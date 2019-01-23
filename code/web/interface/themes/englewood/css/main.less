@@ -1,0 +1,27 @@
+// Core variables and mixins
+@import (reference) "../../responsive/css/variables.less";
+@import (reference) "variables.less";
+
+// Always include the base .less file
+@import "../../responsive/css/responsive_base.less";
+
+#header-container{
+  background-image: url('/interface/themes/englewood/images/header_background.png');
+  background-repeat: no-repeat;
+}
+
+.header-login-button-mixin(rgba(255,255,255,0.75));
+
+.header-button {
+  color: black !important;
+  font-weight: bolder;
+  font-size: 15px;
+  &:hover {
+    box-shadow: 2px 2px 5px darkgrey;
+  }
+}
+
+// 'Library Hours & Location' Button only in the side bar
+#home-page-hours-locations{
+  text-transform: none;
+}

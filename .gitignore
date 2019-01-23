@@ -1,0 +1,155 @@
+# Specific locations within Pika to exclude from git   #
+# Files are excluded either because                    #
+#  - they contain sensitive data (i.e. passwords)      #
+#  - they can change at runtime                        #
+########################################################
+sites/*/backup
+!sites/default/backup
+sites/default/solr5/docs/*
+sites/default/solr5/example/*
+sites/default/solr5/licenses/*
+sites/default/solr5/logs/*
+sites/default/solr5/tmp/*
+sites/default/solr5/server/logs/*
+sites/default/solr5/server/tmp/*
+sites/default/solr5/server/solr/configsets/*
+vufind/web/interface/cache/*
+vufind/web/interface/compile/*
+vufind/web/phpinfo.php
+vufind/web/images/fiveStar/*
+vufind/web/images/charts/*
+vufind/web/repository_images/*
+vufind/web/files/medium/*
+vufind/web/files/thumbnail/*
+vufind/web/files/original/*
+vufind/web/google*.html
+vufind/web/getWorkIdUpdates.php
+vufind/web/sitemaps/*.xml
+vufind/web/sitemaps/*.txt
+tests/jmeter/results/*
+tests/selenium/*
+tests/conf/config.ini
+data-import
+config.pwd.ini
+*.csv
+author_authorities.properties.temp
+author_authorities.v1.properties
+hcl_solr_bib_export.properties
+horizon_export.properties
+*.pid
+*.port
+sites/default/solr/jetty/logs/*
+
+
+# Compiled source #                                                                                   
+###################
+*.com
+*.class
+*.o
+*.so
+
+# Unneeded files that are large or built at runtime #
+#####################################################
+III_Telnet_Extract.pl
+LexileTitles.txt
+
+# Packages #
+############
+# it's better to unpack these files and commit the raw source
+# git has its own built in compression methods
+*.7z
+*.dmg
+*.gz
+*.iso
+*.rar
+*.tar
+*.zip
+
+# Logs and databases #
+######################
+sites/default/solr/jetty/logs
+*.log
+*.log.1
+*.log.2
+*.log.3
+*.log.4
+*.log.5
+*.sqlite
+
+# MARC records #
+################
+*.mrc
+*.marc
+
+# IDE Files #
+#################
+.buildpath
+.project
+.classpath
+org.eclipse.*.prefs
+*.iml
+.idea/
+.settings/
+out/
+
+# OS generated files #
+######################
+.DS_Store*
+ehthumbs.db
+Icon?
+Thumbs.db
+~$*.docx
+~$*.doc
+documentation/~*.tmp
+# Word Tempory File
+.vagrant/
+
+# Dreamweaver Files #
+#####################
+[_]notes/
+*.LCK
+
+# File-watcher mishaps #
+########################
+*.min.min.js
+
+# Marmot Symbolic Links #
+#########################
+sites/*.marmot.org
+!sites/opac.marmot.org/
+#re-include the marmot production directory
+
+# Aspencat Symbolic Links #
+###########################
+sites/*catalog.aspencat.info
+
+# Flatirons Symbolic Links #
+############################
+sites/*.flatironslibrary.org
+sites/*.boulderlibrary.org
+sites/*.flatironsconsortium.org
+
+# Lion Symbolic Links #
+#######################
+sites/*.lionlibraries.org
+
+# Nashville Symbolic Links #
+############################
+sites/170.190.30.108
+sites/170.190.30.180
+sites/170.190.30.38
+sites/*.library.nashville.org
+
+# Nashville CarlX Tools #
+########################
+vufind/web/services/CarlXTools
+vufind/web/interface/themes/nashville_resp/CarlXTools
+
+# Other stuff #
+###############
+sites/marmot.localhost/sql_backup/marmot_econtent.sql
+sites/marmot.localhost/sql_backup/marmot_vufind.sql
+sites/arlington.localhost/sql_backup/arlington_econtent.sql
+*.sql
+vufind/web/interface/themes/pitkin_resp/images/Winter.JPG
+main.tmpcss

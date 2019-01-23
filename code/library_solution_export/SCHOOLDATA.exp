@@ -1,0 +1,99 @@
+#!/usr/bin/expect
+
+# SCHOOLDATA.exp
+# James Staub
+# Nashville Public Library
+# Limitless Libraries : move and unzip school full extract, daily item extract, hourly item update files
+# Millennium 2014
+
+# to do: delete schoolsitemupdate.txt if schoolsitemupdatedaily.txt was downloaded
+
+# 20150904 : add stout output lines to track down scp issue
+# 20150726 : v.1
+
+
+#exp_internal 1 ; # verbose debugging to stdout
+#log_user 1 ; # send screens to stdout
+log_user 0 ; # do NOT send screens to stdout
+
+set wait "2" ; # timeout
+set confpwd "/usr/local/VuFind-Plus/sites/catalog.library.nashville.org/conf/config.pwd.ini"
+set sourceUser "limitless@catalog.library.nashville.org"
+set sourcePath "data/"
+set files {"schoolsextract.zip" "schoolsitemupdate.zip"}
+#set files {"schoolsextract" "schoolsitemupdatedaily" "schoolsitemupdate"}
+set destinationPath "/data/vufind-plus/school.library.nashville.org/marc/"
+
+# READ CONFIG.PWD.INI
+set fd [open $confpwd r]
+while {![eof $fd]} {
+        set line [string trim [gets $fd] " "]
+        if {$line == ""} continue
+        switch -regexp -nocase -- $line {
+                "^\\[Catalog Extract\\]" {
+                        set section true
+                }
+                "^\\[" {
+                        set section false
+                }
+                "^unzipPassword" {
+                        if {$section == true} {
+                                set pair [split $line =]
+                                set variable [string trim [lindex $pair 0]]
+                                set value [string trim [lindex $pair 1]]
+                                set $variable $value
+                                # puts "$variable  = $value"
+                        }
+                }
+                default {}
+        }
+}
+
+foreach file $files {
+
+	# COPY FILE FROM SFTP DROP SPOT
+	spawn scp -p -i /home/limitless/.ssh/id_rsa $sourceUser:$sourcePath$file $destinationPath
+
+# requires setting up SSH keys for limitless:
+#	on source, log in as limitless
+#	$ ssh-keygen # if and only if .ssh/id_rsa.pub does not already exist
+#	[accept defaults]
+#	$ cat .ssh/id_rsa.pub
+#	copy public key
+#	on target, log in as limitless
+#	$ nano .ssh/authorized_keys
+#	paste public key
+#	save
+#	$ chmod 755 .ssh
+#	$ chmod 644 authorized_keys
+# 2015 09 03 James set up SSH key authentication between galacto and catalog; password not needed
+# 2015 09 03 James set up SSH key authentication between catalog and catalog; password not needed
+
+	#expect "$sourceUser\'s password:"
+	#send "$sourcePassword\r"
+	wait
+	close
+
+	# TEST TO SEE IF FILE EXISTS AND IS NEW - CONTINUE IF FALSE
+	if {[file exists $destinationPath$file] != 1} {
+		continue
+	}
+	if {[clock seconds] - [file mtime $destinationPath$file] > 3600} {
+		continue
+	}
+
+	# SCHOOLS: UNZIP
+#	spawn unzip -ouB $destinationPath$file -d $destinationPath
+#	expect "password:"
+#	send "$unzipPassword\r"
+#	expect "inflating"
+#	wait
+	spawn 7za e -y -o$destinationPath $destinationPath$file
+	expect "Enter password (will not be echoed) :"
+	send "$unzipPassword\r"
+	expect "Everything is Ok"
+	wait
+	close
+}
+
+exit

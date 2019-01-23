@@ -1,0 +1,71 @@
+###################
+## Crontab setting from a 'configuration' file
+##
+## to save current crontab to file: crontab -l > crontab_settings.txt
+##
+## to set the current crontab from a file : crontab < crontab_settings.txt
+##
+##################
+
+# !! Please make all changes to the crontab within the git repository system and apply through the above method.
+#
+# ie :
+# git pull origin {current branch}
+# crontab < /usr/local/vufind-plus/sites/anythink.production/conf/crontab_settings.txt
+
+###################
+# * * * * *  command to execute
+# │ │ │ │ │
+# │ │ │ │ └───── day of week (0 - 6)
+# │ │ │ │        (0 to 6 are Sunday to Saturday, or use names (Sun,Mon,Tue,Wed,Thu,Fri,Sat); 7 is Sunday, the same as 0)
+# │ │ │ └────────── month (1 - 12)
+# │ │ └─────────────── day of month (1 - 31)
+# │ └──────────────────── hour (0 - 23)
+# └───────────────────────── min (0 - 59)
+## taken from https://en.wikipedia.org/wiki/Cron
+##############
+
+# Below are common cron tasks used in Pika setups.
+# Uncomment (& adjust timing/settings) to implement the cron tasks your installation needs
+#
+
+#############
+# On Reboot #
+#############
+# Continuous Re-Indexing
+@reboot cd /usr/local/vufind-plus/sites/anythink.production; ./continuous_partial_reindex.sh
+
+######################
+# MySQL Nightly Dump #
+######################
+# backup important bits at 12:10am daily
+10 0 * * * /usr/local/vufind-plus/vufind/cron/nightly_mysql_dump.sh anythink.production 2>&1 >/dev/null
+
+#####################
+# Daily full update #
+#####################
+# Set the start for 1:30 am
+30 01 * * * cd /usr/local/vufind-plus/sites/anythink.production; ./full_update.sh
+
+###################
+# Pika Cron Jobs  #
+###################
+4 20 * * * cd /usr/local/vufind-plus/vufind/cron/; java -jar cron.jar anythink.production
+20 0 * * * cd /usr/local/vufind-plus/vufind/cron/; java -jar cron.jar anythink.production DatabaseCleanup
+
+# Check Apache Solr process and website that it has not stalled.
+*/3 * * * * cd /usr/local/vufind-plus/vufind/cron/; ./solrTest.sh
+
+# Check for semaphore errors
+17 * * * * cd /usr/local/vufind-plus/vufind/cron/; ./apacheSemaphoreCleanup.sh root
+
+################
+# Pika Cleanup #
+################
+# Clean Up Temporary Files
+26 * * * * cd /tmp; /bin/rm -rf CURLCOOKIE*
+27 */2 * * * cd /tmp; /bin/rm -rf epb*
+
+# Restart apache
+0 * * * * /usr/sbin/apachectl graceful > /dev/null 2>&1
+2 0-7 * * * /usr/sbin/apachectl restart > /dev/null 2>&1

@@ -1,0 +1,284 @@
+//
+// Main responsive theme css
+//
+//Default values for variables
+@navbarCollapseWidth: 480px;
+@navbarCollapseDesktopWidth: 481px;
+@horizontalComponentOffsetNarrow: 80px;
+@icon-font-path: '/fonts/';
+
+@import "bootstrap/less/bootstrap.less";
+@import "bootstrap.inline-responsive.less";
+
+//
+//  Basic Style overrides
+//
+a, a:visited{
+  color: @link-color-resp;
+}
+a:hover{
+  color: darken(@link-color-resp, 10%);
+}
+a.btn-primary, a.btn-warning, a.btn-info{
+  color: #ffffff;
+}
+@media print {
+  a:link:after,
+  a:visited:after {
+    content: "" !important;
+  }
+}
+
+body {
+  font-family: @font-family-sans-serif-resp;
+  background-color: @body-bg-resp;
+  > .container{
+    background-color: @content-bg;
+  }
+}
+
+.noBreak{
+  white-space: nowrap;
+}
+
+.collapsed, .expanded{
+  cursor: pointer;
+}
+
+.fieldset-collapsed {
+  //height: 10px;
+  overflow: hidden;
+  border-left: 0;
+  border-right: 0;
+  border-bottom: 0;
+  div, fieldset {
+    display: none;
+  }
+}
+
+.fieldset-collapsible-label {
+  color: #256292;
+  cursor: pointer;
+  font-size: 14px;
+}
+.fieldset-collapsible-label:before{
+  content: "▼ ";
+}
+.fieldset-collapsed .fieldset-collapsible-label {
+  background-position: 4px 4px;
+}
+.fieldset-collapsed .fieldset-collapsible-label:before{
+  content: "► ";
+}
+
+
+.accordion {
+  .panel-title.collapsed:before {
+    content: "► ";
+    @media print {
+      content: "";
+    }
+  }
+  .panel-title.expanded:before {
+    content: "▼ ";
+    @media print{
+      content: "";
+    }
+  }
+}
+
+.panel .panel-title:before {
+  content: "► ";
+  @media print{
+    content: "";
+  }
+}
+.panel.active .panel-title:before {
+  content: "▼ ";
+  @media print{
+    content: "";
+  }
+}
+
+.panel-title{
+  font-size: 14px;
+}
+// Modals
+.modal {
+  //position: fixed; // In modals.less
+  left: 50%;
+  width: 80%;
+  margin-left: -40%;
+  overflow-y: auto;
+
+  @media(max-width: @screen-xs-max) {
+    width: 98%;
+    margin-left: -50%;
+  }
+}
+
+.modal-dialog {
+  max-width: 100%; // constrain content to the modal box
+}
+.modal-buttons{
+  margin-left: 3px;
+  margin-right: 3px;
+}
+ // top-right close button
+.modal-header .close {
+  margin-top: -10px;
+  font-size: 40px;
+  opacity: .4;
+}
+.btn:active, .btn.active{
+  font-weight: bold;
+}
+
+.btn-toolbar{
+  @media print{
+    display: none;
+  }
+}
+
+.btn-group{
+  @media print{
+    display: none;
+  }
+}
+
+.tab-content {
+  border-left: 1px solid #ddd;
+  border-right: 1px solid #ddd;
+  padding: 10px;
+}
+
+.nav-tabs {
+  margin-bottom: 0;
+}
+
+#search_box_group{
+  // Append input to search box when larger than phone
+  @media (max-width: 480px) {
+    #search_button{
+      padding-top: 5px;
+      width: 100%;
+    }
+    padding-top: 5px;
+  }
+}
+
+@media print{
+  #header-wrapper{
+    display: none;
+  }
+  #side-bar{
+    display: none;
+  }
+}
+
+.footer-column{
+  @media (max-width: 767px) {
+    h4:before{
+      content: "▼ ";
+    }
+    h4.collapsed:before{
+      content: "► ";
+    }
+
+  }
+}
+.footerContents{
+  @media (min-width: 767px) {
+    .collapse.in;
+  }
+}
+
+#largeLogo{
+  padding: 20px 0 15px;
+}
+
+.bold{
+  font-weight: bold;
+}
+
+ul.list-striped, ol.list-striped {
+  > li:nth-child(odd),
+  > li:nth-child(odd) {
+    background-color: @table-bg-accent;
+  }
+}
+
+div.striped {
+  > div:nth-child(odd),
+  > div:nth-child(odd) {
+    background-color: @table-bg-accent;
+  }
+}
+
+// Used on Checked Out Page
+.bg-overdue {
+  background-color: @state-danger-bg !important; // important is needed to override .striped on checked out page
+  a&:hover,
+  a&:focus {
+    background-color: darken(@state-danger-bg, 10%);
+  }
+}
+
+// Library Admin Page
+#propertyRowfacets {
+  overflow-x: scroll;
+}
+
+//Table sorters
+.unsortedHeader{
+  background-image: url(/images/unsorted_icon.gif);
+  cursor: pointer;
+  font-weight: bold;
+  background-repeat: no-repeat;
+  background-position: center right;
+  padding-right: 20px;
+}
+thead .sortDescHeader{
+  background-image: url(/images/sort_desc_icon.gif);
+  background-color: #3399FF;
+}
+thead .sortAscHeader{
+  background-image: url(/images/sort_asc_icon.gif);
+  background-color: #3399FF;
+}
+.tablesorter-filter{
+  width: 98%;
+}
+
+// Google translate
+#google_translate_element{
+  font-size: smaller;
+  padding-left: 5px;
+}
+.goog-te-gadget {
+  display: inline-block;
+}
+
+// Third party imports
+@import "ratings.less";
+@import "datepicker.less";
+@import "jcarousel.responsive.less";
+@import "lib/bootstrap-switch.less";
+@import "lib/tablesorter/tablesorter.less";
+@import "lib/lightbox.less";
+
+// Imports of functionality related to Pika
+@import "layout.less";
+@import "home.less";
+@import "browse-categories.less";
+@import "account.less";
+@import "help.less";
+@import "author.less";
+@import "title-scroller.less";
+@import "record.less";
+@import "results-list.less";
+@import "grouped_work.less";
+@import "prospector.less";
+@import "genealogy.less";
+@import "repository.less";
+@import "admin.less";

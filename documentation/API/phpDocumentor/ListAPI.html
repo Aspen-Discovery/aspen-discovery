@@ -1,0 +1,500 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+  <html xmlns="http://www.w3.org/1999/xhtml">
+		<head>
+			<!-- template designed by Marco Von Ballmoos -->
+			<title>Docs For Class ListAPI</title>
+			<link rel="stylesheet" href="../media/stylesheet.css" />
+			<meta http-equiv='Content-Type' content='text/html; charset=iso-8859-1'/>
+		</head>
+		<body>
+			<div class="page-body">			
+<h2 class="class-name"><img src="../media/images/Class_logo.png"
+														alt=" Class"
+														title=" Class"
+														style="vertical-align: middle"> ListAPI</h2>
+
+<a name="sec-description"></a>
+<div class="info-box">
+	<div class="info-box-title">Description</div>
+	<div class="nav-bar">
+					<span class="disabled">Description</span> |
+															<a href="#sec-method-summary">Methods</a> (<a href="#sec-methods">details</a>)
+						
+					</div>
+	<div class="info-box-body">
+        		<!-- ========== Info from phpDoc block ========= -->
+		<p class="notes">
+			Located in <a class="field" href="_ListAPI.php.html">/ListAPI.php</a> (line <span class="field"><a href="../__filesource/fsource_phpDocumentor__ListAPI.php.html#a26">26</a></span>)
+		</p>
+		
+				
+		<pre>Action
+   |
+   --ListAPI</pre>
+	
+			</div>
+</div>
+
+
+
+
+	<a name="sec-method-summary"></a>
+	<div class="info-box">
+		<div class="info-box-title">Method Summary</span></div>
+		<div class="nav-bar">
+			<a href="#sec-description">Description</a> |
+												<span class="disabled">Methods</span> (<a href="#sec-methods">details</a>)
+		</div>
+		<div class="info-box-body">			
+			<div class="method-summary">
+																																																																																																																																<div class="method-definition">
+					<img src="../media/images/Method.png" alt=" "/>
+											<span class="method-result">void</span>
+										<a href="#addTitlesToList" title="details" class="method-name">addTitlesToList</a>
+										()
+									</div>
+																<div class="method-definition">
+					<img src="../media/images/Method.png" alt=" "/>
+											<span class="method-result">void</span>
+										<a href="#comparePublicationDates" title="details" class="method-name">comparePublicationDates</a>
+											(<span class="var-type"></span>&nbsp;<span class="var-name">$a</span>, <span class="var-type"></span>&nbsp;<span class="var-name">$b</span>)
+									</div>
+																<div class="method-definition">
+					<img src="../media/images/Method.png" alt=" "/>
+											<span class="method-result">void</span>
+										<a href="#createList" title="details" class="method-name">createList</a>
+										()
+									</div>
+																<div class="method-definition">
+					<img src="../media/images/Method.png" alt=" "/>
+											<span class="method-result">void</span>
+										<a href="#getAllListIds" title="details" class="method-name">getAllListIds</a>
+										()
+									</div>
+																<div class="method-definition">
+					<img src="../media/images/Method.png" alt=" "/>
+											<span class="method-result">void</span>
+										<a href="#getCacheInfoForList" title="details" class="method-name">getCacheInfoForList</a>
+										()
+									</div>
+																<div class="method-definition">
+					<img src="../media/images/Method.png" alt=" "/>
+											<span class="method-result">void</span>
+										<a href="#getListTitles" title="details" class="method-name">getListTitles</a>
+										()
+									</div>
+																<div class="method-definition">
+					<img src="../media/images/Method.png" alt=" "/>
+											<span class="method-result">void</span>
+										<a href="#getPublicLists" title="details" class="method-name">getPublicLists</a>
+										()
+									</div>
+																<div class="method-definition">
+					<img src="../media/images/Method.png" alt=" "/>
+											<span class="method-result">void</span>
+										<a href="#getRandomSystemListTitles" title="details" class="method-name">getRandomSystemListTitles</a>
+											(<span class="var-type"></span>&nbsp;<span class="var-name">$listName</span>)
+									</div>
+																<div class="method-definition">
+					<img src="../media/images/Method.png" alt=" "/>
+											<span class="method-result">void</span>
+										<a href="#getRSSFeed" title="details" class="method-name">getRSSFeed</a>
+										()
+									</div>
+																<div class="method-definition">
+					<img src="../media/images/Method.png" alt=" "/>
+											<span class="method-result">void</span>
+										<a href="#getSystemLists" title="details" class="method-name">getSystemLists</a>
+										()
+									</div>
+																<div class="method-definition">
+					<img src="../media/images/Method.png" alt=" "/>
+											<span class="method-result">void</span>
+										<a href="#getSystemListTitles" title="details" class="method-name">getSystemListTitles</a>
+											(<span class="var-type"></span>&nbsp;<span class="var-name">$listName</span>)
+									</div>
+																<div class="method-definition">
+					<img src="../media/images/Method.png" alt=" "/>
+											<span class="method-result">void</span>
+										<a href="#getUserLists" title="details" class="method-name">getUserLists</a>
+										()
+									</div>
+																<div class="method-definition">
+					<img src="../media/images/Method.png" alt=" "/>
+											<span class="method-result">void</span>
+										<a href="#launch" title="details" class="method-name">launch</a>
+										()
+									</div>
+																<div class="method-definition">
+					<img src="../media/images/Method.png" alt=" "/>
+											<span class="method-result">void</span>
+										<a href="#loadTitleInformationForIds" title="details" class="method-name">loadTitleInformationForIds</a>
+											(<span class="var-type"></span>&nbsp;<span class="var-name">$ids</span>, [<span class="var-type"></span>&nbsp;<span class="var-name">$descriptions</span> = <span class="var-default">array()</span>], [<span class="var-type"></span>&nbsp;<span class="var-name">$datesSaved</span> = <span class="var-default">array()</span>])
+									</div>
+											</div>
+		</div>
+	</div>		
+
+	
+	<a name="sec-methods"></a>
+	<div class="info-box">
+		<div class="info-box-title">Methods</div>
+		<div class="nav-bar">
+			<a href="#sec-description">Description</a> |
+													<a href="#sec-method-summary">Methods</a> (<span class="disabled">details</span>)
+						
+		</div>
+		<div class="info-box-body">
+			<A NAME='method_detail'></A>
+<a name="methodaddTitlesToList" id="addTitlesToList"><!-- --></a>
+<div class="evenrow">
+	
+	<div class="method-header">
+		<img src="../media/images/Method.png" />
+		<span class="method-title">addTitlesToList</span> (line <span class="line-number"><a href="../__filesource/fsource_phpDocumentor__ListAPI.php.html#a966">966</a></span>)
+	</div> 
+	
+	<!-- ========== Info from phpDoc block ========= -->
+<p class="short-description">Add titles to a user list.</p>
+<p class="description"><p>Parameters:  <ul><li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li><li>password - The pin number for the user.</li><li>listId   - The id of the list to add items to.</li><li>recordIds - The id of the record(s) to add to the list.</li><li>tags   - A comma separated string of tags to apply to the titles within the list. (optional)</li><li>notes  - descriptive text to apply to the titles.  Can be viewed while on the list.  (optional)</li></ul></p><p>Note: You may also provide the parameters to addTitlesToList and titles will be added to the list  after the list is created.</p><p>Returns:  <ul><li>success – true if the account is valid and the titles could be added to the list, false if the username or password were incorrect or the list could not be created.</li><li>listId – the id of the list that titles were added to.</li><li>numAdded – the number of titles that were added to the list.</li></ul></p><p>Sample Call:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-id">http</span>:<span class="src-comm">//catalog.douglascountylibraries.org/API/ListAPI?method=createList&amp;username=23025003575917&amp;password=1234&amp;title=Test+List&amp;description=Test&amp;public=0</span></div></li>
+</ol></div></p><p>Sample Response:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-sym">{</span><span class="src-str">&quot;result&quot;</span>:<span class="src-sym">{</span><span class="src-str">&quot;success&quot;</span>:<span class="src-id">true</span><span class="src-sym">,</span><span class="src-str">&quot;listId&quot;</span>:<span class="src-str">&quot;1688&quot;</span><span class="src-sym">}}</span></div></li>
+</ol></div></p></p>
+	
+	<div class="method-signature">
+		<span class="method-result">void</span>
+		<span class="method-name">
+			addTitlesToList
+		</span>
+				()
+			</div>
+	
+		
+			
+	</div>
+<a name="methodcomparePublicationDates" id="comparePublicationDates"><!-- --></a>
+<div class="oddrow">
+	
+	<div class="method-header">
+		<img src="../media/images/Method.png" />
+		<span class="method-title">comparePublicationDates</span> (line <span class="line-number"><a href="../__filesource/fsource_phpDocumentor__ListAPI.php.html#a705">705</a></span>)
+	</div> 
+	
+	<!-- ========== Info from phpDoc block ========= -->
+	
+	<div class="method-signature">
+		<span class="method-result">void</span>
+		<span class="method-name">
+			comparePublicationDates
+		</span>
+					(<span class="var-type"></span>&nbsp;<span class="var-name">$a</span>, <span class="var-type"></span>&nbsp;<span class="var-name">$b</span>)
+			</div>
+	
+			<ul class="parameters">
+					<li>
+				<span class="var-type"></span>
+				<span class="var-name">$a</span>			</li>
+					<li>
+				<span class="var-type"></span>
+				<span class="var-name">$b</span>			</li>
+				</ul>
+		
+			
+	</div>
+<a name="methodcreateList" id="createList"><!-- --></a>
+<div class="evenrow">
+	
+	<div class="method-header">
+		<img src="../media/images/Method.png" />
+		<span class="method-title">createList</span> (line <span class="line-number"><a href="../__filesource/fsource_phpDocumentor__ListAPI.php.html#a907">907</a></span>)
+	</div> 
+	
+	<!-- ========== Info from phpDoc block ========= -->
+<p class="short-description">Create a User list for the user.</p>
+<p class="description"><p>Parameters:  <ul><li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li><li>password - The pin number for the user.</li><li>title    - The title of the list to create.</li><li>description - A description for the list (optional).</li><li>public   - Set to true or 1 if the list should be public.  (optional, defaults to private).</li></ul></p><p>Note: You may also provide the parameters to addTitlesToList and titles will be added to the list  after the list is created.</p><p>Returns:  <ul><li>success – true if the account is valid and the list could be created, false if the username or password were incorrect or the list could not be created.</li><li>listId – te id of the new list that is created.</li></ul></p><p>Sample Call:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-id">http</span>:<span class="src-comm">//catalog.douglascountylibraries.org/API/ListAPI?method=createList&amp;username=23025003575917&amp;password=1234&amp;title=Test+List&amp;description=Test&amp;public=0</span></div></li>
+</ol></div></p><p>Sample Response:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-sym">{</span><span class="src-str">&quot;result&quot;</span>:<span class="src-sym">{</span><span class="src-str">&quot;success&quot;</span>:<span class="src-id">true</span><span class="src-sym">,</span><span class="src-str">&quot;listId&quot;</span>:<span class="src-str">&quot;1688&quot;</span><span class="src-sym">}}</span></div></li>
+</ol></div></p></p>
+	
+	<div class="method-signature">
+		<span class="method-result">void</span>
+		<span class="method-name">
+			createList
+		</span>
+				()
+			</div>
+	
+		
+			
+	</div>
+<a name="methodgetAllListIds" id="getAllListIds"><!-- --></a>
+<div class="oddrow">
+	
+	<div class="method-header">
+		<img src="../media/images/Method.png" />
+		<span class="method-title">getAllListIds</span> (line <span class="line-number"><a href="../__filesource/fsource_phpDocumentor__ListAPI.php.html#a57">57</a></span>)
+	</div> 
+	
+	<!-- ========== Info from phpDoc block ========= -->
+	
+	<div class="method-signature">
+		<span class="method-result">void</span>
+		<span class="method-name">
+			getAllListIds
+		</span>
+				()
+			</div>
+	
+		
+			
+	</div>
+<a name="methodgetCacheInfoForList" id="getCacheInfoForList"><!-- --></a>
+<div class="evenrow">
+	
+	<div class="method-header">
+		<img src="../media/images/Method.png" />
+		<span class="method-title">getCacheInfoForList</span> (line <span class="line-number"><a href="../__filesource/fsource_phpDocumentor__ListAPI.php.html#a601">601</a></span>)
+	</div> 
+	
+	<!-- ========== Info from phpDoc block ========= -->
+<p class="short-description">Loads caching information to determine what the list should be cached as  and whether it is cached for all users and products (general), for a single user,  or for a single product.</p>
+	
+	<div class="method-signature">
+		<span class="method-result">void</span>
+		<span class="method-name">
+			getCacheInfoForList
+		</span>
+				()
+			</div>
+	
+		
+			
+	</div>
+<a name="methodgetListTitles" id="getListTitles"><!-- --></a>
+<div class="oddrow">
+	
+	<div class="method-header">
+		<img src="../media/images/Method.png" />
+		<span class="method-title">getListTitles</span> (line <span class="line-number"><a href="../__filesource/fsource_phpDocumentor__ListAPI.php.html#a380">380</a></span>)
+	</div> 
+	
+	<!-- ========== Info from phpDoc block ========= -->
+<p class="short-description">Returns information about the titles within a list including:</p>
+<p class="description"><p><ul><li>Title, Author, Bookcover URL, description, record id</li></ul></p></p>
+	
+	<div class="method-signature">
+		<span class="method-result">void</span>
+		<span class="method-name">
+			getListTitles
+		</span>
+				()
+			</div>
+	
+		
+			
+	</div>
+<a name="methodgetPublicLists" id="getPublicLists"><!-- --></a>
+<div class="evenrow">
+	
+	<div class="method-header">
+		<img src="../media/images/Method.png" />
+		<span class="method-title">getPublicLists</span> (line <span class="line-number"><a href="../__filesource/fsource_phpDocumentor__ListAPI.php.html#a79">79</a></span>)
+	</div> 
+	
+	<!-- ========== Info from phpDoc block ========= -->
+<p class="short-description">Get all public lists</p>
+<p class="description"><p>includes id, title, description, and number of titles</p></p>
+	
+	<div class="method-signature">
+		<span class="method-result">void</span>
+		<span class="method-name">
+			getPublicLists
+		</span>
+				()
+			</div>
+	
+		
+			
+	</div>
+<a name="methodgetRandomSystemListTitles" id="getRandomSystemListTitles"><!-- --></a>
+<div class="oddrow">
+	
+	<div class="method-header">
+		<img src="../media/images/Method.png" />
+		<span class="method-title">getRandomSystemListTitles</span> (line <span class="line-number"><a href="../__filesource/fsource_phpDocumentor__ListAPI.php.html#a780">780</a></span>)
+	</div> 
+	
+	<!-- ========== Info from phpDoc block ========= -->
+	
+	<div class="method-signature">
+		<span class="method-result">void</span>
+		<span class="method-name">
+			getRandomSystemListTitles
+		</span>
+					(<span class="var-type"></span>&nbsp;<span class="var-name">$listName</span>)
+			</div>
+	
+			<ul class="parameters">
+					<li>
+				<span class="var-type"></span>
+				<span class="var-name">$listName</span>			</li>
+				</ul>
+		
+			
+	</div>
+<a name="methodgetRSSFeed" id="getRSSFeed"><!-- --></a>
+<div class="evenrow">
+	
+	<div class="method-header">
+		<img src="../media/images/Method.png" />
+		<span class="method-title">getRSSFeed</span> (line <span class="line-number"><a href="../__filesource/fsource_phpDocumentor__ListAPI.php.html#a152">152</a></span>)
+	</div> 
+	
+	<!-- ========== Info from phpDoc block ========= -->
+<p class="short-description">Get's RSS Feed</p>
+	
+	<div class="method-signature">
+		<span class="method-result">void</span>
+		<span class="method-name">
+			getRSSFeed
+		</span>
+				()
+			</div>
+	
+		
+			
+	</div>
+<a name="methodgetSystemLists" id="getSystemLists"><!-- --></a>
+<div class="oddrow">
+	
+	<div class="method-header">
+		<img src="../media/images/Method.png" />
+		<span class="method-title">getSystemLists</span> (line <span class="line-number"><a href="../__filesource/fsource_phpDocumentor__ListAPI.php.html#a244">244</a></span>)
+	</div> 
+	
+	<!-- ========== Info from phpDoc block ========= -->
+<p class="short-description">Get all system generated lists that are available.</p>
+<p class="description"><p>includes id, title, description, and number of titles</p></p>
+	
+	<div class="method-signature">
+		<span class="method-result">void</span>
+		<span class="method-name">
+			getSystemLists
+		</span>
+				()
+			</div>
+	
+		
+			
+	</div>
+<a name="methodgetSystemListTitles" id="getSystemListTitles"><!-- --></a>
+<div class="evenrow">
+	
+	<div class="method-header">
+		<img src="../media/images/Method.png" />
+		<span class="method-title">getSystemListTitles</span> (line <span class="line-number"><a href="../__filesource/fsource_phpDocumentor__ListAPI.php.html#a829">829</a></span>)
+	</div> 
+	
+	<!-- ========== Info from phpDoc block ========= -->
+	
+	<div class="method-signature">
+		<span class="method-result">void</span>
+		<span class="method-name">
+			getSystemListTitles
+		</span>
+					(<span class="var-type"></span>&nbsp;<span class="var-name">$listName</span>)
+			</div>
+	
+			<ul class="parameters">
+					<li>
+				<span class="var-type"></span>
+				<span class="var-name">$listName</span>			</li>
+				</ul>
+		
+			
+	</div>
+<a name="methodgetUserLists" id="getUserLists"><!-- --></a>
+<div class="oddrow">
+	
+	<div class="method-header">
+		<img src="../media/images/Method.png" />
+		<span class="method-title">getUserLists</span> (line <span class="line-number"><a href="../__filesource/fsource_phpDocumentor__ListAPI.php.html#a105">105</a></span>)
+	</div> 
+	
+	<!-- ========== Info from phpDoc block ========= -->
+<p class="short-description">Get all lists that a particular user has created.</p>
+<p class="description"><p>includes id, title, description, number of titles, and whether or not the list is public</p></p>
+	
+	<div class="method-signature">
+		<span class="method-result">void</span>
+		<span class="method-name">
+			getUserLists
+		</span>
+				()
+			</div>
+	
+		
+			
+	</div>
+<a name="methodlaunch" id="launch"><!-- --></a>
+<div class="evenrow">
+	
+	<div class="method-header">
+		<img src="../media/images/Method.png" />
+		<span class="method-title">launch</span> (line <span class="line-number"><a href="../__filesource/fsource_phpDocumentor__ListAPI.php.html#a28">28</a></span>)
+	</div> 
+	
+	<!-- ========== Info from phpDoc block ========= -->
+	
+	<div class="method-signature">
+		<span class="method-result">void</span>
+		<span class="method-name">
+			launch
+		</span>
+				()
+			</div>
+	
+		
+			
+	</div>
+<a name="methodloadTitleInformationForIds" id="loadTitleInformationForIds"><!-- --></a>
+<div class="oddrow">
+	
+	<div class="method-header">
+		<img src="../media/images/Method.png" />
+		<span class="method-title">loadTitleInformationForIds</span> (line <span class="line-number"><a href="../__filesource/fsource_phpDocumentor__ListAPI.php.html#a713">713</a></span>)
+	</div> 
+	
+	<!-- ========== Info from phpDoc block ========= -->
+	
+	<div class="method-signature">
+		<span class="method-result">void</span>
+		<span class="method-name">
+			loadTitleInformationForIds
+		</span>
+					(<span class="var-type"></span>&nbsp;<span class="var-name">$ids</span>, [<span class="var-type"></span>&nbsp;<span class="var-name">$descriptions</span> = <span class="var-default">array()</span>], [<span class="var-type"></span>&nbsp;<span class="var-name">$datesSaved</span> = <span class="var-default">array()</span>])
+			</div>
+	
+			<ul class="parameters">
+					<li>
+				<span class="var-type"></span>
+				<span class="var-name">$ids</span>			</li>
+					<li>
+				<span class="var-type"></span>
+				<span class="var-name">$descriptions</span>			</li>
+					<li>
+				<span class="var-type"></span>
+				<span class="var-name">$datesSaved</span>			</li>
+				</ul>
+		
+			
+	</div>
+						
+		</div>
+	</div>
+
+	
+	<p class="notes" id="credit">
+		Documentation generated on Wed, 25 Apr 2012 14:53:59 -0600 by <a href="http://www.phpdoc.org" target="_blank">phpDocumentor 1.4.3</a>
+	</p>
+	</div></body>
+</html>

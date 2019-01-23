@@ -1,0 +1,3 @@
+[submodule "tuque"]
+path = vufind/web/sys/tuque
+url = https://github.com/Islandora/tuque

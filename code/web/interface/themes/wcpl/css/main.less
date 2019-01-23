@@ -1,0 +1,34 @@
+// Core variables and mixins
+@import (reference) "../../responsive/css/variables.less";
+@import (reference) "variables.less";
+
+// Always include the base .less file
+@import "../../responsive/css/responsive_base.less";
+
+
+//// hide search icon
+//#selected-browse-label .glyphicon-search {
+//  display: none;
+//}
+//// add next icon
+//#selected-browse-label .selected-browse-label-search-text:after{
+//  //.glyphicon-chevron-right
+//  content: "\e075";
+//}
+#selected-browse-search-link .icon-before {
+  display:none;
+}
+#selected-browse-search-link .icon-after {
+  .glyphicon;
+  //display: inline;
+  .glyphicon-chevron-right;
+}
+
+.header-login-button-mixin;
+// bring in login button styling
+
+// custom styling of main browse category carousel
+.noCarouselBrowseCategoriesMixin();
+
+// Selected Category needs to give a highlighted appearance
+.noCarouselSelectedCategoryMixin();

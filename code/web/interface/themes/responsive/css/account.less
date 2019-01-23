@@ -1,0 +1,55 @@
+//@import (reference) "bootstrap/less/variables.less";
+@import (reference) "variables.less";
+
+// Account Settings formatting //
+#account-settings-accordion .panel-group .panel + .panel{
+  margin-top: 0;
+}
+#account-settings-accordion .panel-heading{
+  padding: 5px 15px;
+  background: linear-gradient(to bottom, #e7e7e7, #d7d7d7);
+  border-bottom: 1px solid #a1a1a1;
+}
+#account-settings-accordion .active .panel-heading{
+  background: linear-gradient(to bottom, #4dacde, #0f8fd2);
+}
+#account-settings-accordion .panel-title{
+  font-size: 13px;
+  color: @gray-dark;
+  text-shadow: 1px 1px #fff;
+}
+#account-settings-accordion .active .panel-title{
+  color: #fff;
+  text-shadow: 1px 1px @gray;
+}
+#account-settings-accordion .panel-body{
+  font-size:12px;
+  color: @gray-dark;
+  background-color: #eeeeee;
+}
+.overdueLabel{
+  color: red;
+  font-weight: bold;
+}
+.dueSoonLabel{
+  color: #e58e29;
+  font-weight: bold;
+}
+.holdDisclaimerLibrary{
+  font-weight: bold;
+}
+#mobileHeader {
+  .myAccountLink {
+    font-weight: bold;
+    font-size: 18px;
+  }
+}
+
+// Account Profile
+
+// make Receive Notices Toggle match color scheming of bootstrap switches
+#contactUpdateForm .btn-group .btn-default.active {
+  background-color: @btn-primary-bg;
+  .box-shadow(none);
+  color: @btn-primary-color;
+}

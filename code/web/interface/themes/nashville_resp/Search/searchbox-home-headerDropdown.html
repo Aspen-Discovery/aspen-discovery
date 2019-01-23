@@ -1,0 +1,95 @@
+{strip}
+<div id="home-page-search" class="row">
+<div class="col-xs-12">
+		<form method="get" action="{$path}/Union/Search" id="searchForm" class="form-inline" onsubmit="VuFind.Searches.processSearchForm();">
+			<fieldset>
+			
+            <div class="row">
+            <div class="col-sm-10 col-md-10 col-sm-push-1 col-md-push-1">
+					{if $displayMode}
+					<input type="hidden" name="view" id="view" value="{$displayMode}">
+					{/if}
+						<div class="input-group input-group-sm">
+                                <div class="input-group-sm">
+                                <textarea class="form-control"
+                                       id="lookfor"
+                                       type="search"
+                                       name="lookfor"
+                                       size="30"
+                                       onfocus="$(this).select()"
+                                       autocomplete="off"
+                                       rows="1">
+                                    {$lookfor|escape:"html"}
+                                </textarea>
+                                </div><!-- /input-group-sm -->
+							
+                                <div class="input-group-btn" id="search-actions">
+                                    <button class="btn btn-default dropdown-toggle" data-toggle="dropdown">Options<span class="caret"></span>
+                                    </button>
+                                    <ul id="searchType" class="dropdown-menu text-left">      
+                                        <li id="searchTypeSelect">Search by
+                                        <script language="javascript">
+                                        function nashvilleSearchSelect(type) {ldelim}
+                                            if(type=="Advanced") {ldelim} VuFind.Account.ajaxLightbox('{$path}/Search/AdvancedPopup', false); {rdelim}
+                                            else if(type=="Search Tips") {ldelim} alert(type + "w007"); {rdelim}
+                                        {rdelim}
+                                        </script>
+                                        
+                                        <select name="basicType" onChange="nashvilleSearchSelect(this.value);">
+                                            {foreach from=$basicSearchTypes item=searchDesc key=searchVal}
+                                                <option value="{$searchVal}"{if $basicSearchIndex == $searchVal || $searchIndex == $searchVal} selected="selected"{/if}>{translate text=$searchDesc}</option>
+                                            {/foreach}    
+                                        <!--GENEALOGY SEARCH : BUILD WHEN READY-->
+                                        </select>
+                                        </li>
+                                        <li>
+                                        {if $searchSources|@count == 1}
+                                            <input type="hidden" name="searchSource" value="{$searchSource}">
+                                        {else}
+                                        Search what <select name="searchSource" id="searchSource" title="Select what to search.	Items marked with a * will redirect you to one of our partner sites." onchange='VuFind.Searches.enableSearchTypes();' class="form-control">
+                                            {foreach from=$searchSources item=searchOption key=searchKey}
+                                                <option data-catalog_type="{$searchOption.catalogType}" value="{$searchKey}"
+                                                    {if $searchKey == $searchSource && !$filterList} selected="selected"{/if}
+                                                    {if $searchKey == $searchSource} id="default_search_type"{/if}
+                                                    title="{$searchOption.description}">
+                                                    {translate text="in"} {$searchOption.name}{if $searchOption.external} *{/if}
+                                                </option>
+                                            {/foreach}
+                                        </select>
+                                        {/if}
+                                        </li>
+                                    </ul>
+                                    <button class="btn btn-default" type="submit"><span class="glyphicon glyphicon-search"></span></button>
+                                </div><!-- /class="input-group-btn" id="search-actions" -->
+						
+                        </div><!-- /input-group input-group-sm -->
+                        </div><!-- /col-sm-10 col-md-10 col-sm-push-1 col-md-push-1 -->
+            </div><!-- /class="row" -->
+			
+            <div class="row text-center">
+				<div class="col-sm-10 col-md-10 col-sm-push-1 col-md-push-1">
+				</div>
+			</div>
+			
+            <div class="row text-center">
+				{if $filterList}
+					<label for="keepFiltersSwitch" id="keepFiltersSwitchLabel"><input id="keepFiltersSwitch" type="checkbox" onclick="VuFind.Searches.filterAll(this);" /> Keep Applied Filters</label>
+				{/if}
+			</div>
+            
+			{if $filterList || $hasCheckboxFilters}
+				{* Data for searching within existing results *}
+				<div id="keepFilters" style="display:none;">
+					{foreach from=$filterList item=data key=field}
+						{foreach from=$data item=value}
+							<input class="existingFilter" type="checkbox" name="filter[]" value='{$value.field}:"{$value.value|escape}"' />
+						{/foreach}
+					{/foreach}
+				</div>
+			{/if}
+
+			</fieldset>
+		</form>
+	</div><!-- /col-xs-12 -->
+</div><!-- /id="home-page-search" class="row" -->
+{/strip}

@@ -1,0 +1,1 @@
+<div class='summary'>{$summaryData.summary}</div>

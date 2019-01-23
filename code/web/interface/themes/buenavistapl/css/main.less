@@ -1,0 +1,22 @@
+// Core variables and mixins
+@import (reference) "../../responsive/css/variables.less";
+@import (reference) "variables";
+
+// Always include the base .less file
+@import "../../responsive/css/responsive_base.less";
+
+#header-container {
+  min-height: @header-height + 20;
+  // in some other themes, @header-height is less than the min height set in responsive, set at 110px. plb 9-24-2014
+}
+
+.header-button{
+  border-radius:  0.5em;
+  margin-top: 40px;
+  //height: 40px !important;
+  line-height: 35px !important;
+}
+
+.header-primary{
+  border-top: 1px solid #D9D8D8; // add border to top of the button
+}

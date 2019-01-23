@@ -1,0 +1,139 @@
+// Core variables and mixins
+@import (reference) "../../responsive/css/variables.less";
+@import (reference) "variables";
+
+// Always include the base .less file
+@import "../../responsive/css/responsive_base.less";
+
+.header-login-button-mixin(@header-buttons-background-color);
+
+#header-container{
+  height: 190px;
+  border-bottom: 3px solid #ccc;
+}
+#horizontal-search-label,
+#home-page-search-label,
+#keepFiltersSwitchLabel, #advancedSearchLink,
+#horizontal-search-box #horizontal-search-label,
+#home-page-advanced-search-link{
+  color: @home-search-label-color;
+}
+// Browse Category customizations based on AnyThink
+
+// mixin to select all the typical states of <a> like tags
+.allLinkStates(@rules) {
+  &, &:hover, &:active, &:visited {
+    @rules();
+  }
+}
+
+// the category text
+.browse-category {
+  padding-top: 20px; // extra padding on top to center text
+  height: 120px;
+
+  div {
+    text-shadow: none;
+    text-transform: uppercase;
+    font-size: large;
+    font-weight: 500;
+    &:focus {
+      outline: none; // hide outlining of clicked category
+    }
+  }
+  &.selected {
+    border: none;
+    background-color: @selectedCategoryColor;
+    background: @selectedCategoryColor;
+    //background: linear-gradient(to bottom, @selectedCategoryColor 0%, @selectedCategoryColor 75%, @content-bg 75%, @content-bg 80%, #CCCCCC 80%, @content-bg 100%);
+    background: linear-gradient(to bottom, @selectedCategoryColor 0%, @selectedCategoryColor 75%, @browse-header-background-color 75%, @browse-header-background-color 80%, #CCCCCC 80%, @browse-header-background-color 100%);
+    div {
+      color: #fff;
+    }
+  }
+}
+
+// Left/Right Arrows on browse category carousel
+#browse-category-picker {
+  .jcarousel-control-prev, .jcarousel-control-next {
+    &:active, &:hover {
+      color: @santefe-light-blue;
+      text-decoration: none;
+    }
+    .box-shadow(none);
+    font-size: 20px;
+  }
+  a {
+    &.jcarousel-control-next::after {
+      content: "▶";
+    }
+    &.jcarousel-control-prev::before {
+      content: "◀";
+    }
+  }
+  // indicator dots at bottom of browse category carousel
+  .jcarousel-pagination a {
+    &.active {
+      //background: @santefe-light-blue;
+      // keep shadowing in place on active item
+      .box-shadow(0 0 2px #4E443C);
+    }
+    @detached-outline-ruleset: { outline: none };
+    .allLinkStates(@detached-outline-ruleset)
+  }
+}
+
+
+#footer-container {
+  background-color: @santafe-footer-darkgray;
+  color: #FFF;
+}
+#footer-pika-logo {
+  background-color: #FFF;
+  padding: 4px;
+  border-radius: 4px;
+
+}
+
+@media (min-width: @screen-sm) and (max-width: @screen-md-max) {
+  #header-logo {
+    max-width: 475px;
+  }
+  #header-container {
+    height: 140px;
+  }
+}
+@media (max-width: @screen-tn-max) {
+  #header-container {
+    height: auto;
+  }
+}
+//@media (min-width: @screen-sm)/* and (max-width: @screen-sm-max)*/ {
+//  #header-logo {
+//    max-width: 475px;
+//  }
+//}
+
+
+#horizontal-search-wrapper {
+  //border-bottom: 8px solid @santafe-background-blue;
+  border-bottom: 3px solid #ccc;
+}
+
+
+#home-breadcrumb {
+  font-weight: 700;
+  font-size: initial;
+}
+
+#more-details-accordion .panel-body {
+  font-size: 12px;
+  color: #333;
+  background-color: transparent;
+  border: 1px solid #c5c5c5;
+  border-top: none;
+}
+
+#system-message-header~.breadcrumbs {
+  background-color: @santafe-off-white;
+}

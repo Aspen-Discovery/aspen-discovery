@@ -1,0 +1,103 @@
+#!/usr/bin/expect -f
+#
+# copyCarlXExport.exp
+#
+
+# https://marmot.myjetbrains.com/youtrack/issue/IN-384
+# TLC describes fullExport creation at
+# https://ww2.tlcdelivers.com/helpdesk/default.asp?TicketID=428769
+
+exp_internal 0 ; # 1 = verbose debugging to stdout
+log_user 0 ; # 1 = send screens to stdout
+
+set site [lindex $argv 0]
+set confpwd "/usr/local/VuFind-Plus/sites/$site/conf/config.pwd.ini"
+if {[file exists $confpwd] != 1} {
+        puts "Please check spelling of site $site; config.pwd.ini not found at $confpwd"
+        exit
+}
+set localPath "/data/pika/$site/marc"
+if {[file exists $localPath] != 1} {
+        puts "Please check spelling of site $site; /marc/ directory not found at $localPath"
+        exit
+}
+
+# READ CONFIG.PWD.INI
+set fd [open $confpwd r]
+while {![eof $fd]} {
+        set line [string trim [gets $fd] " "]
+        if {$line == ""} continue
+        switch -regexp -nocase -- $line {
+                "^\\[Catalog Extract\\]" {
+                        set section true
+                }
+                "^\\[" {
+                        set section false
+                }
+                ^(FTP) {
+                        if {$section == true} {
+                                set pair [split $line =]
+                                set variable [string trim [lindex $pair 0]]
+                                set value [string trim [lindex $pair 1]]
+                                set $variable $value
+                                # puts "$variable  = $value"
+                        }
+                }
+                default {}
+        }
+}
+
+# MOVE OLD MRC TO SAV
+if {[file exists "$localPath/fullExport.mrc"] == 1} {
+	file rename -force "$localPath/fullExport.mrc" "$localPath/fullExport.sav"
+}
+
+set prompt {sftp> $}
+set size 0
+
+while {$size == 0} {
+	sleep 60
+	spawn sftp $FTPUser@$FTPHost:/carl.output/utilities/marcout/pika/
+	expect "$FTPUser@$FTPHost\'s password:*"
+	send "$FTPPassword\r"
+	expect $prompt
+
+	# If it is 9PM or later, grab today's full export; else grab yesterdays
+	if {[clock format [clock seconds] -format "%H"] > 20} {
+		set today [clock format [clock seconds] -format "%Y%m%d"]
+	} else {
+		set today [clock format [clock scan yesterday] -format "%Y%m%d"]
+	}
+
+	send "ls -l fullExport.$today.gz\r"
+	#result should look like
+	#ls: cannot access fullExport.20170804.gz: No such file or directory
+	# OR
+	#-rw-r--r--    1 appmgr      dba      304939812 Aug 4 22:10 fullExport.20170804.gz\r\nsftp>
+
+	expect {
+		"not found" {
+			close
+			continue
+		}
+		-re "(\[0-9]+) +(\[^ ]+) +(\[0-9]+) +(\[:0-9]+) +fullExport\.$today\.gz" {
+			set size $expect_out(1,string)
+		}
+	}
+}
+
+expect $prompt
+send "get fullExport.$today.gz $localPath\r"
+set timeout 120
+expect "100%*"
+expect $prompt
+close
+
+spawn gunzip -fN $localPath/fullExport.$today.gz
+expect eof
+
+spawn mv -f $localPath/fullExport $localPath/fullExport.mrc
+expect eof
+
+#
+#--eof--

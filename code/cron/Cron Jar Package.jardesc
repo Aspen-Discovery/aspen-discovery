@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="WINDOWS-1252" standalone="no"?>
+<jardesc>
+    <jar path="VuFind+ Cron/cron.jar"/>
+    <options buildIfNeeded="true" compress="true" descriptionLocation="/VuFind+ Cron/Cron Jar Package.jardesc" exportErrors="true" exportWarnings="true" includeDirectoryEntries="true" overwrite="true" saveDescription="true" storeRefactorings="false" useSourceFolders="false"/>
+    <storedRefactorings deprecationInfo="true" structuralOnly="false"/>
+    <selectedProjects/>
+    <manifest generateManifest="false" mainClassHandleIdentifier="=VuFind+ Cron/src&lt;org.vufind{Cron.java[Cron" manifestLocation="/VuFind+ Cron/Cron Manifest" manifestVersion="1.0" reuseManifest="true" saveManifest="true" usesManifest="true">
+        <sealing sealJar="false">
+            <packagesToSeal/>
+            <packagesToUnSeal/>
+        </sealing>
+    </manifest>
+    <selectedElements exportClassFiles="false" exportJavaFiles="false" exportOutputFolder="true">
+        <javaElement handleIdentifier="=VuFind+ Cron/src&lt;org.epub"/>
+        <javaElement handleIdentifier="=VuFind+ Cron/src&lt;org.vufind"/>
+        <javaElement handleIdentifier="=VuFind+ Cron/src&lt;org.json"/>
+        <javaElement handleIdentifier="=VuFind+ Cron/src&lt;org.douglascountylibraries"/>
+    </selectedElements>
+</jardesc>

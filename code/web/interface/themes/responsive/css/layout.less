@@ -1,0 +1,375 @@
+//@import (reference) "bootstrap/less/variables.less";
+@import (reference) "variables.less";
+
+//Functionality related to the overall layout
+//Headers, Footer, columns, etc.
+
+//Body
+body{
+  color: @body-text-color;
+}
+#content-container{
+  @media(max-width: @screen-sm-min){
+    width: auto;
+  }
+  @media(min-width: @screen-sm-min){
+    width: 100%;
+  }
+  padding: 0;
+}
+
+hr.menu{
+  margin-top: 3px;
+  margin-bottom: 3px;
+  height: 0;
+  border-top: 1px solid #d3d3d3;
+}
+
+//Breadcrumbs (above header)
+.breadcrumbs{
+  background-color: @breadcrumb-bg;
+  padding: 3px;
+}
+.breadcrumb{
+  padding: 0;
+  margin-bottom: 0;
+  > li {
+    display: inline-block;
+    + li:before {
+      content: ""; // Override default separator since we add one in code
+      padding: 0 5px;
+      color: @breadcrumb-color;
+    }
+  }
+}
+//System message
+#system-message-header{
+  background-color: @header-top-color;
+  color: black;
+  text-align: center;
+  padding: 3px;
+}
+//Define the header elements
+#header-container{
+  padding-top: 0;
+  height: @header-height;
+  background-color: @header-top-color;
+  background: linear-gradient(to bottom, @header-top-color, @header-middle-color 85%, @header-bottom-color);
+  border-bottom: @header-bottom-border-width solid @header-bottom-border-color;
+  margin-bottom: 0;
+  min-height: 110px;
+}
+#header-logo{
+  padding: 10px 10px 0 0;
+  @media(max-width: @screen-xs-max){
+    max-width: 100%;
+    height:auto;
+  }
+}
+// OLD Version, when markup was div.header-button > a
+//.header-button{
+//  text-align: center;
+//  height: @header-height - 8px !important;
+//  border-bottom: 4px solid @header-bottom-color;
+//  & > a{
+//    line-height: @header-height - 8px !important;
+//    text-align: center;
+//    vertical-align: middle;
+//    padding: 0;
+//    color: @header-link-color !important;
+//    text-shadow: 1px 1px #fff;
+//    &:visited{
+//      color: @header-link-color !important;
+//    }
+//  }
+//  &:hover{
+//    border-bottom: 4px solid @link-hover-color;
+//  }
+//}
+// New Version, markup is a > div.header-button
+.header-button{
+  // Prevent Button Text from overflowing or creating new lines (Only Nashville needs at this time. 2-5-2016 plb)
+  //white-space: nowrap;
+  //overflow-x: hidden;
+
+  text-align: center;
+  text-shadow: 1px 1px #fff;
+  vertical-align: middle;
+  //height: @header-height - 8px !important; // TODO: Needed?, line-height should force this to be the same now
+  line-height: @header-height - 8px !important;
+  border-bottom: 4px solid @header-bottom-color;
+  color: @header-link-color !important;
+  &:hover{
+    border-bottom: 4px solid @link-hover-color;
+  }
+}
+.header-primary{
+  border-left: 2px solid @header-button-border-vertical;
+  border-right: 2px solid @header-button-border-vertical;
+}
+#library-name-header{
+  font-size: @library-display-name-font-size;
+  color: @library-display-name-color;
+  font-family: @library-display-name-font;
+  font-weight: bold;
+  white-space: normal;
+  padding-top: 5px;
+}
+#header-links{
+  text-align: center;
+  .header-link-wrapper:last-of-type{
+    border-right: 0 solid black;
+  }
+}
+.header-link-wrapper{
+  display: inline-block;
+  padding: 2px 15px;
+  border-right: 1px solid #0078ae;
+  a{
+    font-size: 16px;
+  }
+}
+// Footer
+#footer-container{
+  border-top: 8px solid @footer-top-border-color;
+  padding-top: 3px;
+
+  // zero out negative margins on xs screens
+  @media screen and (max-width: @screen-xs-max) {
+    margin-left: 0;
+    margin-right: 0;
+  }
+  @media (min-width: @screen-sm-max) {
+    padding-left: 40px;
+  }
+}
+#install-info{
+  padding-left: 20px;
+}
+#connect-with-us-info{
+  padding-right: 20px;
+}
+#connect-with-us-label{
+  margin-right: 15px;
+}
+.connect-icon{
+  padding: 0 3px 0 3px;
+}
+
+// Fixed navigation in footer
+#navigation-controls{
+  border-top: 8px solid @footer-top-border-color;
+  background: #fff;
+  @media print {
+    display: none !important;
+  }
+}
+// Applies to both horizontal or side menu bar
+.menu-bar {
+  color: @menu-bar-color;
+  background-color: @menu-bar-background-color;
+}
+
+#horizontal-menu-bar-wrapper {
+
+}
+// Horizontal Menu Bar for small devices
+#horizontal-menu-bar-container {
+  .menu-icon {
+    float: right;
+    padding: 5px;
+    margin-left: 5px;
+    margin-right: 5px;
+    height: 40px;
+    &:focus {
+      outline: none;
+    }
+    &.menu-left {
+      float: left;
+    }
+    &.menu-icon-selected {
+      background-color: @menu-bar-selected-background-color;
+    }
+  }
+  padding-left: @padding-xs-horizontal;
+  padding-right: @padding-xs-horizontal;
+
+  &.sticky-menu-bar {
+    // sticks to top of view port
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: @menu-bar-z-index;
+  }
+
+
+}
+
+// Vertical Menu Bar
+
+.sticky-sidebar {
+  // sticks to top-right of view port
+  position: fixed;
+  top: 0;
+  z-index: @menu-bar-z-index;
+}
+
+#vertical-menu-bar-wrapper {
+  width: @vertical-menu-bar-width;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+#vertical-menu-bar {
+  width: @vertical-menu-bar-width;
+  height: 2000px; // needs to extend out of view, fallback option
+  height: 100vh;  // best solution, height of the view port
+  background-color: @menu-bar-background-color;
+  color: @menu-bar-color;
+  padding-left: 0;
+  padding-right: 0;
+  margin-top: 2px;
+  border-right: 3px solid @content-bg;
+
+  .menu-bar-option {
+    width: 100%;
+    padding-top: @padding-base-vertical;
+    border-top: 3px solid @content-bg;
+    &.menu-icon-selected {
+      background-color: @menu-bar-selected-background-color;
+      color: @menu-bar-selected-color;
+    }
+
+    // To Get Labeling to display Nicely
+    position: relative;
+  }
+  .menu-icon {
+    @menu-icon-padding: 5px;
+    padding: @menu-icon-padding;
+    img {
+      width: @vertical-menu-bar-width - 2*@menu-icon-padding;
+    }
+    &:visited,&:hover,&:focus {
+      text-decoration: none;
+      color: @menu-bar-color;
+      outline: none;
+    }
+    .menu-bar-label {
+      color: @menu-bar-color;
+      font-weight: bold;
+      text-transform: uppercase;
+
+      margin-top: 10px;
+    }
+  }
+}
+
+// Gives Vertical Rotated Text space that tracks with the document flow
+// requires two nested tags: <span class="rotated-text"><span class="rotated-text-inner">{text}</span></span>
+.rotated-text {
+  display: inline-block;
+  overflow: hidden;
+
+  width: @vertical-menu-bar-width;
+  line-height: @vertical-menu-bar-width; // need a set height for the rotated space to flow properly
+}
+.rotated-text-inner {
+  display: inline-block;
+  white-space: nowrap;  // multiple word labels need to stay on the same line
+
+  // Rotate Text Vertically
+  transform: rotate(-90deg) translateX(-100%);
+  transform-origin: 0 0;
+
+  // puts the rotated text into the document flow like we want
+  &:after {
+    content: "";
+    float: left;
+    margin-top: 100%;
+  }
+}
+
+// Toggles Collapsed Sidebar
+// Applied to container divs, remove class to restore original width classes
+.collapsedSidebar {
+  width: @vertical-menu-bar-width;
+  &.rightSidebar {
+    @media (min-width: @screen-sm) {
+      left: 100% - percentage( round(@vertical-menu-bar-width/(@container-sm - @grid-gutter-width), 4) );
+    }
+    @media (min-width: @screen-md) {
+      left:  100% - percentage( round(@vertical-menu-bar-width/(@container-md - @grid-gutter-width), 4) );
+    }
+    @media (min-width: @screen-lg-min) {
+      left: 100% - percentage( round(@vertical-menu-bar-width/(@container-lg - @grid-gutter-width), 4) );
+    }
+  }
+}
+
+// Toggles Expanding Main Content when Sidebar is collapsed
+.mainContentWhenSiderbarCollapsed {
+
+  @media (min-width: @screen-sm) {
+    width: 100% - percentage( round(@vertical-menu-bar-width/(@container-sm - @grid-gutter-width), 4) );
+  }
+  @media (min-width: @screen-md) {
+    width: 100% - percentage( round(@vertical-menu-bar-width/(@container-md - @grid-gutter-width), 4) );
+  }
+  @media (min-width: @screen-lg-min) {
+    width: 100% - percentage( round(@vertical-menu-bar-width/(@container-lg - @grid-gutter-width), 4) );
+  }
+  &.rightSidebar {
+    // Adjustments to display when the sidebar is on the right hand side.
+    right: @vertical-menu-bar-width;
+  }
+}
+
+// Sidebar & Main content
+#side-bar{
+  // padding-left: 0;
+  @media print {
+    display: none;
+  }
+}
+#main-content-with-sidebar{
+  //padding-right: 0; //TODO delete; undone for right side bar
+  padding-bottom: 15px;
+  @media print{
+    width:100%;
+    display: block !important;
+  }
+  & > .row{
+    //margin-right: -30px;// TODO delete; undone for right side bar
+    //margin-right: 15px;
+  }
+}
+
+//JCarousel styling
+.jcarousel ul > li {
+  text-align: center;
+}
+
+.jcarousel .thumbnail img{
+  max-height: 125px !important;
+}
+
+#sectionLabel{
+  width: 100%;
+  background-color: lighten(#80D2F1, 20%);
+  color: #137DE2;
+  text-transform: capitalize;
+  font-weight: bold;
+  padding: 5px;
+  text-align: center;
+  font-size: 16px;
+}
+
+.nopadding {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.required-input{
+  color: red;
+}

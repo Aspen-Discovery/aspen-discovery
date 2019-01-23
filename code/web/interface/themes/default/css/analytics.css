@@ -1,0 +1,86 @@
+.reportFilter {
+	display: inline-block;
+	border: 1px solid gray;
+	border-radius: 3px;
+	margin: 4px;
+	padding: 4px;
+}
+
+.filterLabel {
+	font-size: +1;
+	font-weight: bold;
+	text-align: center;
+	text-decoration: underline;
+	padding-bottom: 3px;
+}
+
+.reportContainer {
+	width: 250px;
+	border: 1px solid gray;
+	border-radius: 3px;
+	height: 265px;
+	padding: 10px;
+	margin: 10px;
+	display: inline-block;
+	text-align: center;
+	float: left;
+	overflow: auto;
+}
+
+.reportContainer2 {
+	width: 540px;
+	border: 1px solid gray;
+	border-radius: 3px;
+	height: 265px;
+	padding: 10px;
+	margin: 10px;
+	display: inline-block;
+	text-align: center;
+	float: left;
+	overflow: auto;
+}
+
+.reportContainer h2,.reportContainer2 h2 {
+	color: #3E576F;
+	fill: #3E576F;
+	font-family: "Lucida Grande", "Lucida Sans Unicode", Verdana, Arial,
+		Helvetica, sans-serif;
+	font-size: 16px;
+	margin: 0px;
+}
+
+.dashboardChart {
+	width: 260px;
+	height: 260px;
+}
+
+.reportOrderedList {
+	text-align: left;
+	height: 75%;
+	overflow: auto;
+}
+
+.reportOrderedList li {
+	list-style-type: decimal;
+	list-style-position: outside;
+}
+
+.detailedReportLink {
+	font-size: 11px;
+	width: 100%;
+	text-align: center;
+}
+
+table.reportDataTable {
+	margin: 5px;
+	border: 1px;
+}
+
+table.reportDataTable td {
+	padding: 2px 4px;
+}
+
+table.reportDataTable th {
+	padding: 2px 4px;
+	border-bottom: 1px solid black;
+}

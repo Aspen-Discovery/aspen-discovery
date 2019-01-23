@@ -1,0 +1,1 @@
+Location where medium covers will be stored

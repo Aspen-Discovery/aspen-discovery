@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="vufind" basedir="." default="main">
+	<property name="tmp" value="/tmp"/>
+	<property name="srcdir" value="${project.basedir}"/>
+	<property name="apacheconfdir" value="/etc/apache2/conf.d"/>
+	<property name="apachectl" value="/etc/init.d/apache2"/>
+	<property name="vufindurl" value="http://venus.marmot.org"/>
+	<property name="vufinddb" value="vufind_test"/>
+	<property name="vufinddbuser" value="vufindtest"/>
+	<property name="vufinddbpass" value="vufindtestpass"/>
+	<property name="mysqlhost" value="localhost"/>
+	<property name="mysqlrootuser" value="root"/>
+	<property name="mysqlrootpass" value="password"/>
+	<property name="marctestfile" value="${project.basedir}/tests/catalog_INCR-TEST_SAMPLE.mrc"/>
+	<property name="version" value="1.2"/>
+
+	<!-- Main Target -->
+	<target name="main" description="main target">
+
+		<!-- Create dirs -->
+		<mkdir dir="${builddir}/reports"/>
+		<mkdir dir="${builddir}/reports/coverage"/>
+
+		<!-- PHP API Documentation? -->
+
+		<!-- PHP CodeSniffer? -->
+
+		<!-- Teardown previous automated test instance -->
+
+		<!-- Create automated test instance of Pika -->
+		<!-- Setup Apache -->
+		<!-- Install Database -->
+		<!-- Group Sample Records -->
+		<!-- Index Sample Records -->
+
+		<!-- Run a bunch of tests -->
+		<!-- PHPUnit -->
+		<!-- Selenium Tests -->
+		<!-- JMeter Tests -->
+
+	</target>
+
+	<!-- Install and Activate VuFind -->
+	<target name="startup" description="install and activate demo">
+		<!-- set up appropriate read/write permissions for Apache -->
+		<exec command="chmod -R a+r ${srcdir}"/>
+		<exec command="chmod -R a+x ${srcdir}/.."/>
+		<exec command="chmod -R a+x ${srcdir}"/>
+		<exec command="chmod -R a+w ${srcdir}/web/interface/cache ${srcdir}/web/interface/compile ${srcdir}/web/images/covers"/>
+
+		<!-- build MySQL database -->
+		<exec command="mysqladmin -f -h ${mysqlhost} -u ${mysqlrootuser} -p${mysqlrootpass} drop ${vufinddb}"/>
+		<exec command="mysqladmin -h ${mysqlhost} -u ${mysqlrootuser} -p${mysqlrootpass} create ${vufinddb}" checkreturn="true"/>
+		<exec command="mysql -h ${mysqlhost} -u ${mysqlrootuser} -p${mysqlrootpass} -e &quot;GRANT SELECT,INSERT,UPDATE,DELETE ON ${vufinddb}.* TO '${vufinddbuser}'@'${mysqlhost}' IDENTIFIED BY '${vufinddbpass}' WITH GRANT OPTION&quot;" checkreturn="true"/>
+		<exec command="mysql -h ${mysqlhost} -u ${mysqlrootuser} -p${mysqlrootpass} -e &quot;FLUSH PRIVILEGES&quot;" checkreturn="true"/>
+		<exec command="mysql -h ${mysqlhost} -u ${mysqlrootuser} -p${mysqlrootpass} -D ${vufinddb} &lt; ${srcdir}/mysql.sql" checkreturn="true"/>
+		<exec command="cp ${srcdir}/web/conf/vufind.ini ${srcdir}/web/conf/${vufinddb}.ini"/>
+		<exec command="chmod 644 ${srcdir}/web/conf/${vufinddb}.ini"/>
+
+		<!-- configure VuFind -->
+		<exec command="sed -e &quot;s!/usr/local/vufind!${srcdir}!&quot; ${srcdir}/web/conf/config.ini | sed -e &quot;s!http://library.myuniversity.edu/vufind!${vufindurl}!&quot; &gt; ${srcdir}/web/conf/config.ini.tmp"/>
+		<exec command="sed -e &quot;s!mysql://root@localhost/vufind!mysql://${vufinddbuser}:${vufinddbpass}@${mysqlhost}/${vufinddb}!&quot; ${srcdir}/web/conf/config.ini.tmp &gt; ${srcdir}/web/conf/config.ini"/>
+		<exec command="rm ${srcdir}/web/conf/config.ini.tmp"/>
+
+		<!-- activate Apache -->
+		<exec command="sed -e &quot;s!/usr/local/vufind!${srcdir}!&quot; ${srcdir}/httpd-vufind.conf &gt; ${apacheconfdir}/vufindtest"/>
+		<exec command="chmod 644 ${apacheconfdir}/vufindtest"/>
+		<exec command="${apachectl} restart"/>
+
+		<!-- import marc test records into vufind index (note: the marc test records have prefix "testsample#") -->
+		<exec command="find ${srcdir}/tests/Selenium/Bugs -name *.mrc -printf %p," outputProperty="buglist"/>
+		<foreach list="${buglist}${marctestfile}" param="filename" delimiter="," target="importrec"/>
+
+		<!-- start Solr (use restart in case of old PID files) -->
+		<exec command="VUFIND_HOME=${srcdir} JETTY_PID=${tmp}/vufindtest.pid JETTY_CONSOLE=/dev/null ${srcdir}/vufind.sh restart" outputProperty="LASTOUTPUT"/>
+		<echo message="${LASTOUTPUT}"/>
+
+		<!-- start the X frame buffer and selenium RC server -->
+		<exec command="VUFIND_HOME=${srcdir} ${srcdir}/tests/auto_test.sh start" outputProperty="LASTOUTPUT"/>
+		<echo message="${LASTOUTPUT}"/>
+
+	</target>
+
+	<!-- Uninstall and Deactivate VuFind -->
+	<target name="shutdown" description="deactivate and uninstall demo">
+
+		<!-- delete the sample/bugs marc test records from vufind index -->
+		<exec command="find ${srcdir}/tests/Selenium/Bugs -name *.mrc -printf %p," outputProperty="buglist"/>
+		<foreach list="${buglist}${marctestfile}" param="filename" delimiter="," target="deleterec"/>
+
+		<!-- remove Apache settings -->
+		<exec command="rm ${apacheconfdir}/vufindtest"/>
+		<exec command="${apachectl} restart"/>
+
+		<!-- drop MySQL database -->
+		<exec command="mysqladmin -f -h ${mysqlhost} -u ${mysqlrootuser} -p${mysqlrootpass} drop ${vufinddb}"/>
+		<exec command="rm ${srcdir}/web/conf/${vufinddb}.ini"/>
+
+		<!-- stop Solr -->
+		<exec command="VUFIND_HOME=${srcdir} JETTY_PID=${tmp}/vufindtest.pid ${srcdir}/vufind.sh stop" outputProperty="LASTOUTPUT"/>
+		<echo message="${LASTOUTPUT}"/>
+
+		<!-- stop the X frame buffer and selenium RC server -->
+		<exec command="VUFIND_HOME=${srcdir} ${srcdir}/tests/auto_test.sh stop" outputProperty="LASTOUTPUT"/>
+		<echo message="${LASTOUTPUT}"/>
+
+	</target>
+</project>

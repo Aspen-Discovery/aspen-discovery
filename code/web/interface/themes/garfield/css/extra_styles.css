@@ -1,0 +1,21 @@
+.searchHomeForm{
+    background-color: #73B5D3;
+    border-color: #409AC2;
+}
+.categoryValue{
+	margin-left: 10px;
+	margin-right: 10px;
+	display: inline-block;
+	height: 3em !important;
+	width: 74px;
+	vertical-align: top;
+	padding-top: 64px;
+	margin-bottom: 2px;
+	background: url('/interface/themes/garfield/images/formatImages.png') no-repeat top left;
+}
+.categoryValue_books { background-position: 5px 0; width: 74px; height: 64px;  }
+.categoryValue_ebook { background-position: -69px 0; width: 74px; height: 64px;  }
+.categoryValue_audiobooks { background-position: -143px 0; width: 74px; height: 64px;  }
+.categoryValue_eaudio { background-position: -217px 0; width: 74px; height: 64px;  }
+.categoryValue_music { background-position: -291px 0; width: 74px; height: 64px;  }
+.categoryValue_movies { background-position: -365px 0; width: 74px; height: 57px;  }

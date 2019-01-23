@@ -1,0 +1,11 @@
+JQueryUI custom theme  
+Use "Start" theme for starting
+Clickable: active
+- background: #0078ae
+- text: #fffff
+- border: #77d5f7
+- icon: #e0fdff 
+Clickable: default state
+ - background #dfeffc
+ - text #1182ab
+ - icon #14b5f0

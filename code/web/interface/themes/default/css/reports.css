@@ -1,0 +1,125 @@
+@CHARSET "ISO-8859-1";
+
+#filterContainer
+{
+	width: 700px;
+	text-align: center;
+	border: 0px #d16e19 solid;
+	padding: 10px;
+}
+
+#generateStats
+{
+	width: 700px;
+	text-align: center;
+	border: 0px #d16e19 solid;
+	padding: 10px;
+}
+
+.multiSelectFilter {
+		width: 300px;
+		}
+		
+.minmaxFilter {
+width: 35px;
+}
+
+#module
+{
+	text-align: left;
+	font-weight: bold;
+	margin-bottom: 10px;
+}
+
+.filterPlaceholder {
+		width: 300px;
+		}
+
+#startDate
+{
+	text-align: left;
+	font-weight: bold;
+	margin-bottom: 10px;
+}
+#endDate
+{
+	text-align: left;
+	font-weight: bold;
+	margin-bottom: 10px;
+}
+
+#minMaxPageViews
+{
+	text-align: left;
+	font-weight: bold;
+	margin-bottom: 10px;
+}
+
+#sourcefilter
+{
+	text-align: left;
+	font-weight: bold;
+	margin-bottom: 10px;
+}
+#usage
+{
+	text-align: left;
+	font-weight: bold;
+}
+label
+{
+	text-align: left;
+	font-weight: bold;
+	min-width: 80px;
+	display: inline-block;
+	zoom: 1;
+	*display: inline;
+}
+
+#filterLeftColumn
+{
+	float: left;
+}
+
+#filterRightColumn
+{
+	float: right;
+}
+
+.filterTitle {
+		font-weight: bold;
+		}
+
+.divClear {    
+clear:both;    
+}
+
+#chart
+{
+	text-align: center;
+	margin-bottom: 10px;
+}
+
+table.datatable {     
+		border-spacing: 0px;    
+		border-collapse: collapse;     
+		width: 700px; } 
+	
+table.datatable th {     
+		text-align: center;     
+		font-weight: bold;     
+		padding: 2px;     
+		border: 1px solid #000000;     
+		background: #eeeeee;     
+		color: #000000; } 
+		
+table.datatable td {     
+		text-align: center;     
+		padding: 2px;     
+		border: 1px solid #000000;     
+		background: #ffffff; } 
+		
+.exportButton {
+	text-align: center; 	
+		}
+

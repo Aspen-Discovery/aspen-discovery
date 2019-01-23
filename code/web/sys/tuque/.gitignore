@@ -1,0 +1,5 @@
+nbproject/
+tests/configs
+build/
+cache.properties
+.DS_Store

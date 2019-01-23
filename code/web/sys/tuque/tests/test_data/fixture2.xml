@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<foxml:digitalObject VERSION="1.1"
+xmlns:foxml="info:fedora/fedora-system:def/foxml#"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="info:fedora/fedora-system:def/foxml# http://www.fedora.info/definitions/1/0/foxml1-1.xsd">
+<foxml:objectProperties>
+<foxml:property NAME="info:fedora/fedora-system:def/model#state" VALUE="Active"/>
+<foxml:property NAME="info:fedora/fedora-system:def/model#label" VALUE="label2"/>
+<foxml:property NAME="info:fedora/fedora-system:def/model#ownerId" VALUE="owner2"/>
+<foxml:property NAME="info:fedora/fedora-system:def/model#createdDate" VALUE="2000-03-12T15:22:37.847Z"/>
+<foxml:property NAME="info:fedora/fedora-system:def/view#lastModifiedDate" VALUE="2000-03-13T14:13:27.182Z"/>
+</foxml:objectProperties>
+<foxml:datastream ID="DC" STATE="A" CONTROL_GROUP="X" VERSIONABLE="true">
+<foxml:datastreamVersion ID="DC.1" LABEL="Dublin Core Record for this object" CREATED="2010-03-13T14:12:59.272Z" MIMETYPE="text/xml" FORMAT_URI="http://www.openarchives.org/OAI/2.0/oai_dc/" SIZE="811">
+<foxml:xmlContent>
+<oai_dc:dc xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai_dc/ http://www.openarchives.org/OAI/2.0/oai_dc.xsd">
+  <dc:identifier>identifier2</dc:identifier>
+  <dc:title>title2</dc:title>
+  <dc:creator>creator2</dc:creator>
+  <dc:subject>subject2</dc:subject>
+  <dc:description>description2</dc:description>
+  <dc:publisher>publisher2</dc:publisher>
+  <dc:contributor>contributor2</dc:contributor>
+  <dc:date>date2</dc:date>
+  <dc:type>type2</dc:type>
+  <dc:format>format2</dc:format>
+  <dc:source>source2</dc:source>
+  <dc:language>language2</dc:language>
+  <dc:relation>relation2</dc:relation>
+  <dc:coverage>coverage2</dc:coverage>
+  <dc:rights>rights2</dc:rights>
+</oai_dc:dc>
+</foxml:xmlContent>
+</foxml:datastreamVersion>
+</foxml:datastream>
+</foxml:digitalObject>

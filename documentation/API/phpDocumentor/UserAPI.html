@@ -1,0 +1,1782 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+  <html xmlns="http://www.w3.org/1999/xhtml">
+		<head>
+			<!-- template designed by Marco Von Ballmoos -->
+			<title>Docs For Class UserAPI</title>
+			<link rel="stylesheet" href="../media/stylesheet.css" />
+			<meta http-equiv='Content-Type' content='text/html; charset=iso-8859-1'/>
+		</head>
+		<body>
+			<div class="page-body">			
+<h2 class="class-name"><img src="../media/images/Class_logo.png"
+														alt=" Class"
+														title=" Class"
+														style="vertical-align: middle"> UserAPI</h2>
+
+<a name="sec-description"></a>
+<div class="info-box">
+	<div class="info-box-title">Description</div>
+	<div class="nav-bar">
+					<span class="disabled">Description</span> |
+															<a href="#sec-method-summary">Methods</a> (<a href="#sec-methods">details</a>)
+						
+					</div>
+	<div class="info-box-body">
+        		<!-- ========== Info from phpDoc block ========= -->
+<p class="short-description">API methods related to getting User information from VuFind from external programs.</p>
+<p class="description"><p>Also handles account actions like placing holds, cancelling holds, etc.</p><p>Copyright (C) Douglas County Libraries 2011.</p><p>This program is free software; you can redistribute it and/or modify  it under the terms of the GNU General Public License version 2,  as published by the Free Software Foundation.</p><p>This program is distributed in the hope that it will be useful,  but WITHOUT ANY WARRANTY; without even the implied warranty of  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the  GNU General Public License for more details.</p><p>You should have received a copy of the GNU General Public License  along with this program; if not, write to the Free Software  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA</p></p>
+	<ul class="tags">
+				<li><span class="field">author:</span> Mark Noble &lt;<a href="mailto:mnoble@turningleaftech.com">mnoble@turningleaftech.com</a>&gt;</li>
+				<li><span class="field">version:</span> 1.0</li>
+				<li><span class="field">copyright:</span> Copyright (C) Douglas County Libraries 2011.</li>
+			</ul>
+		<p class="notes">
+			Located in <a class="field" href="_UserAPI.php.html">/UserAPI.php</a> (line <span class="field"><a href="../__filesource/fsource_phpDocumentor__UserAPI.php.html#a28">28</a></span>)
+		</p>
+		
+				
+		<pre>Action
+   |
+   --UserAPI</pre>
+	
+			</div>
+</div>
+
+
+
+
+	<a name="sec-method-summary"></a>
+	<div class="info-box">
+		<div class="info-box-title">Method Summary</span></div>
+		<div class="nav-bar">
+			<a href="#sec-description">Description</a> |
+												<span class="disabled">Methods</span> (<a href="#sec-methods">details</a>)
+		</div>
+		<div class="info-box-body">			
+			<div class="method-summary">
+																																																																																																																																																																																																																																																																																																																								<div class="method-definition">
+					<img src="../media/images/Method.png" alt=" "/>
+											<span class="method-result">void</span>
+										<a href="#activateEContentHold" title="details" class="method-name">activateEContentHold</a>
+										()
+									</div>
+																<div class="method-definition">
+					<img src="../media/images/Method.png" alt=" "/>
+											<span class="method-result">void</span>
+										<a href="#activateHold" title="details" class="method-name">activateHold</a>
+										()
+									</div>
+																<div class="method-definition">
+					<img src="../media/images/Method.png" alt=" "/>
+											<span class="method-result">void</span>
+										<a href="#addItemToOverDriveCart" title="details" class="method-name">addItemToOverDriveCart</a>
+										()
+									</div>
+																<div class="method-definition">
+					<img src="../media/images/Method.png" alt=" "/>
+											<span class="method-result">void</span>
+										<a href="#addItemToOverDriveWishList" title="details" class="method-name">addItemToOverDriveWishList</a>
+										()
+									</div>
+																<div class="method-definition">
+					<img src="../media/images/Method.png" alt=" "/>
+											<span class="method-result">void</span>
+										<a href="#cancelEContentHold" title="details" class="method-name">cancelEContentHold</a>
+										()
+									</div>
+																<div class="method-definition">
+					<img src="../media/images/Method.png" alt=" "/>
+											<span class="method-result">void</span>
+										<a href="#cancelHold" title="details" class="method-name">cancelHold</a>
+										()
+									</div>
+																<div class="method-definition">
+					<img src="../media/images/Method.png" alt=" "/>
+											<span class="method-result">void</span>
+										<a href="#cancelOverDriveHold" title="details" class="method-name">cancelOverDriveHold</a>
+										()
+									</div>
+																<div class="method-definition">
+					<img src="../media/images/Method.png" alt=" "/>
+											<span class="method-result">void</span>
+										<a href="#checkoutEContentItem" title="details" class="method-name">checkoutEContentItem</a>
+										()
+									</div>
+																<div class="method-definition">
+					<img src="../media/images/Method.png" alt=" "/>
+											<span class="method-result">void</span>
+										<a href="#checkoutOverDriveItem" title="details" class="method-name">checkoutOverDriveItem</a>
+										()
+									</div>
+																<div class="method-definition">
+					<img src="../media/images/Method.png" alt=" "/>
+											<span class="method-result">void</span>
+										<a href="#deleteAllFromReadingHistory" title="details" class="method-name">deleteAllFromReadingHistory</a>
+										()
+									</div>
+																<div class="method-definition">
+					<img src="../media/images/Method.png" alt=" "/>
+											<span class="method-result">void</span>
+										<a href="#deleteSelectedFromReadingHistory" title="details" class="method-name">deleteSelectedFromReadingHistory</a>
+										()
+									</div>
+																<div class="method-definition">
+					<img src="../media/images/Method.png" alt=" "/>
+											<span class="method-result">void</span>
+										<a href="#downloadEContentFile" title="details" class="method-name">downloadEContentFile</a>
+										()
+									</div>
+																<div class="method-definition">
+					<img src="../media/images/Method.png" alt=" "/>
+											<span class="method-result">void</span>
+										<a href="#freezeEContentHold" title="details" class="method-name">freezeEContentHold</a>
+										()
+									</div>
+																<div class="method-definition">
+					<img src="../media/images/Method.png" alt=" "/>
+											<span class="method-result">void</span>
+										<a href="#freezeHold" title="details" class="method-name">freezeHold</a>
+										()
+									</div>
+																<div class="method-definition">
+					<img src="../media/images/Method.png" alt=" "/>
+											<span class="method-result">void</span>
+										<a href="#getPatronCartOverDrive" title="details" class="method-name">getPatronCartOverDrive</a>
+										()
+									</div>
+																<div class="method-definition">
+					<img src="../media/images/Method.png" alt=" "/>
+											<span class="method-result">void</span>
+										<a href="#getPatronCheckedOutEContent" title="details" class="method-name">getPatronCheckedOutEContent</a>
+										()
+									</div>
+																<div class="method-definition">
+					<img src="../media/images/Method.png" alt=" "/>
+											<span class="method-result">void</span>
+										<a href="#getPatronCheckedOutItems" title="details" class="method-name">getPatronCheckedOutItems</a>
+										()
+									</div>
+																<div class="method-definition">
+					<img src="../media/images/Method.png" alt=" "/>
+											<span class="method-result">void</span>
+										<a href="#getPatronCheckedOutItemsOverDrive" title="details" class="method-name">getPatronCheckedOutItemsOverDrive</a>
+										()
+									</div>
+																<div class="method-definition">
+					<img src="../media/images/Method.png" alt=" "/>
+											<span class="method-result">void</span>
+										<a href="#getPatronFines" title="details" class="method-name">getPatronFines</a>
+										()
+									</div>
+																<div class="method-definition">
+					<img src="../media/images/Method.png" alt=" "/>
+											<span class="method-result">void</span>
+										<a href="#getPatronHolds" title="details" class="method-name">getPatronHolds</a>
+										()
+									</div>
+																<div class="method-definition">
+					<img src="../media/images/Method.png" alt=" "/>
+											<span class="method-result">void</span>
+										<a href="#getPatronHoldsEContent" title="details" class="method-name">getPatronHoldsEContent</a>
+										()
+									</div>
+																<div class="method-definition">
+					<img src="../media/images/Method.png" alt=" "/>
+											<span class="method-result">void</span>
+										<a href="#getPatronHoldsOverDrive" title="details" class="method-name">getPatronHoldsOverDrive</a>
+										()
+									</div>
+																<div class="method-definition">
+					<img src="../media/images/Method.png" alt=" "/>
+											<span class="method-result">void</span>
+										<a href="#getPatronOverDriveSummary" title="details" class="method-name">getPatronOverDriveSummary</a>
+										()
+									</div>
+																<div class="method-definition">
+					<img src="../media/images/Method.png" alt=" "/>
+											<span class="method-result">void</span>
+										<a href="#getPatronProfile" title="details" class="method-name">getPatronProfile</a>
+										()
+									</div>
+																<div class="method-definition">
+					<img src="../media/images/Method.png" alt=" "/>
+											<span class="method-result">void</span>
+										<a href="#getPatronReadingHistory" title="details" class="method-name">getPatronReadingHistory</a>
+										()
+									</div>
+																<div class="method-definition">
+					<img src="../media/images/Method.png" alt=" "/>
+											<span class="method-result">void</span>
+										<a href="#getPatronWishListOverDrive" title="details" class="method-name">getPatronWishListOverDrive</a>
+										()
+									</div>
+																<div class="method-definition">
+					<img src="../media/images/Method.png" alt=" "/>
+											<span class="method-result">void</span>
+										<a href="#optIntoReadingHistory" title="details" class="method-name">optIntoReadingHistory</a>
+										()
+									</div>
+																<div class="method-definition">
+					<img src="../media/images/Method.png" alt=" "/>
+											<span class="method-result">void</span>
+										<a href="#optOutOfReadingHistory" title="details" class="method-name">optOutOfReadingHistory</a>
+										()
+									</div>
+																<div class="method-definition">
+					<img src="../media/images/Method.png" alt=" "/>
+											<span class="method-result">void</span>
+										<a href="#placeEContentHold" title="details" class="method-name">placeEContentHold</a>
+										()
+									</div>
+																<div class="method-definition">
+					<img src="../media/images/Method.png" alt=" "/>
+											<span class="method-result">void</span>
+										<a href="#placeHold" title="details" class="method-name">placeHold</a>
+										()
+									</div>
+																<div class="method-definition">
+					<img src="../media/images/Method.png" alt=" "/>
+											<span class="method-result">void</span>
+										<a href="#placeOverDriveHold" title="details" class="method-name">placeOverDriveHold</a>
+										()
+									</div>
+																<div class="method-definition">
+					<img src="../media/images/Method.png" alt=" "/>
+											<span class="method-result">void</span>
+										<a href="#processOverDriveCart" title="details" class="method-name">processOverDriveCart</a>
+										()
+									</div>
+																<div class="method-definition">
+					<img src="../media/images/Method.png" alt=" "/>
+											<span class="method-result">void</span>
+										<a href="#removeOverDriveItemFromWishlist" title="details" class="method-name">removeOverDriveItemFromWishlist</a>
+										()
+									</div>
+																<div class="method-definition">
+					<img src="../media/images/Method.png" alt=" "/>
+											<span class="method-result">void</span>
+										<a href="#renewAll" title="details" class="method-name">renewAll</a>
+										()
+									</div>
+																<div class="method-definition">
+					<img src="../media/images/Method.png" alt=" "/>
+											<span class="method-result">void</span>
+										<a href="#renewItem" title="details" class="method-name">renewItem</a>
+										()
+									</div>
+																<div class="method-definition">
+					<img src="../media/images/Method.png" alt=" "/>
+											<span class="method-result">void</span>
+										<a href="#returnEContentRecord" title="details" class="method-name">returnEContentRecord</a>
+										()
+									</div>
+																<div class="method-definition">
+					<img src="../media/images/Method.png" alt=" "/>
+											<span class="method-result">void</span>
+										<a href="#validateAccount" title="details" class="method-name">validateAccount</a>
+										()
+									</div>
+											</div>
+		</div>
+	</div>		
+
+	
+	<a name="sec-methods"></a>
+	<div class="info-box">
+		<div class="info-box-title">Methods</div>
+		<div class="nav-bar">
+			<a href="#sec-description">Description</a> |
+													<a href="#sec-method-summary">Methods</a> (<span class="disabled">details</span>)
+						
+		</div>
+		<div class="info-box-body">
+			<A NAME='method_detail'></A>
+<a name="methodactivateEContentHold" id="activateEContentHold"><!-- --></a>
+<div class="oddrow">
+	
+	<div class="method-header">
+		<img src="../media/images/Method.png" />
+		<span class="method-title">activateEContentHold</span> (line <span class="line-number"><a href="../__filesource/fsource_phpDocumentor__UserAPI.php.html#a2103">2103</a></span>)
+	</div> 
+	
+	<!-- ========== Info from phpDoc block ========= -->
+<p class="short-description">Activates a frozen eContent hold.</p>
+<p class="description"><p>Parameters:  <ul><li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li><li>password - The pin number for the user.</li><li>id - Theid of the eContent record to activate the hold for.</li></ul></p><p>Returns:  <ul><li>success – true if the account is valid and the hold could be frozen, false if the username or password were incorrect or the hold could not be frozen.</li><li>title – The title of the record.</li><li>message – More information about the reactivation process.</li></ul></p><p>Sample Call:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-id">http</span>:<span class="src-comm">//catalog.douglascountylibraries.org/API/UserAPI?method=activateEContentHold&amp;username=23025003575917&amp;password=1234&amp;ids=532</span></div></li>
+</ol></div></p><p>Sample Response:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-sym">{</span><span class="src-str">&quot;result&quot;</span>:<span class="src-sym">{</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;title&quot;</span>:<span class="src-str">&quot;Toothful&nbsp;tales&nbsp;how&nbsp;we&nbsp;survived&nbsp;the&nbsp;sweet&nbsp;attack&nbsp;\/&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;result&quot;</span>:<span class="src-id">true</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;message&quot;</span>:<span class="src-str">&quot;Your&nbsp;hold&nbsp;was&nbsp;activated&nbsp;successfully.&quot;</span></div></li>
+<li><div class="src-line">&nbsp;<span class="src-sym">}}</span></div></li>
+</ol></div></p></p>
+	<ul class="tags">
+				<li><span class="field">author:</span> Mark Noble &lt;<a href="mailto:mnoble@turningleaftech.com">mnoble@turningleaftech.com</a>&gt;</li>
+			</ul>
+	
+	<div class="method-signature">
+		<span class="method-result">void</span>
+		<span class="method-name">
+			activateEContentHold
+		</span>
+				()
+			</div>
+	
+		
+			
+	</div>
+<a name="methodactivateHold" id="activateHold"><!-- --></a>
+<div class="evenrow">
+	
+	<div class="method-header">
+		<img src="../media/images/Method.png" />
+		<span class="method-title">activateHold</span> (line <span class="line-number"><a href="../__filesource/fsource_phpDocumentor__UserAPI.php.html#a2057">2057</a></span>)
+	</div> 
+	
+	<!-- ========== Info from phpDoc block ========= -->
+<p class="short-description">Activates a hold that was previously suspended within the ILS.  Only unavailable holds can be activated.</p>
+<p class="description"><p>Note:  Horizon implements suspending and activating holds as a toggle.  If a hold is suspended, it will be activated  and if a hold is active it will be suspended.  Care should be taken when calling the method with holds that are in the wrong state.</p><p>Parameters:  <ul><li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li><li>password - The pin number for the user.</li><li>waitingholdselected[] - an array of holds that are not ready for pickup that should be frozen. Each item should be specified as &lt;bibId&gt;:0.</li></ul></p><p>Returns:  <ul><li>success – true if the account is valid and the hold could be activated, false if the username or password were incorrect or the hold could not be activated.</li><li>holdMessage – a reason why the method failed if success is false</li></ul></p><p>Sample Call:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-id">http</span>:<span class="src-comm">//catalog.douglascountylibraries.org/API/UserAPI?method=activateHold&amp;username=23025003575917&amp;password=1234&amp;waitingholdselected[]=1004012:0</span></div></li>
+</ol></div></p><p>Sample Response:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-sym">{</span><span class="src-str">&quot;result&quot;</span>:<span class="src-sym">{</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;success&quot;</span>:<span class="src-id">true</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;holdMessage&quot;</span>:<span class="src-str">&quot;Your&nbsp;hold&nbsp;was&nbsp;updated&nbsp;successfully.&quot;</span></div></li>
+<li><div class="src-line">&nbsp;<span class="src-sym">}}</span></div></li>
+</ol></div></p></p>
+	<ul class="tags">
+				<li><span class="field">author:</span> Mark Noble &lt;<a href="mailto:mnoble@turningleaftech.com">mnoble@turningleaftech.com</a>&gt;</li>
+			</ul>
+	
+	<div class="method-signature">
+		<span class="method-result">void</span>
+		<span class="method-name">
+			activateHold
+		</span>
+				()
+			</div>
+	
+		
+			
+	</div>
+<a name="methodaddItemToOverDriveCart" id="addItemToOverDriveCart"><!-- --></a>
+<div class="oddrow">
+	
+	<div class="method-header">
+		<img src="../media/images/Method.png" />
+		<span class="method-title">addItemToOverDriveCart</span> (line <span class="line-number"><a href="../__filesource/fsource_phpDocumentor__UserAPI.php.html#a1610">1610</a></span>)
+	</div> 
+	
+	<!-- ========== Info from phpDoc block ========= -->
+<p class="short-description">Add an item to the cart in OverDrive.</p>
+<p class="description"><p>In general, this method should not be used.  Instead you should call checkoutOverDriveItem which will first  add the title to the cart and then process the cart.</p><p>Parameters:  <ul><li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li><li>password - The pin number for the user.</li><li>recordId - The id of the record within the eContent database.</li><li>or overdriveId - The id of the record in OverDrive.</li><li>format - The format of the item to place a hold on within OverDrive.</li></ul></p><p>Returns JSON encoded data as follows:  <ul><li>success – true if the account is valid and the title could be removed from the wishlist, false if the username or password were incorrect or the hold could not be removed from the wishlist.</li><li>message – information about the process for display to the user.</li></ul></p><p>Sample Call:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-id">http</span>:<span class="src-comm">//catalog.douglascountylibraries.org/API/UserAPI?method=addItemToOverDriveCart&amp;username=23025003575917&amp;password=1234&amp;overDriveId=A3365DAC-EEC3-4261-99D3-E39B7C94A90F&amp;format=420</span></div></li>
+</ol></div></p><p>Sample Response (fail):  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-sym">{</span><span class="src-str">&quot;result&quot;</span>:<span class="src-sym">{</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;success&quot;</span>:<span class="src-id">false</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;message&quot;</span>:<span class="src-str">&quot;There&nbsp;are&nbsp;no&nbsp;copies&nbsp;available&nbsp;for&nbsp;checkout.&nbsp;You&nbsp;can&nbsp;place&nbsp;a&nbsp;hold&nbsp;on&nbsp;the&nbsp;item&nbsp;instead.&quot;</span></div></li>
+<li><div class="src-line">&nbsp;<span class="src-sym">}}</span></div></li>
+</ol></div></p><p>Sample Response (pass):  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-sym">{</span><span class="src-str">&quot;result&quot;</span>:<span class="src-sym">{</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;success&quot;</span>:<span class="src-id">true</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;message&quot;</span>:<span class="src-str">&quot;The&nbsp;title&nbsp;was&nbsp;added&nbsp;to&nbsp;your&nbsp;cart&nbsp;successfully.&nbsp;You&nbsp;have&nbsp;30&nbsp;minutes&nbsp;to&nbsp;check&nbsp;out&nbsp;the&nbsp;title&nbsp;before&nbsp;it&nbsp;is&nbsp;returned&nbsp;to&nbsp;the&nbsp;library's&nbsp;collection.&quot;</span></div></li>
+<li><div class="src-line">&nbsp;<span class="src-sym">}}</span></div></li>
+</ol></div></p></p>
+	<ul class="tags">
+				<li><span class="field">author:</span> Mark Noble &lt;<a href="mailto:mnoble@turningleaftech.com">mnoble@turningleaftech.com</a>&gt;</li>
+			</ul>
+	
+	<div class="method-signature">
+		<span class="method-result">void</span>
+		<span class="method-name">
+			addItemToOverDriveCart
+		</span>
+				()
+			</div>
+	
+		
+			
+	</div>
+<a name="methodaddItemToOverDriveWishList" id="addItemToOverDriveWishList"><!-- --></a>
+<div class="evenrow">
+	
+	<div class="method-header">
+		<img src="../media/images/Method.png" />
+		<span class="method-title">addItemToOverDriveWishList</span> (line <span class="line-number"><a href="../__filesource/fsource_phpDocumentor__UserAPI.php.html#a1670">1670</a></span>)
+	</div> 
+	
+	<!-- ========== Info from phpDoc block ========= -->
+<p class="short-description">Add an item to the wishlist in OverDrive</p>
+<p class="description"><p>Parameters:  <ul><li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li><li>password - The pin number for the user.</li><li>recordId - The id of the record within the eContent database.</li><li>or overdriveId - The id of the record in OverDrive.</li></ul></p><p>Returns JSON encoded data as follows:  <ul><li>success – true if the account is valid and the title could be removed from the wishlist, false if the username or password were incorrect or the hold could not be removed from the wishlist.</li><li>message – information about the process for display to the user.</li></ul></p><p>Sample Call:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-id">http</span>:<span class="src-comm">//catalog.douglascountylibraries.org/API/UserAPI?method=addItemToOverDriveWishList&amp;username=23025003575917&amp;password=1234&amp;overDriveId=A3365DAC-EEC3-4261-99D3-E39B7C94A90F</span></div></li>
+</ol></div></p><p>Sample Response:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-sym">{</span><span class="src-str">&quot;result&quot;</span>:<span class="src-sym">{</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;success&quot;</span>:<span class="src-id">true</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;message&quot;</span>:<span class="src-str">&quot;The&nbsp;title&nbsp;was&nbsp;added&nbsp;to&nbsp;your&nbsp;wishlist.&quot;</span></div></li>
+<li><div class="src-line">&nbsp;<span class="src-sym">}}</span></div></li>
+</ol></div></p></p>
+	<ul class="tags">
+				<li><span class="field">author:</span> Mark Noble &lt;<a href="mailto:mnoble@turningleaftech.com">mnoble@turningleaftech.com</a>&gt;</li>
+			</ul>
+	
+	<div class="method-signature">
+		<span class="method-result">void</span>
+		<span class="method-name">
+			addItemToOverDriveWishList
+		</span>
+				()
+			</div>
+	
+		
+			
+	</div>
+<a name="methodcancelEContentHold" id="cancelEContentHold"><!-- --></a>
+<div class="oddrow">
+	
+	<div class="method-header">
+		<img src="../media/images/Method.png" />
+		<span class="method-title">cancelEContentHold</span> (line <span class="line-number"><a href="../__filesource/fsource_phpDocumentor__UserAPI.php.html#a1895">1895</a></span>)
+	</div> 
+	
+	<!-- ========== Info from phpDoc block ========= -->
+<p class="short-description">Cancel a hold on an eContent record.</p>
+<p class="description"><p>Parameters:  <ul><li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li><li>password - The pin number for the user.</li><li>recordId – The id of the record that should have it's hold cancelled.</li></ul></p><p>Returns:  <ul><li>success – true if the account is valid and the hold could be canceled, false if the username or password were incorrect or the hold could not be canceled.</li><li>holdMessage – a reason why the method failed if success is false</li></ul></p><p>Sample Call:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-id">http</span>:<span class="src-comm">//catalog.douglascountylibraries.org/API/UserAPI?method=cancelEContentHold&amp;username=23025003575917&amp;password=1234&amp;recordId=521</span></div></li>
+</ol></div></p><p>Sample Response:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-sym">{</span><span class="src-str">&quot;result&quot;</span>:<span class="src-sym">{</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;success&quot;</span>:<span class="src-id">true</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;holdMessage&quot;</span>:<span class="src-str">&quot;Your&nbsp;hold&nbsp;was&nbsp;cancelled&nbsp;successfully.&quot;</span></div></li>
+<li><div class="src-line">&nbsp;<span class="src-sym">}}</span></div></li>
+</ol></div></p></p>
+	<ul class="tags">
+				<li><span class="field">author:</span> Mark Noble &lt;<a href="mailto:mnoble@turningleaftech.com">mnoble@turningleaftech.com</a>&gt;</li>
+			</ul>
+	
+	<div class="method-signature">
+		<span class="method-result">void</span>
+		<span class="method-name">
+			cancelEContentHold
+		</span>
+				()
+			</div>
+	
+		
+			
+	</div>
+<a name="methodcancelHold" id="cancelHold"><!-- --></a>
+<div class="evenrow">
+	
+	<div class="method-header">
+		<img src="../media/images/Method.png" />
+		<span class="method-title">cancelHold</span> (line <span class="line-number"><a href="../__filesource/fsource_phpDocumentor__UserAPI.php.html#a1851">1851</a></span>)
+	</div> 
+	
+	<!-- ========== Info from phpDoc block ========= -->
+<p class="short-description">Cancel a hold that was placed within the ILS.</p>
+<p class="description"><p>Parameters:  <ul><li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li><li>password - The pin number for the user.</li><li>availableholdselected[] – an array of holds that should be canceled.  Each item should be specfied as &lt;bibId&gt;:&lt;itemId&gt;. BibId and itemId can be retrieved as part of the getPatronHolds API</li><li>waitingholdselected[] - an array of holds that are not ready for pickup that should be canceled.  Each item should be specified as &lt;bibId&gt;:0.</li></ul></p><p>Returns:  <ul><li>success – true if the account is valid and the hold could be canceled, false if the username or password were incorrect or the hold could not be canceled.</li><li>holdMessage – a reason why the method failed if success is false</li></ul></p><p>Sample Call:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-id">http</span>:<span class="src-comm">//catalog.douglascountylibraries.org/API/UserAPI?method=cancelHold&amp;username=23025003575917&amp;password=1234&amp;waitingholdselected[]=1003198</span></div></li>
+</ol></div></p><p>Sample Response:  <div class="src-code"><ol></ol></div></p><p>Sample Response (failed):  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-sym">{</span><span class="src-str">&quot;result&quot;</span>:<span class="src-sym">{</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;success&quot;</span>:<span class="src-id">false</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;holdMessage&quot;</span>:<span class="src-str">&quot;Your&nbsp;hold&nbsp;could&nbsp;not&nbsp;be&nbsp;cancelled.&nbsp;Please&nbsp;try&nbsp;again&nbsp;later&nbsp;or&nbsp;see&nbsp;your&nbsp;librarian.&quot;</span></div></li>
+<li><div class="src-line">&nbsp;<span class="src-sym">}}</span></div></li>
+</ol></div></p><p>Sample Response (succeeded):  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-sym">{</span><span class="src-str">&quot;result&quot;</span>:<span class="src-sym">{</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;success&quot;</span>:<span class="src-id">true</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;holdMessage&quot;</span>:<span class="src-str">&quot;Your&nbsp;hold&nbsp;was&nbsp;cancelled&nbsp;successfully.&quot;</span></div></li>
+<li><div class="src-line">&nbsp;<span class="src-sym">}}</span></div></li>
+</ol></div></p></p>
+	<ul class="tags">
+				<li><span class="field">author:</span> Mark Noble &lt;<a href="mailto:mnoble@turningleaftech.com">mnoble@turningleaftech.com</a>&gt;</li>
+			</ul>
+	
+	<div class="method-signature">
+		<span class="method-result">void</span>
+		<span class="method-name">
+			cancelHold
+		</span>
+				()
+			</div>
+	
+		
+			
+	</div>
+<a name="methodcancelOverDriveHold" id="cancelOverDriveHold"><!-- --></a>
+<div class="oddrow">
+	
+	<div class="method-header">
+		<img src="../media/images/Method.png" />
+		<span class="method-title">cancelOverDriveHold</span> (line <span class="line-number"><a href="../__filesource/fsource_phpDocumentor__UserAPI.php.html#a1480">1480</a></span>)
+	</div> 
+	
+	<!-- ========== Info from phpDoc block ========= -->
+<p class="short-description">Cancel a hold within OverDrive</p>
+<p class="description"><p>Parameters:  <ul><li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li><li>password - The pin number for the user.</li><li>recordId - The id of the record within the eContent database.</li><li>or overdriveId - The id of the record in OverDrive.</li><li>format - The format of the record that was used when placing the hold.</li></ul></p><p>Returns JSON encoded data as follows:  <ul><li>success – true if the account is valid and the hold could be cancelled, false if the username or password were incorrect or the hold could not be cancelled.</li><li>message – information about the process for display to the user.</li></ul></p><p>Sample Call:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-id">http</span>:<span class="src-comm">//catalog.douglascountylibraries.org/API/UserAPI?method=cancelOverDriveHold&amp;username=23025003575917&amp;password=1234&amp;overDriveId=A3365DAC-EEC3-4261-99D3-E39B7C94A90F&amp;format=420</span></div></li>
+</ol></div></p><p>Sample Response:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-sym">{</span><span class="src-str">&quot;result&quot;</span>:<span class="src-sym">{</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;success&quot;</span>:<span class="src-id">true</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;message&quot;</span>:<span class="src-str">&quot;Your&nbsp;hold&nbsp;was&nbsp;cancelled&nbsp;successfully.&quot;</span></div></li>
+<li><div class="src-line">&nbsp;<span class="src-sym">}}</span></div></li>
+</ol></div></p></p>
+	<ul class="tags">
+				<li><span class="field">author:</span> Mark Noble &lt;<a href="mailto:mnoble@turningleaftech.com">mnoble@turningleaftech.com</a>&gt;</li>
+			</ul>
+	
+	<div class="method-signature">
+		<span class="method-result">void</span>
+		<span class="method-name">
+			cancelOverDriveHold
+		</span>
+				()
+			</div>
+	
+		
+			
+	</div>
+<a name="methodcheckoutEContentItem" id="checkoutEContentItem"><!-- --></a>
+<div class="evenrow">
+	
+	<div class="method-header">
+		<img src="../media/images/Method.png" />
+		<span class="method-title">checkoutEContentItem</span> (line <span class="line-number"><a href="../__filesource/fsource_phpDocumentor__UserAPI.php.html#a1280">1280</a></span>)
+	</div> 
+	
+	<!-- ========== Info from phpDoc block ========= -->
+<p class="short-description">Checks out an eContent Record to a user.  The record must be available to the user for the checkout to succeed.</p>
+<p class="description"><p>Parameters:  <ul><li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li><li>password - The pin number for the user.</li><li>recordId - The id of the record within the eContent database.</li></ul></p><p>Returns JSON encoded data as follows:  <ul><li>success – true if the account is valid and the item could be checked out, false if the username or password were incorrect or the record could not be checked out.</li><li>message – a reason why the method failed if success is false, or information indicating success.</li></ul></p><p>Sample Call:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-id">http</span>:<span class="src-comm">//catalog.douglascountylibraries.org/API/UserAPI?method=checkoutEContentItem&amp;username=23025003575917&amp;password=1234&amp;recordId=530</span></div></li>
+</ol></div></p><p>Sample Response (checkout):  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-sym">{</span><span class="src-str">&quot;result&quot;</span>:<span class="src-sym">{</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;success&quot;</span>:<span class="src-id">true</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;message&quot;</span>:<span class="src-str">&quot;The&nbsp;title&nbsp;was&nbsp;checked&nbsp;out&nbsp;to&nbsp;you&nbsp;successfully.&nbsp;&nbsp;You&nbsp;may&nbsp;read&nbsp;it&nbsp;from&nbsp;the&nbsp;My&nbsp;eContent&nbsp;page&nbsp;within&nbsp;your&nbsp;account.&quot;</span></div></li>
+<li><div class="src-line">&nbsp;<span class="src-sym">}}</span></div></li>
+</ol></div></p><p>Sample Response (failed):  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-sym">{</span><span class="src-str">&quot;result&quot;</span>:<span class="src-sym">{</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;success&quot;</span>:<span class="src-id">false</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;holdMessage&quot;</span>:<span class="src-str">&quot;There&nbsp;are&nbsp;no&nbsp;available&nbsp;copies&nbsp;of&nbsp;this&nbsp;title,&nbsp;please&nbsp;place&nbsp;a&nbsp;hold&nbsp;instead.&quot;</span></div></li>
+<li><div class="src-line">&nbsp;<span class="src-sym">}}</span></div></li>
+</ol></div></p></p>
+	<ul class="tags">
+				<li><span class="field">author:</span> Mark Noble &lt;<a href="mailto:mnoble@turningleaftech.com">mnoble@turningleaftech.com</a>&gt;</li>
+			</ul>
+	
+	<div class="method-signature">
+		<span class="method-result">void</span>
+		<span class="method-name">
+			checkoutEContentItem
+		</span>
+				()
+			</div>
+	
+		
+			
+	</div>
+<a name="methodcheckoutOverDriveItem" id="checkoutOverDriveItem"><!-- --></a>
+<div class="oddrow">
+	
+	<div class="method-header">
+		<img src="../media/images/Method.png" />
+		<span class="method-title">checkoutOverDriveItem</span> (line <span class="line-number"><a href="../__filesource/fsource_phpDocumentor__UserAPI.php.html#a1731">1731</a></span>)
+	</div> 
+	
+	<!-- ========== Info from phpDoc block ========= -->
+<p class="short-description">Checkout an item in OverDrive by first adding to the cart and then processing the cart.</p>
+<p class="description"><p>Parameters:  <ul><li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li><li>password - The pin number for the user.</li><li>recordId - The id of the record within the eContent database.</li><li>or overdriveId - The id of the record in OverDrive.</li><li>format - The format of the item to place a hold on within OverDrive.</li><li>lendingPeriod - The number of days to checkout the title. (optional)</li></ul></p><p>Returns JSON encoded data as follows:  <ul><li>success – true if the account is valid and the title could be checked out, false if the username or password were incorrect or the hold could not be checked out.</li><li>message – information about the process for display to the user.</li></ul></p><p>Sample Call:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-id">http</span>:<span class="src-comm">//catalog.douglascountylibraries.org/API/UserAPI?method=checkoutOverDriveItem&amp;username=23025003575917&amp;password=1234&amp;overDriveId=A3365DAC-EEC3-4261-99D3-E39B7C94A90F&amp;format=420</span></div></li>
+</ol></div></p><p>Sample Response:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-sym">{</span><span class="src-str">&quot;result&quot;</span>:<span class="src-sym">{</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;success&quot;</span>:<span class="src-id">true</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;message&quot;</span>:<span class="src-str">&quot;Your&nbsp;titles&nbsp;were&nbsp;checked&nbsp;out&nbsp;successfully.&nbsp;You&nbsp;may&nbsp;now&nbsp;download&nbsp;the&nbsp;titles&nbsp;from&nbsp;your&nbsp;Account.&quot;</span></div></li>
+<li><div class="src-line">&nbsp;<span class="src-sym">}}</span></div></li>
+</ol></div></p></p>
+	<ul class="tags">
+				<li><span class="field">author:</span> Mark Noble &lt;<a href="mailto:mnoble@turningleaftech.com">mnoble@turningleaftech.com</a>&gt;</li>
+			</ul>
+	
+	<div class="method-signature">
+		<span class="method-result">void</span>
+		<span class="method-name">
+			checkoutOverDriveItem
+		</span>
+				()
+			</div>
+	
+		
+			
+	</div>
+<a name="methoddeleteAllFromReadingHistory" id="deleteAllFromReadingHistory"><!-- --></a>
+<div class="evenrow">
+	
+	<div class="method-header">
+		<img src="../media/images/Method.png" />
+		<span class="method-title">deleteAllFromReadingHistory</span> (line <span class="line-number"><a href="../__filesource/fsource_phpDocumentor__UserAPI.php.html#a2345">2345</a></span>)
+	</div> 
+	
+	<!-- ========== Info from phpDoc block ========= -->
+<p class="short-description">Clears the user's reading history, but does not stop the collection of new data.  If items are currently checked out  to the user they will be added to the reading history the next time cron runs.</p>
+<p class="description"><p>Parameters:  <ul><li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li><li>password - The pin number for the user.</li></ul></p><p>Returns:  <ul><li>success – true if the account is valid and the reading history could cleared, false if the username or password were incorrect or the reading history could not be cleared.</li></ul></p><p>Sample Call:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-id">http</span>:<span class="src-comm">//catalog.douglascountylibraries.org/API/UserAPI?method=deleteAllFromReadingHistory&amp;username=23025003575917&amp;password=1234</span></div></li>
+</ol></div></p><p>Sample Response:  <div class="src-code"><ol></ol></div></p></p>
+	<ul class="tags">
+				<li><span class="field">author:</span> Mark Noble &lt;<a href="mailto:mnoble@turningleaftech.com">mnoble@turningleaftech.com</a>&gt;</li>
+			</ul>
+	
+	<div class="method-signature">
+		<span class="method-result">void</span>
+		<span class="method-name">
+			deleteAllFromReadingHistory
+		</span>
+				()
+			</div>
+	
+		
+			
+	</div>
+<a name="methoddeleteSelectedFromReadingHistory" id="deleteSelectedFromReadingHistory"><!-- --></a>
+<div class="oddrow">
+	
+	<div class="method-header">
+		<img src="../media/images/Method.png" />
+		<span class="method-title">deleteSelectedFromReadingHistory</span> (line <span class="line-number"><a href="../__filesource/fsource_phpDocumentor__UserAPI.php.html#a2386">2386</a></span>)
+	</div> 
+	
+	<!-- ========== Info from phpDoc block ========= -->
+<p class="short-description">Removes one or more titles from the user's reading history.</p>
+<p class="description"><p>Parameters:  <ul><li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li><li>password - The pin number for the user.</li><li>selected - A list of record ids to be deleted from the reading history.</li></ul></p><p>Returns:  <ul><li>success – true if the account is valid and the items could be removed from the reading history, false if the username or password were incorrect or the items could not be removed from the reading history.</li></ul></p><p>Sample Call:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-id">http</span>:<span class="src-comm">//catalog.douglascountylibraries.org/API/UserAPI?method=deleteSelectedFromReadingHistory&amp;username=23025003575917&amp;password=1234&amp;selected[]=25855</span></div></li>
+</ol></div></p><p>Sample Response:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-sym">{</span><span class="src-str">&quot;result&quot;</span>:<span class="src-sym">{</span><span class="src-str">&quot;success&quot;</span>:<span class="src-id">true</span><span class="src-sym">}}</span></div></li>
+</ol></div></p></p>
+	<ul class="tags">
+				<li><span class="field">author:</span> Mark Noble &lt;<a href="mailto:mnoble@turningleaftech.com">mnoble@turningleaftech.com</a>&gt;</li>
+			</ul>
+	
+	<div class="method-signature">
+		<span class="method-result">void</span>
+		<span class="method-name">
+			deleteSelectedFromReadingHistory
+		</span>
+				()
+			</div>
+	
+		
+			
+	</div>
+<a name="methoddownloadEContentFile" id="downloadEContentFile"><!-- --></a>
+<div class="evenrow">
+	
+	<div class="method-header">
+		<img src="../media/images/Method.png" />
+		<span class="method-title">downloadEContentFile</span> (line <span class="line-number"><a href="../__filesource/fsource_phpDocumentor__UserAPI.php.html#a1313">1313</a></span>)
+	</div> 
+	
+	<!-- ========== Info from phpDoc block ========= -->
+<p class="short-description">Downloads an eContent file to the user's hard drive for offline usage.</p>
+<p class="description"><p>Parameters:  <ul><li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li><li>password - The pin number for the user.</li><li>recordId - The id of the record within the eContent database.</li><li>itemId   - The id of the item attached to the record that should be downloaded.</li></ul></p><p>Returns:  false if the username or password were incorrect or the item cannot be downloaded  or the contents of the file that can be streamed directly to the client.</p></p>
+	<ul class="tags">
+				<li><span class="field">author:</span> Mark Noble &lt;<a href="mailto:mnoble@turningleaftech.com">mnoble@turningleaftech.com</a>&gt;</li>
+			</ul>
+	
+	<div class="method-signature">
+		<span class="method-result">void</span>
+		<span class="method-name">
+			downloadEContentFile
+		</span>
+				()
+			</div>
+	
+		
+			
+	</div>
+<a name="methodfreezeEContentHold" id="freezeEContentHold"><!-- --></a>
+<div class="oddrow">
+	
+	<div class="method-header">
+		<img src="../media/images/Method.png" />
+		<span class="method-title">freezeEContentHold</span> (line <span class="line-number"><a href="../__filesource/fsource_phpDocumentor__UserAPI.php.html#a2001">2001</a></span>)
+	</div> 
+	
+	<!-- ========== Info from phpDoc block ========= -->
+<p class="short-description">Freezes an eContent hold.</p>
+<p class="description"><p>Parameters:  <ul><li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li><li>password - The pin number for the user.</li><li>ids[] - an array of ids that should be frozen.</li><li>suspendDate - The date that the hold should be automatically reactivated.</li></ul></p><p>Returns:  <ul><li>success – true if the account is valid and the hold could be frozen, false if the username or password were incorrect or the hold could not be frozen.</li><li>freezeResults – a list of results for each id that was frozen.</li></ul></p><p>Sample Call:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-id">http</span>:<span class="src-comm">//catalog.douglascountylibraries.org/API/UserAPI?method=freezeEContentHold&amp;username=23025003575917&amp;password=1234&amp;ids[]=532&amp;suspendDate=1/25/2012</span></div></li>
+</ol></div></p><p>Sample Response:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-sym">{</span><span class="src-str">&quot;result&quot;</span>:<span class="src-sym">{</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;success&quot;</span>:<span class="src-id">false</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;freezeResults&quot;</span>:<span class="src-sym">{</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;531&quot;</span>:<span class="src-sym">{</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;success&quot;</span>:<span class="src-id">false</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;title&quot;</span>:<span class="src-str">&quot;Toothful&nbsp;tales&nbsp;how&nbsp;we&nbsp;survived&nbsp;the&nbsp;sweet&nbsp;attack&nbsp;\/&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;error&quot;</span>:<span class="src-str">&quot;Could&nbsp;not&nbsp;find&nbsp;an&nbsp;active&nbsp;hold&nbsp;to&nbsp;suspend.&quot;</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">}</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;521&quot;</span>:<span class="src-sym">{</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;success&quot;</span>:<span class="src-id">true</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;title&quot;</span>:<span class="src-str">&quot;Turn&nbsp;eye&nbsp;appeal&nbsp;into&nbsp;buy&nbsp;appeal&nbsp;how&nbsp;to&nbsp;easily&nbsp;transform&nbsp;your&nbsp;marketing&nbsp;pieces&nbsp;into&nbsp;dazzling,&nbsp;persuasive&nbsp;sales&nbsp;tools!&nbsp;\/&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;error&quot;</span>:<span class="src-str">&quot;The&nbsp;hold&nbsp;was&nbsp;suspended.&quot;</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">}</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-sym">}</span></div></li>
+<li><div class="src-line">&nbsp;<span class="src-sym">}}</span></div></li>
+</ol></div></p></p>
+	<ul class="tags">
+				<li><span class="field">author:</span> Mark Noble &lt;<a href="mailto:mnoble@turningleaftech.com">mnoble@turningleaftech.com</a>&gt;</li>
+			</ul>
+	
+	<div class="method-signature">
+		<span class="method-result">void</span>
+		<span class="method-name">
+			freezeEContentHold
+		</span>
+				()
+			</div>
+	
+		
+			
+	</div>
+<a name="methodfreezeHold" id="freezeHold"><!-- --></a>
+<div class="evenrow">
+	
+	<div class="method-header">
+		<img src="../media/images/Method.png" />
+		<span class="method-title">freezeHold</span> (line <span class="line-number"><a href="../__filesource/fsource_phpDocumentor__UserAPI.php.html#a1945">1945</a></span>)
+	</div> 
+	
+	<!-- ========== Info from phpDoc block ========= -->
+<p class="short-description">Freezes a hold that has been placed on a title within the ILS.  Only unavailable holds can be frozen.</p>
+<p class="description"><p>Note:  Horizon implements suspending and activating holds as a toggle.  If a hold is suspended, it will be activated  and if a hold is active it will be suspended.  Care should be taken when calling the method with holds that are in the wrong state.</p><p>Parameters:  <ul><li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li><li>password - The pin number for the user.</li><li>waitingholdselected[] - an array of holds that are not ready for pickup that should be frozen. Each item should be specified as &lt;bibId&gt;:0.</li><li>suspendDate - The date that the hold should be automatically reactivated.</li></ul></p><p>Returns:  <ul><li>success – true if the account is valid and the hold could be frozen, false if the username or password were incorrect or the hold could not be frozen.</li><li>holdMessage – a reason why the method failed if success is false</li></ul></p><p>Sample Call:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-id">http</span>:<span class="src-comm">//catalog.douglascountylibraries.org/API/UserAPI?method=freezeHold&amp;username=23025003575917&amp;password=1234&amp;waitingholdselected[]=1004012:0&amp;suspendDate=1/25/2012</span></div></li>
+</ol></div></p><p>Sample Response:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-sym">{</span><span class="src-str">&quot;result&quot;</span>:<span class="src-sym">{</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;success&quot;</span>:<span class="src-id">true</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;holdMessage&quot;</span>:<span class="src-str">&quot;Your&nbsp;hold&nbsp;was&nbsp;updated&nbsp;successfully.&quot;</span></div></li>
+<li><div class="src-line">&nbsp;<span class="src-sym">}}</span></div></li>
+</ol></div></p></p>
+	<ul class="tags">
+				<li><span class="field">author:</span> Mark Noble &lt;<a href="mailto:mnoble@turningleaftech.com">mnoble@turningleaftech.com</a>&gt;</li>
+			</ul>
+	
+	<div class="method-signature">
+		<span class="method-result">void</span>
+		<span class="method-name">
+			freezeHold
+		</span>
+				()
+			</div>
+	
+		
+			
+	</div>
+<a name="methodgetPatronCartOverDrive" id="getPatronCartOverDrive"><!-- --></a>
+<div class="oddrow">
+	
+	<div class="method-header">
+		<img src="../media/images/Method.png" />
+		<span class="method-title">getPatronCartOverDrive</span> (line <span class="line-number"><a href="../__filesource/fsource_phpDocumentor__UserAPI.php.html#a659">659</a></span>)
+	</div> 
+	
+	<!-- ========== Info from phpDoc block ========= -->
+<p class="short-description">Get a list of items in the user's OverDrive cart.</p>
+<p class="description"><p>For patrons tha use OverDrive exclusively with VuFind this method will never content because  the cart is always empty except during the checkout process.</p><p>Parameters:  <ul><li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li><li>password - The pin number for the user.</li></ul></p><p>Sample Call:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-id">http</span>:<span class="src-comm">//catalog.douglascountylibraries.org/API/UserAPI?method=getPatronCartOverDrive&amp;username=23025003575917&amp;password=7604</span></div></li>
+</ol></div></p><p>Sample Response:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-sym">{</span><span class="src-str">&quot;result&quot;</span>:<span class="src-sym">{</span><span class="src-str">&quot;success&quot;</span>:<span class="src-id">true</span><span class="src-sym">,</span><span class="src-str">&quot;items&quot;</span>:<span class="src-sym">[</span><span class="src-sym">]</span><span class="src-sym">}}</span></div></li>
+</ol></div></p></p>
+	<ul class="tags">
+				<li><span class="field">author:</span> Mark Noble &lt;<a href="mailto:mnoble@turningleaftech.com">mnoble@turningleaftech.com</a>&gt;</li>
+			</ul>
+	
+	<div class="method-signature">
+		<span class="method-result">void</span>
+		<span class="method-name">
+			getPatronCartOverDrive
+		</span>
+				()
+			</div>
+	
+		
+			
+	</div>
+<a name="methodgetPatronCheckedOutEContent" id="getPatronCheckedOutEContent"><!-- --></a>
+<div class="evenrow">
+	
+	<div class="method-header">
+		<img src="../media/images/Method.png" />
+		<span class="method-title">getPatronCheckedOutEContent</span> (line <span class="line-number"><a href="../__filesource/fsource_phpDocumentor__UserAPI.php.html#a1018">1018</a></span>)
+	</div> 
+	
+	<!-- ========== Info from phpDoc block ========= -->
+<p class="short-description">Get eContent records that are checked out to a user based on username and password.</p>
+<p class="description"><p>Parameters:  <ul><li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li><li>password - The pin number for the user.</li></ul></p><p>Sample Call:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-id">http</span>:<span class="src-comm">//catalog.douglascountylibraries.org/API/UserAPI?method=getPatronCheckedOutItems&amp;username=23025003575917&amp;password=7604</span></div></li>
+</ol></div></p><p>Sample Response:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-sym">{</span><span class="src-str">&quot;result&quot;</span>:<span class="src-sym">{</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;success&quot;</span>:<span class="src-id">true</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;checkedOutItems&quot;</span>:<span class="src-sym">[</span><span class="src-sym">{</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">{</span><span class="src-str">&quot;id&quot;</span>:<span class="src-str">&quot;534&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;source&quot;</span>:<span class="src-str">&quot;CIPA&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;title&quot;</span>:<span class="src-str">&quot;Unsinkable&nbsp;the&nbsp;Molly&nbsp;Brown&nbsp;story&nbsp;\/&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;author&quot;</span>:<span class="src-str">&quot;Lohse,&nbsp;Joyce&nbsp;B.&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;duedate&quot;</span>:<span class="src-str">&quot;1326135657&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;checkoutdate&quot;</span>:<span class="src-str">&quot;1325962857&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;daysUntilDue&quot;</span>:<span class="src-num">2</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;holdQueueLength&quot;</span>:<span class="src-num">0</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;links&quot;</span>:<span class="src-sym">[</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">{</span><span class="src-str">&quot;url&quot;</span>:<span class="src-str">&quot;\/EContent\/534\/Viewer?item=130&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;text&quot;</span>:<span class="src-str">&quot;Read&nbsp;Online&quot;</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">}</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">{</span><span class="src-str">&quot;url&quot;</span>:<span class="src-str">&quot;http:\/\/fulfillment.douglascountylibraries.org\/fulfillment\/URLLink.acsm?action=enterloan&amp;ordersource=DCL+Test&amp;orderid=ACS4-1206216092244346610125819&amp;resid=urn%3Auuid%3A130b9d63-5e4f-430c-aa16-8fb33822aba8&amp;gbauthdate=Sat%2C+07+Jan+2012+19%3A00%3A58+%2B0000&amp;dateval=1325962858&amp;gblver=4&amp;auth=8c6e70a135a7418c441a9b2b32b9ff6cb413e4cf&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;text&quot;</span>:<span class="src-str">&quot;Download&quot;</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">}</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">{</span><span class="src-str">&quot;text&quot;</span>:<span class="src-str">&quot;Return&nbsp;Now&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;onclick&quot;</span>:<span class="src-str">&quot;if&nbsp;(confirm('Are&nbsp;you&nbsp;sure&nbsp;you&nbsp;want&nbsp;to&nbsp;return&nbsp;this&nbsp;title?')){returnEpub('\/EContentRecord\/534\/ReturnTitle')};return&nbsp;false;&quot;</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">}</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">]</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">}</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-sym">}</span><span class="src-sym">]</span></div></li>
+<li><div class="src-line">&nbsp;<span class="src-sym">}}</span></div></li>
+</ol></div></p></p>
+	<ul class="tags">
+				<li><span class="field">author:</span> Mark Noble &lt;<a href="mailto:mnoble@turningleaftech.com">mnoble@turningleaftech.com</a>&gt;</li>
+			</ul>
+	
+	<div class="method-signature">
+		<span class="method-result">void</span>
+		<span class="method-name">
+			getPatronCheckedOutEContent
+		</span>
+				()
+			</div>
+	
+		
+			
+	</div>
+<a name="methodgetPatronCheckedOutItems" id="getPatronCheckedOutItems"><!-- --></a>
+<div class="oddrow">
+	
+	<div class="method-header">
+		<img src="../media/images/Method.png" />
+		<span class="method-title">getPatronCheckedOutItems</span> (line <span class="line-number"><a href="../__filesource/fsource_phpDocumentor__UserAPI.php.html#a946">946</a></span>)
+	</div> 
+	
+	<!-- ========== Info from phpDoc block ========= -->
+<p class="short-description">Get eContent and ILS records that are checked out to a user based on username and password.</p>
+<p class="description"><p>Parameters:  <ul><li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li><li>password - The pin number for the user.</li><li>includeEContent - Optional flag for whether or not to include checked out eContent. Set to false to only include print titles.</li></ul></p><p>Sample Call:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-id">http</span>:<span class="src-comm">//catalog.douglascountylibraries.org/API/UserAPI?method=getPatronCheckedOutItems&amp;username=23025003575917&amp;password=7604</span></div></li>
+</ol></div></p><p>Sample Response:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-sym">{</span><span class="src-str">&quot;result&quot;</span>:<span class="src-sym">{</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;success&quot;</span>:<span class="src-id">true</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;checkedOutItems&quot;</span>:<span class="src-sym">{</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;0&quot;</span>:<span class="src-sym">{</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;id&quot;</span>:<span class="src-str">&quot;534&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;source&quot;</span>:<span class="src-str">&quot;CIPA&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;title&quot;</span>:<span class="src-str">&quot;Unsinkable&nbsp;the&nbsp;Molly&nbsp;Brown&nbsp;story&nbsp;\/&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;author&quot;</span>:<span class="src-str">&quot;Lohse,&nbsp;Joyce&nbsp;B.&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;duedate&quot;</span>:<span class="src-str">&quot;1326135657&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;checkoutdate&quot;</span>:<span class="src-str">&quot;1325962857&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;daysUntilDue&quot;</span>:<span class="src-num">2</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;holdQueueLength&quot;</span>:<span class="src-num">0</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;links&quot;</span>:<span class="src-sym">[</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">{</span><span class="src-str">&quot;url&quot;</span>:<span class="src-str">&quot;\/EContent\/534\/Viewer?item=130&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;text&quot;</span>:<span class="src-str">&quot;Read&nbsp;Online&quot;</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">}</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">{</span><span class="src-str">&quot;url&quot;</span>:<span class="src-str">&quot;http:\/\/fulfillment.douglascountylibraries.org\/fulfillment\/URLLink.acsm?action=enterloan&amp;ordersource=DCL+Test&amp;orderid=ACS4-1206216092244346610125819&amp;resid=urn%3Auuid%3A130b9d63-5e4f-430c-aa16-8fb33822aba8&amp;gbauthdate=Sat%2C+07+Jan+2012+19%3A00%3A58+%2B0000&amp;dateval=1325962858&amp;gblver=4&amp;auth=8c6e70a135a7418c441a9b2b32b9ff6cb413e4cf&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;text&quot;</span>:<span class="src-str">&quot;Download&quot;</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">}</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">{</span><span class="src-str">&quot;text&quot;</span>:<span class="src-str">&quot;Return&nbsp;Now&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;onclick&quot;</span>:<span class="src-str">&quot;if&nbsp;(confirm('Are&nbsp;you&nbsp;sure&nbsp;you&nbsp;want&nbsp;to&nbsp;return&nbsp;this&nbsp;title?')){returnEpub('\/EContentRecord\/534\/ReturnTitle')};return&nbsp;false;&quot;</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">}</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">]</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">}</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;33025021368319&quot;</span>:<span class="src-sym">{</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;id&quot;</span>:<span class="src-str">&quot;966379&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;itemid&quot;</span>:<span class="src-str">&quot;33025021368319&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;duedate&quot;</span>:<span class="src-str">&quot;01\/24\/2012&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;checkoutdate&quot;</span>:<span class="src-str">&quot;2011-12-27&nbsp;00:00:00&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;barcode&quot;</span>:<span class="src-str">&quot;33025021368319&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;renewCount&quot;</span>:<span class="src-str">&quot;1&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;request&quot;</span>:<span class="src-id">null</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;overdue&quot;</span>:<span class="src-id">false</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;daysUntilDue&quot;</span>:<span class="src-num">16</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;title&quot;</span>:<span class="src-str">&quot;Be&nbsp;iron&nbsp;fit&nbsp;:&nbsp;time-efficient&nbsp;training&nbsp;secrets&nbsp;for&nbsp;ultimate&nbsp;fitness&nbsp;\/&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;sortTitle&quot;</span>:<span class="src-str">&quot;be&nbsp;iron&nbsp;fit&nbsp;:&nbsp;time-efficient&nbsp;training&nbsp;secrets&nbsp;for&nbsp;ultimate&nbsp;fitness&nbsp;\/&nbsp;time-efficient&nbsp;training&nbsp;secrets&nbsp;for&nbsp;ultimate&nbsp;fitness&nbsp;\/&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;author&quot;</span>:<span class="src-str">&quot;Fink,&nbsp;Don.&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;format&quot;</span>:<span class="src-str">&quot;Book&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;isbn&quot;</span>:<span class="src-str">&quot;9781599218571&quot;</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">,</span><span class="src-str">&quot;upc&quot;</span>:<span class="src-str">&quot;&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;format_category&quot;</span>:<span class="src-str">&quot;Books&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;holdQueueLength&quot;</span>:<span class="src-num">3</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">}</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-sym">}</span></div></li>
+<li><div class="src-line">&nbsp;<span class="src-sym">}}</span></div></li>
+</ol></div></p></p>
+	<ul class="tags">
+				<li><span class="field">author:</span> Mark Noble &lt;<a href="mailto:mnoble@turningleaftech.com">mnoble@turningleaftech.com</a>&gt;</li>
+			</ul>
+	
+	<div class="method-signature">
+		<span class="method-result">void</span>
+		<span class="method-name">
+			getPatronCheckedOutItems
+		</span>
+				()
+			</div>
+	
+		
+			
+	</div>
+<a name="methodgetPatronCheckedOutItemsOverDrive" id="getPatronCheckedOutItemsOverDrive"><!-- --></a>
+<div class="evenrow">
+	
+	<div class="method-header">
+		<img src="../media/images/Method.png" />
+		<span class="method-title">getPatronCheckedOutItemsOverDrive</span> (line <span class="line-number"><a href="../__filesource/fsource_phpDocumentor__UserAPI.php.html#a766">766</a></span>)
+	</div> 
+	
+	<!-- ========== Info from phpDoc block ========= -->
+<p class="short-description">Get a list of items that are currently checked out to the user within OverDrive.</p>
+<p class="description"><p>Note: VuFind takes care of caching the checked out items page appropriately.  The caling application should not  do additional caching.</p><p>Parameters:  <ul><li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li><li>password - The pin number for the user.</li></ul></p><p>Sample Call:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-id">http</span>:<span class="src-comm">//catalog.douglascountylibraries.org/API/UserAPI?method=getPatronCheckedOutItemsOverDrive&amp;username=23025003575917&amp;password=7604</span></div></li>
+</ol></div></p><p>Sample Response:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-sym">{</span><span class="src-str">&quot;result&quot;</span>:<span class="src-sym">{</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;success&quot;</span>:<span class="src-id">true</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;items&quot;</span>:<span class="src-sym">[</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">{</span><span class="src-str">&quot;imageUrl&quot;</span>:<span class="src-str">&quot;http:\/\/images.contentreserve.com\/ImageType-200\/1138-1\/%7BA10890DB-DDEF-4BA5-BAEC-39AAF8A67D69%7DImg200.jpg&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;title&quot;</span>:<span class="src-str">&quot;An&nbsp;Object&nbsp;of&nbsp;Beauty&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;overDriveId&quot;</span>:<span class="src-str">&quot;A10890DB-DDEF-4BA5-BAEC-39AAF8A67D69&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;subTitle&quot;</span>:<span class="src-str">&quot;&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;format&quot;</span>:<span class="src-str">&quot;OverDrive&nbsp;WMA&nbsp;Audiobook&nbsp;&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;downloadSize&quot;</span>:<span class="src-str">&quot;106251&nbsp;kb&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;downloadLink&quot;</span>:<span class="src-str">&quot;http:\/\/ofs.contentreserve.com\/bin\/OFSGatewayModule.dll\/AnObjectofBeauty9781607889410.odm?RetailerID=douglascounty&amp;Expires=1326047065&amp;Token=a17a4a46-ea2a-4d2b-b076-79044d911a46&amp;Signature=qCCvuYGCXS16C7TkMDg98%2fQU5YY%3d&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;checkedOutOn&quot;</span>:<span class="src-str">&quot;Jan&nbsp;05,&nbsp;2012&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;expiresOn&quot;</span>:<span class="src-str">&quot;Jan&nbsp;12,&nbsp;2012&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;recordId&quot;</span>:<span class="src-str">&quot;14955&quot;</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">}</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-sym">]</span></div></li>
+<li><div class="src-line">&nbsp;<span class="src-sym">}}</span></div></li>
+</ol></div></p></p>
+	<ul class="tags">
+				<li><span class="field">author:</span> Mark Noble &lt;<a href="mailto:mnoble@turningleaftech.com">mnoble@turningleaftech.com</a>&gt;</li>
+			</ul>
+	
+	<div class="method-signature">
+		<span class="method-result">void</span>
+		<span class="method-name">
+			getPatronCheckedOutItemsOverDrive
+		</span>
+				()
+			</div>
+	
+		
+			
+	</div>
+<a name="methodgetPatronFines" id="getPatronFines"><!-- --></a>
+<div class="oddrow">
+	
+	<div class="method-header">
+		<img src="../media/images/Method.png" />
+		<span class="method-title">getPatronFines</span> (line <span class="line-number"><a href="../__filesource/fsource_phpDocumentor__UserAPI.php.html#a866">866</a></span>)
+	</div> 
+	
+	<!-- ========== Info from phpDoc block ========= -->
+<p class="short-description">Get fines from the ILS for a user based on username and password.</p>
+<p class="description"><p>Parameters:  <ul><li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li><li>password - The pin number for the user.</li><li>includeMessages - Whether or not messages to the user should be included within list of fines. (optional, defaults to false)</li></ul></p><p>Sample Call:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-id">http</span>:<span class="src-comm">//catalog.douglascountylibraries.org/API/UserAPI?method=getPatronFines&amp;username=23025003575917&amp;password=7604</span></div></li>
+</ol></div></p><p>Sample Response:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-sym">{</span><span class="src-str">&quot;result&quot;</span>:<span class="src-sym">{</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;success&quot;</span>:<span class="src-id">true</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;fines&quot;</span>:<span class="src-sym">[</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">{</span><span class="src-str">&quot;reason&quot;</span>:<span class="src-str">&quot;Privacy&nbsp;-&nbsp;Family&nbsp;permission&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;amount&quot;</span>:<span class="src-str">&quot;$0.00&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;message&quot;</span>:<span class="src-str">&quot;&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;date&quot;</span>:<span class="src-str">&quot;09\/27\/2005&quot;</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">}</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">{</span><span class="src-str">&quot;reason&quot;</span>:<span class="src-str">&quot;Charges&nbsp;Misc.&nbsp;Fees&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;amount&quot;</span>:<span class="src-str">&quot;$5.00&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;message&quot;</span>:<span class="src-str">&quot;&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;date&quot;</span>:<span class="src-str">&quot;04\/14\/2011&quot;</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">}</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-sym">]</span></div></li>
+<li><div class="src-line">&nbsp;<span class="src-sym">}}</span></div></li>
+</ol></div></p></p>
+	<ul class="tags">
+				<li><span class="field">author:</span> Mark Noble &lt;<a href="mailto:mnoble@turningleaftech.com">mnoble@turningleaftech.com</a>&gt;</li>
+			</ul>
+	
+	<div class="method-signature">
+		<span class="method-result">void</span>
+		<span class="method-name">
+			getPatronFines
+		</span>
+				()
+			</div>
+	
+		
+			
+	</div>
+<a name="methodgetPatronHolds" id="getPatronHolds"><!-- --></a>
+<div class="evenrow">
+	
+	<div class="method-header">
+		<img src="../media/images/Method.png" />
+		<span class="method-title">getPatronHolds</span> (line <span class="line-number"><a href="../__filesource/fsource_phpDocumentor__UserAPI.php.html#a453">453</a></span>)
+	</div> 
+	
+	<!-- ========== Info from phpDoc block ========= -->
+<p class="short-description">Get eContent and ILS holds for a user based on username and password.</p>
+<p class="description"><p>Parameters:  <ul><li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li><li>password - The pin number for the user.</li><li>includeEContent - Optional flag for whether or not to include eContent holds. Set to false to only include print titles.</li></ul></p><p>Returns:  <ul><li>success – true if the account is valid, false if the username or password were incorrect</li><li>message – a reason why the method failed if success is false</li><li>holds – information about each hold including when it was placed, when it expires, and whether or not it is available for pickup.  Holds are broken into two sections: available and unavailable.  Available holds are ready for pickup.</li><li>Id – the record/bib id of the title being held</li><li>location – The location where the title will be picked up</li><li>expire – the date the hold will expire if it is unavailable or the date that it must be picked up if the hold is available</li><li>expireTime – the expire information in number of days since January 1, 1970</li><li>create – the date the hold was originally placed</li><li>createTime – the create information in number of days since January 1, 1970</li><li>reactivate – The date the hold will be reactivated if the hold is suspended</li><li>reactivateTime – the reactivate information in number of days since January 1, 1970</li><li>available – whether or not the hold is available for pickup</li><li>position – the patron's position in the hold queue</li><li>frozen – whether or not the hold is frozen</li><li>itemId – the barcode of the item that filled the hold if the hold has been filled.</li><li>Status – a textual status of the item (Available, Suspended, Active, In Transit)</li></ul></p><p>Sample Call:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-id">http</span>:<span class="src-comm">//catalog.douglascountylibraries.org/API/UserAPI?method=getPatronHolds&amp;username=23025003575917&amp;password=7604</span></div></li>
+</ol></div></p><p>Sample Response:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-sym">{&nbsp;</span><span class="src-str">&quot;result&quot;&nbsp;</span>:</div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-sym">{&nbsp;</span><span class="src-str">&quot;holds&quot;&nbsp;</span>:</div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">{&nbsp;</span><span class="src-str">&quot;unavailable&quot;&nbsp;</span>:&nbsp;<span class="src-sym">[</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">{&nbsp;</span><span class="src-str">&quot;author&quot;&nbsp;</span>:&nbsp;<span class="src-str">&quot;Bernhardt,&nbsp;Gale,&nbsp;1958-&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;available&quot;&nbsp;</span>:&nbsp;<span class="src-id">false</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;availableTime&quot;&nbsp;</span>:&nbsp;<span class="src-id">null</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;barcode&quot;&nbsp;</span>:&nbsp;<span class="src-str">&quot;33025016545293&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;create&quot;&nbsp;</span>:&nbsp;<span class="src-str">&quot;2011-12-20&nbsp;00:00:00&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;createTime&quot;&nbsp;</span>:&nbsp;<span class="src-num">15328</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;expire&quot;&nbsp;</span>:&nbsp;<span class="src-str">&quot;[No&nbsp;expiration&nbsp;date]&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;expireTime&quot;&nbsp;</span>:&nbsp;<span class="src-id">null</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;format&quot;&nbsp;</span>:&nbsp;<span class="src-str">&quot;Book&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;format_category&quot;&nbsp;</span>:&nbsp;<span class="src-sym">[&nbsp;</span><span class="src-str">&quot;Books&quot;&nbsp;</span><span class="src-sym">]</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;frozen&quot;&nbsp;</span>:&nbsp;<span class="src-id">false</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;id&quot;&nbsp;</span>:&nbsp;<span class="src-num">868679</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;isbn&quot;&nbsp;</span>:&nbsp;<span class="src-sym">[&nbsp;</span><span class="src-str">&quot;1931382921&nbsp;(paper)&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;9781931382922&quot;</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">]</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;itemId&quot;&nbsp;</span>:&nbsp;<span class="src-num">1559061</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;location&quot;&nbsp;</span>:&nbsp;<span class="src-str">&quot;Parker&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;position&quot;&nbsp;</span>:&nbsp;<span class="src-num">1</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;reactivate&quot;&nbsp;</span>:&nbsp;<span class="src-str">&quot;&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;reactivateTime&quot;&nbsp;</span>:&nbsp;<span class="src-id">null</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;sortTitle&quot;&nbsp;</span>:&nbsp;<span class="src-str">&quot;training&nbsp;plans&nbsp;for&nbsp;multisport&nbsp;athletes&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;status&quot;&nbsp;</span>:&nbsp;<span class="src-str">&quot;In&nbsp;Transit&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;title&quot;&nbsp;</span>:&nbsp;<span class="src-str">&quot;Training&nbsp;plans&nbsp;for&nbsp;multisport&nbsp;athletes&nbsp;/&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;upc&quot;&nbsp;</span>:&nbsp;<span class="src-str">&quot;&quot;</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">}&nbsp;</span><span class="src-sym">]</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">}</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">{&nbsp;</span><span class="src-str">&quot;available&quot;&nbsp;</span>:&nbsp;<span class="src-sym">[</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">{&nbsp;</span><span class="src-str">&quot;author&quot;&nbsp;</span>:&nbsp;<span class="src-str">&quot;Hunter,&nbsp;Erin.&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;available&quot;&nbsp;</span>:&nbsp;<span class="src-id">true</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;availableTime&quot;&nbsp;</span>:&nbsp;<span class="src-id">null</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;barcode&quot;&nbsp;</span>:&nbsp;<span class="src-str">&quot;33025025084185&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;create&quot;&nbsp;</span>:&nbsp;<span class="src-str">&quot;2011-09-27&nbsp;00:00:00&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;createTime&quot;&nbsp;</span>:&nbsp;<span class="src-num">15244</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;expire&quot;&nbsp;</span>:&nbsp;<span class="src-str">&quot;2012-01-09&nbsp;00:00:00&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;expireTime&quot;&nbsp;</span>:&nbsp;<span class="src-num">15348</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;format&quot;&nbsp;</span>:&nbsp;<span class="src-str">&quot;Book&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;format_category&quot;&nbsp;</span>:&nbsp;<span class="src-sym">[&nbsp;</span><span class="src-str">&quot;Books&quot;&nbsp;</span><span class="src-sym">]</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;frozen&quot;&nbsp;</span>:&nbsp;<span class="src-id">false</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;id&quot;&nbsp;</span>:&nbsp;<span class="src-num">1012238</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;isbn&quot;&nbsp;</span>:&nbsp;<span class="src-sym">[&nbsp;</span><span class="src-str">&quot;9780061555220&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;0061555223&quot;</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">]</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;itemId&quot;&nbsp;</span>:&nbsp;<span class="src-num">2216202</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;location&quot;&nbsp;</span>:&nbsp;<span class="src-str">&quot;Parker&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;position&quot;&nbsp;</span>:&nbsp;<span class="src-num">2</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;reactivate&quot;&nbsp;</span>:&nbsp;<span class="src-str">&quot;&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;reactivateTime&quot;&nbsp;</span>:&nbsp;<span class="src-num">15308</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;sortTitle&quot;&nbsp;</span>:&nbsp;<span class="src-str">&quot;forgotten&nbsp;warrior&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;status&quot;&nbsp;</span>:&nbsp;<span class="src-str">&quot;Available&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;title&quot;&nbsp;</span>:&nbsp;<span class="src-str">&quot;The&nbsp;forgotten&nbsp;warrior&nbsp;/&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;upc&quot;&nbsp;</span>:&nbsp;<span class="src-str">&quot;&quot;</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">}&nbsp;</span><span class="src-sym">]</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">}</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;success&quot;&nbsp;</span>:&nbsp;<span class="src-id">true</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;<span class="src-sym">}</span></div></li>
+<li><div class="src-line">&nbsp;<span class="src-sym">}</span></div></li>
+</ol></div></p></p>
+	<ul class="tags">
+				<li><span class="field">author:</span> Mark Noble &lt;<a href="mailto:mnoble@turningleaftech.com">mnoble@turningleaftech.com</a>&gt;</li>
+			</ul>
+	
+	<div class="method-signature">
+		<span class="method-result">void</span>
+		<span class="method-name">
+			getPatronHolds
+		</span>
+				()
+			</div>
+	
+		
+			
+	</div>
+<a name="methodgetPatronHoldsEContent" id="getPatronHoldsEContent"><!-- --></a>
+<div class="oddrow">
+	
+	<div class="method-header">
+		<img src="../media/images/Method.png" />
+		<span class="method-title">getPatronHoldsEContent</span> (line <span class="line-number"><a href="../__filesource/fsource_phpDocumentor__UserAPI.php.html#a543">543</a></span>)
+	</div> 
+	
+	<!-- ========== Info from phpDoc block ========= -->
+<p class="short-description">Get eContent holds for a user based on username and password.</p>
+<p class="description"><p>Parameters:  <ul><li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li><li>password - The pin number for the user.</li></ul></p><p>Sample Call:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-id">http</span>:<span class="src-comm">//catalog.douglascountylibraries.org/API/UserAPI?method=getPatronHoldsEContent&amp;username=23025003575917&amp;password=7604</span></div></li>
+</ol></div></p><p>Sample Response:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-sym">{</span><span class="src-str">&quot;result&quot;</span>:<span class="src-sym">{</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;success&quot;</span>:<span class="src-id">true</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;holds&quot;</span>:<span class="src-sym">{</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;available&quot;</span>:<span class="src-sym">[</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">{</span><span class="src-str">&quot;id&quot;</span>:<span class="src-str">&quot;522&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;source&quot;</span>:<span class="src-str">&quot;CIPA&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;title&quot;</span>:<span class="src-str">&quot;Into&nbsp;the&nbsp;path&nbsp;of&nbsp;gods&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;author&quot;</span>:<span class="src-str">&quot;Guler,&nbsp;Kathleen&nbsp;Cunningham.&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;available&quot;</span>:<span class="src-id">true</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;create&quot;</span>:<span class="src-str">&quot;1325962832&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;expire&quot;</span>:<span class="src-num">1326394839</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;status&quot;</span>:<span class="src-str">&quot;available&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;links&quot;</span>:<span class="src-sym">[</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">{</span><span class="src-str">&quot;text&quot;</span>:</div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;Cancel&nbsp;Hold&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;onclick&quot;</span>:<span class="src-str">&quot;if&nbsp;(confirm('Are&nbsp;you&nbsp;sure&nbsp;you&nbsp;want&nbsp;to&nbsp;cancel&nbsp;this&nbsp;title?')){cancelEContentHold('\/EContentRecord\/522\/CancelHold')};return&nbsp;false;&quot;</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">}</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">{</span><span class="src-str">&quot;text&quot;</span>:<span class="src-str">&quot;Checkout&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;url&quot;</span>:<span class="src-str">&quot;\/EContentRecord\/522\/Checkout&quot;</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">}</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">]</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">}</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">]</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;unavailable&quot;</span>:<span class="src-sym">[</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">{</span><span class="src-str">&quot;id&quot;</span>:<span class="src-str">&quot;521&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;source&quot;</span>:<span class="src-str">&quot;CIPA&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;title&quot;</span>:<span class="src-str">&quot;Turn&nbsp;eye&nbsp;appeal&nbsp;into&nbsp;buy&nbsp;appeal&nbsp;how&nbsp;to&nbsp;easily&nbsp;transform&nbsp;your&nbsp;marketing&nbsp;pieces&nbsp;into&nbsp;dazzling,&nbsp;persuasive&nbsp;sales&nbsp;tools!&nbsp;\/&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;author&quot;</span>:<span class="src-str">&quot;Saunders,&nbsp;Karen.&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;available&quot;</span>:<span class="src-id">true</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;createTime&quot;</span>:<span class="src-str">&quot;1325962794&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;status&quot;</span>:<span class="src-str">&quot;active&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;position&quot;</span>:<span class="src-num">1</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;links&quot;</span>:<span class="src-sym">[</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">{</span><span class="src-str">&quot;text&quot;</span>:<span class="src-str">&quot;Cancel&nbsp;Hold&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;onclick&quot;</span>:<span class="src-str">&quot;if&nbsp;(confirm('Are&nbsp;you&nbsp;sure&nbsp;you&nbsp;want&nbsp;to&nbsp;cancel&nbsp;this&nbsp;title?')){cancelEContentHold('\/EContentRecord\/521\/CancelHold')};return&nbsp;false;&quot;</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">}</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">]</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;frozen&quot;</span>:<span class="src-id">false</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;reactivateDate&quot;</span>:<span class="src-id">null</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">}</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">]</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-sym">}</span></div></li>
+<li><div class="src-line">&nbsp;<span class="src-sym">}}</span></div></li>
+</ol></div></p></p>
+	<ul class="tags">
+				<li><span class="field">author:</span> Mark Noble &lt;<a href="mailto:mnoble@turningleaftech.com">mnoble@turningleaftech.com</a>&gt;</li>
+			</ul>
+	
+	<div class="method-signature">
+		<span class="method-result">void</span>
+		<span class="method-name">
+			getPatronHoldsEContent
+		</span>
+				()
+			</div>
+	
+		
+			
+	</div>
+<a name="methodgetPatronHoldsOverDrive" id="getPatronHoldsOverDrive"><!-- --></a>
+<div class="evenrow">
+	
+	<div class="method-header">
+		<img src="../media/images/Method.png" />
+		<span class="method-title">getPatronHoldsOverDrive</span> (line <span class="line-number"><a href="../__filesource/fsource_phpDocumentor__UserAPI.php.html#a621">621</a></span>)
+	</div> 
+	
+	<!-- ========== Info from phpDoc block ========= -->
+<p class="short-description">Get a list of holds with details from OverDrive.</p>
+<p class="description"><p>Note: OverDrive can be very slow at times.  Proper precautions should be taken to ensure the calling application  remains responsive.  VuFind does handle caching of OverDrive details so additional caching should not be needed.</p><p>Parameters:  <ul><li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li><li>password - The pin number for the user.</li></ul></p><p>Sample Call:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-id">http</span>:<span class="src-comm">//catalog.douglascountylibraries.org/API/UserAPI?method=getPatronHoldsOverDrive&amp;username=23025003575917&amp;password=7604</span></div></li>
+</ol></div></p><p>Sample Response:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-sym">{</span><span class="src-str">&quot;result&quot;</span>:<span class="src-sym">{</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;success&quot;</span>:<span class="src-id">true</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;holds&quot;</span>:<span class="src-sym">{</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;available&quot;</span>:<span class="src-sym">[</span><span class="src-sym">{</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;overDriveId&quot;</span>:<span class="src-str">&quot;2C32E00B-8838-4F2A-BED7-EAEF2E9249C8&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;imageUrl&quot;</span>:<span class="src-str">&quot;http:\/\/images.contentreserve.com\/ImageType-200\/1523-1\/%7B2C32E00B-8838-4F2A-BED7-EAEF2E9249C8%7DImg200.jpg&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;title&quot;</span>:<span class="src-str">&quot;Danger&nbsp;in&nbsp;a&nbsp;Red&nbsp;Dress&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;subTitle&quot;</span>:<span class="src-str">&quot;The&nbsp;Fortune&nbsp;Hunter&nbsp;Series,&nbsp;Book&nbsp;4&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;author&quot;</span>:<span class="src-str">&quot;Christina&nbsp;Dodd&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;recordId&quot;</span>:<span class="src-str">&quot;9604&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;notificationDate&quot;</span>:<span class="src-num">1325921790</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;expirationDate&quot;</span>:<span class="src-num">1326180990</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;formats&quot;</span>:<span class="src-sym">[</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">{</span><span class="src-str">&quot;name&quot;</span>:<span class="src-str">&quot;Kindle&nbsp;Book&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;overDriveId&quot;</span>:</div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;2C32E00B-8838-4F2A-BED7-EAEF2E9249C8&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;formatId&quot;</span>:<span class="src-str">&quot;420&quot;</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">}</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">{</span><span class="src-str">&quot;name&quot;</span>:<span class="src-str">&quot;Adobe&nbsp;EPUB&nbsp;eBook&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;overDriveId&quot;</span>:<span class="src-str">&quot;2C32E00B-8838-4F2A-BED7-EAEF2E9249C8&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;formatId&quot;</span>:<span class="src-str">&quot;410&quot;</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">}</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">{</span><span class="src-str">&quot;name&quot;</span>:<span class="src-str">&quot;Adobe&nbsp;PDF&nbsp;eBook&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;overDriveId&quot;</span>:<span class="src-str">&quot;2C32E00B-8838-4F2A-BED7-EAEF2E9249C8&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;formatId&quot;</span>:<span class="src-str">&quot;50&quot;</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">}</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">]</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">}</span><span class="src-sym">]</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;unavailable&quot;</span>:<span class="src-sym">[</span><span class="src-sym">{</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;overDriveId&quot;</span>:<span class="src-str">&quot;E750E1B6-2B11-42B5-89CB-153A286FB4A0&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;imageUrl&quot;</span>:<span class="src-str">&quot;http:\/\/images.contentreserve.com\/ImageType-200\/0293-1\/%7BE750E1B6-2B11-42B5-89CB-153A286FB4A0%7DImg200.jpg&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;title&quot;</span>:<span class="src-str">&quot;Sunrise&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;subTitle&quot;</span>:<span class="src-str">&quot;Warriors:&nbsp;Power&nbsp;of&nbsp;Three&nbsp;Series,&nbsp;Book&nbsp;6&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;author&quot;</span>:<span class="src-str">&quot;Erin&nbsp;Hunter&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;recordId&quot;</span>:<span class="src-str">&quot;7356&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;formatId&quot;</span>:<span class="src-str">&quot;410&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;holdQueuePosition&quot;</span>:<span class="src-str">&quot;1&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;holdQueueLength&quot;</span>:<span class="src-str">&quot;1&quot;</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">}</span><span class="src-sym">]</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-sym">}</span></div></li>
+<li><div class="src-line">&nbsp;<span class="src-sym">}}</span></div></li>
+</ol></div></p></p>
+	<ul class="tags">
+				<li><span class="field">author:</span> Mark Noble &lt;<a href="mailto:mnoble@turningleaftech.com">mnoble@turningleaftech.com</a>&gt;</li>
+			</ul>
+	
+	<div class="method-signature">
+		<span class="method-result">void</span>
+		<span class="method-name">
+			getPatronHoldsOverDrive
+		</span>
+				()
+			</div>
+	
+		
+			
+	</div>
+<a name="methodgetPatronOverDriveSummary" id="getPatronOverDriveSummary"><!-- --></a>
+<div class="oddrow">
+	
+	<div class="method-header">
+		<img src="../media/images/Method.png" />
+		<span class="method-title">getPatronOverDriveSummary</span> (line <span class="line-number"><a href="../__filesource/fsource_phpDocumentor__UserAPI.php.html#a815">815</a></span>)
+	</div> 
+	
+	<!-- ========== Info from phpDoc block ========= -->
+<p class="short-description">Get a count of items in various lists within overdrive (holds, cart, wishlist, checked out).</p>
+<p class="description"><p>Usage:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-sym">{</span><span class="src-id">siteUrl</span><span class="src-sym">}</span>/<span class="src-id">API</span>/<span class="src-id"><a href="../phpDocumentor/UserAPI.html">UserAPI</a></span>?<span class="src-id">method</span>=<a href="../phpDocumentor/UserAPI.html#methodgetPatronOverDriveSummary">getPatronOverDriveSummary</a><span class="src-sym">&amp;</span><span class="src-id">username</span>=<span class="src-id">patronBarcode</span><span class="src-sym">&amp;</span><span class="src-id">password</span>=<span class="src-id">pin</span></div></li>
+</ol></div></p><p>Parameters:  <ul><li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li><li>password - The pin number for the user.</li></ul></p><p>Sample Call:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-id">http</span>:<span class="src-comm">//catalog.douglascountylibraries.org/API/UserAPI?method=getPatronOverDriveSummary&amp;username=23025003575917&amp;password=7604</span></div></li>
+</ol></div></p><p>Sample Response:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-sym">{</span><span class="src-str">&quot;result&quot;</span>:<span class="src-sym">{</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;success&quot;</span>:<span class="src-id">true</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;summary&quot;</span>:<span class="src-sym">{</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;numAvailableHolds&quot;</span>:<span class="src-num">1</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;numUnavailableHolds&quot;</span>:<span class="src-num">4</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;numCheckedOut&quot;</span>:<span class="src-num">7</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;numWishlistItems&quot;</span>:<span class="src-num">9</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-sym">}</span></div></li>
+<li><div class="src-line">&nbsp;<span class="src-sym">}}</span></div></li>
+</ol></div></p></p>
+	<ul class="tags">
+				<li><span class="field">author:</span> Mark Noble &lt;<a href="mailto:mnoble@turningleaftech.com">mnoble@turningleaftech.com</a>&gt;</li>
+			</ul>
+	
+	<div class="method-signature">
+		<span class="method-result">void</span>
+		<span class="method-name">
+			getPatronOverDriveSummary
+		</span>
+				()
+			</div>
+	
+		
+			
+	</div>
+<a name="methodgetPatronProfile" id="getPatronProfile"><!-- --></a>
+<div class="evenrow">
+	
+	<div class="method-header">
+		<img src="../media/images/Method.png" />
+		<span class="method-title">getPatronProfile</span> (line <span class="line-number"><a href="../__filesource/fsource_phpDocumentor__UserAPI.php.html#a340">340</a></span>)
+	</div> 
+	
+	<!-- ========== Info from phpDoc block ========= -->
+<p class="short-description">Load patron profile information for a user based on username and password.</p>
+<p class="description"><p>Includes information about print titles and eContent titles that the user has checked out.  Does not include information about OverDrive titles since tat</p><p>Usage:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-sym">{</span><span class="src-id">siteUrl</span><span class="src-sym">}</span>/<span class="src-id">API</span>/<span class="src-id"><a href="../phpDocumentor/UserAPI.html">UserAPI</a></span>?<span class="src-id">method</span>=<a href="../phpDocumentor/UserAPI.html#methodgetPatronProfile">getPatronProfile</a><span class="src-sym">&amp;</span><span class="src-id">username</span>=<span class="src-id">patronBarcode</span><span class="src-sym">&amp;</span><span class="src-id">password</span>=<span class="src-id">pin</span></div></li>
+</ol></div></p><p>Parameters:  <ul><li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li><li>password - The pin number for the user.</li></ul></p><p>Returns JSON encoded data as follows:  <ul><li>success – true if the account is valid, false if the username or password were incorrect</li><li>message – a reason why the method failed if success is false</li><li>profile – profile information including name, address, e-mail, number of holds, number of checked out items, fines.</li><li>firstname – The first name of the patron in the ILS</li><li>lastname – The last name of the patron in the ILS</li><li>fullname – The combined first and last name for the patron in the ILS</li><li>address1 – The street information for the patron</li><li>city – The city where the patron lives</li><li>state – The state where the patron lives</li><li>zip – The zip code for the patron</li><li>phone – The phone number for the patron</li><li>email – The email for the patron</li><li>homeLocationId – The id of the patron's home branch within VuFind</li><li>homeLocationName – The full name of the patron's home branch</li><li>expires – The expiration date of the patron's library card</li><li>fines – the amount of fines on the patron's account formatted for display</li><li>finesVal – the amount of  fines on the patron's account without formatting</li><li>numHolds – The number of holds the patron currently has</li><li>numHoldsAvailable – The number of holds the patron currently has that are available</li><li>numHoldsRequested – The number of holds the patron currently has that are not available</li><li>numCheckedOut – The number of items the patron currently has checked out.</li><li>bypassAutoLogout - 1 if the user has chosen to bypass te automatic logout script or 0 if they have not.</li><li>numEContentCheckedOut - The number of eContent items that the user currently has checked out.</li><li>numEContentAvailableHolds - The number of available eContent holds for the user that can be checked out.</li><li>numEContentUnavailableHolds - The number of unavailable eContent holds for the user.</li><li>numEContentWishList - The number of eContent titles the user has added to their wishlist.</li></ul></p><p>Sample Call:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-id">http</span>:<span class="src-comm">//catalog.douglascountylibraries.org/API/UserAPI?method=getPatronProfile&amp;username=23025003575917&amp;password=7604</span></div></li>
+</ol></div></p><p>Sample Response failed login:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-sym">{</span><span class="src-str">&quot;result&quot;</span>:<span class="src-sym">{</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;success&quot;</span>:<span class="src-id">false</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;message&quot;</span>:<span class="src-str">&quot;Login&nbsp;unsuccessful&quot;</span></div></li>
+<li><div class="src-line">&nbsp;<span class="src-sym">}}</span></div></li>
+</ol></div></p><p>Sample Response:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-sym">{&nbsp;</span><span class="src-str">&quot;result&quot;&nbsp;</span>:&nbsp;<span class="src-sym">{&nbsp;</span><span class="src-str">&quot;profile&quot;&nbsp;</span>:&nbsp;<span class="src-sym">{</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;address1&quot;&nbsp;</span>:&nbsp;<span class="src-str">&quot;P&nbsp;O&nbsp;BOX&nbsp;283&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;bypassAutoLogout&quot;&nbsp;</span>:&nbsp;<span class="src-str">&quot;0&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;city&quot;&nbsp;</span>:&nbsp;<span class="src-str">&quot;LOUVIERS&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;displayName&quot;&nbsp;</span>:&nbsp;<span class="src-str">&quot;&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;email&quot;&nbsp;</span>:&nbsp;<span class="src-str">&quot;test@comcast.net&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;expires&quot;&nbsp;</span>:&nbsp;<span class="src-str">&quot;02/03/2039&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;fines&quot;&nbsp;</span>:&nbsp;<span class="src-num">0</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;finesval&quot;&nbsp;</span>:&nbsp;<span class="src-str">&quot;&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;firstname&quot;&nbsp;</span>:&nbsp;<span class="src-str">&quot;&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;fullname&quot;&nbsp;</span>:&nbsp;<span class="src-str">&quot;POS&nbsp;test&nbsp;1&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;homeLocationId&quot;&nbsp;</span>:&nbsp;<span class="src-str">&quot;3&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;homeLocationName&quot;&nbsp;</span>:&nbsp;<span class="src-str">&quot;Philip&nbsp;S.&nbsp;Miller&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;lastname&quot;&nbsp;</span>:&nbsp;<span class="src-str">&quot;POS&nbsp;test&nbsp;1&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;numCheckedOut&quot;&nbsp;</span>:&nbsp;<span class="src-num">0</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;numEContentAvailableHolds&quot;&nbsp;</span>:&nbsp;<span class="src-num">0</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;numEContentCheckedOut&quot;&nbsp;</span>:&nbsp;<span class="src-num">0</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;numEContentUnavailableHolds&quot;&nbsp;</span>:&nbsp;<span class="src-num">0</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;numEContentWishList&quot;&nbsp;</span>:&nbsp;<span class="src-num">0</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;numHolds&quot;&nbsp;</span>:&nbsp;<span class="src-num">0</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;numHoldsAvailable&quot;&nbsp;</span>:&nbsp;<span class="src-num">0</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;numHoldsRequested&quot;&nbsp;</span>:&nbsp;<span class="src-num">0</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;phone&quot;&nbsp;</span>:&nbsp;<span class="src-str">&quot;303-555-5555&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;state&quot;&nbsp;</span>:&nbsp;<span class="src-str">&quot;CO&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;zip&quot;&nbsp;</span>:&nbsp;<span class="src-str">&quot;80131&quot;</span></div></li>
+<li><div class="src-line">&nbsp;<span class="src-sym">}</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;<span class="src-str">&quot;success&quot;&nbsp;</span>:&nbsp;<span class="src-id">true</span></div></li>
+<li><div class="src-line">&nbsp;<span class="src-sym">}&nbsp;}</span></div></li>
+</ol></div></p></p>
+	<ul class="tags">
+				<li><span class="field">author:</span> Mark Noble &lt;<a href="mailto:mnoble@turningleaftech.com">mnoble@turningleaftech.com</a>&gt;</li>
+			</ul>
+	
+	<div class="method-signature">
+		<span class="method-result">void</span>
+		<span class="method-name">
+			getPatronProfile
+		</span>
+				()
+			</div>
+	
+		
+			
+	</div>
+<a name="methodgetPatronReadingHistory" id="getPatronReadingHistory"><!-- --></a>
+<div class="oddrow">
+	
+	<div class="method-header">
+		<img src="../media/images/Method.png" />
+		<span class="method-title">getPatronReadingHistory</span> (line <span class="line-number"><a href="../__filesource/fsource_phpDocumentor__UserAPI.php.html#a2224">2224</a></span>)
+	</div> 
+	
+	<!-- ========== Info from phpDoc block ========= -->
+<p class="short-description">Loads the reading history for the user.  Includes print, eContent, and OverDrive titles.</p>
+<p class="description"><p>Note: The return of this method can be quite lengthy if the patron has a large number of items in their reading history.</p><p>Parameters:  <ul><li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li><li>password - The pin number for the user.</li></ul></p><p>Returns:  <ul><li>success – true if the account is valid and the hold could be canceled, false if the username or password were incorrect or the hold could not be canceled.</li><li>holdMessage – a reason why the method failed if success is false</li></ul></p><p>Sample Call:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-id">http</span>:<span class="src-comm">//catalog.douglascountylibraries.org/API/UserAPI?method=getPatronReadingHistory&amp;username=23025003575917&amp;password=1234</span></div></li>
+</ol></div></p><p>Sample Response:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-sym">{</span><span class="src-str">&quot;result&quot;</span>:<span class="src-sym">{</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;success&quot;</span>:<span class="src-id">true</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;readingHistory&quot;</span>:<span class="src-sym">[</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">{</span><span class="src-str">&quot;recordId&quot;</span>:<span class="src-str">&quot;597608&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;checkout&quot;</span>:<span class="src-str">&quot;2011-03-18&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;checkoutTime&quot;</span>:<span class="src-num">1300428000</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;lastCheckout&quot;</span>:<span class="src-str">&quot;2011-03-22&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;lastCheckoutTime&quot;</span>:<span class="src-num">1300773600</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;title&quot;</span>:<span class="src-str">&quot;The&nbsp;wanderer&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;title_sort&quot;</span>:<span class="src-str">&quot;wanderer&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;author&quot;</span>:<span class="src-str">&quot;O.A.R.&nbsp;(Musical&nbsp;group)&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;format&quot;</span>:<span class="src-str">&quot;Music&nbsp;CD&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;format_category&quot;</span>:<span class="src-str">&quot;Music&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;isbn&quot;</span>:<span class="src-str">&quot;&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;upc&quot;</span>:<span class="src-str">&quot;803494030726&quot;</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">}</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">{</span><span class="src-str">&quot;recordId&quot;</span>:<span class="src-str">&quot;808990&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;checkout&quot;</span>:<span class="src-str">&quot;2011-03-18&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;checkoutTime&quot;</span>:<span class="src-num">1300428000</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;lastCheckout&quot;</span>:<span class="src-str">&quot;2011-03-22&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;lastCheckoutTime&quot;</span>:<span class="src-num">1300773600</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;title&quot;</span>:<span class="src-str">&quot;Seals&nbsp;\/&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;title_sort&quot;</span>:<span class="src-str">&quot;seals&nbsp;\/&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;author&quot;</span>:<span class="src-str">&quot;Sexton,&nbsp;Colleen&nbsp;A.,&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;format&quot;</span>:<span class="src-str">&quot;Book&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;format_category&quot;</span>:<span class="src-str">&quot;Books&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;isbn&quot;</span>:<span class="src-str">&quot;9781600140563&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;upc&quot;</span>:<span class="src-str">&quot;&quot;</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">}</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-sym">]</span></div></li>
+<li><div class="src-line">&nbsp;<span class="src-sym">}}</span></div></li>
+</ol></div></p></p>
+	<ul class="tags">
+				<li><span class="field">author:</span> Mark Noble &lt;<a href="mailto:mnoble@turningleaftech.com">mnoble@turningleaftech.com</a>&gt;</li>
+			</ul>
+	
+	<div class="method-signature">
+		<span class="method-result">void</span>
+		<span class="method-name">
+			getPatronReadingHistory
+		</span>
+				()
+			</div>
+	
+		
+			
+	</div>
+<a name="methodgetPatronWishListOverDrive" id="getPatronWishListOverDrive"><!-- --></a>
+<div class="evenrow">
+	
+	<div class="method-header">
+		<img src="../media/images/Method.png" />
+		<span class="method-title">getPatronWishListOverDrive</span> (line <span class="line-number"><a href="../__filesource/fsource_phpDocumentor__UserAPI.php.html#a713">713</a></span>)
+	</div> 
+	
+	<!-- ========== Info from phpDoc block ========= -->
+<p class="short-description">Get a list of items in the user's OverDrive wishlist.</p>
+<p class="description"><p>Parameters:  <ul><li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li><li>password - The pin number for the user.</li></ul></p><p>Sample Call:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-id">http</span>:<span class="src-comm">//catalog.douglascountylibraries.org/API/UserAPI?method=getPatronWishListOverDrive&amp;username=23025003575917&amp;password=7604</span></div></li>
+</ol></div></p><p>Sample Response:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-sym">{</span><span class="src-str">&quot;result&quot;</span>:<span class="src-sym">{</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;success&quot;</span>:<span class="src-id">true</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;items&quot;</span>:<span class="src-sym">[</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">{</span><span class="src-str">&quot;overDriveId&quot;</span>:<span class="src-str">&quot;47BCED53-7AEC-47A2-A5D9-75D493196095&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;imageUrl&quot;</span>:<span class="src-str">&quot;http:\/\/images.contentreserve.com\/ImageType-200\/1191-1\/%7B47BCED53-7AEC-47A2-A5D9-75D493196095%7DImg200.jpg&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;title&quot;</span>:<span class="src-str">&quot;The&nbsp;Return&nbsp;of&nbsp;Depression&nbsp;Economics&nbsp;and&nbsp;the&nbsp;Crisis&nbsp;of&nbsp;2008&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;subTitle&quot;</span>:<span class="src-str">&quot;&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;author&quot;</span>:<span class="src-str">&quot;Paul&nbsp;Krugman&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;dateAdded&quot;</span>:<span class="src-str">&quot;Apr&nbsp;19,&nbsp;2009\r\n&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;formats&quot;</span>:<span class="src-sym">[</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">{</span><span class="src-str">&quot;name&quot;</span>:<span class="src-str">&quot;OverDrive&nbsp;WMA&nbsp;Audiobook&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;available&quot;</span>:<span class="src-id">true</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;formatId&quot;</span>:<span class="src-str">&quot;25&quot;</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">}</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">]</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;recordId&quot;</span>:<span class="src-str">&quot;13233&quot;</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">}</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-sym">]</span></div></li>
+<li><div class="src-line">&nbsp;<span class="src-sym">}}</span></div></li>
+</ol></div></p></p>
+	<ul class="tags">
+				<li><span class="field">author:</span> Mark Noble &lt;<a href="mailto:mnoble@turningleaftech.com">mnoble@turningleaftech.com</a>&gt;</li>
+			</ul>
+	
+	<div class="method-signature">
+		<span class="method-result">void</span>
+		<span class="method-name">
+			getPatronWishListOverDrive
+		</span>
+				()
+			</div>
+	
+		
+			
+	</div>
+<a name="methodoptIntoReadingHistory" id="optIntoReadingHistory"><!-- --></a>
+<div class="oddrow">
+	
+	<div class="method-header">
+		<img src="../media/images/Method.png" />
+		<span class="method-title">optIntoReadingHistory</span> (line <span class="line-number"><a href="../__filesource/fsource_phpDocumentor__UserAPI.php.html#a2265">2265</a></span>)
+	</div> 
+	
+	<!-- ========== Info from phpDoc block ========= -->
+<p class="short-description">Allows reading history to be collected for the patron.  If this option is not selected,  no reading history for the patron wil be stored.</p>
+<p class="description"><p>Parameters:  <ul><li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li><li>password - The pin number for the user.</li></ul></p><p>Returns:  <ul><li>success – true if the account is valid and the reading history could be turned on, false if the username or password were incorrect or the reading history could not be turned on.</li></ul></p><p>Sample Call:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-id">http</span>:<span class="src-comm">//catalog.douglascountylibraries.org/API/UserAPI?method=optIntoReadingHistory&amp;username=23025003575917&amp;password=1234</span></div></li>
+</ol></div></p><p>Sample Response:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-sym">{</span><span class="src-str">&quot;result&quot;</span>:<span class="src-sym">{</span><span class="src-str">&quot;success&quot;</span>:<span class="src-id">true</span><span class="src-sym">}}</span></div></li>
+</ol></div></p></p>
+	<ul class="tags">
+				<li><span class="field">author:</span> Mark Noble &lt;<a href="mailto:mnoble@turningleaftech.com">mnoble@turningleaftech.com</a>&gt;</li>
+			</ul>
+	
+	<div class="method-signature">
+		<span class="method-result">void</span>
+		<span class="method-name">
+			optIntoReadingHistory
+		</span>
+				()
+			</div>
+	
+		
+			
+	</div>
+<a name="methodoptOutOfReadingHistory" id="optOutOfReadingHistory"><!-- --></a>
+<div class="evenrow">
+	
+	<div class="method-header">
+		<img src="../media/images/Method.png" />
+		<span class="method-title">optOutOfReadingHistory</span> (line <span class="line-number"><a href="../__filesource/fsource_phpDocumentor__UserAPI.php.html#a2305">2305</a></span>)
+	</div> 
+	
+	<!-- ========== Info from phpDoc block ========= -->
+<p class="short-description">Stops collecting reading history for the patron and removes any reading history entries that have been collected already.</p>
+<p class="description"><p>Parameters:  <ul><li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li><li>password - The pin number for the user.</li></ul></p><p>Returns:  <ul><li>success – true if the account is valid and the reading history could be turned off, false if the username or password were incorrect or the reading history could not be turned off.</li></ul></p><p>Sample Call:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-id">http</span>:<span class="src-comm">//catalog.douglascountylibraries.org/API/UserAPI?method=optOutOfReadingHistory&amp;username=23025003575917&amp;password=1234</span></div></li>
+</ol></div></p><p>Sample Response:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-sym">{</span><span class="src-str">&quot;result&quot;</span>:<span class="src-sym">{</span><span class="src-str">&quot;success&quot;</span>:<span class="src-id">true</span><span class="src-sym">}}</span></div></li>
+</ol></div></p></p>
+	<ul class="tags">
+				<li><span class="field">author:</span> Mark Noble &lt;<a href="mailto:mnoble@turningleaftech.com">mnoble@turningleaftech.com</a>&gt;</li>
+			</ul>
+	
+	<div class="method-signature">
+		<span class="method-result">void</span>
+		<span class="method-name">
+			optOutOfReadingHistory
+		</span>
+				()
+			</div>
+	
+		
+			
+	</div>
+<a name="methodplaceEContentHold" id="placeEContentHold"><!-- --></a>
+<div class="oddrow">
+	
+	<div class="method-header">
+		<img src="../media/images/Method.png" />
+		<span class="method-title">placeEContentHold</span> (line <span class="line-number"><a href="../__filesource/fsource_phpDocumentor__UserAPI.php.html#a1221">1221</a></span>)
+	</div> 
+	
+	<!-- ========== Info from phpDoc block ========= -->
+<p class="short-description">Places a hold on an eContent Record.  If the record is available for immediate usage, it will be checked out to the user.</p>
+<p class="description"><p>Parameters:  <ul><li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li><li>password - The pin number for the user.</li><li>recordId - The id of the record within the eContent database.</li></ul></p><p>Returns JSON encoded data as follows:  <ul><li>success – true if the account is valid and the hold could be placed, false if the username or password were incorrect or the hold could not be placed.</li><li>holdMessage – a reason why the method failed if success is false, or information about hold queue position if successful.</li></ul></p><p>Sample Call:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-id">http</span>:<span class="src-comm">//catalog.douglascountylibraries.org/API/UserAPI?method=placeEContentHold&amp;username=23025003575917&amp;password=1234&amp;recordId=530</span></div></li>
+</ol></div></p><p>Sample Response (checkout):  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-sym">{</span><span class="src-str">&quot;result&quot;</span>:<span class="src-sym">{</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;success&quot;</span>:<span class="src-id">true</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;holdMessage&quot;</span>:<span class="src-str">&quot;The&nbsp;title&nbsp;was&nbsp;checked&nbsp;out&nbsp;to&nbsp;you&nbsp;successfully.&nbsp;You&nbsp;may&nbsp;read&nbsp;it&nbsp;from&nbsp;the&nbsp;My&nbsp;eContent&nbsp;page&nbsp;within&nbsp;your&nbsp;account.&quot;</span></div></li>
+<li><div class="src-line">&nbsp;<span class="src-sym">}}</span></div></li>
+</ol></div></p><p>Sample Response (checkout):  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-sym">{</span><span class="src-str">&quot;result&quot;</span>:<span class="src-sym">{</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;success&quot;</span>:<span class="src-id">true</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;holdMessage&quot;</span>:<span class="src-str">&quot;Your&nbsp;hold&nbsp;was&nbsp;successfully&nbsp;placed,&nbsp;you&nbsp;are&nbsp;number&nbsp;1&nbsp;in&nbsp;the&nbsp;queue.&quot;</span></div></li>
+<li><div class="src-line">&nbsp;<span class="src-sym">}}</span></div></li>
+</ol></div></p></p>
+	<ul class="tags">
+				<li><span class="field">author:</span> Mark Noble &lt;<a href="mailto:mnoble@turningleaftech.com">mnoble@turningleaftech.com</a>&gt;</li>
+			</ul>
+	
+	<div class="method-signature">
+		<span class="method-result">void</span>
+		<span class="method-name">
+			placeEContentHold
+		</span>
+				()
+			</div>
+	
+		
+			
+	</div>
+<a name="methodplaceHold" id="placeHold"><!-- --></a>
+<div class="evenrow">
+	
+	<div class="method-header">
+		<img src="../media/images/Method.png" />
+		<span class="method-title">placeHold</span> (line <span class="line-number"><a href="../__filesource/fsource_phpDocumentor__UserAPI.php.html#a1168">1168</a></span>)
+	</div> 
+	
+	<!-- ========== Info from phpDoc block ========= -->
+<p class="short-description">Places a hold on an item that is available within the ILS. The location where the user would like to pickup  the title must be specified as well als the record the user would like a hold placed on.</p>
+<p class="description"><p>Parameters:  <ul><li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li><li>password - The pin number for the user.</li><li>bibId    - The id of the record within the ILS.</li><li>campus   – the location where the patron would like to pickup the title (optional). If not provided, the patron's home location will be used.</li></ul></p><p>Returns JSON encoded data as follows:  <ul><li>success – true if the account is valid and the hold could be placed, false if the username or password were incorrect or the hold could not be placed.</li><li>holdMessage – a reason why the method failed if success is false, or information about hold queue position if successful.</li></ul></p><p>Sample Call:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-id">http</span>:<span class="src-comm">//catalog.douglascountylibraries.org/API/UserAPI?method=renewAll&amp;username=23025003575917&amp;password=7604&amp;bibId=1004012&amp;campus=pa</span></div></li>
+</ol></div></p><p>Sample Response (successful hold):  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-sym">{</span><span class="src-str">&quot;result&quot;</span>:<span class="src-sym">{</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;success&quot;</span>:<span class="src-id">true</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;holdMessage&quot;</span>:<span class="src-str">&quot;Placement&nbsp;of&nbsp;hold&nbsp;request&nbsp;successful.&nbsp;You&nbsp;are&nbsp;number&nbsp;1&nbsp;in&nbsp;the&nbsp;queue.&quot;</span></div></li>
+<li><div class="src-line">&nbsp;<span class="src-sym">}}</span></div></li>
+</ol></div></p><p>Sample Response (failed hold):  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-sym">{</span><span class="src-str">&quot;result&quot;</span>:<span class="src-sym">{</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;success&quot;</span>:<span class="src-id">false</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;holdMessage&quot;</span>:<span class="src-str">&quot;Unable&nbsp;to&nbsp;place&nbsp;a&nbsp;hold&nbsp;request.&nbsp;You&nbsp;have&nbsp;already&nbsp;requested&nbsp;this.&quot;</span></div></li>
+<li><div class="src-line">&nbsp;<span class="src-sym">}}</span></div></li>
+</ol></div></p></p>
+	<ul class="tags">
+				<li><span class="field">author:</span> Mark Noble &lt;<a href="mailto:mnoble@turningleaftech.com">mnoble@turningleaftech.com</a>&gt;</li>
+			</ul>
+	
+	<div class="method-signature">
+		<span class="method-result">void</span>
+		<span class="method-name">
+			placeHold
+		</span>
+				()
+			</div>
+	
+		
+			
+	</div>
+<a name="methodplaceOverDriveHold" id="placeOverDriveHold"><!-- --></a>
+<div class="oddrow">
+	
+	<div class="method-header">
+		<img src="../media/images/Method.png" />
+		<span class="method-title">placeOverDriveHold</span> (line <span class="line-number"><a href="../__filesource/fsource_phpDocumentor__UserAPI.php.html#a1419">1419</a></span>)
+	</div> 
+	
+	<!-- ========== Info from phpDoc block ========= -->
+<p class="short-description">Place a hold within OverDrive.</p>
+<p class="description"><p>You should specify either the recordId of the title within VuFind or the overdrive id.  The format is also required however when the user checks out the title they can override the format to checkout the version they want.</p><p>Parameters:  <ul><li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li><li>password - The pin number for the user.</li><li>recordId - The id of the record within the eContent database.</li><li>or overdriveId - The id of the record in OverDrive.</li><li>format - The format of the item to place a hold on within OverDrive.</li></ul></p><p>Returns JSON encoded data as follows:  <ul><li>success – true if the account is valid and the hold could be placed, false if the username or password were incorrect or the hold could not be placed.</li><li>message – information about the process for display to the user.</li></ul></p><p>Sample Call:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-id">http</span>:<span class="src-comm">//catalog.douglascountylibraries.org/API/UserAPI?method=placeOverDriveHold&amp;username=23025003575917&amp;password=1234&amp;overDriveId=A3365DAC-EEC3-4261-99D3-E39B7C94A90F&amp;format=420</span></div></li>
+</ol></div></p><p>Sample Response:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-sym">{</span><span class="src-str">&quot;result&quot;</span>:<span class="src-sym">{</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;success&quot;</span>:<span class="src-id">true</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;message&quot;</span>:<span class="src-str">&quot;Your&nbsp;hold&nbsp;was&nbsp;placed&nbsp;successfully.&quot;</span></div></li>
+<li><div class="src-line">&nbsp;<span class="src-sym">}}</span></div></li>
+</ol></div></p></p>
+	<ul class="tags">
+				<li><span class="field">author:</span> Mark Noble &lt;<a href="mailto:mnoble@turningleaftech.com">mnoble@turningleaftech.com</a>&gt;</li>
+			</ul>
+	
+	<div class="method-signature">
+		<span class="method-result">void</span>
+		<span class="method-name">
+			placeOverDriveHold
+		</span>
+				()
+			</div>
+	
+		
+			
+	</div>
+<a name="methodprocessOverDriveCart" id="processOverDriveCart"><!-- --></a>
+<div class="evenrow">
+	
+	<div class="method-header">
+		<img src="../media/images/Method.png" />
+		<span class="method-title">processOverDriveCart</span> (line <span class="line-number"><a href="../__filesource/fsource_phpDocumentor__UserAPI.php.html#a1790">1790</a></span>)
+	</div> 
+	
+	<!-- ========== Info from phpDoc block ========= -->
+<p class="short-description">Process the account to checkout any titles within the OverDrive cart</p>
+<p class="description"><p>Parameters:  <ul><li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li><li>password - The pin number for the user.</li><li>lendingPeriod - The number of days to checkout the title. (optional)</li></ul></p><p>Returns JSON encoded data as follows:  <ul><li>success – true if the cart was processed, false if the username or password were incorrect or the hold could not be removed from the wishlist.</li><li>message – information about the process for display to the user.</li></ul></p><p>Sample Call:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-id">http</span>:<span class="src-comm">//catalog.douglascountylibraries.org/API/UserAPI?method=processOverDriveCart&amp;username=23025003575917&amp;password=1234&amp;lendingPeriod=14</span></div></li>
+</ol></div></p><p>Sample Response:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-sym">{</span><span class="src-str">&quot;result&quot;</span>:<span class="src-sym">{</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;success&quot;</span>:<span class="src-id">true</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;message&quot;</span>:<span class="src-str">&quot;Your&nbsp;titles&nbsp;were&nbsp;checked&nbsp;out&nbsp;successfully.&nbsp;You&nbsp;may&nbsp;now&nbsp;download&nbsp;the&nbsp;titles&nbsp;from&nbsp;your&nbsp;Account.&quot;</span></div></li>
+<li><div class="src-line">&nbsp;<span class="src-sym">}}</span></div></li>
+</ol></div></p></p>
+	<ul class="tags">
+				<li><span class="field">author:</span> Mark Noble &lt;<a href="mailto:mnoble@turningleaftech.com">mnoble@turningleaftech.com</a>&gt;</li>
+			</ul>
+	
+	<div class="method-signature">
+		<span class="method-result">void</span>
+		<span class="method-name">
+			processOverDriveCart
+		</span>
+				()
+			</div>
+	
+		
+			
+	</div>
+<a name="methodremoveOverDriveItemFromWishlist" id="removeOverDriveItemFromWishlist"><!-- --></a>
+<div class="oddrow">
+	
+	<div class="method-header">
+		<img src="../media/images/Method.png" />
+		<span class="method-title">removeOverDriveItemFromWishlist</span> (line <span class="line-number"><a href="../__filesource/fsource_phpDocumentor__UserAPI.php.html#a1540">1540</a></span>)
+	</div> 
+	
+	<!-- ========== Info from phpDoc block ========= -->
+<p class="short-description">Remove an item from the OverDrive WishList</p>
+<p class="description"><p>Parameters:  <ul><li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li><li>password - The pin number for the user.</li><li>recordId - The id of the record within the eContent database.</li><li>or overdriveId - The id of the record in OverDrive.</li></ul></p><p>Returns JSON encoded data as follows:  <ul><li>success – true if the account is valid and the title could be removed from the wishlist, false if the username or password were incorrect or the hold could not be removed from the wishlist.</li><li>message – information about the process for display to the user.</li></ul></p><p>Sample Call:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-id">http</span>:<span class="src-comm">//catalog.douglascountylibraries.org/API/UserAPI?method=removeOverDriveItemFromWishlist&amp;username=23025003575917&amp;password=1234&amp;overDriveId=A3365DAC-EEC3-4261-99D3-E39B7C94A90F</span></div></li>
+</ol></div></p><p>Sample Response:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-sym">{</span><span class="src-str">&quot;result&quot;</span>:<span class="src-sym">{</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;success&quot;</span>:<span class="src-id">true</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;message&quot;</span>:<span class="src-str">&quot;The&nbsp;title&nbsp;was&nbsp;successfully&nbsp;removed&nbsp;from&nbsp;your&nbsp;wishlist.&quot;</span></div></li>
+<li><div class="src-line">&nbsp;<span class="src-sym">}}</span></div></li>
+</ol></div></p></p>
+	<ul class="tags">
+				<li><span class="field">author:</span> Mark Noble &lt;<a href="mailto:mnoble@turningleaftech.com">mnoble@turningleaftech.com</a>&gt;</li>
+			</ul>
+	
+	<div class="method-signature">
+		<span class="method-result">void</span>
+		<span class="method-name">
+			removeOverDriveItemFromWishlist
+		</span>
+				()
+			</div>
+	
+		
+			
+	</div>
+<a name="methodrenewAll" id="renewAll"><!-- --></a>
+<div class="evenrow">
+	
+	<div class="method-header">
+		<img src="../media/images/Method.png" />
+		<span class="method-title">renewAll</span> (line <span class="line-number"><a href="../__filesource/fsource_phpDocumentor__UserAPI.php.html#a1114">1114</a></span>)
+	</div> 
+	
+	<!-- ========== Info from phpDoc block ========= -->
+<p class="short-description">Renews all items that have been checked out to the user from the ILS.</p>
+<p class="description"><p>Returns a count of the number of items that could be renewed.</p><p>Parameters:  <ul><li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li><li>password - The pin number for the user.</li></ul></p><p>Sample Call:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-id">http</span>:<span class="src-comm">//catalog.douglascountylibraries.org/API/UserAPI?method=renewAll&amp;username=23025003575917&amp;password=7604</span></div></li>
+</ol></div></p><p>Sample Response:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-sym">{</span><span class="src-str">&quot;result&quot;</span>:<span class="src-sym">{</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;success&quot;</span>:<span class="src-id">true</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;renewalMessage&quot;</span>:<span class="src-str">&quot;0006&nbsp;of&nbsp;8&nbsp;items&nbsp;were&nbsp;renewed&nbsp;successfully.&quot;</span></div></li>
+<li><div class="src-line">&nbsp;<span class="src-sym">}}</span></div></li>
+</ol></div></p></p>
+	<ul class="tags">
+				<li><span class="field">author:</span> Mark Noble &lt;<a href="mailto:mnoble@turningleaftech.com">mnoble@turningleaftech.com</a>&gt;</li>
+			</ul>
+	
+	<div class="method-signature">
+		<span class="method-result">void</span>
+		<span class="method-name">
+			renewAll
+		</span>
+				()
+			</div>
+	
+		
+			
+	</div>
+<a name="methodrenewItem" id="renewItem"><!-- --></a>
+<div class="oddrow">
+	
+	<div class="method-header">
+		<img src="../media/images/Method.png" />
+		<span class="method-title">renewItem</span> (line <span class="line-number"><a href="../__filesource/fsource_phpDocumentor__UserAPI.php.html#a1075">1075</a></span>)
+	</div> 
+	
+	<!-- ========== Info from phpDoc block ========= -->
+<p class="short-description">Renews an item that has been checked out within the ILS.</p>
+<p class="description"><p>Parameters:  <ul><li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li><li>password - The pin number for the user.</li><li>itemBarcode - The barcode of the item to be renewed.</li></ul></p><p>Sample Call:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-id">http</span>:<span class="src-comm">//catalog.douglascountylibraries.org/API/UserAPI?method=renewItem&amp;username=23025003575917&amp;password=7604&amp;itemBarcode=33025021368319</span></div></li>
+</ol></div></p><p>Sample Response (failed renewal):  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-sym">{</span><span class="src-str">&quot;result&quot;</span>:<span class="src-sym">{</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;success&quot;</span>:<span class="src-id">true</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;renewalMessage&quot;</span>:<span class="src-sym">{</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;itemId&quot;</span>:<span class="src-str">&quot;33025021368319&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;result&quot;</span>:<span class="src-id">false</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;message&quot;</span>:<span class="src-str">&quot;This&nbsp;item&nbsp;may&nbsp;not&nbsp;be&nbsp;renewed&nbsp;-&nbsp;Item&nbsp;has&nbsp;been&nbsp;requested.&quot;</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-sym">}</span></div></li>
+<li><div class="src-line">&nbsp;<span class="src-sym">}}</span></div></li>
+</ol></div></p><p>Sample Response (successful renewal):  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-sym">{</span><span class="src-str">&quot;result&quot;</span>:<span class="src-sym">{</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;success&quot;</span>:<span class="src-id">true</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;renewalMessage&quot;</span>:<span class="src-sym">{</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;itemId&quot;</span>:<span class="src-str">&quot;33025021723869&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;result&quot;</span>:<span class="src-id">true</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;message&quot;</span>:<span class="src-str">&quot;#Renewal&nbsp;successful.&quot;</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-sym">}</span></div></li>
+<li><div class="src-line">&nbsp;<span class="src-sym">}}</span></div></li>
+</ol></div></p></p>
+	<ul class="tags">
+				<li><span class="field">author:</span> Mark Noble &lt;<a href="mailto:mnoble@turningleaftech.com">mnoble@turningleaftech.com</a>&gt;</li>
+			</ul>
+	
+	<div class="method-signature">
+		<span class="method-result">void</span>
+		<span class="method-name">
+			renewItem
+		</span>
+				()
+			</div>
+	
+		
+			
+	</div>
+<a name="methodreturnEContentRecord" id="returnEContentRecord"><!-- --></a>
+<div class="evenrow">
+	
+	<div class="method-header">
+		<img src="../media/images/Method.png" />
+		<span class="method-title">returnEContentRecord</span> (line <span class="line-number"><a href="../__filesource/fsource_phpDocumentor__UserAPI.php.html#a2150">2150</a></span>)
+	</div> 
+	
+	<!-- ========== Info from phpDoc block ========= -->
+<p class="short-description">Returns an eContent record</p>
+<p class="description"><p>Parameters:  <ul><li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li><li>password - The pin number for the user.</li><li>id - The id of the record to return.</li></ul></p><p>Returns:  <ul><li>success – true if the account is valid and the hold could be frozen, false if the username or password were incorrect or the hold could not be frozen.</li><li>freezeResults – a list of results for each id that was frozen.</li></ul></p><p>Sample Call:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-id">http</span>:<span class="src-comm">//catalog.douglascountylibraries.org/API/UserAPI?method=returnEContentRecord&amp;username=23025003575917&amp;password=1234&amp;id=531</span></div></li>
+</ol></div></p><p>Sample Response:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-sym">{</span><span class="src-str">&quot;result&quot;</span>:<span class="src-sym">{</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;success&quot;</span>:<span class="src-id">true</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;message&quot;</span>:<span class="src-str">&quot;The&nbsp;title&nbsp;was&nbsp;returned&nbsp;successfully.&quot;</span></div></li>
+<li><div class="src-line">&nbsp;<span class="src-sym">}}</span></div></li>
+</ol></div></p></p>
+	<ul class="tags">
+				<li><span class="field">author:</span> Mark Noble &lt;<a href="mailto:mnoble@turningleaftech.com">mnoble@turningleaftech.com</a>&gt;</li>
+			</ul>
+	
+	<div class="method-signature">
+		<span class="method-result">void</span>
+		<span class="method-name">
+			returnEContentRecord
+		</span>
+				()
+			</div>
+	
+		
+			
+	</div>
+<a name="methodvalidateAccount" id="validateAccount"><!-- --></a>
+<div class="oddrow">
+	
+	<div class="method-header">
+		<img src="../media/images/Method.png" />
+		<span class="method-title">validateAccount</span> (line <span class="line-number"><a href="../__filesource/fsource_phpDocumentor__UserAPI.php.html#a221">221</a></span>)
+	</div> 
+	
+	<!-- ========== Info from phpDoc block ========= -->
+<p class="short-description">Validate whether or not an account is valid based on the barcode and pin number provided.</p>
+<p class="description"><p>Parameters:  <ul><li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li><li>password - The pin number for the user.</li></ul></p><p>Returns JSON encoded data as follows:  <ul><li>success - false if the username or password could not be found, or the folowing user information if the account is valid.</li><li>id – The id of the user within VuFind</li><li>username, cat_username – The patron's library card number</li><li>password, cat_password – The patron's PIN number</li><li>firstname – The first name of the patron in the ILS</li><li>lastname – The last name of the patron in the ILS</li><li>email – The patron's e-mail address if set within Horizon.</li><li>college, major – not currently used</li><li>homeLocationId – the id of the patron's home libarary within VuFind.</li><li>MyLocation1Id, myLocation2Id – not currently used</li></ul></p><p>Sample Call:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-id">http</span>:<span class="src-comm">//catalog.douglascountylibraries.org/API/UserAPI?method=validateAccount&amp;username=23025003575917&amp;password=7604</span></div></li>
+</ol></div></p><p>Sample Response:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-sym">{</span><span class="src-str">&quot;result&quot;</span>:<span class="src-sym">{</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;success&quot;</span>:<span class="src-sym">{</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;id&quot;</span>:<span class="src-str">&quot;5&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;username&quot;</span>:<span class="src-str">&quot;23025003575917&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;password&quot;</span>:<span class="src-str">&quot;7604&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;firstname&quot;</span>:<span class="src-str">&quot;OS&nbsp;test&nbsp;1&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;lastname&quot;</span>:<span class="src-str">&quot;&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;email&quot;</span>:<span class="src-str">&quot;email&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;cat_username&quot;</span>:<span class="src-str">&quot;23025003575917&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;cat_password&quot;</span>:<span class="src-str">&quot;7604&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;college&quot;</span>:<span class="src-str">&quot;null&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;major&quot;</span>:<span class="src-str">&quot;null&quot;</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;homeLocationId&quot;</span>:<span class="src-id">null</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;myLocation1Id&quot;</span>:<span class="src-id">null</span><span class="src-sym">,</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-str">&quot;myLocation2Id&quot;</span>:<span class="src-id">null</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="src-sym">}</span></div></li>
+<li><div class="src-line">&nbsp;&nbsp;&nbsp;<span class="src-sym">}</span></div></li>
+<li><div class="src-line">&nbsp;<span class="src-sym">}</span></div></li>
+</ol></div></p><p>Sample Response failed login:  <div class="src-code"><ol><li><div class="src-line">&nbsp;<span class="src-sym">{</span><span class="src-str">&quot;result&quot;</span>:<span class="src-sym">{</span><span class="src-str">&quot;success&quot;</span>:<span class="src-id">false</span><span class="src-sym">}}</span></div></li>
+</ol></div></p></p>
+	<ul class="tags">
+				<li><span class="field">author:</span> Mark Noble &lt;<a href="mailto:mnoble@turningleaftech.com">mnoble@turningleaftech.com</a>&gt;</li>
+			</ul>
+	
+	<div class="method-signature">
+		<span class="method-result">void</span>
+		<span class="method-name">
+			validateAccount
+		</span>
+				()
+			</div>
+	
+		
+			
+	</div>
+						
+		</div>
+	</div>
+
+	
+	<p class="notes" id="credit">
+		Documentation generated on Wed, 25 Apr 2012 14:54:03 -0600 by <a href="http://www.phpdoc.org" target="_blank">phpDocumentor 1.4.3</a>
+	</p>
+	</div></body>
+</html>

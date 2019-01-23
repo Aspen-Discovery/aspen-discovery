@@ -1,0 +1,4 @@
+Manifest-Version: 1.0
+Class-Path: lib/postgresql-9.2-1003.jdbc4.jar lib/commons-logging-1.1.1.jar lib/ini4j-0.5.2.jar lib/log4j-1.2.15.jar lib/opencsv-2.2.jar lib/codec-1.6.jar lib/mysql-5.1.15-bin.jar lib/marc4j-pika.jar ../reindexer/reindexer.jar ../record_grouping/record_grouping.jar
+Main-Class: org.vufind.SierraExportAPIMain
+

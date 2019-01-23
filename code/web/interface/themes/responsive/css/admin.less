@@ -1,0 +1,70 @@
+
+// Keep Tables within an Admin panel section navigatable with a scroll bar
+.editor{
+  .panel-group {
+    .panel-body {
+      &>.form-group{
+        &>.controls {
+          overflow-x: auto;
+        }
+      }
+    }
+  }
+}
+
+#browseCategories{
+  tr td:nth-child(3)>select {
+    max-width: 400px;
+  }
+}
+
+// Masquerade Styling
+#masquerade-header {
+  height: @masquerade-bar-height;
+  background-color: @masquerade-background-color;
+  color:  @masquerade-color;
+}
+#masquerade-header-content {
+  padding: 5px;
+}
+//#masquerade-header-title {
+//
+//}
+//#masquerade-header-name-section {
+//
+//}
+#masquerade-header-end {
+  padding-top: 5px;
+  button {
+
+  }
+}
+.sidebar-masquerade-section {
+  background-color: @masquerade-background-color;
+  color: @masquerade-color;
+}
+// create the border of the left & right of the browser window
+body.masqueradeMode {
+  &:before, &:after {
+    content: "";
+    position: fixed;
+    background: @masquerade-background-color;
+    left: 0;
+    right: 0;
+    //height: 10px;
+  }
+  &:before {
+    top: 0;
+  }
+  &:after {
+    bottom: 0;
+  }
+  padding-top: @masquerade-bar-height;
+  border-left: 3px solid @masquerade-background-color;
+  border-right: 3px solid @masquerade-background-color;
+}
+
+.btn-masquerade {
+  .button-variant(@masquerade-button-color, @masquerade-button-bg-color, @btn-default-border);
+  font-weight: bold;
+}

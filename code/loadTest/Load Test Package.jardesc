@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="WINDOWS-1252" standalone="no"?>
+<jardesc>
+    <jar path="Douglas County Libraries/vufind/LoadTest/LoadTest.jar"/>
+    <options buildIfNeeded="true" compress="true" descriptionLocation="/LoadTest/Load Test Package.jardesc" exportErrors="true" exportWarnings="true" includeDirectoryEntries="true" overwrite="true" saveDescription="true" storeRefactorings="false" useSourceFolders="false"/>
+    <storedRefactorings deprecationInfo="true" structuralOnly="false"/>
+    <selectedProjects/>
+    <manifest generateManifest="false" mainClassHandleIdentifier="=LoadTest/src&lt;org.vufind{LoadTestMain.java[LoadTestMain" manifestLocation="/LoadTest/LoadTest Manifest" manifestVersion="1.0" reuseManifest="true" saveManifest="true" usesManifest="true">
+        <sealing sealJar="false">
+            <packagesToSeal/>
+            <packagesToUnSeal/>
+        </sealing>
+    </manifest>
+    <selectedElements exportClassFiles="false" exportJavaFiles="false" exportOutputFolder="true">
+        <folder path="/LoadTest/lib"/>
+        <javaElement handleIdentifier="=LoadTest/src"/>
+    </selectedElements>
+</jardesc>

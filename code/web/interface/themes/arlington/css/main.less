@@ -1,0 +1,115 @@
+// Arlington Main Styling Theme
+
+// Core variables and mixins
+@import (reference)  "../../responsive/css/variables.less";
+@import (reference)  "variables.less";
+
+// Always include the base .less file
+@import "../../responsive/css/responsive_base.less";
+
+.header-login-button-mixin(@arlington-blue);
+
+#header-container {
+  background: #FFFFFF;
+}
+
+#header-logo {
+  padding-top: 0;
+}
+
+// Left/Right Arrows on browse category carousel
+#browse-category-picker {
+  .jcarousel-control-prev, .jcarousel-control-next {
+    .box-shadow(none);
+  }
+  // indicator dots at bottom of browse category carousel
+  .jcarousel-pagination a {
+    &.active {
+      background: @arlington-blue;
+    }
+  }
+}
+
+#more-browse-results {
+  color: @arlington-blue;
+}
+
+.manifestation-format .btn{
+  min-width: 100%;
+}
+
+.manifestation-actions .btn {
+  background-color: lightgrey;
+  border-color: darken(lightgrey, 40%);
+  color: #333333;
+  &:hover{
+    background-color: darken(lightgrey, 20%);
+    border-color: darken(lightgrey, 30%);
+    color: white;
+  }
+}
+
+@media (max-width: @screen-xs-max) {
+  .placeholder-mixin() {
+    color: @input-color-placeholder;
+    font-size: initial; // restore text size
+  }
+  .placeholder-focus-mixin() {
+    color: transparent;
+  }
+  // new method
+  //#lookfor {
+  //  .placeholderselectors({
+  //    color: @font-gray; //
+  //    font-size: initial; // restore text size
+  //  &:focus{
+  //    color: transparent;
+  //  }
+  //  })
+  //}
+  //
+  //.placeholderselectors(@ruleset) {
+  //  // &:-ms-input-placeholder{@ruleset()}
+  //  // &::-webkit-input-placeholder{@ruleset()}
+  //  &:-moz-placeholder{@ruleset();}
+  //  &::-moz-placeholder{@ruleset();}
+  //  &::placeholder {@ruleset();}
+  //}
+
+
+
+  // old method
+  #lookfor {
+    // Overwrite default styling for the searchbox placeholder text to implement displaying it
+    &:-ms-input-placeholder{.placeholder-mixin;}
+    &::-webkit-input-placeholder{.placeholder-mixin;}
+    &:-moz-placeholder{.placeholder-mixin;}
+    &::-moz-placeholder{.placeholder-mixin;}
+    &::placeholder {.placeholder-mixin;}
+
+    // hide placeholder text on focus
+    &:focus{
+      &:-moz-placeholder{.placeholder-focus-mixin;}
+      &::-moz-placeholder{.placeholder-focus-mixin;}
+      &::-webkit-input-placeholder{.placeholder-focus-mixin;}
+      &:-ms-input-placeholder{.placeholder-focus-mixin;}
+      &::placeholder {.placeholder-focus-mixin;}
+    }
+  }
+
+  #horizontal-search-label
+  //,#basicSearchTypes.searchTypeHorizontal // This gets undone by Searches.enableSearchTypes() on ready event
+  {
+    display: none;
+  }
+
+  // TODO: these header height overrides could be added to all stylesheets
+  #header-logo {
+    max-height: 60px;
+  }
+  #header-container {
+    min-height: 0;
+    height: auto;
+  }
+
+}

@@ -1,0 +1,7 @@
+Contains configuration information for running VuFind on an individual server.
+  
+Should create a subdirectory based on the name of the server.  This can be based 
+on the IP address or the domain name, as long as it is the name used to access 
+vufind. 
+
+  

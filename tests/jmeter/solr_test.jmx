@@ -1,0 +1,825 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jmeterTestPlan version="1.2" properties="2.8" jmeter="2.13 r1665067">
+  <hashTree>
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="Test Plan" enabled="true">
+      <stringProp name="TestPlan.comments"></stringProp>
+      <boolProp name="TestPlan.functional_mode">false</boolProp>
+      <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
+      <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+        <collectionProp name="Arguments.arguments">
+          <elementProp name="loopcount" elementType="Argument">
+            <stringProp name="Argument.name">loopcount</stringProp>
+            <stringProp name="Argument.value">500</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="numUsers" elementType="Argument">
+            <stringProp name="Argument.name">numUsers</stringProp>
+            <stringProp name="Argument.value">5</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="duration" elementType="Argument">
+            <stringProp name="Argument.name">duration</stringProp>
+            <stringProp name="Argument.value">300</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="solrPort" elementType="Argument">
+            <stringProp name="Argument.name">solrPort</stringProp>
+            <stringProp name="Argument.value">8080</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+        </collectionProp>
+      </elementProp>
+      <stringProp name="TestPlan.user_define_classpath"></stringProp>
+    </TestPlan>
+    <hashTree>
+      <Arguments guiclass="ArgumentsPanel" testclass="Arguments" testname="Default Site Configuration" enabled="false">
+        <collectionProp name="Arguments.arguments">
+          <elementProp name="url" elementType="Argument">
+            <stringProp name="Argument.name">url</stringProp>
+            <stringProp name="Argument.value"></stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">URL HTTP Requests will start with.</stringProp>
+          </elementProp>
+          <elementProp name="urlshort" elementType="Argument">
+            <stringProp name="Argument.name">urlshort</stringProp>
+            <stringProp name="Argument.value"></stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">short hand name</stringProp>
+          </elementProp>
+          <elementProp name="resultsdir" elementType="Argument">
+            <stringProp name="Argument.name">resultsdir</stringProp>
+            <stringProp name="Argument.value"></stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">Directory to put</stringProp>
+          </elementProp>
+          <elementProp name="testIDsdir" elementType="Argument">
+            <stringProp name="Argument.name">testIDsdir</stringProp>
+            <stringProp name="Argument.value"></stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">Directory ID files are stored in</stringProp>
+          </elementProp>
+          <elementProp name="searchTermFileName" elementType="Argument">
+            <stringProp name="Argument.name">searchTermFileName</stringProp>
+            <stringProp name="Argument.value"></stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="ILSRecordIDFileName" elementType="Argument">
+            <stringProp name="Argument.name">ILSRecordIDFileName</stringProp>
+            <stringProp name="Argument.value"></stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="GroupedWorkIDFileName" elementType="Argument">
+            <stringProp name="Argument.name">GroupedWorkIDFileName</stringProp>
+            <stringProp name="Argument.value"></stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="OverdriveIDFileName" elementType="Argument">
+            <stringProp name="Argument.name">OverdriveIDFileName</stringProp>
+            <stringProp name="Argument.value"></stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="HooplaIDFileName" elementType="Argument">
+            <stringProp name="Argument.name">HooplaIDFileName</stringProp>
+            <stringProp name="Argument.value"></stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="LSSIDsFileName" elementType="Argument">
+            <stringProp name="Argument.name">LSSIDsFileName</stringProp>
+            <stringProp name="Argument.value"></stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="ILSLoginsFileName" elementType="Argument">
+            <stringProp name="Argument.name">ILSLoginsFileName</stringProp>
+            <stringProp name="Argument.value"></stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="SolrQueriesFileName" elementType="Argument">
+            <stringProp name="Argument.name">SolrQueriesFileName</stringProp>
+            <stringProp name="Argument.value"></stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+        </collectionProp>
+        <stringProp name="TestPlan.comments"> This contains the information needed to test a specific site. Toggle on the *one* site you wish to test against.</stringProp>
+      </Arguments>
+      <hashTree/>
+      <Arguments guiclass="ArgumentsPanel" testclass="Arguments" testname="Aspencat Test Site Configuration" enabled="false">
+        <collectionProp name="Arguments.arguments">
+          <elementProp name="url" elementType="Argument">
+            <stringProp name="Argument.name">url</stringProp>
+            <stringProp name="Argument.value">aspencat.marmot.org</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">URL HTTP Requests will start with.</stringProp>
+          </elementProp>
+          <elementProp name="urlshort" elementType="Argument">
+            <stringProp name="Argument.name">urlshort</stringProp>
+            <stringProp name="Argument.value">aspencat</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">short hand name</stringProp>
+          </elementProp>
+          <elementProp name="resultsdir" elementType="Argument">
+            <stringProp name="Argument.name">resultsdir</stringProp>
+            <stringProp name="Argument.value">C:\web\VuFind-Plus\tests\jmeter\results\aspencat_test\\${__time(YMD,Date)}\\${__time(HMS,Time)}\</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">Directory to put</stringProp>
+          </elementProp>
+          <elementProp name="testIDsdir" elementType="Argument">
+            <stringProp name="Argument.name">testIDsdir</stringProp>
+            <stringProp name="Argument.value">C:\web\VuFind-Plus\tests\jmeter\conf\aspencat\</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">Directory ID files are stored in</stringProp>
+          </elementProp>
+          <elementProp name="SolrQueriesFileName" elementType="Argument">
+            <stringProp name="Argument.name">SolrQueriesFileName</stringProp>
+            <stringProp name="Argument.value">solrQueriesUsingNashvilleSearchTermsWithAspencatQueryFields.csv</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="solrPort" elementType="Argument">
+            <stringProp name="Argument.name">solrPort</stringProp>
+            <stringProp name="Argument.value">8081</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+        </collectionProp>
+        <stringProp name="TestPlan.comments"> This contains the information needed to test a specific site. Toggle on the *one* site you wish to test against.</stringProp>
+      </Arguments>
+      <hashTree/>
+      <Arguments guiclass="ArgumentsPanel" testclass="Arguments" testname="Aspencat Production Site Configuration" enabled="false">
+        <collectionProp name="Arguments.arguments">
+          <elementProp name="url" elementType="Argument">
+            <stringProp name="Argument.name">url</stringProp>
+            <stringProp name="Argument.value">catalog.aspencat.info</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">URL HTTP Requests will start with.</stringProp>
+          </elementProp>
+          <elementProp name="urlshort" elementType="Argument">
+            <stringProp name="Argument.name">urlshort</stringProp>
+            <stringProp name="Argument.value">aspencat</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">short hand name</stringProp>
+          </elementProp>
+          <elementProp name="resultsdir" elementType="Argument">
+            <stringProp name="Argument.name">resultsdir</stringProp>
+            <stringProp name="Argument.value">C:\web\VuFind-Plus\tests\jmeter\results\aspencat_production\\${__time(YMD,Date)}\\${__time(HMS,Time)}\</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">Directory to put</stringProp>
+          </elementProp>
+          <elementProp name="testIDsdir" elementType="Argument">
+            <stringProp name="Argument.name">testIDsdir</stringProp>
+            <stringProp name="Argument.value">C:\web\VuFind-Plus\tests\jmeter\conf\aspencat</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">Directory ID files are stored in</stringProp>
+          </elementProp>
+          <elementProp name="SolrQueriesFileName" elementType="Argument">
+            <stringProp name="Argument.name">SolrQueriesFileName</stringProp>
+            <stringProp name="Argument.value">solrQueriesUsingNashvilleSearchTermsWithAspencatQueryFields.csv</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+        </collectionProp>
+        <stringProp name="TestPlan.comments"> This contains the information needed to test a specific site. Toggle on the *one* site you wish to test against.</stringProp>
+      </Arguments>
+      <hashTree/>
+      <Arguments guiclass="ArgumentsPanel" testclass="Arguments" testname="Marmot Local Site Configuration" enabled="false">
+        <collectionProp name="Arguments.arguments">
+          <elementProp name="url" elementType="Argument">
+            <stringProp name="Argument.name">url</stringProp>
+            <stringProp name="Argument.value">mesa.marmot.localhost</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">URL HTTP Requests will start with.</stringProp>
+          </elementProp>
+          <elementProp name="urlshort" elementType="Argument">
+            <stringProp name="Argument.name">urlshort</stringProp>
+            <stringProp name="Argument.value">marmot.localhost</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">short hand name</stringProp>
+          </elementProp>
+          <elementProp name="resultsdir" elementType="Argument">
+            <stringProp name="Argument.name">resultsdir</stringProp>
+            <stringProp name="Argument.value">C:\web\VuFind-Plus\tests\jmeter\results\marmot_localhost\\${__time(YMD,Date)}\\${__time(HMS,Time)}\</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">Directory to put</stringProp>
+          </elementProp>
+          <elementProp name="testIDsdir" elementType="Argument">
+            <stringProp name="Argument.name">testIDsdir</stringProp>
+            <stringProp name="Argument.value">C:\web\VuFind-Plus\tests\jmeter\conf\marmot</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">Directory ID files are stored in</stringProp>
+          </elementProp>
+          <elementProp name="SolrQueriesFileName" elementType="Argument">
+            <stringProp name="Argument.name">SolrQueriesFileName</stringProp>
+            <stringProp name="Argument.value">3000solrQueries.csv</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">this file uses mesa for scoping</stringProp>
+          </elementProp>
+          <elementProp name="solrPort" elementType="Argument">
+            <stringProp name="Argument.name">solrPort</stringProp>
+            <stringProp name="Argument.value">8080</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+        </collectionProp>
+        <stringProp name="TestPlan.comments"> This contains the information needed to test a specific site. Toggle on the *one* site you wish to test against.</stringProp>
+      </Arguments>
+      <hashTree/>
+      <Arguments guiclass="ArgumentsPanel" testclass="Arguments" testname="Marmot Test Site Configuration" enabled="true">
+        <collectionProp name="Arguments.arguments">
+          <elementProp name="url" elementType="Argument">
+            <stringProp name="Argument.name">url</stringProp>
+            <stringProp name="Argument.value">venus.marmot.org</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">URL HTTP Requests will start with.</stringProp>
+          </elementProp>
+          <elementProp name="urlshort" elementType="Argument">
+            <stringProp name="Argument.name">urlshort</stringProp>
+            <stringProp name="Argument.value">venus</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">short hand name</stringProp>
+          </elementProp>
+          <elementProp name="resultsdir" elementType="Argument">
+            <stringProp name="Argument.name">resultsdir</stringProp>
+            <stringProp name="Argument.value">C:\web\VuFind-Plus\tests\jmeter\results\marmot_test\\${__time(YMD,Date)}\\${__time(HMS,Time)}\</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">Directory to put</stringProp>
+          </elementProp>
+          <elementProp name="testIDsdir" elementType="Argument">
+            <stringProp name="Argument.name">testIDsdir</stringProp>
+            <stringProp name="Argument.value">C:\web\VuFind-Plus\tests\jmeter\conf\marmot</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">Directory ID files are stored in</stringProp>
+          </elementProp>
+          <elementProp name="SolrQueriesFileName" elementType="Argument">
+            <stringProp name="Argument.name">SolrQueriesFileName</stringProp>
+            <stringProp name="Argument.value">3000solrQueries_NoFacets.csv</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">this file uses mesa for scoping</stringProp>
+          </elementProp>
+          <elementProp name="solrPort" elementType="Argument">
+            <stringProp name="Argument.name">solrPort</stringProp>
+            <stringProp name="Argument.value">8080</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+        </collectionProp>
+        <stringProp name="TestPlan.comments"> This contains the information needed to test a specific site. Toggle on the *one* site you wish to test against.</stringProp>
+      </Arguments>
+      <hashTree/>
+      <Arguments guiclass="ArgumentsPanel" testclass="Arguments" testname="Marmot Production Site Configuration" enabled="false">
+        <collectionProp name="Arguments.arguments">
+          <elementProp name="url" elementType="Argument">
+            <stringProp name="Argument.name">url</stringProp>
+            <stringProp name="Argument.value">mesa.marmot.org</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">URL HTTP Requests will start with.</stringProp>
+          </elementProp>
+          <elementProp name="urlshort" elementType="Argument">
+            <stringProp name="Argument.name">urlshort</stringProp>
+            <stringProp name="Argument.value">mesa</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">short hand name</stringProp>
+          </elementProp>
+          <elementProp name="resultsdir" elementType="Argument">
+            <stringProp name="Argument.name">resultsdir</stringProp>
+            <stringProp name="Argument.value">C:\web\VuFind-Plus\tests\jmeter\results\marmot_production\\${__time(YMD,Date)}\\${__time(HMS,Time)}\</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">Directory to put</stringProp>
+          </elementProp>
+          <elementProp name="testIDsdir" elementType="Argument">
+            <stringProp name="Argument.name">testIDsdir</stringProp>
+            <stringProp name="Argument.value">C:\web\VuFind-Plus\tests\jmeter\conf\marmot</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">Directory ID files are stored in</stringProp>
+          </elementProp>
+          <elementProp name="SolrQueriesFileName" elementType="Argument">
+            <stringProp name="Argument.name">SolrQueriesFileName</stringProp>
+            <stringProp name="Argument.value">solrQueriesUsingNashvilleSearchTerms.csv</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">this file uses mesa for scoping</stringProp>
+          </elementProp>
+        </collectionProp>
+        <stringProp name="TestPlan.comments"> This contains the information needed to test a specific site. Toggle on the *one* site you wish to test against.</stringProp>
+      </Arguments>
+      <hashTree/>
+      <Arguments guiclass="ArgumentsPanel" testclass="Arguments" testname="Anythink Production Site Configuration" enabled="false">
+        <collectionProp name="Arguments.arguments">
+          <elementProp name="url" elementType="Argument">
+            <stringProp name="Argument.name">url</stringProp>
+            <stringProp name="Argument.value">catalog.anythinklibraries.org</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">URL HTTP Requests will start with.</stringProp>
+          </elementProp>
+          <elementProp name="urlshort" elementType="Argument">
+            <stringProp name="Argument.name">urlshort</stringProp>
+            <stringProp name="Argument.value">anythink</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">short hand name</stringProp>
+          </elementProp>
+          <elementProp name="resultsdir" elementType="Argument">
+            <stringProp name="Argument.name">resultsdir</stringProp>
+            <stringProp name="Argument.value">C:\web\VuFind-Plus\tests\jmeter\results\anythink\\${__time(YMD,Date)}\\${__time(HMS,Time)}\</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">Directory to put</stringProp>
+          </elementProp>
+          <elementProp name="testIDsdir" elementType="Argument">
+            <stringProp name="Argument.name">testIDsdir</stringProp>
+            <stringProp name="Argument.value">C:\web\VuFind-Plus\tests\jmeter\conf\anythink_production</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">Directory ID files are stored in</stringProp>
+          </elementProp>
+        </collectionProp>
+        <stringProp name="TestPlan.comments"> This contains the information needed to test a specific site. Toggle on the *one* site you wish to test against.</stringProp>
+      </Arguments>
+      <hashTree/>
+      <Arguments guiclass="ArgumentsPanel" testclass="Arguments" testname="Nashville Production Site Configuration" enabled="false">
+        <collectionProp name="Arguments.arguments">
+          <elementProp name="url" elementType="Argument">
+            <stringProp name="Argument.name">url</stringProp>
+            <stringProp name="Argument.value">catalog.library.nashville.org</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">URL HTTP Requests will start with.</stringProp>
+          </elementProp>
+          <elementProp name="urlshort" elementType="Argument">
+            <stringProp name="Argument.name">urlshort</stringProp>
+            <stringProp name="Argument.value">nashville</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">short hand name</stringProp>
+          </elementProp>
+          <elementProp name="resultsdir" elementType="Argument">
+            <stringProp name="Argument.name">resultsdir</stringProp>
+            <stringProp name="Argument.value">C:\web\VuFind-Plus\tests\jmeter\conf\nashville\\${__time(YMD,Date)}\\${__time(HMS,Time)}\</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">Directory to put</stringProp>
+          </elementProp>
+          <elementProp name="testIDsdir" elementType="Argument">
+            <stringProp name="Argument.name">testIDsdir</stringProp>
+            <stringProp name="Argument.value">C:\web\VuFind-Plus\tests\jmeter\results\nashville_production</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">Directory ID files are stored in</stringProp>
+          </elementProp>
+        </collectionProp>
+        <stringProp name="TestPlan.comments"> This contains the information needed to test a specific site. Toggle on the *one* site you wish to test against.</stringProp>
+      </Arguments>
+      <hashTree/>
+      <Arguments guiclass="ArgumentsPanel" testclass="Arguments" testname="Nashville Test Site Configuration" enabled="false">
+        <collectionProp name="Arguments.arguments">
+          <elementProp name="url" elementType="Argument">
+            <stringProp name="Argument.name">url</stringProp>
+            <stringProp name="Argument.value">pika.library.nashville.org</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">URL HTTP Requests will start with.</stringProp>
+          </elementProp>
+          <elementProp name="urlshort" elementType="Argument">
+            <stringProp name="Argument.name">urlshort</stringProp>
+            <stringProp name="Argument.value">nashville-pika</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">short hand name</stringProp>
+          </elementProp>
+          <elementProp name="resultsdir" elementType="Argument">
+            <stringProp name="Argument.name">resultsdir</stringProp>
+            <stringProp name="Argument.value">C:\web\VuFind-Plus\tests\jmeter\conf\nashville\\${__time(YMD,Date)}\\${__time(HMS,Time)}\</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">Directory to put</stringProp>
+          </elementProp>
+          <elementProp name="testIDsdir" elementType="Argument">
+            <stringProp name="Argument.name">testIDsdir</stringProp>
+            <stringProp name="Argument.value">C:\web\VuFind-Plus\tests\jmeter\results\nashville_test</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">Directory ID files are stored in</stringProp>
+          </elementProp>
+        </collectionProp>
+        <stringProp name="TestPlan.comments"> This contains the information needed to test a specific site. Toggle on the *one* site you wish to test against.</stringProp>
+      </Arguments>
+      <hashTree/>
+      <Arguments guiclass="ArgumentsPanel" testclass="Arguments" testname="Flatirons Production Site Configuration" enabled="false">
+        <collectionProp name="Arguments.arguments">
+          <elementProp name="url" elementType="Argument">
+            <stringProp name="Argument.name">url</stringProp>
+            <stringProp name="Argument.value">flc.flatironslibrary.org</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">URL HTTP Requests will start with.</stringProp>
+          </elementProp>
+          <elementProp name="urlshort" elementType="Argument">
+            <stringProp name="Argument.name">urlshort</stringProp>
+            <stringProp name="Argument.value">flatirons</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">short hand name</stringProp>
+          </elementProp>
+          <elementProp name="resultsdir" elementType="Argument">
+            <stringProp name="Argument.name">resultsdir</stringProp>
+            <stringProp name="Argument.value">C:\web\VuFind-Plus\tests\jmeter\conf\flatirons\\${__time(YMD,Date)}\\${__time(HMS,Time)}\</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">Directory to put</stringProp>
+          </elementProp>
+          <elementProp name="testIDsdir" elementType="Argument">
+            <stringProp name="Argument.name">testIDsdir</stringProp>
+            <stringProp name="Argument.value">C:\web\VuFind-Plus\tests\jmeter\results\flatirons_production</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">Directory ID files are stored in</stringProp>
+          </elementProp>
+        </collectionProp>
+        <stringProp name="TestPlan.comments"> This contains the information needed to test a specific site. Toggle on the *one* site you wish to test against.</stringProp>
+      </Arguments>
+      <hashTree/>
+      <Arguments guiclass="ArgumentsPanel" testclass="Arguments" testname="Wake County Production Site Configuration" enabled="false">
+        <collectionProp name="Arguments.arguments">
+          <elementProp name="url" elementType="Argument">
+            <stringProp name="Argument.name">url</stringProp>
+            <stringProp name="Argument.value">catalog.wakegov.com</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">URL HTTP Requests will start with.</stringProp>
+          </elementProp>
+          <elementProp name="urlshort" elementType="Argument">
+            <stringProp name="Argument.name">urlshort</stringProp>
+            <stringProp name="Argument.value">wake</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">short hand name</stringProp>
+          </elementProp>
+          <elementProp name="resultsdir" elementType="Argument">
+            <stringProp name="Argument.name">resultsdir</stringProp>
+            <stringProp name="Argument.value">C:\web\VuFind-Plus\tests\jmeter\conf\wake_county\\${__time(YMD,Date)}\\${__time(HMS,Time)}\</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">Directory to put</stringProp>
+          </elementProp>
+          <elementProp name="testIDsdir" elementType="Argument">
+            <stringProp name="Argument.name">testIDsdir</stringProp>
+            <stringProp name="Argument.value">C:\web\VuFind-Plus\tests\jmeter\results\wake_county_production</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">Directory ID files are stored in</stringProp>
+          </elementProp>
+        </collectionProp>
+        <stringProp name="TestPlan.comments"> This contains the information needed to test a specific site. Toggle on the *one* site you wish to test against.</stringProp>
+      </Arguments>
+      <hashTree/>
+      <Arguments guiclass="ArgumentsPanel" testclass="Arguments" testname="Wake County Test Site Configuration" enabled="false">
+        <collectionProp name="Arguments.arguments">
+          <elementProp name="url" elementType="Argument">
+            <stringProp name="Argument.name">url</stringProp>
+            <stringProp name="Argument.value">testvufind.co.wake.nc.us</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">URL HTTP Requests will start with.</stringProp>
+          </elementProp>
+          <elementProp name="urlshort" elementType="Argument">
+            <stringProp name="Argument.name">urlshort</stringProp>
+            <stringProp name="Argument.value">wake-test</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">short hand name</stringProp>
+          </elementProp>
+          <elementProp name="resultsdir" elementType="Argument">
+            <stringProp name="Argument.name">resultsdir</stringProp>
+            <stringProp name="Argument.value">C:\web\VuFind-Plus\tests\jmeter\conf\wake_county\\${__time(YMD,Date)}\\${__time(HMS,Time)}\</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">Directory to put</stringProp>
+          </elementProp>
+          <elementProp name="testIDsdir" elementType="Argument">
+            <stringProp name="Argument.name">testIDsdir</stringProp>
+            <stringProp name="Argument.value">C:\web\VuFind-Plus\tests\jmeter\results\wake_county_production</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+            <stringProp name="Argument.desc">Directory ID files are stored in</stringProp>
+          </elementProp>
+        </collectionProp>
+        <stringProp name="TestPlan.comments"> This contains the information needed to test a specific site. Toggle on the *one* site you wish to test against.</stringProp>
+      </Arguments>
+      <hashTree/>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname=" Main Thread (Set Number of Times or Duration)" enabled="true">
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <intProp name="LoopController.loops">-1</intProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">${numUsers}</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">1</stringProp>
+        <longProp name="ThreadGroup.start_time">1443016800000</longProp>
+        <longProp name="ThreadGroup.end_time">1443610800000</longProp>
+        <boolProp name="ThreadGroup.scheduler">true</boolProp>
+        <stringProp name="ThreadGroup.duration">${duration}</stringProp>
+        <stringProp name="ThreadGroup.delay"></stringProp>
+      </ThreadGroup>
+      <hashTree>
+        <ConfigTestElement guiclass="HttpDefaultsGui" testclass="ConfigTestElement" testname="HTTP Request Defaults" enabled="true">
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+            <collectionProp name="Arguments.arguments"/>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">${url}</stringProp>
+          <stringProp name="HTTPSampler.port"></stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          <stringProp name="HTTPSampler.protocol"></stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path"></stringProp>
+          <stringProp name="HTTPSampler.concurrentPool">4</stringProp>
+        </ConfigTestElement>
+        <hashTree/>
+        <CookieManager guiclass="CookiePanel" testclass="CookieManager" testname="HTTP Cookie Manager" enabled="true">
+          <collectionProp name="CookieManager.cookies"/>
+          <boolProp name="CookieManager.clearEachIteration">true</boolProp>
+        </CookieManager>
+        <hashTree/>
+        <GenericController guiclass="LogicControllerGui" testclass="GenericController" testname="Solr Engine" enabled="true"/>
+        <hashTree>
+          <Arguments guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="SolrServer" elementType="Argument">
+                <stringProp name="Argument.name">SolrServer</stringProp>
+                <stringProp name="Argument.value">${url}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="SolrPort" elementType="Argument">
+                <stringProp name="Argument.name">SolrPort</stringProp>
+                <stringProp name="Argument.value">${solrPort}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </Arguments>
+          <hashTree/>
+          <CSVDataSet guiclass="TestBeanGUI" testclass="CSVDataSet" testname="CSV Data Set Config" enabled="true">
+            <stringProp name="filename">${testIDsdir}\\${SolrQueriesFileName}</stringProp>
+            <stringProp name="fileEncoding"></stringProp>
+            <stringProp name="variableNames">fullSolrURL</stringProp>
+            <stringProp name="delimiter">\n</stringProp>
+            <boolProp name="quotedData">true</boolProp>
+            <boolProp name="recycle">true</boolProp>
+            <boolProp name="stopThread">false</boolProp>
+            <stringProp name="shareMode">shareMode.all</stringProp>
+          </CSVDataSet>
+          <hashTree/>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Solr Query" enabled="true">
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
+              <collectionProp name="Arguments.arguments"/>
+            </elementProp>
+            <stringProp name="HTTPSampler.domain">${SolrServer}</stringProp>
+            <stringProp name="HTTPSampler.port">${SolrPort}</stringProp>
+            <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+            <stringProp name="HTTPSampler.response_timeout">5000</stringProp>
+            <stringProp name="HTTPSampler.protocol">http</stringProp>
+            <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+            <stringProp name="HTTPSampler.path">${fullSolrURL}</stringProp>
+            <stringProp name="HTTPSampler.method">GET</stringProp>
+            <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+            <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+            <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+            <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+            <boolProp name="HTTPSampler.monitor">false</boolProp>
+            <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+          </HTTPSamplerProxy>
+          <hashTree/>
+          <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="false">
+            <boolProp name="ResultCollector.error_logging">false</boolProp>
+            <objProp>
+              <name>saveConfig</name>
+              <value class="SampleSaveConfiguration">
+                <time>true</time>
+                <latency>true</latency>
+                <timestamp>true</timestamp>
+                <success>true</success>
+                <label>true</label>
+                <code>true</code>
+                <message>true</message>
+                <threadName>true</threadName>
+                <dataType>true</dataType>
+                <encoding>false</encoding>
+                <assertions>true</assertions>
+                <subresults>true</subresults>
+                <responseData>false</responseData>
+                <samplerData>false</samplerData>
+                <xml>false</xml>
+                <fieldNames>false</fieldNames>
+                <responseHeaders>false</responseHeaders>
+                <requestHeaders>false</requestHeaders>
+                <responseDataOnError>false</responseDataOnError>
+                <saveAssertionResultsFailureMessage>false</saveAssertionResultsFailureMessage>
+                <assertionsResultsToSave>0</assertionsResultsToSave>
+                <bytes>true</bytes>
+                <threadCounts>true</threadCounts>
+              </value>
+            </objProp>
+            <stringProp name="filename"></stringProp>
+          </ResultCollector>
+          <hashTree/>
+          <BSFAssertion guiclass="TestBeanGUI" testclass="BSFAssertion" testname="Valid JSON Assertion" enabled="true">
+            <stringProp name="filename"></stringProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="script">try {
+   eval(&apos;var response = &apos; + prev.getResponseDataAsString());
+//   if (!response.success) {
+//      prev.setSuccessful(false);
+//      prev.setResponseMessage(response.message);
+//   }
+} catch(e) {
+      prev.setSuccessful(false);
+      prev.setResponseMessage(&quot;Invalid JSON.&quot;);
+}</stringProp>
+            <stringProp name="scriptLanguage">javascript</stringProp>
+          </BSFAssertion>
+          <hashTree/>
+          <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Constant Timer" enabled="true">
+            <stringProp name="ConstantTimer.delay">250</stringProp>
+          </ConstantTimer>
+          <hashTree/>
+        </hashTree>
+        <ResultCollector guiclass="SummaryReport" testclass="ResultCollector" testname="Summary Report" enabled="true">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>false</subresults>
+              <responseData>true</responseData>
+              <samplerData>false</samplerData>
+              <xml>true</xml>
+              <fieldNames>true</fieldNames>
+              <responseHeaders>true</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>false</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <url>true</url>
+              <threadCounts>true</threadCounts>
+              <idleTime>true</idleTime>
+              <connectTime>true</connectTime>
+            </value>
+          </objProp>
+          <objProp>
+            <name></name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>false</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>false</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <threadCounts>true</threadCounts>
+            </value>
+          </objProp>
+          <stringProp name="filename">${resultsdir}${urlshort} All Active Tests Summary Report.csv</stringProp>
+        </ResultCollector>
+        <hashTree/>
+        <ResultCollector guiclass="RespTimeGraphVisualizer" testclass="ResultCollector" testname="Response Time Graph" enabled="true">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>false</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>false</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <threadCounts>true</threadCounts>
+            </value>
+          </objProp>
+          <objProp>
+            <name></name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>false</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>false</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <threadCounts>true</threadCounts>
+            </value>
+          </objProp>
+          <stringProp name="filename"></stringProp>
+          <stringProp name="RespTimeGraph.interval">250</stringProp>
+        </ResultCollector>
+        <hashTree/>
+        <kg.apc.jmeter.vizualizers.CorrectedResultCollector guiclass="kg.apc.jmeter.vizualizers.ResponseTimesOverTimeGui" testclass="kg.apc.jmeter.vizualizers.CorrectedResultCollector" testname="jp@gc - Response Times Over Time" enabled="true">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>false</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>false</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <threadCounts>true</threadCounts>
+            </value>
+          </objProp>
+          <stringProp name="filename"></stringProp>
+          <longProp name="interval_grouping">500</longProp>
+          <boolProp name="graph_aggregated">false</boolProp>
+          <stringProp name="include_sample_labels"></stringProp>
+          <stringProp name="exclude_sample_labels"></stringProp>
+          <stringProp name="start_offset"></stringProp>
+          <stringProp name="end_offset"></stringProp>
+          <boolProp name="include_checkbox_state">false</boolProp>
+          <boolProp name="exclude_checkbox_state">false</boolProp>
+        </kg.apc.jmeter.vizualizers.CorrectedResultCollector>
+        <hashTree/>
+        <kg.apc.jmeter.vizualizers.CorrectedResultCollector guiclass="kg.apc.jmeter.vizualizers.TransactionsPerSecondGui" testclass="kg.apc.jmeter.vizualizers.CorrectedResultCollector" testname="jp@gc - Transactions per Second" enabled="true">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>false</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>false</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <threadCounts>true</threadCounts>
+            </value>
+          </objProp>
+          <stringProp name="filename"></stringProp>
+          <longProp name="interval_grouping">1000</longProp>
+          <boolProp name="graph_aggregated">false</boolProp>
+          <stringProp name="include_sample_labels"></stringProp>
+          <stringProp name="exclude_sample_labels"></stringProp>
+          <stringProp name="start_offset"></stringProp>
+          <stringProp name="end_offset"></stringProp>
+          <boolProp name="include_checkbox_state">false</boolProp>
+          <boolProp name="exclude_checkbox_state">false</boolProp>
+        </kg.apc.jmeter.vizualizers.CorrectedResultCollector>
+        <hashTree/>
+      </hashTree>
+    </hashTree>
+  </hashTree>
+</jmeterTestPlan>

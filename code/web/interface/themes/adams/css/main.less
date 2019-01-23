@@ -1,0 +1,65 @@
+// Core variables and mixins
+@import (reference)  "../../responsive/css/variables.less";
+@import (reference)  "variables.less";
+
+// Always include the base .less file
+@import "../../responsive/css/responsive_base.less";
+
+#header-container{
+  background: none;
+  //border-bottom: 12px solid @header-bottom-border-color;
+//  @media (min-width: @screen-sm-min){
+//    background-image: url('/interface/themes/adams/images/header_background.jpg');
+//  }
+}
+
+//.header-login-button-mixin;
+.header-login-button-mixin(rgba(51,51,51,0.4), #fff, 0);
+
+.header-button {
+  line-height: 30px !important;
+}
+
+
+#header_black{
+  background: black;
+  border: 5px solid black;
+  width: 100%;
+}
+#header_library{
+  line-height: 21px;
+  background: linear-gradient(#007A53, #014731);
+  padding: 20px;
+  width: 100%;
+  margin: 0;
+  height: 64px;
+}
+
+//#header_library2 {
+//  float: right;
+//  padding-right: 45px;
+//}
+
+@import url('https://fonts.googleapis.com/css?family=Special+Elite');
+
+.nielsenlibrarytxt {
+  &,&:visited {
+    color: #ffffff;
+  }
+  &:hover, &:active,&:focus {
+    color: black;
+  }
+  height: auto;
+  font-family: 'Special Elite', serif ;
+  font-size: 2.5em;
+  font-variant: small-caps;
+  margin: .25em 0 .35em;
+  text-decoration: none;
+}
+
+#horizontal-search-box {
+  background-color: #006648;
+  background: -webkit-linear-gradient(top,#006648,#004d36);
+  background: linear-gradient(to bottom,#006648,#004d36);
+  padding: 15px 0;
+}

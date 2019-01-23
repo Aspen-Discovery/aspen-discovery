@@ -1,0 +1,366 @@
+//@import (reference) "bootstrap/less/variables.less";
+@import (reference) "variables.less";
+// **
+// * Additional styling specific to the results list.
+// *
+// * If a rule is used as part of both a record and the results list it should be defined in record.less
+// **
+
+.result{
+  border-bottom: 2px solid #d5d6da;
+  padding: 10px 0 15px;
+  margin-left: 5px;
+  margin-right: 5px;
+  font-size: 12px;
+}
+.result-value-bold{
+  font-weight: bold;
+}
+.result-label{
+  font-weight: bold;
+  color: #44484a;
+}
+#formatCategories{
+  padding-top: 3px;
+}
+#availabilityControlContainer {
+  border-bottom: 3px solid #d5d6da;
+  padding-bottom: @padding-base-vertical;
+}
+#wikipedia_placeholder {
+  #availabilityControlContainer();
+  margin-bottom: @padding-large-vertical;
+  display: none;
+}
+.top-facet{
+ margin-bottom: 10px;
+}
+.facetCol{
+  display: inline-block;
+  padding: 15px;
+  width: 120px;
+  vertical-align: top;
+}
+.facetValue {
+  padding: 0 0 0 30px;
+  color: #888888;
+  font-size: small;
+  a {
+    color: #888888;
+  }
+  &:first-of-type {
+    margin-top: 3px;
+  }
+  &:last-of-type {
+    margin-bottom: 3px;
+  }
+}
+.facet-form{
+  margin: 5px 30px;
+}
+.sidebar-label{
+  text-align: center;
+  background-color: @sidebar-label-background-color;
+  //background: linear-gradient(to bottom, @sidebar-label-background-color, #3d4244); //TODO find precent darken for 2nd color and then change to a darken function
+  background: linear-gradient(to bottom, @sidebar-label-background-color, darken(desaturate(spin(@sidebar-label-background-color, -42.8571), 5.0248), 23.5294)); //TODO find precent darken for 2nd color and then change to a darken function
+  color: @sidebar-label-color;
+  padding: 3px 0;
+  margin-top: 20px;
+}
+
+// The html tag also has .sidebar-label class so this is redundant
+//#narrow-search-label{
+//  text-align: center;
+//  background-color: #7c7c7d;
+//  background: linear-gradient(to bottom, #7c7c7d, #3d4244);
+//  color: #fff;
+//  padding: 3px 0;
+//  margin-top: 20px;
+//}
+
+.facetTitle, .exploreMoreTitle{
+  background-color: #e8e8e8;
+  background: linear-gradient(to bottom, #e8e8e8, #d7d7d7);
+  color: #555555;
+  text-shadow: 1px 1px #fcfcfc;
+  padding: 8px 30px 6px 15px;
+  border-top: 1px solid #f4f4f4;
+  border-bottom: 1px solid #adadad;
+}
+
+.formatCategoryLabel {
+  vertical-align: central; // center not valid, set to central. plb 5-11-2015
+  color: #8d929a;
+  margin-top: 3px;
+  a {
+    color: #8d929a;
+  }
+}
+.top-facet{
+  @media print{
+    display: none;
+  }
+}
+
+// duplicate of .sidebar-label; add class to html tag instead
+//#results-sort-label{
+//  text-align: center;
+//  background-color: #7c7c7d;
+//  background: linear-gradient(to bottom, #7c7c7d, #3d4244);
+//  color: #fff;
+//  padding: 3px 0;
+//  margin-top: 20px;
+//  font-size: 14px;
+//}
+#results-sort{
+  width: 80%;
+  margin: 5px 10%;
+}
+.result-head{
+  font-size: smaller;
+  color: #0d8ec6;
+  #selected-browse-label{
+    .gray-line-mixin;
+  }
+
+}
+#replacement-search-info{
+  font-size: 16px;
+  font-style: italic;
+}
+#original-search-info{
+  font-size: 12px;
+}
+.replacement-search-info-text{
+  color: #888888;
+  font-style: normal;
+}
+.result-title{
+  font-weight: bold;
+  font-size: 18px;
+}
+.result-index{
+  font-size: 18px;
+}
+.result-tools-horizontal{
+  margin-top: 6px;
+  //margin-left: 30px; // disabled for search results. If needed elsewhere create a more specific rule. plb 1-28-2016
+}
+.result-tools-horizontal .btn{
+  background-color: #909090;
+  background: linear-gradient(to bottom, #909090, #686b6c);
+  color: #fff;
+}
+
+.gray-line-mixin() {
+  background: linear-gradient(to bottom, @content-bg, @content-bg 44%, #d5d6da 45%, #d5d6da 55%, @content-bg 56%);
+}
+
+.results-covers{
+  padding-top: @padding-base-vertical;
+  margin-top: @padding-base-vertical;
+  border-bottom: 1px solid #d5d6da;
+}
+.related-manifestations{
+  margin-top: 3px;
+}
+.manifestation-toggle{
+  display: inline-block;
+  background-color: #777272;
+  padding: 3px;
+  color: #fff;
+  font-weight: bold;
+  width:18px;
+  height: 18px;
+  text-align: center;
+  line-height: 14px;
+}
+.manifestation-toggle-placeholder{
+  display: inline-block;
+  padding: 3px;
+  width:20px;
+  height: 18px;
+}
+.manifestation-toggle{
+  content: "-";
+}
+.manifestation-toggle.collapsed{
+  content: "+";
+}
+.related-manifestation{
+  padding-top: 4px;
+  padding-bottom: 4px;
+  border-bottom: 1px dotted #d3d3d3;
+}
+.related-manifestations-header{
+  border-bottom: 1px solid #d3d3d3;
+}
+// Make Choose a Format Label Larger
+.related-manifestations-label {
+  font-size:10pt;
+}
+.manifestation-actions .btn-default{
+  background-color: #088ec6;
+  color: #fff;
+}
+.related-manifestations{
+  margin-bottom: 5px;
+}
+.manifestation-format{
+  font-size:13px;
+  font-weight: bold;
+}
+.related-manifestation-shelf-status{
+   font-size: 13px;
+   font-weight: bold;
+ }
+.related-manifestation-shelf-status.available{
+  color: green;
+}
+.related-manifestation-shelf-status.checked_out{
+  color: red;
+}
+.related-manifestation-shelf-status.availableOther{
+  color: #BB0099;
+}
+.related_record_status{
+  font-size: 13px;
+  font-weight: bold;
+}
+.related_record_status.available{
+  color: green;
+  font-size: 14px;
+}
+.related_record_status.checked_out{
+  color: red;
+}
+.related_record_status.availableOther{
+  color: red;
+}
+.itemSummaryTable tr.available{
+  color: green;
+  font-weight: bold;
+}
+.itemSummary{
+  font-size: 12px;
+  text-indent: -10px;
+  padding-left: 10px;
+}
+.moreFacetPopup{
+  -webkit-column-gap:   35px;
+  -moz-column-gap:      35px;
+  column-gap:           35px;
+  padding-left: 20px;
+  text-indent: -15px;
+  @media(min-width: 0){
+    -webkit-column-count: 1;
+    -moz-column-count:    1;
+    column-count:         1;
+  }
+  @media(min-width: @screen-sm-min){
+    -webkit-column-count: 1;
+    -moz-column-count:    1;
+    column-count:         1;
+  }
+  @media(min-width: @screen-md-min){
+    -webkit-column-count: 2;
+    -moz-column-count:    2;
+    column-count:         2;
+  }
+}
+.highlight{
+  font-weight: bolder;
+  background-color: lemonchiffon;
+}
+
+// Description & View All Formats buttons in xs views
+.view-xs-button {
+  .coversColumn & {
+    margin-top: @padding-small-vertical;
+  }
+  margin-bottom: @padding-small-vertical;
+}
+
+// Special Rules for very narrow views
+@media (max-width: 400px) {
+  .coversColumn {
+    // make cover fit below in column
+    padding-left: 0;
+    padding-right: 0;
+  }
+  #availabilityControl button {
+    .btn-sm();
+  }
+  //.title-rating {
+  //  display: none;
+  //}
+}
+
+//// Hide Formats label when shown in modal pop-up
+//.modal .related-manifestations-header {
+//  display: none;
+//}
+
+.search-results-navigation {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items:center;
+  .previous {
+    flex-grow: 1;
+    cursor: pointer;
+    white-space: nowrap;
+    text-align: right
+  }
+  .return {
+    flex-grow: 3;
+    white-space: normal;
+    text-align: center;
+    padding-left: 2px;
+    padding-right: 2px;
+  }
+  .next {
+    white-space: nowrap;
+    cursor: pointer;
+    flex-grow: 1;
+  }
+}
+
+.yearbox{
+  padding: 3px 6px;
+}
+
+// Combined Results/Bento Box Search
+.combined-results-section {
+  .related-manifestation {
+    border-bottom: none;
+  }
+  width: 100%;
+  display: inline-block;
+  padding: 2px;
+  padding-bottom: 20px;
+  border-top: 5px solid @menu-bar-background-color;
+  margin-top: 15px;
+
+}
+.combined-results-section-title {
+  font-weight: bold;
+  margin-top: 10px;
+  margin-bottom: 15px;
+  float:left;
+}
+.combined-results-button{
+  float:right;
+  margin-top: 4px;
+  background-color: @menu-bar-background-color;
+	border-color: @menu-bar-background-color;
+}
+//@media (min-width: @screen-md-min) {
+//  //#combined-results-container {
+//  //  column-count: 2;
+//  //  column-gap: 15px;
+//  //}
+//  .combined-results-section {
+//    page-break-inside: avoid;
+//  }
+//}

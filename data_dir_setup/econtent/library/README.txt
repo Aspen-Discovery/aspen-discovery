@@ -1,0 +1,1 @@
+Location where eContent files (epub and pdf) will be stored for online reading and for non-drm files to be transferred to the user

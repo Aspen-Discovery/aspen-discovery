@@ -1,0 +1,60 @@
+// Core variables and mixins
+@import (reference) "../../responsive/css/variables.less";
+@import (reference) "variables.less";
+
+// Always include the base .less file
+@import "../../responsive/css/responsive_base.less";
+
+.header-login-button-mixin(#fff);
+
+.header-button{
+  color: @redrocks-red !important;
+  border: 1px solid @redrocks-red;
+}
+
+#header-container {
+  border-bottom-width: 2px;
+}
+
+// Banner for larger devices
+@media (min-width: 1000px) {
+  #header-container {
+    background-image: url('/interface/themes/aspencat/images/redrocks_header_background.png');
+  }
+  #header-logo {
+    display: none;
+  }
+}
+// Logo for mobile-phone sized devices */
+@media (max-width: 1000px) {
+  #header-container {
+    background-image: none;
+    background-color: #FFF;
+  }
+  #header-logo {
+    display: block;
+  }
+
+}
+
+#vertical-menu-bar {
+  .menu-bar-option {
+    &.menu-icon-selected {
+      .menu-bar-label {
+        //color: #666; // matches invert image below
+        color: @menu-bar-selected-color;
+        //TODO: This rule should be added to layout.less, line ~237
+      }
+      img {
+        filter: invert(60%);
+      }
+    }
+  }
+}
+#horizontal-menu-bar-container {
+  .menu-icon-selected {
+    img {
+      filter: invert(60%);
+    }
+  }
+}

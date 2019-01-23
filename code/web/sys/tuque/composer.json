@@ -1,0 +1,11 @@
+{
+  "name": "islandora/tuque",
+  "description": "A PHP API for connecting to the Fedora Commons repository software.",
+  "homepage": "http://islandora.ca",
+  "license": "GPL-2.0+",
+  "require": {
+    "php": ">=5.3.0",
+    "lib-curl": "*",
+    "lib-xml": "*"
+  }
+}

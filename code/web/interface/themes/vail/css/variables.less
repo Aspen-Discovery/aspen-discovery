@@ -1,0 +1,75 @@
+//Variables Customizations for Vail theme
+
+// official logo colors from Vail Graphical Standards
+
+@vail_logo_blue  : #2fa7df; // Pantone Process Cyan C
+@vail_logo_green : #54B948; // Patone 361
+@vail_logo_black : #000000; // Black
+@vail_logo_white : #ffffff; // white
+
+@vail_dark_blue : #336699; // from vail library webpage header, http://vail.colibraries.org/
+
+@header-top-color: @vail_logo_white; //Top color for background gradient in header
+@header-middle-color: @vail_logo_white; //middle color for background gradient in header @80% of header height from bottom
+@header-bottom-color: @vail_logo_white; //Bottom color for background gradient in header
+
+//@header-buttons-background-color : rgba(51,51,51,0.6); // original default
+//@header-buttons-background-color : fade(@vail_logo_white, 60%);
+//@header-buttons-background-color : fade(darken(@vail_logo_white, 10%), 60%);
+//@header-buttons-background-color : fade(darken(@vail_logo_white, 10%), 40%);
+@header-buttons-background-color : fade(darken(@vail_logo_white, 10%), 30%);
+
+//@header-bottom-border-color: @vail_logo_black;
+@header-bottom-border-color: @vail_logo_green;
+
+@footer-top-border-color: @vail_logo_black;
+@header-height: 150px; // matched to header background image
+
+@header_image : url('/interface/themes/vail/images/header_background.png');
+//@header_image : url('/interface/themes/vail/images/DSC_4218 _scaled_1200only.png'); // unscaled vertically.
+//@header_image : url('/interface/themes/vail/images/header_background_fangled.png');
+
+
+// vail dark blue
+@home-search-top-color: @vail_dark_blue; //Top color for background gradient in header
+@home-search-bottom-color: lighten(@vail_dark_blue, 25%);
+
+//original category option, based on logo blue
+//@category1MainColor: @vail_logo_blue;
+//@categoryLineColor: @vail_logo_green;
+//@categoryLineShadow: darken(@vail_logo_green,20%);
+
+//category alternative, based on wail webpage dark blue
+@category1MainColor: @vail_dark_blue;
+@categoryLineColor: @vail_logo_green;
+@categoryLineShadow: darken(@vail_logo_green,20%);
+
+//@selectedCategoryBorderColor: #63B200;
+@selectedCategoryBorderColor: @categoryLineColor; // makes outline more subtle
+
+// Selected Category color to give a highlighted appearance
+@selectedCategoryColor: lighten(@category1MainColor, 14%); //softer touch
+
+// set all browse category colors to the first color to remove lightening of successive categories. plv 9-17-2014
+@category2MainColor: @category1MainColor;
+@category3MainColor: @category1MainColor;
+@category4MainColor: @category1MainColor;
+@category5MainColor: @category1MainColor;
+@category6MainColor: @category1MainColor;
+@category7MainColor: @category1MainColor;
+@category8MainColor: @category1MainColor;
+@category9MainColor: @category1MainColor;
+
+////original category option, based on logo green, white bar
+//@category1MainColor: @vail_logo_green;
+//@categoryLineColor: @vail_logo_white;
+//@categoryLineShadow: darken(@vail_logo_white,20%);
+
+////original category option, based on logo green, white bar
+//@category1MainColor: @vail_logo_green;
+//@categoryLineColor: @vail_logo_blue;
+//@categoryLineShadow: darken(@vail_logo_blue,20%);
+
+
+@menu-bar-background-color: @vail_dark_blue;
+@menu-bar-selected-background-color: @selectedCategoryColor;

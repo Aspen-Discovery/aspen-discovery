@@ -1,0 +1,57 @@
+###################
+## Crontab setting from a 'configuration' file
+##
+## to save current crontab to file: crontab -l > crontab_settings.txt
+##
+## to set the current crontab from a file : crontab < crontab_settings.txt
+##
+## This file supports all instances stored on Marmot's Venus server.
+## We have to consolidate all since we wouldn't want to update cron from multiple files
+##
+## added by pascal. 12-11-2014
+##################
+
+######
+## This Crontab is meant for user cassini, on Titan
+######
+
+# !! Please make all changes to the crontab within the git repository system and apply through the above method.
+#
+# ie :
+# git pull origin {current branch}
+# su cassini
+# crontab < /usr/local/vufind-plus/sites/marmot.test/conf/crontab_settings_cassini.txt
+
+###################
+# * * * * *  command to execute
+# │ │ │ │ │
+# │ │ │ │ └───── day of week (0 - 6)
+# │ │ │ │        (0 to 6 are Sunday to Saturday, or use names (Sun,Mon,Tue,Wed,Thu,Fri,Sat); 7 is Sunday, the same as 0)
+# │ │ │ └────────── month (1 - 12)
+# │ │ └─────────────── day of month (1 - 31)
+# │ └──────────────────── hour (0 - 23)
+# └───────────────────────── min (0 - 59)
+## taken from https://en.wikipedia.org/wiki/Cron
+##############
+
+###################################
+# Data Extract from other systems #
+###################################
+# Accelerated Reader data
+45 22 * * * /home/cassini/cron/copyAcceleratedReaderData.exp
+# Retrieve Hoopla Marc
+03 20 * * * /usr/local/vufind-plus/vufind/cron/HOOPLA.sh marmot.test
+
+###############################
+# Data Extract TO ftp server  #
+###############################
+# sd51 export copy 3.01am on Friday
+#01 3 * * 5 /home/cassini/cron/copySD51Export.sh
+# only works for root. pascal 11-28-2016
+
+##########
+# Cron   #
+##########
+# Write reports for schools only needs to be done once on test
+00 6 * * * cd /usr/local/vufind-plus/vufind/cron; java -jar cron.jar marmot.test SierraReports
+

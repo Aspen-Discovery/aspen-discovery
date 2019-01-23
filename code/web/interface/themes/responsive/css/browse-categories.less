@@ -1,0 +1,423 @@
+//@import (reference) "bootstrap/less/variables.less";
+@import (reference) "bootstrap/less/glyphicons.less";
+@import (reference) "bootstrap/less/bootstrap.less";
+@import (reference) "variables.less";
+
+// Browse Formatting
+#home-page-browse-header{
+  background-color: @browse-header-background-color;
+  padding-bottom: 15px;
+}
+#home-page-browse-content{
+  padding: 15px;
+  background-color: @home-page-browse-content-background-color;
+}
+#browse-label{
+  height: 5px;
+  background-color: @browse-label-line-color;
+  margin-top: 15px;
+  margin-bottom: 15px;
+  margin-right: -15px;
+  z-index: -1;
+}
+.browse-label-text{
+  background-color: @browse-header-background-color;
+  font-size: 22px;
+  color: @browse-label-text-color;
+  line-height: 5px;
+  vertical-align: top;
+  margin: auto;
+  padding: 0 8px;
+  z-index: 2;
+}
+#browse-category-picker {
+  .jcarousel-control-prev, .jcarousel-control-next {
+    background-color: @browseCarouselControlBackgroundColor;
+    color: @browseCarouselControlColor;
+    font-size: 50px;
+    &:focus {
+      text-decoration: none;
+      outline: none;
+    }
+    &:hover {
+      text-decoration: none;
+    }
+  }
+  a.jcarousel-control-next:after {
+    content: "›";
+  }
+  a.jcarousel-control-prev:before {
+    content: "‹";
+  }
+
+  .jcarousel-pagination a {
+    &, &:hover, &:active, &:visited {
+      outline: none;
+    }
+  }
+}
+
+.browse-category {
+  color: @browse-category-text-color; //TODO: needed?
+  font-size: @browse-category-font-size;
+  padding: 10px;
+  text-shadow: 1px 1px @gray;
+  background-color: #5fb7db;
+  height: 100px;
+  margin-left: 4px;
+  margin-right: 4px;
+
+  &:hover{
+    background-color: lightskyblue;
+    color: darkblue;
+  }
+
+  div {
+    color: @browse-category-text-color;
+    cursor: pointer;
+    &:focus {
+      outline: none; // hide outlining of clicked category
+    }
+    &:hover {
+      text-decoration: underline; // emulate link behavior
+    }
+    height: 80px;
+  }
+  &.selected {
+    border: 2px solid @selectedCategoryBorderColor;
+    font-size: @browse-category-font-size + 3; // decreased size of increase, set relative to base font size  plb 9-17-2014
+  }
+
+  &.category0 {
+    background-color: @category1MainColor;
+    background: linear-gradient(to bottom, @category1MainColor, @category1MainColor 82%, @categoryLineShadow 83%, @categoryLineColor 84%, @categoryLineColor 88%, @categoryLineShadow 89%, @category1MainColor 90%, @category1MainColor);
+  }
+  &.category1 {
+    background-color: @category2MainColor;
+    background: linear-gradient(to bottom, @category2MainColor, @category2MainColor 82%, @categoryLineShadow 83%, @categoryLineColor 84%, @categoryLineColor 88%, @categoryLineShadow 89%, @category2MainColor 90%, @category2MainColor);
+  }
+  &.category2 {
+    background-color: @category3MainColor;
+    background: linear-gradient(to bottom, @category3MainColor, @category3MainColor 82%, @categoryLineShadow 83%, @categoryLineColor 84%, @categoryLineColor 88%, @categoryLineShadow 89%, @category3MainColor 90%, @category3MainColor);
+  }
+  &.category3 {
+    background-color: @category4MainColor;
+    background: linear-gradient(to bottom, @category4MainColor, @category4MainColor 82%, @categoryLineShadow 83%, @categoryLineColor 84%, @categoryLineColor 88%, @categoryLineShadow 89%, @category4MainColor 90%, @category4MainColor);
+  }
+  &.category4 {
+    background-color: @category5MainColor;
+    background: linear-gradient(to bottom, @category5MainColor, @category5MainColor 82%, @categoryLineShadow 83%, @categoryLineColor 84%, @categoryLineColor 88%, @categoryLineShadow 89%, @category5MainColor 90%, @category5MainColor);
+  }
+  &.category5 {
+    background-color: @category6MainColor;
+    background: linear-gradient(to bottom, @category6MainColor, @category6MainColor 82%, @categoryLineShadow 83%, @categoryLineColor 84%, @categoryLineColor 88%, @categoryLineShadow 89%, @category6MainColor 90%, @category6MainColor);
+  }
+  &.category6 {
+    background-color: @category7MainColor;
+    background: linear-gradient(to bottom, @category7MainColor, @category7MainColor 82%, @categoryLineShadow 83%, @categoryLineColor 84%, @categoryLineColor 88%, @categoryLineShadow 89%, @category7MainColor 90%, @category7MainColor);
+  }
+  &.category7 {
+    background-color: @category8MainColor;
+    background: linear-gradient(to bottom, @category8MainColor, @category8MainColor 82%, @categoryLineShadow 83%, @categoryLineColor 84%, @categoryLineColor 88%, @categoryLineShadow 89%, @category8MainColor 90%, @category8MainColor);
+  }
+  &.category8 {
+    background-color: @category9MainColor;
+    background: linear-gradient(to bottom, @category9MainColor, @category9MainColor 82%, @categoryLineShadow 83%, @categoryLineColor 84%, @categoryLineColor 88%, @categoryLineShadow 89%, @category9MainColor 90%, @category9MainColor);
+  }
+}
+
+.selected-browse-label-mixin(@side: right){
+  margin-@{side}: 20px;
+  float: @side;
+  background-color: @content-bg;
+  padding: 0 8px;
+}
+
+#selected-browse-label{
+  background-color: @content-bg;
+  //  background: linear-gradient(to bottom, #fff, #fff 44%, #bbd4e3 45%, #bbd4e3 55%, #fff 56%);
+  background: linear-gradient(to bottom, @content-bg, @content-bg 44%, @browse-label-line-color 45%, @browse-label-line-color 55%, @content-bg 56%);
+  margin-bottom: 5px;
+
+  // Browse Mode Toggle switch //
+  & > div.btn-group {
+    span.thumbnail-icon {
+      .glyphicon;
+      .glyphicon-th;
+    }
+    span.grid-icon {
+      .glyphicon;
+      .glyphicon-list;
+    }
+    // search results normal, short citation (lists) mode. (list with important details) //
+    span.list-icon {
+      .glyphicon;
+      //.glyphicon-list-alt;
+      .glyphicon-th-list;
+    }  span{
+         @media (max-width: @screen-xs-max) {
+           display:none;
+         }
+       }
+    .selected-browse-label-mixin();
+    //  background-color: #fff;
+    //  margin-left: 20px;
+    //  padding: 0 8px;
+  }
+}
+
+.selected-browse-label-search{
+  font-size: 20px;
+  color: @selected-browse-label-search-color;
+  vertical-align: top;
+  .selected-browse-label-mixin(left);
+  a {
+    color: @selected-browse-label-search-color;
+  }
+}
+
+#selected-browse-search-link {
+  .icon-before {
+    // by default, use the search magnifying glass icon before the text
+    .glyphicon;
+    .glyphicon-search;
+  }
+  .icon-after {
+    // by default, turn off any icon after the text
+    //display:none
+  }
+}
+
+.browse-rating{
+  margin-top: 5px;
+}
+
+.home-page-browse-thumbnails, .home-page-browse-grid, .browse-thumbnails-few {
+  -webkit-column-gap: 15px;
+  -moz-column-gap: 15px;
+  column-gap: 15px;
+}
+.home-page-browse-thumbnails {
+  @media(min-width: 0){
+    -webkit-column-count: 2;
+    -moz-column-count:    2;
+    column-count:         2;
+  }
+  //three columns works to this size because of content shuffling at @screen-sm-min
+  @media(min-width: @screen-xs-min){
+    -webkit-column-count: 3;
+    -moz-column-count:    3;
+    column-count:         3;
+  }
+  @media(min-width: @screen-md-min){
+    -webkit-column-count: 4;
+    -moz-column-count:    4;
+    column-count:         4;
+  }
+  @media(min-width: @screen-lg-min){
+    -webkit-column-count: 6;
+    -moz-column-count:    6;
+    column-count:         6;
+  }
+}
+//Browse thumbnails if we have 1-8 objects
+.browse-thumbnails-few {
+  @media(min-width: 0){
+    -webkit-column-count: 1;
+    -moz-column-count:    1;
+    column-count:         1;
+  }
+  //three columns works to this size because of content shuffling at @screen-sm-min
+  @media(min-width: @screen-xs-min){
+    -webkit-column-count: 1;
+    -moz-column-count:    1;
+    column-count:         1;
+  }
+  @media(min-width: @screen-md-min){
+    -webkit-column-count: 2;
+    -moz-column-count:    2;
+    column-count:         2;
+  }
+  @media(min-width: @screen-lg-min){
+    -webkit-column-count: 2;
+    -moz-column-count:    2;
+    column-count:         2;
+  }
+}
+//Browse thumbnails if we have 9-18 objects
+.browse-thumbnails-medium {
+  @media(min-width: 0){
+    -webkit-column-count: 1;
+    -moz-column-count:    1;
+    column-count:         1;
+  }
+  //three columns works to this size because of content shuffling at @screen-sm-min
+	@media(min-width: @screen-xs-min){
+		-webkit-column-count: 2;
+		-moz-column-count:    2;
+		column-count:         2;
+	}
+	@media(min-width: @screen-sm-min){
+    -webkit-column-count: 2;
+    -moz-column-count:    2;
+    column-count:         2;
+  }
+  @media(min-width: @screen-md-min){
+    -webkit-column-count: 3;
+    -moz-column-count:    3;
+    column-count:         3;
+  }
+  @media(min-width: @screen-lg-min){
+    -webkit-column-count: 4;
+    -moz-column-count:    4;
+    column-count:         4;
+  }
+}
+.home-page-browse-grid {
+  @media (min-width: 0) {
+    -webkit-column-count: 1;
+    -moz-column-count: 1;
+    column-count: 1;
+  }
+  @media (min-width: @screen-xs-min) and (max-width: @screen-xs-max) {
+    -webkit-column-count: 2;
+    -moz-column-count: 2;
+    column-count: 2;
+  }
+  @media (min-width: @screen-sm-min) {
+    -webkit-column-count: 2;
+    -moz-column-count: 2;
+    column-count: 2;
+  }
+
+  @media (min-width: @screen-md-min) {
+    -webkit-column-count: 3;
+    -moz-column-count: 3;
+    column-count: 3;
+  }
+}
+// Browsing with Covers Only
+.browse-thumbnail{
+  .thumbnail;
+  break-inside: avoid-column;
+  -webkit-column-break-inside: avoid;
+  display: inline-block;
+  .text-center();
+  img{
+    width:100%;
+  }
+}
+.browse-thumbnail-sorted{
+  .thumbnail;
+  border-width: 0;
+  height: 210px;
+  overflow: hidden;
+  text-align: center;
+  img{
+    max-height: 150px;
+  }
+}
+// Browsing with Lists
+.browse-list{
+  break-inside: avoid-column;
+  -webkit-column-break-inside: avoid;
+  display: inline-block;
+  .text-left();
+  width:100%;
+
+  img{
+    .img-thumbnail();
+    float: left;
+    margin: 0 4px 10px 0;
+    width: 80px;
+    border-radius: @border-radius-small;
+  }
+}
+#more-browse-results{
+  background-color: @more-browse-results-backgroundcolor;
+  color: @more-browse-results-color;
+  .text-center();
+  padding: 2px;
+  cursor: pointer;
+  border-radius: 4px;
+  line-height: 0;
+  span {
+    font-weight: bold;
+    font-size: 33px;
+  }
+}
+
+// Browse Sub-Categories
+#browse-sub-category-menu {
+  margin-top: @padding-large-vertical;
+
+  button {
+    margin-right: @padding-small-vertical;
+    &.selected {
+      color: @selectedSubCategoryFontColor;
+      background-color: @selectedSubCategoryBackgroundColor;
+    }
+    &:focus {
+      outline: none;
+    }
+
+  }
+}
+.selected-browse-sub-category-label-search-text{
+  //  display: none; // default till content is put in place
+  &::before { // Dividing Character between Main Category Header & Sub-Category
+    content: ' \00bb \00a0'; // html entity &#187; &nbsp;
+  }
+}
+
+// Mixin that hides the Jcarousel controls and shows all the categories as a grid
+.noCarouselBrowseCategoriesMixin(@titlesPerRow: 4){
+  #browse-category-carousel {
+    overflow: visible; // allow all list items to be seen
+    left: 0;
+    width: 95%;
+    margin-left: 5%;
+
+    ul {
+      position: static; // restore positioning behavior
+      width: 100%;
+    }
+
+    li {
+      // set number items to display in a row based on screen size
+      // default 4 per row, small 2 per row, middle 3 per row, tiny 1 per row
+      //width: 23% !important;
+      width: round(100/@titlesPerRow - 2%) !important;
+      @media (max-width: @screen-sm-max) {
+        //width: 31% !important;
+        width: round(100/(@titlesPerRow - 1) - 2%) !important;
+      }
+      @media (max-width: @screen-xs-max) {
+        //width: 48% !important;
+        width: round(100/(@titlesPerRow - 2) - 2%) !important;
+      }
+      @media (max-width: @screen-tn-max) {
+        //width: 48% !important;
+        width: round(100/(@titlesPerRow - 3) - 2%) !important;
+      }
+      float: left; // retains float left; ul positional is more critical. plb 9-16-2014
+    }
+  }
+
+  // hide scrolling controls
+  #browse-category-picker {
+    .jcarousel-control-prev, .jcarousel-control-next, .jcarousel-pagination {
+      display: none;
+    }
+  }
+
+}
+
+// Gives Selected Category a highlighted appearance
+.noCarouselSelectedCategoryMixin(@selectedCategoryColor: @category6MainColor) {
+  .browse-category.selected {
+    background-color: @selectedCategoryColor;
+    background: linear-gradient(to bottom, @selectedCategoryColor, @selectedCategoryColor 82%, @categoryLineShadow 83%, @categoryLineColor 84%, @categoryLineColor 88%, @categoryLineShadow 89%, @selectedCategoryColor 90%, @selectedCategoryColor);
+    font-size: @browse-category-font-size + 2;
+  }
+}

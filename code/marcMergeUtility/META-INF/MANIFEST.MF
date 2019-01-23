@@ -1,0 +1,4 @@
+Manifest-Version: 1.0
+Class-Path: lib/ini4j-0.5.2.jar lib/log4j-1.2.15.jar lib/marc4j-pika.jar lib/opencsv-2.2.jar lib/normalizer.jar
+Main-Class: com.peakc.marmot.MergeUpdate
+

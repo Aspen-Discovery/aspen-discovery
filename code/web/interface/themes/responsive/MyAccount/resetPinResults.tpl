@@ -1,0 +1,22 @@
+{strip}
+	<div id="page-content" class="content">
+		<div id="main-content">
+			<div class="resulthead"><h3>{translate text='PIN Reset'}</h3></div>
+			<div class="page">
+				{if $resetPinResult.error}
+					<p class="alert alert-danger">{$resetPinResult.error}</p>
+					{if $resetToken && $userID}
+						<div>
+							<a class="btn btn-primary" role="button" href="{$path}/MyAccount/ResetPin?resetToken={$resetToken}&uid={$userID}">Try Again</a>
+						</div>
+					{/if}
+				{else}
+					<p class="alert alert-success">Your PIN number has been reset.</p>
+					<p>
+						<a class="btn btn-primary" role="button" href="{$path}/MyAccount/Login">{translate text='Login'}</a>
+					</p>
+				{/if}
+			</div>
+		</div>
+	</div>
+{/strip}

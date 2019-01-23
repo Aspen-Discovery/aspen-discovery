@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+Class-Path: lib/log4j-1.2.15.jar lib/mysql-5.1.15-bin.jar lib/codec-1.
+ 6.jar lib/ini4j-0.5.2.jar
+Main-Class: org.pika.HooplaExportMain
+

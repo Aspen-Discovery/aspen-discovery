@@ -1,0 +1,39 @@
+#menu-header{
+	background-color: #43749C;
+	font-size: 12px;
+	height: 24px;
+	line-height: 22px;
+	width: 100%;
+	color: white;
+	text-align: right;
+}
+#menu-account-links{
+	background-color: #011753;
+	display: inline-block;
+	zoom: 1;
+	*display: inline;
+}
+
+#menu-header .top-menu-item{
+	padding: 0px 12px;
+	border-left: 1px solid white;
+	height: 22px;
+	display: inline-block;
+	zoom: 1;
+	*display: inline;
+	margin:0px;
+}
+#menu-header .top-menu-item a{
+	color: white;
+	margin-bottom: 0;
+}
+#menu-header .top-menu-item a:hover{
+	text-decoration: underline;
+}
+.menu-account-link{
+	background-color: #011753;
+	font-weight: bold;
+	font-size: 14px;
+	line-height: 19px;
+	height: 22px;
+}

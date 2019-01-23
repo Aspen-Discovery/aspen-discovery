@@ -1,0 +1,9 @@
+/*
+This styling is actually in the location configuration, and takes effect from there.
+Added here for repository but any changes should be set here and in the configuration page as well.
+*/
+
+#header-logo {
+	padding: 5px 30px;
+	margin-top: 8px;
+}

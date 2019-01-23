@@ -1,0 +1,1 @@
+Location where small covers will be stored
