@@ -8,7 +8,7 @@
  * Time: 8:34 AM
  */
 
-class LocationMoreDetails extends DB_DataObject{
+class LocationMoreDetails extends DataObject{
 	public $__table = 'location_more_details';
 	public $id;
 	public $locationId;

@@ -1,8 +1,9 @@
 <?php
-require_once 'DB/DataObject.php';
+require_once ROOT_DIR .'/sys/DB/DataObject.php';
 
-class Analytics_Event extends DB_DataObject{
+class Analytics_Event extends DataObject{
 	public $__table = 'analytics_event';                        // table name
+    public $id;
 	public $sessionId;
 	public $category;
 	public $action;

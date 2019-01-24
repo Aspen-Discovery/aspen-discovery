@@ -23,16 +23,17 @@ class MySQLSession extends SessionInterface {
 				$sessionExpirationTime = $s->last_used + self::$lifetime;
 			}
 			if ($curTime > $sessionExpirationTime){
-				$s->delete();
-				//Start a new session.  Ignore previous errors if the last expired
-				@session_start();
-				session_regenerate_id(true);
-				$sess_id = session_id();
-				$_SESSION = array();
+			    //Clear any previously saved data
+			    $s->data = '';
+                $_SESSION = array();
+				$s->update();
 				$saveNewSession = true;
 			}else{
 				// updated the session in the database to show that we just used it
 				$s->last_used = $curTime;
+				if ($s->data == null) {
+				    $s->data = '';
+                }
 				$s->update();
 				$cookieData = $s->data;
 			}
@@ -50,6 +51,7 @@ class MySQLSession extends SessionInterface {
 			}else{
 				$s->remember_me = 0;
 			}
+			$s->data = '';
 			$s->insert();
 		}
 		return $cookieData;

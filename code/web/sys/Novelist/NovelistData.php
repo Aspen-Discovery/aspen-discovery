@@ -8,7 +8,7 @@
  * Time: 11:33 AM
  */
 
-class NovelistData extends DB_DataObject{
+class NovelistData extends DataObject{
 	public $id;
 	public $groupedRecordPermanentId;
 	public $lastUpdate;

@@ -8,9 +8,9 @@
  * Time: 8:34 AM
  */
 
-class LibraryLink extends DB_DataObject{
+class LibraryLink extends DataObject{
 	public $__table = 'library_links';
-	public $id;
+    public $id;
 	public $libraryId;
 	public $category;
 	public $linkText;

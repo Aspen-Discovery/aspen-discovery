@@ -8,9 +8,9 @@
  * Time: 11:47 AM
  */
 
-require_once 'DB/DataObject.php';
+require_once ROOT_DIR .'/sys/DB/DataObject.php';
 
-class Analytics_PatronType extends DB_DataObject
+class Analytics_PatronType extends DataObject
 {
 	public $__table = 'analytics_patron_type';                        // table name
 	public $id;

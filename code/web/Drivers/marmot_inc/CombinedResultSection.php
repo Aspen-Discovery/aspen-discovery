@@ -6,7 +6,7 @@
  * Time: 4:00 PM
  */
 
-abstract class CombinedResultSection extends DB_DataObject{
+abstract class CombinedResultSection extends DataObject{
 	public $id;
 	public $displayName;
 	public $weight;

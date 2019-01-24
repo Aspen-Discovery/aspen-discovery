@@ -8,9 +8,8 @@
  * Date: 12/27/2016
  *
  */
-require_once 'DB/DataObject.php';
-require_once 'DB/DataObject/Cast.php';
-class UserStaffSettings extends DB_DataObject
+require_once ROOT_DIR . '/sys/DB/DataObject.php';
+class UserStaffSettings extends DataObject
 {
 
 	public $__table = 'user_staff_settings';

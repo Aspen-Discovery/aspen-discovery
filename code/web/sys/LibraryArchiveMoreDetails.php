@@ -8,7 +8,7 @@
  * Date: 2/15/2017
  *
  */
-class LibraryArchiveMoreDetails extends DB_DataObject{
+class LibraryArchiveMoreDetails extends DataObject{
 	public $__table = 'library_archive_more_details';
 	public $id;
 	public $libraryId;

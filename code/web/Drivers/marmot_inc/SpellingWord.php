@@ -2,10 +2,8 @@
 /**
  * Table Definition for spelling words
  */
-require_once 'DB/DataObject.php';
-require_once 'DB/DataObject/Cast.php';
-
-class SpellingWord extends DB_DataObject
+require_once ROOT_DIR . '/sys/DB/DataObject.php';
+class SpellingWord extends DataObject
 {
 	public $__table = 'spelling_words';    // table name
 	public $word;                    //varchar(50)

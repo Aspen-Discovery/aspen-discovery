@@ -24,7 +24,6 @@ PEAR_Singleton::init();
 require_once ROOT_DIR . '/sys/Timer.php';
 require_once ROOT_DIR . '/sys/Logger.php';
 require_once ROOT_DIR . '/sys/BookCoverProcessor.php';
-require_once ROOT_DIR . '/sys/Proxy_Request.php';
 //Bootstrap the process
 if (!function_exists('vufind_autoloader')){
 	// Set up autoloader (needed for YAML)

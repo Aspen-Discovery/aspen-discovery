@@ -2,10 +2,8 @@
 /**
  * Table Definition for library
  */
-require_once 'DB/DataObject.php';
-require_once 'DB/DataObject/Cast.php';
-
-class MillenniumCache extends DB_DataObject 
+require_once ROOT_DIR . '/sys/DB/DataObject.php';
+class MillenniumCache extends DataObject
 {
     public $__table = 'millennium_cache';    // table name
     public $recordId;                    //varchar(20)

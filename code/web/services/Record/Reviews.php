@@ -19,7 +19,7 @@
  */
 
 require_once ROOT_DIR . '/sys/Amazon.php';
-require_once ROOT_DIR . '/sys/Proxy_Request.php';
+require_once ROOT_DIR . '/sys/HTTP/Proxy_Request.php';
 require_once ROOT_DIR . '/Drivers/marmot_inc/ISBNConverter.php';
 require_once(ROOT_DIR . '/sys/LocalEnrichment/EditorialReview.php');
 
@@ -362,7 +362,7 @@ class Record_Reviews extends Record_Record
 
 		//find out if there are any reviews
 		$client = new Proxy_Request();
-		$client->setMethod(HTTP_REQUEST_METHOD_GET);
+		$client->setMethod('GET');
 		$client->setURL($url);
 		if (PEAR_Singleton::isError($http = $client->sendRequest())) {
 			$logger->log("Error connecting to $url", PEAR_LOG_ERR);

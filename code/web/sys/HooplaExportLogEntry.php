@@ -2,10 +2,8 @@
 /**
  * Table Definition for library
  */
-require_once 'DB/DataObject.php';
-require_once 'DB/DataObject/Cast.php';
-
-class HooplaExportLogEntry extends DB_DataObject
+require_once ROOT_DIR . '/sys/DB/DataObject.php';
+class HooplaExportLogEntry extends DataObject
 {
 	public $__table = 'hoopla_export_log';   // table name
 	public $id;

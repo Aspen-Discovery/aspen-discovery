@@ -6,7 +6,7 @@
  * Time: 9:36 PM
  */
 
-class IslandoraSamePikaCache extends DB_DataObject
+class IslandoraSamePikaCache extends DataObject
 {
 	public $__table = 'islandora_samepika_cache';
 	public $id;

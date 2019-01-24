@@ -8,7 +8,7 @@
  * Date: 7/21/2016
  * Time: 4:05 PM
  */
-class ArchiveRequest extends DB_DataObject{
+class ArchiveRequest extends DataObject{
 	public $__table = 'archive_requests';
 	public $id;
 	public $name;

@@ -8,9 +8,9 @@
  * Time: 11:47 AM
  */
 
-require_once 'DB/DataObject.php';
+require_once ROOT_DIR . '/sys/DB/DataObject.php';
 
-class Analytics_Country extends DB_DataObject
+class Analytics_Country extends DataObject
 {
 	public $__table = 'analytics_country';                        // table name
 	public $id;

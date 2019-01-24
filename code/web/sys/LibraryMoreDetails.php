@@ -8,7 +8,7 @@
  * Time: 8:34 AM
  */
 
-class LibraryMoreDetails extends DB_DataObject{
+class LibraryMoreDetails extends DataObject{
 	public $__table = 'library_more_details';
 	public $id;
 	public $libraryId;

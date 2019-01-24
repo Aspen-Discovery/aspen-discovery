@@ -2,8 +2,7 @@
 /**
  * Table Definition for library
  */
-require_once 'DB/DataObject.php';
-require_once 'DB/DataObject/Cast.php';
+require_once ROOT_DIR . '/sys/DB/DataObject.php';
 require_once ROOT_DIR . '/Drivers/marmot_inc/LocationHours.php';
 require_once ROOT_DIR . '/Drivers/marmot_inc/LocationFacetSetting.php';
 require_once ROOT_DIR . '/Drivers/marmot_inc/LocationCombinedResultSection.php';
@@ -12,12 +11,13 @@ require_once ROOT_DIR . '/sys/Indexing/LocationRecordOwned.php';
 require_once ROOT_DIR . '/sys/Indexing/LocationRecordToInclude.php';
 
 
-class Location extends DB_DataObject
+class Location extends DataObject
 {
 	const DEFAULT_AUTOLOGOUT_TIME = 90;
 	const DEFAULT_AUTOLOGOUT_TIME_LOGGED_OUT = 450;
 
 	public $__table = 'location';   // table name
+    public $__primaryKey = 'locationId';
 	public $locationId;				//int(11)
 	public $subdomain;
 	public $code;					//varchar(5)
@@ -90,8 +90,8 @@ class Location extends DB_DataObject
 	public $defaultToCombinedResults;
 	public $useLibraryCombinedResultsSettings;
 
-	/** @var  array $data */
-	protected $data;
+	/** @var  array $_data */
+	protected $_data;
 
 	function keys() {
 		return array('locationId', 'code');
@@ -970,7 +970,7 @@ class Location extends DB_DataObject
 				return $this->combinedResultSections;
 			}
 		}else{
-			return $this->data[$name];
+			return $this->_data[$name];
 		}
 
 	}
@@ -991,7 +991,7 @@ class Location extends DB_DataObject
 		}elseif ($name == 'combinedResultSections') {
 			$this->combinedResultSections = $value;
 		}else{
-			$this->data[$name] = $value;
+			$this->_data[$name] = $value;
 		}
 	}
 

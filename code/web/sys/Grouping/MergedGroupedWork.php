@@ -8,7 +8,7 @@
  * Date: 7/29/14
  * Time: 3:14 PM
  */
-class MergedGroupedWork extends DB_DataObject {
+class MergedGroupedWork extends DataObject {
 	public $__table = 'merged_grouped_works';
 	public $id;
 	public $sourceGroupedWorkId;

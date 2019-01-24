@@ -8,9 +8,8 @@
  * Time: 10:31 AM
  */
 
-require_once 'DB/DataObject.php';
-require_once 'DB/DataObject/Cast.php';
-class RecordToInclude extends DB_DataObject{
+require_once ROOT_DIR . '/sys/DB/DataObject.php';
+class RecordToInclude extends DataObject{
 	public $id;
 	public $indexingProfileId;
 	public $location;

@@ -2,8 +2,8 @@
 /**
  * Table Definition for library
  */
-require_once 'DB/DataObject.php';
-require_once 'DB/DataObject/Cast.php';
+require_once ROOT_DIR . '/sys/DB/DataObject.php';
+require_once ROOT_DIR . '/sys/DB/DataObject.php';
 require_once ROOT_DIR . '/Drivers/marmot_inc/Holiday.php';
 require_once ROOT_DIR . '/Drivers/marmot_inc/LibraryFacetSetting.php';
 require_once ROOT_DIR . '/Drivers/marmot_inc/LibraryArchiveSearchFacetSetting.php';
@@ -19,9 +19,10 @@ require_once ROOT_DIR . '/sys/MaterialsRequestFieldsToDisplay.php';
 require_once ROOT_DIR . '/sys/MaterialsRequestFormats.php';
 require_once ROOT_DIR . '/sys/MaterialsRequestFormFields.php';
 
-class Library extends DB_DataObject
+class Library extends DataObject
 {
 	public $__table = 'library';    // table name
+    public $__primaryKey = 'libraryId';
 	public $isDefault;
 	public $libraryId; 				//int(11)
 	public $subdomain; 				//varchar(15)
@@ -1079,7 +1080,10 @@ class Library extends DB_DataObject
 		if ($activeLibrary->N == 1){
 			$activeLibrary->fetch();
 			return $activeLibrary;
-		}
+		} else if ($activeLibrary->N == 0) {
+		    echo("No libraries are configured for the system.  Please configure at least one library before proceeding.");
+		    die();
+        }
 		//Next check to see if we are in a library.
 		/** @var Location $locationSingleton */
 		global $locationSingleton;
@@ -1088,7 +1092,17 @@ class Library extends DB_DataObject
 			//Load the library based on the home branch for the user
 			return self::getLibraryForLocation($physicalLocation->libraryId);
 		}
-		return null;
+		//Return the active library
+        $activeLibrary->isDefault = 1;
+		$activeLibrary->find(true);
+		if ($activeLibrary->N == 0) {
+            echo("There is not a default library configured in the system.  Please configure one default library before proceeding.");
+            die();
+        } else if ($activeLibrary->N > 1) {
+            echo("There are multiple default libraries configured in the system.  Please set only one library to be the default before proceeding.");
+            die();
+        }
+		return $activeLibrary;
 	}
 
 	static function getPatronHomeLibrary($tmpUser = null){

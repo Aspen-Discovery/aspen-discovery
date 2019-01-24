@@ -8,7 +8,7 @@
  * Date: 1/28/2016
  * Time: 7:17 PM
  */
-class TimeToReshelve  extends DB_DataObject{
+class TimeToReshelve  extends DataObject{
 	public $__table = 'time_to_reshelve';    // table name
 
 	public $id;

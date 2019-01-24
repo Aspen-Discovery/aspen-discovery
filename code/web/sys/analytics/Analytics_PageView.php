@@ -1,7 +1,7 @@
 <?php
-require_once 'DB/DataObject.php';
+require_once ROOT_DIR .'/sys/DB/DataObject.php';
 
-class Analytics_PageView extends DB_DataObject
+class Analytics_PageView extends DataObject
 {
 	public $__table = 'analytics_page_view';                        // table name
 	public $id;

@@ -8,7 +8,7 @@
  * Time: 9:28 AM
  */
 
-class OverDriveAPIProductMetaData extends DB_DataObject {
+class OverDriveAPIProductMetaData extends DataObject {
 	public $__table = 'overdrive_api_product_metadata';   // table name
 
 	public $id;

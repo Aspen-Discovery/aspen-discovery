@@ -2,11 +2,10 @@
 /**
  * Table Definition for library
  */
-require_once 'DB/DataObject.php';
-require_once 'DB/DataObject/Cast.php';
-
-class EditorialReview extends DB_DataObject {
+require_once ROOT_DIR . '/sys/DB/DataObject.php';
+class EditorialReview extends DataObject {
 	public $__table = 'editorial_reviews';    // table name
+    public $__primaryKey = 'editorialReviewId';
 	public $editorialReviewId;
 	public $recordId;
 	public $title;

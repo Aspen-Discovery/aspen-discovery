@@ -8,7 +8,7 @@
  * Date: 7/21/2016
  * Time: 4:05 PM
  */
-class ClaimAuthorshipRequest extends DB_DataObject{
+class ClaimAuthorshipRequest extends DataObject{
 	public $__table = 'claim_authorship_requests';
 	public $id;
 	public $name;

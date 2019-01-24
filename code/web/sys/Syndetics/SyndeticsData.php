@@ -8,7 +8,7 @@
  * Time: 9:14 PM
  */
 
-class SyndeticsData extends DB_DataObject{
+class SyndeticsData extends DataObject{
 	public $id;
 	public $groupedRecordPermanentId;
 	public $lastUpdate;

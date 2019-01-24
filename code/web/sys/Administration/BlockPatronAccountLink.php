@@ -9,10 +9,8 @@
  *
  */
 
-require_once 'DB/DataObject.php';
-require_once 'DB/DataObject/Cast.php';
-
-class BlockPatronAccountLink extends DB_DataObject
+require_once ROOT_DIR . '/sys/DB/DataObject.php';
+class BlockPatronAccountLink extends DataObject
 {
 
 	public $__table = 'user_link_blocks';

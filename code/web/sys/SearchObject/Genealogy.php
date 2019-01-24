@@ -44,7 +44,7 @@ class SearchObject_Genealogy extends SearchObject_Base
 	private $fields = '*,score';
 	// HTTP Method
 	//    private $method = HTTP_REQUEST_METHOD_GET;
-	private $method = HTTP_REQUEST_METHOD_POST;
+	private $method = 'POST';
 	// Result
 	private $indexResult;
 

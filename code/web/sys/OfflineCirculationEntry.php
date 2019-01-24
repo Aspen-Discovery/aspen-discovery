@@ -7,10 +7,8 @@
  * Date: 7/29/13
  * Time: 9:49 AM
  */
-require_once 'DB/DataObject.php';
-require_once 'DB/DataObject/Cast.php';
-
-class OfflineCirculationEntry extends DB_DataObject{
+require_once ROOT_DIR . '/sys/DB/DataObject.php';
+class OfflineCirculationEntry extends DataObject{
 	public $__table = 'offline_circulation';
 	public $id;
 	public $timeEntered;

@@ -2,10 +2,8 @@
 /**
  * Table Definition for library
  */
-require_once 'DB/DataObject.php';
-require_once 'DB/DataObject/Cast.php';
-
-class OverDriveExtractLogEntry extends DB_DataObject
+require_once ROOT_DIR . '/sys/DB/DataObject.php';
+class OverDriveExtractLogEntry extends DataObject
 {
 	public $__table = 'overdrive_extract_log';   // table name
 	public $id;

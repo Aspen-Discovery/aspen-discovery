@@ -2,10 +2,8 @@
 /**
  * Table Definition for library
  */
-require_once 'DB/DataObject.php';
-require_once 'DB/DataObject/Cast.php';
-
-class CronLogEntry extends DB_DataObject
+require_once ROOT_DIR . '/sys/DB/DataObject.php';
+class CronLogEntry extends DataObject
 {
 	public $__table = 'cron_log';   // table name
 	public $id;

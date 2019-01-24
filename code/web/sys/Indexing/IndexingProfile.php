@@ -11,7 +11,7 @@
 require_once ROOT_DIR . '/sys/Indexing/TranslationMap.php';
 require_once ROOT_DIR . '/sys/Indexing/TimeToReshelve.php';
 require_once ROOT_DIR . '/sys/Indexing/SierraExportFieldMapping.php';
-class IndexingProfile extends DB_DataObject{
+class IndexingProfile extends DataObject{
 	public $__table = 'indexing_profiles';    // table name
 
 	public $id;

@@ -1,8 +1,6 @@
 <?php
-require_once 'DB/DataObject.php';
-require_once 'DB/DataObject/Cast.php';
-
-abstract class FacetSetting extends DB_DataObject {
+require_once ROOT_DIR . '/sys/DB/DataObject.php';
+abstract class FacetSetting extends DataObject {
 	public $id;                      //int(25)
 	public $displayName;                    //varchar(255)
 	public $facetName;

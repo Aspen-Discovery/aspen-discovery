@@ -8,9 +8,8 @@
  * Date: 12/16/2016
  *
  */
-require_once 'DB/DataObject.php';
-require_once 'DB/DataObject/Cast.php';
-class MaterialsRequestFormFields extends DB_DataObject
+require_once ROOT_DIR . '/sys/DB/DataObject.php';
+class MaterialsRequestFormFields extends DataObject
 {
 	public $__table = 'materials_request_form_fields';
 	public $id;

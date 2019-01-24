@@ -8,7 +8,7 @@
  * Time: 9:50 AM
  */
 
-class GroupedWork extends DB_DataObject {
+class GroupedWork extends DataObject {
 	public $__table = 'grouped_work';    // table name
 	public $id;
 	public $permanent_id;

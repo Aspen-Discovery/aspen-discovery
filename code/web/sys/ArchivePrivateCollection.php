@@ -8,7 +8,7 @@
  * Date: 2/22/2016
  * Time: 8:55 PM
  */
-class ArchivePrivateCollection extends DB_DataObject{
+class ArchivePrivateCollection extends DataObject{
 	public $__table = 'archive_private_collections';
 	public $id;
 	public $privateCollections;

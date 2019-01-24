@@ -7,12 +7,10 @@
  * Date: 7/29/13
  * Time: 9:49 AM
  */
-require_once 'DB/DataObject.php';
-require_once 'DB/DataObject/Cast.php';
-
-class OfflineHold extends DB_DataObject{
+require_once ROOT_DIR . '/sys/DB/DataObject.php';
+class OfflineHold extends DataObject{
 	public $__table = 'offline_hold';
-	public $id;
+    public $id;
 	public $timeEntered;
 	public $bibId;
 	public $patronBarcode;

@@ -17,7 +17,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
-require_once ROOT_DIR . '/sys/Proxy_Request.php';
+require_once ROOT_DIR . '/sys/HTTP/Proxy_Request.php';
 
 /**
  * ExternalExcerpts Class
@@ -117,7 +117,7 @@ class ExternalExcerpts
 
         //find out if there are any reviews
         $client = new Proxy_Request();
-        $client->setMethod(HTTP_REQUEST_METHOD_GET);
+        $client->setMethod('GET');
         $client->setURL($url);
         if (PEAR_Singleton::isError($http = $client->sendRequest())) {
             return $http;

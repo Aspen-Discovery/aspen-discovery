@@ -2,12 +2,11 @@
 /**
  * Table Definition for an artifact (physical document, picture, man-made object, etc)
  */
-require_once 'DB/DataObject.php';
-require_once 'DB/DataObject/Cast.php';
-
-class Artifact extends DB_DataObject
+require_once ROOT_DIR . '/sys/DB/DataObject.php';
+class Artifact extends DataObject
 {
     public $__table = 'artifact';    // table name
+    public $__primaryKey = 'artifactId';
     public $artifactId;
     public $catalogId;
     public $objectName;

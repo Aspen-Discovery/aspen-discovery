@@ -2,10 +2,8 @@
 /**
  * Table Definition for library
  */
-require_once 'DB/DataObject.php';
-require_once 'DB/DataObject/Cast.php';
-
-class subnet extends DB_DataObject
+require_once ROOT_DIR . '/sys/DB/DataObject.php';
+class subnet extends DataObject
 {
 	public $__table = 'ip_lookup';   // table name
 	public $id;                      //int(25)

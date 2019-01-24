@@ -1,6 +1,6 @@
 <?php
 
-require_once 'HTTP/Request.php';
+require_once ROOT_DIR . '/sys/HTTP/HTTP_Request.php';
 
 class Proxy_Request extends HTTP_Request
 {
@@ -53,5 +53,3 @@ class Proxy_Request extends HTTP_Request
         return parent::sendRequest($saveBody);
     }
 }
-
-?>

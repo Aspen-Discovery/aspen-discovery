@@ -8,9 +8,8 @@
  * Date: 1/26/2017
  *
  */
-require_once 'DB/DataObject.php';
-require_once 'DB/DataObject/Cast.php';
-class ArchiveExploreMoreBar extends DB_DataObject
+require_once ROOT_DIR . '/sys/DB/DataObject.php';
+class ArchiveExploreMoreBar extends DataObject
 {
 	public $__table = 'library_archive_explore_more_bar';
 	public $id;

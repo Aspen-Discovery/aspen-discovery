@@ -897,32 +897,6 @@ class BookCoverProcessor{
 		return $this->processImageURL($url);
 	}
 
-	// Removed as cover provider due to unwanted cover image. 11-14-2017 see  https://marmot.myjetbrains.com/youtrack/issue/D-1608
-//	function openlibrary($id = null)
-//	{
-//		if (is_null($this->isn)){
-//			return false;
-//		}
-//		// Convert internal size value to openlibrary equivalent:
-//		switch($this->size) {
-//			case 'large':
-//				$size = 'L';
-//				break;
-//			case 'medium':
-//				$size = 'M';
-//				break;
-//			case 'small':
-//			default:
-//				$size = 'S';
-//				break;
-//		}
-//
-//		// Retrieve the image; the default=false parameter indicates that we want a 404
-//		// if the ISBN is not supported.
-//		$url = "http://covers.openlibrary.org/b/isbn/{$this->isn}-{$size}.jpg?default=false";
-//		return $this->processImageURL($url);
-//	}
-
 	/**
 	 * Retrieve a Content Cafe cover.
 	 *
@@ -972,9 +946,9 @@ class BookCoverProcessor{
 		}
 		if (is_callable('json_decode')) {
 			$url = 'http://books.google.com/books?jscmd=viewapi&bibkeys=ISBN:' . $this->isn . '&callback=addTheCover';
-			require_once ROOT_DIR . '/sys/Proxy_Request.php';
+			require_once ROOT_DIR . '/sys/HTTP/Proxy_Request.php';
 			$client = new Proxy_Request();
-			$client->setMethod(HTTP_REQUEST_METHOD_GET);
+			$client->setMethod('GET');
 			$client->setURL($url);
 
 			$result = $client->sendRequest();

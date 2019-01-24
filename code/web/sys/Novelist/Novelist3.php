@@ -1,6 +1,7 @@
 <?php
 require_once(ROOT_DIR . '/Drivers/marmot_inc/ISBNConverter.php');
 require_once ROOT_DIR . '/sys/Novelist/NovelistData.php';
+require_once ROOT_DIR . '/sys/HTTP/Proxy_Request.php';
 class Novelist3{
 
 	function doesGroupedWorkHaveCachedSeries($groupedRecordId){

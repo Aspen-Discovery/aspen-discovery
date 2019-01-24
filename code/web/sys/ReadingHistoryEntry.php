@@ -2,10 +2,8 @@
 /**
  * Table Definition for library
  */
-require_once 'DB/DataObject.php';
-require_once 'DB/DataObject/Cast.php';
-
-class ReadingHistoryEntry extends DB_DataObject 
+require_once ROOT_DIR . '/sys/DB/DataObject.php';
+class ReadingHistoryEntry extends DataObject
 {
 	public $__table = 'user_reading_history_work';   // table name
 	public $id;

@@ -2,11 +2,10 @@
 /**
  * Table Definition for library
  */
-require_once 'DB/DataObject.php';
-require_once 'DB/DataObject/Cast.php';
+require_once ROOT_DIR . '/sys/DB/DataObject.php';
 require_once ROOT_DIR . '/sys/ListWidgetList.php';
 
-class ListWidget extends DB_DataObject
+class ListWidget extends DataObject
 {
 	public $__table = 'list_widgets';    // table name
 	public $id;                      //int(25)

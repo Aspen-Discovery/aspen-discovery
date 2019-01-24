@@ -8,8 +8,9 @@
  * Time: 9:57 AM
  */
 
-class MergedRecord extends DB_DataObject{
+class MergedRecord extends DataObject{
 	public $__table = 'merged_records';   // table name
+    public $id;
 	public $original_record;
 	public $new_record;
 

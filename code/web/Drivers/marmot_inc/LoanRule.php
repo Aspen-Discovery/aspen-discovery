@@ -2,10 +2,8 @@
 /**
  * Table Definition for library
  */
-require_once 'DB/DataObject.php';
-require_once 'DB/DataObject/Cast.php';
-
-class LoanRule extends DB_DataObject
+require_once ROOT_DIR . '/sys/DB/DataObject.php';
+class LoanRule extends DataObject
 {
 	public $__table = 'loan_rules';   // table name
 	public $id;

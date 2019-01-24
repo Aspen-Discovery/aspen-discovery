@@ -8,7 +8,7 @@
  * Date: 5/18/2016
  * Time: 10:48 AM
  */
-class IslandoraObjectCache  extends DB_DataObject{
+class IslandoraObjectCache  extends DataObject{
 	public $__table = 'islandora_object_cache';
 	public $id;
 	public $pid;

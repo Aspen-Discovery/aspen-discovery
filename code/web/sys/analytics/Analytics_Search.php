@@ -1,7 +1,7 @@
 <?php
-require_once 'DB/DataObject.php';
+require_once ROOT_DIR . '/sys/DB/DataObject.php';
 
-class Analytics_Search extends DB_DataObject{
+class Analytics_Search extends DataObject{
 	public $__table = 'analytics_search';                        // table name
 	public $id;
 	public $sessionId;

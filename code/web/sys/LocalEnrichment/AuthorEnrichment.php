@@ -8,7 +8,7 @@
  * Date: 7/21/2016
  * Time: 11:36 AM
  */
-class AuthorEnrichment  extends DB_DataObject{
+class AuthorEnrichment  extends DataObject{
 	public $__table = 'author_enrichment';    // table name
 	public $id;
 	public $authorName;

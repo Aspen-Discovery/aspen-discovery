@@ -5,6 +5,7 @@ require_once ROOT_DIR . '/sys/Utils/SwitchDatabase.php';
 global $timer;
 global $logger;
 
+//This initializes the database
 $library = new Library();
 $library->find();
 

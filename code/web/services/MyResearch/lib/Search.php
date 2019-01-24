@@ -2,9 +2,9 @@
 /**
  * Table Definition for search
  */
-require_once 'DB/DataObject.php';
+require_once ROOT_DIR . '/sys/DB/DataObject.php';
 
-class SearchEntry extends DB_DataObject
+class SearchEntry extends DataObject
 {
 	public $__table = 'search';													// table name
 	public $id;															// int(11)	not_null primary_key auto_increment

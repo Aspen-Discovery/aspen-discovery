@@ -18,13 +18,10 @@
  *
  */
 require_once ROOT_DIR . '/sys/IndexEngine.php';
-require_once ROOT_DIR . '/sys/Proxy_Request.php';
+require_once ROOT_DIR . '/sys/HTTP/Proxy_Request.php';
 require_once ROOT_DIR . '/sys/ConfigArray.php';
 require_once ROOT_DIR . '/sys/SolrUtils.php';
 require_once ROOT_DIR . '/sys/VuFindCache.php';
-
-require_once 'XML/Unserializer.php';
-require_once 'XML/Serializer.php';
 
 /**
  * Solr HTTP Interface
@@ -244,7 +241,7 @@ class Solr implements IndexEngine {
 			// Test to see solr is online
 			$test_url = $this->host . "/admin/ping";
 			$test_client = new Proxy_Request('', array('timeout' => 2, 'read_timeout' => 1));
-			$test_client->setMethod(HTTP_REQUEST_METHOD_GET);
+			$test_client->setMethod('GET');
 			$test_client->setURL($test_url);
 			$result = $test_client->sendRequest();
 			if (!PEAR_Singleton::isError($result)) {
@@ -1441,7 +1438,7 @@ class Solr implements IndexEngine {
 	function search($query, $handler = null, $filter = null, $start = 0,
 	$limit = 20, $facet = null, $spell = '', $dictionary = null,
 	$sort = null, $fields = null,
-	$method = HTTP_REQUEST_METHOD_POST, $returnSolrError = false)
+	$method = 'POST', $returnSolrError = false)
 	{
 		global $timer;
 		global $configArray;

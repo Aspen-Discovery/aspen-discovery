@@ -2,11 +2,10 @@
 /**
  * Table Definition for Obituary
  */
-require_once 'DB/DataObject.php';
-require_once 'DB/DataObject/Cast.php';
-
-class Obituary extends DB_DataObject {
+require_once ROOT_DIR . '/sys/DB/DataObject.php';
+class Obituary extends DataObject {
 	public $__table = 'obituary'; // table name
+    public $__primaryKey = 'obituaryId';
 	public $obituaryId;
 	public $personId;
 	public $source;

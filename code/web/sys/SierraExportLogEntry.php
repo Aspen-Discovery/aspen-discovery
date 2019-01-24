@@ -2,13 +2,11 @@
 /**
  * Table Definition for library
  */
-require_once 'DB/DataObject.php';
-require_once 'DB/DataObject/Cast.php';
-
-class SierraExportLogEntry extends DB_DataObject
+require_once ROOT_DIR . '/sys/DB/DataObject.php';
+class SierraExportLogEntry extends DataObject
 {
 	public $__table = 'sierra_api_export_log';   // table name
-	public $id;
+    public $id;
 	public $startTime;
 	public $lastUpdate;
 	public $endTime;

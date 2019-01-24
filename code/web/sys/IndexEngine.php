@@ -98,7 +98,7 @@ Interface IndexEngine {
      */
 	function search($query, $handler = null, $filter = null, $start = 0,
 	                $limit = null, $facet = null, $spell = null, $sort = null, 
-                    $fields = null, $method = HTTP_REQUEST_METHOD_POST);
+                    $fields = null, $method = 'POST');
 
 
 }

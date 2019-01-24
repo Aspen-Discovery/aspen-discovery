@@ -8,7 +8,7 @@
  * Date: 2/22/2016
  * Time: 8:55 PM
  */
-class ArchiveSubject extends DB_DataObject{
+class ArchiveSubject extends DataObject{
 	public $__table = 'archive_subjects';
 	public $id;
 	public $subjectsToIgnore;

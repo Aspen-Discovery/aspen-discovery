@@ -19,7 +19,7 @@
  */
 
 require_once ROOT_DIR . '/Action.php';
-require_once ROOT_DIR . '/sys/Proxy_Request.php';
+require_once ROOT_DIR . '/sys/HTTP/Proxy_Request.php';
 
 global $configArray;
 

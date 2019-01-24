@@ -9,7 +9,7 @@
  */
 
 
-class HooplaExtract extends DB_DataObject
+class HooplaExtract extends DataObject
 {
 	public $id;
 	public $hooplaId;

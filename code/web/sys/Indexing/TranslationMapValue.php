@@ -8,7 +8,7 @@
  * Time: 1:44 PM
  */
 
-class TranslationMapValue extends DB_DataObject{
+class TranslationMapValue extends DataObject{
 	public $__table = 'translation_map_values';    // table name
 	public $id;
 	public $translationMapId;

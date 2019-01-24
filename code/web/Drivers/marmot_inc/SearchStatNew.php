@@ -2,10 +2,8 @@
 /**
  * Table Definition for bad words
  */
-require_once 'DB/DataObject.php';
-require_once 'DB/DataObject/Cast.php';
-
-class SearchStatNew extends DB_DataObject
+require_once ROOT_DIR . '/sys/DB/DataObject.php';
+class SearchStatNew extends DataObject
 {
 	public $__table = 'search_stats_new';    // table name
 	public $id;                      //int(11)

@@ -13,19 +13,19 @@ sites/default/solr5/tmp/*
 sites/default/solr5/server/logs/*
 sites/default/solr5/server/tmp/*
 sites/default/solr5/server/solr/configsets/*
-vufind/web/interface/cache/*
-vufind/web/interface/compile/*
-vufind/web/phpinfo.php
-vufind/web/images/fiveStar/*
-vufind/web/images/charts/*
-vufind/web/repository_images/*
-vufind/web/files/medium/*
-vufind/web/files/thumbnail/*
-vufind/web/files/original/*
-vufind/web/google*.html
-vufind/web/getWorkIdUpdates.php
-vufind/web/sitemaps/*.xml
-vufind/web/sitemaps/*.txt
+code/web/interface/cache/*
+code/web/interface/compile/*
+code/web/phpinfo.php
+code/web/images/fiveStar/*
+code/web/images/charts/*
+code/web/repository_images/*
+code/web/files/medium/*
+code/web/files/thumbnail/*
+code/web/files/original/*
+code/web/google*.html
+code/web/getWorkIdUpdates.php
+code/web/sitemaps/*.xml
+code/web/sitemaps/*.txt
 tests/jmeter/results/*
 tests/selenium/*
 tests/conf/config.ini
@@ -142,8 +142,8 @@ sites/*.library.nashville.org
 
 # Nashville CarlX Tools #
 ########################
-vufind/web/services/CarlXTools
-vufind/web/interface/themes/nashville_resp/CarlXTools
+code/web/services/CarlXTools
+code/web/interface/themes/nashville_resp/CarlXTools
 
 # Other stuff #
 ###############

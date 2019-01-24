@@ -8,7 +8,7 @@
  * Time: 9:25 PM
  */
 
-class LibraryBrowseCategory extends DB_DataObject{
+class LibraryBrowseCategory extends DataObject{
 	public $__table = 'browse_category_library';
 	public $id;
 	public $weight;

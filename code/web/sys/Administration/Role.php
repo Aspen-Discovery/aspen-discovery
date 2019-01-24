@@ -2,12 +2,11 @@
 /**
  * Table Definition for administrators
  */
-require_once 'DB/DataObject.php';
-require_once 'DB/DataObject/Cast.php';
-
-class Role extends DB_DataObject
+require_once ROOT_DIR . '/sys/DB/DataObject.php';
+class Role extends DataObject
 {
 	public $__table = 'roles';// table name
+    public $__primaryKey = 'roleId';
 	public $roleId;                        //int(11)
 	public $name;                     //varchar(50)
 	public $description;              //varchar(100)

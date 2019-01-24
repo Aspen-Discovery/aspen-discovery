@@ -8,7 +8,7 @@
  * Date: 4/27/14
  * Time: 2:23 PM
  */
-class Variable extends DB_DataObject {
+class Variable extends DataObject {
 	public $__table = 'variables'; // table name
 	public $id;
 	public $name;

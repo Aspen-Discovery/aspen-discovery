@@ -8,7 +8,7 @@
  * Time: 10:47 AM
  */
 
-class UserTag extends DB_DataObject {
+class UserTag extends DataObject {
 	public $__table = 'user_tags';                            // table name
 	public $id;
 	public $tag;

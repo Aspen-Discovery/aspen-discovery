@@ -93,7 +93,7 @@ class AuthorFacets implements RecommendationInterface
             null,                 // Spellcheck dictionary
             null,                 // Field to sort on
             'score',              // Fields to return
-            HTTP_REQUEST_METHOD_POST,
+            'POST',
             true                  // Return error messages so we don't blow up!
         );
 

@@ -9,9 +9,8 @@
  * Date: 11/27/2015
  * Time: 9:31 PM
  */
-require_once 'DB/DataObject.php';
-require_once 'DB/DataObject/Cast.php';
-class IlsVolumeInfo extends DB_DataObject{
+require_once ROOT_DIR . '/sys/DB/DataObject.php';
+class IlsVolumeInfo extends DataObject{
 	public $__table = 'ils_volume_info';    // table name
 	public $id;
 	public $recordId;

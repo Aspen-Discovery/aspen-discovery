@@ -1,10 +1,9 @@
 <?php
-require_once 'DB/DataObject.php';
-require_once 'DB/DataObject/Cast.php';
-
-class ArtifactImage extends DB_DataObject
+require_once ROOT_DIR . '/sys/DB/DataObject.php';
+class ArtifactImage extends DataObject
 {
     public $__table = 'artifact_image';    // table name
+    public $__primaryKey = 'artifactImageId';
     public $artifactImageId;
     public $artifactId;
     public $webLink;

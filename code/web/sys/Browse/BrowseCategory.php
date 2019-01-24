@@ -10,7 +10,7 @@
  */
 require_once ROOT_DIR . '/sys/Browse/SubBrowseCategories.php';
 
-class BrowseCategory extends DB_DataObject{
+class BrowseCategory extends DataObject{
 	public $__table = 'browse_category';
 	public $id;
 	public $textId;  //A textual id to make it easier to transfer browse categories between systems

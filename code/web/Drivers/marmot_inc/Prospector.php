@@ -3,6 +3,7 @@
  * Handles integration with Prospector
  */
 
+require_once ROOT_DIR . '/sys/HTTP/Proxy_Request.php';
 class Prospector{
 	/**
 	 * Load search results from Prospector using the encore interface.

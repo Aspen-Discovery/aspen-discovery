@@ -1,8 +1,7 @@
 <?php
 require_once ROOT_DIR . '/sys/Solr.php';
-require_once 'DB/DataObject.php';
-require_once 'DB/DataObject/Cast.php';
-abstract class SolrDataObject extends DB_DataObject{
+require_once ROOT_DIR .'/sys/DB/DataObject.php';
+abstract class SolrDataObject extends DataObject{
 	/**
 	 * Return an array describing the structure of the object fields, etc.
 	 */

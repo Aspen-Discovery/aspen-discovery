@@ -2,12 +2,11 @@
 /**
  * Table Definition for marriage
  */
-require_once 'DB/DataObject.php';
-require_once 'DB/DataObject/Cast.php';
-
-class Marriage extends DB_DataObject
+require_once ROOT_DIR . '/sys/DB/DataObject.php';
+class Marriage extends DataObject
 {
 	public $__table = 'marriage';    // table name
+    public $__primaryKey = 'marriageId';
 	public $marriageId;
 	public $personId;
 	public $spouseName;

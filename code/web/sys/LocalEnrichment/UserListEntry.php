@@ -7,8 +7,8 @@
  * Date: 3/10/14
  * Time: 3:50 PM
  */
-require_once 'DB/DataObject.php';
-class UserListEntry extends DB_DataObject{
+require_once ROOT_DIR . '/sys/DB/DataObject.php';
+class UserListEntry extends DataObject{
 	public $__table = 'user_list_entry';     // table name
 	public $id;                              // int(11)  not_null primary_key auto_increment
 	public $groupedWorkPermanentId;          // int(11)  not_null multiple_key

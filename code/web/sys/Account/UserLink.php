@@ -8,7 +8,7 @@
  * Time: 3:44 PM
  */
 
-class UserLink extends DB_DataObject{
+class UserLink extends DataObject{
 	public $id;
 	public $primaryAccountId;
 	public $linkedAccountId;

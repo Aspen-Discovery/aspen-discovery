@@ -2,10 +2,8 @@
 /**
  * Table Definition for bad words
  */
-require_once 'DB/DataObject.php';
-require_once 'DB/DataObject/Cast.php';
-
-class BadWord extends DB_DataObject
+require_once ROOT_DIR . '/sys/DB/DataObject.php';
+class BadWord extends DataObject
 {
 	public $__table = 'bad_words';    // table name
 	public $id;                      //int(11)

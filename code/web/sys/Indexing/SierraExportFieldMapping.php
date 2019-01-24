@@ -7,7 +7,7 @@
  * Time: 12:17 PM
  */
 
-class SierraExportFieldMapping extends DB_DataObject{
+class SierraExportFieldMapping extends DataObject{
 	public $__table = 'sierra_export_field_mapping';    // table name
 	public $id;
 	public $indexingProfileId;

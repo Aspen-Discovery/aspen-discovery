@@ -1,14 +1,11 @@
 <?php
-/**
- * Table Definition for library
- */
-require_once 'DB/DataObject.php';
-require_once 'DB/DataObject/Cast.php';
 
-class RecordGroupingLogEntry extends DB_DataObject
+require_once ROOT_DIR .'/sys/DB/DataObject.php';
+
+class RecordGroupingLogEntry extends DataObject
 {
 	public $__table = 'record_grouping_log';   // table name
-	public $id;
+    public $id;
 	public $startTime;
 	public $lastUpdate;
 	public $endTime;

@@ -8,7 +8,7 @@
  * Date: 3/29/2016
  * Time: 12:05 PM
  */
-class NonGroupedRecord extends DB_DataObject{
+class NonGroupedRecord extends DataObject{
 	public $__table = 'nongrouped_records';
 	public $id;
 	public $source;

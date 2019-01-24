@@ -8,7 +8,7 @@
  * Time: 9:51 AM
  */
 
-class GroupedWorkPrimaryIdentifier extends DB_DataObject{
+class GroupedWorkPrimaryIdentifier extends DataObject{
 	public $__table = 'grouped_work_primary_identifiers';    // table name
 
 	public $id;

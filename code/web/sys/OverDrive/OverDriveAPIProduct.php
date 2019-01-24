@@ -8,7 +8,7 @@
  * Time: 9:28 AM
  */
 
-class OverDriveAPIProduct extends DB_DataObject{
+class OverDriveAPIProduct extends DataObject{
 	public $__table = 'overdrive_api_products';   // table name
 
 	public $id;

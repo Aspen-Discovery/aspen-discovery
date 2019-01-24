@@ -44,7 +44,7 @@ class SearchObject_Islandora extends SearchObject_Base
 	private $fields = 'PID,fgs_label_s,dc.title,mods_abstract_s,mods_genre_s,RELS_EXT_hasModel_uri_s,dateCreated,score,fgs_createdDate_dt,fgs_lastModifiedDate_dt';
 	// HTTP Method
 	//    private $method = HTTP_REQUEST_METHOD_GET;
-	private $method = HTTP_REQUEST_METHOD_POST;
+	private $method = 'POST';
 	// Result
 	private $indexResult;
 

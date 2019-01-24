@@ -8,13 +8,13 @@
  * Date: 11/17/2016
  *
  */
-require_once 'DB/DataObject.php';
-require_once 'DB/DataObject/Cast.php';
-
-class UserRoles extends DB_DataObject
+require_once ROOT_DIR . '/sys/DB/DataObject.php';
+class UserRoles extends DataObject
 {
 
 	public $__table = 'user_roles';// table name
+    public $__primaryKey = 'id';
+    public $id;
 	public $userId; // int(11)
 	public $roleId; // int(11)
 

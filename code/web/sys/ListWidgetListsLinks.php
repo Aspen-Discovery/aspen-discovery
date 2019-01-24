@@ -2,13 +2,11 @@
 /**
  * Table Definition for library
  */
-require_once 'DB/DataObject.php';
-require_once 'DB/DataObject/Cast.php';
-
-class ListWidgetListsLinks extends DB_DataObject
+require_once ROOT_DIR . '/sys/DB/DataObject.php';
+class ListWidgetListsLinks extends DataObject
 {
 	public $__table = 'list_widget_lists_links';    // table name
-	public $id; //int(11)
+    public $id; //int(11)
 	public $listWidgetListsId;//int(11)
 	public $name; //varchar(255)
 	public $link; //text

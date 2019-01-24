@@ -2,10 +2,8 @@
 /**
  * Table Definition for user
  */
-require_once 'DB/DataObject.php';
-require_once 'DB/DataObject/Cast.php';
-
-class User extends DB_DataObject
+require_once ROOT_DIR . '/sys/DB/DataObject.php';
+class User extends DataObject
 {
 	###START_AUTOCODE
 	/* the code below is auto generated do not remove the above tag */

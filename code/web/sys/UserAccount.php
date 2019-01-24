@@ -47,7 +47,7 @@ class UserAccount {
 				//if ($action != 'AJAX' && $action != 'DjatokaResolver' && $action != 'Logout' && $module != 'MyAccount' && $module != 'API' && !isset($_REQUEST['username'])){
 				//If the library uses CAS/SSO we may already be logged in even though they never logged in within Pika
 				global $library;
-				if (strlen($library->casHost) > 0) {
+				if ($library && strlen($library->casHost) > 0) {
 					$checkCAS = false;
 					$curTime = time();
 					if (!isset($_SESSION['lastCASCheck'])){

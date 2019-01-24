@@ -8,7 +8,7 @@
  * Time: 9:51 AM
  */
 
-class NotInterested extends DB_DataObject{
+class NotInterested extends DataObject{
 	public $id;
 	public $userId;
 	public $groupedRecordPermanentId;

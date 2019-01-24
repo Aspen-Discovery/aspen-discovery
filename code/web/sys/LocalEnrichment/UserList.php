@@ -2,9 +2,9 @@
 /**
  * Table Definition for user_list
  */
-require_once 'DB/DataObject.php';
+require_once ROOT_DIR . '/sys/DB/DataObject.php';
 
-class UserList extends DB_DataObject
+class UserList extends DataObject
 {
 
 	public $__table = 'user_list';												// table name

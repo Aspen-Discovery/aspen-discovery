@@ -8,7 +8,7 @@
  * Time: 9:26 PM
  */
 
-class LocationBrowseCategory extends DB_DataObject{
+class LocationBrowseCategory extends DataObject{
 	public $__table = 'browse_category_location';
 	public $id;
 	public $weight;

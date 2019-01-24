@@ -2,10 +2,8 @@
 /**
  * Table Definition for User Ratings
  */
-require_once 'DB/DataObject.php';
-require_once 'DB/DataObject/Cast.php';
-
-class UserRating extends DB_DataObject 
+require_once ROOT_DIR . '/sys/DB/DataObject.php';
+class UserRating extends DataObject
 {
   public $__table = 'user_rating';    // table name
   public $id;                       //int(11)

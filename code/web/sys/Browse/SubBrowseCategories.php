@@ -8,9 +8,9 @@
  * Date: 6/3/2015
  *
  */
-require_once 'DB/DataObject.php';
+require_once ROOT_DIR . '/sys/DB/DataObject.php';
 
-class SubBrowseCategories extends DB_DataObject {
+class SubBrowseCategories extends DataObject {
 	public $__table = 'browse_category_subcategories';
 	public
 		$id,

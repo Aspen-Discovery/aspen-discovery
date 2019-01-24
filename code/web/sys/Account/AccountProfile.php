@@ -8,7 +8,7 @@
  * Time: 4:48 PM
  */
 
-class AccountProfile extends DB_DataObject {
+class AccountProfile extends DataObject {
 	public $__table = 'account_profiles';    // table name
 
 	public $id;

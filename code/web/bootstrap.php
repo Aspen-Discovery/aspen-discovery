@@ -33,7 +33,7 @@ if ($configArray['System']['debug']) {
 // this can't be determined before session_start is called
 ob_start();
 
-//initMemcache();
+initMemcache();
 initDatabase();
 $timer->logTime("Initialized Database");
 requireSystemLibraries();
@@ -52,29 +52,41 @@ function initMemcache(){
 	/** @var Memcache $memCache */
 	global $memCache;
 	global $timer;
-	global $configArray;
-	// Set defaults if nothing set in config file.
-	$host = isset($configArray['Caching']['memcache_host']) ? $configArray['Caching']['memcache_host'] : 'localhost';
-	$port = isset($configArray['Caching']['memcache_port']) ? $configArray['Caching']['memcache_port'] : 11211;
-	$timeout = isset($configArray['Caching']['memcache_connection_timeout']) ? $configArray['Caching']['memcache_connection_timeout'] : 1;
+    /*global $configArray;
+    // Set defaults if nothing set in config file.
+    $host = isset($configArray['Caching']['memcache_host']) ? $configArray['Caching']['memcache_host'] : 'localhost';
+    $port = isset($configArray['Caching']['memcache_port']) ? $configArray['Caching']['memcache_port'] : 11211;
+    $timeout = isset($configArray['Caching']['memcache_connection_timeout']) ? $configArray['Caching']['memcache_connection_timeout'] : 1;
 
-	// Connect to Memcache:
+    // Connect to Memcache:
+    $memCache = new Memcache();
+    if (!@$memCache->pconnect($host, $port, $timeout)) {
+        //Try again with a non-persistent connection
+        if (!$memCache->connect($host, $port, $timeout)) {
+            PEAR_Singleton::raiseError(new PEAR_Error("Could not connect to Memcache (host = {$host}, port = {$port})."));
+        }
+    }*/
+    require_once ROOT_DIR . '/sys/MemoryCache/Memcache.php';
 	$memCache = new Memcache();
-	if (!@$memCache->pconnect($host, $port, $timeout)) {
-		//Try again with a non-persistent connection
-		if (!$memCache->connect($host, $port, $timeout)) {
-			PEAR_Singleton::raiseError(new PEAR_Error("Could not connect to Memcache (host = {$host}, port = {$port})."));
-		}
-	}
 	$timer->logTime("Initialize Memcache");
 }
 
 function initDatabase(){
 	global $configArray;
+	/** @var PDO */
+	global $aspen_db;
+
+	try{
+        $aspen_db = new PDO($configArray['Database']['database_dsn'],$configArray['Database']['database_user'],$configArray['Database']['database_password']);
+    } catch (PDOException $e) {
+	    echo("Could not connect to database {$configArray['Database']['database_vufind']}, define database connection information in config.pwd.ini<br>$e");
+	    die();
+    }
+
 	// Setup Local Database Connection
-	define('DB_DATAOBJECT_NO_OVERLOAD', 0);
-	$options =& PEAR_Singleton::getStaticProperty('DB_DataObject', 'options');
-	$options = $configArray['Database'];
+	//define('DB_DATAOBJECT_NO_OVERLOAD', 0);
+	//$options =& PEAR_Singleton::getStaticProperty('DB_DataObject', 'options');
+	//$options = $configArray['Database'];
 }
 
 function requireSystemLibraries(){
