@@ -112,7 +112,7 @@ class UserAccount {
 				require_once ROOT_DIR . '/sys/Administration/Role.php';
 				$role = new Role();
 				$canUseTestRoles = false;
-				$role->query("SELECT roles.name FROM roles INNER JOIN user_roles ON roles.roleId = user_roles.roleId WHERE userId = " . UserAccount::getActiveUserId() . " ORDER BY name");
+				$role->query("SELECT * FROM roles INNER JOIN user_roles ON roles.roleId = user_roles.roleId WHERE userId = " . UserAccount::getActiveUserId() . " ORDER BY name");
 				while ($role->fetch()){
 					UserAccount::$userRoles[$role->name] = $role->name;
 					if ($role->name == 'userAdmin'){

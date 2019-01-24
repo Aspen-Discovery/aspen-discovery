@@ -73,7 +73,8 @@ abstract class DataObject
     }
 
     public function fetch(){
-        $this->__queryStmt->fetch(PDO::FETCH_INTO);
+        $return = $this->__queryStmt->fetch(PDO::FETCH_INTO);
+        return $return;
     }
 
     public function orderBy($fieldsToOrder){
@@ -161,5 +162,72 @@ abstract class DataObject
     public function limit($start, $count){
         $this->__limitStart = $start;
         $this->__limitCount = $count;
+    }
+
+    public function count(){
+        if (!isset($this->__table)) {
+            echo("Table not defined for class " . self::class);
+            die();
+        }
+
+        /** @var PDO $aspen_db  */
+        global $aspen_db;
+        $query = 'SELECT COUNT(*) from ' . $this->__table;
+        $properties = get_object_vars($this);
+        $where = '';
+        foreach ($properties as $name => $value) {
+            if ($value != null && $name[0] != '_') {
+                if (strlen($where) != 0) {
+                    $where .= ' AND ';
+                }
+                $where .= $name . ' = ' . $aspen_db->quote($value);
+            }
+        }
+        if (strlen($this->__where) > 0 && strlen($where) > 0){
+            $query .= ' WHERE ' . $this->__where . ' AND ' . $where;
+        }else if (strlen($this->__where) > 0) {
+            $query .= ' WHERE ' . $this->__where;
+        }else if (strlen($where) > 0) {
+            $query .= ' WHERE ' . $where;
+        }
+        $this->__lastQuery = $query;
+        $this->__queryStmt = $aspen_db->prepare($query);
+        if ($this->__queryStmt->execute()){
+            if ($this->__queryStmt->rowCount()) {
+                $data = $this->__queryStmt->fetch();
+                return $data[0];
+            }
+        } else {
+            echo("Failed to execute " . $query);
+        }
+
+        return 0;
+    }
+
+    public function query($query){
+        if (!isset($this->__table)) {
+            echo("Table not defined for class " . self::class);
+            die();
+        }
+
+        /** @var PDO $aspen_db  */
+        global $aspen_db;
+
+        $this->__lastQuery = $query;
+        $this->__queryStmt = $aspen_db->prepare($query);
+        $this->__queryStmt->setFetchMode(PDO::FETCH_INTO, $this);
+        if ($this->__queryStmt->execute()){
+            $this->N = $this->__queryStmt->rowCount();
+        } else {
+            echo("Failed to execute " . $query);
+        }
+
+        return $this->N > 0;
+    }
+
+    public function escape($variable){
+        /** @var PDO $aspen_db  */
+        global $aspen_db;
+        return $aspen_db->quote($variable);
     }
 }

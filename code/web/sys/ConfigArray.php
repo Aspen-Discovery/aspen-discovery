@@ -305,10 +305,18 @@ function updateConfigForScoping($configArray) {
 	//Load the library system information
 	global $library;
 	global $locationSingleton;
-	if (isset($_SESSION['library']) && isset($_SESSION['location'])){
-		$library = $_SESSION['library'];
-		$locationSingleton = $_SESSION['library'];
-		$timer->logTime('got library and location from session');
+	if (isset($_SESSION['library']) && isset($_SESSION['location'])) {
+        $library = $_SESSION['library'];
+        $locationSingleton = $_SESSION['library'];
+        $timer->logTime('got library and location from session');
+    }else if (count($subdomainsToTest) == 0){
+        $Library = new Library();
+        $Library->isDefault = 1;
+        $Library->find();
+        if ($Library->N == 1) {
+            $Library->fetch();
+            $library = $Library;
+        }
 	}else {
 		for ($i = 0; $i < count($subdomainsToTest); $i++){
 			$subdomain = $subdomainsToTest[$i];
@@ -370,7 +378,10 @@ function updateConfigForScoping($configArray) {
 		}
 	}
 	$timer->logTime('found library and location');
-	if (isset($library) && $library != null){
+	if ($library == null) {
+	    echo("Could not find the active library, please review configuration settings");
+	    die();
+    } else {
 		//Update the title
 		$configArray['Site']['theme'] = $library->themeName . ',' . $configArray['Site']['theme'] . ',default';
 		$configArray['Site']['title'] = $library->displayName;
