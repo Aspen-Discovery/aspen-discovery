@@ -20,7 +20,7 @@ class Proxy_Request extends HTTP_Request
 
 	/**
 	 * @param bool $saveBody
-	 * @return PEAR_Error|mixed|void
+	 * @return PEAR_Error|mixed
 	 */
 	function SendRequest($saveBody = true)
     {

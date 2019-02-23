@@ -943,7 +943,7 @@ function initializeSession(){
 	$session_type = $configArray['Session']['type'];
 	$session_lifetime = $configArray['Session']['lifetime'];
 	$session_rememberMeLifetime = $configArray['Session']['rememberMeLifetime'];
-	register_shutdown_function('session_write_close');
+	//register_shutdown_function('session_write_close');
 	$sessionClass = ROOT_DIR . '/sys/' . $session_type . '.php';
 	require_once $sessionClass;
 	if (class_exists($session_type)) {

@@ -11,6 +11,7 @@
  */
 
 require_once ROOT_DIR . '/RecordDrivers/Interface.php';
+require_once ROOT_DIR . '/sys/File/MARC.php';
 class GroupedWorkDriver extends RecordInterface{
 
 	protected $fields;
@@ -1125,10 +1126,10 @@ class GroupedWorkDriver extends RecordInterface{
 				return $this->fields['_highlighting']['author_display'][0];
 			}
 		}
-		if (isset($this->fields['author'])){
-			return $this->fields['author'];
+		if (isset($this->fields['author_display'])){
+			return $this->fields['author_display'];
 		}else{
-			return isset($this->fields['author_display']) ? $this->fields['author_display'] : '';
+			return isset($this->fields['author']) ? $this->fields['author'] : '';
 		}
 	}
 
@@ -2291,30 +2292,6 @@ class GroupedWorkDriver extends RecordInterface{
 		}
 
 		return $this->filterAndSortMoreDetailsOptions($moreDetailsOptions);
-	}
-
-	public function getTags(){
-		/** @var UserTag[] $tags */
-		$tags = array();
-		require_once ROOT_DIR . '/sys/LocalEnrichment/UserTag.php';
-		$userTags = new UserTag();
-		$userTags->groupedRecordPermanentId = $this->getPermanentId();
-		$userTags->find();
-		while ($userTags->fetch()){
-			if (!isset($tags[$userTags->tag])){
-				$tags[$userTags->tag] = clone $userTags;
-				$tags[$userTags->tag]->userAddedThis = false;
-			}
-			$tags[$userTags->tag]->cnt++;
-			if (UserAccount::isLoggedIn()){
-				return false;
-			}else{
-				if (UserAccount::getActiveUserId() == $tags[$userTags->tag]->userId){
-					$tags[$userTags->tag]->userAddedThis = true;
-				}
-			}
-		}
-		return $tags;
 	}
 
 	public function getAcceleratedReaderData(){

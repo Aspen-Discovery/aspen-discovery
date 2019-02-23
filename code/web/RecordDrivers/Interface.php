@@ -340,12 +340,6 @@ abstract class RecordInterface {
 				'label' => 'Editorial Reviews',
 				'body' => "<div id='editorialReviewPlaceholder'></div>",
 		);
-		if ($interface->getVariable('showTagging')){
-			$moreDetailsOptions['tags'] = array(
-					'label' => 'Tagging',
-					'body' => $interface->fetch('GroupedWork/view-tags.tpl'),
-			);
-		}
 		if ($isbn){
 			$moreDetailsOptions['syndicatedReviews'] = array(
 					'label' => 'Published Reviews',

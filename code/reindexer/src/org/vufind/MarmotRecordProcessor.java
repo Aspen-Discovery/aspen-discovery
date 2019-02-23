@@ -149,24 +149,16 @@ class MarmotRecordProcessor extends IIIRecordProcessor {
 
 	@Override
 	protected void loadEContentFormatInformation(Record record, RecordInfo econtentRecord, ItemInfo econtentItem) {
-		String protectionType = econtentItem.geteContentProtectionType();
-		switch (protectionType) {
-			case "external":
-				String iType = econtentItem.getITypeCode();
-				if (iType != null) {
-					String translatedFormat = translateValue("econtent_itype_format", iType, econtentRecord.getRecordIdentifier());
-					String translatedFormatCategory = translateValue("econtent_itype_format_category", iType, econtentRecord.getRecordIdentifier());
-					String translatedFormatBoost = translateValue("econtent_itype_format_boost", iType, econtentRecord.getRecordIdentifier());
-					econtentItem.setFormat(translatedFormat);
-					econtentItem.setFormatCategory(translatedFormatCategory);
-					econtentRecord.setFormatBoost(Long.parseLong(translatedFormatBoost));
-				} else {
-					logger.warn("Did not get a iType for external eContent " + econtentRecord.getFullIdentifier());
-				}
-				break;
-			default:
-				logger.warn("Unknown protection type " + protectionType);
-				break;
+		String iType = econtentItem.getITypeCode();
+		if (iType != null) {
+			String translatedFormat = translateValue("econtent_itype_format", iType, econtentRecord.getRecordIdentifier());
+			String translatedFormatCategory = translateValue("econtent_itype_format_category", iType, econtentRecord.getRecordIdentifier());
+			String translatedFormatBoost = translateValue("econtent_itype_format_boost", iType, econtentRecord.getRecordIdentifier());
+			econtentItem.setFormat(translatedFormat);
+			econtentItem.setFormatCategory(translatedFormatCategory);
+			econtentRecord.setFormatBoost(Long.parseLong(translatedFormatBoost));
+		} else {
+			logger.warn("Did not get a iType for external eContent " + econtentRecord.getFullIdentifier());
 		}
 	}
 

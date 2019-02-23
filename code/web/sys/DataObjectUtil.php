@@ -20,7 +20,6 @@
 
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/Admin.php';
-require_once 'XML/Unserializer.php';
 
 class DataObjectUtil
 {

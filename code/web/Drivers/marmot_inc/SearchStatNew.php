@@ -32,7 +32,7 @@ class SearchStatNew extends DataObject
 			return array();
 		}
 		//Don't suggest things to users that will result in them not getting any results
-		$searchStat->whereAdd("MATCH(phrase) AGAINST ('" . $searchStat->escape($phrase) ."')");
+		$searchStat->whereAdd("MATCH(phrase) AGAINST (" . $searchStat->escape($phrase) .")");
 		//$searchStat->orderBy("numSearches DESC");
 		$searchStat->limit(0, 20);
 		$searchStat->find();
@@ -48,7 +48,7 @@ class SearchStatNew extends DataObject
 			//Try another search using like
 			$searchStat = new SearchStatNew();
 			//Don't suggest things to users that will result in them not getting any results
-			$searchStat->whereAdd("phrase LIKE '" . $searchStat->escape($phrase, true) ."%'");
+			$searchStat->whereAdd("phrase LIKE " . $searchStat->escape($phrase . '%', true));
 			$searchStat->orderBy("numSearches DESC");
 			$searchStat->limit(0, 11);
 			$searchStat->find();

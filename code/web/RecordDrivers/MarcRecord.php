@@ -17,7 +17,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
-require_once 'File/MARC.php';
+require_once ROOT_DIR . '/sys/File/MARC.php';
 
 require_once ROOT_DIR . '/RecordDrivers/IndexRecord.php';
 

@@ -1,10 +1,10 @@
 package org.vufind;
 
 import au.com.bytecode.opencsv.CSVWriter;
-import org.apache.solr.client.solrj.SolrServer;
+import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.impl.BinaryRequestWriter;
-import org.apache.solr.client.solrj.impl.ConcurrentUpdateSolrServer;
-import org.apache.solr.client.solrj.impl.HttpSolrServer;
+import org.apache.solr.client.solrj.impl.ConcurrentUpdateSolrClient;
+import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.common.SolrInputDocument;
 import org.ini4j.Ini;
 
@@ -30,9 +30,9 @@ public class GroupedWorkIndexer {
 	private String serverName;
 	private String solrPort;
 	private Logger logger;
-	private SolrServer solrServer;
+	private SolrClient solrServer;
 	private Long indexStartTime;
-	private ConcurrentUpdateSolrServer updateServer;
+	private ConcurrentUpdateSolrClient updateServer;
 	private HashMap<String, MarcRecordProcessor> ilsRecordProcessors = new HashMap<>();
 	private OverDriveProcessor overDriveProcessor;
 	private HashMap<String, HashMap<String, String>> translationMaps = new HashMap<>();
@@ -133,12 +133,15 @@ public class GroupedWorkIndexer {
 		GroupedReindexMain.addNoteToReindexLog("Setting up update server and solr server");
 		if (fullReindex){
 			//MDN 10-21-2015 - use the grouped core since we are using replication.
-			updateServer = new ConcurrentUpdateSolrServer("http://localhost:" + solrPort + "/solr/grouped", 500, 8);
+			ConcurrentUpdateSolrClient.Builder solrBuilder = new ConcurrentUpdateSolrClient.Builder("http://localhost:" + solrPort + "/solr/grouped_works");
+			solrBuilder.withThreadCount(8);
+			updateServer = solrBuilder.build();
 			updateServer.setRequestWriter(new BinaryRequestWriter());
-			solrServer = new HttpSolrServer("http://localhost:" + solrPort + "/solr/grouped");
+			HttpSolrClient.Builder httpBuilder = new HttpSolrClient.Builder("http://localhost:" + solrPort + "/solr/grouped_works");
+			solrServer = httpBuilder.build();
 
 			//Stop replication from the master
-			String url = "http://localhost:" + solrPort + "/solr/grouped/replication?command=disablereplication";
+			String url = "http://localhost:" + solrPort + "/solr/grouped_works/replication?command=disablereplication";
 			URLPostResponse stopReplicationResponse = Util.getURL(url, logger);
 			if (!stopReplicationResponse.isSuccess()){
 				logger.error("Error restarting replication " + stopReplicationResponse.getMessage());
@@ -175,9 +178,12 @@ public class GroupedWorkIndexer {
 			}else{
 				updatePartialReindexRunning(true);
 			}
-			updateServer = new ConcurrentUpdateSolrServer("http://localhost:" + solrPort + "/solr/grouped", 500, 8);
+			ConcurrentUpdateSolrClient.Builder solrBuilder = new ConcurrentUpdateSolrClient.Builder("http://localhost:" + solrPort + "/solr/grouped_works");
+			solrBuilder.withThreadCount(8);
+			updateServer = solrBuilder.build();
 			updateServer.setRequestWriter(new BinaryRequestWriter());
-			solrServer = new HttpSolrServer("http://localhost:" + solrPort + "/solr/grouped");
+			HttpSolrClient.Builder solrServerBuilder = new HttpSolrClient.Builder("http://localhost:" + solrPort + "/solr/grouped_works");
+			solrServer = solrServerBuilder.build();
 		}
 
 		loadScopes();
@@ -690,7 +696,7 @@ public class GroupedWorkIndexer {
 			//Swap the indexes
 			if (fullReindex)  {
 				//Restart replication from the master
-				String url = "http://localhost:" + solrPort + "/solr/grouped/replication?command=enablereplication";
+				String url = "http://localhost:" + solrPort + "/solr/grouped_works/replication?command=enablereplication";
 				URLPostResponse startReplicationResponse = Util.getURL(url, logger);
 				if (!startReplicationResponse.isSuccess()){
 					logger.error("Error restarting replication " + startReplicationResponse.getMessage());
@@ -710,7 +716,7 @@ public class GroupedWorkIndexer {
 				updateServer.commit(false, false, true);
 				GroupedReindexMain.addNoteToReindexLog("Shutting down the update server");
 				updateServer.blockUntilFinished();
-				updateServer.shutdown();
+				updateServer.close();
 			} catch (Exception e) {
 				logger.error("Error shutting down update server", e);
 			}

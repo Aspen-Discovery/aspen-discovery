@@ -20,10 +20,10 @@
 		<div id="selectedWidgetCss" class="well well-sm">{if $object->customCss}{$object->customCss}{else}No custom css defined{/if}</div>
 		<h4>Widget Style</h4>
 		{assign var=selectedStyle value=$object->style}
-		<div id="selectedWidgetDisplayType" class="well well-sm">{$object->styles.$selectedStyle}</div>
+		<div id="selectedWidgetDisplayType" class="well well-sm">{$object->getStyles().$selectedStyle}</div>
 		<h4>Display Type</h4>
 		{assign var="selectedDisplayType" value=$object->listDisplayType}
-		<div id="selectedWidgetDisplayType" class="well well-sm">{$object->displayTypes.$selectedDisplayType}</div>
+		<div id="selectedWidgetDisplayType" class="well well-sm">{$object->getDisplayTypes().$selectedDisplayType}</div>
 
 		<h4>Maximum Titles to show</h4>
 		<div id="maxTitlesToShow" class="well well-sm">{$object->numTitlesToShow}</div>

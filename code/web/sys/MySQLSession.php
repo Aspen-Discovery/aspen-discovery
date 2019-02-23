@@ -5,15 +5,16 @@ require_once ROOT_DIR . '/services/MyResearch/lib/Session.php';
 
 class MySQLSession extends SessionInterface {
 	static $sessionStartTime;
+	/** @var Session */
+	static $active_session;
 	static public function read($sess_id) {
 		global $logger;
 		$s = new Session();
 		$s->session_id = $sess_id;
 
-		$cookieData = '';
-		$saveNewSession = false;
 		$curTime = time();
 		$logger->log("Loading session $sess_id for " . $_SERVER['REQUEST_URI'] . " $curTime", PEAR_LOG_DEBUG);
+        $createSession = false;
 		if ($s->find(true)) {
 			//First check to see if the session expired
 			MySQLSession::$sessionStartTime = $curTime;
@@ -25,25 +26,21 @@ class MySQLSession extends SessionInterface {
 			if ($curTime > $sessionExpirationTime){
 			    //Clear any previously saved data
 			    $s->data = '';
+			    $s->delete();
                 $_SESSION = array();
-				$s->update();
-				$saveNewSession = true;
+				$createSession = true;
 			}else{
 				// updated the session in the database to show that we just used it
-				$s->last_used = $curTime;
-				if ($s->data == null) {
-				    $s->data = '';
-                }
-				$s->update();
-				$cookieData = $s->data;
+                MySQLSession::$active_session = $s;
 			}
 		} else {
-			$saveNewSession = true;
+			$createSession = true;
 		}
-		if ($saveNewSession){
+		if ($createSession){
+		    $s = new Session();
 			$s->session_id = $sess_id;
 			//There is no active session, we need to create a new one.
-			$s->last_used = $curTime;
+			$s->last_used = MySQLSession::$sessionStartTime;
 			// in date format - easier to read
 			$s->created = date('Y-m-d h:i:s');
 			if (isset($_SESSION['rememberMe']) && $_SESSION['rememberMe'] == true){
@@ -52,39 +49,49 @@ class MySQLSession extends SessionInterface {
 				$s->remember_me = 0;
 			}
 			$s->data = '';
-			$s->insert();
+            MySQLSession::$active_session = $s;
+			$ret = $s->insert();
 		}
+		$cookieData = MySQLSession::$active_session->data;
 		return $cookieData;
 	}
 
+    /**
+     * @param $sess_id
+     * @param $data
+     * @return bool
+     */
 	static public function write($sess_id, $data) {
 		global $logger;
-		$s = new Session();
-		$s->session_id = $sess_id;
-		if ($s->find(true)) {
-			//$logger->log("Saving session for " . $_SERVER['REQUEST_URI'] . " {$s->last_used}, " . MySQLSession::$sessionStartTime, PEAR_LOG_DEBUG);
-			if ($s->last_used != MySQLSession::$sessionStartTime){
-				$logger->log("Not Writing Session data $sess_id because another process wrote to it already", PEAR_LOG_DEBUG);
-				return true;
-			}
-			if ($s->data != $data) {
-				$s->data = $data;
-				$s->last_used = time();
-				$logger->log("Session data changed $sess_id {$s->last_used} " . print_r($data, true), PEAR_LOG_DEBUG);
-			}
-			if (isset($_SESSION['rememberMe']) && ($_SESSION['rememberMe'] == true || $_SESSION['rememberMe'] === "true")){
-				$s->remember_me = 1;
-				setcookie(session_name(),session_id(),time()+self::$rememberMeLifetime,'/');
-			}else{
-				$s->remember_me = 0;
-				session_set_cookie_params(0);
-			}
-			parent::write($sess_id, $data);
-			return $s->update();
-		} else {
-			//No session active
-			return false;
-		}
+		global $module;
+		global $action;
+		if ($module == 'AJAX' || $action == 'AJAX' || $action == 'JSON') {
+		    //Don't update sessions on AJAX and JSON calls
+            //TODO: Make sure this doesn't break anything
+		    return true;
+        }
+		if (MySQLSession::$active_session->session_id != $sess_id) {
+		    echo("Session id changed since load time");
+		    die();
+        }
+
+		$s = MySQLSession::$active_session;
+        $logger->log("Saving session for " . $_SERVER['REQUEST_URI'] . " {$s->last_used}, " . MySQLSession::$sessionStartTime, PEAR_LOG_DEBUG);
+        if ($s->data != $data) {
+            $s->data = $data;
+            $s->last_used = MySQLSession::$sessionStartTime;
+            $logger->log("Session data changed $sess_id {$s->last_used} " . print_r($data, true), PEAR_LOG_DEBUG);
+        }
+        if (isset($_SESSION['rememberMe']) && ($_SESSION['rememberMe'] == true || $_SESSION['rememberMe'] === "true")){
+            $s->remember_me = 1;
+            setcookie(session_name(),session_id(),time()+self::$rememberMeLifetime,'/');
+        }else{
+            $s->remember_me = 0;
+            session_set_cookie_params(0);
+        }
+        parent::write($sess_id, $data);
+        $ret = $s->update();
+        return $ret;
 	}
 
 	static public function destroy($sess_id) {
@@ -100,16 +107,8 @@ class MySQLSession extends SessionInterface {
 	}
 
 	static public function gc($sess_maxlifetime) {
-		//Doing this in PHP  at random times, causes problems for VuFind, do it as part of cron in Java
-		/*$s = new Session();
-		$s->whereAdd('last_used + ' . $sess_maxlifetime . ' < ' . time());
-		$s->whereAdd('remember_me = 0');
-		$s->delete(true);
-
-		$s = new Session();
-		$s->whereAdd('last_used + ' . SessionInterface::$rememberMeLifetime . ' < ' . time());
-		$s->whereAdd('remember_me = 1');
-		$s->delete(true);*/
+        //Do nothing here, delete old sessions in Java Cron
+        return true;
 	}
 
 }

@@ -1,5 +1,5 @@
 #A list of files to merge, can comment out lines with a #
-C:\web\VuFind-Plus\vufind\web\js\jquery-1.9.1.min.js
+C:\web\aspen-discovery\code\web\js\jquery-1.9.1.min.js
 lib/jquery-ui-1.10.4.custom.min.js
 lib/bootstrap.min.js
 lib/bootstrap-datepicker.min.js

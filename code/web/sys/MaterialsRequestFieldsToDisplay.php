@@ -37,10 +37,8 @@ class MaterialsRequestFieldsToDisplay extends DataObject
 		$structure = array(
 			'id'                      => array('property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id of this association'),
 			'weight'                  => array('property'=>'weight', 'type'=>'integer', 'label'=>'Weight', 'description'=>'The sort order of rule', 'default' => 0),
-		  'columnNameToDisplay'     => array('property' => 'columnNameToDisplay', 'type' => 'enum', 'label' => 'Name of Column to Display', 'values' => $columnToChooseFrom, 'description' => 'Name of the database column to list in the main table of the Manage Requests Page'),
+		    'columnNameToDisplay'     => array('property' => 'columnNameToDisplay', 'type' => 'enum', 'label' => 'Name of Column to Display', 'values' => $columnToChooseFrom, 'description' => 'Name of the database column to list in the main table of the Manage Requests Page'),
 			'labelForColumnToDisplay' => array('property' => 'labelForColumnToDisplay', 'type' => 'text', 'label' => 'Display Label', 'description' => 'Label to put in the table header of the Manage Requests page.'),
-//			'libraryId' => array(), // hidden value or internally updated.
-
 		);
 		return $structure;
 	}

@@ -27,7 +27,6 @@ public class GroupedWorkSolr implements Cloneable {
 	private HashSet<String> alternateIds = new HashSet<>();
 	private String authAuthor;
 	private HashMap<String,Long> primaryAuthors = new HashMap<>();
-	private String authorLetter;
 	private HashSet<String> authorAdditional = new HashSet<>();
 	private String authorDisplay;
 	private HashSet<String> author2 = new HashSet<>();
@@ -46,7 +45,6 @@ public class GroupedWorkSolr implements Cloneable {
 	private String displayDescriptionFormat = "";
 	private String displayTitle;
 	private Long earliestPublicationDate = null;
-	private HashSet<String> econtentDevices = new HashSet<>();
 	private HashSet<String> editions = new HashSet<>();
 	private HashSet<String> eras = new HashSet<>();
 	private HashSet<String> fullTitles = new HashSet<>();
@@ -134,8 +132,6 @@ public class GroupedWorkSolr implements Cloneable {
 		// noinspection unchecked
 		clonedWork.description = (HashSet<String>) description.clone();
 		// noinspection unchecked
-		clonedWork.econtentDevices = (HashSet<String>) econtentDevices.clone();
-		// noinspection unchecked
 		clonedWork.editions = (HashSet<String>) editions.clone();
 		// noinspection unchecked
 		clonedWork.eras = (HashSet<String>) eras.clone();
@@ -222,9 +218,10 @@ public class GroupedWorkSolr implements Cloneable {
 		}
 		doc.addField("title", fullTitle);
 		doc.addField("title_display", displayTitle);
-		doc.addField("title_sub", subTitle);
-		doc.addField("title_short", title);
 		doc.addField("title_full", fullTitles);
+
+		doc.addField("subtitle_display", subTitle);
+		doc.addField("title_short", title);
 		doc.addField("title_sort", titleSort);
 		doc.addField("title_alt", titleAlt);
 		doc.addField("title_old", titleOld);
@@ -233,7 +230,7 @@ public class GroupedWorkSolr implements Cloneable {
 		//author and variations
 		doc.addField("auth_author", authAuthor);
 		doc.addField("author", getPrimaryAuthor());
-		doc.addField("author-letter", authorLetter);
+
 		doc.addField("auth_author2", authAuthor2);
 		doc.addField("author2", author2);
 		doc.addField("author2-role", author2Role);
@@ -241,6 +238,7 @@ public class GroupedWorkSolr implements Cloneable {
 		doc.addField("author_display", authorDisplay);
 		//format
 		doc.addField("grouping_category", groupingCategory);
+
 		doc.addField("format_boost", getTotalFormatBoost());
 
 		//language related fields
@@ -337,17 +335,16 @@ public class GroupedWorkSolr implements Cloneable {
 		if (Util.isNumeric(acceleratedReaderPointValue)) {
 			doc.addField("accelerated_reader_point_value", acceleratedReaderPointValue);
 		}
-		//EContent fields
-		doc.addField("econtent_device", econtentDevices);
-
 		HashSet<String> eContentSources = getAllEContentSources();
 		keywords.addAll(eContentSources);
+
 		keywords.addAll(isbns.keySet());
 		keywords.addAll(oclcs);
 		keywords.addAll(barcodes);
 		keywords.addAll(issns);
 		keywords.addAll(lccns);
 		keywords.addAll(upcs.keySet());
+
 		HashSet<String> callNumbers = getAllCallNumbers();
 		keywords.addAll(callNumbers);
 		doc.addField("keywords", Util.getCRSeparatedStringFromSet(keywords));
@@ -371,9 +368,10 @@ public class GroupedWorkSolr implements Cloneable {
 		//relevance determiners
 		doc.addField("popularity", Long.toString((long)popularity));
 		doc.addField("num_holdings", numHoldings);
-		//vufind enrichment
+		//aspen-discovery enrichment
 		doc.addField("rating", rating);
 		doc.addField("rating_facet", getRatingFacet(rating));
+
 		doc.addField("description", Util.getCRSeparatedString(description));
 		doc.addField("display_description", displayDescription);
 
@@ -519,7 +517,6 @@ public class GroupedWorkSolr implements Cloneable {
 					addUniqueFieldValue(doc, "itype_" + curScopeName, Util.trimTrailingPunctuation(curItem.getIType()));
 					if (curItem.isEContent()) {
 						addUniqueFieldValue(doc, "econtent_source_" + curScopeName, Util.trimTrailingPunctuation(curItem.geteContentSource()));
-						addUniqueFieldValue(doc, "econtent_protection_type_" + curScopeName, curItem.geteContentProtectionType());
 					}
 					if (curScope.isLocallyOwned() || curScope.isLibraryOwned() || !curScopeDetails.isRestrictOwningLibraryAndLocationFacets()) {
 						addUniqueFieldValue(doc, "local_callnumber_" + curScopeName, curItem.getCallNumber());
@@ -1139,10 +1136,6 @@ public class GroupedWorkSolr implements Cloneable {
 		this.groupingCategory = groupingCategory;
 	}
 
-	void setAuthorLetter(String authorLetter) {
-		this.authorLetter = authorLetter;
-	}
-
 	void addAuthAuthor2(Set<String> fieldList) {
 		this.authAuthor2.addAll(fieldList);
 	}
@@ -1583,10 +1576,6 @@ public class GroupedWorkSolr implements Cloneable {
 		if (callNumber != null && callNumberSubject == null){
 			this.callNumberSubject = callNumber;
 		}
-	}
-
-	void addEContentDevices(HashSet<String> devices){
-		this.econtentDevices.addAll(Util.trimTrailingPunctuation(devices));
 	}
 
 	void addKeywords(String keywords){

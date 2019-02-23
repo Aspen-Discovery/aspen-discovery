@@ -974,9 +974,7 @@ class OverDriveRecordDriver extends RecordInterface {
 		}
 		return $this->groupedWorkDriver;
 	}
-	public function getTags(){
-		return $this->getGroupedWorkDriver()->getTags();
-	}
+
 	/**
 	 * Get the OpenURL parameters to represent this record (useful for the
 	 * title attribute of a COinS span tag).

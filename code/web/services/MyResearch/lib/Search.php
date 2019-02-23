@@ -26,9 +26,9 @@ class SearchEntry extends DataObject
 	{
 			$searches = array();
 
-			$sql = "SELECT * FROM search WHERE session_id = '" . $this->escape($sid) . "'";
+			$sql = "SELECT * FROM search WHERE session_id = " . $this->escape($sid);
 			if ($uid != null) {
-					$sql .= " OR user_id = '" . $this->escape($uid) . "'";
+					$sql .= " OR user_id = " . $this->escape($uid);
 			}
 			$sql .= " ORDER BY id";
 

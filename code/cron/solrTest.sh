@@ -97,7 +97,7 @@ function get_info() {
                         ##-- Test if solr has process runinng but the website
                         ##-- does not show a status of OK echos the solr site name
 
-                                local checkWebsiteStatus=$(curl -s -m30 "http://localhost:$port/solr/grouped/admin/ping" | grep -c OK)
+                                local checkWebsiteStatus=$(curl -s -m30 "http://localhost:$port/solr/grouped_works/admin/ping" | grep -c OK)
                                 if [ "$checkWebsiteStatus" != "1" ]; then
                                         ##-- Apache Solr Restart code --##
                                         getInfoReturn="$name"

@@ -12,23 +12,7 @@
 #        - [action3, actionParams]
 #      MungeName2:
 #        - [action1, actionParams]
-#    # DismaxFields is optional and defines the fields sent to the Dismax handler
-#    #     when we are able to use it.  QueryFields will be used for advanced
-#    #     searches that Dismax cannot support.  QueryFields is always used if no
-#    #     DismaxFields section is defined.
-#    DismaxFields:
-#      - field1^boost
-#      - field2^boost
-#      - field3^boost
-#    # DismaxParams is optional and allows you to override default Dismax settings
-#    #     (i.e. mm / bf) on a search-by-search basis.  If you want global default
-#    #     values for these settings, you can edit the "dismax" search handler in
-#    #     solr/biblio/conf/solrconfig.xml.
-#    DismaxParams:
-#      - [param1_name, param1_value]
-#      - [param2_name, param2_value]
-#      - [param3_name, param3_value]
-#    # QueryFields define the fields we are searching when not using Dismax
+#    # QueryFields define the fields we are searching
 #    QueryFields:
 #      - SolrField:
 #        - [howToMungeSearchstring, weight]
@@ -37,8 +21,7 @@
 #        - [howToMunge, weight]
 #    # The optional FilterQuery section allows you to AND a static query to the
 #    #     dynamic query generated using the QueryFields; see JournalTitle below
-#    #     for an example.  This is applied whether we use DismaxFields or 
-#    #     QueryFields.
+#    #     for an example.
 #    FilterQuery: (optional Lucene filter query)
 # 
 # ...etc.
@@ -125,7 +108,6 @@
 # See the CallNumber search below for an example of custom munging in action.
 #-----------------------------------------------------------------------------------
 
-# These searches use Dismax when possible:
 Author:
   QueryFields:
     - author_exact:
@@ -154,10 +136,6 @@ AuthorProper:
       - [onephrase, 100]
 
 ISN:
-  DismaxFields:
-    - isbn
-    - issn
-    - upc
   QueryFields:
     - issn:
       - [and, 100]
@@ -170,13 +148,6 @@ ISN:
       - [or, ~]
 
 Subject:
-  DismaxFields:
-    - subject^100
-    - topic^100
-    - topic_proper^100
-    - geographic^50
-    - genre^50
-    - era
   QueryFields:
     - subject:
       - [onephrase, 300]
@@ -203,12 +174,6 @@ Subject:
       - [or, ~]
 
 SubjectProper:
-  DismaxFields:
-    - subject_proper^100
-    - topic_proper^100
-    - geographic_proper^50
-    - genre_proper^50
-    - era_proper
   QueryFields:
     - subject_proper:
       - [onephrase, 300]
@@ -229,38 +194,6 @@ SubjectProper:
     - era_proper:
       - [and, 100]
       - [or, ~]
-
-JournalTitle:
-  DismaxFields:
-    - title_short^500
-    - title_full^400
-    - title^300
-    - title_alt^200
-    - title_new^100
-    - title_old
-    - series^100
-    - series2
-  QueryFields:
-    - title_short:
-      - [onephrase, 500]
-    - title_full:
-      - [onephrase, 400]
-    - title:
-      - [onephrase, 300]
-      - [and, 250]
-    - title_alt:
-      - [and, 200]
-    - title_new:
-      - [and, 100]
-    - title_old:
-      - [and, ~]
-    - series:
-      - [onephrase, 100]
-      - [and, 50]
-    - series2:
-      - [onephrase, 50]
-      - [and , ~]
-  FilterQuery: "format:Journal"
 
 Title:
   QueryFields:
@@ -297,9 +230,6 @@ Title:
       - [and, 30]
 
 TitleProper:
-  DismaxFields:
-    - title_proper^850
-    - series_proper^100
   QueryFields:
     - title_exact:
       - [localized_callnumber, 2400]
@@ -317,9 +247,6 @@ StartOfTitle:
       - [localized_callnumber, 1600]
 
 Series:
-  DismaxFields:
-    - series^100
-    - series2
   QueryFields:
     - series:
       - [onephrase, 500]
@@ -331,8 +258,6 @@ Series:
       - [or, ~]
 
 SeriesProper:
-  DismaxFields:
-    - series_proper^100
   QueryFields:
     - series_proper:
       - [onephrase, 500]
@@ -433,24 +358,6 @@ Keyword:
       - [onephrase, 75]
 
 KeywordProper:
-  DismaxFields:
-    - title_proper^850
-    - series_proper^100
-    - auth_author^300
-    - table_of_contents_proper^10
-    - topic_proper^500
-    - geographic_proper^300
-    - genre_proper^300
-    - keywords_proper
-    - isbn
-    - issn
-    - upc
-    - oclc
-    - callnumber-subject
-    - local_callnumber_exact^800
-    - local_callnumber_left^300
-    - barcode
-
   QueryFields:
     - title_exact:
       - [localized_callnumber, 2400]
@@ -503,7 +410,6 @@ KeywordProper:
     barcode:
       - [onephrase, ~]
 
-# These are advanced searches that never use Dismax:
 id:
   QueryFields:
     - id:
@@ -513,7 +419,6 @@ id:
       - [onephrase, ~]
       - [or, ~]
 
-# Fields for exact matches originating from alphabetic browse
 ids:
   QueryFields:
     - id:
@@ -614,8 +519,6 @@ econtentText:
       - [and, 100]
 
 GenealogyKeyword:
-  DismaxFields:
-    - keywords
   QueryFields:
     - keywords:
       - [onephrase, 100]

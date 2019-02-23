@@ -20,7 +20,6 @@
 
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/Admin.php';
-require_once 'XML/Unserializer.php';
 
 class Home extends Admin_Admin {
 	function launch() {
@@ -38,11 +37,7 @@ class Home extends Admin_Admin {
 			$xml = @file_get_contents($configArray['Index']['url'] . '/admin/cores');
 
 			if ($xml) {
-				$options = array('parseAttributes' => 'true',
-						'keyAttribute' => 'name');
-				$unxml = new XML_Unserializer($options);
-				$unxml->unserialize($xml);
-				$data = $unxml->getUnserializedData();
+				$data = json_decode($xml, true);
 				$interface->assign('data', $data['status']);
 			}
 
@@ -50,11 +45,7 @@ class Home extends Admin_Admin {
 			$masterXml = @file_get_contents($masterIndexUrl);
 
 			if ($masterXml) {
-				$options = array('parseAttributes' => 'true',
-						'keyAttribute' => 'name');
-				$unxml = new XML_Unserializer($options);
-				$unxml->unserialize($masterXml);
-				$masterData = $unxml->getUnserializedData();
+				$masterData = json_decode($masterXml, true);
 				$interface->assign('master_data', $masterData['status']);
 			}
 		}

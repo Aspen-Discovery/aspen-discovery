@@ -1,0 +1,981 @@
+2019-02-22 01:46:53.475 INFO  (main) [   ] o.e.j.u.log Logging initialized @850ms to org.eclipse.jetty.util.log.Slf4jLog
+2019-02-22 01:46:53.622 INFO  (main) [   ] o.e.j.s.Server jetty-9.4.11.v20180605; built: 2018-06-05T18:24:03.829Z; git: d5fc0523cfa96bfebfbda19606cad384d772f04c; jvm 1.8.0_201-b09
+2019-02-22 01:46:53.650 INFO  (main) [   ] o.e.j.d.p.ScanningAppProvider Deployment monitor [file:///C:/web/aspen-discovery/sites/default/solr-7.6.0/server/contexts/] at interval 0
+2019-02-22 01:46:54.122 INFO  (main) [   ] o.e.j.w.StandardDescriptorProcessor NO JSP Support for /solr, did not find org.apache.jasper.servlet.JspServlet
+2019-02-22 01:46:54.130 INFO  (main) [   ] o.e.j.s.session DefaultSessionIdManager workerName=node0
+2019-02-22 01:46:54.155 INFO  (main) [   ] o.e.j.s.session No SessionScavenger set, using defaults
+2019-02-22 01:46:54.157 INFO  (main) [   ] o.e.j.s.session node0 Scavenging every 660000ms
+2019-02-22 01:46:54.204 INFO  (main) [   ] o.a.s.u.c.SSLCredentialProviderFactory Processing SSL Credential Provider chain: env;sysprop
+2019-02-22 01:46:54.230 INFO  (main) [   ] o.a.s.s.SolrDispatchFilter Using logger factory org.apache.logging.slf4j.Log4jLoggerFactory
+2019-02-22 01:46:54.234 INFO  (main) [   ] o.a.s.s.SolrDispatchFilter  ___      _       Welcome to Apache Solr™ version 7.6.0
+2019-02-22 01:46:54.235 INFO  (main) [   ] o.a.s.s.SolrDispatchFilter / __| ___| |_ _   Starting in standalone mode on port 8083
+2019-02-22 01:46:54.235 INFO  (main) [   ] o.a.s.s.SolrDispatchFilter \__ \/ _ \ | '_|  Install dir: c:\web\aspen-discovery\sites\default\solr-7.6.0
+2019-02-22 01:46:54.235 INFO  (main) [   ] o.a.s.s.SolrDispatchFilter |___/\___/_|_|    Start time: 2019-02-22T01:46:54.235Z
+2019-02-22 01:46:54.257 INFO  (main) [   ] o.a.s.c.SolrResourceLoader Using system property solr.solr.home: C:\data\aspen-discovery\aspen.demo\solr7
+2019-02-22 01:46:54.263 INFO  (main) [   ] o.a.s.c.SolrXmlConfig Loading container configuration from C:\data\aspen-discovery\aspen.demo\solr7\solr.xml
+2019-02-22 01:46:54.322 INFO  (main) [   ] o.a.s.c.SolrXmlConfig MBean server found: com.sun.jmx.mbeanserver.JmxMBeanServer@6a396c1e, but no JMX reporters were configured - adding default JMX reporter.
+2019-02-22 01:46:55.203 INFO  (main) [   ] o.a.s.c.TransientSolrCoreCacheDefault Allocating transient cache for 2147483647 transient cores
+2019-02-22 01:46:55.206 INFO  (main) [   ] o.a.s.h.a.MetricsHistoryHandler No .system collection, keeping metrics history in memory.
+2019-02-22 01:46:55.268 INFO  (main) [   ] o.a.s.m.r.SolrJmxReporter JMX monitoring for 'solr.node' (registry 'solr.node') enabled at server: com.sun.jmx.mbeanserver.JmxMBeanServer@6a396c1e
+2019-02-22 01:46:55.268 INFO  (main) [   ] o.a.s.m.r.SolrJmxReporter JMX monitoring for 'solr.jvm' (registry 'solr.jvm') enabled at server: com.sun.jmx.mbeanserver.JmxMBeanServer@6a396c1e
+2019-02-22 01:46:55.273 INFO  (main) [   ] o.a.s.m.r.SolrJmxReporter JMX monitoring for 'solr.jetty' (registry 'solr.jetty') enabled at server: com.sun.jmx.mbeanserver.JmxMBeanServer@6a396c1e
+2019-02-22 01:46:55.302 INFO  (main) [   ] o.a.s.c.CorePropertiesLocator Found 1 core definitions underneath C:\data\aspen-discovery\aspen.demo\solr7
+2019-02-22 01:46:55.303 INFO  (main) [   ] o.a.s.c.CorePropertiesLocator Cores are: [grouped_works]
+2019-02-22 01:46:55.345 INFO  (coreLoadExecutor-9-thread-1) [   x:grouped_works] o.a.s.c.SolrResourceLoader [grouped_works] Added 58 libs to classloader, from paths: [/c:/web/aspen-discovery/sites/default/solr-7.6.0/contrib/clustering/lib, /c:/web/aspen-discovery/sites/default/solr-7.6.0/contrib/extraction/lib, /c:/web/aspen-discovery/sites/default/solr-7.6.0/contrib/langid/lib, /c:/web/aspen-discovery/sites/default/solr-7.6.0/contrib/velocity/lib, /c:/web/aspen-discovery/sites/default/solr-7.6.0/dist]
+2019-02-22 01:46:55.524 INFO  (coreLoadExecutor-9-thread-1) [   x:grouped_works] o.a.s.c.SolrConfig Using Lucene MatchVersion: 7.6.0
+2019-02-22 01:46:55.610 INFO  (main) [   ] o.e.j.s.h.ContextHandler Started o.e.j.w.WebAppContext@17f7cd29{/solr,file:///C:/web/aspen-discovery/sites/default/solr-7.6.0/server/solr-webapp/webapp/,AVAILABLE}{c:\web\aspen-discovery\sites\default\solr-7.6.0\server/solr-webapp/webapp}
+2019-02-22 01:46:55.625 INFO  (main) [   ] o.e.j.s.AbstractConnector Started ServerConnector@3fffff43{HTTP/1.1,[http/1.1]}{0.0.0.0:8083}
+2019-02-22 01:46:55.625 INFO  (main) [   ] o.e.j.s.Server Started @3002ms
+2019-02-22 01:46:55.648 INFO  (coreLoadExecutor-9-thread-1) [   x:grouped_works] o.a.s.s.IndexSchema [grouped_works] Schema name=Aspen Grouped Work Index
+2019-02-22 01:46:55.732 ERROR (coreContainerWorkExecutor-2-thread-1) [   ] o.a.s.c.CoreContainer Error waiting for SolrCore to be loaded on startup
+org.apache.solr.common.SolrException: Unable to create core [grouped_works]
+	at org.apache.solr.core.CoreContainer.createFromDescriptor(CoreContainer.java:1159) ~[solr-core-7.6.0.jar:7.6.0 719cde97f84640faa1e3525690d262946571245f - nknize - 2018-12-07 14:47:52]
+	at org.apache.solr.core.CoreContainer.lambda$load$13(CoreContainer.java:684) ~[solr-core-7.6.0.jar:7.6.0 719cde97f84640faa1e3525690d262946571245f - nknize - 2018-12-07 14:47:52]
+	at com.codahale.metrics.InstrumentedExecutorService$InstrumentedCallable.call(InstrumentedExecutorService.java:197) ~[metrics-core-3.2.6.jar:3.2.6]
+	at java.util.concurrent.FutureTask.run(Unknown Source) ~[?:1.8.0_201]
+	at org.apache.solr.common.util.ExecutorUtil$MDCAwareThreadPoolExecutor.lambda$execute$0(ExecutorUtil.java:209) ~[solr-solrj-7.6.0.jar:7.6.0 719cde97f84640faa1e3525690d262946571245f - nknize - 2018-12-07 14:47:53]
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(Unknown Source) [?:1.8.0_201]
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source) [?:1.8.0_201]
+	at java.lang.Thread.run(Unknown Source) [?:1.8.0_201]
+Caused by: org.apache.solr.common.SolrException: Could not load conf for core grouped_works: Can't load schema C:\data\aspen-discovery\aspen.demo\solr7\grouped_works\conf\schema.xml: Unknown fieldType 'string' specified on field rating_facet
+	at org.apache.solr.core.ConfigSetService.getConfig(ConfigSetService.java:97) ~[solr-core-7.6.0.jar:7.6.0 719cde97f84640faa1e3525690d262946571245f - nknize - 2018-12-07 14:47:52]
+	at org.apache.solr.core.CoreContainer.getConfigSet(CoreContainer.java:1187) ~[solr-core-7.6.0.jar:7.6.0 719cde97f84640faa1e3525690d262946571245f - nknize - 2018-12-07 14:47:52]
+	at org.apache.solr.core.CoreContainer.createFromDescriptor(CoreContainer.java:1134) ~[solr-core-7.6.0.jar:7.6.0 719cde97f84640faa1e3525690d262946571245f - nknize - 2018-12-07 14:47:52]
+	... 7 more
+Caused by: org.apache.solr.common.SolrException: Can't load schema C:\data\aspen-discovery\aspen.demo\solr7\grouped_works\conf\schema.xml: Unknown fieldType 'string' specified on field rating_facet
+	at org.apache.solr.schema.IndexSchema.readSchema(IndexSchema.java:587) ~[solr-core-7.6.0.jar:7.6.0 719cde97f84640faa1e3525690d262946571245f - nknize - 2018-12-07 14:47:52]
+	at org.apache.solr.schema.IndexSchema.<init>(IndexSchema.java:177) ~[solr-core-7.6.0.jar:7.6.0 719cde97f84640faa1e3525690d262946571245f - nknize - 2018-12-07 14:47:52]
+	at org.apache.solr.schema.IndexSchemaFactory.create(IndexSchemaFactory.java:56) ~[solr-core-7.6.0.jar:7.6.0 719cde97f84640faa1e3525690d262946571245f - nknize - 2018-12-07 14:47:52]
+	at org.apache.solr.schema.IndexSchemaFactory.buildIndexSchema(IndexSchemaFactory.java:75) ~[solr-core-7.6.0.jar:7.6.0 719cde97f84640faa1e3525690d262946571245f - nknize - 2018-12-07 14:47:52]
+	at org.apache.solr.core.ConfigSetService.createIndexSchema(ConfigSetService.java:119) ~[solr-core-7.6.0.jar:7.6.0 719cde97f84640faa1e3525690d262946571245f - nknize - 2018-12-07 14:47:52]
+	at org.apache.solr.core.ConfigSetService.getConfig(ConfigSetService.java:92) ~[solr-core-7.6.0.jar:7.6.0 719cde97f84640faa1e3525690d262946571245f - nknize - 2018-12-07 14:47:52]
+	at org.apache.solr.core.CoreContainer.getConfigSet(CoreContainer.java:1187) ~[solr-core-7.6.0.jar:7.6.0 719cde97f84640faa1e3525690d262946571245f - nknize - 2018-12-07 14:47:52]
+	at org.apache.solr.core.CoreContainer.createFromDescriptor(CoreContainer.java:1134) ~[solr-core-7.6.0.jar:7.6.0 719cde97f84640faa1e3525690d262946571245f - nknize - 2018-12-07 14:47:52]
+	... 7 more
+Caused by: org.apache.solr.common.SolrException: Unknown fieldType 'string' specified on field rating_facet
+	at org.apache.solr.schema.IndexSchema.loadFields(IndexSchema.java:645) ~[solr-core-7.6.0.jar:7.6.0 719cde97f84640faa1e3525690d262946571245f - nknize - 2018-12-07 14:47:52]
+	at org.apache.solr.schema.IndexSchema.readSchema(IndexSchema.java:481) ~[solr-core-7.6.0.jar:7.6.0 719cde97f84640faa1e3525690d262946571245f - nknize - 2018-12-07 14:47:52]
+	at org.apache.solr.schema.IndexSchema.<init>(IndexSchema.java:177) ~[solr-core-7.6.0.jar:7.6.0 719cde97f84640faa1e3525690d262946571245f - nknize - 2018-12-07 14:47:52]
+	at org.apache.solr.schema.IndexSchemaFactory.create(IndexSchemaFactory.java:56) ~[solr-core-7.6.0.jar:7.6.0 719cde97f84640faa1e3525690d262946571245f - nknize - 2018-12-07 14:47:52]
+	at org.apache.solr.schema.IndexSchemaFactory.buildIndexSchema(IndexSchemaFactory.java:75) ~[solr-core-7.6.0.jar:7.6.0 719cde97f84640faa1e3525690d262946571245f - nknize - 2018-12-07 14:47:52]
+	at org.apache.solr.core.ConfigSetService.createIndexSchema(ConfigSetService.java:119) ~[solr-core-7.6.0.jar:7.6.0 719cde97f84640faa1e3525690d262946571245f - nknize - 2018-12-07 14:47:52]
+	at org.apache.solr.core.ConfigSetService.getConfig(ConfigSetService.java:92) ~[solr-core-7.6.0.jar:7.6.0 719cde97f84640faa1e3525690d262946571245f - nknize - 2018-12-07 14:47:52]
+	at org.apache.solr.core.CoreContainer.getConfigSet(CoreContainer.java:1187) ~[solr-core-7.6.0.jar:7.6.0 719cde97f84640faa1e3525690d262946571245f - nknize - 2018-12-07 14:47:52]
+	at org.apache.solr.core.CoreContainer.createFromDescriptor(CoreContainer.java:1134) ~[solr-core-7.6.0.jar:7.6.0 719cde97f84640faa1e3525690d262946571245f - nknize - 2018-12-07 14:47:52]
+	... 7 more
+2019-02-22 01:46:55.977 INFO  (qtp2131952342-22) [   ] o.a.s.s.HttpSolrCall [admin] webapp=null path=/admin/info/system params={wt=json} status=0 QTime=94
+2019-02-22 01:46:56.261 INFO  (qtp2131952342-19) [   ] o.a.s.s.HttpSolrCall [admin] webapp=null path=/admin/info/logging params={wt=json&_=1550799604587&since=0} status=0 QTime=1
+2019-02-22 01:47:06.268 INFO  (qtp2131952342-23) [   ] o.a.s.s.HttpSolrCall [admin] webapp=null path=/admin/info/logging params={wt=json&_=1550799604587&since=0} status=0 QTime=0
+2019-02-22 01:47:09.652 ERROR (qtp2131952342-16) [   ] o.a.s.s.HttpSolrCall null:org.apache.solr.core.SolrCoreInitializationException: SolrCore 'grouped_works' is not available due to init failure: Could not load conf for core grouped_works: Can't load schema C:\data\aspen-discovery\aspen.demo\solr7\grouped_works\conf\schema.xml: Unknown fieldType 'string' specified on field rating_facet
+	at org.apache.solr.core.CoreContainer.getCore(CoreContainer.java:1593)
+	at org.apache.solr.servlet.HttpSolrCall.init(HttpSolrCall.java:249)
+	at org.apache.solr.servlet.HttpSolrCall.call(HttpSolrCall.java:469)
+	at org.apache.solr.servlet.SolrDispatchFilter.doFilter(SolrDispatchFilter.java:377)
+	at org.apache.solr.servlet.SolrDispatchFilter.doFilter(SolrDispatchFilter.java:323)
+	at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1634)
+	at org.eclipse.jetty.servlet.ServletHandler.doHandle(ServletHandler.java:533)
+	at org.eclipse.jetty.server.handler.ScopedHandler.handle(ScopedHandler.java:146)
+	at org.eclipse.jetty.security.SecurityHandler.handle(SecurityHandler.java:548)
+	at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:132)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextHandle(ScopedHandler.java:257)
+	at org.eclipse.jetty.server.session.SessionHandler.doHandle(SessionHandler.java:1595)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextHandle(ScopedHandler.java:255)
+	at org.eclipse.jetty.server.handler.ContextHandler.doHandle(ContextHandler.java:1317)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextScope(ScopedHandler.java:203)
+	at org.eclipse.jetty.servlet.ServletHandler.doScope(ServletHandler.java:473)
+	at org.eclipse.jetty.server.session.SessionHandler.doScope(SessionHandler.java:1564)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextScope(ScopedHandler.java:201)
+	at org.eclipse.jetty.server.handler.ContextHandler.doScope(ContextHandler.java:1219)
+	at org.eclipse.jetty.server.handler.ScopedHandler.handle(ScopedHandler.java:144)
+	at org.eclipse.jetty.server.handler.ContextHandlerCollection.handle(ContextHandlerCollection.java:219)
+	at org.eclipse.jetty.server.handler.HandlerCollection.handle(HandlerCollection.java:126)
+	at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:132)
+	at org.eclipse.jetty.rewrite.handler.RewriteHandler.handle(RewriteHandler.java:335)
+	at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:132)
+	at org.eclipse.jetty.server.Server.handle(Server.java:531)
+	at org.eclipse.jetty.server.HttpChannel.handle(HttpChannel.java:352)
+	at org.eclipse.jetty.server.HttpConnection.onFillable(HttpConnection.java:260)
+	at org.eclipse.jetty.io.AbstractConnection$ReadCallback.succeeded(AbstractConnection.java:281)
+	at org.eclipse.jetty.io.FillInterest.fillable(FillInterest.java:102)
+	at org.eclipse.jetty.io.ChannelEndPoint$2.run(ChannelEndPoint.java:118)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.runTask(EatWhatYouKill.java:333)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.doProduce(EatWhatYouKill.java:310)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.tryProduce(EatWhatYouKill.java:168)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.produce(EatWhatYouKill.java:132)
+	at org.eclipse.jetty.util.thread.QueuedThreadPool.runJob(QueuedThreadPool.java:762)
+	at org.eclipse.jetty.util.thread.QueuedThreadPool$2.run(QueuedThreadPool.java:680)
+	at java.lang.Thread.run(Unknown Source)
+Caused by: org.apache.solr.common.SolrException: Could not load conf for core grouped_works: Can't load schema C:\data\aspen-discovery\aspen.demo\solr7\grouped_works\conf\schema.xml: Unknown fieldType 'string' specified on field rating_facet
+	at org.apache.solr.core.ConfigSetService.getConfig(ConfigSetService.java:97)
+	at org.apache.solr.core.CoreContainer.getConfigSet(CoreContainer.java:1187)
+	at org.apache.solr.core.CoreContainer.createFromDescriptor(CoreContainer.java:1134)
+	at org.apache.solr.core.CoreContainer.lambda$load$13(CoreContainer.java:684)
+	at com.codahale.metrics.InstrumentedExecutorService$InstrumentedCallable.call(InstrumentedExecutorService.java:197)
+	at java.util.concurrent.FutureTask.run(Unknown Source)
+	at org.apache.solr.common.util.ExecutorUtil$MDCAwareThreadPoolExecutor.lambda$execute$0(ExecutorUtil.java:209)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(Unknown Source)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)
+	... 1 more
+Caused by: org.apache.solr.common.SolrException: Can't load schema C:\data\aspen-discovery\aspen.demo\solr7\grouped_works\conf\schema.xml: Unknown fieldType 'string' specified on field rating_facet
+	at org.apache.solr.schema.IndexSchema.readSchema(IndexSchema.java:587)
+	at org.apache.solr.schema.IndexSchema.<init>(IndexSchema.java:177)
+	at org.apache.solr.schema.IndexSchemaFactory.create(IndexSchemaFactory.java:56)
+	at org.apache.solr.schema.IndexSchemaFactory.buildIndexSchema(IndexSchemaFactory.java:75)
+	at org.apache.solr.core.ConfigSetService.createIndexSchema(ConfigSetService.java:119)
+	at org.apache.solr.core.ConfigSetService.getConfig(ConfigSetService.java:92)
+	... 9 more
+Caused by: org.apache.solr.common.SolrException: Unknown fieldType 'string' specified on field rating_facet
+	at org.apache.solr.schema.IndexSchema.loadFields(IndexSchema.java:645)
+	at org.apache.solr.schema.IndexSchema.readSchema(IndexSchema.java:481)
+	... 14 more
+
+2019-02-22 01:47:09.999 ERROR (qtp2131952342-15) [   ] o.a.s.s.HttpSolrCall null:org.apache.solr.core.SolrCoreInitializationException: SolrCore 'grouped_works' is not available due to init failure: Could not load conf for core grouped_works: Can't load schema C:\data\aspen-discovery\aspen.demo\solr7\grouped_works\conf\schema.xml: Unknown fieldType 'string' specified on field rating_facet
+	at org.apache.solr.core.CoreContainer.getCore(CoreContainer.java:1593)
+	at org.apache.solr.servlet.HttpSolrCall.init(HttpSolrCall.java:249)
+	at org.apache.solr.servlet.HttpSolrCall.call(HttpSolrCall.java:469)
+	at org.apache.solr.servlet.SolrDispatchFilter.doFilter(SolrDispatchFilter.java:377)
+	at org.apache.solr.servlet.SolrDispatchFilter.doFilter(SolrDispatchFilter.java:323)
+	at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1634)
+	at org.eclipse.jetty.servlet.ServletHandler.doHandle(ServletHandler.java:533)
+	at org.eclipse.jetty.server.handler.ScopedHandler.handle(ScopedHandler.java:146)
+	at org.eclipse.jetty.security.SecurityHandler.handle(SecurityHandler.java:548)
+	at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:132)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextHandle(ScopedHandler.java:257)
+	at org.eclipse.jetty.server.session.SessionHandler.doHandle(SessionHandler.java:1595)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextHandle(ScopedHandler.java:255)
+	at org.eclipse.jetty.server.handler.ContextHandler.doHandle(ContextHandler.java:1317)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextScope(ScopedHandler.java:203)
+	at org.eclipse.jetty.servlet.ServletHandler.doScope(ServletHandler.java:473)
+	at org.eclipse.jetty.server.session.SessionHandler.doScope(SessionHandler.java:1564)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextScope(ScopedHandler.java:201)
+	at org.eclipse.jetty.server.handler.ContextHandler.doScope(ContextHandler.java:1219)
+	at org.eclipse.jetty.server.handler.ScopedHandler.handle(ScopedHandler.java:144)
+	at org.eclipse.jetty.server.handler.ContextHandlerCollection.handle(ContextHandlerCollection.java:219)
+	at org.eclipse.jetty.server.handler.HandlerCollection.handle(HandlerCollection.java:126)
+	at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:132)
+	at org.eclipse.jetty.rewrite.handler.RewriteHandler.handle(RewriteHandler.java:335)
+	at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:132)
+	at org.eclipse.jetty.server.Server.handle(Server.java:531)
+	at org.eclipse.jetty.server.HttpChannel.handle(HttpChannel.java:352)
+	at org.eclipse.jetty.server.HttpConnection.onFillable(HttpConnection.java:260)
+	at org.eclipse.jetty.io.AbstractConnection$ReadCallback.succeeded(AbstractConnection.java:281)
+	at org.eclipse.jetty.io.FillInterest.fillable(FillInterest.java:102)
+	at org.eclipse.jetty.io.ChannelEndPoint$2.run(ChannelEndPoint.java:118)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.runTask(EatWhatYouKill.java:333)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.doProduce(EatWhatYouKill.java:310)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.tryProduce(EatWhatYouKill.java:168)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.produce(EatWhatYouKill.java:132)
+	at org.eclipse.jetty.util.thread.QueuedThreadPool.runJob(QueuedThreadPool.java:762)
+	at org.eclipse.jetty.util.thread.QueuedThreadPool$2.run(QueuedThreadPool.java:680)
+	at java.lang.Thread.run(Unknown Source)
+Caused by: org.apache.solr.common.SolrException: Could not load conf for core grouped_works: Can't load schema C:\data\aspen-discovery\aspen.demo\solr7\grouped_works\conf\schema.xml: Unknown fieldType 'string' specified on field rating_facet
+	at org.apache.solr.core.ConfigSetService.getConfig(ConfigSetService.java:97)
+	at org.apache.solr.core.CoreContainer.getConfigSet(CoreContainer.java:1187)
+	at org.apache.solr.core.CoreContainer.createFromDescriptor(CoreContainer.java:1134)
+	at org.apache.solr.core.CoreContainer.lambda$load$13(CoreContainer.java:684)
+	at com.codahale.metrics.InstrumentedExecutorService$InstrumentedCallable.call(InstrumentedExecutorService.java:197)
+	at java.util.concurrent.FutureTask.run(Unknown Source)
+	at org.apache.solr.common.util.ExecutorUtil$MDCAwareThreadPoolExecutor.lambda$execute$0(ExecutorUtil.java:209)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(Unknown Source)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)
+	... 1 more
+Caused by: org.apache.solr.common.SolrException: Can't load schema C:\data\aspen-discovery\aspen.demo\solr7\grouped_works\conf\schema.xml: Unknown fieldType 'string' specified on field rating_facet
+	at org.apache.solr.schema.IndexSchema.readSchema(IndexSchema.java:587)
+	at org.apache.solr.schema.IndexSchema.<init>(IndexSchema.java:177)
+	at org.apache.solr.schema.IndexSchemaFactory.create(IndexSchemaFactory.java:56)
+	at org.apache.solr.schema.IndexSchemaFactory.buildIndexSchema(IndexSchemaFactory.java:75)
+	at org.apache.solr.core.ConfigSetService.createIndexSchema(ConfigSetService.java:119)
+	at org.apache.solr.core.ConfigSetService.getConfig(ConfigSetService.java:92)
+	... 9 more
+Caused by: org.apache.solr.common.SolrException: Unknown fieldType 'string' specified on field rating_facet
+	at org.apache.solr.schema.IndexSchema.loadFields(IndexSchema.java:645)
+	at org.apache.solr.schema.IndexSchema.readSchema(IndexSchema.java:481)
+	... 14 more
+
+2019-02-22 01:47:10.561 ERROR (qtp2131952342-20) [   ] o.a.s.s.HttpSolrCall null:org.apache.solr.core.SolrCoreInitializationException: SolrCore 'grouped_works' is not available due to init failure: Could not load conf for core grouped_works: Can't load schema C:\data\aspen-discovery\aspen.demo\solr7\grouped_works\conf\schema.xml: Unknown fieldType 'string' specified on field rating_facet
+	at org.apache.solr.core.CoreContainer.getCore(CoreContainer.java:1593)
+	at org.apache.solr.servlet.HttpSolrCall.init(HttpSolrCall.java:249)
+	at org.apache.solr.servlet.HttpSolrCall.call(HttpSolrCall.java:469)
+	at org.apache.solr.servlet.SolrDispatchFilter.doFilter(SolrDispatchFilter.java:377)
+	at org.apache.solr.servlet.SolrDispatchFilter.doFilter(SolrDispatchFilter.java:323)
+	at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1634)
+	at org.eclipse.jetty.servlet.ServletHandler.doHandle(ServletHandler.java:533)
+	at org.eclipse.jetty.server.handler.ScopedHandler.handle(ScopedHandler.java:146)
+	at org.eclipse.jetty.security.SecurityHandler.handle(SecurityHandler.java:548)
+	at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:132)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextHandle(ScopedHandler.java:257)
+	at org.eclipse.jetty.server.session.SessionHandler.doHandle(SessionHandler.java:1595)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextHandle(ScopedHandler.java:255)
+	at org.eclipse.jetty.server.handler.ContextHandler.doHandle(ContextHandler.java:1317)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextScope(ScopedHandler.java:203)
+	at org.eclipse.jetty.servlet.ServletHandler.doScope(ServletHandler.java:473)
+	at org.eclipse.jetty.server.session.SessionHandler.doScope(SessionHandler.java:1564)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextScope(ScopedHandler.java:201)
+	at org.eclipse.jetty.server.handler.ContextHandler.doScope(ContextHandler.java:1219)
+	at org.eclipse.jetty.server.handler.ScopedHandler.handle(ScopedHandler.java:144)
+	at org.eclipse.jetty.server.handler.ContextHandlerCollection.handle(ContextHandlerCollection.java:219)
+	at org.eclipse.jetty.server.handler.HandlerCollection.handle(HandlerCollection.java:126)
+	at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:132)
+	at org.eclipse.jetty.rewrite.handler.RewriteHandler.handle(RewriteHandler.java:335)
+	at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:132)
+	at org.eclipse.jetty.server.Server.handle(Server.java:531)
+	at org.eclipse.jetty.server.HttpChannel.handle(HttpChannel.java:352)
+	at org.eclipse.jetty.server.HttpConnection.onFillable(HttpConnection.java:260)
+	at org.eclipse.jetty.io.AbstractConnection$ReadCallback.succeeded(AbstractConnection.java:281)
+	at org.eclipse.jetty.io.FillInterest.fillable(FillInterest.java:102)
+	at org.eclipse.jetty.io.ChannelEndPoint$2.run(ChannelEndPoint.java:118)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.runTask(EatWhatYouKill.java:333)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.doProduce(EatWhatYouKill.java:310)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.tryProduce(EatWhatYouKill.java:168)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.run(EatWhatYouKill.java:126)
+	at org.eclipse.jetty.util.thread.ReservedThreadExecutor$ReservedThread.run(ReservedThreadExecutor.java:366)
+	at org.eclipse.jetty.util.thread.QueuedThreadPool.runJob(QueuedThreadPool.java:762)
+	at org.eclipse.jetty.util.thread.QueuedThreadPool$2.run(QueuedThreadPool.java:680)
+	at java.lang.Thread.run(Unknown Source)
+Caused by: org.apache.solr.common.SolrException: Could not load conf for core grouped_works: Can't load schema C:\data\aspen-discovery\aspen.demo\solr7\grouped_works\conf\schema.xml: Unknown fieldType 'string' specified on field rating_facet
+	at org.apache.solr.core.ConfigSetService.getConfig(ConfigSetService.java:97)
+	at org.apache.solr.core.CoreContainer.getConfigSet(CoreContainer.java:1187)
+	at org.apache.solr.core.CoreContainer.createFromDescriptor(CoreContainer.java:1134)
+	at org.apache.solr.core.CoreContainer.lambda$load$13(CoreContainer.java:684)
+	at com.codahale.metrics.InstrumentedExecutorService$InstrumentedCallable.call(InstrumentedExecutorService.java:197)
+	at java.util.concurrent.FutureTask.run(Unknown Source)
+	at org.apache.solr.common.util.ExecutorUtil$MDCAwareThreadPoolExecutor.lambda$execute$0(ExecutorUtil.java:209)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(Unknown Source)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)
+	... 1 more
+Caused by: org.apache.solr.common.SolrException: Can't load schema C:\data\aspen-discovery\aspen.demo\solr7\grouped_works\conf\schema.xml: Unknown fieldType 'string' specified on field rating_facet
+	at org.apache.solr.schema.IndexSchema.readSchema(IndexSchema.java:587)
+	at org.apache.solr.schema.IndexSchema.<init>(IndexSchema.java:177)
+	at org.apache.solr.schema.IndexSchemaFactory.create(IndexSchemaFactory.java:56)
+	at org.apache.solr.schema.IndexSchemaFactory.buildIndexSchema(IndexSchemaFactory.java:75)
+	at org.apache.solr.core.ConfigSetService.createIndexSchema(ConfigSetService.java:119)
+	at org.apache.solr.core.ConfigSetService.getConfig(ConfigSetService.java:92)
+	... 9 more
+Caused by: org.apache.solr.common.SolrException: Unknown fieldType 'string' specified on field rating_facet
+	at org.apache.solr.schema.IndexSchema.loadFields(IndexSchema.java:645)
+	at org.apache.solr.schema.IndexSchema.readSchema(IndexSchema.java:481)
+	... 14 more
+
+2019-02-22 01:47:11.380 ERROR (qtp2131952342-22) [   ] o.a.s.s.HttpSolrCall null:org.apache.solr.core.SolrCoreInitializationException: SolrCore 'grouped_works' is not available due to init failure: Could not load conf for core grouped_works: Can't load schema C:\data\aspen-discovery\aspen.demo\solr7\grouped_works\conf\schema.xml: Unknown fieldType 'string' specified on field rating_facet
+	at org.apache.solr.core.CoreContainer.getCore(CoreContainer.java:1593)
+	at org.apache.solr.servlet.HttpSolrCall.init(HttpSolrCall.java:249)
+	at org.apache.solr.servlet.HttpSolrCall.call(HttpSolrCall.java:469)
+	at org.apache.solr.servlet.SolrDispatchFilter.doFilter(SolrDispatchFilter.java:377)
+	at org.apache.solr.servlet.SolrDispatchFilter.doFilter(SolrDispatchFilter.java:323)
+	at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1634)
+	at org.eclipse.jetty.servlet.ServletHandler.doHandle(ServletHandler.java:533)
+	at org.eclipse.jetty.server.handler.ScopedHandler.handle(ScopedHandler.java:146)
+	at org.eclipse.jetty.security.SecurityHandler.handle(SecurityHandler.java:548)
+	at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:132)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextHandle(ScopedHandler.java:257)
+	at org.eclipse.jetty.server.session.SessionHandler.doHandle(SessionHandler.java:1595)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextHandle(ScopedHandler.java:255)
+	at org.eclipse.jetty.server.handler.ContextHandler.doHandle(ContextHandler.java:1317)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextScope(ScopedHandler.java:203)
+	at org.eclipse.jetty.servlet.ServletHandler.doScope(ServletHandler.java:473)
+	at org.eclipse.jetty.server.session.SessionHandler.doScope(SessionHandler.java:1564)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextScope(ScopedHandler.java:201)
+	at org.eclipse.jetty.server.handler.ContextHandler.doScope(ContextHandler.java:1219)
+	at org.eclipse.jetty.server.handler.ScopedHandler.handle(ScopedHandler.java:144)
+	at org.eclipse.jetty.server.handler.ContextHandlerCollection.handle(ContextHandlerCollection.java:219)
+	at org.eclipse.jetty.server.handler.HandlerCollection.handle(HandlerCollection.java:126)
+	at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:132)
+	at org.eclipse.jetty.rewrite.handler.RewriteHandler.handle(RewriteHandler.java:335)
+	at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:132)
+	at org.eclipse.jetty.server.Server.handle(Server.java:531)
+	at org.eclipse.jetty.server.HttpChannel.handle(HttpChannel.java:352)
+	at org.eclipse.jetty.server.HttpConnection.onFillable(HttpConnection.java:260)
+	at org.eclipse.jetty.io.AbstractConnection$ReadCallback.succeeded(AbstractConnection.java:281)
+	at org.eclipse.jetty.io.FillInterest.fillable(FillInterest.java:102)
+	at org.eclipse.jetty.io.ChannelEndPoint$2.run(ChannelEndPoint.java:118)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.runTask(EatWhatYouKill.java:333)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.doProduce(EatWhatYouKill.java:310)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.tryProduce(EatWhatYouKill.java:168)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.run(EatWhatYouKill.java:126)
+	at org.eclipse.jetty.util.thread.ReservedThreadExecutor$ReservedThread.run(ReservedThreadExecutor.java:366)
+	at org.eclipse.jetty.util.thread.QueuedThreadPool.runJob(QueuedThreadPool.java:762)
+	at org.eclipse.jetty.util.thread.QueuedThreadPool$2.run(QueuedThreadPool.java:680)
+	at java.lang.Thread.run(Unknown Source)
+Caused by: org.apache.solr.common.SolrException: Could not load conf for core grouped_works: Can't load schema C:\data\aspen-discovery\aspen.demo\solr7\grouped_works\conf\schema.xml: Unknown fieldType 'string' specified on field rating_facet
+	at org.apache.solr.core.ConfigSetService.getConfig(ConfigSetService.java:97)
+	at org.apache.solr.core.CoreContainer.getConfigSet(CoreContainer.java:1187)
+	at org.apache.solr.core.CoreContainer.createFromDescriptor(CoreContainer.java:1134)
+	at org.apache.solr.core.CoreContainer.lambda$load$13(CoreContainer.java:684)
+	at com.codahale.metrics.InstrumentedExecutorService$InstrumentedCallable.call(InstrumentedExecutorService.java:197)
+	at java.util.concurrent.FutureTask.run(Unknown Source)
+	at org.apache.solr.common.util.ExecutorUtil$MDCAwareThreadPoolExecutor.lambda$execute$0(ExecutorUtil.java:209)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(Unknown Source)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)
+	... 1 more
+Caused by: org.apache.solr.common.SolrException: Can't load schema C:\data\aspen-discovery\aspen.demo\solr7\grouped_works\conf\schema.xml: Unknown fieldType 'string' specified on field rating_facet
+	at org.apache.solr.schema.IndexSchema.readSchema(IndexSchema.java:587)
+	at org.apache.solr.schema.IndexSchema.<init>(IndexSchema.java:177)
+	at org.apache.solr.schema.IndexSchemaFactory.create(IndexSchemaFactory.java:56)
+	at org.apache.solr.schema.IndexSchemaFactory.buildIndexSchema(IndexSchemaFactory.java:75)
+	at org.apache.solr.core.ConfigSetService.createIndexSchema(ConfigSetService.java:119)
+	at org.apache.solr.core.ConfigSetService.getConfig(ConfigSetService.java:92)
+	... 9 more
+Caused by: org.apache.solr.common.SolrException: Unknown fieldType 'string' specified on field rating_facet
+	at org.apache.solr.schema.IndexSchema.loadFields(IndexSchema.java:645)
+	at org.apache.solr.schema.IndexSchema.readSchema(IndexSchema.java:481)
+	... 14 more
+
+2019-02-22 01:47:11.384 ERROR (qtp2131952342-21) [   ] o.a.s.s.HttpSolrCall null:org.apache.solr.core.SolrCoreInitializationException: SolrCore 'grouped_works' is not available due to init failure: Could not load conf for core grouped_works: Can't load schema C:\data\aspen-discovery\aspen.demo\solr7\grouped_works\conf\schema.xml: Unknown fieldType 'string' specified on field rating_facet
+	at org.apache.solr.core.CoreContainer.getCore(CoreContainer.java:1593)
+	at org.apache.solr.servlet.HttpSolrCall.init(HttpSolrCall.java:249)
+	at org.apache.solr.servlet.HttpSolrCall.call(HttpSolrCall.java:469)
+	at org.apache.solr.servlet.SolrDispatchFilter.doFilter(SolrDispatchFilter.java:377)
+	at org.apache.solr.servlet.SolrDispatchFilter.doFilter(SolrDispatchFilter.java:323)
+	at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1634)
+	at org.eclipse.jetty.servlet.ServletHandler.doHandle(ServletHandler.java:533)
+	at org.eclipse.jetty.server.handler.ScopedHandler.handle(ScopedHandler.java:146)
+	at org.eclipse.jetty.security.SecurityHandler.handle(SecurityHandler.java:548)
+	at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:132)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextHandle(ScopedHandler.java:257)
+	at org.eclipse.jetty.server.session.SessionHandler.doHandle(SessionHandler.java:1595)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextHandle(ScopedHandler.java:255)
+	at org.eclipse.jetty.server.handler.ContextHandler.doHandle(ContextHandler.java:1317)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextScope(ScopedHandler.java:203)
+	at org.eclipse.jetty.servlet.ServletHandler.doScope(ServletHandler.java:473)
+	at org.eclipse.jetty.server.session.SessionHandler.doScope(SessionHandler.java:1564)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextScope(ScopedHandler.java:201)
+	at org.eclipse.jetty.server.handler.ContextHandler.doScope(ContextHandler.java:1219)
+	at org.eclipse.jetty.server.handler.ScopedHandler.handle(ScopedHandler.java:144)
+	at org.eclipse.jetty.server.handler.ContextHandlerCollection.handle(ContextHandlerCollection.java:219)
+	at org.eclipse.jetty.server.handler.HandlerCollection.handle(HandlerCollection.java:126)
+	at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:132)
+	at org.eclipse.jetty.rewrite.handler.RewriteHandler.handle(RewriteHandler.java:335)
+	at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:132)
+	at org.eclipse.jetty.server.Server.handle(Server.java:531)
+	at org.eclipse.jetty.server.HttpChannel.handle(HttpChannel.java:352)
+	at org.eclipse.jetty.server.HttpConnection.onFillable(HttpConnection.java:260)
+	at org.eclipse.jetty.io.AbstractConnection$ReadCallback.succeeded(AbstractConnection.java:281)
+	at org.eclipse.jetty.io.FillInterest.fillable(FillInterest.java:102)
+	at org.eclipse.jetty.io.ChannelEndPoint$2.run(ChannelEndPoint.java:118)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.runTask(EatWhatYouKill.java:333)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.doProduce(EatWhatYouKill.java:310)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.tryProduce(EatWhatYouKill.java:168)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.run(EatWhatYouKill.java:126)
+	at org.eclipse.jetty.util.thread.ReservedThreadExecutor$ReservedThread.run(ReservedThreadExecutor.java:366)
+	at org.eclipse.jetty.util.thread.QueuedThreadPool.runJob(QueuedThreadPool.java:762)
+	at org.eclipse.jetty.util.thread.QueuedThreadPool$2.run(QueuedThreadPool.java:680)
+	at java.lang.Thread.run(Unknown Source)
+Caused by: org.apache.solr.common.SolrException: Could not load conf for core grouped_works: Can't load schema C:\data\aspen-discovery\aspen.demo\solr7\grouped_works\conf\schema.xml: Unknown fieldType 'string' specified on field rating_facet
+	at org.apache.solr.core.ConfigSetService.getConfig(ConfigSetService.java:97)
+	at org.apache.solr.core.CoreContainer.getConfigSet(CoreContainer.java:1187)
+	at org.apache.solr.core.CoreContainer.createFromDescriptor(CoreContainer.java:1134)
+	at org.apache.solr.core.CoreContainer.lambda$load$13(CoreContainer.java:684)
+	at com.codahale.metrics.InstrumentedExecutorService$InstrumentedCallable.call(InstrumentedExecutorService.java:197)
+	at java.util.concurrent.FutureTask.run(Unknown Source)
+	at org.apache.solr.common.util.ExecutorUtil$MDCAwareThreadPoolExecutor.lambda$execute$0(ExecutorUtil.java:209)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(Unknown Source)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)
+	... 1 more
+Caused by: org.apache.solr.common.SolrException: Can't load schema C:\data\aspen-discovery\aspen.demo\solr7\grouped_works\conf\schema.xml: Unknown fieldType 'string' specified on field rating_facet
+	at org.apache.solr.schema.IndexSchema.readSchema(IndexSchema.java:587)
+	at org.apache.solr.schema.IndexSchema.<init>(IndexSchema.java:177)
+	at org.apache.solr.schema.IndexSchemaFactory.create(IndexSchemaFactory.java:56)
+	at org.apache.solr.schema.IndexSchemaFactory.buildIndexSchema(IndexSchemaFactory.java:75)
+	at org.apache.solr.core.ConfigSetService.createIndexSchema(ConfigSetService.java:119)
+	at org.apache.solr.core.ConfigSetService.getConfig(ConfigSetService.java:92)
+	... 9 more
+Caused by: org.apache.solr.common.SolrException: Unknown fieldType 'string' specified on field rating_facet
+	at org.apache.solr.schema.IndexSchema.loadFields(IndexSchema.java:645)
+	at org.apache.solr.schema.IndexSchema.readSchema(IndexSchema.java:481)
+	... 14 more
+
+2019-02-22 01:47:11.392 ERROR (qtp2131952342-23) [   ] o.a.s.s.HttpSolrCall null:org.apache.solr.core.SolrCoreInitializationException: SolrCore 'grouped_works' is not available due to init failure: Could not load conf for core grouped_works: Can't load schema C:\data\aspen-discovery\aspen.demo\solr7\grouped_works\conf\schema.xml: Unknown fieldType 'string' specified on field rating_facet
+	at org.apache.solr.core.CoreContainer.getCore(CoreContainer.java:1593)
+	at org.apache.solr.servlet.HttpSolrCall.init(HttpSolrCall.java:249)
+	at org.apache.solr.servlet.HttpSolrCall.call(HttpSolrCall.java:469)
+	at org.apache.solr.servlet.SolrDispatchFilter.doFilter(SolrDispatchFilter.java:377)
+	at org.apache.solr.servlet.SolrDispatchFilter.doFilter(SolrDispatchFilter.java:323)
+	at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1634)
+	at org.eclipse.jetty.servlet.ServletHandler.doHandle(ServletHandler.java:533)
+	at org.eclipse.jetty.server.handler.ScopedHandler.handle(ScopedHandler.java:146)
+	at org.eclipse.jetty.security.SecurityHandler.handle(SecurityHandler.java:548)
+	at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:132)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextHandle(ScopedHandler.java:257)
+	at org.eclipse.jetty.server.session.SessionHandler.doHandle(SessionHandler.java:1595)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextHandle(ScopedHandler.java:255)
+	at org.eclipse.jetty.server.handler.ContextHandler.doHandle(ContextHandler.java:1317)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextScope(ScopedHandler.java:203)
+	at org.eclipse.jetty.servlet.ServletHandler.doScope(ServletHandler.java:473)
+	at org.eclipse.jetty.server.session.SessionHandler.doScope(SessionHandler.java:1564)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextScope(ScopedHandler.java:201)
+	at org.eclipse.jetty.server.handler.ContextHandler.doScope(ContextHandler.java:1219)
+	at org.eclipse.jetty.server.handler.ScopedHandler.handle(ScopedHandler.java:144)
+	at org.eclipse.jetty.server.handler.ContextHandlerCollection.handle(ContextHandlerCollection.java:219)
+	at org.eclipse.jetty.server.handler.HandlerCollection.handle(HandlerCollection.java:126)
+	at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:132)
+	at org.eclipse.jetty.rewrite.handler.RewriteHandler.handle(RewriteHandler.java:335)
+	at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:132)
+	at org.eclipse.jetty.server.Server.handle(Server.java:531)
+	at org.eclipse.jetty.server.HttpChannel.handle(HttpChannel.java:352)
+	at org.eclipse.jetty.server.HttpConnection.onFillable(HttpConnection.java:260)
+	at org.eclipse.jetty.io.AbstractConnection$ReadCallback.succeeded(AbstractConnection.java:281)
+	at org.eclipse.jetty.io.FillInterest.fillable(FillInterest.java:102)
+	at org.eclipse.jetty.io.ChannelEndPoint$2.run(ChannelEndPoint.java:118)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.runTask(EatWhatYouKill.java:333)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.doProduce(EatWhatYouKill.java:310)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.tryProduce(EatWhatYouKill.java:168)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.run(EatWhatYouKill.java:126)
+	at org.eclipse.jetty.util.thread.ReservedThreadExecutor$ReservedThread.run(ReservedThreadExecutor.java:366)
+	at org.eclipse.jetty.util.thread.QueuedThreadPool.runJob(QueuedThreadPool.java:762)
+	at org.eclipse.jetty.util.thread.QueuedThreadPool$2.run(QueuedThreadPool.java:680)
+	at java.lang.Thread.run(Unknown Source)
+Caused by: org.apache.solr.common.SolrException: Could not load conf for core grouped_works: Can't load schema C:\data\aspen-discovery\aspen.demo\solr7\grouped_works\conf\schema.xml: Unknown fieldType 'string' specified on field rating_facet
+	at org.apache.solr.core.ConfigSetService.getConfig(ConfigSetService.java:97)
+	at org.apache.solr.core.CoreContainer.getConfigSet(CoreContainer.java:1187)
+	at org.apache.solr.core.CoreContainer.createFromDescriptor(CoreContainer.java:1134)
+	at org.apache.solr.core.CoreContainer.lambda$load$13(CoreContainer.java:684)
+	at com.codahale.metrics.InstrumentedExecutorService$InstrumentedCallable.call(InstrumentedExecutorService.java:197)
+	at java.util.concurrent.FutureTask.run(Unknown Source)
+	at org.apache.solr.common.util.ExecutorUtil$MDCAwareThreadPoolExecutor.lambda$execute$0(ExecutorUtil.java:209)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(Unknown Source)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)
+	... 1 more
+Caused by: org.apache.solr.common.SolrException: Can't load schema C:\data\aspen-discovery\aspen.demo\solr7\grouped_works\conf\schema.xml: Unknown fieldType 'string' specified on field rating_facet
+	at org.apache.solr.schema.IndexSchema.readSchema(IndexSchema.java:587)
+	at org.apache.solr.schema.IndexSchema.<init>(IndexSchema.java:177)
+	at org.apache.solr.schema.IndexSchemaFactory.create(IndexSchemaFactory.java:56)
+	at org.apache.solr.schema.IndexSchemaFactory.buildIndexSchema(IndexSchemaFactory.java:75)
+	at org.apache.solr.core.ConfigSetService.createIndexSchema(ConfigSetService.java:119)
+	at org.apache.solr.core.ConfigSetService.getConfig(ConfigSetService.java:92)
+	... 9 more
+Caused by: org.apache.solr.common.SolrException: Unknown fieldType 'string' specified on field rating_facet
+	at org.apache.solr.schema.IndexSchema.loadFields(IndexSchema.java:645)
+	at org.apache.solr.schema.IndexSchema.readSchema(IndexSchema.java:481)
+	... 14 more
+
+2019-02-22 01:47:11.400 ERROR (qtp2131952342-19) [   ] o.a.s.s.HttpSolrCall null:org.apache.solr.core.SolrCoreInitializationException: SolrCore 'grouped_works' is not available due to init failure: Could not load conf for core grouped_works: Can't load schema C:\data\aspen-discovery\aspen.demo\solr7\grouped_works\conf\schema.xml: Unknown fieldType 'string' specified on field rating_facet
+	at org.apache.solr.core.CoreContainer.getCore(CoreContainer.java:1593)
+	at org.apache.solr.servlet.HttpSolrCall.init(HttpSolrCall.java:249)
+	at org.apache.solr.servlet.HttpSolrCall.call(HttpSolrCall.java:469)
+	at org.apache.solr.servlet.SolrDispatchFilter.doFilter(SolrDispatchFilter.java:377)
+	at org.apache.solr.servlet.SolrDispatchFilter.doFilter(SolrDispatchFilter.java:323)
+	at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1634)
+	at org.eclipse.jetty.servlet.ServletHandler.doHandle(ServletHandler.java:533)
+	at org.eclipse.jetty.server.handler.ScopedHandler.handle(ScopedHandler.java:146)
+	at org.eclipse.jetty.security.SecurityHandler.handle(SecurityHandler.java:548)
+	at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:132)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextHandle(ScopedHandler.java:257)
+	at org.eclipse.jetty.server.session.SessionHandler.doHandle(SessionHandler.java:1595)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextHandle(ScopedHandler.java:255)
+	at org.eclipse.jetty.server.handler.ContextHandler.doHandle(ContextHandler.java:1317)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextScope(ScopedHandler.java:203)
+	at org.eclipse.jetty.servlet.ServletHandler.doScope(ServletHandler.java:473)
+	at org.eclipse.jetty.server.session.SessionHandler.doScope(SessionHandler.java:1564)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextScope(ScopedHandler.java:201)
+	at org.eclipse.jetty.server.handler.ContextHandler.doScope(ContextHandler.java:1219)
+	at org.eclipse.jetty.server.handler.ScopedHandler.handle(ScopedHandler.java:144)
+	at org.eclipse.jetty.server.handler.ContextHandlerCollection.handle(ContextHandlerCollection.java:219)
+	at org.eclipse.jetty.server.handler.HandlerCollection.handle(HandlerCollection.java:126)
+	at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:132)
+	at org.eclipse.jetty.rewrite.handler.RewriteHandler.handle(RewriteHandler.java:335)
+	at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:132)
+	at org.eclipse.jetty.server.Server.handle(Server.java:531)
+	at org.eclipse.jetty.server.HttpChannel.handle(HttpChannel.java:352)
+	at org.eclipse.jetty.server.HttpConnection.onFillable(HttpConnection.java:260)
+	at org.eclipse.jetty.io.AbstractConnection$ReadCallback.succeeded(AbstractConnection.java:281)
+	at org.eclipse.jetty.io.FillInterest.fillable(FillInterest.java:102)
+	at org.eclipse.jetty.io.ChannelEndPoint$2.run(ChannelEndPoint.java:118)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.runTask(EatWhatYouKill.java:333)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.doProduce(EatWhatYouKill.java:310)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.tryProduce(EatWhatYouKill.java:168)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.run(EatWhatYouKill.java:126)
+	at org.eclipse.jetty.util.thread.ReservedThreadExecutor$ReservedThread.run(ReservedThreadExecutor.java:366)
+	at org.eclipse.jetty.util.thread.QueuedThreadPool.runJob(QueuedThreadPool.java:762)
+	at org.eclipse.jetty.util.thread.QueuedThreadPool$2.run(QueuedThreadPool.java:680)
+	at java.lang.Thread.run(Unknown Source)
+Caused by: org.apache.solr.common.SolrException: Could not load conf for core grouped_works: Can't load schema C:\data\aspen-discovery\aspen.demo\solr7\grouped_works\conf\schema.xml: Unknown fieldType 'string' specified on field rating_facet
+	at org.apache.solr.core.ConfigSetService.getConfig(ConfigSetService.java:97)
+	at org.apache.solr.core.CoreContainer.getConfigSet(CoreContainer.java:1187)
+	at org.apache.solr.core.CoreContainer.createFromDescriptor(CoreContainer.java:1134)
+	at org.apache.solr.core.CoreContainer.lambda$load$13(CoreContainer.java:684)
+	at com.codahale.metrics.InstrumentedExecutorService$InstrumentedCallable.call(InstrumentedExecutorService.java:197)
+	at java.util.concurrent.FutureTask.run(Unknown Source)
+	at org.apache.solr.common.util.ExecutorUtil$MDCAwareThreadPoolExecutor.lambda$execute$0(ExecutorUtil.java:209)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(Unknown Source)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)
+	... 1 more
+Caused by: org.apache.solr.common.SolrException: Can't load schema C:\data\aspen-discovery\aspen.demo\solr7\grouped_works\conf\schema.xml: Unknown fieldType 'string' specified on field rating_facet
+	at org.apache.solr.schema.IndexSchema.readSchema(IndexSchema.java:587)
+	at org.apache.solr.schema.IndexSchema.<init>(IndexSchema.java:177)
+	at org.apache.solr.schema.IndexSchemaFactory.create(IndexSchemaFactory.java:56)
+	at org.apache.solr.schema.IndexSchemaFactory.buildIndexSchema(IndexSchemaFactory.java:75)
+	at org.apache.solr.core.ConfigSetService.createIndexSchema(ConfigSetService.java:119)
+	at org.apache.solr.core.ConfigSetService.getConfig(ConfigSetService.java:92)
+	... 9 more
+Caused by: org.apache.solr.common.SolrException: Unknown fieldType 'string' specified on field rating_facet
+	at org.apache.solr.schema.IndexSchema.loadFields(IndexSchema.java:645)
+	at org.apache.solr.schema.IndexSchema.readSchema(IndexSchema.java:481)
+	... 14 more
+
+2019-02-22 01:47:11.407 ERROR (qtp2131952342-16) [   ] o.a.s.s.HttpSolrCall null:org.apache.solr.core.SolrCoreInitializationException: SolrCore 'grouped_works' is not available due to init failure: Could not load conf for core grouped_works: Can't load schema C:\data\aspen-discovery\aspen.demo\solr7\grouped_works\conf\schema.xml: Unknown fieldType 'string' specified on field rating_facet
+	at org.apache.solr.core.CoreContainer.getCore(CoreContainer.java:1593)
+	at org.apache.solr.servlet.HttpSolrCall.init(HttpSolrCall.java:249)
+	at org.apache.solr.servlet.HttpSolrCall.call(HttpSolrCall.java:469)
+	at org.apache.solr.servlet.SolrDispatchFilter.doFilter(SolrDispatchFilter.java:377)
+	at org.apache.solr.servlet.SolrDispatchFilter.doFilter(SolrDispatchFilter.java:323)
+	at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1634)
+	at org.eclipse.jetty.servlet.ServletHandler.doHandle(ServletHandler.java:533)
+	at org.eclipse.jetty.server.handler.ScopedHandler.handle(ScopedHandler.java:146)
+	at org.eclipse.jetty.security.SecurityHandler.handle(SecurityHandler.java:548)
+	at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:132)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextHandle(ScopedHandler.java:257)
+	at org.eclipse.jetty.server.session.SessionHandler.doHandle(SessionHandler.java:1595)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextHandle(ScopedHandler.java:255)
+	at org.eclipse.jetty.server.handler.ContextHandler.doHandle(ContextHandler.java:1317)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextScope(ScopedHandler.java:203)
+	at org.eclipse.jetty.servlet.ServletHandler.doScope(ServletHandler.java:473)
+	at org.eclipse.jetty.server.session.SessionHandler.doScope(SessionHandler.java:1564)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextScope(ScopedHandler.java:201)
+	at org.eclipse.jetty.server.handler.ContextHandler.doScope(ContextHandler.java:1219)
+	at org.eclipse.jetty.server.handler.ScopedHandler.handle(ScopedHandler.java:144)
+	at org.eclipse.jetty.server.handler.ContextHandlerCollection.handle(ContextHandlerCollection.java:219)
+	at org.eclipse.jetty.server.handler.HandlerCollection.handle(HandlerCollection.java:126)
+	at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:132)
+	at org.eclipse.jetty.rewrite.handler.RewriteHandler.handle(RewriteHandler.java:335)
+	at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:132)
+	at org.eclipse.jetty.server.Server.handle(Server.java:531)
+	at org.eclipse.jetty.server.HttpChannel.handle(HttpChannel.java:352)
+	at org.eclipse.jetty.server.HttpConnection.onFillable(HttpConnection.java:260)
+	at org.eclipse.jetty.io.AbstractConnection$ReadCallback.succeeded(AbstractConnection.java:281)
+	at org.eclipse.jetty.io.FillInterest.fillable(FillInterest.java:102)
+	at org.eclipse.jetty.io.ChannelEndPoint$2.run(ChannelEndPoint.java:118)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.runTask(EatWhatYouKill.java:333)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.doProduce(EatWhatYouKill.java:310)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.tryProduce(EatWhatYouKill.java:168)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.run(EatWhatYouKill.java:126)
+	at org.eclipse.jetty.util.thread.ReservedThreadExecutor$ReservedThread.run(ReservedThreadExecutor.java:366)
+	at org.eclipse.jetty.util.thread.QueuedThreadPool.runJob(QueuedThreadPool.java:762)
+	at org.eclipse.jetty.util.thread.QueuedThreadPool$2.run(QueuedThreadPool.java:680)
+	at java.lang.Thread.run(Unknown Source)
+Caused by: org.apache.solr.common.SolrException: Could not load conf for core grouped_works: Can't load schema C:\data\aspen-discovery\aspen.demo\solr7\grouped_works\conf\schema.xml: Unknown fieldType 'string' specified on field rating_facet
+	at org.apache.solr.core.ConfigSetService.getConfig(ConfigSetService.java:97)
+	at org.apache.solr.core.CoreContainer.getConfigSet(CoreContainer.java:1187)
+	at org.apache.solr.core.CoreContainer.createFromDescriptor(CoreContainer.java:1134)
+	at org.apache.solr.core.CoreContainer.lambda$load$13(CoreContainer.java:684)
+	at com.codahale.metrics.InstrumentedExecutorService$InstrumentedCallable.call(InstrumentedExecutorService.java:197)
+	at java.util.concurrent.FutureTask.run(Unknown Source)
+	at org.apache.solr.common.util.ExecutorUtil$MDCAwareThreadPoolExecutor.lambda$execute$0(ExecutorUtil.java:209)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(Unknown Source)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)
+	... 1 more
+Caused by: org.apache.solr.common.SolrException: Can't load schema C:\data\aspen-discovery\aspen.demo\solr7\grouped_works\conf\schema.xml: Unknown fieldType 'string' specified on field rating_facet
+	at org.apache.solr.schema.IndexSchema.readSchema(IndexSchema.java:587)
+	at org.apache.solr.schema.IndexSchema.<init>(IndexSchema.java:177)
+	at org.apache.solr.schema.IndexSchemaFactory.create(IndexSchemaFactory.java:56)
+	at org.apache.solr.schema.IndexSchemaFactory.buildIndexSchema(IndexSchemaFactory.java:75)
+	at org.apache.solr.core.ConfigSetService.createIndexSchema(ConfigSetService.java:119)
+	at org.apache.solr.core.ConfigSetService.getConfig(ConfigSetService.java:92)
+	... 9 more
+Caused by: org.apache.solr.common.SolrException: Unknown fieldType 'string' specified on field rating_facet
+	at org.apache.solr.schema.IndexSchema.loadFields(IndexSchema.java:645)
+	at org.apache.solr.schema.IndexSchema.readSchema(IndexSchema.java:481)
+	... 14 more
+
+2019-02-22 01:47:16.272 INFO  (qtp2131952342-24) [   ] o.a.s.s.HttpSolrCall [admin] webapp=null path=/admin/info/logging params={wt=json&_=1550799604587&since=0} status=0 QTime=0
+2019-02-22 01:47:26.283 INFO  (qtp2131952342-15) [   ] o.a.s.s.HttpSolrCall [admin] webapp=null path=/admin/info/logging params={wt=json&_=1550799604587&since=0} status=0 QTime=0
+2019-02-22 01:47:36.395 INFO  (qtp2131952342-18) [   ] o.a.s.s.HttpSolrCall [admin] webapp=null path=/admin/info/logging params={wt=json&_=1550799604587&since=0} status=0 QTime=0
+2019-02-22 01:47:44.201 ERROR (qtp2131952342-36) [   ] o.a.s.s.HttpSolrCall null:org.apache.solr.core.SolrCoreInitializationException: SolrCore 'grouped_works' is not available due to init failure: Could not load conf for core grouped_works: Can't load schema C:\data\aspen-discovery\aspen.demo\solr7\grouped_works\conf\schema.xml: Unknown fieldType 'string' specified on field rating_facet
+	at org.apache.solr.core.CoreContainer.getCore(CoreContainer.java:1593)
+	at org.apache.solr.servlet.HttpSolrCall.init(HttpSolrCall.java:249)
+	at org.apache.solr.servlet.HttpSolrCall.call(HttpSolrCall.java:469)
+	at org.apache.solr.servlet.SolrDispatchFilter.doFilter(SolrDispatchFilter.java:377)
+	at org.apache.solr.servlet.SolrDispatchFilter.doFilter(SolrDispatchFilter.java:323)
+	at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1634)
+	at org.eclipse.jetty.servlet.ServletHandler.doHandle(ServletHandler.java:533)
+	at org.eclipse.jetty.server.handler.ScopedHandler.handle(ScopedHandler.java:146)
+	at org.eclipse.jetty.security.SecurityHandler.handle(SecurityHandler.java:548)
+	at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:132)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextHandle(ScopedHandler.java:257)
+	at org.eclipse.jetty.server.session.SessionHandler.doHandle(SessionHandler.java:1595)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextHandle(ScopedHandler.java:255)
+	at org.eclipse.jetty.server.handler.ContextHandler.doHandle(ContextHandler.java:1317)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextScope(ScopedHandler.java:203)
+	at org.eclipse.jetty.servlet.ServletHandler.doScope(ServletHandler.java:473)
+	at org.eclipse.jetty.server.session.SessionHandler.doScope(SessionHandler.java:1564)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextScope(ScopedHandler.java:201)
+	at org.eclipse.jetty.server.handler.ContextHandler.doScope(ContextHandler.java:1219)
+	at org.eclipse.jetty.server.handler.ScopedHandler.handle(ScopedHandler.java:144)
+	at org.eclipse.jetty.server.handler.ContextHandlerCollection.handle(ContextHandlerCollection.java:219)
+	at org.eclipse.jetty.server.handler.HandlerCollection.handle(HandlerCollection.java:126)
+	at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:132)
+	at org.eclipse.jetty.rewrite.handler.RewriteHandler.handle(RewriteHandler.java:335)
+	at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:132)
+	at org.eclipse.jetty.server.Server.handle(Server.java:531)
+	at org.eclipse.jetty.server.HttpChannel.handle(HttpChannel.java:352)
+	at org.eclipse.jetty.server.HttpConnection.onFillable(HttpConnection.java:260)
+	at org.eclipse.jetty.io.AbstractConnection$ReadCallback.succeeded(AbstractConnection.java:281)
+	at org.eclipse.jetty.io.FillInterest.fillable(FillInterest.java:102)
+	at org.eclipse.jetty.io.ChannelEndPoint$2.run(ChannelEndPoint.java:118)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.runTask(EatWhatYouKill.java:333)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.doProduce(EatWhatYouKill.java:310)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.tryProduce(EatWhatYouKill.java:168)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.run(EatWhatYouKill.java:126)
+	at org.eclipse.jetty.util.thread.ReservedThreadExecutor$ReservedThread.run(ReservedThreadExecutor.java:366)
+	at org.eclipse.jetty.util.thread.QueuedThreadPool.runJob(QueuedThreadPool.java:762)
+	at org.eclipse.jetty.util.thread.QueuedThreadPool$2.run(QueuedThreadPool.java:680)
+	at java.lang.Thread.run(Unknown Source)
+Caused by: org.apache.solr.common.SolrException: Could not load conf for core grouped_works: Can't load schema C:\data\aspen-discovery\aspen.demo\solr7\grouped_works\conf\schema.xml: Unknown fieldType 'string' specified on field rating_facet
+	at org.apache.solr.core.ConfigSetService.getConfig(ConfigSetService.java:97)
+	at org.apache.solr.core.CoreContainer.getConfigSet(CoreContainer.java:1187)
+	at org.apache.solr.core.CoreContainer.createFromDescriptor(CoreContainer.java:1134)
+	at org.apache.solr.core.CoreContainer.lambda$load$13(CoreContainer.java:684)
+	at com.codahale.metrics.InstrumentedExecutorService$InstrumentedCallable.call(InstrumentedExecutorService.java:197)
+	at java.util.concurrent.FutureTask.run(Unknown Source)
+	at org.apache.solr.common.util.ExecutorUtil$MDCAwareThreadPoolExecutor.lambda$execute$0(ExecutorUtil.java:209)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(Unknown Source)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)
+	... 1 more
+Caused by: org.apache.solr.common.SolrException: Can't load schema C:\data\aspen-discovery\aspen.demo\solr7\grouped_works\conf\schema.xml: Unknown fieldType 'string' specified on field rating_facet
+	at org.apache.solr.schema.IndexSchema.readSchema(IndexSchema.java:587)
+	at org.apache.solr.schema.IndexSchema.<init>(IndexSchema.java:177)
+	at org.apache.solr.schema.IndexSchemaFactory.create(IndexSchemaFactory.java:56)
+	at org.apache.solr.schema.IndexSchemaFactory.buildIndexSchema(IndexSchemaFactory.java:75)
+	at org.apache.solr.core.ConfigSetService.createIndexSchema(ConfigSetService.java:119)
+	at org.apache.solr.core.ConfigSetService.getConfig(ConfigSetService.java:92)
+	... 9 more
+Caused by: org.apache.solr.common.SolrException: Unknown fieldType 'string' specified on field rating_facet
+	at org.apache.solr.schema.IndexSchema.loadFields(IndexSchema.java:645)
+	at org.apache.solr.schema.IndexSchema.readSchema(IndexSchema.java:481)
+	... 14 more
+
+2019-02-22 01:47:44.327 ERROR (qtp2131952342-21) [   ] o.a.s.s.HttpSolrCall null:org.apache.solr.core.SolrCoreInitializationException: SolrCore 'grouped_works' is not available due to init failure: Could not load conf for core grouped_works: Can't load schema C:\data\aspen-discovery\aspen.demo\solr7\grouped_works\conf\schema.xml: Unknown fieldType 'string' specified on field rating_facet
+	at org.apache.solr.core.CoreContainer.getCore(CoreContainer.java:1593)
+	at org.apache.solr.servlet.HttpSolrCall.init(HttpSolrCall.java:249)
+	at org.apache.solr.servlet.HttpSolrCall.call(HttpSolrCall.java:469)
+	at org.apache.solr.servlet.SolrDispatchFilter.doFilter(SolrDispatchFilter.java:377)
+	at org.apache.solr.servlet.SolrDispatchFilter.doFilter(SolrDispatchFilter.java:323)
+	at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1634)
+	at org.eclipse.jetty.servlet.ServletHandler.doHandle(ServletHandler.java:533)
+	at org.eclipse.jetty.server.handler.ScopedHandler.handle(ScopedHandler.java:146)
+	at org.eclipse.jetty.security.SecurityHandler.handle(SecurityHandler.java:548)
+	at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:132)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextHandle(ScopedHandler.java:257)
+	at org.eclipse.jetty.server.session.SessionHandler.doHandle(SessionHandler.java:1595)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextHandle(ScopedHandler.java:255)
+	at org.eclipse.jetty.server.handler.ContextHandler.doHandle(ContextHandler.java:1317)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextScope(ScopedHandler.java:203)
+	at org.eclipse.jetty.servlet.ServletHandler.doScope(ServletHandler.java:473)
+	at org.eclipse.jetty.server.session.SessionHandler.doScope(SessionHandler.java:1564)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextScope(ScopedHandler.java:201)
+	at org.eclipse.jetty.server.handler.ContextHandler.doScope(ContextHandler.java:1219)
+	at org.eclipse.jetty.server.handler.ScopedHandler.handle(ScopedHandler.java:144)
+	at org.eclipse.jetty.server.handler.ContextHandlerCollection.handle(ContextHandlerCollection.java:219)
+	at org.eclipse.jetty.server.handler.HandlerCollection.handle(HandlerCollection.java:126)
+	at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:132)
+	at org.eclipse.jetty.rewrite.handler.RewriteHandler.handle(RewriteHandler.java:335)
+	at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:132)
+	at org.eclipse.jetty.server.Server.handle(Server.java:531)
+	at org.eclipse.jetty.server.HttpChannel.handle(HttpChannel.java:352)
+	at org.eclipse.jetty.server.HttpConnection.onFillable(HttpConnection.java:260)
+	at org.eclipse.jetty.io.AbstractConnection$ReadCallback.succeeded(AbstractConnection.java:281)
+	at org.eclipse.jetty.io.FillInterest.fillable(FillInterest.java:102)
+	at org.eclipse.jetty.io.ChannelEndPoint$2.run(ChannelEndPoint.java:118)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.runTask(EatWhatYouKill.java:333)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.doProduce(EatWhatYouKill.java:310)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.tryProduce(EatWhatYouKill.java:168)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.run(EatWhatYouKill.java:126)
+	at org.eclipse.jetty.util.thread.ReservedThreadExecutor$ReservedThread.run(ReservedThreadExecutor.java:366)
+	at org.eclipse.jetty.util.thread.QueuedThreadPool.runJob(QueuedThreadPool.java:762)
+	at org.eclipse.jetty.util.thread.QueuedThreadPool$2.run(QueuedThreadPool.java:680)
+	at java.lang.Thread.run(Unknown Source)
+Caused by: org.apache.solr.common.SolrException: Could not load conf for core grouped_works: Can't load schema C:\data\aspen-discovery\aspen.demo\solr7\grouped_works\conf\schema.xml: Unknown fieldType 'string' specified on field rating_facet
+	at org.apache.solr.core.ConfigSetService.getConfig(ConfigSetService.java:97)
+	at org.apache.solr.core.CoreContainer.getConfigSet(CoreContainer.java:1187)
+	at org.apache.solr.core.CoreContainer.createFromDescriptor(CoreContainer.java:1134)
+	at org.apache.solr.core.CoreContainer.lambda$load$13(CoreContainer.java:684)
+	at com.codahale.metrics.InstrumentedExecutorService$InstrumentedCallable.call(InstrumentedExecutorService.java:197)
+	at java.util.concurrent.FutureTask.run(Unknown Source)
+	at org.apache.solr.common.util.ExecutorUtil$MDCAwareThreadPoolExecutor.lambda$execute$0(ExecutorUtil.java:209)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(Unknown Source)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)
+	... 1 more
+Caused by: org.apache.solr.common.SolrException: Can't load schema C:\data\aspen-discovery\aspen.demo\solr7\grouped_works\conf\schema.xml: Unknown fieldType 'string' specified on field rating_facet
+	at org.apache.solr.schema.IndexSchema.readSchema(IndexSchema.java:587)
+	at org.apache.solr.schema.IndexSchema.<init>(IndexSchema.java:177)
+	at org.apache.solr.schema.IndexSchemaFactory.create(IndexSchemaFactory.java:56)
+	at org.apache.solr.schema.IndexSchemaFactory.buildIndexSchema(IndexSchemaFactory.java:75)
+	at org.apache.solr.core.ConfigSetService.createIndexSchema(ConfigSetService.java:119)
+	at org.apache.solr.core.ConfigSetService.getConfig(ConfigSetService.java:92)
+	... 9 more
+Caused by: org.apache.solr.common.SolrException: Unknown fieldType 'string' specified on field rating_facet
+	at org.apache.solr.schema.IndexSchema.loadFields(IndexSchema.java:645)
+	at org.apache.solr.schema.IndexSchema.readSchema(IndexSchema.java:481)
+	... 14 more
+
+2019-02-22 01:47:44.366 ERROR (qtp2131952342-15) [   ] o.a.s.s.HttpSolrCall null:org.apache.solr.core.SolrCoreInitializationException: SolrCore 'grouped_works' is not available due to init failure: Could not load conf for core grouped_works: Can't load schema C:\data\aspen-discovery\aspen.demo\solr7\grouped_works\conf\schema.xml: Unknown fieldType 'string' specified on field rating_facet
+	at org.apache.solr.core.CoreContainer.getCore(CoreContainer.java:1593)
+	at org.apache.solr.servlet.HttpSolrCall.init(HttpSolrCall.java:249)
+	at org.apache.solr.servlet.HttpSolrCall.call(HttpSolrCall.java:469)
+	at org.apache.solr.servlet.SolrDispatchFilter.doFilter(SolrDispatchFilter.java:377)
+	at org.apache.solr.servlet.SolrDispatchFilter.doFilter(SolrDispatchFilter.java:323)
+	at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1634)
+	at org.eclipse.jetty.servlet.ServletHandler.doHandle(ServletHandler.java:533)
+	at org.eclipse.jetty.server.handler.ScopedHandler.handle(ScopedHandler.java:146)
+	at org.eclipse.jetty.security.SecurityHandler.handle(SecurityHandler.java:548)
+	at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:132)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextHandle(ScopedHandler.java:257)
+	at org.eclipse.jetty.server.session.SessionHandler.doHandle(SessionHandler.java:1595)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextHandle(ScopedHandler.java:255)
+	at org.eclipse.jetty.server.handler.ContextHandler.doHandle(ContextHandler.java:1317)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextScope(ScopedHandler.java:203)
+	at org.eclipse.jetty.servlet.ServletHandler.doScope(ServletHandler.java:473)
+	at org.eclipse.jetty.server.session.SessionHandler.doScope(SessionHandler.java:1564)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextScope(ScopedHandler.java:201)
+	at org.eclipse.jetty.server.handler.ContextHandler.doScope(ContextHandler.java:1219)
+	at org.eclipse.jetty.server.handler.ScopedHandler.handle(ScopedHandler.java:144)
+	at org.eclipse.jetty.server.handler.ContextHandlerCollection.handle(ContextHandlerCollection.java:219)
+	at org.eclipse.jetty.server.handler.HandlerCollection.handle(HandlerCollection.java:126)
+	at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:132)
+	at org.eclipse.jetty.rewrite.handler.RewriteHandler.handle(RewriteHandler.java:335)
+	at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:132)
+	at org.eclipse.jetty.server.Server.handle(Server.java:531)
+	at org.eclipse.jetty.server.HttpChannel.handle(HttpChannel.java:352)
+	at org.eclipse.jetty.server.HttpConnection.onFillable(HttpConnection.java:260)
+	at org.eclipse.jetty.io.AbstractConnection$ReadCallback.succeeded(AbstractConnection.java:281)
+	at org.eclipse.jetty.io.FillInterest.fillable(FillInterest.java:102)
+	at org.eclipse.jetty.io.ChannelEndPoint$2.run(ChannelEndPoint.java:118)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.runTask(EatWhatYouKill.java:333)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.doProduce(EatWhatYouKill.java:310)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.tryProduce(EatWhatYouKill.java:168)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.run(EatWhatYouKill.java:126)
+	at org.eclipse.jetty.util.thread.ReservedThreadExecutor$ReservedThread.run(ReservedThreadExecutor.java:366)
+	at org.eclipse.jetty.util.thread.QueuedThreadPool.runJob(QueuedThreadPool.java:762)
+	at org.eclipse.jetty.util.thread.QueuedThreadPool$2.run(QueuedThreadPool.java:680)
+	at java.lang.Thread.run(Unknown Source)
+Caused by: org.apache.solr.common.SolrException: Could not load conf for core grouped_works: Can't load schema C:\data\aspen-discovery\aspen.demo\solr7\grouped_works\conf\schema.xml: Unknown fieldType 'string' specified on field rating_facet
+	at org.apache.solr.core.ConfigSetService.getConfig(ConfigSetService.java:97)
+	at org.apache.solr.core.CoreContainer.getConfigSet(CoreContainer.java:1187)
+	at org.apache.solr.core.CoreContainer.createFromDescriptor(CoreContainer.java:1134)
+	at org.apache.solr.core.CoreContainer.lambda$load$13(CoreContainer.java:684)
+	at com.codahale.metrics.InstrumentedExecutorService$InstrumentedCallable.call(InstrumentedExecutorService.java:197)
+	at java.util.concurrent.FutureTask.run(Unknown Source)
+	at org.apache.solr.common.util.ExecutorUtil$MDCAwareThreadPoolExecutor.lambda$execute$0(ExecutorUtil.java:209)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(Unknown Source)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)
+	... 1 more
+Caused by: org.apache.solr.common.SolrException: Can't load schema C:\data\aspen-discovery\aspen.demo\solr7\grouped_works\conf\schema.xml: Unknown fieldType 'string' specified on field rating_facet
+	at org.apache.solr.schema.IndexSchema.readSchema(IndexSchema.java:587)
+	at org.apache.solr.schema.IndexSchema.<init>(IndexSchema.java:177)
+	at org.apache.solr.schema.IndexSchemaFactory.create(IndexSchemaFactory.java:56)
+	at org.apache.solr.schema.IndexSchemaFactory.buildIndexSchema(IndexSchemaFactory.java:75)
+	at org.apache.solr.core.ConfigSetService.createIndexSchema(ConfigSetService.java:119)
+	at org.apache.solr.core.ConfigSetService.getConfig(ConfigSetService.java:92)
+	... 9 more
+Caused by: org.apache.solr.common.SolrException: Unknown fieldType 'string' specified on field rating_facet
+	at org.apache.solr.schema.IndexSchema.loadFields(IndexSchema.java:645)
+	at org.apache.solr.schema.IndexSchema.readSchema(IndexSchema.java:481)
+	... 14 more
+
+2019-02-22 01:47:46.409 INFO  (qtp2131952342-21) [   ] o.a.s.s.HttpSolrCall [admin] webapp=null path=/admin/info/logging params={wt=json&_=1550799604587&since=0} status=0 QTime=0
+2019-02-22 01:47:56.421 INFO  (qtp2131952342-21) [   ] o.a.s.s.HttpSolrCall [admin] webapp=null path=/admin/info/logging params={wt=json&_=1550799604587&since=0} status=0 QTime=0
+2019-02-22 01:48:04.348 ERROR (qtp2131952342-24) [   ] o.a.s.s.HttpSolrCall null:org.apache.solr.core.SolrCoreInitializationException: SolrCore 'grouped_works' is not available due to init failure: Could not load conf for core grouped_works: Can't load schema C:\data\aspen-discovery\aspen.demo\solr7\grouped_works\conf\schema.xml: Unknown fieldType 'string' specified on field rating_facet
+	at org.apache.solr.core.CoreContainer.getCore(CoreContainer.java:1593)
+	at org.apache.solr.servlet.HttpSolrCall.init(HttpSolrCall.java:249)
+	at org.apache.solr.servlet.HttpSolrCall.call(HttpSolrCall.java:469)
+	at org.apache.solr.servlet.SolrDispatchFilter.doFilter(SolrDispatchFilter.java:377)
+	at org.apache.solr.servlet.SolrDispatchFilter.doFilter(SolrDispatchFilter.java:323)
+	at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1634)
+	at org.eclipse.jetty.servlet.ServletHandler.doHandle(ServletHandler.java:533)
+	at org.eclipse.jetty.server.handler.ScopedHandler.handle(ScopedHandler.java:146)
+	at org.eclipse.jetty.security.SecurityHandler.handle(SecurityHandler.java:548)
+	at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:132)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextHandle(ScopedHandler.java:257)
+	at org.eclipse.jetty.server.session.SessionHandler.doHandle(SessionHandler.java:1595)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextHandle(ScopedHandler.java:255)
+	at org.eclipse.jetty.server.handler.ContextHandler.doHandle(ContextHandler.java:1317)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextScope(ScopedHandler.java:203)
+	at org.eclipse.jetty.servlet.ServletHandler.doScope(ServletHandler.java:473)
+	at org.eclipse.jetty.server.session.SessionHandler.doScope(SessionHandler.java:1564)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextScope(ScopedHandler.java:201)
+	at org.eclipse.jetty.server.handler.ContextHandler.doScope(ContextHandler.java:1219)
+	at org.eclipse.jetty.server.handler.ScopedHandler.handle(ScopedHandler.java:144)
+	at org.eclipse.jetty.server.handler.ContextHandlerCollection.handle(ContextHandlerCollection.java:219)
+	at org.eclipse.jetty.server.handler.HandlerCollection.handle(HandlerCollection.java:126)
+	at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:132)
+	at org.eclipse.jetty.rewrite.handler.RewriteHandler.handle(RewriteHandler.java:335)
+	at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:132)
+	at org.eclipse.jetty.server.Server.handle(Server.java:531)
+	at org.eclipse.jetty.server.HttpChannel.handle(HttpChannel.java:352)
+	at org.eclipse.jetty.server.HttpConnection.onFillable(HttpConnection.java:260)
+	at org.eclipse.jetty.io.AbstractConnection$ReadCallback.succeeded(AbstractConnection.java:281)
+	at org.eclipse.jetty.io.FillInterest.fillable(FillInterest.java:102)
+	at org.eclipse.jetty.io.ChannelEndPoint$2.run(ChannelEndPoint.java:118)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.runTask(EatWhatYouKill.java:333)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.doProduce(EatWhatYouKill.java:310)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.tryProduce(EatWhatYouKill.java:168)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.run(EatWhatYouKill.java:126)
+	at org.eclipse.jetty.util.thread.ReservedThreadExecutor$ReservedThread.run(ReservedThreadExecutor.java:366)
+	at org.eclipse.jetty.util.thread.QueuedThreadPool.runJob(QueuedThreadPool.java:762)
+	at org.eclipse.jetty.util.thread.QueuedThreadPool$2.run(QueuedThreadPool.java:680)
+	at java.lang.Thread.run(Unknown Source)
+Caused by: org.apache.solr.common.SolrException: Could not load conf for core grouped_works: Can't load schema C:\data\aspen-discovery\aspen.demo\solr7\grouped_works\conf\schema.xml: Unknown fieldType 'string' specified on field rating_facet
+	at org.apache.solr.core.ConfigSetService.getConfig(ConfigSetService.java:97)
+	at org.apache.solr.core.CoreContainer.getConfigSet(CoreContainer.java:1187)
+	at org.apache.solr.core.CoreContainer.createFromDescriptor(CoreContainer.java:1134)
+	at org.apache.solr.core.CoreContainer.lambda$load$13(CoreContainer.java:684)
+	at com.codahale.metrics.InstrumentedExecutorService$InstrumentedCallable.call(InstrumentedExecutorService.java:197)
+	at java.util.concurrent.FutureTask.run(Unknown Source)
+	at org.apache.solr.common.util.ExecutorUtil$MDCAwareThreadPoolExecutor.lambda$execute$0(ExecutorUtil.java:209)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(Unknown Source)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)
+	... 1 more
+Caused by: org.apache.solr.common.SolrException: Can't load schema C:\data\aspen-discovery\aspen.demo\solr7\grouped_works\conf\schema.xml: Unknown fieldType 'string' specified on field rating_facet
+	at org.apache.solr.schema.IndexSchema.readSchema(IndexSchema.java:587)
+	at org.apache.solr.schema.IndexSchema.<init>(IndexSchema.java:177)
+	at org.apache.solr.schema.IndexSchemaFactory.create(IndexSchemaFactory.java:56)
+	at org.apache.solr.schema.IndexSchemaFactory.buildIndexSchema(IndexSchemaFactory.java:75)
+	at org.apache.solr.core.ConfigSetService.createIndexSchema(ConfigSetService.java:119)
+	at org.apache.solr.core.ConfigSetService.getConfig(ConfigSetService.java:92)
+	... 9 more
+Caused by: org.apache.solr.common.SolrException: Unknown fieldType 'string' specified on field rating_facet
+	at org.apache.solr.schema.IndexSchema.loadFields(IndexSchema.java:645)
+	at org.apache.solr.schema.IndexSchema.readSchema(IndexSchema.java:481)
+	... 14 more
+
+2019-02-22 01:48:06.424 INFO  (qtp2131952342-15) [   ] o.a.s.s.HttpSolrCall [admin] webapp=null path=/admin/info/logging params={wt=json&_=1550799604587&since=0} status=0 QTime=0
+2019-02-22 01:48:11.838 ERROR (qtp2131952342-37) [   ] o.a.s.s.HttpSolrCall null:org.apache.solr.core.SolrCoreInitializationException: SolrCore 'grouped_works' is not available due to init failure: Could not load conf for core grouped_works: Can't load schema C:\data\aspen-discovery\aspen.demo\solr7\grouped_works\conf\schema.xml: Unknown fieldType 'string' specified on field rating_facet
+	at org.apache.solr.core.CoreContainer.getCore(CoreContainer.java:1593)
+	at org.apache.solr.servlet.HttpSolrCall.init(HttpSolrCall.java:249)
+	at org.apache.solr.servlet.HttpSolrCall.call(HttpSolrCall.java:469)
+	at org.apache.solr.servlet.SolrDispatchFilter.doFilter(SolrDispatchFilter.java:377)
+	at org.apache.solr.servlet.SolrDispatchFilter.doFilter(SolrDispatchFilter.java:323)
+	at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1634)
+	at org.eclipse.jetty.servlet.ServletHandler.doHandle(ServletHandler.java:533)
+	at org.eclipse.jetty.server.handler.ScopedHandler.handle(ScopedHandler.java:146)
+	at org.eclipse.jetty.security.SecurityHandler.handle(SecurityHandler.java:548)
+	at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:132)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextHandle(ScopedHandler.java:257)
+	at org.eclipse.jetty.server.session.SessionHandler.doHandle(SessionHandler.java:1595)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextHandle(ScopedHandler.java:255)
+	at org.eclipse.jetty.server.handler.ContextHandler.doHandle(ContextHandler.java:1317)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextScope(ScopedHandler.java:203)
+	at org.eclipse.jetty.servlet.ServletHandler.doScope(ServletHandler.java:473)
+	at org.eclipse.jetty.server.session.SessionHandler.doScope(SessionHandler.java:1564)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextScope(ScopedHandler.java:201)
+	at org.eclipse.jetty.server.handler.ContextHandler.doScope(ContextHandler.java:1219)
+	at org.eclipse.jetty.server.handler.ScopedHandler.handle(ScopedHandler.java:144)
+	at org.eclipse.jetty.server.handler.ContextHandlerCollection.handle(ContextHandlerCollection.java:219)
+	at org.eclipse.jetty.server.handler.HandlerCollection.handle(HandlerCollection.java:126)
+	at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:132)
+	at org.eclipse.jetty.rewrite.handler.RewriteHandler.handle(RewriteHandler.java:335)
+	at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:132)
+	at org.eclipse.jetty.server.Server.handle(Server.java:531)
+	at org.eclipse.jetty.server.HttpChannel.handle(HttpChannel.java:352)
+	at org.eclipse.jetty.server.HttpConnection.onFillable(HttpConnection.java:260)
+	at org.eclipse.jetty.io.AbstractConnection$ReadCallback.succeeded(AbstractConnection.java:281)
+	at org.eclipse.jetty.io.FillInterest.fillable(FillInterest.java:102)
+	at org.eclipse.jetty.io.ChannelEndPoint$2.run(ChannelEndPoint.java:118)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.runTask(EatWhatYouKill.java:333)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.doProduce(EatWhatYouKill.java:310)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.tryProduce(EatWhatYouKill.java:168)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.run(EatWhatYouKill.java:126)
+	at org.eclipse.jetty.util.thread.ReservedThreadExecutor$ReservedThread.run(ReservedThreadExecutor.java:366)
+	at org.eclipse.jetty.util.thread.QueuedThreadPool.runJob(QueuedThreadPool.java:762)
+	at org.eclipse.jetty.util.thread.QueuedThreadPool$2.run(QueuedThreadPool.java:680)
+	at java.lang.Thread.run(Unknown Source)
+Caused by: org.apache.solr.common.SolrException: Could not load conf for core grouped_works: Can't load schema C:\data\aspen-discovery\aspen.demo\solr7\grouped_works\conf\schema.xml: Unknown fieldType 'string' specified on field rating_facet
+	at org.apache.solr.core.ConfigSetService.getConfig(ConfigSetService.java:97)
+	at org.apache.solr.core.CoreContainer.getConfigSet(CoreContainer.java:1187)
+	at org.apache.solr.core.CoreContainer.createFromDescriptor(CoreContainer.java:1134)
+	at org.apache.solr.core.CoreContainer.lambda$load$13(CoreContainer.java:684)
+	at com.codahale.metrics.InstrumentedExecutorService$InstrumentedCallable.call(InstrumentedExecutorService.java:197)
+	at java.util.concurrent.FutureTask.run(Unknown Source)
+	at org.apache.solr.common.util.ExecutorUtil$MDCAwareThreadPoolExecutor.lambda$execute$0(ExecutorUtil.java:209)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(Unknown Source)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)
+	... 1 more
+Caused by: org.apache.solr.common.SolrException: Can't load schema C:\data\aspen-discovery\aspen.demo\solr7\grouped_works\conf\schema.xml: Unknown fieldType 'string' specified on field rating_facet
+	at org.apache.solr.schema.IndexSchema.readSchema(IndexSchema.java:587)
+	at org.apache.solr.schema.IndexSchema.<init>(IndexSchema.java:177)
+	at org.apache.solr.schema.IndexSchemaFactory.create(IndexSchemaFactory.java:56)
+	at org.apache.solr.schema.IndexSchemaFactory.buildIndexSchema(IndexSchemaFactory.java:75)
+	at org.apache.solr.core.ConfigSetService.createIndexSchema(ConfigSetService.java:119)
+	at org.apache.solr.core.ConfigSetService.getConfig(ConfigSetService.java:92)
+	... 9 more
+Caused by: org.apache.solr.common.SolrException: Unknown fieldType 'string' specified on field rating_facet
+	at org.apache.solr.schema.IndexSchema.loadFields(IndexSchema.java:645)
+	at org.apache.solr.schema.IndexSchema.readSchema(IndexSchema.java:481)
+	... 14 more
+
+2019-02-22 01:48:16.434 INFO  (qtp2131952342-21) [   ] o.a.s.s.HttpSolrCall [admin] webapp=null path=/admin/info/logging params={wt=json&_=1550799604587&since=0} status=0 QTime=0
+2019-02-22 01:48:17.189 ERROR (qtp2131952342-36) [   ] o.a.s.s.HttpSolrCall null:org.apache.solr.core.SolrCoreInitializationException: SolrCore 'grouped_works' is not available due to init failure: Could not load conf for core grouped_works: Can't load schema C:\data\aspen-discovery\aspen.demo\solr7\grouped_works\conf\schema.xml: Unknown fieldType 'string' specified on field rating_facet
+	at org.apache.solr.core.CoreContainer.getCore(CoreContainer.java:1593)
+	at org.apache.solr.servlet.HttpSolrCall.init(HttpSolrCall.java:249)
+	at org.apache.solr.servlet.HttpSolrCall.call(HttpSolrCall.java:469)
+	at org.apache.solr.servlet.SolrDispatchFilter.doFilter(SolrDispatchFilter.java:377)
+	at org.apache.solr.servlet.SolrDispatchFilter.doFilter(SolrDispatchFilter.java:323)
+	at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1634)
+	at org.eclipse.jetty.servlet.ServletHandler.doHandle(ServletHandler.java:533)
+	at org.eclipse.jetty.server.handler.ScopedHandler.handle(ScopedHandler.java:146)
+	at org.eclipse.jetty.security.SecurityHandler.handle(SecurityHandler.java:548)
+	at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:132)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextHandle(ScopedHandler.java:257)
+	at org.eclipse.jetty.server.session.SessionHandler.doHandle(SessionHandler.java:1595)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextHandle(ScopedHandler.java:255)
+	at org.eclipse.jetty.server.handler.ContextHandler.doHandle(ContextHandler.java:1317)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextScope(ScopedHandler.java:203)
+	at org.eclipse.jetty.servlet.ServletHandler.doScope(ServletHandler.java:473)
+	at org.eclipse.jetty.server.session.SessionHandler.doScope(SessionHandler.java:1564)
+	at org.eclipse.jetty.server.handler.ScopedHandler.nextScope(ScopedHandler.java:201)
+	at org.eclipse.jetty.server.handler.ContextHandler.doScope(ContextHandler.java:1219)
+	at org.eclipse.jetty.server.handler.ScopedHandler.handle(ScopedHandler.java:144)
+	at org.eclipse.jetty.server.handler.ContextHandlerCollection.handle(ContextHandlerCollection.java:219)
+	at org.eclipse.jetty.server.handler.HandlerCollection.handle(HandlerCollection.java:126)
+	at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:132)
+	at org.eclipse.jetty.rewrite.handler.RewriteHandler.handle(RewriteHandler.java:335)
+	at org.eclipse.jetty.server.handler.HandlerWrapper.handle(HandlerWrapper.java:132)
+	at org.eclipse.jetty.server.Server.handle(Server.java:531)
+	at org.eclipse.jetty.server.HttpChannel.handle(HttpChannel.java:352)
+	at org.eclipse.jetty.server.HttpConnection.onFillable(HttpConnection.java:260)
+	at org.eclipse.jetty.io.AbstractConnection$ReadCallback.succeeded(AbstractConnection.java:281)
+	at org.eclipse.jetty.io.FillInterest.fillable(FillInterest.java:102)
+	at org.eclipse.jetty.io.ChannelEndPoint$2.run(ChannelEndPoint.java:118)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.runTask(EatWhatYouKill.java:333)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.doProduce(EatWhatYouKill.java:310)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.tryProduce(EatWhatYouKill.java:168)
+	at org.eclipse.jetty.util.thread.strategy.EatWhatYouKill.run(EatWhatYouKill.java:126)
+	at org.eclipse.jetty.util.thread.ReservedThreadExecutor$ReservedThread.run(ReservedThreadExecutor.java:366)
+	at org.eclipse.jetty.util.thread.QueuedThreadPool.runJob(QueuedThreadPool.java:762)
+	at org.eclipse.jetty.util.thread.QueuedThreadPool$2.run(QueuedThreadPool.java:680)
+	at java.lang.Thread.run(Unknown Source)
+Caused by: org.apache.solr.common.SolrException: Could not load conf for core grouped_works: Can't load schema C:\data\aspen-discovery\aspen.demo\solr7\grouped_works\conf\schema.xml: Unknown fieldType 'string' specified on field rating_facet
+	at org.apache.solr.core.ConfigSetService.getConfig(ConfigSetService.java:97)
+	at org.apache.solr.core.CoreContainer.getConfigSet(CoreContainer.java:1187)
+	at org.apache.solr.core.CoreContainer.createFromDescriptor(CoreContainer.java:1134)
+	at org.apache.solr.core.CoreContainer.lambda$load$13(CoreContainer.java:684)
+	at com.codahale.metrics.InstrumentedExecutorService$InstrumentedCallable.call(InstrumentedExecutorService.java:197)
+	at java.util.concurrent.FutureTask.run(Unknown Source)
+	at org.apache.solr.common.util.ExecutorUtil$MDCAwareThreadPoolExecutor.lambda$execute$0(ExecutorUtil.java:209)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(Unknown Source)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)
+	... 1 more
+Caused by: org.apache.solr.common.SolrException: Can't load schema C:\data\aspen-discovery\aspen.demo\solr7\grouped_works\conf\schema.xml: Unknown fieldType 'string' specified on field rating_facet
+	at org.apache.solr.schema.IndexSchema.readSchema(IndexSchema.java:587)
+	at org.apache.solr.schema.IndexSchema.<init>(IndexSchema.java:177)
+	at org.apache.solr.schema.IndexSchemaFactory.create(IndexSchemaFactory.java:56)
+	at org.apache.solr.schema.IndexSchemaFactory.buildIndexSchema(IndexSchemaFactory.java:75)
+	at org.apache.solr.core.ConfigSetService.createIndexSchema(ConfigSetService.java:119)
+	at org.apache.solr.core.ConfigSetService.getConfig(ConfigSetService.java:92)
+	... 9 more
+Caused by: org.apache.solr.common.SolrException: Unknown fieldType 'string' specified on field rating_facet
+	at org.apache.solr.schema.IndexSchema.loadFields(IndexSchema.java:645)
+	at org.apache.solr.schema.IndexSchema.readSchema(IndexSchema.java:481)
+	... 14 more
+
+2019-02-22 01:48:27.279 INFO  (qtp2131952342-22) [   ] o.a.s.s.HttpSolrCall [admin] webapp=null path=/admin/info/logging params={wt=json&_=1550799604587&since=0} status=0 QTime=0
+2019-02-22 01:48:37.296 INFO  (qtp2131952342-21) [   ] o.a.s.s.HttpSolrCall [admin] webapp=null path=/admin/info/logging params={wt=json&_=1550799604587&since=0} status=0 QTime=0
+2019-02-22 01:48:37.775 INFO  (ShutdownMonitor) [   ] o.e.j.s.AbstractConnector Stopped ServerConnector@3fffff43{HTTP/1.1,[http/1.1]}{0.0.0.0:8083}
+2019-02-22 01:48:37.775 INFO  (ShutdownMonitor) [   ] o.e.j.s.session node0 Stopped scavenging
+2019-02-22 01:48:37.777 INFO  (ShutdownMonitor) [   ] o.a.s.c.CoreContainer Shutting down CoreContainer instance=800088638
+2019-02-22 01:48:37.778 INFO  (ShutdownMonitor) [   ] o.a.s.m.SolrMetricManager Closing metric reporters for registry=solr.node, tag=null
+2019-02-22 01:48:37.778 INFO  (ShutdownMonitor) [   ] o.a.s.m.r.SolrJmxReporter Closing reporter [org.apache.solr.metrics.reporters.SolrJmxReporter@2dd29a59: rootName = null, domain = solr.node, service url = null, agent id = null] for registry solr.node / com.codahale.metrics.MetricRegistry@75d5668f
+2019-02-22 01:48:37.783 INFO  (ShutdownMonitor) [   ] o.a.s.m.SolrMetricManager Closing metric reporters for registry=solr.jvm, tag=null
+2019-02-22 01:48:37.783 INFO  (ShutdownMonitor) [   ] o.a.s.m.r.SolrJmxReporter Closing reporter [org.apache.solr.metrics.reporters.SolrJmxReporter@4233e892: rootName = null, domain = solr.jvm, service url = null, agent id = null] for registry solr.jvm / com.codahale.metrics.MetricRegistry@5d1b624d
+2019-02-22 01:48:37.784 INFO  (ShutdownMonitor) [   ] o.a.s.m.SolrMetricManager Closing metric reporters for registry=solr.jetty, tag=null
+2019-02-22 01:48:37.784 INFO  (ShutdownMonitor) [   ] o.a.s.m.r.SolrJmxReporter Closing reporter [org.apache.solr.metrics.reporters.SolrJmxReporter@77d2e85: rootName = null, domain = solr.jetty, service url = null, agent id = null] for registry solr.jetty / com.codahale.metrics.MetricRegistry@6c7ee78f
+2019-02-22 01:48:37.801 INFO  (ShutdownMonitor) [   ] o.e.j.s.h.ContextHandler Stopped o.e.j.w.WebAppContext@17f7cd29{/solr,null,UNAVAILABLE}{c:\web\aspen-discovery\sites\default\solr-7.6.0\server/solr-webapp/webapp}

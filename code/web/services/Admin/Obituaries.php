@@ -21,7 +21,6 @@
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/Genealogy/Person.php';
-require_once 'XML/Unserializer.php';
 
 class Obituaries extends ObjectEditor
 {

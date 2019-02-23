@@ -20,7 +20,6 @@
 
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
-require_once 'XML/Unserializer.php';
 require_once ROOT_DIR . '/sys/LibraryLink.php';
 
 class Admin_LibraryLinks extends ObjectEditor

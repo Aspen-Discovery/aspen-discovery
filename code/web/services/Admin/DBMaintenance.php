@@ -30,9 +30,7 @@ require_once ROOT_DIR . '/services/Admin/Admin.php';
  */
 class DBMaintenance extends Admin_Admin {
 	function launch() {
-		global $configArray;
 		global $interface;
-		mysql_select_db($configArray['Database']['database_vufind_dbname']);
 
 		//Create updates table if one doesn't exist already
 		$this->createUpdatesTable();
@@ -94,6 +92,8 @@ class DBMaintenance extends Admin_Admin {
 		$hoopla_updates = getHooplaUpdates();
 		require_once ROOT_DIR . '/sys/DBMaintenance/sierra_api_updates.php';
 		$sierra_api_updates = getSierraAPIUpdates();
+		require_once ROOT_DIR . '/sys/DBMaintenance/econtent_updates.php';
+		$econtent_updates = getEContentUpdates();
 
 		return array_merge(
 			$library_location_updates,
@@ -102,6 +102,7 @@ class DBMaintenance extends Admin_Admin {
 			$list_widget_updates,
 			$indexing_updates,
 			$islandora_updates,
+            $econtent_updates,
 			$hoopla_updates,
 			$sierra_api_updates,
 			array(
@@ -2377,8 +2378,7 @@ class DBMaintenance extends Admin_Admin {
 							'description' => 'Add column to store the source for a search in the search table',
 							'continueOnError' => true,
 							'sql' => array(
-									"ALTER TABLE `search` 
-									ADD COLUMN `searchSource` VARCHAR(30) NOT NULL DEFAULT 'local' AFTER `search_object`;",
+									"ALTER TABLE `search` ADD COLUMN `searchSource` VARCHAR(30) NOT NULL DEFAULT 'local' AFTER `search_object`;",
 							)
 					),
 
@@ -2426,6 +2426,8 @@ class DBMaintenance extends Admin_Admin {
 	}
 
 	public function addTableListWidgetListsLinks() {
+        /** @var PDO $aspen_db  */
+        global $aspen_db;
 		set_time_limit(120);
 		$sql = 'CREATE TABLE IF NOT EXISTS `list_widget_lists_links`( ' .
 			'`id` int(11) NOT NULL AUTO_INCREMENT, ' .
@@ -2435,16 +2437,17 @@ class DBMaintenance extends Admin_Admin {
 			'`weight` int(3) NOT NULL DEFAULT \'0\',' .
 			'PRIMARY KEY (`id`) ' .
 			') ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;';
-		mysql_query($sql);
+		$aspen_db->query($sql);
 	}
 
 
 	private function checkWhichUpdatesHaveRun($availableUpdates) {
+        /** @var PDO $aspen_db  */
+        global $aspen_db;
 		foreach ($availableUpdates as $key => $update) {
 			$update['alreadyRun'] = false;
-			$result = mysql_query("SELECT * from db_update where update_key = '" . mysql_escape_string($key) . "'");
-			$numRows = mysql_num_rows($result);
-			if ($numRows != false) {
+			$result = $aspen_db->query("SELECT * from db_update where update_key = " . $aspen_db->quote($key));
+			if ($result != false && $result->rowCount() > 0) {
 				$update['alreadyRun'] = true;
 			}
 			$availableUpdates[$key] = $update;
@@ -2453,12 +2456,14 @@ class DBMaintenance extends Admin_Admin {
 	}
 
 	private function markUpdateAsRun($update_key) {
-		$result = mysql_query("SELECT * from db_update where update_key = '" . mysql_escape_string($update_key) . "'");
-		if (mysql_num_rows($result) != false) {
+        /** @var PDO $aspen_db  */
+        global $aspen_db;
+		$result = $aspen_db->query("SELECT * from db_update where update_key = " . $aspen_db->quote($update_key));
+		if ($result->rowCount() != false) {
 			//Update the existing value
-			mysql_query("UPDATE db_update SET date_run = CURRENT_TIMESTAMP WHERE update_key = '" . mysql_escape_string($update_key) . "'");
+            $aspen_db->query("UPDATE db_update SET date_run = CURRENT_TIMESTAMP WHERE update_key = " . $aspen_db->quote($update_key));
 		} else {
-			mysql_query("INSERT INTO db_update (update_key) VALUES ('" . mysql_escape_string($update_key) . "')");
+            $aspen_db->query("INSERT INTO db_update (update_key) VALUES (" . $aspen_db->quote($update_key) . ")");
 		}
 	}
 
@@ -2467,11 +2472,13 @@ class DBMaintenance extends Admin_Admin {
 	}
 
 	private function createUpdatesTable() {
+        /** @var PDO $aspen_db  */
+        global $aspen_db;
 		//Check to see if the updates table exists
-		$result = mysql_query("SHOW TABLES");
+		$result = $aspen_db->query("SHOW TABLES");
 		$tableFound = false;
-		if ($result) {
-			while ($row = mysql_fetch_array($result, MYSQL_NUM)) {
+		if ($result->rowCount()) {
+			while ($row = $result->fetch(PDO::FETCH_NUM)) {
 				if ($row[0] == 'db_update') {
 					$tableFound = true;
 					break;
@@ -2480,7 +2487,7 @@ class DBMaintenance extends Admin_Admin {
 		}
 		if (!$tableFound) {
 			//Create the table to mark which updates have been run.
-			mysql_query("CREATE TABLE db_update (" .
+            $aspen_db->query("CREATE TABLE db_update (" .
 				"update_key VARCHAR( 100 ) NOT NULL PRIMARY KEY ," .
 				"date_run TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP" .
 				") ENGINE = InnoDB");
@@ -2630,24 +2637,27 @@ class DBMaintenance extends Admin_Admin {
 	}
 
 	function runSQLStatement(&$update, $sql) {
+        /** @var PDO $aspen_db  */
+        global $aspen_db;
 		set_time_limit(500);
-		$result = mysql_query($sql);
-		$updateOk = true;
-		if ($result == 0 || $result == false) {
-			if (isset($update['continueOnError']) && $update['continueOnError']) {
-				if (!isset($update['status'])) {
-					$update['status'] = '';
-				}
-				$update['status'] .= 'Warning: ' . mysql_error() . "<br/>";
-			} else {
-				$update['status'] = 'Update failed ' . mysql_error();
-				$updateOk = false;
-			}
-		} else {
-			if (!isset($update['status'])) {
-				$update['status'] = 'Update succeeded';
-			}
-		}
+        $updateOk = true;
+		try{
+            $aspen_db->query($sql);
+            if (!isset($update['status'])) {
+                $update['status'] = 'Update succeeded';
+            }
+        }catch (PDOException $e) {
+            if (isset($update['continueOnError']) && $update['continueOnError']) {
+                if (!isset($update['status'])) {
+                    $update['status'] = '';
+                }
+                $update['status'] .= 'Warning: ' . $e;
+            } else {
+                $update['status'] = 'Update failed ' . $e;
+                $updateOk = false;
+            }
+        }
+
 		return $updateOk;
 	}
 

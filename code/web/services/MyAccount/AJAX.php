@@ -216,29 +216,6 @@ class MyAccount_AJAX
 //		return $interface->fetch('popup-wrapper.tpl');
 	}
 
-	function removeTag()
-	{
-		if (UserAccount::isLoggedIn()) {
-			$tagToRemove = $_REQUEST['tag'];
-
-			require_once ROOT_DIR . '/sys/LocalEnrichment/UserTag.php';
-			$userTag = new UserTag();
-			$userTag->tag = $tagToRemove;
-			$userTag->userId = UserAccount::getActiveUserId();
-			$numDeleted = $userTag->delete();
-			$result = array(
-					'result' => true,
-					'message' => "Removed tag '{$tagToRemove}' from $numDeleted titles."
-			);
-		}else{
-			$result = array(
-					'result' => false,
-					'message' => "Please login to remove a tag."
-			);
-		}
-		return $result;
-	}
-
 	function saveSearch()
 	{
 		$searchId = $_REQUEST['searchId'];
@@ -1414,11 +1391,6 @@ class MyAccount_AJAX
 			}
 			$result['expirationFinesNotice'] = $interface->fetch('MyAccount/expirationFinesNotice.tpl');
 
-			// Get My Tags
-			$tagList = $user->getTags();
-			$interface->assign('tagList', $tagList);
-			$timer->logTime("Load Tags");
-			$result['tagsMenu'] = $interface->fetch('MyAccount/tagsMenu.tpl');
 		}//User is not logged in
 
 		return $result;

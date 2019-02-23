@@ -2,9 +2,9 @@ package org.vufind;
 
 import org.apache.log4j.Logger;
 import org.apache.solr.client.solrj.SolrQuery;
-import org.apache.solr.client.solrj.SolrServer;
+import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.impl.ConcurrentUpdateSolrServer;
+import org.apache.solr.client.solrj.impl.ConcurrentUpdateSolrClient;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
@@ -55,7 +55,7 @@ public class UserListProcessor {
 		}
 	}
 
-	public Long processPublicUserLists(long lastReindexTime, ConcurrentUpdateSolrServer updateServer, SolrServer solrServer) {
+	public Long processPublicUserLists(long lastReindexTime, ConcurrentUpdateSolrClient updateServer, SolrClient solrServer) {
 		GroupedReindexMain.addNoteToReindexLog("Starting to process public lists");
 		Long numListsProcessed = 0l;
 		try{
@@ -104,7 +104,7 @@ public class UserListProcessor {
 		return numListsProcessed;
 	}
 
-	private void updateSolrForList(ConcurrentUpdateSolrServer updateServer, SolrServer solrServer, PreparedStatement getTitlesForListStmt, ResultSet allPublicListsRS) throws SQLException, SolrServerException, IOException {
+	private void updateSolrForList(ConcurrentUpdateSolrClient updateServer, SolrClient solrServer, PreparedStatement getTitlesForListStmt, ResultSet allPublicListsRS) throws SQLException, SolrServerException, IOException {
 		UserListSolr userListSolr = new UserListSolr(indexer);
 		Long listId = allPublicListsRS.getLong("id");
 

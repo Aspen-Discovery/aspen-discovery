@@ -46,12 +46,6 @@ class FavoriteHandler
 	private $isMixedUserList = false; // Flag for user lists that have both catalog & archive items (and eventually other type of items)
 
 	protected $userListSortOptions = array();
-/*	protected $userListSortOptions = array(
-								// URL_value => SQL code for Order BY clause
-								'dateAdded' => 'dateAdded ASC',
-								'custom' => 'weight ASC',  // this puts items with no set weight towards the end of the list
-//								'custom' => 'weight IS NULL, weight ASC',  // this puts items with no set weight towards the end of the list
-							);*/
 	protected $solrSortOptions = array('title', 'author'), // user list sorting options handled by Solr engine.
 						$islandoraSortOptions = array('fgs_label_s'); // user list sorting options handled by the Islandora Solr engine.
 

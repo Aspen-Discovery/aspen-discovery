@@ -18,7 +18,7 @@ class ArrayUtils
 		return $array;
 	}
 
-	function encode_item(&$item, &$key)
+	static function encode_item(&$item, &$key)
 	{
 		if (is_array($item)){
 			ArrayUtils::encode_item($item, $key);

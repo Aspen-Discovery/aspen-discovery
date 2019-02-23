@@ -96,27 +96,6 @@ class User extends DataObject
 	/* the code above is auto generated do not remove the tag below */
 	###END_AUTOCODE
 
-	function getTags(){
-		require_once ROOT_DIR . '/sys/LocalEnrichment/UserTag.php';
-		$tagList = array();
-
-		$escapedId = $this->escape($this->id, false);
-		$sql = "SELECT id, groupedRecordPermanentId, tag, COUNT(groupedRecordPermanentId) AS cnt " .
-							 "FROM user_tags WHERE " .
-							 "userId = '{$escapedId}' ";
-		$sql .= "GROUP BY tag ORDER BY tag ASC";
-		$tag = new UserTag();
-		$tag->query($sql);
-		if ($tag->N) {
-			while ($tag->fetch()) {
-				$tagList[] = clone($tag);
-			}
-		}
-
-		return $tagList;
-	}
-
-
 	function getLists() {
 		require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
 
@@ -213,7 +192,7 @@ class User extends DataObject
 			$role = new Role();
 			$canUseTestRoles = false;
 			if ($this->id){
-				$escapedId = mysql_escape_string($this->id);
+				$escapedId = $this->escape($this->id);
 				$role->query("SELECT roles.* FROM roles INNER JOIN user_roles ON roles.roleId = user_roles.roleId WHERE userId = " . $escapedId . " ORDER BY name");
 				while ($role->fetch()){
 					$this->roles[$role->roleId] = $role->name;

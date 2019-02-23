@@ -144,9 +144,9 @@ class Solr implements IndexEngine {
 		if (empty($index)) {
 			global $library;
 			if ($library){
-				$index = 'grouped';
+				$index = 'grouped_works';
 			}else{
-				$index = isset($configArray['Index']['default_core']) ? $configArray['Index']['default_core'] : "grouped";
+				$index = isset($configArray['Index']['default_core']) ? $configArray['Index']['default_core'] : "grouped_works";
 			}
 
 			$this->index = $index;
@@ -336,7 +336,7 @@ class Solr implements IndexEngine {
 
 		// Generate data if not found in cache:
 		if (!($results = $cache->load($key))) {
-			$results = Horde_Yaml::load(
+		    $results = Horde_Yaml::load(
 				file_get_contents($this->searchSpecsFile)
 			);
 			$cache->save($results, $key);
@@ -658,7 +658,7 @@ class Solr implements IndexEngine {
 				$options['fq'][] = 'language:"' . $originalResult['language'][0] . '"';
 			}
 			//Don't want to get other editions of the same work (that's a different query)
-			if ($this->index != 'grouped'){
+			if ($this->index != 'grouped_works'){
 				if (isset($originalResult['isbn'])){
 					if (is_array($originalResult['isbn'])){
 						foreach($originalResult['isbn'] as $isbn){
@@ -931,13 +931,6 @@ class Solr implements IndexEngine {
 	public function getBoostFactors($searchLibrary, $searchLocation)
 	{
 		$boostFactors = array();
-
-		global $language;
-		if ($language == 'es') {
-			$boostFactors[] = 'language_boost_es';
-		} else {
-			$boostFactors[] = 'language_boost';
-		}
 
 		$applyHoldingsBoost = true;
 		if (isset($searchLibrary) && !is_null($searchLibrary)) {
@@ -1559,7 +1552,7 @@ class Solr implements IndexEngine {
 		}
 
 		//Apply automatic boosting (only to biblio and econtent queries)
-		if (preg_match('/.*(grouped).*/i', $this->host)){
+		if (preg_match('/.*(grouped_works).*/i', $this->host)){
 			//unset($options['qt']); //Force the query to never use dismax handling
 			$searchLibrary = Library::getSearchLibrary($this->searchSource);
 			//Boost items owned at our location
@@ -1651,7 +1644,7 @@ class Solr implements IndexEngine {
 
 			//Determine which fields should be treated as enums
 			global $solrScope;
-			if (preg_match('/.*(grouped).*/i', $this->host)) {
+			if (preg_match('/.*(grouped_works).*/i', $this->host)) {
 				$options["f.target_audience_full.facet.method"] = 'enum';
 				$options["f.target_audience.facet.method"] = 'enum';
 				$options["f.literary_form_full.facet.method"] = 'enum';
@@ -1700,8 +1693,6 @@ class Solr implements IndexEngine {
 			}
 
 			unset($facet['field']);
-			$options['facet.prefix'] = (isset($facet['prefix'])) ? $facet['prefix'] : null;
-			unset($facet['prefix']);
 			$options['facet.sort'] = (isset($facet['sort'])) ? $facet['sort'] : 'count';
 			unset($facet['sort']);
 			if (isset($facet['offset'])) {
@@ -1712,7 +1703,7 @@ class Solr implements IndexEngine {
 				$options['facet.limit'] = $facet['limit'];
 				unset($facet['limit']);
 			}
-			if (preg_match('/.*(grouped).*/i', $this->host)) {
+			if (preg_match('/.*(grouped_works).*/i', $this->host)) {
 				if (isset($searchLibrary) && $searchLibrary->showAvailableAtAnyLocation) {
 					$options['f.available_at.facet.missing'] = 'true';
 				}
@@ -2334,6 +2325,7 @@ class Solr implements IndexEngine {
 			}
 		}
 
+        $this->client->setMethod($method);
 		if ($method == 'GET') {
 			$this->client->addRawQueryString($queryString);
 		} elseif ($method == 'POST') {
@@ -2830,7 +2822,7 @@ class Solr implements IndexEngine {
 		$fields = $memCache->get("schema_dynamic_fields_$solrScope");
 		if (!$fields || isset($_REQUEST['reload'])){
 			global $configArray;
-			$schemaUrl = $configArray['Index']['url'] . '/grouped/admin/file?file=schema.xml&contentType=text/xml;charset=utf-8';
+			$schemaUrl = $configArray['Index']['url'] . '/grouped_works/admin/file?file=schema.xml&contentType=text/xml;charset=utf-8';
 			$schema = simplexml_load_file($schemaUrl);
 			$fields = array();
 			/** @var SimpleXMLElement $field */
@@ -2851,7 +2843,7 @@ class Solr implements IndexEngine {
 		$fields = $memCache->get("schema_fields_$solrScope");
 		if (!$fields || isset($_REQUEST['reload'])){
 			global $configArray;
-			$schemaUrl = $configArray['Index']['url'] . '/grouped/admin/file?file=schema.xml&contentType=text/xml;charset=utf-8';
+			$schemaUrl = $configArray['Index']['url'] . '/grouped_works/admin/file?file=schema.xml&contentType=text/xml;charset=utf-8';
 			$schema = simplexml_load_file($schemaUrl);
 			$fields = array();
 			/** @var SimpleXMLElement $field */

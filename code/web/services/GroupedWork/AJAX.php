@@ -936,59 +936,6 @@ class GroupedWork_AJAX {
 		return json_encode($results);
 	}
 
-	function saveTag()
-	{
-		if (!UserAccount::isLoggedIn()) {
-			return json_encode(array('success' => false, 'message' => 'Sorry, you must be logged in to add tags.'));
-		}
-
-		require_once ROOT_DIR . '/sys/LocalEnrichment/UserTag.php';
-
-		$id = $_REQUEST['id'];
-		// Parse apart the tags and save them in association with the resource:
-		preg_match_all('/"[^"]*"|[^,]+/', $_REQUEST['tag'], $words);
-		foreach ($words[0] as $tag) {
-			$tag = trim(strtolower(str_replace('"', '', $tag)));
-
-			$userTag = new UserTag();
-			$userTag->tag = $tag;
-			$userTag->userId = UserAccount::getActiveUserId();
-			$userTag->groupedRecordPermanentId = $id;
-			if (!$userTag->find(true)){
-				//This is a new tag
-				$userTag->dateTagged = time();
-				$userTag->insert();
-			}else{
-				//This tag has already been added
-			}
-		}
-
-		return json_encode(array('success' => true, 'message' => 'All tags have been added to the title.  Refresh to view updated tag list.'));
-	}
-
-	function removeTag(){
-		if (!UserAccount::isLoggedIn()) {
-			return json_encode(array('success' => false, 'message' => 'Sorry, you must be logged in to remove tags.'));
-		}
-
-		require_once ROOT_DIR . '/sys/LocalEnrichment/UserTag.php';
-
-		$id = $_REQUEST['id'];
-		$tag = $_REQUEST['tag'];
-		$userTag = new UserTag();
-		$userTag->tag = $tag;
-		$userTag->userId = UserAccount::getActiveUserId();
-		$userTag->groupedRecordPermanentId = $id;
-		if ($userTag->find(true)){
-			//This is a new tag
-			$userTag->delete();
-			return json_encode(array('success' => true, 'message' => 'Removed your tag from the title.  Refresh to view updated tag list.'));
-		}else{
-			//This tag has already been added
-			return json_encode(array('success' => true, 'message' => 'We could not find that tag for this record.'));
-		}
-	}
-
 	function getProspectorInfo(){
 		require_once ROOT_DIR . '/Drivers/marmot_inc/Prospector.php';
 		global $configArray;

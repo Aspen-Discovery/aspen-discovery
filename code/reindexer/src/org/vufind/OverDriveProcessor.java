@@ -180,7 +180,6 @@ public class OverDriveProcessor {
 							//Just create one item for each with a list of sub formats.
 							ItemInfo itemInfo = new ItemInfo();
 							itemInfo.seteContentSource("OverDrive");
-							itemInfo.seteContentProtectionType("Limited Access");
 							itemInfo.setIsEContent(true);
 							itemInfo.setShelfLocation("Online OverDrive Collection");
 							itemInfo.setCallNumber("Online OverDrive");
@@ -423,16 +422,10 @@ public class OverDriveProcessor {
 		getProductFormatsStmt.setLong(1, productId);
 		ResultSet formatsRS = getProductFormatsStmt.executeQuery();
 		HashSet<String> formats = new HashSet<>();
-		HashSet<String> eContentDevices = new HashSet<>();
 		Long formatBoost = 1L;
 		while (formatsRS.next()){
 			String format = formatsRS.getString("name");
 			formats.add(format);
-			String deviceString = indexer.translateSystemValue("device_compatibility", format.replace(' ', '_'), identifier);
-			String[] devices = deviceString.split("\\|");
-			for (String device : devices){
-				eContentDevices.add(device.trim());
-			}
 			String formatBoostStr = indexer.translateSystemValue("format_boost_overdrive", format.replace(' ', '_'), identifier);
 			try{
 				Long curFormatBoost = Long.parseLong(formatBoostStr);
@@ -443,9 +436,6 @@ public class OverDriveProcessor {
 				logger.warn("Could not parse format_boost " + formatBoostStr);
 			}
 		}
-		//By default, formats are good for all locations
-		groupedWork.addEContentDevices(eContentDevices);
-
 		formatsRS.close();
 
 		return formats;

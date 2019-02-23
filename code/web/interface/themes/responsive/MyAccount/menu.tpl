@@ -172,7 +172,7 @@
 			{/if}
 
 			{if $loggedIn && (array_key_exists('userAdmin', $userRoles) || array_key_exists('opacAdmin', $userRoles))}
-				{if in_array($action, array('Administrators', 'DBMaintenance', 'DBMaintenanceEContent', 'PHPInfo', 'OpCacheInfo', 'Variables', 'CronLog', 'MemCacheInfo'))
+				{if in_array($action, array('Administrators', 'DBMaintenance', 'PHPInfo', 'OpCacheInfo', 'Variables', 'CronLog', 'MemCacheInfo'))
 				|| ($module == 'Admin' && $action == 'Home')}
 					{assign var="curSection" value=true}
 				{else}
@@ -193,7 +193,6 @@
 							{/if}
 							{if array_key_exists('opacAdmin', $userRoles)}
 								<div class="adminMenuLink{if $action == "DBMaintenance"} active{/if}"><a href="{$path}/Admin/DBMaintenance">DB Maintenance - Pika</a></div>
-								<div class="adminMenuLink{if $action == "DBMaintenanceEContent"} active{/if}"><a href="{$path}/Admin/DBMaintenanceEContent">DB Maintenance - EContent</a></div>
 								<div class="adminMenuLink{if $module == 'Admin' && $action == "Home"} active{/if}"><a href="{$path}/Admin/Home">Solr Information</a></div>
 								<div class="adminMenuLink{if $action == "PHPInfo"} active{/if}"><a href="{$path}/Admin/PHPInfo">PHP Information</a></div>
 								<div class="adminMenuLink{if $action == "MemCacheInfo"} active{/if}"><a href="{$path}/Admin/MemCacheInfo">MemCache Information</a></div>

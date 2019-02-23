@@ -221,9 +221,7 @@
 		<field name="accelerated_reader_reading_level" type="float" indexed="true" stored="true" multiValued="false" default="0" docValues="true"/>
 		<field name="accelerated_reader_point_value" type="float" indexed="true" stored="true" multiValued="false" default="0" docValues="true"/>
 		<!-- eContent related fields -->
-		<field name="econtent_device" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
 		<dynamicField name="econtent_source_*" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
-		<dynamicField name="econtent_protection_type_*" type="string" indexed="true" stored="true" multiValued="true" docValues="true"/>
 		<!-- Broad Search Terms -->
 		<field name="table_of_contents" type="text" indexed="true" stored="true" multiValued="true"/>
 		<field name="table_of_contents_proper" type="textProper" indexed="true" stored="true" multiValued="true"/>

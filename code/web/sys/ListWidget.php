@@ -29,16 +29,24 @@ class ListWidget extends DataObject
 	public $numTitlesToShow;
 
 	// List Widget Styles and their labels
-	public $styles = array('horizontal' => 'Horizontal', 'vertical'=> 'Vertical', 'single'=>'Single Title', 'single-with-next' => 'Single Title with a Next Button', 'text-list' => 'Text Only List');
+	private $_styles = array('horizontal' => 'Horizontal', 'vertical'=> 'Vertical', 'single'=>'Single Title', 'single-with-next' => 'Single Title with a Next Button', 'text-list' => 'Text Only List');
 
 	// List Widget Display Types and their labels
-	public $displayTypes = array(
+	private $_displayTypes = array(
 		'tabs' => 'Tabbed Display',
 		'dropdown' => 'Drop Down List'
 	);
 
 	/** @var  ListWidgetList[] */
 	private $lists;
+
+	public function getStyles(){
+	    return $this->_styles;
+    }
+
+    public function getDisplayTypes(){
+	    return $this->_displayTypes;
+    }
 
 	function keys() {
 		return array('id');

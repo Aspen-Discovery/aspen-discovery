@@ -29,7 +29,6 @@ public class ItemInfo {
 	private String IType;
 	private String ITypeCode;
 	private String eContentSource;
-	private String eContentProtectionType;
 	private String eContentFilename;
 	private String eContentUrl;
 	private String statusCode;
@@ -214,14 +213,6 @@ public class ItemInfo {
 
 	void seteContentSource(String eContentSource) {
 		this.eContentSource = eContentSource;
-	}
-
-	String geteContentProtectionType() {
-		return eContentProtectionType;
-	}
-
-	void seteContentProtectionType(String eContentProtectionType) {
-		this.eContentProtectionType = eContentProtectionType;
 	}
 
 	String getCallNumber() {

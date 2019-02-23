@@ -1,11 +1,7 @@
 {strip}
-	{if $action=='DBMaintenanceEContent'}
-		<h1>Database Maintenance eContent</h1>
-	{else}
-		<h1>Database Maintenance</h1>
-	{/if}
+	<h1>Database Maintenance</h1>
 	<div id="maintenanceOptions"></div>
-	<form id="dbMaintenance" action="{$path}/Admin/{$action}">
+	<form id="dbMaintenance" action="{$path}/Admin/{$action}" method="post">
 		<div>
 			<table class="table">
 				<thead>

@@ -1658,10 +1658,6 @@ class IndexRecord extends RecordInterface
 		return $configArray['Site']['url'] . '/qrcode.php?type=Record&id=' . $this->getPermanentId();
 	}
 
-	public function getTags(){
-		return $this->getGroupedWorkDriver()->getTags();
-	}
-
 	public function getExploreMoreInfo(){
 		global $interface;
 		global $configArray;

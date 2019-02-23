@@ -18,8 +18,12 @@ class SessionInterface {
 	}
 
 	// the following need to be static since they are used as callback functions
-	static public function open($sess_path, $sess_name) { return true; }
-	static public function close() { return true; }
+	static public function open($sess_path, $sess_name) {
+	    return true;
+	}
+	static public function close() {
+	    return true;
+	}
 	static public function read($sess_id) { }
 	static public function write($sess_id, $data) { }
 

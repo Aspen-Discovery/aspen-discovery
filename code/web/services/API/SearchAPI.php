@@ -208,7 +208,7 @@ class SearchAPI extends Action {
 		require_once ROOT_DIR . '/sys/OverDriveExtractLogEntry.php';
 		$logEntry = new OverDriveExtractLogEntry();
 		$logEntry->orderBy('id DESC');
-		$logEntry->limit(1);
+		$logEntry->limit(0,1);
 		if ($logEntry->find(true)){
 			if ($logEntry->numErrors > 0){
 				$status[] = self::STATUS_WARN;
@@ -221,20 +221,16 @@ class SearchAPI extends Action {
 		if ($configArray['Index']['engine'] == 'Solr') {
 			$xml = @file_get_contents($configArray['Index']['url'] . '/admin/cores');
 			if ($xml) {
-				$options = array('parseAttributes' => 'true',
-				                 'keyAttribute' => 'name');
-				$unxml = new XML_Unserializer($options);
-				$unxml->unserialize($xml);
-				$data = $unxml->getUnserializedData();
+				$data = json_decode($xml, true);
 
-				$uptime = $data['status']['grouped']['uptime']['_content']/1000;  // Grouped Index, puts uptime into seconds.
-				$solrStartTime = strtotime($data['status']['grouped']['startTime']['_content']);
+				$uptime = $data['status']['grouped_works']['uptime']/1000;  // Grouped Index, puts uptime into seconds.
+				$solrStartTime = strtotime($data['status']['grouped_works']['startTime']);
 				if ($uptime >= self::SOLR_RESTART_INTERVAL_WARN){ // Grouped Index
 					$status[] = ($uptime >= self::SOLR_RESTART_INTERVAL_CRITICAL) ? self::STATUS_CRITICAL : self::STATUS_WARN;
 					$notes[]  = 'Solr Index (Grouped) last restarted ' . date('m-d-Y H:i:s', $solrStartTime) . ' - '. round($uptime / 3600, 2) . ' hours ago';
 				}
 
-				$numRecords = $data['status']['grouped']['index']['numDocs']['_content'];
+				$numRecords = $data['status']['grouped_works']['index']['numDocs'];
 
 				$minNumRecordVariable = new Variable();
 				$minNumRecordVariable->name = 'solr_grouped_minimum_number_records';
@@ -455,7 +451,6 @@ class SearchAPI extends Action {
 				unset($record['callnumber-subject']);
 				unset($record['author-letter']);
 				unset($record['marc_error']);
-				unset($record['title_fullStr']);
 				unset($record['shortId']);
 				$recordSet[$recordKey] = $record;
 			}

@@ -12,6 +12,8 @@ abstract class DataObject
     public $N;
     /** @var PDOStatement */
     private $__queryStmt;
+    private $__selectAllColumns = true;
+    private $__additionalSelects = array();
     private $__orderBy;
     private $__where;
     private $__limitStart;
@@ -28,7 +30,14 @@ abstract class DataObject
         $this->queryStmt = null;
         /** @var PDO $aspen_db  */
         global $aspen_db;
-        $query = 'SELECT * from ' . $this->__table;
+        $selectClause = '*';
+        if (count($this->__additionalSelects) > 0){
+            $selectClause = implode($this->__additionalSelects, ',') ;
+            if ($this->__selectAllColumns) {
+                $selectClause = '*, ' . $selectClause;
+            }
+        }
+        $query = 'SELECT ' . $selectClause . ' from ' . $this->__table;
         $properties = get_object_vars($this);
         $where = '';
         foreach ($properties as $name => $value) {
@@ -39,6 +48,7 @@ abstract class DataObject
                 $where .= $name . ' = ' . $aspen_db->quote($value);
             }
         }
+
         if (strlen($this->__where) > 0 && strlen($where) > 0){
             $query .= ' WHERE ' . $this->__where . ' AND ' . $where;
         }else if (strlen($this->__where) > 0) {
@@ -77,6 +87,19 @@ abstract class DataObject
         return $return;
     }
 
+    public function fetchAll(){
+        $results = array();
+        if ($this->find() > 0) {
+            $result = $this->fetch();
+            while ($result != null) {
+                $results[] = clone $result;
+                $result = $this->fetch();
+            }
+        }
+
+        return $results;
+    }
+
     public function orderBy($fieldsToOrder){
         if ($fieldsToOrder == null) {
             $this->__orderBy = null;
@@ -110,7 +133,7 @@ abstract class DataObject
         $propertyNames = '';
         $propertyValues = '';
         foreach ($properties as $name => $value) {
-            if ($value != null && $name[0] != '_') {
+            if (!is_null($value) && $name[0] != '_' && $name[0] != 'N') {
                 if (strlen($propertyNames) != 0) {
                     $propertyNames .= ', ';
                     $propertyValues .= ', ';
@@ -132,7 +155,7 @@ abstract class DataObject
         $properties = get_object_vars($this);
         $updates = '';
         foreach ($properties as $name => $value) {
-            if ($value != null && $name[0] != '_') {
+            if ($value != null && $name[0] != '_' && $name != 'N') {
                 if (strlen($updates) != 0) {
                     $updates .= ', ';
                 }
@@ -141,6 +164,7 @@ abstract class DataObject
         }
         $primaryKey = $this->__primaryKey;
         $updateQuery .= ' SET ' . $updates . ' WHERE ' . $primaryKey . ' = ' . $aspen_db->quote($this->$primaryKey);
+        $this->__lastQuery = $updateQuery;
         $response = $aspen_db->prepare($updateQuery)->execute();
         return $response;
     }
@@ -229,5 +253,29 @@ abstract class DataObject
         /** @var PDO $aspen_db  */
         global $aspen_db;
         return $aspen_db->quote($variable);
+    }
+
+    public function selectAdd($condition = null){
+        if ($condition == null) {
+            $this->__selectAllColumns = false;
+            $this->__additionalSelects = array();
+        } else {
+            $this->__additionalSelects[] = $condition;
+        }
+    }
+
+    public function table(){
+        /** @var PDO $aspen_db  */
+        global $aspen_db;
+        //Get the columns defined in this table
+        $query = 'SHOW COLUMNS FROM ' . $this->__table;
+        $results = $aspen_db->query($query, PDO::FETCH_ASSOC);
+        $columns = array();
+        $row = $results->fetchObject();
+        while ($row != null) {
+            $columns[$row->Field] = $row;
+            $row = $results->fetchObject();
+        }
+        return $columns;
     }
 }

@@ -17,7 +17,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
-require_once 'Pager/Pager.php';
+//require_once 'Pager/Pager.php';
 
 /**
  * VuFind Pager Class
@@ -66,7 +66,7 @@ class VuFindPager {
 		}
 
 		// Create the pager object:
-		$this->pager =& Pager::factory($finalOptions);
+		//$this->pager =& Pager::factory($finalOptions);
 	}
 
 	/**
@@ -76,7 +76,8 @@ class VuFindPager {
 	 * @return  array
 	 */
 	public function getLinks() {
-		$links = $this->pager->getLinks();
+		//$links = $this->pager->getLinks();
+        return array();
 		$allLinks = $links['all'];
 		$allLinks = str_replace('<a', '<li><a', $allLinks);
 		$allLinks = str_replace('</a>', '</li></a>', $allLinks);
@@ -90,12 +91,14 @@ class VuFindPager {
 	}
 
 	public function isLastPage() {
+	    return false;
 		$currentPage = $this->pager->_currentPage;
 		$totalPages = $this->pager->_totalPages;
 		return $currentPage == $totalPages;
 	}
 
 	public function getNumRecordsOnPage() {
+	    return 20;
 		if (!$this->isLastPage()) {
 			return $this->pager->_perPage;
 		}

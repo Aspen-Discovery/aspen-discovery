@@ -1197,41 +1197,6 @@ class SearchObject_Solr extends SearchObject_Base
 	}
 
 	/**
-	 * Process a search for a particular tag.
-	 *
-	 * @access  private
-	 * @param   string  $lookfor    The tag to search for
-	 * @return  array   A revised searchTerms array to get matching Solr records
-	 *                  (empty if no tag matches found).
-	 */
-	private function processTagSearch($lookfor)
-	{
-		// Include the app database objects
-		require_once ROOT_DIR . '/sys/LocalEnrichment/UserTag.php';
-		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
-
-		// Find our tag in the database
-		$tag = new UserTag();
-		$tag->tag = $lookfor;
-		$tag->selectAdd(null);
-		$tag->selectAdd('DISTINCT(groupedRecordPermanentId) as groupedRecordPermanentId');
-		$newSearch = array();
-		$newSearch[0] = array('join' => 'OR', 'group' => array());
-		$tag->find();
-		while ($tag->fetch()) {
-			// Grab the list of records tagged with this tag
-			$id = $tag->groupedRecordPermanentId;
-			$newSearch[0]['group'][] = array(
-                    'field' => 'id',
-                    'lookfor' => $id,
-                    'bool' => 'OR'
-                    );
-		}
-
-		return $newSearch;
-	}
-
-	/**
 	 * Get error message from index response, if any.  This will only work if
 	 * processSearch was called with $returnIndexErrors set to true!
 	 *
@@ -1299,24 +1264,7 @@ class SearchObject_Solr extends SearchObject_Base
 		}
 		$timer->logTime("initRecommendations");
 
-
-		// Tag searches need to be handled differently
-		if (count($search) == 1 && isset($search[0]['index']) && $search[0]['index'] == 'tag') {
-			// If we managed to find some tag matches, let's override the search
-			// array.  If we didn't find any tag matches, we should return an
-			// empty record set.
-			$newSearch = $this->processTagSearch($search[0]['lookfor']);
-			$timer->logTime("process Tag search");
-			// Save search so it displays correctly on the "no hits" page:
-			$this->publicQuery = $search[0]['lookfor'];
-			if (empty($newSearch)) {
-				return array('response' => array('numFound' => 0, 'docs' => array()));
-			} else {
-				$search = $newSearch;
-			}
-		}
-
-		// Build Query
+        // Build Query
 		if ($preventQueryModification){
 			$query = $search;
 		}else{
@@ -1744,7 +1692,7 @@ class SearchObject_Solr extends SearchObject_Base
 		// If we have no facets to process, give up now
 		if (!isset($this->indexResult['facet_counts'])){
 			return $list;
-		}elseif (!is_array($this->indexResult['facet_counts']['facet_fields']) && !is_array($this->indexResult['facet_counts']['facet_dates'])) {
+		}elseif (!is_array($this->indexResult['facet_counts']['facet_fields'])) {
 			return $list;
 		}
 
@@ -1783,7 +1731,7 @@ class SearchObject_Solr extends SearchObject_Base
 			$relatedHomeLocationFacets = $locationSingleton->getLocationsFacetsForLibrary($homeLibrary->libraryId);
 		}
 
-		$allFacets = array_merge($this->indexResult['facet_counts']['facet_fields'], $this->indexResult['facet_counts']['facet_dates']);
+		$allFacets = $this->indexResult['facet_counts']['facet_fields'];
 		foreach ($allFacets as $field => $data) {
 			// Skip filtered fields and empty arrays:
 			if (!in_array($field, $validFields) || count($data) < 1) {

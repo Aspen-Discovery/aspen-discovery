@@ -612,7 +612,6 @@
 					<str name="facet.field">topic_facet</str>
 					<str name="facet.field">authorStr</str>
 					<str name="facet.field">awards_facet</str>
-					<str name="facet.field">econtent_device</str>
 					<str name="facet.field">era</str>
 					<str name="facet.field">genre_facet</str>
 					<str name="facet.field">language</str>
@@ -639,7 +638,6 @@
 					<str name="facet.field">topic_facet</str>
 					<str name="facet.field">authorStr</str>
 					<str name="facet.field">awards_facet</str>
-					<str name="facet.field">econtent_device</str>
 					<str name="facet.field">era</str>
 					<str name="facet.field">genre_facet</str>
 					<str name="facet.field">language</str>
@@ -667,7 +665,6 @@
 					<str name="facet.field">topic_facet</str>
 					<str name="facet.field">authorStr</str>
 					<str name="facet.field">awards_facet</str>
-					<str name="facet.field">econtent_device</str>
 					<str name="facet.field">era</str>
 					<str name="facet.field">genre_facet</str>
 					<str name="facet.field">language</str>
@@ -695,7 +692,6 @@
 					<str name="facet.field">topic_facet</str>
 					<str name="facet.field">authorStr</str>
 					<str name="facet.field">awards_facet</str>
-					<str name="facet.field">econtent_device</str>
 					<str name="facet.field">era</str>
 					<str name="facet.field">genre_facet</str>
 					<str name="facet.field">language</str>
@@ -911,7 +907,7 @@
 	
 	<requestHandler name="/replication" class="solr.ReplicationHandler" >
 	  <lst name="slave">
-			<str name="masterUrl">http://localhost:${solr.masterport}/solr/grouped</str>
+			<str name="masterUrl">http://localhost:${solr.masterport}/solr/grouped_works</str>
 		  <str name="pollInterval">00:01:00</str>
 	  </lst>
 	</requestHandler>

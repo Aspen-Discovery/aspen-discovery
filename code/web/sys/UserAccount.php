@@ -286,6 +286,10 @@ class UserAccount {
 				if ($userData->find(true)){
 					$logger->log("Loading user {$userData->cat_username}, {$userData->cat_password} because we didn't have data in memcache", PEAR_LOG_DEBUG);
 					$userData = UserAccount::validateAccount($userData->cat_username, $userData->cat_password, $userData->source);
+					if ($userData == false) {
+					    echo("Could not validate your account.  The underlying ILS may be inaccessible");
+					    die();
+                    }
 					self::updateSession($userData);
 				}
 			}else{
@@ -348,7 +352,12 @@ class UserAccount {
 	 * @param User $user
 	 */
 	public static function updateSession($user) {
-		$_SESSION['activeUserId'] = $user->id;
+	    if ($user != false) {
+            $_SESSION['activeUserId'] = $user->id;
+        } else {
+	        unset($_SESSION['activeUserId']);
+        }
+
 
 		if (isset($_REQUEST['rememberMe']) && ($_REQUEST['rememberMe'] === "true" || $_REQUEST['rememberMe'] === "on")){
 			$_SESSION['rememberMe'] = true;

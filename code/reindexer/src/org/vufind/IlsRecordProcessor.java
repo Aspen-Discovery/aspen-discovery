@@ -651,7 +651,6 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				String[] eContentFields = eContentData.split(":");
 				//First element is the source, and we will always have at least the source and protection type
 				itemInfo.seteContentSource(eContentFields[0].trim());
-				itemInfo.seteContentProtectionType(eContentFields[1].trim().toLowerCase());
 
 				//Remaining fields have variable definitions based on content that has been loaded over the past year or so
 				if (eContentFields.length >= 4){
@@ -671,32 +670,13 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			}
 		}else{
 			//This is for a "less advanced" catalog, set some basic info
-			itemInfo.seteContentProtectionType("external");
 			itemInfo.seteContentSource(getSourceType(record, itemField));
 		}
 
 		//Set record type
-		String protectionType = itemInfo.geteContentProtectionType();
-		switch (protectionType) {
-			case "external":
-				relatedRecord = groupedWork.addRelatedRecord("external_econtent", identifier);
-				relatedRecord.setSubSource(profileType);
-				relatedRecord.addItem(itemInfo);
-				break;
-			case "acs":
-			case "drm":
-			case "public domain":
-			case "free":
-				//Remove restricted (ACS) eContent from Pika #PK-1199
-				//Remove free public domain, but stored locally eContent from Pika #PK-1199
-				//relatedRecord = groupedWork.addRelatedRecord("public_domain_econtent", identifier);
-				//relatedRecord.setSubSource(profileType);
-				//relatedRecord.addItem(itemInfo);
-				return null;
-			default:
-				logger.warn("Unknown protection type " + protectionType + " found in record " + identifier);
-				break;
-		}
+		relatedRecord = groupedWork.addRelatedRecord("external_econtent", identifier);
+		relatedRecord.setSubSource(profileType);
+		relatedRecord.addItem(itemInfo);
 
 		loadEContentFormatInformation(record, relatedRecord, itemInfo);
 
@@ -704,7 +684,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		Subfield urlSubfield = itemField.getSubfield(itemUrlSubfieldIndicator);
 		if (urlSubfield != null){
 			itemInfo.seteContentUrl(urlSubfield.getData().trim());
-		}else if (protectionType.equals("external")){
+		}else{
 			//Check the 856 tag to see if there is a link there
 			List<DataField> urlFields = MarcUtil.getDataFields(record, "856");
 			for (DataField urlField : urlFields){
