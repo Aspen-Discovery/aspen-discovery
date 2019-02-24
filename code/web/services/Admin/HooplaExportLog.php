@@ -49,7 +49,7 @@ class HooplaExportLog extends Admin_Admin
 		                 'fileName'   => $configArray['Site']['path'].'/Admin/HooplaExportLog?page=%d'. (empty($_REQUEST['pagesize']) ? '' : '&pagesize=' . $_REQUEST['pagesize']),
 		                 'perPage'    => $pagesize,
 		);
-		$pager = new VuFindPager($options);
+		$pager = new Pager($options);
 		$interface->assign('pageLinks', $pager->getLinks());
 
 		$this->display('hooplaExportLog.tpl', 'Hoopla Export Log');

@@ -168,7 +168,7 @@ class Archive_Results extends Action {
 				$options = array('totalItems' => $summary['resultTotal'],
 						'fileName'   => $link,
 						'perPage'    => $summary['perPage']);
-				$pager = new VuFindPager($options);
+				$pager = new Pager($options);
 				$interface->assign('pageLinks', $pager->getLinks());
 			}
 

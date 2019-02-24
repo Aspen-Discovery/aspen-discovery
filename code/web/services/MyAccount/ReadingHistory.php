@@ -120,7 +120,7 @@ class ReadingHistory extends MyAccount
 					                 'perPage'    => $recordsPerPage,
 					                 'append'     => false,
 					                 );
-					$pager = new VuFindPager($options);
+					$pager = new Pager($options);
 					$interface->assign('pageLinks', $pager->getLinks());
 				}
 				if (!PEAR_Singleton::isError($result)) {

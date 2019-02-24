@@ -52,7 +52,7 @@ class RecordGroupingLog extends Admin_Admin
 		                 'fileName'   => $configArray['Site']['path'].'/Admin/RecordGroupingLog?page=%d'. (empty($_REQUEST['worksLimit']) ? '' : '&worksLimit=' . $_REQUEST['worksLimit']). (empty($_REQUEST['pagesize']) ? '' : '&pagesize=' . $_REQUEST['pagesize']),
 		                 'perPage'    => $pagesize,
 		);
-		$pager = new VuFindPager($options);
+		$pager = new Pager($options);
 		$interface->assign('pageLinks', $pager->getLinks());
 
 		$this->display('recordGroupingLog.tpl', 'Record Grouping Log');

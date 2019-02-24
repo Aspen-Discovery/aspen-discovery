@@ -481,12 +481,12 @@ class SearchAPI extends Action {
 			$options = array('totalItems' => $summary['resultTotal'],
                              'fileName'   => $link,
                              'perPage'    => $summary['perPage']);
-			$pager = new VuFindPager($options);
+			$pager = new Pager($options);
 			$jsonResults['paging'] = array(
-            	'currentPage' => $pager->pager->_currentPage,
-            	'totalPages' => $pager->pager->_totalPages,
-            	'totalItems' => $pager->pager->_totalItems,
-            	'itemsPerPage' => $pager->pager->_perPage,
+            	'currentPage' => $pager->getCurrentPage(),
+            	'totalPages' => $pager->getTotalPages(),
+            	'totalItems' => $pager->getTotalItems(),
+            	'itemsPerPage' => $pager->getItemsPerPage(),
 			);
 			$interface->assign('pageLinks', $pager->getLinks());
 			$timer->logTime('finish hits processing');

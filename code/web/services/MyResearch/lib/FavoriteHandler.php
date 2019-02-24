@@ -370,7 +370,7 @@ class FavoriteHandler
 		                 'fileName' => $link,
 		                 'append'    => false);
 		require_once ROOT_DIR . '/sys/Pager.php';
-		$pager = new VuFindPager($options);
+		$pager = new Pager($options);
 		$interface->assign('pageLinks', $pager->getLinks());
 
 	}

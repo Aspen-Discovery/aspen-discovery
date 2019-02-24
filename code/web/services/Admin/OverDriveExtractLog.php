@@ -56,7 +56,7 @@ class OverDriveExtractLog extends Admin_Admin
 		                 'fileName'   => $configArray['Site']['path'].'/Admin/OverDriveExtractLog?page=%d',
 		                 'perPage'    => 30,
 		);
-		$pager = new VuFindPager($options);
+		$pager = new Pager($options);
 		$interface->assign('pageLinks', $pager->getLinks());
 
 		$this->display('overdriveExtractLog.tpl', 'OverDrive Extract Log');

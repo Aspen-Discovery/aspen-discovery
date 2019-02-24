@@ -324,7 +324,7 @@ class Author_Home extends Action
 		$options = array('totalItems' => $summary['resultTotal'],
                          'fileName'   => $link,
                          'perPage'    => $summary['perPage']);
-		$pager = new VuFindPager($options);
+		$pager = new Pager($options);
 		$interface->assign('pageLinks', $pager->getLinks());
 
 		// Save the ID of this search to the session so we can return to it easily:

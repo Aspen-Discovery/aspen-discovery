@@ -65,7 +65,7 @@ class EditorialReview_Search extends Admin_Admin {
 		$options = array('totalItems' => $numTotalFiles,
                      'fileName'   => $searchUrl,
                      'perPage'    => $recordsPerPage);
-		$pager = new VuFindPager($options);
+		$pager = new Pager($options);
 		$interface->assign('pageLinks', $pager->getLinks());
 
 		$interface->assign('sidebar', 'MyAccount/account-sidebar.tpl');

@@ -48,7 +48,7 @@ class CronLog extends Admin_Admin
 		                 'fileName'   => $configArray['Site']['path'].'/Admin/CronLog?page=%d',
 		                 'perPage'    => 30,
 		);
-		$pager = new VuFindPager($options);
+		$pager = new Pager($options);
 		$interface->assign('pageLinks', $pager->getLinks());
 
 		$this->display('cronLog.tpl', 'Cron Log');

@@ -81,7 +81,7 @@ class Author_Search extends Action
 
 		$link = $searchObject->renderLinkPageTemplate();
 		$options = array('totalItems' => $cnt, 'fileName' => $link);
-		$pager = new VuFindPager($options);
+		$pager = new Pager($options);
 		$interface->assign('pageLinks', $pager->getLinks());
 
 		$interface->setPageTitle('Author Browse');
