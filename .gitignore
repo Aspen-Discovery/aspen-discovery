@@ -41,6 +41,7 @@ horizon_export.properties
 sites/default/solr/jetty/logs/*
 
 
+
 # Compiled source #                                                                                   
 ###################
 *.com

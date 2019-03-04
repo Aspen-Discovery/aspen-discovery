@@ -208,6 +208,8 @@ function loadLibraryAndLocation(){
 	global $librarySingleton;
 	global $locationSingleton;
 	global $configArray;
+	global $theme;
+
 	//Create global singleton instances for Library and Location
 	$librarySingleton = new Library();
 	$timer->logTime('Created library');
@@ -248,7 +250,6 @@ function loadLibraryAndLocation(){
 	//Update configuration information for scoping now that the database is setup.
 	$configArray = updateConfigForScoping($configArray);
 	$timer->logTime('Updated config for scoping');
-
 }
 
 function loadSearchInformation(){

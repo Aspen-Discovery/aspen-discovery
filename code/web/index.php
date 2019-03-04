@@ -31,15 +31,6 @@ if (isset($_REQUEST['test_role'])){
 // Start Interface
 $interface = new UInterface();
 $timer->logTime('Create interface');
-if (isset($configArray['Site']['responsiveLogo'])){
-	$interface->assign('responsiveLogo', $configArray['Site']['responsiveLogo']);
-}
-if (isset($configArray['Site']['smallLogo'])){
-	$interface->assign('smallLogo', $configArray['Site']['smallLogo']);
-}
-if (isset($configArray['Site']['largeLogo'])){
-	$interface->assign('largeLogo', $configArray['Site']['largeLogo']);
-}
 
 //Set footer information
 /** @var Location $locationSingleton */

@@ -20,6 +20,7 @@
 
 require_once 'Smarty/Smarty.class.php';
 require_once ROOT_DIR . '/sys/mobile_device_detect.php';
+require_once ROOT_DIR . '/sys/Theming/Theme.php';
 
 // Smarty Extension class
 class UInterface extends Smarty
@@ -356,6 +357,27 @@ class UInterface extends Smarty
 		global $library;
 		global $locationSingleton;
 		global $configArray;
+
+        $theme = new Theme();
+        $theme->id = $library->theme;
+        $theme->find(true);
+
+        //Get Logo
+        if ($theme->logoName) {
+            $this->assign('responsiveLogo', '/files/medium/' . $theme->logoName);
+            $this->assign('smallLogo', '/files/thumbnail/' . $theme->logoName);
+            $this->assign('largeLogo', '/files/original/' . $theme->logoName);
+        } else {
+            if (isset($configArray['Site']['responsiveLogo'])){
+                $this->assign('responsiveLogo', $configArray['Site']['responsiveLogo']);
+            }
+            if (isset($configArray['Site']['smallLogo'])){
+                $this->assign('smallLogo', $configArray['Site']['smallLogo']);
+            }
+            if (isset($configArray['Site']['largeLogo'])){
+                $this->assign('largeLogo', $configArray['Site']['largeLogo']);
+            }
+        }
 		$location = $locationSingleton->getActiveLocation();
 		$showHoldButton = 1;
 		$showHoldButtonInSearchResults = 1;

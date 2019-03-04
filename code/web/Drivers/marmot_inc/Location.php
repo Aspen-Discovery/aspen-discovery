@@ -23,6 +23,7 @@ class Location extends DataObject
 	public $code;					//varchar(5)
 	public $subLocation;
 	public $displayName;			//varchar(40)
+    public $theme;
 	public $showDisplayNameInHeader;
 	public $headerText;
 	public $libraryId;				//int(11)
@@ -158,13 +159,23 @@ class Location extends DataObject
 
 		$browseCategoryInstructions = 'For more information on how to setup browse categories, see the <a href="https://docs.google.com/document/d/11biGMw6UDKx9UBiDCCj_GBmatx93UlJBLMESNf_RtDU">online documentation</a>.';
 
+        require_once ROOT_DIR . '/sys/Theming/Theme.php';
+        $theme = new Theme();
+        $availableThemes = array();
+        $theme->orderBy('themeName');
+        $theme->find();
+        while ($theme->fetch()){
+            $availableThemes[$theme->id] = $theme->themeName;
+        }
+
 		$structure = array(
 				'locationId' => array('property'=>'locationId', 'type'=>'label', 'label'=>'Location Id', 'description'=>'The unique id of the location within the database'),
 				'subdomain' => array('property'=>'subdomain', 'type'=>'text', 'label'=>'Subdomain', 'description'=>'The subdomain to use while identifying this branch.  Can be left if it matches the code.', 'required'=>false),
 				'code' => array('property'=>'code', 'type'=>'text', 'label'=>'Code', 'description'=>'The code for use when communicating with the ILS', 'required'=>true),
 				'subLocation' => array('property'=>'subLocation', 'type'=>'text', 'label'=>'Sub Location Code', 'description'=>'The sub location or collection used to identify this '),
 				'displayName' => array('property'=>'displayName', 'type'=>'text', 'label'=>'Display Name', 'description'=>'The full name of the location for display to the user', 'size'=>'40'),
-				'showDisplayNameInHeader' => array('property'=>'showDisplayNameInHeader', 'type'=>'checkbox', 'label'=>'Show Display Name in Header', 'description'=>'Whether or not the display name should be shown in the header next to the logo', 'hideInLists' => true, 'default'=>false),
+                'theme' => array('property'=>'theme', 'type'=>'enum', 'label'=>'Theme', 'values' => $availableThemes, 'description'=>'The theme which should be used for the library', 'hideInLists' => true, 'default' => 'default'),
+                'showDisplayNameInHeader' => array('property'=>'showDisplayNameInHeader', 'type'=>'checkbox', 'label'=>'Show Display Name in Header', 'description'=>'Whether or not the display name should be shown in the header next to the logo', 'hideInLists' => true, 'default'=>false),
 				array('property'=>'libraryId', 'type'=>'enum', 'values'=>$libraryList, 'label'=>'Library', 'description'=>'A link to the library which the location belongs to'),
 				'isMainBranch' => array('property'=>'isMainBranch', 'type'=>'checkbox', 'label'=>'Is Main Branch', 'description'=>'Is this location the main branch for it\'s library', /*'hideInLists' => false,*/ 'default'=>false),
 				'showInLocationsAndHoursList' => array('property'=>'showInLocationsAndHoursList', 'type'=>'checkbox', 'label'=>'Show In Locations And Hours List', 'description'=>'Whether or not this location should be shown in the list of library hours and locations', 'hideInLists' => true, 'default'=>true),

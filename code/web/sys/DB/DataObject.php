@@ -155,7 +155,7 @@ abstract class DataObject
         $properties = get_object_vars($this);
         $updates = '';
         foreach ($properties as $name => $value) {
-            if ($value != null && $name[0] != '_' && $name != 'N') {
+            if ($value != null && !is_array($value)&& $name[0] != '_' && $name != 'N') {
                 if (strlen($updates) != 0) {
                     $updates .= ', ';
                 }

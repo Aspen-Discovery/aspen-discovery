@@ -1705,5 +1705,15 @@ function getLibraryLocationUpdates(){
 					),
 			),
 
+        'library_use_theme' => array(
+            'title' => 'Use Themes for libraries and locations',
+            'description' => 'Update Libraries and locations to use themes rather than coding everything into the library',
+            'continueOnError' => false,
+            'sql' => array(
+                'ALTER TABLE `library` ADD COLUMN `theme` INT(11) DEFAULT 1;',
+                'ALTER TABLE `location` ADD COLUMN `theme` INT(11) DEFAULT 1;',
+            )
+        ),
+
 	);
 }

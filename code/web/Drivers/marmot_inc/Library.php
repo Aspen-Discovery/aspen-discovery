@@ -3,7 +3,6 @@
  * Table Definition for library
  */
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
-require_once ROOT_DIR . '/sys/DB/DataObject.php';
 require_once ROOT_DIR . '/Drivers/marmot_inc/Holiday.php';
 require_once ROOT_DIR . '/Drivers/marmot_inc/LibraryFacetSetting.php';
 require_once ROOT_DIR . '/Drivers/marmot_inc/LibraryArchiveSearchFacetSetting.php';
@@ -33,6 +32,7 @@ class Library extends DataObject
 	public $systemMessage;
 	public $ilsCode;
 	public $themeName; 				//varchar(15)
+    public $theme;
 	public $restrictSearchByLibrary;
 	public $includeOutOfSystemExternalLinks;
 	public $allowProfileUpdates;   //tinyint(4)
@@ -233,8 +233,6 @@ class Library extends DataObject
 
 	public $archiveMoreDetailsRelatedObjectsOrEntitiesDisplayMode;
 
-
-
 	// Use this to set which details will be shown in the the Main Details section of the record view.
 	// You should be able to add options here without needing to change the database.
 	// set the key to the desired SMARTY template variable name, set the value to the label to show in the library configuration page
@@ -364,6 +362,15 @@ class Library extends DataObject
 			$availableWidgets[$widget->id] = $widget->name;
 		}
 
+        require_once ROOT_DIR . '/sys/Theming/Theme.php';
+        $theme = new Theme();
+        $availableThemes = array();
+        $theme->orderBy('themeName');
+        $theme->find();
+        while ($theme->fetch()){
+            $availableThemes[$theme->id] = $theme->themeName;
+        }
+
 		//$Instructions = 'For more information on ???, see the <a href="">online documentation</a>.';
 
 		$structure = array(
@@ -379,7 +386,8 @@ class Library extends DataObject
 			'displaySection' =>array('property'=>'displaySection', 'type' => 'section', 'label' =>'Basic Display', 'hideInLists' => true,
 					'helpLink' => 'https://docs.google.com/document/d/18XXYAn3m9IGbjKwDGluFhPoHDXdIFUhdgmoIEdgRVcM', 'properties' => array(
 				'themeName' => array('property'=>'themeName', 'type'=>'text', 'label'=>'Theme Name', 'description'=>'The name of the theme which should be used for the library', 'hideInLists' => true, 'default' => 'default'),
-				'homeLink' => array('property'=>'homeLink', 'type'=>'text', 'label'=>'Home Link', 'description'=>'The location to send the user when they click on the home button or logo.  Use default or blank to go back to the Pika home location.', 'size'=>'40', 'hideInLists' => true,),
+                'theme' => array('property'=>'theme', 'type'=>'enum', 'label'=>'Theme', 'values' => $availableThemes, 'description'=>'The theme which should be used for the library', 'hideInLists' => true, 'default' => 'default'),
+                'homeLink' => array('property'=>'homeLink', 'type'=>'text', 'label'=>'Home Link', 'description'=>'The location to send the user when they click on the home button or logo.  Use default or blank to go back to the Pika home location.', 'size'=>'40', 'hideInLists' => true,),
 				'additionalCss' => array('property'=>'additionalCss', 'type'=>'textarea', 'label'=>'Additional CSS', 'description'=>'Extra CSS to apply to the site.  Will apply to all pages.', 'hideInLists' => true),
 				'headerText' => array('property'=>'headerText', 'type'=>'html', 'label'=>'Header Text', 'description'=>'Optional Text to display in the header, between the logo and the log in/out buttons.  Will apply to all pages.', 'allowableTags' => '<a><b><em><div><span><p><strong><sub><sup><h1><h2><h3><h4><h5><h6><img>', 'hideInLists' => true),
 				'showSidebarMenu' => array('property'=>'showSidebarMenu', 'type'=>'checkbox', 'label'=>'Display Sidebar Menu', 'description'=>'Determines whether or not the sidebar menu will be shown.  Must also be enabled in config.ini.', 'hideInLists' => true,),

@@ -94,6 +94,8 @@ class DBMaintenance extends Admin_Admin {
 		$sierra_api_updates = getSierraAPIUpdates();
 		require_once ROOT_DIR . '/sys/DBMaintenance/econtent_updates.php';
 		$econtent_updates = getEContentUpdates();
+        require_once ROOT_DIR . '/sys/DBMaintenance/theming_updates.php';
+        $theming_updates = getThemingUpdates();
 
 		return array_merge(
 			$library_location_updates,
@@ -105,6 +107,7 @@ class DBMaintenance extends Admin_Admin {
             $econtent_updates,
 			$hoopla_updates,
 			$sierra_api_updates,
+            $theming_updates,
 			array(
 				'index_search_stats' => array(
 					'title' => 'Index search stats table',

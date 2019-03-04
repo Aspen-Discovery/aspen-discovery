@@ -114,7 +114,7 @@
 
 			{* Admin Functionality if Available *}
 			{if $loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('contentEditor', $userRoles) || array_key_exists('libraryManager', $userRoles) || array_key_exists('locationManager', $userRoles))}
-				{if in_array($action, array('Libraries', 'Locations', 'IPAddresses', 'ListWidgets', 'BrowseCategories', 'PTypes', 'LoanRules', 'LoanRuleDeterminers', 'AccountProfiles', 'NYTLists', 'BlockPatronAccountLinks'))}
+				{if in_array($action, array('Themes', 'Libraries', 'Locations', 'IPAddresses', 'ListWidgets', 'BrowseCategories', 'PTypes', 'LoanRules', 'LoanRuleDeterminers', 'AccountProfiles', 'NYTLists', 'BlockPatronAccountLinks'))}
 					{assign var="curSection" value=true}
 				{else}
 					{assign var="curSection" value=false}
@@ -129,7 +129,9 @@
 					</a>
 					<div id="vufindMenuGroup" class="panel-collapse collapse {if $curSection}in{/if}">
 						<div class="panel-body">
-							{* Library Admin Actions *}
+							{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles))}
+								<div class="adminMenuLink{if $action == "Themes"} active{/if}"><a href="{$path}/Admin/Themes">Themes</a></div>
+							{/if}
 							{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('libraryManager', $userRoles))}
 								<div class="adminMenuLink{if $action == "Libraries"} active{/if}"><a href="{$path}/Admin/Libraries">Library Systems</a></div>
 							{/if}
@@ -192,7 +194,7 @@
 								<div class="adminMenuLink {if $action == "Administrators"} active{/if}"><a href="{$path}/Admin/Administrators">Administrators</a></div>
 							{/if}
 							{if array_key_exists('opacAdmin', $userRoles)}
-								<div class="adminMenuLink{if $action == "DBMaintenance"} active{/if}"><a href="{$path}/Admin/DBMaintenance">DB Maintenance - Pika</a></div>
+								<div class="adminMenuLink{if $action == "DBMaintenance"} active{/if}"><a href="{$path}/Admin/DBMaintenance">DB Maintenance</a></div>
 								<div class="adminMenuLink{if $module == 'Admin' && $action == "Home"} active{/if}"><a href="{$path}/Admin/Home">Solr Information</a></div>
 								<div class="adminMenuLink{if $action == "PHPInfo"} active{/if}"><a href="{$path}/Admin/PHPInfo">PHP Information</a></div>
 								<div class="adminMenuLink{if $action == "MemCacheInfo"} active{/if}"><a href="{$path}/Admin/MemCacheInfo">MemCache Information</a></div>
