@@ -39,8 +39,8 @@ horizon_export.properties
 *.pid
 *.port
 sites/default/solr/jetty/logs/*
-
-
+sites/default/solr-7.6.0/logs/*
+sites/default/solr-7.6.0/server/logs/*
 
 # Compiled source #                                                                                   
 ###################
