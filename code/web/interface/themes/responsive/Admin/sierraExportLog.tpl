@@ -18,7 +18,7 @@
 				</span>
 			</div>
 		</form>
-		<div id="hooplaExportLogContainer">
+		<div id="sierraExportLogContainer">
 			<table class="logEntryDetails table table-condensed table-hover">
 				<thead>
 					<tr><th>Id</th><th>Started</th><th>Last Update</th><th>Finished</th><th>Elapsed</th><th>To Process</th><th>Processed</th><th>Errors</th><th>Remaining</th><th>Notes</th></tr>
