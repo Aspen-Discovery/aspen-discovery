@@ -133,7 +133,7 @@ abstract class DataObject
         $propertyNames = '';
         $propertyValues = '';
         foreach ($properties as $name => $value) {
-            if (!is_null($value) && $name[0] != '_' && $name[0] != 'N') {
+            if (!is_null($value) && !is_array($value) && $name[0] != '_' && $name[0] != 'N') {
                 if (strlen($propertyNames) != 0) {
                     $propertyNames .= ', ';
                     $propertyValues .= ', ';
@@ -155,7 +155,7 @@ abstract class DataObject
         $properties = get_object_vars($this);
         $updates = '';
         foreach ($properties as $name => $value) {
-            if ($value != null && !is_array($value)&& $name[0] != '_' && $name != 'N') {
+            if ($value != null && !is_array($value) && $name[0] != '_' && $name != 'N') {
                 if (strlen($updates) != 0) {
                     $updates .= ', ';
                 }
