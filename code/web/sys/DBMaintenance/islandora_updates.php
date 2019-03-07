@@ -20,7 +20,7 @@ function getIslandoraUpdates() {
 								driverName VARCHAR(25) NOT NULL,
 								driverPath VARCHAR(100) NOT NULL,
 								UNIQUE(pid)
-							) ENGINE = INNODB"
+							) ENGINE = InnoDB"
 				),
 			),
 
@@ -57,7 +57,7 @@ function getIslandoraUpdates() {
 									pid VARCHAR(100),
 									archiveLink VARCHAR(255),
 									UNIQUE (groupedWorkId)
-									) ENGINE = INNODB",
+									) ENGINE = InnoDB",
 					),
 			),
 	);

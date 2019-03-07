@@ -19,7 +19,7 @@ function getIndexingUpdates() {
 							ilsId VARCHAR (20) NOT NULL,
 							numHolds INT(11) DEFAULT 0,
 							UNIQUE(ilsId)
-						) ENGINE = INNODB"
+						) ENGINE = InnoDB"
 			),
 		),
 

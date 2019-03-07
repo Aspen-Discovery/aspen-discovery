@@ -24,7 +24,7 @@ function getGroupedWorkUpdates(){
 					PRIMARY KEY (id),
 					UNIQUE KEY permanent_id (permanent_id),
 					KEY title (title,author,grouping_category)
-				) ENGINE=MyISAM  DEFAULT CHARSET=utf8",
+				) ENGINE=InnoDB  DEFAULT CHARSET=utf8",
 				"CREATE TABLE IF NOT EXISTS grouped_work_identifiers (
 					id BIGINT(20) NOT NULL AUTO_INCREMENT,
 					grouped_work_id BIGINT(20) NOT NULL,
@@ -33,7 +33,7 @@ function getGroupedWorkUpdates(){
 					linksToDifferentTitles TINYINT(4) NOT NULL DEFAULT '0',
 					PRIMARY KEY (id),
 					KEY `type` (`type`,identifier)
-				) ENGINE=MyISAM  DEFAULT CHARSET=utf8",
+				) ENGINE=InnoDB  DEFAULT CHARSET=utf8",
 			),
 
 		),
@@ -46,7 +46,7 @@ function getGroupedWorkUpdates(){
 					grouped_work_id BIGINT(20) NOT NULL,
 					identifier_id BIGINT(20) NOT NULL,
 					PRIMARY KEY (grouped_work_id, identifier_id)
-				) ENGINE=MyISAM  DEFAULT CHARSET=utf8",
+				) ENGINE=InnoDB  DEFAULT CHARSET=utf8",
 				"TRUNCATE TABLE grouped_work_identifiers",
 				"ALTER TABLE `grouped_work_identifiers` CHANGE `type` `type` ENUM( 'asin', 'ils', 'isbn', 'issn', 'oclc', 'upc', 'order', 'external_econtent', 'acs', 'free', 'overdrive' )",
 				"ALTER TABLE grouped_work_identifiers DROP COLUMN grouped_work_id",
@@ -85,7 +85,7 @@ function getGroupedWorkUpdates(){
 					PRIMARY KEY (id),
 					UNIQUE KEY (`type`,identifier),
 					KEY grouped_record_id (grouped_work_id)
-				) ENGINE=MyISAM  DEFAULT CHARSET=utf8",
+				) ENGINE=InnoDB  DEFAULT CHARSET=utf8",
 			),
 		),
 
@@ -117,14 +117,14 @@ function getGroupedWorkUpdates(){
 					UNIQUE KEY (primary_identifier_id, secondary_identifier_id),
 					KEY (primary_identifier_id),
 					KEY (secondary_identifier_id)
-				) ENGINE=MyISAM  DEFAULT CHARSET=utf8",
+				) ENGINE=InnoDB  DEFAULT CHARSET=utf8",
 				"ALTER TABLE grouped_work_identifiers ADD valid_for_enrichment TINYINT(1) DEFAULT 1"
 			),
 		),
 
 		'grouped_work_engine' => array(
 			'title' => 'Grouped Work Engine',
-			'description' => 'Change storage engine to INNODB for grouped work tables',
+			'description' => 'Change storage engine to InnoDB for grouped work tables',
 			'sql' => array(
 				'ALTER TABLE `grouped_work` ENGINE = InnoDB',
 				'ALTER TABLE `grouped_work_identifiers` ENGINE = InnoDB',
@@ -146,7 +146,7 @@ function getGroupedWorkUpdates(){
 					notes VARCHAR(250) NOT NULL DEFAULT '',
 					PRIMARY KEY (id),
 					UNIQUE KEY (sourceGroupedWorkId,destinationGroupedWorkId)
-				) ENGINE=MyISAM DEFAULT CHARSET=utf8",
+				) ENGINE=InnoDB DEFAULT CHARSET=utf8",
 			)
 		),
 

@@ -20,7 +20,7 @@ function getListWidgetUpdates(){
 				"`description` TEXT, " .
 				"`showTitleDescriptions` TINYINT DEFAULT 1, " .
 				"`onSelectCallback` VARCHAR(255) DEFAULT '' " .
-				") ENGINE = MYISAM COMMENT = 'A widget that can be displayed within VuFind or within other sites' ",
+				") ENGINE = InnoDB COMMENT = 'A widget that can be displayed within VuFind or within other sites' ",
 				"CREATE TABLE IF NOT EXISTS list_widget_lists (" .
 				"`id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY, " .
 				"`listWidgetId` INT NOT NULL, " .
@@ -29,7 +29,7 @@ function getListWidgetUpdates(){
 				"`name` VARCHAR(50) NOT NULL, " .
 				"`source` VARCHAR(500) NOT NULL, " .
 				"`fullListLink` VARCHAR(500) DEFAULT '' " .
-				") ENGINE = MYISAM COMMENT = 'The lists that should appear within the widget' ",
+				") ENGINE = InnoDB COMMENT = 'The lists that should appear within the widget' ",
 			),
 		),
 

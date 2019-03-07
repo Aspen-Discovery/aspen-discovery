@@ -21,7 +21,7 @@ function getSierraAPIUpdates() {
 									`lastUpdate` INT(11) NULL COMMENT 'The timestamp when the run last updated (to check for stuck processes)', 
 									`notes` TEXT COMMENT 'Additional information about the run', 
 									PRIMARY KEY ( `id` )
-									) ENGINE = INNODB;",
+									) ENGINE = InnoDB;",
 					)
 			),
 
@@ -46,7 +46,7 @@ function getSierraAPIUpdates() {
 											`bcode3DestinationField` CHAR(3) NOT NULL COMMENT 'The field to place bcode3 into', 
 											`bcode3DestinationSubfield` CHAR(1) NULL COMMENT 'The subfield to place bcode3 into', 
 											PRIMARY KEY ( `id` )
-											) ENGINE = INNODB;",
+											) ENGINE = InnoDB;",
 					)
 			),
 

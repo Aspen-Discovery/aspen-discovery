@@ -36,7 +36,7 @@ function getHooplaUpdates() {
 									children TINYINT NOT NULL DEFAULT 0,
 									price DOUBLE NOT NULL DEFAULT 0,
 									UNIQUE(hooplaId)
-								) ENGINE = INNODB",
+								) ENGINE = InnoDB",
 					),
 			),
 
@@ -51,7 +51,7 @@ function getHooplaUpdates() {
 									`lastUpdate` INT(11) NULL COMMENT 'The timestamp when the run last updated (to check for stuck processes)', 
 									`notes` TEXT COMMENT 'Additional information about the run', 
 									PRIMARY KEY ( `id` )
-									) ENGINE = INNODB;",
+									) ENGINE = InnoDB;",
 					)
 			),
 	);

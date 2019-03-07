@@ -404,7 +404,7 @@ function getLibraryLocationUpdates(){
 				"linkText VARCHAR(100) NOT NULL, " .
 				"url VARCHAR(255) NOT NULL, " .
 				"weight INT NOT NULL DEFAULT '0' " .
-				") ENGINE = MYISAM",
+				") ENGINE = InnoDB",
 				"ALTER TABLE `library_links` ADD INDEX `libraryId` (`libraryId`)",
 			),
 		),
@@ -442,7 +442,7 @@ function getLibraryLocationUpdates(){
 				"linkText VARCHAR(100) NOT NULL, " .
 				"url VARCHAR(255) NOT NULL, " .
 				"weight INT NOT NULL DEFAULT '0' " .
-				") ENGINE = MYISAM",
+				") ENGINE = InnoDB",
 				"ALTER TABLE `library_top_links` ADD INDEX `libraryId` (`libraryId`)",
 			),
 		),
@@ -617,7 +617,7 @@ function getLibraryLocationUpdates(){
 				"showInResults TINYINT NOT NULL DEFAULT '1', " .
 				"showInAuthorResults TINYINT NOT NULL DEFAULT '1', " .
 				"showInAdvancedSearch TINYINT NOT NULL DEFAULT '1' " .
-				") ENGINE = MYISAM COMMENT = 'A widget that can be displayed within VuFind or within other sites' ",
+				") ENGINE = InnoDB COMMENT = 'A widget that can be displayed within VuFind or within other sites' ",
 				"ALTER TABLE `library_facet_setting` ADD UNIQUE `libraryFacet` (`libraryId`, `facetName`)",
 			),
 		),
@@ -686,7 +686,7 @@ function getLibraryLocationUpdates(){
 				"showInAuthorResults TINYINT NOT NULL DEFAULT '1', " .
 				"showInAdvancedSearch TINYINT NOT NULL DEFAULT '1', " .
 				"INDEX (locationId) " .
-				") ENGINE = MYISAM COMMENT = 'A widget that can be displayed within VuFind or within other sites' ",
+				") ENGINE = InnoDB COMMENT = 'A widget that can be displayed within VuFind or within other sites' ",
 				"ALTER TABLE `location_facet_setting` ADD UNIQUE `locationFacet` (`locationID`, `facetName`)",
 			),
 		),
