@@ -13,7 +13,7 @@ class SwitchDatabase
 		{
 			if(SwitchDatabase::isEcontentDatabase())
 			{
-				mysql_selectdb($configArray['Database']['database_vufind_dbname']);
+				mysql_selectdb($configArray['Database']['database_aspen_dbname']);
 				SwitchDatabase::$changedDB = true;
 			}
 		}

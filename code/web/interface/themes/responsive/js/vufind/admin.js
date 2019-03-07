@@ -4,6 +4,10 @@ VuFind.Admin = (function(){
 			VuFind.Account.ajaxLightbox("/Admin/AJAX?method=getHooplaExportNotes&id=" + id, true);
 			return false;
 		},
+		showRbdigitalExportNotes: function (id){
+			VuFind.Account.ajaxLightbox("/Admin/AJAX?method=getRbdigitalExportNotes&id=" + id, true);
+			return false;
+		},
 		showSierraExportNotes: function (id){
 			VuFind.Account.ajaxLightbox("/Admin/AJAX?method=getSierraExportNotes&id=" + id, true);
 			return false;

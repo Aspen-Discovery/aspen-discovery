@@ -90,7 +90,9 @@ class DBMaintenance extends Admin_Admin {
 		$islandora_updates = getIslandoraUpdates();
 		require_once ROOT_DIR . '/sys/DBMaintenance/hoopla_updates.php';
 		$hoopla_updates = getHooplaUpdates();
-		require_once ROOT_DIR . '/sys/DBMaintenance/sierra_api_updates.php';
+        require_once ROOT_DIR . '/sys/DBMaintenance/rbdigital_updates.php';
+        $rbdigital_updates = getRbdigitalUpdates();
+        require_once ROOT_DIR . '/sys/DBMaintenance/sierra_api_updates.php';
 		$sierra_api_updates = getSierraAPIUpdates();
 		require_once ROOT_DIR . '/sys/DBMaintenance/econtent_updates.php';
 		$econtent_updates = getEContentUpdates();
@@ -106,6 +108,7 @@ class DBMaintenance extends Admin_Admin {
 			$islandora_updates,
             $econtent_updates,
 			$hoopla_updates,
+            $rbdigital_updates,
 			$sierra_api_updates,
             $theming_updates,
 			array(
@@ -140,7 +143,7 @@ class DBMaintenance extends Admin_Admin {
 						  KEY `lastSearch` (`lastSearch`),
 						  KEY `phrase` (`phrase`),
 						  FULLTEXT `phrase_text` (`phrase`)
-						) ENGINE=MyISAM AUTO_INCREMENT=0 DEFAULT CHARSET=utf8 COMMENT='Statistical information about searches for use in reporting '",
+						) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8 COMMENT='Statistical information about searches for use in reporting '",
 						"INSERT INTO search_stats_new (phrase, lastSearch, numSearches) SELECT TRIM(REPLACE(phrase, char(9), '')) as phrase, MAX(lastSearch), sum(numSearches) FROM search_stats WHERE numResults > 0 GROUP BY TRIM(REPLACE(phrase,char(9), ''))",
 						"DELETE FROM search_stats_new WHERE phrase LIKE '%(%'",
 						"DELETE FROM search_stats_new WHERE phrase LIKE '%)%'",
@@ -177,7 +180,7 @@ class DBMaintenance extends Admin_Admin {
 						`mortuaryName` VARCHAR( 255 ) NULL ,
 						`comments` MEDIUMTEXT NULL,
 						`picture` VARCHAR( 255 ) NULL
-						) ENGINE = MYISAM COMMENT = 'Stores information about a particular person for use in genealogy';",
+						) ENGINE = InnoDB COMMENT = 'Stores information about a particular person for use in genealogy';",
 
 						//-- marriage table
 						"CREATE TABLE `marriage` (
@@ -190,7 +193,7 @@ class DBMaintenance extends Admin_Admin {
 						`marriageDateMonth` INT NULL COMMENT 'The month the marriage occurred, null or blank if not known',
 						`marriageDateYear` INT NULL COMMENT 'The year the marriage occurred, null or blank if not known',
 						`comments` MEDIUMTEXT NULL
-						) ENGINE = MYISAM COMMENT = 'Information about a marriage between two people';",
+						) ENGINE = InnoDB COMMENT = 'Information about a marriage between two people';",
 
 
 						//-- obituary table
@@ -205,7 +208,7 @@ class DBMaintenance extends Admin_Admin {
 						`sourcePage` VARCHAR( 25 ) NULL ,
 						`contents` MEDIUMTEXT NULL ,
 						`picture` VARCHAR( 255 ) NULL
-						) ENGINE = MYISAM	COMMENT = 'Information about an obituary for a person';",
+						) ENGINE = InnoDB	COMMENT = 'Information about an obituary for a person';",
 					),
 				),
 
@@ -413,7 +416,7 @@ class DBMaintenance extends Admin_Admin {
 						"`firstCheckoutDate` DATE NOT NULL COMMENT 'The last day we detected the item was checked out to the patron', " .
 						"`daysCheckedOut` INT NOT NULL COMMENT 'The total number of days the item was checked out even if it was checked out multiple times.', " .
 						"PRIMARY KEY ( `userId` , `resourceId` )" .
-						") ENGINE = MYISAM COMMENT = 'The reading history for patrons';",
+						") ENGINE = InnoDB COMMENT = 'The reading history for patrons';",
 					),
 				),
 
@@ -436,7 +439,7 @@ class DBMaintenance extends Admin_Admin {
 						INDEX ( userId, checkInDate ),
 						INDEX ( userId, title ),
 						INDEX ( userId, author )
-						) ENGINE = INNODB DEFAULT CHARSET=utf8 COMMENT = 'The reading history for patrons';",
+						) ENGINE = InnoDB DEFAULT CHARSET=utf8 COMMENT = 'The reading history for patrons';",
 						"DROP TABLE user_reading_history"
 					),
 				),
@@ -968,7 +971,7 @@ class DBMaintenance extends Admin_Admin {
 					'description' => 'Update database to use UTF-8 encoding',
 					'continueOnError' => true,
 					'sql' => array(
-						"ALTER DATABASE " . $configArray['Database']['database_vufind_dbname'] . " DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;",
+						"ALTER DATABASE " . $configArray['Database']['database_aspen_dbname'] . " DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;",
 						//"ALTER TABLE administrators CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
 						"ALTER TABLE bad_words CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
 						"ALTER TABLE circulation_status CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
@@ -1013,257 +1016,6 @@ class DBMaintenance extends Admin_Admin {
 					),
 				),
 
-				'alpha_browse_setup_2' => array(
-					'title' => 'Setup Alphabetic Browse',
-					'description' => 'Build tables to handle alphabetic browse functionality.',
-					'sql' => array(
-						"DROP TABLE IF EXISTS `title_browse`",
-						"CREATE TABLE `title_browse` (
-							`id` INT NOT NULL AUTO_INCREMENT COMMENT 'The id of the browse record in numerical order based on the sort order of the rows',
-							`value` VARCHAR( 255 ) NOT NULL COMMENT 'The original value',
-							`sortValue` VARCHAR( 255 ) NOT NULL COMMENT 'The value to sort by',
-						PRIMARY KEY ( `id` ) ,
-						INDEX ( `sortValue` ),
-						UNIQUE (`value`)
-						) ENGINE = MYISAM;",
-
-						"DROP TABLE IF EXISTS `author_browse`",
-						"CREATE TABLE `author_browse` (
-							`id` INT NOT NULL AUTO_INCREMENT COMMENT 'The id of the browse record in numerical order based on the sort order of the rows',
-							`value` VARCHAR( 255 ) NOT NULL COMMENT 'The original value',
-							`sortValue` VARCHAR( 255 ) NOT NULL COMMENT 'The value to sort by',
-						PRIMARY KEY ( `id` ) ,
-						INDEX ( `sortValue` ),
-						UNIQUE (`value`)
-						) ENGINE = MYISAM;",
-
-						"DROP TABLE IF EXISTS `callnumber_browse`",
-						"CREATE TABLE `callnumber_browse` (
-							`id` INT NOT NULL AUTO_INCREMENT COMMENT 'The id of the browse record in numerical order based on the sort order of the rows',
-							`value` VARCHAR( 255 ) NOT NULL COMMENT 'The original value',
-							`sortValue` VARCHAR( 255 ) NOT NULL COMMENT 'The value to sort by',
-						PRIMARY KEY ( `id` ) ,
-						INDEX ( `sortValue` ),
-						UNIQUE (`value`)
-						) ENGINE = MYISAM;",
-
-						"DROP TABLE IF EXISTS `subject_browse`",
-						"CREATE TABLE `subject_browse` (
-							`id` INT NOT NULL AUTO_INCREMENT COMMENT 'The id of the browse record in numerical order based on the sort order of the rows',
-							`value` VARCHAR( 255 ) NOT NULL COMMENT 'The original value',
-							`sortValue` VARCHAR( 255 ) NOT NULL COMMENT 'The value to sort by',
-						PRIMARY KEY ( `id` ) ,
-						INDEX ( `sortValue` ),
-						UNIQUE (`value`)
-						) ENGINE = MYISAM;",
-					),
-				),
-
-				'alpha_browse_setup_3' => array(
-					'title' => 'Alphabetic Browse Performance',
-					'description' => 'Create additional indexes and columns to improve performance of Alphabetic Browse.',
-					'sql' => array(
-						//Author browse
-						//"ALTER TABLE `author_browse_scoped_results` ADD INDEX ( `browseValueId` )",
-						//"ALTER TABLE `author_browse_scoped_results` ADD INDEX ( `scope` )",
-						//"ALTER TABLE `author_browse_scoped_results` ADD INDEX ( `record` )",
-						"ALTER TABLE `author_browse` ADD COLUMN `alphaRank` INT( 11 ) NOT NULL COMMENT 'A numerical ranking of the sort values from a-z'",
-						"ALTER TABLE `author_browse` ADD INDEX ( `alphaRank` )",
-						"set @r=0;",
-						"UPDATE author_browse SET alphaRank = @r:=(@r + 1) ORDER BY `sortValue`;",
-
-						//Call number browse
-						//"ALTER TABLE `callnumber_browse_scoped_results` ADD INDEX ( `browseValueId` )",
-						//"ALTER TABLE `callnumber_browse_scoped_results` ADD INDEX ( `scope` )",
-						//"ALTER TABLE `callnumber_browse_scoped_results` ADD INDEX ( `record` )",
-						"ALTER TABLE `callnumber_browse` ADD COLUMN `alphaRank` INT( 11 ) NOT NULL COMMENT 'A numerical ranking of the sort values from a-z'",
-						"ALTER TABLE `callnumber_browse` ADD INDEX ( `alphaRank` )",
-						"set @r=0;",
-						"UPDATE callnumber_browse SET alphaRank = @r:=(@r + 1) ORDER BY `sortValue`;",
-
-						//Subject Browse
-						//"ALTER TABLE `subject_browse_scoped_results` ADD INDEX ( `browseValueId` )",
-						//"ALTER TABLE `subject_browse_scoped_results` ADD INDEX ( `scope` )",
-						//"ALTER TABLE `subject_browse_scoped_results` ADD INDEX ( `record` )",
-						"ALTER TABLE `subject_browse` ADD COLUMN `alphaRank` INT( 11 ) NOT NULL COMMENT 'A numerical ranking of the sort values from a-z'",
-						"ALTER TABLE `subject_browse` ADD INDEX ( `alphaRank` )",
-						"set @r=0;",
-						"UPDATE subject_browse SET alphaRank = @r:=(@r + 1) ORDER BY `sortValue`;",
-
-						//Tile Browse
-						//"ALTER TABLE `title_browse_scoped_results` ADD INDEX ( `browseValueId` )",
-						//"ALTER TABLE `title_browse_scoped_results` ADD INDEX ( `scope` )",
-						//"ALTER TABLE `title_browse_scoped_results` ADD INDEX ( `record` )",
-						"ALTER TABLE `title_browse` ADD COLUMN `alphaRank` INT( 11 ) NOT NULL COMMENT 'A numerical ranking of the sort values from a-z'",
-						"ALTER TABLE `title_browse` ADD INDEX ( `alphaRank` )",
-						"set @r=0;",
-						"UPDATE title_browse SET alphaRank = @r:=(@r + 1) ORDER BY `sortValue`;",
-					),
-				),
-
-				'alpha_browse_setup_4' => array(
-					'title' => 'Alphabetic Browse Metadata',
-					'description' => 'Create metadata about alphabetic browsing improve performance of Alphabetic Browse.',
-					'sql' => array(
-						"CREATE TABLE author_browse_metadata (
-							`scope` TINYINT( 4 ) NOT NULL ,
-							`scopeId` INT( 11 ) NOT NULL ,
-							`minAlphaRank` INT NOT NULL ,
-							`maxAlphaRank` INT NOT NULL ,
-							`numResults` INT NOT NULL
-						) ENGINE = InnoDB;",
-						//"INSERT INTO author_browse_metadata (SELECT scope, scopeId, MIN(alphaRank) as minAlphaRank, MAX(alphaRank) as maxAlphaRank, count(id) as numResults FROM author_browse inner join author_browse_scoped_results ON id = browseValueId GROUP BY scope, scopeId)",
-
-						"CREATE TABLE callnumber_browse_metadata (
-							`scope` TINYINT( 4 ) NOT NULL ,
-							`scopeId` INT( 11 ) NOT NULL ,
-							`minAlphaRank` INT NOT NULL ,
-							`maxAlphaRank` INT NOT NULL ,
-							`numResults` INT NOT NULL
-						) ENGINE = InnoDB;",
-						//"INSERT INTO callnumber_browse_metadata (SELECT scope, scopeId, MIN(alphaRank) as minAlphaRank, MAX(alphaRank) as maxAlphaRank, count(id) as numResults FROM callnumber_browse inner join callnumber_browse_scoped_results ON id = browseValueId GROUP BY scope, scopeId)",
-
-						"CREATE TABLE title_browse_metadata (
-							`scope` TINYINT( 4 ) NOT NULL ,
-							`scopeId` INT( 11 ) NOT NULL ,
-							`minAlphaRank` INT NOT NULL ,
-							`maxAlphaRank` INT NOT NULL ,
-							`numResults` INT NOT NULL
-						) ENGINE = InnoDB;",
-						//"INSERT INTO title_browse_metadata (SELECT scope, scopeId, MIN(alphaRank) as minAlphaRank, MAX(alphaRank) as maxAlphaRank, count(id) as numResults FROM title_browse inner join title_browse_scoped_results ON id = browseValueId GROUP BY scope, scopeId)",
-
-						"CREATE TABLE subject_browse_metadata (
-							`scope` TINYINT( 4 ) NOT NULL ,
-							`scopeId` INT( 11 ) NOT NULL ,
-							`minAlphaRank` INT NOT NULL ,
-							`maxAlphaRank` INT NOT NULL ,
-							`numResults` INT NOT NULL
-						) ENGINE = InnoDB;",
-						//"INSERT INTO subject_browse_metadata (SELECT scope, scopeId, MIN(alphaRank) as minAlphaRank, MAX(alphaRank) as maxAlphaRank, count(id) as numResults FROM subject_browse inner join subject_browse_scoped_results ON id = browseValueId GROUP BY scope, scopeId)",
-					),
-				),
-
-				'alpha_browse_setup_5' => array(
-					'title' => 'Alphabetic Browse scoped tables',
-					'description' => 'Create Scoping tables for global and all libraries.',
-					'continueOnError' => true,
-					'sql' => array(
-						//Add firstChar fields
-						"ALTER TABLE `title_browse` ADD `firstChar` CHAR( 1 ) NOT NULL",
-						"ALTER TABLE title_browse ADD INDEX ( `firstChar` )",
-						'UPDATE title_browse SET firstChar = SUBSTR(sortValue, 1, 1);',
-						"ALTER TABLE `author_browse` ADD `firstChar` CHAR( 1 ) NOT NULL",
-						"ALTER TABLE author_browse ADD INDEX ( `firstChar` )",
-						'UPDATE author_browse SET firstChar = SUBSTR(sortValue, 1, 1);',
-						"ALTER TABLE `subject_browse` ADD `firstChar` CHAR( 1 ) NOT NULL",
-						"ALTER TABLE subject_browse ADD INDEX ( `firstChar` )",
-						'UPDATE subject_browse SET firstChar = SUBSTR(sortValue, 1, 1);',
-						"ALTER TABLE `callnumber_browse` ADD `firstChar` CHAR( 1 ) NOT NULL",
-						"ALTER TABLE callnumber_browse ADD INDEX ( `firstChar` )",
-						'UPDATE callnumber_browse SET firstChar = SUBSTR(sortValue, 1, 1);',
-						//Create global tables
-						'CREATE TABLE `title_browse_scoped_results_global` (
-							`browseValueId` INT( 11 ) NOT NULL ,
-							`record` VARCHAR( 50 ) NOT NULL ,
-							PRIMARY KEY ( `browseValueId` , `record` ) ,
-							INDEX ( `browseValueId` )
-						) ENGINE = MYISAM',
-						'CREATE TABLE `author_browse_scoped_results_global` (
-							`browseValueId` INT( 11 ) NOT NULL ,
-							`record` VARCHAR( 50 ) NOT NULL ,
-							PRIMARY KEY ( `browseValueId` , `record` ) ,
-							INDEX ( `browseValueId` )
-						) ENGINE = MYISAM',
-						'CREATE TABLE `subject_browse_scoped_results_global` (
-							`browseValueId` INT( 11 ) NOT NULL ,
-							`record` VARCHAR( 50 ) NOT NULL ,
-							PRIMARY KEY ( `browseValueId` , `record` ) ,
-							INDEX ( `browseValueId` )
-						) ENGINE = MYISAM',
-						'CREATE TABLE `callnumber_browse_scoped_results_global` (
-							`browseValueId` INT( 11 ) NOT NULL ,
-							`record` VARCHAR( 50 ) NOT NULL ,
-							PRIMARY KEY ( `browseValueId` , `record` ) ,
-							INDEX ( `browseValueId` )
-						) ENGINE = MYISAM',
-						//Truncate old data
-						"TRUNCATE TABLE `title_browse_scoped_results_global`",
-						"TRUNCATE TABLE `author_browse_scoped_results_global`",
-						"TRUNCATE TABLE `subject_browse_scoped_results_global`",
-						"TRUNCATE TABLE `callnumber_browse_scoped_results_global`",
-						//Load data from old method into tables
-						/*'INSERT INTO title_browse_scoped_results_global (`browseValueId`, record)
-							SELECT title_browse_scoped_results.browseValueId, title_browse_scoped_results.record
-							FROM title_browse_scoped_results
-							WHERE scope = 0;',
-						'INSERT INTO author_browse_scoped_results_global (`browseValueId`, record)
-							SELECT author_browse_scoped_results.browseValueId, author_browse_scoped_results.record
-							FROM author_browse_scoped_results
-							WHERE scope = 0;',
-						'INSERT INTO subject_browse_scoped_results_global (`browseValueId`, record)
-							SELECT subject_browse_scoped_results.browseValueId, subject_browse_scoped_results.record
-							FROM subject_browse_scoped_results
-							WHERE scope = 0;',
-						'INSERT INTO callnumber_browse_scoped_results_global (`browseValueId`, record)
-							SELECT callnumber_browse_scoped_results.browseValueId, callnumber_browse_scoped_results.record
-							FROM callnumber_browse_scoped_results
-							WHERE scope = 0;',*/
-						'createScopingTables',
-						/*'DROP TABLE title_browse_scoped_results',
-						'DROP TABLE author_browse_scoped_results',
-						'DROP TABLE subject_browse_scoped_results',
-						'DROP TABLE callnumber_browse_scoped_results',*/
-
-					),
-				),
-
-				'alpha_browse_setup_6' => array(
-					'title' => 'Alphabetic Browse second letter',
-					'description' => 'Add second char to the tables.',
-					'continueOnError' => true,
-					'sql' => array(
-						"ALTER TABLE `title_browse` ADD `secondChar` CHAR( 1 ) NOT NULL",
-						"ALTER TABLE title_browse ADD INDEX ( `secondChar` )",
-						'UPDATE title_browse SET secondChar = substr(sortValue, 2, 1);',
-						"ALTER TABLE `author_browse` ADD `secondChar` CHAR( 1 ) NOT NULL",
-						"ALTER TABLE author_browse ADD INDEX ( `secondChar` )",
-						'UPDATE author_browse SET secondChar = substr(sortValue, 2, 1);',
-						"ALTER TABLE `subject_browse` ADD `secondChar` CHAR( 1 ) NOT NULL",
-						"ALTER TABLE subject_browse ADD INDEX ( `secondChar` )",
-						'UPDATE subject_browse SET secondChar = substr(sortValue, 2, 1);',
-						"ALTER TABLE `callnumber_browse` ADD `secondChar` CHAR( 1 ) NOT NULL",
-						"ALTER TABLE callnumber_browse ADD INDEX ( `secondChar` )",
-						'UPDATE callnumber_browse SET secondChar = substr(sortValue, 2, 1);',
-					),
-				),
-
-				'alpha_browse_setup_7' => array(
-					'title' => 'Alphabetic Browse change scoping engine',
-					'description' => 'Change DB Engine to INNODB for all scoping tables.',
-					'continueOnError' => true,
-					'sql' => array(
-						"setScopingTableEngine",
-					),
-				),
-
-				'alpha_browse_setup_8' => array(
-					'title' => 'Alphabetic Browse change scoping engine',
-					'description' => 'Change DB Engine to INNODB for all scoping tables.',
-					'continueOnError' => true,
-					'sql' => array(
-						"setScopingTableEngine2",
-					),
-				),
-
-				'alpha_browse_setup_9' => array(
-					'title' => 'Alphabetic Browse remove record indices',
-					'description' => 'Remove record indices since they are no longer needed and make the import slower, also use MyISAM engine since that is faster for import.',
-					'continueOnError' => true,
-					'sql' => array(
-						"removeScopingTableIndex",
-					),
-				),
-
 				'reindexLog' => array(
 					'title' => 'Reindex Log table',
 					'description' => 'Create Reindex Log table to track reindexing.',
@@ -1273,7 +1025,7 @@ class DBMaintenance extends Admin_Admin {
 						"`startTime` INT(11) NOT NULL COMMENT 'The timestamp when the reindex started', " .
 						"`endTime` INT(11) NULL COMMENT 'The timestamp when the reindex process ended', " .
 						"PRIMARY KEY ( `id` )" .
-						") ENGINE = MYISAM;",
+						") ENGINE = InnoDB;",
 						"CREATE TABLE IF NOT EXISTS reindex_process_log(" .
 						"`id` INT NOT NULL AUTO_INCREMENT COMMENT 'The id of reindex process', " .
 						"`reindex_id` INT(11) NOT NULL COMMENT 'The id of the reindex log this process ran during', " .
@@ -1288,7 +1040,7 @@ class DBMaintenance extends Admin_Admin {
 						"`numSkipped` INT(11) NOT NULL COMMENT 'The number of items skipped during the process', " .
 						"`notes` TEXT COMMENT 'Additional information about the process', " .
 						"PRIMARY KEY ( `id` ), INDEX ( `reindex_id` ), INDEX ( `processName` )" .
-						") ENGINE = MYISAM;",
+						") ENGINE = InnoDB;",
 
 					),
 				),
@@ -1333,7 +1085,7 @@ class DBMaintenance extends Admin_Admin {
 						"`lastUpdate` INT(11) NULL COMMENT 'The timestamp when the cron run last updated (to check for stuck processes)', " .
 						"`notes` TEXT COMMENT 'Additional information about the cron run', " .
 						"PRIMARY KEY ( `id` )" .
-						") ENGINE = MYISAM;",
+						") ENGINE = InnoDB;",
 						"CREATE TABLE IF NOT EXISTS cron_process_log(" .
 						"`id` INT NOT NULL AUTO_INCREMENT COMMENT 'The id of cron process', " .
 						"`cronId` INT(11) NOT NULL COMMENT 'The id of the cron run this process ran during', " .
@@ -1345,7 +1097,7 @@ class DBMaintenance extends Admin_Admin {
 						"`numUpdates` INT(11) NOT NULL DEFAULT 0 COMMENT 'The number of updates, additions, etc. that occurred', " .
 						"`notes` TEXT COMMENT 'Additional information about the process', " .
 						"PRIMARY KEY ( `id` ), INDEX ( `cronId` ), INDEX ( `processName` )" .
-						") ENGINE = MYISAM;",
+						") ENGINE = InnoDB;",
 
 					),
 				),
@@ -1358,7 +1110,7 @@ class DBMaintenance extends Admin_Admin {
 						"`id` VARCHAR(50) COMMENT 'The id of the marc record in the ils', " .
 						"`checksum` INT(11) NOT NULL COMMENT 'The timestamp when the reindex started', " .
 						"PRIMARY KEY ( `id` )" .
-						") ENGINE = MYISAM;",
+						") ENGINE = InnoDB;",
 					),
 				),
 				'marcImport_1' => array(
@@ -1460,7 +1212,7 @@ class DBMaintenance extends Admin_Admin {
 								`holdingsInfo` MEDIUMTEXT NOT NULL COMMENT 'Raw HTML returned from Millennium for holdings',
 								`framesetInfo` MEDIUMTEXT NOT NULL COMMENT 'Raw HTML returned from Millennium on the frameset page',
 								`cacheDate` INT(16) NOT NULL COMMENT 'When the entry was recorded in the cache'
-						) ENGINE = MYISAM COMMENT = 'Caches information from Millennium so we do not have to continually load it.';",
+						) ENGINE = InnoDB COMMENT = 'Caches information from Millennium so we do not have to continually load it.';",
 						"ALTER TABLE `millennium_cache` ADD PRIMARY KEY ( `recordId` , `scope` ) ;",
 
 						"CREATE TABLE IF NOT EXISTS `ptype_restricted_locations` (
@@ -1469,7 +1221,7 @@ class DBMaintenance extends Admin_Admin {
 							`holdingDisplay` VARCHAR(30) NOT NULL COMMENT 'The text displayed in the holdings list within Millennium can use regular expression syntax to match multiple locations',
 							`allowablePtypes` VARCHAR(50) NOT NULL COMMENT 'A list of PTypes that are allowed to place holds on items with this location separated with pipes (|).',
 							PRIMARY KEY (`locationId`)
-						) ENGINE=MYISAM",
+						) ENGINE=InnoDB",
 
 						"CREATE TABLE IF NOT EXISTS `non_holdable_locations` (
 							`locationId` INT(11) NOT NULL AUTO_INCREMENT COMMENT 'A unique id for the non holdable location',
@@ -1477,7 +1229,7 @@ class DBMaintenance extends Admin_Admin {
 							`holdingDisplay` VARCHAR(30) NOT NULL COMMENT 'The text displayed in the holdings list within Millennium',
 							`availableAtCircDesk` TINYINT(4) NOT NULL COMMENT 'The item is available if the patron visits the circulation desk.',
 							PRIMARY KEY (`locationId`)
-						) ENGINE=MYISAM"
+						) ENGINE=InnoDB"
 					),
 				),
 
@@ -1562,43 +1314,6 @@ class DBMaintenance extends Admin_Admin {
 						"ALTER TABLE holiday ADD INDEX Date (`date`) ",
 						"ALTER TABLE holiday ADD INDEX Library (`libraryId`) ",
 						"ALTER TABLE holiday ADD UNIQUE KEY LibraryDate(`date`, `libraryId`) ",
-					),
-				),
-				'book_store' => array(
-					'title' => 'Book store table',
-					'description' => 'Create a table to store information about book stores.',
-					'sql' => array(
-						"CREATE TABLE IF NOT EXISTS book_store(" .
-						"`id` INT(11) NOT NULL AUTO_INCREMENT COMMENT 'The id of the book store', " .
-						"`storeName` VARCHAR(100) NOT NULL COMMENT 'The name of the book store', " .
-						"`link` VARCHAR(256) NOT NULL COMMENT 'The URL prefix for searching', " .
-						"`linkText` VARCHAR(100) NOT NULL COMMENT 'The link text', " .
-						"`image` VARCHAR(256) NOT NULL COMMENT 'The URL to the icon/image to display', " .
-						"`resultRegEx` VARCHAR(100) NOT NULL COMMENT 'The regex used to check the search results', " .
-						"PRIMARY KEY ( `id` )" .
-						") ENGINE = InnoDB"
-					),
-				),
-				'book_store_1' => array(
-					'title' => 'Book store table update 1',
-					'description' => 'Add a default column to determine if a book store should be used if a library does not override.',
-					'sql' => array(
-						"ALTER TABLE book_store ADD COLUMN `showByDefault` TINYINT NOT NULL DEFAULT 1 COMMENT 'Whether or not the book store should be used by default for al library systems.'",
-						"ALTER TABLE book_store CHANGE `image` `image` VARCHAR(256) NULL COMMENT 'The URL to the icon/image to display'",
-					),
-				),
-				'nearby_book_store' => array(
-					'title' => 'Nearby book stores',
-					'description' => 'Create a table to store book stores near a location.',
-					'sql' => array(
-						"CREATE TABLE IF NOT EXISTS nearby_book_store(" .
-						"`id` INT(11) NOT NULL AUTO_INCREMENT COMMENT 'The id of this association', " .
-						"`libraryId` INT(11) NOT NULL COMMENT 'The id of the library', " .
-						"`storeId` INT(11) NOT NULL COMMENT 'The id of the book store', " .
-						"`weight` INT(11) NOT NULL DEFAULT 0 COMMENT 'The listing order of the book store', " .
-						"KEY ( `libraryId`, `storeId` ), " .
-						"PRIMARY KEY ( `id` )" .
-						") ENGINE = InnoDB"
 					),
 				),
 
@@ -1781,43 +1496,43 @@ class DBMaintenance extends Admin_Admin {
 							`value` VARCHAR(128),
 							UNIQUE KEY (`value`),
 							PRIMARY KEY ( `id` )
-						) ENGINE = MYISAM",
+						) ENGINE = InnoDB",
 						"CREATE TABLE IF NOT EXISTS analytics_city (
 							`id` INT(11) NOT NULL AUTO_INCREMENT,
 							`value` VARCHAR(128),
 							UNIQUE KEY (`value`),
 							PRIMARY KEY ( `id` )
-						) ENGINE = MYISAM",
+						) ENGINE = InnoDB",
 						"CREATE TABLE IF NOT EXISTS analytics_state (
 							`id` INT(11) NOT NULL AUTO_INCREMENT,
 							`value` VARCHAR(128),
 							UNIQUE KEY (`value`),
 							PRIMARY KEY ( `id` )
-						) ENGINE = MYISAM",
+						) ENGINE = InnoDB",
 						"CREATE TABLE IF NOT EXISTS analytics_theme (
 							`id` INT(11) NOT NULL AUTO_INCREMENT,
 							`value` VARCHAR(128),
 							UNIQUE KEY (`value`),
 							PRIMARY KEY ( `id` )
-						) ENGINE = MYISAM",
+						) ENGINE = InnoDB",
 						"CREATE TABLE IF NOT EXISTS analytics_device (
 							`id` INT(11) NOT NULL AUTO_INCREMENT,
 							`value` VARCHAR(128),
 							UNIQUE KEY (`value`),
 							PRIMARY KEY ( `id` )
-						) ENGINE = MYISAM",
+						) ENGINE = InnoDB",
 						"CREATE TABLE IF NOT EXISTS analytics_physical_location (
 							`id` INT(11) NOT NULL AUTO_INCREMENT,
 							`value` VARCHAR(128),
 							UNIQUE KEY (`value`),
 							PRIMARY KEY ( `id` )
-						) ENGINE = MYISAM",
+						) ENGINE = InnoDB",
 						"CREATE TABLE IF NOT EXISTS analytics_patron_type (
 							`id` INT(11) NOT NULL AUTO_INCREMENT,
 							`value` VARCHAR(128),
 							UNIQUE KEY (`value`),
 							PRIMARY KEY ( `id` )
-						) ENGINE = MYISAM",
+						) ENGINE = InnoDB",
 						"CREATE TABLE IF NOT EXISTS analytics_session_2(
 								`id` INT(11) NOT NULL AUTO_INCREMENT,
 								`session_id` VARCHAR(128),
@@ -1933,7 +1648,7 @@ class DBMaintenance extends Admin_Admin {
 							INDEX(`bibId`),
 							INDEX(`status`),
 							PRIMARY KEY(`id`)
-						) ENGINE = MYISAM"
+						) ENGINE = InnoDB"
 					)
 				),
 
@@ -1981,7 +1696,7 @@ class DBMaintenance extends Admin_Admin {
 							INDEX(`type`),
 							INDEX(`status`),
 							PRIMARY KEY(`id`)
-						) ENGINE = MYISAM"
+						) ENGINE = InnoDB"
 					)
 				),
 
@@ -2001,7 +1716,7 @@ class DBMaintenance extends Admin_Admin {
 							volume VARCHAR(32),
 							INDEX(`groupedRecordPermanentId`),
 							PRIMARY KEY(`id`)
-						) ENGINE = MYISAM",
+						) ENGINE = InnoDB",
 					),
 				),
 
@@ -2021,7 +1736,7 @@ class DBMaintenance extends Admin_Admin {
 							excerpt MEDIUMTEXT,
 							INDEX(`groupedRecordPermanentId`),
 							PRIMARY KEY(`id`)
-						) ENGINE = MYISAM",
+						) ENGINE = InnoDB",
 					),
 				),
 
@@ -2036,7 +1751,7 @@ class DBMaintenance extends Admin_Admin {
 							checksum BIGINT(20) UNSIGNED NOT NULL,
 							PRIMARY KEY (id),
 							UNIQUE (ilsId)
-						) ENGINE=MyISAM  DEFAULT CHARSET=utf8",
+						) ENGINE=InnoDB  DEFAULT CHARSET=utf8",
 					),
 				),
 
@@ -2079,7 +1794,7 @@ class DBMaintenance extends Admin_Admin {
 							INDEX(`groupedRecordPermanentId`),
 							INDEX(`userId`),
 							PRIMARY KEY(`id`)
-						) ENGINE = MYISAM",
+						) ENGINE = InnoDB",
 					),
 				),
 
@@ -2096,7 +1811,7 @@ class DBMaintenance extends Admin_Admin {
 							INDEX(`groupedRecordPermanentId`),
 							INDEX(`userId`),
 							PRIMARY KEY(`id`)
-						) ENGINE = MYISAM",
+						) ENGINE = InnoDB",
 					),
 				),
 
@@ -2114,7 +1829,7 @@ class DBMaintenance extends Admin_Admin {
 							INDEX(`groupedWorkPermanentId`),
 							INDEX(`listId`),
 							PRIMARY KEY(`id`)
-						) ENGINE = MYISAM",
+						) ENGINE = InnoDB",
 					),
 				),
 
@@ -2152,7 +1867,7 @@ class DBMaintenance extends Admin_Admin {
 							defaultFilter TEXT,
 							defaultSort ENUM('relevance', 'popularity', 'newest_to_oldest', 'oldest_to_newest', 'author', 'title', 'user_rating'),
 							UNIQUE (textId)
-						) ENGINE = MYISAM",
+						) ENGINE = InnoDB",
 					),
 				),
 
@@ -2200,7 +1915,7 @@ class DBMaintenance extends Admin_Admin {
 							  `subCategoryId` int(11) NOT NULL,
 							  `weight` SMALLINT(2) UNSIGNED NOT NULL DEFAULT '0',
 							  UNIQUE (`subCategoryId`,`browseCategoryId`)
-							) ENGINE=MyISAM DEFAULT CHARSET=utf8"
+							) ENGINE=InnoDB DEFAULT CHARSET=utf8"
 					),
 				),
 
@@ -2214,14 +1929,14 @@ class DBMaintenance extends Admin_Admin {
 							browseCategoryTextId VARCHAR(60) NOT NULL DEFAULT -1,
 							weight INT NOT NULL DEFAULT '0',
 							UNIQUE (libraryId, browseCategoryTextId)
-						) ENGINE = MYISAM",
+						) ENGINE = InnoDB",
 						"CREATE TABLE browse_category_location (
 							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 							locationId INT(11) NOT NULL,
 							browseCategoryTextId VARCHAR(60) NOT NULL DEFAULT -1,
 							weight INT NOT NULL DEFAULT '0',
 							UNIQUE (locationId, browseCategoryTextId)
-						) ENGINE = MYISAM",
+						) ENGINE = InnoDB",
 					),
 				),
 
@@ -2233,14 +1948,6 @@ class DBMaintenance extends Admin_Admin {
 						"DROP TABLE IF EXISTS resource_tags",
 						"DROP TABLE IF EXISTS user_resource",
 						"DROP TABLE IF EXISTS resource",
-					),
-				),
-
-				'remove_browse_tables' => array(
-					'title' => 'Remove old Browse Tables',
-					'description' => 'Remove old tables that were used for alphabetic browsing',
-					'sql' => array(
-						"dropBrowseTables",
 					),
 				),
 
@@ -2397,36 +2104,36 @@ class DBMaintenance extends Admin_Admin {
 									`lastUpdate` INT(11) NULL COMMENT 'The timestamp when the run last updated (to check for stuck processes)', 
 									`notes` TEXT COMMENT 'Additional information about the run includes stats per source', 
 									PRIMARY KEY ( `id` )
-									) ENGINE = MYISAM;",
+									) ENGINE = InnoDB;",
 							)
 					),
+
+                'change_to_innodb' => array(
+                    'title' => 'Change to INNODB',
+                    'description' => 'Change all tables to use INNODB rather than MyISAM',
+                    'continueOnError' => false,
+                    'sql' => array(
+                        'convertTablesToInnoDB'
+                    )
+                )
 			)
 		);
 	}
 
-	public function dropBrowseTables(&$update) {
-		$this->runSQLStatement($update, 'DROP TABLE IF EXISTS title_browse');
-		$this->runSQLStatement($update, 'DROP TABLE IF EXISTS title_browse_metadata');
-		$this->runSQLStatement($update, 'DROP TABLE IF EXISTS title_browse_scoped_results_global');
-		$this->runSQLStatement($update, 'DROP TABLE IF EXISTS author_browse');
-		$this->runSQLStatement($update, 'DROP TABLE IF EXISTS author_browse_metadata');
-		$this->runSQLStatement($update, 'DROP TABLE IF EXISTS author_browse_scoped_results_global');
-		$this->runSQLStatement($update, 'DROP TABLE IF EXISTS subject_browse');
-		$this->runSQLStatement($update, 'DROP TABLE IF EXISTS subject_browse_metadata');
-		$this->runSQLStatement($update, 'DROP TABLE IF EXISTS subject_browse_scoped_results_global');
-		$this->runSQLStatement($update, 'DROP TABLE IF EXISTS callnumber_browse');
-		$this->runSQLStatement($update, 'DROP TABLE IF EXISTS callnumber_browse_metadata');
-		$this->runSQLStatement($update, 'DROP TABLE IF EXISTS callnumber_browse_scoped_results_global');
+	public function convertTablesToInnoDB(&$update){
+	    global $configArray;
+        $sql = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = '{$configArray['Database']['database_aspen_dbname']}' AND ENGINE = 'MyISAM'";
 
-		$library = new Library();
-		$library->find();
-		while ($library->fetch()) {
-			$this->runSQLStatement($update, "DROP TABLE IF EXISTS title_browse_scoped_results_library_{$library->subdomain}");
-			$this->runSQLStatement($update, "DROP TABLE IF EXISTS author_browse_scoped_results_library_{$library->subdomain}");
-			$this->runSQLStatement($update, "DROP TABLE IF EXISTS subject_browse_scoped_results_library_{$library->subdomain}");
-			$this->runSQLStatement($update, "DROP TABLE IF EXISTS callnumber_browse_scoped_results_library_{$library->subdomain}");
-		}
-	}
+        /** @var PDO $aspen_db  */
+        global $aspen_db;
+        $results = $aspen_db->query($sql, PDO::FETCH_ASSOC);
+        $row = $results->fetchObject();
+        while ($row != null) {
+            $sql = "ALTER TABLE `{$row->TABLE_NAME}` ENGINE=INNODB";
+            $aspen_db->query($sql);
+            $row = $results->fetchObject();
+        }
+    }
 
 	public function addTableListWidgetListsLinks() {
         /** @var PDO $aspen_db  */
@@ -2439,7 +2146,7 @@ class DBMaintenance extends Admin_Admin {
 			'`link` text NOT NULL, ' .
 			'`weight` int(3) NOT NULL DEFAULT \'0\',' .
 			'PRIMARY KEY (`id`) ' .
-			') ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;';
+			') ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;';
 		$aspen_db->query($sql);
 	}
 
@@ -2494,148 +2201,6 @@ class DBMaintenance extends Admin_Admin {
 				"update_key VARCHAR( 100 ) NOT NULL PRIMARY KEY ," .
 				"date_run TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP" .
 				") ENGINE = InnoDB");
-		}
-	}
-
-	function createScopingTables(&$update) {
-		//Create global scoping tables
-		$library = new Library();
-		$library->find();
-		while ($library->fetch()) {
-			$this->runSQLStatement($update,
-				"CREATE TABLE `title_browse_scoped_results_library_{$library->subdomain}` (
-					`browseValueId` INT( 11 ) NOT NULL ,
-					`record` VARCHAR( 50 ) NOT NULL ,
-					PRIMARY KEY ( `browseValueId` , `record` ) ,
-					INDEX ( `browseValueId` )
-				) ENGINE = MYISAM");
-			$this->runSQLStatement($update,
-				"CREATE TABLE `author_browse_scoped_results_library_{$library->subdomain}` (
-					`browseValueId` INT( 11 ) NOT NULL ,
-					`record` VARCHAR( 50 ) NOT NULL ,
-					PRIMARY KEY ( `browseValueId` , `record` ) ,
-					INDEX ( `browseValueId` )
-				) ENGINE = MYISAM");
-			$this->runSQLStatement($update,
-				"CREATE TABLE `subject_browse_scoped_results_library_{$library->subdomain}` (
-					`browseValueId` INT( 11 ) NOT NULL ,
-					`record` VARCHAR( 50 ) NOT NULL ,
-					PRIMARY KEY ( `browseValueId` , `record` ) ,
-					INDEX ( `browseValueId` )
-				) ENGINE = MYISAM");
-			$this->runSQLStatement($update,
-				"CREATE TABLE `callnumber_browse_scoped_results_library_{$library->subdomain}` (
-					`browseValueId` INT( 11 ) NOT NULL ,
-					`record` VARCHAR( 50 ) NOT NULL ,
-					PRIMARY KEY ( `browseValueId` , `record` ) ,
-					INDEX ( `browseValueId` )
-				) ENGINE = MYISAM");
-			//Truncate old data
-			$this->runSQLStatement($update, "TRUNCATE TABLE `title_browse_scoped_results_library_{$library->subdomain}`");
-			$this->runSQLStatement($update, "TRUNCATE TABLE `author_browse_scoped_results_library_{$library->subdomain}`");
-			$this->runSQLStatement($update, "TRUNCATE TABLE `subject_browse_scoped_results_library_{$library->subdomain}`");
-			$this->runSQLStatement($update, "TRUNCATE TABLE `callnumber_browse_scoped_results_library_{$library->subdomain}`");
-			$this->runSQLStatement($update,
-				"INSERT INTO title_browse_scoped_results_library_" . $library->subdomain . " (`browseValueId`, record)
-					SELECT title_browse_scoped_results.browseValueId, title_browse_scoped_results.record
-					FROM title_browse_scoped_results
-					WHERE scope = 1 and scopeId = {$library->libraryId};");
-			$this->runSQLStatement($update,
-				"INSERT INTO author_browse_scoped_results_library_" . $library->subdomain . " (`browseValueId`, record)
-					SELECT author_browse_scoped_results.browseValueId, author_browse_scoped_results.record
-					FROM author_browse_scoped_results
-					WHERE scope = 1 and scopeId = {$library->libraryId};");
-			$this->runSQLStatement($update,
-				"INSERT INTO subject_browse_scoped_results_library_" . $library->subdomain . " (`browseValueId`, record)
-					SELECT subject_browse_scoped_results.browseValueId, subject_browse_scoped_results.record
-					FROM subject_browse_scoped_results
-					WHERE scope = 1 and scopeId = {$library->libraryId};");
-			$this->runSQLStatement($update,
-				"INSERT INTO callnumber_browse_scoped_results_library_" . $library->subdomain . " (`browseValueId`, record)
-					SELECT callnumber_browse_scoped_results.browseValueId, callnumber_browse_scoped_results.record
-					FROM callnumber_browse_scoped_results
-					WHERE scope = 1 and scopeId = {$library->libraryId};");
-		}
-	}
-
-	function setScopingTableEngine(&$update) {
-		//$this->runSQLStatement($update, "ALTER TABLE `title_browse_scoped_results_global` ENGINE = InnoDB");
-		$this->runSQLStatement($update, "ALTER TABLE `title_browse_scoped_results_global` ADD INDEX ( `record` )");
-		//$this->runSQLStatement($update, "ALTER TABLE `author_browse_scoped_results_global` ENGINE = InnoDB");
-		$this->runSQLStatement($update, "ALTER TABLE `author_browse_scoped_results_global` ADD INDEX ( `record` )");
-		//$this->runSQLStatement($update, "ALTER TABLE `subject_browse_scoped_results_global` ENGINE = InnoDB");
-		$this->runSQLStatement($update, "ALTER TABLE `subject_browse_scoped_results_global` ADD INDEX ( `record` )");
-		//$this->runSQLStatement($update, "ALTER TABLE `callnumber_browse_scoped_results_global` ENGINE = InnoDB");
-		$this->runSQLStatement($update, "ALTER TABLE `callnumber_browse_scoped_results_global` ADD INDEX ( `record` )");
-
-		$library = new Library();
-		$library->find();
-		while ($library->fetch()) {
-			//$this->runSQLStatement($update, "ALTER TABLE `title_browse_scoped_results_library_{$library->subdomain}` ENGINE = InnoDB");
-			$this->runSQLStatement($update, "ALTER TABLE `title_browse_scoped_results_library_" . $library->subdomain . "` ADD INDEX ( `record` )");
-			//$this->runSQLStatement($update, "ALTER TABLE `author_browse_scoped_results_library_{$library->subdomain}` ENGINE = InnoDB");
-			$this->runSQLStatement($update, "ALTER TABLE `author_browse_scoped_results_library_" . $library->subdomain . "` ADD INDEX ( `record` )");
-			//$this->runSQLStatement($update, "ALTER TABLE `subject_browse_scoped_results_library_{$library->subdomain}` ENGINE = InnoDB");
-			$this->runSQLStatement($update, "ALTER TABLE `subject_browse_scoped_results_library_" . $library->subdomain . "` ADD INDEX ( `record` )");
-			//$this->runSQLStatement($update, "ALTER TABLE `callnumber_browse_scoped_results_library_{$library->subdomain}` ENGINE = InnoDB");
-			$this->runSQLStatement($update, "ALTER TABLE `callnumber_browse_scoped_results_library_" . $library->subdomain . "` ADD INDEX ( `record` )");
-
-		}
-	}
-
-	function setScopingTableEngine2(&$update) {
-		$this->runSQLStatement($update, "TRUNCATE TABLE title_browse_scoped_results_global");
-		$this->runSQLStatement($update, "ALTER TABLE `title_browse_scoped_results_global` ENGINE = InnoDB");
-		$this->runSQLStatement($update, "TRUNCATE TABLE author_browse_scoped_results_global");
-		$this->runSQLStatement($update, "ALTER TABLE `author_browse_scoped_results_global` ENGINE = InnoDB");
-		$this->runSQLStatement($update, "TRUNCATE TABLE subject_browse_scoped_results_global");
-		$this->runSQLStatement($update, "ALTER TABLE `subject_browse_scoped_results_global` ENGINE = InnoDB");
-		$this->runSQLStatement($update, "TRUNCATE TABLE callnumber_browse_scoped_results_global");
-		$this->runSQLStatement($update, "ALTER TABLE `callnumber_browse_scoped_results_global` ENGINE = InnoDB");
-
-		$library = new Library();
-		$library->find();
-		while ($library->fetch()) {
-			$this->runSQLStatement($update, "TRUNCATE TABLE `title_browse_scoped_results_library_{$library->subdomain}`");
-			$this->runSQLStatement($update, "ALTER TABLE `title_browse_scoped_results_library_{$library->subdomain}` ENGINE = InnoDB");
-			$this->runSQLStatement($update, "TRUNCATE TABLE `author_browse_scoped_results_library_{$library->subdomain}`");
-			$this->runSQLStatement($update, "ALTER TABLE `author_browse_scoped_results_library_{$library->subdomain}` ENGINE = InnoDB");
-			$this->runSQLStatement($update, "TRUNCATE TABLE `subject_browse_scoped_results_library_{$library->subdomain}`");
-			$this->runSQLStatement($update, "ALTER TABLE `subject_browse_scoped_results_library_{$library->subdomain}` ENGINE = InnoDB");
-			$this->runSQLStatement($update, "TRUNCATE TABLE `callnumber_browse_scoped_results_library_{$library->subdomain}`");
-			$this->runSQLStatement($update, "ALTER TABLE `callnumber_browse_scoped_results_library_{$library->subdomain}` ENGINE = InnoDB");
-		}
-	}
-
-	function removeScopingTableIndex(&$update) {
-		$this->runSQLStatement($update, "TRUNCATE TABLE title_browse_scoped_results_global");
-		$this->runSQLStatement($update, "ALTER TABLE `title_browse_scoped_results_global` DROP INDEX `record`");
-		$this->runSQLStatement($update, "ALTER TABLE `title_browse_scoped_results_global` ENGINE = MYISAM");
-		$this->runSQLStatement($update, "TRUNCATE TABLE author_browse_scoped_results_global");
-		$this->runSQLStatement($update, "ALTER TABLE `author_browse_scoped_results_global` DROP INDEX `record`");
-		$this->runSQLStatement($update, "ALTER TABLE `author_browse_scoped_results_global` ENGINE = MYISAM");
-		$this->runSQLStatement($update, "TRUNCATE TABLE subject_browse_scoped_results_global");
-		$this->runSQLStatement($update, "ALTER TABLE `subject_browse_scoped_results_global` DROP INDEX `record`");
-		$this->runSQLStatement($update, "ALTER TABLE `subject_browse_scoped_results_global` ENGINE = MYISAM");
-		$this->runSQLStatement($update, "TRUNCATE TABLE callnumber_browse_scoped_results_global");
-		$this->runSQLStatement($update, "ALTER TABLE `callnumber_browse_scoped_results_global` DROP INDEX `record`");
-		$this->runSQLStatement($update, "ALTER TABLE `callnumber_browse_scoped_results_global` ENGINE = MYISAM");
-
-		$library = new Library();
-		$library->find();
-		while ($library->fetch()) {
-			$this->runSQLStatement($update, "TRUNCATE TABLE `title_browse_scoped_results_library_{$library->subdomain}`");
-			$this->runSQLStatement($update, "ALTER TABLE `title_browse_scoped_results_library_{$library->subdomain}` DROP INDEX `record`");
-			$this->runSQLStatement($update, "ALTER TABLE `title_browse_scoped_results_library_{$library->subdomain}` ENGINE = MYISAM");
-			$this->runSQLStatement($update, "TRUNCATE TABLE `author_browse_scoped_results_library_{$library->subdomain}`");
-			$this->runSQLStatement($update, "ALTER TABLE `author_browse_scoped_results_library_{$library->subdomain}` DROP INDEX `record`");
-			$this->runSQLStatement($update, "ALTER TABLE `author_browse_scoped_results_library_{$library->subdomain}` ENGINE = MYISAM");
-			$this->runSQLStatement($update, "TRUNCATE TABLE `subject_browse_scoped_results_library_{$library->subdomain}`");
-			$this->runSQLStatement($update, "ALTER TABLE `subject_browse_scoped_results_library_{$library->subdomain}` DROP INDEX `record`");
-			$this->runSQLStatement($update, "ALTER TABLE `subject_browse_scoped_results_library_{$library->subdomain}` ENGINE = MYISAM");
-			$this->runSQLStatement($update, "TRUNCATE TABLE `callnumber_browse_scoped_results_library_{$library->subdomain}`");
-			$this->runSQLStatement($update, "ALTER TABLE `callnumber_browse_scoped_results_library_{$library->subdomain}` DROP INDEX `record`");
-			$this->runSQLStatement($update, "ALTER TABLE `callnumber_browse_scoped_results_library_{$library->subdomain}` ENGINE = MYISAM");
 		}
 	}
 
