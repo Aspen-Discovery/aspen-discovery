@@ -24,7 +24,7 @@ require_once ROOT_DIR . '/sys/File/MARC.php';
 
 require_once ROOT_DIR  . '/sys/Language.php';
 
-require_once ROOT_DIR  . '/RecordDrivers/Factory.php';
+require_once ROOT_DIR . '/RecordDrivers/RecordDriverFactory.php';
 require_once ROOT_DIR  . '/RecordDrivers/MarcRecord.php';
 
 abstract class Record_Record extends Action

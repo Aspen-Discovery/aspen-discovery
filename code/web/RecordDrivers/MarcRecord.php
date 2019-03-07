@@ -108,29 +108,6 @@ class MarcRecord extends IndexRecord
 		return isset($this->indexingProfile) ? $this->indexingProfile->recordUrlComponent : 'Record';
 	}
 
-	// No references to the below methods & properties. Commented out 9/29/2017 pascal
-//	protected $itemsFromIndex;
-//
-//	public function setItemsFromIndex($itemsFromIndex, $realTimeStatusNeeded){
-//		global $configArray;
-//		global $offlineMode;
-//		//TODO: offline mode check below has not been tested
-//		if ($configArray['Catalog']['supportsRealtimeIndexing'] || !$realTimeStatusNeeded || $offlineMode) {
-//			$this->itemsFromIndex = $itemsFromIndex;
-//		}
-//	}
-//
-//	protected $detailedRecordInfoFromIndex;
-//
-//	public function setDetailedRecordInfoFromIndex($detailedRecordInfoFromIndex, $realTimeStatusNeeded){
-//		global $configArray;
-//		global $offlineMode;
-//		//TODO: offline mode check below has not been tested
-//		if ($configArray['Catalog']['supportsRealtimeIndexing'] || !$realTimeStatusNeeded || $offlineMode) {
-//			$this->detailedRecordInfoFromIndex = $detailedRecordInfoFromIndex;
-//		}
-//	}
-
 	public function isValid()
 	{
 		if ($this->valid === null) {

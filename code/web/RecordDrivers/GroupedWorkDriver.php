@@ -250,16 +250,6 @@ class GroupedWorkDriver extends RecordInterface{
 	}
 
 	/**
-	 * Get the text to represent this record in the body of an email.
-	 *
-	 * @access  public
-	 * @return  string              Text for inclusion in email.
-	 */
-	public function getEmail() {
-		// TODO: Remove getEmail() method.
-	}
-
-	/**
 	 * Get any excerpts associated with this record.  For details of
 	 * the return format, see sys/Excerpts.php.
 	 *
@@ -2822,7 +2812,7 @@ class GroupedWorkDriver extends RecordInterface{
 		//		list($source) = explode(':', $recordDetails[0], 1); // this does not work for 'overdrive:27770ba9-9e68-410c-902b-de2de8e2b7fe', returns 'overdrive:27770ba9-9e68-410c-902b-de2de8e2b7fe'
 		// when loading book covers.
 		list($source) = explode(':', $recordDetails[0], 2);
-		require_once ROOT_DIR . '/RecordDrivers/Factory.php';
+		require_once ROOT_DIR . '/RecordDrivers/RecordDriverFactory.php';
 		$recordDriver = RecordDriverFactory::initRecordDriverById($recordDetails[0], $groupedWork);
 		$timer->logTime("Loaded Record Driver for  $recordDetails[0]");
 		$memoryWatcher->logMemory("Loaded Record Driver for  $recordDetails[0]");
@@ -3362,4 +3352,15 @@ class GroupedWorkDriver extends RecordInterface{
 		}
 		return $url;
 	}
+
+    /**
+     * Get the text to represent this record in the body of an email.
+     *
+     * @access  public
+     * @return  string              Text for inclusion in email.
+     */
+    public function getEmail()
+    {
+        return "  " . $this->getTitle() . "\n";
+    }
 }

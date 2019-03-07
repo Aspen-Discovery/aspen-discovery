@@ -55,7 +55,7 @@ class EbscoRecordDriver extends RecordInterface {
 	 * @return  string              Breadcrumb text to represent this record.
 	 */
 	public function getBreadcrumb() {
-		// TODO: Implement getBreadcrumb() method.
+        return $this->getTitle();
 	}
 
 	/**
@@ -81,16 +81,6 @@ class EbscoRecordDriver extends RecordInterface {
 	 */
 	public function getCitationFormats() {
 		// TODO: Implement getCitationFormats() method.
-	}
-
-	/**
-	 * Get the text to represent this record in the body of an email.
-	 *
-	 * @access  public
-	 * @return  string              Text for inclusion in email.
-	 */
-	public function getEmail() {
-		// TODO: Implement getEmail() method.
 	}
 
 	/**

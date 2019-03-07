@@ -19,7 +19,7 @@
  */
 
 require_once ROOT_DIR . '/Action.php';
-require_once ROOT_DIR . '/RecordDrivers/Factory.php';
+require_once ROOT_DIR . '/RecordDrivers/RecordDriverFactory.php';
 require_once ROOT_DIR . '/sys/Genealogy/Person.php';
 
 class Person_Home extends Action

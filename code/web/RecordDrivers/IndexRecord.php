@@ -243,17 +243,6 @@ class IndexRecord extends RecordInterface
 	}
 
 	/**
-	 * Get the text to represent this record in the body of an email.
-	 *
-	 * @access  public
-	 * @return  string              Text for inclusion in email.
-	 */
-	public function getEmail()
-	{
-		return "  " . $this->getTitle() . "\n";
-	}
-
-	/**
 	 * Get any excerpts associated with this record.  For details of
 	 * the return format, see sys/Excerpts.php.
 	 *

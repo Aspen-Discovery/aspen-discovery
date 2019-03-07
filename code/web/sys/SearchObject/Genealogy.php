@@ -19,7 +19,7 @@
  */
 require_once ROOT_DIR . '/sys/Solr.php';
 require_once ROOT_DIR . '/sys/SearchObject/Base.php';
-require_once ROOT_DIR . '/RecordDrivers/Factory.php';
+require_once ROOT_DIR . '/RecordDrivers/RecordDriverFactory.php';
 require_once ROOT_DIR . '/Drivers/marmot_inc/Location.php';
 
 /**

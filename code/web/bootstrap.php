@@ -102,7 +102,7 @@ function requireSystemLibraries(){
 	require_once ROOT_DIR . '/Drivers/marmot_inc/Library.php';
 	require_once ROOT_DIR . '/Drivers/marmot_inc/Location.php';
 	require_once ROOT_DIR . '/Drivers/DriverInterface.php';
-	require_once ROOT_DIR . '/RecordDrivers/Factory.php';
+	require_once ROOT_DIR . '/RecordDrivers/RecordDriverFactory.php';
 
 }
 

@@ -219,16 +219,6 @@ abstract class IslandoraDriver extends RecordInterface {
 	}
 
 	/**
-	 * Get the text to represent this record in the body of an email.
-	 *
-	 * @access  public
-	 * @return  string              Text for inclusion in email.
-	 */
-	public function getEmail() {
-		// TODO: Implement getEmail() method.
-	}
-
-	/**
 	 * Get any excerpts associated with this record.  For details of
 	 * the return format, see sys/Excerpts.php.
 	 *

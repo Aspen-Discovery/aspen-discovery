@@ -1194,7 +1194,7 @@ abstract class SirsiDynixROA extends HorizonAPI
 		}
 
 		// Retrieve Full Marc Record
-		require_once ROOT_DIR . '/RecordDrivers/Factory.php';
+		require_once ROOT_DIR . '/RecordDrivers/RecordDriverFactory.php';
 		$record = RecordDriverFactory::initRecordDriverById('ils:' . $recordId);
 		if (!$record) {
 			$title = null;

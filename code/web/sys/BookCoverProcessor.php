@@ -1200,7 +1200,7 @@ class BookCoverProcessor{
 					$this->groupedWork = false;
 				}
 			}else{
-				require_once ROOT_DIR . '/RecordDrivers/Factory.php';
+				require_once ROOT_DIR . '/RecordDrivers/RecordDriverFactory.php';
 				$recordDriver = RecordDriverFactory::initRecordDriverById($this->type . ':' . $this->id);
 				if ($recordDriver && $recordDriver->isValid()){
 					$this->groupedWork = $recordDriver->getGroupedWorkDriver();

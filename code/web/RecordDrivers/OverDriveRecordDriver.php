@@ -64,16 +64,6 @@ class OverDriveRecordDriver extends RecordInterface {
 		return 'OverDrive';
 	}
 
-	protected $itemsFromIndex;
-	public function setItemsFromIndex($itemsFromIndex, $realTimeStatusNeeded){
-		$this->itemsFromIndex = $itemsFromIndex;
-	}
-
-	protected $detailedRecordInfoFromIndex;
-	public function setDetailedRecordInfoFromIndex($detailedRecordInfoFromIndex, $realTimeStatusNeeded){
-		$this->detailedRecordInfoFromIndex = $detailedRecordInfoFromIndex;
-	}
-
 	public function setScopingEnabled($enabled){
 		$this->scopingEnabled = $enabled;
 	}
@@ -127,7 +117,7 @@ class OverDriveRecordDriver extends RecordInterface {
 	 * @return  string              Breadcrumb text to represent this record.
 	 */
 	public function getBreadcrumb() {
-		// TODO: Implement getBreadcrumb() method.
+        return $this->getTitle();
 	}
 
 	/**
@@ -194,16 +184,6 @@ class OverDriveRecordDriver extends RecordInterface {
 	public function getCitationFormats()
 	{
 		return array('AMA', 'APA', 'ChicagoHumanities', 'ChicagoAuthDate', 'MLA');
-	}
-
-	/**
-	 * Get the text to represent this record in the body of an email.
-	 *
-	 * @access  public
-	 * @return  string              Text for inclusion in email.
-	 */
-	public function getEmail() {
-		// TODO: Implement getEmail() method.
 	}
 
 	/**

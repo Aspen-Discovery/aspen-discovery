@@ -734,7 +734,7 @@ class MillenniumHolds{
 
 		//Get the title of the book.
 		// Retrieve Full Marc Record
-		require_once ROOT_DIR . '/RecordDrivers/Factory.php';
+		require_once ROOT_DIR . '/RecordDrivers/RecordDriverFactory.php';
 		$record = RecordDriverFactory::initRecordDriverById($this->driver->accountProfile->recordSource . ':' . $bib1);
 		if (!$record) {
 			$logger->log('Place Hold: Failed to get Marc Record', PEAR_LOG_INFO);
@@ -871,7 +871,7 @@ class MillenniumHolds{
 
 		//Get the title of the book.
 		// Retrieve Full Marc Record
-		require_once ROOT_DIR . '/RecordDrivers/Factory.php';
+		require_once ROOT_DIR . '/RecordDrivers/RecordDriverFactory.php';
 		$record = RecordDriverFactory::initRecordDriverById($this->driver->accountProfile->recordSource . ':' . $bib1);
 		if (!$record) {
 			$logger->log('Place Hold: Failed to get Marc Record', PEAR_LOG_INFO);
