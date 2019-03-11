@@ -287,123 +287,6 @@ class DBMaintenance extends Admin_Admin {
 					),
 				),
 
-				'purchase_link_tracking' => array(
-					'title' => 'Create Purchase Link Tracking Table',
-					'description' => 'Create Purchase Links tables to track links that were clicked',
-					'sql' => array(
-						'CREATE TABLE IF NOT EXISTS purchase_link_tracking (' .
-						'purchaseLinkId int(11) NOT NULL AUTO_INCREMENT, ' .
-						'ipAddress varchar(30) NULL, ' .
-						'recordId VARCHAR(50) NOT NULL, ' .
-						'store VARCHAR(255) NOT NULL, ' .
-						'trackingDate timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP, ' .
-						'PRIMARY KEY (purchaseLinkId) ' .
-						') ENGINE=InnoDB',
-
-						'ALTER TABLE purchase_link_tracking ADD INDEX ( `purchaseLinkId` )',
-					),
-				),
-
-				'resource_update_table' => array(
-					'title' => 'Update resource table',
-					'description' => 'Update resource tracking table to include additional information resources for sorting',
-					'sql' => array(
-						'ALTER TABLE resource ADD author VARCHAR(255)',
-						'ALTER TABLE resource ADD title_sort VARCHAR(255)',
-						'ALTER TABLE resource ADD isbn VARCHAR(13)',
-						'ALTER TABLE resource ADD upc VARCHAR(13)', //Have to use 13 since some publishers use the ISBN as the UPC.
-						'ALTER TABLE resource ADD format VARCHAR(50)',
-						'ALTER TABLE resource ADD format_category VARCHAR(50)',
-						'ALTER TABLE `resource` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci',
-					),
-				),
-
-				'resource_update_table_2' => array(
-					'title' => 'Update resource table 2',
-					'description' => 'Update resource tracking table to make sure that title and author are utf8 encoded',
-					'sql' => array(
-						"ALTER TABLE `resource` CHANGE `title` `title` VARCHAR( 255 ) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT ''",
-						"ALTER TABLE `resource` CHANGE `source` `source` VARCHAR( 50 ) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT 'VuFind'",
-						"ALTER TABLE `resource` CHANGE `author` `author` VARCHAR( 255 ) CHARACTER SET utf8 COLLATE utf8_general_ci",
-						"ALTER TABLE `resource` CHANGE `title_sort` `title_sort` VARCHAR( 255 ) CHARACTER SET utf8 COLLATE utf8_general_ci",
-					),
-				),
-
-				'resource_update3' => array(
-					'title' => 'Update resource table 3',
-					'description' => 'Update resource table to include the checksum of the marc record so we can skip updating records that haven\'t changed',
-					'sql' => array(
-						"ALTER TABLE `resource` ADD marc_checksum BIGINT",
-						"ALTER TABLE `resource` ADD date_updated INT(11)",
-					),
-				),
-
-				'resource_update4' => array(
-					'title' => 'Update resource table 4',
-					'description' => 'Update resource table to include a field for the actual marc record',
-					'continueOnError' => true,
-					'sql' => array(
-						"ALTER TABLE `resource` ADD marc BLOB",
-					),
-				),
-
-				'resource_update5' => array(
-					'title' => 'Update resource table 5',
-					'description' => 'Add a short id column for use with certain ILS i.e. Millennium',
-					'sql' => array(
-						"ALTER TABLE `resource` ADD shortId VARCHAR(20)",
-						"ALTER TABLE `resource` ADD INDEX (shortId)",
-					),
-				),
-
-				'resource_update6' => array(
-					'title' => 'Update resource table 6',
-					'description' => 'Add a deleted column to determine if a resource has been removed from the catalog',
-					'continueOnError' => true,
-					'sql' => array(
-						"ALTER TABLE `resource` ADD deleted TINYINT DEFAULT '0'",
-						"ALTER TABLE `resource` ADD INDEX (deleted)",
-					),
-				),
-
-				'resource_update7' => array(
-					'title' => 'Update resource table 7',
-					'description' => 'Increase the size of the marc field to avoid indexing errors updating the resources table. ',
-					'sql' => array(
-						"ALTER TABLE `resource` CHANGE marc marc LONGBLOB",
-					),
-				),
-
-				'resource_update8' => array(
-					'title' => 'Update resource table 8',
-					'description' => 'Updates resources to store marc records in text for easier debugging and UTF compatibility. ',
-					'sql' => array(
-						//"UPDATE resource set marc = null, marc_checksum = -1;",
-						"ALTER TABLE `resource` CHANGE `marc` `marc` LONGTEXT CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL ;"
-					),
-				),
-
-				'resource_subject' => array(
-					'title' => 'Resource subject',
-					'description' => 'Build table to store subjects for resources',
-					'sql' => array(
-						'CREATE TABLE IF NOT EXISTS subject (' .
-						'id int(11) NOT NULL AUTO_INCREMENT, ' .
-						'subject VARCHAR(100) NOT NULL, ' .
-						'PRIMARY KEY (id), ' .
-						'INDEX (`subject`)' .
-						') ENGINE=InnoDB',
-
-						'CREATE TABLE IF NOT EXISTS resource_subject (' .
-						'id int(11) NOT NULL AUTO_INCREMENT, ' .
-						'resourceId INT(11) NOT NULL, ' .
-						'subjectId INT(11) NOT NULL, ' .
-						'PRIMARY KEY (id), ' .
-						'INDEX (`resourceId`), ' .
-						'INDEX (`subjectId`)' .
-						') ENGINE=InnoDB',
-					),
-				),
 
 				'readingHistory' => array(
 					'title' => 'Reading History Creation',
@@ -460,22 +343,6 @@ class DBMaintenance extends Admin_Admin {
 					),
 				),
 
-				'externalLinkTracking' => array(
-					'title' => 'Create External Link Tracking Table',
-					'description' => 'Build table to track links to external sites from 856 tags or eContent',
-					'sql' => array(
-						'CREATE TABLE IF NOT EXISTS external_link_tracking (' .
-						'externalLinkId int(11) NOT NULL AUTO_INCREMENT, ' .
-						'ipAddress varchar(30) NULL, ' .
-						'recordId varchar(50) NOT NULL, ' .
-						'linkUrl varchar(400) NOT NULL, ' .
-						'linkHost varchar(200) NOT NULL, ' .
-						'trackingDate timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP, ' .
-						'PRIMARY KEY (externalLinkId) ' .
-						') ENGINE=InnoDB',
-					),
-				),
-
 				'readingHistoryUpdate1' => array(
 					'title' => 'Reading History Update 1',
 					'description' => 'Update reading History to include an id table',
@@ -522,14 +389,6 @@ class DBMaintenance extends Admin_Admin {
 						"ALTER TABLE user_not_interested DROP INDEX userId",
 						"ALTER TABLE user_not_interested DROP INDEX userId_2",
 						"ALTER TABLE user_not_interested ADD INDEX(`userId`)",
-					),
-				),
-
-				'userRatings1' => array(
-					'title' => 'User Ratings Update 1',
-					'description' => 'Add date rated for user ratings',
-					'sql' => array(
-						"ALTER TABLE user_rating ADD COLUMN dateRated INT(11)",
 					),
 				),
 
@@ -974,11 +833,8 @@ class DBMaintenance extends Admin_Admin {
 						"ALTER DATABASE " . $configArray['Database']['database_aspen_dbname'] . " DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;",
 						//"ALTER TABLE administrators CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
 						"ALTER TABLE bad_words CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
-						"ALTER TABLE circulation_status CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
-						"ALTER TABLE comments CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
 						"ALTER TABLE db_update CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
 						"ALTER TABLE editorial_reviews CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
-						"ALTER TABLE external_link_tracking CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
 						"ALTER TABLE ip_lookup CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
 						"ALTER TABLE library CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
 						"ALTER TABLE list_widgets CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
@@ -986,21 +842,14 @@ class DBMaintenance extends Admin_Admin {
 						"ALTER TABLE location CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
 						//"ALTER TABLE nonHoldableLocations CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
 						//"ALTER TABLE ptype_restricted_locations CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
-						"ALTER TABLE purchase_link_tracking CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
-						"ALTER TABLE resource CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
-						"ALTER TABLE resource_tags CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
 						"ALTER TABLE roles CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
 						"ALTER TABLE search CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
 						"ALTER TABLE search_stats CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
 						"ALTER TABLE session CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
 						"ALTER TABLE spelling_words CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
-						"ALTER TABLE tags CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
-						//"ALTER TABLE usage_tracking CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
 						"ALTER TABLE user CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
 						"ALTER TABLE user_list CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
-						"ALTER TABLE user_rating CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
 						"ALTER TABLE user_reading_history CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
-						"ALTER TABLE user_resource CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
 						"ALTER TABLE user_roles CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
 						"ALTER TABLE user_suggestions CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
 					),
@@ -1153,8 +1002,6 @@ class DBMaintenance extends Admin_Admin {
 					'description' => 'Add additional indexes to tables that were not defined originally',
 					'continueOnError' => true,
 					'sql' => array(
-						'ALTER TABLE `user_rating` ADD INDEX `Resourceid` ( `resourceid` ) ',
-						'ALTER TABLE `user_rating` ADD INDEX `UserId` ( `userid` ) ',
 						'ALTER TABLE `materials_request_status` ADD INDEX ( `isDefault` )',
 						'ALTER TABLE `materials_request_status` ADD INDEX ( `isOpen` )',
 						'ALTER TABLE `materials_request_status` ADD INDEX ( `isPatronCancel` )',
@@ -1189,8 +1036,6 @@ class DBMaintenance extends Admin_Admin {
 						'RENAME TABLE usageTracking TO usage_tracking',
 						'RENAME TABLE nonHoldableLocations TO non_holdable_locations',
 						'RENAME TABLE pTypeRestrictedLocations TO ptype_restricted_locations',
-						'RENAME TABLE externalLinkTracking TO external_link_tracking',
-						'RENAME TABLE purchaseLinkTracking TO purchase_link_tracking'
 					),
 				),
 
@@ -1518,23 +1363,6 @@ class DBMaintenance extends Admin_Admin {
 							rating TINYINT(1),
 							review MEDIUMTEXT,
 							dateRated INT(11),
-							INDEX(`groupedRecordPermanentId`),
-							INDEX(`userId`),
-							PRIMARY KEY(`id`)
-						) ENGINE = InnoDB",
-					),
-				),
-
-				'work_level_tagging' => array(
-					'title' => 'Work Level Tagging',
-					'description' => 'Stores tags at the work level rather than the individual record.',
-					'sql' => array(
-						"CREATE TABLE user_tags (
-							id INT(11) NOT NULL AUTO_INCREMENT,
-							groupedRecordPermanentId VARCHAR(36),
-							userId INT(11),
-							tag VARCHAR(50),
-							dateTagged INT(11),
 							INDEX(`groupedRecordPermanentId`),
 							INDEX(`userId`),
 							PRIMARY KEY(`id`)

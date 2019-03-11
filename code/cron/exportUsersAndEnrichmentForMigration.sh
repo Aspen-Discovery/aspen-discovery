@@ -43,7 +43,6 @@ mysqldump --user=$1 --password=$PASSWORD --add-drop-table $DBNAME \
  user_reading_history_work\
  user_roles\
  user_staff_settings\
- user_tags\
  user_work_review\
  > /data/$DBNAME.migration.sql
 gzip /data/$DBNAME.migration.sql

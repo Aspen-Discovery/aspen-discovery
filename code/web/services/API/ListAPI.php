@@ -21,7 +21,6 @@
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/sys/Pager.php';
 require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
-require_once ROOT_DIR . '/sys/Utils/SwitchDatabase.php';
 require_once ROOT_DIR . '/sys/Utils/Pagination.php';
 
 class ListAPI extends Action {
@@ -472,34 +471,7 @@ class ListAPI extends Action {
 				}
 			}
 			//The list is a system generated list
-			if ($listId == 'highestRated'){
-				$query = "SELECT record_id, AVG(rating) FROM `user_rating` inner join resource on resourceid = resource.id GROUP BY resourceId order by AVG(rating) DESC LIMIT $numTitlesToShow";
-				$result = mysql_query($query);
-				$ids = array();
-				while ($epubInfo = mysql_fetch_assoc($result)){
-					$ids[] = $epubInfo['record_id'];
-				}
-				$titles = $this->loadTitleInformationForIds($ids, $numTitlesToShow);
-				return array('success'=>true, 'listTitle' => $systemList['title'], 'listDescription' => $systemList['description'], 'titles'=>$titles, 'cacheLength'=>1);
-			} elseif ($listId == 'recentlyReviewed'){
-				$query = "SELECT record_id, MAX(created) FROM `comments` inner join resource on resource_id = resource.id group by resource_id order by max(created) DESC LIMIT $numTitlesToShow";
-				$result = mysql_query($query);
-				$ids = array();
-				while ($epubInfo = mysql_fetch_assoc($result)){
-					$ids[] = $epubInfo['record_id'];
-				}
-				$titles = $this->loadTitleInformationForIds($ids, $numTitlesToShow);
-				return array('success'=>true, 'listTitle' => $systemList['title'], 'listDescription' => $systemList['description'], 'titles'=>$titles, 'cacheLength'=>1);
-			}elseif ($listId == 'mostPopular'){
-				$query = "SELECT record_id, count(userId) from user_reading_history inner join resource on resourceId = resource.id GROUP BY resourceId order by count(userId) DESC LIMIT $numTitlesToShow";
-				$result = mysql_query($query);
-				$ids = array();
-				while ($epubInfo = mysql_fetch_assoc($result)){
-					$ids[] = $epubInfo['record_id'];
-				}
-				$titles = $this->loadTitleInformationForIds($ids, $numTitlesToShow);
-				return array('success'=>true, 'listTitle' => $systemList['title'], 'listDescription' => $systemList['description'], 'titles'=>$titles, 'cacheLength'=>1);
-			}elseif ($listId == 'recommendations'){
+			if ($listId == 'recommendations'){
 				if (!$user){
 					return array('success'=>false, 'message'=>'A valid user must be provided to load recommendations.');
 				}else{

@@ -918,19 +918,6 @@ class GroupedWork_AJAX {
 		return json_encode($result);
 	}
 
-	function getAddTagForm(){
-		global $interface;
-		$id = $_REQUEST['id'];
-		$interface->assign('id', $id);
-
-		$results = array(
-				'title' => 'Add Tag',
-				'modalBody' => $interface->fetch("GroupedWork/addtag.tpl"),
-				'modalButtons' => "<button class='tool btn btn-primary' onclick='VuFind.GroupedWork.saveTag(\"{$id}\"); return false;'>Add Tags</button>"
-		);
-		return json_encode($results);
-	}
-
 	function getProspectorInfo(){
 		require_once ROOT_DIR . '/Drivers/marmot_inc/Prospector.php';
 		global $configArray;

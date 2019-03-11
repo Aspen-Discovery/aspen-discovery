@@ -42,7 +42,6 @@ public class MergeHorizonUsers implements IProcessHandler {
 			mergeNotInterestedStmt = dbConn.prepareStatement("UPDATE user_not_interested SET userId = ? WHERE userId = ?");
 			mergeUserReadingHistoryStmt = dbConn.prepareStatement("UPDATE user_reading_history_work SET userId = ? WHERE userId = ?");
 			mergeUserRolesStmt = dbConn.prepareStatement("UPDATE user_roles SET userId = ? WHERE userId = ?");
-			mergeUserTagsStmt = dbConn.prepareStatement("UPDATE user_tags SET userId = ? WHERE userId = ?");
 			mergeSearchesStmt = dbConn.prepareStatement("UPDATE search SET user_id = ? WHERE user_id = ?");
 			mergeBrowseCategoriesStmt = dbConn.prepareStatement("UPDATE browse_category SET userId = ? WHERE userId = ?");
 			mergeMaterialsRequestsStmt = dbConn.prepareStatement("UPDATE materials_request SET createdBy = ? WHERE createdBy = ?");

@@ -236,16 +236,7 @@ class SearchObject_Solr extends SearchObject_Base
 		// Basic Search logic
 		if ($this->initBasicSearch($searchTerm)) {
 			// If we found a basic search, we don't need to do anything further.
-		} elseif (isset($_REQUEST['tag']) && $module != 'MyAccount') {
-			// Tags, just treat them as normal searches for now.
-			// The search processor knows what to do with them.
-			if ($_REQUEST['tag'] != '') {
-				$this->searchTerms[] = array(
-                    'index'   => 'tag',
-                    'lookfor' => strip_tags($_REQUEST['tag'])
-				);
-			}
-		} else {
+		 else {
 			$this->initAdvancedSearch();
 		}
 

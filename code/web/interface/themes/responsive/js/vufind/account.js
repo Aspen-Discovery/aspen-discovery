@@ -117,7 +117,6 @@ VuFind.Account = (function(){
 				$(".bookings-placeholder").html(data.bookings);
 				$("#availableHoldsNotice-placeHolder").html(data.availableHoldsNotice);
 				$(".expirationFinesNotice-placeholder").html(data.expirationFinesNotice);
-				$("#tagsMenu-placeholder").html(data.tagsMenu);
 			});
 			return false;
 		},

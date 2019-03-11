@@ -112,19 +112,11 @@ function getGroupedWorkUpdates(){
 			)
 		),
 
-		'grouped_work_evoke' => array(
-			'title' => 'Grouped Work eVoke',
-			'description' => 'Allow eVoke as a valid identifier type ',
-			'sql' => array(
-				"ALTER TABLE grouped_work_primary_identifiers CHANGE `type` `type` ENUM('ils', 'external', 'drm', 'free', 'overdrive', 'evoke' ) NOT NULL",
-			)
-		),
-
 		'grouped_work_primary_identifiers_hoopla' => array(
 			'title' => 'Grouped Work Updates to support Hoopla',
 			'description' => 'Allow hoopla as a valid identifier type',
 			'sql' => array(
-				"ALTER TABLE grouped_work_primary_identifiers CHANGE `type` `type` ENUM('ils', 'external', 'drm', 'free', 'overdrive', 'evoke', 'hoopla' ) NOT NULL",
+				"ALTER TABLE grouped_work_primary_identifiers CHANGE `type` `type` ENUM('ils', 'external', 'drm', 'free', 'overdrive', 'hoopla' ) NOT NULL",
 			),
 		),
 

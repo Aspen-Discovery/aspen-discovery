@@ -10,7 +10,6 @@ require_once ROOT_DIR . '/sys/PEAR_Singleton.php';
 PEAR_Singleton::init();
 
 require_once ROOT_DIR . '/sys/ConfigArray.php';
-require_once ROOT_DIR . '/sys/Utils/SwitchDatabase.php';
 global $configArray;
 $configArray = readConfig();
 require_once ROOT_DIR . '/sys/Timer.php';
