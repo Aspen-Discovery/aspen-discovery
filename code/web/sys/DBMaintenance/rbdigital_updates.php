@@ -28,7 +28,9 @@ function getRbdigitalUpdates() {
                         language VARCHAR(50),
                         rawChecksum BIGINT,
                         rawResponse MEDIUMTEXT,
+                        dateFirstDetected bigint(20) DEFAULT NULL,
                         lastChange INT(11) NOT NULL,
+                        deleted TINYINT NOT NULL DEFAULT 0,
                         UNIQUE(rbdigitalId)
                     ) ENGINE = InnoDB",
                 "ALTER TABLE rbdigital_title ADD INDEX(lastChange)"

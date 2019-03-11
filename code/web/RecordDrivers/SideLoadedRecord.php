@@ -39,7 +39,7 @@ class SideLoadedRecord extends ExternalEContentDriver {
 		$isbn = $this->getCleanISBN();
 
 		//Load table of contents
-		$tableOfContents = $this->getTOC();
+		$tableOfContents = $this->getTableOfContents();
 		$interface->assign('tableOfContents', $tableOfContents);
 
 		//Get Related Records to make sure we initialize items

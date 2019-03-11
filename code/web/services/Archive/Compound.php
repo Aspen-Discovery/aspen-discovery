@@ -16,7 +16,7 @@ class Archive_Compound extends Archive_Object{
 		//$this->loadExploreMoreContent();
 
 		//Get the contents of the book
-		/** @var CompoundDriver $bookDriver */
+		/** @var CompoundRecordDriver $bookDriver */
 		$bookDriver = $this->recordDriver;
 		$bookContents = $bookDriver->loadBookContents();
 		$interface->assign('bookContents', $bookContents);

@@ -18,11 +18,11 @@
 		</div>
 	{/if}
 
-	{if $recordDriver && !$showEditions && $recordDriver->getEdition()}
+	{if $recordDriver && !$showEditions && $recordDriver->getEditions()}
 		<div class="row">
 			<div class="result-label col-xs-3">{translate text='Edition'}:</div>
 			<div class="col-xs-9 result-value">
-				{implode subject=$recordDriver->getEdition() glue=", "}
+				{implode subject=$recordDriver->getEditions() glue=", "}
 			</div>
 		</div>
 	{/if}

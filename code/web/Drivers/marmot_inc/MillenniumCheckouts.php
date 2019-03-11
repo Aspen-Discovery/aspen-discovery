@@ -188,8 +188,8 @@ class MillenniumCheckouts {
 						$checkDigit           = $this->driver->getCheckDigit($curTitle['shortId']);
 						$curTitle['recordId'] = '.' . $curTitle['shortId'] . $checkDigit;
 						$curTitle['id']       = '.' . $curTitle['shortId'] . $checkDigit;
-						require_once ROOT_DIR . '/RecordDrivers/MarcRecord.php';
-						$recordDriver = new MarcRecord($this->driver->accountProfile->recordSource . ":" . $curTitle['recordId']);
+						require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+						$recordDriver = new MarcRecordDriver($this->driver->accountProfile->recordSource . ":" . $curTitle['recordId']);
 						if ($recordDriver->isValid()) {
 							$curTitle['coverUrl']      = $recordDriver->getBookcoverUrl('medium');
 							$curTitle['groupedWorkId'] = $recordDriver->getGroupedWorkId();

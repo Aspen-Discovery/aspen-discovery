@@ -39,7 +39,7 @@ class API_ArchiveAPI extends Action {
 		$dplaDocs = array();
 
 		foreach ($searchResult['response']['docs'] as $doc){
-			/** @var IslandoraDriver $record */
+			/** @var IslandoraRecordDriver $record */
 			$record = RecordDriverFactory::initRecordDriver($doc);
 			$contributingLibrary = $record->getContributingLibrary();
 			//$exportToDPLA = isset($doc['mods_extension_marmotLocal_pikaOptions_dpla_s']) ? $doc['mods_extension_marmotLocal_pikaOptions_dpla_s'] : 'collection';
@@ -107,9 +107,9 @@ class API_ArchiveAPI extends Action {
 				$dplaDoc['publisher'] = $publishers;
 			}
 			$dplaDoc['type'] = $record->getFormat();
-			$subTitle = $record->getSubTitle();
+			$subTitle = $record->getSubtitle();
 			if (strlen($subTitle) > 0){
-				$dplaDoc['alternativeTitle'] = $record->getSubTitle();
+				$dplaDoc['alternativeTitle'] = $record->getSubtitle();
 			}
 
 			if (isset($doc['mods_physicalDescription_extent_s'])){

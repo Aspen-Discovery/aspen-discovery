@@ -126,7 +126,7 @@ class BookCoverProcessor{
 	}
 
 	private function getHooplaCover($id){
-		require_once ROOT_DIR . '/RecordDrivers/HooplaDriver.php';
+		require_once ROOT_DIR . '/RecordDrivers/HooplaRecordDriver.php';
 		if (strpos($id, ':') !== false){
 			list(, $id) = explode(":", $id);
 		}
@@ -261,6 +261,19 @@ class BookCoverProcessor{
 		}
 		return false;
 	}
+
+	private function getRbdigitalCover($id){
+        if (strpos($id, ':') !== false){
+            list(, $id) = explode(":", $id);
+        }
+        require_once ROOT_DIR . '/RecordDrivers/RbdigitalRecordDriver.php';
+        $driver = new RbdigitalRecordDriver($id);
+        if ($driver) {
+            $coverUrl = $driver->getBookcoverUrl('large');
+            return $this->processImageURL($coverUrl, true);
+        }
+        return false;
+    }
 
 	private function initDatabaseConnection(){
 		// Setup Local Database Connection
@@ -632,8 +645,8 @@ class BookCoverProcessor{
 				$this->category = 'blank';
 			}
 		}else{
-			require_once ROOT_DIR . '/RecordDrivers/MarcRecord.php';
-			$recordDriver = new MarcRecord($this->id);
+			require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+			$recordDriver = new MarcRecordDriver($this->id);
 			if ($recordDriver->isValid()){
 				$title = $recordDriver->getTitle();
 				$author = $recordDriver->getAuthor();
@@ -1142,10 +1155,14 @@ class BookCoverProcessor{
 					if ($this->getSideLoadedCover($relatedRecord['id'])) {
 						return true;
 					}
-				} elseif (stripos($relatedRecord['source'], 'rbdigital') !== false || stripos($relatedRecord['source'], 'zinio') !== false){
+				} elseif (stripos($relatedRecord['source'], 'zinio') !== false){
 					if ($this->getZinioCover($relatedRecord['id'])) {
 						return true;
 					}
+                } elseif (stripos($relatedRecord['source'], 'rbdigital') !== false){
+                    if ($this->getRbdigitalCover($relatedRecord['id'])) {
+                        return true;
+                    }
 				}else{
 					/** @var GroupedWorkDriver $driver */
 					$driver = $relatedRecord['driver'];

@@ -19,6 +19,7 @@ abstract class DataObject
     private $__limitStart;
     private $__limitCount;
     private $__lastQuery;
+    private $__lastError;
 
     public function find($fetchFirst = false){
         if (!isset($this->__table)) {
@@ -244,6 +245,7 @@ abstract class DataObject
             $this->N = $this->__queryStmt->rowCount();
         } else {
             echo("Failed to execute " . $query);
+            $this->__lastError = $this->__queryStmt->errorInfo();
         }
 
         return $this->N > 0;
@@ -277,5 +279,9 @@ abstract class DataObject
             $row = $results->fetchObject();
         }
         return $columns;
+    }
+
+    public function getLastError(){
+        return $this->__lastError;
     }
 }

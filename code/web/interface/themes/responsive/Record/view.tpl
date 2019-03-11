@@ -19,9 +19,6 @@
 				{if $recordDriver->getTitleSection()}
 					:&nbsp;{$recordDriver->getTitleSection()|removeTrailingPunctuation|escape}
 				{/if}
-				{* if $recordDriver->getTitleStatement()}
-					<br><small>{$recordDriver->getTitleStatement()}</small>
-				{/if *}
 				{if $recordDriver->getFormats()}
 					<br><small>({implode subject=$recordDriver->getFormats() glue=", "})</small>
 				{/if}
@@ -72,8 +69,6 @@
 			<div class="row">
 				{include file=$moreDetailsTemplate}
 			</div>
-
-			<span class="Z3988" title="{$recordDriver->getOpenURL()|escape}" style="display:none">&nbsp;</span>
 		{/if}
 	</div>
 {/strip}

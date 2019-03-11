@@ -1,5 +1,5 @@
 {strip}
-	{* This Template is the default template used by Interface.php *}
+	{* This Template is the default template used by RecordInterface.php *}
 	<div id="tableOfContentsPlaceholder" style="display:none"{if $tableOfContents} class="loaded"{/if}>
 
 	{if $tableOfContents}

@@ -168,7 +168,7 @@ class Archive_Exhibit extends Archive_Object{
 					}
 
 					$collectionToLoadFromObject = $fedoraUtils->getObject($collectionToLoadFromPID);
-					/** @var CollectionDriver|BookDriver $collectionDriver */
+					/** @var CollectionRecordDriver|BookDriver $collectionDriver */
 					$collectionDriver = RecordDriverFactory::initRecordDriver($collectionToLoadFromObject);
 
 					$collectionObjects = $collectionDriver->getChildren();
@@ -248,7 +248,7 @@ class Archive_Exhibit extends Archive_Object{
 					$rand = rand(0, count($randomObjectPids) -1);
 					$randomCollectionPid = $randomObjectPids[$rand];
 					$interface->assign('randomObjectPids', implode(',', $randomObjectPids));
-					/** @var CollectionDriver $randomObjectCollectionDriver */
+					/** @var CollectionRecordDriver $randomObjectCollectionDriver */
 					$randomObjectCollectionDriver = RecordDriverFactory::initIslandoraDriverFromPid(trim($randomCollectionPid));
 					$randomImagePid = $randomObjectCollectionDriver->getRandomObject();
 					if ($randomImagePid != null){
@@ -367,11 +367,11 @@ class Archive_Exhibit extends Archive_Object{
 								}
 							}
 							if ($updateCache){
-								/** @var PlaceDriver $placeEntityDriver */
+								/** @var PlaceRecordDriver $placeEntityDriver */
 								$placeEntityDriver = RecordDriverFactory::initRecordDriver($fedoraUtils->getObject($mappedPlace['pid']));
 								$mappedPlace['label'] = $placeEntityDriver->getTitle();
 								$mappedPlace['url'] = $placeEntityDriver->getRecordUrl();
-								if ($placeEntityDriver instanceof PlaceDriver){
+								if ($placeEntityDriver instanceof PlaceRecordDriver){
 									$geoData = $placeEntityDriver->getGeoData();
 								}else{
 									//echo("Warning {$placeEntityDriver->getTitle()} ({$placeEntityDriver->getUniqueID()}) was not a place");
@@ -499,7 +499,7 @@ class Archive_Exhibit extends Archive_Object{
 					//Load related objects
 					$allObjectsAreCollections = true;
 					foreach ($response['response']['docs'] as $objectInCollection) {
-						/** @var IslandoraDriver $firstObjectDriver */
+						/** @var IslandoraRecordDriver $firstObjectDriver */
 						$firstObjectDriver                                = RecordDriverFactory::initRecordDriver($objectInCollection);
 						$relatedImages[$firstObjectDriver->getUniqueID()] = array(
 							'pid' => $firstObjectDriver->getUniqueID(),
@@ -510,7 +510,7 @@ class Archive_Exhibit extends Archive_Object{
 							'recordIndex' => $recordIndex++
 						);
 
-						if (!($firstObjectDriver instanceof CollectionDriver)) {
+						if (!($firstObjectDriver instanceof CollectionRecordDriver)) {
 							$allObjectsAreCollections = false;
 						}
 						$timer->logTime('Loaded related object');

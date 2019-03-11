@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
 Class-Path: lib/commons-logging-1.1.1.jar lib/ini4j-0.5.2.jar lib/log4j-1.2.15.jar
   lib/marc4j-pika.jar lib/mysql-5.1.15-bin.jar
-Main-Class: org.pika.HorizonExportMain
+Main-Class: com.turning_leaf_technologies.horizon.HorizonExportMain
 

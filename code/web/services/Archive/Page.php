@@ -70,7 +70,7 @@ class Archive_Page extends Archive_Object{
 		//Check download settings for the parent object
 		if ($parentObject != null){
 
-			/** @var CollectionDriver $collection */
+			/** @var CollectionRecordDriver $collection */
 			$anonymousMasterDownload = true;
 			$verifiedMasterDownload = true;
 			$anonymousLcDownload = true;
@@ -79,7 +79,7 @@ class Archive_Page extends Archive_Object{
 			/** @var BookDriver $parentDriver */
 			$parentDriver = RecordDriverFactory::initRecordDriver($parentObject);
 			foreach ($parentDriver->getRelatedCollections() as $collection) {
-				/** @var CollectionDriver $collectionDriver */
+				/** @var CollectionRecordDriver $collectionDriver */
 				$collectionDriver = $collection['driver'];
 				if (!$collectionDriver->canAnonymousDownloadMaster()) {
 					$anonymousMasterDownload = false;

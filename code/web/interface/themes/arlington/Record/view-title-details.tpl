@@ -80,11 +80,11 @@
 	</div>
 	{/if}
 
-	{if $showEditions && $recordDriver->getEdition()}
+	{if $showEditions && $recordDriver->getEditions()}
 		<div class="row">
 			<div class="result-label col-sm-4">{translate text='Edition'}:</div>
 			<div class="col-sm-8 result-value">
-				{implode subject=$recordDriver->getEdition() glue=", "}
+				{implode subject=$recordDriver->getEditions() glue=", "}
 			</div>
 		</div>
 	{/if}

@@ -19,7 +19,7 @@
  *
  * PHP Version 5
  *
- * @file     CAS/ProxyChain/Interface.php
+ * @file     CAS/ProxyChain/RecordInterface.php
  * @category Authentication
  * @package  PhpCAS
  * @author   Adam Franco <afranco@middlebury.edu>

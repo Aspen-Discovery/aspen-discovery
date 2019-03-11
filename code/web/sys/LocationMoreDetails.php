@@ -18,7 +18,7 @@ class LocationMoreDetails extends DataObject{
 
 	static function getObjectStructure(){
 		//Load Libraries for lookup values
-		require_once ROOT_DIR . '/RecordDrivers/Interface.php';
+		require_once ROOT_DIR . '/RecordDrivers/RecordInterface.php';
 		$validSources = RecordInterface::getValidMoreDetailsSources();
 		$structure = array(
 				'id' => array('property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id of the hours within the database'),

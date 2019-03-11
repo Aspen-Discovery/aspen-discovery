@@ -19,7 +19,7 @@ class Archive_Place extends Archive_Entity{
 
 		$interface->assign('showExploreMore', true);
 
-		/** @var PlaceDriver $placeDriver */
+		/** @var PlaceRecordDriver $placeDriver */
 		$placeDriver = $this->recordDriver;
 		$geoData = $placeDriver->getGeoData();
 		$addressInfo = $interface->getVariable('addressInfo');

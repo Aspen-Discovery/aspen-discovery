@@ -895,7 +895,7 @@ abstract class SirsiDynixROA extends HorizonAPI
 
 		if (!empty($patronCheckouts->fields->circRecordList)) {
 			$sCount = 0;
-			require_once ROOT_DIR . '/RecordDrivers/MarcRecord.php';
+			require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 
 			foreach ($patronCheckouts->fields->circRecordList as $checkout) {
 				if (empty($checkout->fields->claimsReturnedDate) && $checkout->fields->status != 'INACTIVE') { // Titles with a claims return date will not be displayed in check outs.
@@ -915,7 +915,7 @@ abstract class SirsiDynixROA extends HorizonAPI
 					$curTitle['renewIndicator'] = $checkout->fields->item->key;
 
 					$curTitle['format'] = 'Unknown';
-					$recordDriver       = new MarcRecord('a' . $bibId);
+					$recordDriver       = new MarcRecordDriver('a' . $bibId);
 					if ($recordDriver->isValid()) {
 						$curTitle['coverUrl']      = $recordDriver->getBookcoverUrl('medium');
 						$curTitle['groupedWorkId'] = $recordDriver->getGroupedWorkId();
@@ -1006,7 +1006,7 @@ abstract class SirsiDynixROA extends HorizonAPI
 		// (Call now includes Item information for when the hold is an item level hold.)
 		$patronHolds = $this->getWebServiceResponse($webServiceURL . '/v1/user/patron/key/' . $patron->username . '?includeFields=holdRecordList{*,item{itemType,barcode,call{callNumber}}}', null, $sessionToken);
 		if ($patronHolds && isset($patronHolds->fields)) {
-			require_once ROOT_DIR . '/RecordDrivers/MarcRecord.php';
+			require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 			foreach ($patronHolds->fields->holdRecordList as $hold) {
 				$curHold               = array();
 				$bibId                 = $hold->fields->bib->key;
@@ -1047,7 +1047,7 @@ abstract class SirsiDynixROA extends HorizonAPI
 					$curHold['locationUpdateable'] = false;
 				}
 
-				$recordDriver = new MarcRecord('a' . $bibId);
+				$recordDriver = new MarcRecordDriver('a' . $bibId);
 				if ($recordDriver->isValid()) {
 					$curHold['title']           = $recordDriver->getTitle();
 					$curHold['author']          = $recordDriver->getPrimaryAuthor();
@@ -1124,7 +1124,7 @@ abstract class SirsiDynixROA extends HorizonAPI
 		$result = array();
 		$needsItemHold = false;
 		$holdableItems = array();
-		/** @var MarcRecord $recordDriver */
+		/** @var MarcRecordDriver $recordDriver */
 		$recordDriver = RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $recordId);
 
 		if ($recordDriver->isValid()){

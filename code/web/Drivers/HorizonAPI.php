@@ -289,7 +289,7 @@ abstract class HorizonAPI extends Horizon{
 		//Now that we have the session token, get holds information
 		$lookupMyAccountInfoResponse = $this->getWebServiceResponse($configArray['Catalog']['webServiceUrl'] . '/standard/lookupMyAccountInfo?clientID=' . $configArray['Catalog']['clientId'] . '&sessionToken=' . $sessionToken . '&includeHoldInfo=true');
 		if (isset($lookupMyAccountInfoResponse->HoldInfo)){
-			require_once ROOT_DIR . '/RecordDrivers/MarcRecord.php';
+			require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 			foreach ($lookupMyAccountInfoResponse->HoldInfo as $hold){
 				$curHold = array();
 				$bibId          = (string) $hold->titleKey;
@@ -320,7 +320,7 @@ abstract class HorizonAPI extends Horizon{
 					$curHold['freezeable'] = false;
 				}
 
-				$recordDriver = new MarcRecord($bibId);
+				$recordDriver = new MarcRecordDriver($bibId);
 				if ($recordDriver->isValid()){
 					$curHold['sortTitle']       = $recordDriver->getSortableTitle();
 					$curHold['format']          = $recordDriver->getFormat();
@@ -757,8 +757,8 @@ abstract class HorizonAPI extends Horizon{
 
 				$curTitle['format']          = 'Unknown';
 				if ($curTitle['id'] && strlen($curTitle['id']) > 0){
-					require_once ROOT_DIR . '/RecordDrivers/MarcRecord.php';
-					$recordDriver = new MarcRecord($curTitle['id']);
+					require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+					$recordDriver = new MarcRecordDriver($curTitle['id']);
 					if ($recordDriver->isValid()){
 						$curTitle['coverUrl']      = $recordDriver->getBookcoverUrl('medium');
 						$curTitle['groupedWorkId'] = $recordDriver->getGroupedWorkId();

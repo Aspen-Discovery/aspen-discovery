@@ -25,7 +25,7 @@ require_once ROOT_DIR . '/sys/File/MARC.php';
 require_once ROOT_DIR  . '/sys/Language.php';
 
 require_once ROOT_DIR . '/RecordDrivers/RecordDriverFactory.php';
-require_once ROOT_DIR  . '/RecordDrivers/MarcRecord.php';
+require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 
 abstract class Record_Record extends Action
 {
@@ -235,7 +235,7 @@ abstract class Record_Record extends Action
 
 			$format = $this->recordDriver->getFormat();
 			$interface->assign('recordFormat', $format);
-			$format_category = $format = $this->recordDriver->getFormatCategory();
+			$format_category = $this->recordDriver->getFormatCategory();
 			$interface->assign('format_category', $format_category);
 			$interface->assign('recordLanguage', $this->recordDriver->getLanguage());
 
@@ -244,16 +244,6 @@ abstract class Record_Record extends Action
 			$notes = $this->recordDriver->getNotes();
 			if (count($notes) > 0){
 				$interface->assign('notes', $notes);
-			}
-
-			// Define External Content Provider
-			if ($this->marcRecord->getField('020')) {
-				if (isset($configArray['Content']['reviews'])) {
-					$interface->assign('hasReviews', true);
-				}
-				if (isset($configArray['Content']['excerpts'])) {
-					$interface->assign('hasExcerpt', true);
-				}
 			}
 		} else {
 			$interface->assign('error', 'Cannot Process MARC Record');
@@ -323,9 +313,6 @@ abstract class Record_Record extends Action
 
 		// Send down text for inclusion in breadcrumbs
 		$interface->assign('breadcrumbText', $this->recordDriver->getBreadcrumb());
-
-		// Send down legal export formats (if any):
-		$interface->assign('exportFormats', $this->recordDriver->getExportFormats());
 
 		// Set AddThis User
 		$interface->assign('addThis', isset($configArray['AddThis']['key']) ?

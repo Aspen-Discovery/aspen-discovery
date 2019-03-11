@@ -50,8 +50,8 @@ class Circa_OfflineHoldsReport extends Admin_Admin{
 		$offlineHoldsObj->find();
 		while ($offlineHoldsObj->fetch()){
 			$offlineHold = array();
-			require_once ROOT_DIR . '/RecordDrivers/MarcRecord.php';
-			$recordDriver = new MarcRecord($offlineHoldsObj->bibId);
+			require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+			$recordDriver = new MarcRecordDriver($offlineHoldsObj->bibId);
 			if ($recordDriver->isValid()){
 				$offlineHold['title'] = $recordDriver->getTitle();
 			}

@@ -437,8 +437,8 @@ class CarlX extends SIP2Driver{
 					$curHold['cancelable']         = true; //TODO: Can Cancel Available Holds?
 					$curHold['freezeable']         = false;
 
-					require_once ROOT_DIR . '/RecordDrivers/MarcRecord.php';
-					$recordDriver = new MarcRecord($carlID);
+					require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+					$recordDriver = new MarcRecordDriver($carlID);
 					if ($recordDriver->isValid()){
 						$curHold['sortTitle']       = $recordDriver->getSortableTitle();
 						$curHold['format']          = $recordDriver->getFormat();
@@ -497,8 +497,8 @@ class CarlX extends SIP2Driver{
 					$curHold['freezeable'] = true;
 
 
-					require_once ROOT_DIR . '/RecordDrivers/MarcRecord.php';
-					$recordDriver = new MarcRecord($carlID);
+					require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+					$recordDriver = new MarcRecordDriver($carlID);
 					if ($recordDriver->isValid()){
 						$curHold['sortTitle']       = $recordDriver->getSortableTitle();
 						$curHold['format']          = $recordDriver->getFormat();
@@ -664,8 +664,8 @@ class CarlX extends SIP2Driver{
 
 				$curTitle['format']          = 'Unknown';
 				if (!empty($carlID)){
-					require_once ROOT_DIR . '/RecordDrivers/MarcRecord.php';
-					$recordDriver = new MarcRecord($carlID); // This needs the $carlID
+					require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+					$recordDriver = new MarcRecordDriver($carlID); // This needs the $carlID
 					if ($recordDriver->isValid()){
 						$curTitle['coverUrl']      = $recordDriver->getBookcoverUrl('medium');
 						$curTitle['groupedWorkId'] = $recordDriver->getGroupedWorkId();
@@ -1176,8 +1176,8 @@ class CarlX extends SIP2Driver{
 						$historyEntry['coverUrl']    = null;
 						$historyEntry['format']      = 'Unknown';
 						if (!empty($historyEntry['recordId'])){
-							require_once ROOT_DIR . '/RecordDrivers/MarcRecord.php';
-							$recordDriver = new MarcRecord($this->accountProfile->recordSource.':'.$historyEntry['recordId']);
+							require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+							$recordDriver = new MarcRecordDriver($this->accountProfile->recordSource.':'.$historyEntry['recordId']);
 							if ($recordDriver->isValid()){
 								$historyEntry['ratingData']  = $recordDriver->getRatingData();
 								$historyEntry['permanentId'] = $recordDriver->getPermanentId();
@@ -1641,8 +1641,8 @@ class CarlX extends SIP2Driver{
 					$holdId = $recordId;
 
 					// Get Title  (Title is not part of the cancel response)
-					require_once ROOT_DIR . '/RecordDrivers/MarcRecord.php';
-					$recordDriver = new MarcRecord($this->fullCarlIDfromBID($recordId));
+					require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+					$recordDriver = new MarcRecordDriver($this->fullCarlIDfromBID($recordId));
 					if ($recordDriver->isValid()) {
 						$title = $recordDriver->getTitle();
 					}

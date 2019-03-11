@@ -25,34 +25,8 @@ function getGroupedWorkUpdates(){
 					UNIQUE KEY permanent_id (permanent_id),
 					KEY title (title,author,grouping_category)
 				) ENGINE=InnoDB  DEFAULT CHARSET=utf8",
-				"CREATE TABLE IF NOT EXISTS grouped_work_identifiers (
-					id BIGINT(20) NOT NULL AUTO_INCREMENT,
-					grouped_work_id BIGINT(20) NOT NULL,
-					`type` VARCHAR(15) NOT NULL,
-					identifier VARCHAR(36) NOT NULL,
-					linksToDifferentTitles TINYINT(4) NOT NULL DEFAULT '0',
-					PRIMARY KEY (id),
-					KEY `type` (`type`,identifier)
-				) ENGINE=InnoDB  DEFAULT CHARSET=utf8",
 			),
 
-		),
-
-		'grouped_works_1' => array(
-			'title' => 'Grouped Work update 1',
-			'description' => 'Updates grouped works to normalize identifiers and add a reference table to link to .',
-			'sql' => array(
-				"CREATE TABLE IF NOT EXISTS grouped_work_identifiers_ref (
-					grouped_work_id BIGINT(20) NOT NULL,
-					identifier_id BIGINT(20) NOT NULL,
-					PRIMARY KEY (grouped_work_id, identifier_id)
-				) ENGINE=InnoDB  DEFAULT CHARSET=utf8",
-				"TRUNCATE TABLE grouped_work_identifiers",
-				"ALTER TABLE `grouped_work_identifiers` CHANGE `type` `type` ENUM( 'asin', 'ils', 'isbn', 'issn', 'oclc', 'upc', 'order', 'external_econtent', 'acs', 'free', 'overdrive' )",
-				"ALTER TABLE grouped_work_identifiers DROP COLUMN grouped_work_id",
-				"ALTER TABLE grouped_work_identifiers DROP COLUMN linksToDifferentTitles",
-				"ALTER TABLE grouped_work_identifiers ADD UNIQUE (`type`, `identifier`)",
-			),
 		),
 
 		'grouped_works_2' => array(
@@ -97,28 +71,11 @@ function getGroupedWorkUpdates(){
 			),
 		),
 
-		'grouped_work_identifiers_ref_indexing' => array(
-			'title' => 'Grouped Work Identifiers Ref Indexing',
-			'description' => 'Add indexing to identifiers re.',
-			'sql' => array(
-				"ALTER TABLE grouped_work_identifiers_ref ADD INDEX(identifier_id)",
-				"ALTER TABLE grouped_work_identifiers_ref ADD INDEX(grouped_work_id)",
-			),
-		),
-
 		'grouped_works_partial_updates' => array(
 			'title' => 'Grouped Work Partial Updates',
 			'description' => 'Updates to allow only changed records to be regrouped.',
 			'sql' => array(
 				"ALTER TABLE grouped_work ADD date_updated INT(11)",
-				"CREATE TABLE grouped_work_primary_to_secondary_id_ref (
-					primary_identifier_id BIGINT(20),
-					secondary_identifier_id BIGINT(20),
-					UNIQUE KEY (primary_identifier_id, secondary_identifier_id),
-					KEY (primary_identifier_id),
-					KEY (secondary_identifier_id)
-				) ENGINE=InnoDB  DEFAULT CHARSET=utf8",
-				"ALTER TABLE grouped_work_identifiers ADD valid_for_enrichment TINYINT(1) DEFAULT 1"
 			),
 		),
 
@@ -127,10 +84,7 @@ function getGroupedWorkUpdates(){
 			'description' => 'Change storage engine to InnoDB for grouped work tables',
 			'sql' => array(
 				'ALTER TABLE `grouped_work` ENGINE = InnoDB',
-				'ALTER TABLE `grouped_work_identifiers` ENGINE = InnoDB',
-				'ALTER TABLE `grouped_work_identifiers_ref` ENGINE = InnoDB',
 				'ALTER TABLE `grouped_work_primary_identifiers` ENGINE = InnoDB',
-				'ALTER TABLE `grouped_work_primary_to_secondary_id_ref` ENGINE = InnoDB',
 				'ALTER TABLE `ils_marc_checksums` ENGINE = InnoDB',
 			)
 		),
@@ -181,26 +135,6 @@ function getGroupedWorkUpdates(){
 			'sql' => array(
 				"DROP INDEX title on grouped_work",
 				"DROP INDEX full_title on grouped_work",
-				"DROP INDEX grouped_work_id on grouped_work_identifiers",
-				"DROP INDEX type_2 on grouped_work_identifiers",
-				"DROP INDEX type_3 on grouped_work_identifiers",
-				"DROP INDEX identifier_id_2 on grouped_work_identifiers_ref",
-				"DROP INDEX grouped_work_id on grouped_work_identifiers_ref",
-				"DROP INDEX grouped_work_id_2 on grouped_work_identifiers_ref",
-				"DROP INDEX primary_identifier_id_2 on grouped_work_primary_to_secondary_id_ref",
-			),
-		),
-
-		'grouped_work_duplicate_identifiers' => array(
-			'title' => 'Cleanup Grouped Duplicate Identifiers within ',
-			'description' => 'Cleanup Duplicate Identifiers that were added mistakenly',
-			'continueOnError' => true,
-			'sql' => array(
-				"TRUNCATE table grouped_work_identifiers",
-				"TRUNCATE table grouped_work_identifiers_ref",
-				"TRUNCATE table grouped_work_primary_to_secondary_id_ref",
-				"ALTER TABLE grouped_work_identifiers DROP INDEX type",
-				"ALTER TABLE grouped_work_identifiers ADD UNIQUE (`type`, `identifier`)",
 			),
 		),
 

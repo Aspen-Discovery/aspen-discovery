@@ -76,8 +76,8 @@ class MillenniumReadingHistory {
 			$historyEntry['format']      = array();
 			if (isset($historyEntry['shortId']) && strlen($historyEntry['shortId']) > 0){
 				$historyEntry['recordId'] = "." . $historyEntry['shortId'] . $this->driver->getCheckDigit($historyEntry['shortId']);
-				require_once ROOT_DIR . '/RecordDrivers/MarcRecord.php';
-				$recordDriver = new MarcRecord($this->driver->accountProfile->recordSource . ':' . $historyEntry['recordId']);
+				require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+				$recordDriver = new MarcRecordDriver($this->driver->accountProfile->recordSource . ':' . $historyEntry['recordId']);
 				if ($recordDriver->isValid()){
 					$historyEntry['ratingData']  = $recordDriver->getRatingData();
 					$historyEntry['permanentId'] = $recordDriver->getPermanentId();

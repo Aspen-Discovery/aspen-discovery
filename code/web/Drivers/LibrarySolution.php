@@ -229,8 +229,8 @@ class LibrarySolution extends ScreenScrapingDriver {
 
 				//Get additional information from MARC Record
 				if ($curTitle['shortId'] && strlen($curTitle['shortId']) > 0){
-					require_once ROOT_DIR . '/RecordDrivers/MarcRecord.php';
-					$recordDriver = new MarcRecord( $this->accountProfile->recordSource . ":" . $curTitle['recordId']);
+					require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+					$recordDriver = new MarcRecordDriver( $this->accountProfile->recordSource . ":" . $curTitle['recordId']);
 					if ($recordDriver->isValid()){
 						$historyEntry['permanentId'] = $recordDriver->getPermanentId();
 						$curTitle['coverUrl']        = $recordDriver->getBookcoverUrl('medium');
@@ -331,8 +331,8 @@ class LibrarySolution extends ScreenScrapingDriver {
 
 				//Get additional information from MARC Record
 				if ($curTitle['shortId'] && strlen($curTitle['shortId']) > 0){
-					require_once ROOT_DIR . '/RecordDrivers/MarcRecord.php';
-					$recordDriver = new MarcRecord( $this->accountProfile->recordSource . ":" . $curTitle['recordId']);
+					require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+					$recordDriver = new MarcRecordDriver( $this->accountProfile->recordSource . ":" . $curTitle['recordId']);
 					if ($recordDriver->isValid()){
 						$curTitle['coverUrl'] = $recordDriver->getBookcoverUrl('medium');
 						$curTitle['groupedWorkId'] = $recordDriver->getGroupedWorkId();
@@ -517,8 +517,8 @@ class LibrarySolution extends ScreenScrapingDriver {
 				$curHold['freezeable'] = false;
 
 				$curHold['sortTitle'] = $hold->title;
-				require_once ROOT_DIR . '/RecordDrivers/MarcRecord.php';
-				$recordDriver = new MarcRecord($this->accountProfile->recordSource . ":" . $bibId);
+				require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+				$recordDriver = new MarcRecordDriver($this->accountProfile->recordSource . ":" . $bibId);
 				if ($recordDriver->isValid()){
 					$curHold['sortTitle'] = $recordDriver->getSortableTitle();
 					$curHold['format'] = $recordDriver->getFormat();

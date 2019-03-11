@@ -13,7 +13,7 @@ class ExploreMore {
 
 	/**
 	 * @param string $activeSection
-	 * @param IndexRecord $recordDriver
+	 * @param IndexRecordDriver $recordDriver
 	 */
 	function loadExploreMoreSidebar($activeSection, $recordDriver){
 		//TODO: remove title from $exploreMoreSectionsToShow array
@@ -31,16 +31,16 @@ class ExploreMore {
 		if ($activeSection == 'archive'){
 			//If this is a book or a page, show a table of contents
 			//Check to see if the record is part of a compound object.  If so we will want to link to the parent compound object.
-			if ($recordDriver instanceof PageDriver){
-				/** @var IslandoraDriver $parentObject */
+			if ($recordDriver instanceof PageRecordDriver){
+				/** @var IslandoraRecordDriver $parentObject */
 				$parentObject = $recordDriver->getParentObject();
 
 				if ($parentObject != null){
-					/** @var IslandoraDriver $parentDriver */
+					/** @var IslandoraRecordDriver $parentDriver */
 					$parentDriver = RecordDriverFactory::initRecordDriver($parentObject);
 
 					//If the parent object is a section then get the parent again
-					/** @var IslandoraDriver $parentOfParent */
+					/** @var IslandoraRecordDriver $parentOfParent */
 					$parentOfParent = $parentDriver->getParentObject();
 					if ($parentOfParent != null ){
 						$parentOfParentDriver = RecordDriverFactory::initRecordDriver($parentOfParent);
@@ -82,15 +82,15 @@ class ExploreMore {
 					}
 				}
 				$timer->logTime("Loaded table of contents");
-			}elseif ($recordDriver instanceof BookDriver || $recordDriver instanceof CompoundDriver){
+			}elseif ($recordDriver instanceof BookDriver || $recordDriver instanceof CompoundRecordDriver){
 				if ($recordDriver->getFormat() != 'Postcard'){
-					/** @var CompoundDriver $bookDriver */
+					/** @var CompoundRecordDriver $bookDriver */
 					$exploreMoreSectionsToShow = $this->setupTableOfContentsForBook($recordDriver, $exploreMoreSectionsToShow, true);
 					$timer->logTime("Loaded table of contents for book");
 				}
 			}
 
-			/** @var IslandoraDriver $archiveDriver */
+			/** @var IslandoraRecordDriver $archiveDriver */
 			$archiveDriver = $recordDriver;
 			if (!isset($this->relatedCollections)){
 				$this->relatedCollections = $archiveDriver->getRelatedCollections();
@@ -171,7 +171,7 @@ class ExploreMore {
 		//Load related content from the archive
 
 		if ($activeSection == 'archive'){
-			/** @var IslandoraDriver $archiveDriver */
+			/** @var IslandoraRecordDriver $archiveDriver */
 			$archiveDriver = $recordDriver;
 			$relatedArchiveEntities = $this->getRelatedArchiveEntities($archiveDriver);
 			if (count($relatedArchiveEntities) > 0){
@@ -235,7 +235,7 @@ class ExploreMore {
 		}
 
 		if ($activeSection == 'archive'){
-			/** @var IslandoraDriver $archiveDriver */
+			/** @var IslandoraRecordDriver $archiveDriver */
 			$archiveDriver = $recordDriver;
 
 			//Load related subjects
@@ -402,7 +402,7 @@ class ExploreMore {
 						$response2 = $searchObject2->processSearch(true, false);
 						if ($response2 && $response2['response']['numFound'] > 0) {
 							$firstObject = reset($response2['response']['docs']);
-							/** @var IslandoraDriver $firstObjectDriver */
+							/** @var IslandoraRecordDriver $firstObjectDriver */
 							$firstObjectDriver = RecordDriverFactory::initRecordDriver($firstObject);
 							$numMatches = $response2['response']['numFound'];
 							$contentType = ucwords(translate($relatedContentType[0]));
@@ -741,7 +741,7 @@ class ExploreMore {
 	}
 
 	/**
-	 * @param IslandoraDriver $archiveDriver
+	 * @param IslandoraRecordDriver $archiveDriver
 	 *
 	 * @return array
 	 */
@@ -750,7 +750,7 @@ class ExploreMore {
 		$relatedSubjects = array();
 
 		foreach ($relatedObjects['objects'] as $object){
-			/** @var IslandoraDriver $relatedObjectDriver */
+			/** @var IslandoraRecordDriver $relatedObjectDriver */
 			$relatedObjectDriver = $object['driver'];
 			foreach ($relatedObjectDriver->getAllSubjectsWithLinks() as $subject){
 				if (!isset($relatedSubjects[$subject['label']])){
@@ -772,7 +772,7 @@ class ExploreMore {
 	/**
 	 * @param string $searchTerm
 	 * @param bool   $searchSubjectsOnly
-	 * @param IslandoraDriver $archiveDriver
+	 * @param IslandoraRecordDriver $archiveDriver
 	 * @return array
 	 */
 	public function getRelatedArchiveObjects($searchTerm, $searchSubjectsOnly, $archiveDriver = null) {
@@ -836,7 +836,7 @@ class ExploreMore {
 							$firstObject = next($response2['response']['docs']);
 						}
 					}
-					/** @var IslandoraDriver $firstObjectDriver */
+					/** @var IslandoraRecordDriver $firstObjectDriver */
 					$firstObjectDriver = RecordDriverFactory::initRecordDriver($firstObject);
 					$contentType = ucwords(translate($relatedContentType[0]));
 					if ($numMatches == 1) {
@@ -865,7 +865,7 @@ class ExploreMore {
 	 * Load entities that are related to this entity but that are not directly related.
 	 * I.e. we want to see
 	 *
-	 * @param IslandoraDriver $archiveDriver
+	 * @param IslandoraRecordDriver $archiveDriver
 	 * @return array
 	 */
 	public function getRelatedArchiveEntities($archiveDriver){
@@ -882,7 +882,7 @@ class ExploreMore {
 		$relatedObjects = $archiveDriver->getDirectlyRelatedArchiveObjects();
 
 		foreach ($relatedObjects['objects'] as $object){
-			/** @var IslandoraDriver $objectDriver */
+			/** @var IslandoraRecordDriver $objectDriver */
 			$objectDriver = $object['driver'];
 
 			$peopleRelatedToObject = $objectDriver->getRelatedPeople();
@@ -1016,7 +1016,7 @@ class ExploreMore {
 	}
 
 	/**
-	 * @param CompoundDriver $bookDriver
+	 * @param CompoundRecordDriver $bookDriver
 	 * @param array $exploreMoreSectionsToShow
 	 * @param bool $currentlyShowingBook
 	 * @return array
@@ -1040,7 +1040,7 @@ class ExploreMore {
 						'label' => $section['title'],
 				);
 				if (!$currentlyShowingBook){
-					$section['link'] = $bookDriver->getRecordUrl(false) . '?pagePid=' . $firstPageInSection['pid'];
+					$section['link'] = $bookDriver->getRecordUrl() . '?pagePid=' . $firstPageInSection['pid'];
 				}
 				$exploreMoreSectionsToShow['tableOfContents']['values'][] = $section;
 			}

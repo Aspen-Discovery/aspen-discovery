@@ -9,12 +9,6 @@
 	<button onclick="return VuFind.GroupedWork.reloadIslandora('{$recordDriver->getUniqueID()}')" class="btn btn-sm btn-default">Clear Islandora Cache</button>
 {/if}
 
-
-	{* QR Code *}
-{if $showQRCode}
-	<div id="record-qr-code" class="text-center hidden-xs visible-md"><img src="{$recordDriver->getQRCodeUrl()}" alt="QR Code for Record"></div>
-{/if}
-
 <h4>Grouping Information</h4>
 <table class="table-striped table table-condensed notranslate">
 	<tr>

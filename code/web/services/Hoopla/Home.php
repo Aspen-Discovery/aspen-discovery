@@ -18,7 +18,7 @@
  *
  */
 
-require_once ROOT_DIR . '/RecordDrivers/HooplaDriver.php';
+require_once ROOT_DIR . '/RecordDrivers/HooplaRecordDriver.php';
 
 class Hoopla_Home extends Action{
 	/** @var  SearchObject_Solr $db */

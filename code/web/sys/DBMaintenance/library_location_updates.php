@@ -558,7 +558,6 @@ function getLibraryLocationUpdates(){
 			'continueOnError' => true,
 			'sql' => array(
 				"ALTER TABLE library ADD showShareOnExternalSites INT(11) DEFAULT 1",
-				"ALTER TABLE library ADD showQRCode INT(11) DEFAULT 1",
 				"ALTER TABLE library ADD showGoodReadsReviews INT(11) DEFAULT 1",
 				"ALTER TABLE library ADD showStaffView INT(11) DEFAULT 1",
 				"ALTER TABLE library ADD showSearchTools INT(11) DEFAULT 1",
@@ -567,7 +566,6 @@ function getLibraryLocationUpdates(){
 				"ALTER TABLE location ADD showEmailThis INT(11) DEFAULT 1",
 				"ALTER TABLE location ADD showFavorites INT(11) DEFAULT 1",
 				"ALTER TABLE location ADD showComments INT(11) DEFAULT 1",
-				"ALTER TABLE location ADD showQRCode INT(11) DEFAULT 1",
 				"ALTER TABLE location ADD showGoodReadsReviews INT(11) DEFAULT 1",
 				"ALTER TABLE location ADD showStaffView INT(11) DEFAULT 1",
 			)

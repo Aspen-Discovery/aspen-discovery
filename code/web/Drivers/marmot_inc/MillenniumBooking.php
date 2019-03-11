@@ -301,10 +301,10 @@ class MillenniumBooking {
 		// Parse out Bookings Information
 		$bookings = $this->parseBookingsPage($html);
 
-		require_once ROOT_DIR . '/RecordDrivers/MarcRecord.php';
+		require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 			foreach($bookings as /*$key =>*/ &$booking){
 //				disableErrorHandler(); // TODO: Test by deleting the marc record file.
-				$recordDriver = new MarcRecord($booking['id']);
+				$recordDriver = new MarcRecordDriver($booking['id']);
 				if ($recordDriver->isValid()){
 //					$booking['id'] = $recordDriver->getUniqueID(); //redundant
 					$booking['shortId'] = $recordDriver->getShortId();

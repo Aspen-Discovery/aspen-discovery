@@ -6,7 +6,7 @@
 
 		{* Display Title *}
 		<h2 class="notranslate">
-			{$recordDriver->getTitleShort()|removeTrailingPunctuation|escape}{if $recordDriver->getSubtitle()}
+			{$recordDriver->getShortTitle()|removeTrailingPunctuation|escape}{if $recordDriver->getSubtitle()}
 				: {$recordDriver->getSubtitle()|removeTrailingPunctuation|escape}
 			{/if}
 		</h2>
@@ -158,7 +158,4 @@
 		</div>
 
 	</div>
-
-
-	<span class="Z3988" title="{$recordDriver->getOpenURL()|escape}" style="display:none">&nbsp;</span>
 {/strip}

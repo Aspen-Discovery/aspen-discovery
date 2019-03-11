@@ -212,8 +212,8 @@ class Aspencat implements DriverInterface{
 				}
 				if ($transaction['id'] && strlen($transaction['id']) > 0){
 					$transaction['recordId'] = $transaction['id'];
-					require_once ROOT_DIR . '/RecordDrivers/MarcRecord.php';
-					$recordDriver = new MarcRecord($transaction['recordId']);
+					require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+					$recordDriver = new MarcRecordDriver($transaction['recordId']);
 					if ($recordDriver->isValid()){
 						$transaction['coverUrl']      = $recordDriver->getBookcoverUrl('medium');
 						$transaction['groupedWorkId'] = $recordDriver->getGroupedWorkId();
@@ -276,8 +276,8 @@ class Aspencat implements DriverInterface{
 
 			if ($transaction['id'] && strlen($transaction['id']) > 0){
 				$transaction['recordId'] = $transaction['id'];
-				require_once ROOT_DIR . '/RecordDrivers/MarcRecord.php';
-				$recordDriver = new MarcRecord($transaction['recordId']);
+				require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+				$recordDriver = new MarcRecordDriver($transaction['recordId']);
 				if ($recordDriver->isValid()){
 					$transaction['coverUrl']      = $recordDriver->getBookcoverUrl('medium');
 					$transaction['groupedWorkId'] = $recordDriver->getGroupedWorkId();
@@ -728,8 +728,8 @@ class Aspencat implements DriverInterface{
 				;
 				if (!empty($historyEntry['recordId'])){
 //					if (is_int($historyEntry['recordId'])) $historyEntry['recordId'] = (string) $historyEntry['recordId']; // Marc Record Contructor expects the recordId as a string.
-					require_once ROOT_DIR . '/RecordDrivers/MarcRecord.php';
-					$recordDriver = new MarcRecord($this->accountProfile->recordSource.':'.$historyEntry['recordId']);
+					require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+					$recordDriver = new MarcRecordDriver($this->accountProfile->recordSource.':'.$historyEntry['recordId']);
 					if ($recordDriver->isValid()){
 						$historyEntry['ratingData']  = $recordDriver->getRatingData();
 						$historyEntry['permanentId'] = $recordDriver->getPermanentId();
@@ -799,8 +799,8 @@ class Aspencat implements DriverInterface{
 
 		//Get a specific item number to place a hold on even though we are placing a title level hold.
 		//because.... Koha
-		require_once ROOT_DIR . '/RecordDrivers/MarcRecord.php';
-		$recordDriver = new MarcRecord($recordId);
+		require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+		$recordDriver = new MarcRecordDriver($recordId);
 		if (!$recordDriver->isValid()){
 			$hold_result['message'] = 'Unable to find a valid record for this title.  Please try your search again.';
 			return $hold_result;
@@ -983,8 +983,8 @@ class Aspencat implements DriverInterface{
 		$hold_result = array();
 		$hold_result['success'] = false;
 
-		require_once ROOT_DIR . '/RecordDrivers/MarcRecord.php';
-		$recordDriver = new MarcRecord($recordId);
+		require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+		$recordDriver = new MarcRecordDriver($recordId);
 		if (!$recordDriver->isValid()){
 			$hold_result['message'] = 'Unable to find a valid record for this title.  Please try your search again.';
 			return $hold_result;
@@ -1171,8 +1171,8 @@ class Aspencat implements DriverInterface{
 					}
 				}
 				if ($bibId){
-					require_once ROOT_DIR . '/RecordDrivers/MarcRecord.php';
-					$recordDriver = new MarcRecord($bibId);
+					require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+					$recordDriver = new MarcRecordDriver($bibId);
 					if ($recordDriver->isValid()){
 						$curHold['sortTitle']       = $recordDriver->getSortableTitle();
 						$curHold['format']          = $recordDriver->getFormat();
@@ -1258,8 +1258,8 @@ class Aspencat implements DriverInterface{
 					}
 				}
 				if ($bibId){
-					require_once ROOT_DIR . '/RecordDrivers/MarcRecord.php';
-					$recordDriver = new MarcRecord($bibId);
+					require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+					$recordDriver = new MarcRecordDriver($bibId);
 					if ($recordDriver->isValid()){
 						$curHold['sortTitle']       = $recordDriver->getSortableTitle();
 						$curHold['format']          = $recordDriver->getFormat();
@@ -1352,8 +1352,8 @@ class Aspencat implements DriverInterface{
 			$curHold['cancelId'] = $curRow['reservenumber'];
 
 			if ($bibId){
-				require_once ROOT_DIR . '/RecordDrivers/MarcRecord.php';
-				$recordDriver = new MarcRecord($bibId);
+				require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+				$recordDriver = new MarcRecordDriver($bibId);
 				if ($recordDriver->isValid()){
 					$curHold['sortTitle'] = $recordDriver->getSortableTitle();
 					$curHold['format'] = $recordDriver->getFormat();

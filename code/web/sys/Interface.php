@@ -408,7 +408,6 @@ class UInterface extends Smarty
 			$this->assign('showLoginButton', $library->showLoginButton);
 			$this->assign('showAdvancedSearchbox', $library->showAdvancedSearchbox);
 			$this->assign('enablePospectorIntegration', $library->enablePospectorIntegration);
-			$this->assign('showTagging', $library->showTagging);
 			$this->assign('showRatings', $library->showRatings);
 			$this->assign('show856LinksAsTab', $library->show856LinksAsTab);
 			$this->assign('showSearchTools', $library->showSearchTools);
@@ -440,7 +439,6 @@ class UInterface extends Smarty
 			$this->assign('showLoginButton', 1);
 			$this->assign('showAdvancedSearchbox', 1);
 			$this->assign('enablePospectorIntegration', isset($configArray['Content']['Prospector']) && $configArray['Content']['Prospector'] == true ? 1 : 0);
-			$this->assign('showTagging', 1);
 			$this->assign('showRatings', 1);
 			$this->assign('show856LinksAsTab', 1);
 			$this->assign('showSearchTools', 1);
@@ -467,7 +465,6 @@ class UInterface extends Smarty
 			$this->assign('showEmailThis', $location->showEmailThis && $library->showEmailThis);
 			$this->assign('showStaffView', $location->showStaffView && $library->showStaffView);
 			$this->assign('showShareOnExternalSites', $location->showShareOnExternalSites && $library->showShareOnExternalSites);
-			$this->assign('showQRCode', $location->showQRCode && $library->showQRCode);
 			$this->assign('showStaffView', $location->showStaffView && $library->showStaffView);
 			$this->assign('showGoodReadsReviews', $location->showGoodReadsReviews && $library->showGoodReadsReviews);
 			$showHoldButton = (($location->showHoldButton == 1) && ($library->showHoldButton == 1)) ? 1 : 0;
@@ -482,7 +479,6 @@ class UInterface extends Smarty
 			$this->assign('showEmailThis', $location->showEmailThis);
 			$this->assign('showShareOnExternalSites', $location->showShareOnExternalSites);
 			$this->assign('showStaffView', $location->showStaffView);
-			$this->assign('showQRCode', $location->showQRCode);
 			$this->assign('showStaffView', $location->showStaffView);
 			$this->assign('showGoodReadsReviews', $location->showGoodReadsReviews);
 			$this->assign('showStandardReviews', $location->showStandardReviews);
@@ -496,7 +492,6 @@ class UInterface extends Smarty
 			$this->assign('showEmailThis', $library->showEmailThis);
 			$this->assign('showShareOnExternalSites', $library->showShareOnExternalSites);
 			$this->assign('showStaffView', $library->showStaffView);
-			$this->assign('showQRCode', $library->showQRCode);
 			$this->assign('showStaffView', $library->showStaffView);
 			$this->assign('showGoodReadsReviews', $library->showGoodReadsReviews);
 			$this->assign('showStandardReviews', $library->showStandardReviews);
@@ -506,7 +501,6 @@ class UInterface extends Smarty
 //			$this->assign('showTextThis', 1);
 			$this->assign('showEmailThis', 1);
 			$this->assign('showShareOnExternalSites', 1);
-			$this->assign('showQRCode', 1);
 			$this->assign('showStaffView', 1);
 			$this->assign('showGoodReadsReviews', 1);
 			$this->assign('showStandardReviews', 1);

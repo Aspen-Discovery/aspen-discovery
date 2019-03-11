@@ -61,8 +61,8 @@ class Person extends SolrDataObject
 	public $importedFrom;
 	public $privateComments;
 
-	private $obituaries = null;
-	private $marriages = null;
+	private $_obituaries = null;
+	private $_marriages = null;
 
 	private $data;
 
@@ -242,8 +242,8 @@ class Person extends SolrDataObject
 		if ($name == 'displayName'){
 			return $this->firstName . ' ' . $this->lastName;
 		}else if ($name == 'marriages') {
-			if (is_null($this->marriages)){
-				$this->marriages = array();
+			if (is_null($this->_marriages)){
+				$this->_marriages = array();
 				if ($this->personId > 0){
 					//Load roles for the user from the user
 					$marriage = new Marriage();
@@ -251,17 +251,17 @@ class Person extends SolrDataObject
 					$marriage->orderBy('marriageDateYear ASC');
 					$marriage->find();
 					while ($marriage->fetch()){
-						$this->marriages[$marriage->marriageId] = clone($marriage);
+						$this->_marriages[$marriage->marriageId] = clone($marriage);
 					}
 				}
 				$timer->logTime("Loaded marriages");
-				return $this->marriages;
+				return $this->_marriages;
 			}else{
-				return $this->marriages;
+				return $this->_marriages;
 			}
 		}else if ($name == 'obituaries') {
-			if (is_null($this->obituaries)){
-				$this->obituaries = array();
+			if (is_null($this->_obituaries)){
+				$this->_obituaries = array();
 				if ($this->personId > 0){
 					//Load roles for the user from the user
 					$obit = new Obituary();
@@ -269,13 +269,13 @@ class Person extends SolrDataObject
 					$obit->orderBy('source ASC');
 					$obit->find();
 					while ($obit->fetch()){
-						$this->obituaries[$obit->obituaryId] = clone($obit);
+						$this->_obituaries[$obit->obituaryId] = clone($obit);
 					}
 				}
 				$timer->logTime("Loaded obituaries");
-				return $this->obituaries;
+				return $this->_obituaries;
 			}else{
-				return $this->obituaries;
+				return $this->_obituaries;
 			}
 		}else{
 			return $this->data[$name];
@@ -284,11 +284,11 @@ class Person extends SolrDataObject
 
 	function __set($name, $value){
 		if ($name == 'marriages'){
-			$this->marriages = $value;
+			$this->_marriages = $value;
 			//Update the database, first remove existing values
 			$this->saveMarriages();
 		}elseif ($name == 'obituaries'){
-			$this->obituaries = $value;
+			$this->_obituaries = $value;
 			//Update the database, first remove existing values
 			$this->saveObituaries();
 		}else{
@@ -320,8 +320,8 @@ class Person extends SolrDataObject
 		if (isset($this->personId)){
 			$marriage = new Marriage();
 			$marriage->query("DELETE FROM marriage WHERE personId = {$this->personId}");
-			if (is_array($this->marriages)){
-				foreach ($this->marriages as $marriageData){
+			if (is_array($this->_marriages)){
+				foreach ($this->_marriages as $marriageData){
 					$marriageData->personId = $this->personId;
 					$marriageData->insert();
 				}
@@ -333,8 +333,8 @@ class Person extends SolrDataObject
 		if (isset($this->personId)){
 			$obit = new Obituary();
 			$obit->query("DELETE FROM obituary WHERE personId = {$this->personId}");
-			if (is_array($this->obituaries)){
-				foreach ($this->obituaries as $obitData){
+			if (is_array($this->_obituaries)){
+				foreach ($this->_obituaries as $obitData){
 					$obitData->personId = $this->personId;
 					$obitData->insert();
 				}

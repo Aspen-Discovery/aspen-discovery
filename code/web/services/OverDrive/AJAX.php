@@ -232,7 +232,7 @@ class OverDrive_AJAX extends Action {
 				array(
 					'promptNeeded' => true,
 					'promptTitle'  => $promptTitle,
-					'prompts'      => $interface->fetch('OverDrive/ajax-overdrive-checkout-prompt.tpl'),
+					'prompts'      => $interface->fetch('OverDrive/ajax-rbdigital-checkout-prompt.tpl'),
 					'buttons'      => '<input class="btn btn-primary" type="submit" name="submit" value="Checkout Title" onclick="return VuFind.OverDrive.processOverDriveCheckoutPrompts();">'
 				)
 			);

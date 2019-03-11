@@ -1,6 +1,7 @@
 package org.solrmarc.tools;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.*;
 import java.net.URL;
@@ -15,7 +16,7 @@ import java.util.regex.Pattern;
  */
 public final class Utils {
 
-	protected static Logger							logger																= Logger.getLogger(Utils.class.getName());
+	protected static Logger							logger																= LogManager.getLogger(Utils.class.getName());
 
 	/**
 	 * Default Constructor It's private, so it can't be instantiated by other

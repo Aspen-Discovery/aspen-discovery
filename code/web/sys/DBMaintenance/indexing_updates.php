@@ -364,7 +364,7 @@ function setupIndexingProfiles($update){
 	$ilsIndexingProfile->groupingClass = 'MarcRecordGrouper';
 	$ilsIndexingProfile->indexingClass = 'IlsRecordProcessor';
 	$ilsIndexingProfile->catalogDriver = $configArray['Catalog']['driver'];
-	$ilsIndexingProfile->recordDriver = 'MarcRecord';
+	$ilsIndexingProfile->recordDriver = 'MarcRecordDriver';
 	$ilsIndexingProfile->recordUrlComponent = 'Record';
 	$ilsIndexingProfile->formatSource = $configArray['Reindex']['useItemBasedCallNumbers'] == true ? 'item' : 'bib';
 	$ilsIndexingProfile->recordNumberTag = $configArray['Reindex']['recordNumberTag'];

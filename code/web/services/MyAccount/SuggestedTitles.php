@@ -57,7 +57,7 @@ class SuggestedTitles extends MyAccount
 			$records = $solrDb->getRecords($suggestionIds);
 			foreach($records as $record) {
 				$interface->assign('resultIndex', ++$curIndex);
-				/** @var IndexRecord $recordDriver */
+				/** @var GroupedWorkDriver $recordDriver */
 				$recordDriver = RecordDriverFactory::initRecordDriver($record);
 				$resourceEntry = $interface->fetch($recordDriver->getSearchResult());
 				$resourceList[] = $resourceEntry;

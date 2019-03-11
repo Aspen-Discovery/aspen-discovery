@@ -97,7 +97,7 @@ class Archive_AJAX extends Action {
 				} else {
 					$interface->assign('showThumbnailsSorted', true);
 					foreach ($response['response']['docs'] as $objectInCollection) {
-						/** @var IslandoraDriver $firstObjectDriver */
+						/** @var IslandoraRecordDriver $firstObjectDriver */
 						$firstObjectDriver = RecordDriverFactory::initRecordDriver($objectInCollection);
 						$relatedObject     = array(
 							'title' => $firstObjectDriver->getTitle(),
@@ -212,7 +212,7 @@ class Archive_AJAX extends Action {
 
 				if ($displayMode == 'covers') {
 					foreach ($response['response']['docs'] as $objectInCollection) {
-						/** @var IslandoraDriver $firstObjectDriver */
+						/** @var IslandoraRecordDriver $firstObjectDriver */
 						$firstObjectDriver = RecordDriverFactory::initRecordDriver($objectInCollection);
 						$relatedObject     = array(
 							'title' => $firstObjectDriver->getTitle(),
@@ -337,7 +337,7 @@ class Archive_AJAX extends Action {
 
 				if ($displayMode == 'covers') {
 					foreach ($response['response']['docs'] as $objectInCollection) {
-						/** @var IslandoraDriver $firstObjectDriver */
+						/** @var IslandoraRecordDriver $firstObjectDriver */
 						$firstObjectDriver = RecordDriverFactory::initRecordDriver($objectInCollection);
 						$relatedObject     = array(
 							'title' => $firstObjectDriver->getTitle(),
@@ -384,7 +384,7 @@ class Archive_AJAX extends Action {
 			require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
 			$fedoraUtils = FedoraUtils::getInstance();
 			$pid = urldecode($_REQUEST['collectionId']);
-			/** @var IslandoraDriver $collectionDriver */
+			/** @var IslandoraRecordDriver $collectionDriver */
 			$collectionDriver = RecordDriverFactory::initIslandoraDriverFromPid($pid);
 			$interface->assign('exhibitPid', $pid);
 			if (isset($_REQUEST['reloadHeader'])){
@@ -507,7 +507,7 @@ class Archive_AJAX extends Action {
 
 				if ($displayMode == 'covers') {
 					foreach ($response['response']['docs'] as $objectInCollection) {
-						/** @var IslandoraDriver $firstObjectDriver */
+						/** @var IslandoraRecordDriver $firstObjectDriver */
 						$firstObjectDriver = RecordDriverFactory::initRecordDriver($objectInCollection);
 						$relatedObject     = array(
 							'title' => $firstObjectDriver->getTitle(),
@@ -565,7 +565,7 @@ class Archive_AJAX extends Action {
 		require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
 		$fedoraUtils = FedoraUtils::getInstance();
 		$exhibitObject = $fedoraUtils->getObject($pid);
-		/** @var IslandoraDriver $exhibitDriver */
+		/** @var IslandoraRecordDriver $exhibitDriver */
 		$exhibitDriver = RecordDriverFactory::initRecordDriver($exhibitObject);
 
 		global $interface;
@@ -634,7 +634,7 @@ class Archive_AJAX extends Action {
 		require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
 		$fedoraUtils = FedoraUtils::getInstance();
 		$exhibitObject = $fedoraUtils->getObject($pid);
-		/** @var IslandoraDriver $exhibitDriver */
+		/** @var IslandoraRecordDriver $exhibitDriver */
 		$exhibitDriver = RecordDriverFactory::initRecordDriver($exhibitObject);
 
 		global $interface;
@@ -763,7 +763,7 @@ class Archive_AJAX extends Action {
 		$fedoraUtils = FedoraUtils::getInstance();
 
 		$archiveObject = $fedoraUtils->getObject($id);
-		/** @var IslandoraDriver $recordDriver */
+		/** @var IslandoraRecordDriver $recordDriver */
 		$recordDriver = RecordDriverFactory::initRecordDriver($archiveObject);
 		$interface->assign('recordDriver', $recordDriver);
 
@@ -776,7 +776,7 @@ class Archive_AJAX extends Action {
 			$fedoraUtils = FedoraUtils::getInstance();
 
 			$secondaryObject = $fedoraUtils->getObject($secondaryId);
-			/** @var IslandoraDriver $secondaryDriver */
+			/** @var IslandoraRecordDriver $secondaryDriver */
 			$secondaryDriver = RecordDriverFactory::initRecordDriver($secondaryObject);
 
 			$secondaryDriver->getMoreDetailsOptions();
@@ -809,7 +809,7 @@ class Archive_AJAX extends Action {
 		$pid = $pids[$pidIndex];
 
 		$archiveObject = $fedoraUtils->getObject(trim($pid));
-		/** @var IslandoraDriver $recordDriver */
+		/** @var IslandoraRecordDriver $recordDriver */
 		$recordDriver = RecordDriverFactory::initRecordDriver($archiveObject);
 
 		$randomImagePid = $recordDriver->getRandomObject();
@@ -882,7 +882,7 @@ class Archive_AJAX extends Action {
 		$pid = $_REQUEST['id'];
 		$interface->assign('pid', $pid);
 		$archiveObject = $fedoraUtils->getObject($pid);
-		/** @var IslandoraDriver $recordDriver */
+		/** @var IslandoraRecordDriver $recordDriver */
 		$recordDriver = RecordDriverFactory::initRecordDriver($archiveObject);
 		$interface->assign('recordDriver', $recordDriver);
 		$directlyRelatedObjects = $recordDriver->getDirectlyRelatedArchiveObjects();

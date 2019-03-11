@@ -235,7 +235,7 @@ class Admin_Libraries extends ObjectEditor
 			$library->clearMoreDetailsOptions();
 
 			$defaultOptions = array();
-			require_once ROOT_DIR . '/RecordDrivers/Interface.php';
+			require_once ROOT_DIR . '/RecordDrivers/RecordInterface.php';
 			$defaultMoreDetailsOptions = RecordInterface::getDefaultMoreDetailsOptions();
 			$i = 0;
 			foreach ($defaultMoreDetailsOptions as $source => $defaultState){

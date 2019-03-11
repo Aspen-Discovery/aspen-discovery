@@ -74,7 +74,7 @@ class Archive_Home extends Action{
 				$response2 = $searchObject2->processSearch(true, false);
 				if ($response2 && $response2['response']['numFound'] > 0) {
 					$firstObject = reset($response2['response']['docs']);
-					/** @var IslandoraDriver $firstObjectDriver */
+					/** @var IslandoraRecordDriver $firstObjectDriver */
 					$firstObjectDriver = RecordDriverFactory::initRecordDriver($firstObject);
 					$numMatches = $response2['response']['numFound'];
 					$contentType = ucwords($genre[0]);

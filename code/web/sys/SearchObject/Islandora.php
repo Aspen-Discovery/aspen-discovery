@@ -351,7 +351,7 @@ class SearchObject_Islandora extends SearchObject_Base
 						unset($current['explain']);
 						unset($current['score']);
 					}
-					/** @var IslandoraDriver $record */
+					/** @var IslandoraRecordDriver $record */
 					$record = RecordDriverFactory::initRecordDriver($current);
 					if ($isMixedUserList) {
 						$html[$listPosition] = $interface->fetch($record->getListEntry($user, $listId, $allowEdit));
@@ -468,7 +468,7 @@ class SearchObject_Islandora extends SearchObject_Base
 
 			$interface->assign('recordIndex', $x + 1);
 			$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
-			/** @var IslandoraDriver $record */
+			/** @var IslandoraRecordDriver $record */
 			$record = RecordDriverFactory::initRecordDriver($current);
 			if (!PEAR_Singleton::isError($record)) {
 				$interface->assign('recordDriver', $record);

@@ -830,7 +830,7 @@ function loadModuleActionId(){
 	$requestURI = preg_replace("/^\/?vufind\//", "", $requestURI);
 	/** IndexingProfile[] $indexingProfiles */
 	global $indexingProfiles;
-	$allRecordModules = "OverDrive|GroupedWork|Record|ExternalEContent|Person|EditorialReview|Library";
+	$allRecordModules = "OverDrive|GroupedWork|Record|ExternalEContent|Person|EditorialReview|Library|Rbdigital";
 	foreach ($indexingProfiles as $profile){
 		$allRecordModules .= '|' . $profile->recordUrlComponent;
 	}

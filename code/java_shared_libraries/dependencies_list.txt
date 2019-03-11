@@ -1,0 +1,9 @@
+commons-codec - https://commons.apache.org/proper/commons-codec
+ini4j - http://ini4j.sourceforge.net/overview.html
+log4j - https://logging.apache.org/log4j/2.x/
+mysql - https://dev.mysql.com/downloads/connector/j/5.1.html
+opencsv - http://opencsv.sourceforge.net
+  commons-beanutils - https://commons.apache.org/proper/commons-beanutils/
+  commons-collections - http://commons.apache.org/proper/commons-collections/
+  commons-lang - http://commons.apache.org/proper/commons-lang
+  commons-text - http://commons.apache.org/proper/commons-text/

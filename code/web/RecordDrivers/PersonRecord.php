@@ -1,5 +1,5 @@
 <?php
-require_once ROOT_DIR . '/RecordDrivers/IndexRecord.php';
+require_once ROOT_DIR . '/RecordDrivers/IndexRecordDriver.php';
 require_once ROOT_DIR . '/sys/Genealogy/Person.php';
 
 /**
@@ -8,7 +8,7 @@ require_once ROOT_DIR . '/sys/Genealogy/Person.php';
  * This class is designed to handle List records.  Much of its functionality
  * is inherited from the default index-based driver.
  */
-class PersonRecord extends IndexRecord
+class PersonRecord extends IndexRecordDriver
 {
 	/** @var Person $person */
 	private $person;
@@ -91,21 +91,6 @@ class PersonRecord extends IndexRecord
 
 	function getPermanentId() {
 		return $this->shortId;
-	}
-
-	function getRecordUrl(){
-		global $configArray;
-		$recordId = $this->getPermanentId();
-
-		//TODO: This should have the correct module set
-		return $configArray['Site']['path'] . '/' . $this->getModule() . '/' . $recordId;
-	}
-
-	function getAbsoluteUrl(){
-		global $configArray;
-		$recordId = $this->getPermanentId();
-
-		return $configArray['Site']['url'] . '/' . $this->getModule() . '/' . $recordId;
 	}
 
 	function getBookcoverUrl($size = 'small'){

@@ -1,14 +1,6 @@
 <?php
 
-/**
- * Record Driver for EBSCO titles
- *
- * @category Pika
- * @author Mark Noble <mark@marmot.org>
- * Date: 2/16/2016
- * Time: 8:31 PM
- */
-require_once ROOT_DIR . '/RecordDrivers/Interface.php';
+require_once ROOT_DIR . '/RecordDrivers/RecordInterface.php';
 
 class EbscoRecordDriver extends RecordInterface {
 	private $recordData;
@@ -47,111 +39,22 @@ class EbscoRecordDriver extends RecordInterface {
 
 	}
 
-	/**
-	 * Get text that can be displayed to represent this record in
-	 * breadcrumbs.
-	 *
-	 * @access  public
-	 * @return  string              Breadcrumb text to represent this record.
-	 */
-	public function getBreadcrumb() {
-        return $this->getTitle();
-	}
-
-	/**
-	 * Assign necessary Smarty variables and return a template name
-	 * to load in order to display the requested citation format.
-	 * For legal values, see getCitationFormats().  Returns null if
-	 * format is not supported.
-	 *
-	 * @param   string $format Citation format to display.
-	 * @access  public
-	 * @return  string              Name of Smarty template file to display.
-	 */
-	public function getCitation($format) {
-		// TODO: Implement getCitation() method.
-	}
-
-	/**
-	 * Get an array of strings representing citation formats supported
-	 * by this record's data (empty if none).  Legal values: "APA", "MLA".
-	 *
-	 * @access  public
-	 * @return  array               Strings representing citation formats.
-	 */
-	public function getCitationFormats() {
-		// TODO: Implement getCitationFormats() method.
-	}
-
-	/**
-	 * Get any excerpts associated with this record.  For details of
-	 * the return format, see sys/Excerpts.php.
-	 *
-	 * @access  public
-	 * @return  array               Excerpt information.
-	 */
-	public function getExcerpts() {
-		// TODO: Implement getExcerpts() method.
-	}
-
-	/**
-	 * Assign necessary Smarty variables and return a template name to
-	 * load in order to export the record in the requested format.  For
-	 * legal values, see getExportFormats().  Returns null if format is
-	 * not supported.
-	 *
-	 * @param   string $format Export format to display.
-	 * @access  public
-	 * @return  string              Name of Smarty template file to display.
-	 */
-	public function getExport($format) {
-		// TODO: Implement getExport() method.
-	}
-
-	/**
-	 * Get an array of strings representing formats in which this record's
-	 * data may be exported (empty if none).  Legal values: "RefWorks",
-	 * "EndNote", "MARC", "RDF".
-	 *
-	 * @access  public
-	 * @return  array               Strings representing export formats.
-	 */
-	public function getExportFormats() {
-		// TODO: Implement getExportFormats() method.
-	}
-
-	/**
-	 * Assign necessary Smarty variables and return a template name to
-	 * load in order to display extended metadata (more details beyond
-	 * what is found in getCoreMetadata() -- used as the contents of the
-	 * Description tab of the record view).
-	 *
-	 * @access  public
-	 * @return  string              Name of Smarty template file to display.
-	 */
-	public function getExtendedMetadata() {
-		// TODO: Implement getExtendedMetadata() method.
-	}
-
-	/**
-	 * Assign necessary Smarty variables and return a template name to
-	 * load in order to display a summary of the item suitable for use in
-	 * user's favorites list.
-	 *
-	 * @access  public
-	 * @param   object $user User object owning tag/note metadata.
-	 * @param   int $listId ID of list containing desired tags/notes (or
-	 *                              null to show tags/notes from all user's lists).
-	 * @param   bool $allowEdit Should we display edit controls?
-	 * @return  string              Name of Smarty template file to display.
-	 */
-	public function getListEntry($user, $listId = null, $allowEdit = true) {
-		// TODO: Implement getListEntry() method.
-	}
-
+    /**
+     * Overridden because we are linking straight to EBSCO
+     * @param bool $unscoped
+     * @return string
+     */
 	public function getLinkUrl($unscoped = false) {
 		return $this->getRecordUrl();
 	}
+
+    /**
+     * Overridden because we are linking straight to EBSCO
+     * @return string
+     */
+    public function getAbsoluteUrl() {
+        return $this->getRecordUrl();
+    }
 
 	public function getRecordUrl() {
 		//TODO: Switch back to an internal link once we do a full EBSCO implementation
@@ -169,27 +72,6 @@ class EbscoRecordDriver extends RecordInterface {
 	}
 
 	/**
-	 * Get an XML RDF representation of the data in this record.
-	 *
-	 * @access  public
-	 * @return  mixed               XML RDF data (false if unsupported or error).
-	 */
-	public function getRDFXML() {
-		// TODO: Implement getRDFXML() method.
-	}
-
-	/**
-	 * Get any reviews associated with this record.  For details of
-	 * the return format, see sys/Reviews.php.
-	 *
-	 * @access  public
-	 * @return  array               Review information.
-	 */
-	public function getReviews() {
-		// TODO: Implement getReviews() method.
-	}
-
-	/**
 	 * Assign necessary Smarty variables and return a template name to
 	 * load in order to display a summary of the item suitable for use in
 	 * search results.
@@ -197,7 +79,7 @@ class EbscoRecordDriver extends RecordInterface {
 	 * @access  public
 	 * @return  string              Name of Smarty template file to display.
 	 */
-	public function getSearchResult() {
+	public function getSearchResult($view = 'list') {
 		global $interface;
 
 		$id = $this->getUniqueID();
@@ -216,8 +98,6 @@ class EbscoRecordDriver extends RecordInterface {
 
 		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
 		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
-
-		$interface->assign('summURLs', $this->getURLs());
 
 		return 'RecordDrivers/EBSCO/result.tpl';
 	}
@@ -250,8 +130,6 @@ class EbscoRecordDriver extends RecordInterface {
 		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
 		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
 
-		$interface->assign('summURLs', $this->getURLs());
-
 		return 'RecordDrivers/EBSCO/combinedResult.tpl';
 	}
 
@@ -280,15 +158,14 @@ class EbscoRecordDriver extends RecordInterface {
 		}
 	}
 
-	/**
-	 * Assign necessary Smarty variables and return a template name to
-	 * load in order to display the Table of Contents extracted from the
-	 * record.  Returns null if no Table of Contents is available.
-	 *
-	 * @access  public
-	 * @return  string              Name of Smarty template file to display.
-	 */
-	public function getTOC() {
+    /**
+     * The Table of Contents extracted from the record.
+     * Returns null if no Table of Contents is available.
+     *
+     * @access  public
+     * @return  array              Array of elements in the table of contents
+     */
+	public function getTableOfContents() {
 		return null;
 	}
 
@@ -302,26 +179,6 @@ class EbscoRecordDriver extends RecordInterface {
 	 */
 	public function getUniqueID() {
 		return  (string)$this->recordData->Header->DbId . ':'. (string)$this->recordData->Header->An;
-	}
-
-	/**
-	 * Does this record have audio content available?
-	 *
-	 * @access  public
-	 * @return  bool
-	 */
-	public function hasAudio() {
-		return false;
-	}
-
-	/**
-	 * Does this record have an excerpt available?
-	 *
-	 * @access  public
-	 * @return  bool
-	 */
-	public function hasExcerpt() {
-		return false;
 	}
 
 	/**
@@ -345,52 +202,12 @@ class EbscoRecordDriver extends RecordInterface {
 	}
 
 	/**
-	 * Does this record have image content available?
-	 *
-	 * @access  public
-	 * @return  bool
-	 */
-	public function hasImages() {
-		return false;
-	}
-
-	/**
-	 * Does this record support an RDF representation?
-	 *
-	 * @access  public
-	 * @return  bool
-	 */
-	public function hasRDF() {
-		return false;
-	}
-
-	/**
 	 * Does this record have reviews available?
 	 *
 	 * @access  public
 	 * @return  bool
 	 */
 	public function hasReviews() {
-		return false;
-	}
-
-	/**
-	 * Does this record have a Table of Contents available?
-	 *
-	 * @access  public
-	 * @return  bool
-	 */
-	public function hasTOC() {
-		return false;
-	}
-
-	/**
-	 * Does this record have video content available?
-	 *
-	 * @access  public
-	 * @return  bool
-	 */
-	public function hasVideo() {
 		return false;
 	}
 
@@ -418,10 +235,6 @@ class EbscoRecordDriver extends RecordInterface {
 		return '';
 	}
 
-	public function getURLs() {
-		return array();
-	}
-
 	public function getSourceDatabase() {
 		return $this->recordData->Header->DbLabel;
 	}
@@ -434,6 +247,7 @@ class EbscoRecordDriver extends RecordInterface {
 				}
 			}
 		}
+		return "";
 	}
 
 	public function getExploreMoreInfo(){

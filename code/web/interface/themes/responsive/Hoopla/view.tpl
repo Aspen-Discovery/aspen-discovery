@@ -8,7 +8,7 @@
 		{* Display Title *}
 		<h2>
 			{$recordDriver->getTitle()|escape}
-			{if $recordDriver->getSubTitle()}: {$recordDriver->getSubTitle()|escape}{/if}
+			{if $recordDriver->getSubtitle()}: {$recordDriver->getSubtitle()|escape}{/if}
 			{if $recordDriver->getTitleSection()} {$recordDriver->getTitleSection()|escape}{/if}
 			{if $recordDriver->getFormats()}
 				<br/><small>({implode subject=$recordDriver->getFormats() glue=", "})</small>
@@ -69,7 +69,5 @@
 		<div class="row">
 			{include file=$moreDetailsTemplate}
 		</div>
-
-		<span class="Z3988" title="{$recordDriver->getOpenURL()|escape}" style="display:none">&nbsp;</span>
 	</div>
 {/strip}

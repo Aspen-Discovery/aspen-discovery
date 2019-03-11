@@ -14,13 +14,6 @@ class ExternalEContentDriver extends BaseEContentDriver{
 		return array('external');
 	}
 
-	function getRecordUrl(){
-		global $configArray;
-		$recordId = $this->getUniqueID();
-
-		return $configArray['Site']['path'] . '/ExternalEContent/' . $recordId;
-	}
-
 	function isItemAvailable($itemId, $totalCopies){
 		return true;
 	}
@@ -98,7 +91,7 @@ class ExternalEContentDriver extends BaseEContentDriver{
 		$isbn = $this->getCleanISBN();
 
 		//Load table of contents
-		$tableOfContents = $this->getTOC();
+		$tableOfContents = $this->getTableOfContents();
 		$interface->assign('tableOfContents', $tableOfContents);
 
 		//Get Related Records to make sure we initialize items

@@ -1,16 +1,8 @@
 <?php
-/**
- * Description goes here
- *
- * @category VuFind-Plus 
- * @author Mark Noble <mark@marmot.org>
- * Date: 2/9/14
- * Time: 9:50 PM
- */
 
-require_once ROOT_DIR . '/RecordDrivers/MarcRecord.php';
+require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 
-abstract class BaseEContentDriver  extends MarcRecord {
+abstract class BaseEContentDriver  extends MarcRecordDriver {
 	abstract function getModuleName();
 	abstract function getValidProtectionTypes();
 
@@ -22,15 +14,13 @@ abstract class BaseEContentDriver  extends MarcRecord {
 	 * just pass it into the constructor.
 	 *
 	 * @param   array|File_MARC_Record||string   $recordData     Data to construct the driver from
-	 * @access  public
+     * @param  GroupedWork $groupedWork ;
+     * @access  public
 	 */
-	public function __construct($recordData){
-		parent::__construct($recordData);
+	public function __construct($recordData, $groupedWork = null){
+		parent::__construct($recordData, $groupedWork);
 	}
 
-	function getHelpText($fileOrUrl){
-		return "";
-	}
 
 	protected function isValidProtectionType($protectionType) {
 		return in_array(strtolower($protectionType), $this->getValidProtectionTypes());
@@ -53,36 +43,11 @@ abstract class BaseEContentDriver  extends MarcRecord {
 	}
 	abstract function isValidForUser($locationCode, $eContentFieldData);
 
-	public function getLinkUrl($useUnscopedHoldingsSummary = false) {
-		global $interface;
-		$baseUrl = $this->getRecordUrl();
-		$linkUrl = $baseUrl . '?searchId=' . $interface->get_template_vars('searchId') . '&amp;recordIndex=' . $interface->get_template_vars('recordIndex') . '&amp;page='  . $interface->get_template_vars('page');
-		if ($useUnscopedHoldingsSummary){
-			$linkUrl .= '&amp;searchSource=marmot';
-		}else{
-			$linkUrl .= '&amp;searchSource=' . $interface->get_template_vars('searchSource');
-		}
-		return $linkUrl;
-	}
-
-	function getQRCodeUrl(){
-		global $configArray;
-		return $configArray['Site']['url'] . '/qrcode.php?type=' . $this->getModuleName() . '&id=' . $this->getPermanentId();
-	}
-
 	abstract function getSharing($locationCode, $eContentFieldData);
 
 	abstract function getActionsForItem($itemId, $fileName, $acsId);
 
 	abstract function getEContentFormat($fileOrUrl, $iType);
-
-	function getFormatNotes($fileOrUrl) {
-		return '';
-	}
-
-	function getFileSize($fileOrUrl) {
-		return 0;
-	}
 
 	protected function isHoldable(){
 		return false;

@@ -18,8 +18,5 @@
 		{* show ratings check in the template *}
 		{*{include file="GroupedWork/title-rating.tpl" showNotInterested=false}*}
 	</div>
-	{*<div id="descriptionPlaceholder{$id}" style="display:none" class="loaded">*}
-		{*{include file="Record/ajax-description-popup.tpl"}*}
-	{*</div>*}
 {/strip}
 

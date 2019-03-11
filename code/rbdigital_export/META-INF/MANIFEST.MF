@@ -1,0 +1,8 @@
+Manifest-Version: 1.0
+Class-Path: .../java_shared_libraries/ini4j-0.5.5-SNAPSHOT.jar ../java
+ _shared_libraries/log4j-api-2.11.2.jar ../java_shared_libraries/log4j
+ -core-2.11.2.jar ../java_shared_libraries/mysql-connector-java-8.0.15
+ .jar ../java_shared_libraries/ini4j-0.5.5-SNAPSHOT.jar
+Main-Class: com.turning_leaf_technologies.rbdigital.RbdigitalExportMai
+ n
+

@@ -242,7 +242,7 @@ class HooplaDriver
 							$currentTitle['borrowsRemaining'] = $hooplaPatronStatus->borrowsRemaining;
 						}
 
-						require_once ROOT_DIR . '/RecordDrivers/HooplaDriver.php';
+						require_once ROOT_DIR . '/RecordDrivers/HooplaRecordDriver.php';
 						$hooplaRecordDriver = new HooplaRecordDriver($hooplaRecordID);
 						if ($hooplaRecordDriver->isValid()) {
 							// Get Record For other details

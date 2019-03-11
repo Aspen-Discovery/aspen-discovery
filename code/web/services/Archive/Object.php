@@ -13,7 +13,7 @@ abstract class Archive_Object extends Action {
 	protected $pid;
 	/** @var  FedoraObject $archiveObject */
 	protected $archiveObject;
-	/** @var IslandoraDriver $recordDriver */
+	/** @var IslandoraRecordDriver $recordDriver */
 	protected $recordDriver;
 	//protected $dcData;
 	protected $modsData;
@@ -268,13 +268,13 @@ abstract class Archive_Object extends Action {
 			$startDate = $formattedDate->format('m/d/Y');
 		}
 		if ($startDate){
-			if ($this->recordDriver instanceof PlaceDriver){
+			if ($this->recordDriver instanceof PlaceRecordDriver){
 				$interface->assign('placeStartDate', $startDate);
-			}elseif ($this->recordDriver instanceof EventDriver){
+			}elseif ($this->recordDriver instanceof EventRecordDriver){
 				$interface->assign('eventStartDate', $startDate);
-			}elseif ($this->recordDriver instanceof OrganizationDriver){
+			}elseif ($this->recordDriver instanceof OrganizationRecordDriver){
 				$interface->assign('organizationStartDate', $startDate);
-			}elseif ($this->recordDriver instanceof PersonDriver){
+			}elseif ($this->recordDriver instanceof PersonRecordDriver){
 				$interface->assign('birthDate', $startDate);
 			}
 		}
@@ -297,13 +297,13 @@ abstract class Archive_Object extends Action {
 			$endDate = $formattedDate->format('m/d/Y');
 		}
 		if ($endDate){
-			if ($this->recordDriver instanceof PlaceDriver){
+			if ($this->recordDriver instanceof PlaceRecordDriver){
 				$interface->assign('placeEndDate', $endDate);
-			}elseif ($this->recordDriver instanceof EventDriver){
+			}elseif ($this->recordDriver instanceof EventRecordDriver){
 				$interface->assign('eventEndDate', $endDate);
-			}elseif ($this->recordDriver instanceof OrganizationDriver){
+			}elseif ($this->recordDriver instanceof OrganizationRecordDriver){
 				$interface->assign('organizationEndDate', $endDate);
-			}elseif ($this->recordDriver instanceof PersonDriver){
+			}elseif ($this->recordDriver instanceof PersonRecordDriver){
 				$interface->assign('deathDate', $endDate);
 			}
 		}
@@ -323,8 +323,8 @@ abstract class Archive_Object extends Action {
 		$interface->assign('repositoryLink', $repositoryLink);
 
 		//Check for display restrictions
-		if ($this->recordDriver instanceof BasicImageDriver || $this->recordDriver instanceof LargeImageDriver || $this->recordDriver instanceof BookDriver || $this->recordDriver instanceof PageDriver || $this->recordDriver instanceof AudioDriver || $this->recordDriver instanceof VideoDriver) {
-			/** @var CollectionDriver $collection */
+		if ($this->recordDriver instanceof BasicImageRecordDriver || $this->recordDriver instanceof LargeImageRecordDriver || $this->recordDriver instanceof BookDriver || $this->recordDriver instanceof PageRecordDriver || $this->recordDriver instanceof AudioRecordDriver || $this->recordDriver instanceof VideoRecordDriver) {
+			/** @var CollectionRecordDriver $collection */
 			$anonymousMasterDownload = true;
 			$verifiedMasterDownload = true;
 			$anonymousLcDownload = true;
@@ -428,7 +428,7 @@ abstract class Archive_Object extends Action {
 		}
 
 		if (!empty($_COOKIE['exhibitInAExhibitParentPid'])) {
-			/** @var CollectionDriver $parentExhibitObject */
+			/** @var CollectionRecordDriver $parentExhibitObject */
 			$parentExhibitObject = RecordDriverFactory::initRecordDriver(array('PID' => $_COOKIE['exhibitInAExhibitParentPid']));
 			$parentExhibitUrl    = $parentExhibitObject->getLinkUrl();
 			$parentExhibitName   = $parentExhibitObject->getTitle();
@@ -445,7 +445,7 @@ abstract class Archive_Object extends Action {
 		if (!empty($_COOKIE['collectionPid'])) {
 			$fedoraUtils = FedoraUtils::getInstance();
 			$collectionToLoadFromObject = $fedoraUtils->getObject($_COOKIE['collectionPid']);
-			/** @var CollectionDriver $collectionDriver */
+			/** @var CollectionRecordDriver $collectionDriver */
 			$collectionDriver = RecordDriverFactory::initRecordDriver($collectionToLoadFromObject);
 			$collectionDriver->getNextPrevLinks($this->pid);
 

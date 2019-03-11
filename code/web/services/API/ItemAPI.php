@@ -52,7 +52,7 @@ class ItemAPI extends Action {
 	public $id;
 
 	/**
-	 * @var MarcRecord|IndexRecord
+	 * @var MarcRecordDriver|IndexRecordDriver
 	 * marc record in File_Marc object
 	 */
 	protected $recordDriver;
@@ -528,7 +528,7 @@ class ItemAPI extends Action {
 			return array('error' => 'Please provide a record to load data for');
 		}
 		$recordId = $_REQUEST['recordId'];
-		/** @var GroupedWorkDriver|MarcRecord|OverDriveRecordDriver|ExternalEContentDriver $driver */
+		/** @var GroupedWorkDriver|MarcRecordDriver|OverDriveRecordDriver|ExternalEContentDriver $driver */
 		$driver = RecordDriverFactory::initRecordDriverById($recordId);
 		if ($driver == null || !$driver->isValid()){
 			return array('error' => 'Sorry we could not find a record with that ID');
@@ -569,7 +569,7 @@ class ItemAPI extends Action {
 						'holds' => 0,
 				);
 			}else{
-				/** @var MarcRecord| $driver */
+				/** @var MarcRecordDriver| $driver */
 				$copies = count($driver->getCopies());
 				$holds = $driver->getNumHolds();
 				return array(

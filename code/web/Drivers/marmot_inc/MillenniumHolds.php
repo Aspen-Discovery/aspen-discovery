@@ -662,12 +662,12 @@ class MillenniumHolds{
 		$holds = $this->parseHoldsPage($sResult, $patron);
 		$timer->logTime("Parsed Holds page");
 
-		require_once ROOT_DIR . '/RecordDrivers/MarcRecord.php';
+		require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 		foreach($holds as $section => $holdSections){
 			foreach($holdSections as $key => $hold){
 
 				disableErrorHandler();
-				$recordDriver = new MarcRecord($this->driver->accountProfile->recordSource . ":" . $hold['recordId']);
+				$recordDriver = new MarcRecordDriver($this->driver->accountProfile->recordSource . ":" . $hold['recordId']);
 				if ($recordDriver->isValid()){
 					$hold['id'] = $recordDriver->getUniqueID();
 					$hold['shortId'] = $recordDriver->getShortId();

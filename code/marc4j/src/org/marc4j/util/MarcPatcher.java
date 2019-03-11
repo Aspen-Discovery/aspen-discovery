@@ -57,7 +57,6 @@ import org.marc4j.marc.impl.VariableFieldImpl;
 public class MarcPatcher {
 
      // Initialize logging category
-//    static Logger logger = Logger.getLogger(MarcPatcher.class.getName());
     private String inputFile = null;
     private String changedRecordFileName = null;
     private String changedLocationFileName = null;
