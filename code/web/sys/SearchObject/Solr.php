@@ -235,8 +235,8 @@ class SearchObject_Solr extends SearchObject_Base
 		//********************
 		// Basic Search logic
 		if ($this->initBasicSearch($searchTerm)) {
-			// If we found a basic search, we don't need to do anything further.
-		 else {
+            // If we found a basic search, we don't need to do anything further.
+        } else {
 			$this->initAdvancedSearch();
 		}
 

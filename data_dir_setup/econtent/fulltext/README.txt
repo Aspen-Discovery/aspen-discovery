@@ -1,1 +1,0 @@
-Location where the full text of eContent files (epub and pdf) will be extracted for indexing

@@ -1,1 +1,0 @@
-Location where QR Codes will be stored after they are built
