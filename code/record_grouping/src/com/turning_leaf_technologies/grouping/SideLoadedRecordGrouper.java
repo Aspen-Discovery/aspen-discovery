@@ -5,14 +5,6 @@ import org.apache.logging.log4j.Logger;
 
 import java.sql.Connection;
 
-/**
- * Groups records that are not loaded into the ILS.  These are additional records that are processed directly in Pika
- *
- * Pika
- * User: Mark Noble
- * Date: 12/15/2015
- * Time: 5:29 PM
- */
 class SideLoadedRecordGrouper extends MarcRecordGrouper {
 
 	/**
@@ -26,6 +18,4 @@ class SideLoadedRecordGrouper extends MarcRecordGrouper {
 	SideLoadedRecordGrouper(Connection dbConnection, IndexingProfile profile, Logger logger, boolean fullRegrouping) {
 		super(dbConnection, profile, logger, fullRegrouping);
 	}
-
-
 }

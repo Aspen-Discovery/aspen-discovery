@@ -80,13 +80,11 @@ public class RecordGrouperMain {
 					"   \n" +
 					"3) benchmark the record generation and test the functionality\n" +
 					"   record_grouping.jar benchmark\n" +
-					"4) Generate author authorities based on data in the exports\n" +
-					"   record_grouping.jar generateAuthorAuthorities <pika_site_name>\n" +
-					"5) Only run record grouping cleanup\n" +
+					"4) Only run record grouping cleanup\n" +
 					"   record_grouping.jar <pika_site_name> runPostGroupingCleanup\n" +
-					"6) Only explode records into individual records (no grouping)\n" +
+					"5) Only explode records into individual records (no grouping)\n" +
 					"   record_grouping.jar <pika_site_name> explodeMarcs\n" +
-					"7) Record Group a specific indexing profile\n" +
+					"6) Record Group a specific indexing profile\n" +
 					"   record_grouping.jar <pika_site_name> \"<profile name>\"");
 			System.exit(1);
 		}
@@ -138,9 +136,6 @@ public class RecordGrouperMain {
 				}
 				System.out.print(result.toString());
 				break;
-			case "generateAuthorAuthorities":
-				generateAuthorAuthorities(args);
-				break;
 			default:
 				doStandardRecordGrouping(args);
 				break;
@@ -164,246 +159,6 @@ public class RecordGrouperMain {
 			System.exit(1);
 		}
 		return value;
-	}
-
-	private static void generateAuthorAuthorities(String[] args) {
-		serverName = args[1];
-		long processStartTime = new Date().getTime();
-
-		CSVWriter authoritiesWriter;
-		try{
-			authoritiesWriter = new CSVWriter(new FileWriter(new File("./author_authorities.properties.temp")));
-		}catch (Exception e){
-			logger.error("Error creating temp file to store authorities");
-			return;
-		}
-
-		//Load existing authorities
-		HashMap<String, String> currentAuthorities = loadAuthorAuthorities(authoritiesWriter);
-		HashMap<String, String> manualAuthorities = loadManualAuthorities();
-
-		logger.info("Starting grouping of records " + new Date().toString());
-
-		// Parse the configuration file
-		Ini configIni = ConfigUtil.loadConfigFile("config.ini", serverName, logger);
-
-		//Connect to the database
-		Connection dbConn = null;
-		try{
-			String databaseConnectionInfo = ConfigUtil.cleanIniValue(configIni.get("Database", "database_aspen_jdbc"));
-			dbConn = DriverManager.getConnection(databaseConnectionInfo);
-		}catch (Exception e){
-			System.out.println("Error connecting to database " + e.toString());
-			System.exit(1);
-		}
-
-		RecordGroupingProcessor recordGroupingProcessor = new RecordGroupingProcessor(dbConn, serverName, configIni, logger, true);
-		generateAuthorAuthoritiesForIlsRecords(configIni, currentAuthorities, manualAuthorities, authoritiesWriter, recordGroupingProcessor);
-		generateAuthorAuthoritiesForOverDriveRecords(dbConn, currentAuthorities, manualAuthorities, authoritiesWriter);
-
-		try {
-			authoritiesWriter.flush();
-			authoritiesWriter.close();
-
-			//TODO: Swap temp authority file with full authority file?
-
-		}catch (Exception e){
-			logger.error("Error closing authorities writer");
-		}
-		try{
-			dbConn.close();
-		}catch (Exception e){
-			logger.error("Error closing database ", e);
-			System.exit(1);
-		}
-
-		for (String curManualTitle : authoritiesWithSpecialHandling.keySet()){
-			logger.debug("Manually handle \"" + curManualTitle + "\",\"" +  currentAuthorities.get(curManualTitle) + "\", (" + authoritiesWithSpecialHandling.get(curManualTitle) + ")");
-		}
-
-		logger.info("Finished generating author authorities " + new Date().toString());
-		long endTime = new Date().getTime();
-		long elapsedTime = endTime - processStartTime;
-		logger.info("Elapsed Minutes " + (elapsedTime / 60000));
-	}
-
-	private static HashMap<String, String> loadManualAuthorities() {
-		HashMap<String, String> manualAuthorAuthorities = new HashMap<>();
-		try {
-			CSVReader csvReader = new CSVReader(new FileReader(new File("./manual_author_authorities.properties")));
-			String[] curLine = csvReader.readNext();
-			while (curLine != null){
-				if (curLine.length >= 2){
-					manualAuthorAuthorities.put(curLine[0], curLine[1]);
-				}
-				curLine = csvReader.readNext();
-			}
-		} catch (IOException e) {
-			logger.error("Unable to load author authorities", e);
-		}
-		return manualAuthorAuthorities;
-
-	}
-
-	private static void generateAuthorAuthoritiesForOverDriveRecords(Connection dbConn, HashMap<String, String> currentAuthorities, HashMap<String, String> manualAuthorities, CSVWriter authoritiesWriter) {
-		int numRecordsProcessed = 0;
-		try{
-			PreparedStatement overDriveRecordsStmt;
-			overDriveRecordsStmt = dbConn.prepareStatement("SELECT id, overdriveId, mediaType, title, subtitle, primaryCreatorRole, primaryCreatorName FROM overdrive_api_products WHERE deleted = 0", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			PreparedStatement overDriveCreatorStmt = dbConn.prepareStatement("SELECT fileAs FROM overdrive_api_product_creators WHERE productId = ? AND role like ? ORDER BY id", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			ResultSet overDriveRecordRS = overDriveRecordsStmt.executeQuery();
-			while (overDriveRecordRS.next()){
-				long id = overDriveRecordRS.getLong("id");
-
-				String mediaType = overDriveRecordRS.getString("mediaType");
-				String title = overDriveRecordRS.getString("title");
-				String subtitle = overDriveRecordRS.getString("subtitle");
-				String primaryCreatorRole = overDriveRecordRS.getString("primaryCreatorRole");
-				String author = overDriveRecordRS.getString("primaryCreatorName");
-				//primary creator in overdrive is always first name, last name.  Therefore, we need to look in the creators table
-				if (author != null){
-					overDriveCreatorStmt.setLong(1, id);
-					overDriveCreatorStmt.setString(2, primaryCreatorRole);
-					ResultSet creatorInfoRS = overDriveCreatorStmt.executeQuery();
-					boolean swapFirstNameLastName = false;
-					if (creatorInfoRS.next()){
-						String tmpAuthor = creatorInfoRS.getString("fileAs");
-						if (tmpAuthor.equals(author) && (mediaType.equals("ebook") || mediaType.equals("audiobook"))){
-							swapFirstNameLastName = true;
-						}else{
-							author = tmpAuthor;
-						}
-					} else {
-						swapFirstNameLastName = true;
-					}
-					if (swapFirstNameLastName){
-						if (author.contains(" ")){
-							String[] authorParts = author.split("\\s+");
-							StringBuilder tmpAuthor = new StringBuilder();
-							for (int i = 1; i < authorParts.length; i++){
-								tmpAuthor.append(authorParts[i]).append(" ");
-							}
-							tmpAuthor.append(authorParts[0]);
-							author = tmpAuthor.toString();
-						}
-					}
-					creatorInfoRS.close();
-				}
-
-				if (author == null) continue;
-
-				GroupedWorkBase work = GroupedWorkFactory.getInstance(-1);
-				work.setTitle(title, 0, subtitle);
-				work.setAuthor(author);
-				if (mediaType.equalsIgnoreCase("audiobook")){
-					work.setGroupingCategory("book");
-				}else if (mediaType.equalsIgnoreCase("ebook")){
-					work.setGroupingCategory("book");
-				}else if (mediaType.equalsIgnoreCase("music")){
-					work.setGroupingCategory("music");
-				}else if (mediaType.equalsIgnoreCase("video")){
-					work.setGroupingCategory("movie");
-				}
-				addAlternateAuthoritiesForWorkToAuthoritiesFile(currentAuthorities, manualAuthorities, authoritiesWriter, work);
-				numRecordsProcessed++;
-			}
-			overDriveRecordRS.close();
-
-			logger.info("Finished loading authorities, read " + numRecordsProcessed + " records from overdrive ");
-		}catch (Exception e){
-			System.out.println("Error loading OverDrive records: " + e.toString());
-			e.printStackTrace();
-		}
-	}
-
-	private static void generateAuthorAuthoritiesForIlsRecords(Ini configIni, HashMap<String, String> currentAuthorities, HashMap<String, String> manualAuthorities, CSVWriter authoritiesWriter, RecordGroupingProcessor recordGroupingProcessor) {
-		int numRecordsRead = 0;
-		String marcPath = configIni.get("Reindex", "marcPath");
-
-		logger.debug("Generating authorities for ILS Records");
-
-		String marcEncoding = configIni.get("Reindex", "marcEncoding");
-
-		String loadFormatFrom = configIni.get("Reindex", "loadFormatFrom").trim();
-		char formatSubfield = ' ';
-		if (loadFormatFrom.equals("item")){
-			formatSubfield = configIni.get("Reindex", "formatSubfield").trim().charAt(0);
-		}
-
-		File[] catalogBibFiles = new File(marcPath).listFiles();
-		if (catalogBibFiles != null){
-			for (File curBibFile : catalogBibFiles){
-				if (curBibFile.getName().toLowerCase().endsWith(".mrc") || curBibFile.getName().toLowerCase().endsWith(".marc")){
-					try{
-						FileInputStream marcFileStream = new FileInputStream(curBibFile);
-						MarcReader catalogReader = new MarcPermissiveStreamReader(marcFileStream, true, true, marcEncoding);
-						while (catalogReader.hasNext()){
-							Record curBib = catalogReader.next();
-							GroupedWorkBase work = recordGroupingProcessor.setupBasicWorkForIlsRecord(curBib, loadFormatFrom, formatSubfield, "");
-							addAlternateAuthoritiesForWorkToAuthoritiesFile(currentAuthorities, manualAuthorities, authoritiesWriter, work);
-							numRecordsRead++;
-						}
-						marcFileStream.close();
-					}catch(Exception e){
-						logger.error("Error loading catalog bibs on record " + numRecordsRead, e);
-					}
-					logger.info("Finished grouping " + numRecordsRead + " records from the ils file " + curBibFile.getName());
-				}
-			}
-		}
-	}
-
-	//private static HashMap<String, String> altNameToOriginalName = new HashMap<>();
-	private static TreeMap<String, String> authoritiesWithSpecialHandling = new TreeMap<>();
-	private static void addAlternateAuthoritiesForWorkToAuthoritiesFile(HashMap<String, String> currentAuthorities, HashMap<String, String> manualAuthorities, CSVWriter authoritiesWriter, GroupedWorkBase work) {
-		String normalizedAuthor = work.getAuthor();
-		if (normalizedAuthor.length() > 0){
-			HashSet<String> alternateAuthorNames = work.getAlternateAuthorNames();
-			if (alternateAuthorNames.size() > 0){
-				for (String curAltName : alternateAuthorNames){
-					if (curAltName != null && curAltName.length() > 0) {
-						//Make sure the authority doesn't link to multiple normalized names
-						if (!currentAuthorities.containsKey(curAltName)) {
-							//altNameToOriginalName.put(curAltName, work.getOriginalAuthor());
-							currentAuthorities.put(curAltName, normalizedAuthor);
-							authoritiesWriter.writeNext(new String[]{curAltName, normalizedAuthor});
-						} else {
-							if (!currentAuthorities.get(curAltName).equals(normalizedAuthor)) {
-								if (!manualAuthorities.containsKey(curAltName)) {
-									//Add to the list of authorities that need special handling.  So we can add them manually.
-									authoritiesWithSpecialHandling.put(curAltName, work.getOriginalAuthor());
-									//logger.warn("Look out, alternate name (" + curAltName + ") links to multiple normalized authors '" + currentAuthorities.get(curAltName) + "' and '" + normalizedAuthor + "' original names \n'" + altNameToOriginalName.get(curAltName) + "' and '" + work.getOriginalAuthor() + "'");
-								}
-							}
-						}
-					}
-				}
-			}
-		}/*else if (work.getOriginalAuthor().length() > 0 && !work.getOriginalAuthor().equals(".") && ! work.getOriginalAuthor().matches("^[\\d./-]+$")){
-			logger.warn("Got a 0 length normalized author, review it. Original Author " + work.getOriginalAuthor());
-		}*/
-
-	}
-
-	private static HashMap<String, String> loadAuthorAuthorities(CSVWriter authoritiesWriter) {
-		HashMap<String, String> authorAuthorities = new HashMap<>();
-		try {
-			CSVReader csvReader = new CSVReader(new FileReader(new File("./author_authorities.properties")));
-			String[] curLine = csvReader.readNext();
-			while (curLine != null){
-				if (curLine.length >= 2){
-					authorAuthorities.put(curLine[0], curLine[1]);
-					if (authoritiesWriter != null) {
-						//Copy to the temp file
-						authoritiesWriter.writeNext(curLine);
-					}
-				}
-				curLine = csvReader.readNext();
-			}
-		} catch (IOException e) {
-			logger.error("Unable to load author authorities", e);
-		}
-		return authorAuthorities;
 	}
 
 	private static void doBenchmarking(boolean validateNYPL) {
@@ -646,7 +401,7 @@ public class RecordGrouperMain {
 
 		RecordGroupingProcessor recordGroupingProcessor = null;
 		if (!onlyDoCleanup) {
-			recordGroupingProcessor = new RecordGroupingProcessor(dbConn, serverName, configIni, logger, fullRegrouping);
+			recordGroupingProcessor = new RecordGroupingProcessor(dbConn, serverName, logger, fullRegrouping);
 
 			if (!explodeMarcsOnly) {
 				markRecordGroupingRunning(dbConn, true);
@@ -1046,8 +801,7 @@ public class RecordGrouperMain {
 											numRecordsProcessed++;
 										}
 										//Mark that the record was processed
-										String fullId = curProfile.getName() + ":" + recordNumber;
-										fullId = fullId.toLowerCase().trim();
+										String fullId = recordIdentifier.toString().toLowerCase();
 										marcRecordIdsInDatabase.remove(fullId);
 										primaryIdentifiersInDatabase.remove(fullId);
 									}
@@ -1377,6 +1131,9 @@ public class RecordGrouperMain {
 	}
 
 	private static void outputMarcRecord(Record marcRecord, File individualFile) throws IOException {
+		if (!individualFile.getParentFile().exists() && !individualFile.getParentFile().mkdirs()){
+			logger.error("Unable to create directory for " + individualFile.getAbsolutePath());
+		}
 		MarcStreamWriter writer2 = new MarcStreamWriter(new FileOutputStream(individualFile,false), "UTF-8");
 		writer2.setAllowOversizeEntry(true);
 		writer2.write(marcRecord);

@@ -26,6 +26,7 @@ public class IndexingProfile {
 	private int numCharsToCreateFolderFrom;
 	private boolean createFolderFromLeadingCharacters;
 	private String recordNumberTag;
+	private char recordNumberSubfield;
 	private String recordNumberPrefix;
 	private String itemTag ;
 	private char itemRecordNumberSubfield;
@@ -118,6 +119,7 @@ public class IndexingProfile {
 				indexingProfile.setMarcPath(indexingProfileRS.getString("marcPath"));
 				indexingProfile.setMarcEncoding(indexingProfileRS.getString("marcEncoding"));
 				indexingProfile.setRecordNumberTag(indexingProfileRS.getString("recordNumberTag"));
+				indexingProfile.setRecordNumberSubfield(getCharFromRecordSet(indexingProfileRS, "recordNumberSubfield"));
 				indexingProfile.setRecordNumberPrefix(indexingProfileRS.getString("recordNumberPrefix"));
 				indexingProfile.setItemTag(indexingProfileRS.getString("itemTag"));
 				indexingProfile.setItemRecordNumberSubfield(getCharFromRecordSet(indexingProfileRS,"itemRecordNumber"));
@@ -150,13 +152,13 @@ public class IndexingProfile {
 				indexingProfile.setDoAutomaticEcontentSuppression(indexingProfileRS.getBoolean("doAutomaticEcontentSuppression"));
 				indexingProfile.setEContentDescriptor(getCharFromRecordSet(indexingProfileRS, "eContentDescriptor"));
 
-				indexingProfile.setLastYearCheckoutsSubfield(getCharFromRecordSet(indexingProfileRS, "lastYearCheckoutsSubfield"));
-				indexingProfile.setBarcodeSubfield(getCharFromRecordSet(indexingProfileRS, "barcodeSubfield"));
-				indexingProfile.setTotalRenewalsSubfield(getCharFromRecordSet(indexingProfileRS, "totalRenewalsSubfield"));
-				indexingProfile.setICode2Subfield(getCharFromRecordSet(indexingProfileRS, "iCode2Subfield"));
+				indexingProfile.setLastYearCheckoutsSubfield(getCharFromRecordSet(indexingProfileRS, "lastYearCheckouts"));
+				indexingProfile.setBarcodeSubfield(getCharFromRecordSet(indexingProfileRS, "barcode"));
+				indexingProfile.setTotalRenewalsSubfield(getCharFromRecordSet(indexingProfileRS, "totalRenewals"));
+				indexingProfile.setICode2Subfield(getCharFromRecordSet(indexingProfileRS, "iCode2"));
 
-				indexingProfile.setCallNumberCutterSubfield(getCharFromRecordSet(indexingProfileRS, "callNumberCutterSubfield"));
-				indexingProfile.setCallNumberPoststampSubfield(getCharFromRecordSet(indexingProfileRS, "callNumberPoststampSubfield"));
+				indexingProfile.setCallNumberCutterSubfield(getCharFromRecordSet(indexingProfileRS, "callNumberCutter"));
+				indexingProfile.setCallNumberPoststampSubfield(getCharFromRecordSet(indexingProfileRS, "callNumberPoststamp"));
 				indexingProfile.setVolume(getCharFromRecordSet(indexingProfileRS, "volume"));
 				indexingProfile.setItemUrl(getCharFromRecordSet(indexingProfileRS, "itemUrl"));
 			} else {
@@ -485,5 +487,13 @@ public class IndexingProfile {
 
 	private void setItemUrl(char itemUrl) {
 		this.itemUrl = itemUrl;
+	}
+
+	public char getRecordNumberSubfield() {
+		return recordNumberSubfield;
+	}
+
+	private void setRecordNumberSubfield(char recordNumberSubfield) {
+		this.recordNumberSubfield = recordNumberSubfield;
 	}
 }

@@ -232,7 +232,7 @@ public class GroupedWork2 extends GroupedWorkBase implements Cloneable {
 		//this.author = author;
 	}
 
-	public String normalizeDiacritics(String textToNormalize){
+	private String normalizeDiacritics(String textToNormalize){
 		return Normalizer.normalize(textToNormalize, Normalizer.Form.NFKC);
 	}
 

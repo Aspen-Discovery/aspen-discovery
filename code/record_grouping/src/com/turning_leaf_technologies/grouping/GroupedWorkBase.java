@@ -11,7 +11,6 @@ import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
-import java.util.HashSet;
 
 /**
  * Superclass for all Grouped Works which have different normalization rules.
@@ -114,25 +113,6 @@ public abstract class GroupedWorkBase {
 
 	abstract String getGroupingCategory();
 
-	HashSet<String> getAlternateAuthorNames() {
-		HashSet<String> alternateNames = new HashSet<>();
-		String displayName = AuthorNormalizer.getDisplayName(originalAuthorName);
-		if (displayName != null && displayName.length() > 0){
-			alternateNames.add(AuthorNormalizer.getNormalizedName(displayName));
-		}
-		String parentheticalName = AuthorNormalizer.getParentheticalName(originalAuthorName);
-		if (parentheticalName != null && parentheticalName.length() > 0){
-			alternateNames.add(AuthorNormalizer.getNormalizedName(parentheticalName));
-			//Finally, try making the parenthetical name a display name
-			String displayName2 = AuthorNormalizer.getDisplayName(parentheticalName);
-			if (displayName2 != null && displayName2.length() > 0){
-				alternateNames.add(AuthorNormalizer.getNormalizedName(displayName2));
-			}
-		}
-
-		return alternateNames;
-	}
-
 	private static void loadAuthorities() {
 		logger.info("Loading authorities");
 		try {
@@ -160,10 +140,6 @@ public abstract class GroupedWorkBase {
 			logger.error("Unable to load title authorities", e);
 		}
 		logger.info("Done loading authorities");
-	}
-
-	String getOriginalAuthor() {
-		return originalAuthorName;
 	}
 
 	void makeUnique(String primaryIdentifier) {

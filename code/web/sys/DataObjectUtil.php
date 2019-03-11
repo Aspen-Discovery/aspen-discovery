@@ -85,7 +85,6 @@ class DataObjectUtil
 			//We can tell which to do based on whether or not the primary key is set
 
 			if ($primaryKeySet){
-
 				$result = $object->update();
 				$validationResults['saveOk'] = ($result == 1);
 			}else{
@@ -168,7 +167,9 @@ class DataObjectUtil
 		}else if (in_array($property['type'], array('text', 'enum', 'hidden', 'url', 'email', 'multiemail'))){
 			if (isset($_REQUEST[$propertyName])){
 				$object->$propertyName = strip_tags(trim($_REQUEST[$propertyName]));
-			}
+			} else {
+                $object->$propertyName = "";
+            }
 
 		}else if (in_array( $property['type'], array('textarea', 'html', 'folder', 'crSeparated'))){
 			if (strlen(trim($_REQUEST[$propertyName])) == 0){

@@ -381,7 +381,7 @@ public class RbdigitalExportMain {
 
     private static RecordGroupingProcessor getRecordGroupingProcessor(){
         if (recordGroupingProcessorSingleton == null) {
-            recordGroupingProcessorSingleton = new RecordGroupingProcessor(aspenConn, serverName, configIni, logger, false);
+            recordGroupingProcessorSingleton = new RecordGroupingProcessor(aspenConn, serverName, logger, false);
         }
         return recordGroupingProcessorSingleton;
     }

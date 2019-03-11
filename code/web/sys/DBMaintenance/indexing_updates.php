@@ -254,13 +254,22 @@ function getIndexingUpdates() {
 		),
 
 		'indexing_profile_groupUnchangedFiles' => array(
-				'title' => 'Indexing Profiles - Group Unchanged Files',
-				'description' => 'Allow logic for whether or not files that haven\'t changed since the last grouping are regrouped',
-				'continueOnError' => true,
-				'sql' => array(
-						"ALTER TABLE indexing_profiles ADD COLUMN `groupUnchangedFiles` tinyint(1) DEFAULT 0",
-				)
-		),
+            'title' => 'Indexing Profiles - Group Unchanged Files',
+            'description' => 'Allow logic for whether or not files that haven\'t changed since the last grouping are regrouped',
+            'continueOnError' => true,
+            'sql' => array(
+                "ALTER TABLE indexing_profiles ADD COLUMN `groupUnchangedFiles` tinyint(1) DEFAULT 0",
+            )
+        ),
+
+        'indexing_profile_marc_record_subfield' => array(
+            'title' => 'Indexing Profiles - Marc Record Subfield',
+            'description' => 'Define the subfield for the marc record',
+            'continueOnError' => true,
+            'sql' => array(
+                "ALTER TABLE indexing_profiles ADD COLUMN `recordNumberSubfield` char(1) DEFAULT 'a'",
+            )
+        ),
 
 		'translation_map_regex' => array(
 			'title' => 'Translation Maps Regex',
