@@ -369,30 +369,6 @@
 					</div>
 				</div>
 			{/if}
-
-			{if $loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('locationReports', $userRoles) || array_key_exists('contentEditor', $userRoles))}
-				{if in_array($action, array('StudentReport'))}
-					{assign var="curSection" value=true}
-				{else}
-					{assign var="curSection" value=false}
-				{/if}
-				<div class="panel{if $curSection} active{/if}">
-					<a href="#reportsMenu" data-toggle="collapse" data-parent="#adminMenuAccordion">
-						<div class="panel-heading">
-							<div class="panel-title">
-								Reports
-							</div>
-						</div>
-					</a>
-					<div id="reportsMenu" class="panel-collapse collapse {if $curSection}in{/if}">
-						<div class="panel-body">
-							{if ($ils == 'CarlX' || $ils == 'Sierra') && $loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('locationReports', $userRoles))}
-								<div class="adminMenuLink{if $action == "StudentReport"} active{/if}"><a href="{$path}/Report/StudentReport">Student Reports</a></div>
-							{/if}
-						</div>
-					</div>
-				</div>
-			{/if}
 		</div>
 
 		{include file="library-links.tpl" libraryLinks=$libraryAccountLinks linksId='home-library-account-links' section='Account'}

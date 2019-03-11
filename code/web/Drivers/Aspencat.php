@@ -1546,13 +1546,11 @@ class Aspencat implements DriverInterface{
 	}
 
 	public function renewItem($patron, $recordId, $itemId, $itemIndex){
-		global $analytics;
 		global $configArray;
 
 		//Get the session token for the user
 		$loginResult = $this->loginToKoha($patron);
 		if ($loginResult['success']){
-			global $analytics;
 			$postParams = array(
 				'from' => 'opac_user',
 				'item' => $itemId,
@@ -1569,22 +1567,13 @@ class Aspencat implements DriverInterface{
 				$success = true;
 				$message = 'Your item was successfully renewed.';
 				//Clear the patron profile
-				if ($analytics){
-					$analytics->addEvent('ILS Integration', 'Renew Successful');
-				}
 			}else{
 				$success = false;
 				$message = 'Invalid Response from SIP 2';
-				if ($analytics){
-					$analytics->addEvent('ILS Integration', 'Renew Failed', $message);
-				}
 			}
 		}else{
 			$success = false;
 			$message = 'Unable to login2';
-			if ($analytics){
-				$analytics->addEvent('ILS Integration', 'Renew Failed', $message);
-			}
 		}
 
 		return array(
@@ -1649,20 +1638,11 @@ class Aspencat implements DriverInterface{
 	function doReadingHistoryAction($patron, $action, /** @noinspection PhpUnusedParameterInspection */
 	                                $selectedTitles){
 		global $configArray;
-		global $analytics;
 		if (!$this->loginToKoha($patron)){
 			return;
 		}else{
 			if ($action == 'deleteMarked'){
-
-				if ($analytics){
-					$analytics->addEvent('ILS Integration', 'Delete Marked Reading History Titles');
-				}
 			}elseif ($action == 'deleteAll'){
-
-				if ($analytics){
-					$analytics->addEvent('ILS Integration', 'Delete All Reading History Titles');
-				}
 			}elseif ($action == 'exportList'){
 				//Leave this unimplemented for now.
 			}elseif ($action == 'optOut'){
@@ -1671,18 +1651,12 @@ class Aspencat implements DriverInterface{
 					'disable_reading_history' => 1
 				);
 				$this->postToKohaPage($kohaUrl, $postParams);
-				if ($analytics){
-					$analytics->addEvent('ILS Integration', 'Opt Out of Reading History');
-				}
 			}elseif ($action == 'optIn'){
 				$kohaUrl = $configArray['Catalog']['url'] . '/cgi-bin/koha/opac-update_reading_history.pl';
 				$postParams = array(
 					'disable_reading_history' => 0
 				);
 				$this->postToKohaPage($kohaUrl, $postParams);
-				if ($analytics){
-					$analytics->addEvent('ILS Integration', 'Opt in to Reading History');
-				}
 			}
 		}
 	}

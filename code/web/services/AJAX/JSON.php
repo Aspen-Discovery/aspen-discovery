@@ -30,9 +30,6 @@ class AJAX_JSON extends Action {
 
 	function launch()
 	{
-		global $analytics;
-		$analytics->disableTracking();
-
 		//header('Content-type: application/json');
 		header('Content-type: text/html');
 		header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
@@ -132,19 +129,6 @@ class AJAX_JSON extends Action {
 		$output = array('data'=>$data,'status'=>$status);
 		echo json_encode($output);
 		exit;
-	}
-
-	function trackEvent(){
-		global $analytics;
-		if (!isset($_REQUEST['category']) || !isset($_REQUEST['eventAction'])){
-			return 'Must provide a category and action to track an event';
-		}
-		$analytics->enableTracking();
-		$category = strip_tags($_REQUEST['category']);
-		$action = strip_tags($_REQUEST['eventAction']);
-		$data = isset($_REQUEST['data']) ? strip_tags($_REQUEST['data']) : '';
-		$analytics->addEvent($category, $action, $data);
-		return true;
 	}
 
 	function getHoursAndLocations(){

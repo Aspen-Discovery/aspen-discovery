@@ -1,7 +1,5 @@
 <?php
-/**
- * Table Definition for administrators
- */
+
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
 class Role extends DataObject
 {

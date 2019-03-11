@@ -742,14 +742,6 @@ function createWidgetFromSearch(searchId){
 	ajaxLightbox(path + '/Admin/AJAX?method=getAddToWidgetForm&source=search&id=' + searchId);
 	return false;
 }
-function trackEvent(category, action, data){
-	var url =path + '/AJAX/JSON?method=trackEvent&category=' + encodeURIComponent(category) + '&eventAction=' + encodeURIComponent(action) + '&data=' + encodeURIComponent(data);
-	$.ajax({
-		url: url,
-		async: true
-	});
-	return true;
-}
 
 function changeDropDownFacet(dropDownId, facetLabel){
 	var selectedOption = $("#" + dropDownId + " :selected");

@@ -13,8 +13,6 @@ class Hoopla_AJAX extends Action
 {
 	function launch() {
 		global $timer;
-		global $analytics;
-		$analytics->disableTracking();
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
 		if (method_exists($this, $method)) {
 			$timer->logTime("Starting method $method");

@@ -10,7 +10,7 @@
 						{foreach from=$cluster.list item=thisFacet name="narrowLoop"}
 							{if $thisFacet.isApplied}
 								<div class="categoryValue categoryValue_{translate text=$thisFacet.value|lower|replace:' ':''} col-tn-2">
-									<a href="{$thisFacet.removalUrl|escape}" class="removeFacetLink" onclick="trackEvent('Remove Facet', 'formatCategory', '{$thisFacet.value|escape}');" title="Remove Filter">
+									<a href="{$thisFacet.removalUrl|escape}" class="removeFacetLink" title="Remove Filter">
 										<div class="row">
 											<div class="col-xs-6">
 												<img src="{img filename=$thisFacet.imageNameSelected}" alt="{translate text=$thisFacet.value|escape}">
@@ -24,7 +24,7 @@
 								</div>
 							{else}
 								<div class="categoryValue categoryValue_{translate text=$thisFacet.value|lower|replace:' ':''} col-tn-2">
-									<a href="{$thisFacet.url|escape}" onclick="trackEvent('Apply Facet', 'formatCategory', '{$thisFacet.value|escape}');">
+									<a href="{$thisFacet.url|escape}">
 										<div class="row">
 											<div class="col-xs-6">
 												<img src="{img filename=$thisFacet.imageName}" alt="{translate text=$thisFacet.value|escape}">
@@ -68,9 +68,9 @@
 							<tr>
 						{/if}
 						{if $thisFacet.isApplied}
-							<td>{$thisFacet.value|escape}</a> <img src="{$path}/images/silk/tick.png" alt="Selected" > <a href="{$thisFacet.removalUrl|escape}" class="removeFacetLink" onclick="trackEvent('Remove Facet', '{$cluster.label}', '{$thisFacet.value|escape}');">(remove)</a></td>
+							<td>{$thisFacet.value|escape}</a> <img src="{$path}/images/silk/tick.png" alt="Selected" > <a href="{$thisFacet.removalUrl|escape}" class="removeFacetLink">(remove)</a></td>
 						{else}
-							<td><a href="{$thisFacet.url|escape}" onclick="trackEvent('Apply Facet', '{$cluster.label}', '{$thisFacet.value|escape}');">{$thisFacet.value|escape}</a> ({$thisFacet.count})</td>
+							<td><a href="{$thisFacet.url|escape}">{$thisFacet.value|escape}</a> ({$thisFacet.count})</td>
 						{/if}
 						{if $smarty.foreach.narrowLoop.iteration % $topFacetSettings.cols == 0 || $smarty.foreach.narrowLoop.last}
 							</tr>

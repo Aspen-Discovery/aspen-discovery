@@ -164,7 +164,6 @@ class OverDriveDriver2 {
 	 */
 	private function _loginToOverDrive($ch, $user){
 		global $configArray;
-		global $analytics;
 		$cookieJar = tempnam ("/tmp", "CURLCOOKIE");
 		$overdriveUrl = $configArray['OverDrive']['url'];
 		curl_setopt_array($ch, array(
@@ -239,22 +238,18 @@ class OverDriveDriver2 {
 				'success' => true,
 				'ch' => $ch,
 			);
-			$analytics->addEvent('OverDrive', 'Login', 'success');
 		}else if (preg_match('/You are barred from borrowing/si', $myAccountMenuContent)){
 			$overDriveInfo = array();
 			$overDriveInfo['success'] = false;
 			$overDriveInfo['message'] = "We're sorry, your account is currently barred from borrowing OverDrive titles. Please see the circulation desk.";
-			$analytics->addEvent('OverDrive', 'Login', 'barred');
 		}else if (preg_match('/Library card has expired/si', $myAccountMenuContent)){
 			$overDriveInfo = array();
 			$overDriveInfo['success'] = false;
 			$overDriveInfo['message'] = "We're sorry, your library card has expired. Please contact your library to renew.";
-			$analytics->addEvent('OverDrive', 'Login', 'expired');
 		}else if (preg_match('/more than (.*?) in library fines are outstanding/si', $myAccountMenuContent)){
 			$overDriveInfo = array();
 			$overDriveInfo['success'] = false;
 			$overDriveInfo['message'] = "We're sorry, your account cannot borrow from OverDrive because you have unpaid fines.";
-			$analytics->addEvent('OverDrive', 'Login', 'over fine limit');
 		}else{
 			global $logger;
 			$logger->log("Could not login to OverDrive ($matchAccount), page results: \r\n" . $myAccountMenuContent, PEAR_LOG_INFO);
@@ -262,7 +257,6 @@ class OverDriveDriver2 {
 			$overDriveInfo = array();
 			$overDriveInfo['success'] = false;
 			$overDriveInfo['message'] = "Unknown error logging in to OverDrive.";
-			$analytics->addEvent('OverDrive', 'Login', 'unknown error');
 		}
 		//global $logger;
 		//$logger->log(print_r($overDriveInfo, true) , PEAR_LOG_INFO);
@@ -282,7 +276,6 @@ class OverDriveDriver2 {
 		global $memCache;
 		$user = UserAccount::getLoggedInUser();
 		global $logger;
-		global $analytics;
 		$ch = curl_init();
 		$overDriveInfo = $this->_loginToOverDrive($ch, $user);
 
@@ -313,7 +306,6 @@ class OverDriveDriver2 {
 		$memCache->delete('overdrive_summary_' . $user->id);
 		$memCache->delete('overdrive_lending_periods_' . $user->id);
 
-		$analytics->addEvent('OverDrive', 'Update Lending Periods');
 		return true;
 	}
 }

@@ -27,7 +27,6 @@ class eContentSupport extends Action
 	{
 		global $interface;
 		global $configArray;
-		global $analytics;
 		$interface->setPageTitle('eContent Support');
 
 		if (isset($_REQUEST['submit'])){
@@ -74,14 +73,12 @@ class eContentSupport extends Action
 					'message' => "<p>We're sorry, an error occurred while submitting your request.</p>". $emailResult->getMessage()
 				)));
 			} elseif ($emailResult){
-				$analytics->addEvent("Emails", "eContent Support Succeeded", $_REQUEST['device'], $_REQUEST['format'], $_REQUEST['operatingSystem']);
 				echo(json_encode(array(
 					'title' => "Support Request Sent",
 					'message' => "<p>Your request was sent to our support team.  We will respond to your request as quickly as possible.</p><p>Thank you for using the catalog.</p>"
 				  ,'body' => $body //TODO: remove this
 				)));
 			}else{
-				$analytics->addEvent("Emails", "eContent Support Failed", $_REQUEST['device'], $_REQUEST['format'], $_REQUEST['operatingSystem']);
 				echo(json_encode(array(
 						'title' => "Support Request Not Sent",
 						'message' => "<p>We're sorry, but your request could not be submitted to our support team at this time.</p><p>Please try again later.</p>"

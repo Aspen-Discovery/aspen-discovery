@@ -11,8 +11,6 @@ class Help_AJAX extends Action {
 	}
 
 	function launch() {
-		global $analytics;
-		$analytics->disableTracking();
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
 		if (in_array($method, array('getSupportForm'))){
 			header('Content-type: application/json');

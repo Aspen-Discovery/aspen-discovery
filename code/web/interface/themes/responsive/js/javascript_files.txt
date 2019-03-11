@@ -18,7 +18,6 @@ vufind/globals.min.js
 vufind/base.min.js
 vufind/account.min.js
 vufind/admin.min.js
-vufind/analytic-reports.min.js
 vufind/archive.min.js
 vufind/browse.min.js
 vufind/dpla.min.js

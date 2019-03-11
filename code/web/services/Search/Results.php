@@ -34,7 +34,6 @@ class Search_Results extends Action {
 		global $configArray;
 		global $timer;
 		global $memoryWatcher;
-		global $analytics;
 		global $library;
 
 		/** @var string $searchSource */
@@ -276,10 +275,6 @@ class Search_Results extends Action {
 			$searchSource = 'local';
 		}
 		$translatedSearch = $allSearchSources[$searchSource]['name'];
-
-		// Save the search for statistics
-		$analytics->addSearch($translatedSearch, $searchObject->displayQuery(), $searchObject->isAdvanced(), $searchObject->getFullSearchType(), $searchObject->hasAppliedFacets(), $searchObject->getResultTotal());
-
 
 		// No Results Actions //
 		if ($searchObject->getResultTotal() < 1) {

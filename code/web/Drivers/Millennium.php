@@ -938,8 +938,7 @@ class Millennium extends ScreenScrapingDriver
 			$curl_url = $this->getVendorOpacUrl() . "/patroninfo~S{$scope}/" . $patronDump['RECORD_#'] ."/modpinfo";
 			$sresult = $this->_curlPostPage($curl_url, $extraPostInfo);
 
-		// Update Patron Information on success
-			global $analytics;
+		    // Update Patron Information on success
 			if (isset($sresult) && strpos($sresult, 'Patron information updated') !== false){
 				$user->phone = $_REQUEST['phone'];
 				$user->email = $_REQUEST['email'];
@@ -948,10 +947,6 @@ class Millennium extends ScreenScrapingDriver
 				/* @var Memcache $memCache */
 				global $memCache;
 				$memCache->delete("patron_dump_$barcode"); // because the update will affect the patron dump information also clear that cache as well
-
-				if ($analytics){
-					$analytics->addEvent('ILS Integration', 'Profile updated successfully');
-				}
 			}else{
 				// Doesn't look like the millennium (actually sierra) server ever provides error messages. plb 4-29-2015
 				if (preg_match('/<h2 class="errormessage">(.*?)<\/h2>/i', $sresult, $errorMatches)){
@@ -961,9 +956,6 @@ class Millennium extends ScreenScrapingDriver
 				}
 
 				$updateErrors[] = $errorMsg;
-				if ($analytics){
-					$analytics->addEvent('ILS Integration', 'Profile update failed');
-				}
 			}
 		} else {
 			$updateErrors[] = 'You can not update your information.';

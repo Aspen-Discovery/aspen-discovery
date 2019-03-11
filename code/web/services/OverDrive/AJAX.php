@@ -7,8 +7,6 @@ global $configArray;
 class OverDrive_AJAX extends Action {
 
 	function launch() {
-		global $analytics;
-		$analytics->disableTracking();
 		$method = $_GET['method'];
 		if (in_array($method, array('CheckoutOverDriveItem', 'PlaceOverDriveHold', 'CancelOverDriveHold', 'GetOverDriveHoldPrompts', 'ReturnOverDriveItem', 'SelectOverDriveDownloadFormat', 'GetDownloadLink', 'GetOverDriveCheckoutPrompts', 'forceUpdateFromAPI'))){
 			header('Content-type: text/plain');

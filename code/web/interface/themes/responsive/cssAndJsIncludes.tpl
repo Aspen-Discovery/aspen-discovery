@@ -45,7 +45,6 @@
 		<script src="{$path}/interface/themes/responsive/js/vufind/account.js?v={$gitBranch|urlencode}"></script>
 		<script src="{$path}/interface/themes/responsive/js/vufind/admin.js?v={$gitBranch|urlencode}"></script>
 		<script src="{$path}/interface/themes/responsive/js/vufind/archive.js?v={$gitBranch|urlencode}"></script>
-		<script src="{$path}/interface/themes/responsive/js/vufind/analytic-reports.js?v={$gitBranch|urlencode}"></script>
 		<script src="{$path}/interface/themes/responsive/js/vufind/browse.js?v={$gitBranch|urlencode}"></script>
 		<script src="{$path}/interface/themes/responsive/js/vufind/dpla.js?v={$gitBranch|urlencode}"></script>
 		<script src="{$path}/interface/themes/responsive/js/vufind/econtent-record.js?v={$gitBranch|urlencode}"></script>

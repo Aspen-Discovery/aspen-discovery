@@ -7,8 +7,6 @@ global $configArray;
 class Rbdigital_AJAX extends Action {
 
 	function launch() {
-		global $analytics;
-		$analytics->disableTracking();
 		$method = $_GET['method'];
 		if (in_array($method, array('CheckoutRbdigitalItem', 'PlaceRbdigitalHold', 'CancelRbdigitalHold', 'GetRbdigitalHoldPrompts', 'ReturnRbdigitalItem', 'GetDownloadLink', 'GetRbdigitalCheckoutPrompts'))){
 			header('Content-type: text/plain');

@@ -700,7 +700,6 @@ class OverDriveDriver3 {
 	 */
 	public function placeOverDriveHold($overDriveId, $user){
 		global $configArray;
-		global $analytics;
 		global $memCache;
 
 		$url = $configArray['OverDrive']['patronApiUrl'] . '/v1/patrons/me/holds/' . $overDriveId;
@@ -718,11 +717,9 @@ class OverDriveDriver3 {
 		if (isset($response->holdListPosition)){
 			$holdResult['success'] = true;
 			$holdResult['message'] = 'Your hold was placed successfully.  You are number ' . $response->holdListPosition . ' on the wait list.';
-			if ($analytics) $analytics->addEvent('OverDrive', 'Place Hold', 'succeeded');
 		}else{
 			$holdResult['message'] = 'Sorry, but we could not place a hold for you on this title.';
 			if (isset($response->message)) $holdResult['message'] .= "  {$response->message}";
-			if ($analytics) $analytics->addEvent('OverDrive', 'Place Hold', 'failed');
 		}
 		$user->clearCache();
 		$memCache->delete('overdrive_summary_' . $user->id);
@@ -737,7 +734,6 @@ class OverDriveDriver3 {
 	 */
 	public function cancelOverDriveHold($overDriveId, $user){
 		global $configArray;
-		global $analytics;
 		global $memCache;
 
 		$url = $configArray['OverDrive']['patronApiUrl'] . '/v1/patrons/me/holds/' . $overDriveId;
@@ -757,11 +753,9 @@ class OverDriveDriver3 {
 		if ($response === true){
 			$cancelHoldResult['success'] = true;
 			$cancelHoldResult['message'] = 'Your hold was cancelled successfully.';
-			if ($analytics) $analytics->addEvent('OverDrive', 'Cancel Hold', 'succeeded');
 		}else{
 			$cancelHoldResult['message'] = 'There was an error cancelling your hold.';
-		 if (isset($response->message)) $cancelHoldResult['message'] .= "  {$response->message}";
-			if ($analytics) $analytics->addEvent('OverDrive', 'Cancel Hold', 'failed');
+		    if (isset($response->message)) $cancelHoldResult['message'] .= "  {$response->message}";
 		}
 		$memCache->delete('overdrive_summary_' . $user->id);
 		$user->clearCache();
@@ -780,7 +774,6 @@ class OverDriveDriver3 {
 	public function checkoutOverDriveItem($overDriveId, $user){
 
 		global $configArray;
-		global $analytics;
 		global $memCache;
 
 		$url = $configArray['OverDrive']['patronApiUrl'] . '/v1/patrons/me/checkouts';
@@ -797,9 +790,6 @@ class OverDriveDriver3 {
 		if (isset($response->expires)) {
 			$result['success'] = true;
 			$result['message'] = 'Your title was checked out successfully. You may now download the title from your Account.';
-			if ($analytics) {
-				$analytics->addEvent('OverDrive', 'Checkout Item', 'succeeded');
-			}
 		}else{
 			$result['message'] = 'Sorry, we could not checkout this title to you.';
 			if (isset($response->errorCode) && $response->errorCode == 'PatronHasExceededCheckoutLimit'){
@@ -816,7 +806,6 @@ class OverDriveDriver3 {
 				$result['message'] = 'Sorry, we could not checkout this title to you.  Please verify that your card has not expired and that you do not have excessive fines.';
 			}
 
-			if ($analytics) $analytics->addEvent('OverDrive', 'Checkout Item', 'failed');
 		}
 
 		$memCache->delete('overdrive_summary_' . $user->id);
@@ -835,7 +824,6 @@ class OverDriveDriver3 {
 
 	public function returnOverDriveItem($overDriveId, $transactionId, $user){
 		global $configArray;
-		global $analytics;
 		global $memCache;
 
 		$url = $configArray['OverDrive']['patronApiUrl'] . '/v1/patrons/me/checkouts/' . $overDriveId;
@@ -854,11 +842,9 @@ class OverDriveDriver3 {
 		if ($response === true){
 			$cancelHoldResult['success'] = true;
 			$cancelHoldResult['message'] = 'Your item was returned successfully.';
-			if ($analytics) $analytics->addEvent('OverDrive', 'Return Item', 'succeeded');
 		}else{
 			$cancelHoldResult['message'] = 'There was an error returning this item.';
 			if (isset($response->message)) $cancelHoldResult['message'] .= "  {$response->message}";
-			if ($analytics) $analytics->addEvent('OverDrive', 'Return Item', 'failed');
 		}
 
 		$memCache->delete('overdrive_summary_' . $user->id);
@@ -868,7 +854,6 @@ class OverDriveDriver3 {
 
 	public function selectOverDriveDownloadFormat($overDriveId, $formatId, $user){
 		global $configArray;
-		global $analytics;
 		/** @var Memcache $memCache */
 		global $memCache;
 
@@ -887,13 +872,11 @@ class OverDriveDriver3 {
 		if (isset($response->linkTemplates->downloadLink)){
 			$result['success'] = true;
 			$result['message'] = 'This format was locked in';
-			if ($analytics) $analytics->addEvent('OverDrive', 'Select Download Format', 'succeeded');
 			$downloadLink = $this->getDownloadLink($overDriveId, $formatId, $user);
 			$result = $downloadLink;
 		}else{
 			$result['message'] = 'Sorry, but we could not select a format for you.';
 			if (isset($response->message)) $result['message'] .= "  {$response->message}";
-			if ($analytics) $analytics->addEvent('OverDrive', 'Select Download Format', 'failed');
 		}
 		$memCache->delete('overdrive_summary_' . $user->id);
 
@@ -930,7 +913,6 @@ class OverDriveDriver3 {
 
 	public function getDownloadLink($overDriveId, $format, $user){
 		global $configArray;
-		global $analytics;
 
 		$url = $configArray['OverDrive']['patronApiUrl'] . "/v1/patrons/me/checkouts/{$overDriveId}/formats/{$format}/downloadlink";
 		$url .= '?errorpageurl=' . urlencode($configArray['Site']['url'] . '/Help/OverDriveError');
@@ -954,11 +936,9 @@ class OverDriveDriver3 {
 			$result['success'] = true;
 			$result['message'] = 'Created Download Link';
 			$result['downloadUrl'] = $response->links->contentlink->href;
-			if ($analytics) $analytics->addEvent('OverDrive', 'Get Download Link', 'succeeded');
 		}else{
 			$result['message'] = 'Sorry, but we could not get a download link for you.';
 			if (isset($response->message)) $result['message'] .= "  {$response->message}";
-			if ($analytics) $analytics->addEvent('OverDrive', 'Get Download Link', 'failed');
 		}
 
 		return $result;

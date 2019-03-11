@@ -313,17 +313,14 @@ class MillenniumHolds{
 
 		// Return Results
 		$isPlural = count($xNum) > 1;
-		global $analytics;
 		$title_list = is_array($titles) ? implode(', ', $titles) : $titles;
 		if ($type == 'cancel' || $type == 'recall'){
 			if ($success){ // All were successful
-				$analytics->addEvent('ILS Integration', 'Hold Cancelled', $title_list);
 				return array(
 					'title' => $titles,
 					'success' => true,
 					'message' => 'Your hold'.($isPlural ? 's were' : ' was' ).' cancelled successfully.');
 			} else { // at least one failure
-				$analytics->addEvent('ILS Integration', 'Hold Not Cancelled', $title_list);
 				return array(
 					'title' => $titles,
 					'success' => false,
@@ -343,13 +340,11 @@ class MillenniumHolds{
 			elseif ($freezeValue == 'on') {
 				//TODO check for error messages
 				if ($success) { // All were successful
-					$analytics->addEvent('ILS Integration', 'Hold Frozen', $title_list);
 					return array(
 						'title' => $titles,
 						'success' => true,
 						'message' => 'Your hold' . ($isPlural ? 's were' : ' was') . ' '. translate('frozen') .' successfully.');
 				} else { // at least one failure
-					$analytics->addEvent('ILS Integration', 'Hold Not Frozen', $title_list);
 					return array(
 						'title' => $titles,
 						'success' => false,
@@ -369,7 +364,6 @@ class MillenniumHolds{
 		}
 
 		else{
-			$analytics->addEvent('ILS Integration', 'Hold(s) Updated', $title_list);
 			return array(
 				'title' => $titles,
 				'success' => true,
@@ -828,14 +822,6 @@ class MillenniumHolds{
 			$hold_result = $this->_getHoldResult($sResult);
 			$hold_result['title']  = $title;
 			$hold_result['bid'] = $bib1;
-			global $analytics;
-			if ($analytics){
-				if ($hold_result['success'] == true){
-					$analytics->addEvent('ILS Integration', 'Successful Hold', $title);
-				}else{
-					$analytics->addEvent('ILS Integration', 'Failed Hold', $hold_result['message'] . ' - ' . $title);
-				}
-			}
 			return $hold_result;
 		}
 	}
@@ -967,14 +953,6 @@ class MillenniumHolds{
 			$hold_result = $this->_getHoldResult($sResult);
 			$hold_result['title']  = $title;
 			$hold_result['bid'] = $bib1;
-			global $analytics;
-			if ($analytics){
-				if ($hold_result['success'] == true){
-					$analytics->addEvent('ILS Integration', 'Successful Hold', $title);
-				}else{
-					$analytics->addEvent('ILS Integration', 'Failed Hold', $hold_result['message'] . ' - ' . $title);
-				}
-			}
 			return $hold_result;
 		}
 	}

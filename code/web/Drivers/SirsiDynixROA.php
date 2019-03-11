@@ -1287,14 +1287,6 @@ abstract class SirsiDynixROA extends HorizonAPI
 
 				$hold_result['title'] = $title;
 				$hold_result['bid']   = $recordId;
-				global $analytics;
-				if ($analytics) {
-					if ($hold_result['success'] == true) {
-						$analytics->addEvent('ILS Integration', 'Successful Hold', $title);
-					} else {
-						$analytics->addEvent('ILS Integration', 'Failed Hold', $hold_result['message'] . ' - ' . $title);
-					}
-				}
 				//Clear the patron profile
 				return $hold_result;
 

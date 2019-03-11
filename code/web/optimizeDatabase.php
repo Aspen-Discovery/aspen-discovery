@@ -23,10 +23,6 @@ foreach ($configArray['Database'] as $key => $value){
 		}
 		$tableName = $matches[1];
 
-		//Some tables take too long to optimize, ignore them.
-		if (!in_array($tableName, array('analytics_session', 'analytics_page_view'))){
-			optimizeTable($tableName);
-		}
 	}
 }
 

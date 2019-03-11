@@ -322,7 +322,6 @@ class MillenniumCheckouts {
 		 *  var Timer $timer
 		 * */
 		global $logger, $timer;
-		global $analytics;
 
 		//Force loading patron API since that seems to be unlocking the patron record in Millennium for Flatirons
 		$this->driver->_getPatronDump($patron->getBarcode(), true);
@@ -356,18 +355,12 @@ class MillenniumCheckouts {
 			$success = false;
 			$msg = ucfirst(strtolower(trim($matches[1])));
 			$message = "Unable to renew this item: $msg.";
-			if ($analytics){
-				$analytics->addEvent('ILS Integration', 'Renew Failed', $msg);
-			}
 		}
 		elseif (preg_match('/Your record is in use/si', $checkedOutPageText, $matches)) {
 			$success = false;
 			$message = 'Unable to renew this item now, your account is in use by the system.  Please try again later.';
 			$logger->log('Account is busy error while attempting renewal', PEAR_LOG_WARNING);
 			$timer->logTime('Got System Busy Error while attempting renewal');
-			if ($analytics){
-				$analytics->addEvent('ILS Integration', 'Renew Failed', 'Account in Use');
-			}
 		}
 		elseif (preg_match('/<table border="0" class="patFunc">(.*?)<\/table>/s', $checkedOutPageText, $matches)) {
 			$checkedOutTitleTable = $matches[1];
@@ -408,9 +401,6 @@ class MillenniumCheckouts {
 		else{
 			$success = true;
 			$message = 'Your item was successfully renewed';
-			if ($analytics){
-				$analytics->addEvent('ILS Integration', 'Renew Successful');
-			}
 		}
 
 		$timer->logTime('Finished Renew Item attempt');

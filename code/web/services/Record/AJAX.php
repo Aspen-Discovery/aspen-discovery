@@ -27,8 +27,6 @@ class Record_AJAX extends Action {
 
 	function launch() {
 		global $timer;
-		global $analytics;
-		$analytics->disableTracking();
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
 		$timer->logTime("Starting method $method");
 		if (method_exists($this, $method)) {
@@ -343,8 +341,6 @@ class Record_AJAX extends Action {
 
 	function placeHold(){
 		global $interface;
-		global $analytics;
-		$analytics->enableTracking();
 		$recordId = $_REQUEST['id'];
 		if (strpos($recordId, ':') > 0){
 			list($source, $shortId) = explode(':', $recordId, 2);

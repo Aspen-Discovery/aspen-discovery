@@ -1241,7 +1241,6 @@ class SearchObject_Solr extends SearchObject_Base
 	 */
 	public function processSearch($returnIndexErrors = false, $recommendations = false, $preventQueryModification = false) {
 		global $timer;
-		global $analytics;
 
 		if ($this->searchSource == 'econtent'){
 			global $solrScope;
@@ -1289,7 +1288,6 @@ class SearchObject_Solr extends SearchObject_Base
 		$formatCategoryValue = null;
 		foreach ($this->filterList as $field => $filter) {
 			foreach ($filter as $value) {
-				$analytics->addEvent('Apply Facet', $field, $value);
 				$isAvailabilityToggle = false;
 				$isAvailableAt = false;
 				if (substr($field, 0, strlen('availability_toggle')) == 'availability_toggle') {

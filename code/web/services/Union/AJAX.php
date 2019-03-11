@@ -24,8 +24,6 @@ class Union_AJAX extends Action {
 
 	function launch()
 	{
-		global $analytics;
-		$analytics->disableTracking();
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
 		header ('Content-type: application/json');
 		header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1

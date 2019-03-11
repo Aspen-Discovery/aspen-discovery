@@ -40,12 +40,7 @@ getGitBranch();
 $interface->loadDisplayOptions();
 $timer->logTime('Loaded display options within interface');
 
-require_once ROOT_DIR . '/sys/Analytics.php';
-//Define tracking to be done
-global $analytics;
 global $active_ip;
-$analytics = new Analytics($active_ip, $startTime);
-$timer->logTime('Setup Analytics');
 
 $googleAnalyticsId        = isset($configArray['Analytics']['googleAnalyticsId'])        ? $configArray['Analytics']['googleAnalyticsId'] : false;
 $googleAnalyticsLinkingId = isset($configArray['Analytics']['googleAnalyticsLinkingId']) ? $configArray['Analytics']['googleAnalyticsLinkingId'] : false;
@@ -344,27 +339,6 @@ if (UserAccount::isLoggedIn() && (!isset($_REQUEST['action']) || $_REQUEST['acti
 	$masqueradeMode = false;
 }
 
-//Setup analytics
-if (!$analytics->isTrackingDisabled()){
-	$analytics->setModule($module);
-	$analytics->setAction($action);
-	$analytics->setObjectId(isset($_REQUEST['id']) ? $_REQUEST['id'] : null);
-	$analytics->setMethod(isset($_REQUEST['method']) ? $_REQUEST['method'] : null);
-	$analytics->setLanguage($interface->getLanguage());
-	$analytics->setTheme($interface->getPrimaryTheme());
-	$analytics->setMobile($interface->isMobile() ? 1 : 0);
-	$analytics->setDevice(get_device_name());
-	$analytics->setPhysicalLocation($physicalLocation);
-	if (UserAccount::isLoggedIn()){
-		$analytics->setPatronType(UserAccount::getUserPType());
-		$analytics->setHomeLocationId(UserAccount::getUserHomeLocationId());
-	}else{
-		$analytics->setPatronType('logged out');
-		$analytics->setHomeLocationId(-1);
-	}
-	$timer->logTime('Setup Analytics');
-}
-
 //Find a reasonable default location to go to
 if ($module == null && $action == null){
 	//We have no information about where to go, go to the default location from config
@@ -661,7 +635,6 @@ $timer->logTime('Finished Index');
 $timer->writeTimings();
 $memoryWatcher->logMemory("Finished index");
 $memoryWatcher->writeMemory();
-//$analytics->finish();
 
 function processFollowup(){
 	global $configArray;

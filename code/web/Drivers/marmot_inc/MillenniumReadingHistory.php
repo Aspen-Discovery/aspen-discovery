@@ -119,7 +119,6 @@ class MillenniumReadingHistory {
 	 * @param   array   $selectedTitles The titles to do the action on if applicable
 	 */
 	function doReadingHistoryAction($patron, $action, $selectedTitles){
-		global $analytics;
 		//Load the reading history page
 		$scope = $this->driver->getDefaultScope();
 		$curl_url = $this->driver->getVendorOpacUrl() . "/patroninfo~S{$scope}/" . $patron->username ."/readinghistory";
@@ -177,18 +176,12 @@ class MillenniumReadingHistory {
 			curl_setopt($curl_connection, CURLOPT_HTTPGET, true);
 			curl_setopt($curl_connection, CURLOPT_URL, $curl_url);
 			curl_exec($curl_connection);
-			if ($analytics){
-				$analytics->addEvent('ILS Integration', 'Delete Marked Reading History Titles');
-			}
 		}elseif ($action == 'deleteAll'){
 			//load patron page readinghistory/rah
 			$curl_url = $this->driver->getVendorOpacUrl() . "/patroninfo~S{$scope}/" . $patron->username ."/readinghistory/rah";
 			curl_setopt($curl_connection, CURLOPT_URL, $curl_url);
 			curl_setopt($curl_connection, CURLOPT_HTTPGET, true);
 			curl_exec($curl_connection);
-			if ($analytics){
-				$analytics->addEvent('ILS Integration', 'Delete All Reading History Titles');
-			}
 		}elseif ($action == 'exportList'){
 			//Leave this unimplemented for now.
 		}elseif ($action == 'optOut'){
@@ -197,9 +190,6 @@ class MillenniumReadingHistory {
 			curl_setopt($curl_connection, CURLOPT_URL, $curl_url);
 			curl_setopt($curl_connection, CURLOPT_HTTPGET, true);
 			curl_exec($curl_connection);
-			if ($analytics){
-				$analytics->addEvent('ILS Integration', 'Opt Out of Reading History');
-			}
 			$patron->trackReadingHistory = false;
 			$patron->update();
 		}elseif ($action == 'optIn'){
@@ -208,9 +198,6 @@ class MillenniumReadingHistory {
 			curl_setopt($curl_connection, CURLOPT_URL, $curl_url);
 			curl_setopt($curl_connection, CURLOPT_HTTPGET, true);
 			curl_exec($curl_connection);
-			if ($analytics){
-				$analytics->addEvent('ILS Integration', 'Opt in to Reading History');
-			}
 			$patron->trackReadingHistory = true;
 			$patron->update();
 		}
