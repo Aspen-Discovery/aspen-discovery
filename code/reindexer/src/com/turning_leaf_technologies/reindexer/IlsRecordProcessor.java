@@ -92,7 +92,6 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	IlsRecordProcessor(GroupedWorkIndexer indexer, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, logger);
 		this.fullReindex = fullReindex;
-		//String marcRecordPath = configIni.get("Reindex", "marcPath");
 		try {
 			profileType = indexingProfileRS.getString("name");
 			individualMarcPath = indexingProfileRS.getString("individualMarcPath");

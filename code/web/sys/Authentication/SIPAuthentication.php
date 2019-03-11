@@ -222,8 +222,6 @@ class SIPAuthentication implements Authentication {
 		$user->cat_password = $password;
 		$user->email = isset($patronInfoResponse['variable']['BE'][0]) ? $patronInfoResponse['variable']['BE'][0] : '';
 		$user->phone = isset($patronInfoResponse['variable']['BF'][0]) ? $patronInfoResponse['variable']['BF'][0] : '';
-		$user->major = 'null';
-		$user->college = 'null';
 		$user->patronType = $patronInfoResponse['variable']['PC'][0];
 		
 		//Get home location
