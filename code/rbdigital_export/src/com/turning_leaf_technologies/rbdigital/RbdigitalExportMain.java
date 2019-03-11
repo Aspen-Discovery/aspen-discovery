@@ -182,7 +182,10 @@ public class RbdigitalExportMain {
         //String audioBookUrl = baseUrl + "/v1/libraries/" + libraryId + "/book-holdings/";
 
         String bookUrl = baseUrl + "/v1/libraries/" + libraryId + "/search?page-size=100";
-        URLPostResponse response = NetworkUtils.getURL(bookUrl, logger, apiToken);
+        HashMap<String, String> headers = new HashMap<>();
+        headers.put("Authorization", "basic " + apiToken);
+        headers.put("Content-Type", "application/json");
+        URLPostResponse response = NetworkUtils.getURL(bookUrl, logger, headers);
         if (!response.isSuccess()){
             logger.error(response.getMessage());
             hadErrors = true;
@@ -200,7 +203,7 @@ public class RbdigitalExportMain {
                 for (int curPage = 1; curPage < numPages; curPage++) {
                     logger.info("Processing page " + curPage);
                     bookUrl = baseUrl + "/v1/libraries/" + libraryId + "/search?page-size=100&page-index=" + curPage;
-                    response = NetworkUtils.getURL(bookUrl, logger, apiToken);
+                    response = NetworkUtils.getURL(bookUrl, logger, headers);
                     responseJSON = new JSONObject(response.getMessage());
                     processRbdigitalTitles(responseJSON, doFullReload);
                 }
@@ -216,7 +219,7 @@ public class RbdigitalExportMain {
         //TODO: Process magazines
         // Get a list of magazines to process
         String eMagazineUrl = baseUrl + "/v1/libraries/" + libraryId + "/search/emagazine/";
-        response = NetworkUtils.getURL(eMagazineUrl, logger, apiToken);
+        response = NetworkUtils.getURL(eMagazineUrl, logger, headers);
         if (!response.isSuccess()){
             logger.error(response.getMessage());
             hadErrors = true;
@@ -369,8 +372,7 @@ public class RbdigitalExportMain {
         author = swapFirstLastNames(author);
         String mediaType = itemDetails.getString("mediaType");
 
-        RecordIdentifier primaryIdentifier = new RecordIdentifier();
-        primaryIdentifier.setValue("rbdigital", rbdigitalId);
+        RecordIdentifier primaryIdentifier = new RecordIdentifier("rbdigital", rbdigitalId);
 
         String subtitle = "";
         if (itemDetails.getBoolean("hasSubtitle")) {

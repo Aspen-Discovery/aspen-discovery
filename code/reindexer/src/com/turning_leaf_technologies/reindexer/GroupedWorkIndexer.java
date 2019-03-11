@@ -244,6 +244,9 @@ public class GroupedWorkIndexer {
 						case "SideLoadedEContent":
 							ilsRecordProcessors.put(curIdentifier, new SideLoadedEContentProcessor(this, dbConn, indexingProfileRS, logger, fullReindex));
 							break;
+						case "Koha":
+							ilsRecordProcessors.put(curIdentifier, new KohaRecordProcessor(this, dbConn, configIni, indexingProfileRS, logger, fullReindex));
+							break;
 						default:
 							logger.error("Unknown indexing class " + ilsIndexingClassString);
 							okToIndex = false;

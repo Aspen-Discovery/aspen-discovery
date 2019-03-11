@@ -109,16 +109,14 @@ public class MarcRecordGrouper extends RecordGroupingProcessor{
 				if (subfieldA != null && (recordNumberPrefix.length() == 0 || subfieldA.getData().length() > recordNumberPrefix.length())) {
 					if (subfieldA.getData().substring(0, recordNumberPrefix.length()).equals(recordNumberPrefix)) {
 						String recordNumber = subfieldA.getData().trim();
-						identifier = new RecordIdentifier();
-						identifier.setValue(recordType, recordNumber);
+						identifier = new RecordIdentifier(recordType, recordNumber);
 					}
 				}
 			}else{
 				//It's a control field
 				ControlField curRecordNumberField = (ControlField)recordNumberField;
 				String recordNumber = curRecordNumberField.getData().trim();
-				identifier = new RecordIdentifier();
-				identifier.setValue(recordType, recordNumber);
+				identifier = new RecordIdentifier(recordType, recordNumber);
 			}
 		}
 

@@ -13,8 +13,8 @@ public class RecordIdentifier {
 
 	private String myString = null;
 	public String toString(){
-		if (myString == null){
-			myString = type + ":" + identifier.toUpperCase();
+		if (myString == null && type != null){
+			myString = type + ":" + identifier.toLowerCase();
 		}
 		return myString;
 	}
@@ -50,6 +50,10 @@ public class RecordIdentifier {
 
 	public String getType() {
 		return type;
+	}
+
+	public RecordIdentifier(String type, String identifier) {
+		this.setValue(type, identifier);
 	}
 
 	public void setValue(String type, String identifier) {

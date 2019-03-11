@@ -22,39 +22,42 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 	KohaRecordProcessor(GroupedWorkIndexer indexer, Connection dbConn, Ini configIni, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, dbConn, indexingProfileRS, logger, fullReindex);
 
+		//TODO: Connect to the database
+		return;
+
 		//Connect to the AspenCat database
-		Connection kohaConn;
-		try {
-			String kohaConnectionJDBC = "jdbc:mysql://" +
-					ConfigUtil.cleanIniValue(configIni.get("Catalog", "db_host")) +
-					"/" + ConfigUtil.cleanIniValue(configIni.get("Catalog", "db_name") +
-					"?user=" + ConfigUtil.cleanIniValue(configIni.get("Catalog", "db_user")) +
-					"&password=" + ConfigUtil.cleanIniValue(configIni.get("Catalog", "db_pwd")) +
-					"&useUnicode=yes&characterEncoding=UTF-8");
-			kohaConn = DriverManager.getConnection(kohaConnectionJDBC);
-
-			//Get a list of all items that are in transit
-			//PreparedStatement getInTransitItemsStmt = kohaConn.prepareStatement("SELECT itemnumber from reserves WHERE found = 'T'");
-			PreparedStatement getInTransitItemsStmt = kohaConn.prepareStatement("SELECT itemnumber from branchtransfers WHERE datearrived IS NULL");
-			ResultSet inTransitItemsRS = getInTransitItemsStmt.executeQuery();
-			while (inTransitItemsRS.next()){
-				inTransitItems.add(inTransitItemsRS.getString("itemnumber"));
-			}
-			inTransitItemsRS.close();
-			getInTransitItemsStmt.close();
-
-			PreparedStatement onHoldShelfItemsStmt = kohaConn.prepareStatement("SELECT itemnumber from reserves WHERE found = 'W'");
-			ResultSet onHoldShelfItemsRS = onHoldShelfItemsStmt.executeQuery();
-			while (onHoldShelfItemsRS.next()){
-				onHoldShelfItems.add(onHoldShelfItemsRS.getString("itemnumber"));
-			}
-			onHoldShelfItemsRS.close();
-			onHoldShelfItemsStmt.close();
-
-		} catch (Exception e) {
-			logger.error("Error connecting to koha database ", e);
-			//System.exit(1);
-		}
+//		Connection kohaConn;
+//		try {
+//			String kohaConnectionJDBC = "jdbc:mysql://" +
+//					ConfigUtil.cleanIniValue(configIni.get("Catalog", "db_host")) +
+//					"/" + ConfigUtil.cleanIniValue(configIni.get("Catalog", "db_name") +
+//					"?user=" + ConfigUtil.cleanIniValue(configIni.get("Catalog", "db_user")) +
+//					"&password=" + ConfigUtil.cleanIniValue(configIni.get("Catalog", "db_pwd")) +
+//					"&useUnicode=yes&characterEncoding=UTF-8");
+//			kohaConn = DriverManager.getConnection(kohaConnectionJDBC);
+//
+//			//Get a list of all items that are in transit
+//			//PreparedStatement getInTransitItemsStmt = kohaConn.prepareStatement("SELECT itemnumber from reserves WHERE found = 'T'");
+//			PreparedStatement getInTransitItemsStmt = kohaConn.prepareStatement("SELECT itemnumber from branchtransfers WHERE datearrived IS NULL");
+//			ResultSet inTransitItemsRS = getInTransitItemsStmt.executeQuery();
+//			while (inTransitItemsRS.next()){
+//				inTransitItems.add(inTransitItemsRS.getString("itemnumber"));
+//			}
+//			inTransitItemsRS.close();
+//			getInTransitItemsStmt.close();
+//
+//			PreparedStatement onHoldShelfItemsStmt = kohaConn.prepareStatement("SELECT itemnumber from reserves WHERE found = 'W'");
+//			ResultSet onHoldShelfItemsRS = onHoldShelfItemsStmt.executeQuery();
+//			while (onHoldShelfItemsRS.next()){
+//				onHoldShelfItems.add(onHoldShelfItemsRS.getString("itemnumber"));
+//			}
+//			onHoldShelfItemsRS.close();
+//			onHoldShelfItemsStmt.close();
+//
+//		} catch (Exception e) {
+//			logger.error("Error connecting to koha database ", e);
+//			//System.exit(1);
+//		}
 
 	}
 
@@ -210,62 +213,68 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 	}
 
 	protected void loadUnsuppressedPrintItems(GroupedWorkSolr groupedWork, RecordInfo recordInfo, String identifier, Record record){
-		List<DataField> itemRecords = MarcUtil.getDataFields(record, itemTag);
-		for (DataField itemField : itemRecords){
-			if (!isItemSuppressed(itemField)){
-				//Check to see if the item has an eContent indicator
-				boolean isEContent = false;
-				if (itemField.getSubfield(iTypeSubfield) != null){
-					String iType = itemField.getSubfield(iTypeSubfield).getData().toLowerCase();
-					if (iType.equals("ebook") || iType.equals("eaudio") || iType.equals("online") || iType.equals("oneclick")){
-						isEContent = true;
-					}
-				}
-				if (!isEContent){
-					getPrintIlsItem(groupedWork, recordInfo, record, itemField);
-				}
-			}
-		}
+		//TODO: Connect to the database
+		return;
+
+//		List<DataField> itemRecords = MarcUtil.getDataFields(record, itemTag);
+//		for (DataField itemField : itemRecords){
+//			if (!isItemSuppressed(itemField)){
+//				//Check to see if the item has an eContent indicator
+//				boolean isEContent = false;
+//				if (itemField.getSubfield(iTypeSubfield) != null){
+//					String iType = itemField.getSubfield(iTypeSubfield).getData().toLowerCase();
+//					if (iType.equals("ebook") || iType.equals("eaudio") || iType.equals("online") || iType.equals("oneclick")){
+//						isEContent = true;
+//					}
+//				}
+//				if (!isEContent){
+//					getPrintIlsItem(groupedWork, recordInfo, record, itemField);
+//				}
+//			}
+//		}
 	}
 
 	protected List<RecordInfo> loadUnsuppressedEContentItems(GroupedWorkSolr groupedWork, String identifier, Record record){
 		List<DataField> itemRecords = MarcUtil.getDataFields(record, itemTag);
 		List<RecordInfo> unsuppressedEcontentRecords = new ArrayList<>();
-		for (DataField itemField : itemRecords){
-			if (!isItemSuppressed(itemField)){
-				//Check to see if the item has an eContent indicator
-				boolean isEContent = false;
-				boolean isOverDrive = false;
-				boolean isHoopla = false;
-				if (itemField.getSubfield(iTypeSubfield) != null){
-					String iType = itemField.getSubfield(iTypeSubfield).getData().toLowerCase();
-					if (iType.equals("ebook") || iType.equals("eaudio") || iType.equals("online") || iType.equals("oneclick")){
-						isEContent = true;
-						String sourceType = getSourceType(record, itemField);
-						if (sourceType != null){
-							sourceType = sourceType.toLowerCase().trim();
-							if (sourceType.contains("overdrive")) {
-								isOverDrive = true;
-							} else if (sourceType.contains("hoopla")) {
-								isHoopla = true;
-							} else {
-								logger.debug("Found eContent Source " + sourceType);
-							}
-						}else {
-							//Need to figure out how to load a source
-							logger.warn("Did not find an econtent source for " + identifier);
-						}
-					}
-				}
-				if (!isOverDrive && !isHoopla && isEContent){
-					RecordInfo eContentRecord = getEContentIlsRecord(groupedWork, record, identifier, itemField);
-					if (eContentRecord != null) {
-						unsuppressedEcontentRecords.add(eContentRecord);
-					}
-				}
-			}
-		}
+		//TODO: update once we have database connection information
 		return unsuppressedEcontentRecords;
+
+//		for (DataField itemField : itemRecords){
+//			if (!isItemSuppressed(itemField)){
+//				//Check to see if the item has an eContent indicator
+//				boolean isEContent = false;
+//				boolean isOverDrive = false;
+//				boolean isHoopla = false;
+//				if (itemField.getSubfield(iTypeSubfield) != null){
+//					String iType = itemField.getSubfield(iTypeSubfield).getData().toLowerCase();
+//					if (iType.equals("ebook") || iType.equals("eaudio") || iType.equals("online") || iType.equals("oneclick")){
+//						isEContent = true;
+//						String sourceType = getSourceType(record, itemField);
+//						if (sourceType != null){
+//							sourceType = sourceType.toLowerCase().trim();
+//							if (sourceType.contains("overdrive")) {
+//								isOverDrive = true;
+//							} else if (sourceType.contains("hoopla")) {
+//								isHoopla = true;
+//							} else {
+//								logger.debug("Found eContent Source " + sourceType);
+//							}
+//						}else {
+//							//Need to figure out how to load a source
+//							logger.warn("Did not find an econtent source for " + identifier);
+//						}
+//					}
+//				}
+//				if (!isOverDrive && !isHoopla && isEContent){
+//					RecordInfo eContentRecord = getEContentIlsRecord(groupedWork, record, identifier, itemField);
+//					if (eContentRecord != null) {
+//						unsuppressedEcontentRecords.add(eContentRecord);
+//					}
+//				}
+//			}
+//		}
+//		return unsuppressedEcontentRecords;
 	}
 
 	@Override

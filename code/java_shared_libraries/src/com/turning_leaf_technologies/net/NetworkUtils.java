@@ -14,22 +14,26 @@ import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 
 
 public class NetworkUtils {
     public static URLPostResponse getURL(String url, Logger logger) {
         return NetworkUtils.getURL(url, logger, null);
     }
-    public static URLPostResponse getURL(String url, Logger logger, String authentication) {
+    public static URLPostResponse getURL(String url, Logger logger, HashMap<String, String> headers) {
         URLPostResponse retVal;
         try {
             URL emptyIndexURL = new URL(url);
             HttpURLConnection conn = (HttpURLConnection) emptyIndexURL.openConnection();
             conn.setConnectTimeout(10000);
             conn.setReadTimeout(300000);
-            if (authentication != null){
-                conn.setRequestProperty("Authorization", "Basic " + Base64.encodeBase64String(authentication.getBytes()));
+            if (headers != null) {
+                for (String header : headers.keySet()) {
+                    conn.setRequestProperty(header, headers.get(header));
+                }
             }
+
             logger.debug("Getting From URL " + url);
             if (conn instanceof HttpsURLConnection){
                 HttpsURLConnection sslConn = (HttpsURLConnection)conn;

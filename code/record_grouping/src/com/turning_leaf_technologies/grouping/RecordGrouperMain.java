@@ -895,8 +895,7 @@ public class RecordGrouperMain {
 				}
 				String mediaType = rbdigitalRecordRS.getString("mediaType");
 
-				RecordIdentifier primaryIdentifier = new RecordIdentifier();
-				primaryIdentifier.setValue("rbdigital", rbdigitalId);
+				RecordIdentifier primaryIdentifier = new RecordIdentifier("rbdigital", rbdigitalId);
 
 				recordGroupingProcessor.processRecord(primaryIdentifier, title, subtitle, author, mediaType, true);
 				primaryIdentifiersInDatabase.remove(primaryIdentifier.toString().toLowerCase());
@@ -978,8 +977,7 @@ public class RecordGrouperMain {
 				}
 
 				overDriveIdentifiersStmt.setLong(1, id);
-				RecordIdentifier primaryIdentifier = new RecordIdentifier();
-				primaryIdentifier.setValue("overdrive", overdriveId);
+				RecordIdentifier primaryIdentifier = new RecordIdentifier("overdrive", overdriveId);
 
 				recordGroupingProcessor.processRecord(primaryIdentifier, title, subtitle, author, mediaType, true);
 				primaryIdentifiersInDatabase.remove(primaryIdentifier.toString().toLowerCase());

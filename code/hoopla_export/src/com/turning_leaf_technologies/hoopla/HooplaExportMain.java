@@ -5,6 +5,7 @@ import com.turning_leaf_technologies.logging.LoggingUtil;
 import com.turning_leaf_technologies.net.NetworkUtils;
 import com.turning_leaf_technologies.net.URLPostResponse;
 import com.turning_leaf_technologies.strings.StringUtils;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
 import org.json.JSONArray;
@@ -174,6 +175,9 @@ public class HooplaExportMain {
 				if (responseJSON.has("nextStartToken")){
 					startToken = responseJSON.getString("nextStartToken");
 				}
+
+				//TODO: Determine if the encoding is needed
+				String encodedToken = Base64.encodeBase64String(accessToken.getBytes());
 				while (startToken != null){
 					url = hooplaAPIBaseURL + "/api/v1/libraries/" + hooplaLibraryId + "/content?startToken=" + startToken;
 					response = NetworkUtils.getURL(url, logger, accessToken);

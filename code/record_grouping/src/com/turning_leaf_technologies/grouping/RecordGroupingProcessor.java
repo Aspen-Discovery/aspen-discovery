@@ -270,24 +270,30 @@ public class RecordGroupingProcessor {
 			groupedWork.setAuthor(author);
 		}
 
-		if (format.equalsIgnoreCase("audiobook")){
-			groupedWork.setGroupingCategory("book");
-		}else if (format.equalsIgnoreCase("ebook")){
-			groupedWork.setGroupingCategory("book");
-		}else if (format.equalsIgnoreCase("music")){
-			groupedWork.setGroupingCategory("music");
-		}else if (format.equalsIgnoreCase("video")){
-			groupedWork.setGroupingCategory("movie");
+		if (formatsToGroupingCategory.containsKey(format)){
+			groupedWork.setGroupingCategory(formatsToGroupingCategory.get(format));
+		} else {
+			if (!formatsWarned.contains(format)) {
+				logger.warn("Could not find format category for format " + format + " setting to other");
+				groupedWork.setGroupingCategory("other");
+				formatsWarned.add(format);
+			}
 		}
+
 
 		addGroupedWorkToDatabase(primaryIdentifier, groupedWork, primaryDataChanged);
 		return groupedWork.getPermanentId();
 	}
 
 
-
+	static HashSet<String> formatsWarned = new HashSet<>();
 	static HashMap<String, String> formatsToGroupingCategory = new HashMap<>();
 	static {
+		formatsToGroupingCategory.put("eMagazine", "book");
+		formatsToGroupingCategory.put("eMusic", "music");
+		formatsToGroupingCategory.put("music", "music");
+		formatsToGroupingCategory.put("video", "movie");
+		formatsToGroupingCategory.put("eAudio", "book");
 		formatsToGroupingCategory.put("Atlas", "other");
 		formatsToGroupingCategory.put("Map", "other");
 		formatsToGroupingCategory.put("TapeCartridge", "other");
