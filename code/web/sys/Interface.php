@@ -96,12 +96,20 @@ class UInterface extends Smarty
 		// problem characters like commas or whitespace).
 		$md5 = md5($this->vufindTheme);
         $this->compile_dir = $configArray['System']['interfaceCompileDir'];
-        if (!is_dir($this->compile_dir)) {
-			if (!mkdir($this->compile_dir, 770, true)){
-				echo("Could not create compile directory {$this->compile_dir}");
-				die();
-			}
-		}
+        if (file_exists($this->compile_dir)) {
+            if (!is_writable($this->compile_dir)) {
+                echo("Compile directory {$this->compile_dir} exists, but is not writable");
+                die();
+            }
+        }else {
+            if (!is_dir($this->compile_dir)) {
+                if (!mkdir($this->compile_dir, 770, true)){
+                    echo("Could not create compile directory {$this->compile_dir}");
+                    die();
+                }
+            }
+        }
+
 
 		$this->plugins_dir   = array('plugins', "$local/interface/plugins");
 		$this->caching       = false;
