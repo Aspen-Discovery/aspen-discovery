@@ -16,14 +16,6 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Pattern;
 
-/**
- * Processes data that was exported from the ILS.
- *
- * Pika
- * User: Mark Noble
- * Date: 11/26/13
- * Time: 9:30 AM
- */
 abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	protected boolean fullReindex;
 	private String individualMarcPath;
