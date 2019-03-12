@@ -118,8 +118,8 @@ class EditorialReview extends DataObject {
 		return $ret;
 	}
 
-	function update($dataObject = false){
-		$ret =  parent::update($dataObject);
+	function update(){
+		$ret =  parent::update();
 
 		return $ret;
 	}

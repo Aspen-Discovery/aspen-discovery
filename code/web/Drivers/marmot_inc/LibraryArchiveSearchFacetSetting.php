@@ -48,7 +48,7 @@ class LibraryArchiveSearchFacetSetting extends FacetSetting {
 		return '/Admin/LibraryArchiveSearchFacetSettings?objectAction=edit&id=' . $this->id;
 	}
 
-	public function getAvailableFacets(){
+	public static function getAvailableFacets(){
 		$config            = getExtraConfigArray('islandoraFacets');
 		$availableFacets = isset($config['Results']) ? $config['Results'] : self::$defaultFacetList;
 		return $availableFacets;

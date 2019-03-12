@@ -959,7 +959,7 @@ class CatalogConnection
 		if ($cachedValue == false || isset($_REQUEST['reload'])){
 			$cachedValue = $this->driver->getNumHolds($id);
 			global $configArray;
-			$memCache->add($key, $cachedValue, 0, $configArray['Caching']['item_data']);
+			$memCache->set($key, $cachedValue, 0, $configArray['Caching']['item_data']);
 		}
 
 		return $cachedValue;

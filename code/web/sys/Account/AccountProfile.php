@@ -43,12 +43,12 @@ class AccountProfile extends DataObject {
 		$memCache->delete('account_profiles_' . $instanceName);
 		return parent::insert();
 	}
-	function update($dataObject = false){
+	function update(){
 		/** @var Memcache $memCache */
 		global $memCache;
 		global $instanceName;
 		$memCache->delete('account_profiles_' . $instanceName);
-		return parent::update($dataObject);
+		return parent::update();
 	}
 	function delete($useWhere = false){
 		/** @var Memcache $memCache */

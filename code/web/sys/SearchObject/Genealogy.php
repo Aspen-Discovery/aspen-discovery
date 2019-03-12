@@ -141,6 +141,12 @@ class SearchObject_Genealogy extends SearchObject_Base
 		$timer->logTime('Setup Solr Search Object');
 	}
 
+    public function setDebugging($enableDebug, $enableSolrQueryDebugging){
+        $this->debug = $enableDebug;
+        $this->debugSolrQuery = $enableDebug && $enableSolrQueryDebugging;
+        $this->getIndexEngine()->setDebugging($enableDebug, $enableSolrQueryDebugging);
+    }
+
 	/**
 	 * Initialise the object from the global
 	 *  search parameters in $_REQUEST.

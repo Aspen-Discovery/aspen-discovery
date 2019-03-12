@@ -81,8 +81,8 @@ class TranslationMap extends DataObject{
 	 *
 	 * @see DB/DB_DataObject::update()
 	 */
-	public function update($dataObject = false){
-		$ret = parent::update($dataObject);
+	public function update(){
+		$ret = parent::update();
 		if ($ret === FALSE ){
 			return $ret;
 		}else{

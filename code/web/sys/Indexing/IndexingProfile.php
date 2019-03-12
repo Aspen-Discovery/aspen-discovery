@@ -271,8 +271,8 @@ class IndexingProfile extends DataObject{
 	 *
 	 * @see DB/DB_DataObject::update()
 	 */
-	public function update($dataObject = false){
-		$ret = parent::update($dataObject);
+	public function update(){
+		$ret = parent::update();
 		if ($ret === FALSE ){
 			global $logger;
 			$logger->log('Failed to update indexing profile for '.$this->name, PEAR_LOG_ERR);

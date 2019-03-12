@@ -1418,7 +1418,6 @@ class DBMaintenance extends Admin_Admin {
 							sharing ENUM('private', 'location', 'library', 'everyone') DEFAULT 'everyone',
 							label VARCHAR(50) NOT NULL,
 							description MEDIUMTEXT,
-							catalogScoping ENUM('unscoped', 'library', 'location'),
 							defaultFilter TEXT,
 							defaultSort ENUM('relevance', 'popularity', 'newest_to_oldest', 'oldest_to_newest', 'author', 'title', 'user_rating'),
 							UNIQUE (textId)

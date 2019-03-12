@@ -7,7 +7,7 @@ abstract class SolrDataObject extends DataObject{
 	 */
 	abstract function getObjectStructure();
 
-	function update($dataObject = false){
+	function update(){
 		return $this->updateDetailed(true);
 	}
 	private $updateStarted = false;

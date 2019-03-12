@@ -137,7 +137,8 @@ class DataObjectUtil
 			}
 			//Check to see if there is a custom validation routine
 			if (isset($property['serverValidation'])){
-				$propValidation = $object->$property['serverValidation']();
+			    $validationRoutine = $property['serverValidation'];
+				$propValidation = $object->$validationRoutine();
 				if ($propValidation['validatedOk'] == false){
 					$validationResults['errors'] =  array_merge($validationResults['errors'], $propValidation['errors']);
 				}
@@ -371,7 +372,15 @@ class DataObjectUtil
 						$subObject = new $subObjectType();
 						$id = $key;
 					}else{
-						$subObject = $existingValues[$id];
+                        if (!isset($existingValues[$id])){
+                            if (!isset($deletions[$id]) || ($deletions[$id] == 'false')) {
+                                $logger->log("$subObjectType $id has been deleted from the database, but is still present in the interface", PEAR_LOG_ERR);
+                            }
+                            continue;
+                        } else {
+                            $subObject = $existingValues[$id];
+                        }
+
 					}
 
 					$deleted = isset($deletions[$id]) ? $deletions[$id] : false;

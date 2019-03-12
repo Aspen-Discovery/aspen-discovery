@@ -151,11 +151,7 @@ abstract class SearchObject_Base
 		$timer->logTime('Setup Base Search Object');
 	}
 
-	public function setDebugging($enableDebug, $enableSolrQueryDebugging){
-		$this->debug = $enableDebug;
-		$this->debugSolrQuery = $enableDebug && $enableSolrQueryDebugging;
-		$this->getIndexEngine()->setDebugging($enableDebug, $enableSolrQueryDebugging);
-	}
+
 
 	/* Parse apart the field and value from a URL filter string.
 	 *
@@ -2386,7 +2382,7 @@ class minSO
 	 *    searchObject passed in. Needs to be kept
 	 *    up-to-date with the deminify() function on
 	 *    searchObject.
-	 *
+	 * @param SearchObject_Base $searchObject
 	 * @access  public
 	 */
 	public function __construct($searchObject)

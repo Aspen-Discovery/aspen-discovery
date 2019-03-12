@@ -56,8 +56,8 @@ class Obituary extends DataObject {
 		return $ret;
 	}
 
-	function update($dataObject = false) {
-		$ret = parent::update($dataObject);
+	function update() {
+		$ret = parent::update();
 		//Load the person this is for, and update solr
 		if ($this->personId) {
 			require_once ROOT_DIR . '/sys/Genealogy/Person.php';

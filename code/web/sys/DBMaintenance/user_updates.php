@@ -10,14 +10,6 @@
 
 function getUserUpdates(){
 	return array(
-		'roles_1' => array(
-			'title' => 'Roles 1',
-			'description' => 'Add new role for epubAdmin',
-			'sql' => array(
-				"INSERT INTO roles (name, description) VALUES ('epubAdmin', 'Allows administration of eContent.')",
-			),
-		),
-
 		'roles_2' => array(
 			'title' => 'Roles 2',
 			'description' => 'Add new role for locationReports',

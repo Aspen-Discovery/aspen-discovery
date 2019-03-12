@@ -1,13 +1,5 @@
 <?php
 
-/**
- * A Customizable section of the catalog that can be browsed within
- *
- * @category VuFind-Plus
- * @author Mark Noble <mark@marmot.org>
- * Date: 1/25/14
- * Time: 10:04 AM
- */
 require_once ROOT_DIR . '/sys/Browse/SubBrowseCategories.php';
 
 class BrowseCategory extends DataObject{
@@ -27,10 +19,12 @@ class BrowseCategory extends DataObject{
 	public $additionalWorksToInclude;
 	public $defaultSort;
 
-	public $catalogScoping;
-
 	public $numTimesShown;
 	public $numTitlesClickedOn;
+
+	function getNumericColumnNames(){
+	    return ['id','sourceListId','userId'];
+    }
 
 	public function getSubCategories(){
 		if (!isset($this->subBrowseCategories) && $this->id) {
@@ -50,7 +44,8 @@ class BrowseCategory extends DataObject{
 	public function __get($name){
 		if ($name == 'subBrowseCategories') {
 			$this->getSubCategories();
-			return $this->subBrowseCategories;
+            /** @noinspection PhpUndefinedFieldInspection */
+            return $this->subBrowseCategories;
 		}else{
 			return $this->data[$name];
 		}
@@ -58,31 +53,20 @@ class BrowseCategory extends DataObject{
 
 	public function __set($name, $value){
 		if ($name == 'subBrowseCategories') {
+            /** @noinspection PhpUndefinedFieldInspection */
 			$this->subBrowseCategories = $value;
 		}else{
 			$this->data[$name] = $value;
 		}
 	}
-	/**
-	 * Override the fetch functionality to save related objects
-	 *
-	 * @see DB/DB_DataObject::fetch()
-	 */
-//	public function fetch(){
-//		$return = parent::fetch();
-//		if ($return !== FALSE) {
-//			// check for any sub-categories
-//			$this->getSubCategories();
-//		}
-//		return $return;
-//	}
+
 	/**
 	 * Override the update functionality to save related objects
 	 *
 	 * @see DB/DB_DataObject::update()
 	 */
-	public function update($dataObject = false){
-		$ret = parent::update($dataObject);
+	public function update(){
+		$ret = parent::update();
 		if ($ret !== FALSE ){
 			$this->saveSubBrowseCategories();
 
@@ -150,7 +134,8 @@ class BrowseCategory extends DataObject{
 	public function saveSubBrowseCategories(){
 		if (isset ($this->subBrowseCategories) && is_array($this->subBrowseCategories)) {
 			/** @var SubBrowseCategories[] $subBrowseCategories */
-			foreach ($this->subBrowseCategories as $subCategory) {
+			/** @var SubBrowseCategories $subCategory */
+            foreach ($this->subBrowseCategories as $subCategory) {
 				if (isset($subCategory->deleteOnSave) && $subCategory->deleteOnSave == true) {
 					$subCategory->delete();
 				} else {
@@ -212,7 +197,6 @@ class BrowseCategory extends DataObject{
 				'canEdit' => false,
 			),
 
-//			'catalogScoping' => array('property'=>'catalogScoping', 'type'=>'enum', 'label'=>'Catalog Scoping', 'values' => array('unscoped' => 'Unscoped', 'library' => 'Current Library', 'location' => 'Current Location'), 'description'=>'What scoping should be used for this search scope?.', 'default'=>'unscoped'),
 			// Disabled setting this option since it is not an implemented feature.
 			'searchTerm' => array('property'=>'searchTerm', 'type'=>'text', 'label'=>'Search Term', 'description'=>'A default search term to apply to the category', 'default'=>'', 'hideInLists' => true, 'maxLength' => 500),
 			'defaultFilter' => array('property'=>'defaultFilter', 'type'=>'textarea', 'label'=>'Default Filter(s)', 'description'=>'Filters to apply to the search by default.', 'hideInLists' => true, 'rows' => 3, 'cols'=>80),
@@ -240,8 +224,7 @@ class BrowseCategory extends DataObject{
 				$location = Location::getUserHomeLocation();
 				$this->textId .= '_' . $location->code;
 			}elseif ($this->sharing == 'library'){
-				global $library;
-				$this->textId .= '_' . $library->getPatronHomeLibrary()->subdomain;
+				$this->textId .= '_' . Library::getPatronHomeLibrary()->subdomain;
 			}
 		}
 
@@ -318,7 +301,7 @@ class BrowseCategory extends DataObject{
 			$this->defaultSort = 'relevance';
 		}elseif ($solrSort == 'popularity desc'){
 			$this->defaultSort = 'popularity';
-		}elseif ($solrSort == 'days_since_added asc'){
+		}elseif ($solrSort == 'days_since_added asc' || $solrSort == 'year desc,title asc'){
 			$this->defaultSort = 'newest_to_oldest';
 		}elseif ($solrSort == 'days_since_added desc'){
 			$this->defaultSort = 'oldest_to_newest';

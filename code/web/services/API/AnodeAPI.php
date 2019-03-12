@@ -153,9 +153,6 @@ class AnodeAPI extends Action {
 				if (isset($groupedWorkRecord['econtent_source_'.$branch])) {
 					$groupedWork['econtent_source'] = $groupedWorkRecord['econtent_source_'.$branch];
 				}
-				if (isset($groupedWorkRecord['econtent_device'])) {
-					$groupedWork['econtent_device'] = $groupedWorkRecord['econtent_device'];
-				}
 				if (isset($groupedWorkRecord['physical'])) {
 					$groupedWork['physical'] = $groupedWorkRecord['physical'];
 				}

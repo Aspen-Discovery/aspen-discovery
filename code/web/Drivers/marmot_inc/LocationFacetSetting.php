@@ -13,6 +13,7 @@ class LocationFacetSetting extends FacetSetting {
 			$location->libraryId = $homeLibrary->libraryId;
 		}
 		$location->find();
+        $locationList = [];
 		while ($location->fetch()){
 			$locationList[$location->locationId] = $location->displayName;
 		}

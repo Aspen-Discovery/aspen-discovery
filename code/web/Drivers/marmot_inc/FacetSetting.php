@@ -15,7 +15,7 @@ abstract class FacetSetting extends DataObject {
 	public $collapseByDefault;
 	public $useMoreFacetPopup;
 
-	public function getAvailableFacets(){
+	public static function getAvailableFacets(){
 		$availableFacets = array(
 			"owning_library" => "Library System",
 			"owning_location" => "Branch",
@@ -26,9 +26,7 @@ abstract class FacetSetting extends DataObject {
 			"publishDate" => "Publication Year",
 			"format" => "Format",
 			"format_category" => "Format Category",
-			"econtent_device" => "Compatible Device",
 			"econtent_source" => "E-Content Collection",
-			"econtent_protection_type" => "E-Content Protection",
 			"subject_facet" => "Subjects",
 			"topic_facet" => "Topics",
 			"target_audience" => "Audience",

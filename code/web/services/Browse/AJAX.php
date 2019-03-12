@@ -127,7 +127,6 @@ class Browse_AJAX extends Action {
 			$browseCategory->label = $categoryName;
 			$browseCategory->userId = UserAccount::getActiveUserId();
 			$browseCategory->sharing = 'everyone';
-			$browseCategory->catalogScoping = 'unscoped';
 			$browseCategory->description = '';
 
 
@@ -234,7 +233,7 @@ class Browse_AJAX extends Action {
 		global $memCache, $configArray, $solrScope;
 		$activeUserId = UserAccount::getActiveUserId();
 		$key = 'browse_category_' . $this->textId . '_' . $activeUserId . '_' . $solrScope . '_' . $browseMode;
-		$memCache->add($key, $result, 0, $configArray['Caching']['browse_category_info']);
+		$memCache->set($key, $result, 0, $configArray['Caching']['browse_category_info']);
 
 		return $result;
 	}
@@ -333,7 +332,7 @@ class Browse_AJAX extends Action {
 			if ($pageToLoad == 1) {
 				global $memCache, $configArray, $solrScope;
 				$key = 'browse_category_' . $this->textId . '_' . $solrScope . '_' . $browseMode;
-				$memCache->add($key, $result, 0, $configArray['Caching']['browse_category_info']);
+				$memCache->set($key, $result, 0, $configArray['Caching']['browse_category_info']);
 			}
 			return $result;
 		}

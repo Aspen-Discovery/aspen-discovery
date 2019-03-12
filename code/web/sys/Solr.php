@@ -1649,16 +1649,15 @@ class Solr implements IndexEngine {
 				$options["f.target_audience.facet.method"] = 'enum';
 				$options["f.literary_form_full.facet.method"] = 'enum';
 				$options["f.literary_form.facet.method"] = 'enum';
-				$options["f.literary_form.econtent_device"] = 'enum';
-				$options["f.literary_form.lexile_code"] = 'enum';
-				$options["f.literary_form.mpaa_rating"] = 'enum';
-				$options["f.literary_form.rating_facet"] = 'enum';
-				$options["f.format_category_{$solrScope}.rating_facet"] = 'enum';
-				$options["f.format_{$solrScope}.rating_facet"] = 'enum';
-				$options["f.availability_toggle_{$solrScope}.rating_facet"] = 'enum';
-				$options["f.local_time_since_added_{$solrScope}.rating_facet"] = 'enum';
-				$options["f.owning_library_{$solrScope}.rating_facet"] = 'enum';
-				$options["f.owning_location_{$solrScope}.rating_facet"] = 'enum';
+				$options["f.lexile_code.facet.method"] = 'enum';
+				$options["f.mpaa_rating.facet.method"] = 'enum';
+				$options["f.rating_facet.facet.method"] = 'enum';
+				$options["f.format_category_{$solrScope}.facet.method"] = 'enum';
+				$options["f.format_{$solrScope}.facet.method"] = 'enum';
+				$options["f.availability_toggle_{$solrScope}.facet.method"] = 'enum';
+				$options["f.local_time_since_added_{$solrScope}.facet.method"] = 'enum';
+				$options["f.owning_library_{$solrScope}.facet.method"] = 'enum';
+				$options["f.owning_location_{$solrScope}.facet.method"] = 'enum';
 			}
 
 			unset($facet['limit']);

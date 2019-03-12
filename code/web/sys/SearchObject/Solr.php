@@ -42,7 +42,6 @@ class SearchObject_Solr extends SearchObject_Base
 	private $index = null;
 	// Field List
 	public static $fields = 'auth_author2,author2-role,id,mpaaRating,title_display,title_full,title_short,title_sub,author,author_display,isbn,upc,issn,series,series_with_volume,recordtype,display_description,literary_form,literary_form_full,num_titles,record_details,item_details,publisherStr,publishDate,subject_facet,topic_facet,primary_isbn,primary_upc,accelerated_reader_point_value,accelerated_reader_reading_level,accelerated_reader_interest_level,lexile_code,lexile_score,display_description,fountas_pinnell,last_indexed';
-	private $fieldsFull = '*,score';
 	// HTTP Method
 	//    private $method = HTTP_REQUEST_METHOD_GET;
 	private $method = 'POST';
@@ -80,7 +79,6 @@ class SearchObject_Solr extends SearchObject_Base
 
 		global $configArray;
 		global $timer;
-		global $library;
 		global $solrScope;
 		// Include our solr index
 		$class = $configArray['Index']['engine'];
@@ -115,13 +113,6 @@ class SearchObject_Solr extends SearchObject_Base
 		}
 		if (isset($searchSettings['General']['default_view'])) {
 			$this->defaultView = $searchSettings['General']['default_view'];
-		}
-		if (isset($searchSettings['General']['default_limit'])) {
-			$this->defaultLimit = $searchSettings['General']['default_limit'];
-		}
-		if (isset($searchSettings['General']['retain_filters_by_default'])) {
-			$this->retainFiltersByDefault
-			= $searchSettings['General']['retain_filters_by_default'];
 		}
 		if (isset($searchSettings['DefaultSortingByType']) && is_array($searchSettings['DefaultSortingByType'])) {
 			$this->defaultSortByType = $searchSettings['DefaultSortingByType'];
@@ -192,14 +183,16 @@ class SearchObject_Solr extends SearchObject_Base
 		}
 	}
 
-	/**
-	 * Initialise the object from the global
-	 *  search parameters in $_REQUEST.
-	 *
-	 * @access  public
-	 * @var string $searchSource
-	 * @return  boolean
-	 */
+    /**
+     * Initialise the object from the global
+     *  search parameters in $_REQUEST.
+     *
+     * @access  public
+     *
+     * @param String|null $searchSource
+     * @param String|null $searchTerm
+     * @return  boolean
+     */
 	public function init($searchSource = null, $searchTerm = null)
 	{
 		// Call the standard initialization routine in the parent:
@@ -311,6 +304,12 @@ class SearchObject_Solr extends SearchObject_Base
 		return true;
 	} // End init()
 
+    public function setDebugging($enableDebug, $enableSolrQueryDebugging){
+        $this->debug = $enableDebug;
+        $this->debugSolrQuery = $enableDebug && $enableSolrQueryDebugging;
+        $this->getIndexEngine()->setDebugging($enableDebug, $enableSolrQueryDebugging);
+    }
+
 	public function setSearchTerm($searchTerm){
 		$this->initBasicSearch($searchTerm);
 	}
@@ -336,7 +335,8 @@ class SearchObject_Solr extends SearchObject_Base
 		$hasSearchLibraryFacets = ($searchLibrary != null && (count($searchLibrary->facets) > 0));
 		$hasSearchLocationFacets = ($searchLocation != null && (count($searchLocation->facets) > 0));
 		if ($hasSearchLocationFacets){
-			$facets = $searchLocation->facets;
+            /** @noinspection PhpUndefinedFieldInspection */
+            $facets = $searchLocation->facets;
 		}elseif ($hasSearchLibraryFacets){
 			$facets = $searchLibrary->facets;
 		}else{
@@ -597,31 +597,7 @@ class SearchObject_Solr extends SearchObject_Base
 		return $html;
 	}
 
-	/**
-	 * Use the record driver to build an array of HTML displays from the search
-	 * results suitable for use on a user's "favorites" page.
-	 *
-	 * @access  public
-	 * @return  array   Array of HTML chunks for individual records.
-	 */
-	public function getSuggestionListHTML()
-	{
-		global $interface;
 
-		$html = array();
-		if (isset($this->indexResult['response']) && isset($this->indexResult['response']['docs'])){
-			for ($x = 0; $x < count($this->indexResult['response']['docs']); $x++) {
-				$current = & $this->indexResult['response']['docs'][$x];
-				if (!$this->debug){
-					unset($current['explain']);
-					unset($current['score']);
-				}
-				$record = RecordDriverFactory::initRecordDriver($current);
-				$html[] = $interface->fetch($record->getSuggestionEntry());
-			}
-		}
-		return $html;
-	}
 	/**
 	 * Use the record driver to build an array of HTML displays from the search
 	 * results suitable for use on a user's "favorites" page.
@@ -720,6 +696,7 @@ class SearchObject_Solr extends SearchObject_Base
 			$current = & $this->indexResult['response']['docs'][$x];
 			$interface->assign('recordIndex', $x + 1);
 			$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
+			/** @var GroupedWorkDriver $record */
 			$record = RecordDriverFactory::initRecordDriver($current);
 			$html[] = $interface->fetch($record->getCitation($citationFormat));
 		}
@@ -768,6 +745,7 @@ class SearchObject_Solr extends SearchObject_Base
 				}
 				$interface->assign('recordIndex', $x + 1);
 				$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
+				/** @var GroupedWorkDriver $record */
 				$record = RecordDriverFactory::initRecordDriver($current);
 				if (!PEAR_Singleton::isError($record)) {
 					$interface->assign('recordDriver', $record);
@@ -1228,7 +1206,7 @@ class SearchObject_Solr extends SearchObject_Base
 	 * @param   bool   $preventQueryModification   Should we allow the search engine
 	 *                                             to modify the query or is it already
 	 *                                             a well formatted query
-	 * @return  object solr result structure (for now)
+	 * @return  array
 	 */
 	public function processSearch($returnIndexErrors = false, $recommendations = false, $preventQueryModification = false) {
 		global $timer;
@@ -1453,8 +1431,9 @@ class SearchObject_Solr extends SearchObject_Base
 
 		// If extra processing is needed for recommendations, do it now:
 		if ($recommendations && is_array($this->recommend)) {
-			foreach($this->recommend as $currentSet) {
-				foreach($currentSet as $current) {
+		    foreach($this->recommend as $currentSet) {
+		        /** @var RecommendationInterface $current */
+                foreach($currentSet as $current) {
 					$current->process();
 				}
 			}
@@ -1600,7 +1579,6 @@ class SearchObject_Solr extends SearchObject_Base
 	 *   for in the shingle suggestions above.
 	 *
 	 * @access  private
-	 * @return  array     Suggestions array
 	 */
 	private function basicSpelling()
 	{
@@ -1700,7 +1678,7 @@ class SearchObject_Solr extends SearchObject_Base
 			if (strlen($currentLibrary->additionalLocationsToShowAvailabilityFor) > 0){
 				$locationsToLookfor = explode('|', $currentLibrary->additionalLocationsToShowAvailabilityFor);
 				$location = new Location();
-				$location->whereAddIn('code', $locationsToLookfor, 'string');
+				$location->whereAddIn('code', $locationsToLookfor, true);
 				$location->find();
 				$additionalAvailableAtLocations = array();
 				while ($location->fetch()){
@@ -1801,8 +1779,6 @@ class SearchObject_Solr extends SearchObject_Base
 						$valueKey = '2' . $valueKey;
 						$foundInstitution = true;
 						$numValidLibraries++;
-					}else if (!is_null($currentLibrary) && $currentLibrary->restrictOwningBranchesAndSystems == 1){
-						//$okToAdd = false;
 					}
 				}else if ($doBranchProcessing){
 					if (strlen($facet[0]) > 0){
@@ -1834,8 +1810,6 @@ class SearchObject_Solr extends SearchObject_Base
 						}elseif ($facet[0] == 'Marmot Digital Library' || $facet[0] == 'Digital Collection' || $facet[0] == 'OverDrive' || $facet[0] == 'Online'){
 							$valueKey = '5' . $valueKey;
 							$numValidRelatedLocations++;
-						}else if (!is_null($currentLibrary) && $currentLibrary->restrictOwningBranchesAndSystems == 1){
-							//$okToAdd = false;
 						}
 					}
 				}
@@ -1904,7 +1878,7 @@ class SearchObject_Solr extends SearchObject_Base
 	 * with it.
 	 *
 	 * @access  public
-	 * @param   string      $preferredSection       Section to favor when loading
+	 * @param   boolean|string      $preferredSection       Section to favor when loading
 	 *                                              settings; if multiple sections
 	 *                                              contain the same facet, this
 	 *                                              section's description will be
@@ -1926,13 +1900,13 @@ class SearchObject_Solr extends SearchObject_Base
 		}
 	}
 
-	/**
-	 * Turn our results into an RSS feed
-	 *
-	 * @access  public
-	 * @public  array      $result      Existing result set (null to do new search)
-	 * @return  string                  XML document
-	 */
+    /**
+     * Turn our results into an RSS feed
+     *
+     * @access  public
+     * @param  null|array      $result      Existing result set (null to do new search)
+     * @return  string                  XML document
+     */
 	public function buildRSS($result = null)
 	{
 		global $configArray;
@@ -1957,7 +1931,7 @@ class SearchObject_Solr extends SearchObject_Base
 				$groupedWorkDriver = new GroupedWorkDriver($result['response']['docs'][$i]);
 				if ($groupedWorkDriver->isValid){
 					$image = $groupedWorkDriver->getBookcoverUrl('medium');
-					$description = "<img src='$image'/> " . $groupedWorkDriver->getDescriptionFast();
+					$description = "<img alt='Cover Image' src='$image'/> " . $groupedWorkDriver->getDescriptionFast();
 					$result['response']['docs'][$i]['rss_description'] = $description;
 				}
 			}else{
@@ -1992,13 +1966,13 @@ class SearchObject_Solr extends SearchObject_Base
 		return $interface->fetch('Search/rss.tpl');
 	}
 
-	/**
-	 * Turn our results into an Excel document
-	 *
-	 * @access  public
-	 * @var  array      $result      Existing result set (null to do new search)
-	 * @return  string                  Excel document
-	 */
+    /**
+     * Turn our results into an Excel document
+     *
+     * @access  public
+     * @var  null|array $result Existing result set (null to do new search)
+     * @throws Exception
+     */
 	public function buildExcel($result = null)
 	{
 		// First, get the search results if none were provided
@@ -2059,7 +2033,8 @@ class SearchObject_Solr extends SearchObject_Base
 			if (isset($curDoc['detailed_location_' . $solrScope])){
 				$location = is_array($curDoc['detailed_location_' . $solrScope]) ? $curDoc['detailed_location_' . $solrScope][0] : $curDoc['detailed_location_' . $solrScope];
 			}
-			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $location);
+            /** @noinspection PhpUnusedLocalVariableInspection */
+            $sheet->setCellValueByColumnAndRow($curCol++, $curRow, $location);
 		}
 
 		for ($i = 0; $i < $maxColumn; $i++){
@@ -2112,7 +2087,6 @@ class SearchObject_Solr extends SearchObject_Base
 	 * @param   string[]  $ids        An array of documents to retrieve from Solr
 	 * @access  public
 	 * @throws  object              PEAR Error
-	 * @return  string              The requested resource
 	 */
 	function searchForRecordIds($ids)
 	{

@@ -357,7 +357,7 @@ class Person extends SolrDataObject
 		return $ret;
 	}
 
-	function update($dataObject = false){
+	function update(){
 		$this->modifiedBy = UserAccount::getActiveUserId();
 		$this->lastModified = time();
 		$ret = parent::update($dataObject);

@@ -33,9 +33,9 @@ class UserListEntry extends DataObject{
 	 * @param bool $dataObject
 	 * @return bool|int|mixed
 	 */
-	function update($dataObject = false)
+	function update()
 	{
-		$result = parent::update($dataObject);
+		$result = parent::update();
 		if ($result) {
 			$this->flushUserListBrowseCategory();
 		}

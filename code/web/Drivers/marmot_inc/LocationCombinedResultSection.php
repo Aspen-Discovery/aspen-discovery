@@ -19,6 +19,7 @@ class LocationCombinedResultSection extends CombinedResultSection{
 			$location->libraryId = $homeLibrary->libraryId;
 		}
 		$location->find();
+        $locationList = [];
 		while ($location->fetch()){
 			$locationList[$location->locationId] = $location->displayName;
 		}

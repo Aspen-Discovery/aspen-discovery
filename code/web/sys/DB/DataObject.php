@@ -21,6 +21,10 @@ abstract class DataObject
     private $__lastQuery;
     private $__lastError;
 
+    function getNumericColumnNames(){
+        return [];
+    }
+
     public function find($fetchFirst = false){
         if (!isset($this->__table)) {
             echo("Table not defined for class " . self::class);
@@ -88,12 +92,26 @@ abstract class DataObject
         return $return;
     }
 
-    public function fetchAll(){
+    /**
+     * Retrieves all objects for the current query if name and value are null
+     * Retrieves a list of all field values if only fieldName is provided
+     * Retrives an associated array if both fieldName and fieldValue are provided
+     * @param null $fieldName
+     * @param null $fieldValue
+     * @return array
+     */
+    public function fetchAll($fieldName = null, $fieldValue = null){
         $results = array();
         if ($this->find() > 0) {
             $result = $this->fetch();
             while ($result != null) {
-                $results[] = clone $result;
+                if ($fieldName != null && $fieldValue != null) {
+                    $results[$result->$fieldName] = $result->$fieldValue;
+                }elseif ($fieldName != null) {
+                    $results[$result->$fieldName] = $result->$fieldName;
+                } else {
+                    $results[] = clone $result;
+                }
                 $result = $this->fetch();
             }
         }
@@ -125,10 +143,27 @@ abstract class DataObject
         }
     }
 
+    public function whereAddIn($field, $values, $escapeValues, $logic = 'AND') {
+        if ($escapeValues) {
+            foreach ($values as $index => $value) {
+                $values[$index] = $this->escape($value);
+            }
+        }
+        $valuesString = implode(', ', $values);
+        $whereClause = "$field IN ($valuesString)";
+        if (strlen($this->__where) > 0) {
+            $this->__where .= ' ' . $logic . ' ' . $whereClause;
+        }else {
+            $this->__where .= $whereClause;
+        }
+    }
+
     public function insert(){
         /** @var PDO $aspen_db */
         global $aspen_db;
         $insertQuery = 'INSERT INTO ' . $this->__table;
+
+        $numericColumns = $this->getNumericColumnNames();
 
         $properties = get_object_vars($this);
         $propertyNames = '';
@@ -140,11 +175,20 @@ abstract class DataObject
                     $propertyValues .= ', ';
                 }
                 $propertyNames .= $name;
-                $propertyValues .= $aspen_db->quote($value);
+                if (in_array($name, $numericColumns)) {
+                    if (is_numeric($value)) {
+                        $propertyValues .= $value;
+                    } else {
+                        $propertyValues .= 'NULL';
+                    }
+                } else {
+                    $propertyValues .= $aspen_db->quote($value);
+                }
             }
         }
         $insertQuery .= '(' . $propertyNames . ') VALUES (' . $propertyValues . ');';
         $response = $aspen_db->prepare($insertQuery)->execute();
+        $this->{$this->__primaryKey} = $aspen_db->lastInsertId();
         return $response;
     }
 
@@ -153,6 +197,8 @@ abstract class DataObject
         global $aspen_db;
         $updateQuery = 'UPDATE ' . $this->__table;
 
+        $numericColumns = $this->getNumericColumnNames();
+
         $properties = get_object_vars($this);
         $updates = '';
         foreach ($properties as $name => $value) {
@@ -160,7 +206,15 @@ abstract class DataObject
                 if (strlen($updates) != 0) {
                     $updates .= ', ';
                 }
-                $updates .= $name . ' = ' . $aspen_db->quote($value);
+                if (in_array($name, $numericColumns)) {
+                    if (is_numeric($value)) {
+                        $updates .= $name . ' = ' . $value;
+                    } else {
+                        $updates .= $name . ' = NULL';
+                    }
+                } else {
+                    $updates .= $name . ' = ' . $aspen_db->quote($value);
+                }
             }
         }
         $primaryKey = $this->__primaryKey;

@@ -877,15 +877,6 @@ function getLibraryLocationUpdates(){
 			),
 		),
 
-		'search_sources_1' => array(
-			'title' => 'Search Sources Update 1',
-			'description' => 'Add scoping information to search scope',
-			'sql' => array(
-				"ALTER TABLE library_search_source ADD COLUMN catalogScoping ENUM('unscoped', 'library', 'location') DEFAULT 'unscoped'",
-				"ALTER TABLE location_search_source ADD COLUMN catalogScoping ENUM('unscoped', 'library', 'location') DEFAULT 'unscoped'"
-			),
-		),
-
 		'more_details_customization' => array(
 			'title' => 'More Details Customization',
 			'description' => 'Setup tables to allow customization of more details in full record view',

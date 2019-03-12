@@ -975,7 +975,7 @@ class Library extends DataObject
 				'keyOther' => 'libraryId',
 				'subObjectType' => 'LibraryRecordOwned',
 				'structure' => $libraryRecordOwnedStructure,
-				'sortable' => true,
+				'sortable' => false,
 				'storeDb' => true,
 				'allowEdit' => false,
 				'canEdit' => false,
@@ -1409,7 +1409,7 @@ class Library extends DataObject
 	 *
 	 * @see DB/DB_DataObject::update()
 	 */
-	public function update($dataObject = false){
+	public function update(){
 		if (isset($this->showInMainDetails) && is_array($this->showInMainDetails)) {
 			// convert array to string before storing in database
 			$this->showInMainDetails = serialize($this->showInMainDetails);
@@ -1418,7 +1418,7 @@ class Library extends DataObject
 			// convert array to string before storing in database
 			$this->showInSearchResultsMainDetails = serialize($this->showInSearchResultsMainDetails);
 		}
-		$ret = parent::update($dataObject);
+		$ret = parent::update();
 		if ($ret !== FALSE ){
 			$this->saveHolidays();
 			$this->saveFacets();
@@ -1591,7 +1591,8 @@ class Library extends DataObject
 	}
 
 	private function saveOneToManyOptions($oneToManySettings) {
-		foreach ($oneToManySettings as $oneToManyDBObject){
+	    /** @var DataObject $oneToManyDBObject */
+        foreach ($oneToManySettings as $oneToManyDBObject){
 			if (isset($oneToManyDBObject->deleteOnSave) && $oneToManyDBObject->deleteOnSave == true){
 				$oneToManyDBObject->delete();
 			}else{
@@ -1768,18 +1769,6 @@ class Library extends DataObject
 
 		$facet = new LibraryFacetSetting();
 		$facet->setupAdvancedFacet('awards_facet', 'Awards', true);
-		$facet->libraryId = $libraryId;
-		$facet->weight = count($defaultFacets) + 1;
-		$defaultFacets[] = $facet;
-
-		$facet = new LibraryFacetSetting();
-		$facet->setupSideFacet('econtent_device', 'Compatible Device', true);
-		$facet->libraryId = $libraryId;
-		$facet->weight = count($defaultFacets) + 1;
-		$defaultFacets[] = $facet;
-
-		$facet = new LibraryFacetSetting();
-		$facet->setupSideFacet('econtent_source', 'eContent Source', true);
 		$facet->libraryId = $libraryId;
 		$facet->weight = count($defaultFacets) + 1;
 		$defaultFacets[] = $facet;

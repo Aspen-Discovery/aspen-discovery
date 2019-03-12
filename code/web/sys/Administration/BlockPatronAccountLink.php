@@ -60,11 +60,11 @@ class BlockPatronAccountLink extends DataObject
 	 *
 	 * @see DB/DB_DataObject::update()
 	 */
-	public function update($dataObject = false){
+	public function update(){
 		$this->getAccountIds();
 		if (!$this->primaryAccountId) return false;  // require a primary account id
 		if (!$this->blockedLinkAccountId && !$this->blockLinking) return false; // require at least one of these
-		return parent::update($dataObject);
+		return parent::update();
 	}
 
 	/**

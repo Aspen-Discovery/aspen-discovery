@@ -21,6 +21,7 @@ class LocationRecordToInclude extends RecordToInclude{
 			$location->libraryId = $homeLibrary->libraryId;
 		}
 		$location->find();
+        $locationList = [];
 		while ($location->fetch()){
 			$locationList[$location->locationId] = $location->displayName;
 		}

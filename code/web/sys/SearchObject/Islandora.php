@@ -211,6 +211,12 @@ class SearchObject_Islandora extends SearchObject_Base
 		return true;
 	} // End init()
 
+    public function setDebugging($enableDebug, $enableSolrQueryDebugging){
+        $this->debug = $enableDebug;
+        $this->debugSolrQuery = $enableDebug && $enableSolrQueryDebugging;
+        $this->getIndexEngine()->setDebugging($enableDebug, $enableSolrQueryDebugging);
+    }
+
 	/**
 	 * Initialise the object for retrieving advanced
 	 *   search screen facet data from inside solr.

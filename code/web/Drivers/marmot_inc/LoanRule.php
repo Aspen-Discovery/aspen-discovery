@@ -42,8 +42,8 @@ class LoanRule extends DataObject
 		$memCache->delete($instanceName . '_loan_rules');
 	}
 
-	function update($dataObject = false){
-		parent::update($dataObject);
+	function update(){
+		parent::update();
 		global $memCache;
 		global $instanceName;
 		$memCache->delete($instanceName . '_loan_rules');

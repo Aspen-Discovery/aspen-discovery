@@ -119,12 +119,12 @@ class UserList extends DataObject
 		}
 		return parent::insert();
 	}
-	function update($dataObject = false){
+	function update(){
 		if ($this->created == 0){
 			$this->created = time();
 		}
 		$this->dateUpdated = time();
-		$result            = parent::update($dataObject);
+		$result            = parent::update();
 		if ($result) {
 			$this->flushUserListBrowseCategory();
 		}

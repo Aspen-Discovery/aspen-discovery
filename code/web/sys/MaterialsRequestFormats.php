@@ -222,7 +222,7 @@ class MaterialsRequestFormats extends DataObject
 		return parent::insert();
 	}
 
-	public function update($dataObject = false) {
+	public function update() {
 		if (is_array($this->specialFields)) {
 			$this->specialFields = implode(',', $this->specialFields);
 		}else{

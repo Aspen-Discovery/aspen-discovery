@@ -97,7 +97,12 @@ class Location extends DataObject
 		return array('locationId', 'code');
 	}
 
-	function getObjectStructure(){
+	function getNumericColumnNames()
+    {
+        return ['scope'];
+    }
+
+    function getObjectStructure(){
 		//Load Libraries for lookup values
 		$library = new Library();
 		$library->orderBy('displayName');
@@ -193,7 +198,7 @@ class Location extends DataObject
 
 				'ilsSection' => array('property'=>'ilsSection', 'type' => 'section', 'label' =>'ILS/Account Integration', 'hideInLists' => true, 'properties' => array(
 						array('property'=>'holdingBranchLabel', 'type'=>'text', 'label'=>'Holding Branch Label', 'description'=>'The label used within the holdings table in Millennium'),
-						array('property'=>'scope', 'type'=>'text', 'label'=>'Scope', 'description'=>'The scope for the system in Millennium to refine holdings to the branch.  If there is no scope defined for the branch, this can be set to 0.'),
+						array('property'=>'scope', 'type'=>'text', 'label'=>'Scope', 'description'=>'The scope for the system in Millennium to refine holdings to the branch.  If there is no scope defined for the branch, this can be set to 0.', 'default'=>0),
 						array('property'=>'useScope', 'type'=>'checkbox', 'label'=>'Use Scope?', 'description'=>'Whether or not the scope should be used when displaying holdings.', 'hideInLists' => true),
 						array('property'=>'defaultPType', 'type'=>'text', 'label'=>'Default P-Type', 'description'=>'The P-Type to use when accessing a subdomain if the patron is not logged in.  Use -1 to use the library default PType.', 'default'=>-1),
 						array('property'=>'validHoldPickupBranch', 'type'=>'enum', 'values' => array('1' => 'Valid for all patrons', '0' => 'Valid for patrons of this branch only', '2' => 'Not Valid' ), 'label'=>'Valid Hold Pickup Branch?', 'description'=>'Determines if the location can be used as a pickup location if it is not the patrons home location or the location they are in.', 'hideInLists' => true, 'default' => 1),
@@ -279,8 +284,8 @@ class Location extends DataObject
 				'fullRecordSection' => array('property'=>'fullRecordSection', 'type' => 'section', 'label' =>'Full Record Display', 'hideInLists' => true, 'properties' => array(
 //	disabled					'showTextThis'  => array('property'=>'showTextThis', 'type'=>'checkbox', 'label'=>'Show Text This', 'description'=>'Whether or not the Text This link is shown', 'hideInLists' => true, 'default' => 1),
 						'showEmailThis'  => array('property'=>'showEmailThis', 'type'=>'checkbox', 'label'=>'Show Email This', 'description'=>'Whether or not the Email This link is shown', 'hideInLists' => true, 'default' => 1),
-						'showShareOnExternalSites'  => array('property'=>'showShareOnExternalSites', 'type'=>'checkbox', 'label'=>'Show Sharing To External Sites', 'description'=>'Whether or not sharing on external sites (Twitter, Facebook, Pinterest, etc. is shown)', 'hideInLists' => true, 'default' => 1),
-						'showComments'  => array('property'=>'showComments', 'type'=>'checkbox', 'label'=>'Enable User Reviews', 'description'=>'Whether or not user reviews are shown (also disables adding user reviews)', 'hideInLists' => true, 'default' => 1),
+                        'showShareOnExternalSites'  => array('property'=>'showShareOnExternalSites', 'type'=>'checkbox', 'label'=>'Show Sharing To External Sites', 'description'=>'Whether or not sharing on external sites (Twitter, Facebook, Pinterest, etc. is shown)', 'hideInLists' => true, 'default' => 1),
+                        'showComments'  => array('property'=>'showComments', 'type'=>'checkbox', 'label'=>'Enable User Reviews', 'description'=>'Whether or not user reviews are shown (also disables adding user reviews)', 'hideInLists' => true, 'default' => 1),
 						'showStaffView' => array('property'=>'showStaffView', 'type'=>'checkbox', 'label'=>'Show Staff View', 'description'=>'Whether or not the staff view is displayed in full record view.', 'hideInLists' => true, 'default'=>true),
 						'moreDetailsOptions' => array(
 								'property'=>'moreDetailsOptions',
@@ -1009,8 +1014,8 @@ class Location extends DataObject
 	 *
 	 * @see DB/DB_DataObject::update()
 	 */
-	public function update($dataObject = false){
-		$ret = parent::update($dataObject);
+	public function update(){
+		$ret = parent::update();
 		if ($ret !== FALSE ){
 			$this->saveHours();
 			$this->saveFacets();
@@ -1322,12 +1327,6 @@ class Location extends DataObject
 
 		$facet = new LocationFacetSetting();
 		$facet->setupAdvancedFacet('awards_facet', 'Awards', true);
-		$facet->locationId = $locationId;
-		$facet->weight = count($defaultFacets) + 1;
-		$defaultFacets[] = $facet;
-
-		$facet = new LocationFacetSetting();
-		$facet->setupSideFacet('econtent_device', 'Compatible Device', true);
 		$facet->locationId = $locationId;
 		$facet->weight = count($defaultFacets) + 1;
 		$defaultFacets[] = $facet;
