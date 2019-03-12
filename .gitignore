@@ -152,6 +152,4 @@ code/web/interface/themes/nashville_resp/CarlXTools
 sites/marmot.localhost/sql_backup/marmot_econtent.sql
 sites/marmot.localhost/sql_backup/marmot_vufind.sql
 sites/arlington.localhost/sql_backup/arlington_econtent.sql
-*.sql
-vufind/web/interface/themes/pitkin_resp/images/Winter.JPG
 main.tmpcss
