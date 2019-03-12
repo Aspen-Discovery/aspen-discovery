@@ -203,6 +203,7 @@ function readConfig()
 	global $serverName, $instanceName;
 	if (isset($_SERVER['aspen_server'])) {
 	    $serverUrl = $_SERVER['aspen_server'];
+	    echo("Server name is set as server var $serverUrl\r\n");
     } else {
         $serverUrl = $_SERVER['SERVER_NAME'];
     }
