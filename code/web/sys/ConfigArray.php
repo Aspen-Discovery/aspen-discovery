@@ -201,7 +201,11 @@ function readConfig()
 	$mainArray = parse_ini_file($configFile, true);
 
 	global $serverName, $instanceName;
-	$serverUrl = $_SERVER['SERVER_NAME'];
+	if (isset($_SERVER['aspen_server'])) {
+	    $serverUrl = $_SERVER['aspen_server'];
+    } else {
+        $serverUrl = $_SERVER['SERVER_NAME'];
+    }
 	$server = $serverUrl;
 	$serverParts = explode('.', $server);
 	$serverName = 'default';
