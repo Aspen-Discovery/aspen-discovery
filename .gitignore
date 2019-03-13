@@ -3,6 +3,7 @@
 #  - they contain sensitive data (i.e. passwords)      #
 #  - they can change at runtime                        #
 ########################################################
+tmp
 sites/*/backup
 !sites/default/backup
 sites/default/solr5/docs/*
