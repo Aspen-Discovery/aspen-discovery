@@ -103,7 +103,7 @@ class UInterface extends Smarty
             }
         }else {
             if (!is_dir($this->compile_dir)) {
-                if (!mkdir($this->compile_dir, 770, true)){
+                if (!mkdir($this->compile_dir, 0755, true)){
                     echo("Could not create compile directory {$this->compile_dir}");
                     die();
                 }
