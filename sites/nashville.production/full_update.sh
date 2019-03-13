@@ -47,7 +47,7 @@ MINFILE1SIZE=$((1070000000))
 CONFIG=/usr/local/VuFind-Plus/sites/${PIKASERVER}/conf/config.pwd.ini
 #echo ${CONFIG}
 if [ ! -f ${CONFIG} ]; then
-        CONFIG=/usr/local/vufind-plus/sites/${PIKASERVER}/conf/config.pwd.ini
+        CONFIG=/usr/local/aspen-discovery/sites/${PIKASERVER}/conf/config.pwd.ini
         #echo ${CONFIG}
         if [ ! -f ${CONFIG} ]; then
                 echo "Please check spelling of site ${PIKASERVER}; conf.pwd.ini not found at $confpwd"
@@ -99,7 +99,7 @@ tar -czf /data/pika/${PIKASERVER}/solr_master_backup.tar.gz /data/pika/${PIKASER
 rm /data/pika/${PIKASERVER}/grouped_work_primary_identifiers.sql
 
 #Restart Solr
-cd /usr/local/vufind-plus/sites/${PIKASERVER}; ./${PIKASERVER}.sh restart
+cd /usr/local/aspen-discovery/sites/${PIKASERVER}; ./${PIKASERVER}.sh restart
 
 #copy the export from CARL.X
 expect copyCarlXExport.exp nashville.production >> ${OUTPUT_FILE}
@@ -107,7 +107,7 @@ expect copyCarlXExport.exp nashville.production >> ${OUTPUT_FILE}
 # Extracts from sideloaded eContent; log defined in config.pwd.ini Sideload
 # Problems with full_update starting late 201608: James moved sideload.sh
 # initiation to crontab
-# cd /usr/local/vufind-plus/vufind/cron; ./sideload.sh ${PIKASERVER}
+# cd /usr/local/aspen-discovery/vufind/cron; ./sideload.sh ${PIKASERVER}
 
 
 #Extract Lexile Data
@@ -120,7 +120,7 @@ cd /data/pika/accelerated_reader; curl --remote-name --remote-time --silent --sh
 #get caught in the regular extract
 if [ "${DAYOFWEEK}" -eq 6 ];
 then
-	cd /usr/local/vufind-plus/vufind/overdrive_api_extract/
+	cd /usr/local/aspen-discovery/vufind/overdrive_api_extract/
 	nice -n -10 java -jar overdrive_extract.jar ${PIKASERVER} fullReload >> ${OUTPUT_FILE}
 fi
 
@@ -136,25 +136,25 @@ then
 			echo "The export file is $PERCENTABOVE (%) larger than the minimum size check." >> ${OUTPUT_FILE}
 
 		#Validate the export
-		cd /usr/local/vufind-plus/vufind/cron; java -server -XX:+UseG1GC -jar cron.jar ${PIKASERVER} ValidateMarcExport >> ${OUTPUT_FILE}
+		cd /usr/local/aspen-discovery/vufind/cron; java -server -XX:+UseG1GC -jar cron.jar ${PIKASERVER} ValidateMarcExport >> ${OUTPUT_FILE}
 		#Full Regroup
-		cd /usr/local/vufind-plus/vufind/record_grouping;
+		cd /usr/local/aspen-discovery/vufind/record_grouping;
 		java -server -XX:+UseG1GC -Xmx6G -jar record_grouping.jar ${PIKASERVER} fullRegroupingNoClear >> ${OUTPUT_FILE}
 		#Full Reindex
-		#cd /usr/local/vufind-plus/vufind/reindexer; nice -n -3 java -jar reindexer.jar ${PIKASERVER} fullReindex >> ${OUTPUT_FILE}
-		cd /usr/local/vufind-plus/vufind/reindexer;
+		#cd /usr/local/aspen-discovery/vufind/reindexer; nice -n -3 java -jar reindexer.jar ${PIKASERVER} fullReindex >> ${OUTPUT_FILE}
+		cd /usr/local/aspen-discovery/vufind/reindexer;
 		java -server -XX:+UseG1GC -Xmx6G -jar reindexer.jar ${PIKASERVER} fullReindex >> ${OUTPUT_FILE}
 
 		# Clean-up Solr Logs
-		# (/usr/local/vufind-plus/sites/default/solr/jetty/logs is a symbolic link to /var/log/pika/solr)
+		# (/usr/local/aspen-discovery/sites/default/solr/jetty/logs is a symbolic link to /var/log/pika/solr)
 		find /var/log/pika/solr -name "solr_log_*" -mtime +7 -delete
 		find /var/log/pika/solr -name "solr_gc_log_*" -mtime +7 -delete
 
 		#Restart Solr
-		cd /usr/local/vufind-plus/sites/${PIKASERVER}; ./${PIKASERVER}.sh restart
+		cd /usr/local/aspen-discovery/sites/${PIKASERVER}; ./${PIKASERVER}.sh restart
 
 		#Delete Zinio Covers
-		cd /usr/local/vufind-plus/vufind/cron; ./zinioDeleteCovers.sh ${PIKASERVER}
+		cd /usr/local/aspen-discovery/vufind/cron; ./zinioDeleteCovers.sh ${PIKASERVER}
 
 		else
 			echo $FILE1 " size " $FILE1SIZE "is less than minimum size :" $MINFILE1SIZE "." >> ${OUTPUT_FILE}

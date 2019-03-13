@@ -26,14 +26,14 @@ set GC_TUNE=-XX:NewRatio=3 ^
  set ENABLE_REMOTE_JMX_OPTS=false
 
 REM Start Solr
-call ..\default\solr\bin\solr.cmd start -p 8183 -m 2g -s "c:\data\vufind-plus\nashville.localhost\solr_master" -d "c:\web\VuFind-Plus\sites\default\solr\jetty"
-call ..\default\solr\bin\solr.cmd start -p 8083 -a "-Dsolr.masterport=8183" -m 2g -s "c:\data\vufind-plus\nashville.localhost\solr_searcher" -d "c:\web\VuFind-Plus\sites\default\solr\jetty"
+call ..\default\solr\bin\solr.cmd start -p 8183 -m 2g -s "c:\data\aspen-discovery\nashville.localhost\solr_master" -d "c:\web\VuFind-Plus\sites\default\solr\jetty"
+call ..\default\solr\bin\solr.cmd start -p 8083 -a "-Dsolr.masterport=8183" -m 2g -s "c:\data\aspen-discovery\nashville.localhost\solr_searcher" -d "c:\web\VuFind-Plus\sites\default\solr\jetty"
 goto done
 
 :stop
 rem Stop Solr
-call ..\default\solr5\bin\solr.cmd stop -p 8183 -s "c:\data\vufind-plus\nashville.localhost\solr_master" -d "c:\web\VuFind-Plus\sites\default\solr\jetty"
-call ..\default\solr5\bin\solr.cmd stop -p 8083 -s "c:\data\vufind-plus\nashville.localhost\solr_searcher" -d "c:\web\VuFind-Plus\sites\default\solr\jetty"
+call ..\default\solr5\bin\solr.cmd stop -p 8183 -s "c:\data\aspen-discovery\nashville.localhost\solr_master" -d "c:\web\VuFind-Plus\sites\default\solr\jetty"
+call ..\default\solr5\bin\solr.cmd stop -p 8083 -s "c:\data\aspen-discovery\nashville.localhost\solr_searcher" -d "c:\web\VuFind-Plus\sites\default\solr\jetty"
 if "%1"=="restart" goto start
 goto done
 

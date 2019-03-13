@@ -59,17 +59,17 @@ do
 
 	#export from overdrive
 	#echo "Starting OverDrive Extract - `date`" >> ${OUTPUT_FILE}
-	cd /usr/local/vufind-plus/vufind/overdrive_api_extract/
+	cd /usr/local/aspen-discovery/vufind/overdrive_api_extract/
 	nice -n -10 java -server -XX:+UseG1GC -jar overdrive_extract.jar ${PIKASERVER} >> ${OUTPUT_FILE}
 
 	#process the export from CARL.X to give Pika what it needs
 	#echo "Starting Millennium Export - `date`" >> ${OUTPUT_FILE}
-	cd /usr/local/vufind-plus/vufind/carlx_export/
+	cd /usr/local/aspen-discovery/vufind/carlx_export/
 	nice -n -10 java -server -XX:+UseG1GC -jar carlx_export.jar ${PIKASERVER} >> ${OUTPUT_FILE}
 
 	#run reindex
 	#echo "Starting Reindexing - `date`" >> ${OUTPUT_FILE}
-	cd /usr/local/vufind-plus/vufind/reindexer
+	cd /usr/local/aspen-discovery/vufind/reindexer
 	nice -n -5 java -server -XX:+UseG1GC -jar reindexer.jar ${PIKASERVER} >> ${OUTPUT_FILE}
 
 	# add any logic wanted for when to send the emails here. (eg errors only)

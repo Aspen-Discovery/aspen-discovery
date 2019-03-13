@@ -5,7 +5,6 @@ Disallow: /Admin/
 Disallow: /Author/
 Disallow: /MyAccount/
 Disallow: /images/fiveStar/
-Disallow: /vufind/
 Disallow: /Record/*/Search/
 Disallow: /Circa/
 
