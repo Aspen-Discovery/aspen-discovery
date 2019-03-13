@@ -441,13 +441,13 @@ public class RecordGrouperMain {
 			}
 
 			if (indexingProfileToRun == null || indexingProfileToRun.equalsIgnoreCase("overdrive")) {
-				groupOverDriveRecords(configIni, dbConn, recordGroupingProcessor, explodeMarcsOnly);
+				groupOverDriveRecords(dbConn, recordGroupingProcessor, explodeMarcsOnly);
 			}
 			if (indexingProfileToRun == null || indexingProfileToRun.equalsIgnoreCase("rbdigital")) {
-				groupRbdigitalRecords(configIni, dbConn, recordGroupingProcessor, explodeMarcsOnly);
+				groupRbdigitalRecords(dbConn, recordGroupingProcessor, explodeMarcsOnly);
 			}
 			if (indexingProfiles.size() > 0) {
-				groupIlsRecords(configIni, dbConn, indexingProfiles, explodeMarcsOnly);
+				groupIlsRecords(dbConn, indexingProfiles, explodeMarcsOnly);
 			}
 
 		}
@@ -550,26 +550,6 @@ public class RecordGrouperMain {
 	}
 
 
-
-	private static SimpleDateFormat dayFormatter = new SimpleDateFormat("yyyy-MM-dd");
-	private static void writeExistingRecordsFile(Ini configIni, TreeSet<String> recordNumbersInExport, String filePrefix) {
-		try {
-			File dataDir = new File(configIni.get("Reindex", "marcPath"));
-			dataDir = dataDir.getParentFile();
-			//write the records in CSV format to the data directory
-			Date curDate = new Date();
-			String curDateFormatted = dayFormatter.format(curDate);
-			File recordsFile = new File(dataDir.getAbsolutePath() + "/" + filePrefix + "_" + curDateFormatted + ".csv");
-			CSVWriter recordWriter = new CSVWriter(new FileWriter(recordsFile));
-			for (String curRecord: recordNumbersInExport){
-				recordWriter.writeNext(new String[]{curRecord});
-			}
-			recordWriter.flush();
-			recordWriter.close();
-		} catch (IOException e) {
-			logger.error("Unable to write existing records to " + filePrefix, e);
-		}
-	}
 
 	private static void updateLastGroupingTime(Connection dbConn) {
 		//Update the last grouping time in the variables table
@@ -707,7 +687,7 @@ public class RecordGrouperMain {
 		}
 	}
 
-	private static void groupIlsRecords(Ini configIni, Connection dbConnection, ArrayList<IndexingProfile> indexingProfiles, boolean explodeMarcsOnly) {
+	private static void groupIlsRecords(Connection dbConnection, ArrayList<IndexingProfile> indexingProfiles, boolean explodeMarcsOnly) {
 		//Get indexing profiles
 		for (IndexingProfile curProfile : indexingProfiles) {
 			addNoteToGroupingLog("Processing profile " + curProfile.getName());
@@ -760,11 +740,8 @@ public class RecordGrouperMain {
 				String marcEncoding = curProfile.getMarcEncoding();
 				TreeSet<String> recordNumbersInExport = new TreeSet<>();
 				TreeSet<String> suppressedRecordNumbersInExport = new TreeSet<>();
-				TreeSet<String> suppressedControlNumbersInExport = new TreeSet<>();
 				TreeSet<String> marcRecordsOverwritten = new TreeSet<>();
 				TreeSet<String> marcRecordsWritten = new TreeSet<>();
-				TreeSet<String> recordNumbersToIndex = new TreeSet<>();
-
 
 				String lastRecordProcessed = "";
 				for (File curBibFile : filesToProcess) {
@@ -780,24 +757,17 @@ public class RecordGrouperMain {
 								if (recordIdentifier == null) {
 									//logger.debug("Record with control number " + curBib.getControlNumber() + " was suppressed or is eContent");
 									String controlNumber = curBib.getControlNumber();
-									if (controlNumber != null) {
-										suppressedControlNumbersInExport.add(controlNumber);
-									}else{
+									if (controlNumber == null) {
 										logger.warn("Bib did not have control number or identifier");
 									}
-								}else if (recordIdentifier.isSuppressed()) {
-									//logger.debug("Record with control number " + curBib.getControlNumber() + " was suppressed or is eContent");
-									suppressedControlNumbersInExport.add(recordIdentifier.getIdentifier());
-								}else{
+								}else if (!recordIdentifier.isSuppressed()) {
 									String recordNumber = recordIdentifier.getIdentifier();
 
 									boolean marcUpToDate = writeIndividualMarc(curProfile, curBib, recordNumber, marcRecordsWritten, marcRecordsOverwritten);
 									recordNumbersInExport.add(recordIdentifier.toString());
 									if (!explodeMarcsOnly) {
 										if (!marcUpToDate || fullRegroupingNoClear) {
-											if (recordGroupingProcessor.processMarcRecord(curBib, !marcUpToDate)) {
-												recordNumbersToIndex.add(recordIdentifier.toString());
-											} else {
+											if (!recordGroupingProcessor.processMarcRecord(curBib, !marcUpToDate)) {
 												suppressedRecordNumbersInExport.add(recordIdentifier.toString());
 											}
 											numRecordsProcessed++;
@@ -836,30 +806,11 @@ public class RecordGrouperMain {
 				addNoteToGroupingLog("&nbsp;&nbsp; - Records Overwritten:" + marcRecordsOverwritten.size());
 
 				removeDeletedRecords(curProfile.getName());
-
-				String profileName = curProfile.getName().replaceAll(" ", "_");
-				writeExistingRecordsFile(configIni, recordNumbersInExport, "record_grouping_" + profileName + "_bibs_in_export");
-				if (suppressedRecordNumbersInExport.size() > 0) {
-					writeExistingRecordsFile(configIni, suppressedRecordNumbersInExport, "record_grouping_" + profileName + "_bibs_to_ignore");
-				}
-				if (suppressedControlNumbersInExport.size() > 0) {
-					writeExistingRecordsFile(configIni, suppressedControlNumbersInExport, "record_grouping_" + profileName + "_ccontrol_numbers_to_ignore");
-				}
-				if (recordNumbersToIndex.size() > 0) {
-					writeExistingRecordsFile(configIni, recordNumbersToIndex, "record_grouping_" + profileName + "_bibs_to_index");
-				}
-				if (marcRecordsWritten.size() > 0) {
-					writeExistingRecordsFile(configIni, marcRecordsWritten, "record_grouping_" + profileName + "_new_bibs_written");
-				}
-				if (marcRecordsOverwritten.size() > 0) {
-					writeExistingRecordsFile(configIni, marcRecordsOverwritten, "record_grouping_" + profileName + "_changed_bibs_written");
-				}
 			}
-
 		}
 	}
 
-	private static void groupRbdigitalRecords(Ini configIni, Connection dbConn, RecordGroupingProcessor recordGroupingProcessor, boolean explodeMarcsOnly) {
+	private static void groupRbdigitalRecords(Connection dbConn, RecordGroupingProcessor recordGroupingProcessor, boolean explodeMarcsOnly) {
 		if (explodeMarcsOnly){
 			//Nothing to do since we don't have marc records to process
 			return;
@@ -879,10 +830,8 @@ public class RecordGrouperMain {
 			}
 
 			ResultSet rbdigitalRecordRS = rbdigitalRecordsStmt.executeQuery();
-			TreeSet<String> recordNumbersInExport = new TreeSet<>();
 			while (rbdigitalRecordRS.next()) {
 				String rbdigitalId = rbdigitalRecordRS.getString("rbdigitalId");
-				recordNumbersInExport.add(rbdigitalId);
 				String title = rbdigitalRecordRS.getString("title");
 				String subtitle = rbdigitalRecordRS.getString("subtitle");
 				String author = rbdigitalRecordRS.getString("primaryAuthor");
@@ -904,9 +853,6 @@ public class RecordGrouperMain {
 				numRecordsProcessed++;
 			}
 			rbdigitalRecordRS.close();
-			if (fullRegrouping){
-				writeExistingRecordsFile(configIni, recordNumbersInExport, "record_grouping_rbdigital_records_in_export");
-			}
 			removeDeletedRecords("rbdigital");
 			addNoteToGroupingLog("Finished grouping " + numRecordsProcessed + " records from rbdigital ");
 		}catch (Exception e){
@@ -914,7 +860,7 @@ public class RecordGrouperMain {
 		}
 	}
 
-	private static void groupOverDriveRecords(Ini configIni, Connection dbConn, RecordGroupingProcessor recordGroupingProcessor, boolean explodeMarcsOnly) {
+	private static void groupOverDriveRecords(Connection dbConn, RecordGroupingProcessor recordGroupingProcessor, boolean explodeMarcsOnly) {
 		if (explodeMarcsOnly){
 			//Nothing to do since we don't have marc records to process
 			return;
@@ -937,12 +883,10 @@ public class RecordGrouperMain {
 			PreparedStatement overDriveIdentifiersStmt = dbConn.prepareStatement("SELECT * FROM overdrive_api_product_identifiers WHERE id = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			PreparedStatement overDriveCreatorStmt = dbConn.prepareStatement("SELECT fileAs FROM overdrive_api_product_creators WHERE productId = ? AND role like ? ORDER BY id", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			ResultSet overDriveRecordRS = overDriveRecordsStmt.executeQuery();
-			TreeSet<String> recordNumbersInExport = new TreeSet<>();
 			while (overDriveRecordRS.next()){
 				long id = overDriveRecordRS.getLong("id");
 
 				String overdriveId = overDriveRecordRS.getString("overdriveId");
-				recordNumbersInExport.add(overdriveId);
 				String mediaType = overDriveRecordRS.getString("mediaType");
 				String title = overDriveRecordRS.getString("title");
 				String subtitle = overDriveRecordRS.getString("subtitle");
@@ -988,9 +932,6 @@ public class RecordGrouperMain {
 			overDriveRecordRS.close();
 
 			//This is no longer needed because we do cleanup differently now (get a list of everything in the database and then cleanup anything that isn't in the API anymore
-			if (fullRegrouping){
-				writeExistingRecordsFile(configIni, recordNumbersInExport, "record_grouping_overdrive_records_in_export");
-			}
 			removeDeletedRecords("overdrive");
 			addNoteToGroupingLog("Finished grouping " + numRecordsProcessed + " records from overdrive ");
 		}catch (Exception e){
