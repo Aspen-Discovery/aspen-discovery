@@ -395,6 +395,8 @@ public class RecordGrouperMain {
 			//The last argument is the indexing profile to run
 			indexingProfileToRun = args[1];
 			fullRegrouping = args.length >= 3 && args[2].equalsIgnoreCase("fullRegrouping");
+			fullRegroupingNoClear = args.length >= 3 && args[2].equalsIgnoreCase("fullRegroupingNoClear");
+			//Never clear the database if we are doing full grouping since we are only processing a single profile
 		}else{
 			fullRegrouping = false;
 		}
@@ -729,7 +731,7 @@ public class RecordGrouperMain {
 					}
 				}
 			}
-			if (curProfile.isGroupUnchangedFiles()){
+			if (curProfile.isGroupUnchangedFiles() || fullRegrouping || fullRegroupingNoClear){
 				processProfile = true;
 			}
 

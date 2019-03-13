@@ -188,7 +188,7 @@ public class MarcRecordGrouper extends RecordGroupingProcessor{
 		}
 		//We didn't get a format from the items, check the bib as backup
 		String format = getFormatFromBib(record);
-		format = categoryMap.get(formatsToGroupingCategory.get(format));
+		format = categoryMap.get(formatsToGroupingCategory.get(format.toLowerCase()));
 		return format;
 	}
 
@@ -532,7 +532,7 @@ public class MarcRecordGrouper extends RecordGroupingProcessor{
 		switch (loadFormatFrom) {
 			case "bib":
 				String format = getFormatFromBib(marcRecord);
-				groupingFormat = categoryMap.get(formatsToGroupingCategory.get(format));
+				groupingFormat = categoryMap.get(formatsToGroupingCategory.get(format.toLowerCase()));
 				break;
 			case "specified":
 				//Use specified format
