@@ -137,8 +137,7 @@ public class ValidateMarcExport implements IProcessHandler {
 				if (subfieldA != null && (profile.getRecordNumberPrefix().length() == 0 || subfieldA.getData().length() > profile.getRecordNumberPrefix().length())) {
 					if (curRecordNumberField.getSubfield('a').getData().substring(0, profile.getRecordNumberPrefix().length()).equals(profile.getRecordNumberPrefix())) {
 						String recordNumber = curRecordNumberField.getSubfield('a').getData().trim();
-						identifier = new RecordIdentifier();
-						identifier.setValue(profile.getName(), recordNumber);
+						identifier = new RecordIdentifier(profile.getName(), recordNumber);
 						break;
 					}
 				}
@@ -146,8 +145,7 @@ public class ValidateMarcExport implements IProcessHandler {
 				//It's a control field
 				ControlField curRecordNumberField = (ControlField)curVariableField;
 				String recordNumber = curRecordNumberField.getData().trim();
-				identifier = new RecordIdentifier();
-				identifier.setValue(profile.getName(), recordNumber);
+				identifier = new RecordIdentifier(profile.getName(), recordNumber);
 				break;
 			}
 		}

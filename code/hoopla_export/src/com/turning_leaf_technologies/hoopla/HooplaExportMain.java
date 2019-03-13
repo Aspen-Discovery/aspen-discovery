@@ -16,6 +16,7 @@ import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 
 public class HooplaExportMain {
 	private static Logger logger;
@@ -163,7 +164,10 @@ public class HooplaExportMain {
 			}
 
 			int numProcessed = 0;
-			URLPostResponse response = NetworkUtils.getURL(url, logger, accessToken);
+			HashMap<String, String> headers = new HashMap<>();
+			headers.put("Authorization", "basic " + Base64.encodeBase64String(accessToken.getBytes()));
+			headers.put("Content-Type", "application/json");
+			URLPostResponse response = NetworkUtils.getURL(url, logger, headers);
 			JSONObject responseJSON = new JSONObject(response.getMessage());
 			if (responseJSON.has("titles")){
 				JSONArray responseTitles = responseJSON.getJSONArray("titles");
@@ -177,10 +181,11 @@ public class HooplaExportMain {
 				}
 
 				//TODO: Determine if the encoding is needed
-				String encodedToken = Base64.encodeBase64String(accessToken.getBytes());
+				//String encodedToken = Base64.encodeBase64String(accessToken.getBytes());
+
 				while (startToken != null){
 					url = hooplaAPIBaseURL + "/api/v1/libraries/" + hooplaLibraryId + "/content?startToken=" + startToken;
-					response = NetworkUtils.getURL(url, logger, accessToken);
+					response = NetworkUtils.getURL(url, logger, headers);
 					responseJSON = new JSONObject(response.getMessage());
 					if (responseJSON.has("titles")) {
 						responseTitles = responseJSON.getJSONArray("titles");

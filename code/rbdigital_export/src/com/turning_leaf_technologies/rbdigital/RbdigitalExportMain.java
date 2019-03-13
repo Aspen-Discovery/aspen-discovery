@@ -16,6 +16,8 @@ import org.json.JSONObject;
 import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
 import com.turning_leaf_technologies.grouping.RecordGroupingProcessor;
 
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
