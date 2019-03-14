@@ -12,7 +12,7 @@ import com.turning_leaf_technologies.config.ConfigUtil;
 import com.turning_leaf_technologies.indexing.IndexingProfile;
 import com.turning_leaf_technologies.logging.LoggingUtil;
 import com.turning_leaf_technologies.net.NetworkUtils;
-import com.turning_leaf_technologies.net.URLPostResponse;
+import com.turning_leaf_technologies.net.WebServiceResponse;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
 import org.marc4j.MarcPermissiveStreamReader;
@@ -468,7 +468,7 @@ public class CarlXExportMain {
 				getMarcRecordsSoapRequest.append(getMarcRecordsSoapRequestEnd);
 
 				//logger.debug("Getting MARC record details " + getMarcRecordsSoapRequest);
-				URLPostResponse marcRecordSOAPResponse = NetworkUtils.postToURL(marcOutURL, getMarcRecordsSoapRequest.toString(), "text/xml", null, logger);
+				WebServiceResponse marcRecordSOAPResponse = NetworkUtils.postToURL(marcOutURL, getMarcRecordsSoapRequest.toString(), "text/xml", null, logger);
 				if (marcRecordSOAPResponse.isSuccess()) {
 
 					// Parse Response
@@ -626,7 +626,7 @@ public class CarlXExportMain {
 				"</soapenv:Body>\n" +
 				"</soapenv:Envelope>";
 
-		URLPostResponse SOAPResponse = NetworkUtils.postToURL(marcOutURL, changedItemsSoapRequest, "text/xml", null, logger);
+		WebServiceResponse SOAPResponse = NetworkUtils.postToURL(marcOutURL, changedItemsSoapRequest, "text/xml", null, logger);
 		if (SOAPResponse.isSuccess()) {
 			String totalItems;
 
@@ -687,7 +687,7 @@ public class CarlXExportMain {
 				"</soapenv:Body>\n" +
 				"</soapenv:Envelope>";
 
-		URLPostResponse SOAPResponse = NetworkUtils.postToURL(marcOutURL, changedMarcSoapRequest, "text/xml", null, logger);
+		WebServiceResponse SOAPResponse = NetworkUtils.postToURL(marcOutURL, changedMarcSoapRequest, "text/xml", null, logger);
 		if (SOAPResponse.isSuccess()) {
 			String totalBibs;
 
@@ -857,7 +857,7 @@ public class CarlXExportMain {
 				}
 				getItemInformationSoapRequest.append(getItemInformationSoapRequestEnd);
 
-				URLPostResponse ItemInformationSOAPResponse = NetworkUtils.postToURL(marcOutURL, getItemInformationSoapRequest.toString(), "text/xml", null, logger);
+				WebServiceResponse ItemInformationSOAPResponse = NetworkUtils.postToURL(marcOutURL, getItemInformationSoapRequest.toString(), "text/xml", null, logger);
 				if (ItemInformationSOAPResponse.isSuccess()) {
 
 					// Parse Response
@@ -1248,7 +1248,7 @@ public class CarlXExportMain {
 		return "CARL" + recordNumber; // add Carl prefix
 	}
 
-	private static Document createXMLDocumentForSoapResponse(URLPostResponse SoapResponse) throws ParserConfigurationException, IOException, SAXException {
+	private static Document createXMLDocumentForSoapResponse(WebServiceResponse SoapResponse) throws ParserConfigurationException, IOException, SAXException {
 		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 
 		DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
@@ -1279,7 +1279,7 @@ public class CarlXExportMain {
 					"</soapenv:Body>\n" +
 					"</soapenv:Envelope>";
 
-			URLPostResponse marcRecordSOAPResponse = NetworkUtils.postToURL(marcOutURL, getMarcRecordsSoapRequest, "text/xml", null, logger);
+			WebServiceResponse marcRecordSOAPResponse = NetworkUtils.postToURL(marcOutURL, getMarcRecordsSoapRequest, "text/xml", null, logger);
 			if (marcRecordSOAPResponse.isSuccess()) {
 
 				// Parse Response

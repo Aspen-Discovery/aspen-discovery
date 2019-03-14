@@ -55,18 +55,7 @@ public class ExtractOverDriveInfoMain {
 		Logger logger = LoggingUtil.setupLogging(serverName, "overdrive_extract");
 		logger.info(currentTime.toString() + ": Starting OverDrive Extract");
 		
-		// Setup the MySQL driver
-		try {
-			// The newInstance() call is a work around for some
-			// broken Java implementations
-			Class.forName("com.mysql.jdbc.Driver").newInstance();
-
-			logger.debug("Loaded driver for MySQL");
-		} catch (Exception ex) {
-			logger.info("Could not load driver for MySQL, exiting.", ex);
-			return;
-		}
-		// Read the base INI file to get information about the server (current directory/cron/config.ini)
+				// Read the base INI file to get information about the server (current directory/cron/config.ini)
 		Ini configIni = ConfigUtil.loadConfigFile("config.ini", serverName, logger);
 		
 		String databaseConnectionInfo = ConfigUtil.cleanIniValue(configIni.get("Database", "database_aspen_jdbc"));

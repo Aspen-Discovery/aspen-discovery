@@ -3,7 +3,7 @@ package com.turning_leaf_technologies.hoopla;
 import com.turning_leaf_technologies.config.ConfigUtil;
 import com.turning_leaf_technologies.logging.LoggingUtil;
 import com.turning_leaf_technologies.net.NetworkUtils;
-import com.turning_leaf_technologies.net.URLPostResponse;
+import com.turning_leaf_technologies.net.WebServiceResponse;
 import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.logging.log4j.Logger;
@@ -167,7 +167,7 @@ public class HooplaExportMain {
 			HashMap<String, String> headers = new HashMap<>();
 			headers.put("Authorization", "basic " + Base64.encodeBase64String(accessToken.getBytes()));
 			headers.put("Content-Type", "application/json");
-			URLPostResponse response = NetworkUtils.getURL(url, logger, headers);
+			WebServiceResponse response = NetworkUtils.getURL(url, logger, headers);
 			JSONObject responseJSON = new JSONObject(response.getMessage());
 			if (responseJSON.has("titles")){
 				JSONArray responseTitles = responseJSON.getJSONArray("titles");
@@ -257,7 +257,7 @@ public class HooplaExportMain {
 			hooplaAPIBaseURL = "https://hoopla-api-dev.hoopladigital.com";
 		}
 		String getTokenUrl = hooplaAPIBaseURL + "/v2/token";
-		URLPostResponse response = NetworkUtils.postToURL(getTokenUrl, null, "application/json", null, logger, hooplaUsername + ":" + hooplaPassword);
+		WebServiceResponse response = NetworkUtils.postToURL(getTokenUrl, null, "application/json", null, logger, hooplaUsername + ":" + hooplaPassword);
 		if (response.isSuccess()){
 			try {
 				JSONObject responseJSON = new JSONObject(response.getMessage());

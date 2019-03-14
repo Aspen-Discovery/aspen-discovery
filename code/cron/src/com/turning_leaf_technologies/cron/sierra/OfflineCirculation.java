@@ -4,7 +4,7 @@ import com.turning_leaf_technologies.cron.CronLogEntry;
 import com.turning_leaf_technologies.cron.CronProcessLogEntry;
 import com.turning_leaf_technologies.cron.IProcessHandler;
 import com.turning_leaf_technologies.net.NetworkUtils;
-import com.turning_leaf_technologies.net.URLPostResponse;
+import com.turning_leaf_technologies.net.WebServiceResponse;
 import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
@@ -201,7 +201,7 @@ public class OfflineCirculation implements IProcessHandler {
 
 			//logger.debug("Home page Response\r\n" + homePageResponse.getMessage());
 			boolean bypassLogin = true;
-			URLPostResponse loginResponse = null;
+			WebServiceResponse loginResponse = null;
 			if (lastLogin == null || !lastLogin.equals(login)){
 				bypassLogin = false;
 				if (lastLogin != null){
@@ -224,7 +224,7 @@ public class OfflineCirculation implements IProcessHandler {
 			}
 
 			if (bypassLogin || (loginResponse.isSuccess() && (loginResponse.getMessage().contains("needinitials")) || ils.equalsIgnoreCase("sierra"))){
-				URLPostResponse initialsResponse;
+				WebServiceResponse initialsResponse;
 				boolean bypassInitials = true;
 				if (ils.equalsIgnoreCase("millennium") && (lastInitials == null || lastInitials.equals(initials))){
 					bypassInitials = false;
@@ -263,7 +263,7 @@ public class OfflineCirculation implements IProcessHandler {
 							"&submit.x=42" +
 							"&submit.y=12" +
 							"&sourcebrowse=airwkstpage";
-					URLPostResponse patronBarcodeResponse = NetworkUtils.postToURL(baseAirpacUrl + "/airwkstcore?" + patronBarcodeParams, null, "text/html", baseAirpacUrl + "/", logger);
+					WebServiceResponse patronBarcodeResponse = NetworkUtils.postToURL(baseAirpacUrl + "/airwkstcore?" + patronBarcodeParams, null, "text/html", baseAirpacUrl + "/", logger);
 
 					if ((patronBarcodeResponse.isSuccess() && patronBarcodeResponse.getMessage().contains("Please scan item barcode"))){
 						lastPatronHadError = false;
@@ -273,7 +273,7 @@ public class OfflineCirculation implements IProcessHandler {
 								"&searchstring=" + itemBarcode +
 								"&searchtype=b" +
 								"&sourcebrowse=airwkstpage";
-						URLPostResponse itemBarcodeResponse = NetworkUtils.postToURL(baseAirpacUrl + "/airwkstcore?" + itemBarcodeParams, null, "text/html", baseAirpacUrl + "/", logger);
+						WebServiceResponse itemBarcodeResponse = NetworkUtils.postToURL(baseAirpacUrl + "/airwkstcore?" + itemBarcodeParams, null, "text/html", baseAirpacUrl + "/", logger);
 						if (itemBarcodeResponse.isSuccess()){
 							Pattern Regex = Pattern.compile("<h3 class=\"error\">(.*?)</h3>", Pattern.CANON_EQ);
 							Matcher RegexMatcher = Regex.matcher(itemBarcodeResponse.getMessage());
@@ -342,7 +342,7 @@ public class OfflineCirculation implements IProcessHandler {
 					"&submit.y=8" +
 					"&subpurpose=null" +
 					"&validationstatus=needlogin";
-			URLPostResponse loginResponse = NetworkUtils.postToURL(baseAirpacUrl + "/airwkstcore?" + loginParams, null, "text/html", baseAirpacUrl + "/", logger);
+			WebServiceResponse loginResponse = NetworkUtils.postToURL(baseAirpacUrl + "/airwkstcore?" + loginParams, null, "text/html", baseAirpacUrl + "/", logger);
 			if (loginResponse.isSuccess() && loginResponse.getMessage().contains("needinitials")){
 				//Login to airpac (initials)
 				String initialsParams = "action=ValidateAirWkstUserAction" +
@@ -354,7 +354,7 @@ public class OfflineCirculation implements IProcessHandler {
 						"&submit.y=8" +
 						"&subpurpose=null" +
 						"&validationstatus=needinitials";
-				URLPostResponse initialsResponse = NetworkUtils.postToURL(baseAirpacUrl + "/airwkstcore?" + initialsParams, null, "text/html", baseAirpacUrl + "/airwkstcore", logger);
+				WebServiceResponse initialsResponse = NetworkUtils.postToURL(baseAirpacUrl + "/airwkstcore?" + initialsParams, null, "text/html", baseAirpacUrl + "/airwkstcore", logger);
 				if (initialsResponse.isSuccess() && initialsResponse.getMessage().contains("Check In")){
 					//Go to the checkin page
 					NetworkUtils.getURL(baseAirpacUrl + "/?action=GetAirWkstUserInfoAction&purpose=fullcheckin", logger);
@@ -365,7 +365,7 @@ public class OfflineCirculation implements IProcessHandler {
 							"&searchstring=" + itemBarcode +
 							"&searchtype=b" +
 							"&sourcebrowse=airwkstpage";
-					URLPostResponse checkinResponse = NetworkUtils.postToURL(baseAirpacUrl + "/airwkstcore?" + checkinParams, null, "text/html", baseAirpacUrl + "/", logger);
+					WebServiceResponse checkinResponse = NetworkUtils.postToURL(baseAirpacUrl + "/airwkstcore?" + checkinParams, null, "text/html", baseAirpacUrl + "/", logger);
 					if (checkinResponse.isSuccess()){
 						Pattern Regex = Pattern.compile("<h3 class=\"error\">(.*?)</h3>", Pattern.CANON_EQ);
 						Matcher RegexMatcher = Regex.matcher(checkinResponse.getMessage());

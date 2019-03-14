@@ -18,11 +18,11 @@ import java.util.HashMap;
 
 
 public class NetworkUtils {
-    public static URLPostResponse getURL(String url, Logger logger) {
+    public static WebServiceResponse getURL(String url, Logger logger) {
         return NetworkUtils.getURL(url, logger, null);
     }
-    public static URLPostResponse getURL(String url, Logger logger, HashMap<String, String> headers) {
-        URLPostResponse retVal;
+    public static WebServiceResponse getURL(String url, Logger logger, HashMap<String, String> headers) {
+        WebServiceResponse retVal;
         try {
             URL emptyIndexURL = new URL(url);
             HttpURLConnection conn = (HttpURLConnection) emptyIndexURL.openConnection();
@@ -53,7 +53,7 @@ public class NetworkUtils {
                 }
 
                 rd.close();
-                retVal = new URLPostResponse(true, 200, response.toString());
+                retVal = new WebServiceResponse(true, 200, response.toString());
             } else {
                 logger.error("Received error " + conn.getResponseCode() + " getting " + url);
                 // Get any errors
@@ -64,25 +64,28 @@ public class NetworkUtils {
                 }
 
                 rd.close();
-                retVal = new URLPostResponse(false, conn.getResponseCode(), response.toString());
+                retVal = new WebServiceResponse(false, conn.getResponseCode(), response.toString());
             }
 
         } catch (MalformedURLException e) {
             logger.error("URL to post (" + url + ") is malformed", e);
-            retVal = new URLPostResponse(false, -1, "URL to post (" + url + ") is malformed");
+            retVal = new WebServiceResponse(false, -1, "URL to post (" + url + ") is malformed");
+        } catch (SocketTimeoutException toe){
+            retVal = new WebServiceResponse(false, -1, "Call timed out");
+            retVal.setCallTimedOut(true);
         } catch (IOException e) {
             logger.error("Error posting to url \r\n" + url, e);
-            retVal = new URLPostResponse(false, -1, "Error posting to url \r\n" + url + "\r\n" + e.toString());
+            retVal = new WebServiceResponse(false, -1, "Error posting to url \r\n" + url + "\r\n" + e.toString());
         }
         return retVal;
     }
 
-    public static URLPostResponse postToURL(String url, String postData, String contentType, String referer, Logger logger) {
+    public static WebServiceResponse postToURL(String url, String postData, String contentType, String referer, Logger logger) {
         return NetworkUtils.postToURL(url, postData, contentType, referer, logger, null);
     }
 
-    public static URLPostResponse postToURL(String url, String postData, String contentType, String referer, Logger logger, String authentication) {
-        URLPostResponse retVal;
+    public static WebServiceResponse postToURL(String url, String postData, String contentType, String referer, Logger logger, String authentication) {
+        WebServiceResponse retVal;
         HttpURLConnection conn = null;
         try {
             URL emptyIndexURL = new URL(url);
@@ -128,7 +131,7 @@ public class NetworkUtils {
                 }
 
                 rd.close();
-                retVal = new URLPostResponse(true, 200, response.toString());
+                retVal = new WebServiceResponse(true, 200, response.toString());
             } else {
                 logger.info("Received error " + conn.getResponseCode() + " posting to " + url + " data " + postData);
                 logger.info(postData);
@@ -151,18 +154,18 @@ public class NetworkUtils {
 
                     rd.close();
                 }
-                retVal = new URLPostResponse(false, conn.getResponseCode(), response.toString());
+                retVal = new WebServiceResponse(false, conn.getResponseCode(), response.toString());
             }
 
         } catch (SocketTimeoutException e){
             logger.error("Timeout connecting to URL (" + url + ") data " + postData, e);
-            retVal = new URLPostResponse(false, -1, "Timeout connecting to URL (" + url + ")");
+            retVal = new WebServiceResponse(false, -1, "Timeout connecting to URL (" + url + ")");
         } catch (MalformedURLException e) {
             logger.error("URL to post (" + url + ") is malformed", e);
-            retVal = new URLPostResponse(false, -1, "URL to post (" + url + ") is malformed");
+            retVal = new WebServiceResponse(false, -1, "URL to post (" + url + ") is malformed");
         } catch (IOException e) {
             logger.error("Error posting to url \r\n" + url, e);
-            retVal = new URLPostResponse(false, -1, "Error posting to url \r\n" + url + "\r\n" + e.toString());
+            retVal = new WebServiceResponse(false, -1, "Error posting to url \r\n" + url + "\r\n" + e.toString());
         }finally{
             if (conn != null) conn.disconnect();
         }

@@ -581,34 +581,10 @@ class GroupedWork_AJAX {
 		return json_encode($result);
 	}
 
-	function getSMSForm(){
-		global $interface;
-		require_once ROOT_DIR . '/sys/Mailer.php';
-
-		$sms = new SMSMailer();
-		$interface->assign('carriers', $sms->getCarriers());
-		$id = $_REQUEST['id'];
-		$interface->assign('id', $id);
-
-		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-		$recordDriver = new GroupedWorkDriver($id);
-
-		$relatedRecords = $recordDriver->getRelatedRecords();
-		$interface->assign('relatedRecords', $relatedRecords);
-		$results = array(
-				'title' => 'Share via SMS Message',
-				'modalBody' => $interface->fetch("GroupedWork/sms-form-body.tpl"),
-				'modalButtons' => "<button class='tool btn btn-primary' onclick='VuFind.GroupedWork.sendSMS(\"{$id}\"); return false;'>Send Text</button>"
-		);
-		return json_encode($results);
-	}
-
 	function getEmailForm(){
 		global $interface;
 		require_once ROOT_DIR . '/sys/Mailer.php';
 
-//		$sms = new SMSMailer();
-//		$interface->assign('carriers', $sms->getCarriers());
 		$id = $_REQUEST['id'];
 		$interface->assign('id', $id);
 
@@ -807,66 +783,6 @@ class GroupedWork_AJAX {
 				'modalButtons' => "<button class='tool btn btn-primary' onclick='VuFind.GroupedWork.saveToList(\"{$id}\"); return false;'>Save To List</button>"
 		);
 		return json_encode($results);
-	}
-
-	function sendSMS(){
-		global $configArray;
-		global $interface;
-		require_once ROOT_DIR . '/sys/Mailer.php';
-		$sms = new SMSMailer();
-
-		// Get Holdings
-		$id = $_REQUEST['id'];
-		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-		$recordDriver = new GroupedWorkDriver($id);
-		$interface->assign('url', $recordDriver->getLinkUrl(true));
-
-		if (isset($_REQUEST['related_record'])){
-			$relatedRecord = $_REQUEST['related_record'];
-			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-			$recordDriver = new GroupedWorkDriver($id);
-
-			$relatedRecords = $recordDriver->getRelatedRecords();
-
-			foreach ($relatedRecords as $curRecord){
-				if ($curRecord['id'] == $relatedRecord){
-					if (isset($curRecord['callNumber'])){
-						$interface->assign('callnumber', $curRecord['callNumber']);
-					}
-					if (isset($curRecord['shelfLocation'])){
-						$interface->assign('shelfLocation', strip_tags($curRecord['shelfLocation']));
-					}
-					$interface->assign('url', $curRecord['driver']->getAbsoluteUrl());
-					break;
-				}
-			}
-		}
-
-		$interface->assign('title', $recordDriver->getTitle());
-		$interface->assign('author', $recordDriver->getPrimaryAuthor());
-		$message = $interface->fetch('Emails/grouped-work-sms.tpl');
-
-		$smsResult = $sms->text($_REQUEST['provider'], $_REQUEST['sms_phone_number'], $configArray['Site']['email'], $message);
-
-		if ($smsResult === true){
-			$result = array(
-					'result' => true,
-					'message' => 'Your text message was sent successfully.'
-			);
-		}elseif (PEAR_Singleton::isError($smsResult)){
-			$result = array(
-					'result' => false,
-					'message' => 'Your text message was count not be sent {$smsResult}.'
-//			'message' => "Your text message count not be sent: {$smsResult->message}."
-			);
-		}else{
-			$result = array(
-					'result' => false,
-					'message' => 'Your text message could not be sent due to an unknown error.'
-			);
-		}
-
-		return json_encode($result);
 	}
 
 	function markNotInterested(){

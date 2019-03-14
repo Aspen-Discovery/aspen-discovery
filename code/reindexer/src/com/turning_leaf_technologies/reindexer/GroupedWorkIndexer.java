@@ -3,7 +3,7 @@ package com.turning_leaf_technologies.reindexer;
 import com.opencsv.CSVWriter;
 import com.turning_leaf_technologies.config.ConfigUtil;
 import com.turning_leaf_technologies.net.NetworkUtils;
-import com.turning_leaf_technologies.net.URLPostResponse;
+import com.turning_leaf_technologies.net.WebServiceResponse;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.impl.BinaryRequestWriter;
 import org.apache.solr.client.solrj.impl.ConcurrentUpdateSolrClient;
@@ -142,7 +142,7 @@ public class GroupedWorkIndexer {
 
 			//Stop replication from the master
 			String url = "http://localhost:" + solrPort + "/solr/grouped_works/replication?command=disablereplication";
-			URLPostResponse stopReplicationResponse = NetworkUtils.getURL(url, logger);
+			WebServiceResponse stopReplicationResponse = NetworkUtils.getURL(url, logger);
 			if (!stopReplicationResponse.isSuccess()){
 				logger.error("Error restarting replication " + stopReplicationResponse.getMessage());
 			}
@@ -718,7 +718,7 @@ public class GroupedWorkIndexer {
 			if (fullReindex)  {
 				//Restart replication from the master
 				String url = "http://localhost:" + solrPort + "/solr/grouped_works/replication?command=enablereplication";
-				URLPostResponse startReplicationResponse = NetworkUtils.getURL(url, logger);
+				WebServiceResponse startReplicationResponse = NetworkUtils.getURL(url, logger);
 				if (!startReplicationResponse.isSuccess()){
 					logger.error("Error restarting replication " + startReplicationResponse.getMessage());
 				}

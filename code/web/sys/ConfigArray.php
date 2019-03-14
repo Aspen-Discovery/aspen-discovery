@@ -140,30 +140,6 @@ function getExtraConfigArray($name)
 		if ($extraConfigs[$name] === false) {
 			$extraConfigs[$name] = array();
 		}
-
-//		if ($name == 'facets'){
-//			//*************************
-//			//Marmot overrides for controlling facets based on library system.
-//			/** @var $librarySingleton Library */
-//			global $librarySingleton;
-//			$library = $librarySingleton->getActiveLibrary();
-//			if (isset($library)){
-//				if ($library->restrictSearchByLibrary && $library->useScope){
-//					unset($extraConfigs[$name]['Results']['owning_library']);
-//					unset($extraConfigs[$name]['Author']['owning_library']);
-//				}
-//			}
-//			global $locationSingleton;
-//			$activeLocation = $locationSingleton->getActiveLocation();
-//			if (!is_null($activeLocation)){
-//				if ($activeLocation->restrictSearchByLocation && $activeLocation->useScope){
-//					unset($extraConfigs[$name]['Results']['owning_library']);
-//					unset($extraConfigs[$name]['Results']['owning_location']);
-//					unset($extraConfigs[$name]['Author']['owning_library']);
-//					unset($extraConfigs[$name]['Author']['owning_location']);
-//				}
-//			}
-//		}
 	}
 
 	return $extraConfigs[$name];

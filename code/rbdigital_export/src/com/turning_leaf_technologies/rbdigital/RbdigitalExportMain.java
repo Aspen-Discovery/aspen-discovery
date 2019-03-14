@@ -4,7 +4,7 @@ import com.turning_leaf_technologies.config.ConfigUtil;
 import com.turning_leaf_technologies.indexing.RecordIdentifier;
 import com.turning_leaf_technologies.logging.LoggingUtil;
 import com.turning_leaf_technologies.net.NetworkUtils;
-import com.turning_leaf_technologies.net.URLPostResponse;
+import com.turning_leaf_technologies.net.WebServiceResponse;
 import com.turning_leaf_technologies.strings.StringUtils;
 
 import org.apache.logging.log4j.Logger;
@@ -185,7 +185,7 @@ public class RbdigitalExportMain {
         HashMap<String, String> headers = new HashMap<>();
         headers.put("Authorization", "basic " + apiToken);
         headers.put("Content-Type", "application/json");
-        URLPostResponse response = NetworkUtils.getURL(bookUrl, logger, headers);
+        WebServiceResponse response = NetworkUtils.getURL(bookUrl, logger, headers);
         if (!response.isSuccess()){
             logger.error(response.getMessage());
             hadErrors = true;

@@ -31,17 +31,6 @@ public class Cron {
 		Date currentTime = new Date();
 		logger = LoggingUtil.setupLogging(serverName, "cron");
 		logger.info(currentTime.toString() + ": Starting Cron");
-		// Setup the MySQL driver
-		try {
-			// The newInstance() call is a work around for some
-			// broken Java implementations
-			Class.forName("com.mysql.jdbc.Driver").newInstance();
-
-			logger.info("Loaded driver for MySQL");
-		} catch (Exception ex) {
-			logger.info("Could not load driver for MySQL, exiting.");
-			return;
-		}
 
 		// Read the base INI file to get information about the server (current directory/cron/config.ini)
 		Ini ini = ConfigUtil.loadConfigFile("config.ini", serverName, logger);

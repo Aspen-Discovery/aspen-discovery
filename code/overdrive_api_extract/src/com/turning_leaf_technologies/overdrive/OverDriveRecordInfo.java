@@ -2,7 +2,7 @@ package com.turning_leaf_technologies.overdrive;
 
 import java.util.HashSet;
 
-public class OverDriveRecordInfo {
+class OverDriveRecordInfo {
 	//Data from base title call
 	private String id;
 	private long crossRefId;
@@ -12,81 +12,81 @@ public class OverDriveRecordInfo {
 	private String series;
 	private String primaryCreatorRole;
 	private String primaryCreatorName;
-	private HashSet<String> formats = new HashSet<String>();
+	private HashSet<String> formats = new HashSet<>();
 	private String coverImage;
-	private HashSet<Long> collections = new HashSet<Long>();
+	private HashSet<Long> collections = new HashSet<>();
 	//Data from metadata call
 	private String rawData;
 
-	public String getRawData() {
+	String getRawData() {
 		return rawData;
 	}
 
-	public void setRawData(String rawData) {
+	void setRawData(String rawData) {
 		this.rawData = rawData;
 	}
 
-	public String getId() {
+	String getId() {
 		return id;
 	}
-	public void setId(String id) {
+	void setId(String id) {
 		this.id = id.toLowerCase();
 	}
-	public long getCrossRefId(){
+	long getCrossRefId(){
 		return crossRefId;
 	}
-	public void setCrossRefId(long crossRefId){
+	void setCrossRefId(long crossRefId){
 		this.crossRefId = crossRefId;
 	}
-	public String getMediaType() {
+	String getMediaType() {
 		return mediaType;
 	}
-	public void setMediaType(String mediaType) {
+	void setMediaType(String mediaType) {
 		this.mediaType = mediaType;
 	}
-	public String getTitle() {
+	String getTitle() {
 		return title;
 	}
-	public void setTitle(String title) {
+	void setTitle(String title) {
 		this.title = title.replaceAll("&#174;", "�");
 	}
-	public String getSeries() {
+	String getSeries() {
 		return series;
 	}
-	public void setSeries(String series) {
+	void setSeries(String series) {
 		this.series = series;
 	}
 	
-	public String getPrimaryCreatorRole() {
+	String getPrimaryCreatorRole() {
 		return primaryCreatorRole;
 	}
-	public void setPrimaryCreatorRole(String primaryCreatorRole) {
+	void setPrimaryCreatorRole(String primaryCreatorRole) {
 		this.primaryCreatorRole = primaryCreatorRole;
 	}
-	public String getPrimaryCreatorName() {
+	String getPrimaryCreatorName() {
 		return primaryCreatorName;
 	}
-	public void setPrimaryCreatorName(String primaryCreatorName) {
+	void setPrimaryCreatorName(String primaryCreatorName) {
 		this.primaryCreatorName = primaryCreatorName;
 	}
-	public HashSet<String> getFormats() {
+	HashSet<String> getFormats() {
 		return formats;
 	}
-	public String getCoverImage() {
+	String getCoverImage() {
 		return coverImage;
 	}
-	public void setCoverImage(String coverImage) {
+	void setCoverImage(String coverImage) {
 		this.coverImage = coverImage;
 	}
-	public HashSet<Long> getCollections() {
+	HashSet<Long> getCollections() {
 		return collections;
 	}
 
-	public String getSubtitle() {
+	String getSubtitle() {
 		return subtitle;
 	}
 
-	public void setSubtitle(String subtitle) {
+	void setSubtitle(String subtitle) {
 		this.subtitle = subtitle;
 	}
 }
