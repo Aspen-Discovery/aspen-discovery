@@ -68,7 +68,7 @@ public class GroupedWorkIndexer {
 	private PreparedStatement getDateFirstDetectedStmt;
 
 
-	public GroupedWorkIndexer(String serverName, Connection dbConn, Ini configIni, boolean fullReindex, boolean singleWorkIndex, Logger logger) {
+	public GroupedWorkIndexer(String serverName, Connection dbConn, Ini configIni, boolean fullReindex, boolean clearIndex, boolean singleWorkIndex, Logger logger) {
 		indexStartTime = new Date().getTime() / 1000;
 		this.serverName = serverName;
 		this.logger = logger;
@@ -284,7 +284,7 @@ public class GroupedWorkIndexer {
 		String arExportPath = configIni.get("Reindex", "arExportPath");
 		loadAcceleratedReaderData(arExportPath);
 
-		if (fullReindex){
+		if (clearIndex){
 			clearIndex();
 		}
 	}

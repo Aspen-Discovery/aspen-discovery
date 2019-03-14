@@ -16,6 +16,7 @@ import java.util.zip.CRC32;
 import javax.net.ssl.HttpsURLConnection;
 
 import com.turning_leaf_technologies.config.ConfigUtil;
+import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -418,13 +419,13 @@ class ExtractOverDriveInfo {
 		try {
 			boolean updateMade = false;
 			//Check to see if anything has changed.  If so, perform necessary updates. 
-			if (!Util.compareStrings(overDriveInfo.getMediaType(), overDriveDBInfo.getMediaType()) || 
-					!Util.compareStrings(overDriveInfo.getTitle(), overDriveDBInfo.getTitle()) ||
-					!Util.compareStrings(overDriveInfo.getSubtitle(), overDriveDBInfo.getSubtitle()) ||
-					!Util.compareStrings(overDriveInfo.getSeries(), overDriveDBInfo.getSeries()) ||
-					!Util.compareStrings(overDriveInfo.getPrimaryCreatorRole(), overDriveDBInfo.getPrimaryCreatorRole()) ||
-					!Util.compareStrings(overDriveInfo.getPrimaryCreatorName(), overDriveDBInfo.getPrimaryCreatorName()) ||
-					!Util.compareStrings(overDriveInfo.getCoverImage(), overDriveDBInfo.getCover()) ||
+			if (!StringUtils.compareStrings(overDriveInfo.getMediaType(), overDriveDBInfo.getMediaType()) ||
+					!StringUtils.compareStrings(overDriveInfo.getTitle(), overDriveDBInfo.getTitle()) ||
+					!StringUtils.compareStrings(overDriveInfo.getSubtitle(), overDriveDBInfo.getSubtitle()) ||
+					!StringUtils.compareStrings(overDriveInfo.getSeries(), overDriveDBInfo.getSeries()) ||
+					!StringUtils.compareStrings(overDriveInfo.getPrimaryCreatorRole(), overDriveDBInfo.getPrimaryCreatorRole()) ||
+					!StringUtils.compareStrings(overDriveInfo.getPrimaryCreatorName(), overDriveDBInfo.getPrimaryCreatorName()) ||
+					!StringUtils.compareStrings(overDriveInfo.getCoverImage(), overDriveDBInfo.getCover()) ||
 					overDriveInfo.getCrossRefId() != overDriveDBInfo.getCrossRefId() ||
 					overDriveDBInfo.isDeleted() ||
 					!overDriveDBInfo.hasRawData()

@@ -165,7 +165,10 @@ class ArlingtonRecordProcessor extends IIIRecordProcessor {
 			long tmpFormatBoostLong = Long.parseLong(formatBoost);
 			recordInfo.setFormatBoost(tmpFormatBoostLong);
 		} catch (NumberFormatException e) {
-			logger.warn("Could not load format boost for format " + formatBoost + " profile " + profileType);
+			if (!unableToTranslateWarnings.contains("no_format_boost_" + formatBoost)){
+				logger.error("Could not load format boost for format " + formatBoost + " profile " + profileType);
+				unableToTranslateWarnings.add("no_format_boost_" + formatBoost);
+			}
 		}
 	}
 

@@ -1334,7 +1334,10 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 					formatBoost = tmpFormatBoostLong;
 				}
 			} catch (NumberFormatException e) {
-				logger.warn("Could not load format boost for format " + tmpFormatBoost + " profile " + profileType);
+				if (!unableToTranslateWarnings.contains("no_format_boost_" + tmpFormatBoost)){
+					logger.error("Could not load format boost for format " + tmpFormatBoost + " profile " + profileType);
+					unableToTranslateWarnings.add("no_format_boost_" + tmpFormatBoost);
+				}
 			}
 		}
 		recordInfo.setFormatBoost(formatBoost);
@@ -2160,6 +2163,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	public String translateValue(String mapName, String value, String identifier){
 		return translateValue(mapName, value, identifier, true);
 	}
+
+	HashSet<String> unableToTranslateWarnings = new HashSet<>();
 	public String translateValue(String mapName, String value, String identifier, boolean reportErrors){
 		if (value == null){
 			return null;
@@ -2167,7 +2172,10 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		TranslationMap translationMap = translationMaps.get(mapName);
 		String translatedValue;
 		if (translationMap == null){
-			logger.error("Unable to find translation map for " + mapName + " in profile " + profileType);
+			if (!unableToTranslateWarnings.contains("unable_to_find_" + mapName)){
+				logger.error("Unable to find translation map for " + mapName);
+				unableToTranslateWarnings.add("unable_to_find_" + mapName);
+			}
 			translatedValue = value;
 		}else{
 			translatedValue = translationMap.translateValue(value, identifier, reportErrors);
@@ -2179,7 +2187,10 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		TranslationMap translationMap = translationMaps.get(mapName);
 		HashSet<String> translatedValues;
 		if (translationMap == null){
-			logger.error("Unable to find translation map for " + mapName + " in profile " + profileType);
+			if (!unableToTranslateWarnings.contains("unable_to_find_" + mapName)){
+				logger.error("Unable to find translation map for " + mapName);
+				unableToTranslateWarnings.add("unable_to_find_" + mapName);
+			}
 			if (values instanceof HashSet){
 				translatedValues = (HashSet<String>)values;
 			}else{

@@ -111,7 +111,7 @@ public class SierraExportAPIMain {
 
 		//Setup other systems we will use
 		recordGroupingProcessor = new MarcRecordGrouper(dbConn, indexingProfile, logger, false);
-		groupedWorkIndexer = new GroupedWorkIndexer(serverName, dbConn, ini, false, false, logger);
+		groupedWorkIndexer = new GroupedWorkIndexer(serverName, dbConn, ini, false, false, false, logger);
 
 		//Start an export log entry
 		try {

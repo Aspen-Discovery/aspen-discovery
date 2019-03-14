@@ -21,7 +21,6 @@ require_once ROOT_DIR . '/sys/IndexEngine.php';
 require_once ROOT_DIR . '/sys/HTTP/Proxy_Request.php';
 require_once ROOT_DIR . '/sys/ConfigArray.php';
 require_once ROOT_DIR . '/sys/SolrUtils.php';
-require_once ROOT_DIR . '/sys/VuFindCache.php';
 
 /**
  * Solr HTTP Interface
@@ -326,22 +325,12 @@ class Solr implements IndexEngine {
 	 */
 	private function _loadSearchSpecs()
 	{
-		// Generate cache key:
-		$key = md5(
-			basename($this->searchSpecsFile) . '-' . filemtime($this->searchSpecsFile)
-		);
-
-		// Load cache manager:
-		$cache = new VuFindCache($this->_specCache, 'searchspecs');
-
-		// Generate data if not found in cache:
-		if (!($results = $cache->load($key))) {
-		    $results = Horde_Yaml::load(
-				file_get_contents($this->searchSpecsFile)
-			);
-			$cache->save($results, $key);
-		}
-		$this->_searchSpecs = $results;
+	    if ($this->_searchSpecs == null) {
+	        //TODO: Store this in Memcache
+            $this->_searchSpecs  = Horde_Yaml::load(
+                file_get_contents($this->searchSpecsFile)
+            );
+        }
 	}
 
 	/**

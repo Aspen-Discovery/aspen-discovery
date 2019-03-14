@@ -16,8 +16,6 @@ import org.json.JSONObject;
 import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
 import com.turning_leaf_technologies.grouping.RecordGroupingProcessor;
 
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -342,7 +340,7 @@ public class RbdigitalExportMain {
 
     private static GroupedWorkIndexer getGroupedWorkIndexer() {
         if (groupedWorkIndexer == null) {
-            groupedWorkIndexer = new GroupedWorkIndexer(serverName, aspenConn, configIni, false, false, logger);
+            groupedWorkIndexer = new GroupedWorkIndexer(serverName, aspenConn, configIni, false, false, false, logger);
         }
         return groupedWorkIndexer;
     }

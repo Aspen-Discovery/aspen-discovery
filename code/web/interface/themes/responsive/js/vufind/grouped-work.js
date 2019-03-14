@@ -452,31 +452,5 @@ VuFind.GroupedWork = (function(){
 			return false;
 		},
 
-		showSmsForm: function(trigger, id){
-			if (Globals.loggedIn){
-				VuFind.loadingMessage();
-				$.getJSON(Globals.path + "/GroupedWork/" + id + "/AJAX?method=getSMSForm", function(data){
-					VuFind.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
-				}).fail(VuFind.ajaxFail);
-			}else{
-				VuFind.Account.ajaxLogin($(trigger), function (){
-					return VuFind.GroupedWork.showSmsForm(trigger, id);
-				}, false);
-			}
-			return false;
-		},
-
-		showTagForm: function(trigger, id, source){
-			if (Globals.loggedIn){
-				$.getJSON(Globals.path + "/GroupedWork/" + id + "/AJAX?method=getAddTagForm", function(data){
-					VuFind.showMessageWithButtons(data.title, data.modalBody, data.modalButtons)
-				});
-			}else{
-				VuFind.Account.ajaxLogin($(trigger), function (){
-					VuFind.GroupedWork.showTagForm(trigger, id, source);
-				}, false);
-			}
-			return false;
-		}
 	};
 }(VuFind.GroupedWork || {}));

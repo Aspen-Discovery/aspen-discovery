@@ -69,7 +69,7 @@ public class ExtractOverDriveInfoMain {
 		// Read the base INI file to get information about the server (current directory/cron/config.ini)
 		Ini configIni = ConfigUtil.loadConfigFile("config.ini", serverName, logger);
 		
-		String databaseConnectionInfo = Util.cleanIniValue(configIni.get("Database", "database_aspen_jdbc"));
+		String databaseConnectionInfo = ConfigUtil.cleanIniValue(configIni.get("Database", "database_aspen_jdbc"));
 		if (databaseConnectionInfo == null || databaseConnectionInfo.length() == 0) {
 			logger.error("Database connection information not found in Database Section.  Please specify connection information in database_aspen_jdbc.");
 			System.exit(1);

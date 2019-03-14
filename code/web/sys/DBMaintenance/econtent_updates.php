@@ -190,7 +190,6 @@ function getEContentUpdates() {
             'description' => 'Update database to use UTF-8 encoding',
             'dependencies' => array(),
             'sql' => array(
-                "ALTER DATABASE " . $configArray['Database']['database_econtent_dbname'] . " DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;",
                 "ALTER TABLE db_update CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
             ),
         ),

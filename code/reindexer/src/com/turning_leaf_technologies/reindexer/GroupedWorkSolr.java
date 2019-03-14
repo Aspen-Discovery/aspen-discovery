@@ -243,7 +243,7 @@ public class GroupedWorkSolr implements Cloneable {
 
 		//language related fields
 		//Check to see if we have Unknown plus a valid value
-		if (languages.size() > 1 && languages.contains("Unknown")){
+		if (languages.size() > 1){
 			languages.remove("Unknown");
 		}
 		doc.addField("language", languages);
@@ -783,10 +783,8 @@ public class GroupedWorkSolr implements Cloneable {
 
 	private void checkInconsistentLiteraryForms() {
 		if (literaryForm.size() > 1){
-			if (literaryForm.containsKey("Unknown")){
-				//We got unknown and something else, remove the unknown
-				literaryForm.remove("Unknown");
-			}
+			//We got unknown and something else, remove the unknown
+			literaryForm.remove("Unknown");
 			if (literaryForm.size() >= 2){
 				//Hmm, we got both fiction and non-fiction
 				Integer numFictionIndicators = literaryForm.get("Fiction");
@@ -806,7 +804,7 @@ public class GroupedWorkSolr implements Cloneable {
 				}else if (numFictionIndicators.compareTo(numNonFictionIndicators) > 0){
 					logger.debug("Popularity dictates that Fiction is the correct literary form for grouped work " + id);
 					literaryForm.remove("Non Fiction");
-				}else if (numFictionIndicators.compareTo(numNonFictionIndicators) > 0){
+				}else if (numFictionIndicators.compareTo(numNonFictionIndicators) < 0){
 					logger.debug("Popularity dictates that Non Fiction is the correct literary form for grouped work " + id);
 					literaryForm.remove("Fiction");
 				}
@@ -816,10 +814,8 @@ public class GroupedWorkSolr implements Cloneable {
 
 	private void checkInconsistentLiteraryFormsFull() {
 		if (literaryFormFull.size() > 1){
-			if (literaryFormFull.containsKey("Unknown")){
-				//We got unknown and something else, remove the unknown
-				literaryFormFull.remove("Unknown");
-			}
+			//We got unknown and something else, remove the unknown
+			literaryFormFull.remove("Unknown");
 			if (literaryFormFull.size() >= 2){
 				//Hmm, we got multiple forms.  Check to see if there are inconsistent forms
 				// i.e. Fiction and Non-Fiction are incompatible, but Novels and Fiction could be mixed
@@ -915,7 +911,7 @@ public class GroupedWorkSolr implements Cloneable {
 		this.id = id;
 	}
 
-	private static Pattern removeBracketsPattern = Pattern.compile("\\[.*?\\]");
+	private static Pattern removeBracketsPattern = Pattern.compile("\\[.*?]");
 	private static Pattern commonSubtitlePattern = Pattern.compile("(?i)((?:[(])?(?:a )?graphic novel|audio cd|book club kit|large print(?:[)])?)$");
 	private static Pattern punctuationPattern = Pattern.compile("[.\\\\/()\\[\\]:;]");
 	void setTitle(String shortTitle, String displayTitle, String sortableTitle, String recordFormat) {
@@ -1207,7 +1203,7 @@ public class GroupedWorkSolr implements Cloneable {
 		if (series != null) {
 			String[] seriesParts = series.split("\\|",2);
 			String seriesName = seriesParts[0];
-			String seriesInfo = getNormalizedSeries(seriesName, true);
+			String seriesInfo = getNormalizedSeries(seriesName);
 			String volume= "";
 			if (seriesParts.length > 1){
 				volume = getNormalizedSeriesVolume(seriesParts[1]);
@@ -1227,7 +1223,7 @@ public class GroupedWorkSolr implements Cloneable {
 						existingVolume = existingSeriesInfo[1];
 					}
 					//Get the longer series name
-					if (existingSeriesName.indexOf(seriesInfoLower) != -1) {
+					if (existingSeriesName.contains(seriesInfoLower)) {
 						//Use the old one unless it doesn't have a volume
 						if (existingVolume.length() == 0){
 							this.seriesWithVolume.remove(existingSeries2);
@@ -1241,7 +1237,7 @@ public class GroupedWorkSolr implements Cloneable {
 								break;
 							}
 						}
-					} else if (seriesInfoLower.indexOf(existingSeriesName) != -1) {
+					} else if (seriesInfoLower.contains(existingSeriesName)) {
 						//Before removing the old series, make sure the new one has a volume
 						if (existingVolume.length() > 0 && existingVolume.equals(volumeLower)){
 							this.seriesWithVolume.remove(existingSeries2);
@@ -1249,7 +1245,7 @@ public class GroupedWorkSolr implements Cloneable {
 						}else if (volume.length() == 0 && existingVolume.length() > 0){
 							okToAdd = false;
 							break;
-						}else if (volume.length() == 0 && existingVolume.length() == 0){
+						}else if (volume.length() == 0){
 							this.seriesWithVolume.remove(existingSeries2);
 							break;
 						}
@@ -1268,7 +1264,7 @@ public class GroupedWorkSolr implements Cloneable {
 		}
 	}
 
-	void addSeries2(String series2){
+	private void addSeries2(String series2){
 		if (series != null) {
 			addSeriesInfoToField(series2, this.series2);
 		}
@@ -1276,15 +1272,15 @@ public class GroupedWorkSolr implements Cloneable {
 
 	private void addSeriesInfoToField(String seriesInfo, HashMap<String, String> seriesField) {
 		if (seriesInfo != null && !seriesInfo.equalsIgnoreCase("none")) {
-			seriesInfo = getNormalizedSeries(seriesInfo, true);
+			seriesInfo = getNormalizedSeries(seriesInfo);
 			String normalizedSeries = seriesInfo.toLowerCase();
 			if (!seriesField.containsKey(normalizedSeries)) {
 				boolean okToAdd = true;
 				for (String existingSeries2 : seriesField.keySet()) {
-					if (existingSeries2.indexOf(normalizedSeries) != -1) {
+					if (existingSeries2.contains(normalizedSeries)) {
 						okToAdd = false;
 						break;
-					} else if (normalizedSeries.indexOf(existingSeries2) != -1) {
+					} else if (normalizedSeries.contains(existingSeries2)) {
 						seriesField.remove(existingSeries2);
 						break;
 					}
@@ -1296,7 +1292,7 @@ public class GroupedWorkSolr implements Cloneable {
 		}
 	}
 
-	String getNormalizedSeriesVolume(String volume){
+	private String getNormalizedSeriesVolume(String volume){
 		volume = Util.trimTrailingPunctuation(volume);
 		volume = volume.replaceAll("(bk\\.?|book)", "");
 		volume = volume.replaceAll("(volume|vol\\.|v\\.)", "");
@@ -1315,11 +1311,10 @@ public class GroupedWorkSolr implements Cloneable {
 		return volume;
 	}
 
-	String getNormalizedSeries(String series, boolean removeVolume){
+	private String getNormalizedSeries(String series){
 		series = Util.trimTrailingPunctuation(series);
-		if (removeVolume){
-			series = series.replaceAll("[#|]\\s*\\d+$", "");
-		}
+		series = series.replaceAll("[#|]\\s*\\d+$", "");
+
 		//Remove anything in parens since it's normally just the format
 		series = series.replaceAll("\\s+\\(.*?\\)", "");
 		series = series.replaceAll(" & ", " and ");
@@ -1391,10 +1386,6 @@ public class GroupedWorkSolr implements Cloneable {
 
 	void setLanguages(HashSet<String> languages) {
 		this.languages.addAll(languages);
-	}
-
-	void addLanguage(String language) {
-		this.languages.add(language);
 	}
 
 	void setTranslations(HashSet<String> translations){

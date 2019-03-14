@@ -224,7 +224,11 @@ abstract class DataObject
         return $response;
     }
 
-    public function get($columnName, $value){
+    public function get($columnName, $value = null){
+        if ($value == null) {
+            $value = $columnName;
+            $columnName = $this->__primaryKey;
+        }
         $this->$columnName = $value;
         return $this->find(true);
     }

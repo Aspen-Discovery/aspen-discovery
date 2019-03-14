@@ -562,7 +562,6 @@ function getLibraryLocationUpdates(){
 				"ALTER TABLE library ADD showStaffView INT(11) DEFAULT 1",
 				"ALTER TABLE library ADD showSearchTools INT(11) DEFAULT 1",
 				"ALTER TABLE location ADD showShareOnExternalSites INT(11) DEFAULT 1",
-				"ALTER TABLE location ADD showTextThis INT(11) DEFAULT 1",
 				"ALTER TABLE location ADD showEmailThis INT(11) DEFAULT 1",
 				"ALTER TABLE location ADD showFavorites INT(11) DEFAULT 1",
 				"ALTER TABLE location ADD showComments INT(11) DEFAULT 1",
@@ -1703,6 +1702,18 @@ function getLibraryLocationUpdates(){
                 'ALTER TABLE `location` ADD COLUMN `theme` INT(11) DEFAULT 1;',
             )
         ),
+
+        'library_remove_unusedColumns' => array(
+            'title' => 'Remove unused columns',
+            'description' => 'Remove showTextThis and and allow columns',
+            'continueOnError' => true,
+            'sql' => array(
+                'ALTER TABLE `library` DROP COLUMN `boopsieLink`;',
+                'ALTER TABLE `library` DROP COLUMN `allow`;',
+                'ALTER TABLE `library` DROP COLUMN `showTextThis`;',
+                'ALTER TABLE `location` DROP COLUMN `showTextThis`;',
+            )
+        )
 
 	);
 }

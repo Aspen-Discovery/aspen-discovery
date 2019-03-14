@@ -28,6 +28,7 @@ public class GroupedReindexMain {
 	@SuppressWarnings("FieldCanBeLocal")
 	private static String processName = "grouped_reindex";
 	private static boolean fullReindex = false;
+	private static boolean clearIndex = false;
 	private static String individualWorkToProcess;
 	private static Ini configIni;
 	private static String baseLogPath;
@@ -56,8 +57,12 @@ public class GroupedReindexMain {
 		serverName = args[0];
 		System.setProperty("reindex.process.serverName", serverName);
 		
-		if (args.length >= 2 && args[1].equalsIgnoreCase("fullReindex")){
+		if (args.length >= 2 && args[1].equalsIgnoreCase("fullReindex")) {
 			fullReindex = true;
+			clearIndex = true;
+		}else if (args.length >= 2 && args[1].equalsIgnoreCase("fullReindexNoClear")){
+			fullReindex = true;
+			clearIndex = false;
 		}else if (args.length >= 2 && args[1].equalsIgnoreCase("singleWork")){
 			//Process a specific work
 			//Prompt for the work to process
@@ -87,7 +92,7 @@ public class GroupedReindexMain {
 		long numWorksProcessed = 0;
 		long numListsProcessed = 0;
 		try {
-			GroupedWorkIndexer groupedWorkIndexer = new GroupedWorkIndexer(serverName, dbConn, configIni, fullReindex, individualWorkToProcess != null, logger);
+			GroupedWorkIndexer groupedWorkIndexer = new GroupedWorkIndexer(serverName, dbConn, configIni, fullReindex, clearIndex, individualWorkToProcess != null, logger);
 			HashMap<Scope, ArrayList<SiteMapEntry>> siteMapsByScope = new HashMap<>();
 			HashSet<Long> uniqueGroupedWorks = new HashSet<>();
 			if (groupedWorkIndexer.isOkToIndex()) {
