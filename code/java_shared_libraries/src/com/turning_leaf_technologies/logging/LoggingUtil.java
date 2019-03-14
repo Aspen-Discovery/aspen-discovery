@@ -26,7 +26,7 @@ public class LoggingUtil {
                 writer.flush();
                 writer.close();
             }catch (FileNotFoundException fne) {
-                System.out.println("Could not find default log file at " + defaultFile.getAbsolutePath());
+                System.out.println("Could not find default log file at " + defaultFile.getAbsolutePath() + " " + fne.toString());
                 System.exit(1);
             }catch (IOException ioe) {
                 System.out.println("Error setting up log file " + ioe.toString());
