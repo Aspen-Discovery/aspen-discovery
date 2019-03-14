@@ -133,48 +133,53 @@ class GroupedWork_AJAX {
 
 		//Process series data
 		$titles = array();
-		if (!isset($enrichmentData['novelist']->seriesTitles) || count($enrichmentData['novelist']->seriesTitles) == 0){
-			$enrichmentResult['seriesInfo'] = array('titles'=>$titles, 'currentIndex'=>0);
-		}else{
-			foreach ($enrichmentData['novelist']->seriesTitles as $key => $record){
-				$titles[] = $this->getScrollerTitle($record, $key, 'Series');
-			}
+		/** @var NovelistData $novelistData */
+		if (isset( $enrichmentData['novelist'])){
+            $novelistData = $enrichmentData['novelist'];
+            if ($novelistData->getSeriesCount() == 0){
+                $enrichmentResult['seriesInfo'] = array('titles'=>$titles, 'currentIndex'=>0);
+            }else{
+                foreach ($novelistData->getSeriesTitles() as $key => $record){
+                    $titles[] = $this->getScrollerTitle($record, $key, 'Series');
+                }
 
-			$seriesInfo = array('titles' => $titles, 'currentIndex' => $enrichmentData['novelist']->seriesDefaultIndex);
-			$enrichmentResult['seriesInfo'] = $seriesInfo;
-		}
-		$memoryWatcher->logMemory('Loaded Series information');
+                $seriesInfo = array('titles' => $titles, 'currentIndex' => $novelistData->getSeriesDefaultIndex());
+                $enrichmentResult['seriesInfo'] = $seriesInfo;
+            }
+            $memoryWatcher->logMemory('Loaded Series information');
 
-		//Process other data from novelist
-		if (isset($enrichmentData['novelist']) && isset($enrichmentData['novelist']->similarTitles)){
-			$interface->assign('similarTitles', $enrichmentData['novelist']->similarTitles);
-			if ($configArray['Catalog']['showExploreMoreForFullRecords']) {
-				$enrichmentResult['similarTitlesNovelist'] = $interface->fetch('GroupedWork/similarTitlesNovelistSidebar.tpl');
-			}else{
-				$enrichmentResult['similarTitlesNovelist'] = $interface->fetch('GroupedWork/similarTitlesNovelist.tpl');
-			}
-		}
-		$memoryWatcher->logMemory('Loaded Similar titles from Novelist');
+            //Process other data from novelist
+            if ($novelistData->getSimilarTitleCount() > 0){
+                $interface->assign('similarTitles', $novelistData->getSimilarTitles());
+                if ($configArray['Catalog']['showExploreMoreForFullRecords']) {
+                    $enrichmentResult['similarTitlesNovelist'] = $interface->fetch('GroupedWork/similarTitlesNovelistSidebar.tpl');
+                }else{
+                    $enrichmentResult['similarTitlesNovelist'] = $interface->fetch('GroupedWork/similarTitlesNovelist.tpl');
+                }
+            }
+            $memoryWatcher->logMemory('Loaded Similar titles from Novelist');
 
-		if (isset($enrichmentData['novelist']) && isset($enrichmentData['novelist']->authors)){
-			$interface->assign('similarAuthors', $enrichmentData['novelist']->authors);
-			if ($configArray['Catalog']['showExploreMoreForFullRecords']) {
-				$enrichmentResult['similarAuthorsNovelist'] = $interface->fetch('GroupedWork/similarAuthorsNovelistSidebar.tpl');
-			}else {
-				$enrichmentResult['similarAuthorsNovelist'] = $interface->fetch('GroupedWork/similarAuthorsNovelist.tpl');
-			}
-		}
-		$memoryWatcher->logMemory('Loaded Similar authors from Novelist');
+            if ($novelistData->getAuthorCount()){
+                $interface->assign('similarAuthors', $novelistData->getAuthors());
+                if ($configArray['Catalog']['showExploreMoreForFullRecords']) {
+                    $enrichmentResult['similarAuthorsNovelist'] = $interface->fetch('GroupedWork/similarAuthorsNovelistSidebar.tpl');
+                }else {
+                    $enrichmentResult['similarAuthorsNovelist'] = $interface->fetch('GroupedWork/similarAuthorsNovelist.tpl');
+                }
+            }
+            $memoryWatcher->logMemory('Loaded Similar authors from Novelist');
 
-		if (isset($enrichmentData['novelist']) && isset($enrichmentData['novelist']->similarSeries)){
-			$interface->assign('similarSeries', $enrichmentData['novelist']->similarSeries);
-			if ($configArray['Catalog']['showExploreMoreForFullRecords']) {
-				$enrichmentResult['similarSeriesNovelist'] = $interface->fetch('GroupedWork/similarSeriesNovelistSidebar.tpl');
-			}else{
-				$enrichmentResult['similarSeriesNovelist'] = $interface->fetch('GroupedWork/similarSeriesNovelist.tpl');
-			}
-		}
-		$memoryWatcher->logMemory('Loaded Similar series from Novelist');
+            if ($novelistData->getSimilarSeriesCount()){
+                $interface->assign('similarSeries', $novelistData->getSimilarSeries());
+                if ($configArray['Catalog']['showExploreMoreForFullRecords']) {
+                    $enrichmentResult['similarSeriesNovelist'] = $interface->fetch('GroupedWork/similarSeriesNovelistSidebar.tpl');
+                }else{
+                    $enrichmentResult['similarSeriesNovelist'] = $interface->fetch('GroupedWork/similarSeriesNovelist.tpl');
+                }
+            }
+            $memoryWatcher->logMemory('Loaded Similar series from Novelist');
+        }
+
 
 		//Load Similar titles (from Solr)
 		$class = $configArray['Index']['engine'];

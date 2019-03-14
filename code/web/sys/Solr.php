@@ -18,7 +18,7 @@
  *
  */
 require_once ROOT_DIR . '/sys/IndexEngine.php';
-require_once ROOT_DIR . '/sys/HTTP/Proxy_Request.php';
+require_once ROOT_DIR . '/sys/HTTP/HTTP_Request.php';
 require_once ROOT_DIR . '/sys/ConfigArray.php';
 require_once ROOT_DIR . '/sys/SolrUtils.php';
 
@@ -165,7 +165,7 @@ class Solr implements IndexEngine {
 		$this->host = $host . '/' . $index;
 
 		// If we're still processing then solr is online
-		$this->client = new Proxy_Request(null, array('useBrackets' => false));
+		$this->client = new HTTP_Request();
 
 		// Read in preferred boolean behavior:
 		$searchSettings = getExtraConfigArray('searches');
@@ -239,9 +239,8 @@ class Solr implements IndexEngine {
 			//$logger->log("Pinging solr server {$this->host} $hostEscaped", PEAR_LOG_DEBUG);
 			// Test to see solr is online
 			$test_url = $this->host . "/admin/ping";
-			$test_client = new Proxy_Request('', array('timeout' => 2, 'read_timeout' => 1));
+			$test_client = new HTTP_Request($test_url);
 			$test_client->setMethod('GET');
-			$test_client->setURL($test_url);
 			$result = $test_client->sendRequest();
 			if (!PEAR_Singleton::isError($result)) {
 				// Even if we get a response, make sure it's a 'good' one.

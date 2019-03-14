@@ -3,7 +3,7 @@
  * Handles integration with Prospector
  */
 
-require_once ROOT_DIR . '/sys/HTTP/Proxy_Request.php';
+require_once ROOT_DIR . '/sys/HTTP/HTTP_Request.php';
 class Prospector{
 	/**
 	 * Load search results from Prospector using the encore interface.
@@ -13,7 +13,7 @@ class Prospector{
 	function getTopSearchResults($searchTerms, $maxResults){
 		$prospectorUrl = $this->getSearchLink($searchTerms);
 		//Load the HTML from Prospector
-		$req = new Proxy_Request($prospectorUrl);
+		$req = new HTTP_Request($prospectorUrl);
 		if (PEAR_Singleton::isError($req->sendRequest())) {
 			return null;
 		}

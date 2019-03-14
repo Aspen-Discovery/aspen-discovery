@@ -1,7 +1,7 @@
 <?php
 require_once(ROOT_DIR . '/Drivers/marmot_inc/ISBNConverter.php');
 require_once ROOT_DIR . '/sys/Novelist/NovelistData.php';
-require_once ROOT_DIR . '/sys/HTTP/Proxy_Request.php';
+require_once ROOT_DIR . '/sys/HTTP/HTTP_Request.php';
 class Novelist3{
 
 	function doesGroupedWorkHaveCachedSeries($groupedRecordId){
@@ -17,6 +17,13 @@ class Novelist3{
 			return false;
 		}
 	}
+
+    /**
+     * @param $groupedRecordId
+     * @param $isbns
+     * @param bool $allowReload
+     * @return NovelistData
+     */
 	function loadBasicEnrichment($groupedRecordId, $isbns, $allowReload = true){
 		global $timer;
 		global $configArray;
@@ -100,7 +107,7 @@ class Novelist3{
 					try{
 						//Get the JSON from the service
 						disableErrorHandler();
-						$req = new Proxy_Request($requestUrl);
+						$req = new HTTP_Request($requestUrl);
 						//$result = file_get_contents($req);
 						if (PEAR_Singleton::isError($req->sendRequest())) {
 							enableErrorHandler();
@@ -244,7 +251,7 @@ class Novelist3{
 				try{
 					//Get the JSON from the service
 					disableErrorHandler();
-					$req = new Proxy_Request($requestUrl);
+					$req = new HTTP_Request($requestUrl);
 					//$result = file_get_contents($req);
 					if (PEAR_Singleton::isError($req->sendRequest())) {
 						enableErrorHandler();
@@ -407,7 +414,7 @@ class Novelist3{
 				try{
 					//Get the JSON from the service
 					disableErrorHandler();
-					$req = new Proxy_Request($requestUrl);
+					$req = new HTTP_Request($requestUrl);
 					//$result = file_get_contents($req);
 					if (PEAR_Singleton::isError($req->sendRequest())) {
 						enableErrorHandler();
@@ -522,7 +529,7 @@ class Novelist3{
 				try{
 					//Get the JSON from the service
 					disableErrorHandler();
-					$req = new Proxy_Request($requestUrl);
+					$req = new HTTP_Request($requestUrl);
 					//$result = file_get_contents($req);
 					if (PEAR_Singleton::isError($req->sendRequest())) {
 						enableErrorHandler();
@@ -568,6 +575,10 @@ class Novelist3{
 		return $novelistData;
 	}
 
+    /**
+     * @param $feature
+     * @param NovelistData $enrichment
+     */
 	private function loadSimilarAuthorInfo($feature, &$enrichment){
 		$authors = array();
 		$items = $feature->authors;
@@ -578,8 +589,7 @@ class Novelist3{
 				'link' => '/Author/Home/?author="'. urlencode($item->full_name) . '"',
 			);
 		}
-		$enrichment->authors = $authors;
-		$enrichment->similarAuthorCount = count($authors);
+		$enrichment->setAuthors($authors);
 	}
 
 	/**
@@ -646,7 +656,7 @@ class Novelist3{
 				try{
 					//Get the JSON from the service
 					disableErrorHandler();
-					$req = new Proxy_Request($requestUrl);
+					$req = new HTTP_Request($requestUrl);
 					//$result = file_get_contents($req);
 					if (PEAR_Singleton::isError($req->sendRequest())) {
 						enableErrorHandler();
@@ -709,6 +719,11 @@ class Novelist3{
 		$novelistData->seriesNote = $seriesData->series_note;
 	}
 
+    /**
+     * @param $currentId
+     * @param $seriesData
+     * @param NovelistData $novelistData
+     */
 	private function loadSeriesInfo($currentId, $seriesData, &$novelistData){
 		$seriesName = $seriesData->full_title;
 		$seriesTitles = array();
@@ -721,23 +736,27 @@ class Novelist3{
 				$novelistData->volume = $curTitle['volume'];
 			}
 		}
-		$novelistData->seriesTitles = $seriesTitles;
+		$novelistData->setSeriesTitles($seriesTitles);
 		$novelistData->seriesTitle = $seriesName;
 		$novelistData->seriesNote = $seriesData->series_note;
 
-		$novelistData->seriesCount = count($items);
-		$novelistData->seriesCountOwned = $titlesOwned;
-		$novelistData->seriesDefaultIndex = 1;
+		$novelistData->setSeriesCount(count($items));
+		$novelistData->setSeriesCountOwned($titlesOwned);
+		$novelistData->setSeriesDefaultIndex(1);
 		$curIndex = 0;
 		foreach ($seriesTitles as $title){
 
 			if ($title['isCurrent']){
-				$novelistData->seriesDefaultIndex = $curIndex;
+				$novelistData->setSeriesDefaultIndex($curIndex);
 			}
 			$curIndex++;
 		}
 	}
 
+    /**
+     * @param $similarSeriesData
+     * @param NovelistData $enrichment
+     */
 	private function loadSimilarSeries($similarSeriesData, &$enrichment){
 		$similarSeries = array();
 		foreach ($similarSeriesData->series as $similarSeriesInfo){
@@ -748,18 +767,21 @@ class Novelist3{
 				'link' => 'Union/Search/?lookfor='. $similarSeriesInfo->full_name . " AND " . $similarSeriesInfo->author,
 			);
 		}
-		$enrichment->similarSeries = $similarSeries;
-		$enrichment->similarSeriesCount = count($similarSeries);
+		$enrichment->setSimilarSeries($similarSeries);
 	}
 
+    /**
+     * @param $currentId
+     * @param $similarTitles
+     * @param NovelistData $enrichment
+     */
 	private function loadSimilarTitleInfo($currentId, $similarTitles, &$enrichment){
 		$items = $similarTitles->titles;
 		$titlesOwned = 0;
 		$similarTitlesReturn = array();
 		$this->loadNoveListTitles($currentId, $items, $similarTitlesReturn, $titlesOwned);
-		$enrichment->similarTitles = $similarTitlesReturn;
-		$enrichment->similarTitleCount = count($items);
-		$enrichment->similarTitleCountOwned = $titlesOwned;
+		$enrichment->setSimilarTitles($similarTitlesReturn);
+		$enrichment->setSimilarTitleCountOwned($titlesOwned);
 	}
 
 	private function loadNoveListTitles($currentId, $items, &$titleList, &$titlesOwned, $seriesName = ''){

@@ -17,7 +17,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
-require_once ROOT_DIR . '/sys/HTTP/Proxy_Request.php';
+require_once ROOT_DIR . '/sys/HTTP/HTTP_Request.php';
 
 /**
  * AWS_Request Class
@@ -110,7 +110,7 @@ class AWS_Request
 		global $configArray;
 
 		// Make the request:
-		$client = new Proxy_Request();
+		$client = new HTTP_Request();
 		$client->setMethod($this->method);
 		echo($this->url);
 		$client->setURL($this->url);

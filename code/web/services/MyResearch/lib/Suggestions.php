@@ -240,9 +240,9 @@ class Suggestions{
 		$enrichmentInfo = $novelist->getSimilarTitles($groupedWorkId, $isbn);
 		$numRecommendations = 0;
 
-		if (isset($enrichmentInfo->similarTitleCountOwned) && $enrichmentInfo->similarTitleCountOwned > 0){
+		if ($enrichmentInfo != null && $enrichmentInfo->getSimilarTitleCountOwned() > 0){
 			//For each related title
-			foreach ($enrichmentInfo->similarTitles as $similarTitle){
+			foreach ($enrichmentInfo->getSimilarTitles() as $similarTitle){
 				if ($similarTitle['libraryOwned']){
 					Suggestions::addTitleToSuggestions($userRating, $groupedWorkId, $groupedWorkId, $similarTitle, $allRatedTitles, $suggestions, $notInterestedTitles);
 					$numRecommendations++;

@@ -9,6 +9,11 @@ class HTTP_Request
     private $responseInfo;
     private $body;
 
+    public function __construct($url = null, $method = 'GET'){
+        $this->url = $url;
+        $this->method = $method;
+    }
+
     public function setMethod($method = 'GET') {
         if ($method != 'GET' && $method != 'POST') {
             global $logger;

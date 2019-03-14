@@ -19,7 +19,7 @@
  */
 
 require_once ROOT_DIR . '/sys/Amazon.php';
-require_once ROOT_DIR . '/sys/HTTP/Proxy_Request.php';
+require_once ROOT_DIR . '/sys/HTTP/HTTP_Request.php';
 require_once ROOT_DIR . '/Drivers/marmot_inc/ISBNConverter.php';
 require_once(ROOT_DIR . '/sys/LocalEnrichment/EditorialReview.php');
 
@@ -361,7 +361,7 @@ class Record_Reviews extends Record_Record
                'index.xml&client=' . $id . '&type=rw12,hw7';
 
 		//find out if there are any reviews
-		$client = new Proxy_Request();
+		$client = new HTTP_Request();
 		$client->setMethod('GET');
 		$client->setURL($url);
 		if (PEAR_Singleton::isError($http = $client->sendRequest())) {
