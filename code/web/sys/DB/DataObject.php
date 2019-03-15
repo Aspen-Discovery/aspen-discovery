@@ -136,9 +136,9 @@ abstract class DataObject
             $this->__where = null;
         }else {
             if (strlen($this->__where) > 0) {
-                $this->__where .= ' ' . $logic. ' ' . $cond;
+                $this->__where .= ' ' . $logic. ' (' . $cond . ')';
             }else {
-                $this->__where .= $cond;
+                $this->__where .= '(' . $cond . ')';
             }
         }
     }
