@@ -1892,7 +1892,7 @@ class GroupedWorkDriver extends IndexRecordDriver{
             );
         } else {
             $seriesFromIndex = $this->getIndexedSeries();
-            if (count($seriesFromIndex) > 0){
+            if ($seriesFromIndex != null && count($seriesFromIndex) > 0){
                 $firstSeries = $seriesFromIndex[0];
                 return array(
                     'seriesTitle' => $firstSeries['seriesTitle'],
