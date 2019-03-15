@@ -65,6 +65,11 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 		return 'OverDrive';
 	}
 
+    protected function getRecordType()
+    {
+        return 'overdrive';
+    }
+
 	/**
 	 * Load the grouped work that this record is connected to.
 	 */
@@ -397,7 +402,12 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 		return $this->overDriveProduct->title;
 	}
 
-	/**
+	public function getShortTitle()
+    {
+        return $this->overDriveProduct->title;
+    }
+
+    /**
 	 * Get the full title of the record.
 	 *
 	 * @return  string
@@ -421,6 +431,20 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 		}
 		return $formats;
 	}
+
+    /**
+     * Get an array of all the format categories associated with the record.
+     *
+     * @return  array
+     */
+    public function getFormatCategory()
+    {
+        $formats = array();
+        foreach ($this->getItems() as $item){
+            $formats[] = $item->name;
+        }
+        return $formats;
+    }
 
 	public function getItems(){
 		if ($this->items == null){
