@@ -12,8 +12,8 @@
 #
 # ie :
 # git pull origin {current branch}
-# /usr/local/aspen-discovery/code/cron/check_crontab.sh nashville.production
-# crontab < /usr/local/aspen-discovery/sites/nashville.production/conf/crontab_settings.txt
+# /usr/local/aspen-discovery/code/cron/check_crontab.sh basinlibraries.production
+# crontab < /usr/local/aspen-discovery/sites/basinlibraries.production/conf/crontab_settings.txt
 
 ###################
 # * * * * *  command to execute
@@ -30,15 +30,15 @@
 #############
 # On Reboot #
 #############
-@reboot cd /usr/local/aspen-discovery/sites/nashville.production/; ./nashville.production.sh start
+@reboot cd /usr/local/aspen-discovery/sites/basinlibraries.production/; ./basinlibraries.production.sh start
 # Continuous Re-Indexing
-@reboot cd /usr/local/VuFind-Plus/sites/nashville.production; ./continuous_partial_reindex.sh
+@reboot cd /usr/local/VuFind-Plus/sites/basinlibraries.production; ./continuous_partial_reindex.sh
 
 ######################
 # MySQL Nightly Dump #
 ######################
 # backup important bits at 12:10am daily
-10 0 * * * /usr/local/aspen-discovery/code/cron/nightly_mysql_dump.sh nashville.production vufind 2>&1 >/dev/null
+10 0 * * * /usr/local/aspen-discovery/code/cron/nightly_mysql_dump.sh basinlibraries.production vufind 2>&1 >/dev/null
 
 #####################
 # Daily full update #
@@ -47,12 +47,12 @@
 # Criteria for start time:
 # Have both the library and schools closed for business? M-Th 8PM; F 6PM; Sat-Sun 5PM
 # Has the weekly RHEL package update been completed? 10:10-10:25PM-ish
-25 22 * * * cd /usr/local/aspen-discovery/sites/nashville.production; ./full_update.sh
+25 22 * * * cd /usr/local/aspen-discovery/sites/basinlibraries.production; ./full_update.sh
 
 #############################################
 # New York Times Best seller Lists Updating #
 #############################################
-07 7 * * 0-1 /usr/local/aspen-discovery/code/cron/updateNYTLists.sh nashville.production
+07 7 * * 0-1 /usr/local/aspen-discovery/code/cron/updateNYTLists.sh basinlibraries.production
 # update on Sundays at 7:07
 
 ################
@@ -67,8 +67,8 @@
 0 7-23 * * * /usr/sbin/apachectl graceful > /dev/null 2>&1
 
 # CRON for VuFind-Plus (book cover cache cleanup etc.)
-00 20 * * * cd /usr/local/VuFind-Plus/code/cron; java -jar cron.jar nashville.production
-20 0 * * * cd /usr/local/VuFind-Plus/code/cron; java -jar cron.jar nashville.production DatabaseCleanup
+00 20 * * * cd /usr/local/VuFind-Plus/code/cron; java -jar cron.jar basinlibraries.production
+20 0 * * * cd /usr/local/VuFind-Plus/code/cron; java -jar cron.jar basinlibraries.production DatabaseCleanup
 
 ###################################
 # Data Extract from other systems #
@@ -81,21 +81,21 @@
 # Every 10 minutes. fixed 11-14-2014 plb. (previously every hour 10 past the hour)
 
 # SIDELOADED ECONTENT MARC triggered HERE (and commented out in full_update.sh)
-0 22 * * * cd /usr/local/aspen-discovery/code/cron; ./sideload.sh nashville.production
+0 22 * * * cd /usr/local/aspen-discovery/code/cron; ./sideload.sh basinlibraries.production
 
 # Download Lexile and AR files triggered in full_update.sh
 
 ###############################
 # MNPS School Overdues Report #
 ###############################
-58 8,12 * * * cd /usr/local/aspen-discovery/code/cron; /opt/rh/php55/root/usr/bin/php NashvilleAdHocOverdues.php nashville.production
+58 8,12 * * * cd /usr/local/aspen-discovery/code/cron; /opt/rh/php55/root/usr/bin/php NashvilleAdHocOverdues.php basinlibraries.production
 
 #################################
 # hacks to keep things afloat until Sparky increases RAM
 # RAM was increased to 32G 2015 09 11; JAMES is keeping these lines commented out here for emergencies
 #################################
-#25 23 * * * rm -rf /data/pika/nashville.production/covers/small; rm -rf /data/pika/nashville.production/covers/medium; rm -rf /data/pika/nashville.production/covers/large; mkdir -m 775 /data/pika/nashville.production/covers/small; mkdir -m 775 /data/pika/nashville.production/covers/medium; mkdir -m 775 /data/pika/nashville.production/covers/large; chown root:apache /data/pika/nashville.production/covers/small; chown root:apache /data/pika/nashville.production/covers/medium; chown root:apache /data/pika/nashville.production/covers/large'
-#10 * * * * cd /usr/local/aspen-discovery/sites/nashville.production; ./pika_restart.sh
+#25 23 * * * rm -rf /data/pika/basinlibraries.production/covers/small; rm -rf /data/pika/basinlibraries.production/covers/medium; rm -rf /data/pika/nashville.production/covers/large; mkdir -m 775 /data/pika/nashville.production/covers/small; mkdir -m 775 /data/pika/nashville.production/covers/medium; mkdir -m 775 /data/pika/nashville.production/covers/large; chown root:apache /data/pika/nashville.production/covers/small; chown root:apache /data/pika/nashville.production/covers/medium; chown root:apache /data/pika/nashville.production/covers/large'
+#10 * * * * cd /usr/local/aspen-discovery/sites/basinlibraries.production; ./pika_restart.sh
 
 # Check Apache Solr process and website that it has not stalled.
 */3 6-23 * * * cd /usr/local/aspen-discovery/code/cron/; ./solrTest.sh
