@@ -310,7 +310,7 @@ class DataObjectUtil
                                     // save thumbnail into a file
                                     imagepng( $tmp_img, "{$pathToMedium}/{$destFileName}" );
                                 } else {
-                                    copy($destFullPath, "{$pathToThumbs}/{$destFileName}");
+                                    copy($destFullPath, "{$pathToMedium}/{$destFileName}");
                                 }
 							}
 						}
