@@ -293,21 +293,25 @@ class DataObjectUtil
 							if (isset($property['mediumWidth'])){
                                 //Create a thumbnail if needed
                                 $thumbWidth = $property['mediumWidth'];
-                                $new_width = $thumbWidth;
-                                $new_height = floor( $height * ( $thumbWidth / $width ) );
+                                if ($width > $thumbWidth){
+                                    $new_width = $thumbWidth;
+                                    $new_height = floor( $height * ( $thumbWidth / $width ) );
 
-                                // create a new temporary image
-                                $tmp_img = imagecreatetruecolor( $new_width, $new_height );
-                                imagealphablending($tmp_img, false);
-                                imagesavealpha($tmp_img,true);
-                                $transparent = imagecolorallocatealpha($tmp_img, 255, 255, 255, 127);
-                                imagefilledrectangle($tmp_img, 0, 0, $width, $height, $transparent);
+                                    // create a new temporary image
+                                    $tmp_img = imagecreatetruecolor( $new_width, $new_height );
+                                    imagealphablending($tmp_img, false);
+                                    imagesavealpha($tmp_img,true);
+                                    $transparent = imagecolorallocatealpha($tmp_img, 255, 255, 255, 127);
+                                    imagefilledrectangle($tmp_img, 0, 0, $width, $height, $transparent);
 
-                                // copy and resize old image into new image
-                                imagecopyresized( $tmp_img, $img, 0, 0, 0, 0, $new_width, $new_height, $width, $height );
+                                    // copy and resize old image into new image
+                                    imagecopyresized( $tmp_img, $img, 0, 0, 0, 0, $new_width, $new_height, $width, $height );
 
-                                // save thumbnail into a file
-                                imagepng( $tmp_img, "{$pathToMedium}/{$destFileName}" );
+                                    // save thumbnail into a file
+                                    imagepng( $tmp_img, "{$pathToMedium}/{$destFileName}" );
+                                } else {
+                                    copy($destFullPath, "{$pathToThumbs}/{$destFileName}");
+                                }
 							}
 						}
 					}
