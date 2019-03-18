@@ -2049,12 +2049,12 @@ class GroupedWorkDriver extends IndexRecordDriver{
     {
         // Don't check for highlighted values if highlighting is disabled:
         if ($useHighlighting) {
-            if (isset($this->fields['_highlighting']['title_sub'][0])){
-                return $this->fields['_highlighting']['title_sub'][0];
+            if (isset($this->fields['_highlighting']['subtitle_display'][0])){
+                return $this->fields['_highlighting']['subtitle_display'][0];
             }
         }
-        return isset($this->fields['title_sub']) ?
-            $this->fields['title_sub'] : '';
+        return isset($this->fields['subtitle_display']) ?
+            $this->fields['subtitle_display'] : '';
     }
 
     public function getSuggestionEntry(){
