@@ -95,7 +95,8 @@ class MySQLSession extends SessionInterface {
             setcookie(session_name(),session_id(),time()+self::$rememberMeLifetime,'/');
         }else{
             $s->remember_me = 0;
-            session_set_cookie_params(0);
+            setcookie(session_name(),session_id(),0,'/');
+            //session_set_cookie_params(0);
         }
         parent::write($sess_id, $data);
         $ret = $s->update();
