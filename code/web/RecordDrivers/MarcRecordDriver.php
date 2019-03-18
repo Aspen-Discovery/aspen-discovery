@@ -182,11 +182,6 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 			$interface->assign('lastGroupedWorkModificationTime', $lastGroupedWorkModificationTime);
 		}
 
-		$solrRecord = $this->fields;
-		if ($solrRecord) {
-			ksort($solrRecord);
-		}
-		$interface->assign('solrRecord', $solrRecord);
 		return 'RecordDrivers/Marc/staff.tpl';
 	}
 

@@ -164,6 +164,7 @@ VuFind.Menu = (function(){
 		},
 
 		collapseSideBar: function(){
+			VuFind.Menu.SideBar.initialLoadDone = true;
 			$('#side-bar,#vertical-menu-bar-container').addClass('collapsedSidebar');
 			$('#main-content-with-sidebar').addClass('mainContentWhenSiderbarCollapsed');
 			$('#main-content-with-sidebar .jcarousel').jcarousel('reload'); // resize carousels in the main content sections
@@ -183,8 +184,14 @@ VuFind.Menu = (function(){
 
 		// Functions for the Vertical Sidebar Menu
 		SideBar: {
+			initialLoadDone: false,
+
 			hideAll: function(){
-				return $(VuFind.Menu.AllSideBarSelectors).filter(':visible').animate({width:'toggle'},350); // slide left to right
+				var animationLength = 0;
+				if (VuFind.Menu.SideBar.initialLoadDone) {
+					animationLength = 350;
+				}
+				return $(VuFind.Menu.AllSideBarSelectors).filter(':visible').animate({width:'toggle'},animationLength); // slide left to right
 			},
 
 			showMenuSection: function(sectionSelector, clickedElement, afterAnimationAction){
@@ -203,7 +210,13 @@ VuFind.Menu = (function(){
 							$('.menu-bar-option').removeClass('menu-icon-selected'); // Remove from any selected
 							parent.addClass('menu-icon-selected');
 							VuFind.Menu.openSideBar();
-							$.when( $(sectionSelector).animate({width:'toggle'},350) ).done(afterAnimationAction); // slide left to right
+							var animationLength = 0;
+							if (VuFind.Menu.SideBar.initialLoadDone) {
+								animationLength = 350;
+							} else {
+								VuFind.Menu.SideBar.initialLoadDone = true;
+							}
+							$.when( $(sectionSelector).animate({width:'toggle'},animationLength) ).done(afterAnimationAction); // slide left to right
 						}
 					}
 				})
@@ -218,11 +231,7 @@ VuFind.Menu = (function(){
 			},
 
 			showSearch: function(clickedElement){
-				if ($('#horizontal-search-box').is(':visible')) { // horizontal search box is being used
-					this.showMenuSection(VuFind.Menu.SideBarSearchSelectors, clickedElement);
-				} else { // sidebar search box is being used
-					this.showMenuSection('#home-page-search,' + VuFind.Menu.SideBarSearchSelectors, clickedElement);
-				}
+				this.showMenuSection(VuFind.Menu.SideBarSearchSelectors, clickedElement);
 			},
 
 			showMenu: function(clickedElement){

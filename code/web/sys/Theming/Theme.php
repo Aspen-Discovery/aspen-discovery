@@ -29,7 +29,7 @@ class Theme extends DataObject
             'id' => array('property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id'),
             'themeName' => array('property'=>'themeName', 'type'=>'text', 'label'=>'Theme Name', 'description'=>'The Name of the Theme', 'maxLength'=>50, 'required' => true),
             'extendsTheme' => array('property'=>'extendsTheme', 'type'=>'text', 'label'=>'Extends Theme', 'description'=>'A theme that this overrides (leave blank if none is overridden)', 'maxLength'=>50, 'required' => false),
-            'logoName' => array('property'=>'logoName', 'type'=>'image', 'label'=>'Logo', 'description'=>'The logo for use in the header', 'required' => false, 'maxWidth' => 200,'hideInLists' => true),
+            'logoName' => array('property'=>'logoName', 'type'=>'image', 'label'=>'Logo (500px x 100px max)', 'description'=>'The logo for use in the header', 'required' => false, 'maxWidth' => 500, 'maxHeight' => 100,'hideInLists' => true),
             //Header Colors
             'headerBackgroundColor' => array('property'=>'headerBackgroundColor', 'type'=>'color', 'label'=>'Header Background Color', 'description'=>'Header Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#f1f1f1'),
             'headerForegroundColor' => array('property'=>'headerForegroundColor', 'type'=>'color', 'label'=>'Header Foreground Color', 'description'=>'Header Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#8b8b8b'),

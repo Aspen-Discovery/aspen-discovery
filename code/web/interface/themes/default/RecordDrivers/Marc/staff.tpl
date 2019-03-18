@@ -64,14 +64,3 @@
 	</div>
 {/if}
 
-{if $solrRecord}
-	<div id="formattedSolrRecord">
-		<h3>Solr Record</h3>
-		<dl>
-			{foreach from=$solrRecord key='field' item='values'}
-				<dt>{$field|escape}</dt>
-				<dd>{implode subject=$values glue=", "}</dd>
-			{/foreach}
-		</dl>
-	</div>
-{/if}

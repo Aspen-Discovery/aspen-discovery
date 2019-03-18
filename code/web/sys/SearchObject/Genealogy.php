@@ -154,7 +154,7 @@ class SearchObject_Genealogy extends SearchObject_Base
 	 * @access  public
 	 * @return  boolean
 	 */
-	public function init()
+	public function init($searchSource = null)
 	{
 		// Call the standard initialization routine in the parent:
 		parent::init('genealogy');

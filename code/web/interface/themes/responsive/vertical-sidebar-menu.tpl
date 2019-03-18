@@ -1,13 +1,15 @@
-{strip}
+{*strip*}
 	{if $displaySidebarMenu}
 		<div class="hidden-xs col-sm-1 col-md-1 col-lg-1" id="vertical-menu-bar-wrapper">
 			<div id="vertical-menu-bar">
-				<div class="menu-bar-option">
-					<a href="#" onclick="VuFind.Menu.SideBar.showSearch(this)" class="menu-icon" title="Search" id="vertical-menu-search-button">
-						<img src="{img filename='/interface/themes/responsive/images/Search.png'}" alt="Search">
-						<div class="menu-bar-label rotated-text"><span class="rotated-text-inner">Search</span></div>
-					</a>
-				</div>
+				{if $action == 'Results' || $action == 'CombinedResults' || ($module == 'Author' && $action == 'Home')}
+					<div class="menu-bar-option">
+						<a href="#" onclick="VuFind.Menu.SideBar.showSearch(this)" class="menu-icon" title="Filter Search" id="vertical-menu-search-button">
+							<img src="{img filename='/interface/themes/responsive/images/Search.png'}" alt="Filter Search">
+							<div class="menu-bar-label rotated-text"><span class="rotated-text-inner">Search</span></div>
+						</a>
+					</div>
+				{/if}
 				{if $loggedIn}{* Logged In *}
 					<div class="menu-bar-option">
 						<a href="#" onclick="VuFind.Menu.SideBar.showAccount(this)" class="menu-icon" title="Account">
@@ -50,29 +52,29 @@
 					$(function(){ldelim}
 						{* .filter(':visible') clauses below ensures that a menu option is triggered if the side bar option is visible is visible :  *}
 
-						{if ($module == "Search" && $action != 'History') || $module == "Series" || $module == "Author" || $module == "Genealogy" || $module == "Library"
-							|| ($module == 'MyAccount' && $action == 'MyList' && !$listEditAllowed)
-							|| ($module == 'EBSCO' && $action == 'Results')
-							|| ($module == 'Union' && $action == 'CombinedResults')
-							|| ($module == 'Archive' && ($action == 'Results' || $action == 'RelatedEntities'))
-					    }
+						{if ($module == "Search" && $action == 'Home')}
+							VuFind.Menu.collapseSideBar();
+						{elseif $action == 'Results' || $action == 'CombinedResults' || ($module == 'Author' && $action == 'Home')}
 								{* Treat Public Lists not owned by user as a Search Page rather than an MyAccount Page *}
 								{* Click Search Menu Bar Button *}
-							$('.menu-bar-option:nth-child(1)>a', '#vertical-menu-bar').filter(':visible').click();
+							//alert("Showing search by default");
+							VuFind.Menu.SideBar.showSearch($('#vertical-menu-search-button'));
+							//$('.menu-bar-option:nth-child(1)>a', '#vertical-menu-bar').filter(':visible').click();
 						{elseif (!$isLoginPage && !in_array($action, array('EmailResetPin', 'ResetPin', 'RequestPinReset', 'EmailPin', 'SelfReg'))) && ($module == "MyAccount" || $module == "Admin" || $module == "Circa" || $module == "EditorialReview" || $module == "Report" || ($module == 'Search' && $action == 'History'))}
 							{* Prevent this action on the Pin Reset Page && Login Page && Offline Circulation Page*}
 							{* Click Account Menu Bar Button *}
-							$('.menu-bar-option:nth-child(2)>a', '#vertical-menu-bar').filter(':visible').click();
+							$('.menu-bar-option:nth-child(1)>a', '#vertical-menu-bar').filter(':visible').click();
 						{elseif $showExploreMore}
 							{* Click Explore More Menu Bar Button *}
 							$('.menu-bar-option:nth-child(4)>a', '#vertical-menu-bar').filter(':visible').click();
 						{else}
 							{* Click Menu - Sidebar Menu Bar Button *}
 							$('.menu-bar-option:nth-child(3)>a', '#vertical-menu-bar').filter(':visible').click();
+							VuFind.Menu.collapseSideBar();
 						{/if}
 						{rdelim})
 				</script>
 			</div>
 		</div>
 	{/if}
-{/strip}
+{*/strip*}

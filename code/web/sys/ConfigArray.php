@@ -172,18 +172,36 @@ function ini_merge($config_ini, $custom_ini)
  */
 function readConfig()
 {
-	//Read default configuration file
-	$configFile = '../../sites/default/conf/config.ini';
-	$mainArray = parse_ini_file($configFile, true);
+    //Read default configuration file
+    $configFile = '../../sites/default/conf/config.ini';
+    $mainArray = parse_ini_file($configFile, true);
 
-	global $serverName, $instanceName;
-	if (isset($_SERVER['aspen_server'])) {
-	    $serverUrl = $_SERVER['aspen_server'];
-	    //echo("Server name is set as server var $serverUrl\r\n");
-    } else {
-        $serverUrl = $_SERVER['SERVER_NAME'];
+    global $fullServerName, $serverName, $instanceName;
+    if ((isset($_REQUEST['test_servername']) || isset($_COOKIE['test_servername']) && session_id() != '' )) {
+        if (isset($_GET['test_servername'])) {
+            $fullServerName = $_REQUEST['test_servername'];
+            if (empty($fullServerName)) {
+                if (isset($_SESSION['test_servername'])) {
+                    unset($_SESSION['test_servername']);
+                }
+            } else{
+                $_SESSION['test_servername'] = $fullServerName;
+            }
+
+        } else {
+            $fullServerName = $_SESSION['test_servername'];
+        }
     }
-	$server = $serverUrl;
+    if (empty($fullServerName)) {
+        if (isset($_SERVER['aspen_server'])) {
+            $fullServerName = $_SERVER['aspen_server'];
+            //echo("Server name is set as server var $serverUrl\r\n");
+        } else {
+            $fullServerName = $_SERVER['SERVER_NAME'];
+        }
+    }
+
+	$server = $fullServerName;
 	$serverParts = explode('.', $server);
 	$serverName = 'default';
 	while (count($serverParts) > 0){
@@ -209,9 +227,9 @@ function readConfig()
 	if ($serverName == 'default'){
 		global $logger;
 		if ($logger){
-			$logger->log('Did not find servername for server ' . $_SERVER['SERVER_NAME'], PEAR_LOG_ERR);
+			$logger->log('Did not find servername for server ' . $fullServerName, PEAR_LOG_ERR);
 		}
-		PEAR_Singleton::raiseError("Invalid configuration, could not find site for " . $_SERVER['SERVER_NAME']);
+		PEAR_Singleton::raiseError("Invalid configuration, could not find site for " . $fullServerName);
 	}
 
 	if ($mainArray == false){
@@ -231,9 +249,9 @@ function readConfig()
 
 	//We no longer are doing proxies as described above so we can preserve SSL now.
 	if (isset($_SERVER['HTTPS'])){
-		$mainArray['Site']['url'] = "https://" . $serverUrl;
+		$mainArray['Site']['url'] = "https://" . $_SERVER['SERVER_NAME'];
 	}else{
-		$mainArray['Site']['url'] = "http://" . $serverUrl;
+		$mainArray['Site']['url'] = "http://" . $_SERVER['SERVER_NAME'];
 	}
 
 	return $mainArray;
@@ -250,7 +268,7 @@ function readConfig()
 function updateConfigForScoping($configArray) {
 	global $timer;
 	//Get the subdomain for the request
-	global $serverName;
+	global $fullServerName;
 
 	//split the servername based on
 	global $subdomain;
@@ -258,8 +276,8 @@ function updateConfigForScoping($configArray) {
 	$timer->logTime('starting updateConfigForScoping');
 
 	$subdomainsToTest = array();
-	if(strpos($_SERVER['SERVER_NAME'], '.')){
-		$serverComponents = explode('.', $_SERVER['SERVER_NAME']);
+	if(strpos($fullServerName, '.')){
+		$serverComponents = explode('.', $fullServerName);
 		$tempSubdomain = '';
 		if (count($serverComponents) >= 3){
 			//URL is probably of the form subdomain.marmot.org or subdomain.opac.marmot.org
