@@ -177,23 +177,12 @@ function readConfig()
     $mainArray = parse_ini_file($configFile, true);
 
     global $fullServerName, $serverName, $instanceName;
-    if (isset($_GET['test_servername'])) {
-        $fullServerName = $_GET['test_servername'];
-        if (empty($fullServerName)) {
-            setcookie('test_servername', $fullServerName, time() - 3600);
-        } else {
-            setcookie('test_servername', $fullServerName, 0);
-        }
-    }elseif (isset($_COOKIE['test_servername'])) {
-        $fullServerName = $_COOKIE['test_servername'];
-    }
-    if (empty($fullServerName)) {
-        if (isset($_SERVER['aspen_server'])) {
-            $fullServerName = $_SERVER['aspen_server'];
-            //echo("Server name is set as server var $serverUrl\r\n");
-        } else {
-            $fullServerName = $_SERVER['SERVER_NAME'];
-        }
+
+    if (isset($_SERVER['aspen_server'])) {
+        $fullServerName = $_SERVER['aspen_server'];
+        //echo("Server name is set as server var $serverUrl\r\n");
+    } else {
+        $fullServerName = $_SERVER['SERVER_NAME'];
     }
 
 	$server = $fullServerName;
@@ -262,8 +251,19 @@ function readConfig()
  */
 function updateConfigForScoping($configArray) {
 	global $timer;
-	//Get the subdomain for the request
-	global $fullServerName;
+    global $fullServerName;
+
+    //Get the subdomain for the request
+	if (isset($_REQUEST['test_servername'])) {
+        $fullServerName = $_GET['test_servername'];
+        if (empty($fullServerName)) {
+            setcookie('test_servername', $_COOKIE['test_servername'], time() - 1000, '/');
+        } else if (!isset($_COOKIE['test_servername']) || ($_COOKIE['test_servername'] != $fullServerName)){
+            setcookie('test_servername', $fullServerName, 0, '/');
+        }
+    }else if(isset($_COOKIE['test_servername'])) {
+        $fullServerName = $_COOKIE['test_servername'];
+    }
 
 	//split the servername based on
 	global $subdomain;
