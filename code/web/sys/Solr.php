@@ -646,7 +646,7 @@ class Solr implements IndexEngine {
 				$options['fq'][] = 'language:"' . $originalResult['language'][0] . '"';
 			}
 			//Don't want to get other editions of the same work (that's a different query)
-			if ($this->index != 'grouped_works'){
+			if ($this->index == 'grouped_works'){
 				if (isset($originalResult['isbn'])){
 					if (is_array($originalResult['isbn'])){
 						foreach($originalResult['isbn'] as $isbn){
