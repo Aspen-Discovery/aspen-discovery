@@ -99,29 +99,16 @@ class I18N_Translator
 		//Check for a more specific language file for the site
 		global $serverName;
 		$serverLangPath = $configArray['Site']['local'] . '/../../sites/' . $serverName . '/lang';
-		if ($dh = @opendir($serverLangPath)) {
-			$serverFile = $serverLangPath . '/' . $this->langCode . '.ini';
-			if (file_exists($serverFile)) {
-				$siteWords = $this->parseLanguageFile($serverFile);
-				$this->words = array_merge($this->words, $siteWords);
-			}
-			closedir($dh);
-		}
-
-		//Also check the theme specific language file (have to check in reverse order so we can override properly).
-		global $interface;
-		if ($interface){
-			$themes = $interface->getThemes();
-			$themeBasePath = $configArray['Site']['local'] . '/interface/themes';
-			$themesReversed = array_reverse($themes);
-			foreach ($themesReversed as $theme){
-				$themeFile = $themeBasePath . '/' . $theme . '/lang/' . $this->langCode . '.ini';
-				if (file_exists($themeFile)) {
-					$siteWords = $this->parseLanguageFile($themeFile);
-					$this->words = array_merge($this->words, $siteWords);
-				}
-			}
-		}
+		if (is_dir($serverLangPath)) {
+            if ($dh = @opendir($serverLangPath)) {
+                $serverFile = $serverLangPath . '/' . $this->langCode . '.ini';
+                if (file_exists($serverFile)) {
+                    $siteWords = $this->parseLanguageFile($serverFile);
+                    $this->words = array_merge($this->words, $siteWords);
+                }
+                closedir($dh);
+            }
+        }
 
 		$timer->logTime('Initialize translator for ' . $langCode);
 	}
