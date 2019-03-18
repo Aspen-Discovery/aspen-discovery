@@ -1157,30 +1157,12 @@ function getLibraryLocationUpdates(){
 			),
 		),
 
-		'horizontal_search_bar' => array(
-			'title' => 'Enable Horizontal Search Bar',
-			'description' => 'Library configuration switch to display a horizontal search bar instead of the default sidebar search box.',
-			'continueOnError' => true,
-			'sql' => array(
-				"ALTER TABLE `library` ADD COLUMN `horizontalSearchBar` TINYINT(1) DEFAULT 0;",
-			),
-		),
-
 		'always_show_search_results_Main_details' => array(
 			'title' => 'Enable Always Show Search Results Main Details',
 			'description' => 'Library configuration switch to always display chosen details in search results even when the info is not supplied or the details vary.',
 			'continueOnError' => true,
 			'sql' => array(
 				"ALTER TABLE `library` ADD COLUMN `alwaysShowSearchResultsMainDetails` TINYINT(1) DEFAULT 0;",
-			),
-		),
-
-		'right_hand_sidebar' => array(
-			'title' => 'Enable Right Hand Sidebar',
-			'description' => 'Library configuration switch to display sidebars on the right of the page instead of the default left side.',
-			'continueOnError' => true,
-			'sql' => array(
-				"ALTER TABLE `library` ADD COLUMN `sideBarOnRight` TINYINT(1) DEFAULT 0;",
 			),
 		),
 
@@ -1497,14 +1479,6 @@ function getLibraryLocationUpdates(){
 					)
 			),
 
-			'display_pika_logo' => array(
-					'title' => 'Library Option to Display Pika Logo',
-					'description' => 'Allow libraries to show the Pika logo in page footers.',
-					'sql' => array(
-						"ALTER TABLE `library` ADD `showPikaLogo` TINYINT DEFAULT '1';",
-					)
-			),
-
 			'masquerade_automatic_timeout_length' => array(
 					'title' => 'Library Option to set Masquerade Mode time out length',
 					'description' => 'Allow libraries to set the value is seconds before an idle Masquerade session times out.',
@@ -1712,6 +1686,17 @@ function getLibraryLocationUpdates(){
                 'ALTER TABLE `library` DROP COLUMN `allow`;',
                 'ALTER TABLE `library` DROP COLUMN `showTextThis`;',
                 'ALTER TABLE `location` DROP COLUMN `showTextThis`;',
+            )
+        ),
+
+        'library_remove_unusedDisplayOptions_3_18' => array(
+            'title' => 'Remove unused display options',
+            'description' => 'Remove pika logo display and sidebar on right option',
+            'continueOnError' => true,
+            'sql' => array(
+                'ALTER TABLE `library` DROP COLUMN `sideBarOnRight`;',
+                'ALTER TABLE `library` DROP COLUMN `showPikaLogo`;',
+                'ALTER TABLE library DROP COLUMN horizontalSearchBar',
             )
         )
 

@@ -41,11 +41,6 @@
 				<a href="http://lioninc.org" title="Member of Libraries Online Incorporated">
 					<img src="/interface/themes/lion/images/logo_responsive.png" alt="Member of Libraries Online Incorporated" style="max-width: 100%; max-height:140px; margin-left:20px; margin-right:20px">
 				</a>
-				{if $showPikaLogo}
-					<a href="http://marmot.org/pika-discovery/about-pika" title="Proud Pika Partner">
-						<img id="footer-pika-logo" src="{img filename='pika-logo.png'}" alt="Proud Pika Partner" style="max-width: 100%; max-height: 80px;">
-					</a>
-				{/if}
 			</div>
 		</div>
 		{if $loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('cataloging', $userRoles) || array_key_exists('libraryManager', $userRoles) || array_key_exists('locationManager', $userRoles))}

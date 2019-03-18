@@ -379,12 +379,6 @@ function updateConfigForScoping($configArray) {
 			if ($subdomain != null && file_exists('./interface/themes/' . $themeName . '/images/'. $subdomain .'_logo_responsive.png')) {
 				$configArray['Site']['responsiveLogo'] = '/interface/themes/' . $themeName . '/images/'. $subdomain .'_logo_responsive.png';
 			}
-			if ($location != null && file_exists('./interface/themes/' . $themeName . '/images/'. $location->code .'_logo_small.png')) {
-				$configArray['Site']['smallLogo'] = '/interface/themes/' . $themeName . '/images/'. $location->code .'_logo_small.png';
-			}
-			if ($location != null && file_exists('./interface/themes/' . $themeName . '/images/'. $location->code .'_logo_large.png')) {
-				$configArray['Site']['largeLogo'] = '/interface/themes/' . $themeName . '/images/'. $location->code .'_logo_large.png';
-			}
 		}
 		$timer->logTime('loaded themes');
 	}

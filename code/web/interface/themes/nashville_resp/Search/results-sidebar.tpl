@@ -1,9 +1,4 @@
 {strip}
-	{* New Search Box *}
-	{if !$horizontalSearchBar}
-		{include file="Search/searchbox-home.tpl"}
-	{/if}
-
 	{include file="login-sidebar.tpl"}
 
 	{*{if $recordCount || $sideRecommendations}*}

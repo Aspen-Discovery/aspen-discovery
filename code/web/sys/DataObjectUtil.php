@@ -119,6 +119,8 @@ class DataObjectUtil
 	 *
 	 * @param $dataObject
 	 * @param $object - The object to validate
+     *
+     * @return array Results of validation
 	 */
 	static function validateObject($structure, $object){
 		//Setup validation return array
@@ -191,6 +193,14 @@ class DataObjectUtil
 			}else{
 				$object->$propertyName =  0;
 			}
+        }else if ($property['type'] == 'color'){
+		    $defaultProperty = $propertyName . 'Default';
+            if (isset($_REQUEST[$propertyName . '-default']) && ($_REQUEST[$propertyName . '-default'] == 'on')){
+                $object->$defaultProperty = 1;
+            }else{
+                $object->$defaultProperty = 0;
+            }
+            $object->$propertyName = $_REQUEST[$propertyName];
 		}else if ($property['type'] == 'currency'){
 			if (preg_match('/\\$?\\d*\\.?\\d*/', $_REQUEST[$propertyName])){
 				if (substr($_REQUEST[$propertyName], 0, 1) == '$'){

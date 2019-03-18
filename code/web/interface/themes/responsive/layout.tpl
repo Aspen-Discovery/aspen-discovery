@@ -33,6 +33,7 @@
 		<link rel="search" type="application/opensearchdescription+xml" title="{$site.title} Catalog Search" href="{$path}/Search/OpenSearch?method=describe">
 
 		{include file="cssAndJsIncludes.tpl"}
+			{$themeCss}
 		{/strip}
 	</head>
 	<body class="module_{$module} action_{$action}{if $masqueradeMode} masqueradeMode{/if}" id="{$module}-{$action}">
@@ -76,51 +77,31 @@
 				</div>
 			</div>
 
-			{if $horizontalSearchBar}
-				<div id="horizontal-search-wrapper" class="row">
-					<div id="horizontal-search-container" class="col-xs-12">
-						{include file="Search/horizontal-searchbox.tpl"}
-					</div>
+			<div id="horizontal-search-wrapper" class="row">
+				<div id="horizontal-search-container" class="col-xs-12">
+					{include file="Search/horizontal-searchbox.tpl"}
 				</div>
-			{/if}
+			</div>
 
 			<div id="content-container">
 				<div class="row">
 
 					{if !empty($sidebar)} {* Main Content & Sidebars *}
 
-						{if $sideBarOnRight}  {*Sidebar on the right *}
-							<div class="rightSidebar col-xs-12 col-sm-4 col-sm-push-8 col-md-3 col-md-push-9 col-lg-3 col-lg-push-9" id="side-bar">
-								{include file="sidebar.tpl"}
-							</div>
-							<div class="rightSidebar col-xs-12 col-sm-8 col-sm-pull-4 col-md-9 col-md-pull-3 col-lg-9 col-lg-pull-3" id="main-content-with-sidebar" style="overflow-x: auto;">
-								{* If main content overflows, use a scrollbar *}
-								{if $showBreadcrumbs}
-									{include file="breadcrumbs.tpl"}
-								{/if}
-								{if $module}
-									{include file="$module/$pageTemplate"}
-								{else}
-									{include file="$pageTemplate"}
-								{/if}
-							</div>
-
-						{else} {* Sidebar on the left *}
-							<div class="col-xs-12 col-sm-4 col-md-3 col-lg-3 " id="side-bar">
-								{include file="sidebar.tpl"}
-							</div>
-							<div class="col-xs-12 col-sm-8 col-md-9 col-lg-9" id="main-content-with-sidebar">
-								{if $showBreadcrumbs}
-									{include file="breadcrumbs.tpl"}
-								{/if}
-								{if $module}
-									{include file="$module/$pageTemplate"}
-								{else}
-									{include file="$pageTemplate"}
-								{/if}
-							</div>
-						{/if}
-
+						{* Sidebar on the left *}
+						<div class="col-xs-12 col-sm-4 col-md-3 col-lg-3 " id="side-bar">
+							{include file="sidebar.tpl"}
+						</div>
+						<div class="col-xs-12 col-sm-8 col-md-9 col-lg-9" id="main-content-with-sidebar">
+							{if $showBreadcrumbs}
+								{include file="breadcrumbs.tpl"}
+							{/if}
+							{if $module}
+								{include file="$module/$pageTemplate"}
+							{else}
+								{include file="$pageTemplate"}
+							{/if}
+						</div>
 					{else} {* Main Content Only, no sidebar *}
 						{if $module}
 							{include file="$module/$pageTemplate"}

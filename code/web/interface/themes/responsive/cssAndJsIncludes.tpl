@@ -1,7 +1,8 @@
 {strip}
 	{* All CSS should be come before javascript for better browser performance *}
-	{if $debugCss}
-    {css filename="main.css"}
+	{* TODO: Fix minification of css *}
+	{if $debugCss || true}
+    	{css filename="main.css"}
 	{else}
 		{css filename="main.min.css"}
 	{/if}

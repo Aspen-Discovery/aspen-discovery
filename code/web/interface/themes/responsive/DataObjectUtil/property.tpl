@@ -59,6 +59,25 @@
 			<input type='text' name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if $property.size}size='{$property.size}'{/if} class='form-control url {if $property.required}required{/if}'>
 		{elseif $property.type == 'email'}
 			<input type='text' name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if $property.size}size='{$property.size}'{/if} class='form-control email {if $property.required}required{/if}'>
+		{elseif $property.type == 'color'}
+			<div class="row">
+				<div class="col-sm-3">
+					<input type='color' name='{$propName}' id='{$propName}' value='{$propValue|escape}' class='form-control{if $property.required}required{/if}' size="7" maxlength="7" onchange="$('#{$propName}Hex').value(this.value)">
+				</div>
+				<div class="col-sm-3">
+					<input type='text' id='{$propName}Hex' value='{$propValue|escape}' class='form-control' size="7" maxlength="7" onchange="$('#{$propName}').val(this.value)" pattern="^#([a-fA-F0-9]{ldelim}6{rdelim})$">
+				</div>
+				<div class="col-sm-6">
+					{assign var=defaultVariableName value="`$propName`Default"}
+					{if is_null($object->$defaultVariableName)}
+						{assign var=useDefault value=true}
+					{else}
+						{assign var=useDefault value=$object->$defaultVariableName}
+					{/if}
+
+					<input type="checkbox" name='{$propName}-default' id='{$propName}-default' {if $useDefault == '1'}checked="checked"{/if}/><label for='{$propName}-default'>Use Default</label>
+				</div>
+			</div>
 		{elseif $property.type == 'multiemail'}
 			<input type='text' name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if $property.size}size='{$property.size}'{/if} class='form-control multiemail {if $property.required}required{/if}'>
 		{elseif $property.type == 'date'}

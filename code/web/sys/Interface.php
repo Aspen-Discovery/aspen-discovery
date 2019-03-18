@@ -194,11 +194,7 @@ class UInterface extends Smarty
 
 		$timer->logTime('Basic configuration');
 
-		$displaySidebarMenu = false;
-		if (isset($configArray['Site']['sidebarMenu'])) {
-			$displaySidebarMenu = (bool) $configArray['Site']['sidebarMenu'];
-		}
-		$this->assign('displaySidebarMenu', $displaySidebarMenu);
+		$this->assign('displaySidebarMenu', true);
 
 		$this->assign('currentTab', 'Search');
 
@@ -364,26 +360,38 @@ class UInterface extends Smarty
 		global $locationSingleton;
 		global $configArray;
 
+		$allAppliedThemes = [];
+		$primaryTheme = null;
+
         $theme = new Theme();
         $theme->id = $library->theme;
-        $theme->find(true);
+        if ($theme->find(true)){
+            $allAppliedThemes = $theme->getAllAppliedThemes();
+            $primaryTheme = $theme;
+        }
+
+        $logoName = null;
+        foreach ($allAppliedThemes as $theme){
+            if (!is_null($theme->logoName)){
+                $logoName = $theme->logoName;
+                break;
+            }
+        }
 
         //Get Logo
-        if ($theme->logoName) {
-            $this->assign('responsiveLogo', '/files/medium/' . $theme->logoName);
-            $this->assign('smallLogo', '/files/thumbnail/' . $theme->logoName);
-            $this->assign('largeLogo', '/files/original/' . $theme->logoName);
+        if ($logoName) {
+            $this->assign('responsiveLogo', '/files/medium/' . $logoName);
         } else {
             if (isset($configArray['Site']['responsiveLogo'])){
                 $this->assign('responsiveLogo', $configArray['Site']['responsiveLogo']);
             }
-            if (isset($configArray['Site']['smallLogo'])){
-                $this->assign('smallLogo', $configArray['Site']['smallLogo']);
-            }
-            if (isset($configArray['Site']['largeLogo'])){
-                $this->assign('largeLogo', $configArray['Site']['largeLogo']);
-            }
         }
+
+        if ($primaryTheme != null) {
+            $themeCss = $primaryTheme->generatedCss;
+            $this->assign('themeCss', $themeCss);
+        }
+
 		$location = $locationSingleton->getActiveLocation();
 		$showHoldButton = 1;
 		$showHoldButtonInSearchResults = 1;
@@ -410,7 +418,7 @@ class UInterface extends Smarty
 			$this->assign('youtubeLink', $library->youtubeLink);
 			$this->assign('instagramLink', $library->instagramLink);
 			$this->assign('goodreadsLink', $library->goodreadsLink);
-			$this->assign('generalContactLink', $library->generalContactLink);
+			$this->assign('geeralContactLink', $library->generalContactLink);
 			$this->assign('showLoginButton', $library->showLoginButton);
 			$this->assign('showAdvancedSearchbox', $library->showAdvancedSearchbox);
 			$this->assign('enablePospectorIntegration', $library->enablePospectorIntegration);
@@ -426,10 +434,7 @@ class UInterface extends Smarty
 			$this->assign('showItsHere', $library->showItsHere);
 			$this->assign('enableMaterialsBooking', $library->enableMaterialsBooking);
 			$this->assign('showHoldButtonForUnavailableOnly', $library->showHoldButtonForUnavailableOnly);
-			$this->assign('horizontalSearchBar', $library->horizontalSearchBar);
-			$this->assign('sideBarOnRight', $library->sideBarOnRight);
 			$this->assign('showHoldCancelDate', $library->showHoldCancelDate);
-			$this->assign('showPikaLogo', $library->showPikaLogo);
 			$this->assign('allowMasqueradeMode', $library->allowMasqueradeMode);
 			$this->assign('allowReadingHistoryDisplayInMasqueradeMode', $library->allowReadingHistoryDisplayInMasqueradeMode);
 			$this->assign('interLibraryLoanName', $library->interLibraryLoanName);
@@ -455,10 +460,7 @@ class UInterface extends Smarty
 			$this->assign('showItsHere', 0);
 			$this->assign('enableMaterialsBooking', 0);
 			$this->assign('showHoldButtonForUnavailableOnly', 0);
-			$this->assign('horizontalSearchBar', 0);
-			$this->assign('sideBarOnRight', 0);
 			$this->assign('showHoldCancelDate', 0);
-			$this->assign('showPikaLogo', 1);
 			$this->assign('allowMasqueradeMode', 0);
 			$this->assign('allowReadingHistoryDisplayInMasqueradeMode', 0);
 			$this->assign('showGroupedHoldCopiesCount', 1);

@@ -6,6 +6,7 @@
 tmp
 sites/*/backup
 sites/*/conf/log4j.*.properties
+!sites/defult/conf/log4j.properties
 !sites/default/backup
 sites/default/solr5/docs/*
 sites/default/solr5/example/*
@@ -28,6 +29,7 @@ code/web/google*.html
 code/web/getWorkIdUpdates.php
 code/web/sitemaps/*.xml
 code/web/sitemaps/*.txt
+code/web/node_modules
 tests/jmeter/results/*
 tests/selenium/*
 tests/conf/config.ini
@@ -92,6 +94,7 @@ sites/default/solr/jetty/logs
 .classpath
 org.eclipse.*.prefs
 *.iml
+*.css.map
 .idea/
 .settings/
 out/

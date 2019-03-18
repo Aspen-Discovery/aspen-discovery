@@ -1,9 +1,5 @@
 {strip}
 {* Search box *}
-	{if !$horizontalSearchBar}
-		{include file="Search/searchbox-home.tpl"}
-	{/if}
-
 	{include file="login-sidebar.tpl"}
 
 	{if $loggedIn}

@@ -164,8 +164,6 @@ class Library extends DataObject
 	public $browseCategoryRatingsMode;
 	public $enableMaterialsBooking;
 	public $allowLinkedAccounts;
-	public $horizontalSearchBar;
-	public $sideBarOnRight;
 	public $showSidebarMenu;
 	public $sidebarMenuButtonText;
 	public $enableArchive;
@@ -196,7 +194,6 @@ class Library extends DataObject
 	public $casHost;
 	public $casPort;
 	public $casContext;
-	public $showPikaLogo;
 	public $masqueradeAutomaticTimeoutLength;
 	public $allowMasqueradeMode;
 	public $allowReadingHistoryDisplayInMasqueradeMode;
@@ -389,7 +386,6 @@ class Library extends DataObject
 				'headerText' => array('property'=>'headerText', 'type'=>'html', 'label'=>'Header Text', 'description'=>'Optional Text to display in the header, between the logo and the log in/out buttons.  Will apply to all pages.', 'allowableTags' => '<a><b><em><div><span><p><strong><sub><sup><h1><h2><h3><h4><h5><h6><img>', 'hideInLists' => true),
 				'showSidebarMenu' => array('property'=>'showSidebarMenu', 'type'=>'checkbox', 'label'=>'Display Sidebar Menu', 'description'=>'Determines whether or not the sidebar menu will be shown.  Must also be enabled in config.ini.', 'hideInLists' => true,),
 				'sidebarMenuButtonText' => array('property'=>'sidebarMenuButtonText', 'type'=>'text', 'label'=>'Sidebar Help Button Text', 'description'=>'The text to show for the help/menu button in the sidebar', 'size'=>'40', 'hideInLists' => true, 'default' => 'Help'),
-				'sideBarOnRight' => array('property'=>'sideBarOnRight', 'type'=>'checkbox', 'label'=>'Display Sidebar on the Right Side', 'description'=>'Sidebars will be displayed on the right side of the page rather than the default left side.', 'hideInLists' => true,),
 				'useHomeLinkInBreadcrumbs' => array('property'=>'useHomeLinkInBreadcrumbs', 'type'=>'checkbox', 'label'=>'Use Home Link in Breadcrumbs', 'description'=>'Whether or not the home link should be used in the breadcumbs.', 'hideInLists' => true,),
 				'useHomeLinkForLogo' => array('property'=>'useHomeLinkForLogo', 'type'=>'checkbox', 'label'=>'Use Home Link for Logo', 'description'=>'Whether or not the home link should be used as the link for the main logo.', 'hideInLists' => true,),
 				'homeLinkText' => array('property'=>'homeLinkText', 'type'=>'text', 'label'=>'Home Link Text', 'description'=>'The text to show for the Home breadcrumb link', 'size'=>'40', 'hideInLists' => true, 'default' => 'Home'),
@@ -398,7 +394,6 @@ class Library extends DataObject
 
 				'enableGenealogy' => array('property'=>'enableGenealogy', 'type'=>'checkbox', 'label'=>'Enable Genealogy Functionality', 'description'=>'Whether or not patrons can search genealogy.', 'hideInLists' => true, 'default' => 1),
 				'enableCourseReserves' => array('property'=>'enableCourseReserves', 'type'=>'checkbox', 'label'=>'Enable Repeat Search in Course Reserves', 'description'=>'Whether or not patrons can repeat searches within course reserves.', 'hideInLists' => true,),
-				'showPikaLogo' => array('property'=>'showPikaLogo', 'type'=>'checkbox', 'label'=>'Display Pika Logo', 'description'=>'Determines whether or not the Pika logo will be shown in the footer.', 'hideInLists' => true, 'default' => true),
 			)),
 
 			// Contact Links //
@@ -506,7 +501,6 @@ class Library extends DataObject
 				'allowAutomaticSearchReplacements'         => array('property' => 'allowAutomaticSearchReplacements', 'type'=>'checkbox', 'label'=>'Allow Automatic Search Corrections', 'description'=>'Turn on to allow Pika to replace search terms that have no results if the current search term looks like a misspelling.', 'hideInLists' => true, 'default'=>true),
 				'applyNumberOfHoldingsBoost'               => array('property' => 'applyNumberOfHoldingsBoost', 'type'=>'checkbox', 'label'=>'Apply Number Of Holdings Boost', 'description'=>'Whether or not the relevance will use boosting by number of holdings in the catalog.', 'hideInLists' => true, 'default' => 1),
 				'searchBoxSection' => array('property' => 'searchBoxSection', 'type' => 'section', 'label' => 'Search Box', 'hideInLists' => true, 'properties' => array(
-					'horizontalSearchBar'                    => array('property' => 'horizontalSearchBar',      'type'=>'checkbox', 'label' => 'Use Horizontal Search Bar',   'description' => 'Instead of the default sidebar search box, a horizontal search bar is shown below the header that spans the screen.', 'hideInLists' => true, 'default' => false),
 					'systemsToRepeatIn'                      => array('property' => 'systemsToRepeatIn',        'type' => 'text',   'label' => 'Systems To Repeat In',        'description' => 'A list of library codes that you would like to repeat search in separated by pipes |.', 'size'=>'20', 'hideInLists' => true,),
 					'repeatSearchOption'                     => array('property' => 'repeatSearchOption',       'type'=>'enum',     'label' => 'Repeat Search Options (requires Restrict Search to Library to be ON)',       'description'=>'Where to allow repeating search. Valid options are: none, librarySystem, marmot, all', 'values'=>array('none'=>'None', 'librarySystem'=>'Library System','marmot'=>'Consortium'),),
 					'repeatInOnlineCollection'               => array('property' => 'repeatInOnlineCollection', 'type'=>'checkbox', 'label' => 'Repeat In Online Collection', 'description'=>'Turn on to allow repeat search in the Online Collection.', 'hideInLists' => true, 'default'=>false),
