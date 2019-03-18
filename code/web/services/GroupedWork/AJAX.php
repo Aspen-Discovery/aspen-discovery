@@ -218,9 +218,6 @@ class GroupedWork_AJAX {
 		}
 		$memoryWatcher->logMemory('Loaded additional go deeper data');
 
-		//Related data
-		$enrichmentResult['relatedContent'] = $interface->fetch('Record/relatedContent.tpl');
-
 		return json_encode($enrichmentResult);
 	}
 
