@@ -6,7 +6,7 @@ class Timer{
 	private $timingsEnabled = false;
 	private $minTimeToLog = 0;
 
-	public function Timer($startTime = null){
+	public function __construct($startTime = null){
 		global $configArray;
 		if ($configArray){
 			if (isset($configArray['System']['timings'])) {

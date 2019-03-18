@@ -5,7 +5,7 @@ class MemoryWatcher{
 	private $memoryMessages;
 	private $memoryLoggingEnabled = false;
 
-	public function MemoryWatcher(){
+	public function __construct(){
 		global $configArray;
 		if ($configArray){
 			if (isset($configArray['System']['logMemoryUsage'])) {
