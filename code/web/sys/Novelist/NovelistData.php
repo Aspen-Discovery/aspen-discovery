@@ -44,7 +44,7 @@ class NovelistData extends DataObject{
 	public $__table = 'novelist_data';
 	public function getNumericColumnNames()
     {
-        return ['hasNovelistData'];
+        return ['hasNovelistData','groupedRecordHasISBN'];
     }
 
     public function getSeriesTitles(){
