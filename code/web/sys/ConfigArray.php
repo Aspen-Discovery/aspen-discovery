@@ -177,20 +177,15 @@ function readConfig()
     $mainArray = parse_ini_file($configFile, true);
 
     global $fullServerName, $serverName, $instanceName;
-    if ((isset($_REQUEST['test_servername']) || isset($_COOKIE['test_servername']) && session_id() != '' )) {
-        if (isset($_GET['test_servername'])) {
-            $fullServerName = $_REQUEST['test_servername'];
-            if (empty($fullServerName)) {
-                if (isset($_SESSION['test_servername'])) {
-                    unset($_SESSION['test_servername']);
-                }
-            } else{
-                $_SESSION['test_servername'] = $fullServerName;
-            }
-
+    if (isset($_GET['test_servername'])) {
+        $fullServerName = $_GET['test_servername'];
+        if (empty($fullServerName)) {
+            setcookie('test_servername', $fullServerName, time() - 3600);
         } else {
-            $fullServerName = $_SESSION['test_servername'];
+            setcookie('test_servername', $fullServerName, 0);
         }
+    }elseif (isset($_COOKIE['test_servername'])) {
+        $fullServerName = $_COOKIE['test_servername'];
     }
     if (empty($fullServerName)) {
         if (isset($_SERVER['aspen_server'])) {
