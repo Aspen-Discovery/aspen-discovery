@@ -603,7 +603,7 @@ class Solr implements IndexEngine {
 			$originalResult = $this->getRecord($id, 'target_audience_full,target_audience_full,literary_form,language,isbn,upc');
 		}
 		// Query String Parameters
-		$options = array('q' => "id:$id", 'qt' => 'morelikethis2', 'mlt.interestingTerms' => 'details', 'rows' => 25, 'fl' => SearchObject_Solr::$fields);
+        $options = array('q' => "id:$id", 'qt' => 'morelikethis2', 'mlt.interestingTerms' => 'details', 'rows' => 25, 'fl' => SearchObject_Solr::$fields);
 		if ($originalResult){
 			$options['fq'] = array();
 			if (isset($originalResult['target_audience_full'])){
@@ -646,26 +646,6 @@ class Solr implements IndexEngine {
 				$options['fq'][] = 'language:"' . $originalResult['language'][0] . '"';
 			}
 			//Don't want to get other editions of the same work (that's a different query)
-			if ($this->index == 'grouped_works'){
-				if (isset($originalResult['isbn'])){
-					if (is_array($originalResult['isbn'])){
-						foreach($originalResult['isbn'] as $isbn){
-							$options['fq'][] = '-isbn:' . ISBN::normalizeISBN($isbn);
-						}
-					}else{
-						$options['fq'][] = '-isbn:' . ISBN::normalizeISBN($originalResult['isbn']);
-					}
-				}
-				if (isset($originalResult['upc'])){
-					if (is_array($originalResult['upc'])){
-						foreach($originalResult['upc'] as $upc){
-							$options['fq'][] = '-upc:' . ISBN::normalizeISBN($upc);
-						}
-					}else{
-						$options['fq'][] = '-upc:' . ISBN::normalizeISBN($originalResult['upc']);
-					}
-				}
-			}
 		}
 
 		$searchLibrary = Library::getSearchLibrary();
@@ -1460,7 +1440,9 @@ class Solr implements IndexEngine {
 				$handler = 'TitleProper';
 			}else if ($handler == 'Title'){
 				$handler = 'TitleProper';
-			}else if ($handler == 'IslandoraKeyword'){
+            }else if ($handler == 'Series'){
+                $handler = 'SeriesProper';
+            }else if ($handler == 'IslandoraKeyword'){
 				$handler = 'IslandoraKeywordProper';
 			}else if ($handler == 'IslandoraSubject'){
 				$handler = 'IslandoraSubjectProper';
@@ -1929,55 +1911,6 @@ class Solr implements IndexEngine {
 				}
 			}*/
 		}
-
-		$blacklistRecords = null;
-		if (isset($searchLocation) && strlen($searchLocation->recordsToBlackList) > 0){
-			$blacklistRecords = $searchLocation->recordsToBlackList;
-		}
-		if (isset($searchLibrary) && strlen($searchLibrary->recordsToBlackList) > 0){
-			if (is_null($blacklistRecords)){
-				$blacklistRecords = $searchLibrary->recordsToBlackList;
-			}else{
-				$blacklistRecords .= "\n" . $searchLibrary->recordsToBlackList;
-			}
-		}
-		if (!is_null($blacklistRecords)){
-			$recordsToBlacklist = preg_split('/\s|\r\n|\r|\n/s', $blacklistRecords);
-			$blacklist = "NOT (";
-			$numRecords = 0;
-			foreach ($recordsToBlacklist as $curRecord){
-				if (strlen($curRecord) > 0){
-					$numRecords++;
-					if ($numRecords > 1){
-						$blacklist .= " OR ";
-					}
-					$blacklist .= "id:" . $curRecord;
-				}
-			}
-			$blacklist .= ")";
-			$filter[] = $blacklist;
-		}
-
-		//Process anything that the user is not interested in.
-		/*require_once ROOT_DIR . '/sys/LocalEnrichment/NotInterested.php';
-		if ($user){
-			$notInterested = new NotInterested();
-			$notInterested->userId = $user->id;
-			$notInterested->find();
-			if ($notInterested->N > 0){
-				$notInterestedFilter = " NOT(";
-				$numRecords = 0;
-				while ($notInterested->fetch()){
-					$numRecords++;
-					if ($numRecords > 1){
-						$notInterestedFilter .= " OR ";
-					}
-					$notInterestedFilter .= "id:" . $notInterested->groupedRecordPermanentId;
-				}
-				$notInterestedFilter .= ")";
-				$filter[] = $notInterestedFilter;
-			}
-		}*/
 
 		return $filter;
 	}
