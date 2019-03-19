@@ -651,9 +651,10 @@ public class GroupedWorkIndexer {
 		logger.info("Clearing existing marc records from index");
 		try {
 			updateServer.deleteByQuery("recordtype:grouped_work");
+			//3-19-2019 Don't commit so the index does not get cleared during run (but will clear at the end.
 			//With this commit, we get errors in the log "Previous SolrRequestInfo was not closed!"
 			//Allow auto commit functionality to handle this
-			updateServer.commit(true, false, false);
+			//updateServer.commit(true, false, false);
 		} catch (HttpSolrClient.RemoteSolrException rse) {
 			logger.error("Solr is not running properly, try restarting", rse);
 			System.exit(-1);
