@@ -352,18 +352,20 @@ abstract class GroupedWorkSubDriver extends RecordInterface
     }
 
     /**
+     * Get an array of all ISBNs associated with the record (may be empty).
+     *
+     * @access  protected
+     * @return  array
+     */
+    public abstract function getISBNs();
+
+    /**
      * Get an array of all ISSNs associated with the record (may be empty).
      *
      * @access  public
      * @return  array
      */
-    public function getISSNs()
-    {
-        // If ISSN is in the index, it should automatically be an array... but if
-        // it's not set at all, we should normalize the value to an empty array.
-        return isset($this->fields['issn']) && is_array($this->fields['issn']) ?
-            $this->fields['issn'] : array();
-    }
+    public abstract function getISSNs();
 
     public function getItemActions($itemInfo){
         return array();

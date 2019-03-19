@@ -1052,28 +1052,20 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 		if ($this->isbns == null) {
 			// If ISBN is in the index, it should automatically be an array... but if
 			// it's not set at all, we should normalize the value to an empty array.
-			if (isset($this->fields['isbn'])) {
-				if (is_array($this->fields['isbn'])) {
-					$this->isbns = $this->fields['isbn'];
-				} else {
-					$this->isbns = array($this->fields['isbn']);
-				}
-			} else {
-				$isbns = array();
-				/** @var File_MARC_Data_Field[] $isbnFields */
-				if ($this->isValid()) {
-					$marcRecord = $this->getMarcRecord();
-					if ($marcRecord != null) {
-						$isbnFields = $this->getMarcRecord()->getFields('020');
-						foreach ($isbnFields as $isbnField) {
-							if ($isbnField->getSubfield('a') != null) {
-								$isbns[] = $isbnField->getSubfield('a')->getData();
-							}
-						}
-					}
-				}
-				$this->isbns = $isbns;
-			}
+            $isbns = array();
+            /** @var File_MARC_Data_Field[] $isbnFields */
+            if ($this->isValid()) {
+                $marcRecord = $this->getMarcRecord();
+                if ($marcRecord != null) {
+                    $isbnFields = $this->getMarcRecord()->getFields('020');
+                    foreach ($isbnFields as $isbnField) {
+                        if ($isbnField->getSubfield('a') != null) {
+                            $isbns[] = $isbnField->getSubfield('a')->getData();
+                        }
+                    }
+                }
+            }
+            $this->isbns = $isbns;
 		}
 		return $this->isbns;
 	}

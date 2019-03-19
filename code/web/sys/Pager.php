@@ -107,7 +107,7 @@ class Pager {
                 $linksText .=  '<li class="page-item' . $active . '"><a class="page-link" href="' .  $this->getPageUrl($i) . "\">$i</a></li>";
             }
             if ($this->_currentPage != $this->_totalPages) {
-                $linksText .=  '<li class="page-item"><a class="page-link" href="' .  $this->getPageUrl(1) . '">Next &raquo;</a></li>';
+                $linksText .=  '<li class="page-item"><a class="page-link" href="' .  $this->getPageUrl($this->_currentPage + 1) . '">Next &raquo;</a></li>';
                 $linksText .=  '<li class="page-item"><a class="page-link" href="' .  $this->getPageUrl($this->getTotalPages()) . '">['.$this->getTotalPages().']</a></li>';
             }
             $linksText .= '</ul>';

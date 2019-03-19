@@ -735,4 +735,14 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 		return $this->getGroupedWorkDriver()->getRelatedRecord($id);
 	}
 
+    /**
+     * Get an array of all ISSNs associated with the record (may be empty).
+     *
+     * @access  public
+     * @return  array
+     */
+    public function getISSNs()
+    {
+        return [];
+    }
 }

@@ -89,6 +89,9 @@ class RbdigitalRecordDriver extends GroupedWorkSubDriver {
     public function getStaffView()
     {
         // TODO: Implement getStaffView() method.
+        global $interface;
+        $interface->assign('rbdigitalExtract', $this->rbdigitalRawMetadata);
+        return 'RecordDrivers/Rbdigital/staff-view.tpl';
     }
 
     /**
@@ -139,13 +142,73 @@ class RbdigitalRecordDriver extends GroupedWorkSubDriver {
 
     public function getMoreDetailsOptions()
     {
-        // TODO: Implement getMoreDetailsOptions() method.
-        return array();
+        global $interface;
+        global $library;
+
+        $isbn = $this->getCleanISBN();
+
+        //Load table of contents
+        $tableOfContents = $this->getTableOfContents();
+        $interface->assign('tableOfContents', $tableOfContents);
+
+        //Load more details options
+        $moreDetailsOptions = $this->getBaseMoreDetailsOptions($isbn);
+
+        //Other editions if applicable (only if we aren't the only record!)
+        $groupedWorkDriver = $this->getGroupedWorkDriver();
+        if ($groupedWorkDriver != null){
+            $relatedRecords = $groupedWorkDriver->getRelatedRecords();
+            if (count($relatedRecords) > 1) {
+                $interface->assign('relatedManifestations', $groupedWorkDriver->getRelatedManifestations());
+                $moreDetailsOptions['otherEditions'] = array(
+                    'label' => 'Other Editions and Formats',
+                    'body' => $interface->fetch('GroupedWork/relatedManifestations.tpl'),
+                    'hideByDefault' => false
+                );
+            }
+        }
+
+        $moreDetailsOptions['moreDetails'] = array(
+            'label' => 'More Details',
+            'body' => $interface->fetch('Record/view-more-details.tpl'),
+        );
+        //TODO: Load and display subjects
+//        $this->loadSubjects();
+//        $moreDetailsOptions['subjects'] = array(
+//            'label' => 'Subjects',
+//            'body' => $interface->fetch('Record/view-subjects.tpl'),
+//        );
+        $moreDetailsOptions['citations'] = array(
+            'label' => 'Citations',
+            'body' => $interface->fetch('Record/cite.tpl'),
+        );
+
+        if ($interface->getVariable('showStaffView')) {
+            $moreDetailsOptions['staff'] = array(
+                'label' => 'Staff View',
+                'body' => $interface->fetch($this->getStaffView()),
+            );
+        }
+
+        return $this->filterAndSortMoreDetailsOptions($moreDetailsOptions);
     }
 
-    public function getItemActions($itemInfo)
+    public function getItemActions($itgemInfo)
     {
         // TODO: Implement getItemActions() method.
+    }
+
+    public function getISBNs()
+    {
+        $isbns = [];
+        $isbns[] = $this->rbdigitalRawMetadata->isbn;
+        return $isbns;
+    }
+
+    public function getISSNs()
+    {
+        // TODO: Implement getISSNs() method.
+        return array();
     }
 
     public function getRecordActions($isAvailable, $isHoldable, $isBookable, $relatedUrls = null)
@@ -324,4 +387,6 @@ class RbdigitalRecordDriver extends GroupedWorkSubDriver {
     function isValid(){
         return $this->valid;
     }
+
+
 }
