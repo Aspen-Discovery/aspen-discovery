@@ -16,7 +16,7 @@
 				{/if}
 			</div>
 			<div class="col-tn-12 col-sm-5 text-right" id="connect-with-us-info">
-				{if $twitterLink || $facebookLink || $generalContactLink || $youtubeLink || $instagramLink || $goodreadsLink}
+				{if $twitterLink || $facebookLink || !empty($generalContactLink) || $youtubeLink || $instagramLink || $goodreadsLink}
 					<span id="connect-with-us-label" class="large">CONNECT WITH US</span>
 					{if $twitterLink}
 						<a href="{$twitterLink}" class="connect-icon"><img src="{img filename='twitter.png'}" class="img-rounded"></a>
@@ -33,7 +33,7 @@
 					{if $goodreadsLink}
 						<a href="{$goodreadsLink}" class="connect-icon"><img src="{img filename='goodreads.png'}" class="img-rounded"></a>
 					{/if}
-					{if $generalContactLink}
+					{if !empty($generalContactLink)}
 						<a href="{$generalContactLink}" class="connect-icon"><img src="{img filename='email-contact.png'}" class="img-rounded"></a>
 					{/if}
 				{/if}

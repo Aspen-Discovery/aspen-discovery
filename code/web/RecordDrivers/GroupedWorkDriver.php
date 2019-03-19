@@ -2881,6 +2881,8 @@ class GroupedWorkDriver extends IndexRecordDriver{
             if (array_key_exists('last_indexed', $this->fields)) {
                 $groupedWorkDetails['Last Indexed'] = date('Y-m-d H:i:sA', strtotime($this->fields['last_indexed']));
             }
+        }else {
+            $groupedWorkDetails['Deleted?'] = 'This work has been deleted from the database and should be reindexed';
         }
         return $groupedWorkDetails;
     }

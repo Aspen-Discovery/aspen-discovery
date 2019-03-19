@@ -239,7 +239,6 @@ TitleProper:
       - [onephrase, 850]
     - series_proper:
       - [onephrase, 100]
-      - [and, 50]
 
 StartOfTitle:
   QueryFields:

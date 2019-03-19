@@ -56,7 +56,7 @@
 				</div>
 				<a id="top"></a>
 				<div class="col-xs-12 col-sm-3 text-right">
-					{if $google_translate_key}
+					{if !empty($google_translate_key)}
 						{literal}
 						<div id="google_translate_element">
 						</div>
