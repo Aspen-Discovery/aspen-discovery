@@ -288,7 +288,7 @@ public class RecordGroupingProcessor {
 	}
 
 
-	static HashSet<String> formatsWarned = new HashSet<>();
+	private static HashSet<String> formatsWarned = new HashSet<>();
 	static HashMap<String, String> formatsToFormatCategory = new HashMap<>();
 	static {
 		formatsToFormatCategory.put("emagazine", "book");

@@ -94,7 +94,7 @@ public class RecordGrouperMain {
 		String processName = "record_grouping";
 		logger = LoggingUtil.setupLogging(serverName, processName);
 
-		switch (serverName) {
+		switch (args[1]) {
 			case "benchmark":
 				boolean validateNYPL = false;
 				if (args.length > 1) {
@@ -109,13 +109,11 @@ public class RecordGrouperMain {
 				String author;
 				String format;
 				String subtitle = null;
-				if (args.length >= 4) {
-					title = args[1];
-					author = args[2];
-					format = args[3];
-					if (args.length >= 5) {
-						subtitle = args[4];
-					}
+				if (args.length >= 6) {
+					title = args[2];
+					author = args[3];
+					format = args[4];
+					subtitle = args[5];
 				} else {
 					title = getInputFromCommandLine("Enter the title");
 					subtitle = getInputFromCommandLine("Enter the subtitle");
@@ -878,7 +876,7 @@ public class RecordGrouperMain {
 				overDriveRecordsStmt.setLong(2, lastGroupingTime);
 				overDriveRecordsStmt.setLong(3, lastGroupingTime);
 			}else{
-				overDriveRecordsStmt = dbConn.prepareStatement("SELECT overdrive_api_products.id, overdriveId, mediaType, title, subtitle, primaryCreatorRole, primaryCreatorName FROM overdrive_api_products INNER JOIN overdrive_api_product_metadata ON overdrive_api_product_metadata.productId = overdrive_api_products.id WHERE deleted = 0 and isOwnedByCollections = 1", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+				overDriveRecordsStmt = dbConn.prepareStatement("SELECT overdrive_api_products.id, overdriveId, mediaType, title, subtitle, primaryCreatorRole, primaryCreatorName, series FROM overdrive_api_products INNER JOIN overdrive_api_product_metadata ON overdrive_api_product_metadata.productId = overdrive_api_products.id WHERE deleted = 0 and isOwnedByCollections = 1", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			}
 			PreparedStatement overDriveIdentifiersStmt = dbConn.prepareStatement("SELECT * FROM overdrive_api_product_identifiers WHERE id = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			PreparedStatement overDriveCreatorStmt = dbConn.prepareStatement("SELECT fileAs FROM overdrive_api_product_creators WHERE productId = ? AND role like ? ORDER BY id", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
@@ -890,19 +888,22 @@ public class RecordGrouperMain {
 				String mediaType = overDriveRecordRS.getString("mediaType");
 				String title = overDriveRecordRS.getString("title");
 				String subtitle = overDriveRecordRS.getString("subtitle");
+				String series = overDriveRecordRS.getString("series");
+				//Overdrive typically makes the subtitle the series and volume which we don't want for grouping
+				if (subtitle != null && series != null && subtitle.toLowerCase().contains(series.toLowerCase())) {
+					subtitle = "";
+				}
 				String primaryCreatorRole = overDriveRecordRS.getString("primaryCreatorRole");
 				String author = overDriveRecordRS.getString("primaryCreatorName");
 				//primary creator in overdrive is always first name, last name.  Therefore, we need to look in the creators table
-				if (author != null){
+				if (author != null && (author.indexOf(',') == -1)){
 					overDriveCreatorStmt.setLong(1, id);
 					overDriveCreatorStmt.setString(2, primaryCreatorRole);
 					ResultSet creatorInfoRS = overDriveCreatorStmt.executeQuery();
 					boolean swapFirstNameLastName = false;
 					if (creatorInfoRS.next()){
 						String tmpAuthor = creatorInfoRS.getString("fileAs");
-						if (tmpAuthor.equals(author) && (mediaType.equals("ebook") || mediaType.equals("audiobook"))){
-							swapFirstNameLastName = true;
-						}else{
+						if (!tmpAuthor.equals(author)){
 							author = tmpAuthor;
 						}
 					} else {
