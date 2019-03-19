@@ -248,10 +248,13 @@ StartOfTitle:
 
 Series:
   QueryFields:
+    - series_proper:
+      - [localized_callnumber, 2400]
+      - [onephrase, 500]
     - series:
       - [onephrase, 500]
-      - [and, 200]
-      - [or, 100]
+      - [and, 100]
+      - [or, 50]
     - series2:
       - [onephrase, 50]
       - [and, 50]
@@ -260,9 +263,8 @@ Series:
 SeriesProper:
   QueryFields:
     - series_proper:
+      - [localized_callnumber, 2400]
       - [onephrase, 500]
-      - [and, 200]
-      - [or, 100]
 
 # This is proving slow based of the number of things we are searching.
 # Try reorganizing to match things better and ensure that we don't look at similar fields multiple times.
@@ -370,13 +372,13 @@ KeywordProper:
     title_proper:
       - [onephrase, 850]
     series_proper:
-      - [and, 50]
+      - [onephrase, 50]
     auth_author:
       - [onephrase, 300]
     auth_author2:
       - [onephrase, 300]
     table_of_contents_proper:
-      - [and, 10]
+      - [onephrase, 10]
     topic_proper:
       - [onephrase, 500]
     geographic_proper:

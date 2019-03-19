@@ -110,7 +110,6 @@ class Library extends DataObject
 	public $showCheckInGrid;
 	public $boostByLibrary;
 	public $additionalLocalBoostFactor;
-	public $recordsToBlackList;
 	public $publicListsToInclude;
 	public $showWikipediaContent;
 	public $eContentSupportAddress;

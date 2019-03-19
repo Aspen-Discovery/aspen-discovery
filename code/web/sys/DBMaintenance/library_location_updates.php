@@ -185,14 +185,6 @@ function getLibraryLocationUpdates(){
 			),
 		),
 
-		'library_19' => array(
-			'title' => 'Library 19',
-			'description' => 'Add the ability to specify a list of records to blacklist. ',
-			'continueOnError' => true,
-			'sql' => array(
-				"ALTER TABLE `library` ADD `recordsToBlackList` MEDIUMTEXT;",
-			),
-		),
 
 		'library_20' => array(
 			'title' => 'Library 20',
@@ -743,15 +735,6 @@ function getLibraryLocationUpdates(){
 			'description' => 'Add the ability to set home page widget by location',
 			'sql' => array(
 				"ALTER TABLE `location` ADD `homePageWidgetId` INT(11) DEFAULT '0';",
-			),
-		),
-
-		'location_4' => array(
-			'title' => 'Location 4',
-			'description' => 'Add the ability to specify a list of records to blacklist. ',
-			'continueOnError' => true,
-			'sql' => array(
-				"ALTER TABLE `location` ADD `recordsToBlackList` MEDIUMTEXT;",
 			),
 		),
 
@@ -1698,7 +1681,16 @@ function getLibraryLocationUpdates(){
                 'ALTER TABLE `library` DROP COLUMN `showPikaLogo`;',
                 'ALTER TABLE library DROP COLUMN horizontalSearchBar',
             )
-        )
+        ),
 
+        'library_remove_unused_recordsToBlackList' => array(
+            'title' => 'Remove recordsToBlackList',
+            'description' => 'Remove recordsToBlackList',
+            'continueOnError' => false,
+            'sql' => array(
+                'ALTER TABLE location DROP COLUMN recordsToBlackList;',
+                'ALTER TABLE library DROP COLUMN recordsToBlackList',
+            )
+        ),
 	);
 }

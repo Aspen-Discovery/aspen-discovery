@@ -56,7 +56,6 @@ class Location extends DataObject
 	public $ptypesToAllowRenewals;
 	public $boostByLocation;
 	public $additionalLocalBoostFactor;
-	public $recordsToBlackList;
 	public $publicListsToInclude;
 	public $automaticTimeoutLength;
 	public $automaticTimeoutLengthLoggedOut;
