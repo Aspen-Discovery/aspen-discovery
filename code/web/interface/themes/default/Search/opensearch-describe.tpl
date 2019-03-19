@@ -2,7 +2,7 @@
 <OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/">
   <ShortName>{$site.title}</ShortName>
   <Description>Library Catalog Search</Description>
-  <Image height="16" width="16" type="image/png">{$url}{img filename=favicon.png}</Image>
+  <Image height="16" width="16" type="image/png">{$url}{$favicon}</Image>
   <Contact>{$site.email}</Contact>
   <Url type="text/html" method="get" template="{$site.url}/Search/Results?lookfor={literal}{searchTerms}&amp;page={startPage?}{/literal}"/>
   <Url type="application/rss+xml" method="get" template="{$site.url}/Search/Results?lookfor={literal}{searchTerms}{/literal}&amp;view=rss"/>

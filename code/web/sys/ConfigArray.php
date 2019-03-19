@@ -383,16 +383,6 @@ function updateConfigForScoping($configArray) {
 		$location = $locationSingleton->getActiveLocation();
 		$timer->logTime('found active location');
 
-		//Add an extra css file for the location if it exists.
-		$themes = explode(',', $library->themeName);
-		foreach ($themes as $themeName){
-			if ($location != null && file_exists('./interface/themes/' . $themeName . '/images/'. $location->code .'_logo_responsive.png')) {
-				$configArray['Site']['responsiveLogo'] = '/interface/themes/' . $themeName . '/images/'. $location->code .'_logo_responsive.png';
-			}
-			if ($subdomain != null && file_exists('./interface/themes/' . $themeName . '/images/'. $subdomain .'_logo_responsive.png')) {
-				$configArray['Site']['responsiveLogo'] = '/interface/themes/' . $themeName . '/images/'. $subdomain .'_logo_responsive.png';
-			}
-		}
 		$timer->logTime('loaded themes');
 	}
 	$timer->logTime('finished update config for scoping');

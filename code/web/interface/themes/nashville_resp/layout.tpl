@@ -33,7 +33,7 @@
 		{if $metadataTemplate}
 			{include file=$metadataTemplate}
 		{/if}
-		<link type="image/x-icon" href="{img filename=favicon.png}" rel="shortcut icon">
+		<link type="image/x-icon" href="{$favicon}" rel="shortcut icon">
 		<link rel="search" type="application/opensearchdescription+xml" title="{$site.title} Catalog Search" href="{$path}/Search/OpenSearch?method=describe">
 
 		{include file="cssAndJsIncludes.tpl"}

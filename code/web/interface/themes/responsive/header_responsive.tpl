@@ -5,9 +5,6 @@
 	<div class="col-xs-12 col-sm-3 col-md-3 col-lg-3">
 		<a href="{$logoLink}/">
 			<img src="{if $responsiveLogo}{$responsiveLogo}{else}{img filename="logo_responsive.png"}{/if}" alt="{$librarySystemName}" title="{$logoAlt}" id="header-logo" {if $showDisplayNameInHeader && $librarySystemName}class="pull-left"{/if}>
-{*			{if $showDisplayNameInHeader && $librarySystemName}
-				<span id="library-name-header" class="hidden-xs visible-sm">{$librarySystemName}</span>
-			{/if}*}
 		</a>
 	</div>
 

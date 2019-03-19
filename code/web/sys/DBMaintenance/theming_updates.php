@@ -58,5 +58,15 @@ function getThemingUpdates() {
             ],
         ],
 
+        'themes_favicon' => [
+            'title' => 'Theme Favicon',
+            'description' => 'Allow favicon to be defined. ',
+            'dependencies' => [],
+            'continueOnError' => true,
+            'sql' => [
+                "ALTER TABLE `themes` ADD COLUMN `favicon` VARCHAR(100)",
+            ],
+        ],
+
     ];
 }

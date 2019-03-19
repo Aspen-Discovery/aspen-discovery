@@ -370,6 +370,7 @@ class UInterface extends Smarty
             $primaryTheme = $theme;
         }
 
+        //Get Logo
         $logoName = null;
         foreach ($allAppliedThemes as $theme){
             if (!is_null($theme->logoName)){
@@ -377,8 +378,6 @@ class UInterface extends Smarty
                 break;
             }
         }
-
-        //Get Logo
         if ($logoName) {
             $this->assign('responsiveLogo', '/files/original/' . $logoName);
         } else {
@@ -386,6 +385,19 @@ class UInterface extends Smarty
                 $this->assign('responsiveLogo', $configArray['Site']['responsiveLogo']);
             }
         }
+
+        //Get favicon
+        $favicon = null;
+        foreach ($allAppliedThemes as $theme){
+            if (!is_null($theme->favicon)){
+                $favicon = $theme->favicon;
+                break;
+            }
+        }
+        if ($favicon) {
+            $this->assign('favicon', '/files/original/' . $favicon);
+        }
+
 
         if ($primaryTheme != null) {
             $themeCss = $primaryTheme->generatedCss;
