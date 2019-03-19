@@ -149,6 +149,9 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 	public function getStaffView() {
 		global $interface;
 
+        $groupedWorkDetails = $this->getGroupedWorkDriver()->getGroupedWorkDetails();
+        $interface->assign('groupedWorkDetails', $groupedWorkDetails);
+
 		$overDriveAPIProduct = new OverDriveAPIProduct();
 		$overDriveAPIProduct->overdriveId = strtolower($this->id);
 		if ($overDriveAPIProduct->find(true)){

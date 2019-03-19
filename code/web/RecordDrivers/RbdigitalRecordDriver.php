@@ -88,8 +88,10 @@ class RbdigitalRecordDriver extends GroupedWorkSubDriver {
      */
     public function getStaffView()
     {
-        // TODO: Implement getStaffView() method.
         global $interface;
+        $groupedWorkDetails = $this->getGroupedWorkDriver()->getGroupedWorkDetails();
+        $interface->assign('groupedWorkDetails', $groupedWorkDetails);
+
         $interface->assign('rbdigitalExtract', $this->rbdigitalRawMetadata);
         return 'RecordDrivers/Rbdigital/staff-view.tpl';
     }

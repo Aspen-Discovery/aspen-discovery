@@ -498,7 +498,8 @@ abstract class GroupedWorkSubDriver extends RecordInterface
     public function getStaffView()
     {
         global $interface;
-        $interface->assign('details', $this->fields);
+        $groupedWorkDetails = $this->getGroupedWorkDriver()->getGroupedWorkDetails();
+        $interface->assign('groupedWorkDetails', $groupedWorkDetails);
 
         $lastGroupedWorkModificationTime = $this->groupedWork->date_updated;
         $interface->assign('lastGroupedWorkModificationTime', $lastGroupedWorkModificationTime);

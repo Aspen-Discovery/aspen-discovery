@@ -1949,20 +1949,8 @@ class GroupedWorkDriver extends IndexRecordDriver{
         ksort($fields);
         $interface->assign('details', $fields);
 
-        require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
-        $groupedWork = new GroupedWork();
-        $groupedWork->permanent_id = $this->getPermanentId();
-        if ($groupedWork->find(true)){
-            $groupedWorkDetails = array();
-            $groupedWorkDetails['Full title'] = $groupedWork->full_title;
-            $groupedWorkDetails['Author'] = $groupedWork->author;
-            $groupedWorkDetails['Grouping Category'] = $groupedWork->grouping_category;
-            $groupedWorkDetails['Last Update'] = date('Y-m-d H:i:sA', $groupedWork->date_updated);
-            if (array_key_exists('last_indexed', $fields)){
-                $groupedWorkDetails['Last Indexed'] = date('Y-m-d H:i:sA', strtotime($fields['last_indexed']));
-            }
-            $interface->assign('groupedWorkDetails', $groupedWorkDetails);
-        }
+        $groupedWorkDetails = $this->getGroupedWorkDetails();
+        $interface->assign('groupedWorkDetails', $groupedWorkDetails);
 
         return 'RecordDrivers/GroupedWork/staff-view.tpl';
     }
@@ -2875,4 +2863,25 @@ class GroupedWorkDriver extends IndexRecordDriver{
 		$recordDriver = null;
 		return $relatedRecord;
 	}
+
+    /**
+     * @return array
+     */
+    public function getGroupedWorkDetails()
+    {
+        require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+        $groupedWork = new GroupedWork();
+        $groupedWork->permanent_id = $this->getPermanentId();
+        $groupedWorkDetails = array();
+        if ($groupedWork->find(true)) {
+            $groupedWorkDetails['Full title'] = $groupedWork->full_title;
+            $groupedWorkDetails['Author'] = $groupedWork->author;
+            $groupedWorkDetails['Grouping Category'] = $groupedWork->grouping_category;
+            $groupedWorkDetails['Last Update'] = date('Y-m-d H:i:sA', $groupedWork->date_updated);
+            if (array_key_exists('last_indexed', $this->fields)) {
+                $groupedWorkDetails['Last Indexed'] = date('Y-m-d H:i:sA', strtotime($this->fields['last_indexed']));
+            }
+        }
+        return $groupedWorkDetails;
+    }
 }

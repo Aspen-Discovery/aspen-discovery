@@ -170,7 +170,9 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 	 */
 	public function getStaffView()
 	{
-		global $interface;
+        global $interface;
+        $groupedWorkDetails = $this->getGroupedWorkDriver()->getGroupedWorkDetails();
+        $interface->assign('groupedWorkDetails', $groupedWorkDetails);
 
 		$interface->assign('marcRecord', $this->getMarcRecord());
 

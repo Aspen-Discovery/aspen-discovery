@@ -1,13 +1,6 @@
 {strip}
 	{if $recordDriver}
 		<div class="row">
-			<div class="result-label col-xs-2">Grouped Work ID: </div>
-			<div class="col-xs-10 result-value">
-				{$recordDriver->getPermanentId()}
-			</div>
-		</div>
-
-		<div class="row">
 			<div class="col-xs-12">
 				<a href="{$path}/GroupedWork/{$recordDriver->getPermanentId()}" class="btn btn-sm btn-default">Go To Grouped Work</a>
 				<button onclick="return VuFind.Record.reloadCover('{$recordDriver->getModule()}', '{$id}')" class="btn btn-sm btn-default">Reload Cover</button>
@@ -30,6 +23,21 @@
 		</div>
 	{/if}
 
+	<h4>Grouping Information</h4>
+	<table class="table-striped table table-condensed notranslate">
+		<tr>
+			<th>Grouped Work ID</th>
+			<td>{$recordDriver->getPermanentId()}</td>
+		</tr>
+		{foreach from=$groupedWorkDetails key='field' item='value'}
+			<tr>
+				<th>{$field|escape}</th>
+				<td>
+					{$value}
+				</td>
+			</tr>
+		{/foreach}
+	</table>
 
 	{if $hooplaExtract}
 	<h3>Hoopla Extract Information</h3>

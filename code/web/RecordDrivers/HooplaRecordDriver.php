@@ -259,6 +259,11 @@ class HooplaRecordDriver extends MarcRecordDriver {
 	public function getStaffView()
 	{
 		parent::getStaffView();
+
+		global $interface;
+        $groupedWorkDetails = $this->getGroupedWorkDriver()->getGroupedWorkDetails();
+        $interface->assign('groupedWorkDetails', $groupedWorkDetails);
+
 		$hooplaExtract = new HooplaExtract();
 //		$hooplaId = preg_replace('/^MWT/', '', $this->id);
 		$hooplaId = HooplaDriver::recordIDtoHooplaID($this->id);
