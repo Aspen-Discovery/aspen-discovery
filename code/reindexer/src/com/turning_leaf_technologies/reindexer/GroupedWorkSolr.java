@@ -8,14 +8,6 @@ import org.apache.solr.common.SolrInputField;
 import java.util.*;
 import java.util.regex.Pattern;
 
-/**
- * A representation of the grouped record as it will be added to Solr.
- *
- * Pika
- * User: Mark Noble
- * Date: 11/25/13
- * Time: 3:19 PM
- */
 public class GroupedWorkSolr implements Cloneable {
 	private String id;
 

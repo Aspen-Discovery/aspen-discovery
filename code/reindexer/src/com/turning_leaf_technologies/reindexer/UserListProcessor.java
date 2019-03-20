@@ -57,7 +57,7 @@ public class UserListProcessor {
 
 	public Long processPublicUserLists(long lastReindexTime, ConcurrentUpdateSolrClient updateServer, SolrClient solrServer) {
 		GroupedReindexMain.addNoteToReindexLog("Starting to process public lists");
-		Long numListsProcessed = 0l;
+		Long numListsProcessed = 0L;
 		try{
 			PreparedStatement listsStmt;
 			if (fullReindex){

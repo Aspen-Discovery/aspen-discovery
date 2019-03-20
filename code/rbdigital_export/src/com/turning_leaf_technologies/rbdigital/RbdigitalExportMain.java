@@ -26,8 +26,6 @@ import java.util.zip.CRC32;
 public class RbdigitalExportMain {
     private static Logger logger;
     private static String serverName;
-    @SuppressWarnings("FieldCanBeLocal")
-    private static String processName = "rbdigital_export";
 
     private static Ini configIni;
 
@@ -81,6 +79,7 @@ public class RbdigitalExportMain {
 
         Date startTime = new Date();
         startTimeForLogging = startTime.getTime() / 1000;
+        String processName = "rbdigital_export";
         logger = LoggingUtil.setupLogging(serverName, processName);
         logger.info("Starting " + processName + ": " + startTime.toString());
 
