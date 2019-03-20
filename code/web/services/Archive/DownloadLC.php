@@ -1,13 +1,5 @@
 <?php
 
-/**
- * Allows downloading the large image for an Object after checking permissions
- *
- * @category Pika
- * @author Mark Noble <mark@marmot.org>
- * Date: 5/16/2016
- * Time: 10:47 AM
- */
 require_once ROOT_DIR . '/services/Archive/Object.php';
 class DownloadLC extends Archive_Object{
 	function launch(){

@@ -1,14 +1,5 @@
 <?php
 
-/**
- * Displays information about a particular library branch
- * Library in Schema.org terminology
- *
- * @category Pika
- * @author Mark Noble <mark@marmot.org>
- * Date: 2/27/2016
- * Time: 2:30 PM
- */
 class Branch extends Action{
 
 	function launch() {

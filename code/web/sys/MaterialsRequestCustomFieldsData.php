@@ -1,13 +1,5 @@
 <?php
 
-/**
- *
- *
- * @category Pika
- * @author: Pascal Brammeier
- * Date: 12/19/2016
- *
- */
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
 class MaterialsRequestCustomFieldsData extends DataObject
 {

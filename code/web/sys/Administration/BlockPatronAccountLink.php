@@ -1,14 +1,5 @@
 <?php
 
-/**
- * Table Definition for Blocking of Patron Account Linking
- *
- * @category Pika
- * @author: Pascal Brammeier
- * Date: 7/30/2015
- *
- */
-
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
 class BlockPatronAccountLink extends DataObject
 {

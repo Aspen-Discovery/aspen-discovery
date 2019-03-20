@@ -39,7 +39,7 @@ class NYTApi {
 			// do not include header in result
 			CURLOPT_HEADER => 0,
 			// set user agent
-			CURLOPT_USERAGENT => 'Pika app cURL Request'
+			CURLOPT_USERAGENT => 'Aspen Discovery app cURL Request'
 		);
 		// Get cURL resource
 		$curl = curl_init();

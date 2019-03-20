@@ -1,14 +1,5 @@
 <?php
 
-/**
- * Resove
- *
- * @category Pika
- * @author Mark Noble <mark@marmot.org>
- * Date: 8/26/2016
- * Time: 2:15 PM
- */
-
 require_once ROOT_DIR . '/Action.php';
 class DjatokaResolver extends Action{
 

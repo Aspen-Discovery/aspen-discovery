@@ -1,12 +1,4 @@
 <?php
-/**
- * Authentication Profile information to configure how users should be authenticated
- *
- * @category Pika
- * @author Mark Noble <mark@marmot.org>
- * Date: 7/20/2015
- * Time: 4:48 PM
- */
 
 class AccountProfile extends DataObject {
 	public $__table = 'account_profiles';    // table name

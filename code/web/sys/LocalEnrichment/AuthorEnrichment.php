@@ -1,13 +1,5 @@
 <?php
 
-/**
- * Description goes here
- *
- * @category Pika
- * @author Mark Noble <mark@marmot.org>
- * Date: 7/21/2016
- * Time: 11:36 AM
- */
 class AuthorEnrichment  extends DataObject{
 	public $__table = 'author_enrichment';    // table name
 	public $id;

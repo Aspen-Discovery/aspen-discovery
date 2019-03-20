@@ -1,12 +1,5 @@
 <?php
-/**
- * Loads and processes holds for Millennium
- *
- * @category Pika
- * @author Mark Noble <mark@marmot.org>
- * Date: 5/20/13
- * Time: 11:33 AM
- */
+
 class MillenniumHolds{
 	/** @var  Millennium $driver */
 	private $driver;

@@ -1,14 +1,5 @@
 <?php
 
-/**
- *
- *
- * @category Pika
- * @author: Pascal Brammeier
- * Date: 10/19/2016
- *
- */
-
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
 
 class MyAccount_Masquerade extends MyAccount

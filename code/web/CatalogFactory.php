@@ -1,12 +1,4 @@
 <?php
-/**
- * Responsible for instantiating Catalog Connections to minimize making multiple concurrent connections
- *
- * @category Pika
- * @author Mark Noble <mark@marmot.org>
- * Date: 2/26/15
- * Time: 8:38 PM
- */
 
 class CatalogFactory {
 	/** @var array An array of connections keyed by driver name */

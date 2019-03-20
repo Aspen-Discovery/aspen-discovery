@@ -1,12 +1,5 @@
 <?php
-/**
- * Rules about which records to include in a scope
- *
- * @category Pika
- * @author Mark Noble <mark@marmot.org>
- * Date: 7/18/2015
- * Time: 10:31 AM
- */
+
 require_once ROOT_DIR . '/sys/Indexing/RecordToInclude.php';
 class LibraryRecordToInclude extends RecordToInclude{
 	public $__table = 'library_records_to_include';    // table name

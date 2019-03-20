@@ -1,12 +1,4 @@
 <?php
-/**
- * Displays Information about Digital Repository (Islandora) Exhibit
- *
- * @category Pika
- * @author Mark Noble <mark@marmot.org>
- * Date: 8/7/2015
- * Time: 7:55 AM
- */
 
 require_once ROOT_DIR . '/services/Archive/Object.php';
 class Archive_Exhibit extends Archive_Object{

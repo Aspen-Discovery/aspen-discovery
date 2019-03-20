@@ -1,12 +1,4 @@
 <?php
-/**
- * Admin interface for creating indexing profiles
- *
- * @category Pika
- * @author Mark Noble <mark@marmot.org>
- * Date: 6/30/2015
- * Time: 1:23 PM
- */
 
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/Admin.php';

@@ -1,13 +1,5 @@
 <?php
 
-/**
- * Contains functionality to load content related to a search or to another object
- *
- * @category Pika
- * @author Mark Noble <mark@marmot.org>
- * Date: 2/20/2016
- * Time: 8:06 PM
- */
 class ExploreMore {
 	private $relatedCollections;
 

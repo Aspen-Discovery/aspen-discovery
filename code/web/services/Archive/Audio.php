@@ -1,14 +1,5 @@
 <?php
 
-/**
- * Allows display of Audio files
- *
- * @category Pika
- * @author Mark Noble <mark@marmot.org>
- * Date: 2/17/2016
- * Time: 9:52 AM
- */
-
 require_once ROOT_DIR . '/services/Archive/Object.php';
 class Archive_Audio  extends Archive_Object{
 	function launch() {

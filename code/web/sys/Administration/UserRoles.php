@@ -1,13 +1,5 @@
 <?php
 
-/**
- *
- *
- * @category Pika
- * @author: Pascal Brammeier
- * Date: 11/17/2016
- *
- */
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
 class UserRoles extends DataObject
 {

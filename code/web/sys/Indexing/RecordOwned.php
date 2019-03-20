@@ -1,12 +1,4 @@
 <?php
-/**
- * Indexing information for what records to are owned by a particular scope
- *
- * @category Pika
- * @author Mark Noble <mark@marmot.org>
- * Date: 7/18/2015
- * Time: 10:31 AM
- */
 
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
 class RecordOwned extends DataObject {

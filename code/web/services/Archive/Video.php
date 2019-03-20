@@ -1,12 +1,4 @@
 <?php
-/**
- * Allows display of a Video from Islandora
- *
- * @category Pika
- * @author Mark Noble <mark@marmot.org>
- * Date: 9/8/2015
- * Time: 8:44 PM
- */
 
 require_once ROOT_DIR . '/services/Archive/Object.php';
 class Archive_Video  extends Archive_Object{

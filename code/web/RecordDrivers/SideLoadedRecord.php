@@ -1,12 +1,4 @@
 <?php
-/**
- * Record Driver to handle loading data for Hoopla Records
- *
- * @category Pika
- * @author Mark Noble <mark@marmot.org>
- * Date: 12/18/14
- * Time: 10:50 AM
- */
 
 require_once ROOT_DIR . '/RecordDrivers/ExternalEContentDriver.php';
 class SideLoadedRecord extends ExternalEContentDriver {

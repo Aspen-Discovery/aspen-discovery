@@ -1,12 +1,4 @@
 <?php
-/**
- * Handles loading asynchronous
- *
- * @category Pika
- * @author Mark Noble <mark@marmot.org>
- * Date: 12/2/13
- * Time: 3:52 PM
- */
 
 class GroupedWork_AJAX {
 	function launch() {

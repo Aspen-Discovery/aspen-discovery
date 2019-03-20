@@ -1,13 +1,5 @@
 <?php
 
-/**
- *  Class for managing sub-categories of Browse Categories
- *
- * @category Pika
- * @author Pascal Brammeier <pascal@marmot.org>
- * Date: 6/3/2015
- *
- */
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
 
 class SubBrowseCategories extends DataObject {

@@ -1,13 +1,5 @@
 <?php
 
-/**
- * Description goes here
- *
- * @category Pika
- * @author Mark Noble <mark@marmot.org>
- * Date: 7/21/2016
- * Time: 4:05 PM
- */
 class ClaimAuthorshipRequest extends DataObject{
 	public $__table = 'claim_authorship_requests';
 	public $id;

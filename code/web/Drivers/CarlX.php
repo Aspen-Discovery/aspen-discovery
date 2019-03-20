@@ -1,14 +1,6 @@
 <?php
 
-/**
- * Implements
- *
- * @category Pika
- * @author Mark Noble <mark@marmot.org>
- * Date: 6/10/2016
- * Time: 1:53 PM
- */
-//require_once ROOT_DIR . '/Drivers/SIP2Driver.php';
+
 require_once ROOT_DIR . '/sys/SIP2.php';
 class CarlX extends SIP2Driver{
 	public $accountProfile;

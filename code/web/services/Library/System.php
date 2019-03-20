@@ -1,14 +1,5 @@
 <?php
 
-/**
- * Displays information about a particular library system
- * Organization in schema.org terminology
- *
- * @category Pika
- * @author Mark Noble <mark@marmot.org>
- * Date: 2/27/2016
- * Time: 2:31 PM
- */
 class System extends Action{
 
 	function launch() {

@@ -1,13 +1,5 @@
 <?php
 
-/**
- *
- *
- * @category Pika
- * @author: Pascal Brammeier
- * Date: 2/15/2017
- *
- */
 class LibraryArchiveMoreDetails extends DataObject{
 	public $__table = 'library_archive_more_details';
 	public $id;

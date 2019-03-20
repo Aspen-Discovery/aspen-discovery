@@ -1,13 +1,4 @@
 <?php
-/**
- *
- *
- * @category Pika
- * @author: Pascal Brammeier
- * Date: 4/24/2018
- *
- */
-
 
 class HooplaExtract extends DataObject
 {

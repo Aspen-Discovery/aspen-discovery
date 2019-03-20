@@ -1,13 +1,5 @@
 <?php
 
-/**
- * A class that allows generation of Lists from the New York Times API
- *
- * @category Pika
- * @author Mark Noble <mark@marmot.org>
- * Date: 8/29/2016
- * Time: 12:07 PM
- */
 include_once ROOT_DIR . '/services/Admin/Admin.php';
 include_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
 class NYTLists extends Admin_Admin {

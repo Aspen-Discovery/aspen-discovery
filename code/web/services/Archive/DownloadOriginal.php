@@ -1,13 +1,5 @@
 <?php
 
-/**
- * Allows downloading the original object after checking permissions
- *
- * @category Pika
- * @author Mark Noble <mark@marmot.org>
- * Date: 5/16/2016
- * Time: 10:47 AM
- */
 require_once ROOT_DIR . '/services/Archive/Object.php';
 class Archive_DownloadOriginal extends Archive_Object{
 	function launch(){

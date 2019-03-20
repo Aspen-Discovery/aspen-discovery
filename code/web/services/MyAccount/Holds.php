@@ -1,12 +1,4 @@
 <?php
-/**
- * Shows all titles that are on hold for a user (combines all sources)
- *
- * @category Pika
- * @author Mark Noble <mark@marmot.org>
- * Date: 10/10/13
- * Time: 1:11 PM
- */
 
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
 class MyAccount_Holds extends MyAccount{

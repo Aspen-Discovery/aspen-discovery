@@ -1,12 +1,4 @@
 <?php
-/**
- * Updates related to indexing for cleanliness
- *
- * @category Pika
- * @author Mark Noble <mark@marmot.org>
- * Date: 7/29/14
- * Time: 2:25 PM
- */
 
 function getIndexingUpdates() {
 	return array(

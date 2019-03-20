@@ -1,15 +1,5 @@
 <?php
 
-/**
- * Nashville online fines and fees payment processing
- *
- * @category Pika
- * @author Mark Noble <mark@marmot.org>
- * @author Niles Ingalls <ningalls@ena.com>
- * @author James Staub <james.staub@nashville.gov>
- * Date: 4/4/2016
- */
-
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
 
 class PayOnlineNashville extends Action{

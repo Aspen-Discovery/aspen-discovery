@@ -1,13 +1,5 @@
 <?php
 
-/**
- *
- *
- * @category Pika
- * @author: Pascal Brammeier
- * Date: 2/10/2017
- *
- */
 class LibraryArchiveSearchFacetSetting extends FacetSetting {
 	public $__table = 'library_archive_search_facet_setting';    // table name
 	public $libraryId;

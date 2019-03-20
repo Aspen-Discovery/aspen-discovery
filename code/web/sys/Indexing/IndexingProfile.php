@@ -1,12 +1,4 @@
 <?php
-/**
- * Includes information for how to index MARC Records.  Allows for the ability to handle multiple data sources.
- *
- * @category Pika
- * @author Mark Noble <mark@marmot.org>
- * Date: 6/30/2015
- * Time: 1:44 PM
- */
 
 require_once ROOT_DIR . '/sys/Indexing/TranslationMap.php';
 require_once ROOT_DIR . '/sys/Indexing/TimeToReshelve.php';

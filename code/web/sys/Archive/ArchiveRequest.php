@@ -1,13 +1,5 @@
 <?php
 
-/**
- * Description goes here
- *
- * @category Pika
- * @author Mark Noble <mark@marmot.org>
- * Date: 7/21/2016
- * Time: 4:05 PM
- */
 class ArchiveRequest extends DataObject{
 	public $__table = 'archive_requests';
 	public $id;

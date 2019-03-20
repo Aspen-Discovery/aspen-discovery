@@ -1,13 +1,5 @@
 <?php
 
-/**
- *
- *
- * @category Pika
- * @author: Pascal Brammeier
- * Date: 8/16/2016
- *
- */
 require_once ROOT_DIR . '/Drivers/HorizonAPI.php';
 abstract class HorizonAPI3_23 extends HorizonAPI
 {

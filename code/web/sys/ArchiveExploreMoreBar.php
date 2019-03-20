@@ -1,13 +1,5 @@
 <?php
 
-/**
- *
- *
- * @category Pika
- * @author: Pascal Brammeier
- * Date: 1/26/2017
- *
- */
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
 class ArchiveExploreMoreBar extends DataObject
 {

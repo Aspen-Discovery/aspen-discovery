@@ -1,13 +1,5 @@
 <?php
 
-/**
- *
- *
- * @category Pika
- * @author: Pascal Brammeier
- * Date: 12/27/2016
- *
- */
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
 class UserStaffSettings extends DataObject
 {

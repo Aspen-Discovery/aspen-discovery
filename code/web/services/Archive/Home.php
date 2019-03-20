@@ -1,14 +1,5 @@
 <?php
 
-/**
- * A home page for the archive displaying all available projects as well as links to content by
- * content type
- *
- * @category Pika
- * @author Mark Noble <mark@marmot.org>
- * Date: 5/27/2016
- * Time: 8:26 AM
- */
 require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
 class Archive_Home extends Action{
 

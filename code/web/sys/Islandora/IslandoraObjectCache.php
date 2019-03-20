@@ -1,13 +1,5 @@
 <?php
 
-/**
- * Stores information about Islandora objects for improved response times
- *
- * @category Pika
- * @author Mark Noble <mark@marmot.org>
- * Date: 5/18/2016
- * Time: 10:48 AM
- */
 class IslandoraObjectCache  extends DataObject{
 	public $__table = 'islandora_object_cache';
 	public $id;

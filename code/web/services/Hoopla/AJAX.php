@@ -1,13 +1,4 @@
 <?php
-/**
- *
- *
- * @category Pika
- * @author: Pascal Brammeier
- * Date: 1/8/2018
- *
- */
-
 
 class Hoopla_AJAX extends Action
 {

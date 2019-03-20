@@ -1,13 +1,5 @@
 <?php
 
-/**
- * Description goes here
- *
- * @category Pika
- * @author Mark Noble <mark@marmot.org>
- * Date: 7/21/2016
- * Time: 4:04 PM
- */
 require_once ROOT_DIR . '/sys/Archive/ClaimAuthorshipRequest.php';
 require_once ROOT_DIR . '/recaptcha/recaptchalib.php';
 class Archive_ClaimAuthorship extends Action{

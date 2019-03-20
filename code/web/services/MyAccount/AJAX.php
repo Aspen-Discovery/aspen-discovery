@@ -1,12 +1,4 @@
 <?php
-/**
- * Asynchronous functionality for MyAccount module
- *
- * @category Pika
- * @author Mark Noble <mark@marmot.org>
- * Date: 3/25/14
- * Time: 4:26 PM
- */
 
 class MyAccount_AJAX
 {

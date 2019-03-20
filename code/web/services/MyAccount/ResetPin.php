@@ -1,14 +1,5 @@
 <?php
 
-/**
- *
- *
- * @category Pika
- * @author: Pascal Brammeier
- * Date: 8/16/2016
- *
- */
-
 require_once ROOT_DIR . "/Action.php";
 require_once ROOT_DIR . '/CatalogConnection.php';
 

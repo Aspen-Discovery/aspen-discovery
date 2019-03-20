@@ -71,7 +71,7 @@ class UserAccount {
 
 						} else {
 							$logger->log("We got a valid user from CAS, getting the user from the database", PEAR_LOG_DEBUG);
-							//We have a valid user via CAS, need to do a login to Pika
+							//We have a valid user via CAS, need to do a login to Aspen
 							$_REQUEST['casLogin'] = true;
 							UserAccount::$isLoggedIn = true;
 							//Set the active user id for the user

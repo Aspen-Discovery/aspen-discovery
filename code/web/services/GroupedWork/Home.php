@@ -1,12 +1,5 @@
 <?php
-/**
- * Description goes here
- *
- * @category Pika
- * @author Mark Noble <mark@marmot.org>
- * Date: 11/27/13
- * Time: 12:14 PM
- */
+
 require_once ROOT_DIR  . '/Action.php';
 class GroupedWork_Home extends Action{
 	function launch() {

@@ -1,12 +1,4 @@
 <?php
-/**
- * Updates related to hoopla for cleanliness
- *
- * @category Pika
- * @author Mark Noble <mark@marmot.org>
- * Date: 7/29/14
- * Time: 2:25 PM
- */
 
 function getHooplaUpdates() {
 	return array(
