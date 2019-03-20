@@ -893,6 +893,10 @@ public class RecordGrouperMain {
 				if (subtitle != null && series != null && subtitle.toLowerCase().contains(series.toLowerCase())) {
 					subtitle = "";
 				}
+				//Overdrive typically makes the subtitle the series and volume which we don't want for grouping
+				if (title != null && series != null && title.toLowerCase().endsWith("--" + series.toLowerCase())) {
+					title = title.substring(0, title.length() - (series.length() + 2));
+				}
 				String primaryCreatorRole = overDriveRecordRS.getString("primaryCreatorRole");
 				String author = overDriveRecordRS.getString("primaryCreatorName");
 				//primary creator in overdrive is always first name, last name.  Therefore, we need to look in the creators table
