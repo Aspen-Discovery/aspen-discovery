@@ -87,4 +87,8 @@ class OpenArchivesRecordDriver extends IndexRecordDriver
     {
         return $this->fields['identifier'];
     }
+
+    public function getLinkUrl($absolutePath = false) {
+        return $this->fields['identifier'];
+    }
 }
