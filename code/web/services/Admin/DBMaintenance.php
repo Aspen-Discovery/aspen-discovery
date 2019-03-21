@@ -98,6 +98,8 @@ class DBMaintenance extends Admin_Admin {
 		$econtent_updates = getEContentUpdates();
         require_once ROOT_DIR . '/sys/DBMaintenance/theming_updates.php';
         $theming_updates = getThemingUpdates();
+        require_once ROOT_DIR . '/sys/DBMaintenance/oai_updates.php';
+        $oai_updates = getOaiUpdates();
 
 		return array_merge(
 			$library_location_updates,
@@ -111,6 +113,7 @@ class DBMaintenance extends Admin_Admin {
             $rbdigital_updates,
 			$sierra_api_updates,
             $theming_updates,
+			$oai_updates,
 			array(
 				'index_search_stats' => array(
 					'title' => 'Index search stats table',

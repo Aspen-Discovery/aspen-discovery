@@ -218,64 +218,62 @@ class SearchAPI extends Action {
 
 		// Solr Restart //
 		global $configArray;
-		if ($configArray['Index']['engine'] == 'Solr') {
-			$xml = @file_get_contents($configArray['Index']['url'] . '/admin/cores');
-			if ($xml) {
-				$data = json_decode($xml, true);
+        $xml = @file_get_contents($configArray['Index']['url'] . '/admin/cores');
+        if ($xml) {
+            $data = json_decode($xml, true);
 
-				$uptime = $data['status']['grouped_works']['uptime']/1000;  // Grouped Index, puts uptime into seconds.
-				$solrStartTime = strtotime($data['status']['grouped_works']['startTime']);
-				if ($uptime >= self::SOLR_RESTART_INTERVAL_WARN){ // Grouped Index
-					$status[] = ($uptime >= self::SOLR_RESTART_INTERVAL_CRITICAL) ? self::STATUS_CRITICAL : self::STATUS_WARN;
-					$notes[]  = 'Solr Index (Grouped) last restarted ' . date('m-d-Y H:i:s', $solrStartTime) . ' - '. round($uptime / 3600, 2) . ' hours ago';
-				}
+            $uptime = $data['status']['grouped_works']['uptime']/1000;  // Grouped Index, puts uptime into seconds.
+            $solrStartTime = strtotime($data['status']['grouped_works']['startTime']);
+            if ($uptime >= self::SOLR_RESTART_INTERVAL_WARN){ // Grouped Index
+                $status[] = ($uptime >= self::SOLR_RESTART_INTERVAL_CRITICAL) ? self::STATUS_CRITICAL : self::STATUS_WARN;
+                $notes[]  = 'Solr Index (Grouped) last restarted ' . date('m-d-Y H:i:s', $solrStartTime) . ' - '. round($uptime / 3600, 2) . ' hours ago';
+            }
 
-				$numRecords = $data['status']['grouped_works']['index']['numDocs'];
+            $numRecords = $data['status']['grouped_works']['index']['numDocs'];
 
-				$minNumRecordVariable = new Variable();
-				$minNumRecordVariable->name = 'solr_grouped_minimum_number_records';
-				if ($minNumRecordVariable->find(true)) {
-					$minNumRecords = $minNumRecordVariable->value;
-					if (!empty($minNumRecords)) {
-						if ($numRecords < $minNumRecords) {
-							// Warn till more that 500 works below the limit
-						$status[] = $numRecords < ($minNumRecords - 500) ? self::STATUS_CRITICAL : self::STATUS_WARN;
-						$notes[]  = "Solr Index (Grouped) Record Count ($numRecords) in below the minimum ($minNumRecords)";
-					} elseif ($numRecords > $minNumRecords + 10000) {
-							$status[] = self::STATUS_WARN;
-							$notes[]  = "Solr Index (Grouped) Record Count ($numRecords) is more than 10,000 above the minimum ($minNumRecords)";
+            $minNumRecordVariable = new Variable();
+            $minNumRecordVariable->name = 'solr_grouped_minimum_number_records';
+            if ($minNumRecordVariable->find(true)) {
+                $minNumRecords = $minNumRecordVariable->value;
+                if (!empty($minNumRecords)) {
+                    if ($numRecords < $minNumRecords) {
+                        // Warn till more that 500 works below the limit
+                    $status[] = $numRecords < ($minNumRecords - 500) ? self::STATUS_CRITICAL : self::STATUS_WARN;
+                    $notes[]  = "Solr Index (Grouped) Record Count ($numRecords) in below the minimum ($minNumRecords)";
+                } elseif ($numRecords > $minNumRecords + 10000) {
+                        $status[] = self::STATUS_WARN;
+                        $notes[]  = "Solr Index (Grouped) Record Count ($numRecords) is more than 10,000 above the minimum ($minNumRecords)";
 
-						}
-					}
+                    }
+                }
 
-				} else {
-					$status[] = self::STATUS_WARN;
-					$notes[]  = 'The minimum number of records for Solr Index (Grouped) has not been set.';
-				}
+            } else {
+                $status[] = self::STATUS_WARN;
+                $notes[]  = 'The minimum number of records for Solr Index (Grouped) has not been set.';
+            }
 
-			} else {
-				$status[] = self::STATUS_CRITICAL;
-				$notes[]  = 'Could not get status from Solr';
-			}
+        } else {
+            $status[] = self::STATUS_CRITICAL;
+            $notes[]  = 'Could not get status from Solr';
+        }
 
 
-			// Count Number of Back-up Index Folders
-			$solrSearcherPath = rtrim($configArray['Index']['local'], '/');
-			$solrSearcherPath = str_replace('solr', 'solr_searcher/grouped/', $solrSearcherPath); // modify path to solr search grouped core path
-			if (strpos($solrSearcherPath, 'grouped')) { // If we didn't make a good path, skip the rest of these checks
-				$indexBackupDirectories = glob($solrSearcherPath.'index.*',  GLOB_ONLYDIR);
-				$numIndexBackupDirectories = count($indexBackupDirectories);
-				if ($numIndexBackupDirectories >= 7) {
-					$status[] = self::STATUS_CRITICAL;
-					$notes[]  = "There are $numIndexBackupDirectories Solr Searcher Grouped Index directories";
-				}
-				elseif ($numIndexBackupDirectories >= 4) {
-					$status[] = self::STATUS_WARN;
-					$notes[]  = "There are $numIndexBackupDirectories Solr Searcher Grouped Index directories";
-				}
+        // Count Number of Back-up Index Folders
+        $solrSearcherPath = rtrim($configArray['Index']['local'], '/');
+        $solrSearcherPath = str_replace('solr', 'solr_searcher/grouped/', $solrSearcherPath); // modify path to solr search grouped core path
+        if (strpos($solrSearcherPath, 'grouped')) { // If we didn't make a good path, skip the rest of these checks
+            $indexBackupDirectories = glob($solrSearcherPath.'index.*',  GLOB_ONLYDIR);
+            $numIndexBackupDirectories = count($indexBackupDirectories);
+            if ($numIndexBackupDirectories >= 7) {
+                $status[] = self::STATUS_CRITICAL;
+                $notes[]  = "There are $numIndexBackupDirectories Solr Searcher Grouped Index directories";
+            }
+            elseif ($numIndexBackupDirectories >= 4) {
+                $status[] = self::STATUS_WARN;
+                $notes[]  = "There are $numIndexBackupDirectories Solr Searcher Grouped Index directories";
+            }
 
-			}
-		}
+        }
 
 		// Check How Many Overdrive Items have been deleted in the last 24 hours
 		if (!empty($configArray['OverDrive']['url'])) {
@@ -378,7 +376,7 @@ class SearchAPI extends Action {
 		global $timer;
 
 		// Include Search Engine Class
-		require_once ROOT_DIR . '/sys/' . $configArray['Index']['engine'] . '.php';
+		require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
 		$timer->logTime('Include search engine');
 
 		//setup the results array.
@@ -594,14 +592,14 @@ class SearchAPI extends Action {
 		global $timer;
 
 		// Include Search Engine Class
-		require_once ROOT_DIR . '/sys/' . $configArray['Index']['engine'] . '.php';
+		require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
 		$timer->logTime('Include search engine');
 
 		//setup the results array.
 		$jsonResults = array();
 
 		// Initialise from the current search globals
-		/** @var SearchObject_Solr $searchObject */
+		/** @var SearchObject_GroupedWorkSearcher $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject();
 		$searchObject->init();
 
@@ -640,14 +638,14 @@ class SearchAPI extends Action {
 		global $timer;
 
 		// Include Search Engine Class
-		require_once ROOT_DIR . '/sys/' . $configArray['Index']['engine'] . '.php';
+		require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
 		$timer->logTime('Include search engine');
 
 		//setup the results array.
 		$jsonResults = array();
 
 		// Initialise from the current search globals
-		/** @var SearchObject_Solr $searchObject */
+		/** @var SearchObject_GroupedWorkSearcher $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject();
 		$searchObject->init();
 
@@ -686,7 +684,7 @@ class SearchAPI extends Action {
 		global $timer;
 
 		// Include Search Engine Class
-		require_once ROOT_DIR . '/sys/' . $configArray['Index']['engine'] . '.php';
+		require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
 		$timer->logTime('Include search engine');
 
 		//setup the results array.

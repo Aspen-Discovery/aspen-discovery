@@ -22,7 +22,6 @@ require_once ROOT_DIR . '/sys/Rbdigital/RbdigitalProduct.php';
 require_once ROOT_DIR . '/RecordDrivers/RbdigitalRecordDriver.php';
 
 class Rbdigital_Home extends Action{
-	/** @var  SearchObject_Solr $db */
 	private $id;
 
 	function launch(){

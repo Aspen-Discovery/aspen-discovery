@@ -33,22 +33,20 @@ class Home extends Admin_Admin {
 		$interface->assign('PikaStatusMessages', explode(';', $pikaStatus['message']));
 
 		// Load SOLR Statistics
-		if ($configArray['Index']['engine'] == 'Solr') {
-			$xml = @file_get_contents($configArray['Index']['url'] . '/admin/cores');
+        $xml = @file_get_contents($configArray['Index']['url'] . '/admin/cores');
 
-			if ($xml) {
-				$data = json_decode($xml, true);
-				$interface->assign('data', $data['status']);
-			}
+        if ($xml) {
+            $data = json_decode($xml, true);
+            $interface->assign('data', $data['status']);
+        }
 
-			$masterIndexUrl = str_replace(':80', ':81', $configArray['Index']['url']) . '/admin/cores';
-			$masterXml = @file_get_contents($masterIndexUrl);
+        $masterIndexUrl = str_replace(':80', ':81', $configArray['Index']['url']) . '/admin/cores';
+        $masterXml = @file_get_contents($masterIndexUrl);
 
-			if ($masterXml) {
-				$masterData = json_decode($masterXml, true);
-				$interface->assign('master_data', $masterData['status']);
-			}
-		}
+        if ($masterXml) {
+            $masterData = json_decode($masterXml, true);
+            $interface->assign('master_data', $masterData['status']);
+        }
 
 		$this->display('home.tpl', 'Solr Information');
 	}

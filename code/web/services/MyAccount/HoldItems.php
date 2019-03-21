@@ -88,9 +88,6 @@ class HoldItems extends Action
 			$hold_message_data['successful'] = 'none';
 		}
 
-		$class = $configArray['Index']['engine'];
-		$db = new $class($configArray['Index']['url']);
-
 		$_SESSION['hold_message'] = $hold_message_data;
 		if (isset($_SESSION['hold_referrer'])){
 			$logger->log('Hold Referrer is set, redirecting to there.  type = ' . $_REQUEST['type'], PEAR_LOG_INFO);

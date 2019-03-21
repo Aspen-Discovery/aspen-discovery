@@ -61,7 +61,7 @@ class Archive_AJAX extends Action {
 			$this->setShowCovers();
 			$displayMode = $this->setCoversDisplayMode();
 
-			/** @var SearchObject_Islandora $searchObject */
+			/** @var SearchObject_IslandoraSearcher $searchObject */
 			$searchObject = SearchObjectFactory::initSearchObject('Islandora');
 			$searchObject->init();
 			$searchObject->setDebugging(false, false);
@@ -164,7 +164,7 @@ class Archive_AJAX extends Action {
 			$this->setShowCovers();
 			$displayMode = $this->setCoversDisplayMode();
 
-			/** @var SearchObject_Islandora $searchObject */
+			/** @var SearchObject_IslandoraSearcher $searchObject */
  			$searchObject = SearchObjectFactory::initSearchObject('Islandora');
 			$searchObject->init();
 			$searchObject->setDebugging(false, false);
@@ -278,7 +278,7 @@ class Archive_AJAX extends Action {
 			$this->setShowCovers();
 			$displayMode = $this->setCoversDisplayMode();
 
-			/** @var SearchObject_Islandora $searchObject */
+			/** @var SearchObject_IslandoraSearcher $searchObject */
 			$searchObject = SearchObjectFactory::initSearchObject('Islandora');
 			$searchObject->init();
 			//$searchObject->setDebugging(false, false);
@@ -448,7 +448,7 @@ class Archive_AJAX extends Action {
 			$this->setShowCovers();
 			$displayMode = $this->setCoversDisplayMode();
 
-			/** @var SearchObject_Islandora $searchObject */
+			/** @var SearchObject_IslandoraSearcher $searchObject */
 			$searchObject = SearchObjectFactory::initSearchObject('Islandora');
 			$searchObject->init();
 			$searchObject->setDebugging(false, false);
@@ -571,7 +571,7 @@ class Archive_AJAX extends Action {
 		global $interface;
 		$facetName = urldecode($_REQUEST['facetName']);
 		$interface->assign('exhibitPid', $pid);
-		/** @var SearchObject_Islandora $searchObject */
+		/** @var SearchObject_IslandoraSearcher $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject('Islandora');
 		$searchObject->init();
 		$searchObject->setDebugging(false, false);
@@ -640,7 +640,7 @@ class Archive_AJAX extends Action {
 		global $interface;
 		$facetName = urldecode($_REQUEST['facetName']);
 		$interface->assign('exhibitPid', $pid);
-		/** @var SearchObject_Islandora $searchObject */
+		/** @var SearchObject_IslandoraSearcher $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject('Islandora');
 		$searchObject->init();
 		$searchObject->setDebugging(false, false);
@@ -1017,7 +1017,7 @@ class Archive_AJAX extends Action {
 	}
 
 	/**
-	 * @param SearchObject_Islandora $searchObject
+	 * @param SearchObject_IslandoraSearcher $searchObject
 	 */
 	public function setupTimelineFacetsAndFilters($searchObject)
 	{
@@ -1056,7 +1056,7 @@ class Archive_AJAX extends Action {
 
 	/**
 	 * @param $sort
-	 * @param SearchObject_Islandora $searchObject
+	 * @param SearchObject_IslandoraSearcher $searchObject
 	 */
 	public function setupTimelineSorts($sort, $searchObject)
 	{

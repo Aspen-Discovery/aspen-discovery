@@ -173,13 +173,12 @@ class AJAX extends Action {
 		global $library;
 		global $timer;
 
-		/** @var SearchObject_Solr $searchObject */
+		/** @var SearchObject_GroupedWorkSearcher $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject();
 		$searchObject->init();
 		// Setup Search Engine Connection
-		$class = $configArray['Index']['engine'];
 		$url = $configArray['Index']['url'];
-		$db = new $class($url);
+		$db = new GroupedWorksSolrConnector($url);
 		$searchObject = $searchObject->restoreSavedSearch($prospectorSavedSearchId, false);
 
 		//Load results from Prospector
@@ -339,7 +338,7 @@ class AJAX extends Action {
 		$searchSource = isset($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : 'local';
 
 		// Initialise from the current search globals
-		/** @var SearchObject_Solr $searchObject */
+		/** @var SearchObject_GroupedWorkSearcher $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject();
 		$searchObject->init($searchSource);
 

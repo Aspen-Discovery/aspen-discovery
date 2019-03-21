@@ -540,7 +540,7 @@ class CatalogConnection
 				$readingHistoryDB->userId = $patron->id;
 				$readingHistoryDB->delete();
 
-				//Opt out within Pika since the ILS does not seem to implement this functionality
+				//Opt out within Aspen since the ILS does not seem to implement this functionality
 				$patron->trackReadingHistory = false;
 				$patron->update();
 			}elseif ($action == 'optIn'){
@@ -550,7 +550,7 @@ class CatalogConnection
 					$result = $this->driver->doReadingHistoryAction($patron, $action, $selectedTitles);
 				}
 
-				//Opt in within Pika since the ILS does not seem to implement this functionality
+				//Opt in within Aspen since the ILS does not seem to implement this functionality
 				$patron->trackReadingHistory = true;
 				$patron->update();
 			}

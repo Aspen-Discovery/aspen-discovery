@@ -30,8 +30,7 @@ class Suggest extends Action {
 		header('Content-type: application/json');
 
 		// Setup Search Engine Connection
-		$class = $configArray['Index']['engine'];
-		$db = new $class($configArray['Index']['url']);
+		$db = new GroupedWorksSolrConnector($configArray['Index']['url']);
 
 		$results = $db->getSuggestion(strtolower(strip_tags($_GET['lookfor'])), 'title_sort', 10);
 		echo json_encode($results);

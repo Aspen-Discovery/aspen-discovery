@@ -226,6 +226,9 @@ class Library extends DataObject
 
 	public $archiveMoreDetailsRelatedObjectsOrEntitiesDisplayMode;
 
+	//OAI
+    public $enableOpenArchives;
+
 	// Use this to set which details will be shown in the the Main Details section of the record view.
 	// You should be able to add options here without needing to change the database.
 	// set the key to the desired SMARTY template variable name, set the value to the label to show in the library configuration page
@@ -893,7 +896,12 @@ class Library extends DataObject
 					),
 			)),
 
-			'edsSection' => array('property'=>'edsSection', 'type' => 'section', 'label' =>'EBSCO EDS', 'hideInLists' => true, 'properties' => array(
+            'oaiSection' => array('property'=>'oaiSection', 'type' => 'section', 'label' =>'Open Archives Results', 'hideInLists' => true, 'helpLink'=>'', 'properties' => array(
+                'enableOpenArchives' => array('property'=>'enableOpenArchives', 'type'=>'checkbox', 'label'=>'Allow Searching Open Archives', 'description'=>'Whether or not information from indexed Open Archives is shown.', 'hideInLists' => true, 'default' => 0),
+
+            )),
+
+            'edsSection' => array('property'=>'edsSection', 'type' => 'section', 'label' =>'EBSCO EDS', 'hideInLists' => true, 'properties' => array(
 					'edsApiProfile' => array('property'=>'edsApiProfile', 'type'=>'text', 'label'=>'EDS API Profile', 'description'=>'The profile to use when connecting to the EBSCO API', 'hideInLists' => true),
 					'edsSearchProfile' => array('property'=>'edsSearchProfile', 'type'=>'text', 'label'=>'EDS Search Profile', 'description'=>'The profile to use when linking to EBSCO EDS', 'hideInLists' => true),
 					'edsApiUsername' => array('property'=>'edsApiUsername', 'type'=>'text', 'label'=>'EDS API Username', 'description'=>'The username to use when connecting to the EBSCO API', 'hideInLists' => true),

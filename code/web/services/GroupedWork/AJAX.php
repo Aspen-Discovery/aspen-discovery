@@ -174,10 +174,9 @@ class GroupedWork_AJAX {
 
 
 		//Load Similar titles (from Solr)
-		$class = $configArray['Index']['engine'];
 		$url = $configArray['Index']['url'];
-		/** @var Solr $db */
-		$db = new $class($url);
+		/** @var GroupedWorksSolrConnector $db */
+		$db = new GroupedWorksSolrConnector($url);
 		$db->disableScoping();
 		$similar = $db->getMoreLikeThis2($id);
 		$memoryWatcher->logMemory('Loaded More Like This data from Solr');
@@ -835,7 +834,7 @@ class GroupedWork_AJAX {
 		$id = $_REQUEST['id'];
 		$interface->assign('id', $id);
 
-		/** @var SearchObject_Solr $searchObject */
+		/** @var SearchObject_GroupedWorkSearcher $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject();
 		$searchObject->init();
 

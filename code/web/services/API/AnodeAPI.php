@@ -20,22 +20,21 @@ require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/API/ItemAPI.php';
 require_once ROOT_DIR . '/services/API/ListAPI.php';
 require_once ROOT_DIR . '/services/API/SearchAPI.php';
-require_once ROOT_DIR . '/sys/Solr.php';
+require_once ROOT_DIR . '/sys/SolrConnector/Solr.php';
 
 class AnodeAPI extends Action {
 
 	function launch() {
-		$method = $_REQUEST['method'];
-			header('Content-type: text/plain');
-			header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
-			header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-			$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
-			if (method_exists($this, $method)) {
-				$output = json_encode(array('result'=>$this->$method()),JSON_PRETTY_PRINT);
-			} else {
-				$output = json_encode(array('error'=>'invalid_method'));
-			}
-			echo $output;
+        header('Content-type: text/plain');
+        header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
+        header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
+        $method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
+        if (method_exists($this, $method)) {
+            $output = json_encode(array('result'=>$this->$method()),JSON_PRETTY_PRINT);
+        } else {
+            $output = json_encode(array('error'=>'invalid_method'));
+        }
+        echo $output;
 	}
 
 	/**
@@ -52,11 +51,6 @@ class AnodeAPI extends Action {
 		if (!$listId) {
 			$listId = $_REQUEST['listId'];
 		}
-		if (!$_REQUEST['numGroupedWorksToShow']) {
-			$numTitlesToShow = 25;
-		} else {
-			$numTitlesToShow = $_REQUEST['numGroupedWorksToShow'];
-		}
 		if (isset($_GET['branch']) && in_array($_GET['branch'], array("bl","se"))) {
 			$branch = $_GET['branch'];
 		} else {
@@ -72,10 +66,9 @@ class AnodeAPI extends Action {
 	 * Returns information about a grouped work's related titles ("More Like This")
 	 *
 	 * @param	string	$id - The initial grouped work
-	 * @var		array	$originalResult - The original record we are getting similar titles for.
 	 * @return	array
 	 */
-	function getAnodeRelatedGroupedWorks($id = NULL, $originalResult = NULL) {
+	function getAnodeRelatedGroupedWorks($id = NULL) {
                 global $configArray;
 		if (!isset($id)) {
 			$id = $_REQUEST['id'];
@@ -86,23 +79,22 @@ class AnodeAPI extends Action {
 			$branch = "catalog";
 		}
 		//Load Similar titles (from Solr)
-		$class = $configArray['Index']['engine'];
 		$url = $configArray['Index']['url'];
 		/** @var Solr $db */
-		$db = new $class($url);
-//		$db->disableScoping();
+		$db = new GroupedWorksSolrConnector($url);
 		$similar = $db->getMoreLikeThis2($id);
 		if (isset($similar) && count($similar['response']['docs']) > 0) {
 			$similarTitles = array();
-//			$similarTitles['titles'] = array();
 
 			foreach ($similar['response']['docs'] as $key => $similarTitle){
 				$similarTitles['titles'][] = $similarTitle;
 			}
-		}
-		$result = $this->getAnodeGroupedWorks($similarTitles,$branch);
-//var_dump($similarTitles);
-//var_dump($result);
+            $result = $this->getAnodeGroupedWorks($similarTitles,$branch);
+		}else{
+		    $result = ['titles' => []];
+        }
+
+
 		return $result;
 	}
 

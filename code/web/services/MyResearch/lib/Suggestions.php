@@ -46,9 +46,8 @@ class Suggestions{
 		$timer->logTime("Loaded titles the patron has rated");
 
 		// Setup Search Engine Connection
-		$class = $configArray['Index']['engine'];
 		$url = $configArray['Index']['url'];
-		$db = new $class($url);
+		$db = new GroupedWorksSolrConnector($url);
 
 		$suggestions = array();
 		if ($doNovelistRecommendations){
@@ -108,10 +107,9 @@ class Suggestions{
 		//Get metadata recommendations if enabled, we have ratings, and we don't have enough suggestions yet
 		if ($doMetadataRecommendations && count($allLikedRatedTitles) > 0 && count($suggestions) < $maxRecommendations){
 			//Get recommendations based on everything I've rated using more like this functionality
-			$class = $configArray['Index']['engine'];
 			$url = $configArray['Index']['url'];
-			/** @var Solr $db */
-			$db = new $class($url);
+			/** @var GroupedWorksSolrConnector $db */
+			$db = new GroupedWorksSolrConnector($url);
 			//$db->debug = true;
 			$moreLikeTheseSuggestions = $db->getMoreLikeThese($allLikedRatedTitles, $notInterestedTitles);
 			if (isset($moreLikeTheseSuggestions['response']['docs'])) {
@@ -151,7 +149,7 @@ class Suggestions{
 	 * Load titles that have been rated by other users which are similar to this.
 	 *
 	 * @param WorkAPI $workApi
-	 * @param SearchObject_Solr|SearchObject_Base $db
+	 * @param SearchObject_GroupedWorkSearcher $db
 	 * @param UserWorkReview $ratedTitle
 	 * @param integer $userId
 	 * @param array $ratedTitles

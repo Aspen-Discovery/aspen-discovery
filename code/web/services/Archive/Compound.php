@@ -5,7 +5,6 @@ class Archive_Compound extends Archive_Object{
 	function launch() {
 		global $interface;
 		$this->loadArchiveObjectData();
-		//$this->loadExploreMoreContent();
 
 		//Get the contents of the book
 		/** @var CompoundRecordDriver $bookDriver */

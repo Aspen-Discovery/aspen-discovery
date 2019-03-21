@@ -622,7 +622,7 @@ class ListAPI extends Action {
 	function loadTitleInformationForIds($ids, $numTitlesToShow, $orderedListOfIds = array()){
 		$titles = array();
 		if (count($ids) > 0){
-			/** @var SearchObject_Solr $searchObject */
+			/** @var SearchObject_GroupedWorkSearcher $searchObject */
 			$searchObject = SearchObjectFactory::initSearchObject();
 			$searchObject->init();
 			$searchObject->setLimit($numTitlesToShow);
@@ -636,7 +636,7 @@ class ListAPI extends Action {
 	function loadArchiveInformationForIds($ids, $numTitlesToShow, $orderedListOfIds = array()){
 		$titles = array();
 		if (count($ids) > 0){
-			/** @var SearchObject_Islandora $archiveSearchObject */
+			/** @var SearchObject_IslandoraSearcher $archiveSearchObject */
 			$archiveSearchObject = SearchObjectFactory::initSearchObject('Islandora');
 			$archiveSearchObject->init();
 			$archiveSearchObject->setPrimarySearch(true);
@@ -658,7 +658,7 @@ class ListAPI extends Action {
 		$listTitles = $memCache->get($cacheId);
 		if ($listTitles == false || isset($_REQUEST['reload'])){
 			//return a random selection of 30 titles from the list.
-			/** @var SearchObject_Solr|SearchObject_Base $searchObj */
+			/** @var SearchObject_GroupedWorkSearcher|SearchObject_BaseSearcher $searchObj */
 			$searchObj = SearchObjectFactory::initSearchObject();
 			$searchObj->init();
 			$searchObj = $searchObj->restoreSavedSearch($searchId, false, true);
@@ -1018,7 +1018,7 @@ class ListAPI extends Action {
 		// We need to add titles to the list //
 
 		// Include Search Engine Class
-		require_once ROOT_DIR . '/sys/' . $configArray['Index']['engine'] . '.php';
+		require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
 		// Include UserListEntry Class
 		require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
 
@@ -1030,8 +1030,8 @@ class ListAPI extends Action {
 				foreach ($titleResult->isbns as $isbns) {
 					$isbn = empty($isbns->isbn13) ? $isbns->isbn10 : $isbns->isbn13;
 					if ($isbn) {
-						//look the title up in Pika by ISBN
-						/** @var SearchObject_Solr $searchObject */
+						//look the title up by ISBN
+						/** @var SearchObject_GroupedWorkSearcher $searchObject */
 						$searchObject = SearchObjectFactory::initSearchObject(); // QUESTION: Does this need to be done within the Loop??
 						$searchObject->init();
 						$searchObject->clearFacets();

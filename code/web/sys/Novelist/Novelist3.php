@@ -789,7 +789,7 @@ class Novelist3{
 		global $configArray;
 		$timer->logTime("Start loadNoveListTitle");
 
-		/** @var SearchObject_Solr $searchObject */
+		/** @var SearchObject_GroupedWorkSearcher $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject();
 		//$searchObject->disableScoping();
 		if (function_exists('disableErrorHandler')){

@@ -1692,5 +1692,14 @@ function getLibraryLocationUpdates(){
                 'ALTER TABLE library DROP COLUMN recordsToBlackList',
             )
         ),
+
+        'library_add_oai_searching' => array(
+            'title' => 'Add Open Archives Searching',
+            'description' => 'Add the ability to search Open Archives',
+            'continueOnError' => false,
+            'sql' => array(
+                'ALTER TABLE library ADD COLUMN enableOpenArchives TINYINT(1) DEFAULT 0',
+            )
+        ),
 	);
 }

@@ -96,10 +96,9 @@ class WorkAPI {
 		//return $groupedWorkDriver->getISBNs();
 
 		global $configArray;
-		$class = $configArray['Index']['engine'];
 		$url = $configArray['Index']['url'];
 		/** @var Solr $db */
-		$db = new $class($url);
+		$db = new GroupedWorksSolrConnector($url);
 
 		disableErrorHandler();
 		$record = $db->getRecord($permanentId, 'isbn');

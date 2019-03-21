@@ -1,31 +1,5 @@
 <?php
-/**
- *
- * Copyright (C) Villanova University 2010.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2,
- * as published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- */
 
-/**
- * SearchObjectFactory Class
- *
- * This is a factory class to build objects for managing searches.
- *
- * @author      Demian Katz <demian.katz@villanova.edu>
- * @access      public
- */
 class SearchObjectFactory {
 
 	/**
@@ -37,16 +11,16 @@ class SearchObjectFactory {
 	 * @param   string  $engine     The type of SearchObject to build (Solr/Summon).
 	 * @return  mixed               The search object on success, false otherwise
 	 */
-	static function initSearchObject($engine = 'Solr')
+	static function initSearchObject($engine = 'GroupedWork')
 	{
 		global $configArray;
 
-		$path = "{$configArray['Site']['local']}/sys/SearchObject/{$engine}.php";
+		$path = "{$configArray['Site']['local']}/sys/SearchObject/{$engine}Searcher.php";
 		if (is_readable($path)) {
 			require_once $path;
-			$class = 'SearchObject_' . $engine;
+			$class = 'SearchObject_' . $engine . 'Searcher';
 			if (class_exists($class)) {
-				/** @var SearchObject_Base $searchObject */
+				/** @var SearchObject_BaseSearcher $searchObject */
 				$searchObject = new $class();
 				return $searchObject;
 			}
@@ -68,7 +42,7 @@ class SearchObjectFactory {
 	{
 		// To avoid excessive constructor calls, we'll keep a static cache of
 		// objects to use for the deminification process:
-		/** @var SearchObject_Base[] $objectCache */
+		/** @var SearchObject_BaseSearcher[] $objectCache */
 		static $objectCache = array();
 
 		// Figure out the engine type for the object we're about to construct:
@@ -84,11 +58,14 @@ class SearchObjectFactory {
 			case 'islandora' :
 				$type = 'Islandora';
 				break;
-			case 'genealogy' :
+            case 'open_archives' :
+                $type = 'OpenArchives';
+                break;
+            case 'genealogy' :
 				$type = 'Genealogy';
 				break;
 			default:
-				$type = 'Solr';
+				$type = 'GroupedWork';
 				break;
 		}
 

@@ -21,7 +21,7 @@
 require_once ROOT_DIR . '/RecordDrivers/HooplaRecordDriver.php';
 
 class Hoopla_Home extends Action{
-	/** @var  SearchObject_Solr $db */
+	/** @var  SearchObject_GroupedWorkSearcher $db */
 	protected $db;
 	private $id;
 

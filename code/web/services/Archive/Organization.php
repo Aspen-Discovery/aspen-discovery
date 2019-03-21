@@ -6,7 +6,6 @@ class Archive_Organization extends Archive_Entity{
 		global $interface;
 
 		$this->loadArchiveObjectData();
-		//$this->loadExploreMoreContent();
 		$this->recordDriver->loadLinkedData();
 		$this->loadRelatedContentForEntity();
 

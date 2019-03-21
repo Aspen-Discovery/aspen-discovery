@@ -1207,7 +1207,7 @@ class BookCoverProcessor{
 	private function loadGroupedWork(){
 		if ($this->groupedWork == null){
 			// Include Search Engine Class
-			require_once ROOT_DIR . '/sys/Solr.php';
+			require_once ROOT_DIR . '/sys/SolrConnector/Solr.php';
 			$this->initMemcache();
 
 			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';

@@ -4,6 +4,7 @@ class SearchSources{
 		$searchSources = SearchSources::getSearchSourcesDefault();
 		return $searchSources;
 	}
+
 	private static function getSearchSourcesDefault(){
 		$searchOptions = array();
 		//Check to see if marmot catalog is a valid option
@@ -18,6 +19,7 @@ class SearchSources{
 		$repeatCourseReserves = false;
 		$searchArchive = false;
 		$searchEbsco = false;
+        $searchOpenArchives = false;
 
 		/** @var $locationSingleton Location */
 		global $locationSingleton;
@@ -45,6 +47,7 @@ class SearchSources{
 			$searchArchive = $library->enableArchive == 1;
 			//TODO: Reenable once we do full EDS integration
 			//$searchEbsco = $library->edsApiProfile != '';
+            $searchOpenArchives = $library->enableOpenArchives == 1;
 		}
 
 		list($enableCombinedResults, $showCombinedResultsFirst, $combinedResultsName) = self::getCombinedSearchSetupParameters($location, $library);
@@ -172,41 +175,46 @@ class SearchSources{
 			);
 		}
 
+		if ($searchOpenArchives){
+            $searchOptions['open_archives'] = array(
+                'name' => 'Open Archive',
+                'description' => 'Open Archive Information',
+                'catalogType' => 'open_archives'
+            );
+        }
+
 		//Genealogy Search
-//		if ($searchGenealogy && !$interface->isMobile()){ //allow in mobile views. plb 11-17-2014
 		if ($searchGenealogy){
 			$searchOptions['genealogy'] = array(
-        'name' => 'Genealogy Records',
-        'description' => 'Genealogy Records from Colorado',
+                'name' => 'Genealogy Records',
+                'description' => 'Genealogy Records from Colorado',
 				'catalogType' => 'genealogy'
 			);
 		}
 
 		if ($enableCombinedResults && !$showCombinedResultsFirst){
 			$searchOptions['combinedResults'] = array(
-					'name' => $combinedResultsName,
-					'description' => "Combined results from multiple sources.",
-					'catalogType' => 'combined'
+                'name' => $combinedResultsName,
+                'description' => "Combined results from multiple sources.",
+                'catalogType' => 'combined'
 			);
 		}
 
 		//Overdrive
-//		if ($repeatInOverdrive && !$interface->isMobile()){ //allow in mobile views. plb 11-17-2014
 		if ($repeatInOverdrive){
 			$searchOptions['overdrive'] = array(
-        'name' => 'OverDrive Digital Catalog',
-        'description' => 'Downloadable Books, Videos, Music, and eBooks with free use for library card holders.',
-        'external' => true,
+                'name' => 'OverDrive Digital Catalog',
+                'description' => 'Downloadable Books, Videos, Music, and eBooks with free use for library card holders.',
+                'external' => true,
 				'catalogType' => 'catalog'
 			);
 		}
 
-//		if ($repeatInProspector && !$interface->isMobile()){ //allow in mobile views. plb 11-17-2014
 		if ($repeatInProspector){
 			$searchOptions['prospector'] = array(
-        'name' => 'Prospector Catalog',
-        'description' => 'A shared catalog of academic, public, and special libraries all over Colorado.',
-        'external' => true,
+                'name' => 'Prospector Catalog',
+                'description' => 'A shared catalog of academic, public, and special libraries all over Colorado.',
+                'external' => true,
 				'catalogType' => 'catalog'
 			);
 		}
@@ -215,37 +223,35 @@ class SearchSources{
 		if ($repeatCourseReserves){
 			//Mesa State
 			$searchOptions['course-reserves-course-name'] = array(
-        'name' => 'Course Reserves by Name or Number',
-        'description' => 'Search course reserves by course name or number',
-        'external' => true,
+                'name' => 'Course Reserves by Name or Number',
+                'description' => 'Search course reserves by course name or number',
+                'external' => true,
 				'catalogType' => 'courseReserves'
 			);
 			$searchOptions['course-reserves-instructor'] = array(
-        'name' => 'Course Reserves by Instructor',
-        'description' => 'Search course reserves by professor, lecturer, or instructor name',
-        'external' => true,
+                'name' => 'Course Reserves by Instructor',
+                'description' => 'Search course reserves by professor, lecturer, or instructor name',
+                'external' => true,
 				'catalogType' => 'courseReserves'
 			);
 		}
 
-//		if ($repeatInWorldCat && !$interface->isMobile()){ //allow in mobile views. plb 11-17-2014
 		if ($repeatInWorldCat){
 			$searchOptions['worldcat'] = array(
-        'name' => 'WorldCat',
-        'description' => 'A shared catalog of libraries all over the world.',
-        'external' => true,
+                'name' => 'WorldCat',
+                'description' => 'A shared catalog of libraries all over the world.',
+                'external' => true,
 				'catalogType' => 'catalog'
 			);
 		}
 
 		//Check to see if Gold Rush is a valid option
-//		if (isset($library) && strlen($library->goldRushCode) > 0 && !$interface->isMobile()){ //allow in mobile views. plb 11-17-2014
 		if (isset($library) && strlen($library->goldRushCode) > 0){
 			$searchOptions['goldrush'] = array(
 			//'link' => "http://goldrush.coalliance.org/index.cfm?fuseaction=Search&amp;inst_code={$library->goldRushCode}&amp;search_type={$worldCatSearchType}&amp;search_term=".urlencode($lookfor),
-        'name' => 'Gold Rush Magazine Finder',
-        'description' => 'A catalog of online journals and full text articles.',
-        'external' => true,
+                'name' => 'Gold Rush Magazine Finder',
+                'description' => 'A catalog of online journals and full text articles.',
+                'external' => true,
 				'catalogType' => 'catalog'
 			);
 		}

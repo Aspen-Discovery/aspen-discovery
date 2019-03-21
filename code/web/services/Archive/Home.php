@@ -18,7 +18,7 @@ class Archive_Home extends Action{
 
 		$archiveName = $library->displayName;
 		//Get the archive name from islnadora
-		/** @var SearchObject_Islandora $searchObject */
+		/** @var SearchObject_IslandoraSearcher $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject('Islandora');
 		$searchObject->init();
 		$searchObject->setDebugging(false, false);
@@ -56,7 +56,7 @@ class Archive_Home extends Action{
 		$relatedContentTypes = array();
 		if ($response && isset($response['response'])){
 			foreach ($response['facet_counts']['facet_fields']['mods_genre_s'] as $genre) {
-				/** @var SearchObject_Islandora $searchObject2 */
+				/** @var SearchObject_IslandoraSearcher $searchObject2 */
 				$searchObject2 = SearchObjectFactory::initSearchObject('Islandora');
 				$searchObject2->init();
 				$searchObject2->setDebugging(false, false);
@@ -115,7 +115,7 @@ class Archive_Home extends Action{
 		global $library;
 
 		//Get a list of all available projects
-		/** @var SearchObject_Islandora $searchObject */
+		/** @var SearchObject_IslandoraSearcher $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject('Islandora');
 		$searchObject->init();
 		$searchObject->setDebugging(false, false);

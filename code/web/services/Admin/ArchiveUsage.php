@@ -23,7 +23,7 @@ class Admin_ArchiveUsage extends Admin_Admin{
 
 		$usageByNamespace = array();
 		while ($archiveLibraries->fetch()){
-			/** @var SearchObject_Islandora $searchObject */
+			/** @var SearchObject_IslandoraSearcher $searchObject */
 			$searchObject = SearchObjectFactory::initSearchObject('Islandora');
 			$searchObject->init();
 			$searchObject->setDebugging(false, false);

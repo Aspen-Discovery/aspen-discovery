@@ -49,7 +49,7 @@ class Person_Home extends Action
 
 		// Setup Search Engine Connection
 		// Include Search Engine Class
-		require_once ROOT_DIR . '/sys/' . $configArray['Genealogy']['engine'] . '.php';
+        require_once ROOT_DIR . '/sys/SolrConnector/GenealogySolrConnector.php';
 		$timer->logTime('Include search engine');
 
 		// Initialise from the current search globals

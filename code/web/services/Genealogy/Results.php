@@ -89,11 +89,11 @@ class Genealogy_Results extends Action {
 		}
 
 		// Include Search Engine Class
-		require_once ROOT_DIR . '/sys/' . $configArray['Genealogy']['engine'] . '.php';
+		require_once ROOT_DIR . '/sys/SolrConnector/GenealogySolrConnector.php';
 		$timer->logTime('Include search engine');
 
 		// Initialise from the current search globals
-		/** @var SearchObject_Genealogy $searchObject */
+		/** @var SearchObject_GenealogySearcher $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject($configArray['Genealogy']['searchObject']);
 		$searchObject->init($searchSource);
 		$searchObject->setPrimarySearch(true);

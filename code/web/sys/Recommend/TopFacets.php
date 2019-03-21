@@ -27,7 +27,7 @@ require_once ROOT_DIR . '/sys/Recommend/Interface.php';
  */
 class TopFacets implements RecommendationInterface
 {
-	/** @var SearchObject_Solr|SearchObject_Base searchObject */
+	/** @var SearchObject_SolrSearcher searchObject */
 	private $searchObject;
 	private $facetSettings = array();
 	private $facets = array();
@@ -43,7 +43,7 @@ class TopFacets implements RecommendationInterface
 	 */
 	public function __construct($searchObject, $params) {
 		// Save the basic parameters:
-		/** @var SearchObject_Solr|SearchObject_Base searchObject */
+		/** @var SearchObject_SolrSearcher searchObject */
 		$this->searchObject = $searchObject;
 
 		// Parse the additional parameters:
@@ -52,7 +52,7 @@ class TopFacets implements RecommendationInterface
 
 		// Load the desired facet information:
 		$config = getExtraConfigArray($iniFile);
-		if ($this->searchObject->getSearchType() == 'genealogy' || $this->searchObject->getSearchType() == 'islandora'){
+		if ($this->searchObject->getSearchType() == 'genealogy' || $this->searchObject->getSearchType() == 'islandora' || $this->searchObject->getSearchType() == 'open_archives'){
 			$this->mainFacets = array();
 		}else{
 			$searchLibrary = Library::getActiveLibrary();

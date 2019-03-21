@@ -27,7 +27,7 @@ require_once ROOT_DIR . '/sys/Recommend/Interface.php';
  */
 class SideFacets implements RecommendationInterface
 {
-	/** @var  SearchObject_Solr|SearchObject_Genealogy $searchObject */
+	/** @var  SearchObject_SolrSearcher $searchObject */
 	private $searchObject;
 	private $facetSettings;
 	private $mainFacets;
@@ -52,9 +52,12 @@ class SideFacets implements RecommendationInterface
 		$iniName = isset($params[2]) ? $params[2] : 'facets';
 
 		if ($searchObject->getSearchType() == 'genealogy') {
-			$config           = getExtraConfigArray($iniName);
-			$this->mainFacets = isset($config[$mainSection]) ? $config[$mainSection] : array();
-		} elseif ($searchObject->getSearchType() == 'islandora'){
+            $config = getExtraConfigArray($iniName);
+            $this->mainFacets = isset($config[$mainSection]) ? $config[$mainSection] : array();
+        }else if ($searchObject->getSearchType() == 'open_archives') {
+            $config           = getExtraConfigArray('openArchivesFacets');
+            $this->mainFacets = isset($config[$mainSection]) ? $config[$mainSection] : array();
+        } elseif ($searchObject->getSearchType() == 'islandora'){
 			$searchLibrary = Library::getActiveLibrary();
 			$hasArchiveSearchLibraryFacets = ($searchLibrary != null && (count($searchLibrary->archiveSearchFacets) > 0));
 			if ($hasArchiveSearchLibraryFacets){

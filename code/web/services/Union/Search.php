@@ -25,9 +25,6 @@ require_once ROOT_DIR . '/Action.php';
  * Provides a way of unifying searching disparate sources either by
  * providing joined results between the sources or by including results from
  * a single source
- *
- * @author Mark Noble
- *
  */
 class Union_Search extends Action {
 	function launch(){
@@ -67,7 +64,15 @@ class Union_Search extends Action {
 			$interface->assign('action', $action);
 			$results = new Archive_Results();
 			$results->launch();
-		}else if ($searchSource == 'ebsco'){
+        }else if ($searchSource == 'open_archives'){
+            require_once (ROOT_DIR . '/services/OpenArchives/Results.php');
+            $module = 'OpenArchives';
+            $interface->assign('module', $module);
+            $action = 'Results';
+            $interface->assign('action', $action);
+            $results = new OpenArchives_Results();
+            $results->launch();
+        }else if ($searchSource == 'ebsco'){
 			require_once (ROOT_DIR . '/services/EBSCO/Results.php');
 			$module = 'EBSCO';
 			$interface->assign('module', $module);

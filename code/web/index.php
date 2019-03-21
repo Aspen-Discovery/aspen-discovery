@@ -394,7 +394,9 @@ if (isset($_REQUEST['genealogyType'])){
 if ($searchSource == 'genealogy') {
 	$_REQUEST['type'] = isset($_REQUEST['genealogyType']) ? $_REQUEST['genealogyType'] : 'GenealogyKeyword';
 }elseif ($searchSource == 'islandora'){
-		$_REQUEST['type'] = isset($_REQUEST['islandoraType']) ? $_REQUEST['islandoraType']:  'IslandoraKeyword';
+    $_REQUEST['type'] = isset($_REQUEST['islandoraType']) ? $_REQUEST['islandoraType']:  'IslandoraKeyword';
+}elseif ($searchSource == 'open_archives'){
+    $_REQUEST['type'] = isset($_REQUEST['oaType']) ? $_REQUEST['oaType']:  'OpenArchivesKeyword';
 }elseif ($searchSource == 'ebsco'){
 	$_REQUEST['type'] = isset($_REQUEST['ebscoType']) ? $_REQUEST['ebscoType']:  'TX';
 }else{
@@ -418,7 +420,7 @@ if ($action == "AJAX" || $action == "JSON"){
 	}
 
 	//Load basic search types for use in the interface.
-	/** @var SearchObject_Solr|SearchObject_Base $searchObject */
+	/** @var SearchObject_GroupedWorkSearcher $searchObject */
 	$searchObject = SearchObjectFactory::initSearchObject();
 	$timer->logTime('Create Search Object');
 	$searchObject->init();
@@ -432,7 +434,7 @@ if ($action == "AJAX" || $action == "JSON"){
 	//Load repeat search options
 	$interface->assign('searchSources', $searchSources->getSearchSources());
 
-	if (isset($configArray['Genealogy']) && $library->enableGenealogy){
+	if ($library->enableGenealogy){
 		$genealogySearchObject = SearchObjectFactory::initSearchObject('Genealogy');
 		$interface->assign('genealogySearchTypes', is_object($genealogySearchObject) ? $genealogySearchObject->getBasicTypes() : array());
 	}
@@ -443,6 +445,12 @@ if ($action == "AJAX" || $action == "JSON"){
 		$interface->assign('enableArchive', true);
 	}
 
+    if ($library->enableOpenArchives){
+        $openArchivesSearchObject = SearchObjectFactory::initSearchObject('OpenArchives');
+        $interface->assign('openArchivesSearchTypes', is_object($openArchivesSearchObject) ? $openArchivesSearchObject->getBasicTypes() : array());
+        $interface->assign('enableOpenArchives', true);
+    }
+
 	//TODO: Reenable once we do full EDS integration
 	/*if ($library->edsApiProfile){
 		require_once ROOT_DIR . '/sys/Ebsco/EDS_API.php';
@@ -451,7 +459,7 @@ if ($action == "AJAX" || $action == "JSON"){
 	}*/
 
 	if (!($module == 'Search' && $action == 'Home')){
-		/** @var SearchObject_Base $savedSearch */
+		/** @var SearchObject_BaseSearcher $savedSearch */
 		$savedSearch = $searchObject->loadLastSearch();
 		//Load information about the search so we can display it in the search box
 		if (!is_null($savedSearch)){
@@ -830,11 +838,11 @@ function loadModuleActionId(){
 		$_REQUEST['id'] = '';
 	}elseif (preg_match('/\/(Archive)\/((?:[\\w\\d:]|%3A)+)\/([^\/?]+)/', $requestURI, $matches)){
 		$_GET['module'] = $matches[1];
-//		$_GET['id'] = $matches[2];// TODO: Leaving in case change below, effects other Pika functionality
+//		$_GET['id'] = $matches[2];// TODO: Leaving in case change below, effects other Aspen functionality
 		$_GET['id'] =  urldecode($matches[2]); // Decodes colons % codes back into colons.
 		$_GET['action'] = $matches[3];
 		$_REQUEST['module'] = $matches[1];
-//		$_REQUEST['id'] = $matches[2]; // TODO: Leaving in case change below, effects other Pika functionality
+//		$_REQUEST['id'] = $matches[2]; // TODO: Leaving in case change below, effects other Aspen functionality
 		$_REQUEST['id'] = urldecode($matches[2]);  // Decodes colons % codes back into colons.
 		$_REQUEST['action'] = $matches[3];
 		//Redirect things /GroupedWork/AJAX to the proper action

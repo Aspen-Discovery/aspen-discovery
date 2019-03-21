@@ -8,7 +8,6 @@ class Archive_Pdf extends Archive_Object{
 		$objectUrl = $configArray['Islandora']['objectUrl'];
 
 		$this->loadArchiveObjectData();
-		//$this->loadExploreMoreContent();
 
 		//Get the contents of the book
 		$interface->assign('showExploreMore', true);

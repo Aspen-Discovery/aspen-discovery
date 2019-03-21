@@ -11,7 +11,6 @@ class Archive_Exhibit extends Archive_Object{
 
 		$this->loadArchiveObjectData();
 		$timer->logTime('Loaded Archive Object Data');
-		//$this->loadExploreMoreContent();
 		$timer->logTime('Loaded Explore More Content');
 
 		if (isset($_REQUEST['style'])){
@@ -285,7 +284,7 @@ class Archive_Exhibit extends Archive_Object{
 		global $timer;
 		global $logger;
 		$fedoraUtils = FedoraUtils::getInstance();
-		/** @var SearchObject_Islandora $searchObject */
+		/** @var SearchObject_IslandoraSearcher $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject('Islandora');
 		$searchObject->init();
 		$searchObject->setDebugging(false, false);

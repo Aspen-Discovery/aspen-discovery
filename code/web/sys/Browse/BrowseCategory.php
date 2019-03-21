@@ -261,7 +261,7 @@ class BrowseCategory extends DataObject{
 	}
 
 	/**
-	 * @param SearchObject_Solr $searchObj
+	 * @param SearchObject_SolrSearcher $searchObj
 	 *
 	 * @return boolean
 	 */

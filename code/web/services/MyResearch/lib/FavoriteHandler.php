@@ -169,7 +169,7 @@ class FavoriteHandler
 		$catalogResourceList = array();
 		if (count($this->catalogIds) > 0) {
 			// Initialise from the current search globals
-			/** @var SearchObject_Solr $catalogSearchObject */
+			/** @var SearchObject_GroupedWorkSearcher $catalogSearchObject */
 			$catalogSearchObject = SearchObjectFactory::initSearchObject();
 			$catalogSearchObject->init();
 			$catalogSearchObject->disableScoping();
@@ -248,7 +248,7 @@ class FavoriteHandler
 		if (count($this->archiveIds) > 0) {
 
 			// Initialise from the current search globals
-			/** @var SearchObject_Islandora $archiveSearchObject */
+			/** @var SearchObject_IslandoraSearcher $archiveSearchObject */
 			$archiveSearchObject = SearchObjectFactory::initSearchObject('Islandora');
 			$archiveSearchObject->init();
 			$archiveSearchObject->setPrimarySearch(true);
@@ -380,7 +380,7 @@ class FavoriteHandler
 		// Retrieve records from index (currently, only Solr IDs supported):
 		if (count($this->catalogIds) > 0) {
 			// Initialise from the current search globals
-			/** @var SearchObject_Solr $searchObject */
+			/** @var SearchObject_GroupedWorkSearcher $searchObject */
 			$searchObject = SearchObjectFactory::initSearchObject();
 			$searchObject->init();
 			// these are added for emailing list  plb 10-8-2014
@@ -394,7 +394,7 @@ class FavoriteHandler
 		}
 		if (count($this->archiveIds) > 0) {
 			// Initialise from the current search globals
-			/** @var SearchObject_Islandora $archiveSearchObject */
+			/** @var SearchObject_IslandoraSearcher $archiveSearchObject */
 			$archiveSearchObject = SearchObjectFactory::initSearchObject('Islandora');
 			$archiveSearchObject->init();
 			$archiveSearchObject->setPrimarySearch(true);
@@ -411,7 +411,7 @@ class FavoriteHandler
 
 	function getCitations($citationFormat){
 		// Initialise from the current search globals
-		/** @var SearchObject_Solr $searchObject */
+		/** @var SearchObject_GroupedWorkSearcher $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject();
 		$searchObject->init();
 

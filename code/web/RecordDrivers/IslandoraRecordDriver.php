@@ -882,10 +882,10 @@ abstract class IslandoraRecordDriver extends IndexRecordDriver {
 		if ($this->subCollections == null){
 			$this->subCollections = array();
 			// Include Search Engine Class
-			require_once ROOT_DIR . '/sys/Solr.php';
+			require_once ROOT_DIR . '/sys/SolrConnector/Solr.php';
 
 			// Initialise from the current search globals
-			/** @var SearchObject_Islandora $searchObject */
+			/** @var SearchObject_IslandoraSearcher $searchObject */
 			$searchObject = SearchObjectFactory::initSearchObject('Islandora');
 			$searchObject->init();
 			$searchObject->setLimit(100);
@@ -1184,7 +1184,7 @@ abstract class IslandoraRecordDriver extends IndexRecordDriver {
 
 			//Get all objects that are linked to this object which have a valid latitude/longitude
 
-			/** @var SearchObject_Islandora $searchObject */
+			/** @var SearchObject_IslandoraSearcher $searchObject */
 			$searchObject = SearchObjectFactory::initSearchObject('Islandora');
 			$searchObject->init();
 			$searchObject->clearFilters();
@@ -1332,7 +1332,7 @@ abstract class IslandoraRecordDriver extends IndexRecordDriver {
 				}
 			}
 
-			/** @var SearchObject_Solr $searchObject */
+			/** @var SearchObject_GroupedWorkSearcher $searchObject */
 			$searchObject = SearchObjectFactory::initSearchObject();
 			$searchObject->init();
 			$linkedWorkData = $searchObject->getRecords($relatedWorkIds);
@@ -1404,7 +1404,7 @@ abstract class IslandoraRecordDriver extends IndexRecordDriver {
 				}
 
 				if (count($relatedObjectPIDs) > 0) {
-					/** @var SearchObject_Islandora $searchObject */
+					/** @var SearchObject_IslandoraSearcher $searchObject */
 					$searchObject = SearchObjectFactory::initSearchObject('Islandora');
 					$searchObject->init();
 					$searchObject->setSort('fgs_label_s');
@@ -1432,10 +1432,10 @@ abstract class IslandoraRecordDriver extends IndexRecordDriver {
 				unset($searchObject);
 			}
 			// Include Search Engine Class
-			require_once ROOT_DIR . '/sys/Solr.php';
+			require_once ROOT_DIR . '/sys/SolrConnector/Solr.php';
 
 			// Initialise from the current search globals
-			/** @var SearchObject_Islandora $searchObject */
+			/** @var SearchObject_IslandoraSearcher $searchObject */
 			$searchObject = SearchObjectFactory::initSearchObject('Islandora');
 			$searchObject->init();
 			$searchObject->setSort('fgs_label_s');
@@ -1770,10 +1770,10 @@ abstract class IslandoraRecordDriver extends IndexRecordDriver {
         if ($this->childObjects == null){
             $this->childObjects = array();
             // Include Search Engine Class
-            require_once ROOT_DIR . '/sys/Solr.php';
+            require_once ROOT_DIR . '/sys/SolrConnector/Solr.php';
 
             // Initialise from the current search globals
-            /** @var SearchObject_Islandora $searchObject */
+            /** @var SearchObject_IslandoraSearcher $searchObject */
             $searchObject = SearchObjectFactory::initSearchObject('Islandora');
             $searchObject->init();
             $searchObject->setLimit(100);
@@ -1874,10 +1874,10 @@ abstract class IslandoraRecordDriver extends IndexRecordDriver {
             $this->pidsOfChildContainers = array();
 
             // Include Search Engine Class
-            require_once ROOT_DIR . '/sys/Solr.php';
+            require_once ROOT_DIR . '/sys/SolrConnector/Solr.php';
 
             // Initialise from the current search globals
-            /** @var SearchObject_Islandora $searchObject */
+            /** @var SearchObject_IslandoraSearcher $searchObject */
             $searchObject = SearchObjectFactory::initSearchObject('Islandora');
             $searchObject->init();
             $searchObject->setLimit(100);
@@ -1915,10 +1915,10 @@ abstract class IslandoraRecordDriver extends IndexRecordDriver {
 
     public function getRandomObject() {
         // Include Search Engine Class
-        require_once ROOT_DIR . '/sys/Solr.php';
+        require_once ROOT_DIR . '/sys/SolrConnector/Solr.php';
 
         // Initialise from the current search globals
-        /** @var SearchObject_Islandora $searchObject */
+        /** @var SearchObject_IslandoraSearcher $searchObject */
         $searchObject = SearchObjectFactory::initSearchObject('Islandora');
         $searchObject->init();
         $searchObject->setLimit(1);

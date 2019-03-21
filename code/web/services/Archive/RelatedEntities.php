@@ -15,12 +15,12 @@ class Archive_RelatedEntities extends Action {
 		global $timer;
 
 		// Include Search Engine Class
-		require_once ROOT_DIR . '/sys/Solr.php';
+		require_once ROOT_DIR . '/sys/SolrConnector/Solr.php';
 		$timer->logTime('Include search engine');
 
 		$searchTerm = $_REQUEST['lookfor'];
 
-		/** @var SearchObject_Islandora $searchObject */
+		/** @var SearchObject_IslandoraSearcher $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject('Islandora');
 		$searchObject->init();
 

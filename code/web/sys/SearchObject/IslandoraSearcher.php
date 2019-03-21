@@ -1,24 +1,6 @@
 <?php
-/**
- *
- * Copyright (C) Villanova University 2010.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2,
- * as published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- */
-require_once ROOT_DIR . '/sys/Solr.php';
-require_once ROOT_DIR . '/sys/SearchObject/Base.php';
+
+require_once ROOT_DIR . '/sys/SolrConnector/Solr.php';
 require_once ROOT_DIR . '/RecordDrivers/RecordDriverFactory.php';
 
 /**
@@ -27,48 +9,26 @@ require_once ROOT_DIR . '/RecordDrivers/RecordDriverFactory.php';
  * This is the default implementation of the SearchObjectBase class, providing the
  * Solr-driven functionality used by VuFind's standard Search module.
  */
-class SearchObject_Islandora extends SearchObject_Base
+class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 {
 	// Publicly viewable version
 	private $publicQuery = null;
-	// Facets
-	private $facetLimit = 30;
-	private $facetOffset = null;
-	private $facetPrefix = null;
-	private $facetSort = null;
 
-	// Index
-	private $index = null;
 	// Field List
 	//private $fields = '*,score';
 	private $fields = 'PID,fgs_label_s,dc.title,mods_abstract_s,mods_genre_s,RELS_EXT_hasModel_uri_s,dateCreated,score,fgs_createdDate_dt,fgs_lastModifiedDate_dt';
-	// HTTP Method
-	//    private $method = HTTP_REQUEST_METHOD_GET;
-	private $method = 'POST';
-	// Result
-	private $indexResult;
 
 	//Whether or not filters should be applied
 	private $applyStandardFilters = true;
 
-	// OTHER VARIABLES
-	// Index
-	/** @var Solr */
-	private $indexEngine = null;
 	// Facets information
 	private $allFacetSettings = array();    // loaded from facets.ini
 
-	// Spelling
-	private $spellingLimit = 3;
-	private $spellQuery    = array();
-	private $dictionary    = 'default';
-	private $spellSimple   = false;
-	private $spellSkipNumeric = true;
-
 	// Display Modes //
 	public $viewOptions = array('list', 'covers');
+    protected $pidFacets = array();
 
-	/**
+    /**
 	 * Constructor. Initialise some details about the server
 	 *
 	 * @access  public
@@ -81,15 +41,12 @@ class SearchObject_Islandora extends SearchObject_Base
 		global $configArray;
 		global $timer;
 		// Include our solr index
-		require_once ROOT_DIR . "/sys/Solr.php";
+		require_once ROOT_DIR . "/sys/SolrConnector/Solr.php";
 		$this->searchType = 'islandora';
 		$this->basicSearchType = 'islandora';
 		// Initialise the index
-		$this->indexEngine = new Solr($configArray['Islandora']['solrUrl'], isset($configArray['Islandora']['solrCore']) ? $configArray['Islandora']['solrCore'] : 'islandora');
+		$this->indexEngine = new IslandoraSolrConnector($configArray['Islandora']['solrUrl'], isset($configArray['Islandora']['solrCore']) ? $configArray['Islandora']['solrCore'] : 'islandora');
 		$timer->logTime('Created Index Engine for Islandora');
-
-		//Make sure to turn off sharding for islandora
-		$this->indexEngine->setShards(array());
 
 		// Get default facet settings
 		$this->allFacetSettings = getExtraConfigArray('islandoraFacets');
@@ -284,15 +241,6 @@ class SearchObject_Islandora extends SearchObject_Base
 		$this->publicQuery  = null;
 	}
 
-	/**
-	 * Switch the spelling dictionary to basic
-	 *
-	 * @access  public
-	 */
-	public function useBasicDictionary() {
-		$this->dictionary = 'basicSpell';
-	}
-
 	public function getQuery()          {return $this->query;}
 	public function getIndexEngine()    {return $this->indexEngine;}
 
@@ -428,34 +376,6 @@ class SearchObject_Islandora extends SearchObject_Base
 		return $widgetTitles;
 	}
 
-
-	/**
-	 * Use the record driver to build an array of HTML displays from the search
-	 * results.
-	 *
-	 * @access  public
-	 * @return  array   Array of HTML chunks for individual records.
-	 */
-	public function getResultRecordHTML()
-	{
-		global $interface;
-
-		$html = array();
-		for ($x = 0; $x < count($this->indexResult['response']['docs']); $x++) {
-			$current = & $this->indexResult['response']['docs'][$x];
-
-			$interface->assign('recordIndex', $x + 1);
-			$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
-			$record = RecordDriverFactory::initRecordDriver($current);
-			if (!PEAR_Singleton::isError($record)) {
-				$interface->assign('recordDriver', $record);
-				$html[] = $interface->fetch($record->getSearchResult($this->view));
-			} else {
-				$html[] = "Unable to find record";
-			}
-		}
-		return $html;
-	}
 
 	/**
 	 * Use the record driver to build an array of HTML displays from the search
@@ -775,19 +695,6 @@ class SearchObject_Islandora extends SearchObject_Base
 	}
 
 	/**
-	 * Get error message from index response, if any.  This will only work if
-	 * processSearch was called with $returnIndexErrors set to true!
-	 *
-	 * @access  public
-	 * @return  mixed       false if no error, error string otherwise.
-	 */
-	public function getIndexError()
-	{
-		return isset($this->indexResult['error']) ?
-		$this->indexResult['error'] : false;
-	}
-
-	/**
 	 * Load all recommendation settings from the relevant ini file.  Returns an
 	 * associative array where the key is the location of the recommendations (top
 	 * or side) and the value is the settings found in the file (which may be either
@@ -822,7 +729,7 @@ class SearchObject_Islandora extends SearchObject_Base
 	 * @param   bool   $preventQueryModification   Should we allow the search engine
 	 *                                             to modify the query or is it already
 	 *                                             a well formatted query
-	 * @return  object solr result structure (for now)
+	 * @return  array solr result structure (for now)
 	 */
 	public function processSearch($returnIndexErrors = false, $recommendations = false, $preventQueryModification = false)
 	{
@@ -989,178 +896,6 @@ class SearchObject_Islandora extends SearchObject_Base
 
 		// Return the result set
 		return $this->indexResult;
-	}
-
-	/**
-	 * Adapt the search query to a spelling query
-	 *
-	 * @access  private
-	 * @return  string    Spelling query
-	 */
-	private function buildSpellingQuery()
-	{
-		$this->spellQuery = array();
-		// Basic search
-		if ($this->searchType == $this->basicSearchType) {
-			// Just the search query is fine
-			return $this->query;
-
-			// Advanced search
-		} else {
-			foreach ($this->searchTerms as $search) {
-				foreach ($search['group'] as $field) {
-					// Add just the search terms to the list
-					$this->spellQuery[] = $field['lookfor'];
-				}
-			}
-			// Return the list put together as a string
-			return join(" ", $this->spellQuery);
-		}
-	}
-
-	/**
-	 * Process spelling suggestions from the results object
-	 *
-	 * @access  private
-	 */
-	private function processSpelling()
-	{
-		global $configArray;
-
-		// Do nothing if spelling is disabled
-		if (!$configArray['Spelling']['enabled']) {
-			return;
-		}
-
-		// Do nothing if there are no suggestions
-		$suggestions = isset($this->indexResult['spellcheck']['suggestions']) ?
-		$this->indexResult['spellcheck']['suggestions'] : array();
-		if (count($suggestions) == 0) {
-			return;
-		}
-
-		// Loop through the array of search terms we have suggestions for
-		$suggestionList = array();
-		foreach ($suggestions as $suggestion) {
-			$ourTerm = $suggestion[0];
-
-			// Skip numeric terms if numeric suggestions are disabled
-			if ($this->spellSkipNumeric && is_numeric($ourTerm)) {
-				continue;
-			}
-
-			$ourHit  = $suggestion[1]['origFreq'];
-			$count   = $suggestion[1]['numFound'];
-			$newList = $suggestion[1]['suggestion'];
-
-			$validTerm = true;
-
-			// Make sure the suggestion is for a valid search term.
-			// Sometimes shingling will have bridged two search fields (in
-			// an advanced search) or skipped over a stopword.
-			if (!$this->findSearchTerm($ourTerm)) {
-				$validTerm = false;
-			}
-
-			// Unless this term had no hits
-			if ($ourHit != 0) {
-				// Filter out suggestions we are already using
-				$newList = $this->filterSpellingTerms($newList);
-			}
-
-			// Make sure it has suggestions and is valid
-			if (count($newList) > 0 && $validTerm) {
-				// Did we get more suggestions then our limit?
-				if ($count > $this->spellingLimit) {
-					// Cut the list at the limit
-					array_splice($newList, $this->spellingLimit);
-				}
-				$suggestionList[$ourTerm]['freq'] = $ourHit;
-				// Format the list nicely
-				foreach ($newList as $item) {
-					if (is_array($item)) {
-						$suggestionList[$ourTerm]['suggestions'][$item['word']] = $item['freq'];
-					} else {
-						$suggestionList[$ourTerm]['suggestions'][$item] = 0;
-					}
-				}
-			}
-		}
-		$this->suggestions = $suggestionList;
-	}
-
-	/**
-	 * Filter a list of spelling suggestions to remove suggestions
-	 *   we are already searching for
-	 *
-	 * @access  private
-	 * @param   array    $termList List of suggestions
-	 * @return  array    Filtered list
-	 */
-	private function filterSpellingTerms($termList) {
-		$newList = array();
-		if (count($termList) == 0) return $newList;
-
-		foreach ($termList as $term) {
-			if (!$this->findSearchTerm($term['word'])) {
-				$newList[] = $term;
-			}
-		}
-		return $newList;
-	}
-
-	/**
-	 * Try running spelling against the basic dictionary.
-	 *   This function should ensure it doesn't return
-	 *   single word suggestions that have been accounted
-	 *   for in the shingle suggestions above.
-	 *
-	 * @access  private
-	 * @return  array     Suggestions array
-	 */
-	private function basicSpelling()
-	{
-		// TODO: There might be a way to run the
-		//   search against both dictionaries from
-		//   inside solr. Investigate. Currently
-		//   submitting a second search for this.
-
-		// Create a new search object
-		$newSearch = SearchObjectFactory::initSearchObject('Archive');
-		$newSearch->deminify($this->minify());
-
-		// Activate the basic dictionary
-		$newSearch->useBasicDictionary();
-		// We don't want it in the search history
-		$newSearch->disableLogging();
-
-		// Run the search
-		$newSearch->processSearch();
-		// Get the spelling results
-		$newList = $newSearch->getRawSuggestions();
-
-		// If there were no shingle suggestions
-		if (count($this->suggestions) == 0) {
-			// Just use the basic ones as provided
-			$this->suggestions = $newList;
-
-			// Otherwise
-		} else {
-			// For all the new suggestions
-			foreach ($newList as $word => $data) {
-				// Check the old suggestions
-				$found = false;
-				foreach ($this->suggestions as $k => $v) {
-					// Make sure it wasn't part of a shingle
-					//   which has been suggested at a higher
-					//   level.
-					$found = preg_match("/\b$word\b/", $k) ? true : $found;
-				}
-				if (!$found) {
-					$this->suggestions[$word] = $data;
-				}
-			}
-		}
 	}
 
 	/**
@@ -1356,94 +1091,10 @@ class SearchObject_Islandora extends SearchObject_Base
 		return $list;
 	}
 
-	/**
-	 * Load all available facet settings.  This is mainly useful for showing
-	 * appropriate labels when an existing search has multiple filters associated
-	 * with it.
-	 *
-	 * @access  public
-	 * @param   string      $preferredSection       Section to favor when loading
-	 *                                              settings; if multiple sections
-	 *                                              contain the same facet, this
-	 *                                              section's description will be
-	 *                                              favored.
-	 */
-	public function activateAllFacets($preferredSection = false)
-	{
-		foreach($this->allFacetSettings as $section => $values) {
-			foreach($values as $key => $value) {
-				$this->addFacet($key, $value);
-			}
-		}
 
-		if ($preferredSection &&
-		is_array($this->allFacetSettings[$preferredSection])) {
-			foreach($this->allFacetSettings[$preferredSection] as $key => $value) {
-				$this->addFacet($key, $value);
-			}
-		}
-	}
-
-	/**
-	 * Turn our results into an RSS feed
-	 *
-	 * @access  public
-	 * @public  array      $result      Existing result set (null to do new search)
-	 * @return  string                  XML document
-	 */
-	public function buildRSS($result = null)
-	{
-		global $configArray;
-		// XML HTTP header
-		header('Content-type: text/xml', true);
-
-		// First, get the search results if none were provided
-		// (we'll go for 50 at a time)
-		if (is_null($result)) {
-			$this->limit = 50;
-			$result = $this->processSearch(false, false);
-		}
-
-		for ($i = 0; $i < count($result['response']['docs']); $i++) {
-			$current = & $this->indexResult['response']['docs'][$i];
-
-			$record = RecordDriverFactory::initRecordDriver($current);
-			if (!PEAR_Singleton::isError($record)) {
-				$result['response']['docs'][$i]['recordUrl'] = $record->getLinkUrl();
-				$result['response']['docs'][$i]['title_display'] = $record->getTitle();
-				$image = $record->getBookcoverUrl('medium');
-				$description = "<img src='$image'/> " . $record->getDescription();
-				$result['response']['docs'][$i]['rss_description'] = $description;
-			} else {
-				$html[] = "Unable to find record";
-			}
-		}
-
-		global $interface;
-
-		// On-screen display value for our search
-		$lookfor = $this->displayQuery();
-		if (count($this->filterList) > 0) {
-			// TODO : better display of filters
-			$interface->assign('lookfor', $lookfor . " (" . translate('with filters') . ")");
-		} else {
-			$interface->assign('lookfor', $lookfor);
-		}
-		// The full url to recreate this search
-		$interface->assign('searchUrl', $configArray['Site']['url']. $this->renderSearchUrl());
-		// Stub of a url for a records screen
-		$interface->assign('baseUrl',    $configArray['Site']['url']);
-
-		$interface->assign('result', $result);
-		return $interface->fetch('Search/rss.tpl');
-	}
 
 	/**
 	 * Turn our results into an Excel document
-	 *
-	 * @access  public
-	 * @public  array      $result      Existing result set (null to do new search)
-	 * @return  string                  Excel document
 	 */
 	public function buildExcel($result = null)
 	{
@@ -1796,7 +1447,7 @@ class SearchObject_Islandora extends SearchObject_Base
 			$s = new SearchEntry();
 			if ($s->get($searchId)){
 				$minSO        = unserialize($s->search_object);
-				/** @var SearchObject_Islandora $searchObject */
+				/** @var SearchObject_IslandoraSearcher $searchObject */
 				$searchObject = SearchObjectFactory::deminify($minSO);
 				$searchObject->setPage($page);
 				$searchObject->setLimit(24); // Assume 24 for Archive Searches; or // TODO: Add pagelimit to saved search?
@@ -1955,4 +1606,17 @@ class SearchObject_Islandora extends SearchObject_Base
 	public function pingServer($failOnError = true){
 		return $this->indexEngine->pingServer($failOnError);
 	}
+
+    public function getBasicTypes()
+    {
+        return [
+            'IslandoraKeyword' => 'Keyword',
+            'IslandoraTitle' => 'Title'
+        ];
+    }
+
+    public function getRecordDriverForResult($record)
+    {
+        return RecordDriverFactory::initRecordDriver($record);
+    }
 }

@@ -182,7 +182,7 @@ class API_ArchiveAPI extends Action {
 	private function getDPLASearchResults($namespace, $changesSince, $curPage, $pageSize)
 	{
 //Query for collections that should not be exported to DPLA
-		/** @var SearchObject_Islandora $searchObject */
+		/** @var SearchObject_IslandoraSearcher $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject('Islandora');
 		$searchObject->init();
 		$searchObject->setPrimarySearch(false);
@@ -207,7 +207,7 @@ class API_ArchiveAPI extends Action {
 
 		//Query Solr for the records to export
 		// Initialise from the current search globals
-		/** @var SearchObject_Islandora $searchObject */
+		/** @var SearchObject_IslandoraSearcher $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject('Islandora');
 		$searchObject->init();
 		$searchObject->setPrimarySearch(true);

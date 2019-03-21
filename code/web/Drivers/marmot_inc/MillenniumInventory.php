@@ -77,9 +77,8 @@ class MillenniumInventory {
 
 		//Setup Solr to be able to get additional information about the title
 		global $configArray;
-		$class = $configArray['Index']['engine'];
 		$url = $configArray['Index']['url'];
-		$this->db = new $class($url);
+		$this->db = new GroupedWorksSolrConnector($url);
 
 		$baseUrl = $this->driver->getVendorOpacUrl();
 		$circaUrl = $this->driver->getVendorOpacUrl() . '/iii/airwkst/airwkstcore';

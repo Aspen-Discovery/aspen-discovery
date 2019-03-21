@@ -5,7 +5,6 @@ class Archive_Image extends Archive_Object{
 	function launch(){
 		global $interface;
 		$this->loadArchiveObjectData();
-		//$this->loadExploreMoreContent();
 
 		$interface->assign('showExploreMore', true);
 		$interface->setTemplate('image.tpl');

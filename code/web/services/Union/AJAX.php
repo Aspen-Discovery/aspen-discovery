@@ -119,7 +119,7 @@ class Union_AJAX extends Action {
 	{
 		global $interface;
 		$interface->assign('viewingCombinedResults', true);
-		/** @var SearchObject_Solr $searchObject */
+		/** @var SearchObject_GroupedWorkSearcher $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject();
 		$searchObject->init('local', $searchTerm);
 		$searchObject->setLimit($numberOfResults);
@@ -186,7 +186,7 @@ class Union_AJAX extends Action {
 	{
 		global $interface;
 		$interface->assign('viewingCombinedResults', true);
-		/** @var SearchObject_Islandora $searchObject */
+		/** @var SearchObject_IslandoraSearcher $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject('Islandora');
 		$searchObject->init();
 		$searchObject->addHiddenFilter('!RELS_EXT_isViewableByRole_literal_ms', "administrator");

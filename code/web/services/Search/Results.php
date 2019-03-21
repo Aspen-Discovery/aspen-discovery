@@ -27,7 +27,6 @@ require_once ROOT_DIR . '/sys/Pager.php';
 class Search_Results extends Action {
 
 	protected $viewOptions = array('list', 'covers');
-	// define the valid view modes checked in Base.php
 
 	function launch() {
 		global $interface;
@@ -67,7 +66,7 @@ class Search_Results extends Action {
 
 
 		// Include Search Engine Class
-		require_once ROOT_DIR . '/sys/Solr.php';
+		require_once ROOT_DIR . '/sys/SolrConnector/Solr.php';
 		$timer->logTime('Include search engine');
 		$memoryWatcher->logMemory('Include search engine');
 
@@ -164,13 +163,12 @@ class Search_Results extends Action {
 
 		// Cannot use the current search globals since we may change the search term above
 		// Display of query is not right when reusing the global search object
-		/** @var SearchObject_Solr $searchObject */
+		/** @var SearchObject_GroupedWorkSearcher $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject();
 		$searchObject->init($searchSource);
 		$searchObject->setPrimarySearch(true);
 		$timer->logTime("Init Search Object");
 		$memoryWatcher->logMemory("Init Search Object");
-//		$searchObject->viewOptions = $this->viewOptions; // set valid view options for the search object
 
 		// Build RSS Feed for Results (if requested)
 		if ($searchObject->getView() == 'rss') {

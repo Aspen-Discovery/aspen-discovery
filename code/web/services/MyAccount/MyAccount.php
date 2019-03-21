@@ -25,7 +25,7 @@ require_once ROOT_DIR . '/CatalogFactory.php';
 
 abstract class MyAccount extends Action
 {
-	/** @var  SearchObject_Solr|SearchObject_Base */
+	/** @var  GroupedWorksSolrConnector */
 	protected $db;
 	/** @var  CatalogConnection $catalog */
 	protected $catalog;
@@ -45,8 +45,7 @@ abstract class MyAccount extends Action
 		}
 
 		// Setup Search Engine Connection
-		$class = $configArray['Index']['engine'];
-		$this->db = new $class($configArray['Index']['url']);
+		$this->db = new GroupedWorksSolrConnector($configArray['Index']['url']);
 
 		// Connect to Database
 		//$user = UserAccount::getLoggedInUser();

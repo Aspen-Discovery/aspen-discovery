@@ -1,5 +1,5 @@
 <?php
-require_once ROOT_DIR . '/sys/Solr.php';
+require_once ROOT_DIR . '/sys/SolrConnector/Solr.php';
 require_once ROOT_DIR .'/sys/DB/DataObject.php';
 abstract class SolrDataObject extends DataObject{
 	/**
@@ -67,12 +67,6 @@ abstract class SolrDataObject extends DataObject{
 		}
 		return $result;
 	}
-	/**
-	 * The configuration section to use when getting the url to use for Solr.
-	 */
-	function getConfigSection(){
-		return 'Index';
-	}
 
 	/**
 	 * Return an array with the name or names of the cores that contain this object
@@ -85,9 +79,9 @@ abstract class SolrDataObject extends DataObject{
 	abstract function solrId();
 
 	function removeFromSolr(){
-		require_once ROOT_DIR . '/sys/Solr.php';
+		require_once ROOT_DIR . '/sys/SolrConnector/Solr.php';
 		global $configArray;
-		$host = $configArray[$this->getConfigSection()]['url'];
+		$host = $configArray['Index']['url'];
 
 		global $logger;
 		$logger->log("Deleting Record {$this->solrId()}", PEAR_LOG_INFO);
@@ -115,7 +109,7 @@ abstract class SolrDataObject extends DataObject{
 		global $timer;
 		global $configArray;
 		$this->_quickReindex = $quick;
-		$host = $configArray[$this->getConfigSection()]['url'];
+		$host = $configArray['Index']['url'];
 		global $logger;
 		$logger->log("Updating " . $this->solrId() . " in solr", PEAR_LOG_INFO);
 
@@ -186,9 +180,9 @@ abstract class SolrDataObject extends DataObject{
 	}
 
 	function optimize(){
-		require_once ROOT_DIR . '/sys/Solr.php';
+		require_once ROOT_DIR . '/sys/SolrConnector/Solr.php';
 		global $configArray;
-		$host = $configArray[$this->getConfigSection()]['url'];
+		$host = $configArray['Index']['url'];
 
 		$cores = $this->cores();
 		foreach ($cores as $corename){

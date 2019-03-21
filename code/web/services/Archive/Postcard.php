@@ -6,7 +6,6 @@ class Archive_Postcard extends Archive_Object{
 		global $interface;
 		global $configArray;
 		$this->loadArchiveObjectData();
-		//$this->loadExploreMoreContent();
 
 		//Get the front of the object
 		$fedoraUtils = FedoraUtils::getInstance();

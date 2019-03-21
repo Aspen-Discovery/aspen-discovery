@@ -306,7 +306,7 @@ class UserList extends DataObject
 
 		//Load catalog items
 		if (count($groupedWorkIds) > 0){
-			/** @var SearchObject_Solr $searchObject */
+			/** @var SearchObject_GroupedWorkSearcher $searchObject */
 			$searchObject = SearchObjectFactory::initSearchObject();
 			$catalogRecords = $searchObject->getRecords($groupedWorkIds);
 			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';

@@ -6,7 +6,6 @@ class Archive_Audio  extends Archive_Object{
 		global $interface;
 		global $configArray;
 		$this->loadArchiveObjectData();
-		//$this->loadExploreMoreContent();
 
 		if ($this->archiveObject->getDatastream('PROXY_MP3') != null) {
 			$interface->assign('audioLink', $configArray['Islandora']['objectUrl'] . "/{$this->pid}/datastream/PROXY_MP3/view");

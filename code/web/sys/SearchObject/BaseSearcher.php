@@ -27,7 +27,7 @@ require_once ROOT_DIR . '/sys/Recommend/RecommendationFactory.php';
  * functionality.  This should be extended to implement functionality for specific
  * VuFind modules (i.e. standard Solr search vs. Summon, etc.).
  */
-abstract class SearchObject_Base
+abstract class SearchObject_BaseSearcher
 {
 	// Parsed query
 	protected $query = null;
@@ -47,6 +47,8 @@ abstract class SearchObject_Base
 
 	// Filters
 	protected $filterList = array();
+    // Facets information
+    protected $allFacetSettings = array();    // loaded from facets.ini
 	// Page number
 	protected $page = 1;
 	// Result limit
@@ -69,7 +71,6 @@ abstract class SearchObject_Base
 	protected $facetOptions = array();
 	protected $checkboxFacets = array(); // Boolean facets represented as checkboxes
 	protected $translatedFacets = array();  // Facets that need to be translated
-	protected $pidFacets = array();
 	// Default Search Handler
 	protected $defaultIndex = null;
 	// Available sort options
@@ -86,12 +87,10 @@ abstract class SearchObject_Base
 	protected $disableLogging = false;
 	// Debugging flag
 	protected $debug = false;
-	protected $debugSolrQuery = false;
 	protected $isPrimarySearch = false;
 	// Search options for the user
 	protected $advancedTypes = array();
 	protected $basicTypes = array();
-	protected $browseTypes = array();
 	// Spelling
 	protected $spellcheck    = true;
 	protected $suggestions   = array();
@@ -140,9 +139,6 @@ abstract class SearchObject_Base
 						$this->debugSolrQuery = true;
 					}
 				}
-			}
-			if ($debug && $configArray['System']['debugSolrQuery'] == true) {
-				$this->debugSolrQuery = true;
 			}
 			$this->debug = $debug;
 		} else {
@@ -197,14 +193,6 @@ abstract class SearchObject_Base
 	{
 		return $this->hiddenFilters;
 	}
-
-//	/**
-//	 * @return array
-//	 */
-//	public function getFacetConfig()
-//	{
-//		return $this->facetConfig;
-//	}
 
 	/**
 	 * Does the object already contain the specified filter?
@@ -429,6 +417,21 @@ abstract class SearchObject_Base
 		}
 		return $list;
 	}
+
+    /**
+     * Return the specified setting from the facets.ini file.
+     *
+     * @access  public
+     * @param   string $section   The section of the facets.ini file to look at.
+     * @param   string $setting   The setting within the specified file to return.
+     * @return  string    The value of the setting (blank if none).
+     */
+    public function getFacetSetting($section, $setting)
+    {
+        return isset($this->allFacetSettings[$section][$setting]) ?
+            $this->allFacetSettings[$section][$setting] : '';
+    }
+
 
 	/**
 	 * Return a url for the current search with an additional filter
@@ -767,7 +770,7 @@ abstract class SearchObject_Base
 	protected function initView()
 	{
 		if (!empty($this->view)){ //return view if it has already been set.
-			return $this->view;
+			return;
 		}
 		// Check for a view parameter in the url.
 		if (isset($_REQUEST['view'])) {
@@ -818,11 +821,6 @@ abstract class SearchObject_Base
 		}
 	}
 
-	/**
-	 * Navigate to a specific page.
-	 *
-	 * @access  protected
-	 */
 	function setPage($page)
 	{
 		$this->page = intval($page);
@@ -1131,19 +1129,7 @@ abstract class SearchObject_Base
 	 * @return  mixed    various internal variables
 	 */
 	public function getAdvancedTypes()  {return $this->advancedTypes;}
-	public function getBasicTypes() {
-		$searchIndex = $this->getSearchIndex();
-		$basicSearchTypes = $this->basicTypes;
-		$searchSource = isset($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : 'local';
-		if ($this->searchType != 'genealogy' && $searchSource != 'genealogy' &&
-				$this->searchType != 'islandora' && $searchSource != 'islandora'
-			) {
-			if (!array_key_exists($searchIndex, $basicSearchTypes)) {
-				$basicSearchTypes[$searchIndex] = $searchIndex;
-			}
-		}
-		return $basicSearchTypes;
-	}
+	public abstract function getBasicTypes();
 	public function getFilters()        {return $this->filterList;}
 	public function getPage()           {return $this->page;}
 	public function getLimit()          {return $this->limit;}
@@ -1769,7 +1755,6 @@ abstract class SearchObject_Base
 		}else{
 			return 'Keyword';
 		}
-
 	}
 
 	/**
@@ -2083,8 +2068,6 @@ abstract class SearchObject_Base
 			return translate($this->basicTypes[$field]);
 		} else if (isset($this->advancedTypes[$field])) {
 			return translate($this->advancedTypes[$field]);
-		} else if (isset($this->browseTypes[$field])) {
-			return translate($this->browseTypes[$field]);
 		} else {
 			return $field;
 		}
@@ -2170,8 +2153,7 @@ abstract class SearchObject_Base
 	 *                                     with the search itself?
 	 * @return  object   Search results (format may vary from class to class).
 	 */
-	abstract public function processSearch($returnIndexErrors = false,
-	$recommendations = false);
+	abstract public function processSearch($returnIndexErrors = false, $recommendations = false, $preventQueryModification = false);
 
 	/**
 	 * Get error message from index response, if any.  This will only work if
@@ -2182,7 +2164,7 @@ abstract class SearchObject_Base
 	 */
 	abstract public function getIndexError();
 
-public function getNextPrevLinks(){
+    public function getNextPrevLinks(){
 		global $interface;
 		global $timer;
 		//Setup next and previous links based on the search results.
@@ -2198,7 +2180,7 @@ public function getNextPrevLinks(){
 			if ($s->N > 0){
 				$s->fetch();
 				$minSO = unserialize($s->search_object);
-				/** @var SearchObject_Solr $searchObject */
+				/** @var SearchObject_BaseSearcher $searchObject */
 				$searchObject = SearchObjectFactory::deminify($minSO);
 				$searchObject->setPage($currentPage);
 				//Run the search
@@ -2346,6 +2328,114 @@ public function getNextPrevLinks(){
 
 		$this->searchType = 'advanced';
 	}
+
+    /**
+     * Return a url of the current search as an RSS feed.
+     *
+     * @access  public
+     * @return  string    URL
+     */
+    public function getRSSUrl()
+    {
+        // Stash our old data for a minute
+        $oldView = $this->view;
+        $oldPage = $this->page;
+        // Add the new view
+        $this->view = 'rss';
+        // Remove page number
+        $this->page = 1;
+        // Get the new url
+        $url = $this->renderSearchUrl();
+        // Restore the old data
+        $this->view = $oldView;
+        $this->page = $oldPage;
+        // Return the URL
+        return $url;
+    }
+
+    /**
+     * Turn our results into an RSS feed
+     *
+     * @access  public
+     * @public  array      $result      Existing result set (null to do new search)
+     * @return  string                  XML document
+     */
+    public function buildRSS($result = null)
+    {
+        global $configArray;
+        // XML HTTP header
+        header('Content-type: text/xml', true);
+
+        // First, get the search results if none were provided
+        // (we'll go for 50 at a time)
+        if (is_null($result)) {
+            $this->limit = 50;
+            $result = $this->processSearch(false, false);
+        }
+
+        for ($i = 0; $i < count($result['response']['docs']); $i++) {
+            $current = & $this->indexResult['response']['docs'][$i];
+
+            $record = RecordDriverFactory::initRecordDriver($current);
+            if (!PEAR_Singleton::isError($record)) {
+                $result['response']['docs'][$i]['recordUrl'] = $record->getAbsoluteUrl();
+                $result['response']['docs'][$i]['title_display'] = $record->getName();
+                $image = $record->getBookcoverUrl('medium');
+                $description = "<img src='$image'/> ";
+                $result['response']['docs'][$i]['rss_description'] = $description;
+            } else {
+                $html[] = "Unable to find record";
+            }
+        }
+
+        global $interface;
+
+        // On-screen display value for our search
+        $lookfor = $this->displayQuery();
+
+        if (count($this->filterList) > 0) {
+            // TODO : better display of filters
+            $interface->assign('lookfor', $lookfor . " (" . translate('with filters') . ")");
+        } else {
+            $interface->assign('lookfor', $lookfor);
+        }
+        // The full url to recreate this search
+        $interface->assign('searchUrl', $configArray['Site']['url']. $this->renderSearchUrl());
+        // Stub of a url for a records screen
+        $interface->assign('baseUrl',    $configArray['Site']['url']);
+
+        $interface->assign('result', $result);
+        return $interface->fetch('Search/rss.tpl');
+    }
+
+    /**
+     * Return a url of the current search as an Excel Spreadsheet.
+     *
+     * @access  public
+     * @return  string    URL
+     */
+    public function getExcelUrl()
+    {
+        // Stash our old data for a minute
+        $oldView = $this->view;
+        $oldPage = $this->page;
+        // Add the new view
+        $this->view = 'excel';
+        // Remove page number
+        $this->page = 1;
+        // Get the new url
+        $url = $this->renderSearchUrl();
+        // Restore the old data
+        $this->view = $oldView;
+        $this->page = $oldPage;
+        // Return the URL
+        return $url;
+    }
+
+    /**
+     * Turn our results into an Excel document
+     */
+    public abstract function buildExcel($result = null);
 }//End of SearchObject_Base
 
 /**
@@ -2382,7 +2472,7 @@ class minSO
 	 *    searchObject passed in. Needs to be kept
 	 *    up-to-date with the deminify() function on
 	 *    searchObject.
-	 * @param SearchObject_Base $searchObject
+	 * @param SearchObject_BaseSearcher $searchObject
 	 * @access  public
 	 */
 	public function __construct($searchObject)

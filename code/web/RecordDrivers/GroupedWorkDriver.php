@@ -370,7 +370,7 @@ class GroupedWorkDriver extends IndexRecordDriver{
                 }
 
                 if (!$foundLink || isset($_REQUEST['reload'])){
-                    /** @var SearchObject_Islandora $searchObject */
+                    /** @var SearchObject_IslandoraSearcher $searchObject */
                     $searchObject = SearchObjectFactory::initSearchObject('Islandora');
                     $searchObject->init();
                     $searchObject->disableLogging();
@@ -2285,7 +2285,7 @@ class GroupedWorkDriver extends IndexRecordDriver{
 			if (isset($_REQUEST['reload'])){
 				$groupedWorkIdsToSearch = $groupedWorkIds;
 			}
-			/** @var SearchObject_Islandora $searchObject */
+			/** @var SearchObject_IslandoraSearcher $searchObject */
 			$searchObject = SearchObjectFactory::initSearchObject('Islandora');
 			$searchObject->init();
 			if ($searchObject->pingServer(false)){

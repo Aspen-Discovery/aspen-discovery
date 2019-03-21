@@ -1,22 +1,4 @@
 <?php
-/**
- *
- * Copyright (C) Andrew Nagy 2009
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2,
- * as published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- */
 
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/MyResearch/lib/Search.php';
@@ -24,9 +6,6 @@ require_once ROOT_DIR . '/services/MyResearch/lib/Search.php';
 require_once ROOT_DIR . '/sys/Pager.php';
 
 class Archive_Results extends Action {
-	protected $viewOptions = array('list', 'covers');
-	// define the valid view modes checked in Base.php
-
 	function launch()
 	{
 		global $interface;
@@ -34,11 +13,11 @@ class Archive_Results extends Action {
 		global $timer;
 
 		// Include Search Engine Class
-		require_once ROOT_DIR . '/sys/Solr.php';
+		require_once ROOT_DIR . '/sys/SolrConnector/Solr.php';
 		$timer->logTime('Include search engine');
 
 		// Initialise from the current search globals
-		/** @var SearchObject_Islandora $searchObject */
+		/** @var SearchObject_IslandoraSearcher $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject('Islandora');
 		$searchObject->init();
 		$searchObject->setPrimarySearch(true);
@@ -64,7 +43,6 @@ class Archive_Results extends Action {
 
 		// Set Interface Variables
 		//   Those we can construct BEFORE the search is executed
-//		$interface->setPageTitle('Archive Search Results');
 		$interface->assign('sortList',   $searchObject->getSortList());
 		$interface->assign('rssLink',    $searchObject->getRSSUrl());
 		$interface->assign('excelLink',  $searchObject->getExcelUrl());

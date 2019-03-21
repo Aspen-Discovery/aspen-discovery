@@ -9,7 +9,6 @@ class Archive_Page extends Archive_Object{
 		$fedoraUtils = FedoraUtils::getInstance();
 
 		$this->loadArchiveObjectData();
-		//$this->loadExploreMoreContent();
 
 		//Get the contents of the book
 		$interface->assign('showExploreMore', true);

@@ -22,7 +22,6 @@ require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProduct.php';
 require_once ROOT_DIR . '/RecordDrivers/OverDriveRecordDriver.php';
 
 class OverDrive_Home extends Action{
-	/** @var  SearchObject_Solr $db */
 	private $id;
 
 	function launch(){

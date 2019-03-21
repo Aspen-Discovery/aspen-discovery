@@ -453,7 +453,7 @@ abstract class Archive_Object extends Action {
 			$recordIndex = isset($_COOKIE['recordIndex']) ? $_COOKIE['recordIndex'] : null;
 			$page        = isset($_COOKIE['page']) ? $_COOKIE['page'] : null;
 			// Restore Islandora Search
-			/** @var SearchObject_Islandora $searchObject */
+			/** @var SearchObject_IslandoraSearcher $searchObject */
 			$searchObject = SearchObjectFactory::initSearchObject('Islandora');
 			$searchObject->init('islandora');
 			$searchObject->getNextPrevLinks($_SESSION['exhibitSearchId'], $recordIndex, $page, $isMapExhibit);
@@ -471,7 +471,7 @@ abstract class Archive_Object extends Action {
 		$interface->assign('lastsearch', isset($_SESSION['lastSearchURL']) ? $_SESSION['lastSearchURL'] : false);
 		$searchSource = isset($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : 'islandora';
 		//TODO: What if it ain't islandora? (direct navigation to archive object page)
-		/** @var SearchObject_Islandora $searchObject */
+		/** @var SearchObject_IslandoraSearcher $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject('Islandora');
 		$searchObject->init($searchSource);
 		$searchObject->getNextPrevLinks();

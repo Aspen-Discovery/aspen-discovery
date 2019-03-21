@@ -42,10 +42,9 @@ class SuggestedTitles extends MyAccount
 		$timer->logTime("Loaded suggestions");
 
 		// Setup Search Engine Connection
-		$class = $configArray['Index']['engine'];
 		$url = $configArray['Index']['url'];
-		/** @var SearchObject_Solr $solrDb */
-		$solrDb = new $class($url);
+		/** @var SearchObject_GroupedWorkSearcher $solrDb */
+		$solrDb = new GroupedWorksSolrConnector($url);
 
 		$resourceList = array();
 		$curIndex = 0;

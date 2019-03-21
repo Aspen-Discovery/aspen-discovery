@@ -1,35 +1,10 @@
 <?php
-/**
- *
- * Copyright (C) Villanova University 2007.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2,
- * as published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA	02111-1307	USA
- *
- */
-require_once ROOT_DIR . '/sys/IndexEngine.php';
+
 require_once ROOT_DIR . '/sys/HTTP/HTTP_Request.php';
 require_once ROOT_DIR . '/sys/ConfigArray.php';
 require_once ROOT_DIR . '/sys/SolrUtils.php';
 
-/**
- * Solr HTTP Interface
- *
- * @version		 $Revision: 1.13 $
- * @author			Andrew S. Nagy <andrew.nagy@villanova.edu>
- * @access			public
- */
-class Solr implements IndexEngine {
+class Solr {
 	/**
 	 * A boolean value determining whether to include debug information in the query
 	 * @var bool
@@ -101,12 +76,6 @@ class Solr implements IndexEngine {
 	 * against the edges of the range...	i.e. ([a TO b] OR [A TO B]).
 	 */
 	private $_caseSensitiveRanges = true;
-
-	/**
-	 * Selected shard settings.
-	 */
-	private $_solrShards = array();
-	private $_solrShardsFieldsToStrip = array();
 
 	/**
 	 * Should we collect highlighting data?
@@ -184,18 +153,9 @@ class Solr implements IndexEngine {
 			$this->_highlight = true;
 		}
 
-		// Deal with field-stripping shard settings:
-		if (isset($searchSettings['StripFields']) && is_array($searchSettings['StripFields'])) {
-			$this->_solrShardsFieldsToStrip = $searchSettings['StripFields'];
-		}
-
 		// Deal with search spec cache setting:
 		if (isset($searchSettings['Cache']['type'])) {
 			$this->_specCache = $searchSettings['Cache']['type'];
-		}
-
-		if (isset($_SESSION['shards'])){
-			$this->_loadShards($_SESSION['shards']);
 		}
 
 		$timer->logTime('Finish Solr Initialization');
@@ -280,18 +240,6 @@ class Solr implements IndexEngine {
 	public function setDebugging($enableDebug, $enableSolrQueryDebugging) {
 		$this->debug = $enableDebug;
 		$this->debugSolrQuery = $enableDebug && $enableSolrQueryDebugging;
-	}
-
-	private function _loadShards($newShards){
-		// Deal with session-based shard settings:
-		$shards = array();
-		global $configArray;
-		foreach ($newShards as $current) {
-			if (isset($configArray['IndexShards'][$current])) {
-				$shards[$current] = $configArray['IndexShards'][$current];
-			}
-		}
-		$this->setShards($shards);
 	}
 
 	/**
@@ -379,7 +327,7 @@ class Solr implements IndexEngine {
 	 * @param string $fieldsToReturn An optional list of fields to return separated by commas
 	 * @access	public
 	 * @throws	object							PEAR Error
-	 * @return	string							The requested resource
+	 * @return	array							The requested resource
 	 */
 	function getRecord($id, $fieldsToReturn = null)
 	{
@@ -429,42 +377,6 @@ class Solr implements IndexEngine {
 		return $record;
 	}
 
-	function getRecordByBarcode($barcode){
-		if ($this->debug) {
-			echo "<pre>Get Record by Barcode: $barcode</pre>\n";
-		}
-
-		// Query String Parameters
-		$options = array('q' => "barcode:\"$barcode\"", 'fl' => SearchObject_Solr::$fields);
-		$result = $this->_select('GET', $options);
-		if (PEAR_Singleton::isError($result)) {
-			PEAR_Singleton::raiseError($result);
-		}
-
-		if (isset($result['response']['docs'][0])){
-			return $result['response']['docs'][0];
-		}else{
-			return null;
-		}
-	}
-
-	function getRecordByIsbn($isbns, $fieldsToReturn = null){
-		// Query String Parameters
-		if ($fieldsToReturn == null){
-			$fieldsToReturn = SearchObject_Solr::$fields;
-		}
-		$options = array('q' => 'isbn:' . implode(' OR ', $isbns), 'fl' => $fieldsToReturn);
-		$result = $this->_select('GET', $options);
-		if (PEAR_Singleton::isError($result)) {
-			PEAR_Singleton::raiseError($result);
-		}
-
-		if (isset($result['response']['docs'][0])){
-			return $result['response']['docs'][0];
-		}else{
-			return null;
-		}
-	}
 
 	/**
 	 * Retrieves a document specified by the ID.
@@ -539,200 +451,7 @@ class Solr implements IndexEngine {
 		return $records;
 	}
 
-	function searchForRecordIds($ids){
-		if (count($ids) == 0){
-			return array();
-		}
-		// Query String Parameters
-		$idString = '';
-		foreach ($ids as $id){
-			if (strlen($idString) > 0){
-				$idString .= ' OR ';
-			}
-			$idString .= "id:\"$id\"";
-		}
-		$options = array('q' => $idString, 'rows' => count($ids), 'fl' => SearchObject_Solr::$fields);
-		$result = $this->_select('GET', $options);
-		if (PEAR_Singleton::isError($result)) {
-			PEAR_Singleton::raiseError($result);
-		}
-		return $result;
-	}
 
-	/**
-	 * Get records similar to one record
-	 * Uses MoreLikeThis Request Handler
-	 *
-	 * Uses SOLR MLT Query Handler
-	 *
-	 * @access	public
-	 * @var     string  $id       The id to retrieve similar titles for
-	 * @throws	object						PEAR Error
-	 * @return	array							An array of query results
-	 *
-	 */
-	function getMoreLikeThis($id)
-	{
-		// Query String Parameters
-		$options = array('q' => "id:$id", 'qt' => 'morelikethis', 'fl' => SearchObject_Solr::$fields);
-		$result = $this->_select('GET', $options);
-		if (PEAR_Singleton::isError($result)) {
-			PEAR_Singleton::raiseError($result);
-		}
-
-		return $result;
-	}
-
-	/**
-	 * Get records similar to one record
-	 * Uses MoreLikeThis Request Handler
-	 *
-	 * Uses SOLR MLT Query Handler
-	 *
-	 * @access	public
-	 * @var     string  $id             The id to retrieve similar titles for
-	 * @var     array   $originalResult The original record we are getting similar titles for.
-	 * @throws	object						PEAR Error
-	 * @return	array							An array of query results
-	 *
-	 */
-	function getMoreLikeThis2($id, $originalResult = null)
-	{
-		global $configArray;
-		if ($originalResult == null){
-			$originalResult = $this->getRecord($id, 'target_audience_full,target_audience_full,literary_form,language,isbn,upc');
-		}
-		// Query String Parameters
-        $options = array('q' => "id:$id", 'qt' => 'morelikethis2', 'mlt.interestingTerms' => 'details', 'rows' => 25, 'fl' => SearchObject_Solr::$fields);
-		if ($originalResult){
-			$options['fq'] = array();
-			if (isset($originalResult['target_audience_full'])){
-				if (is_array($originalResult['target_audience_full'])){
-					$filter = '';
-					foreach ($originalResult['target_audience_full'] as $targetAudience){
-						if ($targetAudience != 'Unknown'){
-							if (strlen($filter) > 0){
-								$filter .= ' OR ';
-							}
-							$filter .= 'target_audience_full:"' . $targetAudience . '"';
-						}
-					}
-					if (strlen($filter) > 0){
-						$options['fq'][] = "($filter)";
-					}
-				}else{
-					$options['fq'][] = 'target_audience_full:"' . $originalResult['target_audience_full'] . '"';
-				}
-			}
-			if (isset($originalResult['literary_form'])){
-				if (is_array($originalResult['literary_form'])){
-					$filter = '';
-					foreach ($originalResult['literary_form'] as $literaryForm){
-						if ($literaryForm != 'Not Coded'){
-							if (strlen($filter) > 0){
-								$filter .= ' OR ';
-							}
-							$filter .= 'literary_form:"' . $literaryForm . '"';
-						}
-					}
-					if (strlen($filter) > 0){
-						$options['fq'][] = "($filter)";
-					}
-				}else{
-					$options['fq'][] = 'literary_form:"' . $originalResult['literary_form'] . '"';
-				}
-			}
-			if (isset($originalResult['language'])){
-				$options['fq'][] = 'language:"' . $originalResult['language'][0] . '"';
-			}
-			//Don't want to get other editions of the same work (that's a different query)
-		}
-
-		$searchLibrary = Library::getSearchLibrary();
-		$searchLocation = Location::getSearchLocation();
-		if ($searchLibrary && $searchLocation){
-			if ($searchLibrary->ilsCode == $searchLocation->code){
-				$searchLocation = null;
-			}
-		}
-
-		$scopingFilters = $this->getScopingFilters($searchLibrary, $searchLocation);
-		foreach ($scopingFilters as $filter){
-			$options['fq'][] = $filter;
-		}
-		$boostFactors = $this->getBoostFactors($searchLibrary, $searchLocation);
-		if ($configArray['Index']['enableBoosting']){
-			$options['bf'] = $boostFactors;
-		}
-
-		if (!empty($this->_solrShards) && is_array($this->_solrShards)) {
-			$options['shards'] = implode(',',$this->_solrShards);
-		}
-
-		$result = $this->_select('GET', $options);
-		if (PEAR_Singleton::isError($result)) {
-			PEAR_Singleton::raiseError($result);
-		}
-
-		return $result;
-	}
-
-	/**
-	 * Get records similar to one record
-	 * Uses MoreLikeThis Request Handler
-	 *
-	 * Uses SOLR MLT Query Handler
-	 *
-	 * @access	public
-	 * @var     string[]  $ids     A list of ids to return data for
-	 * @var     string[]  $notInterestedIds     A list of ids the user is not interested in
-	 * @throws	object						PEAR Error
-	 * @return	array							An array of query results
-	 *
-	 */
-	function getMoreLikeThese($ids, $notInterestedIds)
-	{
-		global $configArray;
-		// Query String Parameters
-		$idString = implode(' OR ', $ids);
-		$options = array('q' => "id:($idString)", 'qt' => 'morelikethese', 'mlt.interestingTerms' => 'details', 'rows' => 25);
-
-		$searchLibrary = Library::getSearchLibrary();
-		$searchLocation = Location::getSearchLocation();
-		$scopingFilters = $this->getScopingFilters($searchLibrary, $searchLocation);
-
-		$notInterestedString = implode(' OR ', $notInterestedIds);
-		if (strlen($notInterestedString) > 0){
-			$idString .= ' OR ' . $notInterestedString;
-		}
-		$options['fq'][] = "-id:($idString)";
-		foreach ($scopingFilters as $filter){
-			$options['fq'][] = $filter;
-		}
-		$boostFactors = $this->getBoostFactors($searchLibrary, $searchLocation);
-		if ($configArray['Index']['enableBoosting']){
-			$options['bf'] = $boostFactors;
-		}
-		if (!empty($this->_solrShards) && is_array($this->_solrShards)) {
-			$options['shards'] = implode(',',$this->_solrShards);
-		}
-
-		$options['rows'] = 30;
-
-		// TODO: Limit Fields
-		if ($this->debug && isset($fields)) {
-			$options['fl'] = $fields;
-		} else {
-			// This should be an explicit list
-			$options['fl'] = '*,score';
-		}
-		$result = $this->_select('GET', $options);
-		if (PEAR_Singleton::isError($result)) {
-			PEAR_Singleton::raiseError($result);
-		}
-
-		return $result;
-	}
 
 	/**
 	 * Get record data based on the provided field and phrase.
@@ -1327,36 +1046,10 @@ class Solr implements IndexEngine {
 
 	function disableScoping(){
 		$this->scopingDisabled = true;
-		global $configArray;
-		if (isset($configArray['ShardPreferences']['defaultChecked']) && !empty($configArray['ShardPreferences']['defaultChecked']) ) {
-			$checkedShards = $configArray['ShardPreferences']['defaultChecked'];
-			$shards = is_array($checkedShards) ? $checkedShards : array($checkedShards);
-		} else {
-			// If no default is configured, use all shards...
-			if (isset($configArray['IndexShards'])){
-				$shards = array_keys($configArray['IndexShards']);
-			}
-		}
-		if (isset($shards)){
-			$this->_loadShards($shards);
-		}
 	}
 
 	function enableScoping(){
 		$this->scopingDisabled = false;
-		global $configArray;
-		if (isset($configArray['ShardPreferences']['defaultChecked']) && !empty($configArray['ShardPreferences']['defaultChecked']) ) {
-			$checkedShards = $configArray['ShardPreferences']['defaultChecked'];
-			$shards = is_array($checkedShards) ? $checkedShards : array($checkedShards);
-		} else {
-			// If no default is configured, use all shards...
-			if (isset($configArray['IndexShards'])){
-				$shards = array_keys($configArray['IndexShards']);
-			}
-		}
-		if (isset($shards)){
-			$this->_loadShards($shards);
-		}
 	}
 
 	function isScopingEnabled(){
@@ -1558,7 +1251,7 @@ class Solr implements IndexEngine {
 
 			$timer->logTime("apply filters based on location");
 		}else{
-			//Non book search (genealogy)
+			//Non book search (genealogy, islandora, open archives)
 			$scopingFilters = array();
 		}
 		if ($filter != null && $scopingFilters != null){
@@ -2087,19 +1780,6 @@ class Solr implements IndexEngine {
 	}
 
 	/**
-	 * Set the shards for distributed search
-	 *
-	 * @param array $shards Name => URL array of shards
-	 *
-	 * @return void
-	 * @access public
-	 */
-	public function setShards($shards)
-	{
-		$this->_solrShards = $shards;
-	}
-
-	/**
 	 * Submit REST Request to write data (protected wrapper to allow child classes
 	 * to use this mechanism -- we should eventually phase out private _update).
 	 *
@@ -2127,17 +1807,6 @@ class Solr implements IndexEngine {
 		// that currently apply:
 		$facetConfig = getExtraConfigArray('facets');
 		$badFacets = array();
-		if (!empty($this->_solrShards) && is_array($this->_solrShards)
-		&& isset($facetConfig['StripFacets'])
-		&& is_array($facetConfig['StripFacets'])
-		) {
-			$shardNames = array_keys($this->_solrShards);
-			foreach ($facetConfig['StripFacets'] as $indexName => $facets) {
-				if (in_array($indexName, $shardNames) === true) {
-					$badFacets = array_merge($badFacets, explode(",", $facets));
-				}
-			}
-		}
 
 		// No bad facets means no filtering necessary:
 		if (empty($badFacets)) {
@@ -2170,9 +1839,9 @@ class Solr implements IndexEngine {
 	 *																					treat it as an empty result set with
 	 *																					an error key set (true)?
 	 * @return	array|PEAR_Error													 The Solr response (or a PEAR error)
-	 * @access	private
+	 * @access	protected
 	 */
-	private function _select($method = HTTP_REQUEST_METHOD_GET, $params = array(), $returnSolrError = false)
+	protected function _select($method = HTTP_REQUEST_METHOD_GET, $params = array(), $returnSolrError = false)
 	{
 		global $timer;
 		global $memoryWatcher;
@@ -2212,10 +1881,6 @@ class Solr implements IndexEngine {
 					}
 				}
 			}
-		}
-		// pass the shard parameter along to Solr if necessary:
-		if (!empty($this->_solrShards) && is_array($this->_solrShards)) {
-			$query[] = 'shards=' . urlencode(implode(',', $this->_solrShards));
 		}
 		$queryString = implode('&', $query);
 

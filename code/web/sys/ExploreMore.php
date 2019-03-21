@@ -24,7 +24,7 @@ class ExploreMore {
 			//If this is a book or a page, show a table of contents
 			//Check to see if the record is part of a compound object.  If so we will want to link to the parent compound object.
 			if ($recordDriver instanceof PageRecordDriver){
-				/** @var IslandoraRecordDriver $parentObject */
+				/** @var AbstractFedoraObject $parentObject */
 				$parentObject = $recordDriver->getParentObject();
 
 				if ($parentObject != null){
@@ -32,7 +32,7 @@ class ExploreMore {
 					$parentDriver = RecordDriverFactory::initRecordDriver($parentObject);
 
 					//If the parent object is a section then get the parent again
-					/** @var IslandoraRecordDriver $parentOfParent */
+					/** @var AbstractFedoraObject $parentOfParent */
 					$parentOfParent = $parentDriver->getParentObject();
 					if ($parentOfParent != null ){
 						$parentOfParentDriver = RecordDriverFactory::initRecordDriver($parentOfParent);
@@ -202,9 +202,8 @@ class ExploreMore {
 			}
 		}
 
-		$searchSubjectsOnly = $activeSection == 'archive';
 		$driver = $activeSection == 'archive' ? $recordDriver : null;
-		$relatedArchiveContent = $this->getRelatedArchiveObjects($quotedSearchTerm, $searchSubjectsOnly, $driver);
+		$relatedArchiveContent = $this->getRelatedArchiveObjects($quotedSearchTerm, $driver);
 		if (count($relatedArchiveContent) > 0) {
 			$exploreMoreSectionsToShow['relatedArchiveData'] = array(
 //					'title' => 'From the Archive',
@@ -258,7 +257,7 @@ class ExploreMore {
 				}
 			}else{
 				//Display donor and contributor information
-				$brandingResults = $archiveDriver->getBrandingInformation(false);
+				$brandingResults = $archiveDriver->getBrandingInformation();
 
 				if (count($brandingResults) > 0){
 					//Sort and filter the acknowledgements
@@ -331,18 +330,19 @@ class ExploreMore {
 
 	function loadExploreMoreBar($activeSection, $searchTerm){
 		if (isset($_REQUEST['page']) && $_REQUEST['page'] > 1){
-			return;
+			return [];
 		}
 		//Get data from the repository
 		global $interface;
 		global $configArray;
+		/** @var Library $library */
 		global $library;
 		$exploreMoreOptions = array();
 
 		$islandoraActive = false;
 		$islandoraSearchObject = null;
 		if ($library->enableArchive && $activeSection != 'archive'){
-			/** @var SearchObject_Islandora $islandoraSearchObject */
+			/** @var SearchObject_IslandoraSearcher $islandoraSearchObject */
 			$islandoraSearchObject = SearchObjectFactory::initSearchObject('Islandora');
 			$islandoraSearchObject->init();
 			$islandoraActive = $islandoraSearchObject->pingServer(false);
@@ -354,6 +354,10 @@ class ExploreMore {
 		}
 
 		$exploreMoreOptions = $this->loadCatalogOptions($activeSection, $exploreMoreOptions, $searchTerm);
+
+		if ($library->enableOpenArchives) {
+            $exploreMoreOptions = $this->loadOpenArchiveOptions($activeSection, $exploreMoreOptions, $searchTerm);
+        }
 
 		$exploreMoreOptions = $this->loadEbscoOptions($activeSection, $exploreMoreOptions, $searchTerm);
 
@@ -381,7 +385,7 @@ class ExploreMore {
 				if ($response && $response['response']['numFound'] > 0) {
 					//Related content
 					foreach ($response['facet_counts']['facet_fields']['mods_genre_s'] as $relatedContentType) {
-						/** @var SearchObject_Islandora $searchObject2 */
+						/** @var SearchObject_IslandoraSearcher $searchObject2 */
 						$searchObject2 = SearchObjectFactory::initSearchObject('Islandora');
 						$searchObject2->init();
 						$searchObject2->setDebugging(false, false);
@@ -525,7 +529,7 @@ class ExploreMore {
 		global $configArray;
 		if ($library->enableArchive) {
 			if (isset($configArray['Islandora']) && isset($configArray['Islandora']['solrUrl']) && $searchTerm) {
-				/** @var SearchObject_Islandora $searchObject */
+				/** @var SearchObject_IslandoraSearcher $searchObject */
 				$searchObject = SearchObjectFactory::initSearchObject('Islandora');
 				$searchObject->init();
 				$searchObject->setDebugging(false, false);
@@ -562,6 +566,61 @@ class ExploreMore {
 		return $exploreMoreOptions;
 	}
 
+    /**
+     * @param $activeSection
+     * @param $exploreMoreOptions
+     * @param $searchTerm
+     * @return array
+     */
+    protected function loadOpenArchiveOptions($activeSection, $exploreMoreOptions, $searchTerm) {
+        global $configArray;
+        if ($activeSection != 'open_archives') {
+            if (strlen($searchTerm) > 0) {
+                /** @var SearchObject_OpenArchivesSearcher $searchObject */
+                $searchObjectSolr = SearchObjectFactory::initSearchObject('OpenArchives');
+                $searchObjectSolr->init('local');
+                $searchObjectSolr->setSearchTerms(array(
+                    'lookfor' => $searchTerm,
+                    'index' => 'OpenArchivesKeyword'
+                ));
+                $searchObjectSolr->setPage(1);
+                $searchObjectSolr->setLimit(5);
+                $results = $searchObjectSolr->processSearch(true, false);
+
+                if ($results && isset($results['response'])) {
+                    $numCatalogResultsAdded = 0;
+                    foreach ($results['response']['docs'] as $doc) {
+                        /** @var OpenArchivesRecordDriver $driver */
+                        $driver = $searchObjectSolr->getRecordDriverForResult($doc);
+                        $numCatalogResults = $results['response']['numFound'];
+                        if ($numCatalogResultsAdded == 4 && $numCatalogResults > 5) {
+                            //Add a link to remaining results
+                            $exploreMoreOptions[] = array(
+                                'label' => "Open Archives Results ($numCatalogResults)",
+                                'description' => "Open Archives Results ($numCatalogResults)",
+                                'image' => $configArray['Site']['path'] . '/interface/themes/responsive/images/library_symbol.png',
+                                'link' => $searchObjectSolr->renderSearchUrl(),
+                                'usageCount' => 1
+                            );
+                        } else {
+                            //Add a link to the actual title
+                            $exploreMoreOptions[] = array(
+                                'label' => $driver->getTitle(),
+                                'description' => $driver->getTitle(),
+                                'image' => $driver->getBookcoverUrl('medium'),
+                                'link' => $driver->getLinkUrl(),
+                                'usageCount' => 1
+                            );
+                        }
+
+                        $numCatalogResultsAdded++;
+                    }
+                }
+            }
+        }
+        return $exploreMoreOptions;
+    }
+
 	/**
 	 * @param $activeSection
 	 * @param $exploreMoreOptions
@@ -572,7 +631,7 @@ class ExploreMore {
 		global $configArray;
 		if ($activeSection != 'catalog') {
 			if (strlen($searchTerm) > 0) {
-				/** @var SearchObject_Solr $searchObject */
+				/** @var SearchObject_GroupedWorkSearcher $searchObject */
 				$searchObjectSolr = SearchObjectFactory::initSearchObject();
 				$searchObjectSolr->init('local');
 				$searchObjectSolr->setSearchTerms(array(
@@ -674,64 +733,6 @@ class ExploreMore {
 		return $exploreMoreOptions;
 	}
 
-	function loadExploreMoreContent(){
-		global $timer;
-		require_once ROOT_DIR . '/sys/ArchiveSubject.php';
-		$archiveSubjects = new ArchiveSubject();
-		$subjectsToIgnore = array();
-		$subjectsToRestrict = array();
-		if ($archiveSubjects->find(true)){
-			$subjectsToIgnore = array_flip(explode("\r\n", strtolower($archiveSubjects->subjectsToIgnore)));
-			$subjectsToRestrict = array_flip(explode("\r\n", strtolower($archiveSubjects->subjectsToRestrict)));
-		}
-		$this->getRelatedCollections();
-		$timer->logTime("Loaded related collections");
-		$relatedSubjects = array();
-		$numSubjectsAdded = 0;
-		if (strlen($this->archiveObject->label) > 0) {
-			$relatedSubjects[$this->archiveObject->label] = '"' . $this->archiveObject->label . '"';
-		}
-		for ($i = 0; $i < 2; $i++){
-			foreach ($this->formattedSubjects as $subject) {
-				$lowerSubject = strtolower($subject['label']);
-				//Ignore anything after a -- if it exists
-				if (strpos($lowerSubject, ' -- ') >= 0){
-					$lowerSubject = substr($lowerSubject, 0, strpos($lowerSubject, ' -- '));
-				}
-				if (!array_key_exists($lowerSubject, $subjectsToIgnore)) {
-					if ($i == 0){
-						//First pass, just add primary subjects
-						if (!array_key_exists($lowerSubject, $subjectsToRestrict)) {
-							$relatedSubjects[$lowerSubject] = '"' . $subject['label'] . '"';
-						}
-					}else{
-						//Second pass, add restricted subjects, but only if we don't have 5 subjects already
-						if (array_key_exists($lowerSubject, $subjectsToRestrict) && count($relatedSubjects) <= 5) {
-							$relatedSubjects[$lowerSubject] = '"' . $subject['label'] . '"';
-						}
-					}
-				}
-			}
-		}
-		$relatedSubjects = array_slice($relatedSubjects, 0, 5);
-		foreach ($this->relatedPeople as $person) {
-			$label = (string)$person['label'];
-			$relatedSubjects[$label] = '"' . $label . '"';
-			$numSubjectsAdded++;
-		}
-		$relatedSubjects = array_slice($relatedSubjects, 0, 8);
-		$timer->logTime("Loaded subjects");
-
-		$exploreMore = new ExploreMore();
-
-		$exploreMore->loadEbscoOptions('archive', array(), implode($relatedSubjects, " or "));
-		$timer->logTime("Loaded EBSCO options");
-
-		$searchTerm = implode(" OR ", $relatedSubjects);
-		$exploreMore->getRelatedArchiveObjects($searchTerm);
-		$timer->logTime("Loaded related archive objects");
-	}
-
 	/**
 	 * @param IslandoraRecordDriver $archiveDriver
 	 *
@@ -763,16 +764,15 @@ class ExploreMore {
 
 	/**
 	 * @param string $searchTerm
-	 * @param bool   $searchSubjectsOnly
 	 * @param IslandoraRecordDriver $archiveDriver
 	 * @return array
 	 */
-	public function getRelatedArchiveObjects($searchTerm, $searchSubjectsOnly, $archiveDriver = null) {
+	public function getRelatedArchiveObjects($searchTerm, $archiveDriver = null) {
 		global $timer;
 		$relatedArchiveContent = array();
 
 		require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
-		/** @var SearchObject_Islandora $searchObject */
+		/** @var SearchObject_IslandoraSearcher $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject('Islandora');
 		$searchObject->init();
 		$searchObject->setDebugging(false, false);
@@ -797,7 +797,7 @@ class ExploreMore {
 		if ($response && $response['response']['numFound'] > 0) {
 			//Using the facets, look for related entities
 			foreach ($response['facet_counts']['facet_fields']['mods_genre_s'] as $relatedContentType) {
-				/** @var SearchObject_Islandora $searchObject2 */
+				/** @var SearchObject_IslandoraSearcher $searchObject2 */
 				$searchObject2 = SearchObjectFactory::initSearchObject('Islandora');
 				$searchObject2->init();
 				$searchObject2->setDebugging(false, false);
@@ -952,7 +952,7 @@ class ExploreMore {
 				$searchTerm .= " AND NOT id:($recordsToAvoid)";
 			}*/
 
-			/** @var SearchObject_Solr $searchObject */
+			/** @var SearchObject_GroupedWorkSearcher $searchObject */
 			$searchObject = SearchObjectFactory::initSearchObject();
 			$searchObject->init('local', $searchTerm);
 			$searchObject->setSearchTerms(array(
@@ -988,6 +988,12 @@ class ExploreMore {
 		return $similarTitles;
 	}
 
+	/**
+     * @param array $entity
+     * @param array $relatedEntities
+     * @param IslandoraRecordDriver $objectDriver
+     * @return array
+     */
 	private function addAssociatedEntity($entity, $relatedEntities, $objectDriver) {
 		if (!isset($relatedEntities[$entity['pid']])){
 			$relatedEntities[$entity['pid']] = $entity;

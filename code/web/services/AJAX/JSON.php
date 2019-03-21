@@ -23,8 +23,7 @@ require_once ROOT_DIR . '/Action.php';
 class AJAX_JSON extends Action {
 
 	// define some status constants
- // ( used by JSON_Autocomplete )
-	const STATUS_OK        = 'OK';           // good
+ 	const STATUS_OK        = 'OK';           // good
 	const STATUS_ERROR     = 'ERROR';        // bad
 	const STATUS_NEED_AUTH = 'NEED_AUTH';    // must login first
 

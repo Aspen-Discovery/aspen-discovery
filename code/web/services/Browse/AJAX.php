@@ -24,7 +24,7 @@ class Browse_AJAX extends Action {
 
 	const ITEMS_PER_PAGE = 24;
 
-	/** @var SearchObject_Solr|SearchObject_Base $searchObject*/
+	/** @var SearchObject_SolrSearcher $searchObject*/
 	private $searchObject;
 
 	function launch()
@@ -108,7 +108,7 @@ class Browse_AJAX extends Action {
 			if (isset($_REQUEST['searchId']) && strlen($_REQUEST['searchId']) > 0){
 				$searchId = $_REQUEST['searchId'];
 
-				/** @var SearchObject_Solr|SearchObject_Base $searchObj */
+				/** @var SearchObject_GroupedWorkSearcher $searchObj */
 				$searchObj = SearchObjectFactory::initSearchObject();
 				$searchObj->init();
 				$searchObj = $searchObj->restoreSavedSearch($searchId, false, true);

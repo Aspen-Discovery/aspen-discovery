@@ -66,6 +66,7 @@ public class OaiIndexerMain {
         }
 
         int numRecordsLoaded = 0;
+        int numRecordsSkipped = 0;
         boolean continueLoading = true;
         String resumptionToken = null;
         while (continueLoading) {
@@ -102,8 +103,11 @@ public class OaiIndexerMain {
                         if (curRecordNode instanceof Element) {
                             Element curRecordElement = (Element) curRecordNode;
 
-                            indexElement(curRecordElement, oaiBaseUrl);
-                            numRecordsLoaded++;
+                            if (indexElement(curRecordElement, oaiBaseUrl)) {
+                                numRecordsLoaded++;
+                            }else{
+                                numRecordsSkipped++;
+                            }
                         }
                     }
 
@@ -142,7 +146,7 @@ public class OaiIndexerMain {
         updateServer.setRequestWriter(new BinaryRequestWriter());
     }
 
-    private static void indexElement(Element curRecordElement, String oaiBaseUrl) {
+    private static boolean indexElement(Element curRecordElement, String oaiBaseUrl) {
         OAISolrRecord solrRecord = new OAISolrRecord();
         solrRecord.setOai_source(oaiBaseUrl);
         logger.debug("Indexing element");
@@ -165,6 +169,8 @@ public class OaiIndexerMain {
                                 break;
                             case "dc:identifier":
                                 if (textContent.startsWith("http")){
+                                    solrRecord.setIdentifier(textContent);
+                                } else if (solrRecord.getIdentifier() == null){
                                     solrRecord.setIdentifier(textContent);
                                 }
                                 break;
@@ -220,12 +226,19 @@ public class OaiIndexerMain {
                 }
             }
         }
+        boolean addedToIndex = false;
         try {
-            updateServer.add(solrRecord.getSolrDocument());
+            if (solrRecord.getIdentifier() == null || solrRecord.getTitle() == null) {
+                logger.debug("Skipping record becuase no identifier was provided.");
+            } else {
+                updateServer.add(solrRecord.getSolrDocument());
+                addedToIndex = true;
+            }
         } catch (SolrServerException e) {
             logger.error("Error adding document to solr server", e);
         } catch (IOException e) {
             logger.error("I/O Error adding document to solr server", e);
         }
+        return addedToIndex;
     }
 }

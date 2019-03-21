@@ -109,4 +109,12 @@ class OAISolrRecord {
     void addRelation(String relation) {
         this.relation.add(relation);
     }
+
+    String getIdentifier() {
+        return identifier;
+    }
+
+    String getTitle() {
+        return title;
+    }
 }

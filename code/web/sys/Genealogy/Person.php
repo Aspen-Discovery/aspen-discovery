@@ -73,9 +73,7 @@ class Person extends SolrDataObject
 	function cores(){
 		return array('genealogy');
 	}
-	function getConfigSection(){
-		return 'Genealogy';
-	}
+
 	function solrId(){
 		return 'person' . $this->personId;
 	}

@@ -16,7 +16,7 @@ abstract class Search_AdvancedBase extends Action{
 	 * interface if necessary.
 	 *
 	 * @access  protected
-	 * @return  SearchObject_Base|boolean mixed           Search Object on successful load, false otherwise
+	 * @return  SearchObject_BaseSearcher|boolean mixed           Search Object on successful load, false otherwise
 	 */
 	protected function loadSavedSearch()
 	{

@@ -102,10 +102,8 @@ class ItemAPI extends Action {
 		$author = trim($_REQUEST['author']);
 
 		// Setup Search Engine Connection
-		$class = $configArray['Index']['engine'];
 		$url = $configArray['Index']['url'];
-		/** @var SearchObject_Solr db */
-		$this->db = new $class($url);
+		$this->db = new GroupedWorksSolrConnector($url);
 
 		//Setup the results to return from the API method
 		$results = array();
@@ -152,10 +150,8 @@ class ItemAPI extends Action {
 		$recordId = trim($_REQUEST['recordId']);
 
 		// Setup Search Engine Connection
-		$class = $configArray['Index']['engine'];
 		$url = $configArray['Index']['url'];
-		/** @var SearchObject_Solr db */
-		$this->db = new $class($url);
+		$this->db = new GroupedWorksSolrConnector($url);
 
 		//Search the database by title and author
 		if ($recordId){
@@ -220,9 +216,8 @@ class ItemAPI extends Action {
 		$itemData['id'] = $this->id;
 
 		// Setup Search Engine Connection
-		$class = $configArray['Index']['engine'];
 		$url = $configArray['Index']['url'];
-		$this->db = new $class($url);
+		$this->db = new GroupedWorksSolrConnector($url);
 
 		// Retrieve Full Marc Record
 		if (!($record = $this->db->getRecord($this->id))) {
@@ -281,9 +276,8 @@ class ItemAPI extends Action {
 		$itemData['id'] = $this->id;
 
 		// Setup Search Engine Connection
-		$class = $configArray['Index']['engine'];
 		$url = $configArray['Index']['url'];
-		$this->db = new $class($url);
+		$this->db = new GroupedWorksSolrConnector($url);
 
 		// Retrieve Full Marc Record
 		if (!($record = $this->db->getRecord($this->id))) {
@@ -592,9 +586,8 @@ class ItemAPI extends Action {
 		$itemData['id'] = $this->id;
 
 		// Setup Search Engine Connection
-		$class = $configArray['Index']['engine'];
 		$url = $configArray['Index']['url'];
-		$this->db = new $class($url);
+		$this->db = new GroupedWorksSolrConnector($url);
 
 		// Retrieve Full Marc Record
 		if (!($record = $this->db->getRecord($this->id))) {

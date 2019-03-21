@@ -1,12 +1,4 @@
 <?php
-/**
- * Service to show an Advanced Popup form to streamline the advanced search.
- *
- * @category VuFind-Plus 
- * @author Mark Noble <mark@marmot.org>
- * Date: 6/26/13
- * Time: 9:50 AM
- */
 
 require_once ROOT_DIR . '/services/Search/AdvancedBase.php';
 class AdvancedPopup extends Search_AdvancedBase {
@@ -14,7 +6,7 @@ class AdvancedPopup extends Search_AdvancedBase {
 		global $interface;
 
 		// Create our search object
-		/** @var SearchObject_Solr|SearchObject_Base $searchObject */
+		/** @var SearchObject_GroupedWorkSearcher $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject();
 		$searchObject->initAdvancedFacets();
 		// We don't want this search in the search history

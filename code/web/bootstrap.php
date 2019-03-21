@@ -94,7 +94,7 @@ function requireSystemLibraries(){
 	require_once ROOT_DIR . '/sys/Account/User.php';
 	require_once ROOT_DIR . '/sys/Account/AccountProfile.php';
 	require_once ROOT_DIR . '/sys/Translator.php';
-	require_once ROOT_DIR . '/sys/SearchObject/Factory.php';
+	require_once ROOT_DIR . '/sys/SearchObject/SearchObjectFactory.php';
 	require_once ROOT_DIR . '/Drivers/marmot_inc/Library.php';
 	require_once ROOT_DIR . '/Drivers/marmot_inc/Location.php';
 	require_once ROOT_DIR . '/Drivers/DriverInterface.php';
@@ -274,7 +274,9 @@ function loadSearchInformation(){
 				$searchSource = 'genealogy';
 			}elseif ($module == 'Archive'){
 				$searchSource = 'islandora';
-			}elseif ($module == 'EBSCO'){
+            }elseif ($module == 'OpenArchives'){
+                $searchSource = 'open_archives';
+            }elseif ($module == 'EBSCO'){
 				$searchSource = 'ebsco';
 			}else{
 				require_once(ROOT_DIR . '/Drivers/marmot_inc/SearchSources.php');

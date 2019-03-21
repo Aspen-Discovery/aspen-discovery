@@ -94,10 +94,9 @@ class Record_AJAX extends Action {
 		$searchObject = SearchObjectFactory::initSearchObject();
 		$searchObject->init();
 		// Setup Search Engine Connection
-		$class = $configArray['Index']['engine'];
 		$url = $configArray['Index']['url'];
-		/** @var SearchObject_Solr $db */
-		$db = new $class($url);
+		/** @var GroupedWorksSolrConnector $db */
+		$db = new GroupedWorksSolrConnector($url);
 
 		// Retrieve Full record from Solr
 		if (!($record = $db->getRecord($id))) {
