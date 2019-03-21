@@ -53,7 +53,7 @@ public class OaiIndexerMain {
         setupSolrClient(solrPort);
 
         String oaiBaseUrl = ConfigUtil.cleanIniValue(configIni.get("OAI", "baseUrl"));
-        String oaiSet = ConfigUtil.cleanIniValue(configIni.get("OAI", "oaiSet"));
+        String oaiSetsFromConfig = ConfigUtil.cleanIniValue(configIni.get("OAI", "oaiSet"));
 
         try {
             updateServer.deleteByQuery("oai_source:\"" + oaiBaseUrl + "\"");
@@ -67,65 +67,70 @@ public class OaiIndexerMain {
 
         int numRecordsLoaded = 0;
         int numRecordsSkipped = 0;
-        boolean continueLoading = true;
-        String resumptionToken = null;
-        while (continueLoading) {
-            continueLoading = false;
 
-            String oaiUrl;
-            if (resumptionToken != null) {
+        String[] oaiSets = oaiSetsFromConfig.split(",");
+        for (String oaiSet : oaiSets) {
+            logger.info("Loading set " + oaiSet);
+            boolean continueLoading = true;
+            String resumptionToken = null;
+            while (continueLoading) {
+                continueLoading = false;
+
+                String oaiUrl;
+                if (resumptionToken != null) {
+                    try {
+                        oaiUrl = oaiBaseUrl + "?verb=ListRecords&resumptionToken=" + URLEncoder.encode(resumptionToken, "UTF-8");
+                    } catch (UnsupportedEncodingException e) {
+                        logger.error("Error encoding resumption token", e);
+                        return;
+                    }
+                } else {
+                    oaiUrl = oaiBaseUrl + "?verb=ListRecords&metadataPrefix=oai_dc&set=" + oaiSet;
+                }
                 try {
-                    oaiUrl = oaiBaseUrl + "?verb=ListRecords&resumptionToken=" + URLEncoder.encode(resumptionToken, "UTF-8");
-                } catch (UnsupportedEncodingException e) {
-                    logger.error("Error encoding resumption token", e);
-                    return;
-                }
-            } else {
-                oaiUrl = oaiBaseUrl + "?verb=ListRecords&metadataPrefix=oai_dc&set=" + oaiSet;
-            }
-            try {
-                logger.info("Loading from " + oaiUrl);
-                DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-                factory.setValidating(false);
-                factory.setIgnoringElementContentWhitespace(true);
-                DocumentBuilder builder = factory.newDocumentBuilder();
+                    logger.info("Loading from " + oaiUrl);
+                    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+                    factory.setValidating(false);
+                    factory.setIgnoringElementContentWhitespace(true);
+                    DocumentBuilder builder = factory.newDocumentBuilder();
 
-                Document doc = builder.parse(oaiUrl);
-                Element docElement = doc.getDocumentElement();
-                //Normally we get list records, but if we are at the end of the list OAI may return an
-                //error rather than ListRecords (even though it gave us a resumption token)
-                NodeList listRecords = docElement.getElementsByTagName("ListRecords");
-                if (listRecords.getLength() > 0) {
-                    Element listRecordsElement = (Element) docElement.getElementsByTagName("ListRecords").item(0);
-                    NodeList allRecords = listRecordsElement.getElementsByTagName("record");
-                    for (int i = 0; i < allRecords.getLength(); i++) {
-                        Node curRecordNode = allRecords.item(i);
-                        if (curRecordNode instanceof Element) {
-                            Element curRecordElement = (Element) curRecordNode;
+                    Document doc = builder.parse(oaiUrl);
+                    Element docElement = doc.getDocumentElement();
+                    //Normally we get list records, but if we are at the end of the list OAI may return an
+                    //error rather than ListRecords (even though it gave us a resumption token)
+                    NodeList listRecords = docElement.getElementsByTagName("ListRecords");
+                    if (listRecords.getLength() > 0) {
+                        Element listRecordsElement = (Element) docElement.getElementsByTagName("ListRecords").item(0);
+                        NodeList allRecords = listRecordsElement.getElementsByTagName("record");
+                        for (int i = 0; i < allRecords.getLength(); i++) {
+                            Node curRecordNode = allRecords.item(i);
+                            if (curRecordNode instanceof Element) {
+                                Element curRecordElement = (Element) curRecordNode;
 
-                            if (indexElement(curRecordElement, oaiBaseUrl)) {
-                                numRecordsLoaded++;
-                            }else{
-                                numRecordsSkipped++;
+                                if (indexElement(curRecordElement, oaiBaseUrl)) {
+                                    numRecordsLoaded++;
+                                }else{
+                                    numRecordsSkipped++;
+                                }
+                            }
+                        }
+
+                        //Check to see if there are more records to load and if so continue
+                        NodeList resumptionTokens = listRecordsElement.getElementsByTagName("resumptionToken");
+                        if (resumptionTokens.getLength() > 0) {
+                            Node resumptionTokenNode = resumptionTokens.item(0);
+                            if (resumptionTokenNode instanceof Element) {
+                                Element resumptionTokenElement = (Element) resumptionTokenNode;
+                                resumptionToken = resumptionTokenElement.getTextContent();
+                                if (resumptionToken.length() > 0) {
+                                    continueLoading = true;
+                                }
                             }
                         }
                     }
-
-                    //Check to see if there are more records to load and if so continue
-                    NodeList resumptionTokens = listRecordsElement.getElementsByTagName("resumptionToken");
-                    if (resumptionTokens.getLength() > 0) {
-                        Node resumptionTokenNode = resumptionTokens.item(0);
-                        if (resumptionTokenNode instanceof Element) {
-                            Element resumptionTokenElement = (Element) resumptionTokenNode;
-                            resumptionToken = resumptionTokenElement.getTextContent();
-                            if (resumptionToken.length() > 0) {
-                                continueLoading = true;
-                            }
-                        }
-                    }
+                } catch (Exception e) {
+                    logger.error("Error parsing OAI data ", e);
                 }
-            } catch (Exception e) {
-                logger.error("Error parsing OAI data ", e);
             }
         }
 
@@ -136,6 +141,9 @@ public class OaiIndexerMain {
         }
 
         logger.info("Loaded " + numRecordsLoaded + " records.");
+        if (numRecordsSkipped > 0) {
+            logger.info("Skipped " + numRecordsLoaded + " records.");
+        }
     }
 
     private static void setupSolrClient(String solrPort) {
