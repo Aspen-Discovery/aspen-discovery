@@ -227,4 +227,53 @@ class GroupedWorksSolrConnector extends Solr
 
         return $result;
     }
+
+    /**
+     * Normalize a sort option.
+     *
+     * @param string $sort The sort option.
+     *
+     * @return string			The normalized sort value.
+     * @access private
+     */
+    protected function _normalizeSort($sort)
+    {
+        // Break apart sort into field name and sort direction (note error
+        // suppression to prevent notice when direction is left blank):
+        $sort = trim($sort);
+        @list($sortField, $sortDirection) = explode(' ', $sort);
+
+        // Default sort order (may be overridden by switch below):
+        $defaultSortDirection = 'asc';
+
+        // Translate special sort values into appropriate Solr fields:
+        switch ($sortField) {
+            case 'year':
+            case 'publishDate':
+                $sortField = 'publishDateSort';
+                $defaultSortDirection = 'desc';
+                break;
+            case 'author':
+                $sortField = 'authorStr asc, title_sort';
+                break;
+            case 'title':
+                $sortField = 'title_sort asc, authorStr';
+                break;
+            case 'callnumber_sort':
+                $searchLibrary = Library::getSearchLibrary($this->getSearchSource());
+                if ($searchLibrary != null){
+                    $sortField = 'callnumber_sort_' . $searchLibrary->subdomain;
+                }
+
+                break;
+        }
+
+        // Normalize sort direction to either "asc" or "desc":
+        $sortDirection = strtolower(trim($sortDirection));
+        if ($sortDirection != 'desc' && $sortDirection != 'asc') {
+            $sortDirection = $defaultSortDirection;
+        }
+
+        return $sortField . ' ' . $sortDirection;
+    }
 }

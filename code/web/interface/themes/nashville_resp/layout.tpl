@@ -12,25 +12,25 @@
 		{if $google_translate_key}
 			<meta name="google-translate-customization" content="{$google_translate_key}">
 		{/if}
-		{if $google_verification_key}
+		{if !empty($google_verification_key)}
 			<meta name="google-site-verification" content="{$google_verification_key}">
 		{/if}
-		{if $addHeader}{$addHeader}{/if}
+		{if !empty($addHeader)}{$addHeader}{/if}
 			<meta property="og:site_name" content="{$site.title|removeTrailingPunctuation|escape:html}" />
-		{if $og_title}
+		{if !empty($og_title)}
 			<meta property="og:title" content="{$og_title|removeTrailingPunctuation|escape:html}" />
 		{/if}
-		{if $og_type}
+		{if !empty($og_type)}
 			<meta property="og:type" content="{$og_type|escape:html}" />
 		{/if}
-		{if $og_image}
+		{if !empty($og_image)}
 			<meta property="og:image" content="{$og_image|escape:html}" />
 		{/if}
-		{if $og_url}
+		{if !empty($og_url)}
 			<meta property="og:url" content="{$og_url|escape:html}" />
 		{/if}
 
-		{if $metadataTemplate}
+		{if !empty($metadataTemplate)}
 			{include file=$metadataTemplate}
 		{/if}
 		<link type="image/x-icon" href="{$favicon}" rel="shortcut icon">

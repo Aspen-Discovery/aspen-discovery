@@ -467,4 +467,104 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
     }
 
     public abstract function getRecordDriverForResult($record);
+
+    /**
+     * Process facets from the results object
+     *
+     * @access  public
+     * @param   array   $filter         Array of field => on-screen description
+     *                                  listing all of the desired facet fields;
+     *                                  set to null to get all configured values.
+     * @param   bool    $expandingLinks If true, we will include expanding URLs
+     *                                  (i.e. get all matches for a facet, not
+     *                                  just a limit to the current search) in
+     *                                  the return array.
+     * @return  array   Facets data arrays
+     */
+    public function getFacetList($filter = null, $expandingLinks = false)
+    {
+        // If there is no filter, we'll use all facets as the filter:
+        if (is_null($filter)) {
+            $filter = $this->facetConfig;
+        }
+
+        // Start building the facet list:
+        $list = array();
+
+        // If we have no facets to process, give up now
+        if (!isset($this->indexResult['facet_counts'])){
+            return $list;
+        }elseif (!is_array($this->indexResult['facet_counts']['facet_fields']) && !is_array($this->indexResult['facet_counts']['facet_dates'])) {
+            return $list;
+        }
+
+        // Loop through every field returned by the result set
+        $validFields = array_keys($filter);
+
+        if (isset($this->indexResult['facet_counts']['facet_dates'])){
+            $allFacets = array_merge($this->indexResult['facet_counts']['facet_fields'], $this->indexResult['facet_counts']['facet_dates']);
+        }else{
+            $allFacets = $this->indexResult['facet_counts']['facet_fields'];
+        }
+
+        foreach ($allFacets as $field => $data) {
+            // Skip filtered fields and empty arrays:
+            if (!in_array($field, $validFields) || count($data) < 1) {
+                continue;
+            }
+
+            // Initialize the settings for the current field
+            $list[$field] = array();
+            // Add the on-screen label
+            $list[$field]['label'] = $filter[$field];
+            // Build our array of values for this field
+            $list[$field]['list']  = array();
+
+            // Should we translate values for the current facet?
+            $translate = in_array($field, $this->translatedFacets);
+
+            // Loop through values:
+            foreach ($data as $facet) {
+                // Initialize the array of data about the current facet:
+                $currentSettings = array();
+                $currentSettings['value'] = $facet[0];
+                $currentSettings['display'] = $translate ? translate($facet[0]) : $facet[0];
+                $currentSettings['count'] = $facet[1];
+                $currentSettings['isApplied'] = false;
+                $currentSettings['url'] = $this->renderLinkWithFilter("$field:".$facet[0]);
+                // If we want to have expanding links (all values matching the facet)
+                // in addition to limiting links (filter current search with facet),
+                // do some extra work:
+                if ($expandingLinks) {
+                    $currentSettings['expandUrl'] = $this->getExpandingFacetLink($field, $facet[0]);
+                }
+
+                // Is this field a current filter?
+                if (in_array($field, array_keys($this->filterList))) {
+                    // and is this value a selected filter?
+                    if (in_array($facet[0], $this->filterList[$field])) {
+                        $currentSettings['isApplied'] = true;
+                        $currentSettings['removalUrl'] =  $this->renderLinkWithoutFilter("$field:{$facet[0]}");
+                    }
+                }
+
+                //Setup the key to allow sorting alphabetically if needed.
+                $valueKey = $facet[0];
+
+                // Store the collected values:
+                $list[$field]['list'][$valueKey] = $currentSettings;
+            }
+
+            //How many facets should be shown by default
+            $list[$field]['valuesToShow'] = 5;
+
+            //Sort the facet alphabetically?
+            //Sort the system and location alphabetically unless we are in the global scope
+            $list[$field]['showAlphabetically'] = false;
+            if ($list[$field]['showAlphabetically']){
+                ksort($list[$field]['list']);
+            }
+        }
+        return $list;
+    }
 }

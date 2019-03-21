@@ -22,8 +22,8 @@ class OpenArchivesRecordDriver extends IndexRecordDriver
             $interface->assign('description', '');
         }
         $interface->assign('type', $this->fields['type']);
-        $interface->assign('source', $this->fields['source']);
-        $interface->assign('publisher', $this->fields['publisher']);
+        $interface->assign('source', isset($this->fields['source']) ? $this->fields['source'] : '');
+        $interface->assign('publisher', isset($this->fields['publisher']) ? $this->fields['publisher'] : '');
         if (array_key_exists('date', $this->fields)) {
             $interface->assign('date', $this->fields['date']);
         } else {

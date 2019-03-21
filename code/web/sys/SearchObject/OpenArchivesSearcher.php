@@ -17,8 +17,7 @@ class SearchObject_OpenArchivesSearcher extends SearchObject_SolrSearcher
         $this->indexEngine = new OpenArchivesSolrConnector($configArray['Index']['url']);
         $timer->logTime('Created Index Engine for Open Archives');
 
-        $this->allFacetSettings = getExtraConfigArray('openArchivesFacets');
-        $this->facetConfig = array();
+        $this->allFacetSettings = getExtraConfigArray('openArchivesSearches');
         $facetLimit = $this->getFacetSetting('Results_Settings', 'facet_limit');
         if (is_numeric($facetLimit)) {
             $this->facetLimit = $facetLimit;
@@ -26,6 +25,32 @@ class SearchObject_OpenArchivesSearcher extends SearchObject_SolrSearcher
         $translatedFacets = $this->getFacetSetting('Advanced_Settings', 'translated_facets');
         if (is_array($translatedFacets)) {
             $this->translatedFacets = $translatedFacets;
+        }
+
+        // Load search preferences:
+        $searchSettings = getExtraConfigArray('openArchivesSearches');
+        $this->defaultIndex = 'OpenArchivesKeyword';
+        if (isset($searchSettings['General']['default_sort'])) {
+            $this->defaultSort = $searchSettings['General']['default_sort'];
+        }
+        if (isset($searchSettings['DefaultSortingByType']) &&
+            is_array($searchSettings['DefaultSortingByType'])) {
+            $this->defaultSortByType = $searchSettings['DefaultSortingByType'];
+        }
+        if (isset($searchSettings['Basic_Searches'])) {
+            $this->basicTypes = $searchSettings['Basic_Searches'];
+        }
+        if (isset($searchSettings['Advanced_Searches'])) {
+            $this->advancedTypes = $searchSettings['Advanced_Searches'];
+        }
+
+        // Load sort preferences (or defaults if none in .ini file):
+        if (isset($searchSettings['Sorting'])) {
+            $this->sortOptions = $searchSettings['Sorting'];
+        } else {
+            $this->sortOptions = array('relevance' => 'sort_relevance',
+                'year' => 'sort_year', 'year asc' => 'sort_year asc',
+                'title' => 'sort_title');
         }
 
         // Load Spelling preferences

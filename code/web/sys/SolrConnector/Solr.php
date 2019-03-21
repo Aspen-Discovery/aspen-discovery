@@ -1003,7 +1003,7 @@ class Solr {
 	 * @return string			The normalized sort value.
 	 * @access private
 	 */
-	private function _normalizeSort($sort)
+	protected function _normalizeSort($sort)
 	{
 		// Break apart sort into field name and sort direction (note error
 		// suppression to prevent notice when direction is left blank):
@@ -1012,28 +1012,6 @@ class Solr {
 
 		// Default sort order (may be overridden by switch below):
 		$defaultSortDirection = 'asc';
-
-		// Translate special sort values into appropriate Solr fields:
-		switch ($sortField) {
-			case 'year':
-			case 'publishDate':
-				$sortField = 'publishDateSort';
-				$defaultSortDirection = 'desc';
-				break;
-			case 'author':
-				$sortField = 'authorStr asc, title_sort';
-				break;
-			case 'title':
-				$sortField = 'title_sort asc, authorStr';
-				break;
-			case 'callnumber_sort':
-				$searchLibrary = Library::getSearchLibrary($this->searchSource);
-				if ($searchLibrary != null){
-					$sortField = 'callnumber_sort_' . $searchLibrary->subdomain;
-				}
-
-				break;
-		}
 
 		// Normalize sort direction to either "asc" or "desc":
 		$sortDirection = strtolower(trim($sortDirection));

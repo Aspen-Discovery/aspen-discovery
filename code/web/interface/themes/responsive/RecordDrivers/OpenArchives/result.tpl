@@ -26,7 +26,7 @@
 			</div>
 		</div>
 
-		{if $summSnippets}
+		{if !empty($summSnippets)}
 			{foreach from=$summSnippets item=snippet}
 				<div class="row">
 					<div class="result-label col-tn-3 col-xs-3">{translate text=$snippet.caption}: </div>

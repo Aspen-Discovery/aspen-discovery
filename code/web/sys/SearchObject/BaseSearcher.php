@@ -1,22 +1,5 @@
 <?php
-/**
- *
- * Copyright (C) Villanova University 2010.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2,
- * as published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- */
+
 require_once ROOT_DIR . '/services/MyResearch/lib/Search.php';
 require_once ROOT_DIR . '/sys/Recommend/RecommendationFactory.php';
 
@@ -25,7 +8,7 @@ require_once ROOT_DIR . '/sys/Recommend/RecommendationFactory.php';
  *
  * Generic base class for abstracting search URL generation and other standard
  * functionality.  This should be extended to implement functionality for specific
- * VuFind modules (i.e. standard Solr search vs. Summon, etc.).
+ * modules (Grouped Works, Lists, OAI, Archives, etc)
  */
 abstract class SearchObject_BaseSearcher
 {
@@ -335,12 +318,6 @@ abstract class SearchObject_BaseSearcher
 		$this->hiddenFilters = array();
 	}
 
-	/**
-	 * Add a hidden (i.e. not visible in facet controls) filter query to the object.
-	 *
-	 * @access  public
-	 * @param   string $fq                 Filter query for Solr.
-	 */
 	public function addHiddenFilter($field, $value)
 	{
 		$this->hiddenFilters[] = $field . ':' . $value;
@@ -2022,8 +1999,7 @@ abstract class SearchObject_BaseSearcher
 				// Can we build a recommendation module with the provided settings?
 				// If the factory throws an error, we'll assume for now it means we
 				// tried to load a non-existent module, and we'll ignore it.
-				$obj = RecommendationFactory::initRecommendation($module, $this,
-				$params);
+				$obj = RecommendationFactory::initRecommendation($module, $this, $params);
 				if ($obj && !PEAR_Singleton::isError($obj)) {
 					$obj->init();
 					$this->recommend[$location][] = $obj;

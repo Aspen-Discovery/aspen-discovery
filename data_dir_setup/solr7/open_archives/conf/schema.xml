@@ -35,11 +35,13 @@
 			</analyzer>
 		</fieldType>
 		<!-- Text Field without Stemming, Synonyms, and stop Word removal -->
-		<fieldType name="textProper" class="solr.TextField" positionIncrementGap="100">
+		<fieldType name="alphaOnlySort" class="solr.TextField" sortMissingLast="true">
 			<analyzer>
-				<tokenizer class="solr.WhitespaceTokenizerFactory"/>
-				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1" preserveOriginal="1"/>
-				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
+				<tokenizer class="solr.KeywordTokenizerFactory"/>
+				<filter class="solr.LowerCaseFilterFactory"/>
+				<!-- The TrimFilter removes any leading or trailing whitespace -->
+				<filter class="solr.TrimFilterFactory"/>
+				<filter class="solr.PatternReplaceFilterFactory" pattern="([^a-z1-9\s])" replacement="" replace="all"/>
 			</analyzer>
 		</fieldType>
 	</types>
@@ -54,14 +56,17 @@
 		<field name="last_indexed" type="date" indexed="false" stored="true"/>
 
 		<field name="title" type="searchable_text" indexed="true" stored="true"/>
+		<field name="title_sort" type="alphaOnlySort" indexed="true" stored="true"/>
 		<field name="creator" type="searchable_text" indexed="true" stored="true" multiValued="true"/>
+		<field name="creator_facet" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
 		<field name="contributor" type="searchable_text" indexed="true" stored="true" multiValued="true"/>
+		<field name="contributor_facet" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
 		<field name="subject" type="searchable_text" indexed="true" stored="true" multiValued="true"/>
-		<field name="subject_proper" type="textProper" indexed="true" stored="false" multiValued="true"/>
+		<field name="subject_facet" type="unchanged_string" indexed="true" stored="false" multiValued="true"/>
 		<field name="description" type="searchable_text" indexed="true" stored="true"/>
 		<field name="coverage" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
-		<field name="publisher" type="textProper" indexed="true" stored="true" multiValued="true"/>
-		<field name="publisherStr" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
+		<field name="publisher" type="searchable_text" indexed="true" stored="true" multiValued="true"/>
+		<field name="publisher_facet" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
 		<field name="format" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
 		<field name="language" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
 		<field name="source" type="unchanged_string" indexed="true" stored="true" multiValued="true" required="false"/>
@@ -74,7 +79,10 @@
 	</fields>
 	
 	<uniqueKey>identifier</uniqueKey>
-	<copyField source="subject" dest="subject_proper"/>
-	<copyField source="publisher" dest="publisherStr"/>
+	<copyField source="title" dest="title_sort"/>
+	<copyField source="subject" dest="subject_facet"/>
+	<copyField source="publisher" dest="publisher_facet"/>
+	<copyField source="creator" dest="creator_facet"/>
+	<copyField source="contributor" dest="contributor_facet"/>
 
 </schema>
