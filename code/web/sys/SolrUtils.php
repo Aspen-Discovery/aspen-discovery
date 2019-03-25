@@ -23,7 +23,6 @@
  *
  * This class is designed to hold Solr-related support methods that may
  * be called statically.  This allows sharing of some Solr-related logic
- * between the Solr and Summon classes.
  *
  * @author      Demian Katz
  * @access      public

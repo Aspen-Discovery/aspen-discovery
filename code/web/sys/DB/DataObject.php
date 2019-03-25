@@ -176,7 +176,11 @@ abstract class DataObject
                 }
                 $propertyNames .= $name;
                 if (in_array($name, $numericColumns)) {
-                    if (is_numeric($value)) {
+                    if ($value === true){
+                        $propertyValues .= 1;
+                    }else if ($value == false) {
+                        $propertyValues .= 0;
+                    } elseif (is_numeric($value)) {
                         $propertyValues .= $value;
                     } else {
                         $propertyValues .= 'NULL';
@@ -207,7 +211,11 @@ abstract class DataObject
                     $updates .= ', ';
                 }
                 if (in_array($name, $numericColumns)) {
-                    if (is_numeric($value)) {
+                    if ($value === true){
+                        $updates .= $name . ' = 1';
+                    }else if ($value == false) {
+                        $updates .= $name . ' = 0';
+                    } else if (is_numeric($value)) {
                         $updates .= $name . ' = ' . $value;
                     } else {
                         $updates .= $name . ' = NULL';

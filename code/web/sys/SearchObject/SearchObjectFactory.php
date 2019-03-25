@@ -8,7 +8,7 @@ class SearchObjectFactory {
 	 * This constructs a search object for the specified engine.
 	 *
 	 * @access  public
-	 * @param   string  $engine     The type of SearchObject to build (Solr/Summon).
+	 * @param   string  $engine     The type of SearchObject to build.
 	 * @return  mixed               The search object on success, false otherwise
 	 */
 	static function initSearchObject($engine = 'GroupedWork')
@@ -47,14 +47,6 @@ class SearchObjectFactory {
 
 		// Figure out the engine type for the object we're about to construct:
 		switch($minSO->ty) {
-			case 'Summon':
-			case 'SummonAdvanced':
-				$type = 'Summon';
-				break;
-			case 'WorldCat':
-			case 'WorldCatAdvanced':
-				$type = 'WorldCat';
-				break;
 			case 'islandora' :
 				$type = 'Islandora';
 				break;

@@ -1,24 +1,5 @@
 <?php
-/**
- *
- * Copyright (C) Villanova University 2007.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2,
- * as published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- */
 
-require_once ROOT_DIR . '/sys/Amazon.php';
 require_once ROOT_DIR . '/sys/HTTP/HTTP_Request.php';
 require_once ROOT_DIR . '/Drivers/marmot_inc/ISBNConverter.php';
 require_once(ROOT_DIR . '/sys/LocalEnrichment/EditorialReview.php');
@@ -162,130 +143,6 @@ class Record_Reviews extends Record_Record
 		}
 		return $reviewData;
 	}
-
-	/**
-	 * Amazon Reviews
-	 *
-	 * This method is responsible for connecting to Amazon AWS and abstracting
-	 * customer reviews for the specific ISBN
-	 *
-	 * @return  array       Returns array with review data, otherwise a
-	 *                      PEAR_Error.
-	 * @access  public
-	 * @author  Andrew Nagy <andrew.nagy@villanova.edu>
-	 */
-	function amazon($isbn, $id)	{
-		global $library;
-		global $locationSingleton;
-		$location = $locationSingleton->getActiveLocation();
-		$result = null;
-		if (isset($library) && $location != null){
-			if ($library->showAmazonReviews == 0 || $location->showAmazonReviews == 0){
-				return $result;
-			}
-		}else if ($location != null && ($location->showAmazonReviews == 0)){
-			//return an empty review
-			return $result;
-		}else if (isset($library) && ($library->showAmazonReviews == 0)){
-			//return an empty review
-			return $result;
-		}
-		$params = array('ResponseGroup' => 'Reviews', 'ItemId' => $isbn);
-		$request = new AWS_Request($id, 'ItemLookup', $params);
-		$response = $request->sendRequest();
-		if (!PEAR_Singleton::isError($response)) {
-			$unxml = new XML_Unserializer();
-			$result = $unxml->unserialize($response);
-			if (!PEAR_Singleton::isError($result)) {
-				$data = $unxml->getUnserializedData();
-				if ($data['Items']['Item']['CustomerReviews']['Review']['ASIN']) {
-					$data['Items']['Item']['CustomerReviews']['Review'] = array($data['Items']['Item']['CustomerReviews']['Review']);
-				}
-				$i = 0;
-				$result = array();
-				if (!empty($data['Items']['Item']['CustomerReviews']['Review'])) {
-					foreach ($data['Items']['Item']['CustomerReviews']['Review'] as $review) {
-						$customer = $this->getAmazonCustomer($id, $review['CustomerId']);
-						if (!PEAR_Singleton::isError($customer)) {
-							$result[$i]['Source'] = $customer;
-						}
-						$result[$i]['Rating'] = $review['Rating'];
-						$result[$i]['Summary'] = $review['Summary'];
-						$result[$i]['Content'] = $review['Content'];
-						$i++;
-					}
-				}
-				return $result;
-			} else {
-				return $result;
-			}
-		} else {
-			return $result;
-		}
-	}
-
-	/**
-	 * Amazon Editorial
-	 *
-	 * This method is responsible for connecting to Amazon AWS and abstracting
-	 * editorial reviews for the specific ISBN
-	 *
-	 * @return  array       Returns array with review data, otherwise a
-	 *                      PEAR_Error.
-	 * @access  public
-	 * @author  Andrew Nagy <andrew.nagy@villanova.edu>
-	 */
-	function amazoneditorial($isbn, $id){
-		global $library;
-		$result = array();
-		if (isset($library) && ($library->showAmazonReviews == 0)){
-			//return an empty review
-			return $result;
-		}
-		if (!isset($isbn)){
-			return $result;
-		}
-		if (strlen($isbn) == 13){
-			//convert to a 10 digit ISBN since Amazon likes that best.
-			$isbn = ISBNConverter::convertISBN13to10($isbn);
-		}
-		$params = array('ResponseGroup' => 'EditorialReview', 'ItemId' => $isbn);
-		$request = new AWS_Request($id, 'ItemLookup', $params);
-		$response = $request->sendRequest();
-		if (!PEAR_Singleton::isError($response)) {
-			$unxml = new XML_Unserializer();
-			$result = $unxml->unserialize($response);
-			if (!PEAR_Singleton::isError($result)) {
-				$data = $unxml->getUnserializedData();
-				if (isset($data['Items']['Item'])){
-					if (isset($data['Items']['Item']['EditorialReviews']['EditorialReview']['Source'])) {
-						$data['Items']['Item']['EditorialReviews']['EditorialReview'] = array($data['Items']['Item']['EditorialReviews']['EditorialReview']);
-					}
-
-					// Filter out product description
-					for ($i=0; $i<=count($data['Items']['Item']['EditorialReviews']['EditorialReview']); $i++) {
-						if ($data['Items']['Item']['EditorialReviews']['EditorialReview'][$i]['Source'] == 'Product Description') {
-							unset($data['Items']['Item']['EditorialReviews']['EditorialReview'][$i]);
-						}
-					}
-
-					return $data['Items']['Item']['EditorialReviews']['EditorialReview'];
-				}else{
-					//An error of some sort occurred.
-					//return $result;
-					return null;
-				}
-
-			} else {
-				//return $result;
-				return null;
-			}
-		} else {
-			//return $result;
-			return null;
-		}
-	}
-
 
 	/**
 	 * getSyndeticsReviews
@@ -447,7 +304,7 @@ class Record_Reviews extends Record_Record
 		$location = $locationSingleton->getActiveLocation();
 		$result = null;
 		if (isset($library) && $location != null){
-			if ($library->showAmazonReviews == 0 || $location->showStandardReviews == 0){
+			if ($location->showStandardReviews == 0){
 				return $result;
 			}
 		}else if ($location != null && ($location->showStandardReviews == 0)){

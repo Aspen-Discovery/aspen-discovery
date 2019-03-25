@@ -1672,6 +1672,32 @@ class DBMaintenance extends Admin_Admin {
                     'sql' => array(
                         'convertTablesToInnoDB'
                     )
+                ),
+
+                'bookcover_info' => array(
+                    'title' => 'Bookcover info',
+                    'description' => 'Crate a table to store information about bookcover generation process',
+                    'continueOnError' => false,
+                    'sql' => [
+                        "CREATE TABLE IF NOT EXISTS bookcover_info(
+									id INT NOT NULL AUTO_INCREMENT,
+									recordType VARCHAR(20),
+									recordId VARCHAR(50),
+									firstLoaded INT(11) NOT NULL, 
+									lastUsed INT(11) NOT NULL, 
+									imageSource VARCHAR(50),
+									sourceWidth INT(11),
+									sourceHeight INT(11), 
+									thumbnailLoaded TINYINT(1) DEFAULT 0,
+									mediumLoaded TINYINT(1) DEFAULT 0,
+									largeLoaded TINYINT(1) DEFAULT 0,
+									uploadedImage TINYINT(1) DEFAULT 0,
+									PRIMARY KEY ( id )
+									) ENGINE = InnoDB;",
+                        "ALTER TABLE bookcover_info ADD INDEX lastUsed (lastUsed)",
+                        "ALTER TABLE bookcover_info ADD UNIQUE INDEX record_info (recordType, recordId)",
+                        "ALTER TABLE bookcover_info ADD INDEX imageSource (imageSource)",
+                    ]
                 )
 			)
 		);
@@ -1798,14 +1824,15 @@ class DBMaintenance extends Admin_Admin {
 
 	/**
 	 * @param $resource
-	 * @return mixed
+	 * @return null|string
 	 */
 	public function getGroupedWorkForResource($resource) {
-//Get the identifier for the resource
+        //Get the identifier for the resource
 		if ($resource->source == 'VuFind') {
 			$primaryIdentifier = $resource->record_id;
 			return $primaryIdentifier;
 		}
+		return null;
 	}
 
 	function updateDueDateFormat(){

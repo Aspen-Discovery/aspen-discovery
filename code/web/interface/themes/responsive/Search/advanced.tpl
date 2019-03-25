@@ -32,23 +32,6 @@
 		padding-right: 5px;
 		float: right;
 	}
-{/literal}{*
-		/*.group0 .groupSearchDetails {*/
-			/*border: 1px solid #D8D7D8;*/
-			/*border-top: 0px;*/
-		/* }*/
-		/*.group1 .groupSearchDetails {*/
-			/*border: 1px solid #94C632;*/
-			/*border-top: 0px;*/
-		/* }*/
-/*		#searchHolder .group0 {
-			border-top : 1px solid #D8D7D8;
-			background:url(/images/gradient_grey.gif) repeat-y;
-		}
-		#searchHolder .group1 {
-			border-top: 1px solid #94C632;
-			background:url(/images/gradient_green.gif) repeat-y;
-		}*/*}{literal}
 	#searchHolder .group {
 		margin-bottom: 10px;
 	}
