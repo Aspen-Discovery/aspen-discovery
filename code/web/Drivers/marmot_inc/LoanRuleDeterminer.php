@@ -19,7 +19,7 @@ class LoanRuleDeterminer extends DataObject
 		return array('id');
 	}
 
-	function getObjectStructure(){
+    static function getObjectStructure(){
 		$structure = array(
 			'id' => array('property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id of the p-type within the database', 'hideInLists' => true),
 			'rowNumber' => array('property'=>'rowNumber', 'type'=>'integer', 'label'=>'Row Number', 'description'=>'The row number of the determiner', 'hideInLists' => false),

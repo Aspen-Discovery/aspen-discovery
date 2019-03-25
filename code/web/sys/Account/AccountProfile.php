@@ -13,7 +13,7 @@ class AccountProfile extends DataObject {
 	public $recordSource;
 	public $weight;
 
-	function getObjectStructure() {
+    static function getObjectStructure() {
 		$structure = array(
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id within the database'),
 			'weight' => array('property'=>'weight', 'type'=>'integer', 'label'=>'Weight', 'description'=>'The sort order of the book store', 'default' => 0),

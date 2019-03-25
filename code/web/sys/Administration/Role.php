@@ -13,7 +13,7 @@ class Role extends DataObject
 		return array('roleId');
 	}
 
-	function getObjectStructure(){
+    static function getObjectStructure(){
 		$structure = array(
           'roleId' => array('property'=>'roleId', 'type'=>'label', 'label'=>'Role Id', 'description'=>'The unique id of the role within the database'),
           'name' => array('property'=>'name', 'type'=>'text', 'label'=>'Name', 'maxLength'=>50, 'description'=>'The full name of the role.'),

@@ -22,7 +22,7 @@ class SierraExportFieldMapping extends DataObject{
 	public $urlExportFieldTag;
 	public $eContentExportFieldTag;
 
-	function getObjectStructure(){
+    static function getObjectStructure(){
 		$indexingProfiles = array();
 		require_once ROOT_DIR . '/sys/Indexing/IndexingProfile.php';
 		$indexingProfile = new IndexingProfile();

@@ -175,7 +175,7 @@ class Person extends SolrDataObject
 		return $return;
 	}
 
-	function getObjectStructure(){
+    static function getObjectStructure(){
 		$structure = array(
 			array('property'=>'id', 'type'=>'method', 'methodName'=>'solrId', 'storeDb' => false, 'storeSolr' => true, 'hideInLists'=>true),
 			array('property'=>'recordtype', 'type'=>'method', 'methodName'=>'recordtype', 'storeDb' => false, 'storeSolr' => true, 'hideInLists'=>true),

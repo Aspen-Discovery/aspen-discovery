@@ -59,7 +59,7 @@ class Admin_ListWidgets extends ObjectEditor {
 
 		return $list;
 	}
-	function getObjectStructure(){
+    function getObjectStructure(){
 		return ListWidget::getObjectStructure();
 	}
 	function getAllowableRoles(){

@@ -22,7 +22,7 @@ class PType extends DataObject
 		return array('id');
 	}
 
-	function getObjectStructure(){
+    static function getObjectStructure(){
 		$structure        = array(
 			'id'         => array('property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id of the p-type within the database', 'hideInLists' => false),
 			'pType'      => array('property'=>'pType', 'type'=>'text', 'label'=>'P-Type', 'description'=>'The P-Type for the patron'),

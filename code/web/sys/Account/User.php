@@ -574,7 +574,7 @@ class User extends DataObject
 		return in_array($roleName, $myRoles);
 	}
 
-	function getObjectStructure(){
+    static function getObjectStructure(){
 		//Lookup available roles in the system
 		require_once ROOT_DIR . '/sys/Administration/Role.php';
 		$roleList = Role::getLookup();

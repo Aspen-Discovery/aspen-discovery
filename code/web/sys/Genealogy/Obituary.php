@@ -29,7 +29,7 @@ class Obituary extends DataObject {
 		return $this->source . ' ' . $this->sourcePage . ' ' . $this->date;
 	}
 
-	function getObjectStructure() {
+    static function getObjectStructure() {
 		$structure = array(
 			array('property' => 'obituaryId', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id of the obituary in the database', 'storeDb' => true),
 			array('property' => 'personId', 'type' => 'hidden', 'label' => 'Person Id', 'description' => 'The id of the person this obituary is for', 'storeDb' => true),

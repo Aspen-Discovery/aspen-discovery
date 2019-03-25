@@ -26,7 +26,7 @@ class Marriage extends DataObject
 		return $this->spouseName . (isset($this->marriageDate) ? (' - ' . $this->marriageDate) : '');
 	}
 
-	function getObjectStructure(){
+    static function getObjectStructure(){
 		$structure = array(
 			array('property'=>'marriageId', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id of the marriage in the database', 'storeDb' => true),
 			array('property'=>'personId', 'type'=>'hidden', 'label'=>'Person Id', 'description'=>'The id of the person this marriage is for', 'storeDb' => true),

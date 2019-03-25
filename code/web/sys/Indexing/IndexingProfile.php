@@ -72,7 +72,7 @@ class IndexingProfile extends DataObject{
 	public $doAutomaticEcontentSuppression;
 	public $groupUnchangedFiles;
 
-	function getObjectStructure(){
+    static function getObjectStructure(){
 		$translationMapStructure = TranslationMap::getObjectStructure();
 		unset($translationMapStructure['indexingProfileId']);
 

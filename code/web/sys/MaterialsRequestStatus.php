@@ -19,7 +19,7 @@ class MaterialsRequestStatus extends DataObject {
 		return array('id');
 	}
 
-	function getObjectStructure(){
+    static function getObjectStructure(){
 		$library = new Library();
 		$library->orderBy('displayName');
 		$user = UserAccount::getLoggedInUser();

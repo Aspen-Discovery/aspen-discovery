@@ -17,7 +17,7 @@ class TranslationMap extends DataObject{
 	public $name;
 	public $usesRegularExpressions;
 
-	function getObjectStructure(){
+    static function getObjectStructure(){
 		$indexingProfiles = array();
 		require_once ROOT_DIR . '/sys/Indexing/IndexingProfile.php';
 		$indexingProfile = new IndexingProfile();

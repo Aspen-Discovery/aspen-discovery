@@ -43,7 +43,7 @@ class Marriages extends ObjectEditor
 		}
 		return $objectList;
 	}
-	function getObjectStructure(){
+    function getObjectStructure(){
 		return Marriage::getObjectStructure();
 	}
 	function getPrimaryKeyColumn(){

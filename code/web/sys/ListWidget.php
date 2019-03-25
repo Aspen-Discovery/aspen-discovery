@@ -52,7 +52,7 @@ class ListWidget extends DataObject
 		return array('id');
 	}
 
-	function getObjectStructure(){
+    static function getObjectStructure(){
 		//Load Libraries for lookup values
 		$libraryList = array();
 		$user = UserAccount::getLoggedInUser();

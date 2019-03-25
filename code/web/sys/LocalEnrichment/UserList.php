@@ -28,7 +28,7 @@ class UserList extends DataObject
 	);
 
 
-	function getObjectStructure(){
+    static function getObjectStructure(){
 		$structure = array(
 			'id' => array(
 				'property'=>'id',

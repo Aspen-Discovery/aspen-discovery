@@ -100,7 +100,7 @@ class Location extends DataObject
         return ['scope'];
     }
 
-    function getObjectStructure(){
+    static function getObjectStructure(){
 		//Load Libraries for lookup values
 		$library = new Library();
 		$library->orderBy('displayName');

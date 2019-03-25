@@ -26,7 +26,7 @@ class Theme extends DataObject
 
     public $generatedCss;
 
-    public function getObjectStructure() {
+    static function getObjectStructure() {
         $structure = array(
             'id' => array('property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id'),
             'themeName' => array('property'=>'themeName', 'type'=>'text', 'label'=>'Theme Name', 'description'=>'The Name of the Theme', 'maxLength'=>50, 'required' => true),

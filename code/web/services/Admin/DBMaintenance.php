@@ -24,9 +24,6 @@ require_once ROOT_DIR . '/services/Admin/Admin.php';
 /**
  * Provides a method of running SQL updates to the database.
  * Shows a list of updates that are available with a description of the
- *
- * @author Mark Noble
- *
  */
 class DBMaintenance extends Admin_Admin {
 	function launch() {
@@ -98,8 +95,10 @@ class DBMaintenance extends Admin_Admin {
 		$econtent_updates = getEContentUpdates();
         require_once ROOT_DIR . '/sys/DBMaintenance/theming_updates.php';
         $theming_updates = getThemingUpdates();
-        require_once ROOT_DIR . '/sys/DBMaintenance/oai_updates.php';
-        $oai_updates = getOaiUpdates();
+        require_once ROOT_DIR . '/sys/DBMaintenance/open_archives_updates.php';
+        $open_archives_updates = getOpenArchivesUpdates();
+        require_once ROOT_DIR . '/sys/DBMaintenance/redwood_archive_updates.php';
+        $redwood_updates = getRedwoodArchiveUpdates();
 
 		return array_merge(
 			$library_location_updates,
@@ -113,7 +112,8 @@ class DBMaintenance extends Admin_Admin {
             $rbdigital_updates,
 			$sierra_api_updates,
             $theming_updates,
-			$oai_updates,
+            $open_archives_updates,
+            $redwood_updates,
 			array(
 				'index_search_stats' => array(
 					'title' => 'Index search stats table',
