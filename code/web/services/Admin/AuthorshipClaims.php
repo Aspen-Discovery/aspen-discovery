@@ -48,7 +48,6 @@ class Admin_AuthorshipClaims extends ObjectEditor {
 		return false;
 	}
 	function canDelete(){
-		$user = UserAccount::getLoggedInUser();
 		return UserAccount::userHasRole('opacAdmin');
 	}
 
