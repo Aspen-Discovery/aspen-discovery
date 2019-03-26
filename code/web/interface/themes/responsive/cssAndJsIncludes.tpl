@@ -55,6 +55,7 @@
 		<script src="{$path}/interface/themes/responsive/js/vufind/materials-request.js?v={$gitBranch|urlencode}"></script>
 		<script src="{$path}/interface/themes/responsive/js/vufind/menu.js?v={$gitBranch|urlencode}"></script>
 		<script src="{$path}/interface/themes/responsive/js/vufind/overdrive.js?v={$gitBranch|urlencode}"></script>
+		<script src="{$path}/interface/themes/responsive/js/vufind/open-archives.js?v={$gitBranch|urlencode}"></script>
 		<script src="{$path}/interface/themes/responsive/js/vufind/hoopla.js?v={$gitBranch|urlencode}"></script>
 		<script src="{$path}/interface/themes/responsive/js/vufind/prospector.js?v={$gitBranch|urlencode}"></script>
 		<script src="{$path}/interface/themes/responsive/js/vufind/ratings.js?v={$gitBranch|urlencode}"></script>

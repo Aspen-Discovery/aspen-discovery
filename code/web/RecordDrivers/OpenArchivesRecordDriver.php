@@ -12,6 +12,7 @@ class OpenArchivesRecordDriver extends IndexRecordDriver
     {
         global $interface;
 
+        $interface->assign('id', $this->getId());
         $interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
         $interface->assign('openArchiveUrl', $this->getLinkUrl());
         $interface->assign('title', $this->getTitle());
@@ -35,7 +36,6 @@ class OpenArchivesRecordDriver extends IndexRecordDriver
         $openArchivesUsage->year = date('Y');
         if ($openArchivesUsage->find(true)){
             $openArchivesUsage->timesViewedInSearch++;
-            $openArchivesUsage->timesUsed = 0;
             $openArchivesUsage->update();
         }else {
             $openArchivesUsage->timesViewedInSearch = 1;

@@ -90,6 +90,9 @@ class UserAccount {
 		return UserAccount::$isLoggedIn;
 	}
 
+    /**
+     * @return bool|integer
+     */
 	public static function getActiveUserId() {
 		if (isset($_SESSION['activeUserId'])) {
 			return $_SESSION['activeUserId'];
