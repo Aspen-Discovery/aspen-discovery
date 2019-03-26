@@ -13,8 +13,6 @@ class BookCoverProcessor{
 	private $id;
 	private $isn;
 	private $issn;
-	private $isbn10;
-	private $isbn13;
 	private $upc;
 	private $isEContent;
 	private $type;
@@ -112,7 +110,11 @@ class BookCoverProcessor{
 			if ($this->getZinioCover($this->type.':'.$this->id)) {
 				return;
 			}
-		}
+		} elseif ($this->type == 'open_archives') {
+            if ($this->getOpenArchivesCover($this->id)) {
+                return;
+            }
+        }
 		$this->log("Looking for cover from providers", PEAR_LOG_INFO);
 		if ($this->getCoverFromProvider()){
 			return;
@@ -605,8 +607,6 @@ class BookCoverProcessor{
 	 * Display a "cover unavailable" graphic and terminate execution.
 	 */
 	function getDefaultCover(){
-		$useDefaultNoCover = true;
-
 		//Get the resource for the cover so we can load the title and author
 		$title = '';
 		$author = '';
@@ -1084,5 +1084,24 @@ class BookCoverProcessor{
         }else{
             $this->bookCoverInfo->update();
         }
+    }
+
+    private function getOpenArchivesCover($id)
+    {
+        //The thumbnail is not saved in the metadata.  To get the URL we need to fetch the page
+        //and then get the thumbnail from the og:image element
+        require_once ROOT_DIR . '/sys/OpenArchives/OpenArchivesRecord.php';
+        $openArchivesRecord = new OpenArchivesRecord();
+        $openArchivesRecord->id = $this->id;
+        if ($openArchivesRecord->find(true)){
+            $url = $openArchivesRecord->permanentUrl;
+            $pageContents = file_get_contents($url);
+            $matches = [];
+            if (preg_match('~<meta property="og:image" content="(.*?)" />~', $pageContents, $matches)){
+                $bookcoverUrl = $matches[1];
+                return $this->processImageURL('open_archives', $bookcoverUrl, true);
+            }
+        }
+        return false;
     }
 }

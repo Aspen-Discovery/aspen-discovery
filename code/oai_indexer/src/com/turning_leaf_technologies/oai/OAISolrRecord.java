@@ -64,7 +64,7 @@ class OAISolrRecord {
 
     SolrInputDocument getSolrDocument() {
         SolrInputDocument doc = new SolrInputDocument();
-        doc.addField("id", this.identifier);
+        doc.addField("id", this.id);
         doc.addField("identifier", this.identifier);
         doc.addField("type", type);
         doc.addField("collection_id", collection_id);

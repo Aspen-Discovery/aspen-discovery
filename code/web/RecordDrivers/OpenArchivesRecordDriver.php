@@ -33,20 +33,20 @@ class OpenArchivesRecordDriver extends IndexRecordDriver
         return 'RecordDrivers/OpenArchives/result.tpl';
     }
 
-    public function getBookcoverUrl($size = 'small')
+    public function getBookcoverUrl($size = 'small', $absolutePath = false)
     {
-        //The thumbnail is not saved in the metadata.  To get the URL we need to fetch the page
-        //and then get the thumbnail from the og:image element
-        //TODO: Add caching for the cover image
-        $url = $this->fields['identifier'];
-        $pageContents = file_get_contents($url);
-        $matches = [];
-        $bookcoverUrl = '';
-        if (preg_match('~<meta property="og:image" content="(.*?)" />~', $pageContents, $matches)){
-            $bookcoverUrl = $matches[1];
-        }
+        global $configArray;
 
-        return $bookcoverUrl;
+        if ($absolutePath){
+            $bookCoverUrl = $configArray['Site']['url'];
+        }else{
+            $bookCoverUrl = $configArray['Site']['path'];
+        }
+        $bookCoverUrl .= "/bookcover.php?id={$this->getUniqueID()}&size={$size}&type=open_archives";
+
+        return $bookCoverUrl;
+
+
     }
 
     public function getModule()
@@ -85,7 +85,7 @@ class OpenArchivesRecordDriver extends IndexRecordDriver
      */
     public function getUniqueID()
     {
-        return $this->fields['identifier'];
+        return $this->fields['id'];
     }
 
     public function getLinkUrl($absolutePath = false) {
