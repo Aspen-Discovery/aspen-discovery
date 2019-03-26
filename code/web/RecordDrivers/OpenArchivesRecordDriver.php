@@ -12,9 +12,8 @@ class OpenArchivesRecordDriver extends IndexRecordDriver
     {
         global $interface;
 
-        $openArchiveUrl = $this->getUniqueID();
         $interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
-        $interface->assign('openArchiveUrl', $openArchiveUrl);
+        $interface->assign('openArchiveUrl', $this->getLinkUrl());
         $interface->assign('title', $this->getTitle());
         if (isset($this->fields['description'])){
             $interface->assign('description', $this->getDescription());
@@ -28,6 +27,20 @@ class OpenArchivesRecordDriver extends IndexRecordDriver
             $interface->assign('date', $this->fields['date']);
         } else {
             $interface->assign('date', null);
+        }
+
+        require_once ROOT_DIR . '/sys/OpenArchives/OpenArchivesRecordUsage.php';
+        $openArchivesUsage = new OpenArchivesRecordUsage();
+        $openArchivesUsage->openArchivesRecordId = $this->getUniqueID();
+        $openArchivesUsage->year = date('Y');
+        if ($openArchivesUsage->find(true)){
+            $openArchivesUsage->timesViewedInSearch++;
+            $openArchivesUsage->timesUsed = 0;
+            $openArchivesUsage->update();
+        }else {
+            $openArchivesUsage->timesViewedInSearch = 1;
+            $openArchivesUsage->timesUsed = 0;
+            $openArchivesUsage->insert();
         }
 
         return 'RecordDrivers/OpenArchives/result.tpl';
