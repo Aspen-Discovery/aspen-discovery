@@ -80,7 +80,7 @@
 							<select name="searchSource" id="searchSource" title="Select what to search.	Items marked with a * will redirect you to one of our partner sites." onchange="VuFind.Searches.enableSearchTypes();" class="searchSourceHorizontal form-control">
 								{foreach from=$searchSources item=searchOption key=searchKey}
 									<option data-catalog_type="{$searchOption.catalogType}" value="{$searchKey}"
-											{if $searchKey == $searchSource && !$filterList} selected="selected"{/if}
+											{if $searchKey == $searchSource} selected="selected"{/if}
 											{if $searchKey == $searchSource} id="default_search_type"{/if}
 											    title="{$searchOption.description}">
 										{translate text="in"} {$searchOption.name}{if $searchOption.external} *{/if}
