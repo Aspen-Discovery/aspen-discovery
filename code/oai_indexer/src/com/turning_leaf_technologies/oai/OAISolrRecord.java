@@ -8,7 +8,6 @@ import java.util.HashSet;
 
 class OAISolrRecord {
     private String identifier;
-    private String oai_source;
     private String type;
     private String title;
     private String creator;
@@ -23,13 +22,12 @@ class OAISolrRecord {
     private HashSet<String> relation = new HashSet<>();
     private String rights;
     private HashSet<String> date = new HashSet<>();
+    private String id;
+    private String collection_name;
+    private long collection_id;
 
     void setIdentifier(String identifier) {
         this.identifier = identifier;
-    }
-
-    void setOai_source(String oai_source) {
-        this.oai_source = oai_source;
     }
 
     void setType(String type) {
@@ -66,9 +64,11 @@ class OAISolrRecord {
 
     SolrInputDocument getSolrDocument() {
         SolrInputDocument doc = new SolrInputDocument();
+        doc.addField("id", this.identifier);
         doc.addField("identifier", this.identifier);
         doc.addField("type", type);
-        doc.addField("oai_source", oai_source);
+        doc.addField("collection_id", collection_id);
+        doc.addField("collection_name", collection_name);
         doc.addField("last_indexed", new Date());
         doc.addField("title", title);
         doc.addField("creator", creator);
@@ -116,5 +116,17 @@ class OAISolrRecord {
 
     String getTitle() {
         return title;
+    }
+
+    void setId(String id) {
+        this.id = id;
+    }
+
+    void setCollectionName(String collection_name) {
+        this.collection_name = collection_name;
+    }
+
+    void setCollectionId(long collection_id) {
+        this.collection_id = collection_id;
     }
 }

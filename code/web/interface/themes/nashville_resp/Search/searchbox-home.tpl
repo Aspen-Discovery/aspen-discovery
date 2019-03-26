@@ -10,7 +10,7 @@
 		<form method="get" action="{$path}/Union/Search" id="searchForm" class="form-inline" onsubmit="VuFind.Searches.processSearchForm();">
 			<div class="row">
 				{*<!--<div class="{if $displaySidebarMenu}col-sm-12{else}col-sm-10 col-md-10 col-sm-push-1 col-md-push-1{/if}">-->*}
-					{if $searchIndex == 'Keyword' || $searchIndex == '' || $searchIndex == 'GenealogyKeyword'}
+					{if $searchIndex == 'Keyword' || $searchIndex == '' || $searchIndex == 'GenealogyKeyword' || $searchIndex == 'OpenArchivesKeyword'}
 						<input type="hidden" name="basicType" id="basicType" value="">
 						<input type="hidden" name="genealogyType" id="genealogyType" value="">
 					{/if}
@@ -46,7 +46,7 @@
 								</button>
 
 								<ul id="searchType" class="dropdown-menu text-left">
-									{if $searchIndex == 'Keyword' || $searchIndex == '' || $searchIndex == 'GenealogyKeyword'}
+									{if $searchIndex == 'Keyword' || $searchIndex == '' || $searchIndex == 'GenealogyKeyword' || $searchIndex == 'OpenArchivesKeyword'}
 										{foreach from=$basicSearchTypes item=searchDesc key=searchVal}
 											<li>
 												<a class="catalogType" href="#" onclick="return VuFind.Searches.updateSearchTypes('catalog', '{$searchVal}', '#searchForm');">{translate text="by"} {translate text=$searchDesc}</a>
@@ -81,7 +81,7 @@
 					</fieldset>
 				{*<!--</div>-->*}
 			</div>
-			{if $searchIndex != 'Keyword' && $searchIndex != '' && $searchIndex != 'GenealogyKeyword'}
+			{if $searchIndex != 'Keyword' && $searchIndex != '' && $searchIndex != 'GenealogyKeyword' || $searchIndex == 'OpenArchivesKeyword'}
 				<div class="row text-center">
 					{*<!--<div class="col-sm-10 col-md-10 col-sm-push-1 col-md-push-1">-->*}
 						<select name="basicType" class="searchTypeHome form-control catalogType" id="basicSearchTypes" title="Search by Keyword to find subjects, titles, authors, etc. Search by Title or Author for more precise results." {if $searchSource == 'genealogy'}style='display:none'{/if}>

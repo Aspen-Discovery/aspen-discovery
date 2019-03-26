@@ -1,6 +1,7 @@
 {strip}
 {if $loggedIn}
 	{* Setup the accoridon *}
+	<!--suppress HtmlUnknownTarget -->
 	<div id="home-account-links" class="sidebar-links row"{if $displaySidebarMenu} style="display: none"{/if}>
 		<div class="panel-group accordion" id="account-link-accordion">
 			{* My Account *}
@@ -11,7 +12,7 @@
 				{assign var="curSection" value=false}
 			{/if}
 
-		<div class="panel{if $displaySidebarMenu || $curSection} active{/if}">
+			<div class="panel{if $displaySidebarMenu || $curSection} active{/if}">
 				{* With SidebarMenu on, we should always keep the MyAccount Panel open. *}
 
 				{* Clickable header for my account section *}
@@ -313,6 +314,28 @@
 								<div class="adminMenuLink{if $action == "ArchivePrivateCollections"} active{/if}"><a href="{$path}/Admin/ArchivePrivateCollections">Archive Private Collections</a></div>
 								<div class="adminMenuLink{if $action == "ClearArchiveCache"} active{/if}"><a href="{$path}/Admin/ClearArchiveCache">Clear Cache</a></div>
 							{/if}
+						</div>
+					</div>
+				</div>
+			{/if}
+
+			{if $loggedIn && (array_key_exists('archives', $userRoles) || array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles))}
+				{if in_array($action, array('OpenArchivesCollections'))}
+					{assign var="curSection" value=true}
+				{else}
+					{assign var="curSection" value=false}
+				{/if}
+				<div class="panel{if $curSection} active{/if}">
+					<a href="#openArchivesMenu" data-toggle="collapse" data-parent="#adminMenuAccordion">
+						<div class="panel-heading">
+							<div class="panel-title">
+								Open Archives
+							</div>
+						</div>
+					</a>
+					<div id="openArchivesMenu" class="panel-collapse collapse {if $curSection}in{/if}">
+						<div class="panel-body">
+							<div class="adminMenuLink{if $action == "OpenArchivesCollections"} active{/if}"><a href="{$path}/Admin/OpenArchivesCollections">Open Archive Collections</a></div>
 						</div>
 					</div>
 				</div>

@@ -9,9 +9,10 @@
 		<form method="get" action="{$path}/Union/Search" id="searchForm" class="form-inline" onsubmit="VuFind.Searches.processSearchForm();">
 			<div class="row">
 				<div class="{if $displaySidebarMenu}col-sm-12{else}col-sm-10 col-md-10 col-sm-push-1 col-md-push-1{/if}">
-					{if $searchIndex == 'Keyword' || $searchIndex == '' || $searchIndex == 'GenealogyKeyword'}
+					{if $searchIndex == 'Keyword' || $searchIndex == '' || $searchIndex == 'GenealogyKeyword' || $searchIndex == 'OpenArchivesKeyword'}
 						<input type="hidden" name="basicType" id="basicType" value="">
 						<input type="hidden" name="genealogyType" id="genealogyType" value="">
+						<input type="hidden" name="oaType" id="oaType" value="">
 					{/if}
 					<input type="hidden" name="view" id="view" value="{$displayMode}">
 
@@ -45,7 +46,7 @@
 								</button>
 
 								<ul id="searchType" class="dropdown-menu text-left">
-									{if $searchIndex == 'Keyword' || $searchIndex == '' || $searchIndex == 'GenealogyKeyword'}
+									{if $searchIndex == 'Keyword' || $searchIndex == '' || $searchIndex == 'GenealogyKeyword' || $searchIndex == 'OpenArchivesKeyword'}
 										{foreach from=$basicSearchTypes item=searchDesc key=searchVal}
 											<li>
 												<a class="catalogType" href="#" onclick="return VuFind.Searches.updateSearchTypes('catalog', '{$searchVal}', '#searchForm');">{translate text="by"} {translate text=$searchDesc}</a>
@@ -64,6 +65,12 @@
 											</li>
 										{/foreach}
 										<li class="divider islandoraType"></li>
+										{foreach from=$openArchiveSearchTypes item=searchDesc key=searchVal}
+											<li>
+												<a class="oaType" href="#" onclick="return VuFind.Searches.updateSearchTypes('oa', '{$searchVal}', '#searchForm');">{translate text="by"} {translate text=$searchDesc}</a>
+											</li>
+										{/foreach}
+										<li class="divider oaType"></li>
 										{foreach from=$ebscoSearchTypes item=searchDesc key=searchVal}
 											<li>
 												<a class="ebscoType" href="#" onclick="return VuFind.Searches.updateSearchTypes('ebsco', '{$searchVal}', '#searchForm');">{translate text="by"} {translate text=$searchDesc}</a>
@@ -93,7 +100,7 @@
 				</div>
 			</div>
 
-			{if $searchIndex != 'Keyword' && $searchIndex != '' && $searchIndex != 'GenealogyKeyword'}
+			{if $searchIndex != 'Keyword' && $searchIndex != '' && $searchIndex != 'GenealogyKeyword' || $searchIndex == 'OpenArchivesKeyword'}
 				<div class="row text-center">
 					<div class="col-sm-10 col-md-10 col-sm-push-1 col-md-push-1">
 						<select name="basicType" class="searchTypeHome form-control catalogType" id="basicSearchTypes" title="Search by Keyword to find subjects, titles, authors, etc. Search by Title or Author for more precise results." {if $searchSource == 'genealogy' || $searchSource == 'islandora' || $searchSource == 'ebsco'}style="display:none"{/if}>
@@ -106,11 +113,17 @@
 								<option value="{$searchVal}"{if $genealogySearchIndex == $searchVal} selected="selected"{/if}>{translate text=$searchDesc}</option>
 							{/foreach}
 						</select>
+						<select name="oaType" class="searchTypeHome form-control oaType" id="oaSearchTypes" {if $searchSource != 'open_archives'}style="display:none"{/if}>
+							{foreach from=$oaSearchTypes item=searchDesc key=searchVal}
+								<option value="{$searchVal}"{if $openArchivesSearchIndex == $searchVal} selected="selected"{/if}>{translate text=$searchDesc}</option>
+							{/foreach}
+						</select>
 						<select name="islandoraType" class="searchTypeHome form-control islandoraType" id="islandoraSearchTypes" {if $searchSource != 'islandora'}style="display:none"{/if}>
 							{foreach from=$islandoraSearchTypes item=searchDesc key=searchVal}
 								<option value="{$searchVal}"{if $islandoraSearchIndex == $searchVal} selected="selected"{/if}>{translate text=$searchDesc}</option>
 							{/foreach}
 						</select>
+
 						<select name="ebscoType" class="searchTypeHome form-control ebscoType" id="ebscoSearchTypes" {if $searchSource != 'ebsco'}style="display:none"{/if}>
 							{foreach from=$ebscoSearchTypes item=searchDesc key=searchVal}
 								<option value="{$searchVal}"{if $ebscoSearchIndex == $searchVal} selected="selected"{/if}>{translate text=$searchDesc}</option>

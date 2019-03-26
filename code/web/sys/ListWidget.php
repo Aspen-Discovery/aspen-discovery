@@ -1,10 +1,7 @@
 <?php
-/**
- * Table Definition for library
- */
+
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
 require_once ROOT_DIR . '/sys/ListWidgetList.php';
-
 class ListWidget extends DataObject
 {
 	public $__table = 'list_widgets';    // table name
@@ -29,10 +26,10 @@ class ListWidget extends DataObject
 	public $numTitlesToShow;
 
 	// List Widget Styles and their labels
-	private $_styles = array('horizontal' => 'Horizontal', 'vertical'=> 'Vertical', 'single'=>'Single Title', 'single-with-next' => 'Single Title with a Next Button', 'text-list' => 'Text Only List');
+	private static $_styles = array('horizontal' => 'Horizontal', 'vertical'=> 'Vertical', 'single'=>'Single Title', 'single-with-next' => 'Single Title with a Next Button', 'text-list' => 'Text Only List');
 
 	// List Widget Display Types and their labels
-	private $_displayTypes = array(
+	private static $_displayTypes = array(
 		'tabs' => 'Tabbed Display',
 		'dropdown' => 'Drop Down List'
 	);
@@ -41,11 +38,11 @@ class ListWidget extends DataObject
 	private $lists;
 
 	public function getStyles(){
-	    return $this->_styles;
+	    return ListWidget::$_styles;
     }
 
     public function getDisplayTypes(){
-	    return $this->_displayTypes;
+	    return ListWidget::$_displayTypes;
     }
 
 	function keys() {
@@ -55,7 +52,6 @@ class ListWidget extends DataObject
     static function getObjectStructure(){
 		//Load Libraries for lookup values
 		$libraryList = array();
-		$user = UserAccount::getLoggedInUser();
 		if (UserAccount::userHasRole('opacAdmin')){
 			$library = new Library();
 			$library->orderBy('displayName');
@@ -152,7 +148,7 @@ class ListWidget extends DataObject
 				'type' => 'enum',
 				'label' => 'The style to use when displaying the list widget',
 //				'values' => array('horizontal' => 'Horizontal', 'vertical'=> 'Vertical', 'single'=>'Single Title', 'single-with-next' => 'Single Title with a Next Button', 'text-list' => 'Text Only List'),
-				'values' => $this->styles,
+				'values' => ListWidget::$_styles,
 				'storeDb' => true,
 				'default' => 'horizontal',
 				'hideInLists' => true,
@@ -195,7 +191,7 @@ class ListWidget extends DataObject
 			'listDisplayType' => array(
 				'property'=>'listDisplayType',
 				'type'=>'enum',
-				'values' => $this->displayTypes,
+				'values' => ListWidget::$_displayTypes,
 //      'values' => array(
 //          'tabs' => 'Tabbed Display',
 //          'dropdown' => 'Drop Down List'

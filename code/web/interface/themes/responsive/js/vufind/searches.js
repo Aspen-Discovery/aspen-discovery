@@ -216,16 +216,19 @@ VuFind.Searches = (function(){
 			}
 			if (catalogType == 'islandora'){
 				$(".islandoraType").show();
-				$(".catalogType,.genealogyType,.ebscoType").hide();
+				$(".catalogType,.genealogyType,.ebscoType, .oaType").hide();
 			}else if (catalogType == 'genealogy'){
 				$(".genealogyType").show();
-				$(".catalogType,.islandoraType,.ebscoType").hide();
+				$(".catalogType,.islandoraType,.ebscoType, .oaType").hide();
+			}else if (catalogType == 'open_archives'){
+				$(".oaType").show();
+				$(".catalogType,.islandoraType,.ebscoType, .genealogyType").hide();
 			}else if (catalogType == 'ebsco'){
 				$(".ebscoType").show();
-				$(".catalogType,.islandoraType,.genealogyType").hide();
+				$(".catalogType,.islandoraType,.genealogyType, .oaType").hide();
 			}else { // default catalog
 				$(".catalogType").show();
-				$(".genealogyType,.islandoraType,.ebscoType").hide();
+				$(".genealogyType,.islandoraType,.ebscoType, .oaType").hide();
 			}
 		},
 
@@ -354,13 +357,22 @@ VuFind.Searches = (function(){
 				$("#genealogyType").remove();
 				$("#islandoraType").remove();
 				$("#ebscoType").remove();
+				$("#oaType").remove();
 			}else if (catalogType == 'archive') {
 				$("#islandoraType").val(searchType);
 				$("#genealogyType").remove();
 				$("#ebscoType").remove();
 				$("#basicType").remove();
+				$("#oaType").remove();
 			}else if (catalogType == 'ebsco') {
 				$("#ebscoType").val(searchType);
+				$("#genealogyType").remove();
+				$("#islandoraType").remove();
+				$("#basicType").remove();
+				$("#oaType").remove();
+			}else if (catalogType == 'open_archives') {
+				$("#oaType").val(searchType);
+				$("#ebscoType").remove();
 				$("#genealogyType").remove();
 				$("#islandoraType").remove();
 				$("#basicType").remove();
@@ -369,6 +381,7 @@ VuFind.Searches = (function(){
 				$("#basicType").remove();
 				$("#islandoraType").remove();
 				$("#ebscoType").remove();
+				$("#oaType").remove();
 			}
 			$(searchFormId).submit();
 			return false;

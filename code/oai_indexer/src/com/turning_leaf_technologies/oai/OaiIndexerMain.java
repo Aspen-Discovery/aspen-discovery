@@ -18,7 +18,10 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.sql.*;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 
 public class OaiIndexerMain {
     private static Logger logger;
@@ -26,12 +29,25 @@ public class OaiIndexerMain {
     private static Ini configIni;
     private static ConcurrentUpdateSolrClient updateServer;
 
+    private static boolean fullReload = false;
+
+    private static PreparedStatement getOpenArchiveCollections;
+    private static PreparedStatement addOpenArchivesRecord;
+    private static PreparedStatement getExistingRecordsForCollection;
+    private static PreparedStatement updateLastIndexedForCollection;
+    private static PreparedStatement deleteOpenArchivesRecord;
+
     public static void main(String[] args){
         if (args.length == 0) {
             System.out.println("You must provide the servername as the first argument.");
             System.exit(1);
         }
+
         String serverName = args[0];
+
+        if (args.length >= 2 && args[1].equalsIgnoreCase("fullReload")){
+            fullReload = true;
+        }
 
         Date startTime = new Date();
         String processName = "oai_indexer";
@@ -40,6 +56,10 @@ public class OaiIndexerMain {
 
         // Read the base INI file to get information about the server (current directory/cron/config.ini)
         configIni = ConfigUtil.loadConfigFile("config.ini", serverName, logger);
+
+        //Connect to the aspen database
+        connectToDatabase();
+
         extractAndIndexOaiData();
 
         logger.info("Finished " + new Date().toString());
@@ -48,27 +68,118 @@ public class OaiIndexerMain {
         logger.info("Elapsed Minutes " + (elapsedTime / 60000));
     }
 
+    private static void connectToDatabase() {
+        Connection aspenConn ;
+        try{
+            String databaseConnectionInfo = ConfigUtil.cleanIniValue(configIni.get("Database", "database_aspen_jdbc"));
+            aspenConn = DriverManager.getConnection(databaseConnectionInfo);
+            getOpenArchiveCollections = aspenConn.prepareStatement("SELECT * FROM open_archives_collection");
+            addOpenArchivesRecord = aspenConn.prepareStatement("INSERT INTO open_archives_record (sourceCollection, permanentUrl) VALUES (?, ?)",PreparedStatement.RETURN_GENERATED_KEYS);
+            getExistingRecordsForCollection = aspenConn.prepareStatement("SELECT id, permanentUrl from open_archives_record WHERE sourceCollection = ?");
+            updateLastIndexedForCollection = aspenConn.prepareStatement("UPDATE open_archives_collection SET lastFetched = ? WHERE id = ?");
+            deleteOpenArchivesRecord = aspenConn.prepareStatement("DELETE FROM open_archives_record WHERE id = ?");
+        }catch (Exception e){
+            logger.error("Error connecting to aspen database", e);
+            System.exit(1);
+        }
+    }
+
     private static void extractAndIndexOaiData() {
         String solrPort = configIni.get("Reindex", "solrPort");
         setupSolrClient(solrPort);
 
-        String oaiBaseUrl = ConfigUtil.cleanIniValue(configIni.get("OAI", "baseUrl"));
-        String oaiSetsFromConfig = ConfigUtil.cleanIniValue(configIni.get("OAI", "oaiSet"));
+        if (fullReload) {
+            try {
+                updateServer.deleteByQuery("*:*");
+                //3-19-2019 Don't commit so the index does not get cleared during run (but will clear at the end).
+            } catch (HttpSolrClient.RemoteSolrException rse) {
+                logger.error("Solr is not running properly, try restarting", rse);
+                System.exit(-1);
+            } catch (Exception e) {
+                logger.error("Error deleting from index", e);
+            }
+        }
 
         try {
-            updateServer.deleteByQuery("oai_source:\"" + oaiBaseUrl + "\"");
-            //3-19-2019 Don't commit so the index does not get cleared during run (but will clear at the end).
-        } catch (HttpSolrClient.RemoteSolrException rse) {
-            logger.error("Solr is not running properly, try restarting", rse);
-            System.exit(-1);
+            ResultSet collectionsRS = getOpenArchiveCollections.executeQuery();
+            while (collectionsRS.next()) {
+                String collectionName = collectionsRS.getString("name");
+                String fetchFrequency = collectionsRS.getString("fetchFrequency");
+                long lastFetched = collectionsRS.getLong("lastFetched");
+                boolean needsIndexing = false;
+                long currentTime = new Date().getTime() / 1000;
+                if (collectionsRS.wasNull() || lastFetched == 0 || fullReload) {
+                    needsIndexing = true;
+                } else {
+                    //'hourly', 'daily', 'weekly', 'monthly', 'yearly', 'once'
+                    switch (fetchFrequency) {
+                        case "hourly":
+                            needsIndexing = lastFetched < (currentTime - 60 * 60);
+                            break;
+                        case "daily":
+                            needsIndexing = lastFetched < (currentTime - 24 * 60 * 60);
+                            break;
+                        case "weekly":
+                            needsIndexing = lastFetched < (currentTime - 7 * 24 * 60 * 60);
+                            break;
+                        case "monthly":
+                            needsIndexing = lastFetched < (currentTime - 30 * 24 * 60 * 60);
+                            break;
+                        case "yearly":
+                            needsIndexing = lastFetched < (currentTime - 3655 * 24 * 60 * 60);
+                            break;
+                    }
+                }
+                if (needsIndexing) {
+                    long collectionId = collectionsRS.getLong("id");
+                    String baseUrl = collectionsRS.getString("baseUrl");
+                    String setName = collectionsRS.getString("setName");
+                    extractAndIndexOaiCollection(collectionName, collectionId, baseUrl, setName, currentTime);
+                }
+            }
+        } catch (SQLException e) {
+            logger.error("Error loading collections", e);
+        }
+
+        try {
+            updateServer.commit();
         } catch (Exception e) {
-            logger.error("Error deleting from index", e);
+            logger.error("Error in final commit", e);
+        }
+    }
+
+    private static void extractAndIndexOaiCollection(String collectionName, long collectionId, String baseUrl, String setNames, long currentTime) {
+        //Get the existing records for the collection
+        //Get existing records for the collection
+        HashMap<String, String> existingRecords = new HashMap<>();
+        if (!fullReload) {
+            try {
+                updateServer.deleteByQuery("collection_name:\"" + collectionName + "\"");
+                //3-19-2019 Don't commit so the index does not get cleared during run (but will clear at the end).
+            } catch (HttpSolrClient.RemoteSolrException rse) {
+                logger.error("Solr is not running properly, try restarting", rse);
+                System.exit(-1);
+            } catch (Exception e) {
+                logger.error("Error deleting from index", e);
+            }
+        }
+
+        //Load existing records from the database so we can cleanup later if needed.
+        try {
+            getExistingRecordsForCollection.setLong(1, collectionId);
+            ResultSet existingRecordsRS = getExistingRecordsForCollection.executeQuery();
+            while (existingRecordsRS.next()) {
+                existingRecords.put(existingRecordsRS.getString("permanentUrl"), existingRecordsRS.getString("id"));
+            }
+        } catch (Exception e) {
+            logger.error("Error loading records for collection " + collectionName, e);
+            return;
         }
 
         int numRecordsLoaded = 0;
         int numRecordsSkipped = 0;
 
-        String[] oaiSets = oaiSetsFromConfig.split(",");
+        String[] oaiSets = setNames.split(",");
         for (String oaiSet : oaiSets) {
             logger.info("Loading set " + oaiSet);
             boolean continueLoading = true;
@@ -79,13 +190,13 @@ public class OaiIndexerMain {
                 String oaiUrl;
                 if (resumptionToken != null) {
                     try {
-                        oaiUrl = oaiBaseUrl + "?verb=ListRecords&resumptionToken=" + URLEncoder.encode(resumptionToken, "UTF-8");
+                        oaiUrl = baseUrl + "?verb=ListRecords&resumptionToken=" + URLEncoder.encode(resumptionToken, "UTF-8");
                     } catch (UnsupportedEncodingException e) {
                         logger.error("Error encoding resumption token", e);
                         return;
                     }
                 } else {
-                    oaiUrl = oaiBaseUrl + "?verb=ListRecords&metadataPrefix=oai_dc&set=" + oaiSet;
+                    oaiUrl = baseUrl + "?verb=ListRecords&metadataPrefix=oai_dc&set=" + oaiSet;
                 }
                 try {
                     logger.info("Loading from " + oaiUrl);
@@ -107,7 +218,7 @@ public class OaiIndexerMain {
                             if (curRecordNode instanceof Element) {
                                 Element curRecordElement = (Element) curRecordNode;
 
-                                if (indexElement(curRecordElement, oaiBaseUrl)) {
+                                if (indexElement(curRecordElement, existingRecords, collectionId, collectionName)) {
                                     numRecordsLoaded++;
                                 }else{
                                     numRecordsSkipped++;
@@ -134,16 +245,37 @@ public class OaiIndexerMain {
             }
         }
 
-        try {
-            updateServer.commit();
-        } catch (Exception e) {
-            logger.error("Error in final commit", e);
+        logger.info("Loaded " + numRecordsLoaded + " records from " + collectionName + ".");
+        if (numRecordsSkipped > 0) {
+            logger.info("Skipped " + numRecordsSkipped + " records from " + collectionName + ".");
         }
 
-        logger.info("Loaded " + numRecordsLoaded + " records.");
-        if (numRecordsSkipped > 0) {
-            logger.info("Skipped " + numRecordsLoaded + " records.");
+        if (existingRecords.size() > 0) {
+            logger.info("Deleted " + existingRecords.size() + " records from " + collectionName + ".");
+            try {
+                ArrayList<String> idsToDelete = new ArrayList<>(existingRecords.values());
+                for(String idToDelete : idsToDelete){
+                    deleteOpenArchivesRecord.setString(1, idToDelete);
+                    deleteOpenArchivesRecord.executeUpdate();
+                }
+                //3-19-2019 Don't commit so the index does not get cleared during run (but will clear at the end).
+            } catch (HttpSolrClient.RemoteSolrException rse) {
+                logger.error("Solr is not running properly, try restarting", rse);
+                System.exit(-1);
+            } catch (Exception e) {
+                logger.error("Error deleting ids from index", e);
+            }
         }
+
+        //Update that we indexed the collection
+        try {
+            updateLastIndexedForCollection.setLong(1, currentTime);
+            updateLastIndexedForCollection.setLong(2, collectionId);
+            updateLastIndexedForCollection.executeUpdate();
+        } catch (SQLException e) {
+            logger.error("Error updating the last fetch time for collection", e);
+        }
+
     }
 
     private static void setupSolrClient(String solrPort) {
@@ -154,9 +286,10 @@ public class OaiIndexerMain {
         updateServer.setRequestWriter(new BinaryRequestWriter());
     }
 
-    private static boolean indexElement(Element curRecordElement, String oaiBaseUrl) {
+    private static boolean indexElement(Element curRecordElement, HashMap<String, String> existingRecords, Long collectionId, String collectionName) {
         OAISolrRecord solrRecord = new OAISolrRecord();
-        solrRecord.setOai_source(oaiBaseUrl);
+        solrRecord.setCollectionId(collectionId);
+        solrRecord.setCollectionName(collectionName);
         logger.debug("Indexing element");
         NodeList children = curRecordElement.getChildNodes();
         for (int i = 0; i < children.getLength(); i++) {
@@ -239,13 +372,37 @@ public class OaiIndexerMain {
             if (solrRecord.getIdentifier() == null || solrRecord.getTitle() == null) {
                 logger.debug("Skipping record becuase no identifier was provided.");
             } else {
-                updateServer.add(solrRecord.getSolrDocument());
-                addedToIndex = true;
+                solrRecord.setCollectionId(collectionId);
+                solrRecord.setCollectionName(collectionName);
+                try {
+                    if (existingRecords.containsKey(solrRecord.getIdentifier())){
+                        solrRecord.setId(existingRecords.get(solrRecord.getIdentifier()));
+                        updateServer.add(solrRecord.getSolrDocument());
+                        addedToIndex = true;
+                    } else {
+                        addOpenArchivesRecord.setLong(1, collectionId);
+                        addOpenArchivesRecord.setString(2, solrRecord.getIdentifier());
+                        addOpenArchivesRecord.executeUpdate();
+                        ResultSet rs = addOpenArchivesRecord.getGeneratedKeys();
+                        if(rs.next())
+                        {
+                            solrRecord.setId(rs.getString(1));
+                            updateServer.add(solrRecord.getSolrDocument());
+                            addedToIndex = true;
+                        }
+                        rs.close();
+                    }
+                } catch (SQLException e) {
+                    logger.error("Error adding record to database", e);
+                }
             }
         } catch (SolrServerException e) {
             logger.error("Error adding document to solr server", e);
         } catch (IOException e) {
             logger.error("I/O Error adding document to solr server", e);
+        }
+        if (addedToIndex) {
+            existingRecords.remove(solrRecord.getIdentifier());
         }
         return addedToIndex;
     }

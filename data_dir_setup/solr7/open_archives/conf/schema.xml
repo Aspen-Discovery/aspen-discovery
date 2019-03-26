@@ -47,8 +47,12 @@
 	</types>
 
 	<fields>
+		<!-- The id of the record in the database -->
+		<field name="id" type="unchanged_string" indexed="true" stored="true" multiValued="false" required="true"/>
+		<!-- The url to the record in the Open Archive -->
 		<field name="identifier" type="unchanged_string" indexed="true" stored="true" multiValued="false" required="true"/>
-		<field name="oai_source" type="unchanged_string" indexed="true" stored="true" multiValued="false" required="true"/>
+		<field name="collection_id" type="unchanged_string" indexed="true" stored="true" multiValued="false" required="true"/>
+		<field name="collection_name" type="unchanged_string" indexed="true" stored="true" multiValued="false" required="true"/>
 		<field name="type" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
 		<field name="_version_" type="long" indexed="true" stored="true"/>
 

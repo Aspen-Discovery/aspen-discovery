@@ -3,9 +3,10 @@
 	<form method="get" action="{$path}/Union/Search" id="searchForm" class="form-inline" onsubmit="VuFind.Searches.processSearchForm();">
 
 		{* Hidden Inputs *}
-		{if $searchIndex == 'Keyword' || $searchIndex == '' || $searchIndex == 'GenealogyKeyword'}
+		{if $searchIndex == 'Keyword' || $searchIndex == '' || $searchIndex == 'GenealogyKeyword' || $searchIndex == 'OpenArchivesKeyword'}
 			<input type="hidden" name="basicType" id="basicType" value="">
 			<input type="hidden" name="genealogyType" id="genealogyType" value="">
+			<input type="hidden" name="oaType" id="oaType" value="">
 		{/if}
 		<input type="hidden" name="view" id="view" value="{$displayMode}">
 
@@ -65,7 +66,13 @@
 							<option value="{$searchVal}"{if $genealogySearchIndex == $searchVal} selected="selected"{/if}>{translate text=$searchDesc}</option>
 						{/foreach}
 					</select>
-
+					{if $enableOpenArchives}
+						<select name="oaType" class="searchTypeHorizontal form-control oaType" id="oaSearchTypes" {if $searchSource != 'open_archives'}style="display:none"{/if}>
+							{foreach from=$openArchivesSearchTypes item=searchDesc key=searchVal}
+								<option value="{$searchVal}"{if $genealogySearchIndex == $searchVal} selected="selected"{/if}>{translate text=$searchDesc}</option>
+							{/foreach}
+						</select>
+					{/if}
 				</div>
 
 					{if !$hiddenSearchSource}

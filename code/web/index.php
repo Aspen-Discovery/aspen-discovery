@@ -391,6 +391,11 @@ if (isset($_REQUEST['genealogyType'])){
 }else{
 	$interface->assign('genealogySearchIndex', 'GenealogyKeyword');
 }
+if (isset($_REQUEST['oaType'])){
+    $interface->assign('openArchivesSearchIndex', $_REQUEST['oaType']);
+}else{
+    $interface->assign('openArchivesSearchIndex', 'OpenArchivesKeyword');
+}
 if ($searchSource == 'genealogy') {
 	$_REQUEST['type'] = isset($_REQUEST['genealogyType']) ? $_REQUEST['genealogyType'] : 'GenealogyKeyword';
 }elseif ($searchSource == 'islandora'){
