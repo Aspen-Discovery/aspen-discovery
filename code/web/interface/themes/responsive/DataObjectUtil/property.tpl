@@ -52,20 +52,20 @@
 				</div>
 			</div>
 		{elseif $property.type == 'text' || $property.type == 'folder'}
-			<input type='text' name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if $property.size}size='{$property.size}'{/if} class='form-control {if $property.required}required{/if}'>
+			<input type='text' name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if $property.size}size='{$property.size}'{/if} class='form-control {if $property.required}required{/if}' {if $property.readOnly}readonly{/if}>
 		{elseif $property.type == 'integer'}
-			<input type='number' name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if $property.max}max="{$property.max}"{/if} {if $property.min}min="{$property.min}"{/if} {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if $property.size}size='{$property.size}'{/if} class='form-control {if $property.required}required{/if}'>
+			<input type='number' name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if $property.max}max="{$property.max}"{/if} {if $property.min}min="{$property.min}"{/if} {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if $property.size}size='{$property.size}'{/if} class='form-control {if $property.required}required{/if}' {if $property.readOnly}readonly{/if}>
 		{elseif $property.type == 'url'}
-			<input type='text' name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if $property.size}size='{$property.size}'{/if} class='form-control url {if $property.required}required{/if}'>
+			<input type='text' name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if $property.size}size='{$property.size}'{/if} class='form-control url {if $property.required}required{/if}' {if $property.readOnly}readonly{/if}>
 		{elseif $property.type == 'email'}
-			<input type='text' name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if $property.size}size='{$property.size}'{/if} class='form-control email {if $property.required}required{/if}'>
+			<input type='text' name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if $property.size}size='{$property.size}'{/if} class='form-control email {if $property.required}required{/if}' {if $property.readOnly}readonly{/if}>
 		{elseif $property.type == 'color'}
 			<div class="row">
 				<div class="col-sm-3">
-					<input type='color' name='{$propName}' id='{$propName}' value='{$propValue|escape}' class='form-control{if $property.required}required{/if}' size="7" maxlength="7" onchange="$('#{$propName}Hex').value(this.value)">
+					<input type='color' name='{$propName}' id='{$propName}' value='{$propValue|escape}' class='form-control{if $property.required}required{/if}' size="7" maxlength="7" onchange="$('#{$propName}Hex').value(this.value)" {if $property.readOnly}readonly{/if}>
 				</div>
 				<div class="col-sm-3">
-					<input type='text' id='{$propName}Hex' value='{$propValue|escape}' class='form-control' size="7" maxlength="7" onchange="$('#{$propName}').val(this.value)" pattern="^#([a-fA-F0-9]{ldelim}6{rdelim})$">
+					<input type='text' id='{$propName}Hex' value='{$propValue|escape}' class='form-control' size="7" maxlength="7" onchange="$('#{$propName}').val(this.value)" pattern="^#([a-fA-F0-9]{ldelim}6{rdelim})$" {if $property.readOnly}readonly{/if}>
 				</div>
 				<div class="col-sm-6">
 					{assign var=defaultVariableName value="`$propName`Default"}
@@ -75,16 +75,16 @@
 						{assign var=useDefault value=$object->$defaultVariableName}
 					{/if}
 
-					<input type="checkbox" name='{$propName}-default' id='{$propName}-default' {if $useDefault == '1'}checked="checked"{/if}/><label for='{$propName}-default'>Use Default</label>
+					<input type="checkbox" name='{$propName}-default' id='{$propName}-default' {if $useDefault == '1'}checked="checked"{/if} {if $property.readOnly}readonly{/if}/><label for='{$propName}-default'>Use Default</label>
 				</div>
 			</div>
 		{elseif $property.type == 'multiemail'}
-			<input type='text' name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if $property.size}size='{$property.size}'{/if} class='form-control multiemail {if $property.required}required{/if}'>
+			<input type='text' name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if $property.size}size='{$property.size}'{/if} class='form-control multiemail {if $property.required}required{/if}' {if $property.readOnly}readonly{/if}>
 		{elseif $property.type == 'date'}
 			{*<input type='{$property.type}' name='{$propName}' id='{$propName}' value='{$propValue}' {if $property.maxLength}maxLength='10'{/if}	class='form-control {if $property.required}required{/if} date'>*}
 			{* disable html5 features until consistly implemented *}
 			{*<input type='text' name='{$propName}' id='{$propName}' value='{$propValue}' {if $property.maxLength}maxLength='10'{/if}	class='form-control {if $property.required}required{/if} date'>*}
-			<input type='text' name='{$propName}' id='{$propName}' value='{$propValue}' {if $property.maxLength}maxLength='10'{/if}	class='form-control {if $property.required}required{/if} datePika'>
+			<input type='text' name='{$propName}' id='{$propName}' value='{$propValue}' {if $property.maxLength}maxLength='10'{/if}	class='form-control {if $property.required}required{/if} datePika' {if $property.readOnly}readonly{/if}>
 			{* datePika is for the form validator *}
 		{elseif $property.type == 'partialDate'}
 			{include file="DataObjectUtil/partialDate.tpl"}
@@ -96,7 +96,7 @@
 			{include file="DataObjectUtil/password.tpl"}
 
 		{elseif $property.type == 'pin'}
-			<input type='password' name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if $property.size}size='{$property.size}'{/if} class='form-control digits {if $property.required}required{/if}'>
+			<input type='password' name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if $property.size}size='{$property.size}'{/if} class='form-control digits {if $property.required}required{/if}' {if $property.readOnly}readonly{/if}>
 
 
 		{elseif $property.type == 'currency'}
@@ -137,7 +137,7 @@
 		{elseif $property.type == 'checkbox'}
 			<div class="checkbox">
 				<label for='{$propName}'{if $property.description} title="{$property.description}"{/if}>
-					<input type='checkbox' name='{$propName}' id='{$propName}' {if ($propValue == 1)}checked='checked'{/if}> {$property.label}
+					<input type='checkbox' name='{$propName}' id='{$propName}' {if ($propValue == 1)}checked='checked'{/if} {if $property.readOnly}readonly{/if}> {$property.label}
 				</label>
 			</div>
 

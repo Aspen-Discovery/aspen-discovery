@@ -3,8 +3,8 @@
 function getOpenArchivesUpdates() {
     return [
         'open_archives_collection' => array(
-            'title' => 'Open Archive Usage by user',
-            'description' => 'Add a table to track how often a particular user uses the Open Archives.',
+            'title' => 'Open Archive Collections',
+            'description' => 'Add a table to track collections of Open Archives Materials.',
             'sql' => array(
                 "CREATE TABLE open_archives_collection (
                     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -14,6 +14,22 @@ function getOpenArchivesUpdates() {
                     fetchFrequency ENUM('hourly', 'daily', 'weekly', 'monthly', 'yearly', 'once'),
                     lastFetched INT(11)
                 ) ENGINE = InnoDB",
+            ),
+        ),
+
+        'open_archives_collection_filtering' => array(
+            'title' => 'Open Archive Collection Filtering',
+            'description' => 'Add the ability to filter a collection by subject.',
+            'sql' => array(
+                "ALTER TABLE open_archives_collection ADD COLUMN subjectFilters MEDIUMTEXT",
+            ),
+        ),
+
+        'open_archives_collection_subjects' => array(
+            'title' => 'Open Archive Collection Subjects',
+            'description' => 'Add a field to list all of the available subjects in a collection (to make filtering easier).',
+            'sql' => array(
+                "ALTER TABLE open_archives_collection ADD COLUMN subjects MEDIUMTEXT",
             ),
         ),
 

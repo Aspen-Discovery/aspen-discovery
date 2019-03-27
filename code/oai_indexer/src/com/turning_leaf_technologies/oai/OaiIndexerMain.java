@@ -19,9 +19,9 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.sql.*;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.Date;
-import java.util.HashMap;
+import java.util.regex.Pattern;
 
 public class OaiIndexerMain {
     private static Logger logger;
@@ -34,7 +34,7 @@ public class OaiIndexerMain {
     private static PreparedStatement getOpenArchiveCollections;
     private static PreparedStatement addOpenArchivesRecord;
     private static PreparedStatement getExistingRecordsForCollection;
-    private static PreparedStatement updateLastIndexedForCollection;
+    private static PreparedStatement updateCollectionAfterIndexing;
     private static PreparedStatement deleteOpenArchivesRecord;
 
     public static void main(String[] args){
@@ -76,7 +76,7 @@ public class OaiIndexerMain {
             getOpenArchiveCollections = aspenConn.prepareStatement("SELECT * FROM open_archives_collection");
             addOpenArchivesRecord = aspenConn.prepareStatement("INSERT INTO open_archives_record (sourceCollection, permanentUrl) VALUES (?, ?)",PreparedStatement.RETURN_GENERATED_KEYS);
             getExistingRecordsForCollection = aspenConn.prepareStatement("SELECT id, permanentUrl from open_archives_record WHERE sourceCollection = ?");
-            updateLastIndexedForCollection = aspenConn.prepareStatement("UPDATE open_archives_collection SET lastFetched = ? WHERE id = ?");
+            updateCollectionAfterIndexing = aspenConn.prepareStatement("UPDATE open_archives_collection SET lastFetched = ?, subjects = ? WHERE id = ?");
             deleteOpenArchivesRecord = aspenConn.prepareStatement("DELETE FROM open_archives_record WHERE id = ?");
         }catch (Exception e){
             logger.error("Error connecting to aspen database", e);
@@ -134,7 +134,17 @@ public class OaiIndexerMain {
                     long collectionId = collectionsRS.getLong("id");
                     String baseUrl = collectionsRS.getString("baseUrl");
                     String setName = collectionsRS.getString("setName");
-                    extractAndIndexOaiCollection(collectionName, collectionId, baseUrl, setName, currentTime);
+                    String subjectFilterString = collectionsRS.getString("subjectFilters");
+                    ArrayList<Pattern> subjectFilters = new ArrayList<>();
+                    if (subjectFilterString != null && subjectFilterString.length() > 0){
+                        String[] subjectFiltersRaw =  subjectFilterString.split("\\s*(\\r\\n|\\n|\\r)\\s*");
+                        for(String subjectFilter : subjectFiltersRaw) {
+                            if (subjectFilter.length() > 0) {
+                                subjectFilters.add(Pattern.compile(subjectFilter, Pattern.CASE_INSENSITIVE));
+                            }
+                        }
+                    }
+                    extractAndIndexOaiCollection(collectionName, collectionId, subjectFilters, baseUrl, setName, currentTime);
                 }
             }
         } catch (SQLException e) {
@@ -148,7 +158,7 @@ public class OaiIndexerMain {
         }
     }
 
-    private static void extractAndIndexOaiCollection(String collectionName, long collectionId, String baseUrl, String setNames, long currentTime) {
+    private static void extractAndIndexOaiCollection(String collectionName, long collectionId, ArrayList<Pattern> subjectFilters, String baseUrl, String setNames, long currentTime) {
         //Get the existing records for the collection
         //Get existing records for the collection
         HashMap<String, String> existingRecords = new HashMap<>();
@@ -178,6 +188,8 @@ public class OaiIndexerMain {
 
         int numRecordsLoaded = 0;
         int numRecordsSkipped = 0;
+
+        TreeSet<String> allExistingCollectionSubjects = new TreeSet<>();
 
         String[] oaiSets = setNames.split(",");
         for (String oaiSet : oaiSets) {
@@ -218,7 +230,7 @@ public class OaiIndexerMain {
                             if (curRecordNode instanceof Element) {
                                 Element curRecordElement = (Element) curRecordNode;
 
-                                if (indexElement(curRecordElement, existingRecords, collectionId, collectionName)) {
+                                if (indexElement(curRecordElement, existingRecords, collectionId, collectionName, subjectFilters, allExistingCollectionSubjects)) {
                                     numRecordsLoaded++;
                                 }else{
                                     numRecordsSkipped++;
@@ -269,9 +281,10 @@ public class OaiIndexerMain {
 
         //Update that we indexed the collection
         try {
-            updateLastIndexedForCollection.setLong(1, currentTime);
-            updateLastIndexedForCollection.setLong(2, collectionId);
-            updateLastIndexedForCollection.executeUpdate();
+            updateCollectionAfterIndexing.setLong(1, currentTime);
+            updateCollectionAfterIndexing.setString(2, String.join("\n", allExistingCollectionSubjects));
+            updateCollectionAfterIndexing.setLong(3, collectionId);
+            updateCollectionAfterIndexing.executeUpdate();
         } catch (SQLException e) {
             logger.error("Error updating the last fetch time for collection", e);
         }
@@ -286,7 +299,7 @@ public class OaiIndexerMain {
         updateServer.setRequestWriter(new BinaryRequestWriter());
     }
 
-    private static boolean indexElement(Element curRecordElement, HashMap<String, String> existingRecords, Long collectionId, String collectionName) {
+    private static boolean indexElement(Element curRecordElement, HashMap<String, String> existingRecords, Long collectionId, String collectionName, ArrayList<Pattern> subjectFilters, Set<String> collectionSubjects) {
         OAISolrRecord solrRecord = new OAISolrRecord();
         solrRecord.setCollectionId(collectionId);
         solrRecord.setCollectionName(collectionName);
@@ -296,72 +309,80 @@ public class OaiIndexerMain {
             Node curChild = children.item(i);
             if (curChild instanceof Element && ((Element)curChild).getTagName().equals("metadata")) {
                 Element metadataElement = (Element)curChild;
-                //There is an oai_dc element and then we get into the meat of things
-                NodeList metadataFields = metadataElement.getChildNodes().item(1).getChildNodes();
-                for (int j = 0; j < metadataFields.getLength(); j++){
-                    Node curNode = metadataFields.item(j);
-                    if (curNode instanceof Element){
-                        Element metadataFieldElement = (Element)curNode;
-                        String metadataTag = metadataFieldElement.getTagName();
-                        String textContent = metadataFieldElement.getTextContent();
-                        switch (metadataTag){
-                            case "dc:title":
-                                solrRecord.setTitle(textContent);
-                                break;
-                            case "dc:identifier":
-                                if (textContent.startsWith("http")){
-                                    solrRecord.setIdentifier(textContent);
-                                } else if (solrRecord.getIdentifier() == null){
-                                    solrRecord.setIdentifier(textContent);
-                                }
-                                break;
-                            case "dc:creator":
-                                solrRecord.setCreator(textContent);
-                                break;
-                            case "dc:contributor":
-                                solrRecord.setContributor(textContent);
-                                break;
-                            case "dc:description":
-                                solrRecord.setDescription(textContent);
-                                break;
-                            case "dc:type":
-                                solrRecord.setType(textContent);
-                                break;
-                            case "dc:subject":
-                                String[] subjects = textContent.split(";");
-                                solrRecord.addSubjects(subjects);
-                                break;
-                            case "dc:coverage":
-                                solrRecord.addCoverage(textContent);
-                                break;
-                            case "dc:publisher":
-                                solrRecord.addPublisher(textContent);
-                                break;
-                            case "dc:format":
-                                solrRecord.addFormat(textContent);
-                                break;
-                            case "dc:source":
-                                solrRecord.addSource(textContent);
-                                break;
-                            case "dc:language":
-                                solrRecord.setLanguage(textContent);
-                                break;
-                            case "dc:relation":
-                                solrRecord.addRelation(textContent);
-                                break;
-                            case "dc:rights":
-                                solrRecord.setRights(textContent);
-                                break;
-                            case "dc:date":
-                                String[] dateRange = textContent.split(";");
-                                for (int tmpIndex = 0; tmpIndex < dateRange.length; tmpIndex++){
-                                    dateRange[tmpIndex] = dateRange[tmpIndex].trim();
-                                }
-                                solrRecord.addDates(dateRange);
+                NodeList metadataChildren = metadataElement.getChildNodes();
+                for (int metaDataChildCtr = 0; metaDataChildCtr < metadataChildren.getLength(); metaDataChildCtr++) {
+                    Node curMetadataChild = metadataChildren.item(metaDataChildCtr);
+                    if (curMetadataChild instanceof Element && ((Element)curMetadataChild).getTagName().equals("oai_dc:dc")) {
+                        Element curMetadataChildElement = (Element)curMetadataChild;
 
-                                break;
-                            default:
-                                logger.warn("Unhandled tag " + metadataTag + " value = " + textContent) ;
+                        NodeList metadataFields = curMetadataChildElement.getChildNodes();
+                        for (int j = 0; j < metadataFields.getLength(); j++){
+                            Node curNode = metadataFields.item(j);
+                            if (curNode instanceof Element){
+                                Element metadataFieldElement = (Element)curNode;
+                                String metadataTag = metadataFieldElement.getTagName();
+                                String textContent = metadataFieldElement.getTextContent();
+                                switch (metadataTag){
+                                    case "dc:title":
+                                        solrRecord.setTitle(textContent);
+                                        break;
+                                    case "dc:identifier":
+                                        if (textContent.startsWith("http")){
+                                            solrRecord.setIdentifier(textContent);
+                                        } else if (solrRecord.getIdentifier() == null){
+                                            solrRecord.setIdentifier(textContent);
+                                        }
+                                        break;
+                                    case "dc:creator":
+                                        solrRecord.setCreator(textContent);
+                                        break;
+                                    case "dc:contributor":
+                                        solrRecord.setContributor(textContent);
+                                        break;
+                                    case "dc:description":
+                                        solrRecord.setDescription(textContent);
+                                        break;
+                                    case "dc:type":
+                                        solrRecord.setType(textContent);
+                                        break;
+                                    case "dc:subject":
+                                        String[] subjects = textContent.split("\\s+;\\s+");
+                                        solrRecord.addSubjects(subjects);
+                                        Collections.addAll(collectionSubjects, subjects);
+                                        break;
+                                    case "dc:coverage":
+                                        solrRecord.addCoverage(textContent);
+                                        break;
+                                    case "dc:publisher":
+                                        solrRecord.addPublisher(textContent);
+                                        break;
+                                    case "dc:format":
+                                        solrRecord.addFormat(textContent);
+                                        break;
+                                    case "dc:source":
+                                        solrRecord.addSource(textContent);
+                                        break;
+                                    case "dc:language":
+                                        solrRecord.setLanguage(textContent);
+                                        break;
+                                    case "dc:relation":
+                                        solrRecord.addRelation(textContent);
+                                        break;
+                                    case "dc:rights":
+                                        solrRecord.setRights(textContent);
+                                        break;
+                                    case "dc:date":
+                                        String[] dateRange = textContent.split(";");
+                                        for (int tmpIndex = 0; tmpIndex < dateRange.length; tmpIndex++){
+                                            dateRange[tmpIndex] = dateRange[tmpIndex].trim();
+                                        }
+                                        solrRecord.addDates(dateRange);
+
+                                        break;
+                                    default:
+                                        logger.warn("Unhandled tag " + metadataTag + " value = " + textContent) ;
+                                }
+                            }
                         }
                     }
                 }
@@ -370,30 +391,44 @@ public class OaiIndexerMain {
         boolean addedToIndex = false;
         try {
             if (solrRecord.getIdentifier() == null || solrRecord.getTitle() == null) {
-                logger.debug("Skipping record becuase no identifier was provided.");
+                logger.debug("Skipping record because no identifier was provided.");
             } else {
-                solrRecord.setCollectionId(collectionId);
-                solrRecord.setCollectionName(collectionName);
-                try {
-                    if (existingRecords.containsKey(solrRecord.getIdentifier())){
-                        solrRecord.setId(existingRecords.get(solrRecord.getIdentifier()));
-                        updateServer.add(solrRecord.getSolrDocument());
-                        addedToIndex = true;
-                    } else {
-                        addOpenArchivesRecord.setLong(1, collectionId);
-                        addOpenArchivesRecord.setString(2, solrRecord.getIdentifier());
-                        addOpenArchivesRecord.executeUpdate();
-                        ResultSet rs = addOpenArchivesRecord.getGeneratedKeys();
-                        if(rs.next())
-                        {
-                            solrRecord.setId(rs.getString(1));
+                boolean subjectMatched = true;
+                if (subjectFilters.size() > 0) {
+                    subjectMatched = false;
+                    for (String curSubject : solrRecord.getSubjects()) {
+                        for (Pattern curSubjectFilter : subjectFilters) {
+                            if (curSubjectFilter.matcher(curSubject).matches()){
+                                subjectMatched = true;
+                            }
+                        }
+                    }
+                }
+                if (!subjectMatched){
+                    logger.debug("Skipping record because no subject matched.");
+                }else {
+                    solrRecord.setCollectionId(collectionId);
+                    solrRecord.setCollectionName(collectionName);
+                    try {
+                        if (existingRecords.containsKey(solrRecord.getIdentifier())) {
+                            solrRecord.setId(existingRecords.get(solrRecord.getIdentifier()));
                             updateServer.add(solrRecord.getSolrDocument());
                             addedToIndex = true;
+                        } else {
+                            addOpenArchivesRecord.setLong(1, collectionId);
+                            addOpenArchivesRecord.setString(2, solrRecord.getIdentifier());
+                            addOpenArchivesRecord.executeUpdate();
+                            ResultSet rs = addOpenArchivesRecord.getGeneratedKeys();
+                            if (rs.next()) {
+                                solrRecord.setId(rs.getString(1));
+                                updateServer.add(solrRecord.getSolrDocument());
+                                addedToIndex = true;
+                            }
+                            rs.close();
                         }
-                        rs.close();
+                    } catch (SQLException e) {
+                        logger.error("Error adding record to database", e);
                     }
-                } catch (SQLException e) {
-                    logger.error("Error adding record to database", e);
                 }
             }
         } catch (SolrServerException e) {

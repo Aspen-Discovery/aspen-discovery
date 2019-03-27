@@ -129,4 +129,8 @@ class OAISolrRecord {
     void setCollectionId(long collection_id) {
         this.collection_id = collection_id;
     }
+
+    HashSet<String> getSubjects() {
+        return subjects;
+    }
 }
