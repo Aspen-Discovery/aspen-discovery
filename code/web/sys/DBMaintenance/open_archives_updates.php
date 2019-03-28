@@ -34,8 +34,8 @@ function getOpenArchivesUpdates() {
         ),
 
         'open_archives_record' => array(
-            'title' => 'Open Archive Usage by user',
-            'description' => 'Add a table to track how often a particular user uses the Open Archives.',
+            'title' => 'Open Archive Record',
+            'description' => 'Add a table to track records within Open Archives',
             'sql' => array(
                 "CREATE TABLE open_archives_record (
                     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -64,8 +64,8 @@ function getOpenArchivesUpdates() {
         ),
 
         'track_open_archive_record_usage' => array(
-            'title' => 'Open Archive Usage by user',
-            'description' => 'Add a table to track how often a particular user uses the Open Archives.',
+            'title' => 'Open Archive Record Usage',
+            'description' => 'Add a table to track how records within open archives are viewed.',
             'continueOnError' => true,
             'sql' => array(
                 "CREATE TABLE open_archives_record_usage (
