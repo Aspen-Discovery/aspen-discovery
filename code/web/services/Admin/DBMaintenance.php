@@ -1589,6 +1589,15 @@ class DBMaintenance extends Admin_Admin {
                     )
                 ),
 
+                'account_profiles_4' => array(
+                    'title' => 'Update Account Profiles 4',
+                    'description' => 'Add database port to connection information',
+                    'continueOnError' => true,
+                    'sql' => array(
+                        "ALTER TABLE `account_profiles` ADD `databasePort` varchar(5)",
+                    )
+                ),
+
 					'archive_private_collections' => array(
 							'title' => 'Archive Private Collections',
 							'description' => 'Create a table to store information about collections that should be private to the owning library',

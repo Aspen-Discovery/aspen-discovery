@@ -425,7 +425,8 @@ class Koha extends CurlBasedDriver {
 
 	function initDatabaseConnection(){
 		if ($this->dbConnection == null){
-			$this->dbConnection = mysqli_connect($this->accountProfile->databaseHost, $this->accountProfile->databaseUser, $this->accountProfile->databasePassword, $this->accountProfile->databaseName);
+		    $port = empty($this->accountProfile->databasePort) ? '3306' : $this->accountProfile->databasePort;
+			$this->dbConnection = mysqli_connect($this->accountProfile->databaseHost, $this->accountProfile->databaseUser, $this->accountProfile->databasePassword, $this->accountProfile->databaseName, $port);
 
 			if (!$this->dbConnection || mysqli_errno($this->dbConnection) != 0){
 				global $logger;
