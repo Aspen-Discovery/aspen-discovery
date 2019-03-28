@@ -463,6 +463,10 @@ class Koha extends CurlBasedDriver {
 		return true;
 	}
 
+    public function hasReadingHistoryUpdatesOfILS(){
+        return false;
+    }
+
     /**
      * @param User $patron
      * @param int $page
@@ -470,7 +474,7 @@ class Koha extends CurlBasedDriver {
      * @return array
      * @throws Exception
      */
-	public function getReadingHistory($patron, $page = 1, $recordsPerPage = -1) {
+	public function getReadingHistory($patron, $page = 1, $recordsPerPage = -1, $sortOption = "checkedOut") {
 		// TODO implement sorting, currently only done in catalogConnection for aspencat reading history
 		//TODO prepend indexProfileType
 		$this->initDatabaseConnection();
@@ -1080,41 +1084,6 @@ class Koha extends CurlBasedDriver {
 		$allFeesRS->close();
 
 		return $fines;
-	}
-
-	/**
-	 * Do an update or edit of reading history information.  Current actions are:
-	 * deleteMarked
-	 * deleteAll
-	 * exportList
-	 * optOut
-	 *
-	 * @param   string  $action         The action to perform
-	 * @param   array   $selectedTitles The titles to do the action on if applicable
-	 */
-	function doReadingHistoryAction($patron, $action, /** @noinspection PhpUnusedParameterInspection */
-	                                $selectedTitles){
-		if (!$this->loginToKoha($patron)){
-			return;
-		}else{
-			if ($action == 'deleteMarked'){
-			}elseif ($action == 'deleteAll'){
-			}elseif ($action == 'exportList'){
-				//Leave this unimplemented for now.
-			}elseif ($action == 'optOut'){
-				$kohaUrl = $this->accountProfile->vendorOpacUrl . '/cgi-bin/koha/opac-update_reading_history.pl';
-				$postParams = array(
-					'disable_reading_history' => 1
-				);
-				$this->postToKohaPage($kohaUrl, $postParams);
-			}elseif ($action == 'optIn'){
-				$kohaUrl = $this->accountProfile->vendorOpacUrl . '/cgi-bin/koha/opac-update_reading_history.pl';
-				$postParams = array(
-					'disable_reading_history' => 0
-				);
-				$this->postToKohaPage($kohaUrl, $postParams);
-			}
-		}
 	}
 
 	private $holdsByBib = array();

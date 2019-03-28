@@ -25,6 +25,22 @@ abstract class AbstractCatalogDriver
 
 	public abstract function patronLogin($username, $password, $validatedViaSSO);
 	public abstract function hasNativeReadingHistory();
+	public function performsReadingHistoryUpdatesOfILS(){
+        return false;
+    }
+    public function getReadingHistory(
+            /** @noinspection PhpUnusedParameterInspection */ $user,
+            /** @noinspection PhpUnusedParameterInspection */ $page = 1,
+            /** @noinspection PhpUnusedParameterInspection */ $recordsPerPage = -1,
+            /** @noinspection PhpUnusedParameterInspection */ $sortOption = "checkedOut") {
+        return array('historyActive'=>false, 'titles'=>array(), 'numTitles'=> 0);
+    }
+    public function doReadingHistoryAction(
+            /** @noinspection PhpUnusedParameterInspection */ $user,
+            /** @noinspection PhpUnusedParameterInspection */ $action,
+            /** @noinspection PhpUnusedParameterInspection */ $selectedTitles){
+        return;
+    }
 	public abstract function getNumHolds($id);
 
 	/**
@@ -76,21 +92,22 @@ abstract class AbstractCatalogDriver
 	 */
 	public abstract function getMyHolds($user);
 
-	/**
-	 * Place Hold
-	 *
-	 * This is responsible for both placing holds as well as placing recalls.
-	 *
-	 * @param   User    $patron       The User to place a hold for
-	 * @param   string  $recordId     The id of the bib record
-	 * @param   string  $pickupBranch The branch where the user wants to pickup the item when available
-	 * @return  array                 An array with the following keys
-	 *                                result - true/false
-	 *                                message - the message to display (if item holds are required, this is a form to select the item).
-	 *                                needsItemLevelHold - An indicator that item level holds are required
-	 *                                title - the title of the record the user is placing a hold on
-	 * @access  public
-	 */
+    /**
+     * Place Hold
+     *
+     * This is responsible for both placing holds as well as placing recalls.
+     *
+     * @param   User        $patron         The User to place a hold for
+     * @param   string      $recordId       The id of the bib record
+     * @param   string      $pickupBranch   The branch where the user wants to pickup the item when available
+     * @param   string|null $cancelDate     The date when the record should be automatically cancelled if not filled
+     * @return  array                 An array with the following keys
+     *                                result - true/false
+     *                                message - the message to display (if item holds are required, this is a form to select the item).
+     *                                needsItemLevelHold - An indicator that item level holds are required
+     *                                title - the title of the record the user is placing a hold on
+     * @access  public
+     */
 	public abstract function placeHold($patron, $recordId, $pickupBranch, $cancelDate = null);
 
 	/**

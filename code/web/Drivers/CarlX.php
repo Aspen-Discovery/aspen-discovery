@@ -1202,6 +1202,9 @@ class CarlX extends SIP2Driver{
 		return array('historyActive' => false, 'titles' => array(), 'numTitles' => 0);
 	}
 
+    public function performsReadingHistoryUpdatesOfILS(){
+        return true;
+    }
 	public function doReadingHistoryAction($user, $action, $selectedTitles){
 		switch ($action) {
 			case 'optIn' :

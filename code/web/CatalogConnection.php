@@ -80,34 +80,6 @@ class CatalogConnection
 	}
 
 	/**
-	 * Get Holding
-	 *
-	 * This is responsible for retrieving the holding information of a certain
-	 * record.
-	 *
-	 * @param string $recordId The record id to retrieve the holdings for
-	 * @param array  $patron   Optional Patron details to determine if a user can
-	 * place a hold or recall on an item
-	 *
-	 * @return mixed     On success, an associative array with the following keys:
-	 * id, availability (boolean), status, location, reserve, callnumber, dueDate,
-	 * number, barcode; on failure, a PEAR_Error.
-	 * @access public
-	 */
-	public function getHolding($recordId, $patron = false)
-	{
-		$holding = $this->driver->getHolding($recordId, $patron);
-
-		// Validate return from driver's getHolding method -- should be an array or
-		// an error.  Anything else is unexpected and should become an error.
-		if (!is_array($holding) && !PEAR_Singleton::isError($holding)) {
-			return new PEAR_Error('Unexpected return from getHolding: ' . $holding);
-		}
-
-		return $holding;
-	}
-
-	/**
 	 * Patron Login
 	 *
 	 * This is responsible for authenticating a patron against the catalog.
@@ -176,10 +148,10 @@ class CatalogConnection
 				}else{
 					// #PK-979 Make display name configurable firstname, last initial, vs first initial last name
 					$homeLibrary = $user->getHomeLibrary();
-					if ($homeLibrary == null || ($homeLibrary->patronNameDisplayStyle == 'firstinitial_lastname')){
+					if ($homeLibrary == null || ($homeLibrary->__get('patronNameDisplayStyle') == 'firstinitial_lastname')){
 						// #PK-979 Make display name configurable firstname, last initial, vs first initial last name
 						$user->displayName = substr($user->firstname, 0, 1) . '. ' . $user->lastname;
-					}elseif ($homeLibrary->patronNameDisplayStyle == 'lastinitial_firstname'){
+					}elseif ($homeLibrary->__get('patronNameDisplayStyle') == 'lastinitial_firstname'){
 						$user->displayName = $user->firstname . ' ' . substr($user->lastname, 0, 1) . '.';
 					}
 				}
@@ -231,11 +203,10 @@ class CatalogConnection
 		if ($user->trackReadingHistory && $user->initialReadingHistoryLoaded){
 			require_once ROOT_DIR . '/sys/ReadingHistoryEntry.php';
 			$readingHistoryDB = new ReadingHistoryEntry();
-			$readingHistoryDB->userId = $user->id;
+            $readingHistoryDB->userId = $user->id;
 			$readingHistoryDB->deleted = 0;
 			$readingHistoryDB->groupBy('groupedWorkPermanentId');
-			$readingHistoryDB->find();
-			$user->setReadingHistorySize($readingHistoryDB->N);
+            $user->setReadingHistorySize($readingHistoryDB->count());
 			$timer->logTime("Updated reading history size");
 		}
 	}
@@ -333,105 +304,82 @@ class CatalogConnection
 	 */
 	function getReadingHistory($patron, $page = 1, $recordsPerPage = -1, $sortOption = "checkedOut"){
 		//Get reading history from the database unless we specifically want to load from the driver.
-		if (($patron->trackReadingHistory && $patron->initialReadingHistoryLoaded) || !$this->driver->hasNativeReadingHistory()){
-			if ($patron->trackReadingHistory){
-				//Make sure initial reading history loaded is set to true if we are here since
-				//The only way it wouldn't be here is if the user has elected to start tracking reading history
-				//And they don't have reading history currently specified.  We get what is checked out below though
-				//So that takes care of the initial load
-				if (!$patron->initialReadingHistoryLoaded){
-					//Load the initial reading history
-					$patron->initialReadingHistoryLoaded = 1;
-					$patron->update();
-				}
+        $result = array('historyActive'=>$patron->trackReadingHistory, 'titles'=>array(), 'numTitles'=> 0);
+        if (!$patron->trackReadingHistory){
+            return $result;
+        }
+        if (!$patron->initialReadingHistoryLoaded) {
+            if ($this->driver->hasNativeReadingHistory()){
+                //Load existing reading history from the ILS
+                $moreRecordsToLoad = true;
+                while ($moreRecordsToLoad) {
+                    $moreRecordsToLoad = false;
+                    $result = $this->driver->getReadingHistory($patron, -1, -1, $sortOption);
+                    if ($result['numTitles'] > 0){
+                        foreach ($result['titles'] as $title){
+                            if ($title['permanentId'] != null){
+                                $userReadingHistoryEntry = new ReadingHistoryEntry();
+                                $userReadingHistoryEntry->userId = $patron->id;
+                                $userReadingHistoryEntry->groupedWorkPermanentId = $title['permanentId'];
+                                $userReadingHistoryEntry->source = $this->accountProfile->recordSource;
+                                $userReadingHistoryEntry->sourceId = $title['recordId'];
+                                $userReadingHistoryEntry->title = $title['title'];
+                                $userReadingHistoryEntry->author = $title['author'];
+                                $userReadingHistoryEntry->format = $title['format'];
+                                $userReadingHistoryEntry->checkOutDate = $title['checkout'];
+                                $userReadingHistoryEntry->checkInDate = null;
+                                $userReadingHistoryEntry->deleted = 0;
+                                $userReadingHistoryEntry->insert();
+                            }
+                        }
+                    }
+                    //TODO: Check to see if there is more to load
+                }
+            }
+            $patron->initialReadingHistoryLoaded = true;
+            $patron->update();
+        }
+        //Do the
+        $this->updateReadingHistoryBasedOnCurrentCheckouts($patron);
 
-				$this->updateReadingHistoryBasedOnCurrentCheckouts($patron);
+        require_once ROOT_DIR . '/sys/ReadingHistoryEntry.php';
+        $readingHistoryDB = new ReadingHistoryEntry();
+        $readingHistoryDB->userId = $patron->id;
+        $readingHistoryDB->deleted = 0; //Only show titles that have not been deleted
+        $readingHistoryDB->selectAdd();
+        $readingHistoryDB->selectAdd('groupedWorkPermanentId');
+        $readingHistoryDB->selectAdd('title');
+        $readingHistoryDB->selectAdd('author');
+        $readingHistoryDB->selectAdd('MAX(checkOutDate) as checkOutDate');
+        $readingHistoryDB->selectAdd('GROUP_CONCAT(DISTINCT(format)) as format');
+        if ($sortOption == "checkedOut"){
+            $readingHistoryDB->orderBy('MAX(checkOutDate) DESC, title ASC');
+        }else if ($sortOption == "returned"){
+            $readingHistoryDB->orderBy('checkInDate DESC, title ASC');
+        }else if ($sortOption == "title"){
+            $readingHistoryDB->orderBy('title ASC, MAX(checkOutDate) DESC');
+        }else if ($sortOption == "author"){
+            $readingHistoryDB->orderBy('author ASC, title ASC, MAX(checkOutDate) DESC');
+        }else if ($sortOption == "format"){
+            $readingHistoryDB->orderBy('format ASC, title ASC, MAX(checkOutDate) DESC');
+        }
+        $readingHistoryDB->groupBy(['groupedWorkPermanentId', 'title', 'author']);
 
-				require_once ROOT_DIR . '/sys/ReadingHistoryEntry.php';
-				$readingHistoryDB = new ReadingHistoryEntry();
-				$readingHistoryDB->userId = $patron->id;
-				$readingHistoryDB->deleted = 0; //Only show titles that have not been deleted
-				$readingHistoryDB->selectAdd('MAX(checkOutDate) as checkOutDate');
-				$readingHistoryDB->selectAdd('GROUP_CONCAT(DISTINCT(format)) as format');
-				if ($sortOption == "checkedOut"){
-					$readingHistoryDB->orderBy('checkOutDate DESC, title ASC');
-				}else if ($sortOption == "returned"){
-					$readingHistoryDB->orderBy('checkInDate DESC, title ASC');
-				}else if ($sortOption == "title"){
-					$readingHistoryDB->orderBy('title ASC, checkOutDate DESC');
-				}else if ($sortOption == "author"){
-					$readingHistoryDB->orderBy('author ASC, title ASC, checkOutDate DESC');
-				}else if ($sortOption == "format"){
-					$readingHistoryDB->orderBy('format ASC, title ASC, checkOutDate DESC');
-				}
-				$readingHistoryDB->groupBy('groupedWorkPermanentId');
-				if ($recordsPerPage != -1){
-					$readingHistoryDB->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
-				}
-				$readingHistoryDB->find();
-				$readingHistoryTitles = array();
+        $numTitles = $readingHistoryDB->count();
 
-				while ($readingHistoryDB->fetch()){
-					$historyEntry = $this->getHistoryEntryForDatabaseEntry($readingHistoryDB);
+        if ($recordsPerPage != -1){
+            $readingHistoryDB->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
+        }
+        $readingHistoryDB->find();
+        $readingHistoryTitles = array();
 
-					$readingHistoryTitles[] = $historyEntry;
-				}
+        while ($readingHistoryDB->fetch()){
+            $historyEntry = $this->getHistoryEntryForDatabaseEntry($readingHistoryDB);
 
-				$readingHistoryDB = new ReadingHistoryEntry();
-				$readingHistoryDB->userId = $patron->id;
-				$readingHistoryDB->deleted = 0;
-				$readingHistoryDB->groupBy('groupedWorkPermanentId');
-				$readingHistoryDB->find();
-				$numTitles = $readingHistoryDB->N;
+            $readingHistoryTitles[] = $historyEntry;
+        }
 
-				return array('historyActive'=>$patron->trackReadingHistory, 'titles'=>$readingHistoryTitles, 'numTitles'=> $numTitles);
-			}else{
-				//Reading history disabled
-				return array('historyActive'=>$patron->trackReadingHistory, 'titles'=>array(), 'numTitles'=> 0);
-			}
-
-		}else{
-			//Don't know enough to load internally, check the ILS.
-			$result = $this->driver->getReadingHistory($patron, $page, $recordsPerPage, $sortOption);
-
-			//Do not try to mark that the initial load has been done since we only load a subset of the reading history above.
-
-			//Sort the records
-			$count = 0;
-			foreach ($result['titles'] as $key => $historyEntry){
-				$count++;
-				if (!isset($historyEntry['title_sort'])){
-					$historyEntry['title_sort'] = preg_replace('/[^a-z\s]/', '', strtolower($historyEntry['title']));
-				}
-				if ($sortOption == "title"){
-					$titleKey = $historyEntry['title_sort'];
-				}elseif ($sortOption == "author"){
-					$titleKey = $historyEntry['author'] . "_" . $historyEntry['title_sort'];
-				}elseif ($sortOption == "checkedOut" || $sortOption == "returned"){
-					$checkoutTime = DateTime::createFromFormat('m-d-Y', $historyEntry['checkout']) ;
-					if ($checkoutTime){
-						$titleKey = $checkoutTime->getTimestamp() . "_" . $historyEntry['title_sort'];
-					}else{
-						//print_r($historyEntry);
-						$titleKey = $historyEntry['title_sort'];
-					}
-				}elseif ($sortOption == "format"){
-					$titleKey = $historyEntry['format'] . "_" . $historyEntry['title_sort'];
-				}else{
-					$titleKey = $historyEntry['title_sort'];
-				}
-				$titleKey .= '_' . ($count);
-				$result['titles'][$titleKey] = $historyEntry;
-				unset($result['titles'][$key]);
-			}
-			if ($sortOption == "checkedOut" || $sortOption == "returned"){
-				krsort($result['titles']);
-			}else{
-				ksort($result['titles']);
-			}
-
-			return $result;
-		}
+        return array('historyActive'=>$patron->trackReadingHistory, 'titles'=>$readingHistoryTitles, 'numTitles'=> $numTitles);
 	}
 
 	/**
@@ -446,74 +394,64 @@ class CatalogConnection
 	 * @param   array   $selectedTitles The titles to do the action on if applicable
 	 */
 	function doReadingHistoryAction($patron, $action, $selectedTitles){
-		if (($patron->trackReadingHistory && $patron->initialReadingHistoryLoaded) || ! $this->driver->hasNativeReadingHistory()){
-			if ($action == 'deleteMarked'){
-				//Remove titles from database (do not remove from ILS)
-				foreach ($selectedTitles as $id => $titleId){
-					list($source, $sourceId) = explode('_', $titleId);
-					$readingHistoryDB = new ReadingHistoryEntry();
-					$readingHistoryDB->userId = $patron->id;
-					$readingHistoryDB->groupedWorkPermanentId = strtolower($id);
-					$readingHistoryDB->find();
-					if ($id && $readingHistoryDB->N > 0){
-						while ($readingHistoryDB->fetch()){
-							$readingHistoryDB->deleted = 1;
-							$readingHistoryDB->update();
-						}
-					}else{
-						$readingHistoryDB = new ReadingHistoryEntry();
-						$readingHistoryDB->userId = $patron->id;
-						$readingHistoryDB->id = str_replace('rsh', '', $titleId);
-						if ($readingHistoryDB->find(true)){
-							$readingHistoryDB->deleted = 1;
-							$readingHistoryDB->update();
-						}
-					}
-				}
-			}elseif ($action == 'deleteAll'){
-				//Remove all titles from database (do not remove from ILS)
-				$readingHistoryDB = new ReadingHistoryEntry();
-				$readingHistoryDB->userId = $patron->id;
-				$readingHistoryDB->find();
-				while ($readingHistoryDB->fetch()){
-					$readingHistoryDB->deleted = 1;
-					$readingHistoryDB->update();
-				}
-			}elseif ($action == 'exportList'){
-				//Leave this unimplemented for now.
-			}elseif ($action == 'optOut'){
-				$driverHasReadingHistory = $this->driver->hasNativeReadingHistory();
+		if ($action == 'deleteMarked'){
+            //Remove titles from database (do not remove from ILS)
+            foreach ($selectedTitles as $id => $titleId){
+                list($source, $sourceId) = explode('_', $titleId);
+                $readingHistoryDB = new ReadingHistoryEntry();
+                $readingHistoryDB->userId = $patron->id;
+                $readingHistoryDB->groupedWorkPermanentId = strtolower($id);
+                $readingHistoryDB->find();
+                if ($id && $readingHistoryDB->N > 0){
+                    while ($readingHistoryDB->fetch()){
+                        $readingHistoryDB->deleted = 1;
+                        $readingHistoryDB->update();
+                    }
+                }else{
+                    $readingHistoryDB = new ReadingHistoryEntry();
+                    $readingHistoryDB->userId = $patron->id;
+                    $readingHistoryDB->id = str_replace('rsh', '', $titleId);
+                    if ($readingHistoryDB->find(true)){
+                        $readingHistoryDB->deleted = 1;
+                        $readingHistoryDB->update();
+                    }
+                }
+            }
+        }elseif ($action == 'deleteAll'){
+            //Remove all titles from database (do not remove from ILS)
+            $readingHistoryDB = new ReadingHistoryEntry();
+            $readingHistoryDB->userId = $patron->id;
+            $readingHistoryDB->find();
+            while ($readingHistoryDB->fetch()){
+                $readingHistoryDB->deleted = 1;
+                $readingHistoryDB->update();
+            }
+        }elseif ($action == 'exportList'){
+            //Leave this unimplemented for now.
+        }elseif ($action == 'optOut'){
+            $driverHasReadingHistory = $this->driver->hasNativeReadingHistory();
 
-				//Opt out within the ILS if possible
-				if ($driverHasReadingHistory && $this->checkFunction('doReadingHistoryAction')){
-					//First run delete all
-					$result = $this->driver->doReadingHistoryAction($patron, 'deleteAll', $selectedTitles);
+            //Delete the reading history (permanently this time sine we are opting out)
+            $readingHistoryDB = new ReadingHistoryEntry();
+            $readingHistoryDB->userId = $patron->id;
+            $readingHistoryDB->delete();
 
-					$result = $this->driver->doReadingHistoryAction($patron, $action, $selectedTitles);
-				}
+            //Opt out within Aspen since the ILS does not seem to implement this functionality
+            $patron->trackReadingHistory = false;
+            $patron->update();
+        }elseif ($action == 'optIn'){
+            //Opt in within Aspen since the ILS does not seem to implement this functionality
+            $patron->trackReadingHistory = true;
+            $patron->update();
 
-				//Delete the reading history (permanently this time sine we are opting out)
-				$readingHistoryDB = new ReadingHistoryEntry();
-				$readingHistoryDB->userId = $patron->id;
-				$readingHistoryDB->delete();
+            //Load the reading history from the ILS if available
+            if ($this->driver->hasNativeReadingHistory()){
 
-				//Opt out within Aspen since the ILS does not seem to implement this functionality
-				$patron->trackReadingHistory = false;
-				$patron->update();
-			}elseif ($action == 'optIn'){
-				$driverHasReadingHistory = $this->driver->hasNativeReadingHistory();
-				//Opt in within the ILS if possible
-				if ($driverHasReadingHistory){
-					$result = $this->driver->doReadingHistoryAction($patron, $action, $selectedTitles);
-				}
-
-				//Opt in within Aspen since the ILS does not seem to implement this functionality
-				$patron->trackReadingHistory = true;
-				$patron->update();
-			}
-		}else{
-			return $this->driver->doReadingHistoryAction($patron, $action, $selectedTitles);
-		}
+            }
+        }
+        if ($this->driver->performsReadingHistoryUpdatesOfILS()){
+            $this->driver->doReadingHistoryAction($patron, $action, $selectedTitles);
+        }
 	}
 
 
@@ -790,43 +728,20 @@ class CatalogConnection
 	public function getHistoryEntryForDatabaseEntry($readingHistoryDB) {
 		$historyEntry = array();
 
-		$historyEntry['itemindex'] = $readingHistoryDB->id;
+        require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+        $recordDriver = new GroupedWorkDriver($readingHistoryDB->groupedWorkPermanentId);
+
 		$historyEntry['deletable'] = true;
-		$historyEntry['source'] = $readingHistoryDB->source;
-		$historyEntry['id'] = $readingHistoryDB->sourceId;
-		$historyEntry['recordId'] = $readingHistoryDB->sourceId;
-		$historyEntry['shortId'] = $readingHistoryDB->sourceId;
 		$historyEntry['title'] = $readingHistoryDB->title;
 		$historyEntry['author'] = $readingHistoryDB->author;
 		$historyEntry['format'] = $readingHistoryDB->format;
 		$historyEntry['checkout'] = $readingHistoryDB->checkOutDate;
 		$historyEntry['checkin'] = $readingHistoryDB->checkInDate;
-		$historyEntry['ratingData'] = null;
-		$historyEntry['permanentId'] = null;
-		$historyEntry['linkUrl'] = null;
-		$historyEntry['coverUrl'] = null;
-		$recordDriver = null;
-		/*if ($readingHistoryDB->source == 'ILS') {
-			require_once ROOT_DIR . '/RecordDrivers/MarcRecord.php';
-			$recordDriver = new MarcRecord($historyEntry['id']);
-		} elseif ($readingHistoryDB->source == 'OverDrive') {
-			require_once ROOT_DIR . '/RecordDrivers/OverDriveRecordDriver.php';
-			$recordDriver = new OverDriveRecordDriver($historyEntry['id']);
-		}*/
-		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-		$recordDriver = new GroupedWorkDriver($readingHistoryDB->groupedWorkPermanentId);
-		if ($recordDriver != null && $recordDriver->isValid) {
-			$historyEntry['ratingData'] = $recordDriver->getRatingData();
-			$historyEntry['permanentId'] = $recordDriver->getPermanentId();
-			$historyEntry['coverUrl'] = $recordDriver->getBookcoverUrl('medium');
-			if ($recordDriver->isValid){
-				$historyEntry['linkUrl'] = $recordDriver->getLinkUrl();
-			}
-			if ($historyEntry['title'] == ''){
-				$historyEntry['title']  = $recordDriver->getTitle();
-			}
-		}
-		$recordDriver = null;
+		$historyEntry['ratingData'] = $recordDriver->getRatingData();
+		$historyEntry['permanentId'] = $readingHistoryDB->groupedWorkPermanentId;
+		$historyEntry['linkUrl'] = $recordDriver->getLinkUrl();
+		$historyEntry['coverUrl'] = $recordDriver->getBookcoverUrl('small');
+
 		return $historyEntry;
 	}
 
@@ -843,8 +758,9 @@ class CatalogConnection
 
 		$activeHistoryTitles = array();
 		while ($readingHistoryDB->fetch()){
-			$historyEntry = $this->getHistoryEntryForDatabaseEntry($readingHistoryDB);
-
+			$historyEntry = [];
+            $historyEntry['source'] = $readingHistoryDB->source;
+            $historyEntry['id'] = $readingHistoryDB->sourceId;
 			$key = $historyEntry['source'] . ':' . $historyEntry['id'];
 			$activeHistoryTitles[$key] = $historyEntry;
 		}

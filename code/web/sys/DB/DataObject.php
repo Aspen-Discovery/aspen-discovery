@@ -15,6 +15,7 @@ abstract class DataObject
     private $__selectAllColumns = true;
     private $__additionalSelects = array();
     private $__orderBy;
+    private $__groupBy;
     private $__where;
     private $__limitStart;
     private $__limitCount;
@@ -60,6 +61,9 @@ abstract class DataObject
             $query .= ' WHERE ' . $this->__where;
         }else if (strlen($where) > 0) {
             $query .= ' WHERE ' . $where;
+        }
+        if ($this->__groupBy != null){
+            $query .= $this->__groupBy;
         }
         if ($this->__orderBy != null) {
             $query .= $this->__orderBy;
@@ -127,6 +131,21 @@ abstract class DataObject
                 $this->__orderBy .= ', ' . $fieldsToOrder;
             }else {
                 $this->__orderBy .= ' ORDER BY ' . $fieldsToOrder;
+            }
+        }
+    }
+
+    public function groupBy($fieldsToGroup){
+        if ($fieldsToGroup == null) {
+            $this->__groupBy = null;
+        }else {
+            if (is_array($fieldsToGroup)){
+                $fieldsToGroup = implode(',', $fieldsToGroup);
+            }
+            if (strlen($this->__groupBy) > 0) {
+                $this->__groupBy .= ', ' . $fieldsToGroup;
+            }else {
+                $this->__groupBy .= ' GROUP BY ' . $fieldsToGroup;
             }
         }
     }

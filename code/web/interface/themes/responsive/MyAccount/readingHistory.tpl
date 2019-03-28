@@ -131,7 +131,7 @@
 							<div class="col-tn-3">
 								<div class="row">
 									<div class="col-xs-12 col-sm-1">
-										<input type="checkbox" name="selected[{$record.permanentId|escape:"url"}]" class="titleSelect" value="rsh{$record.itemindex}" id="rsh{$record.itemindex}">
+										<input type="checkbox" name="selected[{$record.permanentId|escape:"url"}]" class="titleSelect" value="rsh{$record.permanentId}">
 									</div>
 									<div class="col-xs-12 col-sm-10">
 										{if $record.coverUrl}
@@ -162,7 +162,7 @@
 											{else}
 												{if !$record.title|removeTrailingPunctuation}{translate text='Title not available'}{else}{$record.title|removeTrailingPunctuation}{/if}
 											{/if}
-											{if $record.title2}
+											{if !empty($record.title2)}
 												<div class="searchResultSectionInfo">
 													{$record.title2|removeTrailingPunctuation|truncate:180:"..."|highlight}
 												</div>
@@ -182,15 +182,6 @@
 											{else}
 												<a href='{$path}/Author/Home?author="{$record.author|escape:"url"}"'>{$record.author|highlight}</a>
 											{/if}
-										</div>
-									</div>
-								{/if}
-
-								{if $record.publicationDate}
-									<div class="row">
-										<div class="result-label col-tn-3">{translate text='Published'}</div>
-										<div class="result-value col-tn-9">
-											{$record.publicationDate|escape}
 										</div>
 									</div>
 								{/if}

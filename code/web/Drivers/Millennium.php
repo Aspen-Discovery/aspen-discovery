@@ -623,6 +623,9 @@ class Millennium extends CurlBasedDriver
 		return $millenniumReadingHistory->getReadingHistory($patron, $page, $recordsPerPage, $sortOption);
 	}
 
+    public function performsReadingHistoryUpdatesOfILS(){
+        return true;
+    }
 	/**
 	 * Do an update or edit of reading history information.  Current actions are:
 	 * deleteMarked
@@ -639,6 +642,8 @@ class Millennium extends CurlBasedDriver
 		$millenniumReadingHistory = new MillenniumReadingHistory($this);
 		$millenniumReadingHistory->doReadingHistoryAction($patron, $action, $selectedTitles);
 	}
+
+
 
 
 	/**

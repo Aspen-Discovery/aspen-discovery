@@ -54,15 +54,6 @@ class Rbdigital_Home extends Action{
 
 			//Load status summary
             //TODO: Load status summary for the record
-//			require_once (ROOT_DIR . '/Drivers/RbdigitalDriver.php');
-//			$driver = new RbdigitalDriver();
-//			$holdings = $driver->getHoldings($recordDriver);
-//			$scopedAvailability = $driver->getScopedAvailability($recordDriver);
-//			$holdingsSummary = $driver->getStatusSummary($this->id, $scopedAvailability, $holdings);
-//			if (PEAR_Singleton::isError($holdingsSummary)) {
-//				PEAR_Singleton::raiseError($holdingsSummary);
-//			}
-//			$interface->assign('holdingsSummary', $holdingsSummary);
 
 			//Load the citations
 			$this->loadCitations($recordDriver);

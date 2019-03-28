@@ -370,52 +370,6 @@ class ItemAPI extends Action {
 			$itemData['holdings'] = $holdings;
 		}
 
-		//Update to use same method of loading that we do within AJAX
-		/*try {
-			$catalog = CatalogFactory::getCatalogConnectionInstance();;
-			$timer->logTime("Connected to catalog");
-		} catch (PDOException $e) {
-			// What should we do with this error?
-			if ($configArray['System']['debug']) {
-				echo '<pre>';
-				echo 'DEBUG: ' . $e->getMessage();
-				echo '</pre>';
-			}
-			return null;
-		}
-
-		if ($catalog->status) {
-			$result = $catalog->getHolding($fullId);
-			$timer->logTime("Loaded Holding Data from catalog");
-			if (PEAR_Singleton::isError($result)) {
-				PEAR_Singleton::raiseError($result);
-			}
-			if (count($result)) {
-				$holdings = array();
-				$issueSummaries = array();
-				foreach ($result as $copy) {
-					if (isset($copy['type']) && $copy['type'] == 'issueSummary') {
-						$issueSummaries = $result;
-						break;
-					} else {
-						$hasLastCheckinData = (isset($copy['lastCheckinDate']) && $copy['lastCheckinDate'] != null) || $hasLastCheckinData; // if $hasLastCheckinData was true keep that value even when first check is false.
-						// flag for at least 1 lastCheckinDate
-
-						$key = $copy['location'];
-						$key = preg_replace('~\W~', '_', $key);
-						$holdings[$key][] = $copy;
-					}
-				}
-				if (isset($issueSummaries) && count($issueSummaries) > 0) {
-					$itemData['holdings'] = $issueSummaries;
-				} else {
-					$itemData['holdings'] = $holdings;
-				}
-			} else {
-				$itemData['holdings'] = array();
-			}
-		}*/
-
 		return $itemData;
 	}
 
