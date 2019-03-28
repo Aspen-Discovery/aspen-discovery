@@ -1,68 +1,10 @@
 <?php
-/**
- * Description goes here
- *
- * @category VuFind-Plus-2014 
- * @author Mark Noble <mark@marmot.org>
- * Date: 7/20/2015
- * Time: 10:09 PM
- */
 
-abstract class SIP2Driver implements DriverInterface{
+abstract class SIP2Driver extends AbstractCatalogDriver{
 	/** @var sip2 $sipConnection  */
 	private $sipConnection = null;
 
-	private function _loadItemSIP2Data($barcode, $itemStatus){
-		/** @var Memcache $memCache */
-		global $memCache;
-		global $configArray;
-		global $timer;
-		$itemSip2Data = $memCache->get("item_sip2_data_{$barcode}");
-		if ($itemSip2Data == false || isset($_REQUEST['reload'])){
-			//Check to see if the SIP2 information is already cached
-			//TODO: Add Host and Port
-			// set in config .in SIP section
-			if ($this->initSipConnection()){
-				$in = $this->sipConnection->msgItemInformation($barcode);
-				$msg_result = $this->sipConnection->get_message($in);
-				// Make sure the response is 18 as expected
-				if (preg_match("/^18/", $msg_result)) {
-					$result = $this->sipConnection->parseItemInfoResponse( $msg_result );
-					if (isset($result['variable']['AH']) && $itemStatus != 'i'){
-						$itemSip2Data['dueDate'] = $result['variable']['AH'][0];
-					}else{
-						$itemSip2Data['dueDate'] = '';
-					}
-					if (isset($result['variable']['CF'][0])){
-						$itemSip2Data['holdQueueLength'] = intval($result['variable']['CF'][0]);
-					}else{
-						$itemSip2Data['holdQueueLength'] = 0;
-					}
-					$currentLocationSIPField = isset($configArray['Catalog']['currentLocationSIPField']) ? $configArray['Catalog']['currentLocationSIPField'] : 'AP';
-					if ($configArray['Catalog']['realtimeLocations'] == true && isset($result['variable'][$currentLocationSIPField][0])){
-						//Looks like horizon is returning these backwards via SIP.
-						//AQ should be current, but is always returning the same code.
-						//AP should be permanent, but is returning the current location
-						//global $logger;
-						//$logger->log("Permanent location " . $result['variable']['AQ'][0] . " current location " . $result['variable']['AP'][0], PEAR_LOG_INFO);
-						$itemSip2Data['locationCode'] = $result['variable'][$currentLocationSIPField][0];
-						$itemSip2Data['location'] = mapValue('shelf_location', $itemSip2Data['locationCode']);
-					}
-					//Override circulation status based on SIP
-					if (isset($result['fixed']['CirculationStatus'])){
-						$itemSip2Data['status'] = $result['fixed']['CirculationStatus'];
-						$itemSip2Data['status_full'] = mapValue('item_status', $result['fixed']['CirculationStatus']);
-						$itemSip2Data['availability'] = $result['fixed']['CirculationStatus'] == 3;
-					}
-				}
-				$memCache->set("item_sip2_data_{$barcode}", $itemSip2Data, 0, $configArray['Caching']['item_sip2_data']);
-				$timer->logTime("Got due date and hold queue length from SIP 2 for barcode $barcode");
-			}else{
-				$itemSip2Data = false;
-			}
-		}
-		return $itemSip2Data;
-	}
+
 	public function patronLogin($username, $password, $validatedViaSSO) {
 		//TODO: Implement $validatedViaSSO
 		//Koha uses SIP2 authentication for login.  See

@@ -40,17 +40,17 @@ class Admin_Administrators extends ObjectEditor
 		while ($admin->fetch()){
 			$homeLibrary = Library::getLibraryForLocation($admin->homeLocationId);
 			if ($homeLibrary != null){
-				$admin->homeLibraryName = $homeLibrary->displayName;
+				$admin->_homeLibraryName = $homeLibrary->displayName;
 			}else{
-				$admin->homeLibraryName = 'Unknown';
+				$admin->_homeLibraryName = 'Unknown';
 			}
 
 			$location = new Location();
 			$location->locationId = $admin->homeLocationId;
 			if ($location->find(true)) {
-				$admin->homeLocation = $location->displayName;
+				$admin->_homeLocation = $location->displayName;
 			}else{
-				$admin->homeLocation = 'Unknown';
+				$admin->_homeLocation = 'Unknown';
 			}
 
 			$adminList[$admin->id] = clone $admin;

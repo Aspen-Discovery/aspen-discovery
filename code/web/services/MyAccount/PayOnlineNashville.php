@@ -317,7 +317,7 @@ echo "\r\n\r\nResponse Headers\r\n";
 				} else {
 					$name = array($field->value);
 				}
-				$patron->fullname = sprintf("%s %s", $name[0], $name[1]);
+				$patron->_fullname = sprintf("%s %s", $name[0], $name[1]);
 			}
 			if($field->fieldTag == 'z') {
 				if(strpos($field->value, ',')) {

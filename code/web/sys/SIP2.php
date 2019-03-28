@@ -5,9 +5,6 @@
  * This class provides a method of communicating with an Integrated
  * Library System using 3M's SIP2 standard.
  *
- * PHP version 5
- *
- *
  * @package
  * @author     John Wohlers <john@wohlershome.net>
  * @licence    http://opensource.org/licenses/gpl-3.0.html
@@ -75,6 +72,9 @@ class sip2
 
 	/*terminal password */
 	public $AC           = ''; /*AC */
+
+    /* Patron identifier */
+    public $AA;
 
 	/* Maximum number of resends allowed before get_message gives up */
 	public $maxretry     = 3;
@@ -405,7 +405,7 @@ class sip2
 	}
 
 	// For CarlX Only
-	function freezeSuspendHold($reactivateDate = '', $freeze = true, $expDate = '', $holdtype = '', $item = '', $title = '', $fee='N', $pkupLocation = '')
+	function freezeSuspendHold($reactivateDate = '', $freeze = true, $holdtype = '', $item = '', $title = '', $fee='N', $pkupLocation = '')
 	{
 		$mode = '*';
 		/* mode validity check */
@@ -457,40 +457,6 @@ class sip2
 		$this->_addVarOption('XG', '', false);
 		$this->_addVarOption('XI',$reactivateDate . ($freeze ? 'B' : ''), true);  // Custom Field to suspend holds
 
-		return $this->_returnMessage();
-
-	}
-
-	// For CarlX Only
-	function freezeHoldCarlX($reactivateDate = '',  $title = '', $pickupLocation)
-	{
-		$freeze = true;
-		$mode = '*';
-		$pickupLocation = '5';
-		$fee='N';
-		$holdType = '1';
-
-		$this->_newMessage('15');
-		$this->_addFixedOption($mode, 19);
-		$this->msgBuild .= $this->fldTerminator;
-		$this->_addVarOption('BW', '', false);
-		$this->_addVarOption('BS',$pickupLocation, true);
-		$this->_addVarOption('BY',$holdType, true);
-		$this->_addVarOption('AO','');
-//		$this->_addVarOption('AO',$this->AO);
-		$this->_addVarOption('AA',$this->patron);
-		$this->_addVarOption('AB','', false);
-		$this->_addVarOption('AD',$this->patronpwd, true);
-		$this->_addVarOption('AJ',$title, true);
-		$this->_addVarOption('AC','', false);
-//		$this->_addVarOption('AC',$this->AC, true);
-		$this->_addVarOption('BO',$fee, true); /* Y when user has agreed to a fee notice */
-
-		$this->_addVarOption('BR', '1', false);
-		$this->_addVarOption('XG', '', false);
-		$this->_addVarOption('XI',$reactivateDate . ($freeze ? 'B' : ''), true);  // Custom Field to suspend holds
-
-//		return $this->_returnMessage(false, true);
 		return $this->_returnMessage();
 
 	}
@@ -873,6 +839,7 @@ class sip2
 			$prompt = $this->getResponse();
 			$logger->log("Login Prompt Received was " . $prompt, PEAR_LOG_DEBUG);
 			$login = $configArray['SIP2']['sipLogin'];
+            /** @noinspection PhpUnusedLocalVariableInspection */
 			$ret = socket_write($this->socket, $login, strlen($login));
 			$ret = socket_write($this->socket, $lineEnding, strlen($lineEnding));
 			$logger->log("Wrote $ret bytes for login", PEAR_LOG_DEBUG);
@@ -881,7 +848,8 @@ class sip2
 			$prompt = $this->getResponse();
 			$logger->log("Password Prompt Received was " . $prompt, PEAR_LOG_DEBUG);
 			$password = $configArray['SIP2']['sipPassword'];
-			$ret = socket_write($this->socket, $password, strlen($password));
+            /** @noinspection PhpUnusedLocalVariableInspection */
+            $ret = socket_write($this->socket, $password, strlen($password));
 			$ret = socket_write($this->socket, $lineEnding, strlen($lineEnding));
 			$logger->log("Wrote $ret bytes for password", PEAR_LOG_DEBUG);
 
@@ -914,9 +882,9 @@ class sip2
 
 	function getResponse() {
 		$buffer = '';
+        /** @noinspection PhpUnusedLocalVariableInspection */
 		$bytesRead = socket_recv($this->socket, $buffer, 2048, MSG_WAITALL);
 		return $buffer;
-		//return socket_read($this->socket,2048);
 	}
 
 	function disconnect ()

@@ -1,7 +1,7 @@
 {if $loggedIn}
-	{if $profile->web_note}
+	{if $profile->_web_note}
 		<div class="row">
-			<div id="web_note" class="alert alert-info text-center col-xs-12">{$profile->web_note}</div>
+			<div id="web_note" class="alert alert-info text-center col-xs-12">{$profile->_web_note}</div>
 		</div>
 	{/if}
 
@@ -18,9 +18,9 @@
 	{if count($userFines) > 0}
 
 		{* Show Fine Alert when the user has no linked accounts *}
-		{if  count($userFines) == 1 && $profile->fines}
+		{if  count($userFines) == 1 && $profile->_fines}
 			<div class="alert alert-info">
-				Your account has <strong>{$profile->fines}</strong> in fines.
+				Your account has <strong>{$profile->_fines}</strong> in fines.
 			</div>
 		{/if}
 
@@ -99,7 +99,7 @@
 			{include file="MyAccount/finePayments.tpl"}
 		{else}
 			{* Pay Fines Button *}
-			{if $showEcommerceLink && $profile->finesVal > $minimumFineAmount}
+			{if $showEcommerceLink && $profile->_finesVal > $minimumFineAmount}
 				<a href="{$ecommerceLink}" target="_blank"{if $showRefreshAccountButton} onclick="VuFind.Account.ajaxLightbox('{$path}/AJAX/JSON?method=getPayFinesAfterAction')"{/if}>
 					<div class="btn btn-sm btn-primary">{if $payFinesLinkText}{$payFinesLinkText}{else}Click to Pay Fines Online{/if}</div>
 				</a>

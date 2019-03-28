@@ -1092,7 +1092,7 @@ class BookCoverProcessor{
         //and then get the thumbnail from the og:image element
         require_once ROOT_DIR . '/sys/OpenArchives/OpenArchivesRecord.php';
         $openArchivesRecord = new OpenArchivesRecord();
-        $openArchivesRecord->id = $this->id;
+        $openArchivesRecord->id = $id;
         if ($openArchivesRecord->find(true)){
             $url = $openArchivesRecord->permanentUrl;
             $pageContents = file_get_contents($url);

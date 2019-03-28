@@ -1,16 +1,7 @@
 <?php
 
-require_once ROOT_DIR . '/Drivers/ScreenScrapingDriver.php';
-class LibrarySolution extends ScreenScrapingDriver {
-	/** @var  AccountProfile $accountProfile */
-	public $accountProfile;
-
-	/**
-	 * @param AccountProfile $accountProfile
-	 */
-	public function __construct($accountProfile){
-		$this->accountProfile = $accountProfile;
-	}
+require_once ROOT_DIR . '/Drivers/CurlBasedDriver.php';
+class LibrarySolution extends CurlBasedDriver {
 
 	/**
 	 * Patron Login
@@ -64,7 +55,7 @@ class LibrarySolution extends ScreenScrapingDriver {
 				if ($forceDisplayNameUpdate) {
 					$user->displayName = '';
 				}
-				$user->fullname     = $accountSummary->patron->fullName;
+				$user->_fullname     = $accountSummary->patron->fullName;
 				$user->cat_username = $accountSummary->patron->patronId;
 				$user->cat_password = $accountSummary->patron->pin;
 				$user->phone        = $accountSummary->patron->phone;
@@ -113,7 +104,7 @@ class LibrarySolution extends ScreenScrapingDriver {
 							$myLocation1             = new Location();
 							$myLocation1->locationId = $user->myLocation1Id;
 							if ($myLocation1->find(true)) {
-								$user->myLocation1 = $myLocation1->displayName;
+								$user->_myLocation1 = $myLocation1->displayName;
 							}
 						}
 
@@ -123,7 +114,7 @@ class LibrarySolution extends ScreenScrapingDriver {
 							$myLocation2             = new Location();
 							$myLocation2->locationId = $user->myLocation2Id;
 							if ($myLocation2->find(true)) {
-								$user->myLocation2 = $myLocation2->displayName;
+								$user->_myLocation2 = $myLocation2->displayName;
 							}
 						}
 					}
@@ -131,37 +122,37 @@ class LibrarySolution extends ScreenScrapingDriver {
 
 				if (isset($location)){
 					//Get display names that aren't stored
-					$user->homeLocationCode = $location->code;
-					$user->homeLocation     = $location->displayName;
+					$user->_homeLocationCode = $location->code;
+					$user->_homeLocation     = $location->displayName;
 				}
 
-				$user->expires = $accountSummary->patron->cardExpirationDate;
-				list ($yearExp, $monthExp, $dayExp) = explode("-", $user->expires);
+				$user->_expires = $accountSummary->patron->cardExpirationDate;
+				list ($yearExp, $monthExp, $dayExp) = explode("-", $user->_expires);
 				$timeExpire    = strtotime($monthExp . "/" . $dayExp . "/" . $yearExp);
 				$timeNow       = time();
 				$timeToExpire  = $timeExpire - $timeNow;
-				$user->expired = 0;
+				$user->_expired = 0;
 				if ($timeToExpire <= 30 * 24 * 60 * 60) {
 					if ($timeToExpire <= 0) {
-						$user->expired = 1;
+						$user->_expired = 1;
 					}
-					$user->expireClose = 1;
+					$user->_expireClose = 1;
 				} else {
-					$user->expireClose = 0;
+					$user->_expireClose = 0;
 				}
 
-				$user->address1 = $accountSummary->patron->address1;
-				$user->city     = $accountSummary->patron->city;
-				$user->state    = $accountSummary->patron->state;
-				$user->zip      = $accountSummary->patron->zipcode;
+				$user->_address1 = $accountSummary->patron->address1;
+				$user->_city     = $accountSummary->patron->city;
+				$user->_state    = $accountSummary->patron->state;
+				$user->_zip      = $accountSummary->patron->zipcode;
 
-				$user->fines    = $accountSummary->patron->fees / 100;
-				$user->finesVal = floatval(preg_replace('/[^\\d.]/', '', $user->fines));
+				$user->_fines    = $accountSummary->patron->fees / 100;
+				$user->_finesVal = floatval(preg_replace('/[^\\d.]/', '', $user->_fines));
 
-				$user->numCheckedOutIls     = $accountSummary->accountSummary->loanCount;
-				$user->numHoldsAvailableIls = $accountSummary->accountSummary->arrivedHolds;
-				$user->numHoldsRequestedIls = $accountSummary->accountSummary->pendingHolds;
-				$user->numHoldsIls          = $user->numHoldsAvailableIls + $user->numHoldsRequestedIls;
+				$user->_numCheckedOutIls     = $accountSummary->accountSummary->loanCount;
+				$user->_numHoldsAvailableIls = $accountSummary->accountSummary->arrivedHolds;
+				$user->_numHoldsRequestedIls = $accountSummary->accountSummary->pendingHolds;
+				$user->_numHoldsIls          = $user->_numHoldsAvailableIls + $user->_numHoldsRequestedIls;
 
 				if ($userExistsInDB) {
 					$user->update();
@@ -197,7 +188,7 @@ class LibrarySolution extends ScreenScrapingDriver {
 	 * @param string $sortOption
 	 * @return array
 	 */
-	public function getReadingHistory($patron, $page = 1, $recordsPerPage = -1, $sortOption = "checkedOut") {
+	public function getReadingHistory($patron, $page = 1, $recordsPerPage = -1) {
 		$readingHistory = array();
 		if ($this->loginPatronToLSS($patron->cat_username, $patron->cat_password)){
 			//Load transactions from LSS
@@ -457,11 +448,7 @@ class LibrarySolution extends ScreenScrapingDriver {
 			$holdInfoRaw = $this->_curlGetPage($url);
 			$holdInfo = json_decode($holdInfoRaw);
 
-			$indexingProfile = new IndexingProfile();
-			$indexingProfile->name = $this->accountProfile->recordSource;
-			if (!$indexingProfile->find(true)){
-				$indexingProfile = null;
-			}
+			$indexingProfile = $this->getIndexingProfile();
 			foreach ($holdInfo->holds as $hold){
 				$curHold= array();
 				$bibId = $hold->bibliographicId;
@@ -734,4 +721,9 @@ class LibrarySolution extends ScreenScrapingDriver {
 
 		return $fines;
 	}
+
+    function updatePatronInfo($patron, $canUpdateContactInfo)
+    {
+        // TODO: Implement updatePatronInfo() method.
+    }
 }

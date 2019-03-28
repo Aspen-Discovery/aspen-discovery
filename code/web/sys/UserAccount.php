@@ -429,7 +429,7 @@ class UserAccount {
 					$_SESSION['loggedInViaCAS'] = true;
 				}
 				global $library;
-				if (isset($library) && $library->preventExpiredCardLogin && $tempUser->expired) {
+				if (isset($library) && $library->preventExpiredCardLogin && $tempUser->_expired) {
 					// Create error
 					$cardExpired = new PEAR_Error('expired_library_card');
 					return $cardExpired;
@@ -604,32 +604,8 @@ class UserAccount {
 				$accountProfiles[$accountProfile->name] = $additionalInfo;
 			}
 			if (count($accountProfiles) == 0) {
-				global $configArray;
-				//Create default information for historic login.  This will eventually be obsolete
-				$accountProfile = new AccountProfile();
-				$accountProfile->orderBy('weight', 'name');
-				$accountProfile->driver = $configArray['Catalog']['driver'];
-				if (isset($configArray['Catalog']['url'])){
-					$accountProfile->vendorOpacUrl = $configArray['Catalog']['url'];
-				}
-				$accountProfile->authenticationMethod = 'ils';
-				if ($configArray['Catalog']['barcodeProperty'] == 'cat_password'){
-					$accountProfile->loginConfiguration = 'username_barcode';
-				}else{
-					$accountProfile->loginConfiguration = 'barcode_pin';
-				}
-				if (isset($configArray['OPAC']['patron_host'])){
-					$accountProfile->patronApiUrl = $configArray['OPAC']['patron_host'];
-				}
-				$accountProfile->recordSource = 'ils';
-				$accountProfile->name = 'ils';
-
-				$additionalInfo = array(
-					'driver' => $configArray['Catalog']['driver'],
-					'authenticationMethod' => $configArray['Authentication']['method'],
-					'accountProfile' => $accountProfile
-				);
-				$accountProfiles['ils'] = $additionalInfo;
+				echo("Account profiles must be defined in the database for proper setup.");
+				die();
 			}
 			$memCache->set('account_profiles_' . $instanceName, $accountProfiles, 0, $configArray['Caching']['account_profiles']);
 			global $timer;

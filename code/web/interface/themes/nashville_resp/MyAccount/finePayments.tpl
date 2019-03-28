@@ -4,8 +4,8 @@
 	require_once ROOT_DIR . '/services/MyAccount/PayOnlineNashville.php';
   $user = UserAccount::getLoggedInUser();
 
-	// users have to log out and log back in in order for the $user->finesVal to reflect patrons actual balance.
-	// to prevent them from seeing the payment form again, I check that the patron API agrees with $user->finesVal
+	// users have to log out and log back in in order for the $user->_finesVal to reflect patrons actual balance.
+	// to prevent them from seeing the payment form again, I check that the patron API agrees with $user->_finesVal
 
 	$payonline = new PayOnlineNashville();
 	$payonline->librarycard = 'b' . $user->cat_username;
@@ -25,13 +25,13 @@
 		{/php}
 		<div class="alert alert-danger">You have pending payments that will be applied to your account within the next 24 hours. Additional online payments are not currently an option for this account</div>
 		{php}
-	} elseif(floor($search->bill) == 0 && $user->finesVal > 0) {
+	} elseif(floor($search->bill) == 0 && $user->_finesVal > 0) {
 		// This copy should probably be defined elsewhere (language file?)
 		// User has less than $1 in fines; do not allow online fine payment
 		{/php}
 		<div class="alert alert-danger">You have less than $1 in fines. Online payment is currently not an option for this account.</div>
 		{php}
-	} elseif($search->bill > 0 && $user->finesVal > 0) {
+	} elseif($search->bill > 0 && $user->_finesVal > 0) {
 	{/php}
 
 <div>

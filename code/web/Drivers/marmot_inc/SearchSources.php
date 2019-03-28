@@ -347,7 +347,6 @@ class SearchSources{
 			return $worldCatLink;
 		}else if ($searchSource == 'overdrive'){
 			$overDriveUrl = $configArray['OverDrive']['url'];
-//			return "$overDriveUrl/BangSearch.dll?Type=FullText&FullTextField=All&FullTextCriteria=" . urlencode($lookFor);
 			return "$overDriveUrl/search?query=" . urlencode($lookFor);
 		}else if ($searchSource == 'prospector'){
 			$prospectorSearchType = $this->getProspectorSearchType($type);

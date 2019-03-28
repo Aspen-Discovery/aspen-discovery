@@ -17,25 +17,6 @@
 			<p class="alert alert-info">
 				{/strip}
 				Hold Notification is sent once your hold arrives at the pickup location. Your hold must be picked up within 5 days.
-{*
-				Holds allow you to request that a title be delivered to your home library.
-				{if $showDetailedHoldNoticeInformation}
-					Once the title arrives at your library you will
-					{if $profile->noticePreferenceLabel eq 'Mail' && !$treatPrintNoticesAsPhoneNotices}
-						be mailed a notification
-					{elseif $profile->noticePreferenceLabel eq 'Telephone' || ($profile->noticePreferenceLabel eq 'Mail' && $treatPrintNoticesAsPhoneNotices)}
-						receive a phone call
-					{elseif $profile->noticePreferenceLabel eq 'E-mail'}
-						be emailed a notification
-					{else}
-						receive a notification
-					{/if}
-					 informing you that the title is ready for you.
-				{else}
-					Once the title arrives at your library you will receive a notification informing you that the title is ready for you.
-				{/if}
-				You will then have {translate text='Hold Pickup Period'} to pick up the title from your home library.
-*}
 				{strip}
 			</p>
 

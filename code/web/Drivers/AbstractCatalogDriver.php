@@ -1,23 +1,4 @@
 <?php
-/**
- *
- * Copyright (C) Villanova University 2007.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2,
- * as published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- */
-
 
 /**
  * Catalog Specific Driver Class
@@ -30,13 +11,21 @@
  * The most important element here is what the method will return.  In all cases
  * the method can return a PEAR_Error object if an error occurs.
  */
-interface DriverInterface
+abstract class AbstractCatalogDriver
 {
-	public function __construct($accountProfile);
+    /** @var  AccountProfile $accountProfile */
+    public $accountProfile;
 
-	public function patronLogin($username, $password, $validatedViaSSO);
-	public function hasNativeReadingHistory();
-	public function getNumHolds($id);
+    /**
+     * @param AccountProfile $accountProfile
+     */
+    public function __construct($accountProfile){
+        $this->accountProfile = $accountProfile;
+    }
+
+	public abstract function patronLogin($username, $password, $validatedViaSSO);
+	public abstract function hasNativeReadingHistory();
+	public abstract function getNumHolds($id);
 
 	/**
 	 * Get Patron Transactions
@@ -49,12 +38,12 @@ interface DriverInterface
 	 * @return array        Array of the patron's transactions on success
 	 * @access public
 	 */
-	public function getMyCheckouts($user);
+	public abstract function getMyCheckouts($user);
 
 	/**
 	 * @return boolean true if the driver can renew all titles in a single pass
 	 */
-	public function hasFastRenewAll();
+	public abstract function hasFastRenewAll();
 
 	/**
 	 * Renew all titles currently checked out to the user
@@ -62,7 +51,7 @@ interface DriverInterface
 	 * @param $patron  User
 	 * @return mixed
 	 */
-	public function renewAll($patron);
+	public abstract function renewAll($patron);
 
 	/**
 	 * Renew a single title currently checked out to the user
@@ -73,7 +62,7 @@ interface DriverInterface
 	 * @param $itemIndex  string
 	 * @return mixed
 	 */
-	public function renewItem($patron, $recordId, $itemId, $itemIndex);
+	public abstract function renewItem($patron, $recordId, $itemId, $itemIndex);
 
 	/**
 	 * Get Patron Holds
@@ -85,7 +74,7 @@ interface DriverInterface
 	 * @return array        Array of the patron's holds
 	 * @access public
 	 */
-	public function getMyHolds($user);
+	public abstract function getMyHolds($user);
 
 	/**
 	 * Place Hold
@@ -102,7 +91,7 @@ interface DriverInterface
 	 *                                title - the title of the record the user is placing a hold on
 	 * @access  public
 	 */
-	public function placeHold($patron, $recordId, $pickupBranch, $cancelDate = null);
+	public abstract function placeHold($patron, $recordId, $pickupBranch, $cancelDate = null);
 
 	/**
 	 * Place Item Hold
@@ -117,7 +106,7 @@ interface DriverInterface
 	 *                              If an error occurs, return a PEAR_Error
 	 * @access  public
 	 */
-	function placeItemHold($patron, $recordId, $itemId, $pickupBranch);
+    abstract function placeItemHold($patron, $recordId, $itemId, $pickupBranch);
 
 	/**
 	 * Cancels a hold for a patron
@@ -127,11 +116,42 @@ interface DriverInterface
 	 * @param   string  $cancelId   Information about the hold to be cancelled
 	 * @return  array
 	 */
-	function cancelHold($patron, $recordId, $cancelId);
+    abstract function cancelHold($patron, $recordId, $cancelId);
 
-	function freezeHold($patron, $recordId, $itemToFreezeId, $dateToReactivate);
+    abstract function freezeHold($patron, $recordId, $itemToFreezeId, $dateToReactivate);
 
-	function thawHold($patron, $recordId, $itemToThawId);
+    abstract function thawHold($patron, $recordId, $itemToThawId);
 
-	function changeHoldPickupLocation($patron, $recordId, $itemToUpdateId, $newPickupLocation);
+    abstract function changeHoldPickupLocation($patron, $recordId, $itemToUpdateId, $newPickupLocation);
+
+    abstract function updatePatronInfo($patron, $canUpdateContactInfo);
+
+    public abstract function getMyFines($patron, $includeMessages = false);
+
+    /**
+     * @return IndexingProfile|null
+     */
+    public function getIndexingProfile(){
+        global $indexingProfiles;
+        if (array_key_exists($this->accountProfile->recordSource, $indexingProfiles)) {
+            /** @var IndexingProfile $indexingProfile */
+            return $indexingProfiles[$this->accountProfile->recordSource];
+        } else {
+            return null;
+        }
+    }
+
+    public function getWebServiceURL(){
+        if (empty($this->webServiceURL)){
+            $webServiceURL = null;
+            if (!empty($this->accountProfile->patronApiUrl)){
+                $webServiceURL = trim($this->accountProfile->patronApiUrl);
+            }else{
+                global $logger;
+                $logger->log('No Web Service URL defined in account profile', PEAR_LOG_CRIT);
+            }
+            $this->webServiceURL = rtrim($webServiceURL, '/'); // remove any trailing slash because other functions will add it.
+        }
+        return $this->webServiceURL;
+    }
 }

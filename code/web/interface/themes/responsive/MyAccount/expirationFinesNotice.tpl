@@ -2,7 +2,7 @@
 	{if !$offline}
 		{* No need to calculate total fines if in offline mode*}
 		{assign var="totalFines" value=$user->getTotalFines()}
-		{if ($totalFines > 0 && $showFines) || ($showExpirationWarnings && $user->expireClose)}
+		{if ($totalFines > 0 && $showFines) || ($showExpirationWarnings && $user->_expireClose)}
 			<div id="myAccountFines">
 				{if $totalFines > 0 && $showFines}
 					{if $showEcommerceLink && $totalFines > $minimumFineAmount}
@@ -23,20 +23,20 @@
 					{/if}
 				{/if}
 
-				{if $showExpirationWarnings && $user->expireClose}
+				{if $showExpirationWarnings && $user->_expireClose}
 					<div class="myAccountLink">
 						<a class="alignright" title="Please contact your local library to have your library card renewed." style="color:red; font-weight:bold;" onclick="alert('Please Contact your local library to have your library card renewed.')" href="#">
-							{if $user->expired}
+							{if $user->_expired}
 								{if $expiredMessage}
 									{$expiredMessage}
 								{else}
-									Your library card expired on {$user->expires}.
+									Your library card expired on {$user->_expires}.
 								{/if}
 							{else}
 								{if $expirationNearMessage}
 									{$expirationNearMessage}
 								{else}
-									Your library card will expire on {$user->expires}.
+									Your library card will expire on {$user->_expires}.
 								{/if}
 							{/if}
 						</a>

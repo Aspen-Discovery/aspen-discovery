@@ -1,8 +1,8 @@
 {strip}
 	<div data-role="content">
 		{if $loggedIn}
-			{if $profile->web_note}
-				<div id="web_note" class="text-info text-center alert alert-warning"><strong>{$profile->web_note}</strong></div>
+			{if $profile->_web_note}
+				<div id="web_note" class="text-info text-center alert alert-warning"><strong>{$profile->_web_note}</strong></div>
 			{/if}
 
 			{* Alternate Mobile MyAccount Menu *}

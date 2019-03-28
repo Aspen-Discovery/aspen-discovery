@@ -1565,6 +1565,30 @@ class DBMaintenance extends Admin_Admin {
 					)
 				),
 
+                'account_profiles_2' => array(
+                    'title' => 'Update Account Profiles 2',
+                    'description' => 'Update Account Profiles with additional data to reduce information stored in config',
+                    'continueOnError' => true,
+                    'sql' => array(
+                        "ALTER TABLE `account_profiles` ADD `databaseHost` varchar(100)",
+                        "ALTER TABLE `account_profiles` ADD `databaseName` varchar(50)",
+                        "ALTER TABLE `account_profiles` ADD `databaseUser` varchar(50)",
+                        "ALTER TABLE `account_profiles` ADD `databasePassword` varchar(50)",
+                        "ALTER TABLE `account_profiles` ADD `sipHost` varchar(100)",
+                        "ALTER TABLE `account_profiles` ADD `sipPort` varchar(50)",
+                    )
+                ),
+
+                'account_profiles_3' => array(
+                    'title' => 'Update Account Profiles 3',
+                    'description' => 'Update Account Profiles with additional information about SIP',
+                    'continueOnError' => true,
+                    'sql' => array(
+                        "ALTER TABLE `account_profiles` ADD `sipUser` varchar(50)",
+                        "ALTER TABLE `account_profiles` ADD `sipPassword` varchar(50)",
+                    )
+                ),
+
 					'archive_private_collections' => array(
 							'title' => 'Archive Private Collections',
 							'description' => 'Create a table to store information about collections that should be private to the owning library',

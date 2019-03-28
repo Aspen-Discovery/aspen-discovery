@@ -48,40 +48,40 @@ class User extends DataObject
 	private $viewers;
 
 	//Data that we load, but don't store in the User table
-	public $fullname;
-	public $address1;
-	public $address2;
-	public $city;
-	public $state;
-	public $zip;
-	public $workPhone;
-	public $mobileNumber;
-	public $web_note;
-	public $expires;
-	public $expired;
-	public $expireClose;
-	public $fines;
-	public $finesVal;
-	public $homeLibrary;
-	public $homeLibraryName; //Only populated as part of loading administrators
-	public $homeLocationCode;
-	public $homeLocation;
-	public $myLocation1;
-	public $myLocation2;
-	public $numCheckedOutIls;
-	public $numHoldsIls;
-	public $numHoldsAvailableIls;
-	public $numHoldsRequestedIls;
-	private $numCheckedOutOverDrive = 0;
-	private $numHoldsOverDrive = 0;
-	private $numHoldsAvailableOverDrive = 0;
-	private $numHoldsRequestedOverDrive = 0;
-	private $numCheckedOutHoopla = 0;
+	public $_fullname;
+	public $_address1;
+	public $_address2;
+	public $_city;
+	public $_state;
+	public $_zip;
+	public $_workPhone;
+	public $_mobileNumber;
+	public $_web_note;
+	public $_expires;
+	public $_expired;
+	public $_expireClose;
+	public $_fines;
+	public $_finesVal;
+	public $_homeLibrary;
+	public $_homeLibraryName; //Only populated as part of loading administrators
+	public $_homeLocationCode;
+	public $_homeLocation;
+	public $_myLocation1;
+	public $_myLocation2;
+	public $_numCheckedOutIls;
+	public $_numHoldsIls;
+	public $_numHoldsAvailableIls;
+	public $_numHoldsRequestedIls;
+	private $_numCheckedOutOverDrive = 0;
+	private $_numHoldsOverDrive = 0;
+	private $_numHoldsAvailableOverDrive = 0;
+	private $_numHoldsRequestedOverDrive = 0;
+	private $_numCheckedOutHoopla = 0;
 	public $numBookings;
 	public $notices;
-	public $noticePreferenceLabel;
-	private $numMaterialsRequests = 0;
-	private $readingHistorySize = 0;
+	public $_noticePreferenceLabel;
+	private $_numMaterialsRequests = 0;
+	private $_readingHistorySize = 0;
 
 	private $data = array();
 
@@ -101,7 +101,7 @@ class User extends DataObject
 
 		$lists = array();
 
-		$escapedId = $this->escape($this->id, false);
+		$escapedId = $this->escape($this->id);
 		$sql = "SELECT user_list.* FROM user_list " .
 							 "WHERE user_list.user_id = '$escapedId' " .
 							 "ORDER BY user_list.title";
@@ -287,7 +287,7 @@ class User extends DataObject
 		if (isset($this->id) && isset($this->roles) && is_array($this->roles)){
 			require_once ROOT_DIR . '/sys/Administration/Role.php';
 			$role = new Role();
-			$escapedId = $this->escape($this->id, false);
+			$escapedId = $this->escape($this->id);
 			$role->query("DELETE FROM user_roles WHERE userId = " . $escapedId);
 			//Now add the new values.
 			if (count($this->roles) > 0){
@@ -750,10 +750,10 @@ class User extends DataObject
 	 * @return Library|null
 	 */
 	function getHomeLibrary(){
-		if ($this->homeLibrary == null){
-			$this->homeLibrary = Library::getPatronHomeLibrary($this);
+		if ($this->_homeLibrary == null){
+			$this->_homeLibrary = Library::getPatronHomeLibrary($this);
 		}
-		return $this->homeLibrary;
+		return $this->_homeLibrary;
 	}
 
 	function getHomeLibrarySystemName(){
@@ -762,7 +762,7 @@ class User extends DataObject
 
 	public function getNumCheckedOutTotal($includeLinkedUsers = true) {
 		$this->updateRuntimeInformation();
-		$myCheckouts = $this->numCheckedOutIls + $this->numCheckedOutOverDrive + $this->numCheckedOutHoopla;
+		$myCheckouts = $this->_numCheckedOutIls + $this->_numCheckedOutOverDrive + $this->_numHoldsRequestedOverDrive;
 		if ($includeLinkedUsers) {
 			if ($this->getLinkedUsers() != null) {
 				/** @var User $user */
@@ -776,7 +776,7 @@ class User extends DataObject
 
 	public function getNumHoldsTotal($includeLinkedUsers = true) {
 		$this->updateRuntimeInformation();
-		$myHolds = $this->numHoldsIls + $this->numHoldsOverDrive;
+		$myHolds = $this->_numHoldsIls + $this->_numHoldsOverDrive;
 		if ($includeLinkedUsers) {
 			if ($this->getLinkedUsers() != null) {
 				/** @var User $user */
@@ -790,7 +790,7 @@ class User extends DataObject
 
 	public function getNumHoldsAvailableTotal($includeLinkedUsers = true){
 		$this->updateRuntimeInformation();
-		$myHolds = $this->numHoldsAvailableIls + $this->numHoldsAvailableOverDrive;
+		$myHolds = $this->_numHoldsAvailableIls + $this->_numHoldsAvailableOverDrive;
 		if ($includeLinkedUsers){
 			if ($this->getLinkedUsers() != null) {
 				/** @var User $user */
@@ -804,7 +804,7 @@ class User extends DataObject
 	}
 
 	public function getNumBookingsTotal($includeLinkedUsers = true){
-		$myBookings = $this->numBookings;
+		$myBookings = $this->_numBookings;
 		if ($includeLinkedUsers){
 			if ($this->getLinkedUsers() != null) {
 				/** @var User $user */
@@ -819,7 +819,7 @@ class User extends DataObject
 
 	private $totalFinesForLinkedUsers = -1;
 	public function getTotalFines($includeLinkedUsers = true){
-		$totalFines = $this->finesVal;
+		$totalFines = $this->_finesVal;
 		if ($includeLinkedUsers){
 			if ($this->totalFinesForLinkedUsers == -1){
 				if ($this->getLinkedUsers() != null) {
@@ -849,8 +849,6 @@ class User extends DataObject
 	 */
 	public function getMyCheckouts($includeLinkedUsers = true){
 		global $timer;
-		global $configArray;
-
 		//Get checked out titles from the ILS
 		$ilsCheckouts = $this->getCatalogDriver()->getMyCheckouts($this);
 		$timer->logTime("Loaded transactions from catalog.");
@@ -1112,7 +1110,7 @@ class User extends DataObject
 	}
 
 	function updateAltLocationForHold($pickupBranch){
-		if ($this->homeLocationCode != $pickupBranch) {
+		if ($this->_homeLocationCode != $pickupBranch) {
 			global $logger;
 			$logger->log("The selected pickup branch is not the user's home location, checking to see if we need to set an alternate branch", PEAR_LOG_INFO);
 			$location = new Location();
@@ -1402,39 +1400,39 @@ class User extends DataObject
 	}
 
 	function setNumCheckedOutHoopla($val){
-		$this->numCheckedOutHoopla = $val;
+		$this->_numCheckedOutHoopla = $val;
 	}
 
 	function setNumCheckedOutOverDrive($val){
-		$this->numCheckedOutOverDrive = $val;
+		$this->_numCheckedOutOverDrive = $val;
 	}
 
 	function setNumHoldsAvailableOverDrive($val){
-		$this->numHoldsAvailableOverDrive = $val;
-		$this->numHoldsOverDrive += $val;
+		$this->_numHoldsAvailableOverDrive = $val;
+		$this->_numHoldsOverDrive += $val;
 	}
 
 	function setNumHoldsRequestedOverDrive($val){
-		$this->numHoldsRequestedOverDrive = $val;
-		$this->numHoldsOverDrive += $val;
+		$this->_numHoldsRequestedOverDrive = $val;
+		$this->_numHoldsOverDrive += $val;
 	}
 
 	function setNumMaterialsRequests($val){
-		$this->numMaterialsRequests = $val;
+		$this->_numMaterialsRequests = $val;
 	}
 
 	function getNumMaterialsRequests(){
 		$this->updateRuntimeInformation();
-		return $this->numMaterialsRequests;
+		return $this->_numMaterialsRequests;
 	}
 
 	function setReadingHistorySize($val){
-		$this->readingHistorySize = $val;
+		$this->_readingHistorySize = $val;
 	}
 
 	function getReadingHistorySize(){
 		$this->updateRuntimeInformation();
-		return $this->readingHistorySize;
+		return $this->_readingHistorySize;
 	}
 }
 

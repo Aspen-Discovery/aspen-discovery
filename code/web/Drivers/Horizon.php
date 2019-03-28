@@ -19,17 +19,16 @@
  */
 
 //require_once ROOT_DIR . '/sys/SIP2.php'; // not used at this time. plb 6-17-2016
-require_once ROOT_DIR . '/Drivers/ScreenScrapingDriver.php';
-abstract class Horizon extends ScreenScrapingDriver{
+require_once ROOT_DIR . '/Drivers/CurlBasedDriver.php';
+abstract class Horizon extends CurlBasedDriver{
 
 	protected $db;
 	protected $useDb = true;
 	protected $hipUrl;
 	protected $hipProfile;
 	protected $selfRegProfile;
-	public $accountProfile;
 	function __construct($accountProfile) {
-		$this->accountProfile = $accountProfile;
+		parent::__construct($accountProfile);
 		// Load Configuration for this Module
 		global $configArray;
 

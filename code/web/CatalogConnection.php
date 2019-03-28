@@ -1,48 +1,5 @@
 <?php
-/**
- * Catalog Connection Class
- *
- * This wrapper works with a driver class to pass information from the ILS to
- * VuFind.
- *
- * PHP version 5
- *
- * Copyright (C) Villanova University 2007.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2,
- * as published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- * @category VuFind
- * @package  ILS_Drivers
- * @author   Andrew S. Nagy <vufind-tech@lists.sourceforge.net>
- * @author   Demian Katz <demian.katz@villanova.edu>
- * @license  http://opensource.org/licenses/gpl-2.0.php GNU General Public License
- * @link     http://vufind.org/wiki/building_an_ils_driver Wiki
- */
 
-/**
- * Catalog Connection Class
- *
- * This wrapper works with a driver class to pass information from the ILS to
- * VuFind.
- *
- * @category VuFind
- * @package  ILS_Drivers
- * @author   Andrew S. Nagy <vufind-tech@lists.sourceforge.net>
- * @author   Demian Katz <demian.katz@villanova.edu>
- * @license  http://opensource.org/licenses/gpl-2.0.php GNU General Public License
- * @link     http://vufind.org/wiki/building_an_ils_driver Wiki
- */
 class CatalogConnection
 {
 	/**
@@ -60,7 +17,7 @@ class CatalogConnection
 	 * The object of the appropriate driver.
 	 *
 	 * @access private
-	 * @var    Millennium|DriverInterface
+	 * @var    AbstractCatalogDriver
 	 */
 	public $driver;
 
@@ -78,7 +35,7 @@ class CatalogConnection
 	public function __construct($driver, $accountProfile)
 	{
 		$path = ROOT_DIR . "/Drivers/{$driver}.php";
-		if (is_readable($path) && $driver != 'DriverInterface') {
+		if (is_readable($path) && $driver != 'AbstractCatalogDriver') {
 			require_once $path;
 
 			try {

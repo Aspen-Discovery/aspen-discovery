@@ -81,20 +81,6 @@ abstract class SirsiDynixROA extends HorizonAPI
 		}
 	}
 
-	public function getWebServiceURL()
-	{
-		$webServiceURL = null;
-		if (!empty($this->accountProfile->patronApiUrl)) {
-			$webServiceURL = $this->accountProfile->patronApiUrl;
-		} elseif (!empty($configArray['Catalog']['webServiceUrl'])) {
-			$webServiceURL = $configArray['Catalog']['webServiceUrl'];
-		} else {
-			global $logger;
-			$logger->log('No Web Service URL defined in Sirsi Dynix ROA API Driver', PEAR_LOG_CRIT);
-		}
-		return $webServiceURL;
-	}
-
 	private static $userPreferredAddresses = array();
 
 	function findNewUser($barcode) {
@@ -140,7 +126,7 @@ abstract class SirsiDynixROA extends HorizonAPI
 				if ($forceDisplayNameUpdate) {
 					$user->displayName = '';
 				}
-				$user->fullname     = isset($fullName) ? $fullName : '';
+				$user->_fullname     = isset($fullName) ? $fullName : '';
 				$user->cat_username = $barcode;
 
 				$Address1    = "";
@@ -239,7 +225,7 @@ abstract class SirsiDynixROA extends HorizonAPI
 							$myLocation1             = new Location();
 							$myLocation1->locationId = $user->myLocation1Id;
 							if ($myLocation1->find(true)) {
-								$user->myLocation1 = $myLocation1->displayName;
+								$user->_myLocation1 = $myLocation1->displayName;
 							}
 						}
 
@@ -249,7 +235,7 @@ abstract class SirsiDynixROA extends HorizonAPI
 							$myLocation2             = new Location();
 							$myLocation2->locationId = $user->myLocation2Id;
 							if ($myLocation2->find(true)) {
-								$user->myLocation2 = $myLocation2->displayName;
+								$user->_myLocation2 = $myLocation2->displayName;
 							}
 						}
 					}
@@ -257,22 +243,22 @@ abstract class SirsiDynixROA extends HorizonAPI
 
 				if (isset($location)) {
 					//Get display names that aren't stored
-					$user->homeLocationCode = $location->code;
-					$user->homeLocation     = $location->displayName;
+					$user->_homeLocationCode = $location->code;
+					$user->_homeLocation     = $location->displayName;
 				}
 
 				if (isset($lookupMyAccountInfoResponse->fields->privilegeExpiresDate)) {
-					$user->expires = $lookupMyAccountInfoResponse->fields->privilegeExpiresDate;
-					list ($yearExp, $monthExp, $dayExp) = explode("-", $user->expires);
+					$user->_expires = $lookupMyAccountInfoResponse->fields->privilegeExpiresDate;
+					list ($yearExp, $monthExp, $dayExp) = explode("-", $user->_expires);
 					$timeExpire   = strtotime($monthExp . "/" . $dayExp . "/" . $yearExp);
 					$timeNow      = time();
 					$timeToExpire = $timeExpire - $timeNow;
 					if ($timeToExpire <= 30 * 24 * 60 * 60) {
 						//TODO: the ils also has an expire soon flag in the patronStatusInfo
 						if ($timeToExpire <= 0) {
-							$user->expired = 1;
+							$user->_expired = 1;
 						}
-						$user->expireClose = 1;
+						$user->_expireClose = 1;
 					}
 				}
 
@@ -300,22 +286,22 @@ abstract class SirsiDynixROA extends HorizonAPI
 					}
 				}
 
-				$user->address1              = $Address1;
-				$user->address2              = $City . ', ' . $State;
-				$user->city                  = $City;
-				$user->state                 = $State;
-				$user->zip                   = $Zip;
+				$user->_address1              = $Address1;
+				$user->_address2              = $City . ', ' . $State;
+				$user->_city                  = $City;
+				$user->_state                 = $State;
+				$user->_zip                   = $Zip;
 //				$user->phone                 = isset($phone) ? $phone : '';
-				$user->fines                 = sprintf('$%01.2f', $finesVal);
-				$user->finesVal              = $finesVal;
-				$user->numCheckedOutIls      = isset($lookupMyAccountInfoResponse->fields->circRecordList) ? count($lookupMyAccountInfoResponse->fields->circRecordList) : 0;
-				$user->numHoldsIls           = $numHoldsAvailable + $numHoldsRequested;
-				$user->numHoldsAvailableIls  = $numHoldsAvailable;
-				$user->numHoldsRequestedIls  = $numHoldsRequested;
+				$user->_fines                 = sprintf('$%01.2f', $finesVal);
+				$user->_finesVal              = $finesVal;
+				$user->_numCheckedOutIls      = isset($lookupMyAccountInfoResponse->fields->circRecordList) ? count($lookupMyAccountInfoResponse->fields->circRecordList) : 0;
+				$user->_numHoldsIls           = $numHoldsAvailable + $numHoldsRequested;
+				$user->_numHoldsAvailableIls  = $numHoldsAvailable;
+				$user->_numHoldsRequestedIls  = $numHoldsRequested;
 				$user->patronType            = 0; //TODO: not getting this info here?
 				$user->notices               = '-';
-				$user->noticePreferenceLabel = 'E-mail';
-				$user->web_note              = '';
+				$user->_noticePreferenceLabel = 'E-mail';
+				$user->_web_note              = '';
 
 				if ($userExistsInDB) {
 					$user->update();
@@ -402,7 +388,7 @@ abstract class SirsiDynixROA extends HorizonAPI
 				if ($forceDisplayNameUpdate) {
 					$user->displayName = '';
 				}
-				$user->fullname     = isset($fullName) ? $fullName : '';
+				$user->_fullname     = isset($fullName) ? $fullName : '';
 				$user->cat_username = $username;
 				$user->cat_password = $password;
 
@@ -502,7 +488,7 @@ abstract class SirsiDynixROA extends HorizonAPI
 							$myLocation1             = new Location();
 							$myLocation1->locationId = $user->myLocation1Id;
 							if ($myLocation1->find(true)) {
-								$user->myLocation1 = $myLocation1->displayName;
+								$user->_myLocation1 = $myLocation1->displayName;
 							}
 						}
 
@@ -512,7 +498,7 @@ abstract class SirsiDynixROA extends HorizonAPI
 							$myLocation2             = new Location();
 							$myLocation2->locationId = $user->myLocation2Id;
 							if ($myLocation2->find(true)) {
-								$user->myLocation2 = $myLocation2->displayName;
+								$user->_myLocation2 = $myLocation2->displayName;
 							}
 						}
 					}
@@ -520,22 +506,22 @@ abstract class SirsiDynixROA extends HorizonAPI
 
 				if (isset($location)) {
 					//Get display names that aren't stored
-					$user->homeLocationCode = $location->code;
-					$user->homeLocation     = $location->displayName;
+					$user->_homeLocationCode = $location->code;
+					$user->_homeLocation     = $location->displayName;
 				}
 
 				if (isset($lookupMyAccountInfoResponse->fields->privilegeExpiresDate)) {
-					$user->expires = $lookupMyAccountInfoResponse->fields->privilegeExpiresDate;
-					list ($yearExp, $monthExp, $dayExp) = explode("-", $user->expires);
+					$user->_expires = $lookupMyAccountInfoResponse->fields->privilegeExpiresDate;
+					list ($yearExp, $monthExp, $dayExp) = explode("-", $user->_expires);
 					$timeExpire   = strtotime($monthExp . "/" . $dayExp . "/" . $yearExp);
 					$timeNow      = time();
 					$timeToExpire = $timeExpire - $timeNow;
 					if ($timeToExpire <= 30 * 24 * 60 * 60) {
 						//TODO: the ils also has an expire soon flag in the patronStatusInfo
 						if ($timeToExpire <= 0) {
-							$user->expired = 1;
+							$user->_expired = 1;
 						}
-						$user->expireClose = 1;
+						$user->_expireClose = 1;
 					}
 				}
 
@@ -572,22 +558,22 @@ abstract class SirsiDynixROA extends HorizonAPI
 					}
 				}
 
-				$user->address1              = $Address1;
-				$user->address2              = $City . ', ' . $State;
-				$user->city                  = $City;
-				$user->state                 = $State;
-				$user->zip                   = $Zip;
+				$user->_address1              = $Address1;
+				$user->_address2              = $City . ', ' . $State;
+				$user->_city                  = $City;
+				$user->_state                 = $State;
+				$user->_zip                   = $Zip;
 //				$user->phone                 = isset($phone) ? $phone : '';
-				$user->fines                 = sprintf('$%01.2f', $finesVal);
-				$user->finesVal              = $finesVal;
-				$user->numCheckedOutIls      = $numCheckedOut;
-				$user->numHoldsIls           = $numHoldsAvailable + $numHoldsRequested;
-				$user->numHoldsAvailableIls  = $numHoldsAvailable;
-				$user->numHoldsRequestedIls  = $numHoldsRequested;
+				$user->_fines                 = sprintf('$%01.2f', $finesVal);
+				$user->_finesVal              = $finesVal;
+				$user->_numCheckedOutIls      = $numCheckedOut;
+				$user->_numHoldsIls           = $numHoldsAvailable + $numHoldsRequested;
+				$user->_numHoldsAvailableIls  = $numHoldsAvailable;
+				$user->_numHoldsRequestedIls  = $numHoldsRequested;
 				$user->patronType            = 0; //TODO: not getting this info here?
 				$user->notices               = '-';
-				$user->noticePreferenceLabel = 'E-mail';
-				$user->web_note              = '';
+				$user->_noticePreferenceLabel = 'E-mail';
+				$user->_web_note              = '';
 
 				if ($userExistsInDB) {
 					$user->update();
@@ -1235,7 +1221,7 @@ abstract class SirsiDynixROA extends HorizonAPI
 
 			} else {
 				if (empty($campus)) {
-					$campus = $patron->homeLocationCode;
+					$campus = $patron->_homeLocationCode;
 				}
 				//create the hold using the web service
 				$webServiceURL = $this->getWebServiceURL();
@@ -1773,8 +1759,8 @@ abstract class SirsiDynixROA extends HorizonAPI
 				if ($userID = $user->username) {
 					$updatePatronInfoParameters = array(
 						'fields' => array(),
-					  'key' => $userID,
-					  'resource' => '/user/patron',
+                        'key' => $userID,
+                        'resource' => '/user/patron',
 					);
 					if (!empty(self::$userPreferredAddresses[$userID])) {
 						$preferredAddress = self::$userPreferredAddresses[$userID];
@@ -1813,19 +1799,19 @@ abstract class SirsiDynixROA extends HorizonAPI
 					}
 
 					if (!empty($user->address1)) {
-						$setField('STREET', $user->address1);
+						$setField('STREET', $user->_address1);
 					}
 
 					if (!empty($user->zip)) {
-						$setField('ZIP', $user->zip);
+						$setField('ZIP', $user->_zip);
 					}
 
 					if (!empty($user->phone)) {
 						$setField('PHONE', $user->phone);
 					}
 
-					if (!empty($user->city) && !empty($user->city)) {
-						$setField('CITY/STATE', $user->city .' '. $user->state);
+					if (!empty($user->_city) && !empty($user->city)) {
+						$setField('CITY/STATE', $user->_city .' '. $user->_state);
 					}
 
 

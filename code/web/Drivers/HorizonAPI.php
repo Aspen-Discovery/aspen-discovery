@@ -18,7 +18,6 @@
  *
  */
 
-require_once 'DriverInterface.php';
 require_once ROOT_DIR . '/Drivers/Horizon.php';
 
 abstract class HorizonAPI extends Horizon{
@@ -43,11 +42,11 @@ abstract class HorizonAPI extends Horizon{
 		if ($userValid){
 			if (!empty($this->accountProfile->patronApiUrl)) {
 				$webServiceURL = $this->accountProfile->patronApiUrl;
-			} elseif (!empty($configArray['Catalog']['webServiceUrl'])) {
-				$webServiceURL = $configArray['Catalog']['webServiceUrl'];
 			} else {
 				global $logger;
 				$logger->log('No Web Service URL defined in Horizon API Driver', PEAR_LOG_CRIT);
+                echo("Web service URL must be defined in the account profile to work with the Horizon API");
+                die();
 				return null;
 			}
 			$lookupMyAccountInfoResponse = $this->getWebServiceResponse($webServiceURL . '/standard/lookupMyAccountInfo?clientID=' . $configArray['Catalog']['clientId'] . '&sessionToken=' . $sessionToken . '&includeAddressInfo=true&includeHoldInfo=true&includeBlockInfo=true&includeItemsOutInfo=true');
@@ -84,7 +83,7 @@ abstract class HorizonAPI extends Horizon{
 				if ($forceDisplayNameUpdate){
 					$user->displayName = '';
 				}
-				$user->fullname = isset($fullName) ? $fullName : '';
+				$user->_fullname = isset($fullName) ? $fullName : '';
 				$user->cat_username = $username;
 				$user->cat_password = $password;
 				$user->email = $email;
@@ -149,7 +148,7 @@ abstract class HorizonAPI extends Horizon{
 							$myLocation1             = new Location();
 							$myLocation1->locationId = $user->myLocation1Id;
 							if ($myLocation1->find(true)) {
-								$user->myLocation1 = $myLocation1->displayName;
+								$user->_myLocation1 = $myLocation1->displayName;
 							}
 						}
 
@@ -159,7 +158,7 @@ abstract class HorizonAPI extends Horizon{
 							$myLocation2             = new Location();
 							$myLocation2->locationId = $user->myLocation2Id;
 							if ($myLocation2->find(true)) {
-								$user->myLocation2 = $myLocation2->displayName;
+								$user->_myLocation2 = $myLocation2->displayName;
 							}
 						}
 					}
@@ -167,8 +166,8 @@ abstract class HorizonAPI extends Horizon{
 
 				if (isset($location)){
 					//Get display names that aren't stored
-					$user->homeLocationCode = $location->code;
-					$user->homeLocation     = $location->displayName;
+					$user->_homeLocationCode = $location->code;
+					$user->_homeLocation     = $location->displayName;
 				}
 
 
@@ -200,20 +199,20 @@ abstract class HorizonAPI extends Horizon{
 				$user->address2              = $City . ', ' . $State;
 				$user->city                  = $City;
 				$user->state                 = $State;
-				$user->zip                   = $Zip;
+				$user->_zip                   = $Zip;
 				$user->phone                 = isset($lookupMyAccountInfoResponse->phone) ? (string)$lookupMyAccountInfoResponse->phone : '';
-				$user->fines                 = sprintf('$%01.2f', $finesVal);
-				$user->finesVal              = $finesVal;
-				$user->expires               = ''; //TODO: Determine if we can get this
-				$user->expireClose           = $expireClose;
-				$user->numCheckedOutIls      = isset($lookupMyAccountInfoResponse->ItemsOutInfo) ? count($lookupMyAccountInfoResponse->ItemsOutInfo) : 0;
-				$user->numHoldsIls           = $numHoldsAvailable + $numHoldsRequested;
-				$user->numHoldsAvailableIls  = $numHoldsAvailable;
-				$user->numHoldsRequestedIls  = $numHoldsRequested;
+				$user->_fines                 = sprintf('$%01.2f', $finesVal);
+				$user->_finesVal              = $finesVal;
+				$user->_expires               = ''; //TODO: Determine if we can get this
+				$user->_expireClose           = $expireClose;
+				$user->_numCheckedOutIls      = isset($lookupMyAccountInfoResponse->ItemsOutInfo) ? count($lookupMyAccountInfoResponse->ItemsOutInfo) : 0;
+				$user->_numHoldsIls           = $numHoldsAvailable + $numHoldsRequested;
+				$user->_numHoldsAvailableIls  = $numHoldsAvailable;
+				$user->_numHoldsRequestedIls  = $numHoldsRequested;
 				$user->patronType            = 0;
 				$user->notices               = '-';
-				$user->noticePreferenceLabel = 'E-mail';
-				$user->web_note              = '';
+				$user->_noticePreferenceLabel = 'E-mail';
+				$user->_web_note              = '';
 
 				if ($userExistsInDB){
 					$user->update();

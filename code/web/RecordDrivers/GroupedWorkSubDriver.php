@@ -324,6 +324,10 @@ abstract class GroupedWorkSubDriver extends RecordInterface
      */
     abstract function getFormats();
 
+    public function getPrimaryFormat(){
+        return reset($this->getFormats());
+    }
+
     /**
      * Get an array of all the format categories associated with the record.
      *

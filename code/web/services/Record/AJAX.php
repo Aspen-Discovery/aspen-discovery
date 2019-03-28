@@ -142,7 +142,7 @@ class Record_AJAX extends Action {
 			if ($ptype->find(true)){
 				$maxHolds = $ptype->maxHolds;
 			}
-			$currentHolds = $user->numHoldsIls;
+			$currentHolds = $user->_numHoldsIls;
 			//TODO: this check will need to account for linked accounts now
 			if ($maxHolds != -1 && ($currentHolds + 1 > $maxHolds)){
 				$interface->assign('showOverHoldLimit', true);

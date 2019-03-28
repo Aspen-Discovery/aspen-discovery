@@ -18,7 +18,7 @@
  *
  */
 
-require_once 'DriverInterface.php';
+require_once 'AbstractCatalogDriver.php';
 require_once ROOT_DIR . '/Drivers/HorizonAPI3_23.php';
 
 class WCPL extends HorizonAPI3_23
@@ -397,16 +397,16 @@ class WCPL extends HorizonAPI3_23
 
 		//Login by posting username and password
 		$post_data = array(
-      'aspect' => 'overview',
-      'button' => 'New User',
-      'login_prompt' => 'true',
-      'menu' => 'account',
-			'newuser_prompt' => 'true',
-      'profile' => $this->selfRegProfile,
-      'ri' => '', 
-      'sec1' => '',
-      'sec2' => '',
-      'session' => $sessionId,
+            'aspect' => 'overview',
+            'button' => 'New User',
+            'login_prompt' => 'true',
+            'menu' => 'account',
+            'newuser_prompt' => 'true',
+            'profile' => $this->selfRegProfile,
+            'ri' => '',
+            'sec1' => '',
+            'sec2' => '',
+            'session' => $sessionId,
 		);
 		$post_items = array();
 		foreach ($post_data as $key => $value) {
@@ -433,27 +433,27 @@ class WCPL extends HorizonAPI3_23
 
 		//Register the patron
 		$post_data = array(
-      'address1' => $streetAddress,
-		  'address2' => $apartment,
-			'aspect' => 'basic',
-			'pin#' => $pin,
-			'button' => 'I accept',
-			'city_st' => $citySt,
-			'confirmpin#' => $confirmPin,
-			'email_address' => $email,
-			'firstname' => $firstName,
-			'ipp' => 20,
-			'lastname' => $lastName,
-			'menu' => 'account',
-			'newuser_info' => 'true',
-			'npp' => 30,
-			'postal_code' => $zip,
-      'phone_no' => $phone,
-      'profile' => $this->selfRegProfile,
-			'ri' => '',
-			'send_notice_by' => $sendNoticeBy,
-			'session' => $sessionId,
-			'spp' => 20
+            'address1' => $streetAddress,
+            'address2' => $apartment,
+            'aspect' => 'basic',
+            'pin#' => $pin,
+            'button' => 'I accept',
+            'city_st' => $citySt,
+            'confirmpin#' => $confirmPin,
+            'email_address' => $email,
+            'firstname' => $firstName,
+            'ipp' => 20,
+            'lastname' => $lastName,
+            'menu' => 'account',
+            'newuser_info' => 'true',
+            'npp' => 30,
+            'postal_code' => $zip,
+            'phone_no' => $phone,
+            'profile' => $this->selfRegProfile,
+            'ri' => '',
+            'send_notice_by' => $sendNoticeBy,
+            'session' => $sessionId,
+            'spp' => 20
 		);
 
 		$post_items = array();

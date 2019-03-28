@@ -3,14 +3,13 @@
 
 require_once ROOT_DIR . '/sys/SIP2.php';
 class CarlX extends SIP2Driver{
-	public $accountProfile;
 	public $patronWsdl;
 	public $catalogWsdl;
 
 	private $soapClient;
 
 	public function __construct($accountProfile) {
-		$this->accountProfile = $accountProfile;
+	    parent::__construct($accountProfile);
 		global $configArray;
 		$this->patronWsdl  = $configArray['Catalog']['patronApiWsdl'];
 		$this->catalogWsdl = $configArray['Catalog']['catalogApiWsdl'];
@@ -61,7 +60,7 @@ class CarlX extends SIP2Driver{
 					if ($forceDisplayNameUpdate){
 						$user->displayName = '';
 					}
-					$user->fullname     = isset($fullName) ? $fullName : '';
+					$user->_fullname     = isset($fullName) ? $fullName : '';
 					$user->cat_username = $username;
 					$user->cat_password = $result->Patron->PatronPIN;
 					$user->email        = $result->Patron->Email;
@@ -112,7 +111,7 @@ class CarlX extends SIP2Driver{
 								$myLocation1             = new Location();
 								$myLocation1->locationId = $user->myLocation1Id;
 								if ($myLocation1->find(true)) {
-									$user->myLocation1 = $myLocation1->displayName;
+									$user->_myLocation1 = $myLocation1->displayName;
 								}
 							}
 
@@ -122,7 +121,7 @@ class CarlX extends SIP2Driver{
 								$myLocation2             = new Location();
 								$myLocation2->locationId = $user->myLocation2Id;
 								if ($myLocation2->find(true)) {
-									$user->myLocation2 = $myLocation2->displayName;
+									$user->_myLocation2 = $myLocation2->displayName;
 								}
 							}
 						}
@@ -130,8 +129,8 @@ class CarlX extends SIP2Driver{
 
 					if (isset($location)){
 						//Get display names that aren't stored
-						$user->homeLocationCode = $location->code;
-						$user->homeLocation     = $location->displayName;
+						$user->_homeLocationCode = $location->code;
+						$user->_homeLocation     = $location->displayName;
 					}
 
 					if (isset($result->Patron->Addresses)){
@@ -144,11 +143,11 @@ class CarlX extends SIP2Driver{
 							}
 						}
 						if ($primaryAddress != null){
-							$user->address1 = $primaryAddress->Street;
-							$user->address2 = $primaryAddress->City . ', ' . $primaryAddress->State;
-							$user->city     = $primaryAddress->City;
-							$user->state    = $primaryAddress->State;
-							$user->zip      = $primaryAddress->PostalCode;
+							$user->_address1 = $primaryAddress->Street;
+							$user->_address2 = $primaryAddress->City . ', ' . $primaryAddress->State;
+							$user->_city     = $primaryAddress->City;
+							$user->_state    = $primaryAddress->State;
+							$user->_zip      = $primaryAddress->PostalCode;
 						}
 					}
 
@@ -157,20 +156,20 @@ class CarlX extends SIP2Driver{
 					}
 
 					$user->patronType  = $result->Patron->PatronType; // Example: "ADULT"
-					$user->web_note    = '';
+					$user->_web_note    = '';
 					$user->phone       = $result->Patron->Phone1;
-					$user->expires     = $this->extractDateFromCarlXDateField($result->Patron->ExpirationDate);
-					$user->expired     = 0; // default setting
-					$user->expireClose = 0;
+					$user->_expires     = $this->extractDateFromCarlXDateField($result->Patron->ExpirationDate);
+					$user->_expired     = 0; // default setting
+					$user->_expireClose = 0;
 
-					$timeExpire   = strtotime($user->expires);
+					$timeExpire   = strtotime($user->_expires);
 					$timeNow      = time();
 					$timeToExpire = $timeExpire - $timeNow;
 					if ($timeToExpire <= 30 * 24 * 60 * 60) {
 						if ($timeToExpire <= 0) {
-							$user->expired = 1;
+							$user->_expired = 1;
 						}
-						$user->expireClose = 1;
+						$user->_expireClose = 1;
 					}
 
 					//Load summary information for number of holds, checkouts, etc
@@ -182,14 +181,14 @@ class CarlX extends SIP2Driver{
 					$patronSummaryResponse = $this->doSoapRequest('getPatronSummaryOverview', $patronSummaryRequest, $this->patronWsdl);
 
 					if (!empty($patronSummaryResponse) && is_object($patronSummaryResponse)) {
-						$user->numCheckedOutIls     = $patronSummaryResponse->ChargedItemsCount + $patronSummaryResponse->OverdueItemsCount;
-						$user->numHoldsAvailableIls = $patronSummaryResponse->HoldItemsCount;
-						$user->numHoldsRequestedIls = $patronSummaryResponse->UnavailableHoldsCount;
-						$user->numHoldsIls          = $user->numHoldsAvailableIls + $user->numHoldsRequestedIls;
+						$user->_numCheckedOutIls     = $patronSummaryResponse->ChargedItemsCount + $patronSummaryResponse->OverdueItemsCount;
+						$user->_numHoldsAvailableIls = $patronSummaryResponse->HoldItemsCount;
+						$user->_numHoldsRequestedIls = $patronSummaryResponse->UnavailableHoldsCount;
+						$user->_numHoldsIls          = $user->_numHoldsAvailableIls + $user->_numHoldsRequestedIls;
 
 						$outstandingFines = $patronSummaryResponse->FineTotal + $patronSummaryResponse->LostItemFeeTotal;
-						$user->fines      = sprintf('$%0.2f', $outstandingFines);
-						$user->finesVal   = floatval($outstandingFines);
+						$user->_fines      = sprintf('$%0.2f', $outstandingFines);
+						$user->_finesVal   = floatval($outstandingFines);
 					}
 
 					if ($userExistsInDB){
@@ -246,8 +245,8 @@ class CarlX extends SIP2Driver{
 				'success' => false,
 				'message' => array(),
 				'Renewed' => 0,
-				'Unrenewed' => $patron->numCheckedOutIls,
-				'Total' => $patron->numCheckedOutIls
+				'Unrenewed' => $patron->_numCheckedOutIls,
+				'Total' => $patron->_numCheckedOutIls
 		);
 		if ($mysip->connect()) {
 			//send selfcheck status message
@@ -1111,7 +1110,7 @@ class CarlX extends SIP2Driver{
 
 	}
 
-	public function getReadingHistory($user, $page = 1, $recordsPerPage = -1, $sortOption = "checkedOut") {
+	public function getReadingHistory($user, $page = 1, $recordsPerPage = -1) {
 		global $timer;
 
 		$readHistoryEnabled = false;
@@ -1534,9 +1533,7 @@ class CarlX extends SIP2Driver{
 						$freeze = false;
 					}
 
-//					$in = $mySip->freezeSuspendHold($dateToReactivate, $freeze, '', '1', '', $holdId, 'N', $pickupLocation);
-					$in = $mySip->freezeSuspendHold($dateToReactivate, $freeze, '', '2', '', $holdId, 'N', $pickupLocation);
-//				$in = $mySip->freezeHoldCarlX($dateToReactivate, $holdId);
+					$in = $mySip->freezeSuspendHold($dateToReactivate, $freeze,'2', '', $holdId, 'N', $pickupLocation);
 					$msg_result = $mySip->get_message($in);
 
 					if (preg_match("/^16/", $msg_result)) {

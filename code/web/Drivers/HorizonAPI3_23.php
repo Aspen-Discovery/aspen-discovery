@@ -7,11 +7,11 @@ abstract class HorizonAPI3_23 extends HorizonAPI
 		global $configArray;
 		if (!empty($this->accountProfile->patronApiUrl)) {
 			$webServiceURL = $this->accountProfile->patronApiUrl;
-		} elseif (!empty($configArray['Catalog']['webServiceUrl'])) {
-			$webServiceURL = $configArray['Catalog']['webServiceUrl'];
 		} else {
 			global $logger;
 			$logger->log('No Web Service URL defined in Horizon API Driver', PEAR_LOG_CRIT);
+			echo("Web service URL must be defined in the account profile to work with the Horizon API");
+			die();
 			return null;
 		}
 

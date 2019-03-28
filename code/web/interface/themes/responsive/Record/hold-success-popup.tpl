@@ -6,19 +6,19 @@
 			{if $showDetailedHoldNoticeInformation}
 				<div class="alert alert-info">
 					{translate text='Once the title arrives at your library'} you will
-					{if $profile->noticePreferenceLabel eq 'Mail' && !$treatPrintNoticesAsPhoneNotices} be mailed a notification to :
+					{if $profile->_noticePreferenceLabel eq 'Mail' && !$treatPrintNoticesAsPhoneNotices} be mailed a notification to :
 						<blockquote class="alert-warning">
 							{if $canUpdate}<a href="/MyAccount/Profile?patronId={$profile->id}"><span class="glyphicon glyphicon-pencil"></span> {/if}
-								{$profile->address1} {$profile->address2}
+								{$profile->_address1} {$profile->_address2}
 							{if $canUpdate}</a>{/if}
 						</blockquote>
-					{elseif $profile->noticePreferenceLabel eq 'Telephone' || ($profile->noticePreferenceLabel eq 'Mail' && $treatPrintNoticesAsPhoneNotices)} be called at :
+					{elseif $profile->_noticePreferenceLabel eq 'Telephone' || ($profile->_noticePreferenceLabel eq 'Mail' && $treatPrintNoticesAsPhoneNotices)} be called at :
 						<blockquote class="alert-warning">
 							{if $canUpdate}<a href="/MyAccount/Profile?patronId={$profile->id}"><span class="glyphicon glyphicon-pencil"></span> {/if}
 							{$profile->phone}
 							{if $canUpdate}</a>{/if}
 						</blockquote>
-					{elseif $profile->noticePreferenceLabel eq 'E-mail'} be emailed a notification at :
+					{elseif $profile->_noticePreferenceLabel eq 'E-mail'} be emailed a notification at :
 						<blockquote class="alert-warning">
 							{if $canUpdate}<a href="/MyAccount/Profile?patronId={$profile->id}"><span class="glyphicon glyphicon-pencil"></span> {/if}
 							{$profile->email}

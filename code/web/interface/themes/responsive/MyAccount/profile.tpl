@@ -1,9 +1,9 @@
 {strip}
 	<div id="main-content">
 		{if $loggedIn}
-			{if $profile->web_note}
+			{if $profile->_web_note}
 				<div class="row">
-					<div id="web_note" class="alert alert-info text-center col-xs-12">{$profile->web_note}</div>
+					<div id="web_note" class="alert alert-info text-center col-xs-12">{$profile->_web_note}</div>
 				</div>
 			{/if}
 
@@ -47,7 +47,7 @@
 							<form action="" method="post" class="form-horizontal" id="contactUpdateForm">
 								<input type="hidden" name="updateScope" value="contact">
 								<div class="form-group">
-									<div class="col-xs-4"><strong>{translate text='Full Name'}:</strong></div><div class="col-xs-8">{$profile->fullname|escape}</div>
+									<div class="col-xs-4"><strong>{translate text='Full Name'}:</strong></div><div class="col-xs-8">{$profile->_fullname|escape}</div>
 								</div>
 								{if $showUsernameField}
 									<div class="form-group">
@@ -63,7 +63,7 @@
 								{if !$offline}
 									<div class="form-group">
 										<div class="col-xs-4"><strong>{translate text='Fines'}:</strong></div>
-										<div class="col-xs-8">{$profile->fines|escape}</div>
+										<div class="col-xs-8">{$profile->_fines|escape}</div>
 									</div>
 									{if $barcodePin}
 									{* Only Display Barcode when the barcode is used as a username and not a password *}
@@ -74,11 +74,11 @@
 									{/if}
 									<div class="form-group">
 										<div class="col-xs-4"><strong>{translate text='Expiration Date'}:</strong></div>
-										<div class="col-xs-8">{$profile->expires|escape}</div>
+										<div class="col-xs-8">{$profile->_expires|escape}</div>
 									</div>
 								{/if}
 								<div class="form-group">
-									<div class="col-xs-4"><strong>{translate text='Home Library'}:</strong></div><div class="col-xs-8">{$profile->homeLocation|escape}</div>
+									<div class="col-xs-4"><strong>{translate text='Home Library'}:</strong></div><div class="col-xs-8">{$profile->_homeLocation|escape}</div>
 								</div>
 								{if !$offline}
 									{* Don't show inputs for the Horizon ILS as updating those account settings has not been implemented in the Horizon Driver. *}
@@ -88,12 +88,12 @@
 										</div>
 										<div class="col-xs-8">
 											{if $edit && $canUpdateContactInfo && $canUpdateAddress && $ils != 'Horizon'}
-												<input name="address1" id="address1" value='{$profile->address1|escape}' size="50" maxlength="75" class="form-control required">
+												<input name="address1" id="address1" value='{$profile->_address1|escape}' size="50" maxlength="75" class="form-control required">
 											{elseif $edit && $millenniumNoAddress}
-												<input name="address1" id="address1" value='{$profile->address1|escape}' type="hidden">
-												{$profile->address1|escape}
+												<input name="address1" id="address1" value='{$profile->_address1|escape}' type="hidden">
+												{$profile->_address1|escape}
 											{else}
-												{$profile->address1|escape}
+												{$profile->_address1|escape}
 											{/if}
 										</div>
 									</div>
@@ -102,9 +102,9 @@
 										<div class="col-xs-8">
 											{if $edit && $canUpdateContactInfo && $canUpdateAddress && $ils != 'Horizon'}<input name="city" id="city" value="{$profile->city|escape}" size="50" maxlength="75" class="form-control required">
 											{elseif $edit && $millenniumNoAddress}
-												<input name="city" id="city" value="{$profile->city|escape}" type="hidden">
-												{$profile->city|escape}
-											{else}{$profile->city|escape}{/if}
+												<input name="city" id="city" value="{$profile->_city|escape}" type="hidden">
+												{$profile->_city|escape}
+											{else}{$profile->_city|escape}{/if}
 										</div>
 									</div>
 									<div class="form-group">
@@ -112,20 +112,20 @@
 										<div class="col-xs-8">
 											{if $edit && $canUpdateContactInfo && $canUpdateAddress && $ils != 'Horizon'}<input name='state' id="state" value="{$profile->state|escape}" size="50" maxlength="75" class="form-control required">
 											{elseif $edit && $millenniumNoAddress}
-												<input name="state" id="state" value="{$profile->state|escape}" type="hidden">
-												{$profile->state|escape}
-											{else}{$profile->state|escape}{/if}
+												<input name="state" id="state" value="{$profile->_state|escape}" type="hidden">
+												{$profile->_state|escape}
+											{else}{$profile->_state|escape}{/if}
 										</div>
 									</div>
 									<div class="form-group">
 										<div class="col-xs-4"><label for="zip">{translate text='Zip'}:</label></div>
 										<div class="col-xs-8">
 											{if $edit && $canUpdateContactInfo && $canUpdateAddress && $ils != 'Horizon'}
-												<input name="zip" id="zip" value="{$profile->zip|escape}" size="50" maxlength="75" class="form-control required">
+												<input name="zip" id="zip" value="{$profile-_>zip|escape}" size="50" maxlength="75" class="form-control required">
 											{elseif $edit && $millenniumNoAddress}
-												<input name="zip" id="zip" value="{$profile->zip|escape}" type="hidden">
-												{$profile->zip|escape}
-											{else}{$profile->zip|escape}{/if}
+												<input name="zip" id="zip" value="{$profile->_zip|escape}" type="hidden">
+												{$profile->_zip|escape}
+											{else}{$profile->_zip|escape}{/if}
 										</div>
 									</div>
 									<div class="form-group">
@@ -160,14 +160,14 @@
 												<select name="pickupLocation" id="pickupLocation" class="form-control">
 													{if count($pickupLocations) > 0}
 														{foreach from=$pickupLocations item=location}
-															<option value="{$location->code}" {if $location->displayName|escape == $profile->homeLocation|escape}selected="selected"{/if}>{$location->displayName}</option>
+															<option value="{$location->code}" {if $location->displayName|escape == $profile->_homeLocation|escape}selected="selected"{/if}>{$location->displayName}</option>
 														{/foreach}
 													{else}
 														<option>placeholder</option>
 													{/if}
 												</select>
 											{else}
-												{$profile->homeLocation|escape}
+												{$profile->_homeLocation|escape}
 											{/if}
 										</div>
 									</div>
@@ -195,7 +195,7 @@
 													<label for="noticesEmail" class="btn btn-sm btn-default {if $profile->notices == 'z'}active{/if}"><input type="radio" value="z" id="noticesEmail" name="notices" {if $profile->notices == 'z'}checked="checked"{/if}> Email</label>
 												</div>
 											{else}
-												{$profile->noticePreferenceLabel|escape}
+												{$profile->_noticePreferenceLabel|escape}
 											{/if}
 										</div>
 									</div>
@@ -298,9 +298,9 @@
 										<div class="col-xs-4"><label for="mobileNumber">{translate text='Mobile Number'}:</label></div>
 										<div class="col-xs-8">
 											{if $edit == true && $canUpdateContactInfo == true}
-												<input type="tel" name="mobileNumber" value="{$profile->mobileNumber}" class="form-control">
+												<input type="tel" name="mobileNumber" value="{$profile->_mobileNumber}" class="form-control">
 											{else}
-												{$profile->mobileNumber}
+												{$profile->_mobileNumber}
 											{/if}
 										</div>
 									</div>
@@ -522,13 +522,13 @@
 											{if $edit == true}
 												{html_options name="myLocation1" id="myLocation1" class="form-control" options=$locationList selected=$profile->myLocation1Id}
 											{else}
-												{$profile->myLocation1|escape}
+												{$profile->_myLocation1|escape}
 											{/if}
 										</div>
 									</div>
 									<div class="form-group">
 										<div class="col-xs-4"><label for="myLocation2" class="control-label">{translate text='My Second Alternate Library'}:</label></div>
-										<div class="col-xs-8">{if $edit == true}{html_options name="myLocation2" id="myLocation2" class="form-control" options=$locationList selected=$profile->myLocation2Id}{else}{$profile->myLocation2|escape}{/if}</div>
+										<div class="col-xs-8">{if $edit == true}{html_options name="myLocation2" id="myLocation2" class="form-control" options=$locationList selected=$profile->myLocation2Id}{else}{$profile->_myLocation2|escape}{/if}</div>
 									</div>
 								{/if}
 

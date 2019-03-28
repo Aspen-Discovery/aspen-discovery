@@ -977,7 +977,7 @@ class MyAccount_AJAX
 		global $configArray;
 
 		try {
-			/** @var DriverInterface|Millennium|Nashville|Marmot|Sierra|Horizon $catalog */
+			/** @var AbstractCatalogDriver $catalog */
 			$catalog = CatalogFactory::getCatalogConnectionInstance();
 
 			$barcode = $_REQUEST['barcode'];
@@ -1376,10 +1376,10 @@ class MyAccount_AJAX
 			//Expiration and fines
 			$interface->setFinesRelatedTemplateVariables();
 			if ($interface->getVariable('expiredMessage')){
-				$interface->assign('expiredMessage', str_replace('%date%', $user->expires, $interface->getVariable('expiredMessage')));
+				$interface->assign('expiredMessage', str_replace('%date%', $user->_expires, $interface->getVariable('expiredMessage')));
 			}
 			if ($interface->getVariable('expirationNearMessage')){
-				$interface->assign('expirationNearMessage', str_replace('%date%', $user->expires, $interface->getVariable('expirationNearMessage')));
+				$interface->assign('expirationNearMessage', str_replace('%date%', $user->_expires, $interface->getVariable('expirationNearMessage')));
 			}
 			$result['expirationFinesNotice'] = $interface->fetch('MyAccount/expirationFinesNotice.tpl');
 

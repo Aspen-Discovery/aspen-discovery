@@ -2,9 +2,9 @@
 require_once ROOT_DIR . '/sys/HTTP/HTTP_Request.php';
 require_once ROOT_DIR . '/Drivers/marmot_inc/LoanRule.php';
 require_once ROOT_DIR . '/Drivers/marmot_inc/LoanRuleDeterminer.php';
-require_once ROOT_DIR . '/Drivers/ScreenScrapingDriver.php';
+require_once ROOT_DIR . '/Drivers/CurlBasedDriver.php';
 
-class Millennium extends ScreenScrapingDriver
+class Millennium extends CurlBasedDriver
 {
 	var $statusTranslations = null;
 	var $holdableStatiRegex = null;
@@ -217,7 +217,7 @@ class Millennium extends ScreenScrapingDriver
 				$user->lastname = isset($lastName) ? $lastName : '';
 				$forceDisplayNameUpdate = true;
 			}
-			$user->fullname = isset($fullName) ? $fullName : '';
+			$user->_fullname = isset($fullName) ? $fullName : '';
 			if ($forceDisplayNameUpdate){
 				$user->displayName = '';
 			}
@@ -245,9 +245,9 @@ class Millennium extends ScreenScrapingDriver
 			$user->email = isset($patronDump['EMAIL_ADDR']) ? $patronDump['EMAIL_ADDR'] : '';
 			$user->patronType = $patronDump['P_TYPE'];
 			if (isset($configArray['OPAC']['webNoteField'])){
-				$user->web_note = isset($patronDump[$configArray['OPAC']['webNoteField']]) ? $patronDump[$configArray['OPAC']['webNoteField']] : '';
+				$user->_web_note = isset($patronDump[$configArray['OPAC']['webNoteField']]) ? $patronDump[$configArray['OPAC']['webNoteField']] : '';
 			}else{
-				$user->web_note = isset($patronDump['WEB_NOTE']) ? $patronDump['WEB_NOTE'] : '';
+				$user->_web_note = isset($patronDump['WEB_NOTE']) ? $patronDump['WEB_NOTE'] : '';
 			}
 
 			//Setup home location
@@ -292,7 +292,7 @@ class Millennium extends ScreenScrapingDriver
 						$myLocation1             = new Location();
 						$myLocation1->locationId = $user->myLocation1Id;
 						if ($myLocation1->find(true)) {
-							$user->myLocation1 = $myLocation1->displayName;
+							$user->_myLocation1 = $myLocation1->displayName;
 						}
 					}
 
@@ -302,7 +302,7 @@ class Millennium extends ScreenScrapingDriver
 						$myLocation2             = new Location();
 						$myLocation2->locationId = $user->myLocation2Id;
 						if ($myLocation2->find(true)) {
-							$user->myLocation2 = $myLocation2->displayName;
+							$user->_myLocation2 = $myLocation2->displayName;
 						}
 					}
 				}
@@ -310,24 +310,24 @@ class Millennium extends ScreenScrapingDriver
 
 			if (isset($location)){
 				//Get display names that aren't stored
-				$user->homeLocationCode = $location->code;
-				$user->homeLocation     = $location->displayName;
+				$user->_homeLocationCode = $location->code;
+				$user->_homeLocation     = $location->displayName;
 			}
 
-			$user->expired     = 0; // default setting
-			$user->expireClose = 0;
+			$user->_expired     = 0; // default setting
+			$user->_expireClose = 0;
 			//See if expiration date is close
 			if (trim($patronDump['EXP_DATE']) != '-  -'){
-				$user->expires = $patronDump['EXP_DATE'];
+				$user->_expires = $patronDump['EXP_DATE'];
 				list ($monthExp, $dayExp, $yearExp) = explode("-",$patronDump['EXP_DATE']);
 				$timeExpire = strtotime($monthExp . "/" . $dayExp . "/" . $yearExp);
 				$timeNow = time();
 				$timeToExpire = $timeExpire - $timeNow;
 				if ($timeToExpire <= 30 * 24 * 60 * 60){
 					if ($timeToExpire <= 0){
-						$user->expired = 1;
+						$user->_expired = 1;
 					}
-					$user->expireClose = 1;
+					$user->_expireClose = 1;
 				}
 			}
 
@@ -347,29 +347,29 @@ class Millennium extends ScreenScrapingDriver
 				}else if (preg_match('/(.*?)\\s+(\\w{2})\\s+(\\d*(?:-\\d*)?)/', $user->city, $matches)) {
 					$user->city  = $matches[1];
 					$user->state = $matches[2];
-					$user->zip   = $matches[3];
+					$user->_zip   = $matches[3];
 				}
 			}else{
-				$user->address1 = "";
-				$user->city     = "";
-				$user->state    = "";
-				$user->zip      = "";
+				$user->_address1 = "";
+				$user->_city     = "";
+				$user->_state    = "";
+				$user->_zip      = "";
 			}
 
-			$user->address2  = $user->city . ', ' . $user->state;
-			$user->workPhone = (isset($patronDump) && isset($patronDump['G/WK_PHONE'])) ? $patronDump['G/WK_PHONE'] : '';
+			$user->_address2  = $user->city . ', ' . $user->state;
+			$user->_workPhone = (isset($patronDump) && isset($patronDump['G/WK_PHONE'])) ? $patronDump['G/WK_PHONE'] : '';
 			if (isset($patronDump) && isset($patronDump['MOBILE_NO'])){
-				$user->mobileNumber = $patronDump['MOBILE_NO'];
+				$user->_mobileNumber = $patronDump['MOBILE_NO'];
 			}else{
 				if (isset($patronDump) && isset($patronDump['MOBILE_PH'])){
-					$user->mobileNumber = $patronDump['MOBILE_PH'];
+					$user->_mobileNumber = $patronDump['MOBILE_PH'];
 				}else{
-					$user->mobileNumber = '';
+					$user->_mobileNumber = '';
 				}
 			}
 
-			$user->finesVal = floatval(preg_replace('/[^\\d.]/', '', $patronDump['MONEY_OWED']));
-			$user->fines    = $patronDump['MONEY_OWED'];
+			$user->_finesVal = floatval(preg_replace('/[^\\d.]/', '', $patronDump['MONEY_OWED']));
+			$user->_fines    = $patronDump['MONEY_OWED'];
 
 			if (isset($patronDump['USERNAME'])){
 				$user->alt_username = $patronDump['USERNAME'];
@@ -387,11 +387,11 @@ class Millennium extends ScreenScrapingDriver
 					}
 				}
 			}
-			$user->numCheckedOutIls     = $patronDump['CUR_CHKOUT'];
-			$user->numHoldsIls          = isset($patronDump) ? (isset($patronDump['HOLD']) ? count($patronDump['HOLD']) : 0) : '?';
-			$user->numHoldsAvailableIls = $numHoldsAvailable;
-			$user->numHoldsRequestedIls = $numHoldsRequested;
-			$user->numBookings          = isset($patronDump) ? (isset($patronDump['BOOKING']) ? count($patronDump['BOOKING']) : 0) : '?';
+			$user->_numCheckedOutIls     = $patronDump['CUR_CHKOUT'];
+			$user->_numHoldsIls          = isset($patronDump) ? (isset($patronDump['HOLD']) ? count($patronDump['HOLD']) : 0) : '?';
+			$user->_numHoldsAvailableIls = $numHoldsAvailable;
+			$user->_numHoldsRequestedIls = $numHoldsRequested;
+			$user->_numBookings          = isset($patronDump) ? (isset($patronDump['BOOKING']) ? count($patronDump['BOOKING']) : 0) : '?';
 
 			$noticeLabels = array(
 				//'-' => 'Mail',  // officially None in Sierra, as in No Preference Selected.
@@ -402,9 +402,9 @@ class Millennium extends ScreenScrapingDriver
 			);
 			$user->notices = isset($patronDump) ? $patronDump['NOTICE_PREF'] : '-';
 			if (array_key_exists($user->notices, $noticeLabels)){
-				$user->noticePreferenceLabel = $noticeLabels[$user->notices];
+				$user->_noticePreferenceLabel = $noticeLabels[$user->notices];
 			}else{
-				$user->noticePreferenceLabel = 'Unknown';
+				$user->_noticePreferenceLabel = 'Unknown';
 			}
 
 			if ($userExistsInDB){
@@ -443,7 +443,8 @@ class Millennium extends ScreenScrapingDriver
 		if (!$patronDump || $forceReload){
 			$host = isset($this->accountProfile->patronApiUrl) ? $this->accountProfile->patronApiUrl : null; // avoid warning notices
 			if ($host == null){
-				$host = $configArray['OPAC']['patron_host'];
+                echo("Patron API URL must be defined in the account profile to work with the Millennium API");
+                die();
 			}
 			$barcodesToTest = array();
 			$barcodesToTest[] = $barcode;
@@ -1070,19 +1071,11 @@ class Millennium extends ScreenScrapingDriver
 	 */
 	function isRecordHoldable($marcRecord){
 		$pTypes = $this->getPTypes();
-		global $configArray;
-		global $indexingProfiles;
-		if (array_key_exists($this->accountProfile->recordSource, $indexingProfiles)) {
-			/** @var IndexingProfile $indexingProfile */
-			$indexingProfile = $indexingProfiles[$this->accountProfile->recordSource];
-			$marcItemField = $indexingProfile->itemTag;
-			$iTypeSubfield = $indexingProfile->iType;
-			$locationSubfield = $indexingProfile->location;
-		}else{
-			$marcItemField = isset($configArray['Reindex']['itemTag']) ? $configArray['Reindex']['itemTag'] : '989';
-			$iTypeSubfield = isset($configArray['Reindex']['iTypeSubfield']) ? $configArray['Reindex']['iTypeSubfield'] : 'j';
-			$locationSubfield = isset($configArray['Reindex']['locationSubfield']) ? $configArray['Reindex']['locationSubfield'] : 'j';
-		}
+
+		$indexingProfile = $this->getIndexingProfile();
+        $marcItemField = $indexingProfile->itemTag;
+        $iTypeSubfield = $indexingProfile->iType;
+        $locationSubfield = $indexingProfile->location;
 
 		/** @var File_MARC_Data_Field[] $items */
 		$items = $marcRecord->getFields($marcItemField);
@@ -1178,21 +1171,12 @@ class Millennium extends ScreenScrapingDriver
 	 */
 	function isRecordBookable($marcRecord){
 		//TODO: finish this, template from Holds
-		global $configArray;
 		$pTypes = $this->getPTypes();
 
-		global $indexingProfiles;
-		if (array_key_exists($this->accountProfile->recordSource, $indexingProfiles)) {
-			/** @var IndexingProfile $indexingProfile */
-			$indexingProfile = $indexingProfiles[$this->accountProfile->recordSource];
-			$marcItemField = $indexingProfile->itemTag;
-			$iTypeSubfield = $indexingProfile->iType;
-			$locationSubfield = $indexingProfile->location;
-		}else{
-			$marcItemField = isset($configArray['Reindex']['itemTag']) ? $configArray['Reindex']['itemTag'] : '989';
-			$iTypeSubfield = isset($configArray['Reindex']['iTypeSubfield']) ? $configArray['Reindex']['iTypeSubfield'] : 'j';
-			$locationSubfield = isset($configArray['Reindex']['locationSubfield']) ? $configArray['Reindex']['locationSubfield'] : 'j';
-		}
+        $indexingProfile = $this->getIndexingProfile();
+        $marcItemField = $indexingProfile->itemTag;
+        $iTypeSubfield = $indexingProfile->iType;
+        $locationSubfield = $indexingProfile->location;
 
 		/** @var File_MARC_Data_Field[] $items */
 		$items = $marcRecord->getFields($marcItemField);

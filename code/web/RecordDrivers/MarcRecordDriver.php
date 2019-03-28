@@ -950,7 +950,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 	static $catalogDriver = null;
 
 	/**
-	 * @return Millennium|Sierra|Marmot|DriverInterface|HorizonAPI
+	 * @return AbstractCatalogDriver
 	 */
 	protected static function getCatalogDriver()
 	{

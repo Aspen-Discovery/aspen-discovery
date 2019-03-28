@@ -133,7 +133,7 @@ class MyAccount_Holds extends MyAccount{
 		if (!$library->showDetailedHoldNoticeInformation){
 			$notification_method = '';
 		}else{
-			$notification_method = ($user->noticePreferenceLabel != 'Unknown') ? $user->noticePreferenceLabel : '';
+			$notification_method = ($user->_noticePreferenceLabel != 'Unknown') ? $user->_noticePreferenceLabel : '';
 			if ($notification_method == 'Mail' && $library->treatPrintNoticesAsPhoneNotices){
 				$notification_method = 'Telephone';
 			}

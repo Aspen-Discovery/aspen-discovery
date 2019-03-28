@@ -19,11 +19,11 @@
 				Holds allow you to request that a title be delivered to your home library.
 				{if $showDetailedHoldNoticeInformation}
 					Once the title arrives at your library you will
-					{if $profile->noticePreferenceLabel eq 'Mail' && !$treatPrintNoticesAsPhoneNotices}
+					{if $profile->_noticePreferenceLabel eq 'Mail' && !$treatPrintNoticesAsPhoneNotices}
 						be mailed a notification
-					{elseif $profile->noticePreferenceLabel eq 'Telephone' || ($profile->noticePreferenceLabel eq 'Mail' && $treatPrintNoticesAsPhoneNotices)}
+					{elseif $profile->_noticePreferenceLabel eq 'Telephone' || ($profile->_noticePreferenceLabel eq 'Mail' && $treatPrintNoticesAsPhoneNotices)}
 						receive a phone call
-					{elseif $profile->noticePreferenceLabel eq 'E-mail'}
+					{elseif $profile->_noticePreferenceLabel eq 'E-mail'}
 						be emailed a notification
 					{else}
 						receive a notification

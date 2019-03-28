@@ -30,6 +30,7 @@ class UInterface extends Smarty
 	private $themes; // The themes that are active
 	private $isMobile = false;
 	private $url;
+	private $debug = false;
 
 	function __construct()
 	{
@@ -94,8 +95,7 @@ class UInterface extends Smarty
 		// Create an MD5 hash of the theme name -- this will ensure that it's a
 		// writeable directory name (since some config.ini settings may include
 		// problem characters like commas or whitespace).
-		$md5 = md5($this->vufindTheme);
-        $this->compile_dir = $configArray['System']['interfaceCompileDir'];
+		$this->compile_dir = $configArray['System']['interfaceCompileDir'];
         if (file_exists($this->compile_dir)) {
             if (!is_writable($this->compile_dir)) {
                 echo("Compile directory {$this->compile_dir} exists, but is not writable");
@@ -126,7 +126,6 @@ class UInterface extends Smarty
 
 		$this->assign('site', $configArray['Site']);
 		$this->assign('path', $configArray['Site']['path']);
-		$defaultConfig = $configArray['Site']['path'];
 		$url = $_SERVER['SERVER_NAME'];
 		if (isset($_SERVER['HTTPS'])){
 			$url = "https://" . $url;
@@ -356,6 +355,7 @@ class UInterface extends Smarty
 	}
 
 	function loadDisplayOptions(){
+	    /** @var Library $library */
 		global $library;
 		global $locationSingleton;
 		global $configArray;
@@ -605,6 +605,10 @@ class UInterface extends Smarty
 		}
 	}
 
+    /**
+     * @param $variableName
+     * @return string|array
+     */
 	public function getVariable($variableName) {
 		return $this->get_template_vars($variableName);
 	}
@@ -670,7 +674,8 @@ function translate($params) {
 	}
 }
 
-function display_if_inconsistent($params, $content, &$smarty, &$repeat){
+
+function display_if_inconsistent($params, $content, /** @noinspection PhpUnusedParameterInspection */  &$smarty, /** @noinspection PhpUnusedParameterInspection */ &$repeat){
 	//This function is called twice, once for the opening tag and once for the
 	//closing tag.  Content is only set if
 	if (isset($content)) {
@@ -704,44 +709,7 @@ function display_if_inconsistent($params, $content, &$smarty, &$repeat){
 	return null;
 }
 
-//function display_if_inconsistent_in_any_manifestation($params, $content, &$smarty, &$repeat){
-//	//This function is called twice, once for the opening tag and once for the
-//	//closing tag.  Content is only set if
-//	if (isset($content)) {
-//		$manifestations = $params['array'];
-//		$key            = $params['key'];
-//
-////		if (count($manifestations) === 1) {
-////			// If we have only one row of items, display that row
-////			return empty($manifestations[0][$key]) ? '' : $content;
-////		}
-//		$consistent      = true;
-//		$firstValue      = null;
-//		$iterationNumber = 0;
-//		foreach ($manifestations as $manifestation) {
-//
-//			foreach ($manifestation['relatedRecords'] as $arrayValue) {
-//				if ($iterationNumber == 0) {
-//					$firstValue = $arrayValue[$key];
-//				} else {
-//					if ($firstValue != $arrayValue[$key]) {
-//						$consistent = false;
-//						break;
-//					}
-//				}
-//				$iterationNumber++;
-//			}
-//		}
-//		if ($consistent == false){
-//			return $content;
-//		}else{
-//			return "";
-//		}
-//	}
-//	return null;
-//}
-
-function display_if_set($params, $content, &$smarty, &$repeat){
+function display_if_set($params, $content, /** @noinspection PhpUnusedParameterInspection */ &$smarty, /** @noinspection PhpUnusedParameterInspection */ &$repeat){
 	//This function is called twice, once for the opening tag and once for the
 	//closing tag.  Content is only set if
 	if (isset($content)) {

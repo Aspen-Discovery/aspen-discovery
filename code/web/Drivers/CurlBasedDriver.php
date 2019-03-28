@@ -1,33 +1,19 @@
 <?php
 /**
  * An abstract base class so screen scraping functionality can be stored in a single location
- *
- * @category VuFind-Plus-2014 
- * @author Mark Noble <mark@marmot.org>
- * Date: 7/23/2015
- * Time: 2:32 PM
  */
 
-abstract class ScreenScrapingDriver implements DriverInterface {
-	/** @var  AccountProfile $accountProfile */
-	public $accountProfile;
+abstract class CurlBasedDriver extends AbstractCatalogDriver {
+
 	private $cookieJar;
-	public $curl_connection; // need access in order to check for curl errors.
-
-
-	/**
-	 * @param AccountProfile $accountProfile
-	 */
-	public function __construct($accountProfile){
-		$this->accountProfile = $accountProfile;
-	}
+	protected $curl_connection; // need access in order to check for curl errors.
 
 	public function __destruct(){
 		$this->_close_curl();
 	}
 
-	public function setCookieJar(){
-		$cookieJar = tempnam("/tmp", "CURLCOOKIE");
+	public function setCookieJar($prefix = "CURLCOOKIE"){
+		$cookieJar = tempnam("/tmp", $prefix);
 		$this->cookieJar = $cookieJar;
 	}
 
@@ -44,8 +30,8 @@ abstract class ScreenScrapingDriver implements DriverInterface {
 	/**
 	 * Initialize and configure curl connection
 	 *
-	 * @param null $curl_url optional url passed to curl_init
-	 * @param null|Array $curl_options is an array of curl options to include or overwrite.
+	 * @param string|null $curlUrl optional url passed to curl_init
+	 * @param null|array $curl_options is an array of curl options to include or overwrite.
 	 *                    Keys is the curl option constant, Values is the value to set the option to.
 	 * @return resource
 	 */
