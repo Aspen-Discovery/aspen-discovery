@@ -5,9 +5,6 @@ class AuthenticationFactory {
 
 	static function initAuthentication($authNHandler, $additionalInfo = array()){
 		switch(strtoupper($authNHandler)){
-			case "LDAP":
-				require_once 'LDAPAuthentication.php';
-				return new LDAPAuthentication($additionalInfo);
 			case "DB":
 				require_once 'DatabaseAuthentication.php';
 				return new DatabaseAuthentication($additionalInfo);

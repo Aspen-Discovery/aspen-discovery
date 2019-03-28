@@ -197,8 +197,6 @@ class UInterface extends Smarty
 
 		$this->assign('currentTab', 'Search');
 
-		$this->assign('authMethod', $configArray['Authentication']['method']);
-
 		if ($configArray['System']['debug']){
 			$this->assign('debug', true);
 		}
