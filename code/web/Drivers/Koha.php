@@ -127,21 +127,21 @@ class Koha extends CurlBasedDriver {
 			$transaction = array();
 			$transaction['checkoutSource'] = 'ILS';
 
-			$transaction['id'] = $curRow['biblionumber'];
+			$transaction['id'] = $curRow['issue_id'];
 			$transaction['recordId'] = $curRow['biblionumber'];
 			$transaction['shortId'] = $curRow['biblionumber'];
 			$transaction['title'] = $curRow['title'];
 			$transaction['author'] = $curRow['author'];
 
-			$dateDue = DateTime::createFromFormat('Y-m-d', $curRow['date_due']);
+			$dateDue = DateTime::createFromFormat('Y-m-d H:i:s', $curRow['date_due']);
 			if ($dateDue){
 				$dueTime = $dateDue->getTimestamp();
 			}else{
 				$dueTime = null;
 			}
 			$transaction['dueDate'] = $dueTime;
-			$transaction['itemid'] = $curRow['id'];
-			$transaction['renewIndicator'] = $curRow['id'];
+			$transaction['itemid'] = $curRow['itemnumber'];
+			$transaction['renewIndicator'] = $curRow['itemnumber'];
 			$transaction['renewCount'] = $curRow['renewals'];
 
 			if ($transaction['id'] && strlen($transaction['id']) > 0){
@@ -595,6 +595,8 @@ class Koha extends CurlBasedDriver {
 		}
 		$marcRecord = $recordDriver->getMarcRecord();
 
+		//TODO: Use get services method to determine if title or item holds are available
+
 		//Check to see if the title requires item level holds
 		/** @var File_MARC_Data_Field[] $holdTypeFields */
 		$itemLevelHoldAllowed = false;
@@ -1010,33 +1012,24 @@ class Koha extends CurlBasedDriver {
 	}
 
 	public function renewItem($patron, $recordId, $itemId, $itemIndex){
-		//Get the session token for the user
-		$loginResult = $this->loginToKoha($patron);
-		if ($loginResult['success']){
-			$postParams = array(
-				'from' => 'opac_user',
-				'item' => $itemId,
-				'borrowernumber' => $patron->username,
-			);
-			$catalogUrl = $this->accountProfile->vendorOpacUrl;
-			$kohaUrl = "$catalogUrl/cgi-bin/koha/opac-renew.pl";
-			$kohaUrl .= "?" . http_build_query($postParams);
+        $params = [
+            'service' => 'RenewLoan',
+            'patron_id' => $patron->username,
+            'item_id' => $itemId,
+        ];
 
-			$this->getKohaPage($kohaUrl);
+        $renewURL = $this->getWebServiceUrl() . '/cgi-bin/koha/ilsdi.pl?' . http_build_query($params);
+        $renewResponse = $this->getXMLWebServiceResponse($renewURL);
 
-			//TODO: Renewal Failure Messages needed
-			if (true) {
-				$success = true;
-				$message = 'Your item was successfully renewed.';
-				//Clear the patron profile
-			}else{
-				$success = false;
-				$message = 'Invalid Response from SIP 2';
-			}
-		}else{
-			$success = false;
-			$message = 'Unable to login2';
-		}
+        //Parse the result
+        if (isset($renewResponse->success) && ($renewResponse->success == 1)){
+            //We renewed the hold
+            $success = true;
+            $message = 'Your item was successfully renewed';
+        }else{
+            $success = false;
+            $message = 'The item could not be renewed';
+        }
 
 		return array(
 			'itemId' => $itemId,

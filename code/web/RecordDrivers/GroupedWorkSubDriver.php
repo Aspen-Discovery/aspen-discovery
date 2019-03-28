@@ -320,12 +320,16 @@ abstract class GroupedWorkSubDriver extends RecordInterface
     }
 
     /**
-     * @return array
+     * @return String[]
      */
     abstract function getFormats();
 
+    /**
+     * @return string
+     */
     public function getPrimaryFormat(){
-        return reset($this->getFormats());
+        $formats = $this->getFormats();
+        return reset($formats);
     }
 
     /**
