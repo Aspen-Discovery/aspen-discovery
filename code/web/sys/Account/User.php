@@ -128,7 +128,9 @@ class User extends DataObject
 			$accountProfile = $this->getAccountProfile();
 			if ($accountProfile){
 				$catalogDriver = $accountProfile->driver;
-				$this->catalogDriver = CatalogFactory::getCatalogConnectionInstance($catalogDriver, $accountProfile);
+				if (!empty($catalogDriver)){
+                    $this->catalogDriver = CatalogFactory::getCatalogConnectionInstance($catalogDriver, $accountProfile);
+                }
 			}
 		}
 		return $this->catalogDriver;
@@ -622,17 +624,30 @@ class User extends DataObject
 		}
 	}
 
-	private $runtimeInfoUpdated = false;
+	private $_runtimeInfoUpdated = false;
+	private $_hasCatalogConnection = null;
 	function updateRuntimeInformation(){
-		if (!$this->runtimeInfoUpdated) {
+		if (!$this->_runtimeInfoUpdated) {
 			if ($this->getCatalogDriver()) {
 				$this->getCatalogDriver()->updateUserWithAdditionalRuntimeInformation($this);
+				$this->_hasCatalogConnection = true;
 			} else {
-				echo("Catalog Driver is not configured properly.  Please update indexing profiles and setup Account Profiles");
+                $this->_hasCatalogConnection = false;
 			}
-			$this->runtimeInfoUpdated = true;
+			$this->_runtimeInfoUpdated = true;
 		}
 	}
+
+	function hasCatalogConnection(){
+	    if ($this->_hasCatalogConnection == null) {
+            if ($this->getCatalogDriver()) {
+                $this->_hasCatalogConnection = true;
+            } else {
+                $this->_hasCatalogConnection = false;
+            }
+        }
+        return $this->_hasCatalogConnection;
+    }
 
 	function updateOverDriveOptions(){
 		if (isset($_REQUEST['promptForOverdriveEmail']) && ($_REQUEST['promptForOverdriveEmail'] == 'yes' || $_REQUEST['promptForOverdriveEmail'] == 'on')){

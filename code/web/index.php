@@ -326,6 +326,7 @@ if (UserAccount::isLoggedIn() && (!isset($_REQUEST['action']) || $_REQUEST['acti
 		$guidingUser = UserAccount::getGuidingUserObject();
 		$interface->assign('guidingUser', $guidingUser);
 	}
+	$interface->assign('userHasCatalogConnection', UserAccount::getUserHasCatalogConnection());
 
 
 	$homeLibrary = Library::getLibraryForLocation(UserAccount::getUserHomeLocationId());

@@ -336,15 +336,9 @@ class CarlX extends SIP2Driver{
 		$numTries = 0;
 		$result = false;
 		while (!$connectionPassed && $numTries < 3){
-			try {
-				$this->soapClient = new SoapClient($WSDL, $soapRequestOptions);
-				$result = $this->soapClient->$requestName($request);
-				$connectionPassed = true;
-			} catch (SoapFault $e) {
-				global $logger;
-				$logger->log("Soap Client error in CarlX: while calling $requestName ".$e->getMessage() . " try $numTries", PEAR_LOG_ERR);
-				$logger->log($request, PEAR_LOG_ERR);
-			}
+            $this->soapClient = new SoapClient($WSDL, $soapRequestOptions);
+            $result = $this->soapClient->$requestName($request);
+            $connectionPassed = true;
 			$numTries++;
 		}
 		if (!$connectionPassed){
@@ -1079,7 +1073,7 @@ class CarlX extends SIP2Driver{
 								} else {
 									$interface->assign('error', "Your request could not be sent due to an unknown error.");
 									global $logger;
-									$logger->log("Mail List Failure (unknown reason), parameters: $email, $newObject->email, $subject, $body", PEAR_LOG_ERR);
+									$logger->log("Mail List Failure (unknown reason), parameters: $email, $subject, $body", PEAR_LOG_ERR);
 								}
 								return array(
 									'success' => $success,
@@ -1110,9 +1104,7 @@ class CarlX extends SIP2Driver{
 
 	}
 
-	public function getReadingHistory($user, $page = 1, $recordsPerPage = -1) {
-		global $timer;
-
+	public function getReadingHistory($user, $page = 1, $recordsPerPage = -1, $sortOption = 'checkedOut') {
 		$readHistoryEnabled = false;
 		$request = $this->getSearchbyPatronIdRequest($user);
 		$result = $this->doSoapRequest('getPatronInformation', $request, $this->patronWsdl);
@@ -1249,7 +1241,7 @@ class CarlX extends SIP2Driver{
 
 	}
 
-	public function getMyFines($user) {
+	public function getMyFines($user, $includeMessages = false) {
 		$myFines = array();
 
 		$request = $this->getSearchbyPatronIdRequest($user);
@@ -1266,9 +1258,9 @@ class CarlX extends SIP2Driver{
 			foreach($result->FineItems->FineItem as $fine) {
 				// hard coded Nashville school branch IDs
 				if ($fine->Branch == 0) {
-					$fine->Branch = $fines->TransactionBranch;
+					$fine->Branch = $fine->TransactionBranch;
 				}
-				if ($fine->Branch >= 30 && $fines->Branch <= 178 && $fines->Branch != 42 && $fines->Branch != 171) {
+				if ($fine->Branch >= 30 && $fine->Branch <= 178 && $fine->Branch != 42 && $fine->Branch != 171) {
 					$fine->System = "MNPS";
 				} else {
 					$fine->System = "NPL";
@@ -1301,7 +1293,7 @@ class CarlX extends SIP2Driver{
 			foreach($result->LostItems->LostItem as $fine) {
 				// hard coded Nashville school branch IDs
 				if ($fine->Branch == 0) {
-					$fine->Branch = $fines->TransactionBranch;
+					$fine->Branch = $fine->TransactionBranch;
 				}
 				if ($fine->Branch >= 30 && $fine->Branch <= 178 && $fine->Branch != 42 && $fine->Branch != 171) {
 					$fine->System = "MNPS";

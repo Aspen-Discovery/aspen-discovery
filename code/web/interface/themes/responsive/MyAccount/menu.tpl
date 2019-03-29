@@ -28,33 +28,34 @@
 				<div id="myAccountPanel" class="panel-collapse collapse{if  $displaySidebarMenu || $curSection} in{/if}">
 					<div class="panel-body">
 						<span class="expirationFinesNotice-placeholder"></span>
+						{if $userHasCatalogConnection}
+							<div class="myAccountLink{if $action=="CheckedOut"} active{/if}">
+								<a href="{$path}/MyAccount/CheckedOut" id="checkedOut">
+									Checked Out Titles {if !$offline}<span class="checkouts-placeholder"><img src="{$path}/images/loading.gif" alt="loading"></span>{/if}
+								</a>
+							</div>
+							<div class="myAccountLink{if $action=="Holds"} active{/if}">
+								<a href="{$path}/MyAccount/Holds" id="holds">
+									Titles On Hold {if !$offline}<span class="holds-placeholder"><img src="{$path}/images/loading.gif" alt="loading"></span>{/if}
+								</a>
+							</div>
 
-						<div class="myAccountLink{if $action=="CheckedOut"} active{/if}">
-							<a href="{$path}/MyAccount/CheckedOut" id="checkedOut">
-								Checked Out Titles {if !$offline}<span class="checkouts-placeholder"><img src="{$path}/images/loading.gif" alt="loading"></span>{/if}
-							</a>
-						</div>
-						<div class="myAccountLink{if $action=="Holds"} active{/if}">
-							<a href="{$path}/MyAccount/Holds" id="holds">
-								Titles On Hold {if !$offline}<span class="holds-placeholder"><img src="{$path}/images/loading.gif" alt="loading"></span>{/if}
-							</a>
-						</div>
+							{if $enableMaterialsBooking}
+							<div class="myAccountLink{if $action=="Bookings"} active{/if}">
+								<a href="{$path}/MyAccount/Bookings" id="bookings">
+									Scheduled Items  {if !$offline}<span class="bookings-placeholder"><img src="{$path}/images/loading.gif" alt="loading"></span>{/if}
+								</a>
+							</div>
+							{/if}
+							<div class="myAccountLink{if $action=="ReadingHistory"} active{/if}">
+								<a href="{$path}/MyAccount/ReadingHistory">
+									Reading History {if !$offline}<span class="readingHistory-placeholder"><img src="{$path}/images/loading.gif" alt="loading"></span>{/if}
+								</a>
+							</div>
 
-						{if $enableMaterialsBooking}
-						<div class="myAccountLink{if $action=="Bookings"} active{/if}">
-							<a href="{$path}/MyAccount/Bookings" id="bookings">
-								Scheduled Items  {if !$offline}<span class="bookings-placeholder"><img src="{$path}/images/loading.gif" alt="loading"></span>{/if}
-							</a>
-						</div>
-						{/if}
-						<div class="myAccountLink{if $action=="ReadingHistory"} active{/if}">
-							<a href="{$path}/MyAccount/ReadingHistory">
-								Reading History {if !$offline}<span class="readingHistory-placeholder"><img src="{$path}/images/loading.gif" alt="loading"></span>{/if}
-							</a>
-						</div>
-
-						{if $showFines}
-							<div class="myAccountLink{if $action=="Fines"} active{/if}" title="Fines and account messages"><a href="{$path}/MyAccount/Fines">{translate text='Fines and Messages'}</a></div>
+							{if $showFines}
+								<div class="myAccountLink{if $action=="Fines"} active{/if}" title="Fines and account messages"><a href="{$path}/MyAccount/Fines">{translate text='Fines and Messages'}</a></div>
+							{/if}
 						{/if}
 						{if $enableMaterialsRequest}
 							<div class="myAccountLink{if $pageTemplate=="myMaterialRequests.tpl"} active{/if}" title="{translate text='Materials_Request_alt'}s">
@@ -395,7 +396,9 @@
 		{include file="library-links.tpl" libraryLinks=$libraryAccountLinks linksId='home-library-account-links' section='Account'}
 	</div>
 {/if}
+{if $userHasCatalogConnection}
 <script type="text/javascript">
 	VuFind.Account.loadMenuData();
 </script>
+{/if}
 {/strip}

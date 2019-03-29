@@ -189,12 +189,25 @@ class UserAccount {
 			if (strlen(UserAccount::$primaryUserObjectFromDB->displayName)){
 				return UserAccount::$primaryUserObjectFromDB->displayName;
 			}else{
-				return UserAccount::$primaryUserObjectFromDB->firstname . ' ' . UserAccount::$primaryUserObjectFromDB->lastname;;
+				return UserAccount::$primaryUserObjectFromDB->firstname . ' ' . UserAccount::$primaryUserObjectFromDB->lastname;
 			}
 
 		}
 		return '';
 	}
+
+    public static function getUserHasCatalogConnection(){
+        UserAccount::loadUserObjectFromDatabase();
+        if (UserAccount::$primaryUserObjectFromDB != false){
+            $accountProfiles = UserAccount::loadAccountProfiles();
+            /** @var array $userAccountProfile */
+            $userAccountProfile = $accountProfiles[UserAccount::$primaryUserObjectFromDB->source];
+            /** @var AccountProfile $selectedAccountProfile */
+            $selectedAccountProfile = $userAccountProfile['accountProfile'];
+            return !empty($selectedAccountProfile->driver);
+        }
+        return false;
+    }
 
 	public static function getUserPType(){
 		UserAccount::loadUserObjectFromDatabase();
@@ -254,9 +267,10 @@ class UserAccount {
 		return UserAccount::$guidingUserObjectFromDB;
 	}
 
-	/**
-	 * @return bool|null|User
-	 */
+    /**
+     * @return array|bool
+     * @throws UnknownAuthenticationMethodException
+     */
 	public static function getLoggedInUser(){
 		if (UserAccount::$isLoggedIn != null){
 			if (UserAccount::$isLoggedIn){
@@ -310,7 +324,6 @@ class UserAccount {
 					if (!$guidingUser) {
 						global $logger;
 						$logger->log('Invalid Guiding User ID in session variable: '. $_SESSION['guidingUserId'], PEAR_LOG_ERR);
-						$masqueradeMode = false;
 						unset($_SESSION['guidingUserId']); // session_start(); session_commit(); probably needed for this to take effect, but might have other side effects
 					}
 				}
@@ -470,17 +483,18 @@ class UserAccount {
 
 	private static $validatedAccounts = array();
 
-	/**
-	 * Validate the account information (username and password are correct).
-	 * Returns the account, but does not set the global user variable.
-	 *
-	 * @param $username       string
-	 * @param $password       string
-	 * @param $accountSource  string The source of the user account if known or null to test all sources
-	 * @param $parentAccount  User   The parent user if any
-	 *
-	 * @return User|false
-	 */
+    /**
+     * Validate the account information (username and password are correct).
+     * Returns the account, but does not set the global user variable.
+     *
+     * @param $username       string
+     * @param $password       string
+     * @param $accountSource  string The source of the user account if known or null to test all sources
+     * @param $parentAccount  User   The parent user if any
+     *
+     * @return User|false
+     * @throws UnknownAuthenticationMethodException
+     */
 	public static function validateAccount($username, $password, $accountSource = null, $parentAccount = null){
 		if (array_key_exists($username . $password, UserAccount::$validatedAccounts)){
 			return UserAccount::$validatedAccounts[$username . $password];
@@ -593,7 +607,7 @@ class UserAccount {
 			//Load a list of authentication methods to test and see which (if any) result in a valid login.
 			require_once ROOT_DIR . '/sys/Account/AccountProfile.php';
 			$accountProfile = new AccountProfile();
-			$accountProfile->orderBy('weight', 'name');
+			$accountProfile->orderBy(['weight', 'name']);
 			$accountProfile->find();
 			while ($accountProfile->fetch()) {
 				$additionalInfo = array(

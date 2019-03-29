@@ -8,21 +8,23 @@
 			{* Alternate Mobile MyAccount Menu *}
 			{include file="MyAccount/mobilePageHeader.tpl"}
 
-			<h3>{translate text='Account Summary'}</h3>
-			<div>
-				{if $offline}
-				<div class="alert alert-warning"><strong>The library system is currently offline.</strong> We are unable to retrieve information about your check outs and holds at this time.</div>
-				{else}
+			{if $userHasCatalogConnection}
+				<h3>{translate text='Account Summary'}</h3>
+				<div>
+					{if $offline}
+						<div class="alert alert-warning"><strong>The library system is currently offline.</strong> We are unable to retrieve information about your check outs and holds at this time.</div>
+					{else}
 
-				You currently have:
-				<ul>
-					<li><strong><span class="checkouts-placeholder"><img src="{$path}/images/loading.gif" alt="loading"></span></strong> titles <a href="{$path}/MyAccount/CheckedOut">checked out</a></li>
-					<li><strong><span class="holds-placeholder"><img src="{$path}/images/loading.gif" alt="loading"></span></strong> titles on <a href="{$path}/MyAccount/Holds">hold</a></li>
-				</ul>
-				{* TODO: Show an alert if any titles are expired or are going to expire *}
-				{* TODO: Show an alert if any titles ready for pickup *}
-			</div>
-				{/if}
+						You currently have:
+						<ul>
+							<li><strong><span class="checkouts-placeholder"><img src="{$path}/images/loading.gif" alt="loading"></span></strong> titles <a href="{$path}/MyAccount/CheckedOut">checked out</a></li>
+							<li><strong><span class="holds-placeholder"><img src="{$path}/images/loading.gif" alt="loading"></span></strong> titles on <a href="{$path}/MyAccount/Holds">hold</a></li>
+						</ul>
+						{* TODO: Show an alert if any titles are expired or are going to expire *}
+						{* TODO: Show an alert if any titles ready for pickup *}
+					{/if}
+				</div>
+			{/if}
 			{if $showRatings}
 				<h3>{translate text='Recommended for you'}</h3>
 				{if !$hasRatings}

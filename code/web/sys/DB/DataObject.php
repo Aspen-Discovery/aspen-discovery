@@ -127,6 +127,9 @@ abstract class DataObject
         if ($fieldsToOrder == null) {
             $this->__orderBy = null;
         }else {
+            if (is_array($fieldsToOrder)){
+                $fieldsToOrder = implode(',', $fieldsToOrder);
+            }
             if (strlen($this->__orderBy) > 0) {
                 $this->__orderBy .= ', ' . $fieldsToOrder;
             }else {
