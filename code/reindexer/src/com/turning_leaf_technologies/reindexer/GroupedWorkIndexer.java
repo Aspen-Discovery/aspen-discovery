@@ -67,6 +67,7 @@ public class GroupedWorkIndexer {
 	private PreparedStatement getGroupedWorkPrimaryIdentifiers;
 	private PreparedStatement getDateFirstDetectedStmt;
 
+	private static PreparedStatement deleteGroupedWorkStmt;
 
 	public GroupedWorkIndexer(String serverName, Connection dbConn, Ini configIni, boolean fullReindex, boolean clearIndex, boolean singleWorkIndex, Logger logger) {
 		indexStartTime = new Date().getTime() / 1000;
@@ -124,6 +125,7 @@ public class GroupedWorkIndexer {
 		try{
 			getGroupedWorkPrimaryIdentifiers = dbConn.prepareStatement("SELECT * FROM grouped_work_primary_identifiers where grouped_work_id = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			getDateFirstDetectedStmt = dbConn.prepareStatement("SELECT dateFirstDetected FROM ils_marc_checksums WHERE source = ? AND ilsId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			deleteGroupedWorkStmt = dbConn.prepareStatement("DELETE from grouped_work where id = ?");
 		} catch (Exception e){
 			logger.error("Could not load statements to get identifiers ", e);
 		}
@@ -245,7 +247,7 @@ public class GroupedWorkIndexer {
 							ilsRecordProcessors.put(curIdentifier, new SideLoadedEContentProcessor(this, dbConn, indexingProfileRS, logger, fullReindex));
 							break;
 						case "Koha":
-							ilsRecordProcessors.put(curIdentifier, new KohaRecordProcessor(this, dbConn, configIni, indexingProfileRS, logger, fullReindex));
+							ilsRecordProcessors.put(curIdentifier, new KohaRecordProcessor(this, dbConn, indexingProfileRS, logger, fullReindex));
 							break;
 						default:
 							logger.error("Unknown indexing class " + ilsIndexingClassString);
@@ -663,10 +665,10 @@ public class GroupedWorkIndexer {
 		}
 	}
 
-	public void deleteRecord(String id) {
+	public void deleteRecord(String permanentId, Long groupedWorkId) {
 		logger.info("Clearing existing work from index");
 		try {
-			updateServer.deleteById(id);
+			updateServer.deleteById(permanentId);
 			//With this commit, we get errors in the log "Previous SolrRequestInfo was not closed!"
 			//Allow auto commit functionality to handle this
 			//updateServer.commit(true, false, false);
@@ -674,6 +676,11 @@ public class GroupedWorkIndexer {
 			if (totalRecordsHandled % 25 == 0) {
 				updateServer.commit(false, false, true);
 			}
+
+			//Delete the work from the database?
+			//TODO: Should we do this or leave a record if it was linked to lists, reading history, etc?
+			deleteGroupedWorkStmt.setLong(1, groupedWorkId);
+			deleteGroupedWorkStmt.executeUpdate();
 
 		} catch (Exception e) {
 			logger.error("Error deleting work from index", e);
@@ -1041,11 +1048,7 @@ public class GroupedWorkIndexer {
 			//Log that this record did not have primary identifiers after
 			logger.debug("Grouped work " + permanentId + " did not have any primary identifiers for it, suppressing");
 			if (!fullReindex){
-				try {
-					updateServer.deleteById(permanentId);
-				}catch (Exception e){
-					logger.error("Error deleting suppressed record", e);
-				}
+				this.deleteRecord(permanentId, id);
 			}
 
 		}

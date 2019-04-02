@@ -98,6 +98,7 @@ public abstract class GroupedWorkBase {
 		if (authoritativeAuthor == null) {
 			if (authorAuthorities.containsKey(author)) {
 				authoritativeAuthor = authorAuthorities.get(author);
+				logger.info("Found author " + author + " in authorities file");
 			} else {
 				authoritativeAuthor = author;
 			}

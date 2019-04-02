@@ -942,7 +942,7 @@ public class SierraExportAPIMain {
 
 				//Setup the grouped work for the record.  This will take care of either adding it to the proper grouped work
 				//or creating a new grouped work
-				if (!recordGroupingProcessor.processMarcRecord(marcRecord, true)) {
+				if (recordGroupingProcessor.processMarcRecord(marcRecord, true) == null) {
 					logger.warn(identifier.getIdentifier() + " was suppressed");
 				}else{
 					logger.debug("Finished record grouping for " + identifier.getIdentifier());
@@ -1138,7 +1138,7 @@ public class SierraExportAPIMain {
 
 							//Setup the grouped work for the record.  This will take care of either adding it to the proper grouped work
 							//or creating a new grouped work
-							if (!recordGroupingProcessor.processMarcRecord(marcRecord, true)) {
+							if (recordGroupingProcessor.processMarcRecord(marcRecord, true) == null) {
 								logger.warn(identifier.getIdentifier() + " was suppressed");
 							} else {
 								logger.debug("Finished record grouping for " + identifier.getIdentifier());

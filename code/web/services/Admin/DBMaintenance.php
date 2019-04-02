@@ -1598,6 +1598,17 @@ class DBMaintenance extends Admin_Admin {
                     )
                 ),
 
+                'account_profiles_5' => array(
+                    'title' => 'Update Account Profiles 5',
+                    'description' => 'Add database timezone to connection information',
+                    'continueOnError' => true,
+                    'sql' => array(
+                        "ALTER TABLE `account_profiles` ADD `databaseTimezone` varchar(50)",
+                    )
+                ),
+
+
+
 					'archive_private_collections' => array(
 							'title' => 'Archive Private Collections',
 							'description' => 'Create a table to store information about collections that should be private to the owning library',

@@ -82,7 +82,7 @@ public class MarcRecordGrouper extends RecordGroupingProcessor{
 
 	}
 
-	public boolean processMarcRecord(Record marcRecord, boolean primaryDataChanged) {
+	public String processMarcRecord(Record marcRecord, boolean primaryDataChanged) {
 		RecordIdentifier primaryIdentifier = getPrimaryIdentifierFromMarcRecord(marcRecord, profile.getName(), profile.isDoAutomaticEcontentSuppression());
 
 		if (primaryIdentifier != null){
@@ -90,10 +90,10 @@ public class MarcRecordGrouper extends RecordGroupingProcessor{
 			GroupedWorkBase workForTitle = setupBasicWorkForIlsRecord(marcRecord, profile.getFormatSource(), profile.getFormat(), profile.getSpecifiedFormatCategory());
 
 			addGroupedWorkToDatabase(primaryIdentifier, workForTitle, primaryDataChanged);
-			return true;
+			return workForTitle.getPermanentId();
 		}else{
 			//The record is suppressed
-			return false;
+			return null;
 		}
 	}
 

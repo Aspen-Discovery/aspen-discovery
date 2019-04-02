@@ -765,7 +765,7 @@ public class RecordGrouperMain {
 									recordNumbersInExport.add(recordIdentifier.toString());
 									if (!explodeMarcsOnly) {
 										if (!marcUpToDate || fullRegroupingNoClear) {
-											if (!recordGroupingProcessor.processMarcRecord(curBib, !marcUpToDate)) {
+											if (recordGroupingProcessor.processMarcRecord(curBib, !marcUpToDate) == null) {
 												suppressedRecordNumbersInExport.add(recordIdentifier.toString());
 											}
 											numRecordsProcessed++;

@@ -1,6 +1,7 @@
 package com.turning_leaf_technologies.rbdigital;
 
 import com.turning_leaf_technologies.config.ConfigUtil;
+import com.turning_leaf_technologies.grouping.RemoveRecordFromWorkResult;
 import com.turning_leaf_technologies.indexing.RecordIdentifier;
 import com.turning_leaf_technologies.logging.LoggingUtil;
 import com.turning_leaf_technologies.net.NetworkUtils;
@@ -42,12 +43,6 @@ public class RbdigitalExportMain {
     private static PreparedStatement getAllExistingRbdigitalItemsStmt;
     private static PreparedStatement updateRbdigitalAvailabilityStmt;
     private static PreparedStatement getExistingRbdigitalAvailabilityStmt;
-    private static PreparedStatement getWorkForPrimaryIdentifierStmt;
-    private static PreparedStatement getAdditionalPrimaryIdentifierForWorkStmt;
-    private static PreparedStatement deletePrimaryIdentifierStmt;
-    private static PreparedStatement markGroupedWorkAsChangedStmt;
-    private static PreparedStatement deleteGroupedWorkStmt;
-    private static PreparedStatement getPermanentIdByWorkIdStmt;
 
     //Record grouper
     private static GroupedWorkIndexer groupedWorkIndexer;
@@ -138,7 +133,13 @@ public class RbdigitalExportMain {
                 if (!rbdigitalTitle.isDeleted()) {
                     deleteRbdigitalItemStmt.setLong(1, rbdigitalTitle.getId());
                     deleteRbdigitalItemStmt.executeUpdate();
-                    removeRecordFromGroupedWork(startTimeForLogging, "rbdigital", rbdigitalTitle.getRbdigitalId());
+                    RemoveRecordFromWorkResult result = getRecordGroupingProcessor().removeRecordFromGroupedWork("rbdigital", rbdigitalTitle.getRbdigitalId());
+                    if (result.reindexWork){
+                        getGroupedWorkIndexer().processGroupedWork(result.permanentId);
+                    }else if (result.deleteWork){
+                        //Delete the work from solr and the database
+                        getGroupedWorkIndexer().deleteRecord(result.permanentId, result.groupedWorkId);
+                    }
                     numDeleted++;
                 }
             }
@@ -323,7 +324,7 @@ public class RbdigitalExportMain {
                 }
                 if (metadataChanged || availabilityChanged || doFullReload) {
                     if (groupedWorkId == null) {
-                        groupedWorkId = getPermanentIdForRecord(rbdigitalId);
+                        groupedWorkId = getRecordGroupingProcessor().getPermanentIdForRecord("rbdigital", rbdigitalId);
                     }
                     indexRbdigitalRecord(groupedWorkId);
                 }
@@ -342,26 +343,6 @@ public class RbdigitalExportMain {
             groupedWorkIndexer = new GroupedWorkIndexer(serverName, aspenConn, configIni, false, false, false, logger);
         }
         return groupedWorkIndexer;
-    }
-
-    private static String getPermanentIdForRecord(String rbdigitalId) {
-        String permanentId = null;
-        try{
-            getWorkForPrimaryIdentifierStmt.setString(1, "rbdigital");
-            getWorkForPrimaryIdentifierStmt.setString(2, rbdigitalId);
-            ResultSet getWorkForPrimaryIdentifierRS = getWorkForPrimaryIdentifierStmt.executeQuery();
-            if (getWorkForPrimaryIdentifierRS.next()) {
-                long groupedWorkId = getWorkForPrimaryIdentifierRS.getLong("grouped_work_id");
-                getPermanentIdByWorkIdStmt.setLong(1, groupedWorkId);
-                ResultSet getPermanentIdByWorkIdRS = getPermanentIdByWorkIdStmt.executeQuery();
-                if (getPermanentIdByWorkIdRS.next()) {
-                    permanentId = getPermanentIdByWorkIdRS.getString("permanent_id");
-                }
-            }
-        } catch (Exception e) {
-            logger.error("Error processing deleted bibs", e);
-        }
-        return permanentId;
     }
 
     private static String groupRbdigitalRecord(JSONObject itemDetails, String rbdigitalId, String primaryAuthor) throws JSONException {
@@ -450,12 +431,7 @@ public class RbdigitalExportMain {
                             "VALUES (?, ?, ?, ?, ?, ?, ?) " +
                             "ON DUPLICATE KEY UPDATE isAvailable = VALUES(isAvailable), isOwned = VALUES(isOwned), " +
                             "name = VALUES(name), rawChecksum = VALUES(rawChecksum), rawResponse = VALUES(rawResponse), lastChange = VALUES(lastChange)");
-            getWorkForPrimaryIdentifierStmt = aspenConn.prepareStatement("SELECT id, grouped_work_id from grouped_work_primary_identifiers where type = ? and identifier = ?");
-            deletePrimaryIdentifierStmt = aspenConn.prepareStatement("DELETE from grouped_work_primary_identifiers where id = ?");
-            getAdditionalPrimaryIdentifierForWorkStmt = aspenConn.prepareStatement("SELECT * from grouped_work_primary_identifiers where grouped_work_id = ?");
-            markGroupedWorkAsChangedStmt = aspenConn.prepareStatement("UPDATE grouped_work SET date_updated = ? where id = ?");
-            deleteGroupedWorkStmt = aspenConn.prepareStatement("DELETE from grouped_work where id = ?");
-            getPermanentIdByWorkIdStmt = aspenConn.prepareStatement("SELECT permanent_id from grouped_work WHERE id = ?");
+
         }catch (Exception e){
             logger.error("Error connecting to aspen database", e);
             System.exit(1);
@@ -476,60 +452,6 @@ public class RbdigitalExportMain {
             logger.info(note);
         } catch (SQLException e) {
             logger.error("Error adding note to Export Log", e);
-        }
-    }
-
-    //TODO: Move to record grouping or another shared location
-    /**
-     * Removes a record from a grouped work and returns if the grouped work no longer has
-     * any records attached to it (in which case it should be removed from the index after calling this)
-     *
-     * @param updateTime - Current indexing time to indicate that the record has changed
-     * @param source - The source of the record being removed
-     * @param id - The id of the record being removed
-     */
-    private static void removeRecordFromGroupedWork(long updateTime, @SuppressWarnings("SameParameterValue") String source, String id) {
-        try {
-            //Check to see if the identifier is in the grouped work primary identifiers table
-            getWorkForPrimaryIdentifierStmt.setString(1, source);
-            getWorkForPrimaryIdentifierStmt.setString(2, id);
-            ResultSet getWorkForPrimaryIdentifierRS = getWorkForPrimaryIdentifierStmt.executeQuery();
-            if (getWorkForPrimaryIdentifierRS.next()) {
-                long groupedWorkId = getWorkForPrimaryIdentifierRS.getLong("grouped_work_id");
-                long primaryIdentifierId = getWorkForPrimaryIdentifierRS.getLong("id");
-                //Delete the primary identifier
-                deletePrimaryIdentifierStmt.setLong(1, primaryIdentifierId);
-                deletePrimaryIdentifierStmt.executeUpdate();
-                //Check to see if there are other identifiers for this work
-                getAdditionalPrimaryIdentifierForWorkStmt.setLong(1, groupedWorkId);
-                ResultSet getAdditionalPrimaryIdentifierForWorkRS = getAdditionalPrimaryIdentifierForWorkStmt.executeQuery();
-                if (getAdditionalPrimaryIdentifierForWorkRS.next()) {
-                    //There are additional records for this work, just need to mark that it needs indexing again
-                    markGroupedWorkAsChangedStmt.setLong(1, updateTime);
-                    markGroupedWorkAsChangedStmt.setLong(2, groupedWorkId);
-                    markGroupedWorkAsChangedStmt.executeUpdate();
-                } else {
-                    //The grouped work no longer exists
-                    //Get the permanent id
-                    getPermanentIdByWorkIdStmt.setLong(1, groupedWorkId);
-                    ResultSet getPermanentIdByWorkIdRS = getPermanentIdByWorkIdStmt.executeQuery();
-                    if (getPermanentIdByWorkIdRS.next()) {
-                        //TODO: Refactor to do the reindex outside of this method
-                        String permanentId = getPermanentIdByWorkIdRS.getString("permanent_id");
-                        //Delete the work from solr
-                        getGroupedWorkIndexer().deleteRecord(permanentId);
-
-                        //Delete the work from the database?
-                        //TODO: Should we do this or leave a record if it was linked to lists, reading history, etc?
-                        //regular indexer deletes them too
-                        deleteGroupedWorkStmt.setLong(1, groupedWorkId);
-                        deleteGroupedWorkStmt.executeUpdate();
-                    }
-
-                }
-            }//If not true, already deleted skip this
-        } catch (Exception e) {
-            logger.error("Error processing deleted bibs", e);
         }
     }
 }

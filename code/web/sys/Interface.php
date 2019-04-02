@@ -550,8 +550,8 @@ class UInterface extends Smarty
 				$locationForLibrary = new Location();
 				$locationForLibrary->libraryId = $library->libraryId;
 				$locationForLibrary->find(true);
-				$numHours = $locationForLibrary->getNumHours();
-				$this->assign('numHours', $numHours);
+
+				$this->assign('hasValidHours', $locationForLibrary->hasValidHours());
 			}
 			$this->assign('showDisplayNameInHeader', $library->showDisplayNameInHeader);
 			$this->assign('externalMaterialsRequestUrl', $library->externalMaterialsRequestUrl);

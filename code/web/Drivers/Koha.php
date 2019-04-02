@@ -10,8 +10,15 @@ class Koha extends CurlBasedDriver {
 	private static $holdingSortingData = null;
 	protected static function getSortingDataForHoldings() {
 		if (self::$holdingSortingData == null){
-			$user = UserAccount::getLoggedInUser();
-			global $library;
+		    /** @var User $user */
+            $user = false;
+            try {
+                $user = UserAccount::getLoggedInUser();
+            } catch (UnknownAuthenticationMethodException $e) {
+                global $logger;
+                $logger->log("Error authenticating user $e", PEAR_LOG_CRIT);
+            }
+            global $library;
 			global $locationSingleton; /** @var $locationSingleton Location */
 
 			$holdingSortingData = array();
@@ -32,9 +39,9 @@ class Koha extends CurlBasedDriver {
 
 			//Set location information based on the user login.  This will override information based
 			if (isset($user) && $user != false) {
-				$homeBranchId = $user->homeLocationId;
-				$nearbyBranch1Id = $user->myLocation1Id;
-				$nearbyBranch2Id = $user->myLocation2Id;
+				$homeBranchId = $user->_homeLocationId;
+				$nearbyBranch1Id = $user->_myLocation1Id;
+				$nearbyBranch2Id = $user->_myLocation2Id;
 			}
 			//Load the holding label for the user's home location.
 			$userLocation = new Location();
@@ -938,7 +945,6 @@ class Koha extends CurlBasedDriver {
      * @return array
      */
 	public function updateHoldDetailed($patron, $type, $xNum, $cancelId, $locationId, $freezeValue='off'){
-		// TODO: get actual titles for hold items
 		$titles = array();
 
 		if (!isset($xNum) || empty($xNum)){

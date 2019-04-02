@@ -1418,10 +1418,18 @@ class Location extends DataObject
 		return $this->hours;
 	}
 
-	public function getNumHours() {
+	public function hasValidHours() {
 		$hours = new LocationHours();
 		$hours->locationId = $this->locationId;
-		return $hours->count();
+        $hours->find();
+        $hasValidHours = false;
+		while ($hours->fetch()){
+		    if ($hours->open != '00:30' || $hours->close != '00:30'){
+                $hasValidHours = true;
+
+            }
+        }
+		return $hasValidHours;
 	}
 
 	private $opacStatus = null;

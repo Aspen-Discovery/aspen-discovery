@@ -268,7 +268,7 @@ class UserAccount {
 	}
 
     /**
-     * @return array|bool
+     * @return User|false
      * @throws UnknownAuthenticationMethodException
      */
 	public static function getLoggedInUser(){

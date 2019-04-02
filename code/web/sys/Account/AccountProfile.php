@@ -16,6 +16,7 @@ class AccountProfile extends DataObject {
     public $databaseName;
 	public $databaseUser;
 	public $databasePassword;
+    public $databaseTimezone;
 	public $sipHost;
 	public $sipPort;
 	public $weight;
@@ -37,6 +38,7 @@ class AccountProfile extends DataObject {
                     'databaseName' => array('property' => 'databaseName', 'type' => 'text', 'label' => 'Database Schema Name', 'maxLength' => 50, 'description' => 'Name of the schema to connect to within the database', 'required' => false),
                     'databaseUser' => array('property' => 'databaseUser', 'type' => 'text', 'label' => 'Database User', 'maxLength' => 50, 'description' => 'Username to use when connecting', 'required' => false),
                     'databasePassword' => array('property' => 'databasePassword', 'type' => 'text', 'label' => 'Database Password', 'maxLength' => 50, 'description' => 'Password to use when connecting', 'required' => false),
+                    'databaseTimezone' => array('property' => 'databaseTimezone', 'type' => 'text', 'label' => 'Database Timezone', 'maxLength' => 50, 'description' => 'Timezone to use when connecting', 'required' => false),
                 ),
             ),
             'sip2Section'=>array('property'=>'sip2Section', 'type' => 'section', 'label' =>'SIP 2 Information (optional)', 'hideInLists' => true,

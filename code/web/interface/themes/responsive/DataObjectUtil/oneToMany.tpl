@@ -70,7 +70,7 @@
 					</a>
 				{elseif $property.canEdit}
 					{if method_exists($subObject, 'getEditLink')}
-						&nbsp;<a href='{$subObject->getEditLink()}' alt='Edit' title='Edit'>
+						&nbsp;<a href='{$subObject->getEditLink()}' title='Edit'>
 							<span class="glyphicon glyphicon-edit" title="edit">&nbsp;</span>
 						</a>
 					{else}

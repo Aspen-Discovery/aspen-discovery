@@ -38,7 +38,7 @@
 				</div>
 				{/if}
 			</div>
-			{if $curLocation.hours}
+			{if $curLocation.hasValidHours}
 				<h4>Hours</h4>
 				{foreach from=$curLocation.hours item=curHours}
 					<div class="row">

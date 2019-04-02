@@ -20,6 +20,11 @@ public class RecordGroupingProcessor {
 	private PreparedStatement addPrimaryIdentifierForWorkStmt;
 	private PreparedStatement removePrimaryIdentifiersForWorkStmt;
 
+	private PreparedStatement getWorkForPrimaryIdentifierStmt;
+	private PreparedStatement getAdditionalPrimaryIdentifierForWorkStmt;
+	private PreparedStatement deletePrimaryIdentifierStmt;
+	private PreparedStatement getPermanentIdByWorkIdStmt;
+
 	private int numRecordsProcessed = 0;
 	private int numGroupedWorksAdded = 0;
 
@@ -64,13 +69,77 @@ public class RecordGroupingProcessor {
 
 	}
 
-	void setupDatabaseStatements(Connection dbConnection) {
+    /**
+     * Removes a record from a grouped work and returns if the grouped work no longer has
+     * any records attached to it (in which case it should be removed from the index after calling this)
+     *
+     * @param source - The source of the record being removed
+     * @param id - The id of the record being removed
+     */
+    public RemoveRecordFromWorkResult removeRecordFromGroupedWork(@SuppressWarnings("SameParameterValue") String source, String id) {
+        RemoveRecordFromWorkResult result = new RemoveRecordFromWorkResult();
+        try {
+            //Check to see if the identifier is in the grouped work primary identifiers table
+            getWorkForPrimaryIdentifierStmt.setString(1, source);
+            getWorkForPrimaryIdentifierStmt.setString(2, id);
+            ResultSet getWorkForPrimaryIdentifierRS = getWorkForPrimaryIdentifierStmt.executeQuery();
+            if (getWorkForPrimaryIdentifierRS.next()) {
+                long groupedWorkId = getWorkForPrimaryIdentifierRS.getLong("grouped_work_id");
+                long primaryIdentifierId = getWorkForPrimaryIdentifierRS.getLong("id");
+                String permanentId = getWorkForPrimaryIdentifierRS.getString("permanent_id");
+                result.groupedWorkId = groupedWorkId;
+                result.permanentId = permanentId;
+                //Delete the primary identifier
+                deletePrimaryIdentifierStmt.setLong(1, primaryIdentifierId);
+                deletePrimaryIdentifierStmt.executeUpdate();
+                //Check to see if there are other identifiers for this work
+                getAdditionalPrimaryIdentifierForWorkStmt.setLong(1, groupedWorkId);
+                ResultSet getAdditionalPrimaryIdentifierForWorkRS = getAdditionalPrimaryIdentifierForWorkStmt.executeQuery();
+                if (getAdditionalPrimaryIdentifierForWorkRS.next()) {
+                    //There are additional records for this work, just need to mark that it needs indexing again
+                    result.reindexWork = true;
+                } else {
+                    result.deleteWork = true;
+                }
+            }//If not true, already deleted skip this
+        } catch (Exception e) {
+            logger.error("Error processing deleted bibs", e);
+        }
+        return result;
+    }
+
+	public String getPermanentIdForRecord(String source, String id) {
+		String permanentId = null;
+		try{
+			getWorkForPrimaryIdentifierStmt.setString(1, source);
+			getWorkForPrimaryIdentifierStmt.setString(2, id);
+			ResultSet getWorkForPrimaryIdentifierRS = getWorkForPrimaryIdentifierStmt.executeQuery();
+			if (getWorkForPrimaryIdentifierRS.next()) {
+				long groupedWorkId = getWorkForPrimaryIdentifierRS.getLong("grouped_work_id");
+				getPermanentIdByWorkIdStmt.setLong(1, groupedWorkId);
+				ResultSet getPermanentIdByWorkIdRS = getPermanentIdByWorkIdStmt.executeQuery();
+				if (getPermanentIdByWorkIdRS.next()) {
+					permanentId = getPermanentIdByWorkIdRS.getString("permanent_id");
+				}
+			}
+		} catch (Exception e) {
+			logger.error("Error processing deleted bibs", e);
+		}
+		return permanentId;
+	}
+
+    void setupDatabaseStatements(Connection dbConnection) {
 		try{
 			insertGroupedWorkStmt = dbConnection.prepareStatement("INSERT INTO " + RecordGrouperMain.groupedWorkTableName + " (full_title, author, grouping_category, permanent_id, date_updated) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE date_updated = VALUES(date_updated), id=LAST_INSERT_ID(id) ", Statement.RETURN_GENERATED_KEYS) ;
 			updateDateUpdatedForGroupedWorkStmt = dbConnection.prepareStatement("UPDATE grouped_work SET date_updated = ? where id = ?");
 			addPrimaryIdentifierForWorkStmt = dbConnection.prepareStatement("INSERT INTO grouped_work_primary_identifiers (grouped_work_id, type, identifier) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE id=LAST_INSERT_ID(id), grouped_work_id = VALUES(grouped_work_id)", Statement.RETURN_GENERATED_KEYS);
 			removePrimaryIdentifiersForWorkStmt = dbConnection.prepareStatement("DELETE FROM grouped_work_primary_identifiers where grouped_work_id = ?");
 			groupedWorkForIdentifierStmt = dbConnection.prepareStatement("SELECT grouped_work.id, grouped_work.permanent_id FROM grouped_work inner join grouped_work_primary_identifiers on grouped_work_primary_identifiers.grouped_work_id = grouped_work.id where type = ? and identifier = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+
+			getWorkForPrimaryIdentifierStmt = dbConnection.prepareStatement("SELECT grouped_work_primary_identifiers.id, grouped_work_primary_identifiers.grouped_work_id, permanent_id from grouped_work_primary_identifiers inner join grouped_work on grouped_work_id = grouped_work.id where type = ? and identifier = ?");
+			deletePrimaryIdentifierStmt = dbConnection.prepareStatement("DELETE from grouped_work_primary_identifiers where id = ?");
+			getAdditionalPrimaryIdentifierForWorkStmt = dbConnection.prepareStatement("SELECT * from grouped_work_primary_identifiers where grouped_work_id = ?");
+			getPermanentIdByWorkIdStmt = dbConnection.prepareStatement("SELECT permanent_id from grouped_work WHERE id = ?");
 
 			if (!fullRegrouping){
 				PreparedStatement loadExistingGroupedWorksStmt = dbConnection.prepareStatement("SELECT id, permanent_id from grouped_work");

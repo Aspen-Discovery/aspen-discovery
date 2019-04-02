@@ -1,12 +1,11 @@
 package com.turning_leaf_technologies.reindexer;
 
-import com.turning_leaf_technologies.config.ConfigUtil;
 import org.apache.logging.log4j.Logger;
-import org.ini4j.Ini;
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.Record;
 import org.marc4j.marc.Subfield;
 
+import java.net.URLEncoder;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -19,45 +18,82 @@ import java.util.List;
 class KohaRecordProcessor extends IlsRecordProcessor {
 	private HashSet<String> inTransitItems = new HashSet<>();
 	private HashSet<String> onHoldShelfItems = new HashSet<>();
-	KohaRecordProcessor(GroupedWorkIndexer indexer, Connection dbConn, Ini configIni, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
-		super(indexer, dbConn, indexingProfileRS, logger, fullReindex);
+	KohaRecordProcessor(GroupedWorkIndexer indexer, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
+		this (indexer, dbConn, indexingProfileRS, logger, fullReindex, null);
+	}
 
-		//Connect to the AspenCat database
-		if (ConfigUtil.cleanIniValue(configIni.get("Catalog", "db_host")) != null){
-			Connection kohaConn;
-			try {
-				String kohaConnectionJDBC = "jdbc:mysql://" +
-						ConfigUtil.cleanIniValue(configIni.get("Catalog", "db_host")) +
-						"/" + ConfigUtil.cleanIniValue(configIni.get("Catalog", "db_name") +
-						"?user=" + ConfigUtil.cleanIniValue(configIni.get("Catalog", "db_user")) +
-						"&password=" + ConfigUtil.cleanIniValue(configIni.get("Catalog", "db_pwd")) +
-						"&useUnicode=yes&characterEncoding=UTF-8&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=PST");
-				kohaConn = DriverManager.getConnection(kohaConnectionJDBC);
+	private Connection connectToKohaDB(Connection dbConn, Logger logger) {
+		Connection kohaConnection = null;
+		try {
+			//Get information about the account profile for koha
+			PreparedStatement accountProfileStmt = dbConn.prepareStatement("SELECT * from account_profiles WHERE recordSource = ?");
+			accountProfileStmt.setString(1, profileType);
+			ResultSet accountProfileRS = accountProfileStmt.executeQuery();
+			if (accountProfileRS.next()) {
+				try {
+					String host = accountProfileRS.getString("databaseHost");
+					String port = accountProfileRS.getString("databasePort");
+					if (port == null || port.length() == 0) {
+						port = "3306";
+					}
+					String databaseName = accountProfileRS.getString("databaseName");
+					String user = accountProfileRS.getString("databaseUser");
+					String password = accountProfileRS.getString("databasePassword");
+					String timezone = accountProfileRS.getString("databaseTimezone");
 
-				//Get a list of all items that are in transit
-				//PreparedStatement getInTransitItemsStmt = kohaConn.prepareStatement("SELECT itemnumber from reserves WHERE found = 'T'");
-				PreparedStatement getInTransitItemsStmt = kohaConn.prepareStatement("SELECT itemnumber from branchtransfers WHERE datearrived IS NULL");
-				ResultSet inTransitItemsRS = getInTransitItemsStmt.executeQuery();
-				while (inTransitItemsRS.next()){
-					inTransitItems.add(inTransitItemsRS.getString("itemnumber"));
+					String kohaConnectionJDBC = "jdbc:mysql://" +
+							host + ":" + port +
+							"/" + databaseName +
+							"?user=" + user +
+							"&password=" + password +
+							"&useUnicode=yes&characterEncoding=UTF-8";
+					if (timezone != null && timezone.length() > 0){
+						kohaConnectionJDBC += "&serverTimezone=" + URLEncoder.encode(timezone, "UTF8");
+
+					}
+					kohaConnection = DriverManager.getConnection(kohaConnectionJDBC);
+				} catch (Exception e) {
+					logger.error("Error connecting to koha database ", e);
+					System.exit(1);
 				}
-				inTransitItemsRS.close();
-				getInTransitItemsStmt.close();
-
-				PreparedStatement onHoldShelfItemsStmt = kohaConn.prepareStatement("SELECT itemnumber from reserves WHERE found = 'W'");
-				ResultSet onHoldShelfItemsRS = onHoldShelfItemsStmt.executeQuery();
-				while (onHoldShelfItemsRS.next()){
-					onHoldShelfItems.add(onHoldShelfItemsRS.getString("itemnumber"));
-				}
-				onHoldShelfItemsRS.close();
-				onHoldShelfItemsStmt.close();
-
-			} catch (Exception e) {
-				logger.error("Error connecting to koha database ", e);
+			} else {
+				logger.error("Could not find an account profile for Koha stopping");
 				System.exit(1);
 			}
-		} else {
-			logger.error("Connection information for Koha has not been defined, information will not be complete");
+		} catch (Exception e) {
+			logger.error("Error connecting to database ", e);
+			System.exit(1);
+		}
+		return kohaConnection;
+	}
+
+	private KohaRecordProcessor(GroupedWorkIndexer indexer, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex, Connection kohaConnection) {
+		super(indexer, dbConn, indexingProfileRS, logger, fullReindex);
+		if (kohaConnection == null){
+			kohaConnection = connectToKohaDB(dbConn, logger);
+		}
+
+		try {
+			//Get a list of all items that are in transit
+			//PreparedStatement getInTransitItemsStmt = kohaConn.prepareStatement("SELECT itemnumber from reserves WHERE found = 'T'");
+			PreparedStatement getInTransitItemsStmt = kohaConnection.prepareStatement("SELECT itemnumber from branchtransfers WHERE datearrived IS NULL");
+			ResultSet inTransitItemsRS = getInTransitItemsStmt.executeQuery();
+			while (inTransitItemsRS.next()){
+				inTransitItems.add(inTransitItemsRS.getString("itemnumber"));
+			}
+			inTransitItemsRS.close();
+			getInTransitItemsStmt.close();
+
+			PreparedStatement onHoldShelfItemsStmt = kohaConnection.prepareStatement("SELECT itemnumber from reserves WHERE found = 'W'");
+			ResultSet onHoldShelfItemsRS = onHoldShelfItemsStmt.executeQuery();
+			while (onHoldShelfItemsRS.next()){
+				onHoldShelfItems.add(onHoldShelfItemsRS.getString("itemnumber"));
+			}
+			onHoldShelfItemsRS.close();
+			onHoldShelfItemsStmt.close();
+		} catch (Exception e) {
+			logger.error("Error setting up koha statements ", e);
+			System.exit(1);
 		}
 	}
 

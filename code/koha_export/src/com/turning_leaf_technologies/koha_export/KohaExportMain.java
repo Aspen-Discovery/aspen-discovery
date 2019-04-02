@@ -1,116 +1,280 @@
 package com.turning_leaf_technologies.koha_export;
 
 import com.turning_leaf_technologies.config.ConfigUtil;
+import com.turning_leaf_technologies.grouping.MarcRecordGrouper;
+import com.turning_leaf_technologies.grouping.RemoveRecordFromWorkResult;
 import com.turning_leaf_technologies.indexing.IndexingProfile;
 import com.turning_leaf_technologies.logging.LoggingUtil;
+import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
+import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
-import org.marc4j.MarcPermissiveStreamReader;
 import org.marc4j.MarcStreamWriter;
 import org.marc4j.MarcWriter;
+import org.marc4j.MarcXmlReader;
 import org.marc4j.marc.DataField;
+import org.marc4j.marc.MarcFactory;
 import org.marc4j.marc.Record;
-import org.marc4j.marc.Subfield;
-import org.marc4j.marc.VariableField;
-import org.marc4j.marc.impl.SubfieldImpl;
 
 import java.io.*;
+import java.net.URLEncoder;
+import java.nio.charset.Charset;
 import java.sql.*;
-import java.util.ArrayList;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
 
 public class KohaExportMain {
 	private static Logger logger;
 
 	private static IndexingProfile indexingProfile;
+	private static PreparedStatement getBaseMarcRecordStmt;
+	private static PreparedStatement getBibItemsStmt;
+	private static MarcFactory marcFactory = MarcFactory.newInstance();
+	private static MarcRecordGrouper recordGroupingProcessorSingleton;
+	private static GroupedWorkIndexer groupedWorkIndexer;
+	private static Ini configIni;
+	private static Connection dbConn;
+	private static String serverName;
 
 	public static void main(String[] args) {
-		String serverName = args[0];
+		serverName = args[0];
 
 		Date startTime = new Date();
 		logger = LoggingUtil.setupLogging(serverName, "koha_export");
 		logger.info(startTime.toString() + ": Starting Koha Extract");
 
 		// Read the base INI file to get information about the server (current directory/conf/config.ini)
-		Ini ini = ConfigUtil.loadConfigFile("config.ini", serverName, logger);
+		configIni = ConfigUtil.loadConfigFile("config.ini", serverName, logger);
 
 		//Connect to the database
-		Connection dbConn = null;
+		Connection kohaConn = null;
+		String profileToLoad = "ils";
+		if (args.length > 1){
+			profileToLoad = args[1];
+		}
 		try {
-			String databaseConnectionInfo = ConfigUtil.cleanIniValue(ini.get("Database", "database_aspen_jdbc"));
+			String databaseConnectionInfo = ConfigUtil.cleanIniValue(configIni.get("Database", "database_aspen_jdbc"));
 			if (databaseConnectionInfo == null){
 				logger.error("Please provide database_aspen_jdbc within config.ini (or better config.pwd.ini) ");
 				System.exit(1);
 			}
 			dbConn = DriverManager.getConnection(databaseConnectionInfo);
+
+			//Get information about the account profile for koha
+			PreparedStatement accountProfileStmt = dbConn.prepareStatement("SELECT * from account_profiles WHERE driver = 'Koha'");
+			ResultSet accountProfileRS = accountProfileStmt.executeQuery();
+			if (accountProfileRS.next()) {
+				try {
+					String host = accountProfileRS.getString("databaseHost");
+					String port = accountProfileRS.getString("databasePort");
+					if (port == null || port.length() == 0) {
+						port = "3306";
+					}
+					String databaseName = accountProfileRS.getString("databaseName");
+					String user = accountProfileRS.getString("databaseUser");
+					String password = accountProfileRS.getString("databasePassword");
+					String timezone = accountProfileRS.getString("databaseTimezone");
+
+					String kohaConnectionJDBC = "jdbc:mysql://" +
+							host + ":" + port +
+							"/" + databaseName +
+							"?user=" + user +
+							"&password=" + password +
+							"&useUnicode=yes&characterEncoding=UTF-8";
+					if (timezone != null && timezone.length() > 0){
+						kohaConnectionJDBC += "&serverTimezone=" + URLEncoder.encode(timezone, "UTF8");
+
+					}
+					kohaConn = DriverManager.getConnection(kohaConnectionJDBC);
+
+					getBaseMarcRecordStmt = kohaConn.prepareStatement("SELECT * from biblio_metadata where biblionumber = ?");
+					getBibItemsStmt = kohaConn.prepareStatement("SELECT * from items where biblionumber = ?");
+
+                    profileToLoad = accountProfileRS.getString("recordSource");
+				} catch (Exception e) {
+					logger.error("Error connecting to koha database ", e);
+					System.exit(1);
+				}
+			} else {
+				logger.error("Could not find an account profile for Koha stopping");
+				System.exit(1);
+			}
 		} catch (Exception e) {
 			logger.error("Error connecting to database ", e);
 			System.exit(1);
 		}
 
-		Connection kohaConn = null;
-		try {
-			String kohaConnectionJDBC = "jdbc:mysql://" +
-					ConfigUtil.cleanIniValue(ini.get("Catalog", "db_host")) +
-					"/" + ConfigUtil.cleanIniValue(ini.get("Catalog", "db_name") +
-					"?user=" + ConfigUtil.cleanIniValue(ini.get("Catalog", "db_user")) +
-					"&password=" + ConfigUtil.cleanIniValue(ini.get("Catalog", "db_pwd")) +
-					"&useUnicode=yes&characterEncoding=UTF-8");
-			kohaConn = DriverManager.getConnection(kohaConnectionJDBC);
-		} catch (Exception e) {
-			logger.error("Error connecting to koha database ", e);
-			System.exit(1);
-		}
-
-		String profileToLoad = "ils";
-		if (args.length > 1){
-			profileToLoad = args[1];
-		}
 		indexingProfile = IndexingProfile.loadIndexingProfile(dbConn, profileToLoad, logger);
 
-		//Get a list of works that have changed since the last index
-		getChangedRecordsFromDatabase(ini, dbConn, kohaConn);
+		updateBranchInfo(dbConn, kohaConn);
+
 		exportHolds(dbConn, kohaConn);
 
-		if (dbConn != null){
-			try{
-				//Close the connection
-				dbConn.close();
-			}catch(Exception e){
-				System.out.println("Error closing connection: " + e.toString());
-				e.printStackTrace();
-			}
-		}
-		if (kohaConn != null){
-			try{
-				//Close the connection
-				kohaConn.close();
-			}catch(Exception e){
-				System.out.println("Error closing connection: " + e.toString());
-				e.printStackTrace();
-			}
-		}
+		//Get a list of works that have changed since the last index
+		updateRecords(dbConn, kohaConn);
+
+        try{
+            //Close the connection
+            dbConn.close();
+        }catch(Exception e){
+            System.out.println("Error closing connection: " + e.toString());
+            e.printStackTrace();
+        }
+        try{
+            //Close the connection
+            kohaConn.close();
+        }catch(Exception e){
+            System.out.println("Error closing connection: " + e.toString());
+            e.printStackTrace();
+        }
 		Date currentTime = new Date();
 		logger.info(currentTime.toString() + ": Finished Koha Extract");
 	}
 
-	private static void exportHolds(Connection dbConn, Connection kohaConn) {
+    private static void updateBranchInfo(Connection dbConn, Connection kohaConn) {
+        try {
+            PreparedStatement kohaBranchesStmt = kohaConn.prepareStatement("SELECT * from branches");
+            PreparedStatement existingAspenLocationStmt = dbConn.prepareStatement("SELECT libraryId, locationId, isMainBranch from location where code = ?");
+            PreparedStatement updateAspenLocationStmt = dbConn.prepareStatement("UPDATE location SET displayName = ?, address = ?, phone = ? where locationId = ?");
+            PreparedStatement kohaRepeatableHolidaysStmt = kohaConn.prepareStatement("SELECT * FROM koha_uintah.repeatable_holidays where branchcode = ?");
+            PreparedStatement kohaSpecialHolidaysStmt = kohaConn.prepareStatement("SELECT * FROM koha_uintah.special_holidays where (year = ? or year = ?) AND branchcode = ? order by  year, month, day");
+			PreparedStatement existingHoursStmt = dbConn.prepareStatement("SELECT count(*) FROM location_hours where locationId = ?");
+			PreparedStatement addHoursStmt = dbConn.prepareStatement("INSERT INTO location_hours (locationId, day, closed, open, close) VALUES (?, ?, 0, '00:30', '00:30') ");
+			PreparedStatement existingHolidaysStmt = dbConn.prepareStatement("SELECT * FROM holiday where libraryId = ? and date >= ?");
+            PreparedStatement addHolidayStmt = dbConn.prepareStatement("INSERT INTO holiday (libraryId, date, name) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE name = VALUES(name)");
+            PreparedStatement removeHolidayStmt = dbConn.prepareStatement("DELETE FROM holiday WHERE id = ?");
+			PreparedStatement markLibraryClosed = dbConn.prepareStatement("UPDATE location_hours set closed = 1 where locationId = ? and day = ?");
+            ResultSet kohaBranches = kohaBranchesStmt.executeQuery();
+            String currentYear = new SimpleDateFormat("yyyy").format(new Date());
+            GregorianCalendar nextYearCal = new GregorianCalendar();
+            nextYearCal.roll(GregorianCalendar.YEAR, 1);
+            String nextYear = new SimpleDateFormat("yyyy").format(nextYearCal.getTime());
+            while (kohaBranches.next()){
+                String ilsCode = kohaBranches.getString("branchcode");
+                existingAspenLocationStmt.setString(1, ilsCode);
+                ResultSet existingAspenLocationRS = existingAspenLocationStmt.executeQuery();
+                if (existingAspenLocationRS.next()){
+                    long existingLocationId = existingAspenLocationRS.getLong("locationId");
+                    updateAspenLocationStmt.setString(1, kohaBranches.getString("branchname"));
+                    String address = kohaBranches.getString("branchaddress1");
+                    String address2 = kohaBranches.getString("branchaddress2");
+                    if (address2 != null && address2.length() > 0){
+                        address += "\r\n" + address2;
+                    }
+                    address += "\r\n" + kohaBranches.getString("branchcity") + "," + kohaBranches.getString("branchstate") + " " + kohaBranches.getString("branchzip");
+                    updateAspenLocationStmt.setString(2, address);
+                    updateAspenLocationStmt.setString(3, kohaBranches.getString("branchphone"));
+                    updateAspenLocationStmt.setLong(4, existingLocationId);
+                    updateAspenLocationStmt.executeUpdate();
+
+					HashMap<java.sql.Date, Long> existingHolidayDates = new HashMap<>();
+					long libraryId = existingAspenLocationRS.getLong("libraryId");
+					if (existingAspenLocationRS.getBoolean("isMainBranch")) {
+						//Get the existing holidays in case we need to delete any
+						existingHolidaysStmt.setLong(1, libraryId);
+						existingHolidaysStmt.setDate(2, java.sql.Date.valueOf(currentYear + "-01-01"));
+						ResultSet existingHolidaysRS = existingHolidaysStmt.executeQuery();
+						existingHolidayDates = new HashMap<>();
+						while (existingHolidaysRS.next()) {
+							existingHolidayDates.put(existingHolidaysRS.getDate("date"), existingHolidaysRS.getLong("id"));
+						}
+					}
+
+					//update hours for the branch.  We can only get closed times.
+					existingHoursStmt.setLong(1, existingLocationId);
+					ResultSet existingHoursRS = existingHoursStmt.executeQuery();
+					if (existingHoursRS.next()){
+						long numHours = existingHoursRS.getLong(1);
+						if (numHours == 0){
+							//Create default hours
+							for (int i = 0; i < 7; i++) {
+								addHoursStmt.setLong(1, existingLocationId);
+								addHoursStmt.setLong(2, i);
+								addHoursStmt.executeUpdate();
+							}
+						}
+					}
+
+					kohaRepeatableHolidaysStmt.setString(1, ilsCode);
+					ResultSet kohaRepeatableHolidaysRS = kohaRepeatableHolidaysStmt.executeQuery();
+					while (kohaRepeatableHolidaysRS.next()){
+						int weekday = kohaRepeatableHolidaysRS.getInt("weekday");
+						if (!kohaRepeatableHolidaysRS.wasNull()){
+							//The library is closed on this date
+							markLibraryClosed.setLong(1, existingLocationId);
+							markLibraryClosed.setInt(2, weekday);
+							markLibraryClosed.executeUpdate();
+						} else {
+							//Add the holiday for this year
+							String holidayDate = currentYear + "-" + kohaRepeatableHolidaysRS.getString("month") + "-" + kohaRepeatableHolidaysRS.getString("day");
+							java.sql.Date holidayDateAsDate = java.sql.Date.valueOf(holidayDate);
+							String title = kohaRepeatableHolidaysRS.getString("title");
+							addHolidayStmt.setLong(1, libraryId);
+							addHolidayStmt.setDate(2, holidayDateAsDate);
+							addHolidayStmt.setString(3, title);
+							addHolidayStmt.executeUpdate();
+							existingHolidayDates.remove(holidayDateAsDate);
+
+							//Add the holiday for next year
+							holidayDate = nextYear + "-" + kohaRepeatableHolidaysRS.getString("month") + "-" + kohaRepeatableHolidaysRS.getString("day");
+							holidayDateAsDate = java.sql.Date.valueOf(holidayDate);
+							addHolidayStmt.setLong(1, libraryId);
+							addHolidayStmt.setDate(2, holidayDateAsDate);
+							addHolidayStmt.setString(3, title);
+							addHolidayStmt.executeUpdate();
+							existingHolidayDates.remove(holidayDateAsDate);
+						}
+					}
+
+                    //update holidays for the library
+                    //Koha stores holidays per branch rather than per library system for now, we will just assign based on the main branch
+                    if (existingAspenLocationRS.getBoolean("isMainBranch")){
+                        kohaSpecialHolidaysStmt.setInt(1, Integer.parseInt(currentYear));
+                        kohaSpecialHolidaysStmt.setInt(2, Integer.parseInt(nextYear));
+                        kohaSpecialHolidaysStmt.setString(3, ilsCode);
+                        ResultSet kohaSpecialHolidaysRS = kohaSpecialHolidaysStmt.executeQuery();
+                        while (kohaSpecialHolidaysRS.next()) {
+                            String holidayDate = kohaSpecialHolidaysRS.getString("year") + "-" + kohaSpecialHolidaysRS.getString("month") + "-" + kohaSpecialHolidaysRS.getString("day");
+                            java.sql.Date holidayDateAsDate = java.sql.Date.valueOf(holidayDate);
+                            String title = kohaSpecialHolidaysRS.getString("title");
+                            addHolidayStmt.setLong(1, libraryId);
+                            addHolidayStmt.setDate(2, holidayDateAsDate);
+                            addHolidayStmt.setString(3, title);
+                            addHolidayStmt.executeUpdate();
+                            existingHolidayDates.remove(holidayDateAsDate);
+                        }
+                    }
+
+                    //Remove anything leftover
+					for (Long holidayToBeDeleted : existingHolidayDates.values()) {
+						removeHolidayStmt.setLong(1, holidayToBeDeleted);
+						removeHolidayStmt.executeUpdate();
+					}
+                } else {
+                    logger.error("Aspen does not currently have a location defined for code " + ilsCode + " please create the location in Aspen first so the library information is properly defined.");
+                }
+            }
+        }catch (Exception e) {
+            logger.error("Error updating branch information from Koha", e);
+        }
+    }
+
+    private static void exportHolds(Connection dbConn, Connection kohaConn) {
 		Savepoint startOfHolds = null;
 		try {
 			logger.info("Starting export of holds");
 
 			//Start a transaction so we can rebuild an entire table
-			startOfHolds = dbConn.setSavepoint();
+			startOfHolds = dbConn.setSavepoint("hold_update_start");
 			dbConn.setAutoCommit(false);
-			dbConn.prepareCall("TRUNCATE TABLE ils_hold_summary").executeQuery();
+			dbConn.prepareCall("TRUNCATE TABLE ils_hold_summary").executeUpdate();
 
 			PreparedStatement addIlsHoldSummary = dbConn.prepareStatement("INSERT INTO ils_hold_summary (ilsId, numHolds) VALUES (?, ?)");
 
 			HashMap<String, Long> numHoldsByBib = new HashMap<>();
 			//Export bib level holds
-			PreparedStatement bibHoldsStmt = kohaConn.prepareStatement("select count(reservenumber) as numHolds, biblionumber from reserves group by biblionumber", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement bibHoldsStmt = kohaConn.prepareStatement("select count(*) as numHolds, biblionumber from reserves group by biblionumber", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			ResultSet bibHoldsRS = bibHoldsStmt.executeQuery();
 			while (bibHoldsRS.next()){
 				String bibId = bibHoldsRS.getString("biblionumber");
@@ -146,122 +310,92 @@ public class KohaExportMain {
 		logger.info("Finished exporting holds");
 	}
 
-	private static void getChangedRecordsFromDatabase(Ini ini, Connection dbConn, Connection kohaConn) {
+	private static void updateRecords(Connection dbConn, Connection kohaConn) {
 		//Get the time the last extract was done
 		try{
 			logger.info("Starting to load changed records from Koha using the Database connection");
-			long lastKohaExtractTime;
+			long lastKohaExtractTime = 0;
 			Long lastKohaExtractTimeVariableId = null;
 
-			long updateTime = new Date().getTime() / 1000;
-
-			PreparedStatement markGroupedWorkForBibAsChangedStmt = dbConn.prepareStatement("UPDATE grouped_work SET date_updated = ? where id = (SELECT grouped_work_id from grouped_work_primary_identifiers WHERE type = 'ils' and identifier = ?)") ;
 			PreparedStatement loadLastKohaExtractTimeStmt = dbConn.prepareStatement("SELECT * from variables WHERE name = 'last_koha_extract_time'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			ResultSet lastKohaExtractTimeRS = loadLastKohaExtractTimeStmt.executeQuery();
 			if (lastKohaExtractTimeRS.next()){
 				lastKohaExtractTime = lastKohaExtractTimeRS.getLong("value");
 				lastKohaExtractTimeVariableId = lastKohaExtractTimeRS.getLong("id");
-			}else{
-				//Get the last 5 minutes for the initial setup
-				lastKohaExtractTime = new Date().getTime() / 1000 - 5 * 60 * 60;
+			}
+			if (lastKohaExtractTime == 0){
+				lastKohaExtractTime = (new Date().getTime() / 1000) - (24 * 60 * 60);
 			}
 
-			//Since we are on a replica of the database, go back 20 minutes to make sure that we cover changes that haven't been replicated
-			lastKohaExtractTime -= 20 * 60;
+			HashSet<String> changedBibIds = new HashSet<>();
 
-			String maxRecordsToUpdateDuringExtractStr = ini.get("Catalog", "maxRecordsToUpdateDuringExtract");
-			int maxRecordsToUpdateDuringExtract = 100000;
-			if (maxRecordsToUpdateDuringExtractStr != null){
-				maxRecordsToUpdateDuringExtract = Integer.parseInt(maxRecordsToUpdateDuringExtractStr);
+			//Get a list of bibs that have changed
+			PreparedStatement getChangedBibsFromKohaStmt = kohaConn.prepareStatement("select biblionumber from biblio where timestamp >= ?");
+			getChangedBibsFromKohaStmt.setTimestamp(1, new Timestamp(lastKohaExtractTime * 1000));
+			ResultSet getChangedBibsFromKohaRS = getChangedBibsFromKohaStmt.executeQuery();
+			while (getChangedBibsFromKohaRS.next()) {
+				changedBibIds.add(getChangedBibsFromKohaRS.getString("biblionumber"));
 			}
 
-			//Only mark records as changed
-			boolean errorUpdatingDatabase = false;
-
-			PreparedStatement getChangedItemsFromKohaStmt = kohaConn.prepareStatement("select itemnumber, biblionumber, barcode, damaged, itemlost, wthdrawn, suppress, restricted, onloan from items where timestamp >= ? LIMIT 0, ?");
+			//Get a list of items that have changed
+			PreparedStatement getChangedItemsFromKohaStmt = kohaConn.prepareStatement("select DISTINCT biblionumber from items where timestamp >= ?");
 			getChangedItemsFromKohaStmt.setTimestamp(1, new Timestamp(lastKohaExtractTime * 1000));
-			getChangedItemsFromKohaStmt.setLong(2, maxRecordsToUpdateDuringExtract);
 
 			ResultSet itemChangeRS = getChangedItemsFromKohaStmt.executeQuery();
-			HashMap<String, ArrayList<ItemChangeInfo>> changedBibs = new HashMap<>();
-			while (itemChangeRS.next()){
-				String bibNumber = itemChangeRS.getString("biblionumber");
-				String itemNumber = itemChangeRS.getString("itemnumber");
-				int damaged = itemChangeRS.getInt("damaged");
-				String itemlost = itemChangeRS.getString("itemlost");
-				int wthdrawn = itemChangeRS.getInt("wthdrawn");
-				int suppress = itemChangeRS.getInt("suppress");
-				String restricted = itemChangeRS.getString("restricted");
-				String onloan = "";
-				try {
-					onloan = itemChangeRS.getString("onloan");
-				}catch (SQLException e){
-					logger.info("Invalid onloan value for bib " + bibNumber + " item " + itemNumber);
-				}
-
-				ItemChangeInfo changeInfo = new ItemChangeInfo();
-				changeInfo.setItemId(itemNumber);
-				changeInfo.setDamaged(damaged);
-				changeInfo.setItemLost(itemlost);
-				changeInfo.setWithdrawn(wthdrawn);
-				changeInfo.setSuppress(suppress);
-				changeInfo.setRestricted(restricted);
-				changeInfo.setOnLoan(onloan);
-
-				ArrayList<ItemChangeInfo> itemChanges;
-				if (changedBibs.containsKey(bibNumber)) {
-					itemChanges = changedBibs.get(bibNumber);
-				}else{
-					itemChanges = new ArrayList<>();
-					changedBibs.put(bibNumber, itemChanges);
-				}
-				itemChanges.add(changeInfo);
+			while (itemChangeRS.next()) {
+				changedBibIds.add(itemChangeRS.getString("biblionumber"));
 			}
 
-			dbConn.setAutoCommit(false);
-			logger.info("A total of " + changedBibs.size() + " bibs were updated");
-			int numUpdates = 0;
-			for (String curBibId : changedBibs.keySet()){
+			//Items that have been deleted do not update the bib as changed so get that list as well
+			PreparedStatement getDeletedItemsFromKohaStmt = kohaConn.prepareStatement("select DISTINCT biblionumber from deleteditems where timestamp >= ?");
+			getDeletedItemsFromKohaStmt.setTimestamp(1, new Timestamp(lastKohaExtractTime * 1000));
+
+			ResultSet itemDeletedRS = getDeletedItemsFromKohaStmt.executeQuery();
+			while (itemDeletedRS.next()) {
+				changedBibIds.add(itemDeletedRS.getString("biblionumber"));
+			}
+
+			//TODO: limit the number of changes that can be made in one run to keep the index fresher.
+			logger.info("A total of " + changedBibIds.size() + " bibs were updated since the last export");
+			for (String curBibId : changedBibIds){
 				//Update the marc record
-				updateMarc(curBibId, changedBibs.get(curBibId));
-				//Update the database
-				try {
-					markGroupedWorkForBibAsChangedStmt.setLong(1, updateTime);
-					markGroupedWorkForBibAsChangedStmt.setString(2, curBibId);
-					markGroupedWorkForBibAsChangedStmt.executeUpdate();
-
-					numUpdates++;
-					if (numUpdates % 50 == 0){
-						dbConn.commit();
-					}
-				}catch (SQLException e){
-					logger.error("Could not mark that " + curBibId + " was changed due to error ", e);
-					errorUpdatingDatabase = true;
-				}
-			}
-			//Turn auto commit back on
-			dbConn.commit();
-			dbConn.setAutoCommit(true);
-
-			if (!errorUpdatingDatabase) {
-				//Update the last extract time
-				long finishTime = new Date().getTime() / 1000;
-				if (lastKohaExtractTimeVariableId != null) {
-					PreparedStatement updateVariableStmt = dbConn.prepareStatement("UPDATE variables set value = ? WHERE id = ?");
-					updateVariableStmt.setLong(1, finishTime);
-					updateVariableStmt.setLong(2, lastKohaExtractTimeVariableId);
-					updateVariableStmt.executeUpdate();
-					updateVariableStmt.close();
-				} else {
-					PreparedStatement insertVariableStmt = dbConn.prepareStatement("INSERT INTO variables (`name`, `value`) VALUES ('last_koha_extract_time', ?)");
-					insertVariableStmt.setString(1, Long.toString(finishTime));
-					insertVariableStmt.executeUpdate();
-					insertVariableStmt.close();
-				}
-			}else{
-				logger.error("There was an error updating the database, not setting last extract time.");
+				updateBibRecord(curBibId);
 			}
 
+			//Process any bibs that have been deleted
+			PreparedStatement getDeletedBibsFromKohaStmt = kohaConn.prepareStatement("select DISTINCT biblionumber from deletedbiblio where timestamp >= ?");
+			getDeletedBibsFromKohaStmt.setTimestamp(1, new Timestamp(lastKohaExtractTime * 1000));
+
+			ResultSet bibDeletedRS = getDeletedBibsFromKohaStmt.executeQuery();
+			int numRecordsDeleted = 0;
+			while (bibDeletedRS.next()) {
+				String bibId = bibDeletedRS.getString("biblionumber");
+				RemoveRecordFromWorkResult result = getRecordGroupingProcessor().removeRecordFromGroupedWork(indexingProfile.getName(), bibId);
+				if (result.reindexWork){
+					getGroupedWorkIndexer().processGroupedWork(result.permanentId);
+				}else if (result.deleteWork){
+					//Delete the work from solr and the database
+					getGroupedWorkIndexer().deleteRecord(result.permanentId, result.groupedWorkId);
+				}
+				numRecordsDeleted++;
+			}
+
+			logger.info("Updated " + changedBibIds + " records");
+			logger.info("Deleted " + numRecordsDeleted + " records");
+			//Update the last extract time
+			long finishTime = new Date().getTime() / 1000;
+			if (lastKohaExtractTimeVariableId != null) {
+				PreparedStatement updateVariableStmt = dbConn.prepareStatement("UPDATE variables set value = ? WHERE id = ?");
+				updateVariableStmt.setLong(1, finishTime);
+				updateVariableStmt.setLong(2, lastKohaExtractTimeVariableId);
+				updateVariableStmt.executeUpdate();
+				updateVariableStmt.close();
+			} else {
+				PreparedStatement insertVariableStmt = dbConn.prepareStatement("INSERT INTO variables (`name`, `value`) VALUES ('last_koha_extract_time', ?)");
+				insertVariableStmt.setString(1, Long.toString(finishTime));
+				insertVariableStmt.executeUpdate();
+				insertVariableStmt.close();
+			}
 		} catch (Exception e){
 			logger.error("Error loading changed records from Koha database", e);
 			System.exit(1);
@@ -269,85 +403,103 @@ public class KohaExportMain {
 		logger.info("Finished loading changed records from Koha database");
 	}
 
-	private static void updateMarc(String curBibId, ArrayList<ItemChangeInfo> itemChangeInfo) {
+	private static void updateBibRecord(String curBibId) {
 		//Load the existing marc record from file
 		try {
 			File marcFile = indexingProfile.getFileForIlsRecord(curBibId);
-			if (marcFile.exists()) {
-				FileInputStream inputStream = new FileInputStream(marcFile);
-				MarcPermissiveStreamReader marcReader = new MarcPermissiveStreamReader(inputStream, true, true, "UTF-8");
-				if (marcReader.hasNext()) {
-					Record marcRecord = marcReader.next();
-					inputStream.close();
 
-					//Loop through all item fields to see what has changed
-					List<VariableField> itemFields = marcRecord.getVariableFields(indexingProfile.getItemTag());
-					for (VariableField itemFieldVar : itemFields) {
-						DataField itemField = (DataField) itemFieldVar;
-						if (itemField.getSubfield(indexingProfile.getItemRecordNumberSubfield()) != null) {
-							String itemRecordNumber = itemField.getSubfield(indexingProfile.getItemRecordNumberSubfield()).getData();
-							//Update the items
-							for (ItemChangeInfo curItem : itemChangeInfo) {
-								//Find the correct item
-								if (itemRecordNumber.equals(curItem.getItemId())) {
-									//Do not update location since we get the permanent location which shouldn't change
-									//itemField.getSubfield(locationSubfield).setData(curItem.getLocation());
-									setBooleanSubfield(itemField, curItem.getWithdrawn(), '0');
-									setSubfieldValue(itemField, '1', curItem.getItemLost());
-									setBooleanSubfield(itemField, curItem.getDamaged(), '4');
-									setBooleanSubfield(itemField, curItem.getSuppress(), 'i');
-									char subfield = '7';
-									String newValue = curItem.getRestricted();
-									setSubfieldValue(itemField, subfield, newValue);
-									setSubfieldValue(itemField, 'q', curItem.getOnLoan());
-									setSubfieldValue(itemField, '0', curItem.getOnLoan() == null ? "1" : "0");
+			//Create a new record from data in the database (faster and more reliable than using ILSDI or OAI export)
+			getBaseMarcRecordStmt.setString(1, curBibId);
+			ResultSet baseMarcRecordRS = getBaseMarcRecordStmt.executeQuery();
+			while (baseMarcRecordRS.next()) {
+				String marcXML = baseMarcRecordRS.getString("metadata");
+				marcXML = StringUtils.stripNonValidXMLCharacters(marcXML);
+				MarcXmlReader marcXmlReader = new MarcXmlReader(new ByteArrayInputStream(marcXML.getBytes(Charset.forName("UTF-8"))));
 
-								}
-							}
-						}
-					}
+				//This record has all the basic bib data
+				Record marcRecord = marcXmlReader.next();
 
-					//Write the new marc record
-					MarcWriter writer = new MarcStreamWriter(new FileOutputStream(marcFile, false));
-					writer.write(marcRecord);
-					writer.close();
-				} else {
-					logger.info("Could not read marc record for " + curBibId + " the bib was empty");
+				//Add the item information
+				getBibItemsStmt.setString(1, curBibId);
+				ResultSet bibItemsRS = getBibItemsStmt.executeQuery();
+				while (bibItemsRS.next()) {
+					DataField itemField = marcFactory.newDataField("952", ' ', ' ');
+
+					addSubfield(itemField, 'e', bibItemsRS.getString("booksellerid"));
+					addSubfield(itemField, '8', bibItemsRS.getString("ccode"));
+					addSubfield(itemField, '6', bibItemsRS.getString("cn_sort"));
+					addSubfield(itemField, '2', bibItemsRS.getString("cn_source"));
+					addSubfield(itemField, 'f', bibItemsRS.getString("coded_location_qualifier"));
+					addSubfield(itemField, 't', bibItemsRS.getString("copynumber"));
+					addSubfield(itemField, '4', bibItemsRS.getString("damaged"));
+					addSubfield(itemField, 'd', bibItemsRS.getString("dateaccessioned"));
+					addSubfield(itemField, 's', bibItemsRS.getString("datelastborrowed"));
+					addSubfield(itemField, 'r', bibItemsRS.getString("datelastseen"));
+					addSubfield(itemField, 'h', bibItemsRS.getString("enumchron"));
+					addSubfield(itemField, 'b', bibItemsRS.getString("holdingbranch"));
+					addSubfield(itemField, 'a', bibItemsRS.getString("homebranch"));
+					addSubfield(itemField, 'l', bibItemsRS.getString("issues"));
+					addSubfield(itemField, 'o', bibItemsRS.getString("itemcallnumber"));
+					addSubfield(itemField, '1', bibItemsRS.getString("itemlost"));
+					addSubfield(itemField, 'z', bibItemsRS.getString("itemnotes"));
+					//addSubfield(itemField, 'x', bibItemsRS.getString("itemnotes_nonpublic"));
+					addSubfield(itemField, '9', bibItemsRS.getString("itemnumber"));
+					addSubfield(itemField, 'y', bibItemsRS.getString("itype"));
+					addSubfield(itemField, 'c', bibItemsRS.getString("location"));
+					addSubfield(itemField, '3', bibItemsRS.getString("materials"));
+					addSubfield(itemField, '7', bibItemsRS.getString("notforloan"));
+					addSubfield(itemField, 'q', bibItemsRS.getString("onloan"));
+					addSubfield(itemField, 'g', bibItemsRS.getString("price"));
+					addSubfield(itemField, 'm', bibItemsRS.getString("renewals"));
+					addSubfield(itemField, 'v', bibItemsRS.getString("replacementprice"));
+					addSubfield(itemField, 'w', bibItemsRS.getString("replacementpricedate"));
+					addSubfield(itemField, 'n', bibItemsRS.getString("renewals"));
+					addSubfield(itemField, '5', bibItemsRS.getString("restricted"));
+					addSubfield(itemField, 'j', bibItemsRS.getString("stack"));
+					addSubfield(itemField, 'i', bibItemsRS.getString("stocknumber"));
+					addSubfield(itemField, 'u', bibItemsRS.getString("uri"));
+					addSubfield(itemField,'0', bibItemsRS.getString("withdrawn"));
+					marcRecord.addVariableField(itemField);
 				}
-			}else{
-				logger.debug("Marc Record does not exist for " + curBibId + " it is not part of the main extract yet.");
+
+				MarcWriter writer = new MarcStreamWriter(new FileOutputStream(marcFile));
+				writer.write(marcRecord);
+
+				//Regroup the record
+				String groupedWorkId = groupKohaRecord(marcRecord);
+				if (groupedWorkId != null) {
+					//Reindex the record
+					getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
+				}
+
 			}
+
 		}catch (Exception e){
 			logger.error("Error updating marc record for bib " + curBibId, e);
 		}
 	}
 
-	private static void setSubfieldValue(DataField itemField, char subfield, String newValue) {
-		if (newValue == null){
-			if (itemField.getSubfield(subfield) != null) itemField.removeSubfield(itemField.getSubfield(subfield));
-		}else{
-
-			if (itemField.getSubfield(subfield) != null) {
-				itemField.getSubfield(subfield).setData(newValue);
-			}else{
-				itemField.addSubfield(new SubfieldImpl(subfield, newValue));
-			}
+	private static void addSubfield(DataField itemField, char code, String data) {
+		if (data != null) {
+			itemField.addSubfield(marcFactory.newSubfield(code, data));
 		}
 	}
 
-	private static void setBooleanSubfield(DataField itemField, int flagValue, char withdrawnSubfieldChar) {
-		if (flagValue == 0){
-			Subfield withDrawnSubfield = itemField.getSubfield(withdrawnSubfieldChar);
-			if (withDrawnSubfield != null){
-				itemField.removeSubfield(withDrawnSubfield);
-			}
-		}else{
-			Subfield withDrawnSubfield = itemField.getSubfield(withdrawnSubfieldChar);
-			if (withDrawnSubfield == null){
-				itemField.addSubfield(new SubfieldImpl(withdrawnSubfieldChar, "1"));
-			}else{
-				withDrawnSubfield.setData("1");
-			}
+	private static String groupKohaRecord(Record marcRecord) {
+		return getRecordGroupingProcessor().processMarcRecord(marcRecord, true);
+	}
+
+	private static MarcRecordGrouper getRecordGroupingProcessor(){
+		if (recordGroupingProcessorSingleton == null) {
+			recordGroupingProcessorSingleton = new MarcRecordGrouper(dbConn, indexingProfile, logger, false);
 		}
+		return recordGroupingProcessorSingleton;
+	}
+
+	private static GroupedWorkIndexer getGroupedWorkIndexer() {
+		if (groupedWorkIndexer == null) {
+			groupedWorkIndexer = new GroupedWorkIndexer(serverName, dbConn, configIni, false, false, false, logger);
+		}
+		return groupedWorkIndexer;
 	}
 }
