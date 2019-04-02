@@ -38,98 +38,132 @@ public class KohaExportMain {
 	private static String serverName;
 
 	public static void main(String[] args) {
-		serverName = args[0];
-
-		Date startTime = new Date();
-		logger = LoggingUtil.setupLogging(serverName, "koha_export");
-		logger.info(startTime.toString() + ": Starting Koha Extract");
-
-		// Read the base INI file to get information about the server (current directory/conf/config.ini)
-		configIni = ConfigUtil.loadConfigFile("config.ini", serverName, logger);
-
-		//Connect to the database
-		Connection kohaConn = null;
-		String profileToLoad = "ils";
-		if (args.length > 1){
-			profileToLoad = args[1];
-		}
-		try {
-			String databaseConnectionInfo = ConfigUtil.cleanIniValue(configIni.get("Database", "database_aspen_jdbc"));
-			if (databaseConnectionInfo == null){
-				logger.error("Please provide database_aspen_jdbc within config.ini (or better config.pwd.ini) ");
-				System.exit(1);
-			}
-			dbConn = DriverManager.getConnection(databaseConnectionInfo);
-
-			//Get information about the account profile for koha
-			PreparedStatement accountProfileStmt = dbConn.prepareStatement("SELECT * from account_profiles WHERE driver = 'Koha'");
-			ResultSet accountProfileRS = accountProfileStmt.executeQuery();
-			if (accountProfileRS.next()) {
-				try {
-					String host = accountProfileRS.getString("databaseHost");
-					String port = accountProfileRS.getString("databasePort");
-					if (port == null || port.length() == 0) {
-						port = "3306";
-					}
-					String databaseName = accountProfileRS.getString("databaseName");
-					String user = accountProfileRS.getString("databaseUser");
-					String password = accountProfileRS.getString("databasePassword");
-					String timezone = accountProfileRS.getString("databaseTimezone");
-
-					String kohaConnectionJDBC = "jdbc:mysql://" +
-							host + ":" + port +
-							"/" + databaseName +
-							"?user=" + user +
-							"&password=" + password +
-							"&useUnicode=yes&characterEncoding=UTF-8";
-					if (timezone != null && timezone.length() > 0){
-						kohaConnectionJDBC += "&serverTimezone=" + URLEncoder.encode(timezone, "UTF8");
-
-					}
-					kohaConn = DriverManager.getConnection(kohaConnectionJDBC);
-
-					getBaseMarcRecordStmt = kohaConn.prepareStatement("SELECT * from biblio_metadata where biblionumber = ?");
-					getBibItemsStmt = kohaConn.prepareStatement("SELECT * from items where biblionumber = ?");
-
-                    profileToLoad = accountProfileRS.getString("recordSource");
-				} catch (Exception e) {
-					logger.error("Error connecting to koha database ", e);
-					System.exit(1);
-				}
-			} else {
-				logger.error("Could not find an account profile for Koha stopping");
-				System.exit(1);
-			}
-		} catch (Exception e) {
-			logger.error("Error connecting to database ", e);
+		if (args.length == 0) {
+			System.out.println("You must provide the servername as the first argument.");
 			System.exit(1);
 		}
+		boolean runContinuously = true;
+		serverName = args[0];
+		String profileToLoad = "ils";
 
-		indexingProfile = IndexingProfile.loadIndexingProfile(dbConn, profileToLoad, logger);
+		logger = LoggingUtil.setupLogging(serverName, "koha_export");
 
-		updateBranchInfo(dbConn, kohaConn);
+		while (runContinuously) {
+			runContinuously = false;
+			if (args.length >= 2) {
+				profileToLoad = args[1];
+				if (profileToLoad.equals("continuous")){
+					runContinuously = true;
+					profileToLoad = "ils";
+				}
+			}if (args.length >= 3) {
+				if (args[2].equals("continuous")){
+					runContinuously = true;
+				}
+			}
 
-		exportHolds(dbConn, kohaConn);
+			//TODO: Add logging to the database so we can see progress?
 
-		//Get a list of works that have changed since the last index
-		updateRecords(dbConn, kohaConn);
+			Date startTime = new Date();
+			logger.info(startTime.toString() + ": Starting Koha Extract");
 
-        try{
-            //Close the connection
-            dbConn.close();
-        }catch(Exception e){
-            System.out.println("Error closing connection: " + e.toString());
-            e.printStackTrace();
-        }
-        try{
-            //Close the connection
-            kohaConn.close();
-        }catch(Exception e){
-            System.out.println("Error closing connection: " + e.toString());
-            e.printStackTrace();
-        }
-		Date currentTime = new Date();
-		logger.info(currentTime.toString() + ": Finished Koha Extract");
+			// Read the base INI file to get information about the server (current directory/conf/config.ini)
+			configIni = ConfigUtil.loadConfigFile("config.ini", serverName, logger);
+
+			//Connect to the database
+			Connection kohaConn = null;
+
+			try {
+				String databaseConnectionInfo = ConfigUtil.cleanIniValue(configIni.get("Database", "database_aspen_jdbc"));
+				if (databaseConnectionInfo == null) {
+					logger.error("Please provide database_aspen_jdbc within config.ini (or better config.pwd.ini) ");
+					System.exit(1);
+				}
+				dbConn = DriverManager.getConnection(databaseConnectionInfo);
+
+				//Get information about the account profile for koha
+				PreparedStatement accountProfileStmt = dbConn.prepareStatement("SELECT * from account_profiles WHERE driver = 'Koha'");
+				ResultSet accountProfileRS = accountProfileStmt.executeQuery();
+				if (accountProfileRS.next()) {
+					try {
+						String host = accountProfileRS.getString("databaseHost");
+						String port = accountProfileRS.getString("databasePort");
+						if (port == null || port.length() == 0) {
+							port = "3306";
+						}
+						String databaseName = accountProfileRS.getString("databaseName");
+						String user = accountProfileRS.getString("databaseUser");
+						String password = accountProfileRS.getString("databasePassword");
+						String timezone = accountProfileRS.getString("databaseTimezone");
+
+						String kohaConnectionJDBC = "jdbc:mysql://" +
+								host + ":" + port +
+								"/" + databaseName +
+								"?user=" + user +
+								"&password=" + password +
+								"&useUnicode=yes&characterEncoding=UTF-8";
+						if (timezone != null && timezone.length() > 0) {
+							kohaConnectionJDBC += "&serverTimezone=" + URLEncoder.encode(timezone, "UTF8");
+
+						}
+						kohaConn = DriverManager.getConnection(kohaConnectionJDBC);
+
+						getBaseMarcRecordStmt = kohaConn.prepareStatement("SELECT * from biblio_metadata where biblionumber = ?");
+						getBibItemsStmt = kohaConn.prepareStatement("SELECT * from items where biblionumber = ?");
+
+						profileToLoad = accountProfileRS.getString("recordSource");
+					} catch (Exception e) {
+						logger.error("Error connecting to koha database ", e);
+						System.exit(1);
+					}
+				} else {
+					logger.error("Could not find an account profile for Koha stopping");
+					System.exit(1);
+				}
+			} catch (Exception e) {
+				logger.error("Error connecting to database ", e);
+				System.exit(1);
+			}
+
+			indexingProfile = IndexingProfile.loadIndexingProfile(dbConn, profileToLoad, logger);
+
+			updateBranchInfo(dbConn, kohaConn);
+
+			exportHolds(dbConn, kohaConn);
+
+			//Update works that have changed since the last index
+			int numChanges = updateRecords(dbConn, kohaConn);
+
+			try {
+				//Close the connection
+				dbConn.close();
+			} catch (Exception e) {
+				System.out.println("Error closing connection: " + e.toString());
+				e.printStackTrace();
+			}
+			try {
+				//Close the connection
+				kohaConn.close();
+			} catch (Exception e) {
+				System.out.println("Error closing connection: " + e.toString());
+				e.printStackTrace();
+			}
+			Date currentTime = new Date();
+			logger.info(currentTime.toString() + ": Finished Koha Extract");
+
+			//Pause before running the next export (longer if we didn't get any actual changes)
+			if (runContinuously) {
+				try {
+					if (numChanges == 0) {
+						Thread.sleep(1000 * 60 * 5);
+					}else {
+						Thread.sleep(1000 * 60);
+					}
+				} catch (InterruptedException e) {
+					logger.info("Thread was interrupted");
+				}
+			}
+		}
 	}
 
     private static void updateBranchInfo(Connection dbConn, Connection kohaConn) {
@@ -310,7 +344,9 @@ public class KohaExportMain {
 		logger.info("Finished exporting holds");
 	}
 
-	private static void updateRecords(Connection dbConn, Connection kohaConn) {
+	private static int updateRecords(Connection dbConn, Connection kohaConn) {
+		int totalChanges = 0;
+
 		//Get the time the last extract was done
 		try{
 			logger.info("Starting to load changed records from Koha using the Database connection");
@@ -331,7 +367,10 @@ public class KohaExportMain {
 
 			//Get a list of bibs that have changed
 			PreparedStatement getChangedBibsFromKohaStmt = kohaConn.prepareStatement("select biblionumber from biblio where timestamp >= ?");
-			getChangedBibsFromKohaStmt.setTimestamp(1, new Timestamp(lastKohaExtractTime * 1000));
+			Timestamp lastExtractTimestamp = new Timestamp(lastKohaExtractTime * 1000);
+			logger.info("Getting changes to records since " + lastExtractTimestamp.toString());
+
+			getChangedBibsFromKohaStmt.setTimestamp(1, lastExtractTimestamp);
 			ResultSet getChangedBibsFromKohaRS = getChangedBibsFromKohaStmt.executeQuery();
 			while (getChangedBibsFromKohaRS.next()) {
 				changedBibIds.add(getChangedBibsFromKohaRS.getString("biblionumber"));
@@ -339,7 +378,7 @@ public class KohaExportMain {
 
 			//Get a list of items that have changed
 			PreparedStatement getChangedItemsFromKohaStmt = kohaConn.prepareStatement("select DISTINCT biblionumber from items where timestamp >= ?");
-			getChangedItemsFromKohaStmt.setTimestamp(1, new Timestamp(lastKohaExtractTime * 1000));
+			getChangedItemsFromKohaStmt.setTimestamp(1, lastExtractTimestamp);
 
 			ResultSet itemChangeRS = getChangedItemsFromKohaStmt.executeQuery();
 			while (itemChangeRS.next()) {
@@ -348,14 +387,14 @@ public class KohaExportMain {
 
 			//Items that have been deleted do not update the bib as changed so get that list as well
 			PreparedStatement getDeletedItemsFromKohaStmt = kohaConn.prepareStatement("select DISTINCT biblionumber from deleteditems where timestamp >= ?");
-			getDeletedItemsFromKohaStmt.setTimestamp(1, new Timestamp(lastKohaExtractTime * 1000));
+			getDeletedItemsFromKohaStmt.setTimestamp(1, lastExtractTimestamp);
 
 			ResultSet itemDeletedRS = getDeletedItemsFromKohaStmt.executeQuery();
 			while (itemDeletedRS.next()) {
 				changedBibIds.add(itemDeletedRS.getString("biblionumber"));
 			}
 
-			//TODO: limit the number of changes that can be made in one run to keep the index fresher.
+			//TODO: limit the number of changes that can be made in one run to keep the index fresher?
 			logger.info("A total of " + changedBibIds.size() + " bibs were updated since the last export");
 			for (String curBibId : changedBibIds){
 				//Update the marc record
@@ -364,7 +403,7 @@ public class KohaExportMain {
 
 			//Process any bibs that have been deleted
 			PreparedStatement getDeletedBibsFromKohaStmt = kohaConn.prepareStatement("select DISTINCT biblionumber from deletedbiblio where timestamp >= ?");
-			getDeletedBibsFromKohaStmt.setTimestamp(1, new Timestamp(lastKohaExtractTime * 1000));
+			getDeletedBibsFromKohaStmt.setTimestamp(1, lastExtractTimestamp);
 
 			ResultSet bibDeletedRS = getDeletedBibsFromKohaStmt.executeQuery();
 			int numRecordsDeleted = 0;
@@ -380,8 +419,17 @@ public class KohaExportMain {
 				numRecordsDeleted++;
 			}
 
-			logger.info("Updated " + changedBibIds + " records");
+			logger.info("Updated " + changedBibIds.size() + " records");
 			logger.info("Deleted " + numRecordsDeleted + " records");
+
+			totalChanges = changedBibIds.size() + numRecordsDeleted;
+
+			if (groupedWorkIndexer != null) {
+				groupedWorkIndexer.finishIndexingFromExtract();
+				recordGroupingProcessorSingleton = null;
+				groupedWorkIndexer = null;
+			}
+
 			//Update the last extract time
 			long finishTime = new Date().getTime() / 1000;
 			if (lastKohaExtractTimeVariableId != null) {
@@ -401,6 +449,8 @@ public class KohaExportMain {
 			System.exit(1);
 		}
 		logger.info("Finished loading changed records from Koha database");
+
+		return totalChanges;
 	}
 
 	private static void updateBibRecord(String curBibId) {
