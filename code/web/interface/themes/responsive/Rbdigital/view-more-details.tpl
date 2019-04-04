@@ -61,15 +61,6 @@
 		</div>
 	{/if}
 
-	{if count($recordDriver->getASINs()) > 0}
-		<div class="row">
-			<div class="result-label col-md-3">{translate text='ASIN'}:</div>
-			<div class="col-md-9 result-value">
-				{implode subject=$recordDriver->getASINs() glue=", "}
-			</div>
-		</div>
-	{/if}
-
 	{if $recordDriver->getAcceleratedReaderData() != null}
 		{assign var="arData" value=$recordDriver->getAcceleratedReaderData()}
 		<div class="row">

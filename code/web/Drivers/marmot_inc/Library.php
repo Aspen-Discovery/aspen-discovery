@@ -1832,6 +1832,12 @@ class Library extends DataObject
 		$facet->weight = count($defaultFacets) + 1;
 		$defaultFacets[] = $facet;
 
+        $facet = new LibraryFacetSetting();
+        $facet->setupSideFacet('econtent_source', 'eContent Source', true);
+        $facet->libraryId = $libraryId;
+        $facet->weight = count($defaultFacets) + 1;
+        $defaultFacets[] = $facet;
+
 		$facet = new LibraryFacetSetting();
 		$facet->setupSideFacet('publishDate', 'Publication Date', true);
 		$facet->libraryId = $libraryId;

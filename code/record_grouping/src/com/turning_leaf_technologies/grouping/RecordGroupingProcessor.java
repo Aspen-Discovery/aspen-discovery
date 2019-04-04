@@ -69,7 +69,7 @@ public class RecordGroupingProcessor {
 
 	}
 
-    /**
+	/**
      * Removes a record from a grouped work and returns if the grouped work no longer has
      * any records attached to it (in which case it should be removed from the index after calling this)
      *
@@ -204,6 +204,7 @@ public class RecordGroupingProcessor {
 				String existingGroupedWorkPermanentId = groupedWorkForIdentifierRS.getString("permanent_id");
 				long existingGroupedWorkId = groupedWorkForIdentifierRS.getLong("id");
 				if (!existingGroupedWorkPermanentId.equals(groupedWorkPermanentId)){
+					//TODO: For realtime indexing we will want to trigger a reindex of the old record as well
 					markWorkUpdated(existingGroupedWorkId);
 				}
 			}
@@ -217,7 +218,7 @@ public class RecordGroupingProcessor {
 		long groupedWorkId = -1;
 		try{
 			if (existingGroupedWorks.containsKey(groupedWorkPermanentId)){
-				//There is an existing grouped record
+				//There is an existing grouped work
 				groupedWorkId = existingGroupedWorks.get(groupedWorkPermanentId);
 
 				//Mark that the work has been updated

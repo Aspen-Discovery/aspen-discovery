@@ -134,25 +134,6 @@ if ($mode['online'] === false) {
 }
 $timer->logTime('Checked availability mode');
 
-////Check to see if we have a collection applied.
-//// TODO: collection url parameter doesn't look to be used for anything
-//global $defaultCollection;
-//if (isset($_GET['collection'])){
-//	$defaultCollection = $_GET['collection'];
-//	//Set a cookie so we don't have to transfer the ip from page to page.
-//	if ($defaultCollection == '' || $defaultCollection == 'all'){
-//		setcookie('collection', '', 0, '/');
-//		$defaultCollection = null;
-//	}else{
-//		setcookie('collection', $defaultCollection, 0, '/');
-//	}
-//}elseif (isset($_COOKIE['collection'])){
-//	$defaultCollection = $_COOKIE['collection'];
-//}else{
-//	//No collection has been set.
-//}
-//$timer->logTime('Check default collection');
-
 // Proxy server settings
 if (isset($configArray['Proxy']['host'])) {
 	if (isset($configArray['Proxy']['port'])) {

@@ -1,11 +1,6 @@
 <?php
 /**
  * Stores information about a product that has been loaded from the OverDrive APIs
- *
- * @category VuFind-Plus
- * @author Mark Noble <mark@marmot.org>
- * Date: 10/8/13
- * Time: 9:28 AM
  */
 
 class OverDriveAPIProduct extends DataObject{

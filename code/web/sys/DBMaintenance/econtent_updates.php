@@ -1,87 +1,74 @@
 <?php
-/**
- * Aspen Discovery
- * Created by: mdnob
- * Created on: 1/28/2019
- */
+
 function getEContentUpdates() {
-    global $configArray;
     return array(
         'overdrive_api_data' => array(
             'title' => 'OverDrive API Data',
             'description' => 'Build tables to store data loaded fromthe OverDrive API so the reindex process can use cached data and so we can add additional logic for lastupdate time, etc.',
             'sql' => array(
                 "CREATE TABLE IF NOT EXISTS overdrive_api_products (
-						`id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-						overdriveId VARCHAR(36) NOT NULL,
-						mediaType  VARCHAR(50) NOT NULL,
-						title VARCHAR(512) NOT NULL,
-						series VARCHAR(215),
-						primaryCreatorRole VARCHAR(50),
-						primaryCreatorName VARCHAR(215),
-						cover VARCHAR(215),
-						dateAdded INT(11),
-						dateUpdated INT(11),
-						lastMetadataCheck INT(11),
-						lastMetadataChange INT(11),
-	          lastAvailabilityCheck INT(11),
-						lastAvailabilityChange INT(11),
-						deleted TINYINT(1) DEFAULT 0,
-						dateDeleted INT(11) DEFAULT NULL,
-						UNIQUE(overdriveId),
-						INDEX(dateUpdated),
-						INDEX(lastMetadataCheck),
-						INDEX(lastAvailabilityCheck),
-	                    INDEX(deleted)
-					)" ,
+                    `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                    overdriveId VARCHAR(36) NOT NULL,
+                    mediaType  VARCHAR(50) NOT NULL,
+                    title VARCHAR(512) NOT NULL,
+                    series VARCHAR(215),
+                    primaryCreatorRole VARCHAR(50),
+                    primaryCreatorName VARCHAR(215),
+                    cover VARCHAR(215),
+                    dateAdded INT(11),
+                    dateUpdated INT(11),
+                    lastMetadataCheck INT(11),
+                    lastMetadataChange INT(11),
+                    lastAvailabilityCheck INT(11),
+                    lastAvailabilityChange INT(11),
+                    deleted TINYINT(1) DEFAULT 0,
+                    dateDeleted INT(11) DEFAULT NULL,
+                    UNIQUE(overdriveId),
+                    INDEX(dateUpdated),
+                    INDEX(lastMetadataCheck),
+                    INDEX(lastAvailabilityCheck),
+                    INDEX(deleted)
+                )" ,
                 "CREATE TABLE IF NOT EXISTS overdrive_api_product_formats (
-						`id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-						productId INT,
-						textId VARCHAR(25),
-						numericId INT,
-						name VARCHAR(512),
-						fileName  VARCHAR(215),
-						fileSize INT,
-						partCount TINYINT,
-	          sampleSource_1 VARCHAR(215),
-	          sampleUrl_1 VARCHAR(215),
-	          sampleSource_2 VARCHAR(215),
-	          sampleUrl_2 VARCHAR(215),
-						INDEX(productId),
-						INDEX(numericId),
-						UNIQUE(productId, textId)
-					)",
+                    `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                    productId INT,
+                    textId VARCHAR(25),
+                    numericId INT,
+                    name VARCHAR(512),
+                    fileName  VARCHAR(215),
+                    fileSize INT,
+                    partCount TINYINT,
+                    sampleSource_1 VARCHAR(215),
+                    sampleUrl_1 VARCHAR(215),
+                    sampleSource_2 VARCHAR(215),
+                    sampleUrl_2 VARCHAR(215),
+                    INDEX(productId),
+                    INDEX(numericId),
+                    UNIQUE(productId, textId)
+                )",
                 "CREATE TABLE IF NOT EXISTS overdrive_api_product_metadata (
-						`id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-						productId INT,
-						checksum BIGINT,
-						sortTitle VARCHAR(512),
-						publisher VARCHAR(215),
-						publishDate INT(11),
-						isPublicDomain TINYINT(1),
-						isPublicPerformanceAllowed TINYINT(1),
-						shortDescription TEXT,
-						fullDescription TEXT,
-						starRating FLOAT,
-						popularity INT,
-						UNIQUE(productId)
-					)",
-                "CREATE TABLE IF NOT EXISTS overdrive_api_product_creators (
-						`id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-						productId INT,
-						role VARCHAR(50),
-						name VARCHAR(215),
-						fileAs VARCHAR(215),
-						INDEX (productId)
-					)",
-                "CREATE TABLE IF NOT EXISTS overdrive_api_product_identifiers (
-						`id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-						productId INT,
-						type VARCHAR(50),
-						value VARCHAR(75),
-						INDEX (productId),
-	                    INDEX (type)
-					)",
+                    `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                    productId INT,
+                    checksum BIGINT,
+                    sortTitle VARCHAR(512),
+                    publisher VARCHAR(215),
+                    publishDate INT(11),
+                    isPublicDomain TINYINT(1),
+                    isPublicPerformanceAllowed TINYINT(1),
+                    shortDescription TEXT,
+                    fullDescription TEXT,
+                    starRating FLOAT,
+                    popularity INT,
+                    UNIQUE(productId)
+                )",
+               "CREATE TABLE IF NOT EXISTS overdrive_api_product_identifiers (
+                    `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                    productId INT,
+                    type VARCHAR(50),
+                    value VARCHAR(75),
+                    INDEX (productId),
+                    INDEX (type)
+                )",
                 "CREATE TABLE IF NOT EXISTS overdrive_api_product_languages (
 						`id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 						code VARCHAR(10),
@@ -161,6 +148,14 @@ function getEContentUpdates() {
             ),
         ),
 
+        'overdrive_api_data_availability_shared' => array(
+            'title' => 'Add shared flag to OverDrive API',
+            'description' => 'Update Availability table to add shared flag',
+            'sql' => array(
+                "ALTER TABLE overdrive_api_product_availability ADD COLUMN shared TINYINT(1) DEFAULT '0'",
+            ),
+        ),
+
         'overdrive_api_data_metadata_isOwnedByCollections' => array(
             'title' => 'Add isOwnedByCollections to OverDrive Metadata API',
             'description' => 'Update isOwnedByCollections table to add metadata table',
@@ -188,11 +183,24 @@ function getEContentUpdates() {
         'utf8_update' => array(
             'title' => 'Update to UTF-8',
             'description' => 'Update database to use UTF-8 encoding',
-            'dependencies' => array(),
             'sql' => array(
                 "ALTER TABLE db_update CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
             ),
         ),
+
+        'overdrive_api_remove_old_tables' => array(
+            'title' => 'Remove old OverDrive tables',
+            'description' => 'Remove OverDrive tables that are no longer used',
+            'sql' => array(
+                "DROP TABLE overdrive_api_product_creators",
+                "DROP TABLE overdrive_api_product_languages",
+                "DROP TABLE overdrive_api_product_languages_ref",
+                "DROP TABLE overdrive_api_product_subjects",
+                "DROP TABLE overdrive_api_product_subjects_ref",
+                "DROP TABLE overdrive_record_cache",
+                "ALTER TABLE overdrive_api_products DROP COLUMN rawData",
+            ),
+        )
 
     );
 }

@@ -11,7 +11,6 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 	private $valid;
 	private $isbns = null;
 	private $upcs = null;
-	private $asins = null;
 	private $items;
 
 	/**
@@ -365,29 +364,6 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 	}
 
 	/**
-	 * Get an array of all ASINs associated with the record (may be empty).
-	 *
-	 * @access  protected
-	 * @return  array
-	 */
-	public function getASINs()
-	{
-		//Load UPCs for the product
-		if ($this->asins == null){
-			require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProductIdentifiers.php';
-			$overDriveIdentifiers = new OverDriveAPIProductIdentifiers();
-			$overDriveIdentifiers->type = 'ASIN';
-			$overDriveIdentifiers->productId = $this->overDriveProduct->id;
-			$this->asins = array();
-			$overDriveIdentifiers->find();
-			while ($overDriveIdentifiers->fetch()){
-				$this->asins[] = $overDriveIdentifiers->value;
-			}
-		}
-		return $this->asins;
-	}
-
-	/**
 	 * Get the full title of the record.
 	 *
 	 * @return  string
@@ -402,11 +378,6 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
         return $this->overDriveProduct->title;
     }
 
-    /**
-	 * Get the full title of the record.
-	 *
-	 * @return  string
-	 */
 	public function getSubtitle()
 	{
 		return $this->overDriveProduct->subtitle;

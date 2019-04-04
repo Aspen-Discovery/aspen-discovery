@@ -2,29 +2,18 @@ package com.turning_leaf_technologies.overdrive;
 
 import java.util.HashSet;
 
+/**
+ * Full data from the API
+ */
 class OverDriveRecordInfo {
+	boolean hasMetadataChanges = false;
+	boolean hasAvailabilityChanges = false;
+	boolean isNew = false;
+
 	//Data from base title call
 	private String id;
-	private long crossRefId;
-	private String mediaType;
-	private String title;
-	private String subtitle;
-	private String series;
-	private String primaryCreatorRole;
-	private String primaryCreatorName;
-	private HashSet<String> formats = new HashSet<>();
-	private String coverImage;
+	private long databaseId = -1;
 	private HashSet<Long> collections = new HashSet<>();
-	//Data from metadata call
-	private String rawData;
-
-	String getRawData() {
-		return rawData;
-	}
-
-	void setRawData(String rawData) {
-		this.rawData = rawData;
-	}
 
 	String getId() {
 		return id;
@@ -32,61 +21,19 @@ class OverDriveRecordInfo {
 	void setId(String id) {
 		this.id = id.toLowerCase();
 	}
-	long getCrossRefId(){
-		return crossRefId;
-	}
-	void setCrossRefId(long crossRefId){
-		this.crossRefId = crossRefId;
-	}
-	String getMediaType() {
-		return mediaType;
-	}
-	void setMediaType(String mediaType) {
-		this.mediaType = mediaType;
-	}
-	String getTitle() {
-		return title;
-	}
-	void setTitle(String title) {
-		this.title = title.replaceAll("&#174;", "�");
-	}
-	String getSeries() {
-		return series;
-	}
-	void setSeries(String series) {
-		this.series = series;
-	}
-	
-	String getPrimaryCreatorRole() {
-		return primaryCreatorRole;
-	}
-	void setPrimaryCreatorRole(String primaryCreatorRole) {
-		this.primaryCreatorRole = primaryCreatorRole;
-	}
-	String getPrimaryCreatorName() {
-		return primaryCreatorName;
-	}
-	void setPrimaryCreatorName(String primaryCreatorName) {
-		this.primaryCreatorName = primaryCreatorName;
-	}
-	HashSet<String> getFormats() {
-		return formats;
-	}
-	String getCoverImage() {
-		return coverImage;
-	}
-	void setCoverImage(String coverImage) {
-		this.coverImage = coverImage;
-	}
+
 	HashSet<Long> getCollections() {
 		return collections;
 	}
-
-	String getSubtitle() {
-		return subtitle;
+	void addCollection(Long id) {
+		this.collections.add(id);
 	}
 
-	void setSubtitle(String subtitle) {
-		this.subtitle = subtitle;
+	long getDatabaseId() {
+		return databaseId;
+	}
+
+	void setDatabaseId(long databaseId) {
+		this.databaseId = databaseId;
 	}
 }

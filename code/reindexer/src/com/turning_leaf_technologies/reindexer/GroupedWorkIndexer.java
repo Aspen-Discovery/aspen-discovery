@@ -666,7 +666,7 @@ public class GroupedWorkIndexer {
 	}
 
 	public void deleteRecord(String permanentId, Long groupedWorkId) {
-		logger.info("Clearing existing work from index");
+		logger.info("Clearing existing work " + permanentId + " from index");
 		try {
 			updateServer.deleteById(permanentId);
 			//With this commit, we get errors in the log "Previous SolrRequestInfo was not closed!"
@@ -679,6 +679,8 @@ public class GroupedWorkIndexer {
 
 			//Delete the work from the database?
 			//TODO: Should we do this or leave a record if it was linked to lists, reading history, etc?
+			//TODO: Add a deleted flag since overdrive will return titles that can no longer be accessed?
+			//We would avoid continually deleting and readding?
 			deleteGroupedWorkStmt.setLong(1, groupedWorkId);
 			deleteGroupedWorkStmt.executeUpdate();
 
@@ -1002,7 +1004,7 @@ public class GroupedWorkIndexer {
 			//If we didn't add any records to the work (because they are all suppressed) revert to the original
 			if (groupedWork.getNumRecords() == numRecords){
 				//No change in the number of records, revert to the previous
-				logger.debug("Record " + identifier + " did not contribute any records to the work, reverting to previous state " + groupedWork.getNumRecords());
+				logger.info("Record " + type + ":" + identifier + " did not contribute any records to work " + permanentId + ", reverting to previous state " + groupedWork.getNumRecords());
 				groupedWork = originalWork;
 			}else{
 				logger.debug("Record " + identifier + " added to work " + permanentId);
@@ -1014,17 +1016,6 @@ public class GroupedWorkIndexer {
 		if (numPrimaryIdentifiers > 0) {
 			//Add a grouped work to any scopes that are relevant
 			groupedWork.updateIndexingStats(indexingStats);
-
-			//Update the grouped record based on data for each work
-			//getGroupedWorkIdentifiers.setLong(1, id);
-			/*ResultSet groupedWorkIdentifiers = getGroupedWorkIdentifiers.executeQuery();
-			//This just adds isbns, issns, upcs, and oclc numbers to the index
-			while (groupedWorkIdentifiers.next()) {
-				String type = groupedWorkIdentifiers.getString("type");
-				String identifier = groupedWorkIdentifiers.getString("identifier");
-				updateGroupedWorkForSecondaryIdentifier(groupedWork, type, identifier);
-			}
-			groupedWorkIdentifiers.close();*/
 
 			//Load local (VuFind) enrichment for the work
 			loadLocalEnrichment(groupedWork);
@@ -1053,11 +1044,7 @@ public class GroupedWorkIndexer {
 
 		}
 
-
-
-	/*	loop thru each of the scopes
-				if library owned add to appropriate list*/
-
+		// loop through each of the scopes and if library owned add to appropriate sitemap
 		if (fullReindex && siteMapsByScope != null) {
 			int ownershipCount = 0;
 			for (Scope scope : this.getScopes()) {

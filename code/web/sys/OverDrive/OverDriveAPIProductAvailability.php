@@ -1,12 +1,4 @@
 <?php
-/**
- * Description goes here
- *
- * @category VuFind-Plus 
- * @author Mark Noble <mark@marmot.org>
- * Date: 12/9/13
- * Time: 3:41 PM
- */
 
 class OverDriveAPIProductAvailability extends DataObject{
 	public $__table = 'overdrive_api_product_availability';   // table name
@@ -18,6 +10,7 @@ class OverDriveAPIProductAvailability extends DataObject{
 	public $copiesOwned;
 	public $copiesAvailable;
 	public $numberOfHolds;
+	public $shared;
 
 	function getLibraryName(){
 		if ($this->libraryId == -1){

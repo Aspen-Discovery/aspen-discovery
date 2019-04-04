@@ -589,7 +589,6 @@ INSERT INTO `db_update` (`update_key`, `date_run`) VALUES
 ('overdrive_integration', '2019-01-28 20:58:56'),
 ('overdrive_integration_2', '2019-01-28 20:58:56'),
 ('overdrive_integration_3', '2019-01-28 20:58:56'),
-('overdrive_record_cache', '2012-01-02 21:47:53'),
 ('ptype', '2019-01-28 20:59:01'),
 ('pTypesForLibrary', '2019-01-28 20:58:55'),
 ('public_lists_to_include', '2019-01-28 20:58:56'),
@@ -2051,20 +2050,6 @@ CREATE TABLE `overdrive_api_product_availability` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `overdrive_api_product_creators`
---
-
-CREATE TABLE `overdrive_api_product_creators` (
-  `id` int(11) NOT NULL,
-  `productId` int(11) DEFAULT NULL,
-  `role` varchar(50) DEFAULT NULL,
-  `name` varchar(215) DEFAULT NULL,
-  `fileAs` varchar(215) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
--- --------------------------------------------------------
-
---
 -- Table structure for table `overdrive_api_product_formats`
 --
 
@@ -2099,30 +2084,6 @@ CREATE TABLE `overdrive_api_product_identifiers` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `overdrive_api_product_languages`
---
-
-CREATE TABLE `overdrive_api_product_languages` (
-  `id` int(11) NOT NULL,
-  `code` varchar(10) DEFAULT NULL,
-  `name` varchar(50) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `overdrive_api_product_languages_ref`
---
-
-CREATE TABLE `overdrive_api_product_languages_ref` (
-  `id` int(11) NOT NULL,
-  `productId` int(11) DEFAULT NULL,
-  `languageId` int(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
--- --------------------------------------------------------
-
---
 -- Table structure for table `overdrive_api_product_metadata`
 --
 
@@ -2148,28 +2109,6 @@ CREATE TABLE `overdrive_api_product_metadata` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `overdrive_api_product_subjects`
---
-
-CREATE TABLE `overdrive_api_product_subjects` (
-  `id` int(11) NOT NULL,
-  `name` varchar(512) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `overdrive_api_product_subjects_ref`
---
-
-CREATE TABLE `overdrive_api_product_subjects_ref` (
-  `productId` int(11) DEFAULT NULL,
-  `subjectId` int(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
--- --------------------------------------------------------
-
---
 -- Table structure for table `overdrive_extract_log`
 --
 
@@ -2188,19 +2127,6 @@ CREATE TABLE `overdrive_extract_log` (
   `numMetadataChanges` int(11) DEFAULT '0',
   `notes` text
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `overdrive_record_cache`
---
-
-CREATE TABLE `overdrive_record_cache` (
-  `id` int(11) NOT NULL,
-  `sourceUrl` varchar(512) DEFAULT NULL,
-  `pageContents` longtext,
-  `lastLoaded` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='A cache to store information about records within OverDrive.';
 
 -- --------------------------------------------------------
 
@@ -78762,13 +78688,6 @@ ALTER TABLE `overdrive_api_product_availability`
   ADD KEY `libraryId` (`libraryId`);
 
 --
--- Indexes for table `overdrive_api_product_creators`
---
-ALTER TABLE `overdrive_api_product_creators`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `productId` (`productId`);
-
---
 -- Indexes for table `overdrive_api_product_formats`
 --
 ALTER TABLE `overdrive_api_product_formats`
@@ -78786,20 +78705,6 @@ ALTER TABLE `overdrive_api_product_identifiers`
   ADD KEY `type` (`type`);
 
 --
--- Indexes for table `overdrive_api_product_languages`
---
-ALTER TABLE `overdrive_api_product_languages`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `code` (`code`);
-
---
--- Indexes for table `overdrive_api_product_languages_ref`
---
-ALTER TABLE `overdrive_api_product_languages_ref`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `productId` (`productId`,`languageId`);
-
---
 -- Indexes for table `overdrive_api_product_metadata`
 --
 ALTER TABLE `overdrive_api_product_metadata`
@@ -78807,28 +78712,9 @@ ALTER TABLE `overdrive_api_product_metadata`
   ADD UNIQUE KEY `productId` (`productId`);
 
 --
--- Indexes for table `overdrive_api_product_subjects`
---
-ALTER TABLE `overdrive_api_product_subjects`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `name` (`name`(255));
-
---
--- Indexes for table `overdrive_api_product_subjects_ref`
---
-ALTER TABLE `overdrive_api_product_subjects_ref`
-  ADD UNIQUE KEY `productId` (`productId`,`subjectId`);
-
---
 -- Indexes for table `overdrive_extract_log`
 --
 ALTER TABLE `overdrive_extract_log`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `overdrive_record_cache`
---
-ALTER TABLE `overdrive_record_cache`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -79484,12 +79370,6 @@ ALTER TABLE `overdrive_api_product_availability`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `overdrive_api_product_creators`
---
-ALTER TABLE `overdrive_api_product_creators`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
 -- AUTO_INCREMENT for table `overdrive_api_product_formats`
 --
 ALTER TABLE `overdrive_api_product_formats`
@@ -79499,18 +79379,6 @@ ALTER TABLE `overdrive_api_product_formats`
 -- AUTO_INCREMENT for table `overdrive_api_product_identifiers`
 --
 ALTER TABLE `overdrive_api_product_identifiers`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `overdrive_api_product_languages`
---
-ALTER TABLE `overdrive_api_product_languages`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `overdrive_api_product_languages_ref`
---
-ALTER TABLE `overdrive_api_product_languages_ref`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
@@ -79529,12 +79397,6 @@ ALTER TABLE `overdrive_api_product_subjects`
 -- AUTO_INCREMENT for table `overdrive_extract_log`
 --
 ALTER TABLE `overdrive_extract_log`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `overdrive_record_cache`
---
-ALTER TABLE `overdrive_record_cache`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --

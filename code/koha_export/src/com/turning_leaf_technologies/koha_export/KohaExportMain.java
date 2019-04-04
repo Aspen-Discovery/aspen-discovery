@@ -39,7 +39,7 @@ public class KohaExportMain {
 
 	public static void main(String[] args) {
 		if (args.length == 0) {
-			System.out.println("You must provide the servername as the first argument.");
+			System.out.println("You must provide the server name as the first argument.");
 			System.exit(1);
 		}
 		boolean runContinuously = true;
@@ -171,8 +171,8 @@ public class KohaExportMain {
             PreparedStatement kohaBranchesStmt = kohaConn.prepareStatement("SELECT * from branches");
             PreparedStatement existingAspenLocationStmt = dbConn.prepareStatement("SELECT libraryId, locationId, isMainBranch from location where code = ?");
             PreparedStatement updateAspenLocationStmt = dbConn.prepareStatement("UPDATE location SET displayName = ?, address = ?, phone = ? where locationId = ?");
-            PreparedStatement kohaRepeatableHolidaysStmt = kohaConn.prepareStatement("SELECT * FROM koha_uintah.repeatable_holidays where branchcode = ?");
-            PreparedStatement kohaSpecialHolidaysStmt = kohaConn.prepareStatement("SELECT * FROM koha_uintah.special_holidays where (year = ? or year = ?) AND branchcode = ? order by  year, month, day");
+            PreparedStatement kohaRepeatableHolidaysStmt = kohaConn.prepareStatement("SELECT * FROM repeatable_holidays where branchcode = ?");
+            PreparedStatement kohaSpecialHolidaysStmt = kohaConn.prepareStatement("SELECT * FROM special_holidays where (year = ? or year = ?) AND branchcode = ? order by  year, month, day");
 			PreparedStatement existingHoursStmt = dbConn.prepareStatement("SELECT count(*) FROM location_hours where locationId = ?");
 			PreparedStatement addHoursStmt = dbConn.prepareStatement("INSERT INTO location_hours (locationId, day, closed, open, close) VALUES (?, ?, 0, '00:30', '00:30') ");
 			PreparedStatement existingHolidaysStmt = dbConn.prepareStatement("SELECT * FROM holiday where libraryId = ? and date >= ?");

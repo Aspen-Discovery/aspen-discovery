@@ -1307,7 +1307,7 @@ public class GroupedWorkSolr implements Cloneable {
 		series = Util.trimTrailingPunctuation(series);
 		series = series.replaceAll("[#|]\\s*\\d+$", "");
 
-		//Remove anything in parens since it's normally just the format
+		//Remove anything in parentheses since it's normally just the format
 		series = series.replaceAll("\\s+\\(.*?\\)", "");
 		series = series.replaceAll(" & ", " and ");
 		series = series.replaceAll("--", " ");
@@ -1674,5 +1674,9 @@ public class GroupedWorkSolr implements Cloneable {
 
 	TreeSet<String> getTargetAudiences() {
 		return targetAudience;
+	}
+
+	void addLanguage(@SuppressWarnings("SameParameterValue") String language) {
+		this.languages.add(language);
 	}
 }

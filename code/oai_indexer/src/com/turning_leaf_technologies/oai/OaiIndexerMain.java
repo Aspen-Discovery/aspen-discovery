@@ -39,7 +39,7 @@ public class OaiIndexerMain {
 
     public static void main(String[] args){
         if (args.length == 0) {
-            System.out.println("You must provide the servername as the first argument.");
+            System.out.println("You must provide the server name as the first argument.");
             System.exit(1);
         }
 

@@ -97,8 +97,8 @@ public class RecordGrouperMain {
 		switch (args[1]) {
 			case "benchmark":
 				boolean validateNYPL = false;
-				if (args.length > 1) {
-					if (args[1].equals("nypl")) {
+				if (args.length > 2) {
+					if (args[2].equals("nypl")) {
 						validateNYPL = true;
 					}
 				}
@@ -108,7 +108,7 @@ public class RecordGrouperMain {
 				String title;
 				String author;
 				String format;
-				String subtitle = null;
+				String subtitle;
 				if (args.length >= 6) {
 					title = args[2];
 					author = args[3];
@@ -400,8 +400,10 @@ public class RecordGrouperMain {
 		}
 
 		RecordGroupingProcessor recordGroupingProcessor = null;
+		OverDriveRecordGrouper overDriveRecordGrouper;
 		if (!onlyDoCleanup) {
 			recordGroupingProcessor = new RecordGroupingProcessor(dbConn, serverName, logger, fullRegrouping);
+			overDriveRecordGrouper = new OverDriveRecordGrouper(dbConn, serverName, logger, fullRegrouping);
 
 			if (!explodeMarcsOnly) {
 				markRecordGroupingRunning(dbConn, true);
@@ -439,7 +441,7 @@ public class RecordGrouperMain {
 			}
 
 			if (indexingProfileToRun == null || indexingProfileToRun.equalsIgnoreCase("overdrive")) {
-				groupOverDriveRecords(dbConn, recordGroupingProcessor, explodeMarcsOnly);
+				groupOverDriveRecords(dbConn, overDriveRecordGrouper, explodeMarcsOnly);
 			}
 			if (indexingProfileToRun == null || indexingProfileToRun.equalsIgnoreCase("rbdigital")) {
 				groupRbdigitalRecords(dbConn, recordGroupingProcessor, explodeMarcsOnly);
@@ -858,7 +860,7 @@ public class RecordGrouperMain {
 		}
 	}
 
-	private static void groupOverDriveRecords(Connection dbConn, RecordGroupingProcessor recordGroupingProcessor, boolean explodeMarcsOnly) {
+	private static void groupOverDriveRecords(Connection dbConn, OverDriveRecordGrouper recordGroupingProcessor, boolean explodeMarcsOnly) {
 		if (explodeMarcsOnly){
 			//Nothing to do since we don't have marc records to process
 			return;
@@ -878,60 +880,17 @@ public class RecordGrouperMain {
 			}else{
 				overDriveRecordsStmt = dbConn.prepareStatement("SELECT overdrive_api_products.id, overdriveId, mediaType, title, subtitle, primaryCreatorRole, primaryCreatorName, series FROM overdrive_api_products INNER JOIN overdrive_api_product_metadata ON overdrive_api_product_metadata.productId = overdrive_api_products.id WHERE deleted = 0 and isOwnedByCollections = 1", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			}
-			PreparedStatement overDriveIdentifiersStmt = dbConn.prepareStatement("SELECT * FROM overdrive_api_product_identifiers WHERE id = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			PreparedStatement overDriveCreatorStmt = dbConn.prepareStatement("SELECT fileAs FROM overdrive_api_product_creators WHERE productId = ? AND role like ? ORDER BY id", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			ResultSet overDriveRecordRS = overDriveRecordsStmt.executeQuery();
 			while (overDriveRecordRS.next()){
-				long id = overDriveRecordRS.getLong("id");
-
 				String overdriveId = overDriveRecordRS.getString("overdriveId");
 				String mediaType = overDriveRecordRS.getString("mediaType");
 				String title = overDriveRecordRS.getString("title");
 				String subtitle = overDriveRecordRS.getString("subtitle");
 				String series = overDriveRecordRS.getString("series");
-				//Overdrive typically makes the subtitle the series and volume which we don't want for grouping
-				if (subtitle != null && series != null && subtitle.toLowerCase().contains(series.toLowerCase())) {
-					subtitle = "";
-				}
-				//Overdrive typically makes the subtitle the series and volume which we don't want for grouping
-				if (title != null && series != null && title.toLowerCase().endsWith("--" + series.toLowerCase())) {
-					title = title.substring(0, title.length() - (series.length() + 2));
-				}
-				String primaryCreatorRole = overDriveRecordRS.getString("primaryCreatorRole");
 				String author = overDriveRecordRS.getString("primaryCreatorName");
-				//primary creator in overdrive is always first name, last name.  Therefore, we need to look in the creators table
-				if (author != null && (author.indexOf(',') == -1)){
-					overDriveCreatorStmt.setLong(1, id);
-					overDriveCreatorStmt.setString(2, primaryCreatorRole);
-					ResultSet creatorInfoRS = overDriveCreatorStmt.executeQuery();
-					boolean swapFirstNameLastName = false;
-					if (creatorInfoRS.next()){
-						String tmpAuthor = creatorInfoRS.getString("fileAs");
-						if (!tmpAuthor.equals(author)){
-							author = tmpAuthor;
-						}
-					} else {
-						swapFirstNameLastName = true;
-					}
-					if (swapFirstNameLastName){
-						if (author.contains(" ")){
-							String[] authorParts = author.split("\\s+");
-							StringBuilder tmpAuthor = new StringBuilder();
-							for (int i = 1; i < authorParts.length; i++){
-								tmpAuthor.append(authorParts[i]).append(" ");
-							}
-							tmpAuthor.append(authorParts[0]);
-							author = tmpAuthor.toString();
-						}
-					}
-					creatorInfoRS.close();
-				}
 
-				overDriveIdentifiersStmt.setLong(1, id);
-				RecordIdentifier primaryIdentifier = new RecordIdentifier("overdrive", overdriveId);
-
-				recordGroupingProcessor.processRecord(primaryIdentifier, title, subtitle, author, mediaType, true);
-				primaryIdentifiersInDatabase.remove(primaryIdentifier.toString().toLowerCase());
+				recordGroupingProcessor.processOverDriveRecord(overdriveId, title, subtitle, series, author, mediaType, true);
+				primaryIdentifiersInDatabase.remove("overdrive:" + overdriveId.toLowerCase());
 				numRecordsProcessed++;
 			}
 			overDriveRecordRS.close();
