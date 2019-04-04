@@ -605,7 +605,7 @@ public class SierraExportAPIMain {
 						//TODO: Refactor to do the reindex outside of this method
 						String permanentId = getPermanentIdByWorkIdRS.getString("permanent_id");
 						//Delete the work from solr
-						groupedWorkIndexer.deleteRecord(permanentId);
+						groupedWorkIndexer.deleteRecord(permanentId, groupedWorkId);
 
 						//Delete the work from the database?
 						//TODO: Should we do this or leave a record if it was linked to lists, reading history, etc?
