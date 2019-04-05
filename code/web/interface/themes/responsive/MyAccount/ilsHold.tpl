@@ -5,17 +5,6 @@
 		{if $showCovers}
 		<div class="col-xs-4 col-sm-3">
 			{*<div class="row">*}
-				{*
-				<div class="selectTitle col-xs-2">
-					{if $record.cancelable}
-						{if $section == 'available'}
-							<input type="checkbox" name="availableholdselected[]" value="{$record.cancelId}" id="selected{$record.cancelId|escape:"url"}" class="titleSelect{$sectionKey} titleSelect"/>&nbsp;
-						{else}
-							<input type="checkbox" name="waitingholdselected[]" value="{$record.cancelId}" id="selected{$record.cancelId|escape:"url"}" class="titleSelect{$sectionKey} titleSelect"/>&nbsp;
-						{/if}
-					{/if}
-				</div>
-				*}
 				<div class="{*col-xs-10 *}text-center">
 					{if $record.coverUrl}
 						{if $record.recordId && $record.linkUrl}
@@ -197,7 +186,7 @@
 							{if $record.allowFreezeHolds}
 								{if $record.frozen}
 									<button onclick="return VuFind.Account.thawHold('{$record.userId}', '{$record.id}', '{$record.cancelId}', this);" class="btn btn-sm btn-default">{translate text="Thaw Hold"}</button>
-								{elseif $record.freezeable}
+								{elseif $record.canFreeze}
 									<button onclick="return VuFind.Account.freezeHold('{$record.userId}', '{$record.id}', '{$record.cancelId}', {if $suspendRequiresReactivationDate}true{else}false{/if}, this);" class="btn btn-sm btn-default">{translate text="Freeze Hold"}</button>
 								{/if}
 							{/if}

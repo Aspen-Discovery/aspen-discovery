@@ -2,9 +2,10 @@
 require_once ROOT_DIR . '/sys/HTTP/HTTP_Request.php';
 require_once ROOT_DIR . '/Drivers/marmot_inc/LoanRule.php';
 require_once ROOT_DIR . '/Drivers/marmot_inc/LoanRuleDeterminer.php';
-require_once ROOT_DIR . '/Drivers/CurlBasedDriver.php';
+require_once ROOT_DIR . '/sys/CurlWrapper.php';
+require_once ROOT_DIR . '/Drivers/AbstractIlsDriver.php';
 
-class Millennium extends CurlBasedDriver
+class Millennium extends AbstractIlsDriver
 {
 	var $statusTranslations = null;
 	var $holdableStatiRegex = null;
@@ -17,7 +18,16 @@ class Millennium extends CurlBasedDriver
 	/** @var LoanRuleDeterminer[] $loanRuleDeterminers */
 	var $loanRuleDeterminers = null;
 
-	protected function loadLoanRules(){
+	/** @var CurlWrapper */
+	var $curlWrapper;
+
+	public function __construct($accountProfile)
+    {
+        parent::__construct($accountProfile);
+        $this->curlWrapper = new CurlWrapper();
+    }
+
+    protected function loadLoanRules(){
 		if (is_null($this->loanRules)){
 			/** @var Memcache $memCache */
 			global $memCache;
@@ -499,7 +509,7 @@ class Millennium extends CurlBasedDriver
 		//Sample format of a row is as follows:
 		//P TYPE[p47]=100<BR>
 		$patronApiUrl =  $host . "/PATRONAPI/" . $barcode ."/dump" ;
-		$result = $this->_curlGetPage($patronApiUrl);
+		$result = $this->curlWrapper->curlGetPage($patronApiUrl);
 
 		//Strip the actual contents out of the body of the page.
 		//Periodically we get HTML like characters within the notes so strip tags breaks the page.
@@ -542,7 +552,7 @@ class Millennium extends CurlBasedDriver
 
 		$logger->log('Loading page ' . $curlUrl, PEAR_LOG_INFO);
 
-		$loginResponse = $this->_curlPostPage($curlUrl, $post_data);
+		$loginResponse = $this->curlWrapper->curlPostPage($curlUrl, $post_data);
 
 		//When a library uses IPSSO, the initial login does a redirect and requires additional parameters.
 		if (preg_match('/<input type="hidden" name="lt" value="(.*?)" \/>/si', $loginResponse, $loginMatches)) {
@@ -553,9 +563,9 @@ class Millennium extends CurlBasedDriver
 
 			//Don't issue a post, just call the same page (with redirects as needed)
 			$post_string = http_build_query($post_data);
-			curl_setopt($this->curl_connection, CURLOPT_POSTFIELDS, $post_string);
+			curl_setopt($this->curlWrapper->curl_connection, CURLOPT_POSTFIELDS, $post_string);
 
-			$loginResponse = curl_exec($this->curl_connection);
+			$loginResponse = curl_exec($this->curlWrapper->curl_connection);
 		}
 
 		if ($loginResponse) {
@@ -588,10 +598,10 @@ class Millennium extends CurlBasedDriver
 	 * PEAR_Error otherwise.
 	 * @access public
 	 */
-	public function getMyCheckouts( $user ) {
+	public function getCheckouts( $user ) {
 		require_once ROOT_DIR . '/Drivers/marmot_inc/MillenniumCheckouts.php';
 		$millenniumCheckouts = new MillenniumCheckouts($this);
-		return $millenniumCheckouts->getMyCheckouts($user);
+		return $millenniumCheckouts->getCheckouts($user);
 	}
 
 	/**
@@ -608,7 +618,7 @@ class Millennium extends CurlBasedDriver
 
 			//Now we can get the page
 			$curlUrl      = $this->getVendorOpacUrl() . "/patroninfo~S{$scope}/" . $patron->username . "/$page";
-			$curlResponse = $this->_curlGetPage($curlUrl);
+			$curlResponse = $this->curlWrapper->curlGetPage($curlUrl);
 
 			//Strip HTML comments
 			$curlResponse = preg_replace("/<!--([^(-->)]*)-->/", " ", $curlResponse);
@@ -656,10 +666,10 @@ class Millennium extends CurlBasedDriver
 	 * @return array          Array of the patron's holds
 	 * @access public
 	 */
-	public function getMyHolds($patron){
+	public function getHolds($patron){
 		require_once ROOT_DIR . '/Drivers/marmot_inc/MillenniumHolds.php';
 		$millenniumHolds = new MillenniumHolds($this);
-		return $millenniumHolds->getMyHolds($patron);
+		return $millenniumHolds->getHolds($patron);
 	}
 
 	/**
@@ -674,7 +684,7 @@ class Millennium extends CurlBasedDriver
 	 *                                If an error occurs, return a PEAR_Error
 	 * @access  public
 	 */
-	function placeHold($patron, $recordId, $pickupBranch, $cancelDate = null) {
+	function placeHold($patron, $recordId, $pickupBranch = null, $cancelDate = null) {
 		$result = $this->placeItemHold($patron, $recordId, '', $pickupBranch, $cancelDate);
 		return $result;
 	}
@@ -767,16 +777,16 @@ class Millennium extends CurlBasedDriver
 		return $millenniumCheckouts->renewAll($patron);
 	}
 
-	public function renewItem($patron, $recordId, $itemId, $itemIndex){
+	public function renewCheckout($patron, $recordId, $itemId, $itemIndex){
 		require_once ROOT_DIR . '/Drivers/marmot_inc/MillenniumCheckouts.php';
 		$millenniumCheckouts = new MillenniumCheckouts($this);
-		$result = $millenniumCheckouts->renewItem($patron, $itemId, $itemIndex);
+		$result = $millenniumCheckouts->renewCheckout($patron, $itemId, $itemIndex);
 		// If we get an account busy error let's try again a few times after a delay
 		$numTries = 1;
 		while (!$result['success'] && (strpos($result['message'], 'your account is in use by the system.') || stripos($result['message'], 'n use by system.')) && $numTries < 4) {
 			usleep(400000);
 			$numTries++;
-			$result = $millenniumCheckouts->renewItem($patron, $itemId, $itemIndex);
+			$result = $millenniumCheckouts->renewCheckout($patron, $itemId, $itemIndex);
 			if (!$result['success'] && (strpos($result['message'], 'your account is in use by the system.') || stripos($result['message'], 'n use by system.'))) {
 				global $logger;
 				$logger->log("System still busy after $numTries attempts at renewal", PEAR_LOG_ERR);
@@ -910,7 +920,7 @@ class Millennium extends CurlBasedDriver
 			//Issue a post request to update the patron information
 			$scope = $this->getMillenniumScope();
 			$curl_url = $this->getVendorOpacUrl() . "/patroninfo~S{$scope}/" . $patronDump['RECORD_#'] ."/modpinfo";
-			$sresult = $this->_curlPostPage($curl_url, $extraPostInfo);
+			$sresult = $this->curlWrapper->curlPostPage($curl_url, $extraPostInfo);
 
 		    // Update Patron Information on success
 			if (isset($sresult) && strpos($sresult, 'Patron information updated') !== false){
@@ -1150,15 +1160,15 @@ class Millennium extends CurlBasedDriver
 								if ($holdable || $pType != -1){
 									break;
 								}
-							}else{
+							//}else{
 								//$logger->log("PType incorrect", PEAR_LOG_DEBUG);
 							}
 						}
 
-					}else{
+					//}else{
 						//$logger->log("IType incorrect", PEAR_LOG_DEBUG);
 					}
-				}else{
+				//}else{
 					//$logger->log("Location incorrect {$loanRuleDeterminer->location} != {$locationCode}", PEAR_LOG_DEBUG);
 				}
 				if ($holdable) break;
@@ -1780,15 +1790,11 @@ class Millennium extends CurlBasedDriver
 		return true;
 	}
 
-	public function getNumHolds($id) {
-		return 0;
-	}
-
 	protected function _doPinTest($barcode, $pin) {
 		$pin = urlencode(trim($pin));
 		$barcode = trim($barcode);
 		$pinTestUrl = $this->accountProfile->patronApiUrl . "/PATRONAPI/$barcode/$pin/pintest";
-		$pinTestResultRaw = $this->_curlGetPage($pinTestUrl);
+		$pinTestResultRaw = $this->curlWrapper->curlGetPage($pinTestUrl);
 		//$logger->log('PATRONAPI pintest response : ' . $api_contents, PEAR_LOG_DEBUG);
 		if ($pinTestResultRaw){
 			$pinTestResult = strip_tags($pinTestResultRaw);

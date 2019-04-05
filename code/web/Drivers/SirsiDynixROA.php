@@ -137,7 +137,7 @@ abstract class SirsiDynixROA extends HorizonAPI
 				if (isset($lookupMyAccountInfoResponse->fields->preferredAddress)) {
 					$preferredAddress = $lookupMyAccountInfoResponse->fields->preferredAddress;
 					// Set for Account Updating
-					self::$userPreferredAddresses[$userID] = $preferredAddress;
+					self::$userPreferredAddresses[(string)$userID] = $preferredAddress;
 					// Used by My Account Profile to update Contact Info
 					if ($preferredAddress == 1) {
 						$address = $lookupMyAccountInfoResponse->fields->address1;
@@ -186,7 +186,6 @@ abstract class SirsiDynixROA extends HorizonAPI
 				if (isset($lookupMyAccountInfoResponse->fields->library->key)) {
 					$homeBranchCode = strtolower(trim($lookupMyAccountInfoResponse->fields->library->key));
 					//Translate home branch to plain text
-					/** @var \Location $location */
 					$location       = new Location();
 					$location->code = $homeBranchCode;
 					if (!$location->find(true)) {
@@ -314,13 +313,13 @@ abstract class SirsiDynixROA extends HorizonAPI
 
 			}
 		}
+		return false;
 	}
 
 
 	public function patronLogin($username, $password, $validatedViaSSO)
 	{
 		global $timer;
-		global $logger;
 
 		//Remove any spaces from the barcode
 		$username = trim($username);
@@ -591,6 +590,7 @@ abstract class SirsiDynixROA extends HorizonAPI
 				return null;
 			}
 		}
+		return null;
 	}
 
 	private function getStaffSessionToken() {
@@ -799,7 +799,7 @@ abstract class SirsiDynixROA extends HorizonAPI
 
 					$sirsiRoaUserID                                     = $loginUserResponse->patronKey;
 					$sessionToken                                       = $loginUserResponse->sessionToken;
-					SirsiDynixROA::$sessionIdsForUsers[$sirsiRoaUserID] = $sessionToken;
+					SirsiDynixROA::$sessionIdsForUsers[(string)$sirsiRoaUserID] = $sessionToken;
 					$session = array(true, $sessionToken, $sirsiRoaUserID);
 					global $configArray;
 					$memCache->set($memCacheKey, $session, 0, $configArray['Caching']['sirsi_roa_session_token']);
@@ -840,7 +840,7 @@ abstract class SirsiDynixROA extends HorizonAPI
 					$sirsiRoaUserID                                     = $loginUserResponse->staffKey;
 					//this is the same value as patron Key, if user is logged in with that call.
 					$sessionToken                                       = $loginUserResponse->sessionToken;
-					SirsiDynixROA::$sessionIdsForUsers[$sirsiRoaUserID] = $sessionToken;
+					SirsiDynixROA::$sessionIdsForUsers[(string)$sirsiRoaUserID] = $sessionToken;
 					$session = array(true, $sessionToken, $sirsiRoaUserID);
 					global $configArray;
 					$memCache->set($memCacheKey, $session, 0, $configArray['Caching']['sirsi_roa_session_token']);
@@ -863,7 +863,7 @@ abstract class SirsiDynixROA extends HorizonAPI
 	 * @param string $sortOption
 	 * @return array
 	 */
-	public function getMyCheckouts($patron, $page = 1, $recordsPerPage = -1, $sortOption = 'dueDate')
+	public function getCheckouts($patron, $page = 1, $recordsPerPage = -1, $sortOption = 'dueDate')
 	{
 		$checkedOutTitles = array();
 
@@ -894,7 +894,7 @@ abstract class SirsiDynixROA extends HorizonAPI
 					$curTitle['id']       = $bibId;
 
 					$curTitle['dueDate']      = strtotime($checkout->fields->dueDate);
-					$curTitle['checkoutdate'] = strtotime($checkout->fields->checkOutDate);
+					$curTitle['checkoutDate'] = strtotime($checkout->fields->checkOutDate);
 					// Note: there is an overdue flag
 					$curTitle['renewCount']     = $checkout->fields->renewalCount;
 					$curTitle['canrenew']       = $checkout->fields->seenRenewalsRemaining > 0;
@@ -965,7 +965,7 @@ abstract class SirsiDynixROA extends HorizonAPI
 	 * @return array          Array of the patron's holds
 	 * @access public
 	 */
-	public function getMyHolds($patron)
+	public function getHolds($patron)
 	{
 		$availableHolds   = array();
 		$unavailableHolds = array();
@@ -1024,9 +1024,9 @@ abstract class SirsiDynixROA extends HorizonAPI
 				$curHold['reactivateTime']     = strtotime($reactivateDate);
 				$curHold['cancelable']         = strcasecmp($curHold['status'], 'Suspended') != 0 && strcasecmp($curHold['status'], 'Expired') != 0;
 				$curHold['frozen']             = strcasecmp($curHold['status'], 'Suspended') == 0;
-				$curHold['freezeable']         = true;
+				$curHold['canFreeze']         = true;
 				if (strcasecmp($curHold['status'], 'Transit') == 0 || strcasecmp($curHold['status'], 'Expired') == 0) {
-					$curHold['freezeable'] = false;
+					$curHold['canFreeze'] = false;
 				}
 				$curHold['locationUpdateable'] = true;
 				if (strcasecmp($curHold['status'], 'Transit') == 0 || strcasecmp($curHold['status'], 'Expired') == 0) {
@@ -1100,11 +1100,12 @@ abstract class SirsiDynixROA extends HorizonAPI
 	 * @param   User    $patron       The User to place a hold for
 	 * @param   string  $recordId     The id of the bib record
 	 * @param   string  $pickupBranch The branch where the user wants to pickup the item when available
-	 * @return  mixed                 True if successful, false if unsuccessful
+     * @param   null|string $cancelDate  The date the hold should be automatically cancelled
+     * @return  mixed                 True if successful, false if unsuccessful
 	 *                                If an error occurs, return a PEAR_Error
 	 * @access  public
 	 */
-	public function placeHold($patron, $recordId, $pickupBranch, $cancelDate = null) {
+	public function placeHold($patron, $recordId, $pickupBranch = null, $cancelDate = null) {
 		//For Sirsi ROA we don't really know if a record needs a copy or title level hold.  We determined that we would check
 		// the marc record and if the call numbers in the record vary we will place a copy level hold
 		$result = array();
@@ -1171,7 +1172,6 @@ abstract class SirsiDynixROA extends HorizonAPI
 	{
 
 		//Get the session token for the user
-//		$sessionToken = $this->getSessionToken($patron);
 		$sessionToken = $this->staffOrPatronSessionTokenSwitch() ? $this->getStaffSessionToken() : $this->getSessionToken($patron);
 		if (!$sessionToken) {
 			return array(
@@ -1483,7 +1483,7 @@ abstract class SirsiDynixROA extends HorizonAPI
 	 * @param string $itemIndex
 	 * @return array
 	 */
-	public function renewItem($patron, $recordId, $itemId, $itemIndex)
+	public function renewCheckout($patron, $recordId, $itemId, $itemIndex)
 	{
 		$sessionToken = $this->staffOrPatronSessionTokenSwitch() ? $this->getStaffSessionToken() : $this->getSessionToken($patron);
 		if (!$sessionToken) {
@@ -1535,11 +1535,11 @@ abstract class SirsiDynixROA extends HorizonAPI
 	}
 
 	/**
-	 * @param $patron
+	 * @param User $patron
 	 * @param $includeMessages
 	 * @return array|PEAR_Error
 	 */
-	public function getMyFines($patron, $includeMessages)
+	public function getMyFines($patron, $includeMessages = false)
 	{
 		$fines = array();
 		$sessionToken = $this->getSessionToken($patron);
@@ -1577,7 +1577,7 @@ abstract class SirsiDynixROA extends HorizonAPI
 	}
 
 	/**
-	 * @param $user
+	 * @param User $patron
 	 * @param $oldPin
 	 * @param $newPin
 	 * @param $confirmNewPin
@@ -1586,8 +1586,6 @@ abstract class SirsiDynixROA extends HorizonAPI
 	function updatePin($patron, $oldPin, $newPin, $confirmNewPin)
 	{
 		$sessionToken = $this->getSessionToken($patron);
-//		$sessionToken = $this->getStaffSessionToken();
-//		$sessionToken = $this->staffOrPatronSessionTokenSwitch() ? $this->getStaffSessionToken() : $this->getSessionToken($patron);
 		if (!$sessionToken) {
 			return 'Sorry, it does not look like you are logged in currently.  Please login and try again';
 		}
@@ -1622,6 +1620,12 @@ abstract class SirsiDynixROA extends HorizonAPI
 		}
 	}
 
+    /**
+     * @param User $user
+     * @param string $newPin
+     * @param string $resetToken
+     * @return array
+     */
 	function resetPin($user, $newPin, $resetToken=null){
 		if (empty($resetToken)) {
 			global $logger;

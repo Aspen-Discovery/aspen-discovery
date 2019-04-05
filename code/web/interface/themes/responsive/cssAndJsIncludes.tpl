@@ -59,6 +59,7 @@
 		<script src="{$path}/interface/themes/responsive/js/vufind/hoopla.js?v={$gitBranch|urlencode}"></script>
 		<script src="{$path}/interface/themes/responsive/js/vufind/prospector.js?v={$gitBranch|urlencode}"></script>
 		<script src="{$path}/interface/themes/responsive/js/vufind/ratings.js?v={$gitBranch|urlencode}"></script>
+		<script src="{$path}/interface/themes/responsive/js/vufind/rbdigital.js?v={$gitBranch|urlencode}"></script>
 		<script src="{$path}/interface/themes/responsive/js/vufind/reading-history.js?v={$gitBranch|urlencode}"></script>
 		<script src="{$path}/interface/themes/responsive/js/vufind/record.js?v={$gitBranch|urlencode}"></script>
 		<script src="{$path}/interface/themes/responsive/js/vufind/responsive.js?v={$gitBranch|urlencode}"></script>

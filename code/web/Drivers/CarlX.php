@@ -214,10 +214,6 @@ class CarlX extends SIP2Driver{
 		return true;
 	}
 
-	public function getNumHolds($id) {
-		// TODO: Implement getNumHolds() method.
-	}
-
 	/**
 	 * @return boolean true if the driver can renew all titles in a single pass
 	 */
@@ -245,7 +241,7 @@ class CarlX extends SIP2Driver{
 				'success' => false,
 				'message' => array(),
 				'Renewed' => 0,
-				'Unrenewed' => $patron->_numCheckedOutIls,
+				'NotRenewed' => $patron->_numCheckedOutIls,
 				'Total' => $patron->_numCheckedOutIls
 		);
 		if ($mysip->connect()) {
@@ -287,15 +283,15 @@ class CarlX extends SIP2Driver{
 						$renew_result['Renewed'] = 0;
 					}
 
-					$renew_result['Unrenewed'] = ltrim($result['fixed']['Unrenewed'], '0');
-					if (strlen($renew_result['Unrenewed']) == 0){
-						$renew_result['Unrenewed'] = 0;
+					$renew_result['NotRenewed'] = ltrim($result['fixed']['NotRenewed'], '0');
+					if (strlen($renew_result['NotRenewed']) == 0){
+						$renew_result['NotRenewed'] = 0;
 					}
 					if (isset($result['variable']['AF'])){
 						$renew_result['message'][] = $result['variable']['AF'][0];
 					}
 
-					if ($renew_result['Unrenewed'] > 0){
+					if ($renew_result['NotRenewed'] > 0){
 						$renew_result['message'] = array_merge($renew_result['message'], $result['variable']['BN']);
 					}
 				}else{
@@ -357,9 +353,9 @@ class CarlX extends SIP2Driver{
 	 * @param $itemIndex  string
 	 * @return mixed
 	 */
-	public function renewItem($patron, $recordId, $itemId=null, $itemIndex=null) {
+	public function renewCheckout($patron, $recordId, $itemId=null, $itemIndex=null) {
 		// Renew Via SIP
-		return $result = $this->renewItemViaSIP($patron, $itemId);
+		return $result = $this->renewCheckoutViaSIP($patron, $itemId);
 	}
 
 	private $holdStatusCodes = array(
@@ -379,7 +375,7 @@ class CarlX extends SIP2Driver{
 	 * @return array        Array of the patron's holds
 	 * @access public
 	 */
-	public function getMyHolds($user) {
+	public function getHolds($user) {
 		$holds = array(
 			'available'   => array(),
 			'unavailable' => array()
@@ -420,7 +416,7 @@ class CarlX extends SIP2Driver{
 					$curHold['reactivateTime']     = null;
 					$curHold['frozen']             = isset($hold->Suspended) && ($hold->Suspended == true);
 					$curHold['cancelable']         = true; //TODO: Can Cancel Available Holds?
-					$curHold['freezeable']         = false;
+					$curHold['canFreeze']         = false;
 
 					require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 					$recordDriver = new MarcRecordDriver($carlID);
@@ -479,7 +475,7 @@ class CarlX extends SIP2Driver{
 						$curHold['reactivateTime']     = strtotime($hold->SuspendedUntilDate);
 						$curHold['status']             = 'Frozen';
 					}
-					$curHold['freezeable'] = true;
+					$curHold['canFreeze'] = true;
 
 
 					require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
@@ -521,14 +517,15 @@ class CarlX extends SIP2Driver{
 	 * @param   User $patron The User to place a hold for
 	 * @param   string $recordId The id of the bib record
 	 * @param   string $pickupBranch The branch where the user wants to pickup the item when available
-	 * @return  array                 An array with the following keys
+     * @param   null|string $cancelDate  The date the hold should be automatically cancelled
+     * @return  array                 An array with the following keys
 	 *                                result - true/false
 	 *                                message - the message to display (if item holds are required, this is a form to select the item).
 	 *                                needsItemLevelHold - An indicator that item level holds are required
 	 *                                title - the title of the record the user is placing a hold on
 	 * @access  public
 	 */
-	public function placeHold($patron, $recordId, $pickupBranch, $cancelDate = null) {
+	public function placeHold($patron, $recordId, $pickupBranch = null, $cancelDate = null) {
 		return $this->placeHoldViaSIP($patron, $recordId, $pickupBranch, $cancelDate);
 	}
 
@@ -599,7 +596,7 @@ class CarlX extends SIP2Driver{
 		return array($fullName, $lastName, $firstName);
 	}
 
-	public function getMyCheckouts($user) {
+	public function getCheckouts($user) {
 		$checkedOutTitles = array();
 
 		//Search for the patron in the database
@@ -638,11 +635,11 @@ class CarlX extends SIP2Driver{
 				$curTitle['shortId']         = $chargeItem->BID;
 				$curTitle['id']              = $chargeItem->BID;
 				$curTitle['barcode']         = $chargeItem->ItemNumber;   // Barcode & ItemNumber are the same for CarlX
-				$curTitle['itemid']          = $chargeItem->ItemNumber;
+				$curTitle['itemId']          = $chargeItem->ItemNumber;
 				$curTitle['title']           = $chargeItem->Title;
 				$curTitle['author']          = $chargeItem->Author;
 				$curTitle['dueDate']         = strtotime($dueDate);
-				$curTitle['checkoutdate']    = strstr($chargeItem->TransactionDate, 'T', true);
+				$curTitle['checkoutDate']    = strstr($chargeItem->TransactionDate, 'T', true);
 				$curTitle['renewCount']      = isset($chargeItem->RenewalCount) ? $chargeItem->RenewalCount : 0;
 				$curTitle['canrenew']        = true;
 				$curTitle['renewIndicator']  = $chargeItem->ItemNumber;
@@ -724,9 +721,6 @@ class CarlX extends SIP2Driver{
 			// Patron Info to update.
 			$request->Patron->Email  = $_REQUEST['email'];
 			$request->Patron->Phone1 = $_REQUEST['phone'];
-//			$request->Patron->PhoneType = 0; // Set phone Type for Primary Phone (PhoneType 0 is Home, 1 is Work)
-//			$phoneTypes = $this->getPhoneTypeList();
-//			print_r($phoneTypes);
 
 			if (isset($_REQUEST['workPhone'])){
 				$request->Patron->Phone2 = $_REQUEST['workPhone'];
@@ -1382,21 +1376,6 @@ class CarlX extends SIP2Driver{
 		return false;
 	}
 
-	private function getLocationInformation($locationNumber) {
-
-		$request = new stdClass();
-		$request->LocationSearchType = 'Location Number';
-		$request->LocationSearchValue = $locationNumber;
-		$request->Modifiers  = '';
-
-		$result = $this->doSoapRequest('GetLocationInformation', $request, $this->catalogWsdl);
-		if ($result && $result->LocationInfo) {
-			return $result->LocationInfo; // convert to array instead?
-		}
-		return false;
-
-	}
-
 	private function getBranchInformation($branchNumber = null, $branchCode = null) {
 //		TODO: Store in Memcache instead
 		/** @var Memcache $memCache */
@@ -1515,7 +1494,7 @@ class CarlX extends SIP2Driver{
 
 				$holdId = $recordId;
 
-//				$holds = $this->getMyHolds($patron);
+//				$holds = $this->getHolds($patron);
 				$hold = $this->getUnavailableHold($patron, $holdId);
 				if ($hold) {
 
@@ -1672,7 +1651,7 @@ class CarlX extends SIP2Driver{
 	}
 
 
-	public function renewItemViaSIP($patron, $itemId, $useAlternateSIP = false){
+	public function renewCheckoutViaSIP($patron, $itemId, $useAlternateSIP = false){
 		global $configArray;
 
 		//renew the item via SIP 2

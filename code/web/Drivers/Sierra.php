@@ -1,12 +1,5 @@
 <?php
-/**
- * Integration with Sierra.  Mostly inherits from Millennium since the systems are similar
- *
- * @category VuFind-Plus 
- * @author Mark Noble <mark@marmot.org>
- * Date: 10/28/13
- * Time: 9:58 AM
- */
+
 require_once ROOT_DIR . '/Drivers/Millennium.php';
 class Sierra extends Millennium{
 	public function getItemInfo($bibId){
@@ -117,7 +110,6 @@ class Sierra extends Millennium{
 			curl_setopt($ch, CURLOPT_POSTFIELDS, "grant_type=client_credentials");
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
 			$return = curl_exec($ch);
-			$curlInfo = curl_getinfo($ch);
 			curl_close($ch);
 			$tokenData = json_decode($return);
 			if ($tokenData){
@@ -145,10 +137,8 @@ class Sierra extends Millennium{
 			curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
 			curl_setopt($ch, CURLOPT_TIMEOUT, 60);
 			$return = curl_exec($ch);
-			$curlInfo = curl_getinfo($ch);
 			curl_close($ch);
 			$returnVal = json_decode($return);
-			//print_r($returnVal);
 			if ($returnVal != null){
 				if (!isset($returnVal->message) || $returnVal->message != 'An unexpected error has occurred.'){
 					return $returnVal;

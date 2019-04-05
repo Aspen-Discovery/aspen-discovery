@@ -57,7 +57,7 @@ public class RbdigitalExportMain {
 
     public static void main(String[] args){
         if (args.length == 0) {
-            System.out.println("You must provide the servername as the first argument.");
+            System.out.println("You must provide the server name as the first argument.");
             System.exit(1);
         }
         boolean runContinuously = true;
@@ -207,7 +207,7 @@ public class RbdigitalExportMain {
         String apiToken = configIni.get("Rbdigital", "apiToken");
         String libraryId = configIni.get("Rbdigital", "libraryId");
 
-        //Get a list of ebooks and eaudiobooks to process (would ideally use book-holdings, but that is not currently working)
+        //Get a list of eBooks and eAudiobooks to process (would ideally use book-holdings, but that is not currently working)
         //String audioBookUrl = baseUrl + "/v1/libraries/" + libraryId + "/book-holdings/";
 
         String bookUrl = baseUrl + "/v1/libraries/" + libraryId + "/search?page-size=100";

@@ -1,22 +1,4 @@
 <?php
-/**
- *
- * Copyright (C) Villanova University 2007.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2,
- * as published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- */
 
 require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProduct.php';
 require_once ROOT_DIR . '/RecordDrivers/OverDriveRecordDriver.php';
@@ -55,11 +37,8 @@ class OverDrive_Home extends Action{
 			$interface->assign('groupedWorkDriver', $recordDriver->getGroupedWorkDriver());
 
 			//Load status summary
-			require_once (ROOT_DIR . '/Drivers/OverDriveDriverFactory.php');
-			$driver = OverDriveDriverFactory::getDriver();
-			$holdings = $driver->getHoldings($recordDriver);
-			$scopedAvailability = $driver->getScopedAvailability($recordDriver);
-			$holdingsSummary = $driver->getStatusSummary($this->id, $scopedAvailability, $holdings);
+            require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+            $holdingsSummary = $recordDriver->getStatusSummary();
 			if (PEAR_Singleton::isError($holdingsSummary)) {
 				PEAR_Singleton::raiseError($holdingsSummary);
 			}
@@ -69,7 +48,7 @@ class OverDrive_Home extends Action{
 			$this->loadCitations($recordDriver);
 
 			// Retrieve User Search History
-			$interface->assign('lastsearch', isset($_SESSION['lastSearchURL']) ?
+			$interface->assign('lastSearch', isset($_SESSION['lastSearchURL']) ?
 			$_SESSION['lastSearchURL'] : false);
 
 			//Get Next/Previous Links
@@ -81,8 +60,8 @@ class OverDrive_Home extends Action{
 			// Set Show in Main Details Section options for templates
 			// (needs to be set before moreDetailsOptions)
 			global $library;
-			foreach ($library->showInMainDetails as $detailoption) {
-				$interface->assign($detailoption, true);
+			foreach ($library->showInMainDetails as $detailOption) {
+				$interface->assign($detailOption, true);
 			}
 
 			$interface->assign('moreDetailsOptions', $recordDriver->getMoreDetailsOptions());

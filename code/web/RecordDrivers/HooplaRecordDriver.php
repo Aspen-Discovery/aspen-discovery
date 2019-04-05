@@ -244,10 +244,6 @@ class HooplaRecordDriver extends MarcRecordDriver {
 		return $bookCoverUrl;
 	}
 
-	function getNumHolds(){
-		return 0;
-	}
-
 	public function getStaffView()
 	{
 		parent::getStaffView();

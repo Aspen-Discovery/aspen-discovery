@@ -116,16 +116,6 @@ class MillenniumHolds{
 
 		if (!isset($xNum)) {
 			$xNum = is_array($cancelId) ? $cancelId : array($cancelId);
-
-			// below requests variables should be deprecated as of now. plb 2-9-2015
-			// PLB commented out 9-29-2015, starting in 2015.11.6
-//			if (isset($_REQUEST['waitingholdselected']) || isset($_REQUEST['availableholdselected'])) {
-//				$waitingHolds   = isset($_REQUEST['waitingholdselected']) ? $_REQUEST['waitingholdselected'] : array();
-//				$availableHolds = isset($_REQUEST['availableholdselected']) ? $_REQUEST['availableholdselected'] : array();
-//				$xNum           = array_merge($waitingHolds, $availableHolds);
-//			} else {
-//				$xNum = is_array($cancelId) ? $cancelId : array($cancelId);
-//			}
 		}
 
 		$location = new Location();
@@ -143,7 +133,7 @@ class MillenniumHolds{
 
 		$cancelValue = ($type == 'cancel' || $type == 'recall') ? 'on' : 'off';
 
-			$holds = $this->getMyHolds($patron);
+			$holds = $this->getHolds($patron);
 			$combined_holds = array_merge($holds['unavailable'], $holds['available']);
 
 		$POSTVariables = array(
@@ -171,7 +161,7 @@ class MillenniumHolds{
 							$canUpdate = true;
 						}
 					} elseif ($freezeValue == 'on') {
-						if ($holdForXNum['frozen'] == false && $holdForXNum['freezeable'] == true) {
+						if ($holdForXNum['frozen'] == false && $holdForXNum['canFreeze'] == true) {
 							$canUpdate = true;
 						}
 					} elseif ($freezeValue == '') {
@@ -213,13 +203,13 @@ class MillenniumHolds{
 
 		//Issue a post request with the information about what to do with the holds
 		$curl_url = $this->driver->getVendorOpacUrl() . "/patroninfo~S{$scope}/" . $patron->username . "/holds";
-		$sResult = $this->driver->_curlPostPage($curl_url, $POSTVariables);
+		$sResult = $this->driver->curlWrapper->curlPostPage($curl_url, $POSTVariables);
 		$hold_original_results = $this->parseHoldsPage($sResult, $patron);
 			// Note:  Only $hold_original_results above will capture freeze hold errors
 
 		//Go back to the hold page to check make sure our hold was cancelled
 		// Don't believe the page reload is necessary. same output as above. plb 2-3-2015
-		$sResult = $this->driver->_curlGetPage($curl_url);
+		$sResult = $this->driver->curlWrapper->curlGetPage($curl_url);
 		$holds   = $this->parseHoldsPage($sResult, $patron);
 
 		if ($hold_original_results != $holds) { // test if they are the same
@@ -563,7 +553,7 @@ class MillenniumHolds{
 						$matches = array();
 						$curHold['frozen'] = false;
 						if (preg_match('/<input.*name="freeze(.*?)"\\s*(\\w*)\\s*\/>/', $sCols[$i], $matches)){
-							$curHold['freezeable'] = true;
+							$curHold['canFreeze'] = true;
 							if (strlen($matches[2]) > 0){
 								$curHold['frozen'] = true;
 								if ($curHold['status'] == 'Pending'){
@@ -580,7 +570,7 @@ class MillenniumHolds{
 							$_SESSION['freezeResult'][$shortId]['success'] = false;
 							$curHold['freezeError'] = strip_tags($sCols[$i]);
 						}else{
-							$curHold['freezeable'] = false;
+							$curHold['canFreeze'] = false;
 						}
 					}
 				//}
@@ -604,13 +594,13 @@ class MillenniumHolds{
 			if (isset($curHold['status'])){
 				if ($curHold['status'] == 'Pending'){
 					$freezable = true;
-					if (isset($curHold['freezeable'])){
-						$freezable = $curHold['freezeable'];
+					if (isset($curHold['canFreeze'])){
+						$canFreeze = $curHold['canFreeze'];
 					}
-					$curHold['freezeable'] = $freezable && $this->driver->allowFreezingPendingHolds();
+					$curHold['canFreeze'] = $canFreeze && $this->driver->allowFreezingPendingHolds();
 				}else if (preg_match('/\d+ Of (\d+) Holds?/i', $curHold['status'], $matches)){
 					if ($matches[1] == 1){
-						$curHold['freezeable'] = false;
+						$curHold['canFreeze'] = false;
 					}
 				}
 			}
@@ -640,7 +630,7 @@ class MillenniumHolds{
 	 * @return array          Array of the patron's holds
 	 * @access public
 	 */
-	public function getMyHolds($patron) {
+	public function getHolds($patron) {
 		global $timer;
 		//Load the information from millennium using CURL
 		$sResult = $this->driver->_fetchPatronInfoPage($patron, 'holds');
@@ -773,7 +763,7 @@ class MillenniumHolds{
 			list($Month, $Day, $Year)=explode("/", $date);
 
 			//Make sure to connect via the driver so cookies will be correct
-			$this->driver->_curl_connect();
+			$this->driver->curlWrapper->curl_connect();
 
 //			curl_setopt($curl_connection, CURLOPT_POST, true);
 
@@ -793,7 +783,7 @@ class MillenniumHolds{
 			$post_data['submit.x']="35";
 			$post_data['submit.y']="21";
 			$post_data['submit']="submit";
-			$post_data['locx00']= str_pad($pickupBranch, 5); // padded with spaces, which will get url-encoded into plus signs by httpd_build_query() in the _curlPostPage() method.
+			$post_data['locx00']= str_pad($pickupBranch, 5); // padded with spaces, which will get url-encoded into plus signs by httpd_build_query() in the curlPostPage() method.
 			if (!empty($itemId) && $itemId != -1){
 				$post_data['radio']=$itemId;
 			}
@@ -805,7 +795,7 @@ class MillenniumHolds{
 				$post_data['_eventId'] = 'submit';
 			}*/
 
-			$sResult = $this->driver->_curlPostPage($curl_url, $post_data);
+			$sResult = $this->driver->curlWrapper->curlPostPage($curl_url, $post_data);
 
 			$logger->log("Placing hold $recordId : $title", PEAR_LOG_INFO);
 
@@ -903,7 +893,7 @@ class MillenniumHolds{
 			list($Month, $Day, $Year)=explode("/", $date);
 
 			//Make sure to connect via the driver so cookies will be correct
-			$this->driver->_curl_connect();
+			$this->driver->curlWrapper->curl_connect();
 
 //			curl_setopt($curl_connection, CURLOPT_POST, true);
 
@@ -924,7 +914,7 @@ class MillenniumHolds{
 			$post_data['submit.x']="35";
 			$post_data['submit.y']="21";
 			$post_data['submit']="submit";
-			$post_data['locx00']= str_pad($pickupBranch, 5); // padded with spaces, which will get url-encoded into plus signs by httpd_build_query() in the _curlPostPage() method.
+			$post_data['locx00']= str_pad($pickupBranch, 5); // padded with spaces, which will get url-encoded into plus signs by httpd_build_query() in the curlPostPage() method.
 			if (!empty($itemId) && $itemId != -1){
 				$post_data['radio']=$itemId;
 			}
@@ -936,7 +926,7 @@ class MillenniumHolds{
 				$post_data['_eventId'] = 'submit';
 			}*/
 
-			$sResult = $this->driver->_curlPostPage($curl_url, $post_data);
+			$sResult = $this->driver->curlWrapper->curlPostPage($curl_url, $post_data);
 
 			$logger->log("Placing hold $recordId : $title", PEAR_LOG_INFO);
 

@@ -1,32 +1,14 @@
 <?php
 
 /**
- * Complete integration via APIs including availability and account informatino.
- *
- * Copyright (C) Douglas County Libraries 2011.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2,
- * as published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- * @version 1.0
- * @author Mark Noble <mnoble@turningleaftech.com>
- * @copyright Copyright (C) Douglas County Libraries 2011.
+ * Complete integration via APIs including availability and account information.
  */
-class OverDriveDriver3 {
+require_once ROOT_DIR . '/Drivers/AbstractEContentDriver.php';
+class OverDriveDriver extends AbstractEContentDriver{
 	public $version = 3;
 
-	protected $requirePin,
-		$ILSName;
+	protected $requirePin;
+	protected $ILSName;
 
 
 	protected $format_map = array(
@@ -105,7 +87,6 @@ class OverDriveDriver3 {
 				if (!$ilsname) {
 					return false;
 				}
-				//$ilsname = "default";
 
 				if (!isset($configArray['OverDrive']['clientSecret'])){
 					return false;
@@ -119,11 +100,8 @@ class OverDriveDriver3 {
 				curl_setopt($ch, CURLOPT_HTTPHEADER, array(
 					'Content-Type: application/x-www-form-urlencoded;charset=UTF-8',
 					"Authorization: Basic " . $encodedAuthValue,
-					"User-Agent: VuFind-Plus"
+					"User-Agent: Aspen Discovery"
 				));
-				//curl_setopt($ch, CURLOPT_USERPWD, "");
-				//$clientSecret = $configArray['OverDrive']['clientSecret'];
-				//curl_setopt($ch, CURLOPT_USERPWD, $configArray['OverDrive']['clientKey'] . ":" . $clientSecret);
 				curl_setopt($ch, CURLOPT_TIMEOUT, 10);
 				curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 1);
 				curl_setopt($ch, CURLOPT_POST, 1);
@@ -133,14 +111,12 @@ class OverDriveDriver3 {
 				}else{
 					$postFields = "grant_type=password&username={$patronBarcode}&password={$patronPin}&password_required=true&scope=websiteId:{$websiteId}%20ilsname:{$ilsname}";
 				}
-				//$postFields = "grant_type=client_credentials&scope=websiteid:{$websiteId}%20ilsname:{$ilsname}%20cardnumber:{$patronBarcode}";
 
 				curl_setopt($ch, CURLOPT_POSTFIELDS, $postFields);
 
 				curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
 
 				$return = curl_exec($ch);
-				$curlInfo = curl_getinfo($ch);
 				$timer->logTime("Logged $patronBarcode into OverDrive API");
 				curl_close($ch);
 				$patronTokenData = json_decode($return);
@@ -239,8 +215,6 @@ class OverDriveDriver3 {
 			$userPin = ($barcodeProperty == 'cat_username') ? $user->cat_password : $user->cat_username;
 				// determine which column is the pin by using the opposing field to the barcode. (between pin & username)
 			$tokenData = $this->_connectToPatronAPI($user, $userBarcode, $userPin, false);
-			// this worked for flatirons checkout.  plb 1-13-2015
-//			$tokenData = $this->_connectToPatronAPI($user->cat_username, $user->cat_password, false);
 		}else{
 			$tokenData = $this->_connectToPatronAPI($user, $userBarcode, null, false);
 		}
@@ -288,10 +262,8 @@ class OverDriveDriver3 {
 			curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 
 				$return = curl_exec($ch);
-			$curlInfo = curl_getinfo($ch);
 			curl_close($ch);
 			$returnVal = json_decode($return);
-			//print_r($returnVal);
 			if ($returnVal != null){
 				if (!isset($returnVal->message) || $returnVal->message != 'An unexpected error has occurred.'){
 					return $returnVal;
@@ -311,7 +283,7 @@ class OverDriveDriver3 {
 				$authorizationData = $tokenData->token_type . ' ' . $tokenData->access_token;
 				$headers = array(
 					"Authorization: $authorizationData",
-					"User-Agent: VuFind-Plus",
+					"User-Agent: Aspen Discovery",
 					"Host: patron.api.overdrive.com",
 					//"Host: integration-patron.api.overdrive.com"
 				);
@@ -384,7 +356,6 @@ class OverDriveDriver3 {
 		}
 		$overDriveId= strtoupper($overDriveId);
 		$metadataUrl = "https://api.overdrive.com/v1/collections/$productsKey/products/$overDriveId/metadata";
-		//echo($metadataUrl);
 		return $this->_callUrl($metadataUrl);
 	}
 
@@ -394,51 +365,24 @@ class OverDriveDriver3 {
 			$productsKey = $configArray['OverDrive']['productsKey'];
 		}
 		$availabilityUrl = "https://api.overdrive.com/v2/collections/$productsKey/products/$overDriveId/availability";
-		//print_r($availabilityUrl);
 		return $this->_callUrl($availabilityUrl);
 	}
 
-	private function _parseLendingOptions($lendingPeriods){
-		$lendingOptions = array();
-		//print_r($lendingPeriods);
-		if (preg_match('/<script>.*?var hazVariableLending.*?<\/script>.*?<noscript>(.*?)<\/noscript>/si', $lendingPeriods, $matches)){
-			preg_match_all('/<li>\\s?\\d+\\s-\\s(.*?)<select name="(.*?)">(.*?)<\/select><\/li>/si', $matches[1], $lendingPeriodInfo, PREG_SET_ORDER);
-			for ($i = 0; $i < count($lendingPeriodInfo); $i++){
-				$lendingOption = array();
-				$lendingOption['name'] = $lendingPeriodInfo[$i][1];
-				$lendingOption['id'] = $lendingPeriodInfo[$i][2];
-				$options = $lendingPeriodInfo[$i][3];
-				$lendingOption['options']= array();
-				preg_match_all('/<option value="(.*?)".*?(selected="selected")?>(.*?)<\/option>/si', $options, $optionInfo, PREG_SET_ORDER);
-				for ($j = 0; $j < count($optionInfo); $j++){
-					$option = array();
-					$option['value'] = $optionInfo[$j][1];
-					$option['selected'] = strlen($optionInfo[$j][2]) > 0;
-					$option['name'] = $optionInfo[$j][3];
-					$lendingOption['options'][] = $option;
-				}
-				$lendingOptions[] = $lendingOption;
-			}
-		}
-		//print_r($lendingOptions);
-		return $lendingOptions;
-	}
-
 	private $checkouts = array();
-
-	/**
-	 * Loads information about items that the user has checked out in OverDrive
-	 *
-	 * @param User $user
-	 * @param array $overDriveInfo optional array of information loaded from _loginToOverDrive to improve performance.
-	 *
-	 * @return array
-	 */
-	public function getOverDriveCheckedOutItems($user, $overDriveInfo = null, $forSummary = false){
+    /**
+     * Loads information about items that the user has checked out in OverDrive
+     *
+     * @param User $user
+     * @param boolean $forSummary
+     *
+     * @return array
+     */
+	public function getCheckouts($user, $forSummary = false){
 		if (isset($this->checkouts[$user->id])){
 			return $this->checkouts[$user->id];
 		}
 		global $configArray;
+		global $logger;
 		if (!$this->isUserValidForOverDrive($user)){
 			return array();
 		}
@@ -449,7 +393,6 @@ class OverDriveDriver3 {
 			return array();
 		}
 
-		//print_r($response);
 		$checkedOutTitles = array();
 		if (isset($response->checkouts)){
 			foreach ($response->checkouts as $curTitle){
@@ -458,10 +401,18 @@ class OverDriveDriver3 {
 				$bookshelfItem['checkoutSource'] = 'OverDrive';
 				$bookshelfItem['overDriveId'] = $curTitle->reserveId;
 				$bookshelfItem['expiresOn'] = $curTitle->expires;
-				$expirationDate = new DateTime($curTitle->expires);
-				$bookshelfItem['dueDate'] = $expirationDate->getTimestamp();
-				$checkOutDate = new DateTime($curTitle->checkoutDate);
-				$bookshelfItem['checkoutdate'] = $checkOutDate->getTimestamp();
+                try {
+                    $expirationDate = new DateTime($curTitle->expires);
+                    $bookshelfItem['dueDate'] = $expirationDate->getTimestamp();
+                } catch (Exception $e) {
+                    $logger->log("Could not parse date for overdrive expiration " . $curTitle->expires, PEAR_LOG_NOTICE);
+                }
+                try {
+                    $checkOutDate = new DateTime($curTitle->checkoutDate);
+                    $bookshelfItem['checkoutDate'] = $checkOutDate->getTimestamp();
+                } catch (Exception $e) {
+                    $logger->log("Could not parse date for overdrive checkout date " . $curTitle->checkoutDate, PEAR_LOG_NOTICE);
+                }
 				$bookshelfItem['overdriveRead'] = false;
 				if (isset($curTitle->isFormatLockedIn) && $curTitle->isFormatLockedIn == 1){
 					$bookshelfItem['formatSelected'] = true;
@@ -522,7 +473,7 @@ class OverDriveDriver3 {
 								$curFormat['name'] = $this->format_map[$format];
 								$bookshelfItem['formats'][] = $curFormat;
 							}
-						}else{
+						//}else{
 							//No formats found for the title, do we need to do anything special?
 						}
 					}
@@ -563,11 +514,11 @@ class OverDriveDriver3 {
 	private $holds = array();
 
 	/**
-	 * @param User $user
-	 * @param null $overDriveInfo
-	 * @return array
-	 */
-	public function getOverDriveHolds($user, $overDriveInfo = null, $forSummary = false){
+     * @param User $user
+     * @param bool $forSummary
+     * @return array
+     */
+	public function getHolds($user, $forSummary = false){
 		//Cache holds for the user just for this call.
 		if (isset($this->holds[$user->id])){
 			return $this->holds[$user->id];
@@ -588,8 +539,6 @@ class OverDriveDriver3 {
 				$hold['overDriveId'] = $curTitle->reserveId;
 				if ($curTitle->emailAddress){
 					$hold['notifyEmail'] = $curTitle->emailAddress;
-				}else{
-					//print_r($curTitle);
 				}
 				$datePlaced                = strtotime($curTitle->holdPlacedDate);
 				if ($datePlaced) {
@@ -642,7 +591,7 @@ class OverDriveDriver3 {
 	 *
 	 * @return array
 	 */
-	public function getOverDriveSummary($user){
+	public function getAccountSummary($user){
 		/** @var Memcache $memCache */
 		global $memCache;
 		global $configArray;
@@ -665,10 +614,10 @@ class OverDriveDriver3 {
 
 			//TODO: Optimize so we don't need to load all checkouts and holds
 			$summary = array();
-			$checkedOutItems = $this->getOverDriveCheckedOutItems($user, null, true);
+			$checkedOutItems = $this->getCheckouts($user, true);
 			$summary['numCheckedOut'] = count($checkedOutItems);
 
-			$holds = $this->getOverDriveHolds($user, null, true);
+			$holds = $this->getHolds($user, true);
 			$summary['numAvailableHolds'] = count($holds['available']);
 			$summary['numUnavailableHolds'] = count($holds['unavailable']);
 
@@ -682,24 +631,17 @@ class OverDriveDriver3 {
 		return $summary;
 	}
 
-	public function getLendingPeriods($user){
-		//TODO: Replace this with an API when available
-		require_once ROOT_DIR . '/Drivers/OverDriveDriver2.php';
-		$overDriveDriver2 = new OverDriveDriver2();
-		return $overDriveDriver2->getLendingPeriods($user);
-	}
-
 	/**
 	 * Places a hold on an item within OverDrive
 	 *
 	 * @param string $overDriveId
-	 * @param int $format
 	 * @param User $user
 	 *
 	 * @return array (result, message)
 	 */
-	public function placeOverDriveHold($overDriveId, $user){
+	public function placeHold($user, $overDriveId){
 		global $configArray;
+		/** @var Memcache $memCache */
 		global $memCache;
 
 		$url = $configArray['OverDrive']['patronApiUrl'] . '/v1/patrons/me/holds/' . $overDriveId;
@@ -728,12 +670,14 @@ class OverDriveDriver3 {
 	}
 
 	/**
-	 * @param string  $overDriveId
-	 * @param User    $user
-	 * @return array
+     * @param User    $user
+     * @param string  $overDriveId
+     * @param string  $cancelId - unused, identifies the hold to be canceled
+     * @return array
 	 */
-	public function cancelOverDriveHold($overDriveId, $user){
+	public function cancelHold($user, $overDriveId, $cancelId){
 		global $configArray;
+        /** @var Memcache $memCache */
 		global $memCache;
 
 		$url = $configArray['OverDrive']['patronApiUrl'] . '/v1/patrons/me/holds/' . $overDriveId;
@@ -745,7 +689,6 @@ class OverDriveDriver3 {
 		}else{
 			$response = $this->_callPatronDeleteUrl($user, $userBarcode, null, $url);
 		}
-
 
 		$cancelHoldResult = array();
 		$cancelHoldResult['success'] = false;
@@ -771,9 +714,10 @@ class OverDriveDriver3 {
 	 *
 	 * @return array results (result, message)
 	 */
-	public function checkoutOverDriveItem($overDriveId, $user){
+	public function checkoutTitle($user, $overDriveId){
 
 		global $configArray;
+        /** @var Memcache $memCache */
 		global $memCache;
 
 		$url = $configArray['OverDrive']['patronApiUrl'] . '/v1/patrons/me/checkouts';
@@ -813,17 +757,14 @@ class OverDriveDriver3 {
 		return $result;
 	}
 
-	public function getLoanPeriodsForFormat($formatId){
-		//TODO: API for this?
-		if ($formatId == 35){
-			return array(3, 5, 7);
-		}else{
-			return array(7, 14, 21);
-		}
-	}
-
-	public function returnOverDriveItem($overDriveId, $transactionId, $user){
+    /**
+     * @param $overDriveId
+     * @param User $user
+     * @return array
+     */
+	public function returnCheckout($user, $overDriveId){
 		global $configArray;
+        /** @var Memcache $memCache */
 		global $memCache;
 
 		$url = $configArray['OverDrive']['patronApiUrl'] . '/v1/patrons/me/checkouts/' . $overDriveId;
@@ -904,13 +845,6 @@ class OverDriveDriver3 {
 		return ($tokenData !== false) && ($tokenData !== null) && !array_key_exists('error', $tokenData);
 	}
 
-	public function updateLendingOptions(){
-		//TODO: Replace this with an API when available
-		require_once ROOT_DIR . '/Drivers/OverDriveDriver2.php';
-		$overDriveDriver2 = new OverDriveDriver2();
-		return $overDriveDriver2->updateLendingOptions();
-	}
-
 	public function getDownloadLink($overDriveId, $format, $user){
 		global $configArray;
 
@@ -944,67 +878,14 @@ class OverDriveDriver3 {
 		return $result;
 	}
 
-	/**
-	 * Get Holding
-	 *
-	 * This is responsible for retrieving the holding information of a certain
-	 * record.
-	 *
-	 * @param   OverDriveRecordDriver  $overDriveRecordDriver   The record id to retrieve the holdings for
-	 * @return  mixed               An associative array with the following keys:
-	 *                              availability (boolean), status, location,
-	 *                              reserve, callnumber, dueDate, number,
-	 *                              holding summary, holding notes
-	 *                              If an error occurs, return a PEAR_Error
-	 * @access  public
-	 */
-	public function getHoldings($overDriveRecordDriver){
-		/** @var OverDriveAPIProductFormats[] $items */
-		$items = $overDriveRecordDriver->getItems();
-		//Add links as needed
-		$availability = $overDriveRecordDriver->getAvailability();
-		$addCheckoutLink = false;
-		$addPlaceHoldLink = false;
-		foreach($availability as $availableFrom){
-			if ($availableFrom->copiesAvailable > 0){
-				$addCheckoutLink = true;
-			}else{
-				$addPlaceHoldLink = true;
-			}
-		}
-		foreach ($items as $key => $item){
-			$item->links = array();
-			if ($addCheckoutLink){
-				$checkoutLink = "return VuFind.OverDrive.checkOutOverDriveTitle('{$overDriveRecordDriver->getUniqueID()}');";
-				$item->links[] = array(
-					'onclick' => $checkoutLink,
-					'text' => 'Check Out',
-					'overDriveId' => $overDriveRecordDriver->getUniqueID(),
-					'formatId' => $item->numericId,
-					'action' => 'CheckOut'
-				);
-			}else if ($addPlaceHoldLink){
-				$item->links[] = array(
-					'onclick' => "return VuFind.OverDrive.placeOverDriveHold('{$overDriveRecordDriver->getUniqueID()}', '{$item->numericId}');",
-					'text' => 'Place Hold',
-					'overDriveId' => $overDriveRecordDriver->getUniqueID(),
-					'formatId' => $item->numericId,
-					'action' => 'Hold'
-				);
-			}
-			$items[$key] = $item;
-		}
-
-		return $items;
-	}
-
 	public function getLibraryScopingId(){
 		//For econtent, we need to be more specific when restricting copies
 		//since patrons can't use copies that are only available to other libraries.
 		$searchLibrary = Library::getSearchLibrary();
 		$searchLocation = Location::getSearchLocation();
 		$activeLibrary = Library::getActiveLibrary();
-		$activeLocation = Location::getActiveLocation();
+        global $locationSingleton;
+        $activeLocation = $locationSingleton->getActiveLocation();
 		$homeLibrary = Library::getPatronHomeLibrary();
 
 		//Load the holding label for the branch where the user is physically.
@@ -1025,88 +906,40 @@ class OverDriveDriver3 {
 		}
 	}
 
-	/**
-	 * @param OverDriveRecordDriver $overDriveRecordDriver
-	 * @return array
-	 */
-	public function getScopedAvailability($overDriveRecordDriver){
-		$availability = array();
-		$availability['mine'] = $overDriveRecordDriver->getAvailability();
-		$availability['other'] = array();
-		$scopingId = $this->getLibraryScopingId();
-		if ($scopingId != -1){
-			foreach ($availability['mine'] as $key => $availabilityItem){
-				if ($availabilityItem->libraryId != -1 && $availabilityItem->libraryId != $scopingId){
-					$availability['other'][$key] = $availability['mine'][$key];
-					unset($availability['mine'][$key]);
-				}
-			}
-		}
-		return $availability;
-	}
+	public function hasNativeReadingHistory()
+    {
+        return false;
+    }
 
-	public function getStatusSummary($id, $scopedAvailability, $holdings){
-		$holdPosition = 0;
+    public function hasFastRenewAll()
+    {
+        return false;
+    }
 
-		$availableCopies = 0;
-		$totalCopies = 0;
-		$onOrderCopies = 0;
-		$checkedOut = 0;
-		$onHold = 0;
-		$wishListSize = 0;
-		$numHolds = 0;
-		if (count($scopedAvailability['mine']) > 0){
-			foreach ($scopedAvailability['mine'] as $curAvailability){
-				$availableCopies += $curAvailability->copiesAvailable;
-				$totalCopies += $curAvailability->copiesOwned;
-				if ($curAvailability->numberOfHolds > $numHolds){
-					$numHolds = $curAvailability->numberOfHolds;
-				}
-			}
-		}
+    /**
+     * Renew all titles currently checked out to the user.
+     * This is not currently implemented
+     *
+     * @param $patron  User
+     * @return mixed
+     */
+    public function renewAll($patron)
+    {
+        return false;
+    }
 
-		//Load status summary
-		$statusSummary = array();
-		$statusSummary['recordId'] = $id;
-		$statusSummary['totalCopies'] = $totalCopies;
-		$statusSummary['onOrderCopies'] = $onOrderCopies;
-		$statusSummary['accessType'] = 'overdrive';
-		$statusSummary['isOverDrive'] = false;
-		$statusSummary['alwaysAvailable'] = false;
-		$statusSummary['class'] = 'checkedOut';
-		$statusSummary['available'] = false;
-		$statusSummary['status'] = 'Not Available';
-
-		$statusSummary['availableCopies'] = $availableCopies;
-		$statusSummary['isOverDrive'] = true;
-		if ($totalCopies >= 999999){
-			$statusSummary['alwaysAvailable'] = true;
-		}
-		if ($availableCopies > 0){
-			$statusSummary['status'] = "Available from OverDrive";
-			$statusSummary['available'] = true;
-			$statusSummary['class'] = 'available';
-		}else{
-			$statusSummary['status'] = 'Checked Out';
-			$statusSummary['available'] = false;
-			$statusSummary['class'] = 'checkedOut';
-			$statusSummary['isOverDrive'] = true;
-		}
-
-
-		//Determine which buttons to show
-		$statusSummary['holdQueueLength'] = $numHolds;
-		$statusSummary['showPlaceHold'] = $availableCopies == 0 && count($scopedAvailability['mine']) > 0;
-		$statusSummary['showCheckout'] = $availableCopies > 0 && count($scopedAvailability['mine']) > 0;
-		$statusSummary['showAddToWishlist'] = false;
-		$statusSummary['showAccessOnline'] = false;
-
-		$statusSummary['onHold'] = $onHold;
-		$statusSummary['checkedOut'] = $checkedOut;
-		$statusSummary['holdPosition'] = $holdPosition;
-		$statusSummary['numHoldings'] = count($holdings);
-		$statusSummary['wishListSize'] = $wishListSize;
-
-		return $statusSummary;
-	}
+    /**
+     * Renew a single title currently checked out to the user
+     * This is not currently implemented
+     *
+     * @param $patron     User
+     * @param $recordId   string
+     * @param $itemId     string
+     * @param $itemIndex  string
+     * @return mixed
+     */
+    public function renewCheckout($patron, $recordId, $itemId, $itemIndex)
+    {
+        return false;
+    }
 }

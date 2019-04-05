@@ -48,8 +48,8 @@
 				{/if}
 			</div>
 			<div id="returnToSearch" class="return">
-				{if $lastsearch}
-					<a href="{$lastsearch|escape}#record{$recordDriver->getUniqueId()|escape:"url"}">{translate text="Return to Search Results"}</a>
+				{if $lastSearch}
+					<a href="{$lastSearch|escape}#record{$recordDriver->getUniqueId()|escape:"url"}">{translate text="Return to Search Results"}</a>
 				{/if}
 			</div>
 			<div id="nextRecordLink" class="next">

@@ -61,7 +61,7 @@ class MyAccount_CheckedOut extends MyAccount{
 
 			if ($user) {
 				// Get My Transactions
-				$allCheckedOut = $user->getMyCheckouts();
+				$allCheckedOut = $user->getCheckouts();
 
 				$interface->assign('showNotInterested', false);
 				//Do sorting now that we have all records
@@ -108,7 +108,7 @@ class MyAccount_CheckedOut extends MyAccount{
 					$sortKey = utf8_encode($sortKey . '-' . $curTransaction);
 
 					$itemBarcode = isset($curTitle['barcode']) ? $curTitle['barcode'] : null;
-					$itemId      = isset($curTitle['itemid']) ? $curTitle['itemid'] : null;
+					$itemId      = isset($curTitle['itemId']) ? $curTitle['itemId'] : null;
 					if ($itemBarcode != null && isset($_SESSION['renew_message'][$itemBarcode])) {
 						$renewMessage             = $_SESSION['renew_message'][$itemBarcode]['message'];
 						$renewResult              = $_SESSION['renew_message'][$itemBarcode]['success'];
@@ -224,7 +224,7 @@ class MyAccount_CheckedOut extends MyAccount{
 			$activeSheet->setCellValueByColumnAndRow($curCol++, $a, $authorCell);
 			$activeSheet->setCellValueByColumnAndRow($curCol++, $a, $formatString);
 			if ($showOut){
-				$activeSheet->setCellValueByColumnAndRow($curCol++, $a, date('M d, Y', $row['checkoutdate']));
+				$activeSheet->setCellValueByColumnAndRow($curCol++, $a, date('M d, Y', $row['checkoutDate']));
 			}
 			if (isset($row['dueDate'])){
 				$activeSheet->setCellValueByColumnAndRow($curCol++, $a, date('M d, Y', $row['dueDate']));

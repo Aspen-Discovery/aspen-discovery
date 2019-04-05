@@ -1,13 +1,5 @@
 <?php
 
-/**
- * Description goes here
- *
- * @category VuFind-Plus-2014
- * @author Mark Noble <mark@marmot.org>
- * Date: 2/14/2016
- * Time: 5:42 PM
- */
 require_once ROOT_DIR . '/sys/Pager.php';
 
 class EDS_API {

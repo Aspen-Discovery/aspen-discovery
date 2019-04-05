@@ -1,7 +1,15 @@
 <?php
 
-require_once ROOT_DIR . '/Drivers/CurlBasedDriver.php';
-class LibrarySolution extends CurlBasedDriver {
+require_once ROOT_DIR . '/sys/CurlWrapper.php';
+require_once ROOT_DIR . '/Drivers/AbstractIlsDriver.php';
+class LibrarySolution extends AbstractIlsDriver {
+    private $curlWrapper;
+
+    public function __construct($accountProfile) {
+        parent::__construct($accountProfile);
+        $this->curlWrapper = new CurlWrapper();
+        $this->curlWrapper->addCustomHeaders($this->getCustomHeaders(), true);
+    }
 
 	/**
 	 * Patron Login
@@ -27,7 +35,7 @@ class LibrarySolution extends CurlBasedDriver {
 		if ($loginSucceeded){
 			//Get the account summary
 			$url = $this->getVendorOpacUrl() . '/account/summary?_=' . time() * 1000;
-			$accountSummaryRaw = $this->_curlGetPage($url);
+			$accountSummaryRaw = $this->curlWrapper->curlGetPage($url);
 			$accountSummary = json_decode($accountSummaryRaw);
 			if (!empty($accountSummary)) {
 
@@ -171,7 +179,7 @@ class LibrarySolution extends CurlBasedDriver {
 				return null;
 			}
 		}else{
-			$info = curl_getinfo($this->curl_connection);
+			$info = curl_getinfo($this->curlWrapper->curl_connection);
 			$timer->logTime("patron login failed");
 			return null;
 		}
@@ -194,7 +202,7 @@ class LibrarySolution extends CurlBasedDriver {
 			//Load transactions from LSS
 			//TODO: Verify that this will load more than 20 loans
 			$url = $this->getVendorOpacUrl() . '/loans/history/0/20/OutDate?_=' . time() * 1000;
-			$loanInfoRaw = $this->_curlGetPage($url);
+			$loanInfoRaw = $this->curlWrapper->curlGetPage($url);
 			$loanInfo = json_decode($loanInfoRaw);
 
 			foreach ($loanInfo->loanHistory as $loan){
@@ -248,10 +256,6 @@ class LibrarySolution extends CurlBasedDriver {
 		return array('historyActive'=>true, 'titles'=>$readingHistory, 'numTitles'=> count($readingHistory));
 	}
 
-	public function getNumHolds($id) {
-		// TODO: Implement getNumHolds() method.
-	}
-
 	protected function getCustomHeaders() {
 		return array(
 			'Host: tlcweb01.mnps.org:8080',
@@ -281,13 +285,13 @@ class LibrarySolution extends CurlBasedDriver {
 	 * PEAR_Error otherwise.
 	 * @access public
 	 */
-	public function getMyCheckouts($user){
+	public function getCheckouts($user){
 		$transactions = array();
 		if ($this->loginPatronToLSS($user->cat_username, $user->cat_password)){
 			//Load transactions from LSS
 			//TODO: Verify that this will load more than 20 loans
 			$url = $this->getVendorOpacUrl() . '/loans/0/20/Status?_=' . time() * 1000;
-			$loanInfoRaw = $this->_curlGetPage($url);
+			$loanInfoRaw = $this->curlWrapper->curlGetPage($url);
 			$loanInfo = json_decode($loanInfoRaw);
 
 			foreach ($loanInfo->loans as $loan){
@@ -355,11 +359,11 @@ class LibrarySolution extends CurlBasedDriver {
 
 	public function isAuthenticated(){
 		$url = $this->getVendorOpacUrl() . '/isAuthenticated?_=' . time() * 1000;
-		$result = $this->_curlGetPage($url);
+		$result = $this->curlWrapper->curlGetPage($url);
 		return $result == 'true';
 	}
 
-	public function renewItem($patron, $recordId, $itemId, $itemIndex){
+	public function renewCheckout($patron, $recordId, $itemId, $itemIndex){
 		$recordDriver = RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $recordId);
 		$result = array(
 			'success' => false,
@@ -369,14 +373,13 @@ class LibrarySolution extends CurlBasedDriver {
 			//$isAuthenticated = $this->isAuthenticated();
 			$url = $this->getVendorOpacUrl() . '/loans/renew?_=' . time() * 1000;
 			$postParams = '{"renewLoanInfos":"[{\"success\":false,\"itemId\":\"' . $itemId . '\",\"date\":' . (time() * 1000) . ',\"downloadable\":false}]"}';
-			//$this->setupDebugging();
-			$renewItemResponseRaw = $this->_curlPostBodyData($url, $postParams, false);
-			$renewItemResponse = json_decode($renewItemResponseRaw);
-			if ($renewItemResponse == null){
+			$renewCheckoutResponseRaw = $this->curlWrapper->curlPostBodyData($url, $postParams, false);
+			$renewCheckoutResponse = json_decode($renewCheckoutResponseRaw);
+			if ($renewCheckoutResponse == null){
 				//We didn't get valid JSON back
 				$result['message'] = "We could not renew your item.  Received an invalid response from the server.";
 			}else{
-				foreach ($renewItemResponse->renewLoanInfos as $renewInfo){
+				foreach ($renewCheckoutResponse->renewLoanInfos as $renewInfo){
 					if ($renewInfo->success){
 						$result['success'] = 'true';
 						$result['message'] = "Your item was renewed successfully.  It is now due {$renewInfo->dateString}.";
@@ -394,7 +397,7 @@ class LibrarySolution extends CurlBasedDriver {
 	/**
 	 * @param $username
 	 * @param $password
-	 * @return array
+	 * @return boolean
 	 */
 	protected function loginPatronToLSS($username, $password) {
 		//Remove any spaces from the barcode
@@ -408,7 +411,7 @@ class LibrarySolution extends CurlBasedDriver {
 			'rememberMe' => 'false',
 			'username' => $username,
 		);
-		$loginResponse = $this->_curlPostBodyData($url, $postParams);
+		$loginResponse = $this->curlWrapper->curlPostBodyData($url, $postParams);
 		if (strlen($loginResponse) > 0){
 			$decodedResponse = json_decode($loginResponse);
 			if ($decodedResponse){
@@ -435,7 +438,7 @@ class LibrarySolution extends CurlBasedDriver {
 	 * @return array          Array of the patron's holds
 	 * @access public
 	 */
-	public function getMyHolds($user){
+	public function getHolds($user){
 		$holds = array(
 			'available' => array(),
 			'unavailable' => array()
@@ -445,7 +448,7 @@ class LibrarySolution extends CurlBasedDriver {
 			//Load transactions from LSS
 			//TODO: Verify that this will load more than 20 loans
 			$url = $this->getVendorOpacUrl() . '/requests/0/20/Status?_=' . time() * 1000;
-			$holdInfoRaw = $this->_curlGetPage($url);
+			$holdInfoRaw = $this->curlWrapper->curlGetPage($url);
 			$holdInfo = json_decode($holdInfoRaw);
 
 			$indexingProfile = $this->getIndexingProfile();
@@ -492,8 +495,7 @@ class LibrarySolution extends CurlBasedDriver {
 				}
 				//Although LSS interface shows this is possible, we haven't been able to make it work in the
 				//LSS OPAC, setting to false always
-				//$curHold['freezeable'] = $hold->holdSuspendable;
-				$curHold['freezeable'] = false;
+				$curHold['canFreeze'] = false;
 
 				$curHold['sortTitle'] = $hold->title;
 				require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
@@ -535,7 +537,7 @@ class LibrarySolution extends CurlBasedDriver {
 	 *                                If an error occurs, return a PEAR_Error
 	 * @access  public
 	 */
-	function placeHold($patron, $recordId, $pickupBranch, $cancelDate = null) {
+	function placeHold($patron, $recordId, $pickupBranch = null, $cancelDate = null) {
 		$recordDriver = RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $recordId);
 		$result = array(
 			'success' => false,
@@ -551,7 +553,7 @@ class LibrarySolution extends CurlBasedDriver {
 				'pickupBranchId' => $pickupBranch,
 				'titleLevelHold' => 'true'
 			);
-			$placeHoldResponseRaw = $this->_curlPostBodyData($url, $postParams);
+			$placeHoldResponseRaw = $this->curlWrapper->curlPostBodyData($url, $postParams);
 			$placeHoldResponse = json_decode($placeHoldResponseRaw);
 
 			foreach ($placeHoldResponse->placeHoldInfos as $holdResponse){
@@ -602,7 +604,7 @@ class LibrarySolution extends CurlBasedDriver {
 		if ($this->loginPatronToLSS($patron->cat_username, $patron->cat_password)) {
 			//for lss we need additional information about the hold
 			$url = $this->getVendorOpacUrl() . '/requests/0/20/Status?_=' . time() * 1000;
-			$holdInfoRaw = $this->_curlGetPage($url);
+			$holdInfoRaw = $this->curlWrapper->curlGetPage($url);
 			$holdInfo = json_decode($holdInfoRaw);
 
 			$selectedHold = null;
@@ -615,7 +617,7 @@ class LibrarySolution extends CurlBasedDriver {
 			$url = $this->getVendorOpacUrl() . '/requests/cancel?_=' . time() * 1000;
 			$postParams = '{"cancelHoldInfos":"[{\"desireNumber\":\"' . $cancelId. '\",\"success\":false,\"holdQueueLength\":\"' . $selectedHold->holdQueueLength . '\",\"bibliographicId\":\"' . $recordId. '\",\"whichBranch\":' . $selectedHold->holdPickupBranchId . ',\"status\":\"' . $selectedHold->status . '\",\"downloadable\":false}]"}';
 
-			$responseRaw = $this->_curlPostBodyData($url, $postParams, false);
+			$responseRaw = $this->curlWrapper->curlPostBodyData($url, $postParams, false);
 			$response = json_decode($responseRaw);
 
 			foreach ($response->cancelHoldInfos as $itemResponse){
@@ -642,7 +644,7 @@ class LibrarySolution extends CurlBasedDriver {
 			$url = $this->getVendorOpacUrl() . '/requests/suspend?_=' . time() * 1000;
 			$formattedReactivationDate = $dateToReactivate;
 			$postParams = '{"suspendHoldInfos":"[{\"desireNumber\":\"' . $itemToFreezeId . '\",\"success\":false,\"suspendDate\":\"' . $formattedReactivationDate . '\",\"queuePosition\":\"1\",\"bibliographicId\":\"' . $recordId . '\",\"pickupBranchId\":100,\"downloadable\":false}]"}';
-			$responseRaw = $this->_curlPostBodyData($url, $postParams, false);
+			$responseRaw = $this->curlWrapper->curlPostBodyData($url, $postParams, false);
 			$response = json_decode($responseRaw);
 
 			foreach ($response->suspendHoldInfos as $itemResponse){
@@ -688,14 +690,6 @@ class LibrarySolution extends CurlBasedDriver {
 		return $result;
 	}
 
-	function updatePin($user, $oldPin, $newPin, $confirmNewPin){
-		/* var Logger $logger */
-		global $logger;
-		$logger->log('Call to updatePin(), function not implemented.', PEAR_LOG_WARNING);
-
-		return 'Can not update Pins';
-	}
-
 	/**
 	 * @param User $patron patron to get fines for
 	 * @return array  Array of messages
@@ -707,7 +701,7 @@ class LibrarySolution extends CurlBasedDriver {
 			//Load transactions from LSS
 			//TODO: Verify that this will load more than 10000 fines
 			$url = $this->getVendorOpacUrl() . '/fees/0/10000/OutDate?_=' . time() * 1000;
-			$feeInfoRaw = $this->_curlGetPage($url);
+			$feeInfoRaw = $this->curlWrapper->curlGetPage($url);
 			$feeInfo = json_decode($feeInfoRaw);
 
 			foreach ($feeInfo->fees as $fee){

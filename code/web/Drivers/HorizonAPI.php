@@ -1,22 +1,4 @@
 <?php
-/**
- *
- * Copyright (C) Villanova University 2007.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2,
- * as published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- *
- */
 
 require_once ROOT_DIR . '/Drivers/Horizon.php';
 
@@ -47,7 +29,6 @@ abstract class HorizonAPI extends Horizon{
 				$logger->log('No Web Service URL defined in Horizon API Driver', PEAR_LOG_CRIT);
                 echo("Web service URL must be defined in the account profile to work with the Horizon API");
                 die();
-				return null;
 			}
 			$lookupMyAccountInfoResponse = $this->getWebServiceResponse($webServiceURL . '/standard/lookupMyAccountInfo?clientID=' . $configArray['Catalog']['clientId'] . '&sessionToken=' . $sessionToken . '&includeAddressInfo=true&includeHoldInfo=true&includeBlockInfo=true&includeItemsOutInfo=true');
 			if ($lookupMyAccountInfoResponse){
@@ -195,10 +176,10 @@ abstract class HorizonAPI extends Horizon{
 					}
 				}
 
-				$user->address1              = $Address1;
-				$user->address2              = $City . ', ' . $State;
-				$user->city                  = $City;
-				$user->state                 = $State;
+				$user->_address1              = $Address1;
+				$user->_address2              = $City . ', ' . $State;
+				$user->_city                  = $City;
+				$user->_state                 = $State;
 				$user->_zip                   = $Zip;
 				$user->phone                 = isset($lookupMyAccountInfoResponse->phone) ? (string)$lookupMyAccountInfoResponse->phone : '';
 				$user->_fines                 = sprintf('$%01.2f', $finesVal);
@@ -227,10 +208,10 @@ abstract class HorizonAPI extends Horizon{
 				$timer->logTime("lookupMyAccountInfo failed");
 				global $logger;
 				$logger->log('Horizon API call lookupMyAccountInfo failed.', PEAR_LOG_ERR);
-//				$logger->log($configArray['Catalog']['webServiceUrl'] . '/standard/lookupMyAccountInfo?clientID=' . $configArray['Catalog']['clientId'] . '&sessionToken=' . $sessionToken . '&includeAddressInfo=true&includeHoldInfo=true&includeBlockInfo=true&includeItemsOutInfo=true', PEAR_LOG_ERR);
 				return null;
 			}
 		}
+		return null;
 	}
 
 	protected function loginViaWebService($username, $password) {
@@ -264,7 +245,7 @@ abstract class HorizonAPI extends Horizon{
 	 * @return array          Array of the patron's holds
 	 * @access public
 	 */
-	public function getMyHolds($patron){
+	public function getHolds($patron){
 		global $configArray;
 
 		$availableHolds = array();
@@ -314,9 +295,9 @@ abstract class HorizonAPI extends Horizon{
 				$curHold['reactivateTime']     = strtotime($reactivateDate);
 				$curHold['cancelable']         = strcasecmp($curHold['status'], 'Suspended') != 0;
 				$curHold['frozen']             = strcasecmp($curHold['status'], 'Suspended') == 0;
-				$curHold['freezeable'] = true;
+				$curHold['canFreeze'] = true;
 				if (strcasecmp($curHold['status'], 'Transit') == 0) {
-					$curHold['freezeable'] = false;
+					$curHold['canFreeze'] = false;
 				}
 
 				$recordDriver = new MarcRecordDriver($bibId);
@@ -350,19 +331,20 @@ abstract class HorizonAPI extends Horizon{
 		return $holds;
 	}
 
-	/**
-	 * Place Hold
-	 *
-	 * This is responsible for both placing holds as well as placing recalls.
-	 *
-	 * @param   User    $patron       The User to place a hold for
-	 * @param   string  $recordId     The id of the bib record
-	 * @param   string  $pickupBranch The branch where the user wants to pickup the item when available
-	 * @return  mixed                 True if successful, false if unsuccessful
-	 *                                If an error occurs, return a PEAR_Error
-	 * @access  public
-	 */
-	public function placeHold($patron, $recordId, $pickupBranch, $cancelDate = null) {
+    /**
+     * Place Hold
+     *
+     * This is responsible for both placing holds as well as placing recalls.
+     *
+     * @param User $patron              The User to place a hold for
+     * @param string $recordId          The id of the bib record
+     * @param string $pickupBranch      The branch where the user wants to pickup the item when available
+     * @param null|string $cancelDate   The date when the patron no longer needs the item
+     * @return  mixed                   True if successful, false if unsuccessful
+     *                                  If an error occurs, return a PEAR_Error
+     * @access  public
+     */
+	public function placeHold($patron, $recordId, $pickupBranch = null, $cancelDate = null) {
 		$result = $this->placeItemHold($patron, $recordId, null, $pickupBranch);
 		return $result;
 	}
@@ -510,7 +492,7 @@ abstract class HorizonAPI extends Horizon{
 	 * Update a hold that was previously placed in the system.
 	 * Can cancel the hold or update pickup locations.
 	 */
-	public function updateHoldDetailed($patron, $type, /*$titles,*/ $xNum, $cancelId, $locationId, $freezeValue='off'){
+	public function updateHoldDetailed($patron, $type, $xNum, $cancelId, $locationId, $freezeValue='off'){
 		global $configArray;
 
 		$patronId = $patron->id;
@@ -528,23 +510,12 @@ abstract class HorizonAPI extends Horizon{
 			}
 		}
 
-		if (!isset($xNum)){ //AJAX function passes IDs through $cancelID below shouldn't be needed anymore. plb 2-4-2015
-			if (isset($_REQUEST['waitingholdselected']) || isset($_REQUEST['availableholdselected'])){
-				$waitingHolds = isset($_REQUEST['waitingholdselected']) ? $_REQUEST['waitingholdselected'] : array();
-				$availableHolds = isset($_REQUEST['availableholdselected']) ? $_REQUEST['availableholdselected'] : array();
-				$holdKeys = array_merge($waitingHolds, $availableHolds);
-			}else{
-				$holdKeys = is_array($cancelId) ? $cancelId : array($cancelId);
-			}
+		if (!isset($xNum)){
+			$holdKeys = is_array($cancelId) ? $cancelId : array($cancelId);
 		}
 
-//		$loadTitles = empty($titles);
-//		if ($loadTitles) {
-			$holds = $this->getMyHolds($patron);
-			$combined_holds = array_merge($holds['unavailable'], $holds['available']);
-//		}
-//		$logger->log("Load titles = $loadTitles", PEAR_LOG_DEBUG); // move out of foreach loop
-
+        $holds = $this->getHolds($patron);
+        $combined_holds = array_merge($holds['unavailable'], $holds['available']);
 
 		$titles = array();
 		if ($type == 'cancel'){
@@ -693,7 +664,7 @@ abstract class HorizonAPI extends Horizon{
 		}
 	}
 
-	public function getMyCheckouts($patron, $page = 1, $recordsPerPage = -1, $sortOption = 'dueDate') {
+	public function getCheckouts($patron, $page = 1, $recordsPerPage = -1, $sortOption = 'dueDate') {
 		global $configArray;
 
 		$userId = $patron->id;
@@ -727,7 +698,7 @@ abstract class HorizonAPI extends Horizon{
 				$curTitle['author']          = (string)$itemOut->author;
 
 				$curTitle['dueDate']         = strtotime((string)$itemOut->dueDate);
-				$curTitle['checkoutdate']    = (string)$itemOut->ckoDate;
+				$curTitle['checkoutDate']    = (string)$itemOut->ckoDate;
 				$curTitle['renewCount']      = (string)$itemOut->renewals;
 				$curTitle['canrenew']        = true; //TODO: Figure out if the user can renew the title or not
 				$curTitle['renewIndicator']  = (string)$itemOut->itemBarcode;
@@ -793,7 +764,7 @@ abstract class HorizonAPI extends Horizon{
 	}
 
 	// TODO: Test with linked accounts (9-3-2015)
-	public function renewItem($patron, $recordId, $itemId, $itemIndex){
+	public function renewCheckout($patron, $recordId, $itemId, $itemIndex){
 		global $configArray;
 
 		$userId = $patron->id;
@@ -812,17 +783,17 @@ abstract class HorizonAPI extends Horizon{
 		}
 
 		//create the hold using the web service
-		$renewItemUrl = $configArray['Catalog']['webServiceUrl'] . '/standard/renewMyCheckout?clientID=' . $configArray['Catalog']['clientId'] . '&sessionToken=' . $sessionToken . '&itemID=' . $itemId;
+		$renewCheckoutUrl = $configArray['Catalog']['webServiceUrl'] . '/standard/renewMyCheckout?clientID=' . $configArray['Catalog']['clientId'] . '&sessionToken=' . $sessionToken . '&itemID=' . $itemId;
 
-		$renewItemResponse = $this->getWebServiceResponse($renewItemUrl);
+		$renewCheckoutResponse = $this->getWebServiceResponse($renewCheckoutUrl);
 
-		if ($renewItemResponse && !isset($renewItemResponse->string)){
+		if ($renewCheckoutResponse && !isset($renewCheckoutResponse->string)){
 			$success = true;
-			$message = 'Your item was successfully renewed.  The title is now due on ' . $renewItemResponse->dueDate;
+			$message = 'Your item was successfully renewed.  The title is now due on ' . $renewCheckoutResponse->dueDate;
 		}else{
 			//TODO: check that title is included in the message
 			$success = false;
-			$message = $renewItemResponse->string;
+			$message = $renewCheckoutResponse->string;
 		}
 		return array(
 			'itemId' => $itemId,
@@ -844,11 +815,14 @@ abstract class HorizonAPI extends Horizon{
 		return 0;
 	}
 
-	function resetPin($user) {
-
-	}
-
-	function updatePin($user, $oldPin, $newPin, $confirmNewPin){
+    /**
+     * @param User $user
+     * @param string $oldPin
+     * @param string $newPin
+     * @param string $confirmNewPin
+     * @return string
+     */
+    function updatePin($user, $oldPin, $newPin, /** @noinspection PhpUnusedParameterInspection */$confirmNewPin){
 		global $configArray;
 		$userId = $user->id;
 
@@ -877,36 +851,6 @@ abstract class HorizonAPI extends Horizon{
 		}
 	}
 
-	// Original
-//	function updatePin($user, $oldPin, $newPin, $confirmNewPin){
-//		global $configArray;
-//		$userId = $user->id;
-//
-//		//Get the session token for the user
-//		if (isset(HorizonAPI::$sessionIdsForUsers[$userId])){
-//			$sessionToken = HorizonAPI::$sessionIdsForUsers[$userId];
-//		}else{
-//			//Log the user in
-//			list($userValid, $sessionToken) = $this->loginViaWebService($user->cat_username, $user->cat_password);
-//			if (!$userValid){
-//				return 'Sorry, it does not look like you are logged in currently.  Please login and try again';
-//			}
-//		}
-//
-//		//create the hold using the web service
-//		$updatePinUrl = $configArray['Catalog']['webServiceUrl'] . '/standard/changeMyPin?clientID=' . $configArray['Catalog']['clientId'] . '&sessionToken=' . $sessionToken . '&currentPin=' . $oldPin . '&newPin=' . $newPin;
-//		$updatePinResponse = $this->getWebServiceResponse($updatePinUrl);
-//
-//		if ($updatePinResponse){
-//			$user->cat_password = $newPin;
-//			$user->update();
-////			UserAccount::updateSession($user);  //TODO only if $user is the primary user
-//			return "Your pin number was updated successfully.";
-//		}else{
-//			return "Sorry, we could not update your pin number. Please try again later.";
-//		}
-//	}
-//
 	public function emailPin($barcode){
 		global $configArray;
 		if (empty($barcode)) {
@@ -965,25 +909,6 @@ abstract class HorizonAPI extends Horizon{
 		}
 		return $fields;
 	}
-
-	//This function does not currently work due to posting of the self registration data.  Using HIP for now in individual drivers.
-	/*function selfRegister(){
-		global $configArray;
-		$fields = $this->getSelfRegistrationFields();
-
-		$createSelfRegisteredPatronUrl = $configArray['Catalog']['webServiceUrl'] . '/standard/createSelfRegisteredPatron?clientID=' . $configArray['Catalog']['clientId'] . '&secret=' . $configArray['Catalog']['clientSecret'];
-		foreach ($fields as $field){
-			if (isset($_REQUEST[$field['property']])){
-				$createSelfRegisteredPatronUrl .= '&' . $field['property'] . '=' . urlencode($_REQUEST[$field['property']]);
-			}
-		}
-		$createSelfRegisteredPatronResponse = $this->getWebServiceResponse($createSelfRegisteredPatronUrl);
-		if ($createSelfRegisteredPatronResponse){
-			return array('success' => true, 'barcode' => (string)$createSelfRegisteredPatronResponse);
-		}else{
-			return array('success' => false, 'barcode' => '');
-		}
-	}*/
 
 	/**
 	 * Split a name into firstName, lastName, middleName.

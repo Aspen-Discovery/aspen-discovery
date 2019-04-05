@@ -52,7 +52,7 @@ class MillenniumCheckouts {
 	 * PEAR_Error otherwise.
 	 * @access public
 	 */
-	public function getMyCheckouts($user) {
+	public function getCheckouts($user) {
 		$checkedOutTitles = array();
 		global $timer;
 		$timer->logTime("Ready to load checked out titles from Millennium");
@@ -166,8 +166,8 @@ class MillenniumCheckouts {
 							if (preg_match('/<input\s*type="checkbox"\s*name="renew(\d+)"\s*id="renew(\d+)"\s*value="(.*?)"\s*\/>/', $scols[$i], $matches)) {
 								$curTitle['canrenew']       = $patronCanRenew;
 								$curTitle['itemindex']      = $matches[1];
-								$curTitle['itemid']         = $matches[3];
-								$curTitle['renewIndicator'] = $curTitle['itemid'] . '|' . $curTitle['itemindex'];
+								$curTitle['itemId']         = $matches[3];
+								$curTitle['renewIndicator'] = $curTitle['itemId'] . '|' . $curTitle['itemindex'];
 								$curTitle['renewMessage']   = '';
 							} else {
 								$curTitle['canrenew'] = false;
@@ -237,7 +237,7 @@ class MillenniumCheckouts {
 		//Go to the items page
 		$scope = $driver->getDefaultScope();
 		$curl_url = $this->driver->getVendorOpacUrl() . "/patroninfo~S{$scope}/" . $patronDump['RECORD_#'] ."/items";
-		$checkedOutPageText = $driver->_curlGetPage($curl_url); // TODO Initial page load needed?
+		$checkedOutPageText = $driver->curlWrapper->curlGetPage($curl_url); // TODO Initial page load needed?
 
 		//Post renewal information
 		$renewAllPostVariables = array(
@@ -245,7 +245,7 @@ class MillenniumCheckouts {
 			'renewall' => 'YES',
 		);
 
-		$checkedOutPageText = $driver->_curlPostPage($curl_url, $renewAllPostVariables);
+		$checkedOutPageText = $driver->curlWrapper->curlPostPage($curl_url, $renewAllPostVariables);
 		//$logger->log("Result of Renew All\r\n" . $checkedOutPageText, PEAR_LOG_INFO);
 
 		//Clear the existing patron info and get new information.
@@ -253,7 +253,7 @@ class MillenniumCheckouts {
 			'success' => false,
 			'message' => array(),
 			'Renewed' => 0,
-			'Unrenewed' => 0
+			'NotRenewed' => 0
 		);
 		$renew_result['Total'] = $curCheckedOut;
 
@@ -261,8 +261,8 @@ class MillenniumCheckouts {
 		// pattern from Nashville WebPAC : <b> RENEWED successfully</b>
 		$numRenewals = preg_match_all("/<b>\s*RENEWED.*?<\/b>/si", $checkedOutPageText, $matches);
 		$renew_result['Renewed'] = $numRenewals;
-		$renew_result['Unrenewed'] = $renew_result['Total'] - $renew_result['Renewed'];
-		if ($renew_result['Unrenewed'] > 0) {
+		$renew_result['NotRenewed'] = $renew_result['Total'] - $renew_result['Renewed'];
+		if ($renew_result['NotRenewed'] > 0) {
 			$renew_result['success'] = false;
 			// Now Extract Failure Messages
 
@@ -317,7 +317,7 @@ class MillenniumCheckouts {
 	 * @param $itemIndex  string
 	 * @return array
 	 */
-	public function renewItem($patron, $itemId, $itemIndex){
+	public function renewCheckout($patron, $itemId, $itemIndex){
 		/** var Logger $logger
 		 *  var Timer $timer
 		 * */
@@ -338,14 +338,14 @@ class MillenniumCheckouts {
 		$scope = $driver->getDefaultScope();
 		$curl_url = $driver->getVendorOpacUrl() . "/patroninfo~S{$scope}/" . $patron->username ."/items";
 		// Loading this page is not necessary in most cases, but if the patron has a Staff ptype we go into staff mode which makes this page load necessary.
-		$driver->_curlGetPage($curl_url);
+		$driver->curlWrapper->curlGetPage($curl_url);
 
 		$renewPostVariables = array(
 			'currentsortorder' => 'current_checkout',
 			'renewsome' => 'YES',
 			'renew' . $itemIndex => $itemId,
 		);
-		$checkedOutPageText = $driver->_curlPostPage($curl_url, $renewPostVariables);
+		$checkedOutPageText = $driver->curlWrapper->curlPostPage($curl_url, $renewPostVariables);
 
 		//Parse the checked out titles into individual rows
 		$message = 'Unable to load renewal information for this entry.';

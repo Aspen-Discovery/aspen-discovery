@@ -6,11 +6,8 @@ class MyAccount_AJAX
 	{
 		// not checked below refer to testing returning results through utf8 encoding. plb 2-6-2015
 		$valid_json_methods = array(
-			'GetSuggestions', // not checked
-			'GetListTitles', // only used by MyAccount/ImportListsFromClassic.php && ajax.js //not checked
-			'getOverDriveSummary', //called by getOverDriveSummary() is scripts.js // not checked
+			'GetSuggestions', //not checked
 			'GetPreferredBranches', //not checked
-//			'clearUserRating', //no function found.
 			'requestPinReset', //not checked
 			'getCreateListForm', 'getBulkAddToListForm', 'AddList',
 			'getEmailMyListForm', 'sendMyListEmail', 'setListEntryPositions',
@@ -18,7 +15,7 @@ class MyAccount_AJAX
 			'saveSearch', 'deleteSavedSearch', // deleteSavedSearch not checked
 			'confirmCancelHold', 'cancelHold', 'cancelHolds', 'freezeHold', 'thawHold', 'getChangeHoldLocationForm', 'changeHoldLocation',
 			'getReactivationDateForm', //not checked
-			'renewItem', 'renewAll', 'renewSelectedItems', 'getPinResetForm',
+			'renewCheckout', 'renewAll', 'renewSelectedItems', 'getPinResetForm',
 			'getAddAccountLinkForm', 'addAccountLink', 'removeAccountLink',
 			'cancelBooking', 'getCitationFormatsForm', 'getAddBrowseCategoryFromListForm'
 		  ,'getMasqueradeAsForm', 'initiateMasquerade', 'endMasquerade', 'getMenuData'
@@ -390,13 +387,7 @@ class MyAccount_AJAX
 			$user = UserAccount::getLoggedInUser();
 			$catalog = CatalogFactory::getCatalogConnectionInstance();
 
-			// ids grabbed in MillenniumHolds.php in $_REQUEST['waitingholdselected'] & $_REQUEST['availableholdselected']
-			// but we will pass ids here instead.
 			$cancelId = array();
-			if (!empty($_REQUEST['holdselected'])) {
-				$cancelId = $_REQUEST['holdselected'];
-			}
-//			$locationId = isset($_REQUEST['location']) ? $_REQUEST['location'] : null; //not passed via ajax. don't think it's needed
 			$result = $catalog->driver->updateHoldDetailed($user->password, 'cancel', $cancelId, null);
 
 		} catch (PDOException $e) {
@@ -616,7 +607,7 @@ class MyAccount_AJAX
 	/**
 	 * Get a list of preferred hold pickup branches for a user.
 	 *
-	 * @return string XML representing the pickup branches.
+	 * @return array representing the pickup branches.
 	 */
 	function GetPreferredBranches()
 	{
@@ -733,90 +724,6 @@ class MyAccount_AJAX
 
 		$return = array('titles' => $titles, 'currentIndex' => 0);
 		return $return;
-	}
-
-	function GetListTitles()
-	{
-		/** @var MemCache $memCache */
-		global $memCache;
-		global $configArray;
-		global $timer;
-
-		$listId = $_REQUEST['listId'];
-		$_REQUEST['id'] = 'list:' . $listId;
-		$listName = strip_tags(isset($_GET['scrollerName']) ? $_GET['scrollerName'] : 'List' . $listId);
-		$scrollerName = isset($_GET['scrollerName']) ? strip_tags($_GET['scrollerName']) : $listName;
-
-		//Determine the caching parameters
-		require_once(ROOT_DIR . '/services/API/ListAPI.php');
-		$listAPI = new ListAPI();
-		$cacheInfo = $listAPI->getCacheInfoForList();
-
-		$listData = $memCache->get($cacheInfo['cacheName']);
-
-		$return = false; // default response
-		if (!$listData || isset($_REQUEST['reload']) || (isset($listData['titles']) && count($listData['titles']) == 0)) {
-			global $interface;
-
-			$titles = $listAPI->getListTitles();
-			$timer->logTime("getListTitles");
-			$addStrandsTracking = false;
-			if ($titles['success'] == true) {
-				if (isset($titles['strands'])) {
-					$addStrandsTracking = true;
-					$strandsInfo = $titles['strands'];
-				}
-				$titles = $titles['titles'];
-				if (is_array($titles)) {
-					foreach ($titles as $key => $rawData) {
-
-						$interface->assign('title', $rawData['title']);
-//						$interface->assign('description', $rawData['description'] . 'w00t!');
-						$interface->assign('description', $rawData['description']); // Looks like not in use currently
-						$interface->assign('length', $rawData['length']);
-						$interface->assign('publisher', $rawData['publisher']);
-						$descriptionInfo = $interface->fetch('Record/ajax-description-popup.tpl');
-
-						$formattedTitle = "<div id=\"scrollerTitle{$scrollerName}{$key}\" class=\"scrollerTitle\">";
-						$shortId = $rawData['id'];
-						$shortId = str_replace('.b', 'b', $shortId);
-						$formattedTitle .= '<a href="' . $configArray['Site']['path'] . "/Record/" . $rawData['id'] . ($addStrandsTracking ? "?strandsReqId={$strandsInfo['reqId']}&strandsTpl={$strandsInfo['tpl']}" : '') . '" id="descriptionTrigger' . $shortId . '">';
-						$formattedTitle .= "<img src=\"{$rawData['image']}\" class=\"scrollerTitleCover\" alt=\"{$rawData['title']} Cover\"/>" .
-							"</a></div>" .
-							"<div id='descriptionPlaceholder{$shortId}' style='display:none' class='loaded'>" .
-							$descriptionInfo .
-							"</div>";
-						$rawData['formattedTitle'] = $formattedTitle;
-						$titles[$key] = $rawData;
-					}
-				}
-				$currentIndex = count($titles) > 5 ? floor(count($titles) / 2) : 0;
-
-				$return = array('titles' => $titles, 'currentIndex' => $currentIndex);
-				$listData = json_encode($return);
-			} else {
-				$return = array('titles' => array(), 'currentIndex' => 0);
-				$listData = json_encode($return);
-			}
-
-			$memCache->set($cacheInfo['cacheName'], $listData, 0, $cacheInfo['cacheLength']);
-
-		}
-
-		return $return;
-	}
-
-	function getOverDriveSummary()
-	{
-		if (UserAccount::isLoggedIn()) {
-			$user = UserAccount::getLoggedInUser();
-			require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
-			$overDriveDriver = OverDriveDriverFactory::getDriver();
-			$summary = $overDriveDriver->getOverDriveSummary($user);
-			return $summary;
-		} else {
-			return array('error' => 'There is no user currently logged in.');
-		}
 	}
 
 	function LoginForm()
@@ -977,7 +884,7 @@ class MyAccount_AJAX
 		global $configArray;
 
 		try {
-			/** @var AbstractCatalogDriver $catalog */
+			/** @var AbstractIlsDriver $catalog */
 			$catalog = CatalogFactory::getCatalogConnectionInstance();
 
 			$barcode = $_REQUEST['barcode'];
@@ -1112,7 +1019,7 @@ class MyAccount_AJAX
 		return $formDefinition;
 	}
 
-	function renewItem() {
+	function renewCheckout() {
 		if (isset($_REQUEST['patronId']) && isset($_REQUEST['recordId']) && isset($_REQUEST['renewIndicator'])) {
 			if (strpos($_REQUEST['renewIndicator'], '|') > 0){
 				list($itemId, $itemIndex) = explode('|', $_REQUEST['renewIndicator']);
@@ -1132,7 +1039,7 @@ class MyAccount_AJAX
 				$recordId = $_REQUEST['recordId'];
 				$patron = $user->getUserReferredTo($patronId);
 				if ($patron){
-					$renewResults = $patron->renewItem($recordId, $itemId, $itemIndex);
+					$renewResults = $patron->renewCheckout($recordId, $itemId, $itemIndex);
 				}else{
 					$renewResults = array(
 						'success' => false,
@@ -1180,7 +1087,7 @@ class MyAccount_AJAX
 //			}
 
 				$user = UserAccount::getLoggedInUser();
-				if (method_exists($user, 'renewItem')) {
+				if (method_exists($user, 'renewCheckout')) {
 
 					$failure_messages = array();
 					$renewResults     = array();
@@ -1189,7 +1096,7 @@ class MyAccount_AJAX
 						@list($patronId, $recordId, $itemId, $itemIndex) = explode('|', $selected);
 						$patron = $user->getUserReferredTo($patronId);
 						if ($patron){
-							$tmpResult = $patron->renewItem($recordId, $itemId, $itemIndex);
+							$tmpResult = $patron->renewCheckout($recordId, $itemId, $itemIndex);
 						}else{
 							$tmpResult = array(
 								'success' => false,
@@ -1209,8 +1116,8 @@ class MyAccount_AJAX
 						$renewResults['message'] = "All items were renewed successfully.";
 					}
 					$renewResults['Total']     = count($_REQUEST['selected']);
-					$renewResults['Unrenewed'] = count($failure_messages);
-					$renewResults['Renewed']   = $renewResults['Total'] - $renewResults['Unrenewed'];
+					$renewResults['NotRenewed'] = count($failure_messages);
+					$renewResults['Renewed']   = $renewResults['Total'] - $renewResults['NotRenewed'];
 				} else {
 					PEAR_Singleton::raiseError(new PEAR_Error('Cannot Renew Item - ILS Not Supported'));
 					$renewResults = array(

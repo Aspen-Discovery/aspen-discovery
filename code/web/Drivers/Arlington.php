@@ -20,6 +20,13 @@ class Arlington extends Sierra{
 		return true;
 	}
 
+    /**
+     * @param User $user
+     * @param string $oldPin
+     * @param string $newPin
+     * @param string $confirmNewPin
+     * @return string The message to the user updating them on status
+     */
 	public function updatePin($user, $oldPin, $newPin, $confirmNewPin){
 		$scope = $this->getDefaultScope();
 
@@ -35,7 +42,7 @@ class Arlington extends Sierra{
 			'pin2'       => $confirmNewPin,
 			'pat_submit' => 'xxx'
 		);
-		$curlResponse = $this->_curlPostPage($curlUrl, $post);
+		$curlResponse = $this->curlWrapper->curlPostPage($curlUrl, $post);
 
 		if ($curlResponse) {
 			if (stripos($curlResponse, 'Your PIN has been modified.')) {

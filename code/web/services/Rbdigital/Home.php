@@ -59,7 +59,7 @@ class Rbdigital_Home extends Action{
 			$this->loadCitations($recordDriver);
 
 			// Retrieve User Search History
-			$interface->assign('lastsearch', isset($_SESSION['lastSearchURL']) ?
+			$interface->assign('lastSearch', isset($_SESSION['lastSearchURL']) ?
 			$_SESSION['lastSearchURL'] : false);
 
 			//Get Next/Previous Links

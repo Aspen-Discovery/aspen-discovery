@@ -21,9 +21,10 @@ class SantaFe extends Sierra{
 
 		$logger->log('Loading page ' . $curlUrl, PEAR_LOG_INFO);
 
-		$loginResponse = $this->_curlPostPage($curlUrl, $post_data);
+		$loginResponse = $this->curlWrapper->curlPostPage($curlUrl, $post_data);
 
 		//When a library uses IPSSO, the initial login does a redirect and requires additional parameters.
+        /** @noinspection HtmlUnknownAttribute */
 		if (preg_match('/<input type="hidden" name="lt" value="(.*?)" \/>/si', $loginResponse, $loginMatches)) {
 			$lt = $loginMatches[1]; //Get the lt value
 			//Login again
@@ -33,12 +34,11 @@ class SantaFe extends Sierra{
 			//Don't issue a post, just call the same page (with redirects as needed)
 			//Get the ticket from the previous response
 
-			//curl_setopt($this->curl_connection, CURLOPT_URL, $baseUrl);
 			usleep(50000);
 			$post_string = http_build_query($post_data);
-			curl_setopt($this->curl_connection, CURLOPT_POSTFIELDS, $post_string);
+			curl_setopt($this->curlWrapper->curl_connection, CURLOPT_POSTFIELDS, $post_string);
 
-			$loginResponse = curl_exec($this->curl_connection);
+			$loginResponse = curl_exec($this->curlWrapper->curl_connection);
 		}
 
 		if ($loginResponse) {

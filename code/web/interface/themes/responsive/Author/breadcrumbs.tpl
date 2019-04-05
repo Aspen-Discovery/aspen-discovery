@@ -1,5 +1,5 @@
 
-{if $lastsearch}<li><a href="{$lastsearch|escape}">{translate text="Search"}</a> <span class="divider">&raquo;</span></li>{/if}
+{if $lastSearch}<li><a href="{$lastSearch|escape}">{translate text="Search"}</a> <span class="divider">&raquo;</span></li>{/if}
  
 {if $pageTemplate=="home.tpl"}<li><em>{$author.0|escape}, {$author.1|escape}</em> <span class="divider">&raquo;</span></li>{/if}
 

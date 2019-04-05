@@ -76,8 +76,12 @@ class User extends DataObject
 	private $_numHoldsOverDrive = 0;
 	private $_numHoldsAvailableOverDrive = 0;
 	private $_numHoldsRequestedOverDrive = 0;
+    private $_numCheckedOutRbdigital = 0;
+    private $_numHoldsRbdigital = 0;
+    private $_numHoldsAvailableRbdigital = 0;
+    private $_numHoldsRequestedRbdigital = 0;
 	private $_numCheckedOutHoopla = 0;
-	public $numBookings;
+	public $_numBookings;
 	public $notices;
 	public $_noticePreferenceLabel;
 	private $_numMaterialsRequests = 0;
@@ -329,8 +333,13 @@ class User extends DataObject
 							$userData = $memCache->get("user_{$serverName}_{$linkedUser->id}");
 							if ($userData === false || isset($_REQUEST['reload'])){
 								//Load full information from the catalog
-								$linkedUser = UserAccount::validateAccount($linkedUser->cat_username, $linkedUser->cat_password, $linkedUser->source, $this);
-							}else{
+                                try {
+                                    $linkedUser = UserAccount::validateAccount($linkedUser->cat_username, $linkedUser->cat_password, $linkedUser->source, $this);
+                                } catch (UnknownAuthenticationMethodException $e) {
+                                    $logger->log("Unknown authentication method $e", PEAR_LOG_WARNING);
+                                    $linkedUser = false;
+                                }
+                            }else{
 								$logger->log("Found cached linked user {$userData->id}", PEAR_LOG_DEBUG);
 								$linkedUser = $userData;
 							}
@@ -406,13 +415,13 @@ class User extends DataObject
 		}
 	}
 
-	function getRelatedOverDriveUsers(){
+	function getRelatedEcontentUsers($source){
 		$overDriveUsers = array();
-		if ($this->isValidForOverDrive()){
+		if ($this->isValidForEContentSource($source)){
 			$overDriveUsers[$this->cat_username . ':' . $this->cat_password] = $this;
 		}
 		foreach ($this->getLinkedUsers() as $linkedUser){
-			if ($linkedUser->isValidForOverDrive()){
+			if ($linkedUser->isValidForEContentSource($source)){
 				if (!array_key_exists($linkedUser->cat_username . ':' . $linkedUser->cat_password, $overDriveUsers)){
 					$overDriveUsers[$linkedUser->cat_username . ':' . $linkedUser->cat_password] = $linkedUser;
 				}
@@ -422,40 +431,21 @@ class User extends DataObject
 		return $overDriveUsers;
 	}
 
-	function isValidForOverDrive(){
+	function isValidForEContentSource($source){
 		if ($this->parentUser == null || ($this->getBarcode() != $this->parentUser->getBarcode())){
 			$userHomeLibrary = Library::getPatronHomeLibrary($this);
-			if ($userHomeLibrary && $userHomeLibrary->enableOverdriveCollection){
-				return true;
+			if ($userHomeLibrary){
+			    if ($source == 'overdrive'){
+			        return $userHomeLibrary->enableOverdriveCollection;
+                }elseif ($source == 'hoopla'){
+			        return $userHomeLibrary->hooplaLibraryID > 0;
+                }elseif ($source == 'rbdigital'){
+			        global $configArray;
+                    return !empty($configArray['Rbdigital']) && !empty($configArray['Rbdigital']['url']);
+                }
 			}
 		}
 		return false;
-	}
-
-	function isValidForHoopla(){
-		if ($this->parentUser == null || ($this->getBarcode() != $this->parentUser->getBarcode())){
-			$userHomeLibrary = Library::getPatronHomeLibrary($this);
-			if ($userHomeLibrary && $userHomeLibrary->hooplaLibraryID > 0){
-				return true;
-			}
-		}
-		return false;
-	}
-
-	function getRelatedHooplaUsers(){
-		$hooplaUsers = array();
-		if ($this->isValidForHoopla()){
-			$hooplaUsers[$this->cat_username . ':' . $this->cat_password] = $this;
-		}
-		foreach ($this->getLinkedUsers() as $linkedUser){
-			if ($linkedUser->isValidForHoopla()){
-				if (!array_key_exists($linkedUser->cat_username . ':' . $linkedUser->cat_password, $hooplaUsers)){
-					$hooplaUsers[$linkedUser->cat_username . ':' . $linkedUser->cat_password] = $linkedUser;
-				}
-			}
-		}
-
-		return $hooplaUsers;
 	}
 
 	/**
@@ -613,9 +603,8 @@ class User extends DataObject
 		require_once ROOT_DIR . '/sys/LocalEnrichment/UserWorkReview.php';
 
 		$rating = new UserWorkReview();
-//		$rating->userid = $this->id;
-		$rating->whereAdd("`userId` = {$this->id}");
-		$rating->whereAdd('`rating` > 0'); // Some entries are just reviews (and therefore have a default rating of -1)
+		$rating->whereAdd("userId = {$this->id}");
+		$rating->whereAdd('rating > 0'); // Some entries are just reviews (and therefore have a default rating of -1)
 		$rating->find();
 		if ($rating->N > 0){
 			return true;
@@ -777,7 +766,7 @@ class User extends DataObject
 
 	public function getNumCheckedOutTotal($includeLinkedUsers = true) {
 		$this->updateRuntimeInformation();
-		$myCheckouts = $this->_numCheckedOutIls + $this->_numCheckedOutOverDrive + $this->_numHoldsRequestedOverDrive;
+		$myCheckouts = $this->_numCheckedOutIls + $this->_numCheckedOutOverDrive + $this->_numCheckedOutHoopla + $this->_numCheckedOutRbdigital;
 		if ($includeLinkedUsers) {
 			if ($this->getLinkedUsers() != null) {
 				/** @var User $user */
@@ -791,7 +780,7 @@ class User extends DataObject
 
 	public function getNumHoldsTotal($includeLinkedUsers = true) {
 		$this->updateRuntimeInformation();
-		$myHolds = $this->_numHoldsIls + $this->_numHoldsOverDrive;
+		$myHolds = $this->_numHoldsIls + $this->_numHoldsOverDrive + $this->_numHoldsRbdigital;
 		if ($includeLinkedUsers) {
 			if ($this->getLinkedUsers() != null) {
 				/** @var User $user */
@@ -805,7 +794,7 @@ class User extends DataObject
 
 	public function getNumHoldsAvailableTotal($includeLinkedUsers = true){
 		$this->updateRuntimeInformation();
-		$myHolds = $this->_numHoldsAvailableIls + $this->_numHoldsAvailableOverDrive;
+		$myHolds = $this->_numHoldsAvailableIls + $this->_numHoldsAvailableOverDrive + $this->_numHoldsAvailableRbdigital;
 		if ($includeLinkedUsers){
 			if ($this->getLinkedUsers() != null) {
 				/** @var User $user */
@@ -862,66 +851,77 @@ class User extends DataObject
 	 * @param bool $includeLinkedUsers
 	 * @return array
 	 */
-	public function getMyCheckouts($includeLinkedUsers = true){
+	public function getCheckouts($includeLinkedUsers = true){
 		global $timer;
 		//Get checked out titles from the ILS
-		$ilsCheckouts = $this->getCatalogDriver()->getMyCheckouts($this);
+		$ilsCheckouts = $this->getCatalogDriver()->getCheckouts($this);
+        $allCheckedOut = $ilsCheckouts;
 		$timer->logTime("Loaded transactions from catalog.");
 
 		//Get checked out titles from OverDrive
 		//Do not load OverDrive titles if the parent barcode (if any) is the same as the current barcode
-		if ($this->isValidForOverDrive()){
-			require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
-			$overDriveDriver = OverDriveDriverFactory::getDriver();
-			$overDriveCheckedOutItems = $overDriveDriver->getOverDriveCheckedOutItems($this);
-		}else{
-			$overDriveCheckedOutItems = array();
+		if ($this->isValidForEContentSource('overdrive')){
+            require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+            $driver = new OverDriveDriver();
+			$overDriveCheckedOutItems = $driver->getCheckouts($this);
+            $allCheckedOut = array_merge($ilsCheckouts, $overDriveCheckedOutItems);
 		}
-
-		$allCheckedOut = array_merge($ilsCheckouts, $overDriveCheckedOutItems);
 
 		//Get checked out titles from Hoopla
 		//Do not load Hoopla titles if the parent barcode (if any) is the same as the current barcode
-		if ($this->isValidForHoopla()){
-			require_once ROOT_DIR . '/Drivers/HooplaDriver.php';
-			$hooplaDriver = new HooplaDriver();
-			$hooplaCheckedOutItems = $hooplaDriver->getHooplaCheckedOutItems($this);
-			$allCheckedOut = array_merge($allCheckedOut, $hooplaCheckedOutItems);
-		}
+		if ($this->isValidForEContentSource('hoopla')){
+            require_once ROOT_DIR . '/Drivers/HooplaDriver.php';
+            $hooplaDriver = new HooplaDriver();
+            $hooplaCheckedOutItems = $hooplaDriver->getCheckouts($this);
+            $allCheckedOut = array_merge($allCheckedOut, $hooplaCheckedOutItems);
+        }
+
+//        if ($this->isValidForEContentSource('rbdigital')){
+//            require_once ROOT_DIR . '/Drivers/RbdigitalDriver.php';
+//            $rbdigitalDriver = new RbdigitalDriver();
+//            $rbdigitalCheckedOutItems = $rbdigitalDriver->getCheckouts($this);
+//            $allCheckedOut = array_merge($allCheckedOut, $rbdigitalCheckedOutItems);
+//        }
 
 		if ($includeLinkedUsers) {
 			if ($this->getLinkedUsers() != null) {
 				/** @var User $user */
 				foreach ($this->getLinkedUsers() as $user) {
-					$allCheckedOut = array_merge($allCheckedOut, $user->getMyCheckouts(false));
+					$allCheckedOut = array_merge($allCheckedOut, $user->getCheckouts(false));
 				}
 			}
 		}
 		return $allCheckedOut;
 	}
 
-	public function getMyHolds($includeLinkedUsers = true, $unavailableSort = 'sortTitle', $availableSort = 'expire'){
-		$ilsHolds = $this->getCatalogDriver()->getMyHolds($this);
+	public function getHolds($includeLinkedUsers = true, $unavailableSort = 'sortTitle', $availableSort = 'expire'){
+		$ilsHolds = $this->getCatalogDriver()->getHolds($this);
 		if (PEAR_Singleton::isError($ilsHolds)) {
 			$ilsHolds = array();
 		}
+        $allHolds = $ilsHolds;
 
 		//Get holds from OverDrive
-		if ($this->isValidForOverDrive()){
-			require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
-			$overDriveDriver = OverDriveDriverFactory::getDriver();
-			$overDriveHolds = $overDriveDriver->getOverDriveHolds($this);
-		}else{
-			$overDriveHolds = array();
+		if ($this->isValidForEContentSource('overdrive')){
+            require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+            $driver = new OverDriveDriver();
+			$overDriveHolds = $driver->getHolds($this);
+            $allHolds = array_merge_recursive($allHolds, $overDriveHolds);
 		}
 
-		$allHolds = array_merge_recursive($ilsHolds, $overDriveHolds);
+        //Get holds from Rbdigital
+//        if ($this->isValidForEContentSource('rbdigital')){
+//            require_once ROOT_DIR . '/Drivers/RbdigitalDriver.php';
+//            $driver = new RbdigitalDriver();
+//            $rbdigitalHolds = $driver->getHolds($this);
+//            $allHolds = array_merge_recursive($allHolds, $rbdigitalHolds);
+//        }
 
 		if ($includeLinkedUsers) {
 			if ($this->getLinkedUsers() != null) {
 				/** @var User $user */
 				foreach ($this->getLinkedUsers() as $user) {
-					$allHolds = array_merge_recursive($allHolds, $user->getMyHolds(false, $unavailableSort, $availableSort));
+					$allHolds = array_merge_recursive($allHolds, $user->getHolds(false, $unavailableSort, $availableSort));
 				}
 			}
 		}
@@ -951,40 +951,50 @@ class User extends DataObject
 
 		if (count($allHolds['available'])) {
 			switch ($availableSort) {
-				case 'author' :
-				case 'format' :
-					$indexToSortBy = $availableSort;
-					break;
-				case 'title' :
-					$indexToSortBy = 'sortTitle';
-					break;
-				case 'libraryAccount' :
-					$indexToSortBy = 'user';
-					break;
-				case 'expire' :
-				default :
-					$indexToSortBy = 'expire';
+            case 'author' :
+            case 'format' :
+                //This is used in the sort function
+                /** @noinspection PhpUnusedLocalVariableInspection */
+                $indexToSortBy = $availableSort;
+                break;
+            case 'title' :
+                /** @noinspection PhpUnusedLocalVariableInspection */
+                $indexToSortBy = 'sortTitle';
+                break;
+            case 'libraryAccount' :
+                /** @noinspection PhpUnusedLocalVariableInspection */
+                $indexToSortBy = 'user';
+                break;
+            case 'expire' :
+            default :
+                /** @noinspection PhpUnusedLocalVariableInspection */
+                $indexToSortBy = 'expire';
 			}
 			uasort($allHolds['available'], $holdSort);
 		}
 		if (count($allHolds['unavailable'])) {
 			switch ($unavailableSort) {
-				case 'author' :
-				case 'location' :
-				case 'position' :
-				case 'status' :
-				case 'format' :
-					$indexToSortBy = $unavailableSort;
-					break;
-				case 'placed' :
-					$indexToSortBy = 'create';
-					break;
-				case 'libraryAccount' :
-					$indexToSortBy = 'user';
-					break;
-				case 'title' :
-				default :
-					$indexToSortBy = 'sortTitle';
+            case 'author' :
+            case 'location' :
+            case 'position' :
+            case 'status' :
+            case 'format' :
+                //This is used in the sort function
+                /** @noinspection PhpUnusedLocalVariableInspection */
+                $indexToSortBy = $unavailableSort;
+                break;
+            case 'placed' :
+                /** @noinspection PhpUnusedLocalVariableInspection */
+                $indexToSortBy = 'create';
+                break;
+            case 'libraryAccount' :
+                /** @noinspection PhpUnusedLocalVariableInspection */
+                $indexToSortBy = 'user';
+                break;
+            case 'title' :
+            default :
+                /** @noinspection PhpUnusedLocalVariableInspection */
+                $indexToSortBy = 'sortTitle';
 			}
 			uasort($allHolds['unavailable'], $holdSort);
 		}
@@ -1086,18 +1096,19 @@ class User extends DataObject
 		return $locations;
 	}
 
-	/**
-	 * Place Hold
-	 *
-	 * Place a hold for the current user within their ILS
-	 *
-	 * @param   string  $recordId     The id of the bib record
-	 * @param   string  $pickupBranch The branch where the user wants to pickup the item when available
-	 * @return  array                 An array with the following keys
-	 *                                result - true/false
-	 *                                message - the message to display
-	 * @access  public
-	 */
+    /**
+     * Place Hold
+     *
+     * Place a hold for the current user within their ILS
+     *
+     * @param   string $recordId            The id of the bib record
+     * @param   string $pickupBranch        The branch where the user wants to pickup the item when available
+     * @param   null|string $cancelDate     When the hold should be automatically cancelled if desired
+     * @return  array                 An array with the following keys
+     *                                result - true/false
+     *                                message - the message to display
+     * @access  public
+     */
 	function placeHold($recordId, $pickupBranch, $cancelDate = null) {
 		$result = $this->getCatalogDriver()->placeHold($this, $recordId, $pickupBranch, $cancelDate);
 		$this->updateAltLocationForHold($pickupBranch);
@@ -1107,8 +1118,8 @@ class User extends DataObject
 		return $result;
 	}
 
-	function placeVolumeHold($recordId, $volumeId, $pickupBranch, $cancelDate = null){
-		$result = $this->getCatalogDriver()->placeVolumeHold($this, $recordId, $volumeId, $pickupBranch, $cancelDate);
+	function placeVolumeHold($recordId, $volumeId, $pickupBranch){
+		$result = $this->getCatalogDriver()->placeVolumeHold($this, $recordId, $volumeId, $pickupBranch);
 		$this->updateAltLocationForHold($pickupBranch);
 		if ($result['success']){
 			$this->clearCache();
@@ -1163,7 +1174,7 @@ class User extends DataObject
 				foreach ($this->getLinkedUsers() as $user) {
 
 					$additionalResults = $user->cancelAllBookedMaterial(false);
-					if (!$additionalResults['success']) { // if we recieved failures
+					if (!$additionalResults['success']) { // if we received failures
 						if ($result['success']) {
 							$result = $additionalResults; // first set of failures, overwrite currently successful results
 						} else { // if there were already failures, add the extra failure messages
@@ -1255,8 +1266,8 @@ class User extends DataObject
 		return $result;
 	}
 
-	function renewItem($recordId, $itemId, $itemIndex){
-		$result = $this->getCatalogDriver()->renewItem($this, $recordId, $itemId, $itemIndex);
+	function renewCheckout($recordId, $itemId, $itemIndex){
+		$result = $this->getCatalogDriver()->renewCheckout($this, $recordId, $itemId, $itemIndex);
 		$this->clearCache();
 		return $result;
 	}
@@ -1271,7 +1282,7 @@ class User extends DataObject
 					$linkedResults = $user->renewAll(false);
 					//Merge results
 					$renewAllResults['Renewed'] += $linkedResults['Renewed'];
-					$renewAllResults['Unrenewed'] += $linkedResults['Unrenewed'];
+					$renewAllResults['NotRenewed'] += $linkedResults['NotRenewed'];
 					$renewAllResults['Total'] += $linkedResults['Total'];
 					if ($renewAllResults['success'] && !$linkedResults['success']){
 						$renewAllResults['success'] = false;
@@ -1293,9 +1304,8 @@ class User extends DataObject
 	}
 
 	public function doReadingHistoryAction($readingHistoryAction, $selectedTitles){
-		$result = $this->getCatalogDriver()->doReadingHistoryAction($this, $readingHistoryAction, $selectedTitles);
+		$this->getCatalogDriver()->doReadingHistoryAction($this, $readingHistoryAction, $selectedTitles);
 		$this->clearCache();
-		return $result;
 	}
 
 	/**
@@ -1424,13 +1434,27 @@ class User extends DataObject
 
 	function setNumHoldsAvailableOverDrive($val){
 		$this->_numHoldsAvailableOverDrive = $val;
-		$this->_numHoldsOverDrive += $val;
+		$this->_numHoldsRbdigital += $val;
 	}
 
 	function setNumHoldsRequestedOverDrive($val){
 		$this->_numHoldsRequestedOverDrive = $val;
-		$this->_numHoldsOverDrive += $val;
+		$this->_numHoldsRbdigital += $val;
 	}
+
+    function setNumCheckedOutRbdigital($val){
+        $this->_numCheckedOutRbdigital = $val;
+    }
+
+    function setNumHoldsAvailableRbdigital($val){
+        $this->_numHoldsAvailableOverDrive = $val;
+        $this->_numHoldsRbdigital += $val;
+    }
+
+    function setNumHoldsRequestedRbdigital($val){
+        $this->_numHoldsRequestedRbdigital = $val;
+        $this->_numHoldsRbdigital += $val;
+    }
 
 	function setNumMaterialsRequests($val){
 		$this->_numMaterialsRequests = $val;

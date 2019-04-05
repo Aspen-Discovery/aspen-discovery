@@ -2,7 +2,7 @@ VuFind.OverDrive = (function(){
 	return {
 		cancelOverDriveHold: function(patronId, overdriveId){
 			if (confirm("Are you sure you want to cancel this hold?")){
-				var ajaxUrl = Globals.path + "/OverDrive/AJAX?method=CancelOverDriveHold&patronId=" + patronId + "&overDriveId=" + overdriveId;
+				var ajaxUrl = Globals.path + "/OverDrive/AJAX?method=CancelHold&patronId=" + patronId + "&overDriveId=" + overdriveId;
 				$.ajax({
 					url: ajaxUrl,
 					cache: false,
@@ -47,7 +47,7 @@ VuFind.OverDrive = (function(){
 			return result;
 		},
 
-		checkOutOverDriveTitle: function(overDriveId){
+		checkoutTitle: function(overDriveId){
 			if (Globals.loggedIn){
 				//Get any prompts needed for placing holds (e-mail and format depending on the interface.
 				var promptInfo = VuFind.OverDrive.getOverDriveCheckoutPrompts(overDriveId, 'hold');
@@ -56,7 +56,7 @@ VuFind.OverDrive = (function(){
 				}
 			}else{
 				VuFind.Account.ajaxLogin(null, function(){
-					VuFind.OverDrive.checkOutOverDriveTitle(overDriveId);
+					VuFind.OverDrive.checkoutTitle(overDriveId);
 				});
 			}
 			return false;
@@ -83,7 +83,7 @@ VuFind.OverDrive = (function(){
 								VuFind.closeLightbox();
 								ret = confirm(data.message);
 								if (ret == true){
-									VuFind.OverDrive.placeOverDriveHold(overdriveId, null);
+									VuFind.OverDrive.placeHold(overdriveId);
 								}
 							}else{
 								VuFind.showMessage("Error Checking Out Title", data.message, false);
@@ -100,22 +100,20 @@ VuFind.OverDrive = (function(){
 				});
 			}else{
 				VuFind.Account.ajaxLogin(null, function(){
-					// VuFind.OverDrive.checkoutOverDriveItemOneClick(overdriveId);
-					//TODO: method above hasn't been defined
-					VuFind.OverDrive.checkoutOverDriveItem(overdriveId);
+					VuFind.OverDrive.checkoutTitle(overdriveId);
 				}, false);
 			}
 			return false;
 		},
 
 		doOverDriveHold: function(patronId, overDriveId, overdriveEmail, promptForOverdriveEmail){
-			var url = Globals.path + "/OverDrive/AJAX?method=PlaceOverDriveHold&patronId=" + patronId + "&overDriveId=" + overDriveId + "&overdriveEmail=" + overdriveEmail + "&promptForOverdriveEmail=" + promptForOverdriveEmail;
+			var url = Globals.path + "/OverDrive/AJAX?method=PlacHold&patronId=" + patronId + "&overDriveId=" + overDriveId + "&overdriveEmail=" + overdriveEmail + "&promptForOverdriveEmail=" + promptForOverdriveEmail;
 			$.ajax({
 				url: url,
 				cache: false,
 				success: function(data){
 					if (data.availableForCheckout){
-						VuFind.OverDrive.checkoutOverDriveItemOneClick(overdriveId);
+						VuFind.OverDrive.doOverDriveCheckout(patronId, overdriveId);
 					}else{
 						VuFind.showMessage("Placed Hold", data.message, true);
 					}
@@ -184,7 +182,7 @@ VuFind.OverDrive = (function(){
 			return result;
 		},
 
-		placeOverDriveHold: function(overDriveId){
+		placeHold: function(overDriveId){
 			if (Globals.loggedIn){
 				//Get any prompts needed for placing holds (e-mail and format depending on the interface.
 				var promptInfo = VuFind.OverDrive.getOverDriveHoldPrompts(overDriveId, 'hold');
@@ -193,7 +191,7 @@ VuFind.OverDrive = (function(){
 				}
 			}else{
 				VuFind.Account.ajaxLogin(null, function(){
-					VuFind.OverDrive.placeOverDriveHold(overDriveId);
+					VuFind.OverDrive.placeHold(overDriveId);
 				});
 			}
 			return false;
@@ -213,10 +211,10 @@ VuFind.OverDrive = (function(){
 			VuFind.OverDrive.doOverDriveHold(patronId, overdriveId, overdriveEmail, promptForOverdriveEmail);
 		},
 
-		returnOverDriveTitle: function (patronId, overDriveId, transactionId){
+		returnCheckout: function (patronId, overDriveId){
 			if (confirm('Are you sure you want to return this title?')){
 				VuFind.showMessage("Returning Title", "Returning your title in OverDrive.  This may take a minute.");
-				var ajaxUrl = Globals.path + "/OverDrive/AJAX?method=ReturnOverDriveItem&patronId=" + patronId + "&overDriveId=" + overDriveId + "&transactionId=" + transactionId;
+				var ajaxUrl = Globals.path + "/OverDrive/AJAX?method=ReturnCheckout&patronId=" + patronId + "&overDriveId=" + overDriveId;
 				$.ajax({
 					url: ajaxUrl,
 					cache: false,

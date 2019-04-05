@@ -61,10 +61,10 @@
 						</div>
 					{/if}
 
-					{if $record.checkoutdate}
+					{if $record.checkoutDate}
 						<div class="row">
 							<div class="result-label col-tn-4 col-lg-3">{translate text='Checked Out'}</div>
-							<div class="result-value col-tn-8 col-lg-9">{$record.checkoutdate|date_format}</div>
+							<div class="result-value col-tn-8 col-lg-9">{$record.checkoutDate|date_format}</div>
 						</div>
 					{/if}
 
@@ -132,23 +132,6 @@
 				{* Actions for Title *}
 				<div class="col-xs-9 col-sm-8 col-md-4 col-lg-3">
 					<div class="btn-group btn-group-vertical btn-block">
-{* TODO: Add Hoopla Actions
-						{if $record.overdriveRead}
-							<a href="#" onclick="return VuFind.OverDrive.followOverDriveDownloadLink('{$record.userId}', '{$record.overDriveId}', 'ebook-overdrive')" class="btn btn-sm btn-primary">Read&nbsp;Online</a>
-						{/if}
-						{if $record.overdriveListen}
-							<a href="#" onclick="return VuFind.OverDrive.followOverDriveDownloadLink('{$record.userId}', '{$record.overDriveId}', 'audiobook-overdrive')" class="btn btn-sm btn-primary">Listen&nbsp;Online</a>
-						{/if}
-						{if $record.overdriveVideo}
-							<a href="#" onclick="return VuFind.OverDrive.followOverDriveDownloadLink('{$record.userId}', '{$record.overDriveId}', 'video-streaming')" class="btn btn-sm btn-primary">Watch&nbsp;Online</a>
-						{/if}
-						{if $record.formatSelected && !$record.overdriveVideo}
-							<a href="#" onclick="return VuFind.OverDrive.followOverDriveDownloadLink('{$record.userId}', '{$record.overDriveId}', '{$record.selectedFormat.format}')" class="btn btn-sm btn-primary">Download&nbsp;Again</a>
-						{/if}
-						{if $record.earlyReturn}
-							<a href="#" onclick="return VuFind.OverDrive.returnOverDriveTitle('{$record.userId}', '{$record.overDriveId}', '{$record.transactionId}');" class="btn btn-sm btn-warning">Return&nbsp;Now</a>
-						{/if}
-*}
 						{if $record.hooplaUrl}
 						<a href="{$record.hooplaUrl}" target="_blank" {*onclick="alert('Dummy button');return false"*} class="btn btn-sm btn-primary">Access&nbsp;Online</a>
 						{/if}

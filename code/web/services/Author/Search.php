@@ -31,7 +31,7 @@ class Author_Search extends Action
 		$interface->caching = false;
 
 		// Retrieve User Search History
-		$interface->assign('lastsearch', isset($_SESSION['lastSearchURL']) ?
+		$interface->assign('lastSearch', isset($_SESSION['lastSearchURL']) ?
 		$_SESSION['lastSearchURL'] : false);
 
 		// Initialise from the current search globals

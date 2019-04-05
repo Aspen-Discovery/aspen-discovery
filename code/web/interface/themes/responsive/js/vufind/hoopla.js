@@ -42,13 +42,13 @@ VuFind.Hoopla = (function(){
 			return false;
 		},
 
-		returnHooplaTitle: function (patronId, hooplaId) {
+		returnCheckout: function (patronId, hooplaId) {
 			if (Globals.loggedIn) {
 				if (confirm('Are you sure you want to return this title?')) {
 					VuFind.showMessage("Returning Title", "Returning your title in Hoopla.");
 					var url = Globals.path + "/Hoopla/" + hooplaId + "/AJAX",
 							params = {
-								'method': 'returnHooplaTitle'
+								'method': 'returnCheckout'
 								,patronId: patronId
 							};
 					$.getJSON(url, params, function (data) {
@@ -57,7 +57,7 @@ VuFind.Hoopla = (function(){
 				}
 			} else {
 				VuFind.Account.ajaxLogin(null, function () {
-					VuFind.Hoopla.returnHooplaTitle(patronId, hooplaId);
+					VuFind.Hoopla.returnCheckout(patronId, hooplaId);
 				}, false);
 			}
 			return false;

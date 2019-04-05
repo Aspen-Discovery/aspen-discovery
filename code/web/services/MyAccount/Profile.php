@@ -116,11 +116,6 @@ class MyAccount_Profile extends MyAccount
 					}
 						$patron->setStaffSettings();
 				} elseif ($updateScope == 'overdrive') {
-					// overdrive setting keep changing
-					/*	require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
-						$overDriveDriver = OverDriveDriverFactory::getDriver();
-						$result = $overDriveDriver->updateLendingOptions();
-		*/
 					$patron->updateOverDriveOptions();
 				} elseif ($updateScope == 'hoopla') {
 					$patron->updateHooplaOptions();
@@ -140,14 +135,6 @@ class MyAccount_Profile extends MyAccount
 			} else {
 				$interface->assign('edit', false);
 			}
-
-
-			/*require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
-			$overDriveDriver = OverDriveDriverFactory::getDriver();
-			if ($overDriveDriver->version >= 2){
-				$lendingPeriods = $overDriveDriver->getLendingPeriods($user);
-				$interface->assign('overDriveLendingOptions', $lendingPeriods);
-			}*/
 
 //			$interface->assign('overDriveUrl', $configArray['OverDrive']['url']);
 			global $translator;

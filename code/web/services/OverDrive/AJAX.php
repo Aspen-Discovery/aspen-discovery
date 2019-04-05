@@ -8,7 +8,7 @@ class OverDrive_AJAX extends Action {
 
 	function launch() {
 		$method = $_GET['method'];
-		if (in_array($method, array('CheckoutOverDriveItem', 'PlaceOverDriveHold', 'CancelOverDriveHold', 'GetOverDriveHoldPrompts', 'ReturnOverDriveItem', 'SelectOverDriveDownloadFormat', 'GetDownloadLink', 'GetOverDriveCheckoutPrompts', 'forceUpdateFromAPI'))){
+		if (in_array($method, array('CheckoutOverDriveItem', 'PlaceHold', 'CancelHold', 'GetOverDriveHoldPrompts', 'ReturnCheckout', 'SelectOverDriveDownloadFormat', 'GetDownloadLink', 'GetOverDriveCheckoutPrompts', 'forceUpdateFromAPI'))){
 			header('Content-type: text/plain');
 			header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 			header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
@@ -53,7 +53,7 @@ class OverDrive_AJAX extends Action {
 		}
 	}
 
-	function PlaceOverDriveHold(){
+	function PlaceHold(){
 		$user = UserAccount::getLoggedInUser();
 
 		$overDriveId = $_REQUEST['overDriveId'];
@@ -72,9 +72,9 @@ class OverDrive_AJAX extends Action {
 					$patron->update();
 				}
 
-				require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
-				$driver = OverDriveDriverFactory::getDriver();
-				$holdMessage = $driver->placeOverDriveHold($overDriveId, $patron);
+                require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+                $driver = new OverDriveDriver();
+				$holdMessage = $driver->placeHold($patron, $overDriveId);
 				return json_encode($holdMessage);
 			}else{
 				return json_encode(array('result'=>false, 'message'=>'Sorry, it looks like you don\'t have permissions to place holds for that user.'));
@@ -93,9 +93,9 @@ class OverDrive_AJAX extends Action {
 			$patronId = $_REQUEST['patronId'];
 			$patron = $user->getUserReferredTo($patronId);
 			if ($patron) {
-				require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
-				$driver = OverDriveDriverFactory::getDriver();
-				$result = $driver->checkoutOverDriveItem($overDriveId, $patron);
+                require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+                $driver = new OverDriveDriver();
+				$result = $driver->checkoutTitle($overDriveId, $patron);
 				//$logger->log("Checkout result = $result", PEAR_LOG_INFO);
 				if ($result['success']){
 					$result['buttons'] = '<a class="btn btn-primary" href="/MyAccount/CheckedOut" role="button">View My Check Outs</a>';
@@ -109,7 +109,7 @@ class OverDrive_AJAX extends Action {
 		}
 	}
 
-	function ReturnOverDriveItem(){
+	function ReturnReturnCheckout(){
 		$user = UserAccount::getLoggedInUser();
 		$overDriveId = $_REQUEST['overDriveId'];
 		$transactionId = $_REQUEST['transactionId'];
@@ -117,9 +117,9 @@ class OverDrive_AJAX extends Action {
 			$patronId = $_REQUEST['patronId'];
 			$patron = $user->getUserReferredTo($patronId);
 			if ($patron) {
-				require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
-				$driver = OverDriveDriverFactory::getDriver();
-				$result = $driver->returnOverDriveItem($overDriveId, $transactionId, $patron);
+                require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+                $driver = new OverDriveDriver();
+				$result = $driver->returnCheckout($patron, $overDriveId);
 				//$logger->log("Checkout result = $result", PEAR_LOG_INFO);
 				return json_encode($result);
 			}else{
@@ -138,8 +138,8 @@ class OverDrive_AJAX extends Action {
 			$patronId = $_REQUEST['patronId'];
 			$patron = $user->getUserReferredTo($patronId);
 			if ($patron) {
-				require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
-				$driver = OverDriveDriverFactory::getDriver();
+                require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+                $driver = new OverDriveDriver();
 				$result = $driver->selectOverDriveDownloadFormat($overDriveId, $formatId, $patron);
 				//$logger->log("Checkout result = $result", PEAR_LOG_INFO);
 				return json_encode($result);
@@ -159,8 +159,8 @@ class OverDrive_AJAX extends Action {
 			$patronId = $_REQUEST['patronId'];
 			$patron = $user->getUserReferredTo($patronId);
 			if ($patron) {
-				require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
-				$driver = OverDriveDriverFactory::getDriver();
+                require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+                $driver = new OverDriveDriver();
 				$result = $driver->getDownloadLink($overDriveId, $formatId, $patron);
 				//$logger->log("Checkout result = $result", PEAR_LOG_INFO);
 				return json_encode($result);
@@ -185,7 +185,7 @@ class OverDrive_AJAX extends Action {
 			$promptForEmail = true;
 		}
 
-		$overDriveUsers = $user->getRelatedOverDriveUsers();
+		$overDriveUsers = $user->getRelatedEcontentUsers('overdrive');
 		$interface->assign('overDriveUsers', $overDriveUsers);
 		if (count($overDriveUsers) == 1){
 			$interface->assign('patronId', reset($overDriveUsers)->id);
@@ -221,7 +221,7 @@ class OverDrive_AJAX extends Action {
 		$id = $_REQUEST['id'];
 		$interface->assign('overDriveId', $id);
 
-		$overDriveUsers = $user->getRelatedOverDriveUsers();
+		$overDriveUsers = $user->getRelatedEcontentUsers('overdrive');
 		$interface->assign('overDriveUsers', $overDriveUsers);
 
 		if (count($overDriveUsers) > 1){
@@ -257,16 +257,16 @@ class OverDrive_AJAX extends Action {
 
 	}
 
-	function CancelOverDriveHold(){
+	function CancelHold(){
 		$user = UserAccount::getLoggedInUser();
 		$overDriveId = $_REQUEST['overDriveId'];
 		if ($user){
 			$patronId = $_REQUEST['patronId'];
 			$patron = $user->getUserReferredTo($patronId);
 			if ($patron) {
-				require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
-				$driver = OverDriveDriverFactory::getDriver();
-				$result = $driver->cancelOverDriveHold($overDriveId, $patron);
+                require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+                $driver = new OverDriveDriver();
+				$result = $driver->canceHold($patron, $overDriveId, null);
 				return json_encode($result);
 			}else{
 				return json_encode(array('result'=>false, 'message'=>'Sorry, it looks like you don\'t have permissions to download cancel holds for that user.'));

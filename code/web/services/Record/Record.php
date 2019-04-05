@@ -306,7 +306,7 @@ abstract class Record_Record extends Action
 		}
 
 		// Retrieve User Search History
-		$interface->assign('lastsearch', isset($_SESSION['lastSearchURL']) ?
+		$interface->assign('lastSearch', isset($_SESSION['lastSearchURL']) ?
 		$_SESSION['lastSearchURL'] : false);
 
 		$this->cacheId = 'Record|' . $_GET['id'] . '|' . get_class($this);

@@ -105,15 +105,136 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 	 * null if no data is available.
 	 *
 	 * @access  public
-	 * @return  string              Name of Smarty template file to display.
+	 * @return  array              Name of Smarty template file to display.
 	 */
 	public function getHoldings() {
-		require_once (ROOT_DIR . '/Drivers/OverDriveDriverFactory.php');
-		$driver = OverDriveDriverFactory::getDriver();
+        require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
 
-		/** @var OverDriveAPIProductFormats[] $holdings */
-		return $driver->getHoldings($this);
+        /** @var OverDriveAPIProductFormats[] $items */
+        $items = $this->getItems();
+        //Add links as needed
+        $availability = $this->getAvailability();
+        $addCheckoutLink = false;
+        $addPlaceHoldLink = false;
+        foreach($availability as $availableFrom){
+            if ($availableFrom->copiesAvailable > 0){
+                $addCheckoutLink = true;
+            }else{
+                $addPlaceHoldLink = true;
+            }
+        }
+        foreach ($items as $key => $item){
+            $item->links = array();
+            if ($addCheckoutLink){
+                $checkoutLink = "return VuFind.OverDrive.checkOutOverDriveTitle('{$this->getUniqueID()}');";
+                $item->links[] = array(
+                    'onclick' => $checkoutLink,
+                    'text' => 'Check Out',
+                    'overDriveId' => $this->getUniqueID(),
+                    'formatId' => $item->numericId,
+                    'action' => 'CheckOut'
+                );
+            }else if ($addPlaceHoldLink){
+                $item->links[] = array(
+                    'onclick' => "return VuFind.OverDrive.placeHold('{$this->getUniqueID()}', '{$item->numericId}');",
+                    'text' => 'Place Hold',
+                    'overDriveId' => $this->getUniqueID(),
+                    'formatId' => $item->numericId,
+                    'action' => 'Hold'
+                );
+            }
+            $items[$key] = $item;
+        }
+
+        return $items;
 	}
+
+    /**
+     * @return array
+     */
+    public function getScopedAvailability(){
+        $availability = array();
+        $availability['mine'] = $this->getAvailability();
+        $availability['other'] = array();
+        $scopingId = $this->getLibraryScopingId();
+        if ($scopingId != -1){
+            foreach ($availability['mine'] as $key => $availabilityItem){
+                if ($availabilityItem->libraryId != -1 && $availabilityItem->libraryId != $scopingId){
+                    $availability['other'][$key] = $availability['mine'][$key];
+                    unset($availability['mine'][$key]);
+                }
+            }
+        }
+        return $availability;
+    }
+
+    public function getStatusSummary(){
+        $holdings = $this->getHoldings();
+        $scopedAvailability = $this->getScopedAvailability();
+
+        $holdPosition = 0;
+
+        $availableCopies = 0;
+        $totalCopies = 0;
+        $onOrderCopies = 0;
+        $checkedOut = 0;
+        $onHold = 0;
+        $wishListSize = 0;
+        $numHolds = 0;
+        if (count($scopedAvailability['mine']) > 0){
+            foreach ($scopedAvailability['mine'] as $curAvailability){
+                $availableCopies += $curAvailability->copiesAvailable;
+                $totalCopies += $curAvailability->copiesOwned;
+                if ($curAvailability->numberOfHolds > $numHolds){
+                    $numHolds = $curAvailability->numberOfHolds;
+                }
+            }
+        }
+
+        //Load status summary
+        $statusSummary = array();
+        $statusSummary['recordId'] = $this->id;
+        $statusSummary['totalCopies'] = $totalCopies;
+        $statusSummary['onOrderCopies'] = $onOrderCopies;
+        $statusSummary['accessType'] = 'overdrive';
+        $statusSummary['isOverDrive'] = false;
+        $statusSummary['alwaysAvailable'] = false;
+        $statusSummary['class'] = 'checkedOut';
+        $statusSummary['available'] = false;
+        $statusSummary['status'] = 'Not Available';
+
+        $statusSummary['availableCopies'] = $availableCopies;
+        $statusSummary['isOverDrive'] = true;
+        if ($totalCopies >= 999999){
+            $statusSummary['alwaysAvailable'] = true;
+        }
+        if ($availableCopies > 0){
+            $statusSummary['status'] = "Available from OverDrive";
+            $statusSummary['available'] = true;
+            $statusSummary['class'] = 'available';
+        }else{
+            $statusSummary['status'] = 'Checked Out';
+            $statusSummary['available'] = false;
+            $statusSummary['class'] = 'checkedOut';
+            $statusSummary['isOverDrive'] = true;
+        }
+
+
+        //Determine which buttons to show
+        $statusSummary['holdQueueLength'] = $numHolds;
+        $statusSummary['showPlaceHold'] = $availableCopies == 0 && count($scopedAvailability['mine']) > 0;
+        $statusSummary['showCheckout'] = $availableCopies > 0 && count($scopedAvailability['mine']) > 0;
+        $statusSummary['showAddToWishlist'] = false;
+        $statusSummary['showAccessOnline'] = false;
+
+        $statusSummary['onHold'] = $onHold;
+        $statusSummary['checkedOut'] = $checkedOut;
+        $statusSummary['holdPosition'] = $holdPosition;
+        $statusSummary['numHoldings'] = count($holdings);
+        $statusSummary['wishListSize'] = $wishListSize;
+
+        return $statusSummary;
+    }
 
 	public function getSeries(){
 		$seriesData = $this->getGroupedWorkDriver()->getSeries();
@@ -412,6 +533,9 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
         return $formats;
     }
 
+    /**
+     * @return OverDriveAPIProductFormats[]
+     */
 	public function getItems(){
 		if ($this->items == null){
 			require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProductFormats.php';
@@ -486,13 +610,9 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 
 		$isbn = $this->getCleanISBN();
 
-		//Load holdings information from the driver
-		require_once (ROOT_DIR . '/Drivers/OverDriveDriverFactory.php');
-		$driver = OverDriveDriverFactory::getDriver();
-
 		/** @var OverDriveAPIProductFormats[] $holdings */
-		$holdings = $driver->getHoldings($this);
-		$scopedAvailability = $driver->getScopedAvailability($this);
+		$holdings = $this->getHoldings();
+		$scopedAvailability = $this->getScopedAvailability();
 		$interface->assign('availability', $scopedAvailability['mine']);
 		$interface->assign('availabilityOther', $scopedAvailability['other']);
 		$numberOfHolds = 0;
@@ -653,7 +773,7 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 		}else{
 			$actions[] = array(
 				'title' => 'Place Hold OverDrive',
-				'onclick' => "return VuFind.OverDrive.placeOverDriveHold('{$this->id}');",
+				'onclick' => "return VuFind.OverDrive.placeHold('{$this->id}');",
 				'requireLogin' => false,
 			);
 		}

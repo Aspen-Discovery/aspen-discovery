@@ -265,7 +265,7 @@ VuFind.Account = (function(){
 		renewTitle: function(patronId, recordId, renewIndicator) {
 			if (Globals.loggedIn) {
 				VuFind.loadingMessage();
-				$.getJSON(Globals.path + "/MyAccount/AJAX?method=renewItem&patronId=" + patronId + "&recordId=" + recordId + "&renewIndicator="+renewIndicator, function(data){
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=renewCheckout&patronId=" + patronId + "&recordId=" + recordId + "&renewIndicator="+renewIndicator, function(data){
 					VuFind.showMessage(data.title, data.modalBody, data.success, data.success); // autoclose when successful
 				}).fail(VuFind.ajaxFail)
 			} else {

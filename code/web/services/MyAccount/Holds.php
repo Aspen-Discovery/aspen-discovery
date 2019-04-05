@@ -84,7 +84,7 @@ class MyAccount_Holds extends MyAccount{
 //				$recordsPerPage = isset($_REQUEST['pagesize']) && (is_numeric($_REQUEST['pagesize'])) ? $_REQUEST['pagesize'] : 25;
 //				$interface->assign('recordsPerPage', $recordsPerPage);
 
-				$allHolds = $user->getMyHolds(true, $selectedUnavailableSortOption, $selectedAvailableSortOption);
+				$allHolds = $user->getHolds(true, $selectedUnavailableSortOption, $selectedAvailableSortOption);
 				$interface->assign('recordList', $allHolds);
 
 				//make call to export function

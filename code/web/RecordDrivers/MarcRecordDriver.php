@@ -950,7 +950,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 	static $catalogDriver = null;
 
 	/**
-	 * @return AbstractCatalogDriver
+	 * @return AbstractIlsDriver
 	 */
 	protected static function getCatalogDriver()
 	{

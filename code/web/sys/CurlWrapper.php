@@ -1,15 +1,29 @@
 <?php
-/**
- * An abstract base class so screen scraping functionality can be stored in a single location
- */
 
-abstract class CurlBasedDriver extends AbstractCatalogDriver {
+class CurlWrapper {
 
 	private $cookieJar;
-	protected $curl_connection; // need access in order to check for curl errors.
+	private $headers = [];
+	public $curl_connection; // need access in order to check for curl errors.
 
-	public function __destruct(){
-		$this->_close_curl();
+    public function __construct() {
+        global $interface;
+        $gitBranch = $interface->getVariable('gitBranch');
+        if (substr($gitBranch, -1) == "\n"){
+            $gitBranch = substr($gitBranch, 0, -1);
+        }
+        $header = array();
+        $header[0] = "Accept: text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5";
+        $header[] = "Cache-Control: max-age=0";
+        $header[] = "Connection: keep-alive";
+        $header[] = "Accept-Charset: ISO-8859-1,utf-8;q=0.7,*;q=0.7";
+        $header[] = "Accept-Language: en-us,en;q=0.5";
+        $header[] = "User-Agent: Aspen Discovery " . $gitBranch;
+        $this->headers = $header;
+    }
+
+    public function __destruct(){
+		$this->close_curl();
 	}
 
 	public function setCookieJar($prefix = "CURLCOOKIE"){
@@ -35,34 +49,16 @@ abstract class CurlBasedDriver extends AbstractCatalogDriver {
 	 *                    Keys is the curl option constant, Values is the value to set the option to.
 	 * @return resource
 	 */
-	public function _curl_connect($curlUrl = null, $curl_options = null){
+	public function curl_connect($curlUrl = null, $curl_options = null){
 		//Make sure we only connect once
 		if (!$this->curl_connection){
-			$header = $this->getCustomHeaders();
-			if ($header == null) {
-				global $interface;
-				$gitBranch = $interface->getVariable('gitBranch');
-				if (substr($gitBranch, -1) == "\n"){
-					$gitBranch = substr($gitBranch, 0, -1);
-				}
-				$header = array();
-				$header[0] = "Accept: text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5";
-				$header[] = "Cache-Control: max-age=0";
-				$header[] = "Connection: keep-alive";
-				$header[] = "Accept-Charset: ISO-8859-1,utf-8;q=0.7,*;q=0.7";
-				$header[] = "Accept-Language: en-us,en;q=0.5";
-				$header[] = "User-Agent: Pika " . $gitBranch;
-			}
-
 			$cookie = $this->getCookieJar();
 
 			$this->curl_connection = curl_init($curlUrl);
 			$default_curl_options = array(
 				CURLOPT_CONNECTTIMEOUT => 20,
 				CURLOPT_TIMEOUT => 60,
-				CURLOPT_HTTPHEADER => $header,
-				//CURLOPT_USERAGENT => 'User-Agent: Mozilla/5.0 (Windows NT 6.2; WOW64; rv:39.0) Gecko/20100101 Firefox/39.0',
-				//CURLOPT_USERAGENT => "User-Agent:Pika " . $gitBranch,
+				CURLOPT_HTTPHEADER => $this->headers,
 				CURLOPT_RETURNTRANSFER => true,
 				CURLOPT_SSL_VERIFYPEER => false,
 				CURLOPT_FOLLOWLOCATION => true,
@@ -93,7 +89,7 @@ abstract class CurlBasedDriver extends AbstractCatalogDriver {
 	 *  Cleans up after curl operations.
 	 *  Is ran automatically as the class is being shutdown.
 	 */
-	public function _close_curl() {
+	public function close_curl() {
 		if ($this->curl_connection) curl_close($this->curl_connection);
 		if ($this->cookieJar && file_exists($this->cookieJar)) unlink($this->cookieJar);
 	}
@@ -105,10 +101,10 @@ abstract class CurlBasedDriver extends AbstractCatalogDriver {
 	 *
 	 * @return string   The response from the web page if any
 	 */
-	public function _curlGetPage($url){
-		$this->_curl_connect($url);
+	public function curlGetPage($url){
+		$this->curl_connect($url);
+        curl_setopt($this->curl_connection, CURLOPT_HTTPGET, true);
 		$return = curl_exec($this->curl_connection);
-//		$info = curl_getinfo($this->curl_connection);
 		if (!$return) { // log curl error
 			global $logger;
 			$logger->log('curl get error : '.curl_error($this->curl_connection), PEAR_LOG_ERR);
@@ -124,10 +120,10 @@ abstract class CurlBasedDriver extends AbstractCatalogDriver {
 	 *
 	 * @return string   The response from the web page if any
 	 */
-	public function _curlPostPage($url, $postParams){
+	public function curlPostPage($url, $postParams){
 		$post_string = http_build_query($postParams);
 
-		$this->_curl_connect($url);
+		$this->curl_connect($url);
 		curl_setopt_array($this->curl_connection, array(
 			CURLOPT_POST => true,
 			CURLOPT_POSTFIELDS => $post_string
@@ -149,14 +145,14 @@ abstract class CurlBasedDriver extends AbstractCatalogDriver {
 	 *
 	 * @return string   The response from the web page if any
 	 */
-	public function _curlPostBodyData($url, $postParams, $jsonEncode = true){
+	public function curlPostBodyData($url, $postParams, $jsonEncode = true){
 		if ($jsonEncode){
 			$post_string = json_encode($postParams);
 		}else{
 			$post_string  = $postParams;
 		}
 
-		$this->_curl_connect($url);
+		$this->curl_connect($url);
 		curl_setopt_array($this->curl_connection, array(
 			CURLOPT_POST => true,
 			CURLOPT_POSTFIELDS => $post_string,
@@ -171,22 +167,11 @@ abstract class CurlBasedDriver extends AbstractCatalogDriver {
 		return $result1 && $result2;
 	}
 
-	public function getVendorOpacUrl(){
-		global $configArray;
-
-		if ($this->accountProfile && $this->accountProfile->vendorOpacUrl ){
-			$host = $this->accountProfile->vendorOpacUrl;
-		}else{
-			$host = $configArray['Catalog']['url'];
-		}
-
-		if (substr($host, -1) == '/') {
-			$host = substr($host, 0, -1);
-		}
-		return $host;
-	}
-
-	protected function getCustomHeaders() {
-		return null;
+	function addCustomHeaders($customHeaders, $overrideExisting) {
+	    if ($overrideExisting) {
+            $this->headers = $customHeaders;
+        } else {
+            $this->headers = array_merge($this->headers , $customHeaders);
+        }
 	}
 }

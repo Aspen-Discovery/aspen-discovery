@@ -11,7 +11,7 @@ require_once ROOT_DIR . '/CatalogConnection.php';
  * Copyright (C) Douglas County Libraries 2011.
  */
 class ItemAPI extends Action {
-	/** @var  AbstractCatalogDriver */
+	/** @var  AbstractIlsDriver */
 	protected $catalog;
 
 	public $id;

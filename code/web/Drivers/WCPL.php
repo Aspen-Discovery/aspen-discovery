@@ -18,7 +18,7 @@
  *
  */
 
-require_once 'AbstractCatalogDriver.php';
+require_once 'AbstractIlsDriver.php';
 require_once ROOT_DIR . '/Drivers/HorizonAPI3_23.php';
 
 class WCPL extends HorizonAPI3_23
@@ -346,15 +346,6 @@ class WCPL extends HorizonAPI3_23
 		);
 		return isset($statusMap[$statusCode]) ? $statusMap[$statusCode] : 'Unknown (' . $statusCode . ')';
 	}
-	public function getLocationMapLink($locationCode){
-		$locationCode = strtolower($locationCode);
-		$locationMap = array();
-		return isset($locationMap[$locationCode]) ? $locationMap[$locationCode] : '' ;
-	}
-
-	public function getLibraryHours($locationId, $timeToCheck){
-		return null;
-	}
 
 	function selfRegister(){
 		global $logger;
@@ -417,7 +408,7 @@ class WCPL extends HorizonAPI3_23
 		curl_setopt($curl_connection, CURLOPT_POST, true);
 		curl_setopt($curl_connection, CURLOPT_URL, $curl_url);
 		curl_setopt($curl_connection, CURLOPT_POSTFIELDS, $post_string);
-		$sresult = curl_exec($curl_connection);
+		curl_exec($curl_connection);
 
 		$firstName = strip_tags($_REQUEST['firstname']);
 		$lastName = strip_tags($_REQUEST['lastname']);

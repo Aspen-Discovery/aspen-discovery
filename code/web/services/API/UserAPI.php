@@ -143,12 +143,16 @@ class UserAPI extends Action {
 			if ($user && !PEAR_Singleton::isError($user)){
 				return array('success'=>true,'name'=>ucwords($user->firstname . ' ' . $user->lastname));
 			}else{
-				$user = UserAccount::login();
-				if ($user && !PEAR_Singleton::isError($user)){
-					return array('success'=>true,'name'=>ucwords($user->firstname . ' ' . $user->lastname));
-				}else{
-					return array('success'=>false);
-				}
+                try {
+                    $user = UserAccount::login();
+                    if ($user && !PEAR_Singleton::isError($user)){
+                        return array('success'=>true,'name'=>ucwords($user->firstname . ' ' . $user->lastname));
+                    }else{
+                        return array('success'=>false);
+                    }
+                } catch (UnknownAuthenticationMethodException $e) {
+                    return array('success'=>false);
+                }
 			}
 		}else{
 			return array('success'=>false,'message'=>'This method must be called via POST.');
@@ -475,7 +479,7 @@ class UserAPI extends Action {
 
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !PEAR_Singleton::isError($user)){
-			$allHolds = $user->getMyHolds();
+			$allHolds = $user->getHolds();
 			return array('success'=>true, 'holds'=>$allHolds);
 		}else{
 			return array('success'=>false, 'message'=>'Login unsuccessful');
@@ -549,9 +553,9 @@ class UserAPI extends Action {
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !PEAR_Singleton::isError($user)){
-			require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
-			$eContentDriver = OverDriveDriverFactory::getDriver();
-			$eContentHolds = $eContentDriver->getOverDriveHolds($user);
+            require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+            $driver = new OverDriveDriver();
+			$eContentHolds = $driver->getHolds($user);
 			return array('success'=>true, 'holds'=>$eContentHolds);
 		}else{
 			return array('success'=>false, 'message'=>'Login unsuccessful');
@@ -600,9 +604,9 @@ class UserAPI extends Action {
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !PEAR_Singleton::isError($user)){
-			require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
-			$eContentDriver = OverDriveDriverFactory::getDriver();
-			$eContentCheckedOutItems = $eContentDriver->getOverDriveCheckedOutItems($user);
+            require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+            $driver = new OverDriveDriver();
+			$eContentCheckedOutItems = $driver->getCheckouts($user);
 			return array('success'=>true, 'items'=>$eContentCheckedOutItems['items']);
 		}else{
 			return array('success'=>false, 'message'=>'Login unsuccessful');
@@ -647,9 +651,9 @@ class UserAPI extends Action {
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !PEAR_Singleton::isError($user)){
-			require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
-			$eContentDriver = OverDriveDriverFactory::getDriver();
-			$overDriveSummary = $eContentDriver->getOverDriveSummary($user);
+            require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+            $driver = new OverDriveDriver();
+			$overDriveSummary = $driver->getAccountSummary($user);
 			return array('success'=>true, 'summary'=>$overDriveSummary);
 		}else{
 			return array('success'=>false, 'message'=>'Login unsuccessful');
@@ -705,24 +709,6 @@ class UserAPI extends Action {
 	}
 
 	/**
-	 * Returns lending options for a patron from OverDrive.
-	 *
-	 * @return array
-	 */
-	function getOverDriveLendingOptions(){
-		list($username, $password) = $this->loadUsernameAndPassword();
-		$user = UserAccount::validateAccount($username, $password);
-		if ($user && !PEAR_Singleton::isError($user)){
-			require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
-			$driver = OverDriveDriverFactory::getDriver();
-			$accountDetails = $driver->getAccountDetails($user);
-			return array('success'=>true, 'lendingOptions'=>$accountDetails['lendingOptions']);
-		}else{
-			return array('success'=>false, 'message'=>'Login unsuccessful');
-		}
-	}
-
-	/**
 	 * Get eContent and ILS records that are checked out to a user based on username and password.
 	 *
 	 * Parameters:
@@ -744,9 +730,9 @@ class UserAPI extends Action {
 	 *   "checkedOutItems":{
 	 *     "33025021368319":{
 	 *       "id":"966379",
-	 *       "itemid":"33025021368319",
+	 *       "itemId":"33025021368319",
 	 *       "dueDate":"01\/24\/2012",
-	 *       "checkoutdate":"2011-12-27 00:00:00",
+	 *       "checkoutDate":"2011-12-27 00:00:00",
 	 *       "barcode":"33025021368319",
 	 *       "renewCount":"1",
 	 *       "request":null,
@@ -775,7 +761,7 @@ class UserAPI extends Action {
 			list($username, $password) = $this->loadUsernameAndPassword();
 			$user = UserAccount::validateAccount($username, $password);
 			if ($user && !PEAR_Singleton::isError($user)) {
-				$allCheckedOut = $user->getMyCheckouts(false);
+				$allCheckedOut = $user->getCheckouts(false);
 
 				return array('success' => true, 'checkedOutItems' => $allCheckedOut);
 			} else {
@@ -796,7 +782,7 @@ class UserAPI extends Action {
 	 *
 	 * Sample Call:
 	 * <code>
-	 * http://catalog.douglascountylibraries.org/API/UserAPI?method=renewItem&username=23025003575917&password=7604&itemBarcode=33025021368319
+	 * http://catalog.douglascountylibraries.org/API/UserAPI?method=renewCheckout&username=23025003575917&password=7604&itemBarcode=33025021368319
 	 * </code>
 	 *
 	 * Sample Response (failed renewal):
@@ -825,12 +811,14 @@ class UserAPI extends Action {
 	 *
 	 * @author Mark Noble <mnoble@turningleaftech.com>
 	 */
-	function renewItem(){
+	function renewCheckout(){
 		list($username, $password) = $this->loadUsernameAndPassword();
+        $recordId = $_REQUEST['recordId'];
 		$itemBarcode = $_REQUEST['itemBarcode'];
+        $itemIndex = $_REQUEST['itemIndex'];
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !PEAR_Singleton::isError($user)){
-			$renewalMessage = $this->getCatalogConnection()->renewItem($user->cat_username, $itemBarcode);
+			$renewalMessage = $this->getCatalogConnection()->renewCheckout($user->cat_username, $recordId, $itemBarcode, $itemIndex);
 			return array('success'=>true, 'renewalMessage'=>$renewalMessage);
 		}else{
 			return array('success'=>false, 'message'=>'Login unsuccessful');
@@ -1002,13 +990,12 @@ class UserAPI extends Action {
 	function placeOverDriveHold(){
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$overDriveId = $_REQUEST['overDriveId'];
-		$format = $_REQUEST['format'];
 
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !PEAR_Singleton::isError($user)){
-			require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
-			$driver = OverDriveDriverFactory::getDriver();
-			$holdMessage = $driver->placeOverDriveHold($overDriveId, $format, $user);
+            require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+            $driver = new OverDriveDriver();
+			$holdMessage = $driver->placeHold($user, $overDriveId);
 			return array('success'=> $holdMessage['success'], 'message'=>$holdMessage['message']);
 		}else{
 			return array('success'=>false, 'message'=>'Login unsuccessful');
@@ -1022,9 +1009,7 @@ class UserAPI extends Action {
 	 * <ul>
 	 * <li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li>
 	 * <li>password - The pin number for the user. </li>
-	 * <li>recordId - The id of the record within the eContent database.</li>
-	 * <li>or overdriveId - The id of the record in OverDrive.</li>
-	 * <li>format - The format of the record that was used when placing the hold.</li>
+	 * <li>overdriveId - The id of the record in OverDrive.</li>
 	 * </ul>
 	 *
 	 * Returns JSON encoded data as follows:
@@ -1051,73 +1036,13 @@ class UserAPI extends Action {
 	function cancelOverDriveHold(){
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$overDriveId = $_REQUEST['overDriveId'];
-		$format = $_REQUEST['format'];
 
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !PEAR_Singleton::isError($user)){
-			require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
-			$driver = OverDriveDriverFactory::getDriver();
-			$result = $driver->cancelOverDriveHold($overDriveId, $format, $user);
+            require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+            $driver = new OverDriveDriver();
+			$result = $driver->cancelHold($user, $overDriveId, null);
 			return array('success'=> $result['success'], 'message'=>$result['message']);
-		}else{
-			return array('success'=>false, 'message'=>'Login unsuccessful');
-		}
-	}
-
-	/**
-	 * Add an item to the cart in OverDrive.
-	 * In general, this method should not be used.  Instead you should call checkoutOverDriveItem which will first
-	 * add the title to the cart and then process the cart.
-	 *
-	 * Parameters:
-	 * <ul>
-	 * <li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li>
-	 * <li>password - The pin number for the user. </li>
-	 * <li>recordId - The id of the record within the eContent database.</li>
-	 * <li>or overdriveId - The id of the record in OverDrive.</li>
-	 * <li>format - The format of the item to place a hold on within OverDrive.</li>
-	 * </ul>
-	 *
-	 * Returns JSON encoded data as follows:
-	 * <ul>
-	 * <li>success � true if the account is valid and the title could be removed from the wishlist, false if the username or password were incorrect or the hold could not be removed from the wishlist.</li>
-	 * <li>message � information about the process for display to the user.</li>
-	 * </ul>
-	 *
-	 * Sample Call:
-	 * <code>
-	 * http://catalog.douglascountylibraries.org/API/UserAPI?method=addItemToOverDriveCart&username=23025003575917&password=1234&overDriveId=A3365DAC-EEC3-4261-99D3-E39B7C94A90F&format=420
-	 * </code>
-	 *
-	 * Sample Response (fail):
-	 * <code>
-	 * {"result":{
-	 *   "success":false,
-	 *   "message":"There are no copies available for checkout. You can place a hold on the item instead."
-	 * }}
-	 * </code>
-	 *
-	 * Sample Response (pass):
-	 * <code>
-	 * {"result":{
-	 *   "success":true,
-	 *   "message":"The title was added to your cart successfully. You have 30 minutes to check out the title before it is returned to the library's collection."
-	 * }}
-	 * </code>
-	 *
-	 * @author Mark Noble <mnoble@turningleaftech.com>
-	 */
-	function addItemToOverDriveCart(){
-		list($username, $password) = $this->loadUsernameAndPassword();
-		$overDriveId = $_REQUEST['overDriveId'];
-		$format = $_REQUEST['format'];
-
-		$user = UserAccount::validateAccount($username, $password);
-		if ($user && !PEAR_Singleton::isError($user)){
-			require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
-			$driver = OverDriveDriverFactory::getDriver();
-			$holdMessage = $driver->addItemToOverDriveCart($overDriveId, $format, $user);
-			return array('success'=> $holdMessage['success'], 'message'=>$holdMessage['message']);
 		}else{
 			return array('success'=>false, 'message'=>'Login unsuccessful');
 		}
@@ -1130,10 +1055,7 @@ class UserAPI extends Action {
 	 * <ul>
 	 * <li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li>
 	 * <li>password - The pin number for the user. </li>
-	 * <li>recordId - The id of the record within the eContent database.</li>
-	 * <li>or overdriveId - The id of the record in OverDrive.</li>
-	 * <li>format - The format of the item to place a hold on within OverDrive.</li>
-	 * <li>lendingPeriod - The number of days to checkout the title. (optional) </li>
+	 * <li>overdriveId - The id of the record in OverDrive.</li>
 	 * </ul>
 	 *
 	 * Returns JSON encoded data as follows:
@@ -1144,7 +1066,7 @@ class UserAPI extends Action {
 	 *
 	 * Sample Call:
 	 * <code>
-	 * http://catalog.douglascountylibraries.org/API/UserAPI?method=checkoutOverDriveItem&username=23025003575917&password=1234&overDriveId=A3365DAC-EEC3-4261-99D3-E39B7C94A90F&format=420
+	 * http://catalog.douglascountylibraries.org/API/UserAPI?method=checkoutOverDriveItem&username=23025003575917&password=1234&overDriveId=A3365DAC-EEC3-4261-99D3-E39B7C94A90F
 	 * </code>
 	 *
 	 * Sample Response:
@@ -1160,61 +1082,13 @@ class UserAPI extends Action {
 	function checkoutOverDriveItem(){
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$overDriveId = $_REQUEST['overDriveId'];
-		$format = $_REQUEST['format'];
 
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !PEAR_Singleton::isError($user)){
-			require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
-			$driver = OverDriveDriverFactory::getDriver();
-			$lendingPeriod = isset($_REQUEST['lendingPeriod']) ? $_REQUEST['lendingPeriod'] : -1;
-			$holdMessage = $driver->checkoutOverDriveItem($overDriveId, $format, $lendingPeriod, $user);
+            require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+            $driver = new OverDriveDriver();
+			$holdMessage = $driver->checkoutTitle($user, $overDriveId);
 			return array('success'=> $holdMessage['success'], 'message'=>$holdMessage['message']);
-		}else{
-			return array('success'=>false, 'message'=>'Login unsuccessful');
-		}
-	}
-	/**
-	 * Process the account to checkout any titles within the OverDrive cart
-	 *
-	 * Parameters:
-	 * <ul>
-	 * <li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li>
-	 * <li>password - The pin number for the user. </li>
-	 * <li>lendingPeriod - The number of days to checkout the title. (optional) </li>
-	 * </ul>
-	 *
-	 * Returns JSON encoded data as follows:
-	 * <ul>
-	 * <li>success � true if the cart was processed, false if the username or password were incorrect or the hold could not be removed from the wishlist.</li>
-	 * <li>message � information about the process for display to the user.</li>
-	 * </ul>
-	 *
-	 * Sample Call:
-	 * <code>
-	 * http://catalog.douglascountylibraries.org/API/UserAPI?method=processOverDriveCart&username=23025003575917&password=1234&lendingPeriod=14
-	 * </code>
-	 *
-	 * Sample Response:
-	 * <code>
-	 * {"result":{
-	 *   "success":true,
-	 *   "message":"Your titles were checked out successfully. You may now download the titles from your Account."
-	 * }}
-	 * </code>
-	 *
-	 * @author Mark Noble <mnoble@turningleaftech.com>
-	 *
-	 */
-	function processOverDriveCart(){
-		list($username, $password) = $this->loadUsernameAndPassword();
-
-		$user = UserAccount::validateAccount($username, $password);
-		if ($user && !PEAR_Singleton::isError($user)){
-			require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
-			$driver = OverDriveDriverFactory::getDriver();
-			$lendingPeriod = isset($_REQUEST['lendingPeriod']) ? $_REQUEST['lendingPeriod'] : -1;
-			$processCartResult = $driver->processOverDriveCart($user, $lendingPeriod);
-			return array('success'=> $processCartResult['success'], 'message'=>$processCartResult['message']);
 		}else{
 			return array('success'=>false, 'message'=>'Login unsuccessful');
 		}
@@ -1227,8 +1101,7 @@ class UserAPI extends Action {
 	 * <ul>
 	 * <li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li>
 	 * <li>password - The pin number for the user. </li>
-	 * <li>availableholdselected[] � an array of holds that should be canceled.  Each item should be specfied as <bibId>:<itemId>. BibId and itemId can be retrieved as part of the getPatronHolds API</li>
-	 * <li>waitingholdselected[] - an array of holds that are not ready for pickup that should be canceled.  Each item should be specified as <bibId>:0.</li>
+	 * <li>cancelId[] � an array of holds that should be canceled.  Each item should be specfied as <bibId>:<itemId>. BibId and itemId can be retrieved as part of the getPatronHolds API</li>
 	 * </ul>
 	 *
 	 * Returns:
@@ -1239,7 +1112,7 @@ class UserAPI extends Action {
 	 *
 	 * Sample Call:
 	 * <code>
-	 * http://catalog.douglascountylibraries.org/API/UserAPI?method=cancelHold&username=23025003575917&password=1234&waitingholdselected[]=1003198
+	 * http://catalog.douglascountylibraries.org/API/UserAPI?method=cancelHold&username=23025003575917&password=1234&cancelId[]=1003198
 	 * </code>
 	 *
 	 * Sample Response:
@@ -1294,7 +1167,7 @@ class UserAPI extends Action {
 	 * <ul>
 	 * <li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li>
 	 * <li>password - The pin number for the user. </li>
-	 * <li>waitingholdselected[] - an array of holds that are not ready for pickup that should be frozen. Each item should be specified as <bibId>:0.</li>
+	 * <li>cancelId[] - an array of holds that should be frozen. Each item should be specified as <bibId>:0.</li>
 	 * <li>suspendDate - The date that the hold should be automatically reactivated.</li>
 	 * </ul>
 	 *
@@ -1306,7 +1179,7 @@ class UserAPI extends Action {
 	 *
 	 * Sample Call:
 	 * <code>
-	 * http://catalog.douglascountylibraries.org/API/UserAPI?method=freezeHold&username=23025003575917&password=1234&waitingholdselected[]=1004012:0&suspendDate=1/25/2012
+	 * http://catalog.douglascountylibraries.org/API/UserAPI?method=freezeHold&username=23025003575917&password=1234&cancelId[]=1004012:0&suspendDate=1/25/2012
 	 * </code>
 	 *
 	 * Sample Response:
@@ -1339,7 +1212,7 @@ class UserAPI extends Action {
 	 * <ul>
 	 * <li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li>
 	 * <li>password - The pin number for the user. </li>
-	 * <li>waitingholdselected[] - an array of holds that are not ready for pickup that should be frozen. Each item should be specified as <bibId>:0.</li>
+	 * <li>cancelId[] - an array of holds that are not ready for pickup that should be frozen. Each item should be specified as <bibId>:0.</li>
 	 * </ul>
 	 *
 	 * Returns:
@@ -1350,7 +1223,7 @@ class UserAPI extends Action {
 	 *
 	 * Sample Call:
 	 * <code>
-	 * http://catalog.douglascountylibraries.org/API/UserAPI?method=activateHold&username=23025003575917&password=1234&waitingholdselected[]=1004012:0
+	 * http://catalog.douglascountylibraries.org/API/UserAPI?method=activateHold&username=23025003575917&password=1234&cancelId[]=1004012:0
 	 * </code>
 	 *
 	 * Sample Response:

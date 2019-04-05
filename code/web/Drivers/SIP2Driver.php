@@ -1,6 +1,6 @@
 <?php
 
-abstract class SIP2Driver extends AbstractCatalogDriver{
+abstract class SIP2Driver extends AbstractIlsDriver{
 	/** @var sip2 $sipConnection  */
 	private $sipConnection = null;
 
@@ -24,7 +24,7 @@ abstract class SIP2Driver extends AbstractCatalogDriver{
 					'firstname' => $user->firstname,
 					'lastname'  => $user->lastname,
 					'fullname'  => $user->firstname . ' ' . $user->lastname,     //Added to array for possible display later.
-					'cat_username' => $username, //Should this be $Fullname or $patronDump['PATRN_NAME']
+					'cat_username' => $username,
 					'cat_password' => $password,
 					'email' => $user->email,
 					'patronType' => $user->patronType,
@@ -47,7 +47,7 @@ abstract class SIP2Driver extends AbstractCatalogDriver{
 			$this->sipConnection->hostname = $host;
 			$this->sipConnection->port = $post;
 			if ($this->sipConnection->connect()) {
-				//send selfcheck status message
+				//send self check status message
 				$in = $this->sipConnection->msgSCStatus();
 				$msg_result = $this->sipConnection->get_message($in);
 				// Make sure the response is 98 as expected

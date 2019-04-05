@@ -709,7 +709,7 @@ class sip2
 		array(
         'Ok'                => substr($response, 2, 1),
         'Renewed'           => substr($response, 3, 4),
-        'Unrenewed'         => substr($response, 7, 4),
+        'NotRenewed'        => substr($response, 7, 4),
         'TransactionDate'   => substr($response, 11, 18),
 		);
 

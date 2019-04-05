@@ -4,15 +4,6 @@
 		{if $showCovers}
 		<div class="col-xs-4 col-sm-3">
 			{*<div class="row">*}
-				{*
-				<div class="selectTitle col-xs-2">
-					{if $section == 'available'}
-						<input type="checkbox" name="availableholdselected[]" value="{$record.userId}~{$record.overDriveId}~{$record.overDriveId}" id="selected{$record.cancelId|escape:"url"}" class="titleSelect{$sectionKey} titleSelect"/>&nbsp;
-					{else}
-						<input type="checkbox" name="waitingholdselected[]" value="{$record.userId}~{$record.overDriveId}~{$record.overDriveId}" id="selected{$record.cancelId|escape:"url"}" class="titleSelect{$sectionKey} titleSelect"/>&nbsp;
-					{/if}
-				</div>
-				*}
 				<div class="{*col-xs-10 *}text-center">
 					{if $record.coverUrl}
 						{if $record.recordId && $record.linkUrl}

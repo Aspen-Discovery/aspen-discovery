@@ -1,22 +1,4 @@
 <?php
-/**
- *
- * Copyright (C) Villanova University 2007.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2,
- * as published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- */
 
 require_once ROOT_DIR . '/sys/Authentication/AuthenticationFactory.php';
 
@@ -44,8 +26,7 @@ class UserAccount {
 			} else {
 				UserAccount::$isLoggedIn = false;
 				//Need to check cas just in case the user logged in from another site
-				//if ($action != 'AJAX' && $action != 'DjatokaResolver' && $action != 'Logout' && $module != 'MyAccount' && $module != 'API' && !isset($_REQUEST['username'])){
-				//If the library uses CAS/SSO we may already be logged in even though they never logged in within Pika
+				//If the library uses CAS/SSO we may already be logged in even though they never logged in within Aspen
 				global $library;
 				if ($library && strlen($library->casHost) > 0) {
 					$checkCAS = false;
@@ -269,7 +250,6 @@ class UserAccount {
 
     /**
      * @return User|false
-     * @throws UnknownAuthenticationMethodException
      */
 	public static function getLoggedInUser(){
 		if (UserAccount::$isLoggedIn != null){
@@ -302,8 +282,9 @@ class UserAccount {
 				$userData->id = $activeUserId;
 				if ($userData->find(true)){
 					$logger->log("Loading user {$userData->cat_username}, {$userData->cat_password} because we didn't have data in memcache", PEAR_LOG_DEBUG);
-					$userData = UserAccount::validateAccount($userData->cat_username, $userData->cat_password, $userData->source);
-					if ($userData == false) {
+                    $userData = UserAccount::validateAccount($userData->cat_username, $userData->cat_password, $userData->source);
+
+                    if ($userData == false) {
 					    echo("Could not validate your account.  The underlying ILS may be inaccessible");
 					    die();
                     }
@@ -331,7 +312,7 @@ class UserAccount {
 
 			//Check to see if the patron is already logged in within CAS as long as we aren't on a page that is likely to be a login page
 		}elseif ($action != 'AJAX' && $action != 'DjatokaResolver' && $action != 'Logout' && $module != 'MyAccount' && $module != 'API' && !isset($_REQUEST['username'])){
-			//If the library uses CAS/SSO we may already be logged in even though they never logged in within Pika
+			//If the library uses CAS/SSO we may already be logged in even though they never logged in within Aspen
 			global $library;
 			if (strlen($library->casHost) > 0){
 				//Check CAS first
@@ -345,10 +326,15 @@ class UserAccount {
 					UserAccount::$isLoggedIn = false;
 					return false;
 				}else{
-					//We have a valid user via CAS, need to do a login to Pika
+					//We have a valid user via CAS, need to do a login to Aspen
 					$_REQUEST['casLogin'] = true;
-					$userData = UserAccount::login();
-					UserAccount::$isLoggedIn = true;
+                    try {
+                        $userData = UserAccount::login();
+                    } catch (UnknownAuthenticationMethodException $e) {
+                        echo("Unknown validation method $e");
+                        die();
+                    }
+                    UserAccount::$isLoggedIn = true;
 				}
 			}
 		}
@@ -373,7 +359,6 @@ class UserAccount {
         } else {
 	        unset($_SESSION['activeUserId']);
         }
-
 
 		if (isset($_REQUEST['rememberMe']) && ($_REQUEST['rememberMe'] === "true" || $_REQUEST['rememberMe'] === "on")){
 			$_SESSION['rememberMe'] = true;
@@ -493,7 +478,6 @@ class UserAccount {
      * @param $parentAccount  User   The parent user if any
      *
      * @return User|false
-     * @throws UnknownAuthenticationMethodException
      */
 	public static function validateAccount($username, $password, $accountSource = null, $parentAccount = null){
 		if (array_key_exists($username . $password, UserAccount::$validatedAccounts)){
@@ -529,8 +513,13 @@ class UserAccount {
 
 		foreach ($driversToTest as $driverName => $additionalInfo){
 			if ($accountSource == null || $accountSource == $additionalInfo['accountProfile']->name) {
-				$authN = AuthenticationFactory::initAuthentication($additionalInfo['authenticationMethod'], $additionalInfo);
-				$validatedUser = $authN->validateAccount($username, $password, $parentAccount, $validatedViaSSO);
+                try {
+                    $authN = AuthenticationFactory::initAuthentication($additionalInfo['authenticationMethod'], $additionalInfo);
+                } catch (UnknownAuthenticationMethodException $e) {
+                    echo("Unknown validation method $e");
+                    die();
+                }
+                $validatedUser = $authN->validateAccount($username, $password, $parentAccount, $validatedViaSSO);
 				if ($validatedUser && !PEAR_Singleton::isError($validatedUser)) {
 					/** @var Memcache $memCache */
 					global $memCache;
@@ -630,9 +619,11 @@ class UserAccount {
 
 
 	/**
-	 * Look up in ILS for a user that has never logged into Pika before, based on the patron's barcode.
+	 * Look up in ILS for a user that has never logged into Aspen before, based on the patron's barcode.
 	 *
 	 * @param $patronBarcode
+     *
+     * @return false|User
 	 */
 	public static function findNewUser($patronBarcode){
 		$driversToTest = self::loadAccountProfiles();

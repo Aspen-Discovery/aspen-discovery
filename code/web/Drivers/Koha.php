@@ -1,8 +1,12 @@
 <?php
 
-require_once ROOT_DIR . '/Drivers/CurlBasedDriver.php';
-class Koha extends CurlBasedDriver {
+require_once ROOT_DIR . '/sys/CurlWrapper.php';
+require_once ROOT_DIR . '/Drivers/AbstractIlsDriver.php';
+class Koha extends AbstractIlsDriver {
 	private $dbConnection = null;
+
+	/** @var CurlWrapper */
+	private $curlWrapper;
 
 	/**
 	 * @return array
@@ -11,13 +15,7 @@ class Koha extends CurlBasedDriver {
 	protected static function getSortingDataForHoldings() {
 		if (self::$holdingSortingData == null){
 		    /** @var User $user */
-            $user = false;
-            try {
-                $user = UserAccount::getLoggedInUser();
-            } catch (UnknownAuthenticationMethodException $e) {
-                global $logger;
-                $logger->log("Error authenticating user $e", PEAR_LOG_CRIT);
-            }
+		    $user = UserAccount::getLoggedInUser();
             global $library;
 			global $locationSingleton; /** @var $locationSingleton Location */
 
@@ -39,9 +37,9 @@ class Koha extends CurlBasedDriver {
 
 			//Set location information based on the user login.  This will override information based
 			if (isset($user) && $user != false) {
-				$homeBranchId = $user->_homeLocationId;
-				$nearbyBranch1Id = $user->_myLocation1Id;
-				$nearbyBranch2Id = $user->_myLocation2Id;
+				$homeBranchId = $user->homeLocationId;
+				$nearbyBranch1Id = $user->myLocation1Id;
+				$nearbyBranch2Id = $user->myLocation2Id;
 			}
 			//Load the holding label for the user's home location.
 			$userLocation = new Location();
@@ -117,7 +115,7 @@ class Koha extends CurlBasedDriver {
 	 * @param User $patron
 	 * @return array
 	 */
-	public function getMyCheckouts($patron) {
+	public function getCheckouts($patron) {
 		if (isset($this->transactions[$patron->id])){
 			return $this->transactions[$patron->id];
 		}
@@ -147,7 +145,7 @@ class Koha extends CurlBasedDriver {
 				$dueTime = null;
 			}
 			$transaction['dueDate'] = $dueTime;
-			$transaction['itemid'] = $curRow['itemnumber'];
+			$transaction['itemId'] = $curRow['itemnumber'];
 			$transaction['renewIndicator'] = $curRow['itemnumber'];
 			$transaction['renewCount'] = $curRow['renewals'];
 
@@ -182,7 +180,7 @@ class Koha extends CurlBasedDriver {
 	}
 
     public function getXMLWebServiceResponse($url){
-        $xml = $this->_curlGetPage($url);
+        $xml = $this->curlWrapper->curlGetPage($url);
         if ($xml !== false && $xml !== 'false'){
             if (strpos($xml, '<') !== false){
                 //Strip any non-UTF-8 characters
@@ -211,6 +209,12 @@ class Koha extends CurlBasedDriver {
         }
     }
 
+    /**
+     * @param string $username
+     * @param string $password
+     * @param boolean $validatedViaSSO
+     * @return PEAR_Error|User|null
+     */
 	public function patronLogin($username, $password, $validatedViaSSO) {
 		global $logger;
 		//Remove any spaces from the barcode
@@ -338,12 +342,12 @@ class Koha extends CurlBasedDriver {
                         $user->homeLocationId = 0;
                         // Logging for Diagnosing PK-1846
                         global $logger;
-                        $logger->log('Aspencat Driver: No Location found, user\'s homeLocationId being set to 0. User : '.$user->id, PEAR_LOG_WARNING);
+                        $logger->log('Koha Driver: No Location found, user\'s homeLocationId being set to 0. User : '.$user->id, PEAR_LOG_WARNING);
                     }
 
                     if ((empty($user->homeLocationId) || $user->homeLocationId == -1) || (isset($location) && $user->homeLocationId != $location->locationId)) { // When homeLocation isn't set or has changed
                         if ((empty($user->homeLocationId) || $user->homeLocationId == -1) && !isset($location)) {
-                            // homeBranch Code not found in location table and the user doesn't have an assigned homelocation,
+                            // homeBranch Code not found in location table and the user doesn't have an assigned home location,
                             // try to find the main branch to assign to user
                             // or the first location for the library
                             global $library;
@@ -452,10 +456,12 @@ class Koha extends CurlBasedDriver {
 		parent::__construct($accountProfile);
 		global $timer;
 		$timer->logTime("Created Koha Driver");
+		$this->curlWrapper = new CurlWrapper();
+
 	}
 
 	function __destruct(){
-	    parent::__destruct();
+	    $this->curlWrapper = null;
 
 		//Cleanup any connections we have to other systems
 		if ($this->dbConnection != null){
@@ -478,11 +484,12 @@ class Koha extends CurlBasedDriver {
      * @param User $patron
      * @param int $page
      * @param int $recordsPerPage
+     * @param string $sortOption
      * @return array
      * @throws Exception
      */
 	public function getReadingHistory($patron, $page = 1, $recordsPerPage = -1, $sortOption = "checkedOut") {
-		// TODO implement sorting, currently only done in catalogConnection for aspencat reading history
+		// TODO implement sorting, currently only done in catalogConnection for koha reading history
 		//TODO prepend indexProfileType
 		$this->initDatabaseConnection();
 
@@ -494,7 +501,7 @@ class Koha extends CurlBasedDriver {
 			$historyEnabledRow = $historyEnabledRS->fetch_assoc();
 			$historyEnabled = !$historyEnabledRow['disable_reading_history'];
 
-			// Update patron's setting in Pika if the setting has changed in Koha
+			// Update patron's setting in Aspen if the setting has changed in Koha
 			if ($historyEnabled != $patron->trackReadingHistory) {
 				$patron->trackReadingHistory = (boolean) $historyEnabled;
 				$patron->update();
@@ -530,7 +537,7 @@ class Koha extends CurlBasedDriver {
 						$curTitle['shortId']  = $readingHistoryTitleRow['biblionumber'];
 						$curTitle['recordId'] = $readingHistoryTitleRow['biblionumber'];
 						$curTitle['title']    = $readingHistoryTitleRow['title'];
-						$curTitle['checkout'] = $checkOutDate->format('m-d-Y'); // this format is expected by Pika's java cron program.
+						$curTitle['checkout'] = $checkOutDate->format('m-d-Y'); // this format is expected by Aspen's java cron program.
 
 						$readingHistoryTitles[] = $curTitle;
 					}
@@ -555,7 +562,7 @@ class Koha extends CurlBasedDriver {
 				$historyEntry['format']      = "Unknown";
 				;
 				if (!empty($historyEntry['recordId'])){
-//					if (is_int($historyEntry['recordId'])) $historyEntry['recordId'] = (string) $historyEntry['recordId']; // Marc Record Contructor expects the recordId as a string.
+//					if (is_int($historyEntry['recordId'])) $historyEntry['recordId'] = (string) $historyEntry['recordId']; // Marc Record Constructor expects the recordId as a string.
 					require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 					$recordDriver = new MarcRecordDriver($this->accountProfile->recordSource.':'.$historyEntry['recordId']);
 					if ($recordDriver->isValid()){
@@ -589,7 +596,7 @@ class Koha extends CurlBasedDriver {
      *                                If an error occurs, return a PEAR_Error
      * @access  public
      */
-	public function placeHold($patron, $recordId, $pickupBranch, $cancelDate = null){
+	public function placeHold($patron, $recordId, $pickupBranch = null, $cancelDate = null){
 		$hold_result = array();
 		$hold_result['success'] = false;
 
@@ -640,56 +647,6 @@ class Koha extends CurlBasedDriver {
 				);
 			}
 
-			//Create the items table so the patron can select an item to place a hold on
-//			if (preg_match('/<table>\\s+<caption>Select a specific copy:<\/caption>\\s+(.*?)<\/table>/s', $placeHoldPage, $matches)) {
-//				$itemTable = $matches[1];
-//				//Get the header row labels
-//				$headerLabels = array();
-//				preg_match_all('/<th[^>]*>(.*?)<\/th>/si', $itemTable, $tableHeaders, PREG_PATTERN_ORDER);
-//				foreach ($tableHeaders[1] as $col => $tableHeader){
-//					$headerLabels[$col] = trim(strip_tags(strtolower($tableHeader)));
-//				}
-//
-//				//Grab each row within the table
-//				preg_match_all('/<tr[^>]*>\\s+(<td.*?)<\/tr>/si', $itemTable, $tableData, PREG_PATTERN_ORDER);
-//				foreach ($tableData[1] as $tableRow){
-//					//Each row in the table represents a hold
-//
-//					$curItem = array();
-//					$validItem = false;
-//					//Go through each cell in the row
-//					preg_match_all('/<td[^>]*>(.*?)<\/td>/si', $tableRow, $tableCells, PREG_PATTERN_ORDER);
-//					foreach ($tableCells[1] as $col => $tableCell){
-//						if ($headerLabels[$col] == 'copy'){
-//							if (strpos($tableCell, 'disabled') === false){
-//								$validItem = true;
-//								if (preg_match('/value="(\d+)"/', $tableCell, $valueMatches)){
-//									$curItem['itemNumber'] = $valueMatches[1];
-//								}
-//							}
-//						}else if ($headerLabels[$col] == 'item type'){
-//							$curItem['itemType'] = trim($tableCell);
-//						}else if ($headerLabels[$col] == 'barcode'){
-//							$curItem['barcode'] = trim($tableCell);
-//						}else if ($headerLabels[$col] == 'home library'){
-//							$curItem['location'] = trim($tableCell);
-//						}else if ($headerLabels[$col] == 'call number'){
-//							$curItem['callNumber'] = trim($tableCell);
-//						}else if ($headerLabels[$col] == 'vol info'){
-//							$curItem['volInfo'] = trim($tableCell);
-//						}else if ($headerLabels[$col] == 'information'){
-//							$curItem['status'] = trim($tableCell);
-//						}
-//					}
-//					if ($validItem){
-//						$items[$curItem['itemNumber']] = $curItem;
-//					}
-//				}
-//			}elseif (preg_match('/<div class="dialog alert">(.*?)<\/div>/s', $placeHoldPage, $matches)){
-//				$items = array();
-//				$message = trim($matches[1]);
-//			}
-
 			$hold_result['title'] = $recordDriver->getTitle();
 			$hold_result['items'] = $items;
 			if (count($items) > 0){
@@ -727,7 +684,7 @@ class Koha extends CurlBasedDriver {
             /** @noinspection HtmlUnknownAnchorTarget */
             if ($placeHoldResponse->title) {
 				//We redirected to the holds page, everything seems to be good
-				$holds = $this->getMyHolds($patron, 1, -1, 'title');
+				$holds = $this->getHolds($patron, 1, -1, 'title');
 				$hold_result['success'] = true;
 				$hold_result['message'] = "Your hold was placed successfully.";
 				//Find the correct hold (will be unavailable)
@@ -807,7 +764,7 @@ class Koha extends CurlBasedDriver {
 
 		if ($placeHoldResponse->title) {
             //We redirected to the holds page, everything seems to be good
-            $holds = $this->getMyHolds($patron, 1, -1, 'title');
+            $holds = $this->getHolds($patron, 1, -1, 'title');
             $hold_result['success'] = true;
             $hold_result['message'] = "Your hold was placed successfully.";
             //Find the correct hold (will be unavailable)
@@ -842,7 +799,7 @@ class Koha extends CurlBasedDriver {
 	 * @access public
 	 */
     /** @noinspection PhpUnusedParameterInspection */
-	public function getMyHolds($patron, $page = 1, $recordsPerPage = -1, $sortOption = 'title'){
+	public function getHolds($patron, $page = 1, $recordsPerPage = -1, $sortOption = 'title'){
 		$availableHolds = array();
 		$unavailableHolds = array();
 		$holds = array(
@@ -875,7 +832,7 @@ class Koha extends CurlBasedDriver {
 			$curHold['currentPickupName'] = $curHold['location'];
 			$curHold['position'] = $curRow['priority'];
 			$curHold['frozen'] = false;
-			$curHold['freezeable'] = false;
+			$curHold['canFreeze'] = false;
 			$curHold['cancelable'] = true;
 			if ($curRow['found'] == 'S'){
 				$curHold['frozen'] = true;
@@ -887,9 +844,9 @@ class Koha extends CurlBasedDriver {
 				$curHold['status'] = "In Transit";
 			}else{
 				$curHold['status'] = "Pending";
-				$curHold['freezeable'] = true;
+				$curHold['canFreeze'] = true;
 			}
-			$curHold['freezeable'] = false;
+			$curHold['canFreeze'] = false;
 			$curHold['cancelId'] = $curRow['reserve_id'];
 
 			if ($bibId){
@@ -921,7 +878,7 @@ class Koha extends CurlBasedDriver {
 	}
 
 	public function updateHold($requestId, $patronId, $type){
-		$xnum = "x" . $_REQUEST['x'];
+		$xNum = "x" . $_REQUEST['x'];
 		//Strip the . off the front of the bib and the last char from the bib
 		if (isset($_REQUEST['cancelId'])){
 			$cancelId = $_REQUEST['cancelId'];
@@ -930,7 +887,7 @@ class Koha extends CurlBasedDriver {
 		}
 		$locationId = $_REQUEST['location'];
 		$freezeValue = isset($_REQUEST['freeze']) ? 'on' : 'off';
-		return $this->updateHoldDetailed($patronId, $type, $xnum, $cancelId, $locationId, $freezeValue);
+		return $this->updateHoldDetailed($patronId, $type, $xNum, $cancelId, $locationId, $freezeValue);
 	}
 
     /**
@@ -944,21 +901,15 @@ class Koha extends CurlBasedDriver {
      * @param string $freezeValue
      * @return array
      */
-	public function updateHoldDetailed($patron, $type, $xNum, $cancelId, $locationId, $freezeValue='off'){
+    public function updateHoldDetailed($patron, $type, $xNum, $cancelId, $locationId, /** @noinspection PhpUnusedParameterInspection */ $freezeValue='off'){
 		$titles = array();
 
 		if (!isset($xNum) || empty($xNum)){
-			if (isset($_REQUEST['waitingholdselected']) || isset($_REQUEST['availableholdselected'])){
-				$waitingHolds = isset($_REQUEST['waitingholdselected']) ? $_REQUEST['waitingholdselected'] : array();
-				$availableHolds = isset($_REQUEST['availableholdselected']) ? $_REQUEST['availableholdselected'] : array();
-				$holdKeys = array_merge($waitingHolds, $availableHolds);
-			}else{
-				if (is_array($cancelId)){
-					$holdKeys = $cancelId;
-				}else{
-					$holdKeys = array($cancelId);
-				}
-			}
+            if (is_array($cancelId)){
+                $holdKeys = $cancelId;
+            }else{
+                $holdKeys = array($cancelId);
+            }
 		}else{
 			$holdKeys = $xNum;
 		}
@@ -1021,7 +972,7 @@ class Koha extends CurlBasedDriver {
 		);
 	}
 
-	public function renewItem($patron, $recordId, $itemId, $itemIndex){
+	public function renewCheckout($patron, $recordId, $itemId, $itemIndex){
         $params = [
             'service' => 'RenewLoan',
             'patron_id' => $patron->username,
@@ -1049,7 +1000,7 @@ class Koha extends CurlBasedDriver {
 
 	/**
 	 * Get a list of fines for the user.
-	 * Code take from C4::Account getcharges method
+	 * Code taken from C4::Account getcharges method
 	 *
 	 * @param User $patron
 	 * @param bool $includeMessages
@@ -1092,35 +1043,8 @@ class Koha extends CurlBasedDriver {
 		return $fines;
 	}
 
-	private $holdsByBib = array();
 	/** @var mysqli_stmt  */
 	private $getNumHoldsStmt = null;
-	public function getNumHolds($id) {
-		if (isset($this->holdsByBib[$id])){
-			return $this->holdsByBib[$id];
-		}
-		$numHolds = 0;
-
-		$this->initDatabaseConnection();
-        /** @noinspection SqlResolve */
-		$sql = "SELECT count(*) from reserves where biblionumber = $id";
-		$results = mysqli_query($this->dbConnection, $sql);
-		if (!$results){
-			global $logger;
-			$logger->log("Unable to load hold count from Koha (" . mysqli_errno($this->dbConnection) . ") " . mysqli_error($this->dbConnection), PEAR_LOG_ERR);
-		}else{
-			$curRow = $results->fetch_row();
-			$numHolds = $curRow[0];
-			$results->close();
-		}
-
-		$this->holdsByBib[$id] = $numHolds;
-
-		global $timer;
-		$timer->logTime("Finished loading num holds for record ");
-
-		return $numHolds;
-	}
 
     /**
      * Get Total Outstanding fines for a user.  Lifted from Koha:
@@ -1130,7 +1054,7 @@ class Koha extends CurlBasedDriver {
      * @return mixed
      */
 	private function getOutstandingFineTotal($patron) {
-		//Since borrowernumber is stored in fees and payments, not fee_transactions,
+		//Since borrowerNumber is stored in fees and payments, not fee_transactions,
 		//this is done with two queries: the first gets all outstanding charges, the second
 		//picks up any unallocated credits.
 		$amountOutstanding = 0;

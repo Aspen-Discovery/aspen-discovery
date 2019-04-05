@@ -8,7 +8,7 @@ class Rbdigital_AJAX extends Action {
 
 	function launch() {
 		$method = $_GET['method'];
-		if (in_array($method, array('CheckoutRbdigitalItem', 'PlaceRbdigitalHold', 'CancelRbdigitalHold', 'GetRbdigitalHoldPrompts', 'ReturnRbdigitalItem', 'GetDownloadLink', 'GetRbdigitalCheckoutPrompts'))){
+		if (in_array($method, array('CheckoutRbdigitalItem', 'PlaceRbdigitalHold', 'CancelRbdigitalHold', 'GetRbdigitalHoldPrompts', 'ReturnRbdigitalItem', 'GetDownloadLink', 'GetCheckoutPrompts'))){
 			header('Content-type: text/plain');
 			header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 			header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
@@ -163,7 +163,7 @@ class Rbdigital_AJAX extends Action {
 			$promptForEmail = true;
 		}
 
-		$overDriveUsers = $user->getRelatedRbdigitalUsers();
+		$overDriveUsers = $user->getRelatedEcontentUsers('rbdigital');
 		$interface->assign('overDriveUsers', $overDriveUsers);
 		if (count($overDriveUsers) == 1){
 			$interface->assign('patronId', reset($overDriveUsers)->id);
@@ -193,13 +193,13 @@ class Rbdigital_AJAX extends Action {
 		}
 	}
 
-	function GetRbdigitalCheckoutPrompts(){
+	function GetCheckoutPrompts(){
 		$user = UserAccount::getLoggedInUser();
 		global $interface;
 		$id = $_REQUEST['id'];
-		$interface->assign('overDriveId', $id);
+		$interface->assign('rbdigitalId', $id);
 
-		$overDriveUsers = $user->getRelatedRbdigitalUsers();
+		$overDriveUsers = $user->getRelatedEcontentUsers('rbdigital');
 		$interface->assign('overDriveUsers', $overDriveUsers);
 
 		if (count($overDriveUsers) > 1){

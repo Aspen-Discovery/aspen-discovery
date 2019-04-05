@@ -6,8 +6,8 @@ class Admin_OverDriveAPIData extends Admin_Admin
 {
 	function launch()
 	{
-		require_once ROOT_DIR . '/Drivers/OverDriveDriverFactory.php';
-		$driver = OverDriveDriverFactory::getDriver();
+        require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+        $driver = new OverDriveDriver();
 
 		$libraryInfo = $driver->getLibraryAccountInformation();
 		$contents =  "<h1>Main - {$libraryInfo->name}</h1>";

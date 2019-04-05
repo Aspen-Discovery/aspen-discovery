@@ -34,9 +34,8 @@ class Lion extends Sierra
 		$curl_url = $this->getVendorOpacUrl() . "/selfreg~S" . $this->getLibraryScope();
 		$logger->log('Loading page ' . $curl_url, PEAR_LOG_INFO);
 
-		$curl_connection = $this->_curl_connect($curl_url);
+		$curl_connection = $this->curlWrapper->curl_connect($curl_url);
 
-//		$post_data['nfirst'] = $middleName ? $firstName.' '.$middleName : $firstName; // add middle name onto first name;
 		$post_data['nfirst'] =  $firstName;
 		$post_data['nlast'] = $lastName;
 		$post_data['stre_aaddress'] = $address;
@@ -68,13 +67,12 @@ class Lion extends Sierra
 
 		$post_string = http_build_query($post_data);
 		curl_setopt($curl_connection, CURLOPT_POSTFIELDS, $post_string);
-		$sresult = curl_exec($curl_connection);
-//		$info = curl_getinfo($curl_connection); // for debug only
+		$sResult = curl_exec($curl_connection);
 
-		$this->_close_curl();
+		$this->curlWrapper->close_curl();
 
 		//Parse the library card number from the response
-		if (preg_match('%your temporary account number, which is:.*?(\d+)</h1>%si', $sresult, $matches)) {
+		if (preg_match('%your temporary account number, which is:.*?(\d+)</h1>%si', $sResult, $matches)) {
 			$barcode = $matches[1];
 			return array('success' => true, 'barcode' => $barcode);
 		} else {

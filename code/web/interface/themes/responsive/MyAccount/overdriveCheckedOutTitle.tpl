@@ -61,10 +61,10 @@
 					</div>
 				{/if}
 
-				{if $record.checkoutdate}
+				{if $record.checkoutDate}
 					<div class="row">
 						<div class="result-label col-tn-4 col-lg-3">{translate text='Checked Out'}</div>
-						<div class="result-value col-tn-8 col-lg-9">{$record.checkoutdate|date_format}</div>
+						<div class="result-value col-tn-8 col-lg-9">{$record.checkoutDate|date_format}</div>
 					</div>
 				{/if}
 
@@ -134,7 +134,7 @@
 						<a href="#" onclick="return VuFind.OverDrive.followOverDriveDownloadLink('{$record.userId}', '{$record.overDriveId}', '{$record.selectedFormat.format}')" class="btn btn-sm btn-primary">Download&nbsp;Again</a>
 					{/if}
 					{if $record.earlyReturn}
-						<a href="#" onclick="return VuFind.OverDrive.returnOverDriveTitle('{$record.userId}', '{$record.overDriveId}', '{$record.transactionId}');" class="btn btn-sm btn-warning">Return&nbsp;Now</a>
+						<a href="#" onclick="return VuFind.OverDrive.returnCheckout('{$record.userId}', '{$record.overDriveId}');" class="btn btn-sm btn-warning">Return&nbsp;Now</a>
 					{/if}
 				</div>
 

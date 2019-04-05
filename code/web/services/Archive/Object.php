@@ -468,7 +468,7 @@ abstract class Archive_Object extends Action {
 	{
 		global $interface;
 		global $logger;
-		$interface->assign('lastsearch', isset($_SESSION['lastSearchURL']) ? $_SESSION['lastSearchURL'] : false);
+		$interface->assign('lastSearch', isset($_SESSION['lastSearchURL']) ? $_SESSION['lastSearchURL'] : false);
 		$searchSource = isset($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : 'islandora';
 		//TODO: What if it ain't islandora? (direct navigation to archive object page)
 		/** @var SearchObject_IslandoraSearcher $searchObject */

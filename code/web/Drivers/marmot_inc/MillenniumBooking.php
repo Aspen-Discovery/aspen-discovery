@@ -60,7 +60,7 @@ class MillenniumBooking {
 		// Scope appears to be unnecessary at this point.
 
 		// Get pagen from form
-		$curlResponse = $driver->_curlGetPage($bookingUrl);
+		$curlResponse = $driver->curlWrapper->curlGetPage($bookingUrl);
 
 		if (preg_match('/You cannot book this material/i', $curlResponse)){
 			return array(
@@ -125,8 +125,8 @@ class MillenniumBooking {
 			'webbook_note' => '', // the web note doesn't seem to be displayed to the user any where after submit
 		);
 		if (!empty($loc)) $post['webbook_loc'] = $loc; // if we have this info add it, don't include otherwise.
-		$curlResponse = $driver->_curlPostPage($bookingUrl, $post);
-		if ($curlError = curl_errno($driver->curl_connection)) {
+		$curlResponse = $driver->curlWrapper->curlPostPage($bookingUrl, $post);
+		if ($curlError = curl_errno($driver->curlWrapper->curl_connection)) {
 			global $logger;
 			$logger->log('Curl error during booking, code: '.$curlError, PEAR_LOG_WARNING);
 			return array(
@@ -200,15 +200,15 @@ class MillenniumBooking {
 		}
 
 
-		$initialResponse = $driver->_curlPostPage($cancelBookingUrl, $post);
+		$initialResponse = $driver->curlWrapper->curlPostPage($cancelBookingUrl, $post);
 		$errors = array();
-		if ($curlError = curl_errno($driver->curl_connection)) return array(
+		if ($curlError = curl_errno($driver->curlWrapper->curl_connection)) return array(
 			'success' => false,
 			'message' => 'There was an error communicating with the circulation system.'
 		);
 
 		// get the bookings again, to verify that they were in fact really cancelled.
-		$curlResponse = $driver->_curlPostPage($cancelBookingUrl, array());
+		$curlResponse = $driver->curlWrapper->curlPostPage($cancelBookingUrl, array());
 
 		foreach ($cancelIds as $cancelId) {
 			// successful cancels return books page without the item
@@ -254,15 +254,15 @@ class MillenniumBooking {
 		$post = array(
 			'canbookall' => 'YES'
 		);
-		$initialResponse = $driver->_curlPostPage($cancelBookingUrl, $post);
+		$initialResponse = $driver->curlWrapper->curlPostPage($cancelBookingUrl, $post);
 		$errors = array();
-		if ($curlError = curl_errno($driver->curl_connection)) return array(
+		if ($curlError = curl_errno($driver->curlWrapper->curl_connection)) return array(
 			'success' => false,
 			'message' => 'There was an error communicating with the circulation system.'
 		);
 
 		// get the bookings again, to verify that they were in fact really cancelled.
-		$curlResponse = $driver->_curlPostPage($cancelBookingUrl, array());
+		$curlResponse = $driver->curlWrapper->curlPostPage($cancelBookingUrl, array());
 		if (!strpos($curlResponse, 'No bookings found')) { // 'No bookings found' is our success phrase
 			$bookings = $this->parseBookingsPage($curlResponse);
 			if (!empty($bookings)) { // a booking wasn't canceled
@@ -418,7 +418,7 @@ class MillenniumBooking {
 				'webbook_end_n_AMPM' => '',
 				'webbook_note' => '',
 			);
-			$HourlyCalendarResponse = $driver->_curlPostPage($hourlyCalendarUrl, $post);
+			$HourlyCalendarResponse = $driver->curlWrapper->curlPostPage($hourlyCalendarUrl, $post);
 
 			// Extract Hourly Calendar from second response
 			if(preg_match('/<div class="bookingsSelectCal">.*?<table border>(?<HourlyCalendarTable>.*?<\/table>.*?)<\/table>.*?<\/div>/si', $HourlyCalendarResponse, $table)) {

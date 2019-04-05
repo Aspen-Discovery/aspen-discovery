@@ -11,7 +11,7 @@ class Hoopla_AJAX extends Action
 			// Methods intend to return JSON data
 			if (in_array($method, array(
 					'reloadCover',
-					'checkOutHooplaTitle', 'getHooplaCheckOutPrompt', 'returnHooplaTitle'
+					'checkOutHooplaTitle', 'getHooplaCheckOutPrompt', 'returnCheckout'
 			))) {
 				header('Content-type: text/plain');
 				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
@@ -109,7 +109,7 @@ class Hoopla_AJAX extends Action
 			list(, $id) = explode(':', $id);
 		}
 		if ($user) {
-			$hooplaUsers = $user->getRelatedHooplaUsers();
+			$hooplaUsers = $user->getRelatedEcontentUsers('hoopla');
 
 			require_once ROOT_DIR . '/Drivers/HooplaDriver.php';
 			$driver = new HooplaDriver();
@@ -121,7 +121,7 @@ class Hoopla_AJAX extends Action
 				//TODO: need to determine what happens to cards without a Hoopla account
 				$hooplaUserStatuses = array();
 				foreach ($hooplaUsers as $tmpUser) {
-					$checkOutStatus                   = $driver->getHooplaPatronStatus($tmpUser);
+					$checkOutStatus                   = $driver->getAccountSummary($tmpUser);
 					$hooplaUserStatuses[$tmpUser->id] = $checkOutStatus;
 				}
 
@@ -220,7 +220,7 @@ class Hoopla_AJAX extends Action
 					$patron->update();
 				}
 				if ($result['success']) {
-					$checkOutStatus = $driver->getHooplaPatronStatus($patron);
+					$checkOutStatus = $driver->getAccountSummary($patron);
 					$interface->assign('hooplaPatronStatus', $checkOutStatus);
 					$title = empty($result['title']) ? "Title checked out successfully" : $result['title'] . " checked out successfully";
 					return array(
@@ -240,7 +240,7 @@ class Hoopla_AJAX extends Action
 		}
 	}
 
-	function returnHooplaTitle() {
+	function returnCheckout() {
 		$user = UserAccount::getLoggedInUser();
 		if ($user){
 			$patronId = $_REQUEST['patronId'];
@@ -249,7 +249,7 @@ class Hoopla_AJAX extends Action
 				$id = $_REQUEST['id'];
 				require_once ROOT_DIR . '/Drivers/HooplaDriver.php';
 				$driver = new HooplaDriver();
-				$result = $driver->returnHooplaItem($id, $patron);
+				$result = $driver->returnCheckout($patron, $id);
 				return $result;
 			}else{
 				return array('success'=>false, 'message'=>'Sorry, it looks like you don\'t have permissions to return titles for that user.');

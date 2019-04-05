@@ -4,7 +4,6 @@ require_once ROOT_DIR . '/Drivers/HorizonAPI.php';
 abstract class HorizonAPI3_23 extends HorizonAPI
 {
 	private function getBaseWebServiceUrl() {
-		global $configArray;
 		if (!empty($this->accountProfile->patronApiUrl)) {
 			$webServiceURL = $this->accountProfile->patronApiUrl;
 		} else {
@@ -12,7 +11,6 @@ abstract class HorizonAPI3_23 extends HorizonAPI
 			$logger->log('No Web Service URL defined in Horizon API Driver', PEAR_LOG_CRIT);
 			echo("Web service URL must be defined in the account profile to work with the Horizon API");
 			die();
-			return null;
 		}
 
 		$urlParts = parse_url($webServiceURL);
@@ -21,9 +19,14 @@ abstract class HorizonAPI3_23 extends HorizonAPI
 		return $baseWebServiceUrl;
 	}
 
+    /**
+     * @param User $user
+     * @param string $oldPin
+     * @param string $newPin
+     * @param $confirmNewPin
+     * @return string a message to the user letting them know what happened
+     */
 	function updatePin($user, $oldPin, $newPin, $confirmNewPin){
-		global $configArray;
-
 		//Log the user in
 		list($userValid, $sessionToken) = $this->loginViaWebService($user->cat_username, $user->cat_password);
 		if (!$userValid){
@@ -54,7 +57,12 @@ abstract class HorizonAPI3_23 extends HorizonAPI
 		}
 	}
 
-
+    /**
+     * @param User $user
+     * @param string $newPin
+     * @param null|string $resetToken
+     * @return array
+     */
 	function resetPin($user, $newPin, $resetToken=null){
 		if (empty($resetToken)) {
 			global $logger;
@@ -113,7 +121,7 @@ abstract class HorizonAPI3_23 extends HorizonAPI
 
 			// If possible, check if Horizon has an email address for the patron
 			if (!empty($patron->cat_password)) {
-				list($userValid, $sessionToken, $ilsUserID) = $this->loginViaWebService($barcode, $patron->cat_password);
+				list($userValid, $sessionToken) = $this->loginViaWebService($barcode, $patron->cat_password);
 				if ($userValid) {
 					// Yay! We were able to login with the pin Pika has!
 

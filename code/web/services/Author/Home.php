@@ -159,7 +159,7 @@ class Author_Home extends Action
 		// search, and it is better to display nothing than to provide an infinite
 		// loop of links.  Perhaps this can be solved more elegantly with a stack
 		// or with multiple session variables, but for now this seems okay.
-		$interface->assign('lastsearch', (isset($_SESSION['lastSearchURL']) && !strstr($_SESSION['lastSearchURL'], 'Author/Home')) ? $_SESSION['lastSearchURL'] : false);
+		$interface->assign('lastSearch', (isset($_SESSION['lastSearchURL']) && !strstr($_SESSION['lastSearchURL'], 'Author/Home')) ? $_SESSION['lastSearchURL'] : false);
 
 		$interface->assign('lookfor', $_GET['author']);
 		$interface->assign('basicSearchIndex', 'Author');

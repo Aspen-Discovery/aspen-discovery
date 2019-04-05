@@ -99,7 +99,7 @@ class Person_Home extends Action
 		$interface->assign('id', $this->id);
 
 		// Retrieve User Search History
-		$interface->assign('lastsearch', isset($_SESSION['lastSearchURL']) ?
+		$interface->assign('lastSearch', isset($_SESSION['lastSearchURL']) ?
 		$_SESSION['lastSearchURL'] : false);
 
 		$this->cacheId = 'Person|' . $_GET['id'] . '|' . get_class($this);

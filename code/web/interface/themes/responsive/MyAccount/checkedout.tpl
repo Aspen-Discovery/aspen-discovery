@@ -22,7 +22,7 @@
 		{else}
 
 			{if $transList}
-				<form id="renewForm" action="{$path}/MyAccount/RenewMultiple">
+				<form id="renewForm" action="{$path}/MyAccount/CheckedOut">
 					<div id="pager" class="navbar form-inline">
 						<label for="accountSort" class="control-label">{translate text='Sort by'}:&nbsp;</label>
 						<select name="accountSort" id="accountSort" class="form-control" onchange="VuFind.Account.changeAccountSort($(this).val());">

@@ -17,7 +17,7 @@ class CatalogConnection
 	 * The object of the appropriate driver.
 	 *
 	 * @access private
-	 * @var    AbstractCatalogDriver
+	 * @var    AbstractIlsDriver
 	 */
 	public $driver;
 
@@ -35,7 +35,7 @@ class CatalogConnection
 	public function __construct($driver, $accountProfile)
 	{
 		$path = ROOT_DIR . "/Drivers/{$driver}.php";
-		if (is_readable($path) && $driver != 'AbstractCatalogDriver') {
+		if (is_readable($path) && $driver != 'AbstractIlsDriver') {
 			require_once $path;
 
 			try {
@@ -168,23 +168,32 @@ class CatalogConnection
 	 */
 	public function updateUserWithAdditionalRuntimeInformation($user){
 		global $timer;
-		require_once(ROOT_DIR . '/Drivers/OverDriveDriverFactory.php');
-		$overDriveDriver = OverDriveDriverFactory::getDriver();
-		if ($user->isValidForOverDrive() && $overDriveDriver->isUserValidForOverDrive($user)){
-			$overDriveSummary = $overDriveDriver->getOverDriveSummary($user);
+        require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+        $overDriveDriver = new OverDriveDriver();
+		if ($user->isValidForEContentSource('overdrive') && $overDriveDriver->isUserValidForOverDrive($user)){
+			$overDriveSummary = $overDriveDriver->getAccountSummary($user);
 			$user->setNumCheckedOutOverDrive($overDriveSummary['numCheckedOut']);
 			$user->setNumHoldsAvailableOverDrive($overDriveSummary['numAvailableHolds']);
 			$user->setNumHoldsRequestedOverDrive($overDriveSummary['numUnavailableHolds']);
 			$timer->logTime("Updated runtime information from OverDrive");
 		}
 
-		if ($user->isValidForHoopla()){
+		if ($user->isValidForEContentSource('hoopla')){
 			require_once ROOT_DIR . '/Drivers/HooplaDriver.php';
 			$driver = new HooplaDriver();
-			$hooplaSummary = $driver->getHooplaPatronStatus($user);
+			$hooplaSummary = $driver->getAccountSummary($user);
 			$hooplaCheckOuts = isset($hooplaSummary->currentlyBorrowed) ? $hooplaSummary->currentlyBorrowed : 0;
 			$user->setNumCheckedOutHoopla($hooplaCheckOuts);
 		}
+
+		if ($user->isValidForEContentSource('rbdigital')) {
+		    require_once ROOT_DIR . '/Drivers/RbdigitalDriver.php';
+		    $driver = new RbdigitalDriver();
+            $rbdigitalSummary = $driver->getAccountSummary($user);
+            $user->setNumCheckedOutRbdigital($rbdigitalSummary['numCheckedOut']);
+            $user->setNumHoldsAvailableRbdigital($rbdigitalSummary['numAvailableHolds']);
+            $user->setNumHoldsRequestedRbdigital($rbdigitalSummary['numUnavailableHolds']);
+        }
 
 		$materialsRequest = new MaterialsRequest();
 		$materialsRequest->createdBy = $user->id;
@@ -249,9 +258,9 @@ class CatalogConnection
 	 * PEAR_Error otherwise.
 	 * @access public
 	 */
-	public function getMyCheckouts($user)
+	public function getCheckouts($user)
 	{
-		$transactions = $this->driver->getMyCheckouts($user);
+		$transactions = $this->driver->getCheckouts($user);
 		foreach ($transactions as $key => $curTitle){
 			$curTitle['user'] = $user->getNameAndLibraryLabel();
 			$curTitle['userId'] = $user->id;
@@ -277,7 +286,7 @@ class CatalogConnection
 	 *
 	 * This is responsible for retrieving all fines by a specific patron.
 	 *
-	 * @param array $patron The patron array from patronLogin
+	 * @param User $patron The patron from patronLogin
 	 *
 	 * @return mixed        Array of the patron's fines on success, PEAR_Error
 	 * otherwise.
@@ -429,9 +438,7 @@ class CatalogConnection
         }elseif ($action == 'exportList'){
             //Leave this unimplemented for now.
         }elseif ($action == 'optOut'){
-            $driverHasReadingHistory = $this->driver->hasNativeReadingHistory();
-
-            //Delete the reading history (permanently this time sine we are opting out)
+            //Delete the reading history (permanently this time since we are opting out)
             $readingHistoryDB = new ReadingHistoryEntry();
             $readingHistoryDB->userId = $patron->id;
             $readingHistoryDB->delete();
@@ -465,8 +472,8 @@ class CatalogConnection
 	 * @return array        Array of the patron's holds
 	 * @access public
 	 */
-	public function getMyHolds($user) {
-		$holds = $this->driver->getMyHolds($user);
+	public function getHolds($user) {
+		$holds = $this->driver->getHolds($user);
 		foreach ($holds as $section => $holdsForSection){
 			foreach ($holdsForSection as $key => $curTitle){
 				$curTitle['user'] = $user->getNameAndLibraryLabel();
@@ -766,7 +773,7 @@ class CatalogConnection
 		}
 
 		//Update reading history based on current checkouts.  That way it never looks out of date
-		$checkouts = $patron->getMyCheckouts(false);
+		$checkouts = $patron->getCheckouts(false);
 		foreach ($checkouts as $checkout){
 			$sourceId = '?';
 			$source = $checkout['checkoutSource'];
@@ -824,20 +831,6 @@ class CatalogConnection
 		}
 	}
 
-	public function getNumHolds($id) {
-		/** @var Memcache $memCache */
-		global $memCache;
-		$key = 'num_holds_' . $id ;
-		$cachedValue = $memCache->get($key);
-		if ($cachedValue == false || isset($_REQUEST['reload'])){
-			$cachedValue = $this->driver->getNumHolds($id);
-			global $configArray;
-			$memCache->set($key, $cachedValue, 0, $configArray['Caching']['item_data']);
-		}
-
-		return $cachedValue;
-	}
-
 	function cancelHold($patron, $recordId, $cancelId) {
 		return $this->driver->cancelHold($patron, $recordId, $cancelId);
 	}
@@ -860,8 +853,8 @@ class CatalogConnection
 			$this->driver->getBookingCalendar($recordId) : null;
 	}
 
-	public function renewItem($patron, $recordId, $itemId, $itemIndex){
-		return $this->driver->renewItem($patron, $recordId, $itemId, $itemIndex);
+	public function renewCheckout($patron, $recordId, $itemId, $itemIndex){
+		return $this->driver->renewCheckout($patron, $recordId, $itemId, $itemIndex);
 	}
 
 	public function renewAll($patron){
@@ -869,18 +862,18 @@ class CatalogConnection
 			return $this->driver->renewAll($patron);
 		}else{
 			//Get all list of all transactions
-			$currentTransactions = $this->driver->getMyCheckouts($patron);
+			$currentTransactions = $this->driver->getCheckouts($patron);
 			$renewResult = array(
 				'success' => true,
 				'message' => array(),
 				'Renewed' => 0,
-				'Unrenewed' => 0
+				'NotRenewed' => 0
 			);
 			$renewResult['Total'] = count($currentTransactions);
 			$numRenewals = 0;
 			$failure_messages = array();
 			foreach ($currentTransactions as $transaction){
-				$curResult = $this->renewItem($patron, $transaction['recordId'], $transaction['renewIndicator'], null);
+				$curResult = $this->renewCheckout($patron, $transaction['recordId'], $transaction['renewIndicator'], null);
 				if ($curResult['success']){
 					$numRenewals++;
 				} else {
@@ -888,8 +881,8 @@ class CatalogConnection
 				}
 			}
 			$renewResult['Renewed'] += $numRenewals;
-			$renewResult['Unrenewed'] = $renewResult['Total'] - $renewResult['Renewed'];
-			if ($renewResult['Unrenewed'] > 0) {
+			$renewResult['NotRenewed'] = $renewResult['Total'] - $renewResult['Renewed'];
+			if ($renewResult['NotRenewed'] > 0) {
 				$renewResult['success'] = false;
 				$renewResult['message'] = $failure_messages;
 			}else{
@@ -926,4 +919,19 @@ class CatalogConnection
 			return false;
 		}
 	}
+
+    /**
+     * @param User $user
+     * @param string $oldPin
+     * @param string $newPin
+     * @param $confirmNewPin
+     * @return string a message to the user letting them know what happened
+     */
+    function updatePin($user, $oldPin, $newPin, $confirmNewPin){
+        /* var Logger $logger */
+        global $logger;
+        $logger->log('Call to updatePin(), function not implemented.', PEAR_LOG_WARNING);
+
+        return 'Can not update Pins';
+    }
 }

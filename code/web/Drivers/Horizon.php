@@ -1,36 +1,22 @@
 <?php
-/**
- *
- * Copyright (C) Villanova University 2007.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2,
- * as published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- *
- */
 
-//require_once ROOT_DIR . '/sys/SIP2.php'; // not used at this time. plb 6-17-2016
-require_once ROOT_DIR . '/Drivers/CurlBasedDriver.php';
-abstract class Horizon extends CurlBasedDriver{
+require_once ROOT_DIR . '/sys/CurlWrapper.php';
+require_once ROOT_DIR . '/Drivers/AbstractIlsDriver.php';
+abstract class Horizon extends AbstractIlsDriver{
 
 	protected $db;
 	protected $useDb = true;
 	protected $hipUrl;
 	protected $hipProfile;
 	protected $selfRegProfile;
+	protected $curlWrapper;
+
 	function __construct($accountProfile) {
 		parent::__construct($accountProfile);
 		// Load Configuration for this Module
 		global $configArray;
+
+        $this->curlWrapper = new CurlWrapper();
 
 		$this->hipUrl = $configArray['Catalog']['hipUrl'];
 		$this->hipProfile = $configArray['Catalog']['hipProfile'];
@@ -61,15 +47,15 @@ abstract class Horizon extends CurlBasedDriver{
 		}
 	}
 
-	public function getMyFines($patron, $includeMessages){
+	public function getMyFines($patron, $includeMessages = false){
 		if ($this->useDb){
 			return $this->getMyFinesViaDB($patron, $includeMessages);
 		}else{
-			return $this->getMyFinesViaHIP($patron, $includeMessages);
+			return $this->getMyFinesViaHIP($patron);
 		}
 	}
 
-	public function getMyFinesViaHIP($patron, $includeMessages){
+	public function getMyFinesViaHIP($patron){
 		global $configArray;
 		global $logger;
 
@@ -129,7 +115,7 @@ abstract class Horizon extends CurlBasedDriver{
 		curl_setopt($curl_connection, CURLOPT_POSTFIELDS, $post_string);
 		$sresult = curl_exec($curl_connection);
 
-		preg_match_all('/<tr>.*?<td bgcolor="#FFFFFF"><a class="normalBlackFont2">(.*?)<\/a>.*?<a class="normalBlackFont2">(.*?)<\/a>.*?<a class="normalBlackFont2">(.*?)<\/a>.*?<a class="normalBlackFont2">(.*?)<\/a>.*?<\/tr>/s', $sresult, $messageInfo, PREG_SET_ORDER);
+		preg_match_all('/<!--suppress HtmlDeprecatedAttribute --><tr>.*?<td bgcolor="#FFFFFF"><a class="normalBlackFont2">(.*?)<\/a>.*?<a class="normalBlackFont2">(.*?)<\/a>.*?<a class="normalBlackFont2">(.*?)<\/a>.*?<a class="normalBlackFont2">(.*?)<\/a>.*?<\/tr>/s', $sresult, $messageInfo, PREG_SET_ORDER);
 		$messages = array();
 		for ($matchi = 0; $matchi < count($messageInfo); $matchi++) {
 			$messages[] = array(
@@ -216,6 +202,8 @@ abstract class Horizon extends CurlBasedDriver{
 
 	}
 
+	abstract function translateFineMessageType($fineType);
+
 	/**
 	 * @param User $user                     The User Object to make updates to
 	 * @param boolean $canUpdateContactInfo  Permission check that updating is allowed
@@ -242,7 +230,8 @@ abstract class Horizon extends CurlBasedDriver{
 					}
 					//Make sure no one else is using that
 					$userValidation = new User();
-					$userValidation->query("SELECT * from {$userValidation->__table} WHERE id <> {$user->id} and displayName = '{$_REQUEST['displayName']}'");
+                    /** @noinspection SqlResolve */
+                    $userValidation->query("SELECT * from {$userValidation->__table} WHERE id <> {$user->id} and displayName = '{$_REQUEST['displayName']}'");
 					if ($userValidation->N > 0) {
 						$updateErrors[] = 'Sorry, that name is in use or is invalid.';
 						return $updateErrors;
@@ -252,20 +241,15 @@ abstract class Horizon extends CurlBasedDriver{
 
 			//Start at My Account Page
 			$curl_url = $this->hipUrl . "/ipac20/ipac.jsp?profile={$configArray['Catalog']['hipProfile']}&menu=account";
-			$sResult = $this->_curlGetPage($curl_url);
+			$sResult = $this->curlWrapper->curlGetPage($curl_url);
 
 			//Extract the session id from the requestcopy javascript on the page
+            $sessionId = '';
 			if (preg_match('/\\?session=(.*?)&/s', $sResult, $matches)) {
 				$sessionId = $matches[1];
 			} else {
 				PEAR_Singleton::raiseError('Could not load session information from page.');
 			}
-
-			// Now Enable Cookie Session (This must come after the first page fetch, or there will be no curl response.)
-			// It looks like this setting is not needed at all. Retaining in the case that is not always true
-//			curl_setopt_array($this->curl_connection, array(
-//				CURLOPT_COOKIESESSION => true,
-//			));
 
 			//Login by posting username and password
 			global $logger;
@@ -273,21 +257,16 @@ abstract class Horizon extends CurlBasedDriver{
 			$post_data   = array(
 				'aspect' => 'overview',
 				'button' => 'Login to Your Account',
-				//'ipp' => '20',
-				//'lastlogin' => '1299616721524',
 				'login_prompt' => 'true',
 				'menu' => 'account',
-				//'npp' => '10',
 				'profile' => $configArray['Catalog']['hipProfile'],
 				'ri' => '',
 				'sec1' => $user->cat_username,
 				'sec2' => $user->cat_password,
 				'session' => $sessionId,
-				//'spp' => '20'
 			);
 			$curl_url    = $this->hipUrl . "/ipac20/ipac.jsp";
-			$sResult = $this->_curlPostPage($curl_url, $post_data);
-			//TODO check for Login success
+			$this->curlWrapper->curlPostPage($curl_url, $post_data);
 
 			//Update patron information.  Use HIP to update the e-mail to make sure that all business rules are followed.
 			if (isset($_REQUEST['email'])) {
@@ -302,7 +281,7 @@ abstract class Horizon extends CurlBasedDriver{
 					'submenu' => 'info',
 					'updateemail' => 'Update',
 				);
-				$sResult = $this->_curlPostPage($curl_url, $post_data);
+				$sResult = $this->curlWrapper->curlPostPage($curl_url, $post_data);
 
 				//check for errors in boldRedFont1
 				if (preg_match('/<td.*?class="boldRedFont1".*?>(.*?)(?:<br>)*<\/td>/si', $sResult, $matches)) {
@@ -325,7 +304,7 @@ abstract class Horizon extends CurlBasedDriver{
 					'submenu' => 'info',
 					'updatepin' => 'Update',
 				);
-				$sResult = $this->_curlPostPage($curl_url, $post_data);
+				$sResult = $this->curlWrapper->curlPostPage($curl_url, $post_data);
 
 				//check for errors in boldRedFont1
 				if (preg_match('/<td.*?class="boldRedFont1".*?>(.*?)(?:<br>)*<\/td>/', $sResult, $matches)) {
@@ -444,13 +423,16 @@ abstract class Horizon extends CurlBasedDriver{
 		}
 	}
 
-/**
-	 * Email the user's pin number to the account on record if any exists.
-	 */
+    /**
+     * Email the user's pin number to the account on record if any exists.
+     * @param string $barcode
+     * @return array
+     */
 	function emailPin($barcode){
 		global $configArray;
 		if ($this->useDb){
-			$sql = "SELECT name, borrower.borrower#, bbarcode, pin#, email_name, email_address from borrower inner join borrower_barcode on borrower.borrower# = borrower_barcode.borrower# inner join borrower_address on borrower.borrower# = borrower_address.borrower#  where bbarcode= '" . mysql_escape_string($barcode) . "'";
+            /** @noinspection SqlResolve */
+            $sql = "SELECT name, borrower.borrower#, bbarcode, pin#, email_name, email_address from borrower inner join borrower_barcode on borrower.borrower# = borrower_barcode.borrower# inner join borrower_address on borrower.borrower# = borrower_address.borrower#  where bbarcode= '" . mysql_escape_string($barcode) . "'";
 
 			try {
 				$sqlStmt = $this->_query($sql);

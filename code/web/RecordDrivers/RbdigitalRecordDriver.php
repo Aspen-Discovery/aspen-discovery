@@ -18,7 +18,8 @@ class RbdigitalRecordDriver extends GroupedWorkSubDriver {
      * we will already have this data available, so we might as well
      * just pass it into the constructor.
      *
-     * @param   array|File_MARC_Record||string   $recordData     Data to construct the driver from
+     * @param $recordId
+     * @param null|GroupedWork $groupedWork
      * @access  public
      */
     public function __construct($recordId, $groupedWork = null) {
@@ -145,7 +146,6 @@ class RbdigitalRecordDriver extends GroupedWorkSubDriver {
     public function getMoreDetailsOptions()
     {
         global $interface;
-        global $library;
 
         $isbn = $this->getCleanISBN();
 
@@ -174,12 +174,11 @@ class RbdigitalRecordDriver extends GroupedWorkSubDriver {
             'label' => 'More Details',
             'body' => $interface->fetch('Record/view-more-details.tpl'),
         );
-        //TODO: Load and display subjects
-//        $this->loadSubjects();
-//        $moreDetailsOptions['subjects'] = array(
-//            'label' => 'Subjects',
-//            'body' => $interface->fetch('Record/view-subjects.tpl'),
-//        );
+        $this->loadSubjects();
+        $moreDetailsOptions['subjects'] = array(
+            'label' => 'Subjects',
+            'body' => $interface->fetch('RecordDrivers/Rbdigital/view-subjects.tpl'),
+        );
         $moreDetailsOptions['citations'] = array(
             'label' => 'Citations',
             'body' => $interface->fetch('Record/cite.tpl'),
@@ -195,9 +194,9 @@ class RbdigitalRecordDriver extends GroupedWorkSubDriver {
         return $this->filterAndSortMoreDetailsOptions($moreDetailsOptions);
     }
 
-    public function getItemActions($itgemInfo)
+    public function getItemActions($itemInfo)
     {
-        // TODO: Implement getItemActions() method.
+        return [];
     }
 
     public function getISBNs()
@@ -215,8 +214,21 @@ class RbdigitalRecordDriver extends GroupedWorkSubDriver {
 
     public function getRecordActions($isAvailable, $isHoldable, $isBookable, $relatedUrls = null)
     {
-        // TODO: Implement getRecordActions() method.
-        return array();
+        $actions = array();
+        if ($isAvailable){
+            $actions[] = array(
+                'title' => 'Check Out Rbdigital',
+                'onclick' => "return VuFind.Rbdigital.checkOutTitle('{$this->id}');",
+                'requireLogin' => false,
+            );
+        }else{
+            $actions[] = array(
+                'title' => 'Place Hold Rbdigital',
+                'onclick' => "return VuFind.Rbdigital.placeHold('{$this->id}');",
+                'requireLogin' => false,
+            );
+        }
+        return $actions;
     }
 
     /**
@@ -388,6 +400,18 @@ class RbdigitalRecordDriver extends GroupedWorkSubDriver {
 
     function isValid(){
         return $this->valid;
+    }
+
+    function loadSubjects()
+    {
+        $subjects = [];
+        if ($this->rbdigitalRawMetadata->genres) {
+            foreach ($this->rbdigitalRawMetadata->genres as $genre){
+                $subjects[] = $genre->text;
+            }
+        }
+        global $interface;
+        $interface->assign('subjects', $subjects);
     }
 
 

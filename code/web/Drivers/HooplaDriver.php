@@ -1,7 +1,7 @@
 <?php
 
-class HooplaDriver
-{
+require_once ROOT_DIR . '/Drivers/AbstractEContentDriver.php';
+class HooplaDriver extends AbstractEContentDriver{
 	const memCacheKey = 'hoopla_api_access_token';
 //	public $hooplaAPIBaseURL = 'hoopla-api-dev.hoopladigital.com';
 	public $hooplaAPIBaseURL = 'hoopla-api-dev.hoopladigital.com';
@@ -13,7 +13,7 @@ class HooplaDriver
 	public function __construct()
 	{
 		global $configArray;
-		if (!empty($configArray['Hoopla']['HooplaAPIUser']) && !empty($configArray['Hoopla']['HooplaAPIpassword'])) {
+		if (!empty($configArray['Hoopla']['HooplaAPIUser']) && !empty($configArray['Hoopla']['HooplaAPIPassword'])) {
 			$this->hooplaEnabled = true;
 			if (!empty($configArray['Hoopla']['APIBaseURL'])) {
 				$this->hooplaAPIBaseURL = $configArray['Hoopla']['APIBaseURL'];
@@ -36,7 +36,6 @@ class HooplaDriver
 	}
 
 
-	// Originally copied from SirsiDynixROA Driver
 	// $customRequest is for curl, can be 'PUT', 'DELETE', 'POST'
 	private function getAPIResponse($url, $params = null, $customRequest = null, $additionalHeaders = null)
 	{
@@ -48,7 +47,7 @@ class HooplaDriver
 			'Accept: application/json',
 			'Content-Type: application/json',
 			'Authorization: Bearer ' . $this->accessToken,
-			'Originating-App-Id: Pika',
+			'Originating-App-Id: Aspen Discovery',
 		);
 		if (!empty($additionalHeaders) && is_array($additionalHeaders)) {
 			$headers = array_merge($headers, $additionalHeaders);
@@ -76,11 +75,7 @@ class HooplaDriver
 			curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($params));
 		}
 		$json = curl_exec($ch);
-//		// For debugging only
-//		if (stripos($instanceName, 'localhost') !== false) {
-//		$err  = curl_getinfo($ch);
-//		$headerRequest = curl_getinfo($ch, CURLINFO_HEADER_OUT);
-//		}
+
 		if (!$json && curl_getinfo($ch, CURLINFO_HTTP_CODE) == 401) {
 			$logger->log('401 Response in getAPIResponse. Attempting to renew access token', PEAR_LOG_WARNING);
 			$this->renewAccessToken();
@@ -99,7 +94,7 @@ class HooplaDriver
 	}
 
 	/**
-	 * Simplified CURL call for returning a title. Sucess is determined by recieving a http status code of 204
+	 * Simplified CURL call for returning a title. Success is determined by receiving a http status code of 204
 	 * @param $url
 	 * @return bool
 	 */
@@ -108,7 +103,7 @@ class HooplaDriver
 		$ch = curl_init();
 		$headers  = array(
 			'Authorization: Bearer ' . $this->accessToken,
-			'Originating-App-Id: Pika',
+			'Originating-App-Id: Aspen Discovery',
 		);
 
 		curl_setopt($ch, CURLOPT_URL, $url);
@@ -124,11 +119,7 @@ class HooplaDriver
 
 		curl_exec($ch);
 		$http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-//		// For debugging only
-//		if (stripos($instanceName, 'localhost') !== false) {
-//		$err  = curl_getinfo($ch);
-//		$headerRequest = curl_getinfo($ch, CURLINFO_HEADER_OUT);
-//		}
+
 		curl_close($ch);
 		return $http_code == 204;
 	}
@@ -137,7 +128,9 @@ class HooplaDriver
 	private static $hooplaLibraryIdsForUser;
 
 	/**
-	 * @param $user User
+	 * @param User $user
+     *
+     * @return false|int
 	 */
 	public function getHooplaLibraryID($user) {
 		if ($this->hooplaEnabled) {
@@ -154,7 +147,9 @@ class HooplaDriver
 	}
 
 	/**
-	 * @param $user User
+	 * @param User $user
+     *
+     * @return null|string
 	 */
 	private function getHooplaBasePatronURL($user) {
 		$url = null;
@@ -166,13 +161,15 @@ class HooplaDriver
 			}
 		}
 		return $url;
-		}
+    }
 
 	private $hooplaPatronStatuses = array();
 	/**
 	 * @param $user User
+     *
+     * @return false|stdClass
 	 */
-	public function getHooplaPatronStatus($user) {
+	public function getAccountSummary($user) {
 		if ($this->hooplaEnabled) {
 			if (isset($this->hooplaPatronStatuses[$user->id])) {
 				return $this->hooplaPatronStatuses[$user->id];
@@ -198,8 +195,10 @@ class HooplaDriver
 
 	/**
 	 * @param $user User
+     *
+     * @return array
 	 */
-	public function getHooplaCheckedOutItems($user)
+	public function getCheckouts($user)
 	{
 		$checkedOutItems = array();
 		if ($this->hooplaEnabled) {
@@ -208,8 +207,9 @@ class HooplaDriver
 				$hooplaCheckedOutTitlesURL  .= '/checkouts/current';
 				$checkOutsResponse = $this->getAPIResponse($hooplaCheckedOutTitlesURL);
 				if (is_array($checkOutsResponse)) {
+                    $hooplaPatronStatus = null;
 					if (count($checkOutsResponse)) { // Only get Patron status if there are checkouts
-						$hooplaPatronStatus = $this->getHooplaPatronStatus($user);
+						$hooplaPatronStatus = $this->getAccountSummary($user);
 					}
 					foreach ($checkOutsResponse as $checkOut) {
 						$hooplaRecordID  = 'MWT' . $checkOut->contentId;
@@ -224,12 +224,12 @@ class HooplaDriver
 							'title_sort'     => empty($simpleSortTitle) ? $checkOut->title : $simpleSortTitle,
 							'author'         => isset($checkOut->author) ? $checkOut->author : null,
 							'format'         => $checkOut->kind,
-							'checkoutdate'   => $checkOut->borrowed,
+							'checkoutDate'   => $checkOut->borrowed,
 							'dueDate'        => $checkOut->due,
 							'hooplaUrl'      => $checkOut->url
 						);
 
-						if (isset($hooplaPatronStatus->borrowsRemaining)) {
+						if ($hooplaPatronStatus != null && isset($hooplaPatronStatus->borrowsRemaining)) {
 							$currentTitle['borrowsRemaining'] = $hooplaPatronStatus->borrowsRemaining;
 						}
 
@@ -278,12 +278,12 @@ class HooplaDriver
 
 	private function renewAccessToken (){
 		global $configArray;
-		if (!empty($configArray['Hoopla']['HooplaAPIUser']) && !empty($configArray['Hoopla']['HooplaAPIpassword'])) {
+		if (!empty($configArray['Hoopla']['HooplaAPIUser']) && !empty($configArray['Hoopla']['HooplaAPIPassword'])) {
 			$url = 'https://' . str_replace(array('http://', 'https://'),'', $this->hooplaAPIBaseURL) . '/v2/token';
 			// Ensure https is used
 
 			$username = $configArray['Hoopla']['HooplaAPIUser'];
-			$password = $configArray['Hoopla']['HooplaAPIpassword'];
+			$password = $configArray['Hoopla']['HooplaAPIPassword'];
 
 			$curl = curl_init($url);
 			curl_setopt($curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC );
@@ -299,11 +299,7 @@ class HooplaDriver
 				curl_setopt($curl, CURLINFO_HEADER_OUT, true);
 			}
 			$response = curl_exec($curl);
-//			// Use for debugging
-//			if (stripos($instanceName, 'localhost') !== false) {
-//				$err  = curl_getinfo($curl);
-//				$headerRequest = curl_getinfo($curl, CURLINFO_HEADER_OUT);
-//			}
+
 			curl_close($curl);
 
 			if ($response) {
@@ -332,8 +328,10 @@ class HooplaDriver
 	}
 
 	/**
-	 * @param $hooplaId
-	 * @param $user User
+	 * @param string $hooplaId
+	 * @param User $user
+     *
+     * @return array
 	 */
 	public function checkoutHooplaItem($hooplaId, $user) {
 		if ($this->hooplaEnabled) {
@@ -394,13 +392,19 @@ class HooplaDriver
 		}
 	}
 
-	public function returnHooplaItem($hooplaId, $user) {
+    /**
+     * @param string $hooplaId
+     * @param User $user
+     *
+     * @return array
+     */
+	public function returnCheckout($user, $hooplaId) {
 		if ($this->hooplaEnabled) {
-			$returnHooplaItemURL = $this->getHooplaBasePatronURL($user);
-			if (!empty($returnHooplaItemURL)) {
+            $returnCheckoutURL = $this->getHooplaBasePatronURL($user);
+			if (!empty($returnCheckoutURL)) {
 				$itemId = self::recordIDtoHooplaID($hooplaId);
-				$returnHooplaItemURL .= "/$itemId";
-				$result = $this->getAPIResponseReturnHooplaTitle($returnHooplaItemURL);
+                $returnCheckoutURL .= "/$itemId";
+				$result = $this->getAPIResponseReturnHooplaTitle($returnCheckoutURL);
 				if ($result) {
 					return array(
 						'success' => true,
@@ -431,4 +435,92 @@ class HooplaDriver
 			);
 		}
 	}
+
+    public function hasNativeReadingHistory()
+    {
+        return false;
+    }
+
+    /**
+     * @return boolean true if the driver can renew all titles in a single pass
+     */
+    public function hasFastRenewAll()
+    {
+        return false;
+    }
+
+    /**
+     * Renew all titles currently checked out to the user
+     *
+     * @param $patron  User
+     * @return mixed
+     */
+    public function renewAll($patron)
+    {
+        return false;
+    }
+
+    /**
+     * Renew a single title currently checked out to the user
+     *
+     * @param $patron     User
+     * @param $recordId   string
+     * @param $itemId     string
+     * @param $itemIndex  string
+     * @return mixed
+     */
+    public function renewCheckout($patron, $recordId, $itemId, $itemIndex)
+    {
+        return false;
+    }
+
+    /**
+     * Get Patron Holds
+     *
+     * This is responsible for retrieving all holds for a specific patron.
+     *
+     * @param User $user The user to load transactions for
+     *
+     * @return array        Array of the patron's holds
+     * @access public
+     */
+    public function getHolds($user)
+    {
+        return [];
+    }
+
+    /**
+     * Place Hold
+     *
+     * This is responsible for both placing holds as well as placing recalls.
+     *
+     * @param User $patron The User to place a hold for
+     * @param string $recordId The id of the bib record
+     * @return  array                 An array with the following keys
+     *                                result - true/false
+     *                                message - the message to display (if item holds are required, this is a form to select the item).
+     *                                needsItemLevelHold - An indicator that item level holds are required
+     *                                title - the title of the record the user is placing a hold on
+     * @access  public
+     */
+    public function placeHold($patron, $recordId)
+    {
+        return [
+            'result' => false,
+            'message' => 'Holds are not implemented for Hoopla'
+        ];
+    }
+
+    /**
+     * Cancels a hold for a patron
+     *
+     * @param User $patron The User to cancel the hold for
+     * @param string $recordId The id of the bib record
+     * @param string $cancelId Information about the hold to be cancelled
+     * @return false|array
+     */
+    function cancelHold($patron, $recordId, $cancelId)
+    {
+        return false;
+    }
 }
