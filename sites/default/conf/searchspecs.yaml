@@ -448,11 +448,6 @@ DeweyBrowse:
     - dewey-raw:
       - [onephrase, ~]
 
-LccBrowse:
-  QueryFields:
-    - callnumber-a:
-      - [onephrase, ~]
-
 LocalCallNumber:
   QueryFields:
     - local_callnumber_exact:

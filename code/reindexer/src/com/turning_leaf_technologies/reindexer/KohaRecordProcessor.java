@@ -20,6 +20,7 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 	private HashSet<String> onHoldShelfItems = new HashSet<>();
 	private HashMap<Long, String> lostStatuses = new HashMap<>();
 	private HashMap<Long, String> damagedStatuses = new HashMap<>();
+	private HashMap<Long, String> notForLoanStatuses = new HashMap<>();
 
 	KohaRecordProcessor(GroupedWorkIndexer indexer, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		this (indexer, dbConn, indexingProfileRS, logger, fullReindex, null);
@@ -86,11 +87,19 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 			lostStatusRS.close();
 
 			PreparedStatement damagedStatusStmt = kohaConnection.prepareStatement("SELECT * FROM authorised_values where category = 'DAMAGED'");
-			ResultSet damagedStatusRS = lostStatusStmt.executeQuery();
+			ResultSet damagedStatusRS = damagedStatusStmt.executeQuery();
 			while (damagedStatusRS.next()) {
 				damagedStatuses.put(damagedStatusRS.getLong("authorised_value"), damagedStatusRS.getString("lib"));
 			}
 			damagedStatusRS.close();
+
+
+			PreparedStatement notForLoanStatusStmt = kohaConnection.prepareStatement("SELECT * FROM authorised_values where category = 'NOT_LOAN'");
+			ResultSet notForLoanStatusesRS = notForLoanStatusStmt.executeQuery();
+			while (notForLoanStatusesRS.next()) {
+				notForLoanStatuses.put(notForLoanStatusesRS.getLong("authorised_value"), notForLoanStatusesRS.getString("lib"));
+			}
+			notForLoanStatusesRS.close();
 
 			//Get a list of all items that are in transit
 			//PreparedStatement getInTransitItemsStmt = kohaConn.prepareStatement("SELECT itemnumber from reserves WHERE found = 'T'");
@@ -252,8 +261,13 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 						if ("-1".equals(fieldData)) {
 							return "On Order";
 						}
-						//There are several library use only statuses that we do not care about right now.
-						return null;
+						try {
+							Long subfieldDataNumeric = Long.parseLong(fieldData);
+							return notForLoanStatuses.get(subfieldDataNumeric);
+						}catch (NumberFormatException nfe) {
+							//Didn't get a valid status
+							return null;
+						}
 					}else if (subfield == 'k') {
 						switch (fieldData) {
 							case "CATALOGED":

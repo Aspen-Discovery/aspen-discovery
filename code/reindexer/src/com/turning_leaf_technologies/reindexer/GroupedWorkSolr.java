@@ -354,7 +354,6 @@ public class GroupedWorkSolr implements Cloneable {
 		doc.addField("upc", upcs.keySet());
 		
 		//call numbers
-		doc.addField("callnumber-a", callNumberA);
 		doc.addField("callnumber-first", callNumberFirst);
 		doc.addField("callnumber-subject", callNumberSubject);
 		//relevance determiners

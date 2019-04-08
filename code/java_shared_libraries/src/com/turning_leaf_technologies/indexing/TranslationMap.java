@@ -12,23 +12,26 @@ public class TranslationMap {
 	private Logger logger;
 	private String profileName;
 	private String mapName;
-	private boolean fullReindex;
 	private boolean usesRegularExpressions;
 
 	private HashMap<String, String> translationValues = new HashMap<>();
 	private HashMap<Pattern, String> translationValuePatterns = new HashMap<>();
 
-	public TranslationMap(String profileName, String mapName, boolean fullReindex, boolean usesRegularExpressions, Logger logger){
+	public TranslationMap(String profileName, String mapName, boolean usesRegularExpressions, Logger logger){
 		this.profileName = profileName;
 		this.mapName = mapName;
-		this.fullReindex = fullReindex;
 		this.usesRegularExpressions = usesRegularExpressions;
 		this. logger = logger;
 	}
 
 	private HashSet<String> unableToTranslateWarnings = new HashSet<>();
 	private HashMap<String, String> cachedTranslations = new HashMap<>();
+
 	public String translateValue(String value, String identifier){
+		return this.translateValue(value, identifier, false);
+	}
+
+	public String translateValue(String value, String identifier, boolean reportErrors){
 		String translatedValue = null;
 		String lowerCaseValue = value.toLowerCase();
 		if (cachedTranslations.containsKey(value)){
@@ -46,7 +49,7 @@ public class TranslationMap {
 			if (!matchFound) {
 				String concatenatedValue = mapName + ":" + value;
 				if (!unableToTranslateWarnings.contains(concatenatedValue)) {
-					if (fullReindex) {
+					if (reportErrors) {
 						logger.warn("Could not translate '" + concatenatedValue + "' in profile " + profileName + " sample record " + identifier);
 					}
 					unableToTranslateWarnings.add(concatenatedValue);
@@ -61,7 +64,7 @@ public class TranslationMap {
 				} else {
 					String concatenatedValue = mapName + ":" + value;
 					if (!unableToTranslateWarnings.contains(concatenatedValue)) {
-						if (fullReindex) {
+						if (reportErrors) {
 							logger.warn("Could not translate '" + concatenatedValue + "' in profile " + profileName + " sample record " + identifier);
 						}
 						unableToTranslateWarnings.add(concatenatedValue);
@@ -105,5 +108,9 @@ public class TranslationMap {
 		}else{
 			translationValues.put(value.toLowerCase(), translation);
 		}
+	}
+
+	public boolean hasTranslation(String value) {
+		return translationValues.containsKey(value);
 	}
 }

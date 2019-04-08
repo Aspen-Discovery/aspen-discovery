@@ -1,5 +1,6 @@
 package com.turning_leaf_technologies.reindexer;
 
+import com.turning_leaf_technologies.indexing.TranslationMap;
 import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.marc4j.MarcPermissiveStreamReader;
@@ -215,12 +216,15 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 	}
 	private void loadTranslationMapsForProfile(Connection dbConn, long id) throws SQLException{
+		//Load default system values which will be overwritten below
+
+
 		PreparedStatement getTranslationMapsStmt = dbConn.prepareStatement("SELECT * from translation_maps WHERE indexingProfileId = ?");
 		PreparedStatement getTranslationMapValuesStmt = dbConn.prepareStatement("SELECT * from translation_map_values WHERE translationMapId = ?");
 		getTranslationMapsStmt.setLong(1, id);
 		ResultSet translationsMapRS = getTranslationMapsStmt.executeQuery();
 		while (translationsMapRS.next()){
-			TranslationMap map = new TranslationMap(profileType, translationsMapRS.getString("name"), fullReindex, translationsMapRS.getBoolean("usesRegularExpressions"), logger);
+			TranslationMap map = new TranslationMap(profileType, translationsMapRS.getString("name"), translationsMapRS.getBoolean("usesRegularExpressions"), logger);
 			long translationMapId = translationsMapRS.getLong("id");
 			getTranslationMapValuesStmt.setLong(1, translationMapId);
 			ResultSet translationMapValuesRS = getTranslationMapValuesStmt.executeQuery();
@@ -716,6 +720,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 	private SimpleDateFormat dateAddedFormatter = null;
 	private SimpleDateFormat lastCheckInFormatter = null;
+	private HashSet<String> unhandledFormatBoosts = new HashSet<>();
 	void createPrintIlsItem(GroupedWorkSolr groupedWork, RecordInfo recordInfo, Record record, DataField itemField) {
 		if (dateAddedFormatter == null){
 			dateAddedFormatter = new SimpleDateFormat(dateAddedFormat);
@@ -790,7 +795,10 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 						recordInfo.setFormatBoost(Integer.parseInt(formatBoost));
 					}
 				} catch (Exception e) {
-					logger.warn("Could not get boost for format " + format);
+					if (!unhandledFormatBoosts.contains(format)){
+						unhandledFormatBoosts.add(format);
+						logger.warn("Could not get boost for format " + format);
+					}
 				}
 			}
 		}
@@ -1643,7 +1651,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 						} else if (physicalDescriptionData.contains("bluray") || physicalDescriptionData.contains("blu-ray")) {
 							result.add("Blu-ray");
 						} else if (physicalDescriptionData.contains("computer optical disc")) {
-							result.add("Software");
+							if (!physicalDescriptionData.matches("^.*?\\d+\\s+(p\\.|pages).*$")){
+								result.add("Software");
+							}
 						} else if (physicalDescriptionData.contains("sound cassettes")) {
 							result.add("SoundCassette");
 						} else if (physicalDescriptionData.contains("sound discs") || physicalDescriptionData.contains("audio discs") || physicalDescriptionData.contains("compact disc")) {
@@ -2140,42 +2150,53 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		return translateValue(mapName, value, identifier, true);
 	}
 
+	boolean hasTranslation(String mapName, String value) {
+		return translationMaps.containsKey(mapName) && translationMaps.get(mapName).hasTranslation(value);
+	}
+
 	HashSet<String> unableToTranslateWarnings = new HashSet<>();
 	public String translateValue(String mapName, String value, String identifier, boolean reportErrors){
 		if (value == null){
 			return null;
 		}
-		TranslationMap translationMap = translationMaps.get(mapName);
+
 		String translatedValue;
-		if (translationMap == null){
-			if (!unableToTranslateWarnings.contains("unable_to_find_" + mapName)){
-				logger.error("Unable to find translation map for " + mapName);
-				unableToTranslateWarnings.add("unable_to_find_" + mapName);
-			}
+		String lowerCaseValue = value.toLowerCase();
+		if (hasTranslation(mapName, lowerCaseValue)) {
+			TranslationMap translationMap = translationMaps.get(mapName);
+			translatedValue = translationMap.translateValue(lowerCaseValue, identifier, reportErrors);
+		} else if (indexer.hasSystemTranslation(mapName, lowerCaseValue)){
+			translatedValue = indexer.translateSystemValue(mapName, lowerCaseValue, identifier);
+		} else {
 			translatedValue = value;
-		}else{
-			translatedValue = translationMap.translateValue(value, identifier, reportErrors);
+			//Error handling
+			if (!translationMaps.containsKey(mapName)) {
+				if (!unableToTranslateWarnings.contains("unable_to_find_" + mapName)) {
+					logger.error("Unable to find translation map for " + mapName);
+					unableToTranslateWarnings.add("unable_to_find_" + mapName);
+				}
+			} else {
+				String concatenatedValue = mapName + ":" + value;
+				if (!unableToTranslateWarnings.contains(concatenatedValue)) {
+					if (reportErrors) {
+						logger.warn("Could not translate '" + concatenatedValue + "' in profile " + profileType + " sample record " + identifier);
+					}
+					unableToTranslateWarnings.add(concatenatedValue);
+				}
+			}
 		}
 		return translatedValue;
 	}
 
 	HashSet<String> translateCollection(String mapName, Set<String> values, String identifier) {
-		TranslationMap translationMap = translationMaps.get(mapName);
-		HashSet<String> translatedValues;
-		if (translationMap == null){
-			if (!unableToTranslateWarnings.contains("unable_to_find_" + mapName)){
-				logger.error("Unable to find translation map for " + mapName);
-				unableToTranslateWarnings.add("unable_to_find_" + mapName);
+		HashSet<String> translatedValues = new HashSet<>();
+		for (String value : values){
+			String translatedValue = translateValue(mapName, value, identifier);
+			if (translatedValue != null){
+				translatedValues.add(translatedValue);
 			}
-			if (values instanceof HashSet){
-				translatedValues = (HashSet<String>)values;
-			}else{
-				translatedValues = new HashSet<>(values);
-			}
-
-		}else{
-			translatedValues = translationMap.translateCollection(values, identifier);
 		}
+
 		return translatedValues;
 
 	}

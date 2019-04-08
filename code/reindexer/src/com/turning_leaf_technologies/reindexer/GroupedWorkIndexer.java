@@ -1211,12 +1211,15 @@ public class GroupedWorkIndexer {
 		return translationMap;
 	}
 
+	boolean hasSystemTranslation(String mapName, String value) {
+		return translationMaps.containsKey(mapName) && translationMaps.get(mapName).containsKey(value);
+	}
 	private HashSet<String> unableToTranslateWarnings = new HashSet<>();
 	private HashSet<String> missingTranslationMaps = new HashSet<>();
 	String translateSystemValue(String mapName, String value, String identifier){
 		if (value == null){
-				return null;
-			}
+			return null;
+		}
 		HashMap<String, String> translationMap = translationMaps.get(mapName);
 		String translatedValue;
 		if (translationMap == null){

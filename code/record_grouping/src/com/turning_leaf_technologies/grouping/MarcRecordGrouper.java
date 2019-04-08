@@ -180,7 +180,7 @@ public class MarcRecordGrouper extends RecordGroupingProcessor{
 		for (DataField itemField : itemFields) {
 			if (itemField.getSubfield(formatSubfield) != null) {
 				String originalFormat = itemField.getSubfield(formatSubfield).getData().toLowerCase();
-				String format = translateValue("format_group", originalFormat);
+				String format = translateValue("item_format", originalFormat);
 				if (format != null && !format.equals(originalFormat)){
 					return format;
 				}
