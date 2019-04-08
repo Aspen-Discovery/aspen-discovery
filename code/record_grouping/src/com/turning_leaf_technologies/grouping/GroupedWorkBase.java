@@ -1,11 +1,13 @@
 package com.turning_leaf_technologies.grouping;
 
 import com.opencsv.CSVReader;
+import com.opencsv.CSVWriter;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.MessageDigest;
@@ -120,9 +122,7 @@ public abstract class GroupedWorkBase {
 			CSVReader csvReader = new CSVReader(new FileReader(new File("../record_grouping/author_authorities.properties")));
 			String[] curLine = csvReader.readNext();
 			while (curLine != null){
-				if (curLine.length >= 2){
-					authorAuthorities.put(curLine[0], curLine[1]);
-				}
+				authorAuthorities.put(curLine[0], curLine[1]);
 				curLine = csvReader.readNext();
 			}
 		} catch (IOException e) {
