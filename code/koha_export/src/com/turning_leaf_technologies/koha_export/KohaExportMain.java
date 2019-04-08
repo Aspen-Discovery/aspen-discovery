@@ -129,6 +129,8 @@ public class KohaExportMain {
 
 			updateBranchInfo(dbConn, kohaConn);
 
+			updateTranslationMaps(dbConn, kohaConn);
+
 			exportHolds(dbConn, kohaConn);
 
 			//Update works that have changed since the last index
@@ -166,7 +168,96 @@ public class KohaExportMain {
 		}
 	}
 
-    private static void updateBranchInfo(Connection dbConn, Connection kohaConn) {
+	private static void updateTranslationMaps(Connection dbConn, Connection kohaConn) {
+		try {
+			PreparedStatement createTranslationMapStmt = dbConn.prepareStatement("INSERT INTO translation_maps (name, indexingProfileId) VALUES (?, ?)", Statement.RETURN_GENERATED_KEYS);
+			PreparedStatement getTranslationMapStmt = dbConn.prepareStatement("SELECT id from translation_maps WHERE name = ? and indexingProfileId = ?");
+			PreparedStatement getExistingValuesForMapStmt = dbConn.prepareStatement("SELECT * from translation_map_values where translationMapId = ?");
+			PreparedStatement insertTranslationStmt = dbConn.prepareStatement("INSERT INTO translation_map_values (translationMapId, value, translation) VALUES (?, ?, ?)");
+
+			//Load branches into location
+			PreparedStatement kohaBranchesStmt = kohaConn.prepareStatement("SELECT branchcode, branchname from branches");
+			Long translationMapId = getTranlationMapId(createTranslationMapStmt, getTranslationMapStmt, "location");
+			HashMap <String, String> existingValues = getExistingTranslationMapValues(getExistingValuesForMapStmt, translationMapId);
+			updateTranslationMap(kohaBranchesStmt, "branchcode", "branchname", insertTranslationStmt, translationMapId, existingValues);
+
+			//Load LOC into sub location
+			PreparedStatement kohaLocStmt = kohaConn.prepareStatement("SELECT * FROM authorised_values where category = 'LOC'");
+			translationMapId = getTranlationMapId(createTranslationMapStmt, getTranslationMapStmt, "sub_location");
+			existingValues = getExistingTranslationMapValues(getExistingValuesForMapStmt, translationMapId);
+			updateTranslationMap(kohaLocStmt, "authorised_value", "lib", insertTranslationStmt, translationMapId, existingValues);
+
+			//Load ccodes into shelf location
+			PreparedStatement kohaCCodesStmt = kohaConn.prepareStatement("SELECT * FROM authorised_values where category = 'CCODE'");
+			translationMapId = getTranlationMapId(createTranslationMapStmt, getTranslationMapStmt, "shelf_location");
+			existingValues = getExistingTranslationMapValues(getExistingValuesForMapStmt, translationMapId);
+			updateTranslationMap(kohaCCodesStmt, "authorised_value", "lib", insertTranslationStmt, translationMapId, existingValues);
+
+			//Load itemtypes into formats
+			PreparedStatement kohaItemTypesStmt = kohaConn.prepareStatement("SELECT itemtype, description FROM itemtypes");
+			translationMapId = getTranlationMapId(createTranslationMapStmt, getTranslationMapStmt, "format");
+			existingValues = getExistingTranslationMapValues(getExistingValuesForMapStmt, translationMapId);
+			updateTranslationMap(kohaItemTypesStmt, "itemtype", "description", insertTranslationStmt, translationMapId, existingValues);
+
+			//Also load item types into itype
+			translationMapId = getTranlationMapId(createTranslationMapStmt, getTranslationMapStmt, "itype");
+			existingValues = getExistingTranslationMapValues(getExistingValuesForMapStmt, translationMapId);
+			updateTranslationMap(kohaItemTypesStmt, "itemtype", "description", insertTranslationStmt, translationMapId, existingValues);
+
+		}catch (SQLException e) {
+			logger.error("Error updating translation maps", e);
+		}
+	}
+
+	private static void updateTranslationMap(PreparedStatement kohaValuesStmt, String valueColumn, String translationColumn, PreparedStatement insertTranslationStmt, Long translationMapId, HashMap<String, String> existingValues) throws SQLException {
+		ResultSet kohaValuesRS = kohaValuesStmt.executeQuery();
+		while (kohaValuesRS.next()) {
+			String value = kohaValuesRS.getString(valueColumn);
+			String translation = kohaValuesRS.getString(translationColumn);
+			if (existingValues.containsKey(value)){
+				if (!existingValues.get(value).equals(translation)){
+					logger.warn("Translation for " + value + " has changed from " + existingValues.get(value) + " to " + translation);
+				}
+			} else {
+				insertTranslationStmt.setLong(1, translationMapId);
+				insertTranslationStmt.setString(2, value);
+				insertTranslationStmt.setString(3, translation);
+				insertTranslationStmt.executeUpdate();
+			}
+		}
+	}
+
+	private static HashMap<String, String> getExistingTranslationMapValues(PreparedStatement getExistingValuesForMapStmt, Long translationMapId) throws SQLException {
+		HashMap<String, String> existingValues = new HashMap<>();
+		getExistingValuesForMapStmt.setLong(1, translationMapId);
+		ResultSet getExistingValuesForMapRS = getExistingValuesForMapStmt.executeQuery();
+		while (getExistingValuesForMapRS.next()) {
+			existingValues.put(getExistingValuesForMapRS.getString("value"), getExistingValuesForMapRS.getString("translation"));
+		}
+		return existingValues;
+	}
+
+	private static Long getTranlationMapId(PreparedStatement createTranslationMapStmt, PreparedStatement getTranslationMapStmt, String mapName) throws SQLException {
+		Long translationMapId = null;
+		getTranslationMapStmt.setString(1, mapName);
+		getTranslationMapStmt.setLong(2, indexingProfile.getId());
+		ResultSet getTranslationMapRS = getTranslationMapStmt.executeQuery();
+		if (getTranslationMapRS.next()){
+			translationMapId = getTranslationMapRS.getLong("id");
+		} else {
+			//Map does not exist, create it
+			createTranslationMapStmt.setString(1, mapName);
+			createTranslationMapStmt.setLong(2, indexingProfile.getId());
+			createTranslationMapStmt.executeUpdate();
+			ResultSet generatedIds = createTranslationMapStmt.getGeneratedKeys();
+			if (generatedIds.next()) {
+				translationMapId = generatedIds.getLong(1);
+			}
+		}
+		return translationMapId;
+	}
+
+	private static void updateBranchInfo(Connection dbConn, Connection kohaConn) {
         try {
             PreparedStatement kohaBranchesStmt = kohaConn.prepareStatement("SELECT * from branches");
             PreparedStatement existingAspenLocationStmt = dbConn.prepareStatement("SELECT libraryId, locationId, isMainBranch from location where code = ?");
