@@ -18,6 +18,9 @@ import java.util.List;
 class KohaRecordProcessor extends IlsRecordProcessor {
 	private HashSet<String> inTransitItems = new HashSet<>();
 	private HashSet<String> onHoldShelfItems = new HashSet<>();
+	private HashMap<Long, String> lostStatuses = new HashMap<>();
+	private HashMap<Long, String> damagedStatuses = new HashMap<>();
+
 	KohaRecordProcessor(GroupedWorkIndexer indexer, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		this (indexer, dbConn, indexingProfileRS, logger, fullReindex, null);
 	}
@@ -74,6 +77,21 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 		}
 
 		try {
+			//Get a list of lost statuses
+			PreparedStatement lostStatusStmt = kohaConnection.prepareStatement("SELECT * FROM authorised_values where category = 'LOST'");
+			ResultSet lostStatusRS = lostStatusStmt.executeQuery();
+			while (lostStatusRS.next()) {
+				lostStatuses.put(lostStatusRS.getLong("authorised_value"), lostStatusRS.getString("lib"));
+			}
+			lostStatusRS.close();
+
+			PreparedStatement damagedStatusStmt = kohaConnection.prepareStatement("SELECT * FROM authorised_values where category = 'DAMAGED'");
+			ResultSet damagedStatusRS = lostStatusStmt.executeQuery();
+			while (damagedStatusRS.next()) {
+				damagedStatuses.put(damagedStatusRS.getLong("authorised_value"), damagedStatusRS.getString("lib"));
+			}
+			damagedStatusRS.close();
+
 			//Get a list of all items that are in transit
 			//PreparedStatement getInTransitItemsStmt = kohaConn.prepareStatement("SELECT itemnumber from reserves WHERE found = 'T'");
 			PreparedStatement getInTransitItemsStmt = kohaConnection.prepareStatement("SELECT itemnumber from branchtransfers WHERE datearrived IS NULL");
@@ -205,16 +223,31 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 							return "Checked Out";
 						}
 					}else if (subfield == '1'){
-						switch (fieldData) {
-							case "lost":
-								return "Lost";
-							case "missing":
-								return "Missing";
-							case "longoverdue":
-								return "Long Overdue";
-							case "trace":
-								return "Trace";
+						try {
+							Long subfieldDataNumeric = Long.parseLong(fieldData);
+							return lostStatuses.get(subfieldDataNumeric);
+						}catch (NumberFormatException nfe) {
+							switch (fieldData) {
+								case "lost":
+									return "Lost";
+								case "missing":
+									return "Missing";
+								case "longoverdue":
+									return "Long Overdue";
+								case "trace":
+									return "Trace";
+							}
 						}
+
+					}else if (subfield == '4'){
+						try {
+							Long subfieldDataNumeric = Long.parseLong(fieldData);
+							return damagedStatuses.get(subfieldDataNumeric);
+						}catch (NumberFormatException nfe) {
+							//Didn't get a valid status
+							return null;
+						}
+
 					}else if (subfield == '7') {
 						if ("-1".equals(fieldData)) {
 							return "On Order";
@@ -261,7 +294,7 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 					}
 				}
 				if (!isEContent){
-					getPrintIlsItem(groupedWork, recordInfo, record, itemField);
+					createPrintIlsItem(groupedWork, recordInfo, record, itemField);
 				}
 			}
 		}
@@ -386,8 +419,6 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 	}
 
 	protected String getShelfLocationForItem(ItemInfo itemInfo, DataField itemField, String identifier) {
-		/*String locationCode = getItemSubfieldData(locationSubfieldIndicator, itemField);
-		String location = translateValue("location", locationCode);*/
 		String location = "";
 		String subLocationCode = getItemSubfieldData(subLocationSubfield, itemField);
 		if (subLocationCode != null && subLocationCode.length() > 0){

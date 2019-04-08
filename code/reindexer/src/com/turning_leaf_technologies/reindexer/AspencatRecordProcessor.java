@@ -219,7 +219,7 @@ class AspencatRecordProcessor extends IlsRecordProcessor {
 					}
 				}
 				if (!isEContent){
-					getPrintIlsItem(groupedWork, recordInfo, record, itemField);
+					createPrintIlsItem(groupedWork, recordInfo, record, itemField);
 				}
 			}
 		}

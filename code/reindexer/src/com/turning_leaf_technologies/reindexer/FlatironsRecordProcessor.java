@@ -46,7 +46,7 @@ class FlatironsRecordProcessor extends IIIRecordProcessor{
 			//The record is print
 			for (DataField itemField : itemRecords){
 				if (!isItemSuppressed(itemField)){
-					getPrintIlsItem(groupedWork, recordInfo, record, itemField);
+					createPrintIlsItem(groupedWork, recordInfo, record, itemField);
 				}
 			}
 		}

@@ -216,9 +216,6 @@ public class GroupedWorkIndexer {
 						case "WCPL":
 							ilsRecordProcessors.put(curIdentifier, new WCPLRecordProcessor(this, dbConn, indexingProfileRS, logger, fullReindex));
 							break;
-						case "Anythink":
-							ilsRecordProcessors.put(curIdentifier, new AnythinkRecordProcessor(this, dbConn, indexingProfileRS, logger, fullReindex));
-							break;
 						case "Aspencat":
 							ilsRecordProcessors.put(curIdentifier, new AspencatRecordProcessor(this, dbConn, configIni, indexingProfileRS, logger, fullReindex));
 							break;

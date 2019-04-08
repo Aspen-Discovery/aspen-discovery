@@ -192,7 +192,7 @@ class ArlingtonRecordProcessor extends IIIRecordProcessor {
 					itemInfo.setLocationCode(locationCode);
 
 					//if the status and location are null, we can assume this is not a valid item
-					if (!isItemValid(itemStatus, locationCode)) return;
+					if (isItemInvalid(itemStatus, locationCode)) return;
 
 					itemInfo.setShelfLocationCode(locationCode);
 					itemInfo.setShelfLocation(getShelfLocationForItem(itemInfo, null, recordInfo.getRecordIdentifier()));

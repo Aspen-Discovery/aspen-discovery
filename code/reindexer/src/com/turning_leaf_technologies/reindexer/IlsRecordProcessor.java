@@ -35,7 +35,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	private Pattern nonHoldableStatuses;
 	char shelvingLocationSubfield;
 	char collectionSubfield;
-	char dueDateSubfield;
+	private char dueDateSubfield;
 	SimpleDateFormat dueDateFormatter;
 	private char lastCheckInSubfield;
 	private String lastCheckInFormat;
@@ -221,7 +221,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		ResultSet translationsMapRS = getTranslationMapsStmt.executeQuery();
 		while (translationsMapRS.next()){
 			TranslationMap map = new TranslationMap(profileType, translationsMapRS.getString("name"), fullReindex, translationsMapRS.getBoolean("usesRegularExpressions"), logger);
-			Long translationMapId = translationsMapRS.getLong("id");
+			long translationMapId = translationsMapRS.getLong("id");
 			getTranslationMapValuesStmt.setLong(1, translationMapId);
 			ResultSet translationMapValuesRS = getTranslationMapValuesStmt.executeQuery();
 			while (translationMapValuesRS.next()){
@@ -262,10 +262,6 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 	private Record loadMarcRecordFromDisk(String identifier) {
 		Record record = null;
-		String shortId = identifier.replace(".", "");
-		while (shortId.length() < 9){
-			shortId = "0" + shortId;
-		}
 		String individualFilename = getFileForIlsRecord(identifier);
 		try {
 			byte[] fileContents = Util.readFileBytes(individualFilename);
@@ -287,9 +283,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	}
 
 	private String getFileForIlsRecord(String recordNumber) {
-		String shortId = recordNumber.replace(".", "");
+		StringBuilder shortId = new StringBuilder(recordNumber.replace(".", ""));
 		while (shortId.length() < 9){
-			shortId = "0" + shortId;
+			shortId.insert(0, "0");
 		}
 
 		String subFolderName;
@@ -603,7 +599,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		logger.debug("Found " + itemRecords.size() + " items for record " + identifier);
 		for (DataField itemField : itemRecords){
 			if (!isItemSuppressed(itemField)){
-				getPrintIlsItem(groupedWork, recordInfo, record, itemField);
+				createPrintIlsItem(groupedWork, recordInfo, record, itemField);
 				//Can return null if the record does not have status and location
 				//This happens with secondary call numbers sometimes.
 			}else{
@@ -615,7 +611,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	RecordInfo getEContentIlsRecord(GroupedWorkSolr groupedWork, Record record, String identifier, DataField itemField){
 		ItemInfo itemInfo = new ItemInfo();
 		itemInfo.setIsEContent(true);
-		RecordInfo relatedRecord = null;
+		RecordInfo relatedRecord;
 
 		loadDateAdded(identifier, itemField, itemInfo);
 		String itemLocation = getItemSubfieldData(locationSubfieldIndicator, itemField);
@@ -720,7 +716,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 	private SimpleDateFormat dateAddedFormatter = null;
 	private SimpleDateFormat lastCheckInFormatter = null;
-	ItemInfo getPrintIlsItem(GroupedWorkSolr groupedWork, RecordInfo recordInfo, Record record, DataField itemField) {
+	void createPrintIlsItem(GroupedWorkSolr groupedWork, RecordInfo recordInfo, Record record, DataField itemField) {
 		if (dateAddedFormatter == null){
 			dateAddedFormatter = new SimpleDateFormat(dateAddedFormat);
 		}
@@ -747,7 +743,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 
 		//if the status and location are null, we can assume this is not a valid item
-		if (!isItemValid(itemStatus, itemLocation)) return null;
+		if (isItemInvalid(itemStatus, itemLocation)) return;
 
 		setShelfLocationCode(itemField, itemInfo, recordInfo.getRecordIdentifier());
 		itemInfo.setShelfLocation(getShelfLocationForItem(itemInfo, itemField, recordInfo.getRecordIdentifier()));
@@ -808,7 +804,6 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 
 		recordInfo.addItem(itemInfo);
-		return itemInfo;
 	}
 
 	protected void getDueDate(DataField itemField, ItemInfo itemInfo) {
@@ -1001,8 +996,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		return itemPopularity;
 	}
 
-	protected boolean isItemValid(String itemStatus, String itemLocation) {
-		return !(itemStatus == null && itemLocation == null);
+	protected boolean isItemInvalid(String itemStatus, String itemLocation) {
+		return itemStatus == null && itemLocation == null;
 	}
 
 	void loadItemCallNumber(Record record, DataField itemField, ItemInfo itemInfo) {
@@ -1051,7 +1046,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			}
 			//ARL-203 do not create an item level call number that is just a volume
 			if (volume != null && fullCallNumber.length() > 0){
-				if (fullCallNumber.length() > 0 && fullCallNumber.charAt(fullCallNumber.length() - 1) != ' '){
+				if (fullCallNumber.charAt(fullCallNumber.length() - 1) != ' '){
 					fullCallNumber.append(' ');
 				}
 				fullCallNumber.append(volume);
@@ -1063,13 +1058,13 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			}
 		}
 		if (!hasCallNumber){
-			String callNumber = null;
+			StringBuilder callNumber = null;
 			if (use099forBibLevelCallNumbers()) {
 				DataField localCallNumberField = record.getDataField("099");
 				if (localCallNumberField != null) {
-					callNumber = "";
+					callNumber = new StringBuilder();
 					for (Subfield curSubfield : localCallNumberField.getSubfields()) {
-						callNumber += " " + curSubfield.getData().trim();
+						callNumber.append(" ").append(curSubfield.getData().trim());
 					}
 				}
 			}
@@ -1077,22 +1072,22 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			if (callNumber == null) {
 				DataField deweyCallNumberField = record.getDataField("092");
 				if (deweyCallNumberField != null) {
-					callNumber = "";
+					callNumber = new StringBuilder();
 					for (Subfield curSubfield : deweyCallNumberField.getSubfields()) {
-						callNumber += " " + curSubfield.getData().trim();
+						callNumber.append(" ").append(curSubfield.getData().trim());
 					}
 				}
 			}
 			if (callNumber != null) {
 
-				if (volume != null && volume.length() > 0 && !callNumber.endsWith(volume)){
+				if (volume != null && volume.length() > 0 && !callNumber.toString().endsWith(volume)){
 					if (callNumber.length() > 0 && callNumber.charAt(callNumber.length() - 1) != ' '){
-						callNumber += " ";
+						callNumber.append(" ");
 					}
-					callNumber += volume;
+					callNumber.append(volume);
 				}
-				itemInfo.setCallNumber(callNumber.trim());
-				itemInfo.setSortableCallNumber(callNumber.trim());
+				itemInfo.setCallNumber(callNumber.toString().trim());
+				itemInfo.setSortableCallNumber(callNumber.toString().trim());
 			}
 		}
 	}
@@ -1112,7 +1107,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				iTypesThatHaveHoldabilityChecked.put(itemItypeCode, !nonHoldableITypes.matcher(itemItypeCode).matches());
 			}
 			if (!iTypesThatHaveHoldabilityChecked.get(itemItypeCode)){
-				return new HoldabilityInformation(false, new HashSet<Long>());
+				return new HoldabilityInformation(false, new HashSet<>());
 			}
 		}
 		String itemLocationCode =  itemInfo.getLocationCode();
@@ -1121,7 +1116,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				locationsThatHaveHoldabilityChecked.put(itemLocationCode, !nonHoldableLocations.matcher(itemLocationCode).matches());
 			}
 			if (!locationsThatHaveHoldabilityChecked.get(itemLocationCode)){
-				return new HoldabilityInformation(false, new HashSet<Long>());
+				return new HoldabilityInformation(false, new HashSet<>());
 			}
 		}
 		String itemStatusCode = itemInfo.getStatusCode();
@@ -1132,10 +1127,10 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			if (!statusesThatHaveHoldabilityChecked.get(itemStatusCode)){
 
 
-				return new HoldabilityInformation(false, new HashSet<Long>());
+				return new HoldabilityInformation(false, new HashSet<>());
 			}
 		}
-		return new HoldabilityInformation(true, new HashSet<Long>());
+		return new HoldabilityInformation(true, new HashSet<>());
 	}
 
 	protected HoldabilityInformation isItemHoldable(ItemInfo itemInfo, Scope curScope, HoldabilityInformation isHoldableUnscoped){
@@ -1143,7 +1138,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	}
 
 	private BookabilityInformation isItemBookableUnscoped(){
-		return new BookabilityInformation(false, new HashSet<Long>());
+		return new BookabilityInformation(false, new HashSet<>());
 	}
 
 	protected BookabilityInformation isItemBookable(ItemInfo itemInfo, Scope curScope, BookabilityInformation isBookableUnscoped) {
@@ -1249,11 +1244,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	}
 
 	private int getIlsHoldsForTitle(String recordIdentifier) {
-		if (numberOfHoldsByIdentifier.containsKey(recordIdentifier)){
-			return numberOfHoldsByIdentifier.get(recordIdentifier);
-		}else {
-			return 0;
-		}
+		return numberOfHoldsByIdentifier.getOrDefault(recordIdentifier, 0);
 	}
 
 	protected boolean isItemSuppressed(DataField curItem) {
@@ -1281,9 +1272,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			if (collectionSubfieldValue == null){
 				return true;
 			}else{
-				if (collectionsToSuppressPattern != null && collectionsToSuppressPattern.matcher(collectionSubfieldValue.getData().trim()).matches()){
-					return true;
-				}
+				return collectionsToSuppressPattern != null && collectionsToSuppressPattern.matcher(collectionSubfieldValue.getData().trim()).matches();
 			}
 		}
 		return false;
@@ -1354,10 +1343,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		// Disc/Phonograph, etc is difficult).
 		if (leader.length() >= 6) {
 			leaderBit = leader.charAt(6);
-			switch (Character.toUpperCase(leaderBit)) {
-				case 'J':
-					printFormats.add("MusicRecording");
-					break;
+			if (Character.toUpperCase(leaderBit) == 'J') {
+				printFormats.add("MusicRecording");
 			}
 		}
 		getFormatFromPublicationInfo(record, printFormats);
@@ -1368,7 +1355,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		getFormatFromTitle(record, printFormats);
 		getFormatFromDigitalFileCharacteristics(record, printFormats);
 		if (printFormats.size() == 0) {
-			//Only get from fixed field information if we don't have anything yet since the catalogging of
+			//Only get from fixed field information if we don't have anything yet since the cataloging of
 			//fixed fields is not kept up to date reliably.  #D-87
 			getFormatFrom007(record, printFormats);
 			if (printFormats.size() > 1){
@@ -1466,22 +1453,22 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		if (printFormats.contains("Video") && printFormats.contains("VideoCassette")){
 			printFormats.remove("Video");
 		}
-		if (printFormats.contains("DVD") && printFormats.contains("VideoCassette")){
+		if (printFormats.contains("DVD")){
 			printFormats.remove("VideoCassette");
 		}
-		if (printFormats.contains("Blu-ray") && printFormats.contains("VideoDisc")){
+		if (printFormats.contains("Blu-ray")){
 			printFormats.remove("VideoDisc");
 		}
-		if (printFormats.contains("SoundDisc") && printFormats.contains("SoundRecording")){
+		if (printFormats.contains("SoundDisc")){
 			printFormats.remove("SoundRecording");
 		}
-		if (printFormats.contains("SoundDisc") && printFormats.contains("CDROM")){
+		if (printFormats.contains("SoundDisc")){
 			printFormats.remove("CDROM");
 		}
-		if (printFormats.contains("SoundCassette") && printFormats.contains("SoundRecording")){
+		if (printFormats.contains("SoundCassette")){
 			printFormats.remove("SoundRecording");
 		}
-		if (printFormats.contains("SoundCassette") && printFormats.contains("CompactDisc")){
+		if (printFormats.contains("SoundCassette")){
 			printFormats.remove("CompactDisc");
 		}
 		if (printFormats.contains("SoundRecording") && printFormats.contains("CDROM")){
@@ -1517,16 +1504,16 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		if (printFormats.contains("CompactDisc") && printFormats.contains("SoundDisc")){
 			printFormats.remove("CompactDisc");
 		}
-		if (printFormats.contains("CompactDisc") && printFormats.contains("SoundRecording")){
+		if (printFormats.contains("CompactDisc")){
 			printFormats.remove("SoundRecording");
 		}
-		if (printFormats.contains("GraphicNovel") && printFormats.contains("Serial")){
+		if (printFormats.contains("GraphicNovel")){
 			printFormats.remove("Serial");
 		}
 		if (printFormats.contains("Atlas") && printFormats.contains("Map")){
 			printFormats.remove("Atlas");
 		}
-		if (printFormats.contains("LargePrint") && printFormats.contains("Manuscript")){
+		if (printFormats.contains("LargePrint")){
 			printFormats.remove("Manuscript");
 		}
 		if (printFormats.contains("Kinect") || printFormats.contains("XBox360")  || printFormats.contains("Xbox360")
@@ -1641,14 +1628,12 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	}
 
 	private void getFormatFromPhysicalDescription(Record record, Set<String> result) {
-		@SuppressWarnings("unchecked")
 		List<DataField> physicalDescription = MarcUtil.getDataFields(record, "300");
 		if (physicalDescription != null) {
-			Iterator<DataField> fieldsIter = physicalDescription.iterator();
+			Iterator<DataField> fieldIterator = physicalDescription.iterator();
 			DataField field;
-			while (fieldsIter.hasNext()) {
-				field = fieldsIter.next();
-				@SuppressWarnings("unchecked")
+			while (fieldIterator.hasNext()) {
+				field = fieldIterator.next();
 				List<Subfield> subFields = field.getSubfields();
 				for (Subfield subfield : subFields) {
 					if (subfield.getCode() != 'e') {
@@ -1711,10 +1696,10 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 
 		// Check for formats in the 502 tag
-		DataField dissertaionNoteField = record.getDataField("502");
-		if (dissertaionNoteField != null) {
-			if (dissertaionNoteField.getSubfield('a') != null) {
-				String noteValue = dissertaionNoteField.getSubfield('a').getData().toLowerCase();
+		DataField dissertationNoteField = record.getDataField("502");
+		if (dissertationNoteField != null) {
+			if (dissertationNoteField.getSubfield('a') != null) {
+				String noteValue = dissertationNoteField.getSubfield('a').getData().toLowerCase();
 				if (noteValue.contains("thesis (m.a.)")) {
 					result.add("Thesis");
 				}
@@ -1760,14 +1745,12 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	}
 
 	private void getFormatFromSubjects(Record record, Set<String> result) {
-		@SuppressWarnings("unchecked")
 		List<DataField> topicalTerm = MarcUtil.getDataFields(record, "650");
 		if (topicalTerm != null) {
-			Iterator<DataField> fieldsIter = topicalTerm.iterator();
+			Iterator<DataField> fieldIterator = topicalTerm.iterator();
 			DataField field;
-			while (fieldsIter.hasNext()) {
-				field = fieldsIter.next();
-				@SuppressWarnings("unchecked")
+			while (fieldIterator.hasNext()) {
+				field = fieldIterator.next();
 				List<Subfield> subfields = field.getSubfields();
 				for (Subfield subfield : subfields) {
 					if (subfield.getCode() == 'a'){
@@ -1799,11 +1782,10 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 		List<DataField> genreFormTerm = MarcUtil.getDataFields(record, "655");
 		if (genreFormTerm != null) {
-			Iterator<DataField> fieldsIter = genreFormTerm.iterator();
+			Iterator<DataField> fieldIterator = genreFormTerm.iterator();
 			DataField field;
-			while (fieldsIter.hasNext()) {
-				field = fieldsIter.next();
-				@SuppressWarnings("unchecked")
+			while (fieldIterator.hasNext()) {
+				field = fieldIterator.next();
 				List<Subfield> subfields = field.getSubfields();
 				for (Subfield subfield : subfields) {
 					if (subfield.getCode() == 'a'){
@@ -1833,7 +1815,6 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			}
 		}
 
-		@SuppressWarnings("unchecked")
 		List<DataField> localTopicalTerm = MarcUtil.getDataFields(record, "690");
 		if (localTopicalTerm != null) {
 			Iterator<DataField> fieldsIterator = localTopicalTerm.iterator();
@@ -1849,7 +1830,6 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			}
 		}
 
-		@SuppressWarnings("unchecked")
 		List<DataField> addedEntryFields = MarcUtil.getDataFields(record, "710");
 		if (localTopicalTerm != null) {
 			Iterator<DataField> addedEntryFieldIterator = addedEntryFields.iterator();
@@ -1871,7 +1851,6 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 	private void getFormatFrom007(Record record, Set<String> result) {
 		char formatCode;// check the 007 - this is a repeating field
-		@SuppressWarnings("unchecked")
 		ControlField formatField = MarcUtil.getControlField(record, "007");
 		if (formatField != null){
 			if (formatField.getData() == null || formatField.getData().length() < 2) {
@@ -1887,13 +1866,10 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			formatCode = formatField.getData().toUpperCase().charAt(0);
 			switch (formatCode) {
 				case 'A':
-					switch (formatField.getData().toUpperCase().charAt(1)) {
-						case 'D':
-							result.add("Atlas");
-							break;
-						default:
-							result.add("Map");
-							break;
+					if (formatField.getData().toUpperCase().charAt(1) == 'D') {
+						result.add("Atlas");
+					} else {
+						result.add("Map");
 					}
 					break;
 				case 'C':
@@ -2194,8 +2170,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			if (values instanceof HashSet){
 				translatedValues = (HashSet<String>)values;
 			}else{
-				translatedValues = new HashSet<>();
-				translatedValues.addAll(values);
+				translatedValues = new HashSet<>(values);
 			}
 
 		}else{
