@@ -109,7 +109,7 @@ class Novelist3{
 						disableErrorHandler();
 						$req = new HTTP_Request($requestUrl);
 						//$result = file_get_contents($req);
-						if (PEAR_Singleton::isError($req->sendRequest())) {
+						if ($req->sendRequest() instanceof AspenError) {
 							enableErrorHandler();
 							//No enrichment for this isbn, go to the next one
 							continue;
@@ -143,9 +143,9 @@ class Novelist3{
 						}
 					}catch (Exception $e) {
 						global $logger;
-						$logger->log("Error fetching data from NoveList $e", PEAR_LOG_ERR);
+						$logger->log("Error fetching data from NoveList $e", Logger::LOG_ERROR);
 						if (isset($response)){
-							$logger->log($response, PEAR_LOG_DEBUG);
+							$logger->log($response, Logger::LOG_DEBUG);
 						}
 						$enrichment = null;
 					}
@@ -253,7 +253,7 @@ class Novelist3{
 					disableErrorHandler();
 					$req = new HTTP_Request($requestUrl);
 					//$result = file_get_contents($req);
-					if (PEAR_Singleton::isError($req->sendRequest())) {
+					if ($req->sendRequest() instanceof AspenError) {
 						enableErrorHandler();
 						//No enrichment for this isbn, go to the next one
 						continue;
@@ -314,9 +314,9 @@ class Novelist3{
 					}
 				}catch (Exception $e) {
 					global $logger;
-					$logger->log("Error fetching data from NoveList $e", PEAR_LOG_ERR);
+					$logger->log("Error fetching data from NoveList $e", Logger::LOG_ERROR);
 					if (isset($response)){
-						$logger->log($response, PEAR_LOG_DEBUG);
+						$logger->log($response, Logger::LOG_DEBUG);
 					}
 					$enrichment = null;
 				}
@@ -416,7 +416,7 @@ class Novelist3{
 					disableErrorHandler();
 					$req = new HTTP_Request($requestUrl);
 					//$result = file_get_contents($req);
-					if (PEAR_Singleton::isError($req->sendRequest())) {
+					if ($req->sendRequest() instanceof AspenError) {
 						enableErrorHandler();
 						//No enrichment for this isbn, go to the next one
 						continue;
@@ -447,9 +447,9 @@ class Novelist3{
 					}
 				}catch (Exception $e) {
 					global $logger;
-					$logger->log("Error fetching data from NoveList $e", PEAR_LOG_ERR);
+					$logger->log("Error fetching data from NoveList $e", Logger::LOG_ERROR);
 					if (isset($response)){
-						$logger->log($response, PEAR_LOG_DEBUG);
+						$logger->log($response, Logger::LOG_DEBUG);
 					}
 					$enrichment = null;
 				}
@@ -531,7 +531,7 @@ class Novelist3{
 					disableErrorHandler();
 					$req = new HTTP_Request($requestUrl);
 					//$result = file_get_contents($req);
-					if (PEAR_Singleton::isError($req->sendRequest())) {
+					if ($req->sendRequest() instanceof AspenError) {
 						enableErrorHandler();
 						//No enrichment for this isbn, go to the next one
 						continue;
@@ -562,9 +562,9 @@ class Novelist3{
 					}
 				}catch (Exception $e) {
 					global $logger;
-					$logger->log("Error fetching data from NoveList $e", PEAR_LOG_ERR);
+					$logger->log("Error fetching data from NoveList $e", Logger::LOG_ERROR);
 					if (isset($response)){
-						$logger->log($response, PEAR_LOG_DEBUG);
+						$logger->log($response, Logger::LOG_DEBUG);
 					}
 					$enrichment = null;
 				}
@@ -658,7 +658,7 @@ class Novelist3{
 					disableErrorHandler();
 					$req = new HTTP_Request($requestUrl);
 					//$result = file_get_contents($req);
-					if (PEAR_Singleton::isError($req->sendRequest())) {
+					if ($req->sendRequest() instanceof AspenError) {
 						enableErrorHandler();
 						//No enrichment for this isbn, go to the next one
 						continue;
@@ -688,9 +688,9 @@ class Novelist3{
 					}
 				}catch (Exception $e) {
 					global $logger;
-					$logger->log("Error fetching data from NoveList $e", PEAR_LOG_ERR);
+					$logger->log("Error fetching data from NoveList $e", Logger::LOG_ERROR);
 					if (isset($response)){
-						$logger->log($response, PEAR_LOG_DEBUG);
+						$logger->log($response, Logger::LOG_DEBUG);
 					}
 					$enrichment = null;
 				}

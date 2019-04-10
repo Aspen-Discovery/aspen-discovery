@@ -67,7 +67,7 @@ class UserAPI extends Action {
 			}catch (Exception $e){
 				$output = json_encode(array('error'=>'error_encoding_data', 'message' => $e));
 				global $logger;
-				$logger->log("Error encoding json data $e", PEAR_LOG_ERR);
+				$logger->log("Error encoding json data $e", Logger::LOG_ERROR);
 			}
 
 		} else {
@@ -140,12 +140,12 @@ class UserAPI extends Action {
 		//Login the user.  Must be called via Post parameters.
 		if (isset($_POST['username']) && isset($_POST['password'])){
 			$user = UserAccount::getLoggedInUser();
-			if ($user && !PEAR_Singleton::isError($user)){
+			if ($user && !($user instanceof AspenError)){
 				return array('success'=>true,'name'=>ucwords($user->firstname . ' ' . $user->lastname));
 			}else{
                 try {
                     $user = UserAccount::login();
-                    if ($user && !PEAR_Singleton::isError($user)){
+                    if ($user && !($user instanceof AspenError)){
                         return array('success'=>true,'name'=>ucwords($user->firstname . ' ' . $user->lastname));
                     }else{
                         return array('success'=>false);
@@ -359,7 +359,7 @@ class UserAPI extends Action {
 		list($username, $password) = $this->loadUsernameAndPassword();
 
 		$user = UserAccount::validateAccount($username, $password);
-		if ($user && !PEAR_Singleton::isError($user)){
+		if ($user && !($user instanceof AspenError)){
 			//Remove a bunch of junk from the user data
 			unset($user->N);
 			unset($user->query);
@@ -478,7 +478,7 @@ class UserAPI extends Action {
 		list($username, $password) = $this->loadUsernameAndPassword();
 
 		$user = UserAccount::validateAccount($username, $password);
-		if ($user && !PEAR_Singleton::isError($user)){
+		if ($user && !($user instanceof AspenError)){
 			$allHolds = $user->getHolds();
 			return array('success'=>true, 'holds'=>$allHolds);
 		}else{
@@ -552,7 +552,7 @@ class UserAPI extends Action {
 	function getPatronHoldsOverDrive(){
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$user = UserAccount::validateAccount($username, $password);
-		if ($user && !PEAR_Singleton::isError($user)){
+		if ($user && !($user instanceof AspenError)){
             require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
             $driver = new OverDriveDriver();
 			$eContentHolds = $driver->getHolds($user);
@@ -603,7 +603,7 @@ class UserAPI extends Action {
 	function getPatronCheckedOutItemsOverDrive(){
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$user = UserAccount::validateAccount($username, $password);
-		if ($user && !PEAR_Singleton::isError($user)){
+		if ($user && !($user instanceof AspenError)){
             require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
             $driver = new OverDriveDriver();
 			$eContentCheckedOutItems = $driver->getCheckouts($user);
@@ -650,7 +650,7 @@ class UserAPI extends Action {
 	function getPatronOverDriveSummary(){
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$user = UserAccount::validateAccount($username, $password);
-		if ($user && !PEAR_Singleton::isError($user)){
+		if ($user && !($user instanceof AspenError)){
             require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
             $driver = new OverDriveDriver();
 			$overDriveSummary = $driver->getAccountSummary($user);
@@ -700,7 +700,7 @@ class UserAPI extends Action {
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$includeMessages = isset($_REQUEST['includeMessages']) ? $_REQUEST['includeMessages'] : false;
 		$user = UserAccount::validateAccount($username, $password);
-		if ($user && !PEAR_Singleton::isError($user)){
+		if ($user && !($user instanceof AspenError)){
 			$fines = $this->getCatalogConnection()->getMyFines($user, $includeMessages);
 			return array('success'=>true, 'fines'=>$fines);
 		}else{
@@ -760,7 +760,7 @@ class UserAPI extends Action {
 		} else {
 			list($username, $password) = $this->loadUsernameAndPassword();
 			$user = UserAccount::validateAccount($username, $password);
-			if ($user && !PEAR_Singleton::isError($user)) {
+			if ($user && !($user instanceof AspenError)) {
 				$allCheckedOut = $user->getCheckouts(false);
 
 				return array('success' => true, 'checkedOutItems' => $allCheckedOut);
@@ -817,7 +817,7 @@ class UserAPI extends Action {
 		$itemBarcode = $_REQUEST['itemBarcode'];
         $itemIndex = $_REQUEST['itemIndex'];
 		$user = UserAccount::validateAccount($username, $password);
-		if ($user && !PEAR_Singleton::isError($user)){
+		if ($user && !($user instanceof AspenError)){
 			$renewalMessage = $this->getCatalogConnection()->renewCheckout($user->cat_username, $recordId, $itemBarcode, $itemIndex);
 			return array('success'=>true, 'renewalMessage'=>$renewalMessage);
 		}else{
@@ -853,7 +853,7 @@ class UserAPI extends Action {
 	function renewAll(){
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$user = UserAccount::validateAccount($username, $password);
-		if ($user && !PEAR_Singleton::isError($user)){
+		if ($user && !($user instanceof AspenError)){
 			$renewalMessage = $this->getCatalogConnection()->renewAll($user->cat_username);
 			return array('success'=> $renewalMessage['success'], 'renewalMessage'=>$renewalMessage['message']);
 		}else{
@@ -907,7 +907,7 @@ class UserAPI extends Action {
 		$bibId = $_REQUEST['bibId'];
 
 		$patron = UserAccount::validateAccount($username, $password);
-		if ($patron && !PEAR_Singleton::isError($patron)){
+		if ($patron && !($patron instanceof AspenError)){
 			if (isset($_REQUEST['campus'])){
 				$pickupBranch=trim($_REQUEST['campus']);
 			}else{
@@ -926,7 +926,7 @@ class UserAPI extends Action {
 		$itemId = $_REQUEST['itemId'];
 
 		$patron = UserAccount::validateAccount($username, $password);
-		if ($patron && !PEAR_Singleton::isError($patron)){
+		if ($patron && !($patron instanceof AspenError)){
 			if (isset($_REQUEST['campus'])){
 				$pickupBranch=trim($_REQUEST['campus']);
 			}else{
@@ -944,7 +944,7 @@ class UserAPI extends Action {
 		$holdId = $_REQUEST['holdId'];
 		$newLocation = $_REQUEST['location'];
 		$patron = UserAccount::validateAccount($username, $password);
-		if ($patron && !PEAR_Singleton::isError($patron)){
+		if ($patron && !($patron instanceof AspenError)){
 			$holdMessage = $patron->changeHoldPickUpLocation($holdId, $newLocation);
 			return array('success'=> $holdMessage['success'], 'holdMessage'=>$holdMessage['message']);
 		}else{
@@ -992,7 +992,7 @@ class UserAPI extends Action {
 		$overDriveId = $_REQUEST['overDriveId'];
 
 		$user = UserAccount::validateAccount($username, $password);
-		if ($user && !PEAR_Singleton::isError($user)){
+		if ($user && !($user instanceof AspenError)){
             require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
             $driver = new OverDriveDriver();
 			$holdMessage = $driver->placeHold($user, $overDriveId);
@@ -1038,7 +1038,7 @@ class UserAPI extends Action {
 		$overDriveId = $_REQUEST['overDriveId'];
 
 		$user = UserAccount::validateAccount($username, $password);
-		if ($user && !PEAR_Singleton::isError($user)){
+		if ($user && !($user instanceof AspenError)){
             require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
             $driver = new OverDriveDriver();
 			$result = $driver->cancelHold($user, $overDriveId, null);
@@ -1084,7 +1084,7 @@ class UserAPI extends Action {
 		$overDriveId = $_REQUEST['overDriveId'];
 
 		$user = UserAccount::validateAccount($username, $password);
-		if ($user && !PEAR_Singleton::isError($user)){
+		if ($user && !($user instanceof AspenError)){
             require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
             $driver = new OverDriveDriver();
 			$holdMessage = $driver->checkoutTitle($user, $overDriveId);
@@ -1150,7 +1150,7 @@ class UserAPI extends Action {
 		}
 
 		$user = UserAccount::validateAccount($username, $password);
-		if ($user && !PEAR_Singleton::isError($user)){
+		if ($user && !($user instanceof AspenError)){
 			$holdMessage = $user->cancelHold($recordId, $cancelId);
 			return array('success'=> $holdMessage['success'], 'holdMessage'=>$holdMessage['message']);
 		}else{
@@ -1195,7 +1195,7 @@ class UserAPI extends Action {
 	function freezeHold(){
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$user = UserAccount::validateAccount($username, $password);
-		if ($user && !PEAR_Singleton::isError($user)){
+		if ($user && !($user instanceof AspenError)){
 			$holdMessage = $this->getCatalogConnection()->updateHoldDetailed('', $user->cat_username, 'update', '', null, null, 'on');
 			return array('success'=> $holdMessage['success'], 'holdMessage'=>$holdMessage['message']);
 		}else{
@@ -1239,7 +1239,7 @@ class UserAPI extends Action {
 	function activateHold(){
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$user = UserAccount::validateAccount($username, $password);
-		if ($user && !PEAR_Singleton::isError($user)){
+		if ($user && !($user instanceof AspenError)){
 			$holdMessage = $this->getCatalogConnection()->updateHoldDetailed('', $user->cat_username, 'update', '', null, null, 'off');
 			return array('success'=> $holdMessage['success'], 'holdMessage'=>$holdMessage['message']);
 		}else{
@@ -1312,7 +1312,7 @@ class UserAPI extends Action {
 		} else {
 			list($username, $password) = $this->loadUsernameAndPassword();
 			$user = UserAccount::validateAccount($username, $password);
-			if ($user && !PEAR_Singleton::isError($user)) {
+			if ($user && !($user instanceof AspenError)) {
 				$readingHistory = $this->getCatalogConnection()->getReadingHistory($user);
 
 				return array('success' => true, 'readingHistory' => $readingHistory['titles']);
@@ -1352,7 +1352,7 @@ class UserAPI extends Action {
 	function optIntoReadingHistory(){
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$user = UserAccount::validateAccount($username, $password);
-		if ($user && !PEAR_Singleton::isError($user)){
+		if ($user && !($user instanceof AspenError)){
 			$this->getCatalogConnection()->doReadingHistoryAction('optIn', array());
 			return array('success'=>true);
 		}else{
@@ -1389,7 +1389,7 @@ class UserAPI extends Action {
 	function optOutOfReadingHistory(){
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$user = UserAccount::validateAccount($username, $password);
-		if ($user && !PEAR_Singleton::isError($user)){
+		if ($user && !($user instanceof AspenError)){
 			$this->getCatalogConnection()->doReadingHistoryAction('optOut', array());
 			return array('success'=>true);
 		}else{
@@ -1426,7 +1426,7 @@ class UserAPI extends Action {
 	function deleteAllFromReadingHistory(){
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$user = UserAccount::validateAccount($username, $password);
-		if ($user && !PEAR_Singleton::isError($user)){
+		if ($user && !($user instanceof AspenError)){
 			$this->getCatalogConnection()->doReadingHistoryAction('deleteAll', array());
 			return array('success'=>true);
 		}else{
@@ -1465,7 +1465,7 @@ class UserAPI extends Action {
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$selectedTitles = $_REQUEST['selected'];
 		$user = UserAccount::validateAccount($username, $password);
-		if ($user && !PEAR_Singleton::isError($user)){
+		if ($user && !($user instanceof AspenError)){
 			$this->getCatalogConnection()->doReadingHistoryAction('deleteMarked', $selectedTitles);
 			return array('success'=>true);
 		}else{

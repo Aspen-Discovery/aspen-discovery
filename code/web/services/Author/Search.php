@@ -40,8 +40,8 @@ class Author_Search extends Action
 		// TODO : Stats
 
 		$result = $searchObject->processSearch();
-		if (PEAR_Singleton::isError($result)) {
-			PEAR_Singleton::raiseError($result->getMessage());
+		if ($result instanceof AspenError) {
+			AspenError::raiseError($result->getMessage());
 		}
 
 		$interface->assign('sortList',    $searchObject->getSortList());

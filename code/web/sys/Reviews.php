@@ -46,7 +46,7 @@ class ExternalReviews
 				$this->results[$func] = method_exists($this, $func) ? $this->$func($key) : false;
 
 				// If the current provider had no valid reviews, store nothing:
-				if (empty($this->results[$func]) || PEAR_Singleton::isError($this->results[$func])) {
+				if (empty($this->results[$func]) || $this->results[$func] instanceof AspenError) {
 					unset($this->results[$func]);
 				}else{
 					if (is_array($this->results[$func])){
@@ -153,10 +153,11 @@ class ExternalReviews
 		$client = new HTTP_Request();
 		$client->setMethod('GET');
 		$client->setURL($url);
-		if (PEAR_Singleton::isError($http = $client->sendRequest())) {
+        $http = $client->sendRequest();
+		if ($http instanceof AspenError) {
 			// @codeCoverageIgnoreStart
-			$logger->log("Error connecting to $url", PEAR_LOG_ERR);
-			$logger->log("$http", PEAR_LOG_ERR);
+			$logger->log("Error connecting to $url", Logger::LOG_ERROR);
+			$logger->log("$http", Logger::LOG_ERROR);
 			return $http;
 			// @codeCoverageIgnoreEnd
 		}
@@ -164,8 +165,8 @@ class ExternalReviews
 		// Test XML Response
 		if (!($xmldoc = @DOMDocument::loadXML($client->getResponseBody()))) {
 			// @codeCoverageIgnoreStart
-			$logger->log("Did not receive XML from $url", PEAR_LOG_ERR);
-			return new PEAR_Error('Invalid XML');
+			$logger->log("Did not receive XML from $url", Logger::LOG_ERROR);
+			return new AspenError('Invalid XML');
 			// @codeCoverageIgnoreEnd
 		}
 
@@ -178,10 +179,11 @@ class ExternalReviews
 				$url = $baseUrl . '/index.aspx?isbn=' . $this->isbn . '/' .
 				$sourceInfo['file'] . '&client=' . $id . '&type=rw12,hw7';
 				$client->setURL($url);
-				if (PEAR_Singleton::isError($http = $client->sendRequest())) {
+                $http = $client->sendRequest();
+				if ($http instanceof AspenError) {
 					// @codeCoverageIgnoreStart
-					$logger->log("Error connecting to $url", PEAR_LOG_ERR);
-					$logger->log("$http", PEAR_LOG_ERR);
+					$logger->log("Error connecting to $url", Logger::LOG_ERROR);
+					$logger->log("$http", Logger::LOG_ERROR);
 					continue;
 					// @codeCoverageIgnoreEnd
 				}
@@ -190,7 +192,7 @@ class ExternalReviews
 				$responseBody = $client->getResponseBody();
 				if (!($xmldoc2 = @DOMDocument::loadXML($responseBody))) {
 					// @codeCoverageIgnoreStart
-					return new PEAR_Error('Invalid XML');
+					return new AspenError('Invalid XML');
 					// @codeCoverageIgnoreEnd
 				}
 
@@ -309,19 +311,19 @@ class ExternalReviews
 						}
 					} else {
 						global $logger;
-						$logger->log('Unexpected Content Cafe Response retrieving Reviews', PEAR_LOG_ERR);
+						$logger->log('Unexpected Content Cafe Response retrieving Reviews', Logger::LOG_ERROR);
 
 					}
 				} else {
 					global $logger;
-					$logger->log('Content Cafe Error Response'. $response->ContentCafe->Error, PEAR_LOG_ERR);
+					$logger->log('Content Cafe Error Response'. $response->ContentCafe->Error, Logger::LOG_ERROR);
 				}
 			}
 
 		} catch (Exception $e) {
 			global $logger;
-			$logger->log('Failed ContentCafe SOAP Request', PEAR_LOG_ERR);
-			return new PEAR_Error('Failed ContentCafe SOAP Request');
+			$logger->log('Failed ContentCafe SOAP Request', Logger::LOG_ERROR);
+			return new AspenError('Failed ContentCafe SOAP Request');
 		}
 		return $review;
 	}

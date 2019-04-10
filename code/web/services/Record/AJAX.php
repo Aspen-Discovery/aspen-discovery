@@ -100,7 +100,7 @@ class Record_AJAX extends Action {
 
 		// Retrieve Full record from Solr
 		if (!($record = $db->getRecord($id))) {
-			PEAR_Singleton::raiseError(new PEAR_Error('Record Does Not Exist'));
+			AspenError::raiseError(new AspenError('Record Does Not Exist'));
 		}
 
 		$prospector = new Prospector();
@@ -333,7 +333,7 @@ class Record_AJAX extends Action {
 		catch (Exception $e){
 			$output = json_encode(array('error'=>'error_encoding_data', 'message' => $e));
 			global $logger;
-			$logger->log("Error encoding json data $e", PEAR_LOG_ERR);
+			$logger->log("Error encoding json data $e", Logger::LOG_ERROR);
 		}
 		return $output;
 	}

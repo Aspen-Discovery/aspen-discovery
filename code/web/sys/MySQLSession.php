@@ -13,7 +13,7 @@ class MySQLSession extends SessionInterface {
 		$s->session_id = $sess_id;
 
 		$curTime = time();
-		$logger->log("Loading session $sess_id for " . $_SERVER['REQUEST_URI'] . " $curTime", PEAR_LOG_DEBUG);
+		$logger->log("Loading session $sess_id for " . $_SERVER['REQUEST_URI'] . " $curTime", Logger::LOG_DEBUG);
         $createSession = false;
 		if ($s->find(true)) {
 			//First check to see if the session expired
@@ -84,11 +84,11 @@ class MySQLSession extends SessionInterface {
         }
 
 		$s = MySQLSession::$active_session;
-        $logger->log("Saving session for " . $_SERVER['REQUEST_URI'] . " {$s->last_used}, " . MySQLSession::$sessionStartTime, PEAR_LOG_DEBUG);
+        $logger->log("Saving session for " . $_SERVER['REQUEST_URI'] . " {$s->last_used}, " . MySQLSession::$sessionStartTime, Logger::LOG_DEBUG);
         if ($s->data != $data) {
             $s->data = $data;
             $s->last_used = MySQLSession::$sessionStartTime;
-            $logger->log("Session data changed $sess_id {$s->last_used} " . print_r($data, true), PEAR_LOG_DEBUG);
+            $logger->log("Session data changed $sess_id {$s->last_used} " . print_r($data, true), Logger::LOG_DEBUG);
         }
         if (isset($_SESSION['rememberMe']) && ($_SESSION['rememberMe'] == true || $_SESSION['rememberMe'] === "true")){
             $s->remember_me = 1;
@@ -105,7 +105,7 @@ class MySQLSession extends SessionInterface {
 
 	static public function destroy($sess_id) {
 		global $logger;
-		$logger->log("Destroying session $sess_id", PEAR_LOG_DEBUG);
+		$logger->log("Destroying session $sess_id", Logger::LOG_DEBUG);
 		// Perform standard actions required by all session methods:
 		parent::destroy($sess_id);
 

@@ -1578,7 +1578,7 @@ abstract class SearchObject_BaseSearcher
 					//    User is trying to view a saved search from
 					//    another session (deliberate or expired) or
 					//    associated with another user.
-					return new PEAR_Error("Attempt to access invalid search ID");
+					return new AspenError("Attempt to access invalid search ID");
 				}
 			}
 		}
@@ -2000,7 +2000,7 @@ abstract class SearchObject_BaseSearcher
 				// If the factory throws an error, we'll assume for now it means we
 				// tried to load a non-existent module, and we'll ignore it.
 				$obj = RecommendationFactory::initRecommendation($module, $this, $params);
-				if ($obj && !PEAR_Singleton::isError($obj)) {
+				if ($obj && !($obj instanceof AspenError)) {
 					$obj->init();
 					$this->recommend[$location][] = $obj;
 				}
@@ -2183,7 +2183,7 @@ abstract class SearchObject_BaseSearcher
 					$nextResults = $nextSearchObject->getResultRecordSet();
 				}
 
-				if (PEAR_Singleton::isError($result)) {
+				if ($result instanceof AspenError) {
 					//If we get an error excuting the search, just eat it for now.
 				}else{
 					if ($searchObject->getResultTotal() < 1) {
@@ -2353,7 +2353,7 @@ abstract class SearchObject_BaseSearcher
             $current = & $this->indexResult['response']['docs'][$i];
 
             $record = RecordDriverFactory::initRecordDriver($current);
-            if (!PEAR_Singleton::isError($record)) {
+            if (!($record instanceof AspenError)) {
                 $result['response']['docs'][$i]['recordUrl'] = $record->getAbsoluteUrl();
                 $result['response']['docs'][$i]['title_display'] = $record->getName();
                 $image = $record->getBookcoverUrl('medium');

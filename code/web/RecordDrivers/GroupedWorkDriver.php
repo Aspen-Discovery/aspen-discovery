@@ -399,7 +399,7 @@ class GroupedWorkDriver extends IndexRecordDriver{
                                 $numUpdates = $samePikaCache->update();
                                 if ($numUpdates == 0){
                                     global $logger;
-                                    $logger->log("Did not update same pika cache " . print_r($samePikaCache->getLastError(), true), PEAR_LOG_ERR);
+                                    $logger->log("Did not update same pika cache " . print_r($samePikaCache->getLastError(), true), Logger::LOG_ERROR);
                                 }
                             }
                             GroupedWorkDriver::$archiveLinksForWorkIds[$groupedWorkId] = $archiveLink;
@@ -2319,7 +2319,7 @@ class GroupedWorkDriver extends IndexRecordDriver{
 										$numUpdates = $samePikaCache->update();
 										if ($numUpdates == 0){
 											global $logger;
-											$logger->log("Did not update same pika cache " . print_r($samePikaCache->getLastError(), true), PEAR_LOG_ERR);
+											$logger->log("Did not update same pika cache " . print_r($samePikaCache->getLastError(), true), Logger::LOG_ERROR);
 										}
 									}
 									GroupedWorkDriver::$archiveLinksForWorkIds[$groupedWorkId] = $archiveLink;

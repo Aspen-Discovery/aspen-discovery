@@ -509,7 +509,7 @@ class PHPExcel_Shared_OLE
 	public static function OLE2LocalDate($string)
 	{
 		if (strlen($string) != 8) {
-			return new PEAR_Error("Expecting 8 byte string");
+			return new AspenError("Expecting 8 byte string");
 		}
 
 		// factor used for separating numbers into 4 bytes parts

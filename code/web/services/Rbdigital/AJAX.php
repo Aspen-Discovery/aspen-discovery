@@ -66,7 +66,7 @@ class Rbdigital_AJAX extends Action {
 		$user = UserAccount::getLoggedInUser();
 		$overDriveId = $_REQUEST['overDriveId'];
 		//global $logger;
-		//$logger->log("Lending period = $lendingPeriod", PEAR_LOG_INFO);
+		//$logger->log("Lending period = $lendingPeriod", Logger::LOG_NOTICE);
 		if ($user){
 			$patronId = $_REQUEST['patronId'];
 			$patron = $user->getUserReferredTo($patronId);
@@ -74,7 +74,7 @@ class Rbdigital_AJAX extends Action {
 				require_once ROOT_DIR . '/Drivers/RbdigitalDriverFactory.php';
 				$driver = RbdigitalDriverFactory::getDriver();
 				$result = $driver->checkoutRbdigitalItem($overDriveId, $patron);
-				//$logger->log("Checkout result = $result", PEAR_LOG_INFO);
+				//$logger->log("Checkout result = $result", Logger::LOG_NOTICE);
 				if ($result['success']){
 					$result['buttons'] = '<a class="btn btn-primary" href="/MyAccount/CheckedOut" role="button">View My Check Outs</a>';
 				}
@@ -98,7 +98,7 @@ class Rbdigital_AJAX extends Action {
 				require_once ROOT_DIR . '/Drivers/RbdigitalDriverFactory.php';
 				$driver = RbdigitalDriverFactory::getDriver();
 				$result = $driver->returnRbdigitalItem($overDriveId, $transactionId, $patron);
-				//$logger->log("Checkout result = $result", PEAR_LOG_INFO);
+				//$logger->log("Checkout result = $result", Logger::LOG_NOTICE);
 				return json_encode($result);
 			}else{
 				return json_encode(array('result'=>false, 'message'=>'Sorry, it looks like you don\'t have permissions to return titles for that user.'));
@@ -119,7 +119,7 @@ class Rbdigital_AJAX extends Action {
 				require_once ROOT_DIR . '/Drivers/RbdigitalDriverFactory.php';
 				$driver = RbdigitalDriverFactory::getDriver();
 				$result = $driver->selectRbdigitalDownloadFormat($overDriveId, $formatId, $patron);
-				//$logger->log("Checkout result = $result", PEAR_LOG_INFO);
+				//$logger->log("Checkout result = $result", Logger::LOG_NOTICE);
 				return json_encode($result);
 			}else{
 				return json_encode(array('result'=>false, 'message'=>'Sorry, it looks like you don\'t have permissions to download titles for that user.'));
@@ -140,7 +140,7 @@ class Rbdigital_AJAX extends Action {
 				require_once ROOT_DIR . '/Drivers/RbdigitalDriverFactory.php';
 				$driver = RbdigitalDriverFactory::getDriver();
 				$result = $driver->getDownloadLink($overDriveId, $formatId, $patron);
-				//$logger->log("Checkout result = $result", PEAR_LOG_INFO);
+				//$logger->log("Checkout result = $result", Logger::LOG_NOTICE);
 				return json_encode($result);
 			}else{
 				return json_encode(array('result'=>false, 'message'=>'Sorry, it looks like you don\'t have permissions to download titles for that user.'));
@@ -222,7 +222,7 @@ class Rbdigital_AJAX extends Action {
 		} else {
 			// No Overdrive Account Found, give the user an error message
 			global $logger;
-			$logger->log('No valid Overdrive account was found to check out an Overdrive title.', PEAR_LOG_ERR);
+			$logger->log('No valid Overdrive account was found to check out an Overdrive title.', Logger::LOG_ERROR);
 			return json_encode(
 				array(
 					'promptNeeded' => true,

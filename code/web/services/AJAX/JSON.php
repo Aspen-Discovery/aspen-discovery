@@ -74,7 +74,7 @@ class AJAX_JSON extends Action {
 			$user = UserAccount::login();
 
 			$interface->assign('user', $user); // PLB Assignment Needed before error checking?
-			if (!$user || PEAR_Singleton::isError($user)){
+			if (!$user || ($user instanceof AspenError)){
 
 				// Expired Card Notice
 				if ($user && $user->message == 'expired_library_card') {
@@ -87,7 +87,7 @@ class AJAX_JSON extends Action {
 				// General Login Error
 				/** @var PEAR_Error $error */
 				$error = $user;
-				$message = PEAR_Singleton::isError($user) ? translate($error->getMessage()) : translate("Sorry that login information was not recognized, please try again.");
+				$message = ($user instanceof AspenError) ? translate($error->getMessage()) : translate("Sorry that login information was not recognized, please try again.");
 				return array(
 					'success' => false,
 					'message' => $message

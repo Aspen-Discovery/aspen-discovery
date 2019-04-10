@@ -6,8 +6,6 @@ $errorHandlingEnabled = true;
 
 $startTime = microtime(true);
 require_once ROOT_DIR . '/sys/Logger.php';
-require_once ROOT_DIR . '/sys/PEAR_Singleton.php';
-PEAR_Singleton::init();
 
 require_once ROOT_DIR . '/sys/ConfigArray.php';
 global $configArray;
@@ -37,8 +35,7 @@ initDatabase();
 $timer->logTime("Initialized Database");
 requireSystemLibraries();
 initLocale();
-// Sets global error handler for PEAR errors
-PEAR_Singleton::setErrorHandling(PEAR_ERROR_CALLBACK, 'handlePEARError');
+
 $timer->logTime("Basic Initialization");
 loadLibraryAndLocation();
 $timer->logTime("Finished load library and location");
@@ -62,7 +59,7 @@ function initMemcache(){
     if (!@$memCache->pconnect($host, $port, $timeout)) {
         //Try again with a non-persistent connection
         if (!$memCache->connect($host, $port, $timeout)) {
-            PEAR_Singleton::raiseError(new PEAR_Error("Could not connect to Memcache (host = {$host}, port = {$port})."));
+            AspenError::raiseError(new AspenError("Could not connect to Memcache (host = {$host}, port = {$port})."));
         }
     }*/
     require_once ROOT_DIR . '/sys/MemoryCache/Memcache.php';
@@ -87,7 +84,6 @@ function initDatabase(){
 }
 
 function requireSystemLibraries(){
-	global $timer;
 	// Require System Libraries
 	require_once ROOT_DIR . '/sys/Interface.php';
 	require_once ROOT_DIR . '/sys/UserAccount.php';
@@ -111,96 +107,11 @@ function initLocale(){
 	date_default_timezone_set($configArray['Site']['timezone']);
 }
 
-/**
- * Handle an error raised by pear
- *
- * @var PEAR_Error $error;
- * @var string $method
- *
- * @return null
- */
-function handlePEARError($error, $method = null){
-	global $errorHandlingEnabled;
-	if (isset($errorHandlingEnabled) && $errorHandlingEnabled == false){
-		return;
-	}
-	global $configArray;
-
-	// It would be really bad if an error got raised from within the error handler;
-	// we would go into an infinite loop and run out of memory.  To avoid this,
-	// we'll set a static value to indicate that we're inside the error handler.
-	// If the error handler gets called again from within itself, it will just
-	// return without doing anything to avoid problems.  We know that the top-level
-	// call will terminate execution anyway.
-	static $errorAlreadyOccurred = false;
-	if ($errorAlreadyOccurred) {
-		return;
-	} else {
-		$errorAlreadyOccurred = true;
-	}
-
-	//Clear any output that has been generated so far so the user just gets the error message.
-	if (!$configArray['System']['debug']){
-		@ob_clean();
-		header("Content-Type: text/html");
-	}
-
-	// Display an error screen to the user:
-	global $interface;
-	if (!isset($interface) || $interface == false){
-		$interface = new UInterface();
-	}
-
-	$interface->assign('error', $error);
-	$interface->assign('debug', $configArray['System']['debug']);
-	$interface->setTemplate('../error.tpl');
-	$interface->display('layout.tpl');
-
-	// Exceptions we don't want to log
-	$doLog = true;
-	// Microsoft Web Discussions Toolbar polls the server for these two files
-	//    it's not script kiddie hacking, just annoying in logs, ignore them.
-	if (strpos($_SERVER['REQUEST_URI'], "cltreq.asp") !== false) $doLog = false;
-	if (strpos($_SERVER['REQUEST_URI'], "owssvr.dll") !== false) $doLog = false;
-	// If we found any exceptions, finish here
-	if (!$doLog) exit();
-
-	// Log the error for administrative purposes -- we need to build a variety
-	// of pieces so we can supply information at five different verbosity levels:
-	$baseError = $error->toString();
-	$basicServer = " (Server: IP = {$_SERVER['REMOTE_ADDR']}, " .
-        "Referer = " . (isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : '') . ", " .
-        "User Agent = " . (isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '') . ", " .
-        "Request URI = {$_SERVER['REQUEST_URI']})";
-	$detailedServer = "\nServer Context:\n" . print_r($_SERVER, true);
-	$basicBacktrace = "\nBacktrace:\n";
-	if (is_array($error->backtrace)) {
-		foreach($error->backtrace as $line) {
-			$basicBacktrace .= (isset($line['file']) ? $line['file'] : 'none') . "  line " . (isset($line['line']) ? $line['line'] : 'none') . " - " .
-                "class = " . (isset($line['class']) ? $line['class'] : 'none') . ", function = " . (isset($line['function']) ? $line['function'] : 'none') . "\n";
-		}
-	}
-	$detailedBacktrace = "\nBacktrace:\n" . print_r($error->backtrace, true);
-	$errorDetails = array(
-	1 => $baseError,
-	2 => $baseError . $basicServer,
-	3 => $baseError . $basicServer . $basicBacktrace,
-	4 => $baseError . $detailedServer . $basicBacktrace,
-	5 => $baseError . $detailedServer . $detailedBacktrace
-	);
-
-	global $logger;
-	$logger->log($errorDetails, PEAR_LOG_ERR);
-
-	exit();
-}
-
 function loadLibraryAndLocation(){
 	global $timer;
 	global $librarySingleton;
 	global $locationSingleton;
 	global $configArray;
-	global $theme;
 
 	//Create global singleton instances for Library and Location
 	$librarySingleton = new Library();
@@ -283,7 +194,7 @@ function loadSearchInformation(){
 				$searchSources = new SearchSources();
 				global $locationSingleton;
 				$location = $locationSingleton->getActiveLocation();
-				list($enableCombinedResults, $showCombinedResultsFirst, $combinedResultsName) = $searchSources::getCombinedSearchSetupParameters($location, $library);
+				list($enableCombinedResults, $showCombinedResultsFirst) = $searchSources::getCombinedSearchSetupParameters($location, $library);
 				if ($enableCombinedResults && $showCombinedResultsFirst){
 					$searchSource = 'combinedResults';
 				}else{
@@ -362,10 +273,10 @@ function loadSearchInformation(){
 			$indexingProfiles[$indexingProfile->name] = clone($indexingProfile);
 		}
 //		global $logger;
-//		$logger->log("Updating memcache variable {$instanceName}_indexing_profiles", PEAR_LOG_DEBUG);
+//		$logger->log("Updating memcache variable {$instanceName}_indexing_profiles", Logger::LOG_DEBUG);
 		if (!$memCache->set("{$instanceName}_indexing_profiles", $indexingProfiles, 0, $configArray['Caching']['indexing_profiles'])) {
 			global $logger;
-			$logger->log("Failed to update memcache variable {$instanceName}_indexing_profiles", PEAR_LOG_ERR);
+			$logger->log("Failed to update memcache variable {$instanceName}_indexing_profiles", Logger::LOG_ERROR);
 		};
 	}
 }

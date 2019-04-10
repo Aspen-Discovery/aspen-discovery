@@ -478,7 +478,7 @@ class Archive_Exhibit extends Archive_Object{
 				$interface->assign('totalMappedLocations', $totalMappedLocations);
 			}else{
 				$_SESSION['exhibitSearchId'] = $lastExhibitObjectsSearch;
-				$logger->log("Setting exhibit search id to $lastExhibitObjectsSearch", PEAR_LOG_DEBUG);
+				$logger->log("Setting exhibit search id to $lastExhibitObjectsSearch", Logger::LOG_DEBUG);
 
 				$displayMode = $this->archiveCollectionDisplayMode();
 				$this->setShowCovers();
@@ -545,9 +545,9 @@ class Archive_Exhibit extends Archive_Object{
 		if (!empty($_REQUEST['placePid'])) { // May never be actually set here.
 			// Add the place PID to the session if this is a Map Exhibit
 			$_SESSION['placePid'] = $_REQUEST['placePid'];
-			$logger->log("Starting exhibit context " . $this->recordDriver->getUniqueID() . " place {$_SESSION['placePid']}", PEAR_LOG_DEBUG);
+			$logger->log("Starting exhibit context " . $this->recordDriver->getUniqueID() . " place {$_SESSION['placePid']}", Logger::LOG_DEBUG);
 		} else {
-			$logger->log("Starting exhibit context " . $this->recordDriver->getUniqueID() . " no place", PEAR_LOG_DEBUG);
+			$logger->log("Starting exhibit context " . $this->recordDriver->getUniqueID() . " no place", Logger::LOG_DEBUG);
 			$_SESSION['placePid']   = null;
 			$_SESSION['placeLabel'] = null;
 		}

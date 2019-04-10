@@ -35,7 +35,7 @@ class WikipediaParser {
 
 		// Check if data exists or not
 		if(!isset($body['query']['pages']) || isset($body['query']['pages']['-1'])) {
-			return new PEAR_Error('No page found');
+			return new AspenError('No page found');
 		}
 
 		// Get the default page
@@ -298,7 +298,7 @@ class WikipediaParser {
 			$result = file_get_contents($pageUrl);
 			$jsonResult = json_decode($result, true);
 			$info = $this->parseWikipedia($jsonResult);
-			if (!PEAR_Singleton::isError($info)) {
+			if (!($info instanceof AspenError)) {
 				return $info;
 			}
 		}

@@ -91,9 +91,9 @@ class GoDeeperData{
 					}
 				}catch (Exception $e) {
 					global $logger;
-					$logger->log("Error fetching data from Syndetics $e", PEAR_LOG_ERR);
+					$logger->log("Error fetching data from Syndetics $e", Logger::LOG_ERROR);
 					if (isset($response)){
-						$logger->log($response, PEAR_LOG_INFO);
+						$logger->log($response, Logger::LOG_NOTICE);
 					}
 				}
 				$timer->logTime("Finished processing Syndetics options");
@@ -173,12 +173,12 @@ class GoDeeperData{
 					return $response->ContentCafe->RequestItems->RequestItem;
 				} else {
 					global $logger;
-					$logger->log("Content Cafe Error Response for Content Type $field : ". $response->ContentCafe->Error, PEAR_LOG_ERR);
+					$logger->log("Content Cafe Error Response for Content Type $field : ". $response->ContentCafe->Error, Logger::LOG_ERROR);
 				}
 			}
 		} catch (Exception $e) {
 			global $logger;
-			$logger->log('Failed ContentCafe SOAP Request', PEAR_LOG_ERR);
+			$logger->log('Failed ContentCafe SOAP Request', Logger::LOG_ERROR);
 		}
 
 		return false;
@@ -269,8 +269,8 @@ class GoDeeperData{
 				}
 			}catch (Exception $e) {
 				global $logger;
-				$logger->log("Error fetching data from Syndetics $e", PEAR_LOG_ERR);
-				$logger->log("Request URL was $requestUrl", PEAR_LOG_ERR);
+				$logger->log("Error fetching data from Syndetics $e", Logger::LOG_ERROR);
+				$logger->log("Request URL was $requestUrl", Logger::LOG_ERROR);
 				$summaryData = array();
 			}
 			if ($summaryData == false){
@@ -364,7 +364,7 @@ class GoDeeperData{
 
 			}catch (Exception $e) {
 				global $logger;
-				$logger->log("Error fetching data from Syndetics $e", PEAR_LOG_ERR);
+				$logger->log("Error fetching data from Syndetics $e", Logger::LOG_ERROR);
 				$tocData = array();
 			}
 			$memCache->set("syndetics_toc_{$isbn}_{$upc}", $tocData, 0, $configArray['Caching']['syndetics_toc']);
@@ -465,7 +465,7 @@ class GoDeeperData{
 				}
 			}catch (Exception $e) {
 				global $logger;
-				$logger->log("Error fetching data from Syndetics $e", PEAR_LOG_ERR);
+				$logger->log("Error fetching data from Syndetics $e", Logger::LOG_ERROR);
 				$fictionData = array();
 			}
 			$memCache->set("syndetics_fiction_profile_{$isbn}_{$upc}", $fictionData, 0, $configArray['Caching']['syndetics_fiction_profile']);
@@ -538,7 +538,7 @@ class GoDeeperData{
 				return $summaryData;
 			}catch (Exception $e) {
 				global $logger;
-				$logger->log("Error fetching data from Syndetics $e", PEAR_LOG_ERR);
+				$logger->log("Error fetching data from Syndetics $e", Logger::LOG_ERROR);
 				$summaryData = array();
 			}
 			$memCache->set("syndetics_author_notes_{$isbn}_{$upc}", $summaryData, 0, $configArray['Caching']['syndetics_author_notes']);
@@ -581,7 +581,7 @@ class GoDeeperData{
 				$memCache->set("syndetics_excerpt_{$isbn}_{$upc}", $excerptData, 0, $configArray['Caching']['syndetics_excerpt']);
 			}catch (Exception $e) {
 				global $logger;
-				$logger->log("Error fetching data from Syndetics $e", PEAR_LOG_ERR);
+				$logger->log("Error fetching data from Syndetics $e", Logger::LOG_ERROR);
 				$excerptData = array();
 			}
 		}
@@ -654,7 +654,7 @@ class GoDeeperData{
 
 			}catch (Exception $e) {
 				global $logger;
-				$logger->log("Error fetching data from Syndetics $e", PEAR_LOG_ERR);
+				$logger->log("Error fetching data from Syndetics $e", Logger::LOG_ERROR);
 				$summaryData = array();
 			}
 			$memCache->set("syndetics_video_clip_{$isbn}_{$upc}", $summaryData, 0, $configArray['Caching']['syndetics_video_clip']);
@@ -706,7 +706,7 @@ class GoDeeperData{
 				$memCache->set("syndetics_av_summary_{$isbn}_{$upc}", $avSummaryData, 0, $configArray['Caching']['syndetics_av_summary']);
 			}catch (Exception $e) {
 				global $logger;
-				$logger->log("Error fetching data from Syndetics $e", PEAR_LOG_ERR);
+				$logger->log("Error fetching data from Syndetics $e", Logger::LOG_ERROR);
 				$avSummaryData = array();
 			}
 		}

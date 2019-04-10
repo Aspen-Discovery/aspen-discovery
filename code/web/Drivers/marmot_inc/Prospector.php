@@ -14,7 +14,7 @@ class Prospector{
 		$prospectorUrl = $this->getSearchLink($searchTerms);
 		//Load the HTML from Prospector
 		$req = new HTTP_Request($prospectorUrl);
-		if (PEAR_Singleton::isError($req->sendRequest())) {
+		if ($req->sendRequest() instanceof AspenError) {
 			return null;
 		}
 		$prospectorInfo = $req->getResponseBody();

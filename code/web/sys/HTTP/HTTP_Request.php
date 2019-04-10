@@ -17,7 +17,7 @@ class HTTP_Request
     public function setMethod($method = 'GET') {
         if ($method != 'GET' && $method != 'POST') {
             global $logger;
-            $logger->log('Method must be GET or POST', PEAR_LOG_CRIT);
+            $logger->log('Method must be GET or POST', Logger::LOG_ALERT);
         } else {
             $this->method = $method;
         }
@@ -38,7 +38,7 @@ class HTTP_Request
     public function sendRequest($saveBody = null)
     {
         if (!isset($this->url)) {
-            return new PEAR_Error('URL was not set');
+            return new AspenError('URL was not set');
         }
         $curl_opts = array(
             // set request url

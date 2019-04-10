@@ -20,7 +20,7 @@ class DownloadLC extends Archive_Object{
 			echo($lcDataStream->content);
 			exit();
 		}else{
-			PEAR_Singleton::raiseError('Sorry, You do not have permission to download this image.');
+			AspenError::raiseError('Sorry, You do not have permission to download this image.');
 		}
 	}
 }

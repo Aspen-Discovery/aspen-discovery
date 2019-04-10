@@ -63,7 +63,7 @@ class RecordDriverFactory {
 			if (empty($driver)){
 				if (!isset($record['RELS_EXT_hasModel_uri_s'])){
 					//print_r($record);
-					PEAR_Singleton::raiseError('Unable to load Driver for ' . $record['PID'] . " model did not exist");
+					AspenError::raiseError('Unable to load Driver for ' . $record['PID'] . " model did not exist");
 				}
 				$recordType = $record['RELS_EXT_hasModel_uri_s'];
 				//Get rid of islandora namespace information
@@ -98,7 +98,7 @@ class RecordDriverFactory {
 				// If we can't load the driver, fall back to the default, index-based one:
 				if (!is_readable($path)) {
 					//print_r($record);
-					PEAR_Singleton::raiseError('Unable to load Driver for ' . $recordType . " ($normalizedRecordType)");
+					AspenError::raiseError('Unable to load Driver for ' . $recordType . " ($normalizedRecordType)");
 				}else{
 					if (!$hasExistingCache){
 						$islandoraObjectCache = new IslandoraObjectCache();
@@ -178,7 +178,7 @@ class RecordDriverFactory {
 			$recordDriver = new HooplaRecordDriver($recordId, $groupedWork);
 			if (!$recordDriver->isValid()){
 				global $logger;
-				$logger->log("Unable to load record driver for hoopla record $recordId", PEAR_LOG_WARNING);
+				$logger->log("Unable to load record driver for hoopla record $recordId", Logger::LOG_WARNING);
 				$recordDriver = null;
 			}
 		}else{
@@ -205,16 +205,16 @@ class RecordDriverFactory {
 				// If we can't load the driver, fall back to the default, index-based one:
 				if (!is_readable($path)) {
 					global $logger;
-					$logger->log("Unknown record type " . $recordType, PEAR_LOG_ERR);
+					$logger->log("Unknown record type " . $recordType, Logger::LOG_ERROR);
 					$recordDriver = null;
 				}else{
 					require_once $path;
 					if (class_exists($driver)) {
 						disableErrorHandler();
 						$obj = new $driver($id);
-						if (PEAR_Singleton::isError($obj)){
+						if (($obj instanceof AspenError)){
 							global $logger;
-							$logger->log("Error loading record driver", PEAR_LOG_DEBUG);
+							$logger->log("Error loading record driver", Logger::LOG_DEBUG);
 						}
 						enableErrorHandler();
 						return $obj;
@@ -282,7 +282,7 @@ class RecordDriverFactory {
 				// If we can't load the driver, fall back to the default, index-based one:
 				if (!is_readable($path)) {
 					//print_r($record);
-					PEAR_Singleton::raiseError('Unable to load Driver for ' . $recordType . " ($normalizedRecordType)");
+					AspenError::raiseError('Unable to load Driver for ' . $recordType . " ($normalizedRecordType)");
 				} else {
 					$islandoraObjectCache = new IslandoraObjectCache();
 					$islandoraObjectCache->pid = $record->id;
@@ -341,8 +341,8 @@ class RecordDriverFactory {
 				/** @var RecordInterface $obj */
 				$obj = new $driver($record);
 				$timer->logTime("Initialized Driver");
-				if (PEAR_Singleton::isError($obj)) {
-					$logger->log("Error loading record driver", PEAR_LOG_DEBUG);
+				if (($obj instanceof AspenError)) {
+					$logger->log("Error loading record driver", Logger::LOG_DEBUG);
 				}
 				enableErrorHandler();
 				$timer->logTime('Loaded record driver for ' . $obj->getUniqueID());
@@ -353,7 +353,7 @@ class RecordDriverFactory {
 		}
 
 		// If we got here, something went very wrong:
-		return new PEAR_Error("Problem loading record driver: {$driver}");
+		return new AspenError("Problem loading record driver: {$driver}");
 	}
 
 

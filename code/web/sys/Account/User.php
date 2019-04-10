@@ -336,14 +336,14 @@ class User extends DataObject
                                 try {
                                     $linkedUser = UserAccount::validateAccount($linkedUser->cat_username, $linkedUser->cat_password, $linkedUser->source, $this);
                                 } catch (UnknownAuthenticationMethodException $e) {
-                                    $logger->log("Unknown authentication method $e", PEAR_LOG_WARNING);
+                                    $logger->log("Unknown authentication method $e", Logger::LOG_WARNING);
                                     $linkedUser = false;
                                 }
                             }else{
-								$logger->log("Found cached linked user {$userData->id}", PEAR_LOG_DEBUG);
+								$logger->log("Found cached linked user {$userData->id}", Logger::LOG_DEBUG);
 								$linkedUser = $userData;
 							}
-							if ($linkedUser && !PEAR_Singleton::isError($linkedUser)) {
+							if ($linkedUser && !($linkedUser instanceof AspenError)) {
 								$this->linkedUsers[] = clone($linkedUser);
 							}
 						}
@@ -550,7 +550,7 @@ class User extends DataObject
 		if (!isset($this->homeLocationId)) {
 			$this->homeLocationId = 0;
 			global $logger;
-			$logger->log('No Home Location ID was set for newly created user.', PEAR_LOG_WARNING);
+			$logger->log('No Home Location ID was set for newly created user.', Logger::LOG_WARNING);
 		}
 		if (!isset($this->myLocation1Id)) $this->myLocation1Id = 0;
 		if (!isset($this->myLocation2Id)) $this->myLocation2Id = 0;
@@ -664,10 +664,10 @@ class User extends DataObject
 	function updateUserPreferences(){
 		// Validate that the input data is correct
 		if (isset($_POST['myLocation1']) && !is_array($_POST['myLocation1']) && preg_match('/^\d{1,3}$/', $_POST['myLocation1']) == 0){
-			PEAR_Singleton::raiseError('The 1st location had an incorrect format.');
+			AspenError::raiseError('The 1st location had an incorrect format.');
 		}
 		if (isset($_POST['myLocation2']) && !is_array($_POST['myLocation2']) && preg_match('/^\d{1,3}$/', $_POST['myLocation2']) == 0){
-			PEAR_Singleton::raiseError('The 2nd location had an incorrect format.');
+			AspenError::raiseError('The 2nd location had an incorrect format.');
 		}
 		if (isset($_REQUEST['bypassAutoLogout']) && ($_REQUEST['bypassAutoLogout'] == 'yes' || $_REQUEST['bypassAutoLogout'] == 'on')){
 			$this->bypassAutoLogout = 1;
@@ -683,7 +683,7 @@ class User extends DataObject
 				$location = new Location();
 				$location->get('locationId', $_POST['myLocation1'] );
 				if ($location->N != 1) {
-					PEAR_Singleton::raiseError('The 1st location could not be found in the database.');
+					AspenError::raiseError('The 1st location could not be found in the database.');
 				} else {
 					$this->myLocation1Id = $_POST['myLocation1'];
 				}
@@ -696,7 +696,7 @@ class User extends DataObject
 				$location = new Location();
 				$location->get('locationId', $_POST['myLocation2'] );
 				if ($location->N != 1) {
-					PEAR_Singleton::raiseError('The 2nd location could not be found in the database.');
+					AspenError::raiseError('The 2nd location could not be found in the database.');
 				} else {
 					$this->myLocation2Id = $_POST['myLocation2'];
 				}
@@ -896,7 +896,7 @@ class User extends DataObject
 
 	public function getHolds($includeLinkedUsers = true, $unavailableSort = 'sortTitle', $availableSort = 'expire'){
 		$ilsHolds = $this->getCatalogDriver()->getHolds($this);
-		if (PEAR_Singleton::isError($ilsHolds)) {
+		if ($ilsHolds instanceof AspenError) {
 			$ilsHolds = array();
 		}
         $allHolds = $ilsHolds;
@@ -1004,7 +1004,7 @@ class User extends DataObject
 
 	public function getMyBookings($includeLinkedUsers = true){
 		$ilsBookings = $this->getCatalogDriver()->getMyBookings($this);
-		if (PEAR_Singleton::isError($ilsBookings)) {
+		if ($ilsBookings instanceof AspenError) {
 			$ilsBookings = array();
 		}
 
@@ -1024,7 +1024,7 @@ class User extends DataObject
 
 		if (!isset($this->ilsFinesForUser)){
 			$this->ilsFinesForUser = $this->getCatalogDriver()->getMyFines($this);
-			if (PEAR_Singleton::isError($this->ilsFinesForUser)) {
+			if ($this->ilsFinesForUser instanceof AspenError) {
 				$this->ilsFinesForUser = array();
 			}
 		}
@@ -1138,22 +1138,22 @@ class User extends DataObject
 	function updateAltLocationForHold($pickupBranch){
 		if ($this->_homeLocationCode != $pickupBranch) {
 			global $logger;
-			$logger->log("The selected pickup branch is not the user's home location, checking to see if we need to set an alternate branch", PEAR_LOG_INFO);
+			$logger->log("The selected pickup branch is not the user's home location, checking to see if we need to set an alternate branch", Logger::LOG_NOTICE);
 			$location = new Location();
 			$location->code = $pickupBranch;
 			if ($location->find(true)) {
-				$logger->log("Found the location for the pickup branch $pickupBranch {$location->locationId}", PEAR_LOG_INFO);
+				$logger->log("Found the location for the pickup branch $pickupBranch {$location->locationId}", Logger::LOG_NOTICE);
 				if ($this->myLocation1Id == 0) {
-					$logger->log("Alternate location 1 is blank updating that", PEAR_LOG_INFO);
+					$logger->log("Alternate location 1 is blank updating that", Logger::LOG_NOTICE);
 					$this->myLocation1Id = $location->locationId;
 					$this->update();
 				} else if ($this->myLocation2Id == 0 && $location->locationId != $this->myLocation1Id) {
-					$logger->log("Alternate location 2 is blank updating that", PEAR_LOG_INFO);
+					$logger->log("Alternate location 2 is blank updating that", Logger::LOG_NOTICE);
 					$this->myLocation2Id = $location->locationId;
 					$this->update();
 				}
 			}else{
-				$logger->log("Could not find location for $pickupBranch", PEAR_LOG_ERR);
+				$logger->log("Could not find location for $pickupBranch", Logger::LOG_ERROR);
 			}
 		}
 	}

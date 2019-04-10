@@ -24,6 +24,20 @@ abstract class AbstractIlsDriver extends AbstractDriver
 	public abstract function patronLogin($username, $password, $validatedViaSSO);
 
     /**
+     * Place Hold
+     *
+     * This is responsible for both placing holds as well as placing recalls.
+     *
+     * @param   User    $patron       The User to place a hold for
+     * @param   string  $recordId     The id of the bib record
+     * @param   string  $pickupBranch The branch where the user wants to pickup the item when available
+     * @return  mixed                 True if successful, false if unsuccessful
+     *                                If an error occurs, return a PEAR_Error
+     * @access  public
+     */
+    abstract function placeHold($patron, $recordId, $pickupBranch = null, $cancelDate = null);
+
+    /**
      * Place Item Hold
      *
      * This is responsible for both placing item level holds.
@@ -68,7 +82,7 @@ abstract class AbstractIlsDriver extends AbstractDriver
                 $webServiceURL = trim($this->accountProfile->patronApiUrl);
             }else{
                 global $logger;
-                $logger->log('No Web Service URL defined in account profile', PEAR_LOG_CRIT);
+                $logger->log('No Web Service URL defined in account profile', Logger::LOG_ALERT);
             }
             $this->webServiceURL = rtrim($webServiceURL, '/'); // remove any trailing slash because other functions will add it.
         }

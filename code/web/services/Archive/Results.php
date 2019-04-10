@@ -54,8 +54,8 @@ class Archive_Results extends Action {
 
 		// Process Search
 		$result = $searchObject->processSearch(true, true);
-		if (PEAR_Singleton::isError($result)) {
-			PEAR_Singleton::raiseError($result->getMessage());
+		if ($result instanceof AspenError) {
+			AspenError::raiseError($result->getMessage());
 		}
 		$timer->logTime('Process Search');
 
@@ -110,7 +110,7 @@ class Archive_Results extends Action {
 
 					// Unexpected error -- let's treat this as a fatal condition.
 				} else {
-					PEAR_Singleton::raiseError(new PEAR_Error('Unable to process query<br />' .
+					AspenError::raiseError(new AspenError('Unable to process query<br />' .
                         'Solr Returned: ' . $errorMessage));
 				}
 			}

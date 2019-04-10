@@ -89,11 +89,11 @@ class I18N_Translator
 			if ($this->langCode != '' && is_file($file)) {
 				$this->words = $this->parseLanguageFile($file);
 			} else {
-				return new PEAR_Error("Unknown language file");
+				return new AspenError("Unknown language file");
 			}
 			closedir($dh);
 		} else {
-			return new PEAR_Error("Cannot open $path for reading");
+			return new AspenError("Cannot open $path for reading");
 		}
 
 		//Check for a more specific language file for the site

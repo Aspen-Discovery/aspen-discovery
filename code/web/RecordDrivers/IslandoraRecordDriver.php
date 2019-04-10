@@ -957,7 +957,7 @@ abstract class IslandoraRecordDriver extends IndexRecordDriver {
 							}
 						}else{
 							global $logger;
-							$logger->log("Incorrect driver type for " . $collectionInfo['object']['value'], PEAR_LOG_DEBUG);
+							$logger->log("Incorrect driver type for " . $collectionInfo['object']['value'], Logger::LOG_DEBUG);
 						}
 					}
 				}

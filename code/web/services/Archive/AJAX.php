@@ -190,7 +190,7 @@ class Archive_AJAX extends Action {
 				$searchObject->close(); // Trigger save search
 				$lastExhibitObjectsSearch    = $searchObject->getSearchId(); // Have to save the search first.
 				$_SESSION['exhibitSearchId'] = $lastExhibitObjectsSearch;
-				$logger->log("Setting exhibit search id to $lastExhibitObjectsSearch", PEAR_LOG_DEBUG);
+				$logger->log("Setting exhibit search id to $lastExhibitObjectsSearch", Logger::LOG_DEBUG);
 
 				if ($displayMode == 'covers') {
 					foreach ($response['response']['docs'] as $objectInCollection) {
@@ -315,7 +315,7 @@ class Archive_AJAX extends Action {
 				$searchObject->close(); // Trigger save search
 				$lastExhibitObjectsSearch = $searchObject->getSearchId(); // Have to save the search first.
 				$_SESSION['exhibitSearchId'] = $lastExhibitObjectsSearch;
-				$logger->log("Setting exhibit search id to $lastExhibitObjectsSearch", PEAR_LOG_DEBUG);
+				$logger->log("Setting exhibit search id to $lastExhibitObjectsSearch", Logger::LOG_DEBUG);
 
 				if ($displayMode == 'covers') {
 					foreach ($response['response']['docs'] as $objectInCollection) {
@@ -403,7 +403,7 @@ class Archive_AJAX extends Action {
 			}
 
 			$placeId = urldecode($_REQUEST['placeId']);
-			$logger->log("Setting place information for context $placeId", PEAR_LOG_DEBUG);
+			$logger->log("Setting place information for context $placeId", Logger::LOG_DEBUG);
 			@session_start();
 			$_SESSION['placePid'] =  $placeId;
 			$interface->assign('placePid', $placeId);
@@ -411,7 +411,7 @@ class Archive_AJAX extends Action {
 			/** @var FedoraObject $placeObject */
 			$placeObject = $fedoraUtils->getObject($placeId);
 			$_SESSION['placeLabel'] = $placeObject->label;
-			$logger->log("Setting place label for context $placeObject->label", PEAR_LOG_DEBUG);
+			$logger->log("Setting place label for context $placeObject->label", Logger::LOG_DEBUG);
 
 			if ($showTimeline){
 				$interface->assign('displayType', 'map');
@@ -485,7 +485,7 @@ class Archive_AJAX extends Action {
 				$searchObject->close(); // Trigger save search
 				$lastExhibitObjectsSearch = $searchObject->getSearchId(); // Have to save the search first.
 				$_SESSION['exhibitSearchId'] = $lastExhibitObjectsSearch;
-				$logger->log("Setting exhibit search id to $lastExhibitObjectsSearch", PEAR_LOG_DEBUG);
+				$logger->log("Setting exhibit search id to $lastExhibitObjectsSearch", Logger::LOG_DEBUG);
 
 				if ($displayMode == 'covers') {
 					foreach ($response['response']['docs'] as $objectInCollection) {
@@ -578,7 +578,7 @@ class Archive_AJAX extends Action {
 			$facetFieldData = $response['facet_counts']['facet_fields'][$facetName];
 			foreach ($facetFieldData as $field){
 				$entityDriver = RecordDriverFactory::initIslandoraDriverFromPid($field[0]);
-				if (!PEAR_Singleton::isError($entityDriver) && $entityDriver != null){
+				if (!($entityDriver instanceof AspenError) && $entityDriver != null){
 					$facetValues[$entityDriver->getTitle()] = array(
 							'display' => $entityDriver->getTitle(),
 							'url' => $entityDriver->getRecordUrl(),

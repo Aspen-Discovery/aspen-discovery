@@ -162,7 +162,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 		$restored = $this->restoreSavedSearch(null, true, true);
 		if ($restored === true) {
 			return true;
-		} else if (PEAR_Singleton::isError($restored)) {
+		} else if (($restored instanceof AspenError)) {
 			return false;
 		}
 
@@ -501,7 +501,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 			$interface->assign('recordIndex', $x + 1);
 			$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
 			$record = RecordDriverFactory::initRecordDriver($current);
-			if (!PEAR_Singleton::isError($record)){
+			if (!($record instanceof AspenError)){
 				if (method_exists($record, 'getBrowseResult')){
 					$html[] = $interface->fetch($record->getBrowseResult());
 				}else{
@@ -553,7 +553,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 		for ($x = 0; $x < count($this->indexResult['response']['docs']); $x++) {
 			$current = & $this->indexResult['response']['docs'][$x];
 			$record = RecordDriverFactory::initRecordDriver($current);
-			if (!PEAR_Singleton::isError($record)){
+			if (!($record instanceof AspenError)){
 				if (method_exists($record, 'getListWidgetTitle')){
 					if (!empty($orderedListOfIDs)){
 						$position = array_search($current['id'], $orderedListOfIDs);
@@ -634,7 +634,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 				$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
 				/** @var GroupedWorkDriver $record */
 				$record = RecordDriverFactory::initRecordDriver($current);
-				if (!PEAR_Singleton::isError($record)) {
+				if (!($record instanceof AspenError)) {
 					$interface->assign('recordDriver', $record);
 					$html[] = $interface->fetch($record->getSearchResult($this->view));
 				} else {
@@ -674,7 +674,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 				$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
 				/** @var GroupedWorkDriver|ListRecordDriver $record */
 				$record = RecordDriverFactory::initRecordDriver($current);
-				if (!PEAR_Singleton::isError($record)) {
+				if (!($record instanceof AspenError)) {
 					$interface->assign('recordDriver', $record);
 					$html[] = $interface->fetch($record->getCombinedResult($this->view));
 				} else {
@@ -1056,7 +1056,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 			$query = $this->indexEngine->buildQuery($search, false);
 		}
 		$timer->logTime("build query");
-		if (PEAR_Singleton::isError($query)) {
+		if (($query instanceof AspenError)) {
 			return $query;
 		}
 
@@ -1673,7 +1673,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
             unset($objPHPExcel);
         } catch (Exception $e) {
             global $logger;
-            $logger->log("Unable to create PHP File " . $e, PEAR_LOG_ERR);
+            $logger->log("Unable to create PHP File " . $e, Logger::LOG_ERROR);
         }
     }
 

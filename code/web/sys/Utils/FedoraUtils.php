@@ -50,7 +50,7 @@ class FedoraUtils {
 			$this->repository = new FedoraRepository($this->api, $cache);
 		}catch (Exception $e){
 			global $logger;
-			$logger->log("Error connecting to repository $e", PEAR_LOG_ERR);
+			$logger->log("Error connecting to repository $e", Logger::LOG_ERROR);
 		}
 	}
 
@@ -73,7 +73,7 @@ class FedoraUtils {
 			$object = $this->repository->getObject($pid);
 		}catch (Exception $e){
 			//global $logger;
-			//$logger->log("Could not find object $pid due to exception $e", PEAR_LOG_WARNING);
+			//$logger->log("Could not find object $pid due to exception $e", Logger::LOG_WARNING);
 			$object = null;
 		}
 

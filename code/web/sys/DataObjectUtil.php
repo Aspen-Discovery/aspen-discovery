@@ -56,6 +56,7 @@ class DataObjectUtil
 	static function saveObject($structure, $dataType){
 		global $logger;
 		//Check to see if we have a new object or an exiting object to update
+        /** @var DataObject $object */
 		$object = new $dataType();
 		DataObjectUtil::updateFromUI($object, $structure);
 		$primaryKeySet = false;
@@ -65,9 +66,9 @@ class DataObjectUtil
 					$object = new $dataType();
 					$object->$property['property'] = $object->$property['property'];
 					if ($object->find(true)){
-						$logger->log("Loaded existing object from database", PEAR_LOG_DEBUG);
+						$logger->log("Loaded existing object from database", Logger::LOG_DEBUG);
 					}else{
-						$logger->log("Could not find existing object in database", PEAR_LOG_ERR);
+						$logger->log("Could not find existing object in database", Logger::LOG_ERROR);
 					}
 
 					//Reload from UI
@@ -92,10 +93,9 @@ class DataObjectUtil
 				$validationResults['saveOk'] = $result;
 			}
 			if (!$validationResults['saveOk']){
-				//TODO: Display the PEAR error (in certain circumstances only?)
-				$error = &PEAR_Singleton::getStaticProperty('DB_DataObject','lastError');
+				$error = $object->getLastError();
 				if (isset($error)){
-					$validationResults['errors'][] = 'Save failed ' . $error->getMessage();
+					$validationResults['errors'][] = 'Save failed ' . $error;
 				}else{
 					$validationResults['errors'][] = 'Save failed';
 				}
@@ -246,13 +246,13 @@ class DataObjectUtil
 
 			}else if (isset($_FILES[$propertyName])){
 				if (isset($_FILES[$propertyName]["error"]) && $_FILES[$propertyName]["error"] == 4){
-					$logger->log("No file was uploaded for $propertyName", PEAR_LOG_DEBUG);
+					$logger->log("No file was uploaded for $propertyName", Logger::LOG_DEBUG);
 					//No image supplied, use the existing value
 				}else if (isset($_FILES[$propertyName]["error"]) && $_FILES[$propertyName]["error"] > 0){
 					//return an error to the browser
-					$logger->log("Error in file upload for $propertyName", PEAR_LOG_ERR);
+					$logger->log("Error in file upload for $propertyName", Logger::LOG_ERROR);
 				}else if (in_array($_FILES[$propertyName]["type"], array('image/gif', 'image/jpeg', 'image/png'))){
-					$logger->log("Processing uploaded file for $propertyName", PEAR_LOG_DEBUG);
+					$logger->log("Processing uploaded file for $propertyName", Logger::LOG_DEBUG);
 					//Copy the full image to the files directory
 					//Filename is the name of the object + the original filename
 					global $configArray;
@@ -261,9 +261,9 @@ class DataObjectUtil
 						$destFolder = $property['storagePath'];
 						$destFullPath = $destFolder . '/' . $destFileName;
 						$copyResult = copy($_FILES[$propertyName]["tmp_name"], $destFullPath);
-						$logger->log("Copied file to $destFullPath", PEAR_LOG_DEBUG);
+						$logger->log("Copied file to $destFullPath", Logger::LOG_DEBUG);
 					}else{
-						$logger->log("Creating thumbnails for $propertyName", PEAR_LOG_DEBUG);
+						$logger->log("Creating thumbnails for $propertyName", Logger::LOG_DEBUG);
 						$destFileName = $propertyName . $_FILES[$propertyName]["name"];
 						$destFolder = $configArray['Site']['local'] . '/files/original';
 						$pathToThumbs = $configArray['Site']['local'] . '/files/thumbnail';
@@ -356,7 +356,7 @@ class DataObjectUtil
 					}
 					//store the actual filename
 					$object->$propertyName = $destFileName;
-					$logger->log("Set $propertyName to $destFileName", PEAR_LOG_DEBUG);
+					$logger->log("Set $propertyName to $destFileName", Logger::LOG_DEBUG);
 				}
 			}
 
@@ -378,14 +378,14 @@ class DataObjectUtil
 					$destFullPath = $destFolder . '/' . $destFileName;
 					$copyResult = copy($_FILES[$propertyName]["tmp_name"], $destFullPath);
 					if ($copyResult){
-						$logger->log("Copied file from {$_FILES[$propertyName]["tmp_name"]} to $destFullPath", PEAR_LOG_INFO);
+						$logger->log("Copied file from {$_FILES[$propertyName]["tmp_name"]} to $destFullPath", Logger::LOG_NOTICE);
 					}else{
-						$logger->log("Could not copy file from {$_FILES[$propertyName]["tmp_name"]} to $destFullPath", PEAR_LOG_ERR);
+						$logger->log("Could not copy file from {$_FILES[$propertyName]["tmp_name"]} to $destFullPath", Logger::LOG_ERROR);
 						if (!file_exists($_FILES[$propertyName]["tmp_name"])){
-							$logger->log("  Uploaded file did not exist", PEAR_LOG_ERR);
+							$logger->log("  Uploaded file did not exist", Logger::LOG_ERROR);
 						}
 						if (!is_writable($destFullPath)){
-							$logger->log("  Destination is not writable", PEAR_LOG_ERR);
+							$logger->log("  Destination is not writable", Logger::LOG_ERROR);
 						}
 					}
 					//store the actual filename
@@ -417,7 +417,7 @@ class DataObjectUtil
 					}else{
                         if (!isset($existingValues[$id])){
                             if (!isset($deletions[$id]) || ($deletions[$id] == 'false')) {
-                                $logger->log("$subObjectType $id has been deleted from the database, but is still present in the interface", PEAR_LOG_ERR);
+                                $logger->log("$subObjectType $id has been deleted from the database, but is still present in the interface", Logger::LOG_ERROR);
                             }
                             continue;
                         } else {

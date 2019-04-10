@@ -50,7 +50,7 @@ class MyAccount_SelectInterface extends Action{
 			$redirectLibrary = $_COOKIE['PreferredLibrarySystem'];
 		}
 		if ($redirectLibrary != null){
-			$logger->log("Selected library $redirectLibrary", PEAR_LOG_DEBUG);
+			$logger->log("Selected library $redirectLibrary", Logger::LOG_DEBUG);
 			$selectedLibrary = $libraries[$redirectLibrary];
 			global $configArray;
 			$baseUrl = $configArray['Site']['url'];

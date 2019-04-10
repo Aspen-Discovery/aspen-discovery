@@ -24,7 +24,7 @@ class MillenniumHolds{
 		$itemMatches = preg_match('/Choose one item from the list below/', $holdResultPage);
 
 		if ($numMatches > 0 && $itemMatches == 0){
-			//$logger->log('Place Hold Body Text\n' . $matches[1], PEAR_LOG_INFO);
+			//$logger->log('Place Hold Body Text\n' . $matches[1], Logger::LOG_NOTICE);
 			$cleanResponse = preg_replace("^\n|\r|&nbsp;^", "", $matches[1]);
 			$cleanResponse = preg_replace("^<br\s*/>^", "\n", $cleanResponse);
 			$cleanResponse = trim(strip_tags($cleanResponse));
@@ -51,8 +51,8 @@ class MillenniumHolds{
 				$hold_result['message'] = 'Did not receive a response from the circulation system.  Please try again in a few minutes.';
 
 				//global $logger;
-				//$logger->log("Did not receive a response from the circulation system.  Please try again in a few minutes.", PEAR_LOG_WARNING);
-				//$logger->log($holdResultPage, PEAR_LOG_WARNING);
+				//$logger->log("Did not receive a response from the circulation system.  Please try again in a few minutes.", Logger::LOG_WARNING);
+				//$logger->log($holdResultPage, Logger::LOG_WARNING);
 			}else{
 				//Got an error message back.
 				$hold_result['success'] = false;
@@ -84,7 +84,7 @@ class MillenniumHolds{
 			$hold_result['message'] = $message;
 
 			global $logger;
-			$logger->log('Place Hold Full HTML\n' . $holdResultPage, PEAR_LOG_INFO);
+			$logger->log('Place Hold Full HTML\n' . $holdResultPage, Logger::LOG_NOTICE);
 		}
 		return $hold_result;
 	}
@@ -178,7 +178,7 @@ class MillenniumHolds{
 						$POSTVariables['freeze' . $tmpBib . 'x' . $tmpXnum] = $freezeValue;
 					}
 				} else {
-					$logger->log('Call to update a hold when the update is not needed.', PEAR_LOG_WARNING);
+					$logger->log('Call to update a hold when the update is not needed.', Logger::LOG_WARNING);
 				}
 			}
 
@@ -213,7 +213,7 @@ class MillenniumHolds{
 		$holds   = $this->parseHoldsPage($sResult, $patron);
 
 		if ($hold_original_results != $holds) { // test if they are the same
-			$logger->log('Original Hold Results are different from the second Round!', PEAR_LOG_WARNING);
+			$logger->log('Original Hold Results are different from the second Round!', Logger::LOG_WARNING);
 
 			$holds = $hold_original_results; // sets to first page-load to get freeze error results
 			//TODO : Figure out cases where the page reload of holds is necessary. Because the original results are
@@ -247,7 +247,7 @@ class MillenniumHolds{
 				}
 			}
 			$success = empty($failure_messages);
-			if ($success) $logger->log('Cancelled ok', PEAR_LOG_INFO);
+			if ($success) $logger->log('Cancelled ok', Logger::LOG_NOTICE);
 
 		}
 		elseif ($type == 'update') {
@@ -256,7 +256,7 @@ class MillenniumHolds{
 				// TODO Collect errors here.
 				$success = true;
 //				$success = empty($failure_messages);
-//				if ($success) $logger->log('Thawed ok', PEAR_LOG_INFO);
+//				if ($success) $logger->log('Thawed ok', Logger::LOG_NOTICE);
 			}
 			// Freeze Hold
 			elseif ($freezeValue == 'on') {
@@ -277,14 +277,14 @@ class MillenniumHolds{
 					}
 				}
 				$success = empty($failure_messages);
-				if ($success) $logger->log('Froze Hold ok', PEAR_LOG_INFO);
+				if ($success) $logger->log('Froze Hold ok', Logger::LOG_NOTICE);
 			}
 			// Change Pick-up Location
 			elseif ($freezeValue == '') {
 				// TODO Collect errors here.
 				$success = true;
 //				$success = empty($failure_messages);
-//				if ($success) $logger->log('Change Pick-up Location ok', PEAR_LOG_INFO);
+//				if ($success) $logger->log('Change Pick-up Location ok', Logger::LOG_NOTICE);
 			}
 		}
 
@@ -542,7 +542,7 @@ class MillenniumHolds{
 								$curHold['statusMessage'] = $matches[2];
 							}
 						}
-						//$logger->log('Status for item ' . $curHold['id'] . '=' . $sCols[$i], PEAR_LOG_INFO);
+						//$logger->log('Status for item ' . $curHold['id'] . '=' . $sCols[$i], Logger::LOG_NOTICE);
 					}
 					elseif (stripos($sKeys[$i],"CANCEL IF NOT FILLED BY") > -1) {
 						$extractedDate = strip_tags($sCols[$i]);
@@ -714,7 +714,7 @@ class MillenniumHolds{
 		require_once ROOT_DIR . '/RecordDrivers/RecordDriverFactory.php';
 		$record = RecordDriverFactory::initRecordDriverById($this->driver->accountProfile->recordSource . ':' . $bib1);
 		if (!$record) {
-			$logger->log('Place Hold: Failed to get Marc Record', PEAR_LOG_INFO);
+			$logger->log('Place Hold: Failed to get Marc Record', Logger::LOG_NOTICE);
 			$title = null;
 		}else{
 			$title = $record->getTitle();
@@ -797,7 +797,7 @@ class MillenniumHolds{
 
 			$sResult = $this->driver->curlWrapper->curlPostPage($curl_url, $post_data);
 
-			$logger->log("Placing hold $recordId : $title", PEAR_LOG_INFO);
+			$logger->log("Placing hold $recordId : $title", Logger::LOG_NOTICE);
 
 			$sResult = preg_replace("/<!--([^(-->)]*)-->/","",$sResult);
 
@@ -843,7 +843,7 @@ class MillenniumHolds{
 		require_once ROOT_DIR . '/RecordDrivers/RecordDriverFactory.php';
 		$record = RecordDriverFactory::initRecordDriverById($this->driver->accountProfile->recordSource . ':' . $bib1);
 		if (!$record) {
-			$logger->log('Place Hold: Failed to get Marc Record', PEAR_LOG_INFO);
+			$logger->log('Place Hold: Failed to get Marc Record', Logger::LOG_NOTICE);
 			$title = null;
 		}else{
 			$title = $record->getTitle();
@@ -928,7 +928,7 @@ class MillenniumHolds{
 
 			$sResult = $this->driver->curlWrapper->curlPostPage($curl_url, $post_data);
 
-			$logger->log("Placing hold $recordId : $title", PEAR_LOG_INFO);
+			$logger->log("Placing hold $recordId : $title", Logger::LOG_NOTICE);
 
 			$sResult = preg_replace("/<!--([^(-->)]*)-->/","",$sResult);
 

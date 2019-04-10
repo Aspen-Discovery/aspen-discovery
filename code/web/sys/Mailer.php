@@ -80,19 +80,19 @@ class VuFindMailer {
 			//Validate the address list to make sure we don't get an error.
 			$validator->parseAddressList($to);
 		}catch (Exception $e){
-			return new PEAR_Error('Invalid Recipient Email Address');
+			return new AspenError('Invalid Recipient Email Address');
 		}
 		enableErrorHandler();
 
 		if (!$validator->isValidInetAddress($from)) {
-			return new PEAR_Error('Invalid Sender Email Address');
+			return new AspenError('Invalid Sender Email Address');
 		}
 
 		$headers = array('To' => $to, 'Subject' => $subject,
 		                 'Date' => date('D, d M Y H:i:s O'),
 		                 'Content-Type' => 'text/plain; charset="UTF-8"');
 		if (isset($this->settings['fromAddress'])){
-			$logger->log("Overriding From address, using " . $this->settings['fromAddress'], PEAR_LOG_INFO);
+			$logger->log("Overriding From address, using " . $this->settings['fromAddress'], Logger::LOG_NOTICE);
 			$headers['From'] = $this->settings['fromAddress'];
 			$headers['Reply-To'] = $from;
 		}else{
@@ -106,7 +106,7 @@ class VuFindMailer {
 		if ($this->settings['host'] != false){
 			$mailFactory = new Mail();
 			$mail =& $mailFactory->factory('smtp', $this->settings);
-			if (PEAR_Singleton::isError($mail)) {
+			if ($mail instanceof AspenError) {
 				return $mail;
 			}
 
@@ -119,11 +119,11 @@ class VuFindMailer {
 				$formattedMail .= $key . ': ' . $header . '<br />';
 			}
 			$formattedMail .= $body;
-			$logger->log("Sending e-mail", PEAR_LOG_INFO);
-			$logger->log("From = $from", PEAR_LOG_INFO);
-			$logger->log("To = $to", PEAR_LOG_INFO);
-			$logger->log($subject, PEAR_LOG_INFO);
-			$logger->log($formattedMail, PEAR_LOG_INFO);
+			$logger->log("Sending e-mail", Logger::LOG_NOTICE);
+			$logger->log("From = $from", Logger::LOG_NOTICE);
+			$logger->log("To = $to", Logger::LOG_NOTICE);
+			$logger->log($subject, Logger::LOG_NOTICE);
+			$logger->log($formattedMail, Logger::LOG_NOTICE);
 			return true;
 		}
 

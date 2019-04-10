@@ -746,7 +746,7 @@ class sip2
 			//Whoops, we got an error
 			global $logger;
 			$lastError = socket_last_error($this->socket);
-			$logger->log("Error reading data from socket ($lastError)" . socket_strerror($lastError), PEAR_LOG_ERR);
+			$logger->log("Error reading data from socket ($lastError)" . socket_strerror($lastError), Logger::LOG_ERROR);
 		}
 
 		$this->_debugmsg("SIP2: {$result}");
@@ -788,7 +788,7 @@ class sip2
 
 		/* check for actual truly false result using ===*/
 		if ($this->socket === false) {
-			$logger->log("Unable to create socket to SIP server at $this->hostname", PEAR_LOG_ERR);
+			$logger->log("Unable to create socket to SIP server at $this->hostname", Logger::LOG_ERROR);
 			$this->_debugmsg( "SIP2: socket_create() failed: reason: " . socket_strerror($this->socket));
 			return false;
 		} else {
@@ -811,15 +811,15 @@ class sip2
 				if ((time() - $connectStart) >= $connectionTimeout)
 				{
 					socket_close($this->socket);
-					$logger->log("Connection to $address $this->port timed out", PEAR_LOG_ERR);
+					$logger->log("Connection to $address $this->port timed out", Logger::LOG_ERROR);
 					return false;
 				}
-				$logger->log("Waiting for connection", PEAR_LOG_DEBUG);
+				$logger->log("Waiting for connection", Logger::LOG_DEBUG);
 				sleep(1);
 				continue;
 			}else{
-				$logger->log("Unable to connect to $address $this->port", PEAR_LOG_ERR);
-				$logger->log("SIP2: socket_connect() failed.\nReason: ($error) " . socket_strerror($error), PEAR_LOG_ERR);
+				$logger->log("Unable to connect to $address $this->port", Logger::LOG_ERROR);
+				$logger->log("SIP2: socket_connect() failed.\nReason: ($error) " . socket_strerror($error), Logger::LOG_ERROR);
 				$this->_debugmsg("SIP2: socket_connect() failed.\nReason: ($error) " . socket_strerror($error));
 				return false;
 			}
@@ -837,21 +837,21 @@ class sip2
 			//Send login
 			//Read the login prompt
 			$prompt = $this->getResponse();
-			$logger->log("Login Prompt Received was " . $prompt, PEAR_LOG_DEBUG);
+			$logger->log("Login Prompt Received was " . $prompt, Logger::LOG_DEBUG);
 			$login = $configArray['SIP2']['sipLogin'];
             /** @noinspection PhpUnusedLocalVariableInspection */
 			$ret = socket_write($this->socket, $login, strlen($login));
 			$ret = socket_write($this->socket, $lineEnding, strlen($lineEnding));
-			$logger->log("Wrote $ret bytes for login", PEAR_LOG_DEBUG);
+			$logger->log("Wrote $ret bytes for login", Logger::LOG_DEBUG);
 			$this->Sleep();
 
 			$prompt = $this->getResponse();
-			$logger->log("Password Prompt Received was " . $prompt, PEAR_LOG_DEBUG);
+			$logger->log("Password Prompt Received was " . $prompt, Logger::LOG_DEBUG);
 			$password = $configArray['SIP2']['sipPassword'];
             /** @noinspection PhpUnusedLocalVariableInspection */
             $ret = socket_write($this->socket, $password, strlen($password));
 			$ret = socket_write($this->socket, $lineEnding, strlen($lineEnding));
-			$logger->log("Wrote $ret bytes for password", PEAR_LOG_DEBUG);
+			$logger->log("Wrote $ret bytes for password", Logger::LOG_DEBUG);
 
 			if ($this->use_usleep){
 				usleep($this->loginsleeptime);
@@ -861,15 +861,15 @@ class sip2
 
 			//Wait for a response
 			$initialLoginResponse = $this->getResponse();
-			$logger->log("Login response is " . $initialLoginResponse, PEAR_LOG_DEBUG);
+			$logger->log("Login response is " . $initialLoginResponse, Logger::LOG_DEBUG);
 			$this->Sleep();
 
 			//$loginData = $this->parseLoginResponse($loginResponse);
 			if (strpos($initialLoginResponse, 'Login OK.  Initiating SIP') === 0){
-				$logger->log("Logged into SIP client with telnet credentials", PEAR_LOG_DEBUG);
+				$logger->log("Logged into SIP client with telnet credentials", Logger::LOG_DEBUG);
 				$this->_debugmsg( "SIP2: --- LOGIN TO SIP SUCCEEDED ---" );
 			}else{
-				$logger->log("Unable to login to SIP server using telnet credentials", PEAR_LOG_ERR);
+				$logger->log("Unable to login to SIP server using telnet credentials", Logger::LOG_ERROR);
 				$this->_debugmsg( "SIP2: --- LOGIN TO SIP FAILED ---" );
 				$this->_debugmsg( $initialLoginResponse);
 				return false;
@@ -967,7 +967,7 @@ class sip2
 		/* custom debug function,  why repeat the check for the debug flag in code... */
 		if ($this->debug) {
 			global $logger;
-			$logger->log( $message, PEAR_LOG_ERR);
+			$logger->log( $message, Logger::LOG_ERROR);
 			//echo($message . "<br/>\r\n");
 		}
 	}

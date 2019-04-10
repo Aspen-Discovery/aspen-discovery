@@ -56,7 +56,7 @@ class Help_Home extends Action
 
 			// Error -- help isn't available at all!
 		} else {
-			PEAR_Singleton::raiseError(new PEAR_Error('Unknown Help Page'));
+			AspenError::raiseError(new AspenError('Unknown Help Page'));
 		}
 
 		$interface->display('Help/help.tpl');

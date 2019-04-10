@@ -18,13 +18,13 @@ class DatabaseAuthentication implements Authentication {
 
 	private function login($username, $password){
 		if (($username == '') || ($password == '')) {
-			$user = new PEAR_Error('authentication_error_blank');
+			$user = new AspenError('authentication_error_blank');
 		} else {
 			$user = new User();
 			$user->username = $username;
 			$user->password = $password;
 			if (!$user->find(true)) {
-				$user = new PEAR_Error('authentication_error_invalid');
+				$user = new AspenError('authentication_error_invalid');
 			}
 		}
 		return $user;

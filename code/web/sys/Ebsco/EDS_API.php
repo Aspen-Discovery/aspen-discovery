@@ -173,7 +173,7 @@ BODY;
 			}
 		}catch (Exception $e){
 			global $logger;
-			$logger->log("Error loading data from EBSCO $e", PEAR_LOG_ERR);
+			$logger->log("Error loading data from EBSCO $e", Logger::LOG_ERROR);
 		}
 	}
 
@@ -294,7 +294,7 @@ BODY;
 		global $interface;
 		$html = array();
 		//global $logger;
-		//$logger->log(print_r($this->lastSearchResults, true), PEAR_LOG_WARNING);
+		//$logger->log(print_r($this->lastSearchResults, true), Logger::LOG_WARNING);
 		if (isset($this->lastSearchResults->Data->Records)) {
 			for ($x = 0; $x < count($this->lastSearchResults->Data->Records->Record); $x++) {
 				$current = &$this->lastSearchResults->Data->Records->Record[$x];
@@ -326,7 +326,7 @@ BODY;
 		global $interface;
 		$html = array();
 		//global $logger;
-		//$logger->log(print_r($this->lastSearchResults, true), PEAR_LOG_WARNING);
+		//$logger->log(print_r($this->lastSearchResults, true), Logger::LOG_WARNING);
 		if (isset($this->lastSearchResults->Data->Records)) {
 			for ($x = 0; $x < count($this->lastSearchResults->Data->Records->Record); $x++) {
 				$current = &$this->lastSearchResults->Data->Records->Record[$x];

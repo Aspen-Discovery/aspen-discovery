@@ -179,7 +179,7 @@ class Hoopla_AJAX extends Action
 					// No Hoopla Account Found, give the user an error message
 					$invalidAccountMessage = translate('hoopla_invalid_account_or_library');
 					global $logger;
-					$logger->log('No valid Hoopla account was found to check out a Hoopla title.', PEAR_LOG_ERR);
+					$logger->log('No valid Hoopla account was found to check out a Hoopla title.', Logger::LOG_ERROR);
 					return
 						array(
 							'title'   => 'Invalid Hoopla Account',

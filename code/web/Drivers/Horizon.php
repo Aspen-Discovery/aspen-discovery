@@ -40,7 +40,7 @@ abstract class Horizon extends AbstractIlsDriver{
 					}
 			}catch (Exception $e){
 					global $logger;
-				$logger->log("Could not load Horizon database", PEAR_LOG_ERR);
+				$logger->log("Could not load Horizon database", Logger::LOG_ERROR);
 			}
 		}else{
 				$this->useDb = false;
@@ -86,27 +86,27 @@ abstract class Horizon extends AbstractIlsDriver{
 		curl_setopt($curl_connection, CURLOPT_HEADER, false);
 		curl_setopt($curl_connection, CURLOPT_HTTPGET, true);
 		$sresult = curl_exec($curl_connection);
-		$logger->log("Loading fines $curl_url", PEAR_LOG_INFO);
+		$logger->log("Loading fines $curl_url", Logger::LOG_NOTICE);
 
 		//Extract the session id from the requestcopy javascript on the page
 		if (preg_match('/\\?session=(.*?)&/s', $sresult, $matches)) {
 			$sessionId = $matches[1];
 		} else {
-			PEAR_Singleton::raiseError('Could not load session information from page.');
+			AspenError::raiseError('Could not load session information from page.');
 		}
 
 		//Login by posting username and password
 		curl_setopt($curl_connection, CURLOPT_POST, true);
 		$post_data = array(
-      'aspect' => 'overview',
-      'button' => 'Login to Your Account',
-      'login_prompt' => 'true',
-      'menu' => 'account',
-      'profile' => $configArray['Catalog']['hipProfile'],
-      'ri' => '',
-      'sec1' => $patron->cat_username,
-      'sec2' => $patron->cat_password,
-      'session' => $sessionId,
+            'aspect' => 'overview',
+            'button' => 'Login to Your Account',
+            'login_prompt' => 'true',
+            'menu' => 'account',
+            'profile' => $configArray['Catalog']['hipProfile'],
+            'ri' => '',
+            'sec1' => $patron->cat_username,
+            'sec2' => $patron->cat_password,
+            'session' => $sessionId,
 		);
 		$post_string = http_build_query($post_data);
 
@@ -197,7 +197,7 @@ abstract class Horizon extends AbstractIlsDriver{
 			}
 			return $fineList;
 		} catch (PDOException $e) {
-			return new PEAR_Error($e->getMessage());
+			return new AspenError($e->getMessage());
 		}
 
 	}
@@ -248,12 +248,12 @@ abstract class Horizon extends AbstractIlsDriver{
 			if (preg_match('/\\?session=(.*?)&/s', $sResult, $matches)) {
 				$sessionId = $matches[1];
 			} else {
-				PEAR_Singleton::raiseError('Could not load session information from page.');
+				AspenError::raiseError('Could not load session information from page.');
 			}
 
 			//Login by posting username and password
 			global $logger;
-			$logger->log("Logging into user account from updatePatronInfo $curl_url", PEAR_LOG_INFO);
+			$logger->log("Logging into user account from updatePatronInfo $curl_url", Logger::LOG_NOTICE);
 			$post_data   = array(
 				'aspect' => 'overview',
 				'button' => 'Login to Your Account',

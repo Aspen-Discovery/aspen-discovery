@@ -42,7 +42,7 @@ class CatalogConnection
 				$this->driver = new $driver($accountProfile);
 			} catch (PDOException $e) {
 				global $logger;
-				$logger->log("Unable to create driver $driver for account profile {$accountProfile->name}", PEAR_LOG_ERR);
+				$logger->log("Unable to create driver $driver for account profile {$accountProfile->name}", Logger::LOG_ERROR);
 				throw $e;
 			}
 
@@ -129,19 +129,19 @@ class CatalogConnection
 					//We have a good user account for additional processing
 				} else {
 					$timer->logTime("offline patron login failed due to invalid name");
-					$logger->log("offline patron login failed due to invalid name", PEAR_LOG_INFO);
+					$logger->log("offline patron login failed due to invalid name", Logger::LOG_NOTICE);
 					return null;
 				}
 			} else {
 				$timer->logTime("offline patron login failed because we haven't seen this user before");
-				$logger->log("offline patron login failed because we haven't seen this user before", PEAR_LOG_INFO);
+				$logger->log("offline patron login failed because we haven't seen this user before", Logger::LOG_NOTICE);
 				return null;
 			}
 		}else {
 			$user = $this->driver->patronLogin($username, $password, $validatedViaSSO);
 		}
 
-		if ($user && !PEAR_Singleton::isError($user)){
+		if ($user && !($user instanceof AspenError)){
 			if ($user->displayName == '') {
 				if ($user->firstname == ''){
 					$user->displayName = $user->lastname;
@@ -406,7 +406,6 @@ class CatalogConnection
 		if ($action == 'deleteMarked'){
             //Remove titles from database (do not remove from ILS)
             foreach ($selectedTitles as $id => $titleId){
-                list($source, $sourceId) = explode('_', $titleId);
                 $readingHistoryDB = new ReadingHistoryEntry();
                 $readingHistoryDB->userId = $patron->id;
                 $readingHistoryDB->groupedWorkPermanentId = strtolower($id);
@@ -678,22 +677,6 @@ class CatalogConnection
 	}
 
 	/**
-	 * Process inventory for a particular item in the catalog
-	 *
-	 * @param string $login     Login for the user doing the inventory
-	 * @param string $password1 Password for the user doing the inventory
-	 * @param string $initials
-	 * @param string $password2
-	 * @param string[] $barcodes
-	 * @param boolean $updateIncorrectStatuses
-	 *
-	 * @return array
-	 */
-	function doInventory($login, $password1, $initials, $password2, $barcodes, $updateIncorrectStatuses){
-		return $this->driver->doInventory($login, $password1, $initials, $password2, $barcodes, $updateIncorrectStatuses);
-	}
-
-	/**
 	 * Get suppressed records.
 	 *
 	 * @return array ID numbers of suppressed records in the system.
@@ -807,7 +790,7 @@ class CatalogConnection
 				$historyEntryDB->checkOutDate = time();
 				if (!$historyEntryDB->insert()){
 					global $logger;
-					$logger->log("Could not insert new reading history entry", PEAR_LOG_ERR);
+					$logger->log("Could not insert new reading history entry", Logger::LOG_ERROR);
 				}
 			}
 		}
@@ -825,7 +808,7 @@ class CatalogConnection
 				if ($numUpdates != 1){
 					global $logger;
 					$key = $historyEntry['source'] . ':' . $historyEntry['id'];
-					$logger->log("Could not update reading history entry $key", PEAR_LOG_ERR);
+					$logger->log("Could not update reading history entry $key", Logger::LOG_ERROR);
 				}
 			}
 		}
@@ -930,7 +913,7 @@ class CatalogConnection
     function updatePin($user, $oldPin, $newPin, $confirmNewPin){
         /* var Logger $logger */
         global $logger;
-        $logger->log('Call to updatePin(), function not implemented.', PEAR_LOG_WARNING);
+        $logger->log('Call to updatePin(), function not implemented.', Logger::LOG_WARNING);
 
         return 'Can not update Pins';
     }

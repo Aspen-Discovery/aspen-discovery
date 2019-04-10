@@ -82,7 +82,7 @@ class LibrarySolution extends AbstractIlsDriver {
 					}
 				} else {
 					global $logger;
-					$logger->log('Library Solution Driver: No Home Library Location or Hold location found in account look-up. User : ' . $user->id, PEAR_LOG_ERR);
+					$logger->log('Library Solution Driver: No Home Library Location or Hold location found in account look-up. User : ' . $user->id, Logger::LOG_ERROR);
 					// The code below will attempt to find a location for the library anyway if the homeLocation is already set
 				}
 
@@ -99,7 +99,7 @@ class LibrarySolution extends AbstractIlsDriver {
 						if (!$location->find(true)) {
 							// Seriously no locations even?
 							global $logger;
-							$logger->log('Failed to find any location to assign to user as home location', PEAR_LOG_ERR);
+							$logger->log('Failed to find any location to assign to user as home location', Logger::LOG_ERROR);
 							unset($location);
 						}
 					}
@@ -174,7 +174,7 @@ class LibrarySolution extends AbstractIlsDriver {
 			}else{
 				// bad or empty response; or json decoding error
 				global $logger;
-				$logger->log('Bad or Empty response for Library Solution Account Summary call during login', PEAR_LOG_ERR);
+				$logger->log('Bad or Empty response for Library Solution Account Summary call during login', Logger::LOG_ERROR);
 				$timer->logTime("patron login failed");
 				return null;
 			}
@@ -421,7 +421,7 @@ class LibrarySolution extends AbstractIlsDriver {
 			}
 		}else{
 			global $logger;
-			$logger->log("Unable to connect to LSS.  Received $loginResponse", PEAR_LOG_WARNING);
+			$logger->log("Unable to connect to LSS.  Received $loginResponse", Logger::LOG_WARNING);
 			$loginSucceeded = false;
 		}
 

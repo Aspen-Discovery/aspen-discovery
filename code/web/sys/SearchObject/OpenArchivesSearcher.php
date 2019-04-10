@@ -86,7 +86,7 @@ class SearchObject_OpenArchivesSearcher extends SearchObject_SolrSearcher
         $restored = $this->restoreSavedSearch();
         if ($restored === true) {
             return true;
-        } else if (PEAR_Singleton::isError($restored)) {
+        } else if ($restored instanceof AspenError) {
             return false;
         }
 

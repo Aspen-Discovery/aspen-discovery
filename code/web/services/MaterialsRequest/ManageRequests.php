@@ -132,7 +132,7 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 							}
 						}
 						$error = $mail->send($materialRequest->email, $configArray['Site']['email'], "Your Materials Request Update", $body, $replyToAddress);
-						if (PEAR_Singleton::isError($error)) {
+						if (($error instanceof AspenError)) {
 							$interface->assign('error', $error->message);
 						}
 					}

@@ -26,7 +26,7 @@ class HooplaRecordDriver extends MarcRecordDriver {
 				$this->indexingProfile = $indexingProfiles[$this->profileType];
 			} else {
 			    global $logger;
-			    $logger->log(PEAR_LOG_ERR, "Unable to find indexing profile for Hoopla record");
+			    $logger->log(Logger::LOG_ERROR, "Unable to find indexing profile for Hoopla record");
             }
 
 
@@ -125,7 +125,7 @@ class HooplaRecordDriver extends MarcRecordDriver {
                 $actions = $this->getAccessLink($actions);
             } catch (File_MARC_Exception $e) {
                 global $logger;
-                $logger->log(PEAR_LOG_ERR, "Error parsing MARC " . $e->getMessage());
+                $logger->log(Logger::LOG_ERROR, "Error parsing MARC " . $e->getMessage());
             }
         }
 

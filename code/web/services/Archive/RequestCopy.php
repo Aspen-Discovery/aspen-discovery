@@ -9,7 +9,7 @@ class Archive_RequestCopy extends Action{
 		global $interface;
 
 		if (!isset($_REQUEST['pid'])) {
-			PEAR_Singleton::raiseError('No id provided, you must select which object you want a copy of');
+			AspenError::raiseError('No id provided, you must select which object you want a copy of');
 		}
 
 		$pid = $_REQUEST['pid'];
@@ -25,7 +25,7 @@ class Archive_RequestCopy extends Action{
 
 		$owningLibrary->archiveNamespace = $namespace;
 		if (!$owningLibrary->find(true) || $owningLibrary->N != 1){
-			PEAR_Singleton::raiseError('Could not determine which library owns this object, cannot request a copy.');
+			AspenError::raiseError('Could not determine which library owns this object, cannot request a copy.');
 		}
 		$archiveRequestFields = $owningLibrary->getArchiveRequestFormStructure();
 		$archiveRequestFields['pid']['default'] = $pid; // add pid to the form
@@ -81,12 +81,12 @@ class Archive_RequestCopy extends Action{
 									'result' => true,
 									'message' => 'Your e-mail was sent successfully.'
 								);
-							} elseif (PEAR_Singleton::isError($emailResult)){
+							} elseif (($emailResult instanceof AspenError)){
 								$interface->assign('error', "Your request could not be sent: {$emailResult->message}.");
 							} else {
 								$interface->assign('error', "Your request could not be sent due to an unknown error.");
 								global $logger;
-								$logger->log("Mail List Failure (unknown reason), parameters: $owningLibrary->archiveRequestEmail, $newObject->email, $subject, $body", PEAR_LOG_ERR);
+								$logger->log("Mail List Failure (unknown reason), parameters: $owningLibrary->archiveRequestEmail, $newObject->email, $subject, $body", Logger::LOG_ERROR);
 							}
 						} else {
 							$interface->assign('error', 'Please do not include html or links within your request');
@@ -140,15 +140,15 @@ class Archive_RequestCopy extends Action{
 				} else {
 					$errorDescription = 'Unknown error';
 				}
-				$logger->log('Could not insert new object ' . $ret . ' ' . $errorDescription, PEAR_LOG_DEBUG);
+				$logger->log('Could not insert new object ' . $ret . ' ' . $errorDescription, Logger::LOG_DEBUG);
 				$_SESSION['lastError'] = "An error occurred inserting {$this->getObjectType()} <br/>{$errorDescription}";
-				$logger->log(mysql_error(), PEAR_LOG_DEBUG);
+				$logger->log(mysql_error(), Logger::LOG_DEBUG);
 				return false;
 			}
 		} else {
 			global $logger;
 			$errorDescription = implode(', ', $validationResults['errors']);
-			$logger->log('Could not validate new object Archive Request ' . $errorDescription, PEAR_LOG_DEBUG);
+			$logger->log('Could not validate new object Archive Request ' . $errorDescription, Logger::LOG_DEBUG);
 			$_SESSION['lastError'] = "The information entered was not valid. <br/>" . implode('<br/>', $validationResults['errors']);
 			return false;
 		}

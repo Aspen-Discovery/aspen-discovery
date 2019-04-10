@@ -28,7 +28,7 @@ abstract class SirsiDynixROA extends HorizonAPI
 	{
 		global $configArray;
 		global $logger;
-		$logger->log('WebServiceURL :' .$url, PEAR_LOG_INFO);
+		$logger->log('WebServiceURL :' .$url, Logger::LOG_NOTICE);
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $url);
 		$clientId = $configArray['Catalog']['clientId'];
@@ -70,13 +70,13 @@ abstract class SirsiDynixROA extends HorizonAPI
 //		$err  = curl_getinfo($ch);
 //		$headerRequest = curl_getinfo($ch, CURLINFO_HEADER_OUT);
 //		TODO: debugging only, comment out later.
-		$logger->log("Web service response\r\n$json", PEAR_LOG_DEBUG); //TODO: For debugging
+		$logger->log("Web service response\r\n$json", Logger::LOG_DEBUG); //TODO: For debugging
 		curl_close($ch);
 
 		if ($json !== false && $json !== 'false') {
 			return json_decode($json);
 		} else {
-			$logger->log('Curl problem in getWebServiceResponse', PEAR_LOG_WARNING);
+			$logger->log('Curl problem in getWebServiceResponse', Logger::LOG_WARNING);
 			return false;
 		}
 	}
@@ -193,7 +193,7 @@ abstract class SirsiDynixROA extends HorizonAPI
 					}
 				} else {
 					global $logger;
-					$logger->log('SirsiDynixROA Driver: No Home Library Location or Hold location found in account look-up. User : ' . $user->id, PEAR_LOG_ERR);
+					$logger->log('SirsiDynixROA Driver: No Home Library Location or Hold location found in account look-up. User : ' . $user->id, Logger::LOG_ERROR);
 					// The code below will attempt to find a location for the library anyway if the homeLocation is already set
 				}
 
@@ -211,7 +211,7 @@ abstract class SirsiDynixROA extends HorizonAPI
 						if (!$location->find(true)) {
 							// Seriously no locations even?
 							global $logger;
-							$logger->log('Failed to find any location to assign to user as home location', PEAR_LOG_ERR);
+							$logger->log('Failed to find any location to assign to user as home location', Logger::LOG_ERROR);
 							unset($location);
 						}
 					}
@@ -456,7 +456,7 @@ abstract class SirsiDynixROA extends HorizonAPI
 					}
 				} else {
 					global $logger;
-					$logger->log('SirsiDynixROA Driver: No Home Library Location or Hold location found in account look-up. User : ' . $user->id, PEAR_LOG_ERR);
+					$logger->log('SirsiDynixROA Driver: No Home Library Location or Hold location found in account look-up. User : ' . $user->id, Logger::LOG_ERROR);
 					// The code below will attempt to find a location for the library anyway if the homeLocation is already set
 				}
 
@@ -474,7 +474,7 @@ abstract class SirsiDynixROA extends HorizonAPI
 						if (!$location->find(true)) {
 							// Seriously no locations even?
 							global $logger;
-							$logger->log('Failed to find any location to assign to user as home location', PEAR_LOG_ERR);
+							$logger->log('Failed to find any location to assign to user as home location', Logger::LOG_ERROR);
 							unset($location);
 						}
 					}
@@ -586,7 +586,7 @@ abstract class SirsiDynixROA extends HorizonAPI
 			} else {
 				$timer->logTime("lookupMyAccountInfo failed");
 				global $logger;
-				$logger->log('Symphony API call lookupMyAccountInfo failed.', PEAR_LOG_ERR);
+				$logger->log('Symphony API call lookupMyAccountInfo failed.', Logger::LOG_ERROR);
 				return null;
 			}
 		}
@@ -740,15 +740,15 @@ abstract class SirsiDynixROA extends HorizonAPI
 						if ($message->message == 'User already exists') {
 							// This means the barcode counter is off.
 							global $logger;
-							$logger->log('Sirsi Self Registration response was that the user already exists. Advancing the barcode counter by one.', PEAR_LOG_ERR);
+							$logger->log('Sirsi Self Registration response was that the user already exists. Advancing the barcode counter by one.', Logger::LOG_ERROR);
 							$barcode->value++;
 							if (!$barcode->update()) {
-								$logger->log('Sirsi Self Registration barcode counter did not increment when a user already exists!', PEAR_LOG_ERR);
+								$logger->log('Sirsi Self Registration barcode counter did not increment when a user already exists!', Logger::LOG_ERROR);
 							}
 						}
 					}
 					global $logger;
-					$logger->log('Symphony Driver - Patron Info Update Error - Error from ILS : ' . implode(';', $updateErrors), PEAR_LOG_ERR);
+					$logger->log('Symphony Driver - Patron Info Update Error - Error from ILS : ' . implode(';', $updateErrors), Logger::LOG_ERROR);
 				} else {
 					$selfRegResult = array(
 						'success' => true,
@@ -758,18 +758,18 @@ abstract class SirsiDynixROA extends HorizonAPI
 					if (!$barcode->update()) {
 						// Log Error temp barcode number not
 						global $logger;
-						$logger->log('Sirsi Self Registration barcode counter not saving incremented value!', PEAR_LOG_ERR);
+						$logger->log('Sirsi Self Registration barcode counter not saving incremented value!', Logger::LOG_ERROR);
 					}
 				}
 			} else {
 				// Error: unable to set barcode number.
 				global $logger;
-				$logger->log('Sirsi Self Registration barcode counter was not found!', PEAR_LOG_ERR);
+				$logger->log('Sirsi Self Registration barcode counter was not found!', Logger::LOG_ERROR);
 			};
 		} else {
 			// Error: unable to login in staff user
 			global $logger;
-			$logger->log('Unable to log in with Sirsi Self Registration staff user', PEAR_LOG_ERR);
+			$logger->log('Unable to log in with Sirsi Self Registration staff user', Logger::LOG_ERROR);
 		}
 		return $selfRegResult;
 	}
@@ -809,7 +809,7 @@ abstract class SirsiDynixROA extends HorizonAPI
 				foreach ($loginUserResponse->messageList as $error){
 					$errorMessage .= $error->message.'; ';
 				}
-				$logger->log($errorMessage, PEAR_LOG_ERR);
+				$logger->log($errorMessage, Logger::LOG_ERROR);
 			}
 		}
 		return $session;
@@ -850,7 +850,7 @@ abstract class SirsiDynixROA extends HorizonAPI
 				foreach ($loginUserResponse->messageList as $error){
 					$errorMessage .= $error->message.'; ';
 				}
-				$logger->log($errorMessage, PEAR_LOG_ERR);
+				$logger->log($errorMessage, Logger::LOG_ERROR);
 			}
 		}
 		return $session;
@@ -1264,7 +1264,7 @@ abstract class SirsiDynixROA extends HorizonAPI
 						foreach ($createHoldResponse->messageList as $error){
 							$errorMessage .= $error->message.'; ';
 						}
-						$logger->log($errorMessage, PEAR_LOG_ERR);
+						$logger->log($errorMessage, Logger::LOG_ERROR);
 					}
 				} else {
 					$hold_result['success'] = true;
@@ -1320,7 +1320,7 @@ abstract class SirsiDynixROA extends HorizonAPI
 			foreach ($cancelHoldResponse->messageList as $error){
 				$errorMessage .= $error->message.'; ';
 			}
-			$logger->log($errorMessage, PEAR_LOG_ERR);
+			$logger->log($errorMessage, Logger::LOG_ERROR);
 
 			return array(
 				'success' => false,
@@ -1367,7 +1367,7 @@ abstract class SirsiDynixROA extends HorizonAPI
 			}
 			global $logger;
 			$errorMessage = 'Sirsi ROA Change Hold Pickup Location Error: '. ($messages ? implode('; ', $messages) : '');
-			$logger->log($errorMessage, PEAR_LOG_ERR);
+			$logger->log($errorMessage, Logger::LOG_ERROR);
 
 			return array(
 				'success' => false,
@@ -1419,7 +1419,7 @@ abstract class SirsiDynixROA extends HorizonAPI
 
 			global $logger;
 			$errorMessage = 'Sirsi ROA Freeze Hold Error: '. ($messages ? implode('; ', $messages) : '');
-			$logger->log($errorMessage, PEAR_LOG_ERR);
+			$logger->log($errorMessage, Logger::LOG_ERROR);
 
 			return array(
 				'success' => false,
@@ -1466,7 +1466,7 @@ abstract class SirsiDynixROA extends HorizonAPI
 			}
 			global $logger;
 			$errorMessage = 'Sirsi ROA Thaw Hold Error: '. ($messages ? implode('; ', $messages) : '');
-			$logger->log($errorMessage, PEAR_LOG_ERR);
+			$logger->log($errorMessage, Logger::LOG_ERROR);
 
 			$thaw = translate('thaw');
 			return array(
@@ -1522,7 +1522,7 @@ abstract class SirsiDynixROA extends HorizonAPI
 			}
 			global $logger;
 			$errorMessage = 'Sirsi ROA Renew Error: '. ($messages ? implode('; ', $messages) : '');
-			$logger->log($errorMessage, PEAR_LOG_ERR);
+			$logger->log($errorMessage, Logger::LOG_ERROR);
 
 			return array(
 				'itemId'  => $itemId,
@@ -1613,7 +1613,7 @@ abstract class SirsiDynixROA extends HorizonAPI
 					}
 				}
 				global $logger;
-				$logger->log('Symphony ILS encountered errors updating patron pin : '. implode('; ', $messages), PEAR_LOG_ERR);
+				$logger->log('Symphony ILS encountered errors updating patron pin : '. implode('; ', $messages), Logger::LOG_ERROR);
 				return !empty($staffPinError) ? $staffPinError : 'The circulation system encountered errors attempt to update the pin.';
 			}
 			return 'Failed to update pin';
@@ -1629,7 +1629,7 @@ abstract class SirsiDynixROA extends HorizonAPI
 	function resetPin($user, $newPin, $resetToken=null){
 		if (empty($resetToken)) {
 			global $logger;
-			$logger->log('No Reset Token passed to resetPin function', PEAR_LOG_ERR);
+			$logger->log('No Reset Token passed to resetPin function', Logger::LOG_ERROR);
 			return array(
 				'error' => 'Sorry, we could not update your pin. The reset token is missing. Please try again later'
 			);
@@ -1647,7 +1647,7 @@ abstract class SirsiDynixROA extends HorizonAPI
 				$errors[] = $message->message;
 			}
 			global $logger;
-			$logger->log('SirsiDynixROA Driver error updating user\'s Pin :'. implode(';',$errors), PEAR_LOG_ERR);
+			$logger->log('SirsiDynixROA Driver error updating user\'s Pin :'. implode(';',$errors), Logger::LOG_ERROR);
 			return array(
 				'error' => 'Sorry, we encountered an error while attempting to update your pin. Please contact your local library.'
 			);
@@ -1736,7 +1736,7 @@ abstract class SirsiDynixROA extends HorizonAPI
 						$errors[] = $message->message;
 					}
 					global $logger;
-					$logger->log('SirsiDynixROA Driver error updating user\'s Pin :' . implode(';', $errors), PEAR_LOG_ERR);
+					$logger->log('SirsiDynixROA Driver error updating user\'s Pin :' . implode(';', $errors), Logger::LOG_ERROR);
 				}
 				return $result;
 			}
@@ -1859,11 +1859,11 @@ abstract class SirsiDynixROA extends HorizonAPI
 								$updateErrors[] = $message->message;
 							}
 							global $logger;
-							$logger->log('Symphony Driver - Patron Info Update Error - Error from ILS : '.implode(';', $updateErrors), PEAR_LOG_ERR);
+							$logger->log('Symphony Driver - Patron Info Update Error - Error from ILS : '.implode(';', $updateErrors), Logger::LOG_ERROR);
 						}
 				} else {
 					global $logger;
-					$logger->log('Symphony Driver - Patron Info Update Error: Catalog does not have the circulation system User Id', PEAR_LOG_ERR);
+					$logger->log('Symphony Driver - Patron Info Update Error: Catalog does not have the circulation system User Id', Logger::LOG_ERROR);
 					$updateErrors[] = 'Catalog does not have the circulation system User Id';
 				}
 			} else {

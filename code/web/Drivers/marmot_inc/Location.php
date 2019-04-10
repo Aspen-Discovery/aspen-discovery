@@ -752,7 +752,6 @@ class Location extends DataObject
 		global $logger;
 		//Check the current IP address to see if we are in a branch
 		$activeIp = $this->getActiveIp();
-		//$logger->log("Active IP is $activeIp", PEAR_LOG_DEBUG);
 		$this->ipLocation = $memCache->get('location_for_ip_' . $activeIp);
 		$this->ipId = $memCache->get('ipId_for_ip_' . $activeIp);
 		if ($this->ipId == -1){
@@ -774,18 +773,16 @@ class Location extends DataObject
 				$subnet->whereAdd('endIpVal >= ' . $ipVal);
 				$subnet->orderBy('(endIpVal - startIpVal)');
 				if ($subnet->find(true)){
-					//$logger->log("Found {$subnet->N} matching IP addresses {$subnet->location}", PEAR_LOG_DEBUG);
 					$matchedLocation = new Location();
 					$matchedLocation->locationId = $subnet->locationid;
 					if ($matchedLocation->find(true)){
 						//Only use the physical location regardless of where we are
-						//$logger->log("Active location is {$matchedLocation->displayName}", PEAR_LOG_DEBUG);
 						$this->ipLocation = clone($matchedLocation);
 						$this->ipLocation->setOpacStatus( (boolean) $subnet->isOpac);
 
 						$this->ipId = $subnet->id;
 					}else{
-						$logger->log("Did not find location for ip location id {$subnet->locationid}", PEAR_LOG_WARNING);
+						$logger->log("Did not find location for ip location id {$subnet->locationid}", Logger::LOG_WARNING);
 					}
 				}
 				enableErrorHandler();

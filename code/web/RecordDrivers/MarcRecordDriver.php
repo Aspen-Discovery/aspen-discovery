@@ -1361,7 +1361,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 			disableErrorHandler();
 			try {
 				$this->marcRecord = MarcLoader::loadMarcRecordByILSId("{$this->profileType}:{$this->id}");
-				if (PEAR_Singleton::isError($this->marcRecord) || $this->marcRecord == false) {
+				if ($this->marcRecord instanceof AspenError || $this->marcRecord == false) {
 					$this->valid = false;
 					$this->marcRecord = false;
 				}
@@ -1425,10 +1425,10 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 		if ($configArray['Catalog']['ils'] == 'Horizon') {
 			require_once ROOT_DIR . '/CatalogFactory.php';
 			global $logger;
-			$logger->log('fetching num of Holds from MarcRecord', PEAR_LOG_DEBUG);
+			$logger->log('fetching num of Holds from MarcRecord', Logger::LOG_DEBUG);
 
 			$catalog = CatalogFactory::getCatalogConnectionInstance();
-//			$logger->log('$catalog :'.var_export($catalog, true), PEAR_LOG_DEBUG);
+//			$logger->log('$catalog :'.var_export($catalog, true), Logger::LOG_DEBUG);
 			if (isset($catalog->status) && $catalog->status) {
 				$this->numHolds = $catalog->getNumHolds($this->getUniqueID());
 			} else {

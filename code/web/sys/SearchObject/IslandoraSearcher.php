@@ -132,7 +132,7 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 		$restored = $this->restoreSavedSearch();
 		if ($restored === true) {
 			return true;
-		} else if (PEAR_Singleton::isError($restored)) {
+		} else if (($restored instanceof AspenError)) {
 			return false;
 		}
 
@@ -356,7 +356,7 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 		for ($x = 0; $x < count($this->indexResult['response']['docs']); $x++) {
 			$current = & $this->indexResult['response']['docs'][$x];
 			$record = RecordDriverFactory::initRecordDriver($current);
-			if (!PEAR_Singleton::isError($record)){
+			if (!($record instanceof AspenError)){
 				if (method_exists($record, 'getListWidgetTitle')){
 					if (!empty($orderedListOfIDs)) {
 						$position = array_search($current['PID'], $orderedListOfIDs);
@@ -396,7 +396,7 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 			$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
 			/** @var IslandoraRecordDriver $record */
 			$record = RecordDriverFactory::initRecordDriver($current);
-			if (!PEAR_Singleton::isError($record)) {
+			if (!($record instanceof AspenError)) {
 				$interface->assign('recordDriver', $record);
 				$html[] = $interface->fetch($record->getCombinedResult($this->view));
 			} else {
@@ -748,7 +748,7 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 			$query = $this->indexEngine->buildQuery($search, false);
 		}
 
-		if (PEAR_Singleton::isError($query)) {
+		if (($query instanceof AspenError)) {
 			return $query;
 		}
 
@@ -847,7 +847,7 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 		$recordStart = ($this->page - 1) * $this->limit;
 		$pingResult = $this->indexEngine->pingServer(false);
 		if ($pingResult == "false" || $pingResult == false){
-			PEAR_Singleton::raiseError('The archive server is currently unavailable.  Please try your search again in a few minutes.');
+			AspenError::raiseError('The archive server is currently unavailable.  Please try your search again in a few minutes.');
 		}
 		$this->indexResult = $this->indexEngine->search(
 		$this->query,      // Query string
@@ -1378,7 +1378,7 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 					$nextResults = $nextSearchObject->getResultRecordSet();
 				}
 
-				if (PEAR_Singleton::isError($result)) {
+				if ($result instanceof AspenError) {
 					//If we get an error excuting the search, just eat it for now.
 				}else{
 					if ($searchObject->getResultTotal() < 1) {

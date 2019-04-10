@@ -70,7 +70,7 @@ class SIPAuthentication implements Authentication {
 					}
 					$mysip->disconnect();
 				}else{
-					$logger->log("Unable to connect to SIP server", PEAR_LOG_ERR);
+					$logger->log("Unable to connect to SIP server", Logger::LOG_ERROR);
 				}
 			}
 		}
@@ -157,28 +157,28 @@ class SIPAuthentication implements Authentication {
 								// Set login cookie for 1 hour
 								$user->password = $password; // Need this for Metalib
 							} else {
-								$user = new PEAR_Error('authentication_error_invalid');
+								$user = new AspenError('authentication_error_invalid');
 							}
 						} else {
-							$user = new PEAR_Error('authentication_error_technical');
+							$user = new AspenError('authentication_error_technical');
 						}
 					} else {
-						$user = new PEAR_Error('authentication_error_technical');
+						$user = new AspenError('authentication_error_technical');
 					}
 					$mysip->disconnect();
 
 				} else {
-					$user = new PEAR_Error('authentication_error_technical');
+					$user = new AspenError('authentication_error_technical');
 					global $logger;
-					$logger->log("Unable to connect to SIP server", PEAR_LOG_ERR);
+					$logger->log("Unable to connect to SIP server", Logger::LOG_ERROR);
 				}
 			} else {
-				$user = new PEAR_Error('authentication_error_blank');
+				$user = new AspenError('authentication_error_blank');
 			}
 			$timer->logTime("Authenticated user in SIP2Authentication");
 			self::$processedUsers[$username] = $user;
 		} else {
-			$user = new PEAR_Error('authentication_error_blank');
+			$user = new AspenError('authentication_error_blank');
 		}
 
 		
@@ -242,7 +242,7 @@ class SIPAuthentication implements Authentication {
 			if ((!isset($user->homeLocationId) || $user->homeLocationId == 0)) {
 				// Logging for Diagnosing PK-1846
 				global $logger;
-				$logger->log('Sip Authentication: Attempted look up user\'s homeLocationId and failed to find one. User : '.$user->id, PEAR_LOG_WARNING);
+				$logger->log('Sip Authentication: Attempted look up user\'s homeLocationId and failed to find one. User : '.$user->id, Logger::LOG_WARNING);
 			}
 		}
 

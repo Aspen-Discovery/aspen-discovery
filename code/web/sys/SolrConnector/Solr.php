@@ -176,14 +176,14 @@ class Solr {
 		global $logger;
 		$hostEscaped = preg_replace('[\W]', '_', $this->host);
 		if (array_key_exists($this->host, Solr::$serversPinged)){
-			//$logger->log("Pinging solr has already been done this page load", PEAR_LOG_DEBUG);
+			//$logger->log("Pinging solr has already been done this page load", Logger::LOG_DEBUG);
 			return Solr::$serversPinged[$this->host];
 		}
 		if ($memCache){
 
 			$pingDone = $memCache->get('solr_ping_' . $hostEscaped);
 			if ($pingDone != null){
-				//$logger->log("Not pinging solr {$this->host} because we have a cached ping $pingDone", PEAR_LOG_DEBUG);
+				//$logger->log("Not pinging solr {$this->host} because we have a cached ping $pingDone", Logger::LOG_DEBUG);
 				Solr::$serversPinged[$this->host] = $pingDone;
 				return Solr::$serversPinged[$this->host];
 			}else{
@@ -191,26 +191,26 @@ class Solr {
 			}
 		}else{
 			$pingDone = false;
-			//$logger->log("Pinging solr because memcache has not been initialized", PEAR_LOG_DEBUG);
+			//$logger->log("Pinging solr because memcache has not been initialized", Logger::LOG_DEBUG);
 		}
 
 		if ($pingDone == false){
 
-			//$logger->log("Pinging solr server {$this->host} $hostEscaped", PEAR_LOG_DEBUG);
+			//$logger->log("Pinging solr server {$this->host} $hostEscaped", Logger::LOG_DEBUG);
 			// Test to see solr is online
 			$test_url = $this->host . "/admin/ping";
 			$test_client = new HTTP_Request($test_url);
 			$test_client->setMethod('GET');
 			$result = $test_client->sendRequest();
-			if (!PEAR_Singleton::isError($result)) {
+			if (!($result instanceof AspenError)) {
 				// Even if we get a response, make sure it's a 'good' one.
 				if ($test_client->getResponseCode() != 200) {
 					$pingResult = 'false';
 					Solr::$serversPinged[$this->host] = false;
 					if ($failOnError){
-						PEAR_Singleton::raiseError('Solr index is offline.');
+						AspenError::raiseError('Solr index is offline.');
 					}else{
-						$logger->log("Ping of {$this->host} failed", PEAR_LOG_DEBUG);
+						$logger->log("Ping of {$this->host} failed", Logger::LOG_DEBUG);
 						return false;
 					}
 				}else{
@@ -220,9 +220,9 @@ class Solr {
 				$pingResult = 'false';
 				Solr::$serversPinged[$this->host] = false;
 				if ($failOnError){
-					PEAR_Singleton::raiseError($result);
+					AspenError::raiseError($result);
 				}else{
-					$logger->log("Ping of {$this->host} failed", PEAR_LOG_DEBUG);
+					$logger->log("Ping of {$this->host} failed", Logger::LOG_DEBUG);
 					return false;
 				}
 			}
@@ -274,9 +274,7 @@ class Solr {
 	{
 	    if ($this->_searchSpecs == null) {
 	        //TODO: Store this in Memcache
-            $this->_searchSpecs  = Horde_Yaml::load(
-                file_get_contents($this->searchSpecsFile)
-            );
+            $this->_searchSpecs  = Horde_Yaml::load(file_get_contents($this->searchSpecsFile));
         }
 	}
 
@@ -359,8 +357,8 @@ class Solr {
 			//$this->client->clearPostData();
 			$timer->logTime("Send data to solr during getRecord $id $fieldsToReturn");
 
-			if (PEAR_Singleton::isError($result)) {
-				PEAR_Singleton::raiseError($result);
+			if ($result instanceof AspenError) {
+				AspenError::raiseError($result);
 			}else{
 				$result = $this->_process($this->client->getResponseBody());
 			}
@@ -370,8 +368,8 @@ class Solr {
 				$memCache->set("solr_record_{$id}_{$solrScope}_{$fieldsToReturn}", $record, 0, $configArray['Caching']['solr_record']);
 			}else{
 				//global $logger;
-				//$logger->log("Unable to find record $id in Solr", PEAR_LOG_ERR);
-				PEAR_Singleton::raiseError("Record not found $id");
+				//$logger->log("Unable to find record $id in Solr", Logger::LOG_ERROR);
+				AspenError::raiseError("Record not found $id");
 			}
 		}
 		return $record;
@@ -433,8 +431,8 @@ class Solr {
 			//$this->client->clearPostData();
 			$timer->logTime("Send data to solr for getRecords");
 
-			if (PEAR_Singleton::isError($result)) {
-				PEAR_Singleton::raiseError($result);
+			if ($result instanceof AspenError) {
+				AspenError::raiseError($result);
 			}else{
 				$result = $this->_process($this->client->getResponseBody());
 			}
@@ -501,8 +499,8 @@ class Solr {
 			);
 
 			$result = $this->_select(HTTP_REQUEST_METHOD_GET, $options);
-			if (PEAR_Singleton::isError($result)) {
-				PEAR_Singleton::raiseError($result);
+			if ($result instanceof AspenError) {
+				AspenError::raiseError($result);
 			}
 
 			return $result;
@@ -1428,8 +1426,8 @@ class Solr {
 		$timer->logTime("end solr setup");
 		$result = $this->_select($method, $options, $returnSolrError);
 		$timer->logTime("run select");
-		if (PEAR_Singleton::isError($result)) {
-			PEAR_Singleton::raiseError($result);
+		if ($result instanceof AspenError) {
+			AspenError::raiseError($result);
 		}
 
 		return $result;
@@ -1628,8 +1626,8 @@ class Solr {
 			// Add all non-empty values of the current field to the XML:
 			foreach($value as $current) {
 				if ($current != '') {
-					$logger->log("Adding field $field", PEAR_LOG_DEBUG);
-					$logger->log("  value " . $current, PEAR_LOG_DEBUG);
+					$logger->log("Adding field $field", Logger::LOG_DEBUG);
+					$logger->log("  value " . $current, Logger::LOG_DEBUG);
 					$node = $doc->createElement('field');
 					$node->setAttribute('name', $field);
 					$node->appendChild(new DOMText($current));
@@ -1655,8 +1653,8 @@ class Solr {
 		}
 
 		$result = $this->_update($xml);
-		if (PEAR_Singleton::isError($result)) {
-			PEAR_Singleton::raiseError($result);
+		if ($result instanceof AspenError) {
+			AspenError::raiseError($result);
 		}
 
 		return $result;
@@ -1678,8 +1676,8 @@ class Solr {
 		$body = "<delete><id>$id</id></delete>";
 
 		$result = $this->_update($body);
-		if (PEAR_Singleton::isError($result)) {
-			PEAR_Singleton::raiseError($result);
+		if ($result instanceof AspenError) {
+			AspenError::raiseError($result);
 		}
 
 		return $result;
@@ -1706,8 +1704,8 @@ class Solr {
 		$body .= '</delete>';
 
 		$result = $this->_update($body);
-		if (PEAR_Singleton::isError($result)) {
-			PEAR_Singleton::raiseError($result);
+		if ($result instanceof AspenError) {
+			AspenError::raiseError($result);
 		}
 
 		return $result;
@@ -1728,8 +1726,8 @@ class Solr {
 		$body = '<commit softCommit="true" waitSearcher = "false"/>';
 
 		$result = $this->_update($body);
-		if (PEAR_Singleton::isError($result)) {
-			PEAR_Singleton::raiseError($result);
+		if ($result instanceof AspenError) {
+			AspenError::raiseError($result);
 		}
 
 		return $result;
@@ -1750,8 +1748,8 @@ class Solr {
 		$body = '<optimize/>';
 
 		$result = $this->_update($body);
-		if (PEAR_Singleton::isError($result)) {
-			PEAR_Singleton::raiseError($result);
+		if ($result instanceof AspenError) {
+			AspenError::raiseError($result);
 		}
 
 		return $result;
@@ -1903,7 +1901,7 @@ class Solr {
 		$timer->logTime("Send data to solr for select $queryString");
 		$memoryWatcher->logMemory("Send data to solr for select $queryString");
 
-		if (!PEAR_Singleton::isError($result)) {
+		if (!($result instanceof AspenError)) {
 			return $this->_process($this->client->getResponseBody(), $returnSolrError, $queryString);
 		} else {
 			return $result;
@@ -1956,17 +1954,14 @@ class Solr {
 				$errorMsg = $detail;
 			}
 			global $logger;
-			$logger->log("Error updating document\r\n$xml", PEAR_LOG_DEBUG);
-			return new PEAR_Error("Unexpected response -- " . $errorMsg);
+			$logger->log("Error updating document\r\n$xml", Logger::LOG_DEBUG);
+			return new AspenError("Unexpected response -- " . $errorMsg);
 		}elseif ($configArray['System']['debugSolr'] == true){
 			$this->client->getResponseBody();
 			$timer->logTime("Get response body");
-			// Attempt to extract the most useful error message from the response:
-			//print_r("Update Response:");
-			//print_r($detail);
 		}
 
-		if (!PEAR_Singleton::isError($result)) {
+		if (!($result instanceof AspenError)) {
 			return true;
 		} else {
 			return $result;
@@ -2002,7 +1997,7 @@ class Solr {
 				}else{
 					$errorMessage = 'Unable to process query ';
 				}
-				PEAR_Singleton::raiseError(new PEAR_Error($errorMessage. '<br />' .
+				AspenError::raiseError(new AspenError($errorMessage. '<br />' .
 						'Solr Returned: ' . $errorMsg));
 
 			}
@@ -2280,7 +2275,7 @@ class Solr {
 
 		$result = $this->client->sendRequest();
 
-		if (!PEAR_Singleton::isError($result)) {
+		if (!($result instanceof AspenError)) {
 			return $this->_process(
 			$this->client->getResponseBody(), $returnSolrError);
 		} else {
@@ -2356,7 +2351,7 @@ class Solr {
 
 		$result = $this->client->sendRequest();
 
-		if (!PEAR_Singleton::isError($result)) {
+		if (!($result instanceof AspenError)) {
 			// Process the JSON response:
 			$data = $this->_process(
 			$this->client->getResponseBody(), $returnSolrError
@@ -2396,6 +2391,7 @@ class Solr {
 		}
 		return $fields;
 	}
+
 	private function _loadValidFields(){
 		/** @var Memcache $memCache */
 		global $memCache;
@@ -2407,7 +2403,10 @@ class Solr {
 		if (!$fields || isset($_REQUEST['reload'])){
 			global $configArray;
 			$schemaUrl = $configArray['Index']['url'] . '/grouped_works/admin/file?file=schema.xml&contentType=text/xml;charset=utf-8';
-			$schema = simplexml_load_file($schemaUrl);
+			$schema = @simplexml_load_file($schemaUrl);
+			if ($schema == null){
+			    AspenError::raiseError("Solr is not currently running");
+            }
 			$fields = array();
 			/** @var SimpleXMLElement $field */
 			foreach ($schema->fields->field as $field){

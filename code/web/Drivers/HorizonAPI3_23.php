@@ -8,7 +8,7 @@ abstract class HorizonAPI3_23 extends HorizonAPI
 			$webServiceURL = $this->accountProfile->patronApiUrl;
 		} else {
 			global $logger;
-			$logger->log('No Web Service URL defined in Horizon API Driver', PEAR_LOG_CRIT);
+			$logger->log('No Web Service URL defined in Horizon API Driver', Logger::LOG_ALERT);
 			echo("Web service URL must be defined in the account profile to work with the Horizon API");
 			die();
 		}
@@ -45,7 +45,7 @@ abstract class HorizonAPI3_23 extends HorizonAPI
 				$errors .= $errorMessage['message'] . ';';
 			}
 			global $logger;
-			$logger->log('WCPL Driver error updating user\'s Pin :'.$errors, PEAR_LOG_ERR);
+			$logger->log('WCPL Driver error updating user\'s Pin :'.$errors, Logger::LOG_ERROR);
 			return 'Sorry, we encountered an error while attempting to update your pin. Please contact your local library.';
 		} elseif (!empty($updatePinResponse['sessionToken'])){
 			// Success response isn't particularly clear, but returning the session Token seems to indicate the pin updated. plb 8-15-2016
@@ -66,7 +66,7 @@ abstract class HorizonAPI3_23 extends HorizonAPI
 	function resetPin($user, $newPin, $resetToken=null){
 		if (empty($resetToken)) {
 			global $logger;
-			$logger->log('No Reset Token passed to resetPin function', PEAR_LOG_ERR);
+			$logger->log('No Reset Token passed to resetPin function', Logger::LOG_ERROR);
 			return array(
 				'error' => 'Sorry, we could not update your pin. The reset token is missing. Please try again later'
 			);
@@ -84,7 +84,7 @@ abstract class HorizonAPI3_23 extends HorizonAPI
 				$errors .= $errorMessage['message'] . ';';
 			}
 			global $logger;
-			$logger->log('WCPL Driver error updating user\'s Pin :'.$errors, PEAR_LOG_ERR);
+			$logger->log('WCPL Driver error updating user\'s Pin :'.$errors, Logger::LOG_ERROR);
 			return array(
 				'error' => 'Sorry, we encountered an error while attempting to update your pin. Please contact your local library.'
 			);
@@ -164,7 +164,7 @@ abstract class HorizonAPI3_23 extends HorizonAPI
 						$errors .= $errorMessage['message'] . ';';
 					}
 					global $logger;
-					$logger->log('WCPL Driver error updating user\'s Pin :' . $errors, PEAR_LOG_ERR);
+					$logger->log('WCPL Driver error updating user\'s Pin :' . $errors, Logger::LOG_ERROR);
 				}
 				return $result;
 			}
@@ -223,14 +223,14 @@ abstract class HorizonAPI3_23 extends HorizonAPI
 				return $response;
 			} else {
 				global $logger;
-				$logger->log('Error Parsing JSON response in WCPL Driver: ' . json_last_error_msg(), PEAR_LOG_ERR);
+				$logger->log('Error Parsing JSON response in WCPL Driver: ' . json_last_error_msg(), Logger::LOG_ERROR);
 				return false;
 			}
 
 
 		}else{
 			global $logger;
-			$logger->log('Curl problem in getWebServiceResponseUpdated', PEAR_LOG_WARNING);
+			$logger->log('Curl problem in getWebServiceResponseUpdated', Logger::LOG_WARNING);
 			return false;
 		}
 	}

@@ -10,11 +10,6 @@
 <div id ="debug">
 	{if $debug}
 		<h4>{translate text="Debug Information"}</h4>
-		<p class="errorStmt">{$error->getDebugInfo()}</p>
-		{assign var=errorCode value=$error->getCode()}
-		{if $errorCode}
-			<p class="errorMsg">{translate text="Code"}: {$errorCode}</p>
-		{/if}
 		<p>{translate text="Backtrace"}:</p>
 		{foreach from=$error->backtrace item=trace}
 			[{$trace.line}] {$trace.file}<br />

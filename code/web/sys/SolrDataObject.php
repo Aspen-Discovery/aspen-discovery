@@ -20,20 +20,20 @@ abstract class SolrDataObject extends DataObject{
 		global $logger;
 		$result = parent::update();
 		if (!$insertInSolr){
-			$logger->log("updateDetailed, not inserting in solr because insertInSolr was false", PEAR_LOG_DEBUG);
+			$logger->log("updateDetailed, not inserting in solr because insertInSolr was false", Logger::LOG_DEBUG);
 			$this->updateStarted = false;
 			return $result == 1;
 		}else{
 			if ($result !== FALSE){
-				$logger->log("Updating Solr", PEAR_LOG_DEBUG);
+				$logger->log("Updating Solr", Logger::LOG_DEBUG);
 				if (!$this->saveToSolr()){
-					$logger->log("Could not update Solr", PEAR_LOG_ERR);
+					$logger->log("Could not update Solr", Logger::LOG_ERROR);
 					//Could not save to solr
 					$this->updateStarted = false;
 					return false;
 				}
 			}else{
-				$logger->log("Saving to database failed, not updating solr", PEAR_LOG_ERR);
+				$logger->log("Saving to database failed, not updating solr", Logger::LOG_ERROR);
 				$this->updateStarted = false;
 				return false;
 			}
@@ -84,7 +84,7 @@ abstract class SolrDataObject extends DataObject{
 		$host = $configArray['Index']['url'];
 
 		global $logger;
-		$logger->log("Deleting Record {$this->solrId()}", PEAR_LOG_INFO);
+		$logger->log("Deleting Record {$this->solrId()}", Logger::LOG_NOTICE);
 
 		$cores = $this->cores();
 		foreach ($cores as $corename){
@@ -92,7 +92,7 @@ abstract class SolrDataObject extends DataObject{
 			if ($index->deleteRecord($this->solrId())) {
 				$index->commit();
 			} else {
-				return new PEAR_Error("Could not remove from $corename index");
+				return new AspenError("Could not remove from $corename index");
 			}
 		}
 		return true;
@@ -111,7 +111,7 @@ abstract class SolrDataObject extends DataObject{
 		$this->_quickReindex = $quick;
 		$host = $configArray['Index']['url'];
 		global $logger;
-		$logger->log("Updating " . $this->solrId() . " in solr", PEAR_LOG_INFO);
+		$logger->log("Updating " . $this->solrId() . " in solr", Logger::LOG_NOTICE);
 
 		$cores = $this->cores();
 		$objectStructure = $this->getObjectStructure();
@@ -127,17 +127,17 @@ abstract class SolrDataObject extends DataObject{
 			$index = new Solr($host, $corename);
 
 			$xml = $index->getSaveXML($doc, !$this->_quickReindex, $this->_quickReindex);
-			//$logger->log('XML ' . print_r($xml, true), PEAR_LOG_INFO);
+			//$logger->log('XML ' . print_r($xml, true), Logger::LOG_NOTICE);
 			$timer->logTime('Created XML to save to the main index');
 			if ($index->saveRecord($xml)) {
 				if (!$this->_quickReindex){
 					$result = $index->commit();
-					//$logger->log($xml, PEAR_LOG_INFO);
-					//$logger->log("Result saving to $corename index " . print_r($result, true), PEAR_LOG_INFO);
+					//$logger->log($xml, Logger::LOG_NOTICE);
+					//$logger->log("Result saving to $corename index " . print_r($result, true), Logger::LOG_NOTICE);
 				}
 			} else {
 				$this->saveStarted = false;
-				return new PEAR_Error("Could not save to $corename");
+				return new AspenError("Could not save to $corename");
 			}
 			$timer->logTime("Saved to the $corename index");
 		}
@@ -187,7 +187,7 @@ abstract class SolrDataObject extends DataObject{
 		$cores = $this->cores();
 		foreach ($cores as $corename){
 			global $logger;
-			$logger->log("Optimizing Solr Core! $corename", PEAR_LOG_INFO);
+			$logger->log("Optimizing Solr Core! $corename", Logger::LOG_NOTICE);
 
 			$index = new Solr($host, $corename);
 			$index->optimize();

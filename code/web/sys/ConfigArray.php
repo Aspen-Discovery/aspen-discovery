@@ -211,9 +211,9 @@ function readConfig()
 	if ($serverName == 'default'){
 		global $logger;
 		if ($logger){
-			$logger->log('Did not find servername for server ' . $fullServerName, PEAR_LOG_ERR);
+			$logger->log('Did not find servername for server ' . $fullServerName, Logger::LOG_ERROR);
 		}
-		PEAR_Singleton::raiseError("Invalid configuration, could not find site for " . $fullServerName);
+		AspenError::raiseError("Invalid configuration, could not find site for " . $fullServerName);
 	}
 
 	if ($mainArray == false){

@@ -377,13 +377,13 @@ class WCPL extends HorizonAPI3_23
 		curl_setopt($curl_connection, CURLOPT_HEADER, false);
 		curl_setopt($curl_connection, CURLOPT_HTTPGET, true);
 		$sresult = curl_exec($curl_connection);
-		$logger->log("Loading Full Record $curl_url", PEAR_LOG_INFO);
+		$logger->log("Loading Full Record $curl_url", Logger::LOG_NOTICE);
 
 		//Extract the session id from the requestcopy javascript on the page
 		if (preg_match('/\\?session=(.*?)&/s', $sresult, $matches)) {
 			$sessionId = $matches[1];
 		} else {
-			PEAR_Singleton::raiseError('Could not load session information from page.');
+			AspenError::raiseError('Could not load session information from page.');
 		}
 
 		//Login by posting username and password

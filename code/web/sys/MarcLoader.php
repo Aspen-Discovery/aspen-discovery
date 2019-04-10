@@ -27,9 +27,13 @@ class MarcLoader{
 	private static $loadedMarcRecords = array();
 	public static function loadMarcRecordByILSId($id, $recordType = 'marc'){
 		global $indexingProfiles;
-		$recordInfo = explode(':', $id);
-		$recordType = $recordInfo[0];
-		$ilsId = $recordInfo[1];
+		if (strpos($id, ':') !== false){
+            $recordInfo = explode(':', $id);
+            $recordType = $recordInfo[0];
+            $ilsId = $recordInfo[1];
+        }else{
+            $ilsId = $id;
+        }
 
 		if (array_key_exists($ilsId, MarcLoader::$loadedMarcRecords)){
 			return MarcLoader::$loadedMarcRecords[$ilsId];
@@ -65,7 +69,7 @@ class MarcLoader{
 				$rawMarc = file_get_contents($individualName);
 				$marc = new File_MARC($rawMarc, File_MARC::SOURCE_STRING);
 				if (!($marcRecord = $marc->next())) {
-					PEAR_Singleton::raiseError(new PEAR_Error('Could not load marc record for record ' . $shortId));
+					AspenError::raiseError(new AspenError('Could not load marc record for record ' . $shortId));
 				}
 			}
 		}
@@ -212,7 +216,7 @@ class MarcLoader{
 				$rawMarc = file_get_contents($individualName);
 				$marc = new File_MARC($rawMarc, File_MARC::SOURCE_STRING);
 				if (!($marcRecord = $marc->next())) {
-					PEAR_Singleton::raiseError(new PEAR_Error('Could not load marc record for hoopla record ' . $id));
+					AspenError::raiseError(new AspenError('Could not load marc record for hoopla record ' . $id));
 				}
 			}
 		}

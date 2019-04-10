@@ -246,7 +246,7 @@ class ItemAPI extends Action {
 
 		// Retrieve Full Marc Record
 		if (!($record = $this->db->getRecord($this->id))) {
-			PEAR_Singleton::raiseError(new PEAR_Error('Record Does Not Exist'));
+			AspenError::raiseError(new AspenError('Record Does Not Exist'));
 		}
 		$this->record = $record;
 		$this->recordDriver = RecordDriverFactory::initRecordDriver($record);
@@ -510,7 +510,7 @@ class ItemAPI extends Action {
 
 		// Retrieve Full Marc Record
 		if (!($record = $this->db->getRecord($this->id))) {
-			PEAR_Singleton::raiseError(new PEAR_Error('Record Does Not Exist'));
+			AspenError::raiseError(new AspenError('Record Does Not Exist'));
 		}
 		return $record;
 	}

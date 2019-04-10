@@ -81,15 +81,15 @@ class Redwood_ContributeContent extends Action{
 				} else {
 					$errorDescription = 'Unknown error';
 				}
-				$logger->log('Could not insert new object ' . $ret . ' ' . $errorDescription, PEAR_LOG_DEBUG);
+				$logger->log('Could not insert new object ' . $ret . ' ' . $errorDescription, Logger::LOG_DEBUG);
 				$_SESSION['lastError'] = "An error occurred inserting the contribution <br/>{$errorDescription}";
-				$logger->log(mysql_error(), PEAR_LOG_DEBUG);
+				$logger->log(mysql_error(), Logger::LOG_DEBUG);
 				return false;
 			}
 		} else {
 			global $logger;
 			$errorDescription = implode(', ', $validationResults['errors']);
-			$logger->log('Could not validate new Content Contribution ' . $errorDescription, PEAR_LOG_DEBUG);
+			$logger->log('Could not validate new Content Contribution ' . $errorDescription, Logger::LOG_DEBUG);
 			$_SESSION['lastError'] = "The information entered was not valid. <br/>" . implode('<br/>', $validationResults['errors']);
 			return false;
 		}

@@ -128,7 +128,7 @@ class Suggestions{
 			} else {
 				if (isset($moreLikeTheseSuggestions['error'])) {
 					global $logger;
-					$logger->log('Error looking for Suggested Titles : '.$moreLikeTheseSuggestions['error']['msg'], PEAR_LOG_ERR);
+					$logger->log('Error looking for Suggested Titles : '.$moreLikeTheseSuggestions['error']['msg'], Logger::LOG_ERROR);
 				}
 			}
 			$timer->logTime("Loaded recommendations based on ratings");

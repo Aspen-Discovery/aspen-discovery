@@ -45,13 +45,13 @@ class UserAccount {
 						$casAuthentication = new CASAuthentication(null);
 						$casUsername = $casAuthentication->validateAccount(null, null, null, false);
 						$_SESSION['lastCASCheck'] = time();
-						$logger->log("Checked CAS Authentication from UserAccount::isLoggedIn result was $casUsername", PEAR_LOG_DEBUG);
-						if ($casUsername == false || PEAR_Singleton::isError($casUsername)) {
+						$logger->log("Checked CAS Authentication from UserAccount::isLoggedIn result was $casUsername", Logger::LOG_DEBUG);
+						if ($casUsername == false || $casUsername instanceof AspenError) {
 							//The user could not be authenticated in CAS
 							UserAccount::$isLoggedIn = false;
 
 						} else {
-							$logger->log("We got a valid user from CAS, getting the user from the database", PEAR_LOG_DEBUG);
+							$logger->log("We got a valid user from CAS, getting the user from the database", Logger::LOG_DEBUG);
 							//We have a valid user via CAS, need to do a login to Aspen
 							$_REQUEST['casLogin'] = true;
 							UserAccount::$isLoggedIn = true;
@@ -281,7 +281,7 @@ class UserAccount {
 
 				$userData->id = $activeUserId;
 				if ($userData->find(true)){
-					$logger->log("Loading user {$userData->cat_username}, {$userData->cat_password} because we didn't have data in memcache", PEAR_LOG_DEBUG);
+					$logger->log("Loading user {$userData->cat_username}, {$userData->cat_password} because we didn't have data in memcache", Logger::LOG_DEBUG);
                     $userData = UserAccount::validateAccount($userData->cat_username, $userData->cat_password, $userData->source);
 
                     if ($userData == false) {
@@ -291,7 +291,7 @@ class UserAccount {
 					self::updateSession($userData);
 				}
 			}else{
-				$logger->log("Found cached user {$userData->id}", PEAR_LOG_DEBUG);
+				$logger->log("Found cached user {$userData->id}", Logger::LOG_DEBUG);
 			}
 			UserAccount::$isLoggedIn = true;
 
@@ -304,7 +304,7 @@ class UserAccount {
 					$guidingUser->get($_SESSION['guidingUserId']);
 					if (!$guidingUser) {
 						global $logger;
-						$logger->log('Invalid Guiding User ID in session variable: '. $_SESSION['guidingUserId'], PEAR_LOG_ERR);
+						$logger->log('Invalid Guiding User ID in session variable: '. $_SESSION['guidingUserId'], Logger::LOG_ERROR);
 						unset($_SESSION['guidingUserId']); // session_start(); session_commit(); probably needed for this to take effect, but might have other side effects
 					}
 				}
@@ -319,9 +319,9 @@ class UserAccount {
 				require_once ROOT_DIR . '/sys/Authentication/CASAuthentication.php';
 				$casAuthentication = new CASAuthentication(null);
 				global $logger;
-				$logger->log("Checking CAS Authentication from UserAccount::getLoggedInUser", PEAR_LOG_DEBUG);
+				$logger->log("Checking CAS Authentication from UserAccount::getLoggedInUser", Logger::LOG_DEBUG);
 				$casUsername = $casAuthentication->validateAccount(null, null, null, false);
-				if ($casUsername == false || PEAR_Singleton::isError($casUsername)){
+				if ($casUsername == false || $casUsername instanceof AspenError){
 					//The user could not be authenticated in CAS
 					UserAccount::$isLoggedIn = false;
 					return false;
@@ -390,17 +390,17 @@ class UserAccount {
 
 		$validatedViaSSO = false;
 		if (isset($_REQUEST['casLogin'])){
-			$logger->log("Logging the user in via CAS", PEAR_LOG_INFO);
+			$logger->log("Logging the user in via CAS", Logger::LOG_NOTICE);
 			//Check CAS first
 			require_once ROOT_DIR . '/sys/Authentication/CASAuthentication.php';
 			$casAuthentication = new CASAuthentication(null);
 			$casUsername = $casAuthentication->authenticate(false);
-			if ($casUsername == false || PEAR_Singleton::isError($casUsername)){
+			if ($casUsername == false || $casUsername instanceof AspenError){
 				//The user could not be authenticated in CAS
-				$logger->log("The user could not be logged in", PEAR_LOG_INFO);
-				return new PEAR_Error('Could not authenticate in sign on service');
+				$logger->log("The user could not be logged in", Logger::LOG_NOTICE);
+				return new AspenError('Could not authenticate in sign on service');
 			}else{
-				$logger->log("User logged in OK CAS Username $casUsername", PEAR_LOG_INFO);
+				$logger->log("User logged in OK CAS Username $casUsername", Logger::LOG_NOTICE);
 				//Set both username and password since authentication methods could use either.
 				//Each authentication method will need to deal with the possibility that it gets a barcode for both user and password
 				$_REQUEST['username'] = $casUsername;
@@ -422,14 +422,14 @@ class UserAccount {
 			$tempUser = $authN->authenticate($validatedViaSSO);
 
 			// If we authenticated, store the user in the session:
-			if (!PEAR_Singleton::isError($tempUser)) {
+			if (!($tempUser instanceof AspenError)) {
 				if ($validatedViaSSO){
 					$_SESSION['loggedInViaCAS'] = true;
 				}
 				global $library;
 				if (isset($library) && $library->preventExpiredCardLogin && $tempUser->_expired) {
 					// Create error
-					$cardExpired = new PEAR_Error('expired_library_card');
+					$cardExpired = new AspenError('expired_library_card');
 					return $cardExpired;
 				}
 
@@ -438,7 +438,7 @@ class UserAccount {
 				global $serverName;
 				global $configArray;
 				$memCache->set("user_{$serverName}_{$tempUser->id}", $tempUser, 0, $configArray['Caching']['user']);
-				$logger->log("Cached user {$tempUser->id}", PEAR_LOG_DEBUG);
+				$logger->log("Cached user {$tempUser->id}", Logger::LOG_DEBUG);
 
 				$validUsers[] = $tempUser;
 				if ($primaryUser == null){
@@ -450,9 +450,9 @@ class UserAccount {
 				}
 			}else{
 				$username = isset($_REQUEST['username']) ? $_REQUEST['username'] : 'No username provided';
-				$logger->log("Error authenticating patron $username for driver {$driverName}\r\n", PEAR_LOG_ERR);
+				$logger->log("Error authenticating patron $username for driver {$driverName}\r\n", Logger::LOG_ERROR);
 				$lastError = $tempUser;
-				$logger->log($lastError->toString(), PEAR_LOG_ERR);
+				$logger->log($lastError->toString(), Logger::LOG_ERROR);
 			}
 		}
 
@@ -494,15 +494,15 @@ class UserAccount {
 			//Check CAS first
 			require_once ROOT_DIR . '/sys/Authentication/CASAuthentication.php';
 			$casAuthentication = new CASAuthentication(null);
-			$logger->log("Checking CAS Authentication from UserAccount::validateAccount", PEAR_LOG_DEBUG);
+			$logger->log("Checking CAS Authentication from UserAccount::validateAccount", Logger::LOG_DEBUG);
 			$casUsername = $casAuthentication->validateAccount(null, null, $parentAccount, false);
-			if ($casUsername == false || PEAR_Singleton::isError($casUsername)){
+			if ($casUsername == false || $casUsername instanceof AspenError){
 				//The user could not be authenticated in CAS
-				$logger->log("User could not be authenticated in CAS", PEAR_LOG_DEBUG);
+				$logger->log("User could not be authenticated in CAS", Logger::LOG_DEBUG);
 				UserAccount::$validatedAccounts[$username . $password] = false;
 				return false;
 			}else{
-				$logger->log("User was authenticated in CAS", PEAR_LOG_DEBUG);
+				$logger->log("User was authenticated in CAS", Logger::LOG_DEBUG);
 				//Set both username and password since authentication methods could use either.
 				//Each authentication method will need to deal with the possibility that it gets a barcode for both user and password
 				$username = $casUsername;
@@ -520,13 +520,13 @@ class UserAccount {
                     die();
                 }
                 $validatedUser = $authN->validateAccount($username, $password, $parentAccount, $validatedViaSSO);
-				if ($validatedUser && !PEAR_Singleton::isError($validatedUser)) {
+				if ($validatedUser && !($validatedUser instanceof AspenError)) {
 					/** @var Memcache $memCache */
 					global $memCache;
 					global $serverName;
 					global $configArray;
 					$memCache->set("user_{$serverName}_{$validatedUser->id}", $validatedUser, 0, $configArray['Caching']['user']);
-					$logger->log("Cached user {$validatedUser->id}", PEAR_LOG_DEBUG);
+					$logger->log("Cached user {$validatedUser->id}", Logger::LOG_DEBUG);
 					if ($validatedViaSSO){
 						$_SESSION['loggedInViaCAS'] = true;
 					}
@@ -546,10 +546,10 @@ class UserAccount {
 	public static function logout()
 	{
 		//global $logger;
-		//$logger->log("Logging user out", PEAR_LOG_DEBUG);
+		//$logger->log("Logging user out", Logger::LOG_DEBUG);
 		UserAccount::softLogout();
 		session_regenerate_id(true);
-		//$logger->log("New session id is $newId", PEAR_LOG_DEBUG);
+		//$logger->log("New session id is $newId", Logger::LOG_DEBUG);
 	}
 
 	/**
@@ -559,7 +559,7 @@ class UserAccount {
 	public static function softLogout(){
 		if (isset($_SESSION['activeUserId'])){
 			//global $logger;
-			//$logger->log("Logging user {$_SESSION['activeUserId']} out", PEAR_LOG_DEBUG);
+			//$logger->log("Logging user {$_SESSION['activeUserId']} out", Logger::LOG_DEBUG);
 			if (isset($_SESSION['guidingUserId'])){
 				// Shouldn't end up here while in Masquerade Mode, but if does happen end masquerading as well
 				unset($_SESSION['guidingUserId']);
@@ -631,7 +631,7 @@ class UserAccount {
 			$catalogConnectionInstance = CatalogFactory::getCatalogConnectionInstance($driverData['driver'], $driverData['accountProfile']);
 			if (method_exists($catalogConnectionInstance->driver, 'findNewUser')) {
 				$tmpUser = $catalogConnectionInstance->driver->findNewUser($patronBarcode);
-				if (!empty($tmpUser) && !PEAR_Singleton::isError($tmpUser)) {
+				if (!empty($tmpUser) && !($tmpUser instanceof AspenError)) {
 					return $tmpUser;
 				}
 			}

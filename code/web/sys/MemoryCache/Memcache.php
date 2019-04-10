@@ -13,6 +13,7 @@ class Memcache
 
     public function set($name, $value, $flag, $timeout) {
         $this->vars[$name] = $value;
+        return true;
     }
 
     public function delete($name){

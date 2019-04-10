@@ -58,7 +58,7 @@ class Person_Home extends Action
 
 		// Retrieve Full Marc Record
 		if (!($record = $this->db->getRecord('person' . $this->id))) {
-			PEAR_Singleton::raiseError(new PEAR_Error('Record Does Not Exist'));
+			AspenError::raiseError(new AspenError('Record Does Not Exist'));
 		}
 		$this->record = $record;
 
@@ -151,7 +151,7 @@ class Person_Home extends Action
 					$nextResults = $nextSearchObject->getResultRecordSet();
 				}
 
-				if (PEAR_Singleton::isError($result)) {
+				if ($result instanceof AspenError) {
 					//If we get an error excuting the search, just eat it for now.
 				}else{
 					if ($searchObject->getResultTotal() < 1) {

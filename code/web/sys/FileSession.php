@@ -16,7 +16,7 @@ class FileSession extends SessionInterface {
         // Die if the session directory does not exist and cannot be created.
         if (!file_exists(self::$path) || !is_dir(self::$path)) {
             if (!@mkdir(self::$path)) {
-                PEAR_Singleton::raiseError(new PEAR_Error("Cannot access session save path: " .
+                AspenError::raiseError(new AspenError("Cannot access session save path: " .
                     self::$path));
             }
         }

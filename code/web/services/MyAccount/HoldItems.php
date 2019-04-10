@@ -45,7 +45,7 @@ class HoldItems extends Action
 		if (method_exists($this->catalog->driver, 'placeHold')) {
 			$this->placeHolds();
 		} else {
-			PEAR_Singleton::raiseError(new PEAR_Error('Cannot Process Place Hold - ILS Not Supported'));
+			AspenError::raiseError(new AspenError('Cannot Process Place Hold - ILS Not Supported'));
 		}
 	}
 
@@ -90,7 +90,7 @@ class HoldItems extends Action
 
 		$_SESSION['hold_message'] = $hold_message_data;
 		if (isset($_SESSION['hold_referrer'])){
-			$logger->log('Hold Referrer is set, redirecting to there.  type = ' . $_REQUEST['type'], PEAR_LOG_INFO);
+			$logger->log('Hold Referrer is set, redirecting to there.  type = ' . $_REQUEST['type'], Logger::LOG_NOTICE);
 			//Redirect for hold cancellation or update
 			header("Location: " . $_SESSION['hold_referrer']);
 			unset($_SESSION['hold_referrer']);
@@ -105,7 +105,7 @@ class HoldItems extends Action
 				}
 			}
 		}else{
-			$logger->log('No referrer set, but there is a message to show, go to the main holds page', PEAR_LOG_INFO);
+			$logger->log('No referrer set, but there is a message to show, go to the main holds page', Logger::LOG_NOTICE);
 			header("Location: " . $configArray['Site']['path'] . '/MyResearch/Holds');
 		}
 	}

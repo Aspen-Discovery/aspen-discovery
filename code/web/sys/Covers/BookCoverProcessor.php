@@ -36,21 +36,20 @@ class BookCoverProcessor{
 		$this->logger = $logger;
 		$this->doCoverLogging = $this->configArray['Logging']['coverLogging'];
 
-		$this->log("Starting to load cover", PEAR_LOG_INFO);
+		$this->log("Starting to load cover", Logger::LOG_NOTICE);
 		$this->bookCoverPath = $configArray['Site']['coverPath'];
 		if (!$this->loadParameters()){
 			return;
 		}
 
 		if (!$this->reload){
-			$this->log("Looking for Cached cover", PEAR_LOG_INFO);
+			$this->log("Looking for Cached cover", Logger::LOG_NOTICE);
 			if ($this->getCachedCover()){
 				return;
 			}
 		}
 
 		if ($this->type == 'overdrive'){
-			$this->initDatabaseConnection();
 			//Will exit if we find a cover
 			if ($this->getOverDriveCover()){
 				return;
@@ -115,7 +114,7 @@ class BookCoverProcessor{
                 return;
             }
         }
-		$this->log("Looking for cover from providers", PEAR_LOG_INFO);
+		$this->log("Looking for cover from providers", Logger::LOG_NOTICE);
 		if ($this->getCoverFromProvider()){
 			return;
 		}
@@ -128,7 +127,7 @@ class BookCoverProcessor{
 			return;
 		}
 
-		$this->log("No image found, using die image", PEAR_LOG_INFO);
+		$this->log("No image found, using die image", Logger::LOG_NOTICE);
 		$this->getDefaultCover();
 
 	}
@@ -150,7 +149,7 @@ class BookCoverProcessor{
                         return $this->processImageURL('hoopla', $coverUrl, true);
                     }
                 } catch (File_MARC_Exception $e) {
-                    log("MARC record did not have proper indicators " . $e, PEAR_LOG_WARNING);
+                    log("MARC record did not have proper indicators " . $e, Logger::LOG_WARNING);
                 }
             }
 		}
@@ -174,7 +173,7 @@ class BookCoverProcessor{
                             return $this->processImageURL('sideload', $coverUrl, true);
                         }
                     } catch (File_MARC_Exception $e) {
-                        log("MARC record did not have proper indicators " . $e, PEAR_LOG_WARNING);
+                        log("MARC record did not have proper indicators " . $e, Logger::LOG_WARNING);
                     }
                 }
 			}
@@ -272,7 +271,7 @@ class BookCoverProcessor{
                             return $this->processImageURL('zinio', $coverUrl, true);
                         }
                     } catch (File_MARC_Exception $e) {
-                        log("MARC record did not have proper indicators " . $e, PEAR_LOG_WARNING);
+                        log("MARC record did not have proper indicators " . $e, Logger::LOG_WARNING);
                     }
                 }
 			}
@@ -292,35 +291,6 @@ class BookCoverProcessor{
         }
         return false;
     }
-
-	private function initDatabaseConnection(){
-		// Setup Local Database Connection
-		if (!defined('DB_DATAOBJECT_NO_OVERLOAD')){
-			define('DB_DATAOBJECT_NO_OVERLOAD', 0);
-		}
-		$options =& PEAR_Singleton::getStaticProperty('DB_DataObject', 'options');
-		$options = $this->configArray['Database'];
-		$this->logTime("Connect to database");
-		require_once ROOT_DIR . '/Drivers/marmot_inc/Library.php';
-	}
-
-	private function initMemcache(){
-		global $memCache;
-		global $configArray;
-		if (!isset($memCache)){
-			// Set defaults if nothing set in config file.
-			$host = isset($configArray['Caching']['memcache_host']) ? $configArray['Caching']['memcache_host'] : 'localhost';
-			$port = isset($configArray['Caching']['memcache_port']) ? $configArray['Caching']['memcache_port'] : 11211;
-			$timeout = isset($configArray['Caching']['memcache_connection_timeout']) ? $configArray['Caching']['memcache_connection_timeout'] : 1;
-
-			// Connect to Memcache:
-			$memCache = new Memcache();
-			if (!$memCache->pconnect($host, $port, $timeout)) {
-				PEAR_Singleton::raiseError(new PEAR_Error("Could not connect to Memcache (host = {$host}, port = {$port})."));
-			}
-			$this->logTime("Initialize Memcache");
-		}
-	}
 
 	private function loadParameters(){
 		//Check parameters
@@ -413,7 +383,7 @@ class BookCoverProcessor{
 		$expires = 60*60*24*14;  //expire the cover in 2 weeks on the client side
 		header("Cache-Control: maxage=".$expires);
 		header('Expires: ' . gmdate('D, d M Y H:i:s', time()+$expires) . ' GMT');
-		$this->log("Added caching header", PEAR_LOG_INFO);
+		$this->log("Added caching header", Logger::LOG_NOTICE);
 	}
 
 	private function addModificationHeaders($filename){
@@ -433,20 +403,20 @@ class BookCoverProcessor{
 		$if_modified_since = isset($_SERVER['HTTP_IF_MODIFIED_SINCE']) ?stripslashes($_SERVER['HTTP_IF_MODIFIED_SINCE']) : false;
 		$if_none_match = isset($_SERVER['HTTP_IF_NONE_MATCH']) ? 	stripslashes($_SERVER['HTTP_IF_NONE_MATCH']) : 	false;
 		if (!$if_modified_since && !$if_none_match) {
-			$this->log("Caching headers not sent, return full image", PEAR_LOG_INFO);
+			$this->log("Caching headers not sent, return full image", Logger::LOG_NOTICE);
 			return true;
 		}
 		// At least one of the headers is there - check them
 		if ($if_none_match && $if_none_match != $etag) {
-			$this->log("ETAG changed ", PEAR_LOG_INFO);
+			$this->log("ETAG changed ", Logger::LOG_NOTICE);
 			return true; // etag is there but doesn't match
 		}
 		if ($if_modified_since && $if_modified_since != $last_modified) {
-			$this->log("Last modified changed", PEAR_LOG_INFO);
+			$this->log("Last modified changed", Logger::LOG_NOTICE);
 			return true; // if-modified-since is there but doesn't match
 		}
 		// Nothing has changed since their last request - serve a 304 and exit
-		$this->log("File has not been modified", PEAR_LOG_INFO);
+		$this->log("File has not been modified", Logger::LOG_NOTICE);
 		header('HTTP/1.0 304 Not Modified');
 		return false;
 	}
@@ -460,7 +430,7 @@ class BookCoverProcessor{
 			ob_clean();
 			flush();
 			readfile($localPath);
-			$this->log("Read file $localPath", PEAR_LOG_DEBUG);
+			$this->log("Read file $localPath", Logger::LOG_DEBUG);
 			$this->logTime("echo file $localPath");
 		}else{
 			$this->logTime("Added modification headers");
@@ -470,18 +440,18 @@ class BookCoverProcessor{
 	private function getCoverFromProvider(){
 		// Update to allow retrieval of covers based on upc
 		if (!is_null($this->isn) || !is_null($this->upc) || !is_null($this->issn)) {
-			$this->log("Looking for picture based on isbn and upc.", PEAR_LOG_INFO);
+			$this->log("Looking for picture based on isbn and upc.", Logger::LOG_NOTICE);
 
 			// Fetch from provider
 			if (isset($this->configArray['Content']['coverimages'])) {
 				$providers = explode(',', $this->configArray['Content']['coverimages']);
 				foreach ($providers as $provider) {
 					$provider = explode(':', $provider);
-					$this->log("Checking provider ".$provider[0], PEAR_LOG_INFO);
+					$this->log("Checking provider ".$provider[0], Logger::LOG_NOTICE);
 					$func = $provider[0];
 					$key = isset($provider[1]) ? $provider[1] : '';
 					if (method_exists($this, $func) && $this->$func($key)) {
-						$this->log("Found image from $provider[0]", PEAR_LOG_INFO);
+						$this->log("Found image from $provider[0]", Logger::LOG_NOTICE);
 						$this->logTime("Checked $func");
 						return true;
 					}else{
@@ -494,10 +464,9 @@ class BookCoverProcessor{
 	}
 
 	private function getCoverFromMarc($marcRecord = null){
-		$this->log("Looking for picture as part of 856 tag.", PEAR_LOG_INFO);
+		$this->log("Looking for picture as part of 856 tag.", Logger::LOG_NOTICE);
 
 		if ($marcRecord == null){
-			$this->initDatabaseConnection();
 			//Process the marc record
 			require_once ROOT_DIR . '/sys/MarcLoader.php';
 			if ($this->type != 'overdrive' && $this->type != 'hoopla'){
@@ -540,13 +509,13 @@ class BookCoverProcessor{
 		//Check the 690 field to see if this is a seed catalog entry
 		$marcFields = $marcRecord->getFields('690');
 		if ($marcFields){
-			$this->log("Found 690 field", PEAR_LOG_INFO);
+			$this->log("Found 690 field", Logger::LOG_NOTICE);
 			foreach ($marcFields as $marcField){
 				if ($marcField->getSubfield('a')){
-					$this->log("Found 690a subfield", PEAR_LOG_INFO);
+					$this->log("Found 690a subfield", Logger::LOG_NOTICE);
 					$subfield_a = $marcField->getSubfield('a')->getData();
 					if (preg_match('/seed library.*/i', $subfield_a, $matches)){
-						$this->log("Title is a seed library title", PEAR_LOG_INFO);
+						$this->log("Title is a seed library title", Logger::LOG_NOTICE);
 						$filename = "interface/themes/responsive/images/seed_library_logo.jpg";
 						if ($this->processImageURL('seedLibrary', $filename, true)){
 							return true;
@@ -559,10 +528,10 @@ class BookCoverProcessor{
 		//Check for Flatirons covers
         $marcFields = $marcRecord->getFields('962');
 		if ($marcFields){
-			$this->log("Found 962 field", PEAR_LOG_INFO);
+			$this->log("Found 962 field", Logger::LOG_NOTICE);
 			foreach ($marcFields as $marcField){
 				if ($marcField->getSubfield('u')){
-					$this->log("Found 962u subfield", PEAR_LOG_INFO);
+					$this->log("Found 962u subfield", Logger::LOG_NOTICE);
 					$subfield_u = $marcField->getSubfield('u')->getData();
 					if ($this->processImageURL('marcRecord', $subfield_u, true)){
 						return true;
@@ -591,10 +560,10 @@ class BookCoverProcessor{
             $this->bookCoverInfo->update();
             $fileName = "{$this->bookCoverPath}/{$this->size}/{$this->cacheName}.png";
 
-            $this->log("Checking $fileName", PEAR_LOG_INFO);
+            $this->log("Checking $fileName", Logger::LOG_NOTICE);
             // Load local cache if available
             $this->logTime("Found cached cover");
-            $this->log("$fileName exists, returning", PEAR_LOG_INFO);
+            $this->log("$fileName exists, returning", Logger::LOG_NOTICE);
             $this->returnImage($fileName);
         }
 
@@ -638,7 +607,7 @@ class BookCoverProcessor{
 	}
 
 	function processImageURL($source, $url, $cache = true, $attemptRefetch = true) {
-		$this->log("Processing $url", PEAR_LOG_INFO);
+		$this->log("Processing $url", Logger::LOG_NOTICE);
 		$context = stream_context_create(array('http'=>array(
 			'header' => "User-Agent: {$this->configArray['Catalog']['catalogUserAgent']}\r\n"
 //			'header' => "User-Agent: {$this->configArray['Catalog']['genericUserAgent']}\r\n"
@@ -650,13 +619,13 @@ class BookCoverProcessor{
 			// $cache is true or for temporary display purposes if $cache is false.
 			$tempFile = str_replace('.png', uniqid(), $this->cacheFile);
 			$finalFile = $cache ? $this->cacheFile : $tempFile . '.png';
-			$this->log("Processing url $url to $finalFile", PEAR_LOG_DEBUG);
+			$this->log("Processing url $url to $finalFile", Logger::LOG_DEBUG);
 
 			// If some services can't provide an image, they will serve a 1x1 blank
 			// or give us invalid image data.  Let's analyze what came back before
 			// proceeding.
 			if (!@file_put_contents($tempFile, $image)) {
-				$this->log("Unable to write to image directory $tempFile.", PEAR_LOG_ERR);
+				$this->log("Unable to write to image directory $tempFile.", Logger::LOG_ERROR);
 				$this->error = "Unable to write to image directory $tempFile.";
 				return false;
 			}
@@ -670,7 +639,7 @@ class BookCoverProcessor{
 
 			// Test Image for for partial load
 			if(!$imageResource = @imagecreatefromstring($image)){
-				$this->log("Could not create image from string $url", PEAR_LOG_ERR);
+				$this->log("Could not create image from string $url", Logger::LOG_ERROR);
 				@unlink($tempFile);
 				return false;
 			}
@@ -687,9 +656,9 @@ class BookCoverProcessor{
 //				$g = ($rgb >> 8) & 0xFF;
 //				$b = $rgb & 0xFF;
 
-					$this->log('Partial Gray image loaded.', PEAR_LOG_ERR);
+					$this->log('Partial Gray image loaded.', Logger::LOG_ERROR);
 					if ($attemptRefetch) {
-						$this->log('Partial Gray image, attempting refetch.', PEAR_LOG_INFO);
+						$this->log('Partial Gray image, attempting refetch.', Logger::LOG_NOTICE);
 						return $this->processImageURL($url, $cache, false); // Refetch once.
 					}
 				}
@@ -716,44 +685,44 @@ class BookCoverProcessor{
 					$new_width = floor( $width * ( $maxDimension / $height ) );
 				}
 
-				$this->log("Resizing image New Width: $new_width, New Height: $new_height", PEAR_LOG_INFO);
+				$this->log("Resizing image New Width: $new_width, New Height: $new_height", Logger::LOG_NOTICE);
 
 				// create a new temporary image
 				$tmp_img = imagecreatetruecolor( $new_width, $new_height );
 
 				// copy and resize old image into new image
 				if (!imagecopyresampled( $tmp_img, $imageResource, 0, 0, 0, 0, $new_width, $new_height, $width, $height )){
-					$this->log("Could not resize image $url to $this->localFile", PEAR_LOG_ERR);
+					$this->log("Could not resize image $url to $this->localFile", Logger::LOG_ERROR);
 					return false;
 				}
 
 				// save thumbnail into a file
 				if (file_exists($finalFile)){
-					$this->log("File $finalFile already exists, deleting", PEAR_LOG_DEBUG);
+					$this->log("File $finalFile already exists, deleting", Logger::LOG_DEBUG);
 					unlink($finalFile);
 				}
 
 				if (!@imagepng( $tmp_img, $finalFile, 9)){
-					$this->log("Could not save resized file $$this->localFile", PEAR_LOG_ERR);
+					$this->log("Could not save resized file $$this->localFile", Logger::LOG_ERROR);
 					return false;
 				}
 
 			}else{
-				$this->log("Image is the correct size, not resizing.", PEAR_LOG_INFO);
+				$this->log("Image is the correct size, not resizing.", Logger::LOG_NOTICE);
 
 				// Conversion needed -- do some normalization for non-PNG images:
 				if ($type != IMAGETYPE_PNG) {
-					$this->log("Image is not a png, converting to png.", PEAR_LOG_INFO);
+					$this->log("Image is not a png, converting to png.", Logger::LOG_NOTICE);
 
 					$conversionOk = true;
 					// Try to create a GD image and rewrite as PNG, fail if we can't:
 					if (!($imageResource = @imagecreatefromstring($image))) {
-						$this->log("Could not create image from string $url", PEAR_LOG_ERR);
+						$this->log("Could not create image from string $url", Logger::LOG_ERROR);
 						$conversionOk = false;
 					}
 
 					if (!@imagepng($imageResource, $finalFile, 9)) {
-						$this->log("Could not save image to file $url $this->localFile", PEAR_LOG_ERR);
+						$this->log("Could not save image to file $url $this->localFile", Logger::LOG_ERROR);
 						$conversionOk = false;
 					}
 					// We no longer need the temp file:
@@ -762,7 +731,7 @@ class BookCoverProcessor{
 					if (!$conversionOk){
 						return false;
 					}
-					$this->log("Finished creating png at $finalFile.", PEAR_LOG_INFO);
+					$this->log("Finished creating png at $finalFile.", Logger::LOG_NOTICE);
 				} else {
 					// If $tempFile is already a PNG, let's store it in the cache.
 					@rename($tempFile, $finalFile);
@@ -781,7 +750,7 @@ class BookCoverProcessor{
             $this->setBookCoverInfo($source, $width, $height);
 			return true;
 		} else {
-			$this->log("Could not load the file as an image $url", PEAR_LOG_INFO);
+			$this->log("Could not load the file as an image $url", Logger::LOG_NOTICE);
 			return false;
 		}
 	}
@@ -816,7 +785,7 @@ class BookCoverProcessor{
 		if ($this->issn){
 			$url .= "&issn=" . (!is_null($this->issn) ? $this->issn : '');
 		}
-		$this->log("Syndetics url: $url", PEAR_LOG_DEBUG);
+		$this->log("Syndetics url: $url", Logger::LOG_DEBUG);
 		return $this->processImageURL('syndetics', $url);
 	}
 
@@ -884,7 +853,7 @@ class BookCoverProcessor{
 			$client->setURL($url);
 
 			$result = $client->sendRequest();
-			if (!PEAR_Singleton::isError($result)) {
+			if (!($result instanceof AspenError)) {
 				$json = $client->getResponseBody();
 
 				// strip off addthecover( -- note that we need to account for length of ISBN (10 or 13)
@@ -913,7 +882,7 @@ class BookCoverProcessor{
 		return false;
 	}
 
-	function log($message, $level = PEAR_LOG_DEBUG){
+	function log($message, $level = Logger::LOG_DEBUG){
 		if ($this->doCoverLogging){
 			$this->logger->log($message, $level);
 		}
@@ -1035,7 +1004,6 @@ class BookCoverProcessor{
 		if ($this->groupedWork == null){
 			// Include Search Engine Class
 			require_once ROOT_DIR . '/sys/SolrConnector/Solr.php';
-			$this->initMemcache();
 
 			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 			if ($this->type == 'grouped_work'){
@@ -1054,8 +1022,6 @@ class BookCoverProcessor{
 				}
 
 			}
-
-
 		}
 		return $this->groupedWork;
 	}

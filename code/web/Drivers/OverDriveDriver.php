@@ -405,13 +405,13 @@ class OverDriveDriver extends AbstractEContentDriver{
                     $expirationDate = new DateTime($curTitle->expires);
                     $bookshelfItem['dueDate'] = $expirationDate->getTimestamp();
                 } catch (Exception $e) {
-                    $logger->log("Could not parse date for overdrive expiration " . $curTitle->expires, PEAR_LOG_NOTICE);
+                    $logger->log("Could not parse date for overdrive expiration " . $curTitle->expires, Logger::LOG_NOTICE);
                 }
                 try {
                     $checkOutDate = new DateTime($curTitle->checkoutDate);
                     $bookshelfItem['checkoutDate'] = $checkOutDate->getTimestamp();
                 } catch (Exception $e) {
-                    $logger->log("Could not parse date for overdrive checkout date " . $curTitle->checkoutDate, PEAR_LOG_NOTICE);
+                    $logger->log("Could not parse date for overdrive checkout date " . $curTitle->checkoutDate, Logger::LOG_NOTICE);
                 }
 				$bookshelfItem['overdriveRead'] = false;
 				if (isset($curTitle->isFormatLockedIn) && $curTitle->isFormatLockedIn == 1){

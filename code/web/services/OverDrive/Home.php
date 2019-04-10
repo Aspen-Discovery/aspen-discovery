@@ -39,8 +39,8 @@ class OverDrive_Home extends Action{
 			//Load status summary
             require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
             $holdingsSummary = $recordDriver->getStatusSummary();
-			if (PEAR_Singleton::isError($holdingsSummary)) {
-				PEAR_Singleton::raiseError($holdingsSummary);
+			if (($holdingsSummary instanceof AspenError)) {
+				AspenError::raiseError($holdingsSummary);
 			}
 			$interface->assign('holdingsSummary', $holdingsSummary);
 

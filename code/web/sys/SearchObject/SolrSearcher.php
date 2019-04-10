@@ -82,7 +82,7 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
             $interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
             /** @var IndexRecordDriver $record */
             $record = $this->getRecordDriverForResult($current);
-            if (!PEAR_Singleton::isError($record)) {
+            if (!($record instanceof AspenError)) {
                 $interface->assign('recordDriver', $record);
                 $html[] = $interface->fetch($record->getSearchResult($this->view));
             } else {
@@ -123,7 +123,7 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
         }else{
             $query = $this->indexEngine->buildQuery($search, false);
         }
-        if (PEAR_Singleton::isError($query)) {
+        if (($query instanceof AspenError)) {
             return $query;
         }
 

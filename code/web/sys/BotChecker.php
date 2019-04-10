@@ -50,7 +50,7 @@ class BotChecker{
 				}elseif (file_exists('../../sites/default/conf/bots.ini')){
 					$fhnd = fopen('../../sites/default/conf/bots.ini', 'r');
 				}else{
-					$logger->log("Did not find bots.ini file, cannot detect bots", PEAR_LOG_ERR);
+					$logger->log("Did not find bots.ini file, cannot detect bots", Logger::LOG_ERROR);
 					return false;
 				}
 
@@ -68,13 +68,13 @@ class BotChecker{
 
 				$memCache->set("bot_by_user_agent_" . $userAgent, ($isBot ? 'TRUE' : 'FALSE'), 0, $configArray['Caching']['bot_by_user_agent']);
 				if ($isBot){
-					$logger->log("$userAgent is a bot", PEAR_LOG_DEBUG);
+					$logger->log("$userAgent is a bot", Logger::LOG_DEBUG);
 				}else{
-					$logger->log("$userAgent is not a bot", PEAR_LOG_DEBUG);
+					$logger->log("$userAgent is not a bot", Logger::LOG_DEBUG);
 				}
 				BotChecker::$isBot = $isBot;
 			}else{
-				//$logger->log("Got bot info from memcache $isBot", PEAR_LOG_DEBUG);
+				//$logger->log("Got bot info from memcache $isBot", Logger::LOG_DEBUG);
 				BotChecker::$isBot = ($isBot === 'TRUE');
 			}
 

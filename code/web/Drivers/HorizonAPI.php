@@ -26,7 +26,7 @@ abstract class HorizonAPI extends Horizon{
 				$webServiceURL = $this->accountProfile->patronApiUrl;
 			} else {
 				global $logger;
-				$logger->log('No Web Service URL defined in Horizon API Driver', PEAR_LOG_CRIT);
+				$logger->log('No Web Service URL defined in Horizon API Driver', Logger::LOG_ALERT);
                 echo("Web service URL must be defined in the account profile to work with the Horizon API");
                 die();
 			}
@@ -99,7 +99,7 @@ abstract class HorizonAPI extends Horizon{
 					}
 				} else {
 					global $logger;
-					$logger->log('HorizonAPI Driver: No Home Library Location or Hold location found in account look-up. User : '.$user->id, PEAR_LOG_ERR);
+					$logger->log('HorizonAPI Driver: No Home Library Location or Hold location found in account look-up. User : '.$user->id, Logger::LOG_ERROR);
 					// The code below will attempt to find a location for the library anyway if the homeLocation is already set
 				}
 
@@ -116,7 +116,7 @@ abstract class HorizonAPI extends Horizon{
 						if (!$location->find(true)) {
 							// Seriously no locations even?
 							global $logger;
-							$logger->log('Failed to find any location to assign to user as home location', PEAR_LOG_ERR);
+							$logger->log('Failed to find any location to assign to user as home location', Logger::LOG_ERROR);
 							unset($location);
 						}
 					}
@@ -207,7 +207,7 @@ abstract class HorizonAPI extends Horizon{
 			} else {
 				$timer->logTime("lookupMyAccountInfo failed");
 				global $logger;
-				$logger->log('Horizon API call lookupMyAccountInfo failed.', PEAR_LOG_ERR);
+				$logger->log('Horizon API call lookupMyAccountInfo failed.', Logger::LOG_ERROR);
 				return null;
 			}
 		}
@@ -485,7 +485,7 @@ abstract class HorizonAPI extends Horizon{
 		}
 		$locationId = $_REQUEST['location'];
 		$freezeValue = isset($_REQUEST['freeze']) ? 'on' : 'off';
-		return $this->updateHoldDetailed($patronId, $type, /*$title,*/ $xnum, $cancelId, $locationId, $freezeValue);
+		return $this->updateHoldDetailed($patronId, $type, $xnum, $cancelId, $locationId, $freezeValue);
 	}
 
 	/**
@@ -948,10 +948,10 @@ abstract class HorizonAPI extends Horizon{
 				if ($parsedXml === false){
 					//Failed to load xml
 					global $logger;
-					$logger->log("Error parsing xml", PEAR_LOG_ERR);
-					$logger->log($xml, PEAR_LOG_DEBUG);
+					$logger->log("Error parsing xml", Logger::LOG_ERROR);
+					$logger->log($xml, Logger::LOG_DEBUG);
 					foreach(libxml_get_errors() as $error) {
-						$logger->log("\t {$error->message}", PEAR_LOG_ERR);
+						$logger->log("\t {$error->message}", Logger::LOG_ERROR);
 					}
 					return false;
 				}else{
@@ -962,7 +962,7 @@ abstract class HorizonAPI extends Horizon{
 			}
 		}else{
 			global $logger;
-			$logger->log('Curl problem in getWebServiceResponse', PEAR_LOG_WARNING);
+			$logger->log('Curl problem in getWebServiceResponse', Logger::LOG_WARNING);
 			return false;
 		}
 	}

@@ -102,7 +102,7 @@ class ReadingHistory extends MyAccount
 				}
 
 				if (!$patron){
-					PEAR_Singleton::RaiseError(new PEAR_Error("The patron provided is invalid"));
+					AspenError::raiseError(new AspenError("The patron provided is invalid"));
 				}
 				$result = $patron->getReadingHistory($page, $recordsPerPage, $selectedSortOption);
 
@@ -123,7 +123,7 @@ class ReadingHistory extends MyAccount
 					$pager = new Pager($options);
 					$interface->assign('pageLinks', $pager->getLinks());
 				}
-				if (!PEAR_Singleton::isError($result)) {
+				if (!($result instanceof AspenError)) {
 					$interface->assign('historyActive', $result['historyActive']);
 					$interface->assign('transList', $result['titles']);
 					if (isset($_REQUEST['readingHistoryAction']) && $_REQUEST['readingHistoryAction'] == 'exportToExcel'){

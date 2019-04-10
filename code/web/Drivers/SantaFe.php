@@ -19,7 +19,7 @@ class SantaFe extends Sierra{
 		$curlUrl   = 'https://catalog.ci.santa-fe.nm.us/iii/cas/login?scope=1&service=' . urlencode($baseUrl);
 		$post_data = $this->_getLoginFormValues($patron);
 
-		$logger->log('Loading page ' . $curlUrl, PEAR_LOG_INFO);
+		$logger->log('Loading page ' . $curlUrl, Logger::LOG_NOTICE);
 
 		$loginResponse = $this->curlWrapper->curlPostPage($curlUrl, $post_data);
 
@@ -47,7 +47,7 @@ class SantaFe extends Sierra{
 			// Check for Login Error Responses
 			$numMatches = preg_match('/<span.\s?class="errormessage">(?P<error>.+?)<\/span>/is', $loginResponse, $matches);
 			if ($numMatches > 0) {
-				$logger->log('Millennium Curl Login Attempt received an Error response : ' . $matches['error'], PEAR_LOG_DEBUG);
+				$logger->log('Millennium Curl Login Attempt received an Error response : ' . $matches['error'], Logger::LOG_DEBUG);
 				$loginResult = false;
 			} else {
 

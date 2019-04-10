@@ -501,7 +501,7 @@ class ExploreMore {
 
 		} else {
 			global $logger;
-			$logger->log('Islandora Search Failed.', PEAR_LOG_WARNING);
+			$logger->log('Islandora Search Failed.', Logger::LOG_WARNING);
 		}
 
 		/*if (count($exploreMoreOptions) > 0 && count($exploreMoreOptions) < 3){

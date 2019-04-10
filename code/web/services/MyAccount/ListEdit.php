@@ -63,7 +63,7 @@ class MyAccount_ListEdit extends Action
 		} else {
 			if (isset($_REQUEST['submit'])) {
 				$result = $this->addList();
-				if (PEAR_Singleton::isError($result)) {
+				if ($result instanceof AspenError) {
 					$interface->assign('listError', $result->getMessage());
 				} else {
 					if (!empty($_REQUEST['recordId'])) {
@@ -85,7 +85,7 @@ class MyAccount_ListEdit extends Action
 	function addList() {
 		if ($this->user) {
 			if (strlen(trim($_REQUEST['title'])) == 0) {
-				return new PEAR_Error('list_edit_name_required');
+				return new AspenError('list_edit_name_required');
 			}
 			$list = new UserList();
 			$list->title = strip_tags($_REQUEST['title']);

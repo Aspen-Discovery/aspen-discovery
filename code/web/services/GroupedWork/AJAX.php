@@ -649,7 +649,7 @@ class GroupedWork_AJAX {
 						'result' => true,
 						'message' => 'Your e-mail was sent successfully.'
 				);
-			}elseif (PEAR_Singleton::isError($emailResult)){
+			}elseif (($emailResult instanceof AspenError)){
 				$result = array(
 						'result' => false,
 						'message' => "Your e-mail message could not be sent: {$emailResult}."
@@ -840,7 +840,7 @@ class GroupedWork_AJAX {
 
 		// Retrieve Full record from Solr
 		if (!($record = $searchObject->getRecord($id))) {
-			PEAR_Singleton::raiseError(new PEAR_Error('Record Does Not Exist'));
+			AspenError::raiseError(new AspenError('Record Does Not Exist'));
 		}
 
 		$prospector = new Prospector();

@@ -23,10 +23,6 @@ require_once ROOT_DIR . '/CatalogConnection.php';
 
 class RequestPinReset extends Action{
 	protected $catalog;
-	
-	function __construct()
-	{
-	}
 
 	function launch($msg = null)
 	{
@@ -37,7 +33,7 @@ class RequestPinReset extends Action{
 			$driver = $this->catalog->driver;
 			if ($this->catalog->checkFunction('requestPinReset')){
 				$barcode = strip_tags($_REQUEST['barcode']);
-				$requestPinResetResult = $driver->requestPinReset($barcode);
+				$requestPinResetResult = $this->catalog->requestPinReset($barcode);
 			}else{
 				$requestPinResetResult = array(
 					'error' => 'This functionality is not available in the ILS.',

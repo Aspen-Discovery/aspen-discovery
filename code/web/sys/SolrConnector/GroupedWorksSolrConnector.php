@@ -11,8 +11,8 @@ class GroupedWorksSolrConnector extends Solr
         // Query String Parameters
         $options = array('q' => "barcode:\"$barcode\"", 'fl' => SearchObject_GroupedWorkSearcher::$fields_to_return);
         $result = $this->_select('GET', $options);
-        if (PEAR_Singleton::isError($result)) {
-            PEAR_Singleton::raiseError($result);
+        if ($result instanceof AspenError) {
+            AspenError::raiseError($result);
         }
 
         if (isset($result['response']['docs'][0])){
@@ -29,8 +29,8 @@ class GroupedWorksSolrConnector extends Solr
         }
         $options = array('q' => 'isbn:' . implode(' OR ', $isbns), 'fl' => $fieldsToReturn);
         $result = $this->_select('GET', $options);
-        if (PEAR_Singleton::isError($result)) {
-            PEAR_Singleton::raiseError($result);
+        if ($result instanceof AspenError) {
+            AspenError::raiseError($result);
         }
 
         if (isset($result['response']['docs'][0])){
@@ -54,8 +54,8 @@ class GroupedWorksSolrConnector extends Solr
         }
         $options = array('q' => $idString, 'rows' => count($ids), 'fl' => SearchObject_GroupedWorkSearcher::$fields_to_return);
         $result = $this->_select('GET', $options);
-        if (PEAR_Singleton::isError($result)) {
-            PEAR_Singleton::raiseError($result);
+        if ($result instanceof AspenError) {
+            AspenError::raiseError($result);
         }
         return $result;
     }
@@ -77,8 +77,8 @@ class GroupedWorksSolrConnector extends Solr
         // Query String Parameters
         $options = array('q' => "id:$id", 'qt' => 'morelikethis', 'fl' => SearchObject_GroupedWorkSearcher::$fields_to_return);
         $result = $this->_select('GET', $options);
-        if (PEAR_Singleton::isError($result)) {
-            PEAR_Singleton::raiseError($result);
+        if ($result instanceof AspenError) {
+            AspenError::raiseError($result);
         }
 
         return $result;
@@ -167,8 +167,8 @@ class GroupedWorksSolrConnector extends Solr
         }
 
         $result = $this->_select('GET', $options);
-        if (PEAR_Singleton::isError($result)) {
-            PEAR_Singleton::raiseError($result);
+        if ($result instanceof AspenError) {
+            AspenError::raiseError($result);
         }
 
         return $result;
@@ -221,8 +221,8 @@ class GroupedWorksSolrConnector extends Solr
             $options['fl'] = '*,score';
         }
         $result = $this->_select('GET', $options);
-        if (PEAR_Singleton::isError($result)) {
-            PEAR_Singleton::raiseError($result);
+        if ($result instanceof AspenError) {
+            AspenError::raiseError($result);
         }
 
         return $result;

@@ -49,7 +49,7 @@ class Record_Reviews extends Record_Record
 					$reviews[$func] = Record_Reviews::$func($isbn, $key);
 
 					// If the current provider had no valid reviews, store nothing:
-					if (empty($reviews[$func]) || PEAR_Singleton::isError($reviews[$func])) {
+					if (empty($reviews[$func]) || $reviews[$func] instanceof AspenError) {
 						unset($reviews[$func]);
 					}else{
 						if (is_array($reviews[$func])){
@@ -109,7 +109,7 @@ class Record_Reviews extends Record_Record
 		}
 
 		if ($reviews) {
-			if (!PEAR_Singleton::isError($reviews)) {
+			if (!($reviews instanceof AspenError)) {
 				$interface->assign('reviews', $reviews);
 			}else{
 				echo($reviews);
@@ -221,16 +221,17 @@ class Record_Reviews extends Record_Record
 		$client = new HTTP_Request();
 		$client->setMethod('GET');
 		$client->setURL($url);
-		if (PEAR_Singleton::isError($http = $client->sendRequest())) {
-			$logger->log("Error connecting to $url", PEAR_LOG_ERR);
-			$logger->log("$http", PEAR_LOG_ERR);
+		$http = $client->sendRequest();
+		if ($http instanceof AspenError) {
+			$logger->log("Error connecting to $url", Logger::LOG_ERROR);
+			$logger->log("$http", Logger::LOG_ERROR);
 			return $http;
 		}
 
 		// Test XML Response
 		if (!($xmldoc = @DOMDocument::loadXML($client->getResponseBody()))) {
-			$logger->log("Did not receive XML from $url", PEAR_LOG_ERR);
-			return new PEAR_Error('Invalid XML');
+			$logger->log("Did not receive XML from $url", Logger::LOG_ERROR);
+			return new AspenError('Invalid XML');
 		}
 
 		$i = 0;
@@ -242,16 +243,17 @@ class Record_Reviews extends Record_Record
 				$sourceInfo['file'] . '&client=' . $id . '&type=rw12,hw7';
 
 				$client->setURL($url);
-				if (PEAR_Singleton::isError($http = $client->sendRequest())) {
-					$logger->log("Error connecting to $url", PEAR_LOG_ERR);
-					$logger->log("$http", PEAR_LOG_ERR);
+				$http = $client->sendRequest();
+				if ($http instanceof AspenError) {
+					$logger->log("Error connecting to $url", Logger::LOG_ERROR);
+					$logger->log("$http", Logger::LOG_ERROR);
 					continue;
 				}
 
 				// Test XML Response
 				$responseBody = $client->getResponseBody();
 				if (!($xmldoc2 = @DOMDocument::loadXML($responseBody))) {
-					return new PEAR_Error('Invalid XML');
+					return new AspenError('Invalid XML');
 				}
 
 				// Get the marc field for reviews (520)
@@ -349,10 +351,10 @@ class Record_Reviews extends Record_Record
 		$request = new AWS_Request($id, 'CustomerContentLookup', $params);
 		$response = $request->sendRequest();
 		$result = null;
-		if (!PEAR_Singleton::isError($response)) {
+		if (!($response instanceof AspenError)) {
 			$unxml = new XML_Unserializer();
 			$result = $unxml->unserialize($response);
-			if (!PEAR_Singleton::isError($result)) {
+			if (!($result instanceof AspenError)) {
 				$data = $unxml->getUnserializedData();
 				if (isset($data['Customers']['Customer']['Name'])) {
 					return $data['Customers']['Customer']['Name'];

@@ -190,10 +190,10 @@ class Koha extends AbstractIlsDriver {
                 if ($parsedXml === false){
                     //Failed to load xml
                     global $logger;
-                    $logger->log("Error parsing xml", PEAR_LOG_ERR);
-                    $logger->log($xml, PEAR_LOG_DEBUG);
+                    $logger->log("Error parsing xml", Logger::LOG_ERROR);
+                    $logger->log($xml, Logger::LOG_DEBUG);
                     foreach (libxml_get_errors() as $error){
-                        $logger->log("\t {$error->message}", PEAR_LOG_ERR);
+                        $logger->log("\t {$error->message}", Logger::LOG_ERROR);
                     }
                     return false;
                 }else{
@@ -204,7 +204,7 @@ class Koha extends AbstractIlsDriver {
             }
         }else{
             global $logger;
-            $logger->log('Curl problem in getWebServiceResponse', PEAR_LOG_WARNING);
+            $logger->log('Curl problem in getWebServiceResponse', Logger::LOG_WARNING);
             return false;
         }
     }
@@ -342,7 +342,7 @@ class Koha extends AbstractIlsDriver {
                         $user->homeLocationId = 0;
                         // Logging for Diagnosing PK-1846
                         global $logger;
-                        $logger->log('Koha Driver: No Location found, user\'s homeLocationId being set to 0. User : '.$user->id, PEAR_LOG_WARNING);
+                        $logger->log('Koha Driver: No Location found, user\'s homeLocationId being set to 0. User : '.$user->id, Logger::LOG_WARNING);
                     }
 
                     if ((empty($user->homeLocationId) || $user->homeLocationId == -1) || (isset($location) && $user->homeLocationId != $location->locationId)) { // When homeLocation isn't set or has changed
@@ -358,7 +358,7 @@ class Koha extends AbstractIlsDriver {
                             if (!$location->find(true)) {
                                 // Seriously no locations even?
                                 global $logger;
-                                $logger->log('Failed to find any location to assign to user as home location', PEAR_LOG_ERR);
+                                $logger->log('Failed to find any location to assign to user as home location', Logger::LOG_ERROR);
                                 unset($location);
                             }
                         }
@@ -424,9 +424,9 @@ class Koha extends AbstractIlsDriver {
 
                     return $user;
                 }else{
-                    $logger->log("MySQL did not return a result for getUserInfoStmt", PEAR_LOG_ERR);
+                    $logger->log("MySQL did not return a result for getUserInfoStmt", Logger::LOG_ERROR);
                     if ($i == count($barcodesToTest) -1){
-                        return new PEAR_Error('authentication_error_technical');
+                        return new AspenError('authentication_error_technical');
                     }
                 }
             }
@@ -441,7 +441,7 @@ class Koha extends AbstractIlsDriver {
 
 			if (!$this->dbConnection || mysqli_errno($this->dbConnection) != 0){
 				global $logger;
-				$logger->log("Error connecting to Koha database " . mysqli_error($this->dbConnection), PEAR_LOG_ERR);
+				$logger->log("Error connecting to Koha database " . mysqli_error($this->dbConnection), Logger::LOG_ERROR);
 				$this->dbConnection = null;
 			}
 			global $timer;

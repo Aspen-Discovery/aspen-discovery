@@ -1383,7 +1383,7 @@ class Library extends DataObject
 					if (!$this->showInMainDetails) $this->showInMainDetails = array();
 				}catch (Exception $e){
 					global $logger;
-					$logger->log("Error loading $this->libraryId $e", PEAR_LOG_DEBUG);
+					$logger->log("Error loading $this->libraryId $e", Logger::LOG_DEBUG);
 				}
 
 			}
@@ -1446,7 +1446,7 @@ class Library extends DataObject
 		}
 		// Do this last so that everything else can update even if we get an error here
 		$deleteCheck = $this->saveMaterialsRequestFormats();
-		if (PEAR::isError($deleteCheck)) {
+		if ($deleteCheck instanceof AspenError) {
 			$ret = false;
 		};
 
@@ -1565,7 +1565,7 @@ class Library extends DataObject
 					$deleteCheck = $object->delete();
 					if (!$deleteCheck) {
 						$errorString = 'Materials Request(s) are present for the format "' . $object->format . '".';
-						$error       = $this->raiseError($errorString, PEAR_LOG_ERR);
+						$error       = $this->raiseError($errorString, Logger::LOG_ERROR);
 						$error->addUserInfo($errorString);
 						return $error;
 					}

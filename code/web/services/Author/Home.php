@@ -141,7 +141,7 @@ class Author_Home extends Action
 		$interface->caching = false;
 
 		if (!isset($_GET['author'])) {
-			PEAR_Singleton::raiseError(new PEAR_Error('Unknown Author'));
+			AspenError::raiseError(new AspenError('Unknown Author'));
 		} else {
 			$interface->assign('author', $_GET['author']);
 		}
@@ -246,8 +246,8 @@ class Author_Home extends Action
 		// Process Search
 		/** @var PEAR_Error|null $result */
 		$result = $searchObject->processSearch(false, true);
-		if (PEAR_Singleton::isError($result)) {
-			PEAR_Singleton::raiseError($result->getMessage());
+		if ($result instanceof AspenError) {
+			AspenError::raiseError($result->getMessage());
 		}
 
 		// Some more variables

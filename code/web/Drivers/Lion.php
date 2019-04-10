@@ -32,7 +32,7 @@ class Lion extends Sierra
 		$email = trim($_REQUEST['email']);
 
 		$curl_url = $this->getVendorOpacUrl() . "/selfreg~S" . $this->getLibraryScope();
-		$logger->log('Loading page ' . $curl_url, PEAR_LOG_INFO);
+		$logger->log('Loading page ' . $curl_url, Logger::LOG_NOTICE);
 
 		$curl_connection = $this->curlWrapper->curl_connect($curl_url);
 

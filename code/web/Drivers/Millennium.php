@@ -129,7 +129,7 @@ class Millennium extends AbstractIlsDriver
 
 		$req =  $host . "/search~S{$scope}/.b" . $id_ . "/.b" . $id_ . "/1,1,1,B/holdings~" . $id_;
 		$millenniumCache->holdingsInfo = file_get_contents($req);
-		//$logger->log("Loaded holdings from url $req", PEAR_LOG_DEBUG);
+		//$logger->log("Loaded holdings from url $req", Logger::LOG_DEBUG);
 		$timer->logTime('got holdings from millennium');
 
 		$req =  $host . "/search~S{$scope}/.b" . $id_ . "/.b" . $id_ . "/1,1,1,B/frameset~" . $id_;
@@ -183,7 +183,7 @@ class Millennium extends AbstractIlsDriver
 
 		//Load the raw information about the patron
 		$patronDump = $this->_getPatronDump($barcode);
-		//$logger->log("Retrieved patron dump for $barcode\r\n" . print_r($patronDump, true), PEAR_LOG_DEBUG);
+		//$logger->log("Retrieved patron dump for $barcode\r\n" . print_r($patronDump, true), Logger::LOG_DEBUG);
 
 		//Create a variety of possible name combinations for testing purposes.
 		$userValid = false;
@@ -272,7 +272,7 @@ class Millennium extends AbstractIlsDriver
 				}
 			} else {
 				global $logger;
-				$logger->log('Millennium Driver: No Home Library Location or Hold location found in patron dump. User : '.$user->id, PEAR_LOG_ERR);
+				$logger->log('Millennium Driver: No Home Library Location or Hold location found in patron dump. User : '.$user->id, Logger::LOG_ERROR);
 				// The code below will attempt to find a location for the library anyway if the homeLocation is already set
 			}
 
@@ -289,7 +289,7 @@ class Millennium extends AbstractIlsDriver
 						if (!$location->find(true)) {
 							// Seriously no locations even?
 							global $logger;
-							$logger->log('Failed to find any location to assign to user as home location', PEAR_LOG_ERR);
+							$logger->log('Failed to find any location to assign to user as home location', Logger::LOG_ERROR);
 							unset($location);
 						}
 				}
@@ -550,7 +550,7 @@ class Millennium extends AbstractIlsDriver
 		$curlUrl   = $this->getVendorOpacUrl() . "/patroninfo/";
 		$post_data = $this->_getLoginFormValues($patron);
 
-		$logger->log('Loading page ' . $curlUrl, PEAR_LOG_INFO);
+		$logger->log('Loading page ' . $curlUrl, Logger::LOG_NOTICE);
 
 		$loginResponse = $this->curlWrapper->curlPostPage($curlUrl, $post_data);
 
@@ -574,7 +574,7 @@ class Millennium extends AbstractIlsDriver
 			// Check for Login Error Responses
 			$numMatches = preg_match('/<span.\s?class="errormessage">(?P<error>.+?)<\/span>/is', $loginResponse, $matches);
 			if ($numMatches > 0) {
-				$logger->log('Millennium Curl Login Attempt received an Error response : ' . $matches['error'], PEAR_LOG_DEBUG);
+				$logger->log('Millennium Curl Login Attempt received an Error response : ' . $matches['error'], Logger::LOG_DEBUG);
 				$loginResult = false;
 			} else {
 
@@ -789,7 +789,7 @@ class Millennium extends AbstractIlsDriver
 			$result = $millenniumCheckouts->renewCheckout($patron, $itemId, $itemIndex);
 			if (!$result['success'] && (strpos($result['message'], 'your account is in use by the system.') || stripos($result['message'], 'n use by system.'))) {
 				global $logger;
-				$logger->log("System still busy after $numTries attempts at renewal", PEAR_LOG_ERR);
+				$logger->log("System still busy after $numTries attempts at renewal", Logger::LOG_ERROR);
 			}
 		}
 		return $result;
@@ -1110,7 +1110,7 @@ class Millennium extends AbstractIlsDriver
 			}else{
 				$locationCode = '?????';
 			}
-			//$logger->log("$itemNumber) iType = $iType, locationCode = $locationCode", PEAR_LOG_DEBUG);
+			//$logger->log("$itemNumber) iType = $iType, locationCode = $locationCode", Logger::LOG_DEBUG);
 
 			//Check the determiner table to see if this matches
 			$holdable = $this->isItemHoldableToPatron($locationCode, $iType, $pTypes);
@@ -1142,34 +1142,34 @@ class Millennium extends AbstractIlsDriver
 			}
 			$holdable = false;
 			//global $logger;
-			//$logger->log("Checking loan rules for $locationCode, $iType, $pType", PEAR_LOG_DEBUG);
+			//$logger->log("Checking loan rules for $locationCode, $iType, $pType", Logger::LOG_DEBUG);
 			foreach ($this->loanRuleDeterminers as $loanRuleDeterminer){
-				//$logger->log("Determiner {$loanRuleDeterminer->rowNumber}", PEAR_LOG_DEBUG);
+				//$logger->log("Determiner {$loanRuleDeterminer->rowNumber}", Logger::LOG_DEBUG);
 				//Check the location to be sure the determiner applies to this item
 				if ($loanRuleDeterminer->matchesLocation($locationCode) ){
-					//$logger->log("{$loanRuleDeterminer->rowNumber}) Location correct $locationCode, {$loanRuleDeterminer->location} ({$loanRuleDeterminer->trimmedLocation()})", PEAR_LOG_DEBUG);
+					//$logger->log("{$loanRuleDeterminer->rowNumber}) Location correct $locationCode, {$loanRuleDeterminer->location} ({$loanRuleDeterminer->trimmedLocation()})", Logger::LOG_DEBUG);
 					//Check that the iType is correct
 					if ($loanRuleDeterminer->itemType == '999' || in_array($iType, $loanRuleDeterminer->iTypeArray())){
-						//$logger->log("{$loanRuleDeterminer->rowNumber}) iType correct $iType, {$loanRuleDeterminer->itemType}", PEAR_LOG_DEBUG);
+						//$logger->log("{$loanRuleDeterminer->rowNumber}) iType correct $iType, {$loanRuleDeterminer->itemType}", Logger::LOG_DEBUG);
 						foreach ($pTypes as $pType){
 							if ($pType == -1 || $loanRuleDeterminer->patronType == '999' || in_array($pType, $loanRuleDeterminer->pTypeArray())){
-								//$logger->log("{$loanRuleDeterminer->rowNumber}) pType correct $pType, {$loanRuleDeterminer->patronType}", PEAR_LOG_DEBUG);
+								//$logger->log("{$loanRuleDeterminer->rowNumber}) pType correct $pType, {$loanRuleDeterminer->patronType}", Logger::LOG_DEBUG);
 								$loanRule = $this->loanRules[$loanRuleDeterminer->loanRuleId];
-								//$logger->log("Determiner {$loanRuleDeterminer->rowNumber} indicates Loan Rule {$loanRule->loanRuleId} applies, holdable {$loanRule->holdable}", PEAR_LOG_DEBUG);
+								//$logger->log("Determiner {$loanRuleDeterminer->rowNumber} indicates Loan Rule {$loanRule->loanRuleId} applies, holdable {$loanRule->holdable}", Logger::LOG_DEBUG);
 								$holdable = ($loanRule->holdable == 1);
 								if ($holdable || $pType != -1){
 									break;
 								}
 							//}else{
-								//$logger->log("PType incorrect", PEAR_LOG_DEBUG);
+								//$logger->log("PType incorrect", Logger::LOG_DEBUG);
 							}
 						}
 
 					//}else{
-						//$logger->log("IType incorrect", PEAR_LOG_DEBUG);
+						//$logger->log("IType incorrect", Logger::LOG_DEBUG);
 					}
 				//}else{
-					//$logger->log("Location incorrect {$loanRuleDeterminer->location} != {$locationCode}", PEAR_LOG_DEBUG);
+					//$logger->log("Location incorrect {$loanRuleDeterminer->location} != {$locationCode}", Logger::LOG_DEBUG);
 				}
 				if ($holdable) break;
 			}
@@ -1211,7 +1211,7 @@ class Millennium extends AbstractIlsDriver
 			}else{
 				$locationCode = '?????';
 			}
-			//$logger->log("$itemNumber) iType = $iType, locationCode = $locationCode", PEAR_LOG_DEBUG);
+			//$logger->log("$itemNumber) iType = $iType, locationCode = $locationCode", Logger::LOG_DEBUG);
 
 			//Check the determiner table to see if this matches
 			$bookable = $this->isItemBookableToPatron($locationCode, $iType, $pTypes);
@@ -1243,36 +1243,36 @@ class Millennium extends AbstractIlsDriver
 			}
 			$bookable = false;
 			//global $logger;
-			//$logger->log("Checking loan rules for $locationCode, $iType, $pType", PEAR_LOG_DEBUG);
+			//$logger->log("Checking loan rules for $locationCode, $iType, $pType", Logger::LOG_DEBUG);
 			foreach ($this->loanRuleDeterminers as $loanRuleDeterminer){
-				//$logger->log("Determiner {$loanRuleDeterminer->rowNumber}", PEAR_LOG_DEBUG);
+				//$logger->log("Determiner {$loanRuleDeterminer->rowNumber}", Logger::LOG_DEBUG);
 				//Check the location to be sure the determiner applies to this item
 				if ($loanRuleDeterminer->matchesLocation($locationCode) ){
-					//$logger->log("{$loanRuleDeterminer->rowNumber}) Location correct $locationCode, {$loanRuleDeterminer->location} ({$loanRuleDeterminer->trimmedLocation()})", PEAR_LOG_DEBUG);
+					//$logger->log("{$loanRuleDeterminer->rowNumber}) Location correct $locationCode, {$loanRuleDeterminer->location} ({$loanRuleDeterminer->trimmedLocation()})", Logger::LOG_DEBUG);
 					//Check that the iType is correct
 					if ($loanRuleDeterminer->itemType == '999' || in_array($iType, $loanRuleDeterminer->iTypeArray())){
-						//$logger->log("{$loanRuleDeterminer->rowNumber}) iType correct $iType, {$loanRuleDeterminer->itemType}", PEAR_LOG_DEBUG);
+						//$logger->log("{$loanRuleDeterminer->rowNumber}) iType correct $iType, {$loanRuleDeterminer->itemType}", Logger::LOG_DEBUG);
 						foreach ($pTypes as $pType){
 							if ($pType == -1 || $loanRuleDeterminer->patronType == '999' || in_array($pType, $loanRuleDeterminer->pTypeArray())){
-								//$logger->log("{$loanRuleDeterminer->rowNumber}) pType correct $pType, {$loanRuleDeterminer->patronType}", PEAR_LOG_DEBUG);
+								//$logger->log("{$loanRuleDeterminer->rowNumber}) pType correct $pType, {$loanRuleDeterminer->patronType}", Logger::LOG_DEBUG);
 								$loanRule = $this->loanRules[$loanRuleDeterminer->loanRuleId];
-								//$logger->log("Determiner {$loanRuleDeterminer->rowNumber} indicates Loan Rule {$loanRule->loanRuleId} applies, bookable {$loanRule->bookable}", PEAR_LOG_DEBUG);
+								//$logger->log("Determiner {$loanRuleDeterminer->rowNumber} indicates Loan Rule {$loanRule->loanRuleId} applies, bookable {$loanRule->bookable}", Logger::LOG_DEBUG);
 								$bookable = ($loanRule->bookable == 1);
 								if ($bookable || $pType != -1){
 									break;
 								}
 							}
 //						else{
-//							//$logger->log("PType incorrect", PEAR_LOG_DEBUG);
+//							//$logger->log("PType incorrect", Logger::LOG_DEBUG);
 //						}
 						}
 					}
 //					else{
-//						//$logger->log("IType incorrect", PEAR_LOG_DEBUG);
+//						//$logger->log("IType incorrect", Logger::LOG_DEBUG);
 //					}
 				}
 //				else{
-//					//$logger->log("Location incorrect {$loanRuleDeterminer->location} != {$locationCode}", PEAR_LOG_DEBUG);
+//					//$logger->log("Location incorrect {$loanRuleDeterminer->location} != {$locationCode}", Logger::LOG_DEBUG);
 //				}
 			}
 			$memCache->set($memcacheKey, ($bookable ? 'true' : 'false'), 0 , $configArray['Caching']['loan_rule_result']); // TODO: set a different config option for booking results?
@@ -1344,7 +1344,7 @@ class Millennium extends AbstractIlsDriver
 		//Login to the site using vufind login.
 		$cookie = tempnam ("/tmp", "CURLCOOKIE");
 		$curl_url = $this->getVendorOpacUrl() . "/patroninfo";
-		$logger->log('Loading page ' . $curl_url, PEAR_LOG_INFO);
+		$logger->log('Loading page ' . $curl_url, Logger::LOG_NOTICE);
 		//echo "$curl_url";
 		$curl_connection = curl_init($curl_url);
 		curl_setopt($curl_connection, CURLOPT_CONNECTTIMEOUT, 30);
@@ -1368,7 +1368,7 @@ class Millennium extends AbstractIlsDriver
 			//Get the staff page for the record
 			//$curl_url = "https://sierra.marmot.org/search~S93?/Ypig&searchscope=93&SORT=D/Ypig&searchscope=93&SORT=D&SUBKEY=pig/1,383,383,B/staffi1~$shortId&FF=Ypig&2,2,";
 			$curl_url = $this->getVendorOpacUrl() . "/search~S{$scope}?/Ypig&searchscope={$scope}&SORT=D/Ypig&searchscope={$scope}&SORT=D&SUBKEY=pig/1,383,383,B/staffi$itemNumber~$shortId&FF=Ypig&2,2,";
-			$logger->log('Loading page ' . $curl_url, PEAR_LOG_INFO);
+			$logger->log('Loading page ' . $curl_url, Logger::LOG_NOTICE);
 			//echo "$curl_url";
 			curl_setopt($curl_connection, CURLOPT_URL, $curl_url);
 			curl_setopt($curl_connection, CURLOPT_CONNECTTIMEOUT, 30);
@@ -1429,7 +1429,7 @@ class Millennium extends AbstractIlsDriver
 
 		$cookie = tempnam ("/tmp", "CURLCOOKIE");
 		$curl_url = $this->getVendorOpacUrl() . "/selfreg~S" . $this->getLibraryScope();
-		$logger->log('Loading page ' . $curl_url, PEAR_LOG_INFO);
+		$logger->log('Loading page ' . $curl_url, Logger::LOG_NOTICE);
 		//echo "$curl_url";
 		$curl_connection = curl_init($curl_url);
 		curl_setopt($curl_connection, CURLOPT_CONNECTTIMEOUT, 30);
@@ -1495,24 +1495,6 @@ class Millennium extends AbstractIlsDriver
 		$loginData['code'] = $patron->cat_password;
 
 		return $loginData;
-	}
-
-	/**
-	 * Process inventory for a particular item in the catalog
-	 *
-	 * @param string $login     Login for the user doing the inventory
-	 * @param string $password1 Password for the user doing the inventory
-	 * @param string $initials
-	 * @param string $password2
-	 * @param string[] $barcodes
-	 * @param boolean $updateIncorrectStatuses
-	 *
-	 * @return array
-	 */
-	function doInventory($login, $password1, $initials, $password2, $barcodes, $updateIncorrectStatuses){
-		require_once ROOT_DIR . '/Drivers/marmot_inc/MillenniumInventory.php';
-		$millenniumInventory = new MillenniumInventory($this);
-		return $millenniumInventory->doInventory($login, $password1, $initials, $password2, $barcodes, $updateIncorrectStatuses);
 	}
 
 	/**
@@ -1795,7 +1777,7 @@ class Millennium extends AbstractIlsDriver
 		$barcode = trim($barcode);
 		$pinTestUrl = $this->accountProfile->patronApiUrl . "/PATRONAPI/$barcode/$pin/pintest";
 		$pinTestResultRaw = $this->curlWrapper->curlGetPage($pinTestUrl);
-		//$logger->log('PATRONAPI pintest response : ' . $api_contents, PEAR_LOG_DEBUG);
+		//$logger->log('PATRONAPI pintest response : ' . $api_contents, Logger::LOG_DEBUG);
 		if ($pinTestResultRaw){
 			$pinTestResult = strip_tags($pinTestResultRaw);
 

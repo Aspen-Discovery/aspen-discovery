@@ -86,7 +86,7 @@ class EditList extends Action
 
 		// Ensure user have privs to view the list
 		if ($list->user_id != $user->id) {
-			PEAR_Singleton::raiseError(new PEAR_Error(translate('list_access_denied')));
+			AspenError::raiseError(new AspenError(translate('list_access_denied')));
 		}
 
 		// Save Data

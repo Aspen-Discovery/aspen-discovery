@@ -56,7 +56,7 @@ class Timer{
 			$timingInfo = "\r\nTiming for: " . $_SERVER['REQUEST_URI'] . "\r\n";
 			$timingInfo .= implode("\r\n", $this->timingMessages);
 			$timingInfo .= "\r\nTotal Elapsed time was: $totalElapsedTime seconds.\r\n";
-			$logger->log($timingInfo, PEAR_LOG_NOTICE);
+			$logger->log($timingInfo, Logger::LOG_NOTICE);
 		}
 	}
 
@@ -68,7 +68,7 @@ class Timer{
 				$timingInfo = "\r\nTiming for: " . $_SERVER['REQUEST_URI'] . "\r\n";
 				$timingInfo .= implode("\r\n", $this->timingMessages);
 				$timingInfo .= "\r\nTotal Elapsed time was: $totalElapsedTime seconds.\r\n";
-				$logger->log($timingInfo, PEAR_LOG_NOTICE);
+				$logger->log($timingInfo, Logger::LOG_NOTICE);
 			}
 		}
 	}

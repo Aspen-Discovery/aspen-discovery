@@ -46,13 +46,13 @@ abstract class Archive_Object extends Action {
 			$this->endExhibitContext();
 		}
 		if ($isExhibitContext) {
-			$logger->log("In exhibit context, setting exhibit navigation", PEAR_LOG_DEBUG);
+			$logger->log("In exhibit context, setting exhibit navigation", Logger::LOG_DEBUG);
 			$this->setExhibitNavigation();
 		} elseif (isset($_SESSION['lastSearchURL'])) {
-			$logger->log("In search context, setting search navigation", PEAR_LOG_DEBUG);
+			$logger->log("In search context, setting search navigation", Logger::LOG_DEBUG);
 			$this->setArchiveSearchNavigation();
 		} else {
-			$logger->log("Not in any context, not setting navigation", PEAR_LOG_DEBUG);
+			$logger->log("Not in any context, not setting navigation", Logger::LOG_DEBUG);
 		}
 
 		//Check to see if usage is restricted or not.
@@ -162,7 +162,7 @@ abstract class Archive_Object extends Action {
 
 		$this->archiveObject = $fedoraUtils->getObject($this->pid);
 		if ($this->archiveObject == null){
-			PEAR_Singleton::raiseError(new PEAR_Error("Could not load object for PID {$this->pid}"));
+			AspenError::raiseError(new AspenError("Could not load object for PID {$this->pid}"));
 		}
 		$this->recordDriver = RecordDriverFactory::initRecordDriver($this->archiveObject);
 		$interface->assign('recordDriver', $this->recordDriver);
@@ -379,7 +379,7 @@ abstract class Archive_Object extends Action {
 	protected function endExhibitContext()
 	{
 		global $logger;
-		$logger->log("Ending exhibit context", PEAR_LOG_DEBUG);
+		$logger->log("Ending exhibit context", Logger::LOG_DEBUG);
 		$_SESSION['ExhibitContext']  = null;
 		$_SESSION['exhibitSearchId'] = null;
 		$_SESSION['placePid']        = null;
@@ -413,9 +413,9 @@ abstract class Archive_Object extends Action {
 			if (!empty($_SESSION['placeLabel'])) {
 				$exhibitName .= ' - ' . $_SESSION['placeLabel'];
 			}
-			$logger->log("Navigating from a map exhibit", PEAR_LOG_DEBUG);
+			$logger->log("Navigating from a map exhibit", Logger::LOG_DEBUG);
 		}else{
-			$logger->log("Navigating from a NON map exhibit", PEAR_LOG_DEBUG);
+			$logger->log("Navigating from a NON map exhibit", Logger::LOG_DEBUG);
 		}
 
 		//TODO: rename to template vars exhibitName and exhibitUrl;  does it affect other navigation contexts
@@ -458,9 +458,9 @@ abstract class Archive_Object extends Action {
 			$searchObject->init('islandora');
 			$searchObject->getNextPrevLinks($_SESSION['exhibitSearchId'], $recordIndex, $page, $isMapExhibit);
 			// pass page and record index info
-			$logger->log("Setting exhibit navigation for exhibit {$_SESSION['ExhibitContext']} from search id {$_SESSION['exhibitSearchId']}", PEAR_LOG_DEBUG);
+			$logger->log("Setting exhibit navigation for exhibit {$_SESSION['ExhibitContext']} from search id {$_SESSION['exhibitSearchId']}", Logger::LOG_DEBUG);
 		}else{
-			$logger->log("Exhibit search id was not provided", PEAR_LOG_DEBUG);
+			$logger->log("Exhibit search id was not provided", Logger::LOG_DEBUG);
 		}
 	}
 
@@ -475,12 +475,12 @@ abstract class Archive_Object extends Action {
 		$searchObject = SearchObjectFactory::initSearchObject('Islandora');
 		$searchObject->init($searchSource);
 		$searchObject->getNextPrevLinks();
-		$logger->log("Setting search navigation for archive search", PEAR_LOG_DEBUG);
+		$logger->log("Setting search navigation for archive search", Logger::LOG_DEBUG);
 	}
 
 	private function initializeExhibitContextDataFromCookie() {
 		global $logger;
-		$logger->log("Initializing exhibit context from Cookie Data", PEAR_LOG_DEBUG);
+		$logger->log("Initializing exhibit context from Cookie Data", Logger::LOG_DEBUG);
 		$_SESSION['ExhibitContext']             = empty($_COOKIE['ExhibitContext'])             ? $_SESSION['ExhibitContext'] : $_COOKIE['ExhibitContext'];
 		$_SESSION['exhibitSearchId']            = empty($_COOKIE['exhibitSearchId'])            ? $_SESSION['exhibitSearchId'] : $_COOKIE['exhibitSearchId'];
 		$_SESSION['placePid']                   = empty($_COOKIE['placePid'])                   ? $_SESSION['placePid'] : $_COOKIE['placePid'];
@@ -498,7 +498,7 @@ abstract class Archive_Object extends Action {
 
 	private function updateCookieForExhibitContextData() {
 		global $logger;
-		$logger->log("Initializing exhibit context from Cookie Data", PEAR_LOG_DEBUG);
+		$logger->log("Initializing exhibit context from Cookie Data", Logger::LOG_DEBUG);
 		$_COOKIE['ExhibitContext']             = empty($_SESSION['ExhibitContext'])             ? null : $_SESSION['ExhibitContext'];
 		$_COOKIE['exhibitSearchId']            = empty($_SESSION['exhibitSearchId'])            ? null : $_SESSION['exhibitSearchId'];
 		$_COOKIE['placePid']                   = empty($_SESSION['placePid'])                   ? null : $_SESSION['placePid'];

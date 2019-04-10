@@ -9,7 +9,7 @@ VuFind.Account = (function(){
 		showCovers: null,
 
 		addAccountLink: function(){
-			var url = Globals.path + "/MyAccount/AJAX?method=getAddAccountLinkForm";
+			const url = Globals.path + "/MyAccount/AJAX?method=getAddAccountLinkForm";
 			VuFind.Account.ajaxLightbox(url, true);
 		},
 
@@ -19,21 +19,20 @@ VuFind.Account = (function(){
 		 * Called from list-form.tpl
 		 * @returns {boolean}
 		 */
-		addList: function(){
-			var form = $("#addListForm"),
-					isPublic = form.find("#public").prop("checked"),
-					recordId = form.find("input[name=recordId]").val(),
-					source = form.find("input[name=source]").val(),
+		addList: function(recordId){
+			let form = $("#addListForm");
+			recordId = recordId === undefined ? form.find("input[name=recordId]").val() : recordId;
+			let		isPublic = form.find("#public").prop("checked"),
 					title = form.find("input[name=title]").val(),
 					desc = $("#listDesc").val(),
-					url = Globals.path + "/MyAccount/AJAX",
-					params = {
-							'method':'AddList',
-							title: title,
-							public: isPublic,
-							desc: desc,
-							recordId: recordId
-						};
+					url = Globals.path + "/MyAccount/AJAX";
+			let params = {
+				'method':'AddList',
+				title: title,
+				public: isPublic,
+				desc: desc,
+				recordId: recordId
+			};
 			$.getJSON(url, params,function (data) {
 					if (data.success) {
 						VuFind.showMessage("Added Successfully", data.message, true, true);
@@ -56,7 +55,7 @@ VuFind.Account = (function(){
 		 */
 		ajaxLogin: function (trigger, ajaxCallback, closeModalOnAjaxSuccess) {
 			if (Globals.loggedIn) {
-				if (ajaxCallback != undefined && typeof(ajaxCallback) === "function") {
+				if (ajaxCallback !== undefined && typeof(ajaxCallback) === "function") {
 					ajaxCallback();
 				} else if (VuFind.Account.ajaxCallback != null && typeof(VuFind.Account.ajaxCallback) === "function") {
 					VuFind.Account.ajaxCallback();
@@ -65,12 +64,12 @@ VuFind.Account = (function(){
 			} else {
 				var multistep = false,
 						loginLink = false;
-				if (ajaxCallback != undefined && typeof(ajaxCallback) === "function") {
+				if (ajaxCallback !== undefined && typeof(ajaxCallback) === "function") {
 					multistep = true;
 				}
 				VuFind.Account.ajaxCallback = ajaxCallback;
 				VuFind.Account.closeModalOnAjaxSuccess = closeModalOnAjaxSuccess;
-				if (trigger != undefined && trigger != null) {
+				if (trigger !== undefined && trigger !== null) {
 					var dialogTitle = trigger.attr("title") ? trigger.attr("title") : trigger.data("title");
 					loginLink = trigger.data('login');
 					/*
@@ -103,6 +102,14 @@ VuFind.Account = (function(){
 			this.ajaxLogin(jqTrigger, function () {
 				document.location = linkDestination;
 			}, true);
+			return false;
+		},
+
+		loadListData: function (){
+			var url = Globals.path + "/MyAccount/AJAX?method=getListData&activeModule=" + Globals.activeModule + '&activeAction=' + Globals.activeAction;
+			$.getJSON(url, function(data){
+				$("#lists-placeholder").html(data.lists);
+			});
 			return false;
 		},
 
@@ -381,46 +388,6 @@ VuFind.Account = (function(){
 			return false
 		},
 
-/* TODO This functionality is currently not employed, but it could be restored now. plb 11-23-15
-        If that happens, implement the confirmation process for single cancels above to give the user clear
-         choices when asked to confirm.
-
-		cancelSelectedHolds: function() {
-			if (Globals.loggedIn) {
-				var selectedTitles = this.getSelectedTitles()
-								.replace(/waiting|available/g, ''),// strip out of name for now.
-						numHolds = $("input.titleSelect:checked").length;
-				// if numHolds equals 0, quit because user has canceled in getSelectedTitles()
-				if (numHolds > 0 && confirm('Cancel ' + numHolds + ' selected hold' + (numHolds > 1 ? 's' : '') + '?')) {
-					VuFind.loadingMessage();
-					$.getJSON(Globals.path + "/MyAccount/AJAX?method=cancelHolds&"+selectedTitles, function(data){
-						VuFind.showMessage(data.title, data.modalBody, data.success); // autoclose when successful
-						if (data.success) {
-							// remove canceled items from page
-							$("input.titleSelect:checked").closest('div.result').remove();
-						} else if (data.failed) { // remove items that didn't fail
-							var searchArray = data.failed.map(function(ele){return ele.toString()});
-							// convert any number values to string, this is needed bcs inArray() below does strict comparisons
-							// & id will be a string. (sometimes the id values are of type number )
-							$("input.titleSelect:checked").each(function(){
-								var id = $(this).attr('id').replace(/selected/g, ''); //strip down to just the id part
-								if ($.inArray(id, searchArray) == -1) // if the item isn't one of the failed cancels, get rid of its containing div.
-									$(this).closest('div.result').remove();
-							});
-						}
-					}).fail(function(){
-						VuFind.ajaxFail();
-					});
-				}
-			} else {
-				this.ajaxLogin(null, function () {
-					VuFind.Account.cancelSelectedHolds();
-				}, false);
-		}
-		return false;
-	},
-*/
-
 		cancelBooking: function(patronId, cancelId){
 			if (confirm("Are you sure you want to cancel this scheduled item?")){
 				if (Globals.loggedIn) {
@@ -691,11 +658,11 @@ VuFind.Account = (function(){
 			return false;
 		},
 
-		showCreateListForm: function(id){
+		showCreateListForm: function(id = null){
 			if (Globals.loggedIn){
-				var url = Globals.path + "/MyAccount/AJAX",
-						params = {method:"getCreateListForm"};
-				if (id != undefined){
+				let url = Globals.path + "/MyAccount/AJAX";
+				let params = {method:"getCreateListForm"};
+				if (id != null){
 					params.recordId= id;
 				}
 				$.getJSON(url, params, function(data){

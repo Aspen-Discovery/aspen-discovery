@@ -10,7 +10,7 @@ class DownloadPDF extends Archive_Object{
 		}
 
 		if (!$pdfStream){
-			PEAR_Singleton::raiseError('Sorry, We could not create a PDF for that selection.');
+			AspenError::raiseError('Sorry, We could not create a PDF for that selection.');
 		}else{
 			$expires = 60*60*24*14;  //expire the cover in 2 weeks on the client side
 			header("Cache-Control: maxage=".$expires);

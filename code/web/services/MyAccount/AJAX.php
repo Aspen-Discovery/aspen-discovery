@@ -13,12 +13,12 @@ class MyAccount_AJAX
 			'getEmailMyListForm', 'sendMyListEmail', 'setListEntryPositions',
 			'removeTag',
 			'saveSearch', 'deleteSavedSearch', // deleteSavedSearch not checked
-			'confirmCancelHold', 'cancelHold', 'cancelHolds', 'freezeHold', 'thawHold', 'getChangeHoldLocationForm', 'changeHoldLocation',
+			'confirmCancelHold', 'cancelHold', 'freezeHold', 'thawHold', 'getChangeHoldLocationForm', 'changeHoldLocation',
 			'getReactivationDateForm', //not checked
-			'renewCheckout', 'renewAll', 'renewSelectedItems', 'getPinResetForm',
+			'renewCheckout', 'renewAll', 'renewSelectedItems',
 			'getAddAccountLinkForm', 'addAccountLink', 'removeAccountLink',
-			'cancelBooking', 'getCitationFormatsForm', 'getAddBrowseCategoryFromListForm'
-		  ,'getMasqueradeAsForm', 'initiateMasquerade', 'endMasquerade', 'getMenuData'
+			'cancelBooking', 'getCitationFormatsForm', 'getAddBrowseCategoryFromListForm',
+		    'getMasqueradeAsForm', 'initiateMasquerade', 'endMasquerade', 'getMenuData', 'getListData'
 		);
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
 		if (method_exists($this, $method)) {
@@ -46,7 +46,7 @@ class MyAccount_AJAX
 				} catch (Exception $e) {
 					$output = json_encode(array('error' => 'error_encoding_data', 'message' => $e));
 					global $logger;
-					$logger->log("Error encoding json data $e", PEAR_LOG_ERR);
+					$logger->log("Error encoding json data $e", Logger::LOG_ERROR);
 				}
 				echo $output;
 
@@ -189,22 +189,6 @@ class MyAccount_AJAX
 		return $formDefinition;
 	}
 
-	// TODO: Clean-up: No Calls to this method were found. plb 2-1-2016
-	function getPinResetForm(){
-		global $interface;
-		$interface->assign('popupTitle', 'Reset PIN Request');
-
-		$formDefinition = array(
-			'title' => 'Reset PIN',
-			'modalBody' => $interface->fetch('MyAccount/resetPinPopup.tpl'),
-			'modalButtons' => "<span class='tool btn btn-primary' onclick='VuFind.Account.resetPinReset(); return false;'>Add To List</span>"
-		);
-		return $formDefinition;
-//		$pageContent = $interface->fetch('MyResearch/resetPinPopup.tpl');
-//		$interface->assign('popupContent', $pageContent);
-//		return $interface->fetch('popup-wrapper.tpl');
-	}
-
 	function saveSearch()
 	{
 		$searchId = $_REQUEST['searchId'];
@@ -324,12 +308,13 @@ class MyAccount_AJAX
 	}
 
 	function cancelBooking() {
+        $totalCancelled = null;
+        $numCancelled = null;
 		try {
 			$user = UserAccount::getLoggedInUser();
 
 			if (!empty($_REQUEST['cancelAll']) && $_REQUEST['cancelAll'] == 1) {
 				$result = $user->cancelAllBookedMaterial();
-				$totalCancelled = $numCancelled = null;
 			} else {
 				$cancelIds = !empty($_REQUEST['cancelId']) ? $_REQUEST['cancelId'] : array();
 
@@ -358,7 +343,7 @@ class MyAccount_AJAX
 		} catch (PDOException $e) {
 			/** @var Logger $logger */
 			global $logger;
-			$logger->log('Booking : '.$e->getMessage(), PEAR_LOG_ERR);
+			$logger->log('Booking : '.$e->getMessage(), Logger::LOG_ERROR);
 
 			$result = array(
 				'success' => false,
@@ -381,48 +366,6 @@ class MyAccount_AJAX
 		return $cancelResult;
 	}
 
-	function cancelHolds() { // for cancelling multiple holds
-		try {
-			global $configArray;
-			$user = UserAccount::getLoggedInUser();
-			$catalog = CatalogFactory::getCatalogConnectionInstance();
-
-			$cancelId = array();
-			$result = $catalog->driver->updateHoldDetailed($user->password, 'cancel', $cancelId, null);
-
-		} catch (PDOException $e) {
-			// What should we do with this error?
-			if ($configArray['System']['debug']) {
-				echo '<pre>';
-				echo 'DEBUG: ' . $e->getMessage();
-				echo '</pre>';
-			}
-			$result = array(
-				'result' => false,
-				'message' => 'We could not connect to the circulation system, please try again later.'
-			);
-		}
-		if (is_array($result['title'])) { // avoid some naming confusion
-			$result['titles'] = $result['title'];
-			unset($result['title']);
-		}
-		global $interface;
-		$result['success'] = $result['success']; // makes template easier to understand
-		$failed = (is_array($result['message']) && !empty($result['message'])) ? array_keys($result['message']) : null; //returns failed id for javascript function
-		if (isset($result['titles'])) {
-			$result['numCancelled'] = count($result['titles']) - count($failed);
-		}
-		$interface->assign('cancelResults', $result);
-
-		$cancelResult = array(
-			'title' => 'Cancel Hold',
-			'modalBody' => $interface->fetch('MyAccount/cancelhold.tpl'),
-			'success' => $result['success'],
-		  'failed' => $failed
-		);
-		return $cancelResult;
-	}
-
 	function freezeHold() {
 		$user = UserAccount::getLoggedInUser();
 		$result = array(
@@ -441,7 +384,7 @@ class MyAccount_AJAX
 				if (empty($_REQUEST['recordId']) || empty($_REQUEST['holdId'])) {
 					// We aren't getting all the expected data, so make a log entry & tell user.
 					global $logger;
-					$logger->log('Freeze Hold, no record or hold Id was passed in AJAX call.', PEAR_LOG_ERR);
+					$logger->log('Freeze Hold, no record or hold Id was passed in AJAX call.', Logger::LOG_ERROR);
 					$result['message'] = 'Information about the hold to be '. translate('frozen') .' was not provided.';
 				}else{
 					$recordId = $_REQUEST['recordId'];
@@ -458,7 +401,9 @@ class MyAccount_AJAX
 					}
 
 					if (!$result['success'] && is_array($result['message'])) {
-						$result['message'] = implode('; ', $result['message']);
+					    /** @var string[] $messageArray */
+					    $messageArray = $result['message'];
+						$result['message'] = implode('; ', $messageArray);
 						// Millennium Holds assumes there can be more than one item processed. Here we know only one got processed,
 						// but do implode as a fallback
 					}
@@ -467,7 +412,7 @@ class MyAccount_AJAX
 		} else {
 			// We aren't getting all the expected data, so make a log entry & tell user.
 			global $logger;
-			$logger->log('Freeze Hold, no patron Id was passed in AJAX call.', PEAR_LOG_ERR);
+			$logger->log('Freeze Hold, no patron Id was passed in AJAX call.', Logger::LOG_ERROR);
 			$result['message'] = 'No Patron was specified.';
 		}
 
@@ -501,7 +446,7 @@ class MyAccount_AJAX
 		} else {
 			// We aren't getting all the expected data, so make a log entry & tell user.
 			global $logger;
-			$logger->log('Thaw Hold, no patron Id was passed in AJAX call.', PEAR_LOG_ERR);
+			$logger->log('Thaw Hold, no patron Id was passed in AJAX call.', Logger::LOG_ERROR);
 			$result['message'] = 'No Patron was specified.';
 		}
 
@@ -612,18 +557,6 @@ class MyAccount_AJAX
 	function GetPreferredBranches()
 	{
 		require_once ROOT_DIR . '/Drivers/marmot_inc/Location.php';
-		global $configArray;
-
-		try {
-			$catalog = CatalogFactory::getCatalogConnectionInstance();
-		} catch (PDOException $e) {
-			// What should we do with this error?
-			if ($configArray['System']['debug']) {
-				echo '<pre>';
-				echo 'DEBUG: ' . $e->getMessage();
-				echo '</pre>';
-			}
-		}
 
 		$username = $_REQUEST['username'];
 		$password = $_REQUEST['barcode'];
@@ -663,8 +596,7 @@ class MyAccount_AJAX
 
 			//Also determine if the hold can be cancelled.
 			/* var Library $librarySingleton */
-			global $librarySingleton;
-			$patronHomeBranch = $librarySingleton->getPatronHomeLibrary();
+			$patronHomeBranch = Library::getPatronHomeLibrary();
 			$showHoldCancelDate = 0;
 			if ($patronHomeBranch != null) {
 				$showHoldCancelDate = $patronHomeBranch->showHoldCancelDate;
@@ -879,8 +811,7 @@ class MyAccount_AJAX
 		);
 	}
 
-	function requestPinReset()
-	{
+	function requestPinReset(){
 		global $configArray;
 
 		try {
@@ -961,7 +892,7 @@ class MyAccount_AJAX
 								'result' => true,
 								'message' => 'Your e-mail was sent successfully.'
 							);
-						} elseif (PEAR_Singleton::isError($emailResult)){
+						} elseif (($emailResult instanceof AspenError)){
 							$result = array(
 								'result' => false,
 								'message' => "Your e-mail message could not be sent: {$emailResult->message}."
@@ -972,7 +903,7 @@ class MyAccount_AJAX
 								'message' => 'Your e-mail message could not be sent due to an unknown error.'
 							);
 							global $logger;
-							$logger->log("Mail List Failure (unknown reason), parameters: $to, $from, $subject, $body", PEAR_LOG_ERR);
+							$logger->log("Mail List Failure (unknown reason), parameters: $to, $from, $subject, $body", Logger::LOG_ERROR);
 						}
 					} else {
 						$result = array(
@@ -1119,7 +1050,7 @@ class MyAccount_AJAX
 					$renewResults['NotRenewed'] = count($failure_messages);
 					$renewResults['Renewed']   = $renewResults['Total'] - $renewResults['NotRenewed'];
 				} else {
-					PEAR_Singleton::raiseError(new PEAR_Error('Cannot Renew Item - ILS Not Supported'));
+					AspenError::raiseError(new AspenError('Cannot Renew Item - ILS Not Supported'));
 					$renewResults = array(
 						'success' => false,
 						'message' => 'Cannot Renew Items - ILS Not Supported.'
@@ -1294,4 +1225,50 @@ class MyAccount_AJAX
 
 		return $result;
 	}
+
+    function getListData(){
+        global $timer;
+        global $interface;
+        global $configArray;
+        /** @var Memcache $memCache */
+        global $memCache;
+        $result = array();
+        if (UserAccount::isLoggedIn()){
+            $user = UserAccount::getLoggedInUser();
+            $interface->assign('user', $user);
+
+            //Load a list of lists
+            $userListData = $memCache->get('user_list_data_' . UserAccount::getActiveUserId());
+            if ($userListData == null || isset($_REQUEST['reload'])){
+                $lists = array();
+                require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+                $tmpList = new UserList();
+                $tmpList->user_id = UserAccount::getActiveUserId();
+                $tmpList->deleted = 0;
+                $tmpList->orderBy("title ASC");
+                $tmpList->find();
+                if ($tmpList->N > 0){
+                    while ($tmpList->fetch()){
+                        $lists[$tmpList->id] = array(
+                            'name' => $tmpList->title,
+                            'url' => '/MyAccount/MyList/' .$tmpList->id ,
+                            'id' => $tmpList->id,
+                            'numTitles' => $tmpList->numValidListItems()
+                        );
+                    }
+                }
+                $memCache->set('user_list_data_' . UserAccount::getActiveUserId(), $lists, 0, $configArray['Caching']['user']);
+                $timer->logTime("Load Lists");
+            }else{
+                $lists = $userListData;
+                $timer->logTime("Load Lists from cache");
+            }
+
+            $interface->assign('lists', $lists);
+            $result['lists'] = $interface->fetch('MyAccount/listsMenu.tpl');
+
+        }//User is not logged in
+
+        return $result;
+    }
 }

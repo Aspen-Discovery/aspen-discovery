@@ -25,7 +25,7 @@ class Archive_DownloadOriginal extends Archive_Object{
 			unlink($tempFile);
 			exit();
 		}else{
-			PEAR_Singleton::raiseError('Sorry, You do not have permission to download this image.');
+			AspenError::raiseError('Sorry, You do not have permission to download this image.');
 		}
 	}
 

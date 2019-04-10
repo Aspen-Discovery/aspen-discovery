@@ -107,7 +107,7 @@ class CurlWrapper {
 		$return = curl_exec($this->curl_connection);
 		if (!$return) { // log curl error
 			global $logger;
-			$logger->log('curl get error : '.curl_error($this->curl_connection), PEAR_LOG_ERR);
+			$logger->log('curl get error : '.curl_error($this->curl_connection), Logger::LOG_ERROR);
 		}
 		return $return;
 	}
@@ -131,7 +131,7 @@ class CurlWrapper {
 		$return = curl_exec($this->curl_connection);
 		if (!$return) { // log curl error
 			global $logger;
-			$logger->log('curl post error : '.curl_error($this->curl_connection), PEAR_LOG_ERR);
+			$logger->log('curl post error : '.curl_error($this->curl_connection), Logger::LOG_ERROR);
 		}
 		return $return;
 	}

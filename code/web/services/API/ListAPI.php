@@ -716,7 +716,7 @@ class ListAPI extends Action {
 			return array('success'=>false, 'message'=>'You must provide the title of the list to be created.');
 		}
 		$user = UserAccount::validateAccount($username, $password);
-		if ($user && !PEAR_Singleton::isError($user)){
+		if ($user && !($user instanceof AspenError)){
 			$list = new UserList();
 			$list->title = $_REQUEST['title'];
 			$list->description = strip_tags(isset($_REQUEST['description']) ? $_REQUEST['description'] : '');
@@ -783,7 +783,7 @@ class ListAPI extends Action {
 			$recordIds = $_REQUEST['recordIds'];
 		}
 		$user = UserAccount::validateAccount($username, $password);
-		if ($user && !PEAR_Singleton::isError($user)){
+		if ($user && !($user instanceof AspenError)){
 			$list = new UserList();
 			$list->id = $_REQUEST['listId'];
 			$list->user_id = $user->id;
@@ -859,7 +859,7 @@ class ListAPI extends Action {
 			return array('success'=>false, 'message'=>'You must provide the listId to clear titles from.');
 		}
 		$user = UserAccount::validateAccount($username, $password);
-		if ($user && !PEAR_Singleton::isError($user)){
+		if ($user && !($user instanceof AspenError)){
 			$list = new UserList();
 			$list->id = $_REQUEST['listId'];
 			$list->user_id = $user->id;
@@ -936,7 +936,7 @@ class ListAPI extends Action {
 		}
 
 		$pikaUser = UserAccount::validateAccount($pikaUsername, $pikaPassword);
-		if (!$pikaUser || PEAR_Singleton::isError($pikaUser)) {
+		if (!$pikaUser || ($pikaUser instanceof AspenError)) {
 			return array(
 				'success' => false,
 				'message' => 'Invalid Pika NY Times user'

@@ -18,7 +18,7 @@ initializeSession();
 $timer->logTime("Initialized session");
 
 //global $logger;
-//$logger->log("Opening URL " . $_SESSION['REQUEST_URI'], PEAR_LOG_DEBUG);
+//$logger->log("Opening URL " . $_SESSION['REQUEST_URI'], Logger::LOG_DEBUG);
 
 if (isset($_REQUEST['test_role'])){
 	if ($_REQUEST['test_role'] == ''){
@@ -179,12 +179,12 @@ if (isset($_REQUEST['lookfor'])) {
 	if (is_array($_REQUEST['lookfor'])) {
 		foreach ($_REQUEST['lookfor'] as $i => $searchTerm) {
 			if (preg_match('/http:|mailto:|https:/i', $searchTerm)) {
-				PEAR_Singleton::raiseError("Sorry it looks like you are searching for a website, please rephrase your query.");
+				AspenError::raiseError("Sorry it looks like you are searching for a website, please rephrase your query.");
 				$_REQUEST['lookfor'][$i] = '';
 				$_GET['lookfor'][$i]     = '';
 			}
 			if (strlen($searchTerm) >= 256) {
-				PEAR_Singleton::raiseError("Sorry your query is too long, please rephrase your query.");
+				AspenError::raiseError("Sorry your query is too long, please rephrase your query.");
 				$_REQUEST['lookfor'][$i] = '';
 				$_GET['lookfor'][$i]     = '';
 			}
@@ -195,12 +195,12 @@ if (isset($_REQUEST['lookfor'])) {
 	else {
 		$searchTerm = $_REQUEST['lookfor'];
 		if (preg_match('/http:|mailto:|https:/i', $searchTerm)) {
-			PEAR_Singleton::raiseError("Sorry it looks like you are searching for a website, please rephrase your query.");
+			AspenError::raiseError("Sorry it looks like you are searching for a website, please rephrase your query.");
 			$_REQUEST['lookfor'] = '';
 			$_GET['lookfor']     = '';
 		}
 		if (strlen($searchTerm) >= 256) {
-			PEAR_Singleton::raiseError("Sorry your query is too long, please rephrase your query.");
+			AspenError::raiseError("Sorry your query is too long, please rephrase your query.");
 			$_REQUEST['lookfor'] = '';
 			$_GET['lookfor']     = '';
 		}
@@ -220,7 +220,7 @@ if ($isLoggedIn) {
 	//The user is trying to log in
 	$user = UserAccount::login();
 	$timer->logTime('Login the user');
-	if (PEAR_Singleton::isError($user)) {
+	if ($user instanceof AspenError) {
 		require_once ROOT_DIR . '/services/MyAccount/Login.php';
 		$launchAction = new MyAccount_Login();
 		$error_msg    = translate($user->getMessage());
@@ -251,7 +251,7 @@ if ($isLoggedIn) {
 			// For Masquerade Follow up, start directly instead of a redirect
 			if ($_REQUEST['followupAction'] == 'Masquerade' && $_REQUEST['followupModule'] == 'MyAccount') {
 				global $logger;
-				$logger->log("Processing Masquerade after logging in", PEAR_LOG_ERR);
+				$logger->log("Processing Masquerade after logging in", Logger::LOG_ERROR);
 				require_once ROOT_DIR . '/services/MyAccount/Masquerade.php';
 				$masquerade = new MyAccount_Masquerade();
 				$masquerade->launch();
@@ -574,7 +574,7 @@ if (isset($_SESSION['hold_message'])) {
 	$interface->assign('renew_message', formatRenewMessage($_SESSION['renew_message']));
 }elseif (isset($_SESSION['checkout_message'])){
 	global $logger;
-	$logger->log("Found checkout message", PEAR_LOG_DEBUG);
+	$logger->log("Found checkout message", Logger::LOG_DEBUG);
 	$checkoutMessage = $_SESSION['checkout_message'];
 	unset($_SESSION['checkout_message']);
 	$interface->assign('checkout_message', formatCheckoutMessage($checkoutMessage));
@@ -612,7 +612,7 @@ if (!is_dir(ROOT_DIR . "/services/$module")){
 		$service->launch();
 		$timer->logTime('Finish launch of action');
 	}else{
-		PEAR_Singleton::raiseError(new PEAR_Error('Unknown Action'));
+		AspenError::raiseError(new AspenError('Unknown Action'));
 	}
 } else {
 	$interface->assign('showBreadcrumbs', false);
@@ -620,9 +620,9 @@ if (!is_dir(ROOT_DIR . "/services/$module")){
 	$requestURI = $_SERVER['REQUEST_URI'];
 	$cleanedUrl = strip_tags(urldecode($_SERVER['REQUEST_URI']));
 	if ($cleanedUrl != $requestURI){
-		PEAR_Singleton::RaiseError(new PEAR_Error("Cannot Load Action and Module the URL provided is invalid"));
+		AspenError::raiseError(new AspenError("Cannot Load Action and Module the URL provided is invalid"));
 	}else{
-		PEAR_Singleton::RaiseError(new PEAR_Error("Cannot Load Action '$action' for Module '$module' request '$requestURI'"));
+		AspenError::raiseError(new AspenError("Cannot Load Action '$action' for Module '$module' request '$requestURI'"));
 	}
 }
 $timer->logTime('Finished Index');
@@ -783,7 +783,7 @@ function vufind_autoloader($class) {
 			require_once $nameSpaceClass;
 		}
 	}catch (Exception $e){
-		PEAR_Singleton::raiseError("Error loading class $class");
+		AspenError::raiseError("Error loading class $class");
 	}
 }
 

@@ -19,7 +19,7 @@ class MemcacheSession extends SessionInterface {
 		// Connect to Memcache:
 		self::$connection = new Memcache();
 		if (!@self::$connection->connect($host, $port, $timeout)) {
-			PEAR_Singleton::raiseError(new PEAR_Error("Could not connect to Memcache (host = {$host}, port = {$port})."));
+			AspenError::raiseError(new AspenError("Could not connect to Memcache (host = {$host}, port = {$port})."));
 		}
 
 		// Call standard session initialization from this point.

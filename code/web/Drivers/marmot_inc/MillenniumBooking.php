@@ -128,7 +128,7 @@ class MillenniumBooking {
 		$curlResponse = $driver->curlWrapper->curlPostPage($bookingUrl, $post);
 		if ($curlError = curl_errno($driver->curlWrapper->curl_connection)) {
 			global $logger;
-			$logger->log('Curl error during booking, code: '.$curlError, PEAR_LOG_WARNING);
+			$logger->log('Curl error during booking, code: '.$curlError, Logger::LOG_WARNING);
 			return array(
 				'success' => false,
 				'message' => 'There was an error communicating with the circulation system.'
@@ -170,7 +170,7 @@ class MillenniumBooking {
 
 		// Catch all Failure
 		global $logger;
-		$logger->log('Unkown error during booking', PEAR_LOG_ERR);
+		$logger->log('Unkown error during booking', Logger::LOG_ERROR);
 		return array(
 			'success' => false,
 			'message' => 'There was an unexpected result while scheduling your item'

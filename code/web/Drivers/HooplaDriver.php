@@ -40,7 +40,7 @@ class HooplaDriver extends AbstractEContentDriver{
 	private function getAPIResponse($url, $params = null, $customRequest = null, $additionalHeaders = null)
 	{
 		global $logger;
-		$logger->log('Hoopla API URL :' .$url, PEAR_LOG_INFO);
+		$logger->log('Hoopla API URL :' .$url, Logger::LOG_NOTICE);
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $url);
 		$headers  = array(
@@ -77,18 +77,18 @@ class HooplaDriver extends AbstractEContentDriver{
 		$json = curl_exec($ch);
 
 		if (!$json && curl_getinfo($ch, CURLINFO_HTTP_CODE) == 401) {
-			$logger->log('401 Response in getAPIResponse. Attempting to renew access token', PEAR_LOG_WARNING);
+			$logger->log('401 Response in getAPIResponse. Attempting to renew access token', Logger::LOG_WARNING);
 			$this->renewAccessToken();
 			return false;
 		}
 
-		$logger->log("Hoopla API response\r\n$json", PEAR_LOG_DEBUG);
+		$logger->log("Hoopla API response\r\n$json", Logger::LOG_DEBUG);
 		curl_close($ch);
 
 		if ($json !== false && $json !== 'false') {
 			return json_decode($json);
 		} else {
-			$logger->log('Curl problem in getAPIResponse', PEAR_LOG_WARNING);
+			$logger->log('Curl problem in getAPIResponse', Logger::LOG_WARNING);
 			return false;
 		}
 	}
@@ -184,7 +184,7 @@ class HooplaDriver extends AbstractEContentDriver{
 					} else {
 						global $logger;
 						$hooplaErrorMessage = empty($hooplaPatronStatusResponse->message) ? '' : ' Hoopla Message :' . $hooplaPatronStatusResponse->message;
-						$logger->log('Error retrieving patron status from Hoopla. User ID : ' . $user->id . $hooplaErrorMessage, PEAR_LOG_INFO);
+						$logger->log('Error retrieving patron status from Hoopla. User ID : ' . $user->id . $hooplaErrorMessage, Logger::LOG_NOTICE);
 						$this->hooplaPatronStatuses[$user->id] = false; // Don't do status call again for this user
 					}
 				}
@@ -250,7 +250,7 @@ class HooplaDriver extends AbstractEContentDriver{
 					}
 				} else {
 					global $logger;
-					$logger->log('Error retrieving checkouts from Hoopla.', PEAR_LOG_ERR);
+					$logger->log('Error retrieving checkouts from Hoopla.', Logger::LOG_ERROR);
 				}
 			}
 		}
@@ -314,15 +314,15 @@ class HooplaDriver extends AbstractEContentDriver{
 
 				} else {
 					global $logger;
-					$logger->log('Hoopla API retrieve access token call did not contain an access token', PEAR_LOG_ERR);
+					$logger->log('Hoopla API retrieve access token call did not contain an access token', Logger::LOG_ERROR);
 				}
 			} else {
 				global $logger;
-				$logger->log('Curl Error in Hoopla API call to retrieve access token', PEAR_LOG_ERR);
+				$logger->log('Curl Error in Hoopla API call to retrieve access token', Logger::LOG_ERROR);
 			}
 		} else {
 			global $logger;
-			$logger->log('Hoopla API user and/or password not set. Can not retrieve access token', PEAR_LOG_ERR);
+			$logger->log('Hoopla API user and/or password not set. Can not retrieve access token', Logger::LOG_ERROR);
 		}
 		return false;
 	}

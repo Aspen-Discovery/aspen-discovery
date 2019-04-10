@@ -48,8 +48,8 @@ class Archive_Home extends Action{
 		$timer->logTime('Setup Search');
 
 		$response = $searchObject->processSearch(true, true);
-		if (PEAR_Singleton::isError($response)) {
-			PEAR_Singleton::raiseError($response->getMessage());
+		if (($response instanceof AspenError)) {
+			AspenError::raiseError($response->getMessage());
 		}
 		$timer->logTime('Process Search for related content types');
 
@@ -131,8 +131,8 @@ class Archive_Home extends Action{
 		$timer->logTime('Setup Search');
 
 		$response = $searchObject->processSearch(true, true);
-		if (PEAR_Singleton::isError($response)) {
-			PEAR_Singleton::raiseError($response->getMessage());
+		if (($response instanceof AspenError)) {
+			AspenError::raiseError($response->getMessage());
 		}
 		$timer->logTime('Process Search for collections');
 

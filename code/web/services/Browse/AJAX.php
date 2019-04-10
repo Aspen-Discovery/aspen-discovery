@@ -511,7 +511,7 @@ class Browse_AJAX extends Action {
 					$subCategories[] = array('label' => $temp->label, 'textId' => $temp->textId);
 				}else{
 					global $logger;
-					$logger->log("Did not find subcategory with id {$subCategory->subCategoryId}", PEAR_LOG_WARNING);
+					$logger->log("Did not find subcategory with id {$subCategory->subCategoryId}", Logger::LOG_WARNING);
 				}
 			}
 			if ($subCategories) {

@@ -20,7 +20,7 @@ class CatalogFactory {
 				if ($accountProfile == null && !empty($driver)) {
 					$accountProfile = new AccountProfile();
 					$accountProfile->get('driver', $driver);
-					if (PEAR_Singleton::isError($accountProfile)) {
+					if ($accountProfile instanceof AspenError) {
 						$accountProfile = null;
 					}
 

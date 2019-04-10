@@ -1,12 +1,5 @@
 <?php
-/**
- * A report of holds that have been placed offline with their status.
- *
- * @category VuFind-Plus 
- * @author Mark Noble <mark@marmot.org>
- * Date: 7/26/13
- * Time: 10:39 AM
- */
+
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 class Circa_OfflineHoldsReport extends Admin_Admin{
 	public function launch(){

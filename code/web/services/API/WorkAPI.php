@@ -103,7 +103,7 @@ class WorkAPI {
 		disableErrorHandler();
 		$record = $db->getRecord($permanentId, 'isbn');
 		enableErrorHandler();
-		if ($record == false || PEAR_Singleton::isError($record)){
+		if ($record == false || ($record instanceof AspenError)){
 			return array();
 		}else{
 			return $record['isbn'];

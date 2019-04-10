@@ -65,7 +65,7 @@ class AJAX extends Action {
 				} catch (Exception $e) {
 					$output = json_encode(array('error' => 'error_encoding_data', 'message' => $e));
 					global $logger;
-					$logger->log("Error encoding json data $e", PEAR_LOG_ERR);
+					$logger->log("Error encoding json data $e", Logger::LOG_ERROR);
 				}
 
 				echo $output;
@@ -115,7 +115,7 @@ class AJAX extends Action {
 						'result' => true,
 						'message' => 'Your e-mail was sent successfully.'
 				);
-			}elseif (PEAR_Singleton::isError($emailResult)){
+			}elseif (($emailResult instanceof AspenError)){
 				$result = array(
 						'result' => false,
 						'message' => "Your e-mail message could not be sent: {$emailResult->message}."
@@ -348,8 +348,8 @@ class AJAX extends Action {
 
 		// Process Search
 		$result = $searchObject->processSearch(true, true);
-		if (PEAR_Singleton::isError($result)) {
-			PEAR_Singleton::raiseError($result->getMessage());
+		if ($result instanceof AspenError) {
+			AspenError::raiseError($result->getMessage());
 			$success = false;
 		}
 		$searchObject->close();
