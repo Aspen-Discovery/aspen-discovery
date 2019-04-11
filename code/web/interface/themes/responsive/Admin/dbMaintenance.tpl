@@ -20,12 +20,12 @@
 					<tr class="{if $update.alreadyRun}updateRun{else}updateNotRun{/if}
 					{if $update.status == 'Update succeeded'} success{elseif strpos($update.status, 'Warning') !== false} warning{elseif strpos($update.status, 'fail') !== false || strpos($update.status, 'error') !== false} danger{/if}"
 					{if $update.alreadyRun && !$update.status} style="display:none"{/if}>
-						<td><input type="checkbox" name="selected[{$updateKey}]"{if !$update.alreadyRun} checked="checked"{/if} class="selectedUpdate"></td>
-						<td>{$update.title}</td>
+						<td><input type="checkbox" name="selected[{$updateKey}]"{if !$update.alreadyRun} checked="checked"{/if} class="selectedUpdate" id="{$updateKey}"></td>
+						<td><label for="{$updateKey}">{$update.title}</label></td>
 						<td>{$update.description}</td>
 						<td>{if $update.alreadyRun}Yes{else}No{/if}</td>
 						{if $showStatus}
-						<td>{$update.status}</td>
+						<td>{if !empty($update.status)}{$update.status}{/if}</td>
 						{/if}
 					</tr>
 					{/foreach}

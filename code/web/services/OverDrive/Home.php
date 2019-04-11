@@ -17,8 +17,6 @@ class OverDrive_Home extends Action{
 			$interface->assign('searchId', $_SESSION['searchId']);
 		}
 
-		$interface->assign('overDriveVersion', isset($configArray['OverDrive']['interfaceVersion']) ? $configArray['OverDrive']['interfaceVersion'] : 1);
-
 		$this->id = strip_tags($_REQUEST['id']);
 		$interface->assign('id', $this->id);
 		$recordDriver = new OverDriveRecordDriver($this->id);

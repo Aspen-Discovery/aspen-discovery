@@ -59,7 +59,7 @@
 	<button class="btn" data-dismiss="modal" id="modalClose">Close</button>
 	{if !$offline || $enableLoginWhileOffline}
 		<span class="modal-buttons">
-			<input type="submit" name="submit" value="{if $multistep}Continue{else}Login{/if}" id="loginFormSubmit" class="btn btn-primary extraModalButton" onclick="return VuFind.Account.processAjaxLogin()">
+			<input type="submit" name="submit" value="{if $multiStep}Continue{else}Login{/if}" id="loginFormSubmit" class="btn btn-primary extraModalButton" onclick="return VuFind.Account.processAjaxLogin()">
 		</span>
 	{/if}
 </div>

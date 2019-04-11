@@ -109,19 +109,19 @@ class Koha extends AbstractIlsDriver {
 		return $updateErrors;
 	}
 
-	private $transactions = array();
+	private $checkouts = array();
 
 	/**
 	 * @param User $patron
 	 * @return array
 	 */
 	public function getCheckouts($patron) {
-		if (isset($this->transactions[$patron->id])){
-			return $this->transactions[$patron->id];
+		if (isset($this->checkouts[$patron->id])){
+			return $this->checkouts[$patron->id];
 		}
 
-		//Get transactions by screen scraping
-		$transactions = array();
+		//Get checkouts by screen scraping
+		$checkouts = array();
 
 		$this->initDatabaseConnection();
 
@@ -129,14 +129,14 @@ class Koha extends AbstractIlsDriver {
         $sql = "SELECT issues.*, items.biblionumber, title, author from issues left join items on items.itemnumber = issues.itemnumber left join biblio ON items.biblionumber = biblio.biblionumber where borrowernumber = {$patron->username}";
 		$results = mysqli_query($this->dbConnection, $sql);
 		while ($curRow = $results->fetch_assoc()){
-			$transaction = array();
-			$transaction['checkoutSource'] = 'ILS';
+			$checkout = array();
+			$checkout['checkoutSource'] = 'ILS';
 
-			$transaction['id'] = $curRow['issue_id'];
-			$transaction['recordId'] = $curRow['biblionumber'];
-			$transaction['shortId'] = $curRow['biblionumber'];
-			$transaction['title'] = $curRow['title'];
-			$transaction['author'] = $curRow['author'];
+			$checkout['id'] = $curRow['issue_id'];
+			$checkout['recordId'] = $curRow['biblionumber'];
+			$checkout['shortId'] = $curRow['biblionumber'];
+			$checkout['title'] = $curRow['title'];
+			$checkout['author'] = $curRow['author'];
 
 			$dateDue = DateTime::createFromFormat('Y-m-d H:i:s', $curRow['date_due']);
 			if ($dateDue){
@@ -144,39 +144,39 @@ class Koha extends AbstractIlsDriver {
 			}else{
 				$dueTime = null;
 			}
-			$transaction['dueDate'] = $dueTime;
-			$transaction['itemId'] = $curRow['itemnumber'];
-			$transaction['renewIndicator'] = $curRow['itemnumber'];
-			$transaction['renewCount'] = $curRow['renewals'];
+			$checkout['dueDate'] = $dueTime;
+			$checkout['itemId'] = $curRow['itemnumber'];
+			$checkout['renewIndicator'] = $curRow['itemnumber'];
+			$checkout['renewCount'] = $curRow['renewals'];
 
-			if ($transaction['id'] && strlen($transaction['id']) > 0){
-				$transaction['recordId'] = $transaction['id'];
+			if ($checkout['id'] && strlen($checkout['id']) > 0){
+				$checkout['recordId'] = $checkout['id'];
 				require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
-				$recordDriver = new MarcRecordDriver($transaction['recordId']);
+				$recordDriver = new MarcRecordDriver($checkout['recordId']);
 				if ($recordDriver->isValid()){
-					$transaction['coverUrl']      = $recordDriver->getBookcoverUrl('medium');
-					$transaction['groupedWorkId'] = $recordDriver->getGroupedWorkId();
-					$transaction['ratingData']    = $recordDriver->getRatingData();
-					$transaction['format']        = $recordDriver->getPrimaryFormat();
-					$transaction['author']        = $recordDriver->getPrimaryAuthor();
-					$transaction['title']         = $recordDriver->getTitle();
+					$checkout['coverUrl']      = $recordDriver->getBookcoverUrl('medium');
+					$checkout['groupedWorkId'] = $recordDriver->getGroupedWorkId();
+					$checkout['ratingData']    = $recordDriver->getRatingData();
+					$checkout['format']        = $recordDriver->getPrimaryFormat();
+					$checkout['author']        = $recordDriver->getPrimaryAuthor();
+					$checkout['title']         = $recordDriver->getTitle();
 					$curTitle['title_sort']       = $recordDriver->getSortableTitle();
-					$transaction['link']          = $recordDriver->getLinkUrl();
+					$checkout['link']          = $recordDriver->getLinkUrl();
 				}else{
-					$transaction['coverUrl'] = "";
-					$transaction['groupedWorkId'] = "";
-					$transaction['format'] = "Unknown";
+					$checkout['coverUrl'] = "";
+					$checkout['groupedWorkId'] = "";
+					$checkout['format'] = "Unknown";
 				}
 			}
 
-			$transaction['user'] = $patron->getNameAndLibraryLabel();
+			$checkout['user'] = $patron->getNameAndLibraryLabel();
 
-			$transactions[] = $transaction;
+			$checkouts[] = $checkout;
 		}
 
-		$this->transactions[$patron->id] = $transactions;
+		$this->checkouts[$patron->id] = $checkouts;
 
-		return $transactions;
+		return $checkouts;
 	}
 
     public function getXMLWebServiceResponse($url){
@@ -213,7 +213,7 @@ class Koha extends AbstractIlsDriver {
      * @param string $username
      * @param string $password
      * @param boolean $validatedViaSSO
-     * @return PEAR_Error|User|null
+     * @return AspenError|User|null
      */
 	public function patronLogin($username, $password, $validatedViaSSO) {
 		global $logger;
@@ -593,7 +593,7 @@ class Koha extends AbstractIlsDriver {
      * @param   string $pickupBranch The branch where the user wants to pickup the item when available
      * @param   null|string $cancelDate  The date the hold should be automatically cancelled
      * @return  mixed                 True if successful, false if unsuccessful
-     *                                If an error occurs, return a PEAR_Error
+     *                                If an error occurs, return a AspenError
      * @access  public
      */
 	public function placeHold($patron, $recordId, $pickupBranch = null, $cancelDate = null){
@@ -715,7 +715,7 @@ class Koha extends AbstractIlsDriver {
 	 * @param   string  $itemId     The id of the item to hold
 	 * @param   string  $pickupBranch The branch where the user wants to pickup the item when available
 	 * @return  mixed               True if successful, false if unsuccessful
-	 *                              If an error occurs, return a PEAR_Error
+	 *                              If an error occurs, return a AspenError
 	 * @access  public
 	 */
 	function placeItemHold($patron, $recordId, $itemId, $pickupBranch) {
@@ -794,7 +794,7 @@ class Koha extends AbstractIlsDriver {
 	 * @param integer $recordsPerPage The number of records to show per page
 	 * @param string $sortOption      How the records should be sorted
 	 *
-	 * @return mixed        Array of the patron's holds on success, PEAR_Error
+	 * @return mixed        Array of the patron's holds on success, AspenError
 	 * otherwise.
 	 * @access public
 	 */
@@ -972,7 +972,7 @@ class Koha extends AbstractIlsDriver {
 		);
 	}
 
-	public function renewCheckout($patron, $recordId, $itemId, $itemIndex){
+	public function renewCheckout($patron, $recordId, $itemId = null, $itemIndex = null){
         $params = [
             'service' => 'RenewLoan',
             'patron_id' => $patron->username,
@@ -1081,7 +1081,7 @@ class Koha extends AbstractIlsDriver {
 		return $amountOutstanding ;
 	}
 
-	function cancelHold($patron, $recordId, $cancelId) {
+	function cancelHold($patron, $recordId, $cancelId = null) {
 		return $this->updateHoldDetailed($patron, 'cancel', null, $cancelId, '', '');
 	}
 

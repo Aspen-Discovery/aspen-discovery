@@ -244,7 +244,7 @@ class Author_Home extends Action
 		$this->setShowCovers();
 
 		// Process Search
-		/** @var PEAR_Error|null $result */
+		/** @var AspenError|null $result */
 		$result = $searchObject->processSearch(false, true);
 		if ($result instanceof AspenError) {
 			AspenError::raiseError($result->getMessage());

@@ -689,7 +689,7 @@ class MillenniumHolds{
 	 * @param   string  $itemId     The id of the item to hold
 	 * @param   string  $pickupBranch The branch where the user wants to pickup the item when available
 	 * @return  mixed               True if successful, false if unsuccessful
-	 *                              If an error occurs, return a PEAR_Error
+	 *                              If an error occurs, return a AspenError
 	 * @access  public
 	 */
 	function placeItemHold($patron, $recordId, $itemId, $pickupBranch, $cancelDate) {
@@ -819,7 +819,7 @@ class MillenniumHolds{
 	 * @param   string  $volumeId     The id of the volume to hold
 	 * @param   string  $pickupBranch The branch where the user wants to pickup the item when available
 	 * @return  mixed                 True if successful, false if unsuccessful
-	 *                                If an error occurs, return a PEAR_Error
+	 *                                If an error occurs, return a AspenError
 	 * @access  public
 	 */
 	function placeVolumeHold($patron, $recordId, $volumeId, $pickupBranch) {

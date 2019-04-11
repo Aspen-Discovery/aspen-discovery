@@ -5,7 +5,7 @@
 		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
-		{if $google_translate_key}
+		{if !empty($google_translate_key)}
 			<meta name="google-translate-customization" content="{$google_translate_key}">
 		{/if}
 		{if !empty($google_verification_key)}
@@ -42,7 +42,7 @@
 		{/if}
 		{strip}
 			<div class="container">
-			{if $systemMessage}
+			{if !empty($systemMessage)}
 				<div id="system-message-header" class="row">{$systemMessage}</div>
 			{/if}
 			<div class="row breadcrumbs">
@@ -122,7 +122,7 @@
 
 		{include file="tracking.tpl"}
 
-			{if $semanticData}
+			{if !empty($semanticData)}
 				{include file="jsonld.tpl"}
 			{/if}
 		{/strip}

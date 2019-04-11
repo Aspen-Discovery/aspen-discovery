@@ -160,7 +160,7 @@ class Millennium extends AbstractIlsDriver
 	 * @param   boolean $validatedViaSSO  True if the patron has already been validated via SSO.  If so we don't need to validation, just retrieve information
 	 *
 	 * @return  User|null           A string of the user's ID number
-	 *                              If an error occurs, return a PEAR_Error
+	 *                              If an error occurs, return a AspenError
 	 * @access  public
 	 */
 	public function patronLogin($username, $password, $validatedViaSSO) {
@@ -595,7 +595,7 @@ class Millennium extends AbstractIlsDriver
 	 * @param User $user    The user to load transactions for
 	 *
 	 * @return mixed        Array of the patron's transactions on success,
-	 * PEAR_Error otherwise.
+	 * AspenError otherwise.
 	 * @access public
 	 */
 	public function getCheckouts( $user ) {
@@ -681,7 +681,7 @@ class Millennium extends AbstractIlsDriver
 	 * @param   string  $recordId     The id of the bib record
 	 * @param   string  $pickupBranch The branch where the user wants to pickup the item when available
 	 * @return  mixed                 True if successful, false if unsuccessful
-	 *                                If an error occurs, return a PEAR_Error
+	 *                                If an error occurs, return a AspenError
 	 * @access  public
 	 */
 	function placeHold($patron, $recordId, $pickupBranch = null, $cancelDate = null) {
@@ -699,7 +699,7 @@ class Millennium extends AbstractIlsDriver
 	 * @param   string  $itemId     The id of the item to hold
 	 * @param   string  $pickupBranch The branch where the user wants to pickup the item when available
 	 * @return  mixed               True if successful, false if unsuccessful
-	 *                              If an error occurs, return a PEAR_Error
+	 *                              If an error occurs, return a AspenError
 	 * @access  public
 	 */
 	function placeItemHold($patron, $recordId, $itemId, $pickupBranch, $cancelDate = null) {
@@ -718,7 +718,7 @@ class Millennium extends AbstractIlsDriver
 	 * @param   string  $volumeId       The id of the volume to hold
 	 * @param   string  $pickupBranch   The branch where the user wants to pickup the item when available
 	 * @return  mixed                   True if successful, false if unsuccessful
-	 *                                  If an error occurs, return a PEAR_Error
+	 *                                  If an error occurs, return a AspenError
 	 * @access  public
 	 */
 	function placeVolumeHold($patron, $recordId, $volumeId, $pickupBranch) {
@@ -777,7 +777,7 @@ class Millennium extends AbstractIlsDriver
 		return $millenniumCheckouts->renewAll($patron);
 	}
 
-	public function renewCheckout($patron, $recordId, $itemId, $itemIndex){
+	public function renewCheckout($patron, $recordId, $itemId = null, $itemIndex = null){
 		require_once ROOT_DIR . '/Drivers/marmot_inc/MillenniumCheckouts.php';
 		$millenniumCheckouts = new MillenniumCheckouts($this);
 		$result = $millenniumCheckouts->renewCheckout($patron, $itemId, $itemIndex);

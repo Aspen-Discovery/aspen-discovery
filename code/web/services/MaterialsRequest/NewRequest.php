@@ -50,7 +50,7 @@ class MaterialsRequest_NewRequest extends Action
 				$pickupLocations[] = array(
 					'id' => $curLocation->locationId,
 					'displayName' => $curLocation->displayName,
-					'selected' => $curLocation->selected,
+					'selected' => $curLocation->getSelected(),
 				);
 			}
 			$interface->assign('pickupLocations', $pickupLocations);

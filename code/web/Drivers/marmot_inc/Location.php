@@ -486,7 +486,7 @@ class Location extends DataObject
 				} else {
 					$selected = '';
 				}
-				$this->selected = $selected;
+				$this->setSelected($selected);
 				// Each location is prepended with a number to keep precedence for given locations when sorted by ksort below
 				if (isset($physicalLocation) && $physicalLocation->locationId == $this->locationId) {
 					//If the user is in a branch, those holdings come first.
@@ -529,14 +529,14 @@ class Location extends DataObject
 					foreach ($locationList as $location) {
 						if ($location->libraryId == $homeLocation->libraryId && $location->locationId == $homeLocation->locationId) {
 							$existingLocation = true;
-							if (!$isLinkedUser) {$location->selected = true;}
+							if (!$isLinkedUser) {$location->setSelected('selected');}
 							//TODO: update sorting key as well?
 							break;
 						}
 					}
 					if (!$existingLocation) {
 						if (!$isLinkedUser) {
-							$homeLocation->selected                         = true;
+							$homeLocation->setSelected('selected');
 							$locationList['1' . $homeLocation->displayName] = clone $homeLocation;
 							$homeLibaryInList = true;
 						} else {
@@ -1324,13 +1324,7 @@ class Location extends DataObject
 		$defaultFacets[] = $facet;
 
 		$facet = new LocationFacetSetting();
-		$facet->setupAdvancedFacet('econtent_source', 'eContent Source', true);
-		$facet->locationId = $locationId;
-		$facet->weight = count($defaultFacets) + 1;
-		$defaultFacets[] = $facet;
-
-		$facet = new LocationFacetSetting();
-		$facet->setupAdvancedFacet('econtent_protection_type', 'eContent Protection', true);
+		$facet->setupAdvancedFacet('econtent_source', 'eContent Collection', true);
 		$facet->locationId = $locationId;
 		$facet->weight = count($defaultFacets) + 1;
 		$defaultFacets[] = $facet;
@@ -1472,7 +1466,8 @@ class Location extends DataObject
 	}
 
 	private function saveOneToManyOptions($oneToManySettings) {
-		foreach ($oneToManySettings as $oneToManyDBObject){
+	    /** @var DataObject $oneToManyDBObject */
+        foreach ($oneToManySettings as $oneToManyDBObject){
 			if (isset($oneToManyDBObject->deleteOnSave) && $oneToManyDBObject->deleteOnSave == true){
 				$oneToManyDBObject->delete();
 			}else{
@@ -1487,10 +1482,20 @@ class Location extends DataObject
 	}
 
 	private function clearOneToManyOptions($oneToManyDBObjectClassName) {
+	    /** @var DataObject $oneToManyDBObject */
 		$oneToManyDBObject = new $oneToManyDBObjectClassName();
 		$oneToManyDBObject->libraryId = $this->libraryId;
 		$oneToManyDBObject->delete();
-
 	}
+
+	private $_selected;
+    private function setSelected(string $selected)
+    {
+        $this->_selected = $selected;
+    }
+
+    public function getSelected(){
+        return $this->_selected;
+    }
 
 }

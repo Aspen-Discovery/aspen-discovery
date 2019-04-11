@@ -29,7 +29,7 @@ class Record_Reviews extends Record_Record
 	 * Load information from the review provider and update the interface with the data.
 	 *
 	 * @return array       Returns array with review data, otherwise a
-	 *                      PEAR_Error.
+	 *                      AspenError.
 	 */
 	static function loadReviews($id, $isbn, $includeEditorial = false) {
 		global $interface;
@@ -161,7 +161,7 @@ class Record_Reviews extends Record_Record
 	 * syndetics reviewers add another entry.
 	 *
 	 * @return  array       Returns array with review data, otherwise a
-	 *                      PEAR_Error.
+	 *                      AspenError.
 	 * @access  public
 	 * @author  Joel Timothy Norman <joel.t.norman@wmich.edu>
 	 * @author  Andrew Nagy <andrew.nagy@villanova.edu>

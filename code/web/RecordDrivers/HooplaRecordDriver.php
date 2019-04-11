@@ -116,7 +116,7 @@ class HooplaRecordDriver extends MarcRecordDriver {
 			$id = $this->getId();
 			$title = translate('hoopla_checkout_action');
 			$actions[] = array(
-				'onclick' => "return VuFind.Hoopla.getHooplaCheckOutPrompt('$id')",
+				'onclick' => "return VuFind.Hoopla.getCheckOutPrompts('$id')",
 				'title'   => $title
 			);
 
@@ -145,7 +145,7 @@ class HooplaRecordDriver extends MarcRecordDriver {
 			$id = $this->getId();
 			$title = translate('hoopla_checkout_action');
 			$actions[] = array(
-				'onclick' => "return VuFind.Hoopla.getHooplaCheckOutPrompt('$id')",
+				'onclick' => "return VuFind.Hoopla.getCheckOutPrompts('$id')",
 				'title'   => $title
 			);
 

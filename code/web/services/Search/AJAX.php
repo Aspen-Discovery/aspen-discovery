@@ -118,7 +118,7 @@ class AJAX extends Action {
 			}elseif (($emailResult instanceof AspenError)){
 				$result = array(
 						'result' => false,
-						'message' => "Your e-mail message could not be sent: {$emailResult->message}."
+						'message' => "Your e-mail message could not be sent: {$emailResult->getMessage()}."
 				);
 			}else{
 				$result = array(

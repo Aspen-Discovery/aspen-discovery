@@ -82,7 +82,7 @@ class Archive_RequestCopy extends Action{
 									'message' => 'Your e-mail was sent successfully.'
 								);
 							} elseif (($emailResult instanceof AspenError)){
-								$interface->assign('error', "Your request could not be sent: {$emailResult->message}.");
+								$interface->assign('error', "Your request could not be sent: {$emailResult->getMessage()}.");
 							} else {
 								$interface->assign('error', "Your request could not be sent due to an unknown error.");
 								global $logger;

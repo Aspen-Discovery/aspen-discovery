@@ -69,7 +69,7 @@ class CurlWrapper {
 				CURLOPT_HEADER => false,
 				CURLOPT_AUTOREFERER => true,
 				//  CURLOPT_HEADER => true, // debugging only
-				//  CURLOPT_VERBOSE => true, // debugging only
+				  CURLOPT_VERBOSE => true, // debugging only
 			);
 
 			if ($curl_options) {
@@ -161,7 +161,27 @@ class CurlWrapper {
 		return curl_exec($this->curl_connection);
 	}
 
-	protected function setupDebugging(){
+    public function curlSendPage(string $url, string $httpMethod)
+    {
+        $this->curl_connect($url);
+        if ($httpMethod == 'GET'){
+            curl_setopt($this->curl_connection, CURLOPT_HTTPGET, true);
+        }elseif ($httpMethod == 'POST') {
+            curl_setopt($this->curl_connection, CURLOPT_POST, true);
+        }elseif ($httpMethod == 'PUT') {
+            curl_setopt($this->curl_connection, CURLOPT_PUT, true);
+        }else {
+            curl_setopt($this->curl_connection, CURLOPT_CUSTOMREQUEST, $httpMethod);
+        }
+        $return = curl_exec($this->curl_connection);
+        if (!$return) { // log curl error
+            global $logger;
+            $logger->log('curl get error : '.curl_error($this->curl_connection), Logger::LOG_ERROR);
+        }
+        return $return;
+    }
+
+    protected function setupDebugging(){
 		$result1 = curl_setopt($this->curl_connection, CURLOPT_HEADER, true);
 		$result2 = curl_setopt($this->curl_connection, CURLOPT_VERBOSE, true);
 		return $result1 && $result2;

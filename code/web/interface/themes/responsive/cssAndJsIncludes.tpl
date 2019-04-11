@@ -6,7 +6,7 @@
 	{else}
 		{css filename="main.min.css"}
 	{/if}
-	{if $additionalCss}
+	{if !empty($additionalCss)}
 		<style type="text/css">
 			{$additionalCss}
 		</style>

@@ -16,7 +16,7 @@ interface Authentication {
 	 * @param $password       string
 	 * @param $parentAccount  User|null
 	 * @param $validatedViaSSO boolean
-	 * @return bool|PEAR_Error|string
+	 * @return bool|AspenError|string
 	 */
 	public function validateAccount($username, $password, $parentAccount, $validatedViaSSO);
 }

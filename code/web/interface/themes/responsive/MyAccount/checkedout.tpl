@@ -1,6 +1,6 @@
 {strip}
 	{if $loggedIn}
-		{if $profile->_web_note}
+		{if !empty($profile->_web_note)}
 			<div class="row">
 				<div id="web_note" class="alert alert-info text-center col-xs-12">{$profile->_web_note}</div>
 			</div>
@@ -52,6 +52,8 @@
 								{include file="MyAccount/overdriveCheckedOutTitle.tpl" record=$checkedOutTitle resultIndex=$smarty.foreach.checkedOutTitleLoop.iteration}
 							{elseif $checkedOutTitle.checkoutSource == 'Hoopla'}
 								{include file="MyAccount/hooplaCheckedOutTitle.tpl" record=$checkedOutTitle resultIndex=$smarty.foreach.checkedOutTitleLoop.iteration}
+							{elseif $checkedOutTitle.checkoutSource == 'Rbdigital'}
+								{include file="MyAccount/rbdigitalCheckedOutTitle.tpl" record=$checkedOutTitle resultIndex=$smarty.foreach.checkedOutTitleLoop.iteration}
 							{else}
 								<div class="row">
 									Unknown record source {$checkedOutTitle.checkoutSource}

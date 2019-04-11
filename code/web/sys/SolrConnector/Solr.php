@@ -1643,7 +1643,7 @@ class Solr {
 	 * Save Record to Database
 	 *
 	 * @param	 string	$xml				XML document to post to Solr
-	 * @return	mixed							 Boolean true on success or PEAR_Error
+	 * @return	mixed							 Boolean true on success or AspenError
 	 * @access	public
 	 */
 	function saveRecord($xml)
@@ -1761,7 +1761,7 @@ class Solr {
 	 *
 	 * @param string $xml The command to execute
 	 *
-	 * @return mixed			Boolean true on success or PEAR_Error
+	 * @return mixed			Boolean true on success or AspenError
 	 * @access protected
 	 */
 	protected function update($xml)
@@ -1814,7 +1814,7 @@ class Solr {
 	 *																					should we fail outright (false) or
 	 *																					treat it as an empty result set with
 	 *																					an error key set (true)?
-	 * @return	array|PEAR_Error													 The Solr response (or a PEAR error)
+	 * @return	array|AspenError													 The Solr response (or a PEAR error)
 	 * @access	protected
 	 */
 	protected function _select($method = HTTP_REQUEST_METHOD_GET, $params = array(), $returnSolrError = false)
@@ -1912,7 +1912,7 @@ class Solr {
 	 * Submit REST Request to write data
 	 *
 	 * @param	 string			$xml				The command to execute
-	 * @return	mixed									 Boolean true on success or PEAR_Error
+	 * @return	mixed									 Boolean true on success or AspenError
 	 * @access	private
 	 */
 	private function _update($xml)

@@ -62,10 +62,10 @@ VuFind.Account = (function(){
 					VuFind.Account.ajaxCallback = null;
 				}
 			} else {
-				var multistep = false,
+				var multiStep = false,
 						loginLink = false;
 				if (ajaxCallback !== undefined && typeof(ajaxCallback) === "function") {
-					multistep = true;
+					multiStep = true;
 				}
 				VuFind.Account.ajaxCallback = ajaxCallback;
 				VuFind.Account.closeModalOnAjaxSuccess = closeModalOnAjaxSuccess;
@@ -79,8 +79,8 @@ VuFind.Account = (function(){
 					 */
 				}
 				var dialogDestination = Globals.path + '/MyAccount/AJAX?method=LoginForm';
-				if (multistep && !loginLink){
-					dialogDestination += "&multistep=true";
+				if (multiStep && !loginLink){
+					dialogDestination += "&multiStep=true";
 				}
 				var modalDialog = $("#modalDialog");
 				$('.modal-body').html("Loading...");
@@ -334,7 +334,7 @@ VuFind.Account = (function(){
 					if (data.error == false){
 						alert(data.message);
 						if (data.result == true){
-							hideLightbox();
+							VuFind.closeLightbox();
 						}
 					}else{
 						alert("There was an error requesting your pin reset information.  Please contact the library for additional information.");

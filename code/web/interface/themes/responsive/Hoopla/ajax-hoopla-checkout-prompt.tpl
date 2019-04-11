@@ -7,7 +7,7 @@
 					<select name="patronId" id="patronId" class="form-control">
 						{foreach from=$hooplaUsers item=tmpUser}
 						{assign var="userId" value=$tmpUser->id}
-							<option value="{$tmpUser->id}"{* {if $location->selected == "selected"}selected="selected"{/if}*}>
+							<option value="{$tmpUser->id}">
 								{$tmpUser->getNameAndLibraryLabel()}
 								{if !empty($hooplaUserStatuses[$userId])}
 									{assign var="hooplaPatronStatus" value=$hooplaUserStatuses[$userId]}

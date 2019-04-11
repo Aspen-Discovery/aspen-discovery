@@ -104,29 +104,6 @@
 							{*<div class="result-value col-tn-8 col-lg-9">{$record.dueDate|date_format}</div>*}
 						</div>
 					{/if}
-{* TODO: refactor or delete
-
-					<div class="row econtent-download-row">
-						<div class="result-label col-md-4 col-lg-3">{translate text='Download'}</div>
-						<div class="result-value col-md-8 col-lg-9">
-							{if $record.formatSelected}
-								You downloaded the <strong>{$record.selectedFormat.name}</strong> format of this title.
-							{else}
-								<div class="form-inline">
-									<label for="downloadFormat_{$record.overDriveId}">Select one format to download.</label>
-									<br>
-									<select name="downloadFormat_{$record.overDriveId}" id="downloadFormat_{$record.overDriveId}" class="input-sm form-control">
-										<option value="-1">Select a Format</option>
-										{foreach from=$record.formats item=format}
-											<option value="{$format.id}">{$format.name}</option>
-										{/foreach}
-									</select>
-									<a href="#" onclick="VuFind.OverDrive.selectOverDriveDownloadFormat('{$record.userId}', '{$record.overDriveId}')" class="btn btn-sm btn-primary">Download</a>
-								</div>
-							{/if}
-						</div>
-					</div> *}
-
 				</div>
 
 				{* Actions for Title *}

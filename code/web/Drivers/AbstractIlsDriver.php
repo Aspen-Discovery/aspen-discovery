@@ -32,10 +32,20 @@ abstract class AbstractIlsDriver extends AbstractDriver
      * @param   string  $recordId     The id of the bib record
      * @param   string  $pickupBranch The branch where the user wants to pickup the item when available
      * @return  mixed                 True if successful, false if unsuccessful
-     *                                If an error occurs, return a PEAR_Error
+     *                                If an error occurs, return a AspenError
      * @access  public
      */
     abstract function placeHold($patron, $recordId, $pickupBranch = null, $cancelDate = null);
+
+    /**
+     * Cancels a hold for a patron
+     *
+     * @param   User    $patron     The User to cancel the hold for
+     * @param   string  $recordId   The id of the bib record
+     * @param   string  $cancelId   Information about the hold to be cancelled
+     * @return  array
+     */
+    abstract function cancelHold($patron, $recordId, $cancelId = null);
 
     /**
      * Place Item Hold
@@ -47,7 +57,7 @@ abstract class AbstractIlsDriver extends AbstractDriver
      * @param   string  $itemId     The id of the item to hold
      * @param   string  $pickupBranch The branch where the user wants to pickup the item when available
      * @return  mixed               True if successful, false if unsuccessful
-     *                              If an error occurs, return a PEAR_Error
+     *                              If an error occurs, return a AspenError
      * @access  public
      */
     abstract function placeItemHold($patron, $recordId, $itemId, $pickupBranch);
@@ -104,4 +114,14 @@ abstract class AbstractIlsDriver extends AbstractDriver
         return $host;
     }
 
+    /**
+     * Renew a single title currently checked out to the user
+     *
+     * @param $patron     User
+     * @param $recordId   string
+     * @param $itemId     string
+     * @param $itemIndex  string
+     * @return mixed
+     */
+    public abstract function renewCheckout($patron, $recordId, $itemId = null, $itemIndex = null);
 }

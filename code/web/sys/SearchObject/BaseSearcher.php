@@ -1535,7 +1535,7 @@ abstract class SearchObject_BaseSearcher
 	/**
 	 * If there is a saved search being loaded through $_REQUEST, redirect to the
 	 * URL for that search.  If no saved search was requested, return false.  If
-	 * unable to load a requested saved search, return a PEAR_Error object.
+	 * unable to load a requested saved search, return a AspenError object.
 	 *
 	 * @access  protected
 	 * @var     string    $searchId
@@ -1543,7 +1543,7 @@ abstract class SearchObject_BaseSearcher
 	 * @var     boolean   $forceReload
 	 * @return  mixed               Does not return on successful load, returns
 	 *                              false if no search to restore, returns
-	 *                              PEAR_Error object in case of trouble.
+	 *                              AspenError object in case of trouble.
 	 */
 	public function restoreSavedSearch($searchId = null, $redirect = true, $forceReload = false)
 	{

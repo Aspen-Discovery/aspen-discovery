@@ -380,7 +380,7 @@ class UserAccount {
 	 * Try to log in the user using current query parameters
 	 * return User object on success, PEAR error on failure.
 	 *
-	 * @return PEAR_Error|User
+	 * @return AspenError|User
 	 * @throws UnknownAuthenticationMethodException
 	 */
 	public static function login() {

@@ -40,7 +40,7 @@ class CASAuthentication implements Authentication {
 	 * @param $password       string Should be null for CAS
 	 * @param $parentAccount  User|null
 	 * @param $validatedViaSSO boolean
-	 * @return bool|PEAR_Error|string return false if the user cannot authenticate, the barcode if they can, and an error if configuration is incorrect
+	 * @return bool|AspenError|string return false if the user cannot authenticate, the barcode if they can, and an error if configuration is incorrect
 	 */
 	public function validateAccount($username, $password, $parentAccount, $validatedViaSSO) {
 		if($username == '' || $password == ''){

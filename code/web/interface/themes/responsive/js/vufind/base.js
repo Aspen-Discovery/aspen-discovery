@@ -57,7 +57,7 @@ var VuFind = (function(){
 			var modalDialog = $("#modalDialog");
 			if (modalDialog.is(":visible")){
 				modalDialog.modal('hide');
-				if (callback != undefined){
+				if (callback !== undefined){
 					var closeLightboxListener = modalDialog.on('hidden.bs.modal', function (e) {
 						modalDialog.off('hidden.bs.modal');
 						callback();

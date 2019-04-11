@@ -255,7 +255,7 @@ class CatalogConnection
 	 * @param User $user    The user to load transactions for
 	 *
 	 * @return mixed        Array of the patron's transactions on success,
-	 * PEAR_Error otherwise.
+	 * AspenError otherwise.
 	 * @access public
 	 */
 	public function getCheckouts($user)
@@ -288,7 +288,7 @@ class CatalogConnection
 	 *
 	 * @param User $patron The patron from patronLogin
 	 *
-	 * @return mixed        Array of the patron's fines on success, PEAR_Error
+	 * @return mixed        Array of the patron's fines on success, AspenError
 	 * otherwise.
 	 * @access public
 	 */
@@ -308,7 +308,7 @@ class CatalogConnection
 	 * @param   string  $sortOption
 	 *
 	 * @return  array               Array of the patron's reading list
-	 *                              If an error occurs, return a PEAR_Error
+	 *                              If an error occurs, return a AspenError
 	 * @access  public
 	 */
 	function getReadingHistory($patron, $page = 1, $recordsPerPage = -1, $sortOption = "checkedOut"){
@@ -497,7 +497,7 @@ class CatalogConnection
 	 * @param   string  $recordId     The id of the bib record
 	 * @param   string  $pickupBranch The branch where the user wants to pickup the item when available
 	 * @return  mixed                 True if successful, false if unsuccessful
-	 *                                If an error occurs, return a PEAR_Error
+	 *                                If an error occurs, return a AspenError
 	 * @access  public
 	 */
 	function placeHold($patron, $recordId, $pickupBranch, $cancelDate = null) {
@@ -515,7 +515,7 @@ class CatalogConnection
 	* @param   string  $itemId     The id of the item to hold
 	* @param   string  $pickupBranch The branch where the user wants to pickup the item when available
 	* @return  mixed               True if successful, false if unsuccessful
-	*                              If an error occurs, return a PEAR_Error
+	*                              If an error occurs, return a AspenError
 	* @access  public
 	*/
 	function placeItemHold($patron, $recordId, $itemId, $pickupBranch) {
@@ -530,7 +530,7 @@ class CatalogConnection
 	 * to place Holds.
 	 *
 	 * @param   string  $recordId   The id of the bib record
-	 * @return  mixed               True if successful, otherwise return a PEAR_Error
+	 * @return  mixed               True if successful, otherwise return a AspenError
 	 * @access  public
 	 */
 	function getHoldLink($recordId)
@@ -668,7 +668,7 @@ class CatalogConnection
 	 * @param string $dept   ID from getDepartments (empty string to match all)
 	 *
 	 * @return mixed An array of associative arrays representing reserve items (or a
-	 * PEAR_Error object if there is a problem)
+	 * AspenError object if there is a problem)
 	 * @access public
 	 */
 	public function findReserves($course, $inst, $dept)
@@ -814,7 +814,7 @@ class CatalogConnection
 		}
 	}
 
-	function cancelHold($patron, $recordId, $cancelId) {
+	function cancelHold($patron, $recordId, $cancelId = null) {
 		return $this->driver->cancelHold($patron, $recordId, $cancelId);
 	}
 
@@ -836,7 +836,7 @@ class CatalogConnection
 			$this->driver->getBookingCalendar($recordId) : null;
 	}
 
-	public function renewCheckout($patron, $recordId, $itemId, $itemIndex){
+	public function renewCheckout($patron, $recordId, $itemId = null, $itemIndex = null){
 		return $this->driver->renewCheckout($patron, $recordId, $itemId, $itemIndex);
 	}
 
@@ -916,5 +916,13 @@ class CatalogConnection
         $logger->log('Call to updatePin(), function not implemented.', Logger::LOG_WARNING);
 
         return 'Can not update Pins';
+    }
+
+    function requestPinReset($patronBarcode){
+        if ($this->checkFunction('requestPinReset')) {
+            return $this->driver->requestPinReset($patronBarcode);
+        }else{
+            return false;
+        }
     }
 }

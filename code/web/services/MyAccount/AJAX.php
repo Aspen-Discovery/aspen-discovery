@@ -301,7 +301,7 @@ class MyAccount_AJAX
 
 		$cancelResult = array(
 			'title' => 'Cancel Hold',
-			'body' => $interface->fetch('MyAccount/cancelhold.tpl'),
+			'body' => $interface->fetch('MyAccount/cancelHold.tpl'),
 			'success' => $result['success']
 		);
 		return $cancelResult;
@@ -576,7 +576,7 @@ class MyAccount_AJAX
 				$pickupLocations[] = array(
 					'id' => $curLocation->locationId,
 					'displayName' => $curLocation->displayName,
-					'selected' => $curLocation->selected,
+					'selected' => $curLocation->getSelected(),
 				);
 			}
 			require_once ROOT_DIR . '/Drivers/marmot_inc/PType.php';
@@ -679,8 +679,8 @@ class MyAccount_AJAX
 			$useEmailResetPin = $catalog->checkFunction('emailResetPin');
 			$interface->assign('useEmailResetPin', $useEmailResetPin);
 		}
-		if (isset($_REQUEST['multistep'])) {
-			$interface->assign('multistep', true);
+		if (isset($_REQUEST['multiStep'])) {
+			$interface->assign('multiStep', true);
 		}
 		return $interface->fetch('MyAccount/ajax-login.tpl');
 	}
@@ -815,7 +815,7 @@ class MyAccount_AJAX
 		global $configArray;
 
 		try {
-			/** @var AbstractIlsDriver $catalog */
+			/** @var CatalogConnection $catalog */
 			$catalog = CatalogFactory::getCatalogConnectionInstance();
 
 			$barcode = $_REQUEST['barcode'];
@@ -831,6 +831,7 @@ class MyAccount_AJAX
 				echo 'DEBUG: ' . $e->getMessage();
 				echo '</pre>';
 			}
+			return false;
 		}
 	}
 
@@ -895,7 +896,7 @@ class MyAccount_AJAX
 						} elseif (($emailResult instanceof AspenError)){
 							$result = array(
 								'result' => false,
-								'message' => "Your e-mail message could not be sent: {$emailResult->message}."
+								'message' => "Your e-mail message could not be sent: {$emailResult->getMessage()}."
 							);
 						} else {
 							$result = array(
@@ -938,16 +939,23 @@ class MyAccount_AJAX
 
 	function getEmailMyListForm(){
 		global $interface;
-		if (isset($_REQUEST['listId']) && ctype_digit($_REQUEST['listId'])) $listId = $_REQUEST['listId'];
+		if (isset($_REQUEST['listId']) && ctype_digit($_REQUEST['listId'])) {
+		    $listId = $_REQUEST['listId'];
 
-		$interface->assign('listId', $listId);
-		$formDefinition = array(
-			'title' => 'Email a list',
-			'modalBody' => $interface->fetch('MyAccount/emailListPopup.tpl'),
+            $interface->assign('listId', $listId);
+            $formDefinition = array(
+                'title' => 'Email a list',
+                'modalBody' => $interface->fetch('MyAccount/emailListPopup.tpl'),
 //			'modalButtons' => '<input type="submit" name="submit" value="Send" class="btn btn-primary" onclick="$(\'#emailListForm\').submit();" />'
-			'modalButtons' => '<span class="tool btn btn-primary" onclick="$(\'#emailListForm\').submit();">Send E-Mail</span>'
-		);
-		return $formDefinition;
+                'modalButtons' => '<span class="tool btn btn-primary" onclick="$(\'#emailListForm\').submit();">Send E-Mail</span>'
+            );
+            return $formDefinition;
+        } else {
+		    return [
+		        'success' => false,
+                'message' => 'You must provide the id of the list to email'
+            ];
+        }
 	}
 
 	function renewCheckout() {

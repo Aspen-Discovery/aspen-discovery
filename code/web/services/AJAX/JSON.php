@@ -77,7 +77,7 @@ class AJAX_JSON extends Action {
 			if (!$user || ($user instanceof AspenError)){
 
 				// Expired Card Notice
-				if ($user && $user->message == 'expired_library_card') {
+				if ($user && $user->getMessage() == 'expired_library_card') {
 					return array(
 						'success' => false,
 						'message' => translate('expired_library_card')
@@ -85,7 +85,7 @@ class AJAX_JSON extends Action {
 				}
 
 				// General Login Error
-				/** @var PEAR_Error $error */
+				/** @var AspenError $error */
 				$error = $user;
 				$message = ($user instanceof AspenError) ? translate($error->getMessage()) : translate("Sorry that login information was not recognized, please try again.");
 				return array(

@@ -231,7 +231,7 @@ class RecordDriverFactory {
 
 	/**
 	 * @param AbstractFedoraObject $record
-	 * @return PEAR_Error|RecordInterface
+	 * @return AspenError|RecordInterface
 	 */
 	public static function initIslandoraDriverFromObject($record)
 	{
@@ -301,7 +301,7 @@ class RecordDriverFactory {
 
 	/**
 	 * @param string $record
-	 * @return PEAR_Error|RecordInterface
+	 * @return AspenError|RecordInterface
 	 */
 	public static function initIslandoraDriverFromPid($record)
 	{
@@ -324,7 +324,7 @@ class RecordDriverFactory {
 	 * @param $record
 	 * @param $path
 	 * @param $driver
-	 * @return PEAR_Error|RecordInterface
+	 * @return AspenError|RecordInterface
 	 */
 	public static function initAndReturnDriver($record, $driver, $path)
 	{

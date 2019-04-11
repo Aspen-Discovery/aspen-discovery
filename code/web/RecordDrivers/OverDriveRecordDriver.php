@@ -126,7 +126,7 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
         foreach ($items as $key => $item){
             $item->links = array();
             if ($addCheckoutLink){
-                $checkoutLink = "return VuFind.OverDrive.checkOutOverDriveTitle('{$this->getUniqueID()}');";
+                $checkoutLink = "return VuFind.OverDrive.checkOutTitle('{$this->getUniqueID()}');";
                 $item->links[] = array(
                     'onclick' => $checkoutLink,
                     'text' => 'Check Out',
@@ -767,7 +767,7 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 		if ($isAvailable){
 			$actions[] = array(
 				'title' => 'Check Out OverDrive',
-				'onclick' => "return VuFind.OverDrive.checkOutOverDriveTitle('{$this->id}');",
+				'onclick' => "return VuFind.OverDrive.checkOutTitle('{$this->id}');",
 				'requireLogin' => false,
 			);
 		}else{

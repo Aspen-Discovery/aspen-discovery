@@ -8,7 +8,7 @@ class OverDrive_AJAX extends Action {
 
 	function launch() {
 		$method = $_GET['method'];
-		if (in_array($method, array('CheckoutOverDriveItem', 'PlaceHold', 'CancelHold', 'GetOverDriveHoldPrompts', 'ReturnCheckout', 'SelectOverDriveDownloadFormat', 'GetDownloadLink', 'GetOverDriveCheckoutPrompts', 'forceUpdateFromAPI'))){
+		if (in_array($method, array('checkOutTitle', 'placeHold', 'cancelHold', 'getHoldPrompts', 'returnCheckout', 'selectOverDriveDownloadFormat', 'getDownloadLink', 'getCheckOutPrompts', 'forceUpdateFromAPI'))){
 			header('Content-type: text/plain');
 			header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 			header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
@@ -53,7 +53,7 @@ class OverDrive_AJAX extends Action {
 		}
 	}
 
-	function PlaceHold(){
+	function placeHold(){
 		$user = UserAccount::getLoggedInUser();
 
 		$overDriveId = $_REQUEST['overDriveId'];
@@ -84,18 +84,16 @@ class OverDrive_AJAX extends Action {
 		}
 	}
 
-	function CheckoutOverDriveItem(){
+	function checkOutTitle(){
 		$user = UserAccount::getLoggedInUser();
 		$overDriveId = $_REQUEST['overDriveId'];
-		//global $logger;
-		//$logger->log("Lending period = $lendingPeriod", Logger::LOG_NOTICE);
 		if ($user){
 			$patronId = $_REQUEST['patronId'];
 			$patron = $user->getUserReferredTo($patronId);
 			if ($patron) {
                 require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
                 $driver = new OverDriveDriver();
-				$result = $driver->checkoutTitle($overDriveId, $patron);
+				$result = $driver->checkOutTitle($patron, $overDriveId);
 				//$logger->log("Checkout result = $result", Logger::LOG_NOTICE);
 				if ($result['success']){
 					$result['buttons'] = '<a class="btn btn-primary" href="/MyAccount/CheckedOut" role="button">View My Check Outs</a>';
@@ -109,7 +107,7 @@ class OverDrive_AJAX extends Action {
 		}
 	}
 
-	function ReturnReturnCheckout(){
+	function returnCheckout(){
 		$user = UserAccount::getLoggedInUser();
 		$overDriveId = $_REQUEST['overDriveId'];
 		$transactionId = $_REQUEST['transactionId'];
@@ -130,7 +128,7 @@ class OverDrive_AJAX extends Action {
 		}
 	}
 
-	function SelectOverDriveDownloadFormat(){
+	function selectOverDriveDownloadFormat(){
 		$user = UserAccount::getLoggedInUser();
 		$overDriveId = $_REQUEST['overDriveId'];
 		$formatId = $_REQUEST['formatId'];
@@ -151,7 +149,7 @@ class OverDrive_AJAX extends Action {
 		}
 	}
 
-	function GetDownloadLink(){
+	function getDownloadLink(){
 		$user = UserAccount::getLoggedInUser();
 		$overDriveId = $_REQUEST['overDriveId'];
 		$formatId = $_REQUEST['formatId'];
@@ -172,7 +170,7 @@ class OverDrive_AJAX extends Action {
 		}
 	}
 
-	function GetOverDriveHoldPrompts(){
+	function getHoldPrompts(){
 		$user = UserAccount::getLoggedInUser();
 		global $interface;
 		$id = $_REQUEST['id'];
@@ -199,7 +197,7 @@ class OverDrive_AJAX extends Action {
 				array(
 					'promptNeeded' => true,
 					'promptTitle' => $promptTitle,
-					'prompts' => $interface->fetch('OverDrive/ajax-overdrive-hold-prompt.tpl'),
+					'prompts' => $interface->fetch('OverDrive/ajax-hold-prompt.tpl'),
 					'buttons' => '<input class="btn btn-primary" type="submit" name="submit" value="Place Hold" onclick="return VuFind.OverDrive.processOverDriveHoldPrompts();"/>'
 				)
 			);
@@ -215,7 +213,7 @@ class OverDrive_AJAX extends Action {
 		}
 	}
 
-	function GetOverDriveCheckoutPrompts(){
+	function getCheckOutPrompts(){
 		$user = UserAccount::getLoggedInUser();
 		global $interface;
 		$id = $_REQUEST['id'];
@@ -230,7 +228,7 @@ class OverDrive_AJAX extends Action {
 				array(
 					'promptNeeded' => true,
 					'promptTitle'  => $promptTitle,
-					'prompts'      => $interface->fetch('OverDrive/ajax-rbdigital-checkout-prompt.tpl'),
+					'prompts'      => $interface->fetch('OverDrive/ajax-checkout-prompt.tpl'),
 					'buttons'      => '<input class="btn btn-primary" type="submit" name="submit" value="Checkout Title" onclick="return VuFind.OverDrive.processOverDriveCheckoutPrompts();">'
 				)
 			);
@@ -257,7 +255,7 @@ class OverDrive_AJAX extends Action {
 
 	}
 
-	function CancelHold(){
+	function cancelHold(){
 		$user = UserAccount::getLoggedInUser();
 		$overDriveId = $_REQUEST['overDriveId'];
 		if ($user){
@@ -266,7 +264,7 @@ class OverDrive_AJAX extends Action {
 			if ($patron) {
                 require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
                 $driver = new OverDriveDriver();
-				$result = $driver->canceHold($patron, $overDriveId, null);
+				$result = $driver->canceHold($patron, $overDriveId);
 				return json_encode($result);
 			}else{
 				return json_encode(array('result'=>false, 'message'=>'Sorry, it looks like you don\'t have permissions to download cancel holds for that user.'));

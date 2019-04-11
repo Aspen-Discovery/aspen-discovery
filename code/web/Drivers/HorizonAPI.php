@@ -341,7 +341,7 @@ abstract class HorizonAPI extends Horizon{
      * @param string $pickupBranch      The branch where the user wants to pickup the item when available
      * @param null|string $cancelDate   The date when the patron no longer needs the item
      * @return  mixed                   True if successful, false if unsuccessful
-     *                                  If an error occurs, return a PEAR_Error
+     *                                  If an error occurs, return a AspenError
      * @access  public
      */
 	public function placeHold($patron, $recordId, $pickupBranch = null, $cancelDate = null) {
@@ -360,7 +360,7 @@ abstract class HorizonAPI extends Horizon{
 	 * @param   string  $comment    Any comment regarding the hold or recall
 	 * @param   string  $type       Whether to place a hold or recall
 	 * @return  mixed               True if successful, false if unsuccessful
-	 *                              If an error occurs, return a PEAR_Error
+	 *                              If an error occurs, return a AspenError
 	 * @access  public
 	 */
 	function placeItemHold($patron, $recordId, $itemId, $comment = '', $type = 'request') {
@@ -459,7 +459,7 @@ abstract class HorizonAPI extends Horizon{
 		}
 	}
 
-	function cancelHold($patron, $recordId, $cancelId) {
+	function cancelHold($patron, $recordId, $cancelId = null) {
 		return $this->updateHoldDetailed($patron, 'cancel', null, $cancelId, '', '');
 	}
 
@@ -764,7 +764,7 @@ abstract class HorizonAPI extends Horizon{
 	}
 
 	// TODO: Test with linked accounts (9-3-2015)
-	public function renewCheckout($patron, $recordId, $itemId, $itemIndex){
+	public function renewCheckout($patron, $recordId, $itemId = null, $itemIndex = null){
 		global $configArray;
 
 		$userId = $patron->id;

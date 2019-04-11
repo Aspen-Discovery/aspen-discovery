@@ -90,7 +90,7 @@ class ExternalReviews
 	 *
 	 * @param   string  $id Client access key
 	 * @return  array       Returns array with review data, otherwise a
-	 *                      PEAR_Error.
+	 *                      AspenError.
 	 * @access  private
 	 * @author  Joel Timothy Norman <joel.t.norman@wmich.edu>
 	 * @author  Andrew Nagy <andrew.nagy@villanova.edu>

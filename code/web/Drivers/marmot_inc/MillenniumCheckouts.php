@@ -49,7 +49,7 @@ class MillenniumCheckouts {
 	 * @param User $user    The user to load transactions for
 	 *
 	 * @return mixed        Array of the patron's transactions on success,
-	 * PEAR_Error otherwise.
+	 * AspenError otherwise.
 	 * @access public
 	 */
 	public function getCheckouts($user) {

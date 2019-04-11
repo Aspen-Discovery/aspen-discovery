@@ -539,7 +539,7 @@ class CarlX extends SIP2Driver{
 	 * @param   string $itemId The id of the item to hold
 	 * @param   string $pickupBranch The branch where the user wants to pickup the item when available
 	 * @return  mixed               True if successful, false if unsuccessful
-	 *                              If an error occurs, return a PEAR_Error
+	 *                              If an error occurs, return a AspenError
 	 * @access  public
 	 */
 	function placeItemHold($patron, $recordId, $itemId, $pickupBranch) {
@@ -554,7 +554,7 @@ class CarlX extends SIP2Driver{
 	 * @param   string $cancelId Information about the hold to be cancelled
 	 * @return  array
 	 */
-	function cancelHold($patron, $recordId, $cancelId) {
+	function cancelHold($patron, $recordId, $cancelId = null) {
 		return $this->placeHoldViaSIP($patron, $recordId, null, null, 'cancel');
 
 	}
@@ -1063,7 +1063,7 @@ class CarlX extends SIP2Driver{
 										'message' => 'Your e-mail was sent successfully.'
 									);
 								} elseif (($emailResult instanceof AspenError)){
-									$interface->assign('error', "Your request could not be sent: {$emailResult->message}.");
+									$interface->assign('error', "Your request could not be sent: {$emailResult->getMessage()}.");
 								} else {
 									$interface->assign('error', "Your request could not be sent due to an unknown error.");
 									global $logger;

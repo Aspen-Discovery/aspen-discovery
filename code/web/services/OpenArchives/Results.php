@@ -53,7 +53,7 @@ class OpenArchives_Results extends Action {
         // Process Search
         $result = $searchObject->processSearch(true, true);
         if ($result instanceof AspenError) {
-            /** @var PEAR_Error $result */
+            /** @var AspenError $result */
             AspenError::raiseError($result->getMessage());
         }
         $timer->logTime('Process Search');

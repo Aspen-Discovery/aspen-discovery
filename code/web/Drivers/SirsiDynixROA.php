@@ -1050,21 +1050,6 @@ abstract class SirsiDynixROA extends HorizonAPI
 
 					if ($hold->fields->holdType == 'COPY'){
 						$curHold['title2'] = $hold->fields->item->fields->itemType->key . ' - ' . $hold->fields->item->fields->call->fields->callNumber;
-
-
-//						$itemInfo = $this->getWebServiceResponse($webServiceURL . '/v1' . $hold->fields->selectedItem->resource . '/key/' . $hold->fields->selectedItem->key. '?includeFields=barcode,call{*}', null, $sessionToken);
-//						$curHold['title2'] = $itemInfo->fields->itemType->key . ' - ' . $itemInfo->fields->call->fields->callNumber;
-						//TODO: Verify that this matches the title2 built below
-//						if (isset($itemInfo->fields)){
-//							$barcode = $itemInfo->fields->barcode;
-//							$copies = $recordDriver->getCopies();
-//							foreach ($copies as $copy){
-//								if ($copy['itemId'] == $barcode){
-//									$curHold['title2'] = $copy['shelfLocation'] . ' - ' . $copy['callNumber'];
-//									break;
-//								}
-//							}
-//						}
 					}
 
 				} else {
@@ -1102,7 +1087,7 @@ abstract class SirsiDynixROA extends HorizonAPI
 	 * @param   string  $pickupBranch The branch where the user wants to pickup the item when available
      * @param   null|string $cancelDate  The date the hold should be automatically cancelled
      * @return  mixed                 True if successful, false if unsuccessful
-	 *                                If an error occurs, return a PEAR_Error
+	 *                                If an error occurs, return a AspenError
 	 * @access  public
 	 */
 	public function placeHold($patron, $recordId, $pickupBranch = null, $cancelDate = null) {
@@ -1165,7 +1150,7 @@ abstract class SirsiDynixROA extends HorizonAPI
 	 * @param   string $campus The Pickup Location
 	 * @param   string $type Whether to place a hold or recall
 	 * @return  mixed               True if successful, false if unsuccessful
-	 *                              If an error occurs, return a PEAR_Error
+	 *                              If an error occurs, return a AspenError
 	 * @access  public
 	 */
 	function placeItemHold($patron, $recordId, $itemId, $campus = null, $type = 'request', $cancelIfNotFilledByDate = null)
@@ -1294,7 +1279,7 @@ abstract class SirsiDynixROA extends HorizonAPI
 	 }
  }
 
-	function cancelHold($patron, $recordId, $cancelId)
+	function cancelHold($patron, $recordId, $cancelId = null)
 	{
 //		$sessionToken = $this->getStaffSessionToken();
 		$sessionToken = $this->staffOrPatronSessionTokenSwitch() ? $this->getStaffSessionToken() : $this->getSessionToken($patron);
@@ -1483,7 +1468,7 @@ abstract class SirsiDynixROA extends HorizonAPI
 	 * @param string $itemIndex
 	 * @return array
 	 */
-	public function renewCheckout($patron, $recordId, $itemId, $itemIndex)
+	public function renewCheckout($patron, $recordId, $itemId = null, $itemIndex = null)
 	{
 		$sessionToken = $this->staffOrPatronSessionTokenSwitch() ? $this->getStaffSessionToken() : $this->getSessionToken($patron);
 		if (!$sessionToken) {
@@ -1537,7 +1522,7 @@ abstract class SirsiDynixROA extends HorizonAPI
 	/**
 	 * @param User $patron
 	 * @param $includeMessages
-	 * @return array|PEAR_Error
+	 * @return array|AspenError
 	 */
 	public function getMyFines($patron, $includeMessages = false)
 	{

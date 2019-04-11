@@ -28,15 +28,15 @@ VuFind.Hoopla = (function(){
 			return false;
 		},
 
-		getHooplaCheckOutPrompt: function (hooplaId) {
+		getCheckOutPrompts: function (hooplaId) {
 			if (Globals.loggedIn) {
-				var url = Globals.path + "/Hoopla/" + hooplaId + "/AJAX?method=getHooplaCheckOutPrompt";
+				var url = Globals.path + "/Hoopla/" + hooplaId + "/AJAX?method=geCheckOutPrompts";
 				$.getJSON(url, function (data) {
 					VuFind.showMessageWithButtons(data.title, data.body, data.buttons);
 				}).fail(VuFind.ajaxFail);
 			} else {
 				VuFind.Account.ajaxLogin(null, function () {
-					VuFind.Hoopla.getHooplaCheckOutPrompt(hooplaId);
+					VuFind.Hoopla.getCheckOutPrompts(hooplaId);
 				}, false);
 			}
 			return false;

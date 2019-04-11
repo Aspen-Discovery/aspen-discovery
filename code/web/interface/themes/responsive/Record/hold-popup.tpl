@@ -47,7 +47,7 @@
 									{if is_string($location)}
 										<option value="undefined">{$location}</option>
 									{else}
-										<option value="{$location->code}"{if $location->selected == "selected"} selected="selected"{/if}
+										<option value="{$location->code}"{if $location->getSelected() == "selected"} selected="selected"{/if}
 										        data-users="[{$location->pickupUsers|@implode:','}]">{$location->displayName}</option>
 									{/if}
 								{/foreach}

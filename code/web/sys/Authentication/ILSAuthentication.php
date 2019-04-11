@@ -21,6 +21,10 @@ class ILSAuthentication implements Authentication {
 		$this->catalogConnection = CatalogFactory::getCatalogConnectionInstance($this->driverName, $this->accountProfile);
 	}
 
+    /**
+     * @param bool $validatedViaSSO
+     * @return AspenError|User|false
+     */
 	public function authenticate($validatedViaSSO){
 		global $logger;
 		//Check to see if the username and password are provided

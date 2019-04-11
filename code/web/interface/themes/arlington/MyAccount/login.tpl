@@ -90,7 +90,7 @@
 					if (data.error == false){
 						alert(data.message);
 						if (data.success == true){
-							hideLightbox();
+							VuFind.closeLightbox();
 						}
 					}else{
 						alert("There was an error requesting your pin reset information.  Please contact the library for additional information.");

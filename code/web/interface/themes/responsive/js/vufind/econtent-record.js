@@ -1,6 +1,3 @@
-/**
- * Created by mark on 2/11/14.
- */
 VuFind.EContent = (function(){
 	return {
 		submitHelpForm: function(){

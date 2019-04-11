@@ -11,7 +11,7 @@ class Hoopla_AJAX extends Action
 			// Methods intend to return JSON data
 			if (in_array($method, array(
 					'reloadCover',
-					'checkOutHooplaTitle', 'getHooplaCheckOutPrompt', 'returnCheckout'
+					'checkOutHooplaTitle', 'getCheckOutPrompts', 'returnCheckout'
 			))) {
 				header('Content-type: text/plain');
 				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
@@ -102,7 +102,7 @@ class Hoopla_AJAX extends Action
 	/**
 	 * @return array
 	 */
-	function getHooplaCheckOutPrompt(){
+	function getCheckOutPrompts(){
 		$user = UserAccount::getLoggedInUser();
 		$id = $_REQUEST['id'];
 		if (strpos($id, ':') !== false) {
@@ -145,19 +145,26 @@ class Hoopla_AJAX extends Action
 					if (!$checkOutStatus) {
 						require_once ROOT_DIR . '/RecordDrivers/HooplaRecordDriver.php';
 						$hooplaRecord = new HooplaRecordDriver($id);
-						$accessLink = reset($hooplaRecord->getAccessLink()); // Base Hoopla Title View Url
-						$hooplaRegistrationUrl = $accessLink['url'];
-						$hooplaRegistrationUrl .= (parse_url($hooplaRegistrationUrl, PHP_URL_QUERY) ? '&' : '?') . 'showRegistration=true'; // Add Registration URL parameter
+                        try {
+                            // Base Hoopla Title View Url
+                            $accessLink = reset($hooplaRecord->getAccessLink());
+                            $hooplaRegistrationUrl = $accessLink['url'];
+                            $hooplaRegistrationUrl .= (parse_url($hooplaRegistrationUrl, PHP_URL_QUERY) ? '&' : '?') . 'showRegistration=true'; // Add Registration URL parameter
 
-						return
-							array(
-								'title'   => 'Create Hoopla Account',
-								'body'    => $interface->fetch('Hoopla/ajax-hoopla-single-user-checkout-prompt.tpl'),
-								'buttons' =>
-									'<button id="theHooplaButton" class="btn btn-default" type="button" title="Check Out" onclick="return VuFind.Hoopla.checkOutHooplaTitle(\'' . $id . '\', ' . $hooplaUser->id . ');">I registered, Check Out now</button>'
-									.'<a class="btn btn-primary" role="button" href="'.$hooplaRegistrationUrl.'" target="_blank" title="Register at Hoopla" onclick="$(\'#theHooplaButton+a,#theHooplaButton\').toggleClass(\'btn-primary btn-default\');">Register at Hoopla</a>'
-							);
-
+                            return array(
+                                    'title'   => 'Create Hoopla Account',
+                                    'body'    => $interface->fetch('Hoopla/ajax-hoopla-single-user-checkout-prompt.tpl'),
+                                    'buttons' =>
+                                        '<button id="theHooplaButton" class="btn btn-default" type="button" title="Check Out" onclick="return VuFind.Hoopla.checkOutHooplaTitle(\'' . $id . '\', ' . $hooplaUser->id . ')">I registered, Check Out now</button>'
+                                        .'<a class="btn btn-primary" role="button" href="'.$hooplaRegistrationUrl.'" target="_blank" title="Register at Hoopla" onclick="$(\'#theHooplaButton+a,#theHooplaButton\').toggleClass(\'btn-primary btn-default\');">Register at Hoopla</a>'
+                                );
+                        } catch (File_MARC_Exception $e) {
+                            return array(
+                                    'title'   => 'Error',
+                                    'body'    => 'Could not load MARC record for Hoopla checkout.',
+                                    'buttons' => ''
+                                );
+                        }
 					}
 					if ($hooplaUser->hooplaCheckOutConfirmation) {
 						$interface->assign('hooplaPatronStatus', $checkOutStatus);
@@ -165,13 +172,13 @@ class Hoopla_AJAX extends Action
 							array(
 								'title'   => 'Confirm Hoopla Check Out',
 								'body'    => $interface->fetch('Hoopla/ajax-hoopla-single-user-checkout-prompt.tpl'),
-								'buttons' => '<button class="btn btn-primary" type="button" title="Check Out" onclick="return VuFind.Hoopla.checkOutHooplaTitle(\'' . $id . '\', ' . $hooplaUser->id . ');">Check Out</button>'
+								'buttons' => '<button class="btn btn-primary" type="button" title="Check Out" onclick="return VuFind.Hoopla.checkOutHooplaTitle(\'' . $id . '\', ' . $hooplaUser->id . ')">Check Out</button>'
 							);
 					}else{
 						// Go ahead and checkout the title
 						return array(
 							'title'   => 'Checking out Hoopla title',
-							'body'    => '<script>VuFind.Hoopla.checkOutHooplaTitle(\'' . $id . '\', ' . $hooplaUser->id . ')</script>',
+							'body'    => "<script>VuFind.Hoopla.checkOutHooplaTitle('{$id}', '{$hooplaUser->id}')</script>",
 							'buttons' => ''
 						);
 					}
@@ -187,15 +194,20 @@ class Hoopla_AJAX extends Action
 							'buttons' => ''
 						);
 				}
-			}
+			} else {
+                return array(
+                    'title'   => 'Error',
+                    'body'    => 'Item to checkout was not provided.',
+                    'buttons' => ''
+                );
+            }
 		}else{
-			return
-			array(
-				'title'   => 'Error',
-				'body'    => 'You must be logged in to checkout an item.'
-					.'<script>Globals.loggedIn = false;  VuFind.Hoopla.getHooplaCheckOutPrompt(\''.$id.'\')</script>',
-				'buttons' => ''
-			);
+            return array(
+                'title'   => 'Error',
+                'body'    => 'You must be logged in to checkout an item.'
+                    .'<script>Globals.loggedIn = false;  VuFind.Hoopla.getCheckOutPrompts(\''.$id.'\')</script>',
+                'buttons' => ''
+            );
 		}
 
 	}
@@ -214,7 +226,7 @@ class Hoopla_AJAX extends Action
 				$id = $_REQUEST['id'];
 				require_once ROOT_DIR . '/Drivers/HooplaDriver.php';
 				$driver = new HooplaDriver();
-				$result = $driver->checkoutHooplaItem($id, $patron);
+				$result = $driver->checkOutTitle($patron, $id);
 				if (!empty($_REQUEST['stopHooplaConfirmation'])) {
 					$patron->hooplaCheckOutConfirmation = false;
 					$patron->update();
@@ -223,7 +235,8 @@ class Hoopla_AJAX extends Action
 					$checkOutStatus = $driver->getAccountSummary($patron);
 					$interface->assign('hooplaPatronStatus', $checkOutStatus);
 					$title = empty($result['title']) ? "Title checked out successfully" : $result['title'] . " checked out successfully";
-					return array(
+                    /** @noinspection HtmlUnknownTarget */
+                    return array(
 						'success' => true,
 						'title'   => $title,
 						'message' => $interface->fetch('Hoopla/hoopla-checkout-success.tpl'),

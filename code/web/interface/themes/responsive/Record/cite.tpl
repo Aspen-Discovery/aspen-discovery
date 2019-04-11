@@ -1,7 +1,7 @@
 {strip}
 {if $lightbox}
 <div onmouseup="this.style.cursor='default';" id="popupboxHeader" class="header">
-	<a onclick="hideLightbox(); return false;" href="">close</a>
+	<a onclick="VuFind.closeLightbox(); return false;" href="">close</a>
 	{translate text='Title Citation'}
 </div>
 <div id="popupboxContent" class="content">

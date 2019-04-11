@@ -12,8 +12,6 @@ class AspenError
     public function __construct($message){
         $this->message = $message;
         $this->backtrace = debug_backtrace();
-
-        $this->handleAspenError();
     }
 
     public function getMessage(){

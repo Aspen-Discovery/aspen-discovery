@@ -52,11 +52,9 @@ abstract class AbstractDriver
      *
      * @param $patron     User
      * @param $recordId   string
-     * @param $itemId     string
-     * @param $itemIndex  string
      * @return mixed
      */
-    public abstract function renewCheckout($patron, $recordId, $itemId, $itemIndex);
+    public abstract function renewCheckout($patron, $recordId);
 
     public function hasHolds(){
         return true;
@@ -95,8 +93,7 @@ abstract class AbstractDriver
      *
      * @param   User    $patron     The User to cancel the hold for
      * @param   string  $recordId   The id of the bib record
-     * @param   string  $cancelId   Information about the hold to be cancelled
      * @return  array
      */
-    abstract function cancelHold($patron, $recordId, $cancelId);
+    abstract function cancelHold($patron, $recordId);
 }

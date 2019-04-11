@@ -91,7 +91,7 @@ class PHPExcel_Shared_OLE
 	 *
 	 * @acces public
 	 * @param string $file
-	 * @return mixed true on success, PEAR_Error on failure
+	 * @return mixed true on success, AspenError on failure
 	*/
 	public function read($file)
 	{
@@ -261,7 +261,7 @@ class PHPExcel_Shared_OLE
 	*
 	* @access public
 	* @param  integer  the block id of the first block
-	* @return mixed true on success, PEAR_Error on failure
+	* @return mixed true on success, AspenError on failure
 	*/
 	public function _readPpsWks($blockId)
 	{

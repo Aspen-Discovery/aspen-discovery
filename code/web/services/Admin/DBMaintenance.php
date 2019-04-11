@@ -1,22 +1,4 @@
 <?php
-/**
- *
- * Copyright (C) Villanova University 2007.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2,
- * as published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- */
 
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/Admin.php';
@@ -100,7 +82,9 @@ class DBMaintenance extends Admin_Admin {
         require_once ROOT_DIR . '/sys/DBMaintenance/redwood_archive_updates.php';
         $redwood_updates = getRedwoodArchiveUpdates();
 
-		return array_merge(
+        /** @noinspection SqlResolve */
+        /** @noinspection SqlWithoutWhere */
+        return array_merge(
 			$library_location_updates,
 			$user_updates,
 			$grouped_work_updates,
@@ -189,7 +173,7 @@ class DBMaintenance extends Admin_Admin {
 						"CREATE TABLE `marriage` (
 						`marriageId` INT NOT NULL AUTO_INCREMENT PRIMARY KEY ,
 						`personId` INT NOT NULL COMMENT 'A link to one person in the marriage',
-						`spouseName` VARCHAR( 200 ) NULL COMMENT 'The name of the other person in the marriage if they aren''t in the database',
+						`spouseName` VARCHAR( 200 ) NULL COMMENT 'The name of the other person in the marriage if they are not in the database',
 						`spouseId` INT NULL COMMENT 'A link to the second person in the marriage if the person is in the database',
 						`marriageDate` DATE NULL COMMENT 'The date of the marriage if known.',
 						`marriageDateDay` INT NULL COMMENT 'The day of the month the marriage occurred empty or null if not known',
@@ -359,7 +343,7 @@ class DBMaintenance extends Admin_Admin {
 
 				'notInterested' => array(
 					'title' => 'Not Interested Table',
-					'description' => 'Create a table for records the user is not interested in so they can be ommitted from search results',
+					'description' => 'Create a table for records the user is not interested in so they can be omitted from search results',
 					'sql' => array(
 						"CREATE TABLE `user_not_interested` (
 							id INT(11) NOT NULL AUTO_INCREMENT,
@@ -534,7 +518,7 @@ class DBMaintenance extends Admin_Admin {
 						"INSERT INTO materials_request_status (description, sendEmailToPatron, emailTemplate, isOpen, isPatronCancel) VALUES ('Cancelled by Patron', 0, '', 0, 1)",
 						"INSERT INTO materials_request_status (description, sendEmailToPatron, emailTemplate, isOpen) VALUES ('Cancelled - Duplicate Request', 0, '', 0)",
 
-						"UPDATE materials_request SET status = (SELECT id FROM materials_request_status WHERE isDefault =1)",
+                        "UPDATE materials_request SET status = (SELECT id FROM materials_request_status WHERE isDefault =1)",
 
 						"ALTER TABLE materials_request CHANGE `status` `status` INT(11)",
 					),
@@ -631,10 +615,9 @@ class DBMaintenance extends Admin_Admin {
 
 				'materialsRequestFixColumns' => array(
 					'title' => 'Change a Couple Column Data-Types for Material Requests Table',
-					'description' => 'Change illitem and holdPickupLocation column data types for Material Requests Table.',
+					'description' => 'Change illItem column data types for Material Requests Table.',
 					'sql' => array(
-						'ALTER TABLE `materials_request` '
-						.'CHANGE COLUMN `illItem` `illItem` TINYINT(4) NULL DEFAULT NULL ;'
+						'ALTER TABLE `materials_request` CHANGE COLUMN `illItem` `illItem` TINYINT(4) NULL DEFAULT NULL ;'
 					),
 				),
 
@@ -769,7 +752,7 @@ class DBMaintenance extends Admin_Admin {
 
 				'author_enrichment' => array(
 						'title' => 'Author Enrichment',
-						'description' => 'Create table to store enrichment for authors',
+						'description' => 'Create a table to store enrichment for authors',
 						'sql' => array(
 								"CREATE TABLE `author_enrichment` (
 									id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -813,7 +796,7 @@ class DBMaintenance extends Admin_Admin {
 
 				'variables_offline_mode_when_offline_login_allowed' => array(
 						'title' => 'Variables Offline Mode When Offline Login is Allowed',
-						'description' => 'Add a variable to allow setting offline mode from the Pika interface, as long as offline logins are allowed.',
+						'description' => 'Add a variable to allow setting offline mode from the admin interface, as long as offline logins are allowed.',
 						'sql' => array(
 								"INSERT INTO variables (name, value) VALUES ('offline_mode_when_offline_login_allowed', 'false')",
 						),
@@ -821,7 +804,7 @@ class DBMaintenance extends Admin_Admin {
 
 					'variables_full_index_warnings' => array(
 							'title' => 'Variables for how long of an interval to allow between full indexes',
-							'description' => 'Add a variable to allow setting offline mode from the Pika interface, as long as offline logins are allowed.',
+							'description' => 'Add a variable to allow setting offline mode from the admin interface, as long as offline logins are allowed.',
 							'sql' => array(
 									"INSERT INTO variables (name, value) VALUES ('fullReindexIntervalWarning', '86400')",
 									"INSERT INTO variables (name, value) VALUES ('fullReindexIntervalCritical', '129600')",
@@ -843,8 +826,6 @@ class DBMaintenance extends Admin_Admin {
 						"ALTER TABLE list_widgets CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
 						"ALTER TABLE list_widget_lists CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
 						"ALTER TABLE location CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
-						//"ALTER TABLE nonHoldableLocations CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
-						//"ALTER TABLE ptype_restricted_locations CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
 						"ALTER TABLE roles CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
 						"ALTER TABLE search CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
 						"ALTER TABLE search_stats CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
@@ -1042,10 +1023,19 @@ class DBMaintenance extends Admin_Admin {
 					),
 				),
 
-				'addTablelistWidgetListsLinks' => array(
+				'addTableListWidgetListsLinks' => array(
 					'title' => 'Widget Lists',
 					'description' => 'Add a new table: list_widget_lists_links',
-					'sql' => array('addTableListWidgetListsLinks'),
+					'sql' => array(
+					    "CREATE TABLE IF NOT EXISTS `list_widget_lists_links`(
+                            `id` int(11) NOT NULL AUTO_INCREMENT, 
+                            `listWidgetListsId` int(11) NOT NULL, 
+                            `name` varchar(50) NOT NULL, 
+                            `link` text NOT NULL, 
+                            `weight` int(3) NOT NULL DEFAULT '0',
+                            PRIMARY KEY (`id`) 
+                        ) ENGINE=InnoDB DEFAULT CHARSET=utf8;"
+                    ),
 				),
 
 
@@ -1189,9 +1179,9 @@ class DBMaintenance extends Admin_Admin {
 
 				'non_numeric_ptypes' => array(
 					'title' => 'Allow P-Types to be stored as strings',
-					'description' => 'This accomodates any ILS that does not use numeric P-Types',
+					'description' => 'This accommodates any ILS that does not use numeric P-Types',
 					'sql' => array(
-						'ALTER TABLE `ptype`  CHANGE COLUMN `pType` `pType` VARCHAR(20) NOT NULL ;'
+						'ALTER TABLE `ptype` CHANGE COLUMN `pType` `pType` VARCHAR(20) NOT NULL ;'
 					),
 				),
 
@@ -1435,14 +1425,6 @@ class DBMaintenance extends Admin_Admin {
 						"ALTER TABLE browse_category ADD searchTerm VARCHAR(100) NOT NULL DEFAULT ''",
 						"ALTER TABLE browse_category ADD numTimesShown MEDIUMINT NOT NULL DEFAULT 0",
 						"ALTER TABLE browse_category ADD numTitlesClickedOn MEDIUMINT NOT NULL DEFAULT 0",
-					),
-				),
-
-				'browse_categories_search_term_length' => array(
-					'title' => 'Browse Category Search Term Length',
-					'description' => 'Increase the length of the search term field',
-					'sql' => array(
-						"ALTER TABLE browse_category CHANGE searchTerm searchTerm VARCHAR(300) NOT NULL DEFAULT ''",
 					),
 				),
 
@@ -1747,8 +1729,9 @@ class DBMaintenance extends Admin_Admin {
 		);
 	}
 
-	public function convertTablesToInnoDB(&$update){
+	public function convertTablesToInnoDB(/** @noinspection PhpUnusedParameterInspection */ &$update){
 	    global $configArray;
+        /** @noinspection SqlResolve */
         $sql = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = '{$configArray['Database']['database_aspen_dbname']}' AND ENGINE = 'MyISAM'";
 
         /** @var PDO $aspen_db  */
@@ -1756,26 +1739,12 @@ class DBMaintenance extends Admin_Admin {
         $results = $aspen_db->query($sql, PDO::FETCH_ASSOC);
         $row = $results->fetchObject();
         while ($row != null) {
+            /** @noinspection SqlResolve */
             $sql = "ALTER TABLE `{$row->TABLE_NAME}` ENGINE=INNODB";
             $aspen_db->query($sql);
             $row = $results->fetchObject();
         }
     }
-
-	public function addTableListWidgetListsLinks() {
-        /** @var PDO $aspen_db  */
-        global $aspen_db;
-		set_time_limit(120);
-		$sql = 'CREATE TABLE IF NOT EXISTS `list_widget_lists_links`( ' .
-			'`id` int(11) NOT NULL AUTO_INCREMENT, ' .
-			'`listWidgetListsId` int(11) NOT NULL, ' .
-			'`name` varchar(50) NOT NULL, ' .
-			'`link` text NOT NULL, ' .
-			'`weight` int(3) NOT NULL DEFAULT \'0\',' .
-			'PRIMARY KEY (`id`) ' .
-			') ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;';
-		$aspen_db->query($sql);
-	}
 
 
 	private function checkWhichUpdatesHaveRun($availableUpdates) {

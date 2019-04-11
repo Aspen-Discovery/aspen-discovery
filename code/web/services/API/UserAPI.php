@@ -1041,7 +1041,7 @@ class UserAPI extends Action {
 		if ($user && !($user instanceof AspenError)){
             require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
             $driver = new OverDriveDriver();
-			$result = $driver->cancelHold($user, $overDriveId, null);
+			$result = $driver->cancelHold($user, $overDriveId);
 			return array('success'=> $result['success'], 'message'=>$result['message']);
 		}else{
 			return array('success'=>false, 'message'=>'Login unsuccessful');
@@ -1087,7 +1087,7 @@ class UserAPI extends Action {
 		if ($user && !($user instanceof AspenError)){
             require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
             $driver = new OverDriveDriver();
-			$holdMessage = $driver->checkoutTitle($user, $overDriveId);
+			$holdMessage = $driver->checkOutTitle($user, $overDriveId);
 			return array('success'=> $holdMessage['success'], 'message'=>$holdMessage['message']);
 		}else{
 			return array('success'=>false, 'message'=>'Login unsuccessful');

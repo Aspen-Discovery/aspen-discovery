@@ -184,7 +184,7 @@ class Base {/*{{{*/
      * @access public
      * @param   array   $arr    the data set
      * @param   optional    int $opt    data format: STATS_DATA_CUMMULATIVE or STATS_DATA_SIMPLE (default)
-     * @return  mixed   true on success, a PEAR_Error object otherwise
+     * @return  mixed   true on success, a AspenError object otherwise
      */
     function setData($arr, $opt=STATS_DATA_SIMPLE) {/*{{{*/
         if (!is_array($arr)) {
@@ -211,7 +211,7 @@ class Base {/*{{{*/
      *
      * @access  public
      * @param boolean $expanded whether to return a expanded list, default is false
-     * @return  mixed   array of data on success, a PEAR_Error object otherwise
+     * @return  mixed   array of data on success, a AspenError object otherwise
      * @see _validate()
      */
     function getData($expanded=false) {/*{{{*/
@@ -230,7 +230,7 @@ class Base {/*{{{*/
      * Must be called before assigning a new data set containing null values
      *
      * @access  public
-     * @return  mixed   true on success, a PEAR_Error object otherwise
+     * @return  mixed   true on success, a AspenError object otherwise
      * @see _validate()
      */
     function setNullOption($nullOption) {/*{{{*/
@@ -251,7 +251,7 @@ class Base {/*{{{*/
      * values to their original (unset) defaults.
      *
      * @access public
-     * @return mixed true on success, a PEAR_Error object otherwise
+     * @return mixed true on success, a AspenError object otherwise
      * @see mean()
      * @see stDev()
      * @see setData()
@@ -288,7 +288,7 @@ class Base {/*{{{*/
      * This will reset all pre-calculated values to their original (unset) defaults.
      *
      * @access public
-     * @return mixed true on success, a PEAR_Error object otherwise
+     * @return mixed true on success, a AspenError object otherwise
      * @see mean()
      * @see setData()
      */
@@ -317,9 +317,9 @@ class Base {/*{{{*/
      *
      * @access  public
      * @param   int $mode   one of STATS_BASIC or STATS_FULL
-     * @param boolean $returnErrorObject whether the raw PEAR_Error (when true, default),
+     * @param boolean $returnErrorObject whether the raw AspenError (when true, default),
      *                  or only the error message will be returned (when false), if an error happens.
-     * @return  mixed   an associative array of statistics on success, a PEAR_Error object otherwise
+     * @return  mixed   an associative array of statistics on success, a AspenError object otherwise
      * @see calcBasic()
      * @see calcFull()
      */
@@ -340,9 +340,9 @@ class Base {/*{{{*/
      * Calculates a basic set of statistics
      *
      * @access  public
-     * @param boolean $returnErrorObject whether the raw PEAR_Error (when true, default),
+     * @param boolean $returnErrorObject whether the raw AspenError (when true, default),
      *                  or only the error message will be returned (when false), if an error happens.
-     * @return  mixed   an associative array of statistics on success, a PEAR_Error object otherwise
+     * @return  mixed   an associative array of statistics on success, a AspenError object otherwise
      * @see calc()
      * @see calcFull()
      */
@@ -364,9 +364,9 @@ class Base {/*{{{*/
      * Calculates a full set of statistics
      *
      * @access  public
-     * @param boolean $returnErrorObject whether the raw PEAR_Error (when true, default),
+     * @param boolean $returnErrorObject whether the raw AspenError (when true, default),
      *                  or only the error message will be returned (when false), if an error happens.
-     * @return  mixed   an associative array of statistics on success, a PEAR_Error object otherwise
+     * @return  mixed   an associative array of statistics on success, a AspenError object otherwise
      * @see calc()
      * @see calcBasic()
      */
@@ -420,7 +420,7 @@ class Base {/*{{{*/
      * Handles cummulative data sets correctly
      *
      * @access  public
-     * @return  mixed   the minimum value on success, a PEAR_Error object otherwise
+     * @return  mixed   the minimum value on success, a AspenError object otherwise
      * @see calc()
      * @see max()
      */
@@ -444,7 +444,7 @@ class Base {/*{{{*/
      * Handles cummulative data sets correctly
      *
      * @access  public
-     * @return  mixed   the maximum value on success, a PEAR_Error object otherwise
+     * @return  mixed   the maximum value on success, a AspenError object otherwise
      * @see calc()
      * @see min()
      */
@@ -468,7 +468,7 @@ class Base {/*{{{*/
      * Handles cummulative data sets correctly
      *
      * @access  public
-     * @return  mixed   the sum on success, a PEAR_Error object otherwise
+     * @return  mixed   the sum on success, a AspenError object otherwise
      * @see calc()
      * @see sum2()
      * @see sumN()
@@ -490,7 +490,7 @@ class Base {/*{{{*/
      * Handles cummulative data sets correctly
      *
      * @access  public
-     * @return  mixed   the sum on success, a PEAR_Error object otherwise
+     * @return  mixed   the sum on success, a AspenError object otherwise
      * @see calc()
      * @see sum()
      * @see sumN()
@@ -513,7 +513,7 @@ class Base {/*{{{*/
      *
      * @access  public
      * @param   numeric $n  the exponent
-     * @return  mixed   the sum on success, a PEAR_Error object otherwise
+     * @return  mixed   the sum on success, a AspenError object otherwise
      * @see calc()
      * @see sum()
      * @see sum2()
@@ -540,7 +540,7 @@ class Base {/*{{{*/
      * Handles cummulative data sets correctly
      *
      * @access  public
-     * @return  mixed   the product on success, a PEAR_Error object otherwise
+     * @return  mixed   the product on success, a AspenError object otherwise
      * @see productN()
      */
     function product() {/*{{{*/
@@ -561,7 +561,7 @@ class Base {/*{{{*/
      *
      * @access  public
      * @param   numeric $n  the exponent
-     * @return  mixed   the product on success, a PEAR_Error object otherwise
+     * @return  mixed   the product on success, a AspenError object otherwise
      * @see product()
      */
     function productN($n) {/*{{{*/
@@ -593,7 +593,7 @@ class Base {/*{{{*/
      * Handles cummulative data sets correctly
      *
      * @access  public
-     * @return  mixed   the count on success, a PEAR_Error object otherwise
+     * @return  mixed   the count on success, a AspenError object otherwise
      * @see calc()
      */
     function count() {/*{{{*/
@@ -616,7 +616,7 @@ class Base {/*{{{*/
      * Handles cummulative data sets correctly
      *
      * @access  public
-     * @return  mixed   the mean value on success, a PEAR_Error object otherwise
+     * @return  mixed   the mean value on success, a AspenError object otherwise
      * @see calc()
      * @see sum()
      * @see count()
@@ -640,7 +640,7 @@ class Base {/*{{{*/
      * Calculates the range of the data set = max - min
      *
      * @access public
-     * @return mixed the value of the range on success, a PEAR_Error object otherwise.
+     * @return mixed the value of the range on success, a AspenError object otherwise.
      */
     function range() {/*{{{*/
         if (!array_key_exists('range', $this->_calculatedValues)) {
@@ -663,7 +663,7 @@ class Base {/*{{{*/
      * Handles cummulative data sets correctly
      *
      * @access  public
-     * @return  mixed   the variance value on success, a PEAR_Error object otherwise
+     * @return  mixed   the variance value on success, a AspenError object otherwise
      * @see calc()
      * @see __sumdiff()
      * @see count()
@@ -684,7 +684,7 @@ class Base {/*{{{*/
      * Handles cummulative data sets correctly
      *
      * @access  public
-     * @return  mixed   the standard deviation on success, a PEAR_Error object otherwise
+     * @return  mixed   the standard deviation on success, a AspenError object otherwise
      * @see calc()
      * @see variance()
      */
@@ -707,7 +707,7 @@ class Base {/*{{{*/
      *
      * @access  public
      * @param   numeric $mean   the fixed mean value
-     * @return  mixed   the variance on success, a PEAR_Error object otherwise
+     * @return  mixed   the variance on success, a AspenError object otherwise
      * @see __sumdiff()
      * @see count()
      * @see variance()
@@ -724,7 +724,7 @@ class Base {/*{{{*/
      *
      * @access  public
      * @param   numeric $mean   the fixed mean value
-     * @return  mixed   the standard deviation on success, a PEAR_Error object otherwise
+     * @return  mixed   the standard deviation on success, a AspenError object otherwise
      * @see varianceWithMean()
      * @see stDev()
      */
@@ -741,7 +741,7 @@ class Base {/*{{{*/
      * Handles cummulative data sets correctly
      *
      * @access  public
-     * @return  mixed   the absolute deviation on success, a PEAR_Error object otherwise
+     * @return  mixed   the absolute deviation on success, a AspenError object otherwise
      * @see calc()
      * @see __sumabsdev()
      * @see count()
@@ -766,7 +766,7 @@ class Base {/*{{{*/
      *
      * @access  public
      * @param   numeric $mean   the fixed mean value
-     * @return  mixed   the absolute deviation on success, a PEAR_Error object otherwise
+     * @return  mixed   the absolute deviation on success, a AspenError object otherwise
      * @see __sumabsdev()
      * @see absDev()
      */
@@ -786,7 +786,7 @@ class Base {/*{{{*/
      * Handles cummulative data sets correctly
      *
      * @access  public
-     * @return  mixed   the skewness value on success, a PEAR_Error object otherwise
+     * @return  mixed   the skewness value on success, a AspenError object otherwise
      * @see __sumdiff()
      * @see count()
      * @see stDev()
@@ -823,7 +823,7 @@ class Base {/*{{{*/
      * Handles cummulative data sets correctly
      *
      * @access  public
-     * @return  mixed   the kurtosis value on success, a PEAR_Error object otherwise
+     * @return  mixed   the kurtosis value on success, a AspenError object otherwise
      * @see __sumdiff()
      * @see count()
      * @see stDev()
@@ -857,7 +857,7 @@ class Base {/*{{{*/
      * Handles cummulative data sets correctly
      *
      * @access  public
-     * @return  mixed   the median value on success, a PEAR_Error object otherwise
+     * @return  mixed   the median value on success, a AspenError object otherwise
      * @see count()
      * @see calc()
      */
@@ -893,7 +893,7 @@ class Base {/*{{{*/
      * Handles cummulative data sets correctly
      *
      * @access  public
-     * @return  mixed   an array of mode value on success, a PEAR_Error object otherwise
+     * @return  mixed   an array of mode value on success, a AspenError object otherwise
      * @see frequency()
      * @see calc()
      */
@@ -932,7 +932,7 @@ class Base {/*{{{*/
      * Handles cummulative data sets correctly
      *
      * @access  public
-     * @return  mixed   the midrange value on success, a PEAR_Error object otherwise
+     * @return  mixed   the midrange value on success, a AspenError object otherwise
      * @see min()
      * @see max()
      * @see calc()
@@ -957,7 +957,7 @@ class Base {/*{{{*/
      * Handles cummulative data sets correctly
      *
      * @access public
-     * @return mixed the geometrical mean value on success, a PEAR_Error object otherwise
+     * @return mixed the geometrical mean value on success, a AspenError object otherwise
      * @see calc()
      * @see product()
      * @see count()
@@ -988,7 +988,7 @@ class Base {/*{{{*/
      * Handles cummulative data sets correctly
      *
      * @access public
-     * @return mixed the harmonic mean value on success, a PEAR_Error object otherwise
+     * @return mixed the harmonic mean value on success, a AspenError object otherwise
      * @see calc()
      * @see count()
      */
@@ -1035,7 +1035,7 @@ class Base {/*{{{*/
      *
      * @access public
      * @param integer $n moment to calculate
-     * @return mixed the numeric value of the moment on success, PEAR_Error otherwise
+     * @return mixed the numeric value of the moment on success, AspenError otherwise
      */
     function sampleCentralMoment($n) {/*{{{*/
         if (!is_int($n) || $n < 1) {
@@ -1071,7 +1071,7 @@ class Base {/*{{{*/
      *
      * @access public
      * @param integer $n moment to calculate
-     * @return mixed the numeric value of the moment on success, PEAR_Error otherwise
+     * @return mixed the numeric value of the moment on success, AspenError otherwise
      */
     function sampleRawMoment($n) {/*{{{*/
         if (!is_int($n) || $n < 1) {
@@ -1101,7 +1101,7 @@ class Base {/*{{{*/
      * Handles cummulative data sets correctly
      *
      * @access  public
-     * @return  mixed   the coefficient of variation on success, a PEAR_Error object otherwise
+     * @return  mixed   the coefficient of variation on success, a AspenError object otherwise
      * @see stDev()
      * @see mean()
      * @see calc()
@@ -1138,7 +1138,7 @@ class Base {/*{{{*/
      * proportional to the square root of the sample size.
      *
      * @access  public
-     * @return  mixed   the standard error of the mean on success, a PEAR_Error object otherwise
+     * @return  mixed   the standard error of the mean on success, a AspenError object otherwise
      * @see stDev()
      * @see count()
      * @see calc()
@@ -1163,7 +1163,7 @@ class Base {/*{{{*/
      * Handles cummulative data sets correctly
      *
      * @access  public
-     * @return  mixed   an associative array of value=>frequency items on success, a PEAR_Error object otherwise
+     * @return  mixed   an associative array of value=>frequency items on success, a AspenError object otherwise
      * @see min()
      * @see max()
      * @see calc()
@@ -1193,7 +1193,7 @@ class Base {/*{{{*/
      * 25th, 50th, and 75th percentiles.
      *
      * @access public
-     * @return mixed an associative array of quartiles on success, a PEAR_Error otherwise
+     * @return mixed an associative array of quartiles on success, a AspenError otherwise
      * @see percentile()
      */
     function quartiles() {/*{{{*/
@@ -1229,7 +1229,7 @@ class Base {/*{{{*/
      *
      * @todo need to double check the equation
      * @access public
-     * @return mixed a numeric value on success, a PEAR_Error otherwise
+     * @return mixed a numeric value on success, a AspenError otherwise
      * @see quartiles()
      */
     function interquartileMean() {/*{{{*/
@@ -1267,7 +1267,7 @@ class Base {/*{{{*/
      *  where: P = percentile
      *
      * @access public
-     * @return mixed a numeric value on success, a PEAR_Error otherwise
+     * @return mixed a numeric value on success, a AspenError otherwise
      * @see quartiles()
      */
     function interquartileRange() {/*{{{*/
@@ -1291,7 +1291,7 @@ class Base {/*{{{*/
      *  where: P = percentile
      *
      * @access public
-     * @return mixed a numeric value on success, a PEAR_Error otherwise
+     * @return mixed a numeric value on success, a AspenError otherwise
      * @see quartiles()
      * @see interquartileRange()
      */
@@ -1315,7 +1315,7 @@ class Base {/*{{{*/
      *
      * @todo need to double check the equation
      * @access public
-     * @return mixed a numeric value on success, a PEAR_Error otherwise
+     * @return mixed a numeric value on success, a AspenError otherwise
      * @see quartiles()
      */
     function quartileVariationCoefficient() {/*{{{*/
@@ -1343,7 +1343,7 @@ class Base {/*{{{*/
      *
      * @todo need to double check the equation
      * @access public
-     * @return mixed a numeric value on success, a PEAR_Error otherwise
+     * @return mixed a numeric value on success, a AspenError otherwise
      * @see quartiles()
      */
     function quartileSkewnessCoefficient() {/*{{{*/
@@ -1382,7 +1382,7 @@ class Base {/*{{{*/
      *
      * @access public
      * @param numeric $p the percentile to estimate, e.g. 25 for 25th percentile
-     * @return mixed a numeric value on success, a PEAR_Error otherwise
+     * @return mixed a numeric value on success, a AspenError otherwise
      * @see quartiles()
      * @see median()
      */
@@ -1418,7 +1418,7 @@ class Base {/*{{{*/
      * @access private
      * @param   numeric $power  the exponent
      * @param   optional    double   $mean   the data set mean value
-     * @return  mixed   the sum on success, a PEAR_Error object otherwise
+     * @return  mixed   the sum on success, a AspenError object otherwise
      *
      * @see stDev()
      * @see variaceWithMean();
@@ -1453,7 +1453,7 @@ class Base {/*{{{*/
      *
      * @access private
      * @param $mean the fixed mean to use, null as default
-     * @return mixed a numeric value on success, a PEAR_Error otherwise
+     * @return mixed a numeric value on success, a AspenError otherwise
      * @see variance()
      * @see varianceWithMean()
      */
@@ -1481,7 +1481,7 @@ class Base {/*{{{*/
      *
      * @access private
      * @param $mean the fixed mean to use, null as default
-     * @return mixed a numeric value on success, a PEAR_Error otherwise
+     * @return mixed a numeric value on success, a AspenError otherwise
      * @see absDev()
      * @see absDevWithMean()
      */
@@ -1505,7 +1505,7 @@ class Base {/*{{{*/
      *
      * @access  private
      * @param   optional    double   $mean   the mean value for the set or population
-     * @return  mixed   the sum on success, a PEAR_Error object otherwise
+     * @return  mixed   the sum on success, a AspenError object otherwise
      *
      * @see absDev()
      * @see absDevWithMean()
@@ -1531,14 +1531,14 @@ class Base {/*{{{*/
     }/*}}}*/
 
     /**
-     * Utility function to format a PEAR_Error to be used by calc(),
+     * Utility function to format a AspenError to be used by calc(),
      * calcBasic() and calcFull()
      *
      * @access private
      * @param mixed $v value to be formatted
-     * @param boolean $returnErrorObject whether the raw PEAR_Error (when true, default),
+     * @param boolean $returnErrorObject whether the raw AspenError (when true, default),
      *                  or only the error message will be returned (when false)
-     * @return mixed if the value is a PEAR_Error object, and $useErrorObject
+     * @return mixed if the value is a AspenError object, and $useErrorObject
      *              is false, then a string with the error message will be returned,
      *              otherwise the value will not be modified and returned as passed.
      */
@@ -1555,7 +1555,7 @@ class Base {/*{{{*/
      * according to the current null handling option
      *
      * @access  private
-     * @return  mixed true on success, a PEAR_Error object otherwise
+     * @return  mixed true on success, a AspenError object otherwise
      *
      * @see setData()
      */

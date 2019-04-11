@@ -328,18 +328,18 @@ class HooplaDriver extends AbstractEContentDriver{
 	}
 
 	/**
-	 * @param string $hooplaId
-	 * @param User $user
-     *
+     * @param User $user
+     * @param string $titleId
+	 *
      * @return array
 	 */
-	public function checkoutHooplaItem($hooplaId, $user) {
+	public function checkOutTitle($user, $titleId) {
 		if ($this->hooplaEnabled) {
 			$checkoutURL = $this->getHooplaBasePatronURL($user);
 			if (!empty($checkoutURL)) {
 
-				$hooplaId = self::recordIDtoHooplaID($hooplaId);
-				$checkoutURL      .= '/' . $hooplaId;
+				$titleId = self::recordIDtoHooplaID($titleId);
+				$checkoutURL      .= '/' . $titleId;
 				$checkoutResponse = $this->getAPIResponse($checkoutURL, array(), 'POST');
 				if ($checkoutResponse) {
 					if (!empty($checkoutResponse->contentId)) {
@@ -350,16 +350,6 @@ class HooplaDriver extends AbstractEContentDriver{
 							'HooplaURL' => $checkoutResponse->url,
 							'due'       => $checkoutResponse->due
 						);
- 						// Example Success Response
-						//{
-						//	'contentId': 10051356,
-						//  'title': 'The Night Before Christmas',
-						//  'borrowed': 1515799430,
-						//  'due': 1517613830,
-						//  'kind': 'AUDIOBOOK',
-						//  'url': 'https://www-dev.hoopladigital.com/title/10051356',
-						//  'message': 'You can now enjoy this title through Friday, February 2.  You can stream it to your browser, or download it for offline viewing using our Amazon, Android, or iOS mobile apps.'
-						//}
 					} else {
 						return array(
 							'success' => false,
@@ -469,7 +459,7 @@ class HooplaDriver extends AbstractEContentDriver{
      * @param $itemIndex  string
      * @return mixed
      */
-    public function renewCheckout($patron, $recordId, $itemId, $itemIndex)
+    public function renewCheckout($patron, $recordId, $itemId = null, $itemIndex = null)
     {
         return false;
     }
@@ -516,10 +506,9 @@ class HooplaDriver extends AbstractEContentDriver{
      *
      * @param User $patron The User to cancel the hold for
      * @param string $recordId The id of the bib record
-     * @param string $cancelId Information about the hold to be cancelled
      * @return false|array
      */
-    function cancelHold($patron, $recordId, $cancelId)
+    function cancelHold($patron, $recordId)
     {
         return false;
     }

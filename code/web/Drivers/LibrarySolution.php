@@ -24,7 +24,7 @@ class LibrarySolution extends AbstractIlsDriver {
 	 * @param   boolean $validatedViaSSO  True if the patron has already been validated via SSO.  If so we don't need to validation, just retrieve information
 	 *
 	 * @return  User|null           A string of the user's ID number
-	 *                              If an error occurs, return a PEAR_Error
+	 *                              If an error occurs, return a AspenError
 	 * @access  public
 	 */
 	public function patronLogin($username, $password, $validatedViaSSO) {
@@ -282,7 +282,7 @@ class LibrarySolution extends AbstractIlsDriver {
 	 * @param User $user    The user to load transactions for
 	 *
 	 * @return mixed        Array of the patron's transactions on success,
-	 * PEAR_Error otherwise.
+	 * AspenError otherwise.
 	 * @access public
 	 */
 	public function getCheckouts($user){
@@ -363,7 +363,7 @@ class LibrarySolution extends AbstractIlsDriver {
 		return $result == 'true';
 	}
 
-	public function renewCheckout($patron, $recordId, $itemId, $itemIndex){
+	public function renewCheckout($patron, $recordId, $itemId = null, $itemIndex = null){
 		$recordDriver = RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $recordId);
 		$result = array(
 			'success' => false,
@@ -534,7 +534,7 @@ class LibrarySolution extends AbstractIlsDriver {
 	 * @param   string  $recordId     The id of the bib record
 	 * @param   string  $pickupBranch The branch where the user wants to pickup the item when available
 	 * @return  mixed                 True if successful, false if unsuccessful
-	 *                                If an error occurs, return a PEAR_Error
+	 *                                If an error occurs, return a AspenError
 	 * @access  public
 	 */
 	function placeHold($patron, $recordId, $pickupBranch = null, $cancelDate = null) {
@@ -580,7 +580,7 @@ class LibrarySolution extends AbstractIlsDriver {
 	 * @param   string  $itemId     The id of the item to hold
 	 * @param   string  $pickupBranch The branch where the user wants to pickup the item when available
 	 * @return  mixed               True if successful, false if unsuccessful
-	 *                              If an error occurs, return a PEAR_Error
+	 *                              If an error occurs, return a AspenError
 	 * @access  public
 	 */
 	function placeItemHold($patron, $recordId, $itemId, $pickupBranch){
@@ -595,7 +595,7 @@ class LibrarySolution extends AbstractIlsDriver {
 	 * @param   string  $cancelId   Information about the hold to be cancelled
 	 * @return  array
 	 */
-	function cancelHold($patron, $recordId, $cancelId){
+	function cancelHold($patron, $recordId, $cancelId = null){
 		$recordDriver = RecordDriverFactory::initRecordDriverById($this->accountProfile->recordSource . ':' . $recordId);
 		$result = array(
 			'success' => false,
