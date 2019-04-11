@@ -42,7 +42,7 @@ class ExtractOverDriveInfo {
 	//Overdrive API information
 	private String clientSecret;
 	private String clientKey;
-	private String accountId;
+	private String websiteId;
 	private String overDriveAPIToken;
 	private String overDriveAPITokenType;
 	private long overDriveAPIExpiration;
@@ -89,7 +89,7 @@ class ExtractOverDriveInfo {
 			initOverDriveExtract(configIni, dbConn, logEntry, doFullReload);
 
 			try {
-				if (clientSecret == null || clientKey == null || accountId == null || clientSecret.length() == 0 || clientKey.length() == 0 || accountId.length() == 0) {
+				if (clientSecret == null || clientKey == null || websiteId == null || clientSecret.length() == 0 || clientKey.length() == 0 || websiteId.length() == 0) {
 					logEntry.addNote("Did not find correct configuration in config.ini, not loading overdrive titles");
 				} else {
 					//Load products from database this lets us know what is new, what has been deleted, and what has been updated
@@ -269,7 +269,7 @@ class ExtractOverDriveInfo {
 		//Load products from API
 		clientSecret = ConfigUtil.cleanIniValue(configIni.get("OverDrive", "clientSecret"));
 		clientKey = ConfigUtil.cleanIniValue(configIni.get("OverDrive", "clientKey"));
-		accountId = ConfigUtil.cleanIniValue(configIni.get("OverDrive", "accountId"));
+		websiteId = ConfigUtil.cleanIniValue(configIni.get("OverDrive", "websiteId"));
 
 		overDriveProductsKey = configIni.get("OverDrive", "productsKey");
 		if (overDriveProductsKey == null){
@@ -424,7 +424,7 @@ class ExtractOverDriveInfo {
 	 * @throws SocketTimeoutException Error if we timeout getting data
 	 */
 	private boolean loadProductsFromAPI(int loadType) throws SocketTimeoutException {
-		WebServiceResponse libraryInfoResponse = callOverDriveURL("https://api.overdrive.com/v1/libraries/" + accountId);
+		WebServiceResponse libraryInfoResponse = callOverDriveURL("https://api.overdrive.com/v1/libraries/" + websiteId);
 		if (libraryInfoResponse.getResponseCode() == 200 && libraryInfoResponse.getMessage() != null){
 			JSONObject libraryInfo = libraryInfoResponse.getJSONResponse();
 			try {
@@ -503,7 +503,7 @@ class ExtractOverDriveInfo {
 				return false;
 			}
 		}else{
-			results.addNote("Unable to load library information for library " + accountId);
+			results.addNote("Unable to load library information for library " + websiteId);
 			if (libraryInfoResponse.getMessage() != null){
 				results.addNote(libraryInfoResponse.getMessage());
 			}

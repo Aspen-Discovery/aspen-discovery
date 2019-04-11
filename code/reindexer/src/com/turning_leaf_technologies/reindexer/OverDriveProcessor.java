@@ -108,8 +108,10 @@ class OverDriveProcessor {
 						groupedWork.setSubTitle(subtitle);
 						groupedWork.addFullTitle(fullTitle);
 
-						groupedWork.addSeries(series);
-						groupedWork.addSeriesWithVolume(series);
+						if (series != null && series.length() > 0) {
+							groupedWork.addSeries(series);
+							groupedWork.addSeriesWithVolume(series);
+						}
 						groupedWork.setAuthor(productRS.getString("primaryCreatorName"));
 						groupedWork.setAuthAuthor(productRS.getString("primaryCreatorName"));
 						groupedWork.setAuthorDisplay(productRS.getString("primaryCreatorName"));

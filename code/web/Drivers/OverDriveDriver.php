@@ -65,7 +65,6 @@ class OverDriveDriver extends AbstractEContentDriver{
 		return $tokenData;
 	}
 
-	//private function _connectToPatronAPI($patronBarcode, $patronPin = 1234, $forceNewConnection = false){
 	private function _connectToPatronAPI($user, $patronBarcode, $patronPin, $forceNewConnection = false){
 		/** @var Memcache $memCache */
 		global $memCache;
@@ -77,11 +76,10 @@ class OverDriveDriver extends AbstractEContentDriver{
 			if ($tokenData){
 				global $configArray;
 				$ch = curl_init("https://oauth-patron.overdrive.com/patrontoken");
-				if (!isset($configArray['OverDrive']['patronWebsiteId'])){
+				if (!isset($configArray['OverDrive']['websiteId'])){
 					return false;
 				}
-				$websiteId = $configArray['OverDrive']['patronWebsiteId'];
-				//$websiteId = 100300;
+				$websiteId = $configArray['OverDrive']['websiteId'];
 
 				$ilsname = $this->getILSName($user);
 				if (!$ilsname) {
@@ -206,14 +204,18 @@ class OverDriveDriver extends AbstractEContentDriver{
 		return $this->requirePin;
 	}
 
+    /**
+     * @param User $user
+     * @param $url
+     * @param array $postParams
+     * @return bool|mixed
+     */
 	public function _callPatronUrl($user, $url, $postParams = null){
 		global $configArray;
 
-		$barcodeProperty = $configArray['Catalog']['barcodeProperty'];
-		$userBarcode = $user->$barcodeProperty;
+		$userBarcode = $user->getBarcode();
 		if ($this->getRequirePin($user)){
-			$userPin = ($barcodeProperty == 'cat_username') ? $user->cat_password : $user->cat_username;
-				// determine which column is the pin by using the opposing field to the barcode. (between pin & username)
+			$userPin = $user->getPasswordOrPin();
 			$tokenData = $this->_connectToPatronAPI($user, $userBarcode, $userPin, false);
 		}else{
 			$tokenData = $this->_connectToPatronAPI($user, $userBarcode, null, false);
@@ -323,20 +325,20 @@ class OverDriveDriver extends AbstractEContentDriver{
 
 	public function getLibraryAccountInformation(){
 		global $configArray;
-		$libraryId = $configArray['OverDrive']['accountId'];
+		$libraryId = $configArray['OverDrive']['websiteId'];
 		return $this->_callUrl("https://api.overdrive.com/v1/libraries/$libraryId");
 	}
 
 	public function getAdvantageAccountInformation(){
 		global $configArray;
-		$libraryId = $configArray['OverDrive']['accountId'];
+		$libraryId = $configArray['OverDrive']['websiteId'];
 		return $this->_callUrl("https://api.overdrive.com/v1/libraries/$libraryId/advantageAccounts");
 	}
 
 	public function getProductsInAccount($productsUrl = null, $start = 0, $limit = 25){
 		global $configArray;
 		if ($productsUrl == null){
-			$libraryId = $configArray['OverDrive']['accountId'];
+			$libraryId = $configArray['OverDrive']['websiteId'];
 			$productsUrl = "https://api.overdrive.com/v1/collections/$libraryId/products";
 		}
 		$productsUrl .= "?offset=$start&limit=$limit";
@@ -372,22 +374,22 @@ class OverDriveDriver extends AbstractEContentDriver{
     /**
      * Loads information about items that the user has checked out in OverDrive
      *
-     * @param User $user
+     * @param User $patron
      * @param boolean $forSummary
      *
      * @return array
      */
-	public function getCheckouts($user, $forSummary = false){
-		if (isset($this->checkouts[$user->id])){
-			return $this->checkouts[$user->id];
+	public function getCheckouts($patron, $forSummary = false){
+		if (isset($this->checkouts[$patron->id])){
+			return $this->checkouts[$patron->id];
 		}
 		global $configArray;
 		global $logger;
-		if (!$this->isUserValidForOverDrive($user)){
+		if (!$this->isUserValidForOverDrive($patron)){
 			return array();
 		}
 		$url = $configArray['OverDrive']['patronApiUrl'] . '/v1/patrons/me/checkouts';
-		$response = $this->_callPatronUrl($user, $url);
+		$response = $this->_callPatronUrl($patron, $url);
 		if ($response == false){
 			//The user is not authorized to use OverDrive
 			return array();
@@ -498,15 +500,15 @@ class OverDriveDriver extends AbstractEContentDriver{
 					$bookshelfItem['linkUrl']    = $overDriveRecord->getLinkUrl(false);
 					$bookshelfItem['ratingData'] = $overDriveRecord->getRatingData();
 				}
-				$bookshelfItem['user'] = $user->getNameAndLibraryLabel();
-				$bookshelfItem['userId'] = $user->id;
+				$bookshelfItem['user'] = $patron->getNameAndLibraryLabel();
+				$bookshelfItem['userId'] = $patron->id;
 
 				$key = $bookshelfItem['checkoutSource'] . $bookshelfItem['overDriveId'];
 				$checkedOutTitles[$key] = $bookshelfItem;
 			}
 		}
 		if (!$forSummary){
-			$this->checkouts[$user->id] = $checkedOutTitles;
+			$this->checkouts[$patron->id] = $checkedOutTitles;
 		}
 		return $checkedOutTitles;
 	}
@@ -587,17 +589,17 @@ class OverDriveDriver extends AbstractEContentDriver{
 	/**
 	 * Returns a summary of information about the user's account in OverDrive.
 	 *
-	 * @param User $user
+	 * @param User $patron
 	 *
 	 * @return array
 	 */
-	public function getAccountSummary($user){
+	public function getAccountSummary($patron){
 		/** @var Memcache $memCache */
 		global $memCache;
 		global $configArray;
 		global $timer;
 
-		if ($user == false){
+		if ($patron == false){
 			return array(
 				'numCheckedOut' => 0,
 				'numAvailableHolds' => 0,
@@ -607,17 +609,17 @@ class OverDriveDriver extends AbstractEContentDriver{
 			);
 		}
 
-		$summary = $memCache->get('overdrive_summary_' . $user->id);
+		$summary = $memCache->get('overdrive_summary_' . $patron->id);
 		if ($summary == false || isset($_REQUEST['reload'])){
 
 			//Get account information from api
 
 			//TODO: Optimize so we don't need to load all checkouts and holds
 			$summary = array();
-			$checkedOutItems = $this->getCheckouts($user, true);
+			$checkedOutItems = $this->getCheckouts($patron, true);
 			$summary['numCheckedOut'] = count($checkedOutItems);
 
-			$holds = $this->getHolds($user, true);
+			$holds = $this->getHolds($patron, true);
 			$summary['numAvailableHolds'] = count($holds['available']);
 			$summary['numUnavailableHolds'] = count($holds['unavailable']);
 
@@ -625,7 +627,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 			$summary['holds'] = $holds;
 
 			$timer->logTime("Finished loading titles from overdrive summary");
-			$memCache->set('overdrive_summary_' . $user->id, $summary, 0, $configArray['Caching']['overdrive_summary']);
+			$memCache->set('overdrive_summary_' . $patron->id, $summary, 0, $configArray['Caching']['overdrive_summary']);
 		}
 
 		return $summary;
@@ -672,19 +674,17 @@ class OverDriveDriver extends AbstractEContentDriver{
 	/**
      * @param User    $user
      * @param string  $overDriveId
-     * @param string  $cancelId - unused, identifies the hold to be canceled
      * @return array
 	 */
-	public function cancelHold($user, $overDriveId, $cancelId){
+	public function cancelHold($user, $overDriveId){
 		global $configArray;
         /** @var Memcache $memCache */
 		global $memCache;
 
 		$url = $configArray['OverDrive']['patronApiUrl'] . '/v1/patrons/me/holds/' . $overDriveId;
-		$barcodeProperty = $configArray['Catalog']['barcodeProperty'];
 		$userBarcode = $user->getBarcode();
 		if ($this->getRequirePin($user)){
-			$userPin = ($barcodeProperty == 'cat_username') ? $user->cat_password : $user->cat_username;
+            $userPin = $user->getPasswordOrPin();
 			$response = $this->_callPatronDeleteUrl($user, $userBarcode, $userPin, $url);
 		}else{
 			$response = $this->_callPatronDeleteUrl($user, $userBarcode, null, $url);
@@ -706,15 +706,14 @@ class OverDriveDriver extends AbstractEContentDriver{
 	}
 
 	/**
-	 *
-	 * Add an item to the cart in overdrive and then process the cart so it is checked out.
+	 * Checkout a title from OverDrive
 	 *
 	 * @param string $overDriveId
 	 * @param User $user
 	 *
-	 * @return array results (result, message)
+	 * @return array results (success, message, noCopies)
 	 */
-	public function checkoutTitle($user, $overDriveId){
+	public function checkOutTitle($user, $overDriveId){
 
 		global $configArray;
         /** @var Memcache $memCache */
@@ -768,10 +767,9 @@ class OverDriveDriver extends AbstractEContentDriver{
 		global $memCache;
 
 		$url = $configArray['OverDrive']['patronApiUrl'] . '/v1/patrons/me/checkouts/' . $overDriveId;
-		$barcodeProperty = $configArray['Catalog']['barcodeProperty'];
-		$userBarcode = $user->$barcodeProperty;
+		$userBarcode = $user->getBarcode();
 		if ($this->getRequirePin($user)){
-			$userPin = ($barcodeProperty == 'cat_username') ? $user->cat_password : $user->cat_username;
+			$userPin = $user->getPasswordOrPin();
 			$response = $this->_callPatronDeleteUrl($user, $userBarcode, $userPin, $url);
 		}else{
 			$response = $this->_callPatronDeleteUrl($user, $userBarcode, null, $url);
@@ -829,12 +827,10 @@ class OverDriveDriver extends AbstractEContentDriver{
 	 * @return bool
 	 */
 	public function isUserValidForOverDrive($user){
-		global $configArray;
 		global $timer;
-		$barcodeProperty = $configArray['Catalog']['barcodeProperty'];
 		$userBarcode = $user->getBarcode();
 		if ($this->getRequirePin($user)){
-			$userPin = ($barcodeProperty == 'cat_username') ? $user->cat_password : $user->cat_username;
+			$userPin = $user->getPasswordOrPin();
 			// determine which column is the pin by using the opposing field to the barcode. (between catalog password & username)
 			$tokenData = $this->_connectToPatronAPI($user, $userBarcode, $userPin, false);
 			// this worked for flatirons checkout.  plb 1-13-2015
@@ -934,11 +930,9 @@ class OverDriveDriver extends AbstractEContentDriver{
      *
      * @param $patron     User
      * @param $recordId   string
-     * @param $itemId     string
-     * @param $itemIndex  string
      * @return mixed
      */
-    public function renewCheckout($patron, $recordId, $itemId, $itemIndex)
+    public function renewCheckout($patron, $recordId)
     {
         return false;
     }
