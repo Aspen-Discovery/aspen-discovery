@@ -1,7 +1,7 @@
 {strip}
 	{* Supply $label & $actionPath for this template *}
 
-	{if count($linkedUsers) > 1} {* Linked Users contains the active user as well *}
+	{if !empty($linkedUsers) && count($linkedUsers) > 1} {* Linked Users contains the active user as well *}
 		<form action="{$path}{$actionPath}" method="get" class="form form-inline">
 			<div id="linkedUserOptions" class="form-group">
 				<label class="control-label" for="account">{translate text="$label"}: </label>

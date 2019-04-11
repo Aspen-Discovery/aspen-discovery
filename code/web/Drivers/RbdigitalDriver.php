@@ -265,6 +265,10 @@ class RbdigitalDriver extends AbstractEContentDriver
             'unavailable' => array()
         );
 
+        if ($rbdigitalId == false) {
+            return $holds;
+        }
+
         foreach ($patronHolds as $tmpHold) {
             $hold = array();
             $hold['id'] = $tmpHold->isbn;
