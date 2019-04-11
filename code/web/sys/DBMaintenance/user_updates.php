@@ -51,7 +51,7 @@ function getUserUpdates(){
 			'sql' => array(
 				"ALTER TABLE user ADD overdriveEmail VARCHAR( 250 ) NOT NULL DEFAULT ''",
 				"ALTER TABLE user ADD promptForOverdriveEmail TINYINT DEFAULT 1",
-				"UPDATE user SET overdriveEmail = email"
+				"UPDATE user SET overdriveEmail = email WHERE overdriveEmail = ''"
 			),
 		),
 
@@ -85,7 +85,7 @@ function getUserUpdates(){
 
 		'user_account' => array(
 			'title' => 'User Account Source',
-			'description' => 'Store the source of a user account so we can accommodate multiple ilses',
+			'description' => 'Store the source of a user account so we can accommodate multiple ILSs',
 			'sql' => array(
 				"ALTER TABLE `user` ADD `source` VARCHAR(50) DEFAULT 'ils'",
 				"ALTER TABLE `user` DROP INDEX `username`",
@@ -112,8 +112,8 @@ function getUserUpdates(){
 			'description' => 'Set Id columns to require a value (can not be null).',
 			'sql' => array(
 				"ALTER TABLE `user_link` 
-				CHANGE COLUMN `primaryAccountId` `primaryAccountId` INT(11) NOT NULL,
-				CHANGE COLUMN `linkedAccountId` `linkedAccountId` INT(11) NOT NULL;",
+                    CHANGE COLUMN `primaryAccountId` `primaryAccountId` INT(11) NOT NULL,
+                    CHANGE COLUMN `linkedAccountId` `linkedAccountId` INT(11) NOT NULL;",
 			),
 		),
 
@@ -132,21 +132,37 @@ function getUserUpdates(){
 			),
 		),
 
-			'user_reading_history_index_source_id' => array(
-					'title' => 'Index source Id in user reading history',
-					'description' => 'Index source Id in user reading history',
-					'sql' => array(
-							"ALTER TABLE user_reading_history_work ADD INDEX sourceId(sourceId)"
-					),
-			),
+        'user_reading_history_index_source_id' => array(
+            'title' => 'Index source Id in user reading history',
+            'description' => 'Index source Id in user reading history',
+            'sql' => array(
+                "ALTER TABLE user_reading_history_work ADD INDEX sourceId(sourceId)"
+            ),
+        ),
 
-			'user_hoopla_confirmation_checkout' => array(
-					'title' => 'Hoopla Checkout Confirmation Prompt',
-					'description' => 'Stores user preference whether or not to prompt for confirmation before checking out a title from Hoopla',
-					'sql' => array(
-							"ALTER TABLE `user` ADD COLUMN `hooplaCheckOutConfirmation` TINYINT(1) UNSIGNED NOT NULL DEFAULT 1;"
-					),
-			),
+        'user_hoopla_confirmation_checkout' => array(
+            'title' => 'Hoopla Checkout Confirmation Prompt',
+            'description' => 'Stores user preference whether or not to prompt for confirmation before checking out a title from Hoopla',
+            'sql' => array(
+                "ALTER TABLE `user` ADD COLUMN `hooplaCheckOutConfirmation` TINYINT(1) UNSIGNED NOT NULL DEFAULT 1;"
+            ),
+        ),
 
+        'user_remove_default_created' => array(
+            'title' => 'Remove default for user created field',
+            'description' => 'Remove default for user created field (not correct for later versions of MySQL',
+            'sql' => array(
+                "ALTER TABLE `user` CHANGE COLUMN created created DATETIME not null;"
+            ),
+        ),
+
+        'user_add_rbdigital_id' => array(
+            'title' => 'User Rbdigital Id',
+            'description' => 'Stores user rbdigital id for a user',
+            'sql' => array(
+                "ALTER TABLE user ADD COLUMN rbdigitalId INT(11) DEFAULT -1;",
+                "ALTER TABLE user ADD COLUMN rbdigitalLastAccountCheck INT(11)",
+            ),
+        ),
 	);
 }

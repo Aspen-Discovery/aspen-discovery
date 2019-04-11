@@ -38,24 +38,117 @@ class RbdigitalDriver extends AbstractEContentDriver
      * This is responsible for retrieving all transactions (i.e. checked out items)
      * by a specific patron.
      *
-     * @param User $user The user to load transactions for
+     * @param User $patron The user to load transactions for
      *
      * @return array        Array of the patron's transactions on success
      * @access public
      */
-    public function getCheckouts($user)
+    public function getCheckouts($patron)
     {
-        if (isset($this->checkouts[$user->id])){
-            return $this->checkouts[$user->id];
+        if (isset($this->checkouts[$patron->id])){
+            return $this->checkouts[$patron->id];
         }
-        $patronCheckoutUrl = $this->webServiceURL . '/v1/libraries/' . $this->libraryId . '/patrons/' . $user->getBarcode() . '/checkout';
 
-        $patronCheckoutsRaw = $this->curlWrapper->curlGetPage($patronCheckoutUrl);
-        $patronCheckouts = json_decode($patronCheckoutsRaw);
+        //Get the rbdigital id for the patron
+        $rbdigitalId = $this->getRbdigitalId($patron);
 
-        $checkedOutTitles = array();
+        $checkouts = array();
 
-        return $checkedOutTitles;
+        if ($rbdigitalId != false) {
+            $patronCheckoutUrl = $this->webServiceURL . '/v1/libraries/' . $this->libraryId . '/patrons/' . $rbdigitalId. '/checkouts';
+
+            $patronCheckoutsRaw = $this->curlWrapper->curlGetPage($patronCheckoutUrl);
+            $patronCheckouts = json_decode($patronCheckoutsRaw);
+            foreach ($patronCheckouts as $patronCheckout){
+                $checkout = array();
+                $checkout['checkoutSource'] = 'Rbdigital';
+
+                $checkout['id'] = $patronCheckout->transactionId;
+                $checkout['recordId'] = $patronCheckout->isbn;
+                $checkout['title'] = $patronCheckout->title;
+                $checkout['author'] = $patronCheckout->authors;
+
+                $dateDue = DateTime::createFromFormat('Y-m-d', $patronCheckout->expiration);
+                if ($dateDue){
+                    $dueTime = $dateDue->getTimestamp();
+                }else{
+                    $dueTime = null;
+                }
+                $checkout['dueDate'] = $dueTime;
+                $checkout['itemId'] = $patronCheckout->isbn;
+                $checkout['canRenew'] = $patronCheckout->canRenew;
+                $checkout['hasDrm'] = $patronCheckout->hasDrm;
+                $checkout['downloadUrl'] = $patronCheckout->downloadUrl;
+
+                if ($checkout['id'] && strlen($checkout['id']) > 0){
+                    require_once ROOT_DIR . '/RecordDrivers/RbdigitalRecordDriver.php';
+                    $recordDriver = new RbdigitalRecordDriver($checkout['recordId']);
+                    if ($recordDriver->isValid()){
+                        $checkout['coverUrl']      = $recordDriver->getBookcoverUrl('medium');
+                        $checkout['groupedWorkId'] = $recordDriver->getGroupedWorkId();
+                        $checkout['ratingData']    = $recordDriver->getRatingData();
+                        $checkout['format']        = $recordDriver->getPrimaryFormat();
+                        $checkout['author']        = $recordDriver->getPrimaryAuthor();
+                        $checkout['title']         = $recordDriver->getTitle();
+                        $curTitle['title_sort']    = $recordDriver->getTitle();
+                        $checkout['linkUrl']       = $recordDriver->getLinkUrl();
+                    }else{
+                        $checkout['coverUrl'] = "";
+                        $checkout['groupedWorkId'] = "";
+                        $checkout['format'] = $patronCheckout->mediaType;
+                    }
+                }
+
+                $checkout['user'] = $patron->getNameAndLibraryLabel();
+                $checkout['userId'] = $patron->id;
+
+                $checkouts[] = $checkout;
+            }
+
+        }
+        $this->checkouts[$patron->id] = $checkouts;
+
+        return $checkouts;
+    }
+
+    /**
+     * @param User $patron
+     * @param string $recordId
+     *
+     * @return array results (success, message)
+     */
+    public function checkOutTitle($patron, $recordId) {
+        $result = ['success' => false, 'message' => 'Unknown error'];
+        $rbdigitalId = $this->getRbdigitalId($patron);
+        if ($rbdigitalId == false) {
+            $result['message'] = 'Sorry, you are not registered with Rbdigital.  You will need to create an account there before continuing.';
+        } else {
+            require_once ROOT_DIR . '/RecordDrivers/RbdigitalRecordDriver.php';
+            $actionUrl = $this->webServiceURL . '/v1/libraries/' . $this->libraryId . '/patrons/' . $rbdigitalId. '/checkouts/' . $recordId;
+
+            $rawResponse = $this->curlWrapper->curlSendPage($actionUrl, 'POST');
+            $response = json_decode($rawResponse);
+            if ($response == false){
+                $result['message'] = "Invalid information returned from API, please retry your checkout after a few minutes.";
+            }else{
+                if (!empty($response->output) && $response->output == 'SUCCESS') {
+                    $result['success'] = true;
+                    $result['message'] = 'Your title was checked out successfully. You can read or listen to the title from your account.';
+                } else {
+                    $result['message'] = $response->output;
+                }
+
+            }
+        }
+        return $result;
+    }
+
+    public function isUserRegistered(User $user){
+        if ($this->getRbdigitalId($user) != false) {
+            return true;
+        }else{
+            return false;
+        }
     }
 
     /**
@@ -82,13 +175,65 @@ class RbdigitalDriver extends AbstractEContentDriver
      *
      * @param $patron     User
      * @param $recordId   string
-     * @param $itemId     string
-     * @param $itemIndex  string
-     * @return mixed
+     * @return array
      */
-    public function renewCheckout($patron, $recordId, $itemId, $itemIndex)
+    public function renewCheckout($patron, $recordId)
     {
-        // TODO: Implement renewCheckout() method.
+        $result = ['success' => false, 'message' => 'Unknown error'];
+
+        $rbdigitalId = $this->getRbdigitalId($patron);
+        if ($rbdigitalId == false) {
+            $result['message'] = 'Sorry, you are not registered with Rbdigital.  You will need to create an account there before continuing.';
+        } else {
+            $actionUrl = $this->webServiceURL . '/v1/libraries/' . $this->libraryId . '/patrons/' . $rbdigitalId. '/checkouts/' . $recordId;
+
+            $rawResponse = $this->curlWrapper->curlSendPage($actionUrl, 'PUT');
+            $response = json_decode($rawResponse);
+            if ($response == false){
+                $result['message'] = "Invalid information returned from API, please retry your action after a few minutes.";
+            }else{
+                if (!empty($response->output) && $response->output == 'success') {
+                    $result['success'] = true;
+                    $result['message'] = "Your title was renewed successfully.";
+                } else {
+                    $result['message'] = $response->output;
+                }
+            }
+        }
+        return $result;
+    }
+
+    /**
+     * Return a title currently checked out to the user
+     *
+     * @param $patron     User
+     * @param $recordId   string
+     * @return array
+     */
+    public function returnCheckout($patron, $recordId)
+    {
+        $result = ['success' => false, 'message' => 'Unknown error'];
+
+        $rbdigitalId = $this->getRbdigitalId($patron);
+        if ($rbdigitalId == false) {
+            $result['message'] = 'Sorry, you are not registered with Rbdigital.  You will need to create an account there before continuing.';
+        } else {
+            $actionUrl = $this->webServiceURL . '/v1/libraries/' . $this->libraryId . '/patrons/' . $rbdigitalId. '/checkouts/' . $recordId;
+
+            $rawResponse = $this->curlWrapper->curlSendPage($actionUrl, 'DELETE');
+            $response = json_decode($rawResponse);
+            if ($response == false){
+                $result['message'] = "Invalid information returned from API, please retry your action after a few minutes.";
+            }else{
+                if (!empty($response->message) && $response->message == 'success') {
+                    $result['success'] = true;
+                    $result['message'] = "Your title was returned successfully.";
+                } else {
+                    $result['message'] = $response->message;
+                }
+            }
+        }
+        return $result;
     }
 
     private $holds = array();
@@ -97,17 +242,20 @@ class RbdigitalDriver extends AbstractEContentDriver
      *
      * This is responsible for retrieving all holds for a specific patron.
      *
-     * @param User $user The user to load transactions for
+     * @param User $patron The user to load transactions for
      *
      * @return array        Array of the patron's holds
      * @access public
      */
-    public function getHolds($user)
+    public function getHolds($patron)
     {
-        if (isset($this->holds[$user->id])){
-            return $this->holds[$user->id];
+        if (isset($this->holds[$patron->id])){
+            return $this->holds[$patron->id];
         }
-        $patronHoldsUrl = $this->webServiceURL . '/v1/libraries/' . $this->libraryId . '/patrons/' . $user->getBarcode() . '/hold';
+
+        $rbdigitalId = $this->getRbdigitalId($patron);
+
+        $patronHoldsUrl = $this->webServiceURL . '/v1/libraries/' . $this->libraryId . '/patrons/' . $rbdigitalId. '/holds';
 
         $patronHoldsRaw = $this->curlWrapper->curlGetPage($patronHoldsUrl);
         $patronHolds = json_decode($patronHoldsRaw);
@@ -116,6 +264,30 @@ class RbdigitalDriver extends AbstractEContentDriver
             'available' => array(),
             'unavailable' => array()
         );
+
+        foreach ($patronHolds as $tmpHold) {
+            $hold = array();
+            $hold['id'] = $tmpHold->isbn;
+            $hold['transactionId'] = $tmpHold->transactionId;
+            $hold['holdSource'] = 'Rbdigital';
+
+            require_once ROOT_DIR . '/RecordDrivers/RbdigitalRecordDriver.php';
+            $recordDriver = new RbdigitalRecordDriver($hold['id']);
+            if ($recordDriver->isValid()) {
+                $hold['coverUrl'] = $recordDriver->getBookcoverUrl('medium');
+                $hold['title'] = $recordDriver->getTitle();
+                $hold['sortTitle'] = $recordDriver->getTitle();
+                $hold['author'] = $recordDriver->getPrimaryAuthor();
+                $hold['linkUrl'] = $recordDriver->getLinkUrl(false);
+                $hold['format'] = $recordDriver->getFormats();
+                $hold['ratingData'] = $recordDriver->getRatingData();
+            }
+            $hold['user'] = $patron->getNameAndLibraryLabel();
+            $hold['userId'] = $patron->id;
+
+            $key = $hold['holdSource'] . $hold['id'] . $hold['user'];
+            $holds['unavailable'][$key] = $hold;
+        }
 
         return $holds;
     }
@@ -128,15 +300,33 @@ class RbdigitalDriver extends AbstractEContentDriver
      * @param   User $patron The User to place a hold for
      * @param   string $recordId The id of the bib record
      * @return  array                 An array with the following keys
-     *                                result - true/false
+     *                                success - true/false
      *                                message - the message to display (if item holds are required, this is a form to select the item).
-     *                                needsItemLevelHold - An indicator that item level holds are required
-     *                                title - the title of the record the user is placing a hold on
      * @access  public
      */
     public function placeHold($patron, $recordId)
     {
-        // TODO: Implement placeHold() method.
+        $result = ['success' => false, 'message' => 'Unknown error'];
+        $rbdigitalId = $this->getRbdigitalId($patron);
+        if ($rbdigitalId == false) {
+            $result['message'] = 'Sorry, you are not registered with Rbdigital.  You will need to create an account there before continuing.';
+        } else {
+            $actionUrl = $this->webServiceURL . '/v1/libraries/' . $this->libraryId . '/patrons/' . $rbdigitalId. '/holds/' . $recordId;
+
+            $rawResponse = $this->curlWrapper->curlSendPage($actionUrl, 'POST');
+            $response = json_decode($rawResponse);
+            if ($response == false){
+                $result['message'] = "Invalid information returned from API, please retry your hold after a few minutes.";
+            }else{
+                if (is_numeric($response)) {
+                    $result['success'] = true;
+                    $result['message'] = "Your hold was placed successfully.";
+                } else {
+                    $result['message'] = $response->message;
+                }
+            }
+        }
+        return $result;
     }
 
     /**
@@ -144,18 +334,128 @@ class RbdigitalDriver extends AbstractEContentDriver
      *
      * @param   User $patron The User to cancel the hold for
      * @param   string $recordId The id of the bib record
-     * @param   string $cancelId Information about the hold to be cancelled
      * @return  array
      */
-    function cancelHold($patron, $recordId, $cancelId)
+    function cancelHold($patron, $recordId)
     {
-        // TODO: Implement cancelHold() method.
+        $result = ['success' => false, 'message' => 'Unknown error'];
+        $rbdigitalId = $this->getRbdigitalId($patron);
+        if ($rbdigitalId == false) {
+            $result['message'] = 'Sorry, you are not registered with Rbdigital.  You will need to create an account there before continuing.';
+        } else {
+            $actionUrl = $this->webServiceURL . '/v1/libraries/' . $this->libraryId . '/patrons/' . $rbdigitalId. '/holds/' . $recordId;
+
+            $rawResponse = $this->curlWrapper->curlSendPage($actionUrl, 'DELETE');
+            $response = json_decode($rawResponse);
+            if ($response == false){
+                $result['message'] = "Invalid information returned from API, please retry your action after a few minutes.";
+            }else{
+                if (!empty($response->message) && $response->message == 'success') {
+                    $result['success'] = true;
+                    $result['message'] = "Your hold was cancelled successfully.";
+                } else {
+                    $result['message'] = $response->message;
+                }
+            }
+        }
+        return $result;
     }
 
     /**
      * @param User $patron
+     *
+     * @return array
      */
     public function getAccountSummary($patron){
+        /** @var Memcache $memCache */
+        global $memCache;
+        global $configArray;
+        global $timer;
+
+        if ($patron == false){
+            return array(
+                'numCheckedOut' => 0,
+                'numAvailableHolds' => 0,
+                'numUnavailableHolds' => 0,
+            );
+        }
+
+        $summary = $memCache->get('rbdigital_summary_' . $patron->id);
+        if ($summary == false || isset($_REQUEST['reload'])){
+            //Get the rbdigital id for the patron
+            $rbdigitalId = $this->getRbdigitalId($patron);
+
+            //Get account information from api
+            $patronSummaryUrl = $this->webServiceURL . '/v1/tenants/' . $this->libraryId . '/patrons/' . $rbdigitalId. '/patron-config';
+
+            $responseRaw = $this->curlWrapper->curlGetPage($patronSummaryUrl);
+            $response = json_decode($responseRaw);
+
+            $summary = array();
+            $summary['numCheckedOut'] = empty($response->audioBooks->checkouts) ? 0 : count($response->audioBooks->checkouts);
+
+            //Rbdigital automatically checks holds out so nothing is available
+            $summary['numAvailableHolds'] = 0;
+            $summary['numUnavailableHolds'] = empty($response->audioBooks->holds) ? 0 : count($response->audioBooks->holds);
+
+            $timer->logTime("Finished loading titles from overdrive summary");
+            $memCache->set('rbdigital_summary_' . $patron->id, $summary, 0, $configArray['Caching']['overdrive_summary']);
+        }
+
+        return $summary;
+    }
+
+    /**
+     * Get the user's rbdigital id or return false if the user is not registered.
+     * Checks to see if the user is registered no more than every 15 minutes.
+     *
+     * @param User $user
+     * @return int|false
+     */
+    public function getRbdigitalId(User $user)
+    {
+        if (!empty($user->rbdigitalId) && $user->rbdigitalId != -1){
+            return $user->rbdigitalId;
+        } else {
+            //Check to see if we should do a lookup.  Check no more than every 15 minutes
+            if (isset($_REQUEST['reload']) || $user->rbdigitalLastAccountCheck < time() - 15 * 60){
+                $lookupPatronUrl = $this->webServiceURL . '/v1/rpc/libraries/' . $this->libraryId . '/patrons/' . $user->getBarcode();
+
+                $rawResponse = $this->curlWrapper->curlGetPage($lookupPatronUrl);
+                $response = json_decode($rawResponse);
+                if (isset($response->message) && ($response->message == 'Patron not found.')){
+                    if (!empty($user->email)){
+                        $lookupPatronUrl = $this->webServiceURL . '/v1/rpc/libraries/' . $this->libraryId . '/patrons/' . urlencode($user->email);
+
+                        $rawResponse = $this->curlWrapper->curlGetPage($lookupPatronUrl);
+                        $response = json_decode($rawResponse);
+                        if ($response->message == 'Patron not found.'){
+                            $rbdigitalId = -1;
+                        }else {
+                            $rbdigitalId = $response->patronId;
+                        }
+                    }else{
+                        $rbdigitalId = -1;
+                    }
+
+                }else {
+                    $rbdigitalId = $response->patronId;
+                }
+                $user->rbdigitalId = $rbdigitalId;
+                $user->rbdigitalLastAccountCheck = time();
+                $user->update();
+                if ($rbdigitalId == -1) {
+                    return false;
+                }else {
+                    return $rbdigitalId;
+                }
+            } else {
+                return false;
+            }
+        }
+    }
+
+    public function registerAccount($user){
 
     }
 }

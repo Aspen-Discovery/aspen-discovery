@@ -8,51 +8,34 @@ class Rbdigital_AJAX extends Action {
 
 	function launch() {
 		$method = $_GET['method'];
-		if (in_array($method, array('CheckoutRbdigitalItem', 'PlaceRbdigitalHold', 'CancelRbdigitalHold', 'GetRbdigitalHoldPrompts', 'ReturnRbdigitalItem', 'GetDownloadLink', 'GetCheckoutPrompts'))){
-			header('Content-type: text/plain');
-			header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
-			header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-			echo $this->$method();
-		}else{
-			header ('Content-type: text/xml');
-			header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
-			header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-
-			$xmlResponse = '<?xml version="1.0" encoding="UTF-8"?' . ">\n";
-			$xmlResponse .= "<AJAXResponse>\n";
-			if (method_exists($this, $method)) {
-				$xmlResponse .= $this->$_GET['method']();
-			} else {
-				$xmlResponse .= '<Error>Invalid Method</Error>';
-			}
-			$xmlResponse .= '</AJAXResponse>';
-
-			echo $xmlResponse;
-		}
+        header('Content-type: text/plain');
+        header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
+        header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
+        echo $this->$method();
 	}
 
-	function PlaceRbdigitalHold(){
+	function placeHold(){
 		$user = UserAccount::getLoggedInUser();
 
-		$overDriveId = $_REQUEST['overDriveId'];
+		$id = $_REQUEST['id'];
 		if ($user){
 			$patronId = $_REQUEST['patronId'];
 			$patron = $user->getUserReferredTo($patronId);
 			if ($patron){
-				if (isset($_REQUEST['overdriveEmail'])){
-					if ($_REQUEST['overdriveEmail'] != $patron->overdriveEmail){
-						$patron->overdriveEmail = $_REQUEST['overdriveEmail'];
+				if (isset($_REQUEST['rbdigitalEmail'])){
+					if ($_REQUEST['rbdigitalEmail'] != $patron->rbdigitalEmail){
+						$patron->rbdigitalEmail = $_REQUEST['rbdigitalEmail'];
 						$patron->update();
 					}
 				}
-				if (isset($_REQUEST['promptForOverdriveEmail'])){
-					$patron->promptForOverdriveEmail = $_REQUEST['promptForOverdriveEmail'];
+				if (isset($_REQUEST['promptForRbdigitalEmail'])){
+					$patron->promptForRbdigitalEmail = $_REQUEST['promptForRbdigitalEmail'];
 					$patron->update();
 				}
 
-				require_once ROOT_DIR . '/Drivers/RbdigitalDriverFactory.php';
-				$driver = RbdigitalDriverFactory::getDriver();
-				$holdMessage = $driver->placeRbdigitalHold($overDriveId, $patron);
+				require_once ROOT_DIR . '/Drivers/RbdigitalDriver.php';
+				$driver = new RbdigitalDriver();
+				$holdMessage = $driver->placeHold($patron, $id);
 				return json_encode($holdMessage);
 			}else{
 				return json_encode(array('result'=>false, 'message'=>'Sorry, it looks like you don\'t have permissions to place holds for that user.'));
@@ -62,18 +45,16 @@ class Rbdigital_AJAX extends Action {
 		}
 	}
 
-	function CheckoutRbdigitalItem(){
+	function checkOutTitle(){
 		$user = UserAccount::getLoggedInUser();
-		$overDriveId = $_REQUEST['overDriveId'];
-		//global $logger;
-		//$logger->log("Lending period = $lendingPeriod", Logger::LOG_NOTICE);
+		$id = $_REQUEST['id'];
 		if ($user){
 			$patronId = $_REQUEST['patronId'];
 			$patron = $user->getUserReferredTo($patronId);
 			if ($patron) {
-				require_once ROOT_DIR . '/Drivers/RbdigitalDriverFactory.php';
-				$driver = RbdigitalDriverFactory::getDriver();
-				$result = $driver->checkoutRbdigitalItem($overDriveId, $patron);
+				require_once ROOT_DIR . '/Drivers/RbdigitalDriver.php';
+				$driver = new RbdigitalDriver();
+				$result = $driver->checkoutTitle($patron, $id);
 				//$logger->log("Checkout result = $result", Logger::LOG_NOTICE);
 				if ($result['success']){
 					$result['buttons'] = '<a class="btn btn-primary" href="/MyAccount/CheckedOut" role="button">View My Check Outs</a>';
@@ -87,18 +68,18 @@ class Rbdigital_AJAX extends Action {
 		}
 	}
 
-	function ReturnRbdigitalItem(){
+	function returnTitle(){
 		$user = UserAccount::getLoggedInUser();
-		$overDriveId = $_REQUEST['overDriveId'];
+		$id = $_REQUEST['id'];
 		$transactionId = $_REQUEST['transactionId'];
 		if ($user){
 			$patronId = $_REQUEST['patronId'];
 			$patron = $user->getUserReferredTo($patronId);
 			if ($patron) {
-				require_once ROOT_DIR . '/Drivers/RbdigitalDriverFactory.php';
-				$driver = RbdigitalDriverFactory::getDriver();
-				$result = $driver->returnRbdigitalItem($overDriveId, $transactionId, $patron);
-				//$logger->log("Checkout result = $result", Logger::LOG_NOTICE);
+                require_once ROOT_DIR . '/Drivers/RbdigitalDriver.php';
+                $driver = new RbdigitalDriver();
+				$result = $driver->returnTitle($id, $transactionId, $patron);
+
 				return json_encode($result);
 			}else{
 				return json_encode(array('result'=>false, 'message'=>'Sorry, it looks like you don\'t have permissions to return titles for that user.'));
@@ -108,17 +89,17 @@ class Rbdigital_AJAX extends Action {
 		}
 	}
 
-	function SelectRbdigitalDownloadFormat(){
+	function getDownloadLink(){
 		$user = UserAccount::getLoggedInUser();
-		$overDriveId = $_REQUEST['overDriveId'];
+		$id = $_REQUEST['id'];
 		$formatId = $_REQUEST['formatId'];
 		if ($user){
 			$patronId = $_REQUEST['patronId'];
 			$patron = $user->getUserReferredTo($patronId);
 			if ($patron) {
-				require_once ROOT_DIR . '/Drivers/RbdigitalDriverFactory.php';
-				$driver = RbdigitalDriverFactory::getDriver();
-				$result = $driver->selectRbdigitalDownloadFormat($overDriveId, $formatId, $patron);
+                require_once ROOT_DIR . '/Drivers/RbdigitalDriver.php';
+                $driver = new RbdigitalDriver();
+				$result = $driver->getDownloadLink($id, $formatId, $patron);
 				//$logger->log("Checkout result = $result", Logger::LOG_NOTICE);
 				return json_encode($result);
 			}else{
@@ -129,128 +110,154 @@ class Rbdigital_AJAX extends Action {
 		}
 	}
 
-	function GetDownloadLink(){
-		$user = UserAccount::getLoggedInUser();
-		$overDriveId = $_REQUEST['overDriveId'];
-		$formatId = $_REQUEST['formatId'];
-		if ($user){
-			$patronId = $_REQUEST['patronId'];
-			$patron = $user->getUserReferredTo($patronId);
-			if ($patron) {
-				require_once ROOT_DIR . '/Drivers/RbdigitalDriverFactory.php';
-				$driver = RbdigitalDriverFactory::getDriver();
-				$result = $driver->getDownloadLink($overDriveId, $formatId, $patron);
-				//$logger->log("Checkout result = $result", Logger::LOG_NOTICE);
-				return json_encode($result);
-			}else{
-				return json_encode(array('result'=>false, 'message'=>'Sorry, it looks like you don\'t have permissions to download titles for that user.'));
-			}
-		}else{
-			return json_encode(array('result'=>false, 'message'=>'You must be logged in to download a title.'));
-		}
+	function getHoldPrompts(){
+        $user = UserAccount::getLoggedInUser();
+        global $interface;
+        $id = $_REQUEST['id'];
+        $interface->assign('id', $id);
+
+        $users = $user->getRelatedEcontentUsers('rbdigital');
+        $usersWithRbdigitalAccess = [];
+        require_once ROOT_DIR . '/Drivers/RbdigitalDriver.php';
+        $driver = new RbdigitalDriver();
+        foreach ($users as $tmpUser) {
+            if ($driver->getRbdigitalId($tmpUser) != false) {
+                $usersWithRbdigitalAccess[] = $tmpUser;
+            }
+        }
+        $interface->assign('users', $usersWithRbdigitalAccess);
+
+        if (count($usersWithRbdigitalAccess) > 1){
+            $promptTitle = 'Rbdigital Hold Options';
+            return json_encode(
+                array(
+                    'promptNeeded' => true,
+                    'promptTitle'  => $promptTitle,
+                    'prompts'      => $interface->fetch('Rbdigital/ajax-hold-prompt.tpl'),
+                    'buttons'      => '<input class="btn btn-primary" type="submit" name="submit" value="Place Hold" onclick="return VuFind.Rbdigital.processHoldPrompts();">'
+                )
+            );
+        } elseif (count($usersWithRbdigitalAccess) == 1){
+            return json_encode(
+                array(
+                    'patronId' => reset($usersWithRbdigitalAccess)->id,
+                    'promptNeeded' => false,
+                )
+            );
+        } else {
+            // No Rbdigital Account Found, let the user create one if they want
+            return json_encode(
+                array(
+                    'promptNeeded' => true,
+                    'promptTitle'  => 'Create an Account',
+                    'prompts'      => $interface->fetch('Rbdigital/ajax-create-account-prompt.tpl'),
+                    'buttons'      => '<input class="btn btn-primary" type="submit" name="submit" value="Create Account" onclick="return VuFind.Rbdigital.createAccount(\'hold\', \''. $id .'\');">'
+                )
+            );
+        }
 	}
 
-	function GetRbdigitalHoldPrompts(){
+	function getCheckOutPrompts(){
 		$user = UserAccount::getLoggedInUser();
 		global $interface;
 		$id = $_REQUEST['id'];
-		$interface->assign('overDriveId', $id);
-		if ($user->overdriveEmail == 'undefined'){
-			$user->overdriveEmail = '';
-		}
-		$promptForEmail = false;
-		if (strlen($user->overdriveEmail) == 0 || $user->promptForOverdriveEmail == 1){
-			$promptForEmail = true;
-		}
+		$interface->assign('id', $id);
 
-		$overDriveUsers = $user->getRelatedEcontentUsers('rbdigital');
-		$interface->assign('overDriveUsers', $overDriveUsers);
-		if (count($overDriveUsers) == 1){
-			$interface->assign('patronId', reset($overDriveUsers)->id);
-		}
+		$users = $user->getRelatedEcontentUsers('rbdigital');
+		$usersWithRbdigitalAccess = [];
+		require_once ROOT_DIR . '/Drivers/RbdigitalDriver.php';
+		$driver = new RbdigitalDriver();
+		foreach ($users as $tmpUser) {
+		    if ($driver->getRbdigitalId($tmpUser) != false) {
+                $usersWithRbdigitalAccess[] = $tmpUser;
+            }
+        }
+		$interface->assign('users', $usersWithRbdigitalAccess);
 
-		$interface->assign('overdriveEmail', $user->overdriveEmail);
-		$interface->assign('promptForEmail', $promptForEmail);
-		if ($promptForEmail || count($overDriveUsers) > 1){
-			$promptTitle = 'Rbdigital Hold Options';
-			return json_encode(
-				array(
-					'promptNeeded' => true,
-					'promptTitle' => $promptTitle,
-					'prompts' => $interface->fetch('Rbdigital/ajax-overdrive-hold-prompt.tpl'),
-					'buttons' => '<input class="btn btn-primary" type="submit" name="submit" value="Place Hold" onclick="return VuFind.Rbdigital.processRbdigitalHoldPrompts();"/>'
-				)
-			);
-		}else{
-			return json_encode(
-				array(
-					'patronId' => reset($overDriveUsers)->id,
-					'promptNeeded' => false,
-					'overdriveEmail' => $user->overdriveEmail,
-					'promptForOverdriveEmail' => $promptForEmail,
-				)
-			);
-		}
-	}
-
-	function GetCheckoutPrompts(){
-		$user = UserAccount::getLoggedInUser();
-		global $interface;
-		$id = $_REQUEST['id'];
-		$interface->assign('rbdigitalId', $id);
-
-		$overDriveUsers = $user->getRelatedEcontentUsers('rbdigital');
-		$interface->assign('overDriveUsers', $overDriveUsers);
-
-		if (count($overDriveUsers) > 1){
+		if (count($usersWithRbdigitalAccess) > 1){
 			$promptTitle = 'Rbdigital Checkout Options';
 			return json_encode(
 				array(
 					'promptNeeded' => true,
 					'promptTitle'  => $promptTitle,
-					'prompts'      => $interface->fetch('Rbdigital/ajax-rbdigital-checkout-prompt.tpl'),
-					'buttons'      => '<input class="btn btn-primary" type="submit" name="submit" value="Checkout Title" onclick="return VuFind.Rbdigital.processRbdigitalCheckoutPrompts();">'
+					'prompts'      => $interface->fetch('Rbdigital/ajax-checkout-prompt.tpl'),
+					'buttons'      => '<input class="btn btn-primary" type="submit" name="submit" value="Checkout Title" onclick="return VuFind.Rbdigital.processCheckoutPrompts();">'
 				)
 			);
-		} elseif (count($overDriveUsers) == 1){
+		} elseif (count($usersWithRbdigitalAccess) == 1){
 			return json_encode(
 				array(
-					'patronId' => reset($overDriveUsers)->id,
+					'patronId' => reset($usersWithRbdigitalAccess)->id,
 					'promptNeeded' => false,
 				)
 			);
 		} else {
-			// No Overdrive Account Found, give the user an error message
-			global $logger;
-			$logger->log('No valid Overdrive account was found to check out an Overdrive title.', Logger::LOG_ERROR);
+			// No Rbdigital Account Found, let the user create one if they want
 			return json_encode(
 				array(
 					'promptNeeded' => true,
-					'promptTitle'  => 'Error',
-					'prompts'      => 'No valid Overdrive account was found to check this title out with.',
-					'buttons'      => ''
+					'promptTitle'  => 'Create an Account',
+					'prompts'      => $interface->fetch('Rbdigital/ajax-create-account-prompt.tpl'),
+					'buttons'      => '<input class="btn btn-primary" type="submit" name="submit" value="Create Account" onclick="return VuFind.Rbdigital.createAccount(\'checkout\', '. $id . ');">'
 				)
 			);
 		}
-
 	}
 
-	function CancelRbdigitalHold(){
+	function cancelHold(){
 		$user = UserAccount::getLoggedInUser();
-		$overDriveId = $_REQUEST['overDriveId'];
+		$id = $_REQUEST['recordId'];
 		if ($user){
 			$patronId = $_REQUEST['patronId'];
 			$patron = $user->getUserReferredTo($patronId);
 			if ($patron) {
-				require_once ROOT_DIR . '/Drivers/RbdigitalDriverFactory.php';
-				$driver = RbdigitalDriverFactory::getDriver();
-				$result = $driver->cancelRbdigitalHold($overDriveId, $patron);
+                require_once ROOT_DIR . '/Drivers/RbdigitalDriver.php';
+                $driver = new RbdigitalDriver();
+				$result = $driver->cancelHold($patron, $id);
 				return json_encode($result);
 			}else{
-				return json_encode(array('result'=>false, 'message'=>'Sorry, it looks like you don\'t have permissions to download cancel holds for that user.'));
+				return json_encode(array('result'=>false, 'message'=>'Sorry, it looks like you don\'t have permissions to cancel holds for that user.'));
 			}
 		}else{
 			return json_encode(array('result'=>false, 'message'=>'You must be logged in to cancel holds.'));
 		}
 	}
+
+    function renewCheckout(){
+        $user = UserAccount::getLoggedInUser();
+        $id = $_REQUEST['recordId'];
+        if ($user){
+            $patronId = $_REQUEST['patronId'];
+            $patron = $user->getUserReferredTo($patronId);
+            if ($patron) {
+                require_once ROOT_DIR . '/Drivers/RbdigitalDriver.php';
+                $driver = new RbdigitalDriver();
+                $result = $driver->renewCheckout($patron, $id);
+                return json_encode($result);
+            }else{
+                return json_encode(array('result'=>false, 'message'=>'Sorry, it looks like you don\'t have permissions to modify checkouts for that user.'));
+            }
+        }else{
+            return json_encode(array('result'=>false, 'message'=>'You must be logged in to renew titles.'));
+        }
+    }
+
+    function returnCheckout(){
+        $user = UserAccount::getLoggedInUser();
+        $id = $_REQUEST['recordId'];
+        if ($user){
+            $patronId = $_REQUEST['patronId'];
+            $patron = $user->getUserReferredTo($patronId);
+            if ($patron) {
+                require_once ROOT_DIR . '/Drivers/RbdigitalDriver.php';
+                $driver = new RbdigitalDriver();
+                $result = $driver->returnCheckout($patron, $id);
+                return json_encode($result);
+            }else{
+                return json_encode(array('result'=>false, 'message'=>'Sorry, it looks like you don\'t have permissions to modify checkouts for that user.'));
+            }
+        }else{
+            return json_encode(array('result'=>false, 'message'=>'You must be logged in to return titles.'));
+        }
+    }
 }

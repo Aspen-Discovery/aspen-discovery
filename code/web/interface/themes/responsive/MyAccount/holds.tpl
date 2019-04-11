@@ -57,6 +57,8 @@
 							{include file="MyAccount/ilsHold.tpl" record=$record section=$sectionKey resultIndex=$smarty.foreach.recordLoop.iteration}
 						{elseif $record.holdSource == 'OverDrive'}
 							{include file="MyAccount/overdriveHold.tpl" record=$record section=$sectionKey resultIndex=$smarty.foreach.recordLoop.iteration}
+						{elseif $record.holdSource == 'Rbdigital'}
+							{include file="MyAccount/rbdigitalHold.tpl" record=$record section=$sectionKey resultIndex=$smarty.foreach.recordLoop.iteration}
 						{else}
 							<div class="row">
 								Unknown record source {$record.holdSource}

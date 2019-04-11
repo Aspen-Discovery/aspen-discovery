@@ -36,6 +36,8 @@ class User extends DataObject
 	public $hooplaCheckOutConfirmation;
 	public $preferredLibraryInterface;
 	public $noPromptForUserReviews; //tinyint(1)
+    public $rbdigitalId;
+    public $rbdigitalLastAccountCheck;
 
 	private $roles;
 	private $masqueradingRoles;
@@ -289,6 +291,16 @@ class User extends DataObject
 		}
 	}
 
+	function getPasswordOrPin(){
+        global $configArray;
+            //TODO: Check the login configuration for the driver
+        if ($configArray['Catalog']['barcodeProperty'] == 'cat_username'){
+            return trim($this->cat_password);
+        }else{
+            return trim($this->cat_username);
+        }
+    }
+
 	function saveRoles(){
 		if (isset($this->id) && isset($this->roles) && is_array($this->roles)){
 			require_once ROOT_DIR . '/sys/Administration/Role.php';
@@ -333,12 +345,7 @@ class User extends DataObject
 							$userData = $memCache->get("user_{$serverName}_{$linkedUser->id}");
 							if ($userData === false || isset($_REQUEST['reload'])){
 								//Load full information from the catalog
-                                try {
-                                    $linkedUser = UserAccount::validateAccount($linkedUser->cat_username, $linkedUser->cat_password, $linkedUser->source, $this);
-                                } catch (UnknownAuthenticationMethodException $e) {
-                                    $logger->log("Unknown authentication method $e", Logger::LOG_WARNING);
-                                    $linkedUser = false;
-                                }
+                                $linkedUser = UserAccount::validateAccount($linkedUser->cat_username, $linkedUser->cat_password, $linkedUser->source, $this);
                             }else{
 								$logger->log("Found cached linked user {$userData->id}", Logger::LOG_DEBUG);
 								$linkedUser = $userData;
@@ -415,20 +422,24 @@ class User extends DataObject
 		}
 	}
 
+    /**
+     * @param string $source
+     * @return User[]
+     */
 	function getRelatedEcontentUsers($source){
-		$overDriveUsers = array();
+		$users = array();
 		if ($this->isValidForEContentSource($source)){
-			$overDriveUsers[$this->cat_username . ':' . $this->cat_password] = $this;
+            $users[$this->cat_username . ':' . $this->cat_password] = $this;
 		}
 		foreach ($this->getLinkedUsers() as $linkedUser){
 			if ($linkedUser->isValidForEContentSource($source)){
-				if (!array_key_exists($linkedUser->cat_username . ':' . $linkedUser->cat_password, $overDriveUsers)){
-					$overDriveUsers[$linkedUser->cat_username . ':' . $linkedUser->cat_password] = $linkedUser;
+				if (!array_key_exists($linkedUser->cat_username . ':' . $linkedUser->cat_password, $users)){
+                    $users[$linkedUser->cat_username . ':' . $linkedUser->cat_password] = $linkedUser;
 				}
 			}
 		}
 
-		return $overDriveUsers;
+		return $users;
 	}
 
 	function isValidForEContentSource($source){
@@ -441,7 +452,7 @@ class User extends DataObject
 			        return $userHomeLibrary->hooplaLibraryID > 0;
                 }elseif ($source == 'rbdigital'){
 			        global $configArray;
-                    return !empty($configArray['Rbdigital']) && !empty($configArray['Rbdigital']['url']);
+			        return !empty($configArray['Rbdigital']) && !empty($configArray['Rbdigital']['url']);
                 }
 			}
 		}
@@ -593,9 +604,9 @@ class User extends DataObject
 		$roleList = Role::getLookup();
 		$roleList[-1] = 'Any Role';
 		return array(
-		array('filter'=>'role', 'type'=>'enum', 'values'=>$roleList, 'label'=>'Role'),
-		array('filter'=>'cat_password', 'type'=>'text', 'label'=>'Login'),
-		array('filter'=>'cat_username', 'type'=>'text', 'label'=>'Name'),
+            array('filter'=>'role', 'type'=>'enum', 'values'=>$roleList, 'label'=>'Role'),
+            array('filter'=>'cat_password', 'type'=>'text', 'label'=>'Login'),
+            array('filter'=>'cat_username', 'type'=>'text', 'label'=>'Name'),
 		);
 	}
 
@@ -876,12 +887,12 @@ class User extends DataObject
             $allCheckedOut = array_merge($allCheckedOut, $hooplaCheckedOutItems);
         }
 
-//        if ($this->isValidForEContentSource('rbdigital')){
-//            require_once ROOT_DIR . '/Drivers/RbdigitalDriver.php';
-//            $rbdigitalDriver = new RbdigitalDriver();
-//            $rbdigitalCheckedOutItems = $rbdigitalDriver->getCheckouts($this);
-//            $allCheckedOut = array_merge($allCheckedOut, $rbdigitalCheckedOutItems);
-//        }
+        if ($this->isValidForEContentSource('rbdigital')){
+            require_once ROOT_DIR . '/Drivers/RbdigitalDriver.php';
+            $rbdigitalDriver = new RbdigitalDriver();
+            $rbdigitalCheckedOutItems = $rbdigitalDriver->getCheckouts($this);
+            $allCheckedOut = array_merge($allCheckedOut, $rbdigitalCheckedOutItems);
+        }
 
 		if ($includeLinkedUsers) {
 			if ($this->getLinkedUsers() != null) {
@@ -910,12 +921,12 @@ class User extends DataObject
 		}
 
         //Get holds from Rbdigital
-//        if ($this->isValidForEContentSource('rbdigital')){
-//            require_once ROOT_DIR . '/Drivers/RbdigitalDriver.php';
-//            $driver = new RbdigitalDriver();
-//            $rbdigitalHolds = $driver->getHolds($this);
-//            $allHolds = array_merge_recursive($allHolds, $rbdigitalHolds);
-//        }
+        if ($this->isValidForEContentSource('rbdigital')){
+            require_once ROOT_DIR . '/Drivers/RbdigitalDriver.php';
+            $driver = new RbdigitalDriver();
+            $rbdigitalHolds = $driver->getHolds($this);
+            $allHolds = array_merge_recursive($allHolds, $rbdigitalHolds);
+        }
 
 		if ($includeLinkedUsers) {
 			if ($this->getLinkedUsers() != null) {
@@ -1197,7 +1208,7 @@ class User extends DataObject
 	 * @param   string  $itemId     The id of the item to hold
 	 * @param   string  $pickupBranch The branch where the user wants to pickup the item when available
 	 * @return  mixed               True if successful, false if unsuccessful
-	 *                              If an error occurs, return a PEAR_Error
+	 *                              If an error occurs, return a AspenError
 	 * @access  public
 	 */
 	function placeItemHold($recordId, $itemId, $pickupBranch) {
@@ -1266,7 +1277,7 @@ class User extends DataObject
 		return $result;
 	}
 
-	function renewCheckout($recordId, $itemId, $itemIndex){
+	function renewCheckout($recordId, $itemId = null, $itemIndex = null){
 		$result = $this->getCatalogDriver()->renewCheckout($this, $recordId, $itemId, $itemIndex);
 		$this->clearCache();
 		return $result;
@@ -1434,12 +1445,12 @@ class User extends DataObject
 
 	function setNumHoldsAvailableOverDrive($val){
 		$this->_numHoldsAvailableOverDrive = $val;
-		$this->_numHoldsRbdigital += $val;
+		$this->_numHoldsOverDrive += $val;
 	}
 
 	function setNumHoldsRequestedOverDrive($val){
 		$this->_numHoldsRequestedOverDrive = $val;
-		$this->_numHoldsRbdigital += $val;
+		$this->_numHoldsOverDrive += $val;
 	}
 
     function setNumCheckedOutRbdigital($val){
@@ -1447,7 +1458,7 @@ class User extends DataObject
     }
 
     function setNumHoldsAvailableRbdigital($val){
-        $this->_numHoldsAvailableOverDrive = $val;
+        $this->_numHoldsAvailableRbdigital = $val;
         $this->_numHoldsRbdigital += $val;
     }
 

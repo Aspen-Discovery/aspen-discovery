@@ -88,9 +88,9 @@ class BlockPatronAccountLink extends DataObject
 	}
 
 	private function getBarcode(){
-	global $configArray;
-	return ($configArray['Catalog']['barcodeProperty'] == 'cat_username') ? 'cat_username' : 'cat_password';
-}
+        global $configArray;
+        return ($configArray['Catalog']['barcodeProperty'] == 'cat_username') ? 'cat_username' : 'cat_password';
+    }
 
 	static function getObjectStructure()
 	{
