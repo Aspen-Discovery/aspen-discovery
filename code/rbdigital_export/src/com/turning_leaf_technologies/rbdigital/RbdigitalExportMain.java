@@ -274,7 +274,9 @@ public class RbdigitalExportMain {
                 checksumCalculator.update(itemDetailsAsString.getBytes());
                 long itemChecksum = checksumCalculator.getValue();
 
-                String rbdigitalId = itemDetails.getString("id");
+                //MDN 4/11/2019 Although rbdigital provides an id field, they actually use ISBN as the unique identifier
+                //for audiobooks and eBooks.  Switch to that.
+                String rbdigitalId = itemDetails.getString("isbn");
                 logger.debug("processing " + rbdigitalId);
 
                 //Check to see if the title metadata has changed
@@ -309,7 +311,7 @@ public class RbdigitalExportMain {
                         availabilityChanged = true;
                     }
                 } else {
-                    logger.debug("Adding availability for " + itemDetails.getString("id"));
+                    logger.debug("Adding availability for " + rbdigitalId);
                     availabilityChanged = true;
                 }
 

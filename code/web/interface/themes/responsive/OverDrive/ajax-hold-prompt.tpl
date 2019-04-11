@@ -8,7 +8,7 @@
 				<div class='controls'>
 					<select name="patronId" id="patronId" class="form-control">
 						{foreach from=$overDriveUsers item=tmpUser}
-							<option value="{$tmpUser->id}" {if $location->selected == "selected"}selected="selected"{/if}>{$tmpUser->displayName} - {$tmpUser->getHomeLibrarySystemName()}</option>
+							<option value="{$tmpUser->id}">{$tmpUser->displayName} - {$tmpUser->getHomeLibrarySystemName()}</option>
 						{/foreach}
 					</select>
 				</div>
