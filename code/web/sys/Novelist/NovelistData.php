@@ -1,12 +1,4 @@
 <?php
-/**
- * Description goes here
- *
- * @category VuFind-Plus 
- * @author Mark Noble <mark@marmot.org>
- * Date: 12/2/13
- * Time: 11:33 AM
- */
 
 class NovelistData extends DataObject{
 	public $id;
