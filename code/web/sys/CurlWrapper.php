@@ -116,13 +116,16 @@ class CurlWrapper {
 	 * Uses the POST Method to retrieve content from a page
 	 *
 	 * @param string    $url          The url to post to
-	 * @param string[]  $postParams   Additional Post Params to use
+	 * @param string|string[]  $postParams   Additional Post Params to use
 	 *
 	 * @return string   The response from the web page if any
 	 */
 	public function curlPostPage($url, $postParams){
-		$post_string = http_build_query($postParams);
-
+	    if (is_string($postParams)){
+            $post_string = $postParams;
+        }else {
+            $post_string = http_build_query($postParams);
+        }
 		$this->curl_connect($url);
 		curl_setopt_array($this->curl_connection, array(
 			CURLOPT_POST => true,

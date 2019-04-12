@@ -142,6 +142,7 @@ class User extends DataObject
 		return $this->catalogDriver;
 	}
 
+	/** @var AccountProfile */
 	private $accountProfile;
 
 	/**
@@ -293,7 +294,7 @@ class User extends DataObject
 
 	function getPasswordOrPin(){
         global $configArray;
-            //TODO: Check the login configuration for the driver
+        //TODO: Check the login configuration for the driver
         if ($configArray['Catalog']['barcodeProperty'] == 'cat_username'){
             return trim($this->cat_password);
         }else{

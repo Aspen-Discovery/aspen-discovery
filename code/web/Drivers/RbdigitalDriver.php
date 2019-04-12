@@ -143,6 +143,42 @@ class RbdigitalDriver extends AbstractEContentDriver
         return $result;
     }
 
+    public function createAccount(User $user) {
+        global $configArray;
+        $result = ['success' => false, 'message' => 'Unknown error'];
+
+        $registrationData = [
+            'username' => $_REQUEST['username'],
+            'password' => $_REQUEST['password'],
+            'firstName' => $_REQUEST['firstName'],
+            'lastName' => $_REQUEST['lastName'],
+            'email' => $_REQUEST['email'],
+            'postalCode' => $_REQUEST['postalCode'],
+            'libraryCard' => $_REQUEST['libraryCard'],
+            'libraryId' => $configArray['Rbdigital']['libraryId'],
+            'tenantId' => $configArray['Rbdigital']['libraryId']
+        ];
+
+        //TODO: add pin if the library configuration uses pins
+
+        $actionUrl = $this->webServiceURL . '/v1/libraries/' . $this->libraryId . '/patrons/';
+
+        $rawResponse = $this->curlWrapper->curlPostPage($actionUrl, json_encode($registrationData));
+        $response = json_decode($rawResponse);
+        if ($response == false){
+            $result['message'] = "Invalid information returned from API, please retry your action after a few minutes.";
+        }else{
+            if (!empty($response->message) && $response->message == 'success') {
+                $result['success'] = true;
+                $result['message'] = "Your hold was cancelled successfully.";
+            } else {
+                $result['message'] = $response->message;
+            }
+        }
+
+        return $result;
+    }
+
     public function isUserRegistered(User $user){
         if ($this->getRbdigitalId($user) != false) {
             return true;

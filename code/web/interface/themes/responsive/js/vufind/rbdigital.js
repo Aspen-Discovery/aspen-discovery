@@ -39,6 +39,62 @@ VuFind.Rbdigital = (function(){
             return false;
         },
 
+        createAccount: function(action, patronId, id){
+            if (Globals.loggedIn){
+                //Check form validation
+                var $accountForm = $('#createRbdigitalAccount');
+
+                if(! $accountForm[0].checkValidity()) {
+                    // If the form is invalid, submit it. The form won't actually submit;
+                    // this will just cause the browser to display the native HTML5 error messages.
+                    $accountForm.find(':submit').click();
+                    return false;
+                }
+
+                let formValues = 'username=' + encodeURIComponent($("#username").val());
+                let password1 = encodeURIComponent($('#password1').val());
+                let password2 = encodeURIComponent($('#password2').val());
+                if (password1 !== password2){
+                    $("#password_validation").show().focus();
+                    return false;
+                }else{
+                    $("#password_validation").hide();
+                }
+                formValues += '&password=' +  encodeURIComponent($('#password1').val());
+                formValues += '&libraryCard=' +  encodeURIComponent($('#libraryCard').val());
+                formValues += '&firstName=' + encodeURIComponent($('#firstName').val());
+                formValues += '&lastName=' + encodeURIComponent($('#lastName').val());
+                formValues += '&email=' + encodeURIComponent($('#email').val());
+                formValues += '&postalCode=' + encodeURIComponent($('#postalCode').val());
+                formValues += '&followupAction=' + encodeURIComponent(action);
+                formValues += '&patronId=' + encodeURIComponent(patronId);
+                formValues += '&id=' + encodeURIComponent(id);
+                formValues += '&method=createAccount';
+
+                let ajaxUrl = Globals.path + "/Rbdigital/AJAX?" + formValues;
+
+                $.ajax({
+                    url: ajaxUrl,
+                    cache: false,
+                    success: function(data){
+                        if (data.success === true){
+                            VuFind.showMessageWithButtons("Success", data.message, data.buttons);
+                        }else{
+                            VuFind.showMessage("Error", data.message, false);
+                        }
+                    },
+                    dataType: 'json',
+                    async: false,
+                    error: function(){
+                        VuFind.showMessage("Error", "An error occurred processing your request in Rbdigital.  Please try again in a few minutes.");
+                    }
+                });
+            }else{
+                VuFind.showMessage("Error", "You must be logged in before creating an Rbdigital account.", false);
+            }
+            return false;
+        },
+
         doCheckOut: function(patronId, id){
             if (Globals.loggedIn){
                 let ajaxUrl = Globals.path + "/Rbdigital/AJAX?method=checkOutTitle&patronId=" + patronId + "&id=" + id;
@@ -54,7 +110,7 @@ VuFind.Rbdigital = (function(){
                                 VuFind.closeLightbox();
                                 let ret = confirm(data.message);
                                 if (ret === true){
-                                    VuFind.Rbdigital.placeHold(id);
+                                    VuFind.Rbdigital.doHold(patronId, id);
                                 }
                             }else{
                                 VuFind.showMessage("Error Checking Out Title", data.message, false);
@@ -130,7 +186,9 @@ VuFind.Rbdigital = (function(){
                 cache: false,
                 success: function(data){
                     result = data;
+                    // noinspection JSUnresolvedVariable
                     if (data.promptNeeded){
+                        // noinspection JSUnresolvedVariable
                         VuFind.showMessageWithButtons(data.promptTitle, data.prompts, data.buttons);
                     }
                 },

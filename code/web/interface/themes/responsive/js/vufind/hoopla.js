@@ -5,11 +5,11 @@ VuFind.Hoopla = (function(){
 				if (typeof patronId === 'undefined') {
 					patronId = $('#patronId', '#pickupLocationOptions').val(); // Lookup selected user from the options form
 				}
-				var url = Globals.path + '/Hoopla/'+ hooplaId + '/AJAX',
-						params = {
-							'method' : 'checkOutHooplaTitle',
-							patronId : patronId
-						};
+				let url = Globals.path + '/Hoopla/'+ hooplaId + '/AJAX';
+				let	params = {
+					'method' : 'checkOutHooplaTitle',
+					patronId : patronId
+				};
 				if ($('#stopHooplaConfirmation').prop('checked')){
 					params['stopHooplaConfirmation'] = true;
 				}

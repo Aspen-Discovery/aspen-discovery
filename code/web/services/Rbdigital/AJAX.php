@@ -2,8 +2,6 @@
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/sys/HTTP/HTTP_Request.php';
 
-global $configArray;
-
 class Rbdigital_AJAX extends Action {
 
 	function launch() {
@@ -22,17 +20,6 @@ class Rbdigital_AJAX extends Action {
 			$patronId = $_REQUEST['patronId'];
 			$patron = $user->getUserReferredTo($patronId);
 			if ($patron){
-				if (isset($_REQUEST['rbdigitalEmail'])){
-					if ($_REQUEST['rbdigitalEmail'] != $patron->rbdigitalEmail){
-						$patron->rbdigitalEmail = $_REQUEST['rbdigitalEmail'];
-						$patron->update();
-					}
-				}
-				if (isset($_REQUEST['promptForRbdigitalEmail'])){
-					$patron->promptForRbdigitalEmail = $_REQUEST['promptForRbdigitalEmail'];
-					$patron->update();
-				}
-
 				require_once ROOT_DIR . '/Drivers/RbdigitalDriver.php';
 				$driver = new RbdigitalDriver();
 				$holdMessage = $driver->placeHold($patron, $id);
@@ -57,7 +44,8 @@ class Rbdigital_AJAX extends Action {
 				$result = $driver->checkoutTitle($patron, $id);
 				//$logger->log("Checkout result = $result", Logger::LOG_NOTICE);
 				if ($result['success']){
-					$result['buttons'] = '<a class="btn btn-primary" href="/MyAccount/CheckedOut" role="button">View My Check Outs</a>';
+                    /** @noinspection HtmlUnknownTarget */
+                    $result['buttons'] = '<a class="btn btn-primary" href="/MyAccount/CheckedOut" role="button">View My Check Outs</a>';
 				}
 				return json_encode($result);
 			}else{
@@ -68,47 +56,32 @@ class Rbdigital_AJAX extends Action {
 		}
 	}
 
-	function returnTitle(){
-		$user = UserAccount::getLoggedInUser();
-		$id = $_REQUEST['id'];
-		$transactionId = $_REQUEST['transactionId'];
-		if ($user){
-			$patronId = $_REQUEST['patronId'];
-			$patron = $user->getUserReferredTo($patronId);
-			if ($patron) {
+	function createAccount(){
+        $user = UserAccount::getLoggedInUser();
+
+        if ($user){
+            $patronId = $_REQUEST['patronId'];
+            $patron = $user->getUserReferredTo($patronId);
+            if ($patron){
                 require_once ROOT_DIR . '/Drivers/RbdigitalDriver.php';
                 $driver = new RbdigitalDriver();
-				$result = $driver->returnTitle($id, $transactionId, $patron);
-
-				return json_encode($result);
-			}else{
-				return json_encode(array('result'=>false, 'message'=>'Sorry, it looks like you don\'t have permissions to return titles for that user.'));
-			}
-		}else{
-			return json_encode(array('result'=>false, 'message'=>'You must be logged in to return an item.'));
-		}
-	}
-
-	function getDownloadLink(){
-		$user = UserAccount::getLoggedInUser();
-		$id = $_REQUEST['id'];
-		$formatId = $_REQUEST['formatId'];
-		if ($user){
-			$patronId = $_REQUEST['patronId'];
-			$patron = $user->getUserReferredTo($patronId);
-			if ($patron) {
-                require_once ROOT_DIR . '/Drivers/RbdigitalDriver.php';
-                $driver = new RbdigitalDriver();
-				$result = $driver->getDownloadLink($id, $formatId, $patron);
-				//$logger->log("Checkout result = $result", Logger::LOG_NOTICE);
-				return json_encode($result);
-			}else{
-				return json_encode(array('result'=>false, 'message'=>'Sorry, it looks like you don\'t have permissions to download titles for that user.'));
-			}
-		}else{
-			return json_encode(array('result'=>false, 'message'=>'You must be logged in to download a title.'));
-		}
-	}
+                $createAccountMessage = $driver->createAccount($patron);
+                if ($createAccountMessage['success']){
+                    $followupAction = $_REQUEST['followupAction'];
+                    if ($followupAction == 'checkout') {
+                        return $this->checkOutTitle();
+                    }else{
+                        return $this->placeHold();
+                    }
+                }
+                return json_encode($createAccountMessage);
+            }else{
+                return json_encode(array('result'=>false, 'message'=>'Sorry, it looks like you don\'t have permission to create an Rbdigital account for that user.'));
+            }
+        }else{
+            return json_encode(array('result'=>false, 'message'=>'You must be logged in prior to creating an account in Rbdigital.'));
+        }
+    }
 
 	function getHoldPrompts(){
         $user = UserAccount::getLoggedInUser();
@@ -151,7 +124,7 @@ class Rbdigital_AJAX extends Action {
                     'promptNeeded' => true,
                     'promptTitle'  => 'Create an Account',
                     'prompts'      => $interface->fetch('Rbdigital/ajax-create-account-prompt.tpl'),
-                    'buttons'      => '<input class="btn btn-primary" type="submit" name="submit" value="Create Account" onclick="return VuFind.Rbdigital.createAccount(\'hold\', \''. $id .'\');">'
+                    'buttons'      => '<input class="btn btn-primary" type="submit" name="submit" value="Create Account" onclick="return VuFind.Rbdigital.createAccount(\'hold\', \'' . $user->id . '\', \''. $id .'\');">'
                 )
             );
         }
