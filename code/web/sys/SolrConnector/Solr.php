@@ -53,14 +53,14 @@ class Solr {
 	/**
 	 * The path to the YAML file specifying available search types:
 	 */
-	protected $searchSpecsFile = '../../conf/searchspecs.yaml';
+	protected $searchSpecsFile = ROOT_DIR . '/../../sites/default/conf/searchspecs.yaml';
 
 	/**
 	 * An array of search specs pulled from $searchSpecsFile (above)
 	 *
 	 * @var array
 	 */
-	private $_searchSpecs = false;
+	private static $_searchSpecs = false;
 
 	/**
 	 * Should boolean operators in the search string be treated as
@@ -93,8 +93,16 @@ class Solr {
 
 	/** @var string  */
 	private $searchSource = null;
+    /**
+     * @var string
+     */
+    private $debugSearchUrl;
+    /**
+     * @var string
+     */
+    private $fullSearchUrl;
 
-	/**
+    /**
 	 * Constructor
 	 *
 	 * Sets up the SOAP Client
@@ -120,15 +128,6 @@ class Solr {
 			$this->index = $index;
 		}
 
-		//Check for a more specific searchspecs file
-		global $serverName;
-		if (file_exists(ROOT_DIR . "/../../sites/$serverName/conf/searchspecs.yaml")){
-			// Return the file path (note that all ini files are in the conf/ directory)
-			$this->searchSpecsFile = ROOT_DIR . "/../../sites/$serverName/conf/searchspecs.yaml";
-		}elseif(file_exists(ROOT_DIR . "/../../sites/default/conf/searchspecs.yaml")){
-			// Return the file path (note that all ini files are in the conf/ directory)
-			$this->searchSpecsFile = ROOT_DIR . "/../../sites/default/conf/searchspecs.yaml";
-		}
 		$timer->logTime("Load search specs");
 
 		$this->host = $host . '/' . $index;
@@ -272,9 +271,15 @@ class Solr {
 	 */
 	private function _loadSearchSpecs()
 	{
-	    if ($this->_searchSpecs == null) {
-	        //TODO: Store this in Memcache
-            $this->_searchSpecs  = Horde_Yaml::load(file_get_contents($this->searchSpecsFile));
+	    if (Solr::$_searchSpecs == null) {
+	        require_once ROOT_DIR . '/sys/Yaml.php';
+            try {
+                $yaml = new Yaml();
+                Solr::$_searchSpecs = $yaml->load($this->searchSpecsFile);
+            } catch (Exception $e) {
+                require_once ROOT_DIR . '/sys/AspenError.php';
+                AspenError::raiseError('Could not load search specs, check the configuration ' . $e->getMessage());
+            }
         }
 	}
 
@@ -291,24 +296,24 @@ class Solr {
 	private function _getSearchSpecs($handler = null)
 	{
 		// Only load specs once:
-		if ($this->_searchSpecs === false) {
+		if (Solr::$_searchSpecs === false) {
 			$this->_loadSearchSpecs();
 		}
 
 		// Special case -- null $handler means we want all search specs.
 		if (is_null($handler)) {
-			return $this->_searchSpecs;
+			return Solr::$_searchSpecs;
 		}
 
 		// Return specs on the named search if found (easiest, most common case).
-		if (isset($this->_searchSpecs[$handler])) {
-			return $this->_searchSpecs[$handler];
+		if (isset(Solr::$_searchSpecs[$handler])) {
+			return Solr::$_searchSpecs[$handler];
 		}
 
 		// Check for a case-insensitive match -- this provides backward
 		// compatibility with different cases used in early VuFind versions
 		// and allows greater tolerance of minor typos in config files.
-		foreach ($this->_searchSpecs as $name => $specs) {
+		foreach (Solr::$_searchSpecs as $name => $specs) {
 			if (strcasecmp($name, $handler) == 0) {
 				return $specs;
 			}
@@ -498,7 +503,7 @@ class Solr {
 			'spellcheck' => 'true'
 			);
 
-			$result = $this->_select(HTTP_REQUEST_METHOD_GET, $options);
+			$result = $this->_select('GET', $options);
 			if ($result instanceof AspenError) {
 				AspenError::raiseError($result);
 			}
@@ -1183,13 +1188,6 @@ class Solr {
 			$options['fl'] = $options['fl'] . ',explain';
 		}
 
-		if (is_object($this->searchSource)){
-			$defaultFilters = preg_split('/\r\n/', $this->searchSource->defaultFilter);
-			foreach ($defaultFilters as $tmpFilter){
-				$filter[] = $tmpFilter;
-			}
-		}
-
 		//Apply automatic boosting (only to biblio and econtent queries)
 		if (preg_match('/.*(grouped_works).*/i', $this->host)){
 			//unset($options['qt']); //Force the query to never use dismax handling
@@ -1456,131 +1454,6 @@ class Solr {
 			$filter[] = "scope_has_related_records:$solrScope";
 		}
 
-		//*************************
-		//Marmot overrides for filtering based on library system and location
-		//Only include titles that the user has access to based on pType
-		/*$pType = 0;
-		$owningSystem = '';
-		$owningLibrary = '';
-		$canUseDefaultPType = !$this->scopingDisabled;
-
-		if ($user){
-			$pType = $user->patronType;
-		}elseif (isset($searchLocation) && $searchLocation->defaultPType > 0 && $canUseDefaultPType){
-			$pType = $searchLocation->defaultPType;
-		}
-		if ($pType == 0 && isset($searchLibrary)){
-			//We always want to restrict by pType even if we aren't scoping to just the library
-			//holdings since patron's don't want to see things they can't see.
-			if (strlen($searchLibrary->pTypes) > 0){
-				$pType = str_replace(',', ' OR ', $searchLibrary->pTypes);
-			}else if ($searchLibrary->defaultPType > 0){
-				$pType = $searchLibrary->defaultPType;
-			}
-		}
-
-		if (isset($searchLocation)){
-			if (strlen($searchLocation->facetLabel) == 0){
-				$owningLibrary = $searchLocation->displayName;
-			}else{
-				$owningLibrary = $searchLocation->facetLabel;
-			}
-		}
-		if (isset($searchLibrary)){
-			if (strlen($searchLibrary->facetLabel) == 0){
-				$owningSystem = $searchLibrary->displayName;
-			}else{
-				$owningSystem = $searchLibrary->facetLabel;
-			}
-		}
-		$buildingFacetName = 'owning_location';
-		$institutionFacetName = 'owning_library';*/
-
-		//This block makes sure that titles are usable by the current user.  It is always run if we have a reasonable idea
-		//who is using the catalog. This enables "super scope" even if the user is doing a repeat search.
-		/*if ($pType > 0 && $configArray['Index']['enableUsableByFilter'] == true){
-			//First check usability.
-			//It is usable if the title is usable by the ptypes in question OR it is owned by the current branch/ system
-			$usableFilter = 'usable_by:('.$pType . ' OR all)';
-			$owningBranchFilter = "";
-			$usableEContentFilter = "";
-			$onOrderFilter = "";
-			if (strlen($owningLibrary) > 0){
-				$owningBranchFilter .= " $buildingFacetName:\"$owningLibrary\"";
-				$usableEContentFilter .= "$buildingFacetName:\"$owningLibrary Online\"";
-				$onOrderFilter .= "$buildingFacetName:\"$owningLibrary On Order\"";
-			}
-			if (strlen($owningSystem) > 0){
-				if (strlen($owningBranchFilter) > 0) $owningBranchFilter .= " OR ";
-				if (strlen($usableEContentFilter) > 0) $usableEContentFilter .= " OR ";
-				if (strlen($onOrderFilter) > 0) $onOrderFilter .= " OR ";
-				$owningBranchFilter .= "$institutionFacetName:\"$owningSystem\"";
-				$usableEContentFilter .= "$institutionFacetName:\"$owningSystem Online\"";
-				$onOrderFilter .= "$institutionFacetName:\"$owningSystem On Order\"";
-			}
-			$homeLibrary = Library::getPatronHomeLibrary();
-			if ($homeLibrary && $homeLibrary != $searchLibrary){
-				if (strlen($owningBranchFilter) > 0) $owningBranchFilter .= " OR ";
-				if (strlen($usableEContentFilter) > 0) $usableEContentFilter .= " OR ";
-				if (strlen($onOrderFilter) > 0) $onOrderFilter .= " OR ";
-				$homeLibraryFacet = $homeLibrary->facetLabel;
-				$owningBranchFilter .= "$buildingFacetName:\"$homeLibraryFacet\"";
-				$usableEContentFilter .= "$buildingFacetName:\"$homeLibraryFacet Online\"";
-				$onOrderFilter .= "$buildingFacetName:\"$homeLibraryFacet On Order\"";
-			}
-			if (isset($searchLibrary) && $searchLibrary->enableOverdriveCollection){
-				if (strlen($usableEContentFilter) > 0) $usableEContentFilter .= " OR ";
-				$usableEContentFilter .= " $institutionFacetName:\"Shared Digital Collection\"";
-			}
-			if (strlen($owningBranchFilter)){
-				$fullFilter = "($usableFilter OR $owningBranchFilter)";
-			}else{
-				$fullFilter = "($usableFilter)";
-			}
-			if (strlen($usableEContentFilter)){
-				$fullFilter .= " OR $usableEContentFilter";
-			}
-			if (strlen($onOrderFilter)){
-				$fullFilter .= " OR $onOrderFilter";
-			}
-			$filter[] = $fullFilter;
-		}*/
-
-		//This block checks whether or not the title is owned by
-		if ($this->scopingDisabled == false){
-			/*if (isset($searchLibrary)){
-				if ($searchLibrary->restrictSearchByLibrary && $searchLibrary->enableOverdriveCollection){
-					$filter[] = "($institutionFacetName:\"{$owningSystem}\"
-							OR $institutionFacetName:\"Shared Digital Collection\"
-							OR $institutionFacetName:\"Digital Collection\"
-							OR $institutionFacetName:\"{$owningSystem} Online\"
-							OR $institutionFacetName:\"{$owningSystem} On Order\"
-							)";
-				}else if ($searchLibrary->restrictSearchByLibrary){
-					$filter[] = "$institutionFacetName:\"{$owningSystem}\"";
-				}else if (!$searchLibrary->enableOverdriveCollection){
-					//This doesn't work because it effectively removes anything with both OverDrive and Print titles
-					//$filter[] = "!($institutionFacetName:\"Digital Collection\" OR $institutionFacetName:\"{$searchLibrary->facetLabel} Online\")";
-				}
-			}
-
-			if ($searchLocation != null){
-				if ($searchLocation->restrictSearchByLocation && $searchLocation->enableOverdriveCollection){
-					$filter[] = "($buildingFacetName:\"{$owningLibrary}\"
-							OR $buildingFacetName:\"Shared Digital Collection\"
-							OR $buildingFacetName:\"Digital Collection\"
-							OR $buildingFacetName:\"{$owningLibrary} Online\"
-							OR $buildingFacetName:\"{$owningLibrary} On Order\"
-							)";
-				}else if ($searchLocation->restrictSearchByLocation){
-					$filter[] = "($buildingFacetName:\"{$owningLibrary}\")";
-				}else if (!$searchLocation->enableOverdriveCollection){
-					//This doesn't work because it effectively removes anything with both OverDrive and Print titles
-					//$filter[] = "!($buildingFacetName:\"Shared Digital Collection\" OR $buildingFacetName:\"Digital Collection\" OR $buildingFacetName:\"{$searchLibrary->facetLabel} Online\")";
-				}
-			}*/
-		}
-
 		return $filter;
 	}
 
@@ -1770,42 +1643,6 @@ class Solr {
 	}
 
 	/**
-	 * Strip facet settings that are illegal due to shard settings.
-	 *
-	 * @param array $value Current facet.field setting
-	 *
-	 * @return array			 Filtered facet.field setting
-	 * @access private
-	 */
-	private function _stripUnwantedFacets($value)
-	{
-		// Load the configuration of facets to strip and build a list of the ones
-		// that currently apply:
-		$facetConfig = getExtraConfigArray('facets');
-		$badFacets = array();
-
-		// No bad facets means no filtering necessary:
-		if (empty($badFacets)) {
-			return $value;
-		}
-
-		// Ensure that $value is an array:
-		if (!is_array($value)) {
-			$value = array($value);
-		}
-
-		// Rebuild the $value array, excluding all unwanted facets:
-		$newValue = array();
-		foreach ($value as $current) {
-			if (!in_array($current, $badFacets)) {
-				$newValue[] = $current;
-			}
-		}
-
-		return $newValue;
-	}
-
-	/**
 	 * Submit REST Request to read data
 	 *
 	 * @param	 string			$method						 HTTP Method to use: GET, POST,
@@ -1817,7 +1654,7 @@ class Solr {
 	 * @return	array|AspenError													 The Solr response (or a PEAR error)
 	 * @access	protected
 	 */
-	protected function _select($method = HTTP_REQUEST_METHOD_GET, $params = array(), $returnSolrError = false)
+	protected function _select($method = 'GET', $params = array(), $returnSolrError = false)
 	{
 		global $timer;
 		global $memoryWatcher;
@@ -1839,8 +1676,6 @@ class Solr {
 				if ($function != '') {
 					// Strip custom FacetFields when sharding makes it necessary:
 					if ($function === 'facet.field') {
-						$value = $this->_stripUnwantedFacets($value);
-
 						// If we stripped all values, skip the parameter:
 						if (empty($value)) {
 							continue;
@@ -1859,11 +1694,6 @@ class Solr {
 			}
 		}
 		$queryString = implode('&', $query);
-
-		$fullSearchUrl = print_r($this->host . "/select/?" . $queryString, true);
-
-		// Save to file for Jmeter
-		//$write_result = file_put_contents(ROOT_DIR . '\solrQueries.csv', $fullSearchUrl."\n", FILE_APPEND);
 
 		$this->fullSearchUrl = $this->host . "/select/?" . $queryString;
 		if ($this->debug || $this->debugSolrQuery) {
@@ -1971,7 +1801,7 @@ class Solr {
 	/**
 	 * Perform normalization and analysis of Solr return value.
 	 *
-	 * @param	 array			 $result						 The raw response from Solr
+	 * @param	 string			 $result						 The raw response from Solr
 	 * @param	 bool				$returnSolrError		If Solr reports a syntax error,
 	 *																					should we fail outright (false) or
 	 *																					treat it as an empty result set with
@@ -2244,65 +2074,6 @@ class Solr {
 		return false;
 	}
 
-
-	/**
-	 * Obtain information from an alphabetic browse index.
-	 *
-	 * @param string $source					Name of index to search
-	 * @param string $from						Starting point for browse results
-	 * @param int		$page						Result page to return (starts at 0)
-	 * @param int		$page_size			 Number of results to return on each page
-	 * @param bool	 $returnSolrError Should we fail outright on syntax error
-	 * (false) or treat it as an empty result set with an error key set (true)?
-	 *
-	 * @return array
-	 * @access public
-	 */
-	public function alphabeticBrowse($source, $from, $page, $page_size = 20, $returnSolrError = false) {
-		$this->pingServer();
-
-		$this->client->setMethod('GET');
-		$this->client->setURL($this->host . "/browse");
-
-		$offset = $page * $page_size;
-
-		$this->client->addQueryString('from', $from);
-		$this->client->addQueryString('json.nl', 'arrarr');
-		$this->client->addQueryString('offset', $offset);
-		$this->client->addQueryString('rows', $page_size);
-		$this->client->addQueryString('source', $source);
-		$this->client->addQueryString('wt', 'json');
-
-		$result = $this->client->sendRequest();
-
-		if (!($result instanceof AspenError)) {
-			return $this->_process(
-			$this->client->getResponseBody(), $returnSolrError);
-		} else {
-			return $result;
-		}
-	}
-
-	/**
-	 * Convert a terms array (where every even entry is a term and every odd entry
-	 * is a count) into an associate array of terms => counts.
-	 *
-	 * @param array $in Input array
-	 *
-	 * @return array		Processed array
-	 * @access private
-	 */
-	private function _processTerms($in)
-	{
-		$out = array();
-
-		for ($i = 0; $i < count($in); $i += 2) {
-			$out[$in[$i]] = $in[$i + 1];
-		}
-
-		return $out;
-	}
-
 	/**
 	 * Get the boolean clause limit.
 	 *
@@ -2316,57 +2087,6 @@ class Solr {
 		// Use setting from config.ini if present, otherwise assume 1024:
 		return isset($configArray['Index']['maxBooleanClauses'])
 		? $configArray['Index']['maxBooleanClauses'] : 1024;
-	}
-
-	/**
-	 * Extract terms from the Solr index.
-	 *
-	 * @param string $field					 Field to extract terms from
-	 * @param string $start					 Starting term to extract (blank for beginning
-	 * of list)
-	 * @param int		$limit					 Maximum number of terms to return (-1 for no
-	 * limit)
-	 * @param bool	 $returnSolrError Should we fail outright on syntax error
-	 * (false) or treat it as an empty result set with an error key set (true)?
-	 *
-	 * @return array									Associative array parsed from Solr JSON
-	 * response; meat of the response is in the ['terms'] element, which contains
-	 * an index named for the requested term, which in turn contains an associative
-	 * array of term => count in index.
-	 * @access public
-	 */
-	public function getTerms($field, $start, $limit, $returnSolrError = false)
-	{
-		$this->pingServer();
-		$this->client->setMethod('GET');
-		$this->client->setURL($this->host . '/term');
-
-		$this->client->addQueryString('terms', 'true');
-		$this->client->addQueryString('terms.fl', $field);
-		$this->client->addQueryString('terms.lower.incl', 'false');
-		$this->client->addQueryString('terms.lower', $start);
-		$this->client->addQueryString('terms.limit', $limit);
-		$this->client->addQueryString('terms.sort', 'index');
-		$this->client->addQueryString('wt', 'json');
-
-		$result = $this->client->sendRequest();
-
-		if (!($result instanceof AspenError)) {
-			// Process the JSON response:
-			$data = $this->_process(
-			$this->client->getResponseBody(), $returnSolrError
-			);
-
-			// Tidy the data into a more usable format:
-			if (isset($data['terms'])) {
-				$data['terms'] = array(
-				$data['terms'][0] => $this->_processTerms($data['terms'][1])
-				);
-			}
-			return $data;
-		} else {
-			return $result;
-		}
 	}
 
 	public function setSearchSource($searchSource){

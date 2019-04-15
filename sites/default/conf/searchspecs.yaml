@@ -15,7 +15,7 @@
 #    # QueryFields define the fields we are searching
 #    QueryFields:
 #      - SolrField:
-#        - [howToMungeSearchstring, weight]
+#        - [howToMungeSearchString, weight]
 #        - [differentMunge, weight]
 #      - DifferentSolrField:
 #        - [howToMunge, weight]
@@ -218,15 +218,15 @@ Title:
         - [and, 100]
       - title_new:
         - [and, 50]
-    series_proper:
+    - series_proper:
       - [exact, 800]
       - [onephrase, 300]
       - [and, 50]
-    series:
+    - series:
       - [exact, 600]
       - [onephrase, 200]
       - [and, 50]
-    series2:
+    - series2:
       - [and, 30]
 
 TitleProper:
@@ -368,47 +368,47 @@ KeywordProper:
       - [localized_callnumber, 2200]
     - author_left:
       - [localized_callnumber, 1000]
-    title_proper:
+    - title_proper:
       - [onephrase, 850]
-    series_proper:
+    - series_proper:
       - [onephrase, 50]
-    auth_author:
+    - auth_author:
       - [onephrase, 300]
-    auth_author2:
+    - auth_author2:
       - [onephrase, 300]
-    table_of_contents_proper:
+    - table_of_contents_proper:
       - [onephrase, 10]
-    topic_proper:
+    - topic_proper:
       - [onephrase, 500]
-    geographic_proper:
+    - geographic_proper:
       - [onephrase, 300]
-    genre_proper:
+    - genre_proper:
       - [onephrase, 300]
-    keywords_proper:
+    - keywords_proper:
       - [and, ~]
-    issn:
+    - issn:
       - [and, 100]
       - [or, ~]
-    isbn:
+    - isbn:
       - [and, 100]
       - [or, ~]
-    upc:
+    - upc:
       - [and, 100]
       - [or, ~]      
-    oclc:
+    - oclc:
       - [and, 100]
       - [or, ~]
-    callnumber-subject:
+    - callnumber-subject:
       - [onephrase, ~]
-    id:
+    - id:
       - [onephrase, ~]
-    alternate_ids:
+    - alternate_ids:
       - [onephrase, ~]
-    local_callnumber_exact:
+    - local_callnumber_exact:
       - [localized_callnumber, 800]
-    local_callnumber_left:
+    - local_callnumber_left:
       - [localized_callnumber, 300]
-    barcode:
+    - barcode:
       - [onephrase, ~]
 
 id:
@@ -424,28 +424,7 @@ ids:
   QueryFields:
     - id:
       - [or, ~]
-    -alternate_ids:
-      - [onephrase, ~]
-      - [or, ~]
-
-TopicBrowse:
-  QueryFields:
-    - topic_browse:
-      - [onephrase, ~]
-
-AuthorBrowse:
-  QueryFields:
-    - author_browse:
-      - [onephrase, ~]
-
-TitleBrowse:
-  QueryFields:
-    - title_full:
-      - [onephrase, ~]
-
-DeweyBrowse:
-  QueryFields:
-    - dewey-raw:
+    - alternate_ids:
       - [onephrase, ~]
 
 LocalCallNumber:
@@ -456,11 +435,6 @@ LocalCallNumber:
       - [localized_callnumber, 300]
     - local_callnumber:
       - [exact, ~]
-
-callnumber_browse:
-  QueryFields:
-    - callnumber_browse:
-      - [onephrase, ~]
 
 publisher:
   QueryFields:
@@ -506,13 +480,6 @@ genre:
 era:
   QueryFields:
     - era:
-      - [and, ~]
-      
-econtentText:
-  QueryFields:
-    - econtentText:
-      - [onephrase, 500]
-      - [and, 100]
 
 GenealogyKeyword:
   QueryFields:
@@ -852,32 +819,32 @@ IslandoraRelationshipsById:
 OpenArchivesKeyword:
   QueryFields:
     - title:
-        - [exact, 1000]
-        - [and, 250]
-        - [or, ~]
+      - [exact, 1000]
+      - [and, 250]
+      - [or, ~]
     - subject:
-        - [exact, 600]
-        - [and, 250]
-        - [or, ~]
+      - [exact, 600]
+      - [and, 250]
+      - [or, ~]
     - creator:
-        - [exact, 600]
-        - [and, 250]
-        - [or, ~]
+      - [exact, 600]
+      - [and, 250]
+      - [or, ~]
     - description:
-        - [exact, 500]
-        - [and, 125]
-        - [or, ~]
+      - [exact, 500]
+      - [and, 125]
+      - [or, ~]
 
 OpenArchivesTitle:
   QueryFields:
     - title:
-        - [exact, 1000]
-        - [and, 250]
-        - [or, ~]
+      - [exact, 1000]
+      - [and, 250]
+      - [or, ~]
 
 OpenArchivesSubject:
   QueryFields:
     - subject:
-        - [exact, 600]
-        - [and, 250]
-        - [or, ~]
+      - [exact, 600]
+      - [and, 250]
+      - [or, ~]
