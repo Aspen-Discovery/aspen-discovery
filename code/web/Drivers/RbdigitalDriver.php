@@ -79,6 +79,9 @@ class RbdigitalDriver extends AbstractEContentDriver
                 $checkout['canRenew'] = $patronCheckout->canRenew;
                 $checkout['hasDrm'] = $patronCheckout->hasDrm;
                 $checkout['downloadUrl'] = $patronCheckout->downloadUrl;
+                if (strlen($checkout['downloadUrl']) == 0){
+                    $checkout['output'] = $patronCheckout->output;
+                }
 
                 if ($checkout['id'] && strlen($checkout['id']) > 0){
                     require_once ROOT_DIR . '/RecordDrivers/RbdigitalRecordDriver.php';
@@ -168,9 +171,10 @@ class RbdigitalDriver extends AbstractEContentDriver
         if ($response == false){
             $result['message'] = "Invalid information returned from API, please retry your action after a few minutes.";
         }else{
-            if (!empty($response->message) && $response->message == 'success') {
+            if (!empty($response->authStatus) && $response->authStatus == 'Success') {
+                $user->rbdigitalId = $response->patron->patronId;
                 $result['success'] = true;
-                $result['message'] = "Your hold was cancelled successfully.";
+                $result['message'] = "Your have been registered successfully.";
             } else {
                 $result['message'] = $response->message;
             }

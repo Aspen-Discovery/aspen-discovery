@@ -93,7 +93,7 @@
 				<div class="col-xs-9 col-sm-8 col-md-4 col-lg-3">
 					<div class="btn-group btn-group-vertical btn-block">
 						{if $record.downloadUrl}
-						<a href="{$record.downloadUrl}" target="_blank" {*onclick="alert('Dummy button');return false"*} class="btn btn-sm btn-primary">Access&nbsp;Online</a>
+							<a href="{$record.downloadUrl}" target="_blank" {*onclick="alert('Dummy button');return false"*} class="btn btn-sm btn-primary">Download</a>
 						{/if}
 						{if $record.canRenew}
 							<a href="#" onclick="return VuFind.Rbdigital.renewCheckout('{$record.userId}', '{$record.recordId}');" class="btn btn-sm btn-info">Renew Checkout</a>
