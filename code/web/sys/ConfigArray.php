@@ -1,22 +1,4 @@
 <?php
-/**
- *
- * Copyright (C) Villanova University 2009.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2,
- * as published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- */
 
 /**
  * Support function -- get the file path to one of the ini files specified in the
@@ -35,15 +17,15 @@ function getExtraConfigArrayFile($name)
 
 	//Check to see if there is a domain name based subfolder for he configuration
 	global $serverName;
-	if (file_exists("../../sites/$serverName/conf/$filename")){
+	if (file_exists(ROOT_DIR . "/../../sites/$serverName/conf/$filename")){
 		// Return the file path (note that all ini files are in the conf/ directory)
-		return "../../sites/$serverName/conf/$filename";
-	}elseif (file_exists("../../sites/default/conf/$filename")){
+		return ROOT_DIR . "/../../sites/$serverName/conf/$filename";
+	}elseif (file_exists(ROOT_DIR . "/../../sites/default/conf/$filename")){
 		// Return the file path (note that all ini files are in the conf/ directory)
-		return "../../sites/default/conf/$filename";
+		return ROOT_DIR . "/../../sites/default/conf/$filename";
 	} else{
 		// Return the file path (note that all ini files are in the conf/ directory)
-		return '../../sites/' . $filename;
+		return ROOT_DIR . '/../../sites/' . $filename;
 	}
 
 }
@@ -173,16 +155,26 @@ function ini_merge($config_ini, $custom_ini)
 function readConfig()
 {
     //Read default configuration file
-    $configFile = '../../sites/default/conf/config.ini';
+    $configFile = ROOT_DIR . '/../../sites/default/conf/config.ini';
     $mainArray = parse_ini_file($configFile, true);
 
     global $fullServerName, $serverName, $instanceName;
 
     if (isset($_SERVER['aspen_server'])) {
+        //Override withing the config file
         $fullServerName = $_SERVER['aspen_server'];
         //echo("Server name is set as server var $serverUrl\r\n");
     } else {
-        $fullServerName = $_SERVER['SERVER_NAME'];
+
+        if (isset($_SERVER['SERVER_NAME'])) {
+            //Run from browser
+            $fullServerName = $_SERVER['SERVER_NAME'];
+        }elseif (count($_SERVER['argv']) > 1) {
+            $fullServerName = $_SERVER['argv'][1];
+        }else{
+            die('No server name could be found to load configuration');
+        }
+
     }
 
 	$server = $fullServerName;
@@ -190,13 +182,13 @@ function readConfig()
 	$serverName = 'default';
 	while (count($serverParts) > 0){
 		$tmpServername = join('.', $serverParts);
-		$configFile = "../../sites/$tmpServername/conf/config.ini";
+		$configFile = ROOT_DIR . "/../../sites/$tmpServername/conf/config.ini";
 		if (file_exists($configFile)){
 			$serverArray = parse_ini_file($configFile, true);
 			$mainArray = ini_merge($mainArray, $serverArray);
 			$serverName = $tmpServername;
 
-			$passwordFile = "../../sites/$tmpServername/conf/config.pwd.ini";
+			$passwordFile = ROOT_DIR . "/../../sites/$tmpServername/conf/config.pwd.ini";
 			if (file_exists($passwordFile)){
 				$serverArray = parse_ini_file($passwordFile, true);
 				$mainArray = ini_merge($mainArray, $serverArray);
@@ -232,11 +224,13 @@ function readConfig()
 	//a valid SSL cert
 
 	//We no longer are doing proxies as described above so we can preserve SSL now.
-	if (isset($_SERVER['HTTPS'])){
-		$mainArray['Site']['url'] = "https://" . $_SERVER['SERVER_NAME'];
-	}else{
-		$mainArray['Site']['url'] = "http://" . $_SERVER['SERVER_NAME'];
-	}
+    if (isset($_SERVER['SERVER_NAME'])){
+        if (isset($_SERVER['HTTPS'])){
+            $mainArray['Site']['url'] = "https://" . $_SERVER['SERVER_NAME'];
+        }else{
+            $mainArray['Site']['url'] = "http://" . $_SERVER['SERVER_NAME'];
+        }
+    }
 
 	return $mainArray;
 }

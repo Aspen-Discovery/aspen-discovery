@@ -1,22 +1,4 @@
 <?php
-/**
- *
- * Copyright (C) Villanova University 2007.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2,
- * as published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- */
 
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/sys/Pager.php';
@@ -41,7 +23,7 @@ class ListAPI extends Action {
 				header('Content-type: text/plain');
 				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 				header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-				$output = json_encode(array('result'=>$this->$_REQUEST['method']()));
+				$output = json_encode(array('result'=>$this->$method()));
 
 				echo $output;
 			}
@@ -73,21 +55,30 @@ class ListAPI extends Action {
 	 * includes id, title, description, and number of titles
 	 */
 	function getPublicLists(){
+        /** @var PDO $aspen_db  */
+	    global $aspen_db;
 		$list = new UserList();
 		$list->public = 1;
 		$list->find();
 		$results = array();
 		if ($list->N > 0){
 			while ($list->fetch()){
-				$query = "SELECT count(groupedWorkPermanentId) as numTitles FROM user_list_entry where listId = " . $list->id;
-				$numTitleResults = mysql_query($query);
-				$numTitles = ($numTitleResults) ? mysql_fetch_assoc($numTitleResults): array('numTitles', -1);
+			    $query = "SELECT count(groupedWorkPermanentId) as numTitles FROM user_list_entry where listId = " . $list->id;
+				$stmt = $aspen_db->prepare($query);
+				$stmt->setFetchMode(PDO::FETCH_ASSOC);
+				$success = $stmt->execute();
+				if ($success) {
+				    $row = $stmt->fetch();
+				    $numTitles = $row['numTitles'];
+                } else {
+                    $numTitles = -1;
+                }
 
 				$results[] = array(
 				  'id' => $list->id,
           'title' => $list->title,
 				  'description' => $list->description,
-				  'numTitles' => $numTitles['numTitles'],
+				  'numTitles' => $numTitles,
 				);
 			}
 		}
@@ -191,7 +182,8 @@ class ListAPI extends Action {
 
 					$rssFeed .= '<item>';
 					$rssFeed .= '<id>' . $titleId . '</id>';
-					$rssFeed .= '<image>' . htmlspecialchars($image) . '</image>';
+                    /** @noinspection HtmlDeprecatedTag */
+                    $rssFeed .= '<image>' . htmlspecialchars($image) . '</image>';
 					$rssFeed .= '<title>' . htmlspecialchars($bookTitle) . '</title>';
 					$rssFeed .= '<author>' . htmlspecialchars($author) . '</author>';
 					$itemLink = htmlspecialchars($configArray['Site']['url'] . '/Record/' . $titleId);
@@ -227,130 +219,22 @@ class ListAPI extends Action {
 		//System lists are not stored in tables, but are generated based on
 		//a variety of factors.
 		$systemLists[] = array(
-      'id' => 'newfic',
-		  'title' => 'New Fiction',
-		  'description' => 'A selection of New Fiction Titles that have arrived recently or are on order.',
-		  'numTitles' => 30,
+            'id' => 'recentlyReviewed',
+            'title' => 'Recently Reviewed',
+            'description' => 'Titles that have had new reviews added to them.',
+            'numTitles' => 30,
 		);
 		$systemLists[] = array(
-      'id' => 'newnonfic',
-      'title' => 'New Non-Fiction',
-      'description' => 'A selection of New Non-Fiction Titles that have arrived recently or are on order.',
-      'numTitles' => 30,
+            'id' => 'highestRated',
+            'title' => 'Highly Rated',
+            'description' => 'Titles that have the highest ratings within the catalog.',
+            'numTitles' => 30,
 		);
 		$systemLists[] = array(
-      'id' => 'newdvd',
-      'title' => 'New DVDs',
-      'description' => 'A selection of New DVDs that have arrived recently or are on order.',
-      'numTitles' => 30,
-		);
-		$systemLists[] = array(
-      'id' => 'newmyst',
-      'title' => 'New Mysteries',
-      'description' => 'A selection of New Mystery Books that have arrived recently or are on order.',
-      'numTitles' => 30,
-		);
-		$systemLists[] = array(
-      'id' => 'newaudio',
-      'title' => 'New Audio',
-      'description' => 'A selection of New Audio Books that have arrived recently or are on order.',
-      'numTitles' => 30,
-		);
-		$systemLists[] = array(
-      'id' => 'newya',
-      'title' => 'New Young Adult',
-      'description' => 'A selection of New Titles appropriate for Young Adult that have arrived recently or are on order.',
-      'numTitles' => 30,
-		);
-		$systemLists[] = array(
-      'id' => 'newkids',
-      'title' => 'New Kids',
-      'description' => 'A selection of New Titles appropriate for children that have arrived recently or are on order.',
-      'numTitles' => 30,
-		);
-		$systemLists[] = array(
-      'id' => 'newEpub',
-      'title' => 'New Online Books',
-      'description' => 'The most recently added online books in the catalog.',
-      'numTitles' => 30,
-		);
-		$systemLists[] = array(
-      'id' => 'newebooks',
-      'title' => 'New eBooks',
-      'description' => 'The most recently added online books in the catalog.',
-      'numTitles' => 30,
-		);
-		$systemLists[] = array(
-      'id' => 'comingsoonfic',
-      'title' => 'Coming Soon Fiction',
-      'description' => 'A selection of Fiction Titles that are on order and due in soon.',
-      'numTitles' => 30,
-		);
-		$systemLists[] = array(
-      'id' => 'comingsoonnonfic',
-      'title' => 'Coming Soon Non-Fiction',
-      'description' => 'A selection of Non-Fiction Titles that are on order and due in soon.',
-      'numTitles' => 30,
-		);
-		$systemLists[] = array(
-      'id' => 'comingsoondvd',
-      'title' => 'Coming Soon DVDs',
-      'description' => 'A selection of DVDs that are on order and due in soon.',
-      'numTitles' => 30,
-		);
-		$systemLists[] = array(
-      'id' => 'comingsoonkids',
-      'title' => 'Coming Soon Kids',
-      'description' => 'A selection of Kids Titles that are on order and due in soon.',
-      'numTitles' => 30,
-		);
-		$systemLists[] = array(
-      'id' => 'comingsoonya',
-      'title' => 'Coming Soon Young Adult',
-      'description' => 'A selection of Young Adult Titles that are on order and due in soon.',
-      'numTitles' => 30,
-		);
-		$systemLists[] = array(
-      'id' => 'comingsoonmusic',
-      'title' => 'Coming Soon Music',
-      'description' => 'A selection of Music Tiles that are on order and due in soon.',
-      'numTitles' => 30,
-		);
-		/*$systemLists[] = array(
-		 'id' => 'popularEpub',
-		 'title' => 'Popular Online Books',
-		 'description' => 'The most popular books that are available to read online.',
-		 'numTitles' => 30,
-		 );
-		 $systemLists[] = array(
-		 'id' => 'availableEpub',
-		 'title' => 'Available Online Books',
-		 'description' => 'Online books that can be read immediately.',
-		 'numTitles' => 30,
-		 );
-		 $systemLists[] = array(
-		 'id' => 'recommendedEpub',
-		 'title' => 'Recommended Online Books',
-		 'description' => 'Online books that you may like based on your ratings and reading history.',
-		 'numTitles' => 30,
-		 );*/
-		$systemLists[] = array(
-      'id' => 'recentlyReviewed',
-      'title' => 'Recently Reviewed',
-      'description' => 'Titles that have had new reviews added to them.',
-      'numTitles' => 30,
-		);
-		$systemLists[] = array(
-      'id' => 'highestRated',
-      'title' => 'Highly Rated',
-      'description' => 'Titles that have the highest ratings within the catalog.',
-      'numTitles' => 30,
-		);
-		$systemLists[] = array(
-      'id' => 'mostPopular',
-      'title' => 'Most Popular Titles',
-      'description' => 'Most Popular titles based on checkout history.',
-      'numTitles' => 30,
+            'id' => 'mostPopular',
+            'title' => 'Most Popular Titles',
+            'description' => 'Most Popular titles based on checkout history.',
+            'numTitles' => 30,
 		);
 		$systemLists[] = array(
 			'id' => 'recommendations',
@@ -913,11 +797,6 @@ class ListAPI extends Action {
 			$selectedList = $_REQUEST['listToUpdate'];
 		}
 
-		$results = array(
-				'success' => false,
-				'message' => 'Unknown error'
-		);
-
 		if (!isset($configArray['NYT_API']) || !isset($configArray['NYT_API']['books_API_key']) || strlen($configArray['NYT_API']['books_API_key']) == 0){
 			return array(
 				'success' => false,
@@ -925,23 +804,16 @@ class ListAPI extends Action {
 			);
 		}
 		$api_key      = $configArray['NYT_API']['books_API_key'];
-		$pikaUsername = $configArray['NYT_API']['pika_username'];
-		$pikaPassword = $configArray['NYT_API']['pika_password'];
 
-		if (empty($pikaUsername) || empty($pikaPassword)) {
-			return  array(
-				'success' => false,
-				'message' => 'Pika NY Times user not set'
-			);
-		}
-
-		$pikaUser = UserAccount::validateAccount($pikaUsername, $pikaPassword);
-		if (!$pikaUser || ($pikaUser instanceof AspenError)) {
-			return array(
-				'success' => false,
-				'message' => 'Invalid Pika NY Times user'
-			);
-		}
+        //Get the user to attach the list to
+        $nytListUser = new User();
+        $nytListUser->username = 'nyt_user';
+        if (!$nytListUser->find(true)){
+            return  array(
+                'success' => false,
+                'message' => 'NY Times user has not been created'
+            );
+        }
 
 		//Get the raw response from the API with a list of all the names
 		require_once ROOT_DIR . '/sys/NYTApi.php';
@@ -953,8 +825,9 @@ class ListAPI extends Action {
 		//Get the human readable title for our selected list
 		$selectedListTitle = null;
 		$selectedListTitleShort = null;
+		$allLists = $availableLists->results;
 		//Get the title and description for the selected list
-		foreach ($availableLists->results as $listInformation){
+		foreach ($allLists as $listInformation){
 			if ($listInformation->list_name_encoded == $selectedList){
 				$selectedListTitle = 'NYT - ' . $listInformation->display_name;
 				$selectedListTitleShort = $listInformation->display_name;
@@ -969,26 +842,26 @@ class ListAPI extends Action {
 		}
 
 		//Get a list of titles from NYT API
-		$availableListsRaw = $nyt_api->get_list($selectedList);
-		$availableLists = json_decode($availableListsRaw);
+		$listTitlesRaw = $nyt_api->get_list($selectedList);
+		$listTitles = json_decode($listTitlesRaw);
 		//TODO: error handling for this call
 
 
 		// Look for selected List
 		require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
 		$nytList = new UserList();
-		$nytList->user_id = $pikaUser->id;
+		$nytList->user_id = $nytListUser->id;
 		$nytList->title = $selectedListTitle;
-		$listExistsInPika = $nytList->find(1);
+		$listExistsInAspen = $nytList->find(1);
 
 		//We didn't find the list in Pika, create one
-		if (!$listExistsInPika) {
+		if (!$listExistsInAspen) {
 			$nytList = new UserList();
 			$nytList->title       = $selectedListTitle;
 			$nytList->description = "New York Times - " . $selectedListTitleShort; //TODO: Add update date to list description
 			$nytList->public      = 1;
 			$nytList->defaultSort = 'custom';
-			$nytList->user_id     = $pikaUser->id;
+			$nytList->user_id     = $nytListUser->id;
 			$success = $nytList->insert();
 			$nytList->find(true);
 
@@ -1023,8 +896,8 @@ class ListAPI extends Action {
 		require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
 
 		$numTitlesAdded = 0;
-		foreach ($availableLists->results as $titleResult) {
-			$pikaID = null;
+		foreach ($listTitles->results as $titleResult) {
+            $aspenID = null;
 			// go through each list item
 			if (!empty($titleResult->isbns)) {
 				foreach ($titleResult->isbns as $isbns) {
@@ -1042,19 +915,19 @@ class ListAPI extends Action {
 							$recordSet = $searchObject->getResultRecordSet();
 							foreach($recordSet as $recordKey => $record){
 								if (!empty($record['id'])) {
-									$pikaID = $record['id'];
+									$aspenID = $record['id'];
 									break;
 								}
 							}
 						}
 					}
-					//break if we found a pika id for the title
-					if ($pikaID != null) {
+					//break if we found a aspen id for the title
+					if ($aspenID != null) {
 						break;
 					}
 				}
 			}//Done checking ISBNs
-			if ($pikaID != null) {
+			if ($aspenID != null) {
 				$note = "#{$titleResult->rank} on the {$titleResult->display_name} list for {$titleResult->published_date}.";
 				if ($titleResult->rank_last_week != 0) {
 					$note .= '  Last week it was ranked ' . $titleResult->rank_last_week . '.';
@@ -1065,7 +938,7 @@ class ListAPI extends Action {
 
 				$userListEntry = new UserListEntry();
 				$userListEntry->listId = $nytList->id;
-				$userListEntry->groupedWorkPermanentId = $pikaID;
+				$userListEntry->groupedWorkPermanentId = $aspenID;
 
 				$existingEntry = false;
 				if ($userListEntry->find(true)){
@@ -1089,7 +962,7 @@ class ListAPI extends Action {
 
 		if ($results['success']) {
 			$results['message'] .= "<br/> Added $numTitlesAdded Titles to the list";
-			if ($listExistsInPika) {
+			if ($listExistsInAspen) {
 				$nytList->update(); // set a new update time on the main list when it already exists
 			}
 		}

@@ -1,9 +1,4 @@
 <?php
-/**
- * Aspen Discovery Layer
- * Created By: Mark Noble
- * Created On: 1/23/2019
- */
 
 abstract class DataObject
 {

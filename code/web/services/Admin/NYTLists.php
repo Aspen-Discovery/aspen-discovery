@@ -48,8 +48,7 @@ class NYTLists extends Admin_Admin {
 
 			// Get user id
 			$nyTimesUser = new User();
-			$nyTimesUser->cat_username = $configArray['NYT_API']['pika_username'];
-			$nyTimesUser->cat_password = $configArray['NYT_API']['pika_password'];
+			$nyTimesUser->username = 'nyt_user';
 			if ($nyTimesUser->find(1)) {
 				// Get User Lists
 				$nyTimesUserLists          = new UserList();

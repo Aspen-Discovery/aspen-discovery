@@ -16,7 +16,7 @@
 		<!-- Give the user a list of all available lists from NYT -->
 		<select name="selectedList" id="selectedList" class="form-control">
 		{foreach from=$availableLists->results item="listInfo"}
-			<option value="{$listInfo->list_name_encoded}" {if $selectedListName == $listInfo->list_name_encoded}selected="selected"{/if}>{$listInfo->display_name} (Published {$listInfo->newest_published_date|date_format})</option>
+			<option value="{$listInfo->list_name_encoded}" {if !empty($selectedListName) && ($selectedListName == $listInfo->list_name_encoded)}selected="selected"{/if}>{$listInfo->display_name} (Published {$listInfo->newest_published_date|date_format})</option>
 		{/foreach}
 		</select>
 		</div>

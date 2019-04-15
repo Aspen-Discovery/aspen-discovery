@@ -140,7 +140,7 @@ class MyAccount_MyList extends MyAccount {
 		} elseif ($list->user_id != 0){
 			$listUser = new User();
 			$listUser->id = $list->user_id;
-			if (!$listUser->fetch(true)){
+			if (!$listUser->find(true)){
 				$listUser = false;
 			}
 		}else{
@@ -153,9 +153,7 @@ class MyAccount_MyList extends MyAccount {
 		$favList = new FavoriteHandler($list, $listUser, $userCanEdit);
 		$favList->buildListForDisplay();
 
-//		$this->display('list.tpl', isset($list->title) ? $list->title : 'My List');
 		$this->display('../MyAccount/list.tpl', isset($list->title) ? $list->title : 'My List');
-		// this template path is used when an Archive object is in the list; TODO: Need to verify this works when the list is only catalog items
 	}
 
 	function bulkAddTitles($list){

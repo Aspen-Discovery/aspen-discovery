@@ -211,16 +211,12 @@ class UserList extends DataObject
 	 * @return UserListEntry|bool
 	 */
 	function cleanListEntry($listEntry){
-		// Connect to Database
-		$this->catalog = CatalogFactory::getCatalogConnectionInstance();
-
 		//Filter list information for bad words as needed.
 		if (!UserAccount::isLoggedIn() || $this->user_id != UserAccount::getActiveUserId()){
 			//Load all bad words.
 			global $library;
 			require_once ROOT_DIR . '/Drivers/marmot_inc/BadWord.php';
 			$badWords = new BadWord();
-//			$badWordsList = $badWords->getBadWordExpressions();
 
 			//Determine if we should censor bad words or hide the comment completely.
 			$censorWords = true;
@@ -235,7 +231,6 @@ class UserList extends DataObject
 				$this->description = $descriptionText;
 
 				//Filter notes
-				// TODO: possible problem: $notesText overwrites the above description?
 				$notesText = $badWords->censorBadWords($listEntry->notes);
 				$listEntry->notes = $notesText;
 			}else{

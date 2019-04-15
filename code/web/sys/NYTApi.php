@@ -13,6 +13,8 @@ class NYTApi {
 	const BASE_URI = 'http://api.nytimes.com/svc/books/v2/lists/';
 	protected $api_key;
 
+	static $allListsInfo = null;
+
 	public function __construct($key) {
 		$this->api_key = $key;
 	}
@@ -24,6 +26,9 @@ class NYTApi {
 	}
 
 	public function get_list($list_name) {
+	    if ($list_name == 'names' && isset(NYTApi::$allListsInfo)) {
+	        return NYTApi::$allListsInfo;
+        }
 		$url = $this->build_url($list_name);
 		/*
 		// super fast and easy way, but not as many options
@@ -49,7 +54,12 @@ class NYTApi {
 		$response = curl_exec($curl);
 		// Close request to clear up some resources
 		curl_close($curl);
-		// return respone
+
+        if ($list_name == 'names' && !isset(NYTApi::$allListsInfo)) {
+            NYTApi::$allListsInfo = $response;
+        }
+
+		// return response
 		return $response;
 	}
 
