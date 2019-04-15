@@ -479,6 +479,7 @@ class Yaml
         }
         return true;
     }
+
     private function addArray ($incoming_data, $incoming_indent)
     {
         if (count ($incoming_data) > 1) {

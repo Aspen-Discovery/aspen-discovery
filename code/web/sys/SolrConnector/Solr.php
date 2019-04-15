@@ -53,7 +53,7 @@ class Solr {
 	/**
 	 * The path to the YAML file specifying available search types:
 	 */
-	protected $searchSpecsFile = ROOT_DIR . '/../../sites/default/conf/searchspecs.yaml';
+	protected $searchSpecsFile = ROOT_DIR . '/../../sites/default/conf/search_specs.yaml';
 
 	/**
 	 * An array of search specs pulled from $searchSpecsFile (above)
@@ -903,8 +903,9 @@ class Solr {
 		$groups	 = array();
 		$excludes = array();
 		$query = '';
-		if (is_array($search)) {
 
+		if (is_array($search)) {
+            $lookfor = '';
 			foreach ($search as $params) {
 				//Check to see if need to break up a basic search into an advanced search
 				$modifiedQuery = false;
@@ -966,15 +967,7 @@ class Solr {
 								$query .= $this->_buildQueryComponent($params['field'], $lookfor);
 							}
 						} else {
-							/*if ($forDisplay &&
-									isset($params['index']) &&
-									$params['index'] != 'Keyword' &&
-									!strpos($lookfor, $params['index']) === 0) {
-
-								$query = $params['index'] . ':' . $lookfor;
-							} else {*/
-								$query .= $lookfor;
-							//}
+                            $query .= $lookfor;
 						}
 					}
 				}
@@ -1188,7 +1181,7 @@ class Solr {
 			$options['fl'] = $options['fl'] . ',explain';
 		}
 
-		//Apply automatic boosting (only to biblio and econtent queries)
+		//Apply automatic boosting for grouped work queries
 		if (preg_match('/.*(grouped_works).*/i', $this->host)){
 			//unset($options['qt']); //Force the query to never use dismax handling
 			$searchLibrary = Library::getSearchLibrary($this->searchSource);
@@ -1819,7 +1812,7 @@ class Solr {
 			$errorMsg = substr($result, strpos($result, '<pre>'));
 			$errorMsg = substr($errorMsg, strlen('<pre>'), strpos($result, "</pre>"));
 			if ($returnSolrError) {
-				return array('response' => array('numfound' => 0, 'docs' => array()),
+				return array('response' => array('numFound' => 0, 'docs' => array()),
 										'error' => $errorMsg);
 			} else {
 				if ($this->debug){
@@ -1857,11 +1850,11 @@ class Solr {
 	/**
 	 * Input Tokenizer
 	 *
-	 * Tokenizes the user input based on spaces and quotes.	Then joins phrases
+	 * Tokenize the user input based on spaces and quotes.	Then joins phrases
 	 * together that have an AND, OR, NOT present.
 	 *
 	 * @param	 string	$input			User's input string
-	 * @return	array							 Tokenized array
+	 * @return	array					Tokenized array
 	 * @access	public
 	 */
 	public function tokenizeInput($input)
@@ -1892,7 +1885,7 @@ class Solr {
 	}
 
 	/**
-	 * Input Validater
+	 * Input Validator
 	 *
 	 * Cleans the input based on the Lucene Syntax rules.
 	 *
@@ -1933,7 +1926,7 @@ class Solr {
 				return 'not';
 		}
 
-		// If the string consists only of control characters and/or BOOLEANs with no
+		// If the string consists only of control characters and/or BOOLEAN operators with no
 		// other input, wipe it out entirely to prevent weird errors:
 		$operators = array('AND', 'OR', 'NOT', '+', '-', '"', '&', '|');
 		if (trim(str_replace($operators, '', $input)) == '') {
@@ -2104,7 +2097,8 @@ class Solr {
 			$schema = simplexml_load_file($schemaUrl);
 			$fields = array();
 			/** @var SimpleXMLElement $field */
-			foreach ($schema->fields->dynamicField as $field){
+            /** @noinspection PhpUndefinedFieldInspection */
+            foreach ($schema->fields->dynamicField as $field){
 				$fields[] = substr((string)$field['name'], 0, -1);
 			}
 			$memCache->set("schema_dynamic_fields_$solrScope", $fields, 0, 24 * 60 * 60);
@@ -2129,11 +2123,13 @@ class Solr {
             }
 			$fields = array();
 			/** @var SimpleXMLElement $field */
+            /** @noinspection PhpUndefinedFieldInspection */
 			foreach ($schema->fields->field as $field){
 				//print_r($field);
 				$fields[] = (string)$field['name'];
 			}
 			if ($solrScope){
+                /** @noinspection PhpUndefinedFieldInspection */
 				foreach ($schema->fields->dynamicField as $field){
 					$fields[] = substr((string)$field['name'], 0, -1) . $solrScope ;
 				}

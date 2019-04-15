@@ -8,6 +8,7 @@ class HTTP_Request
     private $responseBody;
     private $responseInfo;
     private $body;
+    private $headers = [];
 
     public function __construct($url = null, $method = 'GET'){
         $this->url = $url;
@@ -35,7 +36,7 @@ class HTTP_Request
         $this->body = $body;
     }
 
-    public function sendRequest($saveBody = null)
+    public function sendRequest()
     {
         if (!isset($this->url)) {
             return new AspenError('URL was not set');
@@ -65,6 +66,9 @@ class HTTP_Request
         $curl = curl_init();
         // Set curl options
         curl_setopt_array($curl, $curl_opts);
+        if (count($this->headers) > 0) {
+            curl_setopt($curl, CURLOPT_HTTPHEADER, $this->headers);
+        }
         // Send the request & save response to $response
         $response = curl_exec($curl);
         if ($response == true) {
@@ -90,5 +94,10 @@ class HTTP_Request
     }
     public function getResponseCode(){
         return $this->responseInfo['http_code'];
+    }
+
+    public function addHeader(string $key, string $value)
+    {
+        $this->headers[] = $key . ': ' . $value;
     }
 }
