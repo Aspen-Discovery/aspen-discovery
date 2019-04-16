@@ -551,6 +551,9 @@ class User extends DataObject
 
 
 	function update(){
+        if (empty($this->created)){
+            $this->created = date('Y-m-d');
+        }
 		$result = parent::update();
 		$this->saveRoles();
 		$this->clearCache(); // Every update to object requires clearing the Memcached version of the object
@@ -568,6 +571,9 @@ class User extends DataObject
 		if (!isset($this->myLocation2Id)) $this->myLocation2Id = 0;
 		if (!isset($this->bypassAutoLogout)) $this->bypassAutoLogout = 0;
 
+		if (empty($this->created)){
+            $this->created = date('Y-m-d');
+        }
 		parent::insert();
 		$this->saveRoles();
 		$this->clearCache();

@@ -133,6 +133,8 @@ class RbdigitalDriver extends AbstractEContentDriver
             $response = json_decode($rawResponse);
             if ($response == false){
                 $result['message'] = "Invalid information returned from API, please retry your checkout after a few minutes.";
+                global $logger;
+                $logger->log("Invalid information from rbdigital api " . $rawResponse, Logger::LOG_ERROR);
             }else{
                 if (!empty($response->output) && $response->output == 'SUCCESS') {
                     $result['success'] = true;
@@ -170,6 +172,8 @@ class RbdigitalDriver extends AbstractEContentDriver
         $response = json_decode($rawResponse);
         if ($response == false){
             $result['message'] = "Invalid information returned from API, please retry your action after a few minutes.";
+            global $logger;
+            $logger->log("Invalid information from rbdigital api " . $rawResponse, Logger::LOG_ERROR);
         }else{
             if (!empty($response->authStatus) && $response->authStatus == 'Success') {
                 $user->rbdigitalId = $response->patron->patronId;
@@ -231,6 +235,8 @@ class RbdigitalDriver extends AbstractEContentDriver
             $response = json_decode($rawResponse);
             if ($response == false){
                 $result['message'] = "Invalid information returned from API, please retry your action after a few minutes.";
+                global $logger;
+                $logger->log("Invalid information from rbdigital api " . $rawResponse, Logger::LOG_ERROR);
             }else{
                 if (!empty($response->output) && $response->output == 'success') {
                     $result['success'] = true;
@@ -264,6 +270,8 @@ class RbdigitalDriver extends AbstractEContentDriver
             $response = json_decode($rawResponse);
             if ($response == false){
                 $result['message'] = "Invalid information returned from API, please retry your action after a few minutes.";
+                global $logger;
+                $logger->log("Invalid information from rbdigital api " . $rawResponse, Logger::LOG_ERROR);
             }else{
                 if (!empty($response->message) && $response->message == 'success') {
                     $result['success'] = true;
@@ -361,6 +369,8 @@ class RbdigitalDriver extends AbstractEContentDriver
             $response = json_decode($rawResponse);
             if ($response == false){
                 $result['message'] = "Invalid information returned from API, please retry your hold after a few minutes.";
+                global $logger;
+                $logger->log("Invalid information from rbdigital api " . $rawResponse, Logger::LOG_ERROR);
             }else{
                 if (is_numeric($response)) {
                     $result['success'] = true;
@@ -393,6 +403,8 @@ class RbdigitalDriver extends AbstractEContentDriver
             $response = json_decode($rawResponse);
             if ($response == false){
                 $result['message'] = "Invalid information returned from API, please retry your action after a few minutes.";
+                global $logger;
+                $logger->log("Invalid information from rbdigital api " . $rawResponse, Logger::LOG_ERROR);
             }else{
                 if (!empty($response->message) && $response->message == 'success') {
                     $result['success'] = true;

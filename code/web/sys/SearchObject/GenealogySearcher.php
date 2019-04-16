@@ -17,7 +17,7 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 	private $publicQuery = null;
 
 	// Facets information
-	private $allFacetSettings = array();    // loaded from facets.ini
+	protected $allFacetSettings = array();    // loaded from facets.ini
 
 	/**
 	 * Constructor. Initialise some details about the server
@@ -574,14 +574,18 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 		// If we have no facets to process, give up now
 		if (!isset($this->indexResult['facet_counts'])){
 			return $list;
-		}elseif (!is_array($this->indexResult['facet_counts']['facet_fields']) && !is_array($this->indexResult['facet_counts']['facet_dates'])) {
+		}elseif (empty($this->indexResult['facet_counts']['facet_fields']) && tmpty($this->indexResult['facet_counts']['facet_dates'])) {
 			return $list;
 		}
 
 		// Loop through every field returned by the result set
 		$validFields = array_keys($filter);
 
-		$allFacets = array_merge($this->indexResult['facet_counts']['facet_fields'], $this->indexResult['facet_counts']['facet_dates']);
+        if (isset($this->indexResult['facet_counts']['facet_dates'])){
+            $allFacets = array_merge($this->indexResult['facet_counts']['facet_fields'], $this->indexResult['facet_counts']['facet_dates']);
+        }else{
+            $allFacets = $this->indexResult['facet_counts']['facet_fields'];
+        }
 		foreach ($allFacets as $field => $data) {
 			// Skip filtered fields and empty arrays:
 			if (!in_array($field, $validFields) || count($data) < 1) {
@@ -765,7 +769,7 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 	{
 		$params = parent::getSearchParams();
 
-		$params[] = 'genealogyType=' . $_REQUEST['genealogyType'];
+		$params[] = 'searchIndex=' . $_REQUEST['searchIndex'];
 		$params[] = 'searchSource='  . $_REQUEST['searchSource'];
 
 		return $params;
@@ -782,5 +786,11 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
             "GenealogyKeyword" => "Keyword",
             "GenealogyName" => "Name"
         ];
+    }
+
+    public function getRecordDriverForResult($current)
+    {
+        require_once ROOT_DIR . '/RecordDrivers/PersonRecord.php';
+        return new PersonRecord($current);
     }
 }

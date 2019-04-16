@@ -585,10 +585,9 @@ class SearchAPI extends Action {
 	function getRecordIdForTitle(){
 		$title = strip_tags($_REQUEST['title']);
 		$_REQUEST['lookfor'] = $title;
-		$_REQUEST['type'] = 'Keyword';
+		$_REQUEST['searchIndex'] = 'Keyword';
 
 		global $interface;
-		global $configArray;
 		global $timer;
 
 		// Include Search Engine Class
@@ -631,18 +630,14 @@ class SearchAPI extends Action {
 	function getRecordIdForItemBarcode(){
 		$barcode = strip_tags($_REQUEST['barcode']);
 		$_REQUEST['lookfor'] = $barcode;
-		$_REQUEST['type'] = 'barcode';
+		$_REQUEST['searchIndex'] = 'barcode';
 
 		global $interface;
-		global $configArray;
 		global $timer;
 
 		// Include Search Engine Class
 		require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
 		$timer->logTime('Include search engine');
-
-		//setup the results array.
-		$jsonResults = array();
 
 		// Initialise from the current search globals
 		/** @var SearchObject_GroupedWorkSearcher $searchObject */
@@ -663,24 +658,22 @@ class SearchAPI extends Action {
 			AspenError::raiseError($result->getMessage());
 		}
 
-		if ($searchObject->getResultTotal() < 1){
-			return "";
-		}else{
+		if ($searchObject->getResultTotal() >= 1){
 			//Return the first result
 			$recordSet = $searchObject->getResultRecordSet();
 			foreach($recordSet as $recordKey => $record){
 				return $record['id'];
 			}
 		}
+		return "";
 	}
 
 	function getTitleInfoForISBN(){
 		$isbn = str_replace('-', '', strip_tags($_REQUEST['isbn']));
 		$_REQUEST['lookfor'] = $isbn;
-		$_REQUEST['type'] = 'ISN';
+		$_REQUEST['searchIndex'] = 'ISN';
 
 		global $interface;
-		global $configArray;
 		global $timer;
 
 		// Include Search Engine Class

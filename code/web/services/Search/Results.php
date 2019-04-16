@@ -1,22 +1,4 @@
 <?php
-/**
- *
- * Copyright (C) Andrew Nagy 2009
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2,
- * as published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- */
 
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/MyResearch/lib/Search.php';
@@ -178,7 +160,7 @@ class Search_Results extends Action {
 			exit;
 		}else if ($searchObject->getView() == 'excel'){
 			// Throw the Excel spreadsheet to screen for download
-			echo $searchObject->buildExcel();
+			$searchObject->buildExcel();
 			// And we're done
 			exit;
 		}
@@ -267,18 +249,12 @@ class Search_Results extends Action {
 		// Save the URL of this search to the session so we can return to it easily:
 		$_SESSION['lastSearchURL'] = $searchObject->renderSearchUrl();
 
-		$allSearchSources = SearchSources::getSearchSources();
-		if (!isset($allSearchSources[$searchSource]) && $searchSource == 'marmot'){
-			$searchSource = 'local';
-		}
-		$translatedSearch = $allSearchSources[$searchSource]['name'];
-
 		// No Results Actions //
 		if ($searchObject->getResultTotal() < 1) {
 			require_once ROOT_DIR . '/services/Search/lib/SearchSuggestions.php';
 			$searchSuggestions = new SearchSuggestions();
 
-			$commonSearches = $searchSuggestions->getSpellingSearches($searchObject->displayQuery(), $searchObject->getSearchIndex());
+			$commonSearches = $searchSuggestions->getSpellingSearches($searchObject->displayQuery());
 			$suggestions = array();
 			foreach ($commonSearches as $commonSearch){
 				$suggestions[$commonSearch['phrase']] = '/Search/Results?lookfor=' . urlencode($commonSearch['phrase']);
@@ -431,9 +407,6 @@ class Search_Results extends Action {
 				                 'perPage' => $summary['perPage']);
 				$pager   = new Pager($options);
 				$interface->assign('pageLinks', $pager->getLinks());
-				if ($pager->isLastPage()) {
-					$numUnscopedTitlesToLoad = 5;
-				}
 			}
 		}
 		$timer->logTime('finish hits processing');
@@ -442,7 +415,7 @@ class Search_Results extends Action {
 		$interface->assign('displayMode', $displayMode); // For user toggle switches
 
 		// Big one - our results //
-		$recordSet = $searchObject->getResultRecordHTML($displayMode);
+		$recordSet = $searchObject->getResultRecordHTML();
 		$interface->assign('recordSet', $recordSet);
 		$timer->logTime('load result records');
 		$memoryWatcher->logMemory('load result records');
@@ -461,7 +434,7 @@ class Search_Results extends Action {
 		if ($configArray['Statistics']['enabled'] && isset( $_GET['lookfor']) && !is_array($_GET['lookfor'])) {
 			require_once(ROOT_DIR . '/Drivers/marmot_inc/SearchStatNew.php');
 			$searchStat = new SearchStatNew();
-			$searchStat->saveSearch( strip_tags($_GET['lookfor']),  strip_tags(isset($_GET['type']) ? $_GET['type'] : (isset($_GET['basicType']) ? (is_array($_GET['basicType']) ? reset($_GET['basicType']) : $_GET['basicType']) : 'Keyword')), $searchObject->getResultTotal());
+			$searchStat->saveSearch( strip_tags($_GET['lookfor']),  strip_tags(isset($_GET['type']) ? $_GET['type'] : (isset($_GET['searchIndex']) ? (is_array($_GET['searchIndex']) ? reset($_GET['searchIndex']) : $_GET['searchIndex']) : 'Keyword')), $searchObject->getResultTotal());
 		}
 
 		$interface->assign('sectionLabel', 'Library Catalog');

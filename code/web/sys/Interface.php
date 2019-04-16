@@ -302,7 +302,6 @@ class UInterface extends Smarty
 
 		$this->lang = $lang;
 		$this->assign('userLang', $lang);
-		$this->assign('allLangs', $configArray['Languages']);
 	}
 	/**
 	 * executes & returns or displays the template results

@@ -16,8 +16,8 @@ class Union_CombinedResults extends Action{
 		}else{
 			$lookfor = '';
 		}
-		if (array_key_exists('basicType', $_REQUEST)){
-			$basicType = $_REQUEST['basicType'];
+		if (array_key_exists('searchIndex', $_REQUEST)){
+			$basicType = $_REQUEST['searchIndex'];
 		}else{
 			$basicType = 'Keyword';
 		}

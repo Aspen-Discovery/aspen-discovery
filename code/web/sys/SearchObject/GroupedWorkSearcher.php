@@ -434,9 +434,9 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 				// use $IDList as the order guide for the html
 				$current = &$nullHolder; // empty out in case we don't find the matching record
 				reset($this->indexResult['response']['docs']);
-				foreach ($this->indexResult['response']['docs'] as $index => $doc) {
+				foreach ($this->indexResult['response']['docs'] as $docIndex => $doc) {
 					if ($doc['id'] == $currentId) {
-						$current = & $this->indexResult['response']['docs'][$index];
+						$current = & $this->indexResult['response']['docs'][$docIndex];
 						break;
 					}
 				}
@@ -974,19 +974,14 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 					break;
 			}
 
-			if (isset($_REQUEST['basicType'])) {
-				if ($_REQUEST['basicType'] == 'AllFields'){
-					$_REQUEST['basicType'] = 'Keyword';
+			if (isset($_REQUEST['searchIndex'])) {
+				if ($_REQUEST['searchIndex'] == 'AllFields'){
+					$_REQUEST['searchIndex'] = 'Keyword';
 				}
-				if (is_array($_REQUEST['basicType'])){
-					$_REQUEST['basicType'] = reset($_REQUEST['basicType']);
+				if (is_array($_REQUEST['searchIndex'])){
+					$_REQUEST['searchIndex'] = reset($_REQUEST['searchIndex']);
 				}
-				$params[] = 'basicType=' . $_REQUEST['basicType'];
-			} else if (isset($_REQUEST['type'])) {
-				if ($_REQUEST['type'] == 'AllFields'){
-					$_REQUEST['type'] = 'Keyword';
-				}
-				$params[] = 'type=' . $_REQUEST['type'];
+				$params[] = 'searchIndex=' . $_REQUEST['searchIndex'];
 			}
 			$this->params = $params;
 		}

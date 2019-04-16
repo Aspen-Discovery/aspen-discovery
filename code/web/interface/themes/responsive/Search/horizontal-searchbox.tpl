@@ -3,11 +3,6 @@
 	<form method="get" action="{$path}/Union/Search" id="searchForm" class="form-inline" onsubmit="VuFind.Searches.processSearchForm();">
 
 		{* Hidden Inputs *}
-		{if $searchIndex == 'Keyword' || $searchIndex == '' || $searchIndex == 'GenealogyKeyword' || $searchIndex == 'OpenArchivesKeyword'}
-			<input type="hidden" name="basicType" id="basicType" value="">
-			<input type="hidden" name="genealogyType" id="genealogyType" value="">
-			<input type="hidden" name="oaType" id="oaType" value="">
-		{/if}
 		<input type="hidden" name="view" id="view" value="{$displayMode}">
 
 		{if isset($showCovers)}
@@ -26,24 +21,17 @@
 				<div class="col-lg-1 col-md-1 col-sm-2 col-xs-12">
 					<label id="horizontal-search-label" for="lookfor" class="">Search for </label>
 				</div>
-				<div class="
-				{if $hiddenSearchSource}
-				col-lg-9 col-md-9
-				{else}
-				col-lg-6 col-md-6
-				{/if} col-sm-10 col-xs-12">
+				<div class="{if $hiddenSearchSource}col-lg-9 col-md-9{else}col-lg-6 col-md-6{/if} col-sm-10 col-xs-12">
 					{* Main Search Term Box *}
 					<textarea class="form-control"{/strip}
 							          id="lookfor"
-							          placeholder="&#128269; SEARCH" {* disabled in css by default. plb 11-19-2014 *}
-							          type="search"
 							          name="lookfor"
-							          value=""
 							          title="Enter one or more terms to search for.	Surrounding a term with quotes will limit result to only those that exactly match the term."
 							          onkeyup="return VuFind.Searches.resetSearchType()"
 							          onfocus="$(this).select()"
 							          autocomplete="off"
 							          rows="1"
+							          aria-label="Search Terms"
 											{strip}>
 								{$lookfor|escape:"html"}
 								</textarea>
@@ -55,42 +43,37 @@
 				{else}
 				col-sm-3 col-sm-offset-4 col-xs-5 col-xs-offset-0
 				{/if}">
-					<select name="basicType" class="searchTypeHorizontal form-control catalogType" id="basicSearchTypes" title="Search by Keyword to find subjects, titles, authors, etc. Search by Title or Author for more precise results." {if $searchSource == 'genealogy'}style="display:none"{/if}>
+					<select name="searchIndex" class="searchTypeHorizontal form-control catalogType" id="searchIndex" title="Search by Keyword to find subjects, titles, authors, etc. Search by Title or Author for more precise results." {if $searchSource == 'genealogy'}style="display:none" aria-label="Search Index"{/if}>
 						{foreach from=$basicSearchTypes item=searchDesc key=searchVal}
-							<option value="{$searchVal}"{if $basicSearchIndex == $searchVal || $searchIndex == $searchVal} selected="selected"{/if}>by {translate text=$searchDesc}</option>
+							<option data-search_source="catalog" value="{$searchVal}"{if $searchIndex == $searchVal || $searchIndex == $searchVal} selected="selected"{/if}>by {translate text=$searchDesc}</option>
 						{/foreach}
-					</select>
-					{*TODO: How to chose the Genealogy Search type initially *}
-					<select name="genealogyType" class="searchTypeHorizontal form-control genealogyType" id="genealogySearchTypes" {if $searchSource != 'genealogy'}style="display:none"{/if}>
-						{foreach from=$genealogySearchTypes item=searchDesc key=searchVal}
-							<option value="{$searchVal}"{if $genealogySearchIndex == $searchVal} selected="selected"{/if}>{translate text=$searchDesc}</option>
-						{/foreach}
-					</select>
-					{if $enableOpenArchives}
-						<select name="oaType" class="searchTypeHorizontal form-control oaType" id="oaSearchTypes" {if $searchSource != 'open_archives'}style="display:none"{/if}>
-							{foreach from=$openArchivesSearchTypes item=searchDesc key=searchVal}
-								<option value="{$searchVal}"{if $genealogySearchIndex == $searchVal} selected="selected"{/if}>{translate text=$searchDesc}</option>
+						{if !empty($enableOpenGenealogy)}
+							{foreach from=$genealogySearchTypes item=searchDesc key=searchVal}
+								<option data-search_source="genealogy" value="{$searchVal}"{if $searchIndex == $searchVal} selected="selected"{/if}>{translate text=$searchDesc}</option>
 							{/foreach}
-						</select>
-					{/if}
+						{/if}
+						{if !empty($enableOpenArchives)}
+							{foreach from=$openArchivesSearchTypes item=searchDesc key=searchVal}
+								<option data-search_source="open_archives" value="{$searchVal}"{if $searchIndex == $searchVal} selected="selected"{/if}>{translate text=$searchDesc}</option>
+							{/foreach}
+						{/if}
+					</select>
 				</div>
 
-					{if !$hiddenSearchSource}
-						<div class="col-lg-3 col-md-3 col-sm-5 col-xs-7">
-							<select name="searchSource" id="searchSource" title="Select what to search.	Items marked with a * will redirect you to one of our partner sites." onchange="VuFind.Searches.enableSearchTypes();" class="searchSourceHorizontal form-control">
-								{foreach from=$searchSources item=searchOption key=searchKey}
-									<option data-catalog_type="{$searchOption.catalogType}" value="{$searchKey}"
-											{if $searchKey == $searchSource} selected="selected"{/if}
-											{if $searchKey == $searchSource} id="default_search_type"{/if}
-											    title="{$searchOption.description}">
-										{translate text="in"} {$searchOption.name}{if $searchOption.external} *{/if}
-									</option>
-								{/foreach}
-							</select>
-						</div>
-					{/if}
-
-
+				{if !$hiddenSearchSource}
+					<div class="col-lg-3 col-md-3 col-sm-5 col-xs-7">
+						<select name="searchSource" id="searchSource" title="Select what to search.	Items marked with a * will redirect you to one of our partner sites." onchange="VuFind.Searches.enableSearchTypes();" class="searchSourceHorizontal form-control" aria-label="Collection to Search">
+							{foreach from=$searchSources item=searchOption key=searchKey}
+								<option data-catalog_type="{$searchOption.catalogType}" value="{$searchKey}"
+										{if $searchKey == $searchSource} selected="selected"{/if}
+										{if $searchKey == $searchSource} id="default_search_type"{/if}
+											title="{$searchOption.description}">
+									{translate text="in"} {$searchOption.name}{if $searchOption.external} *{/if}
+								</option>
+							{/foreach}
+						</select>
+					</div>
+				{/if}
 			</div>
 		</div>
 

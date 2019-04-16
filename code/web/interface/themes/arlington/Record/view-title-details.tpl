@@ -38,7 +38,7 @@
 						&nbsp;{$contributor.role}
 					{/if}
 					{if $contributor.title}
-						&nbsp;<a href="{$path}/Search/Results?lookfor={$contributor.title}&amp;basicType=Title">{$contributor.title}</a>
+						&nbsp;<a href="{$path}/Search/Results?lookfor={$contributor.title}&amp;searchIndex=Title">{$contributor.title}</a>
 					{/if}
 				<br/>
 				{/foreach}

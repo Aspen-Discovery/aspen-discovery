@@ -1,26 +1,7 @@
 <?php
-/**
- *
- * Copyright (C) Andrew Nagy 2009
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2,
- * as published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- */
 
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/MyResearch/lib/Search.php';
-
 require_once ROOT_DIR . '/sys/Pager.php';
 
 class Genealogy_Results extends Action {
@@ -94,7 +75,7 @@ class Genealogy_Results extends Action {
 
 		// Initialise from the current search globals
 		/** @var SearchObject_GenealogySearcher $searchObject */
-		$searchObject = SearchObjectFactory::initSearchObject($configArray['Genealogy']['searchObject']);
+		$searchObject = SearchObjectFactory::initSearchObject('Genealogy');
 		$searchObject->init($searchSource);
 		$searchObject->setPrimarySearch(true);
 
@@ -106,7 +87,7 @@ class Genealogy_Results extends Action {
 			exit();
 		}else if ($searchObject->getView() == 'excel'){
 			// Throw the Excel spreadsheet to screen for download
-			echo $searchObject->buildExcel();
+			$searchObject->buildExcel();
 			// And we're done
 			exit();
 		}
@@ -160,8 +141,6 @@ class Genealogy_Results extends Action {
 		$currentPage = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
 		$interface->assign('page', $currentPage);
 
-		$allSearchSources = SearchSources::getSearchSources();
-		$translatedScope = $allSearchSources[$searchSource]['name'];
 		if ($searchObject->getResultTotal() < 1) {
 			// No record found
 			$interface->assign('sitepath', $configArray['Site']['path']);
@@ -276,5 +255,5 @@ class Genealogy_Results extends Action {
 		$interface->assign('sectionLabel', 'Genealogy Database');
 		$interface->assign('sidebar', 'Search/results-sidebar.tpl');
 		$this->display($searchObject->getResultTotal() ? 'list.tpl' : 'list-none.tpl', $pageTitle, 'Search/results-sidebar.tpl');
-	} // End launch()
+	}
 }

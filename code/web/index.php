@@ -218,8 +218,12 @@ if ($isLoggedIn) {
 	$interface->assign('activeUserId', $activeUserId);
 } else if ( (isset($_POST['username']) && isset($_POST['password']) && ($action != 'Account' && $module != 'AJAX')) || isset($_REQUEST['casLogin']) ) {
 	//The user is trying to log in
-	$user = UserAccount::login();
-	$timer->logTime('Login the user');
+    try {
+        $user = UserAccount::login();
+    } catch (UnknownAuthenticationMethodException $e) {
+        AspenError::raiseError("Error authenticating patron " . $e->getMessage());
+    }
+    $timer->logTime('Login the user');
 	if ($user instanceof AspenError) {
 		require_once ROOT_DIR . '/services/MyAccount/Login.php';
 		$launchAction = new MyAccount_Login();
@@ -288,9 +292,6 @@ $timer->logTime('User authentication');
 
 //Load user data for the user as long as we aren't in the act of logging out.
 if (UserAccount::isLoggedIn() && (!isset($_REQUEST['action']) || $_REQUEST['action'] != 'Logout')){
-	loadUserData();
-	$timer->logTime('Load user data');
-
 	$userDisplayName = UserAccount::getUserDisplayName();
 	$interface->assign('userDisplayName', $userDisplayName);
 	$userRoles = UserAccount::getActiveRoles();
@@ -350,8 +351,8 @@ require_once(ROOT_DIR . '/Drivers/marmot_inc/SearchSources.php');
 $searchSources = new SearchSources();
 list($enableCombinedResults, $showCombinedResultsFirst, $combinedResultsName) = $searchSources::getCombinedSearchSetupParameters($location, $library);
 
-if (isset($_REQUEST['basicType'])){
-	$interface->assign('basicSearchIndex', $_REQUEST['basicType']);
+if (isset($_REQUEST['searchIndex'])){
+	$interface->assign('basicSearchIndex', $_REQUEST['searchIndex']);
 }else{
 	$interface->assign('basicSearchIndex', 'Keyword');
 }
@@ -368,31 +369,9 @@ if (isset($_REQUEST['filter'])){
 		}
 	}
 }
-if (isset($_REQUEST['genealogyType'])){
-	$interface->assign('genealogySearchIndex', $_REQUEST['genealogyType']);
-}else{
-	$interface->assign('genealogySearchIndex', 'GenealogyKeyword');
-}
-if (isset($_REQUEST['oaType'])){
-    $interface->assign('openArchivesSearchIndex', $_REQUEST['oaType']);
-}else{
-    $interface->assign('openArchivesSearchIndex', 'OpenArchivesKeyword');
-}
-if ($searchSource == 'genealogy') {
-	$_REQUEST['type'] = isset($_REQUEST['genealogyType']) ? $_REQUEST['genealogyType'] : 'GenealogyKeyword';
-}elseif ($searchSource == 'islandora'){
-    $_REQUEST['type'] = isset($_REQUEST['islandoraType']) ? $_REQUEST['islandoraType']:  'IslandoraKeyword';
-}elseif ($searchSource == 'open_archives'){
-    $_REQUEST['type'] = isset($_REQUEST['oaType']) ? $_REQUEST['oaType']:  'OpenArchivesKeyword';
-}elseif ($searchSource == 'ebsco'){
-	$_REQUEST['type'] = isset($_REQUEST['ebscoType']) ? $_REQUEST['ebscoType']:  'TX';
-}else{
-	if (isset($_REQUEST['basicType'])){
-		$_REQUEST['type'] =  $_REQUEST['basicType'];
-	}else if (!isset($_REQUEST['type'])){
-		$_REQUEST['type'] = 'Keyword';
-	}
-}
+
+$searchSource = isset($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : 'local';
+
 $interface->assign('searchSource', $searchSource);
 
 //Determine if the top search box and breadcrumbs should be shown.  Not showing these
@@ -424,6 +403,7 @@ if ($action == "AJAX" || $action == "JSON"){
 	if ($library->enableGenealogy){
 		$genealogySearchObject = SearchObjectFactory::initSearchObject('Genealogy');
 		$interface->assign('genealogySearchTypes', is_object($genealogySearchObject) ? $genealogySearchObject->getBasicTypes() : array());
+        $interface->assign('enableOpenGenealogy', true);
 	}
 
 	if ($library->enableArchive){
@@ -597,7 +577,8 @@ if (!is_dir(ROOT_DIR . "/services/$module")){
 	$actionClass->launch();
 }else if (is_readable("services/$module/$action.php")) {
 	$actionFile = ROOT_DIR . "/services/$module/$action.php";
-	require_once $actionFile;
+    /** @noinspection PhpIncludeInspection */
+    require_once $actionFile;
 	$moduleActionClass = "{$module}_{$action}";
 	if (class_exists($moduleActionClass, false)) {
 		/** @var Action $service */
@@ -707,12 +688,12 @@ function checkAvailabilityMode() {
 	// If the config file 'available' flag is
 	//    set we are forcing downtime.
 	if (!$configArray['System']['available']) {
-		//Unless the user is accessing from a maintainence IP address
+		//Unless the user is accessing from a maintenance IP address
 
 		$isMaintenance = false;
-		if (isset($configArray['System']['maintainenceIps'])){
+		if (isset($configArray['System']['maintenanceIps'])){
 			$activeIp = $_SERVER['REMOTE_ADDR'];
-			$maintenanceIp =  $configArray['System']['maintainenceIps']; //TODO: system variable misspelled; change and update protected configs
+			$maintenanceIp =  $configArray['System']['maintenanceIps']; //TODO: system variable misspelled; change and update protected configs
 
 			$maintenanceIps = explode(",", $maintenanceIp);
 			foreach ($maintenanceIps as $curIp){
@@ -763,7 +744,9 @@ function getGitBranch(){
 // Set up autoloader (needed for YAML)
 function vufind_autoloader($class) {
 	if (substr($class, 0, 4) == 'CAS_') {
-		return CAS_autoload($class);
+		if (CAS_autoload($class)){
+		    return;
+        }
 	}
 	if (strpos($class, '.php') > 0){
 		$class = substr($class, 0, strpos($class, '.php'));
@@ -772,15 +755,19 @@ function vufind_autoloader($class) {
 	try{
 		if (file_exists('sys/' . $class . '.php')){
 			$className = ROOT_DIR . '/sys/' . $class . '.php';
+            /** @noinspection PhpIncludeInspection */
 			require_once $className;
 		}elseif (file_exists('Drivers/' . $class . '.php')){
 			$className = ROOT_DIR . '/Drivers/' . $class . '.php';
+            /** @noinspection PhpIncludeInspection */
 			require_once $className;
 		}elseif (file_exists('services/MyAccount/lib/' . $class . '.php')){
 			$className = ROOT_DIR . '/services/MyAccount/lib/' . $class . '.php';
+            /** @noinspection PhpIncludeInspection */
 			require_once $className;
 		}else{
-			require_once $nameSpaceClass;
+            /** @noinspection PhpIncludeInspection */
+            require_once $nameSpaceClass;
 		}
 	}catch (Exception $e){
 		AspenError::raiseError("Error loading class $class");
@@ -903,6 +890,7 @@ function initializeSession(){
 	$session_rememberMeLifetime = $configArray['Session']['rememberMeLifetime'];
 	//register_shutdown_function('session_write_close');
 	$sessionClass = ROOT_DIR . '/sys/' . $session_type . '.php';
+    /** @noinspection PhpIncludeInspection */
 	require_once $sessionClass;
 	if (class_exists($session_type)) {
 		/** @var SessionInterface $session */
@@ -910,34 +898,4 @@ function initializeSession(){
 		$session->init($session_lifetime, $session_rememberMeLifetime);
 	}
 	$timer->logTime('Session initialization ' . $session_type);
-}
-
-function loadUserData(){
-	global $interface;
-	global $timer;
-
-	//Assign User information to the interface
-	if (UserAccount::isLoggedIn()) {
-		//$user = UserAccount::getLoggedInUser();
-	}
-
-	if (UserAccount::isLoggedIn()){
-		if (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryAdmin') || UserAccount::userHasRole('cataloging') || UserAccount::userHasRole('libraryManager') || UserAccount::userHasRole('locationManager')){
-			$variable = new Variable();
-			$variable->name= 'lastFullReindexFinish';
-			if ($variable->find(true)){
-				$interface->assign('lastFullReindexFinish', date('m-d-Y H:i:s', $variable->value));
-			}else{
-				$interface->assign('lastFullReindexFinish', 'Unknown');
-			}
-			$variable = new Variable();
-			$variable->name= 'lastPartialReindexFinish';
-			if ($variable->find(true)){
-				$interface->assign('lastPartialReindexFinish', date('m-d-Y H:i:s', $variable->value));
-			}else{
-				$interface->assign('lastPartialReindexFinish', 'Unknown');
-			}
-			$timer->logTime("Load Information about Index status");
-		}
-	}
 }

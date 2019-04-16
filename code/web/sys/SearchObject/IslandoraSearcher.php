@@ -285,9 +285,9 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 			foreach ($IDList as $listPosition => $currentId){
 				// use $IDList as the order guide for the html
 				$current = null; // empty out in case we don't find the matching record
-				foreach ($this->indexResult['response']['docs'] as $index => $doc) {
+				foreach ($this->indexResult['response']['docs'] as $docIndex => $doc) {
 					if ($doc['PID'] == $currentId) {
-						$current = & $this->indexResult['response']['docs'][$index];
+						$current = & $this->indexResult['response']['docs'][$docIndex];
 						break;
 					}
 				}

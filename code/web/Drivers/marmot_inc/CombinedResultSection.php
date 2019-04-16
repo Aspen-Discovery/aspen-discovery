@@ -40,7 +40,7 @@ abstract class CombinedResultSection extends DataObject{
 
 	function getResultsLink($searchTerm, $searchType){
 		if ($this->source == 'pika') {
-			return "/Search/Results?lookfor=$searchTerm&basicType=$searchType&searchSource=local";
+			return "/Search/Results?lookfor=$searchTerm&searchIndex=$searchType&searchSource=local";
 		}elseif ($this->source == 'prospector'){
 			require_once ROOT_DIR . '/Drivers/marmot_inc/Prospector.php';
 			$prospector = new Prospector();
@@ -52,7 +52,7 @@ abstract class CombinedResultSection extends DataObject{
 			global $library;
 			return "https://search.ebscohost.com/login.aspx?direct=true&site=eds-live&scope=site&type=1&custid={$library->edsApiUsername}&groupid=main&profid={$library->edsSearchProfile}&mode=bool&lang=en&authtype=cookie,ip,guest&bquery=$searchTerm";
 		}elseif ($this->source == 'archive'){
-			return "/Archive/Results?lookfor=$searchTerm&basicType=$searchType";
+			return "/Archive/Results?lookfor=$searchTerm&searchIndex=$searchType";
 		}else{
 			return '';
 		}

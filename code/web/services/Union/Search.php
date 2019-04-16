@@ -43,7 +43,7 @@ class Union_Search extends Action {
 			//Reset to a local search source so the external search isn't remembered
 			$_SESSION['searchSource'] = 'local';
 			//Need to redirect to the appropriate search location with the new value for look for
-			$type = isset($_REQUEST['basicType']) ? $_REQUEST['basicType'] : $_REQUEST['type'];
+			$type = isset($_REQUEST['searchIndex']) ? $_REQUEST['searchIndex'] : 'Keyword';
 			$lookfor = isset($_REQUEST['lookfor']) ? $_REQUEST['lookfor'] : '';
 			$link = $searchSources->getExternalLink($searchSource, $type, $lookfor);
 			header('Location: ' . $link);

@@ -111,7 +111,7 @@ abstract class SearchObject_BaseSearcher
 			//Verify that the ip is ok
 			global $locationSingleton;
 			$activeIp = $locationSingleton->getActiveIp();
-			$maintenanceIps = $configArray['System']['maintainenceIps'];
+			$maintenanceIps = $configArray['System']['maintenanceIps'];
 			$debug = true;
 			if (strlen($maintenanceIps) > 0){
 				$debug = false;
@@ -553,7 +553,7 @@ abstract class SearchObject_BaseSearcher
 				}
 				if (isset($this->searchTerms[0]['index'])) {
 					if ($this->searchType == 'basic'){
-						$params[] = "basicType="    . urlencode($this->searchTerms[0]['index']);
+						$params[] = "searchIndex="    . urlencode($this->searchTerms[0]['index']);
 					}else{
 						$params[] = "type="         . urlencode($this->searchTerms[0]['index']);
 					}
@@ -584,25 +584,9 @@ abstract class SearchObject_BaseSearcher
 			}
 		}
 
-
-		// If lookfor is an array, we may be dealing with a legacy Advanced
-		// Search URL.  If there's only one parameter, we can flatten it,
-		// but otherwise we should treat it as an error -- no point in going
-		// to great lengths for compatibility.
-		if (is_array($searchTerm)) {
-			if (count($searchTerm) == 1) {
-				$searchTerm = strip_tags(reset($searchTerm));
-				if (isset($_REQUEST['searchType'])){
-					$_REQUEST['type'] = strip_tags(reset($_REQUEST['searchType']));
-				}
-			} else {
-				return false;
-			}
-		}
-
 		// If no type defined use default
-		if ((isset($_REQUEST['type'])) && ($_REQUEST['type'] != '')) {
-			$type = $_REQUEST['type'];
+		if ((isset($_REQUEST['searchIndex'])) && ($_REQUEST['searchIndex'] != '')) {
+			$type = $_REQUEST['searchIndex'];
 
 			// Flatten type arrays for backward compatibility:
 			if (is_array($type)) {
@@ -837,7 +821,7 @@ abstract class SearchObject_BaseSearcher
 			$this->sort = $defaultSort;
 		} else {
 			// Is there a search-specific sort type set?
-			$type = isset($_REQUEST['type']) ? $_REQUEST['type'] : false;
+			$type = isset($_REQUEST['searchIndex']) ? $_REQUEST['searchIndex'] : false;
 			if ($type && isset($this->defaultSortByType[$type])) {
 				$this->sort = $this->defaultSortByType[$type];
 				// If no search-specific sort type was found, use the overall default:

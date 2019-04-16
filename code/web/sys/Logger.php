@@ -2,8 +2,6 @@
 
 class Logger
 {
-	private $logMethods = array();
-
 	private $logAlerts = false;
     private $logErrors = false;
     private $logWarnings = false;
@@ -54,7 +52,7 @@ class Logger
 
         // Write the message to the log:
         $fhnd = fopen($this->logFilePath, 'a');
-        fwrite($fhnd, $msg);
+        fwrite($fhnd, $msg . "\r\n");
         fclose($fhnd);
 	}
 }

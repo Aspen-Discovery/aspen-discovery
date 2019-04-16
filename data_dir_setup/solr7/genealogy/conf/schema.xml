@@ -1,0 +1,143 @@
+<?xml version="1.0" ?>
+<schema name="Aspen Genealogy Index" version="1.5">
+	<types>
+		<fieldType name="unchanged_string" class="StrField"/> 
+		<fieldType name="integer" class="IntPointField"/>
+		<fieldType name="long" class="LongPointField"/>
+		<fieldType name="float" class="FloatPointField"/>
+		<fieldType name="date" class="DatePointField"/>
+		<fieldType name="random" class="RandomSortField"/>
+		<fieldType name="text_general" class="solr.TextField" positionIncrementGap="100">
+			  <analyzer type="index">
+				<tokenizer class="solr.StandardTokenizerFactory"/>
+				<filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt"  />
+				<filter class="solr.LowerCaseFilterFactory"/>
+			  </analyzer>
+			  <analyzer type="query">
+				<tokenizer class="solr.StandardTokenizerFactory"/>
+				<filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt"  />
+				<filter class="solr.SynonymGraphFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>
+				<filter class="solr.LowerCaseFilterFactory"/>
+			  </analyzer>
+		</fieldType>
+		<fieldType name="searchable_text" class="solr.TextField" positionIncrementGap="100">
+			<analyzer>
+				<!-- Whitespace tokenizer is needed so the Word Delimiter filter factory works properly
+				 For example, this allows E.T. The Extra-Terrestrial to be handled properly.  #ARL-168
+				-->
+				<tokenizer class="solr.WhitespaceTokenizerFactory"/>
+				<filter class="solr.LowerCaseFilterFactory"/>
+				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1" preserveOriginal="1"/>
+				<filter class="solr.CommonGramsFilterFactory" words="stopwords.txt" ignoreCase="true"/>
+				<filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt"/>
+				<filter class="solr.SnowballPorterFilterFactory" language="English"/>
+				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
+			</analyzer>
+		</fieldType>
+		<fieldType name="text-exact" class="solr.TextField" sortMissingLast="true" omitNorms="true">
+			<analyzer>
+				<!-- Whitespace tokenizer is needed so the Word Delimiter filter factory works properly
+				 For example, this allows E.T. The Extra-Terrestrial to be handled properly.  #ARL-168
+				-->
+				<tokenizer class="solr.KeywordTokenizerFactory"/>
+				<charFilter class="solr.PatternReplaceCharFilterFactory" pattern="^\s*(.*)\s*$" replacement="aaaa $1 zzzz"/>
+				<filter class="solr.LowerCaseFilterFactory"/>
+				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
+			</analyzer>
+		</fieldType>
+		<fieldType name="text-left" class="solr.TextField" sortMissingLast="true" omitNorms="true">
+			<analyzer>
+				<!-- Whitespace tokenizer is needed so the Word Delimiter filter factory works properly
+				 For example, this allows E.T. The Extra-Terrestrial to be handled properly.  #ARL-168
+				-->
+				<tokenizer class="solr.KeywordTokenizerFactory"/>
+				<charFilter class="solr.PatternReplaceCharFilterFactory" pattern="^\s*(.*)\s*$" replacement="aaaa $1"/>
+				<filter class="solr.LowerCaseFilterFactory"/>
+				<filter class="solr.TrimFilterFactory"/>
+				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
+			</analyzer>
+		</fieldType>
+		<!-- Text Field without Stemming, Synonyms, and stop Word removal -->
+		<fieldType name="textProper" class="solr.TextField" positionIncrementGap="100">
+			<analyzer>
+				<tokenizer class="solr.WhitespaceTokenizerFactory"/>
+				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1" preserveOriginal="1"/>
+				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
+			</analyzer>
+		</fieldType>
+		<fieldType name="callnumber-search" class="solr.TextField">
+			<analyzer>
+				<tokenizer class="solr.WhitespaceTokenizerFactory"/>
+				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="0" catenateWords="0" catenateNumbers="1" catenateAll="0" splitOnCaseChange="0" splitOnNumerics="1" preserveOriginal="1"/>
+				<filter class="solr.LengthFilterFactory" min="2" max="100"/>
+				<filter class="solr.LowerCaseFilterFactory"/>
+				<filter class="solr.TrimFilterFactory"/>
+			</analyzer>
+		</fieldType>
+		<!-- Text Field without Stemming, Synonyms, and stop Word removal -->
+		<fieldType name="alphaOnlySort" class="solr.TextField" sortMissingLast="true">
+			<analyzer>
+				<tokenizer class="solr.KeywordTokenizerFactory"/>
+				<filter class="solr.LowerCaseFilterFactory"/>
+				<!-- The TrimFilter removes any leading or trailing whitespace -->
+				<filter class="solr.TrimFilterFactory"/>
+				<filter class="solr.PatternReplaceFilterFactory" pattern="([^a-z1-9\s])" replacement="" replace="all"/>
+			</analyzer>
+		</fieldType>
+	</types>
+
+	<fields>
+		<!-- Required by Solr 4.x -->
+		<field name="_version_" type="long" indexed="true" stored="true"/>
+		<!-- Core Fields  -->
+		<field name="id" type="unchanged_string" indexed="true" stored="true"/>
+		<field name="recordtype" type="unchanged_string" indexed="true" stored="true"/>
+		<field name="title" type="searchable_text" indexed="true" stored="true"/>
+		<field name="comments" type="searchable_text" indexed="true" stored="true"/>
+		<field name="keywords" type="searchable_text" indexed="true" stored="false"/>
+		<!-- Fields Specific to People -->
+		<field name="firstName" type="searchable_text" indexed="true" stored="true"/>
+		<field name="lastName" type="searchable_text" indexed="true" stored="true"/>
+		<field name="middleName" type="searchable_text" indexed="true" stored="true"/>
+		<field name="maidenName" type="searchable_text" indexed="true" stored="true"/>
+		<field name="otherName" type="searchable_text" indexed="true" stored="true"/>
+		<field name="nickName" type="searchable_text" indexed="true" stored="true"/>
+		<field name="fullName" type="searchable_text" indexed="true" stored="true"/>
+		<field name="veteranOf" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
+		<field name="birthDate" type="date" indexed="true" stored="true" multiValued="false"/>
+		<field name="deathDate" type="date" indexed="true" stored="trues" multiValued="false"/>
+		<field name="birthYear" type="unchanged_string" indexed="true" stored="true" multiValued="false"/>
+		<field name="deathYear" type="unchanged_string" indexed="true" stored="true" multiValued="false"/>
+		<field name="ageAtDeath" type="unchanged_string" indexed="true" stored="true" multiValued="false"/>
+		<field name="cemeteryName" type="unchanged_string" indexed="true" stored="true"/>
+		<field name="cemeteryLocation" type="unchanged_string" indexed="true" stored="true"/>
+		<field name="mortuaryName" type="unchanged_string" indexed="true" stored="true"/>
+		<field name="sex" type="unchanged_string" indexed="true" stored="true"/>
+		<field name="race" type="unchanged_string" indexed="true" stored="true"/>
+		<field name="causeOfDeath" type="unchanged_string" indexed="true" stored="true"/>
+		<!-- Fields Specific to Obituaries -->
+		<field name="obituaryDate" type="date" indexed="true" stored="true" multiValued="true"/>
+		<field name="obituarySource" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
+		<field name="obituaryText" type="searchable_text" indexed="true" stored="true" multiValued="true"/>
+		<!-- Fields Specific to Marriages -->
+		<field name="spouseName" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
+		<field name="marriageDate" type="date" indexed="true" stored="true" multiValued="true"/>
+		<field name="marriageComments" type="searchable_text" indexed="true" stored="true" multiValued="true"/>
+
+		<!-- Fields Specific to Artifacts -->
+		<field name="catalogId" type="unchanged_string" indexed="true" stored="true"/>
+		<field name="objectName" type="unchanged_string" indexed="true" stored="true"/>
+		<field name="catalogType" type="unchanged_string" indexed="true" stored="true"/>
+		<field name="dateOfCreation" type="date" indexed="true" stored="true" multiValued="false"/>
+		<field name="dateOfAcquisition" type="date" indexed="true" stored="true" multiValued="false"/>
+		<field name="physicalDescription" type="unchanged_string" indexed="true" stored="true"/>
+		<field name="place" type="unchanged_string" indexed="true" stored="true"/>
+		<field name="copyright" type="unchanged_string" indexed="true" stored="true"/>
+		<field name="collection" type="unchanged_string" indexed="true" stored="true"/>
+		<field name="lexiconCategory" type="unchanged_string" indexed="true" stored="true"/>
+		<field name="lexiconSubCategory" type="unchanged_string" indexed="true" stored="true"/>
+		<field name="subjects" type="unchanged_string" indexed="true" stored="true" multiValued="false"/>
+
+	</fields>
+	<uniqueKey>id</uniqueKey>
+</schema>

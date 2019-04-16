@@ -494,7 +494,7 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
         // If we have no facets to process, give up now
         if (!isset($this->indexResult['facet_counts'])){
             return $list;
-        }elseif (!is_array($this->indexResult['facet_counts']['facet_fields']) && !is_array($this->indexResult['facet_counts']['facet_dates'])) {
+        }elseif (empty($this->indexResult['facet_counts']['facet_fields']) && tmpty($this->indexResult['facet_counts']['facet_dates'])) {
             return $list;
         }
 

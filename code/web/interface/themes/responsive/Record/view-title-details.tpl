@@ -38,7 +38,7 @@
 						&nbsp;{$contributor.role}
 					{/if}
 					{if $contributor.title}
-						&nbsp;<a href="{$path}/Search/Results?lookfor={$contributor.title}&amp;basicType=Title">{$contributor.title}</a>
+						&nbsp;<a href="{$path}/Search/Results?lookfor={$contributor.title}&amp;searchIndex=Title">{$contributor.title}</a>
 					{/if}
 				<br/>
 				{/foreach}
@@ -59,10 +59,10 @@
 			<div class="col-sm-8 result-value">
 				{if is_array($series) && !isset($series.seriesTitle)}
 					{foreach from=$series item=seriesItem name=loop}
-						<a href="{$path}/Search/Results?basicType=Series&lookfor=%22{$seriesItem.seriesTitle|removeTrailingPunctuation|escape:"url"}%22">{$seriesItem.seriesTitle|removeTrailingPunctuation|escape}</a>{if $seriesItem.volume} volume {$seriesItem.volume}{/if}<br/>
+						<a href="{$path}/Search/Results?searchIndex=Series&lookfor=%22{$seriesItem.seriesTitle|removeTrailingPunctuation|escape:"url"}%22">{$seriesItem.seriesTitle|removeTrailingPunctuation|escape}</a>{if $seriesItem.volume} volume {$seriesItem.volume}{/if}<br/>
 					{/foreach}
 				{else}
-					<a href="{$path}/Search/Results?basicType=Series&lookfor=%22{$series.seriesTitle|removeTrailingPunctuation|escape:"url"}%22">{$series.seriesTitle|removeTrailingPunctuation|escape}</a>{if $series.volume} volume {$series.volume}{/if}<br/>
+					<a href="{$path}/Search/Results?searchIndex=Series&lookfor=%22{$series.seriesTitle|removeTrailingPunctuation|escape:"url"}%22">{$series.seriesTitle|removeTrailingPunctuation|escape}</a>{if $series.volume} volume {$series.volume}{/if}<br/>
 				{/if}
 			</div>
 		</div>

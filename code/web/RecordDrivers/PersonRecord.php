@@ -2,12 +2,6 @@
 require_once ROOT_DIR . '/RecordDrivers/IndexRecordDriver.php';
 require_once ROOT_DIR . '/sys/Genealogy/Person.php';
 
-/**
- * List Record Driver
- *
- * This class is designed to handle List records.  Much of its functionality
- * is inherited from the default index-based driver.
- */
 class PersonRecord extends IndexRecordDriver
 {
 	/** @var Person $person */
@@ -36,15 +30,16 @@ class PersonRecord extends IndexRecordDriver
 		return $this->person;
 	}
 
-	/**
-	 * Assign necessary Smarty variables and return a template name to
-	 * load in order to display a summary of the item suitable for use in
-	 * search results.
-	 *
-	 * @access  public
-	 * @return  string              Name of Smarty template file to display.
-	 */
-	public function getSearchResult()
+    /**
+     * Assign necessary Smarty variables and return a template name to
+     * load in order to display a summary of the item suitable for use in
+     * search results.
+     *
+     * @access  public
+     * @param string $view
+     * @return  string              Name of Smarty template file to display.
+     */
+	public function getSearchResult($view = 'list')
 	{
 		global $interface;
 
@@ -102,4 +97,54 @@ class PersonRecord extends IndexRecordDriver
 			return $configArray['Site']['path'] . '/interface/themes/default/images/person.png';
 		}
 	}
+
+    /**
+     * Assign necessary Smarty variables and return a template name to
+     * load in order to display a summary of the item suitable for use in
+     * user's favorites list.
+     *
+     * @access  public
+     * @param object $user User object owning tag/note metadata.
+     * @param int $listId ID of list containing desired tags/notes (or
+     *                              null to show tags/notes from all user's lists).
+     * @param bool $allowEdit Should we display edit controls?
+     * @return  string              Name of Smarty template file to display.
+     */
+    public function getListEntry($user, $listId = null, $allowEdit = true)
+    {
+        return $this->getSearchResult('list');
+    }
+
+    public function getModule()
+    {
+        return 'Person';
+    }
+
+    /**
+     * Assign necessary Smarty variables and return a template name to
+     * load in order to display the full record information on the Staff
+     * View tab of the record view page.
+     *
+     * @access  public
+     * @return  string              Name of Smarty template file to display.
+     */
+    public function getStaffView()
+    {
+        return '';
+    }
+
+    public function getDescription()
+    {
+        return '';
+    }
+
+    public function getItemActions($itemInfo)
+    {
+        return [];
+    }
+
+    public function getRecordActions($isAvailable, $isHoldable, $isBookable, $relatedUrls = null)
+    {
+        return [];
+    }
 }

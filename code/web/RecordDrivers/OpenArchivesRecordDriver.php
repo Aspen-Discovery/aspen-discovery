@@ -5,7 +5,7 @@ class OpenArchivesRecordDriver extends IndexRecordDriver
 {
     public function getListEntry($user, $listId = null, $allowEdit = true)
     {
-        // TODO: Implement getListEntry() method.
+        return $this->getSearchResult('list');
     }
 
     public function getSearchResult($view = 'list')

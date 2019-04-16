@@ -100,7 +100,7 @@ class Solr {
     /**
      * @var string
      */
-    private $fullSearchUrl;
+    public $fullSearchUrl;
 
     /**
 	 * Constructor

@@ -1,6 +1,4 @@
 {strip}
-
-
     <div id="footer">
       <div class="l--constrained clearfix">
 
@@ -74,13 +72,6 @@
 
 			</div>-->
 		</div>
-		{if $lastFullReindexFinish && $lastPartialReindexFinish}
-			<div class="row">
-				<div class="col-sm-12 text-left" id="indexing-info">
-					<small>Last Full Index {$lastFullReindexFinish}, Last Partial Index {$lastPartialReindexFinish}</small>
-				</div>
-			</div>
-		{/if}
 
 		{if $inLibrary}
 			<div class="text-right">

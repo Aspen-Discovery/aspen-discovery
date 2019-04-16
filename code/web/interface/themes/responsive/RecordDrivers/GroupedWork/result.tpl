@@ -69,7 +69,7 @@
 									{/if}
 									{foreach from=$indexedSeries item=seriesItem name=loop}
 										{if !isset($summSeries.seriesTitle) || ((strpos(strtolower($seriesItem.seriesTitle), strtolower($summSeries.seriesTitle)) === false) && (strpos(strtolower($summSeries.seriesTitle), strtolower($seriesItem.seriesTitle)) === false))}
-											<a href="{$path}/Search/Results?basicType=Series&lookfor=%22{$seriesItem.seriesTitle|escape:"url"}%22">{$seriesItem.seriesTitle|escape}</a>{if $seriesItem.volume} volume {$seriesItem.volume}{/if}<br>
+											<a href="{$path}/Search/Results?searchIndex=Series&lookfor=%22{$seriesItem.seriesTitle|escape:"url"}%22">{$seriesItem.seriesTitle|escape}</a>{if $seriesItem.volume} volume {$seriesItem.volume}{/if}<br>
 											{if $showMoreSeries && $smarty.foreach.loop.iteration == 3}
 												<a onclick="$('#moreSeries_{$summId}').show();$('#moreSeriesLink_{$summId}').hide();" id="moreSeriesLink_{$summId}">More Series...</a>
 												<div id="moreSeries_{$summId}" style="display:none">

@@ -65,7 +65,7 @@ class MaterialsRequest_NewRequest extends Action
 			$request->placeHoldWhenAvailable = true; // set the place hold option on by default
 			$request->illItem                = true; // set the place hold option on by default
 			if (isset($_REQUEST['lookfor']) && strlen($_REQUEST['lookfor']) > 0) {
-				$searchType = isset($_REQUEST['basicType']) ? $_REQUEST['basicType'] : (isset($_REQUEST['type']) ? $_REQUEST['type'] : 'Keyword');
+				$searchType = isset($_REQUEST['searchIndex']) ? $_REQUEST['searchIndex'] : 'Keyword';
 				if (strcasecmp($searchType, 'author') == 0) {
 					$request->author = $_REQUEST['lookfor'];
 				} else {

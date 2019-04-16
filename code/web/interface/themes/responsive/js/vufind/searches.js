@@ -15,8 +15,8 @@ VuFind.Searches = (function(){
 		// already set in the search form.
 		// This allows a preset showCovers setting to be sent back with the first search without requiring login or
 		// a page reload on the search results page.
-		if (!Globals.opac && !Globals.loggedIn && VuFind.hasLocalStorage() && $('input[name="showCovers"]').length == 0){
-			var showCovers = window.localStorage.getItem('showCovers') || false;
+		if (!Globals.opac && !Globals.loggedIn && VuFind.hasLocalStorage() && $('input[name="showCovers"]').length === 0){
+			let showCovers = window.localStorage.getItem('showCovers') || false;
 			//console.log('Show Covers Value : ', showCovers);
 			if (showCovers.length > 0) {
 				//console.log('Add showCovers value', showCovers);
@@ -38,15 +38,15 @@ VuFind.Searches = (function(){
 		},
 
 		getCombinedResults: function(fullId, shortId, source, searchTerm, searchType, numberOfResults){
-			var url = Globals.path + '/Union/AJAX';
-			var params = '?method=getCombinedResults&source=' + source + '&numberOfResults=' + numberOfResults + "&id=" + fullId + "&searchTerm=" + searchTerm + "&searchType=" + searchType;
+			let url = Globals.path + '/Union/AJAX';
+			let params = '?method=getCombinedResults&source=' + source + '&numberOfResults=' + numberOfResults + "&id=" + fullId + "&searchTerm=" + searchTerm + "&searchType=" + searchType;
 			if ($('#hideCovers').is(':checked')){
 				params += "&showCovers=off";
 			}else{
 				params += "&showCovers=on";
 			}
 			$.getJSON(url+params, function(data){
-				if (data.success == false){
+				if (data.success === 'false'){
 					VuFind.showMessage("Error loading results", data.error);
 				}else{
 					$('#combined-results-section-results-' + shortId).html(data.results);
@@ -83,7 +83,7 @@ VuFind.Searches = (function(){
 		},
 
 		toggleDisplayMode : function(selectedMode){
-			var mode = this.displayModeClasses.hasOwnProperty(selectedMode) ? selectedMode : this.displayMode, // check that selected mode is a valid option
+			let mode = this.displayModeClasses.hasOwnProperty(selectedMode) ? selectedMode : this.displayMode, // check that selected mode is a valid option
 					searchBoxView = $('input[name="view"]','#searchForm'), // display mode variable associated with the search box
 					paramString = VuFind.replaceQueryParam('page', '', VuFind.replaceQueryParam('view',mode)); // set view in url and unset page variable
 			this.displayMode = mode; // set the mode officially
@@ -92,24 +92,24 @@ VuFind.Searches = (function(){
 			if (!Globals.opac && VuFind.hasLocalStorage() ) { // store setting in browser if not an opac computer
 				window.localStorage.setItem('searchResultsDisplayMode', this.displayMode);
 			}
-			if (mode == 'list') $('#hideSearchCoversSwitch').show(); else $('#hideSearchCoversSwitch').hide();
+			if (mode === 'list') $('#hideSearchCoversSwitch').show(); else $('#hideSearchCoversSwitch').hide();
 			location.replace(location.pathname + paramString); // reloads page without adding entry to history
 		},
 
 		getMoreResults: function(){
-			var url = Globals.path + '/Search/AJAX',
+			let url = Globals.path + '/Search/AJAX',
 					params = VuFind.replaceQueryParam('page', this.curPage+1)+'&method=getMoreSearchResults',
 					divClass = this.displayModeClasses[this.displayMode];
 			params = VuFind.replaceQueryParam('view', this.displayMode, params); // set the view url parameter just in case.
 			if (params.search(/[?;&]replacementTerm=/) != -1) {
-				var searchTerm = location.search.split('replacementTerm=')[1].split('&')[0];
+				let searchTerm = location.search.split('replacementTerm=')[1].split('&')[0];
 				params = VuFind.replaceQueryParam('lookfor', searchTerm, params);
 			}
 			$.getJSON(url+params, function(data){
-				if (data.success == false){
+				if (data.success === 'false'){
 					VuFind.showMessage("Error loading search information", "Sorry, we were not able to retrieve additional results.");
 				}else{
-					var newDiv = $(data.records).hide();
+					let newDiv = $(data.records).hide();
 					$('.'+divClass).filter(':last').after(newDiv);
 					newDiv.fadeIn('slow');
 					if (data.lastPage) $('#more-browse-results').hide(); // hide the load more results
@@ -123,7 +123,7 @@ VuFind.Searches = (function(){
 			try{
 				$("#lookfor").autocomplete({
 					source:function(request,response){
-						var url=Globals.path+"/Search/AJAX?method=GetAutoSuggestList&searchTerm=" + $("#lookfor").val();
+						let url=Globals.path+"/Search/AJAX?method=GetAutoSuggestList&searchTerm=" + $("#lookfor").val();
 						$.ajax({
 							url:url,
 							dataType:"json",
@@ -146,45 +146,15 @@ VuFind.Searches = (function(){
 			}
 		},
 
-		/* Advanced Popup has been turned off. plb 10-22-2015
-		addAdvancedGroup: function(button){
-			var currentRow;
-			if (button == undefined){
-				currentRow = $(".advancedRow").last();
-			}else{
-				currentRow = $(button).closest(".advancedRow");
-			}
-
-			//Clone the current row and reset data and ids as needed.
-			var clonedData = currentRow.clone();
-			clonedData.find(".btn").removeClass('active');
-			clonedData.find('.lookfor').val("");
-			clonedData.insertAfter(currentRow);
-
-			VuFind.Searches.resetAdvancedRowIds();
-			return false;
-		},
-
-		deleteAdvancedGroup: function(button){
-			var currentRow = $(button).closest(".advancedRow");
-			currentRow.remove();
-
-			VuFind.Searches.resetAdvancedRowIds();
-			return false;
-		},
-*/
 		sendEmail: function(){
 			if (Globals.loggedIn){
-				var from = $('#from').val();
-				var to = $('#to').val();
-				var message = $('#message').val();
-				var related_record = $('#related_record').val();
-				//var sourceUrl = encodeURIComponent(window.location.href);
-				var sourceUrl = window.location.href;
+				let from = $('#from').val();
+				let to = $('#to').val();
+				let message = $('#message').val();
+				let related_record = $('#related_record').val();
+				let sourceUrl = window.location.href;
 
-				var url = Globals.path + "/Search/AJAX";
-				//var params = "method=sendEmail&from=" + encodeURIComponent(from) + "&to=" + encodeURIComponent(to) + "&message=" + encodeURIComponent(message) + "&url=" + sourceUrl;
-				//passing through getJSON() data array instead
+				let url = Globals.path + "/Search/AJAX";
 				$.getJSON(url,
 						{ // pass parameters as data
 							method     : 'sendEmail'
@@ -206,185 +176,50 @@ VuFind.Searches = (function(){
 		},
 
 		enableSearchTypes: function(){
-			var searchTypeElement = $("#searchSource");
-			var catalogType = "catalog";
+			let searchTypeElement = $("#searchSource");
+			let catalogType = "catalog";
 			if (searchTypeElement){
-				var selectedSearchType = $(searchTypeElement.find(":selected"));
+				let selectedSearchType = $(searchTypeElement.find(":selected"));
 				if (selectedSearchType){
 					catalogType = selectedSearchType.data("catalog_type");
 				}
 			}
-			if (catalogType == 'islandora'){
-				$(".islandoraType").show();
-				$(".catalogType,.genealogyType,.ebscoType, .oaType").hide();
-			}else if (catalogType == 'genealogy'){
-				$(".genealogyType").show();
-				$(".catalogType,.islandoraType,.ebscoType, .oaType").hide();
-			}else if (catalogType == 'open_archives'){
-				$(".oaType").show();
-				$(".catalogType,.islandoraType,.ebscoType, .genealogyType").hide();
-			}else if (catalogType == 'ebsco'){
-				$(".ebscoType").show();
-				$(".catalogType,.islandoraType,.genealogyType, .oaType").hide();
-			}else { // default catalog
-				$(".catalogType").show();
-				$(".genealogyType,.islandoraType,.ebscoType, .oaType").hide();
-			}
-		},
 
-		lastSpellingTimer: undefined,
-		getSpellingSuggestion: function(query, process, isAdvanced){
-			if (VuFind.Searches.lastSpellingTimer != undefined){
-				clearTimeout(VuFind.Searches.lastSpellingTimer);
-				VuFind.Searches.lastSpellingTimer = undefined;
+			let searchIndexElement = $("#searchIndex");
+			if (searchIndexElement) {
+				let searchOptions = searchIndexElement.find("option");
+				let firstVisible = true;
+				$.each(searchOptions, function() {
+					let searchOption = $(this);
+					if (searchOption.data("search_source") === catalogType) {
+						searchOption.show();
+						if (firstVisible) {
+							searchOption.selected = true;
+							firstVisible = false;
+						}
+					}else{
+						searchOption.hide();
+					}
+				});
 			}
 
-			var url = Globals.path + "/Search/AJAX?method=GetAutoSuggestList&searchTerm=" + query;
-			//Get the search source
-			if (isAdvanced){
-				//Add the search type
-			}
-			VuFind.Searches.lastSpellingTimer = setTimeout(
-					function(){
-						$.get(url,
-								function(data){
-									process(data);
-								},
-								'json'
-						)
-					},
-					500
-			);
 		},
-
-		/* Advanced Popup has been turned off. plb 10-22-2015
-		loadSearchGroups: function(){
-			var searchGroups = VuFind.Searches.searchGroups;
-			for (var i = 0; i < searchGroups.length; i++){
-				if (i > 0){
-					VuFind.Searches.addAdvancedGroup();
-				}
-				var searchGroup = searchGroups[i];
-				var groupIndex = i+1;
-				var searchGroupElement = $("#group" + groupIndex);
-				searchGroupElement.find(".groupStartInput").val(searchGroup.groupStart);
-				if (searchGroup.groupStart == 1){
-					searchGroupElement.find(".groupStartButton").addClass("active");
-				}
-				searchGroupElement.find(".searchType").val(searchGroup.searchType);
-				searchGroupElement.find(".lookfor").val(searchGroup.lookfor);
-				searchGroupElement.find(".groupEndInput").val(searchGroup.groupEnd);
-				if (searchGroup.groupEnd == 1){
-					searchGroupElement.find(".groupEndButton").addClass("active");
-				}
-				searchGroupElement.find(".joinOption").val(searchGroup.join);
-			}
-			if (searchGroups.length == 0){
-				VuFind.Searches.resetAdvancedRowIds();
-			}
-		},
-*/
 
 		processSearchForm: function(){
-		// Check for Set Display Mode
-		//	this.getPreferredDisplayMode();
-
 			//Get the selected search type submit the form
-			var searchSource = $("#searchSource");
-			if (searchSource.val() == 'existing'){
+			let searchSource = $("#searchSource");
+			if (searchSource.val() === 'existing'){
 				$(".existingFilter").prop('checked', true);
-				var originalSearchSource = $("#existing_search_option").data('original_type');
+				let originalSearchSource = $("#existing_search_option").data('original_type');
 				searchSource.val(originalSearchSource);
 			}
 		},
 
-		/* Advanced Popup has been turned off. plb 10-22-2015
-		resetAdvancedRowIds: function(){
-			var searchRows = $(".advancedRow");
-			searchRows.each(function(index, element){
-				var indexVal = index + 1;
-				var curRow = $(element);
-				curRow.attr("id", "group" + indexVal);
-				curRow.find(".groupStartInput")
-						.prop("name", "groupStart[" + indexVal + "]")
-						.attr("id", "groupStart" + indexVal + "Input");
-
-				curRow.find(".groupStartButton")
-						.data("hidden_element", "groupStart" + indexVal + "Input")
-						.attr("id", "groupStart" + indexVal);
-
-				curRow.find(".searchType")
-						.attr("name", "searchType[" + indexVal + "]");
-
-				curRow.find(".lookfor")
-						.attr("name", "lookfor[" + indexVal + "]");
-
-				curRow.find(".groupEndInput")
-						.prop("name", "groupEnd[" + indexVal + "]")
-						.attr("id", "groupEnd" + indexVal + "Input");
-
-				curRow.find(".groupEndButton")
-						.data("hidden_element", "groupEnd" + indexVal + "Input")
-						.attr("id", "groupEnd" + indexVal);
-
-				curRow.find(".joinOption")
-						.attr("name", "join[" + indexVal + "]");
-			});
-			if (searchRows.length == 1){
-				$(".deleteCriteria").hide();
-				$(".groupStartButton").hide();
-				$(".groupEndButton").hide();
-			}else{
-				$(".deleteCriteria").show();
-				$(".groupStartButton").show();
-				$(".groupEndButton").show();
-			}
-			var joinOptions = $(".joinOption");
-			joinOptions.show();
-			joinOptions.last().hide();
-		},
-*/
 		resetSearchType: function(){
-			if ($("#lookfor").val() == ""){
+			if ($("#lookfor").val() === ""){
 				$("#searchSource").val($("#default_search_type").val());
 			}
 			return true;
-		},
-
-		updateSearchTypes: function(catalogType, searchType, searchFormId){
-			if (catalogType == 'catalog') {
-				$("#basicType").val(searchType);
-				$("#genealogyType").remove();
-				$("#islandoraType").remove();
-				$("#ebscoType").remove();
-				$("#oaType").remove();
-			}else if (catalogType == 'archive') {
-				$("#islandoraType").val(searchType);
-				$("#genealogyType").remove();
-				$("#ebscoType").remove();
-				$("#basicType").remove();
-				$("#oaType").remove();
-			}else if (catalogType == 'ebsco') {
-				$("#ebscoType").val(searchType);
-				$("#genealogyType").remove();
-				$("#islandoraType").remove();
-				$("#basicType").remove();
-				$("#oaType").remove();
-			}else if (catalogType == 'open_archives') {
-				$("#oaType").val(searchType);
-				$("#ebscoType").remove();
-				$("#genealogyType").remove();
-				$("#islandoraType").remove();
-				$("#basicType").remove();
-			}else{
-				$("#genealogyType").val(searchType);
-				$("#basicType").remove();
-				$("#islandoraType").remove();
-				$("#ebscoType").remove();
-				$("#oaType").remove();
-			}
-			$(searchFormId).submit();
-			return false;
 		},
 
 		filterAll: function(){
@@ -393,10 +228,10 @@ VuFind.Searches = (function(){
 		},
 
 		loadExploreMoreBar: function(section, searchTerm){
-			var url = Globals.path + "/Search/AJAX";
-			var params = "method=loadExploreMoreBar&section=" + encodeURIComponent(section);
+			let url = Globals.path + "/Search/AJAX";
+			let params = "method=loadExploreMoreBar&section=" + encodeURIComponent(section);
 			params += "&searchTerm=" + encodeURIComponent(searchTerm);
-			var fullUrl = url + "?" + params;
+			let fullUrl = url + "?" + params;
 			$.getJSON(fullUrl,
 				function(data) {
 					if (data.success == true){
@@ -406,12 +241,5 @@ VuFind.Searches = (function(){
 				}
 			);
 		}
-
-/* Advanced Popup has been turned off. plb 10-22-2015
-		submitAdvancedSearch: function(){
-			$('#advancedPopup').submit();
-			return false;
-		}
-*/
 	}
 }(VuFind.Searches || {}));

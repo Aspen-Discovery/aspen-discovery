@@ -1,22 +1,4 @@
 <?php
-/**
- *
- * Copyright (C) Villanova University 2007.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2,
- * as published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- */
 
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/sys/HTTP/HTTP_Request.php';
@@ -446,9 +428,6 @@ class Record_AJAX extends Action {
 						$interface->assign('patronId', $patron->id);
 						if (!empty($_REQUEST['autologout'])) $interface->assign('autologout', $_REQUEST['autologout']); // carry user selection to Item Hold Form
 
-//						global $library;
-//						$interface->assign('showDetailedHoldNoticeInformation', $library->showDetailedHoldNoticeInformation);
-//						$interface->assign('treatPrintNoticesAsPhoneNotices', $library->treatPrintNoticesAsPhoneNotices);
 						$interface->assign('showDetailedHoldNoticeInformation', $homeLibrary->showDetailedHoldNoticeInformation);
 						$interface->assign('treatPrintNoticesAsPhoneNotices', $homeLibrary->treatPrintNoticesAsPhoneNotices);
 
@@ -462,19 +441,6 @@ class Record_AJAX extends Action {
 					} else { // Completed Hold Attempt
 						$interface->assign('message', $return['message']);
 						$interface->assign('success', $return['success']);
-
-						//Get library based on patron home library since that is what controls their notifications rather than the active interface.
-						//$library = Library::getPatronHomeLibrary();
-
-//						global $library;
-//						$canUpdateContactInfo = $library->allowProfileUpdates == 1;
-//						// set update permission based on active library's settings. Or allow by default.
-//						$canChangeNoticePreference = $library->showNoticeTypeInProfile == 1;
-//						// when user preference isn't set, they will be shown a link to account profile. this link isn't needed if the user can not change notification preference.
-//						$interface->assign('canUpdate', $canUpdateContactInfo);
-//						$interface->assign('canChangeNoticePreference', $canChangeNoticePreference);
-//						$interface->assign('showDetailedHoldNoticeInformation', $library->showDetailedHoldNoticeInformation);
-//						$interface->assign('treatPrintNoticesAsPhoneNotices', $library->treatPrintNoticesAsPhoneNotices);
 
 						$canUpdateContactInfo = $homeLibrary->allowProfileUpdates == 1;
 						// set update permission based on active library's settings. Or allow by default.
