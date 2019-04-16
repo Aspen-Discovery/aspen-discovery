@@ -1,7 +1,5 @@
 <?php
-/**
- * Table Definition for user_list
- */
+
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
 
 class UserList extends DataObject
@@ -70,7 +68,7 @@ class UserList extends DataObject
 		$listEntry = new UserListEntry();
 		$listEntry->listId = $this->id;
 
-		// These conditions retrieve list items with a valid groupedwork ID or archive ID.
+		// These conditions retrieve list items with a valid groupedWorkID or archive ID.
 		// (This prevents list strangeness when our searches don't find the ID in the search indexes)
 		$listEntry->whereAdd(
 			'(
@@ -82,35 +80,6 @@ class UserList extends DataObject
 
 		return $listEntry->count();
 	}
-
-//	function numValidListItems() {
-//		$archiveItems = $this->num_archive_items();
-//		$catalogItems = $this->num_titles();
-//		return $archiveItems + $catalogItems;
-//	);
-//	function num_archive_items() {
-//		require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
-//		//Join with grouped work to make sure we only load valid entries
-//		$listEntry = new UserListEntry();
-//		$listEntry->listId = $this->id;
-//
-//		require_once ROOT_DIR . '/sys/Islandora/IslandoraObjectCache.php';
-//		$islandoraObject = new IslandoraObjectCache();
-//		$listEntry->joinAdd($islandoraObject);
-//		return $listEntry->count();
-//	}
-//
-//	function num_titles(){
-//		require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
-//		//Join with grouped work to make sure we only load valid entries
-//		$listEntry = new UserListEntry();
-//		$listEntry->listId = $this->id;
-//
-//		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
-//		$groupedWork = new GroupedWork();
-//		$listEntry->joinAdd($groupedWork);
-//		return $listEntry->count();
-//	}
 
 	function insert($createNow = true){
 		if ($createNow) {
@@ -130,10 +99,10 @@ class UserList extends DataObject
 		}
 		return $result;
 	}
-	function delete($useWhere = false){
+	function delete(){
 		$this->deleted = 1;
 		$this->dateUpdated = time();
-		return parent::delete($useWhere);
+		return parent::delete();
 	}
 
 	/**
@@ -149,12 +118,10 @@ class UserList extends DataObject
 		require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
 		$listEntry = new UserListEntry();
 		$listEntry->listId = $this->id;
-		if ($sort == 'author' || $sort == 'title') {
 
-		}
 		if ($sort) $listEntry->orderBy($sort);
 
-		// These conditions retrieve list items with a valid groupedworked or archive ID.
+		// These conditions retrieve list items with a valid groupedWorkId or archive ID.
 		// (This prevents list strangeness when our searches don't find the ID in the search indexes)
 		$listEntry->whereAdd(
 			'(
