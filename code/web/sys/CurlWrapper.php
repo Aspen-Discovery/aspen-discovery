@@ -184,6 +184,11 @@ class CurlWrapper {
         return $return;
     }
 
+    function getHeaders()
+    {
+        return $this->headers;
+    }
+
     protected function setupDebugging(){
 		$result1 = curl_setopt($this->curl_connection, CURLOPT_HEADER, true);
 		$result2 = curl_setopt($this->curl_connection, CURLOPT_VERBOSE, true);
