@@ -351,11 +351,6 @@ require_once(ROOT_DIR . '/Drivers/marmot_inc/SearchSources.php');
 $searchSources = new SearchSources();
 list($enableCombinedResults, $showCombinedResultsFirst, $combinedResultsName) = $searchSources::getCombinedSearchSetupParameters($location, $library);
 
-if (isset($_REQUEST['searchIndex'])){
-	$interface->assign('basicSearchIndex', $_REQUEST['searchIndex']);
-}else{
-	$interface->assign('basicSearchIndex', 'Keyword');
-}
 $interface->assign('curFormatCategory', 'Everything');
 if (isset($_REQUEST['filter'])){
 	foreach ($_REQUEST['filter'] as $curFilter){
