@@ -135,6 +135,8 @@ class RbdigitalDriver extends AbstractEContentDriver
                 $result['message'] = "Invalid information returned from API, please retry your checkout after a few minutes.";
                 global $logger;
                 $logger->log("Invalid information from rbdigital api\r\n$actionUrl\r\n$rawResponse", Logger::LOG_ERROR);
+                $curl_info = curl_getinfo($this->curlWrapper->curl_connection);
+                $logger->log(print_r($curl_info, true), Logger::LOG_ERROR);
             }else{
                 if (!empty($response->output) && $response->output == 'SUCCESS') {
                     $result['success'] = true;
@@ -371,6 +373,8 @@ class RbdigitalDriver extends AbstractEContentDriver
                 $result['message'] = "Invalid information returned from API, please retry your hold after a few minutes.";
                 global $logger;
                 $logger->log("Invalid information from rbdigital api\r\n$actionUrl\r\n$rawResponse", Logger::LOG_ERROR);
+                $curl_info = curl_getinfo($this->curlWrapper->curl_connection);
+                $logger->log(print_r($curl_info, true), Logger::LOG_ERROR);
             }else{
                 if (is_numeric($response)) {
                     $result['success'] = true;
