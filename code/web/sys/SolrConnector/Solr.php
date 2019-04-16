@@ -1758,7 +1758,7 @@ class Solr {
 
 		// Set up XML
 		$this->client->addHeader('Content-Type', 'text/xml; charset=utf-8');
-		$this->client->addHeader('Content-Length', strlen($xml));
+		//$this->client->addHeader('Content-Length', strlen($xml));
 		$this->client->setBody($xml);
 
 		// Send Request

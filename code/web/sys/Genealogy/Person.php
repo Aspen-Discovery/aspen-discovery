@@ -9,6 +9,7 @@ require_once ROOT_DIR . '/sys/Genealogy/Obituary.php';
 class Person extends SolrDataObject
 {
 	public $__table = 'person';    // table name
+    public $__primaryKey = 'personId';
 	public $personId;
 	public $firstName;
 	public $middleName;
@@ -24,13 +25,13 @@ class Person extends SolrDataObject
 
 	//Age information
 	public $birthDate;
-	public $birthDateDay;
-	public $birthDateMonth;
-	public $birthDateYear;
+    public $birthDateDay;
+    public $birthDateMonth;
+    public $birthDateYear;
 	public $deathDate;
-	public $deathDateDay;
-	public $deathDateMonth;
-	public $deathDateYear;
+    public $deathDateDay;
+    public $deathDateMonth;
+    public $deathDateYear;
 	public $ageAtDeath;
 
 	//Burial information
@@ -70,12 +71,12 @@ class Person extends SolrDataObject
 		return array('personId');
 	}
 
-	function cores(){
-		return array('genealogy');
+	function getCore(){
+		return 'genealogy';
 	}
 
 	function solrId(){
-		return 'person' . $this->personId;
+		return $this->personId;
 	}
 	function recordtype(){
 		return 'person';
@@ -190,7 +191,7 @@ class Person extends SolrDataObject
 			array('property'=>'birthDate', 'type'=>'partialDate', 'label'=>'Birth Date', 'description'=>'The date the person was born.', 'storeDb' => true, 'storeSolr' => true, 'propNameMonth'=>'birthDateMonth', 'propNameDay'=>'birthDateDay', 'propNameYear'=>'birthDateYear'),
 			array('property'=>'deathDate', 'type'=>'partialDate', 'label'=>'Death Date', 'description'=>'The date the person died.', 'storeDb' => true, 'storeSolr' => true, 'propNameMonth'=>'deathDateMonth', 'propNameDay'=>'deathDateDay', 'propNameYear'=>'deathDateYear'),
 			array('property'=>'ageAtDeath', 'type'=>'text', 'maxLength'=>100, 'label'=>'Age At Death', 'description'=>'The age (can be approximate) the person was when they died if exact birth or death dates are not known.', 'storeDb' => true, 'storeSolr' => true),
-			array('property'=>'sex', 'type'=>'text', 'maxLength'=>20, 'size'=>20, 'label'=>'Sex', 'description'=>'The sex of the person.', 'storeDb' => true, 'storeSolr' => true),
+			array('property'=>'sex', 'type'=>'text', 'maxLength'=>20, 'size'=>20, 'label'=>'Gender', 'description'=>'The gender of the person.', 'storeDb' => true, 'storeSolr' => true),
 			array('property'=>'race', 'type'=>'text', 'maxLength'=>20, 'size'=>20, 'label'=>'Race', 'description'=>'The race of the person.', 'storeDb' => true, 'storeSolr' => true),
 			array('property'=>'residence', 'type'=>'text', 'maxLength'=>255, 'size'=>40, 'label'=>'Residence', 'description'=>'The race of the person.', 'storeDb' => true, 'storeSolr' => false),
 			array('property'=>'causeOfDeath', 'type'=>'text', 'maxLength'=>255, 'size'=>40, 'label'=>'Cause of Death', 'description'=>'The cause of death.', 'storeDb' => true, 'storeSolr' => true),
@@ -358,7 +359,7 @@ class Person extends SolrDataObject
 	function update(){
 		$this->modifiedBy = UserAccount::getActiveUserId();
 		$this->lastModified = time();
-		$ret = parent::update($dataObject);
+		$ret = parent::update();
 		if ($ret){
 			$this->saveMarriages();
 			$this->saveObituaries();

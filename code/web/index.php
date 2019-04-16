@@ -771,12 +771,9 @@ function vufind_autoloader($class) {
 
 function loadModuleActionId(){
 	//Cleanup method information so module, action, and id are set properly.
-	//This ensures that we don't have to change the http-vufind.conf file when new types are added.
-	//$dataObjects = array('Record', 'EContent', 'EditorialReview', 'Person');
-	//$dataObjectsStr = implode('|', $dataObjects);
+	//This ensures that we don't have to change the http.conf file when new types are added.
 	//Deal with old path based urls by removing the leading path.
 	$requestURI = $_SERVER['REQUEST_URI'];
-	$requestURI = preg_replace("/^\/?vufind\//", "", $requestURI);
 	/** IndexingProfile[] $indexingProfiles */
 	global $indexingProfiles;
 	$allRecordModules = "OverDrive|GroupedWork|Record|ExternalEContent|Person|EditorialReview|Library|Rbdigital";

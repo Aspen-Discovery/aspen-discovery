@@ -39,7 +39,7 @@ class Person_Home extends Action
 		$this->db->init($searchSource);
 
 		// Retrieve Full Marc Record
-		if (!($record = $this->db->getRecord('person' . $this->id))) {
+		if (!($record = $this->db->getRecord($this->id))) {
 			AspenError::raiseError(new AspenError('Record Does Not Exist'));
 		}
 		$this->record = $record;

@@ -70,9 +70,9 @@ abstract class SolrDataObject extends DataObject{
 	}
 
 	/**
-	 * Return an array with the name or names of the cores that contain this object
+	 * return string
 	 */
-	abstract function cores();
+	abstract function getCore();
 
 	/**
 	 * Return a unique id for the object
@@ -87,15 +87,13 @@ abstract class SolrDataObject extends DataObject{
 		global $logger;
 		$logger->log("Deleting Record {$this->solrId()}", Logger::LOG_NOTICE);
 
-		$cores = $this->cores();
-		foreach ($cores as $coreName){
-			$index = new Solr($host, $coreName);
-			if ($index->deleteRecord($this->solrId())) {
-				$index->commit();
-			} else {
-				return new AspenError("Could not remove from $coreName index");
-			}
-		}
+        $coreName = $this->getCore();
+        $index = new Solr($host, $coreName);
+        if ($index->deleteRecord($this->solrId())) {
+            $index->commit();
+        } else {
+            return new AspenError("Could not remove from $coreName index");
+        }
 		return true;
 	}
 
@@ -114,7 +112,6 @@ abstract class SolrDataObject extends DataObject{
 		global $logger;
 		$logger->log("Updating " . $this->solrId() . " in solr", Logger::LOG_NOTICE);
 
-		$cores = $this->cores();
 		$objectStructure = $this->getObjectStructure();
 		$doc = array();
 		foreach ($objectStructure as $property){
@@ -124,22 +121,22 @@ abstract class SolrDataObject extends DataObject{
 		}
 		$timer->logTime('Built Contents to save to Solr');
 
-		foreach ($cores as $coreName){
-			$index = new Solr($host, $coreName);
+		$coreName = $this->getCore();
+        $index = new Solr($host, $coreName);
 
-			$xml = $index->getSaveXML($doc, !$this->_quickReindex, $this->_quickReindex);
-			//$logger->log('XML ' . print_r($xml, true), Logger::LOG_NOTICE);
-			$timer->logTime('Created XML to save to the main index');
-			if ($index->saveRecord($xml)) {
-				if (!$this->_quickReindex){
-					$index->commit();
-				}
-			} else {
-				$this->saveStarted = false;
-				return new AspenError("Could not save to $coreName");
-			}
-			$timer->logTime("Saved to the $coreName index");
-		}
+        $xml = $index->getSaveXML($doc, !$this->_quickReindex, $this->_quickReindex);
+        //$logger->log('XML ' . print_r($xml, true), Logger::LOG_NOTICE);
+        $timer->logTime('Created XML to save to the main index');
+        if ($index->saveRecord($xml)) {
+            if (!$this->_quickReindex){
+                $index->commit();
+            }
+        } else {
+            $this->saveStarted = false;
+            return new AspenError("Could not save to $coreName");
+        }
+        $timer->logTime("Saved to the $coreName index");
+
 		$this->saveStarted = false;
 		return true;
 	}
@@ -183,14 +180,13 @@ abstract class SolrDataObject extends DataObject{
 		global $configArray;
 		$host = $configArray['Index']['url'];
 
-		$cores = $this->cores();
-		foreach ($cores as $coreName){
-			global $logger;
-			$logger->log("Optimizing Solr Core! $coreName", Logger::LOG_NOTICE);
+        $coreName = $this->getCore();
+        global $logger;
+        $logger->log("Optimizing Solr Core! $coreName", Logger::LOG_NOTICE);
 
-			$index = new Solr($host, $coreName);
-			$index->optimize();
-		}
+        $index = new Solr($host, $coreName);
+        $index->optimize();
+
 		return true;
 	}
 }

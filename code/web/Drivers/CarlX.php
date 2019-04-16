@@ -1630,8 +1630,6 @@ class CarlX extends SIP2Driver{
 				$in = $mySip->msgHold($mode, $expirationTime, '2', '', $holdId, '', $pickupBranchNumber);
 				$msg_result = $mySip->get_message($in);
 
-//				$title = $this->getRecordTitle($recordId); //TODO: method isn't defined
-
 				if (preg_match("/^16/", $msg_result)) {
 					$result = $mySip->parseHoldResponse($msg_result );
 					$success = ($result['fixed']['Ok'] == 1);
