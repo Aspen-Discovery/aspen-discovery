@@ -29,105 +29,111 @@ class BookCoverProcessor{
 	/** @var  Timer $timer */
 	private $timer;
 	private $doTimings;
-	public function loadCover($configArray, $timer, $logger){
-		$this->configArray = $configArray;
-		$this->timer = $timer;
-		$this->doTimings = $this->configArray['System']['coverTimings'];
-		$this->logger = $logger;
-		$this->doCoverLogging = $this->configArray['Logging']['coverLogging'];
+	public function loadCover($configArray, $timer, $logger)
+    {
+        $this->configArray = $configArray;
+        $this->timer = $timer;
+        $this->doTimings = $this->configArray['System']['coverTimings'];
+        $this->logger = $logger;
+        $this->doCoverLogging = $this->configArray['Logging']['coverLogging'];
 
-		$this->log("Starting to load cover", Logger::LOG_NOTICE);
-		$this->bookCoverPath = $configArray['Site']['coverPath'];
-		if (!$this->loadParameters()){
-			return;
-		}
+        $this->log("Starting to load cover", Logger::LOG_NOTICE);
+        $this->bookCoverPath = $configArray['Site']['coverPath'];
+        if (!$this->loadParameters()) {
+            return;
+        }
 
-		if (!$this->reload){
-			$this->log("Looking for Cached cover", Logger::LOG_NOTICE);
-			if ($this->getCachedCover()){
-				return;
-			}
-		}
-
-		if ($this->type == 'overdrive'){
-			//Will exit if we find a cover
-			if ($this->getOverDriveCover()){
-				return;
-			}
-		}else if ($this->type == 'hoopla'){
-			//Will exit if we find a cover
-			if ($this->getHooplaCover($this->id)){
-				return;
-			}
-		}elseif ($this->type == 'Colorado State Government Documents'){
-			if ($this->getColoradoGovDocCover()){
-				return;
-			}
-		}elseif ($this->type == 'Classroom Video on Demand'){
-			if ($this->getClassroomVideoOnDemandCover($this->id)){
-				return;
-			}
-		} elseif (stripos($this->type, 'films on demand') !== false){
-			if ($this->getFilmsOnDemandCover($this->id)) {
-				return;
-			}
-		} elseif (stripos($this->type, 'proquest') !== false || stripos($this->type, 'ebrary') !== false){
-			if ($this->getEbraryCover($this->id)) {
-				return;
-			}
-			// Any Sideloaded Collection that has a cover in the 856 tag (and additional conditionals)
-		} elseif (stripos($this->type, 'kanopy') !== false){
-			if ($this->getSideLoadedCover($this->type.':'.$this->id)) {
-				return;
-			}
-		} elseif (stripos($this->type, 'bookflix') !== false){
-			if ($this->getSideLoadedCover($this->type.':'.$this->id)) {
-				return;
-			}
-		} elseif (stripos($this->type, 'boombox') !== false){
-			if ($this->getSideLoadedCover($this->type.':'.$this->id)) {
-				return;
-			}
-		} elseif (stripos($this->type, 'biblioboard') !== false){
-			if ($this->getSideLoadedCover($this->type.':'.$this->id)) {
-				return;
-			}
-		} elseif (stripos($this->type, 'lynda') !== false){
-			if ($this->getSideLoadedCover($this->type.':'.$this->id)) {
-				return;
-			}
-		} elseif (stripos($this->type, 'odilo') !== false){
-			if ($this->getSideLoadedCover($this->type.':'.$this->id)) {
-				return;
-			}
-			// Cloud Library
-		} elseif (stripos($this->type, 'cloud') !== false){
-			if ($this->getSideLoadedCover($this->type.':'.$this->id)) {
-				return;
-			}
-		} elseif (stripos($this->type, 'rbdigital') !== false || stripos($this->type, 'zinio') !== false){
-			if ($this->getZinioCover($this->type.':'.$this->id)) {
-				return;
-			}
-		} elseif ($this->type == 'open_archives') {
-            if ($this->getOpenArchivesCover($this->id)) {
+        if (!$this->reload) {
+            $this->log("Looking for Cached cover", Logger::LOG_NOTICE);
+            if ($this->getCachedCover()) {
                 return;
             }
         }
-		$this->log("Looking for cover from providers", Logger::LOG_NOTICE);
-		if ($this->getCoverFromProvider()){
-			return;
-		}
+        if ($this->type == 'open_archives') {
+            if ($this->getOpenArchivesCover($this->id)) {
+                return;
+            }
+        }elseif ($this->type == 'list') {
+            if ($this->getListCover($this->id)) {
+                return;
+            }
+        }else{
+            if ($this->type == 'overdrive') {
+                //Will exit if we find a cover
+                if ($this->getOverDriveCover()) {
+                    return;
+                }
+            } else if ($this->type == 'hoopla') {
+                //Will exit if we find a cover
+                if ($this->getHooplaCover($this->id)) {
+                    return;
+                }
+            } elseif ($this->type == 'Colorado State Government Documents') {
+                if ($this->getColoradoGovDocCover()) {
+                    return;
+                }
+            } elseif ($this->type == 'Classroom Video on Demand') {
+                if ($this->getClassroomVideoOnDemandCover($this->id)) {
+                    return;
+                }
+            } elseif (stripos($this->type, 'films on demand') !== false) {
+                if ($this->getFilmsOnDemandCover($this->id)) {
+                    return;
+                }
+            } elseif (stripos($this->type, 'proquest') !== false || stripos($this->type, 'ebrary') !== false) {
+                if ($this->getEbraryCover($this->id)) {
+                    return;
+                }
+                // Any Side-loaded Collection that has a cover in the 856 tag (and additional conditionals)
+            } elseif (stripos($this->type, 'kanopy') !== false) {
+                if ($this->getSideLoadedCover($this->type . ':' . $this->id)) {
+                    return;
+                }
+            } elseif (stripos($this->type, 'bookflix') !== false) {
+                if ($this->getSideLoadedCover($this->type . ':' . $this->id)) {
+                    return;
+                }
+            } elseif (stripos($this->type, 'boombox') !== false) {
+                if ($this->getSideLoadedCover($this->type . ':' . $this->id)) {
+                    return;
+                }
+            } elseif (stripos($this->type, 'biblioboard') !== false) {
+                if ($this->getSideLoadedCover($this->type . ':' . $this->id)) {
+                    return;
+                }
+            } elseif (stripos($this->type, 'lynda') !== false) {
+                if ($this->getSideLoadedCover($this->type . ':' . $this->id)) {
+                    return;
+                }
+            } elseif (stripos($this->type, 'odilo') !== false) {
+                if ($this->getSideLoadedCover($this->type . ':' . $this->id)) {
+                    return;
+                }
+                // Cloud Library
+            } elseif (stripos($this->type, 'cloud') !== false) {
+                if ($this->getSideLoadedCover($this->type . ':' . $this->id)) {
+                    return;
+                }
+            } elseif (stripos($this->type, 'rbdigital') !== false || stripos($this->type, 'zinio') !== false) {
+                if ($this->getZinioCover($this->type . ':' . $this->id)) {
+                    return;
+                }
+            }
+            $this->log("Looking for cover from providers", Logger::LOG_NOTICE);
+            if ($this->getCoverFromProvider()) {
+                return;
+            }
 
-		if ($this->type != 'grouped_work' && $this->getCoverFromMarc()){
-			return;
-		}
+            if ($this->type != 'grouped_work' && $this->getCoverFromMarc()) {
+                return;
+            }
 
-		if ($this->getGroupedWorkCover()){
-			return;
-		}
+            if ($this->getGroupedWorkCover()){
+                return;
+            }
+        }
 
-		$this->log("No image found, using die image", Logger::LOG_NOTICE);
+		$this->log("No image found, using default image", Logger::LOG_NOTICE);
 		$this->getDefaultCover();
 
 	}
@@ -159,7 +165,7 @@ class BookCoverProcessor{
 
 	private function getSideLoadedCover($sourceAndId){
 		if (strpos($sourceAndId, ':') !== false){
-			// Sideloaded Record requires both source & id
+			// Side-loaded Record requires both source & id
 
 			require_once ROOT_DIR . '/RecordDrivers/SideLoadedRecord.php';
 			$driver = new SideLoadedRecord($sourceAndId);
@@ -256,7 +262,7 @@ class BookCoverProcessor{
 
 	private function getZinioCover($sourceAndId) {
 		if (strpos($sourceAndId, ':') !== false){
-			// Sideloaded Record requires both source & id
+			// Side loaded Record requires both source & id
 
 			require_once ROOT_DIR . '/RecordDrivers/SideLoadedRecord.php';
 			$driver = new SideLoadedRecord($sourceAndId);
@@ -388,7 +394,7 @@ class BookCoverProcessor{
 
 	private function addModificationHeaders($filename){
 		$timestamp = filemtime($filename);
-		$this->logTime("Got filetimestamp $timestamp");
+		$this->logTime("Got file timestamp $timestamp");
 		$last_modified = substr(date('r', $timestamp), 0, -5).'GMT';
 		$etag = '"'.md5($last_modified).'"';
 		$this->logTime("Got last_modified $last_modified and etag $etag");
@@ -558,6 +564,7 @@ class BookCoverProcessor{
 		if ($hasCachedImage){
             $this->bookCoverInfo->lastUsed = time();
             $this->bookCoverInfo->update();
+
             $fileName = "{$this->bookCoverPath}/{$this->size}/{$this->cacheName}.png";
 
             $this->log("Checking $fileName", Logger::LOG_NOTICE);
@@ -610,7 +617,6 @@ class BookCoverProcessor{
 		$this->log("Processing $url", Logger::LOG_NOTICE);
 		$context = stream_context_create(array('http'=>array(
 			'header' => "User-Agent: {$this->configArray['Catalog']['catalogUserAgent']}\r\n"
-//			'header' => "User-Agent: {$this->configArray['Catalog']['genericUserAgent']}\r\n"
 		)));
 
 		if ($image = @file_get_contents($url, false, $context)) {
@@ -672,7 +678,7 @@ class BookCoverProcessor{
 				$maxDimension = 400;
 			}
 
-			//Check to see if the image needs to be resized
+			//Check to see if the image needs to be re-sized
 			if ($width > $maxDimension || $height > $maxDimension){
 				// We no longer need the temp file:
 				@unlink($tempFile);
@@ -703,7 +709,7 @@ class BookCoverProcessor{
 				}
 
 				if (!@imagepng( $tmp_img, $finalFile, 9)){
-					$this->log("Could not save resized file $$this->localFile", Logger::LOG_ERROR);
+					$this->log("Could not save re-sized file $$this->localFile", Logger::LOG_ERROR);
 					return false;
 				}
 
@@ -1069,5 +1075,22 @@ class BookCoverProcessor{
             }
         }
         return false;
+    }
+
+    private function getListCover($id){
+	    //Build a cover based on the titles within list
+        require_once ROOT_DIR . '/sys/Covers/ListCoverBuilder.php';
+        $coverBuilder = new ListCoverBuilder();
+        require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+        $userList = new UserList();
+        $userList->id = $id;
+        if ($userList->find(true)){
+            $title = $userList->title;
+            $listTitles = $userList->getListTitles();
+            $coverBuilder->getCover($title, $listTitles, $this->cacheFile);
+            return $this->processImageURL('default', $this->cacheFile);
+        }else{
+            return false;
+        }
     }
 }
