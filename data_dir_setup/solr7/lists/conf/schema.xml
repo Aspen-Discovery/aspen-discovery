@@ -93,36 +93,27 @@
 		<field name="id" type="unchanged_string" indexed="true" stored="true"/>
 		<field name="recordtype" type="unchanged_string" indexed="true" stored="true"/>
 		<field name="title" type="searchable_text" indexed="true" stored="true"/>
+		<field name="title_display" type="unchanged_string" indexed="false" stored="true"/>
+		<field name="title_sort" type="alphaOnlySort" indexed="true" stored="true"/> <!-- title for sorting -->
+		<field name="author" type="searchable_text" indexed="true" stored="false" />
+		<field name="author_display" type="unchanged_string" indexed="false" stored="true" multiValued="false"/> <!-- The author to display to the user -->
 		<field name="comments" type="searchable_text" indexed="true" stored="true"/>
+		<field name="table_of_contents" type="searchable_text" indexed="true" stored="true" multiValued="true"/>
+		<field name="table_of_contents_proper" type="textProper" indexed="true" stored="true" multiValued="true"/>
 		<field name="keywords" type="searchable_text" indexed="true" stored="false"/>
-		<!-- Fields Specific to People -->
-		<field name="firstName" type="searchable_text" indexed="true" stored="true"/>
-		<field name="lastName" type="searchable_text" indexed="true" stored="true"/>
-		<field name="middleName" type="searchable_text" indexed="true" stored="true"/>
-		<field name="maidenName" type="searchable_text" indexed="true" stored="true"/>
-		<field name="otherName" type="searchable_text" indexed="true" stored="true"/>
-		<field name="nickName" type="searchable_text" indexed="true" stored="true"/>
-		<field name="fullName" type="searchable_text" indexed="true" stored="true"/>
-		<field name="veteranOf" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
-		<field name="birthDate" type="date" indexed="true" stored="true" multiValued="false"/>
-		<field name="deathDate" type="date" indexed="true" stored="trues" multiValued="false"/>
-		<field name="birthYear" type="unchanged_string" indexed="true" stored="true" multiValued="false"/>
-		<field name="deathYear" type="unchanged_string" indexed="true" stored="true" multiValued="false"/>
-		<field name="ageAtDeath" type="unchanged_string" indexed="true" stored="true" multiValued="false"/>
-		<field name="cemeteryName" type="unchanged_string" indexed="true" stored="true"/>
-		<field name="cemeteryLocation" type="unchanged_string" indexed="true" stored="true"/>
-		<field name="mortuaryName" type="unchanged_string" indexed="true" stored="true"/>
-		<field name="sex" type="unchanged_string" indexed="true" stored="true"/>
-		<field name="race" type="unchanged_string" indexed="true" stored="true"/>
-		<field name="causeOfDeath" type="unchanged_string" indexed="true" stored="true"/>
-		<!-- Fields Specific to Obituaries -->
-		<field name="obituaryDate" type="date" indexed="true" stored="true" multiValued="true"/>
-		<field name="obituarySource" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
-		<field name="obituaryText" type="searchable_text" indexed="true" stored="true" multiValued="true"/>
-		<!-- Fields Specific to Marriages -->
-		<field name="spouseName" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
-		<field name="marriageDate" type="date" indexed="true" stored="true" multiValued="true"/>
-		<field name="marriageComments" type="searchable_text" indexed="true" stored="true" multiValued="true"/>
+		<field name="description" type="searchable_text" indexed="true" stored="false"/>
+		<field name="num_titles" type="integer" indexed="true" stored="false"/>
+		<field name="popularity" type="integer" indexed="true" stored="false" default="0"/>
+		<dynamicField name="local_time_since_added_*" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
+		<dynamicField name="local_days_since_added_*" type="integer" indexed="true" stored="true" multiValued="false"/>
+		<field name="scope_has_related_records" type="unchanged_string" indexed="true" stored="false" multiValued="true"/>
+
+		<!-- IDs of records that make up the list -->
+		<field name="alternate_ids" type="unchanged_string" indexed="true" stored="false" multiValued="true"/>
+		<!-- Field to get random titles -->
+		<dynamicField name="random*" type="random" indexed="true" stored="true"/>
+
 	</fields>
+
 	<uniqueKey>id</uniqueKey>
 </schema>
