@@ -8858,7 +8858,6 @@ hr.menu {
 }
 #home-page-search {
   background-color: #0078AE;
-  background: linear-gradient(to bottom, #0078AE, #0078AE);
   padding: 20px 0 10px;
   margin-bottom: 5px;
 }
@@ -8916,7 +8915,6 @@ hr.menu {
 }
 #horizontal-search-box {
   background-color: #0078AE;
-  background: linear-gradient(to bottom, #0078AE, #0078AE);
   padding: 15px 0;
 }
 #horizontal-search-box #searchForm .row {
@@ -9216,43 +9214,33 @@ hr.menu {
 }
 .browse-category.category0 {
   background-color: #FFF;
-  background: linear-gradient(to bottom, #FFF, #FFF 82%, #FFF 83%, #FFF 84%, #FFF 88%, #FFF 89%, #FFF 90%, #FFF);
 }
 .browse-category.category1 {
   background-color: #FFF;
-  background: linear-gradient(to bottom, #FFF, #FFF 82%, #FFF 83%, #FFF 84%, #FFF 88%, #FFF 89%, #FFF 90%, #FFF);
 }
 .browse-category.category2 {
   background-color: #FFF;
-  background: linear-gradient(to bottom, #FFF, #FFF 82%, #FFF 83%, #FFF 84%, #FFF 88%, #FFF 89%, #FFF 90%, #FFF);
 }
 .browse-category.category3 {
   background-color: #FFF;
-  background: linear-gradient(to bottom, #FFF, #FFF 82%, #FFF 83%, #FFF 84%, #FFF 88%, #FFF 89%, #FFF 90%, #FFF);
 }
 .browse-category.category4 {
   background-color: #FFF;
-  background: linear-gradient(to bottom, #FFF, #FFF 82%, #FFF 83%, #FFF 84%, #FFF 88%, #FFF 89%, #FFF 90%, #FFF);
 }
 .browse-category.category5 {
   background-color: #FFF;
-  background: linear-gradient(to bottom, #FFF, #FFF 82%, #FFF 83%, #FFF 84%, #FFF 88%, #FFF 89%, #FFF 90%, #FFF);
 }
 .browse-category.category6 {
   background-color: #FFF;
-  background: linear-gradient(to bottom, #FFF, #FFF 82%, #FFF 83%, #FFF 84%, #FFF 88%, #FFF 89%, #FFF 90%, #FFF);
 }
 .browse-category.category7 {
   background-color: #FFF;
-  background: linear-gradient(to bottom, #FFF, #FFF 82%, #FFF 83%, #FFF 84%, #FFF 88%, #FFF 89%, #FFF 90%, #FFF);
 }
 .browse-category.category8 {
   background-color: #FFF;
-  background: linear-gradient(to bottom, #FFF, #FFF 82%, #FFF 83%, #FFF 84%, #FFF 88%, #FFF 89%, #FFF 90%, #FFF);
 }
 #selected-browse-label {
   background-color: #fff;
-  background: linear-gradient(to bottom, #fff, #fff 44%, #bbd4e3 45%, #bbd4e3 55%, #fff 56%);
   margin-bottom: 5px;
 }
 #selected-browse-label > div.btn-group {

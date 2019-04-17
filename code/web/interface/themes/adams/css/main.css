@@ -8858,7 +8858,6 @@ hr.menu {
 }
 #home-page-search {
   background-color: #007A53;
-  background: linear-gradient(to bottom, #007A53, #014731);
   padding: 20px 0 10px;
   margin-bottom: 5px;
 }
@@ -8916,7 +8915,6 @@ hr.menu {
 }
 #horizontal-search-box {
   background-color: #007A53;
-  background: linear-gradient(to bottom, #007A53, #014731);
   padding: 15px 0;
 }
 #horizontal-search-box #searchForm .row {
@@ -9216,43 +9214,33 @@ hr.menu {
 }
 .browse-category.category0 {
   background-color: #014731;
-  background: linear-gradient(to bottom, #014731, #014731 82%, #007A53 83%, #007A53 84%, #007A53 88%, #007A53 89%, #014731 90%, #014731);
 }
 .browse-category.category1 {
   background-color: #014731;
-  background: linear-gradient(to bottom, #014731, #014731 82%, #007A53 83%, #007A53 84%, #007A53 88%, #007A53 89%, #014731 90%, #014731);
 }
 .browse-category.category2 {
   background-color: #014731;
-  background: linear-gradient(to bottom, #014731, #014731 82%, #007A53 83%, #007A53 84%, #007A53 88%, #007A53 89%, #014731 90%, #014731);
 }
 .browse-category.category3 {
   background-color: #014731;
-  background: linear-gradient(to bottom, #014731, #014731 82%, #007A53 83%, #007A53 84%, #007A53 88%, #007A53 89%, #014731 90%, #014731);
 }
 .browse-category.category4 {
   background-color: #014731;
-  background: linear-gradient(to bottom, #014731, #014731 82%, #007A53 83%, #007A53 84%, #007A53 88%, #007A53 89%, #014731 90%, #014731);
 }
 .browse-category.category5 {
   background-color: #014731;
-  background: linear-gradient(to bottom, #014731, #014731 82%, #007A53 83%, #007A53 84%, #007A53 88%, #007A53 89%, #014731 90%, #014731);
 }
 .browse-category.category6 {
   background-color: #014731;
-  background: linear-gradient(to bottom, #014731, #014731 82%, #007A53 83%, #007A53 84%, #007A53 88%, #007A53 89%, #014731 90%, #014731);
 }
 .browse-category.category7 {
   background-color: #014731;
-  background: linear-gradient(to bottom, #014731, #014731 82%, #007A53 83%, #007A53 84%, #007A53 88%, #007A53 89%, #014731 90%, #014731);
 }
 .browse-category.category8 {
   background-color: #014731;
-  background: linear-gradient(to bottom, #014731, #014731 82%, #007A53 83%, #007A53 84%, #007A53 88%, #007A53 89%, #014731 90%, #014731);
 }
 #selected-browse-label {
   background-color: #fff;
-  background: linear-gradient(to bottom, #fff, #fff 44%, #bbd4e3 45%, #bbd4e3 55%, #fff 56%);
   margin-bottom: 5px;
 }
 #selected-browse-label > div.btn-group {

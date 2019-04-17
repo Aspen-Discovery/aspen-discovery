@@ -8858,7 +8858,6 @@ hr.menu {
 }
 #home-page-search {
   background-color: #0A61AE;
-  background: linear-gradient(to bottom, #0A61AE, #E1EAF4);
   padding: 20px 0 10px;
   margin-bottom: 5px;
 }
@@ -8916,7 +8915,6 @@ hr.menu {
 }
 #horizontal-search-box {
   background-color: #0A61AE;
-  background: linear-gradient(to bottom, #0A61AE, #E1EAF4);
   padding: 15px 0;
 }
 #horizontal-search-box #searchForm .row {
@@ -9216,43 +9214,33 @@ hr.menu {
 }
 .browse-category.category0 {
   background-color: #597635;
-  background: linear-gradient(to bottom, #597635, #597635 82%, #669 83%, #D7D4E0 84%, #D7D4E0 88%, #669 89%, #597635 90%, #597635);
 }
 .browse-category.category1 {
   background-color: #61813a;
-  background: linear-gradient(to bottom, #61813a, #61813a 82%, #669 83%, #D7D4E0 84%, #D7D4E0 88%, #669 89%, #61813a 90%, #61813a);
 }
 .browse-category.category2 {
   background-color: #698b3e;
-  background: linear-gradient(to bottom, #698b3e, #698b3e 82%, #669 83%, #D7D4E0 84%, #D7D4E0 88%, #669 89%, #698b3e 90%, #698b3e);
 }
 .browse-category.category3 {
   background-color: #719643;
-  background: linear-gradient(to bottom, #719643, #719643 82%, #669 83%, #D7D4E0 84%, #D7D4E0 88%, #669 89%, #719643 90%, #719643);
 }
 .browse-category.category4 {
   background-color: #79a048;
-  background: linear-gradient(to bottom, #79a048, #79a048 82%, #669 83%, #D7D4E0 84%, #D7D4E0 88%, #669 89%, #79a048 90%, #79a048);
 }
 .browse-category.category5 {
   background-color: #81ab4d;
-  background: linear-gradient(to bottom, #81ab4d, #81ab4d 82%, #669 83%, #D7D4E0 84%, #D7D4E0 88%, #669 89%, #81ab4d 90%, #81ab4d);
 }
 .browse-category.category6 {
   background-color: #88b254;
-  background: linear-gradient(to bottom, #88b254, #88b254 82%, #669 83%, #D7D4E0 84%, #D7D4E0 88%, #669 89%, #88b254 90%, #88b254);
 }
 .browse-category.category7 {
   background-color: #90b75f;
-  background: linear-gradient(to bottom, #90b75f, #90b75f 82%, #669 83%, #D7D4E0 84%, #D7D4E0 88%, #669 89%, #90b75f 90%, #90b75f);
 }
 .browse-category.category8 {
   background-color: #97bc6a;
-  background: linear-gradient(to bottom, #97bc6a, #97bc6a 82%, #669 83%, #D7D4E0 84%, #D7D4E0 88%, #669 89%, #97bc6a 90%, #97bc6a);
 }
 #selected-browse-label {
   background-color: #fff;
-  background: linear-gradient(to bottom, #fff, #fff 44%, #bbd4e3 45%, #bbd4e3 55%, #fff 56%);
   margin-bottom: 5px;
 }
 #selected-browse-label > div.btn-group {

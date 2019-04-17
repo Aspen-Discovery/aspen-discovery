@@ -90,39 +90,39 @@
 
   &.category0 {
     background-color: @category1MainColor;
-    background: linear-gradient(to bottom, @category1MainColor, @category1MainColor 82%, @categoryLineShadow 83%, @categoryLineColor 84%, @categoryLineColor 88%, @categoryLineShadow 89%, @category1MainColor 90%, @category1MainColor);
+    //background: linear-gradient(to bottom, @category1MainColor, @category1MainColor 82%, @categoryLineShadow 83%, @categoryLineColor 84%, @categoryLineColor 88%, @categoryLineShadow 89%, @category1MainColor 90%, @category1MainColor);
   }
   &.category1 {
     background-color: @category2MainColor;
-    background: linear-gradient(to bottom, @category2MainColor, @category2MainColor 82%, @categoryLineShadow 83%, @categoryLineColor 84%, @categoryLineColor 88%, @categoryLineShadow 89%, @category2MainColor 90%, @category2MainColor);
+    //background: linear-gradient(to bottom, @category2MainColor, @category2MainColor 82%, @categoryLineShadow 83%, @categoryLineColor 84%, @categoryLineColor 88%, @categoryLineShadow 89%, @category2MainColor 90%, @category2MainColor);
   }
   &.category2 {
     background-color: @category3MainColor;
-    background: linear-gradient(to bottom, @category3MainColor, @category3MainColor 82%, @categoryLineShadow 83%, @categoryLineColor 84%, @categoryLineColor 88%, @categoryLineShadow 89%, @category3MainColor 90%, @category3MainColor);
+    //background: linear-gradient(to bottom, @category3MainColor, @category3MainColor 82%, @categoryLineShadow 83%, @categoryLineColor 84%, @categoryLineColor 88%, @categoryLineShadow 89%, @category3MainColor 90%, @category3MainColor);
   }
   &.category3 {
     background-color: @category4MainColor;
-    background: linear-gradient(to bottom, @category4MainColor, @category4MainColor 82%, @categoryLineShadow 83%, @categoryLineColor 84%, @categoryLineColor 88%, @categoryLineShadow 89%, @category4MainColor 90%, @category4MainColor);
+    //background: linear-gradient(to bottom, @category4MainColor, @category4MainColor 82%, @categoryLineShadow 83%, @categoryLineColor 84%, @categoryLineColor 88%, @categoryLineShadow 89%, @category4MainColor 90%, @category4MainColor);
   }
   &.category4 {
     background-color: @category5MainColor;
-    background: linear-gradient(to bottom, @category5MainColor, @category5MainColor 82%, @categoryLineShadow 83%, @categoryLineColor 84%, @categoryLineColor 88%, @categoryLineShadow 89%, @category5MainColor 90%, @category5MainColor);
+    //background: linear-gradient(to bottom, @category5MainColor, @category5MainColor 82%, @categoryLineShadow 83%, @categoryLineColor 84%, @categoryLineColor 88%, @categoryLineShadow 89%, @category5MainColor 90%, @category5MainColor);
   }
   &.category5 {
     background-color: @category6MainColor;
-    background: linear-gradient(to bottom, @category6MainColor, @category6MainColor 82%, @categoryLineShadow 83%, @categoryLineColor 84%, @categoryLineColor 88%, @categoryLineShadow 89%, @category6MainColor 90%, @category6MainColor);
+    //background: linear-gradient(to bottom, @category6MainColor, @category6MainColor 82%, @categoryLineShadow 83%, @categoryLineColor 84%, @categoryLineColor 88%, @categoryLineShadow 89%, @category6MainColor 90%, @category6MainColor);
   }
   &.category6 {
     background-color: @category7MainColor;
-    background: linear-gradient(to bottom, @category7MainColor, @category7MainColor 82%, @categoryLineShadow 83%, @categoryLineColor 84%, @categoryLineColor 88%, @categoryLineShadow 89%, @category7MainColor 90%, @category7MainColor);
+    //background: linear-gradient(to bottom, @category7MainColor, @category7MainColor 82%, @categoryLineShadow 83%, @categoryLineColor 84%, @categoryLineColor 88%, @categoryLineShadow 89%, @category7MainColor 90%, @category7MainColor);
   }
   &.category7 {
     background-color: @category8MainColor;
-    background: linear-gradient(to bottom, @category8MainColor, @category8MainColor 82%, @categoryLineShadow 83%, @categoryLineColor 84%, @categoryLineColor 88%, @categoryLineShadow 89%, @category8MainColor 90%, @category8MainColor);
+    //background: linear-gradient(to bottom, @category8MainColor, @category8MainColor 82%, @categoryLineShadow 83%, @categoryLineColor 84%, @categoryLineColor 88%, @categoryLineShadow 89%, @category8MainColor 90%, @category8MainColor);
   }
   &.category8 {
     background-color: @category9MainColor;
-    background: linear-gradient(to bottom, @category9MainColor, @category9MainColor 82%, @categoryLineShadow 83%, @categoryLineColor 84%, @categoryLineColor 88%, @categoryLineShadow 89%, @category9MainColor 90%, @category9MainColor);
+    //background: linear-gradient(to bottom, @category9MainColor, @category9MainColor 82%, @categoryLineShadow 83%, @categoryLineColor 84%, @categoryLineColor 88%, @categoryLineShadow 89%, @category9MainColor 90%, @category9MainColor);
   }
 }
 
@@ -135,8 +135,6 @@
 
 #selected-browse-label{
   background-color: @content-bg;
-  //  background: linear-gradient(to bottom, #fff, #fff 44%, #bbd4e3 45%, #bbd4e3 55%, #fff 56%);
-  background: linear-gradient(to bottom, @content-bg, @content-bg 44%, @browse-label-line-color 45%, @browse-label-line-color 55%, @content-bg 56%);
   margin-bottom: 5px;
 
   // Browse Mode Toggle switch //
@@ -152,17 +150,13 @@
     // search results normal, short citation (lists) mode. (list with important details) //
     span.list-icon {
       .glyphicon;
-      //.glyphicon-list-alt;
       .glyphicon-th-list;
     }  span{
-         @media (max-width: @screen-xs-max) {
-           display:none;
-         }
+       @media (max-width: @screen-xs-max) {
+         display:none;
        }
+     }
     .selected-browse-label-mixin();
-    //  background-color: #fff;
-    //  margin-left: 20px;
-    //  padding: 0 8px;
   }
 }
 

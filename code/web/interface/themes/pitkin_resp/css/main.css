@@ -8858,7 +8858,6 @@ hr.menu {
 }
 #home-page-search {
   background-color: #fff;
-  background: linear-gradient(to bottom, #fff, #e0e0e1);
   padding: 20px 0 10px;
   margin-bottom: 5px;
 }
@@ -8916,7 +8915,6 @@ hr.menu {
 }
 #horizontal-search-box {
   background-color: #fff;
-  background: linear-gradient(to bottom, #fff, #e0e0e1);
   padding: 15px 0;
 }
 #horizontal-search-box #searchForm .row {
@@ -9216,43 +9214,33 @@ hr.menu {
 }
 .browse-category.category0 {
   background-color: #fff;
-  background: linear-gradient(to bottom, #fff, #fff 82%, #fff 83%, #fff 84%, #fff 88%, #fff 89%, #fff 90%, #fff);
 }
 .browse-category.category1 {
   background-color: #fff;
-  background: linear-gradient(to bottom, #fff, #fff 82%, #fff 83%, #fff 84%, #fff 88%, #fff 89%, #fff 90%, #fff);
 }
 .browse-category.category2 {
   background-color: #fff;
-  background: linear-gradient(to bottom, #fff, #fff 82%, #fff 83%, #fff 84%, #fff 88%, #fff 89%, #fff 90%, #fff);
 }
 .browse-category.category3 {
   background-color: #fff;
-  background: linear-gradient(to bottom, #fff, #fff 82%, #fff 83%, #fff 84%, #fff 88%, #fff 89%, #fff 90%, #fff);
 }
 .browse-category.category4 {
   background-color: #fff;
-  background: linear-gradient(to bottom, #fff, #fff 82%, #fff 83%, #fff 84%, #fff 88%, #fff 89%, #fff 90%, #fff);
 }
 .browse-category.category5 {
   background-color: #fff;
-  background: linear-gradient(to bottom, #fff, #fff 82%, #fff 83%, #fff 84%, #fff 88%, #fff 89%, #fff 90%, #fff);
 }
 .browse-category.category6 {
   background-color: #fff;
-  background: linear-gradient(to bottom, #fff, #fff 82%, #fff 83%, #fff 84%, #fff 88%, #fff 89%, #fff 90%, #fff);
 }
 .browse-category.category7 {
   background-color: #fff;
-  background: linear-gradient(to bottom, #fff, #fff 82%, #fff 83%, #fff 84%, #fff 88%, #fff 89%, #fff 90%, #fff);
 }
 .browse-category.category8 {
   background-color: #fff;
-  background: linear-gradient(to bottom, #fff, #fff 82%, #fff 83%, #fff 84%, #fff 88%, #fff 89%, #fff 90%, #fff);
 }
 #selected-browse-label {
   background-color: #fff;
-  background: linear-gradient(to bottom, #fff, #fff 44%, #fff 45%, #fff 55%, #fff 56%);
   margin-bottom: 5px;
 }
 #selected-browse-label > div.btn-group {

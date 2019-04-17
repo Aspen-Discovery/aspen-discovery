@@ -8858,7 +8858,6 @@ hr.menu {
 }
 #home-page-search {
   background-color: #fcaf39;
-  background: linear-gradient(to bottom, #fcaf39, #fcaf39);
   padding: 20px 0 10px;
   margin-bottom: 5px;
 }
@@ -8916,7 +8915,6 @@ hr.menu {
 }
 #horizontal-search-box {
   background-color: #fcaf39;
-  background: linear-gradient(to bottom, #fcaf39, #fcaf39);
   padding: 15px 0;
 }
 #horizontal-search-box #searchForm .row {
@@ -9216,43 +9214,33 @@ hr.menu {
 }
 .browse-category.category0 {
   background-color: #fcaf39;
-  background: linear-gradient(to bottom, #fcaf39, #fcaf39 82%, #88c2fe 83%, #015cb9 84%, #015cb9 88%, #88c2fe 89%, #fcaf39 90%, #fcaf39);
 }
 .browse-category.category1 {
   background-color: #fcb548;
-  background: linear-gradient(to bottom, #fcb548, #fcb548 82%, #88c2fe 83%, #015cb9 84%, #015cb9 88%, #88c2fe 89%, #fcb548 90%, #fcb548);
 }
 .browse-category.category2 {
   background-color: #fcbb57;
-  background: linear-gradient(to bottom, #fcbb57, #fcbb57 82%, #88c2fe 83%, #015cb9 84%, #015cb9 88%, #88c2fe 89%, #fcbb57 90%, #fcbb57);
 }
 .browse-category.category3 {
   background-color: #fdc166;
-  background: linear-gradient(to bottom, #fdc166, #fdc166 82%, #88c2fe 83%, #015cb9 84%, #015cb9 88%, #88c2fe 89%, #fdc166 90%, #fdc166);
 }
 .browse-category.category4 {
   background-color: #fdc775;
-  background: linear-gradient(to bottom, #fdc775, #fdc775 82%, #88c2fe 83%, #015cb9 84%, #015cb9 88%, #88c2fe 89%, #fdc775 90%, #fdc775);
 }
 .browse-category.category5 {
   background-color: #fdcd84;
-  background: linear-gradient(to bottom, #fdcd84, #fdcd84 82%, #88c2fe 83%, #015cb9 84%, #015cb9 88%, #88c2fe 89%, #fdcd84 90%, #fdcd84);
 }
 .browse-category.category6 {
   background-color: #fdd493;
-  background: linear-gradient(to bottom, #fdd493, #fdd493 82%, #88c2fe 83%, #015cb9 84%, #015cb9 88%, #88c2fe 89%, #fdd493 90%, #fdd493);
 }
 .browse-category.category7 {
   background-color: #fedaa3;
-  background: linear-gradient(to bottom, #fedaa3, #fedaa3 82%, #88c2fe 83%, #015cb9 84%, #015cb9 88%, #88c2fe 89%, #fedaa3 90%, #fedaa3);
 }
 .browse-category.category8 {
   background-color: #fee0b2;
-  background: linear-gradient(to bottom, #fee0b2, #fee0b2 82%, #88c2fe 83%, #015cb9 84%, #015cb9 88%, #88c2fe 89%, #fee0b2 90%, #fee0b2);
 }
 #selected-browse-label {
   background-color: #fff;
-  background: linear-gradient(to bottom, #fff, #fff 44%, #88c2fe 45%, #88c2fe 55%, #fff 56%);
   margin-bottom: 5px;
 }
 #selected-browse-label > div.btn-group {
