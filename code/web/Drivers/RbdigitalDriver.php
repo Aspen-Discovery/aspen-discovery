@@ -129,7 +129,7 @@ class RbdigitalDriver extends AbstractEContentDriver
             require_once ROOT_DIR . '/RecordDrivers/RbdigitalRecordDriver.php';
             $actionUrl = $this->webServiceURL . '/v1/libraries/' . $this->libraryId . '/patrons/' . $rbdigitalId. '/checkouts/' . $recordId;
 
-            $rawResponse = $this->curlWrapper->curlSendPage($actionUrl, 'POST');
+            $rawResponse = $this->curlWrapper->curlPostPage($actionUrl, '');
             $response = json_decode($rawResponse);
             if ($response == false){
                 $result['message'] = "Invalid information returned from API, please retry your checkout after a few minutes.";
@@ -368,7 +368,7 @@ class RbdigitalDriver extends AbstractEContentDriver
         } else {
             $actionUrl = $this->webServiceURL . '/v1/libraries/' . $this->libraryId . '/patrons/' . $rbdigitalId. '/holds/' . $recordId;
 
-            $rawResponse = $this->curlWrapper->curlSendPage($actionUrl, 'POST');
+            $rawResponse = $this->curlWrapper->curlPostPage($actionUrl, "");
             $response = json_decode($rawResponse);
             if ($response == false){
                 $result['message'] = "Invalid information returned from API, please retry your hold after a few minutes.";
