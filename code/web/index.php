@@ -395,6 +395,10 @@ if ($action == "AJAX" || $action == "JSON"){
 	//Load repeat search options
 	$interface->assign('searchSources', $searchSources->getSearchSources());
 
+	/** @var SearchObject_ListsSearcher $listSearchIndexes */
+    $listSearchIndexes = SearchObjectFactory::initSearchObject('Lists');
+    $interface->assign('listSearchIndexes', is_object($listSearchIndexes) ? $listSearchIndexes->getSearchIndexes() : array());
+
 	if ($library->enableGenealogy){
 		$genealogySearchObject = SearchObjectFactory::initSearchObject('Genealogy');
 		$interface->assign('genealogySearchIndexes', is_object($genealogySearchObject) ? $genealogySearchObject->getSearchIndexes() : array());

@@ -99,7 +99,7 @@ class Lists_Results extends Action {
                 // If it's a parse error or the user specified an invalid field, we
                 // should display an appropriate message:
                 if (is_array($error)){
-                    $errorMessage = reset($error);
+                    $errorMessage = json_encode($error);
                 }else{
                     $errorMessage = $error;
                 }

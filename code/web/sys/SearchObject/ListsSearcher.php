@@ -123,7 +123,7 @@ class SearchObject_ListsSearcher extends SearchObject_SolrSearcher
         return [
             'ListsKeyword' => 'Keyword',
             'ListsTitle' => 'Title',
-            'ListsSubject' => 'Subject',
+            'ListsAuthor' => 'Author',
         ];
     }
 
