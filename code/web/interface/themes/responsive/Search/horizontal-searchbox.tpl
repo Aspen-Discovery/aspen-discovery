@@ -44,19 +44,22 @@
 				col-sm-3 col-sm-offset-4 col-xs-5 col-xs-offset-0
 				{/if}">
 					<select name="searchIndex" class="searchTypeHorizontal form-control catalogType" id="searchIndex" title="The method of searching." aria-label="Search Index">
-						{foreach from=$basicSearchTypes item=searchDesc key=searchVal}
+						{foreach from=$catalogSearchIndexes item=searchDesc key=searchVal}
 							<option data-search_source="catalog" value="{$searchVal}"{if $searchIndex == $searchVal || $searchIndex == $searchVal} selected="selected"{/if}>by {translate text=$searchDesc}</option>
 						{/foreach}
 						{if !empty($enableOpenGenealogy)}
-							{foreach from=$genealogySearchTypes item=searchDesc key=searchVal}
+							{foreach from=$genealogySearchIndexes item=searchDesc key=searchVal}
 								<option data-search_source="genealogy" value="{$searchVal}"{if $searchIndex == $searchVal} selected="selected"{/if}>{translate text=$searchDesc}</option>
 							{/foreach}
 						{/if}
 						{if !empty($enableOpenArchives)}
-							{foreach from=$openArchivesSearchTypes item=searchDesc key=searchVal}
+							{foreach from=$openArchivesSearchIndexes item=searchDesc key=searchVal}
 								<option data-search_source="open_archives" value="{$searchVal}"{if $searchIndex == $searchVal} selected="selected"{/if}>{translate text=$searchDesc}</option>
 							{/foreach}
 						{/if}
+						{foreach from=$listSearchIndexes item=searchDesc key=searchVal}
+							<option data-search_source="lists" value="{$searchVal}"{if $searchIndex == $searchVal} selected="selected"{/if}>{translate text=$searchDesc}</option>
+						{/foreach}
 					</select>
 				</div>
 

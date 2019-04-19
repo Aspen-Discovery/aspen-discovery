@@ -60,10 +60,9 @@ abstract class RecordInterface {
             $extraParams[] = 'searchId=' . $interface->get_template_vars('searchId');
             $extraParams[] = 'recordIndex=' . $interface->get_template_vars('recordIndex');
             $extraParams[] = 'page='  . $interface->get_template_vars('page');
-
+            $extraParams[] = 'searchSource=' . $interface->get_template_vars('searchSource');
         }
 
-        $extraParams[] = 'searchSource=' . $interface->get_template_vars('searchSource');
         if (count($extraParams) > 0){
             $linkUrl .= '?' . implode('&', $extraParams);
         }

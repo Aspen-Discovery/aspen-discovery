@@ -1,13 +1,7 @@
 <?php
 require_once ROOT_DIR . '/RecordDrivers/IndexRecordDriver.php';
 
-/**
- * List Record Driver
- *
- * This class is designed to handle List records.  Much of its functionality
- * is inherited from the default index-based driver.
- */
-class ListRecordDriver extends IndexRecordDriver
+class ListsRecordDriver extends IndexRecordDriver
 {
 	public function __construct($record)
 	{
@@ -16,8 +10,10 @@ class ListRecordDriver extends IndexRecordDriver
 	}
 
     function getBookcoverUrl($size = 'small'){
-	    //TODO: Construct a book cover for the list
-        return null;
+        global $configArray;
+        $id = $this->getId();
+        $bookCoverUrl = $configArray['Site']['coverUrl'] . "/bookcover.php?type=list&amp;id={$id}&amp;size={$size}";
+        return $bookCoverUrl;
     }
 
 	/**
@@ -37,11 +33,12 @@ class ListRecordDriver extends IndexRecordDriver
 
 		$id = $this->getUniqueID();
 		$interface->assign('summId', $id);
-		$interface->assign('summShortId', substr($id, 4)); //Trim the list prefix for the short id
+		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('medium'));
+		$interface->assign('summShortId', $id);
 		$interface->assign('summTitle', $this->getTitle(true));
 		$interface->assign('summAuthor', $this->getPrimaryAuthor(true));
 		if (isset($this->fields['description'])){
-			$interface->assign('summDescription', $this->getDescription(true));
+			$interface->assign('summDescription', $this->getDescription());
 		}else{
 			$interface->assign('summDescription', '');
 		}
@@ -103,39 +100,78 @@ class ListRecordDriver extends IndexRecordDriver
 		if ($this->highlight && $useHighlighting) {
 			if (isset($this->fields['_highlighting']['title_display'][0])){
 				return $this->fields['_highlighting']['title_display'][0];
-			}else if (isset($this->fields['_highlighting']['title_full'][0])){
-				return $this->fields['_highlighting']['title_full'][0];
 			}
 		}
 
 		if (isset($this->fields['title_display'])){
 			return $this->fields['title_display'];
-		}else{
-			if (isset($this->fields['title_full'])){
-				if (is_array($this->fields['title_full'])){
-					return reset($this->fields['title_full']);
-				}else{
-					return $this->fields['title_full'];
-				}
-			}else{
-				return '';
-			}
 		}
+		return '';
 	}
 
 	function getDescriptionFast($useHighlighting = false) {
 
 		// Don't check for highlighted values if highlighting is disabled:
 		if ($this->highlight && $useHighlighting) {
-			if (isset($this->fields['_highlighting']['display_description'][0])) {
-				return $this->fields['_highlighting']['display_description'][0];
+			if (isset($this->fields['_highlighting']['description'][0])) {
+				return $this->fields['_highlighting']['description'][0];
 			}
 		}else{
-			return $this->fields['display_description'];
+			return $this->fields['description'];
 		}
 	}
 
 	function getMoreInfoLinkUrl() {
 		return $this->getLinkUrl();
 	}
+
+    /**
+     * Assign necessary Smarty variables and return a template name to
+     * load in order to display a summary of the item suitable for use in
+     * user's favorites list.
+     *
+     * @access  public
+     * @param object $user User object owning tag/note metadata.
+     * @param int $listId ID of list containing desired tags/notes (or
+     *                              null to show tags/notes from all user's lists).
+     * @param bool $allowEdit Should we display edit controls?
+     * @return  string              Name of Smarty template file to display.
+     */
+    public function getListEntry($user, $listId = null, $allowEdit = true)
+    {
+        // TODO: Implement getListEntry() method.
+    }
+
+    public function getModule()
+    {
+        return 'MyAccount/MyList';
+    }
+
+    /**
+     * Assign necessary Smarty variables and return a template name to
+     * load in order to display the full record information on the Staff
+     * View tab of the record view page.
+     *
+     * @access  public
+     * @return  string              Name of Smarty template file to display.
+     */
+    public function getStaffView()
+    {
+        return null;
+    }
+
+    public function getDescription()
+    {
+        return $this->fields['description'];
+    }
+
+    public function getItemActions($itemInfo)
+    {
+        return [];
+    }
+
+    public function getRecordActions($isAvailable, $isHoldable, $isBookable, $relatedUrls = null)
+    {
+        return [];
+    }
 }

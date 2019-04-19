@@ -1,7 +1,5 @@
 <?php
-/**
- * Table Definition for marriage
- */
+
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
 class Marriage extends DataObject
 {

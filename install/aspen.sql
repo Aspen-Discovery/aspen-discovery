@@ -1263,7 +1263,7 @@ CREATE TABLE `library_facet_setting` (
   `showInAdvancedSearch` tinyint(4) NOT NULL DEFAULT '1',
   `collapseByDefault` tinyint(4) DEFAULT '0',
   `useMoreFacetPopup` tinyint(4) DEFAULT '1'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='A widget that can be displayed within VuFind or within other';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='A widget that can be displayed within websites';
 
 -- --------------------------------------------------------
 
@@ -1586,7 +1586,7 @@ CREATE TABLE `location_facet_setting` (
   `showInAdvancedSearch` tinyint(4) NOT NULL DEFAULT '1',
   `collapseByDefault` tinyint(4) DEFAULT '0',
   `useMoreFacetPopup` tinyint(4) DEFAULT '1'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='A widget that can be displayed within VuFind or within other';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='A widget that can be displayed within websites';
 
 -- --------------------------------------------------------
 
@@ -77932,7 +77932,7 @@ CREATE TABLE `user` (
   `homeLocationId` int(11) NOT NULL COMMENT 'A link to the locations table for the users home location (branch) defined in millennium',
   `myLocation1Id` int(11) NOT NULL COMMENT 'A link to the locations table representing an alternate branch the users frequents or that is close by',
   `myLocation2Id` int(11) NOT NULL COMMENT 'A link to the locations table representing an alternate branch the users frequents or that is close by',
-  `trackReadingHistory` tinyint(4) NOT NULL DEFAULT '0' COMMENT 'Whether or not Reading History should be tracked within VuFind.',
+  `trackReadingHistory` tinyint(4) NOT NULL DEFAULT '0' COMMENT 'Whether or not Reading History should be tracked.',
   `bypassAutoLogout` tinyint(4) NOT NULL DEFAULT '0' COMMENT 'Whether or not the user wants to bypass the automatic logout code on public workstations.',
   `displayName` varchar(30) NOT NULL DEFAULT '',
   `disableCoverArt` tinyint(4) NOT NULL DEFAULT '0',

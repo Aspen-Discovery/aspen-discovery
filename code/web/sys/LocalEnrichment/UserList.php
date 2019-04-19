@@ -4,7 +4,6 @@ require_once ROOT_DIR . '/sys/DB/DataObject.php';
 
 class UserList extends DataObject
 {
-
 	public $__table = 'user_list';												// table name
 	public $id;															// int(11)	not_null primary_key auto_increment
 	public $user_id;													// int(11)	not_null multiple_key

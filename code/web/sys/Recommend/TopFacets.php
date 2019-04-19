@@ -2,18 +2,12 @@
 
 require_once ROOT_DIR . '/sys/Recommend/Interface.php';
 
-/**
- * TopFacets Recommendations Module
- *
- * This class provides recommendations displaying facets above search results
- */
 class TopFacets implements RecommendationInterface
 {
 	/** @var SearchObject_SolrSearcher searchObject */
 	private $searchObject;
 	private $facetSettings = array();
 	private $facets = array();
-	private $baseSettings;
 
 	/* Constructor
 	 *
@@ -33,9 +27,8 @@ class TopFacets implements RecommendationInterface
 		$iniFile = isset($params[1]) ? $params[1] : 'facets';
 
 		// Load the desired facet information:
-		$config = getExtraConfigArray($iniFile);
-		if ($this->searchObject->getSearchType() == 'genealogy' || $this->searchObject->getSearchType() == 'islandora' || $this->searchObject->getSearchType() == 'open_archives'){
-			$this->mainFacets = array();
+		if ($this->searchObject->getSearchType() != 'grouped_works'){
+			$this->facets = array();
 		}else{
 			$searchLibrary = Library::getActiveLibrary();
 			global $locationSingleton;
@@ -67,12 +60,6 @@ class TopFacets implements RecommendationInterface
 				}
 			}
 		}
-
-		// Load other relevant settings:
-		$this->baseSettings = array(
-            'rows' => $config['Results_Settings']['top_rows'],
-            'cols' => $config['Results_Settings']['top_cols']
-		);
 	}
 
 	/* init
@@ -215,7 +202,6 @@ class TopFacets implements RecommendationInterface
 			}
 		}
 		$interface->assign('topFacetSet', $facetList);
-		$interface->assign('topFacetSettings', $this->baseSettings);
 	}
 
 	/* getTemplate

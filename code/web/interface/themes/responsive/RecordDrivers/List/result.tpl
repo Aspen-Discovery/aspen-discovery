@@ -4,13 +4,8 @@
 		<div class="coversColumn col-xs-3 col-sm-3 col-md-3 col-lg-2 text-center">
 			{if $disableCoverArt != 1}
 				<a href="{$path}/MyAccount/MyList/{$summShortId}" class="alignleft listResultImage">
-					<img src="{img filename="lists.png"}" class="listResultImage img-thumbnail" alt="{translate text='No Cover Image'}">
+					<img src="{$bookCoverUrl}" class="listResultImage img-thumbnail" alt="{translate text='Cover Image'}">
 				</a>
-
-				{* From Grouped Work results.tpl *}
-				{*<a href="{$summUrl}">*}
-					{*<img src="{$bookCoverUrlMedium}" class="listResultImage img-thumbnail*}{* img-responsive // shouldn't be needed *}{*" alt="{translate text='No Cover Image'}">*}
-				{*</a>*}
 			{/if}
 		</div>
 	{/if}
@@ -86,7 +81,7 @@
 
 
 		<div class="resultActions row">
-			{include file='List/result-tools.tpl' id=$summId shortId=$shortId module=$summModule summTitle=$summTitle ratingData=$summRating recordUrl=$summUrl}
+			{include file='Lists/result-tools.tpl' id=$summId shortId=$shortId module=$summModule summTitle=$summTitle ratingData=$summRating recordUrl=$summUrl}
 		</div>
 	</div>
 </div>

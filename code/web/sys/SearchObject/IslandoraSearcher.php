@@ -22,7 +22,7 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 	private $applyStandardFilters = true;
 
 	// Facets information
-	private $allFacetSettings = array();    // loaded from facets.ini
+	private $allFacetSettings = array();
 
 	// Display Modes //
 	public $viewOptions = array('list', 'covers');
@@ -75,7 +75,7 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 			$this->defaultSortByType = $searchSettings['DefaultSortingByType'];
 		}
 		if (isset($searchSettings['Basic_Searches'])) {
-			$this->basicTypes = $searchSettings['Basic_Searches'];
+			$this->searchIndexes = $searchSettings['Basic_Searches'];
 		}
 		if (isset($searchSettings['Advanced_Searches'])) {
 			$this->advancedTypes = $searchSettings['Advanced_Searches'];
@@ -205,20 +205,6 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
             );
 
             return true;
-	}
-
-	/**
-	 * Return the specified setting from the facets.ini file.
-	 *
-	 * @access  public
-	 * @param   string $section   The section of the facets.ini file to look at.
-	 * @param   string $setting   The setting within the specified file to return.
-	 * @return  string    The value of the setting (blank if none).
-	 */
-	public function getFacetSetting($section, $setting)
-	{
-		return isset($this->allFacetSettings[$section][$setting]) ?
-		$this->allFacetSettings[$section][$setting] : '';
 	}
 
 	public function getFullSearchUrl() {
@@ -692,28 +678,6 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 		}
 		// Base URL is different for author searches:
 		return $this->serverUrl . '/Archive/Results?';
-	}
-
-	/**
-	 * Load all recommendation settings from the relevant ini file.  Returns an
-	 * associative array where the key is the location of the recommendations (top
-	 * or side) and the value is the settings found in the file (which may be either
-	 * a single string or an array of strings).
-	 *
-	 * @access  protected
-	 * @return  array           associative: location (top/side) => search settings
-	 */
-	protected function getRecommendationSettings()
-	{
-		// Special hard-coded case for author module.  We should make this more
-		// flexible in the future!
-		// Marmot hard-coded case and use searches.ini and facets.ini instead.
-		/*if ($this->searchType == 'author') {
-		 return array('side' => array('SideFacets:Author'));
-		 }*/
-
-		// Use default case from parent class the rest of the time:
-		return parent::getRecommendationSettings();
 	}
 
 	/**
@@ -1510,7 +1474,7 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 		return $this->indexEngine->pingServer($failOnError);
 	}
 
-    public function getBasicTypes()
+    public function getSearchIndexes()
     {
         return [
             'IslandoraKeyword' => 'Keyword',
@@ -1521,5 +1485,10 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
     public function getRecordDriverForResult($record)
     {
         return RecordDriverFactory::initRecordDriver($record);
+    }
+
+    public function getSearchesFile()
+    {
+        return 'islandoraSearches';
     }
 }

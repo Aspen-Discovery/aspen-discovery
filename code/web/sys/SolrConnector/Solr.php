@@ -4,7 +4,7 @@ require_once ROOT_DIR . '/sys/HTTP/HTTP_Request.php';
 require_once ROOT_DIR . '/sys/ConfigArray.php';
 require_once ROOT_DIR . '/sys/SolrUtils.php';
 
-class Solr {
+abstract class Solr {
 	/**
 	 * A boolean value determining whether to include debug information in the query
 	 * @var bool
@@ -51,12 +51,7 @@ class Solr {
 	private $illegal = array('!', ':', ';', '[', ']', '{', '}');
 
 	/**
-	 * The path to the YAML file specifying available search types:
-	 */
-	protected $searchSpecsFile = ROOT_DIR . '/../../sites/default/conf/search_specs.yaml';
-
-	/**
-	 * An array of search specs pulled from $searchSpecsFile (above)
+	 * An array of search specs pulled from yaml file
 	 *
 	 * @var array
 	 */
@@ -275,13 +270,18 @@ class Solr {
 	        require_once ROOT_DIR . '/sys/Yaml.php';
             try {
                 $yaml = new Yaml();
-                Solr::$_searchSpecs = $yaml->load($this->searchSpecsFile);
+                Solr::$_searchSpecs = $yaml->load($this->getSearchSpecsFile());
             } catch (Exception $e) {
                 require_once ROOT_DIR . '/sys/AspenError.php';
                 AspenError::raiseError('Could not load search specs, check the configuration ' . $e->getMessage());
             }
         }
 	}
+
+    /**
+     * @return string
+     */
+	abstract function getSearchSpecsFile();
 
 	/**
 	 * Get the search specifications loaded from the specified YAML file.
@@ -1758,7 +1758,6 @@ class Solr {
 
 		// Set up XML
 		$this->client->addHeader('Content-Type', 'text/xml; charset=utf-8');
-		//$this->client->addHeader('Content-Length', strlen($xml));
 		$this->client->setBody($xml);
 
 		// Send Request

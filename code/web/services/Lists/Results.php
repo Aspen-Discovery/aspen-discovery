@@ -5,7 +5,7 @@ require_once ROOT_DIR . '/services/MyResearch/lib/Search.php';
 
 require_once ROOT_DIR . '/sys/Pager.php';
 
-class OpenArchives_Results extends Action {
+class Lists_Results extends Action {
     function launch()
     {
         global $interface;
@@ -17,8 +17,8 @@ class OpenArchives_Results extends Action {
         $timer->logTime('Include search engine');
 
         // Initialise from the current search globals
-        /** @var SearchObject_OpenArchivesSearcher $searchObject */
-        $searchObject = SearchObjectFactory::initSearchObject('OpenArchives');
+        /** @var SearchObject_ListsSearcher $searchObject */
+        $searchObject = SearchObjectFactory::initSearchObject('Lists');
         $searchObject->init();
         $searchObject->setPrimarySearch(true);
 
@@ -89,7 +89,7 @@ class OpenArchives_Results extends Action {
         if ($searchObject->getResultTotal() < 1) {
             // No record found
             $interface->assign('sitepath', $configArray['Site']['path']);
-            $interface->assign('subpage', 'OpenArchives/list-none.tpl');
+            $interface->assign('subpage', 'Lists/list-none.tpl');
             $interface->setTemplate('list.tpl');
             $interface->assign('recordCount', 0);
 
@@ -136,9 +136,9 @@ class OpenArchives_Results extends Action {
             // Setup Display
             $interface->assign('sitepath', $configArray['Site']['path']);
             if ($displayMode == 'covers') {
-                $displayTemplate = 'OpenArchives/covers-list.tpl'; // structure for bookcover tiles
+                $displayTemplate = 'Lists/covers-list.tpl'; // structure for bookcover tiles
             }else{
-                $displayTemplate = 'OpenArchives/list-list.tpl'; // structure for regular results
+                $displayTemplate = 'Lists/list-list.tpl'; // structure for regular results
                 $displayMode = 'list'; // In case the view is not explicitly set, do so now for display & clients-side functions
                 // Process Paging
                 $link = $searchObject->renderLinkPageTemplate();
@@ -168,12 +168,12 @@ class OpenArchives_Results extends Action {
         }
         $exploreMore = new ExploreMore();
         $exploreMoreSearchTerm = $exploreMore->getExploreMoreQuery();
-        $interface->assign('exploreMoreSection', 'open_archives');
+        $interface->assign('exploreMoreSection', 'lists');
         $interface->assign('showExploreMoreBar', $showExploreMoreBar);
         $interface->assign('exploreMoreSearchTerm', $exploreMoreSearchTerm);
 
         // Done, display the page
-        $interface->assign('sectionLabel', 'Open Archives Results');
-        $this->display($searchObject->getResultTotal() ? 'list.tpl' : 'list-none.tpl','Archive Search Results', 'Search/results-sidebar.tpl');
+        $interface->assign('sectionLabel', 'List Results');
+        $this->display($searchObject->getResultTotal() ? 'list.tpl' : 'list-none.tpl','List Search Results', 'Search/results-sidebar.tpl');
     } // End launch()
 }

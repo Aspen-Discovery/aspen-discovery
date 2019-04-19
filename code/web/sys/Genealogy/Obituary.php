@@ -1,7 +1,5 @@
 <?php
-/**
- * Table Definition for Obituary
- */
+
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
 class Obituary extends DataObject {
 	public $__table = 'obituary'; // table name

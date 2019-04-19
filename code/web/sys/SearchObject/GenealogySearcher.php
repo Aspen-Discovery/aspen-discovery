@@ -17,7 +17,7 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 	private $publicQuery = null;
 
 	// Facets information
-	protected $allFacetSettings = array();    // loaded from facets.ini
+	protected $allFacetSettings = array();
 
 	/**
 	 * Constructor. Initialise some details about the server
@@ -61,7 +61,7 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 			$this->defaultSortByType = $searchSettings['DefaultSortingByType'];
 		}
 		if (isset($searchSettings['Basic_Searches'])) {
-			$this->basicTypes = $searchSettings['Basic_Searches'];
+			$this->searchIndexes = $searchSettings['Basic_Searches'];
 		}
 		if (isset($searchSettings['Advanced_Searches'])) {
 			$this->advancedTypes = $searchSettings['Advanced_Searches'];
@@ -176,20 +176,6 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
             );
 
             return true;
-	}
-
-	/**
-	 * Return the specified setting from the facets.ini file.
-	 *
-	 * @access  public
-	 * @param   string $section   The section of the facets.ini file to look at.
-	 * @param   string $setting   The setting within the specified file to return.
-	 * @return  string    The value of the setting (blank if none).
-	 */
-	public function getFacetSetting($section, $setting)
-	{
-		return isset($this->allFacetSettings[$section][$setting]) ?
-		$this->allFacetSettings[$section][$setting] : '';
 	}
 
 	/**
@@ -527,28 +513,6 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 	}
 
 	/**
-	 * Load all recommendation settings from the relevant ini file.  Returns an
-	 * associative array where the key is the location of the recommendations (top
-	 * or side) and the value is the settings found in the file (which may be either
-	 * a single string or an array of strings).
-	 *
-	 * @access  protected
-	 * @return  array           associative: location (top/side) => search settings
-	 */
-	protected function getRecommendationSettings()
-	{
-		// Special hard-coded case for author module.  We should make this more
-		// flexible in the future!
-		// Marmot hard-coded case and use searches.ini and facets.ini instead.
-		/*if ($this->searchType == 'author') {
-		 return array('side' => array('SideFacets:Author'));
-		 }*/
-
-		// Use default case from parent class the rest of the time:
-		return parent::getRecommendationSettings();
-	}
-
-	/**
 	 * Process facets from the results object
 	 *
 	 * @access  public
@@ -780,7 +744,7 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 		$this->indexEngine->isPrimarySearch = $flag;
 	}
 
-    public function getBasicTypes()
+    public function getSearchIndexes()
     {
         return [
             "GenealogyKeyword" => "Keyword",
@@ -792,5 +756,10 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
     {
         require_once ROOT_DIR . '/RecordDrivers/PersonRecord.php';
         return new PersonRecord($current);
+    }
+
+    public function getSearchesFile()
+    {
+        return 'genealogySearches';
     }
 }

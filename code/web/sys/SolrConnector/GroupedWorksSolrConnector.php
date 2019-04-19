@@ -3,6 +3,14 @@
 require_once 'Solr.php';
 class GroupedWorksSolrConnector extends Solr
 {
+    /**
+     * @return string
+     */
+    function getSearchSpecsFile()
+    {
+        return ROOT_DIR . '/../../sites/default/conf/groupedWorksSearchSpecs.yaml';
+    }
+
     function getRecordByBarcode($barcode){
         if ($this->debug) {
             echo "<pre>Get Record by Barcode: $barcode</pre>\n";

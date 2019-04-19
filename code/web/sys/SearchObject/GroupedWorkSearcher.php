@@ -44,7 +44,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 		$timer->logTime('Created Index Engine');
 
 		// Get default facet settings
-		$this->allFacetSettings = getExtraConfigArray('facets');
+		$this->allFacetSettings = getExtraConfigArray('groupedWorksFacets');
 		$this->facetConfig = array();
 		$facetLimit = $this->getFacetSetting('Results_Settings', 'facet_limit');
 		if (is_numeric($facetLimit)) {
@@ -59,7 +59,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 		}
 
 		// Load search preferences:
-		$searchSettings = getExtraConfigArray('searches');
+		$searchSettings = getExtraConfigArray('groupedWorksSearches');
 		if (isset($searchSettings['General']['default_handler'])) {
 			$this->defaultIndex = $searchSettings['General']['default_handler'];
 		}
@@ -73,7 +73,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 			$this->defaultSortByType = $searchSettings['DefaultSortingByType'];
 		}
 		if (isset($searchSettings['Basic_Searches'])) {
-			$this->basicTypes = $searchSettings['Basic_Searches'];
+			$this->searchIndexes = $searchSettings['Basic_Searches'];
 		}
 		if (isset($searchSettings['Advanced_Searches'])) {
 			$this->advancedTypes = $searchSettings['Advanced_Searches'];
@@ -672,7 +672,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 				}
 				$interface->assign('recordIndex', $x + 1);
 				$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
-				/** @var GroupedWorkDriver|ListRecordDriver $record */
+				/** @var GroupedWorkDriver $record */
 				$record = RecordDriverFactory::initRecordDriver($current);
 				if (!($record instanceof AspenError)) {
 					$interface->assign('recordDriver', $record);
@@ -944,13 +944,10 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 					$params[] = "basicSearchType=Author";
 					break;
 				// New Items or Reserves modules may have a few extra parameters to preserve:
-				case "newitem":
 				case "reserves":
 				case "favorites":
 				case "list":
 					$preserveParams = array(
-						// for newitem:
-						'range', 'department',
 						// for reserves:
 						'course', 'inst', 'dept',
 						// for favorites/list:
@@ -1001,14 +998,6 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 	 */
 	protected function getRecommendationSettings()
 	{
-		// Special hard-coded case for author module.  We should make this more
-		// flexible in the future!
-		// Marmot hard-coded case and use searches.ini and facets.ini instead.
-		/*if ($this->searchType == 'author') {
-		 return array('side' => array('SideFacets:Author'));
-		 }*/
-
-		// Use default case from parent class the rest of the time:
 		return parent::getRecommendationSettings();
 	}
 
@@ -1791,41 +1780,20 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 		return $this->indexEngine->pingServer($failOnError);
 	}
 
-	public function getBasicTypes()
+	public function getSearchIndexes()
     {
-        $basicSearchTypes = $this->basicTypes;
-        return $basicSearchTypes;
+        $catalogSearchIndexes = $this->searchIndexes;
+        return $catalogSearchIndexes;
     }
 
-    //TODO: This can probably be simplified.  It used to have both lists and Grouped Works,
-    // but just has Grouped works now
     public function getRecordDriverForResult($record)
     {
-        global $configArray;
-        $driver = ucwords($record['recordtype']) . 'Record';
-        $path = "{$configArray['Site']['local']}/RecordDrivers/{$driver}.php";
-        // If we can't load the driver, fall back to the default, index-based one:
-        if (!is_readable($path)) {
-            //Try without appending Record
-            $recordType = $record['recordtype'];
-            $driverNameParts = explode('_', $recordType);
-            $recordType = '';
-            foreach ($driverNameParts as $driverPart){
-                $recordType .= (ucfirst($driverPart));
-            }
+        require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+        return new GroupedWorkDriver($record);
+    }
 
-            $driver = $recordType . 'Driver' ;
-            $path = "{$configArray['Site']['local']}/RecordDrivers/{$driver}.php";
-
-            // If we can't load the driver, fall back to the default, index-based one:
-            if (!is_readable($path)) {
-
-                $driver = 'IndexRecordDriver';
-                $path = "{$configArray['Site']['local']}/RecordDrivers/{$driver}.php";
-            }
-        }
-
-        require_once $path;
-        return new $driver($record);
+    public function getSearchesFile()
+    {
+        return 'groupedWorksSearches';
     }
 }

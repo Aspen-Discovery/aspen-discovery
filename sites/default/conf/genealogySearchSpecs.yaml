@@ -1,0 +1,24 @@
+GenealogyKeyword:
+  QueryFields:
+    - keywords:
+      - [onephrase, 100]
+
+GenealogyName:
+  QueryFields:
+    - 
+      - [AND, 100]
+      - firstName:
+        - [and, 100]
+      - lastName:
+        - [and, 100]
+      - maidenName:
+        - [and, 75]
+      - middleName:
+        - [and, 50]
+      - nickName:
+        - [and, ~]
+      - otherName:
+        - [and, ~]
+    - title: 
+      - [onephrase, 350]
+      - [and, 200]

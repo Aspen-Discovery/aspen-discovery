@@ -355,6 +355,8 @@ class ExploreMore {
 
 		$exploreMoreOptions = $this->loadCatalogOptions($activeSection, $exploreMoreOptions, $searchTerm);
 
+        $exploreMoreOptions = $this->loadListOptions($activeSection, $exploreMoreOptions, $searchTerm);
+
 		if ($library->enableOpenArchives) {
             $exploreMoreOptions = $this->loadOpenArchiveOptions($activeSection, $exploreMoreOptions, $searchTerm);
         }
@@ -566,6 +568,56 @@ class ExploreMore {
 		return $exploreMoreOptions;
 	}
 
+	protected function loadListOptions($activeSection, $exploreMoreOptions, $searchTerm){
+        global $configArray;
+        if ($activeSection != 'lists') {
+            if (strlen($searchTerm) > 0) {
+                /** @var SearchObject_ListsSearcher $searchObject */
+                $searchObjectSolr = SearchObjectFactory::initSearchObject('Lists');
+                $searchObjectSolr->init('local');
+                $searchObjectSolr->setSearchTerms(array(
+                    'lookfor' => $searchTerm,
+                    'index' => 'ListsKeyword'
+                ));
+                $searchObjectSolr->setPage(1);
+                $searchObjectSolr->setLimit(5);
+                $results = $searchObjectSolr->processSearch(true, false);
+
+                if ($results && isset($results['response'])) {
+                    $numCatalogResultsAdded = 0;
+                    foreach ($results['response']['docs'] as $doc) {
+                        /** @var ListsRecordDriver $driver */
+                        $driver = $searchObjectSolr->getRecordDriverForResult($doc);
+                        $numCatalogResults = $results['response']['numFound'];
+                        if ($numCatalogResultsAdded == 4 && $numCatalogResults > 5) {
+                            //Add a link to remaining results
+                            $exploreMoreOptions[] = array(
+                                'label' => "Lists ($numCatalogResults)",
+                                'description' => "Lists ($numCatalogResults)",
+                                //TODO: provide a better icon
+                                'image' => $configArray['Site']['path'] . '/interface/themes/responsive/images/library_symbol.png',
+                                'link' => $searchObjectSolr->renderSearchUrl(),
+                                'usageCount' => 1
+                            );
+                        } else {
+                            //Add a link to the actual title
+                            $exploreMoreOptions[] = array(
+                                'label' => $driver->getTitle(),
+                                'description' => $driver->getTitle(),
+                                'image' => $driver->getBookcoverUrl('medium'),
+                                'link' => $driver->getLinkUrl(),
+                                'usageCount' => 1
+                            );
+                        }
+
+                        $numCatalogResultsAdded++;
+                    }
+                }
+            }
+        }
+        return $exploreMoreOptions;
+    }
+
     /**
      * @param $activeSection
      * @param $exploreMoreOptions
@@ -598,6 +650,7 @@ class ExploreMore {
                             $exploreMoreOptions[] = array(
                                 'label' => "Open Archives Results ($numCatalogResults)",
                                 'description' => "Open Archives Results ($numCatalogResults)",
+                                //TODO: Provide a better title
                                 'image' => $configArray['Site']['path'] . '/interface/themes/responsive/images/library_symbol.png',
                                 'link' => $searchObjectSolr->renderSearchUrl(),
                                 'usageCount' => 1

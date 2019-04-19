@@ -39,6 +39,9 @@ class SideFacets implements RecommendationInterface
         }else if ($searchObject->getSearchType() == 'open_archives') {
             $config           = getExtraConfigArray('openArchivesFacets');
             $this->mainFacets = isset($config[$mainSection]) ? $config[$mainSection] : array();
+        }else if ($searchObject->getSearchType() == 'lists') {
+            $config           = getExtraConfigArray('listsFacets');
+            $this->mainFacets = isset($config[$mainSection]) ? $config[$mainSection] : array();
         } elseif ($searchObject->getSearchType() == 'islandora'){
 			$searchLibrary = Library::getActiveLibrary();
 			$hasArchiveSearchLibraryFacets = ($searchLibrary != null && (count($searchLibrary->archiveSearchFacets) > 0));
@@ -186,8 +189,8 @@ class SideFacets implements RecommendationInterface
 		$sideFacets = $this->searchObject->getFacetList($this->mainFacets);
 		$searchLibrary = Library::getSearchLibrary();
 
-		//Do additional processing of facets for non-genealogy searches
-		if ($this->searchObject->getSearchType() != 'genealogy' && $this->searchObject->getSearchType() != 'open_archives') {
+		//Do additional processing of facets
+		if ($this->searchObject->getSearchType() == 'grouped_works') {
 			foreach ($sideFacets as $facetKey => $facet) {
 
 				$facetSetting = $this->facetSettings[$facetKey];

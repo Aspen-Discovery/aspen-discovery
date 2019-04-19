@@ -101,9 +101,12 @@
 		<field name="table_of_contents" type="searchable_text" indexed="true" stored="true" multiValued="true"/>
 		<field name="table_of_contents_proper" type="textProper" indexed="true" stored="true" multiValued="true"/>
 		<field name="keywords" type="searchable_text" indexed="true" stored="false"/>
-		<field name="description" type="searchable_text" indexed="true" stored="false"/>
+		<field name="description" type="searchable_text" indexed="true" stored="true"/>
 		<field name="num_titles" type="integer" indexed="true" stored="false"/>
 		<field name="popularity" type="integer" indexed="true" stored="false" default="0"/>
+		<field name="date_added" type="date" indexed="true" stored="true" multiValued="false"/>
+		<field name="time_since_added" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true"/>
+		<field name="days_since_added" type="integer" indexed="true" stored="true" multiValued="false"/>
 		<dynamicField name="local_time_since_added_*" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
 		<dynamicField name="local_days_since_added_*" type="integer" indexed="true" stored="true" multiValued="false"/>
 		<field name="scope_has_related_records" type="unchanged_string" indexed="true" stored="false" multiValued="true"/>

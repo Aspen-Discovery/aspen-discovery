@@ -159,6 +159,12 @@ class SearchSources{
 			);
 		}
 
+        $searchOptions['lists'] = array(
+            'name' => 'Lists',
+            'description' => 'User Lists',
+            'catalogType' => 'lists'
+        );
+
 		if ($searchEbsco){
 			$searchOptions['ebsco'] = array(
 					'name' => 'EBSCO',
@@ -187,7 +193,7 @@ class SearchSources{
 		if ($searchGenealogy){
 			$searchOptions['genealogy'] = array(
                 'name' => 'Genealogy Records',
-                'description' => 'Genealogy Records from Colorado',
+                'description' => 'Genealogy Records',
 				'catalogType' => 'genealogy'
 			);
 		}

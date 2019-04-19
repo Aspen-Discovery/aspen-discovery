@@ -54,6 +54,14 @@ class Union_Search extends Action {
             $interface->assign('action', $action);
             $results = new OpenArchives_Results();
             $results->launch();
+        }else if ($searchSource == 'lists'){
+            require_once(ROOT_DIR . '/services/Lists/Results.php');
+            $module = 'List';
+            $interface->assign('module', $module);
+            $action = 'Results';
+            $interface->assign('action', $action);
+            $results = new List_Results();
+            $results->launch();
         }else if ($searchSource == 'ebsco'){
 			require_once (ROOT_DIR . '/services/EBSCO/Results.php');
 			$module = 'EBSCO';

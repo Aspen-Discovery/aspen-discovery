@@ -1,7 +1,5 @@
 <?php
-/**
- * Table Definition for Person
- */
+
 require_once ROOT_DIR . '/sys/SolrDataObject.php';
 require_once ROOT_DIR . '/sys/Genealogy/Marriage.php';
 require_once ROOT_DIR . '/sys/Genealogy/Obituary.php';

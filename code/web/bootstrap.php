@@ -187,6 +187,8 @@ function loadSearchInformation(){
 				$searchSource = 'islandora';
             }elseif ($module == 'OpenArchives'){
                 $searchSource = 'open_archives';
+            }elseif ($module == 'List'){
+                $searchSource = 'lists';
             }elseif ($module == 'EBSCO'){
 				$searchSource = 'ebsco';
 			}else{

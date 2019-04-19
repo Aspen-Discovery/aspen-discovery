@@ -31,7 +31,7 @@ abstract class SearchObject_BaseSearcher
 	// Filters
 	protected $filterList = array();
     // Facets information
-    protected $allFacetSettings = array();    // loaded from facets.ini
+    protected $allFacetSettings = array();
 	// Page number
 	protected $page = 1;
 	// Result limit
@@ -73,15 +73,13 @@ abstract class SearchObject_BaseSearcher
 	protected $isPrimarySearch = false;
 	// Search options for the user
 	protected $advancedTypes = array();
-	protected $basicTypes = array();
+	protected $searchIndexes = array();
 	// Spelling
 	protected $spellcheck    = true;
 	protected $suggestions   = array();
 	// Recommendation modules associated with the search:
 	/** @var bool|array $recommend  */
 	protected $recommend     = false;
-	// The INI file to load recommendations settings from:
-	protected $recommendIni = 'searches';
 
 	// STATS
 	protected $initTime = null;
@@ -396,10 +394,10 @@ abstract class SearchObject_BaseSearcher
 	}
 
     /**
-     * Return the specified setting from the facets.ini file.
+     * Return the specified setting from the configuration file.
      *
      * @access  public
-     * @param   string $section   The section of the facets.ini file to look at.
+     * @param   string $section   The section of the configuration file to look at.
      * @param   string $setting   The setting within the specified file to return.
      * @return  string    The value of the setting (blank if none).
      */
@@ -600,7 +598,7 @@ abstract class SearchObject_BaseSearcher
 
 		if (strpos($searchTerm, ':') > 0){
 			$tempSearchInfo = explode(':', $searchTerm, 2);
-			if (in_array($tempSearchInfo[0], $this->basicTypes)){
+			if (in_array($tempSearchInfo[0], $this->searchIndexes)){
 				$type = $tempSearchInfo[0];
 				$searchTerm = $tempSearchInfo[1];
 			}
@@ -1090,7 +1088,7 @@ abstract class SearchObject_BaseSearcher
 	 * @return  mixed    various internal variables
 	 */
 	public function getAdvancedTypes()  {return $this->advancedTypes;}
-	public abstract function getBasicTypes();
+	public abstract function getSearchIndexes();
 	public function getFilters()        {return $this->filterList;}
 	public function getPage()           {return $this->page;}
 	public function getLimit()          {return $this->limit;}
@@ -1449,13 +1447,13 @@ abstract class SearchObject_BaseSearcher
 
 		// Duplicate elimination
 		$dupSaved  = false;
+		$thisSearchUrl = $this->renderSearchUrl();
 		foreach ($searchHistory as $oldSearch) {
 			// Deminify the old search
 			$minSO = unserialize($oldSearch->search_object);
 			$dupSearch = SearchObjectFactory::deminify($minSO);
 			// See if the classes and urls match
-			if (get_class($dupSearch) && get_class($this) &&
-			$dupSearch->renderSearchUrl() == $this->renderSearchUrl()) {
+			if ((get_class($dupSearch) == get_class($this)) && ($dupSearch->renderSearchUrl() == $thisSearchUrl)) {
 				// Is the older search saved?
 				if ($oldSearch->saved) {
 					// Flag for later
@@ -1900,6 +1898,10 @@ abstract class SearchObject_BaseSearcher
 		return $returnValue;
 	}
 
+    /**
+     * @return string
+     */
+	abstract function getSearchesFile();
 	/**
 	 * Load all recommendation settings from the relevant ini file.  Returns an
 	 * associative array where the key is the location of the recommendations (top
@@ -1914,7 +1916,7 @@ abstract class SearchObject_BaseSearcher
 		// Load the necessary settings to determine the appropriate recommendations
 		// module:
 		$search = $this->searchTerms;
-		$searchSettings = getExtraConfigArray($this->recommendIni);
+		$searchSettings = getExtraConfigArray($this->getSearchesFile());
 
 		// If we have just one search type, save it so we can try to load a
 		// type-specific recommendations module:
@@ -1931,17 +1933,12 @@ abstract class SearchObject_BaseSearcher
 		isset($searchSettings['TopRecommendations'][$searchType])) {
 			$recommend['top'] = $searchSettings['TopRecommendations'][$searchType];
 		} else {
-			$recommend['top'] =
-			isset($searchSettings['General']['default_top_recommend']) ?
-			$searchSettings['General']['default_top_recommend'] : false;
+			$recommend['top'] = isset($searchSettings['General']['default_top_recommend']) ? $searchSettings['General']['default_top_recommend'] : false;
 		}
-		if ($searchType &&
-		isset($searchSettings['SideRecommendations'][$searchType])) {
+		if ($searchType && isset($searchSettings['SideRecommendations'][$searchType])) {
 			$recommend['side'] = $searchSettings['SideRecommendations'][$searchType];
 		} else {
-			$recommend['side'] =
-			isset($searchSettings['General']['default_side_recommend']) ?
-			$searchSettings['General']['default_side_recommend'] : false;
+			$recommend['side'] = isset($searchSettings['General']['default_side_recommend']) ? $searchSettings['General']['default_side_recommend'] : false;
 		}
 
 		return $recommend;
@@ -1998,7 +1995,7 @@ abstract class SearchObject_BaseSearcher
 	 * with it.
 	 *
 	 * @access  public
-	 * @param   string      $preferredSection       Section to favor when loading
+	 * @param   false|string      $preferredSection       Section to favor when loading
 	 *                                              settings; if multiple sections
 	 *                                              contain the same facet, this
 	 *                                              section's description will be
@@ -2024,8 +2021,8 @@ abstract class SearchObject_BaseSearcher
 	 */
 	protected function getHumanReadableFieldName($field)
 	{
-		if (isset($this->basicTypes[$field])) {
-			return translate($this->basicTypes[$field]);
+		if (isset($this->searchIndexes[$field])) {
+			return translate($this->searchIndexes[$field]);
 		} else if (isset($this->advancedTypes[$field])) {
 			return translate($this->advancedTypes[$field]);
 		} else {

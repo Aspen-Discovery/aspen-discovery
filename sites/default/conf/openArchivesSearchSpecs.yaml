@@ -1,0 +1,32 @@
+OpenArchivesKeyword:
+  QueryFields:
+    - title:
+      - [exact, 1000]
+      - [and, 250]
+      - [or, ~]
+    - subject:
+      - [exact, 600]
+      - [and, 250]
+      - [or, ~]
+    - creator:
+      - [exact, 600]
+      - [and, 250]
+      - [or, ~]
+    - description:
+      - [exact, 500]
+      - [and, 125]
+      - [or, ~]
+
+OpenArchivesTitle:
+  QueryFields:
+    - title:
+      - [exact, 1000]
+      - [and, 250]
+      - [or, ~]
+
+OpenArchivesSubject:
+  QueryFields:
+    - subject:
+      - [exact, 600]
+      - [and, 250]
+      - [or, ~]

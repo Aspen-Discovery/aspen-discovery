@@ -53,6 +53,9 @@ class SearchObjectFactory {
             case 'open_archives' :
                 $type = 'OpenArchives';
                 break;
+            case 'lists' :
+                $type = 'Lists';
+                break;
             case 'genealogy' :
 				$type = 'Genealogy';
 				break;

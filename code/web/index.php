@@ -386,8 +386,8 @@ if ($action == "AJAX" || $action == "JSON"){
 	$timer->logTime('Create Search Object');
 	$searchObject->init();
 	$timer->logTime('Init Search Object');
-	$basicSearchTypes = is_object($searchObject) ? $searchObject->getBasicTypes() : array();
-	$interface->assign('basicSearchTypes', $basicSearchTypes);
+	$catalogSearchIndexes = is_object($searchObject) ? $searchObject->getSearchIndexes() : array();
+	$interface->assign('catalogSearchIndexes', $catalogSearchIndexes);
 
 	// Set search results display mode in search-box //
 	if ($searchObject->getView()) $interface->assign('displayMode', $searchObject->getView());
@@ -397,19 +397,19 @@ if ($action == "AJAX" || $action == "JSON"){
 
 	if ($library->enableGenealogy){
 		$genealogySearchObject = SearchObjectFactory::initSearchObject('Genealogy');
-		$interface->assign('genealogySearchTypes', is_object($genealogySearchObject) ? $genealogySearchObject->getBasicTypes() : array());
+		$interface->assign('genealogySearchIndexes', is_object($genealogySearchObject) ? $genealogySearchObject->getSearchIndexes() : array());
         $interface->assign('enableOpenGenealogy', true);
 	}
 
 	if ($library->enableArchive){
 		$islandoraSearchObject = SearchObjectFactory::initSearchObject('Islandora');
-		$interface->assign('islandoraSearchTypes', is_object($islandoraSearchObject) ? $islandoraSearchObject->getBasicTypes() : array());
+		$interface->assign('islandoraSearchIndexes', is_object($islandoraSearchObject) ? $islandoraSearchObject->getSearchIndexes() : array());
 		$interface->assign('enableArchive', true);
 	}
 
     if ($library->enableOpenArchives){
         $openArchivesSearchObject = SearchObjectFactory::initSearchObject('OpenArchives');
-        $interface->assign('openArchivesSearchTypes', is_object($openArchivesSearchObject) ? $openArchivesSearchObject->getBasicTypes() : array());
+        $interface->assign('openArchivesSearchIndexes', is_object($openArchivesSearchObject) ? $openArchivesSearchObject->getSearchIndexes() : array());
         $interface->assign('enableOpenArchives', true);
     }
 

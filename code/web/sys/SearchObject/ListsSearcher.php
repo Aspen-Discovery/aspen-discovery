@@ -1,6 +1,6 @@
 <?php
 require_once ROOT_DIR . '/sys/SearchObject/SolrSearcher.php';
-class SearchObject_OpenArchivesSearcher extends SearchObject_SolrSearcher
+class SearchObject_ListsSearcher extends SearchObject_SolrSearcher
 {
     public function __construct(){
         parent::__construct();
@@ -8,16 +8,16 @@ class SearchObject_OpenArchivesSearcher extends SearchObject_SolrSearcher
         global $configArray;
         global $timer;
 
-        $this->resultsModule = 'OpenArchives';
+        $this->resultsModule = 'Lists';
 
-        $this->searchType = 'open_archives';
-        $this->basicSearchType = 'open_archives';
+        $this->searchType = 'lists';
+        $this->basicSearchType = 'lists';
 
-        require_once ROOT_DIR . "/sys/SolrConnector/OpenArchivesSolrConnector.php";
-        $this->indexEngine = new OpenArchivesSolrConnector($configArray['Index']['url']);
+        require_once ROOT_DIR . "/sys/SolrConnector/ListsSolrConnector.php";
+        $this->indexEngine = new ListsSolrConnector($configArray['Index']['url']);
         $timer->logTime('Created Index Engine for Open Archives');
 
-        $this->allFacetSettings = getExtraConfigArray('openArchivesFacets');
+        $this->allFacetSettings = getExtraConfigArray('listsFacets');
         $facetLimit = $this->getFacetSetting('Results_Settings', 'facet_limit');
         if (is_numeric($facetLimit)) {
             $this->facetLimit = $facetLimit;
@@ -28,8 +28,8 @@ class SearchObject_OpenArchivesSearcher extends SearchObject_SolrSearcher
         }
 
         // Load search preferences:
-        $searchSettings = getExtraConfigArray('openArchivesSearches');
-        $this->defaultIndex = 'OpenArchivesKeyword';
+        $searchSettings = getExtraConfigArray('listsSearches');
+        $this->defaultIndex = 'ListsKeyword';
         if (isset($searchSettings['General']['default_sort'])) {
             $this->defaultSort = $searchSettings['General']['default_sort'];
         }
@@ -77,7 +77,7 @@ class SearchObject_OpenArchivesSearcher extends SearchObject_SolrSearcher
     public function init($searchSource = null)
     {
         // Call the standard initialization routine in the parent:
-        parent::init('open_archives');
+        parent::init('lists');
 
         //********************
         // Check if we have a saved search to restore -- if restored successfully,
@@ -121,9 +121,9 @@ class SearchObject_OpenArchivesSearcher extends SearchObject_SolrSearcher
     public function getSearchIndexes()
     {
         return [
-            'OpenArchivesKeyword' => 'Keyword',
-            'OpenArchivesTitle' => 'Title',
-            'OpenArchivesSubject' => 'Subject',
+            'ListsKeyword' => 'Keyword',
+            'ListsTitle' => 'Title',
+            'ListsSubject' => 'Subject',
         ];
     }
 
@@ -136,17 +136,17 @@ class SearchObject_OpenArchivesSearcher extends SearchObject_SolrSearcher
     }
 
     public function getUniqueField(){
-        return 'identifier';
+        return 'id';
     }
 
     public function getRecordDriverForResult($current)
     {
-        require_once ROOT_DIR . '/RecordDrivers/OpenArchivesRecordDriver.php';
-        return new OpenArchivesRecordDriver($current);
+        require_once ROOT_DIR . '/RecordDrivers/ListsRecordDriver.php';
+        return new ListsRecordDriver($current);
     }
 
     public function getSearchesFile()
     {
-        return 'openArchivesSearches';
+        return 'listsSearches';
     }
 }
