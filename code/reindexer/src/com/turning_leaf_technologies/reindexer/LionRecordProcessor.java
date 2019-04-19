@@ -1,5 +1,7 @@
 package com.turning_leaf_technologies.reindexer;
 
+import com.turning_leaf_technologies.indexing.Scope;
+import com.turning_leaf_technologies.marc.MarcUtil;
 import org.apache.logging.log4j.Logger;
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.Record;
@@ -11,17 +13,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
-/**
- * ILS Indexing with customizations specific to Marmot.  Handles processing
- * - print items
- * - econtent items stored within Sierra
- * - order items
- *
- * Pika
- * User: Mark Noble
- * Date: 2/21/14
- * Time: 3:00 PM
- */
 class LionRecordProcessor extends IIIRecordProcessor {
 	LionRecordProcessor(GroupedWorkIndexer indexer, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, dbConn, indexingProfileRS, logger, fullReindex);
@@ -125,12 +116,12 @@ class LionRecordProcessor extends IIIRecordProcessor {
 			if (translatedFormatCategory != null) {
 				recordInfo.addFormatCategory(translatedFormatCategory);
 			}
-			Long formatBoost = 1L;
+			long formatBoost = 1L;
 			String formatBoostStr = translateValue("format_boost", mostPopularIType, recordInfo.getRecordIdentifier());
 			if (formatBoostStr == null){
 				formatBoostStr = translateValue("format_boost", itemTypeToFormat.get(mostPopularIType), recordInfo.getRecordIdentifier());
 			}
-			if (formatBoostStr != null && Util.isNumeric(formatBoostStr)) {
+			if (Util.isNumeric(formatBoostStr)) {
 				formatBoost = Long.parseLong(formatBoostStr);
 			}
 			recordInfo.setFormatBoost(formatBoost);

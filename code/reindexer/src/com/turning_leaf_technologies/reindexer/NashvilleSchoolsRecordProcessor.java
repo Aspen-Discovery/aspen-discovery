@@ -11,13 +11,6 @@ import java.sql.ResultSet;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
 
-/**
- * Description goes here
- * Pika
- * User: Mark Noble
- * Date: 7/8/2015
- * Time: 4:43 PM
- */
 class NashvilleSchoolsRecordProcessor extends IlsRecordProcessor {
 
 	private HashMap<String, LSSItemInformation> allItemInformation = new HashMap<>();
@@ -59,9 +52,7 @@ class NashvilleSchoolsRecordProcessor extends IlsRecordProcessor {
 		//For LSS, the barcode is the item identifier
 		LSSItemInformation itemInformation = allItemInformation.get(itemInfo.getItemIdentifier());
 		if (itemInformation !=null){
-			if (itemInformation.getItemStatus().equals("I")){
-				return true;
-			}
+			return itemInformation.getItemStatus().equals("I");
 		}
 		return false;
 	}

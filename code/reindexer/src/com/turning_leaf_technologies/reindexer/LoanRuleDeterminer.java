@@ -13,11 +13,12 @@ public class LoanRuleDeterminer {
 	private boolean active;
 	private Long rowNumber;
 
-	public Long getRowNumber() {
+	@SuppressWarnings("unused")
+	Long getRowNumber() {
 		return rowNumber;
 	}
 
-	public void setRowNumber(Long rowNumber) {
+	void setRowNumber(Long rowNumber) {
 		this.rowNumber = rowNumber;
 	}
 
@@ -34,29 +35,29 @@ public class LoanRuleDeterminer {
 		}
 	}
 	
-	public Long getLoanRuleId() {
+	Long getLoanRuleId() {
 		return loanRuleId;
 	}
-	public void setLoanRuleId(Long loanRuleId) {
+	void setLoanRuleId(Long loanRuleId) {
 		this.loanRuleId = loanRuleId;
 	}
-	public boolean isActive() {
+	boolean isActive() {
 		return active;
 	}
-	public void setActive(boolean active) {
+	void setActive(boolean active) {
 		this.active = active;
 	}
-	public String getPatronType() {
+	String getPatronType() {
 		return patronType;
 	}
-	public void setPatronType(String patronType) {
+	void setPatronType(String patronType) {
 		this.patronType = patronType;
 		patronTypes = splitNumberRangeString(patronType);
 	}
-	public String getItemType() {
+	String getItemType() {
 		return itemType;
 	}
-	public void setItemType(String itemType) {
+	void setItemType(String itemType) {
 		this.itemType = itemType;
 		itemTypes = splitNumberRangeString(itemType);
 	}
@@ -80,13 +81,13 @@ public class LoanRuleDeterminer {
 	}
 
 
-	public boolean matchesLocation(String locationCode) {
+	boolean matchesLocation(String locationCode) {
 		return location.equals("*") || location.equals("?????") || locationCode.toLowerCase().startsWith(this.trimmedLocation);
 	}
-	public HashSet<Long> getPatronTypes() {
+	HashSet<Long> getPatronTypes() {
 		return patronTypes;
 	}
-	public HashSet<Long> getItemTypes() {
+	HashSet<Long> getItemTypes() {
 		return itemTypes;
 	}
 

@@ -1,5 +1,6 @@
 package com.turning_leaf_technologies.reindexer;
 
+import com.turning_leaf_technologies.indexing.Scope;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -13,13 +14,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 
-/**
- * Description goes here
- * Pika
- * User: Mark Noble
- * Date: 12/9/13
- * Time: 9:14 AM
- */
 class OverDriveProcessor {
 	private GroupedWorkIndexer indexer;
 	private Logger logger;

@@ -2,23 +2,15 @@ package com.turning_leaf_technologies.reindexer;
 
 import java.util.ArrayList;
 
-/**
- * Contains statistics for an individual record processor (within a scope)
- *
- * Pika
- * User: Mark Noble
- * Date: 7/25/2015
- * Time: 9:13 PM
- */
 public class RecordProcessorIndexingStats {
-	public int numRecordsOwned;
-	public int numPhysicalItemsOwned;
-	public int numOrderItemsOwned;
-	public int numEContentOwned;
-	public int numRecordsTotal;
-	public int numPhysicalItemsTotal;
-	public int numOrderItemsTotal;
-	public int numEContentTotal;
+	int numRecordsOwned;
+	int numPhysicalItemsOwned;
+	int numOrderItemsOwned;
+	int numEContentOwned;
+	int numRecordsTotal;
+	int numPhysicalItemsTotal;
+	int numOrderItemsTotal;
+	int numEContentTotal;
 
 	public void getData(ArrayList<String> dataFields) {
 		dataFields.add(Integer.toString(numRecordsOwned));

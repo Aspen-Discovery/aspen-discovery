@@ -1,11 +1,5 @@
 package com.turning_leaf_technologies.reindexer;
 
-
-/**
- * Created by jabedo on 9/25/2016.
- *
- * A single entry within a site map.
- */
 class SiteMapEntry implements Comparable {
 
 	/*

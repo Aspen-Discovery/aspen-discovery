@@ -1,6 +1,8 @@
 package com.turning_leaf_technologies.reindexer;
 
+import com.turning_leaf_technologies.indexing.Scope;
 import com.turning_leaf_technologies.indexing.TranslationMap;
+import com.turning_leaf_technologies.marc.MarcUtil;
 import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.marc4j.MarcPermissiveStreamReader;
@@ -510,7 +512,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		itemInfo.setItemIdentifier(orderNumber);
 		itemInfo.setNumCopies(copies);
 		itemInfo.setIsEContent(false);
-		itemInfo.setIsOrderItem(true);
+		itemInfo.setIsOrderItem();
 		itemInfo.setCallNumber("ON ORDER");
 		itemInfo.setSortableCallNumber("ON ORDER");
 		itemInfo.setDetailedStatus("On Order");
@@ -2150,7 +2152,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		return translateValue(mapName, value, identifier, true);
 	}
 
-	boolean hasTranslation(String mapName, String value) {
+	private boolean hasTranslation(String mapName, String value) {
 		return translationMaps.containsKey(mapName) && translationMaps.get(mapName).hasTranslation(value);
 	}
 

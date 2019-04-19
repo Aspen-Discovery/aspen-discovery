@@ -1,5 +1,6 @@
 package com.turning_leaf_technologies.grouping;
 
+import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
@@ -136,7 +137,7 @@ public class GroupedWork3 extends GroupedWorkBase implements Cloneable {
 			groupingTitle = fullTitle;
 		}
 
-		groupingTitle = makeValueSortable(groupingTitle);
+		groupingTitle = StringUtils.makeValueSortable(groupingTitle);
 
 		groupingTitle = normalizeDiacritics(groupingTitle);
 
@@ -236,18 +237,6 @@ public class GroupedWork3 extends GroupedWorkBase implements Cloneable {
 
 	private String normalizeDiacritics(String textToNormalize){
 		return Normalizer.normalize(textToNormalize, Normalizer.Form.NFKC);
-	}
-
-	private static Pattern sortTrimmingPattern = Pattern.compile("(?i)^(?:(?:a|an|the|el|la|\"|')\\s)(.*)$");
-	private static String makeValueSortable(String curTitle) {
-		if (curTitle == null) return "";
-		String sortTitle = curTitle.toLowerCase();
-		Matcher sortMatcher = sortTrimmingPattern.matcher(sortTitle);
-		if (sortMatcher.matches()) {
-			sortTitle = sortMatcher.group(1);
-		}
-		sortTitle = sortTitle.trim();
-		return sortTitle;
 	}
 
 	@Override

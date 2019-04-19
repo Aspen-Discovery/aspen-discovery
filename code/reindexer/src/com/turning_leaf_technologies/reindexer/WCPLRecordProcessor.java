@@ -1,5 +1,6 @@
 package com.turning_leaf_technologies.reindexer;
 
+import com.turning_leaf_technologies.marc.MarcUtil;
 import org.apache.logging.log4j.Logger;
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.Record;
@@ -11,13 +12,6 @@ import java.sql.ResultSet;
 import java.util.*;
 import java.util.regex.Pattern;
 
-/**
- * Description goes here
- * Pika
- * User: Mark Noble
- * Date: 4/25/14
- * Time: 11:02 AM
- */
 class WCPLRecordProcessor extends IlsRecordProcessor {
 	private PreparedStatement getDateAddedStmt;
 	WCPLRecordProcessor(GroupedWorkIndexer indexer, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {

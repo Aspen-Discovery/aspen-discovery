@@ -1,19 +1,8 @@
 package com.turning_leaf_technologies.reindexer;
 
-import org.marc4j.marc.DataField;
-
 import java.util.Date;
 
-/**
- * Contains supplemental information about items from Library.Solutions for Schools that is not included in the
- * MARC export
- *
- * Pika
- * User: Mark Noble
- * Date: 7/24/2015
- * Time: 10:35 PM
- */
-public class LSSItemInformation {
+class LSSItemInformation {
 	private String resourceId;
 	private String itemBarcode;
 	private String holdingsCode;
@@ -23,67 +12,70 @@ public class LSSItemInformation {
 	private int checkoutsThisYear;
 	private Date dateAddedToSystem;
 
-	public String getResourceId() {
+	@SuppressWarnings("unused")
+	String getResourceId() {
 		return resourceId;
 	}
 
-	public void setResourceId(String resourceId) {
+	void setResourceId(String resourceId) {
 		this.resourceId = resourceId;
 	}
 
-	public String getItemBarcode() {
+	String getItemBarcode() {
 		return itemBarcode;
 	}
 
-	public void setItemBarcode(String itemBarcode) {
+	void setItemBarcode(String itemBarcode) {
 		this.itemBarcode = itemBarcode;
 	}
 
-	public String getHoldingsCode() {
+	@SuppressWarnings("unused")
+	String getHoldingsCode() {
 		return holdingsCode;
 	}
 
-	public void setHoldingsCode(String holdingsCode) {
+	void setHoldingsCode(String holdingsCode) {
 		this.holdingsCode = holdingsCode;
 	}
 
-	public String getItemStatus() {
+	String getItemStatus() {
 		return itemStatus;
 	}
 
-	public void setItemStatus(String itemStatus) {
+	void setItemStatus(String itemStatus) {
 		this.itemStatus = itemStatus;
 	}
 
-	public String getControlNumber() {
+	@SuppressWarnings("unused")
+	String getControlNumber() {
 		return controlNumber;
 	}
 
-	public void setControlNumber(String controlNumber) {
+	void setControlNumber(String controlNumber) {
 		this.controlNumber = controlNumber;
 	}
 
-	public int getTotalCirculations() {
+	int getTotalCirculations() {
 		return totalCirculations;
 	}
 
-	public void setTotalCirculations(int totalCirculations) {
+	void setTotalCirculations(int totalCirculations) {
 		this.totalCirculations = totalCirculations;
 	}
 
-	public int getCheckoutsThisYear() {
+	int getCheckoutsThisYear() {
 		return checkoutsThisYear;
 	}
 
-	public void setCheckoutsThisYear(int checkoutsThisYear) {
+	void setCheckoutsThisYear(int checkoutsThisYear) {
 		this.checkoutsThisYear = checkoutsThisYear;
 	}
 
-	public Date getDateAddedToSystem() {
+	Date getDateAddedToSystem() {
 		return dateAddedToSystem;
 	}
 
-	public void setDateAddedToSystem(Date dateAddedToSystem) {
+	void setDateAddedToSystem(Date dateAddedToSystem) {
 		this.dateAddedToSystem = dateAddedToSystem;
 	}
 }

@@ -15,11 +15,6 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.File;
 
-/**
- * Write an index of all possible sitemaps.
- *
- * Created by jabedo on 10/3/2016.
- */
 class SiteMapIndex {
 	//example from google
 	  /* <?xml version="1.0" encoding="UTF-8"?>

@@ -92,13 +92,13 @@ public class SierraExportAPIMain {
 			suppressOrderRecordsThatAreReceived = suppressOrderRecordsThatAreReceivedStr.equalsIgnoreCase("true");
 		}
 
-		//Connect to the vufind database
+		//Connect to the aspen database
 		Connection dbConn = null;
 		try{
 			String databaseConnectionInfo = ConfigUtil.cleanIniValue(ini.get("Database", "database_vufind_jdbc"));
 			dbConn = DriverManager.getConnection(databaseConnectionInfo);
 		}catch (Exception e){
-			System.out.println("Error connecting to vufind database " + e.toString());
+			System.out.println("Error connecting to aspen database " + e.toString());
 			System.exit(1);
 		}
 

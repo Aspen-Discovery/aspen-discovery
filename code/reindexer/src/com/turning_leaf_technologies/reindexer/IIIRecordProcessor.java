@@ -1,6 +1,7 @@
 package com.turning_leaf_technologies.reindexer;
 
 import com.opencsv.CSVReader;
+import com.turning_leaf_technologies.indexing.Scope;
 import org.apache.logging.log4j.Logger;
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.Record;
@@ -14,13 +15,6 @@ import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-/**
- * Record Processor to handle processing records from Millennium and Sierra
- * Pika
- * User: Mark Noble
- * Date: 7/9/2015
- * Time: 11:39 PM
- */
 abstract class IIIRecordProcessor extends IlsRecordProcessor{
 	private HashMap<String, ArrayList<OrderInfo>> orderInfoFromExport = new HashMap<>();
 	private HashMap<String, DueDateInfo> dueDateInfoFromExport = new HashMap<>();
@@ -93,9 +87,8 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 			return relevantLoanRules;
 		}
 
-		HashSet<Long> pTypesNotAccountedFor = new HashSet<>();
-		pTypesNotAccountedFor.addAll(pTypesToCheck);
-		Long iTypeLong;
+		HashSet<Long> pTypesNotAccountedFor = new HashSet<>(pTypesToCheck);
+		long iTypeLong;
 		if (iType == null){
 			iTypeLong = 999L;
 		}else{
@@ -326,7 +319,7 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 		}
 	}
 
-	void loadDueDateInformation() {
+	private void loadDueDateInformation() {
 		File dueDatesFile = new File(this.exportPath + "/due_dates.csv");
 		if (dueDatesFile.exists()){
 			try{
@@ -381,7 +374,7 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 			ArrayList<OrderInfo> orderItems = orderInfoFromExport.get(recordInfo.getRecordIdentifier());
 			if (orderItems != null) {
 				for (OrderInfo orderItem : orderItems) {
-					createAndAddOrderItem(groupedWork, recordInfo, orderItem, record);
+					createAndAddOrderItem(recordInfo, orderItem);
 					//For On Order Items, increment popularity based on number of copies that are being purchased.
 					groupedWork.addPopularity(orderItem.getNumCopies());
 				}
@@ -401,7 +394,7 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 		}
 	}
 
-	private void createAndAddOrderItem(GroupedWorkSolr groupedWork, RecordInfo recordInfo, OrderInfo orderItem, Record record) {
+	private void createAndAddOrderItem(RecordInfo recordInfo, OrderInfo orderItem) {
 		ItemInfo itemInfo = new ItemInfo();
 		String orderNumber = orderItem.getOrderRecordId();
 		String location = orderItem.getLocationCode();
@@ -413,7 +406,7 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 		itemInfo.setItemIdentifier(orderNumber);
 		itemInfo.setNumCopies(orderItem.getNumCopies());
 		itemInfo.setIsEContent(false);
-		itemInfo.setIsOrderItem(true);
+		itemInfo.setIsOrderItem();
 		itemInfo.setCallNumber("ON ORDER");
 		itemInfo.setSortableCallNumber("ON ORDER");
 		itemInfo.setDetailedStatus("On Order");

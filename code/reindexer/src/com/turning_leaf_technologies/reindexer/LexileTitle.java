@@ -2,13 +2,6 @@ package com.turning_leaf_technologies.reindexer;
 
 import java.util.HashSet;
 
-/**
- * Contains information about the lexile information related to a title.
- * Pika
- * User: Mark Noble
- * Date: 3/6/14
- * Time: 8:56 AM
- */
 public class LexileTitle {
 	private String title;
 	private String author;
@@ -18,11 +11,12 @@ public class LexileTitle {
 	private HashSet<String> awards = new HashSet<>();
 	private String description;
 
-	public String getDescription() {
+	@SuppressWarnings("unused")
+	String getDescription() {
 		return description;
 	}
 
-	public void setDescription(String description) {
+	void setDescription(String description) {
 		this.description = description;
 	}
 
@@ -34,43 +28,44 @@ public class LexileTitle {
 		this.title = title;
 	}
 
-	public String getAuthor() {
+	@SuppressWarnings("unused")
+	String getAuthor() {
 		return author;
 	}
 
-	public void setAuthor(String author) {
+	void setAuthor(String author) {
 		this.author = author;
 	}
 
-	public String getLexileCode() {
+	String getLexileCode() {
 		return lexileCode;
 	}
 
-	public void setLexileCode(String lexileCode) {
+	void setLexileCode(String lexileCode) {
 		this.lexileCode = lexileCode;
 	}
 
-	public String getLexileScore() {
+	String getLexileScore() {
 		return lexileScore;
 	}
 
-	public void setLexileScore(String lexileScore) {
+	void setLexileScore(String lexileScore) {
 		this.lexileScore = lexileScore;
 	}
 
-	public String getSeries() {
+	String getSeries() {
 		return series;
 	}
 
-	public void setSeries(String series) {
+	void setSeries(String series) {
 		this.series = series;
 	}
 
-	public HashSet<String> getAwards() {
+	HashSet<String> getAwards() {
 		return awards;
 	}
 
-	public void setAwards(String awards) {
+	void setAwards(String awards) {
 		//Remove anything in quotes
 		if (awards != null && awards.length() > 0){
 			awards = awards.replaceAll("\\(.*?\\)", "");

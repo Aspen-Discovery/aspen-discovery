@@ -1,6 +1,7 @@
 package com.turning_leaf_technologies.reindexer;
 
 import com.turning_leaf_technologies.config.ConfigUtil;
+import com.turning_leaf_technologies.indexing.Scope;
 import com.turning_leaf_technologies.logging.LoggingUtil;
 import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -12,13 +13,6 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Date;
 
-
-/**
- * Reindex Grouped Records for display within VuFind
- * 
- * @author Mark Noble <mark@marmot.org>
- * 
- */
 public class GroupedReindexMain {
 
 	private static Logger logger;
@@ -90,7 +84,6 @@ public class GroupedReindexMain {
 		
 		//Process grouped works
 		long numWorksProcessed = 0;
-		long numListsProcessed = 0;
 		try {
 			GroupedWorkIndexer groupedWorkIndexer = new GroupedWorkIndexer(serverName, dbConn, configIni, fullReindex, clearIndex, individualWorkToProcess != null, logger);
 			HashMap<Scope, ArrayList<SiteMapEntry>> siteMapsByScope = new HashMap<>();
@@ -114,8 +107,6 @@ public class GroupedReindexMain {
 				} else {
 					logger.info("Running Reindex");
 					numWorksProcessed = groupedWorkIndexer.processGroupedWorks(siteMapsByScope, uniqueGroupedWorks);
-					//TODO: Reindex lists into new index
-					//numListsProcessed = groupedWorkIndexer.processPublicUserLists();
 				}
 				groupedWorkIndexer.finishIndexing();
 
@@ -135,18 +126,13 @@ public class GroupedReindexMain {
 
 		// Send completion information
 		endTime = new Date().getTime();
-		cleanupOldStatisticReports();
-		sendCompletionMessage(numWorksProcessed, numListsProcessed);
+		sendCompletionMessage(numWorksProcessed);
 		
 		addNoteToReindexLog("Finished Reindex for " + serverName);
 		logger.info("Finished Reindex for " + serverName);
 		long endTime = new Date().getTime();
 		long elapsedTime = endTime - startTime;
 		logger.info("Elapsed Minutes " + (elapsedTime / 60000));
-	}
-
-	private static void cleanupOldStatisticReports() {
-
 	}
 
 	private static StringBuffer reindexNotes = new StringBuffer();
@@ -215,16 +201,15 @@ public class GroupedReindexMain {
 		}
 
 		logger.info("Setting up database connections");
-		//Setup connections to vufind and econtent databases
 		String databaseConnectionInfo = ConfigUtil.cleanIniValue(configIni.get("Database", "database_aspen_jdbc"));
 		if (databaseConnectionInfo == null || databaseConnectionInfo.length() == 0) {
-			logger.error("VuFind Database connection information not found in Database Section.  Please specify connection information in database_vufind_jdbc.");
+			logger.error("Database connection information not found in Database Section.  Please specify connection information in database_vufind_jdbc.");
 			System.exit(1);
 		}
 		try {
 			dbConn = DriverManager.getConnection(databaseConnectionInfo);
 		} catch (SQLException e) {
-			logger.error("Could not connect to vufind database", e);
+			logger.error("Could not connect to aspen database", e);
 			System.exit(1);
 		}
 
@@ -249,17 +234,16 @@ public class GroupedReindexMain {
 		
 	}
 	
-	private static void sendCompletionMessage(Long numWorksProcessed, Long numListsProcessed){
+	private static void sendCompletionMessage(Long numWorksProcessed){
 		long elapsedTime = endTime - startTime;
 		float elapsedMinutes = (float)elapsedTime / (float)(60000); 
 		logger.info("Time elapsed: " + elapsedMinutes + " minutes");
 		
 		try {
-			PreparedStatement finishedStatement = dbConn.prepareStatement("UPDATE reindex_log SET endTime = ?, numWorksProcessed = ?, numListsProcessed = ? WHERE id = ?");
+			PreparedStatement finishedStatement = dbConn.prepareStatement("UPDATE reindex_log SET endTime = ?, numWorksProcessed = ? WHERE id = ?");
 			finishedStatement.setLong(1, new Date().getTime() / 1000);
 			finishedStatement.setLong(2, numWorksProcessed);
-			finishedStatement.setLong(3, numListsProcessed);
-			finishedStatement.setLong(4, reindexLogId);
+			finishedStatement.setLong(3, reindexLogId);
 			finishedStatement.executeUpdate();
 		} catch (SQLException e) {
 			logger.error("Unable to update reindex log with completion time.", e);

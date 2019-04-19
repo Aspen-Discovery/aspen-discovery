@@ -6,18 +6,18 @@ public class LoanRule {
 	private Boolean holdable;
 	private Boolean bookable;
 
-	public Boolean getBookable() {
+	Boolean getBookable() {
 		return bookable;
 	}
 
-	public void setBookable(Boolean bookable) {
+	void setBookable(Boolean bookable) {
 		this.bookable = bookable;
 	}
 
-	public Long getLoanRuleId() {
+	Long getLoanRuleId() {
 		return loanRuleId;
 	}
-	public void setLoanRuleId(Long loanRuleId) {
+	void setLoanRuleId(Long loanRuleId) {
 		this.loanRuleId = loanRuleId;
 	}
 	public String getName() {
@@ -26,12 +26,10 @@ public class LoanRule {
 	public void setName(String name) {
 		this.name = name;
 	}
-	public Boolean getHoldable() {
+	Boolean getHoldable() {
 		return holdable;
 	}
-	public void setHoldable(Boolean holdable) {
+	void setHoldable(Boolean holdable) {
 		this.holdable = holdable;
 	}
-	
-	
 }

@@ -1,5 +1,7 @@
 package com.turning_leaf_technologies.reindexer;
 
+import com.turning_leaf_technologies.indexing.Scope;
+import com.turning_leaf_technologies.marc.MarcUtil;
 import org.apache.logging.log4j.Logger;
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.Record;
@@ -9,14 +11,6 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.util.*;
 
-/**
- * ILS Indexing with customizations specific to Flatirons Library Consortium
- *
- * Pika
- * User: Mark Noble
- * Date: 12/29/2014
- * Time: 10:25 AM
- */
 class FlatironsRecordProcessor extends IIIRecordProcessor{
 	FlatironsRecordProcessor(GroupedWorkIndexer indexer, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, dbConn, indexingProfileRS, logger, fullReindex);
@@ -119,7 +113,7 @@ class FlatironsRecordProcessor extends IIIRecordProcessor{
 			Subfield bcode3Subfield = field998.getSubfield('f');
 			if (bcode3Subfield != null){
 				String bCode3 = bcode3Subfield.getData().toLowerCase().trim();
-				if (bCode3.matches("^(c|d|s|a|m|r|n)$")){
+				if (bCode3.matches("^([cdsamrn])$")){
 					return true;
 				}
 			}
@@ -136,9 +130,7 @@ class FlatironsRecordProcessor extends IIIRecordProcessor{
 		boolean has856 = url != null;
 		if (isEContentBibFormat && has856){
 			//Suppress if the url is an overdrive or hoopla url
-			if (url.contains("lib.overdrive") || url.contains("hoopla")){
-				return true;
-			}
+			return url.contains("lib.overdrive") || url.contains("hoopla");
 		}
 
 		return false;
@@ -152,7 +144,7 @@ class FlatironsRecordProcessor extends IIIRecordProcessor{
 			//Suppress icode2 of wmsrn
 			//         status = l
 			//         bcode 3 = cdsamrn
-			if (icode2.matches("^(w|m|s|r|n)$")) {
+			if (icode2.matches("^([wmsrn])$")) {
 				return true;
 			}
 		}

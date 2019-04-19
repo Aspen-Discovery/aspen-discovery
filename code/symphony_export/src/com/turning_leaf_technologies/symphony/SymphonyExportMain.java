@@ -36,13 +36,13 @@ public class SymphonyExportMain {
 		// Read the base INI file to get information about the server (current directory/cron/config.ini)
 		Ini ini = ConfigUtil.loadConfigFile("config.ini", serverName, logger);
 
-		//Connect to the vufind database
+		//Connect to the aspen database
 		Connection pikaConn = null;
 		try{
 			String databaseConnectionInfo = ConfigUtil.cleanIniValue(ini.get("Database", "database_vufind_jdbc"));
 			pikaConn = DriverManager.getConnection(databaseConnectionInfo);
 		}catch (Exception e){
-			System.out.println("Error connecting to vufind database " + e.toString());
+			System.out.println("Error connecting to aspen database " + e.toString());
 			System.exit(1);
 		}
 

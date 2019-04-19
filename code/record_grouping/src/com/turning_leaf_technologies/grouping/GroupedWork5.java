@@ -1,5 +1,6 @@
 package com.turning_leaf_technologies.grouping;
 
+import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -48,7 +49,7 @@ class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 		}
 
 		groupingTitle = normalizeDiacritics(groupingTitle);
-		groupingTitle = makeValueSortable(groupingTitle);
+		groupingTitle = StringUtils.makeValueSortable(groupingTitle);
 		//Remove any bracketed parts of the title
 		groupingTitle = removeBracketedPartOfTitle(groupingTitle);
 		//TODO: Figure out if this is a good idea
@@ -162,7 +163,7 @@ class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 	}
 
 	private String removeBracketedPartOfTitle(String groupingTitle) {
-		if (groupingTitle.indexOf("[") == -1) {
+		if (!groupingTitle.contains("[")) {
 			return groupingTitle;
 		}
 		//Remove any bracketed parts of the title
@@ -267,18 +268,6 @@ class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 	public void setAuthor(String author) {
 		originalAuthorName = author;
 		this.author = normalizeAuthor(author);
-	}
-
-	private static Pattern sortTrimmingPattern = Pattern.compile("(?i)^(?:(?:a|an|the|el|la|\"|')\\s)(.*)$");
-	private static String makeValueSortable(String curTitle) {
-		if (curTitle == null) return "";
-		String sortTitle = curTitle.toLowerCase();
-		Matcher sortMatcher = sortTrimmingPattern.matcher(sortTitle);
-		if (sortMatcher.matches()) {
-			sortTitle = sortMatcher.group(1);
-		}
-		sortTitle = sortTitle.trim();
-		return sortTitle;
 	}
 
 	@Override

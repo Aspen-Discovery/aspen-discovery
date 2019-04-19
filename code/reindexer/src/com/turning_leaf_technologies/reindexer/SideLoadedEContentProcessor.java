@@ -1,5 +1,6 @@
 package com.turning_leaf_technologies.reindexer;
 
+import com.turning_leaf_technologies.marc.MarcUtil;
 import org.apache.logging.log4j.Logger;
 import org.marc4j.marc.Record;
 
@@ -8,13 +9,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.*;
 
-/**
- * Description goes here
- * Pika
- * User: Mark Noble
- * Date: 12/15/2015
- * Time: 3:03 PM
- */
 class SideLoadedEContentProcessor extends IlsRecordProcessor{
 	private PreparedStatement getDateAddedStmt;
 	SideLoadedEContentProcessor(GroupedWorkIndexer indexer, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
@@ -94,7 +88,6 @@ class SideLoadedEContentProcessor extends IlsRecordProcessor{
 		itemInfo.setIsEContent(true);
 
 		loadDateAdded(identifier, itemInfo);
-		String itemLocation = profileType;
 		itemInfo.setLocationCode(profileType);
 		//No itypes for Side loaded econtent
 		//itemInfo.setITypeCode();
@@ -137,7 +130,7 @@ class SideLoadedEContentProcessor extends IlsRecordProcessor{
 				econtentItem.setFormatCategory(translateValue("format_category", firstFormat, econtentRecord.getFullIdentifier()));
 				String formatBoostStr = translateValue("format_boost", firstFormat, econtentRecord.getFullIdentifier());
 				try {
-					Long formatBoost = Long.parseLong(formatBoostStr);
+					long formatBoost = Long.parseLong(formatBoostStr);
 					econtentRecord.setFormatBoost(formatBoost);
 				}catch (Exception e){
 					logger.warn("Unable to parse format boost " + formatBoostStr + " for format " + firstFormat + " " + econtentRecord.getFullIdentifier());

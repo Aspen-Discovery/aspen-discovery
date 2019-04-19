@@ -2,34 +2,25 @@ package com.turning_leaf_technologies.reindexer;
 
 import java.util.regex.Pattern;
 
-/**
- * Stores information about time to reshelve to override status for items
- * Pika
- * User: Mark Noble
- * Date: 1/28/2016
- * Time: 9:33 PM
- */
 public class TimeToReshelve {
-	private String locations;
 	private Pattern locationsPattern;
 	private long numHoursToOverride;
 	private String status;
 	private String groupedStatus;
 
-	public void setLocations(String locations) {
-		this.locations = locations;
+	void setLocations(String locations) {
 		locationsPattern = Pattern.compile(locations);
 	}
 
-	public Pattern getLocationsPattern() {
+	Pattern getLocationsPattern() {
 		return locationsPattern;
 	}
 
-	public long getNumHoursToOverride() {
+	long getNumHoursToOverride() {
 		return numHoursToOverride;
 	}
 
-	public void setNumHoursToOverride(long numHoursToOverride) {
+	void setNumHoursToOverride(long numHoursToOverride) {
 		this.numHoursToOverride = numHoursToOverride;
 	}
 
@@ -41,11 +32,11 @@ public class TimeToReshelve {
 		this.status = status;
 	}
 
-	public String getGroupedStatus() {
+	String getGroupedStatus() {
 		return groupedStatus;
 	}
 
-	public void setGroupedStatus(String groupedStatus) {
+	void setGroupedStatus(String groupedStatus) {
 		this.groupedStatus = groupedStatus;
 	}
 }

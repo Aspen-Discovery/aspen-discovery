@@ -1,5 +1,6 @@
-package com.turning_leaf_technologies.reindexer;
+package com.turning_leaf_technologies.indexing;
 
+import com.turning_leaf_technologies.marc.MarcUtil;
 import org.marc4j.marc.Record;
 
 import java.util.HashMap;
@@ -7,15 +8,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 
-/**
- * Information to determine if a particular record/item should be included within a given scope
- *
- * Pika
- * User: Mark Noble
- * Date: 7/10/2015
- * Time: 11:31 AM
- */
-class InclusionRule {
+public class InclusionRule {
 	private String recordType;
 	private Pattern locationCodePattern;
 	private Pattern subLocationCodePattern;
@@ -32,7 +25,7 @@ class InclusionRule {
 	private String urlToMatch;
 	private String urlReplacement;
 
-	InclusionRule(String recordType, String locationCode, String subLocationCode, String iType, String audience, String format, boolean includeHoldableOnly, boolean includeItemsOnOrder, boolean includeEContent, String marcTagToMatch, String marcValueToMatch, boolean includeExcludeMatches, String urlToMatch, String urlReplacement){
+	public InclusionRule(String recordType, String locationCode, String subLocationCode, String iType, String audience, String format, boolean includeHoldableOnly, boolean includeItemsOnOrder, boolean includeEContent, String marcTagToMatch, String marcValueToMatch, boolean includeExcludeMatches, String urlToMatch, String urlReplacement){
 		this.recordType = recordType;
 		this.includeHoldableOnly = includeHoldableOnly;
 		this.includeItemsOnOrder = includeItemsOnOrder;
@@ -83,7 +76,7 @@ class InclusionRule {
 	}
 
 	private HashMap<String, HashMap<String, HashMap<String, HashMap<String, HashMap<String, Boolean>>>>> locationCodeCache = new HashMap<>();
-	boolean isItemIncluded(String recordType, String locationCode, String subLocationCode, String iType, TreeSet<String> audiences, String format, boolean isHoldable, boolean isOnOrder, boolean isEContent, Record marcRecord){
+	public boolean isItemIncluded(String recordType, String locationCode, String subLocationCode, String iType, TreeSet<String> audiences, String format, boolean isHoldable, boolean isOnOrder, boolean isEContent, Record marcRecord){
 		//Do the quick checks first
 		if (!isEContent && (includeHoldableOnly && !isHoldable)){
 			return false;
@@ -175,7 +168,7 @@ class InclusionRule {
 		return isIncluded;
 	}
 
-	String getLocalUrl(String url){
+	public String getLocalUrl(String url){
 		if (urlToMatch == null || urlToMatch.length() == 0 || urlReplacement == null || urlReplacement.length() == 0){
 			return url;
 		}else{

@@ -8,14 +8,6 @@ import org.marc4j.marc.Subfield;
 import java.sql.Connection;
 import java.sql.ResultSet;
 
-/**
- * Custom Record Processing for Arlington
- *
- * Pika
- * User: Mark Noble
- * Date: 10/15/2015
- * Time: 9:48 PM
- */
 class SantaFeRecordProcessor extends IIIRecordProcessor {
 
 	SantaFeRecordProcessor(GroupedWorkIndexer indexer, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {

@@ -2,8 +2,65 @@ package com.turning_leaf_technologies.strings;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class StringUtils {
+    private static Pattern cleanJrSrPattern = Pattern.compile(".*[JS]r\\.$");
+    private static Pattern cleaner1Pattern = Pattern.compile(".*\\w\\w\\.$");
+    private static Pattern cleaner2Pattern = Pattern.compile(".*\\p{L}\\p{L}\\.$");
+    private static Pattern cleaner3Pattern = Pattern.compile(".*\\w\\p{InCombiningDiacriticalMarks}?\\w\\p{InCombiningDiacriticalMarks}?\\.$");
+    private static Pattern cleaner4Pattern = Pattern.compile(".*\\p{Punct}\\.$");
+    /**
+     * Removes trailing characters (space, comma, slash, semicolon, colon),
+     * trailing period if it is preceded by at least three letters, and single
+     * square bracket characters if they are the start and/or end chars of the
+     * cleaned string
+     *
+     * @param origStr
+     *          String to clean
+     * @return cleaned string
+     */
+    public static String cleanDataForSolr(String origStr) {
+        String currResult = origStr;
+        String prevResult;
+        do {
+            prevResult = currResult;
+            currResult = currResult.trim();
+
+            currResult = currResult.replaceAll(" *([,/;:])$", "");
+
+            // trailing period removed in certain circumstances
+            if (currResult.endsWith(".")) {
+                //noinspection StatementWithEmptyBody
+                if (cleanJrSrPattern.matcher(currResult).matches()) {
+                    // don't strip period off of Jr. or Sr.
+                } else if (cleaner1Pattern.matcher(currResult).matches()) {
+                    currResult = currResult.substring(0, currResult.length() - 1);
+                } else if (cleaner2Pattern.matcher(currResult).matches()) {
+                    currResult = currResult.substring(0, currResult.length() - 1);
+                } else if (cleaner3Pattern.matcher(currResult).matches()) {
+                    currResult = currResult.substring(0, currResult.length() - 1);
+                } else if (cleaner4Pattern.matcher(currResult).matches()) {
+                    currResult = currResult.substring(0, currResult.length() - 1);
+                }
+            }
+
+            currResult = removeOuterBrackets(currResult);
+
+            if (currResult.length() == 0) return currResult;
+
+        } while (!currResult.equals(prevResult));
+
+        // if (!currResult.equals(origStr))
+        // System.out.println(origStr + " -> "+ currResult);
+
+        return currResult;
+    }
+
     public static String trimTo(int maxCharacters, String stringToTrim) {
         if (stringToTrim == null) {
             return null;
@@ -68,5 +125,77 @@ public class StringUtils {
             }
         }
         return out.toString();
+    }
+
+    private static Pattern sortTrimmingPattern = Pattern.compile("(?i)^(?:(?:a|an|the|el|la|\"|')\\s)(.*)$");
+    public static String makeValueSortable(String curTitle) {
+        if (curTitle == null) return "";
+        String sortTitle = curTitle.toLowerCase();
+        Matcher sortMatcher = sortTrimmingPattern.matcher(sortTitle);
+        if (sortMatcher.matches()) {
+            sortTitle = sortMatcher.group(1);
+        }
+        sortTitle = sortTitle.trim();
+        return sortTitle;
+    }
+
+    private static Pattern trimPunctuationPattern = Pattern.compile("^(.*?)[\\s/,.;|]+$");
+    public static String trimTrailingPunctuation(String format) {
+        if (format == null){
+            return "";
+        }
+        Matcher trimPunctuationMatcher = trimPunctuationPattern.matcher(format);
+        if (trimPunctuationMatcher.matches()){
+            return trimPunctuationMatcher.group(1);
+        }else{
+            return format;
+        }
+    }
+
+    public static StringBuilder trimTrailingPunctuation(StringBuilder format) {
+        if (format == null){
+            return new StringBuilder();
+        }
+        Matcher trimPunctuationMatcher = trimPunctuationPattern.matcher(format);
+        if (trimPunctuationMatcher.matches()){
+            return new StringBuilder(trimPunctuationMatcher.group(1));
+        }else{
+            return format;
+        }
+    }
+
+    public static Collection<String> trimTrailingPunctuation(Set<String> fieldList) {
+        HashSet<String> trimmedCollection = new HashSet<>();
+        for (String field : fieldList){
+            trimmedCollection.add(trimTrailingPunctuation(field));
+        }
+        return trimmedCollection;
+    }
+
+    /**
+     * Remove single square bracket characters if they are the start and/or end
+     * chars (matched or unmatched) and are the only square bracket chars in the
+     * string.
+     */
+    public static String removeOuterBrackets(String origStr) {
+        if (origStr == null || origStr.length() == 0) return origStr;
+
+        String result = origStr.trim();
+
+        if (result.length() > 0) {
+            boolean openBracketFirst = result.charAt(0) == '[';
+            boolean closeBracketLast = result.endsWith("]");
+            if (openBracketFirst && closeBracketLast && result.indexOf('[', 1) == -1 && result.lastIndexOf(']', result.length() - 2) == -1)
+                // only square brackets are at beginning and end
+                result = result.substring(1, result.length() - 1);
+            else if (openBracketFirst && result.indexOf(']') == -1)
+                // starts with '[' but no ']'; remove open bracket
+                result = result.substring(1);
+            else if (closeBracketLast && result.indexOf('[') == -1)
+                // ends with ']' but no '['; remove close bracket
+                result = result.substring(0, result.length() - 1);
+        }
+
+        return result.trim();
     }
 }

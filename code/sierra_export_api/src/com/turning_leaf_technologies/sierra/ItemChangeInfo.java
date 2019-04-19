@@ -1,12 +1,5 @@
 package com.turning_leaf_technologies.sierra;
 
-/**
- * Information about an item that has changed within Sierra
- * VuFind-Plus
- * User: Mark Noble
- * Date: 10/13/2014
- * Time: 9:47 AM
- */
 public class ItemChangeInfo {
 	private String itemId;
 	private String location;

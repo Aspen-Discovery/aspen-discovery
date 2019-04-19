@@ -180,7 +180,7 @@ class AACPLRecordProcessor extends IlsRecordProcessor {
 				itemInfo.setItemIdentifier(recordInfo.getRecordIdentifier());
 				itemInfo.setNumCopies(1);
 				itemInfo.setIsEContent(false);
-				itemInfo.setIsOrderItem(true);
+				itemInfo.setIsOrderItem();
 				itemInfo.setCallNumber("ON ORDER");
 				itemInfo.setSortableCallNumber("ON ORDER");
 				itemInfo.setDetailedStatus("On Order");

@@ -5,14 +5,6 @@ import java.util.HashSet;
 import java.util.TreeMap;
 import java.util.regex.Pattern;
 
-/**
- * Information about a Record within the system
- *
- * Pika
- * User: Mark Noble
- * Date: 7/11/2015
- * Time: 12:05 AM
- */
 public class RecordInfo {
 	private String source;
 	private String subSource;

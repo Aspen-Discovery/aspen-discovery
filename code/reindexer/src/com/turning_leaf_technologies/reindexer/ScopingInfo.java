@@ -1,13 +1,7 @@
 package com.turning_leaf_technologies.reindexer;
 
-/**
- * Information that applies to specific scopes for the item.
- *
- * Pika
- * User: Mark Noble
- * Date: 7/14/2015
- * Time: 9:51 PM
- */
+import com.turning_leaf_technologies.indexing.Scope;
+
 class ScopingInfo {
 	private ItemInfo item;
 	private Scope scope;

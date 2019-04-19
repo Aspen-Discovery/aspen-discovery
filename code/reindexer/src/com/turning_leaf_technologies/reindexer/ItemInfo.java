@@ -1,16 +1,11 @@
 package com.turning_leaf_technologies.reindexer;
 
+import com.turning_leaf_technologies.indexing.Scope;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 
-/**
- * Information about an Item that is being inserted into the index
- * Pika
- * User: Mark Noble
- * Date: 7/11/2015
- * Time: 12:07 AM
- */
 public class ItemInfo {
 	private String itemIdentifier;
 	private String locationCode;
@@ -149,8 +144,8 @@ public class ItemInfo {
 		return isOrderItem;
 	}
 
-	void setIsOrderItem(boolean isOrderItem) {
-		this.isOrderItem = isOrderItem;
+	void setIsOrderItem() {
+		this.isOrderItem = true;
 	}
 
 	boolean isEContent() {
@@ -270,9 +265,7 @@ public class ItemInfo {
 	boolean isLocallyOwned(Scope scope) {
 		ScopingInfo scopeData = scopingInfo.get(scope.getScopeName());
 		if (scopeData != null){
-			if (scopeData.isLocallyOwned()){
-				return true;
-			}
+			return scopeData.isLocallyOwned();
 		}
 		return false;
 	}
@@ -280,9 +273,7 @@ public class ItemInfo {
 	boolean isLibraryOwned(Scope scope) {
 		ScopingInfo scopeData = scopingInfo.get(scope.getScopeName());
 		if (scopeData != null){
-			if (scopeData.isLibraryOwned()){
-				return true;
-			}
+			return scopeData.isLibraryOwned();
 		}
 		return false;
 	}
@@ -290,9 +281,7 @@ public class ItemInfo {
 	boolean isLocallyOwned(String scopeName) {
 		ScopingInfo scopeData = scopingInfo.get(scopeName);
 		if (scopeData != null){
-			if (scopeData.isLocallyOwned()){
-				return true;
-			}
+			return scopeData.isLocallyOwned();
 		}
 		return false;
 	}
@@ -300,9 +289,7 @@ public class ItemInfo {
 	boolean isLibraryOwned(String scopeName) {
 		ScopingInfo scopeData = scopingInfo.get(scopeName);
 		if (scopeData != null){
-			if (scopeData.isLibraryOwned()){
-				return true;
-			}
+			return scopeData.isLibraryOwned();
 		}
 		return false;
 	}

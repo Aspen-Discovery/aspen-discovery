@@ -1,4 +1,4 @@
-package com.turning_leaf_technologies.reindexer;
+package com.turning_leaf_technologies.indexing;
 
 import com.sun.istack.internal.NotNull;
 import org.marc4j.marc.Record;
@@ -7,13 +7,6 @@ import java.util.HashSet;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 
-/**
- * Description goes here
- * Pika
- * User: Mark Noble
- * Date: 6/2/2014
- * Time: 1:08 PM
- */
 public class Scope implements Comparable<Scope>{
 	private String scopeName;
 	private String facetLabel;
@@ -48,7 +41,7 @@ public class Scope implements Comparable<Scope>{
 	private boolean baseAvailabilityToggleOnLocalHoldingsOnly = false;
 	private boolean includeOnlineMaterialsInAvailableToggle  = true;
 
-	String getScopeName() {
+	public String getScopeName() {
 		return scopeName;
 	}
 
@@ -85,7 +78,7 @@ public class Scope implements Comparable<Scope>{
 	 * @param subLocationCode   The sub location code to check.  Set to blank if no sub location code
 	 * @return                  Whether or not the item is included within the scope
 	 */
-	InclusionResult isItemPartOfScope(@NotNull String recordType, @NotNull String locationCode, @NotNull String subLocationCode, String iType, TreeSet<String> audiences, String format, boolean isHoldable, boolean isOnOrder, boolean isEContent, Record marcRecord, String econtentUrl){
+	public InclusionResult isItemPartOfScope(@NotNull String recordType, @NotNull String locationCode, @NotNull String subLocationCode, String iType, TreeSet<String> audiences, String format, boolean isHoldable, boolean isOnOrder, boolean isEContent, Record marcRecord, String econtentUrl){
 		if (locationCode == null){
 			//No location code, skip this item
 			return new InclusionResult(false, econtentUrl);
@@ -119,7 +112,7 @@ public class Scope implements Comparable<Scope>{
 	 * @param subLocationCode   The sub location code to check.  Set to blank if no sub location code
 	 * @return                  Whether or not the item is included within the scope
 	 */
-	boolean isItemOwnedByScope(@NotNull String recordType, @NotNull String locationCode, @NotNull String subLocationCode){
+	public boolean isItemOwnedByScope(@NotNull String recordType, @NotNull String locationCode, @NotNull String subLocationCode){
 		for(OwnershipRule curRule: ownershipRules){
 			if (curRule.isItemOwned(recordType, locationCode, subLocationCode)){
 				return true;
@@ -130,12 +123,12 @@ public class Scope implements Comparable<Scope>{
 		return false;
 	}
 
-	String getFacetLabel() {
+	public String getFacetLabel() {
 		return facetLabel;
 	}
 
 
-	boolean isIncludeOverDriveCollection() {
+	public boolean isIncludeOverDriveCollection() {
 		return includeOverDriveCollection;
 	}
 
@@ -147,7 +140,7 @@ public class Scope implements Comparable<Scope>{
 		this.libraryId = libraryId;
 	}
 
-	Long getLibraryId() {
+	public Long getLibraryId() {
 		return libraryId;
 	}
 
@@ -161,7 +154,7 @@ public class Scope implements Comparable<Scope>{
 		this.isLibraryScope = isLibraryScope;
 	}
 
-	boolean isLibraryScope() {
+	public boolean isLibraryScope() {
 		return isLibraryScope;
 	}
 
@@ -169,7 +162,7 @@ public class Scope implements Comparable<Scope>{
 		this.isLocationScope = isLocationScope;
 	}
 
-	boolean isLocationScope() {
+	public boolean isLocationScope() {
 		return isLocationScope;
 	}
 
@@ -181,7 +174,7 @@ public class Scope implements Comparable<Scope>{
 		inclusionRules.add(inclusionRule);
 	}
 
-	HashSet<Long> getRelatedNumericPTypes() {
+	public HashSet<Long> getRelatedNumericPTypes() {
 		return relatedNumericPTypes;
 	}
 
@@ -193,11 +186,11 @@ public class Scope implements Comparable<Scope>{
 		this.libraryScope = libraryScope;
 	}
 
-	Scope getLibraryScope() {
+	public Scope getLibraryScope() {
 		return libraryScope;
 	}
 
-	boolean isRestrictOwningLibraryAndLocationFacets() {
+	public boolean isRestrictOwningLibraryAndLocationFacets() {
 		return restrictOwningLibraryAndLocationFacets;
 	}
 
@@ -205,11 +198,11 @@ public class Scope implements Comparable<Scope>{
 		this.restrictOwningLibraryAndLocationFacets = restrictOwningLibraryAndLocationFacets;
 	}
 
-	HashSet<Scope> getLocationScopes() {
+	public HashSet<Scope> getLocationScopes() {
 		return locationScopes;
 	}
 
-	String getIlsCode() {
+	public String getIlsCode() {
 		return ilsCode;
 	}
 
@@ -221,7 +214,7 @@ public class Scope implements Comparable<Scope>{
 		this.includeOverDriveAdultCollection = includeOverDriveAdultCollection;
 	}
 
-	boolean isIncludeOverDriveAdultCollection() {
+	public boolean isIncludeOverDriveAdultCollection() {
 		return includeOverDriveAdultCollection;
 	}
 
@@ -229,7 +222,7 @@ public class Scope implements Comparable<Scope>{
 		this.includeOverDriveTeenCollection = includeOverDriveTeenCollection;
 	}
 
-	boolean isIncludeOverDriveTeenCollection() {
+	public boolean isIncludeOverDriveTeenCollection() {
 		return includeOverDriveTeenCollection;
 	}
 
@@ -237,7 +230,7 @@ public class Scope implements Comparable<Scope>{
 		this.includeOverDriveKidsCollection = includeOverDriveKidsCollection;
 	}
 
-	boolean isIncludeOverDriveKidsCollection() {
+	public boolean isIncludeOverDriveKidsCollection() {
 		return includeOverDriveKidsCollection;
 	}
 
@@ -245,7 +238,7 @@ public class Scope implements Comparable<Scope>{
 		this.publicListsToInclude = publicListsToInclude;
 	}
 
-	int getPublicListsToInclude() {
+	public int getPublicListsToInclude() {
 		return publicListsToInclude;
 	}
 
@@ -256,11 +249,11 @@ public class Scope implements Comparable<Scope>{
 		}
 	}
 
-	String getAdditionalLocationsToShowAvailabilityFor() {
+	public String getAdditionalLocationsToShowAvailabilityFor() {
 		return additionalLocationsToShowAvailabilityFor;
 	}
 
-	boolean isIncludeAllLibraryBranchesInFacets() {
+	public boolean isIncludeAllLibraryBranchesInFacets() {
 		return includeAllLibraryBranchesInFacets;
 	}
 
@@ -268,11 +261,11 @@ public class Scope implements Comparable<Scope>{
 		this.includeAllLibraryBranchesInFacets = includeAllLibraryBranchesInFacets;
 	}
 
-	Pattern getAdditionalLocationsToShowAvailabilityForPattern() {
+	public Pattern getAdditionalLocationsToShowAvailabilityForPattern() {
 		return additionalLocationsToShowAvailabilityForPattern;
 	}
 
-	boolean isIncludeAllRecordsInShelvingFacets() {
+	public boolean isIncludeAllRecordsInShelvingFacets() {
 		return includeAllRecordsInShelvingFacets;
 	}
 
@@ -280,7 +273,7 @@ public class Scope implements Comparable<Scope>{
 		this.includeAllRecordsInShelvingFacets = includeAllRecordsInShelvingFacets;
 	}
 
-	boolean isIncludeAllRecordsInDateAddedFacets() {
+	public boolean isIncludeAllRecordsInDateAddedFacets() {
 		return includeAllRecordsInDateAddedFacets;
 	}
 
@@ -288,7 +281,7 @@ public class Scope implements Comparable<Scope>{
 		this.includeAllRecordsInDateAddedFacets = includeAllRecordsInDateAddedFacets;
 	}
 
-	boolean isBaseAvailabilityToggleOnLocalHoldingsOnly() {
+	public boolean isBaseAvailabilityToggleOnLocalHoldingsOnly() {
 		return baseAvailabilityToggleOnLocalHoldingsOnly;
 	}
 
@@ -296,7 +289,7 @@ public class Scope implements Comparable<Scope>{
 		this.baseAvailabilityToggleOnLocalHoldingsOnly = baseAvailabilityToggleOnLocalHoldingsOnly;
 	}
 
-	boolean isIncludeOnlineMaterialsInAvailableToggle() {
+	public boolean isIncludeOnlineMaterialsInAvailableToggle() {
 		return includeOnlineMaterialsInAvailableToggle;
 	}
 
@@ -305,16 +298,16 @@ public class Scope implements Comparable<Scope>{
 	}
 
 	private Boolean isUnscoped = null;
-	boolean isUnscoped() {
+	public boolean isUnscoped() {
 		if (isUnscoped == null){
 			isUnscoped = relatedNumericPTypes.contains(-1L);
 		}
 		return isUnscoped;
 	}
 
-	class InclusionResult{
-		boolean isIncluded;
-		String localUrl;
+	public class InclusionResult{
+		public boolean isIncluded;
+		public String localUrl;
 
 		InclusionResult(boolean isIncluded, String localUrl) {
 			this.isIncluded = isIncluded;

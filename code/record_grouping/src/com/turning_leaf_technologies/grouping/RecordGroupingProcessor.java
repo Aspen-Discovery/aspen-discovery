@@ -53,7 +53,7 @@ public class RecordGroupingProcessor {
 	/**
 	 * Creates a record grouping processor that saves results to the database.  For use from external extractors
 	 *
-	 * @param dbConnection   - The Connection to the Pika database
+	 * @param dbConnection   - The Connection to the database
 	 * @param serverName     - The server we are grouping data for
 	 * @param logger         - A logger to store debug and error messages to.
 	 * @param fullRegrouping - Whether or not we are doing full regrouping or if we are only grouping changes.

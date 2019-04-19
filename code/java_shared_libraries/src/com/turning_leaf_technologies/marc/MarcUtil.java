@@ -1,7 +1,7 @@
-package com.turning_leaf_technologies.reindexer;
+package com.turning_leaf_technologies.marc;
 
+import com.turning_leaf_technologies.strings.StringUtils;
 import org.marc4j.marc.*;
-import org.solrmarc.tools.Utils;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -9,10 +9,8 @@ import java.util.regex.Pattern;
 
 /**
  * Class to handle loading data from MARC records
- *
- * Created by mnoble on 6/16/2017.
  */
-class MarcUtil {
+public class MarcUtil {
 	/**
 	 * Get Set of Strings as indicated by tagStr. For each field spec in the
 	 * tagStr that is NOT about bytes (i.e. not a 008[7-12] type fieldspec), the
@@ -34,7 +32,7 @@ class MarcUtil {
 	 * @return the contents of the indicated marc field(s)/subfield(s), as a set
 	 *         of Strings.
 	 */
-	static Set<String> getFieldList(Record record, String tagStr) {
+	public static Set<String> getFieldList(Record record, String tagStr) {
 		String[] tags = tagStr.split(":");
 		Set<String> result = new LinkedHashSet<>();
 		for (String tag1 : tags) {
@@ -58,7 +56,7 @@ class MarcUtil {
 			// brackets indicate parsing for individual characters or as pattern
 			int bracket = tag1.indexOf('[');
 			if (bracket != -1) {
-				String sub[] = tag1.substring(bracket + 1).split("[\\]\\[\\-, ]+");
+				String[] sub = tag1.substring(bracket + 1).split("[\\]\\[\\-, ]+");
 				try {
 					// if bracket expression is digits, expression is treated as character
 					// positions
@@ -111,7 +109,6 @@ class MarcUtil {
 	 *          - the ending index of the substring of the subfield value
 	 * @return the result set of strings
 	 */
-	@SuppressWarnings("unchecked")
 	private static Set<String> getSubfieldDataAsSet(Record record, String fldTag, String subfield, int beginIx, int endIx) {
 		Set<String> resultSet = new LinkedHashSet<>();
 
@@ -129,7 +126,7 @@ class MarcUtil {
 				DataField dfield = (DataField) vf;
 				if (subfield.length() > 1) {
 					// automatic concatenation of grouped subFields
-					StringBuilder buffer = new StringBuilder("");
+					StringBuilder buffer = new StringBuilder();
 					List<Subfield> subFields = dfield.getSubfields();
 					for (Subfield sf : subFields) {
 						if (subfield.indexOf(sf.getCode()) != -1
@@ -173,8 +170,7 @@ class MarcUtil {
 	 *          all the desired subfield values from a single instance of the
 	 *          fldTag
 	 */
-	@SuppressWarnings("unchecked")
-	static Set<String> getSubfieldDataAsSet(Record record, String fldTag, String subfieldsStr, String separator) {
+	private static Set<String> getSubfieldDataAsSet(Record record, String fldTag, String subfieldsStr, String separator) {
 		Set<String> resultSet = new LinkedHashSet<>();
 
 		// Process Leader
@@ -196,7 +192,7 @@ class MarcUtil {
 
 				if (subfieldsStr.length() > 1 || separator != null) {
 					// concatenate subfields using specified separator or space
-					StringBuilder buffer = new StringBuilder("");
+					StringBuilder buffer = new StringBuilder();
 					List<Subfield> subFields = dfield.getSubfields();
 					for (Subfield sf : subFields) {
 						if (subfieldsStr.indexOf(sf.getCode()) != -1) {
@@ -215,8 +211,6 @@ class MarcUtil {
 					for (Subfield sf : subFields) {
 						resultSet.add(sf.getData().trim());
 					}
-				} else {
-					//logger.warn("No subfield provided when getting getSubfieldDataAsSet for " + fldTag);
 				}
 			} else {
 				// Control Field
@@ -253,7 +247,6 @@ class MarcUtil {
 	 * @return set of Strings containing the values of the designated 880
 	 *         field(s)/subfield(s)
 	 */
-	@SuppressWarnings("unchecked")
 	private static Set<String> getLinkedFieldValue(Record record, String tag, String subfield, String separator) {
 		// assume brackets expression is a pattern such as [a-z]
 		Set<String> result = new LinkedHashSet<>();
@@ -270,7 +263,7 @@ class MarcUtil {
 			Subfield link = dfield.getSubfield('6');
 			if (link != null && link.getData().startsWith(tag)) {
 				List<Subfield> subList = dfield.getSubfields();
-				StringBuilder buf = new StringBuilder("");
+				StringBuilder buf = new StringBuilder();
 				for (Subfield subF : subList) {
 					boolean addIt = false;
 					if (subfieldPattern != null) {
@@ -294,7 +287,7 @@ class MarcUtil {
 					}
 				}
 				if (buf.length() > 0) {
-					result.add(Utils.cleanData(buf.toString()));
+					result.add(StringUtils.cleanDataForSolr(buf.toString()));
 				}
 			}
 		}
@@ -314,8 +307,7 @@ class MarcUtil {
 	 *          contents
 	 * @return Set of values (as strings) for solr field
 	 */
-	@SuppressWarnings("unchecked")
-	static Set<String> getAllSubfields(Record record, String fieldSpec, String separator) {
+	public static Set<String> getAllSubfields(Record record, String fieldSpec, String separator) {
 		Set<String> result = new LinkedHashSet<>();
 
 		String[] fldTags = fieldSpec.split(":");
@@ -336,7 +328,7 @@ class MarcUtil {
 
 					StringBuilder buffer = getSpecifiedSubfieldsAsString(marcField, subfldTags, separator);
 					if (buffer.length() > 0) {
-						result.add(Utils.cleanData(buffer.toString()));
+						result.add(StringUtils.cleanDataForSolr(buffer.toString()));
 					}
 				}
 			}
@@ -345,8 +337,8 @@ class MarcUtil {
 		return result;
 	}
 
-	static StringBuilder getSpecifiedSubfieldsAsString(DataField marcField, String validSubfields, String separator) {
-		StringBuilder buffer = new StringBuilder("");
+	public static StringBuilder getSpecifiedSubfieldsAsString(DataField marcField, String validSubfields, String separator) {
+		StringBuilder buffer = new StringBuilder();
 		List<Subfield> subFields = marcField.getSubfields();
 		for (Subfield subfield : subFields) {
 			if (validSubfields.length() == 0 || validSubfields.contains("" + subfield.getCode())){
@@ -359,15 +351,15 @@ class MarcUtil {
 		return buffer;
 	}
 
-	static List<DataField> getDataFields(Record marcRecord, String tag) {
+	public static List<DataField> getDataFields(Record marcRecord, String tag) {
 		return marcRecord.getDataFields(tag);
 	}
 
-	static List<DataField> getDataFields(Record marcRecord, String[] tags) {
+	public static List<DataField> getDataFields(Record marcRecord, String[] tags) {
 		return marcRecord.getDataFields(tags);
 	}
 
-	static ControlField getControlField(Record marcRecord, String tag){
+	public static ControlField getControlField(Record marcRecord, String tag){
 		List variableFields = marcRecord.getControlFields(tag);
 		ControlField variableFieldReturn = null;
 		for (Object variableField : variableFields){
@@ -390,8 +382,7 @@ class MarcUtil {
 	 * @return a string containing ALL subfields of ALL marc fields within the
 	 *         range indicated by the bound string arguments.
 	 */
-	@SuppressWarnings("unchecked")
-	static String getAllSearchableFields(Record record, int lowerBound, int upperBound) {
+	public static String getAllSearchableFields(Record record, int lowerBound, int upperBound) {
 		StringBuilder buffer = new StringBuilder("");
 
 		List<DataField> fields = record.getDataFields();
@@ -413,7 +404,7 @@ class MarcUtil {
 		return buffer.toString();
 	}
 
-	static String getFirstFieldVal(Record record, String fieldSpec) {
+	public static String getFirstFieldVal(Record record, String fieldSpec) {
 		Set<String> result = MarcUtil.getFieldList(record, fieldSpec);
 		if (result.size() == 0){
 			return null;

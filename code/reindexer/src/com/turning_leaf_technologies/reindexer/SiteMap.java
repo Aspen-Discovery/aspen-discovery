@@ -1,5 +1,6 @@
 package com.turning_leaf_technologies.reindexer;
 
+import com.turning_leaf_technologies.indexing.Scope;
 import org.apache.logging.log4j.Logger;
 
 import java.io.BufferedWriter;
@@ -13,12 +14,6 @@ import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-/**
- * Creates Sitemaps for publication to Google and other search engines.
- * This class contains information to build all of the sitemaps for all scopes.
- *
- * Created by jabedo on 9/23/2016.
- */
 class SiteMap {
 
 	private Logger logger;
@@ -52,7 +47,7 @@ class SiteMap {
 				Long locationId = librariesByHomeLocationRS.getLong("locationId");
 				Long libraryId = librariesByHomeLocationRS.getLong("libraryId");
 				if (!librariesByHomeLocation.containsKey(libraryId)) {
-					librariesByHomeLocation.put(libraryId, new ArrayList<Long>());
+					librariesByHomeLocation.put(libraryId, new ArrayList<>());
 				}
 				librariesByHomeLocation.get(libraryId).add(locationId);
 			}
@@ -91,15 +86,15 @@ class SiteMap {
 			scopeName = scope.getScopeName();
 
 
-			String scopedUrl = isSSL ? "https://" : "http://";
+			StringBuilder scopedUrl = new StringBuilder(isSSL ? "https://" : "http://");
 			if (siteMapsByScope.size() > 1){
-				scopedUrl += scopeName;
+				scopedUrl.append(scopeName);
 				String[] urlParts = urlWithoutProtocol.split("\\.");
 				for (int i = (urlParts.length == 2 ? 0 : 1); i < urlParts.length; i++){
-					scopedUrl += "." + urlParts[i];
+					scopedUrl.append(".").append(urlParts[i]);
 				}
 			}else{
-				scopedUrl = baseUrl;
+				scopedUrl = new StringBuilder(baseUrl);
 			}
 
 			libraryIdToWrite = scope.getLibraryId();
@@ -114,15 +109,15 @@ class SiteMap {
 			uniqueItemsToWrite = unique;
 			resetSiteMapDefaults();
 			String fileName = buildSiteMapFileName("_unique_", fileID);
-			writeToFile(fileName, "_unique_", true, maxUniqueTitles, scopedUrl);
+			writeToFile(fileName, "_unique_", true, maxUniqueTitles, scopedUrl.toString());
 			SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
-			siteMapIndex.addSiteMapLocation(buildLocationURL(siteMapFileName("_unique_", 1), scopedUrl), simpleDateFormat.format(date));
+			siteMapIndex.addSiteMapLocation(buildLocationURL(siteMapFileName("_unique_", 1), scopedUrl.toString()), simpleDateFormat.format(date));
 
 			uniqueItemsToWrite = new ArrayList<>(popular);
 			resetSiteMapDefaults();
 			fileName = buildSiteMapFileName("_popular_", fileID);
-			writeToFile(fileName, "_popular_", false, maxPopularTitles, scopedUrl);
-			siteMapIndex.addSiteMapLocation(buildLocationURL(siteMapFileName("_popular_", 1), scopedUrl), simpleDateFormat.format(date));
+			writeToFile(fileName, "_popular_", false, maxPopularTitles, scopedUrl.toString());
+			siteMapIndex.addSiteMapLocation(buildLocationURL(siteMapFileName("_popular_", 1), scopedUrl.toString()), simpleDateFormat.format(date));
 
 			File siteMapindexFile = getSiteMapIndexFile();
 			siteMapIndex.saveFile(siteMapindexFile);

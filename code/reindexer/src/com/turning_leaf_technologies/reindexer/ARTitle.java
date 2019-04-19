@@ -15,11 +15,12 @@ class ARTitle {
 		this.title = title;
 	}
 
-	public String getAuthor() {
+	@SuppressWarnings("unused")
+	String getAuthor() {
 		return author;
 	}
 
-	public void setAuthor(String author) {
+	void setAuthor(String author) {
 		this.author = author;
 	}
 

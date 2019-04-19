@@ -1,5 +1,7 @@
 package com.turning_leaf_technologies.reindexer;
 
+import com.turning_leaf_technologies.indexing.Scope;
+import com.turning_leaf_technologies.marc.MarcUtil;
 import org.apache.logging.log4j.Logger;
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.Record;
@@ -12,13 +14,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-/**
- * ILS Indexing with customizations specific to Nashville
- * Pika
- * User: Mark Noble
- * Date: 2/21/14
- * Time: 3:00 PM
- */
 class NashvilleRecordProcessor extends IIIRecordProcessor {
 	NashvilleRecordProcessor(GroupedWorkIndexer indexer, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, dbConn, indexingProfileRS, logger, fullReindex);

@@ -1,6 +1,9 @@
 package com.turning_leaf_technologies.reindexer;
 
 import com.sun.istack.internal.NotNull;
+import com.turning_leaf_technologies.dates.DateUtils;
+import com.turning_leaf_technologies.indexing.Scope;
+import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.SolrInputField;
@@ -292,17 +295,17 @@ public class GroupedWorkSolr implements Cloneable {
 				Calendar publicationDate = GregorianCalendar.getInstance();
 				publicationDate.set(earliestPublicationDate.intValue(), Calendar.DECEMBER, 31);
 
-				long indexTime = Util.getIndexDate().getTime();
+				long indexTime = DateUtils.getIndexDate().getTime();
 				long publicationTime = publicationDate.getTime().getTime();
 				long bibDaysSinceAdded = (indexTime - publicationTime) / (long)(1000 * 60 * 60 * 24);
 				doc.addField("days_since_added", Long.toString(bibDaysSinceAdded));
-				doc.addField("time_since_added", Util.getTimeSinceAddedForDate(publicationDate.getTime()));
+				doc.addField("time_since_added", DateUtils.getTimeSinceAddedForDate(publicationDate.getTime()));
 			}else{
 				doc.addField("days_since_added", Long.toString(Integer.MAX_VALUE));
 			}
 		}else{
-			doc.addField("days_since_added", Util.getDaysSinceAddedForDate(dateAdded));
-			doc.addField("time_since_added", Util.getTimeSinceAddedForDate(dateAdded));
+			doc.addField("days_since_added", DateUtils.getDaysSinceAddedForDate(dateAdded));
+			doc.addField("time_since_added", DateUtils.getTimeSinceAddedForDate(dateAdded));
 		}
 
 		doc.addField("barcode", barcodes);
@@ -315,12 +318,12 @@ public class GroupedWorkSolr implements Cloneable {
 			doc.addField("lexile_score", lexileScore);
 		}
 		if (lexileCode.length() > 0) {
-			doc.addField("lexile_code", Util.trimTrailingPunctuation(lexileCode));
+			doc.addField("lexile_code", StringUtils.trimTrailingPunctuation(lexileCode));
 		}
 		if (fountasPinnell.length() > 0){
 			doc.addField("fountas_pinnell", fountasPinnell);
 		}
-		doc.addField("accelerated_reader_interest_level", Util.trimTrailingPunctuation(acceleratedReaderInterestLevel));
+		doc.addField("accelerated_reader_interest_level", StringUtils.trimTrailingPunctuation(acceleratedReaderInterestLevel));
 		if (Util.isNumeric(acceleratedReaderReadingLevel)) {
 			doc.addField("accelerated_reader_reading_level", acceleratedReaderReadingLevel);
 		}
@@ -484,14 +487,14 @@ public class GroupedWorkSolr implements Cloneable {
 								Calendar publicationDate = GregorianCalendar.getInstance();
 								publicationDate.set(earliestPublicationDate.intValue(), Calendar.DECEMBER, 31);
 
-								long indexTime = Util.getIndexDate().getTime();
+								long indexTime = DateUtils.getIndexDate().getTime();
 								long publicationTime = publicationDate.getTime().getTime();
 								daysSinceAdded = (indexTime - publicationTime) / (long)(1000 * 60 * 60 * 24);
 							}else{
 								daysSinceAdded = Integer.MAX_VALUE;
 							}
 						}else{
-							daysSinceAdded = Util.getDaysSinceAddedForDate(curItem.getDateAdded());
+							daysSinceAdded = DateUtils.getDaysSinceAddedForDate(curItem.getDateAdded());
 						}
 
 						updateMaxValueField(doc, "local_days_since_added_" + curScopeName, (int)daysSinceAdded);
@@ -505,9 +508,9 @@ public class GroupedWorkSolr implements Cloneable {
 						}
 					}
 
-					addUniqueFieldValue(doc, "itype_" + curScopeName, Util.trimTrailingPunctuation(curItem.getIType()));
+					addUniqueFieldValue(doc, "itype_" + curScopeName, StringUtils.trimTrailingPunctuation(curItem.getIType()));
 					if (curItem.isEContent()) {
-						addUniqueFieldValue(doc, "econtent_source_" + curScopeName, Util.trimTrailingPunctuation(curItem.geteContentSource()));
+						addUniqueFieldValue(doc, "econtent_source_" + curScopeName, StringUtils.trimTrailingPunctuation(curItem.geteContentSource()));
 					}
 					if (curScope.isLocallyOwned() || curScope.isLibraryOwned() || !curScopeDetails.isRestrictOwningLibraryAndLocationFacets()) {
 						addUniqueFieldValue(doc, "local_callnumber_" + curScopeName, curItem.getCallNumber());
@@ -522,7 +525,7 @@ public class GroupedWorkSolr implements Cloneable {
 			SolrInputField field = doc.getField("local_days_since_added_" + scope.getScopeName());
 			if (field != null){
 				Integer daysSinceAdded = (Integer)field.getFirstValue();
-				doc.addField("local_time_since_added_" + scope.getScopeName(), Util.getTimeSinceAdded(daysSinceAdded));
+				doc.addField("local_time_since_added_" + scope.getScopeName(), DateUtils.getTimeSinceAdded(daysSinceAdded));
 			}
 		}
 	}
@@ -907,7 +910,7 @@ public class GroupedWorkSolr implements Cloneable {
 	private static Pattern punctuationPattern = Pattern.compile("[.\\\\/()\\[\\]:;]");
 	void setTitle(String shortTitle, String displayTitle, String sortableTitle, String recordFormat) {
 		if (shortTitle != null){
-			shortTitle = Util.trimTrailingPunctuation(shortTitle);
+			shortTitle = StringUtils.trimTrailingPunctuation(shortTitle);
 
 			//Figure out if we want to use this title or if the one we have is better.
 			boolean updateTitle = false;
@@ -968,7 +971,7 @@ public class GroupedWorkSolr implements Cloneable {
 				//remove punctuation from the sortable title
 				sortableTitle = punctuationPattern.matcher(sortableTitle).replaceAll("");
 				this.titleSort = sortableTitle.trim();
-				displayTitle = Util.trimTrailingPunctuation(displayTitle);
+				displayTitle = StringUtils.trimTrailingPunctuation(displayTitle);
 				//Strip out anything in brackets unless that would cause us to show nothing
 				tmpTitle = removeBracketsPattern.matcher(displayTitle).replaceAll("").trim();
 				if (tmpTitle.length() > 0){
@@ -995,7 +998,7 @@ public class GroupedWorkSolr implements Cloneable {
 
 	void setSubTitle(String subTitle) {
 		if (subTitle != null){
-			subTitle = Util.trimTrailingPunctuation(subTitle);
+			subTitle = StringUtils.trimTrailingPunctuation(subTitle);
 			//TODO: determine if the subtitle should be changed?
 			//Strip out anything in brackets unless that would cause us to show nothing
 			String tmpTitle = removeBracketsPattern.matcher(subTitle).replaceAll("").trim();
@@ -1032,7 +1035,7 @@ public class GroupedWorkSolr implements Cloneable {
 		this.titleNew.addAll(newTitles);
 	}
 
-	public void setAuthor(String author) {
+	void setAuthor(String author) {
 		if (primaryAuthors.containsKey(author)){
 			primaryAuthors.put(author, primaryAuthors.get(author) + 1);
 		}else{
@@ -1052,7 +1055,7 @@ public class GroupedWorkSolr implements Cloneable {
 	}
 
 	void setAuthorDisplay(String newAuthor) {
-		this.authorDisplay = Util.trimTrailingPunctuation(newAuthor);
+		this.authorDisplay = StringUtils.trimTrailingPunctuation(newAuthor);
 	}
 
 	void setAuthAuthor(String author) {
@@ -1152,22 +1155,22 @@ public class GroupedWorkSolr implements Cloneable {
     }
 
 	void addTopic(Set<String> fieldList) {
-		this.topics.addAll(Util.trimTrailingPunctuation(fieldList));
+		this.topics.addAll(StringUtils.trimTrailingPunctuation(fieldList));
 	}
 
 	void addTopic(String fieldValue) {
-		this.topics.add(Util.trimTrailingPunctuation(fieldValue));
+		this.topics.add(StringUtils.trimTrailingPunctuation(fieldValue));
 	}
 
 	void addTopicFacet(Set<String> fieldList) {
-		this.topicFacets.addAll(Util.trimTrailingPunctuation(fieldList));
+		this.topicFacets.addAll(StringUtils.trimTrailingPunctuation(fieldList));
 	}
 	void addTopicFacet(String fieldValue) {
-		this.topicFacets.add(Util.trimTrailingPunctuation(fieldValue));
+		this.topicFacets.add(StringUtils.trimTrailingPunctuation(fieldValue));
 	}
 
 	void addSubjects(Set<String> fieldList) {
-		this.subjects.addAll(Util.trimTrailingPunctuation(fieldList));
+		this.subjects.addAll(StringUtils.trimTrailingPunctuation(fieldList));
 	}
 
 	void addSeries(Set<String> fieldList) {
@@ -1284,7 +1287,7 @@ public class GroupedWorkSolr implements Cloneable {
 	}
 
 	private String getNormalizedSeriesVolume(String volume){
-		volume = Util.trimTrailingPunctuation(volume);
+		volume = StringUtils.trimTrailingPunctuation(volume);
 		volume = volume.replaceAll("(bk\\.?|book)", "");
 		volume = volume.replaceAll("(volume|vol\\.|v\\.)", "");
 		volume = volume.replaceAll("libro", "");
@@ -1298,12 +1301,12 @@ public class GroupedWorkSolr implements Cloneable {
 		volume = volume.replaceAll("eight", "8");
 		volume = volume.replaceAll("nine", "9");
 		volume = volume.replaceAll("[\\[\\]#]", "");
-		volume = Util.trimTrailingPunctuation(volume.trim());
+		volume = StringUtils.trimTrailingPunctuation(volume.trim());
 		return volume;
 	}
 
 	private String getNormalizedSeries(String series){
-		series = Util.trimTrailingPunctuation(series);
+		series = StringUtils.trimTrailingPunctuation(series);
 		series = series.replaceAll("[#|]\\s*\\d+$", "");
 
 		//Remove anything in parentheses since it's normally just the format
@@ -1315,7 +1318,7 @@ public class GroupedWorkSolr implements Cloneable {
 		//Remove the word series at the end since this gets cataloged inconsistently
 		series = series.replaceAll("(?i)\\s+series$", "");
 
-		return Util.trimTrailingPunctuation(series);
+		return StringUtils.trimTrailingPunctuation(series);
 	}
 
 
@@ -1336,31 +1339,31 @@ public class GroupedWorkSolr implements Cloneable {
 	}
 
 	void addGenre(Set<String> fieldList) {
-		this.genres.addAll(Util.trimTrailingPunctuation(fieldList));
+		this.genres.addAll(StringUtils.trimTrailingPunctuation(fieldList));
 	}
 
 	void addGenre(String fieldValue) {
-		this.genres.add(Util.trimTrailingPunctuation(fieldValue));
+		this.genres.add(StringUtils.trimTrailingPunctuation(fieldValue));
 	}
 
 	void addGenreFacet(Set<String> fieldList) {
-		this.genreFacets.addAll(Util.trimTrailingPunctuation(fieldList));
+		this.genreFacets.addAll(StringUtils.trimTrailingPunctuation(fieldList));
 	}
 
 	void addGenreFacet(String fieldValue) {
-		this.genreFacets.add(Util.trimTrailingPunctuation(fieldValue));
+		this.genreFacets.add(StringUtils.trimTrailingPunctuation(fieldValue));
 	}
 
 	void addGeographic(String fieldValue) {
-		this.geographic.add(Util.trimTrailingPunctuation(fieldValue));
+		this.geographic.add(StringUtils.trimTrailingPunctuation(fieldValue));
 	}
 
 	void addGeographicFacet(String fieldValue) {
-		this.geographicFacets.add(Util.trimTrailingPunctuation(fieldValue));
+		this.geographicFacets.add(StringUtils.trimTrailingPunctuation(fieldValue));
 	}
 
 	void addEra(String fieldValue) {
-		this.eras.add(Util.trimTrailingPunctuation(fieldValue));
+		this.eras.add(StringUtils.trimTrailingPunctuation(fieldValue));
 	}
 
 	void setLanguageBoost(Long languageBoost) {
@@ -1398,7 +1401,7 @@ public class GroupedWorkSolr implements Cloneable {
 	}
 
 	void addPublicationDate(String publicationDate){
-		String cleanDate = Util.cleanDate(publicationDate);
+		String cleanDate = DateUtils.cleanDate(publicationDate);
 		if (cleanDate != null){
 			this.publicationDates.add(cleanDate);
 			//Convert the date to a long and see if it is before the current date
@@ -1527,7 +1530,7 @@ public class GroupedWorkSolr implements Cloneable {
 	}
 
 	void addAwards(Set<String> awards) {
-		this.awards.addAll(Util.trimTrailingPunctuation(awards));
+		this.awards.addAll(StringUtils.trimTrailingPunctuation(awards));
 	}
 
 	void setAcceleratedReaderInterestLevel(String acceleratedReaderInterestLevel) {
@@ -1622,11 +1625,11 @@ public class GroupedWorkSolr implements Cloneable {
 	}
 
 	void addLCSubject(String lcSubject) {
-		this.lcSubjects.add(Util.trimTrailingPunctuation(lcSubject));
+		this.lcSubjects.add(StringUtils.trimTrailingPunctuation(lcSubject));
 	}
 
 	void addBisacSubject(String bisacSubject) {
-		this.bisacSubjects.add(Util.trimTrailingPunctuation(bisacSubject));
+		this.bisacSubjects.add(StringUtils.trimTrailingPunctuation(bisacSubject));
 	}
 
 	void addSystemLists(Set<String> systemLists) {
