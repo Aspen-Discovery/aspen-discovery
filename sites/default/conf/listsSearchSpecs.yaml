@@ -3,7 +3,6 @@ ListsKeyword:
     - title:
       - [exact, 1000]
       - [and, 250]
-      - [or, ~]
     - table_of_contents:
       - [exact, 600]
       - [and, 250]
@@ -21,7 +20,6 @@ ListsTitle:
     - title:
       - [exact, 1000]
       - [and, 250]
-      - [or, ~]
     - table_of_contents:
       - [exact, 1000]
       - [and, 250]

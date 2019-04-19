@@ -1,9 +1,6 @@
 {strip}
 	<div id="home-page-browse-header" class="row">
 		<div class="col-sm-12">
-			<div class="row text-center" id="browse-label">
-				<span class="browse-label-text">BROWSE THE CATALOG</span>
-			</div>
 			<div class="row text-center" id="browse-category-picker">
 				<div class="jcarousel-wrapper">
 					<div class="jcarousel" id="browse-category-carousel">
