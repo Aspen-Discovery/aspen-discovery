@@ -2,6 +2,7 @@ package com.turning_leaf_technologies.oai;
 
 import org.apache.solr.common.SolrInputDocument;
 
+import javax.security.auth.Subject;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;

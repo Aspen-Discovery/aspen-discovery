@@ -35,8 +35,12 @@
 @reboot sleep 300 && cd /usr/local/aspen-discovery/code/koha_export; java -jar koha_export.jar basinlibraries.production continuous
 @reboot sleep 300 && cd /usr/local/aspen-discovery/code/overdrive_api_extract; java -jar overdrive_extract.jar basinlibraries.production continuous
 @reboot sleep 300 && cd /usr/local/aspen-discovery/code/rbdigital_export; java -jar rbdigital_export.jar basinlibraries.production continuous
-#TODO: oai extract and indexing at startup
+@reboot sleep 300 && cd /usr/local/aspen-discovery/code/user_list_indexer; java -jar user_list_indexer.jar basinlibraries.production continuous
 
+########################################################
+# Regular extracts that don't need to run continuously #
+########################################################
+0 2 * * 0 cd /usr/local/aspen-discovery/code/oai_indexer; java -jar oai_indexer.jar basinlibraries.production
 
 ######################
 # MySQL Nightly Dump #
@@ -56,7 +60,7 @@
 #############################################
 # New York Times Best seller Lists Updating #
 #############################################
-# 07 7 * * 0-1 /usr/local/aspen-discovery/code/cron/updateNYTLists.sh basinlibraries.production
+07 7 * * 0-1 php /usr/local/aspen-discovery/code/web/cron/updateNYTLists.sh basinlibraries.production
 # update on Sundays at 7:07
 
 ################
@@ -66,8 +70,8 @@
 # Temp files
 26 0 * * * cd /tmp; rm -rf CURLCOOKIE*
 # Restart apache
-0 0-6 * * * /usr/sbin/apachectl restart > /dev/null 2>&1
-0 7-23 * * * /usr/sbin/apachectl graceful > /dev/null 2>&1
+#0 0-6 * * * /usr/sbin/apachectl restart > /dev/null 2>&1
+#0 7-23 * * * /usr/sbin/apachectl graceful > /dev/null 2>&1
 
 # CRON for Aspen (book cover cache cleanup etc.)
 # 00 20 * * * cd /usr/local/VuFind-Plus/code/cron; java -jar cron.jar basinlibraries.production
@@ -80,7 +84,7 @@
 # Download Lexile and AR files triggered in full_update.sh
 
 # Check Apache Solr process and website that it has not stalled.
-*/3 6-23 * * * cd /usr/local/aspen-discovery/code/cron/; ./solrTest.sh
+#*/3 6-23 * * * cd /usr/local/aspen-discovery/code/cron/; ./solrTest.sh
 
 # Check for semaphore errors
-17 * * * * cd /usr/local/aspen-discovery/code/cron/; ./apacheSemaphoreCleanup.sh root
+#17 * * * * cd /usr/local/aspen-discovery/code/cron/; ./apacheSemaphoreCleanup.sh root

@@ -140,7 +140,7 @@ public class OaiIndexerMain {
                         String[] subjectFiltersRaw =  subjectFilterString.split("\\s*(\\r\\n|\\n|\\r)\\s*");
                         for(String subjectFilter : subjectFiltersRaw) {
                             if (subjectFilter.length() > 0) {
-                                subjectFilters.add(Pattern.compile(subjectFilter, Pattern.CASE_INSENSITIVE));
+                                subjectFilters.add(Pattern.compile("\\b" + subjectFilter + "\\b", Pattern.CASE_INSENSITIVE));
                             }
                         }
                     }
@@ -347,6 +347,10 @@ public class OaiIndexerMain {
                                         break;
                                     case "dc:subject":
                                         String[] subjects = textContent.split("\\s+;\\s+");
+                                        //Clean the subjects up
+                                        for (int subjectIdx = 0; subjectIdx < subjects.length; subjectIdx++){
+                                            subjects[subjectIdx] = subjects[subjectIdx].trim();
+                                        }
                                         solrRecord.addSubjects(subjects);
                                         Collections.addAll(collectionSubjects, subjects);
                                         break;
@@ -398,9 +402,13 @@ public class OaiIndexerMain {
                     subjectMatched = false;
                     for (String curSubject : solrRecord.getSubjects()) {
                         for (Pattern curSubjectFilter : subjectFilters) {
-                            if (curSubjectFilter.matcher(curSubject).matches()){
+                            if (curSubjectFilter.matcher(curSubject).find()){
                                 subjectMatched = true;
+                                break;
                             }
+                        }
+                        if (subjectMatched) {
+                            break;
                         }
                     }
                 }
