@@ -14,4 +14,10 @@ class ListsSolrConnector extends Solr
     {
         return ROOT_DIR . '/../../sites/default/conf/listsSearchSpecs.yaml';
     }
+
+    /** return string */
+    public function getSearchesFile()
+    {
+        return 'listsSearches';
+    }
 }

@@ -75,44 +75,17 @@ class GroupedWorksSolrConnector extends Solr
      * Uses SOLR MLT Query Handler
      *
      * @access	public
-     * @var     string  $id       The id to retrieve similar titles for
+     * @var     string  $id             The id to retrieve similar titles for
      * @throws	object						PEAR Error
      * @return	array							An array of query results
      *
      */
     function getMoreLikeThis($id)
     {
-        // Query String Parameters
-        $options = array('q' => "id:$id", 'qt' => 'morelikethis', 'fl' => SearchObject_GroupedWorkSearcher::$fields_to_return);
-        $result = $this->_select('GET', $options);
-        if ($result instanceof AspenError) {
-            AspenError::raiseError($result);
-        }
-
-        return $result;
-    }
-
-    /**
-     * Get records similar to one record
-     * Uses MoreLikeThis Request Handler
-     *
-     * Uses SOLR MLT Query Handler
-     *
-     * @access	public
-     * @var     string  $id             The id to retrieve similar titles for
-     * @var     array   $originalResult The original record we are getting similar titles for.
-     * @throws	object						PEAR Error
-     * @return	array							An array of query results
-     *
-     */
-    function getMoreLikeThis2($id, $originalResult = null)
-    {
         global $configArray;
-        if ($originalResult == null){
-            $originalResult = $this->getRecord($id, 'target_audience_full,target_audience_full,literary_form,language,isbn,upc');
-        }
+        $originalResult = $this->getRecord($id, 'target_audience_full,target_audience_full,literary_form,language,isbn,upc,series');
         // Query String Parameters
-        $options = array('q' => "id:$id", 'qt' => 'morelikethis2', 'mlt.interestingTerms' => 'details', 'rows' => 25, 'fl' => SearchObject_GroupedWorkSearcher::$fields_to_return);
+        $options = array('q' => "id:$id", 'mlt.interestingTerms' => 'details', 'rows' => 25, 'fl' => SearchObject_GroupedWorkSearcher::$fields_to_return);
         if ($originalResult){
             $options['fq'] = array();
             if (isset($originalResult['target_audience_full'])){
@@ -154,6 +127,9 @@ class GroupedWorksSolrConnector extends Solr
             if (isset($originalResult['language'])){
                 $options['fq'][] = 'language:"' . $originalResult['language'][0] . '"';
             }
+            if (isset($originalResult['series'])){
+                $options['fq'][] = '!series:"' . $originalResult['series'][0] . '"';
+            }
             //Don't want to get other editions of the same work (that's a different query)
         }
 
@@ -174,7 +150,7 @@ class GroupedWorksSolrConnector extends Solr
             $options['bf'] = $boostFactors;
         }
 
-        $result = $this->_select('GET', $options);
+        $result = $this->_select('GET', $options, false, 'mlt');
         if ($result instanceof AspenError) {
             AspenError::raiseError($result);
         }
@@ -283,5 +259,11 @@ class GroupedWorksSolrConnector extends Solr
         }
 
         return $sortField . ' ' . $sortDirection;
+    }
+
+    /** return string */
+    public function getSearchesFile()
+    {
+       return 'groupedWorksSearches';
     }
 }

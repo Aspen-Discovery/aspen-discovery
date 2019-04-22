@@ -107,18 +107,6 @@
 		<div id='dplaSearchResultsPlaceholder'></div>
 	{/if}
 
-	{* Display Repeat this search links *}
-	{if strlen($lookfor) > 0 && count($repeatSearchOptions) > 0}
-		<div class='repeatSearchHead'><h4>Try another catalog</h4></div>
-			<div class='repeatSearchList'>
-			{foreach from=$repeatSearchOptions item=repeatSearchOption}
-				<div class='repeatSearchItem'>
-					<a href="{$repeatSearchOption.link}" class='repeatSearchName' target='_blank'>{$repeatSearchOption.name}</a>{if $repeatSearchOption.description} - {$repeatSearchOption.description}{/if}
-				</div>
-			{/foreach}
-		</div>
-	{/if}
-
 	{if $enableMaterialsRequest}
 		<h2>Didn't find it?</h2>
 		<p>Can't find what you are looking for? <a href="{$path}/MaterialsRequest/NewRequest?lookfor={$lookfor}&searchIndex={$searchIndex}" onclick="return VuFind.Account.followLinkIfLoggedIn(this);">{translate text='Suggest a purchase'}</a>.</p>

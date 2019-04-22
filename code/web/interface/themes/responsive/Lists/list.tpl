@@ -81,35 +81,6 @@
 
 	{*Additional Suggestions on the last page of search results or no results returned *}
 
-	{if $unscopedResults}
-		<h2>More results from the {$consortiumName} Catalog</h2>
-		<div class="unscopedResultCount">
-		There are <b>{$numUnscopedResults}</b> results in the entire {$consortiumName} collection. <a href="{$unscopedSearchUrl}">Search the entire collection.</a>
-		</div>
-		{$unscopedResults}{* Unscoped Results already set for display *}
-	{/if}
-
-	{if $showProspectorLink}
-		{* Prospector Results *}
-		<div id='prospectorSearchResultsPlaceholder'></div>
-		{* javascript call for content at bottom of page*}
-	{elseif !empty($interLibraryLoanName) && !empty($interLibraryLoanUrl)}
-		{include file="Search/interLibraryLoanSearch.tpl"}
-	{/if}
-
-	{if $showDplaLink}
-		{* DPLA Results *}
-		<div id='dplaSearchResultsPlaceholder'></div>
-	{/if}
-
-	{if $enableMaterialsRequest}
-		<h2>Didn't find it?</h2>
-		<p>Can't find what you are looking for? <a href="{$path}/MaterialsRequest/NewRequest?lookfor={$lookfor}&searchIndex={$searchIndex}" onclick="return VuFind.Account.followLinkIfLoggedIn(this);">{translate text='Suggest a purchase'}</a>.</p>
-	{elseif $externalMaterialsRequestUrl}
-		<h2>Didn't find it?</h2>
-		<p>Can't find what you are looking for? <a href="{$externalMaterialsRequestUrl}">{translate text='Suggest a purchase'}</a>.</p>
-	{/if}
-
 	{if $showSearchTools || ($loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('contentEditor', $userRoles) || array_key_exists('libraryManager', $userRoles) || array_key_exists('locationManager', $userRoles)))}
 	<div class="searchtools well small">
 		<strong>{translate text='Search Tools'}:</strong>
@@ -139,14 +110,6 @@
 		if ($('#horizontal-menu-bar-container').is(':visible')) {ldelim}
 			$('#home-page-search').show();  {*// Always show the searchbox for search results in mobile views.*}
 		{rdelim}
-
-		{if $showProspectorLink}
-		VuFind.Prospector.getProspectorResults(5, {$prospectorSavedSearchId});
-		{/if}
-
-		{if $showDplaLink}
-		VuFind.DPLA.getDPLAResults('{$lookfor}');
-		{/if}
 
 		{*{include file="Search/results-displayMode-js.tpl"}*}
 		{if !$onInternalIP}

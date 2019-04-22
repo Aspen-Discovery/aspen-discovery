@@ -119,7 +119,7 @@
 		<!-- AUTHOR INFORMATION -->
 		<field name="author" type="searchable_text" indexed="true" stored="false" />
 		<field name="author_display" type="unchanged_string" indexed="false" stored="true" multiValued="false"/> <!-- The author to display to the user -->
-		<field name="authorStr" type="unchanged_string" indexed="true" stored="true"/>
+		<field name="authorStr" type="unchanged_string" indexed="true" stored="true" termVectors="true"/>
 		<field name="author_exact" type="text-exact" indexed="true" stored="true" />
 		<field name="author_left" type="text-left" indexed="true" stored="true" />
 		<field name="author-letter" type="unchanged_string" indexed="true" stored="true"/>
@@ -183,21 +183,21 @@
 		<field name="edition" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
 		<field name="dateSpan" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
 		<dynamicField name="econtent_source_*" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
-		<field name="subject_facet" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true"/>
+		<field name="subject_facet" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true" termVectors="true"/>
 		<field name="subject" type="searchable_text" indexed="true" stored="true" multiValued="true"/>
 		<field name="subject_proper" type="textProper" indexed="true" stored="false" multiValued="true"/>
 		<field name="topic" type="searchable_text" indexed="true" stored="true" multiValued="true"/>
 		<field name="topic_proper" type="textProper" indexed="true" stored="false" multiValued="true"/>
-		<field name="topic_facet" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true"/>
+		<field name="topic_facet" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true" termVectors="true"/>
 		<field name="lc_subject" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true"/>
 		<field name="bisac_subject" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true"/>
 		<field name="genre" type="searchable_text" indexed="true" stored="true" multiValued="true"/>
 		<field name="genre_proper" type="textProper" indexed="true" stored="false" multiValued="true"/>
-		<field name="genre_facet" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true"/>
+		<field name="genre_facet" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true" termVectors="true"/>
 		<field name="geographic" type="searchable_text" indexed="true" stored="true" multiValued="true"/>
 		<field name="geographic_proper" type="textProper" indexed="true" stored="false" multiValued="true"/>
-		<field name="geographic_facet" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true"/>
-		<field name="era" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true"/>
+		<field name="geographic_facet" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true" termVectors="true"/>
+		<field name="era" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true" termVectors="true"/>
 		<field name="era_proper" type="textProper" indexed="true" stored="false" multiValued="true"/>
 		<field name="literary_form_full" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true"/>
 		<field name="literary_form" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true"/>
@@ -213,7 +213,7 @@
 
         <!-- awards and ratings -->
         <field name="mpaa_rating" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true"/>
-        <field name="awards_facet" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true"/>
+        <field name="awards_facet" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true" termVectors="true"/>
         <field name="lexile_score" type="integer" indexed="true" stored="true" multiValued="false" default="-1" docValues="true"/>
         <field name="lexile_code" type="unchanged_string" indexed="true" stored="true" multiValued="false" docValues="true"/>
         <field name="fountas_pinnell" type="unchanged_string" indexed="true" stored="true" multiValued="false" docValues="true"/>

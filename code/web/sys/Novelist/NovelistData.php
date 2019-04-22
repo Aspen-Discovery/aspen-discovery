@@ -110,7 +110,7 @@ class NovelistData extends DataObject{
      */
     public function getSimilarTitleCount()
     {
-        return count($this->_similarTitles);
+        return $this->_similarTitles == null ? 0 : count($this->_similarTitles);
     }
 
     /**
@@ -134,7 +134,7 @@ class NovelistData extends DataObject{
      */
     public function getAuthorCount()
     {
-        return count($this->_authors);
+        return $this->_authors == null ? 0 : count($this->_authors);
     }
 
     /**
@@ -158,7 +158,7 @@ class NovelistData extends DataObject{
      */
     public function getSimilarSeriesCount()
     {
-        return count($this->_similarSeries);
+        return $this->_similarSeries == null ? 0 : count($this->_similarSeries);
     }
 
     /**

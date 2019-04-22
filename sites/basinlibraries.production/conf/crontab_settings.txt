@@ -30,7 +30,7 @@
 #############
 # On Reboot #
 #############
-@reboot cd /usr/local/aspen-discovery/sites/basinlibraries.production/; ./basinlibraries.production.sh start
+@reboot sleep 60 cd /usr/local/aspen-discovery/sites/basinlibraries.production/; ./basinlibraries.production.sh start
 # Continuous Re-Indexing
 @reboot sleep 300 && cd /usr/local/aspen-discovery/code/koha_export; java -jar koha_export.jar basinlibraries.production continuous
 @reboot sleep 300 && cd /usr/local/aspen-discovery/code/overdrive_api_extract; java -jar overdrive_extract.jar basinlibraries.production continuous

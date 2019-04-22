@@ -1,5 +1,5 @@
 {strip}
-	{if count($summary) > 0}
+	{if !empty($summary)}
 		{*<div class="itemSummary row">
 			<div class="col-xs-2 nobreak">
 				<strong>Available</strong>

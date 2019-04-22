@@ -115,6 +115,8 @@ VuFind.GroupedWork = (function(){
 							morelikethisScroller = new TitleScroller('titleScrollerMoreLikeThis', 'MoreLikeThis', 'morelikethisList');
 							$('#moreLikeThisInfo').show();
 							morelikethisScroller.loadTitlesFromJsonData(similarTitleData);
+						}else{
+							$('#moreLikeThisPanel').hide();
 						}
 						var showGoDeeperData = data.showGoDeeper;
 						if (showGoDeeperData) {

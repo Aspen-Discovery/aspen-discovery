@@ -14,4 +14,10 @@ class OpenArchivesSolrConnector extends Solr
     {
         return ROOT_DIR . '/../../sites/default/conf/openArchivesSearchSpecs.yaml';
     }
+
+    /** return string */
+    public function getSearchesFile()
+    {
+        return 'openArchivesSearches';
+    }
 }

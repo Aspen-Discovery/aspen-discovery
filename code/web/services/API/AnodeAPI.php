@@ -82,7 +82,7 @@ class AnodeAPI extends Action {
 		$url = $configArray['Index']['url'];
 		/** @var Solr $db */
 		$db = new GroupedWorksSolrConnector($url);
-		$similar = $db->getMoreLikeThis2($id);
+		$similar = $db->getMoreLikeThis($id);
 		if (isset($similar) && count($similar['response']['docs']) > 0) {
 			$similarTitles = array();
 

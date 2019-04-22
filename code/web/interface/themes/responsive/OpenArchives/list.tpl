@@ -86,35 +86,9 @@
 		{if $pageLinks.all}<div class="text-center">{$pageLinks.all}</div>{/if}
 	{/if}
 
-	{*Additional Suggestions on the last page of search results or no results returned *}
-
-	{if $unscopedResults}
-		<h2>More results from the {$consortiumName} Catalog</h2>
-		<div class="unscopedResultCount">
-		There are <b>{$numUnscopedResults}</b> results in the entire {$consortiumName} collection. <a href="{$unscopedSearchUrl}">Search the entire collection.</a>
-		</div>
-		{$unscopedResults}{* Unscoped Results already set for display *}
-	{/if}
-
-	{if $showProspectorLink}
-		{* Prospector Results *}
-		<div id='prospectorSearchResultsPlaceholder'></div>
-		{* javascript call for content at bottom of page*}
-	{elseif !empty($interLibraryLoanName) && !empty($interLibraryLoanUrl)}
-		{include file="Search/interLibraryLoanSearch.tpl"}
-	{/if}
-
 	{if $showDplaLink}
 		{* DPLA Results *}
 		<div id='dplaSearchResultsPlaceholder'></div>
-	{/if}
-
-	{if $enableMaterialsRequest}
-		<h2>Didn't find it?</h2>
-		<p>Can't find what you are looking for? <a href="{$path}/MaterialsRequest/NewRequest?lookfor={$lookfor}&searchIndex={$searchIndex}" onclick="return VuFind.Account.followLinkIfLoggedIn(this);">{translate text='Suggest a purchase'}</a>.</p>
-	{elseif $externalMaterialsRequestUrl}
-		<h2>Didn't find it?</h2>
-		<p>Can't find what you are looking for? <a href="{$externalMaterialsRequestUrl}">{translate text='Suggest a purchase'}</a>.</p>
 	{/if}
 
 	{if $showSearchTools || ($loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('contentEditor', $userRoles) || array_key_exists('libraryManager', $userRoles) || array_key_exists('locationManager', $userRoles)))}
@@ -147,23 +121,12 @@
 			$('#home-page-search').show();  {*// Always show the searchbox for search results in mobile views.*}
 		{rdelim}
 
-		{if $showProspectorLink}
-		VuFind.Prospector.getProspectorResults(5, {$prospectorSavedSearchId});
-		{/if}
-
 		{if $showDplaLink}
 		VuFind.DPLA.getDPLAResults('{$lookfor}');
 		{/if}
 
-		{*{include file="Search/results-displayMode-js.tpl"}*}
 		{if !$onInternalIP}
-		{*if (!Globals.opac &&VuFind.hasLocalStorage()){ldelim}*}
-			{*var temp = window.localStorage.getItem('searchResultsDisplayMode');*}
-			{*if (VuFind.Searches.displayModeClasses.hasOwnProperty(temp)) VuFind.Searches.displayMode = temp; *}{* if stored value is empty or a bad value, fall back on default setting ("null" returned when not set) *}
-			{*else VuFind.Searches.displayMode = '{$displayMode}';*}
-			{*{rdelim}*}
-		{*else*}
-		{* Because content is served on the page, have to set the mode that was used, even if the user didn't choose the mode. *}
+			{* Because content is served on the page, have to set the mode that was used, even if the user didn't choose the mode. *}
 			VuFind.Searches.displayMode = '{$displayMode}';
 		{else}
 			VuFind.Searches.displayMode = '{$displayMode}';

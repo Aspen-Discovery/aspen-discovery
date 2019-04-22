@@ -27,7 +27,7 @@ VuFind.Account = (function(){
 					desc = $("#listDesc").val(),
 					url = Globals.path + "/MyAccount/AJAX";
 			let params = {
-				'method':'AddList',
+				'method':'addList',
 				title: title,
 				public: isPublic,
 				desc: desc,

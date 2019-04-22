@@ -97,6 +97,9 @@ abstract class Solr {
      */
     public $fullSearchUrl;
 
+    /** return string */
+    abstract public function getSearchesFile();
+
     /**
 	 * Constructor
 	 *
@@ -131,7 +134,7 @@ abstract class Solr {
 		$this->client = new HTTP_Request();
 
 		// Read in preferred boolean behavior:
-		$searchSettings = getExtraConfigArray('searches');
+		$searchSettings = getExtraConfigArray($this->getSearchesFile());
 		if (isset($searchSettings['General']['case_sensitive_bools'])) {
 			$this->caseSensitiveBooleans = $searchSettings['General']['case_sensitive_bools'];
 		}
@@ -1647,7 +1650,7 @@ abstract class Solr {
 	 * @return	array|AspenError													 The Solr response (or a PEAR error)
 	 * @access	protected
 	 */
-	protected function _select($method = 'GET', $params = array(), $returnSolrError = false)
+	protected function _select($method = 'GET', $params = array(), $returnSolrError = false, $queryHandler = 'select')
 	{
 		global $timer;
 		global $memoryWatcher;
@@ -1657,7 +1660,7 @@ abstract class Solr {
 		$this->pingServer();
 
 		$this->client->setMethod($method);
-		$this->client->setURL($this->host . "/select/");
+		$this->client->setURL($this->host . "/$queryHandler/");
 
 		$params['wt'] = 'json';
 		$params['json.nl'] = 'arrarr';

@@ -98,19 +98,28 @@ class OpenArchives_Results extends Action {
             if ($error !== false) {
                 // If it's a parse error or the user specified an invalid field, we
                 // should display an appropriate message:
-                if (is_array($error)){
-                    $errorMessage = reset($error);
-                }else{
-                    $errorMessage = $error;
-                }
-                if (stristr($errorMessage, 'org.apache.lucene.queryParser.ParseException') ||
-                    preg_match('/^undefined field/', $errorMessage)) {
-                    $interface->assign('parseError', true);
+                if (stristr($error['msg'], 'org.apache.lucene.queryParser.ParseException') || preg_match('/^undefined field/', $error['msg'])) {
+                    $interface->assign('parseError', $error['msg']);
+
+                    if (preg_match('/^undefined field/', $error['msg'])) {
+                        // Setup to try as a possible subtitle search
+                        $fieldName = trim(str_replace('undefined field', '', $error['msg'], $replaced)); // strip out the phrase 'undefined field' to get just the fieldname
+                        $original = urlencode("$fieldName:");
+                        if ($replaced === 1 && !empty($fieldName) && strpos($_SERVER['REQUEST_URI'], $original)) {
+                            // ensure only 1 replacement was done, that the fieldname isn't an empty string, and the label is in fact in the Search URL
+                            $new = urlencode("$fieldName :"); // include space in between the field name & colon to avoid the parse error
+                            $thisUrl = str_replace($original, $new, $_SERVER['REQUEST_URI'], $replaced);
+                            if ($replaced === 1) { // ensure only one modification was made
+                                header("Location: " . $thisUrl);
+                                exit();
+                            }
+                        }
+                    }
 
                     // Unexpected error -- let's treat this as a fatal condition.
                 } else {
-                    AspenError::raiseError(new AspenError('Unable to process query<br />' .
-                        'Solr Returned: ' . $errorMessage));
+                    AspenError::raiseError(new AspenError('Unable to process query<br>' .
+                        'Solr Returned: ' . print_r($error, true)));
                 }
             }
 

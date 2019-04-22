@@ -178,7 +178,7 @@ class GroupedWork_AJAX {
 		/** @var GroupedWorksSolrConnector $db */
 		$db = new GroupedWorksSolrConnector($url);
 		$db->disableScoping();
-		$similar = $db->getMoreLikeThis2($id);
+		$similar = $db->getMoreLikeThis($id);
 		$memoryWatcher->logMemory('Loaded More Like This data from Solr');
 		// Send the similar items to the template; if there is only one, we need
 		// to force it to be an array or things will not display correctly.

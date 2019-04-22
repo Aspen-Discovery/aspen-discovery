@@ -9,7 +9,7 @@ class MyAccount_AJAX
 			'GetSuggestions', //not checked
 			'GetPreferredBranches', //not checked
 			'requestPinReset', //not checked
-			'getCreateListForm', 'getBulkAddToListForm', 'AddList',
+			'getCreateListForm', 'getBulkAddToListForm', 'addList',
 			'getEmailMyListForm', 'sendMyListEmail', 'setListEntryPositions',
 			'removeTag',
 			'saveSearch', 'deleteSavedSearch', // deleteSavedSearch not checked
@@ -453,9 +453,7 @@ class MyAccount_AJAX
 		return $result;
 	}
 
-	//TODO: Review these methods to see what can be deleted
-	// Create new list
-	function AddList()
+	function addList()
 	{
 		$return = array();
 		if (UserAccount::isLoggedIn()) {
@@ -471,7 +469,7 @@ class MyAccount_AJAX
 					$recordToAdd = urldecode($_REQUEST['recordId']);
 					if (!preg_match("/^[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}|[A-Z0-9_-]+:[A-Z0-9_-]+$/i", $recordToAdd)) {
 						$return['success'] = false;
-						$return['message'] = 'The title provided is not valid';
+						$return['message'] = 'The recordId provided is not valid';
 						return $return;
 					}
 				}

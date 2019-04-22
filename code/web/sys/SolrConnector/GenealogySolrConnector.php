@@ -14,4 +14,10 @@ class GenealogySolrConnector extends Solr
     {
         return ROOT_DIR . '/../../sites/default/conf/genealogySearchSpecs.yaml';
     }
+
+    /** return string */
+    public function getSearchesFile()
+    {
+        return 'genealogySearches';
+    }
 }

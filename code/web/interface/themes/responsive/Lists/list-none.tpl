@@ -83,50 +83,6 @@
 		</script>
 	{/if}
 
-	{if $unscopedResults}
-		<h2>Results from the entire {$consortiumName} Catalog</h2>
-		{*{foreach from=$unscopedResults item=record name="recordLoop"}*}
-			{*<div class="result {if ($smarty.foreach.recordLoop.iteration % 2) == 0}alt{/if} record{$smarty.foreach.recordLoop.iteration}">*}
-				{* This is raw HTML -- do not escape it: *}
-				{*{$record}*}
-			{*</div>*}
-		{*{/foreach}*}
-		{$unscopedResults}
-	{/if}
-
-	{if $showProspectorLink}
-		{* Prospector Results *}
-		<div id='prospectorSearchResultsPlaceholder'></div>
-		{* javascript call for content at bottom of page*}
-	{elseif !empty($interLibraryLoanName) && !empty($interLibraryLoanUrl)}
-		{include file="Search/interLibraryLoanSearch.tpl"}
-	{/if}
-
-	{if $showDplaLink}
-		{* DPLA Results *}
-		<div id='dplaSearchResultsPlaceholder'></div>
-	{/if}
-
-	{* Display Repeat this search links *}
-	{if strlen($lookfor) > 0 && count($repeatSearchOptions) > 0}
-		<div class='repeatSearchHead'><h4>Try another catalog</h4></div>
-			<div class='repeatSearchList'>
-			{foreach from=$repeatSearchOptions item=repeatSearchOption}
-				<div class='repeatSearchItem'>
-					<a href="{$repeatSearchOption.link}" class='repeatSearchName' target='_blank'>{$repeatSearchOption.name}</a>{if $repeatSearchOption.description} - {$repeatSearchOption.description}{/if}
-				</div>
-			{/foreach}
-		</div>
-	{/if}
-
-	{if $enableMaterialsRequest}
-		<h2>Didn't find it?</h2>
-		<p>Can't find what you are looking for? <a href="{$path}/MaterialsRequest/NewRequest?lookfor={$lookfor}&searchIndex={$searchIndex}" onclick="return VuFind.Account.followLinkIfLoggedIn(this);">{translate text='Suggest a purchase'}</a>.</p>
-	{elseif $externalMaterialsRequestUrl}
-		<h2>Didn't find it?</h2>
-		<p>Can't find what you are looking for? <a href="{$externalMaterialsRequestUrl}">{translate text='Suggest a purchase'}</a>.</p>
-	{/if}
-
 	{if $showSearchTools || ($loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('contentEditor', $userRoles)))}
 		<div class="searchtools well small">
 			<strong>{translate text='Search Tools'}:</strong>
@@ -150,15 +106,4 @@
 	{/if}
 
 </div>
-
-<script type="text/javascript">
-	$(function(){ldelim}
-		{if $showProspectorLink}
-		VuFind.Prospector.getProspectorResults(5, {$prospectorSavedSearchId});
-		{/if}
-		{if $showDplaLink}
-		VuFind.DPLA.getDPLAResults('{$lookfor}');
-		{/if}
-		{rdelim});
-</script>
 {/strip}

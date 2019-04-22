@@ -14,4 +14,10 @@ class IslandoraSolrConnector extends Solr
     {
         return ROOT_DIR . '/../../sites/default/conf/islandoraSearchSpecs.yaml';
     }
+
+    /** return string */
+    public function getSearchesFile()
+    {
+        return 'islandoraSearches';
+    }
 }
