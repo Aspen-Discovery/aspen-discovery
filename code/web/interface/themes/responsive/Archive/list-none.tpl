@@ -1,6 +1,6 @@
 <p class="alert alert-info">{translate text='nohit_prefix'} - <b>{if $lookfor}{$lookfor|escape:"html"}{else}&lt;empty&gt;{/if}</b> - {translate text='nohit_suffix'}</p>
 
-{if $parseError}
+{if !empty($parseError)}
   <p class="error">{translate text='nohit_parse_error'}</p>
 {/if}
 

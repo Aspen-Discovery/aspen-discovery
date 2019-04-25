@@ -123,7 +123,7 @@ VuFind.Searches = (function(){
 			try{
 				$("#lookfor").autocomplete({
 					source:function(request,response){
-						let url=Globals.path+"/Search/AJAX?method=GetAutoSuggestList&searchTerm=" + $("#lookfor").val();
+						let url=Globals.path+"/Search/AJAX?method=getAutoSuggestList&searchTerm=" + $("#lookfor").val() + "&searchIndex=" + $("#searchIndex").val() + "&searchSource=" + $("#searchSource").val();
 						$.ajax({
 							url:url,
 							dataType:"json",
@@ -140,7 +140,12 @@ VuFind.Searches = (function(){
 					},
 					minLength:4,
 					delay:600
-				});
+				}).data('ui-autocomplete')._renderItem = function( ul, item ) {
+					return $( "<li></li>" )
+						.data( "ui-autocomplete-item", item.value )
+						.append( '<a>' + item.label + '</a>' )
+						.appendTo( ul );
+				};
 			}catch(e){
 				alert("error during autocomplete setup"+e);
 			}
@@ -175,6 +180,7 @@ VuFind.Searches = (function(){
 			return false;
 		},
 
+		initialSearchLoaded: false,
 		enableSearchTypes: function(){
 			let searchTypeElement = $("#searchSource");
 			let catalogType = "catalog";
@@ -189,12 +195,18 @@ VuFind.Searches = (function(){
 			if (searchIndexElement) {
 				let searchOptions = searchIndexElement.find("option");
 				let firstVisible = true;
+				if (VuFind.Searches.initialSearchLoaded === true) {
+					$.each(searchOptions, function() {
+						let searchOption = $(this);
+						searchOption.prop('selected', false);
+					});
+				}
 				$.each(searchOptions, function() {
 					let searchOption = $(this);
 					if (searchOption.data("search_source") === catalogType) {
 						searchOption.show();
-						if (firstVisible) {
-							searchOption.selected = true;
+						if (VuFind.Searches.initialSearchLoaded === true && firstVisible) {
+							searchOption.prop('selected', true);
 							firstVisible = false;
 						}
 					}else{
@@ -202,7 +214,7 @@ VuFind.Searches = (function(){
 					}
 				});
 			}
-
+			VuFind.Searches.initialSearchLoaded = true;
 		},
 
 		processSearchForm: function(){

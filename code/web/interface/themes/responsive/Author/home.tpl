@@ -31,11 +31,6 @@
 			</div>
 		{/if}
 
-		{if $numUnscopedResults && $numUnscopedResults != $recordCount}
-			<div class="unscopedResultCount">
-				There are <b>{$numUnscopedResults}</b> results in the entire {$consortiumName} collection. <a href="{$unscopedSearchUrl}">Search the entire collection.</a>			</div>
-		{/if}
-
 		{if $spellingSuggestions}
 			<br><br><div class="correction"><strong>{translate text='spell_suggest'}</strong>:<br>
 			{foreach from=$spellingSuggestions item=details key=term name=termLoop}

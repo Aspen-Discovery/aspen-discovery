@@ -1,19 +1,11 @@
 <?php
 
 require_once ROOT_DIR . '/sys/SolrConnector/Solr.php';
+require_once ROOT_DIR . '/sys/SearchObject/SolrSearcher.php';
 require_once ROOT_DIR . '/RecordDrivers/RecordDriverFactory.php';
 
-/**
- * Search Object class
- *
- * This is the default implementation of the SearchObjectBase class, providing the
- * Solr-driven functionality used by VuFind's standard Search module.
- */
 class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 {
-	// Publicly viewable version
-	private $publicQuery = null;
-
 	// Field List
 	//private $fields = '*,score';
 	private $fields = 'PID,fgs_label_s,dc.title,mods_abstract_s,mods_genre_s,RELS_EXT_hasModel_uri_s,dateCreated,score,fgs_createdDate_dt,fgs_lastModifiedDate_dt';
@@ -90,17 +82,8 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
                 'title' => 'sort_title');
 		}
 
-		// Load Spelling preferences
-		$this->spellcheck    = $configArray['Spelling']['enabled'];
-		$this->spellingLimit = $configArray['Spelling']['limit'];
-		$this->spellSimple   = $configArray['Spelling']['simple'];
-		$this->spellSkipNumeric = isset($configArray['Spelling']['skip_numeric']) ?
-		$configArray['Spelling']['skip_numeric'] : true;
-
 		// Debugging
 		$this->indexEngine->debug = $this->debug;
-
-		$this->recommendIni = 'islandoraSearches';
 
 		$this->indexEngine->debug = $this->debug;
 		$this->indexEngine->debugSolrQuery = $this->debugSolrQuery;
@@ -113,14 +96,15 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 		$timer->logTime('Setup Solr Search Object');
 	}
 
-	/**
-	 * Initialise the object from the global
-	 *  search parameters in $_REQUEST.
-	 *
-	 * @access  public
-	 * @return  boolean
-	 */
-	public function init()
+    /**
+     * Initialise the object from the global
+     *  search parameters in $_REQUEST.
+     *
+     * @access  public
+     * @param string $searchSource
+     * @return  boolean
+     */
+	public function init($searchSource = 'islandora')
 	{
 		// Call the standard initialization routine in the parent:
 		parent::init('islandora');
@@ -195,7 +179,7 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 		}
 
 		// Spellcheck is not needed for facet data!
-		$this->spellcheck = false;
+		$this->spellcheckEnabled = false;
 
 		//********************
 		// Basic Search logic
@@ -210,25 +194,6 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 	public function getFullSearchUrl() {
 		return isset($this->indexEngine->fullSearchUrl) ? $this->indexEngine->fullSearchUrl : 'Unknown';
 	}
-
-	/**
-	 * Used during repeated deminification (such as search history).
-	 *   To scrub fields populated above.
-	 *
-	 * @access  private
-	 */
-	protected function purge()
-	{
-		// Call standard purge:
-		parent::purge();
-
-		// Make some Solr-specific adjustments:
-		$this->query        = null;
-		$this->publicQuery  = null;
-	}
-
-	public function getQuery()          {return $this->query;}
-	public function getIndexEngine()    {return $this->indexEngine;}
 
 	/**
 	 * Return the field (index) searched by a basic search
@@ -306,6 +271,7 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 			$interface->assign('recordIndex', $x + 1);
 			$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
 			$current = &$this->indexResult['response']['docs'][$x];
+			/** @var IslandoraRecordDriver $record */
 			$record  = RecordDriverFactory::initRecordDriver($current);
 			$html[]  = $interface->fetch($record->getListEntry($user, $listId, $allowEdit));
 		}
@@ -324,6 +290,7 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 		$recordSet = $this->indexResult['response']['docs'];
 		foreach ($recordSet as $key => $record){
 			// Additional Information for Emailing a list of Archive Objects
+            /** @var IslandoraRecordDriver $recordDriver */
 			$recordDriver = RecordDriverFactory::initRecordDriver($record);
 			$record['url']    = $recordDriver->getLinkUrl();
 			$record['format'] = $recordDriver->getFormat();
@@ -470,100 +437,6 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 	}
 
 	/**
-	 * Turn the list of spelling suggestions into an array of urls
-	 *   for on-screen use to implement the suggestions.
-	 *
-	 * @access  public
-	 * @return  array     Spelling suggestion data arrays
-	 */
-	public function getSpellingSuggestions()
-	{
-		global $configArray;
-
-		$returnArray = array();
-		if (count($this->suggestions) == 0) return $returnArray;
-		$tokens = $this->spellingTokens($this->buildSpellingQuery());
-
-		foreach ($this->suggestions as $term => $details) {
-			// Find out if our suggestion is part of a token
-			$inToken = false;
-			$targetTerm = "";
-			foreach ($tokens as $token) {
-				// TODO - Do we need stricter matching here?
-				//   Similar to that in replaceSearchTerm()?
-				if (stripos($token, $term) !== false) {
-					$inToken = true;
-					// We need to replace the whole token
-					$targetTerm = $token;
-					// Go and replace this token
-					$returnArray = $this->doSpellingReplace($term,
-					$targetTerm, $inToken, $details, $returnArray);
-				}
-			}
-			// If no tokens we found, just look
-			//    for the suggestion 'as is'
-			if ($targetTerm == "") {
-				$targetTerm = $term;
-				$returnArray = $this->doSpellingReplace($term,
-				$targetTerm, $inToken, $details, $returnArray);
-			}
-		}
-		return $returnArray;
-	}
-
-	/**
-	 * Process one instance of a spelling replacement and modify the return
-	 *   data structure with the details of what was done.
-	 *
-	 * @access  public
-	 * @param   string   $term        The actually term we're replacing
-	 * @param   string   $targetTerm  The term above, or the token it is inside
-	 * @param   boolean  $inToken     Flag for whether the token or term is used
-	 * @param   array    $details     The spelling suggestions
-	 * @param   array    $returnArray Return data structure so far
-	 * @return  array    $returnArray modified
-	 */
-	private function doSpellingReplace($term, $targetTerm, $inToken, $details, $returnArray)
-	{
-		global $configArray;
-
-		$returnArray[$targetTerm]['freq'] = $details['freq'];
-		foreach ($details['suggestions'] as $word => $freq) {
-			// If the suggested word is part of a token
-			if ($inToken) {
-				// We need to make sure we replace the whole token
-				$replacement = str_replace($term, $word, $targetTerm);
-			} else {
-				$replacement = $word;
-			}
-			//  Do we need to show the whole, modified query?
-			if ($configArray['Spelling']['phrase']) {
-				$label = $this->getDisplayQueryWithReplacedTerm($targetTerm, $replacement);
-			} else {
-				$label = $replacement;
-			}
-			// Basic spelling suggestion data
-			$returnArray[$targetTerm]['suggestions'][$label] = array(
-                'freq'        => $freq,
-                'replace_url' => $this->renderLinkWithReplacedTerm($targetTerm, $replacement)
-			);
-			// Only generate expansions if enabled in config
-			if ($configArray['Spelling']['expand']) {
-				// Parentheses differ for shingles
-				if (strstr($targetTerm, " ") !== false) {
-					$replacement = "(($targetTerm) OR ($replacement))";
-				} else {
-					$replacement = "($targetTerm OR $replacement)";
-				}
-				$returnArray[$targetTerm]['suggestions'][$label]['expand_url'] =
-				$this->renderLinkWithReplacedTerm($targetTerm, $replacement);
-			}
-		}
-
-		return $returnArray;
-	}
-
-	/**
 	 * Return a list of valid sort options -- overrides the base class with
 	 * custom behavior for Author/Search screen.
 	 *
@@ -622,46 +495,6 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 		$this->page = $oldPage;
 		// Return the URL
 		return $url;
-	}
-
-	/**
-	 * Build a string for onscreen display showing the
-	 *   query used in the search (not the filters).
-	 *
-	 * @access  public
-	 * @return  string   user friendly version of 'query'
-	 */
-	public function displayQuery()
-	{
-		// Maybe this is a restored object...
-		if ($this->query == null) {
-			$this->query = $this->indexEngine->buildQuery($this->searchTerms);
-		}
-
-		// Do we need the complex answer? Advanced searches
-		if ($this->searchType == $this->advancedSearchType) {
-			$output = $this->buildAdvancedDisplayQuery();
-			// If there is a hardcoded public query (like tags) return that
-		} else if ($this->publicQuery != null) {
-			$output = $this->publicQuery;
-			// If we don't already have a public query, and this is a basic search
-			// with case-insensitive booleans, we need to do some extra work to ensure
-			// that we display the user's query back to them unmodified (i.e. without
-			// capitalized Boolean operators)!
-		} else if (!$this->indexEngine->hasCaseSensitiveBooleans()) {
-			$output = $this->publicQuery =
-			$this->indexEngine->buildQuery($this->searchTerms, true);
-			// Simple answer
-		} else {
-			$output = $this->query;
-		}
-
-		// Empty searches will look odd to users
-		if ($output == '*:*') {
-			$output = "";
-		}
-
-		return $output;
 	}
 
 	/**
@@ -784,15 +617,12 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 		}
 
 		// Build our spellcheck query
-		if ($this->spellcheck) {
-			if ($this->spellSimple) {
-				$this->useBasicDictionary();
-			}
+		if ($this->spellcheckEnabled) {
 			$spellcheck = $this->buildSpellingQuery();
 
 			// If the spellcheck query is purely numeric, skip it if
 			// the appropriate setting is turned on.
-			if ($this->spellSkipNumeric && is_numeric($spellcheck)) {
+			if (is_numeric($spellcheck)) {
 				$spellcheck = "";
 			}
 		} else {
@@ -839,19 +669,15 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 		}
 
 		// Process spelling suggestions if no index error resulted from the query
-		if ($this->spellcheck && !isset($this->indexResult['error'])) {
+		if ($this->spellcheckEnabled && !isset($this->indexResult['error'])) {
 			// Shingle dictionary
 			$this->processSpelling();
-			// Make sure we don't endlessly loop
-			if ($this->dictionary == 'default') {
-				// Expand against the basic dictionary
-				$this->basicSpelling();
-			}
 		}
 
 		// If extra processing is needed for recommendations, do it now:
 		if ($recommendations && is_array($this->recommend)) {
-			foreach($this->recommend as $currentSet) {
+		    foreach($this->recommend as $currentSet) {
+                /** @var RecommendationInterface $current */
 				foreach($currentSet as $current) {
 					$current->process();
 				}
@@ -875,7 +701,6 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 	public function getFilterList($excludeCheckboxFilters = false)
 	{
 		require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
-		global $library;
 		$fedoraUtils = FedoraUtils::getInstance();
 
 		// Get a list of checkbox filters to skip if necessary:
@@ -1062,62 +887,7 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 	 */
 	public function buildExcel($result = null)
 	{
-		// First, get the search results if none were provided
-		// (we'll go for 50 at a time)
-		if (is_null($result)) {
-			$this->limit = 2000;
-			$result = $this->processSearch(false, false);
-		}
-
-		// Prepare the spreadsheet
-		ini_set('include_path', ini_get('include_path'.';/PHPExcel/Classes'));
-		include 'PHPExcel.php';
-		include 'PHPExcel/Writer/Excel2007.php';
-		$objPHPExcel = new PHPExcel();
-		$objPHPExcel->getProperties()->setTitle("Search Results");
-
-		$objPHPExcel->setActiveSheetIndex(0);
-		$objPHPExcel->getActiveSheet()->setTitle('Results');
-
-		//Add headers to the table
-		$sheet = $objPHPExcel->getActiveSheet();
-		$curRow = 1;
-		$curCol = 0;
-		$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'First Name');
-		$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Last Name');
-		$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Birth Date');
-		$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Death Date');
-		$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Veteran Of');
-		$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Cemetery');
-		$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Addition');
-		$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Block');
-		$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Lot');
-		$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Grave');
-		$maxColumn = $curCol -1;
-
-		for ($i = 0; $i < count($result['response']['docs']); $i++) {
-			$curDoc = $result['response']['docs'][$i];
-			$curRow++;
-			$curCol = 0;
-			//TODO: Need to export information to Excel
-		}
-
-		for ($i = 0; $i < $maxColumn; $i++){
-			$sheet->getColumnDimensionByColumn($i)->setAutoSize(true);
-		}
-
-		//Output to the browser
-		header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
-		header("Cache-Control: no-store, no-cache, must-revalidate");
-		header("Cache-Control: post-check=0, pre-check=0", false);
-		header("Pragma: no-cache");
-		header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-		header('Content-Disposition: attachment;filename="Results.xlsx"');
-
-		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
-		$objWriter->save('php://output'); //THIS DOES NOT WORK WHY?
-		$objPHPExcel->disconnectWorksheets();
-		unset($objPHPExcel);
+		//TODO: Create an Excel sheet with the results
 	}
 
 	/**
@@ -1126,7 +896,7 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 	 * @param   string  $id         The document to retrieve from Solr
 	 * @access  public
 	 * @throws  object              PEAR Error
-	 * @return  string              The requested resource
+	 * @return  array               The requested resource
 	 */
 	function getRecord($id)
 	{
@@ -1143,41 +913,13 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 	 */
 	protected function getSearchParams()
 	{
-		if (is_null($this->params)) {
-			$params = array();
-			switch ($this->searchType) {
-				case 'islandora' :
-				default :
-					$params = parent::getSearchParams();
-					if (isset($_REQUEST['islandoraType'])) {
-						$params[] = 'islandoraType=' . $_REQUEST['islandoraType'];
-					} else {
-						$params[] = 'islandoraType=' . $this->defaultIndex;
-					}
-					break;
-				case 'list' :
-				case "favorites":
-				case "list":
-					$preserveParams = array(
-						// for favorites/list:
-						'tag', 'pagesize'
-					);
-					foreach ($preserveParams as $current) {
-						if (isset($_GET[$current])) {
-							if (is_array($_GET[$current])) {
-								foreach ($_GET[$current] as $value) {
-									$params[] = $current . '[]=' . urlencode($value);
-								}
-							} else {
-								$params[] = $current . '=' . urlencode($_GET[$current]);
-							}
-						}
-					}
-
-			}
-			$this->params = $params;
-		}
-		return $this->params;
+        $params = parent::getSearchParams();
+        if (isset($_REQUEST['islandoraType'])) {
+            $params[] = 'islandoraType=' . $_REQUEST['islandoraType'];
+        } else {
+            $params[] = 'islandoraType=' . $this->defaultIndex;
+        }
+        return $params;
 	}
 
 	/**

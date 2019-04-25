@@ -96,7 +96,7 @@
 		<field name="title_display" type="unchanged_string" indexed="false" stored="true"/>
 		<field name="title_sort" type="alphaOnlySort" indexed="true" stored="true"/> <!-- title for sorting -->
 		<field name="author" type="searchable_text" indexed="true" stored="false" />
-		<field name="author_display" type="unchanged_string" indexed="false" stored="true" multiValued="false"/> <!-- The author to display to the user -->
+		<field name="author_display" type="unchanged_string" indexed="true" stored="true" multiValued="false"/> <!-- The author to display to the user -->
 		<field name="comments" type="searchable_text" indexed="true" stored="true"/>
 		<field name="table_of_contents" type="searchable_text" indexed="true" stored="true" multiValued="true"/>
 		<field name="table_of_contents_proper" type="textProper" indexed="true" stored="true" multiValued="true"/>

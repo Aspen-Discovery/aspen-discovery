@@ -14,7 +14,7 @@
 		text-align: left;
 		width: auto;
 	}
-	#hd,#ft,#siteNavBackground,.currentSearch,.sectionSub,.tools,.backtosearch,#tabnav,.submenu,.add,.toggle,.fav,.searchtools,.pagination
+	#hd,#ft,#siteNavBackground,.currentSearch,.sectionSub,.tools,.backtosearch,#tabnav,.submenu,.add,.toggle,.fav,.search_tools,.pagination
 		{
 		visibility: hidden;
 		height: 0;

@@ -8,15 +8,13 @@ class ExploreMore {
 	 * @param IndexRecordDriver $recordDriver
 	 */
 	function loadExploreMoreSidebar($activeSection, $recordDriver){
-		//TODO: remove title from $exploreMoreSectionsToShow array
 		global $interface;
-		global $configArray;
 		global $timer;
 
-		if (isset($configArray['Islandora']) && isset($configArray['Islandora']['solrUrl'])) {
-			require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
-			$fedoraUtils = FedoraUtils::getInstance();
-		}
+//		if (isset($configArray['Islandora']) && isset($configArray['Islandora']['solrUrl'])) {
+//			require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
+//			$fedoraUtils = FedoraUtils::getInstance();
+//		}
 		$exploreMoreSectionsToShow = array();
 
 		$relatedPikaContent = array();
@@ -28,7 +26,7 @@ class ExploreMore {
 				$parentObject = $recordDriver->getParentObject();
 
 				if ($parentObject != null){
-					/** @var IslandoraRecordDriver $parentDriver */
+					/** @var CompoundRecordDriver $parentDriver */
 					$parentDriver = RecordDriverFactory::initRecordDriver($parentObject);
 
 					//If the parent object is a section then get the parent again
@@ -43,7 +41,6 @@ class ExploreMore {
 					}
 
 					$exploreMoreSectionsToShow['parentBook'] = array(
-//							'title' => 'Entire Book',
 							'format' => 'list',
 							'values' => array(
 									array(
@@ -67,7 +64,6 @@ class ExploreMore {
 					if (count($this->relatedCollections) > 1){ //Don't show if the only link is back to the All Collections page
 						$displayType = count($this->relatedCollections) > 3 ? 'textOnlyList' : 'list';
 						$exploreMoreSectionsToShow['relatedCollections'] = array(
-//								'title' => 'Related Archive Collections',
 								'format' => $displayType,
 								'values' => $this->relatedCollections
 						);
@@ -93,7 +89,6 @@ class ExploreMore {
 				if (count($this->relatedCollections) > 1){ //Don't show if the only link is back to the All Collections page
 					$displayType = count($this->relatedCollections) > 3 ? 'textOnlyList' : 'list';
 					$exploreMoreSectionsToShow['relatedCollections'] = array(
-//							'title' => 'Related Archive Collections',
 							'format' => $displayType,
 							'values' => $this->relatedCollections
 					);
@@ -105,7 +100,6 @@ class ExploreMore {
 			$relatedPikaContent = $archiveDriver->getRelatedPikaContent();
 			if (count($relatedPikaContent) > 0){
 				$exploreMoreSectionsToShow['linkedCatalogRecords'] = array(
-//						'title' => 'Librarian Picks',
 						'format' => 'scroller',
 						'values' => $relatedPikaContent
 				);
@@ -145,7 +139,6 @@ class ExploreMore {
 				$exactEntityMatches = $this->loadExactEntityMatches(array(), $curSubject);
 				if (count($exactEntityMatches) > 0){
 					$exploreMoreSectionsToShow['exactEntityMatches'] = array(
-//							'title' => 'Related People, Places &amp; Events',
 							'format' => 'list',
 							'values' => usort($exactEntityMatches, 'ExploreMore::sortRelatedEntities')
 					);
@@ -170,7 +163,6 @@ class ExploreMore {
 				if (isset($relatedArchiveEntities['people'])){
 					usort($relatedArchiveEntities['people'], 'ExploreMore::sortRelatedEntities');
 					$exploreMoreSectionsToShow['relatedPeople'] = array(
-//							'title' => 'Associated People',
 							'format' => 'textOnlyList',
 							'values' => $relatedArchiveEntities['people']
 					);
@@ -178,7 +170,6 @@ class ExploreMore {
 				if (isset($relatedArchiveEntities['places'])){
 					usort($relatedArchiveEntities['places'], 'ExploreMore::sortRelatedEntities');
 					$exploreMoreSectionsToShow['relatedPlaces'] = array(
-//							'title' => 'Associated Places',
 							'format' => 'textOnlyList',
 							'values' => $relatedArchiveEntities['places']
 					);
@@ -186,7 +177,6 @@ class ExploreMore {
 				if (isset($relatedArchiveEntities['organizations'])){
 					usort($relatedArchiveEntities['organizations'], 'ExploreMore::sortRelatedEntities');
 					$exploreMoreSectionsToShow['relatedOrganizations'] = array(
-//							'title' => 'Associated Organizations',
 							'format' => 'textOnlyList',
 							'values' => $relatedArchiveEntities['organizations']
 					);
@@ -194,7 +184,6 @@ class ExploreMore {
 				if (isset($relatedArchiveEntities['events'])){
 					usort($relatedArchiveEntities['events'], 'ExploreMore::sortRelatedEntities');
 					$exploreMoreSectionsToShow['relatedEvents'] = array(
-//							'title' => 'Associated Events',
 							'format' => 'textOnlyList',
 							'values' => $relatedArchiveEntities['events']
 					);
@@ -206,7 +195,6 @@ class ExploreMore {
 		$relatedArchiveContent = $this->getRelatedArchiveObjects($quotedSearchTerm, $driver);
 		if (count($relatedArchiveContent) > 0) {
 			$exploreMoreSectionsToShow['relatedArchiveData'] = array(
-//					'title' => 'From the Archive',
 					'format' => 'subsections',
 					'values' => $relatedArchiveContent
 			);
@@ -216,7 +204,6 @@ class ExploreMore {
 			$relatedWorks = $this->getRelatedWorks($quotedSubjectsForSearching, $relatedPikaContent);
 			if ($relatedWorks['numFound'] > 0){
 				$exploreMoreSectionsToShow['relatedCatalog'] = array(
-//						'title' => 'More From the Catalog',
 						'format' => 'scrollerWithLink',
 						'values' => $relatedWorks['values'],
 						'link' => $relatedWorks['link'],
@@ -234,7 +221,6 @@ class ExploreMore {
 			if (count($relatedSubjects) > 0){
 				usort($relatedSubjects, 'ExploreMore::sortRelatedEntities');
 				$exploreMoreSectionsToShow['relatedSubjects'] = array(
-//						'title' => 'Related Subjects',
 						'format' => 'textOnlyList',
 						'values' => $relatedSubjects
 				);
@@ -248,7 +234,6 @@ class ExploreMore {
 				$dplaResults = $dpla->getDPLAResults('"' . $archiveDriver->getTitle() . '"');
 				if (count($dplaResults)){
 					$exploreMoreSectionsToShow['dpla'] = array(
-//							'title' => 'Digital Public Library of America',
 							'format' => 'scrollerWithLink',
 							'values' => $dplaResults['records'],
 							'link' => 'http://dp.la/search?q=' . urlencode('"' . $archiveDriver->getTitle() . '"'),
@@ -288,7 +273,6 @@ class ExploreMore {
 					usort($brandingResults, 'sortBrandingResults');
 
 					$exploreMoreSectionsToShow['acknowledgements'] = array(
-//							'title' => 'Acknowledgements',
 							'format' => 'list',
 							'values' => $brandingResults,
 							'showTitles' => true,
@@ -345,6 +329,7 @@ class ExploreMore {
 			/** @var SearchObject_IslandoraSearcher $islandoraSearchObject */
 			$islandoraSearchObject = SearchObjectFactory::initSearchObject('Islandora');
 			$islandoraSearchObject->init();
+            $islandoraSearchObject->disableSpelling();
 			$islandoraActive = $islandoraSearchObject->pingServer(false);
 		}
 
@@ -390,6 +375,7 @@ class ExploreMore {
 						/** @var SearchObject_IslandoraSearcher $searchObject2 */
 						$searchObject2 = SearchObjectFactory::initSearchObject('Islandora');
 						$searchObject2->init();
+                        $searchObject2->disableSpelling();
 						$searchObject2->setDebugging(false, false);
 						$searchObject2->setSearchTerms(array(
 								'lookfor' => $searchTerm,
@@ -534,6 +520,7 @@ class ExploreMore {
 				/** @var SearchObject_IslandoraSearcher $searchObject */
 				$searchObject = SearchObjectFactory::initSearchObject('Islandora');
 				$searchObject->init();
+                $searchObject->disableSpelling();
 				$searchObject->setDebugging(false, false);
 
 				//First look specifically for
@@ -574,7 +561,8 @@ class ExploreMore {
             if (strlen($searchTerm) > 0) {
                 /** @var SearchObject_ListsSearcher $searchObject */
                 $searchObjectSolr = SearchObjectFactory::initSearchObject('Lists');
-                $searchObjectSolr->init('local');
+                $searchObjectSolr->init();
+                $searchObjectSolr->disableSpelling();
                 $searchObjectSolr->setSearchTerms(array(
                     'lookfor' => $searchTerm,
                     'index' => 'ListsKeyword'
@@ -630,7 +618,8 @@ class ExploreMore {
             if (strlen($searchTerm) > 0) {
                 /** @var SearchObject_OpenArchivesSearcher $searchObject */
                 $searchObjectSolr = SearchObjectFactory::initSearchObject('OpenArchives');
-                $searchObjectSolr->init('local');
+                $searchObjectSolr->init();
+                $searchObjectSolr->disableSpelling();
                 $searchObjectSolr->setSearchTerms(array(
                     'lookfor' => $searchTerm,
                     'index' => 'OpenArchivesKeyword'
@@ -687,6 +676,7 @@ class ExploreMore {
 				/** @var SearchObject_GroupedWorkSearcher $searchObject */
 				$searchObjectSolr = SearchObjectFactory::initSearchObject();
 				$searchObjectSolr->init('local');
+                $searchObjectSolr->disableSpelling();
 				$searchObjectSolr->setSearchTerms(array(
 						'lookfor' => $searchTerm,
 						'index' => 'Keyword'
@@ -828,6 +818,7 @@ class ExploreMore {
 		/** @var SearchObject_IslandoraSearcher $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject('Islandora');
 		$searchObject->init();
+        $searchObject->disableSpelling();
 		$searchObject->setDebugging(false, false);
 
 		//Get a list of objects in the archive related to this search
@@ -853,6 +844,7 @@ class ExploreMore {
 				/** @var SearchObject_IslandoraSearcher $searchObject2 */
 				$searchObject2 = SearchObjectFactory::initSearchObject('Islandora');
 				$searchObject2->init();
+                $searchObject2->disableSpelling();
 				$searchObject2->setDebugging(false, false);
 				if ($archiveDriver != null){
 					$searchObject2->addHiddenFilter('!PID', str_replace(':', '\:', $archiveDriver->getUniqueID()));
@@ -1008,6 +1000,7 @@ class ExploreMore {
 			/** @var SearchObject_GroupedWorkSearcher $searchObject */
 			$searchObject = SearchObjectFactory::initSearchObject();
 			$searchObject->init('local', $searchTerm);
+            $searchObject->disableSpelling();
 			$searchObject->setSearchTerms(array(
 					'lookfor' => $searchTerm,
 					'index' => 'Keyword'

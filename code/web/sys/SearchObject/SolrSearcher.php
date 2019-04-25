@@ -19,20 +19,47 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
     protected $facetSort = null;
 
     // Spelling
-    protected $spellingLimit = 3;
+    protected $spellcheckEnabled    = true;
+    protected $spellingWordSuggestions   = array();
+    protected $spellingLimit = 5;
     protected $spellQuery    = array();
     protected $dictionary    = 'default';
-    protected $spellSimple   = false;
-    protected $spellSkipNumeric = true;
 
+    // Debugging flags
+    protected $debug = false;
     protected $debugSolrQuery = false;
+
+    // Publicly viewable version
+    protected $publicQuery = null;
 
     public function __construct(){
         parent::__construct();
         global $configArray;
-        if ($this->debug && $configArray['System']['debugSolrQuery'] == true) {
-            $this->debugSolrQuery = true;
+        // Set appropriate debug mode:
+        // Debugging
+        if ($configArray['System']['debugSolr']) {
+            //Verify that the ip is ok
+            global $locationSingleton;
+            $activeIp = $locationSingleton->getActiveIp();
+            $maintenanceIps = $configArray['System']['maintenanceIps'];
+            $debug = true;
+            if (strlen($maintenanceIps) > 0){
+                $debug = false;
+                $allowableIps = explode(',', $maintenanceIps);
+                if (in_array($activeIp, $allowableIps)){
+                    $debug = true;
+                    if ($configArray['System']['debugSolrQuery'] == true) {
+                        $this->debugSolrQuery = true;
+                    }
+                }
+            }
+            $this->debug = $debug;
+        } else {
+            $this->debug = false;
         }
+
+        //Setup Spellcheck
+        $this->spellcheckEnabled = true;
     }
 
     /**
@@ -185,15 +212,12 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
         }
 
         // Build our spellcheck query
-        if ($this->spellcheck) {
-            if ($this->spellSimple) {
-                $this->useBasicDictionary();
-            }
+        if ($this->spellcheckEnabled) {
             $spellcheck = $this->buildSpellingQuery();
 
             // If the spellcheck query is purely numeric, skip it if
             // the appropriate setting is turned on.
-            if ($this->spellSkipNumeric && is_numeric($spellcheck)) {
+            if (is_numeric($spellcheck)) {
                 $spellcheck = "";
             }
         } else {
@@ -236,14 +260,8 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
         }
 
         // Process spelling suggestions if no index error resulted from the query
-        if ($this->spellcheck && !isset($this->indexResult['error'])) {
-            // Shingle dictionary
+        if ($this->spellcheckEnabled && !isset($this->indexResult['error'])) {
             $this->processSpelling();
-            // Make sure we don't endlessly loop
-            if ($this->dictionary == 'default') {
-                // Expand against the basic dictionary
-                $this->basicSpelling();
-            }
         }
 
         // If extra processing is needed for recommendations, do it now:
@@ -285,12 +303,115 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
     }
 
     /**
-     * Switch the spelling dictionary to basic
+     * Turn the list of spelling suggestions into an array of urls
+     *   for on-screen use to implement the suggestions.
      *
      * @access  public
+     * @return  array     Spelling suggestion data arrays
      */
-    public function useBasicDictionary() {
-        $this->dictionary = 'basicSpell';
+    public function getSpellingSuggestions()
+    {
+        $returnArray = array();
+
+        $correctlySpelled = isset($this->indexResult['spellcheck']) ? $this->indexResult['spellcheck']['correctlySpelled'] : true;
+        $spellingCollations = isset($this->indexResult['spellcheck']['collations']) ? $this->indexResult['spellcheck']['collations'] : array();
+        if (count($spellingCollations) > 0){
+            foreach ($spellingCollations as $collation) {
+                if ($collation[0] == 'collation'){
+                    $label = $collation[1]['collationQuery'];
+                    $freq = $collation[1]['hits'];
+                    $oldTerms = [];
+                    $newTerms = [];
+                    foreach ($collation[1]['misspellingsAndCorrections'] as $replacements){
+                        $oldTerms[] = $replacements[0];
+                        $newTerms[] = $replacements[1];
+                    }
+                    $returnArray[$label] = array(
+                        'freq'        => $freq,
+                        'replace_url' => $this->renderLinkWithReplacedTerm($oldTerms, $newTerms),
+                        'phrase' => $label
+                    );
+                }
+            }
+        }elseif (count($this->spellingWordSuggestions) > 0){
+            //TODO: Delete this?
+            $tokens = $this->spellingTokens($this->buildSpellingQuery());
+
+            foreach ($this->spellingWordSuggestions as $term => $details) {
+                // Find out if our suggestion is part of a token
+                $inToken = false;
+                $targetTerm = "";
+                foreach ($tokens as $token) {
+                    // TODO - Do we need stricter matching here?
+                    //   Similar to that in replaceSearchTerm()?
+                    if (stripos($token, $term) !== false) {
+                        $inToken = true;
+                        // We need to replace the whole token
+                        $targetTerm = $token;
+                        // Go and replace this token
+                        $returnArray = $this->doSpellingReplace($term, $targetTerm, $inToken, $details, $returnArray);
+                    }
+                }
+                // If no tokens we found, just look
+                //    for the suggestion 'as is'
+                if ($targetTerm == "") {
+                    $targetTerm = $term;
+                    $returnArray = $this->doSpellingReplace($term, $targetTerm, $inToken, $details, $returnArray);
+                }
+            }
+        }
+
+        return [
+            'correctlySpelled' => $correctlySpelled,
+            'suggestions' => $returnArray
+        ];
+    }
+
+    /**
+     * Process one instance of a spelling replacement and modify the return
+     *   data structure with the details of what was done.
+     *
+     * @access  public
+     * @param   string   $term        The actually term we're replacing
+     * @param   string   $targetTerm  The term above, or the token it is inside
+     * @param   boolean  $inToken     Flag for whether the token or term is used
+     * @param   array    $details     The spelling suggestions
+     * @param   array    $returnArray Return data structure so far
+     * @return  array    $returnArray modified
+     */
+    private function doSpellingReplace($term, $targetTerm, $inToken, $details, $returnArray)
+    {
+        $returnArray[$targetTerm]['freq'] = $details['freq'];
+        foreach ($details['suggestions'] as $word => $freq) {
+            // If the suggested word is part of a token
+            if ($inToken) {
+                // We need to make sure we replace the whole token
+                $replacement = str_replace($term, $word, $targetTerm);
+            } else {
+                $replacement = $word;
+            }
+            //  Do we need to show the whole, modified query?
+            $label = $this->getDisplayQueryWithReplacedTerm($targetTerm, $replacement);
+
+            // Basic spelling suggestion data
+            $returnArray[$targetTerm]['suggestions'][$label] = array(
+                'freq'        => $freq,
+                'replace_url' => $this->renderLinkWithReplacedTerm($targetTerm, $replacement)
+            );
+
+            //
+            // Parentheses differ for shingles
+            //Do not currently want to use expand urls (which add the new term to the search)
+//            if (strstr($targetTerm, " ") !== false) {
+//                $replacement = "(($targetTerm) OR ($replacement))";
+//            } else {
+//                $replacement = "($targetTerm OR $replacement)";
+//            }
+//            $returnArray[$targetTerm]['suggestions'][$label]['expand_url'] = $this->renderLinkWithReplacedTerm($targetTerm, $replacement);
+
+        }
+
+        return $returnArray;
     }
 
     /**
@@ -321,33 +442,29 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
     }
 
     /**
-     * Process spelling suggestions from the results object
+     * Process spelling suggestions from the results object.  This is then used by getSpellingSuggestions
+     * to convert the raw suggestions into something we can use in the user interface.
      *
      * @access  private
      */
     protected function processSpelling()
     {
-        global $configArray;
-
         // Do nothing if spelling is disabled
-        if (!$configArray['Spelling']['enabled']) {
+        if (!$this->spellcheckEnabled) {
             return;
         }
 
         // Do nothing if there are no suggestions
-        $suggestions = isset($this->indexResult['spellcheck']['suggestions']) ?
-            $this->indexResult['spellcheck']['suggestions'] : array();
-        if (count($suggestions) == 0) {
-            return;
-        }
+        $spellingWordSuggestions = isset($this->indexResult['spellcheck']['suggestions']) ?  $this->indexResult['spellcheck']['suggestions'] : array();
+
+        $suggestionList = array();
 
         // Loop through the array of search terms we have suggestions for
-        $suggestionList = array();
-        foreach ($suggestions as $suggestion) {
+        foreach ($spellingWordSuggestions as $suggestion) {
             $ourTerm = $suggestion[0];
 
             // Skip numeric terms if numeric suggestions are disabled
-            if ($this->spellSkipNumeric && is_numeric($ourTerm)) {
+            if (is_numeric($ourTerm)) {
                 continue;
             }
 
@@ -359,7 +476,7 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 
             // Make sure the suggestion is for a valid search term.
             // Sometimes shingling will have bridged two search fields (in
-            // an advanced search) or skipped over a stopword.
+            // an advanced search) or skipped over a stop word.
             if (!$this->findSearchTerm($ourTerm)) {
                 $validTerm = false;
             }
@@ -388,7 +505,8 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
                 }
             }
         }
-        $this->suggestions = $suggestionList;
+
+        $this->spellingWordSuggestions = $suggestionList;
     }
 
     /**
@@ -409,57 +527,6 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
             }
         }
         return $newList;
-    }
-
-    /**
-     * Try running spelling against the basic dictionary.
-     *   This function should ensure it doesn't return
-     *   single word suggestions that have been accounted
-     *   for in the shingle suggestions above.
-     */
-    protected function basicSpelling()
-    {
-        // TODO: There might be a way to run the
-        //   search against both dictionaries from
-        //   inside solr. Investigate. Currently
-        //   submitting a second search for this.
-
-        // Create a new search object
-        $newSearch = SearchObjectFactory::initSearchObject('Genealogy');
-        $newSearch->deminify($this->minify());
-
-        // Activate the basic dictionary
-        $newSearch->useBasicDictionary();
-        // We don't want it in the search history
-        $newSearch->disableLogging();
-
-        // Run the search
-        $newSearch->processSearch();
-        // Get the spelling results
-        $newList = $newSearch->getRawSuggestions();
-
-        // If there were no shingle suggestions
-        if (count($this->suggestions) == 0) {
-            // Just use the basic ones as provided
-            $this->suggestions = $newList;
-
-            // Otherwise
-        } else {
-            // For all the new suggestions
-            foreach ($newList as $word => $data) {
-                // Check the old suggestions
-                $found = false;
-                foreach ($this->suggestions as $k => $v) {
-                    // Make sure it wasn't part of a shingle
-                    //   which has been suggested at a higher
-                    //   level.
-                    $found = preg_match("/\b$word\b/", $k) ? true : $found;
-                }
-                if (!$found) {
-                    $this->suggestions[$word] = $data;
-                }
-            }
-        }
     }
 
     public function getUniqueField(){
@@ -494,7 +561,7 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
         // If we have no facets to process, give up now
         if (!isset($this->indexResult['facet_counts'])){
             return $list;
-        }elseif (empty($this->indexResult['facet_counts']['facet_fields']) && tmpty($this->indexResult['facet_counts']['facet_dates'])) {
+        }elseif (empty($this->indexResult['facet_counts']['facet_fields']) && empty($this->indexResult['facet_counts']['facet_dates'])) {
             return $list;
         }
 
@@ -567,4 +634,160 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
         }
         return $list;
     }
+
+    public function disableSpelling(){
+        $this->spellcheckEnabled = false;
+    }
+
+    public function enableSpelling(){
+        $this->spellcheckEnabled = true;
+    }
+
+    /**
+     * Return the record set from the search results.
+     *
+     * @access  public
+     * @return  array   recordSet
+     */
+    public function getResultRecordSet()
+    {
+        //Marmot add shortIds without dot for use in display.
+        if (isset($this->indexResult['response'])){
+            $recordSet = $this->indexResult['response']['docs'];
+            if (is_array($recordSet)){
+                foreach ($recordSet as $key => $record){
+                    //Trim off the dot from the start
+                    $record['shortId'] = substr($record['id'], 1);
+                    if (!$this->debug){
+                        unset($record['explain']);
+                        unset($record['score']);
+                    }
+                    $recordSet[$key] = $record;
+                }
+            }
+        }else{
+            return array();
+        }
+
+        return $recordSet;
+    }
+
+    /**
+     * Turn our results into an RSS feed
+     *
+     * @access  public
+     * @param  array|null   $result      Existing result set (null to do new search)
+     * @return  string                  XML document
+     */
+    public function buildRSS($result = null)
+    {
+        global $configArray;
+        // XML HTTP header
+        header('Content-type: text/xml', true);
+
+        // First, get the search results if none were provided
+        // (we'll go for 50 at a time)
+        if (is_null($result)) {
+            $this->limit = 50;
+            $result = $this->processSearch(false, false);
+        }
+
+        for ($i = 0; $i < count($result['response']['docs']); $i++) {
+            $current = & $this->indexResult['response']['docs'][$i];
+
+            /** @var IndexRecordDriver $record */
+            $record = RecordDriverFactory::initRecordDriver($current);
+            if (!($record instanceof AspenError)) {
+                $result['response']['docs'][$i]['recordUrl'] = $record->getAbsoluteUrl();
+                $result['response']['docs'][$i]['title_display'] = $record->getTitle();
+                $image = $record->getBookcoverUrl('medium');
+                $description = "<img src='$image' alt='cover image'/> ";
+                $result['response']['docs'][$i]['rss_description'] = $description;
+            } else {
+                $html[] = "Unable to find record";
+            }
+        }
+
+        global $interface;
+
+        // On-screen display value for our search
+        $lookfor = $this->displayQuery();
+
+        if (count($this->filterList) > 0) {
+            // TODO : better display of filters
+            $interface->assign('lookfor', $lookfor . " (" . translate('with filters') . ")");
+        } else {
+            $interface->assign('lookfor', $lookfor);
+        }
+        // The full url to recreate this search
+        $interface->assign('searchUrl', $configArray['Site']['url']. $this->renderSearchUrl());
+        // Stub of a url for a records screen
+        $interface->assign('baseUrl',    $configArray['Site']['url']);
+
+        $interface->assign('result', $result);
+        return $interface->fetch('Search/rss.tpl');
+    }
+
+    /**
+     * Build a string for onscreen display showing the
+     *   query used in the search (not the filters).
+     *
+     * @access  public
+     * @param bool $forceRebuild
+     * @return  string   user friendly version of 'query'
+     */
+    public function displayQuery($forceRebuild = false)
+    {
+        // Maybe this is a restored object...
+        if ($this->query == null || $forceRebuild) {
+            $fullQuery = $this->indexEngine->buildQuery($this->searchTerms, false);
+            $displayQuery = $this->indexEngine->buildQuery($this->searchTerms, true);
+            $this->query = $fullQuery;
+            if ($fullQuery != $displayQuery){
+                $this->publicQuery = $displayQuery;
+            }
+        }
+
+        // Do we need the complex answer? Advanced searches
+        if ($this->searchType == $this->advancedSearchType) {
+            $output = $this->buildAdvancedDisplayQuery();
+            // If there is a hardcoded public query (like tags) return that
+        } else if ($this->publicQuery != null) {
+            $output = $this->publicQuery;
+            // If we don't already have a public query, and this is a basic search
+            // with case-insensitive booleans, we need to do some extra work to ensure
+            // that we display the user's query back to them unmodified (i.e. without
+            // capitalized Boolean operators)!
+        } else if (!$this->indexEngine->hasCaseSensitiveBooleans()) {
+            $output = $this->publicQuery = $this->indexEngine->buildQuery($this->searchTerms, true);
+            // Simple answer
+        } else {
+            $output = $this->query;
+        }
+
+        // Empty searches will look odd to users
+        if ($output == '*:*') {
+            $output = "";
+        }
+
+        return $output;
+    }
+
+    /**
+     * Used during repeated deminification (such as search history).
+     *   To scrub fields populated above.
+     *
+     * @access  private
+     */
+    protected function purge()
+    {
+        // Call standard purge:
+        parent::purge();
+
+        // Make some Solr-specific adjustments:
+        $this->query        = null;
+        $this->publicQuery  = null;
+    }
+
+    public function getIndexEngine()    {return $this->indexEngine;}
 }

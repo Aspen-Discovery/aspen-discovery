@@ -73,15 +73,12 @@ class Record_AJAX extends Action {
 		$id = $_REQUEST['id'];
 		$interface->assign('id', $id);
 
+		/** @var SearchObject_GroupedWorkSearcher $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject();
 		$searchObject->init();
-		// Setup Search Engine Connection
-		$url = $configArray['Index']['url'];
-		/** @var GroupedWorksSolrConnector $db */
-		$db = new GroupedWorksSolrConnector($url);
 
 		// Retrieve Full record from Solr
-		if (!($record = $db->getRecord($id))) {
+		if (!($record = $searchObject->getRecord($id))) {
 			AspenError::raiseError(new AspenError('Record Does Not Exist'));
 		}
 

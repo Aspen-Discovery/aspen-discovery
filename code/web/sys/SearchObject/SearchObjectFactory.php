@@ -29,6 +29,52 @@ class SearchObjectFactory {
 		return false;
 	}
 
+    /**
+     * initSearchObject
+     *
+     * This constructs a search object for the specified engine.
+     *
+     * @access  public
+     * @param   string $searchSource
+     * @return  mixed               The search object on success, false otherwise
+     */
+    static function initSearchObjectBySearchSource($searchSource = 'local')
+    {
+        global $configArray;
+
+        // Figure out the engine type for the object we're about to construct:
+        switch($searchSource) {
+            case 'islandora' :
+                $engine = 'Islandora';
+                break;
+            case 'open_archives' :
+                $engine = 'OpenArchives';
+                break;
+            case 'lists' :
+                $engine = 'Lists';
+                break;
+            case 'genealogy' :
+                $engine = 'Genealogy';
+                break;
+            default:
+                $engine = 'GroupedWork';
+                break;
+        }
+
+        $path = ROOT_DIR . "/sys/SearchObject/{$engine}Searcher.php";
+        if (is_readable($path)) {
+            require_once $path;
+            $class = 'SearchObject_' . $engine . 'Searcher';
+            if (class_exists($class)) {
+                /** @var SearchObject_BaseSearcher $searchObject */
+                $searchObject = new $class();
+                return $searchObject;
+            }
+        }
+
+        return false;
+    }
+
 	/**
 	 * deminify
 	 *

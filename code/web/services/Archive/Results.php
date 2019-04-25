@@ -63,11 +63,14 @@ class Archive_Results extends Action {
 		//   Those we can construct AFTER the search is executed, but we need
 		//   no matter whether there were any results
 		$interface->assign('qtime',               round($searchObject->getQuerySpeed(), 2));
-		$interface->assign('spellingSuggestions', $searchObject->getSpellingSuggestions());
 		$interface->assign('lookfor',             $searchObject->displayQuery());
 		$interface->assign('searchType',          $searchObject->getSearchType());
 		// Will assign null for an advanced search
 		$interface->assign('searchIndex',         $searchObject->getSearchIndex());
+
+        //Always get spelling suggestions to account for cases where something is misspelled, but still gets results
+        $spellingSuggestions = $searchObject->getSpellingSuggestions();
+        $interface->assign('spellingSuggestions', $spellingSuggestions['suggestions']);
 
 		// We'll need recommendations no matter how many results we found:
 		$interface->assign('topRecommendations',

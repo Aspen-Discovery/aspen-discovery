@@ -249,63 +249,36 @@ class Search_Results extends Action {
 		// Save the URL of this search to the session so we can return to it easily:
 		$_SESSION['lastSearchURL'] = $searchObject->renderSearchUrl();
 
+		//Always get spelling suggestions to account for cases where something is misspelled, but still gets results
+        $spellingSuggestions = $searchObject->getSpellingSuggestions();
+        $interface->assign('spellingSuggestions', $spellingSuggestions['suggestions']);
+
 		// No Results Actions //
-		if ($searchObject->getResultTotal() < 1) {
-			require_once ROOT_DIR . '/services/Search/lib/SearchSuggestions.php';
-			$searchSuggestions = new SearchSuggestions();
-
-			$commonSearches = $searchSuggestions->getSpellingSearches($searchObject->displayQuery());
-			$suggestions = array();
-			foreach ($commonSearches as $commonSearch){
-				$suggestions[$commonSearch['phrase']] = '/Search/Results?lookfor=' . urlencode($commonSearch['phrase']);
-			}
-			$interface->assign('spellingSuggestions', $suggestions);
-
-			//We didn't find anything.  Look for search Suggestions
-			//Don't try to find suggestions if facets were applied
-			$autoSwitchSearch = false;
+		if ($searchObject->getResultTotal() == 0) {
+			//Check to see if we can automatically replace the search with a spelling result
 			$disallowReplacements = isset($_REQUEST['disallowReplacements']) || isset($_REQUEST['replacementTerm']);
 			if (!$disallowReplacements && (!isset($facetSet) || count($facetSet) == 0)){
 				//We can try to find a suggestion, but only if we are not doing a phrase search.
 				if (strpos($searchObject->displayQuery(), '"') === false){
-					require_once ROOT_DIR . '/services/Search/lib/SearchSuggestions.php';
-					$searchSuggestions = new SearchSuggestions();
-					$commonSearches = $searchSuggestions->getCommonSearchesMySql($searchObject->displayQuery(), $searchObject->getSearchIndex());
-
-					//assign here before we start popping stuff off
-					$interface->assign('searchSuggestions', $commonSearches);
-
-					//If the first search in the list is used 10 times more than the next, just show results for that
-					$allSuggestions = $searchSuggestions->getAllSuggestions($searchObject->displayQuery(), $searchObject->getSearchIndex());
-					$numSuggestions = count($allSuggestions);
-					if ($numSuggestions == 1){
-						$firstSearch = array_pop($allSuggestions);
-						$autoSwitchSearch = true;
-					}elseif ($numSuggestions >= 2){
-						$firstSearch = array_shift($allSuggestions);
-						$secondSearch = array_shift($allSuggestions);
-						$firstTimesSearched = $firstSearch['numSearches'];
-						$secondTimesSearched = $secondSearch['numSearches'];
-						if ($secondTimesSearched > 0 && $firstTimesSearched / $secondTimesSearched > 10){ // avoids division by zero
-							$autoSwitchSearch = true;
-						}
-					}
-
-					//Check to see if the library does not want automatic search replacements
-					if (!$library->allowAutomaticSearchReplacements){
-						$autoSwitchSearch = false;
-					}
-
-					// Switch to search with a better search term //
-					if ($autoSwitchSearch){
-						//Get search results for the new search
-						// The above assignments probably do nothing when there is a redirect below
-						$thisUrl = $_SERVER['REQUEST_URI'] . "&replacementTerm=" . urlencode($firstSearch['phrase']);
-						header("Location: " . $thisUrl);
-						exit();
-					}
+					//If the search is not spelled properly, we can switch to the first spelling result
+                    if ($spellingSuggestions['correctlySpelled'] == false && $library->allowAutomaticSearchReplacements && count($spellingSuggestions['suggestions']) > 0) {
+                        $firstSuggestion = reset($spellingSuggestions['suggestions']);
+                        //Get search results for the new search
+                        // The above assignments probably do nothing when there is a redirect below
+                        $thisUrl = $_SERVER['REQUEST_URI'] . "&replacementTerm=" . urlencode($firstSuggestion['phrase']);
+                        header("Location: " . $thisUrl);
+                        exit();
+                    }
 				}
 			}
+
+			//Look for suggestions for the search (but not if facets are applied)
+            if (!isset($facetSet) || count($facetSet) == 0) {
+                require_once ROOT_DIR . '/services/Search/lib/SearchSuggestions.php';
+                $searchSuggestions = new SearchSuggestions();
+                $allSuggestions = $searchSuggestions->getAllSuggestions($searchObject->displayQuery(), $searchObject->getSearchIndex());
+                $interface->assign('searchSuggestions', $allSuggestions);
+            }
 
 			// No record found
 			$interface->assign('recordCount', 0);

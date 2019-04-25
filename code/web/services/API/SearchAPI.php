@@ -594,9 +594,6 @@ class SearchAPI extends Action {
 		require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
 		$timer->logTime('Include search engine');
 
-		//setup the results array.
-		$jsonResults = array();
-
 		// Initialise from the current search globals
 		/** @var SearchObject_GroupedWorkSearcher $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject();
@@ -621,9 +618,8 @@ class SearchAPI extends Action {
 		}else{
 			//Return the first result
 			$recordSet = $searchObject->getResultRecordSet();
-			foreach($recordSet as $recordKey => $record){
-				return $record['id'];
-			}
+			$firstRecord = reset($recordSet);
+			return $firstRecord['id'];
 		}
 	}
 

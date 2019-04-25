@@ -71,7 +71,7 @@ class Union_AJAX extends Action {
 		if ($source == 'eds') {
 			$results = $this->getResultsFromEDS($searchTerm, $numberOfResults, $fullResultsLink);
 		}elseif ($source == 'pika') {
-			$results = $this->getResultsFromPika($searchTerm, $numberOfResults, $searchType, $fullResultsLink);
+			$results = $this->getResultsFromCatalog($searchTerm, $numberOfResults, $searchType, $fullResultsLink);
 		}elseif ($source == 'archive'){
 			$results = $this->getResultsFromArchive($numberOfResults, $searchType, $searchTerm, $fullResultsLink);
 
@@ -97,7 +97,7 @@ class Union_AJAX extends Action {
 	 * @param $searchType
 	 * @return string
 	 */
-	private function getResultsFromPika($searchTerm, $numberOfResults, $searchType, $fullResultsLink)
+	private function getResultsFromCatalog($searchTerm, $numberOfResults, $searchType, $fullResultsLink)
 	{
 		global $interface;
 		$interface->assign('viewingCombinedResults', true);

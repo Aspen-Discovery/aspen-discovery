@@ -479,7 +479,7 @@ BODY;
 		}
 	}
 
-	public function displayQuery(){
+	public function displayQuery(/** @noinspection PhpUnusedParameterInspection */$forceRebuild = false){
 		return $this->searchTerm;
 	}
 }

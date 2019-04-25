@@ -1675,6 +1675,16 @@ class DBMaintenance extends Admin_Admin {
 							)
 					),
 
+
+                    'add_search_url_to_saved_searches' => array(
+                        'title' => 'Store the Search Url with saved searches',
+                        'description' => 'Add column to store the url for a search in the search table to optimize finding old versions',
+                        'continueOnError' => true,
+                        'sql' => array(
+                            "ALTER TABLE `search` ADD COLUMN `searchUrl` VARCHAR(255) DEFAULT NULL;",
+                        )
+                    ),
+
 					'record_grouping_log' => array(
 							'title' => 'Record Grouping Log',
 							'description' => 'Create Log for record grouping',

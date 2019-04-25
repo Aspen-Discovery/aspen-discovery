@@ -53,13 +53,6 @@ class SearchObject_OpenArchivesSearcher extends SearchObject_SolrSearcher
                 'title' => 'sort_title');
         }
 
-        // Load Spelling preferences
-        $this->spellcheck    = $configArray['Spelling']['enabled'];
-        $this->spellingLimit = $configArray['Spelling']['limit'];
-        $this->spellSimple   = $configArray['Spelling']['simple'];
-        $this->spellSkipNumeric = isset($configArray['Spelling']['skip_numeric']) ?
-            $configArray['Spelling']['skip_numeric'] : true;
-
         // Debugging
         $this->indexEngine->debug = $this->debug;
         $this->indexEngine->debugSolrQuery = $this->debugSolrQuery;
@@ -113,11 +106,6 @@ class SearchObject_OpenArchivesSearcher extends SearchObject_SolrSearcher
         return true;
     } // End init()
 
-    public function getSpellingSuggestions()
-    {
-        // TODO: Implement getSpellingSuggestions() method.
-    }
-
     public function getSearchIndexes()
     {
         return [
@@ -129,6 +117,7 @@ class SearchObject_OpenArchivesSearcher extends SearchObject_SolrSearcher
 
     /**
      * Turn our results into an Excel document
+     * @param null|array $result
      */
     public function buildExcel($result = null)
     {

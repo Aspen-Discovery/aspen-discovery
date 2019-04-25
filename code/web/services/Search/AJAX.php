@@ -8,9 +8,9 @@ class AJAX extends Action {
 	{
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
 		if (method_exists($this, $method)) {
-			$text_methods = array('GetAutoSuggestList', 'SysListTitles', 'getEmailForm', 'sendEmail', 'getDplaResults');
+			$text_methods = array('SysListTitles', 'getEmailForm', 'sendEmail', 'getDplaResults');
 			//TODO reconfig to use the JSON outputting here.
-			$json_methods = array('getMoreSearchResults', 'GetListTitles', 'loadExploreMoreBar');
+			$json_methods = array('getAutoSuggestList', 'getMoreSearchResults', 'GetListTitles', 'loadExploreMoreBar');
 			// Plain Text Methods //
 			if (in_array($method, $text_methods)) {
 				header('Content-type: text/plain');
@@ -118,32 +118,38 @@ class AJAX extends Action {
 		echo json_encode($result);
 	}
 
-	function GetAutoSuggestList(){
+	function getAutoSuggestList(){
 		require_once ROOT_DIR . '/services/Search/lib/SearchSuggestions.php';
 		global $timer;
 		global $configArray;
 		/** @var Memcache $memCache */
 		global $memCache;
 		$searchTerm = isset($_REQUEST['searchTerm']) ? $_REQUEST['searchTerm'] : $_REQUEST['q'];
-		$searchType = isset($_REQUEST['searchIndex']) ? $_REQUEST['searchIndex'] : '';
-		$cacheKey = 'auto_suggest_list_' . urlencode($searchType) . '_' . urlencode($searchTerm);
+        $searchIndex = isset($_REQUEST['searchIndex']) ? $_REQUEST['searchIndex'] : '';
+        $searchSource = isset($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : '';
+		$cacheKey = 'auto_suggest_list_' . urlencode($searchSource) . '_' . urlencode($searchIndex
+            ) . '_' . urlencode($searchTerm);
 		$searchSuggestions = $memCache->get($cacheKey);
 		if ($searchSuggestions == false || isset($_REQUEST['reload'])){
 			$suggestions = new SearchSuggestions();
-			$commonSearches = $suggestions->getAllSuggestions($searchTerm, $searchType);
+			$commonSearches = $suggestions->getAllSuggestions($searchTerm, $searchIndex, $searchSource);
 			$commonSearchTerms = array();
 			foreach ($commonSearches as $searchTerm){
 				if (is_array($searchTerm)){
-					$commonSearchTerms[] = $searchTerm['phrase'];
+				    $plainText = preg_replace('~</?b>~i', '', $searchTerm['phrase']);
+					$commonSearchTerms[] =[
+					    'label' => $searchTerm['phrase'],
+                        'value' => $plainText
+                    ];
 				}else{
 					$commonSearchTerms[] = $searchTerm;
 				}
 			}
-			$searchSuggestions = json_encode($commonSearchTerms);
+			$searchSuggestions = $commonSearchTerms;
 			$memCache->set($cacheKey, $searchSuggestions, 0, $configArray['Caching']['search_suggestions'] );
 			$timer->logTime("Loaded search suggestions $cacheKey");
 		}
-		echo $searchSuggestions;
+		return $searchSuggestions;
 	}
 
 	function getProspectorResults(){

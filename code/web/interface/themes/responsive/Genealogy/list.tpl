@@ -58,7 +58,7 @@
 	{if $pageLinks.all}<div class="pagination">{$pageLinks.all}</div>{/if}
 
 	{if $showSearchTools}
-		<div class="searchtools well small">
+		<div class="search_tools well small">
 			<strong>{translate text='Search Tools'}:</strong>
 			<a href="{$rssLink|escape}"><span class="silk feed">&nbsp;</span>{translate text='Get RSS Feed'}</a>
 			<a href="#" onclick="return VuFind.Account.ajaxLightbox('{$path}/Search/AJAX?method=getEmailForm', true); "><span class="silk email">&nbsp;</span>{translate text='Email this Search'}</a>

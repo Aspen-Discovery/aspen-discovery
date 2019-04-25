@@ -13,9 +13,6 @@ require_once ROOT_DIR . '/Drivers/marmot_inc/Location.php';
  */
 class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 {
-	// Publicly viewable version
-	private $publicQuery = null;
-
 	// Field List
 	public static $fields_to_return = 'auth_author2,author2-role,id,mpaaRating,title_display,title_full,title_short,subtitle_display,author,author_display,isbn,upc,issn,series,series_with_volume,recordtype,display_description,literary_form,literary_form_full,num_titles,record_details,item_details,publisherStr,publishDate,subject_facet,topic_facet,primary_isbn,primary_upc,accelerated_reader_point_value,accelerated_reader_reading_level,accelerated_reader_interest_level,lexile_code,lexile_score,display_description,fountas_pinnell,last_indexed';
 
@@ -90,13 +87,6 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
                 'title' => 'sort_title');
 		}
 
-		// Load Spelling preferences
-		$this->spellcheck    = $configArray['Spelling']['enabled'];
-		$this->spellingLimit = $configArray['Spelling']['limit'];
-		$this->spellSimple   = $configArray['Spelling']['simple'];
-		$this->spellSkipNumeric = isset($configArray['Spelling']['skip_numeric']) ?
-		$configArray['Spelling']['skip_numeric'] : true;
-
 		$this->indexEngine->debug = $this->debug;
 		$this->indexEngine->debugSolrQuery = $this->debugSolrQuery;
 
@@ -109,33 +99,6 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 
 	public function enableScoping(){
 		$this->indexEngine->enableScoping();
-	}
-
-	public function disableSpelling(){
-		$this->spellcheck = false;
-	}
-
-	public function enableSpelling(){
-		$this->spellcheck = true;
-	}
-
-	/**
-	 * Add filters to the object based on values found in the $_REQUEST superglobal.
-	 *
-	 * @access  protected
-	 */
-	protected function initFilters()
-	{
-		// Use the default behavior of the parent class, but add support for the
-		// special illustrations filter.
-		parent::initFilters();
-		if (isset($_REQUEST['illustration'])) {
-			if ($_REQUEST['illustration'] == 1) {
-				$this->addFilter('illustrated:Illustrated');
-			} else if ($_REQUEST['illustration'] == 0) {
-				$this->addFilter('illustrated:"Not Illustrated"');
-			}
-		}
 	}
 
     /**
@@ -198,7 +161,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 			$this->searchType = 'author';
 			// We don't spellcheck this screen
 			//   it's not for free user input anyway
-			$this->spellcheck  = false;
+			$this->spellcheckEnabled  = false;
 
 			// *** Author/Home
 			if ($action == 'Home' || $author_ajax_call) {
@@ -243,7 +206,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 			}
 		} else if ($module == 'MyAccount') {
 			// Users Lists
-			$this->spellcheck = false;
+			$this->spellcheckEnabled = false;
 			$this->searchType = ($action == 'Home') ? 'favorites' : 'list';
 		}
 
@@ -281,10 +244,9 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 		$searchLibrary = Library::getActiveLibrary();
 
 		$searchLocation = $locationSingleton->getActiveLocation();
-		/** @var Location $userLocation */
-//		$userLocation = Location::getUserHomeLocation();
 		$hasSearchLibraryFacets = ($searchLibrary != null && (count($searchLibrary->facets) > 0));
-		$hasSearchLocationFacets = ($searchLocation != null && (count($searchLocation->facets) > 0));
+        /** @noinspection PhpUndefinedFieldInspection */
+        $hasSearchLocationFacets = ($searchLocation != null && (count($searchLocation->facets) > 0));
 		if ($hasSearchLocationFacets){
             /** @noinspection PhpUndefinedFieldInspection */
             $facets = $searchLocation->facets;
@@ -349,7 +311,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 		}
 
 		// Spellcheck is not needed for facet data!
-		$this->spellcheck = false;
+		$this->spellcheckEnabled = false;
 
 		//********************
 		// Basic Search logic
@@ -373,25 +335,6 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 			}
 		}
 	}
-
-	/**
-	 * Used during repeated deminification (such as search history).
-	 *   To scrub fields populated above.
-	 *
-	 * @access  private
-	 */
-	protected function purge()
-	{
-		// Call standard purge:
-		parent::purge();
-
-		// Make some Solr-specific adjustments:
-		$this->query        = null;
-		$this->publicQuery  = null;
-	}
-
-	public function getQuery()          {return $this->query;}
-	public function getIndexEngine()    {return $this->indexEngine;}
 
 	/**
 	 * Return the field (index) searched by a basic search
@@ -515,34 +458,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 		return $html;
 	}
 
-	/**
-	 * Return the record set from the search results.
-	 *
-	 * @access  public
-	 * @return  array   recordSet
-	 */
-	public function getResultRecordSet()
-	{
-		//Marmot add shortIds without dot for use in display.
-		if (isset($this->indexResult['response'])){
-			$recordSet = $this->indexResult['response']['docs'];
-			if (is_array($recordSet)){
-				foreach ($recordSet as $key => $record){
-					//Trim off the dot from the start
-					$record['shortId'] = substr($record['id'], 1);
-					if (!$this->debug){
-						unset($record['explain']);
-						unset($record['score']);
-					}
-					$recordSet[$key] = $record;
-				}
-			}
-		}else{
-			return array();
-		}
 
-		return $recordSet;
-	}
 
 	/**
 	 * @param array $orderedListOfIDs  Use the index of the matched ID as the index of the resulting array of ListWidget data (for later merging)
@@ -740,97 +656,54 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 		$this->facetPrefix = $prefix;
 	}
 
-	/**
-	 * Turn the list of spelling suggestions into an array of urls
-	 *   for on-screen use to implement the suggestions.
-	 *
-	 * @access  public
-	 * @return  array     Spelling suggestion data arrays
-	 */
-	public function getSpellingSuggestions()
-	{
-		$returnArray = array();
-		if (count($this->suggestions) == 0) return $returnArray;
-		$tokens = $this->spellingTokens($this->buildSpellingQuery());
+    public function supportsSuggestions()
+    {
+        return true;
+    }
 
-		foreach ($this->suggestions as $term => $details) {
-			// Find out if our suggestion is part of a token
-			$inToken = false;
-			$targetTerm = "";
-			foreach ($tokens as $token) {
-				// TODO - Do we need stricter matching here?
-				//   Similar to that in replaceSearchTerm()?
-				if (stripos($token, $term) !== false) {
-					$inToken = true;
-					// We need to replace the whole token
-					$targetTerm = $token;
-					// Go and replace this token
-					$returnArray = $this->doSpellingReplace($term, $targetTerm, $inToken, $details, $returnArray);
-				}
-			}
-			// If no tokens we found, just look
-			//    for the suggestion 'as is'
-			if ($targetTerm == "") {
-				$targetTerm = $term;
-				$returnArray = $this->doSpellingReplace($term, $targetTerm, $inToken, $details, $returnArray);
-			}
-		}
-		return $returnArray;
-	}
+    /**
+     * @param string $searchTerm
+     * @param string $searchIndex
+     * @return array
+     */
+    public function getSearchSuggestions($searchTerm, $searchIndex){
+        $suggestionHandler = 'suggest';
+        if ($searchIndex == 'Title' || $searchIndex == 'StartOfTitle') {
+            $suggestionHandler = 'title_suggest';
+        }elseif ($searchIndex == 'Author'){
+            $suggestionHandler = 'author_suggest';
+        }elseif ($searchIndex == 'Subject'){
+            $suggestionHandler = 'subject_suggest';
+        }
+        $suggestions = $this->indexEngine->getSearchSuggestions($searchTerm, $suggestionHandler);
+        $allSuggestions = [];
+        if (isset($suggestions['suggest'])){
+            foreach ($suggestions['suggest'] as $suggestionType => $suggestedSearchesByType){
+                foreach ($suggestedSearchesByType as $term => $suggestionsForTerm) {
+                    foreach ($suggestionsForTerm['suggestions'] as $suggestion) {
+                        $nonHighlightedTerm = preg_replace('~</?b>~', '', $suggestion['term']);
+                        //Remove the old value if this is a duplicate (after incrementing the weight)
+                        foreach ($allSuggestions as $key => $value) {
+                            if ($value['nonHighlightedTerm'] == $nonHighlightedTerm) {
+                                $suggestion['weight'] += $value['numSearches'];
+                                unset($allSuggestions[$key]);
+                                break;
+                            }
+                        }
+                        $allSuggestions[str_pad($suggestion['weight'], 10, '0', STR_PAD_LEFT) . $suggestion['term']] = array('phrase'=>$suggestion['term'], 'numSearches'=>$suggestion['weight'], 'numResults'=>$suggestion['weight'], 'nonHighlightedTerm' => $nonHighlightedTerm);
+                    }
+                }
+            }
+        }
 
-	/**
-	 * Process one instance of a spelling replacement and modify the return
-	 *   data structure with the details of what was done.
-	 *
-	 * @access  public
-	 * @param   string   $term        The actually term we're replacing
-	 * @param   string   $targetTerm  The term above, or the token it is inside
-	 * @param   boolean  $inToken     Flag for whether the token or term is used
-	 * @param   array    $details     The spelling suggestions
-	 * @param   array    $returnArray Return data structure so far
-	 * @return  array    $returnArray modified
-	 */
-	private function doSpellingReplace($term, $targetTerm, $inToken, $details, $returnArray)
-	{
-		global $configArray;
+        krsort($allSuggestions);
+        if (count ($allSuggestions) > 8){
+            $allSuggestions = array_slice($allSuggestions, 0, 8);
+        }
+        return $allSuggestions;
+    }
 
-		$returnArray[$targetTerm]['freq'] = $details['freq'];
-		foreach ($details['suggestions'] as $word => $freq) {
-			// If the suggested word is part of a token
-			if ($inToken) {
-				// We need to make sure we replace the whole token
-				$replacement = str_replace($term, $word, $targetTerm);
-			} else {
-				$replacement = $word;
-			}
-			//  Do we need to show the whole, modified query?
-			if ($configArray['Spelling']['phrase']) {
-				$label = $this->getDisplayQueryWithReplacedTerm($targetTerm, $replacement);
-			} else {
-				$label = $replacement;
-			}
-			// Basic spelling suggestion data
-			$returnArray[$targetTerm]['suggestions'][$label] = array(
-                'freq'        => $freq,
-                'replace_url' => $this->renderLinkWithReplacedTerm($targetTerm, $replacement)
-			);
-			// Only generate expansions if enabled in config
-			if ($configArray['Spelling']['expand']) {
-				// Parentheses differ for shingles
-				if (strstr($targetTerm, " ") !== false) {
-					$replacement = "(($targetTerm) OR ($replacement))";
-				} else {
-					$replacement = "($targetTerm OR $replacement)";
-				}
-				$returnArray[$targetTerm]['suggestions'][$label]['expand_url'] =
-				$this->renderLinkWithReplacedTerm($targetTerm, $replacement);
-			}
-		}
-
-		return $returnArray;
-	}
-
-	/**
+    /**
 	 * Return a list of valid sort options -- overrides the base class with
 	 * custom behavior for Author/Search screen.
 	 *
@@ -858,50 +731,6 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 	}
 
 	/**
-	 * Build a string for onscreen display showing the
-	 *   query used in the search (not the filters).
-	 *
-	 * @access  public
-	 * @return  string   user friendly version of 'query'
-	 */
-	public function displayQuery()
-	{
-		// Maybe this is a restored object...
-		if ($this->query == null) {
-			$fullQuery = $this->indexEngine->buildQuery($this->searchTerms, false);
-			$displayQuery = $this->indexEngine->buildQuery($this->searchTerms, true);
-			$this->query = $fullQuery;
-			if ($fullQuery != $displayQuery){
-				$this->publicQuery = $displayQuery;
-			}
-		}
-
-		// Do we need the complex answer? Advanced searches
-		if ($this->searchType == $this->advancedSearchType) {
-			$output = $this->buildAdvancedDisplayQuery();
-			// If there is a hardcoded public query (like tags) return that
-		} else if ($this->publicQuery != null) {
-			$output = $this->publicQuery;
-			// If we don't already have a public query, and this is a basic search
-			// with case-insensitive booleans, we need to do some extra work to ensure
-			// that we display the user's query back to them unmodified (i.e. without
-			// capitalized Boolean operators)!
-		} else if (!$this->indexEngine->hasCaseSensitiveBooleans()) {
-			$output = $this->publicQuery = $this->indexEngine->buildQuery($this->searchTerms, true);
-			// Simple answer
-		} else {
-			$output = $this->query;
-		}
-
-		// Empty searches will look odd to users
-		if ($output == '*:*') {
-			$output = "";
-		}
-
-		return $output;
-	}
-
-	/**
 	 * Get the base URL for search results (including ? parameter prefix).
 	 *
 	 * @access  protected
@@ -924,65 +753,41 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 		return parent::getBaseUrl();
 	}
 
-	protected $params;
 	/**
 	 * Get an array of strings to attach to a base URL in order to reproduce the
 	 * current search.
+     *
+     * Note: Can't store this for future use since it gets rewritten by spelling suggestions etc.
 	 *
 	 * @access  protected
 	 * @return  array    Array of URL parameters (key=url_encoded_value format)
 	 */
 	protected function getSearchParams()
 	{
-		if (is_null($this->params)) {
-			$params = array();
-			switch ($this->searchType) {
-				// Author Home screen
-				case "author":
-					if ($this->searchSubType == 'home') $params[] = "author=" . urlencode($this->searchTerms[0]['lookfor']);
-					if ($this->searchSubType == 'search') $params[] = "lookfor=" . urlencode($this->searchTerms[0]['lookfor']);
-					$params[] = "basicSearchType=Author";
-					break;
-				// New Items or Reserves modules may have a few extra parameters to preserve:
-				case "reserves":
-				case "favorites":
-				case "list":
-					$preserveParams = array(
-						// for reserves:
-						'course', 'inst', 'dept',
-						// for favorites/list:
-						'tag', 'pagesize'
-					);
-					foreach ($preserveParams as $current) {
-						if (isset($_GET[$current])) {
-							if (is_array($_GET[$current])) {
-								foreach ($_GET[$current] as $value) {
-									$params[] = $current . '[]=' . urlencode($value);
-								}
-							} else {
-								$params[] = $current . '=' . urlencode($_GET[$current]);
-							}
-						}
-					}
-					break;
-				// Basic search -- use default from parent class.
-				default:
-					$params = parent::getSearchParams();
-					break;
-			}
+        $params = array();
+        switch ($this->searchType) {
+            // Author Home screen
+            case "author":
+                if ($this->searchSubType == 'home') $params[] = "author=" . urlencode($this->searchTerms[0]['lookfor']);
+                if ($this->searchSubType == 'search') $params[] = "lookfor=" . urlencode($this->searchTerms[0]['lookfor']);
+                $params[] = "basicSearchType=Author";
+                break;
+            // New Items or Reserves modules may have a few extra parameters to preserve:
+            default:
+                $params = parent::getSearchParams();
+                break;
+        }
 
-			if (isset($_REQUEST['searchIndex'])) {
-				if ($_REQUEST['searchIndex'] == 'AllFields'){
-					$_REQUEST['searchIndex'] = 'Keyword';
-				}
-				if (is_array($_REQUEST['searchIndex'])){
-					$_REQUEST['searchIndex'] = reset($_REQUEST['searchIndex']);
-				}
-				$params[] = 'searchIndex=' . $_REQUEST['searchIndex'];
-			}
-			$this->params = $params;
-		}
-		return $this->params;
+        if (isset($_REQUEST['searchIndex'])) {
+            if ($_REQUEST['searchIndex'] == 'AllFields'){
+                $_REQUEST['searchIndex'] = 'Keyword';
+            }
+            if (is_array($_REQUEST['searchIndex'])){
+                $_REQUEST['searchIndex'] = reset($_REQUEST['searchIndex']);
+            }
+            $params[] = 'searchIndex=' . $_REQUEST['searchIndex'];
+        }
+        return $params;
 	}
 
 
@@ -1169,20 +974,17 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 		}
 		$timer->logTime("create facets");
 
-		// Build our spellcheck query
-		if ($this->spellcheck) {
-			if ($this->spellSimple) {
-				$this->useBasicDictionary();
-			}
-			$spellcheck = $this->buildSpellingQuery();
+		// Build our spellcheckQuery query
+		if ($this->spellcheckEnabled) {
+			$spellcheckQuery = $this->buildSpellingQuery();
 
-			// If the spellcheck query is purely numeric, skip it if
+			// If the spellcheckQuery query is purely numeric, skip it if
 			// the appropriate setting is turned on.
-			if ($this->spellSkipNumeric && is_numeric($spellcheck)) {
-				$spellcheck = "";
+			if (is_numeric($spellcheckQuery)) {
+				$spellcheckQuery = "";
 			}
 		} else {
-			$spellcheck = "";
+			$spellcheckQuery = "";
 		}
 		$timer->logTime("create spell check");
 
@@ -1206,7 +1008,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 			$recordStart,      // Starting record
 			$this->limit,      // Records per page
 			$facetSet,         // Fields to facet on
-			$spellcheck,       // Spellcheck query
+			$spellcheckQuery,       // Spellcheck query
 			$this->dictionary, // Spellcheck dictionary
 			$finalSort,        // Field to sort on
 			$fieldsToReturn,   // Fields to return
@@ -1227,14 +1029,9 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 		}
 
 		// Process spelling suggestions if no index error resulted from the query
-		if ($this->spellcheck && !isset($this->indexResult['error'])) {
+		if ($this->spellcheckEnabled && !isset($this->indexResult['error'])) {
 			// Shingle dictionary
 			$this->processSpelling();
-			// Make sure we don't endlessly loop
-			if ($this->dictionary == 'default') {
-				// Expand against the basic dictionary
-				$this->basicSpelling();
-			}
 		}
 
 		// If extra processing is needed for recommendations, do it now:
@@ -1533,23 +1330,15 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 
 		$baseUrl = $configArray['Site']['url'];
 		for ($i = 0; $i < count($result['response']['docs']); $i++) {
-
-			//Since the base URL can be different depending on the record type, add the url to the response
-			if (strcasecmp($result['response']['docs'][$i]['recordtype'], 'grouped_work') == 0){
-				$id = $result['response']['docs'][$i]['id'];
-				$result['response']['docs'][$i]['recordUrl'] = $baseUrl . '/GroupedWork/' . $id;
-				require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-				$groupedWorkDriver = new GroupedWorkDriver($result['response']['docs'][$i]);
-				if ($groupedWorkDriver->isValid){
-					$image = $groupedWorkDriver->getBookcoverUrl('medium');
-					$description = "<img alt='Cover Image' src='$image'/> " . $groupedWorkDriver->getDescriptionFast();
-					$result['response']['docs'][$i]['rss_description'] = $description;
-				}
-			}else{
-				$id = $result['response']['docs'][$i]['id'];
-				$result['response']['docs'][$i]['recordUrl'] = $baseUrl . '/Record/' . $id;
-			}
-
+            $id = $result['response']['docs'][$i]['id'];
+            $result['response']['docs'][$i]['recordUrl'] = $baseUrl . '/GroupedWork/' . $id;
+            require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+            $groupedWorkDriver = new GroupedWorkDriver($result['response']['docs'][$i]);
+            if ($groupedWorkDriver->isValid){
+                $image = $groupedWorkDriver->getBookcoverUrl('medium');
+                $description = "<img alt='Cover Image' src='$image'/> " . $groupedWorkDriver->getDescriptionFast();
+                $result['response']['docs'][$i]['rss_description'] = $description;
+            }
 		}
 
 		global $interface;
@@ -1573,6 +1362,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 
     /**
      * Turn our results into an Excel document
+     * @param null|array $result
      */
 	public function buildExcel($result = null)
 	{
@@ -1657,7 +1447,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
             unset($objPHPExcel);
         } catch (Exception $e) {
             global $logger;
-            $logger->log("Unable to create PHP File " . $e, Logger::LOG_ERROR);
+            $logger->log("Unable to create Excel File " . $e, Logger::LOG_ERROR);
         }
     }
 

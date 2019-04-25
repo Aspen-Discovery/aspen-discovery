@@ -68,15 +68,12 @@ abstract class SearchObject_BaseSearcher
 	protected $advancedSearchType = 'advanced';
 	// Flag for logging/search history
 	protected $disableLogging = false;
-	// Debugging flag
-	protected $debug = false;
+
 	protected $isPrimarySearch = false;
 	// Search options for the user
 	protected $advancedTypes = array();
 	protected $searchIndexes = array();
-	// Spelling
-	protected $spellcheck    = true;
-	protected $suggestions   = array();
+
 	// Recommendation modules associated with the search:
 	/** @var bool|array $recommend  */
 	protected $recommend     = false;
@@ -103,28 +100,6 @@ abstract class SearchObject_BaseSearcher
 		// Get the start of the server URL and store
 		$this->serverUrl = $configArray['Site']['path'];
 
-		// Set appropriate debug mode:
-		// Debugging
-		if ($configArray['System']['debugSolr']) {
-			//Verify that the ip is ok
-			global $locationSingleton;
-			$activeIp = $locationSingleton->getActiveIp();
-			$maintenanceIps = $configArray['System']['maintenanceIps'];
-			$debug = true;
-			if (strlen($maintenanceIps) > 0){
-				$debug = false;
-				$allowableIps = explode(',', $maintenanceIps);
-				if (in_array($activeIp, $allowableIps)){
-					$debug = true;
-					if ($configArray['System']['debugSolrQuery'] == true) {
-						$this->debugSolrQuery = true;
-					}
-				}
-			}
-			$this->debug = $debug;
-		} else {
-			$this->debug = false;
-		}
 		$timer->logTime('Setup Base Search Object');
 	}
 
@@ -146,7 +121,7 @@ abstract class SearchObject_BaseSearcher
 		$temp = explode(':', $filter);
 		// $field is the first value
 		$field = array_shift($temp);
-		// join them incase the value contained colons as well.
+		// join them in case the value contained colons as well.
 		$value = join(":", $temp);
 
 		// Remove quotes from the value if there are any
@@ -564,7 +539,7 @@ abstract class SearchObject_BaseSearcher
 
 	/**
 	 * Initialize the object's search settings for a basic search found in the
-	 * $_REQUEST superglobal.
+	 * $_REQUEST super global.
 	 *
 	 * @access  public
 	 * @param String|String[] $searchTerm
@@ -622,7 +597,7 @@ abstract class SearchObject_BaseSearcher
 
 	/**
 	 * Initialize the object's search settings for an advanced search found in the
-	 * $_REQUEST superglobal.  Advanced searches have numeric subscripts on the
+	 * $_REQUEST super global.  Advanced searches have numeric subscripts on the
 	 * lookfor and type parameters -- this is how they are distinguished from basic
 	 * searches.
 	 *
@@ -654,7 +629,7 @@ abstract class SearchObject_BaseSearcher
 						}
 					}
 				}
-				if (count($group) > 0){
+				if (count($group) > 0 && !empty($index)){
 					// Add the completed group to the list
 					$this->searchTerms[] = array(
 						'group' => $group,
@@ -722,7 +697,7 @@ abstract class SearchObject_BaseSearcher
 	}
 
 	/**
-	 * Add view mode to the object based on the $_REQUEST superglobal.
+	 * Add view mode to the object based on the $_REQUEST super global.
 	 *
 	 * @access  protected
 	 */
@@ -761,7 +736,7 @@ abstract class SearchObject_BaseSearcher
 	}
 
 	/**
-	 * Add page number to the object based on the $_REQUEST superglobal.
+	 * Add page number to the object based on the $_REQUEST super global.
 	 *
 	 * @access  protected
 	 */
@@ -789,25 +764,13 @@ abstract class SearchObject_BaseSearcher
 	}
 
 	/**
-	 * Add sort value to the object based on the $_REQUEST superglobal.
+	 * Add sort value to the object based on the $_REQUEST super global.
 	 *
 	 * @access  protected
 	 */
 	protected function initSort()
 	{
 		$defaultSort = '';
-		if (is_object($this->searchSource)){
-			$defaultSort = $this->searchSource->defaultSort;
-			if ($defaultSort == 'newest_to_oldest'){
-				$defaultSort = 'year';
-			}else if ($defaultSort == 'oldest_to_newest'){
-				$defaultSort = 'year asc';
-			}else if ($defaultSort == 'user_rating'){
-				$defaultSort = 'rating desc';
-			}else if ($defaultSort == 'popularity'){
-				$defaultSort = 'popularity desc';
-			}
-		}
 		if (isset($_REQUEST['sort'])) {
 			if (is_array($_REQUEST['sort'])){
 				$sort = array_pop($_REQUEST['sort']);
@@ -838,7 +801,7 @@ abstract class SearchObject_BaseSearcher
 	}
 
 	/**
-	 * Add filters to the object based on values found in the $_REQUEST superglobal.
+	 * Add filters to the object based on values found in the $_REQUEST super global.
 	 *
 	 * @access  protected
 	 */
@@ -1093,7 +1056,6 @@ abstract class SearchObject_BaseSearcher
 	public function getPage()           {return $this->page;}
 	public function getLimit()          {return $this->limit;}
 	public function getQuerySpeed()     {return $this->queryTime;}
-	public function getRawSuggestions() {return $this->suggestions;}
 	public function getResultTotal()    {return $this->resultsTotal;}
 	public function getSearchId()       {return $this->searchId;}
 	public function getQuery()          {return $this->query;}
@@ -1317,7 +1279,7 @@ abstract class SearchObject_BaseSearcher
 		return $url;
 	}
 
-	/**
+    /**
 	 * Returns the stored list of facets for the last search
 	 *
 	 * @access  public
@@ -1330,7 +1292,7 @@ abstract class SearchObject_BaseSearcher
 	 *                                  the return array.
 	 * @return  array   Facets data arrays
 	 */
-	public function getFacetList($filter = null, $expandingLinks = false)
+    public function getFacetList(/** @noinspection PhpUnusedParameterInspection */$filter = null, /** @noinspection PhpUnusedParameterInspection */$expandingLinks = false)
 	{
 		// Assume no facets by default -- child classes can override this to extract
 		// the necessary details from the results saved by processSearch().
@@ -1374,7 +1336,7 @@ abstract class SearchObject_BaseSearcher
 	 */
 	protected function minify()
 	{
-		// Clone ourself as a minified object
+		// Clone this object as a minified object
 		$newObject = new minSO($this);
 		// Return the new object
 		return $newObject;
@@ -1440,51 +1402,71 @@ abstract class SearchObject_BaseSearcher
 	 */
 	protected function addToHistory()
 	{
-		// Get the list of all old searches for this session and/or user
-		$s = new SearchEntry();
-		/** @var SearchEntry[] $searchHistory */
-		$searchHistory = $s->getSearches(session_id(), UserAccount::isLoggedIn() ? UserAccount::getActiveUserId() : null);
+        $thisSearchUrl = $this->renderSearchUrl();
+        $s = new SearchEntry();
+	    //Get the active search within the history, looking at the URL for speed instead of deminifying everything
+        $previouslySavedSearch = $s->getSavedSearchByUrl($thisSearchUrl, session_id(), UserAccount::isLoggedIn() ? UserAccount::getActiveUserId() : null);
+        if ($previouslySavedSearch != null) {
+            $this->searchId    = $previouslySavedSearch->id;
+            if ($previouslySavedSearch->saved){
+                $this->savedSearch = true;
+            }else{
+                //Update creation date if needed
+                if ($previouslySavedSearch->created != date('Y-m-d')){
+                    $previouslySavedSearch->created = date('Y-m-d');
+                    $previouslySavedSearch->update();
+                }
+            }
+        }else{
+            // Get the list of all old searches for this session and/or user
+            /** @var SearchEntry[] $searchHistory */
+            $searchHistory = $s->getSearchesWithNullUrl($this->searchSource, session_id(), UserAccount::isLoggedIn() ? UserAccount::getActiveUserId() : null);
 
-		// Duplicate elimination
-		$dupSaved  = false;
-		$thisSearchUrl = $this->renderSearchUrl();
-		foreach ($searchHistory as $oldSearch) {
-			// Deminify the old search
-			$minSO = unserialize($oldSearch->search_object);
-			$dupSearch = SearchObjectFactory::deminify($minSO);
-			// See if the classes and urls match
-			if ((get_class($dupSearch) == get_class($this)) && ($dupSearch->renderSearchUrl() == $thisSearchUrl)) {
-				// Is the older search saved?
-				if ($oldSearch->saved) {
-					// Flag for later
-					$dupSaved = true;
-					// Record the details
-					$this->searchId    = $oldSearch->id;
-					$this->savedSearch = true;
-				} else {
-					// Delete this search
-					$oldSearch->delete();
-				}
-			}
-		}
+            // Duplicate elimination
+            $dupSaved  = false;
+            foreach ($searchHistory as $oldSearch) {
+                // Deminify the old search
+                $minSO = unserialize($oldSearch->search_object);
+                $dupSearch = SearchObjectFactory::deminify($minSO);
+                // See if the classes and urls match
+                if ($oldSearch->searchUrl == null) {
+                    $oldSearch->searchUrl = $dupSearch->renderSearchUrl();
+                    $oldSearch->update();
+                }
+                if ((get_class($dupSearch) == get_class($this)) && ($oldSearch->searchUrl == $thisSearchUrl)) {
+                    // Is the older search saved?
+                    if ($oldSearch->saved) {
+                        // Flag for later
+                        $dupSaved = true;
+                        // Record the details
+                        $this->searchId    = $oldSearch->id;
+                        $this->savedSearch = true;
+                    } else {
+                        // Delete the old search
+                        $oldSearch->delete();
+                    }
+                }
+            }
 
-		// Save this search unless we found a 'saved' duplicate
-		if (!$dupSaved) {
-			$search = new SearchEntry();
-			$search->session_id = session_id();
-			$search->created = date('Y-m-d');
-			$search->searchSource = $this->searchSource;
-			$search->search_object = serialize($this->minify());
+            // Save this search unless we found a 'saved' duplicate
+            if (!$dupSaved) {
+                $search = new SearchEntry();
+                $search->session_id = session_id();
+                $search->created = date('Y-m-d');
+                $search->searchSource = $this->searchSource;
+                $search->search_object = serialize($this->minify());
+                $search->searchUrl = $this->renderSearchUrl();
 
-			$search->insert();
-			// Record the details
-			$this->searchId    = $search->id;
-			$this->savedSearch = false;
+                $search->insert();
+                // Record the details
+                $this->searchId    = $search->id;
+                $this->savedSearch = false;
 
-			// Chicken and egg... We didn't know the id before insert
-			$search->search_object = serialize($this->minify());
-			$search->update();
-		}
+                // Chicken and egg... We didn't know the id before insert
+                $search->search_object = serialize($this->minify());
+                $search->update();
+            }
+        }
 	}
 
 	public function loadLastSearch(){
@@ -1547,7 +1529,7 @@ abstract class SearchObject_BaseSearcher
 					// of search object, and it also prevents the user from ever
 					// landing on a "?saved=xxxx" URL, which may not persist beyond
 					// the current session.  (We want all searches to be
-					// persistent and bookmarkable).
+					// persistent and able to be bookmarked).
 					if ($redirect){
 						header('Location: ' . $savedSearch->renderSearchUrl());
 						die();
@@ -1613,10 +1595,6 @@ abstract class SearchObject_BaseSearcher
 			// Add to search history
 			$this->addToHistory();
 		}
-
-		//if ($this->debug) {
-		//    echo $this->debugOutput();
-		//}
 	}
 
 	/**
@@ -1799,8 +1777,9 @@ abstract class SearchObject_BaseSearcher
 		$oldTerms = $this->searchTerms;
 		// Replace the search term
 		$this->replaceSearchTerm($oldTerm, $newTerm);
+
 		// Get the new query string
-		$query = $this->displayQuery();
+        $query = $this->displayQuery(true);
 		// Restore the old data
 		$this->searchTerms = $oldTerms;
 		// Return the query string
@@ -1812,8 +1791,8 @@ abstract class SearchObject_BaseSearcher
 	 *
 	 * Because of its focus on spelling, these tokens are unsuitable
 	 * for actual searching. They are stripping important search data
-	 * such as joins and groups, simply because they don't need to be
-	 * spellchecked.
+	 * such as joins and groups, simply because they don't need
+	 * spellchecking.
 	 *
 	 * @param string $input
 	 * @return  array               Tokenized array
@@ -1825,7 +1804,7 @@ abstract class SearchObject_BaseSearcher
 		$paren = array("(" => "", ")" => "");
 
 		// Base of this algorithm comes straight from
-		// PHP doco examples & benighted at gmail dot com
+		// PHP doc examples & benighted at gmail dot com
 		// http://php.net/manual/en/function.strtok.php
 		$tokens = array();
 		$token = strtok($input,' ');
@@ -1857,8 +1836,8 @@ abstract class SearchObject_BaseSearcher
 	 * Return a url for the current search with a search term replaced
 	 *
 	 * @access  public
-	 * @param   string   $oldTerm   The old term to replace
-	 * @param   string   $newTerm   The new term to search
+	 * @param   string|array   $oldTerm   The old term to replace
+	 * @param   string|array   $newTerm   The new term to search
 	 * @return  string   URL of a new search
 	 */
 	public function renderLinkWithReplacedTerm($oldTerm, $newTerm)
@@ -1869,8 +1848,15 @@ abstract class SearchObject_BaseSearcher
 		// Switch to page 1 -- it doesn't make sense to maintain the current page
 		// when changing the contents of the search
 		$this->page = 1;
-		// Replace the term
-		$this->replaceSearchTerm($oldTerm, $newTerm);
+		// Replace the term(s)
+        if (is_array($oldTerm)){
+            for ($i = 0; $i < count($oldTerm); $i++){
+                $this->replaceSearchTerm($oldTerm[$i], $newTerm[$i]);
+            }
+        }else{
+            $this->replaceSearchTerm($oldTerm, $newTerm);
+        }
+
 		// Get the new url
 		$url = $this->renderSearchUrl();
 		// Restore the old data
@@ -2070,14 +2056,15 @@ abstract class SearchObject_BaseSearcher
 		return $output;
 	}
 
-	/**
-	 * Build a string for onscreen display showing the
-	 *   query used in the search (not the filters).
-	 *
-	 * @access  public
-	 * @return  string   user friendly version of 'query'
-	 */
-	public function displayQuery()
+    /**
+     * Build a string for onscreen display showing the
+     *   query used in the search (not the filters).
+     *
+     * @access  public
+     * @param   bool $forceRebuild
+     * @return  string   user friendly version of 'query'
+     */
+	public function displayQuery(/** @noinspection PhpUnusedParameterInspection */$forceRebuild = false)
 	{
 		// Advanced search?
 		if ($this->searchType == $this->advancedSearchType) {
@@ -2087,29 +2074,21 @@ abstract class SearchObject_BaseSearcher
 		return $this->searchTerms[0]['lookfor'];
 	}
 
-	/**
-	 * Turn the list of spelling suggestions into an array of urls
-	 *   for on-screen use to implement the suggestions.
-	 *
-	 * @access  public
-	 * @return  array     Spelling suggestion data arrays
-	 */
-	abstract public function getSpellingSuggestions();
-
-	/**
-	 * Actually process and submit the search; in addition to returning results,
-	 * this method is responsible for populating various class properties that
-	 * are returned by other get methods (i.e. getFacetList).
-	 *
-	 * @access  public
-	 * @param   bool   $returnIndexErrors  Should we die inside the index code if
-	 *                                     we encounter an error (false) or return
-	 *                                     it for access via the getIndexError()
-	 *                                     method (true)?
-	 * @param   bool   $recommendations    Should we process recommendations along
-	 *                                     with the search itself?
-	 * @return  object   Search results (format may vary from class to class).
-	 */
+    /**
+     * Actually process and submit the search; in addition to returning results,
+     * this method is responsible for populating various class properties that
+     * are returned by other get methods (i.e. getFacetList).
+     *
+     * @access  public
+     * @param bool $returnIndexErrors Should we die inside the index code if
+     *                                     we encounter an error (false) or return
+     *                                     it for access via the getIndexError()
+     *                                     method (true)?
+     * @param bool $recommendations Should we process recommendations along
+     *                                     with the search itself?
+     * @param bool $preventQueryModification  Should we make sure the query doesn't change
+     * @return  object   Search results (format may vary from class to class).
+     */
 	abstract public function processSearch($returnIndexErrors = false, $recommendations = false, $preventQueryModification = false);
 
 	/**
@@ -2165,7 +2144,7 @@ abstract class SearchObject_BaseSearcher
 				}
 
 				if ($result instanceof AspenError) {
-					//If we get an error excuting the search, just eat it for now.
+					//If we get an error executing the search, just eat it for now.
 				}else{
 					if ($searchObject->getResultTotal() < 1) {
 						//No results found
@@ -2257,7 +2236,7 @@ abstract class SearchObject_BaseSearcher
 	}
 
 	/**
-	 * Set weather or not this is a primary search.  If it is, we will show links to it in search result debuggin
+	 * Set whether or not this is a primary search.  If it is, we will show links to it in search result debugging
 	 * @param boolean $flag
 	 */
 	public function setPrimarySearch($flag){
@@ -2314,56 +2293,10 @@ abstract class SearchObject_BaseSearcher
      * Turn our results into an RSS feed
      *
      * @access  public
-     * @public  array      $result      Existing result set (null to do new search)
+     * @param  array|null      $result      Existing result set (null to do new search)
      * @return  string                  XML document
      */
-    public function buildRSS($result = null)
-    {
-        global $configArray;
-        // XML HTTP header
-        header('Content-type: text/xml', true);
-
-        // First, get the search results if none were provided
-        // (we'll go for 50 at a time)
-        if (is_null($result)) {
-            $this->limit = 50;
-            $result = $this->processSearch(false, false);
-        }
-
-        for ($i = 0; $i < count($result['response']['docs']); $i++) {
-            $current = & $this->indexResult['response']['docs'][$i];
-
-            $record = RecordDriverFactory::initRecordDriver($current);
-            if (!($record instanceof AspenError)) {
-                $result['response']['docs'][$i]['recordUrl'] = $record->getAbsoluteUrl();
-                $result['response']['docs'][$i]['title_display'] = $record->getName();
-                $image = $record->getBookcoverUrl('medium');
-                $description = "<img src='$image'/> ";
-                $result['response']['docs'][$i]['rss_description'] = $description;
-            } else {
-                $html[] = "Unable to find record";
-            }
-        }
-
-        global $interface;
-
-        // On-screen display value for our search
-        $lookfor = $this->displayQuery();
-
-        if (count($this->filterList) > 0) {
-            // TODO : better display of filters
-            $interface->assign('lookfor', $lookfor . " (" . translate('with filters') . ")");
-        } else {
-            $interface->assign('lookfor', $lookfor);
-        }
-        // The full url to recreate this search
-        $interface->assign('searchUrl', $configArray['Site']['url']. $this->renderSearchUrl());
-        // Stub of a url for a records screen
-        $interface->assign('baseUrl',    $configArray['Site']['url']);
-
-        $interface->assign('result', $result);
-        return $interface->fetch('Search/rss.tpl');
-    }
+    public abstract function buildRSS($result = null);
 
     /**
      * Return a url of the current search as an Excel Spreadsheet.
@@ -2391,8 +2324,27 @@ abstract class SearchObject_BaseSearcher
 
     /**
      * Turn our results into an Excel document
+     * @param array|null $result
      */
     public abstract function buildExcel($result = null);
+
+    public abstract function getResultRecordSet();
+
+    /**
+     * @return bool
+     */
+    public function supportsSuggestions(){
+        return false;
+    }
+
+    /**
+     * @param string $searchTerm
+     * @param string $searchIndex
+     * @return array
+     */
+    public function getSearchSuggestions(/** @noinspection PhpUnusedParameterInspection */$searchTerm, $searchIndex){
+        return [];
+    }
 }//End of SearchObject_Base
 
 /**
@@ -2422,7 +2374,7 @@ class minSO
 	public $f = array();
 	public $hf = array();
 	public $fc = array();
-	public $id, $i, $s, $r, $ty, $sr;
+	public $id, $i, $s, $r, $ty, $sr, $q;
 
 	/**
 	 * Constructor. Building minified object from the
@@ -2485,7 +2437,5 @@ class minSO
 		if (method_exists($searchObject, 'getFacetConfig')) {
 			$this->fc = $searchObject->getFacetConfig();
 		}
-
-		// TODO: Add any other data needed to restore Islandora searches
 	}
-} //End of minso object (not SearchObject_Base)
+} //End of minSO object (not SearchObject_Base)

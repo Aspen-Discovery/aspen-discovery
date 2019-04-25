@@ -82,7 +82,7 @@
 	{*Additional Suggestions on the last page of search results or no results returned *}
 
 	{if $showSearchTools || ($loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('contentEditor', $userRoles) || array_key_exists('libraryManager', $userRoles) || array_key_exists('locationManager', $userRoles)))}
-	<div class="searchtools well small">
+	<div class="search_tools well small">
 		<strong>{translate text='Search Tools'}:</strong>
 		{if $showSearchTools}
 			<a href="{$rssLink|escape}"><span class="silk feed">&nbsp;</span>{translate text='Get RSS Feed'}</a>

@@ -31,46 +31,16 @@
 	</div>
 {/if}
 
-{if $numUnscopedResults && $numUnscopedResults != 0}
-	<div class="unscopedResultCount">
-		There are <b>{$numUnscopedResults}</b> results in the entire {$consortiumName} collection. <span style="font-size:15px"><a href="{$unscopedSearchUrl}">Search the entire collection.</a></span>
-	</div>
-{/if}
 <div>
-	{if $parseError}
+	{if !empty($parseError)}
 		<div class="alert alert-danger">
 			{$parseError}
 		</div>
 	{/if}
 
-	{if $spellingSuggestions}
-		<div class="correction">
-			<h2>Spelling Suggestions</h2>
-			<p>Here are some alternative spellings that you can try instead.</p>
-			<div class="row">
-				{foreach from=$spellingSuggestions item=url key=term name=termLoop}
-					<div class="col-xs-6 col-sm-4 col-md-3 text-left">
-						<a class='btn btn-xs btn-default btn-block' href="{$url|escape}">{$term|escape|truncate:25:'...'}</a>
-					</div>
-				{/foreach}
-			</div>
-		</div>
-		<br>
-	{/if}
+	{include file="Search/spellingSuggestions.tpl"}
 
-	{if $searchSuggestions}
-		<div id="searchSuggestions">
-			<h2>Similar Searches</h2>
-			<p>These searches are similar to the search you tried. Would you like to try one of these instead?</p>
-			<div class="row">
-				{foreach from=$searchSuggestions item=suggestion}
-					<div class="col-xs-6 col-sm-4 col-md-3 text-left">
-						<a class='btn btn-xs btn-default btn-block' href="/Search/Results?lookfor={$suggestion.phrase|escape:url}&searchIndex={$searchIndex|escape:url}" title="{$suggestion.phrase}">{$suggestion.phrase|truncate:25:'...'}</a>
-					</div>
-				{/foreach}
-			</div>
-		</div>
-	{/if}
+	{include file="Search/searchSuggestions.tpl"}
 
 	{if $showExploreMoreBar}
 		<div id="explore-more-bar-placeholder"></div>
@@ -81,17 +51,6 @@
 						{rdelim}
 			);
 		</script>
-	{/if}
-
-	{if $unscopedResults}
-		<h2>Results from the entire {$consortiumName} Catalog</h2>
-		{*{foreach from=$unscopedResults item=record name="recordLoop"}*}
-			{*<div class="result {if ($smarty.foreach.recordLoop.iteration % 2) == 0}alt{/if} record{$smarty.foreach.recordLoop.iteration}">*}
-				{* This is raw HTML -- do not escape it: *}
-				{*{$record}*}
-			{*</div>*}
-		{*{/foreach}*}
-		{$unscopedResults}
 	{/if}
 
 	{if $showProspectorLink}
@@ -116,7 +75,8 @@
 	{/if}
 
 	{if $showSearchTools || ($loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('contentEditor', $userRoles)))}
-		<div class="searchtools well small">
+		<br/>
+		<div class="search_tools well small">
 			<strong>{translate text='Search Tools'}:</strong>
 			{if $showSearchTools}
 				<a href="{$rssLink|escape}"><span class="silk feed">&nbsp;</span>{translate text='Get RSS Feed'}</a>

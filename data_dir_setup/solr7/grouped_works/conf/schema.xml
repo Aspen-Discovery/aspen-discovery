@@ -65,6 +65,21 @@
 				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
 			</analyzer>
 		</fieldType>
+		<fieldType name="textSpelling" class="solr.TextField">
+			<analyzer>
+				<tokenizer class="solr.WhitespaceTokenizerFactory"/>
+				<filter class="solr.LowerCaseFilterFactory"/>
+				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1" preserveOriginal="0"/>
+				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
+			</analyzer>
+		</fieldType>
+		<fieldType name="textSuggest" class="solr.TextField" positionIncrementGap="100">
+			<analyzer>
+				<tokenizer class="solr.StandardTokenizerFactory"/>
+				<filter class="solr.LowerCaseFilterFactory"/>
+				<filter class="solr.TrimFilterFactory"/>
+			</analyzer>
+		</fieldType>
 		<fieldType name="callnumber-search" class="solr.TextField">
 			<analyzer>
 				<tokenizer class="solr.WhitespaceTokenizerFactory"/>
@@ -255,6 +270,14 @@
 		<!-- End user rating for a work 2.5 if not set -->
 		<field name="rating" type="float" indexed="true" stored="false" multiValued="false" default="2.5"/>
 		<field name="rating_facet" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true"/>
+
+		<!-- spelling -->
+		<field name="spelling" type="textSpelling" indexed="true" stored="false" multiValued="true"/>
+		<!-- suggestions (for type aheads) -->
+		<field name="title_suggestions" type="textSuggest" indexed="true" stored="true" multiValued="true"/>
+		<field name="author_suggestions" type="textSuggest" indexed="true" stored="true" multiValued="true"/>
+		<field name="subject_suggestions" type="textSuggest" indexed="true" stored="true" multiValued="true"/>
+
 		<!-- Boosts -->
 		<dynamicField name="lib_boost_*" type="integer" indexed="true" stored="false"/>
 		<!-- Field to get random titles -->
@@ -262,6 +285,18 @@
 	</fields>
 	
 	<uniqueKey>id</uniqueKey>
+
+	<copyField source="title" dest="title_suggestions"/>
+	<copyField source="author" dest="author_suggestions"/>
+	<copyField source="author2" dest="author_suggestions"/>
+	<copyField source="series" dest="title_suggestions"/>
+	<copyField source="subject_facet" dest="subject_suggestions"/>
+
+	<copyField source="title" dest="spelling"/>
+	<copyField source="author" dest="spelling"/>
+	<copyField source="author2" dest="spelling"/>
+	<copyField source="series" dest="spelling"/>
+	<copyField source="subject_facet" dest="spelling"/>
 
 	<copyField source="author" dest="authorStr"/>
 	<copyField source="author" dest="author_exact"/>

@@ -54,13 +54,6 @@
 			</div>
 		{/if}
 
-		{if $numUnscopedResults && $numUnscopedResults != $recordCount}
-		{* avoids when both searches are unscoped *}
-			<div class="unscopedResultCount">
-				There are <b>{$numUnscopedResults}</b> results in the entire {$consortiumName} collection. <a href="{$unscopedSearchUrl}">Search the entire collection.</a>
-			</div>
-		{/if}
-
 		{* User's viewing mode toggle switch *}
 		{include file="Search/results-displayMode-toggle.tpl"}
 
@@ -92,7 +85,7 @@
 	{/if}
 
 	{if $showSearchTools || ($loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('contentEditor', $userRoles) || array_key_exists('libraryManager', $userRoles) || array_key_exists('locationManager', $userRoles)))}
-	<div class="searchtools well small">
+	<div class="search_tools well small">
 		<strong>{translate text='Search Tools'}:</strong>
 		{if $showSearchTools}
 			<a href="{$rssLink|escape}"><span class="silk feed">&nbsp;</span>{translate text='Get RSS Feed'}</a>

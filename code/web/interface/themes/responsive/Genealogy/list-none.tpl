@@ -23,7 +23,7 @@
     </div>
 {/if}
 
-{if $parseError}
+    {if !empty($parseError)}
     <div class="alert alert-danger">
         {$parseError}
     </div>

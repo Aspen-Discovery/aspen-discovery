@@ -1,36 +1,64 @@
 <?php
-/**
- * Table Definition for search
- */
+
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
 
 class SearchEntry extends DataObject
 {
-	public $__table = 'search';													// table name
-	public $id;															// int(11)	not_null primary_key auto_increment
-	public $user_id;												 // int(11)	not_null multiple_key
-	public $created;												 // date(10)	not_null binary
-	public $saved;													 // int(1) not_null default 0
-	public $search_object;									 // blob
-	public $session_id;											// varchar(128)
+	public $__table = 'search';
+	public $id;
+	public $user_id;
+	public $created;
+	public $saved;
+	public $search_object;
+	public $session_id;
+	public $searchSource;
+	public $searchUrl;
 
-	/**
-	 * Get an array of SearchEntry objects for the specified user.
-	 *
-	 * @access	public
-	 * @param	 int				 $sid						Session ID of current user.
-	 * @param	 int				 $uid						User ID of current user (optional).
-	 * @return	array											 Matching SearchEntry objects.
-	 */
+    /**
+     * Get an array of SearchEntry objects for the specified user.
+     *
+     * @access    public
+     * @param     string $searchUrl
+     * @param     int $sid Session ID of current user.
+     * @param     int $uid User ID of current user (optional).
+     * @return    SearchEntry  Matching SearchEntry objects.
+     */
+    function getSavedSearchByUrl($searchUrl, $sid, $uid = null)
+    {
+        $sql = "SELECT * FROM search WHERE searchUrl = " . $this->escape($searchUrl) . " AND (session_id = " . $this->escape($sid);
+        if ($uid != null) {
+            $sql .= " OR user_id = " . $this->escape($uid);
+        }
+        $sql .= ")";
+
+        $s = new SearchEntry();
+        $s->query($sql);
+        if ($s->N) {
+            while ($s->fetch()) {
+                return clone($s);
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Get an array of SearchEntry objects for the specified user.
+     *
+     * @access    public
+     * @param int $sid Session ID of current user.
+     * @param int $uid User ID of current user (optional).
+     * @return    array                                             Matching SearchEntry objects.
+     */
 	function getSearches($sid, $uid = null)
 	{
 			$searches = array();
 
-			$sql = "SELECT * FROM search WHERE session_id = " . $this->escape($sid);
+			$sql = "SELECT * FROM search WHERE (session_id = " . $this->escape($sid);
 			if ($uid != null) {
 					$sql .= " OR user_id = " . $this->escape($uid);
 			}
-			$sql .= " ORDER BY id";
+			$sql .= ") ORDER BY id";
 
 			$s = new SearchEntry();
 			$s->query($sql);
@@ -42,6 +70,36 @@ class SearchEntry extends DataObject
 
 			return $searches;
 	}
+
+    /**
+     * Get an array of SearchEntry objects for the specified user.
+     *
+     * @access    public
+     * @param string $searchSource
+     * @param int $sid Session ID of current user.
+     * @param int $uid User ID of current user (optional).
+     * @return    array                                             Matching SearchEntry objects.
+     */
+    function getSearchesWithNullUrl($searchSource, $sid, $uid = null)
+    {
+        $searches = array();
+
+        $sql = "SELECT * FROM search WHERE searchSource = " . $this->escape($searchSource) . " AND searchUrl = NULL AND (session_id = " . $this->escape($sid);
+        if ($uid != null) {
+            $sql .= " OR user_id = " . $this->escape($uid);
+        }
+        $sql .= ") ORDER BY id";
+
+        $s = new SearchEntry();
+        $s->query($sql);
+        if ($s->N) {
+            while ($s->fetch()) {
+                $searches[] = clone($s);
+            }
+        }
+
+        return $searches;
+    }
 
 	/**
 	 * Get an array of SearchEntry objects representing expired, unsaved searches.

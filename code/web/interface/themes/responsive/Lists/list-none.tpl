@@ -31,13 +31,8 @@
 	</div>
 {/if}
 
-{if $numUnscopedResults && $numUnscopedResults != 0}
-	<div class="unscopedResultCount">
-		There are <b>{$numUnscopedResults}</b> results in the entire {$consortiumName} collection. <span style="font-size:15px"><a href="{$unscopedSearchUrl}">Search the entire collection.</a></span>
-	</div>
-{/if}
 <div>
-	{if $parseError}
+	{if !empty($parseError)}
 		<div class="alert alert-danger">
 			{$parseError}
 		</div>
@@ -84,7 +79,7 @@
 	{/if}
 
 	{if $showSearchTools || ($loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('contentEditor', $userRoles)))}
-		<div class="searchtools well small">
+		<div class="search_tools well small">
 			<strong>{translate text='Search Tools'}:</strong>
 			{if $showSearchTools}
 				<a href="{$rssLink|escape}"><span class="silk feed">&nbsp;</span>{translate text='Get RSS Feed'}</a>

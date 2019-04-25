@@ -3,6 +3,7 @@
 require_once ROOT_DIR . '/sys/HTTP/HTTP_Request.php';
 require_once ROOT_DIR . '/sys/ConfigArray.php';
 require_once ROOT_DIR . '/sys/SolrUtils.php';
+require_once ROOT_DIR . '/sys/AspenError.php';
 
 abstract class Solr {
 	/**
@@ -356,7 +357,7 @@ abstract class Solr {
 			$options = array('ids' => "$id");
 			$options['fl'] = $fieldsToReturn;
 			$this->client->setMethod('GET');
-			$this->client->setURL($this->host . "/get");
+			$this->client->setURL($this->host . "/select");
 			$this->client->addRawQueryString(http_build_query($options));
 
 			global $timer;
@@ -377,7 +378,7 @@ abstract class Solr {
 			}else{
 				//global $logger;
 				//$logger->log("Unable to find record $id in Solr", Logger::LOG_ERROR);
-				AspenError::raiseError("Record not found $id");
+                AspenError::raiseError("Record not found $id");
 			}
 		}
 		return $record;
@@ -429,7 +430,7 @@ abstract class Solr {
 			$options['fl'] = $fieldsToReturn;
 
 			$this->client->setMethod('GET');
-			$this->client->setURL($this->host . "/get");
+			$this->client->setURL($this->host . "/select");
 			$this->client->addRawQueryString(http_build_query($options));
 
 			// Send Request
@@ -484,6 +485,32 @@ abstract class Solr {
 		return $result['facet_counts']['facet_fields'][$field];
 	}
 
+    /**
+     * Get spelling suggestions based on input phrase.
+     *
+     * @access    public
+     * @param string $phrase The input phrase
+     * @param string $suggestionHandler
+     * @return    array     An array of spelling suggestions
+     */
+    function getSearchSuggestions($phrase, $suggestionHandler = 'suggest')
+    {
+        // Query String Parameters
+        $options = array(
+            'q'					=> $phrase,
+            'rows'			 => 0,
+            'start'			=> 1,
+            'indent'		 => 'yes',
+        );
+
+        $result = $this->_select('GET', $options, false, $suggestionHandler);
+        if ($result instanceof AspenError) {
+            AspenError::raiseError($result);
+        }
+
+        return $result;
+    }
+
 	/**
 	 * Get spelling suggestions based on input phrase.
 	 *
@@ -504,14 +531,14 @@ abstract class Solr {
 			'start'			=> 1,
 			'indent'		 => 'yes',
 			'spellcheck' => 'true'
-			);
+        );
 
-			$result = $this->_select('GET', $options);
-			if ($result instanceof AspenError) {
-				AspenError::raiseError($result);
-			}
+        $result = $this->_select('GET', $options, false, 'spell');
+        if ($result instanceof AspenError) {
+            AspenError::raiseError($result);
+        }
 
-			return $result;
+        return $result;
 	}
 
 	/**
@@ -1375,6 +1402,13 @@ abstract class Solr {
 			if ($dictionary != null) {
 				$options['spellcheck.dictionary'] = $dictionary;
 			}
+			$options['spellcheck.extendedResults'] = 'true';
+            $options['spellcheck.count'] = 4;
+            $options['spellcheck.onlyMorePopular'] = 'true';
+            $options['spellcheck.maxResultsForSuggest'] = $limit;
+            $options['spellcheck.collate'] = 'true';
+            $options['spellcheck.maxCollations'] = 4;
+            $options['spellcheck.collateExtendedResults'] = 'true';
 		}
 
 		// Enable highlighting
