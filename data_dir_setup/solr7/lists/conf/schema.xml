@@ -84,6 +84,21 @@
 				<filter class="solr.PatternReplaceFilterFactory" pattern="([^a-z1-9\s])" replacement="" replace="all"/>
 			</analyzer>
 		</fieldType>
+		<fieldType name="textSpelling" class="solr.TextField">
+			<analyzer>
+				<tokenizer class="solr.WhitespaceTokenizerFactory"/>
+				<filter class="solr.LowerCaseFilterFactory"/>
+				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1" preserveOriginal="0"/>
+				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
+			</analyzer>
+		</fieldType>
+		<fieldType name="textSuggest" class="solr.TextField" positionIncrementGap="100">
+			<analyzer>
+				<tokenizer class="solr.StandardTokenizerFactory"/>
+				<filter class="solr.LowerCaseFilterFactory"/>
+				<filter class="solr.TrimFilterFactory"/>
+			</analyzer>
+		</fieldType>
 	</types>
 
 	<fields>
@@ -116,7 +131,20 @@
 		<!-- Field to get random titles -->
 		<dynamicField name="random*" type="random" indexed="true" stored="true"/>
 
+		<!-- spelling -->
+		<field name="spelling" type="textSpelling" indexed="true" stored="false" multiValued="true"/>
+		<!-- suggestions (for type ahead) -->
+		<field name="title_suggestions" type="textSuggest" indexed="true" stored="true" multiValued="true"/>
+		<field name="author_suggestions" type="textSuggest" indexed="true" stored="true" multiValued="true"/>
+		<field name="keyword_suggestions" type="textSuggest" indexed="true" stored="true" multiValued="true"/>
 	</fields>
+
+	<copyField source="title" dest="title_suggestions"/>
+	<copyField source="author" dest="author_suggestions"/>
+	<copyField source="description" dest="keyword_suggestions"/>
+	<copyField source="table_of_contents" dest="keyword_suggestions"/>
+
+	<copyField source="keywords" dest="spelling"/>
 
 	<uniqueKey>id</uniqueKey>
 </schema>

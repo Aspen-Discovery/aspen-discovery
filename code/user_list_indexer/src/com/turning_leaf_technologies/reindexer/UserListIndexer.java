@@ -120,7 +120,7 @@ class UserListIndexer {
 		if (deleted == 1 || isPublic == 0){
 			updateServer.deleteByQuery("id:list");
 		}else{
-			logger.debug("Processing list " + listId + " " + allPublicListsRS.getString("title"));
+			logger.info("Processing list " + listId + " " + allPublicListsRS.getString("title"));
 			userListSolr.setId(listId);
 			userListSolr.setTitle(allPublicListsRS.getString("title"));
 			userListSolr.setDescription(allPublicListsRS.getString("description"));
@@ -161,7 +161,7 @@ class UserListIndexer {
 				if (!allTitlesRS.wasNull() && groupedWorkId.length() > 0 && !groupedWorkId.contains(":")) {
 					// Skip archive object Ids
 					SolrQuery query = new SolrQuery();
-					query.setQuery("id:" + groupedWorkId + " AND recordtype:grouped_work");
+					query.setQuery("id:" + groupedWorkId);
 					query.setFields("title_display", "author_display");
 
 					try {

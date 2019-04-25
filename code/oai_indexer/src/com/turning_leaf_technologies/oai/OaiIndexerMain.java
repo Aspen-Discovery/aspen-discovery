@@ -73,7 +73,7 @@ public class OaiIndexerMain {
         try{
             String databaseConnectionInfo = ConfigUtil.cleanIniValue(configIni.get("Database", "database_aspen_jdbc"));
             aspenConn = DriverManager.getConnection(databaseConnectionInfo);
-            getOpenArchiveCollections = aspenConn.prepareStatement("SELECT * FROM open_archives_collection");
+            getOpenArchiveCollections = aspenConn.prepareStatement("SELECT * FROM open_archives_collection ORDER BY name");
             addOpenArchivesRecord = aspenConn.prepareStatement("INSERT INTO open_archives_record (sourceCollection, permanentUrl) VALUES (?, ?)",PreparedStatement.RETURN_GENERATED_KEYS);
             getExistingRecordsForCollection = aspenConn.prepareStatement("SELECT id, permanentUrl from open_archives_record WHERE sourceCollection = ?");
             updateCollectionAfterIndexing = aspenConn.prepareStatement("UPDATE open_archives_collection SET lastFetched = ?, subjects = ? WHERE id = ?");

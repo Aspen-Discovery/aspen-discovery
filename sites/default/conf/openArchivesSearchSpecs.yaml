@@ -11,7 +11,12 @@ OpenArchivesKeyword:
     - creator:
       - [exact, 600]
       - [and, 250]
-      - [or, ~]
+    - contributor:
+      - [exact, 200]
+      - [and, 100]
+    - publisher:
+      - [exact, 200]
+      - [and, 100]
     - description:
       - [exact, 500]
       - [and, 125]

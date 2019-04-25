@@ -700,58 +700,9 @@
          <str name="wt">xml</str> 
         -->
     </lst>
-    <!-- In addition to defaults, "appends" params can be specified
-         to identify values which should be appended to the list of
-         multi-val params from the query (or the existing "defaults").
-      -->
-    <!-- In this example, the param "fq=instock:true" would be appended to
-         any query time fq params the user may specify, as a mechanism for
-         partitioning the index, independent of any user selected filtering
-         that may also be desired (perhaps as a result of faceted searching).
-
-         NOTE: there is *absolutely* nothing a client can do to prevent these
-         "appends" values from being used, so don't use this mechanism
-         unless you are sure you always want it.
-      -->
-    <!--
-       <lst name="appends">
-         <str name="fq">inStock:true</str>
-       </lst>
-      -->
-    <!-- "invariants" are a way of letting the Solr maintainer lock down
-         the options available to Solr clients.  Any params values
-         specified here are used regardless of what values may be specified
-         in either the query, the "defaults", or the "appends" params.
-
-         In this example, the facet.field and facet.query params would
-         be fixed, limiting the facets clients can use.  Faceting is
-         not turned on by default - but if the client does specify
-         facet=true in the request, these are the only facets they
-         will be able to see counts for; regardless of what other
-         facet.field or facet.query params they may specify.
-
-         NOTE: there is *absolutely* nothing a client can do to prevent these
-         "invariants" values from being used, so don't use this mechanism
-         unless you are sure you always want it.
-      -->
-    <!--
-       <lst name="invariants">
-         <str name="facet.field">cat</str>
-         <str name="facet.field">manu_exact</str>
-         <str name="facet.query">price:[* TO 500]</str>
-         <str name="facet.query">price:[500 TO *]</str>
-       </lst>
-      -->
-    <!-- If the default list of SearchComponents is not desired, that
-         list can either be overridden completely, or components can be
-         prepended or appended to the default list.  (see below)
-      -->
-    <!--
-       <arr name="components">
-         <str>nameOfCustomComponent1</str>
-         <str>nameOfCustomComponent2</str>
-       </arr>
-      -->
+    <arr name="last-components">
+      <str>spellcheck</str>
+    </arr>
   </requestHandler>
 
   <!-- A request handler that returns indented JSON by default -->
@@ -861,7 +812,7 @@
     <!-- a spellchecker built from a field of the main index -->
     <lst name="spellchecker">
       <str name="name">default</str>
-      <str name="field">_text_</str>
+      <str name="field">spelling</str>
       <str name="classname">solr.DirectSolrSpellChecker</str>
       <!-- the spellcheck distance measure used, the default is the internal levenshtein -->
       <str name="distanceMeasure">internal</str>
@@ -1104,6 +1055,119 @@
       </boundaryScanner>
     </highlighting>
   </searchComponent>
+
+  <!-- Search Suggestions -->
+  <searchComponent name="suggest" class="solr.SuggestComponent">
+    <lst name="suggester">
+      <str name="name">title_suggestions</str>
+      <str name="lookupImpl">FuzzyLookupFactory</str>
+      <str name="dictionaryImpl">DocumentDictionaryFactory</str>
+      <str name="field">title_suggestions</str>
+      <str name="weightField">popularity</str>
+      <str name="suggestAnalyzerFieldType">textSuggest</str>
+      <str name="unicodeAware">true</str>
+      <str name="buildOnStartup">true</str>
+      <str name="buildOnCommit">true</str>
+    </lst>
+    <lst name="suggester">
+      <str name="name">infix_title_suggestions</str>
+      <str name="lookupImpl">AnalyzingInfixLookupFactory</str>
+      <str name="indexPath">infix_title_suggestions</str>
+      <str name="dictionaryImpl">DocumentDictionaryFactory</str>
+      <str name="field">title_suggestions</str>
+      <str name="weightField">popularity</str>
+      <str name="suggestAnalyzerFieldType">textSuggest</str>
+      <str name="buildOnStartup">true</str>
+      <str name="buildOnCommit">true</str>
+    </lst>
+    <lst name="suggester">
+      <str name="name">subject_suggestions</str>
+      <str name="lookupImpl">FuzzyLookupFactory</str>
+      <str name="dictionaryImpl">DocumentDictionaryFactory</str>
+      <str name="field">subject_suggestions</str>
+      <str name="weightField">popularity</str>
+      <str name="suggestAnalyzerFieldType">textSuggest</str>
+      <str name="unicodeAware">true</str>
+      <str name="buildOnStartup">true</str>
+      <str name="buildOnCommit">true</str>
+    </lst>
+    <lst name="suggester">
+      <str name="name">infix_subject_suggestions</str>
+      <str name="lookupImpl">AnalyzingInfixLookupFactory</str>
+      <str name="indexPath">infix_subject_suggestions</str>
+      <str name="dictionaryImpl">DocumentDictionaryFactory</str>
+      <str name="field">subject_suggestions</str>
+      <str name="weightField">popularity</str>
+      <str name="suggestAnalyzerFieldType">textSuggest</str>
+      <str name="buildOnStartup">true</str>
+      <str name="buildOnCommit">true</str>
+    </lst>
+    <lst name="suggester">
+      <str name="name">keyword_suggestions</str>
+      <str name="lookupImpl">FuzzyLookupFactory</str>
+      <str name="dictionaryImpl">DocumentDictionaryFactory</str>
+      <str name="field">keyword_suggestions</str>
+      <str name="weightField">popularity</str>
+      <str name="suggestAnalyzerFieldType">textSuggest</str>
+      <str name="unicodeAware">true</str>
+      <str name="buildOnStartup">true</str>
+      <str name="buildOnCommit">true</str>
+    </lst>
+    <lst name="suggester">
+      <str name="name">infix_keyword_suggestions</str>
+      <str name="lookupImpl">AnalyzingInfixLookupFactory</str>
+      <str name="indexPath">infix_keyword_suggestions</str>
+      <str name="dictionaryImpl">DocumentDictionaryFactory</str>
+      <str name="field">subject_suggestions</str>
+      <str name="weightField">popularity</str>
+      <str name="suggestAnalyzerFieldType">textSuggest</str>
+      <str name="buildOnStartup">true</str>
+      <str name="buildOnCommit">true</str>
+    </lst>
+  </searchComponent>
+
+  <requestHandler name="/title_suggest" class="solr.SearchHandler"
+                  startup="lazy" >
+    <lst name="defaults">
+      <str name="suggest.dictionary">title_suggestions</str>
+      <str name="suggest.dictionary">infix_title_suggestions</str>
+      <str name="suggest">true</str>
+      <str name="suggest.count">5</str>
+    </lst>
+    <arr name="components">
+      <str>suggest</str>
+    </arr>
+  </requestHandler>
+
+  <requestHandler name="/subject_suggest" class="solr.SearchHandler"
+                  startup="lazy" >
+    <lst name="defaults">
+      <str name="suggest.dictionary">subject_suggestions</str>
+      <str name="suggest.dictionary">infix_subject_suggestions</str>
+      <str name="suggest">true</str>
+      <str name="suggest.count">5</str>
+    </lst>
+    <arr name="components">
+      <str>suggest</str>
+    </arr>
+  </requestHandler>
+
+  <requestHandler name="/suggest" class="solr.SearchHandler"
+                  startup="lazy" >
+    <lst name="defaults">
+      <str name="suggest.dictionary">title_suggestions</str>
+      <str name="suggest.dictionary">infix_title_suggestions</str>
+      <str name="suggest.dictionary">subject_suggestions</str>
+      <str name="suggest.dictionary">infix_subject_suggestions</str>
+      <str name="suggest.dictionary">keyword_suggestions</str>
+      <str name="suggest.dictionary">infix_keyword_suggestions</str>
+      <str name="suggest">true</str>
+      <str name="suggest.count">5</str>
+    </lst>
+    <arr name="components">
+      <str>suggest</str>
+    </arr>
+  </requestHandler>
 
   <!-- Update Processors
 

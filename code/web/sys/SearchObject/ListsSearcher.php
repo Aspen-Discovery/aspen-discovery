@@ -65,6 +65,7 @@ class SearchObject_ListsSearcher extends SearchObject_SolrSearcher
      *  search parameters in $_REQUEST.
      *
      * @access  public
+     * @param  string $searchSource
      * @return  boolean
      */
     public function init($searchSource = null)
@@ -106,11 +107,6 @@ class SearchObject_ListsSearcher extends SearchObject_SolrSearcher
         return true;
     } // End init()
 
-    public function getSpellingSuggestions()
-    {
-        // TODO: Implement getSpellingSuggestions() method.
-    }
-
     public function getSearchIndexes()
     {
         return [
@@ -122,6 +118,7 @@ class SearchObject_ListsSearcher extends SearchObject_SolrSearcher
 
     /**
      * Turn our results into an Excel document
+     * @param array $result
      */
     public function buildExcel($result = null)
     {
@@ -141,5 +138,25 @@ class SearchObject_ListsSearcher extends SearchObject_SolrSearcher
     public function getSearchesFile()
     {
         return 'listsSearches';
+    }
+
+    public function supportsSuggestions()
+    {
+        return true;
+    }
+
+    /**
+     * @param string $searchTerm
+     * @param string $searchIndex
+     * @return array
+     */
+    public function getSearchSuggestions($searchTerm, $searchIndex){
+        $suggestionHandler = 'suggest';
+        if ($searchIndex == 'ListsTitle') {
+            $suggestionHandler = 'title_suggest';
+        }if ($searchIndex == 'ListsAuthor') {
+            $suggestionHandler = 'author_suggest';
+        }
+        return $this->processSearchSuggestions($searchTerm, $suggestionHandler);
     }
 }

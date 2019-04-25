@@ -138,4 +138,24 @@ class SearchObject_OpenArchivesSearcher extends SearchObject_SolrSearcher
     {
         return 'openArchivesSearches';
     }
+
+    public function supportsSuggestions()
+    {
+        return true;
+    }
+
+    /**
+     * @param string $searchTerm
+     * @param string $searchIndex
+     * @return array
+     */
+    public function getSearchSuggestions($searchTerm, $searchIndex){
+        $suggestionHandler = 'suggest';
+        if ($searchIndex == 'OpenArchivesTitle') {
+            $suggestionHandler = 'title_suggest';
+        }if ($searchIndex == 'OpenArchivesSubject') {
+            $suggestionHandler = 'subject_suggest';
+        }
+        return $this->processSearchSuggestions($searchTerm, $suggestionHandler);
+    }
 }

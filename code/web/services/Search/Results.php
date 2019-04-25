@@ -276,7 +276,7 @@ class Search_Results extends Action {
             if (!isset($facetSet) || count($facetSet) == 0) {
                 require_once ROOT_DIR . '/services/Search/lib/SearchSuggestions.php';
                 $searchSuggestions = new SearchSuggestions();
-                $allSuggestions = $searchSuggestions->getAllSuggestions($searchObject->displayQuery(), $searchObject->getSearchIndex());
+                $allSuggestions = $searchSuggestions->getAllSuggestions($searchObject->displayQuery(), $searchObject->getSearchIndex(), 'grouped_works');
                 $interface->assign('searchSuggestions', $allSuggestions);
             }
 
