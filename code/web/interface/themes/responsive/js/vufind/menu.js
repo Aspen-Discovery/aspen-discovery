@@ -1,7 +1,3 @@
-/**
- * Created by pbrammeier on 12/16/2015.
- */
-
 VuFind.Menu = (function(){
 	$(function(){
 		// Page Initializations
@@ -16,20 +12,18 @@ VuFind.Menu = (function(){
 		VuFind.Menu.stickyMenu('#horizontal-menu-bar-container', 'sticky-menu-bar');
 		VuFind.Menu.stickyMenu('#vertical-menu-bar', 'sticky-sidebar');
 
-		var mobileMode = false;
-
 		if ($('#horizontal-menu-bar-container').is(':visible')) {
 			VuFind.Menu.hideAllFast();
-			mobileMode = true;
+			VuFind.Menu.mobileMode = true;
 		}
 
 		// Trigger mode on resize between horizontal menu & vertical menu
 		$(window).resize(function(){
-			if (mobileMode) {
+			if (VuFind.Menu.mobileMode) {
 				// Entered Sidebar Mode
 				if (!$('#horizontal-menu-bar-container').is(':visible')) { // this depends on horizontal menu always being present
 				//	console.log('Entered SideBar Mode');
-					mobileMode = false;
+					VuFind.Menu.mobileMode = false;
 
 					if ($('#vertical-menu-bar').length) { // Sidebar Menu is in use
 						//console.log('SideBar Menu is on');
@@ -75,7 +69,7 @@ VuFind.Menu = (function(){
 				// Entered Mobile Mode
 				if ($('#horizontal-menu-bar-container').is(':visible')) {
 					//console.log('Entered Mobile Mode');
-					mobileMode = true;
+					VuFind.Menu.mobileMode = true;
 
 					// Un-select any horizontal option that might have been selected previously
 					$('.menu-icon-selected', '#horizontal-menu-bar-container').removeClass('menu-icon-selected');
@@ -111,6 +105,7 @@ VuFind.Menu = (function(){
 	};
 
 	return {
+		mobileMode: false,
 		SearchBoxSelectors:      '#home-page-search',
 		SideBarSearchSelectors:  '#narrow-search-label,#facet-accordion,#results-sort-label,#results-sort-label+div.row,#remove-search-label,#remove-search-label+.applied-filters,#similar-authors',
 		SideBarAccountSelectors: '#home-page-login,#home-account-links',
@@ -311,8 +306,8 @@ VuFind.Menu = (function(){
 						$('#mobile-menu-search-icon').addClass('menu-icon-selected')
 					}
 				}
-				var btn = $('#refineSearchButton'),
-						text = btn.text();
+				let btn = $('#refineSearchButton');
+				let text = btn.text();
 				if (text == 'Refine Search') {
 					$(VuFind.Menu.SideBarSearchSelectors).slideDown();
 					btn.text('Hide Refine Search');
@@ -321,9 +316,6 @@ VuFind.Menu = (function(){
 					$(VuFind.Menu.SideBarSearchSelectors).slideUp();
 					btn.text('Refine Search');
 				}
-
-				//btn.text( text == 'Refine Search' ? 'Hide Refine Search' : 'Refine Search' );
-				//$('#refineSearch,'+VuFind.Menu.SideBarSearchSelectors).toggle();
 			},
 
 			resetRefineSearch: function(){

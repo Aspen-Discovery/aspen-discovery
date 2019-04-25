@@ -58,7 +58,9 @@
 								{* Treat Public Lists not owned by user as a Search Page rather than an MyAccount Page *}
 								{* Click Search Menu Bar Button *}
 							//alert("Showing search by default");
-							VuFind.Menu.SideBar.showSearch($('#vertical-menu-search-button'));
+							if (!VuFind.Menu.mobileMode){ldelim}
+								VuFind.Menu.SideBar.showSearch($('#vertical-menu-search-button'));
+							{rdelim}
 							//$('.menu-bar-option:nth-child(1)>a', '#vertical-menu-bar').filter(':visible').click();
 						{elseif (!$isLoginPage && !in_array($action, array('EmailResetPin', 'ResetPin', 'RequestPinReset', 'EmailPin', 'SelfReg'))) && ($module == "MyAccount" || $module == "Admin" || $module == "Circa" || $module == "EditorialReview" || $module == "Report" || ($module == 'Search' && $action == 'History'))}
 							{* Prevent this action on the Pin Reset Page && Login Page && Offline Circulation Page*}
