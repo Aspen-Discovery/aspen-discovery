@@ -73,7 +73,19 @@ class Person extends SolrDataObject
 		return 'genealogy';
 	}
 
-	function solrId(){
+	function getNumericColumnNames()
+    {
+        return [
+            'birthDateDay',
+            'birthDateMonth',
+            'birthDateYear',
+            'deathDateDay',
+            'deathDateMonth',
+            'deathDateYear',
+        ];
+    }
+
+    function solrId(){
 		return $this->personId;
 	}
 	function recordtype(){

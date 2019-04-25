@@ -10,6 +10,9 @@ class Marriage extends DataObject
 	public $spouseName;
 	public $spouseId;
 	public $marriageDate;
+    public $marriageDateDay;
+    public $marriageDateMonth;
+    public $marriageDateYear;
 	public $comments;
 
 	function keys() {
@@ -19,6 +22,15 @@ class Marriage extends DataObject
 	function id(){
 		return $this->marriageId;
 	}
+
+    function getNumericColumnNames()
+    {
+        return [
+            'marriageDateDay',
+            'marriageDateMonth',
+            'marriageDateYear',
+        ];
+    }
 
 	function label(){
 		return $this->spouseName . (isset($this->marriageDate) ? (' - ' . $this->marriageDate) : '');

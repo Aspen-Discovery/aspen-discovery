@@ -354,7 +354,7 @@ abstract class Solr {
 		if ($record == false || isset($_REQUEST['reload'])){
 			$this->pingServer();
 			// Query String Parameters
-			$options = array('ids' => "$id");
+			$options = array('q' => "id:$id");
 			$options['fl'] = $fieldsToReturn;
 			$this->client->setMethod('GET');
 			$this->client->setURL($this->host . "/select");
@@ -422,11 +422,11 @@ abstract class Solr {
 			$idString = '';
 			foreach ($tmpIds as $id){
 				if (strlen($idString) > 0){
-					$idString .= ',';
+					$idString .= ' OR ';
 				}
 				$idString .= $id;
 			}
-			$options = array('ids' => "$idString");
+			$options = array('q' => "id:$idString");
 			$options['fl'] = $fieldsToReturn;
 
 			$this->client->setMethod('GET');
@@ -2152,7 +2152,7 @@ abstract class Solr {
 		$fields = $memCache->get("schema_fields_$solrScope");
 		if (!$fields || isset($_REQUEST['reload'])){
 			global $configArray;
-			$schemaUrl = $configArray['Index']['url'] . '/grouped_works/admin/file?file=schema.xml&contentType=text/xml;charset=utf-8';
+			$schemaUrl = $this->host . '/admin/file?file=schema.xml&contentType=text/xml;charset=utf-8';
 			$schema = @simplexml_load_file($schemaUrl);
 			if ($schema == null){
 			    AspenError::raiseError("Solr is not currently running");
@@ -2162,7 +2162,9 @@ abstract class Solr {
             /** @noinspection PhpUndefinedFieldInspection */
 			foreach ($schema->fields->field as $field){
 				//print_r($field);
-				$fields[] = (string)$field['name'];
+                if ($field['stored'] == 'true'){
+                    $fields[] = (string)$field['name'];
+                }
 			}
 			if ($solrScope){
                 /** @noinspection PhpUndefinedFieldInspection */

@@ -7,20 +7,18 @@ class PersonRecord extends IndexRecordDriver
 	/** @var Person $person */
 	private $person;
 	private $id;
-	private $shortId;
 	public function __construct($record)
 	{
 		// Call the parent's constructor...
 		parent::__construct($record);
 
 		$this->id = $this->getUniqueID();
-		$this->shortId = substr($this->id, 6);
 	}
 
 	private function getPerson(){
 		if (!isset($this->person)){
 			$person = new Person();
-			$person->personId = $this->shortId;
+			$person->personId = $this->id;
 			$person->find();
 			if ($person->N > 0){
 				$person->fetch();
@@ -44,7 +42,6 @@ class PersonRecord extends IndexRecordDriver
 		global $interface;
 
 		$interface->assign('summId', $this->id);
-		$interface->assign('summShortId', $this->shortId); //Trim the person prefix for the short id
 
 		$person = $this->getPerson();
 		$interface->assign('summPicture', $person->picture);
@@ -85,7 +82,7 @@ class PersonRecord extends IndexRecordDriver
 	}
 
 	function getPermanentId() {
-		return $this->shortId;
+		return $this->id;
 	}
 
 	function getBookcoverUrl($size = 'small'){

@@ -695,16 +695,6 @@
       <int name="rows">10</int>
       <str name="spellcheck.dictionary">default</str>
     </lst>
-    <!-- If the default list of SearchComponents is not desired, that
-         list can either be overridden completely, or components can be
-         prepended or appended to the default list.  (see below)
-      -->
-    <!--
-       <arr name="components">
-         <str>nameOfCustomComponent1</str>
-         <str>nameOfCustomComponent2</str>
-       </arr>
-      -->
     <arr name="last-components">
       <str>spellcheck</str>
     </arr>
@@ -928,31 +918,7 @@
     </arr>
   </requestHandler>
 
-
-  <!-- Query Elevation Component
-
-       http://wiki.apache.org/solr/QueryElevationComponent
-
-       a search component that enables you to configure the top
-       results for a given query regardless of the normal lucene
-       scoring.
-    -->
-	<!--
-  <searchComponent name="elevator" class="solr.QueryElevationComponent" >
-    <str name="queryFieldType">string</str>
-  </searchComponent>
--->
-
-  <!-- A request handler for demonstrating the elevator component -->
-  <requestHandler name="/elevate" class="solr.SearchHandler" startup="lazy">
-    <lst name="defaults">
-      <str name="echoParams">explicit</str>
-    </lst>
-    <arr name="last-components">
-      <str>elevator</str>
-    </arr>
-  </requestHandler>
-
+  <!-- A request handler for loading more like this -->
   <requestHandler name="/mlt" class="solr.MoreLikeThisHandler">
     <lst name="defaults">
       <str name="mlt.fl">subject_facet,topic_facet,awards_facet,genre_facet,geographic_facet,era,authorStr</str>

@@ -398,17 +398,6 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
                 'freq'        => $freq,
                 'replace_url' => $this->renderLinkWithReplacedTerm($targetTerm, $replacement)
             );
-
-            //
-            // Parentheses differ for shingles
-            //Do not currently want to use expand urls (which add the new term to the search)
-//            if (strstr($targetTerm, " ") !== false) {
-//                $replacement = "(($targetTerm) OR ($replacement))";
-//            } else {
-//                $replacement = "($targetTerm OR $replacement)";
-//            }
-//            $returnArray[$targetTerm]['suggestions'][$label]['expand_url'] = $this->renderLinkWithReplacedTerm($targetTerm, $replacement);
-
         }
 
         return $returnArray;
@@ -790,4 +779,34 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
     }
 
     public function getIndexEngine()    {return $this->indexEngine;}
+
+    protected function processSearchSuggestions(string $searchTerm, string $suggestionHandler)
+    {
+        $suggestions = $this->indexEngine->getSearchSuggestions($searchTerm, $suggestionHandler);
+        $allSuggestions = [];
+        if (isset($suggestions['suggest'])){
+            foreach ($suggestions['suggest'] as $suggestionType => $suggestedSearchesByType){
+                foreach ($suggestedSearchesByType as $term => $suggestionsForTerm) {
+                    foreach ($suggestionsForTerm['suggestions'] as $suggestion) {
+                        $nonHighlightedTerm = preg_replace('~</?b>~', '', $suggestion['term']);
+                        //Remove the old value if this is a duplicate (after incrementing the weight)
+                        foreach ($allSuggestions as $key => $value) {
+                            if ($value['nonHighlightedTerm'] == $nonHighlightedTerm) {
+                                $suggestion['weight'] += $value['numSearches'];
+                                unset($allSuggestions[$key]);
+                                break;
+                            }
+                        }
+                        $allSuggestions[str_pad($suggestion['weight'], 10, '0', STR_PAD_LEFT) . $nonHighlightedTerm] = array('phrase'=>$suggestion['term'], 'numSearches'=>$suggestion['weight'], 'numResults'=>$suggestion['weight'], 'nonHighlightedTerm' => $nonHighlightedTerm);
+                    }
+                }
+            }
+        }
+
+        krsort($allSuggestions);
+        if (count ($allSuggestions) > 8){
+            $allSuggestions = array_slice($allSuggestions, 0, 8);
+        }
+        return $allSuggestions;
+    }
 }

@@ -31,7 +31,6 @@ mysqldump --user=$1 --password=$PASSWORD --add-drop-table $DBNAME \
  search\
  search_stats\
  search_stats_new\
- spelling_words\
  tags\
  user\
  user_link\

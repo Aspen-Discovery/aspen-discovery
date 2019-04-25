@@ -34,44 +34,12 @@
 				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
 			</analyzer>
 		</fieldType>
-		<fieldType name="text-exact" class="solr.TextField" sortMissingLast="true" omitNorms="true">
-			<analyzer>
-				<!-- Whitespace tokenizer is needed so the Word Delimiter filter factory works properly
-				 For example, this allows E.T. The Extra-Terrestrial to be handled properly.  #ARL-168
-				-->
-				<tokenizer class="solr.KeywordTokenizerFactory"/>
-				<charFilter class="solr.PatternReplaceCharFilterFactory" pattern="^\s*(.*)\s*$" replacement="aaaa $1 zzzz"/>
-				<filter class="solr.LowerCaseFilterFactory"/>
-				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
-			</analyzer>
-		</fieldType>
-		<fieldType name="text-left" class="solr.TextField" sortMissingLast="true" omitNorms="true">
-			<analyzer>
-				<!-- Whitespace tokenizer is needed so the Word Delimiter filter factory works properly
-				 For example, this allows E.T. The Extra-Terrestrial to be handled properly.  #ARL-168
-				-->
-				<tokenizer class="solr.KeywordTokenizerFactory"/>
-				<charFilter class="solr.PatternReplaceCharFilterFactory" pattern="^\s*(.*)\s*$" replacement="aaaa $1"/>
-				<filter class="solr.LowerCaseFilterFactory"/>
-				<filter class="solr.TrimFilterFactory"/>
-				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
-			</analyzer>
-		</fieldType>
 		<!-- Text Field without Stemming, Synonyms, and stop Word removal -->
 		<fieldType name="textProper" class="solr.TextField" positionIncrementGap="100">
 			<analyzer>
 				<tokenizer class="solr.WhitespaceTokenizerFactory"/>
 				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1" preserveOriginal="1"/>
 				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
-			</analyzer>
-		</fieldType>
-		<fieldType name="callnumber-search" class="solr.TextField">
-			<analyzer>
-				<tokenizer class="solr.WhitespaceTokenizerFactory"/>
-				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="0" catenateWords="0" catenateNumbers="1" catenateAll="0" splitOnCaseChange="0" splitOnNumerics="1" preserveOriginal="1"/>
-				<filter class="solr.LengthFilterFactory" min="2" max="100"/>
-				<filter class="solr.LowerCaseFilterFactory"/>
-				<filter class="solr.TrimFilterFactory"/>
 			</analyzer>
 		</fieldType>
 		<!-- Text Field without Stemming, Synonyms, and stop Word removal -->
@@ -82,6 +50,21 @@
 				<!-- The TrimFilter removes any leading or trailing whitespace -->
 				<filter class="solr.TrimFilterFactory"/>
 				<filter class="solr.PatternReplaceFilterFactory" pattern="([^a-z1-9\s])" replacement="" replace="all"/>
+			</analyzer>
+		</fieldType>
+		<fieldType name="textSpelling" class="solr.TextField">
+			<analyzer>
+				<tokenizer class="solr.WhitespaceTokenizerFactory"/>
+				<filter class="solr.LowerCaseFilterFactory"/>
+				<filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1" preserveOriginal="0"/>
+				<filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
+			</analyzer>
+		</fieldType>
+		<fieldType name="textSuggest" class="solr.TextField" positionIncrementGap="100">
+			<analyzer>
+				<tokenizer class="solr.StandardTokenizerFactory"/>
+				<filter class="solr.LowerCaseFilterFactory"/>
+				<filter class="solr.TrimFilterFactory"/>
 			</analyzer>
 		</fieldType>
 	</types>
@@ -123,6 +106,34 @@
 		<field name="spouseName" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
 		<field name="marriageDate" type="date" indexed="true" stored="true" multiValued="true"/>
 		<field name="marriageComments" type="searchable_text" indexed="true" stored="true" multiValued="true"/>
+		<!-- spelling -->
+		<field name="spelling" type="textSpelling" indexed="true" stored="false" multiValued="true"/>
+		<!-- suggestions (for type ahead) -->
+		<field name="name_suggestions" type="textSuggest" indexed="true" stored="true" multiValued="true"/>
+		<field name="keyword_suggestions" type="textSuggest" indexed="true" stored="true" multiValued="true"/>
 	</fields>
+
+	<copyField source="title" dest="name_suggestions"/>
+	<copyField source="firstName" dest="name_suggestions"/>
+	<copyField source="lastName" dest="name_suggestions"/>
+	<copyField source="middleName" dest="name_suggestions"/>
+	<copyField source="otherName" dest="name_suggestions"/>
+	<copyField source="nickName" dest="name_suggestions"/>
+	<copyField source="title" dest="keyword_suggestions"/>
+	<copyField source="firstName" dest="keyword_suggestions"/>
+	<copyField source="lastName" dest="keyword_suggestions"/>
+	<copyField source="middleName" dest="keyword_suggestions"/>
+	<copyField source="otherName" dest="keyword_suggestions"/>
+	<copyField source="nickName" dest="keyword_suggestions"/>
+	<copyField source="cemeteryName" dest="keyword_suggestions"/>
+	<copyField source="cemeteryLocation" dest="keyword_suggestions"/>
+	<copyField source="mortuaryName" dest="keyword_suggestions"/>
+	<copyField source="sex" dest="keyword_suggestions"/>
+	<copyField source="race" dest="keyword_suggestions"/>
+	<copyField source="causeOfDeath" dest="keyword_suggestions"/>
+	<copyField source="obituarySource" dest="keyword_suggestions"/>
+	<copyField source="spouseName" dest="keyword_suggestions"/>
+
+	<copyField source="keywords" dest="spelling"/>
 	<uniqueKey>id</uniqueKey>
 </schema>

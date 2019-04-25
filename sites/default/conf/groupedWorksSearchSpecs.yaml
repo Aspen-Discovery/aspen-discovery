@@ -420,13 +420,6 @@ id:
       - [onephrase, ~]
       - [or, ~]
 
-ids:
-  QueryFields:
-    - id:
-      - [or, ~]
-    - alternate_ids:
-      - [onephrase, ~]
-
 LocalCallNumber:
   QueryFields:
     - local_callnumber_exact:

@@ -830,7 +830,6 @@ class DBMaintenance extends Admin_Admin {
 						"ALTER TABLE search CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
 						"ALTER TABLE search_stats CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
 						"ALTER TABLE session CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
-						"ALTER TABLE spelling_words CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
 						"ALTER TABLE user CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
 						"ALTER TABLE user_list CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
 						"ALTER TABLE user_reading_history CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
@@ -993,15 +992,13 @@ class DBMaintenance extends Admin_Admin {
 					),
 				),
 
-				'spelling_optimization' => array(
-					'title' => 'Spelling Optimization',
-					'description' => 'Optimizations to spelling to ensure indexes are used',
-					'sql' => array(
-						'ALTER TABLE `spelling_words` ADD `soundex` VARCHAR(20) ',
-						'ALTER TABLE `spelling_words` ADD INDEX `Soundex` (`soundex`)',
-						'UPDATE `spelling_words` SET soundex = SOUNDEX(word) '
-					),
-				),
+				'remove_spelling_words' => array(
+                    'title' => 'Remove Spelling Words',
+                    'description' => 'Optimizations to spelling to ensure indexes are used',
+                    'sql' => array(
+                        'DROP TABLE `spelling_words`',
+                    ),
+                ),
 
 				'boost_disabling' => array(
 					'title' => 'Disabling Lib and Loc Boosting',

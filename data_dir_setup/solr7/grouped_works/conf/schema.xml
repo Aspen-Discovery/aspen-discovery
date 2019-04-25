@@ -273,7 +273,7 @@
 
 		<!-- spelling -->
 		<field name="spelling" type="textSpelling" indexed="true" stored="false" multiValued="true"/>
-		<!-- suggestions (for type aheads) -->
+		<!-- suggestions (for type ahead) -->
 		<field name="title_suggestions" type="textSuggest" indexed="true" stored="true" multiValued="true"/>
 		<field name="author_suggestions" type="textSuggest" indexed="true" stored="true" multiValued="true"/>
 		<field name="subject_suggestions" type="textSuggest" indexed="true" stored="true" multiValued="true"/>

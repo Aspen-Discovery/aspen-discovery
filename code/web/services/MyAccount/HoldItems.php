@@ -43,7 +43,7 @@ class HoldItems extends Action
 		foreach ($selectedTitles as $recordId => $itemNumber){
 			$ids[] = $recordId;
 		}
-		$interface->assign('ids', $ids);
+		$interface->assign('id', $ids);
 
 		$hold_message_data = array(
           'successful' => 'all',

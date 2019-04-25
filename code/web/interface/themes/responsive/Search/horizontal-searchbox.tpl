@@ -71,7 +71,7 @@
 										{if $searchKey == $searchSource} selected="selected"{/if}
 										{if $searchKey == $searchSource} id="default_search_type"{/if}
 											title="{$searchOption.description}">
-									{translate text="in"} {$searchOption.name}{if $searchOption.external} *{/if}
+									{translate text="in"} {$searchOption.name}{if !empty($searchOption.external)} *{/if}
 								</option>
 							{/foreach}
 						</select>
@@ -115,7 +115,7 @@
 				</div>
 
 				{* Show/Hide Search Facets & Sort Options *}
-				{if $recordCount || $sideRecommendations}
+				{if !empty($recordCount) || !empty($sideRecommendations)}
 					<div class="col-tn-3 col-xs-3 visible-xs">
 						<a class="btn btn-default" id="refineSearchButton" role="button" onclick="VuFind.Menu.Mobile.showSearchFacets()">{translate text="Refine Search"}</a>
 					</div>

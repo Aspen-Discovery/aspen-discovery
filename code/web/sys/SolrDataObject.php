@@ -81,14 +81,13 @@ abstract class SolrDataObject extends DataObject{
 
 	function removeFromSolr(){
 		require_once ROOT_DIR . '/sys/SolrConnector/Solr.php';
-		global $configArray;
-		$host = $configArray['Index']['url'];
-
 		global $logger;
 		$logger->log("Deleting Record {$this->solrId()}", Logger::LOG_NOTICE);
 
         $coreName = $this->getCore();
-        $index = new Solr($host, $coreName);
+        /** @var SearchObject_SolrSearcher $searcher */
+        $searcher = SearchObjectFactory::initSearchObjectBySearchSource($coreName);
+        $index = $searcher->getIndexEngine();
         if ($index->deleteRecord($this->solrId())) {
             $index->commit();
         } else {
@@ -106,9 +105,7 @@ abstract class SolrDataObject extends DataObject{
 		$this->saveStarted = true;
 
 		global $timer;
-		global $configArray;
 		$this->_quickReindex = $quick;
-		$host = $configArray['Index']['url'];
 		global $logger;
 		$logger->log("Updating " . $this->solrId() . " in solr", Logger::LOG_NOTICE);
 
@@ -122,7 +119,9 @@ abstract class SolrDataObject extends DataObject{
 		$timer->logTime('Built Contents to save to Solr');
 
 		$coreName = $this->getCore();
-        $index = new Solr($host, $coreName);
+		/** @var SearchObject_SolrSearcher $searcher */
+		$searcher = SearchObjectFactory::initSearchObjectBySearchSource($coreName);
+        $index = $searcher->getIndexEngine();
 
         $xml = $index->getSaveXML($doc, !$this->_quickReindex, $this->_quickReindex);
         //$logger->log('XML ' . print_r($xml, true), Logger::LOG_NOTICE);
@@ -177,14 +176,13 @@ abstract class SolrDataObject extends DataObject{
 
 	function optimize(){
 		require_once ROOT_DIR . '/sys/SolrConnector/Solr.php';
-		global $configArray;
-		$host = $configArray['Index']['url'];
-
-        $coreName = $this->getCore();
+		$coreName = $this->getCore();
         global $logger;
         $logger->log("Optimizing Solr Core! $coreName", Logger::LOG_NOTICE);
 
-        $index = new Solr($host, $coreName);
+        /** @var SearchObject_SolrSearcher $searcher */
+        $searcher = SearchObjectFactory::initSearchObjectBySearchSource($coreName);
+        $index = $searcher->getIndexEngine();
         $index->optimize();
 
 		return true;

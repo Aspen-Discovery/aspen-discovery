@@ -5,12 +5,6 @@ require_once ROOT_DIR . '/sys/SearchObject/SolrSearcher.php';
 require_once ROOT_DIR . '/RecordDrivers/RecordDriverFactory.php';
 require_once ROOT_DIR . '/Drivers/marmot_inc/Location.php';
 
-/**
- * Search Object class
- *
- * This is the default implementation of the SearchObjectBase class, providing the
- * Solr-driven functionality used by VuFind's standard Search module.
- */
 class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 {
 	// Facets information
@@ -562,7 +556,7 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 	 */
 	function getRecord($id)
 	{
-		return $this->indexEngine->getRecord($id);
+		return $this->indexEngine->getRecord($id, $this->getFieldsToReturn());
 	}
 
 	/**
@@ -604,5 +598,27 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
     public function getSearchesFile()
     {
         return 'genealogySearches';
+    }
+
+    public function supportsSuggestions()
+    {
+        return true;
+    }
+
+    /**
+     * @param string $searchTerm
+     * @param string $searchIndex
+     * @return array
+     */
+    public function getSearchSuggestions($searchTerm, $searchIndex){
+        $suggestionHandler = 'suggest';
+        if ($searchIndex == 'GenealogyName') {
+            $suggestionHandler = 'name_suggest';
+        }
+        return $this->processSearchSuggestions($searchTerm, $suggestionHandler);
+    }
+
+    private function getFieldsToReturn() {
+        return 'id,recordtype,title,comments,firstName,lastName,middleName,maidenName,otherName,nickName,fullName,veteranOf,birthDate,birthYear,deathYear,ageAtDeath,cemeteryName,mortuaryName,sex,race,causeOfDeath,obituaryDate,obituarySource,obituaryText,spouseName,marriageDate,marriageComments';
     }
 }

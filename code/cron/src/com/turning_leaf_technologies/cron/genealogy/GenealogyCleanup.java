@@ -119,7 +119,7 @@ public class GenealogyCleanup implements IProcessHandler {
 			processLog.addNote("Skipping reindexing people becuase reindex was not true.");
 			return;
 		}
-		String genealogyUrl = configIni.get("Genealogy", "url");
+		String genealogyUrl = processSettings.get("genealogyIndex");
 		if (genealogyUrl == null || genealogyUrl.length() == 0) {
 			processLog.addNote("Unable to get url for genealogy in GenealogyCleanup section.  Please specify genealogyIndex key.");
 			return;
@@ -454,7 +454,7 @@ public class GenealogyCleanup implements IProcessHandler {
 
 				StringBuilder updateBody = new StringBuilder();
 				updateBody.append("<add commitWithin=\"60000\" ><doc>");
-				updateBody.append("<field name=\"id\">person").append(personId).append("</field>");
+				updateBody.append("<field name=\"id\">").append(personId).append("</field>");
 				updateBody.append("<field name=\"recordtype\">person</field>");
 				String firstName = getFieldForSolr(personRs, "firstName");
 				String lastName = getFieldForSolr(personRs, "lastName");
@@ -629,7 +629,5 @@ public class GenealogyCleanup implements IProcessHandler {
 			processLog.incErrors();
 			ex.printStackTrace();
 		}
-
 	}
-
 }

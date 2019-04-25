@@ -5,12 +5,6 @@ require_once ROOT_DIR . '/sys/SearchObject/SolrSearcher.php';
 require_once ROOT_DIR . '/RecordDrivers/RecordDriverFactory.php';
 require_once ROOT_DIR . '/Drivers/marmot_inc/Location.php';
 
-/**
- * Search Object class
- *
- * This is the default implementation of the SearchObjectBase class, providing the
- * Solr-driven functionality used by VuFind's standard Search module.
- */
 class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 {
 	// Field List
@@ -675,32 +669,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
         }elseif ($searchIndex == 'Subject'){
             $suggestionHandler = 'subject_suggest';
         }
-        $suggestions = $this->indexEngine->getSearchSuggestions($searchTerm, $suggestionHandler);
-        $allSuggestions = [];
-        if (isset($suggestions['suggest'])){
-            foreach ($suggestions['suggest'] as $suggestionType => $suggestedSearchesByType){
-                foreach ($suggestedSearchesByType as $term => $suggestionsForTerm) {
-                    foreach ($suggestionsForTerm['suggestions'] as $suggestion) {
-                        $nonHighlightedTerm = preg_replace('~</?b>~', '', $suggestion['term']);
-                        //Remove the old value if this is a duplicate (after incrementing the weight)
-                        foreach ($allSuggestions as $key => $value) {
-                            if ($value['nonHighlightedTerm'] == $nonHighlightedTerm) {
-                                $suggestion['weight'] += $value['numSearches'];
-                                unset($allSuggestions[$key]);
-                                break;
-                            }
-                        }
-                        $allSuggestions[str_pad($suggestion['weight'], 10, '0', STR_PAD_LEFT) . $suggestion['term']] = array('phrase'=>$suggestion['term'], 'numSearches'=>$suggestion['weight'], 'numResults'=>$suggestion['weight'], 'nonHighlightedTerm' => $nonHighlightedTerm);
-                    }
-                }
-            }
-        }
-
-        krsort($allSuggestions);
-        if (count ($allSuggestions) > 8){
-            $allSuggestions = array_slice($allSuggestions, 0, 8);
-        }
-        return $allSuggestions;
+        return $this->processSearchSuggestions($searchTerm, $suggestionHandler);
     }
 
     /**

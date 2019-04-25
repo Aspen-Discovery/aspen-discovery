@@ -2,13 +2,13 @@
 <div id="record{$summId|escape}" class="resultsList row">
 	<div class="imageColumn col-md-3">
 		<div class="selectTitle hidden-phone col-md-4">
-			<label for="selected{if $summShortId}{$summShortId}{else}{$summId|escape}{/if}" class="resultIndex checkbox"><strong>{$resultIndex}</strong>
-				<input type="checkbox" name="selected[{$summShortId|escape:"url"}]" id="selected{$summShortId|escape:"url"}" style="display:none" />&nbsp;
+			<label for="selected{if $summId}{$summId}{/if}" class="resultIndex checkbox"><strong>{$resultIndex}</strong>
+				<input type="checkbox" name="selected[{$summId|escape:"url"}]" id="selected{$summId|escape:"url"}" style="display:none" />&nbsp;
 			</label>
 		</div>
 
 		<div class="col-md-7 text-center">
-			<a href="{$path}/Person/{$summShortId}">
+			<a href="{$path}/Person/{$summId}">
 			{if $summPicture}
 			<img src="{$path}/files/thumbnail/{$summPicture}" class="alignleft listResultImage" alt="{translate text='Picture'}"/><br />
 			{else}
@@ -22,7 +22,7 @@
 		<div class="row">
 			{if $summScore}({$summScore}) {/if}
 			<strong>
-				<a href="{$path}/Person/{$summShortId}" class="title">{if !$summTitle}{translate text='Title not available'}{else}{$summTitle|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if}</a>
+				<a href="{$path}/Person/{$summId}" class="title">{if !$summTitle}{translate text='Title not available'}{else}{$summTitle|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if}</a>
 				{if $summTitleStatement}
 					<div class="searchResultSectionInfo">
 					{$summTitleStatement|removeTrailingPunctuation|truncate:180:"..."|highlight}
