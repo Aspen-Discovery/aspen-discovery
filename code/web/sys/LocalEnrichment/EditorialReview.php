@@ -1,7 +1,5 @@
 <?php
-/**
- * Table Definition for library
- */
+
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
 class EditorialReview extends DataObject {
 	public $__table = 'editorial_reviews';    // table name

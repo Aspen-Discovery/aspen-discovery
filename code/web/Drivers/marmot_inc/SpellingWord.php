@@ -1,7 +1,5 @@
 <?php
-/**
- * Table Definition for spelling words
- */
+
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
 class SpellingWord extends DataObject
 {

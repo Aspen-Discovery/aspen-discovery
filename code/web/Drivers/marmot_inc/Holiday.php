@@ -1,7 +1,5 @@
 <?php
-/**
- * Table Definition for LocationHours.
- */
+
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
 class Holiday extends DataObject
 {

@@ -1,7 +1,5 @@
 <?php
-/**
- * Table Definition for user
- */
+
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
 class User extends DataObject
 {

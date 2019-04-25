@@ -1,7 +1,5 @@
 <?php
-/**
- * Table Definition for Materials Request
- */
+
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
 class MaterialsRequestStatus extends DataObject {
 	public $__table = 'materials_request_status';   // table name

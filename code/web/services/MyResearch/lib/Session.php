@@ -1,7 +1,5 @@
 <?php
-/**
- * Table Definition for session
- */
+
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
 
 class Session extends DataObject

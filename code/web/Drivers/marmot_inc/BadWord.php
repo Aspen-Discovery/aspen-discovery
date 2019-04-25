@@ -1,7 +1,5 @@
 <?php
-/**
- * Table Definition for bad words
- */
+
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
 class BadWord extends DataObject
 {

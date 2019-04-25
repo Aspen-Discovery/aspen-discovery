@@ -15,8 +15,6 @@ require_once ROOT_DIR . '/sys/DataObjectUtil.php';
  */
 class CreateListWidget extends Action {
 	function launch() 	{
-//		global $configArray;
-//		global $interface;
 		$user = UserAccount::getLoggedInUser();
 
 		$source = $_REQUEST['source'];

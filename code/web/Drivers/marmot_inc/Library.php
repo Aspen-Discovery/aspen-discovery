@@ -1,7 +1,5 @@
 <?php
-/**
- * Table Definition for library
- */
+
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
 require_once ROOT_DIR . '/Drivers/marmot_inc/Holiday.php';
 require_once ROOT_DIR . '/Drivers/marmot_inc/LibraryFacetSetting.php';

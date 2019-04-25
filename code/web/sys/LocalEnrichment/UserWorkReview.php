@@ -1,7 +1,5 @@
 <?php
-/**
- * Table Definition for User Ratings
- */
+
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
 class UserWorkReview extends DataObject
 {
