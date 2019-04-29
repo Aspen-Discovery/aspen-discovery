@@ -7,5 +7,5 @@ fi
 cp -r solr7 /data/aspen-discovery/$1
 
 cd ../sites/$1
-call $1.sh restart
+exec $1.sh restart
 cd ../../data_dir_setup
