@@ -1036,10 +1036,13 @@ public class GroupedWorkSolr implements Cloneable {
 	}
 
 	void setAuthor(String author) {
-		if (primaryAuthors.containsKey(author)){
-			primaryAuthors.put(author, primaryAuthors.get(author) + 1);
-		}else{
-			primaryAuthors.put(author, 1L);
+		if (author != null){
+			author = StringUtils.trimTrailingPunctuation(author);
+			if (primaryAuthors.containsKey(author)){
+				primaryAuthors.put(author, primaryAuthors.get(author) + 1);
+			}else{
+				primaryAuthors.put(author, 1L);
+			}
 		}
 	}
 
@@ -1059,8 +1062,8 @@ public class GroupedWorkSolr implements Cloneable {
 	}
 
 	void setAuthAuthor(String author) {
-		this.authAuthor = author;
-		keywords.add(author);
+		this.authAuthor = StringUtils.trimTrailingPunctuation(author);
+		keywords.add(this.authAuthor);
 	}
 
 	void addOclcNumbers(Set<String> oclcs) {
@@ -1127,19 +1130,19 @@ public class GroupedWorkSolr implements Cloneable {
 	}
 
 	void addAuthAuthor2(Set<String> fieldList) {
-		this.authAuthor2.addAll(fieldList);
+		this.authAuthor2.addAll(StringUtils.trimTrailingPunctuation(fieldList));
 	}
 
 	void addAuthor2(Set<String> fieldList) {
-		this.author2.addAll(fieldList);
+		this.author2.addAll(StringUtils.trimTrailingPunctuation(fieldList));
 	}
 
 	void addAuthor2Role(Set<String> fieldList) {
-		this.author2Role.addAll(fieldList);
+		this.author2Role.addAll(StringUtils.trimTrailingPunctuation(fieldList));
 	}
 
 	void addAuthorAdditional(Set<String> fieldList) {
-		this.authorAdditional.addAll(fieldList);
+		this.authorAdditional.addAll(StringUtils.trimTrailingPunctuation(fieldList));
 	}
 
 	void addHoldings(int recordHoldings) {
