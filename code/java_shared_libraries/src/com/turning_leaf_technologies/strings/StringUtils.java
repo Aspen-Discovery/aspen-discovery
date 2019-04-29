@@ -198,4 +198,17 @@ public class StringUtils {
 
         return result.trim();
     }
+
+    public static String swapFirstLastNames(String author) {
+        //Need to swap the first and last names
+        if (author.contains(" ")){
+            String[] authorParts = author.split("\\s+");
+            StringBuilder tmpAuthor = new StringBuilder();
+            for (int i = 0; i < authorParts.length -1; i++){
+                tmpAuthor.append(authorParts[i]).append(" ");
+            }
+            author = authorParts[authorParts.length -1] + ", " + tmpAuthor.toString();
+        }
+        return author;
+    }
 }

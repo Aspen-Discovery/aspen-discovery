@@ -380,7 +380,7 @@ public class RbdigitalExportMain {
         //Perform record grouping on the record
         String title = itemDetails.getString("title");
         String author = primaryAuthor;
-        author = swapFirstLastNames(author);
+        author = StringUtils.swapFirstLastNames(author);
         String mediaType = itemDetails.getString("mediaType");
 
         RecordIdentifier primaryIdentifier = new RecordIdentifier("rbdigital", rbdigitalId);
@@ -397,19 +397,6 @@ public class RbdigitalExportMain {
             recordGroupingProcessorSingleton = new RecordGroupingProcessor(aspenConn, serverName, logger, false);
         }
         return recordGroupingProcessorSingleton;
-    }
-
-    private static String swapFirstLastNames(String author) {
-        //Need to swap the first and last names
-        if (author.contains(" ")){
-            String[] authorParts = author.split("\\s+");
-            StringBuilder tmpAuthor = new StringBuilder();
-            for (int i = 0; i < authorParts.length -1; i++){
-                tmpAuthor.append(authorParts[i]).append(" ");
-            }
-            author = authorParts[authorParts.length -1] + ", " + tmpAuthor.toString();
-        }
-        return author;
     }
 
     private static void createDbLogEntry(Date startTime, Connection aspenConn) {

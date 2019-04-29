@@ -6,6 +6,7 @@ import com.turning_leaf_technologies.config.ConfigUtil;
 import com.turning_leaf_technologies.indexing.IndexingProfile;
 import com.turning_leaf_technologies.indexing.RecordIdentifier;
 import com.turning_leaf_technologies.logging.LoggingUtil;
+import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
 import org.json.JSONObject;
@@ -833,20 +834,15 @@ public class RecordGrouperMain {
 			while (rbdigitalRecordRS.next()) {
 				String rbdigitalId = rbdigitalRecordRS.getString("rbdigitalId");
 				String title = rbdigitalRecordRS.getString("title");
-				String subtitle = rbdigitalRecordRS.getString("subtitle");
-				String author = rbdigitalRecordRS.getString("primaryAuthor");
-				//Need to swap the first and last names
-				if (author.contains(" ")){
-					String[] authorParts = author.split("\\s+");
-					StringBuilder tmpAuthor = new StringBuilder();
-					for (int i = 0; i < authorParts.length -1; i++){
-						tmpAuthor.append(authorParts[i]).append(" ");
-					}
-					author = authorParts[authorParts.length -1] + ", " + tmpAuthor.toString();
-				}
+				String author = StringUtils.swapFirstLastNames(rbdigitalRecordRS.getString("primaryAuthor"));
 				String mediaType = rbdigitalRecordRS.getString("mediaType");
 
 				RecordIdentifier primaryIdentifier = new RecordIdentifier("rbdigital", rbdigitalId);
+				JSONObject rawResponse = new JSONObject(rbdigitalRecordRS.getString("rawResponse"));
+				String subtitle = null;
+				if (rawResponse.getBoolean("hasSubtitle")) {
+					subtitle = rawResponse.getString("subtitle");
+				}
 
 				recordGroupingProcessor.processRecord(primaryIdentifier, title, subtitle, author, mediaType, true);
 				primaryIdentifiersInDatabase.remove(primaryIdentifier.toString().toLowerCase());
