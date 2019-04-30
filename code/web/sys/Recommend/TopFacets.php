@@ -27,39 +27,39 @@ class TopFacets implements RecommendationInterface
 		$iniFile = isset($params[1]) ? $params[1] : 'facets';
 
 		// Load the desired facet information:
-		if ($this->searchObject->getSearchType() != 'grouped_works'){
-			$this->facets = array();
-		}else{
-			$searchLibrary = Library::getActiveLibrary();
-			global $locationSingleton;
-			$searchLocation = $locationSingleton->getActiveLocation();
-			$hasSearchLibraryFacets = ($searchLibrary != null && (count($searchLibrary->facets) > 0));
-			$hasSearchLocationFacets = ($searchLocation != null && (count($searchLocation->facets) > 0));
-			if ($hasSearchLocationFacets){
-				$facets = $searchLocation->facets;
-			}elseif ($hasSearchLibraryFacets){
-				$facets = $searchLibrary->facets;
-			}else{
-				$facets = Library::getDefaultFacets();
-			}
-			global $solrScope;
-			foreach ($facets as $facet){
-				if ($facet->showAboveResults == 1){
-					$facetName = $facet->facetName;
-					if ($solrScope){
-						if ($facet->facetName == 'availability_toggle'){
-							$facetName = 'availability_toggle_' . $solrScope;
-						}else if ($facet->facetName == 'format_category'){
-							$facetName = 'format_category_' . $solrScope;
-						}else if ($facet->facetName == 'format'){
-							$facetName = 'format_' . $solrScope;
-						}
-					}
-					$this->facets[$facetName] = $facet->displayName;
-					$this->facetSettings[$facetName] = $facet;
-				}
-			}
-		}
+		if ($this->searchObject instanceof  SearchObject_GroupedWorkSearcher) {
+            $searchLibrary = Library::getActiveLibrary();
+            global $locationSingleton;
+            $searchLocation = $locationSingleton->getActiveLocation();
+            $hasSearchLibraryFacets = ($searchLibrary != null && (count($searchLibrary->facets) > 0));
+            $hasSearchLocationFacets = ($searchLocation != null && (count($searchLocation->facets) > 0));
+            if ($hasSearchLocationFacets) {
+                $facets = $searchLocation->facets;
+            } elseif ($hasSearchLibraryFacets) {
+                $facets = $searchLibrary->facets;
+            } else {
+                $facets = Library::getDefaultFacets();
+            }
+            global $solrScope;
+            foreach ($facets as $facet) {
+                if ($facet->showAboveResults == 1) {
+                    $facetName = $facet->facetName;
+                    if ($solrScope) {
+                        if ($facet->facetName == 'availability_toggle') {
+                            $facetName = 'availability_toggle_' . $solrScope;
+                        } else if ($facet->facetName == 'format_category') {
+                            $facetName = 'format_category_' . $solrScope;
+                        } else if ($facet->facetName == 'format') {
+                            $facetName = 'format_' . $solrScope;
+                        }
+                    }
+                    $this->facets[$facetName] = $facet->displayName;
+                    $this->facetSettings[$facetName] = $facet;
+                }
+            }
+        }else{
+            $this->facets = array();
+        }
 	}
 
 	/* init
