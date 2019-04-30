@@ -846,7 +846,6 @@ class Koha extends AbstractIlsDriver {
 				$curHold['status'] = "Pending";
 				$curHold['canFreeze'] = true;
 			}
-			$curHold['canFreeze'] = false;
 			$curHold['cancelId'] = $curRow['reserve_id'];
 
 			if ($bibId){
@@ -1018,17 +1017,16 @@ class Koha extends AbstractIlsDriver {
 
         $allFeesRS = mysqli_query($this->dbConnection, $query);
 
-        $fines = array();
+        $fines = [];
         if ($allFeesRS->num_rows > 0) {
             while ($allFeesRow = $allFeesRS->fetch_assoc()) {
-                //$feeId = $allFeesRow['accountlines_id'];
-                $curFine = array(
+                $curFine = [
                     'date' => $allFeesRow['date'],
                     'reason' => $allFeesRow['accounttype'],
                     'message' => $allFeesRow['description'],
                     'amount' => StringUtils::money_format('%.2n', $allFeesRow['amount']),
                     'amountOutstanding' => StringUtils::money_format('%.2n', $allFeesRow['amountoutstanding']),
-                );
+                ];
                 $fines[] = $curFine;
             }
         }
@@ -1069,11 +1067,43 @@ class Koha extends AbstractIlsDriver {
 	}
 
 	function freezeHold($patron, $recordId, $itemToFreezeId, $dateToReactivate) {
-		return $this->updateHoldDetailed($patron, 'update', null, $itemToFreezeId, '', 'on');
+        $result = [
+            'title' => '',
+            'success' => false,
+            'message' => 'Unable to ' . translate('freeze') .' your hold.'
+        ];
+        $apiUrl = $this->getWebServiceUrl() . "/api/v1/contrib/pika/holds/{$itemToFreezeId}/suspend/";
+        $response = $this->curlWrapper->curlPostPage($apiUrl, '');
+        if(!$response) {
+            return $result;
+        }
+        $hold_response = json_decode($response, false);
+        if ($hold_response->suspended && $hold_response->suspended == true) {
+            $result['message'] = 'Your hold was ' . translate('frozen') .' successfully.';
+            $result['success'] = true;
+            return $result;
+        }
+        return $result;
 	}
 
 	function thawHold($patron, $recordId, $itemToThawId) {
-		return $this->updateHoldDetailed($patron, 'update', null, $itemToThawId, '', 'off');
+        $result = [
+            'title' => '',
+            'success' => false,
+            'message' => 'Unable to ' . translate('thaw') . ' your hold.'
+        ];
+        $apiUrl = $this->getWebServiceUrl() . "/api/v1/contrib/pika/holds/{$itemToThawId}/resume/";
+        $response = $this->curlWrapper->curlPostPage($apiUrl, '');
+        if(!$response) {
+            return $result;
+        }
+        $hold_response = json_decode($response, false);
+        if ($hold_response->resumeed && $hold_response->resumeed == true) {
+            $result['message'] = 'Your hold was ' . translate('thawed') .' successfully.';
+            $result['success'] = true;
+            return $result;
+        }
+        return $result;
 	}
 
 	function changeHoldPickupLocation($patron, $recordId, $itemToUpdateId, $newPickupLocation) {
