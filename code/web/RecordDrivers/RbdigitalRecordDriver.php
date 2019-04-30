@@ -414,5 +414,13 @@ class RbdigitalRecordDriver extends GroupedWorkSubDriver {
         $interface->assign('subjects', $subjects);
     }
 
-
+    /**
+     * @param User $patron
+     * @return string mixed
+     */
+    public function getAccessOnlineLinkUrl($patron)
+    {
+        global $configArray;
+        return $configArray['Site']['url'] . '/Rbdigital/' . $this->id . '/AccessOnline?patronId=' . $patron->id;
+    }
 }

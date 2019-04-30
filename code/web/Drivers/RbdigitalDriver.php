@@ -4,6 +4,7 @@ require_once ROOT_DIR . '/Drivers/AbstractEContentDriver.php';
 class RbdigitalDriver extends AbstractEContentDriver
 {
     private $webServiceURL;
+    private $userInterfaceURL;
     private $apiToken;
     private $libraryId;
 
@@ -14,6 +15,7 @@ class RbdigitalDriver extends AbstractEContentDriver
         //TODO: migrate these settings to the database
         global $configArray;
         $this->webServiceURL = $configArray['Rbdigital']['url'];
+        $this->userInterfaceURL = $configArray['Rbdigital']['userInterfaceUrl'];
         $this->apiToken = $configArray['Rbdigital']['apiToken'];
         $this->libraryId = $configArray['Rbdigital']['libraryId'];
 
@@ -82,6 +84,7 @@ class RbdigitalDriver extends AbstractEContentDriver
                 if (strlen($checkout['downloadUrl']) == 0){
                     $checkout['output'] = $patronCheckout->output;
                 }
+                $checkout['accessOnlineUrl'] = '';
 
                 if ($checkout['id'] && strlen($checkout['id']) > 0){
                     require_once ROOT_DIR . '/RecordDrivers/RbdigitalRecordDriver.php';
@@ -95,6 +98,7 @@ class RbdigitalDriver extends AbstractEContentDriver
                         $checkout['title']         = $recordDriver->getTitle();
                         $curTitle['title_sort']    = $recordDriver->getTitle();
                         $checkout['linkUrl']       = $recordDriver->getLinkUrl();
+                        $checkout['accessOnlineUrl'] = $recordDriver->getAccessOnlineLinkUrl($patron);
                     }else{
                         $checkout['coverUrl'] = "";
                         $checkout['groupedWorkId'] = "";
@@ -476,7 +480,7 @@ class RbdigitalDriver extends AbstractEContentDriver
      */
     public function getRbdigitalId(User $user)
     {
-        if (!empty($user->rbdigitalId) && $user->rbdigitalId != -1){
+        if (!empty($user->rbdigitalId) && $user->rbdigitalId != -1 && !isset($_REQUEST['reload'])){
             return $user->rbdigitalId;
         } else {
             //Check to see if we should do a lookup.  Check no more than every 15 minutes
@@ -518,6 +522,58 @@ class RbdigitalDriver extends AbstractEContentDriver
     }
 
     public function registerAccount($user){
+
+    }
+
+    public function redirectToRbdigital(User $patron, RbdigitalRecordDriver $recordDriver)
+    {
+        header('Location:' . $this->userInterfaceURL . '/book/' . $recordDriver->getUniqueID());
+        die();
+        $result = ['success' => false, 'message' => 'Unknown error'];
+        $rbdigitalId = $this->getRbdigitalId($patron);
+        if ($rbdigitalId == false) {
+            $result['message'] = 'Sorry, you are not registered with Rbdigital.  You will need to create an account there before continuing.';
+        } else {
+            //Get the link to redirect to with the proper bearer information
+            /*
+             * POST to api.rbdigital.com/v1/tokens/
+                with values of…
+                libraryId
+                UserName
+                Password
+
+                You should get a bearer token in response along the lines of...
+                {"bearer": "5cc2058bd2b76b28943de9cf","result": true}
+
+                …and should then be able to set an authorization header using…
+                bearer 5cc2063fd2b76b28943deb32
+             */
+            $tokenUrl = $this->webServiceURL . '/v1/tokens/';
+            $userData = [
+                'UserName' => $rbdigitalId,
+                'Password' => $_REQUEST['password'],
+                'libraryId' => $this->libraryId,
+            ];
+            $rawResponse = $this->curlWrapper->curlPostPage($tokenUrl, json_encode($userData));
+            $response = json_decode($rawResponse);
+
+            if ($response == false){
+                $result['message'] = "Invalid information returned from API, please retry your hold after a few minutes.";
+                global $logger;
+                $logger->log("Invalid information from rbdigital api\r\n$tokenUrl\r\n$rawResponse", Logger::LOG_ERROR);
+                $logger->log(print_r($this->curlWrapper->getHeaders(), true), Logger::LOG_ERROR);
+                $curl_info = curl_getinfo($this->curlWrapper->curl_connection);
+                $logger->log(print_r($curl_info, true), Logger::LOG_ERROR);
+            }else{
+                //We should get back a bearer token
+                if ($response->result == true) {
+                    $bearerToken = $response->bearer;
+                }else{
+                    $result['message'] = "Did not get a bearer token from the API";
+                }
+            }
+        }
+        return $result;
 
     }
 }

@@ -8,7 +8,6 @@ class Rbdigital_Home extends Action{
 
 	function launch(){
 		global $interface;
-		global $configArray;
 
 		if (isset($_REQUEST['searchId'])){
 			$_SESSION['searchId'] = $_REQUEST['searchId'];
@@ -69,7 +68,7 @@ class Rbdigital_Home extends Action{
 
 
 	/**
-	 * @param OverDriveRecordDriver $recordDriver
+	 * @param GroupedWorkSubDriver $recordDriver
 	 */
 	function loadCitations($recordDriver){
 		global $interface;

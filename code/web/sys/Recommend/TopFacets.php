@@ -24,7 +24,6 @@ class TopFacets implements RecommendationInterface
 
 		// Parse the additional parameters:
 		$params = explode(':', $params);
-		$iniFile = isset($params[1]) ? $params[1] : 'facets';
 
 		// Load the desired facet information:
 		if ($this->searchObject instanceof  SearchObject_GroupedWorkSearcher) {
