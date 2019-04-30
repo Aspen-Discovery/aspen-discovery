@@ -124,4 +124,9 @@ abstract class AbstractIlsDriver extends AbstractDriver
      * @return mixed
      */
     public abstract function renewCheckout($patron, $recordId, $itemId = null, $itemIndex = null);
+
+    public function showOutstandingFines()
+    {
+        return false;
+    }
 }

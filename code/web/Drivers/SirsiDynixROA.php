@@ -1860,5 +1860,8 @@ abstract class SirsiDynixROA extends HorizonAPI
 		return $updateErrors;
 	}
 
-
+    public function showOutstandingFines()
+    {
+        return true;
+    }
 }

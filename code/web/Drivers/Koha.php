@@ -1006,38 +1006,32 @@ class Koha extends AbstractIlsDriver {
 	 * @param bool $includeMessages
 	 * @return array
 	 */
-	public function getMyFines($patron, $includeMessages = false){
+	public function getMyFines($patron, $includeMessages = false)
+    {
+        require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
 
+        $this->initDatabaseConnection();
 
-		$this->initDatabaseConnection();
-
-		//Get a list of outstanding fees
+        //Get a list of outstanding fees
         /** @noinspection SqlResolve */
-		$query = "SELECT * FROM fees JOIN fee_transactions AS ft on(id = fee_id) WHERE borrowernumber = {$patron->username} and accounttype in (select accounttype from accounttypes where class='fee' or class='invoice') ";
+        $query = "SELECT * FROM accountlines WHERE borrowernumber = {$patron->username} and amountoutstanding > 0 ORDER BY date DESC";
 
-		$allFeesRS = mysqli_query($this->dbConnection, $query);
+        $allFeesRS = mysqli_query($this->dbConnection, $query);
 
-		$fines = array();
-		while ($allFeesRow = $allFeesRS->fetch_assoc()){
-			$feeId = $allFeesRow['id'];
-            /** @noinspection SqlResolve */
-			$query2 = "SELECT sum(amount) as amountOutstanding from fees LEFT JOIN fee_transactions on (fees.id=fee_transactions.fee_id) where fees.id = $feeId";
-
-			$outstandingFeesRS = mysqli_query($this->dbConnection, $query2);
-			$outstandingFeesRow = $outstandingFeesRS->fetch_assoc();
-			$amountOutstanding = $outstandingFeesRow['amountOutstanding'];
-			if ($amountOutstanding > 0){
-				$curFine = array(
-					'date' => $allFeesRow['timestamp'],
-					'reason' => $allFeesRow['accounttype'],
-					'message' => $allFeesRow['description'],
-					'amount' => $allFeesRow['amount'],
-					'amountOutstanding' => $amountOutstanding,
-				);
-				$fines[] = $curFine;
-			}
-			$outstandingFeesRS->close();
-		}
+        $fines = array();
+        if ($allFeesRS->num_rows > 0) {
+            while ($allFeesRow = $allFeesRS->fetch_assoc()) {
+                //$feeId = $allFeesRow['accountlines_id'];
+                $curFine = array(
+                    'date' => $allFeesRow['date'],
+                    'reason' => $allFeesRow['accounttype'],
+                    'message' => $allFeesRow['description'],
+                    'amount' => StringUtils::money_format('%.2n', $allFeesRow['amount']),
+                    'amountOutstanding' => StringUtils::money_format('%.2n', $allFeesRow['amountoutstanding']),
+                );
+                $fines[] = $curFine;
+            }
+        }
 		$allFeesRS->close();
 
 		return $fines;
@@ -1060,22 +1054,11 @@ class Koha extends AbstractIlsDriver {
 		$amountOutstanding = 0;
 		$this->initDatabaseConnection();
         /** @noinspection SqlResolve */
-		$amountOutstandingRS = mysqli_query($this->dbConnection, "SELECT SUM(amount) FROM fees LEFT JOIN fee_transactions on(fees.id = fee_transactions.fee_id) where fees.borrowernumber = {$patron->username}");
+		$amountOutstandingRS = mysqli_query($this->dbConnection, "SELECT SUM(amountoutstanding) FROM accountlines where borrowernumber = {$patron->username}");
 		if ($amountOutstandingRS){
 			$amountOutstanding = $amountOutstandingRS->fetch_array();
 			$amountOutstanding = $amountOutstanding[0];
 			$amountOutstandingRS->close();
-		}
-
-        /** @noinspection SqlResolve */
-		$creditRS = mysqli_query($this->dbConnection, "SELECT SUM(amount) FROM payments LEFT JOIN fee_transactions on(payments.id = fee_transactions.payment_id) where payments.borrowernumber = ? and fee_id is null" );
-		if ($creditRS){
-			$credit = $creditRS->fetch_array();
-			$credit = $credit[0];
-			if ($credit != null){
-				$amountOutstanding += $credit;
-			}
-			$creditRS->close();
 		}
 
 		return $amountOutstanding ;
@@ -1096,4 +1079,9 @@ class Koha extends AbstractIlsDriver {
 	function changeHoldPickupLocation($patron, $recordId, $itemToUpdateId, $newPickupLocation) {
 		return $this->updateHoldDetailed($patron, 'update', null, $itemToUpdateId, $newPickupLocation, 'off');
 	}
+
+    public function showOutstandingFines()
+    {
+        return true;
+    }
 }

@@ -812,4 +812,9 @@ class CatalogConnection
             return false;
         }
     }
+
+    function showOutstandingFines()
+    {
+        return $this->driver->showOutstandingFines();
+    }
 }
