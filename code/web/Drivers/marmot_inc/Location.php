@@ -557,7 +557,7 @@ class Location extends DataObject
 	 * Returns the active location to use when doing search scoping, etc.
 	 * This does not include the IP address
 	 *
-	 * @return Location
+	 * @return Location|string
 	 */
 	function getActiveLocation(){
 		if (Location::$activeLocation != 'unset') {
