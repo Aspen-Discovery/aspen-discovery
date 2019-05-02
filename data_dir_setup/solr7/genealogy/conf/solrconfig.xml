@@ -1037,8 +1037,6 @@
       <str name="field">name_suggestions</str>
       <str name="suggestAnalyzerFieldType">textSuggest</str>
       <str name="unicodeAware">true</str>
-      <str name="buildOnStartup">true</str>
-      <str name="buildOnCommit">true</str>
     </lst>
     <lst name="suggester">
       <str name="name">infix_name_suggestions</str>
@@ -1047,8 +1045,6 @@
       <str name="dictionaryImpl">DocumentDictionaryFactory</str>
       <str name="field">name_suggestions</str>
       <str name="suggestAnalyzerFieldType">textSuggest</str>
-      <str name="buildOnStartup">true</str>
-      <str name="buildOnCommit">true</str>
     </lst>
     <lst name="suggester">
       <str name="name">keyword_suggestions</str>
@@ -1057,8 +1053,6 @@
       <str name="field">keyword_suggestions</str>
       <str name="suggestAnalyzerFieldType">textSuggest</str>
       <str name="unicodeAware">true</str>
-      <str name="buildOnStartup">true</str>
-      <str name="buildOnCommit">true</str>
     </lst>
     <lst name="suggester">
       <str name="name">infix_keyword_suggestions</str>
@@ -1067,8 +1061,6 @@
       <str name="dictionaryImpl">DocumentDictionaryFactory</str>
       <str name="field">keyword_suggestions</str>
       <str name="suggestAnalyzerFieldType">textSuggest</str>
-      <str name="buildOnStartup">true</str>
-      <str name="buildOnCommit">true</str>
     </lst>
   </searchComponent>
 

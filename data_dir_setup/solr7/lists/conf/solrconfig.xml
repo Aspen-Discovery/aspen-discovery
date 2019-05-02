@@ -1061,8 +1061,6 @@
       <str name="weightField">popularity</str>
       <str name="suggestAnalyzerFieldType">textSuggest</str>
       <str name="unicodeAware">true</str>
-      <str name="buildOnStartup">true</str>
-      <str name="buildOnCommit">true</str>
     </lst>
     <lst name="suggester">
       <str name="name">infix_title_suggestions</str>
@@ -1072,8 +1070,6 @@
       <str name="field">title_suggestions</str>
       <str name="weightField">popularity</str>
       <str name="suggestAnalyzerFieldType">textSuggest</str>
-      <str name="buildOnStartup">true</str>
-      <str name="buildOnCommit">true</str>
     </lst>
     <lst name="suggester">
       <str name="name">author_suggestions</str>
@@ -1083,8 +1079,6 @@
       <str name="weightField">popularity</str>
       <str name="suggestAnalyzerFieldType">textSuggest</str>
       <str name="unicodeAware">true</str>
-      <str name="buildOnStartup">true</str>
-      <str name="buildOnCommit">true</str>
     </lst>
     <lst name="suggester">
       <str name="name">infix_author_suggestions</str>
@@ -1094,8 +1088,6 @@
       <str name="field">author_suggestions</str>
       <str name="weightField">popularity</str>
       <str name="suggestAnalyzerFieldType">textSuggest</str>
-      <str name="buildOnStartup">true</str>
-      <str name="buildOnCommit">true</str>
     </lst>
     <lst name="suggester">
       <str name="name">keyword_suggestions</str>
@@ -1105,8 +1097,6 @@
       <str name="weightField">popularity</str>
       <str name="suggestAnalyzerFieldType">textSuggest</str>
       <str name="unicodeAware">true</str>
-      <str name="buildOnStartup">true</str>
-      <str name="buildOnCommit">true</str>
     </lst>
     <lst name="suggester">
       <str name="name">infix_keyword_suggestions</str>
@@ -1116,8 +1106,6 @@
       <str name="field">subject_suggestions</str>
       <str name="weightField">popularity</str>
       <str name="suggestAnalyzerFieldType">textSuggest</str>
-      <str name="buildOnStartup">true</str>
-      <str name="buildOnCommit">true</str>
     </lst>
   </searchComponent>
 
