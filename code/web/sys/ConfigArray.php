@@ -292,12 +292,12 @@ function updateConfigForScoping($configArray) {
 	//Load the library system information
 	global $library;
 	global $locationSingleton;
-//	if (isset($_SESSION['library']) && isset($_SESSION['location']) && !isset($_REQUEST['reload'])) {
-//        $library = $_SESSION['library'];
-//        $locationSingleton = $_SESSION['library'];
-//        $timer->logTime('got library and location from session');
-//    }
-	if (isset($_SERVER['active_library'])){
+	if (isset($_SESSION['library']) && isset($_SESSION['location']) && !isset($_REQUEST['reload'])) {
+        $library = $_SESSION['library'];
+        $locationSingleton = $_SESSION['library'];
+        $timer->logTime('got library and location from session');
+    }
+	if ($library == null && isset($_SERVER['active_library'])){
 	    //echo("Getting active library from server variable " . $_SERVER['active_library']);
         $Library = new Library();
         $Library->subdomain = $_SERVER['active_library'];
