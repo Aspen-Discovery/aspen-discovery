@@ -36,7 +36,7 @@
 @reboot sleep 290 && cd /usr/local/aspen-discovery/code/overdrive_api_extract; java -jar overdrive_extract.jar basinlibraries.production continuous
 @reboot sleep 300 && cd /usr/local/aspen-discovery/code/rbdigital_export; java -jar rbdigital_export.jar basinlibraries.production continuous
 @reboot sleep 310 && cd /usr/local/aspen-discovery/code/user_list_indexer; java -jar user_list_indexer.jar basinlibraries.production continuous
-5 # * * * php /usr/local/aspen-discovery/code/web/cron/updateSuggesters.php basinlibraries.production
+5 * * * * php /usr/local/aspen-discovery/code/web/cron/updateSuggesters.php basinlibraries.production
 
 ########################################################
 # Regular extracts that don't need to run continuously #

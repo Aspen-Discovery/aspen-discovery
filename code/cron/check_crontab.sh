@@ -13,7 +13,7 @@ if [ $# = 1 ];then
    echo "Please reconcile any differences that should be in the settings file before installing the new cronttab."
    echo ""
    echo "Command to install the new crontab: "
-   echo "crontab < /usr/local/aspen-discovery/sites/${SERVER}/conf/crontab_settings.txt"
+   echo "sudo crontab < /usr/local/aspen-discovery/sites/${SERVER}/conf/crontab_settings.txt"
    exit 0
 else
   echo ""
