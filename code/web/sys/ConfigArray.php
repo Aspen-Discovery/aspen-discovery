@@ -289,26 +289,15 @@ function updateConfigForScoping($configArray) {
 
 	$timer->logTime('found ' . count($subdomainsToTest) . ' subdomains to test');
 
-    echo("Loading global library");
-    echo("Active Library is: " . $_SERVER['active_library']);
-
 	//Load the library system information
 	global $library;
 	global $locationSingleton;
-	if (isset($_SESSION['library']) && isset($_SESSION['location'])) {
+	if (isset($_SESSION['library']) && isset($_SESSION['location']) && !isset($_REQUEST['reload'])) {
         $library = $_SESSION['library'];
         $locationSingleton = $_SESSION['library'];
         $timer->logTime('got library and location from session');
-    }else if (count($subdomainsToTest) == 0) {
-        $Library = new Library();
-        $Library->isDefault = 1;
-        $Library->find();
-        if ($Library->N == 1) {
-            $Library->fetch();
-            $library = $Library;
-        }
-        //Next check for an active_library server environment variable
-    }elseif (isset($_SERVER['active_library'])){
+    }
+	if ($library == null && isset($_SERVER['active_library'])){
         $Library = new Library();
         $Library->subdomain = $_SERVER['active_library'];
         $Library->find($_SERVER['active_library']);
@@ -317,66 +306,79 @@ function updateConfigForScoping($configArray) {
             $library = $Library;
             $timer->logTime("found the library based on active_library server variable");
         }
-	}else {
-		for ($i = 0; $i < count($subdomainsToTest); $i++){
-			$subdomain = $subdomainsToTest[$i];
-			$timer->logTime("testing subdomain $i $subdomain");
-			$Library = new Library();
-			$timer->logTime("created new library object");
-			$Library->subdomain = $subdomain;
-			$Library->find();
-			$timer->logTime("searched for library by subdomain $subdomain");
+    }
+	if ($library == null){
+        if (count($subdomainsToTest) == 0) {
+            $Library = new Library();
+            $Library->isDefault = 1;
+            $Library->find();
+            if ($Library->N == 1) {
+                $Library->fetch();
+                $library = $Library;
+            }
+            //Next check for an active_library server environment variable
+        }else {
+            for ($i = 0; $i < count($subdomainsToTest); $i++){
+                $subdomain = $subdomainsToTest[$i];
+                $timer->logTime("testing subdomain $i $subdomain");
+                $Library = new Library();
+                $timer->logTime("created new library object");
+                $Library->subdomain = $subdomain;
+                $Library->find();
+                $timer->logTime("searched for library by subdomain $subdomain");
 
-			if ($Library->N == 1) {
-				$Library->fetch();
-				//Make the library information global so we can work with it later.
-				$library = $Library;
-				$timer->logTime("found the library based on subdomain");
-				break;
-			} else {
-				//The subdomain can also indicate a location.
-				$Location = new Location();
-				$Location->whereAdd("code = '$subdomain'");
-				$Location->whereAdd("subdomain = '$subdomain'", 'OR');
-				$Location->find();
-				if ($Location->N == 1) {
-					$Location->fetch();
-					//We found a location for the subdomain, get the library.
-					/** @var Library $librarySingleton */
-					global $librarySingleton;
-					$library = $librarySingleton->getLibraryForLocation($Location->locationId);
-					$locationSingleton->setActiveLocation(clone $Location);
-					$timer->logTime("found the location and library based on subdomain");
-					break;
-				} else {
-					//Check to see if there is only one library in the system
-					$Library = new Library();
-					$Library->find();
-					if ($Library->N == 1) {
-						$Library->fetch();
-						$library = $Library;
-						$timer->logTime("there is only one library for this install");
-						break;
-					} else {
-						//If we are on the last subdomain to test, grab the default.
-						if ($i == count($subdomainsToTest) - 1){
-							//Get the default library
-							$Library = new Library();
-							$Library->isDefault = 1;
-							$Library->find();
-							if ($Library->N == 1) {
-								$Library->fetch();
-								$library = $Library;
-								$timer->logTime("found the library based on the default");
-							} else {
-								echo("Could not determine the correct library to use for this install");
-							}
-						}
-					}
-				}
-			}
-		}
-	}
+                if ($Library->N == 1) {
+                    $Library->fetch();
+                    //Make the library information global so we can work with it later.
+                    $library = $Library;
+                    $timer->logTime("found the library based on subdomain");
+                    break;
+                } else {
+                    //The subdomain can also indicate a location.
+                    $Location = new Location();
+                    $Location->whereAdd("code = '$subdomain'");
+                    $Location->whereAdd("subdomain = '$subdomain'", 'OR');
+                    $Location->find();
+                    if ($Location->N == 1) {
+                        $Location->fetch();
+                        //We found a location for the subdomain, get the library.
+                        /** @var Library $librarySingleton */
+                        global $librarySingleton;
+                        $library = $librarySingleton->getLibraryForLocation($Location->locationId);
+                        $locationSingleton->setActiveLocation(clone $Location);
+                        $timer->logTime("found the location and library based on subdomain");
+                        break;
+                    } else {
+                        //Check to see if there is only one library in the system
+                        $Library = new Library();
+                        $Library->find();
+                        if ($Library->N == 1) {
+                            $Library->fetch();
+                            $library = $Library;
+                            $timer->logTime("there is only one library for this install");
+                            break;
+                        } else {
+                            //If we are on the last subdomain to test, grab the default.
+                            if ($i == count($subdomainsToTest) - 1){
+                                //Get the default library
+                                $Library = new Library();
+                                $Library->isDefault = 1;
+                                $Library->find();
+                                if ($Library->N == 1) {
+                                    $Library->fetch();
+                                    $library = $Library;
+                                    $timer->logTime("found the library based on the default");
+                                } else {
+                                    echo("Could not determine the correct library to use for this install");
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
 	$timer->logTime('found library and location');
 	if ($library == null) {
 	    echo("Could not find the active library, please review configuration settings");
