@@ -9,17 +9,6 @@
 		{/if}
 	{else}
 		{if count($summary) > 0}
-			{*<div class="itemSummary row">
-				<div class="col-xs-2 nobreak">
-					<strong>Available</strong>
-				</div>
-				<div class="col-xs-6">
-					<strong>Location</strong>
-				</div>
-				<div class="col-xs-4">
-					<strong>Call Number</strong>
-				</div>
-			</div>*}
 			{assign var=numDefaultItems value="0"}
 			{assign var=numRowsShown value="0"}
 			{foreach from=$summary item="item"}

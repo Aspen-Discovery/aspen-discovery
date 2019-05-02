@@ -44,7 +44,7 @@
 
 					{* Determine if there were hidden Formats for this entry *}
 					{foreach from=$relatedManifestations item=relatedManifestation}
-					{if $relatedManifestation.hideByDefault}
+					{if $relatedManifestation->isHideByDefault()}
 						{assign var=hasHiddenFormats value=true}
 					{/if}
 					{/foreach}

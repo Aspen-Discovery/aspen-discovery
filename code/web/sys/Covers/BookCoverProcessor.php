@@ -905,69 +905,69 @@ class BookCoverProcessor{
 			//Have not found a grouped work based on isbn or upc, check based on related records
 			$relatedRecords = $this->groupedWork->getRelatedRecords(true);
 			foreach ($relatedRecords as $relatedRecord){
-				if (strcasecmp($relatedRecord['source'], 'OverDrive') == 0){
-					if ($this->getOverDriveCover($relatedRecord['id'])){
+				if (strcasecmp($relatedRecord->source, 'OverDrive') == 0){
+					if ($this->getOverDriveCover($relatedRecord->id)){
 						return true;
 					}
-				}elseif (strcasecmp($relatedRecord['source'], 'Hoopla') == 0){
-					if ($this->getHooplaCover($relatedRecord['id'])){
+				}elseif (strcasecmp($relatedRecord->source, 'Hoopla') == 0){
+					if ($this->getHooplaCover($relatedRecord->id)){
 						return true;
 					}
-				}elseif (strcasecmp($relatedRecord['source'], 'Colorado State Government Documents') == 0){
+				}elseif (strcasecmp($relatedRecord->source, 'Colorado State Government Documents') == 0){
 					if ($this->getColoradoGovDocCover()){
 						return true;
 					}
-				}elseif (strcasecmp($relatedRecord['source'], 'Classroom Video on Demand') == 0){
-					if ($this->getClassroomVideoOnDemandCover($relatedRecord['id'])){
+				}elseif (strcasecmp($relatedRecord->source, 'Classroom Video on Demand') == 0){
+					if ($this->getClassroomVideoOnDemandCover($relatedRecord->id)){
 						return true;
 					}
-				}elseif (stripos($relatedRecord['source'], 'proquest') !== false || stripos($relatedRecord['source'], 'ebrary') !== false){
-					if ($this->getEbraryCover($relatedRecord['id'])){
+				}elseif (stripos($relatedRecord->source, 'proquest') !== false || stripos($relatedRecord->source, 'ebrary') !== false){
+					if ($this->getEbraryCover($relatedRecord->id)){
 						return true;
 					}
-				}elseif (stripos($relatedRecord['source'], 'films on demand') !== false){
-					if ($this->getFilmsOnDemandCover($relatedRecord['id'])){
+				}elseif (stripos($relatedRecord->source, 'films on demand') !== false){
+					if ($this->getFilmsOnDemandCover($relatedRecord->id)){
 						return true;
 					}
-				}elseif (stripos($relatedRecord['source'], 'kanopy') !== false){
-					if ($this->getSideLoadedCover($relatedRecord['id'])){
+				}elseif (stripos($relatedRecord->source, 'kanopy') !== false){
+					if ($this->getSideLoadedCover($relatedRecord->id)){
 						return true;
 					}
-				} elseif (stripos($relatedRecord['source'], 'bookflix') !== false){
-					if ($this->getSideLoadedCover($relatedRecord['id'])) {
+				} elseif (stripos($relatedRecord->source, 'bookflix') !== false){
+					if ($this->getSideLoadedCover($relatedRecord->id)) {
 						return true;
 					}
-				} elseif (stripos($relatedRecord['source'], 'boombox') !== false){
-					if ($this->getSideLoadedCover($relatedRecord['id'])) {
+				} elseif (stripos($relatedRecord->source, 'boombox') !== false){
+					if ($this->getSideLoadedCover($relatedRecord->id)) {
 						return true;
 					}
-				} elseif (stripos($relatedRecord['source'], 'biblioboard') !== false){
-					if ($this->getSideLoadedCover($relatedRecord['id'])) {
+				} elseif (stripos($relatedRecord->source, 'biblioboard') !== false){
+					if ($this->getSideLoadedCover($relatedRecord->id)) {
 						return true;
 					}
-				} elseif (stripos($relatedRecord['source'], 'lynda') !== false){
-					if ($this->getSideLoadedCover($relatedRecord['id'])) {
+				} elseif (stripos($relatedRecord->source, 'lynda') !== false){
+					if ($this->getSideLoadedCover($relatedRecord->id)) {
 						return true;
 					}
-				} elseif (stripos($relatedRecord['source'], 'Odilo') !== false){
-					if ($this->getSideLoadedCover($relatedRecord['id'])) {
+				} elseif (stripos($relatedRecord->source, 'Odilo') !== false){
+					if ($this->getSideLoadedCover($relatedRecord->id)) {
 						return true;
 					}
-				} elseif (stripos($relatedRecord['source'], 'cloud') !== false){
-					if ($this->getSideLoadedCover($relatedRecord['id'])) {
+				} elseif (stripos($relatedRecord->source, 'cloud') !== false){
+					if ($this->getSideLoadedCover($relatedRecord->id)) {
 						return true;
 					}
-				} elseif (stripos($relatedRecord['source'], 'zinio') !== false){
-					if ($this->getZinioCover($relatedRecord['id'])) {
+				} elseif (stripos($relatedRecord->source, 'zinio') !== false){
+					if ($this->getZinioCover($relatedRecord->id)) {
 						return true;
 					}
-                } elseif (stripos($relatedRecord['source'], 'rbdigital') !== false){
-                    if ($this->getRbdigitalCover($relatedRecord['id'])) {
+                } elseif (stripos($relatedRecord->source, 'rbdigital') !== false){
+                    if ($this->getRbdigitalCover($relatedRecord->id)) {
                         return true;
                     }
 				}else{
 					/** @var GroupedWorkSubDriver $driver */
-					$driver = $relatedRecord['driver'];
+					$driver = $relatedRecord->_driver;
 					//First check to see if there is a specific record defined in an 856 etc.
 					if (method_exists($driver, 'getMarcRecord') && $this->getCoverFromMarc($driver->getMarcRecord())){
 						return true;

@@ -1,7 +1,4 @@
 <?php
-/**
- * This class handles the display of Grouped Works within ASspen.
- */
 
 require_once ROOT_DIR . '/RecordDrivers/IndexRecordDriver.php';
 require_once ROOT_DIR . '/sys/File/MARC.php';
@@ -52,25 +49,25 @@ class GroupedWorkDriver extends IndexRecordDriver{
         $isFirst = true;
         foreach ($relatedRecords as $relatedRecord){
             if ($isFirst){
-                $summPublisher = $relatedRecord['publisher'];
-                $summPubDate = $relatedRecord['publicationDate'];
-                $summPhysicalDesc = $relatedRecord['physical'];
-                $summEdition = $relatedRecord['edition'];
-                $summLanguage = $relatedRecord['language'];
+                $summPublisher = $relatedRecord->publisher;
+                $summPubDate = $relatedRecord->publicationDate;
+                $summPhysicalDesc = $relatedRecord->physical;
+                $summEdition = $relatedRecord->edition;
+                $summLanguage = $relatedRecord->language;
             }else{
-                if ($summPublisher != $relatedRecord['publisher']){
+                if ($summPublisher != $relatedRecord->publisher){
                     $summPublisher = null;
                 }
-                if ($summPubDate != $relatedRecord['publicationDate']){
+                if ($summPubDate != $relatedRecord->publicationDate){
                     $summPubDate = null;
                 }
-                if ($summPhysicalDesc != $relatedRecord['physical']){
+                if ($summPhysicalDesc != $relatedRecord->physical){
                     $summPhysicalDesc = null;
                 }
-                if ($summEdition != $relatedRecord['edition']){
+                if ($summEdition != $relatedRecord->edition){
                     $summEdition = null;
                 }
-                if ($summLanguage != $relatedRecord['language']){
+                if ($summLanguage != $relatedRecord->language){
                     $summLanguage = null;
                 }
             }
@@ -86,12 +83,17 @@ class GroupedWorkDriver extends IndexRecordDriver{
         $interface->assign('summFountasPinnell', $this->getFountasPinnellLevel());
     }
 
+    /**
+     * @param Grouping_Record $a
+     * @param Grouping_Record $b
+     * @return int
+     */
     static function compareAvailabilityForRecords($a, $b){
-        $availableLocallyA = isset($a['availableLocally']) && $a['availableLocally'];
-        $availableLocallyB = isset($b['availableLocally']) && $b['availableLocally'];
+        $availableLocallyA = $a->getStatusInformation()->isAvailableLocally();
+        $availableLocallyB = $b->getStatusInformation()->isAvailableLocally();
         if (($availableLocallyA == $availableLocallyB)){
-            $availableA = isset($a['available']) && $a['available'] && $a['holdable'];
-            $availableB = isset($b['available']) && $b['available'] && $b['holdable'];
+            $availableA = $a->getStatusInformation()->isAvailable() && $a->isHoldable();
+            $availableB = $b->getStatusInformation()->isAvailable() && $b->isHoldable();
             if (($availableA == $availableB)){
                 return 0;
             }elseif ($availableA){
@@ -106,11 +108,17 @@ class GroupedWorkDriver extends IndexRecordDriver{
         }
     }
 
+    /**
+     * @param string $literaryForm
+     * @param Grouping_Record $a
+     * @param Grouping_Record $b
+     * @return int
+     */
     static function compareEditionsForRecords($literaryForm, $a, $b){
         //We only want to compare editions if the work is non-fiction
         if ($literaryForm == 'Non Fiction'){
-            $editionA = GroupedWorkDriver::normalizeEdition($a['edition']);
-            $editionB = GroupedWorkDriver::normalizeEdition($b['edition']);
+            $editionA = GroupedWorkDriver::normalizeEdition($a->edition);
+            $editionB = GroupedWorkDriver::normalizeEdition($b->edition);
             if ($editionA == $editionB){
                 return 0;
             }else if ($editionA > $editionB){
@@ -122,43 +130,53 @@ class GroupedWorkDriver extends IndexRecordDriver{
         return 0;
     }
 
+    /**
+     * @param Grouping_Record $a
+     * @param Grouping_Record $b
+     * @return int
+     */
     static function compareHoldability($a, $b){
-        if ($a['holdable'] == $b['holdable']){
+        if ($a->isHoldable() == $b->isHoldable()){
             return 0;
-        }else if ($a['holdable']){
+        }else if ($a->isHoldable()){
             return -1;
         }else{
             return 1;
         }
     }
 
+    /**
+     * @param Grouping_Record $a
+     * @param Grouping_Record $b
+     * @return int
+     */
     static function compareLanguagesForRecords($a, $b){
         $aHasEnglish = false;
-        if (is_array($a['language'])){
-            $languageA = strtolower(reset($a['language']));
-            foreach ($a['language'] as $language){
+        if (is_array($a->language)){
+            $languageA = strtolower(reset($a->language));
+            foreach ($a->language as $language){
                 if (strcasecmp('english', $language) == 0){
                     $aHasEnglish = true;
                     break;
                 }
             }
         }else{
-            $languageA = strtolower($a['language']);
+            $languageA = strtolower($a->language);
             if (strcasecmp('english', $languageA) == 0){
                 $aHasEnglish = true;
             }
         }
         $bHasEnglish = false;
-        if (is_array($b['language'])){
-            $languageB = strtolower(reset($b['language']));
-            foreach ($b['language'] as $language){
+        if (is_array($b->language)){
+            $languageB = strtolower(reset($b->language));
+            foreach ($b->language as $language){
                 if (strcasecmp('english', $language) == 0){
                     $bHasEnglish = true;
                     break;
                 }
             }
         }else{
-            $languageB = strtolower($b['language']);
+            $languageB = strtolower($b->language);
             if (strcasecmp('english', $languageB) == 0){
                 $bHasEnglish = true;
             }
@@ -176,38 +194,53 @@ class GroupedWorkDriver extends IndexRecordDriver{
         }
     }
 
+    /**
+     * @param Grouping_Record $a
+     * @param Grouping_Record $b
+     * @return int
+     */
     static function compareLocalAvailableItemsForRecords($a, $b){
-        if (($a['availableHere'] || $a['availableOnline']) && ($b['availableHere'] || $b['availableOnline'])){
-            if (($a['availableLocally'] || $a['availableOnline']) && ($b['availableLocally'] || $b['availableOnline'])){
+        if (($a->getStatusInformation()->isAvailableHere() || $a->getStatusInformation()->isAvailableOnline()) && ($b->getStatusInformation()->isAvailableHere() || $b->getStatusInformation()->isAvailableOnline())){
+            if (($a->getStatusInformation()->isAvailableLocally() || $a->getStatusInformation()->isAvailableOnline()) && ($b->getStatusInformation()->isAvailableLocally() || $b->getStatusInformation()->isAvailableOnline())){
                 return 0;
-            }elseif ($a['availableLocally'] || $a['availableOnline']){
+            }elseif ($a->getStatusInformation()->isAvailableLocally() || $a->getStatusInformation()->isAvailableOnline()){
                 return -1;
-            }elseif ($b['availableLocally'] || $b['availableOnline']){
+            }elseif ($b->getStatusInformation()->isAvailableLocally() || $b->getStatusInformation()->isAvailableOnline()){
                 return 1;
             }else{
                 return 0;
             }
-        }elseif ($a['availableHere'] || $a['availableOnline']){
+        }elseif ($a->getStatusInformation()->isAvailableHere() || $a->getStatusInformation()->isAvailableOnline()){
             return -1;
-        }elseif ($b['availableHere'] || $b['availableOnline']){
+        }elseif ($b->getStatusInformation()->isAvailableHere() || $b->getStatusInformation()->isAvailableOnline()){
             return 1;
         }else{
             return 0;
         }
     }
 
+    /**
+     * @param Grouping_Record $a
+     * @param Grouping_Record $b
+     * @return int
+     */
     static function compareLocalItemsForRecords($a, $b){
-        if ($a['hasLocalItem'] && $b['hasLocalItem']){
+        if ($a->hasLocalItem() && $b->hasLocalItem()){
             return 0;
-        }elseif ($a['hasLocalItem']){
+        }elseif ($a->hasLocalItem()){
             return -1;
-        }elseif ($b['hasLocalItem']){
+        }elseif ($b->hasLocalItem()){
             return 1;
         }else{
             return 0;
         }
     }
 
+    /**
+     * @param Grouping_Record $a
+     * @param Grouping_Record $b
+     * @return int
+     */
     function compareRelatedRecords($a, $b){
         //Get literary form to determine if we should compare editions
         $literaryForm = '';
@@ -219,8 +252,8 @@ class GroupedWorkDriver extends IndexRecordDriver{
             }
         }
         //First sort by format
-        $format1 = $a['format'];
-        $format2 = $b['format'];
+        $format1 = $a->format;
+        $format2 = $b->format;
         $formatComparison = strcasecmp($format1, $format2);
         //Make sure that book is the very first format always
         if ($formatComparison != 0){
@@ -250,16 +283,16 @@ class GroupedWorkDriver extends IndexRecordDriver{
                                 $localItemComparisonResult = GroupedWorkDriver::compareLocalItemsForRecords($a, $b);
                                 if ($localItemComparisonResult == 0) {
                                     //7) All else being equal, sort by hold ratio
-                                    if ($a['holdRatio'] == $b['holdRatio']) {
+                                    if ($a->getHoldRatio() == $b->getHoldRatio()) {
                                         //Hold Ratio is the same, last thing to check is the number of copies
-                                        if ($a['copies'] == $b['copies']) {
+                                        if ($a->getCopies() == $b->getCopies()) {
                                             return 0;
-                                        } elseif ($a['copies'] > $b['copies']) {
+                                        } elseif ($a->getCopies() > $b->getCopies()) {
                                             return -1;
                                         } else {
                                             return 1;
                                         }
-                                    } elseif ($a['holdRatio'] > $b['holdRatio']) {
+                                    } elseif ($a->getHoldRatio() > $b->getHoldRatio()) {
                                         return -1;
                                     } else {
                                         return 1;
@@ -599,11 +632,10 @@ class GroupedWorkDriver extends IndexRecordDriver{
      * @access  public
 
      * @param string $view The current view.
-     * @param boolean $useUnscopedHoldingsSummary Whether or not the result should show an unscoped holdings summary.
      *
      * @return  string              Name of Smarty template file to display.
      */
-    public function getCombinedResult($view = 'list', $useUnscopedHoldingsSummary = false) {
+    public function getCombinedResult($view = 'list') {
         if ($view == 'covers') { // Displaying Results as bookcover tiles
             return $this->getBrowseResult();
         }
@@ -615,7 +647,6 @@ class GroupedWorkDriver extends IndexRecordDriver{
         global $memoryWatcher;
 
         $interface->assign('displayingSearchResults', true);
-        $interface->assign('useUnscopedHoldingsSummary', $useUnscopedHoldingsSummary);
 
         $id = $this->getUniqueID();
         $timer->logTime("Starting to load search result for grouped work $id");
@@ -641,11 +672,7 @@ class GroupedWorkDriver extends IndexRecordDriver{
             $linkUrl .=  '?searchId=' . $interface->get_template_vars('searchId') . '&amp;recordIndex=' . $interface->get_template_vars('recordIndex') . '&amp;page='  . $interface->get_template_vars('page');
         }else{
             $linkUrl = '/GroupedWork/' . $id . '/Home?searchId=' . $interface->get_template_vars('searchId') . '&amp;recordIndex=' . $interface->get_template_vars('recordIndex') . '&amp;page='  . $interface->get_template_vars('page');
-            if ($useUnscopedHoldingsSummary){
-                $linkUrl .= '&amp;searchSource=marmot';
-            }else{
-                $linkUrl .= '&amp;searchSource=' . $interface->get_template_vars('searchSource');
-            }
+            $linkUrl .= '&amp;searchSource=' . $interface->get_template_vars('searchSource');
         }
 
         $interface->assign('summUrl', $linkUrl);
@@ -854,21 +881,21 @@ class GroupedWorkDriver extends IndexRecordDriver{
                 if ($interface->getVariable('showSimilarTitles')) {
                     $exploreMoreOptions['similarTitles'] = array(
                         'label' => 'Similar Titles From NoveList',
-                        'body' => '<div id="novelisttitlesPlaceholder"></div>',
+                        'body' => '<div id="novelistTitlesPlaceholder"></div>',
                         'hideByDefault' => true
                     );
                 }
                 if ($interface->getVariable('showSimilarAuthors')) {
                     $exploreMoreOptions['similarAuthors'] = array(
                         'label' => 'Similar Authors From NoveList',
-                        'body' => '<div id="novelistauthorsPlaceholder"></div>',
+                        'body' => '<div id="novelistAuthorsPlaceholder"></div>',
                         'hideByDefault' => true
                     );
                 }
                 if ($interface->getVariable('showSimilarTitles')) {
                     $exploreMoreOptions['similarSeries'] = array(
                         'label' => 'Similar Series From NoveList',
-                        'body' => '<div id="novelistseriesPlaceholder"></div>',
+                        'body' => '<div id="novelistSeriesPlaceholder"></div>',
                         'hideByDefault' => true
                     );
                 }
@@ -1104,7 +1131,7 @@ class GroupedWorkDriver extends IndexRecordDriver{
 
 		$interface->assign('recordDriver', $this);
 
-		return 'RecordDrivers/GroupedWork/listentry.tpl';
+		return 'RecordDrivers/GroupedWork/listEntry.tpl';
 	}
 
     public function getListWidgetTitle(){
@@ -1166,7 +1193,7 @@ class GroupedWorkDriver extends IndexRecordDriver{
             //Now that we know that we need more detailed information, load the related record.
             $relatedRecords = $this->getRelatedRecords(false);
             $onlyRecord = reset($relatedRecords);
-            $url = $onlyRecord['url'];
+            $url = $onlyRecord->getUrl();
         } else {
             $url = $this->getLinkUrl();
         }
@@ -1287,7 +1314,7 @@ class GroupedWorkDriver extends IndexRecordDriver{
      * The vast majority of record information is stored within the index.
      * This routine parses the information from the index and restructures it for use within the user interface.
      *
-     * @return array|null
+     * @return Grouping_Manifestation[]|null
      */
     public function getRelatedManifestations() {
         global $timer;
@@ -1297,108 +1324,14 @@ class GroupedWorkDriver extends IndexRecordDriver{
         $timer->logTime("Finished loading related records in getRelatedManifestations");
         $memoryWatcher->logMemory("Finished loading related records");
         //Group the records based on format
+        /** @var Grouping_Manifestation[] $relatedManifestations */
         $relatedManifestations = array();
+        require_once ROOT_DIR . '/sys/Grouping/Manifestation.php';
         foreach ($relatedRecords as $curRecord){
-            if (!array_key_exists($curRecord['format'], $relatedManifestations)){
-                $relatedManifestations[$curRecord['format']] = array(
-                    'format' => $curRecord['format'],
-                    'formatCategory' => $curRecord['formatCategory'],
-                    'copies' => 0,
-                    'availableCopies' => 0,
-                    'localCopies' => 0,
-                    'localAvailableCopies' => 0,
-                    'onOrderCopies' => 0,
-                    'numHolds' => 0,
-                    'available' => false,
-                    'hasLocalItem' => false,
-                    'isEContent' => false,
-                    'relatedRecords' => array(),
-                    'preferredEdition' => null,
-                    'statusMessage' => '',
-                    'itemLocations' => array(),
-                    'availableLocally' => false,
-                    'availableOnline' => false,
-                    'availableHere' => false,
-                    'inLibraryUseOnly' => false,
-                    'allLibraryUseOnly' => true,
-                    'hideByDefault' => false,
-                    'itemSummary' => array(),
-                    'itemSummaryLocal' => array(),
-                    'groupedStatus' => ''
-                );
-            }
-            if (isset($curRecord['availableLocally']) && $curRecord['availableLocally'] == true){
-                $relatedManifestations[$curRecord['format']]['availableLocally'] = true;
-            }
-            if (isset($curRecord['availableHere']) && $curRecord['availableHere'] == true){
-                $relatedManifestations[$curRecord['format']]['availableHere'] = true;
-            }
-            if ($curRecord['available'] && $curRecord['locationLabel'] === 'Online'){
-                $relatedManifestations[$curRecord['format']]['availableOnline'] = true;
-            }
-            if (isset($curRecord['availableOnline']) && $curRecord['availableOnline']){
-                $relatedManifestations[$curRecord['format']]['availableOnline'] = true;
-            }
-            if (isset($curRecord['isEContent']) && $curRecord['isEContent']){
-                $relatedManifestations[$curRecord['format']]['isEContent'] = true;
-            }
-            if (!$relatedManifestations[$curRecord['format']]['available'] && $curRecord['available']){
-                $relatedManifestations[$curRecord['format']]['available'] = $curRecord['available'];
-            }
-            if ($curRecord['inLibraryUseOnly']){
-                $relatedManifestations[$curRecord['format']]['inLibraryUseOnly'] = true;
-            }else{
-                $relatedManifestations[$curRecord['format']]['allLibraryUseOnly'] = false;
-            }
-            if (!$relatedManifestations[$curRecord['format']]['hasLocalItem'] && $curRecord['hasLocalItem']){
-                $relatedManifestations[$curRecord['format']]['hasLocalItem'] = $curRecord['hasLocalItem'];
-            }
-            if ($curRecord['shelfLocation']){
-                $relatedManifestations[$curRecord['format']]['shelfLocation'][$curRecord['shelfLocation']] = $curRecord['shelfLocation'];
-            }
-            if ($curRecord['callNumber']){
-                $relatedManifestations[$curRecord['format']]['callNumber'][$curRecord['callNumber']] = $curRecord['callNumber'];
-            }
-            $relatedManifestations[$curRecord['format']]['relatedRecords'][] = $curRecord;
-            $relatedManifestations[$curRecord['format']]['copies'] += $curRecord['copies'];
-            $relatedManifestations[$curRecord['format']]['availableCopies'] += $curRecord['availableCopies'];
-            if ($curRecord['hasLocalItem']){
-                $relatedManifestations[$curRecord['format']]['localCopies'] += (isset($curRecord['localCopies']) ? $curRecord['localCopies'] : 0);
-                $relatedManifestations[$curRecord['format']]['localAvailableCopies'] += (isset($curRecord['localAvailableCopies']) ? $curRecord['localAvailableCopies'] : 0);
-            }
-            if (isset($curRecord['itemSummary'])){
-                $relatedManifestations[$curRecord['format']]['itemSummary'] = $this->mergeItemSummary($relatedManifestations[$curRecord['format']]['itemSummary'], $curRecord['itemSummary']);
-            }
-            if ($curRecord['numHolds']){
-                $relatedManifestations[$curRecord['format']]['numHolds'] += $curRecord['numHolds'];
-            }
-            if (isset($curRecord['onOrderCopies'])){
-                $relatedManifestations[$curRecord['format']]['onOrderCopies'] += $curRecord['onOrderCopies'];
-            }
-            $statusRankings = array(
-                'currently unavailable' => 1,
-                'on order' => 2,
-                'coming soon' => 3,
-                'in processing' => 3.5,
-                'checked out' => 4,
-                'library use only' => 5,
-                'available online' => 6,
-                'in transit' => 6.5,
-                'on shelf' => 7
-            );
-            if (isset($curRecord['groupedStatus']) && $curRecord['groupedStatus'] != ''){
-                $groupedStatus = $relatedManifestations[$curRecord['format']]['groupedStatus'];
-
-                //Check to see if we have a better status here
-                if (array_key_exists(strtolower($curRecord['groupedStatus']), $statusRankings)){
-                    if ($groupedStatus == ''){
-                        $groupedStatus = $curRecord['groupedStatus'];
-                        //Check to see if we are getting a better status
-                    }elseif ($statusRankings[strtolower($curRecord['groupedStatus'])] > $statusRankings[strtolower($groupedStatus)]){
-                        $groupedStatus = $curRecord['groupedStatus'];
-                    }
-                    $relatedManifestations[$curRecord['format']]['groupedStatus'] = $groupedStatus;
-                }
+            if (!array_key_exists($curRecord->format, $relatedManifestations)){
+                $relatedManifestations[$curRecord->format] = new Grouping_Manifestation($curRecord);
+            }else {
+                $relatedManifestations[$curRecord->format]->addRecord($curRecord);
             }
         }
         $timer->logTime("Finished initial processing of related records");
@@ -1434,63 +1367,34 @@ class GroupedWorkDriver extends IndexRecordDriver{
         }elseif ($searchLibrary){
             $isSuperScope = !$searchLibrary->restrictSearchByLibrary;
         }
+        /**
+         * @var  $key
+         * @var Grouping_Manifestation $manifestation
+         */
         foreach ($relatedManifestations as $key => $manifestation) {
-            $manifestation['numRelatedRecords'] = count($manifestation['relatedRecords']);
-            if (count($manifestation['relatedRecords']) == 1) {
-                $firstRecord = reset($manifestation['relatedRecords']);
-                $manifestation['url'] = $firstRecord['url'];
-                $manifestation['actions'] = $firstRecord['actions'];
-            } else {
-                //Figure out what the preferred record is to place a hold on.  Since sorting has been done properly, this should always be the first
-                $bestRecord = reset($manifestation['relatedRecords']);
 
-                if ($manifestation['numRelatedRecords'] > 1 && array_key_exists($bestRecord['groupedStatus'], self::$statusRankings) && self::$statusRankings[ $bestRecord['groupedStatus'] ] <= 5) {
-                    // Check to set prompt for Alternate Edition for any grouped status equal to or less than that of "Checked Out"
-                    $promptForAlternateEdition = false;
-                    foreach ($manifestation['relatedRecords'] as $relatedRecord) {
-                        if ($relatedRecord['available'] == true && $relatedRecord['holdable'] == true) {
-                            $promptForAlternateEdition = true;
-                            unset($relatedRecord);
-                            break;
-                        }
-                    }
-                    if ($promptForAlternateEdition) {
-                        $alteredActions = array();
-                        foreach ($bestRecord['actions'] as $action) {
-                            $action['onclick'] = str_replace('Record.showPlaceHold', 'Record.showPlaceHoldEditions', $action['onclick']);
-                            $alteredActions[] = $action;
-                        }
-                        $manifestation['actions'] = $alteredActions;
-                        unset($action, $alteredActions);
-                    } else {
-                        $manifestation['actions'] = $bestRecord['actions'];
-                    }
-                } else {
-                    $manifestation['actions'] = $bestRecord['actions'];
-                }
-            }
-            if ($selectedFormat && $selectedFormat != $manifestation['format']) {
+            if ($selectedFormat && $selectedFormat != $manifestation->format) {
                 //Do a secondary check to see if we have a more detailed format in the facet
                 $detailedFormat = mapValue('format_by_detailed_format', $selectedFormat);
                 //Also check the reverse
-                $detailedFormat2 = mapValue('format_by_detailed_format', $manifestation['format']);
-                if ($manifestation['format'] != $detailedFormat && $detailedFormat2 != $selectedFormat) {
-                    $manifestation['hideByDefault'] = true;
+                $detailedFormat2 = mapValue('format_by_detailed_format', $manifestation->format);
+                if ($manifestation->format != $detailedFormat && $detailedFormat2 != $selectedFormat) {
+                    $manifestation->setHideByDefault(true);
                 }
             }
-            if ($selectedFormatCategory && $selectedFormatCategory != $manifestation['formatCategory']) {
-                if (($manifestation['format'] == 'eAudiobook') && ($selectedFormatCategory == 'eBook' || $selectedFormatCategory == 'Audio Books')) {
+            if ($selectedFormatCategory && $selectedFormatCategory != $manifestation->formatCategory) {
+                if (($manifestation->format == 'eAudiobook') && ($selectedFormatCategory == 'eBook' || $selectedFormatCategory == 'Audio Books')) {
                     //This is a special case where the format is in 2 categories
-                } else if (($manifestation['format'] == 'VOX Books') && ($selectedFormatCategory == 'Books' || $selectedFormatCategory == 'Audio Books')) {
+                } else if (($manifestation->format == 'VOX Books') && ($selectedFormatCategory == 'Books' || $selectedFormatCategory == 'Audio Books')) {
                     //This is another special case where the format is in 2 categories
                 } else {
-                    $manifestation['hideByDefault'] = true;
+                    $manifestation->setHideByDefault(true);
                 }
             }
-            if ($selectedAvailability == 'Available Online' && !($manifestation['availableOnline'])){
-                $manifestation['hideByDefault'] = true;
+            if ($selectedAvailability == 'Available Online' && !($manifestation->getStatusInformation()->isAvailableOnline())){
+                $manifestation->setHideByDefault(true);
             }elseif ($selectedAvailability == 'Available Now') {
-                if ($manifestation['availableOnline']) {
+                if ($manifestation->getStatusInformation()->isAvailableOnline()) {
                     $addOnline = true;
                     if ($searchLocation != null) {
                         $addOnline = $searchLocation->includeOnlineMaterialsInAvailableToggle;
@@ -1498,20 +1402,20 @@ class GroupedWorkDriver extends IndexRecordDriver{
                         $addOnline = $searchLibrary->includeOnlineMaterialsInAvailableToggle;
                     }
                     if (!$addOnline){
-                        $manifestation['hideByDefault'] = true;
+                        $manifestation->setHideByDefault(true);
                     }
-                }else if (!$manifestation['availableLocally'] && !$isSuperScope){
-                    $manifestation['hideByDefault'] = true;
+                }else if (!$manifestation->getStatusInformation()->isAvailableLocally() && !$isSuperScope){
+                    $manifestation->setHideByDefault(true);
                 }
-            }elseif($selectedAvailability == 'Entire Collection' && !$isSuperScope && (!$manifestation['hasLocalItem'] && !$manifestation['isEContent'])){
-                $manifestation['hideByDefault'] = true;
+            }elseif($selectedAvailability == 'Entire Collection' && !$isSuperScope && (!$manifestation->getStatusInformation()->hasLocalItem() && !$manifestation->isEContent())){
+                $manifestation->setHideByDefault(true);
             }
             if ($selectedDetailedAvailability){
                 $manifestationIsAvailable = false;
-                if ($manifestation['availableOnline']){
+                if ($manifestation->getStatusInformation()->isAvailableOnline()){
                     $manifestationIsAvailable = true;
-                }else if ($manifestation['available']){
-                    foreach ($manifestation['itemSummary'] as $itemSummary) {
+                }else if ($manifestation->getStatusInformation()->isAvailable()){
+                    foreach ($manifestation->getItemSummary() as $itemSummary) {
                         if (strlen($itemSummary['shelfLocation']) && substr_compare($itemSummary['shelfLocation'], $selectedDetailedAvailability, 0)) {
                             if ($itemSummary['available']) {
                                 $manifestationIsAvailable = true;
@@ -1521,13 +1425,13 @@ class GroupedWorkDriver extends IndexRecordDriver{
                     }
                 }
                 if (!$manifestationIsAvailable){
-                    $manifestation['hideByDefault'] = true;
+                    $manifestation->setHideByDefault(true);
                 }
             }
             global $searchSource;
             if ($searchSource == 'econtent'){
                 if (!$manifestation['isEContent']){
-                    $manifestation['hideByDefault'] = true;
+                    $manifestation->setHideByDefault(true);
                 }
             }
 
@@ -1541,105 +1445,26 @@ class GroupedWorkDriver extends IndexRecordDriver{
 
     private $relatedRecords = null;
     private $relatedItemsByRecordId = null;
+
+    /**
+     * @param bool $forCovers
+     * @return Grouping_Record[]
+     */
     public function getRelatedRecords($forCovers = false) {
         $this->loadRelatedRecords($forCovers);
         return $this->relatedRecords;
     }
 
+    /**
+     * @param $recordIdentifier
+     * @return Grouping_Record
+     */
     public function getRelatedRecord($recordIdentifier){
         $this->loadRelatedRecords();
         if (isset($this->relatedRecords[$recordIdentifier])){
             return $this->relatedRecords[$recordIdentifier];
         }else{
             return null;
-        }
-    }
-
-    private function getSchemaOrgBookFormat($pikaFormat) {
-        switch ($pikaFormat){
-            case 'Book':
-            case 'Large Print':
-            case 'Manuscript':
-                return 'Hardcover';
-
-            case 'Audio':
-            case 'Audio Cassette':
-            case 'Audio CD':
-            case 'CD':
-            case 'eAudiobook':
-            case 'Playaway':
-                return 'AudiobookFormat';
-
-            case 'eBook':
-            case 'eMagazine':
-                return 'EBook';
-
-            case 'Graphic Novel':
-            case 'Journal':
-                return 'Paperback';
-
-            default:
-                return '';
-        }
-    }
-
-    private function getSchemaOrgType($pikaFormat) {
-        switch ($pikaFormat){
-            case 'Audio':
-            case 'Audio Book':
-            case 'Audio Cassette':
-            case 'Audio CD':
-            case 'Book':
-            case 'Book Club Kit':
-            case 'eAudiobook':
-            case 'eBook':
-            case 'eMagazine':
-            case 'CD':
-            case 'Journal':
-            case 'Large Print':
-            case 'Manuscript':
-            case 'Musical Score':
-            case 'Newspaper':
-            case 'Playaway':
-            case 'Serial':
-                return 'Book';
-
-            case 'eComic':
-            case 'Graphic Novel':
-                return 'ComicStory';
-
-            case 'eMusic':
-            case 'Music Recording':
-            case 'Phonograph':
-                return 'MusicRecording';
-
-            case 'Blu-ray':
-            case 'DVD':
-            case 'eVideo':
-            case 'VHS':
-            case 'Video':
-                return 'Movie';
-
-            case 'Map':
-                return 'Map';
-
-            case 'Nintendo 3DS':
-            case 'Nintendo Wii':
-            case 'Nintendo Wii U':
-            case 'PlayStation':
-            case 'PlayStation 3':
-            case 'PlayStation 4':
-            case 'Windows Game':
-            case 'Xbox 360':
-            case 'Xbox 360 Kinect':
-            case 'Xbox One':
-                return 'Game';
-
-            case 'Web Content':
-                return 'WebPage';
-
-            default:
-                return 'CreativeWork';
         }
     }
 
@@ -1672,11 +1497,10 @@ class GroupedWorkDriver extends IndexRecordDriver{
 	 * @access  public
 
 	 * @param string $view The current view.
-	 * @param boolean $useUnscopedHoldingsSummary Whether or not the result should show an unscoped holdings summary.
 	 *
 	 * @return  string              Name of Smarty template file to display.
 	 */
-	public function getSearchResult($view = 'list', $useUnscopedHoldingsSummary = false) {
+	public function getSearchResult($view = 'list') {
 		if ($view == 'covers') { // Displaying Results as bookcover tiles
 			return $this->getBrowseResult();
 		}
@@ -1688,7 +1512,6 @@ class GroupedWorkDriver extends IndexRecordDriver{
 		global $memoryWatcher;
 
 		$interface->assign('displayingSearchResults', true);
-		$interface->assign('useUnscopedHoldingsSummary', $useUnscopedHoldingsSummary);
 
 		$id = $this->getUniqueID();
 		$timer->logTime("Starting to load search result for grouped work $id");
@@ -1710,15 +1533,11 @@ class GroupedWorkDriver extends IndexRecordDriver{
 		$memoryWatcher->logMemory("Loaded related records");
 		if (count($relatedRecords) == 1){
 			$firstRecord = reset($relatedRecords);
-			$linkUrl = $firstRecord['url'];
+			$linkUrl = $firstRecord->getUrl();
 			$linkUrl .=  '?searchId=' . $interface->get_template_vars('searchId') . '&amp;recordIndex=' . $interface->get_template_vars('recordIndex') . '&amp;page='  . $interface->get_template_vars('page');
 		}else{
 			$linkUrl = '/GroupedWork/' . $id . '/Home?searchId=' . $interface->get_template_vars('searchId') . '&amp;recordIndex=' . $interface->get_template_vars('recordIndex') . '&amp;page='  . $interface->get_template_vars('page');
-			if ($useUnscopedHoldingsSummary){
-				$linkUrl .= '&amp;searchSource=marmot';
-			}else{
-				$linkUrl .= '&amp;searchSource=' . $interface->get_template_vars('searchSource');
-			}
+			$linkUrl .= '&amp;searchSource=' . $interface->get_template_vars('searchSource');
 		}
 
 		$interface->assign('summUrl', $linkUrl);
@@ -1751,25 +1570,25 @@ class GroupedWorkDriver extends IndexRecordDriver{
 		$alwaysShowMainDetails = $library ? $library->alwaysShowSearchResultsMainDetails : false;
 		foreach ($relatedRecords as $relatedRecord){
 			if ($isFirst){
-				$summPublisher    = $relatedRecord['publisher'];
-				$summPubDate      = $relatedRecord['publicationDate'];
-				$summPhysicalDesc = $relatedRecord['physical'];
-				$summEdition      = $relatedRecord['edition'];
-				$summLanguage     = $relatedRecord['language'];
+				$summPublisher    = $relatedRecord->publisher;
+				$summPubDate      = $relatedRecord->publicationDate;
+				$summPhysicalDesc = $relatedRecord->physical;
+				$summEdition      = $relatedRecord->edition;
+				$summLanguage     = $relatedRecord->language;
 			}else{
-				if ($summPublisher != $relatedRecord['publisher']){
+				if ($summPublisher != $relatedRecord->publisher){
 					$summPublisher = $alwaysShowMainDetails ? translate('Varies, see individual formats and editions') : null;
 				}
-				if ($summPubDate != $relatedRecord['publicationDate']){
+				if ($summPubDate != $relatedRecord->publicationDate){
 					$summPubDate = $alwaysShowMainDetails ? translate('Varies, see individual formats and editions') : null;
 				}
-				if ($summPhysicalDesc != $relatedRecord['physical']){
+				if ($summPhysicalDesc != $relatedRecord->physical){
 					$summPhysicalDesc = $alwaysShowMainDetails ? translate('Varies, see individual formats and editions') : null;
 				}
-				if ($summEdition != $relatedRecord['edition']){
+				if ($summEdition != $relatedRecord->edition){
 					$summEdition = $alwaysShowMainDetails ? translate('Varies, see individual formats and editions') : null;
 				}
-				if ($summLanguage != $relatedRecord['language']){
+				if ($summLanguage != $relatedRecord->language){
 					$summLanguage = $alwaysShowMainDetails ? translate('Varies, see individual formats and editions') : null;
 				}
 			}
@@ -1868,11 +1687,11 @@ class GroupedWorkDriver extends IndexRecordDriver{
         $relatedRecords = $this->getRelatedRecords();
         foreach ($relatedRecords as $record){
             $relatedWorkExample = array(
-                '@id' => $configArray['Site']['url'] . $record['url'],
-                '@type' => $record['schemaDotOrgType']
+                '@id' => $configArray['Site']['url'] . $record->getUrl(),
+                '@type' => $record->getSchemaOrgType()
             );
-            if ($record['schemaDotOrgBookFormat']){
-                $relatedWorkExample['bookFormat'] = $record['schemaDotOrgBookFormat'];
+            if ($record->getSchemaOrgBookFormat()){
+                $relatedWorkExample['bookFormat'] = $record->getSchemaOrgBookFormat();
             }
             $relatedWorkExamples[] = $relatedWorkExample;
         }
@@ -2128,8 +1947,8 @@ class GroupedWorkDriver extends IndexRecordDriver{
 	public function getTableOfContents() {
 		$tableOfContents = array();
 		foreach ($this->getRelatedRecords() as $record){
-			if ($record['driver']){
-			    $driver = $record['driver'];
+			if ($record->_driver){
+			    $driver = $record->_driver;
 			    /** @var GroupedWorkSubDriver $driver */
 				$recordTOC = $driver->getTableOfContents();
 				if ($recordTOC != null && count($recordTOC) > 0){
@@ -2198,9 +2017,9 @@ class GroupedWorkDriver extends IndexRecordDriver{
             // Set the display Name for the review
             if (!$userForReview->displayName){
                 if (strlen(trim($userForReview->firstname)) >= 1){
-                    $userReview->displayName = substr($userForReview->firstname, 0, 1) . '. ' . $userForReview->lastname;
+                    $userReview->setDisplayName(substr($userForReview->firstname, 0, 1) . '. ' . $userForReview->lastname);
                 }else{
-                    $userReview->displayName = $userForReview->lastname;
+                    $userReview->setDisplayName($userForReview->lastname);
                 }
             }
 
@@ -2228,7 +2047,7 @@ class GroupedWorkDriver extends IndexRecordDriver{
         return $this->isValid;
     }
 
-    private static $statusRankings = array(
+    static $statusRankings = array(
         'Currently Unavailable' => 1,
         'On Order' => 2,
         'Coming Soon' => 3,
@@ -2449,8 +2268,13 @@ class GroupedWorkDriver extends IndexRecordDriver{
 				//Generate record information based on the information we have in the index
 				foreach ($recordsFromIndex as $recordDetails){
 					$relatedRecord = $this->setupRelatedRecordDetails($recordDetails, $groupedWork, $timer, $scopingInfo, $activePTypes, $searchLocation, $library, $forCovers);
-					$relatedRecords[$relatedRecord['id']] = $relatedRecord;
-					$memoryWatcher->logMemory("Setup related record details for " . $relatedRecord['id']);
+					if ($relatedRecord != null) {
+                        $relatedRecords[$relatedRecord->id] = $relatedRecord;
+                        $memoryWatcher->logMemory("Setup related record details for " . $relatedRecord->id);
+                    }else{
+					    global $logger;
+					    $logger->log("Error setting up related record " . $recordDetails, LOG_NOTICE);
+                    }
 				}
 			}
 
@@ -2490,23 +2314,7 @@ class GroupedWorkDriver extends IndexRecordDriver{
         return array($scopingInfo, $validRecordIds, $validItemIds);
     }
 
-	private function mergeItemSummary($localCopies, $itemSummary) {
-		foreach ($itemSummary as $key => $item){
-			if (isset($localCopies[$key])){
-				$localCopies[$key]['totalCopies'] += $item['totalCopies'];
-				$localCopies[$key]['availableCopies'] += $item['availableCopies'];
-				if ($item['displayByDefault']){
-					$localCopies[$key]['displayByDefault'] = true;
-				}
-			}else{
-				$localCopies[$key] = $item;
-			}
-		}
-		ksort($localCopies);
-		return $localCopies;
-	}
-
-    private static function normalizeEdition($edition) {
+	private static function normalizeEdition($edition) {
         $edition = strtolower($edition);
         $edition = str_replace('first', '1', $edition);
         $edition = str_replace('second', '2', $edition);
@@ -2527,16 +2335,17 @@ class GroupedWorkDriver extends IndexRecordDriver{
         return $edition;
     }
 
-	/**
-	 * @param $recordDetails
-	 * @param GroupedWork $groupedWork
-	 * @param Timer $timer
-	 * @param $scopingInfo
-	 * @param $activePTypes
-	 * @param Location $searchLocation
-	 * @param Library $library
-	 * @return array
-	 */
+    /**
+     * @param $recordDetails
+     * @param GroupedWork $groupedWork
+     * @param Timer $timer
+     * @param $scopingInfo
+     * @param $activePTypes
+     * @param Location $searchLocation
+     * @param Library $library
+     * @param bool $forCovers Optimization if we are only loading info for the covers
+     * @return Grouping_Record
+     */
 	protected function setupRelatedRecordDetails($recordDetails, $groupedWork, $timer, $scopingInfo, $activePTypes, $searchLocation, $library, $forCovers = false) {
 		//Check to see if we have any volume data for the record
 		require_once ROOT_DIR . '/Drivers/marmot_inc/IlsVolumeInfo.php';
@@ -2563,46 +2372,9 @@ class GroupedWorkDriver extends IndexRecordDriver{
 		$timer->logTime("Loaded Record Driver for  $recordDetails[0]");
 		$memoryWatcher->logMemory("Loaded Record Driver for  $recordDetails[0]");
 
-		//Setup the base record
-		$relatedRecord = array(
-				'id' => $recordDetails[0],
-				'driver' => $recordDriver,
-				'url' => $recordDriver != null ? $recordDriver->getRecordUrl() : '',
-				'format' => $recordDetails[1],
-				'formatCategory' => $recordDetails[2],
-				'edition' => $recordDetails[3],
-				'language' => $recordDetails[4],
-				'publisher' => $recordDetails[5],
-				'publicationDate' => $recordDetails[6],
-				'physical' => $recordDetails[7],
-				'callNumber' => '',
-				'available' => false,
-				'availableOnline' => false,
-				'availableLocally' => false,
-				'availableHere' => false,
-				'inLibraryUseOnly' => true,
-				'allLibraryUseOnly' => true,
-				'isEContent' => false,
-				'availableCopies' => 0,
-				'copies' => 0,
-				'onOrderCopies' => 0,
-				'localAvailableCopies' => 0,
-				'localCopies' => 0,
-				'numHolds' => $recordDriver != null ? $recordDriver->getNumHolds() : 0,
-				'volumeHolds' => $recordDriver != null ? $recordDriver->getVolumeHolds($volumeData) : null,
-				'hasLocalItem' => false,
-				'holdRatio' => 0,
-				'locationLabel' => '',
-				'shelfLocation' => '',
-				'bookable' => false,
-				'holdable' => false,
-				'itemSummary' => array(),
-				'groupedStatus' => 'Currently Unavailable',
-				'source' => $source,
-				'actions' => array(),
-				'schemaDotOrgType' => $this->getSchemaOrgType($recordDetails[1]),
-				'schemaDotOrgBookFormat' => $this->getSchemaOrgBookFormat($recordDetails[1]),
-		);
+		require_once ROOT_DIR . '/sys/Grouping/Record.php';
+		$relatedRecord = new Grouping_Record($recordDetails, $recordDriver, $volumeData, $source);
+
 		$timer->logTime("Setup base related record");
 		$memoryWatcher->logMemory("Setup base related record");
 
@@ -2617,107 +2389,12 @@ class GroupedWorkDriver extends IndexRecordDriver{
 		$recordBookable = false;
 
 		$i = 0;
-		$allLibraryUseOnly = true;
-		foreach ($this->relatedItemsByRecordId[$recordDetails[0]] as $curItem) {
-			$shelfLocation = $curItem[2];
-			$callNumber = $curItem[3];
-			$numCopies = $curItem[6];
-			$isOrderItem = $curItem[7] == 'true';
-			$isEcontent = $curItem[8] == 'true';
-			$itemId = $curItem[1] == 'null' ? '' : $curItem[1];
-			$scopeKey = $curItem[0] . ':' . $itemId;
-			$scopingDetails = $scopingInfo[$scopeKey];
-			if ($isEcontent) {
-				if (strlen($scopingDetails[12]) > 0){
-					$relatedUrls[] = array(
-							'source' => $curItem[9],
-							'file' => $curItem[10],
-							'url' => $scopingDetails[12]
-					);
-				}else{
-					$relatedUrls[] = array(
-							'source' => $curItem[9],
-							'file' => $curItem[10],
-							'url' => $curItem[11]
-					);
-				}
+		foreach ($this->relatedItemsByRecordId[$relatedRecord->id] as $curItem) {
+		    require_once ROOT_DIR . '/sys/Grouping/Item.php';
+		    $item = new Grouping_Item($curItem, $scopingInfo, $activePTypes, $searchLocation, $library);
+		    $relatedRecord->addItem($item);
 
-				$relatedRecord['eContentSource'] = $curItem[9];
-				$relatedRecord['isEContent'] = true;
-			}
-			//Get Scoping information for this record
-			$groupedStatus = $scopingDetails[2];
-			$status = $curItem[13];
-			$locallyOwned = $scopingDetails[4] == 'true';
-			$available = $scopingDetails[5] == 'true';
-			if ($status == 'Library Use Only' && !$available){
-				$status = 'Checked Out (library use only)';
-			}
-			$holdable = $scopingDetails[6] == 'true';
-			$bookable = $scopingDetails[7] == 'true';
-			$inLibraryUseOnly = $scopingDetails[8] == 'true';
-			if (!$inLibraryUseOnly){
-				$allLibraryUseOnly = false;
-			}
-			$libraryOwned = $scopingDetails[9] == 'true';
-			$holdablePTypes = isset($scopingDetails[10]) ? $scopingDetails[10] : '';
-			$bookablePTypes = isset($scopingDetails[11]) ? $scopingDetails[11] : '';
-			$locationCode = isset($curItem[15]) ? $curItem[15] : '';
-			$subLocation = isset($curItem[16]) ? $curItem[16] : '';
-			if (strlen($holdablePTypes) > 0 && $holdablePTypes != '999') {
-				$holdablePTypes = explode(',', $holdablePTypes);
-				$matchingPTypes = array_intersect($holdablePTypes, $activePTypes);
-				if (count($matchingPTypes) == 0) {
-					$holdable = false;
-				}
-			}
-			if ($holdable) {
-				$recordHoldable = true;
-			}
-
-			if (strlen($bookablePTypes) > 0 && $bookablePTypes != '999') {
-				$bookablePTypes = explode(',', $bookablePTypes);
-				$matchingPTypes = array_intersect($bookablePTypes, $activePTypes);
-				if (count($matchingPTypes) == 0) {
-					$bookable = false;
-				}
-			}
-			if ($bookable) {
-				$recordBookable = true;
-			}
-
-			//Update the record with information from the item and from scoping.
-			$displayByDefault = false;
-			if ($available) {
-				if ($isEcontent) {
-					$relatedRecord['availableOnline'] = true;
-				} else {
-					$relatedRecord['available'] = true;
-				}
-				$relatedRecord['availableCopies'] += $numCopies;
-				if ($searchLocation) {
-					$displayByDefault = $locallyOwned || $isEcontent;
-				} elseif ($library) {
-					$displayByDefault = $libraryOwned || $isEcontent;
-				}
-			}
-			if ($isOrderItem) {
-				$relatedRecord['onOrderCopies'] += $numCopies;
-			} else {
-				$relatedRecord['copies'] += $numCopies;
-			}
-			if (!$inLibraryUseOnly) {
-				$relatedRecord['inLibraryUseOnly'] = false;
-			}
-			$relatedRecord['allLibraryUseOnly'] = $allLibraryUseOnly;
-			if ($holdable) {
-				$relatedRecord['holdable'] = true;
-			}
-			if ($bookable) {
-				$relatedRecord['bookable'] = true;
-			}
-			$relatedRecord['groupedStatus'] = GroupedWorkDriver::keepBestGroupedStatus($relatedRecord['groupedStatus'], $groupedStatus);
-			$description = $shelfLocation . ':' . $callNumber;
+			$description = $item->shelfLocation . ':' . $item->callNumber;
 
 			$volume = null;
 			$volumeId = null;
@@ -2725,7 +2402,7 @@ class GroupedWorkDriver extends IndexRecordDriver{
 				/** @var IlsVolumeInfo $volumeDataPoint */
 				foreach ($volumeData as $volumeDataPoint){
 					if ((strlen($volumeDataPoint->relatedItems) == 0) || (strpos($volumeDataPoint->relatedItems, $curItem[1]) !== false)){
-						if ($holdable){
+						if ($item->holdable){
 							$volumeDataPoint->holdable = true;
 						}
 						if (strlen($volumeDataPoint->relatedItems) > 0) {
@@ -2741,41 +2418,41 @@ class GroupedWorkDriver extends IndexRecordDriver{
 			}
 
 			$section = 'Other Locations';
-			if ($locallyOwned) {
+			if ($item->locallyOwned) {
 				if ($localShelfLocation == null) {
-					$localShelfLocation = $shelfLocation;
+					$localShelfLocation = $item->shelfLocation;
 				}
 				if ($localCallNumber == null) {
-					$localCallNumber = $callNumber;
+					$localCallNumber = $item->callNumber;
 				}
-				if ($available && !$isEcontent) {
-					$relatedRecord['availableHere'] = true;
-					$relatedRecord['availableLocally'] = true;
-					$relatedRecord['class'] = 'here';
+				if ($item->available && !$item->isEContent) {
+					$relatedRecord->getStatusInformation()->setAvailableHere(true);
+					$relatedRecord->getStatusInformation()->setAvailableLocally(true);
+					$relatedRecord->setClass('here');
 				}
-				$relatedRecord['localCopies'] += $numCopies;
-				$relatedRecord['hasLocalItem'] = true;
+				$relatedRecord->addLocalCopies($item->numCopies);
+				$relatedRecord->setHasLocalItem(true);
 				$key = '1 ' . $description;
 				$sectionId = 1;
 				$section = 'In this library';
-			} elseif ($libraryOwned) {
+			} elseif ($item->libraryOwned) {
 				if ($libraryShelfLocation == null) {
-					$libraryShelfLocation = $shelfLocation;
+					$libraryShelfLocation = $item->shelfLocation;
 				}
 				if ($libraryCallNumber == null) {
-					$libraryCallNumber = $callNumber;
+					$libraryCallNumber = $item->callNumber;
 				}
-				if ($available && !$isEcontent) {
-					$relatedRecord['availableLocally'] = true;
+				if ($item->available && !$item->isEContent) {
+					$relatedRecord->getStatusInformation()->setAvailableLocally(true);
 				}
-				$relatedRecord['localCopies'] += $numCopies;
-				if ($searchLocation == null || $isEcontent) {
-					$relatedRecord['hasLocalItem'] = true;
+				$relatedRecord->addLocalCopies($item->numCopies);
+				if ($searchLocation == null || $item->isEContent) {
+					$relatedRecord->setHasLocalItem(true);
 				}
 				$key = '5 ' . $description;
 				$sectionId = 5;
 				$section = $library->displayName;
-			} elseif ($isOrderItem) {
+			} elseif ($item->isOrderItem) {
 				$key = '7 ' . $description;
 				$sectionId = 7;
 				$section = 'On Order';
@@ -2784,78 +2461,65 @@ class GroupedWorkDriver extends IndexRecordDriver{
 				$sectionId = 6;
 			}
 
-			if ((strlen($volume) > 0) && !substr($callNumber, -strlen($volume)) == $volume){
-				$callNumber = trim($callNumber . ' ' . $volume);
+            $callNumber = $item->callNumber;
+			if ((strlen($volume) > 0) && !substr($item->callNumber, -strlen($volume)) == $volume){
+				$callNumber = trim($item->callNumber . ' ' . $volume);
 			}
 			//Add the item to the item summary
 			$itemSummaryInfo = array(
 					'description' => $description,
-					'shelfLocation' => $shelfLocation,
+					'shelfLocation' => $item->shelfLocation,
 					'callNumber' => $callNumber,
-					'totalCopies' => 1,
-					'availableCopies' => ($available && !$isOrderItem) ? $numCopies : 0,
-					'isLocalItem' => $locallyOwned,
-					'isLibraryItem' => $libraryOwned,
-					'inLibraryUseOnly' => $inLibraryUseOnly,
-					'allLibraryUseOnly' => $inLibraryUseOnly,
-					'displayByDefault' => $displayByDefault,
-					'onOrderCopies' => $isOrderItem ? $numCopies : 0,
-					'status' => $groupedStatus,
-					'statusFull' => $status,
-					'available' => $available,
-					'holdable' => $holdable,
-					'bookable' => $bookable,
+					'totalCopies' => $item->numCopies,
+					'availableCopies' => ($item->available && !$item->isOrderItem) ? $item->numCopies : 0,
+					'isLocalItem' => $item->locallyOwned,
+					'isLibraryItem' => $item->libraryOwned,
+					'inLibraryUseOnly' => $item->inLibraryUseOnly,
+					'allLibraryUseOnly' => $item->inLibraryUseOnly,
+					'displayByDefault' => $item->isDisplayByDefault(),
+					'onOrderCopies' => $item->isOrderItem ? $item->numCopies : 0,
+					'status' => $item->groupedStatus,
+					'statusFull' => $item->status,
+					'available' => $item->available,
+					'holdable' => $item->holdable,
+					'bookable' => $item->bookable,
 					'sectionId' => $sectionId,
 					'section' => $section,
 					'relatedUrls' => $relatedUrls,
 					'lastCheckinDate' => isset($curItem[14]) ? $curItem[14] : '',
 					'volume' => $volume,
 					'volumeId' => $volumeId,
-					'isEContent' => $isEcontent,
-					'locationCode' => $locationCode,
-					'subLocation' => $subLocation,
-					'itemId' => $itemId
+					'isEContent' => $item->isEContent,
+					'locationCode' => $item->locationCode,
+					'subLocation' => $item->subLocation,
+					'itemId' => $item->itemId
 			);
 			if (!$forCovers){
 				$itemSummaryInfo['actions'] = $recordDriver != null ? $recordDriver->getItemActions($itemSummaryInfo) : array();
 			}
 
 			//Group the item based on location and call number for display in the summary
-			if (isset($relatedRecord['itemSummary'][$key])) {
-				$relatedRecord['itemSummary'][$key]['totalCopies']++;
-				$relatedRecord['itemSummary'][$key]['availableCopies'] += $itemSummaryInfo['availableCopies'];
-				if ($itemSummaryInfo['displayByDefault']) {
-					$relatedRecord['itemSummary'][$key]['displayByDefault'] = true;
-				}
-				$relatedRecord['itemSummary'][$key]['onOrderCopies'] += $itemSummaryInfo['onOrderCopies'];
-				$lastStatus = $relatedRecord['itemSummary'][$key]['status'];
-				$relatedRecord['itemSummary'][$key]['status'] = GroupedWorkDriver::keepBestGroupedStatus($lastStatus, $groupedStatus);
-				if ($lastStatus != $relatedRecord['itemSummary'][$key]['status']){
-					$relatedRecord['itemSummary'][$key]['statusFull'] = $itemSummaryInfo['statusFull'];
-				}
-			} else {
-				$relatedRecord['itemSummary'][$key] = $itemSummaryInfo;
-			}
+			$relatedRecord->addItemSummary($key, $itemSummaryInfo, $item->groupedStatus);
 			//Also add to the details for display in the full list
-			$relatedRecord['itemDetails'][$key . $i++] = $itemSummaryInfo;
+			$relatedRecord->addItemDetails($key . $i++, $itemSummaryInfo);
 		}
 		if ($localShelfLocation != null) {
-			$relatedRecord['shelfLocation'] = $localShelfLocation;
+			$relatedRecord->setShelfLocation($localShelfLocation);
 		} elseif ($libraryShelfLocation != null) {
-			$relatedRecord['shelfLocation'] = $libraryShelfLocation;
+			$relatedRecord->setShelfLocation($libraryShelfLocation);
 		}
 		if ($localCallNumber != null) {
-			$relatedRecord['callNumber'] = $localCallNumber;
+			$relatedRecord->setCallNumber($localCallNumber);
 		} elseif ($libraryCallNumber != null) {
-			$relatedRecord['callNumber'] = $libraryCallNumber;
+			$relatedRecord->setCallNumber($libraryCallNumber);
 		}
-		ksort($relatedRecord['itemSummary']);
-		ksort($relatedRecord['itemDetails']);
+		$relatedRecord->sortItemSummary();
+        $relatedRecord->sortItemDetails();
 		$timer->logTime("Setup record items");
 		$memoryWatcher->logMemory("Setup record items");
 
 		if (!$forCovers){
-			$relatedRecord['actions'] = $recordDriver != null ? $recordDriver->getRecordActions($relatedRecord['availableLocally'] || $relatedRecord['availableOnline'], $recordHoldable, $recordBookable, $relatedUrls, $volumeData) : array();
+			$relatedRecord->setActions($recordDriver != null ? $recordDriver->getRecordActions($relatedRecord->getStatusInformation()->isAvailableLocally() || $relatedRecord->getStatusInformation()->isAvailableOnline(), $relatedRecord->isHoldable(), $relatedRecord->isBookable(), $relatedUrls, $volumeData) : array());
 			$timer->logTime("Loaded actions");
 			$memoryWatcher->logMemory("Loaded actions");
 		}
@@ -2882,7 +2546,7 @@ class GroupedWorkDriver extends IndexRecordDriver{
                 $groupedWorkDetails['Last Indexed'] = date('Y-m-d H:i:sA', strtotime($this->fields['last_indexed']));
             }
         }else {
-            $groupedWorkDetails['Deleted?'] = 'This work has been deleted from the database and should be reindexed';
+            $groupedWorkDetails['Deleted?'] = 'This work has been deleted from the database and should be re-indexed';
         }
         return $groupedWorkDetails;
     }

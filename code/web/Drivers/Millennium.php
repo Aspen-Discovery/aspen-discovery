@@ -60,9 +60,6 @@ class Millennium extends AbstractIlsDriver
 	}
 
 	public function getMillenniumScope(){
-		if (isset($_REQUEST['useUnscopedHoldingsSummary'])){
-			return $this->getDefaultScope();
-		}
 		$searchLibrary = Library::getSearchLibrary();
 		$searchLocation = Location::getSearchLocation();
 
@@ -83,9 +80,6 @@ class Millennium extends AbstractIlsDriver
 	}
 
 	public function getLibraryScope(){
-		if (isset($_REQUEST['useUnscopedHoldingsSummary'])){
-			return $this->getDefaultScope();
-		}
 		$searchLibrary = Library::getSearchLibrary();
 		$searchLocation = Location::getSearchLocation();
 

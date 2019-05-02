@@ -101,7 +101,7 @@ class UInterface extends Smarty
 		unset($local);
 
 		$this->register_block('display_if_inconsistent', 'display_if_inconsistent');
-//		$this->register_block('display_if_inconsistent_in_any_manifestation', 'display_if_inconsistent_in_any_manifestation');
+        $this->register_block('display_if_field_inconsistent', 'display_if_field_inconsistent');
 		$this->register_block('display_if_set', 'display_if_set');
 		$this->register_function('translate', 'translate');
 		$this->register_function('char', 'char');
@@ -686,6 +686,40 @@ function display_if_inconsistent($params, $content, /** @noinspection PhpUnusedP
 		}
 	}
 	return null;
+}
+
+function display_if_field_inconsistent($params, $content, /** @noinspection PhpUnusedParameterInspection */  &$smarty, /** @noinspection PhpUnusedParameterInspection */ &$repeat){
+    //This function is called twice, once for the opening tag and once for the
+    //closing tag.  Content is only set if
+    if (isset($content)) {
+        $array = $params['array'];
+        $key = $params['key'];
+
+        if (count($array) === 1) {
+            // If we have only one row of items, display that row
+            return empty($array[0]->$key) ? '' : $content;
+        }
+        $consistent = true;
+        $firstValue = null;
+        $iterationNumber = 0;
+        foreach ($array as $arrayValue){
+            if ($iterationNumber == 0){
+                $firstValue = $arrayValue->$key;
+            }else{
+                if ($firstValue != $arrayValue->$key){
+                    $consistent = false;
+                    break;
+                }
+            }
+            $iterationNumber++;
+        }
+        if ($consistent == false){
+            return $content;
+        }else{
+            return "";
+        }
+    }
+    return null;
 }
 
 function display_if_set($params, $content, /** @noinspection PhpUnusedParameterInspection */ &$smarty, /** @noinspection PhpUnusedParameterInspection */ &$repeat){

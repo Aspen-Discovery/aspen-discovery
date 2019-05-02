@@ -27,19 +27,14 @@ abstract class GroupedWorkSubDriver extends RecordInterface
     public function __construct($recordData, $groupedWork = null){
         $this->fields = $recordData;
 
-        global $configArray;
-        // Load highlighting/snippet preferences:
-        $searchSettings = getExtraConfigArray('searches');
-        $this->highlight = $configArray['Index']['enableHighlighting'];
-        $this->snippet = $configArray['Index']['enableSnippets'];
-        $this->snippetCaptions = isset($searchSettings['Snippet_Captions']) && is_array($searchSettings['Snippet_Captions']) ? $searchSettings['Snippet_Captions'] : array();
-
         if ($groupedWork == null){
             $this->loadGroupedWork();
         }else{
             $this->groupedWork = $groupedWork;
         }
     }
+
+    public abstract function getIdWithSource();
 
     public function getAcceleratedReaderData()
     {
@@ -292,21 +287,21 @@ abstract class GroupedWorkSubDriver extends RecordInterface
                 if ($interface->getVariable('showSimilarTitles')) {
                     $exploreMoreOptions['similarTitles'] = array(
                         'label' => 'Similar Titles From NoveList',
-                        'body' => '<div id="novelisttitlesPlaceholder"></div>',
+                        'body' => '<div id="novelistTitlesPlaceholder"></div>',
                         'hideByDefault' => true
                     );
                 }
                 if ($interface->getVariable('showSimilarAuthors')) {
                     $exploreMoreOptions['similarAuthors'] = array(
                         'label' => 'Similar Authors From NoveList',
-                        'body' => '<div id="novelistauthorsPlaceholder"></div>',
+                        'body' => '<div id="novelistAuthorsPlaceholder"></div>',
                         'hideByDefault' => true
                     );
                 }
                 if ($interface->getVariable('showSimilarTitles')) {
                     $exploreMoreOptions['similarSeries'] = array(
                         'label' => 'Similar Series From NoveList',
-                        'body' => '<div id="novelistseriesPlaceholder"></div>',
+                        'body' => '<div id="novelistSeriesPlaceholder"></div>',
                         'hideByDefault' => true
                     );
                 }
@@ -473,8 +468,8 @@ abstract class GroupedWorkSubDriver extends RecordInterface
         if ($groupedWork != null) {
             $relatedRecords = $groupedWork->getRelatedRecords();
             foreach ($relatedRecords as $relatedRecord) {
-                if ($relatedRecord['id'] == $this->getIdWithSource()) {
-                    return $relatedRecord['actions'];
+                if ($relatedRecord->id == $this->getIdWithSource()) {
+                    return $relatedRecord->getActions();
                 }
             }
         }

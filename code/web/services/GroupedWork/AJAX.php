@@ -330,7 +330,7 @@ class GroupedWork_AJAX {
 
 		if (count($relatedRecords) == 1){
 			$firstRecord = reset($relatedRecords);
-			$url = $firstRecord['url'];
+			$url = $firstRecord->getUrl();
 		}else{
 			$url =  $recordDriver->getLinkUrl();
 		}

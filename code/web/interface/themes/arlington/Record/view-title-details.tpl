@@ -154,7 +154,7 @@
 		<div class="col-sm-8 result-value">
 			{include file='GroupedWork/statusIndicator.tpl' statusInformation=$statusSummary viewingIndividualRecord=1}
 
-			{include file='GroupedWork/copySummary.tpl' summary=$statusSummary.itemSummary totalCopies=$statusSummary.copies itemSummaryId=$statusSummary.id format=$recordDriver->getPrimaryFormat() recordUrl=$recordDriver->getRecordUrl()}
+			{include file='GroupedWork/copySummary.tpl' summary=$statusSummary->getItemSummary() totalCopies=$statusSummary->getCopies() itemSummaryId=$statusSummary->id format=$recordDriver->getPrimaryFormat() recordUrl=$recordDriver->getRecordUrl()}
 		</div>
 		{* <div class="col-xs-8 result-value result-value-bold statusValue {$statusSummary.class}" id="statusValue">{$statusSummary.groupedStatus|escape}{if $statusSummary.numHolds > 0} ({$statusSummary.numHolds} people are on the wait list){/if}</div> *}
 	</div>

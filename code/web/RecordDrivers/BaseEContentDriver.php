@@ -30,17 +30,7 @@ abstract class BaseEContentDriver  extends MarcRecordDriver {
 	abstract function isLocalItem($locationCode, $eContentFieldData);
 	abstract function isLibraryItem($locationCode, $eContentFieldData);
 	abstract function isItemAvailable($itemId, $totalCopies);
-	function getUsageRestrictions($sharing, $libraryLabel, $locationLabel){
-		if ($sharing == 'shared'){
-			return "Available to Everyone";
-		}else if ($sharing == 'library'){
-			return 'Available to patrons of ' . $libraryLabel;
-		}else if ($sharing == 'location'){
-			return 'Available to patrons of ' .  $locationLabel;
-		}else{
-			return 'Unable to determine usage restrictions';
-		}
-	}
+
 	abstract function isValidForUser($locationCode, $eContentFieldData);
 
 	abstract function getSharing($locationCode, $eContentFieldData);

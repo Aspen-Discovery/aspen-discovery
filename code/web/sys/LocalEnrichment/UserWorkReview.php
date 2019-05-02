@@ -3,11 +3,29 @@
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
 class UserWorkReview extends DataObject
 {
-  public $__table = 'user_work_review';    // table name
-  public $id;                       //int(11)
-	public $groupedRecordPermanentId; //varchar(36)
-  public $userId;                   //int(11)
-  public $rating;                   //int(5)
-	public $review;                  //MEDIUM TEXT
+    public $__table = 'user_work_review';
+    public $id;
+    public $groupedRecordPermanentId;
+    public $userId;
+    public $rating;
+	public $review;
 	public $dateRated;
+
+	private $_displayName;
+
+    /**
+     * @return mixed
+     */
+    public function getDisplayName()
+    {
+        return $this->_displayName;
+    }
+
+    /**
+     * @param mixed $displayName
+     */
+    public function setDisplayName($displayName): void
+    {
+        $this->_displayName = $displayName;
+    }
 }

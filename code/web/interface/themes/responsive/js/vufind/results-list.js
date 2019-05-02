@@ -7,17 +7,6 @@ VuFind.ResultsList = (function(){
 			this.seriesList[this.seriesList.length] = isbn;
 		},
 
-		addIdToStatusList: function(id, type, useUnscopedHoldingsSummary) {
-			if (type == undefined){
-				type = 'VuFind';
-			}
-			var idVal = [];
-			idVal['id'] = id;
-			idVal['useUnscopedHoldingsSummary'] = useUnscopedHoldingsSummary;
-			idVal['type'] = type;
-			this.statusList[this.statusList.length] = idVal;
-		},
-
 		initializeDescriptions: function(){
 			$(".descriptionTrigger").each(function(){
 				var descElement = $(this);
@@ -51,19 +40,14 @@ VuFind.ResultsList = (function(){
 			VuFind.showMessage(title, $("#moreFacetPopup_" + name).html());
 		},
 
-		toggleFacetVisibility: function(){
-			$facetsSection = $("#collapse-side-facets");
-		},
-
 		toggleRelatedManifestations: function(manifestationId){
-			$('#relatedRecordPopup_' + manifestationId).toggleClass('hidden');
-			var manifestationToggle = $('#manifestation-toggle-' + manifestationId);
-			manifestationToggle.toggleClass('collapsed');
-			if (manifestationToggle.hasClass('collapsed')){
-				manifestationToggle.html('+');
+			let relatedRecordPopup = $('#relatedRecordPopup_' + manifestationId);
+			if (relatedRecordPopup.is(":visible")){
+				relatedRecordPopup.slideUp();
 			}else{
-				manifestationToggle.html('-');
+				relatedRecordPopup.slideDown();
 			}
+			//relatedRecordPopup.toggleClass('hidden');
 			return false;
 
 		}

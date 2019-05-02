@@ -29,7 +29,7 @@
 							{if !$summTitle|removeTrailingPunctuation}{translate text='Title not available'}{else}{$summTitle|removeTrailingPunctuation|highlight|truncate:180:"..."}{/if}
 							{if $summSubTitle|removeTrailingPunctuation}: {$summSubTitle|removeTrailingPunctuation|highlight|truncate:180:"..."}{/if}
 						</a>
-						{if $summTitleStatement}
+						{if !empty($summTitleStatement)}
 							&nbsp;-&nbsp;{$summTitleStatement|removeTrailingPunctuation|highlight|truncate:180:"..."}
 						{/if}
 						{if isset($summScore)}
@@ -115,7 +115,7 @@
 					{/if}
 				{/if}
 
-				{if $showEditions}
+				{if !empty($showEditions)}
 					{if $alwaysShowSearchResultsMainDetails || $summEdition}
 						<div class="row">
 							<div class="result-label col-tn-3">Edition: </div>
@@ -130,7 +130,7 @@
 					{/if}
 				{/if}
 
-				{if $showArInfo && $summArInfo}
+				{if !empty($showArInfo) && $summArInfo}
 					<div class="row">
 						<div class="result-label col-tn-3">{translate text='Accelerated Reader'}: </div>
 						<div class="result-value col-tn-8">
@@ -139,7 +139,7 @@
 					</div>
 				{/if}
 
-				{if $showLexileInfo && $summLexileInfo}
+				{if !empty($showLexileInfo) && $summLexileInfo}
 					<div class="row">
 						<div class="result-label col-tn-3">{translate text='Lexile measure'}: </div>
 						<div class="result-value col-tn-8">
@@ -148,7 +148,7 @@
 					</div>
 				{/if}
 
-				{if $showFountasPinnell && $summFountasPinnell}
+				{if !empty($showFountasPinnell) && $summFountasPinnell}
 					<div class="row">
 						<div class="result-label col-tn-3">{translate text='Fountas &amp; Pinnell'}: </div>
 						<div class="result-value col-tn-8">
@@ -157,7 +157,7 @@
 					</div>
 				{/if}
 
-				{if $showPhysicalDescriptions}
+				{if !empty($showPhysicalDescriptions)}
 					{if $alwaysShowSearchResultsMainDetails || $summPhysicalDesc}
 						<div class="row">
 							<div class="result-label col-tn-3">{translate text='Physical Desc'}: </div>
@@ -203,7 +203,7 @@
 					{* Determine if there were hidden Formats for this entry *}
 					{assign var=hasHiddenFormats value=false}
 					{foreach from=$relatedManifestations item=relatedManifestation}
-					{if $relatedManifestation.hideByDefault}
+					{if $relatedManifestation->isHideByDefault()}
 						{assign var=hasHiddenFormats value=true}
 					{/if}
 					{/foreach}

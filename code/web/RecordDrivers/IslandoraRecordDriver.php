@@ -208,7 +208,7 @@ abstract class IslandoraRecordDriver extends IndexRecordDriver {
 		$interface->assign('summDescription', $this->getDescription());
 		$interface->assign('summFormat', $this->getFormat());
 
-		// The below template variables are in the listentry.tpl but the driver doesn't currently
+		// The below template variables are in the listEntry.tpl but the driver doesn't currently
 		// supply this information, so we are making sure they are set to a null value.
 		$interface->assign('summShortId', null);
 		$interface->assign('summTitleStatement', null);
@@ -244,7 +244,7 @@ abstract class IslandoraRecordDriver extends IndexRecordDriver {
 
 		$interface->assign('recordDriver', $this);
 
-		return 'RecordDrivers/Islandora/listentry.tpl';
+		return 'RecordDrivers/Islandora/listEntry.tpl';
 	}
 
 

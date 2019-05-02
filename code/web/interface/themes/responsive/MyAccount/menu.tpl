@@ -6,7 +6,7 @@
 		<div class="panel-group accordion" id="account-link-accordion">
 			{* My Account *}
 			<a id="account-menu"></a>
-			{if $module == 'MyAccount' || $module == 'MyResearch' || ($module == 'Search' && $action == 'Home') || ($module == 'MaterialsRequest' && $action == 'MyRequests')}
+			{if $module == 'MyAccount' || ($module == 'Search' && $action == 'Home') || ($module == 'MaterialsRequest' && $action == 'MyRequests')}
 				{assign var="curSection" value=true}
 			{else}
 				{assign var="curSection" value=false}

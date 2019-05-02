@@ -140,21 +140,21 @@ VuFind.GroupedWork = (function(){
 						}
 						var similarTitlesNovelist = data.similarTitlesNovelist;
 						if (similarTitlesNovelist && similarTitlesNovelist.length > 0){
-							$("#novelisttitlesPlaceholder").html(similarTitlesNovelist);
-							$("#novelisttab_label,#similarTitlesPanel").show()
+							$("#novelistTitlesPlaceholder").html(similarTitlesNovelist);
+							$("#novelistTab_label,#similarTitlesPanel").show()
 									;
 						}
 
 						var similarAuthorsNovelist = data.similarAuthorsNovelist;
 						if (similarAuthorsNovelist && similarAuthorsNovelist.length > 0){
-							$("#novelistauthorsPlaceholder").html(similarAuthorsNovelist);
-							$("#novelisttab_label,#similarAuthorsPanel").show();
+							$("#novelistAuthorsPlaceholder").html(similarAuthorsNovelist);
+							$("#novelistTab_label,#similarAuthorsPanel").show();
 						}
 
 						var similarSeriesNovelist = data.similarSeriesNovelist;
 						if (similarSeriesNovelist && similarSeriesNovelist.length > 0){
-							$("#novelistseriesPlaceholder").html(similarSeriesNovelist);
-							$("#novelisttab_label,#similarSeriesPanel").show();
+							$("#novelistSeriesPlaceholder").html(similarSeriesNovelist);
+							$("#novelistTab_label,#similarSeriesPanel").show();
 						}
 
 						// Show Explore More Sidebar Section loaded above

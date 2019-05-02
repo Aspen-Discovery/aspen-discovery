@@ -5,7 +5,7 @@
 			{display_if_inconsistent array=$relatedRecords key="publicationDate"}
 				<th>Pub. Date</th>
 			{/display_if_inconsistent}
-			{if in_array(strtolower($relatedManifestation.format), array('ebook', 'eaudiobook', 'emagazine', 'evideo'))}
+			{if in_array(strtolower($relatedManifestation->format), array('ebook', 'eaudiobook', 'emagazine', 'evideo'))}
 				<th>Source</th>
 			{/if}
 			{display_if_inconsistent array=$relatedRecords key="edition"}
@@ -32,7 +32,7 @@
 				{display_if_inconsistent array=$relatedRecords key="publicationDate"}
 					<td>{$relatedRecord.publicationDate}</td>
 				{/display_if_inconsistent}
-				{if in_array(strtolower($relatedManifestation.format), array('ebook', 'eaudiobook', 'emagazine', 'evideo'))}
+				{if in_array(strtolower($relatedManifestation->format), array('ebook', 'eaudiobook', 'emagazine', 'evideo'))}
 					<td>{$relatedRecord.eContentSource}</td>
 				{/if}
 				{display_if_inconsistent array=$relatedRecords key="edition"}
@@ -48,18 +48,15 @@
 					<td>{implode subject=$relatedRecord.language glue=","}</td>
 				{/display_if_inconsistent}
 				<td>
-					{include file='GroupedWork/statusIndicator.tpl' statusInformation=$relatedRecord viewingIndividualRecord=1}
+					{include file='GroupedWork/statusIndicator.tpl' statusInformation=$relatedRecord->getStatusInformation() viewingIndividualRecord=1}
 
-					{include file='GroupedWork/copySummary.tpl' summary=$relatedRecord.itemSummary totalCopies=$relatedRecord.copies itemSummaryId=$relatedRecord.id format=$relatedManifestation.format recordViewUrl=$relatedRecord.url}
+					{include file='GroupedWork/copySummary.tpl' summary=$relatedRecord->getItemSummary() totalCopies=$relatedRecord->getCopies() itemSummaryId=$relatedRecord->id format=$relatedManifestation->format recordViewUrl=$relatedRecord->getUrl()}
 
-					{if $relatedRecord.usageRestrictions}
-						<br>{$relatedRecord.usageRestrictions}
-					{/if}
 				</td>
 				<td>
 					<div class="btn-group btn-group-vertical btn-group-sm">
 						<a href="{$relatedRecord.url}" class="btn btn-sm btn-info">More Info</a>
-						{foreach from=$relatedRecord.actions item=curAction}
+						{foreach from=$relatedRecord->getActions() item=curAction}
 							<a href="{$curAction.url}" {if $curAction.onclick}onclick="{$curAction.onclick}"{/if} class="btn btn-sm btn-default" {if $curAction.alt}title="{$curAction.alt}"{/if}>{$curAction.title}</a>
 						{/foreach}
 					</div>

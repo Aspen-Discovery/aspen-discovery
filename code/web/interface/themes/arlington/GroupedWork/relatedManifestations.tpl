@@ -7,10 +7,10 @@
 		</div>
 		{assign var=hasHiddenFormats value=false}
 		{foreach from=$relatedManifestations item=relatedManifestation}
-			{if $relatedManifestation.hideByDefault}
+			{if $relatedManifestation->isHideByDefault()}
 				{assign var=hasHiddenFormats value=true}
 			{/if}
-			<div class="row related-manifestation {if $relatedManifestation.hideByDefault}hiddenManifestation_{$summId}{/if}" {if $relatedManifestation.hideByDefault}style="display: none"{/if}>
+			<div class="row related-manifestation {if $relatedManifestation->isHideByDefault()}hiddenManifestation_{$summId}{/if}" {if $relatedManifestation->isHideByDefault()}style="display: none"{/if}>
 				<div class="col-sm-12">
 				  <div class="row">
 						<div class="col-tn-3 col-xs-4 col-md-3 manifestation-format">
@@ -32,12 +32,12 @@
 							{/if}
 						</div>
 						<div class="col-tn-9 col-xs-8 col-md-5 col-lg-6">
-							{include file='GroupedWork/statusIndicator.tpl' statusInformation=$relatedManifestation viewingIndividualRecord=0}
+							{include file='GroupedWork/statusIndicator.tpl' statusInformation=$relatedManifestation->getStatusInformation() viewingIndividualRecord=0}
 
 							{if $relatedManifestation.numRelatedRecords == 1}
-								{include file='GroupedWork/copySummary.tpl' summary=$relatedManifestation.itemSummary totalCopies=$relatedManifestation.copies itemSummaryId=$id format=$relatedManifestation.format recordViewUrl=$relatedManifestation.url}
+								{include file='GroupedWork/copySummary.tpl' summary=$relatedManifestation->getItemSummary() totalCopies=$relatedManifestation->getCopies() itemSummaryId=$id format=$relatedManifestation->format recordViewUrl=$relatedManifestation.url}
 							{else}
-								{include file='GroupedWork/copySummary.tpl' summary=$relatedManifestation.itemSummary totalCopies=$relatedManifestation.copies itemSummaryId=$id format=$relatedManifestation.format}
+								{include file='GroupedWork/copySummary.tpl' summary=$relatedManifestation->getItemSummary() totalCopies=$relatedManifestation->getCopies() itemSummaryId=$id format=$relatedManifestation->format}
 							{/if}
 
 						</div>

@@ -41,6 +41,10 @@ class RbdigitalRecordDriver extends GroupedWorkSubDriver {
         }
     }
 
+    public function getIdWithSource(){
+        return 'rbdigital:' . $this->id;
+    }
+
     /**
      * Load the grouped work that this record is connected to.
      */

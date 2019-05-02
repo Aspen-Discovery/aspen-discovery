@@ -1,13 +1,7 @@
 <?php
 
-/**
- * Created by PhpStorm.
- * User: jabedo
- * Date: 10/29/2016
- * Time: 8:10 AM
- * Handles an offer for a related record
- */
 class LDRecordOffer {
+    /** @var Grouping_Record */
 	private $relatedRecord;
 
 	public function __construct($record) {
@@ -16,40 +10,38 @@ class LDRecordOffer {
 
 	public function getOffers() {
 		$offers = array();
-		if (isset($this->relatedRecord['itemSummary'])){
-			foreach ($this->relatedRecord['itemSummary'] as $itemData){
-				if ($itemData['isLibraryItem'] || $itemData['isEContent']) {
-					$offerData = array(
-							"availability" => $this->getOfferAvailability($itemData),
-							'availableDeliveryMethod' => $this->getDeliveryMethod(),
-							"itemOffered" => array(
-									'@type' => 'CreativeWork',
-									'@id' => $this->getOfferLinkUrl(), //URL to the record
-							),
-							"offeredBy" => $this->getLibraryUrl(), //URL to the library that owns the item
-							"price" => '0',
-							"inventoryLevel" => $itemData['availableCopies'],
-					);
-					$locationCode = $itemData['locationCode'];
-					$subLocation = $itemData['subLocation'];
-					if (strlen($locationCode) > 0){
-						$offerData['availableAtOrFrom'] = $this->getBranchUrl($locationCode, $subLocation);
-					}
-					$offers[] = $offerData;
-				}
-			}
-		}
+        foreach ($this->relatedRecord->getItemSummary() as $itemData){
+            if ($itemData['isLibraryItem'] || $itemData['isEContent']) {
+                $offerData = array(
+                        "availability" => $this->getOfferAvailability($itemData),
+                        'availableDeliveryMethod' => $this->getDeliveryMethod(),
+                        "itemOffered" => array(
+                                '@type' => 'CreativeWork',
+                                '@id' => $this->getOfferLinkUrl(), //URL to the record
+                        ),
+                        "offeredBy" => $this->getLibraryUrl(), //URL to the library that owns the item
+                        "price" => '0',
+                        "inventoryLevel" => $itemData['availableCopies'],
+                );
+                $locationCode = $itemData['locationCode'];
+                $subLocation = $itemData['subLocation'];
+                if (strlen($locationCode) > 0){
+                    $offerData['availableAtOrFrom'] = $this->getBranchUrl($locationCode, $subLocation);
+                }
+                $offers[] = $offerData;
+            }
+        }
 
 		return $offers;
 	}
 
 	public function getWorkType() {
-		return $this->relatedRecord['schemaDotOrgType'];
+		return $this->relatedRecord->getSchemaOrgType();
 	}
 
 	function getOfferLinkUrl() {
 		global $configArray;
-		return $configArray['Site']['url'] . $this->relatedRecord['url'];
+		return $configArray['Site']['url'] . $this->relatedRecord->getUrl();
 	}
 
 	function getLibraryUrl() {
@@ -68,7 +60,7 @@ class LDRecordOffer {
 		if ($itemData['inLibraryUseOnly']) {
 			return 'InStoreOnly';
 		}
-		if ($this->relatedRecord['availableOnline']) {
+		if ($this->relatedRecord->getStatusInformation()->isAvailableOnline()) {
 			return 'OnlineOnly';
 		}
 		if ($itemData['availableCopies'] > 0) {
@@ -118,7 +110,7 @@ class LDRecordOffer {
 	}
 
 	function getDeliveryMethod() {
-		if ($this->relatedRecord['isEContent']) {
+		if ($this->relatedRecord->isEContent()) {
 			return 'DeliveryModeDirectDownload';
 		} else {
 			return 'DeliveryModePickUp';

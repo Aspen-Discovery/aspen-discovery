@@ -21,8 +21,12 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 	/** @var  IndexingProfile $indexingProfile */
 	protected $indexingProfile;
 	protected $valid = null;
+    /**
+     * @var Grouping_Record
+     */
+    private $recordFromIndex;
 
-	/**
+    /**
 	 * Constructor.  We build the object using all the data retrieved
 	 * from the (Solr) index.  Since we have to
 	 * make a search call to find out which record driver to construct,
@@ -110,12 +114,13 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 	 */
 	public function getUniqueID()
 	{
-		if (isset($this->id)) {
-			return $this->id;
-		} else {
-			return $this->fields['id'];
-		}
+        return $this->id;
 	}
+
+    public function getIdWithSource()
+    {
+        return $this->profileType . ':' . $this->id;
+    }
 
 	/**
 	 * Return the unique identifier of this record within the Solr index;
@@ -127,17 +132,10 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 	 */
 	public function getId()
 	{
-		if (isset($this->id)) {
-			return $this->id;
-		} else {
-			return $this->fields['id'];
-		}
+        return $this->id;
 	}
 
-	public function getIdWithSource()
-	{
-		return $this->profileType . ':' . $this->id;
-	}
+
 
 	/**
 	 * Return the unique identifier of this record within the Solr index;
@@ -309,8 +307,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 	 * Get the edition of the current record.
 	 *
 	 * @access  public
-	 * @param   boolean $returnFirst whether or not only the first value is desired
-	 * @return  string
+	 * @return  string[]
 	 */
 	public function getEditions()
 	{
@@ -533,12 +530,16 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 		$titleField = $this->getMarcRecord()->getField('245');
 		if ($titleField != null && $titleField->getSubfield('a') != null) {
 			$untrimmedTitle = $titleField->getSubfield('a')->getData();
-			$charsToTrim = $titleField->getIndicator(2);
-			if (is_numeric($charsToTrim)) {
-				return substr($untrimmedTitle, $charsToTrim);
-			} else {
-				return $untrimmedTitle;
-			}
+            try {
+                $charsToTrim = $titleField->getIndicator(2);
+                if (is_numeric($charsToTrim)) {
+                    return substr($untrimmedTitle, $charsToTrim);
+                } else {
+                    return $untrimmedTitle;
+                }
+            } catch (File_MARC_Exception $e) {
+                return $untrimmedTitle;
+            }
 		}
 		return 'Unknown';
 	}
@@ -595,15 +596,11 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 
 	public function getAuthor()
 	{
-		if (isset($this->fields['auth_author'])) {
-			return $this->fields['auth_author'];
-		} else {
-			$author = $this->getFirstFieldValue('100', array('a', 'd'));
-			if (empty($author)) {
-				$author = $this->getFirstFieldValue('110', array('a', 'b'));
-			}
-			return $author;
-		}
+        $author = $this->getFirstFieldValue('100', array('a', 'd'));
+        if (empty($author)) {
+            $author = $this->getFirstFieldValue('110', array('a', 'b'));
+        }
+        return $author;
 	}
 
 	public function getContributors()
@@ -1561,7 +1558,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 				$this->recordFromIndex = $groupedWorkDriver->getRelatedRecord($this->getIdWithSource());
 				if ($this->recordFromIndex != null) {
 					//Divide the items into sections and create the status summary
-					$this->holdings = $this->recordFromIndex['itemDetails'];
+					$this->holdings = $this->recordFromIndex->getItemDetails();
 					$this->holdingSections = array();
 					foreach ($this->holdings as $copyInfo) {
 						$sectionName = $copyInfo['sectionId'];
@@ -1579,8 +1576,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 
 					$this->statusSummary = $this->recordFromIndex;
 
-					$this->statusSummary['driver'] = null;
-					unset($this->statusSummary['driver']);
+					$this->statusSummary->_driver = null;
 				} else {
 					$this->holdings = array();
 					$this->holdingSections = array();

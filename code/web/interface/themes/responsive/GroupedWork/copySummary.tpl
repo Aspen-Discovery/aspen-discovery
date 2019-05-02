@@ -1,16 +1,5 @@
 {strip}
 	{if !empty($summary)}
-		{*<div class="itemSummary row">
-			<div class="col-xs-2 nobreak">
-				<strong>Available</strong>
-			</div>
-			<div class="col-xs-6">
-				<strong>Location</strong>
-			</div>
-			<div class="col-xs-4">
-				<strong>Call Number</strong>
-			</div>
-		</div>*}
 		{assign var=numDefaultItems value="0"}
 		{assign var=numRowsShown value="0"}
 		{foreach from=$summary item="item"}
@@ -37,11 +26,11 @@
 			{assign var=numRemainingCopies value=$totalCopies-$numDefaultItems}
 			{if $numRemainingCopies > 0}
 				<div class="itemSummary">
-					&nbsp;&nbsp;<a href="#" onclick="return VuFind.showElementInPopup('Copy Summary', '#itemSummaryPopup_{$itemSummaryId|escapeCSS}_{$relatedManifestation.format|escapeCSS}'{if $recordViewUrl}, '#itemSummaryPopupButtons_{$itemSummaryId|escapeCSS}_{$relatedManifestation.format|escapeCSS}'{/if});">
+					&nbsp;&nbsp;<a href="#" onclick="return VuFind.showElementInPopup('Copy Summary', '#itemSummaryPopup_{$itemSummaryId|escapeCSS}_{$relatedManifestation->format|escapeCSS}'{if $recordViewUrl}, '#itemSummaryPopupButtons_{$itemSummaryId|escapeCSS}_{$relatedManifestatio->format|escapeCSS}'{/if});">
 						{translate text="Quick Copy View"}
 					</a>
 				</div>
-				<div id="itemSummaryPopup_{$itemSummaryId|escapeCSS}_{$relatedManifestation.format|escapeCSS}" class="itemSummaryPopup" style="display: none">
+				<div id="itemSummaryPopup_{$itemSummaryId|escapeCSS}_{$relatedManifestation->format|escapeCSS}" class="itemSummaryPopup" style="display: none">
 					<table class="table table-striped table-condensed itemSummaryTable">
 						<thead>
 						<tr>
@@ -75,7 +64,7 @@
 					</table>
 				</div>
 				{if $recordViewUrl}
-					<div id="itemSummaryPopupButtons_{$itemSummaryId|escapeCSS}_{$relatedManifestation.format|escapeCSS}" {*class="itemSummaryPopup"*} style="display: none">
+					<div id="itemSummaryPopupButtons_{$itemSummaryId|escapeCSS}_{$relatedManifestation->format|escapeCSS}" {*class="itemSummaryPopup"*} style="display: none">
 						<a href="{$recordViewUrl}" class="btn btn-primary" role="button">{translate text="See Full Copy Details"}</a>
 					</div>
 				{/if}

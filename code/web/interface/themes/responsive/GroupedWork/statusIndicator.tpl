@@ -1,8 +1,8 @@
 {strip}
-{if $statusInformation.availableHere}
-	{if $statusInformation.availableOnline}
+{if $statusInformation->isAvailableHere()}
+	{if $statusInformation->isAvailableOnline()}
 		<div class="related-manifestation-shelf-status available">Available Online</div>
-	{elseif $statusInformation.allLibraryUseOnly}
+	{elseif $statusInformation->isAllLibraryUseOnly()}
 		<div class="related-manifestation-shelf-status available">It's Here (library use only)</div>
 	{else}
 		{if $showItsHere}
@@ -11,33 +11,33 @@
 			<div class="related-manifestation-shelf-status available">{translate text='On Shelf'}</div>
 		{/if}
 	{/if}
-{elseif $statusInformation.availableLocally}
-	{if $statusInformation.availableOnline}
+{elseif $statusInformation->isAvailableLocally()}
+	{if $statusInformation->isAvailableOnline()}
 		<div class="related-manifestation-shelf-status available">Available Online</div>
-	{elseif $statusInformation.allLibraryUseOnly}
+	{elseif $statusInformation->isAllLibraryUseOnly()}
 		<div class="related-manifestation-shelf-status available">{translate text='On Shelf (library use only)'}</div>
 	{elseif $scopeType == 'Location'}
 		<div class="related-manifestation-shelf-status availableOther">Available at another branch</div>
 	{else}
 		<div class="related-manifestation-shelf-status available">{translate text='On Shelf'}</div>
 	{/if}
-{elseif $statusInformation.availableOnline}
+{elseif $statusInformation->isAvailableOnline()}
 	<div class="related-manifestation-shelf-status available">Available Online</div>
-{elseif $statusInformation.allLibraryUseOnly}
+{elseif $statusInformation->isAllLibraryUseOnly()}
 	{if $isGlobalScope}
 		<div class="related-manifestation-shelf-status available">{translate text='On Shelf'} (library use only)</div>
 	{else}
-		{if $statusInformation.available && $statusInformation.hasLocalItem}
+		{if $statusInformation->isAvailable() && $statusInformation->hasLocalItem()}
 			<div class="related-manifestation-shelf-status availableOther">{translate text='Checked Out/Available Elsewhere'} (library use only)</div>
-		{elseif $statusInformation.available}
+		{elseif $statusInformation->isAvailable()}
 			<div class="related-manifestation-shelf-status availableOther">{translate text='Available from another library'} (library use only)</div>
 		{else}
 			<div class="related-manifestation-shelf-status checked_out">{translate text='Checked Out'} (library use only)</div>
 		{/if}
 	{/if}
-{elseif $statusInformation.available && $statusInformation.hasLocalItem}
+{elseif $statusInformation->isAvailable() && $statusInformation->hasLocalItem()}
 	<div class="related-manifestation-shelf-status availableOther">{translate text='Checked Out/Available Elsewhere'}</div>
-{elseif $statusInformation.available}
+{elseif $statusInformation->isAvailable()}
 	{if $isGlobalScope}
 		<div class="related-manifestation-shelf-status available">{translate text='On Shelf'}</div>
 	{else}
@@ -45,26 +45,27 @@
 	{/if}
 {else}
 	<div class="related-manifestation-shelf-status checked_out">
-		{if $statusInformation.groupedStatus}{$statusInformation.groupedStatus}{else}Withdrawn/Unavailable{/if}
+		{if $statusInformation->getGroupedStatus()}{$statusInformation->getGroupedStatus()}{else}Withdrawn/Unavailable{/if}
 	</div>
 {/if}
-{if ($statusInformation.numHolds > 0 || $statusInformation.onOrderCopies > 0) && ($showGroupedHoldCopiesCount || $viewingIndividualRecord == 1)}
+{if ($statusInformation->getNumHolds() > 0 || $statusInformation->getOnOrderCopies() > 0) && ($showGroupedHoldCopiesCount || $viewingIndividualRecord == 1)}
 	<div class="smallText">
-		{if $statusInformation.numHolds > 0}
-			{$statusInformation.copies} {if $statusInformation.copies == 1}copy{else}copies{/if}, {$statusInformation.numHolds} {if $statusInformation.numHolds == 1}person is{else}people are{/if} on the wait list.
+		{if $statusInformation->getNumHolds() > 0}
+			{$statusInformation->getCopies()} {if $statusInformation->getCopies() == 1}copy{else}copies{/if}, {$statusInformation->getNumHolds()} {if $statusInformation->getNumHolds() == 1}person is{else}people are{/if} on the wait list.
 		{/if}
-		{if $statusInformation.volumeHolds}
-			<br/>
-			{foreach from=$statusInformation.volumeHolds item=volumeHoldInfo}
-				&nbsp;&nbsp;{$volumeHoldInfo.numHolds} waiting for {$volumeHoldInfo.label}<br>
-			{/foreach}
-		{/if}
-		{if $statusInformation.onOrderCopies > 0}
+		{* TODO: This needs to be updated to work for manifestations as well as records *}
+{*		{if is_array($statusInformation) && $statusInformation.volumeHolds}*}
+{*			<br/>*}
+{*			{foreach from=$statusInformation.volumeHolds item=volumeHoldInfo}*}
+{*				&nbsp;&nbsp;{$volumeHoldInfo->getNumHolds()} waiting for {$volumeHoldInfo.label}<br>*}
+{*			{/foreach}*}
+{*		{/if}*}
+		{if $statusInformation->getOnOrderCopies() > 0}
 			<br/>
 			{if $showOnOrderCounts}
-				{$statusInformation.onOrderCopies} {if $statusInformation.onOrderCopies == 1}copy{else}copies{/if} on order.
+				{$statusInformation->getOnOrderCopies()} {if $statusInformation->getOnOrderCopies() == 1}copy{else}copies{/if} on order.
 			{else}
-				{if $statusInformation.totalCopies > 0}
+				{if $statusInformation->getTotalCopies() > 0}
 					Additional copies on order
 				{else}
 					Copies on order

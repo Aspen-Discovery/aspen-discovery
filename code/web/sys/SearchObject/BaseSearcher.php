@@ -2210,8 +2210,8 @@ abstract class SearchObject_BaseSearcher
 									global $timer;
 									$timer->logTime('Loaded related records for next result');
 									if (count($relatedRecords) == 1) {
-										$nextRecord = reset($relatedRecords);
-										list($nextType, $nextId) = explode('/', trim($nextRecord['url'], '/'));
+										$nextRelatedRecord = reset($relatedRecords);
+										list($nextType, $nextId) = explode('/', trim($nextRelatedRecord->getUrl(), '/'));
 										$interface->assign('nextId', $nextId);
 										$interface->assign('nextType', $nextType);
 									} else {

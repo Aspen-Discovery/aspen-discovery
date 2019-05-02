@@ -452,14 +452,14 @@ class ItemAPI extends Action {
 				$returnData = array();
 				foreach ($manifestations as $manifestation){
 					$manifestationSummary = array(
-							'format' => $manifestation['format'],
-							'copies' => $manifestation['copies'],
-							'availableCopies' => $manifestation['availableCopies'],
-							'numHolds' => $manifestation['numHolds'],
-							'available' => $manifestation['available'],
-							'isEContent' => $manifestation['isEContent'],
-							'groupedStatus' => $manifestation['groupedStatus'],
-							'numRelatedRecords' => $manifestation['numRelatedRecords'],
+							'format' => $manifestation->format,
+							'copies' => $manifestation->getCopies(),
+							'availableCopies' => $manifestation->getAvailableCopies(),
+							'numHolds' => $manifestation->getNumHolds(),
+							'available' => $manifestation->isAvailable(),
+							'isEContent' => $manifestation->isEContent(),
+							'groupedStatus' => $manifestation->getGroupedStatus(),
+							'numRelatedRecords' => $manifestation->getNumRelatedRecords(),
 					);
 					foreach ($manifestation['relatedRecords'] as $relatedRecord){
 						$manifestationSummary['relatedRecords'][] = $relatedRecord['id'];
