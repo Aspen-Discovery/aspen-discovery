@@ -1092,16 +1092,6 @@ class Library extends DataObject
 			//Load the library based on the home branch for the user
 			return self::getLibraryForLocation($physicalLocation->libraryId);
 		}
-		//Next check for an active_library server environment variable
-        if (isset($_SERVER['active_library'])){
-            echo("Active Library is: " . $_SERVER['active_library']);
-            $activeLibrary->subdomain = 1;
-            $activeLibrary->find($_SERVER['active_library']);
-            if ($activeLibrary->N == 1) {
-                $activeLibrary->fetch();
-                return $activeLibrary;
-            }
-        }
 
 		//Return the active library
         $activeLibrary->isDefault = 1;

@@ -297,13 +297,24 @@ function updateConfigForScoping($configArray) {
         $library = $_SESSION['library'];
         $locationSingleton = $_SESSION['library'];
         $timer->logTime('got library and location from session');
-    }else if (count($subdomainsToTest) == 0){
+    }else if (count($subdomainsToTest) == 0) {
         $Library = new Library();
         $Library->isDefault = 1;
         $Library->find();
         if ($Library->N == 1) {
             $Library->fetch();
             $library = $Library;
+        }
+        //Next check for an active_library server environment variable
+    }elseif (isset($_SERVER['active_library'])){
+        echo("Active Library is: " . $_SERVER['active_library']);
+        $Library = new Library();
+        $Library->subdomain = $_SERVER['active_library'];
+        $Library->find($_SERVER['active_library']);
+        if ($Library->N == 1) {
+            $Library->fetch();
+            $library = $Library;
+            $timer->logTime("found the library based on active_library server variable");
         }
 	}else {
 		for ($i = 0; $i < count($subdomainsToTest); $i++){
