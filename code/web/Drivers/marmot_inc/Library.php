@@ -1094,6 +1094,7 @@ class Library extends DataObject
 		}
 		//Next check for an active_library server environment variable
         if (isset($_SERVER['active_library'])){
+            echo("Active Library is: " . $_SERVER['active_library']);
             $activeLibrary->subdomain = 1;
             $activeLibrary->find($_SERVER['active_library']);
             if ($activeLibrary->N == 1) {
