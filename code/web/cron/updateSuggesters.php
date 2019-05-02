@@ -1,0 +1,15 @@
+<?php
+require_once __DIR__ . '/../bootstrap.php';
+
+global $configArray;
+$solrBaseUrl = $configArray['Index']['url'];
+
+//Rebuilding can take quite awhile, give each 5 minutes to complete
+set_time_limit(300);
+file_get_contents($solrBaseUrl . '/grouped_works/suggest?suggest.build=true');
+set_time_limit(300);
+file_get_contents($solrBaseUrl . '/open_archives/suggest?suggest.build=true');
+set_time_limit(300);
+file_get_contents($solrBaseUrl . '/genealogy/suggest?suggest.build=true');
+set_time_limit(300);
+file_get_contents($solrBaseUrl . '/lists/suggest?suggest.build=true');
