@@ -298,7 +298,7 @@ function updateConfigForScoping($configArray) {
 //        $timer->logTime('got library and location from session');
 //    }
 	if (isset($_SERVER['active_library'])){
-	    echo("Getting active library from server variable " . $_SERVER['active_library']);
+	    //echo("Getting active library from server variable " . $_SERVER['active_library']);
         $Library = new Library();
         $Library->subdomain = $_SERVER['active_library'];
         $Library->find($_SERVER['active_library']);
