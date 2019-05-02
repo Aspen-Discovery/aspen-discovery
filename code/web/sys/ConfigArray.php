@@ -289,6 +289,8 @@ function updateConfigForScoping($configArray) {
 
 	$timer->logTime('found ' . count($subdomainsToTest) . ' subdomains to test');
 
+    echo("Loading global library");
+    echo("Active Library is: " . $_SERVER['active_library']);
 
 	//Load the library system information
 	global $library;
@@ -307,7 +309,6 @@ function updateConfigForScoping($configArray) {
         }
         //Next check for an active_library server environment variable
     }elseif (isset($_SERVER['active_library'])){
-        echo("Active Library is: " . $_SERVER['active_library']);
         $Library = new Library();
         $Library->subdomain = $_SERVER['active_library'];
         $Library->find($_SERVER['active_library']);
