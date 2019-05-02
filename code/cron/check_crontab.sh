@@ -8,12 +8,12 @@ SERVER=$1
 if [ $# = 1 ];then
    echo "Differences : "
    echo ""
-   crontab -l| diff /usr/local/vufind-plus/sites/${SERVER}/conf/crontab_settings.txt -
+   crontab -l| diff /usr/local/aspen-discovery/sites/${SERVER}/conf/crontab_settings.txt -
    echo ""
    echo "Please reconcile any differences that should be in the settings file before installing the new cronttab."
    echo ""
    echo "Command to install the new crontab: "
-   echo "crontab < /usr/local/vufind-plus/sites/${SERVER}/conf/crontab_settings.txt"
+   echo "crontab < /usr/local/aspen-discovery/sites/${SERVER}/conf/crontab_settings.txt"
    exit 0
 else
   echo ""
