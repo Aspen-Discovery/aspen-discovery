@@ -119,4 +119,8 @@ class UserListSolr {
 	void setOwnerHasListPublisherRole(boolean ownerHasListPublisherRole){
 		this.ownerHasListPublisherRole = ownerHasListPublisherRole;
 	}
+
+	long getNumTitles(){
+		return numTitles;
+	}
 }

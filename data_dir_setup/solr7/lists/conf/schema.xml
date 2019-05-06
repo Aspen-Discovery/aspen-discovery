@@ -117,7 +117,7 @@
 		<field name="table_of_contents_proper" type="textProper" indexed="true" stored="true" multiValued="true"/>
 		<field name="keywords" type="searchable_text" indexed="true" stored="false"/>
 		<field name="description" type="searchable_text" indexed="true" stored="true"/>
-		<field name="num_titles" type="integer" indexed="true" stored="false"/>
+		<field name="num_titles" type="integer" indexed="true" stored="true"/>
 		<field name="popularity" type="integer" indexed="true" stored="false" default="0"/>
 		<field name="date_added" type="date" indexed="true" stored="true" multiValued="false"/>
 		<field name="time_since_added" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true"/>

@@ -118,7 +118,7 @@ class UserListIndexer {
 		int isPublic = allPublicListsRS.getInt("public");
 		long userId = allPublicListsRS.getLong("user_id");
 		if (deleted == 1 || isPublic == 0){
-			updateServer.deleteByQuery("id:list");
+			updateServer.deleteByQuery("id:" + listId);
 		}else{
 			logger.info("Processing list " + listId + " " + allPublicListsRS.getString("title"));
 			userListSolr.setId(listId);
@@ -179,8 +179,12 @@ class UserListIndexer {
 				//TODO: Handle other types of objects within a User List
 				//Sub-lists, open archives, people, etc.
 			}
-			// Index in the solr catalog
-			updateServer.add(userListSolr.getSolrDocument());
+			if (userListSolr.getNumTitles() >= 3) {
+				// Index in the solr catalog
+				updateServer.add(userListSolr.getSolrDocument());
+			} else {
+				updateServer.deleteByQuery("id:" + listId);
+			}
 		}
 	}
 
