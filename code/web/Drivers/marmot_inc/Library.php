@@ -390,7 +390,6 @@ class Library extends DataObject
 				'showLibraryHoursAndLocationsLink' => array('property'=>'showLibraryHoursAndLocationsLink', 'type'=>'checkbox', 'label'=>'Show Library Hours and Locations Link', 'description'=>'Whether or not the library hours and locations link is shown on the home page.', 'hideInLists' => true, 'default' => true),
 				'eContentSupportAddress'  => array('property'=>'eContentSupportAddress', 'type'=>'multiemail', 'label'=>'E-Content Support Address', 'description'=>'An e-mail address to receive support requests for patrons with eContent problems.', 'size'=>'80', 'hideInLists' => true, 'default'=>'askmarmot@marmot.org'),
 
-				'enableGenealogy' => array('property'=>'enableGenealogy', 'type'=>'checkbox', 'label'=>'Enable Genealogy Functionality', 'description'=>'Whether or not patrons can search genealogy.', 'hideInLists' => true, 'default' => 1),
 				'enableCourseReserves' => array('property'=>'enableCourseReserves', 'type'=>'checkbox', 'label'=>'Enable Repeat Search in Course Reserves', 'description'=>'Whether or not patrons can repeat searches within course reserves.', 'hideInLists' => true,),
 			)),
 
@@ -740,7 +739,7 @@ class Library extends DataObject
 				),
 
 			)),
-			'interLibraryLoanSection' => array('property'=>'interLibraryLoanSectionSection', 'type' => 'section', 'label' =>'Interlibrary Loaning', 'hideInLists' => true,  'properties' => array(
+			'interLibraryLoanSection' => array('property'=>'interLibraryLoanSectionSection', 'type' => 'section', 'label' =>'Interlibrary loans', 'hideInLists' => true,  'properties' => array(
 				'interLibraryLoanName' => array('property'=>'interLibraryLoanName', 'type'=>'text', 'label'=>'Name of Interlibrary Loan Service', 'description'=>'The name to be displayed in the link to the ILL service ', 'hideInLists' => true, 'size'=>'80'),
 				'interLibraryLoanUrl' => array('property'=>'interLibraryLoanUrl',   'type'=>'text', 'label'=>'Interlibrary Loan URL', 'description'=>'The link for the ILL Service.', 'hideInLists' => true, 'size'=>'80'),
 
@@ -776,6 +775,11 @@ class Library extends DataObject
 					                     'properties' => array(
 				'hooplaLibraryID'      => array('property'=>'hooplaLibraryID', 'type'=>'integer', 'label'=>'Hoopla Library ID', 'description'=>'The ID Number Hoopla uses for this library', 'hideInLists' => true),
 			)),
+			'genealogySection' => array('property' => 'genealogySection', 'type' => 'section', 'label' => 'Genealogy', 'hideInLists' =>true,
+                'properties' => [
+                    'enableGenealogy' => array('property'=>'enableGenealogy', 'type'=>'checkbox', 'label'=>'Enable Genealogy Functionality', 'description'=>'Whether or not patrons can search genealogy.', 'hideInLists' => true, 'default' => 1),
+                ]
+            ),
 			'archiveSection' => array('property'=>'archiveSection', 'type' => 'section', 'label' =>'Local Content Archive', 'hideInLists' => true, 'helpLink'=>'https://docs.google.com/a/marmot.org/document/d/128wrNtZu_sUqm2_NypC6Sx8cOvM2cdmeOUDp0hUhQb4/edit?usp=sharing_eid&ts=57324e27', 'properties' => array(
 					'enableArchive' => array('property'=>'enableArchive', 'type'=>'checkbox', 'label'=>'Allow Searching the Archive', 'description'=>'Whether or not information from the archive is shown in Pika.', 'hideInLists' => true, 'default' => 0),
 					'archiveNamespace' => array('property'=>'archiveNamespace', 'type'=>'text', 'label'=>'Archive Namespace', 'description'=>'The namespace of your library in the archive', 'hideInLists' => true, 'maxLength' => 30, 'size'=>'30'),
@@ -1009,9 +1013,24 @@ class Library extends DataObject
 			unset($structure['recordsOwned']);
 			unset($structure['recordsToInclude']);
 		}
+
+		//Update settings based on what we have access to
 		global $configArray;
 		if (!$configArray['Islandora']['enabled']){
 		    unset($structure['archiveSection']);
+        }
+		$ils = $configArray['Catalog']['ils'];
+        if ($ils != 'Millennium' && $ils != 'Sierra'){
+            unset($structure['displaySection']['enableCourseReserves']);
+        }
+        if (!$configArray['Hoopla']['enabled']){
+            unset($structure['hooplaSection']);
+        }
+        if (!$configArray['EDS']['enabled']){
+            unset($structure['edsSection']);
+        }
+        if (!$configArray['CAS']['enabled']){
+            unset($structure['casSection']);
         }
 		return $structure;
 	}
@@ -1538,9 +1557,6 @@ class Library extends DataObject
 
 	public function clearRecordsToInclude(){
 		$this->clearOneToManyOptions('LibraryRecordToInclude');
-//		$object = new LibraryRecordToInclude();
-//		$object->libraryId = $this->libraryId;
-//		$object->delete();
 		$this->recordsToInclude = array();
 	}
 
