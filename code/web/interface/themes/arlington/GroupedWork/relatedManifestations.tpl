@@ -7,7 +7,7 @@
 		</div>
 		{assign var=hasHiddenFormats value=false}
 		{foreach from=$relatedManifestations item=relatedManifestation}
-			{if $relatedManifestation->isHideByDefault()}
+			{if $relatedManifestation->hasHiddenFormats()}
 				{assign var=hasHiddenFormats value=true}
 			{/if}
 			<div class="row related-manifestation {if $relatedManifestation->isHideByDefault()}hiddenManifestation_{$summId}{/if}" {if $relatedManifestation->isHideByDefault()}style="display: none"{/if}>

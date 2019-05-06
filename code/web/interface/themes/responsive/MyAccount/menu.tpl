@@ -223,17 +223,17 @@
 					</a>
 					<div id="indexingMenuGroup" class="panel-collapse collapse {if $curSection}in{/if}">
 						<div class="panel-body">
+							<div class="adminMenuLink{if $action == "IndexingProfiles"} active{/if}"><a href="{$path}/Admin/IndexingProfiles">Indexing Profiles</a></div>
+							<div class="adminMenuLink{if $action == "TranslationMaps"} active{/if}"><a href="{$path}/Admin/TranslationMaps">Translation Maps</a></div>
 							<div class="adminMenuLink{if $action == "IndexingStats"} active{/if}"><a href="{$path}/Admin/IndexingStats">Indexing Statistics</a></div>
 							<div class="adminMenuLink{if $action == "RecordGroupingLog"} active{/if}"><a href="{$path}/Admin/RecordGroupingLog">Record Grouping Log</a></div>
-							<div class="adminMenuLink{if $action == "ReindexLog"} active{/if}"><a href="{$path}/Admin/ReindexLog">Reindex Log</a></div>
+							<div class="adminMenuLink{if $action == "ReindexLog"} active{/if}"><a href="{$path}/Admin/ReindexLog">Grouped Work Index Log</a></div>
+							<div class="adminMenuLink{if $action == "HooplaExportLog"} active{/if}"><a href="{$path}/Admin/HooplaExportLog">Hoopla Export Log</a></div>
+							<div class="adminMenuLink{if $action == "RbdigitalExportLog"} active{/if}"><a href="{$path}/Admin/RbdigitalExportLog">Rbdigital Export Log</a></div>
 							<div class="adminMenuLink{if $action == "OverDriveExtractLog"} active{/if}"><a href="{$path}/Admin/OverDriveExtractLog">OverDrive Extract Log</a></div>
 							{if ($ils == 'Millennium' || $ils == 'Sierra')}
 								<div class="adminMenuLink{if $action == "SierraExportLog"} active{/if}"><a href="{$path}/Admin/SierraExportLog">Sierra Export Log</a></div>
 							{/if}
-							<div class="adminMenuLink{if $action == "HooplaExportLog"} active{/if}"><a href="{$path}/Admin/HooplaExportLog">Hoopla Export Log</a></div>
-							<div class="adminMenuLink{if $action == "RbdigitalExportLog"} active{/if}"><a href="{$path}/Admin/RbdigitalExportLog">Rbdigital Export Log</a></div>
-							<div class="adminMenuLink{if $action == "IndexingProfiles"} active{/if}"><a href="{$path}/Admin/IndexingProfiles">Indexing Profiles</a></div>
-							<div class="adminMenuLink{if $action == "TranslationMaps"} active{/if}"><a href="{$path}/Admin/TranslationMaps">Translation Maps</a></div>
 						</div>
 					</div>
 				</div>

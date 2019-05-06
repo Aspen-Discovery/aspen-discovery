@@ -1730,13 +1730,13 @@ class Library extends DataObject
 		$defaultFacets[] = $facet;
 
 		$facet = new LibraryFacetSetting();
-		$facet->setupSideFacet('literary_form_full', 'Literary Form', true);
+		$facet->setupSideFacet('literary_form', 'Literary Form', true);
 		$facet->libraryId = $libraryId;
 		$facet->weight = count($defaultFacets) + 1;
 		$defaultFacets[] = $facet;
 
 		$facet = new LibraryFacetSetting();
-		$facet->setupSideFacet('target_audience_full', 'Reading Level', true);
+		$facet->setupSideFacet('target_audience', 'Reading Level', true);
 		$facet->libraryId = $libraryId;
 		$facet->weight = count($defaultFacets) + 1;
 		$facet->numEntriesToShowByDefault = 8;

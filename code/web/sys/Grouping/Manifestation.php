@@ -99,7 +99,7 @@ class Grouping_Manifestation
     {
         if (!$this->_hideByDefault){
             foreach ($this->_variations as $variation) {
-                if (!$variation->isHideByDefault()){
+                if ($variation->isHideByDefault()){
                     return true;
                 }
             }

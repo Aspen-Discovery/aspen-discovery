@@ -62,7 +62,7 @@
 				{* Determine if there were hidden Formats for this entry *}
 				{assign var=hasHiddenFormats value=false}
 				{foreach from=$relatedManifestations item=relatedManifestation}
-					{if $relatedManifestation->isHideByDefault()}
+					{if $relatedManifestation->hasHiddenFormats()}
 						{assign var=hasHiddenFormats value=true}
 					{/if}
 				{/foreach}
