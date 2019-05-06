@@ -378,21 +378,26 @@ class OverDriveProcessor {
             for (int i = 0; i < languagesFromMetadata.length(); i++) {
                 JSONObject curLanguageObj = languagesFromMetadata.getJSONObject(i);
                 String language = curLanguageObj.getString("name");
-                languages.add(language);
-                if (primaryLanguage == null) {
-                    primaryLanguage = language;
-                }
-                String languageCode = curLanguageObj.getString("code");
-                String languageBoost = indexer.translateSystemValue("language_boost", languageCode, identifier);
-                if (languageBoost != null) {
-                    Long languageBoostVal = Long.parseLong(languageBoost);
-                    groupedWork.setLanguageBoost(languageBoostVal);
-                }
-                String languageBoostEs = indexer.translateSystemValue("language_boost_es", languageCode, identifier);
-                if (languageBoostEs != null) {
-                    Long languageBoostVal = Long.parseLong(languageBoostEs);
-                    groupedWork.setLanguageBoostSpanish(languageBoostVal);
-                }
+                //OverDrive no adds multiple languages separated by commas
+				String[] splitLanguages = language.split(";");
+				for (String curLanguage : splitLanguages){
+					curLanguage = curLanguage.trim();
+					languages.add(curLanguage);
+					if (primaryLanguage == null) {
+						primaryLanguage = curLanguage;
+					}
+				}
+				String languageCode = curLanguageObj.getString("code");
+				String languageBoost = indexer.translateSystemValue("language_boost", languageCode, identifier);
+				if (languageBoost != null) {
+					Long languageBoostVal = Long.parseLong(languageBoost);
+					groupedWork.setLanguageBoost(languageBoostVal);
+				}
+				String languageBoostEs = indexer.translateSystemValue("language_boost_es", languageCode, identifier);
+				if (languageBoostEs != null) {
+					Long languageBoostVal = Long.parseLong(languageBoostEs);
+					groupedWork.setLanguageBoostSpanish(languageBoostVal);
+				}
             }
             groupedWork.setLanguages(languages);
         }else {
