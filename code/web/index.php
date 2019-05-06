@@ -3,7 +3,6 @@
  * Aspen Discovery Layer
  */
 
-/** CORE APPLICATION CONTROLLER **/
 require_once 'bootstrap.php';
 
 global $timer;
@@ -64,6 +63,8 @@ if ($configArray['System']['systemMessage']){
 		$interface->assign('systemMessage', $library->systemMessage);
 	}
 }
+
+$interface->assign('islandoraEnabled', $configArray['Islandora']['enabled']);
 
 //Get the name of the active instance
 //$inLibrary, is used to pre-select autologoout on place hold forms;

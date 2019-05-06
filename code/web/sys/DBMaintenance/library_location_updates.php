@@ -833,7 +833,7 @@ function getLibraryLocationUpdates(){
 					libraryId INT(11) NOT NULL DEFAULT -1,
 					label VARCHAR(50) NOT NULL,
 					weight INT NOT NULL DEFAULT 0,
-					searchWhat ENUM('catalog', 'genealogy', 'overdrive', 'worldcat', 'prospector', 'goldrush', 'title_browse', 'author_browse', 'subject_browse'),
+					searchWhat ENUM('catalog', 'genealogy', 'overdrive', 'worldcat', 'prospector'),
 					defaultFilter TEXT,
 					defaultSort ENUM('relevance', 'popularity', 'newest_to_oldest', 'oldest_to_newest', 'author', 'title', 'user_rating'),
 					INDEX (libraryId)
@@ -843,7 +843,7 @@ function getLibraryLocationUpdates(){
 					locationId INT(11) NOT NULL DEFAULT -1,
 					label VARCHAR(50) NOT NULL,
 					weight INT NOT NULL DEFAULT 0,
-					searchWhat ENUM('catalog', 'genealogy', 'overdrive', 'worldcat', 'prospector', 'goldrush', 'title_browse', 'author_browse', 'subject_browse'),
+					searchWhat ENUM('catalog', 'genealogy', 'overdrive', 'worldcat', 'prospector'),
 					defaultFilter TEXT,
 					defaultSort ENUM('relevance', 'popularity', 'newest_to_oldest', 'oldest_to_newest', 'author', 'title', 'user_rating'),
 					INDEX (locationId)
@@ -1691,6 +1691,15 @@ function getLibraryLocationUpdates(){
             'continueOnError' => false,
             'sql' => array(
                 'ALTER TABLE library ADD COLUMN enableOpenArchives TINYINT(1) DEFAULT 0',
+            )
+        ),
+
+        'library_remove_gold_rush' => array(
+            'title' => 'Remove Gold Rush Searching',
+            'description' => 'Remove the ability to search Gold Rush',
+            'continueOnError' => false,
+            'sql' => array(
+                'ALTER TABLE library DROP COLUMN goldRushCode',
             )
         ),
 	);

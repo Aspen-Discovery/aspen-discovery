@@ -4,7 +4,7 @@
  * Support function -- get the file path to one of the ini files specified in the
  * [Extra_Config] section of config.ini.
  *
- * @param   string $name        The ini's name from the [Extra_Config] section of config.ini
+ * @param   string $name        The ini file's name from the [Extra_Config] section of config.ini
  * @return  string      The file path
  */
 function getExtraConfigArrayFile($name)
@@ -15,7 +15,7 @@ function getExtraConfigArrayFile($name)
 	//     filename if no stored value is found.
 	$filename = isset($configArray['Extra_Config'][$name]) ? $configArray['Extra_Config'][$name] : $name . '.ini';
 
-	//Check to see if there is a domain name based subfolder for he configuration
+	//Check to see if there is a domain name based sub-folder for he configuration
 	global $serverName;
 	if (file_exists(ROOT_DIR . "/../../sites/$serverName/conf/$filename")){
 		// Return the file path (note that all ini files are in the conf/ directory)
@@ -34,11 +34,11 @@ function getExtraConfigArrayFile($name)
  * Load a translation map from the translation_maps directory
  *
  * @param   string $name        The name of the translation map should not include _map.properties
- * @return  string      The file path
+ * @return  string[]      The file path
  */
 function getTranslationMap($name)
 {
-	//Check to see if there is a domain name based subfolder for he configuration
+	//Check to see if there is a domain name based sub-folder for he configuration
 	global $serverName;
 	/** @var Memcache $memCache */
 	global $memCache;
@@ -88,10 +88,11 @@ function mapValue($mapName, $value){
 		return $value;
 	}
 	$value = str_replace(' ', '_', $value);
+	$lowerCaseValue = strtolower($value);
 	if (isset($map[$value])){
 		return $map[$value];
-	}elseif (isset($map[strtolower($value)])){
-		return $map[strtolower($value)];
+	}elseif (isset($map[$lowerCaseValue])){
+		return $map[$lowerCaseValue];
 	}elseif(isset($map['*'])){
 		if ($map['*'] == 'nomap'){
 			return $value;
@@ -107,7 +108,7 @@ function mapValue($mapName, $value){
  * Support function -- get the contents of one of the ini files specified in the
  * [Extra_Config] section of config.ini.
  *
- * @param   string $name        The ini's name from the [Extra_Config] section of config.ini
+ * @param   string $name        The ini file's name from the [Extra_Config] section of config.ini
  * @return  array       The retrieved configuration settings.
  */
 function getExtraConfigArray($name)
@@ -216,15 +217,9 @@ function readConfig()
 	// Set a instanceName so that memcache variables can be stored for a specific instance of Pika,
 	// rather than the $serverName will depend on the specific interface a user is browsing to.
 	$instanceName = parse_url($mainArray['Site']['url'], PHP_URL_HOST);
-		// Have to set the instanceName before the transformation of $mainArray['Site']['url'] below.
+	// Have to set the instanceName before the transformation of $mainArray['Site']['url'] below.
 
-	//If we are accessing the site via a subdomain, need to preserve the subdomain
-	//Don't try to preserve SSL since the combination of proxy and SSL does not work nicely.
-	//i.e. https://mesa.marmot.org is proxied to https://mesa.opac.marmot.org which does not have
-	//a valid SSL cert
-
-	//We no longer are doing proxies as described above so we can preserve SSL now.
-    if (isset($_SERVER['SERVER_NAME'])){
+	if (isset($_SERVER['SERVER_NAME'])){
         if (isset($_SERVER['HTTPS'])){
             $mainArray['Site']['url'] = "https://" . $_SERVER['SERVER_NAME'];
         }else{

@@ -251,17 +251,6 @@ class SearchSources{
 			);
 		}
 
-		//Check to see if Gold Rush is a valid option
-		if (isset($library) && strlen($library->goldRushCode) > 0){
-			$searchOptions['goldrush'] = array(
-			//'link' => "http://goldrush.coalliance.org/index.cfm?fuseaction=Search&amp;inst_code={$library->goldRushCode}&amp;search_type={$worldCatSearchType}&amp;search_term=".urlencode($lookfor),
-                'name' => 'Gold Rush Magazine Finder',
-                'description' => 'A catalog of online journals and full text articles.',
-                'external' => true,
-				'catalogType' => 'catalog'
-			);
-		}
-
 		return $searchOptions;
 	}
 
@@ -310,32 +299,10 @@ class SearchSources{
 		}
 	}
 
-	public function getGoldRushSearchType($type){
-		switch ($type){
-			case 'Subject':
-				return 'Subject';
-				break;
-			case 'Title':
-				return 'Journal Title';
-				break;
-			case 'ISN':
-				return 'ISSN';
-				break;
-			case 'Author': //Gold Rush does not support author searches directly
-			case 'Keyword':
-			default:
-				return 'Keyword';
-				break;
-		}
-	}
-
 	public function getExternalLink($searchSource, $type, $lookFor){
 		global $library;
 		global $configArray;
-		if ($searchSource =='goldrush'){
-			$goldRushType = $this->getGoldRushSearchType($type);
-			return "http://goldrush.coalliance.org/index.cfm?fuseaction=Search&inst_code={$library->goldRushCode}&search_type={$goldRushType}&search_term=".urlencode($lookFor);
-		}else if ($searchSource == 'worldcat'){
+		if ($searchSource == 'worldcat'){
 			$worldCatSearchType = $this->getWorldCatSearchType($type);
 			$worldCatLink = "http://www.worldcat.org/search?q={$worldCatSearchType}%3A".urlencode($lookFor);
 			if (isset($library) && strlen($library->worldCatUrl) > 0){

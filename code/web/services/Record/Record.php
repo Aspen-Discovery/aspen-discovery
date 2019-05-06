@@ -192,10 +192,6 @@ abstract class Record_Record extends Action
 						$this->issn = substr($this->issn, 0, $pos);
 					}
 					$interface->assign('issn', $this->issn);
-					//Also setup GoldRush link
-					if (isset($library) && strlen($library->goldRushCode) > 0){
-						$interface->assign('goldRushLink', "http://goldrush.coalliance.org/index.cfm?fuseaction=Search&amp;inst_code={$library->goldRushCode}&amp;search_type=ISSN&amp;search_term={$this->issn}");
-					}
 				}
 			}
 

@@ -140,15 +140,15 @@ function loadLibraryAndLocation(){
 	}
 	$timer->logTime('Got branch');
 
-	$sublocation = $locationSingleton->getSublocationCode();
-	if (!isset($_COOKIE['sublocation']) || $sublocation != $_COOKIE['sublocation']) {
-		if (empty($sublocation)) {
-			setcookie('sublocation', $sublocation, time() - 1000, '/');
+	$subLocation = $locationSingleton->getSublocationCode();
+	if (!isset($_COOKIE['sublocation']) || $subLocation != $_COOKIE['sublocation']) {
+		if (empty($subLocation)) {
+			setcookie('sublocation', $subLocation, time() - 1000, '/');
 		} else {
-			setcookie('sublocation', $sublocation, 0, '/');
+			setcookie('sublocation', $subLocation, 0, '/');
 		}
 	}
-	$timer->logTime('Got sublocation');
+	$timer->logTime('Got subLocation');
 
 	//Update configuration information for scoping now that the database is setup.
 	$configArray = updateConfigForScoping($configArray);

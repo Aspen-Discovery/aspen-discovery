@@ -250,17 +250,6 @@ class UInterface extends Smarty
 		return $this->url;
 	}
 
-	/**
-	 * Get the current active theme setting.
-	 *
-	 * @access  public
-	 * @return  string
-	 */
-	public function getVuFindTheme()
-	{
-		return $this->vufindTheme;
-	}
-
 	/*
 	 * Get a list of themes that are active in the interface
 	 *
@@ -297,8 +286,6 @@ class UInterface extends Smarty
 
 	function setLanguage($lang)
 	{
-		global $configArray;
-
 		$this->lang = $lang;
 		$this->assign('userLang', $lang);
 	}

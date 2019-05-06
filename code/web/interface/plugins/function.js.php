@@ -51,7 +51,7 @@ function smarty_function_js($params, &$smarty){
 
 	$path = $configArray['Site']['path'];
 	$local = $configArray['Site']['local'];
-	$themes = explode(',', $smarty->getVuFindTheme());
+	$themes = explode(',', $smarty->getThemes());
 	$themes[] = 'default';
 	$filename = $params['filename'];
 

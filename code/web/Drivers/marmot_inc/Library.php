@@ -58,9 +58,7 @@ class Library extends DataObject
 	public $payFinesLink;
 	public $payFinesLinkText;
 	public $minimumFineAmount;
-	public $showRefreshAccountButton;    // specifically to refresh account after paying fines online
-	public $goldRushCode;
-	public $repeatSearchOption;
+	public $showRefreshAccountButton;    // specifically to refresh account after paying fines onlinepublic $repeatSearchOption;
 	public $repeatInOnlineCollection;
 	public $repeatInProspector;
 	public $repeatInWorldCat;
@@ -761,12 +759,6 @@ class Library extends DataObject
 			)),
 			)),
 
-			'goldrushSection' => array('property'=>'goldrushSection', 'type' => 'section', 'label' =>'Gold Rush', 'hideInLists' => true,
-			                           'helpLink' => 'https://docs.google.com/document/d/1OfVcwdalgi8YNEqTAXXv7Oye15eQwxGGKX5IIaeuT7U', 'properties' => array(
-					'goldRushCode'  => array('property'=>'goldRushCode', 'type'=>'text', 'label'=>'Gold Rush Inst Code', 'description'=>'The INST Code to use with Gold Rush.  Leave blank to not link to Gold Rush.', 'hideInLists' => true,),
-				)),
-
-
 			'overdriveSection' => array('property'=>'overdriveSection', 'type' => 'section', 'label' =>'OverDrive', 'hideInLists' => true,
 					'helpLink'=>'https://docs.google.com/document/d/1HG7duKI4-gbOlgDvMlQrib52LV0BBUhzGD7Q69QLziM', 'properties' => array(
 				'enableOverdriveCollection'      => array('property'=>'enableOverdriveCollection', 'type'=>'checkbox', 'label'=>'Enable Overdrive Collection', 'description'=>'Whether or not titles from the Overdrive collection should be included in searches', 'hideInLists' => true),
@@ -1007,7 +999,6 @@ class Library extends DataObject
 			unset($structure['fullRecordSection']);
 			unset($structure['holdingsSummarySection']);
 			unset($structure['materialsRequestSection']);
-			unset($structure['goldrushSection']);
 			unset($structure['prospectorSection']);
 			unset($structure['worldCatSection']);
 			unset($structure['overdriveSection']);
@@ -1018,6 +1009,10 @@ class Library extends DataObject
 			unset($structure['recordsOwned']);
 			unset($structure['recordsToInclude']);
 		}
+		global $configArray;
+		if (!$configArray['Islandora']['enabled']){
+		    unset($structure['archiveSection']);
+        }
 		return $structure;
 	}
 
@@ -1423,7 +1418,7 @@ class Library extends DataObject
 			$this->saveArchiveSearchFacets();
 			$this->saveRecordsOwned();
 			$this->saveRecordsToInclude();
-			$this->saveManagematerialsRequestFieldsToDisplay();
+			$this->saveMaterialsRequestFieldsToDisplay();
 			$this->saveMaterialsRequestFormFields();
 			$this->saveLibraryLinks();
 			$this->saveLibraryTopLinks();
@@ -1473,7 +1468,7 @@ class Library extends DataObject
 			$this->saveArchiveSearchFacets();
 			$this->saveRecordsOwned();
 			$this->saveRecordsToInclude();
-			$this->saveManagematerialsRequestFieldsToDisplay();
+			$this->saveMaterialsRequestFieldsToDisplay();
 			$this->saveMaterialsRequestFormats();
 			$this->saveMaterialsRequestFormFields();
 			$this->saveLibraryLinks();
@@ -1549,7 +1544,7 @@ class Library extends DataObject
 		$this->recordsToInclude = array();
 	}
 
-	public function saveManagematerialsRequestFieldsToDisplay(){
+	public function saveMaterialsRequestFieldsToDisplay(){
 		if (isset ($this->materialsRequestFieldsToDisplay) && is_array($this->materialsRequestFieldsToDisplay)){
 			$this->saveOneToManyOptions($this->materialsRequestFieldsToDisplay);
 			unset($this->materialsRequestFieldsToDisplay);
