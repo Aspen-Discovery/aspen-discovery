@@ -911,8 +911,8 @@ class Novelist3{
 							'isbn10' => $isbn10,
 							'recordId' => -1,
 							'libraryOwned' => false,
-							'smallCover' => $cover = $configArray['Site']['coverUrl'] . "/bookcover.php?size=small&isn=" . $isbn13,
-							'mediumCover' => $cover = $configArray['Site']['coverUrl'] . "/bookcover.php?size=medium&isn=" . $isbn13,
+							'smallCover' => "/bookcover.php?size=small&isn=" . $isbn13,
+							'mediumCover' => "/bookcover.php?size=medium&isn=" . $isbn13,
 					);
 
 					$curTitle['isCurrent'] = $currentId == $curTitle['recordId'];

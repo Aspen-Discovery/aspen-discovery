@@ -635,7 +635,7 @@ class MyAccount_AJAX
 		foreach ($suggestions as $suggestion) {
 			$titles[] = array(
 				'id' => $suggestion['titleInfo']['id'],
-				'image' => $configArray['Site']['coverUrl'] . "/bookcover.php?id=" . $suggestion['titleInfo']['id'] . "&issn=" . $suggestion['titleInfo']['issn'] . "&isn=" . $suggestion['titleInfo']['isbn10'] . "&size=medium&upc=" . $suggestion['titleInfo']['upc'] . "&category=" . $suggestion['titleInfo']['format_category'][0],
+				'image' => "/bookcover.php?id=" . $suggestion['titleInfo']['id'] . "&issn=" . $suggestion['titleInfo']['issn'] . "&isn=" . $suggestion['titleInfo']['isbn10'] . "&size=medium&upc=" . $suggestion['titleInfo']['upc'] . "&category=" . $suggestion['titleInfo']['format_category'][0],
 				'title' => $suggestion['titleInfo']['title'],
 				'author' => $suggestion['titleInfo']['author'],
 				'basedOn' => $suggestion['basedOn']

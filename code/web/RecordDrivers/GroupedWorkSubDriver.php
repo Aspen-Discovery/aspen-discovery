@@ -52,10 +52,8 @@ abstract class GroupedWorkSubDriver extends RecordInterface
         if (is_array($formatCategory)){
             $formatCategory = reset($formatCategory);
         }
-        $formats = $this->getFormat();
-        $format = reset($formats);
-        global $configArray;
-        $bookCoverUrl = $configArray['Site']['coverUrl'] . "/bookcover.php?id={$id}&amp;size={$size}&amp;category=" . urlencode($formatCategory) . "&amp;format=" . urlencode($format);
+        $format = $this->getPrimaryFormat();
+        $bookCoverUrl = "/bookcover.php?id={$id}&amp;size={$size}&amp;category=" . urlencode($formatCategory) . "&amp;format=" . urlencode($format);
         $isbn = $this->getCleanISBN();
         if ($isbn){
             $bookCoverUrl .= "&amp;isn={$isbn}";

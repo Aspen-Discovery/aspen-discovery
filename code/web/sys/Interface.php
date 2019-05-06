@@ -120,7 +120,6 @@ class UInterface extends Smarty
 		$this->url = $url;
 		$this->assign('template_dir',$this->template_dir);
 		$this->assign('url', $url);
-		$this->assign('coverUrl', $configArray['Site']['coverUrl']);
 
 		if (isset($configArray['Islandora']['repositoryUrl'])) {
 			$this->assign('repositoryUrl', $configArray['Islandora']['repositoryUrl']);

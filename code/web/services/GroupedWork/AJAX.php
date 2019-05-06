@@ -885,15 +885,15 @@ class GroupedWork_AJAX {
 		$recordDriver = new GroupedWorkDriver($id);
 
 		//Reload small cover
-		$smallCoverUrl = $configArray['Site']['coverUrl'] . $recordDriver->getBookcoverUrl('small') . '&reload';
+		$smallCoverUrl = $recordDriver->getBookcoverUrl('small', true) . '&reload';
 		$ret = file_get_contents($smallCoverUrl);
 
 		//Reload medium cover
-		$mediumCoverUrl = $configArray['Site']['coverUrl'] . $recordDriver->getBookcoverUrl('medium') . '&reload';
+		$mediumCoverUrl = $recordDriver->getBookcoverUrl('medium', true) . '&reload';
 		$ret = file_get_contents($mediumCoverUrl);
 
 		//Reload large cover
-		$largeCoverUrl = $configArray['Site']['coverUrl'] . $recordDriver->getBookcoverUrl('large') . '&reload';
+		$largeCoverUrl = $recordDriver->getBookcoverUrl('large', true) . '&reload';
 		$ret = file_get_contents($largeCoverUrl);
 
 		return json_encode(array('success' => true, 'message' => 'Covers have been reloaded.  You may need to refresh the page to clear your local cache.'));

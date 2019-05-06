@@ -364,7 +364,7 @@ class ListAPI extends Action {
 					$suggestions = Suggestions::getSuggestions($userId);
 					$titles = array();
 					foreach ($suggestions as $id=>$suggestion){
-						$imageUrl = $configArray['Site']['coverUrl'] . "/bookcover.php?id=" . $id;
+						$imageUrl = "/bookcover.php?id=" . $id;
 						if (isset($suggestion['titleInfo']['issn'])){
 							$imageUrl .= "&issn=" . $suggestion['titleInfo']['issn'];
 						}

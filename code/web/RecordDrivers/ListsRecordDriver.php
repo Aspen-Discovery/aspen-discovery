@@ -9,10 +9,15 @@ class ListsRecordDriver extends IndexRecordDriver
 		parent::__construct($record);
 	}
 
-    function getBookcoverUrl($size = 'small'){
+    function getBookcoverUrl($size = 'small', $absolutePath = false){
         global $configArray;
+        if ($absolutePath){
+            $bookCoverUrl = $configArray['Site']['url'];
+        }else{
+            $bookCoverUrl = $configArray['Site']['path'];
+        }
         $id = $this->getId();
-        $bookCoverUrl = $configArray['Site']['coverUrl'] . "/bookcover.php?type=list&amp;id={$id}&amp;size={$size}";
+        $bookCoverUrl = $bookCoverUrl . "/bookcover.php?type=list&amp;id={$id}&amp;size={$size}";
         return $bookCoverUrl;
     }
 
