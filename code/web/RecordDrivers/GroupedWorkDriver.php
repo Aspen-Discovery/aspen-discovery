@@ -1342,6 +1342,8 @@ class GroupedWorkDriver extends IndexRecordDriver{
         $selectedFormatCategory = null;
         $selectedAvailability = null;
         $selectedDetailedAvailability = null;
+        $selectedLanguage = null;
+        $selectedEcontentSources = [];
         if (isset($_REQUEST['filter'])){
             foreach ($_REQUEST['filter'] as $filter){
                 if (preg_match('/^format_category(?:\w*):"?(.+?)"?$/', $filter, $matches)){
@@ -1354,6 +1356,10 @@ class GroupedWorkDriver extends IndexRecordDriver{
                     $selectedAvailability = urldecode($matches[1]);
                 }elseif (preg_match('/^available_at(?:[\w_]*):"?(.+?)"?$/', $filter, $matches)) {
                     $selectedDetailedAvailability = urldecode($matches[1]);
+                }elseif (preg_match('/^econtent_source(?:[\w_]*):"?(.+?)"?$/', $filter, $matches)) {
+                    $selectedEcontentSources[] = urldecode($matches[1]);
+                }elseif (preg_match('/^language:"?(.+?)"?$/', $filter, $matches)) {
+                    $selectedLanguage = urldecode($matches[1]);
                 }
             }
         }
@@ -1432,6 +1438,22 @@ class GroupedWorkDriver extends IndexRecordDriver{
             if ($searchSource == 'econtent'){
                 if (!$manifestation['isEContent']){
                     $manifestation->setHideByDefault(true);
+                }
+            }
+
+            //Hide variations as needed
+            if ($selectedLanguage){
+                foreach ($manifestation->getVariations() as $variation){
+                    if ($variation->language != $selectedLanguage){
+                        $variation->setHideByDefault(true);
+                    }
+                }
+            }
+            if (count($selectedEcontentSources) > 0){
+                foreach ($manifestation->getVariations() as $variation){
+                    if (!in_array($variation->econtentSource, $selectedEcontentSources)){
+                        $variation->setHideByDefault(true);
+                    }
                 }
             }
 

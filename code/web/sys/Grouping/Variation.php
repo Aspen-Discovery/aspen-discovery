@@ -15,7 +15,7 @@ class Grouping_Variation
     /** @var Grouping_StatusInformation */
     private $_statusInformation;
 
-    private $_itemSummary = [];
+    private $_hideByDefault = false;
 
     public function __construct(Grouping_Record $record){
         $this->isEcontent = $record->isEContent();
@@ -144,5 +144,21 @@ class Grouping_Variation
 
     public function getCopies(){
         return $this->_statusInformation->getCopies();
+    }
+
+    /**
+     * @return bool
+     */
+    function isHideByDefault(): bool
+    {
+        return $this->_hideByDefault;
+    }
+
+    /**
+     * @param bool $hideByDefault
+     */
+    function setHideByDefault(bool $hideByDefault): void
+    {
+        $this->_hideByDefault = $hideByDefault;
     }
 }

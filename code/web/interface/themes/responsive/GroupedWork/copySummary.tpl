@@ -7,8 +7,10 @@
 				<div class="itemSummary row">
 					<div class="col-xs-7">
 						<span class="notranslate"><strong>{$item.shelfLocation}</strong>
-							{if $item.availableCopies > 1}
-							&nbsp;has&nbsp;{$item.availableCopies}
+							{if $item.availableCopies > 9999}
+								&nbsp;has unlimited
+							{elseif $item.availableCopies > 1}
+								&nbsp;has&nbsp;{$item.availableCopies}
 							{/if}
 						</span>
 					</div>

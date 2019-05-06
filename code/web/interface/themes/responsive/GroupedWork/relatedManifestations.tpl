@@ -7,7 +7,7 @@
 		</div>
 		{assign var=hasHiddenFormats value=false}
 		{foreach from=$relatedManifestations item=relatedManifestation}
-			{if $relatedManifestation->isHideByDefault()}
+			{if $relatedManifestation->hasHiddenFormats()}
 				{assign var=hasHiddenFormats value=true}
 			{/if}
 			{* Display the manifestation (the format being displayed) *}

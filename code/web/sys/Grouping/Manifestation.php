@@ -80,7 +80,33 @@ class Grouping_Manifestation
      */
     function isHideByDefault(): bool
     {
-        return $this->_hideByDefault;
+        if (!$this->_hideByDefault){
+            $hideAllVariations = true;
+            foreach ($this->_variations as $variation) {
+                if (!$variation->isHideByDefault()){
+                    $hideAllVariations = false;
+                    break;
+                }
+            }
+            return $hideAllVariations;
+        }else{
+            return true;
+        }
+
+    }
+
+    function hasHiddenFormats(): bool
+    {
+        if (!$this->_hideByDefault){
+            foreach ($this->_variations as $variation) {
+                if (!$variation->isHideByDefault()){
+                    return true;
+                }
+            }
+            return false;
+        }else{
+            return true;
+        }
     }
 
     /**

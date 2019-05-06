@@ -6,10 +6,13 @@
         </div>
     </div>
     {foreach from=$relatedManifestation->getVariations() item=variation}
-        <div class="row">
+        {if $variation->isHideByDefault()}
+            {assign var=hasHiddenFormats value=true}
+        {/if}
+        <div class="row {if $variation->isHideByDefault()}hiddenManifestation_{$summId}{/if}" {if $variation->isHideByDefault()}style="display: none"{/if}>
             <div class="col-tn-3 col-xs-4{if !$viewingCombinedResults} col-md-3{/if} manifestation-format">
                 &nbsp;&nbsp;&nbsp;
-                <a href="#" onclick="return VuFind.ResultsList.toggleRelatedManifestations('{$id|escapeCSS}_{$relatedManifestation->format|escapeCSS}_{$variation->id|escapeCSS}');">
+                <a href="{$variation->getUrl()}" onclick="return VuFind.ResultsList.toggleRelatedManifestations('{$id|escapeCSS}_{$relatedManifestation->format|escapeCSS}_{$variation->id|escapeCSS}');">
                     {$variation->label}
                 </a>
                 <br>&nbsp;&nbsp;&nbsp;

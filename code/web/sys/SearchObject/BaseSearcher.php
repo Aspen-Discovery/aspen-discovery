@@ -2173,7 +2173,7 @@ abstract class SearchObject_BaseSearcher
 									$timer->logTime('Loaded related records for previous result');
 									if (count($relatedRecords) == 1) {
 										$previousRecord = reset($relatedRecords);
-										list($previousType, $previousId) = explode('/', trim($previousRecord['url'], '/'));
+										list($previousType, $previousId) = explode('/', trim($previousRecord->getUrl(), '/'));
 										$interface->assign('previousId', $previousId);
 										$interface->assign('previousType', $previousType);
 									} else {

@@ -1,7 +1,7 @@
 <div class="col-sm-12">
     <div class="row">
         <div class="col-tn-3 col-xs-4{if !$viewingCombinedResults} col-md-3{/if} manifestation-format">
-            <a href="#" onclick="return VuFind.ResultsList.toggleRelatedManifestations('{$id|escapeCSS}_{$relatedManifestation->format|escapeCSS}');">
+            <a href="{$relatedManifestation->getUrl()}" onclick="return VuFind.ResultsList.toggleRelatedManifestations('{$id|escapeCSS}_{$relatedManifestation->format|escapeCSS}');">
                 {$relatedManifestation->format}
             </a>
             <br>
