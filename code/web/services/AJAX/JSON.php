@@ -166,9 +166,10 @@ class AJAX_JSON extends Action {
 				'name' => $tmpLocation->displayName,
 				'address' => preg_replace('/\r\n|\r|\n/', '<br>', $tmpLocation->address),
 				'phone' => $tmpLocation->phone,
-				'map_image' => "http://maps.googleapis.com/maps/api/staticmap?center=$mapAddress&zoom=15&size=200x200&sensor=false&markers=color:red%7C$mapAddress",
+				//'map_image' => "http://maps.googleapis.com/maps/api/staticmap?center=$mapAddress&zoom=15&size=200x200&sensor=false&markers=color:red%7C$mapAddress",
 				'map_link' => "http://maps.google.com/maps?f=q&hl=en&geocode=&q=$mapAddress&ie=UTF8&z=15&iwloc=addr&om=1&t=m",
-				'hours' => $hours
+				'hours' => $hours,
+                'hasValidHours' => $tmpLocation->hasValidHours()
 			);
 		}
 

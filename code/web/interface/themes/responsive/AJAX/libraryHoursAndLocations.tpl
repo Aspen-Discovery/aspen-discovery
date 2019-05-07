@@ -22,7 +22,9 @@
 						{if $curLocation.address}
 						<dt>Address</dt>
 						<dd>
-							<address>{$curLocation.address}</address>
+							<address>{$curLocation.address}
+								{if !empty($curLocation.map_link)}<br/><a href="{$curLocation.map_link}">Directions</a>{/if}
+							</address>
 						</dd>
 						{/if}
 						{if $curLocation.phone}
@@ -31,12 +33,12 @@
 						{/if}
 					</dl>
 				</div>
-				{if $curLocation.address}
-				<div class="col-xs-12 col-sm-9">
-					<a href="{$curLocation.map_link}"><img src="{$curLocation.map_image}" alt="Map"></a>
-					<br><a href="{$curLocation.map_link}">Directions</a>
-				</div>
-				{/if}
+{*				{if !empty($curLocation.map_link)}*}
+{*				<div class="col-xs-12 col-sm-9">*}
+{*					<a href="{$curLocation.map_link}"><img src="{$curLocation.map_image}" alt="Map"></a>*}
+{*					<br><a href="{$curLocation.map_link}">Directions</a>*}
+{*				</div>*}
+{*				{/if}*}
 			</div>
 			{if $curLocation.hasValidHours}
 				<h4>Hours</h4>
