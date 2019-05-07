@@ -422,6 +422,7 @@ abstract class Solr {
 			$idString = implode(' OR ', $tmpIds);
 			$options = array('q' => "id:($idString)");
 			$options['fl'] = $fieldsToReturn;
+            $options['rows'] = count($tmpIds);
 
 			$this->client->setMethod('GET');
 			$this->client->setURL($this->host . "/select");
