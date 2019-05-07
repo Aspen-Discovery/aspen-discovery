@@ -409,8 +409,7 @@ VuFind.GroupedWork = (function(){
 
 
 		showGroupedWorkInfo:function(id, browseCategoryId){
-			//var url = Globals.path + "/GroupedWork" + encodeURIComponent(id) + "/AJAX?method=getWorkInfo&id=" + id;
-			var url = Globals.path + "/GroupedWork/" + encodeURIComponent(id) + "/AJAX?method=getWorkInfo";
+			let url = Globals.path + "/GroupedWork/" + encodeURIComponent(id) + "/AJAX?method=getWorkInfo";
 			if (browseCategoryId != undefined){
 				url += "&browseCategoryId=" + browseCategoryId;
 			}

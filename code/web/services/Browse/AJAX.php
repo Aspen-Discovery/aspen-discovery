@@ -416,7 +416,7 @@ class Browse_AJAX extends Action {
 //			if ($this->subCategories){ // Avoid unneeded sql update calls of subBrowseCategories
 //				unset ($this->browseCategory->subBrowseCategories);
 //			}
-		$this->browseCategory->update_stats_only();
+		    $this->browseCategory->update_stats_only();
 		}
 	}
 

@@ -310,12 +310,12 @@ class GroupedWork_AJAX {
 		$id = $_REQUEST['id'];
 		$recordDriver = new GroupedWorkDriver($id);
 
-		if (!empty($_REQUEST['browseCategory'])){ // TODO need to check for $_REQUEST['subCategory'] ??
+		if (!empty($_REQUEST['browseCategoryId'])){ // TODO need to check for $_REQUEST['subCategory'] ??
 			// Changed from $_REQUEST['browseCategoryId'] to $_REQUEST['browseCategory'] to be consistent with Browse Category code.
 			// TODO Need to see when this comes into action and verify it works as expected. plb 8-19-2015
 			require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
 			$browseCategory = new BrowseCategory();
-			$browseCategory->textId = $_REQUEST['browseCategory'];
+			$browseCategory->textId = $_REQUEST['browseCategoryId'];
 			if ($browseCategory->find(true)){
 				$browseCategory->numTitlesClickedOn++;
 				$browseCategory->update_stats_only();
