@@ -8,10 +8,15 @@ class CurlWrapper {
 
     public function __construct() {
         global $interface;
-        $gitBranch = $interface->getVariable('gitBranch');
-        if (substr($gitBranch, -1) == "\n"){
-            $gitBranch = substr($gitBranch, 0, -1);
+        if ($interface != null){
+            $gitBranch = $interface->getVariable('gitBranch');
+            if (substr($gitBranch, -1) == "\n"){
+                $gitBranch = substr($gitBranch, 0, -1);
+            }
+        }else{
+            $gitBranch = 'Master';
         }
+
         $header = array();
         $header[0] = "Accept: text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5";
         $header[] = "Cache-Control: max-age=0";

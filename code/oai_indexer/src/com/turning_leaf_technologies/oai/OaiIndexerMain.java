@@ -111,11 +111,9 @@ public class OaiIndexerMain {
                 if (collectionsRS.wasNull() || lastFetched == 0 || fullReload) {
                     needsIndexing = true;
                 } else {
-                    //'hourly', 'daily', 'weekly', 'monthly', 'yearly', 'once'
+                    //'daily', 'weekly', 'monthly', 'yearly', 'once'
                     switch (fetchFrequency) {
-                        case "hourly":
-                            needsIndexing = lastFetched < (currentTime - 60 * 60);
-                            break;
+                        case "hourly": //Legacy, no longer in the interface
                         case "daily":
                             needsIndexing = lastFetched < (currentTime - 24 * 60 * 60);
                             break;
@@ -140,7 +138,7 @@ public class OaiIndexerMain {
                         String[] subjectFiltersRaw =  subjectFilterString.split("\\s*(\\r\\n|\\n|\\r)\\s*");
                         for(String subjectFilter : subjectFiltersRaw) {
                             if (subjectFilter.length() > 0) {
-                                subjectFilters.add(Pattern.compile("\\b" + subjectFilter + "\\b", Pattern.CASE_INSENSITIVE));
+                                subjectFilters.add(Pattern.compile("(\\b|-)" + subjectFilter.toLowerCase() + "(\\b|-)", Pattern.CASE_INSENSITIVE));
                             }
                         }
                     }
@@ -152,7 +150,7 @@ public class OaiIndexerMain {
         }
 
         try {
-            updateServer.commit();
+            updateServer.commit(false, false, true);
         } catch (Exception e) {
             logger.error("Error in final commit", e);
         }
@@ -194,65 +192,77 @@ public class OaiIndexerMain {
         String[] oaiSets = setNames.split(",");
         for (String oaiSet : oaiSets) {
             logger.info("Loading set " + oaiSet);
-            boolean continueLoading = true;
-            String resumptionToken = null;
-            while (continueLoading) {
-                continueLoading = false;
+            //To improve performance, load records for a month at a time
+            GregorianCalendar now = new GregorianCalendar();
+            //Protocol was invented in 2002 so we are safe starting in 2000 to cover anything from OA version 1
+            for (int year = 2000; year <= now.get(GregorianCalendar.YEAR); year++){
+                for (int month = 1; month <= 12; month++){
+                    boolean continueLoading = true;
+                    String resumptionToken = null;
+                    while (continueLoading) {
+                        continueLoading = false;
 
-                String oaiUrl;
-                if (resumptionToken != null) {
-                    try {
-                        oaiUrl = baseUrl + "?verb=ListRecords&resumptionToken=" + URLEncoder.encode(resumptionToken, "UTF-8");
-                    } catch (UnsupportedEncodingException e) {
-                        logger.error("Error encoding resumption token", e);
-                        return;
-                    }
-                } else {
-                    oaiUrl = baseUrl + "?verb=ListRecords&metadataPrefix=oai_dc&set=" + oaiSet;
-                }
-                try {
-                    logger.info("Loading from " + oaiUrl);
-                    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-                    factory.setValidating(false);
-                    factory.setIgnoringElementContentWhitespace(true);
-                    DocumentBuilder builder = factory.newDocumentBuilder();
+                        String oaiUrl;
+                        if (resumptionToken != null) {
+                            try {
+                                oaiUrl = baseUrl + "?verb=ListRecords&resumptionToken=" + URLEncoder.encode(resumptionToken, "UTF-8");
+                            } catch (UnsupportedEncodingException e) {
+                                logger.error("Error encoding resumption token", e);
+                                return;
+                            }
+                        } else {
+                            String startDate = year + "-" + String.format("%02d", month) + "-01";
+                            String endDate = year + "-" + String.format("%02d", month +1 ) + "-01";
+                            if (month == 12){
+                                endDate = (year + 1) + "-01-01";
+                            }
+                            oaiUrl = baseUrl + "?verb=ListRecords&metadataPrefix=oai_dc&set=" + oaiSet + "&from=" + startDate + "&until=" + endDate;
+                        }
+                        try {
+                            logger.info("Loading from " + oaiUrl);
+                            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+                            factory.setValidating(false);
+                            factory.setIgnoringElementContentWhitespace(true);
+                            DocumentBuilder builder = factory.newDocumentBuilder();
 
-                    Document doc = builder.parse(oaiUrl);
-                    Element docElement = doc.getDocumentElement();
-                    //Normally we get list records, but if we are at the end of the list OAI may return an
-                    //error rather than ListRecords (even though it gave us a resumption token)
-                    NodeList listRecords = docElement.getElementsByTagName("ListRecords");
-                    if (listRecords.getLength() > 0) {
-                        Element listRecordsElement = (Element) docElement.getElementsByTagName("ListRecords").item(0);
-                        NodeList allRecords = listRecordsElement.getElementsByTagName("record");
-                        for (int i = 0; i < allRecords.getLength(); i++) {
-                            Node curRecordNode = allRecords.item(i);
-                            if (curRecordNode instanceof Element) {
-                                Element curRecordElement = (Element) curRecordNode;
+                            Document doc = builder.parse(oaiUrl);
+                            Element docElement = doc.getDocumentElement();
+                            //Normally we get list records, but if we are at the end of the list OAI may return an
+                            //error rather than ListRecords (even though it gave us a resumption token)
+                            NodeList listRecords = docElement.getElementsByTagName("ListRecords");
+                            if (listRecords.getLength() > 0) {
+                                Element listRecordsElement = (Element) docElement.getElementsByTagName("ListRecords").item(0);
+                                NodeList allRecords = listRecordsElement.getElementsByTagName("record");
+                                for (int i = 0; i < allRecords.getLength(); i++) {
+                                    Node curRecordNode = allRecords.item(i);
+                                    if (curRecordNode instanceof Element) {
+                                        Element curRecordElement = (Element) curRecordNode;
 
-                                if (indexElement(curRecordElement, existingRecords, collectionId, collectionName, subjectFilters, allExistingCollectionSubjects)) {
-                                    numRecordsLoaded++;
-                                }else{
-                                    numRecordsSkipped++;
+                                        if (indexElement(curRecordElement, existingRecords, collectionId, collectionName, subjectFilters, allExistingCollectionSubjects)) {
+                                            numRecordsLoaded++;
+                                        }else{
+                                            numRecordsSkipped++;
+                                        }
+                                    }
+                                }
+
+                                //Check to see if there are more records to load and if so continue
+                                NodeList resumptionTokens = listRecordsElement.getElementsByTagName("resumptionToken");
+                                if (resumptionTokens.getLength() > 0) {
+                                    Node resumptionTokenNode = resumptionTokens.item(0);
+                                    if (resumptionTokenNode instanceof Element) {
+                                        Element resumptionTokenElement = (Element) resumptionTokenNode;
+                                        resumptionToken = resumptionTokenElement.getTextContent();
+                                        if (resumptionToken.length() > 0) {
+                                            continueLoading = true;
+                                        }
+                                    }
                                 }
                             }
-                        }
-
-                        //Check to see if there are more records to load and if so continue
-                        NodeList resumptionTokens = listRecordsElement.getElementsByTagName("resumptionToken");
-                        if (resumptionTokens.getLength() > 0) {
-                            Node resumptionTokenNode = resumptionTokens.item(0);
-                            if (resumptionTokenNode instanceof Element) {
-                                Element resumptionTokenElement = (Element) resumptionTokenNode;
-                                resumptionToken = resumptionTokenElement.getTextContent();
-                                if (resumptionToken.length() > 0) {
-                                    continueLoading = true;
-                                }
-                            }
+                        } catch (Exception e) {
+                            logger.error("Error parsing OAI data ", e);
                         }
                     }
-                } catch (Exception e) {
-                    logger.error("Error parsing OAI data ", e);
                 }
             }
         }

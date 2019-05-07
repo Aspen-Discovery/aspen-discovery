@@ -1067,10 +1067,22 @@ class BookCoverProcessor{
         $openArchivesRecord->id = $id;
         if ($openArchivesRecord->find(true)){
             $url = $openArchivesRecord->permanentUrl;
-            $pageContents = file_get_contents($url);
+            //Need the full curl wrapper to handle redirects
+            require_once ROOT_DIR . '/sys/CurlWrapper.php';
+            $curlWrapper = new CurlWrapper();
+            $pageContents = $curlWrapper->curlGetPage($url);
+            $curlWrapper->close_curl();
             $matches = [];
             if (preg_match('~<meta property="og:image" content="(.*?)" />~', $pageContents, $matches)){
                 $bookcoverUrl = $matches[1];
+                return $this->processImageURL('open_archives', $bookcoverUrl, true);
+            } /** @noinspection HtmlDeprecatedAttribute */
+            elseif (preg_match('~<img src="(.*?)" border="0" alt="Thumbnail image">~', $pageContents, $matches)){
+                $bookcoverUrl = $matches[1];
+                if (strpos($bookcoverUrl, 'http') !== 0){
+                    $urlComponents = parse_url($url);
+                    $bookcoverUrl = $urlComponents['scheme'] . '://' . $urlComponents['host'] . $bookcoverUrl;
+                }
                 return $this->processImageURL('open_archives', $bookcoverUrl, true);
             }
         }
