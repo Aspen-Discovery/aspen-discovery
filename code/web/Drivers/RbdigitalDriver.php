@@ -489,9 +489,7 @@ class RbdigitalDriver extends AbstractEContentDriver
 
                 $rawResponse = $this->curlWrapper->curlGetPage($lookupPatronUrl);
                 $response = json_decode($rawResponse);
-                if (is_null($response)) {
-                    $rbdigitalId = -1;
-                }elseif (isset($response->message) && ($response->message == 'Patron not found.')){
+                if (is_null($response) || (isset($response->message) && ($response->message == 'Patron not found.'))){
                     if (!empty($user->email)){
                         $lookupPatronUrl = $this->webServiceURL . '/v1/rpc/libraries/' . $this->libraryId . '/patrons/' . urlencode($user->email);
 

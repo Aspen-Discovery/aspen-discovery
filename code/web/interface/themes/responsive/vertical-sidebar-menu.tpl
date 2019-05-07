@@ -34,7 +34,7 @@
 						<div class="menu-bar-label rotated-text"><span class="rotated-text-inner">{$sidebarMenuButtonText}</span></div>
 					</a>
 				</div>
-				{if $showExploreMore}
+				{if !empty($showExploreMore)}
 					<div id="sidebar-menu-option-explore-more" class="menu-bar-option">
 						<a href="#" onclick="VuFind.Menu.SideBar.showExploreMore(this)" class="menu-icon" title="{translate text='Explore More'}">
 							<img src="{img filename='/interface/themes/responsive/images/ExploreMore.png'}" alt="{translate text='Explore More'}">
@@ -62,11 +62,11 @@
 								VuFind.Menu.SideBar.showSearch($('#vertical-menu-search-button'));
 							{rdelim}
 							//$('.menu-bar-option:nth-child(1)>a', '#vertical-menu-bar').filter(':visible').click();
-						{elseif (!$isLoginPage && !in_array($action, array('EmailResetPin', 'ResetPin', 'RequestPinReset', 'EmailPin', 'SelfReg'))) && ($module == "MyAccount" || $module == "Admin" || $module == "Circa" || $module == "EditorialReview" || $module == "Report" || ($module == 'Search' && $action == 'History'))}
+						{elseif (empty($isLoginPage) && !in_array($action, array('EmailResetPin', 'ResetPin', 'RequestPinReset', 'EmailPin', 'SelfReg', 'MyList'))) && ($module == "MyAccount" || $module == "Admin" || $module == "Circa" || $module == "EditorialReview" || $module == "Report" || ($module == 'Search' && $action == 'History'))}
 							{* Prevent this action on the Pin Reset Page && Login Page && Offline Circulation Page*}
 							{* Click Account Menu Bar Button *}
 							$('.menu-bar-option:nth-child(1)>a', '#vertical-menu-bar').filter(':visible').click();
-						{elseif $showExploreMore}
+						{elseif !empty($showExploreMore)}
 							{* Click Explore More Menu Bar Button *}
 							$('.menu-bar-option:nth-child(4)>a', '#vertical-menu-bar').filter(':visible').click();
 						{else}

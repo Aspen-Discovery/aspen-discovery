@@ -134,7 +134,7 @@
 					</div>
 				{/foreach}
 			</div>
-{if $userSort}
+			{if $userSort}
 				<script type="text/javascript">
 					{literal}
 					$(function(){
@@ -146,10 +146,10 @@
 								$(ui.item).find('.related-manifestations').fadeIn()
 							},
 							update: function (e, ui){
-								var updates = [],
-										firstItemOnPage = {/literal}{$recordStart}{literal};
+								let updates = [];
+								let firstItemOnPage = {/literal}{$recordStart}{literal};
 								$('#UserList>div>div').each(function(currentOrder){
-									var id = this.id.replace('groupedRecord','') /* Grouped IDs for catalog items */
+									let id = this.id.replace('groupedRecord','') /* Grouped IDs for catalog items */
 																	.replace('archive',''),      /*modified Islandora PIDs for archive items*/
 													originalOrder = $(this).data('order'),
 													change = currentOrder+firstItemOnPage-originalOrder,
