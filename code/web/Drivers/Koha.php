@@ -241,7 +241,7 @@ class Koha extends AbstractIlsDriver {
 
 		foreach ($barcodesToTest as $i=>$barcode) {
 		    //Authenticate the user using KOHA ILSDI
-            $authenticationURL = $this->getWebServiceUrl() . '/cgi-bin/koha/ilsdi.pl?service=AuthenticatePatron&username=' . $barcode . '&password=' . $password;
+            $authenticationURL = $this->getWebServiceUrl() . '/cgi-bin/koha/ilsdi.pl?service=AuthenticatePatron&username=' . urlencode($barcode) . '&password=' . urlencode($password);
             $authenticationResponse = $this->getXMLWebServiceResponse($authenticationURL);
             if (isset($authenticationResponse->id)){
                 $patronId = $authenticationResponse->id;

@@ -485,11 +485,13 @@ class RbdigitalDriver extends AbstractEContentDriver
         } else {
             //Check to see if we should do a lookup.  Check no more than every 15 minutes
             if (isset($_REQUEST['reload']) || $user->rbdigitalLastAccountCheck < time() - 15 * 60){
-                $lookupPatronUrl = $this->webServiceURL . '/v1/rpc/libraries/' . $this->libraryId . '/patrons/' . $user->getBarcode();
+                $lookupPatronUrl = $this->webServiceURL . '/v1/rpc/libraries/' . $this->libraryId . '/patrons/' . urlencode($user->getBarcode());
 
                 $rawResponse = $this->curlWrapper->curlGetPage($lookupPatronUrl);
                 $response = json_decode($rawResponse);
-                if (isset($response->message) && ($response->message == 'Patron not found.')){
+                if (is_null($response)) {
+                    $rbdigitalId = -1;
+                }elseif (isset($response->message) && ($response->message == 'Patron not found.')){
                     if (!empty($user->email)){
                         $lookupPatronUrl = $this->webServiceURL . '/v1/rpc/libraries/' . $this->libraryId . '/patrons/' . urlencode($user->email);
 

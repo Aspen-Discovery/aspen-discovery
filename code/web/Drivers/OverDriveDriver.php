@@ -227,7 +227,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 				$authorizationData = $tokenData->token_type . ' ' . $tokenData->access_token;
 				$headers = array(
 					"Authorization: $authorizationData",
-					"User-Agent: VuFind-Plus",
+					"User-Agent: Aspen Discovery",
 					"Host: patron.api.overdrive.com" // production
 					//"Host: integration-patron.api.overdrive.com" // testing
 				);
