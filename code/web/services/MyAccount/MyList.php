@@ -4,12 +4,6 @@ require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/MyResearch/lib/FavoriteHandler.php';
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
 
-/**
- * This class does not use MyResearch base class (we don't need to connect to
- * the catalog, and we need to bypass the "redirect if not logged in" logic to
- * allow public lists to work properly).
- * @version  $Revision$
- */
 class MyAccount_MyList extends MyAccount {
 	function __construct(){
 		$this->requireLogin = false;

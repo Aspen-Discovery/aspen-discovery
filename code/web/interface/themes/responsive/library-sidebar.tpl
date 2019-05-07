@@ -8,7 +8,7 @@
 			</a>
 		{/if}
 
-		{if $homeLink}
+		{if !empty($homeLink)}
 			<a href="{$homeLink}">
 				<div id="home-page-home-button" class="sidebar-button">
 					Library Home Page

@@ -29,11 +29,6 @@ abstract class MyAccount extends Action
 		// Setup Search Engine Connection
 		$this->db = new GroupedWorksSolrConnector($configArray['Index']['url']);
 
-		// Connect to Database
-		//$user = UserAccount::getLoggedInUser();
-		//$this->catalog = CatalogFactory::getCatalogConnectionInstance($user ? $user->source : null);
-			// When loading MyList.php and the list is public, user does not need to be logged in to see list
-
 		// Hide Covers when the user has set that setting on an Account Page
 		$this->setShowCovers();
 	}
