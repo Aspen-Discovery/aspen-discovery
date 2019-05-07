@@ -419,14 +419,8 @@ abstract class Solr {
 			$tmpIds = array_slice($ids, $startIndex, $batchSize);
 
 			// Query String Parameters
-			$idString = '';
-			foreach ($tmpIds as $id){
-				if (strlen($idString) > 0){
-					$idString .= ' OR ';
-				}
-				$idString .= $id;
-			}
-			$options = array('q' => "id:$idString");
+			$idString = implode(' OR ', $tmpIds);
+			$options = array('q' => "id:($idString)");
 			$options['fl'] = $fieldsToReturn;
 
 			$this->client->setMethod('GET');
