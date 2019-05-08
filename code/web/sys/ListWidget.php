@@ -41,8 +41,16 @@ class ListWidget extends DataObject
 	    return ListWidget::$_styles;
     }
 
+    public function getStyle($styleName){
+        return ListWidget::$_styles[$styleName];
+    }
+
     public function getDisplayTypes(){
 	    return ListWidget::$_displayTypes;
+    }
+
+    public function getDisplayType($typeName){
+        return ListWidget::$_displayTypes[$typeName];
     }
 
 	function keys() {
