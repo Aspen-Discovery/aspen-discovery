@@ -15,7 +15,13 @@ abstract class FacetSetting extends DataObject {
 	public $collapseByDefault;
 	public $useMoreFacetPopup;
 
-	public static function getAvailableFacets(){
+	public function getNumericColumnNames()
+    {
+        return ['weight', 'showAsDropDown', 'showAboveResults', 'showInResults', 'showInAuthorResults', 'showInAdvancedSearch'];
+    }
+
+
+    public static function getAvailableFacets(){
 		$availableFacets = array(
 			"owning_library" => "Library System",
 			"owning_location" => "Branch",
@@ -57,11 +63,7 @@ abstract class FacetSetting extends DataObject {
 
 		//Add additional facets by library
 		global $configArray;
-		if ($configArray['Catalog']['driver'] == 'Marmot'){
-			/*$availableFacets["collection_adams"] = "Collection (ASU)";
-			$availableFacets["collection_msc"] = "Collection (CMU)";
-			$availableFacets["collection_western"] = "Collection (Western)";*/
-		}else if ($configArray['Catalog']['driver'] == 'WCPL'){
+		if ($configArray['Catalog']['driver'] == 'WCPL'){
 			$availableFacets["system_list"] = "System List";
 		}
 

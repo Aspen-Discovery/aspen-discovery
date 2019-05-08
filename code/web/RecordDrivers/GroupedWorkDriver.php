@@ -2407,8 +2407,8 @@ class GroupedWorkDriver extends IndexRecordDriver{
 		$libraryCallNumber = null;
 		$relatedUrls = array();
 
-		$recordHoldable = false;
-		$recordBookable = false;
+        global $locationSingleton;
+		$physicalLocation = $locationSingleton->getPhysicalLocation();
 
 		$i = 0;
 		foreach ($this->relatedItemsByRecordId[$relatedRecord->id] as $curItem) {
@@ -2448,8 +2448,11 @@ class GroupedWorkDriver extends IndexRecordDriver{
 					$localCallNumber = $item->callNumber;
 				}
 				if ($item->available && !$item->isEContent) {
-					$relatedRecord->getStatusInformation()->setAvailableHere(true);
-					$relatedRecord->getStatusInformation()->setAvailableLocally(true);
+				    //Set available here only if we're in the library
+                    if (!empty($physicalLocation)){
+                        $relatedRecord->getStatusInformation()->setAvailableHere(true);
+                    }
+				    $relatedRecord->getStatusInformation()->setAvailableLocally(true);
 					$relatedRecord->setClass('here');
 				}
 				$relatedRecord->addLocalCopies($item->numCopies);

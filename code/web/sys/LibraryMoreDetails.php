@@ -16,11 +16,15 @@ class LibraryMoreDetails extends DataObject{
 	public $collapseByDefault;
 	public $weight;
 
-	static function getObjectStructure(){
+	function getNumericColumnNames()
+    {
+        return ['collapseByDefault', 'weight'];
+    }
+
+    static function getObjectStructure(){
 		//Load Libraries for lookup values
 		$library = new Library();
 		$library->orderBy('displayName');
-		$user = UserAccount::getLoggedInUser();
 		if (UserAccount::userHasRole('libraryAdmin')){
 			$homeLibrary = Library::getPatronHomeLibrary();
 			$library->libraryId = $homeLibrary->libraryId;
