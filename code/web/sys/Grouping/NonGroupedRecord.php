@@ -1,13 +1,5 @@
 <?php
 
-/**
- * Description goes here
- *
- * @category VuFind-Plus-2014
- * @author Mark Noble <mark@marmot.org>
- * Date: 3/29/2016
- * Time: 12:05 PM
- */
 class NonGroupedRecord extends DataObject{
 	public $__table = 'nongrouped_records';
 	public $id;
@@ -26,7 +18,7 @@ class NonGroupedRecord extends DataObject{
 		$structure = array(
 			array(
 				'property' => 'id',
-				'type' => 'hidden',
+				'type' => 'label',
 				'label' => 'Id',
 				'description' => 'The unique id of the merged grouped work in the database',
 				'storeDb' => true,

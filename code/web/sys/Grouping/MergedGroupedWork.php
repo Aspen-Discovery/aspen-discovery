@@ -1,13 +1,5 @@
 <?php
 
-/**
- * A Grouped Work that has been manually merged
- *
- * @category VuFind-Plus-2014
- * @author Mark Noble <mark@marmot.org>
- * Date: 7/29/14
- * Time: 3:14 PM
- */
 class MergedGroupedWork extends DataObject {
 	public $__table = 'merged_grouped_works';
 	public $id;
@@ -19,7 +11,7 @@ class MergedGroupedWork extends DataObject {
 		$structure = array(
 			array(
 				'property' => 'id',
-				'type' => 'hidden',
+				'type' => 'label',
 				'label' => 'Id',
 				'description' => 'The unique id of the merged grouped work in the database',
 				'storeDb' => true,
