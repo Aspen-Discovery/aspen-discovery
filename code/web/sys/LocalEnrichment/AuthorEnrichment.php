@@ -11,7 +11,7 @@ class AuthorEnrichment  extends DataObject{
 		$structure = array(
 				array(
 						'property' => 'id',
-						'type' => 'hidden',
+						'type' => 'label',
 						'label' => 'Id',
 						'description' => 'The unique id of the enrichment information',
 						'storeDb' => true,

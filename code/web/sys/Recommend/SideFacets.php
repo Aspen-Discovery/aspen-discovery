@@ -190,7 +190,7 @@ class SideFacets implements RecommendationInterface
 		$searchLibrary = Library::getSearchLibrary();
 
 		//Do additional processing of facets
-		if ($this->searchObject->getSearchType() == 'grouped_works') {
+		if ($this->searchObject instanceof SearchObject_GroupedWorkSearcher) {
 			foreach ($sideFacets as $facetKey => $facet) {
 
 				$facetSetting = $this->facetSettings[$facetKey];

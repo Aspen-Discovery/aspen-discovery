@@ -26,7 +26,7 @@ class TopFacets implements RecommendationInterface
 		$params = explode(':', $params);
 
 		// Load the desired facet information:
-		if ($this->searchObject instanceof  SearchObject_GroupedWorkSearcher) {
+		if ($this->searchObject instanceof SearchObject_GroupedWorkSearcher) {
             $searchLibrary = Library::getActiveLibrary();
             global $locationSingleton;
             $searchLocation = $locationSingleton->getActiveLocation();

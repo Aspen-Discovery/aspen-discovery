@@ -1783,12 +1783,6 @@ class Library extends DataObject
 		$defaultFacets[] = $facet;
 
 		$facet = new LibraryFacetSetting();
-		$facet->setupAdvancedFacet('econtent_protection_type', 'eContent Protection', true);
-		$facet->libraryId = $libraryId;
-		$facet->weight = count($defaultFacets) + 1;
-		$defaultFacets[] = $facet;
-
-		$facet = new LibraryFacetSetting();
 		$facet->setupAdvancedFacet('era', 'Era', true);
 		$facet->libraryId = $libraryId;
 		$facet->weight = count($defaultFacets) + 1;
