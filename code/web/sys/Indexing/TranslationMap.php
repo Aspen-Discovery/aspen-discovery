@@ -1,12 +1,4 @@
 <?php
-/**
- * A container to hold information about Translation Maps to allow for multiple data sources and provide for updates without code changes
- *
- * @category VuFind-Plus-2014 
- * @author Mark Noble <mark@marmot.org>
- * Date: 6/30/2015
- * Time: 1:44 PM
- */
 
 require_once ROOT_DIR . '/sys/Indexing/TranslationMapValue.php';
 class TranslationMap extends DataObject{

@@ -1,12 +1,4 @@
 <?php
-/**
- * The actual values for a Translation Map
- *
- * @category VuFind-Plus-2014 
- * @author Mark Noble <mark@marmot.org>
- * Date: 6/30/2015
- * Time: 1:44 PM
- */
 
 class TranslationMapValue extends DataObject{
 	public $__table = 'translation_map_values';    // table name

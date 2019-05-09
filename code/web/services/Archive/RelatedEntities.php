@@ -1,13 +1,5 @@
 <?php
 
-/**
- * Finde Entities related to a search term
- *
- * @category VuFind-Plus-2014
- * @author Mark Noble <mark@marmot.org>
- * Date: 2/17/2016
- * Time: 3:48 PM
- */
 class Archive_RelatedEntities extends Action {
 	function launch(){
 		global $interface;

@@ -1,12 +1,4 @@
 <?php
-/**
- * Imports Lists for a user from prior catalog (Millennium WebPAC, Encore, Etc).
- *
- * @category VuFind-Plus
- * @author Mark Noble <mark@marmot.org>
- * Date: 2/26/14
- * Time: 10:35 PM
- */
 
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
 class ImportListsFromClassic extends MyAccount{

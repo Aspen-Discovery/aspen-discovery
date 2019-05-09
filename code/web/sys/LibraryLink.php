@@ -1,12 +1,4 @@
 <?php
-/**
- * Links to show on the home page for individual libraries
- *
- * @category VuFind-Plus
- * @author Mark Noble <mark@marmot.org>
- * Date: 2/12/14
- * Time: 8:34 AM
- */
 
 class LibraryLink extends DataObject{
 	public $__table = 'library_links';

@@ -123,7 +123,7 @@
 					<a href="#vufindMenuGroup" data-toggle="collapse" data-parent="#adminMenuAccordion">
 						<div class="panel-heading">
 							<div class="panel-title">
-								Pika Configuration
+								Primary Configuration
 							</div>
 						</div>
 					</a>

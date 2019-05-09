@@ -1,12 +1,4 @@
 <?php
-/**
- * A superclass for Digital Archive Objects
- *
- * @category VuFind-Plus-2014
- * @author Mark Noble <mark@marmot.org>
- * Date: 9/9/2015
- * Time: 4:13 PM
- */
 
 require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
 abstract class Archive_Object extends Action {

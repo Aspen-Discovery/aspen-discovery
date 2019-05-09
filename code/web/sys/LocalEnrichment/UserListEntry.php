@@ -1,12 +1,5 @@
 <?php
-/**
- * An entry within the User Id
- *
- * @category VuFind-Plus 
- * @author Mark Noble <mark@marmot.org>
- * Date: 3/10/14
- * Time: 3:50 PM
- */
+
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
 class UserListEntry extends DataObject{
 	public $__table = 'user_list_entry';     // table name

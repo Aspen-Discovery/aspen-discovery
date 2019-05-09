@@ -1,13 +1,5 @@
 <?php
 
-/**
- * Description goes here
- *
- * @category VuFind-Plus-2014
- * @author Mark Noble <mark@marmot.org>
- * Date: 1/31/2016
- * Time: 7:58 PM
- */
 //Include code we need to use Tuque without Drupal
 require_once(ROOT_DIR . '/sys/tuque/Cache.php');
 require_once(ROOT_DIR . '/sys/tuque/FedoraApi.php');

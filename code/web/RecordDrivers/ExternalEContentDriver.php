@@ -1,12 +1,4 @@
 <?php
-/**
- * Record Driver to Handle the display of eContent that is stored in the ILS, but accessed
- *
- * @category VuFind-Plus 
- * @author Mark Noble <mark@marmot.org>
- * Date: 2/7/14
- * Time: 9:48 AM
- */
 
 require_once ROOT_DIR . '/RecordDrivers/BaseEContentDriver.php';
 class ExternalEContentDriver extends BaseEContentDriver{

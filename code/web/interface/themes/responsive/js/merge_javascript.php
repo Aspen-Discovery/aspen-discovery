@@ -1,12 +1,5 @@
 <?php
-/**
- * Description goes here
- *
- * @category VuFind-Plus-2014 
- * @author Mark Noble <mark@marmot.org>
- * Date: 6/14/14
- * Time: 10:10 AM
- */
+
 date_default_timezone_set('America/Denver');
 $mergeListFile = fopen("./javascript_files.txt", 'r');
 $mergedFile = fopen("vufind.min.js", 'w');

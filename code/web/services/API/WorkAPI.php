@@ -1,12 +1,4 @@
 <?php
-/**
- * API functionality related to Grouped Works
- *
- * @category VuFind-Plus
- * @author Mark Noble <mark@marmot.org>
- * Date: 2/4/14
- * Time: 9:21 AM
- */
 
 class WorkAPI {
 	function launch()

@@ -1,12 +1,5 @@
 <?php
-/**
- * Display a list of internal variables that have been defined in the system.
- *
- * @category VuFind-Plus-2014
- * @author Mark Noble <mark@marmot.org>
- * Date: 4/27/14
- * Time: 2:21 PM
- */
+
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 

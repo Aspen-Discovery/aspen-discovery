@@ -14,7 +14,6 @@
 			</div>
 		</div>
 
-
 		{if $summAuthor}
 			<div class="row">
 				<div class="result-label col-tn-3">Author: </div>
@@ -29,16 +28,6 @@
 				</div>
 			</div>
 		{/if}
-{*
-		{if $summPublisher}
-			<div class="row">
-				<div class="result-label col-tn-3">Publisher: </div>
-				<div class="col-tn-9 result-value">
-					{$summPublisher}
-				</div>
-			</div>
-		{/if}
-	*}
 
 		{if $summFormat}
 			<div class="row">
@@ -48,28 +37,6 @@
 				</div>
 			</div>
 		{/if}
-
-		{*
-		{if $summPubDate}
-			<div class="row">
-				<div class="result-label col-tn-3">Pub. Date: </div>
-				<div class="col-tn-9 result-value">
-					{$summPubDate|escape}
-				</div>
-			</div>
-		{/if}
-
-		{if $summSnippets}
-			{foreach from=$summSnippets item=snippet}
-				<div class="row">
-					<div class="result-label col-tn-3">{translate text=$snippet.caption}: </div>
-					<div class="col-tn-9 result-value">
-						{if !empty($snippet.snippet)}<span class="quotestart">&#8220;</span>...{$snippet.snippet|highlight}...<span class="quoteend">&#8221;</span><br />{/if}
-					</div>
-				</div>
-			{/foreach}
-		{/if}
-	*}
 
 		<div class="row well-small">
 			<div class="col-tn-12 result-value" id="descriptionValue{$summId|escape}">{$summDescription|highlight|html_entity_decode|truncate_html:450:"..."|strip_tags|htmlentities}</div>

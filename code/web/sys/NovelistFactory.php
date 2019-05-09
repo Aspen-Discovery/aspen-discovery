@@ -1,12 +1,4 @@
 <?php
-/**
- * Description goes here
- *
- * @category VuFind-Plus 
- * @author Mark Noble <mark@marmot.org>
- * Date: 4/29/13
- * Time: 8:48 AM
- */
 
 class NovelistFactory {
 	static function getNovelist(){

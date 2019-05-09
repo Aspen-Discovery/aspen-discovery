@@ -1,12 +1,4 @@
 <?php
-/**
- * Links to show in the header for individual libraries
- *
- * @category VuFind-Plus
- * @author Mark Noble <mark@marmot.org>
- * Date: 2/12/14
- * Time: 8:34 AM
- */
 
 class LibraryTopLinks extends DataObject{
 	public $__table = 'library_top_links';

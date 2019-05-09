@@ -1,12 +1,4 @@
 <?php
-/**
- * Updates related to record grouping for cleanliness
- *
- * @category VuFind-Plus-2014
- * @author Mark Noble <mark@marmot.org>
- * Date: 7/29/14
- * Time: 2:25 PM
- */
 
 function getGroupedWorkUpdates(){
 	return array(

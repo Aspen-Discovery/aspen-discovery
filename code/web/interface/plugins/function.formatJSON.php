@@ -1,21 +1,5 @@
 <?php
-/**
- * Smarty plugin
- * @package Smarty
- * @subpackage plugins
- */
 
-/**
- * Smarty formatJSON plugin
- *
- * @category VuFind-Plus
- * @author Mark Noble <mark@marmot.org>
- * @var mixed[] $params
- * @var UInterface &$smarty
- * @return null|string
- * Date: 10/8/13
- * Time: 1:51 PM
- */
 function smarty_function_formatJSON($params, &$smarty)
 {
 	if (!isset($params['subject'])) {

@@ -1,12 +1,4 @@
 <?php
-/**
- * A Browse Category designed specifically for a library
- *
- * @category VuFind-Plus
- * @author Mark Noble <mark@marmot.org>
- * Date: 3/4/14
- * Time: 9:25 PM
- */
 
 class LibraryBrowseCategory extends DataObject{
 	public $__table = 'browse_category_library';

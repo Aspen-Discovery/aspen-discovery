@@ -1,12 +1,5 @@
 <?php
-/**
- * Home Page for Account Functionality
- *
- * @category VuFind-Plus
- * @author Mark Noble <mark@marmot.org>
- * Date: 10/10/13
- * Time: 1:11 PM
- */
+
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
 require_once ROOT_DIR . '/services/MyResearch/lib/Suggestions.php';
 class MyAccount_Home extends MyAccount{

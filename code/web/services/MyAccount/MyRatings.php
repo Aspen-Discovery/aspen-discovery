@@ -1,12 +1,5 @@
 <?php
-/**
- * A page to display any ratings that the user has done
- *
- * @category VuFind-Plus
- * @author Mark Noble <mark@marmot.org>
- * Date: 5/1/13
- * Time: 9:58 AM
- */
+
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
 class MyRatings extends MyAccount{
 	public function launch(){

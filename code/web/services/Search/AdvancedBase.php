@@ -1,12 +1,4 @@
 <?php
-/**
- * Base class for Advanced Searches
- *
- * @category VuFind-Plus
- * @author Mark Noble <mark@marmot.org>
- * Date: 6/27/13
- * Time: 10:10 AM
- */
 
 require_once ROOT_DIR . '/Action.php';
 

@@ -1,12 +1,5 @@
 <?php
-/**
- * Description goes here
- *
- * @category VuFind-Plus 
- * @author Mark Noble <mark@marmot.org>
- * Date: 5/20/13
- * Time: 2:42 PM
- */
+
 
 class MillenniumCheckouts {
 	/** @var  Millennium $driver */

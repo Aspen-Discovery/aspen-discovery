@@ -1,14 +1,4 @@
 <?php
-/**
- * Returns information about PHP
- *
- * @category VuFind-Plus-2014 
- * @author Mark Noble <mark@marmot.org>
- * Date: 4/21/14
- * Time: 11:18 AM
- *
- * Modified 10-31-2014. plb
- */
 
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/Admin.php';

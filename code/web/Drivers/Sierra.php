@@ -127,7 +127,7 @@ class Sierra extends Millennium{
 			curl_setopt($ch, CURLOPT_USERAGENT,"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
 			$headers = array(
 					"Authorization: " . $tokenData->token_type . " {$tokenData->access_token}",
-					"User-Agent: VuFind-Plus",
+					"User-Agent: Aspen Discovery",
 					"X-Forwarded-For: " . Location::getActiveIp(),
 					"Host: " . $_SERVER['SERVER_NAME'],
 			);

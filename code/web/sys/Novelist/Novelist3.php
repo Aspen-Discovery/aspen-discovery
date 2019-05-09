@@ -833,7 +833,6 @@ class Novelist3{
 								'title' => $recordDriver->getTitle(),
 								'title_short' => $recordDriver->getTitle(),
 								'author' => $recordDriver->getPrimaryAuthor(),
-							//'publicationDate' => (string)$item->PublicationDate,
 								'isbn' => $recordDriver->getCleanISBN(),
 								'allIsbns' => $recordDriver->getISBNs(),
 								'isbn10' => $recordDriver->getCleanISBN(),
@@ -906,7 +905,6 @@ class Novelist3{
 					$curTitle = array(
 							'title' => $item->full_title,
 							'author' => $item->author,
-						//'publicationDate' => (string)$item->PublicationDate,
 							'isbn' => $isbn13,
 							'isbn10' => $isbn10,
 							'recordId' => -1,

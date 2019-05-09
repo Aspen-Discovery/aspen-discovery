@@ -1,12 +1,4 @@
 <?php
-/**
- * Description goes here
- *
- * @category VuFind-Plus 
- * @author Mark Noble <mark@marmot.org>
- * Date: 12/6/13
- * Time: 9:50 AM
- */
 
 class GroupedWork extends DataObject {
 	public $__table = 'grouped_work';    // table name

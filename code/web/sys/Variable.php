@@ -1,13 +1,5 @@
 <?php
 
-/**
- * A persistent variable defined within the system
- *
- * @category VuFind-Plus-2014
- * @author Mark Noble <mark@marmot.org>
- * Date: 4/27/14
- * Time: 2:23 PM
- */
 class Variable extends DataObject {
 	public $__table = 'variables'; // table name
 	public $id;

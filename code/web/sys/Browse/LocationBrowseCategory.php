@@ -1,12 +1,4 @@
 <?php
-/**
- * A location defined for a browse category
- *
- * @category VuFind-Plus
- * @author Mark Noble <mark@marmot.org>
- * Date: 3/4/14
- * Time: 9:26 PM
- */
 
 class LocationBrowseCategory extends DataObject{
 	public $__table = 'browse_category_location';

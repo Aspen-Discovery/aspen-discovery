@@ -1,12 +1,4 @@
 <?php
-/**
- * Updates related to library & location configuration for cleanliness
- *
- * @category VuFind-Plus-2014
- * @author Mark Noble <mark@marmot.org>
- * Date: 7/29/14
- * Time: 2:23 PM
- */
 
 function getLibraryLocationUpdates(){
 	return array(

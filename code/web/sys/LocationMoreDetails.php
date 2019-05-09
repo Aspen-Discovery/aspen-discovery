@@ -1,12 +1,4 @@
 <?php
-/**
- * Allows configuration of More Details for full record display
- *
- * @category VuFind-Plus
- * @author Mark Noble <mark@marmot.org>
- * Date: 2/12/14
- * Time: 8:34 AM
- */
 
 class LocationMoreDetails extends DataObject{
 	public $__table = 'location_more_details';

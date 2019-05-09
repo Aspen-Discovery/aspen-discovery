@@ -1,12 +1,4 @@
 <?php
-/**
- * Handles AJAX related information for authors
- *
- * @category VuFind-Plus
- * @author Mark Noble <mark@marmot.org>
- * Date: 7/23/13
- * Time: 8:37 AM
- */
 
 class Author_AJAX {
 	function launch() {

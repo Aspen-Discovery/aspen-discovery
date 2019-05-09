@@ -1,12 +1,4 @@
 <?php
-/**
- * Shows all titles that are checked out to a user (combines all sources)
- *
- * @category VuFind-Plus
- * @author Mark Noble <mark@marmot.org>
- * Date: 10/10/13
- * Time: 1:10 PM
- */
 
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
 class MyAccount_CheckedOut extends MyAccount{

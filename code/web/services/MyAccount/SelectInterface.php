@@ -1,12 +1,4 @@
 <?php
-/**
- * Allow the user to select an interface to use to access the site.
- *
- * @category VuFind-Plus
- * @author Mark Noble <mark@marmot.org>
- * Date: 5/8/13
- * Time: 2:32 PM
- */
 
 class MyAccount_SelectInterface extends Action{
 	function launch(){

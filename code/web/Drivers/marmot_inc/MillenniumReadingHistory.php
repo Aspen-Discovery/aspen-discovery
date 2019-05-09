@@ -1,12 +1,4 @@
 <?php
-/**
- * Handles Millennium Integration related to Reading History
- *
- * @category VuFind-Plus 
- * @author Mark Noble <mark@marmot.org>
- * Date: 5/20/13
- * Time: 11:51 AM
- */
 
 class MillenniumReadingHistory {
 	/**

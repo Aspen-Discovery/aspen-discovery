@@ -1,12 +1,4 @@
 <?php
-/**
- * Handles searching DPLA and returning results
- *
- * @category VuFind-Plus-2014
- * @author Mark Noble <mark@marmot.org>
- * Date: 2/9/15
- * Time: 3:09 PM
- */
 
 class DPLA {
 	public function getDPLAResults($searchTerm, $numResults = 5){
