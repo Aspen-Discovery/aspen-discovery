@@ -75,7 +75,7 @@
 						{assign var=useDefault value=$object->$defaultVariableName}
 					{/if}
 
-					<input type="checkbox" name='{$propName}-default' id='{$propName}-default' {if $useDefault == '1'}checked="checked"{/if} {if $property.readOnly}readonly{/if}/><label for='{$propName}-default'>Use Default</label>
+					<input type="checkbox" name='{$propName}-default' id='{$propName}-default' {if $useDefault == '1'}checked="checked"{/if} {if !empty($property.readOnly)}readonly{/if}/><label for='{$propName}-default'>Use Default</label>
 				</div>
 			</div>
 		{elseif $property.type == 'multiemail'}

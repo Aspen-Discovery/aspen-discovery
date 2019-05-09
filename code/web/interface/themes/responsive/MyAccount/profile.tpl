@@ -100,7 +100,7 @@
 									<div class="form-group">
 										<div class="col-xs-4"><label for="city">{translate text='City'}:</label></div>
 										<div class="col-xs-8">
-											{if $edit && $canUpdateContactInfo && $canUpdateAddress && $ils != 'Horizon'}<input name="city" id="city" value="{$profile->city|escape}" size="50" maxlength="75" class="form-control required">
+											{if $edit && $canUpdateContactInfo && $canUpdateAddress && $ils != 'Horizon'}<input name="city" id="city" value="{$profile->_city|escape}" size="50" maxlength="75" class="form-control required">
 											{elseif $edit && $millenniumNoAddress}
 												<input name="city" id="city" value="{$profile->_city|escape}" type="hidden">
 												{$profile->_city|escape}
@@ -110,7 +110,7 @@
 									<div class="form-group">
 										<div class="col-xs-4"><label for="state">{translate text='State'}:</label></div>
 										<div class="col-xs-8">
-											{if $edit && $canUpdateContactInfo && $canUpdateAddress && $ils != 'Horizon'}<input name='state' id="state" value="{$profile->state|escape}" size="50" maxlength="75" class="form-control required">
+											{if $edit && $canUpdateContactInfo && $canUpdateAddress && $ils != 'Horizon'}<input name='state' id="state" value="{$profile->_state|escape}" size="50" maxlength="75" class="form-control required">
 											{elseif $edit && $millenniumNoAddress}
 												<input name="state" id="state" value="{$profile->_state|escape}" type="hidden">
 												{$profile->_state|escape}
@@ -121,7 +121,7 @@
 										<div class="col-xs-4"><label for="zip">{translate text='Zip'}:</label></div>
 										<div class="col-xs-8">
 											{if $edit && $canUpdateContactInfo && $canUpdateAddress && $ils != 'Horizon'}
-												<input name="zip" id="zip" value="{$profile-_>zip|escape}" size="50" maxlength="75" class="form-control required">
+												<input name="zip" id="zip" value="{$profile->_zip|escape}" size="50" maxlength="75" class="form-control required">
 											{elseif $edit && $millenniumNoAddress}
 												<input name="zip" id="zip" value="{$profile->_zip|escape}" type="hidden">
 												{$profile->_zip|escape}
@@ -424,31 +424,9 @@
 										{/if}
 									</div>
 								</div>
-								{if $overDriveLendingOptions}
-									<strong>Lending Options</strong>
-									<p class="help-block">Select how long you would like to checkout each type of material from OverDrive.</p>
-									{foreach from=$overDriveLendingOptions item=lendingOption}
-										<div class="form-group">
-											<div class="col-xs-4"><label class="control-label">{$lendingOption.name}:</label></div>
-											<div class="col-xs-8">
-												<div class="btn-group btn-group-sm" data-toggle="buttons">
-													{foreach from=$lendingOption.options item=option}
-														{if $edit}
-															<label for="{$lendingOption.id}_{$option.value}" class="btn btn-sm btn-default {if $option.selected}active{/if}"><input type="radio" name="{$lendingOption.id}" value="{$option.value}" id="{$lendingOption.id}_{$option.value}" {if $option.selected}checked="checked"{/if} class="form-control">&nbsp;{$option.name}</label>
-															&nbsp; &nbsp;
-														{elseif $option.selected}
-															{$option.name}
-														{/if}
-													{/foreach}
-													</div>
-											</div>
-										</div>
-									{/foreach}
-								{else}
-									<p class="help-block alert alert-warning">
-										{$overdrivePreferencesNotice}
-									</p>
-								{/if}
+								<p class="help-block alert alert-warning">
+									{$overdrivePreferencesNotice}
+								</p>
 								{if !$offline && $edit == true}
 									<div class="form-group">
 										<div class="col-xs-8 col-xs-offset-4">

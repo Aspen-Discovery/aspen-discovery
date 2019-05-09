@@ -430,8 +430,8 @@ class Library extends DataObject
 				'userProfileSection' => array('property' => 'userProfileSection', 'type' => 'section', 'label' => 'User Profile', 'hideInLists' => true,
 						'helpLink'=>'https://docs.google.com/document/d/1S8s8KYPaw6x7IIcxUbzkXgCnnHXR6t8W_2CwXiQyjrE', 'properties' => array(
 					'patronNameDisplayStyle'               => array('property'=>'patronNameDisplayStyle', 'type'=>'enum', 'values'=>array('firstinitial_lastname'=>'First Initial. Last Name', 'lastinitial_firstname'=>'First Name Last Initial.'), 'label'=>'Patron Display Name Style', 'description'=>'How to generate the patron display name'),
-					'allowProfileUpdates'                  => array('property'=>'allowProfileUpdates', 'type'=>'checkbox', 'label'=>'Allow Profile Updates', 'description'=>'Whether or not the user can update their own profile.', 'hideInLists' => true, 'default' => 1),
-					'allowPatronAddressUpdates'            => array('property' => 'allowPatronAddressUpdates', 'type'=>'checkbox', 'label'=>'Allow Patrons to Update Their Address', 'description'=>'Whether or not patrons should be able to update their own address in their profile.', 'hideInLists' => true, 'default' => 1),
+					'allowProfileUpdates'                  => array('property'=>'allowProfileUpdates', 'type'=>'checkbox', 'label'=>'Allow Profile Updates', 'description'=>'Whether or not the user can update their own profile.', 'hideInLists' => true, 'default' => 1, 'readonly' => false),
+					'allowPatronAddressUpdates'            => array('property' => 'allowPatronAddressUpdates', 'type'=>'checkbox', 'label'=>'Allow Patrons to Update Their Address', 'description'=>'Whether or not patrons should be able to update their own address in their profile.', 'hideInLists' => true, 'default' => 1, 'readOnly' => false),
 					'showAlternateLibraryOptionsInProfile' => array('property' => 'showAlternateLibraryOptionsInProfile', 'type'=>'checkbox', 'label'=>'Allow Patrons to Update their Alternate Libraries', 'description'=>'Allow Patrons to See and Change Alternate Library Settings in the Catalog Options Tab in their profile.', 'hideInLists' => true, 'default' => 1),
 					'showWorkPhoneInProfile'               => array('property' => 'showWorkPhoneInProfile', 'type'=>'checkbox', 'label'=>'Show Work Phone in Profile', 'description'=>'Whether or not patrons should be able to change a secondary/work phone number in their profile.', 'hideInLists' => true, 'default' => 0),
 					'treatPrintNoticesAsPhoneNotices'      => array('property' => 'treatPrintNoticesAsPhoneNotices', 'type' => 'checkbox', 'label' => 'Treat Print Notices As Phone Notices', 'description' => 'When showing detailed information about hold notices, treat print notices as if they are phone calls', 'hideInLists' => true, 'default' => 0),
@@ -1026,6 +1026,16 @@ class Library extends DataObject
             unset($structure['ilsSection']['properties']['enableMaterialsBooking']);
             unset($structure['ilsSection']['properties']['pTypesSection']);
         }
+        if ($ils == 'Koha'){
+            unset($structure['ilsSection']['properties']['userProfileSection']['properties']['allowProfileUpdates']);
+            unset($structure['ilsSection']['properties']['userProfileSection']['properties']['allowPatronAddressUpdates']);
+            unset($structure['ilsSection']['properties']['userProfileSection']['properties']['showWorkPhoneInProfile']);
+            unset($structure['ilsSection']['properties']['userProfileSection']['properties']['treatPrintNoticesAsPhoneNotices']);
+            unset($structure['ilsSection']['properties']['userProfileSection']['properties']['showNoticeTypeInProfile']);
+            unset($structure['ilsSection']['properties']['userProfileSection']['properties']['addSMSIndicatorToPhone']);
+            unset($structure['ilsSection']['properties']['userProfileSection']['properties']['maxFinesToAllowAccountUpdates']);
+            unset($structure['selfRegistrationSection']);
+        }
         if (!$configArray['Hoopla']['enabled']){
             unset($structure['hooplaSection']);
         }
@@ -1433,6 +1443,17 @@ class Library extends DataObject
 			// convert array to string before storing in database
 			$this->showInSearchResultsMainDetails = serialize($this->showInSearchResultsMainDetails);
 		}
+		//Updates to properly update settings based on the ILS
+		global $configArray;
+        $ils = $configArray['Catalog']['ils'];
+        if ($ils == 'Koha'){
+            $this->allowProfileUpdates = 0;
+            $this->allowPatronAddressUpdates = 0;
+            $this->showWorkPhoneInProfile = 0;
+            $this->treatPrintNoticesAsPhoneNotices = 0;
+            $this->showNoticeTypeInProfile = 0;
+            $this->addSMSIndicatorToPhone = 0;
+        }
 		$ret = parent::update();
 		if ($ret !== FALSE ){
 			$this->saveHolidays();

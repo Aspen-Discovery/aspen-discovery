@@ -246,7 +246,7 @@ class Koha extends AbstractIlsDriver {
             if (isset($authenticationResponse->id)){
                 $patronId = $authenticationResponse->id;
                 /** @noinspection SqlResolve */
-                $sql = "SELECT borrowernumber, cardnumber, surname, firstname, streetnumber, streettype, address, address2, city, zipcode, country, email, phone, mobile, categorycode, dateexpiry, password, userid, branchcode from borrowers where borrowernumber = $patronId";
+                $sql = "SELECT borrowernumber, cardnumber, surname, firstname, streetnumber, streettype, address, address2, city, state, zipcode, country, email, phone, mobile, categorycode, dateexpiry, password, userid, branchcode from borrowers where borrowernumber = $patronId";
 
                 $lookupUserResult = mysqli_query($this->dbConnection, $sql, MYSQLI_USE_RESULT);
                 if ($lookupUserResult) {
@@ -283,14 +283,10 @@ class Koha extends AbstractIlsDriver {
                     $user->patronType   = $userFromDb['categorycode'];
                     $user->_web_note     = '';
 
-                    $city = strtok($userFromDb['city'], ',');
-                    $state = strtok(',');
-                    $city = trim($city);
-                    $state = trim($state);
-
-                    $user->_address1 = trim($userFromDb['streetnumber'] . ' ' . $userFromDb['address'] . ' ' . $userFromDb['address2']);
-                    $user->_city     = $city;
-                    $user->_state    = $state;
+                    $user->_address1 = trim($userFromDb['streetnumber'] . ' ' . $userFromDb['address']);
+                    $user->_address2 = $userFromDb['address2'];
+                    $user->_city     = $userFromDb['city'];
+                    $user->_state    = $userFromDb['state'];
                     $user->_zip      = $userFromDb['zipcode'];
                     $user->phone    = $userFromDb['phone'];
 
