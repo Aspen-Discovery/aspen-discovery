@@ -25,26 +25,26 @@ class Author_Wikipedia {
 				'?action=query&prop=revisions&rvprop=content&format=json' .
 				'&titles=' . urlencode($author);
 
-		$result = $wikipediaParser->getWikipediaPage($url);
+		$result = $wikipediaParser->getWikipediaPage($url, $lang);
 		if ($result == null){
 			//Try reversing the name
 			if (strpos($author, ',') > 0){
 				$authorParts = explode(',', $author, 2);
-				$author = trim($authorParts[1] . ' ' . $authorParts[0]);
+				$tmpAuthor = trim($authorParts[1] . ' ' . $authorParts[0]);
 				$url = "http://{$lang}.wikipedia.org/w/api.php" .
 					'?action=query&prop=revisions&rvprop=content&format=json' .
-					'&titles=' . urlencode($author);
+					'&titles=' . urlencode($tmpAuthor);
 
-				$result = $wikipediaParser->getWikipediaPage($url);
+				$result = $wikipediaParser->getWikipediaPage($url, $lang);
 			}
 			if ($result == null){
 				//Try one last time with no periods
-				$author = str_replace('.','', $author);
+				$tmpAuthor = str_replace('.','', $author);
 				$url = "http://{$lang}.wikipedia.org/w/api.php" .
 					'?action=query&prop=revisions&rvprop=content&format=json' .
-					'&titles=' . urlencode($author);
+					'&titles=' . urlencode($tmpAuthor);
 
-				$result = $wikipediaParser->getWikipediaPage($url);
+				$result = $wikipediaParser->getWikipediaPage($url, $lang);
 			}
 		}
 		return $result;

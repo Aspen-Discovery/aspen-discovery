@@ -11,18 +11,19 @@ class WikipediaParser {
 		}
 	}
 
-	/**
-	 * parseWikipedia
-	 *
-	 * This method is responsible for parsing the output from the Wikipedia
-	 * REST API.
-	 *
-	 * @param   array  $body JSON formatted data to be parsed
-	 * @return  array
-	 * @access  private
-	 * @author  Rushikesh Katikar <rushikesh.katikar@gmail.com>
-	 */
-	public function parseWikipedia($body) {
+    /**
+     * parseWikipedia
+     *
+     * This method is responsible for parsing the output from the Wikipedia
+     * REST API.
+     *
+     * @param array $body JSON formatted data to be parsed
+     * @param string $lang
+     * @return  array|AspenError
+     * @access  private
+     * @author  Rushikesh Katikar <rushikesh.katikar@gmail.com>
+     */
+	public function parseWikipedia($body, $lang = 'en') {
 		global $configArray;
 
 		// Check if data exists or not
@@ -40,7 +41,10 @@ class WikipediaParser {
 		$as_lines = explode("\n", $body['*']);
 		if (stristr($as_lines[0], '#REDIRECT')) {
 			preg_match('/\[\[(.*)\]\]/', $as_lines[0], $matches);
-			return $this->getWikipediaPage($matches[1]);
+            $url = "http://{$lang}.wikipedia.org/w/api.php" .
+                '?action=query&prop=revisions&rvprop=content&format=json' .
+                '&titles=' . urlencode($matches[1]);
+			return $this->getWikipediaPage($url, $lang);
 		}
 
 		/**
@@ -52,7 +56,6 @@ class WikipediaParser {
 		// We are looking for the infobox inside "{{...}}"
 		//   It may contain nested blocks too, thus the recursion
 		preg_match_all('/\{([^{}]++|(?R))*\}/s', $body['*'], $matches);
-		// print "<p>".htmlentities($body['*'])."</p>\n";
 		$firstInfoBox = null;
 		foreach ($matches[1] as $m) {
 			// If this is the Infobox
@@ -242,7 +245,7 @@ class WikipediaParser {
 
 	function fix_whitespace($matches) {
 		// as usual: $matches[0] is the complete match
-		// $matches[1] the match for the first subpattern
+		// $matches[1] the match for the first sub pattern
 		// enclosed in '(...)' and so on
 		return str_replace(' ', '+', $matches[0]);
 	}
@@ -285,11 +288,16 @@ class WikipediaParser {
 		return isset($imageUrl) ? $imageUrl : false;
 	}
 
-	public function getWikipediaPage($pageUrl) {
+    /**
+     * @param string $pageUrl
+     * @param string $lang
+     * @return array|AspenError|null
+     */
+	public function getWikipediaPage($pageUrl, $lang) {
 		if (filter_var($pageUrl, FILTER_VALIDATE_URL)){
 			$result = file_get_contents($pageUrl);
 			$jsonResult = json_decode($result, true);
-			$info = $this->parseWikipedia($jsonResult);
+			$info = $this->parseWikipedia($jsonResult, $lang);
 			if (!($info instanceof AspenError)) {
 				return $info;
 			}
