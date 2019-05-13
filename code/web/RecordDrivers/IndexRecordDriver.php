@@ -20,7 +20,7 @@ abstract class IndexRecordDriver extends RecordInterface
 	 * These Solr fields should NEVER be used for snippets.  (We exclude author
 	 * and title because they are already covered by displayed fields; we exclude
 	 * spelling because it contains lots of fields jammed together and may cause
-	 * glitchy output; we exclude ID because random numbers are not helpful).
+	 * incorrect output; we exclude ID because random numbers are not helpful).
 	 *
 	 * @var    array
 	 * @access protected

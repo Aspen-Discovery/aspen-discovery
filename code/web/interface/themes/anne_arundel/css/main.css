@@ -7187,9 +7187,6 @@ a.bg-overdue:hover,
 a.bg-overdue:focus {
   background-color: #e4b9b9;
 }
-#propertyRowfacets {
-  overflow-x: scroll;
-}
 .unsortedHeader {
   background-image: url(/images/unsorted_icon.gif);
   cursor: pointer;

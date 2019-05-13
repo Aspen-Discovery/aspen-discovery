@@ -20,13 +20,10 @@ abstract class GroupedWorkSubDriver extends RecordInterface
      * we will already have this data available, so we might as well
      * just pass it into the constructor.
      *
-     * @param   array|File_MARC_Record|string   $recordData     Data to construct the driver from
      * @param  GroupedWork $groupedWork;
      * @access  public
      */
-    public function __construct($recordData, $groupedWork = null){
-        $this->fields = $recordData;
-
+    public function __construct($groupedWork = null){
         if ($groupedWork == null){
             $this->loadGroupedWork();
         }else{
@@ -531,31 +528,26 @@ abstract class GroupedWorkSubDriver extends RecordInterface
      */
     public function getUPCs()
     {
-        // If UPCs is in the index, it should automatically be an array... but if
-        // it's not set at all, we should normalize the value to an empty array.
-        if (isset($this->fields['upc'])){
-            if (is_array($this->fields['upc'])){
-                return $this->fields['upc'];
-            }else{
-                return array($this->fields['upc']);
-            }
-        }else{
-            return array();
-        }
+        return array();
     }
 
     public function getUPC()
     {
         // If UPCs is in the index, it should automatically be an array... but if
         // it's not set at all, we should normalize the value to an empty array.
-        return isset($this->fields['upc']) && is_array($this->fields['upc']) ? $this->fields['upc'][0] : '';
+        $upcs = $this->getUPCs();
+        if (count($upcs) > 0){
+            return '';
+        }else{
+            return reset($upcs);
+        }
     }
 
     /**
      * @param IlsVolumeInfo[] $volumeData
      * @return int
      */
-    function getVolumeHolds($volumeData){
+    function getVolumeHolds(/** @noinspection PhpUnusedParameterInspection */$volumeData){
         return 0;
     }
 

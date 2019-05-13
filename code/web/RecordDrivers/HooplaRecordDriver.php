@@ -76,7 +76,6 @@ class HooplaRecordDriver extends MarcRecordDriver {
 	/**
 	 * @param $actions
 	 * @return array
-	 * @throws File_MARC_Exception
 	 */
 	public function getAccessLink($actions = null)
 	{
@@ -121,12 +120,7 @@ class HooplaRecordDriver extends MarcRecordDriver {
 			);
 
 		} else {
-            try {
-                $actions = $this->getAccessLink($actions);
-            } catch (File_MARC_Exception $e) {
-                global $logger;
-                $logger->log(Logger::LOG_ERROR, "Error parsing MARC " . $e->getMessage());
-            }
+		    $actions = $this->getAccessLink($actions);
         }
 
 		return $actions;
@@ -136,7 +130,7 @@ class HooplaRecordDriver extends MarcRecordDriver {
 		return array();
 	}
 
-	function getRecordActions($recordAvailable, $recordHoldable, $recordBookable, $relatedUrls = null){
+	function getRecordActions($recordAvailable, $recordHoldable, $recordBookable, $relatedUrls = null, $volumeData = null){
 		$actions = array();
 
 		/** @var Library $searchLibrary */

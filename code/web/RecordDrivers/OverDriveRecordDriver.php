@@ -42,13 +42,11 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 			}else{
 				$this->valid = false;
 			}
-			if ($groupedWork == null){
-				$this->loadGroupedWork();
-			}else{
-				$this->groupedWork = $groupedWork;
-			}
 		} else {
 		    $this->valid = false;
+        }
+		if ($this->valid){
+            parent::__construct($groupedWork);
         }
 	}
 

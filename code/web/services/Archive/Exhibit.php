@@ -446,7 +446,7 @@ class Archive_Exhibit extends Archive_Object{
 				$interface->assign('mappedPlaces', $mappedPlaces);
 				$interface->assign('unmappedPlaces', $unmappedPlaces);
 
-				$geolocatedObjects = $this->recordDriver->getGeolocatedObjects();
+				$geolocatedObjects = $this->recordDriver->getGeoLocatedObjects();
 				$totalMappedLocations = count($mappedPlaces) +  $geolocatedObjects['numFound'];
 				$interface->assign('geolocatedObjects', $geolocatedObjects['objects']);
 				foreach ($geolocatedObjects['objects'] as $object){

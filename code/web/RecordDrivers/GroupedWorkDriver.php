@@ -2567,7 +2567,7 @@ class GroupedWorkDriver extends IndexRecordDriver{
             $groupedWorkDetails['Author'] = $groupedWork->author;
             $groupedWorkDetails['Grouping Category'] = $groupedWork->grouping_category;
             $groupedWorkDetails['Last Update'] = date('Y-m-d H:i:sA', $groupedWork->date_updated);
-            if (array_key_exists('last_indexed', $this->fields)) {
+            if ($this->fields != null && array_key_exists('last_indexed', $this->fields)) {
                 $groupedWorkDetails['Last Indexed'] = date('Y-m-d H:i:sA', strtotime($this->fields['last_indexed']));
             }
         }else {

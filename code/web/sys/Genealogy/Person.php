@@ -322,7 +322,7 @@ class Person extends SolrDataObject
 	function delete($useWhere = false){
 		$this->deleteMarriages();
 		$this->deleteObituaries();
-		parent::delete($useWhere);
+		parent::delete();
 	}
 
 	function saveMarriages(){

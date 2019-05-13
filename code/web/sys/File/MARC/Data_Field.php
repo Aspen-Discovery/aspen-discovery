@@ -257,7 +257,6 @@ class File_MARC_Data_Field extends File_MARC_Field
     }
     // }}}
 
-    // {{{ deleteSubfield()
     /**
      * Delete a subfield from the field.
      *
@@ -269,15 +268,13 @@ class File_MARC_Data_Field extends File_MARC_Field
     {
         $this->subfields->deleteNode($subfield);
     }
-    // }}}
 
-    // {{{ getIndicator()
     /**
      * Get the value of an indicator
      *
      * @param int $ind number of the indicator (1 or 2)
      *
-     * @return string returns indicator value if it exists, otherwise false
+     * @return string|false returns indicator value if it exists, otherwise false
      */
     function getIndicator($ind)
     {
@@ -286,21 +283,20 @@ class File_MARC_Data_Field extends File_MARC_Field
         } elseif ($ind == 2) {
             return (string)$this->ind2;
         } else {
-             $errorMessage = File_MARC_Exception::formatError(File_MARC_Exception::$messages[File_MARC_Exception::ERROR_INVALID_INDICATOR_REQUEST], array("indicator" => $indicator));
-             throw new File_MARC_Exception($errorMessage, File_MARC_Exception::ERROR_INVALID_INDICATOR_REQUEST);
+             //$errorMessage = File_MARC_Exception::formatError(File_MARC_Exception::$messages[File_MARC_Exception::ERROR_INVALID_INDICATOR_REQUEST], array("indicator" => $ind));
+             return false;
         }
-        return false;
     }
-    // }}}
 
     // {{{ setIndicator()
     /**
      * Set the value of an indicator
      *
-     * @param int    $ind   number of the indicator (1 or 2)
+     * @param int $ind number of the indicator (1 or 2)
      * @param string $value value of the indicator
      *
      * @return string       returns indicator value if it exists, otherwise false
+     * @throws PEAR_Exception
      */
     function setIndicator($ind, $value)
     {
@@ -332,7 +328,7 @@ class File_MARC_Data_Field extends File_MARC_Field
      * {@link File_MARC_Subfield} is retrieved
      * @param bool   $pcre if true, then match as a regular expression
      *
-     * @return File_MARC_Subfield returns the first subfield that matches
+     * @return File_MARC_Subfield|false returns the first subfield that matches
      * $code, or false if no codes match $code
      */
     function getSubfield($code = null, $pcre = null)

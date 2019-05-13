@@ -54,7 +54,7 @@
 		<div id="title_links">
 			<div class="row">
 				<div class="col-xs-12">
-					<strong style="text-decoration: underline">Volume</strong>
+					<strong style="text-decoration: underline">Links</strong>
 				</div>
 			</div>
 			{include file="Record/view-links.tpl"}

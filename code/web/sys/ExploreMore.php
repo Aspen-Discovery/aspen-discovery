@@ -5,7 +5,7 @@ class ExploreMore {
 
 	/**
 	 * @param string $activeSection
-	 * @param IndexRecordDriver $recordDriver
+	 * @param RecordInterface $recordDriver
 	 */
 	function loadExploreMoreSidebar($activeSection, $recordDriver){
 		global $interface;

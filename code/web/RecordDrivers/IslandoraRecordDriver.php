@@ -29,6 +29,7 @@ abstract class IslandoraRecordDriver extends IndexRecordDriver {
 		}elseif (is_array($recordData)){
 			$this->pid = $recordData['PID'];
 			$this->title = isset($recordData['fgs_label_s']) ? $recordData['fgs_label_s'] : (isset($recordData['dc.title']) ? $recordData['dc.title'] : "");
+			parent::__construct($recordData);
 		}else{
 			$this->pid = $recordData;
 		}
@@ -252,14 +253,15 @@ abstract class IslandoraRecordDriver extends IndexRecordDriver {
 		return 'Archive';
 	}
 
-	/**
-	 * Assign necessary Smarty variables and return a template name to
-	 * load in order to display a summary of the item suitable for use in
-	 * search results.
-	 *
-	 * @access  public
-	 * @return  string              Name of Smarty template file to display.
-	 */
+    /**
+     * Assign necessary Smarty variables and return a template name to
+     * load in order to display a summary of the item suitable for use in
+     * search results.
+     *
+     * @access  public
+     * @param   string $view        The style of the display
+     * @return  string              Name of Smarty template file to display.
+     */
 	public function getSearchResult($view = 'list') {
 		if ($view == 'covers') { // Displaying Results as bookcover tiles
 			return $this->getBrowseResult();
@@ -291,15 +293,19 @@ abstract class IslandoraRecordDriver extends IndexRecordDriver {
 		return 'RecordDrivers/Islandora/result.tpl';
 	}
 
-	/**
-	 * Assign necessary Smarty variables and return a template name to
-	 * load in order to display a summary of the item suitable for use in
-	 * search results.
-	 *
-	 * @access  public
-	 * @return  string              Name of Smarty template file to display.
-	 */
+    /**
+     * Assign necessary Smarty variables and return a template name to
+     * load in order to display a summary of the item suitable for use in
+     * search results.
+     *
+     * @access  public
+     * @param string $view          Formatting of the result
+     * @return  string              Name of Smarty template file to display.
+     */
 	public function getCombinedResult($view = 'list') {
+        if ($view == 'covers') { // Displaying Results as bookcover tiles
+            return $this->getBrowseResult();
+        }
 		global $interface;
 		$id = $this->getUniqueID();
 		$interface->assign('summId', $id);
@@ -326,6 +332,7 @@ abstract class IslandoraRecordDriver extends IndexRecordDriver {
 	 */
 	public function getStaffView() {
 		// TODO: Implement getStaffView() method.
+        return null;
 	}
 
 	public function getTitle() {
@@ -390,7 +397,6 @@ abstract class IslandoraRecordDriver extends IndexRecordDriver {
 		if (isset($this->fields['mods_abstract_s'])){
 			return $this->fields['mods_abstract_s'];
 		} else{
-			$modsData = $this->getModsData();
 			return $this->getModsValue('abstract', 'mods');
 		}
 	}
@@ -984,7 +990,6 @@ abstract class IslandoraRecordDriver extends IndexRecordDriver {
 	public function loadRelatedEntities(){
 		if ($this->loadedRelatedEntities == false){
 			$this->loadedRelatedEntities = true;
-			$fedoraUtils = FedoraUtils::getInstance();
 			$marmotExtension = $this->getMarmotExtension();
 			if ($marmotExtension != null){
 				$entities = $this->getModsValues('relatedEntity', 'marmot', null, true);
@@ -1174,10 +1179,10 @@ abstract class IslandoraRecordDriver extends IndexRecordDriver {
 		return $this->relatedPlaces;
 	}
 
-	private $geolocatedObjects = null;
-	public function getGeolocatedObjects(){
-		if ($this->geolocatedObjects == null) {
-			$this->geolocatedObjects = array(
+	private $geoLocatedObjects = null;
+	public function getGeoLocatedObjects(){
+		if ($this->geoLocatedObjects == null) {
+			$this->geoLocatedObjects = array(
 					'numFound' => 0,
 					'objects' => array()
 			);
@@ -1204,18 +1209,18 @@ abstract class IslandoraRecordDriver extends IndexRecordDriver {
 							'longitude' => isset($doc['mods_extension_marmotLocal_relatedPlace_generalPlace_longitude_s']) ? $doc['mods_extension_marmotLocal_relatedPlace_generalPlace_longitude_s'] : $doc['mods_extension_marmotLocal_art_artInstallation_generalPlace_longitude_s'],
 							'count' => 1
 					);
-					if (array_key_exists("{$objectInfo['latitude']}-{$objectInfo['longitude']}", $this->geolocatedObjects)){
-						$this->geolocatedObjects['objects']["{$objectInfo['latitude']}-{$objectInfo['longitude']}"]['count'] += 1;
+					if (array_key_exists("{$objectInfo['latitude']}-{$objectInfo['longitude']}", $this->geoLocatedObjects)){
+						$this->geoLocatedObjects['objects']["{$objectInfo['latitude']}-{$objectInfo['longitude']}"]['count'] += 1;
 					}else{
-						$this->geolocatedObjects['objects']["{$objectInfo['latitude']}-{$objectInfo['longitude']}"] = $objectInfo;
-						$this->geolocatedObjects['numFound']++;
+						$this->geoLocatedObjects['objects']["{$objectInfo['latitude']}-{$objectInfo['longitude']}"] = $objectInfo;
+						$this->geoLocatedObjects['numFound']++;
 					}
 				}
 			}
 			$searchObject = null;
 			unset ($searchObject);
 		}
-		return $this->geolocatedObjects;
+		return $this->geoLocatedObjects;
 	}
 
 	public function getRelatedOrganizations(){
@@ -1258,6 +1263,7 @@ abstract class IslandoraRecordDriver extends IndexRecordDriver {
 					$linkType = $this->getModsAttribute('type', $linkInfo);
 					$link = $this->getModsValue('link', 'marmot', $linkInfo);
 					$linkText = $this->getModsValue('linkText', 'marmot', $linkInfo);
+                    $isHidden = false;
 					if (strlen($linkText) == 0) {
 						if (strlen($linkType) == 0) {
 							$linkText = $link;
@@ -1265,6 +1271,7 @@ abstract class IslandoraRecordDriver extends IndexRecordDriver {
 							switch (strtolower($linkType)) {
 								case 'relatedpika':
 									$linkText = 'Related title from the catalog';
+                                    $isHidden = true;
 									break;
 								case 'marmotgenealogy':
 									$linkText = 'Genealogy Record';
@@ -1277,15 +1284,18 @@ abstract class IslandoraRecordDriver extends IndexRecordDriver {
 									continue;
 								case 'geonames':
 									$linkText = 'Geographic information from GeoNames.org';
+                                    $isHidden = true;
 									continue;
 								case 'samepika':
 									$linkText = 'This record within the catalog';
 									continue;
 								case 'whosonfirst':
 									$linkText = 'Geographic information from Who\'s on First';
+                                    $isHidden = true;
 									continue;
 								case 'wikipedia':
 									$linkText = 'Information from Wikipedia';
+                                    $isHidden = true;
 									continue;
 								default:
 									$linkText = $linkType;
@@ -1293,10 +1303,6 @@ abstract class IslandoraRecordDriver extends IndexRecordDriver {
 						}
 					}
 					if (strlen($link) > 0) {
-						$isHidden = false;
-						if ($linkType == 'wikipedia' || $linkType == 'geoNames' || $linkType == 'whosOnFirst' || $linkType == 'relatedPika') {
-							$isHidden = true;
-						}
 						$this->links[] = array(
 								'type' => $linkType,
 								'link' => $link,
@@ -1326,30 +1332,30 @@ abstract class IslandoraRecordDriver extends IndexRecordDriver {
 					if (preg_match('/^.*\/GroupedWork\/([a-f0-9-]{36})/', $link['link'], $matches)) {
 						$workId = $matches[1];
 						$relatedWorkIds[] = $workId;
-					}else{
-						//Didn't get a valid grouped work id
 					}
 				}
 			}
 
-			/** @var SearchObject_GroupedWorkSearcher $searchObject */
-			$searchObject = SearchObjectFactory::initSearchObject();
-			$searchObject->init();
-			$linkedWorkData = $searchObject->getRecords($relatedWorkIds);
-			foreach ($linkedWorkData as $workData) {
-				$workDriver = new GroupedWorkDriver($workData);
-				if ($workDriver->isValid) {
-					$this->relatedPikaRecords[] = array(
-							'link' => $workDriver->getLinkUrl(),
-							'label' => $workDriver->getTitle(),
-							'image' => $workDriver->getBookcoverUrl('medium'),
-							'id' => $workId
-					);
-					//$this->links[$id]['hidden'] = true;
-				}
-			}
-			$searchObject = null;
-			unset ($searchObject);
+			if (count($relatedWorkIds) > 0){
+                /** @var SearchObject_GroupedWorkSearcher $searchObject */
+                $searchObject = SearchObjectFactory::initSearchObject();
+                $searchObject->init();
+                $linkedWorkData = $searchObject->getRecords($relatedWorkIds);
+                foreach ($linkedWorkData as $workData) {
+                    $workDriver = new GroupedWorkDriver($workData);
+                    if ($workDriver->isValid) {
+                        $this->relatedPikaRecords[] = array(
+                            'link' => $workDriver->getLinkUrl(),
+                            'label' => $workDriver->getTitle(),
+                            'image' => $workDriver->getBookcoverUrl('medium'),
+                            'id' => $workDriver->getPermanentId()
+                        );
+                        //$this->links[$id]['hidden'] = true;
+                    }
+                }
+                $searchObject = null;
+                unset ($searchObject);
+            }
 
 			//Look for links related to the collection(s) this object is linked to
 			$collections = $this->getRelatedCollections();
@@ -1377,8 +1383,6 @@ abstract class IslandoraRecordDriver extends IndexRecordDriver {
 	public function getDirectlyRelatedArchiveObjects(){
 		if ($this->directlyRelatedObjects == null){
 			global $timer;
-			$fedoraUtils = FedoraUtils::getInstance();
-
 			$timer->logTime("Starting getDirectlyLinkedArchiveObjects");
 			$this->directlyRelatedObjects = array(
 					'numFound' => 0,
@@ -2647,7 +2651,7 @@ abstract class IslandoraRecordDriver extends IndexRecordDriver {
             $publications = array();
             if ($publicationSections){
                 foreach ($publicationSections as $publicationSection){
-                    $publicationTitle = $this->getModsValue('academicPublicatonTitle', 'marmot', $publicationSection);
+                    $publicationTitle = $this->getModsValue('academicPublicationTitle', 'marmot', $publicationSection);
                     $publicationPid = $this->getModsValue('entityPid', 'marmot', $publicationSection);
                     $publicationLink = $this->getModsValue('academicPublicationLink', 'marmot', $publicationSection);
                     if ($publicationPid) {
@@ -2721,7 +2725,7 @@ abstract class IslandoraRecordDriver extends IndexRecordDriver {
                 $url = "http://en.wikipedia.org/w/api.php" .
                     '?action=query&prop=revisions&rvprop=content&format=json' .
                     '&titles=' . urlencode(urldecode($searchTerm));
-                $wikipediaData = $wikipediaParser->getWikipediaPage($url);
+                $wikipediaData = $wikipediaParser->getWikipediaPage($url, 'en');
                 $interface->assign('wikipediaData', $wikipediaData);
 
             }elseif(strcasecmp($link['type'], 'marmotGenealogy') == 0){
@@ -2750,12 +2754,13 @@ abstract class IslandoraRecordDriver extends IndexRecordDriver {
                             $interface->assign('birthDate', $formattedBirthdate);
                         }
 
-                        $formattedDeathdate = $person->formatPartialDateForArchive($person->deathDateDay, $person->deathDateMonth, $person->deathDateYear);
-                        if ($formattedDeathdate) {
-                            $interface->assign('deathDate', $formattedDeathdate);
+                        $formattedDeathDate = $person->formatPartialDateForArchive($person->deathDateDay, $person->deathDateMonth, $person->deathDateYear);
+                        if ($formattedDeathDate) {
+                            $interface->assign('deathDate', $formattedDeathDate);
                         }
 
                         $marriages = array();
+                        /** @noinspection PhpUndefinedFieldInspection */
                         $personMarriages = $person->marriages;
                         if (isset($personMarriages)){
                             foreach ($personMarriages as $marriage){
@@ -2766,6 +2771,7 @@ abstract class IslandoraRecordDriver extends IndexRecordDriver {
                         }
                         $interface->assign('marriages', $marriages);
                         $obituaries = array();
+                        /** @noinspection PhpUndefinedFieldInspection */
                         $personObituaries =$person->obituaries;
                         if (isset($personObituaries)){
                             foreach ($personObituaries as $obit){

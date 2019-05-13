@@ -25,11 +25,6 @@ class RbdigitalRecordDriver extends GroupedWorkSubDriver {
     public function __construct($recordId, $groupedWork = null) {
         $this->id = $recordId;
 
-        if ($groupedWork == null){
-            $this->loadGroupedWork();
-        }else{
-            $this->groupedWork = $groupedWork;
-        }
         $this->rbdigitalProduct = new RbdigitalProduct();
         $this->rbdigitalProduct->rbdigitalId = $recordId;
         if ($this->rbdigitalProduct->find(true)) {
@@ -38,6 +33,9 @@ class RbdigitalRecordDriver extends GroupedWorkSubDriver {
         } else {
             $this->valid = false;
             $this->rbdigitalProduct = null;
+        }
+        if ($this->valid){
+            parent::__construct($groupedWork);
         }
     }
 
