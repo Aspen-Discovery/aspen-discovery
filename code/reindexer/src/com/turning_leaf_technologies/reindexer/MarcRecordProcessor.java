@@ -739,11 +739,11 @@ abstract class MarcRecordProcessor {
 		}
 		//Try to get from 260
 		if (publicationDates.size() ==0) {
-			publicationDates.addAll(MarcUtil.getFieldList(record, "260c"));
+			publicationDates.addAll(StringUtils.trimTrailingPunctuation(MarcUtil.getFieldList(record, "260c")));
 		}
 		//Try to get from 008, but only need to do if we don't have anything else
 		if (publicationDates.size() == 0) {
-			publicationDates.add(MarcUtil.getFirstFieldVal(record, "008[7-10]"));
+			publicationDates.add(StringUtils.trimTrailingPunctuation(MarcUtil.getFirstFieldVal(record, "008[7-10]")));
 		}
 
 		return publicationDates;
@@ -763,7 +763,7 @@ abstract class MarcRecordProcessor {
 				}
 			}
 		}
-		publisher.addAll(MarcUtil.getFieldList(record, "260b"));
+		publisher.addAll(StringUtils.trimTrailingPunctuation(MarcUtil.getFieldList(record, "260b")));
 		return publisher;
 	}
 

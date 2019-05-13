@@ -1,5 +1,7 @@
 package com.turning_leaf_technologies.reindexer;
 
+import com.turning_leaf_technologies.strings.StringUtils;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.TreeMap;

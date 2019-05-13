@@ -58,8 +58,8 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 					}
 					kohaConnection = DriverManager.getConnection(kohaConnectionJDBC);
 				} catch (Exception e) {
-					logger.error("Error connecting to koha database ", e);
-					System.exit(1);
+					logger.warn("Error connecting to koha database ", e);
+					//System.exit(1);
 				}
 			} else {
 				logger.error("Could not find an account profile for Koha stopping");
@@ -78,50 +78,52 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 			kohaConnection = connectToKohaDB(dbConn, logger);
 		}
 
-		try {
-			//Get a list of lost statuses
-			PreparedStatement lostStatusStmt = kohaConnection.prepareStatement("SELECT * FROM authorised_values where category = 'LOST'");
-			ResultSet lostStatusRS = lostStatusStmt.executeQuery();
-			while (lostStatusRS.next()) {
-				lostStatuses.put(lostStatusRS.getLong("authorised_value"), lostStatusRS.getString("lib"));
-			}
-			lostStatusRS.close();
+		if (kohaConnection != null) {
+			try {
+				//Get a list of lost statuses
+				PreparedStatement lostStatusStmt = kohaConnection.prepareStatement("SELECT * FROM authorised_values where category = 'LOST'");
+				ResultSet lostStatusRS = lostStatusStmt.executeQuery();
+				while (lostStatusRS.next()) {
+					lostStatuses.put(lostStatusRS.getLong("authorised_value"), lostStatusRS.getString("lib"));
+				}
+				lostStatusRS.close();
 
-			PreparedStatement damagedStatusStmt = kohaConnection.prepareStatement("SELECT * FROM authorised_values where category = 'DAMAGED'");
-			ResultSet damagedStatusRS = damagedStatusStmt.executeQuery();
-			while (damagedStatusRS.next()) {
-				damagedStatuses.put(damagedStatusRS.getLong("authorised_value"), damagedStatusRS.getString("lib"));
-			}
-			damagedStatusRS.close();
+				PreparedStatement damagedStatusStmt = kohaConnection.prepareStatement("SELECT * FROM authorised_values where category = 'DAMAGED'");
+				ResultSet damagedStatusRS = damagedStatusStmt.executeQuery();
+				while (damagedStatusRS.next()) {
+					damagedStatuses.put(damagedStatusRS.getLong("authorised_value"), damagedStatusRS.getString("lib"));
+				}
+				damagedStatusRS.close();
 
 
-			PreparedStatement notForLoanStatusStmt = kohaConnection.prepareStatement("SELECT * FROM authorised_values where category = 'NOT_LOAN'");
-			ResultSet notForLoanStatusesRS = notForLoanStatusStmt.executeQuery();
-			while (notForLoanStatusesRS.next()) {
-				notForLoanStatuses.put(notForLoanStatusesRS.getLong("authorised_value"), notForLoanStatusesRS.getString("lib"));
-			}
-			notForLoanStatusesRS.close();
+				PreparedStatement notForLoanStatusStmt = kohaConnection.prepareStatement("SELECT * FROM authorised_values where category = 'NOT_LOAN'");
+				ResultSet notForLoanStatusesRS = notForLoanStatusStmt.executeQuery();
+				while (notForLoanStatusesRS.next()) {
+					notForLoanStatuses.put(notForLoanStatusesRS.getLong("authorised_value"), notForLoanStatusesRS.getString("lib"));
+				}
+				notForLoanStatusesRS.close();
 
-			//Get a list of all items that are in transit
-			//PreparedStatement getInTransitItemsStmt = kohaConn.prepareStatement("SELECT itemnumber from reserves WHERE found = 'T'");
-			PreparedStatement getInTransitItemsStmt = kohaConnection.prepareStatement("SELECT itemnumber from branchtransfers WHERE datearrived IS NULL");
-			ResultSet inTransitItemsRS = getInTransitItemsStmt.executeQuery();
-			while (inTransitItemsRS.next()){
-				inTransitItems.add(inTransitItemsRS.getString("itemnumber"));
-			}
-			inTransitItemsRS.close();
-			getInTransitItemsStmt.close();
+				//Get a list of all items that are in transit
+				//PreparedStatement getInTransitItemsStmt = kohaConn.prepareStatement("SELECT itemnumber from reserves WHERE found = 'T'");
+				PreparedStatement getInTransitItemsStmt = kohaConnection.prepareStatement("SELECT itemnumber from branchtransfers WHERE datearrived IS NULL");
+				ResultSet inTransitItemsRS = getInTransitItemsStmt.executeQuery();
+				while (inTransitItemsRS.next()) {
+					inTransitItems.add(inTransitItemsRS.getString("itemnumber"));
+				}
+				inTransitItemsRS.close();
+				getInTransitItemsStmt.close();
 
-			PreparedStatement onHoldShelfItemsStmt = kohaConnection.prepareStatement("SELECT itemnumber from reserves WHERE found = 'W'");
-			ResultSet onHoldShelfItemsRS = onHoldShelfItemsStmt.executeQuery();
-			while (onHoldShelfItemsRS.next()){
-				onHoldShelfItems.add(onHoldShelfItemsRS.getString("itemnumber"));
+				PreparedStatement onHoldShelfItemsStmt = kohaConnection.prepareStatement("SELECT itemnumber from reserves WHERE found = 'W'");
+				ResultSet onHoldShelfItemsRS = onHoldShelfItemsStmt.executeQuery();
+				while (onHoldShelfItemsRS.next()) {
+					onHoldShelfItems.add(onHoldShelfItemsRS.getString("itemnumber"));
+				}
+				onHoldShelfItemsRS.close();
+				onHoldShelfItemsStmt.close();
+			} catch (Exception e) {
+				logger.error("Error setting up koha statements ", e);
+				System.exit(1);
 			}
-			onHoldShelfItemsRS.close();
-			onHoldShelfItemsStmt.close();
-		} catch (Exception e) {
-			logger.error("Error setting up koha statements ", e);
-			System.exit(1);
 		}
 	}
 
@@ -436,11 +438,13 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 	protected String getShelfLocationForItem(ItemInfo itemInfo, DataField itemField, String identifier) {
 		String location = "";
 		String subLocationCode = getItemSubfieldData(subLocationSubfield, itemField);
+		String locationCode = getItemSubfieldData(locationSubfieldIndicator, itemField);
+		location = translateValue("location", locationCode, identifier);
 		if (subLocationCode != null && subLocationCode.length() > 0){
+			if (location.length() > 0){
+				location += " - ";
+			}
 			location += translateValue("sub_location", subLocationCode, identifier);
-		}else{
-			String locationCode = getItemSubfieldData(locationSubfieldIndicator, itemField);
-			location = translateValue("location", locationCode, identifier);
 		}
 		String shelvingLocation = getItemSubfieldData(shelvingLocationSubfield, itemField);
 		if (shelvingLocation != null && shelvingLocation.length() > 0){

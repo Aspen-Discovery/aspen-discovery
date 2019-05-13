@@ -5,13 +5,13 @@ import com.sun.istack.internal.NotNull;
 import java.util.HashMap;
 import java.util.regex.Pattern;
 
-public class OwnershipRule {
+class OwnershipRule {
 	private String recordType;
 
 	private Pattern locationCodePattern;
 	private Pattern subLocationCodePattern;
 
-	public OwnershipRule(String recordType, @NotNull String locationCode, @NotNull String subLocationCode){
+	OwnershipRule(String recordType, @NotNull String locationCode, @NotNull String subLocationCode){
 		this.recordType = recordType;
 
 		if (locationCode.length() == 0){
@@ -25,7 +25,7 @@ public class OwnershipRule {
 	}
 
 	private HashMap<String, Boolean> ownershipResults = new HashMap<>();
-	public boolean isItemOwned(@NotNull String recordType, @NotNull String locationCode, @NotNull String subLocationCode){
+	boolean isItemOwned(@NotNull String recordType, @NotNull String locationCode, @NotNull String subLocationCode){
 		boolean isOwned = false;
 		if (this.recordType.equals(recordType)){
 			String key = locationCode + "-" + subLocationCode;

@@ -42,8 +42,8 @@ public class GroupedWorkIndexer {
 	private PreparedStatement getNovelistStmt;
 	private Connection dbConn;
 
-	private int availableAtLocationBoostValue;
-	private int ownedByLocationBoostValue;
+	static int availableAtBoostValue = 50;
+	static int ownedByBoostValue = 10;
 
 	private boolean fullReindex;
 	private long lastReindexTime;
@@ -72,8 +72,6 @@ public class GroupedWorkIndexer {
 
 		solrPort = configIni.get("Reindex", "solrPort");
 
-		availableAtLocationBoostValue = Integer.parseInt(configIni.get("Reindex", "availableAtLocationBoostValue"));
-		ownedByLocationBoostValue = Integer.parseInt(configIni.get("Reindex", "ownedByLocationBoostValue"));
 		baseLogPath = ConfigUtil.cleanIniValue(configIni.get("Site", "baseLogPath"));
 
 		String maxWorksToProcessStr = ConfigUtil.cleanIniValue(configIni.get("Reindex", "maxWorksToProcess"));
@@ -783,7 +781,7 @@ public class GroupedWorkIndexer {
 
 			//Write the record to Solr.
 			try {
-				SolrInputDocument inputDocument = groupedWork.getSolrDocument(availableAtLocationBoostValue, ownedByLocationBoostValue);
+				SolrInputDocument inputDocument = groupedWork.getSolrDocument();
 				updateServer.add(inputDocument);
 				//logger.debug("Updated solr \r\n" + inputDocument.toString());
 

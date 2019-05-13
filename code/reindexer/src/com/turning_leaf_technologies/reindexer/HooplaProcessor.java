@@ -2,6 +2,7 @@ package com.turning_leaf_technologies.reindexer;
 
 import com.turning_leaf_technologies.indexing.Scope;
 import com.turning_leaf_technologies.marc.MarcUtil;
+import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.marc4j.MarcPermissiveStreamReader;
 import org.marc4j.marc.Record;
@@ -143,8 +144,8 @@ class HooplaProcessor extends MarcRecordProcessor {
 		recordInfo.setFormatBoost(formatBoost);
 		recordInfo.setEdition(primaryEdition);
 		recordInfo.setPhysicalDescription(physicalDescription);
-		recordInfo.setPublicationDate(publicationDate);
-		recordInfo.setPublisher(publisher);
+		recordInfo.setPublicationDate(StringUtils.trimTrailingPunctuation(publicationDate));
+		recordInfo.setPublisher(StringUtils.trimTrailingPunctuation(publisher));
 
 		//Load Languages
 		HashSet<RecordInfo> records = new HashSet<>();

@@ -1,6 +1,7 @@
 package com.turning_leaf_technologies.reindexer;
 
 import com.turning_leaf_technologies.indexing.Scope;
+import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -145,7 +146,7 @@ class OverDriveProcessor {
 
 						overDriveRecord.setEdition("");
 						overDriveRecord.setPrimaryLanguage(primaryLanguage);
-						overDriveRecord.setPublisher(metadata.get("publisher"));
+						overDriveRecord.setPublisher(StringUtils.trimTrailingPunctuation(metadata.get("publisher")));
 						overDriveRecord.setPublicationDate(metadata.get("publicationDate"));
 						overDriveRecord.setPhysicalDescription("");
 

@@ -4,8 +4,6 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.Set;
 import java.util.regex.Pattern;
 
 public class TranslationMap {
@@ -85,17 +83,6 @@ public class TranslationMap {
 		}
 		cachedTranslations.put(value, translatedValue);
 		return translatedValue;
-	}
-
-	public LinkedHashSet<String> translateCollection(Set<String> values, String identifier) {
-		LinkedHashSet<String> translatedCollection = new LinkedHashSet<>();
-		for (String value : values){
-			String translatedValue = translateValue(value, identifier);
-			if (translatedValue != null) {
-				translatedCollection.add(translatedValue);
-			}
-		}
-		return  translatedCollection;
 	}
 
 	public String getMapName() {

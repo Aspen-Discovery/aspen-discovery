@@ -198,7 +198,7 @@ public class GroupedWorkSolr implements Cloneable {
 		return clonedWork;
 	}
 
-	SolrInputDocument getSolrDocument(int availableAtBoostValue, int ownedByBoostValue) {
+	SolrInputDocument getSolrDocument() {
 		SolrInputDocument doc = new SolrInputDocument();
 		//Main identification
 		doc.addField("id", id);
@@ -370,7 +370,7 @@ public class GroupedWorkSolr implements Cloneable {
 		doc.addField("display_description", displayDescription);
 
 		//Save information from scopes
-		addScopedFieldsToDocument(availableAtBoostValue, ownedByBoostValue, doc);
+		addScopedFieldsToDocument(doc);
 
 		return doc;
 	}
@@ -429,7 +429,7 @@ public class GroupedWorkSolr implements Cloneable {
 		return earliestDate;
 	}
 
-	private void addScopedFieldsToDocument(int availableAtBoostValue, int ownedByBoostValue, SolrInputDocument doc) {
+	private void addScopedFieldsToDocument(SolrInputDocument doc) {
 		//Load information based on scopes.  This has some pretty severe performance implications since we potentially
 		//have a lot of scopes and a lot of items & records.
 		for (RecordInfo curRecord : relatedRecords.values()){
@@ -502,10 +502,13 @@ public class GroupedWorkSolr implements Cloneable {
 
 					if (curScope.isLocallyOwned() || curScope.isLibraryOwned()) {
 						if (curScope.isAvailable()) {
-							updateMaxValueField(doc, "lib_boost_" + curScopeName, availableAtBoostValue);
+							updateMaxValueField(doc, "lib_boost_" + curScopeName, GroupedWorkIndexer.availableAtBoostValue);
 						}else {
-							updateMaxValueField(doc, "lib_boost_" + curScopeName, ownedByBoostValue);
+							updateMaxValueField(doc, "lib_boost_" + curScopeName, GroupedWorkIndexer.ownedByBoostValue);
 						}
+					}else{
+						//Make sure we have a minimum value so we don't multiply relevance by 0
+						updateMaxValueField(doc, "lib_boost_" + curScopeName, 1);
 					}
 
 					addUniqueFieldValue(doc, "itype_" + curScopeName, StringUtils.trimTrailingPunctuation(curItem.getIType()));
@@ -657,7 +660,13 @@ public class GroupedWorkSolr implements Cloneable {
 		}
 		if (addLibraryOwnership){
 			//We do different ownership display depending on if this is eContent or not
-			String owningLibraryValue = curScopeDetails.getFacetLabel();
+			String owningLibraryValue;
+			if (curScope.getScope().isLibraryScope()){
+				owningLibraryValue = curScopeDetails.getFacetLabel();
+			}else{
+				owningLibraryValue = curScopeDetails.getLibraryScope().getFacetLabel();
+			}
+
 			if (curItem.isEContent()){
 				owningLibraryValue = curScopeDetails.getFacetLabel() + " Online";
 			}else if (curItem.isOrderItem()) {
@@ -1146,6 +1155,10 @@ public class GroupedWorkSolr implements Cloneable {
 	}
 
 	void addHoldings(int recordHoldings) {
+		if (recordHoldings > 1000){
+			//This is an unlimited access title, just count it as 1
+			recordHoldings = 1;
+		}
 		this.numHoldings += recordHoldings;
 	}
 
