@@ -37,7 +37,12 @@ class ListWidget extends DataObject
 	/** @var  ListWidgetList[] */
 	private $lists;
 
-	public function getStyles(){
+	public function getNumericColumnNames()
+    {
+        return ['id'];
+    }
+
+    public function getStyles(){
 	    return ListWidget::$_styles;
     }
 
@@ -79,7 +84,6 @@ class ListWidget extends DataObject
 				'type'=>'hidden',
 				'label'=>'Id',
 				'description'=>'The unique id of the list widget file.',
-				'primaryKey' => true,
 				'storeDb' => true,
 			),
 			'libraryId' => array('property'=>'libraryId', 'type'=>'enum', 'values'=>$libraryList, 'label'=>'Library', 'description'=>'A link to the library which the location belongs to'),

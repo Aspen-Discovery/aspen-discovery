@@ -28,38 +28,23 @@ class DataObjectUtil
 		return  $interface->fetch('DataObjectUtil/objectEditForm.tpl');
 	}
 
-	/**
-	 * Save the object to the database (and optionally solr) based on the structure of the object
-	 * Takes care of determining whether or not the object is new or not.
-	 *
-	 * @param $dataObject
-	 * @param $form
-	 */
+    /**
+     * Save the object to the database (and optionally solr) based on the structure of the object
+     * Takes care of determining whether or not the object is new or not.
+     *
+     * @param array $structure The structure of the data object
+     * @param string $dataType The class of the data object
+     * @return array
+     */
 	static function saveObject($structure, $dataType){
 		global $logger;
 		//Check to see if we have a new object or an exiting object to update
         /** @var DataObject $object */
 		$object = new $dataType();
 		DataObjectUtil::updateFromUI($object, $structure);
-		$primaryKeySet = false;
-		foreach ($structure as $property){
-			if (isset($property['primaryKey']) && $property['primaryKey'] == true){
-				if (isset($object->$property['property']) && !is_null($object->$property['property']) && strlen($object->$property['property']) > 0){
-					$object = new $dataType();
-					$object->$property['property'] = $object->$property['property'];
-					if ($object->find(true)){
-						$logger->log("Loaded existing object from database", Logger::LOG_DEBUG);
-					}else{
-						$logger->log("Could not find existing object in database", Logger::LOG_ERROR);
-					}
+		$primaryKey = $object->__primaryKey;
+        $primaryKeySet = !empty($object->$primaryKey);
 
-					//Reload from UI
-					DataObjectUtil::updateFromUI($object, $structure);
-					$primaryKeySet = true;
-					break;
-				}
-			}
-		}
 		$validationResults = DataObjectUtil::validateObject($structure, $object);
 		$validationResults['object'] = $object;
 

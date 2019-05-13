@@ -29,10 +29,9 @@ class UserList extends DataObject
 		$structure = array(
 			'id' => array(
 				'property'=>'id',
-				'type'=>'hidden',
+				'type'=>'label',
 				'label'=>'Id',
-				'primaryKey'=>true,
-				'description'=>'The unique id of the e-pub file.',
+				'description'=>'The unique id of the user list.',
 				'storeDb' => true,
 				'storeSolr' => false,
 			),

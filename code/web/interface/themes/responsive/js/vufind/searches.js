@@ -121,31 +121,35 @@ VuFind.Searches = (function(){
 
 		initAutoComplete: function(){
 			try{
-				$("#lookfor").autocomplete({
-					source:function(request,response){
-						let url=Globals.path+"/Search/AJAX?method=getAutoSuggestList&searchTerm=" + $("#lookfor").val() + "&searchIndex=" + $("#searchIndex").val() + "&searchSource=" + $("#searchSource").val();
-						$.ajax({
-							url:url,
-							dataType:"json",
-							success:function(data){
-								response(data);
-							}
-						});
-					},
-					position:{
-						my:"left top",
-						at:"left bottom",
-						of:"#lookfor",
-						collision:"none"
-					},
-					minLength:4,
-					delay:600
-				}).data('ui-autocomplete')._renderItem = function( ul, item ) {
-					return $( "<li></li>" )
-						.data( "ui-autocomplete-item", item.value )
-						.append( '<a>' + item.label + '</a>' )
-						.appendTo( ul );
-				};
+				let searchTermInput = $("#lookfor");
+				if (searchTermInput.length){
+					searchTermInput.autocomplete({
+						source:function(request,response){
+							let url=Globals.path+"/Search/AJAX?method=getAutoSuggestList&searchTerm=" + $("#lookfor").val() + "&searchIndex=" + $("#searchIndex").val() + "&searchSource=" + $("#searchSource").val();
+							$.ajax({
+								url:url,
+								dataType:"json",
+								success:function(data){
+									response(data);
+								}
+							});
+						},
+						position:{
+							my:"left top",
+							at:"left bottom",
+							of:"#lookfor",
+							collision:"none"
+						},
+						minLength:4,
+						delay:600
+					}).data('ui-autocomplete')._renderItem = function( ul, item ) {
+						return $( "<li></li>" )
+							.data( "ui-autocomplete-item", item.value )
+							.append( '<a>' + item.label + '</a>' )
+							.appendTo( ul );
+					};
+				}
+
 			}catch(e){
 				alert("error during autocomplete setup"+e);
 			}

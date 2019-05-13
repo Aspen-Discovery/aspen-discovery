@@ -15,7 +15,6 @@ class AuthorEnrichment  extends DataObject{
 						'label' => 'Id',
 						'description' => 'The unique id of the enrichment information',
 						'storeDb' => true,
-						'primaryKey' => true,
 				),
 				array(
 						'property' => 'authorName',

@@ -21,7 +21,6 @@ class ListWidgetListsLinks extends DataObject
 						'type'=>'hidden',
 						'label'=>'Id',
 						'description'=>'The unique id of the list widget file.',
-						'primaryKey' => true,
 						'storeDb' => true
 				),
 				'weight' => array(

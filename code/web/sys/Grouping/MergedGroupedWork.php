@@ -15,7 +15,6 @@ class MergedGroupedWork extends DataObject {
 				'label' => 'Id',
 				'description' => 'The unique id of the merged grouped work in the database',
 				'storeDb' => true,
-				'primaryKey' => true,
 			),
 			array(
 				'property' => 'sourceGroupedWorkId',

@@ -30,7 +30,7 @@ class EditorialReview extends DataObject {
 		$structure = array(
 		array(
 			'property'=>'editorialReviewId',
-			'type'=>'hidden',
+			'type'=>'label',
 			'label'=>'Id',
 			'description'=>'The unique id of the editorial review in the database',
 			'storeDb' => true,
