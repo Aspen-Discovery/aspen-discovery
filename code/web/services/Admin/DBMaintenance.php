@@ -1000,12 +1000,12 @@ class DBMaintenance extends Admin_Admin {
                     ),
                 ),
 
-				'boost_disabling' => array(
-					'title' => 'Disabling Lib and Loc Boosting',
+				'remove_library_and location_boost' => array(
+					'title' => 'Remove Lib and Loc Boosting',
 					'description' => 'Allow boosting of library and location boosting to be disabled',
 					'sql' => array(
-						"ALTER TABLE `library` ADD `boostByLibrary` TINYINT DEFAULT '1'",
-						"ALTER TABLE `location` ADD `boostByLocation` TINYINT DEFAULT '1'",
+						"ALTER TABLE `library` DROP COLUMN `boostByLibrary`",
+						"ALTER TABLE `location` DROP COLUMN `boostByLocation`",
 					),
 				),
 

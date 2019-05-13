@@ -52,8 +52,6 @@ class Location extends DataObject
 	public $homeLink;
 	public $defaultPType;
 	public $ptypesToAllowRenewals;
-	public $boostByLocation;
-	public $additionalLocalBoostFactor;
 	public $publicListsToInclude;
 	public $automaticTimeoutLength;
 	public $automaticTimeoutLengthLoggedOut;
@@ -204,8 +202,6 @@ class Location extends DataObject
 				'searchingSection' => array('property'=>'searchingSection', 'type' => 'section', 'label' =>'Searching', 'hideInLists' => true, 'properties' => array(
 						array('property'=>'restrictSearchByLocation', 'type'=>'checkbox', 'label'=>'Restrict Search By Location', 'description'=>'Whether or not search results should only include titles from this location', 'hideInLists' => true, 'default'=>false),
 						array('property' => 'publicListsToInclude', 'type'=>'enum', 'values' => array(0 => 'No Lists', '1' => 'Lists from this library', '4'=>'Lists from library list publishers Only', '2'=>'Lists from this location', '5'=>'Lists from list publishers at this location Only', '6'=>'Lists from all list publishers', '3' => 'All Lists'), 'label'=>'Public Lists To Include', 'description'=>'Which lists should be included in this scope'),
-						array('property'=>'boostByLocation', 'type'=>'checkbox', 'label'=>'Boost By Location', 'description'=>'Whether or not boosting of titles owned by this location should be applied', 'hideInLists' => true, 'default'=>true),
-						array('property'=>'additionalLocalBoostFactor', 'type'=>'integer', 'label'=>'Additional Local Boost Factor', 'description'=>'An additional numeric boost to apply to any locally owned and locally available titles', 'hideInLists' => true, 'default'=>1),
 						array('property' => 'searchBoxSection', 'type' => 'section', 'label' => 'Search Box', 'hideInLists' => true, 'properties' => array(
 								array('property'=>'systemsToRepeatIn', 'type'=>'text', 'label'=>'Systems To Repeat In', 'description'=>'A list of library codes that you would like to repeat search in separated by pipes |.', 'hideInLists' => true),
 								array('property'=>'repeatSearchOption', 'type'=>'enum', 'values'=>array('none'=>'None', 'librarySystem'=>'Library System','marmot'=>'Entire Consortium'), 'label'=>'Repeat Search Options (requires Restrict Search By Location to be ON)', 'description'=>'Where to allow repeating search. Valid options are: none, librarySystem, marmot, all', 'default'=>'marmot'),

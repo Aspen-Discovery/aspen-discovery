@@ -447,12 +447,12 @@ function getLibraryLocationUpdates(){
 			),
 		),
 
-		'library_location_boosting' => array(
-			'title' => 'Library Location Boosting',
-			'description' => 'Allow additional boosting for library and location holdings in addition to the default in the index.',
+		'remove_library_location_boosting' => array(
+			'title' => 'Remove Library Location Boosting',
+			'description' => 'Remove additional boosting for library and location holdings in addition to the default in the index.',
 			'sql' => array(
-				"ALTER TABLE library ADD additionalLocalBoostFactor INT(11) DEFAULT 1",
-				"ALTER TABLE location ADD additionalLocalBoostFactor INT(11) DEFAULT 1",
+				"ALTER TABLE library DROP COLUMN additionalLocalBoostFactor",
+				"ALTER TABLE location DROP COLUMN additionalLocalBoostFactor",
 			),
 		),
 

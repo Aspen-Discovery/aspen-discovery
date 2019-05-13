@@ -145,7 +145,7 @@ class GroupedWorksSolrConnector extends Solr
         foreach ($scopingFilters as $filter){
             $options['fq'][] = $filter;
         }
-        $boostFactors = $this->getBoostFactors($searchLibrary, $searchLocation);
+        $boostFactors = $this->getBoostFactors($searchLibrary);
         if ($configArray['Index']['enableBoosting']){
             $options['bf'] = $boostFactors;
         }
@@ -190,7 +190,7 @@ class GroupedWorksSolrConnector extends Solr
         foreach ($scopingFilters as $filter){
             $options['fq'][] = $filter;
         }
-        $boostFactors = $this->getBoostFactors($searchLibrary, $searchLocation);
+        $boostFactors = $this->getBoostFactors($searchLibrary);
         if ($configArray['Index']['enableBoosting']){
             $options['bf'] = $boostFactors;
         }
