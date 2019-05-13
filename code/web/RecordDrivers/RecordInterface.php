@@ -139,7 +139,7 @@ abstract class RecordInterface {
 			);
 		}
 		$timer->logTime('Loaded More Like This');
-		if ($interface->getVariable('enablePospectorIntegration')){
+		if ($interface->getVariable('enableProspectorIntegration')){
 			$moreDetailsOptions['prospector'] = array(
 					'label' => 'More Copies In Prospector',
 					'body' => '<div id="inProspectorPlaceholder">Loading Prospector Copies...</div>',

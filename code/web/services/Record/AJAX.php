@@ -66,7 +66,7 @@ class Record_AJAX extends Action {
 		(UserAccount::isLoggedIn() ? "True" : "False") . "</result>";
 	}
 
-	function GetProspectorInfo(){
+	function getProspectorInfo(){
 		require_once ROOT_DIR . '/Drivers/marmot_inc/Prospector.php';
 		global $configArray;
 		global $interface;

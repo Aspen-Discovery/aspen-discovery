@@ -1682,6 +1682,15 @@ class DBMaintenance extends Admin_Admin {
                         )
                     ),
 
+                    'increase_search_url_size' => array(
+                        'title' => 'Increase allowable length of search url',
+                        'description' => 'Increase allowable length of search url',
+                        'continueOnError' => true,
+                        'sql' => array(
+                            "ALTER TABLE `search` CHANGE COLUMN `searchUrl` `searchUrl` VARCHAR(1000) DEFAULT NULL;",
+                        )
+                    ),
+
 					'record_grouping_log' => array(
 							'title' => 'Record Grouping Log',
 							'description' => 'Create Log for record grouping',

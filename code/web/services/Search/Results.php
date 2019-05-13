@@ -232,7 +232,7 @@ class Search_Results extends Action {
 		$showRatings = 1;
 		$enableProspectorIntegration = isset($configArray['Content']['Prospector']) ? $configArray['Content']['Prospector'] : false;
 		if (isset($library)){
-			$enableProspectorIntegration = ($library->enablePospectorIntegration == 1);
+			$enableProspectorIntegration = ($library->enableProspectorIntegration == 1);
 			$showRatings = $library->showRatings;
 		}
 		if ($enableProspectorIntegration){

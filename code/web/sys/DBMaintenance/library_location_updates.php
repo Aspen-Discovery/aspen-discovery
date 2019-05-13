@@ -65,6 +65,15 @@ function getLibraryLocationUpdates(){
 			),
 		),
 
+		'library_rename_prospector' => [
+            'title' => 'Rename Prospector',
+            'description' => 'Rename Prospector to fix spelling error',
+            'continueOnError' => true,
+            'sql' => array(
+                "ALTER TABLE `library` CHANGE COLUMN `enablePospectorIntegration` enableProspectorIntegration TINYINT(4) NOT NULL DEFAULT '0';",
+            ),
+        ],
+
 		'library_7' => array(
 			'title' => 'Library 7',
 			'description' => 'Allow materials request to be enabled or disabled by library',

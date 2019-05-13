@@ -156,9 +156,9 @@ function getGoDeeperData(dataType, recordType, id, isbn, upc) {
 	});
 }
 
-function GetProspectorInfo(id) {
+function getProspectorInfo(id) {
 	var url = path + "/Record/" + encodeURIComponent(id) + "/AJAX";
-	var params = "method=GetProspectorInfo";
+	var params = "method=getProspectorInfo";
 	var fullUrl = url + "?" + params;
 	$.ajax( {
 		url : fullUrl,

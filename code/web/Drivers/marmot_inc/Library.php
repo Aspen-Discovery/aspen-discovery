@@ -79,7 +79,7 @@ class Library extends DataObject
 	public $useHomeLinkInBreadcrumbs;
 	public $useHomeLinkForLogo;
 	public $showAdvancedSearchbox;
-	public $enablePospectorIntegration;
+	public $enableProspectorIntegration;
 	public $showProspectorResultsAtEndOfSearch;
 	public $prospectorCode;
 	public $enableGenealogy;
@@ -742,7 +742,7 @@ class Library extends DataObject
 					'helpLink'=>'https://docs.google.com/document/d/18SVEhciSjO99hcFLLdFR6OpC4_OtjOafTkuWPGXOhu4', 'properties' => array(
 				'repeatInProspector'  => array('property'=>'repeatInProspector', 'type'=>'checkbox', 'label'=>'Repeat In Prospector', 'description'=>'Turn on to allow repeat search in Prospector functionality.', 'hideInLists' => true, 'default' => 1),
 				'prospectorCode' => array('property'=>'prospectorCode', 'type'=>'text', 'label'=>'Prospector Code', 'description'=>'The code used to identify this location within Prospector. Leave blank if items for this location are not in Prospector.', 'hideInLists' => true,),
-				'enablePospectorIntegration'=> array('property'=>'enablePospectorIntegration', 'type'=>'checkbox', 'label'=>'Enable Prospector Integration', 'description'=>'Whether or not Prospector Integrations should be displayed for this library.', 'hideInLists' => true, 'default' => 1),
+				'enableProspectorIntegration'=> array('property'=>'enableProspectorIntegration', 'type'=>'checkbox', 'label'=>'Enable Prospector Integration', 'description'=>'Whether or not Prospector Integrations should be displayed for this library.', 'hideInLists' => true, 'default' => 1),
 				'showProspectorResultsAtEndOfSearch' => array('property'=>'showProspectorResultsAtEndOfSearch', 'type'=>'checkbox', 'label'=>'Show Prospector Results At End Of Search', 'description'=>'Whether or not Prospector Search Results should be shown at the end of search results.', 'hideInLists' => true, 'default' => 1),
 			)),
 			'worldCatSection' => array('property'=>'worldCatSection', 'type' => 'section', 'label' =>'WorldCat', 'hideInLists' => true,
