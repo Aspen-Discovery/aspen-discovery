@@ -222,7 +222,9 @@ class Novelist3{
 						//return $novelistData;
 						$doFullUpdate = false;
 					}
-				}
+				}else{
+                    $doFullUpdate = false;
+                }
 			}//else, no ISBNs, don't update
 
 		}
