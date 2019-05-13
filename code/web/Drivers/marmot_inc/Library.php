@@ -594,7 +594,7 @@ class Library extends DataObject
 					'helpLink'=>'https://docs.google.com/document/d/1ZZsoKW2NOfGMad36BkWeF5ROqH5Wyg5up3eIhki5Lec', 'properties' => array(
 				'showEmailThis'            => array('property'=>'showEmailThis',            'type'=>'checkbox', 'label'=>'Show Email This',                   'description'=>'Whether or not the Email This link is shown', 'hideInLists' => true, 'default' => 1),
 				'showShareOnExternalSites' => array('property'=>'showShareOnExternalSites', 'type'=>'checkbox', 'label'=>'Show Sharing To External Sites',    'description'=>'Whether or not sharing on external sites (Twitter, Facebook, Pinterest, etc. is shown)', 'hideInLists' => true, 'default' => 1),
-				'show856LinksAsTab'        => array('property'=>'show856LinksAsTab',        'type'=>'checkbox', 'label'=>'Show 856 Links as Tab',             'description'=>'Whether or not 856 links will be shown in their own tab or on the same tab as holdings.', 'hideInLists' => true, 'default' => 1),
+				'show856LinksAsTab'        => array('property'=>'show856LinksAsTab',        'type'=>'checkbox', 'label'=>'Show 856 Links in their own section',             'description'=>'Whether or not 856 links will be shown in their own tab or on the same tab as holdings.', 'hideInLists' => true, 'default' => 1),
 				'showCheckInGrid'          => array('property'=>'showCheckInGrid',          'type'=>'checkbox', 'label'=>'Show Check-in Grid',                'description'=>'Whether or not the check-in grid is shown for periodicals.', 'default' => 1, 'hideInLists' => true,),
 				'showStaffView'            => array('property'=>'showStaffView',            'type'=>'checkbox', 'label'=>'Show Staff View',                   'description'=>'Whether or not the staff view is displayed in full record view.', 'hideInLists' => true, 'default'=>true),
 				'showLCSubjects'           => array('property'=>'showLCSubjects',           'type'=>'checkbox', 'label'=>'Show Library of Congress Subjects', 'description'=>'Whether or not standard (LC) subjects are displayed in full record view.', 'hideInLists' => true, 'default'=>true),
@@ -1021,6 +1021,7 @@ class Library extends DataObject
             unset($structure['ilsSection']['properties']['useScope']);
             unset($structure['ilsSection']['properties']['enableMaterialsBooking']);
             unset($structure['ilsSection']['properties']['pTypesSection']);
+            unset($structure['fullRecordSection']['properties']['showCheckInGrid']);
         }
         if ($ils == 'Koha'){
             unset($structure['ilsSection']['properties']['userProfileSection']['properties']['allowProfileUpdates']);
