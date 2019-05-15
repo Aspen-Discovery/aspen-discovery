@@ -141,9 +141,9 @@ then
 		cd /usr/local/aspen-discovery/vufind/record_grouping;
 		java -server -XX:+UseG1GC -Xmx6G -jar record_grouping.jar ${PIKASERVER} fullRegroupingNoClear >> ${OUTPUT_FILE}
 		#Full Reindex
-		#cd /usr/local/aspen-discovery/vufind/reindexer; nice -n -3 java -jar reindexer.jar ${PIKASERVER} fullReindex >> ${OUTPUT_FILE}
+		#cd /usr/local/aspen-discovery/vufind/reindexer; nice -n -3 java -jar reindexer.jar ${PIKASERVER} full >> ${OUTPUT_FILE}
 		cd /usr/local/aspen-discovery/vufind/reindexer;
-		java -server -XX:+UseG1GC -Xmx6G -jar reindexer.jar ${PIKASERVER} fullReindex >> ${OUTPUT_FILE}
+		java -server -XX:+UseG1GC -Xmx6G -jar reindexer.jar ${PIKASERVER} full >> ${OUTPUT_FILE}
 
 		# Clean-up Solr Logs
 		# (/usr/local/aspen-discovery/sites/default/solr/jetty/logs is a symbolic link to /var/log/pika/solr)
