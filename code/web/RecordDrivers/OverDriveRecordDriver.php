@@ -270,15 +270,10 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 		$overDriveAPIProduct->overdriveId = strtolower($this->id);
 		if ($overDriveAPIProduct->find(true)){
 			$interface->assign('overDriveProduct', $overDriveAPIProduct);
-			$productRaw = json_decode($overDriveAPIProduct->rawData);
-            //Remove links to overdrive that could be used to get semi-sensitive data
-			unset($productRaw->links);
-			unset($productRaw->contentDetails->account);
-			$interface->assign('overDriveProductRaw', $productRaw);
-            $overDriveAPIProductMetaData = new OverDriveAPIProductMetaData();
+			$overDriveAPIProductMetaData = new OverDriveAPIProductMetaData();
             $overDriveAPIProductMetaData->productId = $overDriveAPIProduct->id;
             if ($overDriveAPIProductMetaData->find(true)) {
-                $overDriveMetadata = $overDriveAPIProduct->rawData;
+                $overDriveMetadata = $overDriveAPIProductMetaData->rawData;
                 //Replace http links to content reserve with https so we don't get mixed content warnings
                 $overDriveMetadata = str_replace('http://images.contentreserve.com', 'https://images.contentreserve.com', $overDriveMetadata);
                 $overDriveMetadata = json_decode($overDriveMetadata);
@@ -348,7 +343,7 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 			}
 			$libraryScopingId = $this->getLibraryScopingId();
 			if ($includeSharedTitles){
-				$availability->whereAdd('libraryId = -1 OR libraryId = ' . $libraryScopingId);
+				//$availability->whereAdd('libraryId = -1 OR libraryId = ' . $libraryScopingId);
 			}else{
 				if ($libraryScopingId == -1){
 					return $this->availability;
@@ -357,9 +352,18 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 				}
 			}
 			$availability->find();
-			while ($availability->fetch()){
-				$this->availability[] = clone $availability;
+			$copiesInLibraryCollection = 0;
+            while ($availability->fetch()){
+				$this->availability[$availability->libraryId] = clone $availability;
+				if ($availability->libraryId != -1){
+				    if ($availability->shared){
+                        $copiesInLibraryCollection += $availability->copiesOwned;
+                    }
+                }
 			}
+			if ($copiesInLibraryCollection > 0){
+                $this->availability[-1]->copiesOwned -= $copiesInLibraryCollection;
+            }
 		}
 		return $this->availability;
 	}

@@ -13,7 +13,7 @@ class Grouping_StatusInformation
     public $_groupedStatus = 'Currently Unavailable';
     private $_onOrderCopies = 0;
     private $_numHolds = 0;
-    private $_copies = 1;
+    private $_copies = 0;
     private $_availableCopies = 0;
     private $_localCopies = 0;
     private $_localAvailableCopies = 0;
@@ -213,7 +213,7 @@ class Grouping_StatusInformation
     /**
      * @param bool $available
      */
-    public function setAvailable(bool $available): void
+    function setAvailable(bool $available): void
     {
         $this->_available = $available;
     }
@@ -221,12 +221,12 @@ class Grouping_StatusInformation
     /**
      * @param bool $availableOnline
      */
-    public function setAvailableOnline(bool $availableOnline): void
+    function setAvailableOnline(bool $availableOnline): void
     {
         $this->_availableOnline = $availableOnline;
     }
 
-    public function addAvailableCopies(int $numCopies): void
+    function addAvailableCopies(int $numCopies): void
     {
         $this->_availableCopies += $numCopies;
     }
@@ -234,7 +234,7 @@ class Grouping_StatusInformation
     /**
      * @param bool $allLibraryUseOnly
      */
-    public function setAllLibraryUseOnly(bool $allLibraryUseOnly): void
+    function setAllLibraryUseOnly(bool $allLibraryUseOnly): void
     {
         $this->_allLibraryUseOnly = $allLibraryUseOnly;
     }
@@ -242,7 +242,7 @@ class Grouping_StatusInformation
     /**
      * @param bool $inLibraryUseOnly
      */
-    public function setInLibraryUseOnly(bool $inLibraryUseOnly): void
+    function setInLibraryUseOnly(bool $inLibraryUseOnly): void
     {
         $this->_inLibraryUseOnly = $inLibraryUseOnly;
     }
@@ -250,7 +250,7 @@ class Grouping_StatusInformation
     /**
      * @param bool $availableHere
      */
-    public function setAvailableHere(bool $availableHere): void
+    function setAvailableHere(bool $availableHere): void
     {
         $this->_availableHere = $availableHere;
     }
@@ -258,8 +258,30 @@ class Grouping_StatusInformation
     /**
      * @param bool $availableLocally
      */
-    public function setAvailableLocally(bool $availableLocally): void
+    function setAvailableLocally(bool $availableLocally): void
     {
         $this->_availableLocally = $availableLocally;
     }
+
+    /**
+     * @param int $copies
+     */
+    function addCopies(int $copies)
+    {
+        $this->_copies += $copies;
+    }
+
+    /**
+     * @param int $localCopies
+     */
+    function addLocalCopies(int $localCopies): void
+    {
+        $this->_localCopies += $localCopies;
+    }
+
+    function addOnOrderCopies(int $numCopies): void
+    {
+        $this->_onOrderCopies += $numCopies;
+    }
+
 }

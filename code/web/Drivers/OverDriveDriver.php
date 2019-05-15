@@ -325,21 +325,21 @@ class OverDriveDriver extends AbstractEContentDriver{
 
 	public function getLibraryAccountInformation(){
 		global $configArray;
-		$libraryId = $configArray['OverDrive']['websiteId'];
+		$libraryId = $configArray['OverDrive']['accountId'];
 		return $this->_callUrl("https://api.overdrive.com/v1/libraries/$libraryId");
 	}
 
 	public function getAdvantageAccountInformation(){
 		global $configArray;
-		$libraryId = $configArray['OverDrive']['websiteId'];
+		$libraryId = $configArray['OverDrive']['accountId'];
 		return $this->_callUrl("https://api.overdrive.com/v1/libraries/$libraryId/advantageAccounts");
 	}
 
 	public function getProductsInAccount($productsUrl = null, $start = 0, $limit = 25){
 		global $configArray;
 		if ($productsUrl == null){
-			$libraryId = $configArray['OverDrive']['websiteId'];
-			$productsUrl = "https://api.overdrive.com/v1/collections/$libraryId/products";
+            $accountId = $configArray['OverDrive']['accountId'];
+			$productsUrl = "https://api.overdrive.com/v1/collections/$accountId/products";
 		}
 		$productsUrl .= "?offset=$start&limit=$limit";
 		return $this->_callUrl($productsUrl);

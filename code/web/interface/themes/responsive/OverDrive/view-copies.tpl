@@ -4,19 +4,14 @@
 	<div>
 		<table class="holdingsTable">
 			<thead>
-				<tr><th>Library</th><th>Owned</th><th>Available</th></tr>
+				<tr><th>Library</th><th>Owned</th><th>Available</th><th>Shared?</th></tr>
 			</thead>
 			<tbody>
 				{foreach from=$availability item=availabilityItem}
-					<tr><td>{$availabilityItem->getLibraryName()}</td><td>{$availabilityItem->copiesOwned}</td><td>{$availabilityItem->copiesAvailable}</td></tr>
+					<tr><td>{$availabilityItem->getLibraryName()}</td><td>{$availabilityItem->copiesOwned}</td><td>{$availabilityItem->copiesAvailable}</td><td>{if $availabilityItem->shared}Yes{else}No{/if}</td></tr>
 				{/foreach}
 			</tbody>
 		</table>
-		<div class="note">
-			{if strcasecmp($source, 'OverDrive') == 0}
-				Note: Copies owned by the Digital library are available to patrons of any Marmot Library.  Titles owned by a specific library are only available for use by patrons of that library.
-			{/if}
-		</div>
 	</div>
 {/if}
 {if $showAvailabilityOther && $availabilityOther && count($availabilityOther) > 0}
@@ -24,11 +19,11 @@
 		<h3>Other Libraries that own this title</h3>
 		<table class="holdingsTable">
 			<thead>
-			<tr><th>Library</th><th>Owned</th><th>Available</th></tr>
+			<tr><th>Library</th><th>Owned</th><th>Available</th><th>Shared?</th></tr>
 			</thead>
 			<tbody>
 			{foreach from=$availabilityOther item=availabilityItem}
-				<tr><td>{$availabilityItem->getLibraryName()}</td><td>{$availabilityItem->copiesOwned}</td><td>{$availabilityItem->availableCopies}</td></tr>
+				<tr><td>{$availabilityItem->getLibraryName()}</td><td>{$availabilityItem->copiesOwned}</td><td>{$availabilityItem->copiesAvailable}</td><td>{if $availabilityItem->shared}Yes{else}No{/if}</td></tr>
 			{/foreach}
 			</tbody>
 		</table>

@@ -18,6 +18,8 @@ class Admin_OverDriveAPIData extends Admin_Admin
 			$advantageAccounts = $driver->getAdvantageAccountInformation();
 			if ($advantageAccounts) {
 				$contents .=  "<h1>Advantage Accounts</h1>";
+                $contents .= $this->easy_printr('Advantage Account Information', 'advantageAccountInfo', $advantageAccounts);
+                $contents .= "<br/>";
 				foreach ($advantageAccounts->advantageAccounts as $accountInfo) {
 					$contents .=  $accountInfo->name . ' - ' . $accountInfo->collectionToken . '<br/>';
 				}
@@ -39,18 +41,6 @@ class Admin_OverDriveAPIData extends Admin_Admin
 				$contents .= $this->easy_printr("Metadata for $overDriveId in shared collection", "metadata_{$overDriveId}_{$productKey}", $metadata);
 			}else{
 				$contents .= ("No metadata<br/>");
-			}
-
-			if ($advantageAccounts) {
-				foreach ($advantageAccounts->advantageAccounts as $accountInfo) {
-					$contents .= ("<h3>Metadata - {$accountInfo->name}</h3>");
-					$metadata = $driver->getProductMetadata($overDriveId, $accountInfo->collectionToken);
-					if ($metadata) {
-						$contents .= $this->easy_printr("Metadata response", "metadata_{$overDriveId}_{$accountInfo->collectionToken}", $metadata);
-					} else {
-						$contents .= ("No metadata<br/>");
-					}
-				}
 			}
 
 			$contents .=  "<h2>Availability</h2>";

@@ -23,6 +23,5 @@ class OverDriveAPIProduct extends DataObject{
 	public $lastAvailabilityChange;
 	public $deleted;
 	public $dateDeleted;
-	public $rawData;
 	public $needsUpdate;
 }

@@ -24,11 +24,6 @@ class Grouping_Record
 
     public $_isEContent = false;
     public $_eContentSource;
-    public $_availableCopies = 0;
-    public $_copies = 0;
-    public $_onOrderCopies = 0;
-    public $_localAvailableCopies = 0;
-    public $_localCopies = 0;
     public $_volumeHolds;
     public $_hasLocalItem = false;
     public $_holdRatio = 0;
@@ -203,7 +198,7 @@ class Grouping_Record
      */
     public function getAvailableCopies(): int
     {
-        return $this->_availableCopies;
+        return $this->_statusInformation->getAvailableCopies();
     }
 
     /**
@@ -211,7 +206,7 @@ class Grouping_Record
      */
     public function addAvailableCopies(int $availableCopies): void
     {
-        $this->_availableCopies += $availableCopies;
+        $this->_statusInformation->addAvailableCopies($availableCopies);
     }
 
     /**
@@ -219,7 +214,7 @@ class Grouping_Record
      */
     public function getCopies(): int
     {
-        return $this->_copies;
+        return $this->_statusInformation->getCopies();
     }
 
     /**
@@ -227,7 +222,7 @@ class Grouping_Record
      */
     public function addCopies(int $copies): void
     {
-        $this->_copies += $copies;
+        $this->_statusInformation->addCopies($copies);
     }
 
     /**
@@ -283,7 +278,7 @@ class Grouping_Record
      */
     public function getLocalCopies(): int
     {
-        return $this->_localCopies;
+        return $this->_statusInformation->getLocalCopies();
     }
 
     /**
@@ -291,7 +286,7 @@ class Grouping_Record
      */
     public function addLocalCopies(int $localCopies): void
     {
-        $this->_localCopies += $localCopies;
+        $this->_statusInformation->addLocalCopies($localCopies);
     }
 
     /**
@@ -448,7 +443,7 @@ class Grouping_Record
     /**
      * @return int
      */
-    public function getHoldRatio(): int
+    function getHoldRatio(): int
     {
         return $this->_holdRatio;
     }
@@ -456,7 +451,7 @@ class Grouping_Record
     /**
      * @param int $holdRatio
      */
-    public function setHoldRatio(int $holdRatio): void
+    function setHoldRatio(int $holdRatio): void
     {
         $this->_holdRatio = $holdRatio;
     }
@@ -464,23 +459,15 @@ class Grouping_Record
     /**
      * @return int
      */
-    public function getLocalAvailableCopies(): int
+    function getLocalAvailableCopies(): int
     {
-        return $this->_localAvailableCopies;
-    }
-
-    /**
-     * @param int $localAvailableCopies
-     */
-    public function setLocalAvailableCopies(int $localAvailableCopies): void
-    {
-        $this->_localAvailableCopies = $localAvailableCopies;
+        return $this->_statusInformation->getLocalAvailableCopies();
     }
 
     /**
      * @return string
      */
-    public function getUrl(): string
+    function getUrl(): string
     {
         return $this->_url;
     }
@@ -488,12 +475,12 @@ class Grouping_Record
     /**
      * @param string $url
      */
-    public function setUrl(string $url): void
+    function setUrl(string $url): void
     {
         $this->_url = $url;
     }
 
-    public function getStatusInformation()
+    function getStatusInformation()
     {
         return $this->_statusInformation;
     }
@@ -501,13 +488,13 @@ class Grouping_Record
     /**
      * @return int
      */
-    public function getOnOrderCopies(): int
+    function getOnOrderCopies(): int
     {
-        return $this->_onOrderCopies;
+        return $this->_statusInformation->getOnOrderCopies();
     }
 
-    public function addOnOrderCopies($numCopies)
+    function addOnOrderCopies($numCopies)
     {
-        $this->_onOrderCopies += $numCopies;
+        $this->_statusInformation->addOnOrderCopies($numCopies);
     }
 }
