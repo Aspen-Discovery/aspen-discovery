@@ -81,7 +81,7 @@
 						</div>
 					{/if}
 
-					{if $record.publicationDate}
+					{if !empty($record.publicationDate)}
 						<div class="row">
 							<div class="result-label col-tn-4 col-lg-3">{translate text='Published'}</div>
 							<div class="result-value col-tn-8 col-lg-9">{$record.publicationDate|escape}</div>
@@ -100,7 +100,7 @@
 						<div class="result-value col-tn-8 col-lg-9">{$record.format}</div>
 					</div>
 
-					{if $record.barcode}
+					{if !empty($record.barcode)}
 						<div class="row">
 							<div class="result-label col-tn-4 col-lg-3">{translate text='Barcode'}</div>
 							<div class="result-value col-tn-8 col-lg-9">{$record.barcode}</div>
@@ -141,7 +141,7 @@
 						</div>
 					</div>
 
-					{if $record.fine}
+					{if !empty($record.fine)}
 						<div class="row">
 							<div class="result-label col-tn-4 col-lg-3">{translate text='Fine'}</div>
 							<div class="result-value col-tn-8 col-lg-9">

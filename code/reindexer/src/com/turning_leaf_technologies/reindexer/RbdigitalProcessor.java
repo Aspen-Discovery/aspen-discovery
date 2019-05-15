@@ -40,7 +40,7 @@ class RbdigitalProcessor {
             if (productRS.next()) {
                 //Make sure the record isn't deleted
                 if (productRS.getBoolean("deleted")){
-                    logger.info("Rbdigital product " + identifier + " was deleted, skipping");
+                    logger.debug("Rbdigital product " + identifier + " was deleted, skipping");
                     return;
                 }
 

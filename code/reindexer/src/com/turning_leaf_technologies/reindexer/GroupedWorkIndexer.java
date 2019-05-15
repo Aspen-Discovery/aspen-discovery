@@ -757,7 +757,7 @@ public class GroupedWorkIndexer {
 			//If we didn't add any records to the work (because they are all suppressed) revert to the original
 			if (groupedWork.getNumRecords() == numRecords){
 				//No change in the number of records, revert to the previous
-				logger.info("Record " + type + ":" + identifier + " did not contribute any records to work " + permanentId + ", reverting to previous state " + groupedWork.getNumRecords());
+				logger.debug("Record " + type + ":" + identifier + " did not contribute any records to work " + permanentId + ", reverting to previous state " + groupedWork.getNumRecords());
 				groupedWork = originalWork;
 			}else{
 				logger.debug("Record " + identifier + " added to work " + permanentId);

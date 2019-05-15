@@ -51,10 +51,10 @@ public class GroupedReindexMain {
 		serverName = args[0];
 		System.setProperty("reindex.process.serverName", serverName);
 		
-		if (args.length >= 2 && args[1].equalsIgnoreCase("fullReindex")) {
+		if (args.length >= 2 && args[1].equalsIgnoreCase("full")) {
 			fullReindex = true;
 			clearIndex = true;
-		}else if (args.length >= 2 && args[1].equalsIgnoreCase("fullReindexNoClear")){
+		}else if (args.length >= 2 && args[1].equalsIgnoreCase("fullNoClear")){
 			fullReindex = true;
 			clearIndex = false;
 		}else if (args.length >= 2 && args[1].equalsIgnoreCase("singleWork")){

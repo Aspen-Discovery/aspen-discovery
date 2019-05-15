@@ -14,6 +14,7 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 class ArlingtonRecordProcessor extends IIIRecordProcessor {
+	@SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
 	private HashSet<String> recordsWithVolumes = new HashSet<>();
 	ArlingtonRecordProcessor(GroupedWorkIndexer indexer, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, dbConn, indexingProfileRS, logger, fullReindex);
@@ -302,13 +303,9 @@ class ArlingtonRecordProcessor extends IIIRecordProcessor {
 
 	boolean checkIfBibShouldBeRemovedAsItemless(RecordInfo recordInfo) {
 		//boolean hasVolumeRecords = recordsWithVolumes.contains(recordInfo.getFullIdentifier());
-		if (recordInfo.getNumPrintCopies() == 0 && recordInfo.getNumCopiesOnOrder() == 0 && suppressItemlessBibs){
-			return true;
-			//Need to do additional work to determine exactly how Arlington wants bibs with volumes, but no items
-			//to show.  See #D-81
-		}else{
-			return false;
-		}
+		//Need to do additional work to determine exactly how Arlington wants bibs with volumes, but no items
+		//to show.  See #D-81
+		return recordInfo.getNumPrintCopies() == 0 && recordInfo.getNumCopiesOnOrder() == 0 && suppressItemlessBibs;
 	}
 
 	private static Pattern suppressedBCode3Pattern = Pattern.compile("^[xnopwhd]$");
@@ -359,12 +356,8 @@ class ArlingtonRecordProcessor extends IIIRecordProcessor {
 		//Add lc subjects
 		//groupedWork.addLCSubjects(getLCSubjects(record));
 		//Add bisac subjects
-		//groupedWork.addBisacSubjects(getBisacSubjects(record));
 		groupedWork.addGenre(MarcUtil.getAllSubfields(record, "655abcvxyz", " -- "));
 		groupedWork.addGenreFacet(MarcUtil.getAllSubfields(record, "655av", " -- "));
-		//groupedWork.addGeographic(getAllSubfields(record, "651avxyz", " -- "));
-		//groupedWork.addGeographicFacet(getAllSubfields(record, "600z:610z:611z:630z:648z:650z:651a:651z:655z", " -- "));
-		//groupedWork.addEra(getAllSubfields(record, "600d:610y:611y:630y:648a:648y:650y:651y:655y", " -- "));
 	}
 
 	private void getSubjectValues(List<DataField> subjectFields, HashSet<String> validSubjects) {

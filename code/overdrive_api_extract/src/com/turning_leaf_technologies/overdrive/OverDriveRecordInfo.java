@@ -13,7 +13,7 @@ class OverDriveRecordInfo {
 	//Data from base title call
 	private String id;
 	private long databaseId = -1;
-	private HashSet<Long> collections = new HashSet<>();
+	private HashSet<AdvantageCollectionInfo> collections = new HashSet<>();
 
 	String getId() {
 		return id;
@@ -22,11 +22,11 @@ class OverDriveRecordInfo {
 		this.id = id.toLowerCase();
 	}
 
-	HashSet<Long> getCollections() {
+	HashSet<AdvantageCollectionInfo> getCollections() {
 		return collections;
 	}
-	void addCollection(Long id) {
-		this.collections.add(id);
+	void addCollection(AdvantageCollectionInfo collectionInfo) {
+		this.collections.add(collectionInfo);
 	}
 
 	long getDatabaseId() {

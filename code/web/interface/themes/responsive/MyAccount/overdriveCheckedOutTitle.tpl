@@ -127,10 +127,10 @@
 					{if $record.overdriveListen}
 						<a href="#" onclick="return VuFind.OverDrive.followOverDriveDownloadLink('{$record.userId}', '{$record.overDriveId}', 'audiobook-overdrive')" class="btn btn-sm btn-primary">Listen&nbsp;Online</a>
 					{/if}
-					{if $record.overdriveVideo}
+					{if !empty($record.overdriveVideo)}
 						<a href="#" onclick="return VuFind.OverDrive.followOverDriveDownloadLink('{$record.userId}', '{$record.overDriveId}', 'video-streaming')" class="btn btn-sm btn-primary">Watch&nbsp;Online</a>
 					{/if}
-					{if $record.formatSelected && !$record.overdriveVideo}
+					{if $record.formatSelected && empty($record.overdriveVideo)}
 						<a href="#" onclick="return VuFind.OverDrive.followOverDriveDownloadLink('{$record.userId}', '{$record.overDriveId}', '{$record.selectedFormat.format}')" class="btn btn-sm btn-primary">Download&nbsp;Again</a>
 					{/if}
 					{if $record.earlyReturn}

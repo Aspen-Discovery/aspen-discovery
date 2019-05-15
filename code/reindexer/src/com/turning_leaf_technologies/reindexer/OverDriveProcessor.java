@@ -31,7 +31,7 @@ class OverDriveProcessor {
 			getProductInfoStmt = dbConn.prepareStatement("SELECT * from overdrive_api_products where overdriveId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			getNumCopiesStmt = dbConn.prepareStatement("SELECT sum(copiesOwned) as totalOwned FROM overdrive_api_product_availability WHERE productId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			getProductMetadataStmt = dbConn.prepareStatement("SELECT * from overdrive_api_product_metadata where productId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-			getProductAvailabilityStmt = dbConn.prepareStatement("SELECT * from overdrive_api_product_availability where productId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			getProductAvailabilityStmt = dbConn.prepareStatement("SELECT * from overdrive_api_product_availability where productId = ? and shared = 0", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			getProductFormatsStmt = dbConn.prepareStatement("SELECT * from overdrive_api_product_formats where productId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 		} catch (SQLException e) {
 			logger.error("Error setting up overdrive processor", e);
@@ -97,6 +97,14 @@ class OverDriveProcessor {
 							logger.error("Error loading raw data for OverDrive MetaData");
 						}
 
+						boolean isOnOrder = false;
+						if (rawMetadataDecoded.has("onSaleDate")){
+							String onSaleDate = rawMetadataDecoded.getString("onSaleDate");
+
+
+						}
+
+
 						String fullTitle = title + " " + subtitle;
 						fullTitle = fullTitle.trim();
 						groupedWork.setTitle(title, title, metadata.get("sortTitle"), primaryFormat);
@@ -151,6 +159,7 @@ class OverDriveProcessor {
 						overDriveRecord.setPhysicalDescription("");
 
 						//Load availability & determine which scopes are valid for the record
+						//This does not include any shared records since those are included in the main collection
 						getProductAvailabilityStmt.setLong(1, productId);
 						ResultSet availabilityRS = getProductAvailabilityStmt.executeQuery();
 
@@ -180,7 +189,8 @@ class OverDriveProcessor {
 							//TODO: Check to see if this is a pre-release title.  If not, suppress if the record has 0 copies owned
 							int copiesOwned = availabilityRS.getInt("copiesOwned");
 							itemInfo.setNumCopies(copiesOwned);
-							totalCopiesOwned = Math.max(copiesOwned, totalCopiesOwned);
+							//Add copies since non-shared records are distinct from shared collection
+							totalCopiesOwned += copiesOwned;
 
 							if (available) {
 								itemInfo.setDetailedStatus("Available Online");
@@ -222,6 +232,9 @@ class OverDriveProcessor {
 								}
 							} else {
 								for (Scope curScope : indexer.getScopes()) {
+									if (curScope.isLibraryScope() && curScope.getLibraryId().equals(libraryId)){
+										itemInfo.setShelfLocation(curScope.getFacetLabel() + " - OverDrive Advantage");
+									}
 									if (curScope.isIncludeOverDriveCollection() && curScope.getLibraryId().equals(libraryId)) {
 										boolean okToInclude = false;
 										if (isAdult && curScope.isIncludeOverDriveAdultCollection()) {
@@ -260,6 +273,7 @@ class OverDriveProcessor {
 						groupedWork.addHoldings(totalCopiesOwned);
 					}
 					numCopiesRS.close();
+
 				}
 			}
 			productRS.close();

@@ -77,7 +77,8 @@ public class ExtractOverDriveInfoMain {
 			long elapsedTime = (endTime.getTime() - currentTime.getTime()) / 1000;
 			logger.info("Elapsed time " + String.format("%f2", ((float)elapsedTime / 60f)) + " minutes");
 
-			extractor = null;
+			//Clean up resources
+			extractor.close();
 
 			//Based on number of changes, pause for a little while and then continue on so we are running continuously
 			if (runContinuously) {
