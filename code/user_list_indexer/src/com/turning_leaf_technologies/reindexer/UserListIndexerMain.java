@@ -43,7 +43,7 @@ public class UserListIndexerMain {
             runContinuously = false;
             if (args.length >= 2) {
                 String firstArg = args[1].replaceAll("\\s", "");
-                if (firstArg.equalsIgnoreCase("fullReindex")) {
+                if (firstArg.equalsIgnoreCase("full")) {
                     fullReindex = true;
                 } else if (firstArg.equalsIgnoreCase("continuous")) {
                     runContinuously = true;

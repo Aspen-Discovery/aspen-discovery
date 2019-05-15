@@ -382,9 +382,9 @@ public class RecordGrouperMain {
 		if (args.length >= 2 && args[1].equalsIgnoreCase("explodeMarcs")) {
 			explodeMarcsOnly = true;
 			clearDatabasePriorToGrouping = false;
-		} else if (args.length >= 2 && args[1].equalsIgnoreCase("fullRegroupingNoClear")) {
+		} else if (args.length >= 2 && args[1].equalsIgnoreCase("fullNoClear")) {
 			fullRegroupingNoClear = true;
-		}else if (args.length >= 2 && args[1].equalsIgnoreCase("fullRegrouping")){
+		}else if (args.length >= 2 && args[1].equalsIgnoreCase("full")){
 			clearDatabasePriorToGrouping = true;
 			fullRegrouping = true;
 		}else if (args.length >= 2 && args[1].equalsIgnoreCase("runPostGroupingCleanup")){
@@ -393,8 +393,8 @@ public class RecordGrouperMain {
 		}else if (args.length >= 2){
 			//The last argument is the indexing profile to run
 			indexingProfileToRun = args[1];
-			fullRegrouping = args.length >= 3 && args[2].equalsIgnoreCase("fullRegrouping");
-			fullRegroupingNoClear = args.length >= 3 && args[2].equalsIgnoreCase("fullRegroupingNoClear");
+			fullRegrouping = args.length >= 3 && args[2].equalsIgnoreCase("full");
+			fullRegroupingNoClear = args.length >= 3 && args[2].equalsIgnoreCase("fullNoClear");
 			//Never clear the database if we are doing full grouping since we are only processing a single profile
 		}else{
 			fullRegrouping = false;

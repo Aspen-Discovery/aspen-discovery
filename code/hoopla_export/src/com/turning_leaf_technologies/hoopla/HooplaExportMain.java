@@ -38,7 +38,7 @@ public class HooplaExportMain {
 		if (args.length == 1){
 			//Check to see if we got a full reload parameter
 			String firstArg = args[0].replaceAll("\\s", "");
-			if (firstArg.matches("^fullReload(=true|1)?$")){
+			if (firstArg.matches("^full(=true|1)?$")){
 				doFullReload = true;
 			}
 		}

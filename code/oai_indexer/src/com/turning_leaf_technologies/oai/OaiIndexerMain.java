@@ -45,7 +45,7 @@ public class OaiIndexerMain {
 
         String serverName = args[0];
 
-        if (args.length >= 2 && args[1].equalsIgnoreCase("fullReload")){
+        if (args.length >= 2 && args[1].equalsIgnoreCase("full")){
             fullReload = true;
         }
 
