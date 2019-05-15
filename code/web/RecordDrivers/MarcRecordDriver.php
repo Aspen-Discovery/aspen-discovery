@@ -66,7 +66,8 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 					$this->indexingProfile = $indexingProfiles['ils'];
 				}
 			}
-            $this->valid = true;
+			//Load the marc record so validation happens
+            $this->getMarcRecord();
 		} else {
 			// Also process the MARC record:
 			require_once ROOT_DIR . '/sys/MarcLoader.php';
