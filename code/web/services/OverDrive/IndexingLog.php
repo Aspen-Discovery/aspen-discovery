@@ -38,6 +38,6 @@ class OverDrive_IndexingLog extends Admin_Admin
 	}
 
 	function getAllowableRoles(){
-		return array('opacAdmin');
+		return array('opacAdmin', 'cataloging', 'libraryManager');
 	}
 }

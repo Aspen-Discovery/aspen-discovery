@@ -287,7 +287,7 @@
 			{/if}
 
 			{if $loggedIn && (array_key_exists('libraryAdmin', $userRoles) || array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles))}
-				{if $module == 'OverDrive' && in_array($action, array('APIData', 'ExtractLog', 'Settings'))}
+				{if $module == 'OverDrive' && in_array($action, array('APIData', 'ExtractLog', 'Settings', 'Dashboard'))}
 					{assign var="curSection" value=true}
 				{else}
 					{assign var="curSection" value=false}
@@ -304,7 +304,8 @@
 						<div class="panel-body">
 							<div class="adminMenuLink{if $action == "Settings"} active{/if}"><a href="{$path}/OverDrive/Settings">Settings</a></div>
 							<div class="adminMenuLink{if $action == "IndexingLog"} active{/if}"><a href="{$path}/OverDrive/IndexingLog">Indexing Log</a></div>
-							<div class="adminMenuLink{if $action == "APIData"} active{/if}"><a href="{$path}/OverDrive/APIData">OverDrive API Data</a></div>
+							<div class="adminMenuLink{if $action == "Dashboard"} active{/if}"><a href="{$path}/OverDrive/Dashboard">Dashboard</a></div>
+							<div class="adminMenuLink{if $action == "APIData"} active{/if}"><a href="{$path}/OverDrive/APIData">API Information</a></div>
 						</div>
 					</div>
 				</div>
