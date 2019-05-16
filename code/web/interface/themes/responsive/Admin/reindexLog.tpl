@@ -13,8 +13,8 @@
 			</div>
 			<div class="form-group col-xs-5">
 				<span class="pull-right">
-					<label for="pagesize" class="control-label">Entries Per Page&nbsp;</label>
-					<select id="pagesize" name="pagesize" class="pagesize form-control input-sm" onchange="VuFind.changePageSize()">
+					<label for="pageSize" class="control-label">Entries Per Page&nbsp;</label>
+					<select id="pageSize" name="pageSize" class="pageSize form-control input-sm" onchange="VuFind.changePageSize()">
 						<option value="30"{if $recordsPerPage == 30} selected="selected"{/if}>30</option>
 						<option value="50"{if $recordsPerPage == 50} selected="selected"{/if}>50</option>
 						<option value="75"{if $recordsPerPage == 75} selected="selected"{/if}>75</option>

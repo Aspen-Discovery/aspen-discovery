@@ -86,7 +86,7 @@ class Admin_Administrators extends ObjectEditor
 			}
 
 			global $configArray;
-			header("Location: {$configArray['Site']['path']}/Admin/{$this->getToolName()}");
+			header("Location: {$configArray['Site']['path']}/{$this->getModule()}/{$this->getToolName()}");
 			die();
 		}else{
 			if ($newAdmin->N == 0){

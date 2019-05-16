@@ -32,7 +32,7 @@ class ArchiveExploreMoreBar extends DataObject
 	public static function getObjectStructure()
 	{
 		$structure = array(
-			'id'            => array('property' => 'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id of this association'),
+			'id'            => array('property' => 'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id'),
 //			'weight'        => array('property' => 'weight', 'type'=>'integer', 'label'=>'Sort', 'description'=>'The sort order of rule', 'default' => 0),
 			'section'        => array('property' => 'section', 'type' => 'enum', 'label' => 'Explore More Section', 'description' => 'The section of the Explore More Bar to be displayed','hideInLists' => true,
 			                          'values' => self::$archiveSections),

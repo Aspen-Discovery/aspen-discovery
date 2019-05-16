@@ -41,13 +41,13 @@ var VuFind = (function(){
 
 		changePageSize: function(){
 			var url = window.location.href;
-			if (url.match(/[&?]pagesize=\d+/)) {
-				url = url.replace(/pagesize=\d+/, "pagesize=" + $("#pagesize").val());
+			if (url.match(/[&?]pageSize=\d+/)) {
+				url = url.replace(/pageSize=\d+/, "pageSize=" + $("#pageSize").val());
 			} else {
 				if (url.indexOf("?", 0) > 0){
-					url = url+ "&pagesize=" + $("#pagesize").val();
+					url = url+ "&pageSize=" + $("#pageSize").val();
 				}else{
-					url = url+ "?pagesize=" + $("#pagesize").val();
+					url = url+ "?pageSize=" + $("#pageSize").val();
 				}
 			}
 			window.location.href = url;

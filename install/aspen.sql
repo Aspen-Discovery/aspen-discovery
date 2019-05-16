@@ -583,7 +583,6 @@ INSERT INTO `db_update` (`update_key`, `date_run`) VALUES
 ('overdrive_api_data_availability_type', '2016-06-30 17:11:12'),
 ('overdrive_api_data_crossRefId', '2019-01-28 21:27:59'),
 ('overdrive_api_data_metadata_isOwnedByCollections', '2019-01-28 21:27:59'),
-('overdrive_api_data_needsUpdate', '2019-01-28 21:27:59'),
 ('overdrive_api_data_update_1', '2016-06-30 17:11:12'),
 ('overdrive_api_data_update_2', '2016-06-30 17:11:12'),
 ('overdrive_integration', '2019-01-28 20:58:56'),
@@ -2026,7 +2025,6 @@ CREATE TABLE `overdrive_api_products` (
   `dateDeleted` int(11) DEFAULT NULL,
   `rawData` mediumtext,
   `subtitle` varchar(255) DEFAULT NULL,
-  `needsUpdate` tinyint(1) DEFAULT '0',
   `crossRefId` int(11) DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 

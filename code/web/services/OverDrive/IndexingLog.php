@@ -4,21 +4,14 @@ require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/sys/Pager.php';
 require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProduct.php';
+require_once ROOT_DIR . '/sys/OverDrive/OverDriveExtractLogEntry.php';
 
-class OverDriveExtractLog extends Admin_Admin
+class OverDrive_IndexingLog extends Admin_Admin
 {
 	function launch()
 	{
 		global $interface,
 		       $configArray;
-
-		//Get the number of changes that are outstanding
-		$overdriveProduct = new OverDriveAPIProduct();
-		$overdriveProduct->needsUpdate = 1;
-		$overdriveProduct->deleted = 0;
-		$overdriveProduct->find();
-		$numOutstandingChanges = $overdriveProduct->N;
-		$interface->assign('numOutstandingChanges', $numOutstandingChanges);
 
 		$logEntries = array();
 		$logEntry = new OverDriveExtractLogEntry();
@@ -35,13 +28,13 @@ class OverDriveExtractLog extends Admin_Admin
 		$interface->assign('logEntries', $logEntries);
 
 		$options = array('totalItems' => $total,
-		                 'fileName'   => $configArray['Site']['path'].'/Admin/OverDriveExtractLog?page=%d',
+		                 'fileName'   => $configArray['Site']['path'].'/OverDrive/IndexingLog?page=%d',
 		                 'perPage'    => 30,
 		);
 		$pager = new Pager($options);
 		$interface->assign('pageLinks', $pager->getLinks());
 
-		$this->display('overdriveExtractLog.tpl', 'OverDrive Extract Log');
+		$this->display('overdriveExtractLog.tpl', 'OverDrive Indexing Log');
 	}
 
 	function getAllowableRoles(){

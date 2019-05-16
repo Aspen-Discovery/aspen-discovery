@@ -96,8 +96,8 @@
 	{if $favList->deleted == 0}
 		{if $resourceList}
 			<form class="navbar form-inline">
-				<label for="pagesize" class="control-label">Records Per Page</label>&nbsp;
-				<select id="pagesize" class="pagesize form-control{* input-sm*}" onchange="VuFind.changePageSize()">
+				<label for="pageSize" class="control-label">Records Per Page</label>&nbsp;
+				<select id="pageSize" class="pageSize form-control{* input-sm*}" onchange="VuFind.changePageSize()">
 					<option value="20"{if $recordsPerPage == 20} selected="selected"{/if}>20</option>
 					<option value="40"{if $recordsPerPage == 40} selected="selected"{/if}>40</option>
 					<option value="60"{if $recordsPerPage == 60} selected="selected"{/if}>60</option>

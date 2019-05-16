@@ -7,7 +7,6 @@
 			{if $loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles))}
 				<button onclick="return VuFind.GroupedWork.forceReindex('{$recordDriver->getGroupedWorkId()}')" class="btn btn-sm btn-default">Force Reindex</button>
 				<button onclick="return VuFind.GroupedWork.forceRegrouping('{$recordDriver->getGroupedWorkId()}')" class="btn btn-sm btn-default">Force Regrouping</button>
-				<button onclick="return VuFind.OverDrive.forceUpdateFromAPI('{$recordDriver->getUniqueId()}')" class="btn btn-sm btn-default">Force Update From API</button>
 			{/if}
 			{if $loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('archives', $userRoles))}
 				<button onclick="return VuFind.GroupedWork.reloadIslandora('{$recordDriver->getGroupedWorkId()}')" class="btn btn-sm btn-default">Clear Islandora Cache</button>
@@ -32,12 +31,6 @@
 	{/foreach}
 </table>
 
-<div class="row">
-	<div class="result-label col-xs-3">Needs Update?: </div>
-	<div class="col-xs-9 result-value">
-		{if $overDriveProduct->needsUpdate}Yes{else}No{/if}
-	</div>
-</div>
 <div class="row">
 	<div class="result-label col-xs-3">Date Added: </div>
 	<div class="col-xs-9 result-value">

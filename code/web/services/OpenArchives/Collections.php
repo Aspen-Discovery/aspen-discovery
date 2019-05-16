@@ -4,13 +4,16 @@ require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/OpenArchives/OpenArchivesCollection.php';
-class Admin_OpenArchivesCollections extends ObjectEditor {
+class OpenArchives_Collections extends ObjectEditor {
 	function getObjectType(){
 		return 'OpenArchivesCollection';
 	}
 	function getToolName(){
 		return 'OpenArchivesCollections';
 	}
+    function getModule(){
+        return 'OpenArchives';
+    }
 	function getPageTitle(){
 		return 'Open Archives collections to include';
 	}

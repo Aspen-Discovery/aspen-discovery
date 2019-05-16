@@ -80,8 +80,8 @@
 				<div id="pager" class="col-xs-12">
 					<div class="row">
 						<div class="form-group col-sm-5" id="recordsPerPage">
-							<label for="pagesize" class="control-label">Records Per Page&nbsp;</label>
-							<select id="pagesize" class="pagesize form-control input-sm" onchange="VuFind.changePageSize()">
+							<label for="pageSize" class="control-label">Records Per Page&nbsp;</label>
+							<select id="pageSize" class="pageSize form-control input-sm" onchange="VuFind.changePageSize()">
 								<option value="10"{if $recordsPerPage == 10} selected="selected"{/if}>10</option>
 								<option value="25"{if $recordsPerPage == 25} selected="selected"{/if}>25</option>
 								<option value="50"{if $recordsPerPage == 50} selected="selected"{/if}>50</option>

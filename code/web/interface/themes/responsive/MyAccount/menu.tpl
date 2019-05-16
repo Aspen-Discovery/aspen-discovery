@@ -208,7 +208,7 @@
 			{/if}
 
 			{if $loggedIn && (array_key_exists('libraryAdmin', $userRoles) || array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles))}
-				{if in_array($action, array('RecordGroupingLog', 'ReindexLog', 'OverDriveExtractLog', 'HooplaExportLog', 'RbdigitalExportLog', 'SierraExportLog', 'IndexingStats', 'IndexingProfiles', 'TranslationMaps'))}
+				{if in_array($action, array('RecordGroupingLog', 'ReindexLog', 'SierraExportLog', 'IndexingStats', 'IndexingProfiles', 'TranslationMaps'))}
 					{assign var="curSection" value=true}
 				{else}
 					{assign var="curSection" value=false}
@@ -228,9 +228,6 @@
 							<div class="adminMenuLink{if $action == "IndexingStats"} active{/if}"><a href="{$path}/Admin/IndexingStats">Indexing Statistics</a></div>
 							<div class="adminMenuLink{if $action == "RecordGroupingLog"} active{/if}"><a href="{$path}/Admin/RecordGroupingLog">Record Grouping Log</a></div>
 							<div class="adminMenuLink{if $action == "ReindexLog"} active{/if}"><a href="{$path}/Admin/ReindexLog">Grouped Work Index Log</a></div>
-							<div class="adminMenuLink{if $action == "HooplaExportLog"} active{/if}"><a href="{$path}/Admin/HooplaExportLog">Hoopla Export Log</a></div>
-							<div class="adminMenuLink{if $action == "RbdigitalExportLog"} active{/if}"><a href="{$path}/Admin/RbdigitalExportLog">Rbdigital Export Log</a></div>
-							<div class="adminMenuLink{if $action == "OverDriveExtractLog"} active{/if}"><a href="{$path}/Admin/OverDriveExtractLog">OverDrive Extract Log</a></div>
 							{if ($ils == 'Millennium' || $ils == 'Sierra')}
 								<div class="adminMenuLink{if $action == "SierraExportLog"} active{/if}"><a href="{$path}/Admin/SierraExportLog">Sierra Export Log</a></div>
 							{/if}
@@ -266,26 +263,92 @@
 			{/if}
 
 			{if $loggedIn && (array_key_exists('cataloging', $userRoles) || array_key_exists('opacAdmin', $userRoles))}
-				{if in_array($action, array('MergedGroupedWorks', 'NonGroupedRecords', 'AuthorEnrichment', 'OverDriveAPIData'))}
+				{if in_array($action, array('MergedGroupedWorks', 'NonGroupedRecords', 'AuthorEnrichment'))}
 					{assign var="curSection" value=true}
 				{else}
 					{assign var="curSection" value=false}
 				{/if}
 				<div class="panel{if $curSection} active{/if}">
-					<a href="#catalogingRequestMenu" data-toggle="collapse" data-parent="#adminMenuAccordion">
+					<a href="#catalogingMenu" data-toggle="collapse" data-parent="#adminMenuAccordion">
 						<div class="panel-heading">
 							<div class="panel-title">
 								Cataloging
 							</div>
 						</div>
 					</a>
-					<div id="catalogingRequestMenu" class="panel-collapse collapse {if $curSection}in{/if}">
+					<div id="catalogingMenu" class="panel-collapse collapse {if $curSection}in{/if}">
 						<div class="panel-body">
 							<div class="adminMenuLink{if $action == "MergedGroupedWorks"} active{/if}"><a href="{$path}/Admin/MergedGroupedWorks">Grouped Work Merging</a></div>
 							<div class="adminMenuLink{if $action == "NonGroupedRecords"} active{/if}"><a href="{$path}/Admin/NonGroupedRecords">Records To Not Merge</a></div>
-							<div class="adminMenuLink{if $action == "OverDriveAPIData"} active{/if}"><a href="{$path}/Admin/OverDriveAPIData">OverDrive API Data</a></div>
 							<div class="adminMenuLink{if $action == "AuthorEnrichment"} active{/if}"><a href="{$path}/Admin/AuthorEnrichment">Author Enrichment</a></div>
+						</div>
+					</div>
+				</div>
+			{/if}
 
+			{if $loggedIn && (array_key_exists('libraryAdmin', $userRoles) || array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles))}
+				{if $module == 'OverDrive' && in_array($action, array('APIData', 'ExtractLog', 'Settings'))}
+					{assign var="curSection" value=true}
+				{else}
+					{assign var="curSection" value=false}
+				{/if}
+				<div class="panel{if $curSection} active{/if}">
+					<a href="#overdriveMenu" data-toggle="collapse" data-parent="#adminMenuAccordion">
+						<div class="panel-heading">
+							<div class="panel-title">
+								OverDrive
+							</div>
+						</div>
+					</a>
+					<div id="overdriveMenu" class="panel-collapse collapse {if $curSection}in{/if}">
+						<div class="panel-body">
+							<div class="adminMenuLink{if $action == "Settings"} active{/if}"><a href="{$path}/OverDrive/Settings">Settings</a></div>
+							<div class="adminMenuLink{if $action == "IndexingLog"} active{/if}"><a href="{$path}/OverDrive/IndexingLog">Indexing Log</a></div>
+							<div class="adminMenuLink{if $action == "APIData"} active{/if}"><a href="{$path}/OverDrive/APIData">OverDrive API Data</a></div>
+						</div>
+					</div>
+				</div>
+			{/if}
+
+			{if $loggedIn && (array_key_exists('libraryAdmin', $userRoles) || array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles))}
+				{if $module == 'Hoopla' && in_array($action, array('IndexingLog'))}
+					{assign var="curSection" value=true}
+				{else}
+					{assign var="curSection" value=false}
+				{/if}
+				<div class="panel{if $curSection} active{/if}">
+					<a href="#hooplaMenu" data-toggle="collapse" data-parent="#adminMenuAccordion">
+						<div class="panel-heading">
+							<div class="panel-title">
+								Hoopla
+							</div>
+						</div>
+					</a>
+					<div id="hooplaMenu" class="panel-collapse collapse {if $curSection}in{/if}">
+						<div class="panel-body">
+							<div class="adminMenuLink{if $action == "IndexingLog"} active{/if}"><a href="{$path}/Hoopla/IndexingLog">Indexing Log</a></div>
+						</div>
+					</div>
+				</div>
+			{/if}
+
+			{if $loggedIn && (array_key_exists('libraryAdmin', $userRoles) || array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles))}
+				{if $module == 'Rbdigital' && in_array($action, array('OverDriveExtractLog', 'OverDriveSettings'))}
+					{assign var="curSection" value=true}
+				{else}
+					{assign var="curSection" value=false}
+				{/if}
+				<div class="panel{if $curSection} active{/if}">
+					<a href="#rbdigitalMenu" data-toggle="collapse" data-parent="#adminMenuAccordion">
+						<div class="panel-heading">
+							<div class="panel-title">
+								Rbdigital
+							</div>
+						</div>
+					</a>
+					<div id="rbdigitalMenu" class="panel-collapse collapse {if $curSection}in{/if}">
+						<div class="panel-body">
+							<div class="adminMenuLink{if $action == "IndexingLog"} active{/if}"><a href="{$path}/Rbdigital/IndexingLog">Indexing Log</a></div>
 						</div>
 					</div>
 				</div>
@@ -321,7 +384,7 @@
 			{/if}
 
 			{if $loggedIn && (array_key_exists('archives', $userRoles) || array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles))}
-				{if in_array($action, array('OpenArchivesCollections'))}
+				{if $module == 'OpenArchives' && in_array($action, array('Collections'))}
 					{assign var="curSection" value=true}
 				{else}
 					{assign var="curSection" value=false}
@@ -336,7 +399,7 @@
 					</a>
 					<div id="openArchivesMenu" class="panel-collapse collapse {if $curSection}in{/if}">
 						<div class="panel-body">
-							<div class="adminMenuLink{if $action == "OpenArchivesCollections"} active{/if}"><a href="{$path}/Admin/OpenArchivesCollections">Open Archive Collections</a></div>
+							<div class="adminMenuLink{if $action == "Collections"} active{/if}"><a href="{$path}/OpenArchives/Collections">Collections</a></div>
 						</div>
 					</div>
 				</div>

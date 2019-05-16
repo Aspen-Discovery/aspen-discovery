@@ -8,7 +8,7 @@ class OverDrive_AJAX extends Action {
 
 	function launch() {
 		$method = $_GET['method'];
-		if (in_array($method, array('checkOutTitle', 'placeHold', 'cancelHold', 'getHoldPrompts', 'returnCheckout', 'selectOverDriveDownloadFormat', 'getDownloadLink', 'getCheckOutPrompts', 'forceUpdateFromAPI'))){
+		if (in_array($method, array('checkOutTitle', 'placeHold', 'cancelHold', 'getHoldPrompts', 'returnCheckout', 'selectOverDriveDownloadFormat', 'getDownloadLink', 'getCheckOutPrompts'))){
 			header('Content-type: text/plain');
 			header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 			header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
@@ -28,28 +28,6 @@ class OverDrive_AJAX extends Action {
 			$xmlResponse .= '</AJAXResponse>';
 
 			echo $xmlResponse;
-		}
-	}
-
-	function forceUpdateFromAPI(){
-		require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProduct.php';
-		$id = $_REQUEST['id'];
-		$overDriveProduct = new OverDriveAPIProduct();
-		$overDriveProduct->overdriveId = $id;
-		if ($overDriveProduct->find(true)){
-			if ($overDriveProduct->needsUpdate == true){
-				return json_encode(array('success' => true, 'message' => 'This title was already marked to be updated from the API again the next time the extract is run.'));
-			}
-			$overDriveProduct->needsUpdate = true;
-			$numRows = $overDriveProduct->update();
-			if ($numRows == 1){
-				return json_encode(array('success' => true, 'message' => 'This title will be updated from the API again the next time the extract is run.'));
-			}else{
-				return json_encode(array('success' => false, 'message' => 'Unable to mark the title for needing update. Could not update the title.'));
-			}
-		}else{
-
-			return json_encode(array('success' => false, 'message' => 'Unable to mark the title for needing update. Could not find the title.'));
 		}
 	}
 
@@ -110,7 +88,6 @@ class OverDrive_AJAX extends Action {
 	function returnCheckout(){
 		$user = UserAccount::getLoggedInUser();
 		$overDriveId = $_REQUEST['overDriveId'];
-		$transactionId = $_REQUEST['transactionId'];
 		if ($user){
 			$patronId = $_REQUEST['patronId'];
 			$patron = $user->getUserReferredTo($patronId);
@@ -264,7 +241,7 @@ class OverDrive_AJAX extends Action {
 			if ($patron) {
                 require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
                 $driver = new OverDriveDriver();
-				$result = $driver->canceHold($patron, $overDriveId);
+				$result = $driver->cancelHold($patron, $overDriveId);
 				return json_encode($result);
 			}else{
 				return json_encode(array('result'=>false, 'message'=>'Sorry, it looks like you don\'t have permissions to download cancel holds for that user.'));

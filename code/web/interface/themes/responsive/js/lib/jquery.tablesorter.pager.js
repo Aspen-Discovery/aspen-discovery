@@ -133,7 +133,7 @@
 				cssFirst: '.first',
 				cssLast: '.last',
 				cssPageDisplay: '.pagedisplay',
-				cssPageSize: '.pagesize',
+				cssPageSize: '.pageSize',
 				seperator: "/",
 				positionFixed: true,
 				appender: this.appender
@@ -149,7 +149,7 @@
 				
 					$(this).trigger("appendCache");
 					
-					config.size = parseInt($(".pagesize",pager).val());
+					config.size = parseInt($(".pageSize",pager).val());
 					
 					$(config.cssFirst,pager).click(function() {
 						moveToFirstPage(table);

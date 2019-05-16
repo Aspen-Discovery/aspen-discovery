@@ -1,7 +1,4 @@
 <?php
-/**
- * Stores information about a product that has been loaded from the OverDrive APIs
- */
 
 class OverDriveAPIProduct extends DataObject{
 	public $__table = 'overdrive_api_products';   // table name
@@ -23,5 +20,4 @@ class OverDriveAPIProduct extends DataObject{
 	public $lastAvailabilityChange;
 	public $deleted;
 	public $dateDeleted;
-	public $needsUpdate;
 }

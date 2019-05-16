@@ -51,44 +51,13 @@ class Admin_Libraries extends ObjectEditor
 		return array('opacAdmin', 'libraryAdmin', 'libraryManager');
 	}
 	function canAddNew(){
-		$user = UserAccount::getLoggedInUser();
 		return UserAccount::userHasRole('opacAdmin');
 	}
 	function canDelete(){
-		$user = UserAccount::getLoggedInUser();
 		return UserAccount::userHasRole('opacAdmin');
 	}
 	function getAdditionalObjectActions($existingObject){
-		$objectActions = array();
-		if ($existingObject != null){
-//			$objectActions[] = array(
-//				'text' => 'Reset Facets To Default',
-//				'url' => '/Admin/Libraries?id=' . $existingObject->libraryId . '&amp;objectAction=resetFacetsToDefault',
-//			);
-//			$objectActions[] = array(
-//					'text' => 'Reset More Details To Default',
-//					'url' => '/Admin/Libraries?id=' . $existingObject->libraryId . '&amp;objectAction=resetMoreDetailsToDefault',
-//			);
-//			$objectActions[] = array(
-//				'text' => 'Copy Library Facets',
-//				'url' => '/Admin/Libraries?id=' . $existingObject->libraryId . '&amp;objectAction=copyFacetsFromLibrary',
-//			);
-//			$objectActions[] = array(
-//				'text' => 'Set Materials Request Form Structure To Default',
-//				'url' => '/Admin/Libraries?id=' . $existingObject->libraryId . '&amp;objectAction=defaultMaterialsRequestForm',
-//			);
-//			$objectActions[] = array(
-//				'text' => 'Set Materials Request Formats To Default',
-//				'url' => '/Admin/Libraries?id=' . $existingObject->libraryId . '&amp;objectAction=defaultMaterialsRequestFormats',
-//			);
-//			$objectActions[] = array(
-//				'text' => 'Set Archive Explore More Options To Default',
-//				'url' => '/Admin/Libraries?id=' . $existingObject->libraryId . '&amp;objectAction=defaultArchiveExploreMoreOptions',
-//			);
-		}else{
-			echo("Existing object is null");
-		}
-		return $objectActions;
+		return [];
 	}
 
 	function copyFacetsFromLibrary(){
@@ -187,7 +156,6 @@ class Admin_Libraries extends ObjectEditor
 
 			$_REQUEST['objectAction'] = 'edit';
 		}
-		$structure = $this->getObjectStructure();
 		header("Location: /Admin/Libraries?objectAction=edit&id=" . $libraryId);
 	}
 
@@ -205,7 +173,6 @@ class Admin_Libraries extends ObjectEditor
 
 			$_REQUEST['objectAction'] = 'edit';
 		}
-		$structure = $this->getObjectStructure(); //TODO: Needed?
 		header("Location: /Admin/Libraries?objectAction=edit&id=" . $libraryId);
 	}
 
@@ -234,7 +201,6 @@ class Admin_Libraries extends ObjectEditor
 
 			$_REQUEST['objectAction'] = 'edit';
 		}
-		$structure = $this->getObjectStructure();
 		header("Location: /Admin/Libraries?objectAction=edit&id=" . $libraryId);
 	}
 
@@ -253,7 +219,6 @@ class Admin_Libraries extends ObjectEditor
 
 			$_REQUEST['objectAction'] = 'edit';
 		}
-		$structure = $this->getObjectStructure();
 		header("Location: /Admin/Libraries?objectAction=edit&id=" . $libraryId);
 	}
 

@@ -15,7 +15,6 @@ import java.util.zip.CRC32;
 
 import javax.net.ssl.HttpsURLConnection;
 
-import com.turning_leaf_technologies.config.ConfigUtil;
 import com.turning_leaf_technologies.grouping.OverDriveRecordGrouper;
 import com.turning_leaf_technologies.grouping.RemoveRecordFromWorkResult;
 import com.turning_leaf_technologies.net.NetworkUtils;
@@ -76,7 +75,7 @@ class ExtractOverDriveInfo {
 	private GroupedWorkIndexer groupedWorkIndexer;
 	private Ini configIni;
 
-	int extractOverDriveInfo(Ini configIni, String serverName, Connection dbConn, OverDriveExtractLogEntry logEntry, boolean doFullReload) {
+	int extractOverDriveInfo(Ini configIni, String serverName, Connection dbConn, OverDriveExtractLogEntry logEntry) {
 		int numChanges = 0;
 		this.configIni = configIni;
 		this.serverName = serverName;
@@ -86,7 +85,7 @@ class ExtractOverDriveInfo {
 		long extractStartTime = new Date().getTime();
 
 		try {
-			initOverDriveExtract(configIni, dbConn, logEntry, doFullReload);
+			boolean runFullUpdate = initOverDriveExtract(dbConn, logEntry);
 
 			try {
 				if (clientSecret == null || clientKey == null || accountId == null || clientSecret.length() == 0 || clientKey.length() == 0 || accountId.length() == 0) {
@@ -152,21 +151,21 @@ class ExtractOverDriveInfo {
 					//Update, regroup, and reindex records
 					for (OverDriveRecordInfo curRecord : allProductsInOverDrive.values()) {
 						//Extract data from overdrive and update the database
-						if (doFullReload || curRecord.isNew || curRecord.hasMetadataChanges){
+						if (runFullUpdate || curRecord.isNew || curRecord.hasMetadataChanges){
 							//Load Metadata for the record
 							updateOverDriveMetaData(curRecord);
 						}
-						if (doFullReload || curRecord.hasAvailabilityChanges) {
+						if (runFullUpdate || curRecord.hasAvailabilityChanges) {
 							//Load availability for the record
 							updateOverDriveAvailability(curRecord, curRecord.getDatabaseId());
 						}
 
 						String groupedWorkId = null;
-						if (doFullReload || curRecord.isNew || curRecord.hasMetadataChanges){
+						if (runFullUpdate || curRecord.isNew || curRecord.hasMetadataChanges){
 							//Regroup the record
 							groupedWorkId = getRecordGroupingProcessor().processOverDriveRecord(curRecord.getId());
 						}
-						if (doFullReload || curRecord.isNew || curRecord.hasMetadataChanges || curRecord.hasAvailabilityChanges){
+						if (runFullUpdate || curRecord.isNew || curRecord.hasMetadataChanges || curRecord.hasAvailabilityChanges){
 							//Metadata didn't change so we need to load from the database
 							if (groupedWorkId == null) {
 								groupedWorkId = getRecordGroupingProcessor().getPermanentIdForRecord("overdrive", curRecord.getId());
@@ -197,12 +196,12 @@ class ExtractOverDriveInfo {
 				logger.debug("Not setting last extract time since there were problems extracting products from the API");
 			} else {
 				PreparedStatement updateExtractTime;
-				if (lastExtractTime == null) {
-					updateExtractTime = dbConn.prepareStatement("INSERT INTO variables set value = ?, name = 'last_overdrive_extract_time'");
-				} else {
-					updateExtractTime = dbConn.prepareStatement("UPDATE variables set value = ? where name = 'last_overdrive_extract_time'");
+				String columnToUpdate = "lastUpdateOfChangedRecords";
+				if (runFullUpdate){
+					columnToUpdate = "lastUpdateOfAllRecords";
 				}
-				updateExtractTime.setLong(1, extractStartTime);
+				updateExtractTime = dbConn.prepareStatement("UPDATE overdrive_settings set " + columnToUpdate + " = ?");
+				updateExtractTime.setLong(1, extractStartTime / 1000);
 				updateExtractTime.executeUpdate();
 				logger.debug("Setting last extract time to " + extractStartTime + " " + new Date(extractStartTime).toString());
 			}
@@ -216,9 +215,8 @@ class ExtractOverDriveInfo {
 		return numChanges;
 	}
 
-	private void initOverDriveExtract(Ini configIni, Connection dbConn, OverDriveExtractLogEntry logEntry, boolean doFullReload) throws SQLException {
+	private boolean initOverDriveExtract(Connection dbConn, OverDriveExtractLogEntry logEntry) throws SQLException {
 		addProductStmt = dbConn.prepareStatement("INSERT INTO overdrive_api_products set overdriveid = ?, crossRefId = ?, mediaType = ?, title = ?, subtitle = ?, series = ?, primaryCreatorRole = ?, primaryCreatorName = ?, cover = ?, dateAdded = ?, dateUpdated = ?, lastMetadataCheck = 0, lastMetadataChange = 0, lastAvailabilityCheck = 0, lastAvailabilityChange = 0", PreparedStatement.RETURN_GENERATED_KEYS);
-		PreparedStatement markAllAsNeedingUpdatesStmt = dbConn.prepareStatement("UPDATE overdrive_api_products set needsUpdate = 1");
 		updateProductStmt = dbConn.prepareStatement("UPDATE overdrive_api_products SET crossRefId = ?, mediaType = ?, title = ?, subtitle = ?, series = ?, primaryCreatorRole = ?, primaryCreatorName = ?, cover = ?, deleted = 0 where id = ?");
 		updateProductChangeTimeStmt = dbConn.prepareStatement("UPDATE overdrive_api_products set dateUpdated = ? WHERE overdriveId = ?");
 		deleteProductStmt = dbConn.prepareStatement("UPDATE overdrive_api_products SET deleted = 1, dateDeleted = ? where id = ?");
@@ -237,26 +235,41 @@ class ExtractOverDriveInfo {
 		deleteAllAvailabilityStmt = dbConn.prepareStatement("DELETE FROM overdrive_api_product_availability where productId = ?");
 		updateProductAvailabilityStmt = dbConn.prepareStatement("UPDATE overdrive_api_products SET lastAvailabilityCheck = ?, lastAvailabilityChange = ? where id = ?");
 
-		//Get the last time we extracted data from OverDrive
-		if (doFullReload){
-			logger.info("Doing a full reload of all records.");
-			markAllAsNeedingUpdatesStmt.executeUpdate();
-		}
+		//Load settings
+		PreparedStatement overDriveSettingsStmt = dbConn.prepareStatement("SELECT * from overdrive_settings");
+		ResultSet overDriveSettingsRS = overDriveSettingsStmt.executeQuery();
 
-		//Load last extract time regardless of if we are doing full index or partial index
-		PreparedStatement getVariableStatement = dbConn.prepareStatement("SELECT * FROM variables where name = 'last_overdrive_extract_time'");
-		ResultSet lastExtractTimeRS = getVariableStatement.executeQuery();
-		if (lastExtractTimeRS.next()) {
-			lastExtractTime = lastExtractTimeRS.getLong("value");
-			Date lastExtractDate = new Date(lastExtractTime);
-			if (!doFullReload) {
+		boolean runFullUpdate = false;
+		if (overDriveSettingsRS.next()){
+			clientSecret = overDriveSettingsRS.getString("clientSecret");
+			clientKey = overDriveSettingsRS.getString("clientKey");
+			accountId = overDriveSettingsRS.getString("accountId");
+
+			String overDriveProductsKey = overDriveSettingsRS.getString("productsKey");
+			if (overDriveProductsKey == null){
+				logger.error("No products key provided for OverDrive");
+				System.exit(1);
+			}
+			libToOverDriveAPIKeyMap.put(-1L, overDriveProductsKey);
+			runFullUpdate = overDriveSettingsRS.getBoolean("runFullUpdate");
+
+			//Load last extract time regardless of if we are doing full index or partial index
+			lastExtractTime = overDriveSettingsRS.getLong("lastUpdateOfChangedRecords");
+			if (!runFullUpdate) {
+				Date lastExtractDate = new Date(lastExtractTime * 1000);
 				SimpleDateFormat lastUpdateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
 				logger.info("Loading all records that have changed since " + lastUpdateFormat.format(lastExtractDate));
 				logEntry.addNote("Loading all records that have changed since " + lastUpdateFormat.format(lastExtractDate));
 				lastUpdateTimeParam = lastUpdateFormat.format(lastExtractDate);
 				//Simple Date Format doesn't give us quite the right timezone format so adjust
 				lastUpdateTimeParam = lastUpdateTimeParam.substring(0, lastUpdateTimeParam.length() - 2) + ":" + lastUpdateTimeParam.substring(lastUpdateTimeParam.length() - 2);
+			}else{
+				//Update the settings to mark the full update as not needed
+				dbConn.prepareStatement("UPDATE overdrive_settings set runFullUpdate = 0").executeUpdate();
 			}
+		}else{
+			logger.error("No configuration found in the database for OverDrive");
+			System.exit(1);
 		}
 
 		PreparedStatement advantageCollectionMapStmt = dbConn.prepareStatement("SELECT libraryId, overdriveAdvantageName, overdriveAdvantageProductsKey FROM library where overdriveAdvantageName > ''");
@@ -265,19 +278,9 @@ class ExtractOverDriveInfo {
 			libToOverDriveAPIKeyMap.put(advantageCollectionMapRS.getLong(1), advantageCollectionMapRS.getString(3));
 		}
 
-		//TODO: Remove loading configuration from config.ini and move to database
-		//Load products from API
-		clientSecret = ConfigUtil.cleanIniValue(configIni.get("OverDrive", "clientSecret"));
-		clientKey = ConfigUtil.cleanIniValue(configIni.get("OverDrive", "clientKey"));
-		accountId = ConfigUtil.cleanIniValue(configIni.get("OverDrive", "accountId"));
-
-		String overDriveProductsKey = configIni.get("OverDrive", "productsKey");
-		if (overDriveProductsKey == null){
-			logger.warn("Warning no products key provided for OverDrive");
-		}
-		libToOverDriveAPIKeyMap.put(-1L, overDriveProductsKey);
-
 		setupOverDriveFormatMap();
+
+		return runFullUpdate;
 	}
 
 	private void setupOverDriveFormatMap() {
@@ -562,7 +565,9 @@ class ExtractOverDriveInfo {
 			long numProducts = productInfo.getLong("totalItems");
 			//if (numProducts > 50) numProducts = 50;
 			logger.info(collectionInfo.getName() + " collection has " + numProducts + " products, the libraryId for the collection is " + collectionInfo.getAspenLibraryId());
-			results.addNote("Loading OverDrive information for " + collectionInfo.getName());
+			if (loadType == LOAD_ALL_PRODUCTS) {
+				results.addNote(collectionInfo.getName() + " collection has " + numProducts + " products, the libraryId for the collection is " + collectionInfo.getAspenLibraryId());
+			}
 			results.saveResults();
 			long batchSize = 300;
 			for (int i = 0; i < numProducts; i += batchSize) {

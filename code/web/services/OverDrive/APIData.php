@@ -2,7 +2,7 @@
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 
-class Admin_OverDriveAPIData extends Admin_Admin
+class OverDrive_APIData extends Admin_Admin
 {
 	function launch()
 	{

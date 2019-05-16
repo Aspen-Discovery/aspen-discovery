@@ -1,7 +1,4 @@
 <?php
-/**
- * Stores MetaData for a product that has been loaded from OverDrive
- */
 
 class OverDriveAPIProductMetaData extends DataObject {
 	public $__table = 'overdrive_api_product_metadata';   // table name

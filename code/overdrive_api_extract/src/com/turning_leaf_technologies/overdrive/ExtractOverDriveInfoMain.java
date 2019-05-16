@@ -3,7 +3,6 @@ package com.turning_leaf_technologies.overdrive;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.Date;
 
 import com.turning_leaf_technologies.config.ConfigUtil;
@@ -23,24 +22,9 @@ public class ExtractOverDriveInfoMain {
 		String serverName = args[0];
 		Logger logger = LoggingUtil.setupLogging(serverName, "overdrive_extract");
 
-		args = Arrays.copyOfRange(args, 1, args.length);
-		boolean doFullReload = false;
-		if (args.length == 1){
-			//Check to see if we got a full reload parameter
-			String firstArg = args[0].replaceAll("\\s", "");
-			if (firstArg.matches("^fullReload(=true|1)?$")){
-				doFullReload = true;
-			}
-		}
-
-		boolean runContinuously = true;
-		while (runContinuously) {
-			runContinuously = false;
-			if (args.length >= 1) {
-				if (args[0].equals("continuous")){
-					runContinuously = true;
-				}
-			}
+		//Start an infinite loop to do continual indexing.  We will just kill the process as needed to restart, but
+		//otherwise it should always run
+		while (true) {
 
 			Date currentTime = new Date();
 			logger.info(currentTime.toString() + ": Starting OverDrive Extract");
@@ -67,11 +51,9 @@ public class ExtractOverDriveInfoMain {
 			}
 
 			ExtractOverDriveInfo extractor = new ExtractOverDriveInfo();
-			int numChanges = extractor.extractOverDriveInfo(configIni, serverName, dbConn, logEntry, doFullReload);
+			int numChanges = extractor.extractOverDriveInfo(configIni, serverName, dbConn, logEntry);
 
 			logEntry.setFinished();
-			logEntry.addNote("Finished OverDrive extraction");
-			logEntry.saveResults();
 			logger.info("Finished OverDrive extraction");
 			Date endTime = new Date();
 			long elapsedTime = (endTime.getTime() - currentTime.getTime()) / 1000;
@@ -81,16 +63,14 @@ public class ExtractOverDriveInfoMain {
 			extractor.close();
 
 			//Based on number of changes, pause for a little while and then continue on so we are running continuously
-			if (runContinuously) {
-				try {
-					if (numChanges == 0) {
-						Thread.sleep(1000 * 60 * 5);
-					}else {
-						Thread.sleep(1000 * 60);
-					}
-				} catch (InterruptedException e) {
-					logger.info("Thread was interrupted");
+			try {
+				if (numChanges == 0) {
+					Thread.sleep(1000 * 60 * 5);
+				}else {
+					Thread.sleep(1000 * 60);
 				}
+			} catch (InterruptedException e) {
+				logger.info("Thread was interrupted");
 			}
 		}
 	}

@@ -26,8 +26,9 @@ class SearchAPI extends Action {
 	function launch()
 	{
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
+        $output = '';
 		if (!empty($method) && method_exists($this, $method)) {
-			if (in_array($method , array('getSearchBar', 'getListWidget'))){
+			if (in_array($method , array('getListWidget'))){
 				$output = $this->$method();
 			}else{
 				$jsonOutput = json_encode(array('result'=>$this->$method()));
@@ -177,7 +178,7 @@ class SearchAPI extends Action {
 						$status[] = ($lastIndexTime < ($currentTime - self::PARTIAL_INDEX_INTERVAL_CRITICAL)) ? self::STATUS_CRITICAL : self::STATUS_WARN;
 
 						if ($lastIndexFinishedWasFull) {
-							$notes[] = 'Full Index last finished ' . date('m-d-Y H:i:s', $lastPartialIndexVariable->value) . ' - ' . round(($currentTime - $lastPartialIndexVariable->value) / 60, 2) . ' minutes ago, and a new partial index hasn\'t completed since.';
+							$notes[] = 'Full Index last finished ' . date('m-d-Y H:i:s', $lastPartialIndexVariable->value) . ' - ' . round(($currentTime - $lastPartialIndexVariable->value) / 60, 2) . " minutes ago, and a new partial index hasn't completed since.";
 						} else {
 							$notes[] = 'Partial Index last finished ' . date('m-d-Y H:i:s', $lastPartialIndexVariable->value) . ' - ' . round(($currentTime - $lastPartialIndexVariable->value) / 60, 2) . ' minutes ago';
 						}
@@ -205,7 +206,7 @@ class SearchAPI extends Action {
 		}
 
 		// Overdrive extract errors
-		require_once ROOT_DIR . '/sys/OverDriveExtractLogEntry.php';
+		require_once ROOT_DIR . '/sys/OverDrive/OverDriveExtractLogEntry.php';
 		$logEntry = new OverDriveExtractLogEntry();
 		$logEntry->orderBy('id DESC');
 		$logEntry->limit(0,1);
@@ -276,14 +277,14 @@ class SearchAPI extends Action {
         }
 
 		// Check How Many Overdrive Items have been deleted in the last 24 hours
-		if (!empty($configArray['OverDrive']['url'])) {
+        $overDriveSettings = new OverDriveSetting();
+        if ($overDriveSettings->find(true)) {
 			// Checking that the url is set as a proxy for Overdrive being enabled
 
 			require_once ROOT_DIR . '/sys/OverDrive/OverDriveAPIProduct.php';
 			$overdriveItems = new OverDriveAPIProduct();
 			$overdriveItems->deleted = true;
 			$overdriveItems->whereAdd('dateDeleted > unix_timestamp(DATE_SUB(CURDATE(),INTERVAL 1 DAY) )');
-			// where deleted = 1 and dateDeleted > unix_timestamp(DATE_SUB(CURDATE(),INTERVAL 1 DAY) )
 			$deletedOverdriveItems = $overdriveItems->count();
 			if ($deletedOverdriveItems !== false && $deletedOverdriveItems >= self::OVERDRIVE_DELETED_ITEMS_WARN) {
 				$notes[] = "$deletedOverdriveItems Overdrive Items have been marked as deleted in the last 24 hours";
@@ -294,7 +295,7 @@ class SearchAPI extends Action {
 		// Unprocessed Offline Circs //
 		$offlineCirculationEntry = new OfflineCirculationEntry();
 		$offlineCirculationEntry->status = 'Not Processed';
-		$offlineCircs = $offlineCirculationEntry->count('id');
+		$offlineCircs = $offlineCirculationEntry->count();
 		if (!empty($offlineCircs)) {
 			$status[] = self::STATUS_CRITICAL;
 			$notes[]  = "There are $offlineCircs un-processed offline circulation transactions";
@@ -303,7 +304,7 @@ class SearchAPI extends Action {
 		// Unprocessed Offline Holds //
 		$offlineHoldEntry = new OfflineHold();
 		$offlineHoldEntry->status = 'Not Processed';
-		$offlineHolds = $offlineHoldEntry->count('id');
+		$offlineHolds = $offlineHoldEntry->count();
 		if (!empty($offlineHolds)) {
 			$status[] = self::STATUS_CRITICAL;
 			$notes[]  = "There are $offlineHolds un-processed offline holds";
@@ -322,7 +323,7 @@ class SearchAPI extends Action {
 
 		if (count($notes) > 0){
 			$result = array(
-				'status'  => in_array(self::STATUS_CRITICAL, $status) ? self::STATUS_CRITICAL : self::STATUS_WARN, // Criticals trump Warnings;
+				'status'  => in_array(self::STATUS_CRITICAL, $status) ? self::STATUS_CRITICAL : self::STATUS_WARN, // Critical warnings trump Warnings;
 				'message' => implode('; ',$notes)
 			);
 		}else{
@@ -345,7 +346,7 @@ class SearchAPI extends Action {
 				'prtg' => array(
 					'result' => array(
 						0 => array(
-						'channel'         => 'Pika Status',
+						'channel'         => 'Aspen Status',
 						'value'           => $prtgStatusValues[ $result['status'] ],
 						'limitmode'=> 1,
 						'limitmaxwarning' => $prtgStatusValues[self::STATUS_OK],
@@ -498,7 +499,7 @@ class SearchAPI extends Action {
 		// Will assign null for an advanced search
 		$jsonResults['searchIndex'] =         $searchObject->getSearchIndex();
 		$jsonResults['time'] = round($searchObject->getTotalSpeed(), 2);
-		// Show the save/unsave code on screen
+		// Show the save status on screen
 		// The ID won't exist until after the search has been put in the search history
 		//    so this needs to occur after the close() on the searchObject
 		$jsonResults['showSaved'] =   true;
@@ -525,11 +526,6 @@ class SearchAPI extends Action {
 		return $jsonResults;
 	}
 
-	function getSearchBar(){
-		global $interface;
-		return $interface->fetch('API/searchbar.tpl');
-	}
-
 	function getListWidget(){
 		global $interface;
 		if (isset($_REQUEST['username']) && isset($_REQUEST['password'])){
@@ -539,6 +535,7 @@ class SearchAPI extends Action {
 			$interface->assign('user', $user);
 		}else{
 			$user = UserAccount::getLoggedInUser();
+            $interface->assign('user', $user);
 		}
 		//Load the widget configuration
 		require_once ROOT_DIR . '/sys/ListWidget.php';
@@ -558,12 +555,14 @@ class SearchAPI extends Action {
 		if ($widget->find(true)){
 			$interface->assign('widget', $widget);
 
-			if (!empty($_REQUEST['resizeIframe']) || !empty($_REQUEST['resizeiframe'])) {
+			if (!empty($_REQUEST['resizeIframe'])) {
 				$interface->assign('resizeIframe', true);
 			}
 			//return the widget
 			return $interface->fetch('ListWidget/listWidget.tpl');
-		}
+		}else{
+		    return '';
+        }
 	}
 
 	/**

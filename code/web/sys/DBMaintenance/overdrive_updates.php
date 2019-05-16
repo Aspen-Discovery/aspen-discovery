@@ -1,6 +1,6 @@
 <?php
 
-function getEContentUpdates() {
+function getOverDriveUpdates() {
     return array(
         'overdrive_api_data' => array(
             'title' => 'OverDrive API Data',
@@ -164,11 +164,11 @@ function getEContentUpdates() {
             ),
         ),
 
-        'overdrive_api_data_needsUpdate' => array(
-            'title' => 'Add needsUpdate to OverDrive Product API',
-            'description' => 'Update overdrive_api_product table to add needsUpdate to determine if the record should be reloaded from the API',
+        'remove_overdrive_api_data_needsUpdate' => array(
+            'title' => 'Remove needsUpdate from OverDrive Product API',
+            'description' => 'Update overdrive_api_product table to remove needsUpdate to determine if the record should be reloaded from the API',
             'sql' => array(
-                "ALTER TABLE overdrive_api_products ADD COLUMN needsUpdate TINYINT(1) DEFAULT '0'",
+                "ALTER TABLE overdrive_api_products DROP COLUMN needsUpdate",
             ),
         ),
 
@@ -200,7 +200,68 @@ function getEContentUpdates() {
                 "DROP TABLE overdrive_record_cache",
                 "ALTER TABLE overdrive_api_products DROP COLUMN rawData",
             ),
-        )
+        ),
 
+        'overdrive_add_settings' => array(
+            'title' => 'Add OverDrive Settings',
+            'description' => 'Add Settings for OverDrive to move configuration out of ini',
+            'sql' => array(
+                "CREATE TABLE IF NOT EXISTS overdrive_settings(
+						id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+						url VARCHAR(255),
+						patronApiUrl VARCHAR(255),
+						clientSecret VARCHAR(50),
+						clientKey VARCHAR(50),
+						accountId INT(11) DEFAULT 0,
+						websiteId INT(11) DEFAULT 0,
+						productsKey VARCHAR(50) DEFAULT 0,
+						runFullUpdate TINYINT(1) DEFAULT 0
+					)",
+            ),
+        ),
+
+        'overdrive_add_update_info_to_settings' => array(
+            'title' => 'Add Update information to OverDrive Settings',
+            'description' => 'Add update times to overdrive settings',
+            'sql' => array(
+                "DELETE FROM variables WHERE name = 'last_overdrive_extract_time' OR name = 'partial_overdrive_extract_running'",
+                "ALTER TABLE overdrive_settings ADD COLUMN lastUpdateOfChangedRecords INT(11) DEFAULT 0",
+                "ALTER TABLE overdrive_settings ADD COLUMN lastUpdateOfAllRecords INT(11) DEFAULT 0",
+            ),
+        ),
+
+        'track_overdrive_user_usage' => array(
+            'title' => 'OverDrive Usage by user',
+            'description' => 'Add a table to track how often a particular user uses the Open Archives.',
+            'sql' => array(
+                "CREATE TABLE user_overdrive_usage (
+                    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                    userId INT(11) NOT NULL,
+                    year INT(4) NOT NULL,
+                    month INT(2) NOT NULL,
+                    usageCount INT(11)
+                ) ENGINE = InnoDB",
+                "ALTER TABLE user_overdrive_usage ADD INDEX (userId, year, month)",
+                "ALTER TABLE user_overdrive_usage ADD INDEX (year, month)",
+            ),
+        ),
+
+        'track_overdrive_record_usage' => array(
+            'title' => 'Open Archive Record Usage',
+            'description' => 'Add a table to track how records within open archives are viewed.',
+            'continueOnError' => true,
+            'sql' => array(
+                "CREATE TABLE overdrive_record_usage (
+                    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                    overdriveId VARCHAR(36),
+                    year INT(4) NOT NULL,
+                    month INT(2) NOT NULL,
+                    timesHeld INT(11) NOT NULL,
+                    timesCheckedOut INT(11) NOT NULL
+                ) ENGINE = InnoDB",
+                "ALTER TABLE overdrive_record_usage ADD INDEX (overdriveId, year, month)",
+                "ALTER TABLE overdrive_record_usage ADD INDEX (year, month)",
+            ),
+        ),
     );
 }

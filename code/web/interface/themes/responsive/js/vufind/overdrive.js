@@ -150,16 +150,6 @@ VuFind.OverDrive = (function(){
 			});
 		},
 
-		forceUpdateFromAPI:function(overDriveId){
-			let url = Globals.path + '/OverDrive/' + overDriveId + '/AJAX?method=forceUpdateFromAPI';
-			$.getJSON(url, function (data){
-					VuFind.showMessage("Success", data.message, true, true);
-					setTimeout("VuFind.closeLightbox();", 3000);
-				}
-			);
-			return false;
-		},
-
 		getOverDriveHoldPrompts: function(overDriveId){
 			let url = Globals.path + "/OverDrive/" + overDriveId + "/AJAX?method=getHoldPrompts";
 			let result = true;

@@ -319,7 +319,9 @@ class SearchSources{
 			}
 			return $worldCatLink;
 		}else if ($searchSource == 'overdrive'){
-			$overDriveUrl = $configArray['OverDrive']['url'];
+            $overDriveSettings = new OverDriveSetting();
+            $overDriveSettings->find((true));
+			$overDriveUrl = $overDriveSettings->url;
 			return "$overDriveUrl/search?query=" . urlencode($lookFor);
 		}else if ($searchSource == 'prospector'){
 			$prospectorSearchType = $this->getProspectorSearchType($type);

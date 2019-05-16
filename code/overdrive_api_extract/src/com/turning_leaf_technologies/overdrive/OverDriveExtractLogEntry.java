@@ -97,6 +97,8 @@ class OverDriveExtractLogEntry {
 	}
 	void setFinished() {
 		this.endTime = new Date();
+		this.addNote("Finished OverDrive extraction");
+		this.saveResults();
 	}
 	void incErrors(){
 		numErrors++;

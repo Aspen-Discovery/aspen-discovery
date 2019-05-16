@@ -73,8 +73,8 @@ class DBMaintenance extends Admin_Admin {
         $rbdigital_updates = getRbdigitalUpdates();
         require_once ROOT_DIR . '/sys/DBMaintenance/sierra_api_updates.php';
 		$sierra_api_updates = getSierraAPIUpdates();
-		require_once ROOT_DIR . '/sys/DBMaintenance/econtent_updates.php';
-		$econtent_updates = getEContentUpdates();
+		require_once ROOT_DIR . '/sys/DBMaintenance/overdrive_updates.php';
+		$overdrive_updates = getOverDriveUpdates();
         require_once ROOT_DIR . '/sys/DBMaintenance/theming_updates.php';
         $theming_updates = getThemingUpdates();
         require_once ROOT_DIR . '/sys/DBMaintenance/open_archives_updates.php';
@@ -91,7 +91,7 @@ class DBMaintenance extends Admin_Admin {
 			$list_widget_updates,
 			$indexing_updates,
 			$islandora_updates,
-            $econtent_updates,
+            $overdrive_updates,
 			$hoopla_updates,
             $rbdigital_updates,
 			$sierra_api_updates,

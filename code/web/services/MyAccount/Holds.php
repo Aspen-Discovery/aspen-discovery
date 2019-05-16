@@ -79,11 +79,6 @@ class MyAccount_Holds extends MyAccount{
 		global $offlineMode;
 		if (!$offlineMode) {
 			if ($user) {
-
-				// Paging not implemented on holds page
-//				$recordsPerPage = isset($_REQUEST['pagesize']) && (is_numeric($_REQUEST['pagesize'])) ? $_REQUEST['pagesize'] : 25;
-//				$interface->assign('recordsPerPage', $recordsPerPage);
-
 				$allHolds = $user->getHolds(true, $selectedUnavailableSortOption, $selectedAvailableSortOption);
 				$interface->assign('recordList', $allHolds);
 

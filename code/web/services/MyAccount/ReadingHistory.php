@@ -49,8 +49,8 @@ class ReadingHistory extends MyAccount
 					if (isset($_REQUEST['accountSort'])){
 						$params[] = 'accountSort=' . $_REQUEST['accountSort'];
 					}
-					if (isset($_REQUEST['pagesize'])){
-						$params[] = 'pagesize=' . $_REQUEST['pagesize'];
+					if (isset($_REQUEST['pageSize'])){
+						$params[] = 'pageSize=' . $_REQUEST['pageSize'];
 					}
 					if (isset($_REQUEST['patronId'])){
 						$params[] = 'patronId=' . $_REQUEST['patronId'];
@@ -76,7 +76,7 @@ class ReadingHistory extends MyAccount
 				$page = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
 				$interface->assign('page', $page);
 
-				$recordsPerPage = isset($_REQUEST['pagesize']) && (is_numeric($_REQUEST['pagesize'])) ? $_REQUEST['pagesize'] : 25;
+				$recordsPerPage = isset($_REQUEST['pageSize']) && (is_numeric($_REQUEST['pageSize'])) ? $_REQUEST['pageSize'] : 25;
 				$interface->assign('recordsPerPage', $recordsPerPage);
 				if (isset($_REQUEST['readingHistoryAction']) && $_REQUEST['readingHistoryAction'] == 'exportToExcel'){
 					$recordsPerPage = -1;

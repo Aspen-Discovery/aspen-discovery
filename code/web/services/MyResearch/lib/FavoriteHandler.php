@@ -138,7 +138,7 @@ class FavoriteHandler
 	{
 		global $interface;
 
-		$recordsPerPage = isset($_REQUEST['pagesize']) && (is_numeric($_REQUEST['pagesize'])) ? $_REQUEST['pagesize'] : 20;
+		$recordsPerPage = isset($_REQUEST['pageSize']) && (is_numeric($_REQUEST['pageSize'])) ? $_REQUEST['pageSize'] : 20;
 		$page = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
 		$startRecord = ($page - 1) * $recordsPerPage + 1;
 		if ($startRecord < 0){

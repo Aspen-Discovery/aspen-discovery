@@ -15,6 +15,7 @@ class OpenArchivesCollection extends DataObject
 
     static function getObjectStructure(){
         return [
+            'id' => array('property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id'),
             'name' => array('property'=>'name', 'type'=>'text', 'label'=>'Name', 'description'=>'A name to identify the open archives collection in the system', 'size'=>'100'),
             'baseURL' => array('property'=>'baseUrl', 'type'=>'url', 'label'=>'Base URL', 'description'=>'The url of the open archives site', 'size'=>'255'),
             'setName' => array('property'=>'setName', 'type'=>'text', 'label'=>'Set Name (separate multiple values with commas)', 'description'=>'The name of the set to harvest', 'size'=>'100'),

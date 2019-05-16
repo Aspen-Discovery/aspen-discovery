@@ -203,16 +203,16 @@ class Admin_AJAX extends Action {
 		return json_encode($results);
 	}
 
-  function getOverDriveExtractNotes()	{
-		global $interface;
-		$id = $_REQUEST['id'];
+    function getOverDriveExtractNotes()	{
+        $id = $_REQUEST['id'];
+        require_once ROOT_DIR . '/sys/OverDrive/OverDriveExtractLogEntry.php';
 		$overdriveExtractLog = new OverDriveExtractLogEntry();
 		$overdriveExtractLog->id = $id;
-	  $results = array(
-			  'title' => '',
-			  'modalBody' => '',
-			  'modalButtons' => ""
-	  );
+        $results = array(
+              'title' => '',
+              'modalBody' => '',
+              'modalButtons' => ""
+        );
 		if ($overdriveExtractLog->find(true)){
 			$results['title'] = "OverDrive Extract {$overdriveExtractLog->id} Notes";
 			if (strlen($overdriveExtractLog->notes) == 0){
@@ -224,7 +224,7 @@ class Admin_AJAX extends Action {
 			$results['title'] = "Error";
 			$results['modalBody'] = "We could not find a OverDrive Extract entry with that id.  No notes available.";
 		}
-	  return json_encode($results);
+	    return json_encode($results);
 	}
 
 	function getAddToWidgetForm(){
