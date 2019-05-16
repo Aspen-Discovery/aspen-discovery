@@ -8,7 +8,6 @@ class OverDriveRecordUsage extends DataObject
     public $overdriveId;
     public $year;
     public $month;
-    public $timesViewedInSearch;
     public $timesHeld;
     public $timesCheckedOut;
 }

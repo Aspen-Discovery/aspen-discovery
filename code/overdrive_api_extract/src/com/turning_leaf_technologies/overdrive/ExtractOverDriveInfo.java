@@ -636,6 +636,10 @@ class ExtractOverDriveInfo {
 
 			}
 		}else{
+			logger.error("Unable to load products from " + collectionInfo.getName() + " " + mainProductUrl);
+			results.addNote("Unable to load products from " + collectionInfo.getName() + " " + mainProductUrl);
+			results.incErrors();
+			logger.error(productsResponse.getResponseCode() + " " + productsResponse.getMessage());
 			errorsWhileLoadingProducts = true;
 		}
 	}
