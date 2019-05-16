@@ -247,8 +247,8 @@ function getOverDriveUpdates() {
         ),
 
         'track_overdrive_record_usage' => array(
-            'title' => 'Open Archive Record Usage',
-            'description' => 'Add a table to track how records within open archives are viewed.',
+            'title' => 'Overdrive Record Usage',
+            'description' => 'Add a table to track how records within overdrive are used.',
             'continueOnError' => true,
             'sql' => array(
                 "CREATE TABLE overdrive_record_usage (
