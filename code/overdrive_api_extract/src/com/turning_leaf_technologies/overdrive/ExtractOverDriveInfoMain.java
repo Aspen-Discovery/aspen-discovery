@@ -26,8 +26,8 @@ public class ExtractOverDriveInfoMain {
 		//otherwise it should always run
 		while (true) {
 
-			Date currentTime = new Date();
-			logger.info(currentTime.toString() + ": Starting OverDrive Extract");
+			Date startTime = new Date();
+			logger.info(startTime.toString() + ": Starting OverDrive Extract");
 
 					// Read the base INI file to get information about the server (current directory/cron/config.ini)
 			Ini configIni = ConfigUtil.loadConfigFile("config.ini", serverName, logger);
@@ -44,6 +44,15 @@ public class ExtractOverDriveInfoMain {
 				System.exit(1);
 			}
 
+			//Remove log entries older than 60 days
+			long earliestLogToKeep = (startTime.getTime() / 1000) - (60 * 60 * 24 * 60);
+			try {
+				int numDeletions = dbConn.prepareStatement("DELETE from overdrive_extract_log WHERE startTime < " + earliestLogToKeep).executeUpdate();
+				logger.info("Deleted " + numDeletions + " old log entries");
+			} catch (SQLException e) {
+				logger.error("Error deleting old log entries", e);
+			}
+
 			OverDriveExtractLogEntry logEntry = new OverDriveExtractLogEntry(dbConn, logger);
 			if (!logEntry.saveResults()){
 				logger.error("Could not save log entry to database, quitting");
@@ -56,7 +65,7 @@ public class ExtractOverDriveInfoMain {
 			logEntry.setFinished();
 			logger.info("Finished OverDrive extraction");
 			Date endTime = new Date();
-			long elapsedTime = (endTime.getTime() - currentTime.getTime()) / 1000;
+			long elapsedTime = (endTime.getTime() - startTime.getTime()) / 1000;
 			logger.info("Elapsed time " + String.format("%f2", ((float)elapsedTime / 60f)) + " minutes");
 
 			//Clean up resources

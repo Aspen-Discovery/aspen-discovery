@@ -35,7 +35,6 @@ class ExtractOverDriveInfo {
 	private Connection dbConn;
 	private OverDriveExtractLogEntry results;
 
-	private Long lastExtractTime;
 	private String lastUpdateTimeParam = "";
 
 	//Overdrive API information
@@ -254,7 +253,7 @@ class ExtractOverDriveInfo {
 			runFullUpdate = overDriveSettingsRS.getBoolean("runFullUpdate");
 
 			//Load last extract time regardless of if we are doing full index or partial index
-			lastExtractTime = overDriveSettingsRS.getLong("lastUpdateOfChangedRecords");
+			long lastExtractTime = overDriveSettingsRS.getLong("lastUpdateOfChangedRecords");
 			if (!runFullUpdate) {
 				Date lastExtractDate = new Date(lastExtractTime * 1000);
 				SimpleDateFormat lastUpdateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
