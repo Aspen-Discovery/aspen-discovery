@@ -8589,7 +8589,6 @@ hr.menu {
   padding-top: 0;
   height: 120px;
   background-color: #f2f2f2;
-  background: linear-gradient(to bottom, #f2f2f2, #dddddd 85%, #e0e0e0);
   border-bottom: 8px solid #ef6722;
   margin-bottom: 0;
   min-height: 110px;
@@ -8725,7 +8724,6 @@ hr.menu {
 }
 #vertical-menu-bar {
   width: 40px;
-  height: 2000px;
   height: 100vh;
   background-color: #015cb9;
   color: #FFF;
@@ -8799,21 +8797,21 @@ hr.menu {
   }
 }
 @media (min-width: 768px) {
-  .mainContentWhenSiderbarCollapsed {
+  .mainContentWhenSideBarCollapsed {
     width: 94.44%;
   }
 }
 @media (min-width: 992px) {
-  .mainContentWhenSiderbarCollapsed {
+  .mainContentWhenSideBarCollapsed {
     width: 95.74%;
   }
 }
 @media (min-width: 1200px) {
-  .mainContentWhenSiderbarCollapsed {
+  .mainContentWhenSideBarCollapsed {
     width: 96.49%;
   }
 }
-.mainContentWhenSiderbarCollapsed.rightSidebar {
+.mainContentWhenSideBarCollapsed.rightSidebar {
   right: 40px;
 }
 @media print {
@@ -10968,6 +10966,24 @@ fieldset[disabled] .btn-masquerade.active {
 .btn-masquerade .badge {
   color: #ebccff;
   background-color: #fff;
+}
+.dashboardCategory .dashboardCategoryLabel {
+  font-size: 24px;
+  line-height: 36px;
+  margin-bottom: 10px;
+  font-family: serif;
+  text-align: center;
+  text-decoration: underline darkred double;
+}
+.dashboardLabel {
+  font-size: 14px;
+  text-transform: uppercase;
+  text-align: center;
+}
+.dashboardValue {
+  font-size: 42px;
+  font-weight: bolder;
+  text-align: center;
 }
 #header-container {
   background: #FFFFFF;

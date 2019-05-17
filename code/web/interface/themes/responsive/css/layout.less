@@ -54,7 +54,7 @@ hr.menu{
   padding-top: 0;
   height: @header-height;
   background-color: @header-top-color;
-  background: linear-gradient(to bottom, @header-top-color, @header-middle-color 85%, @header-bottom-color);
+  //background: linear-gradient(to bottom, @header-top-color, @header-middle-color 85%, @header-bottom-color);
   border-bottom: @header-bottom-border-width solid @header-bottom-border-color;
   margin-bottom: 0;
   min-height: 110px;
@@ -209,7 +209,7 @@ hr.menu{
 
 #vertical-menu-bar {
   width: @vertical-menu-bar-width;
-  height: 2000px; // needs to extend out of view, fallback option
+  //height: 2000px; // needs to extend out of view, fallback option
   height: 100vh;  // best solution, height of the view port
   background-color: @menu-bar-background-color;
   color: @menu-bar-color;
@@ -294,7 +294,7 @@ hr.menu{
 }
 
 // Toggles Expanding Main Content when Sidebar is collapsed
-.mainContentWhenSiderbarCollapsed {
+.mainContentWhenSideBarCollapsed {
 
   @media (min-width: @screen-sm) {
     width: 100% - percentage( round(@vertical-menu-bar-width/(@container-sm - @grid-gutter-width), 4) );

@@ -161,12 +161,12 @@ VuFind.Menu = (function(){
 		collapseSideBar: function(){
 			VuFind.Menu.SideBar.initialLoadDone = true;
 			$('#side-bar,#vertical-menu-bar-container').addClass('collapsedSidebar');
-			$('#main-content-with-sidebar').addClass('mainContentWhenSiderbarCollapsed');
+			$('#main-content-with-sidebar').addClass('mainContentWhenSideBarCollapsed');
 			$('#main-content-with-sidebar .jcarousel').jcarousel('reload'); // resize carousels in the main content sections
 		},
 
 		openSideBar: function(){
-			$('#main-content-with-sidebar').removeClass('mainContentWhenSiderbarCollapsed');
+			$('#main-content-with-sidebar').removeClass('mainContentWhenSideBarCollapsed');
 			$('#side-bar,#vertical-menu-bar-container').removeClass('collapsedSidebar');
 			$('#main-content-with-sidebar .jcarousel').jcarousel('reload'); // resize carousels in the main content sections
 		},
