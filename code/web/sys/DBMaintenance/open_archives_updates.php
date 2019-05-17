@@ -78,5 +78,17 @@ function getOpenArchivesUpdates() {
                 "ALTER TABLE open_archives_record_usage ADD INDEX (openArchivesRecordId, year)",
             ),
         ),
+
+        'open_archive_tracking_adjustments' => array(
+            'title' => 'Open Archive Tracking Adjustments',
+            'description' => 'Track by month rather than just by year',
+            'continueOnError' => true,
+            'sql' => array(
+                "ALTER TABLE user_open_archives_usage ADD COLUMN month INT(2) NOT NULL default 4",
+                "ALTER TABLE open_archives_record_usage ADD COLUMN month INT(2) NOT NULL default 4",
+                "ALTER TABLE user_open_archives_usage DROP COLUMN firstUsed",
+                "ALTER TABLE user_open_archives_usage DROP COLUMN lastUsed",
+            ),
+        ),
     ];
 }

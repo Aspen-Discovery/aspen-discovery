@@ -8,7 +8,7 @@ abstract class DataObject
     /** @var PDOStatement */
     private $__queryStmt;
     private $__selectAllColumns = true;
-    private $__additionalSelects = array();
+    private $__additionalSelects = [];
     private $__orderBy;
     private $__groupBy;
     private $__where;
@@ -16,6 +16,7 @@ abstract class DataObject
     private $__limitCount;
     private $__lastQuery;
     private $__lastError;
+    private $__joins = [];
 
     function getNumericColumnNames(){
         return [];
@@ -28,49 +29,10 @@ abstract class DataObject
         }
 
         $this->N = 0;
-        $this->queryStmt = null;
+        $this->__queryStmt = null;
         /** @var PDO $aspen_db  */
         global $aspen_db;
-        $selectClause = '*';
-        if (count($this->__additionalSelects) > 0){
-            $selectClause = implode($this->__additionalSelects, ',') ;
-            if ($this->__selectAllColumns) {
-                $selectClause = '*, ' . $selectClause;
-            }
-        }
-        $query = 'SELECT ' . $selectClause . ' from ' . $this->__table;
-        $properties = get_object_vars($this);
-        $where = '';
-        foreach ($properties as $name => $value) {
-            if ($value != null && $name[0] != '_') {
-                if (strlen($where) != 0) {
-                    $where .= ' AND ';
-                }
-                $where .= $name . ' = ' . $aspen_db->quote($value);
-            }
-        }
-
-        if (strlen($this->__where) > 0 && strlen($where) > 0){
-            $query .= ' WHERE ' . $this->__where . ' AND ' . $where;
-        }else if (strlen($this->__where) > 0) {
-            $query .= ' WHERE ' . $this->__where;
-        }else if (strlen($where) > 0) {
-            $query .= ' WHERE ' . $where;
-        }
-        if ($this->__groupBy != null){
-            $query .= $this->__groupBy;
-        }
-        if ($this->__orderBy != null) {
-            $query .= $this->__orderBy;
-        }
-        if (isset($this->__limitCount) && isset($this->__limitStart)){
-            $query .= ' LIMIT ' . $this->__limitStart . ', ' . $this->__limitCount;
-        } else if (isset($this->__limitCount)) {
-            $query .= ' LIMIT ' . $this->__limitCount;
-        } else if (isset($this->__limitStart)) {
-            //This really shouldn't happen
-            $query .= ' OFFSET ' . $this->__limitCount;
-        }
+        $query = $this->getSelectQuery($aspen_db);
         $this->__lastQuery = $query;
         $this->__queryStmt = $aspen_db->prepare($query);
         $this->__queryStmt->setFetchMode(PDO::FETCH_INTO, $this);
@@ -94,7 +56,7 @@ abstract class DataObject
     /**
      * Retrieves all objects for the current query if name and value are null
      * Retrieves a list of all field values if only fieldName is provided
-     * Retrives an associated array if both fieldName and fieldValue are provided
+     * Retrieves an associated array if both fieldName and fieldValue are provided
      * @param null $fieldName
      * @param null $fieldValue
      * @return array
@@ -366,5 +328,80 @@ abstract class DataObject
 
     public function getLastError(){
         return $this->__lastError;
+    }
+
+    public function joinAdd(DataObject $objectToJoin, string $joinType, string $alias, string $mainTableField, string $joinedTableField) : void
+    {
+        $this->__joins[] = [
+            'object' => $objectToJoin,
+            'joinType' => $joinType,
+            'alias' => $alias,
+            'mainTableField' => $mainTableField,
+            'joinedTableField' => $joinedTableField
+        ];
+    }
+
+    private function getJoinQuery($join) : string
+    {
+        global $aspen_db;
+        /** @var DataObject $joinObject */
+        $joinObject = $join['object'];
+        $subQuery = $joinObject->getSelectQuery($aspen_db);
+
+        return " {$join['joinType']}  JOIN ({$subQuery}) AS {$join['alias']} ON {$this->__table}.{$join['mainTableField']} = {$join['alias']}.{$join['joinedTableField']} ";
+    }
+
+    /**
+     * @param PDO $aspen_db
+     * @return string
+     */
+    public function getSelectQuery(PDO $aspen_db): string
+    {
+        $selectClause = '*';
+        if (count($this->__additionalSelects) > 0) {
+            $selectClause = implode($this->__additionalSelects, ',');
+            if ($this->__selectAllColumns) {
+                $selectClause = '*, ' . $selectClause;
+            }
+        }
+        $query = 'SELECT ' . $selectClause . ' from ' . $this->__table;
+
+        foreach ($this->__joins as $join) {
+            $query .= $this->getJoinQuery($join);
+        }
+
+        $properties = get_object_vars($this);
+        $where = '';
+        foreach ($properties as $name => $value) {
+            if ($value != null && $name[0] != '_') {
+                if (strlen($where) != 0) {
+                    $where .= ' AND ';
+                }
+                $where .= $name . ' = ' . $aspen_db->quote($value);
+            }
+        }
+
+        if (strlen($this->__where) > 0 && strlen($where) > 0) {
+            $query .= ' WHERE ' . $this->__where . ' AND ' . $where;
+        } else if (strlen($this->__where) > 0) {
+            $query .= ' WHERE ' . $this->__where;
+        } else if (strlen($where) > 0) {
+            $query .= ' WHERE ' . $where;
+        }
+        if ($this->__groupBy != null) {
+            $query .= $this->__groupBy;
+        }
+        if ($this->__orderBy != null) {
+            $query .= $this->__orderBy;
+        }
+        if (isset($this->__limitCount) && isset($this->__limitStart)) {
+            $query .= ' LIMIT ' . $this->__limitStart . ', ' . $this->__limitCount;
+        } else if (isset($this->__limitCount)) {
+            $query .= ' LIMIT ' . $this->__limitCount;
+        } else if (isset($this->__limitStart)) {
+            //This really shouldn't happen
+            $query .= ' OFFSET ' . $this->__limitCount;
+        }
+        return $query;
     }
 }

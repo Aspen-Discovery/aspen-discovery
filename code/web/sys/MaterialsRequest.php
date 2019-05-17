@@ -205,4 +205,6 @@ class MaterialsRequest extends DataObject
 		require_once ROOT_DIR . '/sys/MaterialsRequestFormats.php';
 		return MaterialsRequestFormats::getAuthorLabelsAndSpecialFields($libraryId);
 	}
+
+
 }

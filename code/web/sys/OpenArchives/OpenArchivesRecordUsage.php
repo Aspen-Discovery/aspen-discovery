@@ -7,6 +7,7 @@ class OpenArchivesRecordUsage extends DataObject
     public $id;
     public $openArchivesRecordId;
     public $year;
+    public $month;
     public $timesViewedInSearch;
     public $timesUsed;
 }

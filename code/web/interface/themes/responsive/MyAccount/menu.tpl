@@ -385,7 +385,7 @@
 			{/if}
 
 			{if $loggedIn && (array_key_exists('archives', $userRoles) || array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles))}
-				{if $module == 'OpenArchives' && in_array($action, array('Collections'))}
+				{if $module == 'OpenArchives' && in_array($action, array('Collections', 'Dashboard'))}
 					{assign var="curSection" value=true}
 				{else}
 					{assign var="curSection" value=false}
@@ -401,6 +401,7 @@
 					<div id="openArchivesMenu" class="panel-collapse collapse {if $curSection}in{/if}">
 						<div class="panel-body">
 							<div class="adminMenuLink{if $action == "Collections"} active{/if}"><a href="{$path}/OpenArchives/Collections">Collections</a></div>
+							<div class="adminMenuLink{if $action == "Dashboard"} active{/if}"><a href="{$path}/OpenArchives/Dashboard">Dashboard</a></div>
 						</div>
 					</div>
 				</div>

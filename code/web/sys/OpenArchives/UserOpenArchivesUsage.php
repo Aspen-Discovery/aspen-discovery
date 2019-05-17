@@ -8,7 +8,6 @@ class UserOpenArchivesUsage extends DataObject
     public $userId;
     public $openArchivesCollectionId;
     public $year;
-    public $firstUsed;
-    public $lastUsed;
+    public $month;
     public $usageCount;
 }

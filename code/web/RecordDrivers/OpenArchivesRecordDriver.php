@@ -34,6 +34,7 @@ class OpenArchivesRecordDriver extends IndexRecordDriver
         $openArchivesUsage = new OpenArchivesRecordUsage();
         $openArchivesUsage->openArchivesRecordId = $this->getUniqueID();
         $openArchivesUsage->year = date('Y');
+        $openArchivesUsage->month = date('n');
         if ($openArchivesUsage->find(true)){
             $openArchivesUsage->timesViewedInSearch++;
             $openArchivesUsage->update();

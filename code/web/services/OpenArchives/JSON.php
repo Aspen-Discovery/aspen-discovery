@@ -20,6 +20,7 @@ class JSON extends JSON_Action
         $openArchivesUsage = new OpenArchivesRecordUsage();
         $openArchivesUsage->openArchivesRecordId = $id;
         $openArchivesUsage->year = date('Y');
+        $openArchivesUsage->month = date('n');
         if ($openArchivesUsage->find(true)){
             $openArchivesUsage->timesUsed++;
             $ret = $openArchivesUsage->update();
@@ -39,15 +40,13 @@ class JSON extends JSON_Action
             $userOpenArchivesUsage = new UserOpenArchivesUsage();
             $userOpenArchivesUsage->userId = $userId;
             $userOpenArchivesUsage->year = date('Y');
+            $userOpenArchivesUsage->month = date('n');
             $userOpenArchivesUsage->openArchivesCollectionId = $openArchivesRecord->sourceCollection;
 
             if ($userOpenArchivesUsage->find(true)){
-                $userOpenArchivesUsage->lastUsed = time();
                 $userOpenArchivesUsage->usageCount++;
                 $userOpenArchivesUsage->update();
             }else {
-                $userOpenArchivesUsage->lastUsed = time();
-                $userOpenArchivesUsage->firstUsed = time();
                 $userOpenArchivesUsage->usageCount = 1;
                 $userOpenArchivesUsage->insert();
             }
