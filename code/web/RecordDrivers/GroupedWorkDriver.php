@@ -33,7 +33,11 @@ class GroupedWorkDriver extends IndexRecordDriver{
 
 		}else{
 		    //We were passed information from Solr
-            parent::__construct($indexFields);
+            if ($indexFields == null){
+                $this->isValid = false;
+            }else{
+                parent::__construct($indexFields);
+            }
 		}
 	}
 
@@ -2286,19 +2290,22 @@ class GroupedWorkDriver extends IndexRecordDriver{
 			$groupedWork->permanent_id = $this->getUniqueID();
 			$relatedRecords = array();
 			//This will be false if the record is old
-			if ($groupedWork->find(true)){
-				//Generate record information based on the information we have in the index
-				foreach ($recordsFromIndex as $recordDetails){
-					$relatedRecord = $this->setupRelatedRecordDetails($recordDetails, $groupedWork, $timer, $scopingInfo, $activePTypes, $searchLocation, $library, $forCovers);
-					if ($relatedRecord != null) {
-                        $relatedRecords[$relatedRecord->id] = $relatedRecord;
-                        $memoryWatcher->logMemory("Setup related record details for " . $relatedRecord->id);
-                    }else{
-					    global $logger;
-					    $logger->log("Error setting up related record " . $recordDetails, LOG_NOTICE);
+            //Protect against loading every record in the database!
+            if (!empty($groupedWork->permanent_id)){
+                if ($groupedWork->find(true)){
+                    //Generate record information based on the information we have in the index
+                    foreach ($recordsFromIndex as $recordDetails){
+                        $relatedRecord = $this->setupRelatedRecordDetails($recordDetails, $groupedWork, $timer, $scopingInfo, $activePTypes, $searchLocation, $library, $forCovers);
+                        if ($relatedRecord != null) {
+                            $relatedRecords[$relatedRecord->id] = $relatedRecord;
+                            $memoryWatcher->logMemory("Setup related record details for " . $relatedRecord->id);
+                        }else{
+                            global $logger;
+                            $logger->log("Error setting up related record " . $recordDetails, LOG_NOTICE);
+                        }
                     }
-				}
-			}
+                }
+            }
 
 			//Sort the records based on format and then edition
 			uasort($relatedRecords, array($this, "compareRelatedRecords"));

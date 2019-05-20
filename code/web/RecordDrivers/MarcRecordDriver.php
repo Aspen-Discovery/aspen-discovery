@@ -67,7 +67,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 				}
 			}
 			//Load the marc record so validation happens
-            $this->getMarcRecord();
+            $marcRecord = $this->getMarcRecord();
 		} else {
 			// Also process the MARC record:
 			require_once ROOT_DIR . '/sys/MarcLoader.php';
@@ -1319,7 +1319,9 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 				if ($this->marcRecord instanceof AspenError || $this->marcRecord == false) {
 					$this->valid = false;
 					$this->marcRecord = false;
-				}
+				}else{
+				    $this->valid = true;
+                }
 			} catch (Exception $e) {
 				//Unable to load record this happens from time to time
 				$this->valid = false;
