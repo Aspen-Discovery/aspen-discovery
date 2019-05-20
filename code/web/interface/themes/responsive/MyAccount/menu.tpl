@@ -208,7 +208,7 @@
 			{/if}
 
 			{if $loggedIn && (array_key_exists('libraryAdmin', $userRoles) || array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles))}
-				{if in_array($action, array('RecordGroupingLog', 'ReindexLog', 'SierraExportLog', 'IndexingStats', 'IndexingProfiles', 'TranslationMaps'))}
+				{if in_array($action, array('RecordGroupingLog', 'ReindexLog', 'IndexingStats', 'TranslationMaps'))}
 					{assign var="curSection" value=true}
 				{else}
 					{assign var="curSection" value=false}
@@ -223,14 +223,11 @@
 					</a>
 					<div id="indexingMenuGroup" class="panel-collapse collapse {if $curSection}in{/if}">
 						<div class="panel-body">
-							<div class="adminMenuLink{if $action == "IndexingProfiles"} active{/if}"><a href="{$path}/Admin/IndexingProfiles">Indexing Profiles</a></div>
-							<div class="adminMenuLink{if $action == "TranslationMaps"} active{/if}"><a href="{$path}/Admin/TranslationMaps">Translation Maps</a></div>
+
 							<div class="adminMenuLink{if $action == "IndexingStats"} active{/if}"><a href="{$path}/Admin/IndexingStats">Indexing Statistics</a></div>
 							<div class="adminMenuLink{if $action == "RecordGroupingLog"} active{/if}"><a href="{$path}/Admin/RecordGroupingLog">Record Grouping Log</a></div>
 							<div class="adminMenuLink{if $action == "ReindexLog"} active{/if}"><a href="{$path}/Admin/ReindexLog">Grouped Work Index Log</a></div>
-							{if ($ils == 'Millennium' || $ils == 'Sierra')}
-								<div class="adminMenuLink{if $action == "SierraExportLog"} active{/if}"><a href="{$path}/Admin/SierraExportLog">Sierra Export Log</a></div>
-							{/if}
+
 						</div>
 					</div>
 				</div>
@@ -287,6 +284,34 @@
 			{/if}
 
 			{if $loggedIn && (array_key_exists('libraryAdmin', $userRoles) || array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles))}
+				{if $module == 'ILS' && in_array($action, array('IndexingLog', 'TranslationMaps', 'IndexingProfiles', 'Dashboard'))}
+					{assign var="curSection" value=true}
+				{else}
+					{assign var="curSection" value=false}
+				{/if}
+				<div class="panel{if $curSection} active{/if}">
+					<a href="#ilsMenu" data-toggle="collapse" data-parent="#adminMenuAccordion">
+						<div class="panel-heading">
+							<div class="panel-title">
+								ILS &amp; Side Loads
+							</div>
+						</div>
+					</a>
+					<div id="ilsMenu" class="panel-collapse collapse {if $curSection}in{/if}">
+						<div class="panel-body">
+							<div class="adminMenuLink{if $action == "IndexingProfiles"} active{/if}"><a href="{$path}/ILS/IndexingProfiles">Indexing Profiles</a></div>
+							<div class="adminMenuLink{if $action == "TranslationMaps"} active{/if}"><a href="{$path}/ILS/TranslationMaps">Translation Maps</a></div>
+							<div class="adminMenuLink{if $action == "IndexingLog"} active{/if}"><a href="{$path}/ILS/IndexingLog">Indexing Log</a></div>
+							{if ($ils == 'Millennium' || $ils == 'Sierra')}
+								<div class="adminMenuLink{if $action == "SierraExportLog"} active{/if}"><a href="{$path}/Admin/SierraExportLog">Sierra Export Log</a></div>
+							{/if}
+							<div class="adminMenuLink{if $action == "Dashboard"} active{/if}"><a href="{$path}/ILS/Dashboard">Dashboard</a></div>
+						</div>
+					</div>
+				</div>
+			{/if}
+
+			{if $loggedIn && (array_key_exists('libraryAdmin', $userRoles) || array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles))}
 				{if $module == 'OverDrive' && in_array($action, array('APIData', 'ExtractLog', 'Settings', 'Dashboard'))}
 					{assign var="curSection" value=true}
 				{else}
@@ -334,7 +359,7 @@
 			{/if}
 
 			{if $loggedIn && (array_key_exists('libraryAdmin', $userRoles) || array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles))}
-				{if $module == 'Rbdigital' && in_array($action, array('OverDriveExtractLog', 'OverDriveSettings'))}
+				{if $module == 'Rbdigital' && in_array($action, array('IndexingLog', 'Dashboard'))}
 					{assign var="curSection" value=true}
 				{else}
 					{assign var="curSection" value=false}
@@ -349,7 +374,9 @@
 					</a>
 					<div id="rbdigitalMenu" class="panel-collapse collapse {if $curSection}in{/if}">
 						<div class="panel-body">
+							<div class="adminMenuLink{if $action == "Settings"} active{/if}"><a href="{$path}/Rbdigital/Settings">Settings</a></div>
 							<div class="adminMenuLink{if $action == "IndexingLog"} active{/if}"><a href="{$path}/Rbdigital/IndexingLog">Indexing Log</a></div>
+							<div class="adminMenuLink{if $action == "Dashboard"} active{/if}"><a href="{$path}/Rbdigital/Dashboard">Dashboard</a></div>
 						</div>
 					</div>
 				</div>

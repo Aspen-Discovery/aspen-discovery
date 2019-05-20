@@ -144,6 +144,9 @@ class RbdigitalDriver extends AbstractEContentDriver
                 $logger->log(print_r($curl_info, true), Logger::LOG_ERROR);
             }else{
                 if (!empty($response->output) && $response->output == 'SUCCESS') {
+                    $this->trackUserUsageOfRbdigital($patron);
+                    $this->trackRecordCheckout($recordId);
+
                     $result['success'] = true;
                     $result['message'] = 'Your title was checked out successfully. You can read or listen to the title from your account.';
                 } else {
@@ -383,6 +386,8 @@ class RbdigitalDriver extends AbstractEContentDriver
                 $logger->log(print_r($curl_info, true), Logger::LOG_ERROR);
             }else{
                 if (is_numeric($response)) {
+                    $this->trackUserUsageOfRbdigital($patron);
+                    $this->trackRecordHold($recordId);
                     $result['success'] = true;
                     $result['message'] = "Your hold was placed successfully.";
                 } else {
@@ -574,6 +579,76 @@ class RbdigitalDriver extends AbstractEContentDriver
             }
         }
         return $result;
+
+    }
+
+    /**
+     * @param $user
+     */
+    public function trackUserUsageOfRbdigital($user): void
+    {
+        require_once ROOT_DIR . '/sys/Rbdigital/UserRbdigitalUsage.php';
+        $userUsage = new UserRbdigitalUsage();
+        $userUsage->userId = $user->id;
+        $userUsage->year = date('Y');
+        $userUsage->month = date('n');
+
+        if ($userUsage->find(true)) {
+            $userUsage->usageCount++;
+            $userUsage->update();
+        } else {
+            $userUsage->usageCount = 1;
+            $userUsage->insert();
+        }
+    }
+
+    /**
+     * @param int $rbdigitalId
+     */
+    public function trackRecordCheckout($rbdigitalId): void
+    {
+        require_once ROOT_DIR . '/sys/Rbdigital/RbdigitalRecordUsage.php';
+        $recordUsage = new RbdigitalRecordUsage();
+        $product = new RbdigitalProduct();
+        $product->rbdigitalId = $rbdigitalId;
+        if ($product->find(true)) {
+            $recordUsage->rbdigitalId = $product->id;
+            $recordUsage->year = date('Y');
+            $recordUsage->month = date('n');
+            if ($recordUsage->find(true)) {
+                $recordUsage->timesCheckedOut++;
+                $recordUsage->update();
+            } else {
+                $recordUsage->timesCheckedOut = 1;
+                $recordUsage->timesHeld = 0;
+                $recordUsage->insert();
+            }
+        }
+    }
+
+    /**
+     * @param int $rbdigitalId
+     */
+    public function trackRecordHold($rbdigitalId): void
+    {
+        require_once ROOT_DIR . '/sys/Rbdigital/RbdigitalRecordUsage.php';
+        require_once ROOT_DIR . '/sys/Rbdigital/RbdigitalProduct.php';
+        $recordUsage = new RbdigitalRecordUsage();
+        $product = new RbdigitalProduct();
+        $product->rbdigitalId = $rbdigitalId;
+        if ($product->find(true)){
+            $recordUsage->rbdigitalId = $product->id;
+            $recordUsage->year = date('Y');
+            $recordUsage->month = date('n');
+            if ($recordUsage->find(true)) {
+                $recordUsage->timesHeld++;
+                $recordUsage->update();
+            } else {
+                $recordUsage->timesCheckedOut = 0;
+                $recordUsage->timesHeld = 1;
+                $recordUsage->insert();
+            }
+        }
 
     }
 }

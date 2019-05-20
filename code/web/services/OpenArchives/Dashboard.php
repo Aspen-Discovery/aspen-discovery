@@ -1,4 +1,4 @@
-<?php /** @noinspection PhpUndefinedFieldInspection */
+<?php
 
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/Admin.php';
@@ -88,6 +88,7 @@ class OpenArchives_Dashboard extends Admin_Admin
             $usageStats[$collectionId] = 0;
         }
         while ($userUsage->fetch()){
+            /** @noinspection PhpUndefinedFieldInspection */
             $usageStats[$userUsage->openArchivesCollectionId] =  $userUsage->numUsers;
         }
         return $usageStats;
@@ -116,7 +117,7 @@ class OpenArchives_Dashboard extends Admin_Admin
 
         $usage->selectAdd('SUM(IF(timesViewedInSearch>0,1,0)) as numRecordViewed');
         $usage->selectAdd('SUM(IF(timesUsed>0,1,0)) as numRecordsUsed');
-        $usage->find(true);
+        $usage->find();
 
         $usageStats = [];
         foreach ($collectionsToGetStatsFor as $collectionId => $collectionName){
@@ -126,6 +127,7 @@ class OpenArchives_Dashboard extends Admin_Admin
             ];
         }
         while ($usage->fetch()){
+            /** @noinspection PhpUndefinedFieldInspection */
             $usageStats[$usage->sourceCollection] = [
                 'numRecordViewed' => $usage->numRecordViewed,
                 'numRecordsUsed' => $usage->numRecordsUsed

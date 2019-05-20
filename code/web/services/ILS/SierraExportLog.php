@@ -4,7 +4,7 @@ require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/sys/Pager.php';
 
-class SierraExportLog extends Admin_Admin
+class ILS_SierraExportLog extends Admin_Admin
 {
 	function launch()
 	{
@@ -28,7 +28,7 @@ class SierraExportLog extends Admin_Admin
 		$interface->assign('logEntries', $logEntries);
 
 		$options = array('totalItems' => $total,
-		                 'fileName'   => $configArray['Site']['path'].'/Admin/SierraExportLog?page=%d'. (empty($_REQUEST['pageSize']) ? '' : '&pageSize=' . $_REQUEST['pageSize']),
+		                 'fileName'   => $configArray['Site']['path'].'/ILS/SierraExportLog?page=%d'. (empty($_REQUEST['pageSize']) ? '' : '&pageSize=' . $_REQUEST['pageSize']),
 		                 'perPage'    => $pageSize,
 		);
 		$pager = new Pager($options);
@@ -36,7 +36,10 @@ class SierraExportLog extends Admin_Admin
 
 		$this->display('sierraExportLog.tpl', 'Sierra Export Log');
 	}
-
+    function getModule()
+    {
+        return "ILS";
+    }
 	function getAllowableRoles(){
 		return array('opacAdmin', 'libraryAdmin', 'cataloging');
 	}

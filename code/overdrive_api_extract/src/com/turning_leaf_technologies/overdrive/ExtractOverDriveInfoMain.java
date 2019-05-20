@@ -44,8 +44,8 @@ public class ExtractOverDriveInfoMain {
 				System.exit(1);
 			}
 
-			//Remove log entries older than 60 days
-			long earliestLogToKeep = (startTime.getTime() / 1000) - (60 * 60 * 24 * 60);
+			//Remove log entries older than 45 days
+			long earliestLogToKeep = (startTime.getTime() / 1000) - (60 * 60 * 24 * 45);
 			try {
 				int numDeletions = dbConn.prepareStatement("DELETE from overdrive_extract_log WHERE startTime < " + earliestLogToKeep).executeUpdate();
 				logger.info("Deleted " + numDeletions + " old log entries");

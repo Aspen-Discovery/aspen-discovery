@@ -177,30 +177,30 @@ public class KohaExportMain {
 
 			//Load branches into location
 			PreparedStatement kohaBranchesStmt = kohaConn.prepareStatement("SELECT branchcode, branchname from branches");
-			Long translationMapId = getTranlationMapId(createTranslationMapStmt, getTranslationMapStmt, "location");
+			Long translationMapId = getTranslationMapId(createTranslationMapStmt, getTranslationMapStmt, "location");
 			HashMap <String, String> existingValues = getExistingTranslationMapValues(getExistingValuesForMapStmt, translationMapId);
 			updateTranslationMap(kohaBranchesStmt, "branchcode", "branchname", insertTranslationStmt, translationMapId, existingValues);
 
 			//Load LOC into sub location
 			PreparedStatement kohaLocStmt = kohaConn.prepareStatement("SELECT * FROM authorised_values where category = 'LOC'");
-			translationMapId = getTranlationMapId(createTranslationMapStmt, getTranslationMapStmt, "sub_location");
+			translationMapId = getTranslationMapId(createTranslationMapStmt, getTranslationMapStmt, "sub_location");
 			existingValues = getExistingTranslationMapValues(getExistingValuesForMapStmt, translationMapId);
 			updateTranslationMap(kohaLocStmt, "authorised_value", "lib", insertTranslationStmt, translationMapId, existingValues);
 
 			//Load ccodes into shelf location
 			PreparedStatement kohaCCodesStmt = kohaConn.prepareStatement("SELECT * FROM authorised_values where category = 'CCODE'");
-			translationMapId = getTranlationMapId(createTranslationMapStmt, getTranslationMapStmt, "shelf_location");
+			translationMapId = getTranslationMapId(createTranslationMapStmt, getTranslationMapStmt, "shelf_location");
 			existingValues = getExistingTranslationMapValues(getExistingValuesForMapStmt, translationMapId);
 			updateTranslationMap(kohaCCodesStmt, "authorised_value", "lib", insertTranslationStmt, translationMapId, existingValues);
 
 			//Load itemtypes into formats
 			PreparedStatement kohaItemTypesStmt = kohaConn.prepareStatement("SELECT itemtype, description FROM itemtypes");
-			translationMapId = getTranlationMapId(createTranslationMapStmt, getTranslationMapStmt, "format");
+			translationMapId = getTranslationMapId(createTranslationMapStmt, getTranslationMapStmt, "format");
 			existingValues = getExistingTranslationMapValues(getExistingValuesForMapStmt, translationMapId);
 			updateTranslationMap(kohaItemTypesStmt, "itemtype", "description", insertTranslationStmt, translationMapId, existingValues);
 
 			//Also load item types into itype
-			translationMapId = getTranlationMapId(createTranslationMapStmt, getTranslationMapStmt, "itype");
+			translationMapId = getTranslationMapId(createTranslationMapStmt, getTranslationMapStmt, "itype");
 			existingValues = getExistingTranslationMapValues(getExistingValuesForMapStmt, translationMapId);
 			updateTranslationMap(kohaItemTypesStmt, "itemtype", "description", insertTranslationStmt, translationMapId, existingValues);
 
@@ -237,7 +237,7 @@ public class KohaExportMain {
 		return existingValues;
 	}
 
-	private static Long getTranlationMapId(PreparedStatement createTranslationMapStmt, PreparedStatement getTranslationMapStmt, String mapName) throws SQLException {
+	private static Long getTranslationMapId(PreparedStatement createTranslationMapStmt, PreparedStatement getTranslationMapStmt, String mapName) throws SQLException {
 		Long translationMapId = null;
 		getTranslationMapStmt.setString(1, mapName);
 		getTranslationMapStmt.setLong(2, indexingProfile.getId());

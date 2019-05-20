@@ -1,13 +1,5 @@
 VuFind.Admin = (function(){
 	return {
-		showHooplaExportNotes: function (id){
-			VuFind.Account.ajaxLightbox("/Admin/AJAX?method=getHooplaExportNotes&id=" + id, true);
-			return false;
-		},
-		showRbdigitalExportNotes: function (id){
-			VuFind.Account.ajaxLightbox("/Admin/AJAX?method=getRbdigitalExportNotes&id=" + id, true);
-			return false;
-		},
 		showSierraExportNotes: function (id){
 			VuFind.Account.ajaxLightbox("/Admin/AJAX?method=getSierraExportNotes&id=" + id, true);
 			return false;
@@ -42,9 +34,9 @@ VuFind.Admin = (function(){
 			$("#processInfo" + id).toggle();
 		},
 
-		showOverDriveExtractNotes: function (id){
-			VuFind.Account.ajaxLightbox("/Admin/AJAX?method=getOverDriveExtractNotes&id=" + id, true);
+		showExtractNotes: function (id, source){
+			VuFind.Account.ajaxLightbox("/Admin/AJAX?method=getExtractNotes&source=overdrive&id=" + id + "&source=" + source, true);
 			return false;
-		}
+		},
 	};
 }(VuFind.Admin || {}));

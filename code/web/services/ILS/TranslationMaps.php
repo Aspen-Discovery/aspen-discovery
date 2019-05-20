@@ -4,7 +4,7 @@ require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/Indexing/TranslationMap.php';
-class Admin_TranslationMaps extends ObjectEditor {
+class ILS_TranslationMaps extends ObjectEditor {
 	function launch(){
 		global $interface;
 		$objectAction = isset($_REQUEST['objectAction']) ? $_REQUEST['objectAction'] : null;
@@ -18,7 +18,7 @@ class Admin_TranslationMaps extends ObjectEditor {
 			$interface->assign('id', $id);
 			$shortPageTitle = "Import Translation Map Data";
 			$interface->assign('shortPageTitle', $shortPageTitle);
-			$this->display('../Admin/importTranslationMapData.tpl', $shortPageTitle);
+			$this->display('../ILS/importTranslationMapData.tpl', $shortPageTitle);
 			exit();
 		}elseif($objectAction == 'doAppend' || $objectAction == 'doReload'){
 			$id = $_REQUEST['id'];
@@ -78,7 +78,7 @@ class Admin_TranslationMaps extends ObjectEditor {
 				$interface->assign('id', $id);
 				$interface->assign('additionalObjectActions', $this->getAdditionalObjectActions($translationMap));
 				$interface->assign('translationMapValues', $translationMap->translationMapValues);
-				$this->display('../Admin/viewTranslationMapAsIni.tpl', 'View Translation Map Data');
+				$this->display('../ILS/viewTranslationMapAsIni.tpl', 'View Translation Map Data');
 				exit();
 			}else{
 				$interface->assign('error', "Sorry we could not find a translation map with that id");
@@ -89,6 +89,10 @@ class Admin_TranslationMaps extends ObjectEditor {
 	function getObjectType(){
 		return 'TranslationMap';
 	}
+    function getModule()
+    {
+        return "ILS";
+    }
 	function getToolName(){
 		return 'TranslationMaps';
 	}
@@ -132,11 +136,11 @@ class Admin_TranslationMaps extends ObjectEditor {
 		if ($existingObject && $existingObject->id != ''){
 			$actions[] = array(
 				'text' => 'Load From CSV/INI',
-				'url'  => '/Admin/TranslationMaps?objectAction=loadFromFile&id=' . $existingObject->id,
+				'url'  => '/ILS/TranslationMaps?objectAction=loadFromFile&id=' . $existingObject->id,
 			);
 			$actions[] = array(
 				'text' => 'View as INI',
-				'url'  => '/Admin/TranslationMaps?objectAction=viewAsINI&id=' . $existingObject->id,
+				'url'  => '/ILS/TranslationMaps?objectAction=viewAsINI&id=' . $existingObject->id,
 			);
 		}
 

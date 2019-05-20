@@ -4,7 +4,7 @@ require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/Indexing/IndexingProfile.php';
-class Admin_IndexingProfiles extends ObjectEditor {
+class ILS_IndexingProfiles extends ObjectEditor {
 	function launch()
 	{
 		global $interface;
@@ -38,7 +38,12 @@ class Admin_IndexingProfiles extends ObjectEditor {
 	function getObjectType(){
 		return 'IndexingProfile';
 	}
-	function getToolName(){
+	function getModule()
+    {
+        return "ILS";
+    }
+
+    function getToolName(){
 		return 'IndexingProfiles';
 	}
 	function getPageTitle(){

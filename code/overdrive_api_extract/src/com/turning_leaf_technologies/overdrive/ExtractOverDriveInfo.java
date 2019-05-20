@@ -192,7 +192,7 @@ class ExtractOverDriveInfo {
 
 			//Mark the new last update time if we did not get errors loading products from the database
 			if (errorsWhileLoadingProducts || results.hasErrors()) {
-				logger.debug("Not setting last extract time since there were problems extracting products from the API");
+				logger.warn("Not setting last extract time since there were problems extracting products from the API");
 			} else {
 				PreparedStatement updateExtractTime;
 				String columnToUpdate = "lastUpdateOfChangedRecords";

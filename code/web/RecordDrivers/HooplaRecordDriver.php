@@ -246,6 +246,7 @@ class HooplaRecordDriver extends MarcRecordDriver {
         $groupedWorkDetails = $this->getGroupedWorkDriver()->getGroupedWorkDetails();
         $interface->assign('groupedWorkDetails', $groupedWorkDetails);
 
+        require_once ROOT_DIR .'/sys/Hoopla/HooplaExtract.php';
 		$hooplaExtract = new HooplaExtract();
 //		$hooplaId = preg_replace('/^MWT/', '', $this->id);
 		$hooplaId = HooplaDriver::recordIDtoHooplaID($this->id);

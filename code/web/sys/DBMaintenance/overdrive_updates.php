@@ -232,7 +232,7 @@ function getOverDriveUpdates() {
 
         'track_overdrive_user_usage' => array(
             'title' => 'OverDrive Usage by user',
-            'description' => 'Add a table to track how often a particular user uses the Open Archives.',
+            'description' => 'Add a table to track how often a particular user uses OverDrive.',
             'sql' => array(
                 "CREATE TABLE user_overdrive_usage (
                     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,

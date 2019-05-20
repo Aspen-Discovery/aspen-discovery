@@ -10,15 +10,9 @@ class Admin_AJAX extends Action {
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
 		if (method_exists($this, $method)) {
 			$timer->logTime("Starting method $method");
-			if (in_array($method, array('getReindexNotes', 'getReindexProcessNotes', 'getCronNotes', 'getCronProcessNotes', 'getAddToWidgetForm', 'getRecordGroupingNotes', 'getHooplaExportNotes', 'getSierraExportNotes', 'getRbdigitalExportNotes'))) {
+			if (in_array($method, array('getReindexNotes', 'getExtractNotes', 'getReindexProcessNotes', 'getCronNotes', 'getCronProcessNotes', 'getAddToWidgetForm', 'getRecordGroupingNotes', 'getSierraExportNotes'))) {
 				//JSON Responses
 				header('Content-type: application/json');
-				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
-				header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-				echo $this->$method();
-			} else if (in_array($method, array('getOverDriveExtractNotes'))) {
-				//HTML responses
-				header('Content-type: text/html');
 				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 				header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
 				echo $this->$method();
@@ -84,53 +78,6 @@ class Admin_AJAX extends Action {
 		}
 		return json_encode($results);
 	}
-
-	function getHooplaExportNotes(){
-		$id = $_REQUEST['id'];
-		$hooplaExportProcess = new HooplaExportLogEntry();
-		$hooplaExportProcess->id = $id;
-		$results = array(
-				'title' => '',
-				'modalBody' => '',
-				'modalButtons' => ''
-		);
-		if ($hooplaExportProcess->find(true)){
-			$results['title'] = "Hoopla Export Notes";
-			if (strlen(trim($hooplaExportProcess->notes)) == 0){
-				$results['modalBody'] = "No notes have been entered yet";
-			}else{
-				$results['modalBody'] = "<div class='helpText'>{$hooplaExportProcess->notes}</div>";
-			}
-		}else{
-			$results['title'] = "Error";
-			$results['modalBody'] = "We could not find a hoopla extract log entry with that id.  No notes available.";
-		}
-		return json_encode($results);
-	}
-
-    function getRbdigitalExportNotes(){
-        require_once ROOT_DIR . '/sys/Rbdigital/RbdigitalExportLogEntry.php';
-	    $id = $_REQUEST['id'];
-        $exportProcess = new RbdigitalExportLogEntry();
-        $exportProcess->id = $id;
-        $results = array(
-            'title' => '',
-            'modalBody' => '',
-            'modalButtons' => ''
-        );
-        if ($exportProcess->find(true)){
-            $results['title'] = "Rbdigital Export Notes";
-            if (strlen(trim($exportProcess->notes)) == 0){
-                $results['modalBody'] = "No notes have been entered yet";
-            }else{
-                $results['modalBody'] = "<div class='helpText'>{$exportProcess->notes}</div>";
-            }
-        }else{
-            $results['title'] = "Error";
-            $results['modalBody'] = "We could not find a Rbdigital extract log entry with that id.  No notes available.";
-        }
-        return json_encode($results);
-    }
 
 	function getSierraExportNotes(){
 		$id = $_REQUEST['id'];
@@ -203,27 +150,48 @@ class Admin_AJAX extends Action {
 		return json_encode($results);
 	}
 
-    function getOverDriveExtractNotes()	{
+    function getExtractNotes()	{
         $id = $_REQUEST['id'];
-        require_once ROOT_DIR . '/sys/OverDrive/OverDriveExtractLogEntry.php';
-		$overdriveExtractLog = new OverDriveExtractLogEntry();
-		$overdriveExtractLog->id = $id;
-        $results = array(
-              'title' => '',
-              'modalBody' => '',
-              'modalButtons' => ""
-        );
-		if ($overdriveExtractLog->find(true)){
-			$results['title'] = "OverDrive Extract {$overdriveExtractLog->id} Notes";
-			if (strlen($overdriveExtractLog->notes) == 0){
-				$results['modalBody'] = "No notes have been entered for this OverDrive Extract run";
-			}else{
-				$results['modalBody'] = "<div class='helpText'>{$overdriveExtractLog->notes}</div>";
-			}
-		}else{
-			$results['title'] = "Error";
-			$results['modalBody'] = "We could not find a OverDrive Extract entry with that id.  No notes available.";
-		}
+        $source = $_REQUEST['source'];
+        $extractLog = null;
+        if ($source == 'overdrive'){
+            require_once ROOT_DIR . '/sys/OverDrive/OverDriveExtractLogEntry.php';
+            $extractLog = new OverDriveExtractLogEntry();
+        }elseif ($source == 'ils'){
+            require_once ROOT_DIR . '/sys/ILS/IlsExtractLogEntry.php';
+            $extractLog = new IlsExtractLogEntry();
+        }elseif ($source == 'hoopla'){
+            require_once ROOT_DIR . '/sys/Hoopla/HooplaExportLogEntry.php';
+            $extractLog = new HooplaExportLogEntry();
+        }elseif ($source == 'rbdigital'){
+            require_once ROOT_DIR . '/sys/Rbdigital/RbdigitalExportLogEntry.php';
+            $extractLog = new RbdigitalExportLogEntry();
+        }
+
+        if ($extractLog == null){
+            $results['title'] = "Error";
+            $results['modalBody'] = "Invalid source for loading notes.";
+        }else{
+            $extractLog->id = $id;
+            $results = array(
+                'title' => '',
+                'modalBody' => '',
+                'modalButtons' => ""
+            );
+            if ($extractLog->find(true)){
+                $results['title'] = "Extract {$extractLog->id} Notes";
+                if (strlen($extractLog->notes) == 0){
+                    $results['modalBody'] = "No notes have been entered for this run";
+                }else{
+                    $results['modalBody'] = "<div class='helpText'>{$extractLog->notes}</div>";
+                }
+            }else{
+                $results['title'] = "Error";
+                $results['modalBody'] = "We could not find an extract entry with that id.  No notes available.";
+            }
+        }
+
+
 	    return json_encode($results);
 	}
 

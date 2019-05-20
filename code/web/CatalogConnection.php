@@ -502,6 +502,39 @@ class CatalogConnection
 	 */
 	function placeHold($patron, $recordId, $pickupBranch, $cancelDate = null) {
 		$result =  $this->driver->placeHold($patron, $recordId, $pickupBranch, $cancelDate);
+		if ($result['success'] == true){
+		    $indexingProfileId = $this->driver->getIndexingProfile()->id;
+		    //Track usage by the user
+            require_once ROOT_DIR . '/sys/ILS/UserILSUsage.php';
+            $userUsage = new UserILSUsage();
+            $userUsage->userId = $patron->id;
+            $userUsage->indexingProfileId = $indexingProfileId;
+            $userUsage->year = date('Y');
+            $userUsage->month = date('n');
+
+            if ($userUsage->find(true)) {
+                $userUsage->usageCount++;
+                $userUsage->update();
+            } else {
+                $userUsage->usageCount = 1;
+                $userUsage->insert();
+            }
+
+            //Track usage of the record
+            require_once ROOT_DIR . '/sys/ILS/ILSRecordUsage.php';
+            $recordUsage = new ILSRecordUsage();
+            $recordUsage->indexingProfileId = $indexingProfileId;
+            $recordUsage->recordId = $recordId;
+            $recordUsage->year = date('Y');
+            $recordUsage->month = date('n');
+            if ($recordUsage->find(true)) {
+                $recordUsage->timesUsed++;
+                $recordUsage->update();
+            } else {
+                $recordUsage->timesUsed = 1;
+                $recordUsage->insert();
+            }
+        }
 		return $result;
 	}
 

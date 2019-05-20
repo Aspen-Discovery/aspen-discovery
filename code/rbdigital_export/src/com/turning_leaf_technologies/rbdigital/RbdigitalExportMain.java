@@ -18,8 +18,6 @@ import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
 import com.turning_leaf_technologies.grouping.RecordGroupingProcessor;
 
 import java.sql.*;
-import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.zip.CRC32;
@@ -31,13 +29,9 @@ public class RbdigitalExportMain {
     private static Ini configIni;
 
     private static Long startTimeForLogging;
-    private static boolean hadErrors = false;
-
-    //Reporting information
-    private static long exportLogId;
+    private static RbdigitalExtractLogEntry logEntry;
 
     //SQL Statements
-    private static PreparedStatement addNoteToExportLogStmt;
     private static PreparedStatement updateRbdigitalItemStmt;
     private static PreparedStatement deleteRbdigitalItemStmt;
     private static PreparedStatement getAllExistingRbdigitalItemsStmt;
@@ -60,26 +54,13 @@ public class RbdigitalExportMain {
             System.out.println("You must provide the server name as the first argument.");
             System.exit(1);
         }
-        boolean runContinuously = true;
         serverName = args[0];
-        args = Arrays.copyOfRange(args, 1, args.length);
 
         String processName = "rbdigital_export";
         logger = LoggingUtil.setupLogging(serverName, processName);
 
-        while (runContinuously) {
-            runContinuously = false;
-
-            boolean doFullReload = false;
-            if (args.length == 1) {
-                //Check to see if we got a full reload parameter
-                String firstArg = args[0].replaceAll("\\s", "");
-                if (firstArg.matches("^fullReload(=true|1)?$")) {
-                    doFullReload = true;
-                } else if (firstArg.matches("^continuous(=true|1)?$")){
-                    runContinuously = true;
-                }
-            }
+        //noinspection InfiniteLoopStatement
+        while (true) {
 
             Date startTime = new Date();
             startTimeForLogging = startTime.getTime() / 1000;
@@ -91,22 +72,23 @@ public class RbdigitalExportMain {
             //Connect to the aspen database
             aspenConn = connectToDatabase();
 
-            //Remove log entries older than 60 days
-            long earliestLogToKeep = (startTime.getTime() / 1000) - (60 * 60 * 24 * 60);
+            //Remove log entries older than 45 days
+            long earliestLogToKeep = (startTime.getTime() / 1000) - (60 * 60 * 24 * 45);
             try {
                 int numDeletions = aspenConn.prepareStatement("DELETE from rbdigital_export_log WHERE startTime < " + earliestLogToKeep).executeUpdate();
                 logger.info("Deleted " + numDeletions + " old log entries");
             } catch (SQLException e) {
                 logger.error("Error deleting old log entries", e);
             }
+
             //Start a log entry
-            createDbLogEntry(startTime, aspenConn);
+            logEntry = new RbdigitalExtractLogEntry(aspenConn, logger);
 
             //Get a list of all existing records in the database
             loadExistingTitles();
 
             //Do the actual work here
-            int numChanges = extractRbdigitalData(doFullReload);
+            int numChanges = extractRbdigitalData();
 
             //Mark any records that no longer exist in search results as deleted
             numChanges += deleteItems();
@@ -115,9 +97,10 @@ public class RbdigitalExportMain {
                 groupedWorkIndexer.finishIndexingFromExtract();
                 recordGroupingProcessorSingleton = null;
                 groupedWorkIndexer = null;
+                existingRecords = null;
             }
 
-            if (hadErrors) {
+            if (logEntry.hasErrors()) {
                 logger.error("There were errors during the export!");
             }
 
@@ -126,29 +109,20 @@ public class RbdigitalExportMain {
             long elapsedTime = endTime - startTime.getTime();
             logger.info("Elapsed Minutes " + (elapsedTime / 60000));
 
-            try {
-                PreparedStatement finishedStatement = aspenConn.prepareStatement("UPDATE rbdigital_export_log SET endTime = ? WHERE id = ?");
-                finishedStatement.setLong(1, endTime / 1000);
-                finishedStatement.setLong(2, exportLogId);
-                finishedStatement.executeUpdate();
-            } catch (SQLException e) {
-                logger.error("Unable to update export log with completion time.", e);
-            }
+            logEntry.setFinished();
 
             //Disconnect from the database
             disconnectDatabase(aspenConn);
 
             //Pause before running the next export (longer if we didn't get any actual changes)
-            if (runContinuously) {
-                try {
-                    if (numChanges == 0) {
-                        Thread.sleep(1000 * 60 * 5);
-                    }else {
-                        Thread.sleep(1000 * 60);
-                    }
-                } catch (InterruptedException e) {
-                    logger.info("Thread was interrupted");
+            try {
+                if (numChanges == 0) {
+                    Thread.sleep(1000 * 60 * 5);
+                }else {
+                    Thread.sleep(1000 * 60);
                 }
+            } catch (InterruptedException e) {
+                logger.info("Thread was interrupted");
             }
         }
     }
@@ -168,20 +142,23 @@ public class RbdigitalExportMain {
                         getGroupedWorkIndexer().deleteRecord(result.permanentId, result.groupedWorkId);
                     }
                     numDeleted++;
+                    logEntry.incDeleted();
                 }
             }
             if (numDeleted > 0) {
+                logEntry.saveResults();
                 logger.warn("Deleted " + numDeleted + " old titles");
             }
         }catch (SQLException e) {
             logger.error("Error deleting items", e);
-            addNoteToExportLog("Error deleting items " + e.toString());
+            logEntry.addNote("Error deleting items " + e.toString());
         }
         return numDeleted;
     }
 
     private static void loadExistingTitles() {
         try {
+            if (existingRecords == null) existingRecords = new HashMap<>();
             ResultSet allRecordsRS = getAllExistingRbdigitalItemsStmt.executeQuery();
             while (allRecordsRS.next()) {
                 String rbdigitalId = allRecordsRS.getString("rbdigitalId");
@@ -195,70 +172,110 @@ public class RbdigitalExportMain {
             }
         } catch (SQLException e) {
             logger.error("Error loading existing titles", e);
-            addNoteToExportLog("Error loading existing titles" + e.toString());
+            logEntry.addNote("Error loading existing titles" + e.toString());
             System.exit(-1);
         }
     }
 
-    private static int extractRbdigitalData(boolean doFullReload) {
+    private static int extractRbdigitalData() {
         int numChanges = 0;
-        //TODO: Change to pull data from database rather than INI file
-        String baseUrl = configIni.get("Rbdigital", "url");
-        String apiToken = configIni.get("Rbdigital", "apiToken");
-        String libraryId = configIni.get("Rbdigital", "libraryId");
 
-        //Get a list of eBooks and eAudiobooks to process (would ideally use book-holdings, but that is not currently working)
-        //String audioBookUrl = baseUrl + "/v1/libraries/" + libraryId + "/book-holdings/";
-
-        String bookUrl = baseUrl + "/v1/libraries/" + libraryId + "/search?page-size=100";
-        HashMap<String, String> headers = new HashMap<>();
-        headers.put("Authorization", "basic " + apiToken);
-        headers.put("Content-Type", "application/json");
-        WebServiceResponse response = NetworkUtils.getURL(bookUrl, logger, headers);
-        if (!response.isSuccess()){
-            logger.error(response.getMessage());
-            hadErrors = true;
-        }else{
-            try {
-                JSONObject responseJSON = new JSONObject(response.getMessage());
-                int numPages = responseJSON.getInt("pageCount");
-                int numResults = responseJSON.getInt("resultSetCount");
-                logger.info("Preparing to process " + numPages + " pages of audiobook and ebook results, " + numResults + " results");
-                //Process the first page of results
-                logger.debug("Processing page 0 of results");
-                numChanges += processRbdigitalTitles(responseJSON, doFullReload);
-
-                //Process each page of the results
-                for (int curPage = 1; curPage < numPages; curPage++) {
-                    logger.debug("Processing page " + curPage);
-                    bookUrl = baseUrl + "/v1/libraries/" + libraryId + "/search?page-size=100&page-index=" + curPage;
-                    response = NetworkUtils.getURL(bookUrl, logger, headers);
-                    responseJSON = new JSONObject(response.getMessage());
-                    numChanges += processRbdigitalTitles(responseJSON, doFullReload);
+        try {
+            PreparedStatement getSettingsStmt = aspenConn.prepareStatement("SELECT * from rbdigital_settings");
+            ResultSet getSettingsRS = getSettingsStmt.executeQuery();
+            int numSettings = 0;
+            while (getSettingsRS.next()) {
+                numSettings++;
+                String baseUrl = getSettingsRS.getString("apiUrl");
+                String apiToken = getSettingsRS.getString("apiToken");
+                String libraryId = getSettingsRS.getString("libraryId");
+                boolean doFullReload = getSettingsRS.getBoolean("runFullUpdate");
+                long settingsId = getSettingsRS.getLong("id");
+                if (doFullReload){
+                    //Un mark that a full update needs to be done
+                    PreparedStatement updateSettingsStmt = aspenConn.prepareStatement("UPDATE rbdigital_settings set runFullUpdate = 0 where id = ?");
+                    updateSettingsStmt.setLong(1, settingsId);
+                    updateSettingsStmt.executeUpdate();
                 }
-            } catch (JSONException e) {
-                logger.error("Error parsing response", e);
-            }
-        }
 
-        //TODO: Process magazines
-        // Get a list of magazines to process
-        String eMagazineUrl = baseUrl + "/v1/libraries/" + libraryId + "/search/emagazine/";
-        response = NetworkUtils.getURL(eMagazineUrl, logger, headers);
-        if (!response.isSuccess()){
-            logger.error(response.getMessage());
-            hadErrors = true;
-        }else{
-            try {
-                JSONObject responseJSON = new JSONObject(response.getMessage());
-                int numPages = responseJSON.getInt("pageCount");
-                int numResults = responseJSON.getInt("resultSetCount");
-                logger.info("Preparing to process " + numPages + " pages of emagazine results, " + numResults + " results");
-            } catch (JSONException e) {
-                logger.error("Error parsing response", e);
+                //Get a list of eBooks and eAudiobooks to process (would ideally use book-holdings, but that is not currently working)
+                //String audioBookUrl = baseUrl + "/v1/libraries/" + libraryId + "/book-holdings/";
+
+                String bookUrl = baseUrl + "/v1/libraries/" + libraryId + "/search?page-size=100";
+                HashMap<String, String> headers = new HashMap<>();
+                headers.put("Authorization", "basic " + apiToken);
+                headers.put("Content-Type", "application/json");
+                WebServiceResponse response = NetworkUtils.getURL(bookUrl, logger, headers);
+                if (!response.isSuccess()) {
+                    logEntry.incErrors();
+                    logEntry.addNote(response.getMessage());
+                } else {
+                    try {
+                        JSONObject responseJSON = new JSONObject(response.getMessage());
+                        int numPages = responseJSON.getInt("pageCount");
+                        int numResults = responseJSON.getInt("resultSetCount");
+                        logger.info("Preparing to process " + numPages + " pages of audiobook and ebook results, " + numResults + " results");
+                        logEntry.setNumProducts(numResults);
+                        logEntry.saveResults();
+                        //Process the first page of results
+                        logger.debug("Processing page 0 of results");
+                        numChanges += processRbdigitalTitles(responseJSON, doFullReload);
+
+                        //Process each page of the results
+                        for (int curPage = 1; curPage < numPages; curPage++) {
+                            logger.debug("Processing page " + curPage);
+                            bookUrl = baseUrl + "/v1/libraries/" + libraryId + "/search?page-size=100&page-index=" + curPage;
+                            response = NetworkUtils.getURL(bookUrl, logger, headers);
+                            responseJSON = new JSONObject(response.getMessage());
+                            numChanges += processRbdigitalTitles(responseJSON, doFullReload);
+                        }
+                    } catch (JSONException e) {
+                        logger.error("Error parsing response", e);
+                        logEntry.addNote("Error parsing response: " + e.toString());
+                    }
+                }
+
+                //TODO: Process magazines
+                // Get a list of magazines to process
+                String eMagazineUrl = baseUrl + "/v1/libraries/" + libraryId + "/search/emagazine/";
+                response = NetworkUtils.getURL(eMagazineUrl, logger, headers);
+                if (!response.isSuccess()) {
+                    logEntry.incErrors();
+                    logEntry.addNote(response.getMessage());
+                } else {
+                    try {
+                        JSONObject responseJSON = new JSONObject(response.getMessage());
+                        int numPages = responseJSON.getInt("pageCount");
+                        int numResults = responseJSON.getInt("resultSetCount");
+                        logger.info("Preparing to process " + numPages + " pages of emagazine results, " + numResults + " results");
+                    } catch (JSONException e) {
+                        logger.error("Error parsing response", e);
+                        logEntry.addNote("Error parsing response: " + e.toString());
+                    }
+                }
+
+                if (!logEntry.hasErrors()){
+                    //Update the last time we ran the update in settings
+                    PreparedStatement updateExtractTime;
+                    String columnToUpdate = "lastUpdateOfChangedRecords";
+                    if (doFullReload){
+                        columnToUpdate = "lastUpdateOfAllRecords";
+                    }
+                    updateExtractTime = aspenConn.prepareStatement("UPDATE rbdigital_settings set " + columnToUpdate + " = ? WHERE id = ?");
+                    updateExtractTime.setLong(1, startTimeForLogging);
+                    updateExtractTime.setLong(2, settingsId);
+                    updateExtractTime.executeUpdate();
+                }else{
+                    logger.warn("Not setting last extract time since there were problems extracting products from the API");
+                }
+                logger.info("Updated or added " + numChanges + " records");
             }
+            if (numSettings == 0){
+                logger.error("Unable to find settings for Rbdigital, please add settings to the database");
+            }
+        } catch (SQLException e) {
+            logger.error("Error loading settings from the database");
         }
-        logger.info("Updated or added " + numChanges + " records");
         return numChanges;
     }
 
@@ -321,10 +338,12 @@ public class RbdigitalExportMain {
                     primaryAuthor = authors.getJSONObject(0).getString("text");
                 }
                 if (metadataChanged || doFullReload) {
+                    logEntry.incMetadataChanges();
                     //Update the database
                     updateRbdigitalItemStmt.setString(1, rbdigitalId);
                     updateRbdigitalItemStmt.setString(2, itemDetails.getString("title"));
                     updateRbdigitalItemStmt.setString(3, primaryAuthor);
+
                     updateRbdigitalItemStmt.setString(4, itemDetails.getString("mediaType"));
                     updateRbdigitalItemStmt.setBoolean(5, itemDetails.getBoolean("isFiction"));
                     updateRbdigitalItemStmt.setString(6, itemDetails.getString("audience"));
@@ -333,10 +352,15 @@ public class RbdigitalExportMain {
                     updateRbdigitalItemStmt.setString(9, itemDetailsAsString);
                     updateRbdigitalItemStmt.setLong(10, startTimeForLogging);
                     updateRbdigitalItemStmt.setLong(11, startTimeForLogging);
-                    updateRbdigitalItemStmt.executeUpdate();
+                    int result = updateRbdigitalItemStmt.executeUpdate();
+                    if (result == 1) {
+                        //A result of 1 indicates a new row was inserted
+                        logEntry.incAdded();
+                    }
                 }
 
-                if (availabilityChanged) {
+                if (availabilityChanged || doFullReload) {
+                    logEntry.incAvailabilityChanges();
                     updateRbdigitalAvailabilityStmt.setString(1, rbdigitalId);
                     updateRbdigitalAvailabilityStmt.setBoolean(2, itemAvailability.getBoolean("isAvailable"));
                     updateRbdigitalAvailabilityStmt.setBoolean(3, itemAvailability.getBoolean("isOwned"));
@@ -352,6 +376,7 @@ public class RbdigitalExportMain {
                     groupedWorkId = groupRbdigitalRecord(itemDetails, rbdigitalId, primaryAuthor);
                 }
                 if (metadataChanged || availabilityChanged || doFullReload) {
+                    logEntry.incUpdated();
                     if (groupedWorkId == null) {
                         groupedWorkId = getRecordGroupingProcessor().getPermanentIdForRecord("rbdigital", rbdigitalId);
                     }
@@ -362,6 +387,7 @@ public class RbdigitalExportMain {
         } catch (Exception e) {
             logger.error("Error processing titles", e);
         }
+        logEntry.saveResults();
         return numChanges;
     }
 
@@ -397,26 +423,6 @@ public class RbdigitalExportMain {
             recordGroupingProcessorSingleton = new RecordGroupingProcessor(aspenConn, serverName, logger, false);
         }
         return recordGroupingProcessorSingleton;
-    }
-
-    private static void createDbLogEntry(Date startTime, Connection aspenConn) {
-        try {
-            logger.info("Creating log entry for index");
-            PreparedStatement createLogEntryStatement = aspenConn.prepareStatement("INSERT INTO rbdigital_export_log (startTime, lastUpdate, notes) VALUES (?, ?, ?)", PreparedStatement.RETURN_GENERATED_KEYS);
-            createLogEntryStatement.setLong(1, startTime.getTime() / 1000);
-            createLogEntryStatement.setLong(2, startTime.getTime() / 1000);
-            createLogEntryStatement.setString(3, "Initialization complete");
-            createLogEntryStatement.executeUpdate();
-            ResultSet generatedKeys = createLogEntryStatement.getGeneratedKeys();
-            if (generatedKeys.next()){
-                exportLogId = generatedKeys.getLong(1);
-            }
-
-            addNoteToExportLogStmt = aspenConn.prepareStatement("UPDATE rbdigital_export_log SET notes = ?, lastUpdate = ? WHERE id = ?");
-        } catch (SQLException e) {
-            logger.error("Unable to create log entry for record grouping process", e);
-            System.exit(0);
-        }
     }
 
     private static void disconnectDatabase(Connection aspenConn) {
@@ -455,21 +461,5 @@ public class RbdigitalExportMain {
             System.exit(1);
         }
         return aspenConn;
-    }
-
-    private static StringBuffer notes = new StringBuffer();
-    private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-    private static void addNoteToExportLog(String note) {
-        try {
-            Date date = new Date();
-            notes.append("<br>").append(dateFormat.format(date)).append(": ").append(note);
-            addNoteToExportLogStmt.setString(1, StringUtils.trimTo(65535, notes.toString()));
-            addNoteToExportLogStmt.setLong(2, new Date().getTime() / 1000);
-            addNoteToExportLogStmt.setLong(3, exportLogId);
-            addNoteToExportLogStmt.executeUpdate();
-            logger.info(note);
-        } catch (SQLException e) {
-            logger.error("Error adding note to Export Log", e);
-        }
     }
 }

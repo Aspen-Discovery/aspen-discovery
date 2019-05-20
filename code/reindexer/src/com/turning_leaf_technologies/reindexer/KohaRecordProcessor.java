@@ -436,7 +436,7 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 	}
 
 	protected String getShelfLocationForItem(ItemInfo itemInfo, DataField itemField, String identifier) {
-		String location = "";
+		String location;
 		String subLocationCode = getItemSubfieldData(subLocationSubfield, itemField);
 		String locationCode = getItemSubfieldData(locationSubfieldIndicator, itemField);
 		location = translateValue("location", locationCode, identifier);

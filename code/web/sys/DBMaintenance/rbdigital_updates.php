@@ -70,5 +70,70 @@ function getRbdigitalUpdates() {
                         ) ENGINE = InnoDB;",
             )
         ),
+
+        'track_rbdigital_user_usage' => array(
+            'title' => 'Rbdigital Usage by user',
+            'description' => 'Add a table to track how often a particular user uses Rbdigital.',
+            'sql' => array(
+                "CREATE TABLE user_rbdigital_usage (
+                    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                    userId INT(11) NOT NULL,
+                    year INT(4) NOT NULL,
+                    month INT(2) NOT NULL,
+                    usageCount INT(11)
+                ) ENGINE = InnoDB",
+                "ALTER TABLE user_rbdigital_usage ADD INDEX (userId, year, month)",
+                "ALTER TABLE user_rbdigital_usage ADD INDEX (year, month)",
+            ),
+        ),
+
+        'track_rbdigital_record_usage' => array(
+            'title' => 'Rbdigital Record Usage',
+            'description' => 'Add a table to track how records within Rbdigital are used.',
+            'continueOnError' => true,
+            'sql' => array(
+                "CREATE TABLE rbdigital_record_usage (
+                    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                    rbdigitalId INT(11),
+                    year INT(4) NOT NULL,
+                    month INT(2) NOT NULL,
+                    timesHeld INT(11) NOT NULL,
+                    timesCheckedOut INT(11) NOT NULL
+                ) ENGINE = InnoDB",
+                "ALTER TABLE rbdigital_record_usage ADD INDEX (rbdigitalId, year, month)",
+                "ALTER TABLE rbdigital_record_usage ADD INDEX (year, month)",
+            ),
+        ),
+
+        'rbdigital_add_settings' => array(
+            'title' => 'Add Rbdigital Settings',
+            'description' => 'Add Settings for Rbdigital to move configuration out of ini',
+            'sql' => array(
+                "CREATE TABLE IF NOT EXISTS rbdigital_settings(
+						id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+						apiUrl VARCHAR(255),
+						userInterfaceUrl VARCHAR(255),
+						apiToken VARCHAR(50),
+						libraryId INT(11) DEFAULT 0,
+						runFullUpdate TINYINT(1) DEFAULT 0,
+						lastUpdateOfChangedRecords INT(11) DEFAULT 0,
+						lastUpdateOfAllRecords INT(11) DEFAULT 0
+					)",
+            ),
+        ),
+
+        'rbdigital_exportLog_update' => array(
+            'title' => 'Better Rbdigital export log',
+            'description' => 'Add additional rows for Rbdigital export log.',
+            'sql' => array(
+                "ALTER TABLE rbdigital_export_log ADD COLUMN numProducts INT(11) DEFAULT 0",
+                "ALTER TABLE rbdigital_export_log ADD COLUMN numErrors INT(11) DEFAULT 0",
+				"ALTER TABLE rbdigital_export_log ADD COLUMN numAdded INT(11) DEFAULT 0",
+                "ALTER TABLE rbdigital_export_log ADD COLUMN numDeleted INT(11) DEFAULT 0",
+                "ALTER TABLE rbdigital_export_log ADD COLUMN numUpdated INT(11) DEFAULT 0",
+                "ALTER TABLE rbdigital_export_log ADD COLUMN numAvailabilityChanges INT(11) DEFAULT 0",
+                "ALTER TABLE rbdigital_export_log ADD COLUMN numMetadataChanges INT(11) DEFAULT 0",
+            )
+        ),
 	);
 }

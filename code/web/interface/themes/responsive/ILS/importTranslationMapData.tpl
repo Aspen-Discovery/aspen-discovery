@@ -2,13 +2,13 @@
 	{*<h1>{$shortPageTitle}</h1>*}
 
 	<div class="btn-group">
-		<a class="btn btn-sm btn-default" href="/Admin/TranslationMaps?objectAction=edit&amp;id={$id}">Edit Map</a>
+		<a class="btn btn-sm btn-default" href="/ILS/TranslationMaps?objectAction=edit&amp;id={$id}">Edit Map</a>
 		{foreach from=$additionalObjectActions item=action}
 			{if $smarty.server.REQUEST_URI != $action.url}
 				<a class="btn btn-default btn-sm" href='{$action.url}'>{$action.text}</a>
 			{/if}
 		{/foreach}
-		<a class="btn btn-sm btn-default" href='/Admin/TranslationMaps?objectAction=list'>Return to List</a>
+		<a class="btn btn-sm btn-default" href='/ILS/TranslationMaps?objectAction=list'>Return to List</a>
 	</div>
 	<h2>{$mapName}</h2>
 	<div class="helpTextUnsized well">
@@ -31,7 +31,7 @@
 		</div>
 
 	</div>
-	<form name="importTranslationMaps" action="/Admin/TranslationMaps" method="post" id="importTranslationMaps">
+	<form name="importTranslationMaps" action="/ILS/TranslationMaps" method="post" id="importTranslationMaps">
 		<div>
 			<input type="hidden" name="objectAction" value="doAppend" id="objectAction">
 			<input type="hidden" name="id" value="{$id}">
