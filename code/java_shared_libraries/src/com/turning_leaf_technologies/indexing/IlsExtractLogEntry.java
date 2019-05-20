@@ -9,7 +9,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 
-class IlsExtractLogEntry {
+public class IlsExtractLogEntry {
 	private Long logEntryId = null;
 	private String indexingProfile;
 	private Date startTime;
@@ -22,18 +22,19 @@ class IlsExtractLogEntry {
 	private int numUpdated = 0;
 	private Logger logger;
 
-	IlsExtractLogEntry(Connection dbConn, String indexingProfile, Logger logger){
+	public IlsExtractLogEntry(Connection dbConn, String indexingProfile, Logger logger){
 		this.logger = logger;
 		this.startTime = new Date();
 		this.indexingProfile = indexingProfile;
 		try {
 			insertLogEntry = dbConn.prepareStatement("INSERT into ils_extract_log (startTime, indexingProfile) VALUES (?, ?)", PreparedStatement.RETURN_GENERATED_KEYS);
-			updateLogEntry = dbConn.prepareStatement("UPDATE ils_extract_log SET lastUpdate = ?, endTime = ?, notes = ?, numProducts = ?, numErrors = ?, numAdded = ?, numUpdated = ?, numSkipped = ?, numDeleted = ?, numAvailabilityChanges = ?, numMetadataChanges = ? WHERE id = ?", PreparedStatement.RETURN_GENERATED_KEYS);
+			updateLogEntry = dbConn.prepareStatement("UPDATE ils_extract_log SET lastUpdate = ?, endTime = ?, notes = ?, numProducts = ?, numErrors = ?, numAdded = ?, numUpdated = ?, numDeleted = ? WHERE id = ?", PreparedStatement.RETURN_GENERATED_KEYS);
 		} catch (SQLException e) {
 			logger.error("Error creating prepared statements to update log", e);
 		}
+		this.saveResults();
 	}
-	void addNote(String note) {
+	public void addNote(String note) {
 		this.notes.add(note);
 	}
 	
@@ -59,7 +60,8 @@ class IlsExtractLogEntry {
 	
 	private static PreparedStatement insertLogEntry;
 	private static PreparedStatement updateLogEntry;
-	boolean saveResults() {
+	@SuppressWarnings("UnusedReturnValue")
+	public boolean saveResults() {
 		try {
 			if (logEntryId == null){
 				insertLogEntry.setLong(1, startTime.getTime() / 1000);
@@ -92,28 +94,28 @@ class IlsExtractLogEntry {
 			return false;
 		}
 	}
-	void setFinished() {
+	public void setFinished() {
 		this.endTime = new Date();
 		this.addNote("Finished Koha extraction");
 		this.saveResults();
 	}
-	void incErrors(){
+	public void incErrors(){
 		numErrors++;
 	}
-	void incAdded(){
+	public void incAdded(){
 		numAdded++;
 	}
-	void incDeleted(){
+	public void incDeleted(){
 		numDeleted++;
 	}
-	void incUpdated(){
+	public void incUpdated(){
 		numUpdated++;
 	}
-	void setNumProducts(int size) {
+	public void setNumProducts(int size) {
 		numProducts = size;
 	}
 
-	boolean hasErrors() {
+	public boolean hasErrors() {
 		return numErrors > 0;
 	}
 }

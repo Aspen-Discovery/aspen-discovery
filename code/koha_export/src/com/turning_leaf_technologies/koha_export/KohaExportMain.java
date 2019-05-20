@@ -3,6 +3,7 @@ package com.turning_leaf_technologies.koha_export;
 import com.turning_leaf_technologies.config.ConfigUtil;
 import com.turning_leaf_technologies.grouping.MarcRecordGrouper;
 import com.turning_leaf_technologies.grouping.RemoveRecordFromWorkResult;
+import com.turning_leaf_technologies.indexing.IlsExtractLogEntry;
 import com.turning_leaf_technologies.indexing.IndexingProfile;
 import com.turning_leaf_technologies.logging.LoggingUtil;
 import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
@@ -37,34 +38,22 @@ public class KohaExportMain {
 	private static Connection dbConn;
 	private static String serverName;
 
+	private static Long startTimeForLogging;
+	private static IlsExtractLogEntry logEntry;
+
 	public static void main(String[] args) {
 		if (args.length == 0) {
 			System.out.println("You must provide the server name as the first argument.");
 			System.exit(1);
 		}
-		boolean runContinuously = true;
 		serverName = args[0];
 		String profileToLoad = "ils";
 
 		logger = LoggingUtil.setupLogging(serverName, "koha_export");
 
-		while (runContinuously) {
-			runContinuously = false;
-			if (args.length >= 2) {
-				profileToLoad = args[1];
-				if (profileToLoad.equals("continuous")){
-					runContinuously = true;
-					profileToLoad = "ils";
-				}
-			}if (args.length >= 3) {
-				if (args[2].equals("continuous")){
-					runContinuously = true;
-				}
-			}
-
-			//TODO: Add logging to the database so we can see progress?
-
+		while (true) {
 			Date startTime = new Date();
+			startTimeForLogging = startTime.getTime() / 1000;
 			logger.info(startTime.toString() + ": Starting Koha Extract");
 
 			// Read the base INI file to get information about the server (current directory/conf/config.ini)
@@ -125,16 +114,32 @@ public class KohaExportMain {
 				System.exit(1);
 			}
 
+			logEntry = new IlsExtractLogEntry(dbConn, profileToLoad, logger);
+
 			indexingProfile = IndexingProfile.loadIndexingProfile(dbConn, profileToLoad, logger);
 
+			//Remove log entries older than 45 days
+			long earliestLogToKeep = (startTime.getTime() / 1000) - (60 * 60 * 24 * 45);
+			try {
+				int numDeletions = dbConn.prepareStatement("DELETE from ils_extract_log WHERE startTime < " + earliestLogToKeep + " AND indexingProfile = '" + indexingProfile.getName() + "'").executeUpdate();
+				logger.info("Deleted " + numDeletions + " old log entries");
+			} catch (SQLException e) {
+				logger.error("Error deleting old log entries", e);
+			}
+
 			updateBranchInfo(dbConn, kohaConn);
+			logEntry.addNote("Finished updating branch information");
 
 			updateTranslationMaps(dbConn, kohaConn);
+			logEntry.addNote("Finished updating translation maps");
 
 			exportHolds(dbConn, kohaConn);
+			logEntry.addNote("Finished loading holds");
 
 			//Update works that have changed since the last index
 			int numChanges = updateRecords(dbConn, kohaConn);
+
+			logEntry.setFinished();
 
 			try {
 				//Close the connection
@@ -154,16 +159,14 @@ public class KohaExportMain {
 			logger.info(currentTime.toString() + ": Finished Koha Extract");
 
 			//Pause before running the next export (longer if we didn't get any actual changes)
-			if (runContinuously) {
-				try {
-					if (numChanges == 0) {
-						Thread.sleep(1000 * 60 * 5);
-					}else {
-						Thread.sleep(1000 * 60);
-					}
-				} catch (InterruptedException e) {
-					logger.info("Thread was interrupted");
+			try {
+				if (numChanges == 0) {
+					Thread.sleep(1000 * 60 * 5);
+				}else {
+					Thread.sleep(1000 * 60);
 				}
+			} catch (InterruptedException e) {
+				logger.info("Thread was interrupted");
 			}
 		}
 	}
@@ -441,60 +444,72 @@ public class KohaExportMain {
 		//Get the time the last extract was done
 		try{
 			logger.info("Starting to load changed records from Koha using the Database connection");
-			long lastKohaExtractTime = 0;
-			Long lastKohaExtractTimeVariableId = null;
-
-			PreparedStatement loadLastKohaExtractTimeStmt = dbConn.prepareStatement("SELECT * from variables WHERE name = 'last_koha_extract_time'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			ResultSet lastKohaExtractTimeRS = loadLastKohaExtractTimeStmt.executeQuery();
-			if (lastKohaExtractTimeRS.next()){
-				lastKohaExtractTime = lastKohaExtractTimeRS.getLong("value");
-				lastKohaExtractTimeVariableId = lastKohaExtractTimeRS.getLong("id");
-			}
+			long lastKohaExtractTime = indexingProfile.getLastUpdateOfChangedRecords();
 			if (lastKohaExtractTime == 0){
-				lastKohaExtractTime = (new Date().getTime() / 1000) - (24 * 60 * 60);
+				lastKohaExtractTime = new Date().getTime() / 1000 - 24 * 60 * 60;
 			}
+			Timestamp lastExtractTimestamp = new Timestamp(lastKohaExtractTime * 1000);
 
 			HashSet<String> changedBibIds = new HashSet<>();
 
 			//Get a list of bibs that have changed
-			PreparedStatement getChangedBibsFromKohaStmt = kohaConn.prepareStatement("select biblionumber from biblio where timestamp >= ?");
-			Timestamp lastExtractTimestamp = new Timestamp(lastKohaExtractTime * 1000);
-			logger.info("Getting changes to records since " + lastExtractTimestamp.toString());
+			PreparedStatement getChangedBibsFromKohaStmt;
+			if (indexingProfile.isRunFullUpdate()){
+				getChangedBibsFromKohaStmt = kohaConn.prepareStatement("select biblionumber from biblio");
+				logEntry.addNote("Getting all records from Koha");
+			}else{
+				getChangedBibsFromKohaStmt = kohaConn.prepareStatement("select biblionumber from biblio where timestamp >= ?");
+				logEntry.addNote("Getting changes to records since " + lastExtractTimestamp.toString());
 
-			getChangedBibsFromKohaStmt.setTimestamp(1, lastExtractTimestamp);
+				getChangedBibsFromKohaStmt.setTimestamp(1, lastExtractTimestamp);
+			}
+
 			ResultSet getChangedBibsFromKohaRS = getChangedBibsFromKohaStmt.executeQuery();
 			while (getChangedBibsFromKohaRS.next()) {
 				changedBibIds.add(getChangedBibsFromKohaRS.getString("biblionumber"));
 			}
 
-			//Get a list of items that have changed
-			PreparedStatement getChangedItemsFromKohaStmt = kohaConn.prepareStatement("select DISTINCT biblionumber from items where timestamp >= ?");
-			getChangedItemsFromKohaStmt.setTimestamp(1, lastExtractTimestamp);
+			if (!indexingProfile.isRunFullUpdate()){
+				//Get a list of items that have changed
+				PreparedStatement getChangedItemsFromKohaStmt = kohaConn.prepareStatement("select DISTINCT biblionumber from items where timestamp >= ?");
+				getChangedItemsFromKohaStmt.setTimestamp(1, lastExtractTimestamp);
 
-			ResultSet itemChangeRS = getChangedItemsFromKohaStmt.executeQuery();
-			while (itemChangeRS.next()) {
-				changedBibIds.add(itemChangeRS.getString("biblionumber"));
+				ResultSet itemChangeRS = getChangedItemsFromKohaStmt.executeQuery();
+				while (itemChangeRS.next()) {
+					changedBibIds.add(itemChangeRS.getString("biblionumber"));
+				}
+
+				//Items that have been deleted do not update the bib as changed so get that list as well
+				PreparedStatement getDeletedItemsFromKohaStmt = kohaConn.prepareStatement("select DISTINCT biblionumber from deleteditems where timestamp >= ?");
+				getDeletedItemsFromKohaStmt.setTimestamp(1, lastExtractTimestamp);
+
+				ResultSet itemDeletedRS = getDeletedItemsFromKohaStmt.executeQuery();
+				while (itemDeletedRS.next()) {
+					changedBibIds.add(itemDeletedRS.getString("biblionumber"));
+				}
 			}
 
-			//Items that have been deleted do not update the bib as changed so get that list as well
-			PreparedStatement getDeletedItemsFromKohaStmt = kohaConn.prepareStatement("select DISTINCT biblionumber from deleteditems where timestamp >= ?");
-			getDeletedItemsFromKohaStmt.setTimestamp(1, lastExtractTimestamp);
-
-			ResultSet itemDeletedRS = getDeletedItemsFromKohaStmt.executeQuery();
-			while (itemDeletedRS.next()) {
-				changedBibIds.add(itemDeletedRS.getString("biblionumber"));
-			}
-
-			//TODO: limit the number of changes that can be made in one run to keep the index fresher?
 			logger.info("A total of " + changedBibIds.size() + " bibs were updated since the last export");
+			logEntry.setNumProducts(changedBibIds.size());
+			logEntry.saveResults();
+			int numProcessed = 0;
 			for (String curBibId : changedBibIds){
 				//Update the marc record
 				updateBibRecord(curBibId);
+				numProcessed++;
+				if (numProcessed % 250 == 0){
+					logEntry.saveResults();
+				}
 			}
 
 			//Process any bibs that have been deleted
-			PreparedStatement getDeletedBibsFromKohaStmt = kohaConn.prepareStatement("select DISTINCT biblionumber from deletedbiblio where timestamp >= ?");
-			getDeletedBibsFromKohaStmt.setTimestamp(1, lastExtractTimestamp);
+			PreparedStatement getDeletedBibsFromKohaStmt;
+			if (indexingProfile.isRunFullUpdate()) {
+				getDeletedBibsFromKohaStmt = kohaConn.prepareStatement("select DISTINCT biblionumber from deletedbiblio");
+			}else{
+				getDeletedBibsFromKohaStmt = kohaConn.prepareStatement("select DISTINCT biblionumber from deletedbiblio where timestamp >= ?");
+				getDeletedBibsFromKohaStmt.setTimestamp(1, lastExtractTimestamp);
+			}
 
 			ResultSet bibDeletedRS = getDeletedBibsFromKohaStmt.executeQuery();
 			int numRecordsDeleted = 0;
@@ -508,7 +523,9 @@ public class KohaExportMain {
 					getGroupedWorkIndexer().deleteRecord(result.permanentId, result.groupedWorkId);
 				}
 				numRecordsDeleted++;
+				logEntry.incDeleted();
 			}
+			logEntry.saveResults();
 
 			logger.info("Updated " + changedBibIds.size() + " records");
 			logger.info("Deleted " + numRecordsDeleted + " records");
@@ -521,22 +538,25 @@ public class KohaExportMain {
 				groupedWorkIndexer = null;
 			}
 
-			//Update the last extract time
-			long finishTime = new Date().getTime() / 1000;
-			if (lastKohaExtractTimeVariableId != null) {
-				PreparedStatement updateVariableStmt = dbConn.prepareStatement("UPDATE variables set value = ? WHERE id = ?");
-				updateVariableStmt.setLong(1, finishTime);
-				updateVariableStmt.setLong(2, lastKohaExtractTimeVariableId);
+			//Update the last extract time for the indexing profile
+			if (indexingProfile.isRunFullUpdate()) {
+				PreparedStatement updateVariableStmt = dbConn.prepareStatement("UPDATE indexing_profiles set lastUpdateOfAllRecords = ?, runFullUpdate = 0 WHERE id = ?");
+				updateVariableStmt.setLong(1, startTimeForLogging);
+				updateVariableStmt.setLong(2, indexingProfile.getId());
 				updateVariableStmt.executeUpdate();
 				updateVariableStmt.close();
 			} else {
-				PreparedStatement insertVariableStmt = dbConn.prepareStatement("INSERT INTO variables (`name`, `value`) VALUES ('last_koha_extract_time', ?)");
-				insertVariableStmt.setString(1, Long.toString(finishTime));
-				insertVariableStmt.executeUpdate();
-				insertVariableStmt.close();
+				if (!logEntry.hasErrors()) {
+					PreparedStatement updateVariableStmt = dbConn.prepareStatement("UPDATE indexing_profiles set lastUpdateOfChangedRecords = ? WHERE id = ?");
+					updateVariableStmt.setLong(1, startTimeForLogging);
+					updateVariableStmt.setLong(2, indexingProfile.getId());
+					updateVariableStmt.executeUpdate();
+					updateVariableStmt.close();
+				}
 			}
 		} catch (Exception e){
 			logger.error("Error loading changed records from Koha database", e);
+			logEntry.incErrors();
 			System.exit(1);
 		}
 		logger.info("Finished loading changed records from Koha database");
@@ -603,6 +623,11 @@ public class KohaExportMain {
 					marcRecord.addVariableField(itemField);
 				}
 
+				if (marcFile.exists()){
+					logEntry.incUpdated();
+				}else{
+					logEntry.incAdded();
+				}
 				MarcWriter writer = new MarcStreamWriter(new FileOutputStream(marcFile));
 				writer.write(marcRecord);
 
@@ -617,6 +642,7 @@ public class KohaExportMain {
 
 		}catch (Exception e){
 			logger.error("Error updating marc record for bib " + curBibId, e);
+			logEntry.incErrors();
 		}
 	}
 

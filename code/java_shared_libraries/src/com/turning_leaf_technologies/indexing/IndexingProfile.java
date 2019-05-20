@@ -105,6 +105,10 @@ public class IndexingProfile {
 	private char format;
 	private boolean groupUnchangedFiles;
 
+	private long lastUpdateOfChangedRecords;
+	private long lastUpdateOfAllRecords;
+	private boolean runFullUpdate;
+
 	public static IndexingProfile loadIndexingProfile(Connection dbConn, String profileToLoad, Logger logger) {
 		//Get the Indexing Profile from the database
 		IndexingProfile indexingProfile = new IndexingProfile();
@@ -161,6 +165,10 @@ public class IndexingProfile {
 				indexingProfile.setCallNumberPoststampSubfield(getCharFromRecordSet(indexingProfileRS, "callNumberPoststamp"));
 				indexingProfile.setVolume(getCharFromRecordSet(indexingProfileRS, "volume"));
 				indexingProfile.setItemUrl(getCharFromRecordSet(indexingProfileRS, "itemUrl"));
+
+				indexingProfile.setLastUpdateOfChangedRecords(indexingProfileRS.getLong("lastUpdateOfChangedRecords"));
+				indexingProfile.setLastUpdateOfAllRecords(indexingProfileRS.getLong("lastUpdateOfAllRecords"));
+				indexingProfile.setRunFullUpdate(indexingProfileRS.getBoolean("runFullUpdate"));
 			} else {
 				logger.error("Unable to find " + profileToLoad + " indexing profile, please create a profile with the name ils.");
 			}
@@ -495,5 +503,29 @@ public class IndexingProfile {
 
 	private void setRecordNumberSubfield(char recordNumberSubfield) {
 		this.recordNumberSubfield = recordNumberSubfield;
+	}
+
+	public long getLastUpdateOfChangedRecords() {
+		return lastUpdateOfChangedRecords;
+	}
+
+	public void setLastUpdateOfChangedRecords(long lastUpdateOfChangedRecords) {
+		this.lastUpdateOfChangedRecords = lastUpdateOfChangedRecords;
+	}
+
+	public long getLastUpdateOfAllRecords() {
+		return lastUpdateOfAllRecords;
+	}
+
+	public void setLastUpdateOfAllRecords(long lastUpdateOfAllRecords) {
+		this.lastUpdateOfAllRecords = lastUpdateOfAllRecords;
+	}
+
+	public boolean isRunFullUpdate() {
+		return runFullUpdate;
+	}
+
+	public void setRunFullUpdate(boolean runFullUpdate) {
+		this.runFullUpdate = runFullUpdate;
 	}
 }

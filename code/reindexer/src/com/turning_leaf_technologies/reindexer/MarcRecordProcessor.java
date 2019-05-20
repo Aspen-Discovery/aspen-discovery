@@ -300,7 +300,7 @@ abstract class MarcRecordProcessor {
 		HashSet<String> seriesWithVolumes = new HashSet<>();
 		for (DataField seriesField : seriesFields){
 			String series = StringUtils.trimTrailingPunctuation(MarcUtil.getSpecifiedSubfieldsAsString(seriesField, "ap","")).toString();
-			//Remove anything in parens since it's normally just the format
+			//Remove anything in parenthesis since it's normally just the format
 			series = series.replaceAll("\\s+\\(.*?\\)", "");
 			//Remove the word series at the end since this gets cataloged inconsistently
 			series = series.replaceAll("(?i)\\s+series$", "");
@@ -313,7 +313,7 @@ abstract class MarcRecordProcessor {
 		seriesFields = MarcUtil.getDataFields(record, "800");
 		for (DataField seriesField : seriesFields){
 			String series = StringUtils.trimTrailingPunctuation(MarcUtil.getSpecifiedSubfieldsAsString(seriesField, "pqt","")).toString();
-			//Remove anything in parens since it's normally just the format
+			//Remove anything in parenthesis since it's normally just the format
 			series = series.replaceAll("\\s+\\(.*?\\)", "");
 			//Remove the word series at the end since this gets cataloged inconsistently
 			series = series.replaceAll("(?i)\\s+series$", "");

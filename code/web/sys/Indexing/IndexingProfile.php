@@ -71,6 +71,9 @@ class IndexingProfile extends DataObject{
 	public $orderCode3;
 	public $doAutomaticEcontentSuppression;
 	public $groupUnchangedFiles;
+    public $runFullUpdate;
+    public $lastUpdateOfChangedRecords;
+    public $lastUpdateOfAllRecords;
 
     static function getObjectStructure(){
 		$translationMapStructure = TranslationMap::getObjectStructure();
@@ -151,7 +154,11 @@ class IndexingProfile extends DataObject{
 			'orderCopies' => array('property' => 'orderCopies', 'type' => 'text', 'label' => 'Order Copies', 'maxLength' => 1, 'description' => 'The number of copies if not shown within location'),
 			'orderCode3' => array('property' => 'orderCode3', 'type' => 'text', 'label' => 'Order Code3', 'maxLength' => 1, 'description' => 'Code 3 for the order record'),
 
-			'translationMaps' => array(
+            'runFullUpdate' => array('property' => 'runFullUpdate', 'type' => 'checkbox', 'label' => 'Run Full Update', 'description'=>'Whether or not a full update of all records should be done on the next pass of indexing', 'default'=>0),
+            'lastUpdateOfChangedRecords' => array('property' => 'lastUpdateOfChangedRecords', 'type' => 'integer', 'label' => 'Last Update of Changed Records', 'description'=>'The timestamp when just changes were loaded', 'default'=>0),
+            'lastUpdateOfAllRecords' => array('property' => 'lastUpdateOfAllRecords', 'type' => 'integer', 'label' => 'Last Update of All Records', 'description'=>'The timestamp when just changes were loaded', 'default'=>0),
+
+            'translationMaps' => array(
 				'property' => 'translationMaps',
 				'type'=> 'oneToMany',
 				'label' => 'Translation Maps',
@@ -166,35 +173,35 @@ class IndexingProfile extends DataObject{
 				'canEdit' => true,
 			),
 
-				'timeToReshelve' => array(
-						'property' => 'timeToReshelve',
-						'type'=> 'oneToMany',
-						'label' => 'Time to Reshelve',
-						'description' => 'Overrides for time to reshelve.',
-						'keyThis' => 'id',
-						'keyOther' => 'indexingProfileId',
-						'subObjectType' => 'TimeToReshelve',
-						'structure' => TimeToReshelve::getObjectStructure(),
-						'sortable' => true,
-						'storeDb' => true,
-						'allowEdit' => true,
-						'canEdit' => false,
-				),
+            'timeToReshelve' => array(
+                'property' => 'timeToReshelve',
+                'type'=> 'oneToMany',
+                'label' => 'Time to Reshelve',
+                'description' => 'Overrides for time to reshelve.',
+                'keyThis' => 'id',
+                'keyOther' => 'indexingProfileId',
+                'subObjectType' => 'TimeToReshelve',
+                'structure' => TimeToReshelve::getObjectStructure(),
+                'sortable' => true,
+                'storeDb' => true,
+                'allowEdit' => true,
+                'canEdit' => false,
+            ),
 
-				'sierraFieldMappings' => array(
-						'property' => 'sierraFieldMappings',
-						'type'=> 'oneToMany',
-						'label' => 'Sierra Field Mappings (Sierra Systems only)',
-						'description' => 'Field Mappings for exports from Sierra.',
-						'keyThis' => 'id',
-						'keyOther' => 'indexingProfileId',
-						'subObjectType' => 'SierraExportFieldMapping',
-						'structure' => $sierraMappingStructure,
-						'sortable' => false,
-						'storeDb' => true,
-						'allowEdit' => true,
-						'canEdit' => false,
-				),
+            'sierraFieldMappings' => array(
+                'property' => 'sierraFieldMappings',
+                'type'=> 'oneToMany',
+                'label' => 'Sierra Field Mappings (Sierra Systems only)',
+                'description' => 'Field Mappings for exports from Sierra.',
+                'keyThis' => 'id',
+                'keyOther' => 'indexingProfileId',
+                'subObjectType' => 'SierraExportFieldMapping',
+                'structure' => $sierraMappingStructure,
+                'sortable' => false,
+                'storeDb' => true,
+                'allowEdit' => true,
+                'canEdit' => false,
+            ),
 		);
 		return $structure;
 	}

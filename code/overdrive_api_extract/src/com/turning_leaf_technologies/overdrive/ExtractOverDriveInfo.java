@@ -660,7 +660,6 @@ class ExtractOverDriveInfo {
 		String url = "https://api.overdrive.com/v1/collections/" + apiKey + "/products/" + overDriveInfo.getId() + "/metadata";
 		WebServiceResponse metaDataResponse = callOverDriveURL(url);
 		if (metaDataResponse.getResponseCode() != 200){
-			//TODO: Handle timeouts and errors better, reprocess after delay?
 			logger.info("Could not load metadata from " + url );
 			logger.info(metaDataResponse.getResponseCode() + ":" + metaDataResponse.getMessage());
 			results.addNote("Could not load metadata from " + url );
@@ -876,7 +875,6 @@ class ExtractOverDriveInfo {
 		WebServiceResponse availabilityResponse = callOverDriveURL(url);
 		//404 is a message that availability has been deleted.
 		if (availabilityResponse.getResponseCode() != 200 && availabilityResponse.getResponseCode() != 404){
-			//TODO: Better handling of errors to retry later?
 			//We got an error calling the OverDrive API, do nothing.
 			logger.info("Error loading availability for product " + overDriveInfo.getId());
 			logger.info(availabilityResponse.getResponseCode() + ":" + availabilityResponse.getMessage());
@@ -1179,7 +1177,7 @@ class ExtractOverDriveInfo {
 	}
 
 	void close(){
-		//TODO: Should these have an explicit close to cleanup resources
+		//TODO: Should these have an explicit close to cleanup resources?
 		recordGroupingProcessorSingleton = null;
 		groupedWorkIndexer = null;
 

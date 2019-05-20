@@ -394,5 +394,15 @@ function getIndexingUpdates() {
                 "ALTER TABLE ils_record_usage ADD INDEX (year, month)",
             ),
         ),
+
+        'indexing_profile_add_continuous_update_fields' => [
+            'title' => 'Indexing Profile Add Continuous Update Fields',
+            'description' => 'Add fields to track when last updates were done and to trigger full updates',
+            'sql' => [
+                'ALTER TABLE indexing_profiles ADD COLUMN runFullUpdate TINYINT(1) DEFAULT 0',
+                'ALTER TABLE indexing_profiles ADD COLUMN lastUpdateOfChangedRecords INT(11) DEFAULT 0',
+                'ALTER TABLE indexing_profiles ADD COLUMN lastUpdateOfAllRecords INT(11) DEFAULT 0'
+            ]
+        ],
 	);
 }
