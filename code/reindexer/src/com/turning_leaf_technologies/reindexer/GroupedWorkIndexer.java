@@ -59,6 +59,7 @@ public class GroupedWorkIndexer {
 
 	private PreparedStatement getGroupedWorkPrimaryIdentifiers;
 	private PreparedStatement getDateFirstDetectedStmt;
+	private PreparedStatement getGroupedWorkInfoStmt;
 
 	private static PreparedStatement deleteGroupedWorkStmt;
 
@@ -117,6 +118,7 @@ public class GroupedWorkIndexer {
 			getGroupedWorkPrimaryIdentifiers = dbConn.prepareStatement("SELECT * FROM grouped_work_primary_identifiers where grouped_work_id = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			getDateFirstDetectedStmt = dbConn.prepareStatement("SELECT dateFirstDetected FROM ils_marc_checksums WHERE source = ? AND ilsId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			deleteGroupedWorkStmt = dbConn.prepareStatement("DELETE from grouped_work where id = ?");
+			getGroupedWorkInfoStmt = dbConn.prepareStatement("SELECT id, grouping_category from grouped_work where permanent_id = ?");
 		} catch (Exception e){
 			logger.error("Could not load statements to get identifiers ", e);
 		}
@@ -708,7 +710,6 @@ public class GroupedWorkIndexer {
 
 	public void processGroupedWork(String permanentId) {
 		try{
-			PreparedStatement getGroupedWorkInfoStmt = dbConn.prepareStatement("SELECT id, grouping_category from grouped_work where permanent_id = ?");
 			getGroupedWorkInfoStmt.setString(1, permanentId);
 			ResultSet getGroupedWorkInfoRS = getGroupedWorkInfoStmt.executeQuery();
 			if (getGroupedWorkInfoRS.next()) {
