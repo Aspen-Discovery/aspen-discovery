@@ -1,25 +1,4 @@
 <?php
-/**
- *
- * Copyright (C) Anythink Libraries 2012.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2,
- * as published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- * @author Mark Noble <mnoble@turningleaftech.com>
- * @copyright Copyright (C) Anythink Libraries 2012.
- *
- */
 
 require_once ROOT_DIR . '/Action.php';
 require_once(ROOT_DIR . '/services/Admin/Admin.php');
@@ -124,7 +103,7 @@ class MaterialsRequest_SummaryReport extends Admin_Admin {
 			$periodData[$periodStart->getTimestamp()] = array();
 			//Determine how many requests were created
 			$materialsRequest = new MaterialsRequest();
-			$materialsRequest->joinAdd(new User(), 'INNER', 'user', 'createdBy');
+			$materialsRequest->joinAdd(new User(), 'INNER', 'user', 'createdBy', 'id');
 			$materialsRequest->selectAdd();
 			$materialsRequest->selectAdd('COUNT(materials_request.id) as numRequests');
 			$materialsRequest->whereAdd('dateCreated >= ' . $periodStart->getTimestamp() . ' AND dateCreated < ' . $periodEnd->getTimestamp());
@@ -139,8 +118,8 @@ class MaterialsRequest_SummaryReport extends Admin_Admin {
 
 			//Get a list of all requests by the status of the request
 			$materialsRequest = new MaterialsRequest();
-			$materialsRequest->joinAdd(new MaterialsRequestStatus());
-			$materialsRequest->joinAdd(new User(), 'INNER', 'user', 'createdBy');
+			$materialsRequest->joinAdd(new MaterialsRequestStatus(), 'INNER', 'status', 'status', 'id');
+			$materialsRequest->joinAdd(new User(), 'INNER', 'user', 'createdBy', 'id');
 			$materialsRequest->selectAdd();
 			$materialsRequest->selectAdd('COUNT(materials_request.id) as numRequests,description');
 			$materialsRequest->whereAdd('dateUpdated >= ' . $periodStart->getTimestamp() . ' AND dateUpdated < ' . $periodEnd->getTimestamp());

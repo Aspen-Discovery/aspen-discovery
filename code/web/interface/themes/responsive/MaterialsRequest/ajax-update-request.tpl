@@ -1,3 +1,4 @@
+{strip}
 {if $error}
 	<div class="alert alert-danger">{$error}</div>
 {else}
@@ -15,3 +16,4 @@ $("#materialsRequestForm").validate();
 </script>
 
 {/if}
+{/strip}

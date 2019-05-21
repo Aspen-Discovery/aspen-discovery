@@ -1,3 +1,4 @@
+{strip}
 {if $error}
 	<div class="alert alert-danger">{$error}</div>
 {else}
@@ -286,3 +287,4 @@
 
 	-->
 {/if}
+{/strip}

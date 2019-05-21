@@ -319,6 +319,7 @@ class SearchSources{
 			}
 			return $worldCatLink;
 		}else if ($searchSource == 'overdrive'){
+            require_once ROOT_DIR . '/sys/OverDrive/OverDriveSetting.php';
             $overDriveSettings = new OverDriveSetting();
             $overDriveSettings->find((true));
 			$overDriveUrl = $overDriveSettings->url;

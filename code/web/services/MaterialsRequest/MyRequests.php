@@ -1,25 +1,4 @@
 <?php
-/**
- *
- * Copyright (C) Anythink Libraries 2012.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2,
- * as published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- * @author Mark Noble <mnoble@turningleaftech.com>
- * @copyright Copyright (C) Anythink Libraries 2012.
- *
- */
 
 require_once ROOT_DIR . "/Action.php";
 require_once ROOT_DIR . '/sys/MaterialsRequest.php';
@@ -67,7 +46,7 @@ class MaterialsRequest_MyRequests extends MyAccount
 			$statusQueryNotCancelled = new MaterialsRequestStatus();
 			$statusQueryNotCancelled->libraryId = $homeLibrary->libraryId;
 			$statusQueryNotCancelled->isPatronCancel = 0;
-			$materialsRequests->joinAdd($statusQueryNotCancelled);
+			$materialsRequests->joinAdd($statusQueryNotCancelled, 'INNER', 'status', 'status', 'id');
 
 			$requestsThisYear = $materialsRequests->count();
 			$interface->assign('requestsThisYear', $requestsThisYear);
@@ -78,7 +57,7 @@ class MaterialsRequest_MyRequests extends MyAccount
 
 			$materialsRequests = new MaterialsRequest();
 			$materialsRequests->createdBy = UserAccount::getActiveUserId();
-			$materialsRequests->joinAdd($statusQuery);
+			$materialsRequests->joinAdd($statusQuery, 'INNER', 'status', 'status', 'id');
 			$openRequests = $materialsRequests->count();
 			$interface->assign('openRequests', $openRequests);
 
@@ -95,7 +74,7 @@ class MaterialsRequest_MyRequests extends MyAccount
 				$statusQuery->libraryId = $homeLibrary->libraryId;
 				$statusQuery->isOpen = 1;
 			}
-			$materialsRequests->joinAdd($statusQuery);
+			$materialsRequests->joinAdd($statusQuery, 'INNER', 'status', 'status', 'id');
 			$materialsRequests->selectAdd();
 			$materialsRequests->selectAdd('materials_request.*, description as statusLabel');
 			$materialsRequests->find();

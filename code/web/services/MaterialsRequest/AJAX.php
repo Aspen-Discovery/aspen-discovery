@@ -1,25 +1,4 @@
 <?php
-/**
- *
- * Copyright (C) Anythink Libraries 2012.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2,
- * as published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- * @author Mark Noble <mnoble@turningleaftech.com>
- * @copyright Copyright (C) Anythink Libraries 2012.
- *
- */
 
 require_once ROOT_DIR . "/Action.php";
 require_once ROOT_DIR . '/sys/MaterialsRequest.php';
@@ -35,7 +14,7 @@ class MaterialsRequest_AJAX extends Action{
 
 	function launch(){
 		$method = $_GET['method'];
-		if (in_array($method, array('CancelRequest', 'GetWorldCatTitles', 'GetWorldCatIdentifiers', 'MaterialsRequestDetails', 'UpdateMaterialsRequest'))){
+		if (in_array($method, array('CancelRequest', 'GetWorldCatTitles', 'GetWorldCatIdentifiers', 'MaterialsRequestDetails', 'updateMaterialsRequest'))){
 			header('Content-type: text/plain');
 			header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 			header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
@@ -77,7 +56,7 @@ class MaterialsRequest_AJAX extends Action{
 		}
 	}
 
-	function UpdateMaterialsRequest(){
+	function updateMaterialsRequest(){
 		global $interface;
 		global $configArray;
 
@@ -104,11 +83,11 @@ class MaterialsRequest_AJAX extends Action{
 
 						// Statuses
 						$statusQuery           = new MaterialsRequestStatus();
-						$materialsRequest->joinAdd($statusQuery);
+						$materialsRequest->joinAdd($statusQuery, 'INNER', 'status', 'status', 'id');
 
 						// Pick-up Locations
 						$locationQuery = new Location();
-						$materialsRequest->joinAdd($locationQuery, "LEFT");
+						$materialsRequest->joinAdd($locationQuery, "LEFT", 'location', 'holdPickupLocation', 'locationId');
 
 						// Format Labels
 						$formats = new MaterialsRequestFormats();
@@ -120,7 +99,7 @@ class MaterialsRequest_AJAX extends Action{
 							'materials_request.*, description as statusLabel, location.displayName as location'
 						);
 						if (!$usingDefaultFormats) {
-							$materialsRequest->joinAdd($formats, 'LEFT');
+							$materialsRequest->joinAdd($formats, 'LEFT', 'materials_request_formats', 'formatId', 'id');
 							$materialsRequest->selectAdd('materials_request_formats.formatLabel,materials_request_formats.authorLabel, materials_request_formats.specialFields');
 						}
 
@@ -272,11 +251,11 @@ class MaterialsRequest_AJAX extends Action{
 
 					// Statuses
 					$statusQuery           = new MaterialsRequestStatus();
-					$materialsRequest->joinAdd($statusQuery);
+					$materialsRequest->joinAdd($statusQuery, 'INNER', 'status', 'status', 'id');
 
 					// Pick-up Locations
 					$locationQuery = new Location();
-					$materialsRequest->joinAdd($locationQuery, "LEFT");
+					$materialsRequest->joinAdd($locationQuery, "LEFT", 'location', 'holdPickupLocation', 'locationId');
 
 					// Format Labels
 					$formats = new MaterialsRequestFormats();
@@ -288,7 +267,7 @@ class MaterialsRequest_AJAX extends Action{
 						'materials_request.*, description as statusLabel, location.displayName as location'
 					);
 					if (!$usingDefaultFormats) {
-						$materialsRequest->joinAdd($formats, 'LEFT');
+						$materialsRequest->joinAdd($formats, 'LEFT', 'materials_request_formats', 'formatId', 'id');
 						$materialsRequest->selectAdd('materials_request_formats.formatLabel,materials_request_formats.authorLabel, materials_request_formats.specialFields');
 					}
 

@@ -377,7 +377,12 @@ abstract class DataObject
                 if (strlen($where) != 0) {
                     $where .= ' AND ';
                 }
-                $where .= $name . ' = ' . $aspen_db->quote($value);
+                if (count($this->__joins) > 0){
+                    $where .= $this->__table . '.' . $name . ' = ' . $aspen_db->quote($value);
+                }else{
+                    $where .= $name . ' = ' . $aspen_db->quote($value);
+                }
+
             }
         }
 

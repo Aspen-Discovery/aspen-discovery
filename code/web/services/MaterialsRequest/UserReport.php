@@ -1,25 +1,4 @@
 <?php
-/**
- *
- * Copyright (C) Anythink Libraries 2012.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2,
- * as published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- * @author Mark Noble <mnoble@turningleaftech.com>
- * @copyright Copyright (C) Anythink Libraries 2012.
- *
- */
 
 require_once ROOT_DIR . '/Action.php';
 require_once(ROOT_DIR . '/services/Admin/Admin.php');
@@ -65,8 +44,8 @@ class MaterialsRequest_UserReport extends Admin_Admin {
 
 		//Get a list of users that have requests open
 		$materialsRequest = new MaterialsRequest();
-		$materialsRequest->joinAdd(array('createdBy', new User(), 'id'));
-		$materialsRequest->joinAdd(new MaterialsRequestStatus());
+		$materialsRequest->joinAdd(new User(), 'INNER', 'user', 'createdBy', 'id');
+		$materialsRequest->joinAdd(new MaterialsRequestStatus(), 'INNER', 'status', 'status', 'id');
 		$materialsRequest->selectAdd();
 		$materialsRequest->selectAdd('COUNT(materials_request.id) as numRequests');
 		$materialsRequest->selectAdd('user.id as userId, status, description, user.firstName, user.lastName, user.cat_username, user.cat_password');
@@ -86,7 +65,7 @@ class MaterialsRequest_UserReport extends Admin_Admin {
 		$statusSql = "";
 		foreach ($statusesToShow as $status){
 			if (strlen($statusSql) > 0) $statusSql .= ",";
-			$statusSql .= "'" . $materialsRequest->escape($status) . "'";
+			$statusSql .= $materialsRequest->escape($status);
 		}
 		$materialsRequest->whereAdd("status in ($statusSql)");
 		$materialsRequest->groupBy('userId, status');

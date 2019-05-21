@@ -1,25 +1,4 @@
 <?php
-/**
- *
- * Copyright (C) Anythink Libraries 2012.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2,
- * as published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- * @author Mark Noble <mnoble@turningleaftech.com>
- * @copyright Copyright (C) Anythink Libraries 2012.
- *
- */
 
 require_once ROOT_DIR . '/Action.php';
 require_once(ROOT_DIR . '/services/Admin/Admin.php');
@@ -28,9 +7,6 @@ require_once(ROOT_DIR . '/sys/MaterialsRequestStatus.php');
 
 class MaterialsRequest_ManageRequests extends Admin_Admin {
 
-	/**
-	 *
-	 */
 	function launch()
 	{
 		global $configArray;
@@ -182,10 +158,10 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 		if ($user){
 
 			$materialsRequests = new MaterialsRequest();
-			$materialsRequests->joinAdd(new Location(), "LEFT");
-			$materialsRequests->joinAdd(new MaterialsRequestStatus());
-			$materialsRequests->joinAdd(new User(), 'INNER', 'user', 'createdBy');
-			$materialsRequests->joinAdd(new User(), 'LEFT', 'assignee', 'assignedTo');
+			$materialsRequests->joinAdd(new Location(), "LEFT", 'location', 'holdPickupLocation', 'locationId');
+			$materialsRequests->joinAdd(new MaterialsRequestStatus(), 'INNER', 'status', 'status', 'id');
+			$materialsRequests->joinAdd(new User(), 'INNER', 'user', 'createdBy', 'id');
+			$materialsRequests->joinAdd(new User(), 'LEFT', 'assignee', 'assignedTo', 'id');
 			$materialsRequests->selectAdd();
 			$materialsRequests->selectAdd('materials_request.*, description as statusLabel, location.displayName as location, user.firstname, user.lastname, user.' . $configArray['Catalog']['barcodeProperty'] . ' as barcode, assignee.displayName as assignedTo');
 			if (UserAccount::userHasRole('library_material_requests')){
@@ -206,7 +182,7 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 				$statusSql = "";
 				foreach ($statusesToShow as $status){
 					if (strlen($statusSql) > 0) $statusSql .= ",";
-					$statusSql .= "'" . $materialsRequests->escape($status) . "'";
+					$statusSql .=  $materialsRequests->escape($status);
 				}
 				$materialsRequests->whereAdd("status in ($statusSql)");
 			}
@@ -281,7 +257,7 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 					$userRole         = new UserRoles();
 					$userRole->roleId = $role->roleId;
 
-					$materialsRequestManagers->joinAdd($userRole);
+					$materialsRequestManagers->joinAdd($userRole, 'INNER', 'user', 'id', 'userId');
 					$materialsRequestManagers->whereAdd('user.homeLocationId IN (' . implode(', ', $locationsForLibrary) . ')');
 					$assignees = array();
 					if ($materialsRequestManagers->find()) {

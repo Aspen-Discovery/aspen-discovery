@@ -120,6 +120,7 @@ class MyAccount_Profile extends MyAccount
 
 			global $translator;
 			$notice         = $translator->translate('overdrive_account_preferences_notice');
+            require_once ROOT_DIR . '/sys/OverDrive/OverDriveSetting.php';
             $overDriveSettings = new OverDriveSetting();
             $overDriveSettings->find((true));
             $overDriveUrl = $overDriveSettings->url;

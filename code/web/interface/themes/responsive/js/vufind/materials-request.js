@@ -50,7 +50,7 @@ VuFind.MaterialsRequest = (function(){
 		},
 
 		updateMaterialsRequest: function(id){
-			return VuFind.Account.ajaxLightbox(Globals.path + "/MaterialsRequest/AJAX?method=UpdateMaterialsRequest&id=" +id, true);
+			return VuFind.Account.ajaxLightbox(Globals.path + "/MaterialsRequest/AJAX?method=updateMaterialsRequest&id=" +id, true);
 		},
 
 		exportSelectedRequests: function(){

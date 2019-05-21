@@ -36,7 +36,8 @@ class CatalogConnection
 	{
 		$path = ROOT_DIR . "/Drivers/{$driver}.php";
 		if (is_readable($path) && $driver != 'AbstractIlsDriver') {
-			require_once $path;
+            /** @noinspection PhpIncludeInspection */
+            require_once $path;
 
 			try {
 				$this->driver = new $driver($accountProfile);
@@ -202,7 +203,7 @@ class CatalogConnection
 			$statusQuery = new MaterialsRequestStatus();
 			$statusQuery->isOpen = 1;
 			$statusQuery->libraryId = $homeLibrary->libraryId;
-			$materialsRequest->joinAdd($statusQuery);
+			$materialsRequest->joinAdd($statusQuery, 'INNER', 'status', 'status', 'id');
 			$materialsRequest->find();
 			$user->setNumMaterialsRequests($materialsRequest->N);
 			$timer->logTime("Updated number of active materials requests");
@@ -450,7 +451,7 @@ class CatalogConnection
             $patron->trackReadingHistory = true;
             $patron->update();
 
-            //Load the reading history from the ILS if available
+            //TODO: Load the reading history from the ILS if available
             if ($this->driver->hasNativeReadingHistory()){
 
             }
@@ -555,22 +556,6 @@ class CatalogConnection
 		return $this->driver->placeItemHold($patron, $recordId, $itemId, $pickupBranch);
 	}
 
-	/**
-	 * Get Hold Link
-	 *
-	 * The goal for this method is to return a URL to a "place hold" web page on
-	 * the ILS OPAC. This is used for ILSs that do not support an API or method
-	 * to place Holds.
-	 *
-	 * @param   string  $recordId   The id of the bib record
-	 * @return  mixed               True if successful, otherwise return a AspenError
-	 * @access  public
-	 */
-	function getHoldLink($recordId)
-	{
-		return $this->driver->getHoldLink($recordId);
-	}
-
 	function updatePatronInfo($user, $canUpdateContactInfo)
 	{
 		return $errors = $this->driver->updatePatronInfo($user, $canUpdateContactInfo);
@@ -593,6 +578,8 @@ class CatalogConnection
 
 	/**
 	 * @param User $patron
+     *
+     * @return array
 	 */
 	function getMyBookings($patron){
 		$bookings = $this->driver->getMyBookings($patron);
@@ -830,7 +817,7 @@ class CatalogConnection
      * @param $confirmNewPin
      * @return string a message to the user letting them know what happened
      */
-    function updatePin($user, $oldPin, $newPin, $confirmNewPin){
+    function updatePin(/** @noinspection PhpUnusedParameterInspection */ $user, $oldPin, $newPin, $confirmNewPin){
         /* var Logger $logger */
         global $logger;
         $logger->log('Call to updatePin(), function not implemented.', Logger::LOG_WARNING);

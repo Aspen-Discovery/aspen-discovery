@@ -277,6 +277,7 @@ class SearchAPI extends Action {
         }
 
 		// Check How Many Overdrive Items have been deleted in the last 24 hours
+        require_once ROOT_DIR . '/sys/OverDrive/OverDriveSetting.php';
         $overDriveSettings = new OverDriveSetting();
         if ($overDriveSettings->find(true)) {
 			// Checking that the url is set as a proxy for Overdrive being enabled
