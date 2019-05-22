@@ -181,14 +181,6 @@ VuFind.GroupedWork = (function(){
 						$("#syndicatedReviewPlaceholder").html(syndicatedReviewsData);
 					}
 				}
-				if (data.numEditorialReviews == 0){
-					$("#editorialReviewsPanel").hide();
-				}else{
-					var editorialReviewsData = data.editorialReviewsHtml;
-					if (editorialReviewsData && editorialReviewsData.length > 0) {
-						$("#editorialReviewPlaceholder").html(editorialReviewsData);
-					}
-				}
 
 				if (data.numCustomerReviews == 0){
 					$("#borrowerReviewsPanel").hide();

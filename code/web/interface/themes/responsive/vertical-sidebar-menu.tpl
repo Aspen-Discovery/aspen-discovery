@@ -62,7 +62,7 @@
 								VuFind.Menu.SideBar.showSearch($('#vertical-menu-search-button'));
 							{rdelim}
 							//$('.menu-bar-option:nth-child(1)>a', '#vertical-menu-bar').filter(':visible').click();
-						{elseif (empty($isLoginPage) && !in_array($action, array('EmailResetPin', 'ResetPin', 'RequestPinReset', 'EmailPin', 'SelfReg', 'MyList', 'CiteList'))) && ($module == "MyAccount" || $module == "Admin" || $module == "Circa" || $module == "EditorialReview" || $module == "Report" || ($module == 'Search' && $action == 'History'))}
+						{elseif (empty($isLoginPage) && !in_array($action, array('EmailResetPin', 'ResetPin', 'RequestPinReset', 'EmailPin', 'SelfReg', 'MyList', 'CiteList'))) && ($module == "MyAccount" || $module == "Admin" || $module == "Circa" || $module == "Report" || ($module == 'Search' && $action == 'History'))}
 							{* Prevent this action on the Pin Reset Page && Login Page && Offline Circulation Page*}
 							{* Click Account Menu Bar Button *}
 							$('.menu-bar-option:nth-child(1)>a', '#vertical-menu-bar').filter(':visible').click();

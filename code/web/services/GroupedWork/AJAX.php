@@ -423,25 +423,12 @@ class GroupedWork_AJAX {
 		}
 		$interface->assign('syndicatedReviews', $reviews);
 
-		//Load editorial reviews
-		require_once ROOT_DIR . '/sys/LocalEnrichment/EditorialReview.php';
-		$editorialReviews = new EditorialReview();
-		$editorialReviews->recordId = $id;
-		$editorialReviews->find();
-		$allEditorialReviews = array();
-		while($editorialReviews->fetch()){
-			$allEditorialReviews[] = clone($editorialReviews);
-		}
-		$interface->assign('editorialReviews', $allEditorialReviews);
-
 		$userReviews = $recordDriver->getUserReviews();
 		$interface->assign('userReviews', $userReviews);
 
 		$results = array(
 			'numSyndicatedReviews' => $numSyndicatedReviews,
 			'syndicatedReviewsHtml' => $interface->fetch('GroupedWork/view-syndicated-reviews.tpl'),
-			'numEditorialReviews' => count($allEditorialReviews),
-			'editorialReviewsHtml' => $interface->fetch('GroupedWork/view-editorial-reviews.tpl'),
 			'numCustomerReviews' => count($userReviews),
 			'customerReviewsHtml' => $interface->fetch('GroupedWork/view-user-reviews.tpl'),
 		);

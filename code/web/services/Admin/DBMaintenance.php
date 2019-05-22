@@ -243,37 +243,13 @@ class DBMaintenance extends Admin_Admin {
 					),
 				),
 
-				'editorial_review' => array(
-					'title' => 'Create Editorial Review table',
-					'description' => 'Create editorial review tables for external reviews, i.e. book-a-day blog',
+				'remove_editorial_reviews' => array(
+					'title' => 'Remove Editorial Review table',
+					'description' => 'Remove editorial review tables',
 					'sql' => array(
-						"CREATE TABLE editorial_reviews (" .
-						"editorialReviewId int NOT NULL AUTO_INCREMENT PRIMARY KEY, " .
-						"recordId VARCHAR(50) NOT NULL, " .
-						"title VARCHAR(255) NOT NULL, " .
-						"pubDate BIGINT NOT NULL, " .
-						"review TEXT, " .
-						"source VARCHAR(50) NOT NULL" .
-						")",
+						"DROP TABLE editorial_reviews;",
 					),
 				),
-
-				'editorial_review_1' => array(
-					'title' => 'Add tabName to editorial reviews',
-					'description' => 'Update editorial reviews to include a tab name',
-					'sql' => array(
-						"ALTER TABLE editorial_reviews ADD tabName VARCHAR(25) DEFAULT 'Reviews';",
-					),
-				),
-
-				'editorial_review_2' => array(
-					'title' => 'Add teaser to editorial reviews',
-					'description' => 'Update editorial reviews to include a teaser',
-					'sql' => array(
-						"ALTER TABLE editorial_reviews ADD teaser VARCHAR(512);",
-					),
-				),
-
 
 				'readingHistory' => array(
 					'title' => 'Reading History Creation',
@@ -666,9 +642,9 @@ class DBMaintenance extends Admin_Admin {
 
 				'contentEditor' => array(
 					'title' => 'Create Content Editor role',
-					'description' => 'Create Content Editor Role to allow entering of editorial reviews and creation of widgets.',
+					'description' => 'Create Content Editor Role to allow creation of widgets.',
 					'sql' => array(
-						"INSERT INTO `roles` (`name`, `description`) VALUES ('contentEditor', 'Allows entering of editorial reviews and creation of widgets.')",
+						"INSERT INTO `roles` (`name`, `description`) VALUES ('contentEditor', 'Allows creation of widgets.')",
 					),
 				),
 
@@ -820,7 +796,6 @@ class DBMaintenance extends Admin_Admin {
 						//"ALTER TABLE administrators CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
 						"ALTER TABLE bad_words CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
 						"ALTER TABLE db_update CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
-						"ALTER TABLE editorial_reviews CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
 						"ALTER TABLE ip_lookup CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
 						"ALTER TABLE library CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
 						"ALTER TABLE list_widgets CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;",
@@ -974,7 +949,6 @@ class DBMaintenance extends Admin_Admin {
 					'description' => 'Add indexes to tables that were not defined originally',
 					'continueOnError' => true,
 					'sql' => array(
-						'ALTER TABLE `editorial_reviews` ADD INDEX `RecordId` ( `recordId` ) ',
 						'ALTER TABLE `list_widget_lists` ADD INDEX `ListWidgetId` ( `listWidgetId` ) ',
 						'ALTER TABLE `location` ADD INDEX `ValidHoldPickupBranch` ( `validHoldPickupBranch` ) ',
 					),

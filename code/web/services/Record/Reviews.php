@@ -2,7 +2,6 @@
 
 require_once ROOT_DIR . '/sys/HTTP/HTTP_Request.php';
 require_once ROOT_DIR . '/Drivers/marmot_inc/ISBNConverter.php';
-require_once(ROOT_DIR . '/sys/LocalEnrichment/EditorialReview.php');
 
 require_once 'Record.php';
 
@@ -31,7 +30,7 @@ class Record_Reviews extends Record_Record
 	 * @return array       Returns array with review data, otherwise a
 	 *                      AspenError.
 	 */
-	static function loadReviews($id, $isbn, $includeEditorial = false) {
+	static function loadReviews($id, $isbn) {
 		global $interface;
 		global $configArray;
 		/** @var Memcache $memCache */
@@ -63,39 +62,6 @@ class Record_Reviews extends Record_Record
 				}
 			}
 			$memCache->set("reviews_{$isbn}", $reviews, 0, $configArray['Caching']['purchased_reviews']);
-		}
-
-		//Load Editorial Reviews
-		if ($includeEditorial){
-			if (isset($id)){
-				$recordId = $id;
-
-				$editorialReview = new EditorialReview();
-				$editorialReviewResults = array();
-				$editorialReview->whereAdd("recordId = '{$recordId}'");
-				$editorialReview->find();
-				if ($editorialReview->N > 0){
-					while ($editorialReview->fetch()){
-						$editorialReviewResults[] = clone $editorialReview;
-					}
-				}
-
-				//$reviews["editorialReviews"] = array();
-				if (count($editorialReviewResults) > 0) {
-					foreach ($editorialReviewResults AS $key=>$result ){
-						$reviews["editorialReviews"][$key]["Content"] = $result->review;
-						$reviews["editorialReviews"][$key]["Copyright"] = $result->source;
-						$reviews["editorialReviews"][$key]["Source"] = $result->source;
-						$reviews["editorialReviews"][$key]["ISBN"] = null;
-						$reviews["editorialReviews"][$key]["username"] = null;
-
-						$reviews["editorialReviews"][$key] = Record_Reviews::cleanupReview($reviews["editorialReviews"][$key]);
-						if ($result->teaser){
-							$reviews["editorialReviews"][$key]["Teaser"] = $result->teaser;
-						}
-					}
-				}
-			}
 		}
 
 		//Load Reviews from Good Reads

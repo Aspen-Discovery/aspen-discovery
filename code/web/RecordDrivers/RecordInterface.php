@@ -168,10 +168,6 @@ abstract class RecordInterface {
 					'body' => "<div id='customerReviewPlaceholder'></div>",
 			);
 		}
-		$moreDetailsOptions['editorialReviews'] = array(
-				'label' => 'Editorial Reviews',
-				'body' => "<div id='editorialReviewPlaceholder'></div>",
-		);
 		if ($isbn){
 			$moreDetailsOptions['syndicatedReviews'] = array(
 					'label' => 'Published Reviews',
@@ -270,7 +266,6 @@ abstract class RecordInterface {
 				'similarTitles' => 'Similar Titles From NoveList',
 				'similarAuthors' => 'Similar Authors From NoveList',
 				'borrowerReviews' => 'Borrower Reviews',
-				'editorialReviews' => 'Editorial Reviews',
 				'syndicatedReviews' => 'Syndicated Reviews (Syndetics/ContentCafe)',
 				'goodreadsReviews' => 'GoodReads Reviews',
 				'citations' => 'Citations',
@@ -298,7 +293,6 @@ abstract class RecordInterface {
 				'similarTitles' => 'closed',
 				'similarAuthors' => 'closed',
 				'borrowerReviews' => 'closed',
-				'editorialReviews' => 'closed',
 				'syndicatedReviews' => 'closed',
 				'goodreadsReviews' => 'closed',
 				'citations' => 'closed',
