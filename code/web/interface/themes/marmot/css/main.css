@@ -8859,7 +8859,6 @@ hr.menu {
 #home-page-search-label {
   font-size: 35px;
   color: #FFF;
-  text-shadow: 1px 1px #999999;
 }
 #home-page-advanced-search-link {
   color: #FFF;
@@ -8867,31 +8866,26 @@ hr.menu {
 #lookfor:-ms-input-placeholder {
   font-size: 0;
   color: transparent;
-  text-shadow: none;
   border: 0;
 }
 #lookfor::-webkit-input-placeholder {
   font-size: 0;
   color: transparent;
-  text-shadow: none;
   border: 0;
 }
 #lookfor:-moz-placeholder {
   font-size: 0;
   color: transparent;
-  text-shadow: none;
   border: 0;
 }
 #lookfor::-moz-placeholder {
   font-size: 0;
   color: transparent;
-  text-shadow: none;
   border: 0;
 }
 #lookfor::placeholder {
   font-size: 0;
   color: transparent;
-  text-shadow: none;
   border: 0;
 }
 .searchTypeHome,
@@ -8965,7 +8959,6 @@ hr.menu {
   background-color: #AFAFAF;
   color: #FFF;
   font-size: 18px;
-  text-shadow: 1px 1px #999999;
   padding: 5px;
   margin-bottom: 5px;
 }
@@ -9009,13 +9002,11 @@ hr.menu {
 .sidebar-links .panel > a:hover {
   font-size: 14px;
   color: #333333;
-  text-shadow: 1px 1px #fff;
 }
 .sidebar-links .panel.active > a,
 .sidebar-links .panel.active > a:visited,
 .sidebar-links .panel.active > a:hover {
   color: #fff;
-  text-shadow: 1px 1px #555555;
   outline: none;
 }
 .sidebar-links .active .panel-heading {
@@ -9564,11 +9555,9 @@ a.browse-thumbnail-sorted.active {
 #account-settings-accordion .panel-title {
   font-size: 13px;
   color: #333333;
-  text-shadow: 1px 1px #fff;
 }
 #account-settings-accordion .active .panel-title {
   color: #fff;
-  text-shadow: 1px 1px #555555;
 }
 #account-settings-accordion .panel-body {
   font-size: 12px;
@@ -10030,7 +10019,6 @@ a.browse-thumbnail-sorted.active {
   background-color: #e8e8e8;
   background: linear-gradient(to bottom, #e8e8e8, #d7d7d7);
   color: #555555;
-  text-shadow: 1px 1px #fcfcfc;
   padding: 8px 30px 6px 15px;
   border-top: 1px solid #f4f4f4;
   border-bottom: 1px solid #adadad;
@@ -10321,7 +10309,6 @@ a.browse-thumbnail-sorted.active {
 #more-details-accordion .panel-title {
   font-size: 13px;
   color: #333333;
-  text-shadow: 1px 1px #fff;
 }
 #more-details-accordion .active .panel-heading {
   background-color: #E15F15;
@@ -10329,7 +10316,6 @@ a.browse-thumbnail-sorted.active {
 }
 #more-details-accordion .active .panel-title {
   color: #fff;
-  text-shadow: 1px 1px #555555;
 }
 #more-details-accordion .panel-body {
   font-size: 12px;
@@ -10970,7 +10956,6 @@ fieldset[disabled] .btn-masquerade.active {
   height: 120px;
 }
 .browse-category div {
-  text-shadow: none;
   text-transform: uppercase;
   font-size: large;
   font-weight: 500;

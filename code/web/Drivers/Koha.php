@@ -103,7 +103,7 @@ class Koha extends AbstractIlsDriver {
 	 */
 	function updatePatronInfo($patron, $canUpdateContactInfo){
 		$updateErrors = array();
-		if ($canUpdateContactInfo) {
+		if (!$canUpdateContactInfo) {
 			$updateErrors[] = "Profile Information can not be updated.";
 		}
 		return $updateErrors;

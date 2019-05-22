@@ -8861,7 +8861,6 @@ hr.menu {
 #home-page-search-label {
   font-size: 35px;
   color: #FFF;
-  text-shadow: 1px 1px #999999;
 }
 #home-page-advanced-search-link {
   color: #FFF;
@@ -8869,31 +8868,26 @@ hr.menu {
 #lookfor:-ms-input-placeholder {
   font-size: 0;
   color: transparent;
-  text-shadow: none;
   border: 0;
 }
 #lookfor::-webkit-input-placeholder {
   font-size: 0;
   color: transparent;
-  text-shadow: none;
   border: 0;
 }
 #lookfor:-moz-placeholder {
   font-size: 0;
   color: transparent;
-  text-shadow: none;
   border: 0;
 }
 #lookfor::-moz-placeholder {
   font-size: 0;
   color: transparent;
-  text-shadow: none;
   border: 0;
 }
 #lookfor::placeholder {
   font-size: 0;
   color: transparent;
-  text-shadow: none;
   border: 0;
 }
 .searchTypeHome,
@@ -8967,7 +8961,6 @@ hr.menu {
   background-color: #AFAFAF;
   color: #FFF;
   font-size: 18px;
-  text-shadow: 1px 1px #999999;
   padding: 5px;
   margin-bottom: 5px;
 }
@@ -9011,13 +9004,11 @@ hr.menu {
 .sidebar-links .panel > a:hover {
   font-size: 14px;
   color: #333333;
-  text-shadow: 1px 1px #fff;
 }
 .sidebar-links .panel.active > a,
 .sidebar-links .panel.active > a:visited,
 .sidebar-links .panel.active > a:hover {
   color: #fff;
-  text-shadow: 1px 1px #555555;
   outline: none;
 }
 .sidebar-links .active .panel-heading {
@@ -9566,11 +9557,9 @@ a.browse-thumbnail-sorted.active {
 #account-settings-accordion .panel-title {
   font-size: 13px;
   color: #333333;
-  text-shadow: 1px 1px #fff;
 }
 #account-settings-accordion .active .panel-title {
   color: #fff;
-  text-shadow: 1px 1px #555555;
 }
 #account-settings-accordion .panel-body {
   font-size: 12px;
@@ -10033,7 +10022,6 @@ a.browse-thumbnail-sorted.active {
   background-color: #e8e8e8;
   background: linear-gradient(to bottom, #e8e8e8, #d7d7d7);
   color: #555555;
-  text-shadow: 1px 1px #fcfcfc;
   padding: 8px 30px 6px 15px;
   border-top: 1px solid #f4f4f4;
   border-bottom: 1px solid #adadad;
@@ -10326,7 +10314,6 @@ a.browse-thumbnail-sorted.active {
 #more-details-accordion .panel-title {
   font-size: 13px;
   color: #333333;
-  text-shadow: 1px 1px #fff;
 }
 #more-details-accordion .active .panel-heading {
   background-color: #4dacde;
@@ -10334,7 +10321,6 @@ a.browse-thumbnail-sorted.active {
 }
 #more-details-accordion .active .panel-title {
   color: #fff;
-  text-shadow: 1px 1px #555555;
 }
 #more-details-accordion .panel-body {
   font-size: 12px;
@@ -11019,7 +11005,6 @@ h6,
   vertical-align: middle;
   padding: 0;
   text-align: center;
-  text-shadow: none;
   text-decoration: none;
   font-weight: 600;
   color: inherit;
@@ -11085,7 +11070,6 @@ h6,
 #home-page-search-label {
   font-size: 35px;
   color: #fff;
-  text-shadow: 0px 0px #999;
   text-align: center;
 }
 /*
@@ -11139,7 +11123,6 @@ div.panel-title {
 .sidebar-links .panel-heading,
 #account-settings-accordion .panel-heading {
   color: #292929;
-  text-shadow: none;
   font-size: 16px;
   background-color: #e4e4e4;
   background: #e4e4e4;
@@ -11151,7 +11134,6 @@ div.panel-title {
 .sidebar-links .active .panel-heading,
 #account-settings-accordion .active .panel-heading {
   color: #292929;
-  text-shadow: none;
   font-size: 16px;
   background-color: #e4e4e4;
   background: #e4e4e4;
@@ -11162,7 +11144,6 @@ div.panel-title {
 #account-settings-accordion .panel-title,
 #account-settings-accordion .active .panel-title {
   color: #292929;
-  text-shadow: none;
   font-size: 14px;
 }
 #account-settings-accordion .panel-body {
@@ -11174,13 +11155,11 @@ div.panel-title {
 /* Text on expanded accordion menus in the left sidebar of My Account */
 .sidebar-links .active .panel-title {
   color: #444;
-  text-shadow: none;
   text-decoration: none;
 }
 .sidebar-links .panel-title {
   font-size: 16px;
   color: #444;
-  text-shadow: none;
 }
 .panel {
   border: none;
@@ -11265,7 +11244,6 @@ hr.menu {
   padding: 0 3px;
 }
 .browse-category {
-  text-shadow: none;
   padding: 0;
   margin-left: 1px;
   margin-right: 1px;
@@ -11332,7 +11310,6 @@ div#browse-category-carousel ul > li.browse-category:hover {
   background: #4E443C;
   color: #fff;
   text-decoration: none;
-  text-shadow: 0 0 1px #000;
   font: 24px/52px Arial, sans-serif;
   -webkit-box-shadow: 0 0 4px #F0EFE7;
   -moz-box-shadow: 0 0 4px #F0EFE7;
@@ -11428,10 +11405,8 @@ span.results-sort-label {
 /* Facet headings - left menu search results */
 .facetTitle,
 .exploreMoreTitle {
-  background-color: #e4e4e4;
   background: #e4e4e4;
   color: #292929;
-  text-shadow: none;
   padding: 5px 10px;
   border: 1px solid #d7d7d7;
   border-radius: 0px;
@@ -11557,9 +11532,6 @@ p.alert.alert-success {
   color: #444;
   border-color: #fff;
 }
-.panel-group a {
-  text-shadow: none;
-}
 /* this changes the color the warning that appears when you renew items */
 .alert-warning {
   background-color: #ede721;
@@ -11592,7 +11564,6 @@ p.alert.alert-success {
 #more-details-accordion .active .panel-title,
 #more-details-accordion .panel-title {
   color: #292929;
-  text-shadow: none;
   font-size: 14px;
 }
 #more-details-accordion .panel-body {
@@ -11892,7 +11863,6 @@ p.alert.alert-success {
 }
 .social a[class*="icons_"] {
   font: 0/0 a;
-  text-shadow: none;
   color: transparent;
   min-width: 30px;
   min-height: 30px;

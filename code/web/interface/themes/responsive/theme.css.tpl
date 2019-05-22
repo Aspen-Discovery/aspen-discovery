@@ -57,9 +57,9 @@ body .container{ldelim}
 {/if}
 
 {if $secondaryBackgroundColor}
-.browse-category.selected,.browse-category.selected:hover,#browse-sub-category-menu button.selected,#browse-sub-category-menu button.selected:hover{ldelim}
-    background-color: {$secondaryBackgroundColor};
-    border-color: {$secondaryBackgroundColor}
+.browse-category.selected,.browse-category.selected:hover,#browse-sub-category-menu button.selected,#browse-sub-category-menu button.selected:hover,.active .panel-heading{ldelim}
+    border-color: {$secondaryBackgroundColor} !important;
+    background: {$secondaryBackgroundColor} !important;
 {rdelim}
 {/if}
 
@@ -68,9 +68,10 @@ body .container{ldelim}
     background-color: {$secondaryForegroundColor};
     border-color: {$secondaryForegroundColor};
 {rdelim}
-.browse-category.selected,.browse-category.selected:hover,#browse-sub-category-menu button.selected,#browse-sub-category-menu button.selected:hover{ldelim}
-    color: {$secondaryForegroundColor};
+.browse-category.selected,.browse-category.selected:hover,#browse-sub-category-menu button.selected,#browse-sub-category-menu button.selected:hover,.active .panel-heading{ldelim}
+    color: {$secondaryForegroundColor} !important;
 {rdelim}
+
 {/if}
 
 {if $tertiaryBackgroundColor}

@@ -15,8 +15,9 @@ class Theme extends DataObject
     public $headerBackgroundColorDefault;
     public $headerForegroundColor;
     public $headerForegroundColorDefault;
-    public $headerBottomBorderColor;
-    public $headerBottomBorderColorDefault;
+    //TODO: Delete header bottom border color from settings?
+//    public $headerBottomBorderColor;
+//    public $headerBottomBorderColorDefault;
 
     public $headerButtonRadius;
     public $headerButtonColor;
@@ -66,7 +67,7 @@ class Theme extends DataObject
             //Header Colors
             'headerBackgroundColor' => array('property'=>'headerBackgroundColor', 'type'=>'color', 'label'=>'Header Background Color', 'description'=>'Header Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#f1f1f1'),
             'headerForegroundColor' => array('property'=>'headerForegroundColor', 'type'=>'color', 'label'=>'Header Foreground Color', 'description'=>'Header Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#8b8b8b'),
-            'headerBottomBorderColor' => array('property'=>'headerBottomBorderColor', 'type'=>'color', 'label'=>'Header Bottom Border Color', 'description'=>'Header Bottom Border Color', 'required' => false, 'hideInLists' => true, 'default' => '#B7B7B7'),
+//            'headerBottomBorderColor' => array('property'=>'headerBottomBorderColor', 'type'=>'color', 'label'=>'Header Bottom Border Color', 'description'=>'Header Bottom Border Color', 'required' => false, 'hideInLists' => true, 'default' => '#B7B7B7'),
             'headerBottomBorderWidth' => array('property'=>'headerBottomBorderWidth', 'type'=>'text', 'label'=>'Header Bottom Border Width', 'description'=>'Header Bottom Border Width', 'required' => false, 'hideInLists' => true),
             //Header Buttons
             'headerButtonRadius' => array('property'=>'headerButtonRadius', 'type'=>'text', 'label'=>'Header Button Radius', 'description'=>'Header Button Radius', 'required' => false, 'hideInLists' => true),
@@ -118,9 +119,9 @@ class Theme extends DataObject
                 $interface->assign('headerForegroundColor', $theme->headerForegroundColor);
             }
 
-            if ($interface->getVariable('headerBottomBorderColor') == null && !$theme->headerBottomBorderColorDefault) {
-                $interface->assign('headerBottomBorderColor', $theme->headerBottomBorderColor);
-            }
+//            if ($interface->getVariable('headerBottomBorderColor') == null && !$theme->headerBottomBorderColorDefault) {
+//                $interface->assign('headerBottomBorderColor', $theme->headerBottomBorderColor);
+//            }
             if ($interface->getVariable('headerBottomBorderWidth') == null && !empty($theme->headerBottomBorderWidth)) {
                 $interface->assign('headerBottomBorderWidth', $theme->headerBottomBorderWidth);
             }
