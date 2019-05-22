@@ -203,7 +203,7 @@ public class GroupedReindexMain {
 		logger.info("Setting up database connections");
 		String databaseConnectionInfo = ConfigUtil.cleanIniValue(configIni.get("Database", "database_aspen_jdbc"));
 		if (databaseConnectionInfo == null || databaseConnectionInfo.length() == 0) {
-			logger.error("Database connection information not found in Database Section.  Please specify connection information in database_vufind_jdbc.");
+			logger.error("Database connection information not found in Database Section.  Please specify connection information in database_aspen_jdbc.");
 			System.exit(1);
 		}
 		try {

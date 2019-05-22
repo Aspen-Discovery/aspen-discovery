@@ -1,5 +1,6 @@
 package com.turning_leaf_technologies.grouping;
 
+import com.opencsv.CSVReader;
 import com.turning_leaf_technologies.indexing.RecordIdentifier;
 import org.apache.logging.log4j.Logger;
 import org.marc4j.marc.*;
@@ -25,6 +26,9 @@ public class RecordGroupingProcessor {
 	private PreparedStatement deletePrimaryIdentifierStmt;
 	private PreparedStatement getPermanentIdByWorkIdStmt;
 
+	private PreparedStatement getAuthorAuthorityStmt;
+	private PreparedStatement getTitleAuthorityStmt;
+
 	private int numRecordsProcessed = 0;
 	private int numGroupedWorksAdded = 0;
 
@@ -34,7 +38,7 @@ public class RecordGroupingProcessor {
 	HashMap<String, HashMap<String, String>> translationMaps = new HashMap<>();
 
 	//TODO: Determine if we can avoid this by simply using the ON DUPLICATE KEY UPDATE FUNCTIONALITY
-	//Would also want to mark merged works as changed (at least once) to make sure they get reindexed.
+	//Would also want to mark merged works as changed (at least once) to make sure they get re-indexed.
 	private HashMap<String, Long> existingGroupedWorks = new HashMap<>();
 
 	//A list of grouped works that have been manually merged.
@@ -67,6 +71,7 @@ public class RecordGroupingProcessor {
 
 		loadTranslationMaps(serverName);
 
+		loadAuthorities(dbConnection);
 	}
 
 	/**
@@ -140,6 +145,9 @@ public class RecordGroupingProcessor {
 			deletePrimaryIdentifierStmt = dbConnection.prepareStatement("DELETE from grouped_work_primary_identifiers where id = ?");
 			getAdditionalPrimaryIdentifierForWorkStmt = dbConnection.prepareStatement("SELECT * from grouped_work_primary_identifiers where grouped_work_id = ?");
 			getPermanentIdByWorkIdStmt = dbConnection.prepareStatement("SELECT permanent_id from grouped_work WHERE id = ?");
+
+			getAuthorAuthorityStmt = dbConnection.prepareStatement("SELECT * from author_authorities where originalName = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			getTitleAuthorityStmt = dbConnection.prepareStatement("SELECT * from title_authorities where originalName = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 
 			if (!fullRegrouping){
 				PreparedStatement loadExistingGroupedWorksStmt = dbConnection.prepareStatement("SELECT id, permanent_id from grouped_work");
@@ -288,7 +296,7 @@ public class RecordGroupingProcessor {
 
 	private HashSet<Long> updatedAndInsertedWorksThisRun = new HashSet<>();
 	private void markWorkUpdated(long groupedWorkId) {
-		//Optimize to not continually mark the same works as updateed
+		//Optimize to not continually mark the same works as updated
 		if (!updatedAndInsertedWorksThisRun.contains(groupedWorkId)) {
 			try {
 				updateDateUpdatedForGroupedWorkStmt.setLong(1, updateTime);
@@ -328,10 +336,10 @@ public class RecordGroupingProcessor {
 	 * @param author				The author of the record
 	 * @param format				The format of the record
 	 * @param primaryDataChanged	Whether or not the primary data has been changed
-	 * @return						The permanent id of the gerouped work
+	 * @return						The permanent id of the grouped work
 	 */
 	public String processRecord(RecordIdentifier primaryIdentifier, String title, String subtitle, String author, String format, boolean primaryDataChanged){
-		GroupedWorkBase groupedWork = GroupedWorkFactory.getInstance(-1);
+		GroupedWorkBase groupedWork = GroupedWorkFactory.getInstance(-1, this);
 
 		//Replace & with and for better matching
 		groupedWork.setTitle(title, 0, subtitle);
@@ -553,5 +561,99 @@ public class RecordGroupingProcessor {
 			}
 		}
 		return translatedValue;
+	}
+
+	void loadAuthorities(Connection dbConn) {
+		logger.info("Loading authorities");
+		try {
+			//Get the count of authorities in the database
+			boolean reloadAuthorAuthorities = true;
+			PreparedStatement authorityStmt = dbConn.prepareStatement("SELECT count(*) as numAuthorities from author_authorities");
+			ResultSet numAuthorAuthorities = authorityStmt.executeQuery();
+			if (numAuthorAuthorities.next()) {
+				if (numAuthorAuthorities.getInt("numAuthorities") > 0) {
+					reloadAuthorAuthorities = false;
+				}
+			}
+			if (reloadAuthorAuthorities){
+				PreparedStatement addAuthorAuthorityStmt = dbConn.prepareStatement("INSERT into author_authorities (originalName, authoritativeName) VALUES (?, ?)");
+				try {
+					CSVReader csvReader = new CSVReader(new FileReader(new File("../record_grouping/author_authorities.properties")));
+					String[] curLine = csvReader.readNext();
+					while (curLine != null){
+						try{
+							addAuthorAuthorityStmt.setString(1, curLine[0]);
+							addAuthorAuthorityStmt.setString(2, curLine[1]);
+							addAuthorAuthorityStmt.executeUpdate();
+						}catch (SQLException e){
+							logger.error("Error adding authority " + curLine[0]);
+						}
+						curLine = csvReader.readNext();
+					}
+					csvReader.close();
+				} catch (IOException e) {
+					logger.error("Unable to load author authorities", e);
+				}
+			}
+
+			//Get the count of authorities in the database
+			boolean reloadTitleAuthorities = true;
+			authorityStmt = dbConn.prepareStatement("SELECT count(*) as numAuthorities from title_authorities");
+			ResultSet numTitleAuthorities = authorityStmt.executeQuery();
+			if (numTitleAuthorities.next()) {
+				if (numTitleAuthorities.getInt("numAuthorities") > 0) {
+					reloadTitleAuthorities = false;
+				}
+			}
+			if (reloadTitleAuthorities){
+				PreparedStatement addTitleAuthorityStmt = dbConn.prepareStatement("INSERT into title_authorities (originalName, authoritativeName) VALUES (?, ?)");
+				try {
+					CSVReader csvReader = new CSVReader(new FileReader(new File("../record_grouping/title_authorities.properties")));
+					String[] curLine = csvReader.readNext();
+					while (curLine != null){
+						try{
+							addTitleAuthorityStmt.setString(1, curLine[0]);
+							addTitleAuthorityStmt.setString(2, curLine[1]);
+							addTitleAuthorityStmt.executeUpdate();
+						}catch (SQLException e){
+							logger.error("Error adding authority " + curLine[0]);
+						}
+						curLine = csvReader.readNext();
+					}
+					csvReader.close();
+				} catch (IOException e) {
+					logger.error("Unable to load title authorities", e);
+				}
+			}
+		}catch (SQLException e){
+			logger.error("Error loading authorities", e);
+		}
+
+		logger.info("Done loading authorities");
+	}
+
+	String getAuthoritativeAuthor(String originalAuthor){
+		try {
+			getAuthorAuthorityStmt.setString(1, originalAuthor);
+			ResultSet authorityRS = getAuthorAuthorityStmt.executeQuery();
+			if (authorityRS.next()){
+				return authorityRS.getString("authoritativeName");
+			}
+		} catch (SQLException e) {
+			logger.error("Error getting authoritative author", e);
+		}
+		return originalAuthor;
+	}
+	String getAuthoritativeTitle(String originalTitle){
+		try {
+			getTitleAuthorityStmt.setString(1, originalTitle);
+			ResultSet authorityRS = getTitleAuthorityStmt.executeQuery();
+			if (authorityRS.next()){
+				return authorityRS.getString("authoritativeName");
+			}
+		} catch (SQLException e) {
+			logger.error("Error getting authoritative title", e);
+		}
+		return originalTitle;
 	}
 }

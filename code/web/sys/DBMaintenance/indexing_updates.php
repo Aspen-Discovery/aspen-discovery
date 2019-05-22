@@ -404,5 +404,76 @@ function getIndexingUpdates() {
                 'ALTER TABLE indexing_profiles ADD COLUMN lastUpdateOfAllRecords INT(11) DEFAULT 0'
             ]
         ],
+
+        'authorities' => [
+            'title' => 'Authority Tables',
+            'description' => 'Setup authorities in the database to reduce memory usage during indexing',
+            'sql' => [
+                "CREATE TABLE author_authorities (
+                    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                    originalName VARCHAR(255) NOT NULL,
+                    authoritativeName VARCHAR(255) NOT NULL
+                ) ENGINE = InnoDB",
+                "ALTER TABLE author_authorities ADD UNIQUE INDEX (originalName)",
+                "ALTER TABLE author_authorities ADD INDEX (authoritativeName)",
+                "CREATE TABLE title_authorities (
+                    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                    originalName VARCHAR(255) NOT NULL,
+                    authoritativeName VARCHAR(255) NOT NULL
+                ) ENGINE = InnoDB",
+                "ALTER TABLE title_authorities ADD UNIQUE INDEX (originalName)",
+                "ALTER TABLE title_authorities ADD INDEX (authoritativeName)",
+            ]
+        ],
+
+        'accelerated_reader' => [
+            'title' => 'Accelerated Reader',
+            'description' => 'Setup authorities in the database to reduce memory usage during indexing',
+            'sql' => [
+                "CREATE TABLE accelerated_reading_titles (
+                    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                    arBookId INT NOT NULL,
+                    language VARCHAR(2) NOT NULL,
+                    title VARCHAR(255) NOT NULL,
+                    authorCombined VARCHAR(255) NOT NULL,
+                    bookLevel FLOAT,
+                    arPoints INT(4),
+                    isFiction TINYINT(1),
+                    interestLevel VARCHAR(5)                                                            
+                ) ENGINE = InnoDB",
+                "ALTER TABLE accelerated_reading_titles ADD UNIQUE INDEX (arBookId)",
+                "CREATE TABLE accelerated_reading_isbn (
+                    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                    arTitleId INT NOT NULL,
+                    isbn VARCHAR(13) NOT NULL
+                ) ENGINE = InnoDB",
+                "ALTER TABLE accelerated_reading_isbn ADD INDEX (arTitleId)",
+                "ALTER TABLE accelerated_reading_isbn ADD UNIQUE INDEX (isbn)",
+                "CREATE TABLE accelerated_reading_subject (
+                    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                    arTitleId INT NOT NULL,
+                    topic VARCHAR(255) NOT NULL,
+                    subTopic VARCHAR(255) NOT NULL
+                ) ENGINE = InnoDB",
+                "ALTER TABLE accelerated_reading_subject ADD INDEX (arTitleId)",
+                "ALTER TABLE accelerated_reading_subject ADD INDEX (topic, subTopic)",
+                "CREATE TABLE accelerated_reading_subject_to_title (
+                    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                    arTitleId INT NOT NULL,
+                    arSubjectId INT NOT NULL
+                ) ENGINE = InnoDB",
+                "ALTER TABLE accelerated_reading_subject_to_title ADD UNIQUE INDEX (arTitleId, arSubjectId)",
+                "CREATE TABLE accelerated_reading_settings (
+                    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                    indexSeries TINYINT(1) DEFAULT 1,
+                    indexSubjects TINYINT(1) DEFAULT 1,
+                    arExportPath VARCHAR(255) NOT NULL,
+                    ftpServer VARCHAR(255) NOT NULL,
+                    ftpUser VARCHAR(255) NOT NULL,
+                    ftpPassword VARCHAR(255) NOT NULL,
+                    lastFetched INT NOT NULL default 0
+                ) ENGINE = InnoDB",
+            ]
+        ],
 	);
 }

@@ -49,6 +49,8 @@ public class MarcRecordGrouper extends RecordGroupingProcessor{
 
 		super.setupDatabaseStatements(dbConnection);
 
+		super.loadAuthorities(dbConnection);
+
 		loadTranslationMaps(dbConnection);
 
 	}
@@ -619,7 +621,7 @@ public class MarcRecordGrouper extends RecordGroupingProcessor{
 	}
 
 	private GroupedWorkBase setupBasicWorkForIlsRecord(Record marcRecord, String loadFormatFrom, char formatSubfield, String specifiedFormatCategory) {
-		GroupedWorkBase workForTitle = GroupedWorkFactory.getInstance(-1);
+		GroupedWorkBase workForTitle = GroupedWorkFactory.getInstance(-1, this);
 
 		//Title
 		DataField field245 = setWorkTitleBasedOnMarcRecord(marcRecord, workForTitle);

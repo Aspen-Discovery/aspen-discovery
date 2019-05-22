@@ -33,6 +33,10 @@ class GroupedWork4 extends GroupedWorkBase implements Cloneable {
 
 	private static Pattern editionRemovalPattern = Pattern.compile("(first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth|revised|\\d+\\S*)\\s+(edition|ed|ed\\.|update)");
 
+	GroupedWork4(RecordGroupingProcessor processor) {
+		super(processor);
+	}
+
 	private String normalizeTitle(String fullTitle, int numNonFilingCharacters) {
 		String groupingTitle;
 		if (numNonFilingCharacters > 0 && numNonFilingCharacters < fullTitle.length()){

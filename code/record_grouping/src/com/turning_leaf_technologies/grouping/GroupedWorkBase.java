@@ -1,18 +1,11 @@
 package com.turning_leaf_technologies.grouping;
 
-import com.opencsv.CSVReader;
-import com.opencsv.CSVWriter;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.HashMap;
 
 /**
  * Superclass for all Grouped Works which have different normalization rules.
@@ -28,14 +21,15 @@ public abstract class GroupedWorkBase {
 	protected String author = "";             //Up to 50  chars
 	String groupingCategory = "";   //Up to 25  chars
 	private String uniqueIdentifier = null;
+	private RecordGroupingProcessor processor;
+
+	public GroupedWorkBase(RecordGroupingProcessor processor){
+		this.processor = processor;
+	}
 
 	//Load authorities
-	private static HashMap<String, String> authorAuthorities = new HashMap<>();
-	private static HashMap<String, String> titleAuthorities = new HashMap<>();
-
-	static {
-		loadAuthorities();
-	}
+	//private static HashMap<String, String> authorAuthorities = new HashMap<>();
+	//private static HashMap<String, String> titleAuthorities = new HashMap<>();
 
 	String getPermanentId() {
 		if (this.permanentId == null){
@@ -49,11 +43,15 @@ public abstract class GroupedWorkBase {
 					idGenerator.update(fullTitle.getBytes());
 				}
 
-				String author = getAuthoritativeAuthor();
+				String authoritativeAuthor = getAuthoritativeAuthor();
+				//TODO: Delete this if block
+				if (!authoritativeAuthor.equals(this.author)){
+					logger.warn("Authoritative author " + authoritativeAuthor + " used for " + fullTitle);
+				}
 				if (author.equals("")){
 					idGenerator.update("--null--".getBytes());
 				}else{
-					idGenerator.update(author.getBytes());
+					idGenerator.update(authoritativeAuthor.getBytes());
 				}
 				if (groupingCategory.equals("")){
 					idGenerator.update("--null--".getBytes());
@@ -82,11 +80,7 @@ public abstract class GroupedWorkBase {
 	private String authoritativeTitle;
 	String getAuthoritativeTitle() {
 		if (authoritativeTitle == null) {
-			if (titleAuthorities.containsKey(fullTitle)) {
-				authoritativeTitle = titleAuthorities.get(fullTitle);
-			} else {
-				authoritativeTitle = fullTitle;
-			}
+			authoritativeTitle = processor.getAuthoritativeTitle(fullTitle);
 		}
 		return authoritativeTitle;
 	}
@@ -98,12 +92,7 @@ public abstract class GroupedWorkBase {
 	private String authoritativeAuthor = null;
 	String getAuthoritativeAuthor() {
 		if (authoritativeAuthor == null) {
-			if (authorAuthorities.containsKey(author)) {
-				authoritativeAuthor = authorAuthorities.get(author);
-				logger.info("Found author " + author + " in authorities file");
-			} else {
-				authoritativeAuthor = author;
-			}
+			authoritativeAuthor = processor.getAuthoritativeAuthor(author);
 		}
 		return authoritativeAuthor;
 	}
@@ -115,33 +104,6 @@ public abstract class GroupedWorkBase {
 	abstract void setGroupingCategory(String groupingCategory);
 
 	abstract String getGroupingCategory();
-
-	private static void loadAuthorities() {
-		logger.info("Loading authorities");
-		try {
-			CSVReader csvReader = new CSVReader(new FileReader(new File("../record_grouping/author_authorities.properties")));
-			String[] curLine = csvReader.readNext();
-			while (curLine != null){
-				authorAuthorities.put(curLine[0], curLine[1]);
-				curLine = csvReader.readNext();
-			}
-		} catch (IOException e) {
-			logger.error("Unable to load author authorities", e);
-		}
-		try {
-			CSVReader csvReader = new CSVReader(new FileReader(new File("../record_grouping/title_authorities.properties")));
-			String[] curLine = csvReader.readNext();
-			while (curLine != null){
-				if (curLine.length >= 2){
-					titleAuthorities.put(curLine[0], curLine[1]);
-				}
-				curLine = csvReader.readNext();
-			}
-		} catch (IOException e) {
-			logger.error("Unable to load title authorities", e);
-		}
-		logger.info("Done loading authorities");
-	}
 
 	void makeUnique(String primaryIdentifier) {
 		uniqueIdentifier = primaryIdentifier;

@@ -28,6 +28,10 @@ class GroupedWork5 extends GroupedWorkBase implements Cloneable {
 
 	static Logger logger = LogManager.getLogger(GroupedWork5.class);
 
+	GroupedWork5(RecordGroupingProcessor processor) {
+		super(processor);
+	}
+
 	private String normalizeAuthor(String author) {
 		if (author.indexOf(';' )> 0){
 			author = author.substring(0, author.indexOf(';'));

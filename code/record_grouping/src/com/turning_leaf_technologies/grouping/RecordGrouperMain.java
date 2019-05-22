@@ -1,7 +1,5 @@
 package com.turning_leaf_technologies.grouping;
 
-import com.opencsv.CSVReader;
-import com.opencsv.CSVWriter;
 import com.turning_leaf_technologies.config.ConfigUtil;
 import com.turning_leaf_technologies.indexing.IndexingProfile;
 import com.turning_leaf_technologies.indexing.RecordIdentifier;
@@ -79,13 +77,11 @@ public class RecordGrouperMain {
 					"2) Generate work ids for a Pika site based on the exports for the site\n" +
 					"   record_grouping.jar <pika_site_name>\n" +
 					"   \n" +
-					"3) benchmark the record generation and test the functionality\n" +
-					"   record_grouping.jar benchmark\n" +
-					"4) Only run record grouping cleanup\n" +
+					"3) Only run record grouping cleanup\n" +
 					"   record_grouping.jar <pika_site_name> runPostGroupingCleanup\n" +
-					"5) Only explode records into individual records (no grouping)\n" +
+					"4) Only explode records into individual records (no grouping)\n" +
 					"   record_grouping.jar <pika_site_name> explodeMarcs\n" +
-					"6) Record Group a specific indexing profile\n" +
+					"5) Record Group a specific indexing profile\n" +
 					"   record_grouping.jar <pika_site_name> \"<profile name>\"");
 			System.exit(1);
 		}
@@ -95,49 +91,51 @@ public class RecordGrouperMain {
 		String processName = "record_grouping";
 		logger = LoggingUtil.setupLogging(serverName, processName);
 
-		switch (args[1]) {
-			case "benchmark":
-				boolean validateNYPL = false;
-				if (args.length > 2) {
-					if (args[2].equals("nypl")) {
-						validateNYPL = true;
-					}
-				}
-				doBenchmarking(validateNYPL);
-				break;
-			case "generateWorkId":
-				String title;
-				String author;
-				String format;
-				String subtitle;
-				if (args.length >= 6) {
-					title = args[2];
-					author = args[3];
-					format = args[4];
-					subtitle = args[5];
-				} else {
-					title = getInputFromCommandLine("Enter the title");
-					subtitle = getInputFromCommandLine("Enter the subtitle");
-					author = getInputFromCommandLine("Enter the author");
-					format = getInputFromCommandLine("Enter the format");
-				}
-				GroupedWorkBase work = GroupedWorkFactory.getInstance(-1);
-				work.setTitle(title, 0, subtitle);
-				work.setAuthor(author);
-				work.setGroupingCategory(format);
-				JSONObject result = new JSONObject();
-				try {
-					result.put("normalizedAuthor", work.getAuthoritativeAuthor());
-					result.put("normalizedTitle", work.getAuthoritativeTitle());
-					result.put("workId", work.getPermanentId());
-				} catch (Exception e) {
-					logger.error("Error generating response", e);
-				}
-				System.out.print(result.toString());
-				break;
-			default:
-				doStandardRecordGrouping(args);
-				break;
+		// Parse the configuration file
+		Ini configIni = ConfigUtil.loadConfigFile("config.ini", serverName, logger);
+
+		//Connect to the database
+		Connection dbConn = null;
+		try{
+			String databaseConnectionInfo = ConfigUtil.cleanIniValue(configIni.get("Database", "database_aspen_jdbc"));
+			dbConn = DriverManager.getConnection(databaseConnectionInfo);
+		}catch (Exception e){
+			System.out.println("Error connecting to database " + e.toString());
+			System.exit(1);
+		}
+
+		if ("generateWorkId".equals(args[1])) {
+			String title;
+			String author;
+			String format;
+			String subtitle;
+			if (args.length >= 6) {
+				title = args[2];
+				author = args[3];
+				format = args[4];
+				subtitle = args[5];
+			} else {
+				title = getInputFromCommandLine("Enter the title");
+				subtitle = getInputFromCommandLine("Enter the subtitle");
+				author = getInputFromCommandLine("Enter the author");
+				format = getInputFromCommandLine("Enter the format");
+			}
+			RecordGroupingProcessor processor = new RecordGroupingProcessor(dbConn, serverName, logger, false);
+			GroupedWorkBase work = GroupedWorkFactory.getInstance(-1, processor);
+			work.setTitle(title, 0, subtitle);
+			work.setAuthor(author);
+			work.setGroupingCategory(format);
+			JSONObject result = new JSONObject();
+			try {
+				result.put("normalizedAuthor", work.getAuthoritativeAuthor());
+				result.put("normalizedTitle", work.getAuthoritativeTitle());
+				result.put("workId", work.getPermanentId());
+			} catch (Exception e) {
+				logger.error("Error generating response", e);
+			}
+			System.out.print(result.toString());
+		} else {
+			doStandardRecordGrouping(args, dbConn);
 		}
 	}
 
@@ -160,147 +158,10 @@ public class RecordGrouperMain {
 		return value;
 	}
 
-	private static void doBenchmarking(boolean validateNYPL) {
-		long processStartTime = new Date().getTime();
-		logger.info("Starting record grouping benchmark " + new Date().toString());
-
-		try {
-			//Load the input file to test
-			File benchmarkFile = new File("./benchmark_input.csv");
-			CSVReader benchmarkInputReader = new CSVReader(new FileReader(benchmarkFile));
-
-			//Create a file to store the results within
-			SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
-			File resultsFile;
-			if (validateNYPL) {
-				resultsFile = new File("./benchmark_results/" + dateFormatter.format(new Date()) + "_nypl.csv");
-			}else{
-				resultsFile = new File("./benchmark_results/" + dateFormatter.format(new Date()) + "_marmot.csv");
-			}
-			CSVWriter resultsWriter = new CSVWriter(new FileWriter(resultsFile));
-			resultsWriter.writeNext(new String[]{"Original Title", "Original Author", "Format", "Normalized Title", "Normalized Author", "Permanent Id", "Validation Results"});
-
-			//Load the desired results
-			File validationFile;
-			if (validateNYPL){
-				validationFile = new File("./benchmark_output_nypl.csv");
-			}else {
-				validationFile = new File("./benchmark_validation_file.csv");
-			}
-			CSVReader validationReader = new CSVReader(new FileReader(validationFile));
-
-			//Read the header from input
-			String[] csvData;
-			benchmarkInputReader.readNext();
-
-			int numErrors = 0;
-			int numTestsRun = 0;
-			//Read validation file
-			String[] validationData;
-			validationReader.readNext();
-			while ((csvData = benchmarkInputReader.readNext()) != null){
-				if (csvData.length >= 3) {
-					numTestsRun++;
-					String originalTitle = csvData[0];
-					String originalAuthor = csvData[1];
-					String groupingFormat = csvData[2];
-
-					//Get normalized the information and get the permanent id
-					GroupedWorkBase work = GroupedWorkFactory.getInstance(4);
-					work.setTitle(originalTitle, 0, "");
-					work.setAuthor(originalAuthor);
-					work.setGroupingCategory(groupingFormat);
-
-					//Read from validation file
-					validationData = validationReader.readNext();
-					//Check to make sure the results we got are correct
-					String validationResults = "";
-					if (validationData != null && validationData.length >= 6) {
-						String expectedTitle;
-						String expectedAuthor;
-						String expectedWorkId;
-						if (validateNYPL){
-							expectedTitle = validationData[2];
-							expectedAuthor = validationData[3];
-							expectedWorkId = validationData[5];
-						}else{
-							expectedTitle = validationData[3];
-							expectedAuthor = validationData[4];
-							expectedWorkId = validationData[5];
-						}
-
-						if (!expectedTitle.equals(work.getAuthoritativeTitle())) {
-							validationResults += "Normalized title incorrect expected " + expectedTitle + "; ";
-						}
-						if (!expectedAuthor.equals(work.getAuthoritativeAuthor())) {
-							validationResults += "Normalized author incorrect expected " + expectedAuthor + "; ";
-						}
-						if (!expectedWorkId.equals(work.getPermanentId())) {
-							validationResults += "Grouped Work Id incorrect expected " + expectedWorkId + "; ";
-						}
-						if (validationResults.length() != 0){
-							numErrors++;
-						}
-					}else{
-						validationResults += "Did not find validation information ";
-					}
-
-					//Save results
-					String[] results;
-					if (validationResults.length() == 0){
-						results = new String[]{originalTitle, originalAuthor, groupingFormat, work.getAuthoritativeTitle(), work.getAuthoritativeAuthor(), work.getPermanentId()};
-					}else{
-						results = new String[]{originalTitle, originalAuthor, groupingFormat, work.getAuthoritativeTitle(), work.getAuthoritativeAuthor(), work.getPermanentId(), validationResults};
-					}
-					resultsWriter.writeNext(results);
-					/*if (numTestsRun >= 100){
-						break;
-					}*/
-				}
-			}
-			resultsWriter.flush();
-			logger.debug("Ran " + numTestsRun + " tests.");
-			logger.debug("Found " + numErrors + " errors.");
-			benchmarkInputReader.close();
-			validationReader.close();
-
-			long endTime = new Date().getTime();
-			long elapsedTime = endTime - processStartTime;
-			logger.info("Total Run Time " + (elapsedTime / 1000) + " seconds, " + (elapsedTime / 60000) + " minutes.");
-			logger.info("Processed " + (double) numTestsRun / (double) (elapsedTime / 1000) + " records per second.");
-
-			//Write results to the test file for comparison
-			resultsWriter.writeNext(new String[0]);
-			resultsWriter.writeNext(new String[]{"Tests Run", Integer.toString(numTestsRun)});
-			resultsWriter.writeNext(new String[]{"Errors", Integer.toString(numErrors)});
-			resultsWriter.writeNext(new String[]{"Total Run Time (seconds)", Long.toString((elapsedTime / 1000))});
-			resultsWriter.writeNext(new String[]{"Records Per Second", Double.toString((double)numTestsRun / (double)(elapsedTime / 1000))});
-
-
-			resultsWriter.flush();
-			resultsWriter.close();
-		}catch (Exception e){
-			logger.error("Error running benchmark", e);
-		}
-	}
-
-	private static void doStandardRecordGrouping(String[] args) {
+	private static void doStandardRecordGrouping(String[] args, Connection dbConn) {
 		long processStartTime = new Date().getTime();
 
 		logger.info("Starting grouping of records " + new Date().toString());
-
-		// Parse the configuration file
-		Ini configIni = ConfigUtil.loadConfigFile("config.ini", serverName, logger);
-
-		//Connect to the database
-		Connection dbConn = null;
-		try{
-			String databaseConnectionInfo = ConfigUtil.cleanIniValue(configIni.get("Database", "database_aspen_jdbc"));
-			dbConn = DriverManager.getConnection(databaseConnectionInfo);
-		}catch (Exception e){
-			System.out.println("Error connecting to database " + e.toString());
-			System.exit(1);
-		}
 
 		//Start a reindex log entry
 		try {

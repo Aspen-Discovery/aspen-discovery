@@ -6,7 +6,7 @@ import com.turning_leaf_technologies.indexing.IndexingUtils;
 import com.turning_leaf_technologies.indexing.Scope;
 import com.turning_leaf_technologies.net.NetworkUtils;
 import com.turning_leaf_technologies.net.WebServiceResponse;
-import org.apache.solr.client.solrj.SolrClient;
+//import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.impl.BinaryRequestWriter;
 import org.apache.solr.client.solrj.impl.ConcurrentUpdateSolrClient;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
@@ -101,7 +101,7 @@ public class GroupedWorkIndexer {
 
 		//Check to see if a partial reindex is running
 		try{
-			PreparedStatement loadPartialReindexRunning = dbConn.prepareStatement("SELECT * from variables WHERE name = 'partial_reindex_running'");
+			PreparedStatement loadPartialReindexRunning = dbConn.prepareStatement("SELECT * from variables WHERE name = 'partial_reindex_running'", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			ResultSet loadPartialReindexRunningRS = loadPartialReindexRunning.executeQuery();
 			if (loadPartialReindexRunningRS.next()){
 				partialReindexRunning = loadPartialReindexRunningRS.getBoolean("value");
@@ -118,14 +118,14 @@ public class GroupedWorkIndexer {
 			getGroupedWorkPrimaryIdentifiers = dbConn.prepareStatement("SELECT * FROM grouped_work_primary_identifiers where grouped_work_id = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			getDateFirstDetectedStmt = dbConn.prepareStatement("SELECT dateFirstDetected FROM ils_marc_checksums WHERE source = ? AND ilsId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			deleteGroupedWorkStmt = dbConn.prepareStatement("DELETE from grouped_work where id = ?");
-			getGroupedWorkInfoStmt = dbConn.prepareStatement("SELECT id, grouping_category from grouped_work where permanent_id = ?");
+			getGroupedWorkInfoStmt = dbConn.prepareStatement("SELECT id, grouping_category from grouped_work where permanent_id = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 		} catch (Exception e){
 			logger.error("Could not load statements to get identifiers ", e);
 		}
 
 		//Initialize the updateServer and solr server
 		GroupedReindexMain.addNoteToReindexLog("Setting up update server and solr server");
-		SolrClient solrServer;
+		//SolrClient solrServer;
 		if (fullReindex){
 			//MDN 10-21-2015 - use the grouped core since we are using replication.
 			ConcurrentUpdateSolrClient.Builder solrBuilder = new ConcurrentUpdateSolrClient.Builder("http://localhost:" + solrPort + "/solr/grouped_works");
@@ -133,8 +133,8 @@ public class GroupedWorkIndexer {
 			solrBuilder.withQueueSize(25);
 			updateServer = solrBuilder.build();
 			updateServer.setRequestWriter(new BinaryRequestWriter());
-			HttpSolrClient.Builder httpBuilder = new HttpSolrClient.Builder("http://localhost:" + solrPort + "/solr/grouped_works");
-			solrServer = httpBuilder.build();
+			//HttpSolrClient.Builder httpBuilder = new HttpSolrClient.Builder("http://localhost:" + solrPort + "/solr/grouped_works");
+			//solrServer = httpBuilder.build();
 
 			//Stop replication from the master
 			String url = "http://localhost:" + solrPort + "/solr/grouped_works/replication?command=disablereplication";
@@ -179,8 +179,8 @@ public class GroupedWorkIndexer {
 			solrBuilder.withQueueSize(25);
 			updateServer = solrBuilder.build();
 			updateServer.setRequestWriter(new BinaryRequestWriter());
-			HttpSolrClient.Builder solrServerBuilder = new HttpSolrClient.Builder("http://localhost:" + solrPort + "/solr/grouped_works");
-			solrServer = solrServerBuilder.build();
+			//HttpSolrClient.Builder solrServerBuilder = new HttpSolrClient.Builder("http://localhost:" + solrPort + "/solr/grouped_works");
+			//solrServer = solrServerBuilder.build();
 		}
 
 		scopes = IndexingUtils.loadScopes(dbConn, logger);
@@ -1052,5 +1052,6 @@ public class GroupedWorkIndexer {
 			return null;
 		}
 	}
+
 
 }
