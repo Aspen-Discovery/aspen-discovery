@@ -9179,21 +9179,18 @@ hr.menu {
   outline: none;
 }
 .browse-category {
-  color: #fff;
+  color: #6B6B6B;
   font-size: 20px;
   padding: 10px;
-  text-shadow: 1px 1px #555555;
-  background-color: #5fb7db;
+  background-color: #f8f8f8;
   height: 100px;
   margin-left: 4px;
   margin-right: 4px;
 }
 .browse-category:hover {
-  background-color: lightskyblue;
-  color: darkblue;
+  background-color: #e4e4e4;
 }
 .browse-category div {
-  color: #fff;
   cursor: pointer;
   height: 80px;
 }
@@ -9206,33 +9203,6 @@ hr.menu {
 .browse-category.selected {
   border: 2px solid #54B948;
   font-size: 23px;
-}
-.browse-category.category0 {
-  background-color: #336699;
-}
-.browse-category.category1 {
-  background-color: #336699;
-}
-.browse-category.category2 {
-  background-color: #336699;
-}
-.browse-category.category3 {
-  background-color: #336699;
-}
-.browse-category.category4 {
-  background-color: #336699;
-}
-.browse-category.category5 {
-  background-color: #336699;
-}
-.browse-category.category6 {
-  background-color: #336699;
-}
-.browse-category.category7 {
-  background-color: #336699;
-}
-.browse-category.category8 {
-  background-color: #336699;
 }
 #selected-browse-label {
   background-color: #fff;
@@ -10997,44 +10967,5 @@ fieldset[disabled] .btn-masquerade.active {
 }
 .header-button {
   margin-top: 42px;
-}
-#browse-category-carousel {
-  overflow: visible;
-  left: 0;
-  width: 95%;
-  margin-left: 5%;
-}
-#browse-category-carousel ul {
-  position: static;
-  width: 100%;
-}
-#browse-category-carousel li {
-  width: 23% !important;
-  float: left;
-}
-@media (max-width: 991px) {
-  #browse-category-carousel li {
-    width: 31% !important;
-  }
-}
-@media (max-width: 767px) {
-  #browse-category-carousel li {
-    width: 48% !important;
-  }
-}
-@media (max-width: 479px) {
-  #browse-category-carousel li {
-    width: 98% !important;
-  }
-}
-#browse-category-picker .jcarousel-control-prev,
-#browse-category-picker .jcarousel-control-next,
-#browse-category-picker .jcarousel-pagination {
-  display: none;
-}
-.browse-category.selected {
-  background-color: #4f8ac4;
-  background: linear-gradient(to bottom, #4f8ac4, #4f8ac4 82%, #32702b 83%, #54B948 84%, #54B948 88%, #32702b 89%, #4f8ac4 90%, #4f8ac4);
-  font-size: 22px;
 }
 /*# sourceMappingURL=main.css.map */

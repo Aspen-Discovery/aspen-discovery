@@ -9179,21 +9179,18 @@ hr.menu {
   outline: none;
 }
 .browse-category {
-  color: #fff;
+  color: #6B6B6B;
   font-size: 20px;
   padding: 10px;
-  text-shadow: 1px 1px #555555;
-  background-color: #5fb7db;
+  background-color: #f8f8f8;
   height: 100px;
   margin-left: 4px;
   margin-right: 4px;
 }
 .browse-category:hover {
-  background-color: lightskyblue;
-  color: darkblue;
+  background-color: #e4e4e4;
 }
 .browse-category div {
-  color: #fff;
   cursor: pointer;
   height: 80px;
 }
@@ -9206,33 +9203,6 @@ hr.menu {
 .browse-category.selected {
   border: 2px solid #3497d1;
   font-size: 23px;
-}
-.browse-category.category0 {
-  background-color: #0d8ec7;
-}
-.browse-category.category1 {
-  background-color: #0e98d5;
-}
-.browse-category.category2 {
-  background-color: #0fa2e4;
-}
-.browse-category.category3 {
-  background-color: #12acf0;
-}
-.browse-category.category4 {
-  background-color: #21b1f0;
-}
-.browse-category.category5 {
-  background-color: #2fb6f1;
-}
-.browse-category.category6 {
-  background-color: #3dbbf2;
-}
-.browse-category.category7 {
-  background-color: #4cc0f3;
-}
-.browse-category.category8 {
-  background-color: #5ac5f4;
 }
 #selected-browse-label {
   background-color: #fff;
@@ -11004,44 +10974,5 @@ fieldset[disabled] .btn-masquerade.active {
 }
 #selected-browse-search-link .icon-after:before {
   content: "\e080";
-}
-#browse-category-carousel {
-  overflow: visible;
-  left: 0;
-  width: 95%;
-  margin-left: 5%;
-}
-#browse-category-carousel ul {
-  position: static;
-  width: 100%;
-}
-#browse-category-carousel li {
-  width: 23% !important;
-  float: left;
-}
-@media (max-width: 991px) {
-  #browse-category-carousel li {
-    width: 31% !important;
-  }
-}
-@media (max-width: 767px) {
-  #browse-category-carousel li {
-    width: 48% !important;
-  }
-}
-@media (max-width: 479px) {
-  #browse-category-carousel li {
-    width: 98% !important;
-  }
-}
-#browse-category-picker .jcarousel-control-prev,
-#browse-category-picker .jcarousel-control-next,
-#browse-category-picker .jcarousel-pagination {
-  display: none;
-}
-.browse-category.selected {
-  background-color: #2fb6f1;
-  background: linear-gradient(to bottom, #2fb6f1, #2fb6f1 82%, #64b7d8 83%, #89cae5 84%, #89cae5 88%, #64b7d8 89%, #2fb6f1 90%, #2fb6f1);
-  font-size: 22px;
 }
 /*# sourceMappingURL=main.css.map */

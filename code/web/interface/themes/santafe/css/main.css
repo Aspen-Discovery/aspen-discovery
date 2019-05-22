@@ -9179,21 +9179,18 @@ hr.menu {
   outline: none;
 }
 .browse-category {
-  color: #000000;
+  color: #000;
   font-size: 20px;
   padding: 10px;
-  text-shadow: 1px 1px #555555;
-  background-color: #5fb7db;
+  background-color: #f8f8f8;
   height: 100px;
   margin-left: 4px;
   margin-right: 4px;
 }
 .browse-category:hover {
-  background-color: lightskyblue;
-  color: darkblue;
+  background-color: #e4e4e4;
 }
 .browse-category div {
-  color: #000000;
   cursor: pointer;
   height: 80px;
 }
@@ -9206,33 +9203,6 @@ hr.menu {
 .browse-category.selected {
   border: 2px solid #fffcfa;
   font-size: 23px;
-}
-.browse-category.category0 {
-  background-color: #fffcfa;
-}
-.browse-category.category1 {
-  background-color: #fffcfa;
-}
-.browse-category.category2 {
-  background-color: #fffcfa;
-}
-.browse-category.category3 {
-  background-color: #fffcfa;
-}
-.browse-category.category4 {
-  background-color: #fffcfa;
-}
-.browse-category.category5 {
-  background-color: #fffcfa;
-}
-.browse-category.category6 {
-  background-color: #fffcfa;
-}
-.browse-category.category7 {
-  background-color: #fffcfa;
-}
-.browse-category.category8 {
-  background-color: #fffcfa;
 }
 #selected-browse-label {
   background-color: #fffcfa;
