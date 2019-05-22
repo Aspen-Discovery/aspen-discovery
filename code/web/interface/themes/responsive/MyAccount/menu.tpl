@@ -260,7 +260,7 @@
 			{/if}
 
 			{if $loggedIn && (array_key_exists('cataloging', $userRoles) || array_key_exists('opacAdmin', $userRoles))}
-				{if in_array($action, array('MergedGroupedWorks', 'NonGroupedRecords', 'AuthorEnrichment'))}
+				{if in_array($action, array('MergedGroupedWorks', 'NonGroupedRecords', 'AuthorEnrichment', 'ARSettings'))}
 					{assign var="curSection" value=true}
 				{else}
 					{assign var="curSection" value=false}
@@ -278,6 +278,9 @@
 							<div class="adminMenuLink{if $action == "MergedGroupedWorks"} active{/if}"><a href="{$path}/Admin/MergedGroupedWorks">Grouped Work Merging</a></div>
 							<div class="adminMenuLink{if $action == "NonGroupedRecords"} active{/if}"><a href="{$path}/Admin/NonGroupedRecords">Records To Not Merge</a></div>
 							<div class="adminMenuLink{if $action == "AuthorEnrichment"} active{/if}"><a href="{$path}/Admin/AuthorEnrichment">Author Enrichment</a></div>
+							{if array_key_exists('opacAdmin', $userRoles)}
+								<div class="adminMenuLink{if $action == "ARSettings"} active{/if}"><a href="{$path}/RenaissanceLearning/ARSettings">Accelerated Reading Settings</a></div>
+							{/if}
 						</div>
 					</div>
 				</div>
@@ -456,28 +459,6 @@
 				</div>
 			{/if}
 
-			{if $loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('contentEditor', $userRoles))}
-				{if $module == "EditorialReview"}
-					{assign var="curSection" value=true}
-				{else}
-					{assign var="curSection" value=false}
-				{/if}
-				<div class="panel{if $curSection} active{/if}">
-					<a href="#editorialReviewMenu" data-toggle="collapse" data-parent="#adminMenuAccordion">
-						<div class="panel-heading">
-							<div class="panel-title">
-								Editorial Reviews
-							</div>
-						</div>
-					</a>
-					<div id="editorialReviewMenu" class="panel-collapse collapse {if $curSection}in{/if}">
-						<div class="panel-body">
-							<div class="adminMenuLink{if $action == "Edit" && $module == "EditorialReview"} active{/if}"><a href="{$path}/EditorialReview/Edit">New Review</a></div>
-							<div class="adminMenuLink{if $action == "Search" && $module == "EditorialReview"} active{/if}"><a href="{$path}/EditorialReview/Search">Search Existing Reviews</a></div>
-						</div>
-					</div>
-				</div>
-			{/if}
 		</div>
 
 		{include file="library-links.tpl" libraryLinks=$libraryAccountLinks linksId='home-library-account-links' section='Account'}
