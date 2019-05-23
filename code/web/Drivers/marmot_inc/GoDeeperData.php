@@ -2,7 +2,7 @@
 require_once(ROOT_DIR . '/Drivers/marmot_inc/ISBNConverter.php') ;
 
 class GoDeeperData{
-	static function getGoDeeperOptions($isbn, $upc, $getDefaultData = false){
+	static function getGoDeeperOptions($isbn, $upc){
 		global $configArray;
 		/** @var Memcache $memCache */
 		global $memCache;
@@ -125,7 +125,7 @@ class GoDeeperData{
 			}
 
 			$goDeeperOptions = array('options' => $validEnrichmentTypes);
-			if (count($validEnrichmentTypes) > 0){
+			if (count($validEnrichmentTypes) > 0 && isset($defaultOption)){
 				$goDeeperOptions['defaultOption'] = $defaultOption;
 			}
 			$memCache->set("go_deeper_options_{$isbn}_{$upc}", $goDeeperOptions, 0, $configArray['Caching']['go_deeper_options']);
@@ -134,7 +134,7 @@ class GoDeeperData{
 		return $goDeeperOptions;
 	}
 
-	private function getContentCafeData($isbn, $upc, $field = 'AvailableContent') {
+	private static function getContentCafeData($isbn, $upc, $field = 'AvailableContent') {
 		global $configArray;
 
 		if (isset($configArray['Contentcafe']['pw']) && strlen($configArray['Contentcafe']['pw']) > 0) {
@@ -195,7 +195,7 @@ class GoDeeperData{
 		return $summaryData;
 	}
 
-	private function getContentCafeSummary($isbn, $upc) {
+	private static function getContentCafeSummary($isbn, $upc) {
 		global $configArray;
 		/** @var Memcache $memCache */
 		global $memCache;
@@ -227,7 +227,7 @@ class GoDeeperData{
 
 	}
 
-	private function getSyndeticsSummary($isbn, $upc){
+	private static function getSyndeticsSummary($isbn, $upc){
 		global $configArray;
 		/** @var Memcache $memCache */
 		global $memCache;
@@ -255,6 +255,7 @@ class GoDeeperData{
 					$summaryData = array();
 					if (isset($data)){
 						if (isset($data->VarFlds->VarDFlds->Notes->Fld520->a)){
+							/** @noinspection PhpUndefinedFieldInspection */
 							$summaryData['summary'] = (string)$data->VarFlds->VarDFlds->Notes->Fld520->a;
 						}
 					}
@@ -297,7 +298,7 @@ class GoDeeperData{
 		return $tocData;
 	}
 
-	private function getContentCafeTableOfContents($isbn, $upc) {
+	private static function getContentCafeTableOfContents($isbn, $upc) {
 		global $configArray;
 		/** @var Memcache $memCache */
 		global $memCache;
@@ -317,7 +318,7 @@ class GoDeeperData{
 		return $tocData;
 	}
 
-	private function getSyndeticsTableOfContents($isbn, $upc){
+	private static function getSyndeticsTableOfContents($isbn, $upc){
 		global $configArray;
 		/** @var Memcache $memCache */
 		global $memCache;
@@ -345,7 +346,9 @@ class GoDeeperData{
 
 					if (isset($data)){
 						if (isset($data->VarFlds->VarDFlds->SSIFlds->Fld970)){
+							/** @noinspection PhpUndefinedFieldInspection */
 							foreach ($data->VarFlds->VarDFlds->SSIFlds->Fld970 as $field){
+								/** @noinspection PhpUndefinedFieldInspection */
 								$tocData[] = array(
 		                            'label' => (string)$field->l,
 		                            'title' => (string)$field->t,
@@ -372,7 +375,7 @@ class GoDeeperData{
 		return $tocData;
 	}
 
-	function getFictionProfile($isbn, $upc){
+	static function getFictionProfile($isbn, $upc){
 		//Load the index page from syndetics
 		global $configArray;
 		/** @var Memcache $memCache */
@@ -399,7 +402,9 @@ class GoDeeperData{
 				if (isset($data)){
 					//Load characters
 					if (isset($data->VarFlds->VarDFlds->SSIFlds->Fld920)){
+						/** @noinspection PhpUndefinedFieldInspection */
 						foreach ($data->VarFlds->VarDFlds->SSIFlds->Fld920 as $field){
+							/** @noinspection PhpUndefinedFieldInspection */
 							$fictionData['characters'][] = array(
 	                            'name' => (string)$field->b,
 	                            'gender' => (string)$field->c,
@@ -412,33 +417,43 @@ class GoDeeperData{
 					}
 					//Load subjects
 					if (isset($data->VarFlds->VarDFlds->SSIFlds->Fld950)){
+						/** @noinspection PhpUndefinedFieldInspection */
 						foreach ($data->VarFlds->VarDFlds->SSIFlds->Fld950 as $field){
+							/** @noinspection PhpUndefinedFieldInspection */
 							$fictionData['topics'][] = (string)$field->a;
 						}
 					}
 					//Load settings
 					if (isset($data->VarFlds->VarDFlds->SSIFlds->Fld951)){
+						/** @noinspection PhpUndefinedFieldInspection */
 						foreach ($data->VarFlds->VarDFlds->SSIFlds->Fld951 as $field){
 							if (isset($field->c)){
+								/** @noinspection PhpUndefinedFieldInspection */
 								$fictionData['settings'][] = (string)$field->a . ' -- ' . (string)$field->c;
 							}else{
+								/** @noinspection PhpUndefinedFieldInspection */
 								$fictionData['settings'][] = (string)$field->a;
 							}
 						}
 					}
 					//Load additional settings
 					if (isset($data->VarFlds->VarDFlds->SSIFlds->Fld952)){
+						/** @noinspection PhpUndefinedFieldInspection */
 						foreach ($data->VarFlds->VarDFlds->SSIFlds->Fld952 as $field){
 							if (isset($field->c)){
+								/** @noinspection PhpUndefinedFieldInspection */
 								$fictionData['settings'][] = (string)$field->a . ' -- ' . (string)$field->c;
 							}else{
+								/** @noinspection PhpUndefinedFieldInspection */
 								$fictionData['settings'][] = (string)$field->a;
 							}
 						}
 					}
 					//Load genres
 					if (isset($data->VarFlds->VarDFlds->SSIFlds->Fld955)){
+						/** @noinspection PhpUndefinedFieldInspection */
 						foreach ($data->VarFlds->VarDFlds->SSIFlds->Fld955 as $field){
+							/** @noinspection PhpUndefinedFieldInspection */
 							$genre = (string)$field->a;
 							$subGenres = array();
 							if (isset($field->b)){
@@ -454,7 +469,9 @@ class GoDeeperData{
 					}
 					//Load awards
 					if (isset($data->VarFlds->VarDFlds->SSIFlds->Fld985)){
+						/** @noinspection PhpUndefinedFieldInspection */
 						foreach ($data->VarFlds->VarDFlds->SSIFlds->Fld985 as $field){
+							/** @noinspection PhpUndefinedFieldInspection */
 							$fictionData['awards'][] = array(
 	                            'name' => (string)$field->a,
 	                            'year' => (string)$field->y,
@@ -484,7 +501,7 @@ class GoDeeperData{
 		return $summaryData;
 	}
 
-	private function getContentCafeAuthorNotes($isbn, $upc) {
+	private static function getContentCafeAuthorNotes($isbn, $upc) {
 		global $configArray;
 		/** @var Memcache $memCache */
 		global $memCache;
@@ -504,7 +521,7 @@ class GoDeeperData{
 		return $authorData;
 	}
 
-	private function getSyndeticsAuthorNotes($isbn, $upc){
+	private static function getSyndeticsAuthorNotes($isbn, $upc){
 		global $configArray;
 		/** @var Memcache $memCache */
 		global $memCache;
@@ -531,6 +548,7 @@ class GoDeeperData{
 				$summaryData = array();
 				if (isset($data)){
 					if (isset($data->VarFlds->VarDFlds->SSIFlds->Fld980->a)){
+						/** @noinspection PhpUndefinedFieldInspection */
 						$summaryData['summary'] = (string)$data->VarFlds->VarDFlds->SSIFlds->Fld980->a;
 					}
 				}
@@ -546,7 +564,7 @@ class GoDeeperData{
 		return $summaryData;
 	}
 
-	private function getSyndeticsExcerpt($isbn, $upc) {
+	private static function getSyndeticsExcerpt($isbn, $upc) {
 		global $configArray;
 		/** @var Memcache $memCache */
 		global $memCache;
@@ -573,6 +591,7 @@ class GoDeeperData{
 				$excerptData = array();
 				if (isset($data)){
 					if (isset($data->VarFlds->VarDFlds->Notes->Fld520)){
+						/** @noinspection PhpUndefinedFieldInspection */
 						$excerptData['excerpt'] = (string)$data->VarFlds->VarDFlds->Notes->Fld520;
 						$excerptData['excerpt'] = '<p>' . str_replace(chr( 194 ) . chr( 160 ), '</p><p>', $excerptData['excerpt']) . '</p>';
 					}
@@ -588,7 +607,7 @@ class GoDeeperData{
 		return $excerptData;
 	}
 
-	private function getContentCafeExcerpt($isbn, $upc) {
+	private static function getContentCafeExcerpt($isbn, $upc) {
 		global $configArray;
 		/** @var Memcache $memCache */
 		global $memCache;
@@ -619,7 +638,7 @@ class GoDeeperData{
 		return $excerptData;
 	}
 
-	function getVideoClip($isbn, $upc){
+	private static function getVideoClip($isbn, $upc){
 		global $configArray;
 		/** @var Memcache $memCache */
 		global $memCache;
@@ -645,9 +664,11 @@ class GoDeeperData{
 				$summaryData = array();
 				if (isset($data)){
 					if (isset($data->VarFlds->VarDFlds->VideoLink)){
+						/** @noinspection PhpUndefinedFieldInspection */
 						$summaryData['videoClip'] = (string)$data->VarFlds->VarDFlds->VideoLink;
 					}
 					if (isset($data->VarFlds->VarDFlds->SSIFlds->Fld997)){
+						/** @noinspection PhpUndefinedFieldInspection */
 						$summaryData['source'] = (string)$data->VarFlds->VarDFlds->SSIFlds->Fld997;
 					}
 				}
@@ -663,7 +684,7 @@ class GoDeeperData{
 		return $summaryData;
 	}
 
-	function getAVSummary($isbn, $upc){
+	static function getAVSummary($isbn, $upc){
 		global $configArray;
 		/** @var Memcache $memCache */
 		global $memCache;
@@ -690,10 +711,13 @@ class GoDeeperData{
 
 					if (isset($data)){
 						if (isset($data->VarFlds->VarDFlds->Notes->Fld520->a)){
+							/** @noinspection PhpUndefinedFieldInspection */
 							$avSummaryData['summary'] = (string)$data->VarFlds->VarDFlds->Notes->Fld520->a;
 						}
 						if (isset($data->VarFlds->VarDFlds->SSIFlds->Fld970)){
+							/** @noinspection PhpUndefinedFieldInspection */
 							foreach ($data->VarFlds->VarDFlds->SSIFlds->Fld970 as $field){
+								/** @noinspection PhpUndefinedFieldInspection */
 								$avSummaryData['trackListing'][] = array(
 		                            'number' => (string)$field->l,
 		                            'name' => (string)$field->t,
@@ -713,12 +737,12 @@ class GoDeeperData{
 		return $avSummaryData;
 	}
 
-	static function getHtmlData($dataType, $recordType, $isbn, $upc, $id = null){
+	static function getHtmlData($dataType, $recordType, $isbn, $upc){
 		global $interface;
 		global $configArray;
 		$interface->assign('recordType', $recordType);
 		$id = !empty($_REQUEST['id']) ? $_REQUEST['id'] : $_GET['id'];
-		// TODO: request id is not always set here. a quick of static call
+		// TODO: request id is not always set here. a quirk of static call
 		$interface->assign('id', $id);
 		$interface->assign('isbn', $isbn);
 		$interface->assign('upc', $upc);
@@ -780,5 +804,6 @@ class GoDeeperData{
 
 		}
 
-		}
+		return "Unhandled option or incorrectly configured option";
+	}
 }
