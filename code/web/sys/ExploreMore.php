@@ -492,16 +492,6 @@ class ExploreMore {
 			$logger->log('Islandora Search Failed.', Logger::LOG_WARNING);
 		}
 
-		/*if (count($exploreMoreOptions) > 0 && count($exploreMoreOptions) < 3){
-			$exploreMoreOptions[] = array(
-					'label' => "",
-					'description' => "Explore the archive",
-					'image' => $configArray['Site']['path'] . '/images/archive_banner_1.png',
-					'link' => '/Archive/Results',
-					'placeholder' => true,
-			);
-		}*/
-
 		$interface->assign('exploreMoreOptions', $exploreMoreOptions);
 
 		return $exploreMoreOptions;

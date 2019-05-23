@@ -7226,7 +7226,7 @@ thead .sortAscHeader {
 .ui-rater-starsOn {
   display: inline-block;
   height: 18px;
-  background: url(/interface/themes/default/images/star/stars.png) repeat-x 0 0px;
+  background: url(/interface/themes/responsive/images/star/stars.png) repeat-x 0 0px;
   zoom: 1;
   *display: inline;
 }
@@ -9672,7 +9672,7 @@ a.browse-thumbnail-sorted.active {
   }
 }
 .titleScrollerHeader {
-  background: url(/interface/themes/default/images/breadcrumb-gradient.png) repeat-x top left;
+  background: url(/interface/themes/responsive/images/breadcrumb-gradient.png) repeat-x top left;
   padding: 2px;
   color: #00125E;
   font-size: 12px;

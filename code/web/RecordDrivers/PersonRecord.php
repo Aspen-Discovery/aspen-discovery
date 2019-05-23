@@ -91,7 +91,7 @@ class PersonRecord extends IndexRecordDriver
 		if ($person->picture){
 			return $configArray['Site']['path'] . '/files/thumbnail/' . $this->person->picture;
 		}else{
-			return $configArray['Site']['path'] . '/interface/themes/default/images/person.png';
+			return $configArray['Site']['path'] . '/interface/themes/responsive/images/person.png';
 		}
 	}
 

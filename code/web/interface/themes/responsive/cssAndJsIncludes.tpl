@@ -37,7 +37,6 @@
 		<script src="{$path}/interface/themes/responsive/js/lib/jquery-ui-1.10.4.custom.min.js?v={$gitBranch|urlencode}"></script>
 		<script src="{$path}/interface/themes/responsive/js/lib/bootstrap-switch.min.js?v={$gitBranch|urlencode}"></script>
 		<script src="{$path}/interface/themes/responsive/js/lib/jquery.touchwipe.min.js?v={$gitBranch|urlencode}"></script>
-		<script src="{$path}/interface/themes/responsive/js/lib/lightbox.js?v={$gitBranch|urlencode}"></script>
 		<script src="{$path}/interface/themes/responsive/js/lib/jquery.rwdImageMaps.min.js?v={$gitBranch|urlencode}"></script>
 
 		{* Load application specific Javascript *}

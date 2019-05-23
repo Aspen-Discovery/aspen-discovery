@@ -12,7 +12,7 @@
 			{if $summPicture}
 			<img src="{$path}/files/thumbnail/{$summPicture}" class="alignleft listResultImage" alt="{translate text='Picture'}"/><br />
 			{else}
-			<img src="{$path}/interface/themes/default/images/person.png" class="alignleft listResultImage" alt="{translate text='No Cover Image'}"/><br />
+			<img src="{$path}/interface/themes/responsive/images/person.png" class="alignleft listResultImage" alt="{translate text='No Cover Image'}"/><br />
 			{/if}
 			</a>
 		</div>

@@ -41,7 +41,7 @@
 						{if $person->picture}
 							<a target='_blank' href='{$path}/files/original/{$person->picture|escape}'><img src="{$path}/files/medium/{$person->picture|escape}" class="alignleft listResultImage" alt="{translate text='Picture'}"></a><br>
 						{else}
-							<img src="{$path}/interface/themes/default/images/person.png" class="alignleft listResultImage" alt="{translate text='No Cover Image'}"><br>
+							<img src="{$path}/interface/themes/responsive/images/person.png" class="alignleft listResultImage" alt="{translate text='No Cover Image'}"><br>
 						{/if}
 					{*</a>*}
 				</div>

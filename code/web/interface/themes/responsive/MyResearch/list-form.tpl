@@ -1,6 +1,6 @@
 {strip}
 	{if $listError}<p class="error">{$listError|translate}</p>{/if}
-	<form method="post" action="{$path}/MyAccount/ListEdit" name="listForm" class="form form-horizontal" id="addListForm">
+	<form method="post" action="" name="listForm" class="form form-horizontal" id="addListForm">
 		<div class="form-group">
 			<label for="listTitle" class="col-sm-3 control-label">{translate text="List"}:</label>
 			<div class="col-sm-9">
@@ -25,6 +25,6 @@
 {/strip}
 <script type="text/javascript">{literal}
 	$(document).ready(function(){
-		var publicSwitch = $('#public').bootstrapSwitch();
+		let publicSwitch = $('#public').bootstrapSwitch();
 	});
 {/literal}</script>
