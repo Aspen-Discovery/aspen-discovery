@@ -72,7 +72,7 @@ class Archive_ClaimAuthorship extends Action{
 						if (strpos($body, 'http') === false && strpos($body, 'mailto') === false && $body == strip_tags($body)){
 							$body .= $configArray['Site']['url'] . $requestedObject->getRecordUrl();
 							require_once ROOT_DIR . '/sys/Mailer.php';
-							$mail = new VuFindMailer();
+							$mail = new Mailer();
 							$subject = 'New Authorship Claim for Archive Content';
 							$emailResult = $mail->send($owningLibrary->archiveRequestEmail, $newObject->email, $subject, $body);
 

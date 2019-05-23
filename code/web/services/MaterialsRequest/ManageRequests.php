@@ -63,7 +63,7 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 			$selectedRequests = $_REQUEST['select'];
 			$statusToSet = $_REQUEST['newStatus'];
 			require_once ROOT_DIR . '/sys/Mailer.php';
-			$mail = new VuFindMailer();
+			$mail = new Mailer();
 			foreach ($selectedRequests as $requestId => $selected){
 				$materialRequest = new MaterialsRequest();
 				$materialRequest->id = $requestId;

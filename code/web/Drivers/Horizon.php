@@ -450,7 +450,7 @@ abstract class Horizon extends AbstractIlsDriver{
 					}
 					require_once ROOT_DIR . '/sys/Mailer.php';
 
-					$mailer = new VuFindMailer();
+					$mailer = new Mailer();
 					$subject = "PIN number for your Library Card";
 					$body = "The PIN number for your Library Card is $pin.  You may use this PIN number to login to your account.";
 					$mailer->send($email, $configArray['Site']['email'], $subject, $body);

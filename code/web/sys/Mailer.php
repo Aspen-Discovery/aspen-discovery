@@ -1,18 +1,6 @@
 <?php
-require_once 'Mail.php';
-require_once 'Mail/RFC822.php';
 
-/**
- * VuFind Mailer Class
- *
- * This is a wrapper class to load configuration options and perform email
- * functions.  See the comments in web/conf/config.ini for details on how
- * email is configured.
- *
- * @author      Demian Katz <demian.katz@villanova.edu>
- * @access      public
- */
-class VuFindMailer {
+class Mailer {
 	protected $settings;      // settings for PEAR Mail object
 
 	/**

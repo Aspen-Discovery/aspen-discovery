@@ -628,7 +628,7 @@ class GroupedWork_AJAX {
 			$body = $interface->fetch('Emails/grouped-work-email.tpl');
 
 			require_once ROOT_DIR . '/sys/Mailer.php';
-			$mail = new VuFindMailer();
+			$mail = new Mailer();
 			$emailResult = $mail->send($to, $configArray['Site']['email'], $subject, $body, $from);
 
 			if ($emailResult === true){

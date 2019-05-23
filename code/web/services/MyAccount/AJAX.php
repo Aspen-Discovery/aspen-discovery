@@ -882,7 +882,7 @@ class MyAccount_AJAX
 						$body = $interface->fetch('Emails/my-list.tpl');
 
 						require_once ROOT_DIR . '/sys/Mailer.php';
-						$mail = new VuFindMailer();
+						$mail = new Mailer();
 						$subject = $list->title;
 						$emailResult = $mail->send($to, $from, $subject, $body);
 

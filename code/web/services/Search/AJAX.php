@@ -89,7 +89,7 @@ class AJAX extends Action {
 			$body = $interface->fetch('Emails/share-link.tpl');
 
 			require_once ROOT_DIR . '/sys/Mailer.php';
-			$mail = new VuFindMailer();
+			$mail = new Mailer();
 			$emailResult = $mail->send($to, $from, $subject, $body);
 
 			if ($emailResult === true){

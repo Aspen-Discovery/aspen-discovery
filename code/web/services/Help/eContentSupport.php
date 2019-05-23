@@ -13,7 +13,7 @@ class eContentSupport extends Action
 		if (isset($_REQUEST['submit'])){
 			//E-mail the library with details of the support request
 			require_once ROOT_DIR . '/sys/Mailer.php';
-			$mail = new VuFindMailer();
+			$mail = new Mailer();
 			$userLibrary = Library::getPatronHomeLibrary();
 			if (!empty($userLibrary->eContentSupportAddress)){
 				$to = $userLibrary->eContentSupportAddress;
