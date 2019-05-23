@@ -15,6 +15,11 @@ class UserList extends DataObject
 	public $dateUpdated;
 	public $defaultSort; // string(20) null
 
+	public function getNumericColumnNames()
+	{
+		return ['public', 'deleted'];
+	}
+
 	// Used by FavoriteHandler as well//
 	protected $_userListSortOptions = array(
 		// URL_value => SQL code for Order BY clause
