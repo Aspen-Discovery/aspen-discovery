@@ -18,7 +18,7 @@ class DefaultCoverImageBuilder
     	global $interface;
     	if ($interface == null){
     		//Need to initialize the interface to get access to the themes
-		    //This is needed because we try to minimize what loads for bookcovers for performance
+		    //This is needed because we try to minimize what loads for book covers for performance
 		    $interface = new UInterface();
 		    $interface->loadDisplayOptions();
 	    }

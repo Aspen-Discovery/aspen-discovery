@@ -369,8 +369,9 @@ class BookCoverProcessor{
 		}
 		$this->cacheName = preg_replace('/[^a-zA-Z0-9_.-]/', '', $this->cacheName);
 		$this->cacheFile = $this->bookCoverPath . '/' . $this->size . '/' . $this->cacheName . '.png';
-		global $subdomain;
-		$this->defaultCoverCacheFile = $this->bookCoverPath . '/' . $this->size . '/' . $subdomain . '_' . $this->cacheName . '.png';
+		/** @var Library */
+		global $library;
+		$this->defaultCoverCacheFile = $this->bookCoverPath . '/' . $this->size . '/' . $library->subdomain . '_' . $this->cacheName . '.png';
 		$this->logTime("load parameters");
 		return true;
 	}
@@ -558,8 +559,9 @@ class BookCoverProcessor{
 
 
             if ($this->bookCoverInfo->imageSource == 'default'){
-            	global $subdomain;
-	            $fileName = $this->bookCoverPath . '/' . $this->size . '/' . $subdomain . '_' . $this->cacheName . '.png';
+            	/** @var Library */
+            	global $library;
+	            $fileName = $this->bookCoverPath . '/' . $this->size . '/' . $library->subdomain . '_' . $this->cacheName . '.png';
             }else{
 	            $fileName = "{$this->bookCoverPath}/{$this->size}/{$this->cacheName}.png";
             }
