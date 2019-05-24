@@ -50,10 +50,53 @@ class Theme extends DataObject
     public $tertiaryForegroundColor;
     public $tertiaryForegroundColorDefault;
 
+    //Fonts
+	public $headingFont;
+	public $headingFontDefault;
+	public $bodyFont;
+	public $bodyFontDefault;
+
     public $generatedCss;
 
     static function getObjectStructure() {
-        $structure = array(
+	    //Load Valid Fonts
+	    $validHeadingFonts = [
+		    'Arial',
+		    'Catamaran',
+		    'Helvetica',
+		    'Helvetica Neue',
+		    'Josefin Sans',
+		    'Lato',
+		    'Montserrat',
+		    'Noto Sans',
+		    'Open Sans',
+		    'PT Sans',
+		    'Raleway',
+		    'Roboto',
+		    'Source Sans Pro',
+		    'Ubuntu',
+	    ];
+	    $validBodyFonts = [
+		    'Arial',
+		    'Droid Serif',
+		    'Helvetica',
+	        'Helvetica Neue',
+		    'Josefin Sans',
+		    'Lato',
+		    'Montserrat',
+		    'Noto Sans',
+		    'Open Sans',
+		    'Open Sans Condensed',
+		    'Playfair Display',
+		    'PT Sans',
+		    'Raleway',
+		    'Roboto',
+		    'Roboto Condensed',
+		    'Roboto Slab',
+		    'Source Sans Pro',
+	    ];
+
+	    $structure = array(
             'id' => array('property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id'),
             'themeName' => array('property'=>'themeName', 'type'=>'text', 'label'=>'Theme Name', 'description'=>'The Name of the Theme', 'maxLength'=>50, 'required' => true),
             'extendsTheme' => array('property'=>'extendsTheme', 'type'=>'text', 'label'=>'Extends Theme', 'description'=>'A theme that this overrides (leave blank if none is overridden)', 'maxLength'=>50, 'required' => false),
@@ -86,6 +129,9 @@ class Theme extends DataObject
             'tertiaryBackgroundColor' => array('property'=>'tertiaryBackgroundColor', 'type'=>'color', 'label'=>'Tertiary Background Color', 'description'=>'Tertiary Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#de1f0b'),
             'tertiaryForegroundColor' => array('property'=>'tertiaryForegroundColor', 'type'=>'color', 'label'=>'Tertiary Foreground Color', 'description'=>'Tertiary Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff'),
 
+	        'headingFont' => array('property'=>'headingFont', 'type'=>'font', 'label'=>'Heading Font', 'description'=>'Heading Font', 'validFonts'=>$validHeadingFonts, 'previewFontSize'=>'20px', 'required' => false, 'hideInLists' => true, 'default' => 'Ubuntu'),
+	        'bodyFont' => array('property'=>'bodyFont', 'type'=>'font', 'label'=>'Body Font', 'description'=>'Body Font', 'validFonts'=>$validBodyFonts, 'previewFontSize'=>'14px', 'required' => false, 'hideInLists' => true, 'default' => 'Lato'),
+
         );
         return $structure;
     }
@@ -93,13 +139,15 @@ class Theme extends DataObject
     public function insert()
     {
         $this->generatedCss = $this->generateCss($this->getAllAppliedThemes());
-        $ret = parent::insert();
+	    $this->clearDefaultCovers();
+	    $ret = parent::insert();
         return $ret;
     }
 
     public function update()
     {
         $this->generatedCss = $this->generateCss($this->getAllAppliedThemes());
+        $this->clearDefaultCovers();
         $ret = parent::update();
         return $ret;
     }
@@ -162,11 +210,20 @@ class Theme extends DataObject
             if ($interface->getVariable('bodyTextColor') == null && !$theme->bodyTextColorDefault) {
                 $interface->assign('bodyTextColor', $theme->bodyTextColor);
             }
+	        if ($interface->getVariable('headingFont') == null && !$theme->headingFontDefault) {
+		        $interface->assign('headingFont', $theme->headingFont);
+	        }
+	        if ($interface->getVariable('bodyFont') == null && !$theme->bodyFontDefault) {
+		        $interface->assign('bodyFont', $theme->bodyFont);
+	        }
         }
 
         return $interface->fetch('theme.css.tpl');
     }
 
+	/**
+	 * @return Theme[]
+	 */
     public function getAllAppliedThemes(){
         $primaryTheme = clone($this);
         $allAppliedThemes[] = $primaryTheme;
@@ -181,4 +238,11 @@ class Theme extends DataObject
         }
         return $allAppliedThemes;
     }
+
+	private function clearDefaultCovers()
+	{
+		require_once ROOT_DIR . '/sys/Covers/BookCoverInfo.php';
+		$covers = new BookCoverInfo();
+		$covers->reloadAllDefaultCovers();
+	}
 }

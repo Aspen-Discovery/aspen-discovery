@@ -1,6 +1,28 @@
 {strip}
+{if $headingFont}
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family={$headingFont}">
+{/if}
+{if $bodyFont}
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family={$bodyFont}">
+{/if}
+
+{if false}
 <!--suppress CssUnusedSymbol -->
+{/if}
 <style type="text/css">
+{if $headingFont}
+h1, h2, h3, h4, h5, .header-button, .menu-bar-label, .panel-title, label,.browse-category,#browse-sub-category-menu,button,
+.btn,.myAccountLink,.adminMenuLink,.selected-browse-label-search,.result-label,.result-title,.label,#remove-search-label,
+#results-sort-label,#narrow-search-label{ldelim}
+    font-family: {$headingFont}, "Helvetica Neue", Helvetica, Arial, sans-serif;
+{rdelim}
+{/if}
+{if $bodyFont}
+body{ldelim}
+    font-family: {$bodyFont}, "Helvetica Neue", Helvetica, Arial, sans-serif;
+{rdelim}
+{/if}
+
 #header-container{ldelim}
     {if $headerBackgroundColor}
     background-color: {$headerBackgroundColor};

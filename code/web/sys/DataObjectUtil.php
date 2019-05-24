@@ -160,7 +160,7 @@ class DataObjectUtil
 			}else{
 				$object->$propertyName =  0;
 			}
-        }else if ($property['type'] == 'color'){
+        }else if ($property['type'] == 'color' || $property['type'] == 'font'){
 		    $defaultProperty = $propertyName . 'Default';
             if (isset($_REQUEST[$propertyName . '-default']) && ($_REQUEST[$propertyName . '-default'] == 'on')){
                 $object->$defaultProperty = 1;

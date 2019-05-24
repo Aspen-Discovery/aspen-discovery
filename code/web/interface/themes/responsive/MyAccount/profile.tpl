@@ -315,7 +315,6 @@
 								{/if}
 								<script type="text/javascript">
 									$("#contactUpdateForm").validate(
-									{*{if $primaryTheme == 'arlington'}{literal} // Keep & use for debugging*}
 									{if $libraryName == 'Arlington Public Library'}{literal}
 													{
 														rules: {

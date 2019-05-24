@@ -14,8 +14,48 @@ class ListCoverBuilder{
 
     public function __construct()
     {
-        $this->titleFont = ROOT_DIR . '/fonts/JosefinSans-Bold.ttf';
-        $this->authorFont = ROOT_DIR . '/fonts/JosefinSans-BoldItalic.ttf';
+	    global $interface;
+	    if ($interface == null){
+		    //Need to initialize the interface to get access to the themes
+		    //This is needed because we try to minimize what loads for bookcovers for performance
+		    $interface = new UInterface();
+		    $interface->loadDisplayOptions();
+	    }
+
+	    $appliedTheme = $interface->getAppliedTheme();
+	    if ($appliedTheme != null){
+		    $appliedThemes = $appliedTheme->getAllAppliedThemes();
+		    foreach($appliedThemes as $theme){
+			    if (empty($this->titleFont) && $theme->headingFontDefault == 0 && !empty($theme->headingFont)){
+				    $fontFile = ROOT_DIR . '/fonts/' . str_replace(' ', '', $theme->headingFont) . '-Bold.ttf';
+				    if (file_exists($fontFile)){
+					    $this->titleFont = $fontFile;
+				    }
+				    $fontFile = ROOT_DIR . '/fonts/' . str_replace(' ', '', $theme->headingFont) . '-BoldItalic.ttf';
+				    if (file_exists($fontFile)){
+					    $this->authorFont = $fontFile;
+				    }else{
+					    $fontFile = ROOT_DIR . '/fonts/' . str_replace(' ', '', $theme->headingFont) . '-Regular.ttf';
+					    if (file_exists($fontFile)){
+						    $this->authorFont = $fontFile;
+					    }
+				    }
+			    }
+			    if (empty($this->backgroundColor) && !$theme->primaryBackgroundColorDefault){
+				    $colors = sscanf($theme->primaryBackgroundColor, "#%02x%02x%02x");
+				    $this->backgroundColor = [
+					    'r' => $colors[0],
+					    'g' => $colors[1],
+					    'b' => $colors[2]
+				    ];
+			    }
+		    }
+	    }
+
+	    if (empty($this->titleFont)){
+		    $this->titleFont = ROOT_DIR . '/fonts/JosefinSans-Bold.ttf';
+		    $this->authorFont = ROOT_DIR . '/fonts/JosefinSans-BoldItalic.ttf';
+	    }
     }
 
     /**
@@ -83,6 +123,9 @@ class ListCoverBuilder{
 
     private function setBackgroundColors($title)
     {
+	    if (isset($this->backgroundColor)){
+		    return;
+	    }
         $base_saturation = 100;
         $base_brightness = 90;
         $color_distance = 100;

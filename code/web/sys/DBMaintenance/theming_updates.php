@@ -103,5 +103,18 @@ function getThemingUpdates() {
                 "ALTER TABLE `themes` ADD COLUMN `tertiaryForegroundColorDefault` tinyint(1) DEFAULT 1",
             ],
         ],
+
+	    'themes_fonts' => [
+		    'title' => 'Theme Fonts',
+		    'description' => 'Fonts for headings and body. ',
+		    'dependencies' => [],
+		    'continueOnError' => true,
+		    'sql' => [
+			    "ALTER TABLE `themes` ADD COLUMN `headingFont` VARCHAR(191)",
+			    "ALTER TABLE `themes` ADD COLUMN `headingFontDefault` tinyint(1) DEFAULT 1",
+			    "ALTER TABLE `themes` ADD COLUMN `bodyFont` VARCHAR(191)",
+			    "ALTER TABLE `themes` ADD COLUMN `bodyFontDefault` tinyint(1) DEFAULT 1",
+		    ],
+	    ],
     ];
 }

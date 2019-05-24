@@ -16,6 +16,7 @@
 {* Create the base form *}
 <form id='objectEditor' method="post" {if $contentType}enctype="{$contentType}"{/if} action="{$submitUrl}" role="form">
 	{literal}
+
 	<script type="text/javascript">
 	$(document).ready(function(){
 		$("#objectEditor").validate();

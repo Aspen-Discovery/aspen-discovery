@@ -8573,6 +8573,7 @@ hr.menu {
   color: #FFF;
   font-weight: bold;
   text-transform: uppercase;
+  font-size: 16px;
   margin-top: 10px;
 }
 .rotated-text {
@@ -8755,6 +8756,9 @@ hr.menu {
 }
 #horizontal-search-box #horizontal-search-label {
   color: #939396;
+  font-size: 14px;
+  margin-top: 4px;
+  line-height: 20px;
 }
 #horizontal-search-box #lookfor {
   height: 34px;

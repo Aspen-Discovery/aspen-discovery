@@ -3,13 +3,17 @@
 require_once 'Smarty/Smarty.class.php';
 require_once ROOT_DIR . '/sys/mobile_device_detect.php';
 require_once ROOT_DIR . '/sys/Theming/Theme.php';
+require_once ROOT_DIR . '/sys/Variable.php';
+require_once ROOT_DIR . '/services/MyResearch/lib/Session.php';
 
 // Smarty Extension class
 class UInterface extends Smarty
 {
 	public $lang;
-	private $vufindTheme;   // which theme(s) are active?
 	private $themes; // The themes that are active
+	private $theme;
+	/** @var Theme */
+	private $appliedTheme = null;
 	private $isMobile = false;
 	private $url;
 	private $debug = false;
@@ -24,7 +28,6 @@ class UInterface extends Smarty
         $this->caching = false;
 
 		$local = $configArray['Site']['local'];
-		$this->vufindTheme = $configArray['Site']['theme'];
 
 		$this->isMobile = mobile_device_detect();
 		$this->assign('isMobile', $this->isMobile ? 'true' : 'false');
@@ -55,11 +58,11 @@ class UInterface extends Smarty
 			$this->assign('print', true);
 		}
 
-		// Check to see if multiple themes were requested; if so, build an array,
-		// otherwise, store a single string.
-		$themeArray = explode(',', $this->vufindTheme);
-		//Make sure we always fall back to the default theme so a template does not have to be overridden.
-		$themeArray[] = 'default';
+		//Make sure we always fall back to the default (responsive) theme so a template does not have to be overridden.
+		//TODO: This is a bad hack.  ConfigArray appends the library theme to the Site theme array.  We can streamline
+		//to just set the themes in use globally someplace rather than passing through the INI
+		$themeArray = explode(',', $configArray['Site']['theme']);
+		$this->themes = $themeArray;
 		if (count($themeArray) > 1) {
 			$this->template_dir = array();
 			foreach ($themeArray as $currentTheme) {
@@ -67,9 +70,8 @@ class UInterface extends Smarty
 				$this->template_dir[] = "$local/interface/themes/$currentTheme";
 			}
 		} else {
-			$this->template_dir  = "$local/interface/themes/{$this->vufindTheme}";
+			$this->template_dir  = "$local/interface/themes/" . $themeArray[0];
 		}
-		$this->themes = $themeArray;
 		if (isset($timer)){
 			$timer->logTime('Set theme');
 		}
@@ -145,7 +147,6 @@ class UInterface extends Smarty
 		$this->assign('showLinkToClassicInMaintenanceMode', $configArray['Catalog']['showLinkToClassicInMaintenanceMode']);
 		$this->assign('showConvertListsFromClassic', $configArray['Catalog']['showConvertListsFromClassic']);
 
-		$this->assign('theme', $this->vufindTheme);
 		$this->assign('primaryTheme', reset($themeArray));
 		$this->assign('device', get_device_name());
 
@@ -319,6 +320,10 @@ class UInterface extends Smarty
 		}
 	}
 
+	function getAppliedTheme(){
+		return $this->appliedTheme;
+	}
+
 	function loadDisplayOptions(){
 	    /** @var Library $library */
 		global $library;
@@ -333,6 +338,7 @@ class UInterface extends Smarty
         if ($theme->find(true)){
             $allAppliedThemes = $theme->getAllAppliedThemes();
             $primaryTheme = $theme;
+            $this->appliedTheme = $primaryTheme;
         }
 
         //Get Logo
@@ -367,6 +373,7 @@ class UInterface extends Smarty
         if ($primaryTheme != null) {
             $themeCss = $primaryTheme->generatedCss;
             $this->assign('themeCss', $themeCss);
+            $this->assign('primaryThemeObject', $primaryTheme);
         }
 
 		$location = $locationSingleton->getActiveLocation();

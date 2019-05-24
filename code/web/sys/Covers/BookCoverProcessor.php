@@ -18,6 +18,7 @@ class BookCoverProcessor{
 	private $type;
 	private $cacheName;
 	private $cacheFile;
+	private $defaultCoverCacheFile; //Includes servername so each member of a consortium can have different covers
 	public $error;
 	/** @var null|GroupedWorkDriver */
 	private $groupedWork = null;
@@ -149,13 +150,9 @@ class BookCoverProcessor{
 			/** @var File_MARC_Data_Field[] $linkFields */
 			$linkFields = $driver->getMarcRecord()->getFields('856');
 			foreach($linkFields as $linkField){
-                try {
-                    if ($linkField->getIndicator(1) == 4 && $linkField->getIndicator(2) == 2) {
-                        $coverUrl = $linkField->getSubfield('u')->getData();
-                        return $this->processImageURL('hoopla', $coverUrl, true);
-                    }
-                } catch (File_MARC_Exception $e) {
-                    log("MARC record did not have proper indicators " . $e, Logger::LOG_WARNING);
+                if ($linkField->getIndicator(1) == 4 && $linkField->getIndicator(2) == 2) {
+                    $coverUrl = $linkField->getSubfield('u')->getData();
+                    return $this->processImageURL('hoopla', $coverUrl, true);
                 }
             }
 		}
@@ -173,13 +170,9 @@ class BookCoverProcessor{
 				/** @var File_MARC_Data_Field[] $linkFields */
 				$linkFields = $driver->getMarcRecord()->getFields('856');
 				foreach ($linkFields as $linkField) {
-                    try {
-                        if ($linkField->getIndicator(1) == 4 && $linkField->getIndicator(2) == 2) {
-                            $coverUrl = $linkField->getSubfield('u')->getData();
-                            return $this->processImageURL('sideload', $coverUrl, true);
-                        }
-                    } catch (File_MARC_Exception $e) {
-                        log("MARC record did not have proper indicators " . $e, Logger::LOG_WARNING);
+                    if ($linkField->getIndicator(1) == 4 && $linkField->getIndicator(2) == 2) {
+                        $coverUrl = $linkField->getSubfield('u')->getData();
+                        return $this->processImageURL('sideload', $coverUrl, true);
                     }
                 }
 			}
@@ -189,7 +182,7 @@ class BookCoverProcessor{
 
 	private function getColoradoGovDocCover(){
 		$filename = "interface/themes/responsive/images/state_flag_of_colorado.png";
-		if ($this->processImageURL('coloradoGovDoc', $filename, true)){
+		if ($this->processImageURL('coloradoGovDoc', $filename, false)){
 			return true;
 		}else{
 			return false;
@@ -219,7 +212,7 @@ class BookCoverProcessor{
 		}
 		$coverId = preg_replace('/^10+/', '', $id);
 		$coverUrl = "http://cvod.infobase.com/image/$coverId";
-		if ($this->processImageURL('classroomVideoOnDemand', $coverUrl, true)){
+		if ($this->processImageURL('classroomVideoOnDemand', $coverUrl,true)){
 			return true;
 		}else{
 			return false;
@@ -251,7 +244,7 @@ class BookCoverProcessor{
 			$overDriveMetadata->find(true);
 			$filename = $overDriveMetadata->cover;
 			if ($filename != null){
-				return $this->processImageURL('overdrive', $filename);
+				return $this->processImageURL('overdrive', $filename, true);
 			}else{
 				return false;
 			}
@@ -270,14 +263,10 @@ class BookCoverProcessor{
 				/** @var File_MARC_Data_Field[] $linkFields */
 				$linkFields = $driver->getMarcRecord()->getFields('856');
 				foreach ($linkFields as $linkField) {
-					try {
-                        if ($linkField->getIndicator(1) == 4 && $linkField->getSubfield('3') != NULL && $linkField->getSubfield('3')->getData() == 'Image') {
-                            $coverUrl = $linkField->getSubfield('u')->getData();
-                            $coverUrl = str_replace('size=200', 'size=lg', $coverUrl);
-                            return $this->processImageURL('zinio', $coverUrl, true);
-                        }
-                    } catch (File_MARC_Exception $e) {
-                        log("MARC record did not have proper indicators " . $e, Logger::LOG_WARNING);
+                    if ($linkField->getIndicator(1) == 4 && $linkField->getSubfield('3') != NULL && $linkField->getSubfield('3')->getData() == 'Image') {
+                        $coverUrl = $linkField->getSubfield('u')->getData();
+                        $coverUrl = str_replace('size=200', 'size=lg', $coverUrl);
+                        return $this->processImageURL('zinio', $coverUrl, true);
                     }
                 }
 			}
@@ -380,6 +369,8 @@ class BookCoverProcessor{
 		}
 		$this->cacheName = preg_replace('/[^a-zA-Z0-9_.-]/', '', $this->cacheName);
 		$this->cacheFile = $this->bookCoverPath . '/' . $this->size . '/' . $this->cacheName . '.png';
+		global $subdomain;
+		$this->defaultCoverCacheFile = $this->bookCoverPath . '/' . $this->size . '/' . $subdomain . '_' . $this->cacheName . '.png';
 		$this->logTime("load parameters");
 		return true;
 	}
@@ -496,7 +487,7 @@ class BookCoverProcessor{
 						if ($marcField->getSubfield('f')){
 							//Just references the file, add the original directory
 							$filename = $this->bookCoverPath . '/original/' . trim($marcField->getSubfield('f')->getData());
-							if ($this->processImageURL('marcRecord', $filename, true)){
+							if ($this->processImageURL('marcRecord', $filename, false)){
 								//We got a successful match
 								return true;
 							}
@@ -523,7 +514,7 @@ class BookCoverProcessor{
 					if (preg_match('/seed library.*/i', $subfield_a, $matches)){
 						$this->log("Title is a seed library title", Logger::LOG_NOTICE);
 						$filename = "interface/themes/responsive/images/seed_library_logo.jpg";
-						if ($this->processImageURL('seedLibrary', $filename, true)){
+						if ($this->processImageURL('seedLibrary', $filename, false)){
 							return true;
 						}
 					}
@@ -565,15 +556,24 @@ class BookCoverProcessor{
             $this->bookCoverInfo->lastUsed = time();
             $this->bookCoverInfo->update();
 
-            $fileName = "{$this->bookCoverPath}/{$this->size}/{$this->cacheName}.png";
 
-            $this->log("Checking $fileName", Logger::LOG_NOTICE);
-            // Load local cache if available
-            $this->logTime("Found cached cover");
-            $this->log("$fileName exists, returning", Logger::LOG_NOTICE);
-            $this->returnImage($fileName);
+            if ($this->bookCoverInfo->imageSource == 'default'){
+            	global $subdomain;
+	            $fileName = $this->bookCoverPath . '/' . $this->size . '/' . $subdomain . '_' . $this->cacheName . '.png';
+            }else{
+	            $fileName = "{$this->bookCoverPath}/{$this->size}/{$this->cacheName}.png";
+            }
+
+            if (file_exists($fileName)){
+	            $this->log("Checking $fileName", Logger::LOG_NOTICE);
+	            // Load local cache if available
+	            $this->logTime("Found cached cover");
+	            $this->log("$fileName exists, returning", Logger::LOG_NOTICE);
+	            $this->returnImage($fileName);
+            }else{
+	            $hasCachedImage = false;
+            }
         }
-
 
 		$this->logTime("Finished checking for cached cover.");
 		return $hasCachedImage;
@@ -609,11 +609,11 @@ class BookCoverProcessor{
 		if (strlen($title) ===0){
             $title = 'Unknown Title';
 		}
-        $coverBuilder->getCover($title, $author, $this->cacheFile);
-        return $this->processImageURL('default', $this->cacheFile);
+        $coverBuilder->getCover($title, $author, $this->defaultCoverCacheFile);
+        return $this->processImageURL('default', $this->defaultCoverCacheFile, false);
 	}
 
-	function processImageURL($source, $url, $cache = true, $attemptRefetch = true) {
+	function processImageURL($source, $url, $attemptRefetch = true) {
 		$this->log("Processing $url", Logger::LOG_NOTICE);
 		$context = stream_context_create(array('http'=>array(
 			'header' => "User-Agent: {$this->configArray['Catalog']['catalogUserAgent']}\r\n"
@@ -623,8 +623,14 @@ class BookCoverProcessor{
 			// Figure out file paths -- $tempFile will be used to store the downloaded
 			// image for analysis.  $finalFile will be used for long-term storage if
 			// $cache is true or for temporary display purposes if $cache is false.
-			$tempFile = str_replace('.png', uniqid(), $this->cacheFile);
-			$finalFile = $cache ? $this->cacheFile : $tempFile . '.png';
+			if ($source == 'default'){
+				$tempFile = str_replace('.png', uniqid(), $this->defaultCoverCacheFile);
+				$finalFile = $this->defaultCoverCacheFile;
+			}else{
+				$tempFile = str_replace('.png', uniqid(), $this->cacheFile);
+				$finalFile = $this->cacheFile;
+			}
+
 			$this->log("Processing url $url to $finalFile", Logger::LOG_DEBUG);
 
 			// If some services can't provide an image, they will serve a 1x1 blank
@@ -665,7 +671,7 @@ class BookCoverProcessor{
 					$this->log('Partial Gray image loaded.', Logger::LOG_ERROR);
 					if ($attemptRefetch) {
 						$this->log('Partial Gray image, attempting refetch.', Logger::LOG_NOTICE);
-						return $this->processImageURL($url, $cache, false); // Refetch once.
+						return $this->processImageURL($source, $url, false); // Refetch once.
 					}
 				}
 			}
@@ -747,10 +753,6 @@ class BookCoverProcessor{
 			// Display the image:
 			$this->returnImage($finalFile);
 
-			// If we don't want to cache the image, delete it now that we're done.
-			if (!$cache) {
-				@unlink($finalFile);
-			}
 			$this->logTime("Finished processing image url");
 
             $this->setBookCoverInfo($source, $width, $height);
@@ -792,7 +794,7 @@ class BookCoverProcessor{
 			$url .= "&issn=" . (!is_null($this->issn) ? $this->issn : '');
 		}
 		$this->log("Syndetics url: $url", Logger::LOG_DEBUG);
-		return $this->processImageURL('syndetics', $url);
+		return $this->processImageURL('syndetics', $url, true);
 	}
 
 	function librarything($key)
@@ -801,7 +803,7 @@ class BookCoverProcessor{
 			return false;
 		}
 		$url = 'http://covers.librarything.com/devkey/' . $key . '/' . $this->size . '/isbn/' . $this->isn;
-		return $this->processImageURL('libraryThing', $url);
+		return $this->processImageURL('libraryThing', $url, true);
 	}
 
 	/**
@@ -843,7 +845,7 @@ class BookCoverProcessor{
 
 		$url .= "/ContentCafe/Jacket.aspx?UserID={$id}&Password={$pw}&Return=1&Type={$size}&Value={$lookupCode}&erroroverride=1";
 
-	return $this->processImageURL('contentCafe', $url);
+	return $this->processImageURL('contentCafe', $url, true);
 }
 
 	function google()
@@ -1100,7 +1102,7 @@ class BookCoverProcessor{
             $title = $userList->title;
             $listTitles = $userList->getListTitles();
             $coverBuilder->getCover($title, $listTitles, $this->cacheFile);
-            return $this->processImageURL('default', $this->cacheFile);
+            return $this->processImageURL('default', $this->cacheFile, false);
         }else{
             return false;
         }

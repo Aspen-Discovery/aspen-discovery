@@ -21,4 +21,8 @@ class BookCoverInfo extends DataObject
     {
         return ['sourceWidth', 'sourceHeight', 'thumbnailLoaded', 'mediumLoaded', 'largeLoaded', 'uploadedImage'];
     }
+
+    public function reloadAllDefaultCovers(){
+    	$this->query("UPDATE " . $this->__table . " SET thumbnailLoaded = 0, mediumLoaded = 0, largeLoaded = 0 where imageSource = 'default'");
+    }
 }

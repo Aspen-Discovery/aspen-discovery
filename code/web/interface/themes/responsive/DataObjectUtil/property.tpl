@@ -62,10 +62,10 @@
 		{elseif $property.type == 'color'}
 			<div class="row">
 				<div class="col-sm-3">
-					<input type='color' name='{$propName}' id='{$propName}' value='{$propValue|escape}' class='form-control{if $property.required}required{/if}' size="7" maxlength="7" onchange="$('#{$propName}Hex').value(this.value)" {if $property.readOnly}readonly{/if}>
+					<input type='color' name='{$propName}' id='{$propName}' value='{$propValue|escape}' class='form-control{if $property.required}required{/if}' size="7" maxlength="7" onchange="$('#{$propName}Hex').val(this.value);$('#{$propName}-default').prop('checked',false);" {if $property.readOnly}readonly{/if}>
 				</div>
 				<div class="col-sm-3">
-					<input type='text' id='{$propName}Hex' value='{$propValue|escape}' class='form-control' size="7" maxlength="7" onchange="$('#{$propName}').val(this.value)" pattern="^#([a-fA-F0-9]{ldelim}6{rdelim})$" {if $property.readOnly}readonly{/if}>
+					<input type='text' id='{$propName}Hex' value='{$propValue|escape}' class='form-control' size="7" maxlength="7" onchange="$('#{$propName}').val(this.value);$('#{$propName}-default').prop('checked',false);" pattern="^#([a-fA-F0-9]{ldelim}6{rdelim})$" {if $property.readOnly}readonly{/if}>
 				</div>
 				<div class="col-sm-6">
 					{assign var=defaultVariableName value="`$propName`Default"}
@@ -77,6 +77,36 @@
 
 					<input type="checkbox" name='{$propName}-default' id='{$propName}-default' {if $useDefault == '1'}checked="checked"{/if} {if !empty($property.readOnly)}readonly{/if}/><label for='{$propName}-default'>Use Default</label>
 				</div>
+			</div>
+		{elseif $property.type == 'font'}
+			<div class="row">
+				<div class="col-sm-4">
+					<select name='{$propName}' id='{$propName}' class='form-control font {if $property.required}required{/if}' {if $property.readOnly}readonly{/if} onchange="$('#{$propName}-default').prop('checked',false);VuFind.Admin.loadGoogleFontPreview('{$propName}')">
+						{foreach from=$property.validFonts item=fontName}
+							<option value="{$fontName}"{if $propValue == $fontName} selected='selected'{/if}>{$fontName}</option>
+						{/foreach}
+					</select>
+				</div>
+				<div class="col-sm-3">
+					{assign var=defaultVariableName value="`$propName`Default"}
+					{if is_null($object->$defaultVariableName)}
+						{assign var=useDefault value=true}
+					{else}
+						{assign var=useDefault value=$object->$defaultVariableName}
+					{/if}
+
+					<input type="checkbox" name='{$propName}-default' id='{$propName}-default' {if $useDefault == '1'}checked="checked"{/if} {if !empty($property.readOnly)}readonly{/if}/><label for='{$propName}-default'>Use Default</label>
+				</div>
+				<div class="col-sm-5">
+					<div id="{$propName}-sample-text" style="font-family: {$propValue},arial; font-size: {if $property.previewFontSize}{$property.previewFontSize}{else}12px{/if}">
+						English, Español, 中文(简体), עברית
+					</div>
+				</div>
+				<script type="text/javascript">
+					$().ready(function () {ldelim}
+						VuFind.Admin.loadGoogleFontPreview('{$propName}');
+                    {rdelim});
+				</script>
 			</div>
 		{elseif $property.type == 'multiemail'}
 			<input type='text' name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if $property.size}size='{$property.size}'{/if} class='form-control multiemail {if $property.required}required{/if}' {if $property.readOnly}readonly{/if}>

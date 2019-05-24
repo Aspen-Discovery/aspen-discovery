@@ -38,5 +38,12 @@ VuFind.Admin = (function(){
 			VuFind.Account.ajaxLightbox("/Admin/AJAX?method=getExtractNotes&source=overdrive&id=" + id + "&source=" + source, true);
 			return false;
 		},
+		loadGoogleFontPreview: function (fontSelector) {
+			let fontElement = $("#" + fontSelector);
+			let fontName = fontElement.val();
+
+			$('head').append('<link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=' + fontName + '">');
+			$('#' + fontSelector + '-sample-text').css('font-family', fontName);
+		}
 	};
 }(VuFind.Admin || {}));
