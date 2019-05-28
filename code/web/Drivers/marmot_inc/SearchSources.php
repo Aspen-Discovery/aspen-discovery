@@ -70,9 +70,10 @@ class SearchSources{
 			);
 		}elseif (isset($library)){
 			$searchOptions['local'] = array(
-              'name' => strlen($library->abbreviatedDisplayName) > 0 ? $library->abbreviatedDisplayName :  $library->displayName,
-              'description' => "The {$library->displayName} catalog.",
-							'catalogType' => 'catalog'
+				'name' => 'Entire Library Catalog',
+                //'name' => strlen($library->abbreviatedDisplayName) > 0 ? $library->abbreviatedDisplayName :  $library->displayName,
+                'description' => "The {$library->displayName} catalog.",
+				'catalogType' => 'catalog'
 			);
 		}else{
 			$marmotAdded = true;
@@ -85,12 +86,12 @@ class SearchSources{
 		}
 
 		if (($location != null) &&
-		($repeatSearchSetting == 'marmot' || $repeatSearchSetting == 'librarySystem') &&
-		($location->useScope && $location->restrictSearchByLocation)
+			($repeatSearchSetting == 'marmot' || $repeatSearchSetting == 'librarySystem') &&
+			($location->useScope && $location->restrictSearchByLocation)
 		){
 			$searchOptions[$library->subdomain] = array(
-        'name' => $library->displayName,
-        'description' => "The entire {$library->displayName} catalog not limited to a particular branch.",
+		        'name' => $library->displayName,
+		        'description' => "The entire {$library->displayName} catalog not limited to a particular branch.",
 				'catalogType' => 'catalog'
 			);
 		}
@@ -106,8 +107,8 @@ class SearchSources{
 						$repeatInLibrary->fetch();
 
 						$searchOptions[$repeatInLibrary->subdomain] = array(
-              'name' => $repeatInLibrary->displayName,
-              'description' => '',
+							'name' => $repeatInLibrary->displayName,
+				            'description' => '',
 							'catalogType' => 'catalog'
 						);
 					}else{
@@ -119,8 +120,8 @@ class SearchSources{
 							$repeatInLocation->fetch();
 
 							$searchOptions[$repeatInLocation->code] = array(
-                'name' => $repeatInLocation->displayName,
-                'description' => '',
+								'name' => $repeatInLocation->displayName,
+				                'description' => '',
 								'catalogType' => 'catalog'
 							);
 						}
@@ -147,14 +148,14 @@ class SearchSources{
 
 		//Marmot Global search
 		if (isset($library) &&
-		($repeatSearchSetting == 'marmot') &&
-		$library->restrictSearchByLibrary
-		&& $marmotAdded == false
+			($repeatSearchSetting == 'marmot') &&
+			$library->restrictSearchByLibrary
+			&& $marmotAdded == false
 		){
 			$consortiumName = $configArray['Site']['libraryName'];
 			$searchOptions['marmot'] = array(
 				'name' => "$consortiumName Catalog",
-        'description' => 'A consortium of libraries who share resources with your library.',
+                'description' => 'A consortium of libraries who share resources with your library.',
 				'catalogType' => 'catalog'
 			);
 		}
@@ -167,17 +168,17 @@ class SearchSources{
 
 		if ($searchEbsco){
 			$searchOptions['ebsco'] = array(
-					'name' => 'EBSCO',
-					'description' => 'EBSCO',
-					'catalogType' => 'ebsco'
+				'name' => 'EBSCO',
+				'description' => 'EBSCO',
+				'catalogType' => 'ebsco'
 			);
 		}
 
 		if ($searchArchive){
 			$searchOptions['islandora'] = array(
-					'name' => 'Local Digital Archive',
-					'description' => 'Local Digital Archive in Colorado',
-					'catalogType' => 'islandora'
+				'name' => 'Local Digital Archive',
+				'description' => 'Local Digital Archive in Colorado',
+				'catalogType' => 'islandora'
 			);
 		}
 

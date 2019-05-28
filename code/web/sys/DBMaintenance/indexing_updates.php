@@ -428,7 +428,7 @@ function getIndexingUpdates() {
 
         'accelerated_reader' => [
             'title' => 'Accelerated Reader',
-            'description' => 'Setup authorities in the database to reduce memory usage during indexing',
+            'description' => 'Setup Acclerated Reader in the database to reduce memory usage during indexing',
             'sql' => [
                 "CREATE TABLE accelerated_reading_titles (
                     arBookId INT NOT NULL PRIMARY KEY,
