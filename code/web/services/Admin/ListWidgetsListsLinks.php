@@ -1,24 +1,4 @@
 <?php
-/**
- *
- * Copyright (C) Douglas County Libraries 2012
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2,
- * as published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- * @author Juan Gimenez <jgimenez@dclibraries.org>
- *
- */
 
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/Admin.php';
@@ -47,6 +27,7 @@ class ListWidgetsListsLinks extends Admin_Admin {
 
 		switch ($objectAction)
 		{
+			/** @noinspection PhpMissingBreakStatementInspection */
 			case 'save':
 				$this->launchSave();//Yes, there is not a break after this case.
 			case 'edit':
@@ -152,7 +133,7 @@ class ListWidgetsListsLinks extends Admin_Admin {
 	{
 		$listWidgetLinks = new ListWidgetListsLinks();
 		DataObjectUtil::updateFromUI($listWidgetLinks, $listWidgetLinks->getObjectStructure());
-		$validationResults = DataObjectUtil::saveObject($listWidgetLinks->getObjectStructure(), "ListWidgetListsLinks");
+		DataObjectUtil::saveObject($listWidgetLinks->getObjectStructure(), "ListWidgetListsLinks");
 	}
 
 	public function getAllowableRoles(){

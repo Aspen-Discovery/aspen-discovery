@@ -363,6 +363,10 @@ class DataObjectUtil
 			if (strlen($_REQUEST[$propertyName]) > 0 && ($_REQUEST[$propertyName] == $_REQUEST[$propertyName . 'Repeat'])){
 				$object->$propertyName = md5($_REQUEST[$propertyName]);
 			}
+		}else if ($property['type'] == 'storedPassword'){
+			if (strlen($_REQUEST[$propertyName]) > 0 && ($_REQUEST[$propertyName] == $_REQUEST[$propertyName . 'Repeat'])){
+				$object->$propertyName = $_REQUEST[$propertyName];
+			}
 		}else if ($property['type'] == 'oneToMany'){
 			//Check for deleted associations
 			$deletions = isset($_REQUEST[$propertyName . 'Deleted']) ? $_REQUEST[$propertyName . 'Deleted'] : array();

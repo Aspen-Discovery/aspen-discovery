@@ -1,12 +1,12 @@
 package com.turning_leaf_technologies.reindexer;
 
-import com.opencsv.CSVWriter;
+import com.jcraft.jsch.*;
 import com.turning_leaf_technologies.config.ConfigUtil;
+import com.turning_leaf_technologies.file.UnzipUtility;
 import com.turning_leaf_technologies.indexing.IndexingUtils;
 import com.turning_leaf_technologies.indexing.Scope;
 import com.turning_leaf_technologies.net.NetworkUtils;
 import com.turning_leaf_technologies.net.WebServiceResponse;
-//import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.impl.BinaryRequestWriter;
 import org.apache.solr.client.solrj.impl.ConcurrentUpdateSolrClient;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
@@ -15,15 +15,16 @@ import org.ini4j.Ini;
 
 import java.io.*;
 import java.sql.*;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Date;
 
 import org.apache.logging.log4j.Logger;
 
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+
 public class GroupedWorkIndexer {
 	private Ini configIni;
-	private String baseLogPath;
 	private String serverName;
 	private String solrPort;
 	private Logger logger;
@@ -35,7 +36,6 @@ public class GroupedWorkIndexer {
 	private RbdigitalProcessor rbdigitalProcessor;
 	private HashMap<String, HashMap<String, String>> translationMaps = new HashMap<>();
 	private HashMap<String, LexileTitle> lexileInformation = new HashMap<>();
-	private HashMap<String, ARTitle> arInformation = new HashMap<>();
 	private Long maxWorksToProcess = -1L;
 
 	private PreparedStatement getRatingStmt;
@@ -48,18 +48,16 @@ public class GroupedWorkIndexer {
 	private boolean fullReindex;
 	private long lastReindexTime;
 	private Long lastReindexTimeVariableId;
-	private boolean partialReindexRunning;
-	private Long partialReindexRunningVariableId;
-	private Long fullReindexRunningVariableId;
 	private boolean okToIndex = true;
 
 
-	private HashSet<String> worksWithInvalidLiteraryForms = new HashSet<>();
 	private TreeSet<Scope> scopes ;
 
 	private PreparedStatement getGroupedWorkPrimaryIdentifiers;
 	private PreparedStatement getDateFirstDetectedStmt;
 	private PreparedStatement getGroupedWorkInfoStmt;
+	private PreparedStatement getArBookIdForIsbnStmt;
+	private PreparedStatement getArBookInfoStmt;
 
 	private static PreparedStatement deleteGroupedWorkStmt;
 
@@ -72,8 +70,6 @@ public class GroupedWorkIndexer {
 		this.configIni = configIni;
 
 		solrPort = configIni.get("Reindex", "solrPort");
-
-		baseLogPath = ConfigUtil.cleanIniValue(configIni.get("Site", "baseLogPath"));
 
 		String maxWorksToProcessStr = ConfigUtil.cleanIniValue(configIni.get("Reindex", "maxWorksToProcess"));
 		if (maxWorksToProcessStr != null && maxWorksToProcessStr.length() > 0){
@@ -99,26 +95,14 @@ public class GroupedWorkIndexer {
 			logger.error("Could not load last index time from variables table ", e);
 		}
 
-		//Check to see if a partial reindex is running
-		try{
-			PreparedStatement loadPartialReindexRunning = dbConn.prepareStatement("SELECT * from variables WHERE name = 'partial_reindex_running'", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-			ResultSet loadPartialReindexRunningRS = loadPartialReindexRunning.executeQuery();
-			if (loadPartialReindexRunningRS.next()){
-				partialReindexRunning = loadPartialReindexRunningRS.getBoolean("value");
-				partialReindexRunningVariableId = loadPartialReindexRunningRS.getLong("id");
-			}
-			loadPartialReindexRunningRS.close();
-			loadPartialReindexRunning.close();
-		} catch (Exception e){
-			logger.error("Could not load last index time from variables table ", e);
-		}
-
 		//Load a few statements we will need later
 		try{
 			getGroupedWorkPrimaryIdentifiers = dbConn.prepareStatement("SELECT * FROM grouped_work_primary_identifiers where grouped_work_id = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			getDateFirstDetectedStmt = dbConn.prepareStatement("SELECT dateFirstDetected FROM ils_marc_checksums WHERE source = ? AND ilsId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			deleteGroupedWorkStmt = dbConn.prepareStatement("DELETE from grouped_work where id = ?");
 			getGroupedWorkInfoStmt = dbConn.prepareStatement("SELECT id, grouping_category from grouped_work where permanent_id = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			getArBookIdForIsbnStmt = dbConn.prepareStatement("SELECT arBookId from accelerated_reading_isbn where isbn = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			getArBookInfoStmt = dbConn.prepareStatement("SELECT * from accelerated_reading_titles where arBookId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 		} catch (Exception e){
 			logger.error("Could not load statements to get identifiers ", e);
 		}
@@ -142,8 +126,6 @@ public class GroupedWorkIndexer {
 			if (!stopReplicationResponse.isSuccess()){
 				logger.error("Error restarting replication " + stopReplicationResponse.getMessage());
 			}
-
-			updateFullReindexRunning(true);
 		}else{
 			//TODO: Bypass this if called from an export process?
 
@@ -166,14 +148,6 @@ public class GroupedWorkIndexer {
 				GroupedReindexMain.addNoteToReindexLog("Index last ran " + (elapsedTime) + " seconds ago");
 			}
 
-			if (partialReindexRunning){
-				//Oops, a reindex is already running.
-				//No longer really care about this since it doesn't happen and there are other ways of finding a stuck process
-				//logger.warn("A partial reindex is already running, check to make sure that reindexes don't overlap since that can cause poor performance");
-				GroupedReindexMain.addNoteToReindexLog("A partial reindex is already running, check to make sure that reindexes don't overlap since that can cause poor performance");
-			}else{
-				updatePartialReindexRunning(true);
-			}
 			ConcurrentUpdateSolrClient.Builder solrBuilder = new ConcurrentUpdateSolrClient.Builder("http://localhost:" + solrPort + "/solr/grouped_works");
 			solrBuilder.withThreadCount(1);
 			solrBuilder.withQueueSize(25);
@@ -275,8 +249,7 @@ public class GroupedWorkIndexer {
 		String lexileExportPath = configIni.get("Reindex", "lexileExportPath");
 		loadLexileData(lexileExportPath);
 
-		String arExportPath = configIni.get("Reindex", "arExportPath");
-		loadAcceleratedReaderData(arExportPath);
+		loadAcceleratedReaderData();
 
 		if (clearIndex){
 			clearIndex();
@@ -300,67 +273,91 @@ public class GroupedWorkIndexer {
 	TreeSet<String> overDriveRecordsSkipped = new TreeSet<>();
 	private TreeMap<String, ScopedIndexingStats> indexingStats = new TreeMap<>();
 
-	private void loadAcceleratedReaderData(String acceleratedReaderPath){
+	private void loadAcceleratedReaderData(){
 		try{
-			File arFile = new File(acceleratedReaderPath);
-			BufferedReader arDataReader = new BufferedReader(new FileReader(arFile));
-			//Skip over the header
-			arDataReader.readLine();
-			String arDataLine = arDataReader.readLine();
-			int numLines = 0;
-			while (arDataLine != null){
-				ARTitle titleInfo = new ARTitle();
-				String[] arFields = arDataLine.split("\\t");
-				if (arFields.length >= 29){
-					titleInfo.setTitle(arFields[2]);
-					titleInfo.setAuthor(arFields[6]);
-					titleInfo.setBookLevel(arFields[7]);
-					titleInfo.setArPoints(arFields[8]);
-					titleInfo.setInterestLevel(arFields[10]);
-					String isbn1 = arFields[11];
-					if (isbn1.length() > 0) {
-						isbn1 = isbn1.replaceAll("[^\\dX]", "");
-						arInformation.put(isbn1, titleInfo);
+			PreparedStatement arSettingsStmt = dbConn.prepareStatement("SELECT * FROM accelerated_reading_settings");
+			ResultSet arSettingsRS = arSettingsStmt.executeQuery();
+			if (arSettingsRS.next()){
+				long lastFetched = arSettingsRS.getLong("lastFetched");
+				//Update if we have never updated or if we last updated more than a week ago
+				//If we are updating, update the settings table right away so multiple processors don't update at the same time
+				if (lastFetched < ((new Date().getTime() / 1000) - (7 * 24 * 60 * 60 * 1000))){
+					PreparedStatement updateSettingsStmt = dbConn.prepareStatement("UPDATE accelerated_reading_settings SET lastFetched = ?");
+					updateSettingsStmt.setLong(1, (new Date().getTime() / 1000));
+
+					updateSettingsStmt.executeUpdate();
+
+					//Fetch the latest file from the SFTP server
+					String ftpServer = arSettingsRS.getString("ftpServer");
+					String ftpUser = arSettingsRS.getString("ftpUser");
+					String ftpPassword = arSettingsRS.getString("ftpPassword");
+					String arExportPath = arSettingsRS.getString("arExportPath");
+
+					String remoteFile = "/RLI-ARDATA-XML.ZIP";
+					File localFile = new File(arExportPath + "/RLI-ARDATA-XML.ZIP");
+
+					JSch jsch = new JSch();
+					Session session;
+					try {
+						session = jsch.getSession(ftpUser, ftpServer, 22);
+						session.setConfig("StrictHostKeyChecking", "no");
+						session.setPassword(ftpPassword);
+						session.connect();
+
+						Channel channel = session.openChannel("sftp");
+						channel.connect();
+						ChannelSftp sftpChannel = (ChannelSftp) channel;
+						sftpChannel.get(remoteFile, new FileOutputStream(localFile));
+						sftpChannel.exit();
+						session.disconnect();
+					} catch (JSchException e) {
+						logger.error("JSch Error retrieving accelerated reader file from server", e);
+					} catch (SftpException e) {
+						logger.error("Sftp Error retrieving accelerated reader file from server", e);
 					}
-					String isbn2 = arFields[14];
-					if (isbn2.length() > 0) {
-						isbn2 = isbn2.replaceAll("[^\\dX]", "");
-						arInformation.put(isbn2, titleInfo);
+
+					if (localFile.exists()){
+						UnzipUtility.unzip(localFile.getPath(), arExportPath);
+
+						//Update the database
+						//Load the ar_titles xml file
+						File arTitles = new File(arExportPath + "/ar_titles.xml");
+						loadAcceleratedReaderTitlesXMLFile(arTitles);
+
+						//Load the ar_titles_isbn xml file
+						File arTitlesIsbn = new File(arExportPath + "/ar_titles_isbn.xml");
+						loadAcceleratedReaderTitlesIsbnXMLFile(arTitlesIsbn);
 					}
-					String isbn3 = arFields[17];
-					if (isbn3.length() > 0) {
-						isbn3 = isbn3.replaceAll("[^\\dX]", "");
-						arInformation.put(isbn3, titleInfo);
-					}
-					String isbn4 = arFields[20];
-					if (isbn4.length() > 0) {
-						isbn4 = isbn4.replaceAll("[^\\dX]", "");
-						arInformation.put(isbn4, titleInfo);
-					}
-					String isbn5 = arFields[23];
-					if (isbn5.length() > 0) {
-						isbn5 = isbn5.replaceAll("[^\\dX]", "");
-						arInformation.put(isbn5, titleInfo);
-					}
-					String isbn6 = arFields[26];
-					if (isbn6.length() > 0) {
-						isbn6 = isbn6.replaceAll("[^\\dX]", "");
-						arInformation.put(isbn6, titleInfo);
-					}
-					String isbn7 = arFields[29];
-					if (isbn7.length() > 0) {
-						isbn7 = isbn7.replaceAll("[^\\dX]", "");
-						arInformation.put(isbn7, titleInfo);
-					}
-					numLines++;
 				}
-				arDataLine = arDataReader.readLine();
 			}
-			logger.info("Read " + numLines + " lines of accelerated reader data");
-		}catch (FileNotFoundException fne){
-			logger.error("Error loading accelerated reader data, the file was not found at " + acceleratedReaderPath);
 		}catch (Exception e){
 			logger.error("Error loading accelerated reader data", e);
+		}
+	}
+
+	private void loadAcceleratedReaderTitlesIsbnXMLFile(File arTitlesIsbn) {
+		try {
+			logger.info("Loading ar isbns from " + arTitlesIsbn);
+
+			SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
+			SAXParser saxParser = saxParserFactory.newSAXParser();
+			ArTitleIsbnsHandler handler = new ArTitleIsbnsHandler(dbConn, logger);
+			saxParser.parse(arTitlesIsbn, handler);
+		} catch (Exception e) {
+			logger.error("Error parsing Accelerated Reader Title data ", e);
+		}
+	}
+
+	private void loadAcceleratedReaderTitlesXMLFile(File arTitles) {
+		try {
+			logger.info("Loading ar titles from " + arTitles);
+
+			SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
+			SAXParser saxParser = saxParserFactory.newSAXParser();
+			ArTitlesHandler handler = new ArTitlesHandler(dbConn, logger);
+			saxParser.parse(arTitles, handler);
+		} catch (Exception e) {
+			logger.error("Error parsing Accelerated Reader Title data ", e);
 		}
 	}
 
@@ -435,7 +432,7 @@ public class GroupedWorkIndexer {
 			//Delete the work from the database?
 			//TODO: Should we do this or leave a record if it was linked to lists, reading history, etc?
 			//TODO: Add a deleted flag since overdrive will return titles that can no longer be accessed?
-			//We would avoid continually deleting and readding?
+			//We would avoid continually deleting and re-adding?
 			deleteGroupedWorkStmt.setLong(1, groupedWorkId);
 			deleteGroupedWorkStmt.executeUpdate();
 
@@ -500,127 +497,7 @@ public class GroupedWorkIndexer {
 			}
 		}
 
-		writeWorksWithInvalidLiteraryForms();
 		updateLastReindexTime();
-
-		//Write validation information
-		if (fullReindex) {
-			writeStats();
-			updateFullReindexRunning(false);
-		}else{
-			updatePartialReindexRunning(false);
-		}
-	}
-
-	private void writeStats() {
-		try {
-			File dataDir = new File(configIni.get("Reindex", "marcPath"));
-			dataDir = dataDir.getParentFile();
-			//write the records in CSV format to the data directory
-			Date curDate = new Date();
-			String curDateFormatted = dayFormatter.format(curDate);
-			File recordsFile = new File(dataDir.getAbsolutePath() + "/reindex_stats_" + curDateFormatted + ".csv");
-			CSVWriter recordWriter = new CSVWriter(new FileWriter(recordsFile));
-			ArrayList<String> headers = new ArrayList<>();
-			headers.add("Scope Name");
-			headers.add("Owned works");
-			headers.add("Total works");
-			TreeSet<String> recordProcessorNames = new TreeSet<>(ilsRecordProcessors.keySet());
-			recordProcessorNames.add("overdrive");
-			for (String processorName : recordProcessorNames){
-				headers.add("Owned " + processorName + " records");
-				headers.add("Owned " + processorName + " physical items");
-				headers.add("Owned " + processorName + " on order items");
-				headers.add("Owned " + processorName + " e-content items");
-				headers.add("Total " + processorName + " records");
-				headers.add("Total " + processorName + " physical items");
-				headers.add("Total " + processorName + " on order items");
-				headers.add("Total " + processorName + " e-content items");
-			}
-			recordWriter.writeNext(headers.toArray(new String[0]));
-
-			//Write custom scopes
-			for (String curScope: indexingStats.keySet()){
-				ScopedIndexingStats stats = indexingStats.get(curScope);
-				recordWriter.writeNext(stats.getData());
-			}
-			recordWriter.flush();
-			recordWriter.close();
-		} catch (IOException e) {
-			logger.error("Unable to write statistics", e);
-		}
-	}
-
-	private SimpleDateFormat dayFormatter = new SimpleDateFormat("yyyy-MM-dd");
-
-	private void updatePartialReindexRunning(boolean running) {
-		if (!fullReindex) {
-			logger.info("Updating partial reindex running");
-			//Update the last grouping time in the variables table
-			try {
-				if (partialReindexRunningVariableId != null) {
-					PreparedStatement updateVariableStmt = dbConn.prepareStatement("UPDATE variables set value = ? WHERE id = ?");
-					updateVariableStmt.setString(1, Boolean.toString(running));
-					updateVariableStmt.setLong(2, partialReindexRunningVariableId);
-					updateVariableStmt.executeUpdate();
-					updateVariableStmt.close();
-				} else {
-					PreparedStatement insertVariableStmt = dbConn.prepareStatement("INSERT INTO variables (`name`, `value`) VALUES ('partial_reindex_running', ?)", Statement.RETURN_GENERATED_KEYS);
-					insertVariableStmt.setString(1, Boolean.toString(running));
-					insertVariableStmt.executeUpdate();
-					ResultSet generatedKeys = insertVariableStmt.getGeneratedKeys();
-					if (generatedKeys.next()){
-						partialReindexRunningVariableId = generatedKeys.getLong(1);
-					}
-					insertVariableStmt.close();
-				}
-			} catch (Exception e) {
-				logger.error("Error setting last grouping time", e);
-			}
-		}
-	}
-
-	private void updateFullReindexRunning(boolean running) {
-		logger.info("Updating full reindex running");
-		//Update the last grouping time in the variables table
-		try {
-			if (fullReindexRunningVariableId != null) {
-				PreparedStatement updateVariableStmt = dbConn.prepareStatement("UPDATE variables set value = ? WHERE id = ?");
-				updateVariableStmt.setString(1, Boolean.toString(running));
-				updateVariableStmt.setLong(2, fullReindexRunningVariableId);
-				updateVariableStmt.executeUpdate();
-				updateVariableStmt.close();
-			} else {
-				PreparedStatement insertVariableStmt = dbConn.prepareStatement("INSERT INTO variables (`name`, `value`) VALUES ('full_reindex_running', ?) ON DUPLICATE KEY UPDATE value = VALUES(value)", Statement.RETURN_GENERATED_KEYS);
-				insertVariableStmt.setString(1, Boolean.toString(running));
-				insertVariableStmt.executeUpdate();
-				ResultSet generatedKeys = insertVariableStmt.getGeneratedKeys();
-				if (generatedKeys.next()){
-					fullReindexRunningVariableId = generatedKeys.getLong(1);
-				}
-				insertVariableStmt.close();
-			}
-		} catch (Exception e) {
-			logger.error("Error setting that full index is running", e);
-		}
-	}
-
-	private void writeWorksWithInvalidLiteraryForms() {
-		logger.info("Writing works with invalid literary forms");
-		File worksWithInvalidLiteraryFormsFile = new File (baseLogPath + "/" + serverName + "/worksWithInvalidLiteraryForms.txt");
-		try {
-			if (worksWithInvalidLiteraryForms.size() > 0) {
-				FileWriter writer = new FileWriter(worksWithInvalidLiteraryFormsFile, false);
-				logger.debug("Found " + worksWithInvalidLiteraryForms.size() + " grouped works with invalid literary forms\r\n");
-				writer.write("Found " + worksWithInvalidLiteraryForms.size() + " grouped works with invalid literary forms\r\n");
-				writer.write("Works with inconsistent literary forms\r\n");
-				for (String curId : worksWithInvalidLiteraryForms){
-					writer.write(curId + "\r\n");
-				}
-			}
-		}catch(Exception e){
-			logger.error("Error writing works with invalid literary forms", e);
-		}
 	}
 
 	private void updateLastReindexTime() {
@@ -835,17 +712,27 @@ public class GroupedWorkIndexer {
 	}
 
 	private void loadAcceleratedDataForWork(GroupedWorkSolr groupedWork){
-		for(String isbn : groupedWork.getIsbns()){
-			if (arInformation.containsKey(isbn)){
-				ARTitle arTitle = arInformation.get(isbn);
-				String bookLevel = arTitle.getBookLevel();
-				if (bookLevel.length() > 0){
-					groupedWork.setAcceleratedReaderReadingLevel(bookLevel);
+		try {
+			for (String isbn : groupedWork.getIsbns()){
+				getArBookIdForIsbnStmt.setString(1, isbn);
+				ResultSet arBookIdRS = getArBookIdForIsbnStmt.executeQuery();
+				if (arBookIdRS.next()){
+					String arBookId = arBookIdRS.getString("arBookId");
+					getArBookInfoStmt.setString(1, arBookId);
+					ResultSet arBookInfoRS = getArBookInfoStmt.executeQuery();
+					if (arBookInfoRS.next()){
+						String bookLevel = arBookInfoRS.getString("bookLevel");
+						if (bookLevel.length() > 0){
+							groupedWork.setAcceleratedReaderReadingLevel(bookLevel);
+						}
+						groupedWork.setAcceleratedReaderPointValue(arBookInfoRS.getString("arPoints"));
+						groupedWork.setAcceleratedReaderInterestLevel(arBookInfoRS.getString("interestLevel"));
+						break;
+					}
 				}
-				groupedWork.setAcceleratedReaderPointValue(arTitle.getArPoints());
-				groupedWork.setAcceleratedReaderInterestLevel(arTitle.getInterestLevel());
-				break;
 			}
+		} catch (SQLException e) {
+			logger.error("Error loading accelerated reader information", e);
 		}
 	}
 
@@ -879,7 +766,7 @@ public class GroupedWorkIndexer {
 					if (novelistRS.wasNull()){
 						volume = "";
 					}
-					groupedWork.addSeriesWithVolume(series + "|" + volume);
+					groupedWork.addSeriesWithVolume(series, volume);
 				}
 			}
 			novelistRS.close();
@@ -1022,12 +909,6 @@ public class GroupedWorkIndexer {
 					}
 			}
 		return  translatedCollection;
-	}
-
-
-
-	void addWorkWithInvalidLiteraryForms(String id) {
-		this.worksWithInvalidLiteraryForms.add(id);
 	}
 
 	TreeSet<Scope> getScopes() {

@@ -91,7 +91,7 @@ class RbdigitalProcessor {
                     if (rawResponse.has("series")){
                         String series = rawResponse.getJSONObject("series").getString("text");
                         groupedWork.addSeries(series);
-                        groupedWork.addSeriesWithVolume(series + "|" + seriesPosition);
+                        groupedWork.addSeriesWithVolume(series, Integer.toString(seriesPosition));
                     }else{
                         logger.debug("Record should have series, but does not");
                     }
@@ -117,7 +117,7 @@ class RbdigitalProcessor {
                 try {
                     formatBoost = Long.parseLong(indexer.translateSystemValue("format_boost_rbdigital", primaryFormat, identifier));
                 } catch (Exception e) {
-                    logger.warn("Could not translate format boost for " + primaryFormat + " create transaltion map format_boost_rbdigital");
+                    logger.warn("Could not translate format boost for " + primaryFormat + " create translation map format_boost_rbdigital");
                 }
                 rbdigitalRecord.setFormatBoost(formatBoost);
                 if (rawResponse.has("narrators")) {

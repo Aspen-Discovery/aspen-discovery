@@ -304,11 +304,12 @@ abstract class MarcRecordProcessor {
 			series = series.replaceAll("\\s+\\(.*?\\)", "");
 			//Remove the word series at the end since this gets cataloged inconsistently
 			series = series.replaceAll("(?i)\\s+series$", "");
+			String volume = "";
 			if (seriesField.getSubfield('v') != null){
 				//Separate out the volume so we can link specially
-				series += "|" + seriesField.getSubfield('v').getData();
+				volume = seriesField.getSubfield('v').getData();
 			}
-			seriesWithVolumes.add(series);
+			groupedWork.addSeriesWithVolume(series, volume);
 		}
 		seriesFields = MarcUtil.getDataFields(record, "800");
 		for (DataField seriesField : seriesFields){
@@ -318,13 +319,14 @@ abstract class MarcRecordProcessor {
 			//Remove the word series at the end since this gets cataloged inconsistently
 			series = series.replaceAll("(?i)\\s+series$", "");
 
+			String volume = "";
 			if (seriesField.getSubfield('v') != null){
 				//Separate out the volume so we can link specially
-				series += "|" + seriesField.getSubfield('v').getData();
+				volume = seriesField.getSubfield('v').getData();
 			}
-			seriesWithVolumes.add(series);
+			groupedWork.addSeriesWithVolume(series, volume);
 		}
-		groupedWork.addSeriesWithVolume(seriesWithVolumes);
+
 
 		groupedWork.addSeries(MarcUtil.getFieldList(record, "830ap:800pqt"));
 		groupedWork.addSeries2(MarcUtil.getFieldList(record, "490a"));
@@ -346,10 +348,6 @@ abstract class MarcRecordProcessor {
 		loadTargetAudiences(groupedWork, record, printItems, identifier);
 		loadFountasPinnell(groupedWork, record);
 		groupedWork.addMpaaRating(getMpaaRating(record));
-		//Do not load ar data from MARC since we now get it directly from Renaissance Learning
-		/*groupedWork.setAcceleratedReaderInterestLevel(getAcceleratedReaderInterestLevel(record));
-		groupedWork.setAcceleratedReaderReadingLevel(getAcceleratedReaderReadingLevel(record));
-		groupedWork.setAcceleratedReaderPointValue(getAcceleratedReaderPointLevel(record));*/
 		groupedWork.addKeywords(MarcUtil.getAllSearchableFields(record, 100, 900));
 	}
 

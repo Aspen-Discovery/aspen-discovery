@@ -5,11 +5,6 @@ require_once ROOT_DIR . '/sys/Pager.php';
 require_once ROOT_DIR . '/sys/ISBN.php';
 require_once ROOT_DIR . '/CatalogConnection.php';
 
-/**
- * API methods related to getting information about specific items.
- *
- * Copyright (C) Douglas County Libraries 2011.
- */
 class ItemAPI extends Action {
 	/** @var  AbstractIlsDriver */
 	protected $catalog;

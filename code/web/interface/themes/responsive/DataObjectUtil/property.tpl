@@ -122,7 +122,7 @@
 		{elseif $property.type == 'textarea' || $property.type == 'html' || $property.type == 'crSeparated'}
 			{include file="DataObjectUtil/textarea.tpl"}
 
-		{elseif $property.type == 'password'}
+		{elseif $property.type == 'password' || $property.type == 'storedPassword'}
 			{include file="DataObjectUtil/password.tpl"}
 
 		{elseif $property.type == 'pin'}

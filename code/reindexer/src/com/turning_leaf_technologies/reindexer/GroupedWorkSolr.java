@@ -803,7 +803,6 @@ public class GroupedWorkSolr implements Cloneable {
 					//logger.warn("Found inconsistent literary forms for grouped work " + id + " both fiction and non fiction had the same amount of usage.  Defaulting to neither.");
 					literaryForm.clear();
 					literaryForm.put("Unknown", 1);
-					groupedWorkIndexer.addWorkWithInvalidLiteraryForms(id);
 				}else if (numFictionIndicators.compareTo(numNonFictionIndicators) > 0){
 					logger.debug("Popularity dictates that Fiction is the correct literary form for grouped work " + id);
 					literaryForm.remove("Non Fiction");
@@ -840,7 +839,6 @@ public class GroupedWorkSolr implements Cloneable {
 						//Ugh, we have inconsistent literary forms and can't make an educated guess as to which is correct.
 						literaryFormFull.clear();
 						literaryFormFull.put("Unknown", 1);
-						groupedWorkIndexer.addWorkWithInvalidLiteraryForms(id);
 					}
 				}else{
 					removeInconsistentFullLiteraryForms(literaryFormFull, highestUsageLiteraryForms);
@@ -1203,20 +1201,12 @@ public class GroupedWorkSolr implements Cloneable {
 	void addSeries(String series) {
 		addSeriesInfoToField(series, this.series);
 	}
-	void addSeriesWithVolume(Set<String> fieldList){
-		for(String curField : fieldList){
-			this.addSeriesWithVolume(curField);
-		}
-	}
 
-	void addSeriesWithVolume(String series){
+	void addSeriesWithVolume(String seriesName, String volume){
 		if (series != null) {
-			String[] seriesParts = series.split("\\|",2);
-			String seriesName = seriesParts[0];
 			String seriesInfo = getNormalizedSeries(seriesName);
-			String volume= "";
-			if (seriesParts.length > 1){
-				volume = getNormalizedSeriesVolume(seriesParts[1]);
+			if (volume.length() > 0){
+				volume = getNormalizedSeriesVolume(volume);
 			}
 			String seriesInfoLower = seriesInfo.toLowerCase();
 			String volumeLower = volume.toLowerCase();
