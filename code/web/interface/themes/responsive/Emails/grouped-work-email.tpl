@@ -7,10 +7,10 @@
 {if $recordDriver->getPrimaryAuthor()}
   By {$recordDriver->getPrimaryAuthor()}
 {/if}
-{if $callnumber}
+{if !empty($callnumber)}
 	{translate text="Call Number"}: {$callnumber}
 {/if}
-{if $shelfLocation}
+{if !empty($shelfLocation)}
 	{translate text="Shelf Location"}: {$shelfLocation}
 {/if}
 

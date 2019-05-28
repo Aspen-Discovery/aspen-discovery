@@ -1696,7 +1696,7 @@ class DBMaintenance extends Admin_Admin {
                     'continueOnError' => false,
                     'sql' => [
                         "CREATE TABLE IF NOT EXISTS bookcover_info(
-									id INT NOT NULL AUTO_INCREMENT,
+									id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 									recordType VARCHAR(20),
 									recordId VARCHAR(50),
 									firstLoaded INT(11) NOT NULL, 
@@ -1714,7 +1714,21 @@ class DBMaintenance extends Admin_Admin {
                         "ALTER TABLE bookcover_info ADD UNIQUE INDEX record_info (recordType, recordId)",
                         "ALTER TABLE bookcover_info ADD INDEX imageSource (imageSource)",
                     ]
-                )
+                ),
+
+				'sendgrid_settings' => array(
+					'title' => 'SendGrid Settings',
+					'description' => 'Add settings to handle SendGrid configuration',
+					'continueOnError' => false,
+					'sql' => array(
+						'CREATE TABLE IF NOT EXISTS sendgrid_settings(
+						    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+						    fromAddress VARCHAR(255),
+						    replyToAddress VARCHAR(255),
+						    apiKey VARCHAR(255)
+						) ENGINE = InnoDB;'
+					)
+				),
 			)
 		);
 	}

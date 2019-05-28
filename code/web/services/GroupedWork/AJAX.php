@@ -215,6 +215,7 @@ class GroupedWork_AJAX {
 	function getScrollerTitle($record, $index, $scrollerName){
 		$cover = $record['mediumCover'];
 		$title = preg_replace("/\\s*(\\/|:)\\s*$/","", $record['title']);
+		$series = '';
 		if (isset($record['series']) && $record['series'] != null){
 			if (is_array($record['series'])){
 				foreach($record['series'] as $series){
@@ -435,7 +436,7 @@ class GroupedWork_AJAX {
 		return json_encode($results);
 	}
 
-	function getPromptforReviewForm() {
+	function getPromptForReviewForm() {
 		$user = UserAccount::getActiveUserObj();
 		if ($user) {
 			if (!$user->noPromptForUserReviews) {
@@ -475,6 +476,8 @@ class GroupedWork_AJAX {
 			$user->noPromptForUserReviews = 1;
 			$success = $user->update();
 			return json_encode(array('success' => $success));
+		}else{
+			return json_encode(['success' => false]);
 		}
 	}
 
@@ -563,7 +566,7 @@ class GroupedWork_AJAX {
 
 	function getEmailForm(){
 		global $interface;
-		require_once ROOT_DIR . '/sys/Mailer.php';
+		require_once ROOT_DIR . '/sys/Email/Mailer.php';
 
 		$id = $_REQUEST['id'];
 		$interface->assign('id', $id);
@@ -606,14 +609,14 @@ class GroupedWork_AJAX {
 			$relatedRecords = $recordDriver->getRelatedRecords();
 
 			foreach ($relatedRecords as $curRecord){
-				if ($curRecord['id'] == $relatedRecord){
-					if (isset($curRecord['callNumber'])){
-						$interface->assign('callnumber', $curRecord['callNumber']);
+				if ($curRecord->id == $relatedRecord){
+					if (isset($curRecord->callNumber)){
+						$interface->assign('callnumber', $curRecord->callNumber);
 					}
-					if (isset($curRecord['shelfLocation'])){
-						$interface->assign('shelfLocation', strip_tags($curRecord['shelfLocation']));
+					if (isset($curRecord->shelfLocation)){
+						$interface->assign('shelfLocation', strip_tags($curRecord->shelfLocation));
 					}
-					$interface->assign('url', $curRecord['driver']->getAbsoluteUrl());
+					$interface->assign('url', $curRecord->getDriver()->getAbsoluteUrl());
 					break;
 				}
 			}
@@ -627,9 +630,9 @@ class GroupedWork_AJAX {
 			$interface->assign('message', $message);
 			$body = $interface->fetch('Emails/grouped-work-email.tpl');
 
-			require_once ROOT_DIR . '/sys/Mailer.php';
+			require_once ROOT_DIR . '/sys/Email/Mailer.php';
 			$mail = new Mailer();
-			$emailResult = $mail->send($to, $configArray['Site']['email'], $subject, $body, $from);
+			$emailResult = $mail->send($to, $subject, $body, $from);
 
 			if ($emailResult === true){
 				$result = array(
@@ -766,6 +769,10 @@ class GroupedWork_AJAX {
 	}
 
 	function markNotInterested(){
+		$result = array(
+			'result' => false,
+			'message' => "Unknown error.",
+		);
 		if (UserAccount::isLoggedIn()){
 			$id = $_REQUEST['id'];
 			require_once ROOT_DIR . '/sys/LocalEnrichment/NotInterested.php';
@@ -816,7 +823,6 @@ class GroupedWork_AJAX {
 
 	function getProspectorInfo(){
 		require_once ROOT_DIR . '/Drivers/marmot_inc/Prospector.php';
-		global $configArray;
 		global $interface;
 		$id = $_REQUEST['id'];
 		$interface->assign('id', $id);
@@ -867,21 +873,20 @@ class GroupedWork_AJAX {
 
 	function reloadCover(){
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-		global $configArray;
 		$id = $_REQUEST['id'];
 		$recordDriver = new GroupedWorkDriver($id);
 
 		//Reload small cover
 		$smallCoverUrl = $recordDriver->getBookcoverUrl('small', true) . '&reload';
-		$ret = file_get_contents($smallCoverUrl);
+		file_get_contents($smallCoverUrl);
 
 		//Reload medium cover
 		$mediumCoverUrl = $recordDriver->getBookcoverUrl('medium', true) . '&reload';
-		$ret = file_get_contents($mediumCoverUrl);
+		file_get_contents($mediumCoverUrl);
 
 		//Reload large cover
 		$largeCoverUrl = $recordDriver->getBookcoverUrl('large', true) . '&reload';
-		$ret = file_get_contents($largeCoverUrl);
+		file_get_contents($largeCoverUrl);
 
 		return json_encode(array('success' => true, 'message' => 'Covers have been reloaded.  You may need to refresh the page to clear your local cache.'));
 	}

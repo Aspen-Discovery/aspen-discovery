@@ -62,7 +62,7 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 			//Look for which titles should be modified
 			$selectedRequests = $_REQUEST['select'];
 			$statusToSet = $_REQUEST['newStatus'];
-			require_once ROOT_DIR . '/sys/Mailer.php';
+			require_once ROOT_DIR . '/sys/Email/Mailer.php';
 			$mail = new Mailer();
 			foreach ($selectedRequests as $requestId => $selected){
 				$materialRequest = new MaterialsRequest();
@@ -107,7 +107,7 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 								$body = str_replace('{' . $fieldName . '}', $fieldValue, $body);
 							}
 						}
-						$error = $mail->send($materialRequest->email, $configArray['Site']['email'], "Your Materials Request Update", $body, $replyToAddress);
+						$error = $mail->send($materialRequest->email, "Your Materials Request Update", $body, $replyToAddress);
 						if (($error instanceof AspenError)) {
 							$interface->assign('error', $error->getMessage());
 						}

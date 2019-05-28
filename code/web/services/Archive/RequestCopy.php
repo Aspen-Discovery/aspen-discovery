@@ -71,10 +71,10 @@ class Archive_RequestCopy extends Action{
 						//Send a copy of the request to the proper administrator
 						if (strpos($body, 'http') === false && strpos($body, 'mailto') === false && $body == strip_tags($body)){
 							$body .= $configArray['Site']['url'] . $requestedObject->getRecordUrl();
-							require_once ROOT_DIR . '/sys/Mailer.php';
+							require_once ROOT_DIR . '/sys/Email/Mailer.php';
 							$mail = new Mailer();
 							$subject = 'New Request for Copies of Archive Content';
-							$emailResult = $mail->send($owningLibrary->archiveRequestEmail, $newObject->email, $subject, $body);
+							$emailResult = $mail->send($owningLibrary->archiveRequestEmail, $subject, $body, $newObject->email);
 
 							if ($emailResult === true){
 								$result = array(

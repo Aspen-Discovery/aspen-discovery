@@ -12,7 +12,7 @@ class eContentSupport extends Action
 
 		if (isset($_REQUEST['submit'])){
 			//E-mail the library with details of the support request
-			require_once ROOT_DIR . '/sys/Mailer.php';
+			require_once ROOT_DIR . '/sys/Email/Mailer.php';
 			$mail = new Mailer();
 			$userLibrary = Library::getPatronHomeLibrary();
 			if (!empty($userLibrary->eContentSupportAddress)){
@@ -47,7 +47,7 @@ class eContentSupport extends Action
 			$interface->assign('email', $patronEmail);
 
 			$body = $interface->fetch('Help/eContentSupportEmail.tpl');
-			$emailResult = $mail->send($to, $sendingAddress, $subject, $body, $patronEmail);
+			$emailResult = $mail->send($to, $subject, $body, $patronEmail);
 			if (PEAR::isError($emailResult)) {
 				echo(json_encode(array(
 					'title' => "Support Request Not Sent",

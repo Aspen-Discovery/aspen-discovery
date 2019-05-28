@@ -881,10 +881,10 @@ class MyAccount_AJAX
 						$interface->assign('message', $message);
 						$body = $interface->fetch('Emails/my-list.tpl');
 
-						require_once ROOT_DIR . '/sys/Mailer.php';
+						require_once ROOT_DIR . '/sys/Email/Mailer.php';
 						$mail = new Mailer();
 						$subject = $list->title;
-						$emailResult = $mail->send($to, $from, $subject, $body);
+						$emailResult = $mail->send($to, $subject, $body, $from);
 
 						if ($emailResult === true){
 							$result = array(

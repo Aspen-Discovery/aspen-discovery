@@ -21,21 +21,10 @@ VuFind.Ratings = (function(){
 		},
 
 		doRatingReview: function (id){
-			$.getJSON(Globals.path + "/GroupedWork/"+id+"/AJAX?method=getPromptforReviewForm", function(data){
+			$.getJSON(Globals.path + "/GroupedWork/"+id+"/AJAX?method=getPromptForReviewForm", function(data){
 				if (data.prompt) VuFind.showMessageWithButtons(data.title, data.modalBody, data.modalButtons); // only ask if user hasn't set the setting already
 				if (data.error)  VuFind.showMessage('Error', data.message);
 			}).fail(VuFind.ajaxFail)
-			// Version 3
-			//VuFind.Account.ajaxLightbox(Globals.path + "/GroupedWork/"+id+"/AJAX?method=getPromptforReviewForm", true);
-			// Version 2
-			//VuFind.showMessageWithButtons('Add a Review',
-			//		'Would you like to add a review explaining your rating to help other users?',
-			//		'<button class="btn btn-primary" onclick="VuFind.GroupedWork.showReviewForm(this, \''+id+'\')">Add a Review</button>'
-			//);
-			// Version 1
-			//if (confirm('Would you like to add a review explaining your rating to help other users?')){
-			//	VuFind.GroupedWork.showReviewForm(id);
-			//}
 		},
 
 		doNoRatingReviews : function (){

@@ -195,6 +195,7 @@
 							{/if}
 							{if array_key_exists('opacAdmin', $userRoles)}
 								<div class="adminMenuLink{if $action == "DBMaintenance"} active{/if}"><a href="{$path}/Admin/DBMaintenance">DB Maintenance</a></div>
+								<div class="adminMenuLink{if $action == "SendGridSettings"} active{/if}"><a href="{$path}/Admin/SendGridSettings">SendGrid Settings</a></div>
 								<div class="adminMenuLink{if $module == 'Admin' && $action == "Home"} active{/if}"><a href="{$path}/Admin/Home">Solr Information</a></div>
 								<div class="adminMenuLink{if $action == "PHPInfo"} active{/if}"><a href="{$path}/Admin/PHPInfo">PHP Information</a></div>
 {*								<div class="adminMenuLink{if $action == "MemCacheInfo"} active{/if}"><a href="{$path}/Admin/MemCacheInfo">MemCache Information</a></div>*}

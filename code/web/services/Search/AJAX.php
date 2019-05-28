@@ -9,7 +9,7 @@ class AJAX extends Action {
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
 		if (method_exists($this, $method)) {
 			$text_methods = array('SysListTitles', 'getEmailForm', 'sendEmail', 'getDplaResults');
-			//TODO reconfig to use the JSON outputting here.
+			//TODO re-config to use the JSON outputting here.
 			$json_methods = array('getAutoSuggestList', 'getMoreSearchResults', 'GetListTitles', 'loadExploreMoreBar');
 			// Plain Text Methods //
 			if (in_array($method, $text_methods)) {
@@ -22,28 +22,33 @@ class AJAX extends Action {
 				//			$response = $this->$method();
 
 				//			header ('Content-type: application/json');
-				header('Content-type: text/html');
+				header('Content-type: application/json; charset=utf-8');
 				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 				header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
 
 				try {
 					$result = $this->$method();
-					require_once ROOT_DIR . '/sys/Utils/ArrayUtils.php';
-					//					$utf8EncodedValue = ArrayUtils::utf8EncodeArray(array('result'=>$result));
-					$utf8EncodedValue = ArrayUtils::utf8EncodeArray($result);
-					$output = json_encode($utf8EncodedValue);
-					$error = json_last_error();
-					if ($error != JSON_ERROR_NONE || $output === FALSE) {
-						if (function_exists('json_last_error_msg')) {
-							$output = json_encode(array('error' => 'error_encoding_data', 'message' => json_last_error_msg()));
-						} else {
-							$output = json_encode(array('error' => 'error_encoding_data', 'message' => json_last_error()));
-						}
-						global $configArray;
-						if ($configArray['System']['debug']) {
-							print_r($utf8EncodedValue);
+					if (true){
+						$output = json_encode($result);
+					}else{
+						require_once ROOT_DIR . '/sys/Utils/ArrayUtils.php';
+						$utf8EncodedValue = ArrayUtils::utf8EncodeArray($result);
+						$output = json_encode($utf8EncodedValue);
+						$error = json_last_error();
+						if ($error != JSON_ERROR_NONE || $output === FALSE) {
+							if (function_exists('json_last_error_msg')) {
+								$output = json_encode(array('error' => 'error_encoding_data', 'message' => json_last_error_msg()));
+							} else {
+								$output = json_encode(array('error' => 'error_encoding_data', 'message' => json_last_error()));
+							}
+							global $configArray;
+							if ($configArray['System']['debug']) {
+								print_r($utf8EncodedValue);
+							}
 						}
 					}
+
+
 				} catch (Exception $e) {
 					$output = json_encode(array('error' => 'error_encoding_data', 'message' => $e));
 					global $logger;
@@ -88,9 +93,9 @@ class AJAX extends Action {
 			$interface->assign('msgUrl', $url);
 			$body = $interface->fetch('Emails/share-link.tpl');
 
-			require_once ROOT_DIR . '/sys/Mailer.php';
+			require_once ROOT_DIR . '/sys/Email/Mailer.php';
 			$mail = new Mailer();
-			$emailResult = $mail->send($to, $from, $subject, $body);
+			$emailResult = $mail->send($to, $subject, $body, $from);
 
 			if ($emailResult === true){
 				$result = array(

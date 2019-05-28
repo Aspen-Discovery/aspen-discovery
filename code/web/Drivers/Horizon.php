@@ -448,12 +448,12 @@ abstract class Horizon extends AbstractIlsDriver{
 					if (strlen($email) == 0){
 						return array('error' => 'Your account does not have an email address on record. Please visit your local library to retrieve your PIN number.');
 					}
-					require_once ROOT_DIR . '/sys/Mailer.php';
+					require_once ROOT_DIR . '/sys/Email/Mailer.php';
 
 					$mailer = new Mailer();
 					$subject = "PIN number for your Library Card";
 					$body = "The PIN number for your Library Card is $pin.  You may use this PIN number to login to your account.";
-					$mailer->send($email, $configArray['Site']['email'], $subject, $body);
+					$mailer->send($email, $subject, $body);
 					return array(
 						'success' => true,
 						'pin' => $pin,

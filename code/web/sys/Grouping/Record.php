@@ -497,4 +497,12 @@ class Grouping_Record
     {
         $this->_statusInformation->addOnOrderCopies($numCopies);
     }
+
+	/**
+	 * @return GroupedWorkSubDriver
+	 */
+	function getDriver(): GroupedWorkSubDriver
+	{
+		return $this->_driver;
+	}
 }

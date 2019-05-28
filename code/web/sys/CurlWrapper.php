@@ -200,6 +200,10 @@ class CurlWrapper {
 		return $result1 && $result2;
 	}
 
+	/**
+	 * @param string[] $customHeaders
+	 * @param bool $overrideExisting
+	 */
 	function addCustomHeaders($customHeaders, $overrideExisting) {
 	    if ($overrideExisting) {
             $this->headers = $customHeaders;
