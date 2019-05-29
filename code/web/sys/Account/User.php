@@ -536,7 +536,7 @@ class User extends DataObject
 			$userLink                   = new UserLink();
 			$userLink->primaryAccountId = $this->id;
 			$userLink->linkedAccountId  = $userId;
-			$ret                        = $userLink->delete();
+			$ret                        = $userLink->delete(true);
 
 			//Force a reload of data
 			$this->linkedUsers = null;

@@ -220,11 +220,18 @@ abstract class DataObject
         return $this->find(true);
     }
 
-    public function delete(){
+    public function delete($useWhere = false){
         /** @var PDO $aspen_db */
         global $aspen_db;
         $primaryKey = $this->__primaryKey;
-        $deleteQuery = 'DELETE from ' . $this->__table . ' WHERE ' . $primaryKey . ' = ' . $aspen_db->quote($this->$primaryKey);
+
+        if ($useWhere){
+	        /** @noinspection SqlWithoutWhere */
+	        $deleteQuery = 'DELETE from ' . $this->__table . $this->getWhereClause($aspen_db);
+        }else{
+	        $deleteQuery = 'DELETE from ' . $this->__table . ' WHERE ' . $primaryKey . ' = ' . $aspen_db->quote($this->$primaryKey);
+        }
+
         $response = $aspen_db->prepare($deleteQuery)->execute();
         return $response;
     }
@@ -243,23 +250,8 @@ abstract class DataObject
         /** @var PDO $aspen_db  */
         global $aspen_db;
         $query = 'SELECT COUNT(*) from ' . $this->__table;
-        $properties = get_object_vars($this);
-        $where = '';
-        foreach ($properties as $name => $value) {
-            if ($value != null && $name[0] != '_') {
-                if (strlen($where) != 0) {
-                    $where .= ' AND ';
-                }
-                $where .= $name . ' = ' . $aspen_db->quote($value);
-            }
-        }
-        if (strlen($this->__where) > 0 && strlen($where) > 0){
-            $query .= ' WHERE ' . $this->__where . ' AND ' . $where;
-        }else if (strlen($this->__where) > 0) {
-            $query .= ' WHERE ' . $this->__where;
-        }else if (strlen($where) > 0) {
-            $query .= ' WHERE ' . $where;
-        }
+
+	    $query .= $this->getWhereClause($aspen_db);
         $this->__lastQuery = $query;
         $this->__queryStmt = $aspen_db->prepare($query);
         if ($this->__queryStmt->execute()){
@@ -409,4 +401,30 @@ abstract class DataObject
         }
         return $query;
     }
+
+	/**
+	 * @param PDO $aspen_db
+	 * @return string
+	 */
+	private function getWhereClause(PDO $aspen_db): string
+	{
+		$properties = get_object_vars($this);
+		$where = '';
+		foreach ($properties as $name => $value) {
+			if ($value != null && $name[0] != '_') {
+				if (strlen($where) != 0) {
+					$where .= ' AND ';
+				}
+				$where .= $name . ' = ' . $aspen_db->quote($value);
+			}
+		}
+		if (strlen($this->__where) > 0 && strlen($where) > 0) {
+			$where = ' WHERE ' . $this->__where . ' AND ' . $where;
+		} else if (strlen($this->__where) > 0) {
+			$where = ' WHERE ' . $this->__where;
+		} else if (strlen($where) > 0) {
+			$where = ' WHERE ' . $where;
+		}
+		return $where;
+	}
 }
