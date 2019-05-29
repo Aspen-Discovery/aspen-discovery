@@ -385,7 +385,7 @@ KeywordProper:
     - genre_proper:
       - [onephrase, 300]
     - keywords_proper:
-      - [and, ~]
+      - [onephrase, ~]
     - issn:
       - [and, 100]
       - [or, ~]
