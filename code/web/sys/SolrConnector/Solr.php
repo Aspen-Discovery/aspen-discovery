@@ -56,7 +56,7 @@ abstract class Solr {
 	 *
 	 * @var array
 	 */
-	private static $_searchSpecs = false;
+	private static $_searchSpecs = [];
 
 	/**
 	 * Should boolean operators in the search string be treated as
@@ -270,11 +270,11 @@ abstract class Solr {
 	 */
 	private function _loadSearchSpecs()
 	{
-	    if (Solr::$_searchSpecs == null) {
+	    if (empty(Solr::$_searchSpecs[$this->host])) {
 	        require_once ROOT_DIR . '/sys/Yaml.php';
             try {
                 $yaml = new Yaml();
-                Solr::$_searchSpecs = $yaml->load($this->getSearchSpecsFile());
+	            Solr::$_searchSpecs[$this->host] = $yaml->load($this->getSearchSpecsFile());
             } catch (Exception $e) {
                 require_once ROOT_DIR . '/sys/AspenError.php';
                 AspenError::raiseError('Could not load search specs, check the configuration ' . $e->getMessage());
@@ -300,24 +300,24 @@ abstract class Solr {
 	private function _getSearchSpecs($handler = null)
 	{
 		// Only load specs once:
-		if (Solr::$_searchSpecs === false) {
+		if (empty(Solr::$_searchSpecs[$this->host])) {
 			$this->_loadSearchSpecs();
 		}
 
 		// Special case -- null $handler means we want all search specs.
 		if (is_null($handler)) {
-			return Solr::$_searchSpecs;
+			return Solr::$_searchSpecs[$this->host];
 		}
 
 		// Return specs on the named search if found (easiest, most common case).
-		if (isset(Solr::$_searchSpecs[$handler])) {
-			return Solr::$_searchSpecs[$handler];
+		if (isset(Solr::$_searchSpecs[$this->host][$handler])) {
+			return Solr::$_searchSpecs[$this->host][$handler];
 		}
 
 		// Check for a case-insensitive match -- this provides backward
 		// compatibility with different cases used in early VuFind versions
 		// and allows greater tolerance of minor typos in config files.
-		foreach (Solr::$_searchSpecs as $name => $specs) {
+		foreach (Solr::$_searchSpecs[$this->host] as $name => $specs) {
 			if (strcasecmp($name, $handler) == 0) {
 				return $specs;
 			}

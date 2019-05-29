@@ -16,7 +16,7 @@
 			<div class="exploreMoreItemsContainer jcarousel"{* data-wrap="circular" data-jcarousel="true"*}> {* noIntialize is a filter for VuFind.initCarousels() *}
 				<ul>
 					{foreach from=$exploreMoreOptions item=exploreMoreCategory}
-						{if $exploreMoreCategory.placeholder}
+						{if !empty($exploreMoreCategory.placeholder)}
 							<li class="">
 								<a href='{$exploreMoreCategory.link}'>
 									<img src="{$exploreMoreCategory.image}" alt="{$exploreMoreCategory.label|escape}">

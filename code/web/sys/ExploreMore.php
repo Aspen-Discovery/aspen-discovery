@@ -606,7 +606,7 @@ class ExploreMore {
         global $configArray;
         if ($activeSection != 'open_archives') {
             if (strlen($searchTerm) > 0) {
-                /** @var SearchObject_OpenArchivesSearcher $searchObject */
+                /** @var SearchObject_OpenArchivesSearcher $searchObjectSolr */
                 $searchObjectSolr = SearchObjectFactory::initSearchObject('OpenArchives');
                 $searchObjectSolr->init();
                 $searchObjectSolr->disableSpelling();

@@ -17,6 +17,7 @@ class SearchObjectFactory {
 
 		$path = "{$configArray['Site']['local']}/sys/SearchObject/{$engine}Searcher.php";
 		if (is_readable($path)) {
+			/** @noinspection PhpIncludeInspection */
 			require_once $path;
 			$class = 'SearchObject_' . $engine . 'Searcher';
 			if (class_exists($class)) {
@@ -40,8 +41,6 @@ class SearchObjectFactory {
      */
     static function initSearchObjectBySearchSource($searchSource = 'local')
     {
-        global $configArray;
-
         // Figure out the engine type for the object we're about to construct:
         switch($searchSource) {
             case 'islandora' :
@@ -63,7 +62,8 @@ class SearchObjectFactory {
 
         $path = ROOT_DIR . "/sys/SearchObject/{$engine}Searcher.php";
         if (is_readable($path)) {
-            require_once $path;
+	        /** @noinspection PhpIncludeInspection */
+	        require_once $path;
             $class = 'SearchObject_' . $engine . 'Searcher';
             if (class_exists($class)) {
                 /** @var SearchObject_BaseSearcher $searchObject */
@@ -115,7 +115,7 @@ class SearchObjectFactory {
 			$objectCache[$type] = self::initSearchObject($type);
 		}
 
-		// Populate and return the deminified object:
+		// Populate and return the expanded object:
 		$objectCache[$type]->deminify($minSO);
 		//MDN 1/5/2015 return a clone of the search object since we may deminify several search objects in a single page load. 
 		return clone $objectCache[$type];

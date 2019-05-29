@@ -418,7 +418,7 @@ if ($action == "AJAX" || $action == "JSON"){
         $interface->assign('enableOpenArchives', true);
     }
 
-	//TODO: Reenable once we do full EDS integration
+	//TODO: Re-enable once we do full EDS integration
 	/*if ($library->edsApiProfile){
 		require_once ROOT_DIR . '/sys/Ebsco/EDS_API.php';
 		$ebscoSearchObject = new EDS_API();
