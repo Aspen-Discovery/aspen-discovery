@@ -150,7 +150,6 @@ class Koha extends AbstractIlsDriver {
 			$checkout['renewCount'] = $curRow['renewals'];
 
 			if ($checkout['id'] && strlen($checkout['id']) > 0){
-				$checkout['recordId'] = $checkout['id'];
 				require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 				$recordDriver = new MarcRecordDriver($checkout['recordId']);
 				if ($recordDriver->isValid()){
