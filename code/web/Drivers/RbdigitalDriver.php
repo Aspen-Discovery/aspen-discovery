@@ -12,12 +12,15 @@ class RbdigitalDriver extends AbstractEContentDriver
     private $curlWrapper;
 
     public function __construct() {
-        //TODO: migrate these settings to the database
-        global $configArray;
-        $this->webServiceURL = $configArray['Rbdigital']['url'];
-        $this->userInterfaceURL = $configArray['Rbdigital']['userInterfaceUrl'];
-        $this->apiToken = $configArray['Rbdigital']['apiToken'];
-        $this->libraryId = $configArray['Rbdigital']['libraryId'];
+        require_once ROOT_DIR . '/sys/Rbdigital/RbdigitalSetting.php';
+        $rbdigitalSettings = new RbdigitalSetting();
+        if ($rbdigitalSettings->find(true)){
+	        $this->webServiceURL = $rbdigitalSettings->apiUrl;
+	        $this->userInterfaceURL = $rbdigitalSettings->userInterfaceUrl;
+	        $this->apiToken = $rbdigitalSettings->apiToken;
+	        $this->libraryId = $rbdigitalSettings->libraryId;
+        }
+
 
         $this->curlWrapper = new CurlWrapper();
         $headers = [
