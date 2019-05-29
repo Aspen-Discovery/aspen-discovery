@@ -102,10 +102,10 @@ class UserList extends DataObject
 		}
 		return $result;
 	}
-	function delete(){
+	function delete($useWhere = false){
 		$this->deleted = 1;
 		$this->dateUpdated = time();
-		return parent::delete();
+		return parent::update();
 	}
 
 	/**

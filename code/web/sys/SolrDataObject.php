@@ -61,7 +61,7 @@ abstract class SolrDataObject extends DataObject{
 			return true;
 		}
 	}
-	function delete(){
+	function delete($useWhere = false){
 		$result = parent::delete();
 		if ($result != FALSE){
 			$this->removeFromSolr();
