@@ -394,9 +394,9 @@ public class GroupedWorkIndexer {
 			}
 			logger.info("Read " + lexileInformation.size() + " lines of lexile data");
 		}catch (FileNotFoundException fne){
-			logger.error("Error loading lexile data, the file was not found at " + lexileExportPath);
+			logger.warn("Error loading lexile data, the file was not found at " + lexileExportPath);
 		}catch (Exception e){
-			logger.error("Error loading lexile data on " + curLine +  Arrays.toString(lexileFields), e);
+			logger.warn("Error loading lexile data on " + curLine +  Arrays.toString(lexileFields), e);
 		}
 	}
 
