@@ -1703,5 +1703,20 @@ function getLibraryLocationUpdates(){
                 'ALTER TABLE library DROP COLUMN goldRushCode',
             )
         ),
+
+		'library_indexes' => [
+			'title' => 'Library Indexes',
+			'description' => 'Add new indexes to improve join performance',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE location ADD INDEX libraryId(libraryId)',
+				'ALTER TABLE location_records_to_include ADD INDEX indexingProfileId(indexingProfileId)',
+				'ALTER TABLE location_records_owned ADD INDEX locationId(locationId)',
+				'ALTER TABLE location_records_owned ADD INDEX indexingProfileId(indexingProfileId)',
+				'ALTER TABLE library_records_to_include ADD INDEX indexingProfileId(indexingProfileId)',
+				'ALTER TABLE library_records_owned ADD INDEX libraryId(libraryId)',
+				'ALTER TABLE library_records_owned ADD INDEX indexingProfileId(indexingProfileId)',
+			]
+		]
 	);
 }
