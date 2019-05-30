@@ -263,11 +263,19 @@ class Search_Results extends Action {
 					//If the search is not spelled properly, we can switch to the first spelling result
                     if ($spellingSuggestions['correctlySpelled'] == false && $library->allowAutomaticSearchReplacements && count($spellingSuggestions['suggestions']) > 0) {
                         $firstSuggestion = reset($spellingSuggestions['suggestions']);
-                        //Get search results for the new search
-                        // The above assignments probably do nothing when there is a redirect below
-                        $thisUrl = $_SERVER['REQUEST_URI'] . "&replacementTerm=" . urlencode($firstSuggestion['phrase']);
-                        header("Location: " . $thisUrl);
-                        exit();
+                        //first check to see if we will get results
+	                    /** @var SearchObject_GroupedWorkSearcher $replacementSearchObject */
+	                    $replacementSearchObject = SearchObjectFactory::initSearchObject();
+	                    $replacementSearchObject->init($searchSource, $firstSuggestion['phrase']);
+	                    $replacementSearchObject->setPrimarySearch(false);
+	                    $replacementSearchObject->processSearch(true, false);
+                        if ($replacementSearchObject->getResultTotal() > 0){
+	                        //Get search results for the new search
+	                        // The above assignments probably do nothing when there is a redirect below
+	                        $thisUrl = $_SERVER['REQUEST_URI'] . "&replacementTerm=" . urlencode($firstSuggestion['phrase']);
+	                        header("Location: " . $thisUrl);
+	                        exit();
+                        }
                     }
 				}
 			}
