@@ -550,14 +550,6 @@ if (isset($_REQUEST['followup'])) {
 if (isset($_SESSION['hold_message'])) {
 	$interface->assign('hold_message', formatHoldMessage($_SESSION['hold_message']));
 	unset($_SESSION['hold_message']);
-}elseif (isset($_SESSION['renew_message'])){ // this routine should be deprecated now. plb 2-2-2015
-	$interface->assign('renew_message', formatRenewMessage($_SESSION['renew_message']));
-}elseif (isset($_SESSION['checkout_message'])){
-	global $logger;
-	$logger->log("Found checkout message", Logger::LOG_DEBUG);
-	$checkoutMessage = $_SESSION['checkout_message'];
-	unset($_SESSION['checkout_message']);
-	$interface->assign('checkout_message', formatCheckoutMessage($checkoutMessage));
 }*/
 
 // Process Solr shard settings

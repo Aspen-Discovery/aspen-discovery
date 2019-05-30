@@ -314,7 +314,7 @@ class LibrarySolution extends AbstractIlsDriver {
 				$curTitle['canrenew']
 				$curTitle['itemindex']
 				$curTitle['renewIndicator']
-				$curTitle['renewMessage']*/
+				*/
 
 				//Get additional information from MARC Record
 				if ($curTitle['shortId'] && strlen($curTitle['shortId']) > 0){

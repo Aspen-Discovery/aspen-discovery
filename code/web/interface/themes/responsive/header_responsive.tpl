@@ -42,7 +42,7 @@
 
 	<div class="loginOptions col-sm-2 col-sm-offset-7 col-md-2 col-md-offset-2 col-lg-offset-2 col-lg-2"{if $loggedIn} style="display: none;"{/if}>
 		{if $showLoginButton == 1}
-			<a id="headerLoginLink" href="{$path}/MyAccount/Home" class="loginLink" data-login="true" title="Login" onclick="{if $isLoginPage}$('#username').focus();return false{else}return VuFind.Account.followLinkIfLoggedIn(this);{/if}">
+			<a id="headerLoginLink" href="{$path}/MyAccount/Home" class="loginLink" data-login="true" title="Login" onclick="{if !empty($isLoginPage)}$('#username').focus();return false{else}return VuFind.Account.followLinkIfLoggedIn(this);{/if}">
 				<div class="hidden-xs header-button header-primary">
 					{translate text="LOGIN"}
 				</div>

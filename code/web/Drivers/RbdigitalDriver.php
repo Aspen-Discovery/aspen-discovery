@@ -173,8 +173,8 @@ class RbdigitalDriver extends AbstractEContentDriver
             'email' => $_REQUEST['email'],
             'postalCode' => $_REQUEST['postalCode'],
             'libraryCard' => $_REQUEST['libraryCard'],
-            'libraryId' => $configArray['Rbdigital']['libraryId'],
-            'tenantId' => $configArray['Rbdigital']['libraryId']
+            'libraryId' => $this->libraryId,
+            'tenantId' => $this->libraryId
         ];
 
         //TODO: add pin if the library configuration uses pins
@@ -498,19 +498,21 @@ class RbdigitalDriver extends AbstractEContentDriver
                 $rawResponse = $this->curlWrapper->curlGetPage($lookupPatronUrl);
                 $response = json_decode($rawResponse);
                 if (is_null($response) || (isset($response->message) && ($response->message == 'Patron not found.'))){
-                    if (!empty($user->email)){
-                        $lookupPatronUrl = $this->webServiceURL . '/v1/rpc/libraries/' . $this->libraryId . '/patrons/' . urlencode($user->email);
-
-                        $rawResponse = $this->curlWrapper->curlGetPage($lookupPatronUrl);
-                        $response = json_decode($rawResponse);
-                        if ($response->message == 'Patron not found.'){
-                            $rbdigitalId = -1;
-                        }else {
-                            $rbdigitalId = $response->patronId;
-                        }
-                    }else{
-                        $rbdigitalId = -1;
-                    }
+                	//Do not do lookup by email address because patron's can share email addresses
+	                $rbdigitalId = -1;
+//                    if (!empty($user->email)){
+//                        $lookupPatronUrl = $this->webServiceURL . '/v1/rpc/libraries/' . $this->libraryId . '/patrons/' . urlencode($user->email);
+//
+//                        $rawResponse = $this->curlWrapper->curlGetPage($lookupPatronUrl);
+//                        $response = json_decode($rawResponse);
+//                        if (!empty($response->message) && $response->message == 'Patron not found.'){
+//                            $rbdigitalId = -1;
+//                        }else {
+//                            $rbdigitalId = $response->patronId;
+//                        }
+//                    }else{
+//                        $rbdigitalId = -1;
+//                    }
 
                 }else {
                     $rbdigitalId = $response->patronId;

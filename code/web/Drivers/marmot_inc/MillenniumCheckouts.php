@@ -161,7 +161,6 @@ class MillenniumCheckouts {
 								$curTitle['itemindex']      = $matches[1];
 								$curTitle['itemId']         = $matches[3];
 								$curTitle['renewIndicator'] = $curTitle['itemId'] . '|' . $curTitle['itemindex'];
-								$curTitle['renewMessage']   = '';
 							} else {
 								$curTitle['canrenew'] = false;
 							}

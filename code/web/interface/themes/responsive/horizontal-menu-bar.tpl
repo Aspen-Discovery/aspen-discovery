@@ -21,7 +21,7 @@
 		<img src="{img filename='/interface/themes/responsive/images/Search.png'}" alt="Search">
 	</a>
 
-	{if $showExploreMore}
+	{if !empty($showExploreMore)}
 		{* TODO: set explore more anchor tag so exploremore is moved into view on mobile *}
 		<a href="#" id="mobile-menu-explore-more-icon" onclick="VuFind.Menu.Mobile.showExploreMore(this)" class="menu-icon menu-left" title="{translate text='Explore More'}">
 			<img src="{img filename='/interface/themes/responsive/images/ExploreMore.png'}" alt="{translate text='Explore More'}">

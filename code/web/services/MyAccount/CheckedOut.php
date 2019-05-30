@@ -102,24 +102,19 @@ class MyAccount_CheckedOut extends MyAccount{
 					$itemBarcode = isset($curTitle['barcode']) ? $curTitle['barcode'] : null;
 					$itemId      = isset($curTitle['itemId']) ? $curTitle['itemId'] : null;
 					if ($itemBarcode != null && isset($_SESSION['renew_message'][$itemBarcode])) {
-						$renewMessage             = $_SESSION['renew_message'][$itemBarcode]['message'];
 						$renewResult              = $_SESSION['renew_message'][$itemBarcode]['success'];
-						$curTitle['renewMessage'] = $renewMessage;
 						$curTitle['renewResult']  = $renewResult;
 						$allCheckedOut[$sortKey]  = $curTitle;
 						unset($_SESSION['renew_message'][$itemBarcode]);
 						//$logger->log("Found renewal message in session for $itemBarcode", Logger::LOG_NOTICE);
 					} else if ($itemId != null && isset($_SESSION['renew_message'][$itemId])) {
-						$renewMessage             = $_SESSION['renew_message'][$itemId]['message'];
 						$renewResult              = $_SESSION['renew_message'][$itemId]['success'];
-						$curTitle['renewMessage'] = $renewMessage;
 						$curTitle['renewResult']  = $renewResult;
 						$allCheckedOut[$sortKey]  = $curTitle;
 						unset($_SESSION['renew_message'][$itemId]);
 						//$logger->log("Found renewal message in session for $itemBarcode", Logger::LOG_NOTICE);
 					} else {
 						$allCheckedOut[$sortKey] = $curTitle;
-						$renewMessage            = null;
 						$renewResult             = null;
 					}
 					unset($allCheckedOut[$i]);

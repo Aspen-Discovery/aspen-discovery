@@ -450,8 +450,10 @@ class User extends DataObject
                 }elseif ($source == 'hoopla'){
 			        return $userHomeLibrary->hooplaLibraryID > 0;
                 }elseif ($source == 'rbdigital'){
-			        global $configArray;
-			        return !empty($configArray['Rbdigital']) && !empty($configArray['Rbdigital']['url']);
+				    require_once ROOT_DIR . '/sys/Rbdigital/RbdigitalSetting.php';
+				    $rbdigitalSettings = new RbdigitalSetting();
+				    $rbdigitalSettings->find();
+				    return $rbdigitalSettings->N > 0;
                 }
 			}
 		}
@@ -902,8 +904,8 @@ class User extends DataObject
 		if ($includeLinkedUsers) {
 			if ($this->getLinkedUsers() != null) {
 				/** @var User $user */
-				foreach ($this->getLinkedUsers() as $user) {
-					$allCheckedOut = array_merge($allCheckedOut, $user->getCheckouts(false));
+				foreach ($this->getLinkedUsers() as $linkedUser) {
+					$allCheckedOut = array_merge($allCheckedOut, $linkedUser->getCheckouts(false));
 				}
 			}
 		}

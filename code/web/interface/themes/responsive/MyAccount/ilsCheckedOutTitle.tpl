@@ -1,5 +1,5 @@
 {strip}
-	<div id="record{$record.source}_{$record.id|escape}" class="result row{if $record.overdue} bg-overdue{/if}">
+	<div id="record{$record.checkoutSource}_{$record.id|escape}" class="result row{if $record.overdue} bg-overdue{/if}">
 
 		{* Cover Column *}
 		{if $showCovers}
@@ -14,7 +14,7 @@
 				<div class="{*coverColumn *}text-center col-xs-12 col-sm-10">
 					{if $disableCoverArt != 1}{*TODO: should become part of $showCovers *}
 						{if $record.coverUrl}
-							{if $record.recordId && $record.linkUrl}
+							{if $record.recordId && !empty($record.linkUrl)}
 								<a href="{$record.linkUrl}" id="descriptionTrigger{$record.recordId|escape:"url"}">
 									<img src="{$record.coverUrl}" class="listResultImage img-thumbnail img-responsive" alt="{translate text='Cover Image'}">
 								</a>
@@ -49,7 +49,7 @@
 							{if !$record.title|removeTrailingPunctuation}{translate text='Title not available'}{else}{$record.title|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if}
 						</span>
 					{/if}
-					{if $record.title2}
+					{if !empty($record.title2)}
 						<div class="searchResultSectionInfo">
 							{$record.title2|removeTrailingPunctuation|truncate:180:"..."|highlight}
 						</div>
@@ -59,7 +59,7 @@
 
 			<div class="row">
 				<div class="resultDetails col-xs-12 col-md-9">
-					{if $record.volume}
+					{if !empty($record.volume)}
 						<div class="row">
 							<div class="result-label col-tn-4 col-lg-3">{translate text='Volume'}</div>
 							<div class="result-value col-tn-8 col-lg-9">{$record.volume|escape}</div>
@@ -157,11 +157,6 @@
 							<div class="result-label col-tn-4 col-lg-3">{translate text='Renewed'}</div>
 							<div class="result-value col-tn-8 col-lg-9">
 								{$record.renewCount} times
-								{if $record.renewMessage}{* TODO: used anymore? *}
-									<div class="alert {if $record.renewResult == true}alert-success{else}alert-error{/if}">
-										{$record.renewMessage|escape}
-									</div>
-								{/if}
 							</div>
 						</div>
 					{/if}

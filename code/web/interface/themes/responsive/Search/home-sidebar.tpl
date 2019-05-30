@@ -7,7 +7,7 @@
 		{include file="MyAccount/menu.tpl"}
 	{/if}
 
-	{if $showExploreMore}
+	{if !empty($showExploreMore)}
 		<div id="explore-more-header" class="row">Explore More</div>
 		<div id="explore-more-body" class="row">
 			<div id="loadingExploreMore">

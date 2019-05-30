@@ -33,7 +33,7 @@
 							          rows="1"
 							          aria-label="Search Terms"
 											{strip}>
-								{$lookfor|escape:"html"}
+								{if !empty($lookfor)}{$lookfor|escape:"html"}{/if}
 								</textarea>
 				</div>
 
@@ -45,20 +45,20 @@
 				{/if}">
 					<select name="searchIndex" class="searchTypeHorizontal form-control catalogType" id="searchIndex" title="The method of searching." aria-label="Search Index">
 						{foreach from=$catalogSearchIndexes item=searchDesc key=searchVal}
-							<option data-search_source="catalog" value="{$searchVal}"{if $searchIndex == $searchVal || $searchIndex == $searchVal} selected="selected"{/if}>by {translate text=$searchDesc}</option>
+							<option data-search_source="catalog" value="{$searchVal}"{if !empty($searchIndex) && $searchIndex == $searchVal} selected="selected"{/if}>by {translate text=$searchDesc}</option>
 						{/foreach}
 						{if !empty($enableOpenGenealogy)}
 							{foreach from=$genealogySearchIndexes item=searchDesc key=searchVal}
-								<option data-search_source="genealogy" value="{$searchVal}"{if $searchIndex == $searchVal} selected="selected"{/if}>{translate text=$searchDesc}</option>
+								<option data-search_source="genealogy" value="{$searchVal}"{if !empty($searchIndex) && $searchIndex == $searchVal} selected="selected"{/if}>{translate text=$searchDesc}</option>
 							{/foreach}
 						{/if}
 						{if !empty($enableOpenArchives)}
 							{foreach from=$openArchivesSearchIndexes item=searchDesc key=searchVal}
-								<option data-search_source="open_archives" value="{$searchVal}"{if $searchIndex == $searchVal} selected="selected"{/if}>{translate text=$searchDesc}</option>
+								<option data-search_source="open_archives" value="{$searchVal}"{if !empty($searchIndex) && $searchIndex == $searchVal} selected="selected"{/if}>{translate text=$searchDesc}</option>
 							{/foreach}
 						{/if}
 						{foreach from=$listSearchIndexes item=searchDesc key=searchVal}
-							<option data-search_source="lists" value="{$searchVal}"{if $searchIndex == $searchVal} selected="selected"{/if}>{translate text=$searchDesc}</option>
+							<option data-search_source="lists" value="{$searchVal}"{if !empty($searchIndex) && $searchIndex == $searchVal} selected="selected"{/if}>{translate text=$searchDesc}</option>
 						{/foreach}
 					</select>
 				</div>
@@ -93,13 +93,13 @@
 
 				<div id="horizontal-search-additional" class="col-tn-5 col-xs-5 col-sm-12 col-md-8">
 					{* Keep Applied Filters Checkbox *}
-					{if $filterList}
+					{if !empty($filterList)}
 						<label for="keepFiltersSwitch" id="keepFiltersSwitchLabel">
 							<input id="keepFiltersSwitch" type="checkbox" onclick="VuFind.Searches.filterAll(this);"> Keep Applied Filters</label>
 					{/if}
 
 					{* Return to Advanced Search Link *}
-					{if $searchType == 'advanced'}
+					{if !empty($searchType) && $searchType == 'advanced'}
 						<div>
 							&nbsp;
 							<a id="advancedSearchLink" href="{$path}/Search/Advanced">{translate text='Edit This Advanced Search'}</a>
@@ -123,7 +123,7 @@
 			</div>
 		</div>
 
-		{if $filterList}
+		{if !empty($filterList)}
 			{* Data for searching within existing results *}
 			<div id="keepFilters" style="display:none;">
 				{foreach from=$filterList item=data key=field}
