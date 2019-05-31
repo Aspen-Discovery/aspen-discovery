@@ -4,10 +4,6 @@ require_once ROOT_DIR . "/Action.php";
 
 class MyAccount_Login extends Action
 {
-	function __construct()
-	{
-	}
-
 	function launch($msg = null)
 	{
 		global $interface;
@@ -24,6 +20,7 @@ class MyAccount_Login extends Action
 			die();
 		}
 
+		//TODO: Determine if these are used
 		$returnUrl = isset($_REQUEST['return']) ? $_REQUEST['return'] : '';
 		if ($returnUrl != ''){
 			header('Location: ' . $returnUrl);
@@ -33,6 +30,7 @@ class MyAccount_Login extends Action
 		// Assign the followup task to come back to after they login -- note that
 		//     we need to check for a pre-existing followup task in case we've
 		//     looped back here due to an error (bad username/password, etc.).
+		//TODO: Determine if these are used
 		$followup = isset($_REQUEST['followup']) ?  strip_tags($_REQUEST['followup']) : $action;
 
 		// Don't go to the trouble if we're just logging in to the Home action
@@ -53,18 +51,11 @@ class MyAccount_Login extends Action
 			// If we have a save or delete action, create the appropriate recordId
 			//     parameter.  If we've looped back due to user error and already have
 			//     a recordId parameter, remember it for future reference.
+			//TODO: Determine if these are used
 			if (isset($_REQUEST['delete'])) {
 				$interface->assign('returnUrl', $_SERVER['REQUEST_URI']);
-				/*$mode = !isset($_REQUEST['mode']) ?
-                    '' : '&mode=' . urlencode($_REQUEST['mode']);
-				$interface->assign('recordId', 'delete=' .
-				urlencode($_REQUEST['delete']) . $mode);*/
 			} else if (isset($_REQUEST['save'])) {
 				$interface->assign('returnUrl', $_SERVER['REQUEST_URI']);
-				/*$mode = !isset($_REQUEST['mode']) ?
-                    '' : '&mode=' . urlencode($_REQUEST['mode']);
-				$interface->assign('recordId', 'save=' .
-				urlencode($_REQUEST['save']) . $mode);*/
 			} else if (isset($_REQUEST['recordId'])) {
 				$interface->assign('returnUrl', $_REQUEST['recordId']);
 			}
@@ -95,12 +86,9 @@ class MyAccount_Login extends Action
 			$interface->assign('usernameLabel', 'Your Name');
 			$interface->assign('passwordLabel', 'Library Card Number');
 		}
-		if ($configArray['Catalog']['ils'] == 'Horizon' || $configArray['Catalog']['ils'] == 'Symphony'){
-			$interface->assign('showForgotPinLink', true);
-			$catalog = CatalogFactory::getCatalogConnectionInstance();
-			$useEmailResetPin = $catalog->checkFunction('emailResetPin');
-			$interface->assign('useEmailResetPin', $useEmailResetPin);
-		}
+
+		$catalog = CatalogFactory::getCatalogConnectionInstance();
+		$interface->assign('forgotPasswordType', $catalog->getForgotPasswordType());
 
 		$interface->assign('isLoginPage', true);
 

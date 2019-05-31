@@ -34,13 +34,13 @@
 				<label for="password" class="control-label col-xs-12 col-sm-4">{$passwordLabel}: </label>
 				<div class="col-xs-12 col-sm-8">
 					<input type="password" name="password" id="password" size="28" onkeypress="return VuFind.submitOnEnter(event, '#loginForm');" class="form-control">
-					{if $showForgotPinLink}
+					{if $forgotPasswordType != 'null'}
 						<p class="text-muted help-block">
-							<strong>Forgot PIN?</strong>&nbsp;
-							{if $useEmailResetPin}
-								<a href="{$path}/MyAccount/EmailResetPin">Reset My PIN</a>
+							<strong>Forgot {$passwordLabel}?</strong>&nbsp;
+							{if $forgotPasswordType == 'emailResetLink'}
+								<a href="{$path}/MyAccount/EmailResetPin">Reset My {$passwordLabel}</a>
 							{else}
-								<a href="{$path}/MyAccount/EmailPin">E-mail my PIN</a>
+								<a href="{$path}/MyAccount/EmailPin">E-mail my {$passwordLabel}</a>
 							{/if}
 						</p>
 					{/if}
@@ -72,7 +72,7 @@
 <div class="modal-footer">
 	<button class="btn" data-dismiss="modal" id="modalClose">Close</button>
 	<span class="modal-buttons">
-		<input type="submit" name="submit" value="{if $multiStep}Continue{else}Login{/if}" id="loginFormSubmit" class="btn btn-primary extraModalButton" onclick="return VuFind.Account.processAjaxLogin()">
+		<input type="submit" name="submit" value="{if !empty($multiStep)}Continue{else}Login{/if}" id="loginFormSubmit" class="btn btn-primary extraModalButton" onclick="return VuFind.Account.processAjaxLogin()">
 	</span>
 </div>
 {/strip}

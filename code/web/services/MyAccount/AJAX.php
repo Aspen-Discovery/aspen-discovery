@@ -671,12 +671,10 @@ class MyAccount_AJAX
 			$interface->assign('usernameLabel', 'Your Name');
 			$interface->assign('passwordLabel', 'Library Card Number');
 		}
-		if ($configArray['Catalog']['ils'] == 'Horizon' || $configArray['Catalog']['ils'] == 'Symphony' || $configArray['Catalog']['ils'] == 'Koha'){
-			$interface->assign('showForgotPinLink', true);
-			$catalog = CatalogFactory::getCatalogConnectionInstance();
-			$useEmailResetPin = $catalog->checkFunction('emailResetPin');
-			$interface->assign('useEmailResetPin', $useEmailResetPin);
-		}
+
+		$catalog = CatalogFactory::getCatalogConnectionInstance();
+		$interface->assign('forgotPasswordType', $catalog->getForgotPasswordType());
+
 		if (isset($_REQUEST['multiStep'])) {
 			$interface->assign('multiStep', true);
 		}

@@ -839,24 +839,6 @@ class Location extends DataObject
 		return Location::$activeIp;
 	}
 
-/* Add on if the Main Branch gets used more frequently
-	private static $mainBranchLocation = 'unset';
-	function getMainBranchLocation() {
-		if (Location::$mainBranchLocation != 'unset') return Location::$mainBranchLocation;
-		Location::$mainBranchLocation = null; // set default value
-		global $library;
-		if (!empty($library->libraryId)) {
-			$mainBranch = new Location();
-			$mainBranch->libraryId = $library->libraryId;
-			$mainBranch->isMainBranch = true;
-			if ($mainBranch->find(true)) {
-				Location::$mainBranchLocation =  clone $mainBranch;
-			}
-		}
-		return Location::$mainBranchLocation;
-	}
-*/
-
 	private $sublocationCode = 'unset';
 	function getSublocationCode(){
 		if ($this->sublocationCode == 'unset') {

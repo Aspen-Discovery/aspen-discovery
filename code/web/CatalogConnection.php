@@ -837,4 +837,26 @@ class CatalogConnection
     {
         return $this->driver->showOutstandingFines();
     }
+
+	/**
+	 * Returns one of three values
+	 * - none - No forgot password functionality exists
+	 * - emailResetLink - A link to reset the pin is emailed to the user
+	 * - emailPin - The pin itself is emailed to the user
+	 * @return string
+	 */
+	function getForgotPasswordType()
+	{
+		return $this->driver->getForgotPasswordType();
+	}
+
+	public function getEmailResetPinTemplate()
+	{
+		return $this->driver->getEmailResetPinTemplate();
+	}
+
+	function processEmailResetPinForm()
+	{
+		return $this->driver->processEmailResetPinForm();
+	}
 }

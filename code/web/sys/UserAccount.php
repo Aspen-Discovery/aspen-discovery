@@ -180,7 +180,7 @@ class UserAccount {
     public static function getUserHasCatalogConnection(){
         UserAccount::loadUserObjectFromDatabase();
         if (UserAccount::$primaryUserObjectFromDB != false){
-            $accountProfiles = UserAccount::loadAccountProfiles();
+            $accountProfiles = UserAccount::getAccountProfiles();
             /** @var array $userAccountProfile */
             $userAccountProfile = $accountProfiles[UserAccount::$primaryUserObjectFromDB->source];
             /** @var AccountProfile $selectedAccountProfile */
@@ -412,17 +412,21 @@ class UserAccount {
 		/** @var User $primaryUser */
 		$primaryUser = null;
 		$lastError = null;
-		$driversToTest = self::loadAccountProfiles();
+		$driversToTest = self::getAccountProfiles();
 
 		//Test each driver in turn.  We do test all of them in case an account is valid in
 		//more than one system
 		foreach ($driversToTest as $driverName => $driverData){
 			// Perform authentication:
 			$authN = AuthenticationFactory::initAuthentication($driverData['authenticationMethod'], $driverData);
+			// We get back 1 of 3 states from the authenticate call:
+			//  1) A user which means we authenticated correctly
+			//  2) Null which means the authentication method couldn't handle the user
+			//  3) AspenError which means the authentication method handled the user, but didn't find the user
 			$tempUser = $authN->authenticate($validatedViaSSO);
 
 			// If we authenticated, store the user in the session:
-			if (!($tempUser instanceof AspenError)) {
+			if (!($tempUser instanceof AspenError) && $tempUser != null) {
 				if ($validatedViaSSO){
 					$_SESSION['loggedInViaCAS'] = true;
 				}
@@ -448,7 +452,7 @@ class UserAccount {
 					//We have more than one account with these credentials, automatically link them
 					$primaryUser->addLinkedUser($tempUser);
 				}
-			}else{
+			}else if ($tempUser != null){
 				$username = isset($_REQUEST['username']) ? $_REQUEST['username'] : 'No username provided';
 				$logger->log("Error authenticating patron $username for driver {$driverName}\r\n", Logger::LOG_ERROR);
 				$lastError = $tempUser;
@@ -485,7 +489,7 @@ class UserAccount {
 		}
 		// Perform authentication:
 		//Test all valid authentication methods and see which (if any) result in a valid login.
-		$driversToTest = self::loadAccountProfiles();
+		$driversToTest = self::getAccountProfiles();
 
 		global $library;
 		global $logger;
@@ -581,9 +585,9 @@ class UserAccount {
 	}
 
 	/**
-	 * @return array
+	 * @return AccountProfile[]
 	 */
-	protected static function loadAccountProfiles() {
+	static function getAccountProfiles() {
 		/** @var Memcache $memCache */
 		global $memCache;
 		global $instanceName;
@@ -626,7 +630,7 @@ class UserAccount {
      * @return false|User
 	 */
 	public static function findNewUser($patronBarcode){
-		$driversToTest = self::loadAccountProfiles();
+		$driversToTest = self::getAccountProfiles();
 		foreach ($driversToTest as $driverName => $driverData){
 			$catalogConnectionInstance = CatalogFactory::getCatalogConnectionInstance($driverData['driver'], $driverData['accountProfile']);
 			if (method_exists($catalogConnectionInstance->driver, 'findNewUser')) {

@@ -274,8 +274,6 @@ function loadSearchInformation(){
 		while ($indexingProfile->fetch()){
 			$indexingProfiles[$indexingProfile->name] = clone($indexingProfile);
 		}
-//		global $logger;
-//		$logger->log("Updating memcache variable {$instanceName}_indexing_profiles", Logger::LOG_DEBUG);
 		if (!$memCache->set("{$instanceName}_indexing_profiles", $indexingProfiles, 0, $configArray['Caching']['indexing_profiles'])) {
 			global $logger;
 			$logger->log("Failed to update memcache variable {$instanceName}_indexing_profiles", Logger::LOG_ERROR);

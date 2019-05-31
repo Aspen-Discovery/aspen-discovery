@@ -16,9 +16,6 @@ spl_autoload_register('vufind_autoloader');
 initializeSession();
 $timer->logTime("Initialized session");
 
-//global $logger;
-//$logger->log("Opening URL " . $_SESSION['REQUEST_URI'], Logger::LOG_DEBUG);
-
 if (isset($_REQUEST['test_role'])){
 	if ($_REQUEST['test_role'] == ''){
 		setcookie('test_role', $_REQUEST['test_role'], time() - 1000, '/');

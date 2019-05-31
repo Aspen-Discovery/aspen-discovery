@@ -22,9 +22,12 @@ class DatabaseAuthentication implements Authentication {
 		} else {
 			$user = new User();
 			$user->username = $username;
-			$user->password = $password;
 			if (!$user->find(true)) {
-				$user = new AspenError('authentication_error_invalid');
+				$user = null;
+			}else{
+				if ($user->password != $password){
+					$user = new AspenError('authentication_error_invalid');
+				}
 			}
 		}
 		return $user;

@@ -107,11 +107,9 @@ abstract class HorizonAPI3_23 extends HorizonAPI
 
 
 	// Newer Horizon API version
-	public function emailResetPin($barcode)
+	function processEmailResetPinForm()
 	{
-		if (empty($barcode)) {
-			$barcode = $_REQUEST['barcode'];
-		}
+		$barcode = $_REQUEST['barcode'];
 
 		$patron = new User;
 		$patron->get('cat_username', $barcode);
@@ -132,6 +130,7 @@ abstract class HorizonAPI3_23 extends HorizonAPI
 							if (empty($lookupMyAccountInfoResponse->AddressInfo->email)){
 								// return an error message because horizon doesn't have an email.
 								return array(
+									'success' => false,
 									'error' => 'The circulation system does not have an email associated with this card number. Please contact your library to reset your pin.'
 								);
 							}
@@ -156,6 +155,7 @@ abstract class HorizonAPI3_23 extends HorizonAPI
 				);
 			} else {
 				$result = array(
+					'success' => false,
 					'error' => "Sorry, we could not e-mail your pin to you.  Please visit the library to reset your pin."
 				);
 				if (isset($resetPinResponse['messageList'])) {
@@ -173,6 +173,7 @@ abstract class HorizonAPI3_23 extends HorizonAPI
 
 		} else {
 			return array(
+				'success' => false,
 				'error' => 'Sorry, we did not find the card number you entered or you have not logged into the catalog previously.  Please contact your library to reset your pin.'
 			);
 		}
@@ -235,4 +236,13 @@ abstract class HorizonAPI3_23 extends HorizonAPI
 		}
 	}
 
+	function getForgotPasswordType()
+	{
+		return 'emailResetLink';
+	}
+
+	function getEmailResetPinTemplate()
+	{
+		return 'sirsiROAEmailResetPinLinkgotPasswordLink.tpl';
+	}
 }

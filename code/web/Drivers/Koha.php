@@ -7,6 +7,7 @@ class Koha extends AbstractIlsDriver {
 
 	/** @var CurlWrapper */
 	private $curlWrapper;
+	private $opacCurlWrapper;
 
 	/**
 	 * @return array
@@ -238,6 +239,7 @@ class Koha extends AbstractIlsDriver {
 			}
 		}
 
+		$userExistsInDB = false;
 		foreach ($barcodesToTest as $i=>$barcode) {
 		    //Authenticate the user using KOHA ILSDI
             $authenticationURL = $this->getWebServiceUrl() . '/cgi-bin/koha/ilsdi.pl?service=AuthenticatePatron&username=' . urlencode($barcode) . '&password=' . urlencode($password);
@@ -424,9 +426,22 @@ class Koha extends AbstractIlsDriver {
                         return new AspenError('authentication_error_technical');
                     }
                 }
+            }else{
+            	//User is not valid, check to see if they have a valid account in Koha so we can return a different error
+	            /** @noinspection SqlResolve */
+	            $sql = "SELECT borrowernumber, cardnumber, userId from borrowers where cardnumber = '$barcode' OR userId = '$barcode'";
+
+	            $lookupUserResult = mysqli_query($this->dbConnection, $sql);
+	            if ($lookupUserResult->num_rows > 0) {
+		            $userExistsInDB = true;
+	            }
             }
 		}
-		return null;
+		if ($userExistsInDB){
+			return new AspenError('authentication_error_denied');
+		}else{
+			return null;
+		}
 	}
 
 	function initDatabaseConnection(){
@@ -1109,4 +1124,104 @@ class Koha extends AbstractIlsDriver {
     {
         return true;
     }
+
+	private function loginToKohaOpac($user) {
+		$catalogUrl = $this->accountProfile->vendorOpacUrl;
+		//Construct the login url
+		$loginUrl = "$catalogUrl/cgi-bin/koha/opac-user.pl";
+		//Setup post parameters to the login url
+		$postParams = array(
+			'koha_login_context' => 'opac',
+			'password' => $user->cat_password,
+			'userid'=> $user->cat_username
+		);
+		$sResult = $this->postToKohaPage($loginUrl, $postParams);
+		//Parse the response to make sure the login went ok
+		//If we can see the logout link, it means that we logged in successfully.
+		if (preg_match('/<a\\s+class="logout"\\s+id="logout"[^>]*?>/si', $sResult)){
+			$result =array(
+				'success' => true,
+				'summaryPage' => $sResult
+			);
+		}else{
+			$result =array(
+				'success' => false,
+			);
+		}
+		return $result;
+	}
+
+	/**
+	 * @param $kohaUrl
+	 * @param $postParams
+	 * @return mixed
+	 */
+	protected function postToKohaPage($kohaUrl, $postParams) {
+		if ($this->opacCurlWrapper == null){
+			$this->opacCurlWrapper = new CurlWrapper();
+		}
+		return $this->opacCurlWrapper->curlPostPage($kohaUrl, $postParams);
+	}
+
+	protected function getKohaPage($kohaUrl){
+		if ($this->opacCurlWrapper == null){
+			$this->opacCurlWrapper = new CurlWrapper();
+		}
+		return $this->opacCurlWrapper->curlGetPage($kohaUrl);
+	}
+
+	function processEmailResetPinForm()
+	{
+		$result = array(
+			'success' => false,
+			'error' => "Unknown error sending password reset."
+		);
+
+		$catalogUrl = $this->accountProfile->vendorOpacUrl;
+		$username = strip_tags($_REQUEST['username']);
+		$email = strip_tags($_REQUEST['email']);
+		$postVariables = [
+			'koha_login_context' => 'opac',
+			'username' => $username,
+			'email' => $email,
+			'sendEmail' => 'Submit'
+		];
+		if (isset($_REQUEST['resendEmail'])){
+			$postVariables['resendEmail'] = strip_tags($_REQUEST['resendEmail']);
+		}
+
+		$postResults = $this->postToKohaPage($catalogUrl . '/cgi-bin/koha/opac-password-recovery.pl', $postVariables);
+
+		$messageInformation = [];
+		if (preg_match('%<div class="alert alert-warning">(.*?)</div>%s', $postResults, $messageInformation)){
+			$error = $messageInformation[1];
+			$error = str_replace('<h3>', '<h4>', $error);
+			$error = str_replace('</h3>', '</h4>', $error);
+			$error = str_replace('/cgi-bin/koha/opac-password-recovery.pl', '/MyAccount/EmailResetPin', $error);
+			$result['error'] = trim($error);
+		}elseif (preg_match('%<div id="password-recovery">\s+<div class="alert alert-info">(.*?)<a href="/cgi-bin/koha/opac-main.pl"">Return to the main page</a>\s+</div>\s+</div>%s', $postResults, $messageInformation)) {
+			$message = $messageInformation[1];
+			$result['success'] = true;
+			$result['message'] = trim($message);
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Returns one of three values
+	 * - none - No forgot password functionality exists
+	 * - emailResetLink - A link to reset the pin is emailed to the user
+	 * - emailPin - The pin itself is emailed to the user
+	 * @return string
+	 */
+	function getForgotPasswordType()
+	{
+		return 'emailResetLink';
+	}
+
+	function getEmailResetPinTemplate()
+	{
+		return 'kohaEmailResetPinLink.tpl';
+	}
 }

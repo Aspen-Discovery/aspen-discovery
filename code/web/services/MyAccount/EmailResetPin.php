@@ -6,30 +6,40 @@ require_once ROOT_DIR . '/CatalogConnection.php';
 class EmailResetPin extends Action{
 	protected $catalog;
 
-	function __construct()
-	{
-	}
-
 	function launch($msg = null)
 	{
 		global $interface;
+		global $library;
 
+		if (isset($library)){
+			$interface->assign('usernameLabel', str_replace('Your', '', $library->loginFormUsernameLabel ? $library->loginFormUsernameLabel : 'Name'));
+			$interface->assign('passwordLabel', str_replace('Your', '', $library->loginFormPasswordLabel ? $library->loginFormPasswordLabel : 'Library Card Number'));
+		}else{
+			$interface->assign('usernameLabel', 'Name');
+			$interface->assign('passwordLabel', 'Library Card Number');
+		}
+
+		$this->catalog = CatalogFactory::getCatalogConnectionInstance(null, null);
 		if (isset($_REQUEST['submit'])){
+			$emailResult = $this->catalog->processEmailResetPinForm();
 
-			$this->catalog = CatalogFactory::getCatalogConnectionInstance(null, null);
-			$driver = $this->catalog->driver;
-			if ($this->catalog->checkFunction('emailResetPin')){
-				$barcode = strip_tags($_REQUEST['barcode']);
-				$emailResult = $driver->emailResetPin($barcode);
-			}else{
-				$emailResult = array(
-					'error' => 'This functionality is not available in the ILS.',
-				);
-			}
 			$interface->assign('emailResult', $emailResult);
 			$this->display('emailResetPinResults.tpl', 'Email to Reset Pin');
 		}else{
-			$this->display('emailResetPin.tpl', 'Email to Reset Pin');
+			if (isset($_REQUEST['email'])){
+				$interface->assign('email', $_REQUEST['email']);
+			}
+			if (isset($_REQUEST['barcode'])){
+				$interface->assign('barcode', $_REQUEST['barcode']);
+			}
+			if (isset($_REQUEST['username'])){
+				$interface->assign('username', $_REQUEST['username']);
+			}
+			if (isset($_REQUEST['resendEmail'])){
+				$interface->assign('resendEmail', $_REQUEST['resendEmail']);
+			}
+
+			$this->display($this->catalog->getEmailResetPinTemplate(), 'Reset ' . $interface->getVariable('passwordLabel'));
 		}
 	}
 }

@@ -1652,11 +1652,9 @@ abstract class SirsiDynixROA extends HorizonAPI
 		}
 	}
 
-	public function emailResetPin($barcode)
+	function processEmailResetPinForm()
 	{
-		if (empty($barcode)) {
-			$barcode = $_REQUEST['barcode'];
-		}
+		$barcode = $_REQUEST['barcode'];
 
 		$patron = new User;
 		$patron->get('cat_username', $barcode);
@@ -1689,6 +1687,7 @@ abstract class SirsiDynixROA extends HorizonAPI
 								if (empty($email)) {
 									// return an error message because Symphony doesn't have an email.
 									return array(
+										'success' => false,
 										'error' => 'The circulation system does not have an email associated with this card number. Please contact your library to reset your pin.'
 									);
 								}
@@ -1713,6 +1712,7 @@ abstract class SirsiDynixROA extends HorizonAPI
 				);
 			} else {
 				$result = array(
+					'success' => false,
 					'error' => "Sorry, we could not e-mail your pin to you.  Please visit the library to reset your pin."
 				);
 				if (isset($resetPinResponse->messageList)) {
@@ -1728,6 +1728,7 @@ abstract class SirsiDynixROA extends HorizonAPI
 
 		} else {
 			return array(
+				'success' => false,
 				'error' => 'Sorry, we did not find the card number you entered or you have not logged into the catalog previously.  Please contact your library to reset your pin.'
 			);
 		}
@@ -1864,4 +1865,14 @@ abstract class SirsiDynixROA extends HorizonAPI
     {
         return true;
     }
+
+	function getForgotPasswordType()
+	{
+		return 'emailResetLink';
+	}
+
+	function getEmailResetPinTemplate()
+	{
+		return 'sirsiROAEmailResetPinLinkgotPasswordLink.tpl';
+	}
 }

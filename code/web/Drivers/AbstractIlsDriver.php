@@ -123,10 +123,35 @@ abstract class AbstractIlsDriver extends AbstractDriver
      * @param $itemIndex  string
      * @return mixed
      */
-    public abstract function renewCheckout($patron, $recordId, $itemId = null, $itemIndex = null);
+    abstract function renewCheckout($patron, $recordId, $itemId = null, $itemIndex = null);
 
-    public function showOutstandingFines()
+    function showOutstandingFines()
     {
         return false;
     }
+
+	/**
+	 * Returns one of three values
+	 * - none - No forgot password functionality exists
+	 * - emailResetLink - A link to reset the pin is emailed to the user
+	 * - emailPin - The pin itself is emailed to the user
+	 * @return string
+	 */
+    function getForgotPasswordType()
+	{
+		return 'none';
+	}
+
+	function getEmailResetPinTemplate()
+	{
+		return 'overrideInDriver';
+	}
+
+	function processEmailResetPinForm()
+	{
+		return [
+			'success' => false,
+			'error' => 'This functionality is not available in the ILS.',
+		];
+	}
 }

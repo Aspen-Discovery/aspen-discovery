@@ -971,4 +971,15 @@ abstract class HorizonAPI extends Horizon{
 		return false;
 	}
 
+	/**
+	 * Returns one of three values
+	 * - none - No forgot password functionality exists
+	 * - emailResetLink - A link to reset the pin is emailed to the user
+	 * - emailPin - The pin itself is emailed to the user
+	 * @return string
+	 */
+	function getForgotPasswordType()
+	{
+		return 'emailPin';
+	}
 }

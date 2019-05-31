@@ -34,13 +34,13 @@
 						<label for="password" class="control-label col-xs-12 col-sm-4">{$passwordLabel}: </label>
 						<div class="col-xs-12 col-sm-8">
 							<input type="password" name="password" id="password" size="28" onkeypress="return VuFind.submitOnEnter(event, '#loginForm');" class="form-control">
-							{if $showForgotPinLink}
-								<p class="help-block">
-									<strong>Forgot PIN?</strong>&nbsp;
-									{if $useEmailResetPin}
-										<a href="{$path}/MyAccount/EmailResetPin">Reset My PIN</a>
+							{if $forgotPasswordType != 'null'}
+								<p class="text-muted help-block">
+									<strong>Forgot {$passwordLabel}?</strong>&nbsp;
+									{if $forgotPasswordType == 'emailResetLink'}
+										<a href="{$path}/MyAccount/EmailResetPin">Reset My {$passwordLabel}</a>
 									{else}
-										<a href="{$path}/MyAccount/EmailPin">E-mail my PIN</a>
+										<a href="{$path}/MyAccount/EmailPin">E-mail my {$passwordLabel}</a>
 									{/if}
 								</p>
 							{/if}
