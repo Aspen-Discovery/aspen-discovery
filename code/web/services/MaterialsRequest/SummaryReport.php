@@ -164,7 +164,7 @@ class MaterialsRequest_SummaryReport extends Admin_Admin {
 		}
 
 		$interface->setTemplate('summaryReport.tpl');
-		$interface->assign('sidebar', 'MyAccount/account-sidebar.tpl');
+		$interface->assign('sidebar', 'Search/home-sidebar.tpl');
 		$interface->setPageTitle('Materials Request Summary Report');
 		$interface->display('layout.tpl');
 	}

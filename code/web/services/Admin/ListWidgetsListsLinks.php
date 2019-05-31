@@ -34,7 +34,7 @@ class ListWidgetsListsLinks extends Admin_Admin {
 				$this->launchEdit($_REQUEST['widgetId'], $_REQUEST['widgetListId']);
 				break;
 		}
-		$interface->assign('sidebar', 'MyAccount/account-sidebar.tpl');
+		$interface->assign('sidebar', 'Search/home-sidebar.tpl');
 		$interface->display('layout.tpl');
 	}
 

@@ -11,7 +11,7 @@ class LoanRules extends ObjectEditor
 		if ($objectAction == 'reloadFromCsv'){
 			global $interface;
 			$interface->setTemplate('../Admin/importLoanRuleData.tpl');
-			$interface->assign('sidebar', 'MyAccount/account-sidebar.tpl');
+			$interface->assign('sidebar', 'Search/home-sidebar.tpl');
 			$interface->setPageTitle("Reload Loan Rules");
 			$interface->display('layout.tpl');
 			exit();

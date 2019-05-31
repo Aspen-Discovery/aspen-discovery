@@ -1555,4 +1555,23 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
     {
         return 'groupedWorksSearches';
     }
+
+	/**
+	 * Get records similar to one record
+	 * Uses MoreLikeThis Request Handler
+	 *
+	 * Uses SOLR MLT Query Handler
+	 *
+	 * @access    public
+	 *
+	 * @param array[] $ids
+	 * @param string[] $notInterestedIds
+	 * @param int $page
+	 * @param int $limit
+	 * @return    array                            An array of query results
+	 */
+	function getMoreLikeThese($ids, $notInterestedIds, $page = 1, $limit = 25)
+	{
+		return $this->indexEngine->getMoreLikeThese($ids, $notInterestedIds, $this->getFieldsToReturn(), $page, $limit);
+	}
 }

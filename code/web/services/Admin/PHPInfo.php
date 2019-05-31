@@ -42,7 +42,7 @@ h2 {font-size: 125%;}
 		$interface->assign("info", $info);
 		$interface->assign('title', 'PHP Information');
 
-		$interface->assign('sidebar', 'MyAccount/account-sidebar.tpl');
+		$interface->assign('sidebar', 'Search/home-sidebar.tpl');
 		$interface->setTemplate('adminInfo.tpl');
 		$interface->setPageTitle('PHP Information');
 		$interface->display('layout.tpl');

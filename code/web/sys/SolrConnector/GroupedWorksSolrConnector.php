@@ -1,6 +1,7 @@
 <?php
 
 require_once 'Solr.php';
+require_once ROOT_DIR . '/sys/SearchObject/GroupedWorkSearcher.php';
 class GroupedWorksSolrConnector extends Solr
 {
     /**
@@ -158,33 +159,43 @@ class GroupedWorksSolrConnector extends Solr
         return $result;
     }
 
-    /**
-     * Get records similar to one record
-     * Uses MoreLikeThis Request Handler
-     *
-     * Uses SOLR MLT Query Handler
-     *
-     * @access	public
-     * @var     string[]  $ids     A list of ids to return data for
-     * @var     string[]  $notInterestedIds     A list of ids the user is not interested in
-     * @throws	object						PEAR Error
-     * @return	array							An array of query results
-     *
-     */
-    function getMoreLikeThese($ids, $notInterestedIds)
+	/**
+	 * Get records similar to one record
+	 * Uses MoreLikeThis Request Handler
+	 *
+	 * Uses SOLR MLT Query Handler
+	 *
+	 * @access    public
+	 *
+	 * @param array[] $ids
+	 * @param string[] $notInterestedIds
+	 * @param string $fieldsToReturn
+	 * @param int $page
+	 * @param int $limit
+	 * @return    array                            An array of query results
+	 */
+    function getMoreLikeThese($ids, $notInterestedIds, $fieldsToReturn, $page = 1, $limit = 25)
     {
         global $configArray;
         // Query String Parameters
-        $idString = implode(' OR ', $ids);
-        $options = array('q' => "id:($idString)", 'qt' => 'morelikethese', 'mlt.interestingTerms' => 'details', 'rows' => 25);
+	    $idString = '';
+	    foreach ($ids as $index => $ratingInfo){
+	    	if (strlen($idString) > 0){
+	    		$idString .= ' OR ';
+		    }
+	    	$ratingBoost = $ratingInfo['rating'];
+            $idString .= "id:{$ratingInfo['workId']}^$ratingBoost";
+	    }
+        //$idString = implode(' OR ', $ids);
+        $options = array('q' => $idString, 'mlt.interestingTerms' => 'details', 'mlt.boost' => 'true', 'offset' => $page, 'rows' => $limit, 'fl' => $fieldsToReturn);
 
         $searchLibrary = Library::getSearchLibrary();
         $searchLocation = Location::getSearchLocation();
         $scopingFilters = $this->getScopingFilters($searchLibrary, $searchLocation);
 
-        $notInterestedString = implode(' OR ', $notInterestedIds);
-        if (strlen($notInterestedString) > 0){
-            $idString .= ' OR ' . $notInterestedString;
+        if (count($notInterestedIds) > 0){
+	        $notInterestedString = implode(' OR ', $notInterestedIds);
+            $options['fq'][] = "-id:($notInterestedString)";
         }
         $options['fq'][] = "-id:($idString)";
         foreach ($scopingFilters as $filter){
@@ -195,16 +206,7 @@ class GroupedWorksSolrConnector extends Solr
             $options['bf'] = $boostFactors;
         }
 
-        $options['rows'] = 30;
-
-        // TODO: Limit Fields
-        if ($this->debug && isset($fields)) {
-            $options['fl'] = $fields;
-        } else {
-            // This should be an explicit list
-            $options['fl'] = '*,score';
-        }
-        $result = $this->_select('GET', $options);
+        $result = $this->_select('GET', $options, true, 'mlt');
         if ($result instanceof AspenError) {
             AspenError::raiseError($result);
         }

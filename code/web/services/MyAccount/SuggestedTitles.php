@@ -10,29 +10,19 @@ class SuggestedTitles extends MyAccount
 	function launch()
 	{
 		global $interface;
-		global $configArray;
 		global $timer;
 
 		$suggestions = Suggestions::getSuggestions();
 		$timer->logTime("Loaded suggestions");
 
-		// Setup Search Engine Connection
-		$url = $configArray['Index']['url'];
-		/** @var SearchObject_GroupedWorkSearcher $solrDb */
-		$solrDb = new GroupedWorksSolrConnector($url);
-
 		$resourceList = array();
 		$curIndex = 0;
 		if (is_array($suggestions)) {
-			$suggestionIds = array();
 			foreach($suggestions as $suggestion) {
-				$suggestionIds[] = $suggestion['titleInfo']['id'];
-			}
-			$records = $solrDb->getRecords($suggestionIds);
-			foreach($records as $record) {
 				$interface->assign('resultIndex', ++$curIndex);
+				require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 				/** @var GroupedWorkDriver $recordDriver */
-				$recordDriver = RecordDriverFactory::initRecordDriver($record);
+				$recordDriver = new GroupedWorkDriver($suggestion['titleInfo']);
 				$resourceEntry = $interface->fetch($recordDriver->getSearchResult());
 				$resourceList[] = $resourceEntry;
 			}

@@ -41,7 +41,7 @@ abstract class ObjectEditor extends Admin_Admin
 				$this->viewIndividualObject($structure);
 			}
 		}
-		$interface->assign('sidebar', 'MyAccount/account-sidebar.tpl');
+		$interface->assign('sidebar', 'Search/home-sidebar.tpl');
 		$interface->setPageTitle($this->getPageTitle());
 		$interface->display('layout.tpl');
 

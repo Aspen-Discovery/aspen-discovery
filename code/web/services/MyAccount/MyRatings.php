@@ -18,6 +18,7 @@ class MyRatings extends MyAccount{
 		$ratedIds = array();
 		while($rating->fetch()){
 			$ratedIds[$rating->groupedRecordPermanentId] = clone($rating);
+			$ratings[$rating->groupedRecordPermanentId] = [];
 		}
 		$timer->logTime("Loaded ids of titles the user has rated");
 
@@ -28,7 +29,7 @@ class MyRatings extends MyAccount{
 			$groupedWorkDriver = new GroupedWorkDriver($record);
 			if ($groupedWorkDriver->isValid){
 				$rating = $ratedIds[$groupedWorkDriver->getPermanentId()];
-				$ratings[] = array(
+				$ratings[$rating->groupedRecordPermanentId] = array(
 						'id' =>$rating->id,
 						'groupedWorkId' => $rating->groupedRecordPermanentId,
 						'title' => $groupedWorkDriver->getTitle(),
@@ -41,7 +42,6 @@ class MyRatings extends MyAccount{
 				);
 			}
 		}
-
 
 		//Load titles the user is not interested in
 		$notInterested = array();
@@ -81,7 +81,7 @@ class MyRatings extends MyAccount{
 		$interface->assign('showNotInterested', false);
 
 		$interface->setPageTitle('My Ratings');
-		$interface->assign('sidebar', 'MyAccount/account-sidebar.tpl');
+		$interface->assign('sidebar', 'Search/home-sidebar.tpl');
 		$interface->setTemplate('myRatings.tpl');
 		$interface->display('layout.tpl');
 	}

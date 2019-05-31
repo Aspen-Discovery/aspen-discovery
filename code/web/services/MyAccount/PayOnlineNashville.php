@@ -90,7 +90,7 @@ $receipt .= $process->ProcessPaymentResult->TotalAmount;
 
 		//Present a success or failure message
 		$interface->setPageTitle('Payment Results');
-		$interface->assign('sidebar', 'MyAccount/account-sidebar.tpl');
+		$interface->assign('sidebar', 'Search/home-sidebar.tpl');
 		$interface->setTemplate('onlinePaymentResult.tpl');
 		$interface->display('layout.tpl');
 	}

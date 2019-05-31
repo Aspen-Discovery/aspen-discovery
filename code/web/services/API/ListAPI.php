@@ -75,10 +75,10 @@ class ListAPI extends Action {
                 }
 
 				$results[] = array(
-				  'id' => $list->id,
-          'title' => $list->title,
-				  'description' => $list->description,
-				  'numTitles' => $numTitles,
+					'id' => $list->id,
+					'title' => $list->title,
+					'description' => $list->description,
+					'numTitles' => $numTitles,
 				);
 			}
 		}
@@ -110,11 +110,11 @@ class ListAPI extends Action {
 		if ($list->N > 0){
 			while ($list->fetch()){
 				$results[] = array(
-          'id' => $list->id,
-          'title' => $list->title,
-          'description' => $list->description,
-          'numTitles' => $list->numValidListItems(),
-          'public' => $list->public == 1,
+					'id' => $list->id,
+					'title' => $list->title,
+					'description' => $list->description,
+					'numTitles' => $list->numValidListItems(),
+					'public' => $list->public == 1,
 				);
 			}
 		}
@@ -122,11 +122,11 @@ class ListAPI extends Action {
 		$suggestions = Suggestions::getSuggestions($userId);
 		if (count($suggestions) > 0){
 			$results[] = array(
-          'id' => 'recommendations',
-          'title' => 'User Recommendations',
-          'description' => 'Personalized Recommendations based on ratings.',
-          'numTitles' => count($suggestions),
-          'public' => false,
+				'id' => 'recommendations',
+				'title' => 'User Recommendations',
+				'description' => 'Personalized Recommendations based on ratings.',
+				'numTitles' => count($suggestions),
+				'public' => false,
 			);
 		}
 		return array('success'=>true, 'lists'=>$results);
@@ -300,8 +300,6 @@ class ListAPI extends Action {
 	 * @return array
 	 */
 	function getListTitles($listId = NULL, $numTitlesToShow = 25) {
-		global $configArray;
-
 		if (!$listId){
 			if (!isset($_REQUEST['id'])){
 				return array('success'=>false, 'message'=>'The id of the list to load must be provided as the id parameter.');
@@ -380,11 +378,11 @@ class ListAPI extends Action {
 						$smallImageUrl = $imageUrl . "&size=small";
 						$imageUrl .= "&size=medium";
 						$titles[] = array(
-	            'id' => $id,
-	            'image' => $imageUrl,
+				            'id' => $id,
+				            'image' => $imageUrl,
 							'small_image' => $smallImageUrl,
-	            'title' => $suggestion['titleInfo']['title'],
-	            'author' => $suggestion['titleInfo']['author']
+				            'title' => $suggestion['titleInfo']['title'],
+				            'author' => $suggestion['titleInfo']['author']
 						);
 					}
 					return array('success'=>true, 'listTitle' => $systemList['title'], 'listDescription' => $systemList['description'], 'titles'=>$titles, 'cacheLength'=>0);

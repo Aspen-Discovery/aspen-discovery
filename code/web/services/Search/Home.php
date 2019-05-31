@@ -72,8 +72,8 @@ class Search_Home extends Action {
 	 * @return BrowseCategory[]
 	 */
 	public function getBrowseCategories($localBrowseCategories=null) {
-		global $interface,
-						$user;
+		global $interface;
+		$user = UserAccount::getActiveUserObj();
 
 		$browseCategories = array();
 		$specifiedCategory = isset($_REQUEST['browseCategory']);

@@ -53,7 +53,7 @@ class IndexingStats extends Admin_Admin{
 			$interface->assign('noStatsFound', true);
 		}
 
-		$interface->assign('sidebar', 'MyAccount/account-sidebar.tpl');
+		$interface->assign('sidebar', 'Search/home-sidebar.tpl');
 		$interface->setTemplate('reindexStats.tpl');
 		$interface->display('layout.tpl');
 	}

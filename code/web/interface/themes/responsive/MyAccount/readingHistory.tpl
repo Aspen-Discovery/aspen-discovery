@@ -1,7 +1,7 @@
 <div class="col-xs-12">
 {if $loggedIn}
 
-	{if $profile->_web_note}
+	{if !empty($profile->_web_note)}
 		<div class="row">
 			<div id="web_note" class="alert alert-info text-center col-xs-12">{$profile->_web_note}</div>
 		</div>

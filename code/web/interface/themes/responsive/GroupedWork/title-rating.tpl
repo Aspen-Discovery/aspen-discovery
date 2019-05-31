@@ -17,7 +17,7 @@
 			</span>
 		</div>
 		{if $showNotInterested == true}
-			<button class="button notInterested" title="Select Not Interested if you don't want to see this title again." onclick="return VuFind.GroupedWork.markNotInterested('{$summId}');">Not&nbsp;Interested</button>
+			<button id="notInterested{$summId}" class="button notInterested" title="Select Not Interested if you don't want to see this title again." onclick="return VuFind.GroupedWork.markNotInterested('{$summId}');">Not&nbsp;Interested</button>
 		{/if}
 	</div>
 {/if}

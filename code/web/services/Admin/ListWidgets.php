@@ -157,7 +157,7 @@ class Admin_ListWidgets extends ObjectEditor {
 			}
 		}
 
-		$interface->assign('sidebar', 'MyAccount/account-sidebar.tpl');
+		$interface->assign('sidebar', 'Search/home-sidebar.tpl');
 		$interface->setPageTitle('List Widgets');
 		$interface->display('layout.tpl');
 

@@ -199,7 +199,8 @@ VuFind.GroupedWork = (function(){
 				$.getJSON(
 						url, function(data){
 							if (data.result == true){
-								VuFind.showMessage('Success', data.message);
+								//VuFind.showMessage('Success', data.message);
+								$("#notInterested" + recordId).css('background-color', '#f73d3d').css('color', 'white').prop("disabled", true);
 							}else{
 								VuFind.showMessage('Sorry', data.message);
 							}

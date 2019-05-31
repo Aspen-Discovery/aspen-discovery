@@ -101,11 +101,6 @@ class MaterialsRequest_UserReport extends Admin_Admin {
 			$this->exportToExcel($userData, $statuses);
 		}
 
-//		$interface->setTemplate('userReport.tpl');
-//		$interface->setPageTitle('Materials Request User Report');
-//		$interface->assign('sidebar', 'MyAccount/account-sidebar.tpl');
-//		$interface->display('layout.tpl');
-
 		$this->display('userReport.tpl', 'Materials Request User Report');
 	}
 

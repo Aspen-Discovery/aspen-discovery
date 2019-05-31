@@ -57,7 +57,7 @@ class Circa_OfflineHoldsReport extends Admin_Admin{
 		}
 
 		$interface->setPageTitle('Offline Holds Report');
-		$interface->assign('sidebar', 'MyAccount/account-sidebar.tpl');
+		$interface->assign('sidebar', 'Search/home-sidebar.tpl');
 		$interface->assign('offlineHolds', $offlineHolds);
 		$interface->setTemplate('offlineHoldsReport.tpl');
 		$interface->display('layout.tpl');

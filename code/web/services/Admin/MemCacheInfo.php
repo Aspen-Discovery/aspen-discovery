@@ -21,7 +21,7 @@ class Admin_MemCacheInfo extends Admin_Admin {
 		$interface->assign("info", $info->output);
 		$interface->assign('title', 'MemCache Information');
 
-		$interface->assign('sidebar', 'MyAccount/account-sidebar.tpl');
+		$interface->assign('sidebar', 'Search/home-sidebar.tpl');
 		$interface->setTemplate('adminInfo.tpl');
 		$interface->setPageTitle('MemCache Information');
 		$interface->display('layout.tpl');

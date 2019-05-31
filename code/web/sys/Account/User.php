@@ -1488,6 +1488,24 @@ class User extends DataObject
 		return $this->_numMaterialsRequests;
 	}
 
+	function getNumRatings(){
+		require_once ROOT_DIR . '/sys/LocalEnrichment/UserWorkReview.php';
+
+		$rating = new UserWorkReview();
+		$rating->whereAdd("userId = {$this->id}");
+		$rating->whereAdd('rating > 0'); // Some entries are just reviews (and therefore have a default rating of -1)
+		return $rating->count();
+	}
+
+	function hasRecommendations(){
+		require_once ROOT_DIR . '/sys/LocalEnrichment/UserWorkReview.php';
+
+		$rating = new UserWorkReview();
+		$rating->whereAdd("userId = {$this->id}");
+		$rating->whereAdd('rating >= 3'); // Some entries are just reviews (and therefore have a default rating of -1)
+		return $rating->count() > 0;
+	}
+
 	function setReadingHistorySize($val){
 		$this->_readingHistorySize = $val;
 	}

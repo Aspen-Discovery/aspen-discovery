@@ -23,7 +23,7 @@ class ImportListsFromClassic extends MyAccount{
 		$interface->assign('listList', $listList);
 
 		$interface->setPageTitle('Import Results');
-		$interface->assign('sidebar', 'MyAccount/account-sidebar.tpl');
+		$interface->assign('sidebar', 'Search/home-sidebar.tpl');
 		$interface->setTemplate('listImportResults.tpl');
 
 		$interface->display('layout.tpl');

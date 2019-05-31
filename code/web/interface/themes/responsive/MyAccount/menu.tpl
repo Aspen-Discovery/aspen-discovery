@@ -64,9 +64,9 @@
 						{/if}
 						{if $showRatings}
 							<hr class="menu">
-							<div class="myAccountLink{if $action=="MyRatings"} active{/if}"><a href="{$path}/MyAccount/MyRatings">{translate text='Titles You Rated'}</a></div>
+							<div class="myAccountLink{if $action=="MyRatings"} active{/if}"><a href="{$path}/MyAccount/MyRatings">{translate text='Titles You Rated'} <span class="ratings-placeholder"><img src="{$path}/images/loading.gif" alt="loading"></span></a></div>
 							{if $user->disableRecommendations == 0}
-								<div class="myAccountLink{if $action=="SuggestedTitles"} active{/if}"><a href="{$path}/MyAccount/SuggestedTitles">{translate text='Recommended For You'}</a></div>
+								<div class="myAccountLink{if $action=="SuggestedTitles"} active{/if}"><a href="{$path}/MyAccount/SuggestedTitles">{translate text='Recommended For You'} <span class="recommendations-placeholder"><img src="{$path}/images/loading.gif" alt="loading"></span></a></div>
 							{/if}
 						{/if}
 						<hr class="menu">

@@ -22,7 +22,7 @@ class Admin_OpCacheInfo extends Admin_Admin {
 		$interface->assign("info", $info);
 		$interface->assign('title', 'Zend OpCache Information');
 
-		$interface->assign('sidebar', 'MyAccount/account-sidebar.tpl');
+		$interface->assign('sidebar', 'Search/home-sidebar.tpl');
 		$interface->setTemplate('adminInfo.tpl');
 		$interface->setPageTitle('Zend OpCache Information');
 		$interface->display('layout.tpl');
