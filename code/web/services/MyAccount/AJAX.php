@@ -671,7 +671,7 @@ class MyAccount_AJAX
 			$interface->assign('usernameLabel', 'Your Name');
 			$interface->assign('passwordLabel', 'Library Card Number');
 		}
-		if ($configArray['Catalog']['ils'] == 'Horizon' || $configArray['Catalog']['ils'] == 'Symphony'){
+		if ($configArray['Catalog']['ils'] == 'Horizon' || $configArray['Catalog']['ils'] == 'Symphony' || $configArray['Catalog']['ils'] == 'Koha'){
 			$interface->assign('showForgotPinLink', true);
 			$catalog = CatalogFactory::getCatalogConnectionInstance();
 			$useEmailResetPin = $catalog->checkFunction('emailResetPin');
@@ -1208,6 +1208,12 @@ class MyAccount_AJAX
 
 			//Count of Materials Requests
 			$result['materialsRequests'] = '<span class="badge">' . $user->getNumMaterialsRequests() . '</span>';
+
+			//Count of ratings
+			$result['ratings'] = '<span class="badge">' . $user->getNumRatings() . '</span>';
+
+			//Count of ratings
+			$result['recommendations'] = ($user->hasRecommendations() ? '<span class="label label-success">active</span>' : '');
 
 			//Available Holds
 			if ($_REQUEST['activeModule'] == 'MyAccount' && $_REQUEST['activeAction'] == 'Holds'){

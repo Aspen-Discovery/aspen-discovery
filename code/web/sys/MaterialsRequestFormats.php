@@ -235,14 +235,14 @@ class MaterialsRequestFormats extends DataObject
 					$materialRequest->whereAdd("`libraryId` = {$this->libraryId} AND `format`='{$previous->format}'");
 
 					if ($materialRequest->update(DB_DATAOBJECT_WHEREADD_ONLY)) {
-						return parent::update($dataObject);
+						return parent::update();
 
 					}
 				} else {
-					return parent::update($dataObject);
+					return parent::update();
 				}
 			} else {
-				return parent::update($dataObject);
+				return parent::update();
 			}
 		}
 	return false;

@@ -441,7 +441,7 @@ class CatalogConnection
             //Delete the reading history (permanently this time since we are opting out)
             $readingHistoryDB = new ReadingHistoryEntry();
             $readingHistoryDB->userId = $patron->id;
-            $readingHistoryDB->delete();
+            $readingHistoryDB->delete(true);
 
             //Opt out within Aspen since the ILS does not seem to implement this functionality
             $patron->trackReadingHistory = false;

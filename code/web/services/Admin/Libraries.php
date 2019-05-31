@@ -73,12 +73,14 @@ class Admin_Libraries extends ObjectEditor
 			$libraryToCopyFrom->libraryId = $libraryToCopyFromId;
 			$library->find(true);
 
+			/** @noinspection PhpUndefinedFieldInspection */
 			$facetsToCopy = $libraryToCopyFrom->facets;
 			foreach ($facetsToCopy as $facetKey => $facet){
 				$facet->libraryId = $libraryId;
 				$facet->id = null;
 				$facetsToCopy[$facetKey] = $facet;
 			}
+			/** @noinspection PhpUndefinedFieldInspection */
 			$library->facets = $facetsToCopy;
 			$library->update();
 			header("Location: /Admin/Libraries?objectAction=edit&id=" . $libraryId);

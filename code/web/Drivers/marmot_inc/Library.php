@@ -1637,9 +1637,10 @@ class Library extends DataObject
 	}
 
 	private function clearOneToManyOptions($oneToManyDBObjectClassName) {
+		/** @var DataObject $oneToManyDBObject */
 		$oneToManyDBObject = new $oneToManyDBObjectClassName();
 		$oneToManyDBObject->libraryId = $this->libraryId;
-		$oneToManyDBObject->delete();
+		$oneToManyDBObject->delete(true);
 
 	}
 
@@ -1705,11 +1706,13 @@ class Library extends DataObject
 
 	public function clearFacets(){
 		$this->clearOneToManyOptions('LibraryFacetSetting');
+		/** @noinspection PhpUndefinedFieldInspection */
 		$this->facets = array();
 	}
 
 	public function clearArchiveSearchFacets(){
 		$this->clearOneToManyOptions('LibraryArchiveSearchFacetSetting');
+		/** @noinspection PhpUndefinedFieldInspection */
 		$this->archiveSearchfacets = array();
 	}
 

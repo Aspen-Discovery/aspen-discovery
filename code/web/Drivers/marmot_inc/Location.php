@@ -165,7 +165,7 @@ class Location extends DataObject
             $availableThemes[$theme->id] = $theme->themeName;
         }
 
-		$structure = array(
+	    $structure = array(
 				'locationId' => array('property'=>'locationId', 'type'=>'label', 'label'=>'Location Id', 'description'=>'The unique id of the location within the database'),
 				'subdomain' => array('property'=>'subdomain', 'type'=>'text', 'label'=>'Subdomain', 'description'=>'The subdomain to use while identifying this branch.  Can be left if it matches the code.', 'required'=>false),
 				'code' => array('property'=>'code', 'type'=>'text', 'label'=>'Code', 'description'=>'The code for use when communicating with the ILS', 'required'=>true),
@@ -632,6 +632,9 @@ class Location extends DataObject
 		Location::$activeLocation = $location;
 	}
 
+	/**
+	 * @var string|Location
+	 */
 	private static $userHomeLocation = 'unset';
 
 	/**
@@ -640,7 +643,9 @@ class Location extends DataObject
 	 * @return Location
 	 */
 	static function getUserHomeLocation(){
-		if (isset(Location::$userHomeLocation) && Location::$userHomeLocation != 'unset') return Location::$userHomeLocation;
+		if (isset(Location::$userHomeLocation) && Location::$userHomeLocation != 'unset') {
+			return Location::$userHomeLocation;
+		}
 
 		// default value
 		Location::$userHomeLocation = null;
@@ -972,23 +977,30 @@ class Location extends DataObject
 		}else{
 			return $this->_data[$name];
 		}
-
+		return null;
 	}
 
 	public function __set($name, $value){
 		if ($name == "hours") {
+			/** @noinspection PhpUndefinedFieldInspection */
 			$this->hours = $value;
 		}elseif ($name == "moreDetailsOptions") {
+			/** @noinspection PhpUndefinedFieldInspection */
 			$this->moreDetailsOptions = $value;
 		}elseif ($name == "facets") {
+			/** @noinspection PhpUndefinedFieldInspection */
 			$this->facets = $value;
 		}elseif ($name == 'browseCategories'){
+			/** @noinspection PhpUndefinedFieldInspection */
 			$this->browseCategories = $value;
 		}elseif ($name == 'recordsOwned'){
+			/** @noinspection PhpUndefinedFieldInspection */
 			$this->recordsOwned = $value;
 		}elseif ($name == 'recordsToInclude'){
+			/** @noinspection PhpUndefinedFieldInspection */
 			$this->recordsToInclude = $value;
 		}elseif ($name == 'combinedResultSections') {
+			/** @noinspection PhpUndefinedFieldInspection */
 			$this->combinedResultSections = $value;
 		}else{
 			$this->_data[$name] = $value;
@@ -1218,7 +1230,7 @@ class Location extends DataObject
 	public function clearRecordsOwned(){
 		$object = new LocationRecordOwned();
 		$object->locationId = $this->locationId;
-		$object->delete();
+		$object->delete(true);
 		$this->recordsOwned = array();
 	}
 
@@ -1244,7 +1256,7 @@ class Location extends DataObject
 	public function clearRecordsToInclude(){
 		$object = new LibraryRecordToInclude();
 		$object->locationId = $this->locationId;
-		$object->delete();
+		$object->delete(true);
 		$this->recordsToInclude = array();
 	}
 
@@ -1260,7 +1272,7 @@ class Location extends DataObject
 
 		if ($configArray['Index']['enableDetailedAvailability']){
 			$facet = new LocationFacetSetting();
-			$facet->setupTopFacet('availability_toggle', 'Available?', true);
+			$facet->setupTopFacet('availability_toggle', 'Available?');
 			$facet->locationId = $locationId;
 			$facet->weight = count($defaultFacets) + 1;
 			$defaultFacets[] = $facet;
@@ -1312,19 +1324,19 @@ class Location extends DataObject
 		$defaultFacets[] = $facet;
 
 		$facet = new LocationFacetSetting();
-		$facet->setupAdvancedFacet('awards_facet', 'Awards', true);
+		$facet->setupAdvancedFacet('awards_facet', 'Awards');
 		$facet->locationId = $locationId;
 		$facet->weight = count($defaultFacets) + 1;
 		$defaultFacets[] = $facet;
 
 		$facet = new LocationFacetSetting();
-		$facet->setupAdvancedFacet('econtent_source', 'eContent Collection', true);
+		$facet->setupAdvancedFacet('econtent_source', 'eContent Collection');
 		$facet->locationId = $locationId;
 		$facet->weight = count($defaultFacets) + 1;
 		$defaultFacets[] = $facet;
 
 		$facet = new LocationFacetSetting();
-		$facet->setupAdvancedFacet('era', 'Era', true);
+		$facet->setupAdvancedFacet('era', 'Era');
 		$facet->locationId = $locationId;
 		$facet->weight = count($defaultFacets) + 1;
 		$defaultFacets[] = $facet;
@@ -1348,19 +1360,19 @@ class Location extends DataObject
 		$defaultFacets[] = $facet;
 
 		$facet = new LocationFacetSetting();
-		$facet->setupAdvancedFacet('lexile_code', 'Lexile code', true);
+		$facet->setupAdvancedFacet('lexile_code', 'Lexile code');
 		$facet->locationId = $locationId;
 		$facet->weight = count($defaultFacets) + 1;
 		$defaultFacets[] = $facet;
 
 		$facet = new LocationFacetSetting();
-		$facet->setupAdvancedFacet('lexile_score', 'Lexile measure', true);
+		$facet->setupAdvancedFacet('lexile_score', 'Lexile measure');
 		$facet->locationId = $locationId;
 		$facet->weight = count($defaultFacets) + 1;
 		$defaultFacets[] = $facet;
 
 		$facet = new LocationFacetSetting();
-		$facet->setupAdvancedFacet('mpaa_rating', 'Movie Rating', true);
+		$facet->setupAdvancedFacet('mpaa_rating', 'Movie Rating');
 		$facet->locationId = $locationId;
 		$facet->weight = count($defaultFacets) + 1;
 		$defaultFacets[] = $facet;
@@ -1384,7 +1396,7 @@ class Location extends DataObject
 		$defaultFacets[] = $facet;
 
 		$facet = new LocationFacetSetting();
-		$facet->setupAdvancedFacet('geographic_facet', 'Region', true);
+		$facet->setupAdvancedFacet('geographic_facet', 'Region');
 		$facet->locationId = $locationId;
 		$facet->weight = count($defaultFacets) + 1;
 		$defaultFacets[] = $facet;
@@ -1479,7 +1491,7 @@ class Location extends DataObject
 	    /** @var DataObject $oneToManyDBObject */
 		$oneToManyDBObject = new $oneToManyDBObjectClassName();
 		$oneToManyDBObject->libraryId = $this->libraryId;
-		$oneToManyDBObject->delete();
+		$oneToManyDBObject->delete(true);
 	}
 
 	private $_selected;

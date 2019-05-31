@@ -66,7 +66,7 @@ class ManageStatuses extends ObjectEditor
 			$homeLibrary = Library::getPatronHomeLibrary();
 			$materialRequestStatus = new MaterialsRequestStatus();
 			$materialRequestStatus->libraryId = $homeLibrary->libraryId;
-			$materialRequestStatus->delete();
+			$materialRequestStatus->delete(true);
 
 			$materialRequestStatus = new MaterialsRequestStatus();
 			$materialRequestStatus->libraryId = -1;
