@@ -577,10 +577,10 @@ class GroupedWork_AJAX {
 		$relatedRecords = $recordDriver->getRelatedRecords();
 		$interface->assign('relatedRecords', $relatedRecords);
 		$results = array(
-				'title' => 'Share via E-mail',
+				'title' => 'Share via Email',
 				'modalBody' => $interface->fetch("GroupedWork/email-form-body.tpl"),
-				'modalButtons' => "<button class='tool btn btn-primary' onclick='VuFind.GroupedWork.sendEmail(\"{$id}\"); return false;'>Send E-mail</button>"
-//		'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#emailForm\").submit()'>Send E-mail</button>"
+				'modalButtons' => "<button class='tool btn btn-primary' onclick='VuFind.GroupedWork.sendEmail(\"{$id}\"); return false;'>Send Email</button>"
+//		'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#emailForm\").submit()'>Send Email</button>"
 		      // triggering submit action to trigger form validation
 		);
 		return json_encode($results);
@@ -637,23 +637,23 @@ class GroupedWork_AJAX {
 			if ($emailResult === true){
 				$result = array(
 						'result' => true,
-						'message' => 'Your e-mail was sent successfully.'
+						'message' => 'Your email was sent successfully.'
 				);
 			}elseif (($emailResult instanceof AspenError)){
 				$result = array(
 						'result' => false,
-						'message' => "Your e-mail message could not be sent: {$emailResult}."
+						'message' => "Your email message could not be sent: {$emailResult}."
 				);
 			}else{
 				$result = array(
 						'result' => false,
-						'message' => 'Your e-mail message could not be sent due to an unknown error.'
+						'message' => 'Your email message could not be sent due to an unknown error.'
 				);
 			}
 		}else{
 			$result = array(
 					'result' => false,
-					'message' => 'Sorry, we can&apos;t send e-mails with html or other data in it.'
+					'message' => 'Sorry, we can&apos;t send emails with html or other data in it.'
 			);
 		}
 		return json_encode($result);

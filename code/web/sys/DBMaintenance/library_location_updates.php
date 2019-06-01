@@ -235,7 +235,7 @@ function getLibraryLocationUpdates(){
 
 		'library_26' => array(
 			'title' => 'Library 26',
-			'description' => 'Add a support e-mail address for eContent problems.',
+			'description' => 'Add a support email address for eContent problems.',
 			'continueOnError' => true,
 			'sql' => array(
 				"ALTER TABLE `library` ADD `eContentSupportAddress` VARCHAR(256) DEFAULT 'askmarmot@marmot.org';",

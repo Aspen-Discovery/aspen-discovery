@@ -887,17 +887,17 @@ class MyAccount_AJAX
 						if ($emailResult === true){
 							$result = array(
 								'result' => true,
-								'message' => 'Your e-mail was sent successfully.'
+								'message' => 'Your email was sent successfully.'
 							);
 						} elseif (($emailResult instanceof AspenError)){
 							$result = array(
 								'result' => false,
-								'message' => "Your e-mail message could not be sent: {$emailResult->getMessage()}."
+								'message' => "Your email message could not be sent: {$emailResult->getMessage()}."
 							);
 						} else {
 							$result = array(
 								'result' => false,
-								'message' => 'Your e-mail message could not be sent due to an unknown error.'
+								'message' => 'Your email message could not be sent due to an unknown error.'
 							);
 							global $logger;
 							$logger->log("Mail List Failure (unknown reason), parameters: $to, $from, $subject, $body", Logger::LOG_ERROR);
@@ -905,7 +905,7 @@ class MyAccount_AJAX
 					} else {
 						$result = array(
 							'result' => false,
-							'message' => 'Sorry, we can&apos;t send e-mails with html or other data in it.'
+							'message' => 'Sorry, we can&apos;t send emails with html or other data in it.'
 						);
 					}
 
@@ -926,7 +926,7 @@ class MyAccount_AJAX
 		else { // Invalid listId
 			$result = array(
 				'result' => false,
-				'message' => "Invalid List Id. Your e-mail message could not be sent."
+				'message' => "Invalid List Id. Your email message could not be sent."
 			);
 		}
 
@@ -943,7 +943,7 @@ class MyAccount_AJAX
                 'title' => 'Email a list',
                 'modalBody' => $interface->fetch('MyAccount/emailListPopup.tpl'),
 //			'modalButtons' => '<input type="submit" name="submit" value="Send" class="btn btn-primary" onclick="$(\'#emailListForm\').submit();" />'
-                'modalButtons' => '<span class="tool btn btn-primary" onclick="$(\'#emailListForm\').submit();">Send E-Mail</span>'
+                'modalButtons' => '<span class="tool btn btn-primary" onclick="$(\'#emailListForm\').submit();">Send Email</span>'
             );
             return $formDefinition;
         } else {

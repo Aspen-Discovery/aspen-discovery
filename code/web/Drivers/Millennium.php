@@ -402,7 +402,7 @@ class Millennium extends AbstractIlsDriver
 				'-' => '',  // notification will generally be based on what information is available so can't determine here. plb 12-02-2014
 				'a' => 'Mail', // officially Print in Sierra
 				'p' => 'Telephone',
-				'z' => 'E-mail',
+				'z' => 'Email',
 			);
 			$user->notices = isset($patronDump) ? $patronDump['NOTICE_PREF'] : '-';
 			if (array_key_exists($user->notices, $noticeLabels)){
@@ -897,7 +897,7 @@ class Millennium extends AbstractIlsDriver
 			//Validate we have required info for notices
 			if (isset($extraPostInfo['notices'])){
 				if ($extraPostInfo['notices'] == 'z' && strlen($extraPostInfo['email']) == 0){
-					$updateErrors[] = 'To receive notices by e-mail you must set an e-mail address.';
+					$updateErrors[] = 'To receive notices by email you must set an email address.';
 				}elseif ($extraPostInfo['notices'] == 'p' && strlen($extraPostInfo['tele1']) == 0){
 					$updateErrors[] = 'To receive notices by phone you must provide a telephone number.';
 				}elseif (strlen($extraPostInfo['addr1a']) == 0 || strlen($extraPostInfo['addr1b']) == 0){
@@ -1756,7 +1756,7 @@ class Millennium extends AbstractIlsDriver
 		$fields[] = array('property'=>'city', 'type'=>'text', 'label'=>'City', 'description'=>'City', 'maxLength' => 48, 'required' => true);
 		$fields[] = array('property'=>'state', 'type'=>'text', 'label'=>'State', 'description'=>'State', 'maxLength' => 32, 'required' => true);
 		$fields[] = array('property'=>'zip', 'type'=>'text', 'label'=>'Zip Code', 'description'=>'Zip Code', 'maxLength' => 32, 'required' => true);
-		$fields[] = array('property'=>'email', 'type'=>'email', 'label'=>'E-Mail', 'description'=>'E-Mail', 'maxLength' => 128, 'required' => false);
+		$fields[] = array('property'=>'email', 'type'=>'email', 'label'=>'Email', 'description'=>'Email', 'maxLength' => 128, 'required' => false);
 		$fields[] = array('property'=>'phone', 'type'=>'text', 'label'=>'Phone (xxx-xxx-xxxx)', 'description'=>'Phone', 'maxLength' => 128, 'required' => false);
 
 		return $fields;

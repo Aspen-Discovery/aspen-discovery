@@ -268,7 +268,7 @@ abstract class Horizon extends AbstractIlsDriver{
 			$curl_url    = $this->hipUrl . "/ipac20/ipac.jsp";
 			$this->curlWrapper->curlPostPage($curl_url, $post_data);
 
-			//Update patron information.  Use HIP to update the e-mail to make sure that all business rules are followed.
+			//Update patron information.  Use HIP to update the email to make sure that all business rules are followed.
 			if (isset($_REQUEST['email'])) {
 				$post_data   = array(
 					'menu' => 'account',

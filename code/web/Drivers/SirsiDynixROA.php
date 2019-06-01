@@ -299,7 +299,7 @@ abstract class SirsiDynixROA extends HorizonAPI
 				$user->_numHoldsRequestedIls  = $numHoldsRequested;
 				$user->patronType            = 0; //TODO: not getting this info here?
 				$user->notices               = '-';
-				$user->_noticePreferenceLabel = 'E-mail';
+				$user->_noticePreferenceLabel = 'Email';
 				$user->_web_note              = '';
 
 				if ($userExistsInDB) {
@@ -571,7 +571,7 @@ abstract class SirsiDynixROA extends HorizonAPI
 				$user->_numHoldsRequestedIls  = $numHoldsRequested;
 				$user->patronType            = 0; //TODO: not getting this info here?
 				$user->notices               = '-';
-				$user->_noticePreferenceLabel = 'E-mail';
+				$user->_noticePreferenceLabel = 'Email';
 				$user->_web_note              = '';
 
 				if ($userExistsInDB) {
@@ -1713,7 +1713,7 @@ abstract class SirsiDynixROA extends HorizonAPI
 			} else {
 				$result = array(
 					'success' => false,
-					'error' => "Sorry, we could not e-mail your pin to you.  Please visit the library to reset your pin."
+					'error' => "Sorry, we could not email your pin to you.  Please visit the library to reset your pin."
 				);
 				if (isset($resetPinResponse->messageList)) {
 					$errors = array();

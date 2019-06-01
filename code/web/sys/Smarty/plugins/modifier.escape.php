@@ -65,7 +65,7 @@ function smarty_modifier_escape($string, $esc_type = 'html', $char_set = 'ISO-88
             return strtr($string, array('\\'=>'\\\\',"'"=>"\\'",'"'=>'\\"',"\r"=>'\\r',"\n"=>'\\n','</'=>'<\/'));
             
         case 'mail':
-            // safe way to display e-mail address on a web page
+            // safe way to display email address on a web page
             return str_replace(array('@', '.'),array(' [AT] ', ' [DOT] '), $string);
             
         case 'nonstd':

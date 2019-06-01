@@ -156,7 +156,7 @@ abstract class HorizonAPI3_23 extends HorizonAPI
 			} else {
 				$result = array(
 					'success' => false,
-					'error' => "Sorry, we could not e-mail your pin to you.  Please visit the library to reset your pin."
+					'error' => "Sorry, we could not email your pin to you.  Please visit the library to reset your pin."
 				);
 				if (isset($resetPinResponse['messageList'])) {
 					$errors = '';

@@ -43,7 +43,7 @@
 									{if $forgotPasswordType == 'emailResetLink'}
 										<a href="{$path}/MyAccount/EmailResetPin">Reset My {$passwordLabel}</a>
 									{else}
-										<a href="{$path}/MyAccount/EmailPin">E-mail my {$passwordLabel}</a>
+										<a href="{$path}/MyAccount/EmailPin">Email my {$passwordLabel}</a>
 									{/if}
 								</p>
 							{/if}

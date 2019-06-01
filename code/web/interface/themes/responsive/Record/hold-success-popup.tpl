@@ -18,7 +18,7 @@
 							{$profile->phone}
 							{if $canUpdate}</a>{/if}
 						</blockquote>
-					{elseif $profile->_noticePreferenceLabel eq 'E-mail'} be emailed a notification at :
+					{elseif $profile->_noticePreferenceLabel eq 'Email'} be emailed a notification at :
 						<blockquote class="alert-warning">
 							{if $canUpdate}<a href="/MyAccount/Profile?patronId={$profile->id}"><span class="glyphicon glyphicon-pencil"></span> {/if}
 							{$profile->email}

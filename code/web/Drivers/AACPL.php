@@ -50,7 +50,7 @@ class AACPL extends SirsiDynixROA {
 		$fields[] = array('property'=>'city', 'type'=>'text', 'label'=>'City', 'description'=>'City', 'maxLength' => 48, 'required' => true);
 		$fields[] = array('property'=>'state', 'type'=>'text', 'label'=>'State', 'description'=>'State', 'maxLength' => 32, 'required' => true);
 		$fields[] = array('property'=>'zip', 'type'=>'text', 'label'=>'Zip Code', 'description'=>'Zip Code', 'maxLength' => 32, 'required' => true);
-		$fields[] = array('property'=>'email', 'type'=>'email', 'label'=>'E-Mail', 'description'=>'E-Mail', 'maxLength' => 128, 'required' => false);
+		$fields[] = array('property'=>'email', 'type'=>'email', 'label'=>'Email', 'description'=>'Email', 'maxLength' => 128, 'required' => false);
 		$fields[] = array('property'=>'phone', 'type'=>'text', 'label'=>'Phone (xxx-xxx-xxxx)', 'description'=>'Phone', 'maxLength' => 128, 'required' => false);
 		$fields[] = array('property'=>'pin', 'type'=>'pin', 'label'=>'Pin (Save this number)', 'description'=>'Pin (Save this number)', 'maxLength' => 25, 'required' => true);
 		$fields[] = array('property'=>'pin1', 'type'=>'pin', 'label'=>'Re-enter Pin (Save this number)', 'description'=>'Pin (Save this number)', 'maxLength' => 25, 'required' => true);

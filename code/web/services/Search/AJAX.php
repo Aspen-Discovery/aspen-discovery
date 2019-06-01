@@ -100,23 +100,23 @@ class AJAX extends Action {
 			if ($emailResult === true){
 				$result = array(
 						'result' => true,
-						'message' => 'Your e-mail was sent successfully.'
+						'message' => 'Your email was sent successfully.'
 				);
 			}elseif (($emailResult instanceof AspenError)){
 				$result = array(
 						'result' => false,
-						'message' => "Your e-mail message could not be sent: {$emailResult->getMessage()}."
+						'message' => "Your email message could not be sent: {$emailResult->getMessage()}."
 				);
 			}else{
 				$result = array(
 						'result' => false,
-						'message' => 'Your e-mail message could not be sent due to an unknown error.'
+						'message' => 'Your email message could not be sent due to an unknown error.'
 				);
 			}
 		}else{
 			$result = array(
 					'result' => false,
-					'message' => 'Sorry, we can&apos;t send e-mails with html or other data in it.'
+					'message' => 'Sorry, we can&apos;t send emails with html or other data in it.'
 			);
 		}
 
@@ -286,9 +286,9 @@ class AJAX extends Action {
 	function getEmailForm(){
 		global $interface;
 		$results = array(
-			'title' => 'E-Mail Search',
+			'title' => 'Email Search',
 			'modalBody' => $interface->fetch('Search/email.tpl'),
-			'modalButtons' => "<span class='tool btn btn-primary' onclick='$(\"#emailSearchForm\").submit();'>Send E-Mail</span>"
+			'modalButtons' => "<span class='tool btn btn-primary' onclick='$(\"#emailSearchForm\").submit();'>Send Email</span>"
 		);
 		echo json_encode($results);
 	}

@@ -29,7 +29,7 @@ class ArchiveRequest extends DataObject{
 				array('property'=>'country', 'type'=>'text', 'label'=>'Country', 'description'=>'Country', 'maxLength' => 50, 'required' => false, 'default' => 'United States'),
 				array('property'=>'phone', 'type'=>'text', 'label'=>'Phone', 'description'=>'Phone', 'maxLength' => 20, 'required' => true),
 				array('property'=>'alternatePhone', 'type'=>'text', 'label'=>'Alternate Phone', 'description'=>'Alternate Phone', 'maxLength' => 20, 'required' => false),
-				array('property'=>'email', 'type'=>'email', 'label'=>'E-mail Address', 'description'=>'E-mail Address', 'maxLength' => 100, 'required' => true),
+				array('property'=>'email', 'type'=>'email', 'label'=>'Email Address', 'description'=>'Email Address', 'maxLength' => 100, 'required' => true),
 				array('property'=>'format', 'type'=>'text', 'label'=>'Format Required (Black and White/Color, Print/Digital, etc)', 'description'=>'Additional information about how you want the materials delivered', 'maxLength' => 255, 'required' => false),
 				array('property'=>'purpose', 'type'=>'textarea', 'label'=>'Purpose: Provide information about how this image will be used: Description, title of publication, author, publisher, date of publication, number of copies produced, etc', 'description'=>'Additional information about what you will use the copy(copies) for', 'required' => true, 'hideInLists' => true),
 				'pid' => array('property'=>'pid', 'type'=>'hidden', 'label'=>'PID of Object', 'description'=>'ID of the object in ', 'maxLength' => 50, 'required' => true),

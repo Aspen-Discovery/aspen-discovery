@@ -176,7 +176,7 @@ class UserAPI extends Action {
 	 * <li>password, cat_password � The patron's PIN number</li>
 	 * <li>firstname � The first name of the patron in the ILS</li>
 	 * <li>lastname � The last name of the patron in the ILS</li>
-	 * <li>email � The patron's e-mail address if set within Horizon.</li>
+	 * <li>email � The patron's email address if set within Horizon.</li>
 	 * <li>homeLocationId � the id of the patron's home libarary within VuFind.</li>
 	 * <li>MyLocation1Id, myLocation2Id � not currently used</li>
 	 * </ul>
@@ -259,7 +259,7 @@ class UserAPI extends Action {
 	 * <ul>
 	 * <li>success � true if the account is valid, false if the username or password were incorrect</li>
 	 * <li>message � a reason why the method failed if success is false</li>
-	 * <li>profile � profile information including name, address, e-mail, number of holds, number of checked out items, fines.</li>
+	 * <li>profile � profile information including name, address, email, number of holds, number of checked out items, fines.</li>
 	 * <li>firstname � The first name of the patron in the ILS</li>
 	 * <li>lastname � The last name of the patron in the ILS</li>
 	 * <li>fullname � The combined first and last name for the patron in the ILS</li>

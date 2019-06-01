@@ -3,8 +3,8 @@
 	<div class="share-tools">
 		<span class="share-tools-label hidden-inline-xs">SHARE</span>
 		{if $showEmailThis == 1}
-			<a href="#" onclick="return VuFind.GroupedWork.showEmailForm(this, '{$recordDriver->getPermanentId()|escape:"url"}')" title="Share via e-mail">
-				<img src="{img filename='email-icon.png'}" alt="E-mail this">
+			<a href="#" onclick="return VuFind.GroupedWork.showEmailForm(this, '{$recordDriver->getPermanentId()|escape:"url"}')" title="Share via email">
+				<img src="{img filename='email-icon.png'}" alt="Email this">
 			</a>
 		{/if}
 		{if $showShareOnExternalSites}

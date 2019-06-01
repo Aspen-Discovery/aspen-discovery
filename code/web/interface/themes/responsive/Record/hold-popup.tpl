@@ -23,7 +23,7 @@
 						be mailed a notification
 					{elseif $profile->_noticePreferenceLabel eq 'Telephone' || ($profile->_noticePreferenceLabel eq 'Mail' && $treatPrintNoticesAsPhoneNotices)}
 						receive a phone call
-					{elseif $profile->_noticePreferenceLabel eq 'E-mail'}
+					{elseif $profile->_noticePreferenceLabel eq 'Email'}
 						be emailed a notification
 					{else}
 						receive a notification

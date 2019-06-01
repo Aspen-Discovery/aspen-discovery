@@ -204,7 +204,7 @@ VuFind.Rbdigital = (function(){
 
         placeHold: function (id) {
             if (Globals.loggedIn){
-                //Get any prompts needed for placing holds (e-mail and format depending on the interface.
+                //Get any prompts needed for placing holds (email and format depending on the interface.
                 let promptInfo = VuFind.Rbdigital.getHoldPrompts(id, 'hold');
                 // noinspection JSUnresolvedVariable
                 if (!promptInfo.promptNeeded){

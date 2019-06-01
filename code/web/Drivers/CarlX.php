@@ -818,13 +818,13 @@ class CarlX extends SIP2Driver{
 		$fields[] = array('default'=>'TN','property'=>'state',       'type'=>'text', 'label'=>'State', 'description'=>'State', 'maxLength' => 2, 'required' => true);
 		$fields[] = array('property'=>'zip',         'type'=>'text', 'label'=>'Zip Code', 'description'=>'Zip Code', 'maxLength' => 32, 'required' => true);
 		$fields[] = array('property'=>'phone',       'type'=>'text',  'label'=>'Primary Phone', 'description'=>'Primary Phone', 'maxLength'=>15, 'required'=>true);
-		$fields[] = array('property'=>'email',       'type'=>'email', 'label'=>'E-Mail', 'description'=>'E-Mail', 'maxLength' => 128, 'required' => true);
+		$fields[] = array('property'=>'email',       'type'=>'email', 'label'=>'Email', 'description'=>'Email', 'maxLength' => 128, 'required' => true);
 //		$fields[] = array('property'=>'pin',         'type'=>'pin',   'label'=>'Pin', 'description'=>'Your desired 4-digit pin', 'maxLength' => 4, 'size' => 4, 'required' => true);
 //		$fields[] = array('property'=>'pin1',        'type'=>'pin',   'label'=>'Confirm Pin', 'description'=>'Re-type your desired 4-digit pin', 'maxLength' => 4, 'size' => 4, 'required' => true);
 		return $fields;
 	}
 
-	public function selfRegister(){
+	function selfRegister(){
 		global $library,
 		       $configArray,
 		       $active_ip,
@@ -1060,7 +1060,7 @@ class CarlX extends SIP2Driver{
 								if ($emailResult === true){
 									$result = array(
 										'result' => true,
-										'message' => 'Your e-mail was sent successfully.'
+										'message' => 'Your email was sent successfully.'
 									);
 								} elseif (($emailResult instanceof AspenError)){
 									$interface->assign('error', "Your request could not be sent: {$emailResult->getMessage()}.");

@@ -14,7 +14,7 @@ Address:
 Phone: {$requestResult->phone}
 {if $requestResult->alternatePhone}Alternate Phone: {$requestResult->alternatePhone}{/if}
 
-E-mail: {$requestResult->email}
+Email: {$requestResult->email}
 
 {if $requestResults->format}
 Format Requested: {$requestResult->format}

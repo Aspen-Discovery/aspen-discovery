@@ -14,7 +14,7 @@ class ClaimAuthorshipRequest extends DataObject{
 		$structure = array(
 				array('property'=>'name', 'type'=>'text', 'label'=>'Name', 'description'=>'Name', 'maxLength' => 100, 'required' => true),
 				array('property'=>'phone', 'type'=>'text', 'label'=>'Phone', 'description'=>'Phone', 'maxLength' => 20, 'required' => true),
-				array('property'=>'email', 'type'=>'email', 'label'=>'E-mail Address', 'description'=>'E-mail Address', 'maxLength' => 100, 'required' => true),
+				array('property'=>'email', 'type'=>'email', 'label'=>'Email Address', 'description'=>'Email Address', 'maxLength' => 100, 'required' => true),
 				array('property'=>'message', 'type'=>'text', 'label'=>'Additional Information', 'description'=>'Additional information about your request for authorship', 'maxLength' => 255, 'required' => false),
 				'pid' => array('property'=>'pid', 'type'=>'hidden', 'label'=>'PID of Object', 'description'=>'ID of the object in ', 'maxLength' => 50, 'required' => true),
 				'dateRequested' => array('property'=>'dateRequested', 'type'=>'hidden', 'label'=>'The date this request was made'),

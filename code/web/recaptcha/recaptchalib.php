@@ -240,7 +240,7 @@ function recaptcha_mailhide_html($pubkey, $privkey, $email) {
 	$url = recaptcha_mailhide_url($pubkey, $privkey, $email);
 
 	return htmlentities($emailparts[0]) . "<a href='" . htmlentities($url) .
-	"' onclick=\"window.open('" . htmlentities($url) . "', '', 'toolbar=0,scrollbars=0,location=0,statusbar=0,menubar=0,resizable=0,width=500,height=300'); return false;\" title=\"Reveal this e-mail address\">...</a>@" . htmlentities($emailparts [1]);
+	"' onclick=\"window.open('" . htmlentities($url) . "', '', 'toolbar=0,scrollbars=0,location=0,statusbar=0,menubar=0,resizable=0,width=500,height=300'); return false;\" title=\"Reveal this email address\">...</a>@" . htmlentities($emailparts [1]);
 
 }
 

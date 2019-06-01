@@ -192,7 +192,7 @@ abstract class HorizonAPI extends Horizon{
 				$user->_numHoldsRequestedIls  = $numHoldsRequested;
 				$user->patronType            = 0;
 				$user->notices               = '-';
-				$user->_noticePreferenceLabel = 'E-mail';
+				$user->_noticePreferenceLabel = 'Email';
 				$user->_web_note              = '';
 
 				if ($userExistsInDB){
@@ -869,7 +869,7 @@ abstract class HorizonAPI extends Horizon{
 			);
 		}else{
 			$result = array(
-				'error' => "Sorry, we could not e-mail your pin to you.  Please visit the library to reset your pin."
+				'error' => "Sorry, we could not email your pin to you.  Please visit the library to reset your pin."
 			);
 			if (isset($updatePinResponse->code)){
 				$result['error'] .= '  ' . $updatePinResponse->string;

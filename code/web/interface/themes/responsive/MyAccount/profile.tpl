@@ -146,7 +146,7 @@
 									{/if}
 								{/if}
 								<div class="form-group">
-									<div class="col-xs-4"><label for="email">{translate text='E-mail'}:</label></div>
+									<div class="col-xs-4"><label for="email">{translate text='Email'}:</label></div>
 									<div class="col-xs-8">
 										{if $edit == true && $canUpdateContactInfo == true}<input type="text" name="email" id="email" value="{$profile->email|escape}" size="50" maxlength="75" class="form-control multiemail">{else}{$profile->email|escape}{/if}
 										{* Multiemail class is for form validation; type has to be text for multiemail validation to work correctly *}
@@ -283,7 +283,7 @@
 											{if $edit == true && $canUpdateContactInfo == true}
 												<input type="checkbox" name="smsNotices" id="smsNotices" {if $profile->mobileNumber}checked='checked'{/if} data-switch="">
 												<p class="help-block alert alert-warning">
-													SMS/Text Messages are sent <strong>in addition</strong> to postal mail/e-mail/phone alerts. <strong>Message and data rates may apply.</strong>
+													SMS/Text Messages are sent <strong>in addition</strong> to postal mail/email/phone alerts. <strong>Message and data rates may apply.</strong>
 													<br><br>
 													To sign up for SMS/Text messages, you must opt-in above and enter your Mobile (cell phone) number below.
 													<br><br>
@@ -408,13 +408,13 @@
 							<form action="" method="post" class="form-horizontal">
 								<input type="hidden" name="updateScope" value="overdrive">
 								<div class="form-group">
-									<div class="col-xs-4"><label for="overdriveEmail" class="control-label">{translate text='OverDrive Hold e-mail'}:</label></div>
+									<div class="col-xs-4"><label for="overdriveEmail" class="control-label">{translate text='OverDrive Hold email'}:</label></div>
 									<div class="col-xs-8">
 										{if $edit == true}<input name="overdriveEmail" id="overdriveEmail" class="form-control" value='{$profile->overdriveEmail|escape}' size='50' maxlength='75'>{else}{$profile->overdriveEmail|escape}{/if}
 									</div>
 								</div>
 								<div class="form-group">
-									<div class="col-xs-4"><label for="promptForOverdriveEmail" class="control-label">{translate text='Prompt for OverDrive e-mail'}:</label></div>
+									<div class="col-xs-4"><label for="promptForOverdriveEmail" class="control-label">{translate text='Prompt for OverDrive email'}:</label></div>
 									<div class="col-xs-8">
 										{if $edit == true}
 											<input type="checkbox" name="promptForOverdriveEmail" id="promptForOverdriveEmail" {if $profile->promptForOverdriveEmail==1}checked='checked'{/if} data-switch="">

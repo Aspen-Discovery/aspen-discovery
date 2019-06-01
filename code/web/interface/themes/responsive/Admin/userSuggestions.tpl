@@ -13,7 +13,7 @@
 					<thead>
 						<tr>
 							<th id='nameHeader' class='headerCell'><label title='The name of the user who entered the suggestion'>Name</label></th>
-							<th id='emailHeader' class='headerCell'><label title='The email address of the user who entered the suggestion'>E-mail</label></th>
+							<th id='emailHeader' class='headerCell'><label title='The email address of the user who entered the suggestion'>Email</label></th>
 							<th id='suggestionHeader' class='headerCell'><label title='The text of the suggestion'>Suggestion</label></th>
 							<th id='enteredOnHeader' class='headerCell'><label title='When the suggestion was entered'>Entered On</label></th>
 							<th id='hideHeader' class='headerCell'><label title='Check to remove the hide the suggestion from view.'>Hide?</label></th>

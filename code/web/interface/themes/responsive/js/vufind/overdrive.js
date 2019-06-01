@@ -49,7 +49,7 @@ VuFind.OverDrive = (function(){
 
 		checkOutTitle: function(overDriveId){
 			if (Globals.loggedIn){
-				//Get any prompts needed for placing holds (e-mail and format depending on the interface.
+				//Get any prompts needed for placing holds (email and format depending on the interface.
 				let promptInfo = VuFind.OverDrive.getCheckOutPrompts(overDriveId, 'hold');
 				if (!promptInfo.promptNeeded){
 					VuFind.OverDrive.doOverDriveCheckout(promptInfo.patronId, overDriveId);
@@ -174,7 +174,7 @@ VuFind.OverDrive = (function(){
 
 		placeHold: function(overDriveId){
 			if (Globals.loggedIn){
-				//Get any prompts needed for placing holds (e-mail and format depending on the interface.
+				//Get any prompts needed for placing holds (email and format depending on the interface.
 				let promptInfo = VuFind.OverDrive.getOverDriveHoldPrompts(overDriveId, 'hold');
 				if (!promptInfo.promptNeeded){
 					VuFind.OverDrive.doOverDriveHold(promptInfo.patronId, overDriveId, promptInfo.overdriveEmail, promptInfo.promptForOverdriveEmail);

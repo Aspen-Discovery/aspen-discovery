@@ -79,7 +79,7 @@ class Archive_ClaimAuthorship extends Action{
 							if ($emailResult === true){
 								$result = array(
 									'result' => true,
-									'message' => 'Your e-mail was sent successfully.'
+									'message' => 'Your email was sent successfully.'
 								);
 							} elseif (($emailResult instanceof AspenError)){
 								$interface->assign('error', "Your request could not be sent: {$emailResult->getMessage()}.");

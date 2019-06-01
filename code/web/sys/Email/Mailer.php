@@ -100,7 +100,7 @@ class Mailer {
 //				$formattedMail .= $key . ': ' . $header . '<br />';
 //			}
 //			$formattedMail .= $body;
-//			$logger->log("Sending e-mail", Logger::LOG_NOTICE);
+//			$logger->log("Sending email", Logger::LOG_NOTICE);
 //			$logger->log("From = $from", Logger::LOG_NOTICE);
 //			$logger->log("To = $to", Logger::LOG_NOTICE);
 //			$logger->log($subject, Logger::LOG_NOTICE);

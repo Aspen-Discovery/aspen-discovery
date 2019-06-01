@@ -5,7 +5,7 @@ Name: {$requestResult->name}
 Phone: {$requestResult->phone}
 {if $requestResult->alternatePhone}Alternate Phone: {$requestResult->alternatePhone}{/if}
 
-E-mail: {$requestResult->email}
+Email: {$requestResult->email}
 
 Message:
 {$requestResult->message}

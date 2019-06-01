@@ -11,7 +11,7 @@ class eContentSupport extends Action
 		$interface->setPageTitle('eContent Support');
 
 		if (isset($_REQUEST['submit'])){
-			//E-mail the library with details of the support request
+			//Email the library with details of the support request
 			require_once ROOT_DIR . '/sys/Email/Mailer.php';
 			$mail = new Mailer();
 			$userLibrary = Library::getPatronHomeLibrary();

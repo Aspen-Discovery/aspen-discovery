@@ -13,7 +13,7 @@
 			<label for='name' class='control-label'>Name: <span class="requiredIndicator">*</span></label><input type="text" name="name" id="name" class="required form-control" maxlength="120" size="60" value="{$name}"/>
 		</div>
 		<div class='form-group'>
-			<label for='email' class='control-label'>E-mail: <span class="requiredIndicator">*</span></label><input type="text" name="email" id="email" class="required email form-control" maxlength="120" size="60" value="{$email}"/>
+			<label for='email' class='control-label'>Email: <span class="requiredIndicator">*</span></label><input type="text" name="email" id="email" class="required email form-control" maxlength="120" size="60" value="{$email}"/>
 		</div>
 		<div class='form-group'>
 			<label for='bookAuthor' class='control-label'>Book Title/Author:</label><input type="text" name="bookAuthor" id="bookAuthor" maxlength="120" size="60" class="form-control"/>
