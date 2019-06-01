@@ -1384,4 +1384,27 @@ class Koha extends AbstractIlsDriver {
 		}
 		return $result;
 	}
+
+	function updatePin(User $user, string $oldPin, string $newPin)
+	{
+		$catalogUrl = $this->accountProfile->vendorOpacUrl;
+		$this->loginToKohaOpac($user);
+
+		$postFields = [
+			'Oldkey' => $oldPin,
+			'Newkey' => $newPin,
+			'Confirm' => $newPin
+		];
+
+		$pinFormResponse = $this->postToKohaPage($catalogUrl . '/cgi-bin/koha/opac-passwd.pl', $postFields);
+		if (preg_match('%<div class="alert">(.*?)</div>%s', $pinFormResponse, $matches)) {
+			$error = $matches[1];
+			$error = str_replace('<h3>', '<h4>', $error);
+			$error = str_replace('</h3>', '</h4>', $error);
+			return ['success' => false, 'errors' => trim($error)];
+		}else if (preg_match('/Password updated/s', $pinFormResponse)) {
+			return ['success' => true, 'message' => 'Your password was updated successfully.'];
+		}
+		return ['success' => false, 'errors' => "Unknown error updating password."];
+	}
 }

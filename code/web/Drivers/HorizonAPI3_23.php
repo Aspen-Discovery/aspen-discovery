@@ -23,14 +23,13 @@ abstract class HorizonAPI3_23 extends HorizonAPI
      * @param User $user
      * @param string $oldPin
      * @param string $newPin
-     * @param $confirmNewPin
-     * @return string a message to the user letting them know what happened
+     * @return string[] a message to the user letting them know what happened
      */
-	function updatePin($user, $oldPin, $newPin, $confirmNewPin){
+	function updatePin($user, $oldPin, $newPin){
 		//Log the user in
 		list($userValid, $sessionToken) = $this->loginViaWebService($user->cat_username, $user->cat_password);
 		if (!$userValid){
-			return 'Sorry, it does not look like you are logged in currently.  Please login and try again';
+			return ['success' => false, 'errors' => 'Sorry, it does not look like you are logged in currently.  Please login and try again'];
 		}
 
 		$updatePinUrl = $this->getBaseWebServiceUrl() . '/hzws/user/patron/changeMyPin';
@@ -46,14 +45,14 @@ abstract class HorizonAPI3_23 extends HorizonAPI
 			}
 			global $logger;
 			$logger->log('WCPL Driver error updating user\'s Pin :'.$errors, Logger::LOG_ERROR);
-			return 'Sorry, we encountered an error while attempting to update your pin. Please contact your local library.';
+			return ['success' => false, 'errors' => 'Sorry, we encountered an error while attempting to update your pin. Please contact your local library.'];
 		} elseif (!empty($updatePinResponse['sessionToken'])){
 			// Success response isn't particularly clear, but returning the session Token seems to indicate the pin updated. plb 8-15-2016
 			$user->cat_password = $newPin;
 			$user->update();
-			return "Your pin number was updated successfully.";
+			return ['success' => true, 'message' => "Your pin number was updated successfully."];
 		}else{
-			return "Sorry, we could not update your pin number. Please try again later.";
+			return ['success' => false, 'errors' => "Sorry, we could not update your pin number. Please try again later."];
 		}
 	}
 

@@ -43,6 +43,7 @@ class MyAccount_Profile extends MyAccount
 				$allowPinReset = false;
 				$showAlternateLibraryOptionsInProfile = true;
 				$allowAccountLinking = true;
+				$passwordLabel = 'Library Card Number';
 			}else{
 				$canUpdateContactInfo = ($patronHomeLibrary->allowProfileUpdates == 1);
 				$canUpdateAddress = ($patronHomeLibrary->allowPatronAddressUpdates == 1);
@@ -57,6 +58,7 @@ class MyAccount_Profile extends MyAccount
 					$canUpdateContactInfo = false;
 					$canUpdateAddress = false;
 				}
+				$passwordLabel = str_replace('Your', '', $patronHomeLibrary->loginFormPasswordLabel ? $patronHomeLibrary->loginFormPasswordLabel : 'Library Card Number');
 			}
 
 			$interface->assign('showUsernameField', $patron->getShowUsernameField());
@@ -70,6 +72,7 @@ class MyAccount_Profile extends MyAccount
 			$interface->assign('allowPinReset', $allowPinReset);
 			$interface->assign('showAlternateLibraryOptions', $showAlternateLibraryOptionsInProfile);
 			$interface->assign('allowAccountLinking', $allowAccountLinking);
+			$interface->assign('passwordLabel', $passwordLabel);
 
 			// Determine Pickup Locations
 			$pickupLocations = $patron->getValidPickupBranches($patron->getAccountProfile()->recordSource);
@@ -102,10 +105,16 @@ class MyAccount_Profile extends MyAccount
 				} elseif ($updateScope == 'hoopla') {
 					$patron->updateHooplaOptions();
 				} elseif ($updateScope == 'pin') {
-					$errors = $patron->updatePin();
-					session_start(); // any writes to the session storage also closes session. possibly happens in updatePin. plb 4-21-2015
-					$_SESSION['profileUpdateErrors'] = $errors;
-					// Template checks for update Pin success message and presents as success even though stored in this errors variable
+					$updateResult = $patron->updatePin();
+					if (!$updateResult['success']){
+						session_start(); // any writes to the session storage also closes session. possibly happens in updatePin. plb 4-21-2015
+						$_SESSION['profileUpdateErrors'] = $updateResult['errors'];
+						// Template checks for update Pin success message and presents as success even though stored in this errors variable
+					}else{
+						session_start();
+						$_SESSION['profileUpdateMessage'] = $updateResult['message'];
+					}
+
 				}
 
 				session_write_close();
@@ -131,7 +140,13 @@ class MyAccount_Profile extends MyAccount
 
 			if (!empty($_SESSION['profileUpdateErrors'])) {
 				$interface->assign('profileUpdateErrors', $_SESSION['profileUpdateErrors']);
+				@session_start();
 				unset($_SESSION['profileUpdateErrors']);
+			}
+			if (!empty($_SESSION['profileUpdateMessage'])) {
+				$interface->assign('profileUpdateMessage', $_SESSION['profileUpdateMessage']);
+				@session_start();
+				unset($_SESSION['profileUpdateMessage']);
 			}
 
 			if ($showAlternateLibraryOptionsInProfile) {
@@ -153,6 +168,7 @@ class MyAccount_Profile extends MyAccount
 			$interface->assign('profile', $patron); //
 			$interface->assign('barcodePin', $patron->getAccountProfile()->loginConfiguration == 'barcode_pin');
 				// Switch for displaying the barcode in the account profile
+
 		}
 
 		// switch for hack for Millennium driver profile updating when updating is allowed but address updating is not allowed.

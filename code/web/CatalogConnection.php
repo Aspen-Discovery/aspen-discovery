@@ -811,18 +811,14 @@ class CatalogConnection
 	}
 
     /**
+     * Resets the PIN/Password.  At this point, the confirmation matches the new pin so no need to reconfirm
      * @param User $user
      * @param string $oldPin
      * @param string $newPin
-     * @param $confirmNewPin
-     * @return string a message to the user letting them know what happened
+     * @return string[] a message to the user letting them know what happened
      */
-    function updatePin(/** @noinspection PhpUnusedParameterInspection */ $user, $oldPin, $newPin, $confirmNewPin){
-        /* var Logger $logger */
-        global $logger;
-        $logger->log('Call to updatePin(), function not implemented.', Logger::LOG_WARNING);
-
-        return 'Can not update Pins';
+    function updatePin($user, $oldPin, $newPin){
+    	return $this->driver->updatePin($user, $oldPin, $newPin);
     }
 
     function requestPinReset($patronBarcode){

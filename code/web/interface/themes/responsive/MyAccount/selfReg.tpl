@@ -13,13 +13,13 @@
 		</div>
 		<div class="alert alert-info">
 			{if !empty($selfRegResult.barcode)}
-				<p>Your library card number is <strong>{$selfRegResult.barcode}</strong>.</p>
+				<p>Your library card number is <strong>{$selfRegResult.barcode}</strong></p>
 			{/if}
 			{if !empty($selfRegResult.username)}
-				<p>Your username is <strong>{$selfRegResult.username}</strong>.</p>
+				<p>Your username is <strong>{$selfRegResult.username}</strong></p>
 			{/if}
 			{if !empty($selfRegResult.password)}
-				<p>Your initial password is <strong>{$selfRegResult.password}</strong>.</p>
+				<p>Your initial password is <strong>{$selfRegResult.password}</strong></p>
 			{/if}
 		</div>
 	{else}

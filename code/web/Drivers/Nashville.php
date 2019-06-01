@@ -129,7 +129,7 @@ class Nashville extends Millennium{
      * @param string $confirmNewPin
      * @return string
      */
-	public function updatePin($user, $oldPin, $newPin, $confirmNewPin){
+	function updatePin($user, $oldPin, $newPin, $confirmNewPin){
 		//Login to the patron's account
 		$barcode = $this->_getBarcode($user);
 		//Attempt to call new PIN popup form for patron record 1. WebPAC will challenge for barcode/PIN.
@@ -171,9 +171,9 @@ class Nashville extends Millennium{
 				$user->cat_password = $newPin;
 				$user->update();
 //				UserAccount::updateSession($user); // needed?? TODO if needed, determine this $user is the same as the user logged in.
-				return "Your pin number was updated successfully.";
+				return ['success' => true, 'message' => "Your pin number was updated successfully."];
 			} else if (preg_match('/class="errormessage">(.+?)<\/div>/is', $sresult, $matches)){
-				return trim($matches[1]);
+				return ['success' => false, 'errors' => trim($matches[1])];
 //POSSIBLE ERRORS FROM /newpin
 //Old PIN does not match PIN in record.
 //New PINs do not match
@@ -182,10 +182,10 @@ class Nashville extends Millennium{
 //SUCCESS=Your PIN has been modified.
 
 			} else {
-				return "Sorry, your PIN has not been modified : unknown error. Please try again later.";
+				return ['success' => false, 'errors' => "Sorry, your PIN has not been modified : unknown error. Please try again later."];
 			}
 		}else{
-			return "Sorry, we could not update your pin number. Please try again later.";
+			return ['success' => false, 'errors' => "Sorry, we could not update your pin number. Please try again later."];
 		}
 	}
 

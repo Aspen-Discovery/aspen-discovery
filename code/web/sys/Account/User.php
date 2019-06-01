@@ -1350,30 +1350,41 @@ class User extends DataObject
 		return $result;
 	}
 
-	public function updatePin(){
+	/**
+	 * Update the PIN or password for the user
+	 *
+	 * @return string[] keys are success and errors or message
+	 */
+	function updatePin(){
 		if (isset($_REQUEST['pin'])){
 			$oldPin = $_REQUEST['pin'];
 		}else{
-			return "Please enter your current pin number";
+			return ['success' => false, 'errors' => "Please enter your current pin number"];
 		}
 		if ($this->cat_password != $oldPin){
-			return "The old pin number is incorrect";
+			return ['success' => false, 'errors' => "The old pin number is incorrect"];
 		}
 		if (!empty($_REQUEST['pin1'])){
 			$newPin = $_REQUEST['pin1'];
 		}else{
-			return "Please enter the new pin number";
+			return ['success' => false, 'errors' => "Please enter the new pin number"];
 		}
 		if (!empty($_REQUEST['pin2'])){
 			$confirmNewPin = $_REQUEST['pin2'];
 		}else{
-			return "Please enter the new pin number again";
+			return ['success' => false, 'errors' => "Please enter the new pin number again"];
 		}
 		if ($newPin != $confirmNewPin){
-			return "New PINs do not match. Please try again.";
+			return ['success' => false, 'errors' => "New PINs do not match. Please try again."];
 		}
-		$result = $this->getCatalogDriver()->updatePin($this, $oldPin, $newPin, $confirmNewPin);
-		$this->clearCache();
+		$result = $this->getCatalogDriver()->updatePin($this, $oldPin, $newPin);
+		if ($result['success']){
+			$this->cat_password = $newPin;
+			$this->password = $newPin;
+			$this->update();
+			$this->clearCache();
+		}
+
 		return $result;
 	}
 

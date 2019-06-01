@@ -1565,19 +1565,18 @@ abstract class SirsiDynixROA extends HorizonAPI
 	 * @param User $patron
 	 * @param $oldPin
 	 * @param $newPin
-	 * @param $confirmNewPin
-	 * @return string
+	 * @return array
 	 */
-	function updatePin($patron, $oldPin, $newPin, $confirmNewPin)
+	function updatePin($patron, $oldPin, $newPin)
 	{
 		$sessionToken = $this->getSessionToken($patron);
 		if (!$sessionToken) {
-			return 'Sorry, it does not look like you are logged in currently.  Please login and try again';
+			return ['success' => false, 'errors' => 'Sorry, it does not look like you are logged in currently.  Please login and try again'];
 		}
 
 		$params = array(
 			'currentPin' => $oldPin,
-		  'newPin' => $newPin
+		    'newPin' => $newPin
 		);
 
 		$webServiceURL = $this->getWebServiceURL();
@@ -1586,7 +1585,7 @@ abstract class SirsiDynixROA extends HorizonAPI
 		if (!empty($updatePinResponse->patronKey) && $updatePinResponse->patronKey ==  $patron->username) {
 			$patron->cat_password = $newPin;
 			$patron->update();
-			return "Your pin number was updated successfully.";
+			return ['success' => true, 'errors' => "Your pin number was updated successfully."];
 
 		} else {
 			$messages = array();
@@ -1599,9 +1598,13 @@ abstract class SirsiDynixROA extends HorizonAPI
 				}
 				global $logger;
 				$logger->log('Symphony ILS encountered errors updating patron pin : '. implode('; ', $messages), Logger::LOG_ERROR);
-				return !empty($staffPinError) ? $staffPinError : 'The circulation system encountered errors attempt to update the pin.';
+				if (!empty($staffPinError) ){
+					return ['success' => false, 'errors' => $staffPinError];
+				} else {
+					return ['success' => false, 'errors' => 'The circulation system encountered errors attempt to update the pin.'];
+				}
 			}
-			return 'Failed to update pin';
+			return ['success' => false, 'errors' =>'Failed to update pin'];
 		}
 	}
 

@@ -24,10 +24,9 @@ class Arlington extends Sierra{
      * @param User $user
      * @param string $oldPin
      * @param string $newPin
-     * @param string $confirmNewPin
-     * @return string The message to the user updating them on status
+     * @return string[] The message to the user updating them on status
      */
-	public function updatePin($user, $oldPin, $newPin, $confirmNewPin){
+	function updatePin($user, $oldPin, $newPin){
 		$scope = $this->getDefaultScope();
 
 		//First we have to login to classic
@@ -39,7 +38,7 @@ class Arlington extends Sierra{
 		$post = array(
 			'pin'        => $oldPin,
 			'pin1'       => $newPin,
-			'pin2'       => $confirmNewPin,
+			'pin2'       => $newPin,
 			'pat_submit' => 'xxx'
 		);
 		$curlResponse = $this->curlWrapper->curlPostPage($curlUrl, $post);
@@ -48,16 +47,16 @@ class Arlington extends Sierra{
 			if (stripos($curlResponse, 'Your PIN has been modified.')) {
 				$user->cat_password = $newPin;
 				$user->update();
-				return "Your pin number was updated successfully.";
+				return ['success' => true, 'message' => "Your pin number was updated successfully."];
 			} else if (preg_match('/class="errormessage">(.+?)<\/div>/is', $curlResponse, $matches)){
-				return trim($matches[1]);
+				return ['success' => false, 'errors' => trim($matches[1])];
 
 			} else {
-				return "Sorry, your PIN has not been modified : unknown error. Please try again later.";
+				return ['success' => false, 'errors' => "Sorry, your PIN has not been modified : unknown error. Please try again later."];
 			}
 
 		} else {
-			return "Sorry, we could not update your pin number. Please try again later.";
+			return ['success' => false, 'errors' => "Sorry, we could not update your pin number. Please try again later."];
 		}
 
 	}

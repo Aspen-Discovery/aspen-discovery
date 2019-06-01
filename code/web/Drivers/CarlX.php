@@ -671,7 +671,7 @@ class CarlX extends SIP2Driver{
 		return $checkedOutTitles;
 	}
 
-	public function updatePin($user, $oldPin, $newPin, $confirmNewPin) {
+	function updatePin($user, $oldPin, $newPin) {
 		$request = $this->getSearchbyPatronIdRequest($user);
 		$request->Patron->PatronPIN = $newPin;
 		$result = $this->doSoapRequest('updatePatron', $request, $this->patronWsdl, $this->genericResponseSOAPCallOptions);
@@ -688,26 +688,26 @@ class CarlX extends SIP2Driver{
 					if (!$success) {
 						// TODO: might not want to include sending message back to user
 						$errorMessage = $response['SOAP-ENV:Body']['ns3:GenericResponse']['ns3:ResponseStatuses']['ns2:ResponseStatus']['ns2:LongMessage'];
-						return 'Failed to update your pin'. ($errorMessage ? ' : ' .$errorMessage : '');
+						return ['success' => false, 'errors' => 'Failed to update your pin'. ($errorMessage ? ' : ' .$errorMessage : '')];
 					} else {
 						$user->cat_password = $newPin;
 						$user->update();
-						return "Your pin number was updated successfully.";
+						return ['success' => true, 'errors' => "Your pin number was updated successfully."];
 					}
 
 				} else {
 					global $logger;
 					$logger->log('Unable to read XML from CarlX response when attempting to update Patron PIN.', Logger::LOG_ERROR);
-					return 'Unable to update your pin.';
+					return ['success' => false, 'errors' => 'Unable to update your pin.'];
 				}
 
 			} else {
 				global $logger;
 				$logger->log('CarlX ILS gave no response when attempting to update Patron PIN.', Logger::LOG_ERROR);
-				return 'Unable to update your pin.';
+				return ['success' => false, 'errors' => 'Unable to update your pin.'];
 			}
 		} elseif (!$result) {
-			return 'Failed to contact Circulation System.';
+			return ['success' => false, 'errors' => 'Failed to contact Circulation System.'];
 		}
 	}
 

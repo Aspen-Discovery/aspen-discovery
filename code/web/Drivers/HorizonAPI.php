@@ -819,10 +819,9 @@ abstract class HorizonAPI extends Horizon{
      * @param User $user
      * @param string $oldPin
      * @param string $newPin
-     * @param string $confirmNewPin
-     * @return string
+     * @return array
      */
-    function updatePin($user, $oldPin, $newPin, /** @noinspection PhpUnusedParameterInspection */$confirmNewPin){
+    function updatePin($user, $oldPin, $newPin){
 		global $configArray;
 		$userId = $user->id;
 
@@ -833,7 +832,7 @@ abstract class HorizonAPI extends Horizon{
 			//Log the user in
 			list($userValid, $sessionToken) = $this->loginViaWebService($user->cat_username, $user->cat_password);
 			if (!$userValid){
-				return 'Sorry, it does not look like you are logged in currently.  Please login and try again';
+				return ['success' => false, 'errors' => 'Sorry, it does not look like you are logged in currently.  Please login and try again'];
 			}
 		}
 
@@ -845,9 +844,9 @@ abstract class HorizonAPI extends Horizon{
 			$user->cat_password = $newPin;
 			$user->update();
 //			UserAccount::updateSession($user);  //TODO only if $user is the primary user
-			return "Your pin number was updated successfully.";
+			return ['success' => true, 'message' => "Your pin number was updated successfully."];
 		}else{
-			return "Sorry, we could not update your pin number. Please try again later.";
+			return ['success' => false, 'errors' => "Sorry, we could not update your pin number. Please try again later."];
 		}
 	}
 
