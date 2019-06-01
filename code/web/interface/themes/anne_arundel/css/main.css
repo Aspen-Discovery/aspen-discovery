@@ -7090,6 +7090,16 @@ body > .container {
 }
 .panel-title {
   font-size: 14px;
+  color: #333333;
+}
+.panel-title > a {
+  color: #333333;
+}
+.active .panel-title {
+  color: white;
+}
+.active .panel-title > a {
+  color: white;
 }
 .modal {
   left: 50%;
