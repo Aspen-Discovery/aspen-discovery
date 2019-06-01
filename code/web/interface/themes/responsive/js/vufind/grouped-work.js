@@ -236,24 +236,6 @@ VuFind.GroupedWork = (function(){
 			return false;
 		},
 
-		removeTag:function(id, tag){
-			if (confirm("Are you sure you want to remove the tag \"" + tag + "\" from this title?")){
-				var url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=removeTag';
-				url += "&tag=" + encodeURIComponent(tag);
-				$.getJSON(
-						url, function(data){
-							if (data.result == true){
-								VuFind.showMessage('Success', data.message);
-							}else{
-								VuFind.showMessage('Sorry', data.message);
-							}
-						}
-				);
-				return false;
-			}
-			return false;
-		},
-
 		saveReview: function(id){
 			if (!Globals.loggedIn){
 				VuFind.Account.ajaxLogin(null, function(){

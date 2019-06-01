@@ -11,14 +11,13 @@ class MyAccount_AJAX
 			'requestPinReset', //not checked
 			'getCreateListForm', 'getBulkAddToListForm', 'addList',
 			'getEmailMyListForm', 'sendMyListEmail', 'setListEntryPositions',
-			'removeTag',
 			'saveSearch', 'deleteSavedSearch', // deleteSavedSearch not checked
 			'confirmCancelHold', 'cancelHold', 'freezeHold', 'thawHold', 'getChangeHoldLocationForm', 'changeHoldLocation',
 			'getReactivationDateForm', //not checked
 			'renewCheckout', 'renewAll', 'renewSelectedItems',
 			'getAddAccountLinkForm', 'addAccountLink', 'removeAccountLink',
 			'cancelBooking', 'getCitationFormatsForm', 'getAddBrowseCategoryFromListForm',
-		    'getMasqueradeAsForm', 'initiateMasquerade', 'endMasquerade', 'getMenuData', 'getListData'
+		    'getMasqueradeAsForm', 'initiateMasquerade', 'endMasquerade', 'getMenuData', 'getListData', 'getRatingsData'
 		);
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
 		if (method_exists($this, $method)) {
@@ -1230,6 +1229,28 @@ class MyAccount_AJAX
 				$interface->assign('expirationNearMessage', str_replace('%date%', $user->_expires, $interface->getVariable('expirationNearMessage')));
 			}
 			$result['expirationFinesNotice'] = $interface->fetch('MyAccount/expirationFinesNotice.tpl');
+
+		}//User is not logged in
+
+		return $result;
+	}
+
+	function getRatingsData(){
+		global $timer;
+		global $interface;
+		global $configArray;
+		/** @var Memcache $memCache */
+		global $memCache;
+		$result = array();
+		if (UserAccount::isLoggedIn()){
+			$user = UserAccount::getLoggedInUser();
+			$interface->assign('user', $user);
+
+			//Count of ratings
+			$result['ratings'] = '<span class="badge">' . $user->getNumRatings() . '</span>';
+
+			//Count of ratings
+			$result['recommendations'] = ($user->hasRecommendations() ? '<span class="label label-success">active</span>' : '');
 
 		}//User is not logged in
 

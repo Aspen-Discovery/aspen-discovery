@@ -1,6 +1,3 @@
-/**
- * Created by mark on 1/14/14.
- */
 VuFind.Account = (function(){
 
 	return {
@@ -92,11 +89,11 @@ VuFind.Account = (function(){
 		},
 
 		followLinkIfLoggedIn: function (trigger, linkDestination) {
-			if (trigger == undefined) {
+			if (trigger === undefined) {
 				alert("You must provide the trigger to follow a link after logging in.");
 			}
 			var jqTrigger = $(trigger);
-			if (linkDestination == undefined) {
+			if (linkDestination === undefined) {
 				linkDestination = jqTrigger.attr("href");
 			}
 			this.ajaxLogin(jqTrigger, function () {
@@ -113,8 +110,17 @@ VuFind.Account = (function(){
 			return false;
 		},
 
+		loadRatingsData: function (){
+			let url = Globals.path + "/MyAccount/AJAX?method=getRatingsData&activeModule=" + Globals.activeModule + '&activeAction=' + Globals.activeAction;
+			$.getJSON(url, function(data){
+				$(".ratings-placeholder").html(data.ratings);
+				$(".recommendations-placeholder").html(data.recommendations);
+			});
+			return false;
+		},
+
 		loadMenuData: function (){
-			var url = Globals.path + "/MyAccount/AJAX?method=getMenuData&activeModule=" + Globals.activeModule + '&activeAction=' + Globals.activeAction;
+			let url = Globals.path + "/MyAccount/AJAX?method=getMenuData&activeModule=" + Globals.activeModule + '&activeAction=' + Globals.activeAction;
 			$.getJSON(url, function(data){
 				$("#lists-placeholder").html(data.lists);
 				$(".checkouts-placeholder").html(data.checkouts);
@@ -131,7 +137,7 @@ VuFind.Account = (function(){
 		},
 
 		preProcessLogin: function (){
-			var username = $("#username").val(),
+			let username = $("#username").val(),
 				password = $("#password").val(),
 				loginErrorElem = $('#loginError');
 			if (!username || !password) {
@@ -178,7 +184,7 @@ VuFind.Account = (function(){
 				//VuFind.loadingMessage();
 				$.post(url, params, function(response){
 							loadingElem.hide();
-							if (response.result.success == true) {
+							if (response.result.success === true) {
 								// Hide "log in" options and show "log out" options:
 								$('.loginOptions, #loginOptions').hide();
 								$('.logoutOptions, #logoutOptions').show();
@@ -194,9 +200,9 @@ VuFind.Account = (function(){
 								}
 
 								Globals.loggedIn = true;
-								if (ajaxCallback != undefined && typeof(ajaxCallback) === "function") {
+								if (ajaxCallback !== undefined && typeof(ajaxCallback) === "function") {
 									ajaxCallback();
-								} else if (VuFind.Account.ajaxCallback != undefined && typeof(VuFind.Account.ajaxCallback) === "function") {
+								} else if (VuFind.Account.ajaxCallback !== undefined && typeof(VuFind.Account.ajaxCallback) === "function") {
 									VuFind.Account.ajaxCallback();
 									VuFind.Account.ajaxCallback = null;
 								}
@@ -222,7 +228,7 @@ VuFind.Account = (function(){
 					url: url,
 					data: {username: username, password: password},
 					success: function (response) {
-						if (response.result == true) {
+						if (response.result === true) {
 							VuFind.showMessage("Account to Manage", response.message ? response.message : "Successfully linked the account.", true, true);
 						} else {
 							loginErrorElem.text(response.message);
@@ -245,26 +251,11 @@ VuFind.Account = (function(){
 			if (confirm("Are you sure you want to stop managing this account?")){
 				var url = Globals.path + "/MyAccount/AJAX?method=removeAccountLink&idToRemove=" + idToRemove;
 				$.getJSON(url, function(data){
-					if (data.result == true){
+					if (data.result === true){
 						VuFind.showMessage('Linked Account Removed', data.message, true, true);
 						//setTimeout(function(){window.location.reload()}, 3000);
 					}else{
 						VuFind.showMessage('Unable to Remove Account Link', data.message);
-					}
-				});
-			}
-			return false;
-		},
-
-		removeTag: function(tag){
-			if (confirm("Are you sure you want to remove the tag \"" + tag + "\" from all titles?")){
-				var url = Globals.path + "/MyAccount/AJAX",
-						params = {method:'removeTag', tag: tag};
-				$.getJSON(url, params, function(data){
-					if (data.result == true){
-						VuFind.showMessage('Tag Deleted', data.message, true, true);
-					}else{
-						VuFind.showMessage('Tag Not Deleted', data.message);
 					}
 				});
 			}

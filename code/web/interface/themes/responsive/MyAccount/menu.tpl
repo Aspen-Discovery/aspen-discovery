@@ -472,6 +472,7 @@
 {else}
 <script type="text/javascript">
 	VuFind.Account.loadListData();
+    VuFind.Account.loadRatingsData();
 </script>
 {/if}
 {/strip}
