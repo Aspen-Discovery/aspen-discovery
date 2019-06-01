@@ -23,7 +23,7 @@
 		{* Output the editing control*}
 		{if $property.type == 'section'}
 			<div class="panel-group" id="accordion_{$property.label|escapeCSS}">
-				<div class="panel panel-default">
+				<div class="panel panel-default {if !empty($property.expandByDefault)}active{/if}">
 					<div class="panel-heading row">
 						<h4 class="panel-title col-xs-11">
 							<a data-toggle="collapse" data-parent="#accordion_{$property.label|escapeCSS}" href="#accordion_body_{$property.label|escapeCSS}">
@@ -37,7 +37,7 @@
 						{/if}
 					</div>
 
-					<div id="accordion_body_{$property.label|escapeCSS}" class="panel-collapse collapse">
+					<div id="accordion_body_{$property.label|escapeCSS}" class="panel-collapse {if !empty($property.expandByDefault)}in{else}collapse{/if}">
 						<div class="panel-body">
 							{if $property.instructions}
 								<div class="alert alert-info">

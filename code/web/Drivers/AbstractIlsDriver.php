@@ -154,4 +154,21 @@ abstract class AbstractIlsDriver extends AbstractDriver
 			'error' => 'This functionality is not available in the ILS.',
 		];
 	}
+
+	function selfRegister()
+	{
+		return [
+			'success' => false,
+		];
+	}
+
+	function getSelfRegistrationFields()
+	{
+		return [];
+	}
+
+	function hasUsernameField()
+	{
+		return false;
+	}
 }

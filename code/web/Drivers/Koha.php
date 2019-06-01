@@ -7,6 +7,7 @@ class Koha extends AbstractIlsDriver {
 
 	/** @var CurlWrapper */
 	private $curlWrapper;
+	/** @var CurlWrapper */
 	private $opacCurlWrapper;
 
 	/**
@@ -1223,5 +1224,164 @@ class Koha extends AbstractIlsDriver {
 	function getEmailResetPinTemplate()
 	{
 		return 'kohaEmailResetPinLink.tpl';
+	}
+
+	function getSelfRegistrationFields(){
+		//TODO: Load these from the Koha database
+		global $library;
+		$fields = array();
+		$location = new Location();
+		$location->libraryId = $library->libraryId;
+		$location->validHoldPickupBranch = 1;
+
+		if ($location->find()) {
+			$pickupLocations = array();
+			while($location->fetch()) {
+				$pickupLocations[$location->code] = $location->displayName;
+			}
+			asort($pickupLocations);
+		}
+
+		//Library
+		$fields[] = array('property' => 'librarySection', 'type' => 'section', 'label' => 'Library', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => [
+			array('property' => 'borrower_branchcode', 'type' => 'enum', 'label' => 'Home Library', 'description' => 'Please choose the Library location you would prefer to use', 'values' => $pickupLocations, 'required' => true)
+		]);
+
+		//Identity
+		$fields[] = array('property' => 'identitySection', 'type' => 'section', 'label' => 'Identity', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => [
+			array('property'=>'borrower_title', 'type'=>'enum', 'label'=>'Salutation', 'values'=>[''=>'', 'Mr'=>'Mr', 'Mrs' => 'Mrs', 'Ms' => 'Ms', 'Miss' => 'Miss','Dr.'=>'Dr.'], 'description'=>'Your first name', 'required' => false),
+			array('property'=>'borrower_surname', 'type'=>'text', 'label'=>'Surname', 'description'=>'Your last name', 'maxLength' => 60, 'required' => true),
+			array('property'=>'borrower_firstname', 'type'=>'text', 'label'=>'First Name', 'description'=>'Your first name', 'maxLength' => 25, 'required' => true),
+			array('property'=>'borrower_dateofbirth', 'type'=>'date', 'label'=>'Date of Birth (MM-DD-YYYY)', 'description'=>'Date of birth', 'maxLength' => 10, 'required' => true),
+			array('property'=>'borrower_initials', 'type'=>'text', 'label'=>'Initials', 'description'=>'Initials', 'maxLength' => 25, 'required' => false),
+			array('property'=>'borrower_othernames', 'type'=>'text', 'label'=>'Other names', 'description'=>'Other names you go by', 'maxLength' => 128, 'required' => false),
+			array('property'=>'borrower_sex', 'type'=>'enum', 'label'=>'Gender', 'values'=>[''=>'None Specified','F'=>'Female', 'M'=>'Male'], 'description'=>'Gender', 'required' => false),
+
+		]);
+		//Main Address
+		$fields[] = array('property' => 'mainAddressSection', 'type' => 'section', 'label' => 'Main Address', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => [
+			array('property'=>'borrower_address', 'type'=>'text', 'label'=>'Address', 'description'=>'Address', 'maxLength' => 128, 'required' => true),
+			array('property'=>'borrower_address2', 'type'=>'text', 'label'=>'Address 2', 'description'=>'Second line of the address', 'maxLength' => 128, 'required' => false),
+			array('property'=>'borrower_city', 'type'=>'text', 'label'=>'City', 'description'=>'City', 'maxLength' => 48, 'required' => true),
+			array('property'=>'borrower_state', 'type'=>'text', 'label'=>'State', 'description'=>'State', 'maxLength' => 32, 'required' => true),
+			array('property'=>'borrower_zipcode', 'type'=>'text', 'label'=>'Zip Code', 'description'=>'Zip Code', 'maxLength' => 32, 'required' => true),
+			array('property'=>'borrower_country', 'type'=>'text', 'label'=>'Country', 'description'=>'Country', 'maxLength' => 32, 'required' => false),
+		]);
+		//Contact information
+		$fields[] = array('property' => 'contactInformationSection', 'type' => 'section', 'label' => 'Contact Information', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => [
+			array('property'=>'borrower_phone', 'type'=>'text', 'label'=>'Primary Phone (xxx-xxx-xxxx)', 'description'=>'Phone', 'maxLength' => 128, 'required' => false),
+			array('property'=>'borrower_email', 'type'=>'email', 'label'=>'Primary Email', 'description'=>'Email', 'maxLength' => 128, 'required' => false),
+		]);
+		//Contact information
+		$fields[] = array('property' => 'additionalContactInformationSection', 'type' => 'section', 'label' => 'Additional Contact Information', 'hideInLists' => true, 'expandByDefault' => false, 'properties' => [
+			array('property'=>'borrower_phonepro', 'type'=>'text', 'label'=>'Secondary Phone (xxx-xxx-xxxx)', 'description'=>'Phone', 'maxLength' => 128, 'required' => false),
+			array('property'=>'borrower_mobile', 'type'=>'text', 'label'=>'Other Phone (xxx-xxx-xxxx)', 'description'=>'Phone', 'maxLength' => 128, 'required' => false),
+			array('property'=>'borrower_emailpro', 'type'=>'email', 'label'=>'Secondary Email', 'description'=>'Email', 'maxLength' => 128, 'required' => false),
+			array('property'=>'borrower_fax', 'type'=>'text', 'label'=>'Fax (xxx-xxx-xxxx)', 'description'=>'Fax', 'maxLength' => 128, 'required' => false),
+		]);
+		//Alternate address
+		$fields[] = array('property' => 'alternateAddressSection', 'type' => 'section', 'label' => 'Alternate address', 'hideInLists' => true, 'expandByDefault' => false, 'properties' => [
+			array('property'=>'borrower_B_address', 'type'=>'text', 'label'=>'Alternate Address', 'description'=>'Address', 'maxLength' => 128, 'required' => false),
+			array('property'=>'borrower_B_address2', 'type'=>'text', 'label'=>'Address 2', 'description'=>'Second line of the address', 'maxLength' => 128, 'required' => false),
+			array('property'=>'borrower_B_city', 'type'=>'text', 'label'=>'City', 'description'=>'City', 'maxLength' => 48, 'required' => false),
+			array('property'=>'borrower_B_state', 'type'=>'text', 'label'=>'State', 'description'=>'State', 'maxLength' => 32, 'required' => false),
+			array('property'=>'borrower_B_zipcode', 'type'=>'text', 'label'=>'Zip Code', 'description'=>'Zip Code', 'maxLength' => 32, 'required' => false),
+			array('property'=>'borrower_B_country', 'type'=>'text', 'label'=>'Country', 'description'=>'Country', 'maxLength' => 32, 'required' => false),
+			array('property'=>'borrower_B_phone', 'type'=>'text', 'label'=>'Phone (xxx-xxx-xxxx)', 'description'=>'Phone', 'maxLength' => 128, 'required' => false),
+			array('property'=>'borrower_B_email', 'type'=>'email', 'label'=>'Email', 'description'=>'Email', 'maxLength' => 128, 'required' => false),
+			array('property'=>'borrower_contactnote', 'type'=>'textarea', 'label'=>'Contact  Notes', 'description'=>'Additional information for the alternate contact', 'maxLength' => 128, 'required' => false),
+		]);
+		//Alternate contact
+		$fields[] = array('property' => 'alternateContactSection', 'type' => 'section', 'label' => 'Alternate contact', 'hideInLists' => true, 'expandByDefault' => false, 'properties' => [
+			array('property'=>'borrower_altcontactsurname', 'type'=>'text', 'label'=>'Surname', 'description'=>'Your last name', 'maxLength' => 60, 'required' => false),
+			array('property'=>'borrower_altcontactfirstname', 'type'=>'text', 'label'=>'First Name', 'description'=>'Your first name', 'maxLength' => 25, 'required' => false),
+			array('property'=>'borrower_altcontactaddress', 'type'=>'text', 'label'=>'Address', 'description'=>'Address', 'maxLength' => 128, 'required' => false),
+			array('property'=>'borrower_altcontactaddress2', 'type'=>'text', 'label'=>'Address 2', 'description'=>'Second line of the address', 'maxLength' => 128, 'required' => false),
+			array('property'=>'borrower_altcontactaddress3', 'type'=>'text', 'label'=>'City', 'description'=>'City', 'maxLength' => 48, 'required' => false),
+			array('property'=>'borrower_altcontactstate', 'type'=>'text', 'label'=>'State', 'description'=>'State', 'maxLength' => 32, 'required' => false),
+			array('property'=>'borrower_altcontactzipcode', 'type'=>'text', 'label'=>'Zip Code', 'description'=>'Zip Code', 'maxLength' => 32, 'required' => false),
+			array('property'=>'borrower_altcontactcountry', 'type'=>'text', 'label'=>'Country', 'description'=>'Country', 'maxLength' => 32, 'required' => false),
+			array('property'=>'borrower_altcontactphone', 'type'=>'text', 'label'=>'Phone (xxx-xxx-xxxx)', 'description'=>'Phone', 'maxLength' => 128, 'required' => false),
+		]);
+
+		return $fields;
+	}
+
+	function selfRegister()
+	{
+		$result = [
+			'success' => false,
+		];
+
+		$catalogUrl = $this->accountProfile->vendorOpacUrl;
+		$selfRegPage = $this->getKohaPage($catalogUrl . '/cgi-bin/koha/opac-memberentry.pl');
+		$captcha = '';
+		$captchaDigest = '';
+		$captchaInfo = [];
+		if (preg_match('%<span class="hint">(?:.*)<strong>(.*?)</strong></span>%s', $selfRegPage, $captchaInfo)){
+			$captcha = $captchaInfo[1];
+		}
+		$captchaInfo = [];
+		if (preg_match('%<input type="hidden" name="captcha_digest" value="(.*?)" />%s', $selfRegPage, $captchaInfo)){
+			$captchaDigest = $captchaInfo[1];
+		}
+
+		$postFields = [];
+		$postFields['borrower_branchcode'] = $_REQUEST['borrower_branchcode'];
+		$postFields['borrower_title'] = $_REQUEST['borrower_title'];
+		$postFields['borrower_surname'] = $_REQUEST['borrower_surname'];
+		$postFields['borrower_firstname'] = $_REQUEST['borrower_firstname'];
+		$postFields['borrower_dateofbirth'] = str_replace('-', '/', $_REQUEST['borrower_dateofbirth']);
+		$postFields['borrower_initials'] = $_REQUEST['borrower_initials'];
+		$postFields['borrower_othernames'] = $_REQUEST['borrower_othernames'];
+		$postFields['borrower_sex'] = $_REQUEST['borrower_sex'];
+		$postFields['borrower_address'] = $_REQUEST['borrower_address'];
+		$postFields['borrower_address2'] = $_REQUEST['borrower_address2'];
+		$postFields['borrower_city'] = $_REQUEST['borrower_city'];
+		$postFields['borrower_state'] = $_REQUEST['borrower_state'];
+		$postFields['borrower_zipcode'] = $_REQUEST['borrower_zipcode'];
+		$postFields['borrower_country'] = $_REQUEST['borrower_country'];
+		$postFields['borrower_phone'] = $_REQUEST['borrower_phone'];
+		$postFields['borrower_email'] = $_REQUEST['borrower_email'];
+		$postFields['borrower_phonepro'] = $_REQUEST['borrower_phonepro'];
+		$postFields['borrower_mobile'] = $_REQUEST['borrower_mobile'];
+		$postFields['borrower_emailpro'] = $_REQUEST['borrower_emailpro'];
+		$postFields['borrower_fax'] = $_REQUEST['borrower_fax'];
+		$postFields['borrower_B_address'] = $_REQUEST['borrower_B_address'];
+		$postFields['borrower_B_address2'] = $_REQUEST['borrower_B_address2'];
+		$postFields['borrower_B_city'] = $_REQUEST['borrower_B_city'];
+		$postFields['borrower_B_state'] = $_REQUEST['borrower_B_state'];
+		$postFields['borrower_B_zipcode'] = $_REQUEST['borrower_B_zipcode'];
+		$postFields['borrower_B_country'] = $_REQUEST['borrower_B_country'];
+		$postFields['borrower_B_phone'] = $_REQUEST['borrower_B_phone'];
+		$postFields['borrower_B_email'] = $_REQUEST['borrower_B_email'];
+		$postFields['borrower_contactnote'] = $_REQUEST['borrower_contactnote'];
+		$postFields['borrower_altcontactsurname'] = $_REQUEST['borrower_altcontactsurname'];
+		$postFields['borrower_altcontactfirstname'] = $_REQUEST['borrower_altcontactfirstname'];
+		$postFields['borrower_altcontactaddress'] = $_REQUEST['borrower_altcontactaddress'];
+		$postFields['borrower_altcontactaddress2'] = $_REQUEST['borrower_altcontactaddress2'];
+		$postFields['borrower_altcontactaddress3'] = $_REQUEST['borrower_altcontactaddress3'];
+		$postFields['borrower_altcontactstate'] = $_REQUEST['borrower_altcontactstate'];
+		$postFields['borrower_altcontactzipcode'] = $_REQUEST['borrower_altcontactzipcode'];
+		$postFields['borrower_altcontactcountry'] = $_REQUEST['borrower_altcontactcountry'];
+		$postFields['borrower_altcontactphone'] = $_REQUEST['borrower_altcontactphone'];
+		$postFields['captcha'] = $captcha;
+		$postFields['captcha_digest'] = $captchaDigest;
+		$postFields['action'] = 'create';
+		$headers = [
+			'Content-Type: application/x-www-form-urlencoded'
+		];
+		$this->opacCurlWrapper->addCustomHeaders($headers, false);
+		$selfRegPageResponse = $this->postToKohaPage($catalogUrl . '/cgi-bin/koha/opac-memberentry.pl', $postFields);
+
+		$matches = [];
+		if (preg_match('%<h1>Registration Complete!</h1>.*?<span id="patron-userid">(.*?)</span>.*?<span id="patron-password">(.*?)</span>%s', $selfRegPageResponse, $matches)){
+			$username = $matches[1];
+			$password = $matches[2];
+			$result['success'] = true;
+			$result['username'] = $username;
+			$result['password'] = $password;
+		}
+		return $result;
 	}
 }
