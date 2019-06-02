@@ -325,11 +325,10 @@ class GroupedWork_AJAX {
 		}
 		$interface->assign('recordDriver', $recordDriver);
 
-//		// if the grouped work consists of only 1 related item, return the record url, otherwise return the grouped-work url
+		// if the grouped work consists of only 1 related item, return the record url, otherwise return the grouped-work url
 		$relatedRecords = $recordDriver->getRelatedRecords();
 
 		// short version
-
 		if (count($relatedRecords) == 1){
 			$firstRecord = reset($relatedRecords);
 			$url = $firstRecord->getUrl();
@@ -345,9 +344,10 @@ class GroupedWork_AJAX {
 		$interface->assign('buttonLabel', $buttonLabel);
 		$interface->assign('url', $url);
 
+		$modalBody = $interface->fetch('GroupedWork/work-details.tpl');
 		$results = array(
 				'title' => "<a href='$url'>{$recordDriver->getTitle()}</a>",
-				'modalBody' => $interface->fetch('GroupedWork/work-details.tpl'),
+				'modalBody' => $modalBody,
 				'modalButtons' => "<button onclick=\"return AspenDiscovery.GroupedWork.showSaveToListForm(this, '$escapedId');\" class=\"modal-buttons btn btn-primary\" style='float: left'>$buttonLabel</button>"
 					."<a href='$url'><button class='modal-buttons btn btn-primary'>More Info</button></a>"
 		);
