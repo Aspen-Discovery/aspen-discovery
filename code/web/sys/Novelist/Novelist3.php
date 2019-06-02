@@ -719,6 +719,10 @@ class Novelist3{
 		}
 		$novelistData->seriesTitle = $seriesName;
 		$novelistData->seriesNote = $seriesData->series_note;
+		if (strlen($novelistData->seriesNote) > 255){
+			require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
+			$novelistData->seriesNote = StringUtils::truncate($novelistData->seriesNote, 255);
+		}
 	}
 
     /**
@@ -741,6 +745,10 @@ class Novelist3{
 		$novelistData->setSeriesTitles($seriesTitles);
 		$novelistData->seriesTitle = $seriesName;
 		$novelistData->seriesNote = $seriesData->series_note;
+		if (strlen($novelistData->seriesNote) > 255){
+			require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
+			$novelistData->seriesNote = StringUtils::truncate($novelistData->seriesNote, 255);
+		}
 
 		$novelistData->setSeriesCount(count($items));
 		$novelistData->setSeriesCountOwned($titlesOwned);
