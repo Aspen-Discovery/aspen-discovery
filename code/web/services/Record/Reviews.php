@@ -141,14 +141,11 @@ class Record_Reviews extends Record_Record
 
 		$review = array();
 		$location = $locationSingleton->getActiveLocation();
-		if (isset($library) && $location != null){
+		if ($location != null){
 			if ($library->showStandardReviews == 0 || $location->showStandardReviews == 0){
 				return $review;
 			}
-		}else if ($location != null && ($location->showStandardReviews == 0)){
-			//return an empty review
-			return $review;
-		}else if (isset($library) && ($library->showStandardReviews == 0)){
+		}elseif ($library->showStandardReviews == 0){
 			//return an empty review
 			return $review;
 		}
@@ -260,25 +257,17 @@ class Record_Reviews extends Record_Record
 		return $review;
 	}
 
-	/**
-	 * Load review information from Content Cafe based on the ISBN
-	 *
-	 * @param $id
-	 * @return array
-	 */
+
 	function contentcafe($isbn, $id){
 		global $library;
 		global $locationSingleton;
 		$location = $locationSingleton->getActiveLocation();
 		$result = null;
-		if (isset($library) && $location != null){
+		if ($location != null){
 			if ($location->showStandardReviews == 0){
 				return $result;
 			}
-		}else if ($location != null && ($location->showStandardReviews == 0)){
-			//return an empty review
-			return $result;
-		}else if (isset($library) && ($library->showStandardReviews == 0)){
+		}else if ($library->showStandardReviews == 0){
 			//return an empty review
 			return $result;
 		}

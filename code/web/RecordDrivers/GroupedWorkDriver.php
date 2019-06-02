@@ -2025,9 +2025,8 @@ class GroupedWorkDriver extends IndexRecordDriver{
         $reviews = array();
 
         // Determine if we should censor bad words or hide the comment completely.
-        $censorWords = true;
         global $library;
-        if (isset($library)) $censorWords = !$library->hideCommentsWithBadWords; // censor if not hiding
+        $censorWords = !$library->hideCommentsWithBadWords; // censor if not hiding
         require_once(ROOT_DIR . '/Drivers/marmot_inc/BadWord.php');
         $badWords = new BadWord();
 

@@ -431,7 +431,7 @@ class UserAccount {
 					$_SESSION['loggedInViaCAS'] = true;
 				}
 				global $library;
-				if (isset($library) && $library->preventExpiredCardLogin && $tempUser->_expired) {
+				if ($library->preventExpiredCardLogin && $tempUser->_expired) {
 					// Create error
 					$cardExpired = new AspenError('expired_library_card');
 					return $cardExpired;

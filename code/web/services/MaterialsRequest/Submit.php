@@ -17,8 +17,8 @@ class MaterialsRequest_Submit extends Action
 		global $interface;
 		global $library;
 
-		$maxActiveRequests = isset($library) ? $library->maxOpenRequests : 5;
-		$maxRequestsPerYear = isset($library) ? $library->maxRequestsPerYear : 60;
+		$maxActiveRequests = $library->maxOpenRequests;
+		$maxRequestsPerYear = $library->maxRequestsPerYear;
 		$accountPageLink = $configArray['Site']['path'] . '/MaterialsRequest/MyRequests';
 		$interface->assign('accountPageLink', $accountPageLink);
 		$interface->assign('maxActiveRequests', $maxActiveRequests);

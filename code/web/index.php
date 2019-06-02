@@ -443,16 +443,12 @@ if ($action == "AJAX" || $action == "JSON"){
 	}else{
 		$interface->assign('showTopSearchBox', 1);
 		$interface->assign('showBreadcrumbs', 1);
-		if (isset($library) && $library != false && $library->useHomeLinkInBreadcrumbs){
+		if ($library->useHomeLinkInBreadcrumbs){
 			$interface->assign('homeBreadcrumbLink', $library->homeLink);
 		}else{
 			$interface->assign('homeBreadcrumbLink', '/');
 		}
-		if (isset($library) && $library != false){
-			$interface->assign('homeLinkText', $library->homeLinkText);
-		}else{
-			$interface->assign('homeLinkText', 'Home');
-		}
+		$interface->assign('homeLinkText', $library->homeLinkText);
 	}
 
 }

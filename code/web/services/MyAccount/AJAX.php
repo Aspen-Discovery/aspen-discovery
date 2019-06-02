@@ -159,13 +159,8 @@ class MyAccount_AJAX
 		global $library;
 
 		$interface->assign('enableSelfRegistration', 0);
-		if (isset($library)){
-			$interface->assign('usernameLabel', str_replace('Your', '', $library->loginFormUsernameLabel ? $library->loginFormUsernameLabel : 'Your Name'));
-			$interface->assign('passwordLabel', str_replace('Your', '', $library->loginFormPasswordLabel ? $library->loginFormPasswordLabel : 'Library Card Number'));
-		}else{
-			$interface->assign('usernameLabel', 'Name');
-			$interface->assign('passwordLabel', 'Library Card Number');
-		}
+		$interface->assign('usernameLabel', str_replace('Your', '', $library->loginFormUsernameLabel ? $library->loginFormUsernameLabel : 'Your Name'));
+		$interface->assign('passwordLabel', str_replace('Your', '', $library->loginFormPasswordLabel ? $library->loginFormPasswordLabel : 'Library Card Number'));
 		// Display Page
 		$formDefinition = array(
 			'title' => 'Account to Manage',
@@ -623,11 +618,7 @@ class MyAccount_AJAX
 		//Get suggestions for the user
 		$suggestions = Suggestions::getSuggestions();
 		$interface->assign('suggestions', $suggestions);
-		if (isset($library)) {
-			$interface->assign('showRatings', $library->showRatings);
-		} else {
-			$interface->assign('showRatings', 1);
-		}
+		$interface->assign('showRatings', $library->showRatings);
 
 		//return suggestions as json for display in the title scroller
 		$titles = array();
@@ -659,17 +650,10 @@ class MyAccount_AJAX
 	{
 		global $interface;
 		global $library;
-		global $configArray;
 
-		if (isset($library)){
-			$interface->assign('enableSelfRegistration', $library->enableSelfRegistration);
-			$interface->assign('usernameLabel', $library->loginFormUsernameLabel ? $library->loginFormUsernameLabel : 'Your Name');
-			$interface->assign('passwordLabel', $library->loginFormPasswordLabel ? $library->loginFormPasswordLabel : 'Library Card Number');
-		}else{
-			$interface->assign('enableSelfRegistration', 0);
-			$interface->assign('usernameLabel', 'Your Name');
-			$interface->assign('passwordLabel', 'Library Card Number');
-		}
+		$interface->assign('enableSelfRegistration', $library->enableSelfRegistration);
+		$interface->assign('usernameLabel', $library->loginFormUsernameLabel ? $library->loginFormUsernameLabel : 'Your Name');
+		$interface->assign('passwordLabel', $library->loginFormPasswordLabel ? $library->loginFormPasswordLabel : 'Library Card Number');
 
 		$catalog = CatalogFactory::getCatalogConnectionInstance();
 		$interface->assign('forgotPasswordType', $catalog->getForgotPasswordType());

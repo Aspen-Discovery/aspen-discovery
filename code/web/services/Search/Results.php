@@ -229,12 +229,8 @@ class Search_Results extends Action {
 		$interface->assign('showNotInterested', false);
 		$interface->assign('page_body_style', 'sidebar_left');
 
-		$showRatings = 1;
-		$enableProspectorIntegration = isset($configArray['Content']['Prospector']) ? $configArray['Content']['Prospector'] : false;
-		if (isset($library)){
-			$enableProspectorIntegration = ($library->enableProspectorIntegration == 1);
-			$showRatings = $library->showRatings;
-		}
+		$enableProspectorIntegration = ($library->enableProspectorIntegration == 1);
+		$showRatings = $library->showRatings;
 		if ($enableProspectorIntegration){
 			$interface->assign('showProspectorLink', true);
 			$interface->assign('prospectorSavedSearchId', $searchObject->getSearchId());

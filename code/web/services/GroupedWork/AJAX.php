@@ -195,7 +195,7 @@ class GroupedWork_AJAX {
 
 		//Load go deeper options
 		//TODO: Additional go deeper options
-		if (isset($library) && $library->showGoDeeper == 0){
+		if ($library->showGoDeeper == 0){
 			$enrichmentResult['showGoDeeper'] = false;
 		}else{
 			require_once(ROOT_DIR . '/Drivers/marmot_inc/GoDeeperData.php');

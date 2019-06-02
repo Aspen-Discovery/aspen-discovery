@@ -12,11 +12,7 @@ class ReadingHistory extends MyAccount
 		$user = UserAccount::getLoggedInUser();
 
 		global $library;
-		if (isset($library)){
-			$interface->assign('showRatings', $library->showRatings);
-		}else{
-			$interface->assign('showRatings', 1);
-		}
+		$interface->assign('showRatings', $library->showRatings);
 
 		global $offlineMode;
 		if (!$offlineMode) {

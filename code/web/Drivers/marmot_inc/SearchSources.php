@@ -34,21 +34,20 @@ class SearchSources{
 			}else{
 				$systemsToRepeatIn = explode('|', $library->systemsToRepeatIn);
 			}
-		}elseif (isset($library)){
+		}else{
 			$repeatSearchSetting = $library->repeatSearchOption;
 			$repeatInWorldCat = $library->repeatInWorldCat == 1;
 			$repeatInProspector = $library->repeatInProspector == 1;
 			$repeatInOverdrive = $library->repeatInOverdrive == 1;
 			$systemsToRepeatIn = explode('|', $library->systemsToRepeatIn);
 		}
-		if (isset($library)){
-			$searchGenealogy = $library->enableGenealogy;
-			$repeatCourseReserves = $library->enableCourseReserves == 1;
-			$searchArchive = $library->enableArchive == 1;
-			//TODO: Reenable once we do full EDS integration
-			//$searchEbsco = $library->edsApiProfile != '';
-            $searchOpenArchives = $library->enableOpenArchives == 1;
-		}
+
+		$searchGenealogy = $library->enableGenealogy;
+		$repeatCourseReserves = $library->enableCourseReserves == 1;
+		$searchArchive = $library->enableArchive == 1;
+		//TODO: Re-enable once we do full EDS integration
+		//$searchEbsco = $library->edsApiProfile != '';
+        $searchOpenArchives = $library->enableOpenArchives == 1;
 
 		list($enableCombinedResults, $showCombinedResultsFirst, $combinedResultsName) = self::getCombinedSearchSetupParameters($location, $library);
 
@@ -68,20 +67,12 @@ class SearchSources{
               'description' => "The {$location->displayName} catalog.",
 							'catalogType' => 'catalog'
 			);
-		}elseif (isset($library)){
+		}else{
 			$searchOptions['local'] = array(
 				'name' => 'Entire Library Catalog',
                 //'name' => strlen($library->abbreviatedDisplayName) > 0 ? $library->abbreviatedDisplayName :  $library->displayName,
                 'description' => "The {$library->displayName} catalog.",
 				'catalogType' => 'catalog'
-			);
-		}else{
-			$marmotAdded = true;
-			$consortiumName = $configArray['Site']['libraryName'];
-			$searchOptions['local'] = array(
-              'name' => "Entire $consortiumName Catalog",
-              'description' => "The entire $consortiumName catalog.",
-							'catalogType' => 'catalog'
 			);
 		}
 
@@ -147,8 +138,7 @@ class SearchSources{
 		}
 
 		//Marmot Global search
-		if (isset($library) &&
-			($repeatSearchSetting == 'marmot') &&
+		if (($repeatSearchSetting == 'marmot') &&
 			$library->restrictSearchByLibrary
 			&& $marmotAdded == false
 		){
@@ -306,7 +296,7 @@ class SearchSources{
 		if ($searchSource == 'worldcat'){
 			$worldCatSearchType = $this->getWorldCatSearchType($type);
 			$worldCatLink = "http://www.worldcat.org/search?q={$worldCatSearchType}%3A".urlencode($lookFor);
-			if (isset($library) && strlen($library->worldCatUrl) > 0){
+			if (strlen($library->worldCatUrl) > 0){
 				$worldCatLink = $library->worldCatUrl;
 				if (strpos($worldCatLink, '?') == false){
 					$worldCatLink .= "?";

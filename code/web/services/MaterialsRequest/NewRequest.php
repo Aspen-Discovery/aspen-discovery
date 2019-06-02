@@ -72,46 +72,38 @@ class MaterialsRequest_NewRequest extends Action
 			}
 			$interface->assign('useWorldCat', $useWorldCat);
 
-			if (isset($library)) {
-				// Get the Fields to Display for the form
-				$requestFormFields = $request->getRequestFormFields($library->libraryId);
-				$interface->assign('requestFormFields', $requestFormFields);
+			// Get the Fields to Display for the form
+			$requestFormFields = $request->getRequestFormFields($library->libraryId);
+			$interface->assign('requestFormFields', $requestFormFields);
 
-				// Add bookmobile Stop to the pickup locations if that form field is being used.
-				foreach ($requestFormFields as $catagory) {
-					/** @var MaterialsRequestFormFields $formField */
-					foreach ($catagory as $formField) {
-						if ($formField->fieldType == 'bookmobileStop') {
-							$pickupLocations[] = array(
-								'id' => 'bookmobile',
-								'displayName' => $formField->fieldLabel,
-								'selected' => false,
-							);
-							$interface->assign('pickupLocations', $pickupLocations);
-							break 2;
-						}
+			// Add bookmobile Stop to the pickup locations if that form field is being used.
+			foreach ($requestFormFields as $catagory) {
+				/** @var MaterialsRequestFormFields $formField */
+				foreach ($catagory as $formField) {
+					if ($formField->fieldType == 'bookmobileStop') {
+						$pickupLocations[] = array(
+							'id' => 'bookmobile',
+							'displayName' => $formField->fieldLabel,
+							'selected' => false,
+						);
+						$interface->assign('pickupLocations', $pickupLocations);
+						break 2;
 					}
 				}
-
-				// Get Author Labels for all Formats and Formats that use Special Fields
-				list($formatAuthorLabels, $specialFieldFormats) = $request->getAuthorLabelsAndSpecialFields($library->libraryId);
-
-				$interface->assign('formatAuthorLabelsJSON', json_encode($formatAuthorLabels));
-				$interface->assign('specialFieldFormatsJSON', json_encode($specialFieldFormats));
 			}
+
+			// Get Author Labels for all Formats and Formats that use Special Fields
+			list($formatAuthorLabels, $specialFieldFormats) = $request->getAuthorLabelsAndSpecialFields($library->libraryId);
+
+			$interface->assign('formatAuthorLabelsJSON', json_encode($formatAuthorLabels));
+			$interface->assign('specialFieldFormatsJSON', json_encode($specialFieldFormats));
 
 			// Set up for User Log in
-			if (isset($library)) {
-				$interface->assign('newMaterialsRequestSummary', $library->newMaterialsRequestSummary);
+			$interface->assign('newMaterialsRequestSummary', $library->newMaterialsRequestSummary);
 
-				$interface->assign('enableSelfRegistration', $library->enableSelfRegistration);
-				$interface->assign('usernameLabel', $library->loginFormUsernameLabel ? $library->loginFormUsernameLabel : 'Your Name');
-				$interface->assign('passwordLabel', $library->loginFormPasswordLabel ? $library->loginFormPasswordLabel : 'Library Card Number');
-			} else {
-				$interface->assign('enableSelfRegistration', 0);
-				$interface->assign('usernameLabel', 'Your Name');
-				$interface->assign('passwordLabel', 'Library Card Number');
-			}
+			$interface->assign('enableSelfRegistration', $library->enableSelfRegistration);
+			$interface->assign('usernameLabel', $library->loginFormUsernameLabel ? $library->loginFormUsernameLabel : 'Your Name');
+			$interface->assign('passwordLabel', $library->loginFormPasswordLabel ? $library->loginFormPasswordLabel : 'Library Card Number');
 
 			$this->display('new.tpl', translate('Materials_Request_alt'));
 		}

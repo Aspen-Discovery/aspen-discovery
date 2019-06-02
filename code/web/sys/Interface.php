@@ -381,11 +381,11 @@ class UInterface extends Smarty
 		$showHoldButtonInSearchResults = 1;
 		$this->assign('logoLink', $configArray['Site']['path']);
 		$this->assign('logoAlt', 'Return to Catalog Home');
-		if (isset($library) && $library->useHomeLinkForLogo){
+		if ($library->useHomeLinkForLogo){
 			if (isset($location) && strlen($location->homeLink) > 0 && $location->homeLink != 'default'){
 				$this->assign('logoAlt', 'Library Home Page');
 				$this->assign('logoLink', $location->homeLink);
-			}elseif (isset($library) && strlen($library->homeLink) > 0 && $library->homeLink != 'default'){
+			}elseif (strlen($library->homeLink) > 0 && $library->homeLink != 'default'){
 				$this->assign('logoAlt', 'Library Home Page');
 				$this->assign('logoLink', $library->homeLink);
 			}
@@ -393,64 +393,45 @@ class UInterface extends Smarty
 
 		if (isset($location) && strlen($location->homeLink) > 0 && $location->homeLink != 'default'){
 			$this->assign('homeLink', $location->homeLink);
-		}elseif (isset($library) && strlen($library->homeLink) > 0 && $library->homeLink != 'default'){
+		}elseif (strlen($library->homeLink) > 0 && $library->homeLink != 'default'){
 			$this->assign('homeLink', $library->homeLink);
 		}
-		if (isset($library)){
-			$this->assign('facebookLink', $library->facebookLink);
-			$this->assign('twitterLink', $library->twitterLink);
-			$this->assign('youtubeLink', $library->youtubeLink);
-			$this->assign('instagramLink', $library->instagramLink);
-			$this->assign('goodreadsLink', $library->goodreadsLink);
-			$this->assign('geeralContactLink', $library->generalContactLink);
-			$this->assign('showLoginButton', $library->showLoginButton);
-			$this->assign('showAdvancedSearchbox', $library->showAdvancedSearchbox);
-			$this->assign('enableProspectorIntegration', $library->enableProspectorIntegration);
-			$this->assign('showRatings', $library->showRatings);
-			$this->assign('show856LinksAsTab', $library->show856LinksAsTab);
-			$this->assign('showSearchTools', $library->showSearchTools);
-			$this->assign('alwaysShowSearchResultsMainDetails', $library->alwaysShowSearchResultsMainDetails);
-			$this->assign('showExpirationWarnings', $library->showExpirationWarnings);
-			$this->assign('expiredMessage', $library->expiredMessage);
-			$this->assign('expirationNearMessage', $library->expirationNearMessage);
-			$this->assign('showSimilarTitles', $library->showSimilarTitles);
-			$this->assign('showSimilarAuthors', $library->showSimilarAuthors);
-			$this->assign('showItsHere', $library->showItsHere);
-			$this->assign('enableMaterialsBooking', $library->enableMaterialsBooking);
-			$this->assign('showHoldButtonForUnavailableOnly', $library->showHoldButtonForUnavailableOnly);
-			$this->assign('showHoldCancelDate', $library->showHoldCancelDate);
-			$this->assign('allowMasqueradeMode', $library->allowMasqueradeMode);
-			$this->assign('allowReadingHistoryDisplayInMasqueradeMode', $library->allowReadingHistoryDisplayInMasqueradeMode);
-			$this->assign('interLibraryLoanName', $library->interLibraryLoanName);
-			$this->assign('interLibraryLoanUrl', $library->interLibraryLoanUrl);
 
-			if ($this->getVariable('displaySidebarMenu') && !$library->showSidebarMenu){
-				$this->assign('displaySidebarMenu', false);
-			}
-			$this->assign('sidebarMenuButtonText', $library->sidebarMenuButtonText);
-			$this->assign('showGroupedHoldCopiesCount', $library->showGroupedHoldCopiesCount);
-			$this->assign('showOnOrderCounts', $library->showOnOrderCounts);
-		}else{
-			$this->assign('showLoginButton', 1);
-			$this->assign('showAdvancedSearchbox', 1);
-			$this->assign('enableProspectorIntegration', isset($configArray['Content']['Prospector']) && $configArray['Content']['Prospector'] == true ? 1 : 0);
-			$this->assign('showRatings', 1);
-			$this->assign('show856LinksAsTab', 1);
-			$this->assign('showSearchTools', 1);
-			$this->assign('alwaysShowSearchResultsMainDetails', 0);
-			$this->assign('showExpirationWarnings', 1);
-			$this->assign('showSimilarTitles', 1);
-			$this->assign('showSimilarAuthors', 1);
-			$this->assign('showItsHere', 0);
-			$this->assign('enableMaterialsBooking', 0);
-			$this->assign('showHoldButtonForUnavailableOnly', 0);
-			$this->assign('showHoldCancelDate', 0);
-			$this->assign('allowMasqueradeMode', 0);
-			$this->assign('allowReadingHistoryDisplayInMasqueradeMode', 0);
-			$this->assign('showGroupedHoldCopiesCount', 1);
-			$this->assign('showOnOrderCounts', true);
+		$this->assign('facebookLink', $library->facebookLink);
+		$this->assign('twitterLink', $library->twitterLink);
+		$this->assign('youtubeLink', $library->youtubeLink);
+		$this->assign('instagramLink', $library->instagramLink);
+		$this->assign('goodreadsLink', $library->goodreadsLink);
+		$this->assign('geeralContactLink', $library->generalContactLink);
+		$this->assign('showLoginButton', $library->showLoginButton);
+		$this->assign('showAdvancedSearchbox', $library->showAdvancedSearchbox);
+		$this->assign('enableProspectorIntegration', $library->enableProspectorIntegration);
+		$this->assign('showRatings', $library->showRatings);
+		$this->assign('show856LinksAsTab', $library->show856LinksAsTab);
+		$this->assign('showSearchTools', $library->showSearchTools);
+		$this->assign('alwaysShowSearchResultsMainDetails', $library->alwaysShowSearchResultsMainDetails);
+		$this->assign('showExpirationWarnings', $library->showExpirationWarnings);
+		$this->assign('expiredMessage', $library->expiredMessage);
+		$this->assign('expirationNearMessage', $library->expirationNearMessage);
+		$this->assign('showSimilarTitles', $library->showSimilarTitles);
+		$this->assign('showSimilarAuthors', $library->showSimilarAuthors);
+		$this->assign('showItsHere', $library->showItsHere);
+		$this->assign('enableMaterialsBooking', $library->enableMaterialsBooking);
+		$this->assign('showHoldButtonForUnavailableOnly', $library->showHoldButtonForUnavailableOnly);
+		$this->assign('showHoldCancelDate', $library->showHoldCancelDate);
+		$this->assign('allowMasqueradeMode', $library->allowMasqueradeMode);
+		$this->assign('allowReadingHistoryDisplayInMasqueradeMode', $library->allowReadingHistoryDisplayInMasqueradeMode);
+		$this->assign('interLibraryLoanName', $library->interLibraryLoanName);
+		$this->assign('interLibraryLoanUrl', $library->interLibraryLoanUrl);
+
+		if ($this->getVariable('displaySidebarMenu') && !$library->showSidebarMenu){
+			$this->assign('displaySidebarMenu', false);
 		}
-		if (isset($library) && $location != null){ // library and location
+		$this->assign('sidebarMenuButtonText', $library->sidebarMenuButtonText);
+		$this->assign('showGroupedHoldCopiesCount', $library->showGroupedHoldCopiesCount);
+		$this->assign('showOnOrderCounts', $library->showOnOrderCounts);
+
+		if ($location != null){ // library and location
 			$this->assign('showFavorites', $location->showFavorites && $library->showFavorites);
 			$this->assign('showComments', $location->showComments && $library->showComments);
 			$this->assign('showEmailThis', $location->showEmailThis && $library->showEmailThis);
@@ -463,17 +444,7 @@ class UInterface extends Smarty
 			$this->assign('showSimilarTitles', $library->showSimilarTitles);
 			$this->assign('showSimilarAuthors', $library->showSimilarAuthors);
 			$this->assign('showStandardReviews', (($location->showStandardReviews == 1) && ($library->showStandardReviews == 1)) ? 1 : 0);
-		}elseif ($location != null){ // location only
-			$this->assign('showFavorites', $location->showFavorites);
-			$this->assign('showComments', $location->showComments);
-			$this->assign('showEmailThis', $location->showEmailThis);
-			$this->assign('showShareOnExternalSites', $location->showShareOnExternalSites);
-			$this->assign('showStaffView', $location->showStaffView);
-			$this->assign('showStaffView', $location->showStaffView);
-			$this->assign('showGoodReadsReviews', $location->showGoodReadsReviews);
-			$this->assign('showStandardReviews', $location->showStandardReviews);
-			$showHoldButton = $location->showHoldButton;
-		}elseif (isset($library)){ // library only
+		}else{ // library only
 			$this->assign('showFavorites', $library->showFavorites);
 			$showHoldButton = $library->showHoldButton;
 			$showHoldButtonInSearchResults = $library->showHoldButtonInSearchResults;
@@ -484,14 +455,6 @@ class UInterface extends Smarty
 			$this->assign('showStaffView', $library->showStaffView);
 			$this->assign('showGoodReadsReviews', $library->showGoodReadsReviews);
 			$this->assign('showStandardReviews', $library->showStandardReviews);
-		}else{ // neither library nor location
-			$this->assign('showFavorites', 1);
-			$this->assign('showComments', 1);
-			$this->assign('showEmailThis', 1);
-			$this->assign('showShareOnExternalSites', 1);
-			$this->assign('showStaffView', 1);
-			$this->assign('showGoodReadsReviews', 1);
-			$this->assign('showStandardReviews', 1);
 		}
 		if ($showHoldButton == 0){
 			$showHoldButtonInSearchResults = 0;
@@ -512,29 +475,24 @@ class UInterface extends Smarty
 		$this->assign('showHoldButtonInSearchResults', $showHoldButtonInSearchResults);
 		$this->assign('showNotInterested', true);
 		$this->assign('librarySystemName', 'Marmot'); //TODO: need better default
-		if (isset($library)){
-			$this->assign('showRatings', $library->showRatings);
-			$this->assign('allowPinReset', $library->allowPinReset);
-			$this->assign('librarySystemName', $library->displayName);
-			$this->assign('showLibraryHoursAndLocationsLink', $library->showLibraryHoursAndLocationsLink);
-			//Check to see if we should just call it library location
-			$numLocations = $library->getNumLocationsForLibrary();
-			$this->assign('numLocations', $numLocations);
-			if ($numLocations == 1){
-				$locationForLibrary = new Location();
-				$locationForLibrary->libraryId = $library->libraryId;
-				$locationForLibrary->find(true);
 
-				$this->assign('hasValidHours', $locationForLibrary->hasValidHours());
-			}
-			$this->assign('showDisplayNameInHeader', $library->showDisplayNameInHeader);
-			$this->assign('externalMaterialsRequestUrl', $library->externalMaterialsRequestUrl);
-		}else{
-			$this->assign('showLibraryHoursAndLocationsLink', 1);
-			$this->assign('showRatings', 1);
-			$this->assign('allowPinReset', 0);
-			$this->assign('showDisplayNameInHeader', 0);
+		$this->assign('showRatings', $library->showRatings);
+		$this->assign('allowPinReset', $library->allowPinReset);
+		$this->assign('librarySystemName', $library->displayName);
+		$this->assign('showLibraryHoursAndLocationsLink', $library->showLibraryHoursAndLocationsLink);
+		//Check to see if we should just call it library location
+		$numLocations = $library->getNumLocationsForLibrary();
+		$this->assign('numLocations', $numLocations);
+		if ($numLocations == 1){
+			$locationForLibrary = new Location();
+			$locationForLibrary->libraryId = $library->libraryId;
+			$locationForLibrary->find(true);
+
+			$this->assign('hasValidHours', $locationForLibrary->hasValidHours());
 		}
+		$this->assign('showDisplayNameInHeader', $library->showDisplayNameInHeader);
+		$this->assign('externalMaterialsRequestUrl', $library->externalMaterialsRequestUrl);
+
 		if ($location != null){
 			$this->assign('showDisplayNameInHeader', $location->showDisplayNameInHeader);
 			$this->assign('librarySystemName', $location->displayName);
@@ -543,38 +501,37 @@ class UInterface extends Smarty
 		//Determine whether or not materials request functionality should be enabled
 		require_once ROOT_DIR . '/sys/MaterialsRequest.php';
 		$this->assign('enableMaterialsRequest', MaterialsRequest::enableMaterialsRequest());
+		$materialRequestType =
 
 		//Load library links
-		if (isset($library)){
-			$links = $library->libraryLinks;
-			$libraryHelpLinks = array();
-			$libraryAccountLinks = array();
-			$expandedLinkCategories = array();
-			/** @var LibraryLink $libraryLink */
-			foreach ($links as $libraryLink){
-				if ($libraryLink->showInHelp || (!$libraryLink->showInHelp && !$libraryLink->showInAccount)){
-					if (!array_key_exists($libraryLink->category, $libraryHelpLinks)){
-						$libraryHelpLinks[$libraryLink->category] = array();
-					}
-					$libraryHelpLinks[$libraryLink->category][$libraryLink->linkText] = $libraryLink;
+		$links = $library->libraryLinks;
+		$libraryHelpLinks = array();
+		$libraryAccountLinks = array();
+		$expandedLinkCategories = array();
+		/** @var LibraryLink $libraryLink */
+		foreach ($links as $libraryLink){
+			if ($libraryLink->showInHelp || (!$libraryLink->showInHelp && !$libraryLink->showInAccount)){
+				if (!array_key_exists($libraryLink->category, $libraryHelpLinks)){
+					$libraryHelpLinks[$libraryLink->category] = array();
 				}
-				if ($libraryLink->showInAccount){
-					if (!array_key_exists($libraryLink->category, $libraryAccountLinks)){
-						$libraryAccountLinks[$libraryLink->category] = array();
-					}
-					$libraryAccountLinks[$libraryLink->category][$libraryLink->linkText] = $libraryLink;
-				}
-				if ($libraryLink->showExpanded){
-					$expandedLinkCategories[$libraryLink->category] = 1;
-				}
+				$libraryHelpLinks[$libraryLink->category][$libraryLink->linkText] = $libraryLink;
 			}
-			$this->assign('libraryAccountLinks', $libraryAccountLinks);
-			$this->assign('libraryHelpLinks', $libraryHelpLinks);
-			$this->assign('expandedLinkCategories', $expandedLinkCategories);
-
-			$topLinks = $library->libraryTopLinks;
-			$this->assign('topLinks', $topLinks);
+			if ($libraryLink->showInAccount){
+				if (!array_key_exists($libraryLink->category, $libraryAccountLinks)){
+					$libraryAccountLinks[$libraryLink->category] = array();
+				}
+				$libraryAccountLinks[$libraryLink->category][$libraryLink->linkText] = $libraryLink;
+			}
+			if ($libraryLink->showExpanded){
+				$expandedLinkCategories[$libraryLink->category] = 1;
+			}
 		}
+		$this->assign('libraryAccountLinks', $libraryAccountLinks);
+		$this->assign('libraryHelpLinks', $libraryHelpLinks);
+		$this->assign('expandedLinkCategories', $expandedLinkCategories);
+
+		$topLinks = $library->libraryTopLinks;
+		$this->assign('topLinks', $topLinks);
 	}
 
     /**

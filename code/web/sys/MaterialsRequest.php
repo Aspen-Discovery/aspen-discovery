@@ -129,7 +129,7 @@ class MaterialsRequest extends DataObject
 			$enableMaterialsRequest = $configArray['MaterialsRequest']['enabled'];
 			//Now check if the library allows material requests
 			if ($enableMaterialsRequest){
-				if (isset($library) && $library->enableMaterialsRequest == 0){
+				if ($library->enableMaterialsRequest == 0){
 					$enableMaterialsRequest = false;
 				}else if (UserAccount::isLoggedIn()){
 					$homeLibrary = Library::getPatronHomeLibrary();
@@ -137,7 +137,7 @@ class MaterialsRequest extends DataObject
 						$enableMaterialsRequest = false;
 					}else if ($homeLibrary->enableMaterialsRequest == 0){
 						$enableMaterialsRequest = false;
-					}else if (isset($library) && $homeLibrary->libraryId != $library->libraryId){
+					}else if ($homeLibrary->libraryId != $library->libraryId){
 						$enableMaterialsRequest = false;
 					}else if (isset($configArray['MaterialsRequest']['allowablePatronTypes'])){
 						//Check to see if we need to do additional restrictions by patron type

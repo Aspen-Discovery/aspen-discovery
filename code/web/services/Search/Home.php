@@ -29,7 +29,7 @@ class Search_Home extends Action {
 		}
 
 		// Get Library's Browse Categories if none were set for Location
-		if (isset($library) && empty($browseCategories) && $library->browseCategories){
+		if (empty($browseCategories) && $library->browseCategories){
 			$browseCategories = $this->getBrowseCategories($library->browseCategories);
 		}
 

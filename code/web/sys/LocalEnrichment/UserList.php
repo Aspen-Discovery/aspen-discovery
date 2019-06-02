@@ -189,8 +189,7 @@ class UserList extends DataObject
 			$badWords = new BadWord();
 
 			//Determine if we should censor bad words or hide the comment completely.
-			$censorWords = true;
-			if (isset($library)) $censorWords = $library->hideCommentsWithBadWords == 0 ? true : false;
+			$censorWords = ($library->hideCommentsWithBadWords == 0 ? true : false);
 			if ($censorWords){
 				//Filter Title
 				$titleText = $badWords->censorBadWords($this->title);

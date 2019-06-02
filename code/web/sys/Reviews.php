@@ -105,14 +105,11 @@ class ExternalReviews
 
 		$review = array();
 		$location = $locationSingleton->getActiveLocation();
-		if (isset($library) && $location != null){
+		if ($location != null){
 			if ($library->showStandardReviews == 0 || $location->showStandardReviews == 0){
 				return $review;
 			}
-		}else if ($location != null && ($location->showStandardReviews == 0)){
-			//return an empty review
-			return $review;
-		}else if (isset($library) && ($library->showStandardReviews == 0)){
+		}else if ($library->showStandardReviews == 0){
 			//return an empty review
 			return $review;
 		}
@@ -252,13 +249,11 @@ class ExternalReviews
 		global $configArray;
 
 		$location = $locationSingleton->getActiveLocation();
-		if (isset($library) && $location != null){
+		if ($location != null){
 			if ($library->showStandardReviews == 0 || $location->showStandardReviews == 0){
 				return null;
 			}
-		}elseif ($location != null && ($location->showStandardReviews == 0)){
-			return null;
-		}elseif (isset($library) && ($library->showStandardReviews == 0)){
+		}elseif ($library->showStandardReviews == 0){
 			return null;
 		}
 
