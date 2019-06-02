@@ -62,6 +62,10 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
         $this->spellcheckEnabled = true;
     }
 
+    function ping(){
+    	return $this->indexEngine->pingServer(false);
+    }
+
     /**
      * Load all available facet settings.  This is mainly useful for showing
      * appropriate labels when an existing search has multiple filters associated

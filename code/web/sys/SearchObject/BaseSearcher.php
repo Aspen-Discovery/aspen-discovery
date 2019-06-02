@@ -103,7 +103,9 @@ abstract class SearchObject_BaseSearcher
 		$timer->logTime('Setup Base Search Object');
 	}
 
-
+	function ping(){
+		return true;
+	}
 
 	/* Parse apart the field and value from a URL filter string.
 	 *

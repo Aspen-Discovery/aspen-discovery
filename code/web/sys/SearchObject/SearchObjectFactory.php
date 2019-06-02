@@ -8,8 +8,8 @@ class SearchObjectFactory {
 	 * This constructs a search object for the specified engine.
 	 *
 	 * @access  public
-	 * @param   string  $engine     The type of SearchObject to build.
-	 * @return  mixed               The search object on success, false otherwise
+	 * @param   string  $engine                   The type of SearchObject to build.
+	 * @return  SearchObject_BaseSearcher|false   The search object on success, false otherwise
 	 */
 	static function initSearchObject($engine = 'GroupedWork')
 	{
