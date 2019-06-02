@@ -1,6 +1,3 @@
-/**
- * Created by mark on 1/24/14.
- */
 var Globals = (function () {
 	//Do setup work here
 	return {

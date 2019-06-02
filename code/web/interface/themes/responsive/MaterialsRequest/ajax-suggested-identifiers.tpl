@@ -35,7 +35,7 @@
 					{/if}
 				</td>
 
-				<td><input type="button" value="Use This" onclick="VuFind.MaterialsRequest.setIsbnAndOclcNumber('{$suggestion.title|escape}', '{$suggestion.author|escape}', '{$suggestion.isbn}', '{$suggestion.oclcNumber}')" /></td>
+				<td><input type="button" value="Use This" onclick="AspenDiscovery.MaterialsRequest.setIsbnAndOclcNumber('{$suggestion.title|escape}', '{$suggestion.author|escape}', '{$suggestion.isbn}', '{$suggestion.oclcNumber}')" /></td>
 			</tr>
 			{/foreach}
 		</tbody>

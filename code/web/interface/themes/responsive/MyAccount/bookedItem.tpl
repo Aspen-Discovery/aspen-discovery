@@ -118,7 +118,7 @@
 			<div class="col-xs-12 col-md-3">
 				<div class="btn-group btn-group-vertical btn-block">
 					{if $record.cancelValue}
-						<button onclick="return VuFind.Account.cancelBooking('{$record.userId}', '{$record.cancelValue}')" class="btn btn-sm btn-warning">Cancel Item</button>
+						<button onclick="return AspenDiscovery.Account.cancelBooking('{$record.userId}', '{$record.cancelValue}')" class="btn btn-sm btn-warning">Cancel Item</button>
 					{/if}
 				</div>
 			</div>

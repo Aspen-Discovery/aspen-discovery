@@ -12,7 +12,7 @@
 				</span>
 			{/if}
 			{if $loggedIn && ($review->userid == $activeUserId || array_key_exists('opacAdmin', $userRoles))}
-				&nbsp;<span onclick='return VuFind.GroupedWork.deleteReview("{$id|escape:"url"}", "{$review->id}");' class="btn btn-danger btn-xs">&times; {translate text='Delete'}</span>
+				&nbsp;<span onclick='return AspenDiscovery.GroupedWork.deleteReview("{$id|escape:"url"}", "{$review->id}");' class="btn btn-danger btn-xs">&times; {translate text='Delete'}</span>
 			{/if}</h5>
 	</div>
 	{if $review->review}

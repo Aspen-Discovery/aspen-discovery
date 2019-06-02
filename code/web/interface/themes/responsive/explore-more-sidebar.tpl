@@ -89,7 +89,7 @@
 			<ul>
 				{foreach from=$section.values item=value}
 					<li>
-						<a href="#" onclick="return VuFind.Archive.handleBookClick('{$bookPid}', '{$value.pid}', VuFind.Archive.activeBookViewer);">
+						<a href="#" onclick="return AspenDiscovery.Archive.handleBookClick('{$bookPid}', '{$value.pid}', AspenDiscovery.Archive.activeBookViewer);">
 							{$value.label}
 						</a>
 					</li>
@@ -178,7 +178,7 @@
 	{if empty($exploreMoreSections) && empty($relatedArticles)}
 		$('#sidebar-menu-option-explore-more,#explore-more-header,#explore-more-body').fadeOut().empty().remove();
 		{if $displaySidebarMenu}
-			VuFind.Menu.collapseSideBar();
+			AspenDiscovery.Menu.collapseSideBar();
 		{/if}
 	{else}
 	{literal}
@@ -190,7 +190,7 @@
 				$(this).removeClass('active');
 			})
 			.one('shown.bs.collapse', function () {
-				VuFind.initCarousels( $(this).children('.panel-collapse.in').find('.jcarousel') );
+				AspenDiscovery.initCarousels( $(this).children('.panel-collapse.in').find('.jcarousel') );
 			});
 	{/literal}
 	{/if}

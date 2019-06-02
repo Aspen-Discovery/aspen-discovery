@@ -50,7 +50,7 @@
 
 	{if $displayMode == 'covers'}
 		{if $recordEnd < $recordCount}
-			<a onclick="return VuFind.Searches.getMoreResults()">
+			<a onclick="return AspenDiscovery.Searches.getMoreResults()">
 				<div class="row" id="more-browse-results">
 					<img src="{img filename="browse_more_arrow.png"}" alt="Load More Search Results" title="Load More Search Results">
 				</div>
@@ -64,7 +64,7 @@
 		<div class="well small">
 			<strong>{translate text='Search Tools'}:</strong>
 			<a href="{$rssLink|escape}"><span class="silk feed">&nbsp;</span>{translate text='Get RSS Feed'}</a>
-			<a href="#" onclick="return VuFind.Account.ajaxLightbox('{$path}/Search/AJAX?method=getEmailForm', true);"><span class="silk email">&nbsp;</span>{translate text='Email this Search'}</a>
+			<a href="#" onclick="return AspenDiscovery.Account.ajaxLightbox('{$path}/Search/AJAX?method=getEmailForm', true);"><span class="silk email">&nbsp;</span>{translate text='Email this Search'}</a>
 		</div>
 	{/if}
 </div>
@@ -74,24 +74,17 @@
 	<script type="text/javascript">
 		$(document).ready(function (){ldelim}
 		{if $showWikipedia}
-			VuFind.Wikipedia.getWikipediaArticle('{$wikipediaAuthorName}');
+			AspenDiscovery.Wikipedia.getWikipediaArticle('{$wikipediaAuthorName}');
 		{/if}
 
-			{*{include file="Search/results-displayMode-js.tpl"}*}
 			{if !$onInternalIP}
-			{*if (!Globals.opac &&VuFind.hasLocalStorage()){ldelim}*}
-			{*var temp = window.localStorage.getItem('searchResultsDisplayMode');*}
-			{*if (VuFind.Searches.displayModeClasses.hasOwnProperty(temp)) VuFind.Searches.displayMode = temp; *}{* if stored value is empty or a bad value, fall back on default setting ("null" returned when not set) *}
-			{*else VuFind.Searches.displayMode = '{$displayMode}';*}
-			{*{rdelim}*}
-			{*else*}
 			{* Because content is served on the page, have to set the mode that was used, even if the user didn't chose the mode. *}
-			VuFind.Searches.displayMode = '{$displayMode}';
+			AspenDiscovery.Searches.displayMode = '{$displayMode}';
 			{else}
-			VuFind.Searches.displayMode = '{$displayMode}';
+			AspenDiscovery.Searches.displayMode = '{$displayMode}';
 			Globals.opac = 1; {* set to true to keep opac browsers from storing browse mode *}
 			{/if}
-			$('#'+VuFind.Searches.displayMode).parent('label').addClass('active'); {* show user which one is selected *}
+			$('#'+AspenDiscovery.Searches.displayMode).parent('label').addClass('active'); {* show user which one is selected *}
 
 			{rdelim});
 	</script>

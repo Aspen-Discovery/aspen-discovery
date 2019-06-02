@@ -46,11 +46,11 @@
 								{* Show hold/checkout button as appropriate *}
 								{if $holdingsSummary.showPlaceHold}
 									{* Place hold link *}
-									<a href="#" class="btn btn-sm btn-block btn-primary" id="placeHold{$recordDriver->getUniqueID()|escape:"url"}" onclick="return VuFind.Rbdigital.placeRbdigitalHold('{$recordDriver->getUniqueID()}')">{translate text="Place Hold"}</a>
+									<a href="#" class="btn btn-sm btn-block btn-primary" id="placeHold{$recordDriver->getUniqueID()|escape:"url"}" onclick="return AspenDiscovery.Rbdigital.placeRbdigitalHold('{$recordDriver->getUniqueID()}')">{translate text="Place Hold"}</a>
 								{/if}
 								{if $holdingsSummary.showCheckout}
 									{* Checkout link *}
-									<a href="#" class="btn btn-sm btn-block btn-primary" id="checkout{$recordDriver->getUniqueID()|escape:"url"}" onclick="return VuFind.Rbdigital.checkOutRbdigitalTitle('{$recordDriver->getUniqueID()}')">{translate text="Checkout"}</a>
+									<a href="#" class="btn btn-sm btn-block btn-primary" id="checkout{$recordDriver->getUniqueID()|escape:"url"}" onclick="return AspenDiscovery.Rbdigital.checkOutRbdigitalTitle('{$recordDriver->getUniqueID()}')">{translate text="Checkout"}</a>
 								{/if}
 							</div>
 						</div>

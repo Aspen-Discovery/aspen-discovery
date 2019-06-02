@@ -44,7 +44,7 @@
 							</p>
 
 							<label for="showPwd" class="checkbox">
-								<input type="checkbox" id="showPwd" name="showPwd" onclick="return VuFind.pwdToText('password')">
+								<input type="checkbox" id="showPwd" name="showPwd" onclick="return AspenDiscovery.pwdToText('password')">
 								{translate text="Reveal Password"}
 							</label>
 
@@ -59,7 +59,7 @@
 
 					<div id ="loginSubmitRow" class="form-group">
 						<div class="col-xs-12 col-sm-offset-4 col-sm-8">
-							<input type="submit" name="submit" value="Login" id="loginFormSubmit" class="btn btn-primary" onclick="return VuFind.Account.preProcessLogin();">
+							<input type="submit" name="submit" value="Login" id="loginFormSubmit" class="btn btn-primary" onclick="return AspenDiscovery.Account.preProcessLogin();">
 							{if $followup}<input type="hidden" name="followup" value="{$followup}">{/if}
 							<input type="cancel" name="cancel" value="Cancel" id="loginFormCancel" class="btn btn-primary" onclick="Location.reload()" style="display:none;">
 							{if $followupModule}<input type="hidden" name="followupModule" value="{$followupModule}">{/if}
@@ -90,7 +90,7 @@
 					if (data.error == false){
 						alert(data.message);
 						if (data.success == true){
-							VuFind.closeLightbox();
+							AspenDiscovery.closeLightbox();
 						}
 					}else{
 						alert("There was an error requesting your pin reset information.  Please contact the library for additional information.");
@@ -106,8 +106,8 @@
 <script type="text/javascript">
 	$('#username').focus().select();
 	$(function(){
-		VuFind.Account.validateCookies();
-		var haslocalStorage = VuFind.hasLocalStorage() || false;
+		AspenDiscovery.Account.validateCookies();
+		var haslocalStorage = AspenDiscovery.hasLocalStorage() || false;
 		if (haslocalStorage) {
 			var rememberMe = (window.localStorage.getItem('rememberMe') == 'true'), // localStorage saves everything as strings
 					showCovers = window.localStorage.getItem('showCovers') || false;
@@ -118,7 +118,7 @@
 				$("#username").val(lastUserName);
 				$("#password").val(lastPwd);
 				{/literal}{*// $("#showPwd").prop("checked", showPwd  ? "checked" : '');
-//					if (showPwd) VuFind.pwdToText('password');*}{literal}
+//					if (showPwd) AspenDiscovery.pwdToText('password');*}{literal}
 			}
 			$("#rememberMe").prop("checked", rememberMe ? "checked" : '');
 			if (showCovers.length > 0) {

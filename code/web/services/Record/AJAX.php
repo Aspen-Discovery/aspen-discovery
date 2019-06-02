@@ -180,7 +180,7 @@ class Record_AJAX extends Action {
 				$results = array(
 					'title' => empty($title) ? 'Place Hold' : 'Place Hold on ' . $title,
 					'modalBody' => $interface->fetch("Record/hold-popup.tpl"),
-					'modalButtons' => "<input type='submit' name='submit' id='requestTitleButton' value='Submit Hold Request' class='btn btn-primary' onclick='return VuFind.Record.submitHoldForm();'>"
+					'modalButtons' => "<input type='submit' name='submit' id='requestTitleButton' value='Submit Hold Request' class='btn btn-primary' onclick='return AspenDiscovery.Record.submitHoldForm();'>"
 				);
 			}
 
@@ -215,7 +215,7 @@ class Record_AJAX extends Action {
 			$results = array(
 				'title' => 'Place Hold on Alternate Edition?',
 				'modalBody' => $interface->fetch('Record/hold-select-edition-popup.tpl'),
-				'modalButtons' => '<a href="#" class="btn btn-primary" onclick="return VuFind.Record.showPlaceHold(\'Record\', \'' . $id . '\', false);">No, place a hold on this edition</a>'
+				'modalButtons' => '<a href="#" class="btn btn-primary" onclick="return AspenDiscovery.Record.showPlaceHold(\'Record\', \'' . $id . '\', false);">No, place a hold on this edition</a>'
 			);
 		}else{
 			$results = array(

@@ -35,12 +35,12 @@
 				{if $hasLargeImage && ($anonymousLcDownload || ($loggedIn && $verifiedLcDownload))}
 					<a class="btn btn-default" href="/Archive/{$pid}/DownloadLC">Download Large Image</a>
 				{elseif ($hasLargeImage && !$loggedIn && $verifiedLcDownload)}
-					<a class="btn btn-default" onclick="return VuFind.Account.followLinkIfLoggedIn(this)" href="/Archive/{$pid}/DownloadLC">Login to Download Large Image</a>
+					<a class="btn btn-default" onclick="return AspenDiscovery.Account.followLinkIfLoggedIn(this)" href="/Archive/{$pid}/DownloadLC">Login to Download Large Image</a>
 				{/if}
 				{if $anonymousMasterDownload || ($loggedIn && $verifiedMasterDownload)}
 					<a class="btn btn-default" href="/Archive/{$pid}/DownloadOriginal">Download Original Image</a>
 				{elseif (!$loggedIn && $verifiedMasterDownload)}
-					<a class="btn btn-default" onclick="return VuFind.Account.followLinkIfLoggedIn(this)" href="/Archive/{$pid}/DownloadOriginal">Login to Download Original Image</a>
+					<a class="btn btn-default" onclick="return AspenDiscovery.Account.followLinkIfLoggedIn(this)" href="/Archive/{$pid}/DownloadOriginal">Login to Download Original Image</a>
 				{/if}
 			{/if}
 			{if $allowRequestsForArchiveMaterials}
@@ -50,7 +50,7 @@
 				<a class="btn btn-default" href="{$path}/Archive/ClaimAuthorship?pid={$pid}">Claim Authorship</a>
 			{/if}
 			{if $showFavorites == 1}
-				<a onclick="return VuFind.Archive.showSaveToListForm(this, '{$pid|escape}');" class="btn btn-default ">{translate text='Add to favorites'}</a>
+				<a onclick="return AspenDiscovery.Archive.showSaveToListForm(this, '{$pid|escape}');" class="btn btn-default ">{translate text='Add to favorites'}</a>
 			{/if}
 		</div>
 
@@ -108,7 +108,6 @@
 				openSeadragonSettings.settings.tileSources.push(tileSource);
 
 				var viewer = new OpenSeadragon(openSeadragonSettings.settings);
-				//VuFind.Archive.initializeOpenSeadragon(viewer);
 				$('#pika-openseadragon').addClass('processed');
 			{rdelim}
 		{rdelim});
@@ -117,6 +116,6 @@
 {* {/strip} *}
 <script type="text/javascript">
 	$().ready(function(){ldelim}
-		VuFind.Archive.loadExploreMore('{$pid|urlencode}');
+		AspenDiscovery.Archive.loadExploreMore('{$pid|urlencode}');
 	{rdelim});
 </script>

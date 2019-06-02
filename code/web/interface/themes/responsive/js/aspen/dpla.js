@@ -1,7 +1,4 @@
-/**
- * Created by mark on 2/9/15.
- */
-VuFind.DPLA = (function(){
+AspenDiscovery.DPLA = (function(){
 	return {
 		getDPLAResults: function(searchTerm){
 			var url = Globals.path + "/Search/AJAX";
@@ -21,4 +18,4 @@ VuFind.DPLA = (function(){
 			});
 		}
 	}
-}(VuFind.DPLA || {}));
+}(AspenDiscovery.DPLA || {}));

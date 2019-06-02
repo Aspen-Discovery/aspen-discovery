@@ -107,7 +107,7 @@ class Rbdigital_AJAX extends Action {
                     'promptNeeded' => true,
                     'promptTitle'  => $promptTitle,
                     'prompts'      => $interface->fetch('Rbdigital/ajax-hold-prompt.tpl'),
-                    'buttons'      => '<input class="btn btn-primary" type="submit" name="submit" value="Place Hold" onclick="return VuFind.Rbdigital.processHoldPrompts();">'
+                    'buttons'      => '<input class="btn btn-primary" type="submit" name="submit" value="Place Hold" onclick="return AspenDiscovery.Rbdigital.processHoldPrompts();">'
                 )
             );
         } elseif (count($usersWithRbdigitalAccess) == 1){
@@ -124,7 +124,7 @@ class Rbdigital_AJAX extends Action {
                     'promptNeeded' => true,
                     'promptTitle'  => 'Create an Account',
                     'prompts'      => $interface->fetch('Rbdigital/ajax-create-account-prompt.tpl'),
-                    'buttons'      => '<input class="btn btn-primary" type="submit" name="submit" value="Create Account" onclick="return VuFind.Rbdigital.createAccount(\'hold\', \'' . $user->id . '\', \''. $id .'\');">'
+                    'buttons'      => '<input class="btn btn-primary" type="submit" name="submit" value="Create Account" onclick="return AspenDiscovery.Rbdigital.createAccount(\'hold\', \'' . $user->id . '\', \''. $id .'\');">'
                 )
             );
         }
@@ -154,7 +154,7 @@ class Rbdigital_AJAX extends Action {
 					'promptNeeded' => true,
 					'promptTitle'  => $promptTitle,
 					'prompts'      => $interface->fetch('Rbdigital/ajax-checkout-prompt.tpl'),
-					'buttons'      => '<input class="btn btn-primary" type="submit" name="submit" value="Checkout Title" onclick="return VuFind.Rbdigital.processCheckoutPrompts();">'
+					'buttons'      => '<input class="btn btn-primary" type="submit" name="submit" value="Checkout Title" onclick="return AspenDiscovery.Rbdigital.processCheckoutPrompts();">'
 				)
 			);
 		} elseif (count($usersWithRbdigitalAccess) == 1){
@@ -171,7 +171,7 @@ class Rbdigital_AJAX extends Action {
 					'promptNeeded' => true,
 					'promptTitle'  => 'Create an Account',
 					'prompts'      => $interface->fetch('Rbdigital/ajax-create-account-prompt.tpl'),
-					'buttons'      => '<input class="btn btn-primary" type="submit" name="submit" value="Create Account" onclick="return VuFind.Rbdigital.createAccount(\'checkout\', '. $id . ');">'
+					'buttons'      => '<input class="btn btn-primary" type="submit" name="submit" value="Create Account" onclick="return AspenDiscovery.Rbdigital.createAccount(\'checkout\', '. $id . ');">'
 				)
 			);
 		}

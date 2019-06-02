@@ -3,7 +3,7 @@
 		<div class="archiveComponent browseFilterContainer">
 			<div class="row archiveComponentBody">
 				<div class="archiveComponentBox">
-					<a href="#" onclick="return VuFind.Archive.showBrowseFilterPopup('{$pid}', '{$browseFilterFacetName}', '{$browseFilterLabel}')">
+					<a href="#" onclick="return AspenDiscovery.Archive.showBrowseFilterPopup('{$pid}', '{$browseFilterFacetName}', '{$browseFilterLabel}')">
 						<div class="col-tn-4 col-xs-3 col-md-4 archiveComponentIconContainer">
 							<img src="{$browseFilterImage}" width="100" height="100" alt="{$browseFilterLabel}" class="archiveComponentImage">
 						</div>

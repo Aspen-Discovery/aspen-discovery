@@ -69,7 +69,7 @@
 
 	{if $displayMode == 'covers'}
 		{if $recordEnd < $recordCount}
-			<a onclick="return VuFind.Searches.getMoreResults()" role="button">
+			<a onclick="return AspenDiscovery.Searches.getMoreResults()" role="button">
 				<div class="row" id="more-browse-results">
 					<span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>
 				</div>
@@ -89,19 +89,19 @@
 		<strong>{translate text='Search Tools'}:</strong>
 		{if $showSearchTools}
 			<a href="{$rssLink|escape}"><span class="silk feed">&nbsp;</span>{translate text='Get RSS Feed'}</a>
-			<a href="#" onclick="return VuFind.Account.ajaxLightbox('{$path}/Search/AJAX?method=getEmailForm', true);"><span class="silk email">&nbsp;</span>{translate text='Email this Search'}</a>
+			<a href="#" onclick="return AspenDiscovery.Account.ajaxLightbox('{$path}/Search/AJAX?method=getEmailForm', true);"><span class="silk email">&nbsp;</span>{translate text='Email this Search'}</a>
 			{if $savedSearch}
-				<a href="#" onclick="return VuFind.Account.saveSearch('{$searchId}')"><span class="silk delete">&nbsp;</span>{translate text='save_search_remove'}</a>
+				<a href="#" onclick="return AspenDiscovery.Account.saveSearch('{$searchId}')"><span class="silk delete">&nbsp;</span>{translate text='save_search_remove'}</a>
 			{else}
-				<a href="#" onclick="return VuFind.Account.saveSearch('{$searchId}')"><span class="silk add">&nbsp;</span>{translate text='save_search'}</a>
+				<a href="#" onclick="return AspenDiscovery.Account.saveSearch('{$searchId}')"><span class="silk add">&nbsp;</span>{translate text='save_search'}</a>
 			{/if}
 			<a href="{$excelLink|escape}"><span class="silk table_go">&nbsp;</span>{translate text='Export To Excel'}</a>
 		{/if}
 		{if $loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('contentEditor', $userRoles) || array_key_exists('libraryManager', $userRoles) || array_key_exists('locationManager', $userRoles))}
-			<a href="#" onclick="return VuFind.ListWidgets.createWidgetFromSearch('{$searchId}')"><span class="silk cog_go">&nbsp;</span>{translate text='Create Widget'}</a>
+			<a href="#" onclick="return AspenDiscovery.ListWidgets.createWidgetFromSearch('{$searchId}')"><span class="silk cog_go">&nbsp;</span>{translate text='Create Widget'}</a>
 		{/if}
 		{if $loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('contentEditor', $userRoles) || array_key_exists('libraryManager', $userRoles) || array_key_exists('locationManager', $userRoles))}
-			<a href="#" onclick="return VuFind.Browse.addToHomePage('{$searchId}')"><span class="silk cog_go">&nbsp;</span>{translate text='Add To Home Page as Browse Category'}</a>
+			<a href="#" onclick="return AspenDiscovery.Browse.addToHomePage('{$searchId}')"><span class="silk cog_go">&nbsp;</span>{translate text='Add To Home Page as Browse Category'}</a>
 		{/if}
 	</div>
 	{/if}
@@ -115,17 +115,17 @@
 		{rdelim}
 
 		{if $showDplaLink}
-		VuFind.DPLA.getDPLAResults('{$lookfor}');
+		AspenDiscovery.DPLA.getDPLAResults('{$lookfor}');
 		{/if}
 
 		{if !$onInternalIP}
 			{* Because content is served on the page, have to set the mode that was used, even if the user didn't choose the mode. *}
-			VuFind.Searches.displayMode = '{$displayMode}';
+			AspenDiscovery.Searches.displayMode = '{$displayMode}';
 		{else}
-			VuFind.Searches.displayMode = '{$displayMode}';
+			AspenDiscovery.Searches.displayMode = '{$displayMode}';
 			Globals.opac = 1; {* set to true to keep opac browsers from storing browse mode *}
 		{/if}
-		$('#'+VuFind.Searches.displayMode).parent('label').addClass('active'); {* show user which one is selected *}
+		$('#'+AspenDiscovery.Searches.displayMode).parent('label').addClass('active'); {* show user which one is selected *}
 
 		{rdelim});
 </script>

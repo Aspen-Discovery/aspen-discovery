@@ -883,7 +883,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 						$actions[] = array(
 								'title' => 'Hold ' . $volumeInfo->displayLabel,
 								'url' => '',
-								'onclick' => "return VuFind.Record.showPlaceHold('{$this->getModule()}', '$id');",
+								'onclick' => "return AspenDiscovery.Record.showPlaceHold('{$this->getModule()}', '$id');",
 								'requireLogin' => false,
 						);
 					}
@@ -892,7 +892,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 				$actions[] = array(
 						'title' => 'Place Hold',
 						'url' => '',
-						'onclick' => "return VuFind.Record.showPlaceHold('{$this->getModule()}', '{$this->getIdWithSource()}');",
+						'onclick' => "return AspenDiscovery.Record.showPlaceHold('{$this->getModule()}', '{$this->getIdWithSource()}');",
 						'requireLogin' => false,
 				);
 			}
@@ -901,7 +901,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 			$actions[] = array(
 					'title' => 'Schedule Item',
 					'url' => '',
-					'onclick' => "return VuFind.Record.showBookMaterial('{$this->getModule()}', '{$this->getId()}');",
+					'onclick' => "return AspenDiscovery.Record.showBookMaterial('{$this->getModule()}', '{$this->getId()}');",
 					'requireLogin' => false,
 			);
 		}

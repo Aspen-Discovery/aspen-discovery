@@ -1,7 +1,4 @@
-/**
- * Created by mark on 12/10/2015.
- */
-VuFind.Archive = (function(){
+AspenDiscovery.Archive = (function(){
 	var date = new Date();
 	date.setTime(date.getTime() + (1 /*days*/ * 24 * 60 * 60 * 1000));
 	expires = "; expires=" + date.toGMTString();
@@ -32,10 +29,10 @@ VuFind.Archive = (function(){
 		},
 
 		getPreferredDisplayMode: function(){
-			if (!Globals.opac && VuFind.hasLocalStorage()){
+			if (!Globals.opac && AspenDiscovery.hasLocalStorage()){
 				temp = window.localStorage.getItem('archiveCollectionDisplayMode');
-				if (VuFind.Archive.displayModeClasses.hasOwnProperty(temp)) {
-					VuFind.Archive.displayMode = temp; // if stored value is empty or a bad value, fall back on default setting ("null" is returned from local storage when not set)
+				if (AspenDiscovery.Archive.displayModeClasses.hasOwnProperty(temp)) {
+					AspenDiscovery.Archive.displayMode = temp; // if stored value is empty or a bad value, fall back on default setting ("null" is returned from local storage when not set)
 				}
 			}
 		},
@@ -44,7 +41,7 @@ VuFind.Archive = (function(){
 			var mode = this.displayModeClasses.hasOwnProperty(selectedMode) ? selectedMode : this.displayMode; // check that selected mode is a valid option
 			this.displayMode = mode; // set the mode officially
 			this.curPage = 1; // reset js page counting
-			if (!Globals.opac && VuFind.hasLocalStorage() ) { // store setting in browser if not an opac computer
+			if (!Globals.opac && AspenDiscovery.hasLocalStorage() ) { // store setting in browser if not an opac computer
 				window.localStorage.setItem('archiveCollectionDisplayMode', this.displayMode);
 			}
 			if (mode == 'list') $('#hideSearchCoversSwitch').show(); else $('#hideSearchCoversSwitch').hide();
@@ -56,8 +53,8 @@ VuFind.Archive = (function(){
 		},
 
 		toggleShowCovers: function(showCovers){
-			VuFind.Account.showCovers = showCovers;
-			if (!Globals.opac && VuFind.hasLocalStorage()) { // store setting in browser if not an opac computer
+			AspenDiscovery.Account.showCovers = showCovers;
+			if (!Globals.opac && AspenDiscovery.hasLocalStorage()) { // store setting in browser if not an opac computer
 				window.localStorage.setItem('showCovers', this.showCovers ? 'on' : 'off');
 			}
 			this.ajaxReloadCallback()
@@ -149,14 +146,14 @@ VuFind.Archive = (function(){
 
 		clearCache:function(id){
 			var url = Globals.path + "/Archive/AJAX?id=" + encodeURI(id) + "&method=clearCache";
-			VuFind.loadingMessage();
+			AspenDiscovery.loadingMessage();
 			$.getJSON(url, function(data){
 				if (data.success) {
-					VuFind.showMessage("Cache Cleared Successfully", data.message, 2000); // auto-close after 2 seconds.
+					AspenDiscovery.showMessage("Cache Cleared Successfully", data.message, 2000); // auto-close after 2 seconds.
 				} else {
-					VuFind.showMessage("Error", data.message);
+					AspenDiscovery.showMessage("Error", data.message);
 				}
-			}).fail(VuFind.ajaxFail);
+			}).fail(AspenDiscovery.ajaxFail);
 			return false;
 		},
 
@@ -173,7 +170,7 @@ VuFind.Archive = (function(){
 				$("#exhibit-results-loading").show();
 				this.curPage = 1;
 			}
-			var url = Globals.path + "/Archive/AJAX?method=getRelatedObjectsForExhibit&collectionId=" + exhibitPid + "&page=" + this.curPage + "&sort=" + this.sort + '&archiveCollectionView=' + this.displayMode + '&showCovers=' + VuFind.Account.showCovers;
+			var url = Globals.path + "/Archive/AJAX?method=getRelatedObjectsForExhibit&collectionId=" + exhibitPid + "&page=" + this.curPage + "&sort=" + this.sort + '&archiveCollectionView=' + this.displayMode + '&showCovers=' + AspenDiscovery.Account.showCovers;
 			url = url + "&reloadHeader=" + reloadHeader;
 
 			$.getJSON(url, function(data){
@@ -237,8 +234,8 @@ VuFind.Archive = (function(){
 			}
 
 			if (redirect != "undefined" && redirect === true){
-				var newUrl = VuFind.buildUrl(document.location.origin + document.location.pathname, 'placePid', placePid);
-				newUrl = VuFind.buildUrl(newUrl, 'style', 'map');
+				var newUrl = AspenDiscovery.buildUrl(document.location.origin + document.location.pathname, 'placePid', placePid);
+				newUrl = AspenDiscovery.buildUrl(newUrl, 'style', 'map');
 				document.location.href = newUrl;
 			}
 			if (showTimeline == "undefined"){
@@ -258,10 +255,10 @@ VuFind.Archive = (function(){
 				showTimeline: showTimeline,
 				page: "MapExhibit"
 			};
-			var newUrl = VuFind.buildUrl(document.location.origin + document.location.pathname, 'placePid', placePid);
-			var currentParameters = VuFind.getQuerystringParameters();
+			var newUrl = AspenDiscovery.buildUrl(document.location.origin + document.location.pathname, 'placePid', placePid);
+			var currentParameters = AspenDiscovery.getQuerystringParameters();
 			if (currentParameters["style"] != undefined){
-				newUrl = VuFind.buildUrl(newUrl, 'style', currentParameters["style"]);
+				newUrl = AspenDiscovery.buildUrl(newUrl, 'style', currentParameters["style"]);
 			}
 			//Push the new url, but only if we aren't going back where we just were.
 			if (document.location.href != newUrl){
@@ -298,8 +295,8 @@ VuFind.Archive = (function(){
 			// Load specified page & viewer
 			//Loading message
 			//Load Page  set-up
-			VuFind.Archive.activeBookPid = bookPid;
-			VuFind.Archive.changeActiveBookViewer(bookViewer, pagePid);
+			AspenDiscovery.Archive.activeBookPid = bookPid;
+			AspenDiscovery.Archive.changeActiveBookViewer(bookViewer, pagePid);
 
 			// store in browser history
 			var stateObj = {
@@ -308,9 +305,9 @@ VuFind.Archive = (function(){
 				viewer: bookViewer,
 				page: 'Book'
 			},
-					newUrl = VuFind.buildUrl(document.location.origin + document.location.pathname, 'bookPid', bookPid),
-					newUrl = VuFind.buildUrl(newUrl, 'pagePid', pagePid),
-					newUrl = VuFind.buildUrl(newUrl, 'viewer', bookViewer);
+					newUrl = AspenDiscovery.buildUrl(document.location.origin + document.location.pathname, 'bookPid', bookPid),
+					newUrl = AspenDiscovery.buildUrl(newUrl, 'pagePid', pagePid),
+					newUrl = AspenDiscovery.buildUrl(newUrl, 'viewer', bookViewer);
 			//Push the new url, but only if we aren't going back where we just were.
 			if (document.location.href != newUrl){
 				history.pushState(stateObj, '', newUrl);
@@ -322,7 +319,7 @@ VuFind.Archive = (function(){
 		reloadMapResults: function(exhibitPid, placePid, reloadHeader,showTimeline){
 			$("#exhibit-results-loading").show();
 			this.curPage = 1;
-			var url = Globals.path + "/Archive/AJAX?method=getRelatedObjectsForMappedCollection&collectionId=" + exhibitPid + "&placeId=" + placePid + "&page=" + this.curPage + "&sort=" + this.sort + '&archiveCollectionView=' + this.displayMode + '&showCovers=' + VuFind.Account.showCovers + '&showTimeline=' + showTimeline;
+			var url = Globals.path + "/Archive/AJAX?method=getRelatedObjectsForMappedCollection&collectionId=" + exhibitPid + "&placeId=" + placePid + "&page=" + this.curPage + "&sort=" + this.sort + '&archiveCollectionView=' + this.displayMode + '&showCovers=' + AspenDiscovery.Account.showCovers + '&showTimeline=' + showTimeline;
 			$("input[name=dateFilter]:checked").each(function(){
 				url = url + "&dateFilter="+$(this).val();
 			});
@@ -343,7 +340,7 @@ VuFind.Archive = (function(){
 		reloadTimelineResults: function(exhibitPid, reloadHeader){
 			$("#exhibit-results-loading").show();
 			this.curPage = 1;
-			var url = Globals.path + "/Archive/AJAX?method=getRelatedObjectsForTimelineExhibit&collectionId=" + exhibitPid + "&page=" + this.curPage + "&sort=" + this.sort + '&archiveCollectionView=' + this.displayMode + '&showCovers=' + VuFind.Account.showCovers;
+			var url = Globals.path + "/Archive/AJAX?method=getRelatedObjectsForTimelineExhibit&collectionId=" + exhibitPid + "&page=" + this.curPage + "&sort=" + this.sort + '&archiveCollectionView=' + this.displayMode + '&showCovers=' + AspenDiscovery.Account.showCovers;
 			$("input[name=dateFilter]:checked").each(function(){
 				url = url + "&dateFilter="+$(this).val();
 			});
@@ -364,7 +361,7 @@ VuFind.Archive = (function(){
 		reloadScrollerResults: function(pid, reloadHeader){
 			$("#exhibit-results-loading").show();
 			this.curPage = 1;
-			var url = Globals.path + "/Archive/AJAX?method=getRelatedObjectsForScroller&pid=" + pid + "&page=" + this.curPage + "&sort=" + this.sort + '&archiveCollectionView=' + this.displayMode + '&showCovers=' + VuFind.Account.showCovers;
+			var url = Globals.path + "/Archive/AJAX?method=getRelatedObjectsForScroller&pid=" + pid + "&page=" + this.curPage + "&sort=" + this.sort + '&archiveCollectionView=' + this.displayMode + '&showCovers=' + AspenDiscovery.Account.showCovers;
 			url = url + "&reloadHeader=" + reloadHeader;
 
 			$.getJSON(url, function(data){
@@ -383,9 +380,9 @@ VuFind.Archive = (function(){
 			$.getJSON(Globals.path + "/Archive/AJAX?id=" + encodeURI(pid) + "&method=getExploreMoreContent", function(data){
 				if (data.success){
 					$("#explore-more-body").html(data.exploreMore);
-					VuFind.initCarousels("#explore-more-body .panel-collapse.in .jcarousel"); // Only initialize browse categories in open accordions
+					AspenDiscovery.initCarousels("#explore-more-body .panel-collapse.in .jcarousel"); // Only initialize browse categories in open accordions
 				}
-			}).fail(VuFind.ajaxFail);
+			}).fail(AspenDiscovery.ajaxFail);
 		},
 
 		loadMetadata: function(pid, secondaryId){
@@ -483,26 +480,22 @@ VuFind.Archive = (function(){
 				var tile = new OpenSeadragon.DjatokaTileSource(
 						Globals.url + "/AJAX/DjatokaResolver",
 						this.pageDetails[pid]['jp2'],
-						VuFind.Archive.openSeadragonViewerSettings()
+						AspenDiscovery.Archive.openSeadragonViewerSettings()
 				);
 				if (!$('#pika-openseadragon').hasClass('processed')) {
 					$('#pika-openseadragon').addClass('processed');
-					settings = VuFind.Archive.openSeadragonViewerSettings();
-					settings.tileSources = new Array();
+					settings = AspenDiscovery.Archive.openSeadragonViewerSettings();
+					settings.tileSources = [];
 					settings.tileSources.push(tile);
-					VuFind.Archive.openSeaDragonViewer = new OpenSeadragon(settings);
+					AspenDiscovery.Archive.openSeaDragonViewer = new OpenSeadragon(settings);
 				}else{
-					//VuFind.Archive.openSeadragonViewerSettings.tileSources = new Array();
-					//VuFind.Archive.openSeaDragonViewer.close();
-					VuFind.Archive.openSeaDragonViewer.open(tile);
+					AspenDiscovery.Archive.openSeaDragonViewer.open(tile);
 				}
-				//VuFind.Archive.openSeaDragonViewer.viewport.fitVertically(true);
 			}else if(this.activeBookViewer == 'audio') {
 				$('#view-audio').show();
 				$('#audio-player-src').attr('src', this.pageDetails[pid]['audio']);
 				var audioPlayer = document.getElementById("audio-player");
 				audioPlayer.load();
-				//audioPlayer.play();
 			}else if(this.activeBookViewer == 'video') {
 				$('#view-video').show();
 				$('#video-player-src').attr('src', this.pageDetails[pid]['video']);
@@ -574,7 +567,7 @@ VuFind.Archive = (function(){
 			var url = Globals.path + "/Archive/AJAX?id=" + encodeURI(pid) + "&method=getNextRandomObject";
 			$.getJSON(url, function(data){
 				$('#randomImagePlaceholder').html(data.image);
-			}).fail(VuFind.ajaxFail);
+			}).fail(AspenDiscovery.ajaxFail);
 			return false;
 		},
 
@@ -603,19 +596,19 @@ VuFind.Archive = (function(){
 
 		showBrowseEntityFilterPopup: function(exhibitPid, facetName, title){
 			var url = Globals.path + "/Archive/AJAX?id=" + encodeURI(exhibitPid) + "&method=getEntityFacetValuesForExhibit&facetName=" + encodeURI(facetName);
-			VuFind.loadingMessage();
+			AspenDiscovery.loadingMessage();
 			$.getJSON(url, function(data){
-				VuFind.showMessage(title, data.modalBody);
-			}).fail(VuFind.ajaxFail);
+				AspenDiscovery.showMessage(title, data.modalBody);
+			}).fail(AspenDiscovery.ajaxFail);
 			return false;
 		},
 
 		showBrowseFilterPopup: function(exhibitPid, facetName, title){
 			var url = Globals.path + "/Archive/AJAX?id=" + encodeURI(exhibitPid) + "&method=getFacetValuesForExhibit&facetName=" + encodeURI(facetName);
-			VuFind.loadingMessage();
+			AspenDiscovery.loadingMessage();
 			$.getJSON(url, function(data){
-				VuFind.showMessage(title, data.modalBody);
-			}).fail(VuFind.ajaxFail);
+				AspenDiscovery.showMessage(title, data.modalBody);
+			}).fail(AspenDiscovery.ajaxFail);
 			return false;
 		},
 
@@ -623,25 +616,25 @@ VuFind.Archive = (function(){
 			var url = Globals.path + "/Archive/AJAX?id=" + encodeURI(pid) + "&method=getObjectInfo";
 					// (typeof collectionSearchId == 'undefined' ? '' : '&collectionSearchId=' + encodeURI(collectionSearchId)) +
 					// (typeof recordIndex == 'undefined' ? '' : '&recordIndex=' + encodeURI(recordIndex));
-			VuFind.loadingMessage();
+			AspenDiscovery.loadingMessage();
 			this.setForExhibitNavigation(recordIndex, page);
 
 			$.getJSON(url, function(data){
-				VuFind.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
-			}).fail(VuFind.ajaxFail);
+				AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+			}).fail(AspenDiscovery.ajaxFail);
 			return false;
 		},
 
 		showSaveToListForm: function (trigger, id){
 			if (Globals.loggedIn){
-				VuFind.loadingMessage();
+				AspenDiscovery.loadingMessage();
 				var url = Globals.path + "/Archive/" + id + "/AJAX?method=getSaveToListForm";
 				$.getJSON(url, function(data){
-					VuFind.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
-				}).fail(VuFind.ajaxFail);
+					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+				}).fail(AspenDiscovery.ajaxFail);
 			}else{
-				VuFind.Account.ajaxLogin($(trigger), function (){
-					VuFind.Archive.showSaveToListForm(trigger, id);
+				AspenDiscovery.Account.ajaxLogin($(trigger), function (){
+					AspenDiscovery.Archive.showSaveToListForm(trigger, id);
 				});
 			}
 			return false;
@@ -660,16 +653,16 @@ VuFind.Archive = (function(){
 				$.getJSON(url, params,
 						function(data) {
 							if (data.success) {
-								VuFind.showMessage("Added Successfully", data.message, 2000); // auto-close after 2 seconds.
+								AspenDiscovery.showMessage("Added Successfully", data.message, 2000); // auto-close after 2 seconds.
 							} else {
-								VuFind.showMessage("Error", data.message);
+								AspenDiscovery.showMessage("Error", data.message);
 							}
 						}
-				).fail(VuFind.ajaxFail);
+				).fail(AspenDiscovery.ajaxFail);
 			}
 			return false;
 		},
 
 	}
 
-}(VuFind.Archive || {}));
+}(AspenDiscovery.Archive || {}));

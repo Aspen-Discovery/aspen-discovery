@@ -60,7 +60,7 @@ $.fn.rater.rate = function($this, opts, rating) {
 				$off = $this.find('.ui-rater-starsOff');
 		$off.fadeTo(600, 0.4, function() {
 			$.getJSON(opts.url, {id: opts.id, rating: rating}, function(data) {
-				if (data.error) VuFind.showMessage(data.error);
+				if (data.error) AspenDiscovery.showMessage(data.error);
 				if (data.rating) { // success
 					opts.rating = data.rating;
 					$on.css('cursor', 'default');
@@ -73,16 +73,15 @@ $.fn.rater.rate = function($this, opts, rating) {
 							$off.fadeTo(500, 1);
 							$this.attr('title', 'Your rating: ' + rating.toFixed(1));
 							if ($this.data('show_review') == true){
-								//VuFind.Ratings.doRatingReview(rating, opts.module, opts.id);
-								VuFind.Ratings.doRatingReview(opts.id);
+								AspenDiscovery.Ratings.doRatingReview(opts.id);
 							}
 					});
 				}
-					}).fail(VuFind.ajaxFail);
+					}).fail(AspenDiscovery.ajaxFail);
 
 		});
 	}else{
-		VuFind.Account.ajaxLogin(null, function(){
+		AspenDiscovery.Account.ajaxLogin(null, function(){
 			$.fn.rater.rate($this, opts, rating);
 		});
 	}

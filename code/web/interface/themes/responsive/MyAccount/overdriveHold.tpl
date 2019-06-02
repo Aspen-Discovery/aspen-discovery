@@ -111,9 +111,9 @@
 				<div class="col-xs-9 col-sm-8 col-md-4 col-lg-3">
 					<div class="btn-group btn-group-vertical btn-block">
 						{if $section == 'available'}
-							<button onclick="return VuFind.OverDrive.doOverDriveCheckout('{$record.userId}', '{$record.overDriveId}');" class="btn btn-sm btn-primary">Checkout</button>
+							<button onclick="return AspenDiscovery.OverDrive.doOverDriveCheckout('{$record.userId}', '{$record.overDriveId}');" class="btn btn-sm btn-primary">Checkout</button>
 						{/if}
-						<button onclick="return VuFind.OverDrive.cancelOverDriveHold('{$record.userId}', '{$record.overDriveId}');" class="btn btn-sm btn-warning">Cancel Hold</button>
+						<button onclick="return AspenDiscovery.OverDrive.cancelOverDriveHold('{$record.userId}', '{$record.overDriveId}');" class="btn btn-sm btn-warning">Cancel Hold</button>
 					</div>
 
 				</div>

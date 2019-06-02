@@ -1,11 +1,11 @@
 <div class="col-sm-12">
     <div class="row">
         <div class="col-tn-3 col-xs-4{if !$viewingCombinedResults} col-md-3{/if} manifestation-format">
-            <a href="{$relatedManifestation->getUrl()}" onclick="return VuFind.ResultsList.toggleRelatedManifestations('{$id|escapeCSS}_{$relatedManifestation->format|escapeCSS}');">
+            <a href="{$relatedManifestation->getUrl()}" onclick="return AspenDiscovery.ResultsList.toggleRelatedManifestations('{$id|escapeCSS}_{$relatedManifestation->format|escapeCSS}');">
                 {$relatedManifestation->format}
             </a>
             <br>
-            <a href="#" onclick="return VuFind.ResultsList.toggleRelatedManifestations('{$id|escapeCSS}_{$relatedManifestation->format|escapeCSS}');">
+            <a href="#" onclick="return AspenDiscovery.ResultsList.toggleRelatedManifestations('{$id|escapeCSS}_{$relatedManifestation->format|escapeCSS}');">
                 <span class="manifestation-toggle-text label {if $relatedManifestation->getNumRelatedRecords() == 1}label-default{else}label-info{/if}" id='manifestation-toggle-text-{$id|escapeCSS}_{$relatedManifestation->format|escapeCSS}'>{if $relatedManifestation->getNumRelatedRecords() == 1}Show&nbsp;Edition{else}Show&nbsp;Editions{/if}</span>
             </a>
         </div>
@@ -23,7 +23,7 @@
                 <div class="btn-group btn-group-vertical btn-block">
                     {foreach from=$relatedManifestation->getActions() item=curAction}
                         {if $curAction.url && strlen($curAction.url) > 0}
-                            <a href="{$curAction.url}" class="btn btn-sm btn-primary" onclick="{if $curAction.requireLogin}return VuFind.Account.followLinkIfLoggedIn(this, '{$curAction.url}');{/if}" {if $curAction.alt}title="{$curAction.alt}"{/if}>{$curAction.title}</a>
+                            <a href="{$curAction.url}" class="btn btn-sm btn-primary" onclick="{if $curAction.requireLogin}return AspenDiscovery.Account.followLinkIfLoggedIn(this, '{$curAction.url}');{/if}" {if $curAction.alt}title="{$curAction.alt}"{/if}>{$curAction.title}</a>
                         {else}
                             <a href="#" class="btn btn-sm btn-primary" onclick="{$curAction.onclick}" {if $curAction.alt}title="{$curAction.alt}"{/if}>{$curAction.title}</a>
                         {/if}

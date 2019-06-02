@@ -22,7 +22,7 @@
 							<legend>Statuses to Show:</legend>
 							<div class="form-group checkbox">
 								<label for="selectAllStatusFilter">
-									<input type="checkbox" name="selectAllStatusFilter" id="selectAllStatusFilter" onchange="VuFind.toggleCheckboxes('.statusFilter', '#selectAllStatusFilter');">
+									<input type="checkbox" name="selectAllStatusFilter" id="selectAllStatusFilter" onchange="AspenDiscovery.toggleCheckboxes('.statusFilter', '#selectAllStatusFilter');">
 									<strong>Select All</strong>
 								</label>
 							</div>
@@ -53,7 +53,7 @@
 							<legend>Format:</legend>
 							<div class="form-group checkbox">
 								<label for="selectAllFormatFilter">
-									<input type="checkbox" name="selectAllFormatFilter" id="selectAllFormatFilter" onchange="VuFind.toggleCheckboxes('.formatFilter', '#selectAllFormatFilter');">
+									<input type="checkbox" name="selectAllFormatFilter" id="selectAllFormatFilter" onchange="AspenDiscovery.toggleCheckboxes('.formatFilter', '#selectAllFormatFilter');">
 									<strong>Select All</strong>
 								</label>
 							</div>
@@ -75,7 +75,7 @@
 							</div>
 								<div class="form-group checkbox">
 								<label for="selectAllAssigneesFilter">
-									<input type="checkbox" name="selectAllAssigneesFilter" id="selectAllAssigneesFilter" onchange="VuFind.toggleCheckboxes('.assigneesFilter', '#selectAllAssigneesFilter');">
+									<input type="checkbox" name="selectAllAssigneesFilter" id="selectAllAssigneesFilter" onchange="AspenDiscovery.toggleCheckboxes('.assigneesFilter', '#selectAllAssigneesFilter');">
 									<strong>Select All</strong>
 								</label>
 							</div>
@@ -102,7 +102,7 @@
 				<table id="requestedMaterials" class="table tablesorter table-striped table-hover">
 					<thead>
 						<tr>
-							<th><input type="checkbox" name="selectAll" id="selectAll" onchange="VuFind.toggleCheckboxes('.select', '#selectAll');"></th>
+							<th><input type="checkbox" name="selectAll" id="selectAll" onchange="AspenDiscovery.toggleCheckboxes('.select', '#selectAll');"></th>
 							{foreach from=$columnsToDisplay item=label}
 								<th>{$label}</th>
 							{/foreach}
@@ -207,8 +207,8 @@
 								{/foreach}
 								<td>
 									<div class="btn-group btn-group-vertical btn-group-sm">
-										<button type="button" onclick="VuFind.MaterialsRequest.showMaterialsRequestDetails('{$request->id}', true)" class="btn btn-sm btn-info">Details</button>
-										<button type="button" onclick="VuFind.MaterialsRequest.updateMaterialsRequest('{$request->id}')" class="btn btn-sm btn-primary">Update&nbsp;Request</button>
+										<button type="button" onclick="AspenDiscovery.MaterialsRequest.showMaterialsRequestDetails('{$request->id}', true)" class="btn btn-sm btn-info">Details</button>
+										<button type="button" onclick="AspenDiscovery.MaterialsRequest.updateMaterialsRequest('{$request->id}')" class="btn btn-sm btn-primary">Update&nbsp;Request</button>
 									</div>
 								</td>
 							</tr>
@@ -233,7 +233,7 @@
 											{/foreach}
 
 										</select>
-										<span class="btn btn-sm btn-primary input-group-addon" onclick="return VuFind.MaterialsRequest.assignSelectedRequests();">Assign Selected Requests</span>
+										<span class="btn btn-sm btn-primary input-group-addon" onclick="return AspenDiscovery.MaterialsRequest.assignSelectedRequests();">Assign Selected Requests</span>
 									{else}
 										<span class="text-warning">No Valid Assignees Found</span>
 									{/if}
@@ -252,13 +252,13 @@
 											<option value="{$status}">{$statusLabel}</option>
 										{/foreach}
 									</select>
-									<span class="btn btn-sm btn-primary input-group-addon" onclick="return VuFind.MaterialsRequest.updateSelectedRequests();">Update Selected Requests</span>
+									<span class="btn btn-sm btn-primary input-group-addon" onclick="return AspenDiscovery.MaterialsRequest.updateSelectedRequests();">Update Selected Requests</span>
 								</div>
 							</div>
 						</div>
 						<div class="row">
 							<div class="col-xs-12">
-								<input class="btn btn-sm btn-default" type="submit" name="exportSelected" value="Export Selected To Excel" onclick="return VuFind.MaterialsRequest.exportSelectedRequests();">
+								<input class="btn btn-sm btn-default" type="submit" name="exportSelected" value="Export Selected To Excel" onclick="return AspenDiscovery.MaterialsRequest.exportSelectedRequests();">
 							</div>
 						</div>
 					</div>

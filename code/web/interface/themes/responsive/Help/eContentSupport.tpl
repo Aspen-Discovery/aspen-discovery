@@ -56,7 +56,7 @@
 		</div>
 		{if $lightbox == false}
 			<div class='form-group'>
-				<button class='btn btn-sm btn-primary' onclick='return VuFind.EContent.submitHelpForm();'>Submit</button>
+				<button class='btn btn-sm btn-primary' onclick='return AspenDiscovery.EContent.submitHelpForm();'>Submit</button>
 			</div>
 		{/if}
 	</form>

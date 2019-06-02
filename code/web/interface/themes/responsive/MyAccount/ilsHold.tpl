@@ -176,22 +176,22 @@
 						{if $section == 'available'}
 							{if $record.cancelable}
 								{* First step in cancelling a hold is now fetching confirmation message, with better labeled buttons. *}
-								<button onclick="return VuFind.Account.confirmCancelHold('{$record.userId}', '{$record.id}', '{$record.cancelId}');" class="btn btn-sm btn-warning">{translate text="Cancel Hold"}</button>
+								<button onclick="return AspenDiscovery.Account.confirmCancelHold('{$record.userId}', '{$record.id}', '{$record.cancelId}');" class="btn btn-sm btn-warning">{translate text="Cancel Hold"}</button>
 							{/if}
 						{else}
 							{if $record.cancelable}
 								{* First step in cancelling a hold is now fetching confirmation message, with better labeled buttons. *}
-								<button onclick="return VuFind.Account.confirmCancelHold('{$record.userId}', '{$record.id}', '{$record.cancelId}');" class="btn btn-sm btn-warning">{translate text="Cancel Hold"}</button>
+								<button onclick="return AspenDiscovery.Account.confirmCancelHold('{$record.userId}', '{$record.id}', '{$record.cancelId}');" class="btn btn-sm btn-warning">{translate text="Cancel Hold"}</button>
 							{/if}
 							{if $record.allowFreezeHolds}
 								{if $record.frozen}
-									<button onclick="return VuFind.Account.thawHold('{$record.userId}', '{$record.id}', '{$record.cancelId}', this);" class="btn btn-sm btn-default">{translate text="Thaw Hold"}</button>
+									<button onclick="return AspenDiscovery.Account.thawHold('{$record.userId}', '{$record.id}', '{$record.cancelId}', this);" class="btn btn-sm btn-default">{translate text="Thaw Hold"}</button>
 								{elseif $record.canFreeze}
-									<button onclick="return VuFind.Account.freezeHold('{$record.userId}', '{$record.id}', '{$record.cancelId}', {if $suspendRequiresReactivationDate}true{else}false{/if}, this);" class="btn btn-sm btn-default">{translate text="Freeze Hold"}</button>
+									<button onclick="return AspenDiscovery.Account.freezeHold('{$record.userId}', '{$record.id}', '{$record.cancelId}', {if $suspendRequiresReactivationDate}true{else}false{/if}, this);" class="btn btn-sm btn-default">{translate text="Freeze Hold"}</button>
 								{/if}
 							{/if}
 							{if $record.locationUpdateable}
-								<button onclick="return VuFind.Account.changeHoldPickupLocation('{$record.userId}', '{$record.id}', '{$record.cancelId}');" class="btn btn-sm btn-default">Change Pickup Loc.</button>
+								<button onclick="return AspenDiscovery.Account.changeHoldPickupLocation('{$record.userId}', '{$record.id}', '{$record.cancelId}');" class="btn btn-sm btn-default">Change Pickup Loc.</button>
 							{/if}
 						{/if}
 					</div>

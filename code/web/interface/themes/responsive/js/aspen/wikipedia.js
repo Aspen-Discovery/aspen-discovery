@@ -1,4 +1,4 @@
-VuFind.Wikipedia = (function(){
+AspenDiscovery.Wikipedia = (function(){
 	return{
 		getWikipediaArticle: function(articleName){
 			var url = Globals.path + "/Author/AJAX?method=getWikipediaData&articleName=" + articleName;
@@ -8,4 +8,4 @@ VuFind.Wikipedia = (function(){
 			});
 		}
 	};
-}(VuFind.Wikipedia));
+}(AspenDiscovery.Wikipedia));

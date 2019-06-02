@@ -8,7 +8,7 @@
 		{/if}
 		{if $showFavorites == 1}
 			<div class="btn-group btn-group-sm">
-				<button onclick="return VuFind.Archive.showSaveToListForm(this, '{$summId|escape}');" class="btn btn-sm ">{translate text='Add to favorites'}</button>
+				<button onclick="return AspenDiscovery.Archive.showSaveToListForm(this, '{$summId|escape}');" class="btn btn-sm ">{translate text='Add to favorites'}</button>
 			</div>
 		{/if}
 

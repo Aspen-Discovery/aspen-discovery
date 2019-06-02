@@ -76,7 +76,7 @@
 						{if $allowMasqueradeMode && !$masqueradeMode}
 							{if $canMasquerade}
 								<hr class="menu">
-								<div class="myAccountLink"><a onclick="VuFind.Account.getMasqueradeForm();" href="#">Masquerade</a></div>
+								<div class="myAccountLink"><a onclick="AspenDiscovery.Account.getMasqueradeForm();" href="#">Masquerade</a></div>
 							{/if}
 						{/if}
 					</div>
@@ -106,7 +106,7 @@
 
 							<div id="lists-placeholder"><img src="{$path}/images/loading.gif" alt="loading"></div>
 
-							<a href="#" onclick="return VuFind.Account.showCreateListForm();" class="btn btn-sm btn-primary">Create a New List</a>
+							<a href="#" onclick="return AspenDiscovery.Account.showCreateListForm();" class="btn btn-sm btn-primary">Create a New List</a>
 						</div>
 					</div>
 				</div>
@@ -120,14 +120,14 @@
 					{assign var="curSection" value=false}
 				{/if}
 				<div class="panel{if $curSection} active{/if}">
-					<a href="#vufindMenuGroup" data-toggle="collapse" data-parent="#adminMenuAccordion">
+					<a href="#primaryAdminMenuGroup" data-toggle="collapse" data-parent="#adminMenuAccordion">
 						<div class="panel-heading">
 							<div class="panel-title">
 								Primary Configuration
 							</div>
 						</div>
 					</a>
-					<div id="vufindMenuGroup" class="panel-collapse collapse {if $curSection}in{/if}">
+					<div id="primaryAdminMenuGroup" class="panel-collapse collapse {if $curSection}in{/if}">
 						<div class="panel-body">
 							{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles))}
 								<div class="adminMenuLink{if $action == "Themes"} active{/if}"><a href="{$path}/Admin/Themes">Themes</a></div>
@@ -467,12 +467,12 @@
 {/if}
 {if $userHasCatalogConnection}
 <script type="text/javascript">
-	VuFind.Account.loadMenuData();
+	AspenDiscovery.Account.loadMenuData();
 </script>
 {else}
 <script type="text/javascript">
-	VuFind.Account.loadListData();
-    VuFind.Account.loadRatingsData();
+	AspenDiscovery.Account.loadListData();
+    AspenDiscovery.Account.loadRatingsData();
 </script>
 {/if}
 {/strip}

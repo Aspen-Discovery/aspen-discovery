@@ -22,7 +22,7 @@
 							<td>{$logEntry->numUpdated}</td>
 							<td>{$logEntry->numAvailabilityChanges}</td>
 							<td>{$logEntry->numMetadataChanges}</td>
-							<td><a href="#" onclick="return VuFind.Admin.showExtractNotes('{$logEntry->id}', 'overdrive');">Show Notes</a></td>
+							<td><a href="#" onclick="return AspenDiscovery.Admin.showExtractNotes('{$logEntry->id}', 'overdrive');">Show Notes</a></td>
 						</tr>
 					{/foreach}
 				</tbody>

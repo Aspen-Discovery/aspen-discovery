@@ -292,7 +292,7 @@ class Browse_AJAX extends Action {
 						if (!$browseCategoryRatingsMode) $browseCategoryRatingsMode = $library->browseCategoryRatingsMode;  // Try Library Setting
 
 						// when the Ajax rating is turned on, they have to be initialized with each load of the category.
-						if ($browseCategoryRatingsMode == 'stars') $records[] = '<script type="text/javascript">VuFind.Ratings.initializeRaters()</script>';
+						if ($browseCategoryRatingsMode == 'stars') $records[] = '<script type="text/javascript">AspenDiscovery.Ratings.initializeRaters()</script>';
 					}
 
 					$result['searchUrl'] = $this->searchObject->renderSearchUrl();

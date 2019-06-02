@@ -81,7 +81,7 @@
 		{elseif $property.type == 'font'}
 			<div class="row">
 				<div class="col-sm-4">
-					<select name='{$propName}' id='{$propName}' class='form-control font {if $property.required}required{/if}' {if $property.readOnly}readonly{/if} onchange="$('#{$propName}-default').prop('checked',false);VuFind.Admin.loadGoogleFontPreview('{$propName}')">
+					<select name='{$propName}' id='{$propName}' class='form-control font {if $property.required}required{/if}' {if $property.readOnly}readonly{/if} onchange="$('#{$propName}-default').prop('checked',false);AspenDiscovery.Admin.loadGoogleFontPreview('{$propName}')">
 						{foreach from=$property.validFonts item=fontName}
 							<option value="{$fontName}"{if $propValue == $fontName} selected='selected'{/if}>{$fontName}</option>
 						{/foreach}
@@ -104,7 +104,7 @@
 				</div>
 				<script type="text/javascript">
 					$().ready(function () {ldelim}
-						VuFind.Admin.loadGoogleFontPreview('{$propName}');
+						AspenDiscovery.Admin.loadGoogleFontPreview('{$propName}');
                     {rdelim});
 				</script>
 			</div>

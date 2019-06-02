@@ -13,7 +13,7 @@
 						<legend>Statuses to Show:</legend>
 						<div class="form-group checkbox">
 							<label for="selectAllStatusFilter">
-								<input type="checkbox" name="selectAllStatusFilter" id="selectAllStatusFilter" onclick="VuFind.toggleCheckboxes('.statusFilter', '#selectAllStatusFilter');">
+								<input type="checkbox" name="selectAllStatusFilter" id="selectAllStatusFilter" onclick="AspenDiscovery.toggleCheckboxes('.statusFilter', '#selectAllStatusFilter');">
 								<strong>Select All</strong>
 							</label>
 						</div>

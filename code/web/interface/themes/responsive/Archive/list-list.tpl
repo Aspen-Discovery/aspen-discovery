@@ -8,7 +8,7 @@
 		<script type="text/javascript">
 			$(document).ready(
 				function () {ldelim}
-					VuFind.Searches.loadExploreMoreBar('archive', '{$exploreMoreSearchTerm|escape:"html"}');
+					AspenDiscovery.Searches.loadExploreMoreBar('archive', '{$exploreMoreSearchTerm|escape:"html"}');
 				{rdelim}
 			);
 		</script>

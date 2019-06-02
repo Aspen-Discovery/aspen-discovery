@@ -1,4 +1,4 @@
-/* Contains all plugins that are in use within VuFind-Plus */
+/* Contains all plugins that are in use within Aspen Discovery */
 
 /*!
  * jQuery idleTimer plugin
@@ -946,7 +946,7 @@ jQuery.cookie = function(name, value, options) {
     }
 };
 
-//TODO: Rating JS, move to a VuFind file.
+//TODO: Rating JS, move to an Aspen Discovery file.
 //copyright 2008 Jarrett Vance
 //http://jvance.com
 $.fn.rater = function(options) {

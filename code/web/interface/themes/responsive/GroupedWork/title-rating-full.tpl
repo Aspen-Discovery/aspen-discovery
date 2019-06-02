@@ -3,7 +3,7 @@
 	<div class="full-rating">
 		{if $showRatings}
 			{if $ratingData.user}
-				<div class="your-rating row rater" {*onclick="return VuFind.GroupedWork.showReviewForm(this, '{$recordDriver->getPermanentId()}')"*}
+				<div class="your-rating row rater"
 								{* AJAX rater data fields *}
              data-user_rating="{$ratingData.user}" data-average_rating="{$ratingData.average}" data-id="{$recordDriver->getPermanentId()}"
              data-show_review="{if $showComments && !$user->noPromptForUserReviews}1{else}0{/if}"
@@ -17,7 +17,7 @@
 				</div>
 			{/if}
 
-			<div class="average-rating row{if !$ratingData.user} rater{/if}" {*onclick="return VuFind.GroupedWork.showReviewForm(this, '{$recordDriver->getPermanentId()}')"*}
+			<div class="average-rating row{if !$ratingData.user} rater{/if}"
 							{if !$ratingData.user} {* When user is not logged in or has not rating the work *}
 								{* AJAX rater data fields *}
 								data-average_rating="{$ratingData.average}" data-id="{$recordDriver->getPermanentId()}"
@@ -67,7 +67,7 @@
 		{if $showComments && !$hideReviewButton}{* Add hideReviewButton=true to {include} tag to disable below *}
 			<div class="row">
 				<div class="col-xs-12 text-center">
-					<span id="userreviewlink{$recordDriver->getPermanentId()}" class="userreviewlink btn btn-sm" title="Add a Review" onclick="return VuFind.GroupedWork.showReviewForm(this, '{$recordDriver->getPermanentId()}')">
+					<span id="userreviewlink{$recordDriver->getPermanentId()}" class="userreviewlink btn btn-sm" title="Add a Review" onclick="return AspenDiscovery.GroupedWork.showReviewForm(this, '{$recordDriver->getPermanentId()}')">
 						Add a Review
 					</span>
 				</div>

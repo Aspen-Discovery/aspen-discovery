@@ -1,6 +1,6 @@
-VuFind.Ratings = (function(){
+AspenDiscovery.Ratings = (function(){
 	$(function(){
-		VuFind.Ratings.initializeRaters();
+		AspenDiscovery.Ratings.initializeRaters();
 	});
 	return{
 		initializeRaters: function(){
@@ -22,19 +22,19 @@ VuFind.Ratings = (function(){
 
 		doRatingReview: function (id){
 			$.getJSON(Globals.path + "/GroupedWork/"+id+"/AJAX?method=getPromptForReviewForm", function(data){
-				if (data.prompt) VuFind.showMessageWithButtons(data.title, data.modalBody, data.modalButtons); // only ask if user hasn't set the setting already
-				if (data.error)  VuFind.showMessage('Error', data.message);
-			}).fail(VuFind.ajaxFail)
+				if (data.prompt) AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons); // only ask if user hasn't set the setting already
+				if (data.error)  AspenDiscovery.showMessage('Error', data.message);
+			}).fail(AspenDiscovery.ajaxFail)
 		},
 
 		doNoRatingReviews : function (){
 			$.getJSON(Globals.path + "/GroupedWork/AJAX?method=setNoMoreReviews", function(data){
-				if (data.success) VuFind.showMessage('Success', 'You will no longer be asked to give a review.', true)
-				else VuFind.showMessage('Error', 'Failed to save your setting.')
-			}).fail(VuFind.ajaxFail);
+				if (data.success) AspenDiscovery.showMessage('Success', 'You will no longer be asked to give a review.', true)
+				else AspenDiscovery.showMessage('Error', 'Failed to save your setting.')
+			}).fail(AspenDiscovery.ajaxFail);
 		}
 	};
-}(VuFind.Ratings));
+}(AspenDiscovery.Ratings));
 
 /*
 *  Jquery Ratings Plugin, Adapted for Pika
@@ -99,7 +99,7 @@ $.fn.rater.rate = function($this, opts, rating) {
 		$off.fadeTo(600, 0.4, function() {
 			$.getJSON(opts.url, {method: 'RateTitle', id: opts.id, rating: rating}, function(data) {
 				if (data.error) {
-					VuFind.showMessage('Error', data.error);
+					AspenDiscovery.showMessage('Error', data.error);
 					$off.fadeTo(500, 1).mouseleave(); // Reset rater in light of failure
 				}
 				if (data.rating) { // success
@@ -116,18 +116,18 @@ $.fn.rater.rate = function($this, opts, rating) {
 								$off.fadeTo(500, 1);
 								$this.attr('title', 'Your rating: ' + rating.toFixed(1));
 								if ($this.data('show_review') == true){
-									VuFind.Ratings.doRatingReview(opts.id);
+									AspenDiscovery.Ratings.doRatingReview(opts.id);
 								}
 							});
 				}
 			}).fail(function(){
-				VuFind.ajaxFail();
+				AspenDiscovery.ajaxFail();
 				$off.fadeTo(500, 1).mouseleave(); // Reset rater in light of failure
 			});
 
 		});
 	}else{
-		VuFind.Account.ajaxLogin(null, function(){
+		AspenDiscovery.Account.ajaxLogin(null, function(){
 			$.fn.rater.rate($this, opts, rating);
 		}, true);
 	}

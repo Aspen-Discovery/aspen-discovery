@@ -43,7 +43,7 @@
 	{literal}
 	$("#emailForm").validate({
 		submitHandler: function(){
-			VuFind.GroupedWork.sendEmail("{/literal}{$id}{literal}")
+			AspenDiscovery.GroupedWork.sendEmail("{/literal}{$id}{literal}")
 		}
 	});
 	{/literal}

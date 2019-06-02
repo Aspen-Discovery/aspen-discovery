@@ -1,4 +1,4 @@
-VuFind.Rbdigital = (function(){
+AspenDiscovery.Rbdigital = (function(){
     return {
         cancelHold: function(patronId, id){
             let url = Globals.path + "/Rbdigital/AJAX?method=cancelHold&patronId=" + patronId + "&recordId=" + id;
@@ -7,18 +7,18 @@ VuFind.Rbdigital = (function(){
                 cache: false,
                 success: function(data){
                     if (data.success) {
-                        VuFind.showMessage("Hold Cancelled", data.message, true);
+                        AspenDiscovery.showMessage("Hold Cancelled", data.message, true);
                         $("#rbdigitalHold_" + id).hide();
-                        VuFind.Account.loadMenuData();
+                        AspenDiscovery.Account.loadMenuData();
                     }else{
-                        VuFind.showMessage("Error Cancelling Hold", data.message, true);
+                        AspenDiscovery.showMessage("Error Cancelling Hold", data.message, true);
                     }
 
                 },
                 dataType: 'json',
                 async: false,
                 error: function(){
-                    VuFind.showMessage("Error Cancelling Hold", "An error occurred processing your request in Rbdigital.  Please try again in a few minutes.", false);
+                    AspenDiscovery.showMessage("Error Cancelling Hold", "An error occurred processing your request in Rbdigital.  Please try again in a few minutes.", false);
                 }
             });
         },
@@ -26,14 +26,14 @@ VuFind.Rbdigital = (function(){
         checkOutTitle: function (id) {
             if (Globals.loggedIn){
                 //Get any prompts needed for checking out a title
-                let promptInfo = VuFind.Rbdigital.getCheckOutPrompts(id);
+                let promptInfo = AspenDiscovery.Rbdigital.getCheckOutPrompts(id);
                 // noinspection JSUnresolvedVariable
                 if (!promptInfo.promptNeeded){
-                    VuFind.Rbdigital.doCheckOut(promptInfo.patronId, id);
+                    AspenDiscovery.Rbdigital.doCheckOut(promptInfo.patronId, id);
                 }
             }else{
-                VuFind.Account.ajaxLogin(null, function(){
-                    VuFind.Rbdigital.checkOutTitle(id);
+                AspenDiscovery.Account.ajaxLogin(null, function(){
+                    AspenDiscovery.Rbdigital.checkOutTitle(id);
                 });
             }
             return false;
@@ -78,19 +78,19 @@ VuFind.Rbdigital = (function(){
                     cache: false,
                     success: function(data){
                         if (data.success === true){
-                            VuFind.showMessageWithButtons("Success", data.message, data.buttons);
+                            AspenDiscovery.showMessageWithButtons("Success", data.message, data.buttons);
                         }else{
-                            VuFind.showMessage("Error", data.message, false);
+                            AspenDiscovery.showMessage("Error", data.message, false);
                         }
                     },
                     dataType: 'json',
                     async: false,
                     error: function(){
-                        VuFind.showMessage("Error", "An error occurred processing your request in Rbdigital.  Please try again in a few minutes.");
+                        AspenDiscovery.showMessage("Error", "An error occurred processing your request in Rbdigital.  Please try again in a few minutes.");
                     }
                 });
             }else{
-                VuFind.showMessage("Error", "You must be logged in before creating an Rbdigital account.", false);
+                AspenDiscovery.showMessage("Error", "You must be logged in before creating an Rbdigital account.", false);
             }
             return false;
         },
@@ -103,17 +103,17 @@ VuFind.Rbdigital = (function(){
                     cache: false,
                     success: function(data){
                         if (data.success === true){
-                            VuFind.showMessageWithButtons("Title Checked Out Successfully", data.message, data.buttons);
+                            AspenDiscovery.showMessageWithButtons("Title Checked Out Successfully", data.message, data.buttons);
                         }else{
                             // noinspection JSUnresolvedVariable
                             if (data.noCopies === true){
-                                VuFind.closeLightbox();
+                                AspenDiscovery.closeLightbox();
                                 let ret = confirm(data.message);
                                 if (ret === true){
-                                    VuFind.Rbdigital.doHold(patronId, id);
+                                    AspenDiscovery.Rbdigital.doHold(patronId, id);
                                 }
                             }else{
-                                VuFind.showMessage("Error Checking Out Title", data.message, false);
+                                AspenDiscovery.showMessage("Error Checking Out Title", data.message, false);
                             }
                         }
                     },
@@ -122,12 +122,12 @@ VuFind.Rbdigital = (function(){
                     error: function(){
                         alert("An error occurred processing your request in Rbdigital.  Please try again in a few minutes.");
                         //alert("ajaxUrl = " + ajaxUrl);
-                        VuFind.closeLightbox();
+                        AspenDiscovery.closeLightbox();
                     }
                 });
             }else{
-                VuFind.Account.ajaxLogin(null, function(){
-                    VuFind.Rbdigital.checkOutTitle(id);
+                AspenDiscovery.Account.ajaxLogin(null, function(){
+                    AspenDiscovery.Rbdigital.checkOutTitle(id);
                 }, false);
             }
             return false;
@@ -141,15 +141,15 @@ VuFind.Rbdigital = (function(){
                 success: function(data){
                     // noinspection JSUnresolvedVariable
                     if (data.availableForCheckout){
-                        VuFind.Rbdigital.doCheckOut(patronId, id);
+                        AspenDiscovery.Rbdigital.doCheckOut(patronId, id);
                     }else{
-                        VuFind.showMessage("Placed Hold", data.message, true);
+                        AspenDiscovery.showMessage("Placed Hold", data.message, true);
                     }
                 },
                 dataType: 'json',
                 async: false,
                 error: function(){
-                    VuFind.showMessage("Error Placing Hold", "An error occurred processing your request in Rbdigital.  Please try again in a few minutes.", false);
+                    AspenDiscovery.showMessage("Error Placing Hold", "An error occurred processing your request in Rbdigital.  Please try again in a few minutes.", false);
                 }
             });
         },
@@ -165,14 +165,14 @@ VuFind.Rbdigital = (function(){
                     // noinspection JSUnresolvedVariable
                     if (data.promptNeeded){
                         // noinspection JSUnresolvedVariable
-                        VuFind.showMessageWithButtons(data.promptTitle, data.prompts, data.buttons);
+                        AspenDiscovery.showMessageWithButtons(data.promptTitle, data.prompts, data.buttons);
                     }
                 },
                 dataType: 'json',
                 async: false,
                 error: function(){
                     alert("An error occurred processing your request.  Please try again in a few minutes.");
-                    VuFind.closeLightbox();
+                    AspenDiscovery.closeLightbox();
                 }
             });
             return result;
@@ -189,14 +189,14 @@ VuFind.Rbdigital = (function(){
                     // noinspection JSUnresolvedVariable
                     if (data.promptNeeded){
                         // noinspection JSUnresolvedVariable
-                        VuFind.showMessageWithButtons(data.promptTitle, data.prompts, data.buttons);
+                        AspenDiscovery.showMessageWithButtons(data.promptTitle, data.prompts, data.buttons);
                     }
                 },
                 dataType: 'json',
                 async: false,
                 error: function(){
                     alert("An error occurred processing your request in Rbdigital.  Please try again in a few minutes.");
-                    VuFind.closeLightbox();
+                    AspenDiscovery.closeLightbox();
                 }
             });
             return result;
@@ -205,14 +205,14 @@ VuFind.Rbdigital = (function(){
         placeHold: function (id) {
             if (Globals.loggedIn){
                 //Get any prompts needed for placing holds (email and format depending on the interface.
-                let promptInfo = VuFind.Rbdigital.getHoldPrompts(id, 'hold');
+                let promptInfo = AspenDiscovery.Rbdigital.getHoldPrompts(id, 'hold');
                 // noinspection JSUnresolvedVariable
                 if (!promptInfo.promptNeeded){
-                    VuFind.Rbdigital.doHold(promptInfo.patronId, id);
+                    AspenDiscovery.Rbdigital.doHold(promptInfo.patronId, id);
                 }
             }else{
-                VuFind.Account.ajaxLogin(null, function(){
-                    VuFind.Rbdigital.placeHold(id);
+                AspenDiscovery.Account.ajaxLogin(null, function(){
+                    AspenDiscovery.Rbdigital.placeHold(id);
                 });
             }
             return false;
@@ -225,16 +225,16 @@ VuFind.Rbdigital = (function(){
                 cache: false,
                 success: function(data){
                     if (data.success) {
-                        VuFind.showMessage("Title Renewed", data.message, true);
+                        AspenDiscovery.showMessage("Title Renewed", data.message, true);
                     }else{
-                        VuFind.showMessage("Unable to Renew Title", data.message, true);
+                        AspenDiscovery.showMessage("Unable to Renew Title", data.message, true);
                     }
 
                 },
                 dataType: 'json',
                 async: false,
                 error: function(){
-                    VuFind.showMessage("Error Renewing Checkout", "An error occurred processing your request in Rbdigital.  Please try again in a few minutes.", false);
+                    AspenDiscovery.showMessage("Error Renewing Checkout", "An error occurred processing your request in Rbdigital.  Please try again in a few minutes.", false);
                 }
             });
         },
@@ -246,20 +246,20 @@ VuFind.Rbdigital = (function(){
                 cache: false,
                 success: function(data){
                     if (data.success) {
-                        VuFind.showMessage("Title Returned", data.message, true);
+                        AspenDiscovery.showMessage("Title Returned", data.message, true);
                         $("#rbdigitalCheckout_" + recordId).hide();
-                        VuFind.Account.loadMenuData();
+                        AspenDiscovery.Account.loadMenuData();
                     }else{
-                        VuFind.showMessage("Error Returning Title", data.message, true);
+                        AspenDiscovery.showMessage("Error Returning Title", data.message, true);
                     }
 
                 },
                 dataType: 'json',
                 async: false,
                 error: function(){
-                    VuFind.showMessage("Error Returning Checkout", "An error occurred processing your request in Rbdigital.  Please try again in a few minutes.", false);
+                    AspenDiscovery.showMessage("Error Returning Checkout", "An error occurred processing your request in Rbdigital.  Please try again in a few minutes.", false);
                 }
             });
         }
     }
-}(VuFind.Rbdigital || {}));
+}(AspenDiscovery.Rbdigital || {}));

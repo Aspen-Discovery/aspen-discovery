@@ -220,13 +220,13 @@ class RbdigitalRecordDriver extends GroupedWorkSubDriver {
         if ($isAvailable){
             $actions[] = array(
                 'title' => 'Check Out Rbdigital',
-                'onclick' => "return VuFind.Rbdigital.checkOutTitle('{$this->id}');",
+                'onclick' => "return AspenDiscovery.Rbdigital.checkOutTitle('{$this->id}');",
                 'requireLogin' => false,
             );
         }else{
             $actions[] = array(
                 'title' => 'Place Hold Rbdigital',
-                'onclick' => "return VuFind.Rbdigital.placeHold('{$this->id}');",
+                'onclick' => "return AspenDiscovery.Rbdigital.placeHold('{$this->id}');",
                 'requireLogin' => false,
             );
         }

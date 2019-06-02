@@ -170,7 +170,7 @@ class MyAccount_AJAX
 		$formDefinition = array(
 			'title' => 'Account to Manage',
 			'modalBody' => $interface->fetch('MyAccount/addAccountLink.tpl'),
-			'modalButtons' => "<span class='tool btn btn-primary' onclick='VuFind.Account.processAddLinkedUser(); return false;'>Add Account</span>"
+			'modalButtons' => "<span class='tool btn btn-primary' onclick='AspenDiscovery.Account.processAddLinkedUser(); return false;'>Add Account</span>"
 		);
 		return $formDefinition;
 	}
@@ -183,7 +183,7 @@ class MyAccount_AJAX
 		$formDefinition = array(
 			'title' => 'Add titles to list',
 			'modalBody' => $interface->fetch('MyAccount/bulkAddToListPopup.tpl'),
-			'modalButtons' => "<span class='tool btn btn-primary' onclick='VuFind.Lists.processBulkAddForm(); return false;'>Add To List</span>"
+			'modalButtons' => "<span class='tool btn btn-primary' onclick='AspenDiscovery.Lists.processBulkAddForm(); return false;'>Add To List</span>"
 		);
 		return $formDefinition;
 	}
@@ -257,7 +257,7 @@ class MyAccount_AJAX
 		return array(
 				'title' => translate('Cancel Hold'),
 				'body' => translate("Are you sure you want to cancel this hold?"),
-				'buttons' => "<span class='tool btn btn-primary' onclick='VuFind.Account.cancelHold(\"$patronId\", \"$recordId\", \"$cancelId\")'>$cancelButtonLabel</span>",
+				'buttons' => "<span class='tool btn btn-primary' onclick='AspenDiscovery.Account.cancelHold(\"$patronId\", \"$recordId\", \"$cancelId\")'>$cancelButtonLabel</span>",
 		);
 	}
 
@@ -541,7 +541,7 @@ class MyAccount_AJAX
 		$results = array(
 			'title' => 'Create new List',
 			'modalBody' => $interface->fetch("MyResearch/list-form.tpl"),
-			'modalButtons' => "<span class='tool btn btn-primary' onclick='VuFind.Account.addList(\"{$id}\"); return false;'>Create List</span>"
+			'modalButtons' => "<span class='tool btn btn-primary' onclick='AspenDiscovery.Account.addList(\"{$id}\"); return false;'>Create List</span>"
 		);
 		return $results;
 	}
@@ -733,7 +733,7 @@ class MyAccount_AJAX
 			$results = array(
 				'title'        => 'Change Hold Location',
 				'modalBody'    => $interface->fetch("MyAccount/changeHoldLocation.tpl"),
-				'modalButtons' => '<span class="tool btn btn-primary" onclick="VuFind.Account.doChangeHoldLocation(); return false;">Change Location</span>'
+				'modalButtons' => '<span class="tool btn btn-primary" onclick="AspenDiscovery.Account.doChangeHoldLocation(); return false;">Change Location</span>'
 			);
 		} else {
 			$results = array(
@@ -840,7 +840,7 @@ class MyAccount_AJAX
 		return array(
 				'title' => 'Select Citation Format',
 				'modalBody' => $pageContent,
-				'modalButtons' => '<input class="btn btn-primary" onclick="VuFind.Lists.processCiteListForm(); return false;" value="' . translate('Generate Citations') . '">'
+				'modalButtons' => '<input class="btn btn-primary" onclick="AspenDiscovery.Lists.processCiteListForm(); return false;" value="' . translate('Generate Citations') . '">'
 		);
 	}
 

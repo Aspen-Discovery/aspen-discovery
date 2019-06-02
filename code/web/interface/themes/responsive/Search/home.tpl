@@ -36,10 +36,10 @@
 			<div class="row" id="selected-browse-label">
 
 				<div class="btn-group btn-group-sm" data-toggle="buttons">
-					<label for="covers" title="Covers" class="btn btn-sm btn-default"><input onchange="VuFind.Browse.toggleBrowseMode(this.id)" type="radio" id="covers">
+					<label for="covers" title="Covers" class="btn btn-sm btn-default"><input onchange="AspenDiscovery.Browse.toggleBrowseMode(this.id)" type="radio" id="covers">
 						<span class="thumbnail-icon"></span><span> Covers</span>
 					</label>
-					<label for="grid" title="Grid" class="btn btn-sm btn-default"><input onchange="VuFind.Browse.toggleBrowseMode(this.id);" type="radio" id="grid">
+					<label for="grid" title="Grid" class="btn btn-sm btn-default"><input onchange="AspenDiscovery.Browse.toggleBrowseMode(this.id);" type="radio" id="grid">
 						<span class="grid-icon"></span><span> Grid</span>
 					</label>
 				</div>
@@ -59,7 +59,7 @@
 				</div>
 			</div>
 
-			<a onclick="return VuFind.Browse.getMoreResults()" role="button">
+			<a onclick="return AspenDiscovery.Browse.getMoreResults()" role="button">
 				<div class="row" id="more-browse-results">
 					<span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>
 				</div>
@@ -70,20 +70,20 @@
 <script type="text/javascript">
 	$(function(){ldelim}
 		{if $selectedBrowseCategory}
-			VuFind.Browse.curCategory = '{$selectedBrowseCategory->textId}';
-			{if $subCategoryTextId}VuFind.Browse.curSubCategory = '{$subCategoryTextId}';{/if}
+			AspenDiscovery.Browse.curCategory = '{$selectedBrowseCategory->textId}';
+			{if $subCategoryTextId}AspenDiscovery.Browse.curSubCategory = '{$subCategoryTextId}';{/if}
 		{/if}
 		{if !$onInternalIP}
-		if (!Globals.opac && VuFind.hasLocalStorage()){ldelim}
+		if (!Globals.opac && AspenDiscovery.hasLocalStorage()){ldelim}
 			var temp = window.localStorage.getItem('browseMode');
-			if (VuFind.Browse.browseModeClasses.hasOwnProperty(temp)) VuFind.Browse.browseMode = temp; {* if stored value is empty or a bad value, fall back on default setting ("null" returned when not set) *}
-			else VuFind.Browse.browseMode = '{$browseMode}';
+			if (AspenDiscovery.Browse.browseModeClasses.hasOwnProperty(temp)) AspenDiscovery.Browse.browseMode = temp; {* if stored value is empty or a bad value, fall back on default setting ("null" returned when not set) *}
+			else AspenDiscovery.Browse.browseMode = '{$browseMode}';
 		{rdelim}
-		else VuFind.Browse.browseMode = '{$browseMode}';
+		else AspenDiscovery.Browse.browseMode = '{$browseMode}';
 		{else}
-		VuFind.Browse.browseMode = '{$browseMode}';
+		AspenDiscovery.Browse.browseMode = '{$browseMode}';
 		{/if}
-		$('#'+VuFind.Browse.browseMode).parent('label').addClass('active'); {* show user which one is selected *}
-		VuFind.Browse.toggleBrowseMode();
+		$('#'+AspenDiscovery.Browse.browseMode).parent('label').addClass('active'); {* show user which one is selected *}
+		AspenDiscovery.Browse.toggleBrowseMode();
 	{rdelim});
 </script>

@@ -28,15 +28,10 @@
 </div>
 
 <script type="text/javascript">
-{* // to debug with validation off
-	$("#emailListForm").submit(function(){
-		VuFind.Lists.SendMyListEmail();
-		return false;
-	}); *}
 	{literal}
 	$("#emailListForm").validate({
 		submitHandler: function(){
-			VuFind.Lists.SendMyListEmail();
+			AspenDiscovery.Lists.SendMyListEmail();
 		}
 	});
 	{/literal}

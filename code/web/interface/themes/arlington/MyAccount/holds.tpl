@@ -42,7 +42,7 @@
 					{if is_array($recordList.$sectionKey) && count($recordList.$sectionKey) > 0}
 						<div id="pager" class="navbar form-inline">
 							<label for="{$sectionKey}HoldSort" class="control-label">{translate text='Sort by'}:&nbsp;</label>
-							<select name="{$sectionKey}HoldSort" id="{$sectionKey}HoldSort" class="form-control" onchange="VuFind.Account.changeAccountSort($(this).val(), '{$sectionKey}HoldSort');">
+							<select name="{$sectionKey}HoldSort" id="{$sectionKey}HoldSort" class="form-control" onchange="AspenDiscovery.Account.changeAccountSort($(this).val(), '{$sectionKey}HoldSort');">
 								{foreach from=$sortOptions[$sectionKey] item=sortDesc key=sortVal}
 									<option value="{$sortVal}"{if $defaultSortOption[$sectionKey] == $sortVal} selected="selected"{/if}>{translate text=$sortDesc}</option>
 								{/foreach}
@@ -50,7 +50,7 @@
 
 							{if !$hideCoversFormDisplayed}
 								{* Display the Hide Covers switch above the first section that has holds; and only display it once *}
-								<label for="hideCovers" class="control-label checkbox pull-right"> Hide Covers <input id="hideCovers" type="checkbox" onclick="VuFind.Account.toggleShowCovers(!$(this).is(':checked'))" {if $showCovers == false}checked="checked"{/if}></label>
+								<label for="hideCovers" class="control-label checkbox pull-right"> Hide Covers <input id="hideCovers" type="checkbox" onclick="AspenDiscovery.Account.toggleShowCovers(!$(this).is(':checked'))" {if $showCovers == false}checked="checked"{/if}></label>
 								{assign var="hideCoversFormDisplayed" value=true}
 							{/if}
 						</div>
@@ -76,9 +76,6 @@
 								<div>
 									<input type="hidden" name="withSelectedAction" value="">
 									<div id="holdsUpdateSelected{$sectionKey}Bottom" class="holdsUpdateSelected{$sectionKey}">
-										{*
-										<input type="submit" class="btn btn-sm btn-warning" name="cancelSelected" value="Cancel Selected" onclick="return VuFind.Account.cancelSelectedHolds()">
-										*}
 										<input type="submit" class="btn btn-sm btn-default" id="exportToExcel{if $sectionKey=='available'}Available{else}Unavailable{/if}Bottom" name="exportToExcel{if $sectionKey=='available'}Available{else}Unavailable{/if}" value="Export to Excel" >
 									</div>
 								</div>

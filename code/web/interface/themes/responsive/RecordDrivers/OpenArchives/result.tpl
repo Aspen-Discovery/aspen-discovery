@@ -3,7 +3,7 @@
 	{if $showCovers}
 		<div class="coversColumn col-xs-3 col-sm-3 col-md-3 col-lg-2 text-center">
 			{if $disableCoverArt != 1}
-				<a href="{$openArchiveUrl}" class="alignleft listResultImage" onclick="VuFind.OpenArchives.trackUsage('{$id}')">
+				<a href="{$openArchiveUrl}" class="alignleft listResultImage" onclick="AspenDiscovery.OpenArchives.trackUsage('{$id}')">
 					<img src="{$bookCoverUrl}" class="listResultImage img-thumbnail" alt="{translate text='Cover Image'}">
 				</a>
 			{/if}
@@ -17,11 +17,11 @@
 		<div class="row">
 			<div class="col-xs-12">
 				<span class="result-index">{$resultIndex})</span>&nbsp;
-				<a href="{$openArchiveUrl}" class="result-title notranslate" onclick="VuFind.OpenArchives.trackUsage('{$id}')">
+				<a href="{$openArchiveUrl}" class="result-title notranslate" onclick="AspenDiscovery.OpenArchives.trackUsage('{$id}')">
 					{if !$title|removeTrailingPunctuation}{translate text='Title not available'}{else}{$title|removeTrailingPunctuation|highlight|truncate:180:"..."}{/if}
 				</a>
 				{if isset($summScore)}
-					&nbsp;(<a href="#" onclick="return VuFind.showElementInPopup('Score Explanation', '#scoreExplanationValue{$summId|escape}');">{$summScore}</a>)
+					&nbsp;(<a href="#" onclick="return AspenDiscovery.showElementInPopup('Score Explanation', '#scoreExplanationValue{$summId|escape}');">{$summScore}</a>)
 				{/if}
 			</div>
 		</div>

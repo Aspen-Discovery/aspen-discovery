@@ -66,11 +66,11 @@
 		<div class="search_tools well small">
 			<strong>{translate text='Search Tools'}:</strong>
 			<a href="{$rssLink|escape}"><span class="silk feed">&nbsp;</span>{translate text='Get RSS Feed'}</a>
-			<a href="#" onclick="return VuFind.Account.ajaxLightbox('{$path}/Search/AJAX?method=getEmailForm', true); "><span class="silk email">&nbsp;</span>{translate text='Email this Search'}</a>
+			<a href="#" onclick="return AspenDiscovery.Account.ajaxLightbox('{$path}/Search/AJAX?method=getEmailForm', true); "><span class="silk email">&nbsp;</span>{translate text='Email this Search'}</a>
 			{if $savedSearch}
-				<a href="#" onclick="return VuFind.Account.saveSearch('{$searchId}')"><span class="silk delete">&nbsp;</span>{translate text='save_search_remove'}</a>
+				<a href="#" onclick="return AspenDiscovery.Account.saveSearch('{$searchId}')"><span class="silk delete">&nbsp;</span>{translate text='save_search_remove'}</a>
 			{else}
-				<a href="#" onclick="return VuFind.Account.saveSearch('{$searchId}')"><span class="silk add">&nbsp;</span>{translate text='save_search'}</a>
+				<a href="#" onclick="return AspenDiscovery.Account.saveSearch('{$searchId}')"><span class="silk add">&nbsp;</span>{translate text='save_search'}</a>
 			{/if}
 			<a href="{$excelLink|escape}"><span class="silk table_go">&nbsp;</span>{translate text='Export To Excel'}</a>
 		</div>
@@ -83,27 +83,14 @@
 			$('#home-page-search').show();  {*// Always show the searchbox for search results in mobile views.*}
 			{rdelim}
 
-{*  TODO: Show DPLA results on archive page?
-		{if $showDplaLink}
-		VuFind.DPLA.getDPLAResults('{$lookfor}');
-		{/if}
-*}
-
-		{*{include file="Search/results-displayMode-js.tpl"}*}
 		{if !$onInternalIP}
-		{*if (!Globals.opac &&VuFind.hasLocalStorage()){ldelim}*}
-		{*var temp = window.localStorage.getItem('searchResultsDisplayMode');*}
-		{*if (VuFind.Searches.displayModeClasses.hasOwnProperty(temp)) VuFind.Searches.displayMode = temp; *}{* if stored value is empty or a bad value, fall back on default setting ("null" returned when not set) *}
-		{*else VuFind.Searches.displayMode = '{$displayMode}';*}
-		{*{rdelim}*}
-		{*else*}
 		{* Because content is served on the page, have to set the mode that was used, even if the user didn't choose the mode. *}
-		VuFind.Searches.displayMode = '{$displayMode}';
+		AspenDiscovery.Searches.displayMode = '{$displayMode}';
 		{else}
-		VuFind.Searches.displayMode = '{$displayMode}';
+		AspenDiscovery.Searches.displayMode = '{$displayMode}';
 		Globals.opac = 1; {* set to true to keep opac browsers from storing browse mode *}
 		{/if}
-		$('#'+VuFind.Searches.displayMode).parent('label').addClass('active'); {* show user which one is selected *}
+		$('#'+AspenDiscovery.Searches.displayMode).parent('label').addClass('active'); {* show user which one is selected *}
 
 		{rdelim});
 </script>

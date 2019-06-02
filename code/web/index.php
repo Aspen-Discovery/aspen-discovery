@@ -12,7 +12,7 @@ global $memoryWatcher;
 loadModuleActionId();
 $timer->logTime("Loaded Module and Action Id");
 $memoryWatcher->logMemory("Loaded Module and Action Id");
-spl_autoload_register('vufind_autoloader');
+spl_autoload_register('aspen_autoloader');
 initializeSession();
 $timer->logTime("Initialized session");
 
@@ -731,7 +731,7 @@ function getGitBranch(){
 	$interface->assign('gitBranch', $branchName);
 }
 // Set up autoloader (needed for YAML)
-function vufind_autoloader($class) {
+function aspen_autoloader($class) {
 	if (substr($class, 0, 4) == 'CAS_') {
 		if (CAS_autoload($class)){
 		    return;

@@ -16,13 +16,6 @@
 		{/if}
 
 		<div id="download-options">
-			{* {if $canView}
-				{if $anonymousMasterDownload || ($loggedIn && $verifiedMasterDownload)}
-					<a class="btn btn-default" href="/Archive/{$pid}/DownloadOriginal">Download Original</a>
-				{elseif (!$loggedIn && $verifiedMasterDownload)}
-					<a class="btn btn-default" onclick="return VuFind.Account.followLinkIfLoggedIn(this)" href="/Archive/{$pid}/DownloadOriginal">Login to Download Original</a>
-				{/if}
-			{/if} *}
 			{if $allowRequestsForArchiveMaterials}
 				<a class="btn btn-default" href="{$path}/Archive/RequestCopy?pid={$pid}">Request Copy</a>
 			{/if}
@@ -30,7 +23,7 @@
 				<a class="btn btn-default" href="{$path}/Archive/ClaimAuthorship?pid={$pid}">Claim Authorship</a>
 			{/if}
 			{if $showFavorites == 1}
-				<a onclick="return VuFind.Archive.showSaveToListForm(this, '{$pid|escape}');" class="btn btn-default ">{translate text='Add to favorites'}</a>
+				<a onclick="return AspenDiscovery.Archive.showSaveToListForm(this, '{$pid|escape}');" class="btn btn-default ">{translate text='Add to favorites'}</a>
 			{/if}
 		</div>
 
@@ -39,6 +32,6 @@
 {/strip}
 <script type="text/javascript">
 	$().ready(function(){ldelim}
-		VuFind.Archive.loadExploreMore('{$pid|urlencode}');
+		AspenDiscovery.Archive.loadExploreMore('{$pid|urlencode}');
 		{rdelim});
 </script>

@@ -249,7 +249,7 @@ class GroupedWork_AJAX {
 			$formattedTitle = $interface->fetch('RecordDrivers/GroupedWork/scroller-title.tpl');
 		}else{
 			$originalId = $_REQUEST['id'];
-			$formattedTitle = "<div id=\"scrollerTitle{$scrollerName}{$index}\" class=\"scrollerTitle\" onclick=\"return VuFind.showElementInPopup('$title', '#noResults{$index}')\">" .
+			$formattedTitle = "<div id=\"scrollerTitle{$scrollerName}{$index}\" class=\"scrollerTitle\" onclick=\"return AspenDiscovery.showElementInPopup('$title', '#noResults{$index}')\">" .
 					"<img src=\"{$cover}\" class=\"scrollerTitleCover\" alt=\"{$title} Cover\"/>" .
 					"</div>";
 			$formattedTitle .= "<div id=\"noResults{$index}\" style=\"display:none\">
@@ -347,7 +347,7 @@ class GroupedWork_AJAX {
 		$results = array(
 				'title' => "<a href='$url'>{$recordDriver->getTitle()}</a>",
 				'modalBody' => $interface->fetch('GroupedWork/work-details.tpl'),
-				'modalButtons' => "<button onclick=\"return VuFind.GroupedWork.showSaveToListForm(this, '$escapedId');\" class=\"modal-buttons btn btn-primary\" style='float: left'>$buttonLabel</button>"
+				'modalButtons' => "<button onclick=\"return AspenDiscovery.GroupedWork.showSaveToListForm(this, '$escapedId');\" class=\"modal-buttons btn btn-primary\" style='float: left'>$buttonLabel</button>"
 					."<a href='$url'><button class='modal-buttons btn btn-primary'>More Info</button></a>"
 		);
 		return json_encode($results);
@@ -447,7 +447,7 @@ class GroupedWork_AJAX {
 						'prompt' => true,
 						'title' => 'Add a Review',
 						'modalBody' => $interface->fetch("GroupedWork/prompt-for-review-form.tpl"),
-						'modalButtons' => "<button class='tool btn btn-primary' onclick='VuFind.GroupedWork.showReviewForm(this, \"{$id}\");'>Submit A Review</button>"
+						'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.GroupedWork.showReviewForm(this, \"{$id}\");'>Submit A Review</button>"
 					);
 				} else {
 					$results = array(
@@ -502,7 +502,7 @@ class GroupedWork_AJAX {
 			$results = array(
 				'title' => $title,
 				'modalBody' => $interface->fetch("GroupedWork/review-form-body.tpl"),
-				'modalButtons' => "<button class='tool btn btn-primary' onclick='VuFind.GroupedWork.saveReview(\"{$id}\");'>Submit $title</button>"
+				'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.GroupedWork.saveReview(\"{$id}\");'>Submit $title</button>"
 			);
 		} else {
 			$results = array(
@@ -579,7 +579,7 @@ class GroupedWork_AJAX {
 		$results = array(
 				'title' => 'Share via Email',
 				'modalBody' => $interface->fetch("GroupedWork/email-form-body.tpl"),
-				'modalButtons' => "<button class='tool btn btn-primary' onclick='VuFind.GroupedWork.sendEmail(\"{$id}\"); return false;'>Send Email</button>"
+				'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.GroupedWork.sendEmail(\"{$id}\"); return false;'>Send Email</button>"
 //		'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#emailForm\").submit()'>Send Email</button>"
 		      // triggering submit action to trigger form validation
 		);
@@ -763,7 +763,7 @@ class GroupedWork_AJAX {
 		$results = array(
 				'title' => 'Add To List',
 				'modalBody' => $interface->fetch("GroupedWork/save.tpl"),
-				'modalButtons' => "<button class='tool btn btn-primary' onclick='VuFind.GroupedWork.saveToList(\"{$id}\"); return false;'>Save To List</button>"
+				'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.GroupedWork.saveToList(\"{$id}\"); return false;'>Save To List</button>"
 		);
 		return json_encode($results);
 	}

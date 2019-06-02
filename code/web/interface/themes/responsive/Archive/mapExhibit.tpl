@@ -40,18 +40,18 @@
 				<script type="text/javascript">
 					var infowindow;
 					function initMap() {ldelim}
-						VuFind.Archive.archive_map = new google.maps.Map(document.getElementById('exhibit-map'), {ldelim}
+						AspenDiscovery.Archive.archive_map = new google.maps.Map(document.getElementById('exhibit-map'), {ldelim}
 								center: {ldelim}lat: {$mapCenterLat}, lng: {$mapCenterLong}{rdelim},
 								zoom: {$mapZoom}
 						{rdelim});
 
-						VuFind.Archive.archive_info_window = new google.maps.InfoWindow({ldelim}{rdelim});
+						AspenDiscovery.Archive.archive_info_window = new google.maps.InfoWindow({ldelim}{rdelim});
 
 						{foreach from=$mappedPlaces item=place name=place}
 							{if $place.latitude && $place.longitude}
 								var marker{$smarty.foreach.place.index} = new google.maps.Marker({ldelim}
 									position: {ldelim}lat: {$place.latitude}, lng: {$place.longitude}{rdelim},
-									map: VuFind.Archive.archive_map,
+									map: AspenDiscovery.Archive.archive_map,
 									title: '{$place.label|escapeCSS} ({$place.count})',
 									icon: {ldelim}
 										path: google.maps.SymbolPath.CIRCLE,
@@ -65,34 +65,34 @@
 										{rdelim}
 								{rdelim});
 
-								VuFind.Archive.markers[{$smarty.foreach.place.index}] = marker{$smarty.foreach.place.index};
+								AspenDiscovery.Archive.markers[{$smarty.foreach.place.index}] = marker{$smarty.foreach.place.index};
 								marker{$smarty.foreach.place.index}.addListener('click', function(){ldelim}
-									VuFind.Archive.handleMapClick({$smarty.foreach.place.index}, '{$pid|urlencode}', '{$place.pid|urlencode}', '{$place.label|escape:javascript}', false, {$showTimeline});
+									AspenDiscovery.Archive.handleMapClick({$smarty.foreach.place.index}, '{$pid|urlencode}', '{$place.pid|urlencode}', '{$place.label|escape:javascript}', false, {$showTimeline});
 								{rdelim});
 
 								{if $selectedPlace == $place.pid}
 									{* Click the first marker so we show images by default *}
-									VuFind.Archive.handleMapClick({$smarty.foreach.place.index}, '{$pid|urlencode}', '{$place.pid|urlencode}', '{$place.label|escape:javascript}', false, {$showTimeline});
+									AspenDiscovery.Archive.handleMapClick({$smarty.foreach.place.index}, '{$pid|urlencode}', '{$place.pid|urlencode}', '{$place.label|escape:javascript}', false, {$showTimeline});
 								{/if}
 							{/if}
 						{/foreach}
 						{foreach from=$geolocatedObjects item=geolocatedObject name=geolocatedObjects}
 							var geomarker{$smarty.foreach.geolocatedObjects.index} = new google.maps.Marker({ldelim}
 								position: {ldelim}lat: {$geolocatedObject.latitude}, lng: {$geolocatedObject.longitude}{rdelim},
-								map: VuFind.Archive.archive_map,
+								map: AspenDiscovery.Archive.archive_map,
 								title: '{$geolocatedObject.label|escape:javascript}',
 								{rdelim});
 
-							VuFind.Archive.geomarkers[{$smarty.foreach.geolocatedObjects.index}] = geomarker{$smarty.foreach.geolocatedObjects.index};
+							AspenDiscovery.Archive.geomarkers[{$smarty.foreach.geolocatedObjects.index}] = geomarker{$smarty.foreach.geolocatedObjects.index};
 							geomarker{$smarty.foreach.geolocatedObjects.index}.addListener('click', function(){ldelim}
-								VuFind.Archive.showObjectInPopup('{$geolocatedObject.pid|urlencode}', {$smarty.foreach.geolocatedObjects.index}, 1);
+								AspenDiscovery.Archive.showObjectInPopup('{$geolocatedObject.pid|urlencode}', {$smarty.foreach.geolocatedObjects.index}, 1);
 								{rdelim});
 
 						{/foreach}
 						{foreach from=$unmappedPlaces item=place}
 							{if $selectedPlace == $place.pid}
 								{* Click the first marker so we show images by default *}
-								VuFind.Archive.handleMapClick(-1, '{$pid|urlencode}', '{$place.pid|urlencode}', '{$place.label|escape:javascript}', false, {$showTimeline});
+								AspenDiscovery.Archive.handleMapClick(-1, '{$pid|urlencode}', '{$place.pid|urlencode}', '{$place.label|escape:javascript}', false, {$showTimeline});
 							{/if}
 						{/foreach}
 					{rdelim}
@@ -111,14 +111,14 @@
 		</div>
 		{if count($unmappedPlaces) > 0}
 			<div class="col-sm-4">
-				<button class="btn btn-info btn-xs" onclick="VuFind.showElementInPopup('Unmapped Locations', '#unmappedLocations');">Show Unmapped Locations</button>
+				<button class="btn btn-info btn-xs" onclick="AspenDiscovery.showElementInPopup('Unmapped Locations', '#unmappedLocations');">Show Unmapped Locations</button>
 			</div>
 			<div id="unmappedLocations" style="display: none">
 				Click any location to view more information about that location.
 				<ol>
 					{foreach from=$unmappedPlaces item=place}
 						<li>
-							<a href="{$place.url}" onclick="VuFind.closeLightbox();return VuFind.Archive.handleMapClick(-1, '{$pid|urlencode}', '{$place.pid|urlencode}', '{$place.label|escape:javascript}', false, {$showTimeline});">
+							<a href="{$place.url}" onclick="AspenDiscovery.closeLightbox();return AspenDiscovery.Archive.handleMapClick(-1, '{$pid|urlencode}', '{$place.pid|urlencode}', '{$place.label|escape:javascript}', false, {$showTimeline});">
 								{$place.label} has {$place.count} objects
 							</a>
 						</li>
@@ -157,7 +157,7 @@
 						<a class="btn btn-small btn-default" href="{$repositoryLink}/datastream/MODS/edit" target="_blank">
 							Edit MODS Record
 						</a>
-						<a class="btn btn-small btn-default" href="#" onclick="return VuFind.Archive.clearCache('{$pid}');" target="_blank">
+						<a class="btn btn-small btn-default" href="#" onclick="return AspenDiscovery.Archive.clearCache('{$pid}');" target="_blank">
 							Clear Cache
 						</a>
 					</div>
@@ -172,6 +172,6 @@
 {/strip}
 <script type="text/javascript">
 	$().ready(function(){ldelim}
-		VuFind.Archive.loadExploreMore('{$pid|urlencode}');
+		AspenDiscovery.Archive.loadExploreMore('{$pid|urlencode}');
 	{rdelim});
 </script>

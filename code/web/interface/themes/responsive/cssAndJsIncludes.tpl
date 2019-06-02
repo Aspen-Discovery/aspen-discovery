@@ -14,7 +14,7 @@
 
 	{* Include correct all javascript *}
 	{if $ie8}
-		{* include to give responsive capability to ie8 browsers, but only on successful detection of those browsers. For that reason, don't include in vufind.min.js *}
+		{* include to give responsive capability to ie8 browsers, but only on successful detection of those browsers. For that reason, don't include in aspen.min.js *}
 		<script src="{$path}/interface/themes/responsive/js/lib/respond.min.js?v={$gitBranch|urlencode}"></script>
 	{/if}
 	{if $debugJs}
@@ -28,7 +28,7 @@
 		<script src="{$path}/interface/themes/responsive/js/lib/jquery.validate.min.js?v={$gitBranch|urlencode}"></script>
 
 		<script src="{$path}/interface/themes/responsive/js/lib/recaptcha_ajax.js?v={$gitBranch|urlencode}"></script>
-		{* Combined into ratings.js (part of the vufind.min.js)*}
+		{* Combined into ratings.js (part of the aspen.min.js)*}
 		{*<script src="{$path}/interface/themes/responsive/js/lib/rater.min.js"></script>*}
 		{*<script src="{$path}/interface/themes/responsive/js/lib/rater.js"></script>*}
 		<script src="{$path}/interface/themes/responsive/js/lib/bootstrap.min.js?v={$gitBranch|urlencode}"></script>
@@ -40,36 +40,36 @@
 		<script src="{$path}/interface/themes/responsive/js/lib/jquery.rwdImageMaps.min.js?v={$gitBranch|urlencode}"></script>
 
 		{* Load application specific Javascript *}
-		<script src="{$path}/interface/themes/responsive/js/vufind/globals.js?v={$gitBranch|urlencode}"></script>
-		<script src="{$path}/interface/themes/responsive/js/vufind/base.js?v={$gitBranch|urlencode}"></script>
-		<script src="{$path}/interface/themes/responsive/js/vufind/account.js?v={$gitBranch|urlencode}"></script>
-		<script src="{$path}/interface/themes/responsive/js/vufind/admin.js?v={$gitBranch|urlencode}"></script>
-		<script src="{$path}/interface/themes/responsive/js/vufind/archive.js?v={$gitBranch|urlencode}"></script>
-		<script src="{$path}/interface/themes/responsive/js/vufind/browse.js?v={$gitBranch|urlencode}"></script>
-		<script src="{$path}/interface/themes/responsive/js/vufind/dpla.js?v={$gitBranch|urlencode}"></script>
-		<script src="{$path}/interface/themes/responsive/js/vufind/econtent-record.js?v={$gitBranch|urlencode}"></script>
-		<script src="{$path}/interface/themes/responsive/js/vufind/grouped-work.js?v={$gitBranch|urlencode}"></script>
-		<script src="{$path}/interface/themes/responsive/js/vufind/lists.js?v={$gitBranch|urlencode}"></script>
-		<script src="{$path}/interface/themes/responsive/js/vufind/lists-widgets.js?v={$gitBranch|urlencode}"></script>
-		<script src="{$path}/interface/themes/responsive/js/vufind/materials-request.js?v={$gitBranch|urlencode}"></script>
-		<script src="{$path}/interface/themes/responsive/js/vufind/menu.js?v={$gitBranch|urlencode}"></script>
-		<script src="{$path}/interface/themes/responsive/js/vufind/overdrive.js?v={$gitBranch|urlencode}"></script>
-		<script src="{$path}/interface/themes/responsive/js/vufind/open-archives.js?v={$gitBranch|urlencode}"></script>
-		<script src="{$path}/interface/themes/responsive/js/vufind/hoopla.js?v={$gitBranch|urlencode}"></script>
-		<script src="{$path}/interface/themes/responsive/js/vufind/prospector.js?v={$gitBranch|urlencode}"></script>
-		<script src="{$path}/interface/themes/responsive/js/vufind/ratings.js?v={$gitBranch|urlencode}"></script>
-		<script src="{$path}/interface/themes/responsive/js/vufind/rbdigital.js?v={$gitBranch|urlencode}"></script>
-		<script src="{$path}/interface/themes/responsive/js/vufind/reading-history.js?v={$gitBranch|urlencode}"></script>
-		<script src="{$path}/interface/themes/responsive/js/vufind/record.js?v={$gitBranch|urlencode}"></script>
-		<script src="{$path}/interface/themes/responsive/js/vufind/responsive.js?v={$gitBranch|urlencode}"></script>
-		<script src="{$path}/interface/themes/responsive/js/vufind/results-list.js?v={$gitBranch|urlencode}"></script>
-		<script src="{$path}/interface/themes/responsive/js/vufind/searches.js?v={$gitBranch|urlencode}"></script>
-		<script src="{$path}/interface/themes/responsive/js/vufind/title-scroller.js?v={$gitBranch|urlencode}"></script>
-		<script src="{$path}/interface/themes/responsive/js/vufind/wikipedia.js?v={$gitBranch|urlencode}"></script>
+		<script src="{$path}/interface/themes/responsive/js/aspen/globals.js?v={$gitBranch|urlencode}"></script>
+		<script src="{$path}/interface/themes/responsive/js/aspen/base.js?v={$gitBranch|urlencode}"></script>
+		<script src="{$path}/interface/themes/responsive/js/aspen/account.js?v={$gitBranch|urlencode}"></script>
+		<script src="{$path}/interface/themes/responsive/js/aspen/admin.js?v={$gitBranch|urlencode}"></script>
+		<script src="{$path}/interface/themes/responsive/js/aspen/archive.js?v={$gitBranch|urlencode}"></script>
+		<script src="{$path}/interface/themes/responsive/js/aspen/browse.js?v={$gitBranch|urlencode}"></script>
+		<script src="{$path}/interface/themes/responsive/js/aspen/dpla.js?v={$gitBranch|urlencode}"></script>
+		<script src="{$path}/interface/themes/responsive/js/aspen/econtent-record.js?v={$gitBranch|urlencode}"></script>
+		<script src="{$path}/interface/themes/responsive/js/aspen/grouped-work.js?v={$gitBranch|urlencode}"></script>
+		<script src="{$path}/interface/themes/responsive/js/aspen/lists.js?v={$gitBranch|urlencode}"></script>
+		<script src="{$path}/interface/themes/responsive/js/aspen/lists-widgets.js?v={$gitBranch|urlencode}"></script>
+		<script src="{$path}/interface/themes/responsive/js/aspen/materials-request.js?v={$gitBranch|urlencode}"></script>
+		<script src="{$path}/interface/themes/responsive/js/aspen/menu.js?v={$gitBranch|urlencode}"></script>
+		<script src="{$path}/interface/themes/responsive/js/aspen/overdrive.js?v={$gitBranch|urlencode}"></script>
+		<script src="{$path}/interface/themes/responsive/js/aspen/open-archives.js?v={$gitBranch|urlencode}"></script>
+		<script src="{$path}/interface/themes/responsive/js/aspen/hoopla.js?v={$gitBranch|urlencode}"></script>
+		<script src="{$path}/interface/themes/responsive/js/aspen/prospector.js?v={$gitBranch|urlencode}"></script>
+		<script src="{$path}/interface/themes/responsive/js/aspen/ratings.js?v={$gitBranch|urlencode}"></script>
+		<script src="{$path}/interface/themes/responsive/js/aspen/rbdigital.js?v={$gitBranch|urlencode}"></script>
+		<script src="{$path}/interface/themes/responsive/js/aspen/reading-history.js?v={$gitBranch|urlencode}"></script>
+		<script src="{$path}/interface/themes/responsive/js/aspen/record.js?v={$gitBranch|urlencode}"></script>
+		<script src="{$path}/interface/themes/responsive/js/aspen/responsive.js?v={$gitBranch|urlencode}"></script>
+		<script src="{$path}/interface/themes/responsive/js/aspen/results-list.js?v={$gitBranch|urlencode}"></script>
+		<script src="{$path}/interface/themes/responsive/js/aspen/searches.js?v={$gitBranch|urlencode}"></script>
+		<script src="{$path}/interface/themes/responsive/js/aspen/title-scroller.js?v={$gitBranch|urlencode}"></script>
+		<script src="{$path}/interface/themes/responsive/js/aspen/wikipedia.js?v={$gitBranch|urlencode}"></script>
 	{else}
 		{* This is all merged using the merge_javascript.php file called automatically with a File Watcher*}
 		{* Code is minified using uglify.js *}
-		<script src="{$path}/interface/themes/responsive/js/vufind.min.js?v={$gitBranch|urlencode}"></script>
+		<script src="{$path}/interface/themes/responsive/js/aspen.min.js?v={$gitBranch|urlencode}"></script>
 	{/if}
 
 	{/strip}
@@ -96,7 +96,7 @@
 			Globals.automaticTimeoutLengthLoggedOut = {$automaticTimeoutLengthLoggedOut};
 			{/if}
 			{* Set Search Result Display Mode on Searchbox *}
-			{if !$onInternalIP}VuFind.Searches.getPreferredDisplayMode();VuFind.Archive.getPreferredDisplayMode();{/if}
+			{if !$onInternalIP}AspenDiscovery.Searches.getPreferredDisplayMode();AspenDiscovery.Archive.getPreferredDisplayMode();{/if}
 			{literal}
 		});
 		{/literal}
@@ -104,9 +104,9 @@
 
 	{if $includeAutoLogoutCode == true}
 		{if $debugJs}
-			<script type="text/javascript" src="{$path}/interface/themes/responsive/js/vufind/autoLogout.js?v={$gitBranch|urlencode}"></script>
+			<script type="text/javascript" src="{$path}/interface/themes/responsive/js/aspen/autoLogout.js?v={$gitBranch|urlencode}"></script>
 		{else}
-			<script type="text/javascript" src="{$path}/interface/themes/responsive/js/vufind/autoLogout.min.js?v={$gitBranch|urlencode}"></script>
+			<script type="text/javascript" src="{$path}/interface/themes/responsive/js/aspen/autoLogout.min.js?v={$gitBranch|urlencode}"></script>
 		{/if}
 	{/if}
 {/strip}

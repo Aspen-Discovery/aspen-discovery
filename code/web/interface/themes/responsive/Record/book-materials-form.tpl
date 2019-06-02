@@ -82,7 +82,7 @@
 		$(function(){
 			$('#bookMaterialForm').validate({
 				submitHandler: function(){
-					VuFind.Record.submitBookMaterialForm();
+					AspenDiscovery.Record.submitBookMaterialForm();
 				},
 				highlight: function(e){
 					$(e).closest('.form-group').addClass('has-error')

@@ -56,7 +56,7 @@
 						<a class="btn btn-small btn-default" href="{$repositoryLink}/datastream/MODS/edit" target="_blank">
 							Edit MODS Record
 						</a>
-						<a class="btn btn-small btn-default" href="#" onclick="return VuFind.Archive.clearCache('{$pid}');" target="_blank">
+						<a class="btn btn-small btn-default" href="#" onclick="return AspenDiscovery.Archive.clearCache('{$pid}');" target="_blank">
 							Clear Cache
 						</a>
 					</div>
@@ -68,7 +68,7 @@
 {/strip}
 <script type="text/javascript">
 	$().ready(function(){ldelim}
-		VuFind.Archive.handleTimelineClick('{$pid|urlencode}');
-		VuFind.Archive.loadExploreMore('{$pid|urlencode}');
+		AspenDiscovery.Archive.handleTimelineClick('{$pid|urlencode}');
+		AspenDiscovery.Archive.loadExploreMore('{$pid|urlencode}');
 	{rdelim});
 </script>

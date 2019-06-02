@@ -12,16 +12,16 @@
 					<div id="view-toggle" class="btn-group" role="group" data-toggle="buttons">
 						{if $anonymousMasterDownload || ($loggedIn && $verifiedMasterDownload)}
 						<label class="btn btn-group-small btn-default">
-							<input type="radio" name="pageView" id="view-toggle-pdf" autocomplete="off" onchange="VuFind.Archive.changeActiveBookViewer('pdf', VuFind.Archive.activeBookPage);">
+							<input type="radio" name="pageView" id="view-toggle-pdf" autocomplete="off" onchange="AspenDiscovery.Archive.changeActiveBookViewer('pdf', AspenDiscovery.Archive.activeBookPage);">
 							View As PDF
 						</label>
 						{/if}
 						<label class="btn btn-group-small btn-default">
-							<input type="radio" name="pageView" id="view-toggle-image" autocomplete="off" onchange="VuFind.Archive.changeActiveBookViewer('image', VuFind.Archive.activeBookPage);">
+							<input type="radio" name="pageView" id="view-toggle-image" autocomplete="off" onchange="AspenDiscovery.Archive.changeActiveBookViewer('image', AspenDiscovery.Archive.activeBookPage);">
 							View As Image
 						</label>
 						<label class="btn btn-group-small btn-default">
-							<input type="radio" name="pageView" id="view-toggle-transcription" autocomplete="off" onchange="VuFind.Archive.changeActiveBookViewer('transcription', VuFind.Archive.activeBookPage);">
+							<input type="radio" name="pageView" id="view-toggle-transcription" autocomplete="off" onchange="AspenDiscovery.Archive.changeActiveBookViewer('transcription', AspenDiscovery.Archive.activeBookPage);">
 							View Transcription
 						</label>
 					</div>
@@ -55,7 +55,7 @@
 				<a class="btn btn-default" href="{$path}/Archive/ClaimAuthorship?pid={$pid}">Claim Authorship</a>
 			{/if}
 			{if $showFavorites == 1}
-				<a onclick="return VuFind.Archive.showSaveToListForm(this, '{$pid|escape}');" class="btn btn-default ">{translate text='Add to favorites'}</a>
+				<a onclick="return AspenDiscovery.Archive.showSaveToListForm(this, '{$pid|escape}');" class="btn btn-default ">{translate text='Add to favorites'}</a>
 			{/if}
 		</div>
 
@@ -67,10 +67,10 @@
 
 <script type="text/javascript">
 	{if !($anonymousMasterDownload || ($loggedIn && $verifiedMasterDownload))}
-	VuFind.Archive.allowPDFView = false;
+	AspenDiscovery.Archive.allowPDFView = false;
 	{/if}
 	{assign var=pageCounter value=1}
-	VuFind.Archive.pageDetails['{$page.pid}'] = {ldelim}
+	AspenDiscovery.Archive.pageDetails['{$page.pid}'] = {ldelim}
 		pid: '{$page.pid}',
 		pdf: {if $anonymousMasterDownload || ($loggedIn && $verifiedMasterDownload)}'{$page.pdf}'{else}''{/if},
 		jp2: '{$page.jp2}',
@@ -80,8 +80,8 @@
 
 	$().ready(function(){ldelim}
 		{if $canView}
-		VuFind.Archive.changeActiveBookViewer('{$activeViewer}', '{$page.pid}')
+		AspenDiscovery.Archive.changeActiveBookViewer('{$activeViewer}', '{$page.pid}')
 		{/if}
-		VuFind.Archive.loadExploreMore('{$pid|urlencode}');
+		AspenDiscovery.Archive.loadExploreMore('{$pid|urlencode}');
 	{rdelim});
 </script>

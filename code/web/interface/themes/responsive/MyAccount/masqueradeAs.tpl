@@ -19,7 +19,7 @@
 		{literal}
 		$("#masqueradeForm").validate({
 			submitHandler: function(){
-				VuFind.Account.initiateMasquerade();
+				AspenDiscovery.Account.initiateMasquerade();
 			}
 		});
 		{/literal}

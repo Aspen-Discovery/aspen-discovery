@@ -44,6 +44,6 @@
 {/strip}
 <script type="text/javascript">
 	$().ready(function(){ldelim}
-		VuFind.Archive.loadExploreMore('{$pid|urlencode}');
+		AspenDiscovery.Archive.loadExploreMore('{$pid|urlencode}');
 		{rdelim});
 </script>

@@ -1,29 +1,29 @@
-VuFind.Menu = (function(){
+AspenDiscovery.Menu = (function(){
 	$(function(){
 		// Page Initializations
-		VuFind.Menu.AllSideBarSelectors =
-				VuFind.Menu.SearchBoxSelectors + ',' +
-				VuFind.Menu.SideBarSearchSelectors + ',' +
-				VuFind.Menu.SideBarAccountSelectors + ',' +
-				VuFind.Menu.SideBarMenuSelectors + ',' +
-				VuFind.Menu.ExploreMoreSelectors;
+		AspenDiscovery.Menu.AllSideBarSelectors =
+				AspenDiscovery.Menu.SearchBoxSelectors + ',' +
+				AspenDiscovery.Menu.SideBarSearchSelectors + ',' +
+				AspenDiscovery.Menu.SideBarAccountSelectors + ',' +
+				AspenDiscovery.Menu.SideBarMenuSelectors + ',' +
+				AspenDiscovery.Menu.ExploreMoreSelectors;
 
 		// Set up Sticky Menus
-		VuFind.Menu.stickyMenu('#horizontal-menu-bar-container', 'sticky-menu-bar');
-		VuFind.Menu.stickyMenu('#vertical-menu-bar', 'sticky-sidebar');
+		AspenDiscovery.Menu.stickyMenu('#horizontal-menu-bar-container', 'sticky-menu-bar');
+		AspenDiscovery.Menu.stickyMenu('#vertical-menu-bar', 'sticky-sidebar');
 
 		if ($('#horizontal-menu-bar-container').is(':visible')) {
-			VuFind.Menu.hideAllFast();
-			VuFind.Menu.mobileMode = true;
+			AspenDiscovery.Menu.hideAllFast();
+			AspenDiscovery.Menu.mobileMode = true;
 		}
 
 		// Trigger mode on resize between horizontal menu & vertical menu
 		$(window).resize(function(){
-			if (VuFind.Menu.mobileMode) {
+			if (AspenDiscovery.Menu.mobileMode) {
 				// Entered Sidebar Mode
 				if (!$('#horizontal-menu-bar-container').is(':visible')) { // this depends on horizontal menu always being present
 				//	console.log('Entered SideBar Mode');
-					VuFind.Menu.mobileMode = false;
+					AspenDiscovery.Menu.mobileMode = false;
 
 					if ($('#vertical-menu-bar').length) { // Sidebar Menu is in use
 						//console.log('SideBar Menu is on');
@@ -35,60 +35,60 @@ VuFind.Menu = (function(){
 						$('.menu-bar-option').removeClass('menu-icon-selected'); // Remove from any selected
 
 						// Hide SideBar Content
-						VuFind.Menu.hideAllFast();
+						AspenDiscovery.Menu.hideAllFast();
 
 						// Select the sidebar menu that was selected in the mobile menu, if any
 						if ($('#mobile-menu-search-icon', '#horizontal-menu-bar-container').is('.menu-icon-selected')) {
 
 							// Reset Refine Search Button
-							VuFind.Menu.Mobile.resetRefineSearch();
+							AspenDiscovery.Menu.Mobile.resetRefineSearch();
 
-							VuFind.Menu.SideBar.showSearch('.menu-bar-option:nth-child(1)>a')
+							AspenDiscovery.Menu.SideBar.showSearch('.menu-bar-option:nth-child(1)>a')
 						}
 						else if ($('#mobile-menu-account-icon', '#horizontal-menu-bar-container').is('.menu-icon-selected')) {
-							VuFind.Menu.SideBar.showAccount('.menu-bar-option:nth-child(2)>a')
+							AspenDiscovery.Menu.SideBar.showAccount('.menu-bar-option:nth-child(2)>a')
 						}
 						else if ($('#mobile-menu-menu-icon', '#horizontal-menu-bar-container').is('.menu-icon-selected')) {
-							VuFind.Menu.SideBar.showMenu('.menu-bar-option:nth-child(3)>a')
+							AspenDiscovery.Menu.SideBar.showMenu('.menu-bar-option:nth-child(3)>a')
 						}
 						else if ($('#mobile-menu-explore-more-icon', '#horizontal-menu-bar-container').is('.menu-icon-selected')) {
-							VuFind.Menu.SideBar.showExploreMore('.menu-bar-option:nth-child(4)>a')
+							AspenDiscovery.Menu.SideBar.showExploreMore('.menu-bar-option:nth-child(4)>a')
 						} else {
 							// if nothing selected, Collapse sidebar
-							if ($(VuFind.Menu.AllSideBarSelectors).filter(':visible').length == 0) {
-								VuFind.Menu.collapseSideBar();
+							if ($(AspenDiscovery.Menu.AllSideBarSelectors).filter(':visible').length == 0) {
+								AspenDiscovery.Menu.collapseSideBar();
 							}
 						}
 					} else {
 						//console.log('No Sidebar Menu. Side bar content being displayed');
 						// Show All Sidebar Stuff when Sidebar menu is not in use.
-						$(VuFind.Menu.AllSideBarSelectors).show();
+						$(AspenDiscovery.Menu.AllSideBarSelectors).show();
 					}
 				}
 			} else {
 				// Entered Mobile Mode
 				if ($('#horizontal-menu-bar-container').is(':visible')) {
 					//console.log('Entered Mobile Mode');
-					VuFind.Menu.mobileMode = true;
+					AspenDiscovery.Menu.mobileMode = true;
 
 					// Un-select any horizontal option that might have been selected previously
 					$('.menu-icon-selected', '#horizontal-menu-bar-container').removeClass('menu-icon-selected');
 
 					// Hide SideBar Content
-					VuFind.Menu.hideAllFast();
+					AspenDiscovery.Menu.hideAllFast();
 
 					// Select the corresponding menu option if one was selected in the sidebar menu
 					if ($('.menu-bar-option:nth-child(1)', '#vertical-menu-bar').is('.menu-icon-selected')) {
-						VuFind.Menu.Mobile.showSearch('#mobile-menu-search-icon')
+						AspenDiscovery.Menu.Mobile.showSearch('#mobile-menu-search-icon')
 					}
 					else if ($('.menu-bar-option:nth-child(2)', '#vertical-menu-bar').is('.menu-icon-selected')) {
-						VuFind.Menu.Mobile.showAccount('#mobile-menu-account-icon')
+						AspenDiscovery.Menu.Mobile.showAccount('#mobile-menu-account-icon')
 					}
 					else if ($('.menu-bar-option:nth-child(3)', '#vertical-menu-bar').is('.menu-icon-selected')) {
-						VuFind.Menu.Mobile.showMenu('#mobile-menu-menu-icon')
+						AspenDiscovery.Menu.Mobile.showMenu('#mobile-menu-menu-icon')
 					}
 					else if ($('.menu-bar-option:nth-child(4)', '#vertical-menu-bar').is('.menu-icon-selected')) {
-						VuFind.Menu.Mobile.showExploreMore('#mobile-menu-explore-more-icon')
+						AspenDiscovery.Menu.Mobile.showExploreMore('#mobile-menu-explore-more-icon')
 					}
 				}
 			}
@@ -99,7 +99,7 @@ VuFind.Menu = (function(){
 
 	// Private Function for Menu.js functions only
 	var reloadRelatedTitles = function() {
-		if ($(VuFind.Menu.ExploreMoreSelectors).is(':visible')) {
+		if ($(AspenDiscovery.Menu.ExploreMoreSelectors).is(':visible')) {
 			$('.jcarousel').jcarousel('reload')
 		}
 	};
@@ -155,11 +155,11 @@ VuFind.Menu = (function(){
 		// This version is for hiding content without using an animation.
 		// This is important for the initial page load, putting content in the necessary state with out being distracting
 		hideAllFast: function(){
-			return $(VuFind.Menu.AllSideBarSelectors).filter(':visible').hide() // return of object is needed for $when(VuFind.Menu.hideAll()).done() calls
+			return $(AspenDiscovery.Menu.AllSideBarSelectors).filter(':visible').hide() // return of object is needed for $when(AspenDiscovery.Menu.hideAll()).done() calls
 		},
 
 		collapseSideBar: function(){
-			VuFind.Menu.SideBar.initialLoadDone = true;
+			AspenDiscovery.Menu.SideBar.initialLoadDone = true;
 			$('#side-bar,#vertical-menu-bar-container').addClass('collapsedSidebar');
 			$('#main-content-with-sidebar').addClass('mainContentWhenSideBarCollapsed');
 			$('#main-content-with-sidebar .jcarousel').jcarousel('reload'); // resize carousels in the main content sections
@@ -172,7 +172,7 @@ VuFind.Menu = (function(){
 		},
 
 		reloadRelatedTitles: function() {
-			if ($(VuFind.Menu.ExploreMoreSelectors).is(':visible')) {
+			if ($(AspenDiscovery.Menu.ExploreMoreSelectors).is(':visible')) {
 				$('.jcarousel').jcarousel('reload')
 			}
 		},
@@ -183,10 +183,10 @@ VuFind.Menu = (function(){
 
 			hideAll: function(){
 				var animationLength = 0;
-				if (VuFind.Menu.SideBar.initialLoadDone) {
+				if (AspenDiscovery.Menu.SideBar.initialLoadDone) {
 					animationLength = 350;
 				}
-				return $(VuFind.Menu.AllSideBarSelectors).filter(':visible').animate({width:'toggle'},animationLength); // slide left to right
+				return $(AspenDiscovery.Menu.AllSideBarSelectors).filter(':visible').animate({width:'toggle'},animationLength); // slide left to right
 			},
 
 			showMenuSection: function(sectionSelector, clickedElement, afterAnimationAction){
@@ -204,12 +204,12 @@ VuFind.Menu = (function(){
 						else {
 							$('.menu-bar-option').removeClass('menu-icon-selected'); // Remove from any selected
 							parent.addClass('menu-icon-selected');
-							VuFind.Menu.openSideBar();
+							AspenDiscovery.Menu.openSideBar();
 							var animationLength = 0;
-							if (VuFind.Menu.SideBar.initialLoadDone) {
+							if (AspenDiscovery.Menu.SideBar.initialLoadDone) {
 								animationLength = 350;
 							} else {
-								VuFind.Menu.SideBar.initialLoadDone = true;
+								AspenDiscovery.Menu.SideBar.initialLoadDone = true;
 							}
 							$.when( $(sectionSelector).animate({width:'toggle'},animationLength) ).done(afterAnimationAction); // slide left to right
 						}
@@ -219,26 +219,26 @@ VuFind.Menu = (function(){
 				// Collapse side bar when no content is visible in it
 				//   Sometimes a Selected Menu option may be empty any way (ie search menu w/ horizontal search box on home page)
 				.done(function(){
-					if ($(VuFind.Menu.AllSideBarSelectors).filter(':visible').length == 0) {
-						VuFind.Menu.collapseSideBar();
+					if ($(AspenDiscovery.Menu.AllSideBarSelectors).filter(':visible').length == 0) {
+						AspenDiscovery.Menu.collapseSideBar();
 					}
 				})
 			},
 
 			showSearch: function(clickedElement){
-				this.showMenuSection(VuFind.Menu.SideBarSearchSelectors, clickedElement);
+				this.showMenuSection(AspenDiscovery.Menu.SideBarSearchSelectors, clickedElement);
 			},
 
 			showMenu: function(clickedElement){
-				this.showMenuSection(VuFind.Menu.SideBarMenuSelectors, clickedElement)
+				this.showMenuSection(AspenDiscovery.Menu.SideBarMenuSelectors, clickedElement)
 			},
 
 			showAccount: function(clickedElement){
-				this.showMenuSection(VuFind.Menu.SideBarAccountSelectors, clickedElement)
+				this.showMenuSection(AspenDiscovery.Menu.SideBarAccountSelectors, clickedElement)
 			},
 
 			showExploreMore: function(clickedElement){
-				this.showMenuSection(VuFind.Menu.ExploreMoreSelectors, clickedElement, reloadRelatedTitles)
+				this.showMenuSection(AspenDiscovery.Menu.ExploreMoreSelectors, clickedElement, reloadRelatedTitles)
 			},
 
 		},
@@ -246,13 +246,13 @@ VuFind.Menu = (function(){
 		// Functions for the Mobile/Horizontal Menu
 		Mobile: {
 			hideAll: function(){
-				return $(VuFind.Menu.AllSideBarSelectors).filter(':visible').slideUp() // return of object is needed for $.when(VuFind.Menu.hideAll()).done() calls
+				return $(AspenDiscovery.Menu.AllSideBarSelectors).filter(':visible').slideUp() // return of object is needed for $.when(AspenDiscovery.Menu.hideAll()).done() calls
 			},
 
 			showMenuSection: function(sectionSelector, clickedElement){
 				return $.when(this.hideAll() ).done(function(){
 					var elem = $(clickedElement);
-						VuFind.Menu.openSideBar();  // covers the case when view has switched from sidebar mode to mobile mode
+						AspenDiscovery.Menu.openSideBar();  // covers the case when view has switched from sidebar mode to mobile mode
 						if ( elem.is('.menu-icon-selected')){
 							elem.removeClass('menu-icon-selected');
 
@@ -280,16 +280,16 @@ VuFind.Menu = (function(){
 			},
 
 			showMenu: function(clickedElement){
-				this.showMenuSection(VuFind.Menu.SideBarMenuSelectors, clickedElement)
+				this.showMenuSection(AspenDiscovery.Menu.SideBarMenuSelectors, clickedElement)
 			},
 
 			showAccount: function(clickedElement){
-				this.showMenuSection(VuFind.Menu.SideBarAccountSelectors, clickedElement);
+				this.showMenuSection(AspenDiscovery.Menu.SideBarAccountSelectors, clickedElement);
 				$('#myAccountPanel').filter(':not(.in)').collapse('show');  // Open up the MyAccount Section, if it is not open. (.collapse('show') acts like a toggle instead of always showing. plb 2-12-2016)
 			},
 
 			showExploreMore: function(clickedElement){
-				this.showMenuSection(VuFind.Menu.ExploreMoreSelectors, clickedElement)
+				this.showMenuSection(AspenDiscovery.Menu.ExploreMoreSelectors, clickedElement)
 						.done(reloadRelatedTitles)
 			},
 
@@ -309,20 +309,20 @@ VuFind.Menu = (function(){
 				let btn = $('#refineSearchButton');
 				let text = btn.text();
 				if (text == 'Refine Search') {
-					$(VuFind.Menu.SideBarSearchSelectors).slideDown();
+					$(AspenDiscovery.Menu.SideBarSearchSelectors).slideDown();
 					btn.text('Hide Refine Search');
 				}
 				if (text == 'Hide Refine Search') {
-					$(VuFind.Menu.SideBarSearchSelectors).slideUp();
+					$(AspenDiscovery.Menu.SideBarSearchSelectors).slideUp();
 					btn.text('Refine Search');
 				}
 			},
 
 			resetRefineSearch: function(){
-				$(VuFind.Menu.SideBarSearchSelectors).hide();
+				$(AspenDiscovery.Menu.SideBarSearchSelectors).hide();
 				$('#refineSearchButton').text('Refine Search');
 			}
 
 		}
 	}
-}(VuFind.Menu || {}));
+}(AspenDiscovery.Menu || {}));

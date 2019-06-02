@@ -16,17 +16,14 @@
 						<div class="col-tn-3 col-xs-4 col-md-3 manifestation-format">
 							{if $relatedManifestation.numRelatedRecords == 1}
 								<a class="btn btn-xs btn-primary" href="{$relatedManifestation.url}">{$relatedManifestation.format}</a>
-								{*<a href="#" class="btn btn-xs btn-primary" onclick="return VuFind.ResultsList.toggleRelatedManifestations('{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}');">*}
-									{*{$relatedManifestation.format}*}
-								{*</a>*}
-								<a href="#" onclick="return VuFind.ResultsList.toggleRelatedManifestations('{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}');">
+								<a href="#" onclick="return AspenDiscovery.ResultsList.toggleRelatedManifestations('{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}');">
 									<span class="manifestation-toggle-text label label-default" id='manifestation-toggle-text-{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}'>Show&nbsp;Edition</span>
 								</a>
 							{else}
-								<a href="#" class="btn btn-xs btn-primary" onclick="return VuFind.ResultsList.toggleRelatedManifestations('{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}');">
+								<a href="#" class="btn btn-xs btn-primary" onclick="return AspenDiscovery.ResultsList.toggleRelatedManifestations('{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}');">
 									{$relatedManifestation.format}
 								</a>
-								<a href="#" onclick="return VuFind.ResultsList.toggleRelatedManifestations('{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}');">
+								<a href="#" onclick="return AspenDiscovery.ResultsList.toggleRelatedManifestations('{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}');">
 									<span class="manifestation-toggle-text label label-info" id='manifestation-toggle-text-{$id|escapeCSS}_{$relatedManifestation.format|escapeCSS}'>Show&nbsp;Editions</span>
 								</a>
 							{/if}
@@ -46,7 +43,7 @@
 								<div class="btn-group btn-group-vertical btn-block">
 									{foreach from=$relatedManifestation.actions item=curAction}
 										{if $curAction.url && strlen($curAction.url) > 0}
-											<a href="{$curAction.url}" class="btn btn-xs btn-info" onclick="{if $curAction.requireLogin}return VuFind.Account.followLinkIfLoggedIn(this, '{$curAction.url}');{/if}" {if $curAction.alt}title="{$curAction.alt}"{/if}>{$curAction.title}</a>
+											<a href="{$curAction.url}" class="btn btn-xs btn-info" onclick="{if $curAction.requireLogin}return AspenDiscovery.Account.followLinkIfLoggedIn(this, '{$curAction.url}');{/if}" {if $curAction.alt}title="{$curAction.alt}"{/if}>{$curAction.title}</a>
 										{else}
 											<a href="#" class="btn btn-xs btn-info" onclick="{$curAction.onclick}" {if $curAction.alt}title="{$curAction.alt}"{/if}>{$curAction.title}</a>
 										{/if}

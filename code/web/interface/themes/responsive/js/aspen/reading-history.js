@@ -1,4 +1,4 @@
-VuFind.Account.ReadingHistory = (function(){
+AspenDiscovery.Account.ReadingHistory = (function(){
 	return {
 		deletedMarkedAction: function (){
 			if (confirm('The marked items will be irreversibly deleted from your reading history.  Proceed?')){
@@ -36,4 +36,4 @@ VuFind.Account.ReadingHistory = (function(){
 			return false;
 		}
 	};
-}(VuFind.Account.ReadingHistory || {}));
+}(AspenDiscovery.Account.ReadingHistory || {}));

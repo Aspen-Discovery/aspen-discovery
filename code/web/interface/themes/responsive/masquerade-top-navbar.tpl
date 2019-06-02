@@ -14,7 +14,7 @@
 				</div>
 
 				<div id="masquerade-header-end" class="col-tn-5 col-xs-4 col-sm-3 col-lg-2 pull-right">
-					<button class="btn btn-masquerade btn-block pull-right" onclick="VuFind.Account.endMasquerade()">End Masquerade</button>
+					<button class="btn btn-masquerade btn-block pull-right" onclick="AspenDiscovery.Account.endMasquerade()">End Masquerade</button>
 				</div>
 			</div>
 

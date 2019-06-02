@@ -1,7 +1,6 @@
 {if $showRatings == 1}
 	<div{if $ratingClass} class="{$ratingClass} rate{$summId}"{/if}>
-		{*<div class="title-rating" onclick="return VuFind.GroupedWork.showReviewForm(this, '{$summId}');">*}
-		<div class="title-rating rater" {*onclick="return VuFind.GroupedWork.showReviewForm(this, '{$summId}');"*}
+		<div class="title-rating rater"
 						{* AJAX rater data fields *}
          data-user_rating="{$ratingData.user}" data-average_rating="{$ratingData.average}"
          data-id="{$id}"
@@ -17,7 +16,7 @@
 			</span>
 		</div>
 		{if $showNotInterested == true}
-			<button id="notInterested{$summId}" class="button notInterested" title="Select Not Interested if you don't want to see this title again." onclick="return VuFind.GroupedWork.markNotInterested('{$summId}');">Not&nbsp;Interested</button>
+			<button id="notInterested{$summId}" class="button notInterested" title="Select Not Interested if you don't want to see this title again." onclick="return AspenDiscovery.GroupedWork.markNotInterested('{$summId}');">Not&nbsp;Interested</button>
 		{/if}
 	</div>
 {/if}

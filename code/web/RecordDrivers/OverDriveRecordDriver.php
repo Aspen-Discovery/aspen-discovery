@@ -128,7 +128,7 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
         foreach ($items as $key => $item){
             $item->links = array();
             if ($addCheckoutLink){
-                $checkoutLink = "return VuFind.OverDrive.checkOutTitle('{$this->getUniqueID()}');";
+                $checkoutLink = "return AspenDiscovery.OverDrive.checkOutTitle('{$this->getUniqueID()}');";
                 $item->links[] = array(
                     'onclick' => $checkoutLink,
                     'text' => 'Check Out',
@@ -138,7 +138,7 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
                 );
             }else if ($addPlaceHoldLink){
                 $item->links[] = array(
-                    'onclick' => "return VuFind.OverDrive.placeHold('{$this->getUniqueID()}', '{$item->numericId}');",
+                    'onclick' => "return AspenDiscovery.OverDrive.placeHold('{$this->getUniqueID()}', '{$item->numericId}');",
                     'text' => 'Place Hold',
                     'overDriveId' => $this->getUniqueID(),
                     'formatId' => $item->numericId,
@@ -773,13 +773,13 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 		if ($isAvailable){
 			$actions[] = array(
 				'title' => 'Check Out OverDrive',
-				'onclick' => "return VuFind.OverDrive.checkOutTitle('{$this->id}');",
+				'onclick' => "return AspenDiscovery.OverDrive.checkOutTitle('{$this->id}');",
 				'requireLogin' => false,
 			);
 		}else{
 			$actions[] = array(
 				'title' => 'Place Hold OverDrive',
-				'onclick' => "return VuFind.OverDrive.placeHold('{$this->id}');",
+				'onclick' => "return AspenDiscovery.OverDrive.placeHold('{$this->id}');",
 				'requireLogin' => false,
 			);
 		}

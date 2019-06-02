@@ -1,4 +1,4 @@
-VuFind.ResultsList = (function(){
+AspenDiscovery.ResultsList = (function(){
 	return {
 		statusList: [],
 		seriesList: [],
@@ -15,7 +15,7 @@ VuFind.ResultsList = (function(){
 					html: true,
 					trigger: 'hover',
 					title: 'Description',
-					content: VuFind.ResultsList.loadDescription(descriptionContentClass)
+					content: AspenDiscovery.ResultsList.loadDescription(descriptionContentClass)
 				};
 				descElement.popover(options);
 			});
@@ -37,7 +37,7 @@ VuFind.ResultsList = (function(){
 		},
 
 		moreFacetPopup: function(title, name){
-			VuFind.showMessage(title, $("#moreFacetPopup_" + name).html());
+			AspenDiscovery.showMessage(title, $("#moreFacetPopup_" + name).html());
 		},
 
 		toggleRelatedManifestations: function(manifestationId){
@@ -53,4 +53,4 @@ VuFind.ResultsList = (function(){
 		}
 
 	};
-}(VuFind.ResultsList || {}));
+}(AspenDiscovery.ResultsList || {}));

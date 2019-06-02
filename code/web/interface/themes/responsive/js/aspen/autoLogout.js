@@ -238,13 +238,13 @@ $(document).ready(function(){
 var autoLogoutTimer;
 function showLogoutMessage(){
 	var url = Globals.path + '/AJAX/JSON?method=getAutoLogoutPrompt';
-	VuFind.Account.ajaxLightbox(url, false);
+	AspenDiscovery.Account.ajaxLightbox(url, false);
 	autoLogoutTimer = setTimeout("endSession()", 10000);
 }
 
 function showRedirectToHomeMessage(){
 	var url = Globals.path + '/AJAX/JSON?method=getReturnToHomePrompt';
-	VuFind.Account.ajaxLightbox(url, false);
+	AspenDiscovery.Account.ajaxLightbox(url, false);
 	autoLogoutTimer = setTimeout("endSession()", 10000);
 }
 
@@ -271,14 +271,14 @@ function startIdleTimer(){
 
 function continueSession(){
 	clearTimeout(autoLogoutTimer);
-	VuFind.closeLightbox();
+	AspenDiscovery.closeLightbox();
 	startIdleTimer();
 }
 
 function endSession(){
 	var masqueradeMode = $('#masquerade-header').is(':visible');
 	if (masqueradeMode) {
-		VuFind.Account.endMasquerade()
+		AspenDiscovery.Account.endMasquerade()
 	} else {
 		//Redirect to logout page
 		window.location = Globals.path + "/MyAccount/Logout";

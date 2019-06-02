@@ -97,9 +97,9 @@
 							<a href="{$record.downloadUrl}" target="_blank" class="btn btn-sm btn-primary">Download</a>
 						{/if}
 						{if $record.canRenew}
-							<a href="#" onclick="return VuFind.Rbdigital.renewCheckout('{$record.userId}', '{$record.recordId}');" class="btn btn-sm btn-info">Renew Checkout</a>
+							<a href="#" onclick="return AspenDiscovery.Rbdigital.renewCheckout('{$record.userId}', '{$record.recordId}');" class="btn btn-sm btn-info">Renew Checkout</a>
 						{/if}
-						<a href="#" onclick="return VuFind.Rbdigital.returnCheckout('{$record.userId}', '{$record.recordId}');" class="btn btn-sm btn-warning">Return&nbsp;Now</a>
+						<a href="#" onclick="return AspenDiscovery.Rbdigital.returnCheckout('{$record.userId}', '{$record.recordId}');" class="btn btn-sm btn-warning">Return&nbsp;Now</a>
 					</div>
 				</div>
 			</div>

@@ -1,4 +1,4 @@
-VuFind.Prospector = (function(){
+AspenDiscovery.Prospector = (function(){
 	return {
 		getProspectorResults: function(prospectorNumTitlesToLoad, prospectorSavedSearchId){
 			var url = Globals.path + "/Search/AJAX";
@@ -40,4 +40,4 @@ VuFind.Prospector = (function(){
 			}
 		}
 	}
-}(VuFind.Prospector || {}));
+}(AspenDiscovery.Prospector || {}));

@@ -132,7 +132,7 @@ class Hoopla_AJAX extends Action
 						array(
 							'title'   => 'Hoopla Check Out',
 							'body'    => $interface->fetch('Hoopla/ajax-hoopla-checkout-prompt.tpl'),
-							'buttons' => '<button class="btn btn-primary" type= "button" title="Check Out" onclick="return VuFind.Hoopla.checkOutHooplaTitle(\'' . $id . '\');">Check Out</button>'
+							'buttons' => '<button class="btn btn-primary" type= "button" title="Check Out" onclick="return AspenDiscovery.Hoopla.checkOutHooplaTitle(\'' . $id . '\');">Check Out</button>'
 						);
 				} elseif (count($hooplaUsers) == 1) {
 					/** @var User $hooplaUser */
@@ -154,7 +154,7 @@ class Hoopla_AJAX extends Action
                                     'title'   => 'Create Hoopla Account',
                                     'body'    => $interface->fetch('Hoopla/ajax-hoopla-single-user-checkout-prompt.tpl'),
                                     'buttons' =>
-                                        '<button id="theHooplaButton" class="btn btn-default" type="button" title="Check Out" onclick="return VuFind.Hoopla.checkOutHooplaTitle(\'' . $id . '\', ' . $hooplaUser->id . ')">I registered, Check Out now</button>'
+                                        '<button id="theHooplaButton" class="btn btn-default" type="button" title="Check Out" onclick="return AspenDiscovery.Hoopla.checkOutHooplaTitle(\'' . $id . '\', ' . $hooplaUser->id . ')">I registered, Check Out now</button>'
                                         .'<a class="btn btn-primary" role="button" href="'.$hooplaRegistrationUrl.'" target="_blank" title="Register at Hoopla" onclick="$(\'#theHooplaButton+a,#theHooplaButton\').toggleClass(\'btn-primary btn-default\');">Register at Hoopla</a>'
                                 );
                         } catch (File_MARC_Exception $e) {
@@ -171,13 +171,13 @@ class Hoopla_AJAX extends Action
 							array(
 								'title'   => 'Confirm Hoopla Check Out',
 								'body'    => $interface->fetch('Hoopla/ajax-hoopla-single-user-checkout-prompt.tpl'),
-								'buttons' => '<button class="btn btn-primary" type="button" title="Check Out" onclick="return VuFind.Hoopla.checkOutHooplaTitle(\'' . $id . '\', ' . $hooplaUser->id . ')">Check Out</button>'
+								'buttons' => '<button class="btn btn-primary" type="button" title="Check Out" onclick="return AspenDiscovery.Hoopla.checkOutHooplaTitle(\'' . $id . '\', ' . $hooplaUser->id . ')">Check Out</button>'
 							);
 					}else{
 						// Go ahead and checkout the title
 						return array(
 							'title'   => 'Checking out Hoopla title',
-							'body'    => "<script>VuFind.Hoopla.checkOutHooplaTitle('{$id}', '{$hooplaUser->id}')</script>",
+							'body'    => "<script>AspenDiscovery.Hoopla.checkOutHooplaTitle('{$id}', '{$hooplaUser->id}')</script>",
 							'buttons' => ''
 						);
 					}
@@ -204,7 +204,7 @@ class Hoopla_AJAX extends Action
             return array(
                 'title'   => 'Error',
                 'body'    => 'You must be logged in to checkout an item.'
-                    .'<script>Globals.loggedIn = false;  VuFind.Hoopla.getCheckOutPrompts(\''.$id.'\')</script>',
+                    .'<script>Globals.loggedIn = false;  AspenDiscovery.Hoopla.getCheckOutPrompts(\''.$id.'\')</script>',
                 'buttons' => ''
             );
 		}

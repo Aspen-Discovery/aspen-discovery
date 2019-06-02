@@ -77,7 +77,7 @@ class eContentSupport extends Action
 				$result = array(
 						'title' => 'eContent Support',
 						'modalBody' => $interface->fetch('Help/eContentSupport.tpl'),
-						'modalButtons' => "<button class='btn btn-sm btn-primary' onclick='return VuFind.EContent.submitHelpForm();'>Submit</button>",
+						'modalButtons' => "<button class='btn btn-sm btn-primary' onclick='return AspenDiscovery.EContent.submitHelpForm();'>Submit</button>",
 				);
 				echo json_encode($result);
 			}else{

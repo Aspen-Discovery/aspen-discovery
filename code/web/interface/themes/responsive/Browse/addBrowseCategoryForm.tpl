@@ -31,7 +31,7 @@
 	{literal}
 	$("#createBrowseCategory").validate({
 		submitHandler: function(){
-			VuFind.Browse.createBrowseCategory()
+			AspenDiscovery.Browse.createBrowseCategory()
 		}
 	});
 	{/literal}

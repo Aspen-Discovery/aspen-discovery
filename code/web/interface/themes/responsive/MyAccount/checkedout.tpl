@@ -25,19 +25,19 @@
 				<form id="renewForm" action="{$path}/MyAccount/CheckedOut">
 					<div id="pager" class="navbar form-inline">
 						<label for="accountSort" class="control-label">{translate text='Sort by'}:&nbsp;</label>
-						<select name="accountSort" id="accountSort" class="form-control" onchange="VuFind.Account.changeAccountSort($(this).val());">
+						<select name="accountSort" id="accountSort" class="form-control" onchange="AspenDiscovery.Account.changeAccountSort($(this).val());">
 							{foreach from=$sortOptions item=sortDesc key=sortVal}
 								<option value="{$sortVal}"{if $defaultSortOption == $sortVal} selected="selected"{/if}>{translate text=$sortDesc}</option>
 							{/foreach}
 						</select>
 
-						<label for="hideCovers" class="control-label checkbox pull-right"> Hide Covers <input id="hideCovers" type="checkbox" onclick="VuFind.Account.toggleShowCovers(!$(this).is(':checked'))" {if $showCovers == false}checked="checked"{/if}></label>
+						<label for="hideCovers" class="control-label checkbox pull-right"> Hide Covers <input id="hideCovers" type="checkbox" onclick="AspenDiscovery.Account.toggleShowCovers(!$(this).is(':checked'))" {if $showCovers == false}checked="checked"{/if}></label>
 					</div>
 
 					<div class="btn-group">
 						{if !$hasOnlyEContentCheckOuts}
-							<a href="#" onclick="VuFind.Account.renewSelectedTitles()" class="btn btn-sm btn-default">Renew Selected Items</a>
-							<a href="#" onclick="VuFind.Account.renewAll()" class="btn btn-sm btn-default">Renew All</a>
+							<a href="#" onclick="AspenDiscovery.Account.renewSelectedTitles()" class="btn btn-sm btn-default">Renew Selected Items</a>
+							<a href="#" onclick="AspenDiscovery.Account.renewAll()" class="btn btn-sm btn-default">Renew All</a>
 						{/if}
 						<a href="{$path}/MyAccount/CheckedOut?exportToExcel{if isset($defaultSortOption)}&accountSort={$defaultSortOption}{/if}" class="btn btn-sm btn-default" id="exportToExcelTop">Export to Excel</a>
 					</div>
@@ -70,8 +70,8 @@
 
 					<div class="btn-group">
 						{if !$hasOnlyEContentCheckOuts}
-							<a href="#" onclick="VuFind.Account.renewSelectedTitles()" class="btn btn-sm btn-default">Renew Selected Items</a>
-							<a href="#" onclick="VuFind.Account.renewAll()" class="btn btn-sm btn-default">Renew All</a>
+							<a href="#" onclick="AspenDiscovery.Account.renewSelectedTitles()" class="btn btn-sm btn-default">Renew Selected Items</a>
+							<a href="#" onclick="AspenDiscovery.Account.renewAll()" class="btn btn-sm btn-default">Renew All</a>
 						{/if}
 						<a href="{$path}/MyAccount/CheckedOut?exportToExcel{if isset($defaultSortOption)}&accountSort={$defaultSortOption}{/if}" class="btn btn-sm btn-default" id="exportToExcelTop">Export to Excel</a>
 					</div>

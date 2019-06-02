@@ -1,4 +1,4 @@
-VuFind.Browse = (function(){
+AspenDiscovery.Browse = (function(){
 	return {
 		curPage: 1,
 		curCategory: '',
@@ -10,19 +10,19 @@ VuFind.Browse = (function(){
 		},
 
 		addToHomePage: function(searchId){
-			VuFind.Account.ajaxLightbox(Globals.path + '/Browse/AJAX?method=getAddBrowseCategoryForm&searchId=' + searchId, true);
+			AspenDiscovery.Account.ajaxLightbox(Globals.path + '/Browse/AJAX?method=getAddBrowseCategoryForm&searchId=' + searchId, true);
 			return false;
 		},
 
 		initializeBrowseCategory: function(){
-			// wrapper for setting events and connecting w/ VuFind.initCarousels() in base.js
+			// wrapper for setting events and connecting w/ AspenDiscovery.initCarousels() in base.js
 
 			var browseCategoryCarousel = $("#browse-category-carousel");
 
 			// connect the browse catalog functions to the jcarousel controls
 			browseCategoryCarousel.on('jcarousel:targetin', 'li', function(){
 				var categoryId = $(this).data('category-id');
-				VuFind.Browse.changeBrowseCategory(categoryId);
+				AspenDiscovery.Browse.changeBrowseCategory(categoryId);
 			});
 
 			if ($('#browse-category-picker .jcarousel-control-prev').css('display') != 'none') {
@@ -63,7 +63,7 @@ VuFind.Browse = (function(){
 					categoryTextId = this.curCategory || $('#browse-category-carousel .selected').data('category-id'),
 					subCategoryTextId = this.curSubCategory || $('#browse-sub-category-menu .selected').data('sub-category-id');
 			this.browseMode = mode; // set the mode officially
-			if (!Globals.opac && VuFind.hasLocalStorage() ) { // store setting in browser if not an opac computer
+			if (!Globals.opac && AspenDiscovery.hasLocalStorage() ) { // store setting in browser if not an opac computer
 				window.localStorage.setItem('browseMode', this.browseMode);
 			}
 			if (subCategoryTextId) return this.changeBrowseSubCategory(subCategoryTextId);
@@ -72,7 +72,7 @@ VuFind.Browse = (function(){
 
 		resetBrowseResults : function(){
 			var classes = (function(){ // return list of all associated css classes (class list can be expanded without changing this code.)
-						var str = '', object = VuFind.Browse.browseModeClasses;
+						var str = '', object = AspenDiscovery.Browse.browseModeClasses;
 						for (property in object) { str += object[property]+' ' }
 						return str;
 					})(),
@@ -90,7 +90,7 @@ VuFind.Browse = (function(){
 			var url = Globals.path + '/Browse/AJAX',
 					params = {
 						method : 'getBrowseCategoryInfo'
-						,textId : categoryTextId || VuFind.Browse.curCategory
+						,textId : categoryTextId || AspenDiscovery.Browse.curCategory
 						,browseMode : this.browseMode
 					},
 					newLabel = $('#browse-category-'+categoryTextId+' div').first().text(), // get label from corresponding li div
@@ -120,15 +120,15 @@ VuFind.Browse = (function(){
 			//   so that if the user moves onto another category before we get results, we won't do anything
 			this.loadingCategory = loadingID;
 			$.getJSON(url, params, function(data){
-				if (VuFind.Browse.loadingCategory == loadingID) {
+				if (AspenDiscovery.Browse.loadingCategory == loadingID) {
 					if (data.success == false) {
-						VuFind.showMessage("Error loading browse information", "Sorry, we were not able to find titles for that category");
+						AspenDiscovery.showMessage("Error loading browse information", "Sorry, we were not able to find titles for that category");
 					} else {
 						$('.selected-browse-label-search-text').html(data.label); // update label
 
-						VuFind.Browse.curPage = 1;
-						VuFind.Browse.curCategory = data.textId;
-						VuFind.Browse.curSubCategory = data.subCategoryTextId || '';
+						AspenDiscovery.Browse.curPage = 1;
+						AspenDiscovery.Browse.curCategory = data.textId;
+						AspenDiscovery.Browse.curSubCategory = data.subCategoryTextId || '';
 						$('#home-page-browse-results div.row') // should be the first div only
 								.html(data.records).fadeIn('slow');
 
@@ -147,11 +147,11 @@ VuFind.Browse = (function(){
 					}
 				}
 			}).fail(function(){
-				VuFind.ajaxFail();
+				AspenDiscovery.ajaxFail();
 				$('#home-page-browse-results div').html('').show(); // should be first div
 				//$('.home-page-browse-thumbnails').html('').show();
 			}).done(function() {
-				VuFind.Browse.loadingCategory = null;  // done loading category, empty flag
+				AspenDiscovery.Browse.loadingCategory = null;  // done loading category, empty flag
 			});
 			return false;
 		},
@@ -161,7 +161,7 @@ VuFind.Browse = (function(){
 			var url = Globals.path + '/Browse/AJAX',
 					params = {
 						method : 'getBrowseSubCategoryInfo'
-						,textId : VuFind.Browse.curCategory
+						,textId : AspenDiscovery.Browse.curCategory
 						,subCategoryTextId : subCategoryTextId
 						,browseMode : this.browseMode
 					};
@@ -180,15 +180,15 @@ VuFind.Browse = (function(){
 
 			$.getJSON(url, params, function(data){
 				if (data.success == false){
-					VuFind.showMessage("Error loading browse information", "Sorry, we were not able to find titles for that category");
+					AspenDiscovery.showMessage("Error loading browse information", "Sorry, we were not able to find titles for that category");
 				}else{
 					if (data.label) $('.selected-browse-label-search-text').html(data.label); // update label // needed when sub-category is specified via URL
 					if (data.subCategoryLabel) $('.selected-browse-sub-category-label-search-text').html(data.subCategoryLabel);
 					else $('.selected-browse-sub-category-label-search-text').fadeOut(); // Hide if no sub-category
 
-					VuFind.Browse.curPage = 1;
-					if (data.textId) VuFind.Browse.curCategory = data.textId;
-					if (data.subCategoryTextId) VuFind.Browse.curSubCategory = data.subCategoryTextId || '';
+					AspenDiscovery.Browse.curPage = 1;
+					if (data.textId) AspenDiscovery.Browse.curCategory = data.textId;
+					if (data.subCategoryTextId) AspenDiscovery.Browse.curSubCategory = data.subCategoryTextId || '';
 
 					$('#home-page-browse-results div.row')  // should be the first div only
 							.html(data.records).fadeIn('slow');
@@ -196,7 +196,7 @@ VuFind.Browse = (function(){
 					$('#selected-browse-search-link').attr('href', data.searchUrl); // update the search link
 				}
 			}).fail(function(){
-				VuFind.ajaxFail();
+				AspenDiscovery.ajaxFail();
 				$('#home-page-browse-results div.row').html('').show(); // should be first div
 				$('.selected-browse-sub-category-label-search-text').fadeOut(); // hide sub-category Label
 			});
@@ -220,11 +220,11 @@ VuFind.Browse = (function(){
 				}
 				$.getJSON(url, params, function (data) {
 					if (data.success == false) {
-						VuFind.showMessage("Unable to create category", data.message);
+						AspenDiscovery.showMessage("Unable to create category", data.message);
 					} else {
-						VuFind.showMessage("Successfully added", "This search was added to the homepage successfully.", true);
+						AspenDiscovery.showMessage("Successfully added", "This search was added to the homepage successfully.", true);
 					}
-				}).fail(VuFind.ajaxFail);
+				}).fail(AspenDiscovery.ajaxFail);
 			return false;
 		},
 
@@ -242,7 +242,7 @@ VuFind.Browse = (function(){
 					divClass = this.browseModeClasses[this.browseMode]; //|| this.browseModeClasses[Object.keys(this.browseModeClasses)[0]]; // if browseMode isn't set grab the first class
 			$.getJSON(url, params, function(data){
 				if (data.success == false){
-					VuFind.showMessage("Error loading browse information", "Sorry, we were not able to find titles for that category");
+					AspenDiscovery.showMessage("Error loading browse information", "Sorry, we were not able to find titles for that category");
 				}else{
 					var newDiv = $('<div class="'+divClass+' row" />').hide().append(data.records);
 					$('.'+divClass).filter(':last').after(newDiv).after('<hr>');
@@ -251,9 +251,9 @@ VuFind.Browse = (function(){
 						$('#more-browse-results').hide(); // hide the load more results TODO: implement server side
 					}
 				}
-			}).fail(VuFind.ajaxFail);
+			}).fail(AspenDiscovery.ajaxFail);
 			return false;
 		}
 
 	}
-}(VuFind.Browse || {}));
+}(AspenDiscovery.Browse || {}));

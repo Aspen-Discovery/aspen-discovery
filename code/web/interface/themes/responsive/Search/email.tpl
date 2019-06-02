@@ -23,7 +23,7 @@
 	{literal}
 	$("#emailSearchForm").validate({
 		submitHandler: function(){
-			VuFind.Searches.sendEmail();
+			AspenDiscovery.Searches.sendEmail();
 		}
 	});
 	{/literal}

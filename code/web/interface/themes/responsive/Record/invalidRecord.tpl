@@ -7,6 +7,6 @@
 	</p>
 {elseif $externalMaterialsRequestUrl}
 	<p class="alert alert-info">
-		Can't find what you are looking for? Try our <a href="{$externalMaterialsRequestUrl}" onclick="return VuFind.Account.followLinkIfLoggedIn(this);">{'Materials Request'|translate} Service</a>.
+		Can't find what you are looking for? Try our <a href="{$externalMaterialsRequestUrl}" onclick="return AspenDiscovery.Account.followLinkIfLoggedIn(this);">{'Materials Request'|translate} Service</a>.
 	</p>
 {/if}

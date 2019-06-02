@@ -1,6 +1,6 @@
 {strip}
 <div id="horizontal-search-box" class="row">
-	<form method="get" action="{$path}/Union/Search" id="searchForm" class="form-inline" onsubmit="VuFind.Searches.processSearchForm();">
+	<form method="get" action="{$path}/Union/Search" id="searchForm" class="form-inline" onsubmit="AspenDiscovery.Searches.processSearchForm();">
 
 		{* Hidden Inputs *}
 		<input type="hidden" name="view" id="view" value="{$displayMode}">
@@ -27,7 +27,7 @@
 							          id="lookfor"
 							          name="lookfor"
 							          title="Enter one or more terms to search for.	Surrounding a term with quotes will limit result to only those that exactly match the term."
-							          onkeyup="return VuFind.Searches.resetSearchType()"
+							          onkeyup="return AspenDiscovery.Searches.resetSearchType()"
 							          onfocus="$(this).select()"
 							          autocomplete="off"
 							          rows="1"
@@ -65,7 +65,7 @@
 
 				{if !$hiddenSearchSource}
 					<div class="col-lg-3 col-md-3 col-sm-5 col-xs-7">
-						<select name="searchSource" id="searchSource" title="Select what to search.	Items marked with a * will redirect you to one of our partner sites." onchange="VuFind.Searches.enableSearchTypes();" class="searchSourceHorizontal form-control" aria-label="Collection to Search">
+						<select name="searchSource" id="searchSource" title="Select what to search.	Items marked with a * will redirect you to one of our partner sites." onchange="AspenDiscovery.Searches.enableSearchTypes();" class="searchSourceHorizontal form-control" aria-label="Collection to Search">
 							{foreach from=$searchSources item=searchOption key=searchKey}
 								<option data-catalog_type="{$searchOption.catalogType}" value="{$searchKey}"
 										{if $searchKey == $searchSource} selected="selected"{/if}
@@ -95,7 +95,7 @@
 					{* Keep Applied Filters Checkbox *}
 					{if !empty($filterList)}
 						<label for="keepFiltersSwitch" id="keepFiltersSwitchLabel">
-							<input id="keepFiltersSwitch" type="checkbox" onclick="VuFind.Searches.filterAll(this);"> Keep Applied Filters</label>
+							<input id="keepFiltersSwitch" type="checkbox" onclick="AspenDiscovery.Searches.filterAll(this);"> Keep Applied Filters</label>
 					{/if}
 
 					{* Return to Advanced Search Link *}
@@ -117,7 +117,7 @@
 				{* Show/Hide Search Facets & Sort Options *}
 				{if !empty($recordCount) || !empty($sideRecommendations)}
 					<div class="col-tn-3 col-xs-3 visible-xs">
-						<a class="btn btn-default" id="refineSearchButton" role="button" onclick="VuFind.Menu.Mobile.showSearchFacets()">{translate text="Refine Search"}</a>
+						<a class="btn btn-default" id="refineSearchButton" role="button" onclick="AspenDiscovery.Menu.Mobile.showSearchFacets()">{translate text="Refine Search"}</a>
 					</div>
 				{/if}
 			</div>

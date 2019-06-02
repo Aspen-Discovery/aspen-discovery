@@ -177,7 +177,7 @@ class UserAPI extends Action {
 	 * <li>firstname � The first name of the patron in the ILS</li>
 	 * <li>lastname � The last name of the patron in the ILS</li>
 	 * <li>email � The patron's email address if set within Horizon.</li>
-	 * <li>homeLocationId � the id of the patron's home libarary within VuFind.</li>
+	 * <li>homeLocationId � the id of the patron's home library within Aspen.</li>
 	 * <li>MyLocation1Id, myLocation2Id � not currently used</li>
 	 * </ul>
 	 *

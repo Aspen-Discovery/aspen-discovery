@@ -19,7 +19,7 @@ function resetPinReset(){
 			if (data.error == false){
 				alert(data.message);
 				if (data.result == true){
-					VuFind.closeLightbox();
+					AspenDiscovery.closeLightbox();
 				}
 			}else{
 				alert("There was an error requesting your pin reset information.  Please contact the library for additional information.");

@@ -20,7 +20,7 @@
 
 				<script type="text/javascript">
 					$(document).ready(function(){ldelim}
-						return VuFind.Archive.handleCollectionScrollerClick('{$pid}');
+						return AspenDiscovery.Archive.handleCollectionScrollerClick('{$pid}');
 						{rdelim});
 				</script>
 			</div>

@@ -177,7 +177,7 @@
 				<div class="col-xs-9 col-sm-8 col-md-4 col-lg-3">
 					<div class="btn-group btn-group-vertical btn-block">
 						{if !isset($record.canrenew) || $record.canrenew == true}
-							<a href="#" onclick="return VuFind.Account.renewTitle('{$record.userId}', '{$record.recordId}', '{$record.renewIndicator}');" class="btn btn-sm btn-primary">{translate text='Renew'}</a>
+							<a href="#" onclick="return AspenDiscovery.Account.renewTitle('{$record.userId}', '{$record.recordId}', '{$record.renewIndicator}');" class="btn btn-sm btn-primary">{translate text='Renew'}</a>
 						{else}
 							Sorry, this title cannot be renewed
 						{/if}

@@ -28,7 +28,7 @@
 				{foreach from=$recordDriver->getDetailedContributors() item=contributor name=loop}
 					{if $smarty.foreach.loop.index == 5}
 						<div id="showAdditionalContributorsLink">
-							<a onclick="VuFind.Record.moreContributors(); return false;" href="#">{translate text='more'} ...</a>
+							<a onclick="AspenDiscovery.Record.moreContributors(); return false;" href="#">{translate text='more'} ...</a>
 						</div>
 						{*create hidden div*}
 						<div id="additionalContributors" style="display:none">
@@ -44,7 +44,7 @@
 				{/foreach}
 				{if $smarty.foreach.loop.index >= 5}
 					<div>
-						<a href="#" onclick="VuFind.Record.lessContributors(); return false;">{translate text='less'} ...</a>
+						<a href="#" onclick="AspenDiscovery.Record.lessContributors(); return false;">{translate text='less'} ...</a>
 					</div>
 					</div>{* closes hidden div *}
 				{/if}

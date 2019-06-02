@@ -1,21 +1,14 @@
-VuFind.Searches = (function(){
+AspenDiscovery.Searches = (function(){
 	$(function(){
-		VuFind.Searches.enableSearchTypes();
-		VuFind.Searches.initAutoComplete();
-
-		//console.log(
-		//		'Not opac', !Globals.opac,
-		//		'Not Logged In', !Globals.loggedIn,
-		//		'Local Storage', VuFind.hasLocalStorage(),
-		//		'No showCovers Hidden Input', ($('input[name="showCovers"]').length == 0)
-		//);
+		AspenDiscovery.Searches.enableSearchTypes();
+		AspenDiscovery.Searches.initAutoComplete();
 
 		// Add Browser-stored showCovers setting to the search form if there is a stored value set, and
 		// this is not a OPAC Machine, and the user is not logged in, and there is not a hidden value
 		// already set in the search form.
 		// This allows a preset showCovers setting to be sent back with the first search without requiring login or
 		// a page reload on the search results page.
-		if (!Globals.opac && !Globals.loggedIn && VuFind.hasLocalStorage() && $('input[name="showCovers"]').length === 0){
+		if (!Globals.opac && !Globals.loggedIn && AspenDiscovery.hasLocalStorage() && $('input[name="showCovers"]').length === 0){
 			let showCovers = window.localStorage.getItem('showCovers') || false;
 			//console.log('Show Covers Value : ', showCovers);
 			if (showCovers.length > 0) {
@@ -47,11 +40,11 @@ VuFind.Searches = (function(){
 			}
 			$.getJSON(url+params, function(data){
 				if (data.success === 'false'){
-					VuFind.showMessage("Error loading results", data.error);
+					AspenDiscovery.showMessage("Error loading results", data.error);
 				}else{
 					$('#combined-results-section-results-' + shortId).html(data.results);
 				}
-			}).fail(VuFind.ajaxFail);
+			}).fail(AspenDiscovery.ajaxFail);
 			return false;
 		},
 
@@ -64,7 +57,7 @@ VuFind.Searches = (function(){
 				}
 			} else {
 				if ($('.combined-results-section', '#combined-results-all-column').length == 0) {
-					$.each(VuFind.Searches.combinedResultsDefinedOrder, function (i, id) {
+					$.each(AspenDiscovery.Searches.combinedResultsDefinedOrder, function (i, id) {
 						el = $(id).parents('.combined-results-section').detach().appendTo('#combined-results-all-column');
 					});
 				}
@@ -73,11 +66,11 @@ VuFind.Searches = (function(){
 		},
 
 		getPreferredDisplayMode: function(){
-			if (!Globals.opac && VuFind.hasLocalStorage()){
+			if (!Globals.opac && AspenDiscovery.hasLocalStorage()){
 				temp = window.localStorage.getItem('searchResultsDisplayMode');
-				if (VuFind.Searches.displayModeClasses.hasOwnProperty(temp)) {
-					VuFind.Searches.displayMode = temp; // if stored value is empty or a bad value, fall back on default setting ("null" is returned from local storage when not set)
-					$('input[name="view"]','#searchForm').val(VuFind.Searches.displayMode); // set the user's preferred search view mode on the search box.
+				if (AspenDiscovery.Searches.displayModeClasses.hasOwnProperty(temp)) {
+					AspenDiscovery.Searches.displayMode = temp; // if stored value is empty or a bad value, fall back on default setting ("null" is returned from local storage when not set)
+					$('input[name="view"]','#searchForm').val(AspenDiscovery.Searches.displayMode); // set the user's preferred search view mode on the search box.
 				}
 			}
 		},
@@ -85,11 +78,11 @@ VuFind.Searches = (function(){
 		toggleDisplayMode : function(selectedMode){
 			let mode = this.displayModeClasses.hasOwnProperty(selectedMode) ? selectedMode : this.displayMode, // check that selected mode is a valid option
 					searchBoxView = $('input[name="view"]','#searchForm'), // display mode variable associated with the search box
-					paramString = VuFind.replaceQueryParam('page', '', VuFind.replaceQueryParam('view',mode)); // set view in url and unset page variable
+					paramString = AspenDiscovery.replaceQueryParam('page', '', AspenDiscovery.replaceQueryParam('view',mode)); // set view in url and unset page variable
 			this.displayMode = mode; // set the mode officially
 			this.curPage = 1; // reset js page counting
 			if (searchBoxView) searchBoxView.val(this.displayMode); // set value in search form, if present
-			if (!Globals.opac && VuFind.hasLocalStorage() ) { // store setting in browser if not an opac computer
+			if (!Globals.opac && AspenDiscovery.hasLocalStorage() ) { // store setting in browser if not an opac computer
 				window.localStorage.setItem('searchResultsDisplayMode', this.displayMode);
 			}
 			if (mode === 'list') $('#hideSearchCoversSwitch').show(); else $('#hideSearchCoversSwitch').hide();
@@ -98,24 +91,24 @@ VuFind.Searches = (function(){
 
 		getMoreResults: function(){
 			let url = Globals.path + '/Search/AJAX',
-					params = VuFind.replaceQueryParam('page', this.curPage+1)+'&method=getMoreSearchResults',
+					params = AspenDiscovery.replaceQueryParam('page', this.curPage+1)+'&method=getMoreSearchResults',
 					divClass = this.displayModeClasses[this.displayMode];
-			params = VuFind.replaceQueryParam('view', this.displayMode, params); // set the view url parameter just in case.
+			params = AspenDiscovery.replaceQueryParam('view', this.displayMode, params); // set the view url parameter just in case.
 			if (params.search(/[?;&]replacementTerm=/) != -1) {
 				let searchTerm = location.search.split('replacementTerm=')[1].split('&')[0];
-				params = VuFind.replaceQueryParam('lookfor', searchTerm, params);
+				params = AspenDiscovery.replaceQueryParam('lookfor', searchTerm, params);
 			}
 			$.getJSON(url+params, function(data){
 				if (data.success === 'false'){
-					VuFind.showMessage("Error loading search information", "Sorry, we were not able to retrieve additional results.");
+					AspenDiscovery.showMessage("Error loading search information", "Sorry, we were not able to retrieve additional results.");
 				}else{
 					let newDiv = $(data.records).hide();
 					$('.'+divClass).filter(':last').after(newDiv);
 					newDiv.fadeIn('slow');
 					if (data.lastPage) $('#more-browse-results').hide(); // hide the load more results
-					else VuFind.Searches.curPage++;
+					else AspenDiscovery.Searches.curPage++;
 				}
-			}).fail(VuFind.ajaxFail);
+			}).fail(AspenDiscovery.ajaxFail);
 			return false;
 		},
 
@@ -174,9 +167,9 @@ VuFind.Searches = (function(){
 						},
 						function(data) {
 							if (data.result) {
-								VuFind.showMessage("Success", data.message);
+								AspenDiscovery.showMessage("Success", data.message);
 							} else {
-								VuFind.showMessage("Error", data.message);
+								AspenDiscovery.showMessage("Error", data.message);
 							}
 						}
 				);
@@ -199,7 +192,7 @@ VuFind.Searches = (function(){
 			if (searchIndexElement) {
 				let searchOptions = searchIndexElement.find("option");
 				let firstVisible = true;
-				if (VuFind.Searches.initialSearchLoaded === true) {
+				if (AspenDiscovery.Searches.initialSearchLoaded === true) {
 					$.each(searchOptions, function() {
 						let searchOption = $(this);
 						searchOption.prop('selected', false);
@@ -209,7 +202,7 @@ VuFind.Searches = (function(){
 					let searchOption = $(this);
 					if (searchOption.data("search_source") === catalogType) {
 						searchOption.show();
-						if (VuFind.Searches.initialSearchLoaded === true && firstVisible) {
+						if (AspenDiscovery.Searches.initialSearchLoaded === true && firstVisible) {
 							searchOption.prop('selected', true);
 							firstVisible = false;
 						}
@@ -218,7 +211,7 @@ VuFind.Searches = (function(){
 					}
 				});
 			}
-			VuFind.Searches.initialSearchLoaded = true;
+			AspenDiscovery.Searches.initialSearchLoaded = true;
 		},
 
 		processSearchForm: function(){
@@ -252,10 +245,10 @@ VuFind.Searches = (function(){
 				function(data) {
 					if (data.success == true){
 						$("#explore-more-bar-placeholder").html(data.exploreMoreBar);
-						VuFind.initCarousels();
+						AspenDiscovery.initCarousels();
 					}
 				}
 			);
 		}
 	}
-}(VuFind.Searches || {}));
+}(AspenDiscovery.Searches || {}));

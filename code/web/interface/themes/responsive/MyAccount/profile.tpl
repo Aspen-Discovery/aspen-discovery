@@ -553,22 +553,15 @@
 								</p>
 									<div class="lead">Additional accounts to manage</div>
 									<p>The following accounts can be managed from this account.</p>
-									{*<table class="table table-bordered">*}
-										{*{foreach from=$profile->linkedUsers item=tmpUser} *}{* Show linking for the account currently chosen for display in account settings *}
-											{*<tr><td>{$tmpUser->getNameAndLibraryLabel()}</td><td><button class="btn btn-xs btn-warning" onclick="VuFind.Account.removeLinkedUser({$tmpUser->id});">Remove</button></td> </tr>*}
-											{*{foreachelse}*}
-											{*<tr><td>None</td></tr>*}
-										{*{/foreach}*}
-									{*</table>*}
 									<ul>
 										{foreach from=$profile->linkedUsers item=tmpUser}  {* Show linking for the account currently chosen for display in account settings *}
-											<li>{$tmpUser->getNameAndLibraryLabel()} <button class="btn btn-xs btn-warning" onclick="VuFind.Account.removeLinkedUser({$tmpUser->id});">Remove</button> </li>
+											<li>{$tmpUser->getNameAndLibraryLabel()} <button class="btn btn-xs btn-warning" onclick="AspenDiscovery.Account.removeLinkedUser({$tmpUser->id});">Remove</button> </li>
 											{foreachelse}
 											<li>None</li>
 										{/foreach}
 									</ul>
 								{if $user->id == $profile->id}{* Only allow account adding for the actual account user is logged in with *}
-									<button class="btn btn-primary btn-xs" onclick="VuFind.Account.addAccountLink()">Add an Account</button>
+									<button class="btn btn-primary btn-xs" onclick="AspenDiscovery.Account.addAccountLink()">Add an Account</button>
 								{else}
 									<p>Log into this account to add other accounts to it.</p>
 								{/if}

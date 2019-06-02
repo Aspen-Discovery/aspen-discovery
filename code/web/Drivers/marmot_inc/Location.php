@@ -184,7 +184,7 @@ class Location extends DataObject
 				'automaticTimeoutLengthLoggedOut' => array('property'=>'automaticTimeoutLengthLoggedOut', 'type'=>'integer', 'label'=>'Automatic Timeout Length (logged out)', 'description'=>'The length of time before the catalog resets to the home page set to 0 to disable.', 'size'=>'8', 'hideInLists' => true,'default'=>self::DEFAULT_AUTOLOGOUT_TIME_LOGGED_OUT),
 
 				'displaySection'=> array('property'=>'displaySection', 'type' => 'section', 'label' =>'Basic Display', 'hideInLists' => true, 'properties' => array(
-						array('property'=>'homeLink', 'type'=>'text', 'label'=>'Home Link', 'description'=>'The location to send the user when they click on the home button or logo.  Use default or blank to go back to the vufind home location.', 'hideInLists' => true, 'size'=>'40'),
+						array('property'=>'homeLink', 'type'=>'text', 'label'=>'Home Link', 'description'=>'The location to send the user when they click on the home button or logo.  Use default or blank to go back to the aspen home location.', 'hideInLists' => true, 'size'=>'40'),
 						array('property'=>'additionalCss', 'type'=>'textarea', 'label'=>'Additional CSS', 'description'=>'Extra CSS to apply to the site.  Will apply to all pages.', 'hideInLists' => true),
 						array('property'=>'headerText', 'type'=>'html', 'label'=>'Header Text', 'description'=>'Optional Text to display in the header, between the logo and the log in/out buttons.  Will apply to all pages.', 'allowableTags' => '<a><b><em><div><span><p><strong><sub><sup><h1><h2><h3><h4><h5><h6><img>', 'hideInLists' => true),
 				)),

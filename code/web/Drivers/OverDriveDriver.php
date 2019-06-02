@@ -159,7 +159,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 		if ($tokenData){
 			$ch = curl_init($url);
 			curl_setopt($ch, CURLOPT_USERAGENT,"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
-			curl_setopt($ch, CURLOPT_HTTPHEADER, array("Authorization: {$tokenData->token_type} {$tokenData->access_token}", "User-Agent: VuFind-Plus"));
+			curl_setopt($ch, CURLOPT_HTTPHEADER, array("Authorization: {$tokenData->token_type} {$tokenData->access_token}", "User-Agent: Aspen Discovery"));
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 			curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
 			curl_setopt($ch, CURLOPT_TIMEOUT, 10);
@@ -298,7 +298,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 					//"Host: integration-patron.api.overdrive.com"
 				);
 			}else{
-				$headers = array("User-Agent: VuFind-Plus", "Host: api.overdrive.com");
+				$headers = array("User-Agent: Aspen Discovery", "Host: api.overdrive.com");
 			}
 
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);

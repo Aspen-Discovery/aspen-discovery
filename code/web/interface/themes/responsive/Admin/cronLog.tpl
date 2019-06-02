@@ -10,13 +10,13 @@
 				<tbody>
 					{foreach from=$logEntries item=logEntry}
 						<tr{if $logEntry->getHadErrors()} class="danger"{/if}>
-							<td><a href="#" class="accordion-toggle collapsed" id="cronEntry{$logEntry->id}" onclick="VuFind.Admin.toggleCronProcessInfo('{$logEntry->id}');return false;">{$logEntry->id}</a></td>
+							<td><a href="#" class="accordion-toggle collapsed" id="cronEntry{$logEntry->id}" onclick="AspenDiscovery.Admin.toggleCronProcessInfo('{$logEntry->id}');return false;">{$logEntry->id}</a></td>
 							<td>{$logEntry->startTime|date_format:"%D %T"}</td>
 							<td>{$logEntry->endTime|date_format:"%D %T"}</td>
 							<td>{$logEntry->getElapsedTime()}</td>
 							<td>{$logEntry->getNumProcesses()}</td>
 							<td>{if $logEntry->getHadErrors()}Yes{else}No{/if}</td>
-							<td><a href="#" onclick="return VuFind.Admin.showCronNotes('{$logEntry->id}');">Show Notes</a></td>
+							<td><a href="#" onclick="return AspenDiscovery.Admin.showCronNotes('{$logEntry->id}');">Show Notes</a></td>
 						</tr>
 						<tr class="logEntryProcessDetails" id="processInfo{$logEntry->id}" style="display:none">
 							<td colspan="7">
@@ -33,7 +33,7 @@
 											<td>{$process->getElapsedTime()}</td>
 											<td>{$process->numErrors}</td>
 											<td>{$process->numUpdates}</td>
-											<td><a href="#" onclick="return VuFind.Admin.showCronProcessNotes('{$process->id}');">Show Notes</a></td>
+											<td><a href="#" onclick="return AspenDiscovery.Admin.showCronProcessNotes('{$process->id}');">Show Notes</a></td>
 										</tr>
 									{/foreach}
 									</tbody>

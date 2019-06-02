@@ -1,7 +1,4 @@
-/**
- * Created by mark on 5/19/14.
- */
-VuFind.MaterialsRequest = (function(){
+AspenDiscovery.MaterialsRequest = (function(){
 	return {
 		getWorldCatIdentifiers: function(){
 			var title = $("#title").val();
@@ -46,11 +43,11 @@ VuFind.MaterialsRequest = (function(){
 		},
 
 		showMaterialsRequestDetails: function(id, staffView){
-			return VuFind.Account.ajaxLightbox(Globals.path + "/MaterialsRequest/AJAX?method=MaterialsRequestDetails&id=" +id + "&staffView=" +staffView, true);
+			return AspenDiscovery.Account.ajaxLightbox(Globals.path + "/MaterialsRequest/AJAX?method=MaterialsRequestDetails&id=" +id + "&staffView=" +staffView, true);
 		},
 
 		updateMaterialsRequest: function(id){
-			return VuFind.Account.ajaxLightbox(Globals.path + "/MaterialsRequest/AJAX?method=updateMaterialsRequest&id=" +id, true);
+			return AspenDiscovery.Account.ajaxLightbox(Globals.path + "/MaterialsRequest/AJAX?method=updateMaterialsRequest&id=" +id, true);
 		},
 
 		exportSelectedRequests: function(){
@@ -120,14 +117,14 @@ VuFind.MaterialsRequest = (function(){
 			$(".formatSpecificField").hide();
 			//Get the selected format
 			var selectedFormat = $("#format").find("option:selected").val(),
-					hasSpecialFields = typeof VuFind.MaterialsRequest.specialFields != 'undefined';
+					hasSpecialFields = typeof AspenDiscovery.MaterialsRequest.specialFields != 'undefined';
 
 			$(".specialFormatField").hide(); // hide all the special fields
 			$(".specialFormatHideField").show(); // show all the special format hide fields
 			this.updateHoldOptions();
 			if (hasSpecialFields){
-				if (VuFind.MaterialsRequest.specialFields[selectedFormat]) {
-					VuFind.MaterialsRequest.specialFields[selectedFormat].forEach(function (specifiedOption) {
+				if (AspenDiscovery.MaterialsRequest.specialFields[selectedFormat]) {
+					AspenDiscovery.MaterialsRequest.specialFields[selectedFormat].forEach(function (specifiedOption) {
 						switch (specifiedOption) {
 							case 'Abridged/Unabridged':
 								$(".abridgedField").show();
@@ -156,14 +153,14 @@ VuFind.MaterialsRequest = (function(){
 
 
 			//Update labels as needed
-			if (VuFind.MaterialsRequest.authorLabels){
-				if (VuFind.MaterialsRequest.authorLabels[selectedFormat]) {
-					$("#authorFieldLabel").html(VuFind.MaterialsRequest.authorLabels[selectedFormat] + ': ');
+			if (AspenDiscovery.MaterialsRequest.authorLabels){
+				if (AspenDiscovery.MaterialsRequest.authorLabels[selectedFormat]) {
+					$("#authorFieldLabel").html(AspenDiscovery.MaterialsRequest.authorLabels[selectedFormat] + ': ');
 				//	TODO: Set when required
 				}
 			}
 
-			if ((hasSpecialFields && VuFind.MaterialsRequest.specialFields[selectedFormat] && VuFind.MaterialsRequest.specialFields[selectedFormat].indexOf('Article Field') > -1)){
+			if ((hasSpecialFields && AspenDiscovery.MaterialsRequest.specialFields[selectedFormat] && AspenDiscovery.MaterialsRequest.specialFields[selectedFormat].indexOf('Article Field') > -1)){
 				$("#magazineTitle,#acceptCopyrightYes").addClass('required');
 				$("#acceptCopyrightYes").addClass('required');
 				$("#copyright").show();
@@ -199,4 +196,4 @@ VuFind.MaterialsRequest = (function(){
 		// 	$("#request_details_body").printElement();
 		// }
 	};
-}(VuFind.MaterialsRequest || {}));
+}(AspenDiscovery.MaterialsRequest || {}));

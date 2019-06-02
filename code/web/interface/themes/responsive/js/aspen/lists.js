@@ -1,7 +1,7 @@
-VuFind.Lists = (function(){
+AspenDiscovery.Lists = (function(){
 	return {
 		addToHomePage: function(listId){
-			VuFind.Account.ajaxLightbox(Globals.path + '/MyAccount/AJAX?method=getAddBrowseCategoryFromListForm&listId=' + listId, true);
+			AspenDiscovery.Account.ajaxLightbox(Globals.path + '/MyAccount/AJAX?method=getAddBrowseCategoryFromListForm&listId=' + listId, true);
 			return false;
 		},
 
@@ -53,13 +53,13 @@ VuFind.Lists = (function(){
 
 		emailListAction: function (listId) {
 			var urlToDisplay = Globals.path + '/MyAccount/AJAX';
-			VuFind.loadingMessage();
+			AspenDiscovery.loadingMessage();
 			$.getJSON(urlToDisplay, {
 					method  : 'getEmailMyListForm'
 					,listId : listId
 				},
 					function(data){
-						VuFind.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+						AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 			});
 			return false;
 		},
@@ -77,16 +77,16 @@ VuFind.Lists = (function(){
 				},
 				function(data) {
 					if (data.result) {
-						VuFind.showMessage("Success", data.message);
+						AspenDiscovery.showMessage("Success", data.message);
 					} else {
-						VuFind.showMessage("Error", data.message);
+						AspenDiscovery.showMessage("Error", data.message);
 					}
 				}
 			);
 		},
 
 		citeListAction: function (id) {
-			return VuFind.Account.ajaxLightbox(Globals.path + '/MyAccount/AJAX?method=getCitationFormatsForm&listId=' + id, false);
+			return AspenDiscovery.Account.ajaxLightbox(Globals.path + '/MyAccount/AJAX?method=getCitationFormatsForm&listId=' + id, false);
 			//return false;
 			//TODO: ajax call not working
 		},
@@ -96,7 +96,7 @@ VuFind.Lists = (function(){
 		},
 
 		batchAddToListAction: function (id){
-			return VuFind.Account.ajaxLightbox(Globals.path + '/MyAccount/AJAX/?method=getBulkAddToListForm&listId=' + id);
+			return AspenDiscovery.Account.ajaxLightbox(Globals.path + '/MyAccount/AJAX/?method=getBulkAddToListForm&listId=' + id);
 			//return false;
 		},
 
@@ -127,4 +127,4 @@ VuFind.Lists = (function(){
 		//	$(selectedElement).css('background-color', 'gray');
 		//}
 	};
-}(VuFind.Lists || {}));
+}(AspenDiscovery.Lists || {}));

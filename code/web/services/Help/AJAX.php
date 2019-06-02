@@ -50,7 +50,7 @@ class Help_AJAX extends Action {
 		$results = array(
 			'title' => 'eContent Support Request',
 			'modalBody' => $interface->fetch('Help/eContentSupport.tpl'),
-			'modalButtons' => '<span class="tool btn btn-primary" onclick="VuFind.EContent.submitHelpForm();">Submit</span>'
+			'modalButtons' => '<span class="tool btn btn-primary" onclick="AspenDiscovery.EContent.submitHelpForm();">Submit</span>'
 		);
 		return json_encode($results);
 	}

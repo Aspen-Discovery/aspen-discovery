@@ -51,7 +51,7 @@
 					<a href="#" class="jcarousel-control-prev"{* data-target="-=1"*}><i class="glyphicon glyphicon-chevron-left"></i></a>
 					<a href="#" class="jcarousel-control-next"{* data-target="+=1"*}><i class="glyphicon glyphicon-chevron-right"></i></a>
 
-					<div class="exploreMoreItemsContainer jcarousel"{* data-wrap="circular" data-jcarousel="true"*}> {* noIntialize is a filter for VuFind.initCarousels() *}
+					<div class="exploreMoreItemsContainer jcarousel">
 						<ul>
 							{foreach from=$relatedImages item=image}
 								<li class="explore-more-option">
@@ -97,7 +97,7 @@
 			</div>
 			<div class="col-sm-4 col-sm-offset-2">
 				{* Display information to sort the results (by date or by title *}
-				<select id="results-sort" name="sort" onchange="VuFind.Archive.sort = this.options[this.selectedIndex].value;VuFind.Archive.getMoreExhibitResults('{$exhibitPid|urlencode}', 1);" class="form-control">
+				<select id="results-sort" name="sort" onchange="AspenDiscovery.Archive.sort = this.options[this.selectedIndex].value;AspenDiscovery.Archive.getMoreExhibitResults('{$exhibitPid|urlencode}', 1);" class="form-control">
 					<option value="title" {if $sort=='title'}selected="selected"{/if}>{translate text='Sort by ' }Title</option>
 					<option value="newest" {if $sort=='newest'}selected="selected"{/if}>{translate text='Sort by ' }Newest First</option>
 					<option value="oldest" {if $sort=='oldest'}selected="selected"{/if}>{translate text='Sort by ' }Oldest First</option>
@@ -132,7 +132,7 @@
 				{foreach from=$relatedImages item=image}
 					{if $showThumbnailsSorted && count($relatedImages) >= 18}<div class="col-xs-6 col-sm-4 col-md-3">{/if}
 						<figure class="{if $showThumbnailsSorted && count($relatedImages) >= 18}browse-thumbnail-sorted{else}browse-thumbnail{/if}">
-							<a href="{$image.link}" {if $image.title}data-title="{$image.title}"{/if} onclick="return VuFind.Archive.showObjectInPopup('{$image.pid|urlencode}'{if $image.recordIndex},{$image.recordIndex}{if $page},{$page}{/if}{/if})">
+							<a href="{$image.link}" {if $image.title}data-title="{$image.title}"{/if} onclick="return AspenDiscovery.Archive.showObjectInPopup('{$image.pid|urlencode}'{if $image.recordIndex},{$image.recordIndex}{if $page},{$page}{/if}{/if})">
 								<img src="{$image.image}" {if $image.title}alt="{$image.title}"{/if}>
 								<figcaption class="explore-more-category-title">
 									<strong>{$image.title}</strong>
@@ -146,7 +146,7 @@
 		{* Show more link if we aren't seeing all the records already *}
 		<div id="nextInsertPoint">
 		{if $recordEnd < $recordCount}
-			<a onclick="return VuFind.Archive.getMoreExhibitResults('{$pid|urlencode}')" role="button">
+			<a onclick="return AspenDiscovery.Archive.getMoreExhibitResults('{$pid|urlencode}')" role="button">
 				<div class="row" id="more-browse-results">
 					<span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>
 				</div>
@@ -177,7 +177,7 @@
 						<a class="btn btn-small btn-default" href="{$repositoryLink}/datastream/MODS/edit" target="_blank">
 							Edit MODS Record
 						</a>
-						<a class="btn btn-small btn-default" href="#" onclick="return VuFind.Archive.clearCache('{$pid}');" target="_blank">
+						<a class="btn btn-small btn-default" href="#" onclick="return AspenDiscovery.Archive.clearCache('{$pid}');" target="_blank">
 							Clear Cache
 						</a>
 					</div>
@@ -189,6 +189,6 @@
 {/strip}
 <script type="text/javascript">
 	$().ready(function(){ldelim}
-		VuFind.Archive.loadExploreMore('{$pid|urlencode}');
+		AspenDiscovery.Archive.loadExploreMore('{$pid|urlencode}');
 	{rdelim});
 </script>

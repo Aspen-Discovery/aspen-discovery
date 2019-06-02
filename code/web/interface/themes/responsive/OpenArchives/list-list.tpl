@@ -10,7 +10,7 @@
 				<script type="text/javascript">
 					$(document).ready(
 						function () {ldelim}
-							VuFind.Searches.loadExploreMoreBar('open_archives', '{$exploreMoreSearchTerm|escape:"html"}');
+							AspenDiscovery.Searches.loadExploreMoreBar('open_archives', '{$exploreMoreSearchTerm|escape:"html"}');
 						{rdelim}
 					);
 				</script>

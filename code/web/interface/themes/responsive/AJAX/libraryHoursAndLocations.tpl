@@ -3,7 +3,7 @@
 	<form role="from">
 		<div class="form-group">
 			<label for="selectLibrary">Select a Location</label>
-			<select name="selectLibrary" id="selectLibrary" onchange="return VuFind.showLocationHoursAndMap();" class="form-control">
+			<select name="selectLibrary" id="selectLibrary" onchange="return AspenDiscovery.showLocationHoursAndMap();" class="form-control">
 				{foreach from=$libraryLocations item=curLocation}
 					<option value="{$curLocation.id}">{$curLocation.name}</option>
 				{/foreach}

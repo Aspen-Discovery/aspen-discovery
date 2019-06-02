@@ -1,4 +1,4 @@
-VuFind.Account = (function(){
+AspenDiscovery.Account = (function(){
 
 	return {
 		ajaxCallback: null,
@@ -7,7 +7,7 @@ VuFind.Account = (function(){
 
 		addAccountLink: function(){
 			const url = Globals.path + "/MyAccount/AJAX?method=getAddAccountLinkForm";
-			VuFind.Account.ajaxLightbox(url, true);
+			AspenDiscovery.Account.ajaxLightbox(url, true);
 		},
 
 		/**
@@ -32,11 +32,11 @@ VuFind.Account = (function(){
 			};
 			$.getJSON(url, params,function (data) {
 					if (data.success) {
-						VuFind.showMessage("Added Successfully", data.message, true, true);
+						AspenDiscovery.showMessage("Added Successfully", data.message, true, true);
 					} else {
-						VuFind.showMessage("Error", data.message);
+						AspenDiscovery.showMessage("Error", data.message);
 					}
-			}).fail(VuFind.ajaxFail);
+			}).fail(AspenDiscovery.ajaxFail);
 			return false;
 		},
 
@@ -54,9 +54,9 @@ VuFind.Account = (function(){
 			if (Globals.loggedIn) {
 				if (ajaxCallback !== undefined && typeof(ajaxCallback) === "function") {
 					ajaxCallback();
-				} else if (VuFind.Account.ajaxCallback != null && typeof(VuFind.Account.ajaxCallback) === "function") {
-					VuFind.Account.ajaxCallback();
-					VuFind.Account.ajaxCallback = null;
+				} else if (AspenDiscovery.Account.ajaxCallback != null && typeof(AspenDiscovery.Account.ajaxCallback) === "function") {
+					AspenDiscovery.Account.ajaxCallback();
+					AspenDiscovery.Account.ajaxCallback = null;
 				}
 			} else {
 				var multiStep = false,
@@ -64,8 +64,8 @@ VuFind.Account = (function(){
 				if (ajaxCallback !== undefined && typeof(ajaxCallback) === "function") {
 					multiStep = true;
 				}
-				VuFind.Account.ajaxCallback = ajaxCallback;
-				VuFind.Account.closeModalOnAjaxSuccess = closeModalOnAjaxSuccess;
+				AspenDiscovery.Account.ajaxCallback = ajaxCallback;
+				AspenDiscovery.Account.closeModalOnAjaxSuccess = closeModalOnAjaxSuccess;
 				if (trigger !== undefined && trigger !== null) {
 					var dialogTitle = trigger.attr("title") ? trigger.attr("title") : trigger.data("title");
 					loginLink = trigger.data('login');
@@ -146,7 +146,7 @@ VuFind.Account = (function(){
 						.show();
 				return false;
 			}
-			if (VuFind.hasLocalStorage()){
+			if (AspenDiscovery.hasLocalStorage()){
 				var rememberMe = $("#rememberMe").prop('checked'),
 						showPwd = $('#showPwd').prop('checked');
 				if (rememberMe){
@@ -173,7 +173,7 @@ VuFind.Account = (function(){
 						loadingElem = $('#loading'),
 						url = Globals.path + "/AJAX/JSON?method=loginUser",
 						params = {username: username, password: password, rememberMe: rememberMe};
-				if (!Globals.opac && VuFind.hasLocalStorage()){
+				if (!Globals.opac && AspenDiscovery.hasLocalStorage()){
 					var showCovers = window.localStorage.getItem('showCovers') || false;
 					if (showCovers && showCovers.length > 0) { // if there is a set value, pass it back with the login info
 						params.showCovers = showCovers
@@ -181,7 +181,6 @@ VuFind.Account = (function(){
 				}
 				loginErrorElem.hide();
 				loadingElem.show();
-				//VuFind.loadingMessage();
 				$.post(url, params, function(response){
 							loadingElem.hide();
 							if (response.result.success === true) {
@@ -195,16 +194,16 @@ VuFind.Account = (function(){
 								name = 'Logged In As ' + name.slice(0, 1) + '. ' + name.slice(name.lastIndexOf(' ') + 1, name.length) + '.';
 								$('#side-bar #myAccountNameLink').html(name);
 
-								if (VuFind.Account.closeModalOnAjaxSuccess) {
-									VuFind.closeLightbox();
+								if (AspenDiscovery.Account.closeModalOnAjaxSuccess) {
+									AspenDiscovery.closeLightbox();
 								}
 
 								Globals.loggedIn = true;
 								if (ajaxCallback !== undefined && typeof(ajaxCallback) === "function") {
 									ajaxCallback();
-								} else if (VuFind.Account.ajaxCallback !== undefined && typeof(VuFind.Account.ajaxCallback) === "function") {
-									VuFind.Account.ajaxCallback();
-									VuFind.Account.ajaxCallback = null;
+								} else if (AspenDiscovery.Account.ajaxCallback !== undefined && typeof(AspenDiscovery.Account.ajaxCallback) === "function") {
+									AspenDiscovery.Account.ajaxCallback();
+									AspenDiscovery.Account.ajaxCallback = null;
 								}
 							} else {
 								loginErrorElem.text(response.result.message).show();
@@ -229,7 +228,7 @@ VuFind.Account = (function(){
 					data: {username: username, password: password},
 					success: function (response) {
 						if (response.result === true) {
-							VuFind.showMessage("Account to Manage", response.message ? response.message : "Successfully linked the account.", true, true);
+							AspenDiscovery.showMessage("Account to Manage", response.message ? response.message : "Successfully linked the account.", true, true);
 						} else {
 							loginErrorElem.text(response.message);
 							loginErrorElem.show();
@@ -252,10 +251,10 @@ VuFind.Account = (function(){
 				var url = Globals.path + "/MyAccount/AJAX?method=removeAccountLink&idToRemove=" + idToRemove;
 				$.getJSON(url, function(data){
 					if (data.result === true){
-						VuFind.showMessage('Linked Account Removed', data.message, true, true);
+						AspenDiscovery.showMessage('Linked Account Removed', data.message, true, true);
 						//setTimeout(function(){window.location.reload()}, 3000);
 					}else{
-						VuFind.showMessage('Unable to Remove Account Link', data.message);
+						AspenDiscovery.showMessage('Unable to Remove Account Link', data.message);
 					}
 				});
 			}
@@ -264,10 +263,10 @@ VuFind.Account = (function(){
 
 		renewTitle: function(patronId, recordId, renewIndicator) {
 			if (Globals.loggedIn) {
-				VuFind.loadingMessage();
+				AspenDiscovery.loadingMessage();
 				$.getJSON(Globals.path + "/MyAccount/AJAX?method=renewCheckout&patronId=" + patronId + "&recordId=" + recordId + "&renewIndicator="+renewIndicator, function(data){
-					VuFind.showMessage(data.title, data.modalBody, data.success, data.success); // autoclose when successful
-				}).fail(VuFind.ajaxFail)
+					AspenDiscovery.showMessage(data.title, data.modalBody, data.success, data.success); // autoclose when successful
+				}).fail(AspenDiscovery.ajaxFail)
 			} else {
 				this.ajaxLogin(null, function () {
 					this.renewTitle(renewIndicator);
@@ -279,9 +278,9 @@ VuFind.Account = (function(){
 		renewAll: function() {
 			if (Globals.loggedIn) {
 				if (confirm('Renew All Items?')) {
-					VuFind.loadingMessage();
+					AspenDiscovery.loadingMessage();
 					$.getJSON(Globals.path + "/MyAccount/AJAX?method=renewAll", function (data) {
-						VuFind.showMessage(data.title, data.modalBody, data.success);
+						AspenDiscovery.showMessage(data.title, data.modalBody, data.success);
 						// autoclose when all successful
 						if (data.success || data.renewed > 0) {
 							// Refresh page on close when a item has been successfully renewed, otherwise stay
@@ -289,7 +288,7 @@ VuFind.Account = (function(){
 								location.reload(true);
 							});
 						}
-					}).fail(VuFind.ajaxFail);
+					}).fail(AspenDiscovery.ajaxFail);
 				}
 			} else {
 				this.ajaxLogin(null, this.renewAll, true);
@@ -300,14 +299,14 @@ VuFind.Account = (function(){
 
 		renewSelectedTitles: function () {
 			if (Globals.loggedIn) {
-				var selectedTitles = VuFind.getSelectedTitles();
+				var selectedTitles = AspenDiscovery.getSelectedTitles();
 				if (selectedTitles) {
 					if (confirm('Renew selected Items?')) {
-						VuFind.loadingMessage();
+						AspenDiscovery.loadingMessage();
 						$.getJSON(Globals.path + "/MyAccount/AJAX?method=renewSelectedItems&" + selectedTitles, function (data) {
 							var reload = data.success || data.renewed > 0;
-							VuFind.showMessage(data.title, data.modalBody, data.success, reload);
-						}).fail(VuFind.ajaxFail);
+							AspenDiscovery.showMessage(data.title, data.modalBody, data.success, reload);
+						}).fail(AspenDiscovery.ajaxFail);
 					}
 				}
 			} else {
@@ -327,7 +326,7 @@ VuFind.Account = (function(){
 					if (data.error == false){
 						alert(data.message);
 						if (data.result == true){
-							VuFind.closeLightbox();
+							AspenDiscovery.closeLightbox();
 						}
 					}else{
 						alert("There was an error requesting your pin reset information.  Please contact the library for additional information.");
@@ -342,39 +341,39 @@ VuFind.Account = (function(){
 				requireLogin = false;
 			}
 			if (requireLogin && !Globals.loggedIn) {
-				VuFind.Account.ajaxLogin(null, function () {
-					VuFind.Account.ajaxLightbox(urlToDisplay, requireLogin);
+				AspenDiscovery.Account.ajaxLogin(null, function () {
+					AspenDiscovery.Account.ajaxLightbox(urlToDisplay, requireLogin);
 				}, false);
 			} else {
-				VuFind.loadingMessage();
+				AspenDiscovery.loadingMessage();
 				$.getJSON(urlToDisplay, function(data){
 					if (data.success){
 						data = data.result;
 					}
-					VuFind.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
-				}).fail(VuFind.ajaxFail);
+					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+				}).fail(AspenDiscovery.ajaxFail);
 			}
 			return false;
 		},
 
 		confirmCancelHold: function(patronId, recordId, holdIdToCancel) {
-			VuFind.loadingMessage();
+			AspenDiscovery.loadingMessage();
 			$.getJSON(Globals.path + "/MyAccount/AJAX?method=confirmCancelHold&patronId=" + patronId + "&recordId=" + recordId + "&cancelId="+holdIdToCancel, function(data){
-				VuFind.showMessageWithButtons(data.title, data.body, data.buttons); // autoclose when successful
-			}).fail(VuFind.ajaxFail);
+				AspenDiscovery.showMessageWithButtons(data.title, data.body, data.buttons); // autoclose when successful
+			}).fail(AspenDiscovery.ajaxFail);
 
 			return false
 		},
 
 		cancelHold: function(patronId, recordId, holdIdToCancel){
 			if (Globals.loggedIn) {
-				VuFind.loadingMessage();
+				AspenDiscovery.loadingMessage();
 				$.getJSON(Globals.path + "/MyAccount/AJAX?method=cancelHold&patronId=" + patronId + "&recordId=" + recordId + "&cancelId="+holdIdToCancel, function(data){
-					VuFind.showMessage(data.title, data.body, data.success, data.success); // autoclose when successful
-				}).fail(VuFind.ajaxFail)
+					AspenDiscovery.showMessage(data.title, data.body, data.success, data.success); // autoclose when successful
+				}).fail(AspenDiscovery.ajaxFail)
 			} else {
 				this.ajaxLogin(null, function () {
-					VuFind.Account.cancelHold(patronId, recordId, holdIdToCancel)
+					AspenDiscovery.Account.cancelHold(patronId, recordId, holdIdToCancel)
 				}, false);
 			}
 
@@ -384,23 +383,23 @@ VuFind.Account = (function(){
 		cancelBooking: function(patronId, cancelId){
 			if (confirm("Are you sure you want to cancel this scheduled item?")){
 				if (Globals.loggedIn) {
-					VuFind.loadingMessage();
+					AspenDiscovery.loadingMessage();
 					var c = {};
 					c[patronId] = cancelId;
 					//console.log(c);
 					//$.getJSON(Globals.path + "/MyAccount/AJAX", {method:"cancelBooking", patronId:patronId, cancelId:cancelId}, function(data){
 					$.getJSON(Globals.path + "/MyAccount/AJAX", {method:"cancelBooking", cancelId:c}, function(data){
-						VuFind.showMessage(data.title, data.modalBody, data.success); // autoclose when successful
+						AspenDiscovery.showMessage(data.title, data.modalBody, data.success); // autoclose when successful
 						if (data.success) {
 							// remove canceled item from page
 							var escapedId = cancelId.replace(/:/g, "\\:"); // needed for jquery selector to work correctly
 							// first backslash for javascript escaping, second for css escaping (within jquery)
 							$('div.result').has('#selected'+escapedId).remove();
 						}
-					}).fail(VuFind.ajaxFail)
+					}).fail(AspenDiscovery.ajaxFail)
 				} else {
 					this.ajaxLogin(null, function () {
-						VuFind.Account.cancelBooking(cancelId)
+						AspenDiscovery.Account.cancelBooking(cancelId)
 					}, false);
 				}
 			}
@@ -414,9 +413,9 @@ VuFind.Account = (function(){
 						numBookings = $("input.titleSelect:checked").length;
 				// if numBookings equals 0, quit because user has canceled in getSelectedTitles()
 				if (numBookings > 0 && confirm('Cancel ' + numBookings + ' selected scheduled item' + (numBookings > 1 ? 's' : '') + '?')) {
-					VuFind.loadingMessage();
+					AspenDiscovery.loadingMessage();
 					$.getJSON(Globals.path + "/MyAccount/AJAX?method=cancelBooking&"+selectedTitles, function(data){
-						VuFind.showMessage(data.title, data.modalBody, data.success); // autoclose when successful
+						AspenDiscovery.showMessage(data.title, data.modalBody, data.success); // autoclose when successful
 						if (data.success) {
 							// remove canceled items from page
 							$("input.titleSelect:checked").closest('div.result').remove();
@@ -430,10 +429,10 @@ VuFind.Account = (function(){
 									$(this).closest('div.result').remove();
 							});
 						}
-					}).fail(VuFind.ajaxFail);
+					}).fail(AspenDiscovery.ajaxFail);
 				}
 			} else {
-				this.ajaxLogin(null, VuFind.Account.cancelSelectedBookings, false);
+				this.ajaxLogin(null, AspenDiscovery.Account.cancelSelectedBookings, false);
 			}
 			return false;
 
@@ -442,9 +441,9 @@ VuFind.Account = (function(){
 		cancelAllBookings: function(){
 			if (Globals.loggedIn) {
 				if (confirm('Cancel all of your scheduled items?')) {
-					VuFind.loadingMessage();
+					AspenDiscovery.loadingMessage();
 					$.getJSON(Globals.path + "/MyAccount/AJAX?method=cancelBooking&cancelAll=1", function(data){
-						VuFind.showMessage(data.title, data.modalBody, data.success); // autoclose when successful
+						AspenDiscovery.showMessage(data.title, data.modalBody, data.success); // autoclose when successful
 						if (data.success) {
 							// remove canceled items from page
 							$("input.titleSelect").closest('div.result').remove();
@@ -458,10 +457,10 @@ VuFind.Account = (function(){
 									$(this).closest('div.result').remove();
 							});
 						}
-					}).fail(VuFind.ajaxFail);
+					}).fail(AspenDiscovery.ajaxFail);
 				}
 			} else {
-				this.ajaxLogin(null, VuFind.Account.cancelAllBookings, false);
+				this.ajaxLogin(null, AspenDiscovery.Account.cancelAllBookings, false);
 			}
 			return false;
 		},
@@ -470,19 +469,19 @@ VuFind.Account = (function(){
 			if (typeof sortParameterName === 'undefined') {
 				sortParameterName = 'accountSort'
 			}
-			var paramString = VuFind.replaceQueryParam(sortParameterName, newSort);
+			var paramString = AspenDiscovery.replaceQueryParam(sortParameterName, newSort);
 			location.replace(location.pathname + paramString)
 		},
 
 		changeHoldPickupLocation: function (patronId, recordId, holdId){
 			if (Globals.loggedIn){
-				VuFind.loadingMessage();
+				AspenDiscovery.loadingMessage();
 				$.getJSON(Globals.path + "/MyAccount/AJAX?method=getChangeHoldLocationForm&patronId=" + patronId + "&recordId=" + recordId + "&holdId=" + holdId, function(data){
-					VuFind.showMessageWithButtons(data.title, data.modalBody, data.modalButtons)
+					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons)
 				});
 			}else{
-				VuFind.Account.ajaxLogin(null, function(){
-					return VuFind.Account.changeHoldPickupLocation(patronId, recordId, holdId);
+				AspenDiscovery.Account.ajaxLogin(null, function(){
+					return AspenDiscovery.Account.changeHoldPickupLocation(patronId, recordId, holdId);
 				}, false);
 			}
 			return false;
@@ -490,8 +489,8 @@ VuFind.Account = (function(){
 
 		deleteSearch: function(searchId){
 			if (!Globals.loggedIn){
-				VuFind.Account.ajaxLogin(null, function () {
-					VuFind.Searches.saveSearch(searchId);
+				AspenDiscovery.Account.ajaxLogin(null, function () {
+					AspenDiscovery.Searches.saveSearch(searchId);
 				}, false);
 			}else{
 				var url = Globals.path + "/MyAccount/AJAX";
@@ -499,9 +498,9 @@ VuFind.Account = (function(){
 				$.getJSON(url + '?' + params,
 						function(data) {
 							if (data.result) {
-								VuFind.showMessage("Success", data.message);
+								AspenDiscovery.showMessage("Success", data.message);
 							} else {
-								VuFind.showMessage("Error", data.message);
+								AspenDiscovery.showMessage("Error", data.message);
 							}
 						}
 				);
@@ -522,16 +521,16 @@ VuFind.Account = (function(){
 			$.getJSON(url, params,
 					function(data) {
 						if (data.success) {
-							VuFind.showMessage("Success", data.message, true, true);
+							AspenDiscovery.showMessage("Success", data.message, true, true);
 						} else {
-							VuFind.showMessage("Error", data.message);
+							AspenDiscovery.showMessage("Error", data.message);
 						}
 					}
-			).fail(VuFind.ajaxFail);
+			).fail(AspenDiscovery.ajaxFail);
 		},
 
 		freezeHold: function(patronId, recordId, holdId, promptForReactivationDate, caller){
-			VuFind.loadingMessage();
+			AspenDiscovery.loadingMessage();
 			var url = Globals.path + '/MyAccount/AJAX',
 					params = {
 						patronId : patronId
@@ -542,20 +541,20 @@ VuFind.Account = (function(){
 				//Prompt the user for the date they want to reactivate the hold
 				params['method'] = 'getReactivationDateForm'; // set method for this form
 				$.getJSON(url, params, function(data){
-					VuFind.showMessageWithButtons(data.title, data.modalBody, data.modalButtons)
-				}).fail(VuFind.ajaxFail);
+					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons)
+				}).fail(AspenDiscovery.ajaxFail);
 
 			}else{
 				var popUpBoxTitle = $(caller).text() || "Freezing Hold"; // freezing terminology can be customized, so grab text from click button: caller
-				VuFind.showMessage(popUpBoxTitle, "Updating your hold.  This may take a minute.");
+				AspenDiscovery.showMessage(popUpBoxTitle, "Updating your hold.  This may take a minute.");
 				params['method'] = 'freezeHold'; //set method for this ajax call
 				$.getJSON(url, params, function(data){
 					if (data.success) {
-						VuFind.showMessage("Success", data.message, true, true);
+						AspenDiscovery.showMessage("Success", data.message, true, true);
 					} else {
-						VuFind.showMessage("Error", data.message);
+						AspenDiscovery.showMessage("Error", data.message);
 					}
-				}).fail(VuFind.ajaxFail);
+				}).fail(AspenDiscovery.ajaxFail);
 			}
 		},
 
@@ -570,14 +569,14 @@ VuFind.Account = (function(){
 						,reactivationDate : $("#reactivationDate").val()
 					}
 					,url = Globals.path + '/MyAccount/AJAX';
-			VuFind.showMessage(popUpBoxTitle, "Updating your hold.  This may take a minute.");
+			AspenDiscovery.showMessage(popUpBoxTitle, "Updating your hold.  This may take a minute.");
 			$.getJSON(url, params, function(data){
 				if (data.success) {
-					VuFind.showMessage("Success", data.message, true, true);
+					AspenDiscovery.showMessage("Success", data.message, true, true);
 				} else {
-					VuFind.showMessage("Error", data.message);
+					AspenDiscovery.showMessage("Error", data.message);
 				}
-			}).fail(VuFind.ajaxFail);
+			}).fail(AspenDiscovery.ajaxFail);
 		},
 
 		/* Hide this code for now. I should be to re-enable when re-enable selections for Holds
@@ -604,7 +603,7 @@ VuFind.Account = (function(){
 				}
 			}
 			url = Globals.path + '/MyAccount/Holds?multiAction=freezeSelected&patronId=' + patronId + '&recordId=' + recordId + '&' + selectedTitles + '&suspendDate=' + suspendDate;
-			queryParams = VuFind.getQuerystringParameters();
+			queryParams = AspenDiscovery.getQuerystringParameters();
 			if ($.inArray('section', queryParams)){
 				url += '&section=' + queryParams['section'];
 			}
@@ -632,8 +631,8 @@ VuFind.Account = (function(){
 
 		saveSearch: function(searchId){
 			if (!Globals.loggedIn){
-				VuFind.Account.ajaxLogin(null, function(){
-					VuFind.Account.saveSearch(searchId);
+				AspenDiscovery.Account.ajaxLogin(null, function(){
+					AspenDiscovery.Account.saveSearch(searchId);
 				}, false);
 			}else{
 				var url = Globals.path + "/MyAccount/AJAX",
@@ -641,12 +640,12 @@ VuFind.Account = (function(){
 				$.getJSON(url, params,
 						function(data){
 							if (data.result) {
-								VuFind.showMessage("Success", data.message);
+								AspenDiscovery.showMessage("Success", data.message);
 							} else {
-								VuFind.showMessage("Error", data.message);
+								AspenDiscovery.showMessage("Error", data.message);
 							}
 						}
-				).fail(VuFind.ajaxFail);
+				).fail(AspenDiscovery.ajaxFail);
 			}
 			return false;
 		},
@@ -659,11 +658,11 @@ VuFind.Account = (function(){
 					params.recordId= id;
 				}
 				$.getJSON(url, params, function(data){
-					VuFind.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
-				}).fail(VuFind.ajaxFail);
+					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+				}).fail(AspenDiscovery.ajaxFail);
 			}else{
-				VuFind.Account.ajaxLogin($trigger, function(){
-					return VuFind.GroupedWork.showEmailForm(trigger, id);
+				AspenDiscovery.Account.ajaxLogin($trigger, function(){
+					return AspenDiscovery.GroupedWork.showEmailForm(trigger, id);
 				}, false);
 			}
 			return false;
@@ -671,7 +670,7 @@ VuFind.Account = (function(){
 
 		thawHold: function(patronId, recordId, holdId, caller){
 			var popUpBoxTitle = $(caller).text() || "Thawing Hold";  // freezing terminology can be customized, so grab text from click button: caller
-			VuFind.showMessage(popUpBoxTitle, "Updating your hold.  This may take a minute.");
+			AspenDiscovery.showMessage(popUpBoxTitle, "Updating your hold.  This may take a minute.");
 			var url = Globals.path + '/MyAccount/AJAX',
 					params = {
 						'method' : 'thawHold'
@@ -681,17 +680,17 @@ VuFind.Account = (function(){
 					};
 			$.getJSON(url, params, function(data){
 				if (data.success) {
-					VuFind.showMessage("Success", data.message, true, true);
+					AspenDiscovery.showMessage("Success", data.message, true, true);
 				} else {
-					VuFind.showMessage("Error", data.message);
+					AspenDiscovery.showMessage("Error", data.message);
 				}
-			}).fail(VuFind.ajaxFail);
+			}).fail(AspenDiscovery.ajaxFail);
 		},
 
 		toggleShowCovers: function(showCovers){
 			this.showCovers = showCovers;
-			var paramString = VuFind.replaceQueryParam('showCovers', this.showCovers ? 'on': 'off'); // set variable
-			if (!Globals.opac && VuFind.hasLocalStorage()) { // store setting in browser if not an opac computer
+			var paramString = AspenDiscovery.replaceQueryParam('showCovers', this.showCovers ? 'on': 'off'); // set variable
+			if (!Globals.opac && AspenDiscovery.hasLocalStorage()) { // store setting in browser if not an opac computer
 				window.localStorage.setItem('showCovers', this.showCovers ? 'on' : 'off');
 			}
 			location.replace(location.pathname + paramString); // reloads page without adding entry to history
@@ -704,12 +703,12 @@ VuFind.Account = (function(){
 		},
 
 		getMasqueradeForm: function () {
-			VuFind.loadingMessage();
+			AspenDiscovery.loadingMessage();
 			var url = Globals.path + "/MyAccount/AJAX",
 					params = {method:"getMasqueradeAsForm"};
 			$.getJSON(url, params, function(data){
-				VuFind.showMessageWithButtons(data.title, data.modalBody, data.modalButtons)
-			}).fail(VuFind.ajaxFail);
+				AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons)
+			}).fail(AspenDiscovery.ajaxFail);
 			return false;
 		},
 
@@ -728,7 +727,7 @@ VuFind.Account = (function(){
 					$('#masqueradeLoading').hide();
 					$('#masqueradeAsError').html(data.error).show();
 				}
-			}).fail(VuFind.ajaxFail);
+			}).fail(AspenDiscovery.ajaxFail);
 			return false;
 		},
 
@@ -737,9 +736,9 @@ VuFind.Account = (function(){
 					params = {method:"endMasquerade"};
 			$.getJSON(url, params).done(function(){
 					location.href = Globals.path + '/MyAccount/Home';
-			}).fail(VuFind.ajaxFail);
+			}).fail(AspenDiscovery.ajaxFail);
 			return false;
 		}
 
 	};
-}(VuFind.Account || {}));
+}(AspenDiscovery.Account || {}));

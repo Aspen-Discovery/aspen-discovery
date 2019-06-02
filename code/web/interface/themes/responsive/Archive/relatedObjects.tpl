@@ -34,17 +34,17 @@
 			</div>
 			<div class="col-sm-4 col-sm-offset-2">
 				{* Display information to sort the results (by date or by title *}
-				<select id="results-sort" name="sort" onchange="VuFind.Archive.sort = this.options[this.selectedIndex].value;
+				<select id="results-sort" name="sort" onchange="AspenDiscovery.Archive.sort = this.options[this.selectedIndex].value;
 								{if $displayType == 'map'}
-									VuFind.Archive.reloadMapResults('{$exhibitPid|urlencode}', '{$placePid|urlencode}', 1);
+									AspenDiscovery.Archive.reloadMapResults('{$exhibitPid|urlencode}', '{$placePid|urlencode}', 1);
 								{elseif $displayType == 'mapNoTimeline'}
-									VuFind.Archive.reloadMapResults('{$exhibitPid|urlencode}', '{$placePid|urlencode}', 1);
+									AspenDiscovery.Archive.reloadMapResults('{$exhibitPid|urlencode}', '{$placePid|urlencode}', 1);
 								{elseif $displayType == 'timeline'}
-									VuFind.Archive.reloadTimelineResults('{$exhibitPid|urlencode}', 1);
+									AspenDiscovery.Archive.reloadTimelineResults('{$exhibitPid|urlencode}', 1);
 								{elseif $displayType == 'scroller'}
-									VuFind.Archive.reloadScrollerResults('{$exhibitPid|urlencode}', 1);
+									AspenDiscovery.Archive.reloadScrollerResults('{$exhibitPid|urlencode}', 1);
 								{elseif $displayType == 'basic'}
-									VuFind.Archive.getMoreExhibitResults('{$exhibitPid|urlencode}', 1);
+									AspenDiscovery.Archive.getMoreExhibitResults('{$exhibitPid|urlencode}', 1);
 								{/if}
 								" class="form-control">
 					<option value="title" {if $sort=='title'}selected="selected"{/if}>{translate text='Sort by ' }Title</option>
@@ -71,17 +71,17 @@
 					<div class="btn-group btn-group-sm" role="group" aria-label="Select Dates" data-toggle="buttons">
 						<label class="btn btn-default btn-sm{if !empty($smarty.request.dateFilter) && in_array('unknown', $smarty.request.dateFilter)} active{/if}">
 							{if $displayType == 'map'}
-								<input name="dateFilter" onchange="VuFind.Archive.reloadMapResults('{$exhibitPid|urlencode}', '{$placePid|urlencode}', 0)" type="radio" value="all"><strong>All</strong><br/>({$recordCount})
+								<input name="dateFilter" onchange="AspenDiscovery.Archive.reloadMapResults('{$exhibitPid|urlencode}', '{$placePid|urlencode}', 0)" type="radio" value="all"><strong>All</strong><br/>({$recordCount})
 							{elseif $displayType == 'timeline'}
-								<input name="dateFilter" onchange="VuFind.Archive.reloadTimelineResults('{$exhibitPid|urlencode}', 0)" type="radio" value="all"><strong>All</strong><br/>({$recordCount})
+								<input name="dateFilter" onchange="AspenDiscovery.Archive.reloadTimelineResults('{$exhibitPid|urlencode}', 0)" type="radio" value="all"><strong>All</strong><br/>({$recordCount})
 							{/if}
 						</label>
 						{foreach from=$dateFacetInfo item=facet}
 							<label class="btn btn-default btn-sm{if !empty($smarty.request.dateFilter) && in_array($facet.value, $smarty.request.dateFilter)} active{/if}">
 								{if $displayType == 'map'}
-									<input name="dateFilter" onchange="VuFind.Archive.reloadMapResults('{$exhibitPid|urlencode}', '{$placePid|urlencode}', 0)" type="radio" autocomplete="off" value="{$facet.value}"><strong>{$facet.label}</strong><br/>({$facet.count})
+									<input name="dateFilter" onchange="AspenDiscovery.Archive.reloadMapResults('{$exhibitPid|urlencode}', '{$placePid|urlencode}', 0)" type="radio" autocomplete="off" value="{$facet.value}"><strong>{$facet.label}</strong><br/>({$facet.count})
 								{elseif $displayType == 'timeline'}
-									<input name="dateFilter" onchange="VuFind.Archive.reloadTimelineResults('{$exhibitPid|urlencode}', 0)" type="radio" autocomplete="off" value="{$facet.value}"{if !empty($smarty.request.dateFilter) && in_array($facet.value, $smarty.request.dateFilter)} checked="checked"{/if}><strong>{$facet.label}</strong><br/>({$facet.count})
+									<input name="dateFilter" onchange="AspenDiscovery.Archive.reloadTimelineResults('{$exhibitPid|urlencode}', 0)" type="radio" autocomplete="off" value="{$facet.value}"{if !empty($smarty.request.dateFilter) && in_array($facet.value, $smarty.request.dateFilter)} checked="checked"{/if}><strong>{$facet.label}</strong><br/>({$facet.count})
 								{/if}
 							</label>
 						{/foreach}
@@ -89,9 +89,9 @@
 							<div class="btn-group btn-group-sm" role="group" aria-label="Unknown Date" data-toggle="buttons">
 								<label class="btn btn-default btn-sm{if !empty($smarty.request.dateFilter) && in_array('unknown', $smarty.request.dateFilter)} active{/if}">
 									{if $displayType == 'map'}
-										<input name="dateFilter" onchange="VuFind.Archive.reloadMapResults('{$exhibitPid|urlencode}', '{$placePid|urlencode}', 0)" type="radio" autocomplete="off" value="unknown"><strong>Unknown</strong><br/>({$numObjectsWithUnknownDate})
+										<input name="dateFilter" onchange="AspenDiscovery.Archive.reloadMapResults('{$exhibitPid|urlencode}', '{$placePid|urlencode}', 0)" type="radio" autocomplete="off" value="unknown"><strong>Unknown</strong><br/>({$numObjectsWithUnknownDate})
 									{elseif $displayType == 'timeline'}
-										<input name="dateFilter" onchange="VuFind.Archive.reloadTimelineResults('{$exhibitPid|urlencode}', 0)" type="radio" autocomplete="off" value="unknown"><strong>Unknown</strong><br/>({$numObjectsWithUnknownDate})
+										<input name="dateFilter" onchange="AspenDiscovery.Archive.reloadTimelineResults('{$exhibitPid|urlencode}', 0)" type="radio" autocomplete="off" value="unknown"><strong>Unknown</strong><br/>({$numObjectsWithUnknownDate})
 									{/if}
 								</label>
 							</div>
@@ -121,7 +121,7 @@
 		{foreach from=$relatedObjects item=image}
 			{if $showThumbnailsSorted}<div class="col-xs-6 col-sm-4 col-md-3">{/if}
 				<figure class="{if $showThumbnailsSorted}browse-thumbnail-sorted{else}browse-thumbnail{/if}">
-					<a href="{$image.link}" {if $image.title}data-title="{$image.title}"{/if} onclick="return VuFind.Archive.showObjectInPopup('{$image.pid|urlencode}'{if $image.recordIndex},{$image.recordIndex}{if $page},{$page}{/if}{/if})">
+					<a href="{$image.link}" {if $image.title}data-title="{$image.title}"{/if} onclick="return AspenDiscovery.Archive.showObjectInPopup('{$image.pid|urlencode}'{if $image.recordIndex},{$image.recordIndex}{if $page},{$page}{/if}{/if})">
 						<img src="{$image.image}" {if $image.title}alt="{$image.title}"{/if}>
 						<figcaption class="explore-more-category-title">
 							<strong>{$image.title|truncate:50} ({$image.dateCreated})</strong>
@@ -137,7 +137,7 @@
 	{if $displayType == 'map' || $displayType == 'mapNoTimeline'}
 		{* {$recordCount-$recordEnd} more records to load *}
 		{if $recordEnd < $recordCount}
-			<a onclick="return VuFind.Archive.getMoreMapResults('{$exhibitPid|urlencode}', '{$placePid|urlencode}', '{if $displayType == 'map'}true{else}false{/if}')" role="button">
+			<a onclick="return AspenDiscovery.Archive.getMoreMapResults('{$exhibitPid|urlencode}', '{$placePid|urlencode}', '{if $displayType == 'map'}true{else}false{/if}')" role="button">
 				<div class="row" id="more-browse-results">
 					<span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>
 				</div>
@@ -146,7 +146,7 @@
 	{elseif $displayType == 'timeline'}
 		{* {$recordCount-$recordEnd} more records to load *}
 		{if $recordEnd < $recordCount}
-			<a onclick="return VuFind.Archive.getMoreTimelineResults('{$exhibitPid|urlencode}')" role="button">
+			<a onclick="return AspenDiscovery.Archive.getMoreTimelineResults('{$exhibitPid|urlencode}')" role="button">
 				<div class="row" id="more-browse-results">
 					<span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>
 				</div>
@@ -155,7 +155,7 @@
 	{elseif $displayType == 'scroller'}
 		{* {$recordCount-$recordEnd} more records to load *}
 		{if $recordEnd < $recordCount}
-			<a onclick="return VuFind.Archive.getMoreScrollerResults('{$exhibitPid|urlencode}')" role="button">
+			<a onclick="return AspenDiscovery.Archive.getMoreScrollerResults('{$exhibitPid|urlencode}')" role="button">
 				<div class="row" id="more-browse-results">
 					<span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>
 				</div>
@@ -164,7 +164,7 @@
 	{else}
 		{if $recordEnd < $recordCount}
 			{* {$recordCount-$recordEnd} more records to load *}
-			<a onclick="return VuFind.Archive.getMoreExhibitResults('{$exhibitPid|urlencode}')" role="button">
+			<a onclick="return AspenDiscovery.Archive.getMoreExhibitResults('{$exhibitPid|urlencode}')" role="button">
 				<div class="row" id="more-browse-results">
 					<span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>
 				</div>

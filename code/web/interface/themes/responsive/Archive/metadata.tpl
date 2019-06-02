@@ -4,7 +4,7 @@
 <script type="text/javascript">
 	{literal}
 	$().ready(function(){
-		VuFind.Archive.loadMetadata('{/literal}{$pid}{literal}');
+		AspenDiscovery.Archive.loadMetadata('{/literal}{$pid}{literal}');
 	});
 	{/literal}
 </script>

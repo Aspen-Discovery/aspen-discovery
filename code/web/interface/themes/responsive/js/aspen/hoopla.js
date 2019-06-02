@@ -1,4 +1,4 @@
-VuFind.Hoopla = (function(){
+AspenDiscovery.Hoopla = (function(){
 	return {
 		checkOutHooplaTitle: function (hooplaId, patronId) {
 			if (Globals.loggedIn) {
@@ -15,14 +15,14 @@ VuFind.Hoopla = (function(){
 				}
 				$.getJSON(url, params, function (data) {
 					if (data.success) {
-						VuFind.showMessageWithButtons(data.title, data.message, data.buttons);
+						AspenDiscovery.showMessageWithButtons(data.title, data.message, data.buttons);
 					} else {
-						VuFind.showMessage("Checking Out Title", data.message);
+						AspenDiscovery.showMessage("Checking Out Title", data.message);
 					}
-				}).fail(VuFind.ajaxFail)
+				}).fail(AspenDiscovery.ajaxFail)
 			}else{
-				VuFind.Account.ajaxLogin(null, function(){
-					VuFind.Hoopla.checkOutHooplaTitle(hooplaId, patronId);
+				AspenDiscovery.Account.ajaxLogin(null, function(){
+					AspenDiscovery.Hoopla.checkOutHooplaTitle(hooplaId, patronId);
 				}, false);
 			}
 			return false;
@@ -32,11 +32,11 @@ VuFind.Hoopla = (function(){
 			if (Globals.loggedIn) {
 				var url = Globals.path + "/Hoopla/" + hooplaId + "/AJAX?method=geCheckOutPrompts";
 				$.getJSON(url, function (data) {
-					VuFind.showMessageWithButtons(data.title, data.body, data.buttons);
-				}).fail(VuFind.ajaxFail);
+					AspenDiscovery.showMessageWithButtons(data.title, data.body, data.buttons);
+				}).fail(AspenDiscovery.ajaxFail);
 			} else {
-				VuFind.Account.ajaxLogin(null, function () {
-					VuFind.Hoopla.getCheckOutPrompts(hooplaId);
+				AspenDiscovery.Account.ajaxLogin(null, function () {
+					AspenDiscovery.Hoopla.getCheckOutPrompts(hooplaId);
 				}, false);
 			}
 			return false;
@@ -45,23 +45,23 @@ VuFind.Hoopla = (function(){
 		returnCheckout: function (patronId, hooplaId) {
 			if (Globals.loggedIn) {
 				if (confirm('Are you sure you want to return this title?')) {
-					VuFind.showMessage("Returning Title", "Returning your title in Hoopla.");
+					AspenDiscovery.showMessage("Returning Title", "Returning your title in Hoopla.");
 					var url = Globals.path + "/Hoopla/" + hooplaId + "/AJAX",
 							params = {
 								'method': 'returnCheckout'
 								,patronId: patronId
 							};
 					$.getJSON(url, params, function (data) {
-						VuFind.showMessage(data.success ? 'Success' : 'Error', data.message, data.success, data.success);
-					}).fail(VuFind.ajaxFail);
+						AspenDiscovery.showMessage(data.success ? 'Success' : 'Error', data.message, data.success, data.success);
+					}).fail(AspenDiscovery.ajaxFail);
 				}
 			} else {
-				VuFind.Account.ajaxLogin(null, function () {
-					VuFind.Hoopla.returnCheckout(patronId, hooplaId);
+				AspenDiscovery.Account.ajaxLogin(null, function () {
+					AspenDiscovery.Hoopla.returnCheckout(patronId, hooplaId);
 				}, false);
 			}
 			return false;
 		}
 
 	}
-}(VuFind.Hoopla || {}));
+}(AspenDiscovery.Hoopla || {}));

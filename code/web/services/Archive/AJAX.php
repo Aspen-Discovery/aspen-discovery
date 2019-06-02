@@ -725,10 +725,10 @@ class Archive_AJAX extends Action {
 		$interface->assign('description', $recordDriver->getDescription());
 		$interface->assign('image', $recordDriver->getBookcoverUrl('medium'));
 
-		$urlStr = "<a href=\"$url\" onclick='VuFind.Archive.setForExhibitNavigation({$_COOKIE['recordIndex']},{$_COOKIE['page']})'>";
+		$urlStr = "<a href=\"$url\" onclick='AspenDiscovery.Archive.setForExhibitNavigation({$_COOKIE['recordIndex']},{$_COOKIE['page']})'>";
 		$escapedPid = urlencode($pid);
 		$addToFavoritesLabel = translate('Add to favorites');
-		$addToFavoritesButton = "<button onclick=\"return VuFind.Archive.showSaveToListForm(this, '$escapedPid');\" class=\"modal-buttons btn btn-primary\" style='float: left'>$addToFavoritesLabel</button>";
+		$addToFavoritesButton = "<button onclick=\"return AspenDiscovery.Archive.showSaveToListForm(this, '$escapedPid');\" class=\"modal-buttons btn btn-primary\" style='float: left'>$addToFavoritesLabel</button>";
 		return array(
 			'title' => "{$urlStr}{$recordDriver->getTitle()}</a>",
 			'modalBody' => $interface->fetch('Archive/archivePopup.tpl'),
@@ -921,7 +921,7 @@ class Archive_AJAX extends Action {
 		$results = array(
 			'title' => 'Add To List',
 			'modalBody' => $interface->fetch("GroupedWork/save.tpl"),
-			'modalButtons' => "<button class='tool btn btn-primary' onclick='VuFind.Archive.saveToList(\"{$id}\"); return false;'>Save To List</button>"
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.Archive.saveToList(\"{$id}\"); return false;'>Save To List</button>"
 		);
 		return $results;
 	}

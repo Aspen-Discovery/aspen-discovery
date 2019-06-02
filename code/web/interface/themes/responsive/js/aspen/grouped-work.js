@@ -1,7 +1,4 @@
-/**
- * Created by mark on 1/24/14.
- */
-VuFind.GroupedWork = (function(){
+AspenDiscovery.GroupedWork = (function(){
 	return {
 		hasTableOfContentsInRecord: false,
 
@@ -11,9 +8,9 @@ VuFind.GroupedWork = (function(){
 				if (data.result == true){
 					$('.rate' + groupedWorkId).find('.ui-rater-starsOn').width(0);
 					$('#myRating' + groupedWorkId).hide();
-					VuFind.showMessage('Success', data.message, true);
+					AspenDiscovery.showMessage('Success', data.message, true);
 				}else{
-					VuFind.showMessage('Sorry', data.message);
+					AspenDiscovery.showMessage('Sorry', data.message);
 				}
 			});
 			return false;
@@ -24,7 +21,7 @@ VuFind.GroupedWork = (function(){
 			$.getJSON(
 					url, function(data){
 						if (data.result == false){
-							VuFind.showMessage('Sorry', "There was an error updating the title.");
+							AspenDiscovery.showMessage('Sorry', "There was an error updating the title.");
 						}else{
 							$("#notInterested" + notInterestedId).hide();
 						}
@@ -38,9 +35,9 @@ VuFind.GroupedWork = (function(){
 				$.getJSON(url, function(data){
 					if (data.result == true){
 						$('#review_' + reviewId).hide();
-						VuFind.showMessage('Success', data.message, true);
+						AspenDiscovery.showMessage('Success', data.message, true);
 					}else{
-						VuFind.showMessage('Sorry', data.message);
+						AspenDiscovery.showMessage('Sorry', data.message);
 					}
 				});
 			}
@@ -50,8 +47,8 @@ VuFind.GroupedWork = (function(){
 		forceRegrouping: function (id){
 			var url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=forceRegrouping';
 			$.getJSON(url, function (data){
-						VuFind.showMessage("Success", data.message, true, true);
-						setTimeout("VuFind.closeLightbox();", 3000);
+						AspenDiscovery.showMessage("Success", data.message, true, true);
+						setTimeout("AspenDiscovery.closeLightbox();", 3000);
 					}
 			);
 			return false;
@@ -60,8 +57,8 @@ VuFind.GroupedWork = (function(){
 		forceReindex: function (id){
 			var url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=forceReindex';
 			$.getJSON(url, function (data){
-						VuFind.showMessage("Success", data.message, true, true);
-						setTimeout("VuFind.closeLightbox();", 3000);
+						AspenDiscovery.showMessage("Success", data.message, true, true);
+						setTimeout("AspenDiscovery.closeLightbox();", 3000);
 					}
 			);
 			return false;
@@ -135,7 +132,7 @@ VuFind.GroupedWork = (function(){
 								}
 							}
 						}
-						if (VuFind.GroupedWork.hasTableOfContentsInRecord){
+						if (AspenDiscovery.GroupedWork.hasTableOfContentsInRecord){
 							$("#tableofcontentstab_label,#tableOfContentsPlaceholder,#tableOfContentsPanel").show();
 						}
 						var similarTitlesNovelist = data.similarTitlesNovelist;
@@ -161,7 +158,7 @@ VuFind.GroupedWork = (function(){
 						$('.ajax-carousel', '#explore-more-body').parents('.jcarousel-wrapper').show()
 								.prev('.sectionHeader').show();
 						// Initiate Any Explore More JCarousels
-						VuFind.initCarousels('.ajax-carousel');
+						AspenDiscovery.initCarousels('.ajax-carousel');
 
 					} catch (e) {
 						alert("error loading enrichment: " + e);
@@ -199,38 +196,35 @@ VuFind.GroupedWork = (function(){
 				$.getJSON(
 						url, function(data){
 							if (data.result == true){
-								//VuFind.showMessage('Success', data.message);
 								$("#notInterested" + recordId).css('background-color', '#f73d3d').css('color', 'white').prop("disabled", true);
 							}else{
-								VuFind.showMessage('Sorry', data.message);
+								AspenDiscovery.showMessage('Sorry', data.message);
 							}
 						}
 				);
 				return false;
 			}else{
-				return VuFind.Account.ajaxLogin(null, function(){markNotInterested(source, recordId)}, false);
+				return AspenDiscovery.Account.ajaxLogin(null, function(){markNotInterested(source, recordId)}, false);
 			}
 		},
 
 		reloadCover: function (id){
 			var url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=reloadCover';
 			$.getJSON(url, function (data){
-						VuFind.showMessage("Success", data.message, true, true);
-						//setTimeout("VuFind.closeLightbox();", 3000);
+						AspenDiscovery.showMessage("Success", data.message, true, true);
 					}
 			);
 			return false;
 		},
 
 		reloadEnrichment: function (id){
-			VuFind.GroupedWork.loadEnrichmentInfo(id, true);
+			AspenDiscovery.GroupedWork.loadEnrichmentInfo(id, true);
 		},
 
 		reloadIslandora: function(id){
 			var url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=reloadIslandora';
 			$.getJSON(url, function (data){
-					VuFind.showMessage("Success", data.message, true, true);
-					//setTimeout("VuFind.closeLightbox();", 3000);
+					AspenDiscovery.showMessage("Success", data.message, true, true);
 				}
 			);
 			return false;
@@ -238,7 +232,7 @@ VuFind.GroupedWork = (function(){
 
 		saveReview: function(id){
 			if (!Globals.loggedIn){
-				VuFind.Account.ajaxLogin(null, function(){
+				AspenDiscovery.Account.ajaxLogin(null, function(){
 					this.saveReview(id)
 				})
 			} else {
@@ -258,12 +252,12 @@ VuFind.GroupedWork = (function(){
 							}else{
 								$("#review_" + data.reviewId).replaceWith(data.reviewHtml);
 							}
-							VuFind.closeLightbox();
+							AspenDiscovery.closeLightbox();
 						} else {
-							VuFind.showMessage("Error", data.message);
+							AspenDiscovery.showMessage("Error", data.message);
 						}
 					}
-				).fail(VuFind.ajaxFail);
+				).fail(AspenDiscovery.ajaxFail);
 			}
 			return false;
 		},
@@ -280,15 +274,15 @@ VuFind.GroupedWork = (function(){
 				dataType: "json",
 				success: function(data) {
 					if (data.success) {
-						VuFind.showMessage("Success", data.message);
-						setTimeout("VuFind.closeLightbox();", 3000);
+						AspenDiscovery.showMessage("Success", data.message);
+						setTimeout("AspenDiscovery.closeLightbox();", 3000);
 					} else {
-						VuFind.showMessage("Error adding tags", "There was an unexpected error adding tags to this title.<br/>" + data.message);
+						AspenDiscovery.showMessage("Error adding tags", "There was an unexpected error adding tags to this title.<br/>" + data.message);
 					}
 
 				},
 				error: function(jqXHR, textStatus) {
-					VuFind.showMessage("Error adding tags", "There was an unexpected error adding tags to this title.<br/>" + textStatus);
+					AspenDiscovery.showMessage("Error adding tags", "There was an unexpected error adding tags to this title.<br/>" + textStatus);
 				}
 			});
 		},
@@ -306,12 +300,12 @@ VuFind.GroupedWork = (function(){
 				$.getJSON(url, params,
 						function(data) {
 							if (data.success) {
-								VuFind.showMessage("Added Successfully", data.message, 2000); // auto-close after 2 seconds.
+								AspenDiscovery.showMessage("Added Successfully", data.message, 2000); // auto-close after 2 seconds.
 							} else {
-								VuFind.showMessage("Error", data.message);
+								AspenDiscovery.showMessage("Error", data.message);
 							}
 						}
-				).fail(VuFind.ajaxFail);
+				).fail(AspenDiscovery.ajaxFail);
 			}
 			return false;
 		},
@@ -333,12 +327,12 @@ VuFind.GroupedWork = (function(){
 				$.getJSON(url, params,
 						function(data) {
 							if (data.result) {
-								VuFind.showMessage("Success", data.message);
+								AspenDiscovery.showMessage("Success", data.message);
 							} else {
-								VuFind.showMessage("Error", data.message);
+								AspenDiscovery.showMessage("Error", data.message);
 							}
 						}
-				).fail(VuFind.ajaxFail);
+				).fail(AspenDiscovery.ajaxFail);
 			}
 			return false;
 		},
@@ -358,25 +352,25 @@ VuFind.GroupedWork = (function(){
 				$.getJSON(url, params,
 						function(data) {
 							if (data.result) {
-								VuFind.showMessage("Success", data.message);
+								AspenDiscovery.showMessage("Success", data.message);
 							} else {
-								VuFind.showMessage("Error", data.message);
+								AspenDiscovery.showMessage("Error", data.message);
 							}
 						}
-				).fail(VuFind.ajaxFail);
+				).fail(AspenDiscovery.ajaxFail);
 			}
 			return false;
 		},
 
 		showEmailForm: function(trigger, id){
 			if (Globals.loggedIn){
-				VuFind.loadingMessage();
+				AspenDiscovery.loadingMessage();
 				$.getJSON(Globals.path + "/GroupedWork/" + id + "/AJAX?method=getEmailForm", function(data){
-					VuFind.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
-				}).fail(VuFind.ajaxFail);
+					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+				}).fail(AspenDiscovery.ajaxFail);
 			}else{
-				VuFind.Account.ajaxLogin($(trigger), function (){
-					return VuFind.GroupedWork.showEmailForm(trigger, id);
+				AspenDiscovery.Account.ajaxLogin($(trigger), function (){
+					return AspenDiscovery.GroupedWork.showEmailForm(trigger, id);
 				}, false);
 			}
 			return false;
@@ -388,22 +382,22 @@ VuFind.GroupedWork = (function(){
 			if (browseCategoryId != undefined){
 				url += "&browseCategoryId=" + browseCategoryId;
 			}
-			VuFind.loadingMessage();
+			AspenDiscovery.loadingMessage();
 			$.getJSON(url, function(data){
-				VuFind.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
-			}).fail(VuFind.ajaxFail);
+				AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+			}).fail(AspenDiscovery.ajaxFail);
 			return false;
 		},
 
 		showReviewForm: function(trigger, id){
 			if (Globals.loggedIn){
-				VuFind.loadingMessage();
+				AspenDiscovery.loadingMessage();
 				$.getJSON(Globals.path + "/GroupedWork/" + encodeURIComponent(id) + "/AJAX?method=getReviewForm", function(data){
-					VuFind.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
-				}).fail(VuFind.ajaxFail);
+					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+				}).fail(AspenDiscovery.ajaxFail);
 			}else{
-				VuFind.Account.ajaxLogin($(trigger), function (){
-					return VuFind.GroupedWork.showReviewForm(trigger, id);
+				AspenDiscovery.Account.ajaxLogin($(trigger), function (){
+					return AspenDiscovery.GroupedWork.showReviewForm(trigger, id);
 				}, false);
 			}
 			return false;
@@ -411,18 +405,18 @@ VuFind.GroupedWork = (function(){
 
 		showSaveToListForm: function (trigger, id){
 			if (Globals.loggedIn){
-				VuFind.loadingMessage();
+				AspenDiscovery.loadingMessage();
 				var url = Globals.path + "/GroupedWork/" + id + "/AJAX?method=getSaveToListForm";
 				$.getJSON(url, function(data){
-					VuFind.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
-				}).fail(VuFind.ajaxFail);
+					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+				}).fail(AspenDiscovery.ajaxFail);
 			}else{
-				VuFind.Account.ajaxLogin($(trigger), function (){
-					VuFind.GroupedWork.showSaveToListForm(trigger, id);
+				AspenDiscovery.Account.ajaxLogin($(trigger), function (){
+					AspenDiscovery.GroupedWork.showSaveToListForm(trigger, id);
 				});
 			}
 			return false;
 		},
 
 	};
-}(VuFind.GroupedWork || {}));
+}(AspenDiscovery.GroupedWork || {}));

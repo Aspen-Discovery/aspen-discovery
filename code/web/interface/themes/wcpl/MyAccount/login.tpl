@@ -36,7 +36,7 @@
 					<div id="loginPasswordRow" class="form-group">
 						<label for="password" class="control-label col-xs-12 col-sm-4">{$passwordLabel}: </label>
 						<div class="col-xs-12 col-sm-8">
-							<input type="password" name="password" id="password" size="28" onkeypress="return VuFind.submitOnEnter(event, '#loginForm');" class="form-control">
+							<input type="password" name="password" id="password" size="28" onkeypress="return AspenDiscovery.submitOnEnter(event, '#loginForm');" class="form-control">
 							{if $forgotPasswordType != 'null'}
 								<p class="text-muted help-block">
 									<strong>Forgot {$passwordLabel}?</strong>&nbsp;
@@ -59,7 +59,7 @@
 					<div id="loginPasswordRow2" class="form-group">
 						<div class="col-xs-12 col-sm-offset-4 col-sm-8">
 							<label for="showPwd" class="checkbox">
-								<input type="checkbox" id="showPwd" name="showPwd" onclick="return VuFind.pwdToText('password')">
+								<input type="checkbox" id="showPwd" name="showPwd" onclick="return AspenDiscovery.pwdToText('password')">
 								{translate text="Reveal Password"}
 							</label>
 
@@ -74,7 +74,7 @@
 
 					<div id="loginPasswordRow2" class="form-group">
 						<div class="col-xs-12 col-sm-offset-4 col-sm-8">
-							<input type="submit" name="submit" value="Login" id="loginFormSubmit" class="btn btn-primary" onclick="return VuFind.Account.preProcessLogin();">
+							<input type="submit" name="submit" value="Login" id="loginFormSubmit" class="btn btn-primary" onclick="return AspenDiscovery.Account.preProcessLogin();">
 							{if $followup}<input type="hidden" name="followup" value="{$followup}">{/if}
 							{if $followupModule}<input type="hidden" name="followupModule" value="{$followupModule}">{/if}
 							{if $followupAction}<input type="hidden" name="followupAction" value="{$followupAction}">{/if}
@@ -95,8 +95,8 @@
 <script type="text/javascript">
 	$('#username').focus().select();
 	$(function(){
-		VuFind.Account.validateCookies();
-		var haslocalStorage = VuFind.hasLocalStorage() || false;
+		AspenDiscovery.Account.validateCookies();
+		var haslocalStorage = AspenDiscovery.hasLocalStorage() || false;
 		if (haslocalStorage) {
 			var rememberMe = (window.localStorage.getItem('rememberMe') == 'true'), // localStorage saves everything as strings
 							showCovers = window.localStorage.getItem('showCovers') || false;
@@ -107,7 +107,7 @@
 				$("#username").val(lastUserName);
 				$("#password").val(lastPwd);
 				{/literal}{*// $("#showPwd").prop("checked", showPwd  ? "checked" : '');
-//					if (showPwd) VuFind.pwdToText('password');*}{literal}
+//					if (showPwd) AspenDiscovery.pwdToText('password');*}{literal}
 			}
 			$("#rememberMe").prop("checked", rememberMe ? "checked" : '');
 			if (showCovers.length > 0) {

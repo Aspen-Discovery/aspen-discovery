@@ -1,4 +1,4 @@
-var VuFind = (function(){
+var AspenDiscovery = (function(){
 
 	// This provides a check to interrupt AjaxFail Calls on page redirects;
 	 window.onbeforeunload = function(){
@@ -6,9 +6,9 @@ var VuFind = (function(){
 	};
 
 	$(document).ready(function(){
-		VuFind.initializeModalDialogs();
-		VuFind.setupFieldSetToggles();
-		VuFind.initCarousels();
+		AspenDiscovery.initializeModalDialogs();
+		AspenDiscovery.setupFieldSetToggles();
+		AspenDiscovery.initCarousels();
 
 		$("#modalDialog").modal({show:false});
 
@@ -23,10 +23,10 @@ var VuFind = (function(){
 		$(window).on("popstate", function () {
 			// if the state is the page you expect, pull the name and load it.
 			if (history.state && history.state.page === "MapExhibit") {
-				VuFind.Archive.handleMapClick(history.state.marker, history.state.exhibitPid, history.state.placePid, history.state.label, false, history.state.showTimeline);
+				AspenDiscovery.Archive.handleMapClick(history.state.marker, history.state.exhibitPid, history.state.placePid, history.state.label, false, history.state.showTimeline);
 			}
 			else if (history.state && history.state.page === "Book") {
-				VuFind.Archive.handleBookClick(history.state.bookPid, history.state.pagePid, history.state.viewer);
+				AspenDiscovery.Archive.handleBookClick(history.state.bookPid, history.state.pagePid, history.state.viewer);
 			}
 		});
 	});
@@ -168,8 +168,8 @@ var VuFind = (function(){
 					});
 
 			// If Browse Category js is set, initialize those functions
-			if (typeof VuFind.Browse.initializeBrowseCategory == 'function') {
-				VuFind.Browse.initializeBrowseCategory();
+			if (typeof AspenDiscovery.Browse.initializeBrowseCategory == 'function') {
+				AspenDiscovery.Browse.initializeBrowseCategory();
 			}
 		},
 
@@ -301,7 +301,7 @@ var VuFind = (function(){
 			if (autoClose) {
 				setTimeout(function(){
 							if (refreshAfterClose) location.reload(true);
-							else VuFind.closeLightbox();
+							else AspenDiscovery.closeLightbox();
 						}
 						, autoClose > 1 ? autoClose : 3000);
 			}else if (refreshAfterClose) {
@@ -320,12 +320,12 @@ var VuFind = (function(){
 
 		// common loading message for lightbox while waiting for AJAX processes to complete.
 		loadingMessage: function() {
-			VuFind.showMessage('Loading', 'Loading, please wait.')
+			AspenDiscovery.showMessage('Loading', 'Loading, please wait.')
 		},
 
 		// common message for when an AJAX call has failed.
 		ajaxFail: function() {
-			if (!Globals.LeavingPage) VuFind.showMessage('Request Failed', 'There was an error with this AJAX Request.');
+			if (!Globals.LeavingPage) AspenDiscovery.showMessage('Request Failed', 'There was an error with this AJAX Request.');
 		},
 
 		toggleHiddenElementWithButton: function(button){
@@ -339,7 +339,7 @@ var VuFind = (function(){
 			// buttonsElementId is optional
 			var modalDialog = $("#modalDialog");
 			if (modalDialog.is(":visible")){
-				VuFind.closeLightbox(function(){VuFind.showElementInPopup(title, elementId)});
+				AspenDiscovery.closeLightbox(function(){AspenDiscovery.showElementInPopup(title, elementId)});
 			}else{
 				$(".modal-title").html(title);
 				var elementText = $(elementId).html(),
@@ -392,7 +392,7 @@ var VuFind = (function(){
 		}
 	}
 
-}(VuFind || {}));
+}(AspenDiscovery || {}));
 
 jQuery.validator.addMethod("multiemail", function (value, element) {
 	if (this.optional(element)) {
