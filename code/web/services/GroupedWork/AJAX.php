@@ -195,6 +195,7 @@ class GroupedWork_AJAX {
 
 		//Load go deeper options
 		//TODO: Additional go deeper options
+		global $library;
 		if ($library->showGoDeeper == 0){
 			$enrichmentResult['showGoDeeper'] = false;
 		}else{

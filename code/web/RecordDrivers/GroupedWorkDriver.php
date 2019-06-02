@@ -1978,9 +1978,9 @@ class GroupedWorkDriver extends IndexRecordDriver{
 			    /** @var GroupedWorkSubDriver $driver */
 				$recordTOC = $driver->getTableOfContents();
 				if ($recordTOC != null && count($recordTOC) > 0){
-					$editionDescription = "{$record['format']}";
-					if ($record['edition']){
-						$editionDescription .= " - {$record['edition']}";
+					$editionDescription = "{$record->format}";
+					if ($record->edition){
+						$editionDescription .= " - {$record->edition}";
 					}
 					$tableOfContents = array_merge($tableOfContents, array("<h4>From the $editionDescription</h4>"), $recordTOC);
 				}
