@@ -77,7 +77,7 @@ class UInterface extends Smarty
 		}
 
 		// Create an MD5 hash of the theme name -- this will ensure that it's a
-		// writeable directory name (since some config.ini settings may include
+		// writable directory name (since some config.ini settings may include
 		// problem characters like commas or whitespace).
 		$this->compile_dir = $configArray['System']['interfaceCompileDir'];
         if (file_exists($this->compile_dir)) {
@@ -191,7 +191,7 @@ class UInterface extends Smarty
 
 		// Detect Internet Explorer 8 to include respond.js for responsive css support
 		if (isset($_SERVER['HTTP_USER_AGENT'])) {
-			$ie8 = stristr($_SERVER['HTTP_USER_AGENT'], 'msie 8') || stristr($_SERVER['HTTP_USER_AGENT'], 'trident/5'); //trident/5 should catch ie9 compability modes
+			$ie8 = stristr($_SERVER['HTTP_USER_AGENT'], 'msie 8') || stristr($_SERVER['HTTP_USER_AGENT'], 'trident/5'); //trident/5 should catch ie9 compatibility modes
 			$this->assign('ie8', $ie8);
 		}
 
@@ -219,31 +219,31 @@ class UInterface extends Smarty
 			$user = UserAccount::getLoggedInUser();
 			//Figure out if we should show a link to pay fines.
 			$homeLibrary = Library::getLibraryForLocation($user->homeLocationId);
-			$showEcomerceLink     = isset($homeLibrary) && $homeLibrary->showEcommerceLink == 1;
+			$showECommerceLink     = isset($homeLibrary) && $homeLibrary->showEcommerceLink == 1;
 
-			if ($showEcomerceLink) {
+			if ($showECommerceLink) {
 				$this->assign('minimumFineAmount', $homeLibrary->minimumFineAmount);
 				$this->assign('payFinesLinkText', $homeLibrary->payFinesLinkText);
 				$this->assign('showRefreshAccountButton', $homeLibrary->showRefreshAccountButton);
 
-				// Determine E-comerce Link
-				$ecomerceLink = null;
+				// Determine E-commerce Link
+				$eCommerceLink = null;
 				if ($homeLibrary->payFinesLink == 'default') {
 					global $configArray;
-					$defaultEcommerceLink = $configArray['Site']['ecommerceLink'];
-					if (!empty($defaultEcommerceLink)) {
-						$ecomerceLink = $defaultEcommerceLink;
+					$defaultECommerceLink = $configArray['Site']['ecommerceLink'];
+					if (!empty($defaultECommerceLink)) {
+						$eCommerceLink = $defaultECommerceLink;
 					} else {
-						$showEcomerceLink = false;
+						$showECommerceLink = false;
 					}
 				} elseif (!empty($homeLibrary->payFinesLink)) {
-						$ecomerceLink = $homeLibrary->payFinesLink;
+						$eCommerceLink = $homeLibrary->payFinesLink;
 				} else {
-					$showEcomerceLink = false;
+					$showECommerceLink = false;
 				}
-				$this->assign('ecommerceLink', $ecomerceLink);
+				$this->assign('eCommerceLink', $eCommerceLink);
 			}
-			$this->assign('showEcommerceLink', $showEcomerceLink);
+			$this->assign('showECommerceLink', $showECommerceLink);
 		}
 	}
 
@@ -377,8 +377,6 @@ class UInterface extends Smarty
         }
 
 		$location = $locationSingleton->getActiveLocation();
-		$showHoldButton = 1;
-		$showHoldButtonInSearchResults = 1;
 		$this->assign('logoLink', $configArray['Site']['path']);
 		$this->assign('logoAlt', 'Return to Catalog Home');
 		if ($library->useHomeLinkForLogo){
@@ -402,7 +400,7 @@ class UInterface extends Smarty
 		$this->assign('youtubeLink', $library->youtubeLink);
 		$this->assign('instagramLink', $library->instagramLink);
 		$this->assign('goodreadsLink', $library->goodreadsLink);
-		$this->assign('geeralContactLink', $library->generalContactLink);
+		$this->assign('generalContactLink', $library->generalContactLink);
 		$this->assign('showLoginButton', $library->showLoginButton);
 		$this->assign('showAdvancedSearchbox', $library->showAdvancedSearchbox);
 		$this->assign('enableProspectorIntegration', $library->enableProspectorIntegration);
@@ -500,10 +498,12 @@ class UInterface extends Smarty
 
 		//Determine whether or not materials request functionality should be enabled
 		require_once ROOT_DIR . '/sys/MaterialsRequest.php';
-		$this->assign('enableMaterialsRequest', MaterialsRequest::enableMaterialsRequest());
-		$materialRequestType =
+		$this->assign('enableAspenMaterialsRequest', MaterialsRequest::enableAspenMaterialsRequest());
+		$materialRequestType = $library->enableMaterialsRequest;
+		$this->assign('materialRequestType', $materialRequestType);
 
 		//Load library links
+		/** @noinspection PhpUndefinedFieldInspection */
 		$links = $library->libraryLinks;
 		$libraryHelpLinks = array();
 		$libraryAccountLinks = array();
@@ -530,6 +530,7 @@ class UInterface extends Smarty
 		$this->assign('libraryHelpLinks', $libraryHelpLinks);
 		$this->assign('expandedLinkCategories', $expandedLinkCategories);
 
+		/** @noinspection PhpUndefinedFieldInspection */
 		$topLinks = $library->libraryTopLinks;
 		$this->assign('topLinks', $topLinks);
 	}

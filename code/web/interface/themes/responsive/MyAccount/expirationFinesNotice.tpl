@@ -5,14 +5,14 @@
 		{if ($totalFines > 0 && $showFines) || ($showExpirationWarnings && $user->_expireClose)}
 			<div id="myAccountFines">
 				{if $totalFines > 0 && $showFines}
-					{if $showEcommerceLink && $totalFines > $minimumFineAmount}
+					{if $showECommerceLink && $totalFines > $minimumFineAmount}
 						<div class="myAccountLink">
-							<a href="{$ecommerceLink}" target="_blank"{if $showRefreshAccountButton} onclick="AspenDiscovery.Account.ajaxLightbox('{$path}/AJAX/JSON?method=getPayFinesAfterAction')"{/if}  style="color:red; font-weight:bold;">
+							<a href="{$eCommerceLink}" target="_blank"{if $showRefreshAccountButton} onclick="AspenDiscovery.Account.ajaxLightbox('{$path}/AJAX/JSON?method=getPayFinesAfterAction')"{/if}  style="color:red; font-weight:bold;">
 								Your account{if count($user->getLinkedUsers())>0}s have{else} has{/if} ${$totalFines|number_format:2} in fines.
 							</a>
 						</div>
 						<div class="myAccountLink">
-							<a href="{$ecommerceLink}" target="_blank"{if $showRefreshAccountButton} onclick="AspenDiscovery.Account.ajaxLightbox('{$path}/AJAX/JSON?method=getPayFinesAfterAction')"{/if}>
+							<a href="{$eCommerceLink}" target="_blank"{if $showRefreshAccountButton} onclick="AspenDiscovery.Account.ajaxLightbox('{$path}/AJAX/JSON?method=getPayFinesAfterAction')"{/if}>
 								{if $payFinesLinkText}{$payFinesLinkText}{else}Pay Fines Online{/if}
 							</a>
 						</div>

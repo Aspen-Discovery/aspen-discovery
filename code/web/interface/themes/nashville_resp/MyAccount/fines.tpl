@@ -104,8 +104,8 @@
 			{include file="MyAccount/finePayments.tpl"}
 		{else}
 			{* Pay Fines Button *}
-			{if $showEcommerceLink && $profile->_finesVal > $minimumFineAmount}
-				<a href="{$ecommerceLink}" target="_blank"{if $showRefreshAccountButton} onclick="AspenDiscovery.Account.ajaxLightbox('{$path}/AJAX/JSON?method=getPayFinesAfterAction')"{/if}>
+			{if $showECommerceLink && $profile->_finesVal > $minimumFineAmount}
+				<a href="{$eCommerceLink}" target="_blank"{if $showRefreshAccountButton} onclick="AspenDiscovery.Account.ajaxLightbox('{$path}/AJAX/JSON?method=getPayFinesAfterAction')"{/if}>
 					<div class="btn btn-sm btn-primary">{if $payFinesLinkText}{$payFinesLinkText}{else}Click to Pay Fines Online{/if}</div>
 				</a>
 			{/if}

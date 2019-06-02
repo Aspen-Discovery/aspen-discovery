@@ -214,7 +214,6 @@ class Library extends DataObject
 	public $archiveRequestFieldCountry;
 	public $archiveRequestFieldPhone;
 	public $archiveRequestFieldAlternatePhone;
-//	public $archiveRequestFieldEmail;
 	public $archiveRequestFieldFormat;
 	public $archiveRequestFieldPurpose;
 
@@ -359,6 +358,17 @@ class Library extends DataObject
         $theme->find();
         while ($theme->fetch()){
             $availableThemes[$theme->id] = $theme->themeName;
+        }
+
+        $materialsRequestOptions = [
+        	0 => 'None',
+	        1 => 'Aspen Request System',
+	        2 => 'ILS Request System',
+	        3 => 'External Request Link'
+        ];
+        $catalog = CatalogFactory::getCatalogConnectionInstance();
+        if (!$catalog->hasMaterialsRequestSupport()){
+        	unset($materialsRequestOptions[2]);
         }
 
 		//$Instructions = 'For more information on ???, see the <a href="">online documentation</a>.';
@@ -667,7 +677,7 @@ class Library extends DataObject
 			'materialsRequestSection'=> array('property'=>'materialsRequestSection', 'type' => 'section', 'label' =>'Materials Request', 'hideInLists' => true,
 					'helpLink'=>'https://docs.google.com/document/d/18Sah0T8sWUextphL5ykg8QEM_YozniSXqOo1nfi6gnc',
 					'properties' => array(
-				'enableMaterialsRequest'      => array('property'=>'enableMaterialsRequest', 'type'=>'checkbox', 'label'=>'Enable Pika Materials Request System', 'description'=>'Enable Materials Request functionality so patrons can request items not in the catalog.', 'hideInLists' => true,),
+				'enableMaterialsRequest'      => array('property'=>'enableMaterialsRequest', 'type'=>'enum', 'values'=>$materialsRequestOptions, 'label'=>'Materials Request System', 'description'=>'Materials Request functionality so patrons can request items not in the catalog.', 'hideInLists' => true, 'onchange' => 'return AspenDiscovery.Admin.updateMaterialsRequestFields();', 'default'=>0),
 				'externalMaterialsRequestUrl' => array('property'=>'externalMaterialsRequestUrl', 'type'=>'text', 'label'=>'External Materials Request URL', 'description'=>'A link to an external Materials Request System to be used instead of the built in Pika system', 'hideInList' => true),
 				'maxRequestsPerYear'          => array('property'=>'maxRequestsPerYear', 'type'=>'integer', 'label'=>'Max Requests Per Year', 'description'=>'The maximum number of requests that a user can make within a year', 'hideInLists' => true, 'default' => 60),
 				'maxOpenRequests'             => array('property'=>'maxOpenRequests', 'type'=>'integer', 'label'=>'Max Open Requests', 'description'=>'The maximum number of requests that a user can have open at one time', 'hideInLists' => true, 'default' => 5),
@@ -766,7 +776,6 @@ class Library extends DataObject
 				'overdriveAdvantageProductsKey'  => array('property'=>'overdriveAdvantageProductsKey', 'type'=>'text', 'label'=>'Overdrive Advantage Products Key', 'description'=>'The products key for use when building urls to the API from the advantageAccounts call.', 'size'=>'80', 'hideInLists' => false,),
 			)),
 			'hooplaSection' => array('property'=>'hooplaSection', 'type' => 'section', 'label' =>'Hoopla', 'hideInLists' => true,
-//					'helpLink'=>'',
 					                     'properties' => array(
 				'hooplaLibraryID'      => array('property'=>'hooplaLibraryID', 'type'=>'integer', 'label'=>'Hoopla Library ID', 'description'=>'The ID Number Hoopla uses for this library', 'hideInLists' => true),
 			)),
@@ -1131,6 +1140,10 @@ class Library extends DataObject
 		return $activeLibrary;
 	}
 
+	/**
+	 * @param User|null $tmpUser
+	 * @return Library|null
+	 */
 	static function getPatronHomeLibrary($tmpUser = null){
 		//Finally check to see if the user has logged in and if so, use that library
 		if ($tmpUser != null){
@@ -1350,6 +1363,7 @@ class Library extends DataObject
 		}else{
 			return $this->data[$name];
 		}
+		return null;
 	}
 
 	public function __set($name, $value){
@@ -1475,8 +1489,7 @@ class Library extends DataObject
 			$libraryLocations->find();
 			while ($libraryLocations->fetch()){
 				$user = new User();
-				$numChanges = $user->query("update user set displayName = '' where homeLocationId = {$libraryLocations->locationId}");
-
+				$user->query("update user set displayName = '' where homeLocationId = {$libraryLocations->locationId}");
 			}
 		}
 		// Do this last so that everything else can update even if we get an error here
@@ -1749,7 +1762,7 @@ class Library extends DataObject
 
 		if ($configArray['Index']['enableDetailedAvailability']){
 			$facet = new LibraryFacetSetting();
-			$facet->setupTopFacet('availability_toggle', 'Available?', true);
+			$facet->setupTopFacet('availability_toggle', 'Available?');
 			$facet->libraryId = $libraryId;
 			$facet->weight = count($defaultFacets) + 1;
 			$defaultFacets[] = $facet;
@@ -1758,7 +1771,7 @@ class Library extends DataObject
 
 		if (!$configArray['Index']['enableDetailedAvailability']){
 			$facet = new LibraryFacetSetting();
-			$facet->setupSideFacet('available_at', 'Available Now At', true);
+			$facet->setupSideFacet('available_at', 'Available Now At');
 			$facet->libraryId = $libraryId;
 			$facet->weight = count($defaultFacets) + 1;
 			$defaultFacets[] = $facet;
@@ -1802,13 +1815,13 @@ class Library extends DataObject
 		$defaultFacets[] = $facet;
 
 		$facet = new LibraryFacetSetting();
-		$facet->setupAdvancedFacet('awards_facet', 'Awards', true);
+		$facet->setupAdvancedFacet('awards_facet', 'Awards');
 		$facet->libraryId = $libraryId;
 		$facet->weight = count($defaultFacets) + 1;
 		$defaultFacets[] = $facet;
 
 		$facet = new LibraryFacetSetting();
-		$facet->setupAdvancedFacet('era', 'Era', true);
+		$facet->setupAdvancedFacet('era', 'Era');
 		$facet->libraryId = $libraryId;
 		$facet->weight = count($defaultFacets) + 1;
 		$defaultFacets[] = $facet;
@@ -1832,19 +1845,19 @@ class Library extends DataObject
 		$defaultFacets[] = $facet;
 
 		$facet = new LibraryFacetSetting();
-		$facet->setupAdvancedFacet('lexile_code', 'Lexile code', true);
+		$facet->setupAdvancedFacet('lexile_code', 'Lexile code');
 		$facet->libraryId = $libraryId;
 		$facet->weight = count($defaultFacets) + 1;
 		$defaultFacets[] = $facet;
 
 		$facet = new LibraryFacetSetting();
-		$facet->setupAdvancedFacet('lexile_score', 'Lexile measure', true);
+		$facet->setupAdvancedFacet('lexile_score', 'Lexile measure');
 		$facet->libraryId = $libraryId;
 		$facet->weight = count($defaultFacets) + 1;
 		$defaultFacets[] = $facet;
 
 		$facet = new LibraryFacetSetting();
-		$facet->setupAdvancedFacet('mpaa_rating', 'Movie Rating', true);
+		$facet->setupAdvancedFacet('mpaa_rating', 'Movie Rating');
 		$facet->libraryId = $libraryId;
 		$facet->weight = count($defaultFacets) + 1;
 		$defaultFacets[] = $facet;
@@ -1874,7 +1887,7 @@ class Library extends DataObject
 		$defaultFacets[] = $facet;
 
 		$facet = new LibraryFacetSetting();
-		$facet->setupAdvancedFacet('geographic_facet', 'Region', true);
+		$facet->setupAdvancedFacet('geographic_facet', 'Region');
 		$facet->libraryId = $libraryId;
 		$facet->weight = count($defaultFacets) + 1;
 		$defaultFacets[] = $facet;

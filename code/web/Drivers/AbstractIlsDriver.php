@@ -23,18 +23,19 @@ abstract class AbstractIlsDriver extends AbstractDriver
 
 	public abstract function patronLogin($username, $password, $validatedViaSSO);
 
-    /**
-     * Place Hold
-     *
-     * This is responsible for both placing holds as well as placing recalls.
-     *
-     * @param   User    $patron       The User to place a hold for
-     * @param   string  $recordId     The id of the bib record
-     * @param   string  $pickupBranch The branch where the user wants to pickup the item when available
-     * @return  mixed                 True if successful, false if unsuccessful
-     *                                If an error occurs, return a AspenError
-     * @access  public
-     */
+	/**
+	 * Place Hold
+	 *
+	 * This is responsible for both placing holds as well as placing recalls.
+	 *
+	 * @param User $patron The User to place a hold for
+	 * @param string $recordId          The id of the bib record
+	 * @param string $pickupBranch      The branch where the user wants to pickup the item when available
+	 * @param string $cancelDate        When the hold should be automatically cancelled
+	 * @return  mixed                 True if successful, false if unsuccessful
+	 *                                If an error occurs, return a AspenError
+	 * @access  public
+	 */
     abstract function placeHold($patron, $recordId, $pickupBranch = null, $cancelDate = null);
 
     /**
@@ -172,8 +173,40 @@ abstract class AbstractIlsDriver extends AbstractDriver
 		return false;
 	}
 
-	function updatePin(User $user, string $oldPin, string $newPin)
+	function updatePin(/** @noinspection PhpUnusedParameterInspection */User $user, string $oldPin, string $newPin)
 	{
 		return ['success' => false, 'errors' => 'Can not update PINs, this ILS does not support updating PINs'];
+	}
+
+	function hasMaterialsRequestSupport(){
+    	return false;
+	}
+	function getNewMaterialsRequestForm()
+	{
+		return 'not supported';
+	}
+
+	/**
+	 * @param User $user
+	 * @return string[]
+	 */
+	function processMaterialsRequestForm(/** @noinspection PhpUnusedParameterInspection */$user)
+	{
+		return ['success' => false, 'message' => 'Not Implemented'];
+	}
+
+	function getMaterialsRequests(/** @noinspection PhpUnusedParameterInspection */User $user)
+	{
+		return [];
+	}
+
+	function getMaterialsRequestsPage(/** @noinspection PhpUnusedParameterInspection */User $user)
+	{
+		return 'not supported';
+	}
+
+	function deleteMaterialsRequests(/** @noinspection PhpUnusedParameterInspection */User $user)
+	{
+		return ['success' => false, 'message' => 'Not Implemented'];
 	}
 }

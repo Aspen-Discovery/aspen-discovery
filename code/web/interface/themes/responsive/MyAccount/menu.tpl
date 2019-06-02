@@ -57,9 +57,13 @@
 								<div class="myAccountLink{if $action=="Fines"} active{/if}" title="Fines and account messages"><a href="{$path}/MyAccount/Fines">{translate text='Fines and Messages'}</a></div>
 							{/if}
 						{/if}
-						{if $enableMaterialsRequest}
+						{if $materialRequestType == 1 && $enableAspenMaterialsRequest}
 							<div class="myAccountLink{if $pageTemplate=="myMaterialRequests.tpl"} active{/if}" title="{translate text='Materials_Request_alt'}s">
 								<a href="{$path}/MaterialsRequest/MyRequests">{translate text='Materials_Request_alt'}s <span class="materialsRequests-placeholder"><img src="{$path}/images/loading.gif" alt="loading"></span></a>
+							</div>
+						{elseif $materialRequestType == 2}
+							<div class="myAccountLink{if $pageTemplate=="ilsyMaterialRequests.tpl"} active{/if}" title="{translate text='Materials_Request_alt'}s">
+								<a href="{$path}/MaterialsRequest/IlsRequests">{translate text='Materials_Request_alt'}s <span class="materialsRequests-placeholder"><img src="{$path}/images/loading.gif" alt="loading"></span></a>
 							</div>
 						{/if}
 						{if $showRatings}
@@ -234,7 +238,7 @@
 				</div>
 			{/if}
 
-			{if $loggedIn && $enableMaterialsRequest && array_key_exists('library_material_requests', $userRoles)}
+			{if $loggedIn && ($enableAspenMaterialsRequest && $materialRequestType == 1) && array_key_exists('library_material_requests', $userRoles)}
 				{if in_array($action, array('ManageRequests', 'SummaryReport', 'UserReport', 'ManageStatuses'))}
 					{assign var="curSection" value=true}
 				{else}

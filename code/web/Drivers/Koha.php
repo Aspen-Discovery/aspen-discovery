@@ -1407,4 +1407,146 @@ class Koha extends AbstractIlsDriver {
 		}
 		return ['success' => false, 'errors' => "Unknown error updating password."];
 	}
+
+	function hasMaterialsRequestSupport(){
+		return true;
+	}
+	function getNewMaterialsRequestForm()
+	{
+		global $interface;
+		require_once ROOT_DIR . '/sys/Indexing/TranslationMap.php';
+		$itypeMap = new TranslationMap();
+		$itypeMap->name = 'itype';
+		$itypeMap->indexingProfileId = $this->getIndexingProfile()->id;
+		$iTypes = [];
+		if ($itypeMap->find(true)){
+			/** @var TranslationMapValue $value */
+			foreach ($itypeMap->translationMapValues as $value){
+				$iTypes[$value->value] = $value->translation;
+			}
+		}
+		$pickupLocations = [];
+		$locations = new Location();
+		$locations->orderBy('displayName');
+		$locations->find();
+		while ($locations->fetch()) {
+			$pickupLocations[$locations->code] = $locations->displayName;
+		}
+		$interface->assign('pickupLocations', $pickupLocations);
+
+		$fields = [
+			array('property'=>'title', 'type'=>'text', 'label'=>'Title', 'description'=>'The title of the item to be purchased', 'maxLength'=>255, 'required' => true),
+			array('property'=>'author', 'type'=>'text', 'label'=>'Author', 'description'=>'The author of the item to be purchased', 'maxLength'=>80, 'required' => false),
+			array('property'=>'copyrightdate', 'type'=>'text', 'label'=>'Copyright Date', 'description'=>'Copyright or publication year, for example: 2016', 'maxLength'=>4, 'required' => false),
+			array('property'=>'isbn', 'type'=>'text', 'label'=>'Standard number (ISBN, ISSN or other)', 'description'=>'', 'maxLength'=>80, 'required' => false),
+			array('property'=>'publishercode', 'type'=>'text', 'label'=>'Publisher', 'description'=>'', 'maxLength'=>80, 'required' => false),
+			array('property'=>'collectiontitle', 'type'=>'text', 'label'=>'Collection', 'description'=>'', 'maxLength'=>80, 'required' => false),
+			array('property'=>'place', 'type'=>'text', 'label'=>'Publication place', 'description'=>'', 'maxLength'=>80, 'required' => false),
+			array('property'=>'quantity', 'type'=>'text', 'label'=>'Quantity', 'description'=>'', 'maxLength'=>4, 'required' => false),
+			array('property'=>'itemtype', 'type'=>'enum', 'values'=>$iTypes, 'label'=>'Item type', 'description'=>'', 'required' => false),
+			array('property'=>'branchcode', 'type'=>'enum', 'values'=>$pickupLocations, 'label'=>'Library', 'description'=>'', 'required' => false),
+			array('property'=>'note', 'type'=>'textarea', 'label'=>'Note', 'description'=>'', 'required' => false),
+		];
+
+
+		$interface->assign('submitUrl', '/MaterialsRequest/NewRequestIls');
+		$interface->assign('structure', $fields);
+		$interface->assign('saveButtonText', 'Submit your suggestion');
+
+		$fieldsForm = $interface->fetch('DataObjectUtil/objectEditForm.tpl');
+		$interface->assign('materialsRequestForm', $fieldsForm);
+
+		return 'new-koha-request.tpl';
+	}
+
+	/**
+	 * @param User $user
+	 * @return string[]
+	 */
+	function processMaterialsRequestForm($user)
+	{
+		$this->loginToKohaOpac($user);
+		$postFields = [
+			'title' => $_REQUEST['title'],
+			'author' => $_REQUEST['author'],
+			'copyrightdate' => $_REQUEST['copyrightdate'],
+			'isbn' => $_REQUEST['isbn'],
+			'publishercode' => $_REQUEST['publishercode'],
+			'collectiontitle' => $_REQUEST['collectiontitle'],
+			'place' => $_REQUEST['place'],
+			'quantity' => $_REQUEST['quantity'],
+			'itemtype' => $_REQUEST['itemtype'],
+			'branchcode' => $_REQUEST['branchcode'],
+			'note' => $_REQUEST['note'],
+			'negcap' => '',
+			'suggested_by_anyone' => 0,
+			'op' => 'add_confirm'
+		];
+		$catalogUrl = $this->accountProfile->vendorOpacUrl;
+		$submitSuggestionResponse = $this->postToKohaPage($catalogUrl . '/cgi-bin/koha/opac-suggestions.pl', $postFields);
+		if (preg_match('/Your purchase suggestions/', $submitSuggestionResponse)){
+			return ['success' => true, 'message' => 'Successfully submitted your request'];
+		}else{
+			return ['success' => false, 'message' => 'Unknown error submitting request'];
+		}
+	}
+
+	function getMaterialsRequests(User $user)
+	{
+		$this->loginToKohaOpac($user);
+
+		$catalogUrl = $this->accountProfile->vendorOpacUrl;
+		$requestsPage = $this->getKohaPage($catalogUrl . '/cgi-bin/koha/opac-suggestions.pl');
+
+		$matches = [];
+		$allRequests = [];
+		/** @noinspection HtmlUnknownAttribute */
+		if (preg_match('%<table id="suggestt" .*?<tbody>(.*)</tbody>%s', $requestsPage, $matches)) {
+			$tableBody = $matches[1];
+			preg_match_all('%<tr>.*?<input type="checkbox" class="cb" name="delete_field" value="(.*?)" />.*?<td>(.*?)</td>\s+<td>(.*?)</td>\s+<td>\s+<span class="tdlabel">Note: </span>(.*?)</td>\s+<td>(.*?)</td>\s+<td>\s+<span class="tdlabel">Status:</span>(.*?)</td>%s', $tableBody, $tableRows, PREG_SET_ORDER);
+			foreach ($tableRows as $tableRow){
+				$request = [];
+				$request['id'] = $tableRow[1];
+				$request['summary'] = trim($tableRow[2]);
+				$request['suggestedOn'] = trim($tableRow[3]);
+				$request['note'] = trim($tableRow[4]);
+				$request['managedBy'] = trim($tableRow[5]);
+				$request['status'] = trim($tableRow[6]);
+				$allRequests[] = $request;
+			}
+		}
+
+		return $allRequests;
+
+
+	}
+
+	function getMaterialsRequestsPage(User $user)
+	{
+		$allRequests = $this->getMaterialsRequests($user);
+
+		global $interface;
+		$interface->assign('allRequests', $allRequests);
+
+		return 'koha-requests.tpl';
+	}
+
+	function deleteMaterialsRequests(/** @noinspection PhpUnusedParameterInspection */User $user)
+	{
+		$this->loginToKohaOpac($user);
+
+		$catalogUrl = $this->accountProfile->vendorOpacUrl;
+		$this->getKohaPage($catalogUrl . '/cgi-bin/koha/opac-suggestions.pl');
+
+		$postFields = [
+			'op' => 'delete_confirm',
+			'delete_field' => $_REQUEST['delete_field']
+		];
+		$requestsPage = $this->postToKohaPage($catalogUrl . '/cgi-bin/koha/opac-suggestions.pl', $postFields);
+
+		return [
+			'success' => true,
+			'message' => 'deleted your requests'
+		];
+	}
 }

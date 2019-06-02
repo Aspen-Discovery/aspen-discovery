@@ -629,7 +629,7 @@
 									</div>
 								{/if}
 
-								{if $profile->hasRole('library_material_requests')}
+								{if $profile->hasRole('library_material_requests') && ($materialRequestType == 1)}
 									<div class="row">
 										<div class="lead col-tn-12">Materials Request Management</div>
 									</div>

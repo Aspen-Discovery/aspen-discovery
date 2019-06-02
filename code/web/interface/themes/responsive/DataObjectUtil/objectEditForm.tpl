@@ -20,6 +20,11 @@
 	<script type="text/javascript">
 	$(document).ready(function(){
 		$("#objectEditor").validate();
+		{/literal}
+		{if !empty($initializationJs)}
+			{$initializationJs}
+		{/if}
+		{literal}
 	});
 	</script>
 	{/literal}

@@ -199,14 +199,18 @@ class CatalogConnection
 		$materialsRequest = new MaterialsRequest();
 		$materialsRequest->createdBy = $user->id;
 		$homeLibrary = Library::getLibraryForLocation($user->homeLocationId);
-		if ($homeLibrary && $homeLibrary->enableMaterialsRequest){
-			$statusQuery = new MaterialsRequestStatus();
-			$statusQuery->isOpen = 1;
-			$statusQuery->libraryId = $homeLibrary->libraryId;
-			$materialsRequest->joinAdd($statusQuery, 'INNER', 'status', 'status', 'id');
-			$materialsRequest->find();
-			$user->setNumMaterialsRequests($materialsRequest->N);
-			$timer->logTime("Updated number of active materials requests");
+		if ($homeLibrary){
+			if ($homeLibrary->enableMaterialsRequest == 1) {
+				$statusQuery = new MaterialsRequestStatus();
+				$statusQuery->isOpen = 1;
+				$statusQuery->libraryId = $homeLibrary->libraryId;
+				$materialsRequest->joinAdd($statusQuery, 'INNER', 'status', 'status', 'id');
+				$materialsRequest->find();
+				$user->setNumMaterialsRequests($materialsRequest->N);
+				$timer->logTime("Updated number of active materials requests");
+			}elseif($homeLibrary->enableMaterialsRequest == 2){
+				$user->setNumMaterialsRequests(count($this->getMaterialsRequests($user)));
+			}
 		}
 
 
@@ -855,4 +859,34 @@ class CatalogConnection
 	{
 		return $this->driver->processEmailResetPinForm();
 	}
+
+	function hasMaterialsRequestSupport(){
+		return $this->driver->hasMaterialsRequestSupport();
+	}
+
+	function getNewMaterialsRequestForm()
+	{
+		return $this->driver->getNewMaterialsRequestForm();
+	}
+
+	function processMaterialsRequestForm($user)
+	{
+		return $this->driver->processMaterialsRequestForm($user);
+	}
+
+	function getMaterialsRequests(User $user)
+	{
+		return $this->driver->getMaterialsRequests($user);
+	}
+
+	function getMaterialsRequestsPage(User $user){
+		return $this->driver->getMaterialsRequestsPage($user);
+	}
+
+	function deleteMaterialsRequests(User $user)
+	{
+		return $this->driver->deleteMaterialsRequests($user);
+	}
+
+
 }

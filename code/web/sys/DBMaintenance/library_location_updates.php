@@ -78,7 +78,7 @@ function getLibraryLocationUpdates(){
 			'title' => 'Library 7',
 			'description' => 'Allow materials request to be enabled or disabled by library',
 			'sql' => array(
-				"ALTER TABLE `library` ADD `enableMaterialsRequest` TINYINT DEFAULT '1';",
+				"ALTER TABLE `library` ADD `enableMaterialsRequest` TINYINT DEFAULT '0';",
 			),
 		),
 

@@ -62,8 +62,6 @@ class MaterialsRequest_Submit extends Action
 				$statusQuery->isOpen = 1;
 				$materialsRequest->joinAdd($statusQuery, 'INNER', 'status', 'status', 'id');
 				$openRequests = $materialsRequest->count();
-//				$materialsRequest->selectAdd();
-//				$materialsRequest->selectAdd('materials_request.*, description as statusLabel');
 
 				$materialsRequest->find();
 				$interface->assign('openRequests', $openRequests);

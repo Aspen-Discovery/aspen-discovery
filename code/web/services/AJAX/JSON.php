@@ -90,7 +90,7 @@ class AJAX_JSON extends Action {
 			'email'=>$user->email,
 			'homeLocation'=> isset($patronHomeBranch) ? $patronHomeBranch->code : '',
 			'homeLocationId'=> isset($patronHomeBranch) ? $patronHomeBranch->locationId : '',
-			'enableMaterialsRequest' => MaterialsRequest::enableMaterialsRequest(true),
+			'enableMaterialsRequest' => MaterialsRequest::enableAspenMaterialsRequest(true),
 		);
 	}
 

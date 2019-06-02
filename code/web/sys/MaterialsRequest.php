@@ -117,45 +117,38 @@ class MaterialsRequest extends DataObject
 	}
 
 	static $materialsRequestEnabled = null;
-	static function enableMaterialsRequest($forceReload = false){
+	static function enableAspenMaterialsRequest($forceReload = false){
 		if (MaterialsRequest::$materialsRequestEnabled != null && $forceReload == false){
 			return MaterialsRequest::$materialsRequestEnabled;
 		}
 		global $configArray;
 		global $library;
 
-		//First make sure we are enabled in the config file
-		if (isset($configArray['MaterialsRequest']) && isset($configArray['MaterialsRequest']['enabled'])){
-			$enableMaterialsRequest = $configArray['MaterialsRequest']['enabled'];
-			//Now check if the library allows material requests
-			if ($enableMaterialsRequest){
-				if ($library->enableMaterialsRequest == 0){
-					$enableMaterialsRequest = false;
-				}else if (UserAccount::isLoggedIn()){
-					$homeLibrary = Library::getPatronHomeLibrary();
-					if (is_null($homeLibrary)){
-						$enableMaterialsRequest = false;
-					}else if ($homeLibrary->enableMaterialsRequest == 0){
-						$enableMaterialsRequest = false;
-					}else if ($homeLibrary->libraryId != $library->libraryId){
-						$enableMaterialsRequest = false;
-					}else if (isset($configArray['MaterialsRequest']['allowablePatronTypes'])){
-						//Check to see if we need to do additional restrictions by patron type
-						$allowablePatronTypes = $configArray['MaterialsRequest']['allowablePatronTypes'];
-						if (strlen($allowablePatronTypes) > 0){
-							$user = UserAccount::getLoggedInUser();
-							if (!preg_match("/^$allowablePatronTypes$/i", $user->patronType)){
-								$enableMaterialsRequest = false;
-							}
-						}
+		$enableAspenMaterialsRequest = true;
+		if ($library->enableMaterialsRequest != 1){
+			$enableAspenMaterialsRequest = false;
+		}else if (UserAccount::isLoggedIn()){
+			$homeLibrary = Library::getPatronHomeLibrary();
+			if (is_null($homeLibrary)){
+				$enableAspenMaterialsRequest = false;
+			}else if ($homeLibrary->enableMaterialsRequest != 1){
+				$enableAspenMaterialsRequest = false;
+			}else if ($homeLibrary->libraryId != $library->libraryId){
+				$enableAspenMaterialsRequest = false;
+			}else if (isset($configArray['MaterialsRequest']['allowablePatronTypes'])){
+				//Check to see if we need to do additional restrictions by patron type
+				$allowablePatronTypes = $configArray['MaterialsRequest']['allowablePatronTypes'];
+				if (strlen($allowablePatronTypes) > 0){
+					$user = UserAccount::getLoggedInUser();
+					if (!preg_match("/^$allowablePatronTypes$/i", $user->patronType)){
+						$enableAspenMaterialsRequest = false;
 					}
 				}
 			}
-		}else{
-			$enableMaterialsRequest = false;
 		}
-		MaterialsRequest::$materialsRequestEnabled = $enableMaterialsRequest;
-		return $enableMaterialsRequest;
+
+		MaterialsRequest::$materialsRequestEnabled = $enableAspenMaterialsRequest;
+		return $enableAspenMaterialsRequest;
 	}
 
 	function getHoldLocationName($locationId) {

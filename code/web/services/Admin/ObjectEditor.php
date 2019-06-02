@@ -20,6 +20,7 @@ abstract class ObjectEditor extends Admin_Admin
 
 		$interface->assign('objectType', $this->getObjectType());
 		$interface->assign('toolName', $this->getToolName());
+		$interface->assign('initializationJs', $this->getInitializationJs());
 
 		//Define the structure of the object.
 		$structure = $this->getObjectStructure();
@@ -309,6 +310,9 @@ abstract class ObjectEditor extends Admin_Admin
 		return '';
 	}
 	function getListInstructions(){
+		return '';
+	}
+	function getInitializationJs(){
 		return '';
 	}
 }
