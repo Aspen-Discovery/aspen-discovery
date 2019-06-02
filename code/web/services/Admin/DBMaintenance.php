@@ -1729,6 +1729,60 @@ class DBMaintenance extends Admin_Admin {
 						) ENGINE = InnoDB;'
 					)
 				),
+
+				'aspen_usage' => [
+					'title' => 'Aspen Usage Table',
+					'description' => 'Add a table to track usage of aspen',
+					'continueOnError' => false,
+					'sql' => array(
+						'CREATE TABLE IF NOT EXISTS aspen_usage(
+						    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+		                    year INT(4) NOT NULL,
+		                    month INT(2) NOT NULL,
+		                    pageViews INT(11) DEFAULT 0,
+		                    pageViewsByBots INT(11) DEFAULT 0,
+		                    pageViewsByAuthenticatedUsers INT(11) DEFAULT 0,
+		                    pagesWithErrors INT(11) DEFAULT 0,
+		                    slowPages INT(11) DEFAULT 0,
+		                    ajaxRequests INT(11) DEFAULT 0,
+		                    slowAjaxRequests INT(11) DEFAULT 0,
+		                    coverViews INT(11) DEFAULT 0,
+		                    genealogySearches INT(11) DEFAULT 0,
+		                    groupedWorkSearches INT(11) DEFAULT 0,
+		                    islandoraSearches INT(11) DEFAULT 0,
+		                    openArchivesSearches INT(11) DEFAULT 0,
+		                    userListSearches INT(11) DEFAULT 0
+						) ENGINE = InnoDB;',
+						"ALTER TABLE aspen_usage ADD INDEX (year, month)",
+					)
+				],
+
+				'slow_pages' => [
+					'title' => 'Slow Page Tracking',
+					'description' => 'Add tables to track which pages are slow',
+					'continueOnError' => false,
+					'sql' => array(
+						'CREATE TABLE IF NOT EXISTS slow_page(
+						    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+		                    year INT(4) NOT NULL,
+		                    month INT(2) NOT NULL,
+		                    module VARCHAR(50) NOT NULL,
+		                    action VARCHAR(50) NOT NULL,
+		                    timesSlow INT(11) DEFAULT 0
+						) ENGINE = InnoDB;',
+						"ALTER TABLE slow_page ADD INDEX (year, month, module, action)",
+						'CREATE TABLE IF NOT EXISTS slow_ajax_request(
+						    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+		                    year INT(4) NOT NULL,
+		                    month INT(2) NOT NULL,
+		                    module VARCHAR(50) NOT NULL,
+		                    action VARCHAR(50) NOT NULL,
+		                    method VARCHAR(75) NOT NULL,
+		                    timesSlow INT(11) DEFAULT 0
+						) ENGINE = InnoDB;',
+						"ALTER TABLE slow_ajax_request ADD INDEX (year, month, module, action, method)",
+					)
+				],
 			)
 		);
 	}

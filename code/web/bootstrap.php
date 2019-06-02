@@ -1,6 +1,12 @@
 <?php
 define ('ROOT_DIR', __DIR__);
 
+require_once ROOT_DIR . '/sys/SystemLogging/AspenUsage.php';
+global $aspenUsage;
+$aspenUsage = new AspenUsage();
+$aspenUsage->year = date('Y');
+$aspenUsage->month = date('n');
+
 global $errorHandlingEnabled;
 $errorHandlingEnabled = true;
 
@@ -32,6 +38,13 @@ ob_start();
 
 initMemcache();
 initDatabase();
+
+try{
+	$aspenUsage->find(true);
+}catch (Exception $e){
+	//Table has not been created yet, ignore it
+}
+
 $timer->logTime("Initialized Database");
 requireSystemLibraries();
 initLocale();

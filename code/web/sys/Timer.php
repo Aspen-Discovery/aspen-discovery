@@ -25,6 +25,10 @@ class Timer{
 		$this->timingMessages = array();
 	}
 
+	public function getElapsedTime(){
+		return microtime(true) - $this->firstTime;
+	}
+
 	public function logTime($message){
 		if ($this->timingsEnabled){
 			$curTime = microtime(true);

@@ -1,9 +1,7 @@
 <?php
-/**
- * Aspen Discovery Layer
- */
-
 require_once 'bootstrap.php';
+
+global $aspenUsage;
 
 global $timer;
 global $memoryWatcher;
@@ -64,7 +62,7 @@ if ($configArray['System']['systemMessage']){
 $interface->assign('islandoraEnabled', $configArray['Islandora']['enabled']);
 
 //Get the name of the active instance
-//$inLibrary, is used to pre-select autologoout on place hold forms;
+//$inLibrary, is used to pre-select auto-logout on place hold forms;
 // to hide the remember me option on login pages;
 // and to show the Location in the page footer
 if ($locationSingleton->getIPLocation() != null){
@@ -132,18 +130,6 @@ if ($mode['online'] === false) {
 }
 $timer->logTime('Checked availability mode');
 
-// Proxy server settings
-if (isset($configArray['Proxy']['host'])) {
-	if (isset($configArray['Proxy']['port'])) {
-		$proxy_server = $configArray['Proxy']['host'].":".$configArray['Proxy']['port'];
-	} else {
-		$proxy_server = $configArray['Proxy']['host'];
-	}
-	$proxy = array('http' => array('proxy' => "tcp://$proxy_server", 'request_fulluri' => true));
-	stream_context_get_default($proxy);
-}
-$timer->logTime('Proxy server checks');
-
 // Setup Translator
 global $language;
 global $serverName;
@@ -173,7 +159,6 @@ $interface->assign('deviceName', $deviceName);
 //Look for spammy searches and kill them
 if (isset($_REQUEST['lookfor'])) {
 	// Advanced Search with only the default search group (multiple search groups are named lookfor0, lookfor1, ... )
-	// TODO: Actually the lookfor is inconsistent; reloading from results in an array : lookfor[]
 	if (is_array($_REQUEST['lookfor'])) {
 		foreach ($_REQUEST['lookfor'] as $i => $searchTerm) {
 			if (preg_match('/http:|mailto:|https:/i', $searchTerm)) {
@@ -187,7 +172,6 @@ if (isset($_REQUEST['lookfor'])) {
 				$_GET['lookfor'][$i]     = '';
 			}
 		}
-
 	}
 	// Basic Search
 	else {
@@ -369,10 +353,21 @@ $interface->assign('searchSource', $searchSource);
 
 //Determine if the top search box and breadcrumbs should be shown.  Not showing these
 //Does have a slight performance advantage.
+$isAJAX = false;
 if ($action == "AJAX" || $action == "JSON"){
+	$isAJAX = true;
 	$interface->assign('showTopSearchBox', 0);
 	$interface->assign('showBreadcrumbs', 0);
+	$aspenUsage->ajaxRequests++;
 }else{
+	$aspenUsage->pageViews++;
+	require_once ROOT_DIR . '/sys/BotChecker.php';
+	if (BotChecker::isRequestFromBot()){
+		$aspenUsage->pageViewsByBots++;
+	}
+	if ($isLoggedIn){
+		$aspenUsage->pageViewsByAuthenticatedUsers++;
+	}
 	//TODO: footerLists not in any current template
 	if (isset($configArray['FooterLists'])){
 		$interface->assign('footerLists', $configArray['FooterLists']);
@@ -505,7 +500,7 @@ if (($isOpac || $masqueradeMode || (!empty($ipLocation) && $ipLocation->getOpacS
 		if ($isOpac && $location) {
 			$automaticTimeoutLength          = $location->automaticTimeoutLength;
 			$automaticTimeoutLengthLoggedOut = $location->automaticTimeoutLengthLoggedOut;
-		} // If we know the branch by iplocation, use the settings based on that location
+		} // If we know the branch by ip location, use the settings based on that location
 		elseif ($ipLocation) {
 			//TODO: ensure we are checking that URL is consistent with location, if not turn off
 			// eg: browsing at fort lewis library from garfield county library
@@ -595,6 +590,51 @@ $timer->logTime('Finished Index');
 $timer->writeTimings();
 $memoryWatcher->logMemory("Finished index");
 $memoryWatcher->writeMemory();
+try{
+	$elapsedTime = $timer->getElapsedTime();
+	if ($elapsedTime > 1){
+		if ($isAJAX){
+			$aspenUsage->slowAjaxRequests++;
+			require_once ROOT_DIR . '/sys/SystemLogging/SlowAjaxRequest.php';
+			$slowRequest = new SlowAjaxRequest();
+			$slowRequest->year = date('Y');
+			$slowRequest->month = date('n');
+			$slowRequest->module = $module;
+			$slowRequest->method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
+			$slowRequest->action = $action;
+			if ($slowRequest->find(true)){
+				$slowRequest->timesSlow++;
+				$slowRequest->update();
+			}else{
+				$slowRequest->timesSlow = 1;
+				$slowRequest->insert();
+			}
+		}else{
+			$aspenUsage->slowPages++;
+			require_once ROOT_DIR . '/sys/SystemLogging/SlowPage.php';
+			$slowPage = new SlowPage();
+			$slowPage->year = date('Y');
+			$slowPage->month = date('n');
+			$slowPage->module = $module;
+			$slowPage->action = $action;
+			if ($slowPage->find(true)){
+				$slowPage->timesSlow++;
+				$slowPage->update();
+			}else{
+				$slowPage->timesSlow = 1;
+				$slowPage->insert();
+			}
+		}
+	}
+
+	if ($aspenUsage->id){
+		$aspenUsage->update();
+	}else{
+		$aspenUsage->insert();
+	}
+}catch(Exception $e){
+	//Table not created yet, ignore
+}
 
 function processFollowup(){
 	global $configArray;
@@ -715,7 +755,7 @@ function getGitBranch(){
 	if ($gitName == 'HEAD'){
 		$stringFromFile = file('../../.git/HEAD', FILE_USE_INCLUDE_PATH);
 		$stringFromFile = $stringFromFile[0]; //get the string from the array
-		$explodedString = explode("/", $stringFromFile); //seperate out by the "/" in the string
+		$explodedString = explode("/", $stringFromFile); //separate out by the "/" in the string
 		$branchName = $explodedString[2]; //get the one that is always the branch name
 	}else{
 		$stringFromFile = file('../../.git/FETCH_HEAD', FILE_USE_INCLUDE_PATH);

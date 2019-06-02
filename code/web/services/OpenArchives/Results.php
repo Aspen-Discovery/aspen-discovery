@@ -11,6 +11,8 @@ class OpenArchives_Results extends Action {
         global $interface;
         global $configArray;
         global $timer;
+	    global $aspenUsage;
+	    $aspenUsage->openArchivesSearches++;
 
         // Include Search Engine Class
         require_once ROOT_DIR . '/sys/SolrConnector/Solr.php';

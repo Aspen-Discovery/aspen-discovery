@@ -1,6 +1,8 @@
 <?php
 require_once 'bootstrap.php';
 
+global $aspenUsage;
+$aspenUsage->coverViews++;
 require_once ROOT_DIR . '/sys/Covers/BookCoverProcessor.php';
 
 //Create class to handle processing of covers
@@ -10,4 +12,13 @@ if ($processor->error){
 	header('Content-type: text/plain'); //Use for debugging notices and warnings
 	$logger->log("Error processing cover " . $processor->error, Logger::LOG_ERROR);
 	echo($processor->error);
+}
+try{
+	if ($aspenUsage->id){
+		$aspenUsage->update();
+	}else{
+		$aspenUsage->insert();
+	}
+}catch(Exception $e){
+	//Table not created yet, ignore
 }

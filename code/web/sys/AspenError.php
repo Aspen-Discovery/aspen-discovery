@@ -61,6 +61,9 @@ class AspenError
             $errorAlreadyOccurred = true;
         }
 
+        global $aspenUsage;
+        $aspenUsage->pagesWithErrors++;
+
         //Clear any output that has been generated so far so the user just gets the error message.
         if (!$configArray['System']['debug']){
             @ob_clean();

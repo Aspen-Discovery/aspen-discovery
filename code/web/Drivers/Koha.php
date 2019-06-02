@@ -1517,8 +1517,6 @@ class Koha extends AbstractIlsDriver {
 		}
 
 		return $allRequests;
-
-
 	}
 
 	function getMaterialsRequestsPage(User $user)

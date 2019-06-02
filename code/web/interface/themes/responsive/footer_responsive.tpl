@@ -3,7 +3,7 @@
 	<div class="navbar-inner">
 		<div class="row">
 			<div class="col-tn-12 col-sm-7 text-left" id="install-info">
-				<small>Powered By Aspen Discovery</small><br>
+				<small>Powered By Aspen Discovery from Turning Leaf Technologies</small><br>
 				{if !$productionServer}
 					<small class='location_info'>{$physicalLocation}{if $debug} ({$activeIp}){/if} - {$deviceName}</small>
 				{/if}

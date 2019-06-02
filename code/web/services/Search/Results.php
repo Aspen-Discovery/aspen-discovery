@@ -16,6 +16,8 @@ class Search_Results extends Action {
 		global $timer;
 		global $memoryWatcher;
 		global $library;
+		global $aspenUsage;
+		$aspenUsage->groupedWorkSearches++;
 
 		/** @var string $searchSource */
 		$searchSource = isset($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : 'local';
