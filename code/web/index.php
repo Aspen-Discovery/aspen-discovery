@@ -360,10 +360,11 @@ if ($action == "AJAX" || $action == "JSON"){
 	$interface->assign('showBreadcrumbs', 0);
 	$aspenUsage->ajaxRequests++;
 }else{
-	$aspenUsage->pageViews++;
 	require_once ROOT_DIR . '/sys/BotChecker.php';
 	if (BotChecker::isRequestFromBot()){
 		$aspenUsage->pageViewsByBots++;
+	}else{
+		$aspenUsage->pageViews++;
 	}
 	if ($isLoggedIn){
 		$aspenUsage->pageViewsByAuthenticatedUsers++;
