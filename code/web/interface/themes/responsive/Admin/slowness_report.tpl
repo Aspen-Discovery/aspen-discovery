@@ -30,7 +30,7 @@
 		</table>
 
 		<h3>Slow Asynchronous Requests</h3>
-		<table id="slowPages" class="table table-striped table-condensed tablesorter">
+		<table id="slowRequests" class="table table-striped table-condensed tablesorter">
 			<thead>
 				<tr>
 					<th>Module</th>
@@ -63,6 +63,7 @@
 	<script type="text/javascript">
 		{literal}
         $("#slowPages").tablesorter({cssAsc: 'sortAscHeader', cssDesc: 'sortDescHeader', cssHeader: 'unsortedHeader'});
+        $("#slowRequests").tablesorter({cssAsc: 'sortAscHeader', cssDesc: 'sortDescHeader', cssHeader: 'unsortedHeader'});
 		{/literal}
 	</script>
 {/strip}
