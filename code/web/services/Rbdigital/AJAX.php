@@ -171,7 +171,7 @@ class Rbdigital_AJAX extends Action {
 					'promptNeeded' => true,
 					'promptTitle'  => 'Create an Account',
 					'prompts'      => $interface->fetch('Rbdigital/ajax-create-account-prompt.tpl'),
-					'buttons'      => '<input class="btn btn-primary" type="submit" name="submit" value="Create Account" onclick="return AspenDiscovery.Rbdigital.createAccount(\'checkout\', '. $id . ');">'
+					'buttons'      => '<input class="btn btn-primary" type="submit" name="submit" value="Create Account" onclick="return AspenDiscovery.Rbdigital.createAccount(\'checkout\', '. $user->id . ', '. $id . ');">'
 				)
 			);
 		}
