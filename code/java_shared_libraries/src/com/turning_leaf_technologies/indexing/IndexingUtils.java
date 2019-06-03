@@ -138,25 +138,19 @@ public class IndexingUtils {
                 }
             }
 
-            if (!scopes.contains(locationScopeInfo)){
-                //Connect this scope to the library scopes
-                for (Scope curScope : scopes){
-                    if (curScope.isLibraryScope() && Objects.equals(curScope.getLibraryId(), libraryId)){
-                        curScope.addLocationScope(locationScopeInfo);
-                        locationScopeInfo.setLibraryScope(curScope);
-                        break;
-                    }
-                }
-                scopes.add(locationScopeInfo);
-            }else{
-                logger.debug("Not adding location scope because a library scope with the name " + locationScopeInfo.getScopeName() + " exists already.");
-                for (Scope existingLibraryScope : scopes){
-                    if (existingLibraryScope.getScopeName().equals(locationScopeInfo.getScopeName())){
-                        existingLibraryScope.setIsLocationScope(true);
-                        break;
-                    }
+            if (scopes.contains(locationScopeInfo)) {
+                locationScopeInfo.setScopeName(locationScopeInfo.getScopeName()+"loc");
+            }
+            //Connect this scope to the library scopes
+            for (Scope curScope : scopes){
+                if (curScope.isLibraryScope() && Objects.equals(curScope.getLibraryId(), libraryId)){
+                    curScope.addLocationScope(locationScopeInfo);
+                    locationScopeInfo.setLibraryScope(curScope);
+                    break;
                 }
             }
+            scopes.add(locationScopeInfo);
+
         }
     }
 

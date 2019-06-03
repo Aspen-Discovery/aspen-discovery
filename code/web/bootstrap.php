@@ -244,7 +244,11 @@ function loadSearchInformation(){
 		}
 	}
 	if ($searchLocation){
-		$solrScope = strtolower($searchLocation->code);
+		if ($searchLibrary && strtolower($searchLocation->code) == $solrScope){
+			$solrScope .= 'loc';
+		}else{
+			$solrScope = strtolower($searchLocation->code);
+		}
 		if (!empty($searchLocation->subLocation)){
 			$solrScope = strtolower($searchLocation->subLocation);
 		}
