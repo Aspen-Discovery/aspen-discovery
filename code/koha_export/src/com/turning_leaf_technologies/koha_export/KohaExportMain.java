@@ -586,6 +586,7 @@ public class KohaExportMain {
 				while (bibItemsRS.next()) {
 					DataField itemField = marcFactory.newDataField("952", ' ', ' ');
 
+					addSubfield(itemField, 'p', bibItemsRS.getString("barcode"));
 					addSubfield(itemField, 'e', bibItemsRS.getString("booksellerid"));
 					addSubfield(itemField, '8', bibItemsRS.getString("ccode"));
 					addSubfield(itemField, '6', bibItemsRS.getString("cn_sort"));
