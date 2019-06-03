@@ -17,6 +17,7 @@ import org.marc4j.marc.DataField;
 import org.marc4j.marc.MarcFactory;
 import org.marc4j.marc.Record;
 
+import javax.naming.CommunicationException;
 import java.io.*;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
@@ -37,6 +38,8 @@ public class KohaExportMain {
 	private static Ini configIni;
 	private static Connection dbConn;
 	private static String serverName;
+
+	private static String kohaConnectionJDBC;
 
 	private static Long startTimeForLogging;
 	private static IlsExtractLogEntry logEntry;
@@ -85,7 +88,7 @@ public class KohaExportMain {
 						String password = accountProfileRS.getString("databasePassword");
 						String timezone = accountProfileRS.getString("databaseTimezone");
 
-						String kohaConnectionJDBC = "jdbc:mysql://" +
+						kohaConnectionJDBC = "jdbc:mysql://" +
 								host + ":" + port +
 								"/" + databaseName +
 								"?user=" + user +
@@ -93,12 +96,12 @@ public class KohaExportMain {
 								"&useUnicode=yes&characterEncoding=UTF-8";
 						if (timezone != null && timezone.length() > 0) {
 							kohaConnectionJDBC += "&serverTimezone=" + URLEncoder.encode(timezone, "UTF8");
-
 						}
-						kohaConn = DriverManager.getConnection(kohaConnectionJDBC);
-
-						getBaseMarcRecordStmt = kohaConn.prepareStatement("SELECT * from biblio_metadata where biblionumber = ?");
-						getBibItemsStmt = kohaConn.prepareStatement("SELECT * from items where biblionumber = ?");
+						kohaConn = connectToKoha();
+						if (kohaConn == null){
+							//Do another loop and hope we reconnect the next time.
+							continue;
+						}
 
 						profileToLoad = accountProfileRS.getString("recordSource");
 					} catch (Exception e) {
@@ -169,6 +172,30 @@ public class KohaExportMain {
 				logger.info("Thread was interrupted");
 			}
 		}
+	}
+
+	private static Connection connectToKoha() throws SQLException {
+		int tries = 0;
+		while (tries < 3){
+			try{
+				Connection kohaConn = DriverManager.getConnection(kohaConnectionJDBC);
+
+				getBaseMarcRecordStmt = kohaConn.prepareStatement("SELECT * from biblio_metadata where biblionumber = ?");
+				getBibItemsStmt = kohaConn.prepareStatement("SELECT * from items where biblionumber = ?");
+
+				return kohaConn;
+			}catch (Exception e){
+				tries++;
+				logger.error("Could not connect to the koha database, try " + tries);
+				try {
+					Thread.sleep(15000);
+				} catch (InterruptedException ex) {
+					logger.debug("Thread was interrupted");
+				}
+			}
+
+		}
+		throw new SQLException("Unable to connect to the Koha database");
 	}
 
 	private static void updateTranslationMaps(Connection dbConn, Connection kohaConn) {
@@ -495,7 +522,23 @@ public class KohaExportMain {
 			int numProcessed = 0;
 			for (String curBibId : changedBibIds){
 				//Update the marc record
-				updateBibRecord(curBibId);
+				int retry = 0;
+				while (retry < 3) {
+					try {
+						updateBibRecord(curBibId);
+						break;
+					} catch (Exception e){
+						//If we get an error, the Koha database went away, pause for 15 seconds and then reconnect
+						Thread.sleep(15000);
+						kohaConn = connectToKoha();
+						retry++;
+						logger.error("Koha database went away, trying to reconnect and reprocess", e);
+					}
+				}
+				if (retry > 3){
+					//Quit and live to extract another day, but make sure not to update the last extract time
+					return numProcessed;
+				}
 				numProcessed++;
 				if (numProcessed % 250 == 0){
 					logEntry.saveResults();
@@ -557,14 +600,14 @@ public class KohaExportMain {
 		} catch (Exception e){
 			logger.error("Error loading changed records from Koha database", e);
 			logEntry.incErrors();
-			System.exit(1);
+			//Don't quit since that keeps the exporter from running continuously
 		}
 		logger.info("Finished loading changed records from Koha database");
 
 		return totalChanges;
 	}
 
-	private static void updateBibRecord(String curBibId) {
+	private static void updateBibRecord(String curBibId) throws FileNotFoundException, SQLException {
 		//Load the existing marc record from file
 		try {
 			File marcFile = indexingProfile.getFileForIlsRecord(curBibId);
@@ -641,9 +684,15 @@ public class KohaExportMain {
 
 			}
 
-		}catch (Exception e){
-			logger.error("Error updating marc record for bib " + curBibId, e);
-			logEntry.incErrors();
+		}catch (Exception e) {
+			if (e instanceof com.mysql.cj.jdbc.exceptions.CommunicationsException){
+				throw e;
+			}else if (e instanceof SQLException && ((SQLException) e).getSQLState().equals("S1009")) {
+				throw e;
+			}else {
+				logger.error("Error updating marc record for bib " + curBibId, e);
+				logEntry.incErrors();
+			}
 		}
 	}
 

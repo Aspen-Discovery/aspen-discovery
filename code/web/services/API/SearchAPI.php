@@ -55,8 +55,6 @@ class SearchAPI extends Action {
 		$notes = array();
 		$status = array();
 
-		$currentTime = time();
-
 		//Check if solr is running by pinging it
 		$solrSearcher = SearchObjectFactory::initSearchObject();
 		if (!$solrSearcher->ping()){
@@ -247,7 +245,6 @@ class SearchAPI extends Action {
 
 		// Report additional information after the results
 		$jsonResults['query_time'] = 		  round($searchObject->getQuerySpeed(), 2);
-		$jsonResults['spellingSuggestions'] = $searchObject->getSpellingSuggestions();
 		$jsonResults['lookfor'] =             $searchObject->displayQuery();
 		$jsonResults['searchType'] =          $searchObject->getSearchType();
 		// Will assign null for an advanced search

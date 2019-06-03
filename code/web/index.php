@@ -588,36 +588,38 @@ $memoryWatcher->writeMemory();
 try{
 	$elapsedTime = $timer->getElapsedTime();
 
-	if ($isAJAX){
-		$aspenUsage->slowAjaxRequests++;
-		require_once ROOT_DIR . '/sys/SystemLogging/SlowAjaxRequest.php';
-		$slowRequest = new SlowAjaxRequest();
-		$slowRequest->year = date('Y');
-		$slowRequest->month = date('n');
-		$slowRequest->module = $module;
-		$slowRequest->method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
-		$slowRequest->action = $action;
-		if ($slowRequest->find(true)){
-			$slowRequest->setSlowness($elapsedTime);
-			$slowRequest->update();
-		}else{
-			$slowRequest->setSlowness($elapsedTime);
-			$slowRequest->insert();
-		}
-	}else{
-		$aspenUsage->slowPages++;
-		require_once ROOT_DIR . '/sys/SystemLogging/SlowPage.php';
-		$slowPage = new SlowPage();
-		$slowPage->year = date('Y');
-		$slowPage->month = date('n');
-		$slowPage->module = $module;
-		$slowPage->action = $action;
-		if ($slowPage->find(true)){
-			$slowPage->setSlowness($elapsedTime);
-			$slowPage->update();
-		}else{
-			$slowPage->setSlowness($elapsedTime);
-			$slowPage->insert();
+	if (BotChecker::isRequestFromBot()) {
+		if ($isAJAX) {
+			$aspenUsage->slowAjaxRequests++;
+			require_once ROOT_DIR . '/sys/SystemLogging/SlowAjaxRequest.php';
+			$slowRequest = new SlowAjaxRequest();
+			$slowRequest->year = date('Y');
+			$slowRequest->month = date('n');
+			$slowRequest->module = $module;
+			$slowRequest->method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
+			$slowRequest->action = $action;
+			if ($slowRequest->find(true)) {
+				$slowRequest->setSlowness($elapsedTime);
+				$slowRequest->update();
+			} else {
+				$slowRequest->setSlowness($elapsedTime);
+				$slowRequest->insert();
+			}
+		} else {
+			$aspenUsage->slowPages++;
+			require_once ROOT_DIR . '/sys/SystemLogging/SlowPage.php';
+			$slowPage = new SlowPage();
+			$slowPage->year = date('Y');
+			$slowPage->month = date('n');
+			$slowPage->module = $module;
+			$slowPage->action = $action;
+			if ($slowPage->find(true)) {
+				$slowPage->setSlowness($elapsedTime);
+				$slowPage->update();
+			} else {
+				$slowPage->setSlowness($elapsedTime);
+				$slowPage->insert();
+			}
 		}
 	}
 
