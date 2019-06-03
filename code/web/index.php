@@ -354,7 +354,7 @@ $interface->assign('searchSource', $searchSource);
 //Determine if the top search box and breadcrumbs should be shown.  Not showing these
 //Does have a slight performance advantage.
 $isAJAX = false;
-if ($action == "AJAX" || $action == "JSON"){
+if ($action == "AJAX" || $action == "JSON" || $module == 'API'){
 	$isAJAX = true;
 	$interface->assign('showTopSearchBox', 0);
 	$interface->assign('showBreadcrumbs', 0);
@@ -588,7 +588,7 @@ $memoryWatcher->writeMemory();
 try{
 	$elapsedTime = $timer->getElapsedTime();
 
-	if (BotChecker::isRequestFromBot()) {
+	if (!BotChecker::isRequestFromBot()) {
 		if ($isAJAX) {
 			$aspenUsage->slowAjaxRequests++;
 			require_once ROOT_DIR . '/sys/SystemLogging/SlowAjaxRequest.php';
