@@ -55,7 +55,11 @@ class Admin_SlownessReport extends Admin_Admin
 				$stats[$usage->module . '_' . $usage->action]=[
 					'module' => $usage->module,
 					'action' => $usage->action,
-					$setName => $usage->timesSlow,
+					$setName.'_fast' => $usage->timesFast,
+					$setName.'_acceptable' => $usage->timesAcceptable,
+					$setName.'_slow' => $usage->timesSlow,
+					$setName.'_slower' => $usage->timesSlower,
+					$setName.'_very_slow' => $usage->timesVerySlow,
 				];
 			}
 		}
@@ -80,7 +84,11 @@ class Admin_SlownessReport extends Admin_Admin
 					'module' => $usage->module,
 					'action' => $usage->action,
 					'method' => $usage->method,
-					$setName => $usage->timesSlow,
+					$setName.'_fast' => $usage->timesFast,
+					$setName.'_acceptable' => $usage->timesAcceptable,
+					$setName.'_slow' => $usage->timesSlow,
+					$setName.'_slower' => $usage->timesSlower,
+					$setName.'_very_slow' => $usage->timesVerySlow,
 				];
 			}
 		}

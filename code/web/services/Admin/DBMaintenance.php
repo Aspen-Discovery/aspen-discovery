@@ -1783,6 +1783,21 @@ class DBMaintenance extends Admin_Admin {
 						"ALTER TABLE slow_ajax_request ADD INDEX (year, month, module, action, method)",
 					)
 				],
+
+				'slow_page_granularity' => [
+					'title' => 'Slow request granularity',
+					'description' => 'Add additional granularity to slow request log',
+					'sql' => [
+						'ALTER TABLE slow_page add column timesFast INT(11)', //Less than .5 seconds
+						'ALTER TABLE slow_page add column timesAcceptable INT(11)', //Less than 1 second
+						'ALTER TABLE slow_page add column timesSlower INT(11)', //More than 2 seconds
+						'ALTER TABLE slow_page add column timesVerySlow INT(11)', //More than 4 seconds
+						'ALTER TABLE slow_ajax_request add column timesFast INT(11)', //Less than .5 seconds
+						'ALTER TABLE slow_ajax_request add column timesAcceptable INT(11)', //Less than 1 second
+						'ALTER TABLE slow_ajax_request add column timesSlower INT(11)', //More than 2 seconds
+						'ALTER TABLE slow_ajax_request add column timesVerySlow INT(11)', //More than 4 seconds
+					]
+				],
 			)
 		);
 	}

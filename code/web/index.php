@@ -369,10 +369,6 @@ if ($action == "AJAX" || $action == "JSON"){
 	if ($isLoggedIn){
 		$aspenUsage->pageViewsByAuthenticatedUsers++;
 	}
-	//TODO: footerLists not in any current template
-	if (isset($configArray['FooterLists'])){
-		$interface->assign('footerLists', $configArray['FooterLists']);
-	}
 
 	//Load basic search types for use in the interface.
 	/** @var SearchObject_GroupedWorkSearcher $searchObject */
@@ -503,8 +499,6 @@ if (($isOpac || $masqueradeMode || (!empty($ipLocation) && $ipLocation->getOpacS
 			$automaticTimeoutLengthLoggedOut = $location->automaticTimeoutLengthLoggedOut;
 		} // If we know the branch by ip location, use the settings based on that location
 		elseif ($ipLocation) {
-			//TODO: ensure we are checking that URL is consistent with location, if not turn off
-			// eg: browsing at fort lewis library from garfield county library
 			$automaticTimeoutLength          = $ipLocation->automaticTimeoutLength;
 			$automaticTimeoutLengthLoggedOut = $ipLocation->automaticTimeoutLengthLoggedOut;
 		} // Otherwise, use the main branch's settings or the first location's settings
@@ -593,38 +587,35 @@ $memoryWatcher->logMemory("Finished index");
 $memoryWatcher->writeMemory();
 try{
 	$elapsedTime = $timer->getElapsedTime();
-	if ($elapsedTime > 1){
-		if ($isAJAX){
-			$aspenUsage->slowAjaxRequests++;
-			require_once ROOT_DIR . '/sys/SystemLogging/SlowAjaxRequest.php';
-			$slowRequest = new SlowAjaxRequest();
-			$slowRequest->year = date('Y');
-			$slowRequest->month = date('n');
-			$slowRequest->module = $module;
-			$slowRequest->method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
-			$slowRequest->action = $action;
-			if ($slowRequest->find(true)){
-				$slowRequest->timesSlow++;
-				$slowRequest->update();
-			}else{
-				$slowRequest->timesSlow = 1;
-				$slowRequest->insert();
-			}
+
+	if ($isAJAX){
+		$aspenUsage->slowAjaxRequests++;
+		require_once ROOT_DIR . '/sys/SystemLogging/SlowAjaxRequest.php';
+		$slowRequest = new SlowAjaxRequest();
+		$slowRequest->year = date('Y');
+		$slowRequest->month = date('n');
+		$slowRequest->module = $module;
+		$slowRequest->method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
+		$slowRequest->action = $action;
+		$slowRequest->setSlowness($elapsedTime);
+		if ($slowRequest->find(true)){
+			$slowRequest->update();
 		}else{
-			$aspenUsage->slowPages++;
-			require_once ROOT_DIR . '/sys/SystemLogging/SlowPage.php';
-			$slowPage = new SlowPage();
-			$slowPage->year = date('Y');
-			$slowPage->month = date('n');
-			$slowPage->module = $module;
-			$slowPage->action = $action;
-			if ($slowPage->find(true)){
-				$slowPage->timesSlow++;
-				$slowPage->update();
-			}else{
-				$slowPage->timesSlow = 1;
-				$slowPage->insert();
-			}
+			$slowRequest->insert();
+		}
+	}else{
+		$aspenUsage->slowPages++;
+		require_once ROOT_DIR . '/sys/SystemLogging/SlowPage.php';
+		$slowPage = new SlowPage();
+		$slowPage->year = date('Y');
+		$slowPage->month = date('n');
+		$slowPage->module = $module;
+		$slowPage->action = $action;
+		$slowPage->setSlowness($elapsedTime);
+		if ($slowPage->find(true)){
+			$slowPage->update();
+		}else{
+			$slowPage->insert();
 		}
 	}
 
@@ -719,7 +710,7 @@ function checkAvailabilityMode() {
 		$isMaintenance = false;
 		if (isset($configArray['System']['maintenanceIps'])){
 			$activeIp = $_SERVER['REMOTE_ADDR'];
-			$maintenanceIp =  $configArray['System']['maintenanceIps']; //TODO: system variable misspelled; change and update protected configs
+			$maintenanceIp =  $configArray['System']['maintenanceIps'];
 
 			$maintenanceIps = explode(",", $maintenanceIp);
 			foreach ($maintenanceIps as $curIp){
@@ -834,11 +825,9 @@ function loadModuleActionId(){
 		$_REQUEST['id'] = '';
 	}elseif (preg_match('/\/(Archive)\/((?:[\\w\\d:]|%3A)+)\/([^\/?]+)/', $requestURI, $matches)){
 		$_GET['module'] = $matches[1];
-//		$_GET['id'] = $matches[2];// TODO: Leaving in case change below, effects other Aspen functionality
 		$_GET['id'] =  urldecode($matches[2]); // Decodes colons % codes back into colons.
 		$_GET['action'] = $matches[3];
 		$_REQUEST['module'] = $matches[1];
-//		$_REQUEST['id'] = $matches[2]; // TODO: Leaving in case change below, effects other Aspen functionality
 		$_REQUEST['id'] = urldecode($matches[2]);  // Decodes colons % codes back into colons.
 		$_REQUEST['action'] = $matches[3];
 		//Redirect things /GroupedWork/AJAX to the proper action

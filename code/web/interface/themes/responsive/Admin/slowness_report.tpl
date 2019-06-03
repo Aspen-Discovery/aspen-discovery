@@ -4,18 +4,26 @@
 		<h3>Slow Pages</h3>
 		<table id="slowPages" class="table table-striped table-condensed tablesorter">
 			<thead>
-				<th>Module</th>
-				<th>Action</th>
-				<th>This Month</th>
-				<th>Last Month</th>
+				<tr>
+					<th>Module</th>
+					<th>Action</th>
+					<th>Fast<br>&lt; 0.5 sec</th>
+					<th>Acceptable<br>&lt; 1sec</th>
+					<th>Slow<br>&lt; 2sec</th>
+					<th>Slower<br>&lt; 4sec</th>
+					<th>Very Slow<br>&gt;= 4sec</th>
+				</tr>
 			</thead>
 			<tbody>
 				{foreach from=$slowPages item=slowPage}
 					<tr>
 						<td>{$slowPage.module}</td>
 						<td>{$slowPage.action}</td>
-						<td>{if empty($slowPage.this_month)}0{else}{$slowPage.this_month}{/if}</td>
-						<td>{if empty($slowPage.last_month)}0{else}{$slowPage.last_month}{/if}</td>
+						<td>{if empty($slowPage.this_month_fast)}0{else}{$slowPage.this_month_fast}{/if} / {if empty($slowPage.last_month_fast)}0{else}{$slowPage.last_month_fast}{/if}</td>
+						<td>{if empty($slowPage.this_month_acceptable)}0{else}{$slowPage.this_month_acceptable}{/if} / {if empty($slowPage.last_month_acceptable)}0{else}{$slowPage.last_month_acceptable}{/if}</td>
+						<td>{if empty($slowPage.this_month_slow)}0{else}{$slowPage.this_month_slow}{/if} / {if empty($slowPage.last_month_slow)}0{else}{$slowPage.last_month_slow}{/if}</td>
+						<td>{if empty($slowPage.this_month_slower)}0{else}{$slowPage.this_month_slower}{/if} / {if empty($slowPage.last_month_slower)}0{else}{$slowPage.last_month_slower}{/if}</td>
+						<td>{if empty($slowPage.this_month_very_slow)}0{else}{$slowPage.this_month_very_slow}{/if} / {if empty($slowPage.last_month_very_slow)}0{else}{$slowPage.last_month_very_slow}{/if}</td>
 					</tr>
 				{/foreach}
 			</tbody>
@@ -24,11 +32,16 @@
 		<h3>Slow Asynchronous Requests</h3>
 		<table id="slowPages" class="table table-striped table-condensed tablesorter">
 			<thead>
-			<th>Module</th>
-			<th>Action</th>
-			<th>Method</th>
-			<th>This Month</th>
-			<th>Last Month</th>
+				<tr>
+					<th>Module</th>
+					<th>Action</th>
+					<th>Method</th>
+					<th>Fast<br>&lt; 0.5 sec</th>
+					<th>Acceptable<br>&lt; 1sec</th>
+					<th>Slow<br>&lt; 2sec</th>
+					<th>Slower<br>&lt; 4sec</th>
+					<th>Very Slow<br>&gt;= 4sec</th>
+				</tr>
 			</thead>
 			<tbody>
 			{foreach from=$slowAsyncRequests item=slowRequest}
@@ -36,8 +49,11 @@
 					<td>{$slowRequest.module}</td>
 					<td>{$slowRequest.action}</td>
 					<td>{$slowRequest.method}</td>
-					<td>{if empty($slowRequest.this_month)}0{else}{$slowRequest.this_month}{/if}</td>
-					<td>{if empty($slowRequest.last_month)}0{else}{$slowRequest.last_month}{/if}</td>
+					<td>{if empty($slowRequest.this_month_fast)}0{else}{$slowRequest.this_month_fast}{/if} / {if empty($slowRequest.last_month_fast)}0{else}{$slowRequest.last_month_fast}{/if}</td>
+					<td>{if empty($slowRequest.this_month_acceptable)}0{else}{$slowRequest.this_month_acceptable}{/if} / {if empty($slowRequest.last_month_acceptable)}0{else}{$slowRequest.last_month_acceptable}{/if}</td>
+					<td>{if empty($slowRequest.this_month_slow)}0{else}{$slowRequest.this_month_slow}{/if} / {if empty($slowRequest.last_month_slow)}0{else}{$slowRequest.last_month_slow}{/if}</td>
+					<td>{if empty($slowRequest.this_month_slower)}0{else}{$slowRequest.this_month_slower}{/if} / {if empty($slowRequest.last_month_slower)}0{else}{$slowRequest.last_month_slower}{/if}</td>
+					<td>{if empty($slowRequest.this_month_very_slow)}0{else}{$slowRequest.this_month_very_slow}{/if} / {if empty($slowRequest.last_month_very_slow)}0{else}{$slowRequest.last_month_very_slow}{/if}</td>
 				</tr>
 			{/foreach}
 			</tbody>
