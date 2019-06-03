@@ -597,10 +597,11 @@ try{
 		$slowRequest->module = $module;
 		$slowRequest->method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
 		$slowRequest->action = $action;
-		$slowRequest->setSlowness($elapsedTime);
 		if ($slowRequest->find(true)){
+			$slowRequest->setSlowness($elapsedTime);
 			$slowRequest->update();
 		}else{
+			$slowRequest->setSlowness($elapsedTime);
 			$slowRequest->insert();
 		}
 	}else{
@@ -611,10 +612,11 @@ try{
 		$slowPage->month = date('n');
 		$slowPage->module = $module;
 		$slowPage->action = $action;
-		$slowPage->setSlowness($elapsedTime);
 		if ($slowPage->find(true)){
+			$slowPage->setSlowness($elapsedTime);
 			$slowPage->update();
 		}else{
+			$slowPage->setSlowness($elapsedTime);
 			$slowPage->insert();
 		}
 	}
@@ -626,6 +628,8 @@ try{
 	}
 }catch(Exception $e){
 	//Table not created yet, ignore
+	global $logger;
+	$logger->log("Exception updating aspen usage/slow pages: " . $e, Logger::LOG_DEBUG);
 }
 
 function processFollowup(){
