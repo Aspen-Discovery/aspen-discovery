@@ -316,6 +316,9 @@ public class UpdateReadingHistory implements IProcessHandler {
 				case "Hoopla":
 					sourceId = checkedOutItem.getString("hooplaId");
 					break;
+				case "Rbdigital":
+					sourceId = checkedOutItem.getString("recordId");
+					break;
 				case "eContent":
 					source = checkedOutItem.getString("recordType");
 					sourceId = checkedOutItem.getString("id");
@@ -340,7 +343,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 				}
 			}
 
-		//This is a newly checked out title
+			//This is a newly checked out title
 			insertReadingHistoryStmt.setLong(1, userId);
 			String groupedWorkId = checkedOutItem.has("groupedWorkId") ? checkedOutItem.getString("groupedWorkId") : "";
 			if (groupedWorkId == null){

@@ -5,7 +5,6 @@
 ##
 ## to set the current crontab from a file : crontab < crontab_settings.txt
 ##
-## added by pascal. 12-11-2014
 ##################
 
 # !! Please make all changes to the crontab within the git repository system and apply through the above method.
@@ -30,12 +29,7 @@
 #############
 # Indexing Tasks #
 #############
-@reboot sleep 60 cd /usr/local/aspen-discovery/sites/basinlibraries.production/; ./basinlibraries.production.sh start
-# Continuous Re-Indexing
-@reboot sleep 280 && cd /usr/local/aspen-discovery/code/koha_export; java -jar koha_export.jar basinlibraries.production continuous
-@reboot sleep 290 && cd /usr/local/aspen-discovery/code/overdrive_api_extract; java -jar overdrive_extract.jar basinlibraries.production continuous
-@reboot sleep 300 && cd /usr/local/aspen-discovery/code/rbdigital_export; java -jar rbdigital_export.jar basinlibraries.production continuous
-@reboot sleep 310 && cd /usr/local/aspen-discovery/code/user_list_indexer; java -jar user_list_indexer.jar basinlibraries.production continuous
+@reboot sleep 60 /usr/local/aspen-discovery/sites/basinlibraries.production/; ./start_background_processes.sh
 5 * * * * php /usr/local/aspen-discovery/code/web/cron/updateSuggesters.php basinlibraries.production
 
 ########################################################
@@ -43,26 +37,11 @@
 ########################################################
 0 2 * * 0 cd /usr/local/aspen-discovery/code/oai_indexer; java -jar oai_indexer.jar basinlibraries.production
 
-######################
-# MySQL Nightly Dump #
-######################
-# backup important bits at 12:10am daily
-# 10 0 * * * /usr/local/aspen-discovery/code/cron/nightly_mysql_dump.sh basinlibraries.production vufind 2>&1 >/dev/null
-
-#####################
-# Daily full update #
-#####################
-# Set the start for 10:25PM
-# Criteria for start time:
-# Have both the library and schools closed for business? M-Th 8PM; F 6PM; Sat-Sun 5PM
-# Has the weekly RHEL package update been completed? 10:10-10:25PM-ish
-# 25 22 * * * cd /usr/local/aspen-discovery/sites/basinlibraries.production; ./full_update.sh
-
 #############################################
 # New York Times Best seller Lists Updating #
 #############################################
 07 7 * * 0-1 php /usr/local/aspen-discovery/code/web/cron/updateNYTLists.php basinlibraries.production
-# update on Sundays at 7:07
+# update on Sundays and Mondays at 7:07
 
 ################
 # Pika Cleanup #
@@ -70,22 +49,6 @@
 
 # Temp files
 26 0 * * * cd /tmp; rm -rf CURLCOOKIE*
-# Restart apache
-#0 0-6 * * * /usr/sbin/apachectl restart > /dev/null 2>&1
-#0 7-23 * * * /usr/sbin/apachectl graceful > /dev/null 2>&1
 
 # CRON for Aspen (book cover cache cleanup etc.)
-# 00 20 * * * cd /usr/local/VuFind-Plus/code/cron; java -jar cron.jar basinlibraries.production
-# 20 0 * * * cd /usr/local/VuFind-Plus/code/cron; java -jar cron.jar basinlibraries.production DatabaseCleanup
-
-###################################
-# Data Extract from other systems #
-###################################
-
-# Download Lexile and AR files triggered in full_update.sh
-
-# Check Apache Solr process and website that it has not stalled.
-#*/3 6-23 * * * cd /usr/local/aspen-discovery/code/cron/; ./solrTest.sh
-
-# Check for semaphore errors
-#17 * * * * cd /usr/local/aspen-discovery/code/cron/; ./apacheSemaphoreCleanup.sh root
+00 20 * * * cd /usr/local/VuFind-Plus/code/cron; java -jar cron.jar basinlibraries.production

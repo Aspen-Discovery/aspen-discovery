@@ -1,17 +1,10 @@
 package com.turning_leaf_technologies.cron;
 
-import java.io.File;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import com.turning_leaf_technologies.config.ConfigUtil;
 import org.apache.logging.log4j.Logger;
@@ -30,8 +23,6 @@ public class DatabaseCleanup implements IProcessHandler {
 		removeOldSearches(dbConn, logger, processLog);
 		removeSpammySearches(dbConn, logger, processLog);
 		removeLongSearches(dbConn, logger, processLog);
-		cleanupReadingHistory(dbConn, logger, processLog);
-		cleanupIndexingReports(configIni, dbConn, logger, processLog);
 		removeOldMaterialsRequests(dbConn, logger, processLog);
 		removeUserDataForDeletedUsers(dbConn, logger, processLog);
 
@@ -181,57 +172,6 @@ public class DatabaseCleanup implements IProcessHandler {
 		}
 	}
 
-	private void cleanupIndexingReports(Ini configIni, Connection dbConn, Logger logger, CronProcessLogEntry processLog) {
-		//Remove indexing reports
-		try{
-			//Get the data directory where reports are stored
-			File dataDir = new File(configIni.get("Reindex", "marcPath"));
-			dataDir = dataDir.getParentFile();
-			//Get a list of dates that should be kept
-			SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
-			GregorianCalendar today = new GregorianCalendar();
-			ArrayList<String> validDatesToKeep = new ArrayList<>();
-			//Keep the last 7 days
-			for (int i = 0; i < 7; i++) {
-				validDatesToKeep.add(dateFormatter.format(today.getTime()));
-				today.add(Calendar.DATE, -1);
-			}
-			//Keep the last 12 months
-			today.setTime(new Date());
-			today.set(Calendar.DAY_OF_MONTH, 1);
-			for (int i = 0; i < 12; i++) {
-				validDatesToKeep.add(dateFormatter.format(today.getTime()));
-				today.add(Calendar.MONTH, -1);
-			}
-
-			//List all csv files in the directory
-			File[] filesToCheck = dataDir.listFiles((dir, name) -> name.matches(".*\\d{4}-\\d{2}-\\d{2}\\.csv"));
-
-			//Check to see if we should keep or delete the file
-			Pattern getDatePattern = Pattern.compile("(\\d{4}-\\d{2}-\\d{2})", Pattern.CANON_EQ);
-			if (filesToCheck != null) {
-				for (File curFile : filesToCheck) {
-					//Get the date from the file
-					Matcher fileMatcher = getDatePattern.matcher(curFile.getName());
-					if (fileMatcher.find()) {
-						String date = fileMatcher.group();
-						if (!validDatesToKeep.contains(date)) {
-							if (!curFile.delete()){
-								logger.warn("Could not delete file " + curFile.getAbsolutePath());
-							}
-						}
-					}
-				}
-			}
-
-		} catch (Exception e){
-			processLog.incErrors();
-			processLog.addNote("Error removing old indexing reports. " + e.toString());
-			logger.error("Error removing old indexing reports", e);
-			processLog.saveToDatabase(dbConn, logger);
-		}
-	}
-
 	private void removeLongSearches(Connection dbConn, Logger logger, CronProcessLogEntry processLog) {
 		//Remove long searches
 		try {
@@ -259,15 +199,6 @@ public class DatabaseCleanup implements IProcessHandler {
 			int rowsRemoved = removeSearchStmt.executeUpdate();
 
 			processLog.addNote("Removed " + rowsRemoved + " spammy searches");
-			processLog.incUpdated();
-
-			processLog.saveToDatabase(dbConn, logger);
-
-			PreparedStatement removeSearchStmt2 = dbConn.prepareStatement("DELETE from analytics_search where lookfor like '%http:%' or lookfor like '%https:%' or lookfor like '%mailto:%' or length(lookfor) > 256");
-
-			int rowsRemoved2 = removeSearchStmt2.executeUpdate();
-
-			processLog.addNote("Removed " + rowsRemoved2 + " spammy searches");
 			processLog.incUpdated();
 
 			processLog.saveToDatabase(dbConn, logger);
@@ -332,73 +263,6 @@ public class DatabaseCleanup implements IProcessHandler {
 			processLog.incErrors();
 			processLog.addNote("Unable to delete expired sessions. " + e.toString());
 			logger.error("Error deleting expired sessions", e);
-			processLog.saveToDatabase(dbConn, logger);
-		}
-	}
-
-	private void cleanupReadingHistory(Connection dbConn, Logger logger, CronProcessLogEntry processLog) {
-		//Remove reading history entries that are duplicate based on being renewed
-		//Get a list of duplicate titles
-		try {
-			//Add a filter so that we are looking at 1 week resolution rather than exact.
-			PreparedStatement duplicateRecordsToPreserveStmt = dbConn.prepareStatement("SELECT COUNT(id) as numRecords, userId, groupedWorkPermanentId, source, sourceId, FLOOR(checkOutDate/604800) as checkoutWeek , MIN(id) as idToPreserve FROM user_reading_history_work where deleted = 0 GROUP BY userId, groupedWorkPermanentId, FLOOR(checkOutDate/604800) having numRecords > 1", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			PreparedStatement deleteDuplicateRecordStmt = dbConn.prepareStatement("UPDATE user_reading_history_work SET deleted = 1 WHERE userId = ? AND groupedWorkPermanentId = ? AND FLOOR(checkOutDate/604800) = ? AND id != ?");
-			ResultSet duplicateRecordsRS = duplicateRecordsToPreserveStmt.executeQuery();
-			int numDuplicateRecords = 0;
-			while (duplicateRecordsRS.next()){
-				deleteDuplicateRecordStmt.setLong(1, duplicateRecordsRS.getLong("userId"));
-				deleteDuplicateRecordStmt.setString(2, duplicateRecordsRS.getString("groupedWorkPermanentId"));
-				deleteDuplicateRecordStmt.setLong(3, duplicateRecordsRS.getLong("checkoutWeek"));
-				deleteDuplicateRecordStmt.setLong(4, duplicateRecordsRS.getLong("idToPreserve"));
-				deleteDuplicateRecordStmt.executeUpdate();
-
-				//int numDeletions = deleteDuplicateRecordStmt.executeUpdate();
-				/*if (numDeletions == 0){
-					//This happens if the items have already been marked as deleted
-					logger.debug("Warning did not delete any records for user " + duplicateRecordsRS.getLong("userId"));
-				}*/
-				numDuplicateRecords++;
-			}
-			processLog.addNote("Removed " + numDuplicateRecords + " records that were duplicates (check 1)");
-
-			//Now look for additional duplicates where the check in date is within a week
-			duplicateRecordsToPreserveStmt = dbConn.prepareStatement("SELECT COUNT(id) as numRecords, userId, groupedWorkPermanentId, source, sourceId, FLOOR(checkInDate/604800) checkInWeek, MIN(id) as idToPreserve FROM user_reading_history_work where deleted = 0 GROUP BY userId, groupedWorkPermanentId, FLOOR(checkInDate/604800) having numRecords > 1", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			deleteDuplicateRecordStmt = dbConn.prepareStatement("UPDATE user_reading_history_work SET deleted = 1 WHERE userId = ? AND groupedWorkPermanentId = ? AND FLOOR(checkInDate/604800) = ? AND id != ?");
-			duplicateRecordsRS = duplicateRecordsToPreserveStmt.executeQuery();
-			numDuplicateRecords = 0;
-			while (duplicateRecordsRS.next()){
-				deleteDuplicateRecordStmt.setLong(1, duplicateRecordsRS.getLong("userId"));
-				deleteDuplicateRecordStmt.setString(2, duplicateRecordsRS.getString("groupedWorkPermanentId"));
-				deleteDuplicateRecordStmt.setLong(3, duplicateRecordsRS.getLong("checkInWeek"));
-				deleteDuplicateRecordStmt.setLong(4, duplicateRecordsRS.getLong("idToPreserve"));
-				deleteDuplicateRecordStmt.executeUpdate();
-
-				//int numDeletions = deleteDuplicateRecordStmt.executeUpdate();
-				/*if (numDeletions == 0){
-					//This happens if the items have already been marked as deleted
-					logger.debug("Warning did not delete any records for user " + duplicateRecordsRS.getLong("userId"));
-				}*/
-				numDuplicateRecords++;
-			}
-			processLog.addNote("Removed " + numDuplicateRecords + " records that were duplicates (check 2)");
-		} catch (SQLException e) {
-			processLog.incErrors();
-			processLog.addNote("Unable to delete duplicate reading history entries. " + e.toString());
-			logger.error("Error deleting duplicate reading history entries", e);
-			processLog.saveToDatabase(dbConn, logger);
-		}
-
-		//Remove invalid reading history entries
-		try{
-			PreparedStatement removeInvalidReadingHistoryEntriesStmt = dbConn.prepareStatement("DELETE FROM user_reading_history_work WHERE groupedWorkPermanentId = 'L'");
-			int numUpdates = removeInvalidReadingHistoryEntriesStmt.executeUpdate();
-			processLog.addNote("Removed " + numUpdates + " invalid reading history entries");
-			processLog.incUpdated();
-
-		} catch (Exception e){
-			processLog.incErrors();
-			processLog.addNote("Error removing invalid reading history entriee. " + e.toString());
-			logger.error("Error removing invalid reading history entriee", e);
 			processLog.saveToDatabase(dbConn, logger);
 		}
 	}

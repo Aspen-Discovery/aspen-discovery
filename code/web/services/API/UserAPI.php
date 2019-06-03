@@ -17,15 +17,15 @@ class UserAPI extends Action {
 	 */
 	function launch()
 	{
-		//header('Content-type: application/json');
-		header('Content-type: text/html');
+		header('Content-type: application/json');
+		//header('Content-type: text/html');
 		header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
 
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
 		if (method_exists($this, $method)) {
 			try{
-				$result = $this->$_REQUEST['method']();
+				$result = $this->$method();
 				require_once ROOT_DIR . '/sys/Utils/ArrayUtils.php';
 				$utf8EncodedValue = ArrayUtils::utf8EncodeArray(array('result'=>$result));
 				$output = json_encode($utf8EncodedValue);

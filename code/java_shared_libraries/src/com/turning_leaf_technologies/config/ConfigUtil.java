@@ -80,7 +80,11 @@ public class ConfigUtil {
         if (value == null) {
             return null;
         }
+        if (value.lastIndexOf(';') > 0){
+            value = value.substring(0, value.lastIndexOf(';'));
+        }
         value = value.trim();
+
         if (value.startsWith("\"")) {
             value = value.substring(1);
         }

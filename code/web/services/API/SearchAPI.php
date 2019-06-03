@@ -318,7 +318,6 @@ class SearchAPI extends Action {
 
 	/**
 	 * Retrieve the top 20 search terms by popularity from the search_stats table
-	 * Enter description here ...
 	 */
 	function getTopSearches(){
 		require_once(ROOT_DIR . '/Drivers/marmot_inc/SearchStatNew.php');

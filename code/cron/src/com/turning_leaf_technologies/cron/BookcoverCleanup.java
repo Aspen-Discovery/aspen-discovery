@@ -9,7 +9,7 @@ import org.ini4j.Ini;
 import org.ini4j.Profile.Section;
 
 @SuppressWarnings("unused")
-public class BookcoverCleanup implements IProcessHandler {
+public class BookCoverCleanup implements IProcessHandler {
 	public void doCronProcess(String servername, Ini configIni, Section processSettings, Connection dbConn, CronLogEntry cronEntry, Logger logger) {
 		CronProcessLogEntry processLog = new CronProcessLogEntry(cronEntry.getLogEntryId(), "Bookcover Cleanup");
 		processLog.saveToDatabase(dbConn, logger);
@@ -17,6 +17,11 @@ public class BookcoverCleanup implements IProcessHandler {
 		String coverPath = configIni.get("Site", "coverPath");
 		String[] coverPaths = new String[] { "/small", "/medium", "/large" };
 		long currentTime = new Date().getTime();
+
+		//TODO: Get a smarter list of covers to remove
+		//Any default covers created more than a week ago
+		//Any non default covers accessed more than 2 weeks ago
+		//Any non default covers accessed created more than 4 weeks ago
 
 		for (String path : coverPaths) {
 			int numFilesDeleted = 0;
