@@ -1798,6 +1798,18 @@ class DBMaintenance extends Admin_Admin {
 						'ALTER TABLE slow_ajax_request add column timesVerySlow INT(11)', //More than 4 seconds
 					]
 				],
+
+				'memory_table' => [
+					'title' => 'cached_values in Memory',
+					'description' => 'Memory table for cross platform caching',
+					'sql' => [
+						'CREATE TABLE IF NOT EXISTS cached_values(
+    						cacheKey VARCHAR(200) NOT NULL, 
+    						value VARCHAR(1024),
+    						expirationTime INT(11)
+    						) ENGINE = MEMORY;',
+					],
+				],
 			)
 		);
 	}

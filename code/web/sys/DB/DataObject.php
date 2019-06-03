@@ -427,4 +427,16 @@ abstract class DataObject
 		}
 		return $where;
 	}
+
+	public function __sleep()
+	{
+		$propertiesToSerialize = [];
+		$properties = get_object_vars($this);
+		foreach ($properties as $name => $value) {
+			if ($value != null && $name[0] != '_') {
+				$propertiesToSerialize[] = $name;
+			}
+		}
+		return $propertiesToSerialize;
+	}
 }
