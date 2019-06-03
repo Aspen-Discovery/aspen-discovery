@@ -195,7 +195,7 @@ public class KohaExportMain {
 			}
 
 		}
-		throw new SQLException("Unable to connect to the Koha database");
+		return null;
 	}
 
 	private static void updateTranslationMaps(Connection dbConn, Connection kohaConn) {
@@ -522,23 +522,8 @@ public class KohaExportMain {
 			int numProcessed = 0;
 			for (String curBibId : changedBibIds){
 				//Update the marc record
-				int retry = 0;
-				while (retry < 3) {
-					try {
-						updateBibRecord(curBibId);
-						break;
-					} catch (Exception e){
-						//If we get an error, the Koha database went away, pause for 15 seconds and then reconnect
-						Thread.sleep(15000);
-						kohaConn = connectToKoha();
-						retry++;
-						logger.error("Koha database went away, trying to reconnect and reprocess", e);
-					}
-				}
-				if (retry > 3){
-					//Quit and live to extract another day, but make sure not to update the last extract time
-					return numProcessed;
-				}
+				updateBibRecord(curBibId);
+
 				numProcessed++;
 				if (numProcessed % 250 == 0){
 					logEntry.saveResults();
@@ -685,7 +670,9 @@ public class KohaExportMain {
 			}
 
 		}catch (Exception e) {
-			if (e instanceof com.mysql.cj.jdbc.exceptions.CommunicationsException){
+			if (e instanceof com.mysql.cj.jdbc.exceptions.CommunicationsException) {
+				throw e;
+			}else if (e instanceof com.mysql.cj.exceptions.StatementIsClosedException){
 				throw e;
 			}else if (e instanceof SQLException && ((SQLException) e).getSQLState().equals("S1009")) {
 				throw e;
