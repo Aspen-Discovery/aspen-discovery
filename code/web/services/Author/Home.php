@@ -290,9 +290,6 @@ class Author_Home extends Action
 			}
 		}
 
-		// Setup Display
-		$interface->assign('sitepath', $configArray['Site']['path']);
-
 		// Process Paging
 		$link = $searchObject->renderLinkPageTemplate();
 		$options = array('totalItems' => $summary['resultTotal'],

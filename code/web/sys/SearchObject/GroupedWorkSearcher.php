@@ -747,15 +747,26 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
                 break;
         }
 
-        if (isset($_REQUEST['searchIndex'])) {
-            if ($_REQUEST['searchIndex'] == 'AllFields'){
-                $_REQUEST['searchIndex'] = 'Keyword';
-            }
-            if (is_array($_REQUEST['searchIndex'])){
-                $_REQUEST['searchIndex'] = reset($_REQUEST['searchIndex']);
-            }
-            $params[] = 'searchIndex=' . $_REQUEST['searchIndex'];
+        //Only use the request search index if we don't have a search index set alread
+		$searchIndexSet = false;
+        foreach ($params as $param){
+        	if (strpos($param, 'searchIndex') == 0){
+		        $searchIndexSet = true;
+		        break;
+	        }
         }
+        if (!$searchIndexSet){
+	        if (isset($_REQUEST['searchIndex'])) {
+		        if ($_REQUEST['searchIndex'] == 'AllFields'){
+			        $_REQUEST['searchIndex'] = 'Keyword';
+		        }
+		        if (is_array($_REQUEST['searchIndex'])){
+			        $_REQUEST['searchIndex'] = reset($_REQUEST['searchIndex']);
+		        }
+		        $params[] = 'searchIndex=' . $_REQUEST['searchIndex'];
+	        }
+        }
+
         return $params;
 	}
 

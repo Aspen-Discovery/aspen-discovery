@@ -82,10 +82,6 @@ class OpenArchives_Results extends Action {
         // 'Finish' the search... complete timers and log search history.
         $searchObject->close();
         $interface->assign('time', round($searchObject->getTotalSpeed(), 2));
-        // Show the save/unsave code on screen
-        // The ID won't exist until after the search has been put in the search history
-        //    so this needs to occur after the close() on the searchObject
-        $interface->assign('showSaved',   true);
         $interface->assign('savedSearch', $searchObject->isSavedSearch());
         $interface->assign('searchId',    $searchObject->getSearchId());
         $currentPage = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
@@ -93,7 +89,6 @@ class OpenArchives_Results extends Action {
 
         if ($searchObject->getResultTotal() < 1) {
             // No record found
-            $interface->assign('sitepath', $configArray['Site']['path']);
             $interface->assign('subpage', 'OpenArchives/list-none.tpl');
             $interface->setTemplate('list.tpl');
             $interface->assign('recordCount', 0);
@@ -148,7 +143,6 @@ class OpenArchives_Results extends Action {
             $timer->logTime('load result records');
 
             // Setup Display
-            $interface->assign('sitepath', $configArray['Site']['path']);
             if ($displayMode == 'covers') {
                 $displayTemplate = 'OpenArchives/covers-list.tpl'; // structure for bookcover tiles
             }else{

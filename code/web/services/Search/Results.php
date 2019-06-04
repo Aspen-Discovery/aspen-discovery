@@ -217,10 +217,6 @@ class Search_Results extends Action {
 		// 'Finish' the search... complete timers and log search history.
 		$searchObject->close();
 		$interface->assign('time', round($searchObject->getTotalSpeed(), 2));
-		// Show the save/unsave code on screen
-		// The ID won't exist until after the search has been put in the search history
-		//    so this needs to occur after the close() on the searchObject
-		$interface->assign('showSaved',   true);
 		$interface->assign('savedSearch', $searchObject->isSavedSearch());
 		$interface->assign('searchId',    $searchObject->getSearchId());
 		$currentPage = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
@@ -286,6 +282,24 @@ class Search_Results extends Action {
                 $interface->assign('searchSuggestions', $allSuggestions);
             }
 
+            //Check to see if we are not using a Keyword search and the Keyword search would provide results
+            if (!$searchObject->isAdvanced()){
+	            $searchTerms = $searchObject->getSearchTerms();
+	            if (count($searchTerms) == 1 && $searchTerms[0]['index'] != 'Keyword'){
+		            $keywordSearchObject = clone $searchObject;
+		            $keywordSearchObject->setSearchTerms(['index'=>'Keyword','lookfor'=>$searchTerms[0]['lookfor']]);
+		            $keywordSearchObject->disableSpelling();
+		            $keywordSearchObject->clearFacets();
+		            $keywordSearchObject->processSearch(false, false, false);
+		            if ($keywordSearchObject->getResultTotal() > 0){
+		            	$interface->assign('keywordResultsLink', $keywordSearchObject->renderSearchUrl());
+			            $interface->assign('keywordResultsCount', $keywordSearchObject->getResultTotal());
+		            }
+	            }
+
+
+            }
+
 			// No record found
 			$interface->assign('recordCount', 0);
 
@@ -321,9 +335,8 @@ class Search_Results extends Action {
 
 			$timer->logTime('no hits processing');
 
-		}
-		// Exactly One Result //
-		elseif ($searchObject->getResultTotal() == 1 && (strpos($searchObject->displayQuery(), 'id') === 0 || $searchObject->getSearchType() == 'id')){
+		} elseif ($searchObject->getResultTotal() == 1 && (strpos($searchObject->displayQuery(), 'id') === 0 || $searchObject->getSearchType() == 'id')){
+			// Exactly One Result //
 			//Redirect to the home page for the record
 			$recordSet = $searchObject->getResultRecordSet();
 			$record = reset($recordSet);
@@ -337,8 +350,7 @@ class Search_Results extends Action {
 				exit();
 			}
 
-		}
-		else {
+		} else {
 			$timer->logTime('save search');
 
 			// Assign interface variables
@@ -379,7 +391,7 @@ class Search_Results extends Action {
 			$displayMode = 'list'; // In case the view is not explicitly set, do so now for display & clients-side functions
 
 			// Process Paging (only in list mode)
-			if ($searchObject->getResultTotal() > 1) {
+			if ($searchObject->getResultTotal() > 1 && !empty($summary)) {
 				$link    = $searchObject->renderLinkPageTemplate();
 				$options = array('totalItems' => $summary['resultTotal'],
 				                 'fileName' => $link,

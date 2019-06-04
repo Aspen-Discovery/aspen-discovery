@@ -29,4 +29,3 @@ ListsAuthor:
     - author:
       - [exact, 600]
       - [and, 250]
-      - [or, ~]

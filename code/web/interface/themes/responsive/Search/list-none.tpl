@@ -38,6 +38,15 @@
 		</div>
 	{/if}
 
+	{if !empty($keywordResultsLink)}
+		<div class="correction">
+		<h3>Try a Keyword Search?</h3>
+			Your search type is not set to Keyword.  There are <strong>{$keywordResultsCount}</strong> results if you <a class='btn btn-xs btn-default' href="{$keywordResultsLink}">Search by Keyword</a>.
+
+
+		</div>
+	{/if}
+
 	{include file="Search/spellingSuggestions.tpl"}
 
 	{include file="Search/searchSuggestions.tpl"}

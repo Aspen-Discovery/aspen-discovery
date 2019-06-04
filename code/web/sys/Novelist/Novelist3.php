@@ -394,7 +394,7 @@ class Novelist3{
 
 		$novelistData->groupedRecordHasISBN = count($isbns) > 0;
 
-		//When loading full data, we aways need to load the data since we can't cache due to terms of sevice
+		//When loading full data, we aways need to load the data since we can't cache due to terms of service
 		if ($recordExists && $novelistData->primaryISBN != null && strlen($novelistData->primaryISBN) > 0){
 			//Just check the primary ISBN since we know that was good.
 			$isbns = array($novelistData->primaryISBN);
@@ -459,9 +459,9 @@ class Novelist3{
 		}//Check for number of ISBNs
 
 		if ($recordExists){
-			$ret = $novelistData->update();
+			$novelistData->update();
 		}else{
-			$ret = $novelistData->insert();
+			$novelistData->insert();
 		}
 
 		$memCache->set("novelist_similar_titles_$groupedRecordId", $novelistData, 0, $configArray['Caching']['novelist_enrichment']);
@@ -708,16 +708,21 @@ class Novelist3{
 	 * @param NovelistData $novelistData
 	 */
 	private function loadSeriesInfoFast($seriesData, &$novelistData){
+		/** @noinspection PhpUndefinedFieldInspection */
 		$seriesName = $seriesData->full_title;
+		/** @noinspection PhpUndefinedFieldInspection */
 		$items = $seriesData->series_titles;
 		foreach ($items as $item){
+			/** @noinspection PhpUndefinedFieldInspection */
 			if ($item->primary_isbn == $novelistData->primaryISBN){
+				/** @noinspection PhpUndefinedFieldInspection */
 				$volume = $item->volume;
 				$volume = preg_replace('/^0+/', '', $volume);
 				$novelistData->volume = $volume;
 			}
 		}
 		$novelistData->seriesTitle = $seriesName;
+		/** @noinspection PhpUndefinedFieldInspection */
 		$novelistData->seriesNote = $seriesData->series_note;
 		if (strlen($novelistData->seriesNote) > 255){
 			require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
@@ -796,7 +801,6 @@ class Novelist3{
 
 	private function loadNoveListTitles($currentId, $items, &$titleList, &$titlesOwned, $seriesName = ''){
 		global $timer;
-		global $configArray;
 		$timer->logTime("Start loadNoveListTitle");
 
 		/** @var SearchObject_GroupedWorkSearcher $searchObject */
@@ -885,7 +889,7 @@ class Novelist3{
 				if ($isInCatalog) break;
 			}
 			if ($isInCatalog){
-				$titleList = $this->addTitleToTitleList($currentId, $titleList, $seriesName, $titleFromCatalog, $titlesFromCatalog, $titleIndex, $item, $configArray, $index);
+				$titleList = $this->addTitleToTitleList($currentId, $titleList, $seriesName, $titleFromCatalog, $titlesFromCatalog, $titleIndex, $item, $index);
 			}
 		}
 
@@ -906,7 +910,7 @@ class Novelist3{
 				}
 
 				if ($isInCatalog) {
-					$titleList = $this->addTitleToTitleList($currentId, $titleList, $seriesName, $titleFromCatalog, $titlesFromCatalog, $titleIndex, $item, $configArray, $index);
+					$titleList = $this->addTitleToTitleList($currentId, $titleList, $seriesName, $titleFromCatalog, $titlesFromCatalog, $titleIndex, $item, $index);
 					unset($titlesFromCatalog[$titleIndex]);
 				}else{
 					$isbn = reset($item->isbns);
@@ -982,7 +986,7 @@ class Novelist3{
 	 * @param $index
 	 * @return array titleList
 	 */
-	private function addTitleToTitleList($currentId, &$titleList, $seriesName, $titleFromCatalog, &$titlesFromCatalog, $titleIndex, $item, $configArray, $index)
+	private function addTitleToTitleList($currentId, &$titleList, $seriesName, $titleFromCatalog, &$titlesFromCatalog, $titleIndex, $item, $index)
 	{
 
 		$curTitle = $titleFromCatalog;

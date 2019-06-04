@@ -250,10 +250,6 @@ class SearchAPI extends Action {
 		// Will assign null for an advanced search
 		$jsonResults['searchIndex'] =         $searchObject->getSearchIndex();
 		$jsonResults['time'] = round($searchObject->getTotalSpeed(), 2);
-		// Show the save status on screen
-		// The ID won't exist until after the search has been put in the search history
-		//    so this needs to occur after the close() on the searchObject
-		$jsonResults['showSaved'] =   true;
 		$jsonResults['savedSearch'] = $searchObject->isSavedSearch();
 		$jsonResults['searchId'] =    $searchObject->getSearchId();
 		$currentPage = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
