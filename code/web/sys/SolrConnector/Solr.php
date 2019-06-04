@@ -1061,7 +1061,7 @@ abstract class Solr {
 		global $timer;
 		global $configArray;
 		// Query String Parameters
-		$options = array('q' => $query, 'rows' => $limit, 'start' => $start, 'indent' => 'yes');
+		$options = array('q' => $query, 'q.op' => 'AND', 'rows' => $limit, 'start' => $start, 'indent' => 'yes');
 
 		// Add Sorting
 		if ($sort && !empty($sort)) {

@@ -253,11 +253,9 @@ Series:
     - series:
       - [onephrase, 500]
       - [and, 100]
-      - [or, 50]
     - series2:
       - [onephrase, 50]
       - [and, 50]
-      - [or, ~]
 
 SeriesProper:
   QueryFields:
