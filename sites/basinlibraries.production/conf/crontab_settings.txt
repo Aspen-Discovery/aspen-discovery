@@ -51,4 +51,4 @@
 26 0 * * * cd /tmp; rm -rf CURLCOOKIE*
 
 # CRON for Aspen (book cover cache cleanup etc.)
-00 20 * * * cd /usr/local/VuFind-Plus/code/cron; java -jar cron.jar basinlibraries.production
+00 20 * * * cd /usr/local/aspen-discovery/code/cron; java -jar cron.jar basinlibraries.production
