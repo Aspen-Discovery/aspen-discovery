@@ -65,7 +65,7 @@ class Grouping_Item
 
         $this->shelfLocation = $itemDetails[2];
         $this->callNumber = $itemDetails[3];
-        $this->numCopies = $itemDetails[6];
+        $this->numCopies = is_numeric($itemDetails[6]) ? $itemDetails[6] : 0;
         $this->isOrderItem = $itemDetails[7] == 'true';
         $this->isEContent = $itemDetails[8] == 'true';
 
