@@ -78,7 +78,7 @@ class AspenError
 
         $interface->assign('error', $this);
         $interface->assign('debug', $configArray['System']['debug']);
-        $interface->setTemplate('../error.tpl');
+        $interface->setTemplate('error.tpl');
         $interface->display('layout.tpl');
 
         // Exceptions we don't want to log
