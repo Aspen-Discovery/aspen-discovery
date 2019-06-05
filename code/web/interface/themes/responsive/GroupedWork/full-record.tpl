@@ -47,8 +47,11 @@
 					<div class="series row">
 						<div class="result-label col-tn-3">{translate text='Series'}:</div>
 						<div class="col-tn-9 result-value">
-							{if $series}
-								<a href="{$path}/GroupedWork/{$recordDriver->getPermanentId()}/Series">{$series.seriesTitle}</a>{if $series.volume} volume {$series.volume}{/if}<br/>
+							{assign var=summSeries value=$recordDriver->getSeries()}
+							{if $summSeries.fromNovelist}
+								<a href="{$path}/GroupedWork/{$recordDriver->getPermanentId()}/Series">{$summSeries.seriesTitle}</a>{if $summSeries.volume} volume {$summSeries.volume}{/if}
+							{else}
+								<a href="{$path}/Search/Results?searchIndex=Series&lookfor={$summSeries.seriesTitle}">{$summSeries.seriesTitle}</a>{if $summSeries.volume} volume {$summSeries.volume}{/if}
 							{/if}
 							{if $indexedSeries}
 								{if count($indexedSeries) >= 5}

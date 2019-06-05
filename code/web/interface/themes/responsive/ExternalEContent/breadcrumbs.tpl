@@ -4,6 +4,3 @@
 {if $breadcrumbText}
 <em>{$breadcrumbText|truncate:30:"..."|escape}</em> <span class="divider">&raquo;</span>
 {/if}
-{if $subTemplate!=""}
-<em>{$subTemplate|replace:'view-':''|replace:'.tpl':''|replace:'../MyResearch/':''|capitalize|translate}</em> 
-{/if}
