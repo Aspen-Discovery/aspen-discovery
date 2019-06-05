@@ -987,6 +987,7 @@ class GroupedWorkDriver extends IndexRecordDriver{
         }else{
             $additionalIsbns =  array();
         }
+        //This makes sure that the primary ISBN is first
         $additionalIsbns = array_remove_by_value($additionalIsbns, $primaryIsbn);
         $isbns = array_merge($isbns, $additionalIsbns);
         return $isbns;
@@ -1724,29 +1725,33 @@ class GroupedWorkDriver extends IndexRecordDriver{
         return $relatedWorkExamples;
     }
 
+    private $seriesData;
     public function getSeries($allowReload = true){
-        //Get a list of isbns from the record
-        $relatedIsbns = $this->getISBNs();
-        $novelist = NovelistFactory::getNovelist();
-        $novelistData = $novelist->loadBasicEnrichment($this->getPermanentId(), $relatedIsbns, $allowReload);
-        if ($novelistData != null && isset($novelistData->seriesTitle)){
-            return array(
-                'seriesTitle' => $novelistData->seriesTitle,
-                'volume' => $novelistData->volume,
-                'fromNovelist' => true,
-            );
-        } else {
-            $seriesFromIndex = $this->getIndexedSeries();
-            if ($seriesFromIndex != null && count($seriesFromIndex) > 0){
-                $firstSeries = $seriesFromIndex[0];
-                return array(
-                    'seriesTitle' => $firstSeries['seriesTitle'],
-                    'volume' => isset($firstSeries['volume']) ? $firstSeries['volume'] : '',
-                    'fromNovelist' => false,
-                );
-            }
-            return null;
-        }
+    	if (empty($this->seriesData)){
+		    //Get a list of isbns from the record
+		    $relatedIsbns = $this->getISBNs();
+		    $novelist = NovelistFactory::getNovelist();
+		    $novelistData = $novelist->loadBasicEnrichment($this->getPermanentId(), $relatedIsbns, $allowReload);
+		    if ($novelistData != null && isset($novelistData->seriesTitle)){
+			    $this->seriesData = array(
+				    'seriesTitle' => $novelistData->seriesTitle,
+				    'volume' => $novelistData->volume,
+				    'fromNovelist' => true,
+			    );
+		    } else {
+			    $seriesFromIndex = $this->getIndexedSeries();
+			    if ($seriesFromIndex != null && count($seriesFromIndex) > 0){
+				    $firstSeries = $seriesFromIndex[0];
+				    $this->seriesData = array(
+					    'seriesTitle' => $firstSeries['seriesTitle'],
+					    'volume' => isset($firstSeries['volume']) ? $firstSeries['volume'] : '',
+					    'fromNovelist' => false,
+				    );
+			    }
+			    return null;
+		    }
+	    }
+        return $this->seriesData;
     }
 
     public function getShortTitle($useHighlighting = false) {

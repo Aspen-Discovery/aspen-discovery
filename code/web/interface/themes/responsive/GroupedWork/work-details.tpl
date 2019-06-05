@@ -13,7 +13,11 @@
 				<div class="result-label col-md-3">Series: </div>
 				<div class="col-md-9 result-value">
 					{assign var=summSeries value=$recordDriver->getSeries(false)}
-					<a href="/GroupedWork/{$recordDriver->getPermanentId()}/Series">{$summSeries.seriesTitle}</a>{if $summSeries.volume} volume {$summSeries.volume}{/if}
+					{if $summSeries.fromNovelist}
+						<a href="{$path}/GroupedWork/{$recordDriver->getPermanentId()}/Series">{$summSeries.seriesTitle}</a>{if $summSeries.volume} volume {$summSeries.volume}{/if}
+					{else}
+						<a href="{$path}/Search/Results?searchIndex=Series&lookfor={$summSeries.seriesTitle}">{$summSeries.seriesTitle}</a>{if $summSeries.volume} volume {$summSeries.volume}{/if}
+					{/if}
 				</div>
 			</div>
 		{/if}

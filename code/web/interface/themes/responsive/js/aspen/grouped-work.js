@@ -91,36 +91,36 @@ AspenDiscovery.GroupedWork = (function(){
 		},
 
 		loadEnrichmentInfo: function (id, forceReload) {
-			var url = Globals.path + "/GroupedWork/" + encodeURIComponent(id) + "/AJAX",
+			let url = Globals.path + "/GroupedWork/" + encodeURIComponent(id) + "/AJAX",
 					params = {'method':'getEnrichmentInfo'};
 			if (forceReload != undefined){
 				params['reload'] = true;
 			}
 			$.getJSON(url, params, function(data) {
 					try{
-						var seriesData = data.seriesInfo;
+						let seriesData = data.seriesInfo;
 						if (seriesData && seriesData.titles.length > 0) {
-							seriesScroller = new TitleScroller('titleScrollerSeries', 'Series', 'seriesList');
+							let seriesScroller = new TitleScroller('titleScrollerSeries', 'Series', 'seriesList');
 							$('#seriesInfo').show();
 							seriesScroller.loadTitlesFromJsonData(seriesData);
 							$('#seriesPanel').show();
 						}else{
 							$('#seriesPanel').hide();
 						}
-						var similarTitleData = data.similarTitles;
+						let similarTitleData = data.similarTitles;
 						if (similarTitleData && similarTitleData.titles.length > 0) {
-							morelikethisScroller = new TitleScroller('titleScrollerMoreLikeThis', 'MoreLikeThis', 'morelikethisList');
+							let morelikethisScroller = new TitleScroller('titleScrollerMoreLikeThis', 'MoreLikeThis', 'morelikethisList');
 							$('#moreLikeThisInfo').show();
 							morelikethisScroller.loadTitlesFromJsonData(similarTitleData);
 						}else{
 							$('#moreLikeThisPanel').hide();
 						}
-						var showGoDeeperData = data.showGoDeeper;
+						let showGoDeeperData = data.showGoDeeper;
 						if (showGoDeeperData) {
 							//$('#goDeeperLink').show();
-							var goDeeperOptions = data.goDeeperOptions;
+							let goDeeperOptions = data.goDeeperOptions;
 							//add a tab before citation for each item
-							for (var option in goDeeperOptions){
+							for (let option in goDeeperOptions){
 								if (option == 'excerpt') {
 									$("#excerptPanel").show();
 								} else if (option == 'avSummary') {
@@ -135,20 +135,20 @@ AspenDiscovery.GroupedWork = (function(){
 						if (AspenDiscovery.GroupedWork.hasTableOfContentsInRecord){
 							$("#tableofcontentstab_label,#tableOfContentsPlaceholder,#tableOfContentsPanel").show();
 						}
-						var similarTitlesNovelist = data.similarTitlesNovelist;
+						let similarTitlesNovelist = data.similarTitlesNovelist;
 						if (similarTitlesNovelist && similarTitlesNovelist.length > 0){
 							$("#novelistTitlesPlaceholder").html(similarTitlesNovelist);
 							$("#novelistTab_label,#similarTitlesPanel").show()
 									;
 						}
 
-						var similarAuthorsNovelist = data.similarAuthorsNovelist;
+						let similarAuthorsNovelist = data.similarAuthorsNovelist;
 						if (similarAuthorsNovelist && similarAuthorsNovelist.length > 0){
 							$("#novelistAuthorsPlaceholder").html(similarAuthorsNovelist);
 							$("#novelistTab_label,#similarAuthorsPanel").show();
 						}
 
-						var similarSeriesNovelist = data.similarSeriesNovelist;
+						let similarSeriesNovelist = data.similarSeriesNovelist;
 						if (similarSeriesNovelist && similarSeriesNovelist.length > 0){
 							$("#novelistSeriesPlaceholder").html(similarSeriesNovelist);
 							$("#novelistTab_label,#similarSeriesPanel").show();

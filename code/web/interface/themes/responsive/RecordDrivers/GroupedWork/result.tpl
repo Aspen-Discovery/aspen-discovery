@@ -60,7 +60,11 @@
 							<div class="result-label col-tn-3">Series: </div>
 							<div class="result-value col-tn-8">
 								{if $summSeries}
-									<a href="{$path}/GroupedWork/{$summId}/Series">{$summSeries.seriesTitle}</a>{if $summSeries.volume} volume {$summSeries.volume}{/if}<br>
+									{if $summSeries.fromNovelist}
+										<a href="{$path}/GroupedWork/{$summId}/Series">{$summSeries.seriesTitle}</a>{if $summSeries.volume} volume {$summSeries.volume}{/if}<br>
+									{else}
+										<a href="{$path}/Search/Results?searchIndex=Series&lookfor={$summSeries.seriesTitle}">{$summSeries.seriesTitle}</a>{if $summSeries.volume} volume {$summSeries.volume}{/if}
+									{/if}
 								{/if}
 								{if $indexedSeries}
 									{assign var=showMoreSeries value=false}

@@ -62,7 +62,11 @@
 						<a href="{$path}/Search/Results?searchIndex=Series&lookfor=%22{$seriesItem.seriesTitle|removeTrailingPunctuation|escape:"url"}%22">{$seriesItem.seriesTitle|removeTrailingPunctuation|escape}</a>{if $seriesItem.volume} volume {$seriesItem.volume}{/if}<br/>
 					{/foreach}
 				{else}
-					<a href="{$path}/Search/Results?searchIndex=Series&lookfor=%22{$series.seriesTitle|removeTrailingPunctuation|escape:"url"}%22">{$series.seriesTitle|removeTrailingPunctuation|escape}</a>{if $series.volume} volume {$series.volume}{/if}<br/>
+					{if $series.fromNovelist}
+						<a href="{$path}/GroupedWork/{$recordDriver->getPermanentId()}/Series">{$series.seriesTitle}</a>{if $series.volume} volume {$series.volume}{/if}<br>
+					{else}
+						<a href="{$path}/Search/Results?searchIndex=Series&lookfor={$series.seriesTitle}">{$series.seriesTitle}</a>{if $series.volume} volume {$series.volume}{/if}
+					{/if}
 				{/if}
 			</div>
 		</div>
