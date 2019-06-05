@@ -27,6 +27,15 @@ function getUserUpdates(){
 			),
 		),
 
+		'user_phone_length' => array(
+			'title' => 'Increase User phone length',
+			'description' => 'Increase length of the user phone',
+			'continueOnError' => true,
+			'sql' => array(
+				"ALTER TABLE user CHANGE COLUMN phone phone VARCHAR(190) NOT NULL DEFAULT ''",
+			),
+		),
+
 		'user_ilsType' => array(
 			'title' => 'User Type',
 			'description' => 'Add patronType field to User table to allow for functionality to be controlled based on the type of patron within the ils',
