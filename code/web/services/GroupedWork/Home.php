@@ -60,6 +60,4 @@ class GroupedWork_Home extends Action{
 		// Display Page
 		$this->display('full-record.tpl', $recordDriver->getTitle());
 	}
-
-
 }

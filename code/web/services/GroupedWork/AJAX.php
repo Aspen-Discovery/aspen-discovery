@@ -590,7 +590,6 @@ class GroupedWork_AJAX {
 	function sendEmail()
 	{
 		global $interface;
-		global $configArray;
 
 		$to = strip_tags($_REQUEST['to']);
 		$from = strip_tags($_REQUEST['from']);

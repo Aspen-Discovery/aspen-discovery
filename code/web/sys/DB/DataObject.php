@@ -433,7 +433,7 @@ abstract class DataObject
 		$propertiesToSerialize = [];
 		$properties = get_object_vars($this);
 		foreach ($properties as $name => $value) {
-			if ($value != null && $name[0] != '_') {
+			if ($value != null && strpos($name, '__') === false && $name != 'N') {
 				$propertiesToSerialize[] = $name;
 			}
 		}

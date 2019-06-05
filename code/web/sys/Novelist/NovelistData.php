@@ -14,24 +14,24 @@ class NovelistData extends DataObject{
     public $volume;
 
     /** @var array */
-	private $_seriesTitles = [];
+	protected $_seriesTitles = [];
     /** @var int */
-	private $_seriesDefaultIndex;
+	protected $_seriesDefaultIndex;
 	/** @var int */
-	private $_seriesCount;
+	protected $_seriesCount;
     /** @var int */
-	private $_seriesCountOwned;
+	protected $_seriesCountOwned;
 
 	/** @var int */
-    private $_similarTitleCountOwned;
+	protected $_similarTitleCountOwned;
     /** @var array */
-    private $_similarTitles;
+	protected $_similarTitles;
 
     /** @var array */
-    private $_authors;
+	protected $_authors;
 
     /** @var array */
-    private $_similarSeries;
+	protected $_similarSeries;
 
 	public $__table = 'novelist_data';
 	public function getNumericColumnNames()
