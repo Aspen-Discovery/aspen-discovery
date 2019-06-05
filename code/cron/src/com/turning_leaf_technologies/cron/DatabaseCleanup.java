@@ -25,9 +25,31 @@ public class DatabaseCleanup implements IProcessHandler {
 		removeLongSearches(dbConn, logger, processLog);
 		removeOldMaterialsRequests(dbConn, logger, processLog);
 		removeUserDataForDeletedUsers(dbConn, logger, processLog);
+		removeOldCachedObjects(dbConn, logger, processLog);
 
 		processLog.setFinished();
 		processLog.saveToDatabase(dbConn, logger);
+	}
+
+	private void removeOldCachedObjects(Connection dbConn, Logger logger, CronProcessLogEntry processLog) {
+		//Remove long searches
+		try {
+			long now = new Date().getTime() / 1000;
+			PreparedStatement removeOldCachedObjectsStmt = dbConn.prepareStatement("DELETE from cached_values where expirationTime <= ?");
+			removeOldCachedObjectsStmt.setLong(1, now);
+
+			int rowsRemoved = removeOldCachedObjectsStmt.executeUpdate();
+
+			processLog.addNote("Removed " + rowsRemoved + " long searches");
+			processLog.incUpdated();
+
+			processLog.saveToDatabase(dbConn, logger);
+		} catch (SQLException e) {
+			processLog.incErrors();
+			processLog.addNote("Unable to delete old cached objects. " + e.toString());
+			logger.error("Error deleting old cached objects", e);
+			processLog.saveToDatabase(dbConn, logger);
+		}
 	}
 
 	private void removeUserDataForDeletedUsers(Connection dbConn, Logger logger, CronProcessLogEntry processLog) {
