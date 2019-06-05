@@ -12,6 +12,7 @@
 					<th>Slow<br>&lt; 2sec</th>
 					<th>Slower<br>&lt; 4sec</th>
 					<th>Very Slow<br>&gt;= 4sec</th>
+					<th>Total</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -44,6 +45,7 @@
 								{if empty($slowPage.this_month_very_slow)}0{else}{$slowPage.this_month_very_slow}{/if} / {if empty($slowPage.last_month_very_slow)}0{else}{$slowPage.last_month_very_slow}{/if}
 							{if $slowPage.average == 5}</strong>{/if}
 						</td>
+						<td>{if empty($slowPage.total)}0{else}{$slowPage.total}{/if}</td>
 					</tr>
 				{/foreach}
 			</tbody>
@@ -61,6 +63,7 @@
 					<th>Slow<br>&lt; 2sec</th>
 					<th>Slower<br>&lt; 4sec</th>
 					<th>Very Slow<br>&gt;= 4sec</th>
+					<th>Total</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -71,29 +74,30 @@
 					<td>{$slowRequest.method}</td>
 					<td {if $slowRequest.average == 1}style="background-color: lightseagreen"{/if}>
 						{if $slowRequest.average == 1}<strong>{/if}
-							{if empty($slowRequest.this_month_fast)}0{else}{$slowRequest.this_month_fast}{/if} / {if empty($slowRequest.last_month_fast)}0{else}{$slowRequest.last_month_fast}{/if}
-							{if $slowRequest.average == 1}</strong>{/if}
+						{if empty($slowRequest.this_month_fast)}0{else}{$slowRequest.this_month_fast}{/if} / {if empty($slowRequest.last_month_fast)}0{else}{$slowRequest.last_month_fast}{/if}
+						{if $slowRequest.average == 1}</strong>{/if}
 					</td>
 					<td {if $slowRequest.average == 2}style="background-color: lightgreen"{/if}>
 						{if $slowRequest.average == 2}<strong>{/if}
-							{if empty($slowRequest.this_month_acceptable)}0{else}{$slowRequest.this_month_acceptable}{/if} / {if empty($slowRequest.last_month_acceptable)}0{else}{$slowRequest.last_month_acceptable}{/if}
-							{if $slowRequest.average == 2}</strong>{/if}
+						{if empty($slowRequest.this_month_acceptable)}0{else}{$slowRequest.this_month_acceptable}{/if} / {if empty($slowRequest.last_month_acceptable)}0{else}{$slowRequest.last_month_acceptable}{/if}
+						{if $slowRequest.average == 2}</strong>{/if}
 					</td>
 					<td {if $slowRequest.average == 3}style="background-color: lightgoldenrodyellow"{/if}>
 						{if $slowRequest.average == 3}<strong>{/if}
-							{if empty($slowRequest.this_month_slow)}0{else}{$slowRequest.this_month_slow}{/if} / {if empty($slowRequest.last_month_slow)}0{else}{$slowRequest.last_month_slow}{/if}
-							{if $slowRequest.average == 3}</strong>{/if}
+						{if empty($slowRequest.this_month_slow)}0{else}{$slowRequest.this_month_slow}{/if} / {if empty($slowRequest.last_month_slow)}0{else}{$slowRequest.last_month_slow}{/if}
+						{if $slowRequest.average == 3}</strong>{/if}
 					</td>
 					<td {if $slowRequest.average == 4}style="background-color: lightpink"{/if}>
 						{if $slowRequest.average == 4}<strong>{/if}
-							{if empty($slowRequest.this_month_slower)}0{else}{$slowRequest.this_month_slower}{/if} / {if empty($slowRequest.last_month_slower)}0{else}{$slowRequest.last_month_slower}{/if}
-							{if $slowRequest.average == 4}</strong>{/if}
+						{if empty($slowRequest.this_month_slower)}0{else}{$slowRequest.this_month_slower}{/if} / {if empty($slowRequest.last_month_slower)}0{else}{$slowRequest.last_month_slower}{/if}
+						{if $slowRequest.average == 4}</strong>{/if}
 					</td>
 					<td {if $slowRequest.average == 5}style="background-color: lightcoral"{/if}>
 						{if $slowRequest.average == 5}<strong>{/if}
-							{if empty($slowRequest.this_month_very_slow)}0{else}{$slowRequest.this_month_very_slow}{/if} / {if empty($slowRequest.last_month_very_slow)}0{else}{$slowRequest.last_month_very_slow}{/if}
-							{if $slowRequest.average == 5}</strong>{/if}
+						{if empty($slowRequest.this_month_very_slow)}0{else}{$slowRequest.this_month_very_slow}{/if} / {if empty($slowRequest.last_month_very_slow)}0{else}{$slowRequest.last_month_very_slow}{/if}
+						{if $slowRequest.average == 5}</strong>{/if}
 					</td>
+					<td>{if empty($slowRequest.total)}0{else}{$slowRequest.total}{/if}</td>
 				</tr>
 			{/foreach}
 			</tbody>

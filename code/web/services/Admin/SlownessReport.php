@@ -26,6 +26,7 @@ class Admin_SlownessReport extends Admin_Admin
 			$weightedCount = $slowPage['this_month_fast'] + $slowPage['this_month_acceptable'] * 2  + $slowPage['this_month_slow'] * 3 + $slowPage['this_month_slower'] * 4 + $slowPage['this_month_very_slow'] * 5;
 			$averageSlowness = round($weightedCount / $totalCount);
 			$slowPages[$key]['average'] = $averageSlowness;
+			$slowPages[$key]['total'] = $totalCount;
 		}
 		$slowPages = $this->getSlowPageStats($lastMonth, $lastMonthYear, 'last_month', $slowPages);
 		ksort($slowPages);
@@ -38,6 +39,7 @@ class Admin_SlownessReport extends Admin_Admin
 			$weightedCount = $slowRequest['this_month_fast'] + $slowRequest['this_month_acceptable'] * 2  + $slowRequest['this_month_slow'] * 3 + $slowRequest['this_month_slower'] * 4 + $slowRequest['this_month_very_slow'] * 5;
 			$averageSlowness = round($weightedCount / $totalCount);
 			$slowAsyncRequests[$key]['average'] = $averageSlowness;
+			$slowAsyncRequests[$key]['total'] = $totalCount;
 		}
 		$slowAsyncRequests = $this->getSlowAsyncRequestStats($lastMonth, $lastMonthYear, 'last_month', $slowAsyncRequests);
 		ksort($slowAsyncRequests);
