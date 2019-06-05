@@ -100,7 +100,7 @@ AspenDiscovery.GroupedWork = (function(){
 					try{
 						let seriesData = data.seriesInfo;
 						if (seriesData && seriesData.titles.length > 0) {
-							let seriesScroller = new TitleScroller('titleScrollerSeries', 'Series', 'seriesList');
+							seriesScroller = new TitleScroller('titleScrollerSeries', 'Series', 'seriesList');
 							$('#seriesInfo').show();
 							seriesScroller.loadTitlesFromJsonData(seriesData);
 							$('#seriesPanel').show();
@@ -109,7 +109,7 @@ AspenDiscovery.GroupedWork = (function(){
 						}
 						let similarTitleData = data.similarTitles;
 						if (similarTitleData && similarTitleData.titles.length > 0) {
-							let morelikethisScroller = new TitleScroller('titleScrollerMoreLikeThis', 'MoreLikeThis', 'morelikethisList');
+							morelikethisScroller = new TitleScroller('titleScrollerMoreLikeThis', 'MoreLikeThis', 'morelikethisList');
 							$('#moreLikeThisInfo').show();
 							morelikethisScroller.loadTitlesFromJsonData(similarTitleData);
 						}else{
