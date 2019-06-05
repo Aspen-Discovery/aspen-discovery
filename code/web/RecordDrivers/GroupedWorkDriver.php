@@ -1747,8 +1747,9 @@ class GroupedWorkDriver extends IndexRecordDriver{
 					    'volume' => isset($firstSeries['volume']) ? $firstSeries['volume'] : '',
 					    'fromNovelist' => false,
 				    );
+			    }else{
+				    return null;
 			    }
-			    return null;
 		    }
 	    }
         return $this->seriesData;
