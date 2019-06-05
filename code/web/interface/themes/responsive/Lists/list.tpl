@@ -21,9 +21,11 @@
 			{else}
 				No results found in {$sectionLabel}
 			{/if}
+			{if !$productionServer}
 			<span class="hidden-phone">
 			 {translate text='query time'}: {$qtime}s
 			</span>
+			{/if}
 		</div>
 
 		{if $replacementTerm}

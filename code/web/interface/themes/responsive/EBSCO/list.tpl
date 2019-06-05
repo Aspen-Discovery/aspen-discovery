@@ -14,9 +14,11 @@
 			{translate text='of'} <b>{$recordCount}</b>
 			{if $searchType == 'basic'}{translate text='for search'}: <b>'{$lookfor|escape:"html"}'</b>,{/if}
 		{/if}
+		{if !$productionServer}
 		<span class="hidden-phone">
 			,&nbsp;{translate text='query time'}: {$qtime}s
 		</span>
+		{/if}
 
 		<div class="clearer"></div>
 	</div>
