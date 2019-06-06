@@ -358,7 +358,11 @@ if ($action == "AJAX" || $action == "JSON" || $module == 'API'){
 	$isAJAX = true;
 	$interface->assign('showTopSearchBox', 0);
 	$interface->assign('showBreadcrumbs', 0);
-	$aspenUsage->ajaxRequests++;
+	if (BotChecker::isRequestFromBot()){
+		$aspenUsage->pageViewsByBots++;
+	}else{
+		$aspenUsage->ajaxRequests++;
+	}
 }else{
 	require_once ROOT_DIR . '/sys/BotChecker.php';
 	if (BotChecker::isRequestFromBot()){
