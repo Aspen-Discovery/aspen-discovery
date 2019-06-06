@@ -1,8 +1,8 @@
 {* Errors *}
 {if isset($errors) && count($errors) > 0}
-	<div id='errors' class="alert alert-error">
+	<div id='errors' class="alert alert-danger">
 	{foreach from=$errors item=error}
-		<div id='error'>{$error}</div>
+		<div class='error'>{$error}</div>
 	{/foreach}
 	</div>
 {/if}

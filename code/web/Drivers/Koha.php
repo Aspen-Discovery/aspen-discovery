@@ -1654,7 +1654,9 @@ class Koha extends AbstractIlsDriver {
 		];
 		$catalogUrl = $this->accountProfile->vendorOpacUrl;
 		$submitSuggestionResponse = $this->postToKohaPage($catalogUrl . '/cgi-bin/koha/opac-suggestions.pl', $postFields);
-		if (preg_match('/Your purchase suggestions/', $submitSuggestionResponse)){
+		if (preg_match('%<div class="alert alert-error">(.*?)</div>%s', $submitSuggestionResponse, $matches)) {
+			return ['success' => false, 'message' => $matches[1]];
+		}elseif (preg_match('/Your purchase suggestions/', $submitSuggestionResponse)){
 			return ['success' => true, 'message' => 'Successfully submitted your request'];
 		}else{
 			return ['success' => false, 'message' => 'Unknown error submitting request'];

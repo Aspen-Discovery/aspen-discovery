@@ -21,12 +21,14 @@ class MaterialsRequest_NewRequestIls extends Action
 				if ($result['success']){
 					header('Location: ' . $configArray['Site']['path'] . '/MaterialsRequest/IlsRequests');
 					exit;
+				}else{
+					global $interface;
+					$interface->assign('errors', [$result['message']]);
 				}
-			}else{
-				$requestForm = $catalogConnection->getNewMaterialsRequestForm();
-
-				$this->display($requestForm, translate('Materials_Request_alt'));
 			}
+			$requestForm = $catalogConnection->getNewMaterialsRequestForm();
+
+			$this->display($requestForm, translate('Materials_Request_alt'));
 		}
 	}
 }
