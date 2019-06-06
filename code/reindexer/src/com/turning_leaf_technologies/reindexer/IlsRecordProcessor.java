@@ -270,14 +270,15 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		Record record = null;
 		String individualFilename = getFileForIlsRecord(identifier);
 		try {
-			byte[] fileContents = Util.readFileBytes(individualFilename);
-			//FileInputStream inputStream = new FileInputStream(individualFile);
-			InputStream inputStream = new ByteArrayInputStream(fileContents);
 			//Don't need to use a permissive reader here since we've written good individual MARCs as part of record grouping
 			//Actually we do need to since we can still get MARC records over the max length.
-			MarcReader marcReader = new MarcPermissiveStreamReader(inputStream, true, false, "UTF-8");
+			FileInputStream inputStream = new FileInputStream(individualFilename);
+			MarcReader marcReader = new MarcPermissiveStreamReader(inputStream, true, true, "UTF-8");
 			if (marcReader.hasNext()) {
 				record = marcReader.next();
+			}
+			if (record.hasErrors()){
+				logger.info("Errors loading MARC\r\n" + record.getErrors().toString());
 			}
 			inputStream.close();
 		}catch (FileNotFoundException fe){
