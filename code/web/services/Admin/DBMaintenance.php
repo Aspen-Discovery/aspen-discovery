@@ -1560,6 +1560,16 @@ class DBMaintenance extends Admin_Admin {
                     )
                 ),
 
+				'account_profiles_oauth' => array(
+					'title' => 'Account Profiles - OAuth',
+					'description' => 'Add information for connecting to APIs with OAuth2 credentials',
+					'continueOnError' => true,
+					'sql' => array(
+						"ALTER TABLE `account_profiles` ADD `oAuthClientId` varchar(36)",
+						"ALTER TABLE `account_profiles` ADD `oAuthClientSecret` varchar(36)",
+					)
+				),
+
 
 
 					'archive_private_collections' => array(

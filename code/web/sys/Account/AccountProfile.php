@@ -19,6 +19,8 @@ class AccountProfile extends DataObject {
     public $databaseTimezone;
 	public $sipHost;
 	public $sipPort;
+	public $oAuthClientId;
+	public $oAuthClientSecret;
 	public $weight;
 
     static function getObjectStructure() {
@@ -49,6 +51,12 @@ class AccountProfile extends DataObject {
                     'sipPassword' => array('property' => 'sipPassword', 'type' => 'text', 'label' => 'SIP 2 Password', 'maxLength' => 50, 'description' => 'Password to use when connecting', 'required' => false),
                 ),
             ),
+			'oAuthSection'=>array('property'=>'oAuthSection', 'type' => 'section', 'label' =>'OAuth2 Information (optional)', 'hideInLists' => true,
+				'helpLink' => '', 'properties' => array(
+					'oAuthClientId' => array('property' => 'oAuthClientId', 'type' => 'text', 'label' => 'OAuth2 ClientId', 'maxLength' => 36, 'description' => 'The Client ID to use when making a connection to APIs', 'required' => false),
+					'oAuthClientSecret' => array('property' => 'oAuthClientSecret', 'type' => 'text', 'label' => 'OAuth2 Secret', 'maxLength' => 36, 'description' => 'The Client Secret to use when making a connection to APIs', 'required' => false),
+				),
+			),
             'recordSource' => array('property' => 'recordSource', 'type' => 'text', 'label' => 'Record Source', 'maxLength' => 50, 'description' => 'The record source of checkouts holds, etc.  Should match the name of an Indexing Profile.', 'required' => false),
 		);
 		return $structure;

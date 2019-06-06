@@ -741,7 +741,7 @@ class MyAccount_AJAX
 		$interface->assign('recordId', $_REQUEST['recordId']);
 
 		$ils = $configArray['Catalog']['ils'];
-		$reactivateDateNotRequired = ($ils == 'Symphony');
+		$reactivateDateNotRequired = ($ils == 'Symphony' || $ils == 'Koha');
 		$interface->assign('reactivateDateNotRequired', $reactivateDateNotRequired);
 
 		$title = translate('Freeze Hold'); // language customization
@@ -1220,11 +1220,7 @@ class MyAccount_AJAX
 	}
 
 	function getRatingsData(){
-		global $timer;
 		global $interface;
-		global $configArray;
-		/** @var Memcache $memCache */
-		global $memCache;
 		$result = array();
 		if (UserAccount::isLoggedIn()){
 			$user = UserAccount::getLoggedInUser();

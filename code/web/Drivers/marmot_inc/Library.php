@@ -1033,8 +1033,8 @@ class Library extends DataObject
             unset($structure['fullRecordSection']['properties']['showCheckInGrid']);
         }
         if ($ils == 'Koha'){
-            unset($structure['ilsSection']['properties']['userProfileSection']['properties']['allowProfileUpdates']);
-            unset($structure['ilsSection']['properties']['userProfileSection']['properties']['allowPatronAddressUpdates']);
+            //unset($structure['ilsSection']['properties']['userProfileSection']['properties']['allowProfileUpdates']);
+            //unset($structure['ilsSection']['properties']['userProfileSection']['properties']['allowPatronAddressUpdates']);
             unset($structure['ilsSection']['properties']['userProfileSection']['properties']['showWorkPhoneInProfile']);
             unset($structure['ilsSection']['properties']['userProfileSection']['properties']['treatPrintNoticesAsPhoneNotices']);
             unset($structure['ilsSection']['properties']['userProfileSection']['properties']['showNoticeTypeInProfile']);
@@ -1459,8 +1459,8 @@ class Library extends DataObject
 		global $configArray;
         $ils = $configArray['Catalog']['ils'];
         if ($ils == 'Koha'){
-            $this->allowProfileUpdates = 0;
-            $this->allowPatronAddressUpdates = 0;
+//            $this->allowProfileUpdates = 0;
+//            $this->allowPatronAddressUpdates = 0;
             $this->showWorkPhoneInProfile = 0;
             $this->treatPrintNoticesAsPhoneNotices = 0;
             $this->showNoticeTypeInProfile = 0;

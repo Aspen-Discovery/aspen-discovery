@@ -7,14 +7,14 @@
 	</div>
 {/if}
 
-{if $instructions}
+{if !empty($instructions)}
 	<div class="alert alert-info">
 		{$instructions}
 	</div>
 {/if}
 
 {* Create the base form *}
-<form id='objectEditor' method="post" {if $contentType}enctype="{$contentType}"{/if} action="{$submitUrl}" role="form">
+<form id='objectEditor' method="post" {if !empty($contentType)}enctype="{$contentType}"{/if} action="{$submitUrl}" role="form">
 	{literal}
 
 	<script type="text/javascript">
@@ -31,7 +31,9 @@
 	
 	<div class='editor'>
 		<input type='hidden' name='objectAction' value='save' />
+		{if !empty($id)}
 		<input type='hidden' name='id' value='{$id}' />
+		{/if}
 
 		<br/>
 		
@@ -40,7 +42,7 @@
 		{/foreach}
 
 		{* Show Recaptcha spam control if set. *}
-		{if $captcha}
+		{if !empty($captcha)}
 		<div class="form-group">
 			{$captcha}
 		</div>

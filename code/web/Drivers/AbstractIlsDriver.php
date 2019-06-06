@@ -209,4 +209,15 @@ abstract class AbstractIlsDriver extends AbstractDriver
 	{
 		return ['success' => false, 'message' => 'Not Implemented'];
 	}
+
+	/**
+	 * Gets form to update contact information within the ILS.
+	 *
+	 * @param User $user
+	 * @return string|null
+	 */
+	function getPatronUpdateForm(/** @noinspection PhpUnusedParameterInspection */User $user)
+	{
+		return null;
+	}
 }

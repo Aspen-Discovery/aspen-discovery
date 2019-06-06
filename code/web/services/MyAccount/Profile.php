@@ -15,7 +15,6 @@ class MyAccount_Profile extends MyAccount
 		$interface->assign('showSMSNoticesInProfile', $ils == 'Sierra' && $smsEnabled == true);
 
 		if ($user) {
-
 			// Determine which user we are showing/updating settings for
 			$linkedUsers = $user->getLinkedUsers();
 			$patronId    = isset($_REQUEST['patronId']) ? $_REQUEST['patronId'] : $user->id;
@@ -27,6 +26,11 @@ class MyAccount_Profile extends MyAccount
 				array_unshift($linkedUsers, $user); // Adds primary account to list for display in account selector
 				$interface->assign('linkedUsers', $linkedUsers);
 				$interface->assign('selectedUser', $patronId);
+			}
+
+			$patronUpdateForm = $patron->getPatronUpdateForm();
+			if ($patronUpdateForm != null){
+				$interface->assign('patronUpdateForm', $patronUpdateForm);
 			}
 
 			/** @var Library $librarySingleton */
@@ -91,7 +95,7 @@ class MyAccount_Profile extends MyAccount
 					$patron->updateUserPreferences();
 				}  elseif ($updateScope == 'staffSettings') {
 
-					$patron->updateUserPreferences(); // update bypass autolog out option
+					$patron->updateUserPreferences(); // update bypass auto logout option
 
 					if (isset($_REQUEST['materialsRequestEmailSignature'])) {
 						$patron->setMaterialsRequestEmailSignature($_REQUEST['materialsRequestEmailSignature']);
@@ -99,7 +103,7 @@ class MyAccount_Profile extends MyAccount
 					if (isset($_REQUEST['materialsRequestReplyToAddress'])) {
 						$patron->setMaterialsRequestReplyToAddress($_REQUEST['materialsRequestReplyToAddress']);
 					}
-						$patron->setStaffSettings();
+					$patron->setStaffSettings();
 				} elseif ($updateScope == 'overdrive') {
 					$patron->updateOverDriveOptions();
 				} elseif ($updateScope == 'hoopla') {

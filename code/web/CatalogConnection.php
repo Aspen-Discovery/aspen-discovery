@@ -889,5 +889,10 @@ class CatalogConnection
 		return $this->driver->deleteMaterialsRequests($user);
 	}
 
+	function getPatronUpdateForm(User $user)
+	{
+		return $this->driver->getPatronUpdateForm($user);
+	}
+
 
 }

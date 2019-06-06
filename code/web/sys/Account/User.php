@@ -49,6 +49,7 @@ class User extends DataObject
 
 	//Data that we load, but don't store in the User table
 	public $_fullname;
+	public $_dateOfBirth;
 	public $_address1;
 	public $_address2;
 	public $_city;
@@ -1524,6 +1525,11 @@ class User extends DataObject
 	function getReadingHistorySize(){
 		$this->updateRuntimeInformation();
 		return $this->_readingHistorySize;
+	}
+
+	function getPatronUpdateForm()
+	{
+		return $this->getCatalogDriver()->getPatronUpdateForm($this);
 	}
 }
 

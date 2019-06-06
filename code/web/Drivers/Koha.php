@@ -107,7 +107,84 @@ class Koha extends AbstractIlsDriver {
 		$updateErrors = array();
 		if (!$canUpdateContactInfo) {
 			$updateErrors[] = "Profile Information can not be updated.";
+		}else{
+			$catalogUrl = $this->accountProfile->vendorOpacUrl;
+
+			$this->loginToKohaOpac($patron);
+
+			$updatePage = $this->getKohaPage($catalogUrl . '/cgi-bin/koha/opac-memberentry.pl');
+			//Get the csr token
+			$csr_token = '';
+			if (preg_match('%<input type="hidden" name="csrf_token" value="(.*?)" />%s', $updatePage, $matches)) {
+				$csr_token = $matches[1];
+			}
+
+			$postVariables = [
+				'borrower_branchcode' => $_REQUEST['borrower_branchcode'],
+				'borrower_title' => $_REQUEST['borrower_title'],
+				'borrower_surname' => $_REQUEST['borrower_surname'],
+				'borrower_firstname' => $_REQUEST['borrower_firstname'],
+				'borrower_dateofbirth' => $this->aspenDateToKohaDate($_REQUEST['borrower_dateofbirth']),
+				'borrower_initials' => $_REQUEST['borrower_initials'],
+				'borrower_othernames' => $_REQUEST['borrower_othernames'],
+				'borrower_sex' => $_REQUEST['borrower_sex'],
+				'borrower_address' => $_REQUEST['borrower_address'],
+				'borrower_address2' => $_REQUEST['borrower_address2'],
+				'borrower_city' => $_REQUEST['borrower_city'],
+				'borrower_state' => $_REQUEST['borrower_state'],
+				'borrower_zipcode' => $_REQUEST['borrower_zipcode'],
+				'borrower_country' => $_REQUEST['borrower_country'],
+				'borrower_phone' => $_REQUEST['borrower_phone'],
+				'borrower_email' => $_REQUEST['borrower_email'],
+				'borrower_phonepro' => $_REQUEST['borrower_phonepro'],
+				'borrower_mobile' => $_REQUEST['borrower_mobile'],
+				'borrower_emailpro' => $_REQUEST['borrower_emailpro'],
+				'borrower_fax' => $_REQUEST['borrower_fax'],
+				'borrower_B_address' => $_REQUEST['borrower_B_address'],
+				'borrower_B_address2' => $_REQUEST['borrower_B_address2'],
+				'borrower_B_city' => $_REQUEST['borrower_B_city'],
+				'borrower_B_state' => $_REQUEST['borrower_B_state'],
+				'borrower_B_zipcode' => $_REQUEST['borrower_B_zipcode'],
+				'borrower_B_country' => $_REQUEST['borrower_B_country'],
+				'borrower_B_phone' => $_REQUEST['borrower_B_phone'],
+				'borrower_B_email' => $_REQUEST['borrower_B_email'],
+				'borrower_contactnote' => $_REQUEST['borrower_contactnote'],
+				'borrower_altcontactsurname' => $_REQUEST['borrower_altcontactsurname'],
+				'borrower_altcontactfirstname' => $_REQUEST['borrower_altcontactfirstname'],
+				'borrower_altcontactaddress1' => $_REQUEST['borrower_altcontactaddress1'],
+				'borrower_altcontactaddress2' => $_REQUEST['borrower_altcontactaddress2'],
+				'borrower_altcontactaddress3' => $_REQUEST['borrower_altcontactaddress3'],
+				'borrower_altcontactstate' => $_REQUEST['borrower_altcontactstate'],
+				'borrower_altcontactzipcode' => $_REQUEST['borrower_altcontactzipcode'],
+				'borrower_altcontactcountry' => $_REQUEST['borrower_altcontactcountry'],
+				'borrower_altcontactphone' => $_REQUEST['borrower_altcontactphone'],
+
+				'csrf_token' => $csr_token,
+				'action' => 'update'
+			];
+			if (isset($_REQUEST['resendEmail'])){
+				$postVariables['resendEmail'] = strip_tags($_REQUEST['resendEmail']);
+			}
+
+			$postResults = $this->postToKohaPage($catalogUrl . '/cgi-bin/koha/opac-memberentry.pl', $postVariables);
+
+			$messageInformation = [];
+			if (preg_match('%<div class="alert alert-warning">(.*?)</div>%s', $postResults, $messageInformation)){
+				$error = $messageInformation[1];
+				$error = str_replace('<h3>', '<h4>', $error);
+				$error = str_replace('</h3>', '</h4>', $error);
+				$updateErrors[] = trim($error);
+			}elseif (preg_match('%<div class="alert alert-success">(.*?)</div>%s', $postResults, $messageInformation)) {
+				$error = $messageInformation[1];
+				$error = str_replace('<h3>', '<h4>', $error);
+				$error = str_replace('</h3>', '</h4>', $error);
+				$updateErrors[] = trim($error);
+			}elseif (preg_match('%<div class="alert">(.*?)</div>%s', $postResults, $messageInformation)) {
+				$error = $messageInformation[1];
+				$updateErrors[] = trim($error);
+			}
 		}
+
 		return $updateErrors;
 	}
 
@@ -1073,6 +1150,30 @@ class Koha extends AbstractIlsDriver {
 		return $amountOutstanding ;
 	}
 
+	private $oauthToken = null;
+	function getOAuthToken(){
+		if ($this->oauthToken == null){
+			$apiUrl = $this->getWebServiceUrl() . "/api/v1/oauth/token";
+			$postParams = [
+				'grant_type' => 'client_credentials',
+				'client_id' => $this->accountProfile->oAuthClientId,
+				'client_secret' => $this->accountProfile->oAuthClientSecret,
+			];
+
+			$this->curlWrapper->addCustomHeaders([
+				'Accept: application/json',
+				'Content-Type: application/x-www-form-urlencoded',
+			], false);
+			$response = $this->curlWrapper->curlPostPage($apiUrl, $postParams);
+			$json_response = json_decode($response);
+			if (!empty($json_response->access_token)){
+				$this->oauthToken = $json_response->access_token;
+			}else{
+				$this->oauthToken = false;
+			}
+		}
+		return $this->oauthToken;
+	}
 	function cancelHold($patron, $recordId, $cancelId = null) {
 		return $this->updateHoldDetailed($patron, 'cancel', null, $cancelId, '', '');
 	}
@@ -1083,17 +1184,44 @@ class Koha extends AbstractIlsDriver {
             'success' => false,
             'message' => 'Unable to ' . translate('freeze') .' your hold.'
         ];
-        $apiUrl = $this->getWebServiceUrl() . "/api/v1/contrib/pika/holds/{$itemToFreezeId}/suspend/";
-        $response = $this->curlWrapper->curlPostPage($apiUrl, '');
-        if(!$response) {
-            return $result;
+        $apiUrl = $this->getWebServiceUrl() . "/api/v1/holds/{$itemToFreezeId}/suspension";
+        if (strlen($dateToReactivate) > 0){
+	        $postParams = [
+		        'end_date' => $dateToReactivate
+	        ];
+	        $postParams = json_encode($postParams);
+        }else{
+        	$postParams = '';
         }
-        $hold_response = json_decode($response, false);
-        if ($hold_response->suspended && $hold_response->suspended == true) {
-            $result['message'] = 'Your hold was ' . translate('frozen') .' successfully.';
-            $result['success'] = true;
-            return $result;
+
+        $oauthToken = $this->getOAuthToken();
+        if ($oauthToken == false){
+	        $result['message'] = 'Unable to authenticate with the ILS.  Please try again later or contact the library.';
+        }else{
+	        $this->curlWrapper->addCustomHeaders([
+		        'Accept: application/json',
+		        'Content-Type: application/x-www-form-urlencoded',
+		        'Authorization: Bearer ' . $oauthToken,
+		        //'Authorization: Basic ' . base64_encode($this->accountProfile->oAuthClientId . ':' . $this->accountProfile->oAuthClientSecret),
+	        ], true);
+	        $response = $this->curlWrapper->curlPostPage($apiUrl, $postParams);
+	        if(!$response) {
+		        return $result;
+	        }else{
+		        $hold_response = json_decode($response, false);
+		        if (isset($hold_response->error)){
+			        $result['message'] = $hold_response->error;
+			        $result['success'] = true;
+		        }else{
+			        print_r($hold_response);
+			        if ($hold_response->suspended && $hold_response->suspended == true) {
+				        $result['message'] = 'Your hold was ' . translate('frozen') .' successfully.';
+				        $result['success'] = true;
+			        }
+		        }
+	        }
         }
+
         return $result;
 	}
 
@@ -1228,14 +1356,14 @@ class Koha extends AbstractIlsDriver {
 
 	function getSelfRegistrationFields(){
 		//TODO: Load these from the Koha database
-		global $library;
+		//global $library;
 		$fields = array();
 		$location = new Location();
-		$location->libraryId = $library->libraryId;
+		//$location->libraryId = $library->libraryId;
 		$location->validHoldPickupBranch = 1;
 
+		$pickupLocations = array();
 		if ($location->find()) {
-			$pickupLocations = array();
 			while($location->fetch()) {
 				$pickupLocations[$location->code] = $location->displayName;
 			}
@@ -1243,65 +1371,65 @@ class Koha extends AbstractIlsDriver {
 		}
 
 		//Library
-		$fields[] = array('property' => 'librarySection', 'type' => 'section', 'label' => 'Library', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => [
-			array('property' => 'borrower_branchcode', 'type' => 'enum', 'label' => 'Home Library', 'description' => 'Please choose the Library location you would prefer to use', 'values' => $pickupLocations, 'required' => true)
+		$fields['librarySection'] = array('property' => 'librarySection', 'type' => 'section', 'label' => 'Library', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => [
+			'borrower_branchcode' => array('property' => 'borrower_branchcode', 'type' => 'enum', 'label' => 'Home Library', 'description' => 'Please choose the Library location you would prefer to use', 'values' => $pickupLocations, 'required' => true)
 		]);
 
 		//Identity
-		$fields[] = array('property' => 'identitySection', 'type' => 'section', 'label' => 'Identity', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => [
-			array('property'=>'borrower_title', 'type'=>'enum', 'label'=>'Salutation', 'values'=>[''=>'', 'Mr'=>'Mr', 'Mrs' => 'Mrs', 'Ms' => 'Ms', 'Miss' => 'Miss','Dr.'=>'Dr.'], 'description'=>'Your first name', 'required' => false),
-			array('property'=>'borrower_surname', 'type'=>'text', 'label'=>'Surname', 'description'=>'Your last name', 'maxLength' => 60, 'required' => true),
-			array('property'=>'borrower_firstname', 'type'=>'text', 'label'=>'First Name', 'description'=>'Your first name', 'maxLength' => 25, 'required' => true),
-			array('property'=>'borrower_dateofbirth', 'type'=>'date', 'label'=>'Date of Birth (MM-DD-YYYY)', 'description'=>'Date of birth', 'maxLength' => 10, 'required' => true),
-			array('property'=>'borrower_initials', 'type'=>'text', 'label'=>'Initials', 'description'=>'Initials', 'maxLength' => 25, 'required' => false),
-			array('property'=>'borrower_othernames', 'type'=>'text', 'label'=>'Other names', 'description'=>'Other names you go by', 'maxLength' => 128, 'required' => false),
-			array('property'=>'borrower_sex', 'type'=>'enum', 'label'=>'Gender', 'values'=>[''=>'None Specified','F'=>'Female', 'M'=>'Male'], 'description'=>'Gender', 'required' => false),
+		$fields['identitySection'] = array('property' => 'identitySection', 'type' => 'section', 'label' => 'Identity', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => [
+			'borrower_title' => array('property'=>'borrower_title', 'type'=>'enum', 'label'=>'Salutation', 'values'=>[''=>'', 'Mr'=>'Mr', 'Mrs' => 'Mrs', 'Ms' => 'Ms', 'Miss' => 'Miss','Dr.'=>'Dr.'], 'description'=>'Your first name', 'required' => false),
+			'borrower_surname' => array('property'=>'borrower_surname', 'type'=>'text', 'label'=>'Surname', 'description'=>'Your last name', 'maxLength' => 60, 'required' => true),
+			'borrower_firstname' => array('property'=>'borrower_firstname', 'type'=>'text', 'label'=>'First Name', 'description'=>'Your first name', 'maxLength' => 25, 'required' => true),
+			'borrower_dateofbirth' => array('property'=>'borrower_dateofbirth', 'type'=>'date', 'label'=>'Date of Birth (MM-DD-YYYY)', 'description'=>'Date of birth', 'maxLength' => 10, 'required' => true),
+			'borrower_initials' => array('property'=>'borrower_initials', 'type'=>'text', 'label'=>'Initials', 'description'=>'Initials', 'maxLength' => 25, 'required' => false),
+			'borrower_othernames' => array('property'=>'borrower_othernames', 'type'=>'text', 'label'=>'Other names', 'description'=>'Other names you go by', 'maxLength' => 128, 'required' => false),
+			'borrower_sex' => array('property'=>'borrower_sex', 'type'=>'enum', 'label'=>'Gender', 'values'=>[''=>'None Specified','F'=>'Female', 'M'=>'Male'], 'description'=>'Gender', 'required' => false),
 
 		]);
 		//Main Address
-		$fields[] = array('property' => 'mainAddressSection', 'type' => 'section', 'label' => 'Main Address', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => [
-			array('property'=>'borrower_address', 'type'=>'text', 'label'=>'Address', 'description'=>'Address', 'maxLength' => 128, 'required' => true),
-			array('property'=>'borrower_address2', 'type'=>'text', 'label'=>'Address 2', 'description'=>'Second line of the address', 'maxLength' => 128, 'required' => false),
-			array('property'=>'borrower_city', 'type'=>'text', 'label'=>'City', 'description'=>'City', 'maxLength' => 48, 'required' => true),
-			array('property'=>'borrower_state', 'type'=>'text', 'label'=>'State', 'description'=>'State', 'maxLength' => 32, 'required' => true),
-			array('property'=>'borrower_zipcode', 'type'=>'text', 'label'=>'Zip Code', 'description'=>'Zip Code', 'maxLength' => 32, 'required' => true),
-			array('property'=>'borrower_country', 'type'=>'text', 'label'=>'Country', 'description'=>'Country', 'maxLength' => 32, 'required' => false),
+		$fields['mainAddressSection'] = array('property' => 'mainAddressSection', 'type' => 'section', 'label' => 'Main Address', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => [
+			'borrower_address' => array('property'=>'borrower_address', 'type'=>'text', 'label'=>'Address', 'description'=>'Address', 'maxLength' => 128, 'required' => true),
+			'borrower_address2' => array('property'=>'borrower_address2', 'type'=>'text', 'label'=>'Address 2', 'description'=>'Second line of the address', 'maxLength' => 128, 'required' => false),
+			'borrower_city' => array('property'=>'borrower_city', 'type'=>'text', 'label'=>'City', 'description'=>'City', 'maxLength' => 48, 'required' => true),
+			'borrower_state' => array('property'=>'borrower_state', 'type'=>'text', 'label'=>'State', 'description'=>'State', 'maxLength' => 32, 'required' => true),
+			'borrower_zipcode' => array('property'=>'borrower_zipcode', 'type'=>'text', 'label'=>'Zip Code', 'description'=>'Zip Code', 'maxLength' => 32, 'required' => true),
+			'borrower_country' => array('property'=>'borrower_country', 'type'=>'text', 'label'=>'Country', 'description'=>'Country', 'maxLength' => 32, 'required' => false),
 		]);
 		//Contact information
-		$fields[] = array('property' => 'contactInformationSection', 'type' => 'section', 'label' => 'Contact Information', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => [
-			array('property'=>'borrower_phone', 'type'=>'text', 'label'=>'Primary Phone (xxx-xxx-xxxx)', 'description'=>'Phone', 'maxLength' => 128, 'required' => false),
-			array('property'=>'borrower_email', 'type'=>'email', 'label'=>'Primary Email', 'description'=>'Email', 'maxLength' => 128, 'required' => false),
+		$fields['contactInformationSection'] = array('property' => 'contactInformationSection', 'type' => 'section', 'label' => 'Contact Information', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => [
+			'borrower_phone' => array('property'=>'borrower_phone', 'type'=>'text', 'label'=>'Primary Phone (xxx-xxx-xxxx)', 'description'=>'Phone', 'maxLength' => 128, 'required' => false),
+			'borrower_email' => array('property'=>'borrower_email', 'type'=>'email', 'label'=>'Primary Email', 'description'=>'Email', 'maxLength' => 128, 'required' => false),
 		]);
 		//Contact information
-		$fields[] = array('property' => 'additionalContactInformationSection', 'type' => 'section', 'label' => 'Additional Contact Information', 'hideInLists' => true, 'expandByDefault' => false, 'properties' => [
-			array('property'=>'borrower_phonepro', 'type'=>'text', 'label'=>'Secondary Phone (xxx-xxx-xxxx)', 'description'=>'Phone', 'maxLength' => 128, 'required' => false),
-			array('property'=>'borrower_mobile', 'type'=>'text', 'label'=>'Other Phone (xxx-xxx-xxxx)', 'description'=>'Phone', 'maxLength' => 128, 'required' => false),
-			array('property'=>'borrower_emailpro', 'type'=>'email', 'label'=>'Secondary Email', 'description'=>'Email', 'maxLength' => 128, 'required' => false),
-			array('property'=>'borrower_fax', 'type'=>'text', 'label'=>'Fax (xxx-xxx-xxxx)', 'description'=>'Fax', 'maxLength' => 128, 'required' => false),
+		$fields['additionalContactInformationSection'] = array('property' => 'additionalContactInformationSection', 'type' => 'section', 'label' => 'Additional Contact Information', 'hideInLists' => true, 'expandByDefault' => false, 'properties' => [
+			'borrower_phonepro' => array('property'=>'borrower_phonepro', 'type'=>'text', 'label'=>'Secondary Phone (xxx-xxx-xxxx)', 'description'=>'Phone', 'maxLength' => 128, 'required' => false),
+			'borrower_mobile' => array('property'=>'borrower_mobile', 'type'=>'text', 'label'=>'Other Phone (xxx-xxx-xxxx)', 'description'=>'Phone', 'maxLength' => 128, 'required' => false),
+			'borrower_emailpro' => array('property'=>'borrower_emailpro', 'type'=>'email', 'label'=>'Secondary Email', 'description'=>'Email', 'maxLength' => 128, 'required' => false),
+			'borrower_fax' => array('property'=>'borrower_fax', 'type'=>'text', 'label'=>'Fax (xxx-xxx-xxxx)', 'description'=>'Fax', 'maxLength' => 128, 'required' => false),
 		]);
 		//Alternate address
-		$fields[] = array('property' => 'alternateAddressSection', 'type' => 'section', 'label' => 'Alternate address', 'hideInLists' => true, 'expandByDefault' => false, 'properties' => [
-			array('property'=>'borrower_B_address', 'type'=>'text', 'label'=>'Alternate Address', 'description'=>'Address', 'maxLength' => 128, 'required' => false),
-			array('property'=>'borrower_B_address2', 'type'=>'text', 'label'=>'Address 2', 'description'=>'Second line of the address', 'maxLength' => 128, 'required' => false),
-			array('property'=>'borrower_B_city', 'type'=>'text', 'label'=>'City', 'description'=>'City', 'maxLength' => 48, 'required' => false),
-			array('property'=>'borrower_B_state', 'type'=>'text', 'label'=>'State', 'description'=>'State', 'maxLength' => 32, 'required' => false),
-			array('property'=>'borrower_B_zipcode', 'type'=>'text', 'label'=>'Zip Code', 'description'=>'Zip Code', 'maxLength' => 32, 'required' => false),
-			array('property'=>'borrower_B_country', 'type'=>'text', 'label'=>'Country', 'description'=>'Country', 'maxLength' => 32, 'required' => false),
-			array('property'=>'borrower_B_phone', 'type'=>'text', 'label'=>'Phone (xxx-xxx-xxxx)', 'description'=>'Phone', 'maxLength' => 128, 'required' => false),
-			array('property'=>'borrower_B_email', 'type'=>'email', 'label'=>'Email', 'description'=>'Email', 'maxLength' => 128, 'required' => false),
-			array('property'=>'borrower_contactnote', 'type'=>'textarea', 'label'=>'Contact  Notes', 'description'=>'Additional information for the alternate contact', 'maxLength' => 128, 'required' => false),
+		$fields['alternateAddressSection'] = array('property' => 'alternateAddressSection', 'type' => 'section', 'label' => 'Alternate address', 'hideInLists' => true, 'expandByDefault' => false, 'properties' => [
+			'borrower_B_address' => array('property'=>'borrower_B_address', 'type'=>'text', 'label'=>'Alternate Address', 'description'=>'Address', 'maxLength' => 128, 'required' => false),
+			'borrower_B_address2' => array('property'=>'borrower_B_address2', 'type'=>'text', 'label'=>'Address 2', 'description'=>'Second line of the address', 'maxLength' => 128, 'required' => false),
+			'borrower_B_city' => array('property'=>'borrower_B_city', 'type'=>'text', 'label'=>'City', 'description'=>'City', 'maxLength' => 48, 'required' => false),
+			'borrower_B_state' => array('property'=>'borrower_B_state', 'type'=>'text', 'label'=>'State', 'description'=>'State', 'maxLength' => 32, 'required' => false),
+			'borrower_B_zipcode' => array('property'=>'borrower_B_zipcode', 'type'=>'text', 'label'=>'Zip Code', 'description'=>'Zip Code', 'maxLength' => 32, 'required' => false),
+			'borrower_B_country' => array('property'=>'borrower_B_country', 'type'=>'text', 'label'=>'Country', 'description'=>'Country', 'maxLength' => 32, 'required' => false),
+			'borrower_B_phone' => array('property'=>'borrower_B_phone', 'type'=>'text', 'label'=>'Phone (xxx-xxx-xxxx)', 'description'=>'Phone', 'maxLength' => 128, 'required' => false),
+			'borrower_B_email' => array('property'=>'borrower_B_email', 'type'=>'email', 'label'=>'Email', 'description'=>'Email', 'maxLength' => 128, 'required' => false),
+			'borrower_contactnote' => array('property'=>'borrower_contactnote', 'type'=>'textarea', 'label'=>'Contact  Notes', 'description'=>'Additional information for the alternate contact', 'maxLength' => 128, 'required' => false),
 		]);
 		//Alternate contact
-		$fields[] = array('property' => 'alternateContactSection', 'type' => 'section', 'label' => 'Alternate contact', 'hideInLists' => true, 'expandByDefault' => false, 'properties' => [
-			array('property'=>'borrower_altcontactsurname', 'type'=>'text', 'label'=>'Surname', 'description'=>'Your last name', 'maxLength' => 60, 'required' => false),
-			array('property'=>'borrower_altcontactfirstname', 'type'=>'text', 'label'=>'First Name', 'description'=>'Your first name', 'maxLength' => 25, 'required' => false),
-			array('property'=>'borrower_altcontactaddress', 'type'=>'text', 'label'=>'Address', 'description'=>'Address', 'maxLength' => 128, 'required' => false),
-			array('property'=>'borrower_altcontactaddress2', 'type'=>'text', 'label'=>'Address 2', 'description'=>'Second line of the address', 'maxLength' => 128, 'required' => false),
-			array('property'=>'borrower_altcontactaddress3', 'type'=>'text', 'label'=>'City', 'description'=>'City', 'maxLength' => 48, 'required' => false),
-			array('property'=>'borrower_altcontactstate', 'type'=>'text', 'label'=>'State', 'description'=>'State', 'maxLength' => 32, 'required' => false),
-			array('property'=>'borrower_altcontactzipcode', 'type'=>'text', 'label'=>'Zip Code', 'description'=>'Zip Code', 'maxLength' => 32, 'required' => false),
-			array('property'=>'borrower_altcontactcountry', 'type'=>'text', 'label'=>'Country', 'description'=>'Country', 'maxLength' => 32, 'required' => false),
-			array('property'=>'borrower_altcontactphone', 'type'=>'text', 'label'=>'Phone (xxx-xxx-xxxx)', 'description'=>'Phone', 'maxLength' => 128, 'required' => false),
+		$fields['alternateContactSection'] = array('property' => 'alternateContactSection', 'type' => 'section', 'label' => 'Alternate contact', 'hideInLists' => true, 'expandByDefault' => false, 'properties' => [
+			'borrower_altcontactsurname' => array('property'=>'borrower_altcontactsurname', 'type'=>'text', 'label'=>'Surname', 'description'=>'Your last name', 'maxLength' => 60, 'required' => false),
+			'borrower_altcontactfirstname' => array('property'=>'borrower_altcontactfirstname', 'type'=>'text', 'label'=>'First Name', 'description'=>'Your first name', 'maxLength' => 25, 'required' => false),
+			'borrower_altcontactaddress1' => array('property'=>'borrower_altcontactaddress1', 'type'=>'text', 'label'=>'Address', 'description'=>'Address', 'maxLength' => 128, 'required' => false),
+			'borrower_altcontactaddress2' => array('property'=>'borrower_altcontactaddress2', 'type'=>'text', 'label'=>'Address 2', 'description'=>'Second line of the address', 'maxLength' => 128, 'required' => false),
+			'borrower_altcontactaddress3' => array('property'=>'borrower_altcontactaddress3', 'type'=>'text', 'label'=>'City', 'description'=>'City', 'maxLength' => 48, 'required' => false),
+			'borrower_altcontactstate' => array('property'=>'borrower_altcontactstate', 'type'=>'text', 'label'=>'State', 'description'=>'State', 'maxLength' => 32, 'required' => false),
+			'borrower_altcontactzipcode' => array('property'=>'borrower_altcontactzipcode', 'type'=>'text', 'label'=>'Zip Code', 'description'=>'Zip Code', 'maxLength' => 32, 'required' => false),
+			'borrower_altcontactcountry' => array('property'=>'borrower_altcontactcountry', 'type'=>'text', 'label'=>'Country', 'description'=>'Country', 'maxLength' => 32, 'required' => false),
+			'borrower_altcontactphone' => array('property'=>'borrower_altcontactphone', 'type'=>'text', 'label'=>'Phone (xxx-xxx-xxxx)', 'description'=>'Phone', 'maxLength' => 128, 'required' => false),
 		]);
 
 		return $fields;
@@ -1358,7 +1486,7 @@ class Koha extends AbstractIlsDriver {
 		$postFields['borrower_contactnote'] = $_REQUEST['borrower_contactnote'];
 		$postFields['borrower_altcontactsurname'] = $_REQUEST['borrower_altcontactsurname'];
 		$postFields['borrower_altcontactfirstname'] = $_REQUEST['borrower_altcontactfirstname'];
-		$postFields['borrower_altcontactaddress'] = $_REQUEST['borrower_altcontactaddress'];
+		$postFields['borrower_altcontactaddress1'] = $_REQUEST['borrower_altcontactaddress1'];
 		$postFields['borrower_altcontactaddress2'] = $_REQUEST['borrower_altcontactaddress2'];
 		$postFields['borrower_altcontactaddress3'] = $_REQUEST['borrower_altcontactaddress3'];
 		$postFields['borrower_altcontactstate'] = $_REQUEST['borrower_altcontactstate'];
@@ -1421,6 +1549,7 @@ class Koha extends AbstractIlsDriver {
 		$iTypes = [];
 		if ($itypeMap->find(true)){
 			/** @var TranslationMapValue $value */
+			/** @noinspection PhpUndefinedFieldInspection */
 			foreach ($itypeMap->translationMapValues as $value){
 				$iTypes[$value->value] = $value->translation;
 			}
@@ -1540,11 +1669,82 @@ class Koha extends AbstractIlsDriver {
 			'op' => 'delete_confirm',
 			'delete_field' => $_REQUEST['delete_field']
 		];
-		$requestsPage = $this->postToKohaPage($catalogUrl . '/cgi-bin/koha/opac-suggestions.pl', $postFields);
+		$this->postToKohaPage($catalogUrl . '/cgi-bin/koha/opac-suggestions.pl', $postFields);
 
 		return [
 			'success' => true,
 			'message' => 'deleted your requests'
 		];
+	}
+
+	/**
+	 * Gets a form to update contact information within the ILS.
+	 *
+	 * @param User $user
+	 * @return string|null
+	 */
+	function getPatronUpdateForm($user)
+	{
+		//This is very similar to a patron self so we are going to get those fields and then modify
+		$patronUpdateFields = $this->getSelfRegistrationFields();
+		//Display sections as headings
+		$patronUpdateFields['librarySection']['renderAsHeading'] = true;
+		$patronUpdateFields['identitySection']['renderAsHeading'] = true;
+		$patronUpdateFields['mainAddressSection']['renderAsHeading'] = true;
+		$patronUpdateFields['contactInformationSection']['renderAsHeading'] = true;
+		$patronUpdateFields['additionalContactInformationSection']['renderAsHeading'] = true;
+		$patronUpdateFields['alternateAddressSection']['renderAsHeading'] = true;
+		$patronUpdateFields['alternateContactSection']['renderAsHeading'] = true;
+
+		//Set default values
+		/** @noinspection SqlResolve */
+		$sql = "SELECT * FROM borrowers where borrowernumber = " . mysqli_escape_string($this->dbConnection, $user->username);
+		$results = mysqli_query($this->dbConnection, $sql);
+		if ($curRow = $results->fetch_assoc()){
+			foreach ($curRow as $property => $value){
+				$objectProperty = 'borrower_' . $property;
+				if ($property == 'dateofbirth'){
+					$user->$objectProperty = $this->kohaDateToAspenDate($value);
+				}else{
+					$user->$objectProperty = $value;
+				}
+			}
+		}
+
+		global $interface;
+		$patronUpdateFields[] = array('property'=>'updateScope', 'type'=>'hidden', 'label'=>'Update Scope', 'description'=>'', 'value' => 'contact');
+		/** @noinspection PhpUndefinedFieldInspection */
+		$user->updateScope = 'contact';
+		$interface->assign('submitUrl', '/MyAccount/Profile');
+		$interface->assign('structure', $patronUpdateFields);
+		$interface->assign('object', $user);
+		$interface->assign('saveButtonText', 'Update Contact Information');
+
+		$fieldsForm = $interface->fetch('DataObjectUtil/objectEditForm.tpl');
+		return $fieldsForm;
+	}
+
+	function kohaDateToAspenDate($date){
+		if (strlen($date) == 0){
+			return $date;
+		}else{
+			list($year, $month, $day) = explode('-', $date);
+			return "$day-$month-$year";
+		}
+	}
+
+	/**
+	 * Converts the string for submission to the web form which is different than the
+	 * format within the database.
+	 * @param string $date
+	 * @return string
+	 */
+	function aspenDateToKohaDate($date){
+		if (strlen($date) == 0){
+			return $date;
+		}else{
+			list($day, $month, $year) = explode('-', $date);
+			return "$day/$month/$year";
+		}
 	}
 }
