@@ -19,6 +19,6 @@ class EBSCO_Home extends Action{
 			$interface->assign('showExploreMore', true);
 		}
 
-		$this->display('view.tpl', $recordDriver->getTitle());
+		$this->display('full-record.tpl', $recordDriver->getTitle());
 	}
 }

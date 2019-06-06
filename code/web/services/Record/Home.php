@@ -44,7 +44,7 @@ class Record_Home extends Record_Record{
 			$interface->assign('showExploreMore', true);
 		}
 
-		$this->display('view.tpl', $this->recordDriver->getTitle());
+		$this->display('full-record.tpl', $this->recordDriver->getTitle());
 
 	}
 

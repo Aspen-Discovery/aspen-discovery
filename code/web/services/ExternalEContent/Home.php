@@ -84,7 +84,7 @@ class ExternalEContent_Home extends Action{
 			$interface->assign('staffDetails', $recordDriver->getStaffView());
 
 			// Display Page
-			$this->display('view.tpl', $recordDriver->getTitle());
+			$this->display('full-record.tpl', $recordDriver->getTitle());
 
 		}
 	}

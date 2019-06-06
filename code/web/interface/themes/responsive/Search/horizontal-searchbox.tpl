@@ -11,7 +11,7 @@
 
 		{assign var="hiddenSearchSource" value=false}
 		{* Switch sizing when no search source is to be displayed *}
-		{if $searchSources|@count <= 1}
+		{if empty($searchSources) || count($searchSources) == 1}
 			{assign var="hiddenSearchSource" value=true}
 			<input type="hidden" name="searchSource" value="{$searchSource}">
 		{/if}

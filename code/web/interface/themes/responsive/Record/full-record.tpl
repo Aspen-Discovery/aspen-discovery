@@ -15,7 +15,7 @@
 			{* Display Title *}
 			<h2>
 				{*{$recordDriver->getTitle()|escape}*}{* // ever a case when the trailing punction is needed? *}
-				{$recordDriver->getTitle()|removeTrailingPunctuation|escape}
+				{$recordDriver->getTitle()|removeTrailingPunctuation}
 				{if $recordDriver->getTitleSection()}
 					:&nbsp;{$recordDriver->getTitleSection()|removeTrailingPunctuation|escape}
 				{/if}

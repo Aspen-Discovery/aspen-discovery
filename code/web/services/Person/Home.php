@@ -181,6 +181,6 @@ class Person_Home extends Action
 //		}
 
 		// Display Page
-		$this->display('view.tpl', $titleField);
+		$this->display('full-record.tpl', $titleField);
 	}
 }
