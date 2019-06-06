@@ -8443,10 +8443,6 @@ hr.menu {
   border-bottom: 0;
   box-shadow: 2px 2px 5px #fff;
 }
-.header-primary {
-  border-left: 2px solid #d9d8d8;
-  border-right: 2px solid #d9d8d8;
-}
 #library-name-header {
   font-size: 26px;
   color: #007290;
