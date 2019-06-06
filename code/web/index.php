@@ -563,13 +563,25 @@ if (!is_dir(ROOT_DIR . "/services/$module")){
 		/** @var Action $service */
 		$service = new $moduleActionClass();
 		$timer->logTime('Start launch of action');
-		$service->launch();
+		try {
+			$service->launch();
+		}catch (Error $e){
+			AspenError::raiseError(new AspenError($e->getMessage(), $e->getTrace()));
+		}catch (Exception $e){
+			AspenError::raiseError(new AspenError($e->getMessage(), $e->getTrace()));
+		}
 		$timer->logTime('Finish launch of action');
 	}else if (class_exists($action, false)) {
 		/** @var Action $service */
 		$service = new $action();
 		$timer->logTime('Start launch of action');
-		$service->launch();
+		try {
+			$service->launch();
+		}catch (Error $e){
+			AspenError::raiseError(new AspenError($e->getMessage(), $e->getTrace()));
+		}catch (Exception $e){
+			AspenError::raiseError(new AspenError($e->getMessage(), $e->getTrace()));
+		}
 		$timer->logTime('Finish launch of action');
 	}else{
 		AspenError::raiseError(new AspenError('Unknown Action'));

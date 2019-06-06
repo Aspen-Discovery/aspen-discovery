@@ -9,9 +9,14 @@ class AspenError
 
     public $backtrace;
 
-    public function __construct($message){
+    public function __construct($message, $backtrace = null){
         $this->message = $message;
-        $this->backtrace = debug_backtrace();
+        if ($backtrace == null){
+	        $this->backtrace = debug_backtrace();
+        }else{
+	        $this->backtrace = $backtrace;
+        }
+
     }
 
     public function getMessage(){
@@ -63,6 +68,7 @@ class AspenError
 
         global $aspenUsage;
         $aspenUsage->pagesWithErrors++;
+	    $aspenUsage->update();
 
         //Clear any output that has been generated so far so the user just gets the error message.
         if (!$configArray['System']['debug']){
@@ -78,7 +84,7 @@ class AspenError
 
         $interface->assign('error', $this);
         $interface->assign('debug', $configArray['System']['debug']);
-        $interface->setTemplate('error.tpl');
+        $interface->setTemplate('../error.tpl');
         $interface->display('layout.tpl');
 
         // Exceptions we don't want to log
