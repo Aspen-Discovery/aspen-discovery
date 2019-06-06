@@ -17,7 +17,6 @@ import org.marc4j.marc.DataField;
 import org.marc4j.marc.MarcFactory;
 import org.marc4j.marc.Record;
 
-import javax.naming.CommunicationException;
 import java.io.*;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
@@ -95,6 +94,7 @@ public class KohaExportMain {
 								"&password=" + password +
 								"&useUnicode=yes&characterEncoding=UTF-8";
 						if (timezone != null && timezone.length() > 0) {
+							//noinspection StringConcatenationInLoop
 							kohaConnectionJDBC += "&serverTimezone=" + URLEncoder.encode(timezone, "UTF8");
 						}
 						kohaConn = connectToKoha();
@@ -174,7 +174,7 @@ public class KohaExportMain {
 		}
 	}
 
-	private static Connection connectToKoha() throws SQLException {
+	private static Connection connectToKoha() {
 		int tries = 0;
 		while (tries < 3){
 			try{
@@ -657,8 +657,9 @@ public class KohaExportMain {
 				}else{
 					logEntry.incAdded();
 				}
-				MarcWriter writer = new MarcStreamWriter(new FileOutputStream(marcFile));
+				MarcWriter writer = new MarcStreamWriter(new FileOutputStream(marcFile), "UTF-8");
 				writer.write(marcRecord);
+				writer.close();
 
 				//Regroup the record
 				String groupedWorkId = groupKohaRecord(marcRecord);
