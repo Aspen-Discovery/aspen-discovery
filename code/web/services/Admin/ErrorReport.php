@@ -13,7 +13,7 @@ class Admin_ErrorReport extends ObjectEditor
 		return 'ErrorReport';
 	}
 	function getPageTitle(){
-		return 'Errors)';
+		return 'Errors';
 	}
 	function getAllObjects(){
 		$object = new AspenError();
