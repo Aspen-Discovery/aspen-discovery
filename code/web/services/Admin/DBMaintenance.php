@@ -1820,6 +1820,22 @@ class DBMaintenance extends Admin_Admin {
     						) ENGINE = MEMORY;',
 					],
 				],
+
+				'error_table' => [
+					'title' => 'Error Logging',
+					'description' => 'Table to store error information',
+					'sql' => [
+						'CREATE TABLE IF NOT EXISTS errors(
+    						id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+		                    module VARCHAR(50) NOT NULL,
+		                    action VARCHAR(50) NOT NULL,
+		                    url TEXT,
+		                    message TEXT,
+		                    backtrace TEXT,
+		                    timestamp INT(11)
+    						) ENGINE = INNODB;',
+					],
+				],
 			)
 		);
 	}

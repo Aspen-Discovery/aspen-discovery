@@ -24,7 +24,9 @@ class Search_Home extends Action {
 
 		// Get Location's Browse Categories if Location is set
 		$activeLocation = $locationSingleton->getActiveLocation();
+		/** @noinspection PhpUndefinedFieldInspection */
 		if ($activeLocation != null && $activeLocation->browseCategories){
+			/** @noinspection PhpUndefinedFieldInspection */
 			$browseCategories = $this->getBrowseCategories($activeLocation->browseCategories);
 		}
 
@@ -38,6 +40,7 @@ class Search_Home extends Action {
 			$defaultLibrary = new Library();
 			$defaultLibrary->isDefault = true;
 			if ($defaultLibrary->find(true)) {
+				/** @noinspection PhpUndefinedFieldInspection */
 				$browseCategories = $this->getBrowseCategories($defaultLibrary->browseCategories);
 			}
 		}
@@ -54,10 +57,6 @@ class Search_Home extends Action {
 			require_once ROOT_DIR . '/services/Browse/AJAX.php';
 			$browseAJAX = new Browse_AJAX();
 			$browseAJAX->setBrowseMode(); // set default browse mode in the case that the user hasn't chosen one.
-
-			// browse results no longer needed. there is an embedded ajax call in home.tpl. plb 5-4-2015
-////			$browseResults = $browseAJAX->getBrowseCategoryInfo(reset($browseCategories)->textId);
-////			$interface->assign('browseResults', $browseResults);
 		}
 		if (!$interface->get_template_vars('browseMode')) {
 			$interface->assign('browseMode', 'covers'); // fail safe: if no browseMode is set at all, go with covers
@@ -100,6 +99,7 @@ class Search_Home extends Action {
 
 							$validSubCategory = false;
 							$subCategories = array();
+							/** @noinspection PhpUndefinedFieldInspection */
 							/** @var SubBrowseCategories $subCategory */
 							foreach ($selectedBrowseCategory->subBrowseCategories as $subCategory) {
 								// Get Needed Info about sub-category
@@ -143,6 +143,7 @@ class Search_Home extends Action {
 
 						$validSubCategory = false;
 						$subCategories = array();
+						/** @noinspection PhpUndefinedFieldInspection */
 						/** @var SubBrowseCategories $subCategory */
 						foreach ($selectedBrowseCategory->subBrowseCategories as $subCategory) {
 							// Get Needed Info about sub-category

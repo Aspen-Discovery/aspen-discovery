@@ -178,7 +178,7 @@
 			{/if}
 
 			{if $loggedIn && (array_key_exists('userAdmin', $userRoles) || array_key_exists('opacAdmin', $userRoles))}
-				{if in_array($action, array('Administrators', 'DBMaintenance', 'UsageDashboard', 'SlownessReport', 'PHPInfo', 'OpCacheInfo', 'Variables', 'CronLog', 'MemCacheInfo'))
+				{if in_array($action, array('Administrators', 'DBMaintenance', 'UsageDashboard', 'SlownessReport', 'ErrorReport', 'PHPInfo', 'OpCacheInfo', 'Variables', 'CronLog', 'MemCacheInfo'))
 				|| ($module == 'Admin' && $action == 'Home')}
 					{assign var="curSection" value=true}
 				{else}
@@ -200,6 +200,7 @@
 							{if array_key_exists('opacAdmin', $userRoles)}
 								<div class="adminMenuLink{if $action == "DBMaintenance"} active{/if}"><a href="{$path}/Admin/DBMaintenance">DB Maintenance</a></div>
 								<div class="adminMenuLink{if $action == "UsageDashboard"} active{/if}"><a href="{$path}/Admin/UsageDashboard">Usage Dashboard</a></div>
+								<div class="adminMenuLink{if $action == "ErrorReport"} active{/if}"><a href="{$path}/Admin/ErrorReport">Error Report</a></div>
 								<div class="adminMenuLink{if $action == "SlownessReport"} active{/if}"><a href="{$path}/Admin/SlownessReport">Slowness Report</a></div>
 								<div class="adminMenuLink{if $action == "SendGridSettings"} active{/if}"><a href="{$path}/Admin/SendGridSettings">SendGrid Settings</a></div>
 								<div class="adminMenuLink{if $module == 'Admin' && $action == "Home"} active{/if}"><a href="{$path}/Admin/Home">Solr Information</a></div>

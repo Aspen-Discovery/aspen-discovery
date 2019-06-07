@@ -1,25 +1,59 @@
 <?php
 
 
-class AspenError
+class AspenError extends DataObject
 {
     static $errorCallback = null;
 
-    private $message;
+    public $__table = 'errors';
+    public $id;
+	public $module;
+	public $action;
+	public $url;
+	public $message;
+	public $backtrace;
+	public $timestamp;
 
-    public $backtrace;
+	/**
+	 * Create a new Aspen Error.  For new Errors raised by the system, message should be filled out.
+	 * For searching old errors, provide no parameters
+	 *
+	 * @param null $message
+	 * @param null $backtrace
+	 */
+	public function __construct($message = null, $backtrace = null){
+		if ($message != null){
+			$this->url = $_SERVER['REQUEST_URI'];
+			global $module;
+			global $action;
+			$this->module = $module;
+			$this->action = $action;
+			$this->timestamp = time();
 
-    public function __construct($message, $backtrace = null){
-        $this->message = $message;
-        if ($backtrace == null){
-	        $this->backtrace = debug_backtrace();
-        }else{
-	        $this->backtrace = $backtrace;
-        }
-
+			$this->message = $message;
+			if ($backtrace == null){
+				$this->backtrace = debug_backtrace();
+			}else{
+				$this->backtrace = $backtrace;
+			}
+		}
     }
 
-    public function getMessage(){
+	public static function getObjectStructure()
+	{
+		$structure = array(
+			'id' => array('property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id'),
+			'module' => array('property'=>'module', 'type'=>'label', 'label'=>'Module', 'description'=>'The Module that caused the error'),
+			'action' => array('property'=>'action', 'type'=>'label', 'label'=>'Action', 'description'=>'The Action that caused the error'),
+			'url' => array('property'=>'url', 'type'=>'label', 'label'=>'Url', 'description'=>'The URL that caused the error'),
+			'message' => array('property'=>'message', 'type'=>'label', 'label'=>'Message', 'description'=>'A description of the error'),
+			'backtrace' => array('property'=>'backtrace', 'type'=>'label', 'label'=>'Backtrace', 'description'=>'The trace that led to the error'),
+			'timestamp' => array('property'=>'timestamp', 'type'=>'label', 'label'=>'Timestamp', 'description'=>'When the error occurred'),
+		);
+		return $structure;
+	}
+
+	public function getMessage(){
         return $this->message;
     }
 
@@ -69,6 +103,13 @@ class AspenError
         global $aspenUsage;
         $aspenUsage->pagesWithErrors++;
 	    $aspenUsage->update();
+
+	    try{
+		    $this->insert();
+	    }catch(Exception $e){
+	    	//Table has not been created yet
+	    }
+
 
         //Clear any output that has been generated so far so the user just gets the error message.
         if (!$configArray['System']['debug']){
