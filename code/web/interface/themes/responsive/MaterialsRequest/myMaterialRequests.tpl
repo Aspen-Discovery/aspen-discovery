@@ -1,4 +1,3 @@
-<script type="text/javascript" src="{$path}/MaterialsRequest/ajax.js"></script>
 <div id="main-content">
 	{if !empty($profile->_web_note)}
 		<div class="row">
