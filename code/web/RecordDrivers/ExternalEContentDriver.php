@@ -89,7 +89,7 @@ class ExternalEContentDriver extends BaseEContentDriver{
 		//Get Related Records to make sure we initialize items
 		$recordInfo = $this->getGroupedWorkDriver()->getRelatedRecord('external_econtent:' . $this->getIdWithSource());
 
-		$interface->assign('items', $recordInfo['itemSummary']);
+		$interface->assign('items', $recordInfo->getItemSummary());
 
 		//Load more details options
 		$moreDetailsOptions = $this->getBaseMoreDetailsOptions($isbn);

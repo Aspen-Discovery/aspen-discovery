@@ -17,7 +17,6 @@ class ExternalEContent_Home extends Action{
 
 		$this->id = strip_tags($_REQUEST['id']);
 		$interface->assign('id', $this->id);
-		//$recordDriver = new ExternalEContentDriver($this->id);
 
 		global $activeRecordProfile;
 		if (isset($activeRecordProfile)){
@@ -67,13 +66,13 @@ class ExternalEContent_Home extends Action{
 
 			//Get Related Records to make sure we initialize items
 			$recordInfo = $recordDriver->getGroupedWorkDriver()->getRelatedRecord('external_econtent:' . $recordDriver->getIdWithSource());
-			$interface->assign('actions', $recordInfo['actions']);
+			$interface->assign('actions', $recordInfo->getActions());
 
 			// Set Show in Main Details Section options for templates
 			// (needs to be set before moreDetailsOptions)
 			global $library;
-			foreach ($library->showInMainDetails as $detailoption) {
-				$interface->assign($detailoption, true);
+			foreach ($library->showInMainDetails as $detailOption) {
+				$interface->assign($detailOption, true);
 			}
 
 			$interface->assign('moreDetailsOptions', $recordDriver->getMoreDetailsOptions());
@@ -90,7 +89,7 @@ class ExternalEContent_Home extends Action{
 	}
 
 	/**
-	 * @param HooplaRecordDriver $recordDriver
+	 * @param ExternalEContentDriver $recordDriver
 	 */
 	function loadCitations($recordDriver)
 	{
