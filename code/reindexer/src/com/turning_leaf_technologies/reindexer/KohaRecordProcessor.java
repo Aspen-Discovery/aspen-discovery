@@ -378,34 +378,44 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 		if (itemField.getSubfield('e') != null){
 			sourceType = itemField.getSubfield('e').getData();
 		}else{
-			//Try 949a
-			DataField field949 = record.getDataField("949");
-			if (field949 != null && field949.getSubfield('a') != null){
-				sourceType = field949.getSubfield('a').getData();
-			}else{
-				DataField field037 = record.getDataField("037");
-				if (field037 != null && field037.getSubfield('b') != null){
-					sourceType = field037.getSubfield('b').getData();
-				}else{
-					List<DataField> urlFields = record.getDataFields("856");
-					for (DataField urlDataField : urlFields){
-						if (urlDataField.getSubfield('3') != null) {
-							if (urlDataField.getIndicator1() == '4' || urlDataField.getIndicator1() == ' ') {
-								//Technically, should not include indicator 2 of 2, but AspenCat has lots of records with an indicator 2 of 2 that are valid.
-								if (urlDataField.getIndicator2() == ' ' || urlDataField.getIndicator2() == '0' || urlDataField.getIndicator2() == '1' || urlDataField.getIndicator2() == '2') {
-									sourceType = urlDataField.getSubfield('3').getData().trim();
-									break;
-								}
-							}
+			List<DataField> urlFields = record.getDataFields("856");
+			for (DataField urlDataField : urlFields) {
+				Subfield subfieldU = urlDataField.getSubfield('u');
+				if (subfieldU != null) {
+					String urlSubfield = subfieldU.getData();
+					if (urlSubfield.contains("overdrive.com")) {
+						sourceType = "OverDrive";
+						break;
+					} else if (urlSubfield.contains("ebrary.com")) {
+						sourceType = "Ebook Central";
+						break;
+					} else {
+						logger.debug("URL is not overdrive");
+					}
+				}
+				if (urlDataField.getSubfield('3') != null) {
+					if (urlDataField.getIndicator1() == '4' || urlDataField.getIndicator1() == ' ') {
+						//Technically, should not include indicator 2 of 2, but AspenCat has lots of records with an indicator 2 of 2 that are valid.
+						if (urlDataField.getIndicator2() == ' ' || urlDataField.getIndicator2() == '0' || urlDataField.getIndicator2() == '1' || urlDataField.getIndicator2() == '2') {
+							sourceType = urlDataField.getSubfield('3').getData().trim();
+							break;
 						}
 					}
+				}
+			}
 
-					//If the source type is still null, try the location of the item
-					if (sourceType == null){
-						//Try the location for the item
-						if (itemField.getSubfield('a') != null){
-							sourceType = itemField.getSubfield('a').getData();
-						}
+			//If the source type is still null, try the location of the item
+			if (sourceType == null){
+				DataField field037 = record.getDataField("037");
+				DataField field949 = record.getDataField("949");
+				if (field037 != null && field037.getSubfield('b') != null) {
+					sourceType = field037.getSubfield('b').getData();
+				}else if (field949 != null && field949.getSubfield('a') != null){
+					sourceType = field949.getSubfield('a').getData();
+				}else{
+					//Try the location for the item
+					if (itemField.getSubfield('a') != null){
+						sourceType = itemField.getSubfield('a').getData();
 					}
 				}
 			}

@@ -277,7 +277,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			if (marcReader.hasNext()) {
 				record = marcReader.next();
 			}
-			if (record.hasErrors()){
+			if (record != null && record.hasErrors()){
 				logger.info("Errors loading MARC\r\n" + record.getErrors().toString());
 			}
 			inputStream.close();
@@ -699,7 +699,12 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 		itemInfo.setDetailedStatus("Available Online");
 
-		return relatedRecord;
+		//If we don't get a URL, return null since it isn't valid
+		if (itemInfo.geteContentUrl() == null || itemInfo.geteContentUrl().length() == 0){
+			return null;
+		}else{
+			return relatedRecord;
+		}
 	}
 
 	protected void loadDateAdded(String recordIdentifier, DataField itemField, ItemInfo itemInfo) {
@@ -1947,22 +1952,18 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 							result.add("Collage");
 							break;
 						case 'D':
+						case 'L':
 							result.add("Drawing");
 							break;
 						case 'E':
 							result.add("Painting");
 							break;
 						case 'F':
+						case 'J':
 							result.add("Print");
 							break;
 						case 'G':
 							result.add("Photonegative");
-							break;
-						case 'J':
-							result.add("Print");
-							break;
-						case 'L':
-							result.add("Drawing");
 							break;
 						case 'O':
 							result.add("FlashCard");
