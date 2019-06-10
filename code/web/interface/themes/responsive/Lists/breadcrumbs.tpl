@@ -4,3 +4,12 @@
 {if $breadcrumbText}
     <em>{$breadcrumbText|truncate:30:"..."|escape}</em> <span class="divider">&raquo;</span>
 {/if}
+{if $recordCount}
+    {if $displayMode == 'covers'}
+        There are {$recordCount|number_format} total results.
+    {else}
+        {translate text="Showing"}
+        {$recordStart} - {$recordEnd}
+        {translate text='of'} {$recordCount|number_format}
+    {/if}
+{/if}

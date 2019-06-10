@@ -107,17 +107,6 @@
 				<label for="hideCovers" class="control-label checkbox pull-right"> Hide Covers <input id="hideCovers" type="checkbox" onclick="AspenDiscovery.Account.toggleShowCovers(!$(this).is(':checked'))" {if $showCovers == false}checked="checked"{/if}></label>
 			</form>
 
-		{if $recordCount}
-			<div class="resulthead row">
-				<div class="col-xs-12">
-						{translate text="Showing"} <b>{$recordStart}</b> - <b>{$recordEnd}</b> {translate text='of'} <b>{$recordCount}</b>
-						{if $debug}
-							&nbsp;There are {$favList->numValidListItems()} valid Items.
-						{/if}
-				</div>
-			</div>
-		{/if}
-
 			{if $allowEdit && $userSort}
 				<div class="alert alert-info alert-dismissible" role="alert">
 					<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>

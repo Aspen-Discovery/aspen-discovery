@@ -8,26 +8,6 @@
 
 	{* Information about the search *}
 	<div class="result-head">
-
-		<div>
-			{if $recordCount}
-				{if $displayMode == 'covers'}
-					There are {$recordCount|number_format} total results.
-				{else}
-					{translate text="Showing"}
-					{$recordStart} - {$recordEnd}
-					{translate text='of'} {$recordCount|number_format}
-				{/if}
-			{else}
-				No results found in {$sectionLabel}
-			{/if}
-			{if !$productionServer}
-			<span class="hidden-phone">
-			 {translate text='query time'}: {$qtime}s
-			</span>
-			{/if}
-		</div>
-
 		{if $replacementTerm}
 			<div id="replacement-search-info-block">
 				<div id="replacement-search-info"><span class="replacement-search-info-text">Showing Results for</span> {$replacementTerm}</div>

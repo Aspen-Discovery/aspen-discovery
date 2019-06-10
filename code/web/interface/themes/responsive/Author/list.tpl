@@ -1,23 +1,10 @@
 {* Listing Options *}
 <div class="row">
-	{if $recordCount}
-		{translate text="Showing"}
-		<b>{$recordStart}</b> - <b>{$recordEnd}</b>
-		{* total record count is not currently reliable due to Solr facet paging
-					 limitations -- for now, displaying it is disabled.
-				{translate text='of'} <b>{$recordCount}</b>
-				 *}
-		{translate text='for search'} <b>'{$lookfor|escape}'</b>
-	{/if}
 
-	<div class="pull-right">
-		{translate text='Sort'}
-		<select name="sort" onchange="document.location.href = this.options[this.selectedIndex].value;">
-		{foreach from=$sortList item=sortData key=sortLabel}
-			<option value="{$sortData.sortUrl|escape}"{if $sortData.selected} selected{/if}>{translate text=$sortData.desc}</option>
-		{/foreach}
-		</select>
-	</div>
+	{* User's viewing mode toggle switch *}
+	{include file="Search/results-displayMode-toggle.tpl"}
+
+	<div class="clearer"></div>
 </div>
 
 {* End Listing Options *}

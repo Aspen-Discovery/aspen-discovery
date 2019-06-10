@@ -10063,6 +10063,16 @@ a.browse-thumbnail-sorted.active {
   background-color: #007A53;
   border-color: #007A53;
 }
+#results-sort {
+  width: 160px;
+  margin: 0 8px 0 18px;
+  height: 30px;
+  padding: 2px 5px;
+  border-radius: 3px;
+  border: 1px solid #ababab;
+  float: left;
+  font-size: 12px;
+}
 .graph-bar {
   background-color: #088ec6;
 }

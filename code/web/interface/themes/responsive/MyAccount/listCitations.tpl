@@ -17,12 +17,6 @@
 			</div>
 			<br />
 		{/foreach}
-		{if $recordCount}
-			{translate text="Showing"}
-			<b>{$recordStart}</b> - <b>{$recordEnd}</b>
-			{translate text='of'} <b>{$recordCount}</b>
-		{/if}
-
 	</div>
 {else}
 	{translate text='This list does not have any titles to build citations for.'}

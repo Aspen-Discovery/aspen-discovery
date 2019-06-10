@@ -39,6 +39,8 @@ abstract class MyAccount extends Action
 	 * @param string|null $sidebar         Sets the sidebar on the page to be displayed
 	 */
 	function display($mainContentTemplate, $pageTitle='My Account', $sidebar='Search/home-sidebar.tpl') {
+		global $interface;
+		$interface->setPageTitle($pageTitle);
 		parent::display($mainContentTemplate, translate($pageTitle), $sidebar);
 	}
 }

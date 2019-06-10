@@ -4,3 +4,8 @@
 {if $breadcrumbText}
 &nbsp;<em>{$breadcrumbText|truncate:30:"..."|escape}</em> <span class="divider">&raquo;</span>
 {/if}
+{if $recordCount}
+	{translate text="Showing"}
+	<b>{$recordStart}</b> - <b>{$recordEnd}</b>
+	{translate text='of'} <b>{$recordCount}</b>
+{/if}

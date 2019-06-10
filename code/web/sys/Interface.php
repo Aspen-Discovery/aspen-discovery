@@ -276,10 +276,6 @@ class UInterface extends Smarty
 		}
 	}
 
-	function  getShortPageTitle(){
-		return $this->get_template_vars('shortPageTitle');
-	}
-
 	function getLanguage()
 	{
 		return $this->lang;

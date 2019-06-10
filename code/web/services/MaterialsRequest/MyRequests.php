@@ -86,7 +86,7 @@ class MaterialsRequest_MyRequests extends MyAccount
 			exit;
 		}
 		$interface->assign('allRequests', $allRequests);
-		$interface->assign('shortPageTitle', 'My ' . translate('Materials_Request_alt'). 's' );
+		$interface->assign('pageTitleShort', 'My ' . translate('Materials_Request_alt'). 's' );
 
 		$title = 'My '. translate('Materials_Request_alt') .'s';
 		$this->display('myMaterialRequests.tpl', $title);

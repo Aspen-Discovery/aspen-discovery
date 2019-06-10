@@ -12,8 +12,7 @@
 <style type="text/css">
 {if $headingFont}
 h1, h2, h3, h4, h5, .header-button, .menu-bar-label, .panel-title, label,.browse-category,#browse-sub-category-menu,button,
-.btn,.myAccountLink,.adminMenuLink,.selected-browse-label-search,.result-label,.result-title,.label,#remove-search-label,
-#results-sort-label,#narrow-search-label{ldelim}
+.btn,.myAccountLink,.adminMenuLink,.selected-browse-label-search,.result-label,.result-title,.label,#remove-search-label,#narrow-search-label{ldelim}
     font-family: {$headingFont}, "Helvetica Neue", Helvetica, Arial, sans-serif;
 {rdelim}
 {/if}

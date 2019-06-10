@@ -30,7 +30,6 @@ class Author_Search extends Action
 		$interface->assign('lookfor',     $searchObject->displayQuery());
 		$interface->assign('searchType',  $searchObject->getSearchType());
 		$interface->assign('searchIndex', $searchObject->getSearchIndex());
-		$interface->assign('qtime',       round($searchObject->getQuerySpeed(), 2));
 
 		$summary = $searchObject->getResultSummary();
 		// Post processing, remember that the REAL results here with regards to

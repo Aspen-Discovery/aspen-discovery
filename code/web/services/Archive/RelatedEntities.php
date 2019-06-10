@@ -47,7 +47,7 @@ class Archive_RelatedEntities extends Action {
 			$searchObject->addFacet($facetField, 'Events');
 			$urlAction = 'Event';
 		}
-		$interface->assign('shortPageTitle', $pageTitle);
+		$interface->assign('pageTitleShort', $pageTitle);
 
 		//TODO: Sort and paginate facet values.
 		//  The problem with doing it now is that we are faceting based on pid which can't

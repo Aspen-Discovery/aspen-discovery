@@ -3,3 +3,12 @@
 {elseif $pageTemplate!=""}
 	<li>{translate text=$pageTemplate|replace:'.tpl':''|capitalize|translate} <span class="divider">&raquo;</span></li>
 {/if}
+{if $recordCount}
+	{if $displayMode == 'covers'}
+		There are {$recordCount|number_format} total results.
+	{else}
+		{translate text="Showing"}
+		{$recordStart} - {$recordEnd}
+		{translate text='of'} {$recordCount|number_format}
+	{/if}
+{/if}

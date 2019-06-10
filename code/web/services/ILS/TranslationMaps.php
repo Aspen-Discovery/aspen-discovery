@@ -16,9 +16,8 @@ class ILS_TranslationMaps extends ObjectEditor {
 				$interface->assign('additionalObjectActions', $this->getAdditionalObjectActions($translationMap));
 			}
 			$interface->assign('id', $id);
-			$shortPageTitle = "Import Translation Map Data";
-			$interface->assign('shortPageTitle', $shortPageTitle);
-			$this->display('../ILS/importTranslationMapData.tpl', $shortPageTitle);
+			$pageTitleShort = "Import Translation Map Data";
+			$this->display('../ILS/importTranslationMapData.tpl', $pageTitleShort);
 			exit();
 		}elseif($objectAction == 'doAppend' || $objectAction == 'doReload'){
 			$id = $_REQUEST['id'];

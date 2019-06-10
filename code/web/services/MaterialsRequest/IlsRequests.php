@@ -23,7 +23,7 @@ class MaterialsRequest_IlsRequests extends MyAccount
 			}
 			$requestTemplate = $catalogConnection->getMaterialsRequestsPage($user);
 
-			$interface->assign('shortPageTitle', 'My ' . translate('Materials_Request_alt'). 's' );
+			$interface->assign('pageTitleShort', 'My ' . translate('Materials_Request_alt'). 's' );
 
 			$title = 'My '. translate('Materials_Request_alt') .'s';
 			$this->display($requestTemplate, $title);

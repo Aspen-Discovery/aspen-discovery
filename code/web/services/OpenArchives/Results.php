@@ -63,7 +63,6 @@ class OpenArchives_Results extends Action {
         // Some more variables
         //   Those we can construct AFTER the search is executed, but we need
         //   no matter whether there were any results
-        $interface->assign('qtime',               round($searchObject->getQuerySpeed(), 2));
         $interface->assign('lookfor',             $searchObject->displayQuery());
         $interface->assign('searchType',          $searchObject->getSearchType());
         // Will assign null for an advanced search

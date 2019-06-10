@@ -5,7 +5,7 @@
 </script>
 {/if}
 <div class="col-xs-12">
-	{if $seriesTitle}
+	{if !empty($seriesTitle)}
 	<h2 class="notranslate">
 		{$seriesTitle}
 	</h2>
@@ -25,11 +25,7 @@
 
 	<div class="result-head">
 		<div id="searchInfo">
-			{if $recordCount}
-				{translate text="Showing"}
-				<b>{$recordStart}</b> - <b>{$recordEnd}</b>
-				{translate text='of'} <b>{$recordCount}</b>
-			{else}
+			{if !$recordCount}
 				<p>Sorry, we could not find series information for this title.</p>
 			{/if}
 		</div>

@@ -1,6 +1,6 @@
 <li>
-	{if !empty($shortPageTitle)}
-	<em>{$shortPageTitle}</em>
+	{if !empty($pageTitleShort)}
+	<em>{$pageTitleShort}</em>
 	{else}
 	<em>{$pageTemplate|replace:'.tpl':''|capitalize|translate}</em>
 	{/if}

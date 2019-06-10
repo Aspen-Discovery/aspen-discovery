@@ -22,7 +22,6 @@ class EBSCO_Results extends Action{
 			$pageTitle = substr($pageTitle, 0, 20) . '...';
 		}
 
-		$interface->assign('qtime',               round($searchObject->getQuerySpeed(), 2));
 		$interface->assign('lookfor',             $displayQuery);
 
 		// Big one - our results //

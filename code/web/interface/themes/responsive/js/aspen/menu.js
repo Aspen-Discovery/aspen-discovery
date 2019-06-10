@@ -107,7 +107,7 @@ AspenDiscovery.Menu = (function(){
 	return {
 		mobileMode: false,
 		SearchBoxSelectors:      '#home-page-search',
-		SideBarSearchSelectors:  '#narrow-search-label,#facet-accordion,#results-sort-label,#results-sort-label+div.row,#remove-search-label,#remove-search-label+.applied-filters,#similar-authors',
+		SideBarSearchSelectors:  '#narrow-search-label,#facet-accordion,#remove-search-label,#remove-search-label+.applied-filters,#similar-authors',
 		SideBarAccountSelectors: '#home-page-login,#home-account-links',
 		SideBarMenuSelectors:    '#home-page-login,#home-page-library-section',
 		ExploreMoreSelectors:    '#explore-more-header,#explore-more-body',
