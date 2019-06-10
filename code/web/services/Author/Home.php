@@ -198,11 +198,7 @@ class Author_Home extends Action
 		$interface->assign('showWikipedia', false);
 		if ($searchObject->getPage() == 1) {
 			// Only load Wikipedia info if turned on in config file:
-			if (isset($configArray['Content']['authors'])
-					&& stristr($configArray['Content']['authors'], 'wikipedia')
-					&& (!$library || $library->showWikipediaContent == 1)
-					) {
-
+			if ($library->showWikipediaContent == 1) {
 				$interface->assign('showWikipedia', true);
 
 				//Strip anything in parenthesis
@@ -235,8 +231,6 @@ class Author_Home extends Action
 		// Some more variables
 		//   Those we can construct AFTER the search is executed, but we need
 		//   no matter whether there were any results
-		$interface->assign('qtime', round($searchObject->getQuerySpeed(), 2));
-
 		// Assign interface variables
 		$summary = $searchObject->getResultSummary();
 		$interface->assign('recordCount', $summary['resultTotal']);
@@ -265,29 +259,10 @@ class Author_Home extends Action
 
 		//Load similar author information.
 		$groupedWorkId = null;
-		$workIsbns = array();
 		foreach ($searchObject->getResultRecordSet() as $title){
 			$groupedWorkId = $title['id'];
-			if (isset($title['isbn'])){
-				if (is_array($title['isbn'])){
-					$workIsbns = $title['isbn'];
-				}else{
-					$workIsbns[] = $title['isbn'];
-				}
-
-				if (count($workIsbns) > 0){
-					break;
-				}
-			}
-		}
-
-		if (count($workIsbns) > 0){
-			//Make sure to trim off any format information from the ISBN
-			$novelist = NovelistFactory::getNovelist();
-			$enrichment['novelist'] = $novelist->getSimilarAuthors($groupedWorkId, $workIsbns);
-			if ($enrichment) {
-				$interface->assign('enrichment', $enrichment);
-			}
+			$interface->assign('firstWorkId', $groupedWorkId);
+			break;
 		}
 
 		// Process Paging
