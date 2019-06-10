@@ -120,7 +120,7 @@
 					</div>
 				{/if}
 
-				{if $showArInfo && $summArInfo}
+				{if !empty($showArInfo) && $summArInfo}
 					<div class="row">
 						<div class="result-label col-tn-3">{translate text='Accelerated Reader'}: </div>
 						<div class="result-value col-tn-9">
@@ -129,7 +129,7 @@
 					</div>
 				{/if}
 
-				{if $showLexileInfo && $summLexileInfo}
+				{if !empty($showLexileInfo) && $summLexileInfo}
 					<div class="row">
 						<div class="result-label col-tn-3">{translate text='Lexile measure'}: </div>
 						<div class="result-value col-tn-9">
@@ -138,7 +138,7 @@
 					</div>
 				{/if}
 
-				{if $showFountasPinnell && $summFountasPinnell}
+				{if !empty($showFountasPinnell) && $summFountasPinnell}
 					<div class="row">
 						<div class="result-label col-tn-3">{translate text='Fountas &amp; Pinnell'}: </div>
 						<div class="result-value col-tn-9">

@@ -117,7 +117,7 @@
 		</div>
 	{/if}
 
-	{if $showArInfo && $recordDriver->getAcceleratedReaderDisplayString()}
+	{if !empty($showArInfo) && $recordDriver->getAcceleratedReaderDisplayString()}
 		<div class="row">
 			<div class="result-label col-sm-4">{translate text='Accelerated Reader'}: </div>
 			<div class="result-value col-sm-8">
@@ -126,7 +126,7 @@
 		</div>
 	{/if}
 
-	{if $showLexileInfo && $recordDriver->getLexileDisplayString()}
+	{if !empty($showLexileInfo) && $recordDriver->getLexileDisplayString()}
 		<div class="row">
 			<div class="result-label col-sm-4">{translate text='Lexile measure'}: </div>
 			<div class="result-value col-sm-8">
@@ -135,7 +135,7 @@
 		</div>
 	{/if}
 
-	{if $showFountasPinnell && $recordDriver->getFountasPinnellLevel()}
+	{if !empty($showFountasPinnell) && $recordDriver->getFountasPinnellLevel()}
 		<div class="row">
 			<div class="result-label col-sm-4">{translate text='Fountas &amp; Pinnell'}:</div>
 			<div class="col-sm-8 result-value">
@@ -155,9 +155,13 @@
 	<div class="row">
 		<div class="result-label col-sm-4">{translate text='Status'}:</div>
 		<div class="col-sm-8 result-value">
-			{include file='GroupedWork/statusIndicator.tpl' statusInformation=$statusSummary->getStatusInformation() viewingIndividualRecord=1}
+			{if $statusSummary}
+				{include file='GroupedWork/statusIndicator.tpl' statusInformation=$statusSummary->getStatusInformation() viewingIndividualRecord=1}
+				{include file='GroupedWork/copySummary.tpl' summary=$statusSummary->getItemSummary() totalCopies=$statusSummary->getCopies() itemSummaryId=$statusSummary->id}
+			{else}
+				Unavailable/Withdrawn
+			{/if}
 
-			{include file='GroupedWork/copySummary.tpl' summary=$statusSummary->getItemSummary() totalCopies=$statusSummary->getCopies() itemSummaryId=$statusSummary->id}
 		</div>
 		{* <div class="col-xs-8 result-value result-value-bold statusValue {$statusSummary.class}" id="statusValue">{$statusSummary.groupedStatus|escape}{if $statusSummary.numHolds > 0} ({$statusSummary.numHolds} people are on the wait list){/if}</div> *}
 	</div>

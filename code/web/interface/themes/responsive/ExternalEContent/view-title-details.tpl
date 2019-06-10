@@ -61,7 +61,7 @@
 		</div>
 	{/if}
 
-	{if $showArInfo && $recordDriver->getAcceleratedReaderDisplayString()}
+	{if !empty($showArInfo) && $recordDriver->getAcceleratedReaderDisplayString()}
 		<div class="row">
 			<div class="result-label col-sm-4">{translate text='Accelerated Reader'}: </div>
 			<div class="result-value col-sm-8">
@@ -70,7 +70,7 @@
 		</div>
 	{/if}
 
-	{if $showLexileInfo && $recordDriver->getLexileDisplayString()}
+	{if !empty($showLexileInfo) && $recordDriver->getLexileDisplayString()}
 		<div class="row">
 			<div class="result-label col-sm-4">{translate text='Lexile measure'}: </div>
 			<div class="result-value col-sm-8">
@@ -79,7 +79,7 @@
 		</div>
 	{/if}
 
-	{if $showFountasPinnell && $recordDriver->getFountasPinnellLevel()}
+	{if !empty($showFountasPinnell) && $recordDriver->getFountasPinnellLevel()}
 		<div class="row">
 			<div class="result-label col-sm-3>{translate text='Fountas &amp; Pinnell'}:</div>
 			<div class="col-sm-9 result-value">
