@@ -159,7 +159,8 @@ public class MarcRecordGrouper extends RecordGroupingProcessor{
 					List<DataField> linkFields = getDataFields(marcRecord, "856");
 					for (DataField linkField : linkFields) {
 						if (linkField.getSubfield('u') != null) {
-							//Check the url to see if it is from OverDrive or Hoopla
+							//Check the url to see if it is from OverDrive
+							//TODO: Suppress Rbdigital and Hoopla records as well?
 							String linkData = linkField.getSubfield('u').getData().trim();
 							if (overdrivePattern.matcher(linkData).matches()) {
 								identifier.setSuppressed();
