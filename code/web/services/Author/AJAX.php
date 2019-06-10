@@ -5,13 +5,39 @@ class Author_AJAX {
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
 		if (method_exists($this, $method)) {
 			//JSON Encoded data
-			header('Content-type: text/plain');
+			header('Content-type: application/json');
 			header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 			header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
 			echo $this->$method();
 		}else {
 			echo json_encode(array('error'=>'invalid_method'));
 		}
+	}
+
+	function getEnrichmentInfo() {
+		global $interface;
+		global $memoryWatcher;
+
+		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+		$id = $_REQUEST['workId'];
+		$recordDriver = new GroupedWorkDriver($id);
+
+		$enrichmentResult = array();
+		$enrichmentData = $recordDriver->loadEnrichment();
+		$memoryWatcher->logMemory('Loaded Enrichment information from Novelist');
+
+		/** @var NovelistData $novelistData */
+		if (isset( $enrichmentData['novelist'])){
+			$novelistData = $enrichmentData['novelist'];
+
+			if ($novelistData->getAuthorCount()){
+				$interface->assign('similarAuthors', $novelistData->getAuthors());
+				$enrichmentResult['similarAuthorsNovelist'] = $interface->fetch('GroupedWork/similarAuthorsNovelistSidebar.tpl');
+			}
+			$memoryWatcher->logMemory('Loaded Similar authors from Novelist');
+		}
+
+		return json_encode($enrichmentResult);
 	}
 
 	function getWikipediaData(){
@@ -21,10 +47,7 @@ class Author_AJAX {
 		/** @var Memcache $memCache */
 		global $memCache;
 		$returnVal = array();
-		if (isset($configArray['Content']['authors'])
-				&& stristr($configArray['Content']['authors'], 'wikipedia')
-				&& (!$library || $library->showWikipediaContent == 1)
-		) {
+		if ($library->showWikipediaContent == 1) {
 			// Only use first two characters of language string; Wikipedia
 			// uses language domains but doesn't break them up into regional
 			// variations like pt-br or en-gb.

@@ -45,6 +45,7 @@
 		<script src="{$path}/interface/themes/responsive/js/aspen/account.js?v={$gitBranch|urlencode}"></script>
 		<script src="{$path}/interface/themes/responsive/js/aspen/admin.js?v={$gitBranch|urlencode}"></script>
 		<script src="{$path}/interface/themes/responsive/js/aspen/archive.js?v={$gitBranch|urlencode}"></script>
+		<script src="{$path}/interface/themes/responsive/js/aspen/authors.js?v={$gitBranch|urlencode}"></script>
 		<script src="{$path}/interface/themes/responsive/js/aspen/browse.js?v={$gitBranch|urlencode}"></script>
 		<script src="{$path}/interface/themes/responsive/js/aspen/dpla.js?v={$gitBranch|urlencode}"></script>
 		<script src="{$path}/interface/themes/responsive/js/aspen/econtent-record.js?v={$gitBranch|urlencode}"></script>

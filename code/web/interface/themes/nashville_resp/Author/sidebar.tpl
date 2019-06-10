@@ -7,17 +7,14 @@
 
 			{* Sort the results - moved to results-displayMode-toggle.tpl for Nashville - 2015 07 07 by Jenny *}
 
-			{*TODO: delete this once menu bar is well-implemented *}
-			<div id="xs-main-content-insertion-point" class="row"></div>
-
-			{if $enrichment.novelist->similarAuthorCount != 0}
+			{if $enrichment.novelist->getAuthorCount() != 0}
 				<div id="similar-authors" class="sidebar-links row"{if $displaySidebarMenu} style="display: none"{/if}>
-					<div class="panel">
+					<div>
 						<div id="similar-authors-label" class="sidebar-label">
 							{translate text="Similar Authors"}
 						</div>
-						<div class="similar-authors panel-body">
-							{foreach from=$enrichment.novelist->authors item=similar}
+						<div class="similar-authors">
+							{foreach from=$enrichment.novelist->getAuthors() item=similar}
 								<div class="facetValue">
 									<a href='{$similar.link}'>{$similar.name}</a>
 								</div>

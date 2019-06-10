@@ -93,78 +93,78 @@ AspenDiscovery.GroupedWork = (function(){
 		loadEnrichmentInfo: function (id, forceReload) {
 			let url = Globals.path + "/GroupedWork/" + encodeURIComponent(id) + "/AJAX",
 					params = {'method':'getEnrichmentInfo'};
-			if (forceReload != undefined){
+			if (forceReload !== undefined){
 				params['reload'] = true;
 			}
 			$.getJSON(url, params, function(data) {
-					try{
-						let seriesData = data.seriesInfo;
-						if (seriesData && seriesData.titles.length > 0) {
-							seriesScroller = new TitleScroller('titleScrollerSeries', 'Series', 'seriesList');
-							$('#seriesInfo').show();
-							seriesScroller.loadTitlesFromJsonData(seriesData);
-							$('#seriesPanel').show();
-						}else{
-							$('#seriesPanel').hide();
-						}
-						let similarTitleData = data.similarTitles;
-						if (similarTitleData && similarTitleData.titles.length > 0) {
-							morelikethisScroller = new TitleScroller('titleScrollerMoreLikeThis', 'MoreLikeThis', 'morelikethisList');
-							$('#moreLikeThisInfo').show();
-							morelikethisScroller.loadTitlesFromJsonData(similarTitleData);
-						}else{
-							$('#moreLikeThisPanel').hide();
-						}
-						let showGoDeeperData = data.showGoDeeper;
-						if (showGoDeeperData) {
-							//$('#goDeeperLink').show();
-							let goDeeperOptions = data.goDeeperOptions;
-							//add a tab before citation for each item
-							for (let option in goDeeperOptions){
-								if (option == 'excerpt') {
-									$("#excerptPanel").show();
-								} else if (option == 'avSummary') {
-									$("#avSummaryPlaceholder,#tableOfContentsPlaceholder,#tableOfContentsPanel").show();
-								} else if (option == 'tableOfContents') {
-									$("#tableOfContentsPlaceholder,#tableOfContentsPanel").show();
-								} else if (option == 'authorNotes') {
-									$('#authornotesPlaceholder,#authornotesPanel').show();
-								}
+				try{
+					let seriesData = data.seriesInfo;
+					if (seriesData && seriesData.titles.length > 0) {
+						seriesScroller = new TitleScroller('titleScrollerSeries', 'Series', 'seriesList');
+						$('#seriesInfo').show();
+						seriesScroller.loadTitlesFromJsonData(seriesData);
+						$('#seriesPanel').show();
+					}else{
+						$('#seriesPanel').hide();
+					}
+					let similarTitleData = data.similarTitles;
+					if (similarTitleData && similarTitleData.titles.length > 0) {
+						morelikethisScroller = new TitleScroller('titleScrollerMoreLikeThis', 'MoreLikeThis', 'morelikethisList');
+						$('#moreLikeThisInfo').show();
+						morelikethisScroller.loadTitlesFromJsonData(similarTitleData);
+					}else{
+						$('#moreLikeThisPanel').hide();
+					}
+					let showGoDeeperData = data.showGoDeeper;
+					if (showGoDeeperData) {
+						//$('#goDeeperLink').show();
+						let goDeeperOptions = data.goDeeperOptions;
+						//add a tab before citation for each item
+						for (let option in goDeeperOptions){
+							if (option == 'excerpt') {
+								$("#excerptPanel").show();
+							} else if (option == 'avSummary') {
+								$("#avSummaryPlaceholder,#tableOfContentsPlaceholder,#tableOfContentsPanel").show();
+							} else if (option == 'tableOfContents') {
+								$("#tableOfContentsPlaceholder,#tableOfContentsPanel").show();
+							} else if (option == 'authorNotes') {
+								$('#authornotesPlaceholder,#authornotesPanel').show();
 							}
 						}
-						if (AspenDiscovery.GroupedWork.hasTableOfContentsInRecord){
-							$("#tableofcontentstab_label,#tableOfContentsPlaceholder,#tableOfContentsPanel").show();
-						}
-						let similarTitlesNovelist = data.similarTitlesNovelist;
-						if (similarTitlesNovelist && similarTitlesNovelist.length > 0){
-							$("#novelistTitlesPlaceholder").html(similarTitlesNovelist);
-							$("#novelistTab_label,#similarTitlesPanel").show()
-									;
-						}
-
-						let similarAuthorsNovelist = data.similarAuthorsNovelist;
-						if (similarAuthorsNovelist && similarAuthorsNovelist.length > 0){
-							$("#novelistAuthorsPlaceholder").html(similarAuthorsNovelist);
-							$("#novelistTab_label,#similarAuthorsPanel").show();
-						}
-
-						let similarSeriesNovelist = data.similarSeriesNovelist;
-						if (similarSeriesNovelist && similarSeriesNovelist.length > 0){
-							$("#novelistSeriesPlaceholder").html(similarSeriesNovelist);
-							$("#novelistTab_label,#similarSeriesPanel").show();
-						}
-
-						// Show Explore More Sidebar Section loaded above
-						$('.ajax-carousel', '#explore-more-body').parents('.jcarousel-wrapper').show()
-								.prev('.sectionHeader').show();
-						// Initiate Any Explore More JCarousels
-						AspenDiscovery.initCarousels('.ajax-carousel');
-
-					} catch (e) {
-						alert("error loading enrichment: " + e);
 					}
+					if (AspenDiscovery.GroupedWork.hasTableOfContentsInRecord){
+						$("#tableofcontentstab_label,#tableOfContentsPlaceholder,#tableOfContentsPanel").show();
+					}
+					let similarTitlesNovelist = data.similarTitlesNovelist;
+					if (similarTitlesNovelist && similarTitlesNovelist.length > 0){
+						$("#novelistTitlesPlaceholder").html(similarTitlesNovelist);
+						$("#novelistTab_label,#similarTitlesPanel").show()
+						;
+					}
+
+					let similarAuthorsNovelist = data.similarAuthorsNovelist;
+					if (similarAuthorsNovelist && similarAuthorsNovelist.length > 0){
+						$("#novelistAuthorsPlaceholder").html(similarAuthorsNovelist);
+						$("#novelistTab_label,#similarAuthorsPanel").show();
+					}
+
+					let similarSeriesNovelist = data.similarSeriesNovelist;
+					if (similarSeriesNovelist && similarSeriesNovelist.length > 0){
+						$("#novelistSeriesPlaceholder").html(similarSeriesNovelist);
+						$("#novelistTab_label,#similarSeriesPanel").show();
+					}
+
+					// Show Explore More Sidebar Section loaded above
+					$('.ajax-carousel', '#explore-more-body')
+						.parents('.jcarousel-wrapper').show()
+						.prev('.sectionHeader').show();
+					// Initiate Any Explore More JCarousels
+					AspenDiscovery.initCarousels('.ajax-carousel');
+
+				} catch (e) {
+					alert("error loading enrichment: " + e);
 				}
-			);
+			});
 		},
 
 		loadReviewInfo: function (id) {

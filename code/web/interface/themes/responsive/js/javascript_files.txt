@@ -19,6 +19,7 @@ aspen/base.min.js
 aspen/account.min.js
 aspen/admin.min.js
 aspen/archive.min.js
+aspen/authors.min.js
 aspen/browse.min.js
 aspen/dpla.min.js
 aspen/econtent-record.min.js

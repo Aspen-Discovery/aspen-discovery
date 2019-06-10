@@ -14,32 +14,21 @@
 
 	{* Information about the search *}
 	<div class="result-head">
-
-		{if $recordCount}
-			{if $displayMode == 'covers'}
-				There are {$recordCount|number_format} total results.
-			{else}
-				{translate text="Showing"} {$recordStart} - {$recordEnd} {translate text='of'} {$recordCount|number_format}
+		<div>
+			{if $replacementTerm}
+				<div id="replacement-search-info">
+					<span class="replacement-search-info-text">Showing Results for </span>{$replacementTerm}<span class="replacement-search-info-text">.  Search instead for <span class="replacement-search-info-text"><a href="{$oldSearchUrl}">{$oldTerm}</a>
+				</div>
 			{/if}
-		{/if}
-		{if !$productionServer}
-		<span class="hidden-phone">
-			 &nbsp;{translate text='query time'}: {$qtime}s
-		</span>
-		{/if}
-		{if $replacementTerm}
-			<div id="replacement-search-info">
-				<span class="replacement-search-info-text">Showing Results for </span>{$replacementTerm}<span class="replacement-search-info-text">.  Search instead for <span class="replacement-search-info-text"><a href="{$oldSearchUrl}">{$oldTerm}</a>
-			</div>
-		{/if}
 
-		{if $spellingSuggestions}
-			<br><br><div class="correction"><strong>{translate text='spell_suggest'}</strong>:<br>
-			{foreach from=$spellingSuggestions item=details key=term name=termLoop}
-				{$term|escape} &raquo; {foreach from=$details.suggestions item=data key=word name=suggestLoop}<a href="{$data.replace_url|escape}">{$word|escape}</a>{if $data.expand_url} <a href="{$data.expand_url|escape}"><img src="{$path}/images/silk/expand.png" alt="{translate text='spell_expand_alt'}"/></a> {/if}{if !$smarty.foreach.suggestLoop.last}, {/if}{/foreach}{if !$smarty.foreach.termLoop.last}<br>{/if}
-			{/foreach}
+			{if $spellingSuggestions}
+				<br><br><div class="correction"><strong>{translate text='spell_suggest'}</strong>:<br>
+				{foreach from=$spellingSuggestions item=details key=term name=termLoop}
+					{$term|escape} &raquo; {foreach from=$details.suggestions item=data key=word name=suggestLoop}<a href="{$data.replace_url|escape}">{$word|escape}</a>{if $data.expand_url} <a href="{$data.expand_url|escape}"><img src="{$path}/images/silk/expand.png" alt="{translate text='spell_expand_alt'}"/></a> {/if}{if !$smarty.foreach.suggestLoop.last}, {/if}{/foreach}{if !$smarty.foreach.termLoop.last}<br>{/if}
+				{/foreach}
+			</div>
+			{/if}
 		</div>
-		{/if}
 
 		{* User's viewing mode toggle switch *}
 		{include file="Search/results-displayMode-toggle.tpl"}
@@ -75,18 +64,18 @@
 {* Embedded Javascript For this Page *}
 	<script type="text/javascript">
 		$(document).ready(function (){ldelim}
-		{if $showWikipedia}
-			AspenDiscovery.Wikipedia.getWikipediaArticle('{$wikipediaAuthorName}');
-		{/if}
+			{if $showWikipedia}
+				AspenDiscovery.Wikipedia.getWikipediaArticle('{$wikipediaAuthorName}');
+			{/if}
+            AspenDiscovery.Authors.loadEnrichmentInfo('{$firstWorkId}');
 
 			{if !$onInternalIP}
-			{* Because content is served on the page, have to set the mode that was used, even if the user didn't chose the mode. *}
-			AspenDiscovery.Searches.displayMode = '{$displayMode}';
+				{* Because content is served on the page, have to set the mode that was used, even if the user didn't chose the mode. *}
+				AspenDiscovery.Searches.displayMode = '{$displayMode}';
 			{else}
-			AspenDiscovery.Searches.displayMode = '{$displayMode}';
-			Globals.opac = 1; {* set to true to keep opac browsers from storing browse mode *}
+				AspenDiscovery.Searches.displayMode = '{$displayMode}';
+				Globals.opac = 1; {* set to true to keep opac browsers from storing browse mode *}
 			{/if}
 			$('#'+AspenDiscovery.Searches.displayMode).parent('label').addClass('active'); {* show user which one is selected *}
-
-			{rdelim});
+		{rdelim});
 	</script>

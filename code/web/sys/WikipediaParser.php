@@ -183,6 +183,10 @@ class WikipediaParser {
 		$pattern[] = '/{{Taxobox.*}}\n\n/Us';
 		$replacement[] = "";
 
+		//Strip out embedded Infoboxes
+		$pattern[] = '/{{Infobox.*}}\n\n/Us';
+		$replacement[] = "";
+
 		//Strip out anything like {{!}}
 		$pattern[] = '/{{!}}/Us';
 		$replacement[] = "";

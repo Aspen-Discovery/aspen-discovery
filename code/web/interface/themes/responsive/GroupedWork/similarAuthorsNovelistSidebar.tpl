@@ -1,18 +1,17 @@
 {strip}
-	{* TODO: put this in a help pop-up
-	<div class="alert alert-info">NoveList provides detailed suggestions for other authors you might want to read if you enjoyed this book.  Suggestions are based on recommendations from librarians and other contributors.</div>
-	*}
-	<div id="similarAuthorsNoveList" class="jcarousel ajax-carousel col-tn-12">
-		<ul>
-		{foreach from=$similarAuthors item=author name="recordLoop"}
-			<li{* class="novelist-similar-item"*}>
-				{* This is raw HTML -- do not escape it: *}
-				<div class="novelist-similar-item-header notranslate"><a href='{$author.link}'>{$author.name}</a></div>
-				<div class="novelist-similar-item-reason">
-					{$author.reason}
-				</div>
-			</li>
-		{/foreach}
-		</ul>
+	<div id="similar-authors" class="sidebar-links row">
+		<div class="">
+			<div id="similar-authors-label" class="sidebar-label" title="NoveList provides detailed suggestions for other authors you might want to read if you enjoyed this book.  Suggestions are based on recommendations from librarians and other contributors." data-toggle="tooltip" data-placement="right">
+				{translate text="Similar Authors"}
+			</div>
+			<div class="similar-authors">
+				{foreach from=$similarAuthors item=author name="recordLoop"}
+					<div class="facetValue">
+						{* This is raw HTML -- do not escape it: *}
+						<div class="notranslate"><a href='{$author.link}' title="{$author.reason|escape:html}" data-toggle="tooltip" data-placement="bottom">{$author.name}</a></div>
+					</div>
+				{/foreach}
+			</div>
+		</div>
 	</div>
 {/strip}
