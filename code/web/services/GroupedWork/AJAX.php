@@ -7,7 +7,7 @@ class GroupedWork_AJAX {
 		if (method_exists($this, $method)) {
 			$timer->logTime("Starting method $method");
 
-			header('Content-type: text/plain');
+			header('Content-type: application/json');
 			header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 			header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
 			echo $this->$method();
