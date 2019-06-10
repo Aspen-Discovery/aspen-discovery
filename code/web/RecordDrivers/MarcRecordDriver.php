@@ -1666,8 +1666,10 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 		// Schema.org
 		// Get information about the record
 		require_once ROOT_DIR . '/RecordDrivers/LDRecordOffer.php';
-		$linkedDataRecord = new LDRecordOffer($this->getGroupedWorkDriver()->getRelatedRecord($this->getIdWithSource()));
-		$semanticData [] = array(
+		$relatedRecord = $this->getGroupedWorkDriver()->getRelatedRecord($this->getIdWithSource());
+		if ($relatedRecord != null) {
+			$linkedDataRecord = new LDRecordOffer($relatedRecord);
+			$semanticData [] = array(
 				'@context' => 'http://schema.org',
 				'@type' => $linkedDataRecord->getWorkType(),
 				'name' => $this->getTitle(),
@@ -1677,15 +1679,18 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 				'isAccessibleForFree' => true,
 				'image' => $this->getBookcoverUrl('medium'),
 				"offers" => $linkedDataRecord->getOffers()
-		);
+			);
 
-		//Open graph data (goes in meta tags)
-		global $interface;
-		$interface->assign('og_title', $this->getTitle());
-		$interface->assign('og_type', $this->getGroupedWorkDriver()->getOGType());
-		$interface->assign('og_image', $this->getBookcoverUrl('medium'));
-		$interface->assign('og_url', $this->getAbsoluteUrl());
-		return $semanticData;
+			//Open graph data (goes in meta tags)
+			global $interface;
+			$interface->assign('og_title', $this->getTitle());
+			$interface->assign('og_type', $this->getGroupedWorkDriver()->getOGType());
+			$interface->assign('og_image', $this->getBookcoverUrl('medium'));
+			$interface->assign('og_url', $this->getAbsoluteUrl());
+			return $semanticData;
+		}else{
+			AspenError::raiseError('MARC Record did not have an associated record in grouped work ' . $this->getPermanentId());
+		}
 	}
 
 }

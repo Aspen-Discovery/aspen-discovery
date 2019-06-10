@@ -14,6 +14,7 @@ class GroupedWorkDriver extends IndexRecordDriver{
 			$id = str_replace('groupedWork:', '', $id);
 			//Just got a record id, let's load the full record from Solr
 			// Setup Search Engine Connection
+		    /** @var SearchObject_GroupedWorkSearcher $searchObject */
 			$searchObject = SearchObjectFactory::initSearchObject();
 			$searchObject->disableScoping();
 			if (function_exists('disableErrorHandler')){
@@ -2417,7 +2418,6 @@ class GroupedWorkDriver extends IndexRecordDriver{
 		$libraryShelfLocation = null;
 		$localCallNumber = null;
 		$libraryCallNumber = null;
-		$relatedUrls = array();
 
         global $locationSingleton;
 		$physicalLocation = $locationSingleton->getPhysicalLocation();
@@ -2522,7 +2522,7 @@ class GroupedWorkDriver extends IndexRecordDriver{
 					'bookable' => $item->bookable,
 					'sectionId' => $sectionId,
 					'section' => $section,
-					'relatedUrls' => $relatedUrls,
+					'relatedUrls' => $item->getRelatedUrls(),
 					'lastCheckinDate' => isset($curItem[14]) ? $curItem[14] : '',
 					'volume' => $volume,
 					'volumeId' => $volumeId,
@@ -2532,7 +2532,8 @@ class GroupedWorkDriver extends IndexRecordDriver{
 					'itemId' => $item->itemId
 			);
 			if (!$forCovers){
-				$itemSummaryInfo['actions'] = $recordDriver != null ? $recordDriver->getItemActions($itemSummaryInfo) : array();
+				$item->setActions($recordDriver != null ? $recordDriver->getItemActions($itemSummaryInfo) : array());
+				$itemSummaryInfo['actions'] = $item->getActions();
 			}
 
 			//Group the item based on location and call number for display in the summary
@@ -2556,7 +2557,7 @@ class GroupedWorkDriver extends IndexRecordDriver{
 		$memoryWatcher->logMemory("Setup record items");
 
 		if (!$forCovers){
-			$relatedRecord->setActions($recordDriver != null ? $recordDriver->getRecordActions($relatedRecord->getStatusInformation()->isAvailableLocally() || $relatedRecord->getStatusInformation()->isAvailableOnline(), $relatedRecord->isHoldable(), $relatedRecord->isBookable(), $relatedUrls, $volumeData) : array());
+			$relatedRecord->setActions($recordDriver != null ? $recordDriver->getRecordActions($relatedRecord->getStatusInformation()->isAvailableLocally() || $relatedRecord->getStatusInformation()->isAvailableOnline(), $relatedRecord->isHoldable(), $relatedRecord->isBookable(), [], $volumeData) : array());
 			$timer->logTime("Loaded actions");
 			$memoryWatcher->logMemory("Loaded actions");
 		}

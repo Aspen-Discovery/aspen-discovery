@@ -330,7 +330,9 @@ class BookCoverProcessor{
 		if (isset($_GET['id']) && is_array($_GET['id'])){
 			$_GET['id'] = array_pop($_GET['id']);
 		}
-		$this->id = isset($_GET['id']) ? $_GET['id'] : null;
+		$this->id = isset($_GET['id']) ? $_GET['id'] : '';
+		//If this is external eContent, we don't care about that part, just use the remaining id
+		$this->id = str_replace('external_econtent:', '', $this->id);
 		if (isset($_GET['type'])){
 			$this->type =  $_GET['type'];
 		}else{

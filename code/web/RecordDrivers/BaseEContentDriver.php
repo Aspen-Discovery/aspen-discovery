@@ -3,7 +3,6 @@
 require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 
 abstract class BaseEContentDriver  extends MarcRecordDriver {
-	abstract function getModuleName();
 	abstract function getValidProtectionTypes();
 
 	/**
@@ -35,11 +34,12 @@ abstract class BaseEContentDriver  extends MarcRecordDriver {
 
 	abstract function getSharing($locationCode, $eContentFieldData);
 
-	abstract function getActionsForItem($itemId, $fileName, $acsId);
-
 	abstract function getEContentFormat($fileOrUrl, $iType);
 
 	protected function isHoldable(){
 		return false;
 	}
+
+
+
 }

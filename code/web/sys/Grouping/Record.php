@@ -397,7 +397,11 @@ class Grouping_Record
      */
     public function getActions(): array
     {
-        return $this->_actions;
+    	$actionsToReturn = $this->_actions;
+    	foreach ($this->_items as $item){
+		    $actionsToReturn = array_merge($actionsToReturn, $item->getActions());
+	    }
+        return $actionsToReturn;
     }
 
     /**

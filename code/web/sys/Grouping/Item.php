@@ -53,12 +53,18 @@ class Grouping_Item
     public $holdablePTypes;
     public $numHolds = 0;
     public $available = false;
+    private $_relatedUrls = [];
+	private $_actions = [];
     private $_displayByDefault = false;
 
-    /**
-     * Grouping_Item constructor.
-     * @param array$itemDetails
-     */
+	/**
+	 * Grouping_Item constructor.
+	 * @param array $itemDetails
+	 * @param array $scopingInfo
+	 * @param string[] $activePTypes
+	 * @param Location $searchLocation
+	 * @param Library $library
+	 */
     public function __construct($itemDetails, $scopingInfo, $activePTypes, $searchLocation, $library) {
         $this->itemId = $itemDetails[1] == 'null' ? '' : $itemDetails[1];
         $this->scopeKey = $itemDetails[0] . ':' . $this->itemId;
@@ -72,13 +78,13 @@ class Grouping_Item
         $scopingDetails = $scopingInfo[$this->scopeKey];
         if ($this->isEContent) {
             if (strlen($scopingDetails[12]) > 0){
-                $relatedUrls[] = array(
+                $this->_relatedUrls[] = array(
                     'source' => $itemDetails[9],
                     'file' => $itemDetails[10],
                     'url' => $scopingDetails[12]
                 );
             }else{
-                $relatedUrls[] = array(
+                $this->_relatedUrls[] = array(
                     'source' => $itemDetails[9],
                     'file' => $itemDetails[10],
                     'url' => $itemDetails[11]
@@ -143,4 +149,25 @@ class Grouping_Item
     {
         return $this->_displayByDefault;
     }
+
+	/**
+	 * @return array
+	 */
+	public function getActions(): array
+	{
+		return $this->_actions;
+	}
+
+	/**
+	 * @param array $actions
+	 */
+	public function setActions(array $actions): void
+	{
+		$this->_actions = $actions;
+	}
+
+	public function getRelatedUrls()
+	{
+		return $this->_relatedUrls;
+	}
 }

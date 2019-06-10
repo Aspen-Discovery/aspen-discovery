@@ -87,7 +87,7 @@ class ExternalEContentDriver extends BaseEContentDriver{
 		$interface->assign('tableOfContents', $tableOfContents);
 
 		//Get Related Records to make sure we initialize items
-		$recordInfo = $this->getGroupedWorkDriver()->getRelatedRecord('external_econtent:' . $this->getIdWithSource());
+		$recordInfo = $this->getGroupedWorkDriver()->getRelatedRecord($this->getIdWithSource());
 
 		$interface->assign('items', $recordInfo->getItemSummary());
 
@@ -133,7 +133,7 @@ class ExternalEContentDriver extends BaseEContentDriver{
 		return $this->profileType;
 	}
 
-	function getModuleName(){
+	function getModule(){
 		return 'ExternalEContent';
 	}
 
@@ -161,34 +161,9 @@ class ExternalEContentDriver extends BaseEContentDriver{
 		return $formats;
 	}
 
-	function getEContentFormat($fileOrUrl, $iType){
+	function getEContentFormat($fileOrUrl, $iType)
+	{
 		return mapValue('econtent_itype_format', $iType);
-	}
-
-	/**
-	 * @param string $itemId
-	 * @param string $fileOrUrl
-	 * @param string|null $acsId
-	 * @return array
-	 */
-	function getActionsForItem($itemId, $fileOrUrl, $acsId){
-		$actions = array();
-		$title = 'Access Online';
-		if (strlen($fileOrUrl) > 0){
-			if (strlen($fileOrUrl) >= 3){
-				$extension =strtolower(substr($fileOrUrl, strlen($fileOrUrl), 3));
-				if ($extension == 'pdf'){
-					$title = 'Access PDF';
-				}
-			}
-			$actions[] = array(
-				'url' => $fileOrUrl,
-				'title' => $title,
-				'requireLogin' => false,
-			);
-		}
-
-		return $actions;
 	}
 
 	public function getItemActions($itemInfo){
@@ -223,7 +198,19 @@ class ExternalEContentDriver extends BaseEContentDriver{
 			}
 		}
 
-
 		return $actions;
+	}
+
+	function getRecordUrl()
+	{
+		global $configArray;
+		$recordId = $this->getUniqueID();
+
+		return $configArray['Site']['path'] . "/{$this->getModule()}/$recordId";
+	}
+
+	public function getIdWithSource()
+	{
+		return 'external_econtent:' . $this->profileType . ':' . $this->id;
 	}
 }
