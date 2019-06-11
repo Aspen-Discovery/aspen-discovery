@@ -27,7 +27,7 @@
 			<div class="row">
 				<div class="col-xs-4 col-sm-5 col-md-4 col-lg-3 text-center">
 					{if $disableCoverArt != 1}
-						<div id="recordcover" class="text-center row">
+						<div id="recordCover" class="text-center row">
 							<img alt="{translate text='Book Cover'}" class="img-thumbnail" src="{$recordDriver->getBookcoverUrl('medium')}">
 						</div>
 					{/if}

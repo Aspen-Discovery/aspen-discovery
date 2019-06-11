@@ -36,7 +36,7 @@
 	<div class="row">
 		<div class="col-xs-4 col-sm-5 col-md-4 col-lg-3 text-center">
 			{if $disableCoverArt != 1}
-				<div id="recordcover" class="text-center">
+				<div id="recordCover" class="text-center">
 					{*<a href="{$path}/Person/{$id}">*}
 						{if $person->picture}
 							<a target='_blank' href='{$path}/files/original/{$person->picture|escape}'><img src="{$path}/files/medium/{$person->picture|escape}" class="alignleft listResultImage" alt="{translate text='Picture'}"></a><br>
