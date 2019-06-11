@@ -1,7 +1,7 @@
 {strip}
 <div id="page-content" class="content">
 	<div id="main-content">
-		{if $error}
+		{if !empty($error)}
 			<div class="alert alert-danger">{$error}</div>
 		{else}
 

@@ -1,6 +1,6 @@
 <div id="main-content" class="col-md-12">
 	<h3>Materials Request Requests by User Report</h3>
-	{if $error}
+	{if !empty($error)}
 		<div class="error">{$error}</div>
 	{else}
 		<div id="materialsRequestFilters">

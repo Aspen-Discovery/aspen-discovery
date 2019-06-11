@@ -1,6 +1,6 @@
 {strip}
 <div id="main-content" class="col-tn-12 col-xs-12">
-	{if $error}
+	{if !empty($error)}
 		<div class="alert alert-danger">{$error}</div>
 	{/if}
 	<form name="addAdministrator" method="post" enctype="multipart/form-data" class="form-horizontal">

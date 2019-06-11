@@ -1,7 +1,7 @@
 {strip}
 <div id="main-content" class="col-md-12">
 	<h2>Manage Materials Requests</h2>
-	{if $error}
+	{if !empty($error)}
 		<div class="alert alert-danger">{$error}</div>
 	{/if}
 	{if $loggedIn}

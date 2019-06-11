@@ -3,7 +3,7 @@
 	{* Search Navigation *}
 	{include file="GroupedWork/search-results-navigation.tpl"}
 
-	{if $error}
+	{if !empty($error)}
 		<div class="row">
 			<div class="alert alert-danger">
 				{$error}

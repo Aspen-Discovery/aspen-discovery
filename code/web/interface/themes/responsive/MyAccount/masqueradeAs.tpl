@@ -1,6 +1,6 @@
 {strip}
 	<p class="alert alert-info" id="masqueradeLoading" style="display: none">Starting Masquerade Mode</p>
-	{if $error}
+	{if !empty($error)}
 	<p class="alert alert-danger" id="masqueradeAsError">{$error}</p>
 	{/if}
 	{*<p class="alert alert-danger" id="cookiesError" style="display: none">It appears that you do not have cookies enabled on this computer.  Cookies are required to access account information.</p>*}

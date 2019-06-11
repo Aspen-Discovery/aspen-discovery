@@ -1,5 +1,5 @@
 {strip}
-{if $error}
+	{if !empty($error)}
 	<div class="alert alert-danger">{$error}</div>
 {else}
 	<div>

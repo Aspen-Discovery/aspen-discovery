@@ -2,7 +2,7 @@
 	<h3>Request Archive Copies of Materials</h3>
 	<div class="page">
 		{if $requestSubmitted}
-			{if $error}
+			{if !empty($error)}
 				<div class="alert alert-danger">
 				<p>There was an error submitting your request.</p>
 				<p>{$error}</p>

@@ -2,7 +2,7 @@
 	<h3>Claim Authorship of Archive Materials</h3>
 	<div class="page">
 		{if $requestSubmitted}
-			{if $error}
+			{if !empty($error)}
 				<p>There was an error submitting your request.</p>
 				<p>{$error}</p>
 			{else}

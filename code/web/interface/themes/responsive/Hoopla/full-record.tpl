@@ -29,7 +29,7 @@
 
 			<div id="main-content" class="col-xs-8 col-sm-7 col-md-8 col-lg-9">
 
-				{if $error}{* TODO: Does this get used? *}
+				{if !empty($error)}
 					<div class="row">
 						<div class="alert alert-danger">
 							{$error}

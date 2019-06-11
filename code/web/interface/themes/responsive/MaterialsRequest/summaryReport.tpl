@@ -1,6 +1,6 @@
 	<div id="main-content" class="col-md-12">
 		<h2>Materials Request Summary Report</h2>
-		{if $error}
+		{if !empty($error)}
 			<div class="alert alert-warning">{$error}</div>
 		{else}
 

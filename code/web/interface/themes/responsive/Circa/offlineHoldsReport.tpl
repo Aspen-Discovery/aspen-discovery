@@ -1,6 +1,6 @@
 {strip}
 	<div id="page-content" class="content">
-		{if $error}<p class="error">{$error}</p>{/if}
+		{if !empty($error)}<p class="error">{$error}</p>{/if}
 		<div id="sidebar">
 			{* Report filters *}
 			<div class="sidegroup">

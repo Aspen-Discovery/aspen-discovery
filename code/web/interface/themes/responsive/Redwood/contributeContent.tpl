@@ -2,7 +2,7 @@
 	<h3>Contribute Content To The Archive</h3>
 	<div class="page">
 		{if $requestSubmitted}
-			{if $error}
+			{if !empty($error)}
 				<p>There was an error submitting your content.</p>
 				<p>{$error}</p>
 			{else}

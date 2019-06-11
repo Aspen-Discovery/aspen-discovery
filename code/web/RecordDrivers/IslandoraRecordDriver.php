@@ -690,8 +690,6 @@ abstract class IslandoraRecordDriver extends IndexRecordDriver {
 		$moreDetailsOptions = $this->getBaseMoreDetailsOptions();
 
 		return $moreDetailsOptions;
-		// Doesn't need filtered twice.
-//		return $this->filterAndSortMoreDetailsOptions($moreDetailsOptions);
 	}
 
 	public function filterAndSortMoreDetailsOptions($allOptions) {
@@ -710,7 +708,6 @@ abstract class IslandoraRecordDriver extends IndexRecordDriver {
 		if ($useDefault){
 			/** @var LibraryArchiveMoreDetails[] $defaultDetailsFilters */
 			$defaultDetailsFilters = LibraryArchiveMoreDetails::getDefaultOptions($library->libraryId);
-//			$moreDetailsFilters = RecordInterface::getDefaultMoreDetailsOptions();
 			foreach ($defaultDetailsFilters as $filter) {
 				$moreDetailsFilters[$filter->section] = $filter->collapseByDefault ? 'closed' : 'open';
 			}

@@ -8,7 +8,7 @@
 	<span class='availableHoldsNoticePlaceHolder'></span>
 
 	<h2>My {translate text='Materials_Request_alt'}s</h2>
-	{if $error}
+	{if !empty($error)}
 		<div class="alert alert-danger">{$error}</div>
 	{else}
 		<div id="materialsRequestSummary" class="alert alert-info">

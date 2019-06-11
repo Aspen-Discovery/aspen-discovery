@@ -1,6 +1,6 @@
 {strip}
 	<h1>Pika Lists based on the New York Times API</h1>
-	{if $error}
+	{if !empty($error)}
 		<div class="alert alert-danger">{$error}</div>
 	{/if}
 
