@@ -12,6 +12,7 @@ class AspenError extends DataObject
 	public $url;
 	public $message;
 	public $backtrace;
+	public $_rawBacktrace;
 	public $timestamp;
 
 	/**
@@ -32,9 +33,12 @@ class AspenError extends DataObject
 
 			$this->message = $message;
 			if ($backtrace == null){
-				$this->backtrace = debug_backtrace();
+				$this->_rawBacktrace = debug_backtrace();
 			}else{
-				$this->backtrace = $backtrace;
+				$this->_rawBacktrace = $backtrace;
+			}
+			foreach ($this->_rawBacktrace as $backtraceLine){
+				$this->backtrace .= "{$backtraceLine['class']}{$backtraceLine['type']}{$backtraceLine['function']} [{$backtraceLine['line']}] - {$backtraceLine['file']}<br/>";
 			}
 		}
     }
@@ -55,6 +59,10 @@ class AspenError extends DataObject
 
 	public function getMessage(){
         return $this->message;
+    }
+
+    public function getRawBacktrace(){
+		return $this->_rawBacktrace;
     }
 
     public function toString()
