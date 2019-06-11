@@ -195,13 +195,12 @@ class Novelist3{
 						if (strlen($response) > strlen($bestRawJson)){
 							$bestRawJson = $response;
 							$bestIsbn = $isbn;
-						}
-
-						//Parse the JSON
-						$decodedData = json_decode($response);
-						if (count($decodedData->FeatureContent) > 0){
-							$novelistData->hasNovelistData = 1;
-							break;
+							//Parse the JSON
+							$decodedData = json_decode($response);
+							if (is_array($decodedData->TitleInfo->isbns) && count($decodedData->TitleInfo->isbns) > 0){
+								$novelistData->hasNovelistData = 1;
+								break;
+							}
 						}
 					}catch (Exception $e) {
 						global $logger;
