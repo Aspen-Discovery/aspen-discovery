@@ -154,7 +154,7 @@ class Novelist3{
 		}
 
 		$data = null;
-		if ($allowReload && ($doUpdate || isset($_REQUEST['reload']))){
+		if (($allowReload && $doUpdate) || isset($_REQUEST['reload'])){
 			$novelistData->groupedRecordHasISBN = count($isbns) > 0;
 
 			if ($doUpdate && $novelistData->primaryISBN != null && strlen($novelistData->primaryISBN) > 0){
@@ -339,13 +339,17 @@ class Novelist3{
 			}elseif ($curTitle['libraryOwned']){
 				$novelistDataForTitle = new NovelistData();
 				$novelistDataForTitle->groupedRecordPermanentId = $curTitle['id'];
-				if (!$novelistDataForTitle->find()){
+				if (!$novelistDataForTitle->find(true)){
 					$novelistDataForTitle->hasNovelistData = 1;
 					$novelistDataForTitle->primaryISBN = $curTitle['isbn'];
 					$novelistDataForTitle->groupedRecordHasISBN = count($curTitle['allIsbns']) > 0;
 					$novelistDataForTitle->seriesTitle = $curTitle['series'];
 					$novelistDataForTitle->volume = $curTitle['volume'];
 					$novelistDataForTitle->seriesNote = $seriesData->series_note;
+					$novelistDataForTitle->insert();
+				}elseif (empty($novelistDataForTitle->seriesTitle) || empty($novelistDataForTitle->volume)){
+					$novelistDataForTitle->seriesTitle = $curTitle['series'];
+					$novelistDataForTitle->volume = $curTitle['volume'];
 					$novelistDataForTitle->update();
 				}
 			}
