@@ -25,7 +25,7 @@ class Novelist3{
      * @return NovelistData
      */
 	function loadBasicEnrichment($groupedRecordId, $isbns, $allowReload = true){
-		$novelistData = $this->getRawNovelistData($groupedRecordId, $isbns);
+		$novelistData = $this->getRawNovelistData($groupedRecordId, $isbns, $allowReload);
 		if (!empty($novelistData)){
 			$data = $novelistData->getJsonData();
 			if (isset($data->FeatureContent) && $data->FeatureCount > 0){
@@ -123,7 +123,7 @@ class Novelist3{
 	 * @param string[] $isbns
 	 * @return NovelistData|null
 	 */
-	function getRawNovelistData($groupedRecordId, $isbns){
+	function getRawNovelistData($groupedRecordId, $isbns, $allowReload = true){
 		global $timer;
 		global $configArray;
 
@@ -153,7 +153,7 @@ class Novelist3{
 		}
 
 		$data = null;
-		if ($doUpdate || isset($_REQUEST['reload'])){
+		if ($allowReload && ($doUpdate || isset($_REQUEST['reload']))){
 			$novelistData->groupedRecordHasISBN = count($isbns) > 0;
 
 			if ($doUpdate && $novelistData->primaryISBN != null && strlen($novelistData->primaryISBN) > 0){
@@ -172,7 +172,6 @@ class Novelist3{
 
 				$bestIsbn = '';
 				$bestRawJson = '';
-				$numFound = 0;
 				//Check each ISBN for enrichment data
 				foreach ($isbns as $isbn){
 					$requestUrl = "http://novselect.ebscohost.com/Data/ContentByQuery?profile=$profile&password=$pwd&ClientIdentifier={$isbn}&isbn={$isbn}&version=2.1&tmpstmp=" . time();
@@ -192,14 +191,14 @@ class Novelist3{
 						$response = $req->getResponseBody();
 						$timer->logTime("Made call to Novelist for enrichment information");
 
-						//Parse the JSON
-						if (strlen($response) > $bestRawJson){
+						if (strlen($response) > strlen($bestRawJson)){
 							$bestRawJson = $response;
 							$bestIsbn = $isbn;
 						}
 
-						$numFound++;
-						if ($numFound == 3){
+						//Parse the JSON
+						$decodedData = json_decode($response);
+						if (count($decodedData->FeatureCount) > 0){
 							break;
 						}
 					}catch (Exception $e) {
