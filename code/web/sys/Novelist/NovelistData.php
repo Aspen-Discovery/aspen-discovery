@@ -3,7 +3,6 @@
 class NovelistData extends DataObject{
 	public $id;
 	public $groupedRecordPermanentId;
-	public $lastUpdate;
 	public $groupedRecordHasISBN;
 	public $hasNovelistData;
 	public $primaryISBN;
@@ -12,6 +11,10 @@ class NovelistData extends DataObject{
 	public $seriesTitle;
     public $seriesNote;
     public $volume;
+
+	public $lastUpdate;
+	public $jsonResponse;
+	private $_jsonData = null;
 
     /** @var array */
 	protected $_seriesTitles = [];
@@ -175,5 +178,12 @@ class NovelistData extends DataObject{
     public function setSimilarSeries($similarSeries)
     {
         $this->_similarSeries = $similarSeries;
+    }
+
+    public function getJsonData(){
+    	if (empty($this->_jsonData) && $this->jsonResponse != null){
+    		$this->_jsonData = json_decode($this->jsonResponse);
+	    }
+    	return $this->_jsonData;
     }
 } 

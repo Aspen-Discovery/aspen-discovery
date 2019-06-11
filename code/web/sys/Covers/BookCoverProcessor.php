@@ -35,6 +35,7 @@ class BookCoverProcessor{
         $this->configArray = $configArray;
         $this->timer = $timer;
         $this->doTimings = $this->configArray['System']['coverTimings'];
+        $this->timer->enableTimings($this->doTimings);
         $this->logger = $logger;
         $this->doCoverLogging = $this->configArray['Logging']['coverLogging'];
 

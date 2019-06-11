@@ -1256,6 +1256,15 @@ class DBMaintenance extends Admin_Admin {
 					),
 				),
 
+				'novelist_data_json' => array(
+					'title' => 'Novelist Data JSON',
+					'description' => 'Updates to cache full json response for a short period for performance.',
+					'sql' => array(
+						"ALTER TABLE novelist_data ADD COLUMN jsonResponse MEDIUMTEXT",
+						"UPDATE novelist_data set lastUpdate = 0",
+					),
+				),
+
 				'syndetics_data' => array(
 					'title' => 'Syndetics Data',
 					'description' => 'Stores basic information from Syndetics for efficiency purposes.',
