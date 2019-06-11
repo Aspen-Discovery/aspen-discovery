@@ -110,6 +110,27 @@ class GroupedWork_AJAX {
 		}
 	}
 
+	function getDescription(){
+		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+		$result = [
+			'success' => false,
+		];
+		$id = $_REQUEST['id'];
+
+		$recordDriver = new GroupedWorkDriver($id);
+		if ($recordDriver->isValid()){
+			$description = $recordDriver->getDescription();
+			if (strlen($description) == 0){
+				$description = 'Description not provided';
+			}
+			$description = strip_tags($description, '<a><b><p><i><em><strong><ul><li><ol>');
+			$result['success'] = true;
+			$result['description'] = $description;
+		}
+
+		return json_encode($result);
+	}
+
 	function getEnrichmentInfo(){
 		global $configArray;
 		global $interface;

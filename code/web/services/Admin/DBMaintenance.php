@@ -1276,6 +1276,18 @@ class DBMaintenance extends Admin_Admin {
 					),
 				),
 
+				'syndetics_data_update_1' => array(
+					'title' => 'Syndetics Data Update 1',
+					'description' => 'Add additional information about when specific content is last updated.',
+					'continueOnError' => true,
+					'sql' => array(
+						"ALTER TABLE syndetics_data CHANGE COLUMN lastUpdate lastDescriptionUpdate INT(11) DEFAULT 0",
+						"ALTER TABLE syndetics_data ADD COLUMN lastTableOfContentsUpdate INT(11) DEFAULT 0",
+						"ALTER TABLE syndetics_data ADD COLUMN lastExcerptUpdate INT(11) DEFAULT 0",
+						"ALTER TABLE syndetics_data DROP COLUMN hasSyndeticsData",
+					),
+				),
+
 
 				'ils_marc_checksums' => array(
 					'title' => 'ILS MARC Checksums',

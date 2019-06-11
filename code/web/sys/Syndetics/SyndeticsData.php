@@ -3,13 +3,14 @@
 class SyndeticsData extends DataObject{
 	public $id;
 	public $groupedRecordPermanentId;
-	public $lastUpdate;
-	public $hasSyndeticsData;
 	public $primaryIsbn;
 	public $primaryUpc;
 	public $description;
+	public $lastDescriptionUpdate;
 	public $tableOfContents;
+	public $lastTableOfContentsUpdate;
 	public $excerpt;
+	public $lastExcerptUpdate;
 
 	public $__table = 'syndetics_data';
 } 

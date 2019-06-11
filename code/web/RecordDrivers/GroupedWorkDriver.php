@@ -783,7 +783,7 @@ class GroupedWorkDriver extends IndexRecordDriver{
         $cleanIsbn = $this->getCleanISBN();
         if ($cleanIsbn != null && strlen($cleanIsbn) > 0){
             require_once ROOT_DIR . '/Drivers/marmot_inc/GoDeeperData.php';
-            $summaryInfo = GoDeeperData::getSummary($cleanIsbn, $this->getCleanUPC());
+            $summaryInfo = GoDeeperData::getSummary($this->getPermanentId(), $cleanIsbn, $this->getCleanUPC());
             if (isset($summaryInfo['summary'])){
                 $description = $summaryInfo['summary'];
             }

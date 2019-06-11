@@ -110,15 +110,15 @@ abstract class RecordInterface {
 		global $configArray;
 		global $timer;
 		$moreDetailsOptions = array();
-		$description = $this->getDescription();
-		if (strlen($description) == 0){
-			$description = 'Description not provided';
-		}
-		$description = strip_tags($description, '<a><b><p><i><em><strong><ul><li><ol>');
-		$interface->assign('description', $description);
+//		$description = $this->getDescription();
+//		if (strlen($description) == 0){
+//			$description = 'Description not provided';
+//		}
+//		$description = strip_tags($description, '<a><b><p><i><em><strong><ul><li><ol>');
+//		$interface->assign('description', $description);
 		$moreDetailsOptions['description'] = array(
 				'label' => 'Description',
-				'body' => $description,
+				'body' => '<div id="descriptionPlaceholder">Loading Description...</div>',
 				'hideByDefault' => false,
 				'openByDefault' => true
 		);

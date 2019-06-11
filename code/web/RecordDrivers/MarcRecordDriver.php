@@ -633,7 +633,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 		if ($isbn || $upc) {
 			if (!$library || ($library && $library->preferSyndeticsSummary == 1)) {
 				require_once ROOT_DIR . '/Drivers/marmot_inc/GoDeeperData.php';
-				$summaryInfo = GoDeeperData::getSummary($isbn, $upc);
+				$summaryInfo = GoDeeperData::getSummary($this->getPermanentId(), $isbn, $upc);
 				if (isset($summaryInfo['summary'])) {
 					$summary = $summaryInfo['summary'];
 					$useMarcSummary = false;
@@ -663,7 +663,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 				$interface->assign('summaryTeaser', strip_tags($summary));
 			} elseif ($library && $library->preferSyndeticsSummary == 0) {
 				require_once ROOT_DIR . '/Drivers/marmot_inc/GoDeeperData.php';
-				$summaryInfo = GoDeeperData::getSummary($isbn, $upc);
+				$summaryInfo = GoDeeperData::getSummary($this->getPermanentId(), $isbn, $upc);
 				if (isset($summaryInfo['summary'])) {
 					$summary = $summaryInfo['summary'];
 				}
@@ -745,7 +745,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 			if ($allowExternalDescription) {
 				if (!is_null($isbn) || !is_null($upc)) {
 					require_once ROOT_DIR . '/Drivers/marmot_inc/GoDeeperData.php';
-					$summaryInfo = GoDeeperData::getSummary($isbn, $upc);
+					$summaryInfo = GoDeeperData::getSummary($this->getPermanentId(), $isbn, $upc);
 					if (isset($summaryInfo['summary'])) {
 						$descriptionArray['description'] = $this->trimDescription($summaryInfo['summary']);
 						$useMarcSummary = false;

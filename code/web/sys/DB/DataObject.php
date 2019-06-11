@@ -176,6 +176,10 @@ abstract class DataObject
     }
 
     public function update(){
+	    $primaryKey = $this->__primaryKey;
+	    if (empty($this->$primaryKey)){
+	    	return $this->insert();
+	    }
         /** @var PDO $aspen_db */
         global $aspen_db;
         $updateQuery = 'UPDATE ' . $this->__table;
@@ -204,7 +208,6 @@ abstract class DataObject
                 }
             }
         }
-        $primaryKey = $this->__primaryKey;
         $updateQuery .= ' SET ' . $updates . ' WHERE ' . $primaryKey . ' = ' . $aspen_db->quote($this->$primaryKey);
         $this->__lastQuery = $updateQuery;
         $response = $aspen_db->prepare($updateQuery)->execute();

@@ -55,7 +55,7 @@ AspenDiscovery.GroupedWork = (function(){
 		},
 
 		forceReindex: function (id){
-			var url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=forceReindex';
+			let url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=forceReindex';
 			$.getJSON(url, function (data){
 						AspenDiscovery.showMessage("Success", data.message, true, true);
 						setTimeout("AspenDiscovery.closeLightbox();", 3000);
@@ -88,6 +88,17 @@ AspenDiscovery.GroupedWork = (function(){
 			$("#goodReadsPlaceHolder").replaceWith(
 				"<iframe id='goodreads_iframe' class='goodReadsIFrame' src='https://www.goodreads.com/api/reviews_widget_iframe?did=DEVELOPER_ID&format=html&isbn=" + isbn + "&links=660&review_back=fff&stars=000&text=000' width='100%' height='400px' frameborder='0'></iframe>"
 			);
+		},
+
+		loadDescription: function (id){
+			let url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=getDescription';
+			$.getJSON(url, function (data){
+					if (data.success){
+						$("#descriptionPlaceholder").html(data.description);
+					}
+				}
+			);
+			return false;
 		},
 
 		loadEnrichmentInfo: function (id, forceReload) {
