@@ -121,6 +121,7 @@ class Novelist3{
 	/**
 	 * @param string $groupedRecordId
 	 * @param string[] $isbns
+	 * @param bool $allowReload
 	 * @return NovelistData|null
 	 */
 	function getRawNovelistData($groupedRecordId, $isbns, $allowReload = true){
@@ -198,7 +199,7 @@ class Novelist3{
 
 						//Parse the JSON
 						$decodedData = json_decode($response);
-						if (count($decodedData->FeatureCount) > 0){
+						if (count($decodedData->FeatureContent) > 0){
 							$novelistData->hasNovelistData = 1;
 							break;
 						}
