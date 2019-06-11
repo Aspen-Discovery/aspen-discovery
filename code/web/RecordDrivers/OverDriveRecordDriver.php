@@ -802,28 +802,33 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 		// Schema.org
 		// Get information about the record
 		require_once ROOT_DIR . '/RecordDrivers/LDRecordOffer.php';
-		$linkedDataRecord = new LDRecordOffer($this->getRelatedRecord());
-		$semanticData [] = array(
-				'@context' => 'http://schema.org',
-				'@type' => $linkedDataRecord->getWorkType(),
-				'name' => $this->getTitle(),
-				'creator' => $this->getAuthor(),
-				'bookEdition' => $this->getEditions(),
-				'isAccessibleForFree' => true,
-				'image' => $this->getBookcoverUrl('medium', true),
-				"offers" => $linkedDataRecord->getOffers()
-		);
+		$relatedRecord = $this->getRelatedRecord();
+		if ($relatedRecord != null) {
+			$linkedDataRecord = new LDRecordOffer($this->getRelatedRecord());
+			$semanticData [] = array(
+					'@context' => 'http://schema.org',
+					'@type' => $linkedDataRecord->getWorkType(),
+					'name' => $this->getTitle(),
+					'creator' => $this->getAuthor(),
+					'bookEdition' => $this->getEditions(),
+					'isAccessibleForFree' => true,
+					'image' => $this->getBookcoverUrl('medium', true),
+					"offers" => $linkedDataRecord->getOffers()
+			);
 
-		global $interface;
-		$interface->assign('og_title', $this->getTitle());
-		$interface->assign('og_type', $this->getGroupedWorkDriver()->getOGType());
-		$interface->assign('og_image', $this->getBookcoverUrl('medium', true));
-		$interface->assign('og_url', $this->getAbsoluteUrl());
-		return $semanticData;
+			global $interface;
+			$interface->assign('og_title', $this->getTitle());
+			$interface->assign('og_type', $this->getGroupedWorkDriver()->getOGType());
+			$interface->assign('og_image', $this->getBookcoverUrl('medium', true));
+			$interface->assign('og_url', $this->getAbsoluteUrl());
+			return $semanticData;
+		}else{
+			AspenError::raiseError('OverDrive Record did not have an associated record in grouped work ' . $this->getPermanentId());
+		}
 	}
 
 	function getRelatedRecord() {
-		$id = 'overdrive:' . $this->id;
+		$id = strtolower('overdrive:' . $this->id);
 		return $this->getGroupedWorkDriver()->getRelatedRecord($id);
 	}
 
