@@ -46,7 +46,11 @@ class OverDrive_AJAX extends Action {
 					}
 				}
 				if (isset($_REQUEST['promptForOverdriveEmail'])){
-					$patron->promptForOverdriveEmail = $_REQUEST['promptForOverdriveEmail'];
+					if ($_REQUEST['promptForOverdriveEmail'] == 1 || $_REQUEST['promptForOverdriveEmail'] == 'yes' || $_REQUEST['promptForOverdriveEmail'] == 'on'){
+						$patron->promptForOverdriveEmail = 1;
+					}else{
+						$patron->promptForOverdriveEmail = 0;
+					}
 					$patron->update();
 				}
 

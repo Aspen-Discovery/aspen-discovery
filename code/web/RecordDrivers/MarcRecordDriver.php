@@ -67,7 +67,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 				}
 			}
 			//Load the marc record so validation happens
-            $marcRecord = $this->getMarcRecord();
+            $this->getMarcRecord();
 		} else {
 			// Also process the MARC record:
 			require_once ROOT_DIR . '/sys/MarcLoader.php';
@@ -1690,6 +1690,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 			return $semanticData;
 		}else{
 			AspenError::raiseError('MARC Record did not have an associated record in grouped work ' . $this->getPermanentId());
+			return null;
 		}
 	}
 

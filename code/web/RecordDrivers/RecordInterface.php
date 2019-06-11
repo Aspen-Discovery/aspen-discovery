@@ -213,18 +213,19 @@ abstract class RecordInterface {
 		global $locationSingleton;
 		$activeLocation = $locationSingleton->getActiveLocation();
 
+		$moreDetailsFilters = [];
 		$useDefault = true;
 		if ($library && count($library->moreDetailsOptions) > 0){
-			$moreDetailsFilters = array();
 			$useDefault = false;
 			/** @var LibraryMoreDetails $option */
 			foreach ($library->moreDetailsOptions as $option){
 				$moreDetailsFilters[$option->source] = $option->collapseByDefault ? 'closed' : 'open';
 			}
 		}
+		/** @noinspection PhpUndefinedFieldInspection */
 		if ($activeLocation && count($activeLocation->moreDetailsOptions) > 0){
-			$moreDetailsFilters = array();
 			$useDefault = false;
+			/** @noinspection PhpUndefinedFieldInspection */
 			/** @var LocationMoreDetails $option */
 			foreach ($activeLocation->moreDetailsOptions as $option){
 				$moreDetailsFilters[$option->source] = $option->collapseByDefault ? 'closed' : 'open';
@@ -233,7 +234,6 @@ abstract class RecordInterface {
 
 		if ($useDefault){
 			$moreDetailsFilters = RecordInterface::getDefaultMoreDetailsOptions();
-
 		}
 
 		$filteredMoreDetailsOptions = array();

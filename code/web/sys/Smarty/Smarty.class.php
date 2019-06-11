@@ -951,6 +951,7 @@ class Smarty
         $_auto_id = $this->_get_auto_id($cache_id, $compile_id);
 
         if (!empty($this->cache_handler_func)) {
+            $dummy = null;
             return call_user_func_array($this->cache_handler_func,
                                   array('clear', &$this, &$dummy, $tpl_file, $cache_id, $compile_id, $exp_time));
         } else {
@@ -1052,8 +1053,7 @@ class Smarty
      * Returns an array containing template variables
      *
      * @param string $name
-     * @param string $type
-     * @return array
+     * @return string|array
      */
     function &get_template_vars($name=null)
     {
@@ -1062,7 +1062,7 @@ class Smarty
         } elseif(isset($this->_tpl_vars[$name])) {
             return $this->_tpl_vars[$name];
         } else {
-            // var non-existant, return valid reference
+            // var non-existent, return valid reference
             $_tmp = null;
             return $_tmp;
         }
@@ -1072,7 +1072,6 @@ class Smarty
      * Returns an array containing config variables
      *
      * @param string $name
-     * @param string $type
      * @return array
      */
     function &get_config_vars($name=null)

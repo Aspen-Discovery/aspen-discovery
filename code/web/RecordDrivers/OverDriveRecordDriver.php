@@ -824,6 +824,7 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 			return $semanticData;
 		}else{
 			AspenError::raiseError('OverDrive Record did not have an associated record in grouped work ' . $this->getPermanentId());
+			return null;
 		}
 	}
 
