@@ -14,6 +14,7 @@ class AspenError extends DataObject
 	public $backtrace;
 	public $_rawBacktrace;
 	public $timestamp;
+	public $userAgent;
 
 	/**
 	 * Create a new Aspen Error.  For new Errors raised by the system, message should be filled out.
@@ -29,6 +30,7 @@ class AspenError extends DataObject
 			global $action;
 			$this->module = $module;
 			$this->action = $action;
+			$this->userAgent = $_SERVER['HTTP_USER_AGENT'];
 			$this->timestamp = time();
 
 			$this->message = $message;
@@ -50,6 +52,7 @@ class AspenError extends DataObject
 			'module' => array('property'=>'module', 'type'=>'label', 'label'=>'Module', 'description'=>'The Module that caused the error'),
 			'action' => array('property'=>'action', 'type'=>'label', 'label'=>'Action', 'description'=>'The Action that caused the error'),
 			'url' => array('property'=>'url', 'type'=>'label', 'label'=>'Url', 'description'=>'The URL that caused the error'),
+			'userAgent' => array('property'=>'userAgent', 'type'=>'label', 'label'=>'User Agent', 'description'=>'The User agent for the user'),
 			'message' => array('property'=>'message', 'type'=>'label', 'label'=>'Message', 'description'=>'A description of the error'),
 			'backtrace' => array('property'=>'backtrace', 'type'=>'label', 'label'=>'Backtrace', 'description'=>'The trace that led to the error'),
 			'timestamp' => array('property'=>'timestamp', 'type'=>'timestamp', 'label'=>'Timestamp', 'description'=>'When the error occurred'),

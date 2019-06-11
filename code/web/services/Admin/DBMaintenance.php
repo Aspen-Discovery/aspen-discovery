@@ -1836,6 +1836,14 @@ class DBMaintenance extends Admin_Admin {
     						) ENGINE = INNODB;',
 					],
 				],
+
+				'error_table_agent' => [
+					'title' => 'Error Logging with User Agent',
+					'description' => 'Add user agent to error logging',
+					'sql' => [
+						'ALTER TABLE errors ADD COLUMN userAgent TEXT',
+					],
+				],
 			)
 		);
 	}
