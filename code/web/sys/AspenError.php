@@ -48,7 +48,7 @@ class AspenError extends DataObject
 			'url' => array('property'=>'url', 'type'=>'label', 'label'=>'Url', 'description'=>'The URL that caused the error'),
 			'message' => array('property'=>'message', 'type'=>'label', 'label'=>'Message', 'description'=>'A description of the error'),
 			'backtrace' => array('property'=>'backtrace', 'type'=>'label', 'label'=>'Backtrace', 'description'=>'The trace that led to the error'),
-			'timestamp' => array('property'=>'timestamp', 'type'=>'label', 'label'=>'Timestamp', 'description'=>'When the error occurred'),
+			'timestamp' => array('property'=>'timestamp', 'type'=>'timestamp', 'label'=>'Timestamp', 'description'=>'When the error occurred'),
 		);
 		return $structure;
 	}
