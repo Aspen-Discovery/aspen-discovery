@@ -29,7 +29,7 @@ class Novelist3{
 		if (!empty($novelistData)){
 			$data = $novelistData->getJsonData();
 			if (isset($data->FeatureContent) && $data->FeatureCount > 0){
-				$novelistData->hasNovelistData = true;
+				$novelistData->hasNovelistData = 1;
 				//We got data!
 				$novelistData->primaryISBN = $data->TitleInfo->primary_isbn;
 
@@ -54,7 +54,7 @@ class Novelist3{
 		if (!empty($novelistData)){
 			$data = $novelistData->getJsonData();
 			if (isset($data->FeatureContent) && $data->FeatureCount > 0){
-				$novelistData->hasNovelistData = true;
+				$novelistData->hasNovelistData = 1;
 				//We got data!
 				$novelistData->primaryISBN = $data->TitleInfo->primary_isbn;
 
@@ -104,7 +104,7 @@ class Novelist3{
 		if (!empty($novelistData)){
 			$data = $novelistData->getJsonData();
 			if (isset($data->FeatureContent) && $data->FeatureCount > 0){
-				$novelistData->hasNovelistData = true;
+				$novelistData->hasNovelistData = 1;
 				//We got data!
 				$novelistData->primaryISBN = $data->TitleInfo->primary_isbn;
 
@@ -166,9 +166,9 @@ class Novelist3{
 
 			if (count($isbns) == 0){
 				//Whoops, no ISBNs, can't get enrichment for this
-				$novelistData->hasNovelistData = false;
+				$novelistData->hasNovelistData = 0;
 			}else{
-				$novelistData->hasNovelistData = false;
+				$novelistData->hasNovelistData = 0;
 
 				$bestIsbn = '';
 				$bestRawJson = '';
@@ -199,6 +199,7 @@ class Novelist3{
 						//Parse the JSON
 						$decodedData = json_decode($response);
 						if (count($decodedData->FeatureCount) > 0){
+							$novelistData->hasNovelistData = 1;
 							break;
 						}
 					}catch (Exception $e) {
@@ -233,7 +234,7 @@ class Novelist3{
 			$data = $novelistData->getJsonData();
 
 			if (isset($data->FeatureContent) && $data->FeatureCount > 0){
-				$novelistData->hasNovelistData = true;
+				$novelistData->hasNovelistData = 1;
 				//We got data!
 				$novelistData->primaryISBN = $data->TitleInfo->primary_isbn;
 
@@ -277,7 +278,7 @@ class Novelist3{
 			$data = $novelistData->getJsonData();
 
 			if (isset($data->FeatureContent) && $data->FeatureCount > 0){
-				$novelistData->hasNovelistData = true;
+				$novelistData->hasNovelistData = 1;
 				//We got data!
 				$novelistData->primaryISBN = $data->TitleInfo->primary_isbn;
 
