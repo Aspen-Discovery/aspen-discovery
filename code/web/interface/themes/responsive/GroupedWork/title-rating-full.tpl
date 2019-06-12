@@ -18,7 +18,7 @@
 			{/if}
 
 			<div class="average-rating row{if !$ratingData.user} rater{/if}"
-							{if !$ratingData.user} {* When user is not logged in or has not rating the work *}
+							{if !$ratingData.user} {* When user is not logged in or has not rated the work *}
 								{* AJAX rater data fields *}
 								data-average_rating="{$ratingData.average}" data-id="{$recordDriver->getPermanentId()}"
 								data-show_review="{if $showComments  && (!$user || !$user->noPromptForUserReviews)}1{else}0{/if}"

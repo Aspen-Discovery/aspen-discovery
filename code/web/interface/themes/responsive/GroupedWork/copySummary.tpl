@@ -24,11 +24,11 @@
 				{assign var=numRowsShown value=$numRowsShown+1}
 			{/if}
 		{/foreach}
-		{if !$inPopUp}
+		{if empty($inPopUp)}
 			{assign var=numRemainingCopies value=$totalCopies-$numDefaultItems}
 			{if $numRemainingCopies > 0}
 				<div class="itemSummary">
-					&nbsp;&nbsp;<a href="#" onclick="return AspenDiscovery.showElementInPopup('Copy Summary', '#itemSummaryPopup_{$itemSummaryId|escapeCSS}_{$relatedManifestation->format|escapeCSS}'{if $recordViewUrl}, '#itemSummaryPopupButtons_{$itemSummaryId|escapeCSS}_{$relatedManifestatio->format|escapeCSS}'{/if});">
+					&nbsp;&nbsp;<a href="#" onclick="return AspenDiscovery.showElementInPopup('Copy Summary', '#itemSummaryPopup_{$itemSummaryId|escapeCSS}_{$relatedManifestation->format|escapeCSS}'{if $recordViewUrl}, '#itemSummaryPopupButtons_{$itemSummaryId|escapeCSS}_{$relatedManifestation->format|escapeCSS}'{/if});">
 						{translate text="Quick Copy View"}
 					</a>
 				</div>

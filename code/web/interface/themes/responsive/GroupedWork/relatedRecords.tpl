@@ -25,7 +25,7 @@
 		</tr>
 		</thead>
 		{foreach from=$relatedRecords item=relatedRecord key=index}
-			<tr{if $promptAlternateEdition && $index===0} class="danger"{/if}>
+			<tr{if !empty($promptAlternateEdition) && $index===0} class="danger"{/if}>
 				{* <td>
 				{$relatedRecord.holdRatio}
 				</td> *}
@@ -55,7 +55,7 @@
 					<div class="btn-group btn-group-vertical btn-group-sm">
 						<a href="{$relatedRecord->getUrl()}" class="btn btn-sm btn-info">More Info</a>
 						{foreach from=$relatedRecord->getActions() item=curAction}
-							<a href="{$curAction.url}" {if $curAction.onclick}onclick="{$curAction.onclick}"{/if} class="btn btn-sm btn-default" {if $curAction.alt}title="{$curAction.alt}"{/if}>{$curAction.title}</a>
+							<a href="{if !empty($curAction.url)}{$curAction.url}{else}#{/if}" {if $curAction.onclick}onclick="{$curAction.onclick}"{/if} class="btn btn-sm btn-default" {if !empty($curAction.alt)}title="{$curAction.alt}"{/if}>{$curAction.title}</a>
 						{/foreach}
 					</div>
 				</td>

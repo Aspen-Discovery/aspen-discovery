@@ -8,7 +8,7 @@
 
 	{* Information about the search *}
 	<div class="result-head">
-		{if $replacementTerm}
+		{if !empty($replacementTerm)}
 			<div id="replacement-search-info-block">
 				<div id="replacement-search-info"><span class="replacement-search-info-text">Showing Results for</span> {$replacementTerm}</div>
 				<div id="original-search-info"><span class="replacement-search-info-text">Search instead for </span><a href="{$oldSearchUrl}">{$oldTerm}</a></div>

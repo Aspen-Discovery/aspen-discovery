@@ -30,7 +30,7 @@
 		</div>
 	{/if}
 
-	{if $recordDriver->getMpaaRating()}
+	{if !empty($recordDriver->getMpaaRating())}
 		<div class="row">
 			<div class="result-label col-sm-3">{translate text='Rating'}:</div>
 			<div class="col-sm-9 result-value">{$recordDriver->getMpaaRating()|escape}</div>

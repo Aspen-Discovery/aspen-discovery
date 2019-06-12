@@ -15,7 +15,7 @@
 	{* Information about the search *}
 	<div class="result-head">
 		<div>
-			{if $replacementTerm}
+			{if !empty($replacementTerm)}
 				<div id="replacement-search-info">
 					<span class="replacement-search-info-text">Showing Results for </span>{$replacementTerm}<span class="replacement-search-info-text">.  Search instead for <span class="replacement-search-info-text"><a href="{$oldSearchUrl}">{$oldTerm}</a>
 				</div>
