@@ -5,6 +5,6 @@
 <em>{$pageTemplate|replace:'.tpl':''|capitalize|translate}</em>
 {/if}
 <span class="divider">&raquo;</span>
-{if $recordCount}
+{if !empty($recordCount)}
 	{translate text="Showing"} <b>{$recordStart}</b> - <b>{$recordEnd}</b> {translate text='of'} <b>{$recordCount}</b>
 {/if}

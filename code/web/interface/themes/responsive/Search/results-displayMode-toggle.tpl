@@ -1,7 +1,7 @@
 {strip}
 	{* User's viewing mode toggle switch *}
 	<div class="row">{* browse styling replicated here *}
-		{if $recordCount}
+		{if !empty($recordCount)}
 			{* <span class="sidebar-label">
 				   <label for="results-sort">{translate text='Sort'}</label></span> *}
 

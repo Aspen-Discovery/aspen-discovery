@@ -4,7 +4,7 @@
 {if $breadcrumbText}
     <em>{$breadcrumbText|truncate:30:"..."|escape}</em> <span class="divider">&raquo;</span>
 {/if}
-{if $recordCount}
+{if !empty($recordCount)}
     {if $displayMode == 'covers'}
         There are {$recordCount|number_format} total results.
     {else}

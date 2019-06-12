@@ -58,7 +58,7 @@
 		<h2>{$label}</h2>
 		<div class="row">
 			<div class="col-sm-4">
-				{if $recordCount}
+				{if !empty($recordCount)}
 					{$recordCount} total objects.
 				{/if}
 			</div>

@@ -3,7 +3,7 @@
 {elseif $pageTemplate!=""}
 	<li>{translate text=$pageTemplate|replace:'.tpl':''|capitalize|translate} <span class="divider">&raquo;</span></li>
 {/if}
-{if $recordCount}
+{if !empty($recordCount)}
 	{translate text="Showing"}
 	{$recordStart} - {$recordEnd}
 	{translate text='of'} {$recordCount|number_format}

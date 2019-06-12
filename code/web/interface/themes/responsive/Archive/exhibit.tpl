@@ -109,7 +109,7 @@
 		</div>
 		<div class="row">
 			<div class="col-sm-4">
-				{if $recordCount}
+				{if !empty($recordCount)}
 					{$recordCount} objects in this collection.
 				{/if}
 			</div>

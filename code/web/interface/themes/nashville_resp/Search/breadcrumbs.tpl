@@ -5,7 +5,7 @@
 {/if}
 
 {* Moved result-head info here from list.tpl - JE 6/18/15 *}
-    {if $recordCount}
+    {if !empty($recordCount)}
 		{if $displayMode == 'covers'}
 			There are {$recordCount|number_format} total results.
 		{else}
