@@ -760,8 +760,9 @@ public class GroupedWorkIndexer {
 			if (novelistRS.next()){
 				String series = novelistRS.getString("seriesTitle");
 				if (!novelistRS.wasNull()){
-					groupedWork.clearSeriesData();
-					groupedWork.addSeries(series);
+					//Don't clear since there are valid cases when they are different
+					//groupedWork.clearSeriesData();
+					//groupedWork.addSeries(series);
 					String volume = novelistRS.getString("volume");
 					if (novelistRS.wasNull()){
 						volume = "";

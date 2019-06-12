@@ -703,6 +703,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		if (itemInfo.geteContentUrl() == null || itemInfo.geteContentUrl().length() == 0){
 			return null;
 		}else{
+			//System.out.println(identifier + "\t" + itemInfo.getItemIdentifier() + "\t" + itemInfo.geteContentUrl());
 			return relatedRecord;
 		}
 	}

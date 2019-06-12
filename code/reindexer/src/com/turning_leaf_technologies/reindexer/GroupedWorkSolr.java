@@ -72,7 +72,7 @@ public class GroupedWorkSolr implements Cloneable {
 	private double popularity;
 	private HashSet<String> publishers = new HashSet<>();
 	private HashSet<String> publicationDates = new HashSet<>();
-	private float rating = 2.5f;
+	private float rating = -1f;
 	private HashMap<String, String> series = new HashMap<>();
 	private HashMap<String, String> series2 = new HashMap<>();
 	private HashMap<String, String> seriesWithVolume = new HashMap<>();
@@ -363,7 +363,7 @@ public class GroupedWorkSolr implements Cloneable {
 		doc.addField("popularity", Long.toString((long)popularity));
 		doc.addField("num_holdings", numHoldings);
 		//aspen-discovery enrichment
-		doc.addField("rating", rating);
+		doc.addField("rating", rating == -1f ? 2.5 : rating);
 		doc.addField("rating_facet", getRatingFacet(rating));
 
 		doc.addField("description", Util.getCRSeparatedString(description));
