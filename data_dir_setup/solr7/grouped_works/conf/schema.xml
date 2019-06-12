@@ -151,6 +151,7 @@
 		<!-- SERIES Fields -->
 		<field name="series" type="searchable_text" indexed="true" stored="true" multiValued="true"/>
 		<field name="series2" type="searchable_text" indexed="true" stored="true" multiValued="true"/>
+		<field name="series_facet" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true"/>
 		<field name="series_proper" type="textProper" indexed="true" stored="false" multiValued="true"/>
 		<field name="series_with_volume" type="textProper" indexed="false" stored="true" multiValued="true"/>
 
@@ -306,6 +307,8 @@
 	<copyField source="auth_author2" dest="auth_author2Str"/>
 	<copyField source="author_additional" dest="author_additionalStr"/>
 	<copyField source="publisher" dest="publisherStr"/>
+	<copyField source="series" dest="series_facet"/>
+
 	<!-- CopyFields for Proper (Unstemmed) searching -->
 	<copyField source="title" dest="title_proper"/>
 	<copyField source="title" dest="title_exact"/>

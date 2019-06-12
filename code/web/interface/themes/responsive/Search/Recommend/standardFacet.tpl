@@ -1,4 +1,4 @@
-{if $cluster.showMoreFacetPopup}
+{if isset($cluster.showMoreFacetPopup) && $cluster.showMoreFacetPopup}
 	{foreach from=$cluster.list item=thisFacet name="narrowLoop"}
 		{if $thisFacet.isApplied}
 			<div class="facetValue"><img src="{$path}/images/silk/tick.png" alt="Selected" /> {$thisFacet.display|escape} <a href="{$thisFacet.removalUrl|escape}" class="removeFacetLink">(remove)</a></div>

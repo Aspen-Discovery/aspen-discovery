@@ -59,6 +59,7 @@ abstract class FacetSetting extends DataObject {
 			"accelerated_reader_reading_level" => "AR Reading Level",
 			"accelerated_reader_point_value" => "AR Point Value",
 			"fountas_pinnell" => "Fountas &amp; Pinnell",
+			"series_facet" => "Series",
 		);
 
 		//Add additional facets by library

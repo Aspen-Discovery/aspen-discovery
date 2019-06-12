@@ -31,15 +31,15 @@
 							<div id="facetDetails_{$title}" class="facetDetails" {if $cluster.collapseByDefault}style="display:none"{/if}>
 
 								{if $title == 'publishDate' || $title == 'birthYear' || $title == 'deathYear'}
-									{include file="Search/Recommend/yearFacetFilter.tpl" cluster=$cluster title=$title name=$name}
+									{include file="Search/Recommend/yearFacetFilter.tpl" cluster=$cluster title=$title}
 								{elseif $title == 'rating_facet'}
-									{include file="Search/Recommend/ratingFacet.tpl" cluster=$cluster title=$title name=$name}
+									{include file="Search/Recommend/ratingFacet.tpl" cluster=$cluster title=$title}
 								{elseif $title == 'lexile_score' || $title == 'accelerated_reader_reading_level' || $title == 'accelerated_reader_point_value'}
-									{include file="Search/Recommend/sliderFacet.tpl" cluster=$cluster title=$title name=$name}
-								{elseif $cluster.showAsDropDown}
-									{include file="Search/Recommend/dropDownFacet.tpl" cluster=$cluster title=$title name=$name}
+									{include file="Search/Recommend/sliderFacet.tpl" cluster=$cluster title=$title}
+								{elseif !empty($cluster.showAsDropDown)}
+									{include file="Search/Recommend/dropDownFacet.tpl" cluster=$cluster title=$title}
 								{else}
-									{include file="Search/Recommend/standardFacet.tpl" cluster=$cluster title=$title name=$name}
+									{include file="Search/Recommend/standardFacet.tpl" cluster=$cluster title=$title}
 								{/if}
 							</div>
 						</div>
