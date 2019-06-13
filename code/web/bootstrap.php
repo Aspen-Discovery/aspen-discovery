@@ -60,24 +60,9 @@ function initMemcache(){
 	//Connect to memcache
 	/** @var Memcache $memCache */
 	global $memCache;
-	global $timer;
-    /*global $configArray;
-    // Set defaults if nothing set in config file.
-    $host = isset($configArray['Caching']['memcache_host']) ? $configArray['Caching']['memcache_host'] : 'localhost';
-    $port = isset($configArray['Caching']['memcache_port']) ? $configArray['Caching']['memcache_port'] : 11211;
-    $timeout = isset($configArray['Caching']['memcache_connection_timeout']) ? $configArray['Caching']['memcache_connection_timeout'] : 1;
 
-    // Connect to Memcache:
-    $memCache = new Memcache();
-    if (!@$memCache->pconnect($host, $port, $timeout)) {
-        //Try again with a non-persistent connection
-        if (!$memCache->connect($host, $port, $timeout)) {
-            AspenError::raiseError(new AspenError("Could not connect to Memcache (host = {$host}, port = {$port})."));
-        }
-    }*/
     require_once ROOT_DIR . '/sys/MemoryCache/Memcache.php';
 	$memCache = new Memcache();
-	$timer->logTime("Initialize Memcache");
 }
 
 function initDatabase(){
@@ -289,10 +274,6 @@ function loadSearchInformation(){
 	while ($indexingProfile->fetch()){
 		$indexingProfiles[$indexingProfile->name] = clone($indexingProfile);
 	}
-	if (!$memCache->set("{$instanceName}_indexing_profiles", $indexingProfiles, 0, $configArray['Caching']['indexing_profiles'])) {
-		global $logger;
-		$logger->log("Failed to update memcache variable {$instanceName}_indexing_profiles", Logger::LOG_ERROR);
-	};
 }
 
 function disableErrorHandler(){

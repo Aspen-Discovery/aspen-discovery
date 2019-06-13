@@ -323,196 +323,200 @@ class Koha extends AbstractIlsDriver {
             $authenticationURL = $this->getWebServiceUrl() . '/cgi-bin/koha/ilsdi.pl?service=AuthenticatePatron&username=' . urlencode($barcode) . '&password=' . urlencode($password);
             $authenticationResponse = $this->getXMLWebServiceResponse($authenticationURL);
             if (isset($authenticationResponse->id)){
-                $patronId = $authenticationResponse->id;
-                /** @noinspection SqlResolve */
-                $sql = "SELECT borrowernumber, cardnumber, surname, firstname, streetnumber, streettype, address, address2, city, state, zipcode, country, email, phone, mobile, categorycode, dateexpiry, password, userid, branchcode from borrowers where borrowernumber = $patronId";
+				$patronId = $authenticationResponse->id;
+				/** @noinspection SqlResolve */
+				$sql = "SELECT borrowernumber, cardnumber, surname, firstname, streetnumber, streettype, address, address2, city, state, zipcode, country, email, phone, mobile, categorycode, dateexpiry, password, userid, branchcode from borrowers where borrowernumber = $patronId";
 
-                $lookupUserResult = mysqli_query($this->dbConnection, $sql, MYSQLI_USE_RESULT);
-                if ($lookupUserResult) {
-                    $userFromDb = $lookupUserResult->fetch_assoc();
-                    $lookupUserResult->close();
+				$lookupUserResult = mysqli_query($this->dbConnection, $sql, MYSQLI_USE_RESULT);
+				if ($lookupUserResult) {
+					$userFromDb = $lookupUserResult->fetch_assoc();
+					$lookupUserResult->close();
 
-                    $userExistsInDB = false;
-                    $user = new User();
-                    //Get the unique user id from Millennium
-                    $user->source = $this->accountProfile->name;
-                    $user->username = $userFromDb['borrowernumber'];
-                    if ($user->find(true)){
-                        $userExistsInDB = true;
-                    }
+					$userExistsInDB = false;
+					$user = new User();
+					//Get the unique user id from Millennium
+					$user->source = $this->accountProfile->name;
+					$user->username = $userFromDb['borrowernumber'];
+					if ($user->find(true)){
+					    $userExistsInDB = true;
+					}
 
-                    $forceDisplayNameUpdate = false;
-                    $firstName = $userFromDb['firstname'];
-                    if ($user->firstname != $firstName) {
-                        $user->firstname = $firstName;
-                        $forceDisplayNameUpdate = true;
-                    }
-                    $lastName = $userFromDb['surname'];
-                    if ($user->lastname != $lastName){
-                        $user->lastname = isset($lastName) ? $lastName : '';
-                        $forceDisplayNameUpdate = true;
-                    }
-                    if ($forceDisplayNameUpdate){
-                        $user->displayName = '';
-                    }
-                    $user->_fullname     = $userFromDb['firstname'] . ' ' . $userFromDb['surname'];
-                    $user->cat_username = $barcode;
-                    $user->cat_password = $password;
-                    $user->email        = $userFromDb['email'];
-                    $user->patronType   = $userFromDb['categorycode'];
-                    $user->_web_note     = '';
+					$forceDisplayNameUpdate = false;
+					$firstName = $userFromDb['firstname'];
+					if ($user->firstname != $firstName) {
+					    $user->firstname = $firstName;
+					    $forceDisplayNameUpdate = true;
+					}
+					$lastName = $userFromDb['surname'];
+					if ($user->lastname != $lastName){
+					    $user->lastname = isset($lastName) ? $lastName : '';
+					    $forceDisplayNameUpdate = true;
+					}
+					if ($forceDisplayNameUpdate){
+					    $user->displayName = '';
+					}
+					$user->_fullname     = $userFromDb['firstname'] . ' ' . $userFromDb['surname'];
+					$user->cat_username = $barcode;
+					$user->cat_password = $password;
+					$user->email        = $userFromDb['email'];
+					$user->patronType   = $userFromDb['categorycode'];
+					$user->_web_note     = '';
 
-                    $user->_address1 = trim($userFromDb['streetnumber'] . ' ' . $userFromDb['address']);
-                    $user->_address2 = $userFromDb['address2'];
-                    $user->_city     = $userFromDb['city'];
-                    $user->_state    = $userFromDb['state'];
-                    $user->_zip      = $userFromDb['zipcode'];
-                    $user->phone    = $userFromDb['phone'];
+					$user->_address1 = trim($userFromDb['streetnumber'] . ' ' . $userFromDb['address']);
+					$user->_address2 = $userFromDb['address2'];
+					$user->_city     = $userFromDb['city'];
+					$user->_state    = $userFromDb['state'];
+					$user->_zip      = $userFromDb['zipcode'];
+					$user->phone    = $userFromDb['phone'];
 
-                    //Get fines
-                    //Load fines from database
-                    $outstandingFines = $this->getOutstandingFineTotal($user);
-                    $user->_fines    = sprintf('$%0.2f', $outstandingFines);
-                    $user->_finesVal = floatval($outstandingFines);
+					//Get fines
+					//Load fines from database
+					$outstandingFines = $this->getOutstandingFineTotal($user);
+					$user->_fines    = sprintf('$%0.2f', $outstandingFines);
+					$user->_finesVal = floatval($outstandingFines);
+					$timer->logTime("Loaded base patron information for Koha");
 
-                    //Get number of items checked out
-                    /** @noinspection SqlResolve */
-                    $checkedOutItemsRS = mysqli_query($this->dbConnection, 'SELECT count(*) as numCheckouts FROM issues WHERE borrowernumber = ' . $user->username, MYSQLI_USE_RESULT);
-                    $numCheckouts = 0;
-                    if ($checkedOutItemsRS){
-                        $checkedOutItems = $checkedOutItemsRS->fetch_assoc();
-                        $numCheckouts = $checkedOutItems['numCheckouts'];
-                        $checkedOutItemsRS->close();
-                    }
-                    $user->_numCheckedOutIls = $numCheckouts;
+					//Get number of items checked out
+					/** @noinspection SqlResolve */
+					$checkedOutItemsRS = mysqli_query($this->dbConnection, 'SELECT count(*) as numCheckouts FROM issues WHERE borrowernumber = ' . $user->username, MYSQLI_USE_RESULT);
+					$numCheckouts = 0;
+					if ($checkedOutItemsRS){
+					    $checkedOutItems = $checkedOutItemsRS->fetch_assoc();
+					    $numCheckouts = $checkedOutItems['numCheckouts'];
+					    $checkedOutItemsRS->close();
+					}
+					$user->_numCheckedOutIls = $numCheckouts;
+					$timer->logTime("Loaded checkouts for Koha");
 
-                    //Get number of available holds
-                    /** @noinspection SqlResolve */
-                    $availableHoldsRS = mysqli_query($this->dbConnection, 'SELECT count(*) as numHolds FROM reserves WHERE found = "W" and borrowernumber = ' . $user->username, MYSQLI_USE_RESULT);
-                    $numAvailableHolds = 0;
-                    if ($availableHoldsRS){
-                        $availableHolds = $availableHoldsRS->fetch_assoc();
-                        $numAvailableHolds = $availableHolds['numHolds'];
-                        $availableHoldsRS->close();
-                    }
-                    $user->_numHoldsAvailableIls = $numAvailableHolds;
+					//Get number of available holds
+					/** @noinspection SqlResolve */
+					$availableHoldsRS = mysqli_query($this->dbConnection, 'SELECT count(*) as numHolds FROM reserves WHERE found = "W" and borrowernumber = ' . $user->username, MYSQLI_USE_RESULT);
+					$numAvailableHolds = 0;
+					if ($availableHoldsRS){
+					    $availableHolds = $availableHoldsRS->fetch_assoc();
+					    $numAvailableHolds = $availableHolds['numHolds'];
+					    $availableHoldsRS->close();
+					}
+					$user->_numHoldsAvailableIls = $numAvailableHolds;
+					$timer->logTime("Loaded available holds for Koha");
 
-                    //Get number of unavailable
-                    /** @noinspection SqlResolve */
-                    $waitingHoldsRS = mysqli_query($this->dbConnection, 'SELECT count(*) as numHolds FROM reserves WHERE (found <> "W" or found is null) and borrowernumber = ' . $user->username, MYSQLI_USE_RESULT);
-                    $numWaitingHolds = 0;
-                    if ($waitingHoldsRS){
-                        $waitingHolds = $waitingHoldsRS->fetch_assoc();
-                        $numWaitingHolds = $waitingHolds['numHolds'];
-                        $waitingHoldsRS->close();
-                    }
-                    $user->_numHoldsRequestedIls = $numWaitingHolds;
-                    $user->_numHoldsIls = $user->_numHoldsAvailableIls + $user->_numHoldsRequestedIls;
+					//Get number of unavailable
+					/** @noinspection SqlResolve */
+					$waitingHoldsRS = mysqli_query($this->dbConnection, 'SELECT count(*) as numHolds FROM reserves WHERE (found <> "W" or found is null) and borrowernumber = ' . $user->username, MYSQLI_USE_RESULT);
+					$numWaitingHolds = 0;
+					if ($waitingHoldsRS){
+					    $waitingHolds = $waitingHoldsRS->fetch_assoc();
+					    $numWaitingHolds = $waitingHolds['numHolds'];
+					    $waitingHoldsRS->close();
+					}
+					$user->_numHoldsRequestedIls = $numWaitingHolds;
+					$user->_numHoldsIls = $user->_numHoldsAvailableIls + $user->_numHoldsRequestedIls;
+					$timer->logTime("Loaded total holds for Koha");
 
-                    $homeBranchCode = strtolower($userFromDb['branchcode']);
-                    $location = new Location();
-                    $location->code = $homeBranchCode;
-                    if (!$location->find(1)){
-                        unset($location);
-                        $user->homeLocationId = 0;
-                        // Logging for Diagnosing PK-1846
-                        global $logger;
-                        $logger->log('Koha Driver: No Location found, user\'s homeLocationId being set to 0. User : '.$user->id, Logger::LOG_WARNING);
-                    }
+					$homeBranchCode = strtolower($userFromDb['branchcode']);
+					$location = new Location();
+					$location->code = $homeBranchCode;
+					if (!$location->find(1)){
+					    unset($location);
+					    $user->homeLocationId = 0;
+					    // Logging for Diagnosing PK-1846
+					    global $logger;
+					    $logger->log('Koha Driver: No Location found, user\'s homeLocationId being set to 0. User : '.$user->id, Logger::LOG_WARNING);
+					}
 
-                    if ((empty($user->homeLocationId) || $user->homeLocationId == -1) || (isset($location) && $user->homeLocationId != $location->locationId)) { // When homeLocation isn't set or has changed
-                        if ((empty($user->homeLocationId) || $user->homeLocationId == -1) && !isset($location)) {
-                            // homeBranch Code not found in location table and the user doesn't have an assigned home location,
-                            // try to find the main branch to assign to user
-                            // or the first location for the library
-                            global $library;
+					if ((empty($user->homeLocationId) || $user->homeLocationId == -1) || (isset($location) && $user->homeLocationId != $location->locationId)) { // When homeLocation isn't set or has changed
+					    if ((empty($user->homeLocationId) || $user->homeLocationId == -1) && !isset($location)) {
+					        // homeBranch Code not found in location table and the user doesn't have an assigned home location,
+					        // try to find the main branch to assign to user
+					        // or the first location for the library
+					        global $library;
 
-                            $location            = new Location();
-                            $location->libraryId = $library->libraryId;
-                            $location->orderBy('isMainBranch desc'); // gets the main branch first or the first location
-                            if (!$location->find(true)) {
-                                // Seriously no locations even?
-                                global $logger;
-                                $logger->log('Failed to find any location to assign to user as home location', Logger::LOG_ERROR);
-                                unset($location);
-                            }
-                        }
-                        if (isset($location)) {
-                            $user->homeLocationId = $location->locationId;
-                            if (empty($user->myLocation1Id)) {
-                                $user->myLocation1Id  = ($location->nearbyLocation1 > 0) ? $location->nearbyLocation1 : $location->locationId;
-                                /** @var /Location $location */
-                                //Get display name for preferred location 1
-                                $myLocation1             = new Location();
-                                $myLocation1->locationId = $user->myLocation1Id;
-                                if ($myLocation1->find(true)) {
-                                    $user->_myLocation1 = $myLocation1->displayName;
-                                }
-                            }
+					        $location            = new Location();
+					        $location->libraryId = $library->libraryId;
+					        $location->orderBy('isMainBranch desc'); // gets the main branch first or the first location
+					        if (!$location->find(true)) {
+					            // Seriously no locations even?
+					            global $logger;
+					            $logger->log('Failed to find any location to assign to user as home location', Logger::LOG_ERROR);
+					            unset($location);
+					        }
+					    }
+					    if (isset($location)) {
+					        $user->homeLocationId = $location->locationId;
+					        if (empty($user->myLocation1Id)) {
+					            $user->myLocation1Id  = ($location->nearbyLocation1 > 0) ? $location->nearbyLocation1 : $location->locationId;
+					            /** @var /Location $location */
+					            //Get display name for preferred location 1
+					            $myLocation1             = new Location();
+					            $myLocation1->locationId = $user->myLocation1Id;
+					            if ($myLocation1->find(true)) {
+					                $user->_myLocation1 = $myLocation1->displayName;
+					            }
+					        }
 
-                            if (empty($user->myLocation2Id)){
-                                $user->myLocation2Id  = ($location->nearbyLocation2 > 0) ? $location->nearbyLocation2 : $location->locationId;
-                                //Get display name for preferred location 2
-                                $myLocation2             = new Location();
-                                $myLocation2->locationId = $user->myLocation2Id;
-                                if ($myLocation2->find(true)) {
-                                    $user->_myLocation2 = $myLocation2->displayName;
-                                }
-                            }
-                        }
-                    }
+					        if (empty($user->myLocation2Id)){
+					            $user->myLocation2Id  = ($location->nearbyLocation2 > 0) ? $location->nearbyLocation2 : $location->locationId;
+					            //Get display name for preferred location 2
+					            $myLocation2             = new Location();
+					            $myLocation2->locationId = $user->myLocation2Id;
+					            if ($myLocation2->find(true)) {
+					                $user->_myLocation2 = $myLocation2->displayName;
+					            }
+					        }
+					    }
+					}
 
-                    if (isset($location)){
-                        //Get display names that aren't stored
-                        $user->_homeLocationCode = $location->code;
-                        $user->_homeLocation     = $location->displayName;
-                    }
+					if (isset($location)){
+					    //Get display names that aren't stored
+					    $user->_homeLocationCode = $location->code;
+					    $user->_homeLocation     = $location->displayName;
+					}
 
-                    $user->_expires = $userFromDb['dateexpiry']; //TODO: format is year-month-day; millennium is month-day-year; needs converting??
+					$user->_expires = $userFromDb['dateexpiry']; //TODO: format is year-month-day; millennium is month-day-year; needs converting??
 
-                    $user->_expired     = 0; // default setting
-                    $user->_expireClose = 0;
+					$user->_expired     = 0; // default setting
+					$user->_expireClose = 0;
 
-                    if (!empty($userFromDb['dateexpiry'])) { // TODO: probably need a better check of this field
-                        list ($yearExp, $monthExp, $dayExp) = explode('-', $userFromDb['dateexpiry']);
-                        $timeExpire   = strtotime($monthExp . "/" . $dayExp . "/" . $yearExp);
-                        $timeNow      = time();
-                        $timeToExpire = $timeExpire - $timeNow;
-                        if ($timeToExpire <= 30 * 24 * 60 * 60) {
-                            if ($timeToExpire <= 0) {
-                                $user->_expired = 1;
-                            }
-                            $user->_expireClose = 1;
-                        }
-                    }
+					if (!empty($userFromDb['dateexpiry'])) { // TODO: probably need a better check of this field
+					    list ($yearExp, $monthExp, $dayExp) = explode('-', $userFromDb['dateexpiry']);
+					    $timeExpire   = strtotime($monthExp . "/" . $dayExp . "/" . $yearExp);
+					    $timeNow      = time();
+					    $timeToExpire = $timeExpire - $timeNow;
+					    if ($timeToExpire <= 30 * 24 * 60 * 60) {
+					        if ($timeToExpire <= 0) {
+					            $user->_expired = 1;
+					        }
+					        $user->_expireClose = 1;
+					    }
+					}
 
-                    $user->_noticePreferenceLabel = 'Unknown';
+					$user->_noticePreferenceLabel = 'Unknown';
 
-                    if ($userExistsInDB){
-                        $user->update();
-                    }else{
-                        $user->created = date('Y-m-d');
-                        $user->insert();
-                    }
+					if ($userExistsInDB){
+					    $user->update();
+					}else{
+					    $user->created = date('Y-m-d');
+					    $user->insert();
+					}
 
-                    $timer->logTime("patron logged in successfully");
+					$timer->logTime("patron logged in successfully");
 
-                    return $user;
-                }else{
-                    $logger->log("MySQL did not return a result for getUserInfoStmt", Logger::LOG_ERROR);
-                    if ($i == count($barcodesToTest) -1){
-                        return new AspenError('authentication_error_technical');
-                    }
-                }
+					return $user;
+				}else{
+				    $logger->log("MySQL did not return a result for getUserInfoStmt", Logger::LOG_ERROR);
+				    if ($i == count($barcodesToTest) -1){
+				        return new AspenError('authentication_error_technical');
+				    }
+				}
             }else{
-            	//User is not valid, check to see if they have a valid account in Koha so we can return a different error
-	            /** @noinspection SqlResolve */
-	            $sql = "SELECT borrowernumber, cardnumber, userId from borrowers where cardnumber = '$barcode' OR userId = '$barcode'";
+				//User is not valid, check to see if they have a valid account in Koha so we can return a different error
+				/** @noinspection SqlResolve */
+				$sql = "SELECT borrowernumber, cardnumber, userId from borrowers where cardnumber = '$barcode' OR userId = '$barcode'";
 
-	            $lookupUserResult = mysqli_query($this->dbConnection, $sql);
-	            if ($lookupUserResult->num_rows > 0) {
-		            $userExistsInDB = true;
-	            }
+				$lookupUserResult = mysqli_query($this->dbConnection, $sql);
+				if ($lookupUserResult->num_rows > 0) {
+				    $userExistsInDB = true;
+				}
             }
 		}
 		if ($userExistsInDB){
@@ -1663,6 +1667,20 @@ class Koha extends AbstractIlsDriver {
 		}
 	}
 
+	function getNumMaterialsRequests(User $user)
+	{
+		$numRequests = 0;
+		$this->initDatabaseConnection();
+
+		/** @noinspection SqlResolve */
+		$sql = "SELECT count(*) as numRequests FROM koha_uintah.suggestions where suggestedby = {$user->username}";
+		$results = mysqli_query($this->dbConnection, $sql);
+		if ($curRow = $results->fetch_assoc()){
+			$numRequests = $curRow['numRequests'];
+		}
+		return $numRequests;
+	}
+
 	function getMaterialsRequests(User $user)
 	{
 		$this->loginToKohaOpac($user);
@@ -1739,6 +1757,7 @@ class Koha extends AbstractIlsDriver {
 		$patronUpdateFields['alternateAddressSection']['renderAsHeading'] = true;
 		$patronUpdateFields['alternateContactSection']['renderAsHeading'] = true;
 
+		$this->initDatabaseConnection();
 		//Set default values
 		/** @noinspection SqlResolve */
 		$sql = "SELECT * FROM borrowers where borrowernumber = " . mysqli_escape_string($this->dbConnection, $user->username);

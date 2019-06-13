@@ -587,18 +587,15 @@ class UserAccount {
 		}
 	}
 
+	private static $_accountProfiles = null;
 	/**
 	 * @return AccountProfile[]
 	 */
 	static function getAccountProfiles() {
-		/** @var Memcache $memCache */
-		global $memCache;
-		global $instanceName;
-		global $configArray;
-		$accountProfiles = $memCache->get('account_profiles_' . $instanceName);
+		UserAccount::$_accountProfiles = null;
 
-		if ($accountProfiles == false || isset($_REQUEST['reload'])){
-			$accountProfiles = array();
+		if (UserAccount::$_accountProfiles == null){
+			UserAccount::$_accountProfiles = array();
 
 			//Load a list of authentication methods to test and see which (if any) result in a valid login.
 			require_once ROOT_DIR . '/sys/Account/AccountProfile.php';
@@ -611,17 +608,16 @@ class UserAccount {
 					'authenticationMethod' => $accountProfile->authenticationMethod,
 					'accountProfile' => clone($accountProfile)
 				);
-				$accountProfiles[$accountProfile->name] = $additionalInfo;
+				UserAccount::$_accountProfiles[$accountProfile->name] = $additionalInfo;
 			}
-			if (count($accountProfiles) == 0) {
+			if (count(UserAccount::$_accountProfiles) == 0) {
 				echo("Account profiles must be defined in the database for proper setup.");
 				die();
 			}
-			$memCache->set('account_profiles_' . $instanceName, $accountProfiles, 0, $configArray['Caching']['account_profiles']);
 			global $timer;
 			$timer->logTime("Loaded Account Profiles");
 		}
-		return $accountProfiles;
+		return UserAccount::$_accountProfiles;
 	}
 
 

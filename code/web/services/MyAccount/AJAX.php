@@ -1166,12 +1166,14 @@ class MyAccount_AJAX
 
 			//Count of Checkouts
 			$result['checkouts'] = '</div><span class="badge">' . $user->getNumCheckedOutTotal() . '</span>';
+			$timer->logTime("Load all checkouts for menu");
 
 			//Count of Holds
 			$result['holds'] = '<span class="badge">' . $user->getNumHoldsTotal() . '</span>';
 			if ($user->getNumHoldsAvailableTotal() > 0){
 				$result['holds'] .= '&nbsp;<span class="label label-success">' . $user->getNumHoldsAvailableTotal() . ' ready for pick up</span>';
 			}
+			$timer->logTime("Load all holds for menu");
 
 			//Count of bookings
 			global $library;
@@ -1186,12 +1188,15 @@ class MyAccount_AJAX
 			if ($user->getReadingHistorySize() > 0){
 				$result['readingHistory'] = '<span class="badge">' . $user->getReadingHistorySize() . '</span>';
 			}
+			$timer->logTime("Load reading history for menu");
 
 			//Count of Materials Requests
 			$result['materialsRequests'] = '<span class="badge">' . $user->getNumMaterialsRequests() . '</span>';
+			$timer->logTime("Load number of materials requests for menu");
 
 			//Count of ratings
 			$result['ratings'] = '<span class="badge">' . $user->getNumRatings() . '</span>';
+			$timer->logTime("Load ratings");
 
 			//Count of ratings
 			$result['recommendations'] = ($user->hasRecommendations() ? '<span class="label label-success">active</span>' : '');

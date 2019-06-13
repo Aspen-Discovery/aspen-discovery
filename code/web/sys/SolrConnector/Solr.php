@@ -2096,6 +2096,7 @@ abstract class Solr {
 		if (isset($_REQUEST['allFields'])){
 			return array('*');
 		}
+		//There are very large performance gains for caching this in memory since we need to do a remote call and file parse
 		$fields = $memCache->get("schema_fields_$solrScope");
 		if (!$fields || isset($_REQUEST['reload'])){
 			global $configArray;

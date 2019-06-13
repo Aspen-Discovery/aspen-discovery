@@ -824,6 +824,8 @@ class OverDriveDriver extends AbstractEContentDriver{
 		return $result;
 	}
 
+	/** @var array Key = user id, value = boolean */
+	private static $validUsersOverDrive = [];
 	/**
 	 * @param $user  User
 	 * @return bool
@@ -831,16 +833,20 @@ class OverDriveDriver extends AbstractEContentDriver{
 	public function isUserValidForOverDrive($user){
 		global $timer;
 		$userBarcode = $user->getBarcode();
-		if ($this->getRequirePin($user)){
-			$userPin = $user->getPasswordOrPin();
-			// determine which column is the pin by using the opposing field to the barcode. (between catalog password & username)
-			$tokenData = $this->_connectToPatronAPI($user, $userBarcode, $userPin, false);
-			// this worked for flatirons checkout.  plb 1-13-2015
-		}else{
-			$tokenData = $this->_connectToPatronAPI($user, $userBarcode, null, false);
+		if (!isset(OverDriveDriver::$validUsersOverDrive[$userBarcode])){
+			if ($this->getRequirePin($user)){
+				$userPin = $user->getPasswordOrPin();
+				// determine which column is the pin by using the opposing field to the barcode. (between catalog password & username)
+				$tokenData = $this->_connectToPatronAPI($user, $userBarcode, $userPin, false);
+				// this worked for flatirons checkout.  plb 1-13-2015
+			}else{
+				$tokenData = $this->_connectToPatronAPI($user, $userBarcode, null, false);
+			}
+			$timer->logTime("Checked to see if the user $userBarcode is valid for OverDrive");
+			$isValid = ($tokenData !== false) && ($tokenData !== null) && !array_key_exists('error', $tokenData);
+			OverDriveDriver::$validUsersOverDrive[$userBarcode] = $isValid;
 		}
-		$timer->logTime("Checked to see if the user $userBarcode is valid for OverDrive");
-		return ($tokenData !== false) && ($tokenData !== null) && !array_key_exists('error', $tokenData);
+		return OverDriveDriver::$validUsersOverDrive[$userBarcode];
 	}
 
 	public function getDownloadLink($overDriveId, $format, $user){

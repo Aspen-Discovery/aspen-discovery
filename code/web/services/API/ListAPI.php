@@ -285,7 +285,7 @@ class ListAPI extends Action {
 			}
 
 
-			return array('success' => true, 'listName' => $list->title, 'listDescription' => $list->description, 'titles'=>$titles, 'cacheLength'=>24);
+			return array('success' => true, 'listName' => $list->title, 'listDescription' => $list->description, 'titles'=>$titles);
 		}else{
 			return array('success'=>false, 'message'=>'The specified list could not be found.');
 		}
@@ -331,13 +331,13 @@ class ListAPI extends Action {
 				if ($titles === false) { // Didn't find saved search
 					return array('success'=>false, 'message' => 'The specified search could not be found.');
 				} else { // successful search with or without any results. (javascript can handle no results returned.)
-					return array('success'=>true, 'listTitle' => $listId, 'listDescription' => "Search Results", 'titles'=>$titles, 'cacheLength'=>4);
+					return array('success'=>true, 'listTitle' => $listId, 'listDescription' => "Search Results", 'titles'=>$titles);
 				}
 			}else{
 				//Do a default search
 				$titles = $this->getSystemListTitles($listId, $numTitlesToShow);
 				if (count($titles) > 0 ){
-					return array('success'=>true, 'listTitle' => $listId, 'listDescription' => "System Generated List", 'titles'=>$titles, 'cacheLength'=>4);
+					return array('success'=>true, 'listTitle' => $listId, 'listDescription' => "System Generated List", 'titles'=>$titles);
 				}else{
 					return array('success'=>false, 'message'=>'The specified list could not be found.');
 				}
@@ -385,7 +385,7 @@ class ListAPI extends Action {
 				            'author' => $suggestion['titleInfo']['author']
 						);
 					}
-					return array('success'=>true, 'listTitle' => $systemList['title'], 'listDescription' => $systemList['description'], 'titles'=>$titles, 'cacheLength'=>0);
+					return array('success'=>true, 'listTitle' => $systemList['title'], 'listDescription' => $systemList['description'], 'titles'=>$titles);
 				}
 			}else{
 				return array('success'=>false, 'message'=>'The specified list could not be found.');
@@ -424,44 +424,32 @@ class ListAPI extends Action {
 			}
 			return array(
 				'cacheType' => 'general',
-				'cacheName' => 'list_general_list:' . $listId,
-				'cacheLength' => $configArray['Caching']['list_general'],
 				'fullListLink' => $configArray['Site']['path'] . '/MyResearch/MyList/' . $listId, // TODO: switch to /MyAccount/MyList/
 			);
 
 		}elseif (preg_match('/review:(.*)/', $listId, $reviewInfo)){
 			return array(
 				'cacheType' => 'general',
-				'cacheName' => 'list_general_' . $listId,
-				'cacheLength' => $configArray['Caching']['list_general'],
 				'fullListLink' => ''
 			);
 		}elseif ($listId == 'highestRated'){
 			return array(
 				'cacheType' => 'general',
-				'cacheName' => 'list_highest_rated_' . $listId,
-				'cacheLength' => $configArray['Caching']['list_highest_rated'],
 				'fullListLink' => ''
 			);
 		}elseif ($listId == 'recentlyReviewed'){
 			return array(
 				'cacheType' => 'general',
-				'cacheName' => 'list_recently_reviewed_' . $listId,
-				'cacheLength' => $configArray['Caching']['list_recently_reviewed'],
 				'fullListLink' => ''
 			);
 		}elseif ($listId == 'mostPopular'){
 			return array(
 				'cacheType' => 'general',
-				'cacheName' => 'list_most_popular_' . $listId,
-				'cacheLength' => $configArray['Caching']['list_most_popular'],
 				'fullListLink' => ''
 			);
 		}elseif ($listId == 'recommendations'){
 			return array(
 				'cacheType' => 'user',
-				'cacheName' => 'list_recommendations_' . $listId . '_' . $user->id,
-				'cacheLength' => $configArray['Caching']['list_recommendations'],
 				'fullListLink' => ''
 			);
 		}elseif (preg_match('/^search:(.*)/', $listId, $searchInfo)){
@@ -469,25 +457,17 @@ class ListAPI extends Action {
 				$searchId = $searchInfo[1];
 				return array(
 					'cacheType' => 'general',
-					'cacheName' => 'list_general_search_' . $searchId,
-					'cacheLength' => $configArray['Caching']['list_general'],
 					'fullListLink' => $configArray['Site']['path'] . '/Search/Results?saved=' . $searchId,
 				);
 			}else{
-				$requestUri = $_SERVER['REQUEST_URI'];
-				$requestUri = str_replace("&reload", "", $requestUri);
 				return array(
 					'cacheType' => 'general',
-					'cacheName' => 'list_general_search_' . md5($requestUri),
-					'cacheLength' => $configArray['Caching']['list_general'],
 					'fullListLink' => ''
 				);
 			}
 		}else{
 			return array(
 				'cacheType' => 'general',
-				'cacheName' => 'list_general_' . $listId,
-				'cacheLength' => $configArray['Caching']['list_general'],
 				'fullListLink' => ''
 			);
 		}

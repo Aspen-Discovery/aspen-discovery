@@ -220,4 +220,9 @@ abstract class AbstractIlsDriver extends AbstractDriver
 	{
 		return null;
 	}
+
+	function getNumMaterialsRequests(User $user)
+	{
+		return 0;
+	}
 }

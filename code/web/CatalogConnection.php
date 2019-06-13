@@ -169,6 +169,7 @@ class CatalogConnection
 	 */
 	public function updateUserWithAdditionalRuntimeInformation($user){
 		global $timer;
+		$timer->logTime("Starting to Update Additional Runtime information for user " . $user->id);
         require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
         $overDriveDriver = new OverDriveDriver();
 		if ($user->isValidForEContentSource('overdrive') && $overDriveDriver->isUserValidForOverDrive($user)){
@@ -185,6 +186,7 @@ class CatalogConnection
 			$hooplaSummary = $driver->getAccountSummary($user);
 			$hooplaCheckOuts = isset($hooplaSummary->currentlyBorrowed) ? $hooplaSummary->currentlyBorrowed : 0;
 			$user->setNumCheckedOutHoopla($hooplaCheckOuts);
+			$timer->logTime("Updated runtime information from Hoopla");
 		}
 
 		if ($user->isValidForEContentSource('rbdigital')) {
@@ -194,13 +196,14 @@ class CatalogConnection
             $user->setNumCheckedOutRbdigital($rbdigitalSummary['numCheckedOut']);
             $user->setNumHoldsAvailableRbdigital($rbdigitalSummary['numAvailableHolds']);
             $user->setNumHoldsRequestedRbdigital($rbdigitalSummary['numUnavailableHolds']);
+			$timer->logTime("Updated runtime information from Rbdigital");
         }
 
-		$materialsRequest = new MaterialsRequest();
-		$materialsRequest->createdBy = $user->id;
 		$homeLibrary = Library::getLibraryForLocation($user->homeLocationId);
 		if ($homeLibrary){
 			if ($homeLibrary->enableMaterialsRequest == 1) {
+				$materialsRequest = new MaterialsRequest();
+				$materialsRequest->createdBy = $user->id;
 				$statusQuery = new MaterialsRequestStatus();
 				$statusQuery->isOpen = 1;
 				$statusQuery->libraryId = $homeLibrary->libraryId;
@@ -209,7 +212,7 @@ class CatalogConnection
 				$user->setNumMaterialsRequests($materialsRequest->N);
 				$timer->logTime("Updated number of active materials requests");
 			}elseif($homeLibrary->enableMaterialsRequest == 2){
-				$user->setNumMaterialsRequests(count($this->getMaterialsRequests($user)));
+				$user->setNumMaterialsRequests($this->getNumMaterialsRequests($user));
 			}
 		}
 
@@ -223,6 +226,8 @@ class CatalogConnection
             $user->setReadingHistorySize($readingHistoryDB->count());
 			$timer->logTime("Updated reading history size");
 		}
+
+		$timer->logTime("Updated Additional Runtime information for user " . $user->id);
 	}
 
 	/**
@@ -873,6 +878,11 @@ class CatalogConnection
 	function processMaterialsRequestForm($user)
 	{
 		return $this->driver->processMaterialsRequestForm($user);
+	}
+
+	function getNumMaterialsRequests(User $user) : int
+	{
+		return $this->driver->getNumMaterialsRequests($user);
 	}
 
 	function getMaterialsRequests(User $user)

@@ -5,6 +5,7 @@ class Timer{
 	private $timingMessages;
 	private $timingsEnabled = false;
 	private $minTimeToLog = 0;
+	private $timingsWritten = false;
 
 	public function __construct($startTime = null){
 		global $configArray;
@@ -46,7 +47,8 @@ class Timer{
 	}
 
 	public function writeTimings(){
-		if ($this->timingsEnabled){
+		if ($this->timingsEnabled && !$this->timingsWritten){
+			$this->timingsWritten = true;
 			$minTimeToLog = 0;
 
 			$curTime = microtime(true);
@@ -66,14 +68,7 @@ class Timer{
 
 	function __destruct() {
 		if ($this->timingsEnabled){
-			global $logger;
-			if ($logger){
-				$totalElapsedTime =round(microtime(true) - $this->firstTime, 4);
-				$timingInfo = "\r\nTiming for: " . $_SERVER['REQUEST_URI'] . "\r\n";
-				$timingInfo .= implode("\r\n", $this->timingMessages);
-				$timingInfo .= "\r\nTotal Elapsed time was: $totalElapsedTime seconds.\r\n";
-				$logger->log($timingInfo, Logger::LOG_NOTICE);
-			}
+			$this->writeTimings();
 		}
 	}
 }

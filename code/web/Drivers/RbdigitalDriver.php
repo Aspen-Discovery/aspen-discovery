@@ -472,7 +472,7 @@ class RbdigitalDriver extends AbstractEContentDriver
             $summary['numAvailableHolds'] = 0;
             $summary['numUnavailableHolds'] = empty($response->audioBooks->holds) ? 0 : count($response->audioBooks->holds);
 
-            $timer->logTime("Finished loading titles from overdrive summary");
+            $timer->logTime("Finished loading titles from rbdigital summary");
             $memCache->set('rbdigital_summary_' . $patron->id, $summary, 0, $configArray['Caching']['overdrive_summary']);
         }
 
