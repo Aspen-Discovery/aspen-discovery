@@ -40,8 +40,9 @@ function addWrappedTextToImage($imageHandle, $font, $lines, $fontSize, $lineSpac
         $lineHeight = abs($lineBox[3] - $lineBox[5]);
         //Get the starting position for the text
         $startY += $lineHeight;
-        //Write the text to the image
-        if (!imagefttext($imageHandle, $fontSize, 0, $startX, $startY, $color, $font, utf8_decode($line))){
+
+	    //Write the text to the image
+        if (!imagefttext($imageHandle, $fontSize, 0, $startX, $startY, $color, $font, $line)){
             echo("Failed to write text");
         }
         $startY += $lineSpacing;
