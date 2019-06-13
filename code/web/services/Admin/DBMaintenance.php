@@ -1265,6 +1265,15 @@ class DBMaintenance extends Admin_Admin {
 					),
 				),
 
+				'novelist_data_indexes' => array(
+					'title' => 'Novelist Data Add Indexes',
+					'description' => 'Add indexes to novelist data for performance.',
+					'sql' => array(
+						"ALTER TABLE novelist_data ADD INDEX primaryISBN(primaryISBN)",
+						"ALTER TABLE novelist_data ADD INDEX series(seriesTitle, volume)",
+					),
+				),
+
 				'syndetics_data' => array(
 					'title' => 'Syndetics Data',
 					'description' => 'Stores basic information from Syndetics for efficiency purposes.',

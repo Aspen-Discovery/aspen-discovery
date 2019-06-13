@@ -406,137 +406,116 @@ class Novelist3{
 		global $timer;
 		$timer->logTime("Start loadNoveListTitle");
 
-		/** @var SearchObject_GroupedWorkSearcher $searchObject */
-		$searchObject = SearchObjectFactory::initSearchObject();
-		//$searchObject->disableScoping();
-		if (function_exists('disableErrorHandler')){
-			disableErrorHandler();
-		}
-
-		//Get all of the records that could match based on ISBN
-		$allIsbns = "";
-		foreach ($items as $item){
-			if (count($item->isbns) > 0){
-				if (strlen($allIsbns) > 0){
-					$allIsbns .= ' OR ';
-				}
-				$allIsbns .= implode(' OR ', $item->isbns);
-			}
-		}
-		$searchObject->setBasicQuery($allIsbns, "isbn");
-		$searchObject->clearFacets();
-		$searchObject->disableSpelling();
-		$searchObject->disableLogging();
-		$searchObject->setLimit(count($items));
-		$response = $searchObject->processSearch(true, false, false);
-
-		//Get all the titles from the catalog
-		$titlesFromCatalog = array();
-		if ($response && isset($response['response'])) {
-			//Get information about each project
-			if ($searchObject->getResultTotal() > 0) {
-				foreach ($response['response']['docs'] as $fields) {
-					$recordDriver = new GroupedWorkDriver($fields);
-					$timer->logTime("Create driver");
-
-					if ($recordDriver->isValid){
-						$curTitle = $this->setupTitleInfoForWork($recordDriver);
-						$timer->logTime("Load title information");
-						$titlesOwned++;
-						$titlesFromCatalog[] = $curTitle;
-					}
-
-				}
-			}
-		}
-
-		//Loop through items an match to records we found in the catalog.
 		$titleList = array();
-		foreach ($items as $index => $item){
+		foreach ($items as $index=>$item){
 			$titleList[$index] = null;
-		}
-		//Do 2 passes, one to check based on primary_isbn only and one to check based on all isbns
-		foreach ($items as $index => $item){
-			$isInCatalog = false;
-			$titleFromCatalog = null;
-			foreach ($titlesFromCatalog as $titleIndex => $titleFromCatalog){
-				if (in_array($item->primary_isbn, $titleFromCatalog['allIsbns'])){
-					$isInCatalog = true;
+
+			//Do various lookups to figure out what to link to
+
+			//check novelist cache by series
+			if ($titleList[$index] == null && !empty($seriesName) && !empty($item->volume)){
+				//Check to see if we can get a grouped work id based on the volume and series name
+				require_once ROOT_DIR . '/sys/Novelist/NovelistData.php';
+				$novelistData = new NovelistData();
+				$novelistData->seriesTitle = $seriesName;
+				if (isset($item->volume)){
+					$novelistData->volume = $this->normalizeSeriesVolume($item->volume);
 				}
-
-				if ($isInCatalog) break;
-			}
-			if ($isInCatalog){
-				$titleList = $this->addTitleToTitleList($currentId, $titleList, $seriesName, $titleFromCatalog, $titlesFromCatalog, $titleIndex, $item, $index);
-			}
-		}
-
-		foreach ($titleList as $index => $title){
-			if ($titleList[$index] == null){
-				$isInCatalog = false;
-				$item = $items[$index];
-				foreach ($titlesFromCatalog as $titleIndex => $titleFromCatalog) {
-					foreach ($item->isbns as $isbn) {
-						if (in_array($isbn, $titleFromCatalog['allIsbns'])) {
-							$isInCatalog = true;
-							break;
-						}
-					}
-					if ($isInCatalog){
-						break;
+				if ($novelistData->find(true)){
+					$groupedWorkDriver = new GroupedWorkDriver($novelistData->groupedRecordPermanentId);
+					if ($groupedWorkDriver->isValid()){
+						$titlesOwned++;
+						$titleInfo = $this->setupTitleInfoForWork($groupedWorkDriver);
+						$tempArray = [$titleInfo];
+						$titleList = $this->addTitleToTitleList($currentId, $titleList, $seriesName, $titleInfo, $tempArray, 0, $item, $index);
 					}
 				}
+			}
 
-				if ($isInCatalog) {
-					$titleList = $this->addTitleToTitleList($currentId, $titleList, $seriesName, $titleFromCatalog, $titlesFromCatalog, $titleIndex, $item, $index);
-					unset($titlesFromCatalog[$titleIndex]);
-				}else{
-					if (!empty($seriesName)){
-						//Check to see if we can get a grouped work id based on the volume and series name
-						require_once ROOT_DIR . '/sys/Novelist/NovelistData.php';
-						$novelistData = new NovelistData();
-						$novelistData->seriesTitle = $seriesName;
-						if (isset($item->volume)){
-							$novelistData->volume = $this->normalizeSeriesVolume($item->volume);
-						}
-						if ($novelistData->find(true)){
-							$groupedWorkDriver = new GroupedWorkDriver($novelistData->groupedRecordPermanentId);
-							if ($groupedWorkDriver->isValid()){
-								$titleInfo = $this->setupTitleInfoForWork($groupedWorkDriver);
-								$tempArray = [$titleInfo];
-								$titleList = $this->addTitleToTitleList($currentId, $titleList, $seriesName, $titleInfo, $tempArray, 0, $item, $index);
-								$isInCatalog = true;
+			//Load based on ISBN
+			if ($titleList[$index] == null && count($item->isbns) > 0){
+				$allIsbns = implode(' OR ', $item->isbns);
+
+				//First check novelist cache by ISBN
+				$novelistCache = new NovelistData();
+				$allIsbnsQuoted = '';
+				foreach ($item->isbns as $isbn){
+					if (strlen($allIsbnsQuoted) > 0){
+						$allIsbnsQuoted .= ', ';
+					}
+					$allIsbnsQuoted .= $novelistCache->escape($isbn);
+				}
+				$novelistCache->whereAdd();
+				$novelistCache->whereAdd("primaryISBN IN ($allIsbnsQuoted)");
+				if ($novelistCache->find(true)){
+					$groupedWorkDriver = new GroupedWorkDriver($novelistCache->groupedRecordPermanentId);
+					if ($groupedWorkDriver->isValid()){
+						$titlesOwned++;
+						$titleInfo = $this->setupTitleInfoForWork($groupedWorkDriver);
+						$tempArray = [$titleInfo];
+						$titleList = $this->addTitleToTitleList($currentId, $titleList, $seriesName, $titleInfo, $tempArray, 0, $item, $index);
+					}
+				}
+
+				//Finally check solr by isbn
+				if ($titleList[$index] == null){
+					//Now check solr
+					/** @var SearchObject_GroupedWorkSearcher $searchObject */
+					$searchObject = SearchObjectFactory::initSearchObject();
+					$searchObject->clearFacets();
+					$searchObject->disableSpelling();
+					$searchObject->disableLogging();
+					$searchObject->setLimit(1);
+					$searchObject->setBasicQuery($allIsbns, "isbn");
+
+					$response = $searchObject->processSearch(true, false, false);
+					if ($response && isset($response['response'])) {
+						//Get information about each project
+						if ($searchObject->getResultTotal() > 0) {
+							foreach ($response['response']['docs'] as $fields) {
+								$recordDriver = new GroupedWorkDriver($fields);
+								$timer->logTime("Create driver");
+
+								if ($recordDriver->isValid){
+									$curTitle = $this->setupTitleInfoForWork($recordDriver);
+									$timer->logTime("Load title information");
+									$titlesOwned++;
+									$titlesFromCatalog[] = $curTitle;
+									$titleList = $this->addTitleToTitleList($currentId, $titleList, $seriesName, $curTitle, $titlesFromCatalog, 0, $item, $index);
+								}
+
 							}
 						}
 					}
-					if (!$isInCatalog) {
-						$isbn = reset($item->isbns);
-						$isbn13 = strlen($isbn) == 13 ? $isbn : ISBNConverter::convertISBN10to13($isbn);
-						$isbn10 = strlen($isbn) == 10 ? $isbn : ISBNConverter::convertISBN13to10($isbn);
-						$curTitle = array(
-							'title' => $item->full_title,
-							'author' => $item->author,
-							'isbn' => $isbn13,
-							'isbn10' => $isbn10,
-							'recordId' => -1,
-							'libraryOwned' => false,
-							'smallCover' => "/bookcover.php?size=small&isn=" . $isbn13,
-							'mediumCover' => "/bookcover.php?size=medium&isn=" . $isbn13,
-						);
-
-						$curTitle['isCurrent'] = $currentId == $curTitle['recordId'];
-						$curTitle['series'] = isset($seriesName) ? $seriesName : '';;
-						$curTitle['volume'] = isset($item->volume) ? $this->normalizeSeriesVolume($item->volume) : '';
-						$curTitle['reason'] = isset($item->reason) ? $item->reason : '';
-
-						$titleList[$index] = $curTitle;
-					}
 				}
-
 			}
 
-		}
+			//If we got this far, we don't own the title
+			if ($titleList[$index] == null){
 
+				$isbn = reset($item->isbns);
+				$isbn13 = strlen($isbn) == 13 ? $isbn : ISBNConverter::convertISBN10to13($isbn);
+				$isbn10 = strlen($isbn) == 10 ? $isbn : ISBNConverter::convertISBN13to10($isbn);
+				$curTitle = array(
+					'title' => $item->full_title,
+					'author' => $item->author,
+					'isbn' => $isbn13,
+					'isbn10' => $isbn10,
+					'recordId' => -1,
+					'libraryOwned' => false,
+					'smallCover' => "/bookcover.php?size=small&isn=" . $isbn13,
+					'mediumCover' => "/bookcover.php?size=medium&isn=" . $isbn13,
+				);
+
+				$curTitle['isCurrent'] = $currentId == $curTitle['recordId'];
+				$curTitle['series'] = isset($seriesName) ? $seriesName : '';;
+				$curTitle['volume'] = isset($item->volume) ? $this->normalizeSeriesVolume($item->volume) : '';
+				$curTitle['reason'] = isset($item->reason) ? $item->reason : '';
+
+				$titleList[$index] = $curTitle;
+
+			}
+		}
 	}
 
 	private function loadRelatedContent($relatedContent, &$enrichment) {
