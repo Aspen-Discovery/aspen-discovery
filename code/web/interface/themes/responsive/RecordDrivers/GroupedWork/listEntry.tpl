@@ -88,7 +88,7 @@
 					{* Hide Formats section on mobile view, unless there is a single format or a format has been selected by the user *}
 					{* relatedManifestationsValue ID is used by the Formats button *}
 
-					{include file="GroupedWork/relatedManifestations.tpl" id=$summId}
+					{include file="GroupedWork/relatedManifestations.tpl" id=$summId workId=$summId}
 
 				</div>
 			</div>
@@ -113,7 +113,7 @@
 
 
 			<div class="resultActions row">
-				{include file='GroupedWork/result-tools-horizontal.tpl' id=$summId shortId=$shortId summTitle=$summTitle ratingData=$summRating recordUrl=$summUrl}
+				{include file='GroupedWork/result-tools-horizontal.tpl' id=$summId shortId=$shortId summTitle=$summTitle ratingData=$summRating recordUrl=$summUrl showMoreInfo=true}
 			</div>
 		</div>
 

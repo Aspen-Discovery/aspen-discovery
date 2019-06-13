@@ -198,6 +198,8 @@ $interface->assign('loggedIn', $isLoggedIn);
 if ($isLoggedIn) {
 	$activeUserId = UserAccount::getActiveUserId();
 	$interface->assign('activeUserId', $activeUserId);
+	$activeUserObject = UserAccount::getActiveUserObj();
+	$interface->assign('user', $activeUserObject);
 } else if ( (isset($_POST['username']) && isset($_POST['password']) && ($action != 'Account' && $module != 'AJAX')) || isset($_REQUEST['casLogin']) ) {
 	//The user is trying to log in
     try {

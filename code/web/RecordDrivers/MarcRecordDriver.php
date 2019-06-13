@@ -1150,6 +1150,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 			$relatedRecords = $groupedWorkDriver->getRelatedRecords();
 			if (count($relatedRecords) > 1) {
 				$interface->assign('relatedManifestations', $groupedWorkDriver->getRelatedManifestations());
+				$interface->assign('workId',$groupedWorkDriver->getPermanentId());
 				$moreDetailsOptions['otherEditions'] = array(
 						'label' => 'Other Editions and Formats',
 						'body' => $interface->fetch('GroupedWork/relatedManifestations.tpl'),

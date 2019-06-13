@@ -20,11 +20,14 @@ class GroupedWork_Home extends Action{
 		$interface->assign('recordDriver', $recordDriver);
 		$timer->logTime('Loaded Grouped Work Driver');
 
+		//For display in metadata
+		$interface->assign('description', $recordDriver->getDescriptionFast(true));
+
 		// Set Show in Search Results Main Details Section options for template
 		// (needs to be set before moreDetailsOptions)
 		global $library;
-		foreach ($library->showInMainDetails as $detailoption) {
-			$interface->assign($detailoption, true);
+		foreach ($library->showInMainDetails as $detailOption) {
+			$interface->assign($detailOption, true);
 		}
 
 		$recordDriver->assignBasicTitleDetails();

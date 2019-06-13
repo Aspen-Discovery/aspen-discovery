@@ -658,6 +658,7 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 		$relatedRecords = $this->getGroupedWorkDriver()->getRelatedRecords();
 		if (count($relatedRecords) > 1){
 			$interface->assign('relatedManifestations', $this->getGroupedWorkDriver()->getRelatedManifestations());
+			$interface->assign('workId', $this->getGroupedWorkDriver()->getPermanentId());
 			$moreDetailsOptions['otherEditions'] = array(
 					'label' => 'Other Editions and Formats',
 					'body' => $interface->fetch('GroupedWork/relatedManifestations.tpl'),

@@ -115,7 +115,6 @@ abstract class RecordInterface {
 //			$description = 'Description not provided';
 //		}
 //		$description = strip_tags($description, '<a><b><p><i><em><strong><ul><li><ol>');
-//		$interface->assign('description', $description);
 		$moreDetailsOptions['description'] = array(
 				'label' => 'Description',
 				'body' => '<div id="descriptionPlaceholder">Loading Description...</div>',

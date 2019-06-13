@@ -7,7 +7,7 @@
 
 		<div class="row">
 			{if $showCovers}
-				<div class="coversColumn col-xs-3 col-sm-3{if !$viewingCombinedResults} col-md-3 col-lg-2{/if} text-center">
+				<div class="coversColumn col-xs-3 col-sm-3{if !empty($viewingCombinedResults)} col-md-3 col-lg-2{/if} text-center">
 					{if $disableCoverArt != 1}
 						<a href="{$summUrl}">
 							<img src="{$bookCoverUrlMedium}" class="listResultImage img-thumbnail" alt="{translate text='Cover Image'}">
@@ -20,7 +20,7 @@
 				</div>
 			{/if}
 
-			<div class="{if !$showCovers}col-xs-12{else}col-xs-9 col-sm-9{if !$viewingCombinedResults} col-md-9 col-lg-10{/if}{/if}">{* May turn out to be more than one situation to consider here *}
+			<div class="{if !$showCovers}col-xs-12{else}col-xs-9 col-sm-9{if !empty($viewingCombinedResults)} col-md-9 col-lg-10{/if}{/if}">{* May turn out to be more than one situation to consider here *}
 				{* Title Row *}
 				<div class="row">
 					<div class="col-xs-12">
@@ -233,12 +233,12 @@
 						{* Hide Formats section on mobile view, unless there is a single format or a format has been selected by the user *}
 						{* relatedManifestationsValue ID is used by the Formats button *}
 
-						{include file="GroupedWork/relatedManifestations.tpl" id=$summId}
+						{include file="GroupedWork/relatedManifestations.tpl" id=$summId workId=$summId}
 
 					</div>
 				</div>
 
-				{if !$viewingCombinedResults}
+				{if empty($viewingCombinedResults)}
 					{* Description Section *}
 					{if $summDescription}
 						<div class="row visible-xs">
@@ -259,7 +259,7 @@
 
 					<div class="row">
 						<div class="col-xs-12">
-							{include file='GroupedWork/result-tools-horizontal.tpl' id=$summId shortId=$shortId ratingData=$summRating recordUrl=$summUrl}
+							{include file='GroupedWork/result-tools-horizontal.tpl' id=$summId shortId=$summId ratingData=$summRating recordUrl=$summUrl showMoreInfo=true}
 							{* TODO: id & shortId shouldn't be needed to be specified here, otherwise need to note when used.
 								summTitle only used by cart div, which is disabled as of now. 12-28-2015 plb *}
 						</div>
@@ -269,8 +269,5 @@
 			</div>
 
 		</div>
-
-
-		{if $summCOinS}<span class="Z3988" title="{$summCOinS|escape}" style="display:none">&nbsp;</span>{/if}
 	</div>
 {/strip}
