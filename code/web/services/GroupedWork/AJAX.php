@@ -193,9 +193,38 @@ class GroupedWork_AJAX {
             $memoryWatcher->logMemory('Loaded Similar series from Novelist');
         }
 
+		//Load go deeper options
+		//TODO: Additional go deeper options
+		global $library;
+		if ($library->showGoDeeper == 0){
+			$enrichmentResult['showGoDeeper'] = false;
+		}else{
+			require_once(ROOT_DIR . '/Drivers/marmot_inc/GoDeeperData.php');
+			$goDeeperOptions = GoDeeperData::getGoDeeperOptions($recordDriver->getCleanISBN(), $recordDriver->getCleanUPC());
+			if (count($goDeeperOptions['options']) == 0){
+				$enrichmentResult['showGoDeeper'] = false;
+			}else{
+				$enrichmentResult['showGoDeeper'] = true;
+				$enrichmentResult['goDeeperOptions'] = $goDeeperOptions['options'];
+			}
+		}
+		$memoryWatcher->logMemory('Loaded additional go deeper data');
+
+		return json_encode($enrichmentResult);
+	}
+
+	function getMoreLikeThis(){
+		global $configArray;
+		global $memoryWatcher;
+
+		$id = $_REQUEST['id'];
+
+		$enrichmentResult = array();
 
 		//Load Similar titles (from Solr)
 		$url = $configArray['Index']['url'];
+		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+		require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
 		/** @var GroupedWorksSolrConnector $db */
 		$db = new GroupedWorksSolrConnector($url);
 		$db->disableScoping();
@@ -213,23 +242,6 @@ class GroupedWork_AJAX {
 			$enrichmentResult['similarTitles'] = $similarTitlesInfo;
 		}
 		$memoryWatcher->logMemory('Loaded More Like This scroller data');
-
-		//Load go deeper options
-		//TODO: Additional go deeper options
-		global $library;
-		if ($library->showGoDeeper == 0){
-			$enrichmentResult['showGoDeeper'] = false;
-		}else{
-			require_once(ROOT_DIR . '/Drivers/marmot_inc/GoDeeperData.php');
-			$goDeeperOptions = GoDeeperData::getGoDeeperOptions($recordDriver->getCleanISBN(), $recordDriver->getCleanUPC());
-			if (count($goDeeperOptions['options']) == 0){
-				$enrichmentResult['showGoDeeper'] = false;
-			}else{
-				$enrichmentResult['showGoDeeper'] = true;
-				$enrichmentResult['goDeeperOptions'] = $goDeeperOptions['options'];
-			}
-		}
-		$memoryWatcher->logMemory('Loaded additional go deeper data');
 
 		return json_encode($enrichmentResult);
 	}

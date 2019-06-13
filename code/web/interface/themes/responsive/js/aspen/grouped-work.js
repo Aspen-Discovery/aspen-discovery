@@ -118,14 +118,6 @@ AspenDiscovery.GroupedWork = (function(){
 					}else{
 						$('#seriesPanel').hide();
 					}
-					let similarTitleData = data.similarTitles;
-					if (similarTitleData && similarTitleData.titles.length > 0) {
-						morelikethisScroller = new TitleScroller('titleScrollerMoreLikeThis', 'MoreLikeThis', 'morelikethisList');
-						$('#moreLikeThisInfo').show();
-						morelikethisScroller.loadTitlesFromJsonData(similarTitleData);
-					}else{
-						$('#moreLikeThisPanel').hide();
-					}
 					let showGoDeeperData = data.showGoDeeper;
 					if (showGoDeeperData) {
 						//$('#goDeeperLink').show();
@@ -171,6 +163,29 @@ AspenDiscovery.GroupedWork = (function(){
 						.prev('.sectionHeader').show();
 					// Initiate Any Explore More JCarousels
 					AspenDiscovery.initCarousels('.ajax-carousel');
+
+				} catch (e) {
+					alert("error loading enrichment: " + e);
+				}
+			});
+		},
+
+		loadMoreLikeThis: function (id, forceReload) {
+			let url = Globals.path + "/GroupedWork/" + encodeURIComponent(id) + "/AJAX",
+				params = {'method':'getMoreLikeThis'};
+			if (forceReload !== undefined){
+				params['reload'] = true;
+			}
+			$.getJSON(url, params, function(data) {
+				try{
+					let similarTitleData = data.similarTitles;
+					if (similarTitleData && similarTitleData.titles.length > 0) {
+						morelikethisScroller = new TitleScroller('titleScrollerMoreLikeThis', 'MoreLikeThis', 'morelikethisList');
+						$('#moreLikeThisInfo').show();
+						morelikethisScroller.loadTitlesFromJsonData(similarTitleData);
+					}else{
+						$('#moreLikeThisPanel').hide();
+					}
 
 				} catch (e) {
 					alert("error loading enrichment: " + e);
