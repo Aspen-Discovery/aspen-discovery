@@ -338,48 +338,35 @@ abstract class Solr {
 	 */
 	function getRecord($id, $fieldsToReturn = null)
 	{
-		/*if ($this->debugSolrQuery) {
-			echo "<pre>Get Record: $id</pre>\n";
-		}*/
-		/** @var Memcache $memCache */
-		global $memCache;
-		global $configArray;
-		global $solrScope;
+		$record = null;
 		if (!$fieldsToReturn){
 			$validFields = $this->_loadValidFields();
 			$fieldsToReturn = implode(',', $validFields);
 		}
-		$record = $memCache->get("solr_record_{$id}_{$solrScope}_{$fieldsToReturn}");
+		$this->pingServer();
+		// Query String Parameters
+		$options = array('q' => "id:$id");
+		$options['fl'] = $fieldsToReturn;
+		$this->client->setMethod('GET');
+		$this->client->setURL($this->host . "/select");
+		$this->client->addRawQueryString(http_build_query($options));
 
-		if ($record == false || isset($_REQUEST['reload'])){
-			$this->pingServer();
-			// Query String Parameters
-			$options = array('q' => "id:$id");
-			$options['fl'] = $fieldsToReturn;
-			$this->client->setMethod('GET');
-			$this->client->setURL($this->host . "/select");
-			$this->client->addRawQueryString(http_build_query($options));
+		global $timer;
+		$timer->logTime("Prepare to send get (ids) request to solr returning fields $fieldsToReturn");
+		$result = $this->client->sendRequest();
+		//$this->client->clearPostData();
+		$timer->logTime("Send data to solr during getRecord $id $fieldsToReturn");
 
-			global $timer;
-			$timer->logTime("Prepare to send get (ids) request to solr returning fields $fieldsToReturn");
-			$result = $this->client->sendRequest();
-			//$this->client->clearPostData();
-			$timer->logTime("Send data to solr during getRecord $id $fieldsToReturn");
+		if ($result instanceof AspenError) {
+			AspenError::raiseError($result);
+		}else{
+			$result = $this->_process($this->client->getResponseBody());
+		}
 
-			if ($result instanceof AspenError) {
-				AspenError::raiseError($result);
-			}else{
-				$result = $this->_process($this->client->getResponseBody());
-			}
-
-			if (isset($result['response']['docs'][0])){
-				$record = $result['response']['docs'][0];
-				$memCache->set("solr_record_{$id}_{$solrScope}_{$fieldsToReturn}", $record, 0, $configArray['Caching']['solr_record']);
-			}else{
-				//global $logger;
-				//$logger->log("Unable to find record $id in Solr", Logger::LOG_ERROR);
-                AspenError::raiseError("Record not found $id");
-			}
+		if (isset($result['response']['docs'][0])){
+			$record = $result['response']['docs'][0];
+		}else{
+            AspenError::raiseError("Record not found $id");
 		}
 		return $record;
 	}
@@ -1178,7 +1165,7 @@ abstract class Solr {
 			//Boost items owned at our location
 			$searchLocation = Location::getSearchLocation($this->searchSource);
 
-			$boostFactors = $this->getBoostFactors($searchLibrary, $searchLocation);
+			$boostFactors = $this->getBoostFactors($searchLibrary);
 
 			if (isset($options['qt']) && $options['qt'] == 'dismax'){
 				//Boost by number of holdings

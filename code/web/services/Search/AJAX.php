@@ -10,7 +10,7 @@ class AJAX extends Action {
 		if (method_exists($this, $method)) {
 			$text_methods = array('SysListTitles', 'getEmailForm', 'sendEmail', 'getDplaResults');
 			//TODO re-config to use the JSON outputting here.
-			$json_methods = array('getAutoSuggestList', 'getMoreSearchResults', 'GetListTitles', 'loadExploreMoreBar');
+			$json_methods = array('getAutoSuggestList', 'getMoreSearchResults', 'getListTitles', 'loadExploreMoreBar');
 			// Plain Text Methods //
 			if (in_array($method, $text_methods)) {
 				header('Content-type: text/plain');
@@ -161,7 +161,6 @@ class AJAX extends Action {
 		$prospectorSavedSearchId = $_GET['prospectorSavedSearchId'];
 
 		require_once ROOT_DIR . '/Drivers/marmot_inc/Prospector.php';
-		global $configArray;
 		global $interface;
 		global $library;
 		global $timer;
@@ -169,9 +168,6 @@ class AJAX extends Action {
 		/** @var SearchObject_GroupedWorkSearcher $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject();
 		$searchObject->init();
-		// Setup Search Engine Connection
-		$url = $configArray['Index']['url'];
-		$db = new GroupedWorksSolrConnector($url);
 		$searchObject = $searchObject->restoreSavedSearch($prospectorSavedSearchId, false);
 
 		//Load results from Prospector
@@ -196,16 +192,13 @@ class AJAX extends Action {
 		if (!isset($_GET['id'])){
 			$_GET['id'] = $_GET['name'];
 		}
-		return $this->GetListTitles();
+		return $this->getListTitles();
 	}
 
 	/**
-	 * @return string JSON encoded data representing the list information
+	 * @return array data representing the list information
 	 */
-	function GetListTitles(){
-		/** @var Memcache $memCache */
-		global $memCache;
-		global $configArray;
+	function getListTitles(){
 		global $timer;
 
 		$listName = strip_tags(isset($_GET['scrollerName']) ? $_GET['scrollerName'] : 'List' . $_GET['id']);
@@ -213,73 +206,64 @@ class AJAX extends Action {
 		//Determine the caching parameters
 		require_once(ROOT_DIR . '/services/API/ListAPI.php');
 		$listAPI = new ListAPI();
-		$cacheInfo = $listAPI->getCacheInfoForList();
 
-		$cacheName = $cacheInfo['cacheName'];
-		if (isset($_REQUEST['coverSize']) && $_REQUEST['coverSize'] == 'medium'){
-			$cacheName .= '_medium';
-		}
+		global $interface;
+		$interface->assign('listName', $listName);
 
-		$listData = $memCache->get($cacheName);
-		if (!$listData || isset($_REQUEST['reload']) || (isset($listData['titles']) && count($listData['titles']) == 0)){
-			global $interface;
-			$interface->assign('listName', $listName);
+		$showRatings = isset($_REQUEST['showRatings']) && $_REQUEST['showRatings'];
+		$interface->assign('showRatings', $showRatings); // overwrite values that come from library settings
 
-			$showRatings = isset($_REQUEST['showRatings']) && $_REQUEST['showRatings'];
-			$interface->assign('showRatings', $showRatings); // overwrite values that come from library settings
+		$numTitlesToShow = isset($_REQUEST['numTitlesToShow']) ? $_REQUEST['numTitlesToShow'] : 25;
 
-			$numTitlesToShow = isset($_REQUEST['numTitlesToShow']) ? $_REQUEST['numTitlesToShow'] : 25;
+		$titles = $listAPI->getListTitles(null, $numTitlesToShow);
+		$timer->logTime("getListTitles");
+		if ($titles['success'] == true){
+			$titles = $titles['titles'];
+			if (is_array($titles)){
+				foreach ($titles as $key => $rawData){
+					$interface->assign('key', $key);
+					// 20131206 James Staub: bookTitle is in the list API and it removes the final frontslash, but I didn't get $rawData['bookTitle'] to load
 
-			$titles = $listAPI->getListTitles(null, $numTitlesToShow);
-			$timer->logTime("getListTitles");
-			if ($titles['success'] == true){
-				$titles = $titles['titles'];
-				if (is_array($titles)){
-					foreach ($titles as $key => $rawData){
-						$interface->assign('key', $key);
-						// 20131206 James Staub: bookTitle is in the list API and it removes the final frontslash, but I didn't get $rawData['bookTitle'] to load
-
-						$titleShort = preg_replace(array('/\:.*?$/', '/\s*\/$\s*/'),'', $rawData['title']);
+					$titleShort = preg_replace(array('/\:.*?$/', '/\s*\/$\s*/'),'', $rawData['title']);
 //						$titleShort = preg_replace('/\:.*?$/','', $rawData['title']);
 //						$titleShort = preg_replace('/\s*\/$\s*/','', $titleShort);
 
-						$imageUrl = $rawData['small_image'];
-						if (isset($_REQUEST['coverSize']) && $_REQUEST['coverSize'] == 'medium'){
-							$imageUrl = $rawData['image'];
-						}
-
-						$interface->assign('title',       $titleShort);
-						$interface->assign('author',      $rawData['author']);
-						$interface->assign('description', isset($rawData['description']) ? $rawData['description'] : null);
-						$interface->assign('length',      isset($rawData['length']) ? $rawData['length'] : null);
-						$interface->assign('publisher',   isset($rawData['publisher']) ? $rawData['publisher'] : null);
-						$interface->assign('shortId',     $rawData['shortId']);
-						$interface->assign('id',          $rawData['id']);
-						$interface->assign('titleURL',    $rawData['titleURL']);
-						$interface->assign('imageUrl',    $imageUrl);
-
-						if ($showRatings){
-							$interface->assign('ratingData', $rawData['ratingData']);
-							$interface->assign('showNotInterested', false);
-						}
-
-						$rawData['formattedTitle']         = $interface->fetch('ListWidget/formattedTitle.tpl');
-						$rawData['formattedTextOnlyTitle'] = $interface->fetch('ListWidget/formattedTextOnlyTitle.tpl');
-						// TODO: Modify these for Archive Objects
-
-						$titles[$key] = $rawData;
+					$imageUrl = $rawData['small_image'];
+					if (isset($_REQUEST['coverSize']) && $_REQUEST['coverSize'] == 'medium'){
+						$imageUrl = $rawData['image'];
 					}
+
+					$interface->assign('title',       $titleShort);
+					$interface->assign('author',      $rawData['author']);
+					$interface->assign('description', isset($rawData['description']) ? $rawData['description'] : null);
+					$interface->assign('length',      isset($rawData['length']) ? $rawData['length'] : null);
+					$interface->assign('publisher',   isset($rawData['publisher']) ? $rawData['publisher'] : null);
+					$interface->assign('shortId',     $rawData['shortId']);
+					$interface->assign('id',          $rawData['id']);
+					$interface->assign('titleURL',    $rawData['titleURL']);
+					$interface->assign('imageUrl',    $imageUrl);
+
+					if ($showRatings){
+						$interface->assign('ratingData', $rawData['ratingData']);
+						$interface->assign('showNotInterested', false);
+					}
+
+					$rawData['formattedTitle']         = $interface->fetch('ListWidget/formattedTitle.tpl');
+					$rawData['formattedTextOnlyTitle'] = $interface->fetch('ListWidget/formattedTextOnlyTitle.tpl');
+					// TODO: Modify these for Archive Objects
+
+					$titles[$key] = $rawData;
 				}
-				$currentIndex = count($titles) > 5 ? floor(count($titles) / 2) : 0;
-
-				$listData = array('titles' => $titles, 'currentIndex' => $currentIndex);
-
-				$memCache->set($cacheInfo['cacheName'], $listData, 0, $cacheInfo['cacheLength']);
-			}else{
-				$listData = array('titles' => array(), 'currentIndex' => 0);
-				if ($titles['message']) $listData['error'] = $titles['message']; // send error message to widget javascript
 			}
+			$currentIndex = count($titles) > 5 ? floor(count($titles) / 2) : 0;
+
+			$listData = array('titles' => $titles, 'currentIndex' => $currentIndex);
+
+		}else{
+			$listData = array('titles' => array(), 'currentIndex' => 0);
+			if ($titles['message']) $listData['error'] = $titles['message']; // send error message to widget javascript
 		}
+
 		return $listData;
 	}
 
@@ -313,21 +297,9 @@ class AJAX extends Action {
 		// Called Only for Covers mode //
 		$success = true; // set to false on error
 
-//		$currentPage = isset($_REQUEST['pageToLoad']) ? $_REQUEST['pageToLoad'] : 1;
-//		$query = ltrim($_REQUEST['query'], '?');
-//		parse_str($query, $_REQUEST);
-//		$_REQUEST['page'] = $currentPage;
-		// quick & dirty way to get search parameters
-
-		// More involved method for grabbing variables
-		//		parse_str($query, $searchParams);
-//		$test = array_merge($_REQUEST, $searchParams, array('page' => $currentPage));
-//		$_REQUEST = $test;
-
 		if (isset($_REQUEST['view'])) $_REQUEST['view'] = $displayMode; // overwrite any display setting for now
 
 		/** @var string $searchSource */
-//		$searchSource = isset($searchParams['searchSource']) ? $searchParams['searchSource'] : 'local';
 		$searchSource = isset($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : 'local';
 
 		// Initialise from the current search globals
@@ -335,9 +307,7 @@ class AJAX extends Action {
 		$searchObject = SearchObjectFactory::initSearchObject();
 		$searchObject->init($searchSource);
 
-//		if ($displayMode == 'covers') {
-			$searchObject->setLimit(24); // a set of 24 covers looks better in display
-//		}
+		$searchObject->setLimit(24); // a set of 24 covers looks better in display
 
 		// Process Search
 		$result = $searchObject->processSearch(true, true);
@@ -348,9 +318,8 @@ class AJAX extends Action {
 		$searchObject->close();
 
 		// Process for Display //
-		$recordSet = $searchObject->getResultRecordHTML($displayMode);
-//		if ($displayMode == 'covers'){
-			$displayTemplate = 'Search/covers-list.tpl'; // structure for bookcover tiles
+		$recordSet = $searchObject->getResultRecordHTML();
+		$displayTemplate = 'Search/covers-list.tpl'; // structure for bookcover tiles
 
 		// Rating Settings
 		global $library, $location;
@@ -361,10 +330,6 @@ class AJAX extends Action {
 		// when the Ajax rating is turned on, they have to be initialized with each load of the category.
 		if ($browseCategoryRatingsMode == 'stars') $recordSet[] = '<script type="text/javascript">AspenDiscovery.Ratings.initializeRaters()</script>';
 
-//		}
-//		else { // default
-//			$displayTemplate = 'Search/list-list.tpl'; // structure for regular results
-//		}
 		global $interface;
 		$interface->assign('recordSet', $recordSet);
 		$records = $interface->fetch($displayTemplate);

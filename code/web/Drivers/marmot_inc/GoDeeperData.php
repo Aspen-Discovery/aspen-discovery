@@ -22,71 +22,78 @@ class GoDeeperData{
 
 			// Use Syndetics Go-Deeper Data.
 			if (!empty($configArray['Syndetics']['key'])){
-				$clientKey = $configArray['Syndetics']['key'];
-				$requestUrl = "http://syndetics.com/index.aspx?isbn=$isbn/INDEX.XML&client=$clientKey&type=xw10&upc=$upc";
-				//echo($requestUrl . "\r\n");
-
 				try{
-					//Get the XML from the service
-					$ctx = stream_context_create(array(
-						'http' => array(
-						'timeout' => 5
-					)
-					));
-					$response = @file_get_contents($requestUrl, 0, $ctx);
-					$timer->logTime("Got options from syndetics");
-					//echo($response);
+					$showSummary = $configArray['Syndetics']['showSummary'];
+					$showAvSummary = $configArray['Syndetics']['showAvSummary'];
+					$showToc = $configArray['Syndetics']['showToc'];
+					$showExcerpt = $configArray['Syndetics']['showExcerpt'];
+					$showFictionProfile = $configArray['Syndetics']['showFictionProfile'];
+					$showAuthorNotes = $configArray['Syndetics']['showAuthorNotes'];
+					$showVideoClip = $configArray['Syndetics']['showVideoClip'];
 
-					//Parse the XML
-					if (preg_match('/<!DOCTYPE\\sHTML.*/', $response)) {
-						//The ISBN was not found in syndetics (we got an error message)
-					} else {
-						//Got a valid response
-						$data = new SimpleXMLElement($response);
+					if ($showSummary || $showAvSummary || $showToc || $showExcerpt || $showFictionProfile || $showAuthorNotes || $showVideoClip){
+						$clientKey = $configArray['Syndetics']['key'];
+						$requestUrl = "http://syndetics.com/index.aspx?isbn=$isbn/INDEX.XML&client=$clientKey&type=xw10&upc=$upc";
 
-						$validEnrichmentTypes = array();
-						if (isset($data)){
-							if ($configArray['Syndetics']['showSummary'] && isset($data->SUMMARY)){
-								$validEnrichmentTypes['summary'] = 'Summary';
-								if (!isset($defaultOption)) $defaultOption = 'summary';
-							}
-							if ($configArray['Syndetics']['showAvSummary'] && isset($data->AVSUMMARY)){
-								//AV Summary is weird since it combines both summary and table of contents for movies and music
-								$avSummary = GoDeeperData::getAVSummary($isbn, $upc);
-								if (isset($avSummary['summary'])){
+						//Get the XML from the service
+						$ctx = stream_context_create(array(
+							'http' => array(
+								'timeout' => 5
+							)
+						));
+						$response = @file_get_contents($requestUrl, 0, $ctx);
+						$timer->logTime("Got options from syndetics");
+						//echo($response);
+
+						//Parse the XML
+						if (preg_match('/<!DOCTYPE\\sHTML.*/', $response)) {
+							//The ISBN was not found in syndetics (we got an error message)
+						} else {
+							//Got a valid response
+							$data = new SimpleXMLElement($response);
+
+							$validEnrichmentTypes = array();
+							if (isset($data)){
+								if ($showSummary && isset($data->SUMMARY)){
 									$validEnrichmentTypes['summary'] = 'Summary';
 									if (!isset($defaultOption)) $defaultOption = 'summary';
 								}
-								if (isset($avSummary['trackListing'])){
-									$validEnrichmentTypes['tableOfContents'] = 'Table of Contents';
-									if (!isset($defaultOption)) $defaultOption = 'tableOfContents';
+								if ($showAvSummary && isset($data->AVSUMMARY)){
+									//AV Summary is weird since it combines both summary and table of contents for movies and music
+									$avSummary = GoDeeperData::getAVSummary($isbn, $upc);
+									if (isset($avSummary['summary'])){
+										$validEnrichmentTypes['summary'] = 'Summary';
+										if (!isset($defaultOption)) $defaultOption = 'summary';
+									}
+									if (isset($avSummary['trackListing'])){
+										$validEnrichmentTypes['tableOfContents'] = 'Table of Contents';
+										if (!isset($defaultOption)) $defaultOption = 'tableOfContents';
+									}
 								}
-								//$validEnrichmentTypes['avSummary'] = 'Summary';
-								//if (!isset($defaultOption)) $defaultOption = 'avSummary';
-							}
 //							if ($configArray['Syndetics']['showAvProfile'] && isset($data->AVPROFILE)){
 //								//Profile has similar bands and tags for music.  Not sure how to best use this
 //							}
-							if ($configArray['Syndetics']['showToc'] && isset($data->TOC)){
-								$validEnrichmentTypes['tableOfContents'] = 'Table of Contents';
-								if (!isset($defaultOption)) $defaultOption = 'tableOfContents';
-							}
-							if ($configArray['Syndetics']['showExcerpt'] && isset($data->DBCHAPTER)){
-								$validEnrichmentTypes['excerpt'] = 'Excerpt';
-								if (!isset($defaultOption)) $defaultOption = 'excerpt';
-							}
-							if ($configArray['Syndetics']['showFictionProfile'] && isset($data->FICTION)){
-								$validEnrichmentTypes['fictionProfile'] = 'Character Information';
-								if (!isset($defaultOption)) $defaultOption = 'fictionProfile';
-							}
-							if ($configArray['Syndetics']['showAuthorNotes'] && isset($data->ANOTES)){
-								$validEnrichmentTypes['authorNotes'] = 'Author Notes';
-								if (!isset($defaultOption)) $defaultOption = 'authorNotes';
-							}
-							if ($configArray['Syndetics']['showVideoClip'] && isset($data->VIDEOCLIP)){
-								//Profile has similar bands and tags for music.  Not sure how to best use this
-								$validEnrichmentTypes['videoClip'] = 'Video Clip';
-								if (!isset($defaultOption)) $defaultOption = 'videoClip';
+								if ($showToc && isset($data->TOC)){
+									$validEnrichmentTypes['tableOfContents'] = 'Table of Contents';
+									if (!isset($defaultOption)) $defaultOption = 'tableOfContents';
+								}
+								if ($showExcerpt && isset($data->DBCHAPTER)){
+									$validEnrichmentTypes['excerpt'] = 'Excerpt';
+									if (!isset($defaultOption)) $defaultOption = 'excerpt';
+								}
+								if ($showFictionProfile && isset($data->FICTION)){
+									$validEnrichmentTypes['fictionProfile'] = 'Character Information';
+									if (!isset($defaultOption)) $defaultOption = 'fictionProfile';
+								}
+								if ($showAuthorNotes && isset($data->ANOTES)){
+									$validEnrichmentTypes['authorNotes'] = 'Author Notes';
+									if (!isset($defaultOption)) $defaultOption = 'authorNotes';
+								}
+								if ($showVideoClip && isset($data->VIDEOCLIP)){
+									//Profile has similar bands and tags for music.  Not sure how to best use this
+									$validEnrichmentTypes['videoClip'] = 'Video Clip';
+									if (!isset($defaultOption)) $defaultOption = 'videoClip';
+								}
 							}
 						}
 					}
@@ -231,6 +238,13 @@ class GoDeeperData{
 
 	private static function getSyndeticsSummary($workId, $isbn, $upc){
 		global $configArray;
+		$clientKey = $configArray['Syndetics']['key'];
+		$showSummary = $configArray['Syndetics']['showSummary'];
+
+		if (empty($clientKey) || !$showSummary){
+			return array();
+		}
+
 		/** @var Memcache $memCache */
 		global $memCache;
 		$key = "syndetics_summary_{$isbn}_{$upc}";
@@ -255,7 +269,7 @@ class GoDeeperData{
 			}
 			if ($doReload){
 				try{
-					$clientKey = $configArray['Syndetics']['key'];
+
 					//Load the index page from syndetics
 					$requestUrl = "http://syndetics.com/index.aspx?isbn=$isbn/SUMMARY.XML&client=$clientKey&type=xw10&upc=$upc";
 

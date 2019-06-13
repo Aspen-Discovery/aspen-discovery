@@ -281,13 +281,6 @@ class IndexingProfile extends DataObject{
 			$this->saveTimeToReshelve();
 			$this->saveSierraFieldMappings();
 		}
-		/** @var Memcache $memCache */
-		global $memCache;
-		global $instanceName;
-		if (!$memCache->delete("{$instanceName}_indexing_profiles")) {
-			global $logger;
-			$logger->log("Failed to delete memcache variable {$instanceName}_indexing_profiles when adding new indexing profile for {$this->name}", Logger::LOG_ERROR);
-		}
 		return true;
 	}
 
@@ -306,13 +299,6 @@ class IndexingProfile extends DataObject{
 			$this->saveTranslationMaps();
 			$this->saveTimeToReshelve();
 			$this->saveSierraFieldMappings();
-		}
-		/** @var Memcache $memCache */
-		global $memCache;
-		global $instanceName;
-		if (!$memCache->delete("{$instanceName}_indexing_profiles")) {
-			global $logger;
-			$logger->log("Failed to delete memcache variable {$instanceName}_indexing_profiles when adding new indexing profile for {$this->name}", Logger::LOG_ERROR);
 		}
 		return true;
 	}

@@ -31,9 +31,9 @@ class Millennium extends AbstractIlsDriver
 		if (is_null($this->loanRules)){
 			/** @var Memcache $memCache */
 			global $memCache;
-			global $configArray;
+//			global $configArray;
 			global $instanceName;
-			$this->loanRules = $memCache->get($instanceName . '_loan_rules');
+//			$this->loanRules = $memCache->get($instanceName . '_loan_rules');
 			if (!$this->loanRules || isset($_REQUEST['reload'])){
 				$this->loanRules = array();
 				$loanRule = new LoanRule();
@@ -42,7 +42,7 @@ class Millennium extends AbstractIlsDriver
 					$this->loanRules[$loanRule->loanRuleId] = clone($loanRule);
 				}
 			}
-			$memCache->set($instanceName . '_loan_rules', $this->loanRules, 0, $configArray['Caching']['loan_rules']);
+//			$memCache->set($instanceName . '_loan_rules', $this->loanRules, 0, $configArray['Caching']['loan_rules']);
 
 			$this->loanRuleDeterminers = $memCache->get($instanceName . '_loan_rule_determiners');
 			if (!$this->loanRuleDeterminers || isset($_REQUEST['reload'])){
@@ -55,7 +55,7 @@ class Millennium extends AbstractIlsDriver
 					$this->loanRuleDeterminers[$loanRuleDeterminer->rowNumber] = clone($loanRuleDeterminer);
 				}
 			}
-			$memCache->set($instanceName . '_loan_rule_determiners', $this->loanRuleDeterminers, 0, $configArray['Caching']['loan_rules']);
+//			$memCache->set($instanceName . '_loan_rule_determiners', $this->loanRuleDeterminers, 0, $configArray['Caching']['loan_rules']);
 		}
 	}
 

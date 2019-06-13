@@ -1851,6 +1851,14 @@ class DBMaintenance extends Admin_Admin {
 					],
 				],
 
+				'memory_table_size_increase' => [
+					'title' => 'Memory table size increase',
+					'description' => 'Memory table for cross platform caching',
+					'sql' => [
+						'ALTER TABLE cached_values CHANGE COLUMN value value VARCHAR(16384);',
+					],
+				],
+
 				'error_table' => [
 					'title' => 'Error Logging',
 					'description' => 'Table to store error information',

@@ -3,7 +3,7 @@
 require_once ROOT_DIR . '/sys/MemoryCache/CachedValue.php';
 class Memcache
 {
-	private $enableDbCache = false;
+	private $enableDbCache = true;
     private $vars = array();
 
     public function get($name){
@@ -33,7 +33,7 @@ class Memcache
 	    $this->vars[$name] = $value;
 	    if ($this->enableDbCache) {
 		    $valueToCache = serialize($value);
-		    if (strlen($valueToCache) <= 1024 && strlen($name) < 200) {
+		    if (strlen($valueToCache) <= 16384 && strlen($name) < 200) {
 			    try {
 				    $cachedValue = new CachedValue();
 				    $cachedValue->cacheKey = $name;
@@ -56,6 +56,10 @@ class Memcache
 			    } catch (Exception $e) {
 				    //Table has not been created ignore
 			    }
+		    }else{
+		    	global $logger;
+		    	$logger->log("data was too large to be cached", Logger::LOG_WARNING);
+		    	return false;
 		    }
 	    }
         return true;

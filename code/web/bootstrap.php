@@ -282,20 +282,17 @@ function loadSearchInformation(){
 	require_once ROOT_DIR . '/sys/Indexing/IndexingProfile.php';
 	/** @var $indexingProfiles IndexingProfile[] */
 	global $indexingProfiles;
-	$indexingProfiles = $memCache->get("{$instanceName}_indexing_profiles");
-	if ($indexingProfiles === false || isset($_REQUEST['reload'])){
-		$indexingProfiles = array();
-		$indexingProfile = new IndexingProfile();
-		$indexingProfile->orderBy('name');
-		$indexingProfile->find();
-		while ($indexingProfile->fetch()){
-			$indexingProfiles[$indexingProfile->name] = clone($indexingProfile);
-		}
-		if (!$memCache->set("{$instanceName}_indexing_profiles", $indexingProfiles, 0, $configArray['Caching']['indexing_profiles'])) {
-			global $logger;
-			$logger->log("Failed to update memcache variable {$instanceName}_indexing_profiles", Logger::LOG_ERROR);
-		};
+	$indexingProfiles = array();
+	$indexingProfile = new IndexingProfile();
+	$indexingProfile->orderBy('name');
+	$indexingProfile->find();
+	while ($indexingProfile->fetch()){
+		$indexingProfiles[$indexingProfile->name] = clone($indexingProfile);
 	}
+	if (!$memCache->set("{$instanceName}_indexing_profiles", $indexingProfiles, 0, $configArray['Caching']['indexing_profiles'])) {
+		global $logger;
+		$logger->log("Failed to update memcache variable {$instanceName}_indexing_profiles", Logger::LOG_ERROR);
+	};
 }
 
 function disableErrorHandler(){

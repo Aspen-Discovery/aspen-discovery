@@ -94,7 +94,7 @@
 				{if $list->displayFor == 'all' || ($list->displayFor == 'loggedIn' && $loggedIn) || ($list->displayFor == 'notLoggedIn' && !$loggedIn)}
 					{if $index == 0}
 						listScroller{$listName} = new TitleScroller('titleScroller{$listName}', '{$listName}', 'list{$listName}', {if $widget->autoRotate==1}true{else}false{/if}, '{$widget->style}');
-						listScroller{$listName}.loadTitlesFrom('{$path}/Search/AJAX?method=GetListTitles%26id={$list->source|escape:url}%26scrollerName={$listName}%26coverSize={$widget->coverSize}%26showRatings={$widget->showRatings}%26numTitlesToShow={$widget->numTitlesToShow}{if $reload}%26reload=true{/if}', false);
+						listScroller{$listName}.loadTitlesFrom('{$path}/Search/AJAX?method=getListTitles%26id={$list->source|escape:url}%26scrollerName={$listName}%26coverSize={$widget->coverSize}%26showRatings={$widget->showRatings}%26numTitlesToShow={$widget->numTitlesToShow}{if $reload}%26reload=true{/if}', false);
 					{/if}
 					{assign var=index value=$index+1}
 				{/if}
@@ -141,7 +141,7 @@
 						else if (listIndex == {$index}){ldelim}
 							if (listScroller{$listName} == null){ldelim}
 								listScroller{$listName} = new TitleScroller('titleScroller{$listName}', '{$listName}', 'list{$listName}', {if $widget->autoRotate==1}true{else}false{/if}, '{$widget->style}');
-								listScroller{$listName}.loadTitlesFrom('{$path}/Search/AJAX?method=GetListTitles%26id={$list->source|escape:url}%26scrollerName={$listName}%26coverSize={$widget->coverSize}%26showRatings={$widget->showRatings}%26numTitlesToShow={$widget->numTitlesToShow}{if $reload}%26reload=true{/if}', false);
+								listScroller{$listName}.loadTitlesFrom('{$path}/Search/AJAX?method=getListTitles%26id={$list->source|escape:url}%26scrollerName={$listName}%26coverSize={$widget->coverSize}%26showRatings={$widget->showRatings}%26numTitlesToShow={$widget->numTitlesToShow}{if $reload}%26reload=true{/if}', false);
 							{rdelim}else{ldelim}
 								listScroller{$listName}.activateCurrentTitle();
 							{rdelim}

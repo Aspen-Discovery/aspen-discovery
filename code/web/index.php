@@ -139,18 +139,15 @@ if (isset($_REQUEST['mylang'])) {
 } else {
 	$language = strip_tags((isset($_COOKIE['language'])) ? $_COOKIE['language'] : $configArray['Site']['language']);
 }
-/** @var Memcache $memCache */
-$translator = $memCache->get("translator_{$serverName}_{$language}");
-if ($translator == false || isset($_REQUEST['reloadTranslator'])){
-	// Make sure language code is valid, reset to default if bad:
-	$validLanguages = array_keys($configArray['Languages']);
-	if (!in_array($language, $validLanguages)) {
-		$language = $configArray['Site']['language'];
-	}
-	$translator = new I18N_Translator('lang', $language, $configArray['System']['missingTranslations']);
-	$memCache->set("translator_{$serverName}_{$language}", $translator, 0, $configArray['Caching']['translator']);
-	$timer->logTime('Translator setup');
+
+// Make sure language code is valid, reset to default if bad:
+$validLanguages = array_keys($configArray['Languages']);
+if (!in_array($language, $validLanguages)) {
+	$language = $configArray['Site']['language'];
 }
+$translator = new I18N_Translator('lang', $language, $configArray['System']['missingTranslations']);
+$timer->logTime('Translator setup');
+
 $interface->setLanguage($language);
 
 $deviceName = get_device_name();

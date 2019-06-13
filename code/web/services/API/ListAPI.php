@@ -535,26 +535,20 @@ class ListAPI extends Action {
 	function getSavedSearchTitles($searchId, $numTitlesToShow){
 		/** @var Memcache $memCache */
 		global $memCache;
-		global $configArray;
 		$cacheId = 'saved_search_titles_' . $searchId;
-		$listTitles = $memCache->get($cacheId);
-		if ($listTitles == false || isset($_REQUEST['reload'])){
-			//return a random selection of 30 titles from the list.
-			/** @var SearchObject_GroupedWorkSearcher|SearchObject_BaseSearcher $searchObj */
-			$searchObj = SearchObjectFactory::initSearchObject();
-			$searchObj->init();
-			$searchObj = $searchObj->restoreSavedSearch($searchId, false, true);
-			if ($searchObj) { // check that the saved search was retrieved successfully
-				if (isset($_REQUEST['numTitles'])) {
-					$searchObj->setLimit($_REQUEST['numTitles']);
-				} else {
-					$searchObj->setLimit($numTitlesToShow);
-				}
-				$searchObj->processSearch(false, false);
-				$listTitles = $searchObj->getListWidgetTitles();
-
-				$memCache->set($cacheId, $listTitles, 0, $configArray['Caching']['list_saved_search']);
+		//return a random selection of 30 titles from the list.
+		/** @var SearchObject_GroupedWorkSearcher|SearchObject_BaseSearcher $searchObj */
+		$searchObj = SearchObjectFactory::initSearchObject();
+		$searchObj->init();
+		$searchObj = $searchObj->restoreSavedSearch($searchId, false, true);
+		if ($searchObj) { // check that the saved search was retrieved successfully
+			if (isset($_REQUEST['numTitles'])) {
+				$searchObj->setLimit($_REQUEST['numTitles']);
+			} else {
+				$searchObj->setLimit($numTitlesToShow);
 			}
+			$searchObj->processSearch(false, false);
+			$listTitles = $searchObj->getListWidgetTitles();
 		}
 
 		return $listTitles;
