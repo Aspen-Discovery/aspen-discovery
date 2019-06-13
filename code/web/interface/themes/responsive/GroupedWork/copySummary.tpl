@@ -28,7 +28,7 @@
 			{assign var=numRemainingCopies value=$totalCopies-$numDefaultItems}
 			{if $numRemainingCopies > 0}
 				<div class="itemSummary">
-					&nbsp;&nbsp;<a href="#" onclick="return AspenDiscovery.showElementInPopup('Copy Summary', '#itemSummaryPopup_{$itemSummaryId|escapeCSS}_{$relatedManifestation->format|escapeCSS}'{if $recordViewUrl}, '#itemSummaryPopupButtons_{$itemSummaryId|escapeCSS}_{$relatedManifestation->format|escapeCSS}'{/if});">
+					&nbsp;&nbsp;<a href="#" onclick="return AspenDiscovery.showElementInPopup('Copy Summary', '#itemSummaryPopup_{$itemSummaryId|escapeCSS}_{$relatedManifestation->format|escapeCSS}'{if !empty($recordViewUrl)}, '#itemSummaryPopupButtons_{$itemSummaryId|escapeCSS}_{$relatedManifestation->format|escapeCSS}'{/if});">
 						{translate text="Quick Copy View"}
 					</a>
 				</div>
@@ -65,7 +65,7 @@
 						</tbody>
 					</table>
 				</div>
-				{if $recordViewUrl}
+				{if !empty($recordViewUrl)}
 					<div id="itemSummaryPopupButtons_{$itemSummaryId|escapeCSS}_{$relatedManifestation->format|escapeCSS}" {*class="itemSummaryPopup"*} style="display: none">
 						<a href="{$recordViewUrl}" class="btn btn-primary" role="button">{translate text="See Full Copy Details"}</a>
 					</div>

@@ -159,6 +159,9 @@ class UserAccount {
 		}
 	}
 
+	/**
+	 * @return User|bool
+	 */
 	public static function getActiveUserObj(){
 		UserAccount::loadUserObjectFromDatabase();
 		return UserAccount::$primaryUserObjectFromDB;

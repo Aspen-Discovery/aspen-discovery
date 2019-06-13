@@ -27,15 +27,13 @@ class Novelist3{
 	function loadBasicEnrichment($groupedRecordId, $isbns, $allowReload = true){
 		$novelistData = $this->getRawNovelistData($groupedRecordId, $isbns, $allowReload);
 		if (!empty($novelistData)){
-			$data = $novelistData->getJsonData();
-			if (isset($data->FeatureContent) && $data->FeatureCount > 0){
-				$novelistData->hasNovelistData = 1;
-				//We got data!
-				$novelistData->primaryISBN = $data->TitleInfo->primary_isbn;
-
-				//Series Information
-				if (isset($data->FeatureContent->SeriesInfo)){
-					$this->loadSeriesInfoFast($data->FeatureContent->SeriesInfo, $novelistData);
+			if (empty($novelistData->seriesTitle) || isset($_REQUEST['reload'])){
+				$data = $novelistData->getJsonData();
+				if (isset($data->FeatureContent) && $data->FeatureCount > 0){
+					//Series Information
+					if (isset($data->FeatureContent->SeriesInfo)){
+						$this->loadSeriesInfoFast($data, $novelistData);
+					}
 				}
 			}
 		}
@@ -54,10 +52,6 @@ class Novelist3{
 		if (!empty($novelistData)){
 			$data = $novelistData->getJsonData();
 			if (isset($data->FeatureContent) && $data->FeatureCount > 0){
-				$novelistData->hasNovelistData = 1;
-				//We got data!
-				$novelistData->primaryISBN = $data->TitleInfo->primary_isbn;
-
 				//Series Information
 				if (isset($data->FeatureContent->SeriesInfo)){
 					$this->loadSeriesInfo($groupedRecordId, $data->FeatureContent->SeriesInfo, $novelistData);
@@ -104,10 +98,6 @@ class Novelist3{
 		if (!empty($novelistData)){
 			$data = $novelistData->getJsonData();
 			if (isset($data->FeatureContent) && $data->FeatureCount > 0){
-				$novelistData->hasNovelistData = 1;
-				//We got data!
-				$novelistData->primaryISBN = $data->TitleInfo->primary_isbn;
-
 				//Similar Titles
 				if (isset($data->FeatureContent->SimilarTitles)){
 					$this->loadSimilarTitleInfo($groupedRecordId, $data->FeatureContent->SimilarTitles, $novelistData);
@@ -192,14 +182,21 @@ class Novelist3{
 						$response = $req->getResponseBody();
 						$timer->logTime("Made call to Novelist for enrichment information");
 
-						if (strlen($response) > strlen($bestRawJson)){
-							$bestRawJson = $response;
-							$bestIsbn = $isbn;
-							//Parse the JSON
-							$decodedData = json_decode($response);
-							if (is_array($decodedData->TitleInfo->isbns) && count($decodedData->TitleInfo->isbns) > 0){
-								$novelistData->hasNovelistData = 1;
+
+						//Parse the JSON
+						$decodedData = json_decode($response);
+						if (!is_null($decodedData->TitleInfo) && is_array($decodedData->TitleInfo->isbns) && count($decodedData->TitleInfo->isbns) > 0){
+							$novelistData->hasNovelistData = 1;
+
+							if (isset($decodedData->FeatureContent->SeriesInfo) && count($decodedData->FeatureContent->SeriesInfo->series_titles) > 0){
+								//Try to get something with series data since that is our primary use
+								$bestRawJson = $response;
+								$bestIsbn = $decodedData->TitleInfo->primary_isbn;
 								break;
+							}elseif (strlen($response) > strlen($bestRawJson)){
+								//Try to get the longest json since that should have the most information for us.
+								$bestRawJson = $response;
+								$bestIsbn = $decodedData->TitleInfo->primary_isbn;
 							}
 						}
 					}catch (Exception $e) {
@@ -234,10 +231,6 @@ class Novelist3{
 			$data = $novelistData->getJsonData();
 
 			if (isset($data->FeatureContent) && $data->FeatureCount > 0){
-				$novelistData->hasNovelistData = 1;
-				//We got data!
-				$novelistData->primaryISBN = $data->TitleInfo->primary_isbn;
-
 				//Similar Authors
 				if (isset($data->FeatureContent->SimilarAuthors)){
 					$this->loadSimilarAuthorInfo($data->FeatureContent->SimilarAuthors, $novelistData);
@@ -278,10 +271,6 @@ class Novelist3{
 			$data = $novelistData->getJsonData();
 
 			if (isset($data->FeatureContent) && $data->FeatureCount > 0){
-				$novelistData->hasNovelistData = 1;
-				//We got data!
-				$novelistData->primaryISBN = $data->TitleInfo->primary_isbn;
-
 				//Series Information
 				if (isset($data->FeatureContent->SeriesInfo) && count($data->FeatureContent->SeriesInfo->series_titles) > 0){
 					$this->loadSeriesInfo($groupedRecordId, $data->FeatureContent->SeriesInfo, $novelistData);
@@ -294,30 +283,37 @@ class Novelist3{
 	}
 
 	/**
-	 * @param SimpleXMLElement $seriesData
+	 * @param stdClass $data decoded json data
 	 * @param NovelistData $novelistData
 	 */
-	private function loadSeriesInfoFast($seriesData, &$novelistData){
-		/** @noinspection PhpUndefinedFieldInspection */
+	private function loadSeriesInfoFast($data, &$novelistData){
+		$seriesData = $data->FeatureContent->SeriesInfo;
 		$seriesName = $seriesData->full_title;
-		/** @noinspection PhpUndefinedFieldInspection */
 		$items = $seriesData->series_titles;
-		foreach ($items as $item){
-			/** @noinspection PhpUndefinedFieldInspection */
-			if ($item->primary_isbn == $novelistData->primaryISBN){
-				/** @noinspection PhpUndefinedFieldInspection */
-				$volume = $item->volume;
-				$volume = preg_replace('/^0+/', '', $volume);
-				$novelistData->volume = $volume;
+
+		//If we don't get additional series titles, don't mark this as being good novelist data
+		if (count($items) == 0){
+			$novelistData->seriesTitle = null;
+			$novelistData->volume = null;
+			$novelistData->seriesNote = null;
+		}else{
+			foreach ($items as $item){
+				if (in_array($novelistData->primaryISBN, $item->isbns)){
+					$novelistData->volume = $this->normalizeSeriesVolume($item->volume);
+					break;
+				}elseif ($item->main_title == $data->TitleInfo->main_title){
+					$novelistData->volume = $this->normalizeSeriesVolume($item->volume);
+					break;
+				}
+			}
+			$novelistData->seriesTitle = $seriesName;
+			$novelistData->seriesNote = $seriesData->series_note;
+			if (strlen($novelistData->seriesNote) > 255){
+				require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
+				$novelistData->seriesNote = StringUtils::truncate($novelistData->seriesNote, 255);
 			}
 		}
-		$novelistData->seriesTitle = $seriesName;
-		/** @noinspection PhpUndefinedFieldInspection */
-		$novelistData->seriesNote = $seriesData->series_note;
-		if (strlen($novelistData->seriesNote) > 255){
-			require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
-			$novelistData->seriesNote = StringUtils::truncate($novelistData->seriesNote, 255);
-		}
+		$novelistData->update();
 	}
 
     /**
@@ -334,7 +330,7 @@ class Novelist3{
 		foreach ($seriesTitles as $curTitle){
 			if ($curTitle['isCurrent'] && isset($curTitle['volume']) && strlen($curTitle['volume']) > 0){
 				$enrichment['volumeLabel'] = (isset($curTitle['volume']) ? ('volume ' . $curTitle['volume']) : '');
-				$novelistData->volume = $curTitle['volume'];
+				$novelistData->volume = $this->normalizeSeriesVolume($curTitle['volume']);
 				$novelistData->update();
 			}elseif ($curTitle['libraryOwned']){
 				$novelistDataForTitle = new NovelistData();
@@ -344,12 +340,12 @@ class Novelist3{
 					$novelistDataForTitle->primaryISBN = $curTitle['isbn'];
 					$novelistDataForTitle->groupedRecordHasISBN = count($curTitle['allIsbns']) > 0;
 					$novelistDataForTitle->seriesTitle = $curTitle['series'];
-					$novelistDataForTitle->volume = $curTitle['volume'];
+					$novelistDataForTitle->volume = $this->normalizeSeriesVolume($curTitle['volume']);
 					$novelistDataForTitle->seriesNote = $seriesData->series_note;
 					$novelistDataForTitle->insert();
 				}elseif (empty($novelistDataForTitle->seriesTitle) || empty($novelistDataForTitle->volume)){
 					$novelistDataForTitle->seriesTitle = $curTitle['series'];
-					$novelistDataForTitle->volume = $curTitle['volume'];
+					$novelistDataForTitle->volume = $this->normalizeSeriesVolume($curTitle['volume']);
 					$novelistDataForTitle->update();
 				}
 			}
@@ -444,32 +440,7 @@ class Novelist3{
 					$timer->logTime("Create driver");
 
 					if ($recordDriver->isValid){
-						//Load data about the record
-						$ratingData = $recordDriver->getRatingData();
-						$timer->logTime("Get Rating data");
-						$fullRecordLink = $recordDriver->getLinkUrl();
-
-						//See if we can get the series title from the record
-						$curTitle = array(
-								'title' => $recordDriver->getTitle(),
-								'title_short' => $recordDriver->getTitle(),
-								'author' => $recordDriver->getPrimaryAuthor(),
-								'isbn' => $recordDriver->getCleanISBN(),
-								'allIsbns' => $recordDriver->getISBNs(),
-								'isbn10' => $recordDriver->getCleanISBN(),
-								'upc' => $recordDriver->getCleanUPC(),
-								'recordId' => $recordDriver->getPermanentId(),
-								'recordtype' => 'grouped_work',
-								'id' => $recordDriver->getPermanentId(), //This allows the record to be displayed in various locations.
-								'libraryOwned' => true,
-								'shortId' => $recordDriver->getPermanentId(),
-								'format_category' => $recordDriver->getFormatCategory(),
-								'ratingData' => $ratingData,
-								'fullRecordLink' => $fullRecordLink,
-								'recordDriver' => $recordDriver,
-								'smallCover' => $recordDriver->getBookcoverUrl('small'),
-								'mediumCover' => $recordDriver->getBookcoverUrl('medium'),
-						);
+						$curTitle = $this->setupTitleInfoForWork($recordDriver);
 						$timer->logTime("Load title information");
 						$titlesOwned++;
 						$titlesFromCatalog[] = $curTitle;
@@ -520,10 +491,29 @@ class Novelist3{
 					$titleList = $this->addTitleToTitleList($currentId, $titleList, $seriesName, $titleFromCatalog, $titlesFromCatalog, $titleIndex, $item, $index);
 					unset($titlesFromCatalog[$titleIndex]);
 				}else{
-					$isbn = reset($item->isbns);
-					$isbn13 = strlen($isbn) == 13 ? $isbn : ISBNConverter::convertISBN10to13($isbn);
-					$isbn10 = strlen($isbn) == 10 ? $isbn : ISBNConverter::convertISBN13to10($isbn);
-					$curTitle = array(
+					if (!empty($seriesName)){
+						//Check to see if we can get a grouped work id based on the volume and series name
+						require_once ROOT_DIR . '/sys/Novelist/NovelistData.php';
+						$novelistData = new NovelistData();
+						$novelistData->seriesTitle = $seriesName;
+						if (isset($item->volume)){
+							$novelistData->volume = $this->normalizeSeriesVolume($item->volume);
+						}
+						if ($novelistData->find(true)){
+							$groupedWorkDriver = new GroupedWorkDriver($novelistData->groupedRecordPermanentId);
+							if ($groupedWorkDriver->isValid()){
+								$titleInfo = $this->setupTitleInfoForWork($groupedWorkDriver);
+								$tempArray = [$titleInfo];
+								$titleList = $this->addTitleToTitleList($currentId, $titleList, $seriesName, $titleInfo, $tempArray, 0, $item, $index);
+								$isInCatalog = true;
+							}
+						}
+					}
+					if (!$isInCatalog) {
+						$isbn = reset($item->isbns);
+						$isbn13 = strlen($isbn) == 13 ? $isbn : ISBNConverter::convertISBN10to13($isbn);
+						$isbn10 = strlen($isbn) == 10 ? $isbn : ISBNConverter::convertISBN13to10($isbn);
+						$curTitle = array(
 							'title' => $item->full_title,
 							'author' => $item->author,
 							'isbn' => $isbn13,
@@ -532,14 +522,15 @@ class Novelist3{
 							'libraryOwned' => false,
 							'smallCover' => "/bookcover.php?size=small&isn=" . $isbn13,
 							'mediumCover' => "/bookcover.php?size=medium&isn=" . $isbn13,
-					);
+						);
 
-					$curTitle['isCurrent'] = $currentId == $curTitle['recordId'];
-					$curTitle['series'] = isset($seriesName) ? $seriesName : '';;
-					$curTitle['volume'] = isset($item->volume) ? $item->volume : '';
-					$curTitle['reason'] = isset($item->reason) ? $item->reason : '';
+						$curTitle['isCurrent'] = $currentId == $curTitle['recordId'];
+						$curTitle['series'] = isset($seriesName) ? $seriesName : '';;
+						$curTitle['volume'] = isset($item->volume) ? $this->normalizeSeriesVolume($item->volume) : '';
+						$curTitle['reason'] = isset($item->reason) ? $item->reason : '';
 
-					$titleList[$index] = $curTitle;
+						$titleList[$index] = $curTitle;
+					}
 				}
 
 			}
@@ -581,16 +572,14 @@ class Novelist3{
 	}
 
 	/**
-	 * @param $currentId
-	 * @param $titleList
-	 * @param $seriesName
-	 * @param $isInCatalog
-	 * @param $titleFromCatalog
-	 * @param $titlesFromCatalog
-	 * @param $titleIndex
-	 * @param $item
-	 * @param $configArray
-	 * @param $index
+	 * @param string $currentId - Record Id of the current record we are looking at
+	 * @param array $titleList - A list of all titles we are getting data for
+	 * @param string $seriesName
+	 * @param array $titleFromCatalog
+	 * @param array $titlesFromCatalog
+	 * @param int $titleIndex - The index of the title we are loading data for in titleList
+	 * @param stdClass $item
+	 * @param int $index
 	 * @return array titleList
 	 */
 	private function addTitleToTitleList($currentId, &$titleList, $seriesName, $titleFromCatalog, &$titlesFromCatalog, $titleIndex, $item, $index)
@@ -602,10 +591,52 @@ class Novelist3{
 
 		$curTitle['isCurrent'] = $currentId == $curTitle['recordId'];
 		$curTitle['series'] = isset($seriesName) ? $seriesName : '';;
-		$curTitle['volume'] = isset($item->volume) ? $item->volume : '';
+		$curTitle['volume'] = isset($item->volume) ? $this->normalizeSeriesVolume($item->volume) : '';
 		$curTitle['reason'] = isset($item->reason) ? $item->reason : '';
 
 		$titleList[$index] = $curTitle;
 		return $titleList;
+	}
+
+	private function normalizeSeriesVolume($volume){
+		$volume = preg_replace('/^0+/', '', $volume);
+		$volume = preg_replace('/\.$/', '', $volume);
+		return trim($volume);
+	}
+
+	/**
+	 * @param GroupedWorkDriver $recordDriver
+	 * @return array
+	 */
+	private function setupTitleInfoForWork(GroupedWorkDriver $recordDriver): array
+	{
+		global $timer;
+		//Load data about the record
+		$ratingData = $recordDriver->getRatingData();
+		$timer->logTime("Get Rating data");
+		$fullRecordLink = $recordDriver->getLinkUrl();
+
+		//See if we can get the series title from the record
+		$curTitle = array(
+			'title' => $recordDriver->getTitle(),
+			'title_short' => $recordDriver->getTitle(),
+			'author' => $recordDriver->getPrimaryAuthor(),
+			'isbn' => $recordDriver->getCleanISBN(),
+			'allIsbns' => $recordDriver->getISBNs(),
+			'isbn10' => $recordDriver->getCleanISBN(),
+			'upc' => $recordDriver->getCleanUPC(),
+			'recordId' => $recordDriver->getPermanentId(),
+			'recordtype' => 'grouped_work',
+			'id' => $recordDriver->getPermanentId(), //This allows the record to be displayed in various locations.
+			'libraryOwned' => true,
+			'shortId' => $recordDriver->getPermanentId(),
+			'format_category' => $recordDriver->getFormatCategory(),
+			'ratingData' => $ratingData,
+			'fullRecordLink' => $fullRecordLink,
+			'recordDriver' => $recordDriver,
+			'smallCover' => $recordDriver->getBookcoverUrl('small'),
+			'mediumCover' => $recordDriver->getBookcoverUrl('medium'),
+		);
+		return $curTitle;
 	}
 }

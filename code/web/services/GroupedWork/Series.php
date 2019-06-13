@@ -29,6 +29,13 @@ class GroupedWork_Series extends Action
 		$novelist = NovelistFactory::getNovelist();
 		$seriesData = $novelist->getSeriesTitles($id, $recordDriver->getISBNs());
 
+		// Set Show in Main Details Section options for templates
+		// (needs to be set before moreDetailsOptions)
+		global $library;
+		foreach ($library->showInSearchResultsMainDetails as $detailOption) {
+			$interface->assign($detailOption, true);
+		}
+
 		//Loading the series title is not reliable.  Do not try to load it.
 		$seriesTitle = null;
 		$seriesAuthors = array();

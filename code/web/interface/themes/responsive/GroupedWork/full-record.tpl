@@ -44,29 +44,32 @@
 				{assign var=indexedSeries value=$recordDriver->getIndexedSeries()}
 				{assign var=series value=$recordDriver->getSeries()}
 				{if $showSeries && ($series || $indexedSeries)}
-					<div class="series row">
+					<div class="series row" id="seriesPlaceholder{$recordDriver->getPermanentId()}">
 						<div class="result-label col-tn-3">{translate text='Series'}:</div>
 						<div class="col-tn-9 result-value">
-							{assign var=summSeries value=$recordDriver->getSeries()}
+							{assign var=summSeries value=$series}
 							{if $summSeries.fromNovelist}
 								<a href="{$path}/GroupedWork/{$recordDriver->getPermanentId()}/Series">{$summSeries.seriesTitle}</a>{if $summSeries.volume} volume {$summSeries.volume}{/if}
 							{else}
 								<a href="{$path}/Search/Results?searchIndex=Series&lookfor={$summSeries.seriesTitle}">{$summSeries.seriesTitle}</a>{if $summSeries.volume} volume {$summSeries.volume}{/if}
 							{/if}
 							{if $indexedSeries}
+								{if $summSeries.fromNovelist}
+									<br/>
+								{/if}
 								{if count($indexedSeries) >= 5}
 									{assign var=showMoreSeries value="true"}
 								{/if}
 								{foreach from=$indexedSeries item=seriesItem name=loop}
 									{if !isset($series.seriesTitle) || ((strpos(strtolower($seriesItem.seriesTitle), strtolower($series.seriesTitle)) === false) && (strpos(strtolower($series.seriesTitle), strtolower($seriesItem.seriesTitle)) === false))}
 										<a href="{$path}/Search/Results?searchIndex=Series&lookfor=%22{$seriesItem.seriesTitle|removeTrailingPunctuation|escape:"url"}%22">{$seriesItem.seriesTitle|removeTrailingPunctuation|escape}</a>{if $seriesItem.volume} volume {$seriesItem.volume}{/if}<br/>
-										{if $showMoreSeries && $smarty.foreach.loop.iteration == 3}
+										{if !empty($showMoreSeries) && $smarty.foreach.loop.iteration == 3}
 											<a onclick="$('#moreSeries_{$recordDriver->getPermanentId()}').show();$('#moreSeriesLink_{$recordDriver->getPermanentId()}').hide();" id="moreSeriesLink_{$summId}">More Series...</a>
 											<div id="moreSeries_{$recordDriver->getPermanentId()}" style="display:none">
 										{/if}
 									{/if}
 								{/foreach}
-								{if $showMoreSeries}
+								{if !empty($showMoreSeries)}
 									</div>
 								{/if}
 							{/if}
@@ -147,7 +150,7 @@
 					</div>
 				{/if}
 
-				{include file="GroupedWork/relatedManifestations.tpl" relatedManifestations=$recordDriver->getRelatedManifestations()}
+				{include file="GroupedWork/relatedManifestations.tpl" relatedManifestations=$recordDriver->getRelatedManifestations() workId=$recordDriver->getPermanentId()}
 
 				<div class="row">
 					{include file='GroupedWork/result-tools-horizontal.tpl' summId=$recordDriver->getPermanentId() summShortId=$recordDriver->getPermanentId() ratingData=$recordDriver->getRatingData() recordUrl=$recordDriver->getLinkUrl() showMoreInfo=false}

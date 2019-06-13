@@ -1207,7 +1207,7 @@ class GroupedWorkDriver extends IndexRecordDriver{
     }
 
     public function getMpaaRating(){
-        return $this->fields['mpaaRating'];
+        return isset($this->fields['mpaaRating']) ? $this->fields['mpaaRating'] : null;
     }
 
     private $numRelatedRecords = -1;
@@ -1733,7 +1733,7 @@ class GroupedWorkDriver extends IndexRecordDriver{
 		    $relatedIsbns = $this->getISBNs();
 		    $novelist = NovelistFactory::getNovelist();
 		    $novelistData = $novelist->loadBasicEnrichment($this->getPermanentId(), $relatedIsbns, $allowReload);
-		    if ($novelistData != null && isset($novelistData->seriesTitle)){
+		    if ($novelistData != null && !empty($novelistData->seriesTitle)){
 			    $this->seriesData = array(
 				    'seriesTitle' => $novelistData->seriesTitle,
 				    'volume' => $novelistData->volume,

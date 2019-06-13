@@ -533,7 +533,7 @@ class UInterface extends Smarty
 
     /**
      * @param $variableName
-     * @return string|array
+     * @return string|array|null
      */
 	public function getVariable($variableName) {
 		return $this->get_template_vars($variableName);
