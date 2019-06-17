@@ -37,6 +37,9 @@ class UInterface extends Smarty
 		if (isset($configArray['Translation']['google_translate_key']) && strlen($configArray['Translation']['google_translate_key']) > 0){
 			$this->assign('google_translate_key', $configArray['Translation']['google_translate_key']);
 			$this->assign('google_included_languages', $configArray['Translation']['includedLanguages']);
+		} else {
+			//setup translations within Aspen
+			$this->assign('enableLanguageSelector', true);
 		}
 
 		//Check to see if we have a google site verification key
@@ -268,11 +271,11 @@ class UInterface extends Smarty
 	function setPageTitle($title)
 	{
 		//Marmot override, add the name of the site to the title unless we are using the mobile interface.
-		$this->assign('pageTitleShort', translate($title));
+		$this->assign('pageTitleShort', $title);
 		if ($this->isMobile){
-			$this->assign('pageTitle', translate($title));
+			$this->assign('pageTitle', $title);
 		}else{
-			$this->assign('pageTitle', translate($title) . ' | ' . $this->get_template_vars('librarySystemName'));
+			$this->assign('pageTitle', $title . ' | ' . $this->get_template_vars('librarySystemName'));
 		}
 	}
 
@@ -281,9 +284,12 @@ class UInterface extends Smarty
 		return $this->lang;
 	}
 
+	/**
+	 * @param Language $lang
+	 */
 	function setLanguage($lang)
 	{
-		$this->lang = $lang;
+		$this->lang = $lang->code;
 		$this->assign('userLang', $lang);
 	}
 	/**
@@ -589,14 +595,14 @@ function translate($params) {
 	// object.
 	if (!is_object($translator)) {
 		global $configArray;
-
-		$translator = new I18N_Translator('lang', $configArray['Site']['language'],
-		$configArray['System']['missingTranslations']);
+		$translator = new Translator('lang', $configArray['Site']['language']);
 	}
 	if (is_array($params)) {
-		return $translator->translate($params['text']);
+		$defaultText = isset($params['defaultText']) ? $params['defaultText'] : null;
+		$inAttribute = isset($params['inAttribute']) ? $params['inAttribute'] : false;
+		return $translator->translate($params['text'], $defaultText, $inAttribute);
 	} else {
-		return $translator->translate($params);
+		return $translator->translate($params, null, false);
 	}
 }
 

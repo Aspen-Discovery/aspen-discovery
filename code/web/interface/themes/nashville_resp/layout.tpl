@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{$userLang}">
+<html lang="{$userLang->code}">
 	<head prefix="og: http://ogp.me/ns#">{strip}
 		<title>{$pageTitle|truncate:64:"..."}</title>
 		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">

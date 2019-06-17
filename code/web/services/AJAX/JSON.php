@@ -12,15 +12,16 @@ class AJAX_JSON extends Action {
 	function launch()
 	{
 		//header('Content-type: application/json');
-		header('Content-type: text/html');
+		header('Content-type: application/json');
 		header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
 
 		$method = $_GET['method'];
 		if (method_exists($this, $method)) {
 			if ($method == 'getHoursAndLocations'){
+				header('Content-type: text/html');
 				$output = $this->$method();
-			}elseif (in_array($method, array('getAutoLogoutPrompt', 'getReturnToHomePrompt', 'getPayFinesAfterAction'))) {
+			}elseif (in_array($method, array('getAutoLogoutPrompt', 'getReturnToHomePrompt', 'getPayFinesAfterAction', 'getTranslationForm', 'saveTranslation'))) {
 				$output = json_encode($this->$method());
 				// Browser-side handler ajaxLightbox() doesn't use the input format in else block below
 			}else{
@@ -31,6 +32,90 @@ class AJAX_JSON extends Action {
 		}
 
 		echo $output;
+	}
+
+	function getTranslationForm(){
+		if (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('translator')){
+			$translationTerm = new TranslationTerm();
+			$translationTerm->id = $_REQUEST['termId'];
+			if ($translationTerm->find(true)){
+				global $interface;
+				/** @var Language $activeLanguage */
+				global $activeLanguage;
+				$interface->assign('translationTerm', $translationTerm);
+				$translation = new Translation();
+				$translation->termId = $translationTerm->id;
+				$translation->languageId = $activeLanguage->id;
+				if ($translation->find(true)){
+					$interface->assign('translation', $translation);
+				}
+				//English is always 1.  If we are not in english mode, show english as well for reference
+				if ($activeLanguage->id != 1){
+					$englishTranslation = new Translation();
+					$englishTranslation->termId = $translationTerm->id;
+					$englishTranslation->languageId = 1;
+					if ($englishTranslation->find(true)){
+						$interface->assign('englishTranslation', $englishTranslation);
+					}
+				}
+
+				$result = [
+					'title' => translate('Translate a term'),
+					'modalBody' => $interface->fetch('Translation/termTranslationForm.tpl'),
+					'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.saveTranslation()'>" . translate('Update Translation') . "</button>"
+				];
+			}else{
+				$result = [
+					'success' => false,
+					'message' => 'No translation term was found'
+				];
+			}
+		}else{
+			$result = [
+				'success' => false,
+				'message' => 'You do not have permissions for this functionality'
+			];
+		}
+
+
+		return $result;
+	}
+
+	function saveTranslation(){
+		$translationId = strip_tags($_REQUEST['translationId']);
+		$newTranslation = $_REQUEST['translation'];
+		$translation = new Translation();
+		$translation->id = $translationId;
+		$result = [
+			'success' => false,
+			'message' => 'Unknown Error'
+		];
+		if (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('translator')){
+			if ($translation->find(true)){
+				$translation->translation = $newTranslation;
+				$translation->translated = 1;
+				$translation->update();
+
+				$term = new TranslationTerm();
+				$term->id = $translation->termId;
+				$term->find(true);
+				/** @var Memcache $memCache */
+				global $memCache;
+				global $activeLanguage;
+				$memCache->delete('translation_' . $activeLanguage->id . '_0_' . $term->term);
+				$memCache->delete('translation_' . $activeLanguage->id . '_1_' . $term->term);
+				$result = [
+					'success' => true,
+					'message' => 'Successfully updated the translation'
+				];
+			}else{
+				$result['message'] = 'Could not find the translation';
+			}
+		}else{
+			$result['message'] = 'You do not have permissions to translate';
+		}
+
+		return $result;
 	}
 
 	function isLoggedIn(){
@@ -53,26 +138,33 @@ class AJAX_JSON extends Action {
 		global $interface;
 		$isLoggedIn = UserAccount::isLoggedIn();
 		if (!$isLoggedIn){
-			$user = UserAccount::login();
+			try{
+				$user = UserAccount::login();
 
-			$interface->assign('user', $user); // PLB Assignment Needed before error checking?
-			if (!$user || ($user instanceof AspenError)){
+				$interface->assign('user', $user); // PLB Assignment Needed before error checking?
+				if (!$user || ($user instanceof AspenError)){
 
-				// Expired Card Notice
-				if ($user && $user->getMessage() == 'expired_library_card') {
+					// Expired Card Notice
+					if ($user && $user->getMessage() == 'expired_library_card') {
+						return array(
+							'success' => false,
+							'message' => translate('expired_library_card')
+						);
+					}
+
+					// General Login Error
+					/** @var AspenError $error */
+					$error = $user;
+					$message = ($user instanceof AspenError) ? translate($error->getMessage()) : translate("Sorry that login information was not recognized, please try again.");
 					return array(
 						'success' => false,
-						'message' => translate('expired_library_card')
+						'message' => $message
 					);
 				}
-
-				// General Login Error
-				/** @var AspenError $error */
-				$error = $user;
-				$message = ($user instanceof AspenError) ? translate($error->getMessage()) : translate("Sorry that login information was not recognized, please try again.");
+			} catch (UnknownAuthenticationMethodException $e) {
 				return array(
 					'success' => false,
-					'message' => $message
+					'message' => $e->getMessage()
 				);
 			}
 		}else{

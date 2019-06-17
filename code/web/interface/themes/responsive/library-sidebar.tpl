@@ -11,7 +11,7 @@
 		{if !empty($homeLink)}
 			<a href="{$homeLink}">
 				<div id="home-page-home-button" class="sidebar-button">
-					Library Home Page
+					{translate text='Library Home Page'}
 				</div>
 			</a>
 		{/if}

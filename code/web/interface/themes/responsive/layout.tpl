@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="{$userLang}">
+<html lang="{$userLang->code}">
 	<head prefix="og: http://ogp.me/ns#">{strip}
-		<title>{$pageTitle|truncate:64:"..."}</title>
+		<title>{translate text=$pageTitle inAttribute=true|truncate:64:"..."}</title>
 		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
@@ -40,6 +40,7 @@
 		{if $masqueradeMode}
 			{include file="masquerade-top-navbar.tpl"}
 		{/if}
+
 		{strip}
 			<div class="container">
 			{if !empty($systemMessage)}
@@ -64,6 +65,10 @@
 					{/if}
 				</div>
 			</div>
+
+			{if $enableLanguageSelector}
+				{include file="language-selection-navbar.tpl"}
+			{/if}
 
 			<div id="header-wrapper" class="row">
 				<div id="header-container">

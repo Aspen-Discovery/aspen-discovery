@@ -133,22 +133,44 @@ $timer->logTime('Checked availability mode');
 // Setup Translator
 global $language;
 global $serverName;
-if (isset($_REQUEST['mylang'])) {
-	$language = strip_tags($_REQUEST['mylang']);
+if (isset($_REQUEST['myLang'])) {
+	$language = strip_tags($_REQUEST['myLang']);
 	setcookie('language', $language, null, '/');
 } else {
 	$language = strip_tags((isset($_COOKIE['language'])) ? $_COOKIE['language'] : $configArray['Site']['language']);
 }
 
 // Make sure language code is valid, reset to default if bad:
-$validLanguages = array_keys($configArray['Languages']);
-if (!in_array($language, $validLanguages)) {
-	$language = $configArray['Site']['language'];
+$validLanguages = [];
+try{
+	require_once ROOT_DIR . '/sys/Translation/Language.php';
+	$validLanguage = new Language();
+	$validLanguage->orderBy("weight");
+	$validLanguage->find();
+	while ($validLanguage->fetch()){
+		$validLanguages[$validLanguage->code] = clone $validLanguage;
+	}
+}catch(Exception $e){
+	$defaultLanguage = new Language();
+	$defaultLanguage->code = 'en';
+	$defaultLanguage->displayName = 'English';
+	$defaultLanguage->displayNameEnglish = 'English';
+	$defaultLanguage->facetValue = 'English';
+	$validLanguages['en'] = $defaultLanguage;
+	$language = 'en';
 }
-$translator = new I18N_Translator('lang', $language, $configArray['System']['missingTranslations']);
+
+if (!array_key_exists($language, $validLanguages)) {
+	$language = 'en';
+}
+/** @var Language $activeLanguage */
+global $activeLanguage;
+$activeLanguage = $validLanguages[$language];
+$interface->assign('validLanguages', $validLanguages);
+$translator = new Translator('lang', $language);
 $timer->logTime('Translator setup');
 
-$interface->setLanguage($language);
+$interface->setLanguage($activeLanguage);
 
 $deviceName = get_device_name();
 $interface->assign('deviceName', $deviceName);

@@ -1325,6 +1325,7 @@ class GroupedWorkDriver extends IndexRecordDriver{
     public function getRelatedManifestations() {
         global $timer;
         global $memoryWatcher;
+        global $interface;
         $timer->logTime("Starting to load related records in getRelatedManifestations");
         $relatedRecords = $this->getRelatedRecords();
         $timer->logTime("Finished loading related records in getRelatedManifestations");
@@ -1368,6 +1369,14 @@ class GroupedWorkDriver extends IndexRecordDriver{
                     $selectedLanguage = urldecode($matches[1]);
                 }
             }
+        }
+
+        if ($selectedLanguage == null){
+        	/** @var Language $activeLanguage */
+        	global $activeLanguage;
+        	if ($activeLanguage->code != 'en'){
+        		$selectedLanguage = $activeLanguage->facetValue;
+	        }
         }
 
         //Check to see what we need to do for actions, and determine if the record should be hidden by default

@@ -8,7 +8,7 @@
 							{foreach from=$browseCategories item=browseCategory name="browseCategoryLoop"}
 								<li id="browse-category-{$browseCategory->textId}" class="browse-category {if (!$selectedBrowseCategory && $smarty.foreach.browseCategoryLoop.index == 0) || $selectedBrowseCategory && $selectedBrowseCategory->textId == $browseCategory->textId} selected{/if}" data-category-id="{$browseCategory->textId}">
 										<div >
-											{$browseCategory->label}
+											{translate text=$browseCategory->label}
 										</div>
 								</li>
 							{/foreach}
@@ -37,10 +37,10 @@
 
 				<div class="btn-group btn-group-sm" data-toggle="buttons">
 					<label for="covers" title="Covers" class="btn btn-sm btn-default"><input onchange="AspenDiscovery.Browse.toggleBrowseMode(this.id)" type="radio" id="covers">
-						<span class="thumbnail-icon"></span><span> Covers</span>
+						<span class="thumbnail-icon"></span><span> {translate text='Covers'}</span>
 					</label>
 					<label for="grid" title="Grid" class="btn btn-sm btn-default"><input onchange="AspenDiscovery.Browse.toggleBrowseMode(this.id);" type="radio" id="grid">
-						<span class="grid-icon"></span><span> Grid</span>
+						<span class="grid-icon"></span><span> {translate text='Grid'}</span>
 					</label>
 				</div>
 

@@ -19,7 +19,7 @@
 		<div class="col-sm-9 col-xs-12">
 			<div class="row">
 				<div class="col-lg-1 col-md-1 col-sm-2 col-xs-12">
-					<label id="horizontal-search-label" for="lookfor" class="">Search for </label>
+					<label id="horizontal-search-label" for="lookfor" class="">{translate text="Search for"} </label>
 				</div>
 				<div class="{if $hiddenSearchSource}col-lg-9 col-md-9{else}col-lg-6 col-md-6{/if} col-sm-10 col-xs-12">
 					{* Main Search Term Box *}
@@ -45,20 +45,20 @@
 				{/if}">
 					<select name="searchIndex" class="searchTypeHorizontal form-control catalogType" id="searchIndex" title="The method of searching." aria-label="Search Index">
 						{foreach from=$catalogSearchIndexes item=searchDesc key=searchVal}
-							<option data-search_source="catalog" value="{$searchVal}"{if !empty($searchIndex) && $searchIndex == $searchVal} selected="selected"{/if}>by {translate text=$searchDesc}</option>
+							<option data-search_source="catalog" value="{$searchVal}"{if !empty($searchIndex) && $searchIndex == $searchVal} selected="selected"{/if}>{translate text="by"} {translate text=$searchDesc}</option>
 						{/foreach}
 						{if !empty($enableOpenGenealogy)}
 							{foreach from=$genealogySearchIndexes item=searchDesc key=searchVal}
-								<option data-search_source="genealogy" value="{$searchVal}"{if !empty($searchIndex) && $searchIndex == $searchVal} selected="selected"{/if}>{translate text=$searchDesc}</option>
+								<option data-search_source="genealogy" value="{$searchVal}"{if !empty($searchIndex) && $searchIndex == $searchVal} selected="selected"{/if}>{translate text="by"} {translate text=$searchDesc}</option>
 							{/foreach}
 						{/if}
 						{if !empty($enableOpenArchives)}
 							{foreach from=$openArchivesSearchIndexes item=searchDesc key=searchVal}
-								<option data-search_source="open_archives" value="{$searchVal}"{if !empty($searchIndex) && $searchIndex == $searchVal} selected="selected"{/if}>{translate text=$searchDesc}</option>
+								<option data-search_source="open_archives" value="{$searchVal}"{if !empty($searchIndex) && $searchIndex == $searchVal} selected="selected"{/if}>{translate text="by"} {translate text=$searchDesc}</option>
 							{/foreach}
 						{/if}
 						{foreach from=$listSearchIndexes item=searchDesc key=searchVal}
-							<option data-search_source="lists" value="{$searchVal}"{if !empty($searchIndex) && $searchIndex == $searchVal} selected="selected"{/if}>{translate text=$searchDesc}</option>
+							<option data-search_source="lists" value="{$searchVal}"{if !empty($searchIndex) && $searchIndex == $searchVal} selected="selected"{/if}>{translate text="by"} {translate text=$searchDesc}</option>
 						{/foreach}
 					</select>
 				</div>
@@ -86,8 +86,7 @@
 				<div class="col-tn-3 col-xs-3 col-sm-4 col-md-4">
 					<button class="btn btn-default" type="submit">
 						<span class="glyphicon glyphicon-search"></span>
-						<span id="horizontal-search-box-submit-text">&nbsp;GO</span>
-						{*<span class="visible-xs-inline"> SEARCH</span>  TODO: Will work when upgraded to Bootstrap 3.0*}
+						<span id="horizontal-search-box-submit-text">&nbsp;{translate text='GO'}</span>
 					</button>
 				</div>
 

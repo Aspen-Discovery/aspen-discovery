@@ -268,4 +268,42 @@ class GroupedWorksSolrConnector extends Solr
     {
        return 'groupedWorksSearches';
     }
+
+	/**
+	 * Load Boost factors for a query
+	 *
+	 * @param Library $searchLibrary
+	 * @return array
+	 */
+	public function getBoostFactors($searchLibrary)
+	{
+		global $activeLanguage;
+
+		$boostFactors = array();
+
+		if ($activeLanguage->code == 'en'){
+			$applyHoldingsBoost = true;
+			if (isset($searchLibrary) && !is_null($searchLibrary)) {
+				$applyHoldingsBoost = $searchLibrary->applyNumberOfHoldingsBoost;
+			}
+			if ($applyHoldingsBoost) {
+				//$boostFactors[] = 'product(num_holdings,15,div(format_boost,50))';
+				//$boostFactors[] = 'product(sum(popularity,1),format_boost)';
+				$boostFactors[] = 'sum(num_holdings,popularity,format_boost)';
+			} else {
+				$boostFactors[] = 'sum(popularity,format_boost)';
+			}
+		}else{
+			$boostFactors[] = 'product(999,termfreq(language,' . $activeLanguage->facetValue . '))';
+			$boostFactors[] = 'sum(format_boost)';
+		}
+
+		//Add rating as part of the ranking, normalize so ratings of less that 2.5 are below unrated entries.
+		$boostFactors[] = 'sum(rating,1)';
+
+		global $solrScope;
+		$boostFactors[] = "sum(lib_boost_{$solrScope},1)";
+
+		return $boostFactors;
+	}
 }

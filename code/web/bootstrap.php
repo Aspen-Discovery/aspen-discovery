@@ -87,7 +87,7 @@ function requireSystemLibraries(){
 	require_once ROOT_DIR . '/sys/UserAccount.php';
 	require_once ROOT_DIR . '/sys/Account/User.php';
 	require_once ROOT_DIR . '/sys/Account/AccountProfile.php';
-	require_once ROOT_DIR . '/sys/Translator.php';
+	require_once ROOT_DIR . '/sys/Translation/Translator.php';
 	require_once ROOT_DIR . '/sys/SearchObject/SearchObjectFactory.php';
 	require_once ROOT_DIR . '/Drivers/marmot_inc/Library.php';
 	require_once ROOT_DIR . '/Drivers/marmot_inc/Location.php';

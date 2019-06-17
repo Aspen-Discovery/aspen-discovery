@@ -34,7 +34,7 @@
 
 				{if $recordDriver->getPrimaryAuthor()}
 					<div class="row">
-						<div class="result-label col-tn-3">Author: </div>
+						<div class="result-label col-tn-3">{translate text=Author}: </div>
 						<div class="col-tn-9 result-value notranslate">
 							<a href='{$path}/Author/Home?author="{$recordDriver->getPrimaryAuthor()|escape:"url"}"'>{$recordDriver->getPrimaryAuthor()|highlight}</a>
 						</div>
@@ -79,7 +79,7 @@
 
 				{if $showPublicationDetails}
 					<div class="row">
-						<div class="result-label col-tn-3">Publisher: </div>
+						<div class="result-label col-tn-3">{translate text=Publisher}: </div>
 						<div class="result-value col-tn-9">
 							{if $summPublisher}
 								{$summPublisher}
@@ -90,7 +90,7 @@
 					</div>
 
 					<div class="row">
-						<div class="result-label col-tn-3">Pub. Date: </div>
+						<div class="result-label col-tn-3">{translate text="Pub. Date"}: </div>
 						<div class="result-value col-tn-9">
 							{if $summPubDate}
 								{$summPubDate|escape}
@@ -103,7 +103,7 @@
 
 				{if $showEditions && $summEdition}
 					<div class="row">
-						<div class="result-label col-tn-3">Edition: </div>
+						<div class="result-label col-tn-3">{translate text="Edition"}: </div>
 						<div class="result-value col-tn-9">
 							{$summEdition}
 						</div>
@@ -112,7 +112,7 @@
 
 				{if $summLanguage}
 					<div class="row">
-						<div class="result-label col-tn-3">Language: </div>
+						<div class="result-label col-tn-3">{translate text="Language"}: </div>
 						<div class="result-value col-tn-9">
 							{if is_array($summLanguage)}
 								{', '|implode:$summLanguage}

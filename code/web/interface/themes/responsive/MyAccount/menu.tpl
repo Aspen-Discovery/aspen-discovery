@@ -58,12 +58,12 @@
 							{/if}
 						{/if}
 						{if $materialRequestType == 1 && $enableAspenMaterialsRequest}
-							<div class="myAccountLink{if $pageTemplate=="myMaterialRequests.tpl"} active{/if}" title="{translate text='Materials_Request_alt'}s">
-								<a href="{$path}/MaterialsRequest/MyRequests">{translate text='Materials_Request_alt'}s <span class="materialsRequests-placeholder"><img src="{$path}/images/loading.gif" alt="loading"></span></a>
+							<div class="myAccountLink{if $pageTemplate=="myMaterialRequests.tpl"} active{/if}" title="Materials Requests">
+								<a href="{$path}/MaterialsRequest/MyRequests">{translate text='Materials_Requests_alt'} <span class="materialsRequests-placeholder"><img src="{$path}/images/loading.gif" alt="loading"></span></a>
 							</div>
 						{elseif $materialRequestType == 2}
-							<div class="myAccountLink{if $pageTemplate=="ilsyMaterialRequests.tpl"} active{/if}" title="{translate text='Materials_Request_alt'}s">
-								<a href="{$path}/MaterialsRequest/IlsRequests">{translate text='Materials_Request_alt'}s <span class="materialsRequests-placeholder"><img src="{$path}/images/loading.gif" alt="loading"></span></a>
+							<div class="myAccountLink{if $pageTemplate=="ilsyMaterialRequests.tpl"} active{/if}" title="Materials Requests">
+								<a href="{$path}/MaterialsRequest/IlsRequests">{translate text='Materials_Requests_alt'} <span class="materialsRequests-placeholder"><img src="{$path}/images/loading.gif" alt="loading"></span></a>
 							</div>
 						{/if}
 						{if $showRatings}
@@ -74,7 +74,7 @@
 							{/if}
 						{/if}
 						<hr class="menu">
-						<div class="myAccountLink{if $pageTemplate=="profile.tpl"} active{/if}"><a href="{$path}/MyAccount/Profile">Account Settings</a></div>
+						<div class="myAccountLink{if $pageTemplate=="profile.tpl"} active{/if}"><a href="{$path}/MyAccount/Profile">{translate text='Account Settings'}</a></div>
 						{* Only highlight saved searches as active if user is logged in: *}
 						<div class="myAccountLink{if $user && $pageTemplate=="history.tpl"} active{/if}"><a href="{$path}/Search/History?require_login">{translate text='history_saved_searches'}</a></div>
 						{if $allowMasqueradeMode && !$masqueradeMode}
@@ -94,31 +94,30 @@
 				{assign var="curSection" value=false}
 			{/if}
 			<div class="panel{if $curSection} active{/if}">
-					<a data-toggle="collapse" data-parent="#account-link-accordion" href="#myListsPanel">
-						<div class="panel-heading">
-							<div class="panel-title">
-								My Lists
-							</div>
-						</div>
-					</a>
-					<div id="myListsPanel" class="panel-collapse collapse{if $action == 'MyRatings' || $action == 'Suggested Titles' || $action == 'MyList'} in{/if}">
-						<div class="panel-body">
-							{if $showConvertListsFromClassic}
-								<div class="myAccountLink"><a href="{$path}/MyAccount/ImportListsFromClassic" class="btn btn-sm btn-default">Import Existing Lists</a></div>
-								<br>
-							{/if}
-
-							<div id="lists-placeholder"><img src="{$path}/images/loading.gif" alt="loading"></div>
-
-							<a href="#" onclick="return AspenDiscovery.Account.showCreateListForm();" class="btn btn-sm btn-primary">Create a New List</a>
+				<a data-toggle="collapse" data-parent="#account-link-accordion" href="#myListsPanel">
+					<div class="panel-heading">
+						<div class="panel-title">
+							{translate text='My Lists'}
 						</div>
 					</div>
+				</a>
+				<div id="myListsPanel" class="panel-collapse collapse{if $action == 'MyRatings' || $action == 'Suggested Titles' || $action == 'MyList'} in{/if}">
+					<div class="panel-body">
+						{if $showConvertListsFromClassic}
+							<div class="myAccountLink"><a href="{$path}/MyAccount/ImportListsFromClassic" class="btn btn-sm btn-default">Import Existing Lists</a></div>
+							<br>
+						{/if}
+
+						<div id="lists-placeholder"><img src="{$path}/images/loading.gif" alt="loading"></div>
+
+						<a href="#" onclick="return AspenDiscovery.Account.showCreateListForm();" class="btn btn-sm btn-primary">{translate text='Create a New List'}</a>
+					</div>
 				</div>
-			{*{/if}*}
+			</div>
 
 			{* Admin Functionality if Available *}
-			{if $loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('contentEditor', $userRoles) || array_key_exists('libraryManager', $userRoles) || array_key_exists('locationManager', $userRoles))}
-				{if in_array($action, array('Themes', 'Libraries', 'Locations', 'IPAddresses', 'ListWidgets', 'BrowseCategories', 'PTypes', 'LoanRules', 'LoanRuleDeterminers', 'AccountProfiles', 'NYTLists', 'BlockPatronAccountLinks'))}
+			{if $loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('contentEditor', $userRoles) || array_key_exists('libraryManager', $userRoles) || array_key_exists('locationManager', $userRoles) || array_key_exists('translator', $userRoles))}
+				{if in_array($action, array('Themes', 'Libraries', 'Locations', 'IPAddresses', 'ListWidgets', 'BrowseCategories', 'PTypes', 'LoanRules', 'LoanRuleDeterminers', 'AccountProfiles', 'NYTLists', 'BlockPatronAccountLinks', 'Languages'))}
 					{assign var="curSection" value=true}
 				{else}
 					{assign var="curSection" value=false}
@@ -135,6 +134,9 @@
 						<div class="panel-body">
 							{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles))}
 								<div class="adminMenuLink{if $action == "Themes"} active{/if}"><a href="{$path}/Admin/Themes">Themes</a></div>
+							{/if}
+							{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('translator', $userRoles))}
+								<div class="adminMenuLink{if $action == "Languages"} active{/if}"><a href="{$path}/Translation/Languages">Languages</a></div>
 							{/if}
 							{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('libraryManager', $userRoles))}
 								<div class="adminMenuLink{if $action == "Libraries"} active{/if}"><a href="{$path}/Admin/Libraries">Library Systems</a></div>
