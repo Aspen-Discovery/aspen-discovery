@@ -28,18 +28,13 @@ class MyAccount_AJAX
 				$result = $this->$method();
 				try {
 					require_once ROOT_DIR . '/sys/Utils/ArrayUtils.php';
-					$utf8EncodedValue = ArrayUtils::utf8EncodeArray($result);
-					$output = json_encode($utf8EncodedValue);
+					$output = json_encode($result);
 					$error = json_last_error();
 					if ($error != JSON_ERROR_NONE || $output === FALSE) {
 						if (function_exists('json_last_error_msg')) {
 							$output = json_encode(array('error' => 'error_encoding_data', 'message' => json_last_error_msg()));
 						} else {
 							$output = json_encode(array('error' => 'error_encoding_data', 'message' => json_last_error()));
-						}
-						global $configArray;
-						if ($configArray['System']['debug']) {
-							print_r($utf8EncodedValue);
 						}
 					}
 				} catch (Exception $e) {
@@ -1154,7 +1149,7 @@ class MyAccount_AJAX
 						);
 					}
 				}
-				$memCache->set('user_list_data_' . UserAccount::getActiveUserId(), $lists, 0, $configArray['Caching']['user']);
+				$memCache->set('user_list_data_' . UserAccount::getActiveUserId(), $lists, $configArray['Caching']['user']);
 				$timer->logTime("Load Lists");
 			}else{
 				$lists = $userListData;
@@ -1273,7 +1268,7 @@ class MyAccount_AJAX
                         );
                     }
                 }
-                $memCache->set('user_list_data_' . UserAccount::getActiveUserId(), $lists, 0, $configArray['Caching']['user']);
+                $memCache->set('user_list_data_' . UserAccount::getActiveUserId(), $lists, $configArray['Caching']['user']);
                 $timer->logTime("Load Lists");
             }else{
                 $lists = $userListData;

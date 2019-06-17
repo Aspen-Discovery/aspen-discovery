@@ -444,7 +444,7 @@ class UserAccount {
 				global $memCache;
 				global $serverName;
 				global $configArray;
-				$memCache->set("user_{$serverName}_{$tempUser->id}", $tempUser, 0, $configArray['Caching']['user']);
+				$memCache->set("user_{$serverName}_{$tempUser->id}", $tempUser, $configArray['Caching']['user']);
 				$logger->log("Cached user {$tempUser->id}", Logger::LOG_DEBUG);
 
 				$validUsers[] = $tempUser;
@@ -532,7 +532,7 @@ class UserAccount {
 					global $memCache;
 					global $serverName;
 					global $configArray;
-					$memCache->set("user_{$serverName}_{$validatedUser->id}", $validatedUser, 0, $configArray['Caching']['user']);
+					$memCache->set("user_{$serverName}_{$validatedUser->id}", $validatedUser, $configArray['Caching']['user']);
 					$logger->log("Cached user {$validatedUser->id}", Logger::LOG_DEBUG);
 					if ($validatedViaSSO){
 						$_SESSION['loggedInViaCAS'] = true;

@@ -42,7 +42,7 @@ class Millennium extends AbstractIlsDriver
 					$this->loanRules[$loanRule->loanRuleId] = clone($loanRule);
 				}
 			}
-//			$memCache->set($instanceName . '_loan_rules', $this->loanRules, 0, $configArray['Caching']['loan_rules']);
+//			$memCache->set($instanceName . '_loan_rules', $this->loanRules, $configArray['Caching']['loan_rules']);
 
 			$this->loanRuleDeterminers = $memCache->get($instanceName . '_loan_rule_determiners');
 			if (!$this->loanRuleDeterminers || isset($_REQUEST['reload'])){
@@ -55,7 +55,7 @@ class Millennium extends AbstractIlsDriver
 					$this->loanRuleDeterminers[$loanRuleDeterminer->rowNumber] = clone($loanRuleDeterminer);
 				}
 			}
-//			$memCache->set($instanceName . '_loan_rule_determiners', $this->loanRuleDeterminers, 0, $configArray['Caching']['loan_rules']);
+//			$memCache->set($instanceName . '_loan_rule_determiners', $this->loanRuleDeterminers, $configArray['Caching']['loan_rules']);
 		}
 	}
 
@@ -483,7 +483,7 @@ class Millennium extends AbstractIlsDriver
 				}else{
 
 					$timer->logTime('Finished loading patron dump from ILS.');
-					$memCache->set("patron_dump_$barcode", $patronDump, 0, $configArray['Caching']['patron_dump']);
+					$memCache->set("patron_dump_$barcode", $patronDump, $configArray['Caching']['patron_dump']);
 					//Need to wait a little bit since getting the patron api locks the record in the DB
 					usleep(250);
 					break;
@@ -1167,7 +1167,7 @@ class Millennium extends AbstractIlsDriver
 				}
 				if ($holdable) break;
 			}
-			$memCache->set($memcacheKey, ($holdable ? 'true' : 'false'), 0 , $configArray['Caching']['loan_rule_result']);
+			$memCache->set($memcacheKey, ($holdable ? 'true' : 'false') , $configArray['Caching']['loan_rule_result']);
 			$timer->logTime("Finished checking if item is holdable $locationCode, $iType, $pTypeString");
 		}
 
@@ -1269,7 +1269,7 @@ class Millennium extends AbstractIlsDriver
 //					//$logger->log("Location incorrect {$loanRuleDeterminer->location} != {$locationCode}", Logger::LOG_DEBUG);
 //				}
 			}
-			$memCache->set($memcacheKey, ($bookable ? 'true' : 'false'), 0 , $configArray['Caching']['loan_rule_result']); // TODO: set a different config option for booking results?
+			$memCache->set($memcacheKey, ($bookable ? 'true' : 'false') , $configArray['Caching']['loan_rule_result']); // TODO: set a different config option for booking results?
 			$timer->logTime("Finished checking if item is bookable $locationCode, $iType, $pType");
 		}
 

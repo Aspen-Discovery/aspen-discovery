@@ -309,7 +309,7 @@ class HooplaDriver extends AbstractEContentDriver{
 
 					/** @var Memcache $memCache */
 					global $memCache;
-					$memCache->set(self::memCacheKey, $this->accessToken, null, $configArray['Caching']['hoopla_api_access_token']);
+					$memCache->set(self::memCacheKey, $this->accessToken, $configArray['Caching']['hoopla_api_access_token']);
 					return true;
 
 				} else {

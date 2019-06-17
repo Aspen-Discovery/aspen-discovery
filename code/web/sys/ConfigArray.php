@@ -78,7 +78,7 @@ function getTranslationMap($name)
 	fclose($fHnd);
 
 	global $configArray;
-	$memCache->set('translation_map_'. $serverName.'_' . $name, $mapValues, 0, $configArray['Caching']['translation_map']);
+	$memCache->set('translation_map_'. $serverName.'_' . $name, $mapValues, $configArray['Caching']['translation']);
 	return $mapValues;
 }
 

@@ -1417,7 +1417,7 @@ class CarlX extends SIP2Driver{
 						$branchNumber = $result->BranchInfo
 					);
 				}
-				$memCache->set('carlx_branchNumbers', $branchInfo , false, $configArray['Caching']['carlx_branchNumbers']);
+				$memCache->set('carlx_branchNumbers', $branchInfo, $configArray['Caching']['carlx_branchNumbers']);
 			} elseif (!empty($branchCode)) {
 				$branchInfo = $memCache->get('carlx_branchCodes');
 				if ($branchInfo) {
@@ -1427,7 +1427,7 @@ class CarlX extends SIP2Driver{
 						$branchCode => $result->BranchInfo
 					);
 				}
-				$memCache->set('carlx_branchCodes', $branchInfo, false, $configArray['Caching']['carlx_branchCodes']);
+				$memCache->set('carlx_branchCodes', $branchInfo, $configArray['Caching']['carlx_branchCodes']);
 			}
 			return $result->BranchInfo; // convert to array instead?
 		}
