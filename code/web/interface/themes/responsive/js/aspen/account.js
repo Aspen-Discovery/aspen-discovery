@@ -579,40 +579,6 @@ AspenDiscovery.Account = (function(){
 			}).fail(AspenDiscovery.ajaxFail);
 		},
 
-		/* Hide this code for now. I should be to re-enable when re-enable selections for Holds
-		plb 9-14-2015
-
-		freezeSelectedHolds: function (){
-			var selectedTitles = this.getSelectedTitles();
-			if (selectedTitles.length == 0){
-				return false;
-			}
-			var suspendDate = '',
-					suspendDateTop = $('#suspendDateTop'),
-					url = '',
-					queryParams = '';
-			if (suspendDateTop.length) { //Check to see whether or not we are using a suspend date.
-				if (suspendDateTop.val().length > 0) {
-					suspendDate = suspendDateTop.val();
-				} else {
-					suspendDate = $('#suspendDateBottom').val();
-				}
-				if (suspendDate.length == 0) {
-					alert("Please select the date when the hold should be reactivated.");
-					return false;
-				}
-			}
-			url = Globals.path + '/MyAccount/Holds?multiAction=freezeSelected&patronId=' + patronId + '&recordId=' + recordId + '&' + selectedTitles + '&suspendDate=' + suspendDate;
-			queryParams = AspenDiscovery.getQuerystringParameters();
-			if ($.inArray('section', queryParams)){
-				url += '&section=' + queryParams['section'];
-			}
-			window.location = url;
-			return false;
-		},
-		*/
-
-
 		getSelectedTitles: function(promptForSelectAll){
 			if (promptForSelectAll == undefined){
 				promptForSelectAll = true;
