@@ -109,7 +109,7 @@
 
 			{if $allowEdit && $userSort}
 				<div class="alert alert-info alert-dismissible" role="alert">
-					<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+					<button type="button" class="close" data-dismiss="alert" aria-label="{translate text=Close inAttribute=true"><span aria-hidden="true">&times;</span></button>
 					<strong>Drag-and-Drop!</strong> Just drag the list items into the order you like.
 				</div>
 			{/if}

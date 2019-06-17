@@ -732,7 +732,7 @@ class Archive_AJAX extends Action {
 		return array(
 			'title' => "{$urlStr}{$recordDriver->getTitle()}</a>",
 			'modalBody' => $interface->fetch('Archive/archivePopup.tpl'),
-			'modalButtons' => "$addToFavoritesButton{$urlStr}<button class='modal-buttons btn btn-primary'>More Info</button></a>"
+			'modalButtons' => "$addToFavoritesButton{$urlStr}<button class='modal-buttons btn btn-primary'>" . translate("More Info") . "</button></a>"
 		);
 	}
 

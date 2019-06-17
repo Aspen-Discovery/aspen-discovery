@@ -53,7 +53,7 @@
 				</td>
 				<td>
 					<div class="btn-group btn-group-vertical btn-group-sm">
-						<a href="{$relatedRecord->getUrl()}" class="btn btn-sm btn-info">More Info</a>
+						<a href="{$relatedRecord->getUrl()}" class="btn btn-sm btn-info">{translate text="More Info"}</a>
 						{foreach from=$relatedRecord->getActions() item=curAction}
 							<a href="{if !empty($curAction.url)}{$curAction.url}{else}#{/if}" {if $curAction.onclick}onclick="{$curAction.onclick}"{/if} class="btn btn-sm btn-default" {if !empty($curAction.alt)}title="{$curAction.alt}"{/if}>{$curAction.title}</a>
 						{/foreach}

@@ -3,7 +3,7 @@
 	<div class="result-tools-horizontal btn-toolbar" role="toolbar">
 		{if $showMoreInfo !== false && $summUrl}
 			<div class="btn-group btn-group-sm">
-				<a href="{$summUrl}" class="btn btn-sm ">More Info</a>
+				<a href="{$summUrl}" class="btn btn-sm ">{translate text="More Info"}</a>
 			</div>
 		{/if}
 		{if $showFavorites == 1}

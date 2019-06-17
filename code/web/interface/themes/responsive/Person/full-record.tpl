@@ -39,9 +39,9 @@
 				<div id="recordCover" class="text-center">
 					{*<a href="{$path}/Person/{$id}">*}
 						{if $person->picture}
-							<a target='_blank' href='{$path}/files/original/{$person->picture|escape}'><img src="{$path}/files/medium/{$person->picture|escape}" class="alignleft listResultImage" alt="{translate text='Picture'}"></a><br>
+							<a target='_blank' href='{$path}/files/original/{$person->picture|escape}'><img src="{$path}/files/medium/{$person->picture|escape}" class="alignleft listResultImage" alt="{translate text='Picture' inAttribute=true}"></a><br>
 						{else}
-							<img src="{$path}/interface/themes/responsive/images/person.png" class="alignleft listResultImage" alt="{translate text='No Cover Image'}"><br>
+							<img src="{$path}/interface/themes/responsive/images/person.png" class="alignleft listResultImage" alt="{translate text='No Cover Image' inAttribute=true}"><br>
 						{/if}
 					{*</a>*}
 				</div>

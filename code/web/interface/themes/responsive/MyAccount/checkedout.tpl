@@ -39,7 +39,7 @@
 							<a href="#" onclick="AspenDiscovery.Account.renewSelectedTitles()" class="btn btn-sm btn-default">Renew Selected Items</a>
 							<a href="#" onclick="AspenDiscovery.Account.renewAll()" class="btn btn-sm btn-default">Renew All</a>
 						{/if}
-						<a href="{$path}/MyAccount/CheckedOut?exportToExcel{if isset($defaultSortOption)}&accountSort={$defaultSortOption}{/if}" class="btn btn-sm btn-default" id="exportToExcelTop">Export to Excel</a>
+						<a href="{$path}/MyAccount/CheckedOut?exportToExcel{if isset($defaultSortOption)}&accountSort={$defaultSortOption}{/if}" class="btn btn-sm btn-default" id="exportToExcelTop">{translate text="Export to Excel"}</a>
 					</div>
 
 					<br>

@@ -50,5 +50,13 @@ function getTranslationUpdates() {
 				'ALTER TABLE translations ADD INDEX translation_status (languageId, translated)',
 			],
 	    ],
+
+	    'translator_role' => [
+	        'title' => 'Translator Role',
+		    'description' => 'Add the translator role',
+		    'sql' => [
+			    "INSERT INTO roles (name, description) VALUES ('translator', 'Allows the user to translate the system.')",
+		    ]
+	    ],
     ];
 }

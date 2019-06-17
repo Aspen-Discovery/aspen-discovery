@@ -12,8 +12,8 @@ class Redwood_ContributeContent extends Action{
 
 		if (isset($_REQUEST['submit'])) {
 			if (isset($configArray['ReCaptcha']['privateKey'])){
-				$privatekey = $configArray['ReCaptcha']['privateKey'];
-				$resp = recaptcha_check_answer ($privatekey,
+				$privateKey = $configArray['ReCaptcha']['privateKey'];
+				$resp = recaptcha_check_answer ($privateKey,
 					$_SERVER["REMOTE_ADDR"],
 					$_POST["g-recaptcha-response"]);
 				$recaptchaValid = $resp->is_valid;
@@ -27,8 +27,8 @@ class Redwood_ContributeContent extends Action{
 				// Pre-fill form with user supplied data
 				foreach ($objectFields as &$property) {
 					if (isset($_REQUEST[$property['property']])){
-						$uservalue = $_REQUEST[$property['property']];
-						$property['default'] = $uservalue;
+						$userValue = $_REQUEST[$property['property']];
+						$property['default'] = $userValue;
 					}
 				}
 

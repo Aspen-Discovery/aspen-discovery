@@ -1,5 +1,5 @@
 
-<h2 id="pageTitle">{$pageTitleShort}</h2>
+<h2 id="pageTitle">{$pageTitleShort|translate}</h2>
 {if $lastError}
 	<div class="alert alert-danger">
 		{$lastError}
@@ -16,7 +16,7 @@
 			<tr>
 				{foreach from=$structure item=property key=id}
 					{if !isset($property.hideInLists) || $property.hideInLists == false}
-					<th><label title='{$property.description}'>{$property.label}</label></th>
+					<th><label title='{$property.description}'>{$property.label|translate}</label></th>
 					{/if}
 				{/foreach}
 				<th>Actions</th>

@@ -69,7 +69,7 @@ class Translator
 		//TODO: Determine if there is a performance improvement to preloading all of this, or if caching within Memcache is good enough
 		/** @var Language */
 		global $activeLanguage;
-		$translationMode = !$inAttribute && (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('translator'));
+		$translationMode = $this->translationModeActive() && !$inAttribute && (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('translator'));
 		try{
 			/** @var Memcache $memCache */
 			global $memCache;
@@ -179,5 +179,30 @@ class Translator
 				}
 			}
 		}
+	}
+
+	private $translationModeActive = null;
+	public function translationModeActive(){
+		if ($this->translationModeActive === null){
+			if (isset($_SESSION['translationMode']) && !isset($_REQUEST['stopTranslationMode'])){
+				$translationModeActive = ($_SESSION['translationMode'] == 'on');
+			}else{
+				if (isset($_REQUEST['startTranslationMode'])){
+					session_start();
+					$_SESSION['translationMode'] = 'on';
+					session_write_close();
+					$translationModeActive = true;
+				}elseif (isset($_REQUEST['stopTranslationMode'])){
+					session_start();
+					$_SESSION['translationMode'] = 'off';
+					session_write_close();
+					$translationModeActive = false;
+				}else{
+					$translationModeActive = false;
+				}
+			}
+			$this->translationModeActive = $translationModeActive;
+		}
+		return $this->translationModeActive;
 	}
 }

@@ -7,6 +7,6 @@
 		{include file="GroupedWork/relatedRecords.tpl" inPopUp=true}
 	</div>
 	<div class="modal-footer">
-		<button class="btn" data-dismiss="modal" id="modalClose">Close</button>
+		<button class="btn" data-dismiss="modal" id="modalClose">{translate text=Close}</button>
 	</div>
 {/strip}

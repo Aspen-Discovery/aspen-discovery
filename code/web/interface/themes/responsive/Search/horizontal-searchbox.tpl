@@ -94,7 +94,7 @@
 					{* Keep Applied Filters Checkbox *}
 					{if !empty($filterList)}
 						<label for="keepFiltersSwitch" id="keepFiltersSwitchLabel">
-							<input id="keepFiltersSwitch" type="checkbox" onclick="AspenDiscovery.Searches.filterAll(this);"> Keep Applied Filters</label>
+							<input id="keepFiltersSwitch" type="checkbox" onclick="AspenDiscovery.Searches.filterAll(this);"> {translate text='Keep Applied Filters'}</label>
 					{/if}
 
 					{* Return to Advanced Search Link *}

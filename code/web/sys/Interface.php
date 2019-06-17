@@ -30,7 +30,7 @@ class UInterface extends Smarty
 		$local = $configArray['Site']['local'];
 
 		$this->isMobile = mobile_device_detect();
-		$this->assign('isMobile', $this->isMobile ? 'true' : 'false');
+		$this->assign('isMobile', $this->isMobile ? true : false);
 		$this->assign('device', get_device_name());
 
 		//Figure out google translate id

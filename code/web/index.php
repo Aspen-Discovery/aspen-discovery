@@ -165,9 +165,12 @@ if (!array_key_exists($language, $validLanguages)) {
 }
 /** @var Language $activeLanguage */
 global $activeLanguage;
+global $translator;
 $activeLanguage = $validLanguages[$language];
 $interface->assign('validLanguages', $validLanguages);
-$translator = new Translator('lang', $language);
+if ($translator == null){
+	$translator = new Translator('lang', $language);
+}
 $timer->logTime('Translator setup');
 
 $interface->setLanguage($activeLanguage);
