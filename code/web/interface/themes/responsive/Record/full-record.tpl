@@ -20,7 +20,7 @@
 					:&nbsp;{$recordDriver->getTitleSection()|removeTrailingPunctuation|escape}
 				{/if}
 				{if $recordDriver->getFormats()}
-					<br><small>({implode subject=$recordDriver->getFormats() glue=", "})</small>
+					<br><small>({implode subject=$recordDriver->getFormats() glue=", ", translate=true})</small>
 				{/if}
 			</h2>
 

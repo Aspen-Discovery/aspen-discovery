@@ -22,23 +22,36 @@ function smarty_function_implode($params, &$smarty)
 {
 	if (!isset($params['subject'])) {
 		$smarty->trigger_error("implode: missing 'subject' parameter");
-		return;
+		return "implode: missing 'subject' parameter";
 	}
 
 	if (!isset($params['glue'])) {
 		$params['glue'] = ", ";
+	}
+	$translate = false;
+	if (isset($params['translate'])) {
+		$translate = $params['translate'];
 	}
 
 	$subject = $params['subject'];
 
 	$implodedValue = null;
 	if (is_array($subject)){
+		if ($translate){
+			foreach ($subject as $index => $value){
+				$subject[$index] = translate($value);
+			}
+		}
 		if (isset($params['sort'])){
 			sort($subject);
 		}
 		$implodedValue = implode($params['glue'], $subject);
 	}else{
-		$implodedValue = $subject;
+		if ($translate){
+			$implodedValue = translate($subject);
+		}else{
+			$implodedValue = $subject;
+		}
 	}
 
 	if (!isset($params['assign'])) {

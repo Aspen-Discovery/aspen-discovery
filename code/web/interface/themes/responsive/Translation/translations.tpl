@@ -10,4 +10,22 @@
 		</div>
 	</form>
 
+	<form method="post">
+		{foreach from=$allTerms item=term}
+			<div class="row">
+				<div class="col-sm-1">{$term->id}</div>
+				<div class="col-sm-3"><label for="translation_{$term->id}">{$term->term}</label></div>
+				<div class="col-sm-4">
+					<input type="hidden" name="translation_changed[{$term->id}]" id="translation_changed_{$term->id}" value="0">
+					<textarea class="form-control" rows="1" cols="40" name="translation[{$term->id}]" id="translation_{$term->id}" onchange="$('#translation_changed_{$term->id}').val(1)">{$term->translation}</textarea>
+				</div>
+				<div class="col-sm-4">
+					<a href="{$term->samplePageUrl}">{$term->samplePageUrl}</a>
+				</div>
+			</div>
+		{/foreach}
+		<div class="form-group">
+			<button type="submit" name="submit" class="btn btn-primary">{translate text="Save Translations"}</button>
+		</div>
+	</form>
 </div>

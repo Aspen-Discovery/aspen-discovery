@@ -3,7 +3,7 @@
 
 	{if $recordDriver->getUniformTitle()}
 		<div class="row">
-			<div class="result-label col-sm-4">Uniform Title: </div>
+			<div class="result-label col-sm-4">{translate text="Uniform Title"}: </div>
 			<div class="col-sm-8 result-value">
 				{foreach from=$recordDriver->getUniformTitle() item=uniformTitle}
 					<a href="{$path}/Search/Results?lookfor={$uniformTitle|escape:"url"}">{$uniformTitle|highlight}</a><br/>
@@ -14,7 +14,7 @@
 
 	{if $recordDriver->getAuthor()}
 		<div class="row">
-			<div class="result-label col-sm-4">Author: </div>
+			<div class="result-label col-sm-4">{translate text="Author"}: </div>
 			<div class="col-sm-8 result-value">
 				<a href='{$path}/Author/Home?author="{$recordDriver->getAuthor()|escape:"url"}"'>{$recordDriver->getAuthor()|highlight}</a><br/>
 			</div>
@@ -55,7 +55,7 @@
 	{assign var=series value=$recordDriver->getSeries()}
 	{if $series}
 		<div class="series row">
-			<div class="result-label col-sm-4">Series: </div>
+			<div class="result-label col-sm-4">{translate text="Series"}: </div>
 			<div class="col-sm-8 result-value">
 				{if is_array($series) && !isset($series.seriesTitle)}
 					{foreach from=$series item=seriesItem name=loop}
@@ -85,7 +85,7 @@
 	<div class="row">
 		<div class="result-label col-sm-4">{translate text='Format'}:</div>
 		<div class="col-sm-8 result-value">
-			{implode subject=$recordFormat glue=", "}
+			{implode subject=$recordFormat glue=", ", translate=true}
 		</div>
 	</div>
 	{/if}

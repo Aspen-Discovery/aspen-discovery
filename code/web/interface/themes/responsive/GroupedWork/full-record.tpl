@@ -84,7 +84,7 @@
 							{if $summPublisher}
 								{$summPublisher}
 							{else}
-								Varies, see individual formats and editions
+								{translate text="Varies, see individual formats and editions"}
 							{/if}
 						</div>
 					</div>
@@ -95,7 +95,7 @@
 							{if $summPubDate}
 								{$summPubDate|escape}
 							{else}
-								Varies, see individual formats and editions
+								{translate text="Varies, see individual formats and editions"}
 							{/if}
 						</div>
 					</div>
@@ -115,9 +115,9 @@
 						<div class="result-label col-tn-3">{translate text="Language"}: </div>
 						<div class="result-value col-tn-9">
 							{if is_array($summLanguage)}
-								{', '|implode:$summLanguage}
+								{implode subject=$summLanguage glue=', ' translate=true}
 							{else}
-								{$summLanguage}
+								{$summLanguage|translate}
 							{/if}
 						</div>
 					</div>

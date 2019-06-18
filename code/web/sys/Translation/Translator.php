@@ -184,22 +184,20 @@ class Translator
 	private $translationModeActive = null;
 	public function translationModeActive(){
 		if ($this->translationModeActive === null){
-			if (isset($_SESSION['translationMode']) && !isset($_REQUEST['stopTranslationMode'])){
+			if (isset($_REQUEST['startTranslationMode'])){
+				session_start();
+				$_SESSION['translationMode'] = 'on';
+				session_write_close();
+				$translationModeActive = true;
+			}elseif (isset($_REQUEST['stopTranslationMode'])){
+				session_start();
+				$_SESSION['translationMode'] = 'off';
+				session_write_close();
+				$translationModeActive = false;
+			}elseif (isset($_SESSION['translationMode'])){
 				$translationModeActive = ($_SESSION['translationMode'] == 'on');
 			}else{
-				if (isset($_REQUEST['startTranslationMode'])){
-					session_start();
-					$_SESSION['translationMode'] = 'on';
-					session_write_close();
-					$translationModeActive = true;
-				}elseif (isset($_REQUEST['stopTranslationMode'])){
-					session_start();
-					$_SESSION['translationMode'] = 'off';
-					session_write_close();
-					$translationModeActive = false;
-				}else{
-					$translationModeActive = false;
-				}
+				$translationModeActive = false;
 			}
 			$this->translationModeActive = $translationModeActive;
 		}
