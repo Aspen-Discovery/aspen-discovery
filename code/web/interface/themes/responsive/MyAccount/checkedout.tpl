@@ -15,13 +15,13 @@
 		{/if}
 
 		{if $offline}
-			<div class="alert alert-warning"><strong>The library system is currently offline.</strong> We are unable to retrieve information about your {translate text='Checked Out Titles'|lower} at this time.</div>
+			<div class="alert alert-warning">{translate text=offline_notice defaultText="<strong>The library system is currently offline.</strong> We are unable to retrieve information about your account at this time."}</div>
 		{else}
 
 			{if $transList}
 				<form id="renewForm" action="{$path}/MyAccount/CheckedOut">
 					<div id="pager" class="navbar form-inline">
-						<label for="accountSort" class="control-label">{translate text='Sort by'}:&nbsp;</label>
+						<label for="accountSort" class="control-label">{translate text='Sort by'}&nbsp;</label>
 						<select name="accountSort" id="accountSort" class="form-control" onchange="AspenDiscovery.Account.changeAccountSort($(this).val());">
 							{foreach from=$sortOptions item=sortDesc key=sortVal}
 								<option value="{$sortVal}"{if $defaultSortOption == $sortVal} selected="selected"{/if}>{translate text=$sortDesc}</option>

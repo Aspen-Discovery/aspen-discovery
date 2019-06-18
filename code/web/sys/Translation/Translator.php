@@ -58,13 +58,13 @@ class Translator
 	/**
 	 * Translate the phrase
 	 *
-	 * @param string $phrase        The phrase to translate
-	 * @param bool $inAttribute     Whether or not we are in an attribute.If we are, we can't show the span
-	 * @return  string              the translated phrase
-	 * @note    Can be called statically if 2nd parameter is defined and load
-	 *          method is called before
+	 * @param string $phrase                - The phrase to translate
+	 * @param string $defaultText           - The default text for a phrase that is just a key for a longer phrase
+	 * @param string[] $replacementValues   - Values to replace within the string
+	 * @param bool $inAttribute             - Whether or not we are in an attribute. If we are, we can't show the span
+	 * @return  string                      - The translated phrase
 	 */
-	function translate($phrase, $defaultText, $inAttribute = false)
+	function translate($phrase, $defaultText = '', $replacementValues = [], $inAttribute = false)
 	{
 		//TODO: Determine if there is a performance improvement to preloading all of this, or if caching within Memcache is good enough
 		/** @var Language */
@@ -134,17 +134,23 @@ class Translator
 				}else{
 					$fullTranslation = $translation->translation;
 				}
+
 				global $configArray;
 				$memCache->set('translation_' . $activeLanguage->id . '_' . $translationMode . '_' . $phrase, $fullTranslation, $configArray['Caching']['translation']);
-				return $fullTranslation;
+				$returnString = $fullTranslation;
 			}else{
-				return $existingTranslation;
+				$returnString = $existingTranslation;
 			}
 		}catch (PDOException $e){
 			//tables likely don't exist, ignore
-			return $phrase;
+			$returnString = $phrase;
 		}
-
+		if (count($replacementValues) > 0){
+			foreach ($replacementValues as $index => $replacementValue){
+				$returnString = str_replace('%' . ($index + 1) . '%', $replacementValue, $returnString);
+			}
+		}
+		return $returnString;
 	}
 
 	private function loadTranslationsFromIniFile()

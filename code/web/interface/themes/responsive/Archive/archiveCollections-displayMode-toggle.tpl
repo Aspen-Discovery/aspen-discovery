@@ -10,7 +10,7 @@
 			</label>
 		</div>
 		<div class="btn-group" id="hideSearchCoversSwitch"{if $displayMode != 'list'} style="display: none;"{/if}>
-			<label for="hideCovers" class="checkbox{* control-label*}"> Hide Covers
+			<label for="hideCovers" class="checkbox{* control-label*}"> {translate text='Hide Covers'}
 				<input id="hideCovers" type="checkbox" onclick="AspenDiscovery.Archive.toggleShowCovers(!$(this).is(':checked'))" {if $showCovers == false}checked="checked"{/if}>
 			</label>
 		</div>

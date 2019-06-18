@@ -47,11 +47,11 @@
 									AspenDiscovery.Archive.getMoreExhibitResults('{$exhibitPid|urlencode}', 1);
 								{/if}
 								" class="form-control">
-					<option value="title" {if $sort=='title'}selected="selected"{/if}>{translate text='Sort by ' }Title</option>
-					<option value="newest" {if $sort=='newest'}selected="selected"{/if}>{translate text='Sort by ' }Newest First</option>
-					<option value="oldest" {if $sort=='oldest'}selected="selected"{/if}>{translate text='Sort by ' }Oldest First</option>
-					<option value="dateAdded" {if $sort=='dateAdded'}selected="selected"{/if}>{translate text='Sort by ' }Date Added</option>
-					<option value="dateModified" {if $sort=='dateModified'}selected="selected"{/if}>{translate text='Sort by ' }Date Modified</option>
+					<option value="title" {if $sort=='title'}selected="selected"{/if}>{translate text='Sort by'} Title</option>
+					<option value="newest" {if $sort=='newest'}selected="selected"{/if}>{translate text='Sort by'} Newest First</option>
+					<option value="oldest" {if $sort=='oldest'}selected="selected"{/if}>{translate text='Sort by'} Oldest First</option>
+					<option value="dateAdded" {if $sort=='dateAdded'}selected="selected"{/if}>{translate text='Sort by'} Date Added</option>
+					<option value="dateModified" {if $sort=='dateModified'}selected="selected"{/if}>{translate text='Sort by'} Date Modified</option>
 				</select>
 			</div>
 		</div>

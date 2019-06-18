@@ -2,7 +2,7 @@
 <div class="col-sm-12">
     <div class="row">
         <div class="col-sm-12 manifestation-format">
-            {$relatedManifestation->format}
+            {$relatedManifestation->format|translate}
         </div>
     </div>
     {foreach from=$relatedManifestation->getVariations() item=variation}
@@ -10,7 +10,7 @@
             <div class="col-tn-3 col-xs-4{if !$viewingCombinedResults} col-md-3{/if} manifestation-format">
                 &nbsp;&nbsp;&nbsp;
                 <a href="{$variation->getUrl()}" onclick="return AspenDiscovery.ResultsList.toggleRelatedManifestations('{$workId|escapeCSS}_{$relatedManifestation->format|escapeCSS}_{$variation->id|escapeCSS}');">
-                    {$variation->label|translate}
+                    {$variation->label}
                 </a>
                 <br>&nbsp;&nbsp;&nbsp;
                 <a href="#" onclick="return AspenDiscovery.ResultsList.toggleRelatedManifestations('{$workId|escapeCSS}_{$relatedManifestation->format|escapeCSS}_{$variation->id|escapeCSS}');">

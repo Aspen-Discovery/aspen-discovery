@@ -48,17 +48,6 @@ if ($googleAnalyticsId) {
 global $library;
 global $offlineMode;
 
-//Set System Message
-if ($configArray['System']['systemMessage']){
-	$interface->assign('systemMessage', $configArray['System']['systemMessage']);
-}else if ($offlineMode){
-	$interface->assign('systemMessage', "<p class='alert alert-warning'><strong>The circulation system is currently offline.</strong>  Access to account information and availability is limited.</p>");
-}else{
-	if ($library && strlen($library->systemMessage) > 0){
-		$interface->assign('systemMessage', $library->systemMessage);
-	}
-}
-
 $interface->assign('islandoraEnabled', $configArray['Islandora']['enabled']);
 
 //Get the name of the active instance
@@ -174,6 +163,17 @@ if ($translator == null){
 $timer->logTime('Translator setup');
 
 $interface->setLanguage($activeLanguage);
+
+//Set System Message after translator has been setup
+if ($configArray['System']['systemMessage']){
+	$interface->assign('systemMessage', translate($configArray['System']['systemMessage']));
+}else if ($offlineMode){
+	$interface->assign('systemMessage', "<p class='alert alert-warning'>" . translate(['text'=>'offline_notice', 'defaultText'=>"<strong>The library system is currently offline.</strong> We are unable to retrieve information about your account at this time."]) . "</p>");
+}else{
+	if ($library && strlen($library->systemMessage) > 0){
+		$interface->assign('systemMessage', translate($library->systemMessage));
+	}
+}
 
 $deviceName = get_device_name();
 $interface->assign('deviceName', $deviceName);

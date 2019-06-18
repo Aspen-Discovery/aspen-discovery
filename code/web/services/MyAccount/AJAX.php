@@ -1166,7 +1166,13 @@ class MyAccount_AJAX
 			//Count of Holds
 			$result['holds'] = '<span class="badge">' . $user->getNumHoldsTotal() . '</span>';
 			if ($user->getNumHoldsAvailableTotal() > 0){
-				$result['holds'] .= '&nbsp;<span class="label label-success">' . $user->getNumHoldsAvailableTotal() . ' ready for pick up</span>';
+				$availableHoldsLabel = translate([
+					'text' => '%1% ready for pick up',
+					'replacements' => [
+						$user->getNumHoldsAvailableTotal()
+					]
+				]);
+				$result['holds'] .= '&nbsp;<span class="label label-success">' . $availableHoldsLabel . '</span>';
 			}
 			$timer->logTime("Load all holds for menu");
 

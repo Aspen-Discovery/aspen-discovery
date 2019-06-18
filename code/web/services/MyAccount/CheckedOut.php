@@ -138,7 +138,7 @@ class MyAccount_CheckedOut extends MyAccount{
 
 		}
 
-		$this->display('checkedout.tpl', translate('Checked Out Titles'));
+		$this->display('checkedout.tpl','Checked Out Titles');
 	}
 
 	public function exportToExcel($checkedOutItems, $showOut, $showRenewed, $showWaitList) {

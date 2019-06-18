@@ -14,7 +14,7 @@
 
 				<h2>{translate text='Account Settings'}</h2>
 		{if $offline}
-			<div class="alert alert-warning"><strong>The library system is currently offline.</strong> We are unable to retrieve information about your {translate text='Account Settings'|lower} at this time.</div>
+			<div class="alert alert-warning">{translate text=offline_notice defaultText="<strong>The library system is currently offline.</strong> We are unable to retrieve information about your account at this time."}</div>
 		{else}
 
 			{if !empty($profileUpdateErrors)}

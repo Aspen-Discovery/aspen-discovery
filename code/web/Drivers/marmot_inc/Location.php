@@ -1147,15 +1147,15 @@ class Location extends DataObject
 				$nextDayOfWeek = strftime ('%a', $nextDay);
 				if (isset($nextDayHours['closed']) && $nextDayHours['closed'] == true){
 					if (isset($closureReason)){
-						$libraryHoursMessage = "The library is closed today for $closureReason.";
+						$libraryHoursMessage = translate(['text'=>"The library is closed today for %1%.", 'replacements'=>[$closureReason]]);
 					}else{
-						$libraryHoursMessage = "The library is closed today.";
+						$libraryHoursMessage = translate("The library is closed today.");
 					}
 				}else{
 					if (isset($closureReason)){
-						$libraryHoursMessage = "The library is closed today for $closureReason. It will reopen on $nextDayOfWeek from {$nextDayHours['openFormatted']} to {$nextDayHours['closeFormatted']}";
+						$libraryHoursMessage = translate(['text'=>"The library is closed today for %1%. It will reopen on %2% from %3% to %4%", 'replacements'=>[$closureReason, $nextDayOfWeek, $nextDayHours['openFormatted'], $nextDayHours['closeFormatted']]]);
 					}else{
-						$libraryHoursMessage = "The library is closed today. It will reopen on $nextDayOfWeek from {$nextDayHours['openFormatted']} to {$nextDayHours['closeFormatted']}";
+						$libraryHoursMessage = translate(['text'=>"The library is closed today. It will reopen on %1% from %2% to %3%", 'replacements'=>[$nextDayOfWeek, $nextDayHours['openFormatted'], $nextDayHours['closeFormatted']]]);
 					}
 				}
 			}else{
@@ -1167,21 +1167,21 @@ class Location extends DataObject
 					$closeHour = 24;
 				}
 				if ($currentHour < $openHour){
-					$libraryHoursMessage = "The library will be open today from " . $todaysLibraryHours['openFormatted'] . " to " . $todaysLibraryHours['closeFormatted'] . ".";
+					$libraryHoursMessage = translate(['text'=>"The library will be open today from %1% to %2%", 'replacements'=>[$todaysLibraryHours['openFormatted'], $todaysLibraryHours['closeFormatted']]]);
 				}else if ($currentHour > $closeHour){
 					$tomorrowsLibraryHours = Location::getLibraryHours($locationId,  time() + (24 * 60 * 60));
 					if (isset($tomorrowsLibraryHours['closed'])  && ($tomorrowsLibraryHours['closed'] == true || $tomorrowsLibraryHours['closed'] == 1)){
 						if (isset($tomorrowsLibraryHours['closureReason'])){
-							$libraryHoursMessage = "The library will be closed tomorrow for {$tomorrowsLibraryHours['closureReason']}.";
+							$libraryHoursMessage = translate(['text'=>"The library will be closed tomorrow for %1", 'replacements'=>[$tomorrowsLibraryHours['closureReason']]]);
 						}else{
-							$libraryHoursMessage = "The library will be closed tomorrow";
+							$libraryHoursMessage = translate("The library will be closed tomorrow");
 						}
 
 					}else{
-						$libraryHoursMessage = "The library will be open tomorrow from " . $tomorrowsLibraryHours['openFormatted'] . " to " . $tomorrowsLibraryHours['closeFormatted'] . ".";
+						$libraryHoursMessage = translate(['text'=>"The library will be open tomorrow from %1% to %2%", 'replacements'=>[$tomorrowsLibraryHours['openFormatted'], $tomorrowsLibraryHours['closeFormatted']]]);
 					}
 				}else{
-					$libraryHoursMessage = "The library is open today from " . $todaysLibraryHours['openFormatted'] . " to " . $todaysLibraryHours['closeFormatted'] . ".";
+					$libraryHoursMessage = translate(['text'=>"The library is open today from %1% to %2%", 'replacements'=>[$todaysLibraryHours['openFormatted'], $todaysLibraryHours['closeFormatted']]]);
 				}
 			}
 		}else{

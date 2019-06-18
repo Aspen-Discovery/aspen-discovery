@@ -1,8 +1,8 @@
-{*{strip}*}
+{strip}
 	<form action="{$path}/MyAccount/MyList/{$favList->id}" id="myListFormHead">
 		<div>
 			<input type="hidden" name="myListActionHead" id="myListActionHead" class="form">
-			<h3 id="listTitle">{*<span class="silk list">&nbsp;</span>*}{$favList->title|escape:"html"}</h3>
+			<h3 id="listTitle">{$favList->title|escape:"html"}</h3>
 			{if $notes}
 				<div id="listNotes">
 				{foreach from=$notes item="note"}
@@ -12,7 +12,7 @@
 			{/if}
 
 			{if $favList->deleted == 1}
-				<p class="alert alert-danger">Sorry, this list has been deleted.</p>
+				<p class="alert alert-danger">{translate text='Sorry, this list has been deleted.'}</p>
 			{else}
 				{if $favList->description}<div class="listDescription alignleft" id="listDescription">{$favList->description|escape}</div>{/if}
 				{if $allowEdit}
@@ -27,7 +27,7 @@
 						</div>
 						<div class="form-group">
 
-							<label for="defaultSort" class="control-label">Default Sort: </label>
+							<label for="defaultSort" class="control-label">{translate text='Default Sort'} </label>
 							<select id="defaultSort" name="defaultSort" class="form-control">
 								{foreach from=$defaultSortList item=sortValue key=sortLabel}
 									<option value="{$sortLabel}"{if $sortLabel == $defaultSort} selected="selected"{/if}>
@@ -43,19 +43,19 @@
 				<div id="listTopButtons" class="btn-toolbar">
 					{if $allowEdit}
 						<div class="btn-group">
-							<button value="editList" id="FavEdit" class="btn btn-sm btn-info" onclick="return AspenDiscovery.Lists.editListAction()">Edit List</button>
+							<button value="editList" id="FavEdit" class="btn btn-sm btn-info" onclick="return AspenDiscovery.Lists.editListAction()">{translate text='Edit List'}</button>
 						</div>
 						<div class="btn-group">
-							<button value="saveList" id="FavSave" class="btn btn-sm btn-primary" style="display:none" onclick='return AspenDiscovery.Lists.updateListAction()'>Save Changes</button>
+							<button value="saveList" id="FavSave" class="btn btn-sm btn-primary" style="display:none" onclick='return AspenDiscovery.Lists.updateListAction()'>{translate text='Save Changes'}</button>
 						</div>
 						<div class="btn-group">
-							<button value="batchAdd" id="FavBatchAdd" class="btn btn-sm btn-default" onclick='return AspenDiscovery.Lists.batchAddToListAction({$favList->id})'>Add Multiple Titles</button>
+							<button value="batchAdd" id="FavBatchAdd" class="btn btn-sm btn-default" onclick='return AspenDiscovery.Lists.batchAddToListAction({$favList->id})'>{translate text='Add Multiple Titles'}</button>
 							{if $favList->public == 0}
-								<button value="makePublic" id="FavPublic" class="btn btn-sm btn-default" onclick='return AspenDiscovery.Lists.makeListPublicAction()'>Make Public</button>
+								<button value="makePublic" id="FavPublic" class="btn btn-sm btn-default" onclick='return AspenDiscovery.Lists.makeListPublicAction()'>{translate text='Make Public'}</button>
 							{else}
-								<button value="makePrivate" id="FavPrivate" class="btn btn-sm btn-default" onclick='return AspenDiscovery.Lists.makeListPrivateAction()'>Make Private</button>
+								<button value="makePrivate" id="FavPrivate" class="btn btn-sm btn-default" onclick='return AspenDiscovery.Lists.makeListPrivateAction()'>{translate text='Make Private'}</button>
 								{if $loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('contentEditor', $userRoles))}
-									&nbsp;&nbsp;<a href="#" class="button btn btn-sm btn-default" id="FavCreateWidget" onclick="return AspenDiscovery.ListWidgets.createWidgetFromList('{$favList->id}')">Create Widget</a>
+									&nbsp;&nbsp;<a href="#" class="button btn btn-sm btn-default" id="FavCreateWidget" onclick="return AspenDiscovery.ListWidgets.createWidgetFromList('{$favList->id}')">{translate text='Create Widget'}</a>
 								{/if}
 								{if $loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('contentEditor', $userRoles) || array_key_exists('libraryManager', $userRoles) || array_key_exists('locationManager', $userRoles))}
 									<a href="#" id="FavHome" class="btn btn-sm btn-default" onclick="return AspenDiscovery.Lists.addToHomePage('{$favList->id}')">{translate text='Add To Home Page'}</a>
@@ -64,12 +64,12 @@
 						</div>
 					{/if}
 					<div class="btn-group">
-						<button value="emailList" id="FavEmail" class="btn btn-sm btn-default" onclick='return AspenDiscovery.Lists.emailListAction("{$favList->id}")'>Email List</button>
-						<button value="printList" id="FavPrint" class="btn btn-sm btn-default" onclick='return AspenDiscovery.Lists.printListAction()'>Print List</button>
-						<button value="citeList" id="FavCite" class="btn btn-sm btn-default" onclick='return AspenDiscovery.Lists.citeListAction("{$favList->id}")'>Generate Citations</button>
+						<button value="emailList" id="FavEmail" class="btn btn-sm btn-default" onclick='return AspenDiscovery.Lists.emailListAction("{$favList->id}")'>{translate text='Email List'}</button>
+						<button value="printList" id="FavPrint" class="btn btn-sm btn-default" onclick='return AspenDiscovery.Lists.printListAction()'>{translate text='Print List'}</button>
+						<button value="citeList" id="FavCite" class="btn btn-sm btn-default" onclick='return AspenDiscovery.Lists.citeListAction("{$favList->id}")'>{translate text='Generate Citations'}</button>
 
 						<div class="btn-group" role="group">
-							<button type="button" class="btn btn-sm btn-default btn-info dropdown-toggle" data-toggle="dropdown" aria-expanded="false">Sort &nbsp;<span class="caret"></span></button>
+							<button type="button" class="btn btn-sm btn-default btn-info dropdown-toggle" data-toggle="dropdown" aria-expanded="false">{translate text='Sort by'}&nbsp;<span class="caret"></span></button>
 							<ul class="dropdown-menu dropdown-menu-right" role="menu">
 								{foreach from=$sortList item=sortData}
 									<li>
@@ -85,7 +85,7 @@
 					</div>
 					{if $allowEdit}
 						<div class="btn-group">
-							<button value="deleteList" id="FavDelete" class="btn btn-sm btn-danger" onclick='return AspenDiscovery.Lists.deleteListAction();'>Delete List</button>
+							<button value="deleteList" id="FavDelete" class="btn btn-sm btn-danger" onclick='return AspenDiscovery.Lists.deleteListAction();'>{translate text='Delete List'}</button>
 						</div>
 					{/if}
 				</div>
@@ -96,7 +96,7 @@
 	{if $favList->deleted == 0}
 		{if $resourceList}
 			<form class="navbar form-inline">
-				<label for="pageSize" class="control-label">Records Per Page</label>&nbsp;
+				<label for="pageSize" class="control-label">{translate text='Records Per Page'}</label>&nbsp;
 				<select id="pageSize" class="pageSize form-control{* input-sm*}" onchange="AspenDiscovery.changePageSize()">
 					<option value="20"{if $recordsPerPage == 20} selected="selected"{/if}>20</option>
 					<option value="40"{if $recordsPerPage == 40} selected="selected"{/if}>40</option>
@@ -104,12 +104,12 @@
 					<option value="80"{if $recordsPerPage == 80} selected="selected"{/if}>80</option>
 					<option value="100"{if $recordsPerPage == 100} selected="selected"{/if}>100</option>
 				</select>
-				<label for="hideCovers" class="control-label checkbox pull-right"> Hide Covers <input id="hideCovers" type="checkbox" onclick="AspenDiscovery.Account.toggleShowCovers(!$(this).is(':checked'))" {if $showCovers == false}checked="checked"{/if}></label>
+				<label for="hideCovers" class="control-label checkbox pull-right"> {translate text='Hide Covers'} <input id="hideCovers" type="checkbox" onclick="AspenDiscovery.Account.toggleShowCovers(!$(this).is(':checked'))" {if $showCovers == false}checked="checked"{/if}></label>
 			</form>
 
 			{if $allowEdit && $userSort}
 				<div class="alert alert-info alert-dismissible" role="alert">
-					<button type="button" class="close" data-dismiss="alert" aria-label="{translate text=Close inAttribute=true"><span aria-hidden="true">&times;</span></button>
+					<button type="button" class="close" data-dismiss="alert" aria-label="{translate text='Close' inAttribute=true}"><span aria-hidden="true">&times;</span>{translate text='Close'}</button>
 					<strong>Drag-and-Drop!</strong> Just drag the list items into the order you like.
 				</div>
 			{/if}
@@ -178,4 +178,4 @@
 			{translate text='You do not have any saved resources'}
 		{/if}
 	{/if}
-{*{/strip}*}
+{/strip}

@@ -41,6 +41,6 @@ abstract class MyAccount extends Action
 	function display($mainContentTemplate, $pageTitle='My Account', $sidebar='Search/home-sidebar.tpl') {
 		global $interface;
 		$interface->setPageTitle($pageTitle);
-		parent::display($mainContentTemplate, translate($pageTitle), $sidebar);
+		parent::display($mainContentTemplate, $pageTitle, $sidebar);
 	}
 }

@@ -4,7 +4,7 @@
 		<div class="coversColumn col-xs-3 col-sm-3 col-md-3 col-lg-2 text-center">
 			{if $disableCoverArt != 1}
 				<a href="{$path}/MyAccount/MyList/{$summShortId}" class="alignleft listResultImage">
-					<img src="{$bookCoverUrl}" class="listResultImage img-thumbnail" alt="{translate text='Cover Image'}">
+					<img src="{$bookCoverUrl}" class="listResultImage img-thumbnail" alt="{translate text='Cover Image' inAttribute=true}">
 				</a>
 			{/if}
 		</div>

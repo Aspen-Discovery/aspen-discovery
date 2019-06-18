@@ -600,9 +600,10 @@ function translate($params) {
 	if (is_array($params)) {
 		$defaultText = isset($params['defaultText']) ? $params['defaultText'] : null;
 		$inAttribute = isset($params['inAttribute']) ? $params['inAttribute'] : false;
-		return $translator->translate($params['text'], $defaultText, $inAttribute);
+		$replacementValues = isset($params['replacements']) ? $params['replacements'] : [];
+		return $translator->translate($params['text'], $defaultText, $replacementValues, $inAttribute);
 	} else {
-		return $translator->translate($params, null, false);
+		return $translator->translate($params, null, [], false);
 	}
 }
 

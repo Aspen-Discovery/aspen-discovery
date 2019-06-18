@@ -17,7 +17,7 @@
 				<div class="libraryHours alert alert-success">{$libraryHoursMessage}</div>
 			{/if}
 		{if $offline}
-			<div class="alert alert-warning"><strong>The library system is currently offline.</strong> We are unable to retrieve information about your holds at this time.</div>
+			<div class="alert alert-warning">{translate text=offline_notice defaultText="<strong>The library system is currently offline.</strong> We are unable to retrieve information about your account at this time."}</div>
 		{else}
 
 			<p id="overdrive_holds_inclusion_notice">
@@ -29,7 +29,7 @@
 					{* Note: These Titles are custom for Arlington *}
 					<p class="alert alert-info">
 						{if $sectionKey == 'available'}
-							{translate text="available hold summary"}
+							{translate text="available hold summary" defaultText="These titles have arrived at the library or are available online for you to use."}
 							{*These titles have arrived at the library or are available online for you to use.*}
 						{else}
 							{*{translate text="These titles are currently checked out to other patrons."}  We will notify you{if not $notification_method or $notification_method eq 'Unknown'}{else} via {$notification_method}{/if} when a title is available.*}
@@ -41,7 +41,7 @@
 					</p>
 					{if is_array($recordList.$sectionKey) && count($recordList.$sectionKey) > 0}
 						<div id="pager" class="navbar form-inline">
-							<label for="{$sectionKey}HoldSort" class="control-label">{translate text='Sort by'}:&nbsp;</label>
+							<label for="{$sectionKey}HoldSort" class="control-label">{translate text='Sort by'}&nbsp;</label>
 							<select name="{$sectionKey}HoldSort" id="{$sectionKey}HoldSort" class="form-control" onchange="AspenDiscovery.Account.changeAccountSort($(this).val(), '{$sectionKey}HoldSort');">
 								{foreach from=$sortOptions[$sectionKey] item=sortDesc key=sortVal}
 									<option value="{$sortVal}"{if $defaultSortOption[$sectionKey] == $sortVal} selected="selected"{/if}>{translate text=$sortDesc}</option>
