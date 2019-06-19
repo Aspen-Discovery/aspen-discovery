@@ -519,9 +519,9 @@
 										</div>
 										<div class="col-xs-8">
 											<select name="searchPreferenceLanguage" id="searchPreferenceLanguage" class="form-control">
-												<option value="0" {if $profile->searchPreferenceLanguage == 0}selected{/if}>{translate text='language_preference_interfiled' defaultText="No, show materials interfiled with materials in other languages"}</option>
-												<option value="1" {if $profile->searchPreferenceLanguage == 1}selected{/if}>{translate text='language_preference_above' defaultText="Yes, show materials above other languages"}</option>
-												<option value="2" {if $profile->searchPreferenceLanguage == 2}selected{/if}>{translate text='language_preference_only_preferred' defaultText="Yes, only show materials in my preferred language"}</option>
+												<option value="0" {if $profile->searchPreferenceLanguage == 0}selected{/if}>{translate text='language_preference_interfiled' defaultText="No, show interfiled with other languages"}</option>
+												<option value="1" {if $profile->searchPreferenceLanguage == 1}selected{/if}>{translate text='language_preference_above' defaultText="Yes, show above other languages"}</option>
+												<option value="2" {if $profile->searchPreferenceLanguage == 2}selected{/if}>{translate text='language_preference_only_preferred' defaultText="Yes, only show my preferred language"}</option>
 											</select>
 										</div>
 									</div>

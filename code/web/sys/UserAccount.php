@@ -367,7 +367,7 @@ class UserAccount {
 	public static function updateSession($user) {
 	    if ($user != false) {
             $_SESSION['activeUserId'] = $user->id;
-        } else {
+	    } else {
 	        unset($_SESSION['activeUserId']);
         }
 
@@ -475,6 +475,10 @@ class UserAccount {
 		if ($primaryUser){
 			UserAccount::$isLoggedIn = true;
 			UserAccount::$primaryUserData = $primaryUser;
+			if (isset($_COOKIE['searchPreferenceLanguage']) && $primaryUser->searchPreferenceLanguage == -1){
+				$primaryUser->searchPreferenceLanguage = $_COOKIE['searchPreferenceLanguage'];
+				$primaryUser->update();
+			}
 			return $primaryUser;
 		}else{
 			return $lastError;
@@ -564,6 +568,8 @@ class UserAccount {
 		//$logger->log("Logging user out", Logger::LOG_DEBUG);
 		UserAccount::softLogout();
 		unset($_SESSION['language']);
+		setcookie('searchPreferenceLanguage', $_COOKIE['searchPreferenceLanguage'], time() - 1000, '/');
+		unset($_COOKIE['searchPreferenceLanguage]']);
 		session_regenerate_id(true);
 		//$logger->log("New session id is $newId", Logger::LOG_DEBUG);
 	}

@@ -289,7 +289,7 @@ class GroupedWorksSolrConnector extends Solr
 			$searchPreferenceLanguage = 0;
 		}
 
-		if ($activeLanguage->code == 'en' || $searchPreferenceLanguage == 0){
+		if ($activeLanguage->code == 'en' || $searchPreferenceLanguage <= 0){
 			$applyHoldingsBoost = true;
 			if (isset($searchLibrary) && !is_null($searchLibrary)) {
 				$applyHoldingsBoost = $searchLibrary->applyNumberOfHoldingsBoost;

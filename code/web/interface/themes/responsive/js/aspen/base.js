@@ -386,12 +386,20 @@ var AspenDiscovery = (function(){
 			$.getJSON(url, params,
 				function(data) {
 					if (data.success) {
-						AspenDiscovery.showMessage('Success', data.message, true);
+						if (data.message.length > 0){
+							//User was logged in, show a message about how to update
+							AspenDiscovery.showMessage('Success', data.message, true, true);
+						}else{
+							//Refresh the page
+							// noinspection SillyAssignmentJS
+							window.location.href = window.location.href;
+						}
 					} else {
 						AspenDiscovery.showMessage("Error", data.message);
 					}
 				}
 			).fail(AspenDiscovery.ajaxFail);
+			return false;
 		},
 
         setLanguage: function() {

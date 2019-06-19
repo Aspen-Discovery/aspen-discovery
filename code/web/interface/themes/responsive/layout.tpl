@@ -61,6 +61,9 @@
 		{if $enableLanguageSelector}
 			{include file="language-selection-navbar.tpl"}
 		{/if}
+		{if $showLanguagePreferencesBar}
+			{include file="languagePreferences.tpl"}
+		{/if}
 
 		<div id="header-wrapper" class="row">
 			<div id="header-container">
@@ -139,15 +142,6 @@
 	<script type="text/javascript"
 	        src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 {/literal}
-{/if}
-{if $showLanguagePreferencesDialog}
-	{literal}
-		<script type="text/javascript">
-			$(document).ready(function(){
-                    AspenDiscovery.showLanguagePreferencesForm();
-            });
-		</script>
-	{/literal}
 {/if}
 </body>
 </html>

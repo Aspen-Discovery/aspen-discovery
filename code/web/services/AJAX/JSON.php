@@ -34,26 +34,22 @@ class AJAX_JSON extends Action {
 		echo $output;
 	}
 
-	function getLanguagePreferencesForm(){
-		global $interface;
-		$result = [
-			'title' => translate('Update Language Preferences'),
-			'modalBody' => $interface->fetch('MyAccount/languagePreferences.tpl'),
-			'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.saveLanguagePreferences()'>" . translate('Save Preferences') . "</button>"
-		];
-
-		return $result;
-	}
-
 	function saveLanguagePreference(){
-		setcookie('searchPreferenceLanguage', $_REQUEST['searchPreferenceLanguage'], 0, '/');
 		if (UserAccount::isLoggedIn()){
-			//todo, save preference to the user object
+			$userObj = UserAccount::getActiveUserObj();
+			$userObj->searchPreferenceLanguage = $_REQUEST['searchPreferenceLanguage'];
+			$userObj->update();
+			return [
+				'success' => true,
+				'message' => 'Your preferences were updated.  You can make changes to this setting within your account setting.'
+			];
+		}else{
+			setcookie('searchPreferenceLanguage', $_REQUEST['searchPreferenceLanguage'], 0, '/');
+			return [
+				'success' => true,
+				'message' => ''
+			];
 		}
-		return [
-			'success' => true,
-			'message' => 'Your preferences was updated.  Future searches will reflect this preference.'
-		];
 	}
 
 	function getTranslationForm(){

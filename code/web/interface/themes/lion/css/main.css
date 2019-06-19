@@ -8695,16 +8695,25 @@ hr.menu {
 .form-control-sm {
   display: block;
   width: 100%;
-  height: 20px;
-  padding: 2px 6px;
-  font-size: 11px;
-  line-height: 1.42857143;
+  padding: 5px 10px;
+  font-size: 12px;
+  line-height: 1.5;
   color: #555555;
   vertical-align: middle;
   background-color: #fff;
   background-image: none;
   border: 1px solid #ccc;
   border-radius: 3px;
+}
+.form-inline select.form-control-sm {
+  width: auto;
+}
+.form-inline .form-control-sm {
+  display: inline-block;
+}
+.navbar-skinny {
+  min-height: auto;
+  margin-bottom: 0;
 }
 #home-page-search {
   background-color: #74C1F2;

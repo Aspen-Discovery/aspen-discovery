@@ -122,7 +122,6 @@ $timer->logTime('Checked availability mode');
 // Setup Translator
 global $language;
 global $serverName;
-$showLanguagePreferencesDialog = false;
 //Get the active language
 $userLanguage = UserAccount::getUserInterfaceLanguage();
 if ($userLanguage == ''){
@@ -140,12 +139,26 @@ if (isset($_REQUEST['myLang'])) {
 	if ($language != $newLanguage){
 		$language = $newLanguage;
 		$_SESSION['language'] = $language;
-		if ($language != 'en'){
-			$showLanguagePreferencesDialog = true;
+		//Clear the preference cookie
+		if (isset($_COOKIE['searchPreferenceLanguage'])){
+			//Clear the cookie when we change languages
+			setcookie('searchPreferenceLanguage', $_COOKIE['searchPreferenceLanguage'], time() - 1000, '/');
+			unset($_COOKIE['searchPreferenceLanguage']);
 		}
 	}
 }
-$interface->assign('showLanguagePreferencesDialog', $showLanguagePreferencesDialog);
+if (!UserAccount::isLoggedIn() && isset($_COOKIE['searchPreferenceLanguage'])) {
+	$showLanguagePreferencesBar = true;
+	$interface->assign('searchPreferenceLanguage', $_COOKIE['searchPreferenceLanguage']);
+}elseif (UserAccount::isLoggedIn()){
+	$showLanguagePreferencesBar = $language != 'en' && UserAccount::getActiveUserObj()->searchPreferenceLanguage == -1;
+	$interface->assign('searchPreferenceLanguage', UserAccount::getActiveUserObj()->searchPreferenceLanguage);
+}else{
+	$showLanguagePreferencesBar = $language != 'en';
+	$interface->assign('searchPreferenceLanguage', -1);
+}
+
+$interface->assign('showLanguagePreferencesBar', $showLanguagePreferencesBar);
 
 // Make sure language code is valid, reset to default if bad:
 $validLanguages = [];
@@ -264,7 +277,6 @@ if ($isLoggedIn) {
 	$interface->assign('loggedIn', $user == false ? 'false' : 'true');
 	if ($user){
 		$interface->assign('activeUserId', $user->id);
-
 	}
 
 	//Check to see if there is a followup module and if so, use that module and action for the next page load
