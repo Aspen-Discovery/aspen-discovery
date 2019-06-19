@@ -7,8 +7,6 @@
 	{if $displayMode == 'covers'}
 		There are {$recordCount|number_format} total results.
 	{else}
-		{translate text="Showing"}
-		{$recordStart} - {$recordEnd}
-		{translate text='of'} {$recordCount|number_format}
+		{translate text="Showing %1% - %2% of %3%" 1=$recordStart 2=$recordEnd 3=$recordCount}
 	{/if}
 {/if}

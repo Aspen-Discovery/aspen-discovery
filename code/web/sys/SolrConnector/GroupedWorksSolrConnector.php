@@ -281,20 +281,29 @@ class GroupedWorksSolrConnector extends Solr
 
 		$boostFactors = array();
 
-		if ($activeLanguage->code == 'en'){
+		if (UserAccount::isLoggedIn()){
+			$searchPreferenceLanguage = UserAccount::getActiveUserObj()->searchPreferenceLanguage;
+		}elseif (isset($_COOKIE['searchPreferenceLanguage'])){
+			$searchPreferenceLanguage = $_COOKIE['searchPreferenceLanguage'];
+		}else{
+			$searchPreferenceLanguage = 0;
+		}
+
+		if ($activeLanguage->code == 'en' || $searchPreferenceLanguage == 0){
 			$applyHoldingsBoost = true;
 			if (isset($searchLibrary) && !is_null($searchLibrary)) {
 				$applyHoldingsBoost = $searchLibrary->applyNumberOfHoldingsBoost;
 			}
 			if ($applyHoldingsBoost) {
-				//$boostFactors[] = 'product(num_holdings,15,div(format_boost,50))';
-				//$boostFactors[] = 'product(sum(popularity,1),format_boost)';
 				$boostFactors[] = 'sum(num_holdings,popularity,format_boost)';
 			} else {
 				$boostFactors[] = 'sum(popularity,format_boost)';
 			}
 		}else{
-			$boostFactors[] = 'product(999,termfreq(language,' . $activeLanguage->facetValue . '))';
+			if ($searchPreferenceLanguage == 1) {
+				//Apply a ridiculously high boost if the user wants to see foreign language materials first
+				$boostFactors[] = 'product(999999999,termfreq(language,' . $activeLanguage->facetValue . '))';
+			}
 			$boostFactors[] = 'sum(format_boost)';
 		}
 
@@ -305,5 +314,44 @@ class GroupedWorksSolrConnector extends Solr
 		$boostFactors[] = "sum(lib_boost_{$solrScope},1)";
 
 		return $boostFactors;
+	}
+
+	/**
+	 * Get filters based on scoping for the search
+	 * @param Library $searchLibrary
+	 * @param Location $searchLocation
+	 * @return array
+	 */
+	public function getScopingFilters($searchLibrary, $searchLocation){
+		global $solrScope;
+
+		$filter = array();
+
+		//Simplify detecting which works are relevant to our scope
+		if (!$solrScope){
+			if (isset($searchLocation)){
+				$filter[] = "scope_has_related_records:{$searchLocation->code}";
+			}elseif(isset($searchLibrary)){
+				$filter[] = "scope_has_related_records:{$searchLibrary->subdomain}";
+			}
+		}else{
+			$filter[] = "scope_has_related_records:$solrScope";
+		}
+
+		global $activeLanguage;
+		if ($activeLanguage->code != 'en'){
+			if (UserAccount::isLoggedIn()){
+				$searchPreferenceLanguage = UserAccount::getActiveUserObj()->searchPreferenceLanguage;
+			}elseif (isset($_COOKIE['searchPreferenceLanguage'])){
+				$searchPreferenceLanguage = $_COOKIE['searchPreferenceLanguage'];
+			}else{
+				$searchPreferenceLanguage = 0;
+			}
+			if ($searchPreferenceLanguage == 2){
+				$filter[] = 'language:' . $activeLanguage->facetValue;
+			}
+		}
+
+		return $filter;
 	}
 }

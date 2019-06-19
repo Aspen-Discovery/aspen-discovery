@@ -47,12 +47,12 @@
 							<tr {if $item.availableCopies}class="available" {/if}>
 								{if $item.onOrderCopies > 0}
 									{if $showOnOrderCounts}
-										<td>{translate text="%1% on order" replacements=[{$item.onOrderCopies}]}</td>
+										<td>{translate text="%1% on order" 1=$item.onOrderCopies}</td>
 									{else}
 										<td>{translate text="Copies on order"}</td>
 									{/if}
 								{else}
-									<td>{translate text="%1% of %2%" replacements=[{$item.availableCopies},{$item.totalCopies}]}</td>
+									<td>{translate text="%1% of %2%" 1=$item.availableCopies 2=$item.totalCopies}</td>
 								{/if}
 								<td class="notranslate">{$item.shelfLocation}</td>
 								<td class="notranslate">

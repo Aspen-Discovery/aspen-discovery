@@ -594,13 +594,18 @@ function translate($params) {
 	// encounter a failure before we are able to load the global translator
 	// object.
 	if (!is_object($translator)) {
-		global $configArray;
-		$translator = new Translator('lang', $configArray['Site']['language']);
+		global $activeLanguage;
+		$translator = new Translator('lang', $activeLanguage->code);
 	}
 	if (is_array($params)) {
 		$defaultText = isset($params['defaultText']) ? $params['defaultText'] : null;
 		$inAttribute = isset($params['inAttribute']) ? $params['inAttribute'] : false;
-		$replacementValues = isset($params['replacements']) ? $params['replacements'] : [];
+		$replacementValues = [];
+		foreach ($params as $index => $param){
+			if (is_numeric($index)){
+				$replacementValues[$index] = $param;
+			}
+		}
 		return $translator->translate($params['text'], $defaultText, $replacementValues, $inAttribute);
 	} else {
 		return $translator->translate($params, null, [], false);

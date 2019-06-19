@@ -180,6 +180,14 @@ class UserAccount {
 		return '';
 	}
 
+	public static function getUserInterfaceLanguage(){
+		UserAccount::loadUserObjectFromDatabase();
+		if (UserAccount::$primaryUserObjectFromDB != false){
+			return UserAccount::$primaryUserObjectFromDB->interfaceLanguage;
+		}
+		return '';
+	}
+
     public static function getUserHasCatalogConnection(){
         UserAccount::loadUserObjectFromDatabase();
         if (UserAccount::$primaryUserObjectFromDB != false){
@@ -555,6 +563,7 @@ class UserAccount {
 		//global $logger;
 		//$logger->log("Logging user out", Logger::LOG_DEBUG);
 		UserAccount::softLogout();
+		unset($_SESSION['language']);
 		session_regenerate_id(true);
 		//$logger->log("New session id is $newId", Logger::LOG_DEBUG);
 	}

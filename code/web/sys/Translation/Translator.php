@@ -147,7 +147,7 @@ class Translator
 		}
 		if (count($replacementValues) > 0){
 			foreach ($replacementValues as $index => $replacementValue){
-				$returnString = str_replace('%' . ($index + 1) . '%', $replacementValue, $returnString);
+				$returnString = str_replace('%' . $index . '%', $replacementValue, $returnString);
 			}
 		}
 		return $returnString;
@@ -191,12 +191,12 @@ class Translator
 	public function translationModeActive(){
 		if ($this->translationModeActive === null){
 			if (isset($_REQUEST['startTranslationMode'])){
-				session_start();
+				@session_start();
 				$_SESSION['translationMode'] = 'on';
 				session_write_close();
 				$translationModeActive = true;
 			}elseif (isset($_REQUEST['stopTranslationMode'])){
-				session_start();
+				@session_start();
 				$_SESSION['translationMode'] = 'off';
 				session_write_close();
 				$translationModeActive = false;

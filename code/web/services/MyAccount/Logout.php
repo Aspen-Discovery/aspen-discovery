@@ -2,7 +2,7 @@
 
 require_once ROOT_DIR . '/Action.php';
 
-class Logout extends Action {
+class MyAccount_Logout extends Action {
 
 	public function launch() {
 		global $configArray;

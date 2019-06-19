@@ -1372,9 +1372,17 @@ class GroupedWorkDriver extends IndexRecordDriver{
         }
 
         if ($selectedLanguage == null){
+	        if (UserAccount::isLoggedIn()){
+		        $searchPreferenceLanguage = UserAccount::getActiveUserObj()->searchPreferenceLanguage;
+	        }elseif (isset($_COOKIE['searchPreferenceLanguage'])){
+		        $searchPreferenceLanguage = $_COOKIE['searchPreferenceLanguage'];
+	        }else{
+		        $searchPreferenceLanguage = 0;
+	        }
+
         	/** @var Language $activeLanguage */
         	global $activeLanguage;
-        	if ($activeLanguage->code != 'en'){
+        	if ($activeLanguage->code != 'en' && ($searchPreferenceLanguage != 0)){
         		$selectedLanguage = $activeLanguage->facetValue;
 	        }
         }

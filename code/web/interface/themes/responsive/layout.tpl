@@ -140,5 +140,14 @@
 	        src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 {/literal}
 {/if}
+{if $showLanguagePreferencesDialog}
+	{literal}
+		<script type="text/javascript">
+			$(document).ready(function(){
+                    AspenDiscovery.showLanguagePreferencesForm();
+            });
+		</script>
+	{/literal}
+{/if}
 </body>
 </html>

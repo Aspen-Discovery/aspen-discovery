@@ -1395,23 +1395,8 @@ abstract class Solr {
 	 * @param Location $searchLocation
 	 * @return array
 	 */
-	public function getScopingFilters($searchLibrary, $searchLocation){
-		global $solrScope;
-
-		$filter = array();
-
-		//Simplify detecting which works are relevant to our scope
-		if (!$solrScope){
-			if (isset($searchLocation)){
-				$filter[] = "scope_has_related_records:{$searchLocation->code}";
-			}elseif(isset($searchLibrary)){
-				$filter[] = "scope_has_related_records:{$searchLibrary->subdomain}";
-			}
-		}else{
-			$filter[] = "scope_has_related_records:$solrScope";
-		}
-
-		return $filter;
+	public function getScopingFilters(/** @noinspection PhpUnusedParameterInspection */$searchLibrary, $searchLocation){
+		return [];
 	}
 
 	/**

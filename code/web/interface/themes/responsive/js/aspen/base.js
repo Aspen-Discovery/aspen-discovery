@@ -376,12 +376,30 @@ var AspenDiscovery = (function(){
 			return arguments.callee.haslocalStorage;
 		},
 
+		saveLanguagePreferences:function(){
+			let preference = $("#searchPreferenceLanguage option:selected").val();
+			let url = Globals.path + "/AJAX/JSON";
+			let params =  {
+				method : 'saveLanguagePreference',
+				searchPreferenceLanguage : preference
+			};
+			$.getJSON(url, params,
+				function(data) {
+					if (data.success) {
+						AspenDiscovery.showMessage('Success', data.message, true);
+					} else {
+						AspenDiscovery.showMessage("Error", data.message);
+					}
+				}
+			).fail(AspenDiscovery.ajaxFail);
+		},
+
         setLanguage: function() {
             //Update the user interface with the selected language
 			let newLanguage = $("#selected-language option:selected").val();
 			let curLocation = window.location.href;
 			let newParam = 'myLang=' + newLanguage;
-			if (curLocation.indexOf(newParam) == -1){
+			if (curLocation.indexOf(newParam) === -1){
 				let newLocation = curLocation.replace(new RegExp('([?&])myLang=(.*?)(?:&|$)'), '$1' + newParam);
 				if (newLocation === curLocation){
 					newLocation = AspenDiscovery.buildUrl(curLocation, 'myLang', newLanguage);
@@ -391,6 +409,14 @@ var AspenDiscovery = (function(){
 
 			return false;
         },
+
+		showLanguagePreferencesForm: function(){
+			let url = Globals.path + "/AJAX/JSON?method=getLanguagePreferencesForm";
+			$.getJSON(url, function(data){
+				AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+			}).fail(AspenDiscovery.ajaxFail);
+			return false;
+		},
 
         showTranslateForm: function(termId) {
 		    let url = Globals.path + "/AJAX/JSON?method=getTranslationForm&termId=" + termId;

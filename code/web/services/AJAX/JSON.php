@@ -21,7 +21,7 @@ class AJAX_JSON extends Action {
 			if ($method == 'getHoursAndLocations'){
 				header('Content-type: text/html');
 				$output = $this->$method();
-			}elseif (in_array($method, array('getAutoLogoutPrompt', 'getReturnToHomePrompt', 'getPayFinesAfterAction', 'getTranslationForm', 'saveTranslation'))) {
+			}elseif (in_array($method, array('getAutoLogoutPrompt', 'getReturnToHomePrompt', 'getPayFinesAfterAction', 'getTranslationForm', 'saveTranslation', 'getLanguagePreferencesForm', 'saveLanguagePreference'))) {
 				$output = json_encode($this->$method());
 				// Browser-side handler ajaxLightbox() doesn't use the input format in else block below
 			}else{
@@ -32,6 +32,28 @@ class AJAX_JSON extends Action {
 		}
 
 		echo $output;
+	}
+
+	function getLanguagePreferencesForm(){
+		global $interface;
+		$result = [
+			'title' => translate('Update Language Preferences'),
+			'modalBody' => $interface->fetch('MyAccount/languagePreferences.tpl'),
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.saveLanguagePreferences()'>" . translate('Save Preferences') . "</button>"
+		];
+
+		return $result;
+	}
+
+	function saveLanguagePreference(){
+		setcookie('searchPreferenceLanguage', $_REQUEST['searchPreferenceLanguage'], 0, '/');
+		if (UserAccount::isLoggedIn()){
+			//todo, save preference to the user object
+		}
+		return [
+			'success' => true,
+			'message' => 'Your preferences was updated.  Future searches will reflect this preference.'
+		];
 	}
 
 	function getTranslationForm(){

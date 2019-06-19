@@ -181,9 +181,9 @@
 						<div class="result-label col-tn-3">{translate text="Language"}: </div>
 						<div class="result-value col-tn-8">
 							{if is_array($summLanguage)}
-								{', '|implode:$summLanguage}
+								{implode subject=$summLanguage glue=', ' translate=true}
 							{else}
-								{$summLanguage}
+								{$summLanguage|translate}
 							{/if}
 						</div>
 					</div>

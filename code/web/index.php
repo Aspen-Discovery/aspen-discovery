@@ -122,12 +122,30 @@ $timer->logTime('Checked availability mode');
 // Setup Translator
 global $language;
 global $serverName;
-if (isset($_REQUEST['myLang'])) {
-	$language = strip_tags($_REQUEST['myLang']);
-	setcookie('language', $language, null, '/');
-} else {
-	$language = strip_tags((isset($_COOKIE['language'])) ? $_COOKIE['language'] : $configArray['Site']['language']);
+$showLanguagePreferencesDialog = false;
+//Get the active language
+$userLanguage = UserAccount::getUserInterfaceLanguage();
+if ($userLanguage == ''){
+	$language = strip_tags((isset($_SESSION['language'])) ? $_SESSION['language'] : 'en');
+}else{
+	$language = $userLanguage;
 }
+if (isset($_REQUEST['myLang'])) {
+	$newLanguage = strip_tags($_REQUEST['myLang']);
+	if (($userLanguage != '') && ($newLanguage != UserAccount::getUserInterfaceLanguage())){
+		$userObject = UserAccount::getActiveUserObj();
+		$userObject->interfaceLanguage = $newLanguage;
+		$userObject->update();
+	}
+	if ($language != $newLanguage){
+		$language = $newLanguage;
+		$_SESSION['language'] = $language;
+		if ($language != 'en'){
+			$showLanguagePreferencesDialog = true;
+		}
+	}
+}
+$interface->assign('showLanguagePreferencesDialog', $showLanguagePreferencesDialog);
 
 // Make sure language code is valid, reset to default if bad:
 $validLanguages = [];

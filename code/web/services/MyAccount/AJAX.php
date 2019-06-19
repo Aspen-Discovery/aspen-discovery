@@ -1168,9 +1168,7 @@ class MyAccount_AJAX
 			if ($user->getNumHoldsAvailableTotal() > 0){
 				$availableHoldsLabel = translate([
 					'text' => '%1% ready for pick up',
-					'replacements' => [
-						$user->getNumHoldsAvailableTotal()
-					]
+					1=>$user->getNumHoldsAvailableTotal()
 				]);
 				$result['holds'] .= '&nbsp;<span class="label label-success">' . $availableHoldsLabel . '</span>';
 			}

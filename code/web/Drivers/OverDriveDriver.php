@@ -551,8 +551,6 @@ class OverDriveDriver extends AbstractEContentDriver{
 				}
 				$hold['holdQueueLength']   = $curTitle->numberOfHolds;
 				$hold['holdQueuePosition'] = $curTitle->holdListPosition;
-				//Add to an array for proper translation within holds page
-				$hold['holdQueue']         = [$hold['holdQueuePosition'], $hold['holdQueueLength']];
 				$hold['position']          = $curTitle->holdListPosition;  // this is so that overdrive holds can be sorted by hold position with the IlS holds
 				$hold['available']         = isset($curTitle->actions->checkout);
 				if ($hold['available']){

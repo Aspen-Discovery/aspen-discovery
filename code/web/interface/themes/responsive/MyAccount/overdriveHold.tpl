@@ -101,7 +101,7 @@
 						<div class="row">
 							<div class="result-label col-tn-4">{translate text='Position'}</div>
 							<div class="col-tn-8 result-value">
-								{translate text="%1% out of %2%" replacements=$record.holdQueue}
+								{translate text="%1% out of %2%" 1=$record.holdQueuePosition 2=$record.holdQueueLength}
 							</div>
 						</div>
 					{/if}
