@@ -49,7 +49,7 @@ public class KohaExportMain {
 			System.exit(1);
 		}
 		serverName = args[0];
-		String profileToLoad = "ils";
+		String profileToLoad = "koha";
 
 		logger = LoggingUtil.setupLogging(serverName, "koha_export");
 
@@ -61,105 +61,80 @@ public class KohaExportMain {
 			// Read the base INI file to get information about the server (current directory/conf/config.ini)
 			configIni = ConfigUtil.loadConfigFile("config.ini", serverName, logger);
 
-			//Connect to the database
-			Connection kohaConn = null;
+			int numChanges = 0;
 
 			try {
+				//Connect to the Aspen Database
 				String databaseConnectionInfo = ConfigUtil.cleanIniValue(configIni.get("Database", "database_aspen_jdbc"));
 				if (databaseConnectionInfo == null) {
-					logger.error("Please provide database_aspen_jdbc within config.ini (or better config.pwd.ini) ");
+					logger.error("Please provide database_aspen_jdbc within config.pwd.ini");
 					System.exit(1);
 				}
 				dbConn = DriverManager.getConnection(databaseConnectionInfo);
-
-				//Get information about the account profile for koha
-				PreparedStatement accountProfileStmt = dbConn.prepareStatement("SELECT * from account_profiles WHERE driver = 'Koha'");
-				ResultSet accountProfileRS = accountProfileStmt.executeQuery();
-				if (accountProfileRS.next()) {
-					try {
-						String host = accountProfileRS.getString("databaseHost");
-						String port = accountProfileRS.getString("databasePort");
-						if (port == null || port.length() == 0) {
-							port = "3306";
-						}
-						String databaseName = accountProfileRS.getString("databaseName");
-						String user = accountProfileRS.getString("databaseUser");
-						String password = accountProfileRS.getString("databasePassword");
-						String timezone = accountProfileRS.getString("databaseTimezone");
-
-						kohaConnectionJDBC = "jdbc:mysql://" +
-								host + ":" + port +
-								"/" + databaseName +
-								"?user=" + user +
-								"&password=" + password +
-								"&useUnicode=yes&characterEncoding=UTF-8";
-						if (timezone != null && timezone.length() > 0) {
-							//noinspection StringConcatenationInLoop
-							kohaConnectionJDBC += "&serverTimezone=" + URLEncoder.encode(timezone, "UTF8");
-						}
-						kohaConn = connectToKoha();
-						if (kohaConn == null){
-							//Do another loop and hope we reconnect the next time.
-							continue;
-						}
-
-						profileToLoad = accountProfileRS.getString("recordSource");
-					} catch (Exception e) {
-						logger.error("Error connecting to koha database ", e);
-						System.exit(1);
-					}
-				} else {
-					logger.error("Could not find an account profile for Koha stopping");
+				if (dbConn == null) {
+					logger.error("Could not establish connection to database at " + databaseConnectionInfo);
 					System.exit(1);
 				}
+
+				logEntry = new IlsExtractLogEntry(dbConn, profileToLoad, logger);
+				//Remove log entries older than 45 days
+				long earliestLogToKeep = (startTime.getTime() / 1000) - (60 * 60 * 24 * 45);
+				try {
+					int numDeletions = dbConn.prepareStatement("DELETE from ils_extract_log WHERE startTime < " + earliestLogToKeep + " AND indexingProfile = '" + profileToLoad + "'").executeUpdate();
+					logger.info("Deleted " + numDeletions + " old log entries");
+				} catch (SQLException e) {
+					logger.error("Error deleting old log entries", e);
+				}
+
+				//Connect to the Koha database
+				Connection kohaConn;
+				KohaInstanceInformation kohaInstanceInformation = initializeKohaConnection(dbConn);
+				if (kohaInstanceInformation == null){
+					logEntry.incErrors();
+					logEntry.addNote("Could not connect to the Koha database");
+					logEntry.setFinished();
+					continue;
+				}else{
+					kohaConn = kohaInstanceInformation.kohaConnection;
+					profileToLoad = kohaInstanceInformation.indexingProfileName;
+				}
+
+				indexingProfile = IndexingProfile.loadIndexingProfile(dbConn, profileToLoad, logger);
+
+				updateBranchInfo(dbConn, kohaConn);
+				logEntry.addNote("Finished updating branch information");
+
+				updateTranslationMaps(dbConn, kohaConn);
+				logEntry.addNote("Finished updating translation maps");
+
+				exportHolds(dbConn, kohaConn);
+				logEntry.addNote("Finished loading holds");
+
+				//Update works that have changed since the last index
+				numChanges = updateRecords(dbConn, kohaConn);
+
+				logEntry.setFinished();
+
+				try {
+					//Close the connection
+					dbConn.close();
+				} catch (Exception e) {
+					System.out.println("Error closing connection: " + e.toString());
+					e.printStackTrace();
+				}
+				try {
+					//Close the connection
+					kohaConn.close();
+				} catch (Exception e) {
+					System.out.println("Error closing connection: " + e.toString());
+					e.printStackTrace();
+				}
+				Date currentTime = new Date();
+				logger.info(currentTime.toString() + ": Finished Koha Extract");
 			} catch (Exception e) {
 				logger.error("Error connecting to database ", e);
-				System.exit(1);
+				//Don't exit, we will try again in a few minutes
 			}
-
-			logEntry = new IlsExtractLogEntry(dbConn, profileToLoad, logger);
-
-			indexingProfile = IndexingProfile.loadIndexingProfile(dbConn, profileToLoad, logger);
-
-			//Remove log entries older than 45 days
-			long earliestLogToKeep = (startTime.getTime() / 1000) - (60 * 60 * 24 * 45);
-			try {
-				int numDeletions = dbConn.prepareStatement("DELETE from ils_extract_log WHERE startTime < " + earliestLogToKeep + " AND indexingProfile = '" + indexingProfile.getName() + "'").executeUpdate();
-				logger.info("Deleted " + numDeletions + " old log entries");
-			} catch (SQLException e) {
-				logger.error("Error deleting old log entries", e);
-			}
-
-			updateBranchInfo(dbConn, kohaConn);
-			logEntry.addNote("Finished updating branch information");
-
-			updateTranslationMaps(dbConn, kohaConn);
-			logEntry.addNote("Finished updating translation maps");
-
-			exportHolds(dbConn, kohaConn);
-			logEntry.addNote("Finished loading holds");
-
-			//Update works that have changed since the last index
-			int numChanges = updateRecords(dbConn, kohaConn);
-
-			logEntry.setFinished();
-
-			try {
-				//Close the connection
-				dbConn.close();
-			} catch (Exception e) {
-				System.out.println("Error closing connection: " + e.toString());
-				e.printStackTrace();
-			}
-			try {
-				//Close the connection
-				kohaConn.close();
-			} catch (Exception e) {
-				System.out.println("Error closing connection: " + e.toString());
-				e.printStackTrace();
-			}
-			Date currentTime = new Date();
-			logger.info(currentTime.toString() + ": Finished Koha Extract");
 
 			//Pause before running the next export (longer if we didn't get any actual changes)
 			try {
@@ -171,10 +146,53 @@ public class KohaExportMain {
 			} catch (InterruptedException e) {
 				logger.info("Thread was interrupted");
 			}
-		}
+		} //Infinite loop
 	}
 
-	private static Connection connectToKoha() {
+	private static KohaInstanceInformation initializeKohaConnection(Connection dbConn) throws SQLException{
+		//Get information about the account profile for koha
+		PreparedStatement accountProfileStmt = dbConn.prepareStatement("SELECT * from account_profiles WHERE driver = 'Koha'");
+		ResultSet accountProfileRS = accountProfileStmt.executeQuery();
+		KohaInstanceInformation kohaInstanceInformation = null;
+		if (accountProfileRS.next()) {
+			try {
+				String host = accountProfileRS.getString("databaseHost");
+				String port = accountProfileRS.getString("databasePort");
+				if (port == null || port.length() == 0) {
+					port = "3306";
+				}
+				String databaseName = accountProfileRS.getString("databaseName");
+				String user = accountProfileRS.getString("databaseUser");
+				String password = accountProfileRS.getString("databasePassword");
+				String timezone = accountProfileRS.getString("databaseTimezone");
+
+				kohaConnectionJDBC = "jdbc:mysql://" +
+						host + ":" + port +
+						"/" + databaseName +
+						"?user=" + user +
+						"&password=" + password +
+						"&useUnicode=yes&characterEncoding=UTF-8";
+				if (timezone != null && timezone.length() > 0) {
+					kohaConnectionJDBC += "&serverTimezone=" + URLEncoder.encode(timezone, "UTF8");
+				}
+
+				Connection kohaConn = connectToKohaDatabase();
+				if (kohaConn != null){
+					kohaInstanceInformation = new KohaInstanceInformation();
+					kohaInstanceInformation.kohaConnection = kohaConn;
+					kohaInstanceInformation.indexingProfileName = accountProfileRS.getString("recordSource");
+				}
+			} catch (Exception e) {
+				logger.error("Error connecting to koha database ", e);
+			}
+		} else {
+			logger.error("Could not find an account profile for Koha stopping");
+			System.exit(1);
+		}
+		return kohaInstanceInformation;
+	}
+
+	private static Connection connectToKohaDatabase() {
 		int tries = 0;
 		while (tries < 3){
 			try{
