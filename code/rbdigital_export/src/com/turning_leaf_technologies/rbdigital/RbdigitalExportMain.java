@@ -438,23 +438,29 @@ public class RbdigitalExportMain {
         Connection aspenConn = null;
         try{
             String databaseConnectionInfo = ConfigUtil.cleanIniValue(configIni.get("Database", "database_aspen_jdbc"));
-            aspenConn = DriverManager.getConnection(databaseConnectionInfo);
-            getAllExistingRbdigitalItemsStmt = aspenConn.prepareStatement("SELECT id, rbdigitalId, rawChecksum, deleted from rbdigital_title");
-            updateRbdigitalItemStmt = aspenConn.prepareStatement(
-                    "INSERT INTO rbdigital_title " +
-                            "(rbdigitalId, title, primaryAuthor, mediaType, isFiction, audience, language, rawChecksum, rawResponse, lastChange, dateFirstDetected) " +
-                            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
-                            "ON DUPLICATE KEY UPDATE title = VALUES(title), primaryAuthor = VALUES(primaryAuthor), mediaType = VALUES(mediaType), " +
-                            "isFiction = VALUES(isFiction), audience = VALUES(audience), language = VALUES(language), rawChecksum = VALUES(rawChecksum), " +
-                            "rawResponse = VALUES(rawResponse), lastChange = VALUES(lastChange), deleted = 0");
-            deleteRbdigitalItemStmt = aspenConn.prepareStatement("UPDATE rbdigital_title SET deleted = 1 where id = ?");
-            getExistingRbdigitalAvailabilityStmt = aspenConn.prepareStatement("SELECT id, rawChecksum from rbdigital_availability WHERE rbdigitalId = ?");
-            updateRbdigitalAvailabilityStmt = aspenConn.prepareStatement(
-                    "INSERT INTO rbdigital_availability " +
-                            "(rbdigitalId, isAvailable, isOwned, name, rawChecksum, rawResponse, lastChange) " +
-                            "VALUES (?, ?, ?, ?, ?, ?, ?) " +
-                            "ON DUPLICATE KEY UPDATE isAvailable = VALUES(isAvailable), isOwned = VALUES(isOwned), " +
-                            "name = VALUES(name), rawChecksum = VALUES(rawChecksum), rawResponse = VALUES(rawResponse), lastChange = VALUES(lastChange)");
+            if (databaseConnectionInfo != null){
+                aspenConn = DriverManager.getConnection(databaseConnectionInfo);
+                getAllExistingRbdigitalItemsStmt = aspenConn.prepareStatement("SELECT id, rbdigitalId, rawChecksum, deleted from rbdigital_title");
+                updateRbdigitalItemStmt = aspenConn.prepareStatement(
+                        "INSERT INTO rbdigital_title " +
+                                "(rbdigitalId, title, primaryAuthor, mediaType, isFiction, audience, language, rawChecksum, rawResponse, lastChange, dateFirstDetected) " +
+                                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
+                                "ON DUPLICATE KEY UPDATE title = VALUES(title), primaryAuthor = VALUES(primaryAuthor), mediaType = VALUES(mediaType), " +
+                                "isFiction = VALUES(isFiction), audience = VALUES(audience), language = VALUES(language), rawChecksum = VALUES(rawChecksum), " +
+                                "rawResponse = VALUES(rawResponse), lastChange = VALUES(lastChange), deleted = 0");
+                deleteRbdigitalItemStmt = aspenConn.prepareStatement("UPDATE rbdigital_title SET deleted = 1 where id = ?");
+                getExistingRbdigitalAvailabilityStmt = aspenConn.prepareStatement("SELECT id, rawChecksum from rbdigital_availability WHERE rbdigitalId = ?");
+                updateRbdigitalAvailabilityStmt = aspenConn.prepareStatement(
+                        "INSERT INTO rbdigital_availability " +
+                                "(rbdigitalId, isAvailable, isOwned, name, rawChecksum, rawResponse, lastChange) " +
+                                "VALUES (?, ?, ?, ?, ?, ?, ?) " +
+                                "ON DUPLICATE KEY UPDATE isAvailable = VALUES(isAvailable), isOwned = VALUES(isOwned), " +
+                                "name = VALUES(name), rawChecksum = VALUES(rawChecksum), rawResponse = VALUES(rawResponse), lastChange = VALUES(lastChange)");
+
+            }else{
+                logger.error("Aspen database connection information was not provided");
+                System.exit(1);
+            }
 
         }catch (Exception e){
             logger.error("Error connecting to aspen database", e);

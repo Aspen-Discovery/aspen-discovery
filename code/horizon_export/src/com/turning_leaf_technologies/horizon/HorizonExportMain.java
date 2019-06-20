@@ -43,7 +43,7 @@ public class HorizonExportMain {
 		try {
 			String databaseConnectionInfo = ConfigUtil.cleanIniValue(ini.get("Database", "database_aspen_jdbc"));
 			if (databaseConnectionInfo == null){
-				logger.error("Please provide database_aspen_jdbc within config.ini (or better config.pwd.ini) ");
+				logger.error("Please provide database_aspen_jdbc within config.pwd.ini");
 				System.exit(1);
 			}
 			dbConn = DriverManager.getConnection(databaseConnectionInfo);
