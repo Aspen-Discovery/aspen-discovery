@@ -20,8 +20,11 @@ import java.util.HashMap;
 
 public class HooplaExportMain {
 	private static Logger logger;
+	private static String serverName;
 
 	private static Ini configIni;
+
+	private static Long startTimeForLogging;
 	private static String hooplaAPIBaseURL;
 
 	private static Long lastExportTime;
@@ -32,66 +35,70 @@ public class HooplaExportMain {
 	private static long exportLogId;
 	private static PreparedStatement addNoteToExportLogStmt;
 	public static void main(String[] args){
-		String serverName = args[0];
-		args = Arrays.copyOfRange(args, 1, args.length);
-		boolean doFullReload = false;
-		if (args.length == 1){
-			//Check to see if we got a full reload parameter
-			String firstArg = args[0].replaceAll("\\s", "");
-			if (firstArg.matches("^full(=true|1)?$")){
-				doFullReload = true;
-			}
+		if (args.length == 0) {
+			System.out.println("You must provide the server name as the first argument.");
+			System.exit(1);
 		}
+		serverName = args[0];
 
-		Date startTime = new Date();
 		logger = LoggingUtil.setupLogging(serverName, "hoopla_export");
-		logger.info(startTime.toString() + ": Starting Hoopla Export");
 
-		// Read the base INI file to get information about the server (current directory/cron/config.ini)
-		configIni = ConfigUtil.loadConfigFile("config.ini", serverName, logger);
+		while (true) {
+			Date startTime = new Date();
+			startTimeForLogging = startTime.getTime() / 1000;
+			logger.info(startTime.toString() + ": Starting Hoopla Export");
 
-		//Connect to the Aspen database
-		Connection aspenConn = null;
-		try{
-			String databaseConnectionInfo = ConfigUtil.cleanIniValue(configIni.get("Database", "database_aspen_jdbc"));
-			aspenConn = DriverManager.getConnection(databaseConnectionInfo);
-		}catch (Exception e){
-			System.out.println("Error connecting to Aspen database " + e.toString());
-			System.exit(1);
-		}
+			// Read the base INI file to get information about the server (current directory/cron/config.ini)
+			configIni = ConfigUtil.loadConfigFile("config.ini", serverName, logger);
 
-		//Start a log entry
-		createDbLogEntry(startTime, aspenConn);
+			//Connect to the Aspen database
+			Connection aspenConn = null;
+			try{
+				String databaseConnectionInfo = ConfigUtil.cleanIniValue(configIni.get("Database", "database_aspen_jdbc"));
+				if (databaseConnectionInfo != null) {
+					aspenConn = DriverManager.getConnection(databaseConnectionInfo);
+				}else{
+					logger.error("Aspen database connection information was not provided");
+					System.exit(1);
+				}
+			}catch (Exception e){
+				logger.error("Error connecting to Aspen database " + e.toString());
+				System.exit(1);
+			}
 
-		//Get the last grouping time
-		loadLastGroupingTime(aspenConn);
+			//Start a log entry
+			createDbLogEntry(startTime, aspenConn);
 
-		//Do work here
-		exportHooplaData(aspenConn, lastExportTime, doFullReload);
+			//Get the last grouping time
+			loadLastGroupingTime(aspenConn);
 
-		if (!hadErrors){
-			updateExportTime(aspenConn, startTime.getTime() / 1000);
-		}
+			//Do work here
+			exportHooplaData(aspenConn, lastExportTime, doFullReload);
 
-		logger.info("Finished exporting data " + new Date().toString());
-		long endTime = new Date().getTime();
-		long elapsedTime = endTime - startTime.getTime();
-		logger.info("Elapsed Minutes " + (elapsedTime / 60000));
+			if (!hadErrors){
+				updateExportTime(aspenConn, startTime.getTime() / 1000);
+			}
 
-		try {
-			PreparedStatement finishedStatement = aspenConn.prepareStatement("UPDATE hoopla_export_log SET endTime = ? WHERE id = ?");
-			finishedStatement.setLong(1, endTime / 1000);
-			finishedStatement.setLong(2, exportLogId);
-			finishedStatement.executeUpdate();
-		} catch (SQLException e) {
-			logger.error("Unable to update hoopla export log with completion time.", e);
-		}
+			logger.info("Finished exporting data " + new Date().toString());
+			long endTime = new Date().getTime();
+			long elapsedTime = endTime - startTime.getTime();
+			logger.info("Elapsed Minutes " + (elapsedTime / 60000));
 
-		try{
-			aspenConn.close();
-		}catch (Exception e){
-			logger.error("Error closing database ", e);
-			System.exit(1);
+			try {
+				PreparedStatement finishedStatement = aspenConn.prepareStatement("UPDATE hoopla_export_log SET endTime = ? WHERE id = ?");
+				finishedStatement.setLong(1, endTime / 1000);
+				finishedStatement.setLong(2, exportLogId);
+				finishedStatement.executeUpdate();
+			} catch (SQLException e) {
+				logger.error("Unable to update hoopla export log with completion time.", e);
+			}
+
+			try{
+				aspenConn.close();
+			}catch (Exception e){
+				logger.error("Error closing database ", e);
+				System.exit(1);
+			}
 		}
 	}
 
@@ -120,10 +127,19 @@ public class HooplaExportMain {
 
 	private static void createDbLogEntry(Date startTime, Connection aspenConn) {
 		try {
+			//Remove log entries older than 45 days
+			long earliestLogToKeep = (startTime.getTime() / 1000) - (60 * 60 * 24 * 45);
+			try {
+				int numDeletions = aspenConn.prepareStatement("DELETE from hoopla_export_log WHERE startTime < " + earliestLogToKeep).executeUpdate();
+				logger.info("Deleted " + numDeletions + " old log entries");
+			} catch (SQLException e) {
+				logger.error("Error deleting old log entries", e);
+			}
+
 			logger.info("Creating log entry for index");
 			PreparedStatement createLogEntryStatement = aspenConn.prepareStatement("INSERT INTO hoopla_export_log (startTime, lastUpdate, notes) VALUES (?, ?, ?)", PreparedStatement.RETURN_GENERATED_KEYS);
-			createLogEntryStatement.setLong(1, startTime.getTime() / 1000);
-			createLogEntryStatement.setLong(2, startTime.getTime() / 1000);
+			createLogEntryStatement.setLong(1, startTimeForLogging);
+			createLogEntryStatement.setLong(2, startTimeForLogging);
 			createLogEntryStatement.setString(3, "Initialization complete");
 			createLogEntryStatement.executeUpdate();
 			ResultSet generatedKeys = createLogEntryStatement.getGeneratedKeys();
