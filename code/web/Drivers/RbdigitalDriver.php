@@ -3,6 +3,7 @@
 require_once ROOT_DIR . '/Drivers/AbstractEContentDriver.php';
 class RbdigitalDriver extends AbstractEContentDriver
 {
+	private $valid = false;
     private $webServiceURL;
     private $userInterfaceURL;
     private $apiToken;
@@ -13,22 +14,30 @@ class RbdigitalDriver extends AbstractEContentDriver
 
     public function __construct() {
         require_once ROOT_DIR . '/sys/Rbdigital/RbdigitalSetting.php';
-        $rbdigitalSettings = new RbdigitalSetting();
-        if ($rbdigitalSettings->find(true)){
+        try{
+	        $rbdigitalSettings = new RbdigitalSetting();
+	        if ($rbdigitalSettings->find(true)){
+		        $this->valid = true;
+	        }
+        }catch (Exception $e){
+        	global $logger;
+        	$logger->log("Could not load Rbdigital settings", Logger::LOG_ALERT);
+        }
+
+        if ($this->valid) {
 	        $this->webServiceURL = $rbdigitalSettings->apiUrl;
 	        $this->userInterfaceURL = $rbdigitalSettings->userInterfaceUrl;
 	        $this->apiToken = $rbdigitalSettings->apiToken;
 	        $this->libraryId = $rbdigitalSettings->libraryId;
+
+	        $this->curlWrapper = new CurlWrapper();
+	        $headers = [
+		        'Accept: application/json',
+		        'Authorization: basic ' . strtolower($this->apiToken),
+		        'Content-Type: application/json'
+	        ];
+	        $this->curlWrapper->addCustomHeaders($headers, true);
         }
-
-
-        $this->curlWrapper = new CurlWrapper();
-        $headers = [
-            'Accept: application/json',
-            'Authorization: basic ' . strtolower($this->apiToken),
-            'Content-Type: application/json'
-        ];
-        $this->curlWrapper->addCustomHeaders($headers, true);
     }
 
     public function hasNativeReadingHistory()

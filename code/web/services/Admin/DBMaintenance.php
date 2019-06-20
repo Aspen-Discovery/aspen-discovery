@@ -1687,6 +1687,15 @@ class DBMaintenance extends Admin_Admin {
 					),
 
 
+					'saved_searches_created_default' => array(
+						'title' => 'Change default creation date for saved searches',
+						'description' => 'Change default creation date for saved searches since it gives errors in newer MySQL versions',
+						'continueOnError' => true,
+						'sql' => array(
+							"ALTER TABLE `search` CHANGE COLUMN `created` `created` DATE NOT NULL;",
+						)
+					),
+
                     'add_search_url_to_saved_searches' => array(
                         'title' => 'Store the Search Url with saved searches',
                         'description' => 'Add column to store the url for a search in the search table to optimize finding old versions',
@@ -1747,8 +1756,7 @@ class DBMaintenance extends Admin_Admin {
 									thumbnailLoaded TINYINT(1) DEFAULT 0,
 									mediumLoaded TINYINT(1) DEFAULT 0,
 									largeLoaded TINYINT(1) DEFAULT 0,
-									uploadedImage TINYINT(1) DEFAULT 0,
-									PRIMARY KEY ( id )
+									uploadedImage TINYINT(1) DEFAULT 0
 									) ENGINE = InnoDB;",
                         "ALTER TABLE bookcover_info ADD INDEX lastUsed (lastUsed)",
                         "ALTER TABLE bookcover_info ADD UNIQUE INDEX record_info (recordType, recordId)",

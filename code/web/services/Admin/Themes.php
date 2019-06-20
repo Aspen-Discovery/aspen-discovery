@@ -44,7 +44,8 @@ class Admin_Themes extends ObjectEditor
 	}
 
 	function getInstructions(){
-		return 'For more information on themes see TBD';
+		//return 'For more information on themes see TBD';
+		return '';
 	}
 
 	function getListInstructions(){

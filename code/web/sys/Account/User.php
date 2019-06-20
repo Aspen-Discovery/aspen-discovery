@@ -452,9 +452,13 @@ class User extends DataObject
 			        return $userHomeLibrary->hooplaLibraryID > 0;
                 }elseif ($source == 'rbdigital'){
 				    require_once ROOT_DIR . '/sys/Rbdigital/RbdigitalSetting.php';
-				    $rbdigitalSettings = new RbdigitalSetting();
-				    $rbdigitalSettings->find();
-				    return $rbdigitalSettings->N > 0;
+				    try{
+					    $rbdigitalSettings = new RbdigitalSetting();
+					    $rbdigitalSettings->find();
+					    return $rbdigitalSettings->N > 0;
+				    }catch (Exception $e){
+				    	return false;
+				    }
                 }
 			}
 		}

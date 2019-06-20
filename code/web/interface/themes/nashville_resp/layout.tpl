@@ -5,10 +5,10 @@
 		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
-		{literal}
-		<script src="https://use.typekit.net/uew0ppi.js"></script>
-		<script>try{Typekit.load({ async: true });}catch(e){}</script>
-		{/literal}
+{*		{literal}*}
+{*		<script src="https://use.typekit.net/uew0ppi.js"></script>*}
+{*		<script>try{Typekit.load({ async: true });}catch(e){}</script>*}
+{*		{/literal}*}
 		{if $google_translate_key}
 			<meta name="google-translate-customization" content="{$google_translate_key}">
 		{/if}
@@ -58,6 +58,12 @@
 			<div id="horizontal-menu-bar-wrapper" class="row visible-xs">
 				<div id="horizontal-menu-bar-container" class="col-tn-12 col-xs-12 menu-bar">
 					{include file='horizontal-menu-bar.tpl'}
+				</div>
+			</div>
+
+			<div id="horizontal-search-wrapper" class="row">
+				<div id="horizontal-search-container" class="col-xs-12">
+					{include file="Search/horizontal-searchbox.tpl"}
 				</div>
 			</div>
 

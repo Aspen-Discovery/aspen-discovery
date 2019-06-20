@@ -36,10 +36,17 @@ class OverDriveDriver extends AbstractEContentDriver{
 
 	private function getSettings(){
 	    if ($this->settings == null){
-	        //There should only be one setting row
-            require_once ROOT_DIR . '/sys/OverDrive/OverDriveSetting.php';
-	        $this->settings = new OverDriveSetting();
-            $this->settings->find((true));
+	    	try{
+			    //There should only be one setting row
+			    require_once ROOT_DIR . '/sys/OverDrive/OverDriveSetting.php';
+			    $this->settings = new OverDriveSetting();
+			    if (!$this->settings->find(true)){
+			    	$this->settings = false;
+			    }
+		    }catch (Exception $e){
+			    $this->settings = false;
+		    }
+
         }
 	    return $this->settings;
     }
@@ -50,7 +57,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 		$tokenData = $memCache->get('overdrive_token');
 		if ($forceNewConnection || $tokenData == false){
 			$settings = $this->getSettings();
-			if (!empty($settings->clientKey) && !empty($settings->clientSecret)){
+			if (!$settings == false && !empty($settings->clientKey) && !empty($settings->clientSecret)){
 				$ch = curl_init("https://oauth.overdrive.com/token");
 				curl_setopt($ch, CURLOPT_USERAGENT,"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
 				curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);

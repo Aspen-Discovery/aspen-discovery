@@ -31,7 +31,7 @@ abstract class ObjectEditor extends Admin_Admin
 		if (is_null($objectAction) || $objectAction == 'list'){
 			$interface->assign('instructions', $this->getListInstructions());
 			$this->viewExistingObjects();
-		}elseif (($objectAction == 'save' || $objectAction == 'delete') && isset($_REQUEST['id'])){
+		}elseif (($objectAction == 'save' || $objectAction == 'delete')){
 			$this->editObject($objectAction, $structure);
 		}else{
 			//check to see if a custom action is being called.
@@ -199,7 +199,7 @@ abstract class ObjectEditor extends Admin_Admin
 	function editObject($objectAction, $structure){
 		$errorOccurred = false;
 		//Save or create a new object
-		$id = $_REQUEST['id'];
+		$id = isset($_REQUEST['id']) ? $_REQUEST['id'] : '';
 		if (empty($id) || $id < 0){
 			//Insert a new record
 			$curObject = $this->insertObject($structure);
