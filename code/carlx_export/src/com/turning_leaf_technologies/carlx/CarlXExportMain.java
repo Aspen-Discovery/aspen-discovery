@@ -9,10 +9,13 @@ import java.util.*;
 import java.util.Date;
 
 import com.turning_leaf_technologies.config.ConfigUtil;
+import com.turning_leaf_technologies.grouping.MarcRecordGrouper;
+import com.turning_leaf_technologies.indexing.IlsExtractLogEntry;
 import com.turning_leaf_technologies.indexing.IndexingProfile;
 import com.turning_leaf_technologies.logging.LoggingUtil;
 import com.turning_leaf_technologies.net.NetworkUtils;
 import com.turning_leaf_technologies.net.WebServiceResponse;
+import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
 import org.marc4j.MarcPermissiveStreamReader;
@@ -40,215 +43,295 @@ public class CarlXExportMain {
 	private static IndexingProfile indexingProfile;
 
 	private static String marcOutURL;
+	private static Ini configIni;
+	private static Connection dbConn;
+	private static String serverName;
+	private static MarcRecordGrouper recordGroupingProcessorSingleton;
+	private static GroupedWorkIndexer groupedWorkIndexer;
 
 	private static Long lastCarlXExtractTimeVariableId = null;
 
 	private static boolean hadErrors = false;
 
 	public static void main(String[] args) {
-		String serverName = args[0];
-
-		// Set-up Logging //
-		Date startTime = new Date();
-		String processName = "carlx_export";
-		logger = LoggingUtil.setupLogging(serverName, processName);
-		logger.warn(startTime.toString() + ": Starting CarlX Extract");
-
-		// Read the base INI file to get information about the server (current directory/cron/config.ini)
-		Ini ini = ConfigUtil.loadConfigFile("config.ini", serverName, logger);
-
-		//Connect to the database
-		Connection dbConn = null;
-		try{
-			String databaseConnectionInfo = ConfigUtil.cleanIniValue(ini.get("Database", "database_aspen_jdbc"));
-			dbConn = DriverManager.getConnection(databaseConnectionInfo);
-		}catch (Exception e){
-			System.out.println("Error connecting to database " + e.toString());
-			logger.error("Error connecting to database ", e);
+		if (args.length == 0) {
+			System.out.println("You must provide the server name as the first argument.");
 			System.exit(1);
 		}
+		serverName = args[0];
 
-		long exportStartTime = startTime.getTime() / 1000;
-
-		String profileToLoad = "ils";
+		String profileToLoad = "carlx";
 		if (args.length > 1){
 			profileToLoad = args[1];
 		}
-		indexingProfile = IndexingProfile.loadIndexingProfile(dbConn, profileToLoad, logger);
 
-		// Get Last Extract Time
-		String beginTimeString = getLastExtractTime(dbConn);
+		String processName = "carlx_export";
+		logger = LoggingUtil.setupLogging(serverName, processName);
 
-		boolean errorUpdatingDatabase = false;
-		try {
-			// Get MarcOut WSDL url for SOAP calls
-			marcOutURL = ini.get("Catalog", "marcOutApiWsdl");
+		while (true){
+			Date startTime = new Date();
+			long startTimeForLogging = startTime.getTime() / 1000;
+			logger.info(startTime.toString() + ": Starting CarlX Extract");
 
-			logger.warn("Starting export of bibs and items");
-			//Load updated bibs
-			ArrayList<String> updatedBibs = new ArrayList<>();
-			ArrayList<String> createdBibs = new ArrayList<>();
-			ArrayList<String> deletedBibs = new ArrayList<>();
-			logger.debug("Calling GetChangedBibsRequest with BeginTime of " + beginTimeString);
-			if (!getUpdatedBibs(beginTimeString, updatedBibs, createdBibs, deletedBibs)) {
-				//Halt execution
-				logger.error("Failed to getUpdatedBibs, exiting");
-				System.exit(1);
-			} else {
-				logger.warn("Loaded updated bibs");
-			}
+			// Read the base INI file to get information about the server (current directory/cron/config.ini)
+			configIni = ConfigUtil.loadConfigFile("config.ini", serverName, logger);
 
-			//Load updated items
-			ArrayList<String> updatedItemIDs = new ArrayList<>();
-			ArrayList<String> createdItemIDs = new ArrayList<>();
-			ArrayList<String> deletedItemIDs = new ArrayList<>();
-			logger.debug("Calling GetChangedItemsRequest with BeginTime of " + beginTimeString);
-			if (!getUpdatedItems(beginTimeString, updatedItemIDs, createdItemIDs, deletedItemIDs)) {
-				//Halt execution
-				logger.error("Failed to getUpdatedItems, exiting");
-				System.exit(1);
-			} else {
-				logger.warn("Loaded updated items");
-			}
-
-			// Fetch Item Information for each ID
-			ArrayList<ItemChangeInfo> itemUpdates = fetchItemInformation(updatedItemIDs);
-			if (hadErrors) {
-				logger.error("Failed to Fetch Item Information for updated items, exiting");
-				System.exit(1);
-			} else {
-				logger.warn("Fetched Item information for updated items");
-			}
-			ArrayList<ItemChangeInfo> createdItems = fetchItemInformation(createdItemIDs);
-			if (hadErrors) {
-				logger.error("Failed to Fetch Item Information for created items, exiting");
-				System.exit(1);
-			} else {
-				logger.warn("Fetched Item information for created items");
-			}
-
-			PreparedStatement markGroupedWorkForBibAsChangedStmt = null;
-			try {
-				dbConn.setAutoCommit(false); // turn off for updating grouped worked for re-indexing
-				markGroupedWorkForBibAsChangedStmt = dbConn.prepareStatement("UPDATE grouped_work SET date_updated = ? where id = (SELECT grouped_work_id from grouped_work_primary_identifiers WHERE type = 'ils' and identifier = ?)");
-			} catch (SQLException e) {
-				logger.error("Failed to prepare statement to mark records for Re-indexing", e);
-			}
-
-
-			// Update Changed Bibs //
-			errorUpdatingDatabase = updateBibRecords(dbConn, exportStartTime, updatedBibs, updatedItemIDs, createdItemIDs, deletedItemIDs, itemUpdates, createdItems, markGroupedWorkForBibAsChangedStmt);
-			logger.debug("Done updating Bib Records");
-			errorUpdatingDatabase = updateChangedItems(dbConn, exportStartTime, createdItemIDs, deletedItemIDs, itemUpdates, createdItems, errorUpdatingDatabase, markGroupedWorkForBibAsChangedStmt);
-			logger.debug("Done updating Item Records");
-
-			// Now remove Any left-over deleted items.  The APIs give us the item id, but not the bib id.  We may need to
-			// look them up within Solr as long as the item id is exported as part of the MARC record
-			if (deletedItemIDs.size() > 0) {
-				for (String deletedItemID : deletedItemIDs) {
-					logger.debug("Item " + deletedItemID + " should be deleted, but we didn't get a bib for it.");
-					//TODO: Now you *really* have to get the BID, dude.
-				}
-			}
-
-			//TODO: Process Deleted Bibs
-			if (deletedBibs.size() > 0) {
-				logger.debug("There are " + deletedBibs + " that still need to be processed.");
-				for (String deletedBibID : deletedBibs) {
-					logger.debug("Bib " + deletedBibID + " should be deleted.");
-				}
-			}
-
-			//TODO: Process New Bibs
-			if (createdBibs.size() > 0) {
-				logger.debug("There are " + createdBibs.size() + " that still need to be processed");
-				for (String createdBibId : createdBibs) {
-					logger.debug("Bib " + createdBibId + " is new and should be created.");
-				}
-			}
-
-			try {
-				// Turn auto commit back on
-				dbConn.commit();
-				dbConn.setAutoCommit(true);
-			} catch (Exception e) {
-				logger.error("MySQL Error: " + e.toString());
-			}
-		}catch (Exception e){
-			logger.error("error loading changes to MARC data: ", e);
-		}
-
-		logger.warn("Finished export of bibs and items, starting export of holds");
-
-			//Connect to the CarlX database
-		String url        = ini.get("Catalog", "carlx_db");
-		String dbUser     = ini.get("Catalog", "carlx_db_user");
-		String dbPassword = ini.get("Catalog", "carlx_db_password");
-		if (url.startsWith("\"")){
-			url = url.substring(1, url.length() - 1);
-		}
-		Connection carlxConn;
-		try{
-			//Open the connection to the database
-			Properties props = new Properties();
-			props.setProperty("user", dbUser);
-			props.setProperty("password", dbPassword);
-			carlxConn = DriverManager.getConnection(url, props);
-
-			exportHolds(carlxConn, dbConn);
-
-			//Close CarlX connection
-			carlxConn.close();
-
-		}catch(Exception e){
-			logger.error("Error exporting holds", e);
-			System.out.println("Error: " + e.toString());
-			e.printStackTrace();
-		}
-
-
-		try {
-			// Wrap Up
-			if (!errorUpdatingDatabase && !hadErrors) {
-				//Update the last extract time
-				if (lastCarlXExtractTimeVariableId != null) {
-					PreparedStatement updateVariableStmt = dbConn.prepareStatement("UPDATE variables set value = ? WHERE id = ?");
-					updateVariableStmt.setLong(1, exportStartTime);
-					updateVariableStmt.setLong(2, lastCarlXExtractTimeVariableId);
-					updateVariableStmt.executeUpdate();
-					updateVariableStmt.close();
-					logger.warn("Updated last extract time to " + exportStartTime);
-				} else {
-					PreparedStatement insertVariableStmt = dbConn.prepareStatement("INSERT INTO variables (`name`, `value`) VALUES ('last_carlx_extract_time', ?)");
-					insertVariableStmt.setString(1, Long.toString(exportStartTime));
-					insertVariableStmt.executeUpdate();
-					insertVariableStmt.close();
-					logger.warn("Set last extract time to " + exportStartTime);
-				}
-			} else {
-				if (errorUpdatingDatabase){
-					logger.error("There was an error updating the database, not setting last extract time.");
-				}
-				if (hadErrors){
-					logger.error("There was an error during the extract, not setting last extract time.");
-				}
-			}
+			int numChanges = 0;
 
 			try{
-				//Close the connection
-				dbConn.close();
-			}catch(Exception e){
-				System.out.println("Error closing connection: " + e.toString());
-				logger.error("Error closing connection: ", e);
+				//Connect to the Aspen Database
+				String databaseConnectionInfo = ConfigUtil.cleanIniValue(configIni.get("Database", "database_aspen_jdbc"));
+				if (databaseConnectionInfo == null) {
+					logger.error("Please provide database_aspen_jdbc within config.pwd.ini");
+					System.exit(1);
+				}
+				dbConn = DriverManager.getConnection(databaseConnectionInfo);
+				if (dbConn == null) {
+					logger.error("Could not establish connection to database at " + databaseConnectionInfo);
+					System.exit(1);
+				}
+
+				IlsExtractLogEntry logEntry = new IlsExtractLogEntry(dbConn, profileToLoad, logger);
+				//Remove log entries older than 45 days
+				long earliestLogToKeep = (startTime.getTime() / 1000) - (60 * 60 * 24 * 45);
+				try {
+					int numDeletions = dbConn.prepareStatement("DELETE from ils_extract_log WHERE startTime < " + earliestLogToKeep + " AND indexingProfile = '" + profileToLoad + "'").executeUpdate();
+					logger.info("Deleted " + numDeletions + " old log entries");
+				} catch (SQLException e) {
+					logger.error("Error deleting old log entries", e);
+				}
+
+				// Connect to the CARL.X database and get information about API
+				CarlXInstanceInformation carlXInstanceInformation = initializeCarlXConnection();
+				if (carlXInstanceInformation == null){
+					logEntry.incErrors();
+					logEntry.addNote("Could not connect to the CARL.X database");
+					logEntry.setFinished();
+					continue;
+				}else{
+					profileToLoad = carlXInstanceInformation.indexingProfileName;
+				}
+
+				indexingProfile = IndexingProfile.loadIndexingProfile(dbConn, profileToLoad, logger);
+
+				// Get Last Extract Time
+				String beginTimeString = getLastExtractTime(dbConn);
+
+				boolean errorUpdatingDatabase = false;
+				try {
+					// Get MarcOut WSDL url for SOAP calls
+					marcOutURL = carlXInstanceInformation.baseAPIUrl + "/CarlXAPI/MarcoutAPI.wsdl";
+
+					logger.warn("Starting export of bibs and items");
+					//Load updated bibs
+					ArrayList<String> updatedBibs = new ArrayList<>();
+					ArrayList<String> createdBibs = new ArrayList<>();
+					ArrayList<String> deletedBibs = new ArrayList<>();
+					logger.debug("Calling GetChangedBibsRequest with BeginTime of " + beginTimeString);
+					if (!getUpdatedBibs(beginTimeString, updatedBibs, createdBibs, deletedBibs)) {
+						//Halt execution
+						logger.error("Failed to getUpdatedBibs, exiting");
+						System.exit(1);
+					} else {
+						logger.warn("Loaded updated bibs");
+					}
+
+					//Load updated items
+					ArrayList<String> updatedItemIDs = new ArrayList<>();
+					ArrayList<String> createdItemIDs = new ArrayList<>();
+					ArrayList<String> deletedItemIDs = new ArrayList<>();
+					logger.debug("Calling GetChangedItemsRequest with BeginTime of " + beginTimeString);
+					if (!getUpdatedItems(beginTimeString, updatedItemIDs, createdItemIDs, deletedItemIDs)) {
+						//Halt execution
+						logger.error("Failed to getUpdatedItems, exiting");
+						System.exit(1);
+					} else {
+						logger.warn("Loaded updated items");
+					}
+
+					// Fetch Item Information for each ID
+					ArrayList<ItemChangeInfo> itemUpdates = fetchItemInformation(updatedItemIDs);
+					if (hadErrors) {
+						logger.error("Failed to Fetch Item Information for updated items, exiting");
+						System.exit(1);
+					} else {
+						logger.warn("Fetched Item information for updated items");
+					}
+					ArrayList<ItemChangeInfo> createdItems = fetchItemInformation(createdItemIDs);
+					if (hadErrors) {
+						logger.error("Failed to Fetch Item Information for created items, exiting");
+						System.exit(1);
+					} else {
+						logger.warn("Fetched Item information for created items");
+					}
+					numChanges = updatedItemIDs.size() + createdItemIDs.size() + deletedItemIDs.size();
+
+					PreparedStatement markGroupedWorkForBibAsChangedStmt = null;
+					try {
+						dbConn.setAutoCommit(false); // turn off for updating grouped worked for re-indexing
+						markGroupedWorkForBibAsChangedStmt = dbConn.prepareStatement("UPDATE grouped_work SET date_updated = ? where id = (SELECT grouped_work_id from grouped_work_primary_identifiers WHERE type = 'ils' and identifier = ?)");
+					} catch (SQLException e) {
+						logger.error("Failed to prepare statement to mark records for Re-indexing", e);
+					}
+
+
+					// Update Changed Bibs //
+					errorUpdatingDatabase = updateBibRecords(dbConn, startTimeForLogging, updatedBibs, updatedItemIDs, createdItemIDs, deletedItemIDs, itemUpdates, createdItems, markGroupedWorkForBibAsChangedStmt);
+					logger.debug("Done updating Bib Records");
+					errorUpdatingDatabase = updateChangedItems(dbConn, startTimeForLogging, createdItemIDs, deletedItemIDs, itemUpdates, createdItems, errorUpdatingDatabase, markGroupedWorkForBibAsChangedStmt);
+					logger.debug("Done updating Item Records");
+
+					// Now remove Any left-over deleted items.  The APIs give us the item id, but not the bib id.  We may need to
+					// look them up within Solr as long as the item id is exported as part of the MARC record
+					if (deletedItemIDs.size() > 0) {
+						for (String deletedItemID : deletedItemIDs) {
+							logger.debug("Item " + deletedItemID + " should be deleted, but we didn't get a bib for it.");
+							//TODO: Now you *really* have to get the BID, dude.
+						}
+					}
+
+					//TODO: Process Deleted Bibs
+					if (deletedBibs.size() > 0) {
+						logger.debug("There are " + deletedBibs + " that still need to be processed.");
+						for (String deletedBibID : deletedBibs) {
+							logger.debug("Bib " + deletedBibID + " should be deleted.");
+						}
+					}
+
+					//TODO: Process New Bibs
+					if (createdBibs.size() > 0) {
+						logger.debug("There are " + createdBibs.size() + " that still need to be processed");
+						for (String createdBibId : createdBibs) {
+							logger.debug("Bib " + createdBibId + " is new and should be created.");
+						}
+					}
+
+					try {
+						// Turn auto commit back on
+						dbConn.commit();
+						dbConn.setAutoCommit(true);
+					} catch (Exception e) {
+						logger.error("MySQL Error: " + e.toString());
+					}
+				}catch (Exception e){
+					logger.error("error loading changes to MARC data: ", e);
+				}
+
+				logger.info("Finished export of bibs and items, starting export of holds");
+
+				//Export holds
+				//TODO: Are we keeping the CARL.X database connection open too long?
+				try{
+					exportHolds(carlXInstanceInformation.carlXConn, dbConn);
+
+					//Close CarlX connection
+					carlXInstanceInformation.carlXConn.close();
+
+				}catch(Exception e){
+					logger.error("Error exporting holds", e);
+					System.out.println("Error: " + e.toString());
+					e.printStackTrace();
+				}
+
+				try {
+					// Wrap Up
+					if (!errorUpdatingDatabase && !hadErrors) {
+						//Update the last extract time
+						if (lastCarlXExtractTimeVariableId != null) {
+							PreparedStatement updateVariableStmt = dbConn.prepareStatement("UPDATE variables set value = ? WHERE id = ?");
+							updateVariableStmt.setLong(1, startTimeForLogging);
+							updateVariableStmt.setLong(2, lastCarlXExtractTimeVariableId);
+							updateVariableStmt.executeUpdate();
+							updateVariableStmt.close();
+							logger.warn("Updated last extract time to " + startTimeForLogging);
+						} else {
+							PreparedStatement insertVariableStmt = dbConn.prepareStatement("INSERT INTO variables (`name`, `value`) VALUES ('last_carlx_extract_time', ?)");
+							insertVariableStmt.setString(1, Long.toString(startTimeForLogging));
+							insertVariableStmt.executeUpdate();
+							insertVariableStmt.close();
+							logger.warn("Set last extract time to " + startTimeForLogging);
+						}
+					} else {
+						if (errorUpdatingDatabase){
+							logger.error("There was an error updating the database, not setting last extract time.");
+						}
+						if (hadErrors){
+							logger.error("There was an error during the extract, not setting last extract time.");
+						}
+					}
+
+					try{
+						//Close the connection
+						dbConn.close();
+					}catch(Exception e){
+						System.out.println("Error closing connection: " + e.toString());
+						logger.error("Error closing connection: ", e);
+					}
+
+				} catch (Exception e) {
+					logger.error("MySQL Error: " + e.toString());
+				}
+
+				Date currentTime = new Date();
+				logger.warn(currentTime.toString() + ": Finished CarlX Extract");
+			}catch (Exception e){
+				logger.error("Error connecting to database ", e);
 			}
+			//Don't exit, we will try again in a few minutes
+			//Pause before running the next export (longer if we didn't get any actual changes)
+			try {
+				if (numChanges == 0) {
+					Thread.sleep(1000 * 60 * 5);
+				}else {
+					Thread.sleep(1000 * 60);
+				}
+			} catch (InterruptedException e) {
+				logger.info("Thread was interrupted");
+			}
+		} //Infinite loop
+	}
 
-		} catch (Exception e) {
-			logger.error("MySQL Error: " + e.toString());
+	private static CarlXInstanceInformation initializeCarlXConnection() throws SQLException {
+		//Get information about the account profile for koha
+		PreparedStatement accountProfileStmt = dbConn.prepareStatement("SELECT * from account_profiles WHERE driver = 'CarlX'");
+		ResultSet accountProfileRS = accountProfileStmt.executeQuery();
+		CarlXInstanceInformation carlXInstanceInformation = null;
+		if (accountProfileRS.next()) {
+			try {
+				String host = accountProfileRS.getString("databaseHost");
+				String port = accountProfileRS.getString("databasePort");
+				if (port == null || port.length() == 0) {
+					port = "1521";
+				}
+				String databaseName = accountProfileRS.getString("databaseName");
+				String user = accountProfileRS.getString("databaseUser");
+				String password = accountProfileRS.getString("databasePassword");
+				String databaseJdbcUrl = "jdbc:oracle:thin:@//" + host + ":" + port +"/" + databaseName;
+				Connection carlxConn;
+				try{
+					//Open the connection to the database
+					Properties props = new Properties();
+					props.setProperty("user", user);
+					props.setProperty("password", password);
+					carlxConn = DriverManager.getConnection(databaseJdbcUrl, props);
+
+					carlXInstanceInformation = new CarlXInstanceInformation();
+					carlXInstanceInformation.carlXConn = carlxConn;
+					carlXInstanceInformation.indexingProfileName = accountProfileRS.getString("recordSource");
+					carlXInstanceInformation.baseAPIUrl = accountProfileRS.getString("patronApiUrl");
+				}catch(Exception e){
+					logger.error("Error exporting holds", e);
+					System.out.println("Error: " + e.toString());
+					e.printStackTrace();
+				}
+			} catch (Exception e) {
+				logger.error("Error connecting to koha database ", e);
+			}
+		} else {
+			logger.error("Could not find an account profile for Koha stopping");
+			System.exit(1);
 		}
-
-
-		Date currentTime = new Date();
-		logger.warn(currentTime.toString() + ": Finished CarlX Extract");
+		return carlXInstanceInformation;
 	}
 
 	private static boolean updateChangedItems(Connection dbConn, long updateTime, ArrayList<String> createdItemIDs, ArrayList<String> deletedItemIDs, ArrayList<ItemChangeInfo> itemUpdates, ArrayList<ItemChangeInfo> createdItems, boolean errorUpdatingDatabase, PreparedStatement markGroupedWorkForBibAsChangedStmt) {
@@ -780,13 +863,13 @@ public class CarlXExportMain {
 						attributeNode        = attributes.getNamedItem("ind1");
 						String tempString    = attributeNode.getNodeValue();
 //												String tempString     = attributeNode.getTextContent();
-						Character indicator1 = tempString.charAt(0);
+						char indicator1 = tempString.charAt(0);
 
 						// Get second indicator
 						attributeNode        = attributes.getNamedItem("ind2");
 						tempString           = attributeNode.getNodeValue();
 //												tempString            = attributeNode.getTextContent();
-						Character indicator2 = tempString.charAt(0);
+						char indicator2 = tempString.charAt(0);
 
 						// Go through sub-fields
 						NodeList subFields   = marcField.getChildNodes();
@@ -802,7 +885,7 @@ public class CarlXExportMain {
 								attributes           = subFieldNode.getAttributes();
 								attributeNode        = attributes.getNamedItem("code");
 								tempString           = attributeNode.getNodeValue();
-								Character code       = tempString.charAt(0);
+								char code       = tempString.charAt(0);
 								String subFieldValue = subFieldNode.getTextContent();
 								Subfield subfield    = MarcFactoryImpl.newInstance().newSubfield(code, subFieldValue);
 								dataField.addSubfield(subfield);
@@ -1375,7 +1458,23 @@ public class CarlXExportMain {
 			}
 		}
 		logger.info("Finished exporting holds");
-
 	}
 
+	private static String groupRecord(Connection dbConn, Record marcRecord) {
+		return getRecordGroupingProcessor(dbConn).processMarcRecord(marcRecord, true);
+	}
+
+	private static MarcRecordGrouper getRecordGroupingProcessor(Connection dbConn){
+		if (recordGroupingProcessorSingleton == null) {
+			recordGroupingProcessorSingleton = new MarcRecordGrouper(dbConn, indexingProfile, logger, false);
+		}
+		return recordGroupingProcessorSingleton;
+	}
+
+	private static GroupedWorkIndexer getGroupedWorkIndexer(Connection dbConn) {
+		if (groupedWorkIndexer == null) {
+			groupedWorkIndexer = new GroupedWorkIndexer(serverName, dbConn, configIni, false, false, false, logger);
+		}
+		return groupedWorkIndexer;
+	}
 }
