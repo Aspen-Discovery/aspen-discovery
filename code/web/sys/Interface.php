@@ -329,48 +329,53 @@ class UInterface extends Smarty
 		$allAppliedThemes = [];
 		$primaryTheme = null;
 
-        $theme = new Theme();
-        $theme->id = $library->theme;
-        if ($theme->find(true)){
-            $allAppliedThemes = $theme->getAllAppliedThemes();
-            $primaryTheme = $theme;
-            $this->appliedTheme = $primaryTheme;
-        }
+		try {
+			$theme = new Theme();
+			$theme->id = $library->theme;
+			if ($theme->find(true)) {
+				$allAppliedThemes = $theme->getAllAppliedThemes();
+				$primaryTheme = $theme;
+				$this->appliedTheme = $primaryTheme;
+			}
 
-        //Get Logo
-        $logoName = null;
-        foreach ($allAppliedThemes as $theme){
-            if (!is_null($theme->logoName)){
-                $logoName = $theme->logoName;
-                break;
-            }
-        }
-        if ($logoName) {
-            $this->assign('responsiveLogo', '/files/original/' . $logoName);
-        } else {
-            if (isset($configArray['Site']['responsiveLogo'])){
-                $this->assign('responsiveLogo', $configArray['Site']['responsiveLogo']);
-            }
-        }
+			//Get Logo
+			$logoName = null;
+			foreach ($allAppliedThemes as $theme) {
+				if (!is_null($theme->logoName)) {
+					$logoName = $theme->logoName;
+					break;
+				}
+			}
+			if ($logoName) {
+				$this->assign('responsiveLogo', '/files/original/' . $logoName);
+			} else {
+				if (isset($configArray['Site']['responsiveLogo'])) {
+					$this->assign('responsiveLogo', $configArray['Site']['responsiveLogo']);
+				}
+			}
 
-        //Get favicon
-        $favicon = null;
-        foreach ($allAppliedThemes as $theme){
-            if (!is_null($theme->favicon)){
-                $favicon = $theme->favicon;
-                break;
-            }
-        }
-        if ($favicon) {
-            $this->assign('favicon', '/files/original/' . $favicon);
-        }
+			//Get favicon
+			$favicon = null;
+			foreach ($allAppliedThemes as $theme) {
+				if (!is_null($theme->favicon)) {
+					$favicon = $theme->favicon;
+					break;
+				}
+			}
+			if ($favicon) {
+				$this->assign('favicon', '/files/original/' . $favicon);
+			}
 
 
-        if ($primaryTheme != null) {
-            $themeCss = $primaryTheme->generatedCss;
-            $this->assign('themeCss', $themeCss);
-            $this->assign('primaryThemeObject', $primaryTheme);
-        }
+			if ($primaryTheme != null) {
+				$themeCss = $primaryTheme->generatedCss;
+				$this->assign('themeCss', $themeCss);
+				$this->assign('primaryThemeObject', $primaryTheme);
+			}
+		}catch (PDOException $e){
+			global $logger;
+			$logger->log("Theme interface not found", Logger::LOG_ALERT);
+		}
 
 		$location = $locationSingleton->getActiveLocation();
 		$this->assign('logoLink', $configArray['Site']['path']);
