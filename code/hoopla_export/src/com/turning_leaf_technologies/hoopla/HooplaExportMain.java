@@ -196,7 +196,7 @@ public class HooplaExportMain {
 					if (responseJSON.has("titles")) {
 						JSONArray responseTitles = responseJSON.getJSONArray("titles");
 						if (responseTitles != null && responseTitles.length() > 0) {
-							numProcessed += updateTitlesInDB(responseTitles, doFullReload);
+							numChanges += updateTitlesInDB(responseTitles, doFullReload);
 						}
 
 						String startToken = null;
@@ -211,7 +211,7 @@ public class HooplaExportMain {
 							if (responseJSON.has("titles")) {
 								responseTitles = responseJSON.getJSONArray("titles");
 								if (responseTitles != null && responseTitles.length() > 0) {
-									numProcessed += updateTitlesInDB(responseTitles, doFullReload);
+									numChanges += updateTitlesInDB(responseTitles, doFullReload);
 								}
 							}
 							if (responseJSON.has("nextStartToken")) {
@@ -219,9 +219,8 @@ public class HooplaExportMain {
 							} else {
 								startToken = null;
 							}
-							if (numProcessed % 10000 == 0) {
-								logEntry.addNote("Processed " + numProcessed + " records from hoopla");
-							}
+							logEntry.addNote("Processed " + numChanges + " records from hoopla");
+							logEntry.saveResults();
 						}
 					}
 				}
