@@ -1332,6 +1332,10 @@ public class GroupedWorkSolr implements Cloneable {
 		this.physicals.addAll(fieldList);
 	}
 
+	void addPhysical(String field) {
+		this.physicals.add(field);
+	}
+
 	void addDateSpan(Set<String> fieldList) {
 		this.dateSpans.addAll(fieldList);
 	}

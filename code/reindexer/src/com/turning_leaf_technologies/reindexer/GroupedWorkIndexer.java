@@ -34,6 +34,7 @@ public class GroupedWorkIndexer {
 	private HashMap<String, MarcRecordProcessor> ilsRecordProcessors = new HashMap<>();
 	private OverDriveProcessor overDriveProcessor;
 	private RbdigitalProcessor rbdigitalProcessor;
+	private HooplaProcessor hooplaProcessor;
 	private HashMap<String, HashMap<String, String>> translationMaps = new HashMap<>();
 	private HashMap<String, LexileTitle> lexileInformation = new HashMap<>();
 	private Long maxWorksToProcess = -1L;
@@ -191,9 +192,6 @@ public class GroupedWorkIndexer {
 						case "Flatirons":
 							ilsRecordProcessors.put(curIdentifier, new FlatironsRecordProcessor(this, dbConn, indexingProfileRS, logger, fullReindex));
 							break;
-						case "Hoopla":
-							ilsRecordProcessors.put(curIdentifier, new HooplaProcessor(this, indexingProfileRS, logger));
-							break;
 						case "Arlington":
 							ilsRecordProcessors.put(curIdentifier, new ArlingtonRecordProcessor(this, dbConn, indexingProfileRS, logger, fullReindex));
 							break;
@@ -233,6 +231,8 @@ public class GroupedWorkIndexer {
 		overDriveProcessor = new OverDriveProcessor(this, dbConn, logger);
 
 		rbdigitalProcessor = new RbdigitalProcessor(this, dbConn, logger);
+
+		hooplaProcessor = new HooplaProcessor(this, dbConn, logger);
 
 		//Load translation maps
 		loadSystemTranslationMaps();
@@ -785,6 +785,9 @@ public class GroupedWorkIndexer {
 				break;
 			case "rbdigital":
 				rbdigitalProcessor.processRecord(groupedWork, identifier);
+				break;
+			case "hoopla":
+				hooplaProcessor.processRecord(groupedWork, identifier);
 				break;
 			default:
 				if (ilsRecordProcessors.containsKey(type)) {

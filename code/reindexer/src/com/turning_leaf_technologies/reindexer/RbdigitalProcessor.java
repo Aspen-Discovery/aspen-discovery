@@ -1,6 +1,7 @@
 package com.turning_leaf_technologies.reindexer;
 
 import com.turning_leaf_technologies.indexing.Scope;
+import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -29,7 +30,7 @@ class RbdigitalProcessor {
             getProductInfoStmt = dbConn.prepareStatement("SELECT * from rbdigital_title where rbdigitalId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
             getAvailabilityStmt = dbConn.prepareStatement("SELECT * from rbdigital_availability where rbdigitalId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
         } catch (SQLException e) {
-            logger.error("Error setting up overdrive processor", e);
+            logger.error("Error setting up rbdigital processor", e);
         }
     }
 
@@ -81,7 +82,7 @@ class RbdigitalProcessor {
                     String subtitle = rawResponse.getString("subtitle");
                     groupedWork.setSubTitle(subtitle);
                 }
-                String primaryAuthor = swapFirstLastNames(productRS.getString("primaryAuthor"));
+                String primaryAuthor = StringUtils.swapFirstLastNames(productRS.getString("primaryAuthor"));
                 groupedWork.setAuthor(primaryAuthor);
                 groupedWork.setAuthAuthor(primaryAuthor);
                 groupedWork.setAuthorDisplay(primaryAuthor);
@@ -126,7 +127,7 @@ class RbdigitalProcessor {
                     HashSet<String> narratorsWithRoleToAdd = new HashSet<>();
                     for (int i = 0; i < narrators.length(); i++) {
                         JSONObject curNarrator = narrators.getJSONObject(i);
-                        String narratorName = swapFirstLastNames(curNarrator.getString("text"));
+                        String narratorName = StringUtils.swapFirstLastNames(curNarrator.getString("text"));
                         narratorsToAdd.add(narratorName);
                         narratorsWithRoleToAdd.add(narratorName + "|" + curNarrator.getString("facet"));
                     }
@@ -139,7 +140,7 @@ class RbdigitalProcessor {
                     //Skip the first author since that is the primary author
                     for (int i = 1; i < authors.length(); i++) {
                         JSONObject curNarrator = authors.getJSONObject(i);
-                        authorsToAdd.add(swapFirstLastNames(curNarrator.getString("text")));
+                        authorsToAdd.add(StringUtils.swapFirstLastNames(curNarrator.getString("text")));
                     }
                     groupedWork.addAuthor2(authorsToAdd);
                 }
@@ -237,16 +238,4 @@ class RbdigitalProcessor {
         }
     }
 
-    private String swapFirstLastNames(String author) {
-        //Need to swap the first and last names
-        if (author.contains(" ")){
-            String[] authorParts = author.split("\\s+");
-            StringBuilder tmpAuthor = new StringBuilder();
-            for (int i = 0; i < authorParts.length -1; i++){
-                tmpAuthor.append(authorParts[i]).append(" ");
-            }
-            author = authorParts[authorParts.length -1] + ", " + tmpAuthor.toString();
-        }
-        return author;
-    }
 }

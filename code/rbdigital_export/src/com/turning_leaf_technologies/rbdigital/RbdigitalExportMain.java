@@ -72,17 +72,7 @@ public class RbdigitalExportMain {
             //Connect to the aspen database
             aspenConn = connectToDatabase();
 
-            //Remove log entries older than 45 days
-            long earliestLogToKeep = (startTime.getTime() / 1000) - (60 * 60 * 24 * 45);
-            try {
-                int numDeletions = aspenConn.prepareStatement("DELETE from rbdigital_export_log WHERE startTime < " + earliestLogToKeep).executeUpdate();
-                logger.info("Deleted " + numDeletions + " old log entries");
-            } catch (SQLException e) {
-                logger.error("Error deleting old log entries", e);
-            }
-
-            //Start a log entry
-            logEntry = new RbdigitalExtractLogEntry(aspenConn, logger);
+            createDbLogEntry(startTime, aspenConn);
 
             //Get a list of all existing records in the database
             loadExistingTitles();
@@ -467,5 +457,19 @@ public class RbdigitalExportMain {
             System.exit(1);
         }
         return aspenConn;
+    }
+
+    private static void createDbLogEntry(Date startTime, Connection aspenConn) {
+        //Remove log entries older than 45 days
+        long earliestLogToKeep = (startTime.getTime() / 1000) - (60 * 60 * 24 * 45);
+        try {
+            int numDeletions = aspenConn.prepareStatement("DELETE from rbdigital_export_log WHERE startTime < " + earliestLogToKeep).executeUpdate();
+            logger.info("Deleted " + numDeletions + " old log entries");
+        } catch (SQLException e) {
+            logger.error("Error deleting old log entries", e);
+        }
+
+        //Start a log entry
+        logEntry = new RbdigitalExtractLogEntry(aspenConn, logger);
     }
 }

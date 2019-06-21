@@ -9,6 +9,11 @@ class HooplaExportLogEntry extends DataObject
 	public $lastUpdate;
 	public $endTime;
 	public $notes;
+	public $numProducts;
+	public $numErrors;
+	public $numAdded;
+	public $numDeleted;
+	public $numUpdated;
 
 	function keys() {
 		return array('id');

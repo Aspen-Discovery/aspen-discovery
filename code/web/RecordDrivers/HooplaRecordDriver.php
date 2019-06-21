@@ -1,51 +1,105 @@
 <?php
 
-require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
-class HooplaRecordDriver extends MarcRecordDriver {
+require_once ROOT_DIR . '/RecordDrivers/RecordInterface.php';
+require_once ROOT_DIR . '/RecordDrivers/GroupedWorkSubDriver.php';
+require_once ROOT_DIR . '/sys/Hoopla/HooplaExtract.php';
+class HooplaRecordDriver extends GroupedWorkSubDriver {
+	private $id;
+	/** @var HooplaExtract */
+	private $hooplaExtract;
+	private $hooplaRawMetadata;
+	private $valid;
 	/**
 	 * Constructor.  We build the object using data from the Hoopla records stored on disk.
 	 * Will be similar to a MarcRecord with slightly different functionality
 	 *
-	 * @param array|File_MARC_Record|string $record
+	 * @param string $recordId
 	 * @param  GroupedWork $groupedWork;
 	 * @access  public
 	 */
-	public function __construct($record, $groupedWork = null) {
-		if ($record instanceof File_MARC_Record){
-			$this->marcRecord = $record;
-		}elseif (is_string($record)){
-			require_once ROOT_DIR . '/sys/MarcLoader.php';
-			$this->profileType = 'hoopla';
-			$this->id = $record;
+	public function __construct($recordId, $groupedWork = null) {
+		$this->id = $recordId;
 
-			$this->valid = MarcLoader::marcExistsForHooplaId($record);
+		$this->hooplaExtract = new HooplaExtract();
+		$this->hooplaExtract->hooplaId = $recordId;
+		if ($this->hooplaExtract->find(true)) {
+			$this->valid = true;
+			$this->hooplaRawMetadata = json_decode($this->hooplaExtract->rawResponse);
+		} else {
+			$this->valid = false;
+			$this->hooplaExtract = null;
+		}
+		if ($this->valid){
+			parent::__construct($groupedWork);
+		}
+	}
 
-			// Code block taken from MarcRecord.php, to set the indexing profile so that method getAbsoluteURL() works correctly. pascal 4-27-2017
-			global $indexingProfiles;
-			if (array_key_exists($this->profileType, $indexingProfiles)) {
-				$this->indexingProfile = $indexingProfiles[$this->profileType];
-			} else {
-			    global $logger;
-			    $logger->log(Logger::LOG_ERROR, "Unable to find indexing profile for Hoopla record");
-            }
+	public function getIdWithSource(){
+		return 'hoopla:' . $this->id;
+	}
 
+	/**
+	 * Load the grouped work that this record is connected to.
+	 */
+	public function loadGroupedWork() {
+		if ($this->groupedWork == null){
+			require_once ROOT_DIR . '/sys/Grouping/GroupedWorkPrimaryIdentifier.php';
+			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+			$groupedWork = new GroupedWork();
+			$query = "SELECT grouped_work.* FROM grouped_work INNER JOIN grouped_work_primary_identifiers ON grouped_work.id = grouped_work_id WHERE type='hoopla' AND identifier = '" . $this->getUniqueID() . "'";
+			$groupedWork->query($query);
 
-		}else{
-			// Call the parent's constructor...
-			parent::__construct($record, $groupedWork);
-
-			// Also process the MARC record:
-			require_once ROOT_DIR . '/sys/MarcLoader.php';
-			$this->marcRecord = MarcLoader::loadMarcRecordFromRecord($record);
-			if (!$this->marcRecord) {
-				$this->valid = false;
+			if ($groupedWork->N == 1){
+				$groupedWork->fetch();
+				$this->groupedWork = clone $groupedWork;
 			}
 		}
-		if ($groupedWork == null){
-			parent::loadGroupedWork();
-		}else{
-			$this->groupedWork = $groupedWork;
-		}
+	}
+
+	public function getModule()
+	{
+		return 'Hoopla';
+	}
+
+	/**
+	 * Assign necessary Smarty variables and return a template name to
+	 * load in order to display the full record information on the Staff
+	 * View tab of the record view page.
+	 *
+	 * @access  public
+	 * @return  string              Name of Smarty template file to display.
+	 */
+	public function getStaffView()
+	{
+		global $interface;
+		$groupedWorkDetails = $this->getGroupedWorkDriver()->getGroupedWorkDetails();
+		$interface->assign('groupedWorkDetails', $groupedWorkDetails);
+
+		$interface->assign('hooplaExtract', $this->hooplaRawMetadata);
+		return 'RecordDrivers/Hoopla/staff-view.tpl';
+	}
+
+	/**
+	 * Get the full title of the record.
+	 *
+	 * @return  string
+	 */
+	public function getTitle()
+	{
+		return $this->hooplaExtract->title;
+	}
+
+	/**
+	 * The Table of Contents extracted from the record.
+	 * Returns null if no Table of Contents is available.
+	 *
+	 * @access  public
+	 * @return  array              Array of elements in the table of contents
+	 */
+	public function getTableOfContents()
+	{
+		$segments = $this->hooplaRawMetadata->segments;
+		return $segments;
 	}
 
 	/**
@@ -56,106 +110,18 @@ class HooplaRecordDriver extends MarcRecordDriver {
 	 * @access  public
 	 * @return  string              Unique identifier.
 	 */
-	public function getShortId()
+	public function getUniqueID()
 	{
 		return $this->id;
 	}
 
-	/**
-	 * @return File_MARC_Record
-	 */
-	public function getMarcRecord(){
-		if ($this->marcRecord == null){
-			$this->marcRecord = MarcLoader::loadMarcRecordByHooplaId($this->id);
-			global $timer;
-			$timer->logTime("Finished loading marc record for hoopla record {$this->id}");
-		}
-		return $this->marcRecord;
-	}
-
-	/**
-	 * @param $actions
-	 * @return array
-	 */
-	public function getAccessLink($actions = null)
+	public function getDescription()
 	{
-		$title      = translate('hoopla_url_action');
-		$marcRecord = $this->getMarcRecord();
-		/** @var File_MARC_Data_Field[] $linkFields */
-		$linkFields = $marcRecord->getFields('856');
-		$fileOrUrl  = null;
-		foreach ($linkFields as $linkField) {
-			if ($linkField->getIndicator(1) == 4 && $linkField->getIndicator(2) == 0) {
-				$linkSubfield = $linkField->getSubfield('u');
-				$fileOrUrl    = $linkSubfield->getData();
-				break;
-			}
+		if (!empty($this->hooplaRawMetadata->synopsis)) {
+			return $this->hooplaRawMetadata->synopsis;
+		}else{
+			return "";
 		}
-		if ($fileOrUrl != null) {
-			$actions[] = array(
-				'url' => $fileOrUrl,
-				'title' => $title,
-				'requireLogin' => false,
-			);
-		}
-		return $actions;
-	}
-
-	protected function getRecordType(){
-		return 'hoopla';
-	}
-
-	function getActions() {
-		//TODO: If this is added to the related record, pass in the value
-		$actions = array();
-
-		/** @var Library $searchLibrary */
-		$searchLibrary = Library::getSearchLibrary();
-		if ($searchLibrary->hooplaLibraryID > 0) { // Library is enabled for Hoopla patron action integration
-			$id = $this->getId();
-			$title = translate('hoopla_checkout_action');
-			$actions[] = array(
-				'onclick' => "return AspenDiscovery.Hoopla.getCheckOutPrompts('$id')",
-				'title'   => $title
-			);
-
-		} else {
-		    $actions = $this->getAccessLink($actions);
-        }
-
-		return $actions;
-	}
-
-	public function getItemActions($itemInfo){
-		return array();
-	}
-
-	function getRecordActions($recordAvailable, $recordHoldable, $recordBookable, $relatedUrls = null, $volumeData = null){
-		$actions = array();
-
-		/** @var Library $searchLibrary */
-		$searchLibrary = Library::getSearchLibrary();
-		if ($searchLibrary->hooplaLibraryID > 0) { // Library is enabled for Hoopla patron action integration
-			$id = $this->getId();
-			$title = translate('hoopla_checkout_action');
-			$actions[] = array(
-				'onclick' => "return AspenDiscovery.Hoopla.getCheckOutPrompts('$id')",
-				'title'   => $title
-			);
-
-		} else {
-			$title = translate('hoopla_url_action');
-			foreach ($relatedUrls as $url){
-				$actions[] = array(
-					'url' => $url['url'],
-					'title' => $title,
-					'requireLogin' => false,
-				);
-			}
-
-		}
-
-		return $actions;
 	}
 
 	public function getMoreDetailsOptions(){
@@ -181,11 +147,6 @@ class HooplaRecordDriver extends MarcRecordDriver {
 			);
 		}
 
-		$notes = $this->getNotes();
-		if (count($notes) > 0){
-			$interface->assign('notes', $notes);
-		}
-
 		$moreDetailsOptions['moreDetails'] = array(
 			'label' => 'More Details',
 			'body' => $interface->fetch('Hoopla/view-more-details.tpl'),
@@ -193,7 +154,7 @@ class HooplaRecordDriver extends MarcRecordDriver {
 		$this->loadSubjects();
 		$moreDetailsOptions['subjects'] = array(
 			'label' => 'Subjects',
-			'body' => $interface->fetch('Record/view-subjects.tpl'),
+			'body' => $interface->fetch('RecordDrivers/Hoopla/view-subjects.tpl'),
 		);
 		$moreDetailsOptions['citations'] = array(
 			'label' => 'Citations',
@@ -209,59 +170,275 @@ class HooplaRecordDriver extends MarcRecordDriver {
 		return $this->filterAndSortMoreDetailsOptions($moreDetailsOptions);
 	}
 
-	function getBookcoverUrl($size = 'small', $absolutePath = false){
-		$id = $this->getUniqueID();
-		$formatCategory = $this->getFormatCategory();
-		if (is_array($formatCategory)){
-			$formatCategory = reset($formatCategory);
-		}
-		$formats = $this->getFormat();
-		$format = reset($formats);
-		global $configArray;
-		if ($absolutePath){
-			$bookCoverUrl = $configArray['Site']['url'];
-		}else{
-			$bookCoverUrl = $configArray['Site']['path'];
-		}
-		$bookCoverUrl .= "/bookcover.php?id={$id}&amp;size={$size}&amp;category=" . urlencode($formatCategory) . "&amp;format=" . urlencode($format) . "&amp;type=hoopla";
-		$isbn = $this->getCleanISBN();
-		if ($isbn){
-			$bookCoverUrl .= "&amp;isn={$isbn}";
-		}
-		$upc = $this->getCleanUPC();
-		if ($upc){
-			$bookCoverUrl .= "&amp;upc={$upc}";
-		}
-		$issn = $this->getCleanISSN();
-		if ($issn){
-			$bookCoverUrl .= "&amp;issn={$issn}";
-		}
-		return $bookCoverUrl;
+	public function getItemActions($itemInfo)
+	{
+		return [];
 	}
 
-	public function getStaffView()
+	public function getISBNs()
 	{
-		parent::getStaffView();
+		$isbns = [];
+		if (!empty($this->hooplaRawMetadata->isbn)) {
+			$isbns[] = $this->hooplaRawMetadata->isbn;
+		}
+		return $isbns;
+	}
+
+	public function getISSNs()
+	{
+		return array();
+	}
+
+	function getRecordActions($recordAvailable, $recordHoldable, $recordBookable, $relatedUrls = null, $volumeData = null){
+		$actions = array();
+
+		/** @var Library $searchLibrary */
+		$searchLibrary = Library::getSearchLibrary();
+		if ($searchLibrary->hooplaLibraryID > 0) { // Library is enabled for Hoopla patron action integration
+			$id = $this->id;
+			$title = translate('hoopla_checkout_action');
+			$actions[] = array(
+				'onclick' => "return AspenDiscovery.Hoopla.getCheckOutPrompts('$id')",
+				'title'   => $title
+			);
+		} else {
+			$title = translate('hoopla_url_action');
+			foreach ($relatedUrls as $url){
+				$actions[] = array(
+					'url' => $url['url'],
+					'title' => $title,
+					'requireLogin' => false,
+				);
+			}
+		}
+
+		return $actions;
+	}
+
+	/**
+	 * Returns an array of contributors to the title, ideally with the role appended after a pipe symbol
+	 * @return array
+	 */
+	function getContributors()
+	{
+		$contributors = array();
+		if (isset($this->hooplaRawMetadata->artists)){
+			$authors = $this->hooplaRawMetadata->artists;
+			foreach ($authors as $author) {
+				//TODO: Reverse name?
+				$contributors[] = $author->name . '|' . ucwords($author->relationship);
+			}
+		}
+		return $contributors;
+	}
+
+	/**
+	 * Get the edition of the current record.
+	 *
+	 * @access  protected
+	 * @return  array
+	 */
+	function getEditions()
+	{
+		// No specific information provided by Hoopla
+		return array();
+	}
+
+	/**
+	 * @return array
+	 */
+	function getFormats()
+	{
+		if ($this->hooplaExtract->kind == "MOVIE" || $this->hooplaExtract->kind == "TELEVISION") {
+			return ['eVideo'];
+		} elseif ($this->hooplaExtract->kind == "AUDIOBOOK"){
+			return ['eAudiobook'];
+		} elseif ($this->hooplaExtract->kind == "EBOOK"){
+			return ['eBook'];
+		} elseif ($this->hooplaExtract->kind == "ECOMIC"){
+			return ['eComic'];
+		} elseif ($this->hooplaExtract->kind == "MUSIC"){
+			return ['eMusic'];
+		} else {
+			return ['eBook'];
+		}
+	}
+
+	/**
+	 * Get an array of all the format categories associated with the record.
+	 *
+	 * @return  array
+	 */
+	function getFormatCategory()
+	{
+		if ($this->hooplaExtract->kind == "AUDIOBOOK") {
+			return ['eBook', 'Audio Books'];
+		}else if ($this->hooplaExtract->kind == "MOVIE" || $this->hooplaExtract->kind == "TELEVISION") {
+			return ['Movies'];
+		}else if ($this->hooplaExtract->kind == "MUSIC") {
+			return ['Music'];
+		} else {
+			return ['eBook'];
+		}
+	}
+
+	public function getLanguage()
+	{
+		return ucfirst(strtolower($this->hooplaRawMetadata->language));
+	}
+
+	public function getNumHolds(){
+		return 0;
+	}
+
+	/**
+	 * @return array
+	 */
+	function getPlacesOfPublication()
+	{
+		//Not provided within the metadata
+		return array();
+	}
+
+	/**
+	 * Returns the primary author of the work
+	 * @return String
+	 */
+	function getPrimaryAuthor()
+	{
+		if (!empty($this->hooplaRawMetadata->artist)){
+			return $this->hooplaRawMetadata->artist;
+		}else{
+			return '';
+		}
+	}
+
+	/**
+	 * @return array
+	 */
+	function getPublishers()
+	{
+		return [$this->hooplaRawMetadata->publisher];
+	}
+
+	/**
+	 * @return array
+	 */
+	function getPublicationDates()
+	{
+		return [$this->hooplaRawMetadata->year];
+	}
+
+	protected function getRecordType()
+	{
+		return 'hoopla';
+	}
+
+	function getRelatedRecord() {
+		$id = 'hoopla:' . $this->id;
+		return $this->getGroupedWorkDriver()->getRelatedRecord($id);
+	}
+
+	public function getSemanticData() {
+		// Schema.org
+		// Get information about the record
+		require_once ROOT_DIR . '/RecordDrivers/LDRecordOffer.php';
+		$linkedDataRecord = new LDRecordOffer($this->getRelatedRecord());
+		$semanticData [] = array(
+			'@context' => 'http://schema.org',
+			'@type' => $linkedDataRecord->getWorkType(),
+			'name' => $this->getTitle(),
+			'creator' => $this->getPrimaryAuthor(),
+			'bookEdition' => $this->getEditions(),
+			'isAccessibleForFree' => true,
+			'image' => $this->getBookcoverUrl('medium'),
+			"offers" => $linkedDataRecord->getOffers()
+		);
 
 		global $interface;
-        $groupedWorkDetails = $this->getGroupedWorkDriver()->getGroupedWorkDetails();
-        $interface->assign('groupedWorkDetails', $groupedWorkDetails);
-
-        require_once ROOT_DIR .'/sys/Hoopla/HooplaExtract.php';
-		$hooplaExtract = new HooplaExtract();
-//		$hooplaId = preg_replace('/^MWT/', '', $this->id);
-		$hooplaId = HooplaDriver::recordIDtoHooplaID($this->id);
-		if ($hooplaExtract->get('hooplaId', $hooplaId) == 1) {
-			$hooplaData = array();
-			foreach ($hooplaExtract->table() as $fieldName => $value_ignored) {
-				$hooplaData[$fieldName] = $hooplaExtract->$fieldName;
-			}
-			global $interface;
-			$interface->assign('hooplaExtract', $hooplaData);
-		}
-		return 'RecordDrivers/Hoopla/staff-view.tpl';
-
+		$interface->assign('og_title', $this->getTitle());
+		$interface->assign('og_type', $this->getGroupedWorkDriver()->getOGType());
+		$interface->assign('og_image', $this->getBookcoverUrl('medium'));
+		$interface->assign('og_url', $this->getAbsoluteUrl());
+		return $semanticData;
 	}
 
+	/**
+	 * Returns title without subtitle
+	 *
+	 * @return string
+	 */
+	function getShortTitle()
+	{
+		return $this->getTitle();
+	}
 
+	/**
+	 * Returns subtitle
+	 *
+	 * @return string
+	 */
+	function getSubtitle()
+	{
+		return "";
+	}
+
+	function isValid(){
+		return $this->valid;
+	}
+
+	function loadSubjects()
+	{
+		$subjects = [];
+		if ($this->hooplaRawMetadata->genres) {
+			$subjects = $this->hooplaRawMetadata->genres;
+		}
+		global $interface;
+		$interface->assign('subjects', $subjects);
+	}
+
+	function getActions() {
+		//TODO: If this is added to the related record, pass in the value
+		$actions = array();
+
+		/** @var Library $searchLibrary */
+		$searchLibrary = Library::getSearchLibrary();
+		if ($searchLibrary->hooplaLibraryID > 0) { // Library is enabled for Hoopla patron action integration
+			$title = translate('hoopla_checkout_action');
+			$actions[] = array(
+				'onclick' => "return AspenDiscovery.Hoopla.getCheckOutPrompts('{$this->id}')",
+				'title'   => $title
+			);
+
+		} else {
+			$actions = $this->getAccessLink($actions);
+		}
+
+		return $actions;
+	}
+
+	public function getAccessLink($actions = null)
+	{
+		$title      = translate('hoopla_url_action');
+		$actions[] = array(
+			'url' => $this->hooplaRawMetadata->url,
+			'title' => $title,
+			'requireLogin' => false,
+		);
+	}
+
+	/**
+	 * Get an array of physical descriptions of the item.
+	 *
+	 * @access  protected
+	 * @return  array
+	 */
+	public function getPhysicalDescriptions()
+	{
+		$physicalDescriptions = [];
+		if (!empty($this->hooplaRawMetadata->duration)){
+			$physicalDescriptions[] = $this->hooplaRawMetadata->duration;
+		}
+		return $physicalDescriptions;
+	}
 }

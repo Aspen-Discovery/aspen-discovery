@@ -256,13 +256,6 @@ class SearchAPI extends Action {
 		$jsonResults['page'] = $currentPage;
 
 
-		if ($configArray['Statistics']['enabled'] && isset( $_GET['lookfor'])) {
-			require_once(ROOT_DIR . '/Drivers/marmot_inc/SearchStatNew.php');
-			$searchStat = new SearchStatNew();
-			$type = isset($_GET['type']) ? strip_tags($_GET['type']) : 'Keyword';
-			$searchStat->saveSearch( strip_tags($_GET['lookfor']), $type, $searchObject->getResultTotal());
-		}
-
 		// Save the ID of this search to the session so we can return to it easily:
 		$_SESSION['lastSearchId'] = $searchObject->getSearchId();
 
@@ -310,21 +303,6 @@ class SearchAPI extends Action {
 		}else{
 		    return '';
         }
-	}
-
-	/**
-	 * Retrieve the top 20 search terms by popularity from the search_stats table
-	 */
-	function getTopSearches(){
-		require_once(ROOT_DIR . '/Drivers/marmot_inc/SearchStatNew.php');
-		$numSearchesToReturn = isset($_REQUEST['numResults']) ? $_REQUEST['numResults'] : 20;
-		$searchStats = new SearchStatNew();
-		$searchStats->query("SELECT phrase, numSearches as numTotalSearches FROM `search_stats_new` where phrase != '' order by numTotalSearches DESC LIMIT " . $numSearchesToReturn);
-		$searches = array();
-		while ($searchStats->fetch()){
-			$searches[] = $searchStats->phrase;
-		}
-		return $searches;
 	}
 
 	function getRecordIdForTitle(){

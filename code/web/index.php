@@ -819,7 +819,7 @@ function loadModuleActionId(){
 	$requestURI = $_SERVER['REQUEST_URI'];
 	/** IndexingProfile[] $indexingProfiles */
 	global $indexingProfiles;
-	$allRecordModules = "OverDrive|GroupedWork|Record|ExternalEContent|Person|Library|Rbdigital";
+	$allRecordModules = "OverDrive|GroupedWork|Record|ExternalEContent|Person|Library|Rbdigital|Hoopla";
 	foreach ($indexingProfiles as $profile){
 		$allRecordModules .= '|' . $profile->recordUrlComponent;
 	}

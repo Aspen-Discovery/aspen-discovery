@@ -124,7 +124,7 @@ function getRbdigitalUpdates() {
 
         'rbdigital_exportLog_update' => array(
             'title' => 'Better Rbdigital export log',
-            'description' => 'Add additional rows for Rbdigital export log.',
+            'description' => 'Add additional info for Rbdigital export log.',
             'sql' => array(
                 "ALTER TABLE rbdigital_export_log ADD COLUMN numProducts INT(11) DEFAULT 0",
                 "ALTER TABLE rbdigital_export_log ADD COLUMN numErrors INT(11) DEFAULT 0",

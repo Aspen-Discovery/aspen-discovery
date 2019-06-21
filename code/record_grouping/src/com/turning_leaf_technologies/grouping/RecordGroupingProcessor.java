@@ -25,6 +25,7 @@ public class RecordGroupingProcessor {
 	private PreparedStatement getAdditionalPrimaryIdentifierForWorkStmt;
 	private PreparedStatement deletePrimaryIdentifierStmt;
 	private PreparedStatement getPermanentIdByWorkIdStmt;
+	private PreparedStatement getGroupedWorkIdByPermanentIdStmt;
 
 	private PreparedStatement getAuthorAuthorityStmt;
 	private PreparedStatement getTitleAuthorityStmt;
@@ -36,10 +37,6 @@ public class RecordGroupingProcessor {
 	private long startTime = new Date().getTime();
 
 	HashMap<String, HashMap<String, String>> translationMaps = new HashMap<>();
-
-	//TODO: Determine if we can avoid this by simply using the ON DUPLICATE KEY UPDATE FUNCTIONALITY
-	//Would also want to mark merged works as changed (at least once) to make sure they get re-indexed.
-	private HashMap<String, Long> existingGroupedWorks = new HashMap<>();
 
 	//A list of grouped works that have been manually merged.
 	private HashMap<String, String> mergedGroupedWorks = new HashMap<>();
@@ -149,15 +146,8 @@ public class RecordGroupingProcessor {
 			getAuthorAuthorityStmt = dbConnection.prepareStatement("SELECT * from author_authorities where originalName = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			getTitleAuthorityStmt = dbConnection.prepareStatement("SELECT * from title_authorities where originalName = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 
-			if (!fullRegrouping){
-				PreparedStatement loadExistingGroupedWorksStmt = dbConnection.prepareStatement("SELECT id, permanent_id from grouped_work");
-				ResultSet loadExistingGroupedWorksRS = loadExistingGroupedWorksStmt.executeQuery();
-				while (loadExistingGroupedWorksRS.next()){
-					existingGroupedWorks.put(loadExistingGroupedWorksRS.getString("permanent_id"), loadExistingGroupedWorksRS.getLong("id"));
-				}
-				loadExistingGroupedWorksRS.close();
-				loadExistingGroupedWorksStmt.close();
-			}
+			getGroupedWorkIdByPermanentIdStmt = dbConnection.prepareStatement("SELECT id from grouped_work WHERE permanent_id = ?");
+
 			PreparedStatement loadMergedWorksStmt = dbConnection.prepareStatement("SELECT * from merged_grouped_works");
 			ResultSet mergedWorksRS = loadMergedWorksStmt.executeQuery();
 			while (mergedWorksRS.next()){
@@ -225,9 +215,12 @@ public class RecordGroupingProcessor {
 		numRecordsProcessed++;
 		long groupedWorkId = -1;
 		try{
-			if (existingGroupedWorks.containsKey(groupedWorkPermanentId)){
+			getGroupedWorkIdByPermanentIdStmt.setString(1, groupedWorkPermanentId);
+			ResultSet existingIdRS = getGroupedWorkIdByPermanentIdStmt.executeQuery();
+
+			if (existingIdRS.next()){
 				//There is an existing grouped work
-				groupedWorkId = existingGroupedWorks.get(groupedWorkPermanentId);
+				groupedWorkId = existingIdRS.getLong("id");
 
 				//Mark that the work has been updated
 				//Only mark it as updated if the data for the primary identifier has changed
@@ -251,8 +244,6 @@ public class RecordGroupingProcessor {
 				generatedKeysRS.close();
 				numGroupedWorksAdded++;
 
-				//Add to the existing works so we can optimize performance later
-				existingGroupedWorks.put(groupedWorkPermanentId, groupedWorkId);
 				updatedAndInsertedWorksThisRun.add(groupedWorkId);
 			}
 
@@ -274,22 +265,26 @@ public class RecordGroupingProcessor {
 		logger.debug("Overriding grouped work " + originalGroupedWorkPermanentId + " with " + groupedWorkPermanentId);
 
 		//Mark that the original was updated
-		if (existingGroupedWorks.containsKey(originalGroupedWorkPermanentId)) {
-			//There is an existing grouped record
-			long originalGroupedWorkId = existingGroupedWorks.get(originalGroupedWorkPermanentId);
+		try {
+			getGroupedWorkIdByPermanentIdStmt.setString(1, groupedWorkPermanentId);
+			ResultSet existingIdRS = getGroupedWorkIdByPermanentIdStmt.executeQuery();
 
-			//Make sure we mark the original work as updated so it can be removed from the index next time around
-			markWorkUpdated(originalGroupedWorkId);
+			if (existingIdRS.next()){
+				//There is an existing grouped record
+				long originalGroupedWorkId = existingIdRS.getLong("id");
 
-			//Remove the identifiers for the work.
-			//TODO: If we have multiple identifiers for this work, we'll call the delete once for each work.
-			//Should we optimize to just call it once and remember that we removed it already?
-			try {
+				//Make sure we mark the original work as updated so it can be removed from the index next time around
+				markWorkUpdated(originalGroupedWorkId);
+
+				//Remove the identifiers for the work.
+				//TODO: If we have multiple identifiers for this work, we'll call the delete once for each work.
+				//Should we optimize to just call it once and remember that we removed it already?
+
 				removePrimaryIdentifiersForWorkStmt.setLong(1, originalGroupedWorkId);
 				removePrimaryIdentifiersForWorkStmt.executeUpdate();
-			} catch (SQLException e) {
-				logger.error("Error removing primary identifiers for merged work " + originalGroupedWorkPermanentId + "(" + originalGroupedWorkId + ")");
 			}
+		} catch (SQLException e) {
+			logger.error("Error removing primary identifiers for merged work " + originalGroupedWorkPermanentId, e);
 		}
 		return groupedWorkPermanentId;
 	}
@@ -354,7 +349,7 @@ public class RecordGroupingProcessor {
 			groupedWork.setGroupingCategory(groupingCategory);
 		} else {
 			if (!formatsWarned.contains(format)) {
-				logger.warn("Could not find format category for format " + format + " setting to book");
+				logger.error("Could not find format category for format " + format + " setting to book");
 				groupedWork.setGroupingCategory("book");
 				formatsWarned.add(format);
 			}
@@ -373,7 +368,10 @@ public class RecordGroupingProcessor {
 		formatsToFormatCategory.put("emusic", "music");
 		formatsToFormatCategory.put("music", "music");
 		formatsToFormatCategory.put("video", "movie");
+		formatsToFormatCategory.put("evideo", "movie");
 		formatsToFormatCategory.put("eaudio", "book");
+		formatsToFormatCategory.put("eaudiobook", "book");
+		formatsToFormatCategory.put("ecomic", "book");
 		formatsToFormatCategory.put("audiobook", "book");
 		formatsToFormatCategory.put("atlas", "other");
 		formatsToFormatCategory.put("map", "other");

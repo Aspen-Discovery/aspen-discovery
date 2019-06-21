@@ -9,7 +9,6 @@
 		<h2>
 			{$recordDriver->getTitle()|escape}
 			{if $recordDriver->getSubtitle()}: {$recordDriver->getSubtitle()|escape}{/if}
-			{if $recordDriver->getTitleSection()} {$recordDriver->getTitleSection()|escape}{/if}
 			{if $recordDriver->getFormats()}
 				<br/><small>({implode subject=$recordDriver->getFormats() glue=", "})</small>
 			{/if}

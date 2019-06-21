@@ -18,7 +18,7 @@ class RbdigitalRecordDriver extends GroupedWorkSubDriver {
      * we will already have this data available, so we might as well
      * just pass it into the constructor.
      *
-     * @param $recordId
+     * @param string $recordId
      * @param null|GroupedWork $groupedWork
      * @access  public
      */
@@ -47,16 +47,18 @@ class RbdigitalRecordDriver extends GroupedWorkSubDriver {
      * Load the grouped work that this record is connected to.
      */
     public function loadGroupedWork() {
-        require_once ROOT_DIR . '/sys/Grouping/GroupedWorkPrimaryIdentifier.php';
-        require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
-        $groupedWork = new GroupedWork();
-        $query = "SELECT grouped_work.* FROM grouped_work INNER JOIN grouped_work_primary_identifiers ON grouped_work.id = grouped_work_id WHERE type='rbdigital' AND identifier = '" . $this->getUniqueID() . "'";
-        $groupedWork->query($query);
+    	if ($this->groupedWork == null){
+		    require_once ROOT_DIR . '/sys/Grouping/GroupedWorkPrimaryIdentifier.php';
+		    require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+		    $groupedWork = new GroupedWork();
+		    $query = "SELECT grouped_work.* FROM grouped_work INNER JOIN grouped_work_primary_identifiers ON grouped_work.id = grouped_work_id WHERE type='rbdigital' AND identifier = '" . $this->getUniqueID() . "'";
+		    $groupedWork->query($query);
 
-        if ($groupedWork->N == 1){
-            $groupedWork->fetch();
-            $this->groupedWork = clone $groupedWork;
-        }
+		    if ($groupedWork->N == 1){
+			    $groupedWork->fetch();
+			    $this->groupedWork = clone $groupedWork;
+		    }
+	    }
     }
 
     public function getBookcoverUrl($size = 'small')
@@ -211,7 +213,6 @@ class RbdigitalRecordDriver extends GroupedWorkSubDriver {
 
     public function getISSNs()
     {
-        // TODO: Implement getISSNs() method.
         return array();
     }
 

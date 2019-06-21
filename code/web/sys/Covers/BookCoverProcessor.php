@@ -141,21 +141,14 @@ class BookCoverProcessor{
 	}
 
 	private function getHooplaCover($id){
-		require_once ROOT_DIR . '/RecordDrivers/HooplaRecordDriver.php';
 		if (strpos($id, ':') !== false){
 			list(, $id) = explode(":", $id);
 		}
-
+		require_once ROOT_DIR . '/RecordDrivers/HooplaRecordDriver.php';
 		$driver = new HooplaRecordDriver($id);
 		if ($driver->isValid()){
-			/** @var File_MARC_Data_Field[] $linkFields */
-			$linkFields = $driver->getMarcRecord()->getFields('856');
-			foreach($linkFields as $linkField){
-                if ($linkField->getIndicator(1) == 4 && $linkField->getIndicator(2) == 2) {
-                    $coverUrl = $linkField->getSubfield('u')->getData();
-                    return $this->processImageURL('hoopla', $coverUrl, true);
-                }
-            }
+			$coverUrl = $driver->getBookcoverUrl('large');
+			return $this->processImageURL('rbdigital', $coverUrl, true);
 		}
 
 		return false;
@@ -920,6 +913,10 @@ class BookCoverProcessor{
 					if ($this->getHooplaCover($relatedRecord->id)){
 						return true;
 					}
+				} elseif (stripos($relatedRecord->source, 'rbdigital') !== false){
+					if ($this->getRbdigitalCover($relatedRecord->id)) {
+						return true;
+					}
 				}elseif (strcasecmp($relatedRecord->source, 'Colorado State Government Documents') == 0){
 					if ($this->getColoradoGovDocCover()){
 						return true;
@@ -968,11 +965,7 @@ class BookCoverProcessor{
 					if ($this->getZinioCover($relatedRecord->id)) {
 						return true;
 					}
-                } elseif (stripos($relatedRecord->source, 'rbdigital') !== false){
-                    if ($this->getRbdigitalCover($relatedRecord->id)) {
-                        return true;
-                    }
-				}else{
+                }else{
 					/** @var GroupedWorkSubDriver $driver */
 					$driver = $relatedRecord->_driver;
 					//First check to see if there is a specific record defined in an 856 etc.

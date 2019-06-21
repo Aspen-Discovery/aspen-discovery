@@ -24,8 +24,8 @@ public class NetworkUtils {
     public static WebServiceResponse getURL(String url, Logger logger, HashMap<String, String> headers) {
         WebServiceResponse retVal;
         try {
-            URL emptyIndexURL = new URL(url);
-            HttpURLConnection conn = (HttpURLConnection) emptyIndexURL.openConnection();
+            URL urlToCall = new URL(url);
+            HttpURLConnection conn = (HttpURLConnection) urlToCall.openConnection();
             conn.setConnectTimeout(10000);
             conn.setReadTimeout(300000);
             if (headers != null) {

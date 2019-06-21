@@ -1,212 +1,247 @@
 package com.turning_leaf_technologies.reindexer;
 
 import com.turning_leaf_technologies.indexing.Scope;
-import com.turning_leaf_technologies.marc.MarcUtil;
 import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.logging.log4j.Logger;
-import org.marc4j.MarcPermissiveStreamReader;
-import org.marc4j.marc.Record;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
-import java.io.ByteArrayInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.Set;
 
-class HooplaProcessor extends MarcRecordProcessor {
-	private String individualMarcPath;
-	private int numCharsToCreateFolderFrom;
-	private boolean createFolderFromLeadingCharacters;
+class HooplaProcessor {
+	private GroupedWorkIndexer indexer;
+	private Logger logger;
 
-	HooplaProcessor(GroupedWorkIndexer indexer, ResultSet indexingProfileRS, Logger logger) {
-		super(indexer, logger);
+	private PreparedStatement getProductInfoStmt;
+
+	HooplaProcessor(GroupedWorkIndexer indexer, Connection dbConn, Logger logger) {
+		this.indexer = indexer;
+		this.logger = logger;
 
 		try {
-			individualMarcPath = indexingProfileRS.getString("individualMarcPath");
-			numCharsToCreateFolderFrom         = indexingProfileRS.getInt("numCharsToCreateFolderFrom");
-			createFolderFromLeadingCharacters  = indexingProfileRS.getBoolean("createFolderFromLeadingCharacters");
-
-		}catch (Exception e){
-			logger.error("Error loading indexing profile information from database", e);
+			getProductInfoStmt = dbConn.prepareStatement("SELECT * from hoopla_export where hooplaId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+		} catch (SQLException e) {
+			logger.error("Error setting up hoopla processor", e);
 		}
 	}
 
-	@Override
-	public void processRecord(GroupedWorkSolr groupedWork, String identifier) {
-		Record record = loadMarcRecordFromDisk(identifier);
-
-		if (record != null) {
-			try {
-				updateGroupedWorkSolrDataBasedOnMarc(groupedWork, record, identifier);
-			} catch (Exception e) {
-				logger.error("Error updating solr based on hoopla marc record", e);
-			}
-		}
-	}
-
-	private Record loadMarcRecordFromDisk(String identifier){
-		Record record = null;
-		//Load the marc record from disc
-		String individualFilename = getFileForIlsRecord(identifier);
+	void processRecord(GroupedWorkSolr groupedWork, String identifier) {
 		try {
-			byte[] fileContents = Util.readFileBytes(individualFilename);
-			InputStream inputStream = new ByteArrayInputStream(fileContents);
-			//FileInputStream inputStream = new FileInputStream(individualFile);
-			MarcPermissiveStreamReader marcReader = new MarcPermissiveStreamReader(inputStream, true, true, "UTF-8");
-			if (marcReader.hasNext()) {
-				record = marcReader.next();
-			}
-			inputStream.close();
-		} catch (FileNotFoundException fnfe){
-			logger.error("Hoopla file " + individualFilename + " did not exist");
-		} catch (Exception e) {
-			logger.error("Error reading data from hoopla file " + individualFilename, e);
-		}
-		return record;
-	}
+			getProductInfoStmt.setString(1, identifier);
+			ResultSet productRS = getProductInfoStmt.executeQuery();
+			if (productRS.next()) {
+				//Make sure the record isn't deleted
+				if (!productRS.getBoolean("active")){
+					logger.debug("Hoopla product " + identifier + " is inactive, skipping");
+					return;
+				}
 
-	private String getFileForIlsRecord(String recordNumber) {
-		String shortId = recordNumber.replace(".", "");
-		while (shortId.length() < 9){
-			shortId = "0" + shortId;
-		}
+				RecordInfo hooplaRecord = groupedWork.addRelatedRecord("hoopla", identifier);
+				hooplaRecord.setRecordIdentifier("hoopla", identifier);
 
-		String subFolderName;
-		if (createFolderFromLeadingCharacters){
-			subFolderName        = shortId.substring(0, numCharsToCreateFolderFrom);
-		}else{
-			subFolderName        = shortId.substring(0, shortId.length() - numCharsToCreateFolderFrom);
-		}
+				String title = productRS.getString("title");
+				String kind = productRS.getString("kind");
+				String formatCategory;
+				String primaryFormat;
+				switch (kind) {
+					case "MOVIE":
+					case "TELEVISION":
+						formatCategory = "Movies";
+						primaryFormat = "eVideo";
+						break;
+					case "AUDIOBOOK":
+						formatCategory = "Audio Books";
+						hooplaRecord.addFormatCategory("eBook");
+						primaryFormat = "eAudiobook";
+						break;
+					case "EBOOK":
+						formatCategory = "eBook";
+						primaryFormat = "eBook";
+						break;
+					case "COMIC":
+						formatCategory = "eBook";
+						primaryFormat = "eComic";
+						break;
+					case "MUSIC":
+						formatCategory = "Music";
+						primaryFormat = "eMusic";
+						break;
+					default:
+						logger.error("Unhandled hoopla kind " + kind);
+						formatCategory = kind;
+						primaryFormat = kind;
+						break;
+				}
 
-		String basePath           = individualMarcPath + "/" + subFolderName;
-		return basePath + "/" + shortId + ".mrc";
-	}
+				hooplaRecord.addFormat(primaryFormat);
+				hooplaRecord.addFormatCategory(formatCategory);
 
-	@Override
-	protected void updateGroupedWorkSolrDataBasedOnMarc(GroupedWorkSolr groupedWork, Record record, String identifier) {
-		//First get format
-		String format = MarcUtil.getFirstFieldVal(record, "099a");
-		if (format != null) {
-			format = format.replace(" hoopla", "");
-		}
+				JSONObject rawResponse = new JSONObject(productRS.getString("rawResponse"));
 
-		//Do updates based on the overall bib (shared regardless of scoping)
-		updateGroupedWorkSolrDataBasedOnStandardMarcData(groupedWork, record, null, identifier, format);
+				groupedWork.setTitle(title, title, title, primaryFormat);
 
-		//Do special processing for Hoopla which does not have individual items within the record
-		//Instead, each record has essentially unlimited items that can be used at one time.
-		//There are also not multiple formats within a record that we would need to split out.
+				String primaryAuthor = "";
+				if (rawResponse.has("artist")){
+					primaryAuthor = rawResponse.getString("artist");
+					primaryAuthor = StringUtils.swapFirstLastNames(primaryAuthor);
+				}else if (rawResponse.has("publisher")){
+					primaryAuthor = rawResponse.getString("publisher");
+				}
+				groupedWork.setAuthor(primaryAuthor);
+				groupedWork.setAuthAuthor(primaryAuthor);
+				groupedWork.setAuthorDisplay(primaryAuthor);
 
-		String formatCategory = indexer.translateSystemValue("format_category_hoopla", format, identifier);
-		String formatBoostStr = indexer.translateSystemValue("format_boost_hoopla", format, identifier);
-		Long formatBoost = Long.parseLong(formatBoostStr);
+				if (rawResponse.has("series")){
+					String series = rawResponse.getString("series");
+					groupedWork.addSeries(series);
+					String volume = "";
+					if (rawResponse.has("episode")){
+						volume = rawResponse.getString("episode");
+					}
+					groupedWork.addSeriesWithVolume(series, volume);
+				}
 
-		String fullDescription = Util.getCRSeparatedString(MarcUtil.getFieldList(record, "520a"));
-		groupedWork.addDescription(fullDescription, format);
-
-		//Load editions
-		Set<String> editions = MarcUtil.getFieldList(record, "250a");
-		String primaryEdition = null;
-		if (editions.size() > 0) {
-			primaryEdition = editions.iterator().next();
-		}
-		groupedWork.addEditions(editions);
-
-		//Load publication details
-		//Load publishers
-		Set<String> publishers = this.getPublishers(record);
-		groupedWork.addPublishers(publishers);
-		String publisher = null;
-		if (publishers.size() > 0){
-			publisher = publishers.iterator().next();
-		}
-
-		//Load publication dates
-		Set<String> publicationDates = this.getPublicationDates(record);
-		groupedWork.addPublicationDates(publicationDates);
-		String publicationDate = null;
-		if (publicationDates.size() > 0){
-			publicationDate = publicationDates.iterator().next();
-		}
-
-		//Load physical description
-		Set<String> physicalDescriptions = MarcUtil.getFieldList(record, "300abcefg:530abcd");
-		String physicalDescription = null;
-		if (physicalDescriptions.size() > 0){
-			physicalDescription = physicalDescriptions.iterator().next();
-		}
-		groupedWork.addPhysical(physicalDescriptions);
-
-		//Setup the per Record information
-		RecordInfo recordInfo = groupedWork.addRelatedRecord("hoopla", identifier);
-		recordInfo.setFormatBoost(formatBoost);
-		recordInfo.setEdition(primaryEdition);
-		recordInfo.setPhysicalDescription(physicalDescription);
-		recordInfo.setPublicationDate(StringUtils.trimTrailingPunctuation(publicationDate));
-		recordInfo.setPublisher(StringUtils.trimTrailingPunctuation(publisher));
-
-		//Load Languages
-		HashSet<RecordInfo> records = new HashSet<>();
-		records.add(recordInfo);
-		loadLanguageDetails(groupedWork, record, records, identifier);
-
-		//For Hoopla, we just have a single item always
-		ItemInfo itemInfo = new ItemInfo();
-		itemInfo.setIsEContent(true);
-		itemInfo.setNumCopies(1);
-		itemInfo.setFormat(format);
-		itemInfo.setFormatCategory(formatCategory);
-		itemInfo.seteContentSource("Hoopla");
-		itemInfo.setShelfLocation("Online Hoopla Collection");
-		itemInfo.setCallNumber("Online Hoopla");
-		itemInfo.setSortableCallNumber("Online Hoopla");
-		itemInfo.seteContentSource("Hoopla");
-		itemInfo.setDetailedStatus("Available Online");
-		loadEContentUrl(record, itemInfo);
-		Date dateAdded = indexer.getDateFirstDetected("hoopla", identifier);
-		itemInfo.setDateAdded(dateAdded);
-
-		recordInfo.addItem(itemInfo);
-		loadScopeInfoForEContentItem(groupedWork, recordInfo, itemInfo, record);
-
-
-		//TODO: Determine how to find popularity for Hoopla titles.
-		//Right now the information is not exported from Hoopla.  We could load based on clicks
-		//From Pika to Hoopla, but that wouldn't count plays directly within the app
-		//(which may be ok).
-		groupedWork.addPopularity(1);
-
-		//Related Record
-		groupedWork.addRelatedRecord("hoopla", identifier);
-	}
-
-	private void loadScopeInfoForEContentItem(GroupedWorkSolr groupedWork, RecordInfo recordInfo, ItemInfo itemInfo, Record record) {
-		//Figure out ownership information
-		for (Scope curScope: indexer.getScopes()){
-			String originalUrl = itemInfo.geteContentUrl();
-			Scope.InclusionResult result = curScope.isItemPartOfScope("hoopla", "", "", null, groupedWork.getTargetAudiences(), recordInfo.getPrimaryFormat(), false, false, true, record, originalUrl);
-			if (result.isIncluded){
-				ScopingInfo scopingInfo = itemInfo.addScope(curScope);
-				scopingInfo.setAvailable(true);
-				scopingInfo.setStatus("Available Online");
-				scopingInfo.setGroupedStatus("Available Online");
-				scopingInfo.setHoldable(false);
-				if (curScope.isLocationScope()) {
-					scopingInfo.setLocallyOwned(curScope.isItemOwnedByScope("hoopla", "", ""));
-					if (curScope.getLibraryScope() != null) {
-						scopingInfo.setLibraryOwned(curScope.getLibraryScope().isItemOwnedByScope("hoopla", "", ""));
+				boolean children = rawResponse.getBoolean("children");
+				if (children){
+					groupedWork.addTargetAudience("Juvenile");
+					groupedWork.addTargetAudienceFull("Juvenile");
+				}else{
+					if (rawResponse.has("rating")){
+						String rating = rawResponse.getString("rating");
+						if (rating.equals("TVMA") || rating.equals("M") || rating.equals("NC17")){
+							groupedWork.addTargetAudience("Adult");
+							groupedWork.addTargetAudienceFull("Adult");
+						}else {
+							groupedWork.addTargetAudience("Young Adult");
+							groupedWork.addTargetAudienceFull("Adolescent (14-17)");
+							groupedWork.addTargetAudience("Adult");
+							groupedWork.addTargetAudienceFull("Adult");
+						}
+					}else{
+						groupedWork.addTargetAudience("Adult");
+						groupedWork.addTargetAudienceFull("Adult");
 					}
 				}
-				if (curScope.isLibraryScope()) {
-					 scopingInfo.setLibraryOwned(curScope.isItemOwnedByScope("hoopla", "", ""));
+
+				String language = rawResponse.getString("language");
+				language = org.apache.commons.lang3.StringUtils.capitalize(language.toLowerCase());
+				hooplaRecord.setPrimaryLanguage(language);
+				long formatBoost = 1;
+				try {
+					formatBoost = Long.parseLong(indexer.translateSystemValue("format_boost_hoopla", primaryFormat, identifier));
+				} catch (Exception e) {
+					logger.warn("Could not translate format boost for " + primaryFormat + " create translation map format_boost_hoopla");
 				}
-				//Check to see if we need to do url rewriting
-				if (originalUrl != null && !originalUrl.equals(result.localUrl)){
-					scopingInfo.setLocalUrl(result.localUrl);
+				hooplaRecord.setFormatBoost(formatBoost);
+				if (rawResponse.has("artists")) {
+					JSONArray artists = rawResponse.getJSONArray("artists");
+					HashSet<String> artistsToAdd = new HashSet<>();
+					HashSet<String> artistsWithRoleToAdd = new HashSet<>();
+					for (int i = 0; i < artists.length(); i++) {
+						JSONObject curArtist = artists.getJSONObject(i);
+						String artistName = StringUtils.swapFirstLastNames(curArtist.getString("name"));
+						artistsToAdd.add(artistName);
+						artistsWithRoleToAdd.add(artistName + "|" + org.apache.commons.lang3.StringUtils.capitalize(curArtist.getString("relationship").toLowerCase()));
+					}
+					groupedWork.addAuthor2(artistsToAdd);
+					groupedWork.addAuthor2Role(artistsWithRoleToAdd);
 				}
+
+				JSONArray genres = rawResponse.getJSONArray("genres");
+				HashSet<String> genresToAdd = new HashSet<>();
+//				HashMap<String, Integer> literaryForm = new HashMap<>();
+//				HashMap<String, Integer> literaryFormFull = new HashMap<>();
+				HashSet<String> topicsToAdd = new HashSet<>();
+				for (int i = 0; i < genres.length(); i++) {
+					String genre = genres.getString(0);
+
+					genresToAdd.add(genre);
+					topicsToAdd.add(genre);
+				}
+				groupedWork.addGenre(genresToAdd);
+				groupedWork.addGenreFacet(genresToAdd);
+				groupedWork.addTopicFacet(topicsToAdd);
+				groupedWork.addTopic(topicsToAdd);
+
+//				boolean isFiction = productRS.getBoolean("isFiction");
+//				if (!isFiction){
+//					Util.addToMapWithCount(literaryForm, "Non Fiction");
+//					Util.addToMapWithCount(literaryFormFull, "Non Fiction");
+//				}else{
+//					Util.addToMapWithCount(literaryForm, "Fiction");
+//					Util.addToMapWithCount(literaryFormFull, "Fiction");
+//				}
+//				if (literaryForm.size() > 0){
+//					groupedWork.addLiteraryForms(literaryForm);
+//				}
+//				if (literaryFormFull.size() > 0){
+//					groupedWork.addLiteraryFormsFull(literaryFormFull);
+//				}
+				String publisher = rawResponse.getString("publisher");
+				groupedWork.addPublisher(publisher);
+				//publication date
+				String releaseYear = rawResponse.getString("year");
+				groupedWork.addPublicationDate(releaseYear);
+				//physical description
+				if (rawResponse.has("duration")){
+					groupedWork.addPhysical(rawResponse.getString("duration"));
+				}
+
+				//Description
+				if (rawResponse.has("synopsis")) {
+					String description = rawResponse.getString("synopsis");
+					groupedWork.addDescription(description, primaryFormat);
+				}
+
+				String isbn = rawResponse.getString("isbn");
+				groupedWork.addIsbn(isbn, primaryFormat);
+
+				String upc = rawResponse.getString("upc");
+				groupedWork.addUpc(upc);
+
+				ItemInfo itemInfo = new ItemInfo();
+				itemInfo.seteContentSource("Hoopla");
+				itemInfo.setIsEContent(true);
+				itemInfo.seteContentUrl(rawResponse.getString("url"));
+				itemInfo.setShelfLocation("Online Hoopla Collection");
+				itemInfo.setCallNumber("Online Hoopla");
+				itemInfo.setSortableCallNumber("Online Hoopla");
+				//Hoopla is always 1 copy unlimited use
+				itemInfo.setNumCopies(1);
+
+				Date dateAdded = new Date(productRS.getLong("dateFirstDetected") * 1000);
+				itemInfo.setDateAdded(dateAdded);
+
+				itemInfo.setDetailedStatus("Available Online");
+				for (Scope scope : indexer.getScopes()) {
+					//TODO: Filter here based on library settings, this likely needs to be rewritten
+					ScopingInfo scopingInfo = itemInfo.addScope(scope);
+					scopingInfo.setAvailable(true);
+					scopingInfo.setStatus("Available Online");
+					scopingInfo.setGroupedStatus("Available Online");
+					scopingInfo.setHoldable(false);
+					scopingInfo.setLibraryOwned(true);
+					scopingInfo.setLocallyOwned(true);
+					scopingInfo.setInLibraryUseOnly(false);
+				}
+
+				hooplaRecord.addItem(itemInfo);
+
 			}
+			productRS.close();
+		}catch (NullPointerException e) {
+			logger.error("Null pointer exception processing rbdigital record ", e);
+		} catch (JSONException e) {
+			logger.error("Error parsing raw data for rbdigital", e);
+		} catch (SQLException e) {
+			logger.error("Error loading information from Database for overdrive title", e);
 		}
 	}
+
 }

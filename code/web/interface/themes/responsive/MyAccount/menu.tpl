@@ -348,7 +348,7 @@
 			{/if}
 
 			{if $loggedIn && (array_key_exists('libraryAdmin', $userRoles) || array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles))}
-				{if $module == 'Hoopla' && in_array($action, array('IndexingLog'))}
+				{if $module == 'Hoopla' && in_array($action, array('IndexingLog', 'Settings'))}
 					{assign var="curSection" value=true}
 				{else}
 					{assign var="curSection" value=false}
@@ -363,6 +363,7 @@
 					</a>
 					<div id="hooplaMenu" class="panel-collapse collapse {if $curSection}in{/if}">
 						<div class="panel-body">
+							<div class="adminMenuLink{if $action == "Settings"} active{/if}"><a href="{$path}/Hoopla/Settings">Settings</a></div>
 							<div class="adminMenuLink{if $action == "IndexingLog"} active{/if}"><a href="{$path}/Hoopla/IndexingLog">Indexing Log</a></div>
 						</div>
 					</div>

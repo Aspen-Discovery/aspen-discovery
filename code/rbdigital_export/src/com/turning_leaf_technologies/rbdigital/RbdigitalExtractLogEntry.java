@@ -36,7 +36,7 @@ class RbdigitalExtractLogEntry {
 	void addNote(String note) {
 		this.notes.add(note);
 	}
-	
+
 	private String getNotesHtml() {
 		StringBuilder notesText = new StringBuilder("<ol class='cronNotes'>");
 		for (String curNote : notes){
@@ -56,7 +56,7 @@ class RbdigitalExtractLogEntry {
 		}
 		return returnText;
 	}
-	
+
 	private static PreparedStatement insertLogEntry;
 	private static PreparedStatement updateLogEntry;
 	boolean saveResults() {

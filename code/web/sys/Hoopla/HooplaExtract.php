@@ -13,6 +13,9 @@ class HooplaExtract extends DataObject
 	public $rating; // eg TV parental guidance rating
 	public $abridged;
 	public $price;
+	public $rawChecksum;
+	public $rawResponse;
+	public $dateFirstDetected;
 
 	public $__table = 'hoopla_export';
 
