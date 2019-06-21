@@ -619,7 +619,7 @@ class RbdigitalDriver extends AbstractEContentDriver
     /**
      * @param int $rbdigitalId
      */
-    public function trackRecordCheckout($rbdigitalId): void
+    function trackRecordCheckout($rbdigitalId): void
     {
         require_once ROOT_DIR . '/sys/Rbdigital/RbdigitalRecordUsage.php';
         $recordUsage = new RbdigitalRecordUsage();
@@ -643,7 +643,7 @@ class RbdigitalDriver extends AbstractEContentDriver
     /**
      * @param int $rbdigitalId
      */
-    public function trackRecordHold($rbdigitalId): void
+    function trackRecordHold($rbdigitalId): void
     {
         require_once ROOT_DIR . '/sys/Rbdigital/RbdigitalRecordUsage.php';
         require_once ROOT_DIR . '/sys/Rbdigital/RbdigitalProduct.php';

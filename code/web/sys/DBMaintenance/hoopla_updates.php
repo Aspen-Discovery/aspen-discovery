@@ -86,5 +86,38 @@ function getHooplaUpdates()
 					)",
 			),
 		),
+
+		'track_hoopla_user_usage' => array(
+			'title' => 'Hoopla Usage by user',
+			'description' => 'Add a table to track how often a particular user uses Hoopla.',
+			'sql' => array(
+				"CREATE TABLE user_hoopla_usage (
+                    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                    userId INT(11) NOT NULL,
+                    year INT(4) NOT NULL,
+                    month INT(2) NOT NULL,
+                    usageCount INT(11)
+                ) ENGINE = InnoDB",
+				"ALTER TABLE user_hoopla_usage ADD INDEX (userId, year, month)",
+				"ALTER TABLE user_hoopla_usage ADD INDEX (year, month)",
+			),
+		),
+
+		'track_hoopla_record_usage' => array(
+			'title' => 'Hoopla Record Usage',
+			'description' => 'Add a table to track how records within Hoopla are used.',
+			'continueOnError' => true,
+			'sql' => array(
+				"CREATE TABLE hoopla_record_usage (
+                    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                    hooplaId INT(11),
+                    year INT(4) NOT NULL,
+                    month INT(2) NOT NULL,
+                    timesCheckedOut INT(11) NOT NULL
+                ) ENGINE = InnoDB",
+				"ALTER TABLE hoopla_record_usage ADD INDEX (hooplaId, year, month)",
+				"ALTER TABLE hoopla_record_usage ADD INDEX (year, month)",
+			),
+		),
 	);
 }

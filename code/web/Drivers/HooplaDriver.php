@@ -343,6 +343,8 @@ class HooplaDriver extends AbstractEContentDriver{
 				$checkoutResponse = $this->getAPIResponse($checkoutURL, array(), 'POST');
 				if ($checkoutResponse) {
 					if (!empty($checkoutResponse->contentId)) {
+						$this->trackUserUsageOfHoopla($user);
+						$this->trackRecordCheckout($titleId);
 						return array(
 							'success'   => true,
 							'message'   => $checkoutResponse->message,
@@ -512,4 +514,47 @@ class HooplaDriver extends AbstractEContentDriver{
     {
         return false;
     }
+
+	/**
+	 * @param $user
+	 */
+	public function trackUserUsageOfHoopla($user): void
+	{
+		require_once ROOT_DIR . '/sys/Hoopla/UserHooplaUsage.php';
+		$userUsage = new UserHooplaUsage();
+		$userUsage->userId = $user->id;
+		$userUsage->year = date('Y');
+		$userUsage->month = date('n');
+
+		if ($userUsage->find(true)) {
+			$userUsage->usageCount++;
+			$userUsage->update();
+		} else {
+			$userUsage->usageCount = 1;
+			$userUsage->insert();
+		}
+	}
+
+	/**
+	 * @param int $hooplaId
+	 */
+	public function trackRecordCheckout($hooplaId): void
+	{
+		require_once ROOT_DIR . '/sys/Hoopla/HooplaRecordUsage.php';
+		$recordUsage = new HooplaRecordUsage();
+		$product = new HooplaExtract();
+		$product->hooplaId = $hooplaId;
+		if ($product->find(true)) {
+			$recordUsage->hooplaId = $product->id;
+			$recordUsage->year = date('Y');
+			$recordUsage->month = date('n');
+			if ($recordUsage->find(true)) {
+				$recordUsage->timesCheckedOut++;
+				$recordUsage->update();
+			} else {
+				$recordUsage->timesCheckedOut = 1;
+				$recordUsage->insert();
+			}
+		}
+	}
 }
