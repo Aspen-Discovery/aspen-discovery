@@ -143,7 +143,7 @@ function getHooplaUpdates()
     				ratingsToExclude VARCHAR(100),
     				excludeAbridged TINYINT DEFAULT 0,
     				excludeParentalAdvisory TINYINT DEFAULT 0,
-    				excludeProfanity TINYINT DEFAULT 0,
+    				excludeProfanity TINYINT DEFAULT 0
 				) ENGINE = InnoDB'
 			]
 		],
