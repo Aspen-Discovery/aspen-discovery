@@ -411,20 +411,21 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 			);
 
 		} else {
-			$actions = $this->getAccessLink($actions);
+			$actions[] = $this->getAccessLink();
 		}
 
 		return $actions;
 	}
 
-	public function getAccessLink($actions = null)
+	public function getAccessLink()
 	{
 		$title      = translate('hoopla_url_action');
-		$actions[] = array(
+		$accessLink = array(
 			'url' => $this->hooplaRawMetadata->url,
 			'title' => $title,
 			'requireLogin' => false,
 		);
+		return $accessLink;
 	}
 
 	/**
@@ -440,5 +441,9 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 			$physicalDescriptions[] = $this->hooplaRawMetadata->duration;
 		}
 		return $physicalDescriptions;
+	}
+
+	function getHooplaCoverUrl(){
+		return $this->hooplaRawMetadata->coverImageUrl;
 	}
 }

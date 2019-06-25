@@ -72,6 +72,7 @@ class Library extends DataObject
 	public $overdriveAdvantageName;
 	public $overdriveAdvantageProductsKey;
 	public $hooplaLibraryID;
+	public $hooplaScopeId;
 	public $systemsToRepeatIn;
 	public $additionalLocationsToShowAvailabilityFor;
 	public $homeLink;
@@ -370,6 +371,16 @@ class Library extends DataObject
         if (!$catalog->hasMaterialsRequestSupport()){
         	unset($materialsRequestOptions[2]);
         }
+
+		require_once ROOT_DIR . '/sys/Hoopla/HooplaScope.php';
+		$hooplaScope = new HooplaScope();
+		$hooplaScope->orderBy('name');
+		$hooplaScopes = [];
+		$hooplaScope->find();
+		$hooplaScopes[-1] = 'none';
+		while ($hooplaScope->fetch()){
+			$hooplaScopes[$hooplaScope->id] = $hooplaScope->name;
+		}
 
 		//$Instructions = 'For more information on ???, see the <a href="">online documentation</a>.';
 
@@ -775,9 +786,9 @@ class Library extends DataObject
 				'overdriveAdvantageName'         => array('property'=>'overdriveAdvantageName', 'type'=>'text', 'label'=>'Overdrive Advantage Name', 'description'=>'The name of the OverDrive Advantage account if any.', 'size'=>'80', 'hideInLists' => true,),
 				'overdriveAdvantageProductsKey'  => array('property'=>'overdriveAdvantageProductsKey', 'type'=>'text', 'label'=>'Overdrive Advantage Products Key', 'description'=>'The products key for use when building urls to the API from the advantageAccounts call.', 'size'=>'80', 'hideInLists' => false,),
 			)),
-			'hooplaSection' => array('property'=>'hooplaSection', 'type' => 'section', 'label' =>'Hoopla', 'hideInLists' => true,
-					                     'properties' => array(
+			'hooplaSection' => array('property'=>'hooplaSection', 'type' => 'section', 'label' =>'Hoopla', 'hideInLists' => true, 'properties' => array(
 				'hooplaLibraryID'      => array('property'=>'hooplaLibraryID', 'type'=>'integer', 'label'=>'Hoopla Library ID', 'description'=>'The ID Number Hoopla uses for this library', 'hideInLists' => true),
+                'hooplaScopeId'        => array('property'=>'hooplaScopeId', 'type'=>'enum','values'=>$hooplaScopes, 'description'=>'The hoopla scope to use', 'hideInLists' => true, 'default'=>-1),
 			)),
 			'genealogySection' => array('property' => 'genealogySection', 'type' => 'section', 'label' => 'Genealogy', 'hideInLists' =>true,
                 'properties' => [

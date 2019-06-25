@@ -28,6 +28,10 @@ public class RecordInfo {
 		this.recordIdentifier = recordIdentifier;
 	}
 
+	public String getSource(){
+		return this.source;
+	}
+
 	void setSubSource(String subSource) {
 		this.subSource = subSource;
 	}

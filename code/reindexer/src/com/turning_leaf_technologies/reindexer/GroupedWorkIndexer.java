@@ -55,12 +55,13 @@ public class GroupedWorkIndexer {
 	private TreeSet<Scope> scopes ;
 
 	private PreparedStatement getGroupedWorkPrimaryIdentifiers;
-	private PreparedStatement getDateFirstDetectedStmt;
 	private PreparedStatement getGroupedWorkInfoStmt;
 	private PreparedStatement getArBookIdForIsbnStmt;
 	private PreparedStatement getArBookInfoStmt;
 
 	private static PreparedStatement deleteGroupedWorkStmt;
+
+	private boolean removeRedundantHooplaRecords = false;
 
 	public GroupedWorkIndexer(String serverName, Connection dbConn, Ini configIni, boolean fullReindex, boolean clearIndex, boolean singleWorkIndex, Logger logger) {
 		indexStartTime = new Date().getTime() / 1000;
@@ -99,13 +100,23 @@ public class GroupedWorkIndexer {
 		//Load a few statements we will need later
 		try{
 			getGroupedWorkPrimaryIdentifiers = dbConn.prepareStatement("SELECT * FROM grouped_work_primary_identifiers where grouped_work_id = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-			getDateFirstDetectedStmt = dbConn.prepareStatement("SELECT dateFirstDetected FROM ils_marc_checksums WHERE source = ? AND ilsId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			deleteGroupedWorkStmt = dbConn.prepareStatement("DELETE from grouped_work where id = ?");
 			getGroupedWorkInfoStmt = dbConn.prepareStatement("SELECT id, grouping_category from grouped_work where permanent_id = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			getArBookIdForIsbnStmt = dbConn.prepareStatement("SELECT arBookId from accelerated_reading_isbn where isbn = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			getArBookInfoStmt = dbConn.prepareStatement("SELECT * from accelerated_reading_titles where arBookId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 		} catch (Exception e){
 			logger.error("Could not load statements to get identifiers ", e);
+		}
+
+		//Check hoopla settings to see if we need to remove redundant records
+		try{
+			PreparedStatement getHooplaSettingsStmt = dbConn.prepareStatement("SELECT excludeTitlesWithCopiesFromOtherVendors from hoopla_settings");
+			ResultSet getHooplaSettingsRS = getHooplaSettingsStmt.executeQuery();
+			if (getHooplaSettingsRS.next()) {
+				removeRedundantHooplaRecords = getHooplaSettingsRS.getBoolean("excludeTitlesWithCopiesFromOtherVendors");
+			}
+		}catch (Exception e){
+			logger.error("Error loading Hoopla Settings", e);
 		}
 
 		//Initialize the updateServer and solr server
@@ -645,10 +656,15 @@ public class GroupedWorkIndexer {
 		groupedWorkPrimaryIdentifiers.close();
 
 		if (numPrimaryIdentifiers > 0) {
+			//Strip out any hoopla records that have the same format as an rbdigital or overdrive record
+			if (removeRedundantHooplaRecords) {
+				groupedWork.removeRedundantHooplaRecords();
+			}
+
 			//Add a grouped work to any scopes that are relevant
 			groupedWork.updateIndexingStats(indexingStats);
 
-			//Load local (VuFind) enrichment for the work
+			//Load local enrichment for the work
 			loadLocalEnrichment(groupedWork);
 			//Load lexile data for the work
 			loadLexileDataForWork(groupedWork);
@@ -918,25 +934,4 @@ public class GroupedWorkIndexer {
 	TreeSet<Scope> getScopes() {
 		return this.scopes;
 	}
-
-	Date getDateFirstDetected(@SuppressWarnings("SameParameterValue") String source, String recordId){
-		Long dateFirstDetected = null;
-		try {
-			getDateFirstDetectedStmt.setString(1, source);
-			getDateFirstDetectedStmt.setString(2, recordId);
-			ResultSet dateFirstDetectedRS = getDateFirstDetectedStmt.executeQuery();
-			if (dateFirstDetectedRS.next()) {
-				dateFirstDetected = dateFirstDetectedRS.getLong("dateFirstDetected");
-			}
-		}catch (Exception e){
-			logger.error("Error loading date first detected for " + recordId);
-		}
-		if (dateFirstDetected != null){
-			return new Date(dateFirstDetected * 1000);
-		}else {
-			return null;
-		}
-	}
-
-
 }

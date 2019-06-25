@@ -30,7 +30,7 @@ AspenDiscovery.Hoopla = (function(){
 
 		getCheckOutPrompts: function (hooplaId) {
 			if (Globals.loggedIn) {
-				var url = Globals.path + "/Hoopla/" + hooplaId + "/AJAX?method=geCheckOutPrompts";
+				var url = Globals.path + "/Hoopla/" + hooplaId + "/AJAX?method=getCheckOutPrompts";
 				$.getJSON(url, function (data) {
 					AspenDiscovery.showMessageWithButtons(data.title, data.body, data.buttons);
 				}).fail(AspenDiscovery.ajaxFail);

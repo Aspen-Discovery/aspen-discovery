@@ -4,68 +4,25 @@ class Hoopla_AJAX extends Action
 {
 	function launch() {
 		global $timer;
+		header('Content-type: application/json');
+		header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
+		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
+
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
 		if (method_exists($this, $method)) {
 			$timer->logTime("Starting method $method");
 
-			// Methods intend to return JSON data
-			if (in_array($method, array(
-					'reloadCover',
-					'checkOutHooplaTitle', 'getCheckOutPrompts', 'returnCheckout'
-			))) {
-				header('Content-type: text/plain');
-				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
-				header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-				echo json_encode($this->$method());
-
-				// Methods that return HTML
-			} else if (in_array($method, array())) {
-				header('Content-type: text/html');
-				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
-				header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-				echo $this->$method();
-			} else if ($method == 'downloadMarc') {
-				echo $this->$method();
-
-				// Methods that return XML (default mode)
-			} else {
-				header('Content-type: text/xml');
-				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
-				header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-
-				$xmlResponse = '<?xml version="1.0" encoding="UTF-8"?' . ">\n";
-				$xmlResponse .= "<AJAXResponse>\n";
-				$xmlResponse .= $this->$_GET['method']();
-				$xmlResponse .= '</AJAXResponse>';
-
-				echo $xmlResponse;
-			}
+			echo json_encode($this->$method());
 		}else{
 			echo json_encode(array('error'=>'invalid_method'));
 		}
 	}
 
-	function downloadMarc(){
-		$id = $_REQUEST['id'];
-		$marcData = MarcLoader::loadMarcRecordByILSId($id);
-		header('Content-Description: File Transfer');
-		header('Content-Type: application/octet-stream');
-		header("Content-Disposition: attachment; filename={$id}.mrc");
-		header('Content-Transfer-Encoding: binary');
-		header('Expires: 0');
-		header('Cache-Control: must-revalidate');
-		header('Pragma: public');
-
-		header('Content-Length: ' . strlen($marcData->toRaw()));
-		ob_clean();
-		flush();
-		echo($marcData->toRaw());
-	}
 
 	function reloadCover(){
-		require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+		require_once ROOT_DIR . '/RecordDrivers/HooplaRecordDriver.php';
 		$id = $_REQUEST['id'];
-		$recordDriver = new MarcRecordDriver($id);
+		$recordDriver = new HooplaRecordDriver($id);
 
 		//Reload small cover
 		$smallCoverUrl = str_replace('&amp;', '&', $recordDriver->getBookcoverUrl('small')) . '&reload';
@@ -146,7 +103,7 @@ class Hoopla_AJAX extends Action
 						$hooplaRecord = new HooplaRecordDriver($id);
                         try {
                             // Base Hoopla Title View Url
-                            $accessLink = reset($hooplaRecord->getAccessLink());
+                            $accessLink = $hooplaRecord->getAccessLink();
                             $hooplaRegistrationUrl = $accessLink['url'];
                             $hooplaRegistrationUrl .= (parse_url($hooplaRegistrationUrl, PHP_URL_QUERY) ? '&' : '?') . 'showRegistration=true'; // Add Registration URL parameter
 

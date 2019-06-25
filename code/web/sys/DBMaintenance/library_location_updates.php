@@ -1717,6 +1717,15 @@ function getLibraryLocationUpdates(){
 				'ALTER TABLE library_records_owned ADD INDEX libraryId(libraryId)',
 				'ALTER TABLE library_records_owned ADD INDEX indexingProfileId(indexingProfileId)',
 			]
+		],
+
+		'library_location_hoopla_scoping' => [
+			'title' => 'Library and Location Scoping of Hoopla',
+			'description' => 'Add information about how to scope hoopla records',
+			'sql' => [
+				'ALTER TABLE library ADD COLUMN hooplaScopeId INT(11) default -1',
+				'ALTER TABLE location ADD COLUMN hooplaScopeId INT(11) default -1',
+			]
 		]
 	);
 }

@@ -41,6 +41,7 @@ public class Scope implements Comparable<Scope>{
 	private boolean baseAvailabilityToggleOnLocalHoldingsOnly = false;
 	private boolean includeOnlineMaterialsInAvailableToggle  = true;
 
+	private HooplaScope hooplaScope;
 	public String getScopeName() {
 		return scopeName;
 	}
@@ -303,6 +304,14 @@ public class Scope implements Comparable<Scope>{
 			isUnscoped = relatedNumericPTypes.contains(-1L);
 		}
 		return isUnscoped;
+	}
+
+	public HooplaScope getHooplaScope() {
+		return hooplaScope;
+	}
+
+	public void setHooplaScope(HooplaScope hooplaScope) {
+		this.hooplaScope = hooplaScope;
 	}
 
 	public class InclusionResult{

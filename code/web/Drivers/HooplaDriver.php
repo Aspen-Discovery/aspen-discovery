@@ -3,7 +3,8 @@
 require_once ROOT_DIR . '/Drivers/AbstractEContentDriver.php';
 class HooplaDriver extends AbstractEContentDriver{
 	const memCacheKey = 'hoopla_api_access_token';
-//	public $hooplaAPIBaseURL = 'hoopla-api-dev.hoopladigital.com';
+	/** @var HooplaSetting|null */
+	private $hooplaSettings = null;
 	public $hooplaAPIBaseURL = 'hoopla-api-dev.hoopladigital.com';
 	private $accessToken;
 	private $hooplaEnabled = false;
@@ -12,13 +13,19 @@ class HooplaDriver extends AbstractEContentDriver{
 
 	public function __construct()
 	{
-		global $configArray;
-		if (!empty($configArray['Hoopla']['HooplaAPIUser']) && !empty($configArray['Hoopla']['HooplaAPIPassword'])) {
-			$this->hooplaEnabled = true;
-			if (!empty($configArray['Hoopla']['APIBaseURL'])) {
-				$this->hooplaAPIBaseURL = $configArray['Hoopla']['APIBaseURL'];
+		require_once ROOT_DIR . '/sys/Hoopla/HooplaSetting.php';
+		try{
+			$hooplaSettings = new HooplaSetting();
+			if ($hooplaSettings->find(true)){
+				$this->hooplaEnabled = true;
+
+				$this->hooplaAPIBaseURL = $hooplaSettings->apiUrl;
+				$this->hooplaSettings = $hooplaSettings;
 				$this->getAccessToken();
 			}
+		}catch (Exception $e){
+			global $logger;
+			$logger->log("Could not load Hoopla settings", Logger::LOG_ALERT);
 		}
 	}
 
@@ -61,6 +68,7 @@ class HooplaDriver extends AbstractEContentDriver{
 			curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $customRequest);
 		}
 
+		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 1);
 		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 		curl_setopt($ch, CURLOPT_HEADER, false);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -212,7 +220,7 @@ class HooplaDriver extends AbstractEContentDriver{
 						$hooplaPatronStatus = $this->getAccountSummary($user);
 					}
 					foreach ($checkOutsResponse as $checkOut) {
-						$hooplaRecordID  = 'MWT' . $checkOut->contentId;
+						$hooplaRecordID  = $checkOut->contentId;
 						$simpleSortTitle = preg_replace('/^The\s|^A\s/i', '', $checkOut->title); // remove beginning The or A
 
 						$currentTitle = array(
@@ -241,9 +249,9 @@ class HooplaDriver extends AbstractEContentDriver{
 							$currentTitle['linkUrl']       = $hooplaRecordDriver->getLinkUrl();
 							$currentTitle['groupedWorkId'] = $hooplaRecordDriver->getGroupedWorkId();
 							$currentTitle['ratingData']    = $hooplaRecordDriver->getRatingData();
-							$currentTitle['title_sort']    = $hooplaRecordDriver->getSortableTitle();
+							$currentTitle['title_sort']    = $hooplaRecordDriver->getTitle();
 							$currentTitle['author']        = $hooplaRecordDriver->getPrimaryAuthor();
-							$currentTitle['format']        = implode(', ', $hooplaRecordDriver->getFormat());
+							$currentTitle['format']        = $hooplaRecordDriver->getPrimaryFormat();
 						}
 						$key = $currentTitle['checkoutSource'] . $currentTitle['hooplaId']; // This matches the key naming scheme in the Overdrive Driver
 						$checkedOutItems[$key] = $currentTitle;
@@ -277,15 +285,15 @@ class HooplaDriver extends AbstractEContentDriver{
 	}
 
 	private function renewAccessToken (){
-		global $configArray;
-		if (!empty($configArray['Hoopla']['HooplaAPIUser']) && !empty($configArray['Hoopla']['HooplaAPIPassword'])) {
+		if ($this->hooplaEnabled) {
 			$url = 'https://' . str_replace(array('http://', 'https://'),'', $this->hooplaAPIBaseURL) . '/v2/token';
 			// Ensure https is used
 
-			$username = $configArray['Hoopla']['HooplaAPIUser'];
-			$password = $configArray['Hoopla']['HooplaAPIPassword'];
+			$username = $this->hooplaSettings->apiUsername;
+			$password = $this->hooplaSettings->apiPassword;
 
 			$curl = curl_init($url);
+			curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, 1);
 			curl_setopt($curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC );
 			curl_setopt($curl, CURLOPT_USERPWD, "$username:$password");
 			curl_setopt($curl, CURLOPT_POST, true);
@@ -309,6 +317,7 @@ class HooplaDriver extends AbstractEContentDriver{
 
 					/** @var Memcache $memCache */
 					global $memCache;
+					global $configArray;
 					$memCache->set(self::memCacheKey, $this->accessToken, null, $configArray['Caching']['hoopla_api_access_token']);
 					return true;
 
@@ -542,6 +551,7 @@ class HooplaDriver extends AbstractEContentDriver{
 	{
 		require_once ROOT_DIR . '/sys/Hoopla/HooplaRecordUsage.php';
 		$recordUsage = new HooplaRecordUsage();
+		require_once ROOT_DIR . '/sys/Hoopla/HooplaExtract.php';
 		$product = new HooplaExtract();
 		$product->hooplaId = $hooplaId;
 		if ($product->find(true)) {

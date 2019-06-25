@@ -150,7 +150,7 @@ class RbdigitalProcessor {
                 HashMap<String, Integer> literaryFormFull = new HashMap<>();
                 HashSet<String> topicsToAdd = new HashSet<>();
                 for (int i = 0; i < genres.length(); i++) {
-                    JSONObject curGenre = genres.getJSONObject(0);
+                    JSONObject curGenre = genres.getJSONObject(i);
                     String genre = curGenre.getString("text");
 
                     genresToAdd.add(genre);

@@ -61,7 +61,7 @@
 							<div class="myAccountLink{if $pageTemplate=="myMaterialRequests.tpl"} active{/if}" title="{translate text='Materials_Request_alt'}s">
 								<a href="{$path}/MaterialsRequest/MyRequests">{translate text='Materials_Request_alt'}s <span class="materialsRequests-placeholder"><img src="{$path}/images/loading.gif" alt="loading"></span></a>
 							</div>
-						{elseif $materialRequestType == 2}
+						{elseif $materialRequestType == 2 && $userHasCatalogConnection}
 							<div class="myAccountLink{if $pageTemplate=="ilsyMaterialRequests.tpl"} active{/if}" title="{translate text='Materials_Request_alt'}s">
 								<a href="{$path}/MaterialsRequest/IlsRequests">{translate text='Materials_Request_alt'}s <span class="materialsRequests-placeholder"><img src="{$path}/images/loading.gif" alt="loading"></span></a>
 							</div>
@@ -348,7 +348,7 @@
 			{/if}
 
 			{if $loggedIn && (array_key_exists('libraryAdmin', $userRoles) || array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles))}
-				{if $module == 'Hoopla' && in_array($action, array('IndexingLog', 'Settings', 'Dashboard'))}
+				{if $module == 'Hoopla' && in_array($action, array('IndexingLog', 'Settings', 'Scopes', 'Dashboard'))}
 					{assign var="curSection" value=true}
 				{else}
 					{assign var="curSection" value=false}
@@ -364,6 +364,7 @@
 					<div id="hooplaMenu" class="panel-collapse collapse {if $curSection}in{/if}">
 						<div class="panel-body">
 							<div class="adminMenuLink{if $action == "Settings"} active{/if}"><a href="{$path}/Hoopla/Settings">Settings</a></div>
+							<div class="adminMenuLink{if $action == "Scopes"} active{/if}"><a href="{$path}/Hoopla/Scopes">Scopes</a></div>
 							<div class="adminMenuLink{if $action == "IndexingLog"} active{/if}"><a href="{$path}/Hoopla/IndexingLog">Indexing Log</a></div>
 							<div class="adminMenuLink{if $action == "Dashboard"} active{/if}"><a href="{$path}/Hoopla/Dashboard">Dashboard</a></div>
 						</div>

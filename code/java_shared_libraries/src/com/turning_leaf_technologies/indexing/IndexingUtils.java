@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.Objects;
 import java.util.TreeSet;
 import org.apache.logging.log4j.Logger;
@@ -14,17 +15,56 @@ public class IndexingUtils {
         TreeSet<Scope> scopes = new TreeSet<>();
         //Setup translation maps for system and location
         try {
-            loadLibraryScopes(scopes, dbConn);
+            HashMap<Long, HooplaScope> hooplaScopes = loadHooplaScopes(dbConn, logger);
 
-            loadLocationScopes(scopes, dbConn, logger);
+            loadLibraryScopes(scopes, hooplaScopes, dbConn);
+
+            loadLocationScopes(scopes, hooplaScopes, dbConn);
         } catch (SQLException e) {
-            logger.error("Error setting up system maps", e);
+            logger.error("Error setting up scopes", e);
         }
 
         return scopes;
     }
 
-    private static void loadLocationScopes(TreeSet<Scope> scopes, Connection dbConn, Logger logger) throws SQLException {
+    private static HashMap<Long, HooplaScope> loadHooplaScopes(Connection dbConn, Logger logger) {
+        HashMap<Long, HooplaScope> hooplaScopes = new HashMap<>();
+        try {
+            PreparedStatement hooplaScopeStmt = dbConn.prepareStatement("SELECT * from hoopla_scopes", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+            ResultSet hooplaScopesRS = hooplaScopeStmt.executeQuery();
+
+            while (hooplaScopesRS.next()){
+                HooplaScope hooplaScope = new HooplaScope();
+                hooplaScope.setId(hooplaScopesRS.getLong("id"));
+                hooplaScope.setName(hooplaScopesRS.getString("name"));
+                hooplaScope.setIncludeEBooks(hooplaScopesRS.getBoolean("includeEBooks"));
+                hooplaScope.setMaxCostPerCheckoutEBooks(hooplaScopesRS.getLong("id"));
+                hooplaScope.setIncludeEComics(hooplaScopesRS.getBoolean("includeEComics"));
+                hooplaScope.setMaxCostPerCheckoutEComics(hooplaScopesRS.getFloat("maxCostPerCheckoutEComics"));
+                hooplaScope.setIncludeEAudiobook(hooplaScopesRS.getBoolean("includeEAudiobook"));
+                hooplaScope.setMaxCostPerCheckoutEAudiobook(hooplaScopesRS.getFloat("maxCostPerCheckoutEAudiobook"));
+                hooplaScope.setIncludeMovies(hooplaScopesRS.getBoolean("includeMovies"));
+                hooplaScope.setMaxCostPerCheckoutMovies(hooplaScopesRS.getFloat("maxCostPerCheckoutMovies"));
+                hooplaScope.setIncludeMusic(hooplaScopesRS.getBoolean("includeMusic"));
+                hooplaScope.setMaxCostPerCheckoutMusic(hooplaScopesRS.getFloat("maxCostPerCheckoutMusic"));
+                hooplaScope.setIncludeTelevision(hooplaScopesRS.getBoolean("includeTelevision"));
+                hooplaScope.setMaxCostPerCheckoutTelevision(hooplaScopesRS.getFloat("maxCostPerCheckoutTelevision"));
+                hooplaScope.setRestrictToChildrensMaterial(hooplaScopesRS.getBoolean("restrictToChildrensMaterial"));
+                hooplaScope.setRatingsToExclude(hooplaScopesRS.getString("ratingsToExclude"));
+                hooplaScope.setExcludeAbridged(hooplaScopesRS.getBoolean("excludeAbridged"));
+                hooplaScope.setExcludeParentalAdvisory(hooplaScopesRS.getBoolean("excludeParentalAdvisory"));
+                hooplaScope.setExcludeProfanity(hooplaScopesRS.getBoolean("excludeProfanity"));
+
+                hooplaScopes.put(hooplaScope.getId(), hooplaScope);
+            }
+
+        }catch (SQLException e) {
+            logger.error("Error loading hoopla scopes", e);
+        }
+        return hooplaScopes;
+    }
+
+    private static void loadLocationScopes(TreeSet<Scope> scopes, HashMap<Long, HooplaScope> hooplaScopes, Connection dbConn) throws SQLException {
         PreparedStatement locationInformationStmt = dbConn.prepareStatement("SELECT library.libraryId, locationId, code, subLocation, ilsCode, " +
                         "library.subdomain, location.facetLabel, location.displayName, library.pTypes, library.restrictOwningBranchesAndSystems, location.publicListsToInclude, " +
                         "library.enableOverdriveCollection as enableOverdriveCollectionLibrary, " +
@@ -34,7 +74,8 @@ public class IndexingUtils {
                         "library.includeOverdriveKids as includeOverdriveKidsLibrary, location.includeOverdriveKids as includeOverdriveKidsLocation, " +
                         "location.additionalLocationsToShowAvailabilityFor, includeAllLibraryBranchesInFacets, " +
                         "location.includeAllRecordsInShelvingFacets, location.includeAllRecordsInDateAddedFacets, location.baseAvailabilityToggleOnLocalHoldingsOnly, " +
-                        "location.includeOnlineMaterialsInAvailableToggle, location.includeLibraryRecordsToInclude " +
+                        "location.includeOnlineMaterialsInAvailableToggle, location.includeLibraryRecordsToInclude, " +
+                        "library.hooplaScopeId as hooplaScopeLibrary, location.hooplaScopeId as hooplaScopeLocation " +
                         "FROM location INNER JOIN library on library.libraryId = location.libraryId ORDER BY code ASC",
                 ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
         PreparedStatement locationOwnedRecordRulesStmt = dbConn.prepareStatement("SELECT location_records_owned.*, indexing_profiles.name FROM location_records_owned INNER JOIN indexing_profiles ON indexingProfileId = indexing_profiles.id WHERE locationId = ?",
@@ -87,6 +128,16 @@ public class IndexingUtils {
             locationScopeInfo.setIncludeAllRecordsInDateAddedFacets(locationInformationRS.getBoolean("includeAllRecordsInDateAddedFacets"));
             locationScopeInfo.setBaseAvailabilityToggleOnLocalHoldingsOnly(locationInformationRS.getBoolean("baseAvailabilityToggleOnLocalHoldingsOnly"));
             locationScopeInfo.setIncludeOnlineMaterialsInAvailableToggle(locationInformationRS.getBoolean("includeOnlineMaterialsInAvailableToggle"));
+
+            long hooplaScopeLocation = locationInformationRS.getLong("hooplaScopeLocation");
+            long hooplaScopeLibrary = locationInformationRS.getLong("hooplaScopeLibrary");
+            if (hooplaScopeLocation == -1 ){
+                if (hooplaScopeLibrary != -1) {
+                    locationScopeInfo.setHooplaScope(hooplaScopes.get(hooplaScopeLibrary));
+                }
+            }else{
+                locationScopeInfo.setHooplaScope(hooplaScopes.get(hooplaScopeLocation));
+            }
 
             //Load information about what should be included in the scope
             locationOwnedRecordRulesStmt.setLong(1, locationId);
@@ -155,11 +206,11 @@ public class IndexingUtils {
     }
 
     private static PreparedStatement libraryRecordInclusionRulesStmt;
-    private static void loadLibraryScopes(TreeSet<Scope> scopes, Connection dbConn) throws SQLException {
+    private static void loadLibraryScopes(TreeSet<Scope> scopes, HashMap<Long, HooplaScope> hooplaScopes, Connection dbConn) throws SQLException {
         PreparedStatement libraryInformationStmt = dbConn.prepareStatement("SELECT libraryId, ilsCode, subdomain, " +
                         "displayName, facetLabel, pTypes, enableOverdriveCollection, restrictOwningBranchesAndSystems, publicListsToInclude, " +
                         "additionalLocationsToShowAvailabilityFor, includeOverdriveAdult, includeOverdriveTeen, includeOverdriveKids, " +
-                        "includeAllRecordsInShelvingFacets, includeAllRecordsInDateAddedFacets, includeOnlineMaterialsInAvailableToggle " +
+                        "includeAllRecordsInShelvingFacets, includeAllRecordsInDateAddedFacets, includeOnlineMaterialsInAvailableToggle, hooplaScopeId " +
                         "FROM library ORDER BY ilsCode ASC",
                 ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
         PreparedStatement libraryOwnedRecordRulesStmt = dbConn.prepareStatement("SELECT library_records_owned.*, indexing_profiles.name from library_records_owned INNER JOIN indexing_profiles ON indexingProfileId = indexing_profiles.id WHERE libraryId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
@@ -202,6 +253,11 @@ public class IndexingUtils {
             newScope.setIncludeOverDriveAdultCollection(includeOverdriveAdult);
             newScope.setIncludeOverDriveTeenCollection(includeOverdriveTeen);
             newScope.setIncludeOverDriveKidsCollection(includeOverdriveKids);
+
+            long hooplaScopeLibrary = libraryInformationRS.getLong("hooplaScopeId");
+            if (hooplaScopeLibrary != -1) {
+                newScope.setHooplaScope(hooplaScopes.get(hooplaScopeLibrary));
+            }
 
             newScope.setRestrictOwningLibraryAndLocationFacets(libraryInformationRS.getBoolean("restrictOwningBranchesAndSystems"));
             newScope.setIlsCode(libraryInformationRS.getString("ilsCode"));

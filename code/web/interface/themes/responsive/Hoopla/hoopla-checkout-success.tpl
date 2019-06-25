@@ -1,5 +1,5 @@
 {strip}
-	{if $hooplaUser}{* Linked User that is not the main user *}
+	{if !empty($hooplaUser)}{* Linked User that is not the main user *}
 		<p>
 			Using card for {$hooplaUser->getNameAndLibraryLabel()} :
 		</p>

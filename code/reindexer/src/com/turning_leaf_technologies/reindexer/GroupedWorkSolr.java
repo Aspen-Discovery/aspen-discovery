@@ -478,7 +478,7 @@ public class GroupedWorkSolr implements Cloneable {
 					if (curScope.isLocallyOwned() || curScope.isLibraryOwned() || curScopeDetails.isIncludeAllRecordsInDateAddedFacets()) {
 						//Date Added To Catalog needs to be the earliest date added for the catalog.
 						Date dateAdded = curItem.getDateAdded();
-						long daysSinceAdded;
+						Integer daysSinceAdded;
 						//See if we need to override based on publication date if not provided.
 						//Should be set by individual driver though.
 						if (dateAdded == null){
@@ -489,15 +489,15 @@ public class GroupedWorkSolr implements Cloneable {
 
 								long indexTime = DateUtils.getIndexDate().getTime();
 								long publicationTime = publicationDate.getTime().getTime();
-								daysSinceAdded = (indexTime - publicationTime) / (long)(1000 * 60 * 60 * 24);
+								daysSinceAdded = (int)(indexTime - publicationTime) / (1000 * 60 * 60 * 24);
 							}else{
 								daysSinceAdded = Integer.MAX_VALUE;
 							}
 						}else{
-							daysSinceAdded = DateUtils.getDaysSinceAddedForDate(curItem.getDateAdded());
+							daysSinceAdded = DateUtils.getDaysSinceAddedForDate(dateAdded);
 						}
 
-						updateMaxValueField(doc, "local_days_since_added_" + curScopeName, (int)daysSinceAdded);
+						updateMaxValueField(doc, "local_days_since_added_" + curScopeName, daysSinceAdded);
 					}
 
 					if (curScope.isLocallyOwned() || curScope.isLibraryOwned()) {
@@ -1193,10 +1193,10 @@ public class GroupedWorkSolr implements Cloneable {
 		}
 	}
 
-	void clearSeriesData(){
-		this.series.clear();
-		this.seriesWithVolume.clear();
-	}
+//	void clearSeriesData(){
+//		this.series.clear();
+//		this.seriesWithVolume.clear();
+//	}
 
 	void addSeries(String series) {
 		addSeriesInfoToField(series, this.series);
@@ -1690,5 +1690,32 @@ public class GroupedWorkSolr implements Cloneable {
 
 	void addLanguage(@SuppressWarnings("SameParameterValue") String language) {
 		this.languages.add(language);
+	}
+
+	/**
+	 * Removes any hoopla records where the equivalent format exists in OverDrive or Rbdigital
+	 */
+	void removeRedundantHooplaRecords() {
+		if (relatedRecords.size() > 1) {
+			ArrayList<RecordInfo> hooplaRecordsAsArray = new ArrayList<>();
+			ArrayList<RecordInfo> otherRecordsAsArray = new ArrayList<>();
+			for (RecordInfo relatedRecord : relatedRecords.values()) {
+				if (relatedRecord.getSource().equals("hoopla")) {
+					hooplaRecordsAsArray.add(relatedRecord);
+				}else if(relatedRecord.getSource().equals("overdrive") || relatedRecord.getSource().equals("rbdigital")){
+					otherRecordsAsArray.add(relatedRecord);
+				}
+			}
+			for (RecordInfo record1 : hooplaRecordsAsArray) {
+				//This is a candidate for removal
+				for (RecordInfo record2 : otherRecordsAsArray) {
+					if (record1.getPrimaryFormat().equals(record2.getPrimaryFormat())) {
+						//Suppress the hoopla record
+						relatedRecords.remove(record1.getFullIdentifier());
+						break;
+					}
+				}
+			}
+		}
 	}
 }

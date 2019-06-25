@@ -76,8 +76,10 @@ public class HooplaExportMain {
 			int numChanges = exportHooplaData();
 
 			//Mark any records that no longer exist in search results as deleted
-			//TODO: Process deleted records
-			//numChanges += deleteItems();
+			//TODO: Can we detect records that were deleted in the API or should this only be done on a full reload
+			//With Hoopla should we just do a full reload once a night rather than realtime changes?
+			//Since the records should not change often
+			numChanges += deleteItems();
 
 			if (groupedWorkIndexer != null) {
 				groupedWorkIndexer.finishIndexingFromExtract();
@@ -110,6 +112,35 @@ public class HooplaExportMain {
 				logger.info("Thread was interrupted");
 			}
 		}
+	}
+
+	private static int deleteItems() {
+		int numDeleted = 0;
+		try {
+			for (HooplaTitle hooplaTitle : existingRecords.values()) {
+				if (hooplaTitle.isActive()) {
+					deleteHooplaItemStmt.setLong(1, hooplaTitle.getId());
+					deleteHooplaItemStmt.executeUpdate();
+					RemoveRecordFromWorkResult result = getRecordGroupingProcessor().removeRecordFromGroupedWork("rbdigital", Long.toString(hooplaTitle.getHooplaId()));
+					if (result.reindexWork){
+						getGroupedWorkIndexer().processGroupedWork(result.permanentId);
+					}else if (result.deleteWork){
+						//Delete the work from solr and the database
+						getGroupedWorkIndexer().deleteRecord(result.permanentId, result.groupedWorkId);
+					}
+					numDeleted++;
+					logEntry.incDeleted();
+				}
+			}
+			if (numDeleted > 0) {
+				logEntry.saveResults();
+				logger.warn("Deleted " + numDeleted + " old titles");
+			}
+		}catch (SQLException e) {
+			logger.error("Error deleting items", e);
+			logEntry.addNote("Error deleting items " + e.toString());
+		}
+		return numDeleted;
 	}
 
 	private static void loadExistingTitles() {
@@ -197,6 +228,7 @@ public class HooplaExportMain {
 						JSONArray responseTitles = responseJSON.getJSONArray("titles");
 						if (responseTitles != null && responseTitles.length() > 0) {
 							numChanges += updateTitlesInDB(responseTitles, doFullReload);
+							logEntry.saveResults();
 						}
 
 						String startToken = null;
@@ -219,7 +251,6 @@ public class HooplaExportMain {
 							} else {
 								startToken = null;
 							}
-							logEntry.addNote("Processed " + numChanges + " records from hoopla");
 							logEntry.saveResults();
 						}
 					}
@@ -249,6 +280,7 @@ public class HooplaExportMain {
 				checksumCalculator.reset();
 				checksumCalculator.update(rawResponse.getBytes());
 				long rawChecksum = checksumCalculator.getValue();
+				boolean curTitleActive = curTitle.getBoolean("active");
 
 				long hooplaId = curTitle.getLong("titleId");
 
@@ -259,6 +291,15 @@ public class HooplaExportMain {
 					if (existingTitle.getChecksum() != rawChecksum){
 						recordUpdated = true;
 						logEntry.incUpdated();
+						if (existingTitle.isActive() != curTitleActive) {
+							if (curTitleActive) {
+								logEntry.incAdded();
+							} else {
+								logEntry.incDeleted();
+							}
+						}else{
+							logEntry.incUpdated();
+						}
 					}
 					existingRecords.remove(hooplaId);
 				}else{
@@ -283,13 +324,19 @@ public class HooplaExportMain {
 					updateHooplaTitleInDB.setLong(14, startTimeForLogging);
 					updateHooplaTitleInDB.executeUpdate();
 
-					if (curTitle.getBoolean("active")){
+					numUpdates++;
+
+					if (curTitleActive){
 						String groupedWorkId = groupRecord(curTitle, hooplaId);
 						indexRecord(groupedWorkId);
-						numUpdates++;
 					}else{
 						//Delete the record if it exists
 						RemoveRecordFromWorkResult result = getRecordGroupingProcessor().removeRecordFromGroupedWork("hoopla", Long.toString(hooplaId));
+						if (result.groupedWorkId != null){
+							//This was previously indexed, we should mark it as deleted.  If we are just refreshing
+							//an inactive record we don't care.
+							logEntry.incDeleted();
+						}
 						if (result.reindexWork){
 							getGroupedWorkIndexer().processGroupedWork(result.permanentId);
 						}else if (result.deleteWork){

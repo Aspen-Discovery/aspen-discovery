@@ -119,5 +119,41 @@ function getHooplaUpdates()
 				"ALTER TABLE hoopla_record_usage ADD INDEX (year, month)",
 			),
 		),
+
+		'hoopla_scoping' => [
+			'title' => 'Hoopla Scoping',
+			'description' => 'Add a table to define what information should be included within search results',
+			'sql' => [
+				'CREATE TABLE hoopla_scopes (
+    				id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    				name VARCHAR(50) NOT NULL,
+    				includeEBooks TINYINT DEFAULT 1,
+    				maxCostPerCheckoutEBooks FLOAT DEFAULT 5,
+    				includeEComics TINYINT DEFAULT 1,
+    				maxCostPerCheckoutEComics FLOAT DEFAULT 5,
+    				includeEAudiobook TINYINT DEFAULT 1,
+    				maxCostPerCheckoutEAudiobook FLOAT DEFAULT 5,
+    				includeMovies TINYINT DEFAULT 1,
+    				maxCostPerCheckoutMovies FLOAT DEFAULT 5,
+    				includeMusic TINYINT DEFAULT 1,
+    				maxCostPerCheckoutMusic FLOAT DEFAULT 5,
+    				includeTelevision TINYINT DEFAULT 1,
+    				maxCostPerCheckoutTelevision FLOAT DEFAULT 5,
+    				restrictToChildrensMaterial TINYINT DEFAULT 0,
+    				ratingsToExclude VARCHAR(100),
+    				excludeAbridged TINYINT DEFAULT 0,
+    				excludeParentalAdvisory TINYINT DEFAULT 0,
+    				excludeProfanity TINYINT DEFAULT 0,
+				) ENGINE = InnoDB'
+			]
+		],
+
+		'hoopla_filter_records_from_other_vendors' =>[
+			'title'=> 'Hoopla Filter Records Purchased from other vendors',
+			'description' =>'Add an option to exclude hoopla titles purchased from other vendors',
+			'sql' => [
+				'ALTER TABLE hoopla_settings ADD COLUMN excludeTitlesWithCopiesFromOtherVendors TINYINT DEFAULT 0'
+			]
+		]
 	);
 }

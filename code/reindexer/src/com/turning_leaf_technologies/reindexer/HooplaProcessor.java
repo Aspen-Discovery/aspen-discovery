@@ -1,5 +1,6 @@
 package com.turning_leaf_technologies.reindexer;
 
+import com.turning_leaf_technologies.indexing.HooplaScope;
 import com.turning_leaf_technologies.indexing.Scope;
 import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -41,12 +42,13 @@ class HooplaProcessor {
 					logger.debug("Hoopla product " + identifier + " is inactive, skipping");
 					return;
 				}
+				String kind = productRS.getString("kind");
+				float price = productRS.getFloat("price");
 
 				RecordInfo hooplaRecord = groupedWork.addRelatedRecord("hoopla", identifier);
 				hooplaRecord.setRecordIdentifier("hoopla", identifier);
 
 				String title = productRS.getString("title");
-				String kind = productRS.getString("kind");
 				String formatCategory;
 				String primaryFormat;
 				switch (kind) {
@@ -159,7 +161,7 @@ class HooplaProcessor {
 //				HashMap<String, Integer> literaryFormFull = new HashMap<>();
 				HashSet<String> topicsToAdd = new HashSet<>();
 				for (int i = 0; i < genres.length(); i++) {
-					String genre = genres.getString(0);
+					String genre = genres.getString(i);
 
 					genresToAdd.add(genre);
 					topicsToAdd.add(genre);
@@ -219,16 +221,66 @@ class HooplaProcessor {
 				itemInfo.setDateAdded(dateAdded);
 
 				itemInfo.setDetailedStatus("Available Online");
+				boolean abridged = productRS.getBoolean("abridged");
+				boolean pa = productRS.getBoolean("pa");
+				boolean profanity = productRS.getBoolean("profanity");
+				String rating = productRS.getString("rating");
+
 				for (Scope scope : indexer.getScopes()) {
-					//TODO: Filter here based on library settings, this likely needs to be rewritten
-					ScopingInfo scopingInfo = itemInfo.addScope(scope);
-					scopingInfo.setAvailable(true);
-					scopingInfo.setStatus("Available Online");
-					scopingInfo.setGroupedStatus("Available Online");
-					scopingInfo.setHoldable(false);
-					scopingInfo.setLibraryOwned(true);
-					scopingInfo.setLocallyOwned(true);
-					scopingInfo.setInLibraryUseOnly(false);
+					boolean okToAdd = true;
+					HooplaScope hooplaScope = scope.getHooplaScope();
+					if (hooplaScope != null){
+						//Filter by kind and price
+						switch (kind){
+							case "MOVIE":
+								okToAdd = (hooplaScope.isIncludeMovies() && price <= hooplaScope.getMaxCostPerCheckoutMovies());
+								break;
+							case "TELEVISION":
+								okToAdd = (hooplaScope.isIncludeTelevision() && price <= hooplaScope.getMaxCostPerCheckoutTelevision());
+								break;
+							case "AUDIOBOOK":
+								okToAdd = (hooplaScope.isIncludeEAudiobook() && price <= hooplaScope.getMaxCostPerCheckoutEAudiobook());
+								break;
+							case "EBOOK":
+								okToAdd = (hooplaScope.isIncludeEBooks() && price <= hooplaScope.getMaxCostPerCheckoutEBooks());
+								break;
+							case "COMIC":
+								okToAdd = (hooplaScope.isIncludeEComics() && price <= hooplaScope.getMaxCostPerCheckoutEComics());
+								break;
+							case "MUSIC":
+								okToAdd = (hooplaScope.isIncludeMusic() && price <= hooplaScope.getMaxCostPerCheckoutMusic());
+								break;
+							default:
+								logger.error("Unknown kind " + kind);
+						}
+						if (okToAdd && hooplaScope.isExcludeAbridged() && abridged){
+							okToAdd = false;
+						}
+						if (okToAdd && hooplaScope.isExcludeParentalAdvisory() && pa){
+							okToAdd = false;
+						}
+						if (okToAdd && hooplaScope.isExcludeProfanity() && profanity){
+							okToAdd = false;
+						}
+						if (okToAdd && hooplaScope.isRestrictToChildrensMaterial() && !children){
+							okToAdd = false;
+						}
+						if (okToAdd && hooplaScope.isRatingExcluded(rating)){
+							okToAdd = false;
+						}
+					}else{
+						okToAdd = false;
+					}
+					if (okToAdd) {
+						ScopingInfo scopingInfo = itemInfo.addScope(scope);
+						scopingInfo.setAvailable(true);
+						scopingInfo.setStatus("Available Online");
+						scopingInfo.setGroupedStatus("Available Online");
+						scopingInfo.setHoldable(false);
+						scopingInfo.setLibraryOwned(true);
+						scopingInfo.setLocallyOwned(true);
+						scopingInfo.setInLibraryUseOnly(false);
+					}
 				}
 
 				hooplaRecord.addItem(itemInfo);

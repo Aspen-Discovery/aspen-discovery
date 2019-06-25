@@ -147,8 +147,8 @@ class BookCoverProcessor{
 		require_once ROOT_DIR . '/RecordDrivers/HooplaRecordDriver.php';
 		$driver = new HooplaRecordDriver($id);
 		if ($driver->isValid()){
-			$coverUrl = $driver->getBookcoverUrl('large');
-			return $this->processImageURL('rbdigital', $coverUrl, true);
+			$coverUrl = $driver->getHooplaCoverUrl();
+			return $this->processImageURL('hoopla', $coverUrl, true);
 		}
 
 		return false;

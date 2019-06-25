@@ -1131,6 +1131,9 @@ class MyAccount_AJAX
 		global $memCache;
 		$result = array();
 		if (UserAccount::isLoggedIn()){
+			//TODO: This validates the account with the ILS which may not be needed if we can store that
+			//the user is logged in and valid for a few minutes (up to an hour or 2?)
+			//Would require that we know when number of checkouts, holds, etc are updated.
 			$user = UserAccount::getLoggedInUser();
 			$interface->assign('user', $user);
 
