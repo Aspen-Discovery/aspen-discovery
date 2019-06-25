@@ -68,6 +68,8 @@ public class HooplaExportMain {
 
 			//Start a log entry
 			createDbLogEntry(startTime, aspenConn);
+			logEntry.addNote("Starting extract");
+			logEntry.saveResults();
 
 			//Get a list of all existing records in the database
 			loadExistingTitles();
@@ -79,7 +81,12 @@ public class HooplaExportMain {
 			//TODO: Can we detect records that were deleted in the API or should this only be done on a full reload
 			//With Hoopla should we just do a full reload once a night rather than realtime changes?
 			//Since the records should not change often
-			numChanges += deleteItems();
+			if (!logEntry.hasErrors()){
+				numChanges += deleteItems();
+			}else{
+				logEntry.addNote("Not deleting items because there were errors");
+			}
+
 
 			if (groupedWorkIndexer != null) {
 				groupedWorkIndexer.finishIndexingFromExtract();
@@ -204,6 +211,7 @@ public class HooplaExportMain {
 				String accessToken = getAccessToken(apiUsername, apiPassword);
 				if (accessToken == null) {
 					logEntry.incErrors();
+					logEntry.addNote("Could not load access token");
 					return numChanges;
 				}
 
@@ -220,7 +228,7 @@ public class HooplaExportMain {
 				WebServiceResponse response = NetworkUtils.getURL(url, logger, headers);
 				if (!response.isSuccess()){
 					logEntry.incErrors();
-					logEntry.addNote(response.getMessage());
+					logEntry.addNote("Could not get titles from " + url + " " + response.getMessage());
 				}else {
 					JSONObject responseJSON = new JSONObject(response.getMessage());
 					if (responseJSON.has("titles")) {
@@ -238,18 +246,24 @@ public class HooplaExportMain {
 						while (startToken != null) {
 							url = hooplaAPIBaseURL + "/api/v1/libraries/" + hooplaLibraryId + "/content?startToken=" + startToken;
 							response = NetworkUtils.getURL(url, logger, headers);
-							responseJSON = new JSONObject(response.getMessage());
-							if (responseJSON.has("titles")) {
-								responseTitles = responseJSON.getJSONArray("titles");
-								if (responseTitles != null && responseTitles.length() > 0) {
-									numChanges += updateTitlesInDB(responseTitles, doFullReload);
+							if (response.isSuccess()){
+								responseJSON = new JSONObject(response.getMessage());
+								if (responseJSON.has("titles")) {
+									responseTitles = responseJSON.getJSONArray("titles");
+									if (responseTitles != null && responseTitles.length() > 0) {
+										numChanges += updateTitlesInDB(responseTitles, doFullReload);
+									}
 								}
+								if (responseJSON.has("nextStartToken")) {
+									startToken = responseJSON.getString("nextStartToken");
+								} else {
+									startToken = null;
+								}
+							}else{
+								logEntry.incErrors();
+								logEntry.addNote("Error loading data from " + url + " " + response.getResponseCode() + " " + response.getMessage());
 							}
-							if (responseJSON.has("nextStartToken")) {
-								startToken = responseJSON.getString("nextStartToken");
-							} else {
-								startToken = null;
-							}
+
 							logEntry.saveResults();
 						}
 					}

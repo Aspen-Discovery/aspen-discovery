@@ -1709,7 +1709,7 @@ public class GroupedWorkSolr implements Cloneable {
 			for (RecordInfo record1 : hooplaRecordsAsArray) {
 				//This is a candidate for removal
 				for (RecordInfo record2 : otherRecordsAsArray) {
-					if (record1.getPrimaryFormat().equals(record2.getPrimaryFormat())) {
+					if (record1.getPrimaryFormat().equals(record2.getPrimaryFormat()) && record1.getPrimaryLanguage().equals(record2.getPrimaryLanguage())) {
 						//Suppress the hoopla record
 						relatedRecords.remove(record1.getFullIdentifier());
 						break;

@@ -54,6 +54,10 @@ public class RecordInfo {
 		this.primaryLanguage = primaryLanguage;
 	}
 
+	String getPrimaryLanguage(){
+		return primaryLanguage;
+	}
+
 	void setPublisher(String publisher) {
 		this.publisher = publisher;
 	}

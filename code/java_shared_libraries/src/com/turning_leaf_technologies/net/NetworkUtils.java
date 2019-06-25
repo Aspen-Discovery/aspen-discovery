@@ -5,10 +5,7 @@ import org.apache.logging.log4j.Logger;
 
 
 import javax.net.ssl.HttpsURLConnection;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
@@ -57,13 +54,16 @@ public class NetworkUtils {
             } else {
                 logger.error("Received error " + conn.getResponseCode() + " getting " + url);
                 // Get any errors
-                BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
-                String line;
-                while ((line = rd.readLine()) != null) {
-                    response.append(line);
-                }
+                InputStream errorStream = conn.getErrorStream();
+                if (errorStream != null) {
+                    BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
+                    String line;
+                    while ((line = rd.readLine()) != null) {
+                        response.append(line);
+                    }
 
-                rd.close();
+                    rd.close();
+                }
                 retVal = new WebServiceResponse(false, conn.getResponseCode(), response.toString());
             }
 

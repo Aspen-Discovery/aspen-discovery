@@ -34,6 +34,7 @@ class HooplaExtractLogEntry {
 
     void addNote(String note) {
         this.notes.add(note);
+        saveResults();
     }
 
     private String getNotesHtml() {
