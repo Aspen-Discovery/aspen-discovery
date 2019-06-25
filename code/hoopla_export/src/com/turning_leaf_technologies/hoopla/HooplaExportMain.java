@@ -213,7 +213,6 @@ public class HooplaExportMain {
 					url += "?startTime=" + lastUpdate;
 				}
 
-				int numProcessed = 0;
 				HashMap<String, String> headers = new HashMap<>();
 				headers.put("Authorization", "Bearer " + accessToken);
 				headers.put("Content-Type", "application/json");
@@ -402,8 +401,8 @@ public class HooplaExportMain {
 
 	private static String getAccessToken(String username, String password) {
 		if (username == null || password == null){
-			logger.error("Please set HooplaAPIUser and HooplaAPIpassword in config.pwd.ini");
-			logEntry.addNote("Please set HooplaAPIUser and HooplaAPIpassword in config.pwd.ini");
+			logger.error("Please set HooplaAPIUser and HooplaAPIPassword in settings");
+			logEntry.addNote("Please set HooplaAPIUser and HooplaAPIPassword in settings");
 			return null;
 		}
 		String getTokenUrl = hooplaAPIBaseURL + "/v2/token";
@@ -418,7 +417,7 @@ public class HooplaExportMain {
 				return null;
 			}
 		}else{
-			logEntry.addNote("Please set HooplaAPIUser and HooplaAPIpassword in config.pwd.ini");
+			logEntry.addNote("Please set HooplaAPIUser and HooplaAPIPassword in settings");
 			return null;
 		}
 	}
