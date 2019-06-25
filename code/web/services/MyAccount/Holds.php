@@ -94,37 +94,6 @@ class MyAccount_Holds extends MyAccount{
 			}
 		}
 
-// Not displayed, so skipping fetching offline holds for the patron
-//		//Load holds that have been entered offline
-//		if ($user){
-//			//TODO: Offline holds are not displayed on the My Holds page
-//			require_once ROOT_DIR . '/sys/OfflineHold.php';
-//			$twoDaysAgo = time() - 48 * 60 * 60;
-//			$twoWeeksAgo = time() - 14 * 24 * 60 * 60;
-//			$offlineHoldsObj = new OfflineHold();
-//			$offlineHoldsObj->patronId = $user->id;
-//			$offlineHoldsObj->whereAdd("status = 'Not Processed' OR (status = 'Hold Placed' AND timeEntered >= $twoDaysAgo) OR (status = 'Hold Failed' AND timeEntered >= $twoWeeksAgo)");
-//			// mysql has these functions as well: "status = 'Not Processed' OR (status = 'Hold Placed' AND timeEntered >= DATE_SUB(NOW(), INTERVAL 2 DAYS)) OR (status = 'Hold Failed' AND timeEntered >= DATE_SUB(NOW(), INTERVAL 2 WEEKS))");
-//			$offlineHolds = array();
-//			if ($offlineHoldsObj->find()){
-//				while ($offlineHoldsObj->fetch()){
-//					//Load the title
-//					$offlineHold = array();
-//					require_once ROOT_DIR . '/RecordDrivers/MarcRecord.php';
-//					$recordDriver = new MarcRecord($offlineHoldsObj->bibId);
-//					if ($recordDriver->isValid()){
-//						$offlineHold['title'] = $recordDriver->getTitle();
-//					}
-//					$offlineHold['bibId'] = $offlineHoldsObj->bibId;
-//					$offlineHold['timeEntered'] = $offlineHoldsObj->timeEntered;
-//					$offlineHold['status'] = $offlineHoldsObj->status;
-//					$offlineHold['notes'] = $offlineHoldsObj->notes;
-//					$offlineHolds[] = $offlineHold;
-//				}
-//			}
-//			$interface->assign('offlineHolds', $offlineHolds);
-//		}
-
 		if (!$library->showDetailedHoldNoticeInformation){
 			$notification_method = '';
 		}else{
@@ -134,8 +103,6 @@ class MyAccount_Holds extends MyAccount{
 			}
 		}
 		$interface->assign('notification_method', strtolower($notification_method));
-
-		//print_r($patron);
 
 		// Present to the user
 		$this->display('holds.tpl', 'My Holds');
@@ -171,7 +138,7 @@ class MyAccount_Holds extends MyAccount{
 			->setCellValue('D3', 'Placed')
 			->setCellValue('E3', 'Pickup')
 			->setCellValue('F3', 'Available')
-			->setCellValue('G3', translate('Pick-Up By'));
+			->setCellValue('G3', translate('Pickup By'));
 		} else {
 			$objPHPExcel->setActiveSheetIndex(0)
 			->setCellValue('A1', 'Holds - '.ucfirst($exportType))

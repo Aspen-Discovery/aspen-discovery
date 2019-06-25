@@ -8,10 +8,10 @@
 					{if $record.coverUrl}
 						{if $record.recordId && $record.linkUrl}
 							<a href="{$record.linkUrl}" id="descriptionTrigger{$record.recordId|escape:"url"}">
-								<img src="{$record.coverUrl}" class="listResultImage img-thumbnail img-responsive" alt="{translate text='Cover Image'}">
+								<img src="{$record.coverUrl}" class="listResultImage img-thumbnail img-responsive" alt="{translate text='Cover Image' inAttribute=true}">
 							</a>
 						{else} {* Cover Image but no Record-View link *}
-							<img src="{$record.coverUrl}" class="listResultImage img-thumbnail img-responsive" alt="{translate text='Cover Image'}">
+							<img src="{$record.coverUrl}" class="listResultImage img-thumbnail img-responsive" alt="{translate text='Cover Image' inAttribute=true}">
 						{/if}
 					{/if}
 				</div>
@@ -47,8 +47,8 @@
 				<div class="resultDetails col-xs-12 col-md-8 col-lg-9">
 					{if $record.author}
 						<div class="row">
-							<div class="result-label col-tn-3">{translate text='Author'}</div>
-							<div class="col-tn-9 result-value">
+							<div class="result-label col-tn-4">{translate text='Author'}</div>
+							<div class="col-tn-8 result-value">
 								{if is_array($record.author)}
 									{foreach from=$record.author item=author}
 										<a href='{$path}/Author/Home?author="{$author|escape:"url"}"'>{$author|highlight}</a>
@@ -62,8 +62,8 @@
 
 					{if $record.format}
 						<div class="row">
-							<div class="result-label col-tn-3">{translate text='Format'}</div>
-						<div class="col-tn-9 result-value">
+							<div class="result-label col-tn-4">{translate text='Format'}</div>
+						<div class="col-tn-8 result-value">
 								{implode subject=$record.format glue=", "}
 							</div>
 						</div>
@@ -71,8 +71,8 @@
 
 					{if $hasLinkedUsers}
 					<div class="row">
-						<div class="result-label col-tn-3">{translate text='On Hold For'}</div>
-						<div class="col-tn-9 result-value">
+						<div class="result-label col-tn-4">{translate text='On Hold For'}</div>
+						<div class="col-tn-8 result-value">
 							{$record.user}
 						</div>
 					</div>
@@ -80,8 +80,8 @@
 
 					{if $record.create}
 						<div class="row">
-							<div class="result-label col-tn-3">{translate text='Date Placed'}</div>
-							<div class="col-tn-9 result-value">
+							<div class="result-label col-tn-4">{translate text='Date Placed'}</div>
+							<div class="col-tn-8 result-value">
 								{$record.create|date_format:"%b %d, %Y"}
 							</div>
 						</div>
@@ -90,8 +90,8 @@
 					{if $section == 'available'}
 					{* Available Hold *}
 						<div class="row">
-							<div class="result-label col-tn-3">{translate text='Expires'}</div>
-							<div class="col-tn-9 result-value">
+							<div class="result-label col-tn-4">{translate text='Expires'}</div>
+							<div class="col-tn-8 result-value">
 								<strong>{$record.expire|date_format:"%b %d, %Y at %l:%M %p"}</strong>
 							</div>
 						</div>
@@ -99,9 +99,9 @@
 					{else}
 						{* Unavailable hold *}
 						<div class="row">
-							<div class="result-label col-sm-3">{translate text='Position'}</div>
-							<div class="col-sm-9 result-value">
-								{$record.holdQueuePosition} out of {$record.holdQueueLength}
+							<div class="result-label col-tn-4">{translate text='Position'}</div>
+							<div class="col-tn-8 result-value">
+								{translate text="%1% out of %2%" 1=$record.holdQueuePosition 2=$record.holdQueueLength}
 							</div>
 						</div>
 					{/if}
@@ -111,9 +111,9 @@
 				<div class="col-xs-9 col-sm-8 col-md-4 col-lg-3">
 					<div class="btn-group btn-group-vertical btn-block">
 						{if $section == 'available'}
-							<button onclick="return AspenDiscovery.OverDrive.doOverDriveCheckout('{$record.userId}', '{$record.overDriveId}');" class="btn btn-sm btn-primary">Checkout</button>
+							<button onclick="return AspenDiscovery.OverDrive.doOverDriveCheckout('{$record.userId}', '{$record.overDriveId}');" class="btn btn-sm btn-primary">{translate text="Checkout"}</button>
 						{/if}
-						<button onclick="return AspenDiscovery.OverDrive.cancelOverDriveHold('{$record.userId}', '{$record.overDriveId}');" class="btn btn-sm btn-warning">Cancel Hold</button>
+						<button onclick="return AspenDiscovery.OverDrive.cancelOverDriveHold('{$record.userId}', '{$record.overDriveId}');" class="btn btn-sm btn-warning">{translate text="Cancel Hold"}</button>
 					</div>
 
 				</div>

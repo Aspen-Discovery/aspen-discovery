@@ -67,8 +67,8 @@
 		{if $showComments && !$hideReviewButton}{* Add hideReviewButton=true to {include} tag to disable below *}
 			<div class="row">
 				<div class="col-xs-12 text-center">
-					<span id="userreviewlink{$recordDriver->getPermanentId()}" class="userreviewlink btn btn-sm" title="Add a Review" onclick="return AspenDiscovery.GroupedWork.showReviewForm(this, '{$recordDriver->getPermanentId()}')">
-						Add a Review
+					<span id="userreviewlink{$recordDriver->getPermanentId()}" class="userreviewlink btn btn-sm" title="{translate text='Add a Review' inAttribute=true}" onclick="return AspenDiscovery.GroupedWork.showReviewForm(this, '{$recordDriver->getPermanentId()}')">
+						{translate text='Add a Review'}
 					</span>
 				</div>
 			</div>

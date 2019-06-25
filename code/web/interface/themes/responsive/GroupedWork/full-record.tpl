@@ -15,7 +15,7 @@
 			<div class="col-xs-4 col-sm-5 col-md-4 col-lg-3 text-center">
 				{if $disableCoverArt != 1}
 					<div id="recordCover" class="text-center row">
-						<img alt="{translate text='Book Cover'}" class="img-thumbnail" src="{$recordDriver->getBookcoverUrl('medium')}">
+						<img alt="{translate text='Book Cover' inAttribute=true}" class="img-thumbnail" src="{$recordDriver->getBookcoverUrl('medium')}">
 					</div>
 				{/if}
 				{if $showRatings}
@@ -34,7 +34,7 @@
 
 				{if $recordDriver->getPrimaryAuthor()}
 					<div class="row">
-						<div class="result-label col-tn-3">Author: </div>
+						<div class="result-label col-tn-3">{translate text=Author}: </div>
 						<div class="col-tn-9 result-value notranslate">
 							<a href='{$path}/Author/Home?author="{$recordDriver->getPrimaryAuthor()|escape:"url"}"'>{$recordDriver->getPrimaryAuthor()|highlight}</a>
 						</div>
@@ -79,23 +79,23 @@
 
 				{if $showPublicationDetails}
 					<div class="row">
-						<div class="result-label col-tn-3">Publisher: </div>
+						<div class="result-label col-tn-3">{translate text=Publisher}: </div>
 						<div class="result-value col-tn-9">
 							{if $summPublisher}
 								{$summPublisher}
 							{else}
-								Varies, see individual formats and editions
+								{translate text="Varies, see individual formats and editions"}
 							{/if}
 						</div>
 					</div>
 
 					<div class="row">
-						<div class="result-label col-tn-3">Pub. Date: </div>
+						<div class="result-label col-tn-3">{translate text="Pub. Date"}: </div>
 						<div class="result-value col-tn-9">
 							{if $summPubDate}
 								{$summPubDate|escape}
 							{else}
-								Varies, see individual formats and editions
+								{translate text="Varies, see individual formats and editions"}
 							{/if}
 						</div>
 					</div>
@@ -103,7 +103,7 @@
 
 				{if $showEditions && $summEdition}
 					<div class="row">
-						<div class="result-label col-tn-3">Edition: </div>
+						<div class="result-label col-tn-3">{translate text="Edition"}: </div>
 						<div class="result-value col-tn-9">
 							{$summEdition}
 						</div>
@@ -112,12 +112,12 @@
 
 				{if $summLanguage}
 					<div class="row">
-						<div class="result-label col-tn-3">Language: </div>
+						<div class="result-label col-tn-3">{translate text="Language"}: </div>
 						<div class="result-value col-tn-9">
 							{if is_array($summLanguage)}
-								{', '|implode:$summLanguage}
+								{implode subject=$summLanguage glue=', ' translate=true}
 							{else}
-								{$summLanguage}
+								{$summLanguage|translate}
 							{/if}
 						</div>
 					</div>

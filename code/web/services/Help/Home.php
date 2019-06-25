@@ -19,7 +19,8 @@ class Help_Home extends Action
 		// (most likely to exist).  The code will attempt to display most appropriate
 		// help screen that actually exists.
 		$tpl_user = 'Help/' . $interface->getLanguage() . "/{$safe_topic}.tpl";
-		$tpl_site = "Help/{$configArray['Site']['language']}/{$safe_topic}.tpl";
+		global $activeLanguage;
+		$tpl_site = "Help/{$activeLanguage->code}/{$safe_topic}.tpl";
 		$tpl_en = 'Help/en/' . $safe_topic . '.tpl';
 
 		// Best case -- help is available in the user's chosen language

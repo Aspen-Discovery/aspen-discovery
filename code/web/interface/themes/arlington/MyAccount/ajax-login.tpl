@@ -56,7 +56,7 @@
 	{/if}
 </div>
 <div class="modal-footer">
-	<button class="btn" data-dismiss="modal" id="modalClose">Close</button>
+	<button class="btn" data-dismiss="modal" id="modalClose">{translate text="Close"}</button>
 	{if !$offline || $enableLoginWhileOffline}
 		<span class="modal-buttons">
 			<input type="submit" name="submit" value="{if !empty($multiStep)}Continue{else}Login{/if}" id="loginFormSubmit" class="btn btn-primary extraModalButton" onclick="return AspenDiscovery.Account.processAjaxLogin()">

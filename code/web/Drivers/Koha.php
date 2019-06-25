@@ -951,7 +951,7 @@ class Koha extends AbstractIlsDriver {
 					$curHold['isbn'] = $recordDriver->getCleanISBN();
 					$curHold['upc'] = $recordDriver->getCleanUPC();
 					$curHold['format_category'] = $recordDriver->getFormatCategory();
-					$curHold['coverUrl'] = $recordDriver->getBookcoverUrl();
+					$curHold['coverUrl'] = $recordDriver->getBookcoverUrl('medium');
 					$curHold['link'] = $recordDriver->getRecordUrl();
 
 					//Load rating information

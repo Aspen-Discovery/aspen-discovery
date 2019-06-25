@@ -73,14 +73,15 @@ class Author_AJAX {
 				}
 			}
 			if ($doLookup){
-				$wiki_lang = substr($configArray['Site']['language'], 0, 2);
+				global $activeLanguage;
+				$wiki_lang = substr($activeLanguage->code, 0, 2);
 				$interface->assign('wiki_lang', $wiki_lang);
 				$authorInfo  = $memCache->get("wikipedia_article_{$authorName}_{$wiki_lang}" );
 				if ($authorInfo == false){
 					require_once ROOT_DIR . '/services/Author/Wikipedia.php';
 					$wikipediaParser = new Author_Wikipedia();
 					$authorInfo = $wikipediaParser->getWikipedia($authorName, $wiki_lang);
-					$memCache->set("wikipedia_article_{$authorName}_{$wiki_lang}", $authorInfo, false, $configArray['Caching']['wikipedia_article']);
+					$memCache->set("wikipedia_article_{$authorName}_{$wiki_lang}", $authorInfo, $configArray['Caching']['wikipedia_article']);
 				}
 				$returnVal['success'] = true;
 				$returnVal['article'] = $authorInfo;

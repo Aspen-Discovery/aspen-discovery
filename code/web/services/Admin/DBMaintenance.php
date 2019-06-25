@@ -77,6 +77,8 @@ class DBMaintenance extends Admin_Admin {
 		$overdrive_updates = getOverDriveUpdates();
         require_once ROOT_DIR . '/sys/DBMaintenance/theming_updates.php';
         $theming_updates = getThemingUpdates();
+		require_once ROOT_DIR . '/sys/DBMaintenance/translation_updates.php';
+		$translation_updates = getTranslationUpdates();
         require_once ROOT_DIR . '/sys/DBMaintenance/open_archives_updates.php';
         $open_archives_updates = getOpenArchivesUpdates();
         require_once ROOT_DIR . '/sys/DBMaintenance/redwood_archive_updates.php';
@@ -96,6 +98,7 @@ class DBMaintenance extends Admin_Admin {
             $rbdigital_updates,
 			$sierra_api_updates,
             $theming_updates,
+	        $translation_updates,
             $open_archives_updates,
             $redwood_updates,
 			array(
@@ -1864,6 +1867,14 @@ class DBMaintenance extends Admin_Admin {
 					'description' => 'Memory table for cross platform caching',
 					'sql' => [
 						'ALTER TABLE cached_values CHANGE COLUMN value value VARCHAR(16384);',
+					],
+				],
+
+				'memory_index' => [
+					'title' => 'Memory table indexing',
+					'description' => 'Add Index for memory table',
+					'sql' => [
+						'ALTER TABLE cached_values ADD UNIQUE INDEX cacheKey(`cacheKey`)',
 					],
 				],
 

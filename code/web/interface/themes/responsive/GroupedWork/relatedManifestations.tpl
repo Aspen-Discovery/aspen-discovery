@@ -22,14 +22,14 @@
 		{foreachelse}
 			<div class="row related-manifestation">
 				<div class="col-sm-12">
-					The library does not own any copies of this title.
+					{translate text="no_copies_statement" defaultText="The library does not own any copies of this title."}
 				</div>
 			</div>
 		{/foreach}
 		{if $hasHiddenFormats}
 			<div class="row related-manifestation" id="formatToggle_{$workId}">
 				<div class="col-sm-12">
-					<a href="#" onclick="$('.hiddenManifestation_{$workId}').show();$('#formatToggle_{$workId}').hide();return false;">View all Formats</a>
+					<a href="#" onclick="$('.hiddenManifestation_{$workId}').show();$('#formatToggle_{$workId}').hide();return false;">{translate text="View all Formats"}</a>
 				</div>
 			</div>
 		{/if}

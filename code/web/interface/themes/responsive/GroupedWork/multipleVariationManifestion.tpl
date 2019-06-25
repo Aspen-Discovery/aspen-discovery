@@ -2,7 +2,7 @@
 <div class="col-sm-12">
     <div class="row">
         <div class="col-sm-12 manifestation-format">
-            {$relatedManifestation->format}
+            {$relatedManifestation->format|translate}
         </div>
     </div>
     {foreach from=$relatedManifestation->getVariations() item=variation}
@@ -14,7 +14,7 @@
                 </a>
                 <br>&nbsp;&nbsp;&nbsp;
                 <a href="#" onclick="return AspenDiscovery.ResultsList.toggleRelatedManifestations('{$workId|escapeCSS}_{$relatedManifestation->format|escapeCSS}_{$variation->id|escapeCSS}');">
-                    <span class="manifestation-toggle-text label {if $variation->getNumRelatedRecords() == 1}label-default{else}label-info{/if}" id='manifestation-toggle-text-{$workId|escapeCSS}_{$variation->format|escapeCSS}'>{if $variation->getNumRelatedRecords() == 1}Show&nbsp;Edition{else}Show&nbsp;Editions{/if}</span>
+                    <span class="manifestation-toggle-text label {if $variation->getNumRelatedRecords() == 1}label-default{else}label-info{/if}" id='manifestation-toggle-text-{$workId|escapeCSS}_{$variation->format|escapeCSS}'>{if $variation->getNumRelatedRecords() == 1}{translate text='Show&nbsp;Edition'}{else}{translate text='Show&nbsp;Editions'}{/if}</span>
                 </a>
             </div>
             <div class="col-tn-9 col-xs-8{if !$viewingCombinedResults} col-md-5 col-lg-6{/if}">
@@ -31,9 +31,9 @@
                     <div class="btn-group btn-group-vertical btn-block">
                         {foreach from=$variation->getActions() item=curAction}
                             {if $curAction.url && strlen($curAction.url) > 0}
-                                <a href="{$curAction.url}" class="btn btn-sm btn-primary" onclick="{if $curAction.requireLogin}return AspenDiscovery.Account.followLinkIfLoggedIn(this, '{$curAction.url}');{/if}" {if $curAction.alt}title="{$curAction.alt}"{/if}>{$curAction.title}</a>
+                                <a href="{$curAction.url}" class="btn btn-sm btn-primary" onclick="{if $curAction.requireLogin}return AspenDiscovery.Account.followLinkIfLoggedIn(this, '{$curAction.url}');{/if}" {if $curAction.alt}title="{translate text=$curAction.alt inAttribute=false}"{/if}>{$curAction.title|translate}</a>
                             {else}
-                                <a href="#" class="btn btn-sm btn-primary" onclick="{$curAction.onclick}" {if $curAction.alt}title="{$curAction.alt}"{/if}>{$curAction.title}</a>
+                                <a href="#" class="btn btn-sm btn-primary" onclick="{$curAction.onclick}" {if $curAction.alt}title="{translate text=$curAction.alt inAttribute=false}"{/if}>{$curAction.title|translate}</a>
                             {/if}
                         {/foreach}
                     </div>

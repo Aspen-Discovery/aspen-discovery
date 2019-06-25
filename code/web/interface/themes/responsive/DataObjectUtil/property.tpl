@@ -13,25 +13,25 @@
 	<div class="form-group" id="propertyRow{$propName}">
 		{* Output the label *}
 		{if $property.type == 'enum'}
-			<label for='{$propName}Select'{if $property.description} title="{$property.description}"{/if}>{$property.label}{if $property.required}<span class="required-input">*</span>{/if}</label>
+			<label for='{$propName}Select'{if $property.description} title="{$property.description}"{/if}>{$property.label|translate} {if $property.required}<span class="required-input">*</span>{/if}</label>
 		{elseif $property.type == 'oneToMany' && !empty($property.helpLink)}
 			<div class="row">
 				<div class="col-xs-11">
-					<label for='{$propName}'{if $property.description} title="{$property.description}"{/if}>{$property.label}</label>
+					<label for='{$propName}'{if $property.description} title="{$property.description}"{/if}>{$property.label|translate}</label>
 				</div>
 				<div class="col-xs-1">
 					<a href="{$property.helpLink}" target="_blank"><img src="{$path}/interface/themes/responsive/images/help.png" alt="Help"></a>
 				</div>
 			</div>
 		{elseif $property.type != 'section' && $property.type != 'checkbox' && $property.type != 'hidden'}
-			<label for='{$propName}'{if $property.description} title="{$property.description}"{/if}>{$property.label}{if $property.required}<span class="required-input">*</span>{/if}</label>
+			<label for='{$propName}'{if $property.description} title="{$property.description}"{/if}>{$property.label|translate} {if $property.required}<span class="required-input">*</span>{/if}</label>
 		{/if}
 		{* Output the editing control*}
 		{if $property.type == 'section'}
 			{if !empty($property.renderAsHeading) && $property.renderAsHeading == true}
 				<div class="row">
 					<div class="col-xs-12">
-						<h3>{$property.label}</h3>
+						<h3>{$property.label|translate}</h3>
 
 						{foreach from=$property.properties item=property}
 							{include file="DataObjectUtil/property.tpl"}
@@ -44,7 +44,7 @@
 						<div class="panel-heading row">
 							<h4 class="panel-title col-xs-11">
 								<a data-toggle="collapse" data-parent="#accordion_{$property.label|escapeCSS}" href="#accordion_body_{$property.label|escapeCSS}">
-									{$property.label}
+									{$property.label|translate}
 								</a>
 							</h4>
 							{if $property.helpLink}

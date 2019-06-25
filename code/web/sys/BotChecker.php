@@ -45,7 +45,7 @@ class BotChecker{
 				}
 				fclose($fileHandle);
 
-				$memCache->set("bot_by_user_agent_" . $userAgent, ($isBot ? 'TRUE' : 'FALSE'), 0, $configArray['Caching']['bot_by_user_agent']);
+				$memCache->set("bot_by_user_agent_" . $userAgent, ($isBot ? 'TRUE' : 'FALSE'), $configArray['Caching']['bot_by_user_agent']);
 				if ($isBot){
 					$logger->log("$userAgent is a bot", Logger::LOG_DEBUG);
 				}else{

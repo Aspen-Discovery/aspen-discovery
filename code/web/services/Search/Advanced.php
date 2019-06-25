@@ -43,15 +43,6 @@ class Search_Advanced extends Search_AdvancedBase {
 //		$columnWidth = (count($facets) > 1) ? round(100 / count($facets), 0) : 0;
 //		$interface->assign('columnWidth', $columnWidth);
 
-		// Process settings to control special-purpose facets not supported by the
-		//     more generic configuration options.
-		$specialFacets = $searchObject->getFacetSetting('Advanced_Settings', 'special_facets');
-		if (stristr($specialFacets, 'illustrated')) {
-			$interface->assign('illustratedLimit',
-			$this->getIllustrationSettings($savedSearch));
-		}
-
-
 		// Send search type settings to the template
 		$interface->assign('advSearchTypes', $searchObject->getAdvancedTypes());
 

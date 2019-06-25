@@ -751,7 +751,7 @@ class ListAPI extends Action {
 			$searchObj->processSearch(false, false);
 			$listTitles = $searchObj->getListWidgetTitles();
 
-			$memCache->set('system_list_titles_' . $listName, $listTitles, 0, $configArray['Caching']['system_list_titles']);
+			$memCache->set('system_list_titles_' . $listName, $listTitles, $configArray['Caching']['system_list_titles']);
 		}
 		return $listTitles;
 	}

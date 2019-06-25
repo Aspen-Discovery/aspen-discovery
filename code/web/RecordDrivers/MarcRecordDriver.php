@@ -762,7 +762,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 				}
 			}
 
-			$memCache->set("record_description_{$isbn}_{$upc}_{$allowExternalDescription}", $descriptionArray, 0, $configArray['Caching']['record_description']);
+			$memCache->set("record_description_{$isbn}_{$upc}_{$allowExternalDescription}", $descriptionArray, $configArray['Caching']['record_description']);
 		}
 		return $descriptionArray;
 	}

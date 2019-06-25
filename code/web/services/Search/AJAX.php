@@ -151,7 +151,7 @@ class AJAX extends Action {
 				}
 			}
 			$searchSuggestions = $commonSearchTerms;
-			$memCache->set($cacheKey, $searchSuggestions, 0, $configArray['Caching']['search_suggestions'] );
+			$memCache->set($cacheKey, $searchSuggestions, $configArray['Caching']['search_suggestions'] );
 			$timer->logTime("Loaded search suggestions $cacheKey");
 		}
 		return $searchSuggestions;

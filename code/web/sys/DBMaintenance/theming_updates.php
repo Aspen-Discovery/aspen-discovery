@@ -5,7 +5,6 @@ function getThemingUpdates() {
         'themes_setup' => [
             'title' => 'Theme Setup',
             'description' => 'Initial setup of themes table. ',
-            'dependencies' => [],
             'continueOnError' => false,
             'sql' => [
                 "CREATE TABLE IF NOT EXISTS themes (" .
@@ -21,7 +20,6 @@ function getThemingUpdates() {
         'themes_header_colors' => [
             'title' => 'Theme Header Colors',
             'description' => 'Initial setup of header colors for the theme. ',
-            'dependencies' => [],
             'continueOnError' => false,
             'sql' => [
                 "ALTER TABLE themes ADD COLUMN `headerBackgroundColor` CHAR(7) DEFAULT '#f1f1f1'",
@@ -34,7 +32,6 @@ function getThemingUpdates() {
         'themes_header_colors_2' => [
             'title' => 'Theme Header Colors 2 + generated css',
             'description' => 'Initial setup of header colors for the theme. ',
-            'dependencies' => [],
             'continueOnError' => true,
             'sql' => [
                 "ALTER TABLE `themes` ADD COLUMN `generatedCss` LONGTEXT",
@@ -46,7 +43,6 @@ function getThemingUpdates() {
         'themes_header_buttons' => [
             'title' => 'Theme Header Buttons',
             'description' => 'Initial setup of header button colors. ',
-            'dependencies' => [],
             'continueOnError' => true,
             'sql' => [
                 "ALTER TABLE `themes` ADD COLUMN `headerBottomBorderWidth` VARCHAR(6) DEFAULT null",
@@ -61,7 +57,6 @@ function getThemingUpdates() {
         'themes_favicon' => [
             'title' => 'Theme Favicon',
             'description' => 'Allow favicon to be defined. ',
-            'dependencies' => [],
             'continueOnError' => true,
             'sql' => [
                 "ALTER TABLE `themes` ADD COLUMN `favicon` VARCHAR(100)",
@@ -71,7 +66,6 @@ function getThemingUpdates() {
         'themes_primary_colors' => [
             'title' => 'Theme Primary Colors',
             'description' => 'Initial setup of primary colors. ',
-            'dependencies' => [],
             'continueOnError' => true,
             'sql' => [
                 "ALTER TABLE `themes` ADD COLUMN `pageBackgroundColor` CHAR(7) DEFAULT '#ffffff'",
@@ -90,7 +84,6 @@ function getThemingUpdates() {
         'themes_secondary_colors' => [
             'title' => 'Theme Secondary and Tertiary Category Colors',
             'description' => 'Initial setup of secondary and tertiary colors. ',
-            'dependencies' => [],
             'continueOnError' => true,
             'sql' => [
                 "ALTER TABLE `themes` ADD COLUMN `secondaryBackgroundColor` CHAR(7) DEFAULT '#de9d03'",
@@ -107,7 +100,6 @@ function getThemingUpdates() {
 	    'themes_fonts' => [
 		    'title' => 'Theme Fonts',
 		    'description' => 'Fonts for headings and body. ',
-		    'dependencies' => [],
 		    'continueOnError' => true,
 		    'sql' => [
 			    "ALTER TABLE `themes` ADD COLUMN `headingFont` VARCHAR(191)",

@@ -179,11 +179,7 @@ class Search_Results extends Action {
 		$this->setShowCovers();
 
 		$displayQuery = $searchObject->displayQuery();
-		$pageTitle = $displayQuery;
-		if (strlen($pageTitle) > 20){
-			$pageTitle = substr($pageTitle, 0, 20) . '...';
-		}
-		$pageTitle .= ' | Search Results';
+		$pageTitle = 'Search Results';
 		$interface->assign('sortList',   $searchObject->getSortList());
 		$interface->assign('rssLink',    $searchObject->getRSSUrl());
 		$interface->assign('excelLink',  $searchObject->getExcelUrl());

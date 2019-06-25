@@ -49,14 +49,14 @@
 		{/if}
 
 		{if $saveButtonText}
-			<input type="submit" name="submit" value="{$saveButtonText}" class="btn btn-primary"/>
+			<button type="submit" name="submit" value="{$saveButtonText}" class="btn btn-primary">{$saveButtonText|translate}</button>
 		{else}
 			<div id="objectEditorSaveButtons">
-			<input type="submit" name="submitReturnToList" value="Save Changes and Return" class="btn btn-primary"/>
+			<button type="submit" name="submitReturnToList" value="Save Changes and Return" class="btn btn-primary">{translate text="Save Changes and Return"}</button>
 			{if $id}
-				<input type="submit" name="submitStay" value="Save Changes and Stay Here" class="btn"/>
+				<button type="submit" name="submitStay" value="Save Changes and Stay Here" class="btn">{translate text="Save Changes and Stay Here"}</button>
 			{else}
-				<input type="submit" name="submitAddAnother" value="Save Changes and Add Another" class="btn"/>
+				<button type="submit" name="submitAddAnother" value="Save Changes and Add Another" class="btn">{translate text="Save Changes and Add Another"}</button>
 			{/if}
 			</div>
 		{/if}

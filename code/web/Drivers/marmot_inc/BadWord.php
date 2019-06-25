@@ -13,11 +13,12 @@ class BadWord extends DataObject
 	}
 
 	function getBadWordExpressions(){
+		/** @var $memCache Memcache */
 		global $memCache;
 		global $configArray;
 		global $timer;
 		$badWordsList = $memCache->get('bad_words_list');
-		if ($badWordsList == false){
+		if ($badWordsList === false){
 			$badWordsList = array();
 			$this->find();
 			if ($this->N){
@@ -28,7 +29,7 @@ class BadWord extends DataObject
 				}
 			}
 			$timer->logTime("Loaded bad words");
-			$memCache->set('bad_words_list', $badWordsList, 0, $configArray['Caching']['bad_words_list']);
+			$memCache->set('bad_words_list', $badWordsList, $configArray['Caching']['bad_words_list']);
 		}
 		return $badWordsList;
 	}

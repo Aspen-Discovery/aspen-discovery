@@ -3,9 +3,9 @@
 		<h3>OverDrive API Data</h3>
 		<form class="navbar form-inline row">
 			<div class="form-group col-xs-12">
-				<label for="overDriveId" class="control-label">OverDrive ID:</label>
+				<label for="overDriveId" class="control-label">{translate text="OverDrive ID"}:</label>
 				<input id ="overDriveId" type="text" name="id" class="form-control">
-				<button class="btn btn-primary" type="submit">Go</button>
+				<button class="btn btn-primary" type="submit">{translate text=Go}</button>
 			</div>
 		</form>
 		{$overDriveAPIData}

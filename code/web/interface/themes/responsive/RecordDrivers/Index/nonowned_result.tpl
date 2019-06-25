@@ -1,7 +1,7 @@
 <div class="resultsList row">
 <div class="selectTitle">&nbsp;</div>
 	<div class="col-sm-3 col-md-3 col-lg-2 text-center">
-		<img src="{$path}/bookcover.php?isn={$record.isbn|@formatISBN}&amp;issn={$record.issn}&amp;size=medium&amp;upc={$record.upc}" class="listResultImage img-thumbnail img-responsive" alt="{translate text='Cover Image'}"/>
+		<img src="{$path}/bookcover.php?isn={$record.isbn|@formatISBN}&amp;issn={$record.issn}&amp;size=medium&amp;upc={$record.upc}" class="listResultImage img-thumbnail img-responsive" alt="{translate text='Cover Image' inAttribute=true}"/>
 	</div>
 	<div class="col-sm-9 col-md-9 col-lg-10">
 		<div class="row">

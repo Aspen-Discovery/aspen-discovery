@@ -180,6 +180,14 @@ class UserAccount {
 		return '';
 	}
 
+	public static function getUserInterfaceLanguage(){
+		UserAccount::loadUserObjectFromDatabase();
+		if (UserAccount::$primaryUserObjectFromDB != false){
+			return UserAccount::$primaryUserObjectFromDB->interfaceLanguage;
+		}
+		return '';
+	}
+
     public static function getUserHasCatalogConnection(){
         UserAccount::loadUserObjectFromDatabase();
         if (UserAccount::$primaryUserObjectFromDB != false){
@@ -359,7 +367,7 @@ class UserAccount {
 	public static function updateSession($user) {
 	    if ($user != false) {
             $_SESSION['activeUserId'] = $user->id;
-        } else {
+	    } else {
 	        unset($_SESSION['activeUserId']);
         }
 
@@ -444,7 +452,7 @@ class UserAccount {
 				global $memCache;
 				global $serverName;
 				global $configArray;
-				$memCache->set("user_{$serverName}_{$tempUser->id}", $tempUser, 0, $configArray['Caching']['user']);
+				$memCache->set("user_{$serverName}_{$tempUser->id}", $tempUser, $configArray['Caching']['user']);
 				$logger->log("Cached user {$tempUser->id}", Logger::LOG_DEBUG);
 
 				$validUsers[] = $tempUser;
@@ -467,6 +475,10 @@ class UserAccount {
 		if ($primaryUser){
 			UserAccount::$isLoggedIn = true;
 			UserAccount::$primaryUserData = $primaryUser;
+			if (isset($_COOKIE['searchPreferenceLanguage']) && $primaryUser->searchPreferenceLanguage == -1){
+				$primaryUser->searchPreferenceLanguage = $_COOKIE['searchPreferenceLanguage'];
+				$primaryUser->update();
+			}
 			return $primaryUser;
 		}else{
 			return $lastError;
@@ -532,7 +544,7 @@ class UserAccount {
 					global $memCache;
 					global $serverName;
 					global $configArray;
-					$memCache->set("user_{$serverName}_{$validatedUser->id}", $validatedUser, 0, $configArray['Caching']['user']);
+					$memCache->set("user_{$serverName}_{$validatedUser->id}", $validatedUser, $configArray['Caching']['user']);
 					$logger->log("Cached user {$validatedUser->id}", Logger::LOG_DEBUG);
 					if ($validatedViaSSO){
 						$_SESSION['loggedInViaCAS'] = true;
@@ -555,6 +567,9 @@ class UserAccount {
 		//global $logger;
 		//$logger->log("Logging user out", Logger::LOG_DEBUG);
 		UserAccount::softLogout();
+		unset($_SESSION['language']);
+		setcookie('searchPreferenceLanguage', $_COOKIE['searchPreferenceLanguage'], time() - 1000, '/');
+		unset($_COOKIE['searchPreferenceLanguage]']);
 		session_regenerate_id(true);
 		//$logger->log("New session id is $newId", Logger::LOG_DEBUG);
 	}

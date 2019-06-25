@@ -165,5 +165,14 @@ function getUserUpdates(){
                 "ALTER TABLE user ADD COLUMN rbdigitalLastAccountCheck INT(11)",
             ),
         ),
+
+		'user_languages' => [
+			'title' => 'User Language Preferences',
+			'description' => 'Stores information about preferences for the user related to language',
+			'sql' => [
+				"ALTER TABLE user ADD COLUMN interfaceLanguage VARCHAR(3) DEFAULT 'en'",
+				"ALTER TABLE user ADD COLUMN searchPreferenceLanguage TINYINT(1) DEFAULT '-1'",
+			],
+		],
 	);
 }

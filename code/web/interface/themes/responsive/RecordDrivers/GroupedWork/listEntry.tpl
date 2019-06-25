@@ -4,7 +4,7 @@
 		<div class="row">
 		{if $showCovers}
 		<div class="col-xs-3 col-sm-3 col-md-3 col-lg-2 text-center">
-			<img src="{$bookCoverUrlMedium}" class="listResultImage img-thumbnail{* img-responsive*}" alt="{translate text='Cover Image'}">
+			<img src="{$bookCoverUrlMedium}" class="listResultImage img-thumbnail{* img-responsive*}" alt="{translate text='Cover Image' inAttribute=true}">
 			{include file="GroupedWork/title-rating.tpl" ratingClass="" id=$summId ratingData=$summRating showNotInterested=false}
 		</div>
 		{/if}

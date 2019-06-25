@@ -113,7 +113,7 @@ class Sierra extends Millennium{
 			curl_close($ch);
 			$tokenData = json_decode($return);
 			if ($tokenData){
-				$memCache->set('sierra_token', $tokenData, 0, $tokenData->expires_in - 10);
+				$memCache->set('sierra_token', $tokenData, $tokenData->expires_in - 10);
 			}
 		}
 		return $tokenData;

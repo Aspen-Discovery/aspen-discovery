@@ -74,7 +74,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 				curl_close($ch);
 				$tokenData = json_decode($return);
 				if ($tokenData){
-					$memCache->set('overdrive_token', $tokenData, 0, $tokenData->expires_in - 10);
+					$memCache->set('overdrive_token', $tokenData, $tokenData->expires_in - 10);
 				}
 			}else{
 				//OverDrive is not configured
@@ -150,7 +150,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 						}
 					}else{
 						if (property_exists($patronTokenData, 'expires_in')){
-							$memCache->set('overdrive_patron_token_' . $patronBarcode, $patronTokenData, 0, $patronTokenData->expires_in - 10);
+							$memCache->set('overdrive_patron_token_' . $patronBarcode, $patronTokenData, $patronTokenData->expires_in - 10);
 						}
 					}
 				}
@@ -637,7 +637,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 			$summary['holds'] = $holds;
 
 			$timer->logTime("Finished loading titles from overdrive summary");
-			$memCache->set('overdrive_summary_' . $patron->id, $summary, 0, $configArray['Caching']['overdrive_summary']);
+			$memCache->set('overdrive_summary_' . $patron->id, $summary, $configArray['Caching']['overdrive_summary']);
 		}
 
 		return $summary;

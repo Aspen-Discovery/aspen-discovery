@@ -364,7 +364,7 @@ BODY;
 			$infoUrl = $this->edsBaseApi . '/info';
 			curl_setopt($this->curl_connection, CURLOPT_URL, $infoUrl);
 			$searchOptionsStr = curl_exec($this->curl_connection);
-			$memCache->set('ebsco_search_options_' . $library->subdomain, $searchOptionsStr, 0, $configArray['Caching']['ebsco_options']);
+			$memCache->set('ebsco_search_options_' . $library->subdomain, $searchOptionsStr, $configArray['Caching']['ebsco_options']);
 		}
 
 		$infoData = new SimpleXMLElement($searchOptionsStr);

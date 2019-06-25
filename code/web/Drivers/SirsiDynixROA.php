@@ -802,7 +802,7 @@ abstract class SirsiDynixROA extends HorizonAPI
 					SirsiDynixROA::$sessionIdsForUsers[(string)$sirsiRoaUserID] = $sessionToken;
 					$session = array(true, $sessionToken, $sirsiRoaUserID);
 					global $configArray;
-					$memCache->set($memCacheKey, $session, 0, $configArray['Caching']['sirsi_roa_session_token']);
+					$memCache->set($memCacheKey, $session, $configArray['Caching']['sirsi_roa_session_token']);
 			} elseif (isset($loginUserResponse->messageList)) {
 				global $logger;
 				$errorMessage = 'Sirsi ROA Webservice Login Error: ';
@@ -843,7 +843,7 @@ abstract class SirsiDynixROA extends HorizonAPI
 					SirsiDynixROA::$sessionIdsForUsers[(string)$sirsiRoaUserID] = $sessionToken;
 					$session = array(true, $sessionToken, $sirsiRoaUserID);
 					global $configArray;
-					$memCache->set($memCacheKey, $session, 0, $configArray['Caching']['sirsi_roa_session_token']);
+					$memCache->set($memCacheKey, $session, $configArray['Caching']['sirsi_roa_session_token']);
 			} elseif (isset($loginUserResponse->messageList)) {
 				global $logger;
 				$errorMessage = 'Sirsi ROA Webservice Login Error: ';

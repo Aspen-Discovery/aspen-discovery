@@ -98,12 +98,12 @@
 			<div class="col-sm-4 col-sm-offset-2">
 				{* Display information to sort the results (by date or by title *}
 				<select id="results-sort" name="sort" onchange="AspenDiscovery.Archive.sort = this.options[this.selectedIndex].value;AspenDiscovery.Archive.getMoreExhibitResults('{$exhibitPid|urlencode}', 1);" class="form-control">
-					<option value="title" {if $sort=='title'}selected="selected"{/if}>{translate text='Sort by ' }Title</option>
-					<option value="newest" {if $sort=='newest'}selected="selected"{/if}>{translate text='Sort by ' }Newest First</option>
-					<option value="oldest" {if $sort=='oldest'}selected="selected"{/if}>{translate text='Sort by ' }Oldest First</option>
+					<option value="title" {if $sort=='title'}selected="selected"{/if}>{translate text='Sort by'} Title</option>
+					<option value="newest" {if $sort=='newest'}selected="selected"{/if}>{translate text='Sort by'} Newest First</option>
+					<option value="oldest" {if $sort=='oldest'}selected="selected"{/if}>{translate text='Sort by'} Oldest First</option>
 					{* Added these two options to basic exhibit page. pascal 2-24-2017 *}
-					<option value="dateAdded" {if $sort=='dateAdded'}selected="selected"{/if}>{translate text='Sort by ' }Date Added</option>
-					<option value="dateModified" {if $sort=='dateModified'}selected="selected"{/if}>{translate text='Sort by ' }Date Modified</option>
+					<option value="dateAdded" {if $sort=='dateAdded'}selected="selected"{/if}>{translate text='Sort by'} Date Added</option>
+					<option value="dateModified" {if $sort=='dateModified'}selected="selected"{/if}>{translate text='Sort by'} Date Modified</option>
 				</select>
 			</div>
 		</div>

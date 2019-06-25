@@ -136,7 +136,7 @@ class GoDeeperData{
 			if (count($validEnrichmentTypes) > 0 && isset($defaultOption)){
 				$goDeeperOptions['defaultOption'] = $defaultOption;
 			}
-			$memCache->set("go_deeper_options_{$isbn}_{$upc}", $goDeeperOptions, 0, $configArray['Caching']['go_deeper_options']);
+			$memCache->set("go_deeper_options_{$isbn}_{$upc}", $goDeeperOptions, $configArray['Caching']['go_deeper_options']);
 		}
 
 		return $goDeeperOptions;
@@ -222,9 +222,9 @@ class GoDeeperData{
 					$summaryData['summary'] = end($temp); // Grab the Longest Summary
 				}
 				if (!empty($summaryData['summary'])) {
-					$memCache->set($memCacheKey, $summaryData, 0, $configArray['Caching']['contentcafe_summary']);
+					$memCache->set($memCacheKey, $summaryData, $configArray['Caching']['contentcafe_summary']);
 				}else{
-					$memCache->set($memCacheKey, 'no_summary', 0, $configArray['Caching']['contentcafe_summary']);
+					$memCache->set($memCacheKey, 'no_summary', $configArray['Caching']['contentcafe_summary']);
 				}
 			}
 		}
@@ -327,9 +327,9 @@ class GoDeeperData{
 			}
 
 			if ($summaryData == false){
-				$memCache->set($key, 'no_summary', 0, $configArray['Caching']['syndetics_summary']);
+				$memCache->set($key, 'no_summary', $configArray['Caching']['syndetics_summary']);
 			}else{
-				$memCache->set($key, $summaryData, 0, $configArray['Caching']['syndetics_summary']);
+				$memCache->set($key, $summaryData, $configArray['Caching']['syndetics_summary']);
 			}
 		}
 		if ($summaryData == 'no_summary'){
@@ -362,7 +362,7 @@ class GoDeeperData{
 			if ($response) {
 				$tocData['html'] = $response[0]->TocItems->TocItem[0]->Toc;
 				if (!empty($tocData['html'])) {
-					$memCache->set($memCacheKey, $tocData, 0, $configArray['Caching']['contentcafe_toc']);
+					$memCache->set($memCacheKey, $tocData, $configArray['Caching']['contentcafe_toc']);
 				}
 			}
 
@@ -422,7 +422,7 @@ class GoDeeperData{
 				$logger->log("Error fetching data from Syndetics $e", Logger::LOG_ERROR);
 				$tocData = array();
 			}
-			$memCache->set("syndetics_toc_{$isbn}_{$upc}", $tocData, 0, $configArray['Caching']['syndetics_toc']);
+			$memCache->set("syndetics_toc_{$isbn}_{$upc}", $tocData, $configArray['Caching']['syndetics_toc']);
 		}
 		return $tocData;
 	}
@@ -537,7 +537,7 @@ class GoDeeperData{
 				$logger->log("Error fetching data from Syndetics $e", Logger::LOG_ERROR);
 				$fictionData = array();
 			}
-			$memCache->set("syndetics_fiction_profile_{$isbn}_{$upc}", $fictionData, 0, $configArray['Caching']['syndetics_fiction_profile']);
+			$memCache->set("syndetics_fiction_profile_{$isbn}_{$upc}", $fictionData, $configArray['Caching']['syndetics_fiction_profile']);
 		}
 		return $fictionData;
 	}
@@ -565,7 +565,7 @@ class GoDeeperData{
 			if ($response) {
 				$authorData['summary'] = $response[0]->BiographyItems->BiographyItem[0]->Biography;
 				if (!empty($authorData['summary'])) {
-					$memCache->set($memCacheKey, $authorData, 0, $configArray['Caching']['contentcafe_author_notes']);
+					$memCache->set($memCacheKey, $authorData, $configArray['Caching']['contentcafe_author_notes']);
 				}
 			}
 
@@ -611,7 +611,7 @@ class GoDeeperData{
 				$logger->log("Error fetching data from Syndetics $e", Logger::LOG_ERROR);
 				$summaryData = array();
 			}
-			$memCache->set("syndetics_author_notes_{$isbn}_{$upc}", $summaryData, 0, $configArray['Caching']['syndetics_author_notes']);
+			$memCache->set("syndetics_author_notes_{$isbn}_{$upc}", $summaryData, $configArray['Caching']['syndetics_author_notes']);
 		}
 		return $summaryData;
 	}
@@ -649,7 +649,7 @@ class GoDeeperData{
 					}
 				}
 
-				$memCache->set("syndetics_excerpt_{$isbn}_{$upc}", $excerptData, 0, $configArray['Caching']['syndetics_excerpt']);
+				$memCache->set("syndetics_excerpt_{$isbn}_{$upc}", $excerptData, $configArray['Caching']['syndetics_excerpt']);
 			}catch (Exception $e) {
 				global $logger;
 				$logger->log("Error fetching data from Syndetics $e", Logger::LOG_ERROR);
@@ -672,7 +672,7 @@ class GoDeeperData{
 			if ($response) {
 				$excerptData['excerpt'] = $response[0]->ExcerptItems->ExcerptItem[0]->Excerpt;
 				if (!empty($excerptData['excerpt'])) {
-					$memCache->set($memCacheKey, $excerptData, 0, $configArray['Caching']['contentcafe_excerpt']);
+					$memCache->set($memCacheKey, $excerptData, $configArray['Caching']['contentcafe_excerpt']);
 				}
 			}
 		}
@@ -730,7 +730,7 @@ class GoDeeperData{
 				$logger->log("Error fetching data from Syndetics $e", Logger::LOG_ERROR);
 				$summaryData = array();
 			}
-			$memCache->set("syndetics_video_clip_{$isbn}_{$upc}", $summaryData, 0, $configArray['Caching']['syndetics_video_clip']);
+			$memCache->set("syndetics_video_clip_{$isbn}_{$upc}", $summaryData, $configArray['Caching']['syndetics_video_clip']);
 		}
 
 		return $summaryData;
@@ -779,7 +779,7 @@ class GoDeeperData{
 					}
 				}
 
-				$memCache->set("syndetics_av_summary_{$isbn}_{$upc}", $avSummaryData, 0, $configArray['Caching']['syndetics_av_summary']);
+				$memCache->set("syndetics_av_summary_{$isbn}_{$upc}", $avSummaryData, $configArray['Caching']['syndetics_av_summary']);
 			}catch (Exception $e) {
 				global $logger;
 				$logger->log("Error fetching data from Syndetics $e", Logger::LOG_ERROR);

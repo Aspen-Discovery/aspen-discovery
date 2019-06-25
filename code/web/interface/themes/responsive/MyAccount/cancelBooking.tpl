@@ -6,7 +6,7 @@
 			{if is_array($cancelResults.message)}
 				<div class="alert alert-warning">
 					{if $totalCancelled}
-					<strong>{$numCancelled} of {$totalCancelled}</strong> scheduled items were cancelled successfully.
+						<strong>{$numCancelled} of {$totalCancelled}</strong> scheduled items were cancelled successfully.
 					{else}
 						Some of the attempted cancellations failed.
 					{/if}

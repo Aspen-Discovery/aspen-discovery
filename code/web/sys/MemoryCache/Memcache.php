@@ -28,7 +28,7 @@ class Memcache
         return false;
     }
 
-    public function set($name, $value, $flag, $timeout)
+    public function set($name, $value, $timeout)
     {
 	    $this->vars[$name] = $value;
 	    if ($this->enableDbCache) {

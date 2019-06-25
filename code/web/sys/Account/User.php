@@ -41,6 +41,9 @@ class User extends DataObject
 	private $masqueradingRoles;
 	private $masqueradeLevel;
 
+	public $interfaceLanguage;
+	public $searchPreferenceLanguage;
+
 	/** @var User $parentUser */
 	private $parentUser;
 	/** @var User[] $linkedUsers */
@@ -696,6 +699,12 @@ class User extends DataObject
 			$this->bypassAutoLogout = 1;
 		}else{
 			$this->bypassAutoLogout = 0;
+		}
+		if (isset($_REQUEST['profileLanguage'])){
+			$this->interfaceLanguage = $_REQUEST['profileLanguage'];
+		}
+		if (isset($_REQUEST['searchPreferenceLanguage'])){
+			$this->searchPreferenceLanguage = $_REQUEST['searchPreferenceLanguage'];
 		}
 
 		//Make sure the selected location codes are in the database.

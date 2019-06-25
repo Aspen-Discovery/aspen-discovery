@@ -131,6 +131,7 @@ class MyAccount_Profile extends MyAccount
 				$interface->assign('edit', false);
 			}
 
+			/** @var Translator $translator */
 			global $translator;
 			$notice         = $translator->translate('overdrive_account_preferences_notice');
             require_once ROOT_DIR . '/sys/OverDrive/OverDriveSetting.php';

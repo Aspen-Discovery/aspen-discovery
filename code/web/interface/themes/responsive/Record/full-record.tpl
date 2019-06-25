@@ -20,7 +20,7 @@
 					:&nbsp;{$recordDriver->getTitleSection()|removeTrailingPunctuation|escape}
 				{/if}
 				{if $recordDriver->getFormats()}
-					<br><small>({implode subject=$recordDriver->getFormats() glue=", "})</small>
+					<br><small>({implode subject=$recordDriver->getFormats() glue=", ", translate=true})</small>
 				{/if}
 			</h2>
 
@@ -28,7 +28,7 @@
 				<div class="col-xs-4 col-sm-5 col-md-4 col-lg-3 text-center">
 					{if $disableCoverArt != 1}
 						<div id="recordCover" class="text-center row">
-							<img alt="{translate text='Book Cover'}" class="img-thumbnail" src="{$recordDriver->getBookcoverUrl('medium')}">
+							<img alt="{translate text='Book Cover' inAttribute=true}" class="img-thumbnail" src="{$recordDriver->getBookcoverUrl('medium')}">
 						</div>
 					{/if}
 					{if $showRatings}

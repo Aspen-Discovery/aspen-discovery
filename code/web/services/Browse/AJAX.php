@@ -147,9 +147,8 @@ class Browse_AJAX extends Action {
 		}
 	}
 
-/** @var  BrowseCategory $browseCategory */
+	/** @var  BrowseCategory $browseCategory */
 	private $browseCategory;
-
 
 	/**
 	 * @param bool $reload  Reload object's BrowseCategory
@@ -184,7 +183,7 @@ class Browse_AJAX extends Action {
 		$interface->assign('browseCategoryId', $this->textId);
 		$result['success'] = true;
 		$result['textId'] = $this->textId;
-		$result['label'] = translate('Recommended for you');
+		$result['label'] = 'Recommended for you';
 		$result['searchUrl'] = '/MyAccount/SuggestedTitles';
 
 		require_once ROOT_DIR . '/services/MyResearch/lib/Suggestions.php';
@@ -215,7 +214,7 @@ class Browse_AJAX extends Action {
 		global $memCache, $configArray, $solrScope;
 		$activeUserId = UserAccount::getActiveUserId();
 		$key = 'browse_category_' . $this->textId . '_' . $activeUserId . '_' . $solrScope . '_' . $browseMode;
-		$memCache->set($key, $result, 0, $configArray['Caching']['browse_category_info']);
+		$memCache->set($key, $result, $configArray['Caching']['browse_category_info']);
 
 		return $result;
 	}
@@ -314,7 +313,7 @@ class Browse_AJAX extends Action {
 			if ($pageToLoad == 1) {
 				global $memCache, $configArray, $solrScope;
 				$key = 'browse_category_' . $this->textId . '_' . $solrScope . '_' . $browseMode;
-				$memCache->set($key, $result, 0, $configArray['Caching']['browse_category_info']);
+				$memCache->set($key, $result, $configArray['Caching']['browse_category_info']);
 			}
 			return $result;
 		}
@@ -390,7 +389,7 @@ class Browse_AJAX extends Action {
 			$response['subCategoryTextId'] = $subCategoryTextId;
 
 			// Set the main category label before we fetch the sub-categories main results
-			$response['label']  = $this->browseCategory->label;
+			$response['label']  = translate($this->browseCategory->label);
 
 			// Reset Main Category with SubCategory to fetch main results
 			$this->setTextId($subCategoryTextId);

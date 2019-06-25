@@ -25,7 +25,7 @@ class Rbdigital_AJAX extends Action {
 				$holdMessage = $driver->placeHold($patron, $id);
 				return json_encode($holdMessage);
 			}else{
-				return json_encode(array('result'=>false, 'message'=>'Sorry, it looks like you don\'t have permissions to place holds for that user.'));
+				return json_encode(array('result'=>false, 'message'=>translate(['text'=>'no_permissions_for_hold','defaultText'=>'Sorry, it looks like you don\'t have permissions to place holds for that user.'])));
 			}
 		}else{
 			return json_encode(array('result'=>false, 'message'=>'You must be logged in to place a hold.'));

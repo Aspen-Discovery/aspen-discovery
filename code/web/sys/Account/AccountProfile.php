@@ -26,7 +26,7 @@ class AccountProfile extends DataObject {
     static function getObjectStructure() {
 		$structure = array(
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id within the database'),
-			'weight' => array('property'=>'weight', 'type'=>'integer', 'label'=>'Weight', 'description'=>'The sort order of the book store', 'default' => 0),
+			'weight' => array('property'=>'weight', 'type'=>'integer', 'label'=>'Weight', 'description'=>'The sort order', 'default' => 0),
 			'name' => array('property' => 'name', 'type' => 'text', 'label' => 'Name', 'maxLength' => 50, 'description' => 'A name for this indexing profile', 'required' => true),
 			'driver' => array('property' => 'driver', 'type' => 'text', 'label' => 'Driver', 'maxLength' => 50, 'description' => 'The name of the driver to use for authentication', 'required' => false),
 			'loginConfiguration' => array('property' => 'loginConfiguration', 'type' => 'enum', 'label' => 'Login Configuration', 'values' => array('barcode_pin' => 'Barcode and Pin','name_barcode' => 'Name and Barcode'), 'description' => 'How to configure the prompts for this authentication profile', 'required' => true),

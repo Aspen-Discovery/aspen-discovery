@@ -59,7 +59,7 @@ class OverDrive_AJAX extends Action {
 				$holdMessage = $driver->placeHold($patron, $overDriveId);
 				return json_encode($holdMessage);
 			}else{
-				return json_encode(array('result'=>false, 'message'=>'Sorry, it looks like you don\'t have permissions to place holds for that user.'));
+				return json_encode(array('result'=>false, 'message'=>translate(['text'=>'no_permissions_for_hold','defaultText'=>'Sorry, it looks like you don\'t have permissions to place holds for that user.'])));
 			}
 		}else{
 			return json_encode(array('result'=>false, 'message'=>'You must be logged in to place a hold.'));
@@ -177,9 +177,9 @@ class OverDrive_AJAX extends Action {
 			return json_encode(
 				array(
 					'promptNeeded' => true,
-					'promptTitle' => $promptTitle,
+					'promptTitle' => translate($promptTitle),
 					'prompts' => $interface->fetch('OverDrive/ajax-hold-prompt.tpl'),
-					'buttons' => '<input class="btn btn-primary" type="submit" name="submit" value="Place Hold" onclick="return AspenDiscovery.OverDrive.processOverDriveHoldPrompts();"/>'
+					'buttons' => '<button class="btn btn-primary" type="submit" name="submit" onclick="return AspenDiscovery.OverDrive.processOverDriveHoldPrompts();">' . translate('Place Hold') . '</button>'
 				)
 			);
 		}else{

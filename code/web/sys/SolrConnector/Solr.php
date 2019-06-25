@@ -225,7 +225,7 @@ abstract class Solr {
 				}
 			}
 			if ($memCache){
-				$memCache->set('solr_ping_' . $hostEscaped, $pingResult, 0, $configArray['Caching']['solr_ping']);
+				$memCache->set('solr_ping_' . $hostEscaped, $pingResult, $configArray['Caching']['solr_ping']);
 			}
 			Solr::$serversPinged[$this->host] = $pingResult;
 			$timer->logTime('Ping Solr instance ' . $this->host);
@@ -629,28 +629,9 @@ abstract class Solr {
 	 * @param Library $searchLibrary
 	 * @return array
 	 */
-	public function getBoostFactors($searchLibrary)
+	public function getBoostFactors(/** @noinspection PhpUnusedParameterInspection */$searchLibrary)
 	{
-		$boostFactors = array();
-
-		$applyHoldingsBoost = true;
-		if (isset($searchLibrary) && !is_null($searchLibrary)) {
-			$applyHoldingsBoost = $searchLibrary->applyNumberOfHoldingsBoost;
-		}
-		if ($applyHoldingsBoost) {
-			//$boostFactors[] = 'product(num_holdings,15,div(format_boost,50))';
-			//$boostFactors[] = 'product(sum(popularity,1),format_boost)';
-            $boostFactors[] = 'sum(num_holdings,popularity,format_boost)';
-		} else {
-			$boostFactors[] = 'sum(popularity,format_boost)';
-		}
-		//Add rating as part of the ranking, normalize so ratings of less that 2.5 are below unrated entries.
-		$boostFactors[] = 'sum(rating,1)';
-
-		global $solrScope;
-        $boostFactors[] = "sum(lib_boost_{$solrScope},1)";
-
-		return $boostFactors;
+		return [];
 	}
 
 	/**
@@ -1172,7 +1153,6 @@ abstract class Solr {
 				if (count($boostFactors) > 0 && $configArray['Index']['enableBoosting']){
 					$options['bf'] = "sum(" . implode(',', $boostFactors) . ")";
 				}
-				//print ($options['bq']);
 			}else{
 				$baseQuery = $options['q'];
 				//Boost items in our system
@@ -1415,23 +1395,8 @@ abstract class Solr {
 	 * @param Location $searchLocation
 	 * @return array
 	 */
-	public function getScopingFilters($searchLibrary, $searchLocation){
-		global $solrScope;
-
-		$filter = array();
-
-		//Simplify detecting which works are relevant to our scope
-		if (!$solrScope){
-			if (isset($searchLocation)){
-				$filter[] = "scope_has_related_records:{$searchLocation->code}";
-			}elseif(isset($searchLibrary)){
-				$filter[] = "scope_has_related_records:{$searchLibrary->subdomain}";
-			}
-		}else{
-			$filter[] = "scope_has_related_records:$solrScope";
-		}
-
-		return $filter;
+	public function getScopingFilters(/** @noinspection PhpUnusedParameterInspection */$searchLibrary, $searchLocation){
+		return [];
 	}
 
 	/**
@@ -2084,7 +2049,7 @@ abstract class Solr {
             foreach ($schema->fields->dynamicField as $field){
 				$fields[] = substr((string)$field['name'], 0, -1);
 			}
-			$memCache->set("schema_dynamic_fields_$solrScope", $fields, 0, 24 * 60 * 60);
+			$memCache->set("schema_dynamic_fields_$solrScope", $fields, 24 * 60 * 60);
 		}
 		return $fields;
 	}
@@ -2099,7 +2064,6 @@ abstract class Solr {
 		//There are very large performance gains for caching this in memory since we need to do a remote call and file parse
 		$fields = $memCache->get("schema_fields_$solrScope");
 		if (!$fields || isset($_REQUEST['reload'])){
-			global $configArray;
 			$schemaUrl = $this->host . '/admin/file?file=schema.xml&contentType=text/xml;charset=utf-8';
 			$schema = @simplexml_load_file($schemaUrl);
 			if ($schema == null){
@@ -2120,7 +2084,7 @@ abstract class Solr {
 					$fields[] = substr((string)$field['name'], 0, -1) . $solrScope ;
 				}
 			}
-			$memCache->set("schema_fields_$solrScope", $fields, 0, 24 * 60 * 60);
+			$memCache->set("schema_fields_$solrScope", $fields, 24 * 60 * 60);
 		}
 		return $fields;
 	}

@@ -31,12 +31,10 @@ var AspenDiscovery = (function(){
 			}
 		});
 	});
-	/**
-	 * Created by mark on 1/14/14.
-	 */
+
 	return {
 		buildUrl: function(base, key, value) {
-			var sep = (base.indexOf('?') > -1) ? '&' : '?';
+			let sep = (base.indexOf('?') > -1) ? '&' : '?';
 			return base + sep + key + '=' + value;
 		},
 
@@ -101,14 +99,6 @@ var AspenDiscovery = (function(){
 					}
 
 				}
-
-				//// Explore More Related Titles Carousel
-				//else if (jcarousel.is('.relatedTitlesContainer')) {
-				//}
-
-				//// Explore More Bar Carousel
-				//else if (jcarousel.is('.exploreMoreItemsContainer')) {
-				//}
 
 				// Default Generic Carousel;
 				else {
@@ -209,8 +199,8 @@ var AspenDiscovery = (function(){
 
 		replaceQueryParam : function (param, newValue, search) {
 			if (typeof search == 'undefined') search = location.search;
-			var regex = new RegExp("([?;&])" + param + "[^&;]*[;&]?"),
-					query = search.replace(regex, "$1").replace(/&$/, '');
+			let regex = new RegExp("([?;&])" + param + "[^&;]*[;&]?");
+			let query = search.replace(regex, "$1").replace(/&$/, '');
 			return newValue ? (query.length > 2 ? query + "&" : "?") + param + "=" + newValue : query;
 		},
 
@@ -258,12 +248,6 @@ var AspenDiscovery = (function(){
 				.click(function() {
 					$(this).toggleClass("expanded collapsed")
 					.siblings().slideToggle();
-				//$(this).siblings().hide();
-				//$(this).addClass("collapsed");
-				//$(this).click(function() {
-				//	$(this).toggleClass("expanded");
-				//	$(this).toggleClass("collapsed");
-				//	$(this).siblings().slideToggle();
 					return false;
 				});
 			});
@@ -390,8 +374,89 @@ var AspenDiscovery = (function(){
 				} else arguments.callee.haslocalStorage = false;
 			}
 			return arguments.callee.haslocalStorage;
+		},
+
+		saveLanguagePreferences:function(){
+			let preference = $("#searchPreferenceLanguage option:selected").val();
+			let url = Globals.path + "/AJAX/JSON";
+			let params =  {
+				method : 'saveLanguagePreference',
+				searchPreferenceLanguage : preference
+			};
+			$.getJSON(url, params,
+				function(data) {
+					if (data.success) {
+						if (data.message.length > 0){
+							//User was logged in, show a message about how to update
+							AspenDiscovery.showMessage('Success', data.message, true, true);
+						}else{
+							//Refresh the page
+							// noinspection SillyAssignmentJS
+							window.location.href = window.location.href;
+						}
+					} else {
+						AspenDiscovery.showMessage("Error", data.message);
+					}
+				}
+			).fail(AspenDiscovery.ajaxFail);
+			return false;
+		},
+
+        setLanguage: function() {
+            //Update the user interface with the selected language
+			let newLanguage = $("#selected-language option:selected").val();
+			let curLocation = window.location.href;
+			let newParam = 'myLang=' + newLanguage;
+			if (curLocation.indexOf(newParam) === -1){
+				let newLocation = curLocation.replace(new RegExp('([?&])myLang=(.*?)(?:&|$)'), '$1' + newParam);
+				if (newLocation === curLocation){
+					newLocation = AspenDiscovery.buildUrl(curLocation, 'myLang', newLanguage);
+				}
+				window.location.href = newLocation;
+			}
+
+			return false;
+        },
+
+		showLanguagePreferencesForm: function(){
+			let url = Globals.path + "/AJAX/JSON?method=getLanguagePreferencesForm";
+			$.getJSON(url, function(data){
+				AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+			}).fail(AspenDiscovery.ajaxFail);
+			return false;
+		},
+
+        showTranslateForm: function(termId) {
+		    let url = Globals.path + "/AJAX/JSON?method=getTranslationForm&termId=" + termId;
+			$.getJSON(url, function(data){
+				AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+			}).fail(AspenDiscovery.ajaxFail);
+			return false;
+        },
+
+		saveTranslation: function(){
+			let termId = $("#termId").val();
+			let translationId = $("#translationId").val();
+			let translation = $("#translation").val();
+			let url = Globals.path + "/AJAX/JSON";
+			let params =  {
+				method : 'saveTranslation'
+				,translationId : translationId
+				,translation : translation
+			};
+			$.getJSON(url, params,
+				function(data) {
+					if (data.success) {
+						$(".term_" + termId ).html(translation);
+						$(".translation_id_" + translationId ).removeClass('not_translated').addClass("translated");
+						AspenDiscovery.closeLightbox();
+					} else {
+						AspenDiscovery.showMessage("Error", data.message);
+					}
+				}
+			).fail(AspenDiscovery.ajaxFail);
 		}
-	}
+    }
 
 }(AspenDiscovery || {}));
 

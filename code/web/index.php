@@ -48,17 +48,6 @@ if ($googleAnalyticsId) {
 global $library;
 global $offlineMode;
 
-//Set System Message
-if ($configArray['System']['systemMessage']){
-	$interface->assign('systemMessage', $configArray['System']['systemMessage']);
-}else if ($offlineMode){
-	$interface->assign('systemMessage', "<p class='alert alert-warning'><strong>The circulation system is currently offline.</strong>  Access to account information and availability is limited.</p>");
-}else{
-	if ($library && strlen($library->systemMessage) > 0){
-		$interface->assign('systemMessage', $library->systemMessage);
-	}
-}
-
 $interface->assign('islandoraEnabled', $configArray['Islandora']['enabled']);
 
 //Get the name of the active instance
@@ -133,22 +122,89 @@ $timer->logTime('Checked availability mode');
 // Setup Translator
 global $language;
 global $serverName;
-if (isset($_REQUEST['mylang'])) {
-	$language = strip_tags($_REQUEST['mylang']);
-	setcookie('language', $language, null, '/');
-} else {
-	$language = strip_tags((isset($_COOKIE['language'])) ? $_COOKIE['language'] : $configArray['Site']['language']);
+//Get the active language
+$userLanguage = UserAccount::getUserInterfaceLanguage();
+if ($userLanguage == ''){
+	$language = strip_tags((isset($_SESSION['language'])) ? $_SESSION['language'] : 'en');
+}else{
+	$language = $userLanguage;
 }
+if (isset($_REQUEST['myLang'])) {
+	$newLanguage = strip_tags($_REQUEST['myLang']);
+	if (($userLanguage != '') && ($newLanguage != UserAccount::getUserInterfaceLanguage())){
+		$userObject = UserAccount::getActiveUserObj();
+		$userObject->interfaceLanguage = $newLanguage;
+		$userObject->update();
+	}
+	if ($language != $newLanguage){
+		$language = $newLanguage;
+		$_SESSION['language'] = $language;
+		//Clear the preference cookie
+		if (isset($_COOKIE['searchPreferenceLanguage'])){
+			//Clear the cookie when we change languages
+			setcookie('searchPreferenceLanguage', $_COOKIE['searchPreferenceLanguage'], time() - 1000, '/');
+			unset($_COOKIE['searchPreferenceLanguage']);
+		}
+	}
+}
+if (!UserAccount::isLoggedIn() && isset($_COOKIE['searchPreferenceLanguage'])) {
+	$showLanguagePreferencesBar = true;
+	$interface->assign('searchPreferenceLanguage', $_COOKIE['searchPreferenceLanguage']);
+}elseif (UserAccount::isLoggedIn()){
+	$showLanguagePreferencesBar = $language != 'en' && UserAccount::getActiveUserObj()->searchPreferenceLanguage == -1;
+	$interface->assign('searchPreferenceLanguage', UserAccount::getActiveUserObj()->searchPreferenceLanguage);
+}else{
+	$showLanguagePreferencesBar = $language != 'en';
+	$interface->assign('searchPreferenceLanguage', -1);
+}
+
+$interface->assign('showLanguagePreferencesBar', $showLanguagePreferencesBar);
 
 // Make sure language code is valid, reset to default if bad:
-$validLanguages = array_keys($configArray['Languages']);
-if (!in_array($language, $validLanguages)) {
-	$language = $configArray['Site']['language'];
+$validLanguages = [];
+try{
+	require_once ROOT_DIR . '/sys/Translation/Language.php';
+	$validLanguage = new Language();
+	$validLanguage->orderBy("weight");
+	$validLanguage->find();
+	while ($validLanguage->fetch()){
+		$validLanguages[$validLanguage->code] = clone $validLanguage;
+	}
+}catch(Exception $e){
+	$defaultLanguage = new Language();
+	$defaultLanguage->code = 'en';
+	$defaultLanguage->displayName = 'English';
+	$defaultLanguage->displayNameEnglish = 'English';
+	$defaultLanguage->facetValue = 'English';
+	$validLanguages['en'] = $defaultLanguage;
+	$language = 'en';
 }
-$translator = new I18N_Translator('lang', $language, $configArray['System']['missingTranslations']);
+
+if (!array_key_exists($language, $validLanguages)) {
+	$language = 'en';
+}
+/** @var Language $activeLanguage */
+global $activeLanguage;
+global $translator;
+$activeLanguage = $validLanguages[$language];
+$interface->assign('validLanguages', $validLanguages);
+if ($translator == null){
+	$translator = new Translator('lang', $language);
+}
 $timer->logTime('Translator setup');
 
-$interface->setLanguage($language);
+$interface->setLanguage($activeLanguage);
+
+//Set System Message after translator has been setup
+if ($configArray['System']['systemMessage']){
+	$interface->assign('systemMessage', translate($configArray['System']['systemMessage']));
+}else if ($offlineMode){
+	$interface->assign('systemMessage', "<p class='alert alert-warning'>" . translate(['text'=>'offline_notice', 'defaultText'=>"<strong>The library system is currently offline.</strong> We are unable to retrieve information about your account at this time."]) . "</p>");
+}else{
+	if ($library && strlen($library->systemMessage) > 0){
+		$interface->assign('systemMessage', translate($library->systemMessage));
+	}
+}
 
 $deviceName = get_device_name();
 $interface->assign('deviceName', $deviceName);
@@ -221,7 +277,6 @@ if ($isLoggedIn) {
 	$interface->assign('loggedIn', $user == false ? 'false' : 'true');
 	if ($user){
 		$interface->assign('activeUserId', $user->id);
-
 	}
 
 	//Check to see if there is a followup module and if so, use that module and action for the next page load

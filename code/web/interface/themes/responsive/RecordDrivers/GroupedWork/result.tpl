@@ -10,7 +10,7 @@
 				<div class="coversColumn col-xs-3 col-sm-3{if !empty($viewingCombinedResults)} col-md-3 col-lg-2{/if} text-center">
 					{if $disableCoverArt != 1}
 						<a href="{$summUrl}">
-							<img src="{$bookCoverUrlMedium}" class="listResultImage img-thumbnail" alt="{translate text='Cover Image'}">
+							<img src="{$bookCoverUrlMedium}" class="listResultImage img-thumbnail" alt="{translate text='Cover Image' inAttribute=true}">
 						</a>
 					{/if}
 
@@ -40,7 +40,7 @@
 
 				{if $summAuthor}
 					<div class="row">
-						<div class="result-label col-tn-3">Author: </div>
+						<div class="result-label col-tn-3">{translate text="Author"}: </div>
 						<div class="result-value col-tn-8 notranslate">
 							{if is_array($summAuthor)}
 								{foreach from=$summAuthor item=author}
@@ -57,13 +57,13 @@
 					{assign var=indexedSeries value=$recordDriver->getIndexedSeries()}
 					{if $summSeries || $indexedSeries}
 						<div class="series{$summISBN} row">
-							<div class="result-label col-tn-3">Series: </div>
+							<div class="result-label col-tn-3">{translate text="Series"}: </div>
 							<div class="result-value col-tn-8">
 								{if $summSeries}
 									{if $summSeries.fromNovelist}
-										<a href="{$path}/GroupedWork/{$summId}/Series">{$summSeries.seriesTitle}</a>{if $summSeries.volume} volume {$summSeries.volume}{/if}<br>
+										<a href="{$path}/GroupedWork/{$summId}/Series">{$summSeries.seriesTitle}</a>{if $summSeries.volume} {translate text=volume} {$summSeries.volume}{/if}<br>
 									{else}
-										<a href="{$path}/Search/Results?searchIndex=Series&lookfor={$summSeries.seriesTitle}">{$summSeries.seriesTitle}</a>{if $summSeries.volume} volume {$summSeries.volume}{/if}
+										<a href="{$path}/Search/Results?searchIndex=Series&lookfor={$summSeries.seriesTitle}">{$summSeries.seriesTitle}</a>{if $summSeries.volume} {translate text=volume} {$summSeries.volume}{/if}
 									{/if}
 								{/if}
 								{if $indexedSeries}
@@ -73,9 +73,9 @@
 									{/if}
 									{foreach from=$indexedSeries item=seriesItem name=loop}
 										{if !isset($summSeries.seriesTitle) || ((strpos(strtolower($seriesItem.seriesTitle), strtolower($summSeries.seriesTitle)) === false) && (strpos(strtolower($summSeries.seriesTitle), strtolower($seriesItem.seriesTitle)) === false))}
-											<a href="{$path}/Search/Results?searchIndex=Series&lookfor=%22{$seriesItem.seriesTitle|escape:"url"}%22">{$seriesItem.seriesTitle|escape}</a>{if $seriesItem.volume} volume {$seriesItem.volume}{/if}<br>
+											<a href="{$path}/Search/Results?searchIndex=Series&lookfor=%22{$seriesItem.seriesTitle|escape:"url"}%22">{$seriesItem.seriesTitle|escape}</a>{if $seriesItem.volume} {translate text=volume} {$seriesItem.volume}{/if}<br>
 											{if $showMoreSeries && $smarty.foreach.loop.iteration == 3}
-												<a onclick="$('#moreSeries_{$summId}').show();$('#moreSeriesLink_{$summId}').hide();" id="moreSeriesLink_{$summId}">More Series...</a>
+												<a onclick="$('#moreSeries_{$summId}').show();$('#moreSeriesLink_{$summId}').hide();" id="moreSeriesLink_{$summId}">{translate text='More Series...'}</a>
 												<div id="moreSeries_{$summId}" style="display:none">
 											{/if}
 										{/if}
@@ -92,7 +92,7 @@
 				{if $showPublisher}
 				{if $alwaysShowSearchResultsMainDetails || $summPublisher}
 					<div class="row">
-						<div class="result-label col-tn-3">Publisher: </div>
+						<div class="result-label col-tn-3">{translate text="Publisher"}: </div>
 						<div class="result-value col-tn-8">
 							{if $summPublisher}
 								{$summPublisher}
@@ -107,7 +107,7 @@
 				{if $showPublicationDate}
 					{if $alwaysShowSearchResultsMainDetails || $summPubDate}
 						<div class="row">
-							<div class="result-label col-tn-3">Pub. Date: </div>
+							<div class="result-label col-tn-3">{translate text="Pub. Date"}: </div>
 							<div class="result-value col-tn-8">
 								{if $summPubDate}
 									{$summPubDate|escape}
@@ -122,7 +122,7 @@
 				{if !empty($showEditions)}
 					{if $alwaysShowSearchResultsMainDetails || $summEdition}
 						<div class="row">
-							<div class="result-label col-tn-3">Edition: </div>
+							<div class="result-label col-tn-3">{translate text="Edition"}: </div>
 							<div class="result-value col-tn-8">
 								{if $summEdition}
 									{$summEdition}
@@ -178,12 +178,12 @@
 
 				{if $showLanguages && $summLanguage}
 					<div class="row">
-						<div class="result-label col-tn-3">Language: </div>
+						<div class="result-label col-tn-3">{translate text="Language"}: </div>
 						<div class="result-value col-tn-8">
 							{if is_array($summLanguage)}
-								{', '|implode:$summLanguage}
+								{implode subject=$summLanguage glue=', ' translate=true}
 							{else}
-								{$summLanguage}
+								{$summLanguage|translate}
 							{/if}
 						</div>
 					</div>
