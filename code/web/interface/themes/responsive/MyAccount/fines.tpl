@@ -18,7 +18,7 @@
 			{* Show Fine Alert when the user has no linked accounts *}
 			{if  count($userFines) == 1 && $profile->_fines}
 				<div class="alert alert-info">
-					Your account has <strong>{$profile->_fines}</strong> in fines.
+					{translate text="fines_summary" defaultText="Your account has <strong>%1%</strong> in fines." 1=$profile->_fines}
 				</div>
 			{/if}
 
@@ -29,15 +29,15 @@
 						<thead>
 						<tr>
 							{if $showDate}
-								<th>Date</th>
+								<th>{translate text="Date"}</th>
 							{/if}
 							{if $showReason}
-								<th>Message</th>
+								<th>{translate text="Message"}</th>
 							{/if}
-							<th>Title</th>
-							<th>Fine/Fee Amount</th>
+							<th>{translate text="Title"}</th>
+							<th>{translate text="Fine/Fee Amount"}</th>
 							{if $showOutstanding}
-								<th>Amount Outstanding</th>
+								<th>{translate text="Amount Outstanding"}</th>
 							{/if}
 						</tr>
 						</thead>
@@ -72,7 +72,7 @@
 						</tbody>
 						<tfoot>
 						<tr class="info">
-							<th>Total</th>
+							<th>{translate text="Total"}</th>
 							{if $showDate}
 								<td></td>
 							{/if}
@@ -87,7 +87,7 @@
 						</tfoot>
 					</table>
 				{else}
-					<p class="alert alert-success">This account does not have any fines within the system.</p>
+					<p class="alert alert-success">{translate text="no_fines_for_account_message" defaultText="This account does not have any fines within the system."}</p>
 				{/if}
 			{/foreach}
 
@@ -98,13 +98,13 @@
 				{* Pay Fines Button *}
 				{if $showECommerceLink && $profile->_finesVal > $minimumFineAmount}
 					<a href="{$eCommerceLink}" target="_blank"{if $showRefreshAccountButton} onclick="AspenDiscovery.Account.ajaxLightbox('{$path}/AJAX/JSON?method=getPayFinesAfterAction')"{/if}>
-						<div class="btn btn-sm btn-primary">{if $payFinesLinkText}{$payFinesLinkText}{else}Click to Pay Fines Online{/if}</div>
+						<div class="btn btn-sm btn-primary">{if $payFinesLinkText}{$payFinesLinkText}{else}{translate text="Click to Pay Fines Online"}{/if}</div>
 					</a>
 				{/if}
 			{/if}
 
 		{else}
-			<p class="alert alert-success">You do not have any fines within the system.</p>
+			<p class="alert alert-success">{translate text="no_fines_message" defaultText="You do not have any fines within the system."}</p>
 		{/if}
 	{/if}
 {else}

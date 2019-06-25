@@ -105,7 +105,7 @@ class MaterialsRequest_NewRequest extends Action
 			$interface->assign('usernameLabel', $library->loginFormUsernameLabel ? $library->loginFormUsernameLabel : 'Your Name');
 			$interface->assign('passwordLabel', $library->loginFormPasswordLabel ? $library->loginFormPasswordLabel : 'Library Card Number');
 
-			$this->display('new.tpl', translate('Materials_Request_alt'));
+			$this->display('new.tpl', 'Materials Request');
 		}
 	}
 }

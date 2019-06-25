@@ -68,13 +68,13 @@
 	{/if}
 
 	{if $materialRequestType == 1}
-		<h2>Didn't find it?</h2>
+		<h2>{translate text="Didn't find it?"}</h2>
 		<p>Can't find what you are looking for? <a href="{$path}/MaterialsRequest/NewRequest?lookfor={$lookfor}&searchIndex={$searchIndex}" onclick="return AspenDiscovery.Account.followLinkIfLoggedIn(this);">{translate text='Suggest a purchase'}</a>.</p>
 	{elseif $materialRequestType == 2}
-		<h2>Didn't find it?</h2>
+		<<h2>{translate text="Didn't find it?"}</h2>
 		<p>Can't find what you are looking for? <a href="{$path}/MaterialsRequest/NewRequestIls?lookfor={$lookfor}&searchIndex={$searchIndex}" onclick="return AspenDiscovery.Account.followLinkIfLoggedIn(this);">{translate text='Suggest a purchase'}</a>.</p>
 	{elseif $materialRequestType == 3}
-		<h2>Didn't find it?</h2>
+		<h2>{translate text="Didn't find it?"}</h2>
 		<p>Can't find what you are looking for? <a href="{$externalMaterialsRequestUrl}">{translate text='Suggest a purchase'}</a>.</p>
 	{/if}
 

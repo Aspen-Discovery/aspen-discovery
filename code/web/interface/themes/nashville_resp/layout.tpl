@@ -50,6 +50,13 @@
 			<div id="system-message-header" class="row">{$systemMessage}</div>
 		{/if}
 
+		{if $enableLanguageSelector}
+			{include file="language-selection-navbar.tpl"}
+		{/if}
+		{if $showLanguagePreferencesBar}
+			{include file="languagePreferences.tpl"}
+		{/if}
+
 		<div id="header-wrapper" class="row">
 			<div id="header-container">
 				{include file='header_responsive.tpl'}

@@ -25,7 +25,7 @@
 						<label for="acceptCopyrightNo"><input type="radio" name="acceptCopyright" id="acceptCopyrightNo" value="1">Decline</label>
 					</div>
 					<div class="col-sm-9 col-sm-offset-3">
-						<input type="submit" value="Submit {translate text='Materials_Request_alt'}" class="btn btn-primary">
+						<input type="submit" value="{translate text='Submit Materials Request'}" class="btn btn-primary">
 					</div>
 				</div>
 			</form>

@@ -27,8 +27,11 @@
 						{translate text="available hold summary" defaultText="These titles have arrived at the library or are available online for you to use."}
 						{*These titles have arrived at the library or are available online for you to use.*}
 					{else}
-						{translate text="These titles are currently checked out to other patrons."}  We will notify you{if not $notification_method or $notification_method eq 'Unknown'}{else} via {$notification_method}{/if} when a title is available.
-						{* Only show the notification method when it is known and set *}
+						{if not $notification_method or $notification_method eq 'Unknown'}
+							{translate text="unavailable_hold_summary_no_notification" defaultText="These titles are currently checked out to other patrons. We will notify you when a title is available."}
+						{else}
+							{translate text="unavailable_hold_summary_with_notification" defaultText="These titles are currently checked out to other patrons. We will notify you via %1% when a title is available." 1=$notification_method}
+						{/if}
 					{/if}
 				</p>
 				{if is_array($recordList.$sectionKey) && count($recordList.$sectionKey) > 0}
@@ -75,7 +78,7 @@
 					</div>
 				{else} {* Check to see if records are available *}
 					{if $sectionKey == 'available'}
-						{translate text='You do not have any holds that are ready to be picked up.'}
+						{translate text="no_holds_ready_pickup" defaultText='You do not have any holds that are ready to be picked up.'}
 					{else}
 						{translate text='You do not have any pending holds.'}
 					{/if}

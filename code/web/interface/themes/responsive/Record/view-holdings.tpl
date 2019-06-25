@@ -46,7 +46,7 @@
 	<div id="title_links">
 		<div class="row">
 			<div class="col-xs-12">
-				<strong style="text-decoration: underline">Links</strong>
+				<strong style="text-decoration: underline">{translate text="Links"}</strong>
 			</div>
 		</div>
 		{include file="Record/view-links.tpl"}

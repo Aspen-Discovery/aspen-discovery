@@ -6,15 +6,15 @@
 					<h4>
 						<span class="glyphicon glyphicon-sunglasses"></span>
 						&nbsp;
-						Masquerade Mode
+						{translate text="Masquerade Mode"}
 					</h4>
 				</div>
 				<div id="masquerade-header-name-section" class="hidden-tn hidden-xs col-sm-5 col-lg-6">
-					<h5>Masquerading As {$userDisplayName|capitalize}</h5>
+					<h5>{translate text="Masquerading As %1%" 1=$userDisplayName}</h5>
 				</div>
 
 				<div id="masquerade-header-end" class="col-tn-5 col-xs-4 col-sm-3 col-lg-2 pull-right">
-					<button class="btn btn-masquerade btn-block pull-right" onclick="AspenDiscovery.Account.endMasquerade()">End Masquerade</button>
+					<button class="btn btn-masquerade btn-block pull-right" onclick="AspenDiscovery.Account.endMasquerade()">{translate text="End Masquerade"}</button>
 				</div>
 			</div>
 

@@ -28,7 +28,7 @@
 		<div class="hidden-xs col-sm-2 col-sm-offset-5 col-md-2 col-md-offset-0 col-lg-2 col-lg-offset-0">
 			<a id="myAccountNameLink" href="{$path}/MyAccount/Home">
 				<div class="header-button header-primary">
-					{if $userDisplayName}{$userDisplayName|capitalize}'s Account{else}My Account{/if}
+					{if $userDisplayName}{translate text="%1%'s Account" 1=$userDisplayName|capitalize }{else}{translate text="My Account"}{/if}
 				</div>
 			</a>
 		</div>

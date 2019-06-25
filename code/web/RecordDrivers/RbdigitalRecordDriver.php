@@ -177,7 +177,7 @@ class RbdigitalRecordDriver extends GroupedWorkSubDriver {
 
         $moreDetailsOptions['moreDetails'] = array(
             'label' => 'More Details',
-            'body' => $interface->fetch('Record/view-more-details.tpl'),
+            'body' => $interface->fetch('Rbdigital/view-more-details.tpl'),
         );
         $this->loadSubjects();
         $moreDetailsOptions['subjects'] = array(

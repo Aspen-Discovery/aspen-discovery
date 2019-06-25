@@ -158,7 +158,6 @@ class Author_Home extends Action
 		if (substr($author, strlen($author) - 1, 1) == ",") {
 			$author = substr($author, 0, strlen($author) - 1);
 		}
-		$authorRaw = $author;
 		$wikipediaAuthorName = $author;
 		$author = explode(',', $author);
 		$interface->assign('author', $author);
@@ -283,6 +282,6 @@ class Author_Home extends Action
 		$interface->assign('displayMode', $currentView);
 		$interface->assign('subpage', 'Search/list-' . $currentView .'.tpl');
 
-		$this->display('home.tpl', 'Author ' . $authorRaw, 'Author/sidebar.tpl');
+		$this->display('home.tpl', 'Author', 'Author/sidebar.tpl');
 	}
 }

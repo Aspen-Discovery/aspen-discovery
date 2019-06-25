@@ -1,7 +1,7 @@
 {if $searchId}
-	<li>Genealogy {translate text="Search"} <span class="divider">{if !empty($lookfor)}&raquo;</span> {$lookfor|capitalize|escape:"html"}{/if} <span class="divider">&raquo;</span></li>
+	<li>Genealogy {translate text="Search"} <span class="divider">{if !empty($lookfor)}&raquo;</span> {$lookfor|escape:"html"}{/if} <span class="divider">&raquo;</span></li>
 {elseif $pageTemplate!=""}
-	<li>{translate text=$pageTemplate|replace:'.tpl':''|capitalize|translate} <span class="divider">&raquo;</span></li>
+	<li>{translate text=$pageTemplate|replace:'.tpl':''} <span class="divider">&raquo;</span></li>
 {/if}
 {if !empty($recordCount)}
 	{translate text="Showing"}

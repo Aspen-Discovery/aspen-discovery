@@ -58,11 +58,11 @@
 								{/if}
 							{/if}
 							{if $materialRequestType == 1 && $enableAspenMaterialsRequest}
-								<div class="myAccountLink{if $pageTemplate=="myMaterialRequests.tpl"} active{/if}" title="{translate text='Materials_Requests_alt'}">
+								<div class="myAccountLink{if $pageTemplate=="myMaterialRequests.tpl"} active{/if}" title="{translate text='Materials_Requests_alt' inAttribute=true}">
 									<a href="{$path}/MaterialsRequest/MyRequests">{translate text='Materials_Requests_alt'} <span class="materialsRequests-placeholder"><img src="{$path}/images/loading.gif" alt="loading"></span></a>
 								</div>
 							{elseif $materialRequestType == 2 && $userHasCatalogConnection}
-								<div class="myAccountLink{if $pageTemplate=="ilsMaterialRequests.tpl"} active{/if}" title="{translate text='Materials_Requests_alt'}">
+								<div class="myAccountLink{if $pageTemplate=="ilsMaterialRequests.tpl"} active{/if}" title="{translate text='Materials_Requests_alt' inAttribute=true}">
 									<a href="{$path}/MaterialsRequest/IlsRequests">{translate text='Materials_Requests_alt'} <span class="materialsRequests-placeholder"><img src="{$path}/images/loading.gif" alt="loading"></span></a>
 								</div>
 							{/if}

@@ -3,7 +3,7 @@
 		{if $masqueradeMode}
 			<div class="sidebar-masquerade-section">
 				<div class="logoutOptions hidden-phone" >
-					<a id="masqueradedMyAccountNameLink" href="{$path}/MyAccount/Home">Masquerading As {$userDisplayName|capitalize}</a>
+					<a id="masqueradedMyAccountNameLink" href="{$path}/MyAccount/Home">{translate text="Masquerading As %1%" 1=$userDisplayName}</a>
 					<div class="bottom-border-line"></div> {* divs added to aid anythink styling. plb 11-19-2014 *}
 				</div>
 				<div class="logoutOptions">
@@ -12,7 +12,7 @@
 				</div>
 			</div>
 			<div class="logoutOptions hidden-phone" {if !$loggedIn} style="display: none;"{/if}>
-				<a id="myAccountNameLink" href="{$path}/MyAccount/Home">Logged In As {$guidingUser->displayName|capitalize}</a>
+				<a id="myAccountNameLink" href="{$path}/MyAccount/Home">{translate text="Logged In As %1%" 1=$guidingUser->displayName }</a>
 				<div class="bottom-border-line"></div> {* divs added to aid anythink styling. plb 11-19-2014 *}
 			</div>
 			<div class="logoutOptions">
@@ -22,7 +22,7 @@
 
 		{else}
 			<div class="logoutOptions hidden-phone" {if !$loggedIn} style="display: none;"{/if}>
-				<a id="myAccountNameLink" href="{$path}/MyAccount/Home">Logged In As {$userDisplayName|capitalize}</a>
+				<a id="myAccountNameLink" href="{$path}/MyAccount/Home">{translate text="Logged In As %1%" 1=$userDisplayName }</a>
 				<div class="bottom-border-line"></div> {* divs added to aid anythink styling. plb 11-19-2014 *}
 			</div>
 			<div class="logoutOptions" {if !$loggedIn} style="display: none;"{/if}>

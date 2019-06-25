@@ -317,7 +317,7 @@ class MaterialsRequest_AJAX extends Action{
 			}
 		}
 		$return = array(
-				'title'        => translate('Materials_Request_alt') . ' Details',
+				'title'        => translate('Materials Request Details'),
 				'modalBody'    => $interface->fetch('MaterialsRequest/ajax-request-details.tpl'),
 				'modalButtons' => '' //TODO idea: add Update Request button (for staff only?)
 		);

@@ -7,7 +7,7 @@
 
 	<span class='availableHoldsNoticePlaceHolder'></span>
 
-	<h2>My {translate text='Materials_Request_alt'}s</h2>
+	<h2>{translate text='My Materials Requests'}</h2>
 	{if !empty($error)}
 		<div class="alert alert-danger">{$error}</div>
 	{else}
@@ -17,11 +17,11 @@
 					<thead>
 						<tr>
 							<th>&nbsp;</th>
-							<th>Summary</th>
-							<th>Suggested On</th>
-							<th>Note</th>
-							<th>Managed By</th>
-							<th>Status</th>
+							<th>{translate text="Summary"}</th>
+							<th>{translate text="Suggested On"}</th>
+							<th>{translate text="Note"}</th>
+							<th>{translate text="Managed By"}</th>
+							<th>{translate text="Status"}</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -39,13 +39,13 @@
 						{/foreach}
 					</tbody>
 				</table>
-				<input type="submit" value="Delete Selected" class="btn btn-sm btn-danger" name="submit"/>
+				<button type="submit" class="btn btn-sm btn-danger" name="submit">{translate text="Delete Selected"}</button>
 			</form>
 			<br/>
 		{else}
 			<div class="alert alert-warning">There are no {translate text='materials request'}s that meet your criteria.</div>
 		{/if}
-		<div id="createNewMaterialsRequest"><a href="{$path}/MaterialsRequest/NewRequestIls" class="btn btn-primary btn-sm">Submit a New {translate text='Materials_Request_alt'}</a></div>
+		<div id="createNewMaterialsRequest"><a href="{$path}/MaterialsRequest/NewRequestIls" class="btn btn-primary btn-sm">{translate text='Submit a New Materials Request'}</a></div>
 	{/if}
 </div>
 <script type="text/javascript">

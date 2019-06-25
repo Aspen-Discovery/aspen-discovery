@@ -183,7 +183,7 @@ class Browse_AJAX extends Action {
 		$interface->assign('browseCategoryId', $this->textId);
 		$result['success'] = true;
 		$result['textId'] = $this->textId;
-		$result['label'] = 'Recommended for you';
+		$result['label'] = translate('Recommended for you');
 		$result['searchUrl'] = '/MyAccount/SuggestedTitles';
 
 		require_once ROOT_DIR . '/services/MyResearch/lib/Suggestions.php';

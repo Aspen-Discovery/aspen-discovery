@@ -1,5 +1,5 @@
 	<div id="main-content">
-		<h1>Copy Library {$facetType|capitalize} Facets</h1>
+		<h1>{translate text="Copy Library %1% Facets" 1="{$facetType|capitalize}"</h1>
 		{if count($allLibraries) == 0}
 			<div class="alert alert-warning">Sorry, there are no libraries available for you to copy {$facetType} facets from.</div>
 		{else}

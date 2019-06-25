@@ -15,7 +15,7 @@
 				</div>
 
 				<p>
-					<a role="button" class="btn btn-primary" href="{$accountPageLink}">See My {translate text='Materials_Request_alt'}s</a>
+					<a role="button" class="btn btn-primary" href="{$accountPageLink}">{translate text='See My Materials Requests'}</a>
 				</p>
 			</div>
 		{/if}

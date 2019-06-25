@@ -23,9 +23,9 @@ class MaterialsRequest_IlsRequests extends MyAccount
 			}
 			$requestTemplate = $catalogConnection->getMaterialsRequestsPage($user);
 
-			$interface->assign('pageTitleShort', 'My ' . translate('Materials_Request_alt'). 's' );
+			$interface->assign('pageTitleShort', 'My Materials Requests');
 
-			$title = 'My '. translate('Materials_Request_alt') .'s';
+			$title = 'My Materials Requests';
 			$this->display($requestTemplate, $title);
 		}else{
 			header('Location: ' . $configArray['Site']['path'] . '/MyAccount/Home?followupModule=MaterialsRequest&followupAction=MyRequests');

@@ -8,21 +8,21 @@
 	<div class="row">
 		{if $showVolume}
 			<div class="col-tn-2">
-				<strong><u>Volume</u></strong>
+				<strong><u>{translate text="Volume"}</u></strong>
 			</div>
 		{/if}
 		<div class="col-tn-{if $showLastCheckIn && showVolume}3{elseif $showLastCheckIn || $showVolume}4{else}5{/if} ">
-			<strong><u>Location</u></strong>
+			<strong><u>{translate text="Location"}</u></strong>
 		</div>
 		<div class="holdingsCallNumber col-tn-{if $showLastCheckIn || $showVolume}3{else}4{/if}">
-			<strong><u>Call Number</u></strong>
+			<strong><u>{translate text="Call Number"}</u></strong>
 		</div>
 		<div class="col-tn-{if $showLastCheckIn && showVolume}2{elseif $showLastCheckIn || $showVolume}3{else}3{/if}">
-			<strong><u>Status</u></strong>
+			<strong><u>{translate text="Status"}</u></strong>
 		</div>
 		{if $showLastCheckIn}
 			<div class="col-tn-2">
-				<strong><u>Last Check-In</u></strong>
+				<strong><u>{translate text="Last Check-In"}</u></strong>
 			</div>
 		{/if}
 	</div>

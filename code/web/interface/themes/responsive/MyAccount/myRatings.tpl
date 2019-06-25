@@ -68,9 +68,9 @@
 				<table class="myAccountTable table table-striped" id="notInterestedTable">
 					<thead>
 						<tr>
-							<th>Date</th>
-							<th>Title</th>
-							<th>Author</th>
+							<th>{translate text="Date"}</th>
+							<th>{translate text="Title"}</th>
+							<th>{translate text="Author"}</th>
 							<th>&nbsp;</th>
 						</tr>
 					</thead>
@@ -80,7 +80,7 @@
 								<td>{$notInterestedTitle.dateMarked|date_format}</td>
 								<td><a href="{$notInterestedTitle.link}">{$notInterestedTitle.title}</a></td>
 								<td>{$notInterestedTitle.author}</td>
-								<td><span class="btn btn-xs btn-warning" onclick="return AspenDiscovery.GroupedWork.clearNotInterested('{$notInterestedTitle.id}');">Clear</span></td>
+								<td><span class="btn btn-xs btn-warning" onclick="return AspenDiscovery.GroupedWork.clearNotInterested('{$notInterestedTitle.id}');">{translate text="Clear"}</span></td>
 							</tr>
 						{/foreach}
 					</tbody>

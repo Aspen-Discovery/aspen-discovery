@@ -28,7 +28,7 @@ class MaterialsRequest_NewRequestIls extends Action
 			}
 			$requestForm = $catalogConnection->getNewMaterialsRequestForm();
 
-			$this->display($requestForm, translate('Materials_Request_alt'));
+			$this->display($requestForm, 'Materials Request');
 		}
 	}
 }

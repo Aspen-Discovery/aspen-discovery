@@ -4,6 +4,6 @@
 {elseif $pageTitle}
 <em>{$pageTitle}</em>
 {else}
-<em>{$pageTemplate|replace:'.tpl':''|capitalize|translate}</em>
+<em>{$pageTemplate|replace:'.tpl':''}</em>
 {/if}
 <span class="divider">&raquo;</span>

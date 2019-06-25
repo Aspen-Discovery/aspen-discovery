@@ -4,7 +4,7 @@
 	<div>
 		<table class="holdingsTable">
 			<thead>
-				<tr><th>Library</th><th>Owned</th><th>Available</th><th>Shared?</th></tr>
+				<tr><th>{translate text="Library"}</th><th>{translate text="Owned"}</th><th>{translate text="Available"}</th><th>{translate text="Shared?"}</th></tr>
 			</thead>
 			<tbody>
 				{foreach from=$availability item=availabilityItem}
@@ -16,7 +16,7 @@
 {/if}
 {if $showAvailabilityOther && $availabilityOther && count($availabilityOther) > 0}
 	<div>
-		<h3>Other Libraries that own this title</h3>
+		<h3>{translate text="Other Libraries that own this title"}</h3>
 		<table class="holdingsTable">
 			<thead>
 			<tr><th>Library</th><th>Owned</th><th>Available</th><th>Shared?</th></tr>

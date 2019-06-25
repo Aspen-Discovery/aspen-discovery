@@ -40,7 +40,7 @@
 
 				{if $summAuthor}
 					<div class="row">
-						<div class="result-label col-tn-3">{translate text="Author"}: </div>
+						<div class="result-label col-tn-3">{translate text="Author"} </div>
 						<div class="result-value col-tn-8 notranslate">
 							{if is_array($summAuthor)}
 								{foreach from=$summAuthor item=author}
@@ -57,7 +57,7 @@
 					{assign var=indexedSeries value=$recordDriver->getIndexedSeries()}
 					{if $summSeries || $indexedSeries}
 						<div class="series{$summISBN} row">
-							<div class="result-label col-tn-3">{translate text="Series"}: </div>
+							<div class="result-label col-tn-3">{translate text="Series"} </div>
 							<div class="result-value col-tn-8">
 								{if $summSeries}
 									{if $summSeries.fromNovelist}
@@ -92,7 +92,7 @@
 				{if $showPublisher}
 				{if $alwaysShowSearchResultsMainDetails || $summPublisher}
 					<div class="row">
-						<div class="result-label col-tn-3">{translate text="Publisher"}: </div>
+						<div class="result-label col-tn-3">{translate text="Publisher"} </div>
 						<div class="result-value col-tn-8">
 							{if $summPublisher}
 								{$summPublisher}
@@ -107,7 +107,7 @@
 				{if $showPublicationDate}
 					{if $alwaysShowSearchResultsMainDetails || $summPubDate}
 						<div class="row">
-							<div class="result-label col-tn-3">{translate text="Pub. Date"}: </div>
+							<div class="result-label col-tn-3">{translate text="Pub. Date"} </div>
 							<div class="result-value col-tn-8">
 								{if $summPubDate}
 									{$summPubDate|escape}
@@ -122,7 +122,7 @@
 				{if !empty($showEditions)}
 					{if $alwaysShowSearchResultsMainDetails || $summEdition}
 						<div class="row">
-							<div class="result-label col-tn-3">{translate text="Edition"}: </div>
+							<div class="result-label col-tn-3">{translate text="Edition"} </div>
 							<div class="result-value col-tn-8">
 								{if $summEdition}
 									{$summEdition}
@@ -136,7 +136,7 @@
 
 				{if !empty($showArInfo) && $summArInfo}
 					<div class="row">
-						<div class="result-label col-tn-3">{translate text='Accelerated Reader'}: </div>
+						<div class="result-label col-tn-3">{translate text='Accelerated Reader'} </div>
 						<div class="result-value col-tn-8">
 							{$summArInfo}
 						</div>
@@ -145,7 +145,7 @@
 
 				{if !empty($showLexileInfo) && $summLexileInfo}
 					<div class="row">
-						<div class="result-label col-tn-3">{translate text='Lexile measure'}: </div>
+						<div class="result-label col-tn-3">{translate text='Lexile measure'} </div>
 						<div class="result-value col-tn-8">
 							{$summLexileInfo}
 						</div>
@@ -154,7 +154,7 @@
 
 				{if !empty($showFountasPinnell) && $summFountasPinnell}
 					<div class="row">
-						<div class="result-label col-tn-3">{translate text='Fountas &amp; Pinnell'}: </div>
+						<div class="result-label col-tn-3">{translate text='Fountas &amp; Pinnell'} </div>
 						<div class="result-value col-tn-8">
 							{$summFountasPinnell}
 						</div>
@@ -164,7 +164,7 @@
 				{if !empty($showPhysicalDescriptions)}
 					{if $alwaysShowSearchResultsMainDetails || $summPhysicalDesc}
 						<div class="row">
-							<div class="result-label col-tn-3">{translate text='Physical Desc'}: </div>
+							<div class="result-label col-tn-3">{translate text='Physical Desc'} </div>
 							<div class="result-value col-tn-8">
 								{if $summPhysicalDesc}
 									{$summPhysicalDesc}
@@ -178,7 +178,7 @@
 
 				{if $showLanguages && $summLanguage}
 					<div class="row">
-						<div class="result-label col-tn-3">{translate text="Language"}: </div>
+						<div class="result-label col-tn-3">{translate text="Language"} </div>
 						<div class="result-value col-tn-8">
 							{if is_array($summLanguage)}
 								{implode subject=$summLanguage glue=', ' translate=true}
@@ -192,7 +192,7 @@
 				{if $summSnippets}
 					{foreach from=$summSnippets item=snippet}
 						<div class="row">
-							<div class="result-label col-tn-3">{translate text=$snippet.caption}: </div>
+							<div class="result-label col-tn-3">{translate text=$snippet.caption} </div>
 							<div class="result-value col-tn-8">
 								{if !empty($snippet.snippet)}<span class="quotestart">&#8220;</span>...{$snippet.snippet|highlight}...<span class="quoteend">&#8221;</span><br>{/if}
 							</div>
@@ -216,7 +216,7 @@
 					   won't have any hidden formats and will be displayed *}
 					{if !$hasHiddenFormats && count($relatedManifestations) != 1}
 						<div class="hidethisdiv{$summId|escape} result-label col-tn-3">
-							Formats:
+							{translate text="Formats"}
 						</div>
 						<div class="hidethisdiv{$summId|escape} result-value col-tn-8">
 							<a href="#" onclick="$('#relatedManifestationsValue{$summId|escape},.hidethisdiv{$summId|escape}').toggleClass('hidden-xs');return false;">
@@ -242,7 +242,7 @@
 					{* Description Section *}
 					{if $summDescription}
 						<div class="row visible-xs">
-							<div class="result-label col-tn-3">Description:</div>
+							<div class="result-label col-tn-3">Description</div>
 							<div class="result-value col-tn-8"><a id="descriptionLink{$summId|escape}" href="#" onclick="$('#descriptionValue{$summId|escape},#descriptionLink{$summId|escape}').toggleClass('hidden-xs');return false;">Click to view</a></div>
 						</div>
 					{/if}
