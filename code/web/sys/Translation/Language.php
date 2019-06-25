@@ -9,6 +9,7 @@ class Language extends DataObject
 	public $displayName;
 	public $displayNameEnglish;
 	public $facetValue;
+	public $displayToTranslatorsOnly;
 
 	static function getObjectStructure(){
 		return [
@@ -18,6 +19,7 @@ class Language extends DataObject
 			'displayName' => array('property'=>'displayName', 'type'=>'text', 'label'=>'Display name - native', 'description'=>'Display Name for the language in the language itself', 'size'=>'50'),
 			'displayNameEnglish' => array('property'=>'displayNameEnglish', 'type'=>'text', 'label'=>'Display name - English', 'description'=>'The url of the open archives site', 'size'=>'50'),
 			'facetValue' => array('property'=>'facetValue', 'type'=>'text', 'label'=>'Facet Value', 'description'=>'The facet value for filtering results and applying preferences', 'size'=>'100'),
+			'displayToTranslatorsOnly' => array('property'=>'displayToTranslatorsOnly', 'type'=>'checkbox', 'label'=>'Display To Translators Only', 'description'=>'Whether or not only translators should see the translation (good practice before the translation is completed)', 'default' => 0),
 		];
 	}
 

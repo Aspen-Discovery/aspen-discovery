@@ -167,8 +167,11 @@ try{
 	$validLanguage = new Language();
 	$validLanguage->orderBy("weight");
 	$validLanguage->find();
+	$userIsTranslator = UserAccount::userHasRole('translator') || UserAccount::userHasRole('opacAdmin');
 	while ($validLanguage->fetch()){
-		$validLanguages[$validLanguage->code] = clone $validLanguage;
+		if (!$validLanguage->displayToTranslatorsOnly || $userIsTranslator){
+			$validLanguages[$validLanguage->code] = clone $validLanguage;
+		}
 	}
 }catch(Exception $e){
 	$defaultLanguage = new Language();

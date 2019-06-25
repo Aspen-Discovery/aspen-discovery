@@ -20,6 +20,14 @@ function getTranslationUpdates() {
             ],
         ],
 
+	    'languages_show_for_translators' => [
+		    'title' => 'Languages option to show for translators only',
+		    'description' => 'Option to show languages to translators only for use while translations are being built. ',
+		    'sql' => [
+			    "ALTER TABLE languages ADD COLUMN displayToTranslatorsOnly TINYINT(1) DEFAULT 0",
+		    ],
+        ],
+
 	    'translation_terms' => [
 	    	'title' => 'Translation Term',
 		    'description' => 'Initial setup of translation term table',
