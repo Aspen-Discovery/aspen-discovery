@@ -440,9 +440,9 @@ var AspenDiscovery = (function(){
 			let translation = $("#translation").val();
 			let url = Globals.path + "/AJAX/JSON";
 			let params =  {
-				method : 'saveTranslation'
-				,translationId : translationId
-				,translation : translation
+				method : 'saveTranslation',
+				translationId : translationId,
+				translation : translation
 			};
 			$.getJSON(url, params,
 				function(data) {
@@ -455,7 +455,25 @@ var AspenDiscovery = (function(){
 					}
 				}
 			).fail(AspenDiscovery.ajaxFail);
-		}
+		},
+		deleteTranslationTerm(termId) {
+			let url = Globals.path + "/AJAX/JSON";
+			let params =  {
+				method : 'deleteTranslationTerm',
+				termId : termId
+			};
+			$.getJSON(url, params,
+				function(data) {
+					if (data.success) {
+						$("#term_" + termId ).hide();
+						AspenDiscovery.closeLightbox();
+					} else {
+						AspenDiscovery.showMessage("Error", data.message);
+					}
+				}
+			).fail(AspenDiscovery.ajaxFail);
+            return false;
+        }
     }
 
 }(AspenDiscovery || {}));

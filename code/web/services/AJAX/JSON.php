@@ -21,7 +21,7 @@ class AJAX_JSON extends Action {
 			if ($method == 'getHoursAndLocations'){
 				header('Content-type: text/html');
 				$output = $this->$method();
-			}elseif (in_array($method, array('getAutoLogoutPrompt', 'getReturnToHomePrompt', 'getPayFinesAfterAction', 'getTranslationForm', 'saveTranslation', 'getLanguagePreferencesForm', 'saveLanguagePreference'))) {
+			}elseif (in_array($method, array('getAutoLogoutPrompt', 'getReturnToHomePrompt', 'getPayFinesAfterAction', 'getTranslationForm', 'saveTranslation', 'getLanguagePreferencesForm', 'saveLanguagePreference', 'deleteTranslationTerm'))) {
 				$output = json_encode($this->$method());
 				// Browser-side handler ajaxLightbox() doesn't use the input format in else block below
 			}else{
@@ -32,6 +32,29 @@ class AJAX_JSON extends Action {
 		}
 
 		echo $output;
+	}
+
+	function deleteTranslationTerm(){
+		$termId = $_REQUEST['termId'];
+		$translation = new Translation();
+		$translation->termId = $termId;
+		$numDeleted = $translation->delete(true);
+
+		$term = new TranslationTerm();
+		$term->id = $termId;
+		$numDeleted += $term->delete(true);
+
+		if ($numDeleted == 0){
+			return [
+				'success' => false,
+				'message' => 'Nothing was deleted, may have been deleted already.'
+			];
+		}else{
+			return [
+				'success' => true,
+				'message' => 'The term was deleted successfully.'
+			];
+		}
 	}
 
 	function saveLanguagePreference(){
