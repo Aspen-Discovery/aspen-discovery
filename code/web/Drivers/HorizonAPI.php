@@ -191,7 +191,7 @@ abstract class HorizonAPI extends Horizon{
 				$user->_numHoldsAvailableIls  = $numHoldsAvailable;
 				$user->_numHoldsRequestedIls  = $numHoldsRequested;
 				$user->patronType            = 0;
-				$user->notices               = '-';
+				$user->_notices               = '-';
 				$user->_noticePreferenceLabel = 'Email';
 				$user->_web_note              = '';
 

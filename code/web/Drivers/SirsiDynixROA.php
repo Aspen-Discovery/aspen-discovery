@@ -298,7 +298,7 @@ abstract class SirsiDynixROA extends HorizonAPI
 				$user->_numHoldsAvailableIls  = $numHoldsAvailable;
 				$user->_numHoldsRequestedIls  = $numHoldsRequested;
 				$user->patronType            = 0; //TODO: not getting this info here?
-				$user->notices               = '-';
+				$user->_notices               = '-';
 				$user->_noticePreferenceLabel = 'Email';
 				$user->_web_note              = '';
 
@@ -570,7 +570,7 @@ abstract class SirsiDynixROA extends HorizonAPI
 				$user->_numHoldsAvailableIls  = $numHoldsAvailable;
 				$user->_numHoldsRequestedIls  = $numHoldsRequested;
 				$user->patronType            = 0; //TODO: not getting this info here?
-				$user->notices               = '-';
+				$user->_notices               = '-';
 				$user->_noticePreferenceLabel = 'Email';
 				$user->_web_note              = '';
 

@@ -61,8 +61,8 @@ class CurlWrapper {
 
 			$this->curl_connection = curl_init($curlUrl);
 			$default_curl_options = array(
-				CURLOPT_CONNECTTIMEOUT => 20,
-				CURLOPT_TIMEOUT => 60,
+				CURLOPT_CONNECTTIMEOUT => 1,
+				CURLOPT_TIMEOUT => 5,
 				CURLOPT_HTTPHEADER => $this->headers,
 				CURLOPT_RETURNTRANSFER => true,
 				CURLOPT_SSL_VERIFYPEER => false,

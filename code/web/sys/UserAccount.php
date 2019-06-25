@@ -188,7 +188,7 @@ class UserAccount {
             $userAccountProfile = $accountProfiles[UserAccount::$primaryUserObjectFromDB->source];
             /** @var AccountProfile $selectedAccountProfile */
             $selectedAccountProfile = $userAccountProfile['accountProfile'];
-            return !empty($selectedAccountProfile->driver);
+            return !empty(trim($selectedAccountProfile->driver));
         }
         return false;
     }

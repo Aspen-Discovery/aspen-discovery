@@ -18,25 +18,23 @@ class RbdigitalDriver extends AbstractEContentDriver
 	        $rbdigitalSettings = new RbdigitalSetting();
 	        if ($rbdigitalSettings->find(true)){
 		        $this->valid = true;
+
+		        $this->webServiceURL = $rbdigitalSettings->apiUrl;
+		        $this->userInterfaceURL = $rbdigitalSettings->userInterfaceUrl;
+		        $this->apiToken = $rbdigitalSettings->apiToken;
+		        $this->libraryId = $rbdigitalSettings->libraryId;
+
+		        $this->curlWrapper = new CurlWrapper();
+		        $headers = [
+			        'Accept: application/json',
+			        'Authorization: basic ' . strtolower($this->apiToken),
+			        'Content-Type: application/json'
+		        ];
+		        $this->curlWrapper->addCustomHeaders($headers, true);
 	        }
         }catch (Exception $e){
         	global $logger;
         	$logger->log("Could not load Rbdigital settings", Logger::LOG_ALERT);
-        }
-
-        if ($this->valid) {
-	        $this->webServiceURL = $rbdigitalSettings->apiUrl;
-	        $this->userInterfaceURL = $rbdigitalSettings->userInterfaceUrl;
-	        $this->apiToken = $rbdigitalSettings->apiToken;
-	        $this->libraryId = $rbdigitalSettings->libraryId;
-
-	        $this->curlWrapper = new CurlWrapper();
-	        $headers = [
-		        'Accept: application/json',
-		        'Authorization: basic ' . strtolower($this->apiToken),
-		        'Content-Type: application/json'
-	        ];
-	        $this->curlWrapper->addCustomHeaders($headers, true);
         }
     }
 
@@ -171,7 +169,6 @@ class RbdigitalDriver extends AbstractEContentDriver
     }
 
     public function createAccount(User $user) {
-        global $configArray;
         $result = ['success' => false, 'message' => 'Unknown error'];
 
         $registrationData = [
@@ -544,55 +541,55 @@ class RbdigitalDriver extends AbstractEContentDriver
 
     }
 
-    public function redirectToRbdigital(User $patron, RbdigitalRecordDriver $recordDriver)
+    public function redirectToRbdigital(/** @noinspection PhpUnusedParameterInspection */ User $patron, RbdigitalRecordDriver $recordDriver)
     {
         header('Location:' . $this->userInterfaceURL . '/book/' . $recordDriver->getUniqueID());
         die();
-        $result = ['success' => false, 'message' => 'Unknown error'];
-        $rbdigitalId = $this->getRbdigitalId($patron);
-        if ($rbdigitalId == false) {
-            $result['message'] = 'Sorry, you are not registered with Rbdigital.  You will need to create an account there before continuing.';
-        } else {
-            //Get the link to redirect to with the proper bearer information
-            /*
-             * POST to api.rbdigital.com/v1/tokens/
-                with values of…
-                libraryId
-                UserName
-                Password
-
-                You should get a bearer token in response along the lines of...
-                {"bearer": "5cc2058bd2b76b28943de9cf","result": true}
-
-                …and should then be able to set an authorization header using…
-                bearer 5cc2063fd2b76b28943deb32
-             */
-            $tokenUrl = $this->webServiceURL . '/v1/tokens/';
-            $userData = [
-                'UserName' => $rbdigitalId,
-                'Password' => $_REQUEST['password'],
-                'libraryId' => $this->libraryId,
-            ];
-            $rawResponse = $this->curlWrapper->curlPostPage($tokenUrl, json_encode($userData));
-            $response = json_decode($rawResponse);
-
-            if ($response == false){
-                $result['message'] = "Invalid information returned from API, please retry your hold after a few minutes.";
-                global $logger;
-                $logger->log("Invalid information from rbdigital api\r\n$tokenUrl\r\n$rawResponse", Logger::LOG_ERROR);
-                $logger->log(print_r($this->curlWrapper->getHeaders(), true), Logger::LOG_ERROR);
-                $curl_info = curl_getinfo($this->curlWrapper->curl_connection);
-                $logger->log(print_r($curl_info, true), Logger::LOG_ERROR);
-            }else{
-                //We should get back a bearer token
-                if ($response->result == true) {
-                    $bearerToken = $response->bearer;
-                }else{
-                    $result['message'] = "Did not get a bearer token from the API";
-                }
-            }
-        }
-        return $result;
+//        $result = ['success' => false, 'message' => 'Unknown error'];
+//        $rbdigitalId = $this->getRbdigitalId($patron);
+//        if ($rbdigitalId == false) {
+//            $result['message'] = 'Sorry, you are not registered with Rbdigital.  You will need to create an account there before continuing.';
+//        } else {
+//            //Get the link to redirect to with the proper bearer information
+//            /*
+//             * POST to api.rbdigital.com/v1/tokens/
+//                with values of…
+//                libraryId
+//                UserName
+//                Password
+//
+//                You should get a bearer token in response along the lines of...
+//                {"bearer": "5cc2058bd2b76b28943de9cf","result": true}
+//
+//                …and should then be able to set an authorization header using…
+//                bearer 5cc2063fd2b76b28943deb32
+//             */
+//            $tokenUrl = $this->webServiceURL . '/v1/tokens/';
+//            $userData = [
+//                'UserName' => $rbdigitalId,
+//                'Password' => $_REQUEST['password'],
+//                'libraryId' => $this->libraryId,
+//            ];
+//            $rawResponse = $this->curlWrapper->curlPostPage($tokenUrl, json_encode($userData));
+//            $response = json_decode($rawResponse);
+//
+//            if ($response == false){
+//                $result['message'] = "Invalid information returned from API, please retry your hold after a few minutes.";
+//                global $logger;
+//                $logger->log("Invalid information from rbdigital api\r\n$tokenUrl\r\n$rawResponse", Logger::LOG_ERROR);
+//                $logger->log(print_r($this->curlWrapper->getHeaders(), true), Logger::LOG_ERROR);
+//                $curl_info = curl_getinfo($this->curlWrapper->curl_connection);
+//                $logger->log(print_r($curl_info, true), Logger::LOG_ERROR);
+//            }else{
+//                //We should get back a bearer token
+//                if ($response->result == true) {
+//                    $bearerToken = $response->bearer;
+//                }else{
+//                    $result['message'] = "Did not get a bearer token from the API";
+//                }
+//            }
+//        }
+//        return $result;
 
     }
 

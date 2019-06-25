@@ -28,7 +28,6 @@ class CarlX extends SIP2Driver{
 
 		$result = $this->doSoapRequest('getPatronInformation', $request);
 
-		$patronValid = false;
 		if ($result){
 			if (isset($result->Patron)){
 				//Check to see if the pin matches
@@ -68,10 +67,10 @@ class CarlX extends SIP2Driver{
 						$user->trackReadingHistory = $result->Patron->LoanHistoryOptInFlag;
 					}
 
-					$user->emailReceiptFlag    = $result->Patron->EmailReceiptFlag;
-					$user->availableHoldNotice = $result->Patron->SendHoldAvailableFlag;
-					$user->comingDueNotice     = $result->Patron->SendComingDueFlag;
-					$user->phoneType           = $result->Patron->PhoneType;
+					$user->_emailReceiptFlag    = $result->Patron->EmailReceiptFlag;
+					$user->_availableHoldNotice = $result->Patron->SendHoldAvailableFlag;
+					$user->_comingDueNotice     = $result->Patron->SendComingDueFlag;
+					$user->_phoneType           = $result->Patron->PhoneType;
 
 					$homeBranchCode = strtolower($result->Patron->DefaultBranch);
 					$location = new Location();
@@ -151,7 +150,7 @@ class CarlX extends SIP2Driver{
 					}
 
 					if (isset($result->Patron->EmailNotices)) {
-						$user->notices = $result->Patron->EmailNotices;
+						$user->_notices = $result->Patron->EmailNotices;
 					}
 
 					$user->patronType  = $result->Patron->PatronType; // Example: "ADULT"
@@ -203,10 +202,8 @@ class CarlX extends SIP2Driver{
 			}
 		}
 
-		if (!$patronValid){
-			$timer->logTime("patron login failed");
-			return null;
-		}
+		$timer->logTime("patron login failed");
+		return null;
 	}
 
 	public function hasNativeReadingHistory() {
@@ -314,6 +311,13 @@ class CarlX extends SIP2Driver{
 		'trace' => 1,                          // enable use of __getLastResponse, so that we can determine the response.
 	);
 
+	/**
+	 * @param $requestName
+	 * @param $request
+	 * @param string $WSDL
+	 * @param array $soapRequestOptions
+	 * @return false|stdClass
+	 */
 	private function doSoapRequest($requestName, $request, $WSDL = '', $soapRequestOptions = array()) {
 		if (empty($WSDL)) { // Let the patron WSDL be the assumed default WSDL when not specified.
 			if (!empty($this->patronWsdl)) {
@@ -326,14 +330,21 @@ class CarlX extends SIP2Driver{
 		}
 
 		// There are exceptions in the Soap Client that need to be caught for smooth functioning
-		$soapRequestOptions['connection_timeout'] = 3;
+		//MDN 6/24/2019 connection timeout is too long if we retry 3 times.
+		//  Updating to a 1 second timeout and only trying twice which means a failed call will be no more than 2 seconds rather than 9
+		$soapRequestOptions['connection_timeout'] = 1;
 		$connectionPassed = false;
 		$numTries = 0;
 		$result = false;
-		while (!$connectionPassed && $numTries < 3){
-            $this->soapClient = new SoapClient($WSDL, $soapRequestOptions);
-            $result = $this->soapClient->$requestName($request);
-            $connectionPassed = true;
+		while (!$connectionPassed && $numTries < 2){
+			try {
+				$this->soapClient = new SoapClient($WSDL, $soapRequestOptions);
+				$result = $this->soapClient->$requestName($request);
+				$connectionPassed = true;
+			} catch (SoapFault $e) {
+				global $logger;
+				$logger->log("Error connecting to SOAP " . $e, Logger::LOG_WARNING);
+			}
 			$numTries++;
 		}
 		if (!$connectionPassed){
@@ -1348,7 +1359,7 @@ class CarlX extends SIP2Driver{
 	 *
 	 * @param User $user The user to load transactions for
 	 *
-	 * @return array        Array of the patron's transactions on success
+	 * @return false|stdClass        Array of the patron's transactions on success
 	 * @access public
 	 */
 	private function getPatronTransactions($user)

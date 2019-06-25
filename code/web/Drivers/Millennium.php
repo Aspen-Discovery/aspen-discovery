@@ -404,9 +404,9 @@ class Millennium extends AbstractIlsDriver
 				'p' => 'Telephone',
 				'z' => 'Email',
 			);
-			$user->notices = isset($patronDump) ? $patronDump['NOTICE_PREF'] : '-';
-			if (array_key_exists($user->notices, $noticeLabels)){
-				$user->_noticePreferenceLabel = $noticeLabels[$user->notices];
+			$user->_notices = isset($patronDump) ? $patronDump['NOTICE_PREF'] : '-';
+			if (array_key_exists($user->_notices, $noticeLabels)){
+				$user->_noticePreferenceLabel = $noticeLabels[$user->_notices];
 			}else{
 				$user->_noticePreferenceLabel = 'Unknown';
 			}

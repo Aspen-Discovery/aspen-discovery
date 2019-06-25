@@ -83,7 +83,7 @@ class User extends DataObject
     private $_numHoldsRequestedRbdigital = 0;
 	private $_numCheckedOutHoopla = 0;
 	public $_numBookings;
-	public $notices;
+	public $_notices;
 	public $_noticePreferenceLabel;
 	private $_numMaterialsRequests = 0;
 	private $_readingHistorySize = 0;
@@ -91,10 +91,10 @@ class User extends DataObject
 	private $data = array();
 
 	// CarlX Option
-	public $emailReceiptFlag;
-	public $availableHoldNotice;
-	public $comingDueNotice;
-	public $phoneType;
+	public $_emailReceiptFlag;
+	public $_availableHoldNotice;
+	public $_comingDueNotice;
+	public $_phoneType;
 
 	function getNumericColumnNames()
 	{
