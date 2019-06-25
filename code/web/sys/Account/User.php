@@ -1542,7 +1542,11 @@ class User extends DataObject
 
 	function getPatronUpdateForm()
 	{
-		return $this->getCatalogDriver()->getPatronUpdateForm($this);
+		if ($this->getCatalogDriver() != null){
+			return $this->getCatalogDriver()->getPatronUpdateForm($this);
+		}else{
+			return null;
+		}
 	}
 }
 
