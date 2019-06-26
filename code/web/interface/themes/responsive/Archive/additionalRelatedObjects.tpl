@@ -6,7 +6,7 @@
 				{$entity.label}
 			</a>
 			{if $entity.role}
-				&nbsp;({$entity.role})
+				&nbsp;({$entity.role|translate})
 			{/if}
 			{if $entity.note}
 				&nbsp;- {$entity.note}
@@ -22,7 +22,7 @@
 				<figcaption class="explore-more-category-title">
 					<strong>{$image.label}</strong>
 					{if $image.role}
-						&nbsp;({$image.role})
+						&nbsp;({$image.role|translate})
 					{/if}
 					{if $image.note}
 						&nbsp;- {$image.note}

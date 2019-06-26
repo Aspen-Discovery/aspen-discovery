@@ -125,7 +125,6 @@ class SearchAPI extends Action {
 	function search()
 	{
 		global $interface;
-		global $configArray;
 		global $timer;
 
 		// Include Search Engine Class
@@ -141,7 +140,6 @@ class SearchAPI extends Action {
 
 		// Set Interface Variables
 		//   Those we can construct BEFORE the search is executed
-		$interface->setPageTitle('Search Results');
 		$interface->assign('sortList',   $searchObject->getSortList());
 		$interface->assign('rssLink',    $searchObject->getRSSUrl());
 
@@ -324,7 +322,6 @@ class SearchAPI extends Action {
 
 		// Set Interface Variables
 		//   Those we can construct BEFORE the search is executed
-		$interface->setPageTitle('Search Results');
 		$interface->assign('sortList',   $searchObject->getSortList());
 		$interface->assign('rssLink',    $searchObject->getRSSUrl());
 
@@ -365,7 +362,6 @@ class SearchAPI extends Action {
 
 		// Set Interface Variables
 		//   Those we can construct BEFORE the search is executed
-		$interface->setPageTitle('Search Results');
 		$interface->assign('sortList',   $searchObject->getSortList());
 		$interface->assign('rssLink',    $searchObject->getRSSUrl());
 
@@ -408,7 +404,6 @@ class SearchAPI extends Action {
 
 		// Set Interface Variables
 		//   Those we can construct BEFORE the search is executed
-		$interface->setPageTitle('Search Results');
 		$interface->assign('sortList',   $searchObject->getSortList());
 		$interface->assign('rssLink',    $searchObject->getRSSUrl());
 

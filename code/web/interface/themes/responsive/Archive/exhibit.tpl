@@ -77,7 +77,7 @@
 		<div id="related-objects-for-exhibit">
 			<div id="exhibit-results-loading" class="row" style="display: none">
 				<div class="alert alert-info">
-					Updating results, please wait.
+					{translate text="Updating results, please wait."}
 				</div>
 			</div>
 
@@ -88,7 +88,7 @@
 					<div class="input-group">
 						<input type="text" name="lookfor" size="30" title="Enter one or more terms to search for.	Surrounding a term with quotes will limit result to only those that exactly match the term." autocomplete="off" class="form-control" placeholder="Search this collection">
 						<div class="input-group-btn" id="search-actions">
-							<button class="btn btn-default" type="submit">GO</button>
+							<button class="btn btn-default" type="submit">{translate text="GO"}/button>
 						</div>
 						<input type="hidden" name="islandoraType" value="IslandoraKeyword">
 						<input type="hidden" name="filter[]" value='ancestors_ms:"{$pid}"'>
@@ -98,19 +98,19 @@
 			<div class="col-sm-4 col-sm-offset-2">
 				{* Display information to sort the results (by date or by title *}
 				<select id="results-sort" name="sort" onchange="AspenDiscovery.Archive.sort = this.options[this.selectedIndex].value;AspenDiscovery.Archive.getMoreExhibitResults('{$exhibitPid|urlencode}', 1);" class="form-control">
-					<option value="title" {if $sort=='title'}selected="selected"{/if}>{translate text='Sort by'} Title</option>
-					<option value="newest" {if $sort=='newest'}selected="selected"{/if}>{translate text='Sort by'} Newest First</option>
-					<option value="oldest" {if $sort=='oldest'}selected="selected"{/if}>{translate text='Sort by'} Oldest First</option>
+					<option value="title" {if $sort=='title'}selected="selected"{/if}>{translate text='Sort by %1%', 1='Title'}</option>
+					<option value="newest" {if $sort=='newest'}selected="selected"{/if}>{translate text='Sort by %1%', 1='Newest First'}</option>
+					<option value="oldest" {if $sort=='oldest'}selected="selected"{/if}>{translate text='Sort by %1%', 1='Oldest First'}</option>
 					{* Added these two options to basic exhibit page. pascal 2-24-2017 *}
-					<option value="dateAdded" {if $sort=='dateAdded'}selected="selected"{/if}>{translate text='Sort by'} Date Added</option>
-					<option value="dateModified" {if $sort=='dateModified'}selected="selected"{/if}>{translate text='Sort by'} Date Modified</option>
+					<option value="dateAdded" {if $sort=='dateAdded'}selected="selected"{/if}>{translate text='Sort by %1%', 1='Date Added'}</option>
+					<option value="dateModified" {if $sort=='dateModified'}selected="selected"{/if}>{translate text='Sort by %1%', 1='Date Modified'}</option>
 				</select>
 			</div>
 		</div>
 		<div class="row">
 			<div class="col-sm-4">
 				{if !empty($recordCount)}
-					{$recordCount} objects in this collection.
+					{translate text='%1% objects in this collection.' 1=$recordCount}
 				{/if}
 			</div>
 		</div>
@@ -162,23 +162,23 @@
 				<a href="#staffViewPanelBody" data-toggle="collapse">
 					<div class="panel-heading">
 						<div class="panel-title">
-							Staff View
+							{translate text='Staff View'}
 						</div>
 					</div>
 				</a>
 				<div id="staffViewPanelBody" class="panel-collapse collapse {*in*}{*toggle on for open*}">
 					<div class="panel-body">
 						<a class="btn btn-small btn-default" href="{$repositoryLink}" target="_blank">
-							View in Islandora
+							{translate text="View in Islandora"}
 						</a>
 						<a class="btn btn-small btn-default" href="{$repositoryLink}/datastream/MODS/view" target="_blank">
-							View MODS Record
+							{translate text='View MODS Record'}
 						</a>
 						<a class="btn btn-small btn-default" href="{$repositoryLink}/datastream/MODS/edit" target="_blank">
-							Edit MODS Record
+							{translate text='Edit MODS Record'}
 						</a>
 						<a class="btn btn-small btn-default" href="#" onclick="return AspenDiscovery.Archive.clearCache('{$pid}');" target="_blank">
-							Clear Cache
+							{translate text='Clear Cache'}
 						</a>
 					</div>
 				</div>

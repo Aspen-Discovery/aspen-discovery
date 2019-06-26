@@ -1,8 +1,8 @@
 {strip}
 	<div id="moreFacetPopup">
-		<p>Please select one of the items below to narrow your search by.</p>
+		<p>{translate text="Please select one of the items below to narrow your search by."}</p>
 		{if count($facetValues) >= 120}
-			<div class="alert alert-info">Only the top 120 values are shown.  Additional values may be available by searching.</div>
+			<div class="alert alert-info">{translate text="max_facet_notice" defaultText="Only the top 120 values are shown.  Additional values may be available by searching."}</div>
 		{/if}
 		<div class="container-12">
 			<div class="row moreFacetPopup">

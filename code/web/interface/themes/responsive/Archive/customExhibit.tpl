@@ -14,7 +14,6 @@
 
 	<h2>
 		{$title}
-		{*{$title|escape} // plb 3/8/2017 not escaping because some titles use &amp; *}
 	</h2>
 
 	<div class="row">
@@ -46,23 +45,23 @@
 					<a href="#staffViewPanelBody" data-toggle="collapse">
 						<div class="panel-heading">
 							<div class="panel-title">
-								Staff View
+								{translate text="Staff View"}
 							</div>
 						</div>
 					</a>
 					<div id="staffViewPanelBody" class="panel-collapse collapse {*in*}{*toggle on for open*}">
 						<div class="panel-body">
 							<a class="btn btn-small btn-default" href="{$repositoryLink}" target="_blank">
-								View in Islandora
+								{translate text="View in Islandora"}
 							</a>
 							<a class="btn btn-small btn-default" href="{$repositoryLink}/datastream/MODS/view" target="_blank">
-								View MODS Record
+								{translate text="View MODS Record"}
 							</a>
 							<a class="btn btn-small btn-default" href="{$repositoryLink}/datastream/MODS/edit" target="_blank">
-								Edit MODS Record
+								{translate text="Edit MODS Record"}
 							</a>
 							<a class="btn btn-small btn-default" href="#" onclick="return AspenDiscovery.Archive.clearCache('{$pid}');" target="_blank">
-								Clear Cache
+								{translate text="Clear Cache"}
 							</a>
 						</div>
 					</div>

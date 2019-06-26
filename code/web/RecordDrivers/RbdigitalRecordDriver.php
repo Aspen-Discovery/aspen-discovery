@@ -293,7 +293,7 @@ class RbdigitalRecordDriver extends GroupedWorkSubDriver {
      */
     function getFormatCategory()
     {
-        if ($this->rbdigitalProduct->mediaType == "eaudio"){
+        if ($this->rbdigitalProduct->mediaType == "eAudio"){
             return ['eBook', 'Audio Books'];
         } else {
             return ['eBook'];

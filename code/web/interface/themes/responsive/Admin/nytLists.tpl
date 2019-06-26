@@ -1,5 +1,5 @@
 {strip}
-	<h1>Pika Lists based on the New York Times API</h1>
+	<h1>{translate text="Lists based on the New York Times API"}</h1>
 	{if !empty($error)}
 		<div class="alert alert-danger">{$error}</div>
 	{/if}
@@ -8,7 +8,7 @@
 		<div class="alert alert-info">{$successMessage}</div>
 	{/if}
 
-	<h3>Create or Update a List</h3>
+	<h3>{translate text="Create or Update a List"}</h3>
 
 	<form action="" method="post" id="buildList">
 		<div class="form-group">

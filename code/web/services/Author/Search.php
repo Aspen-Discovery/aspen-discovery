@@ -65,8 +65,6 @@ class Author_Search extends Action
 		$pager = new Pager($options);
 		$interface->assign('pageLinks', $pager->getLinks());
 
-		$interface->setPageTitle('Author Browse');
-		$interface->setTemplate('list.tpl');
-		$interface->display('layout.tpl');
+		$this->display('list.tpl', 'Author Browse');
 	}
 }

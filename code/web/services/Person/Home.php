@@ -86,9 +86,6 @@ class Person_Home extends Action
 
 		$this->cacheId = 'Person|' . $_GET['id'] . '|' . get_class($this);
 
-		// Send down text for inclusion in breadcrumbs
-		$interface->assign('breadcrumbText', $this->recordDriver->getBreadcrumb());
-
 		$formattedBirthdate = $person->formatPartialDate($person->birthDateDay, $person->birthDateMonth, $person->birthDateYear);
 		$interface->assign('birthDate', $formattedBirthdate);
 
@@ -176,9 +173,6 @@ class Person_Home extends Action
 	{
 
 		$titleField = $this->recordDriver->getName(); //$this->record['firstName'] . ' ' . $this->record['lastName'];
-//		if ($titleField){
-//			$interface->setPageTitle($titleField);
-//		}
 
 		// Display Page
 		$this->display('full-record.tpl', $titleField);

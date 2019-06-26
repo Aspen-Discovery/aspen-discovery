@@ -42,10 +42,7 @@ abstract class ObjectEditor extends Admin_Admin
 				$this->viewIndividualObject($structure);
 			}
 		}
-		$interface->assign('sidebar', 'Search/home-sidebar.tpl');
-		$interface->setPageTitle($this->getPageTitle());
-		$interface->display('layout.tpl');
-
+		$this->display($interface->getTemplate(), $this->getPageTitle(), 'Search/home-sidebar.tpl');
 	}
 	/**
 	 * The class name of the object which is being edited
@@ -79,7 +76,7 @@ abstract class ObjectEditor extends Admin_Admin
 
 	function getExistingObjectByPrimaryKey($objectType, $value){
 		$primaryKeyColumn = $this->getPrimaryKeyColumn();
-		/** @var DB_DataObject $curLibrary */
+		/** @var DataObject $curLibrary */
 		$curLibrary = new $objectType();
 		$curLibrary->$primaryKeyColumn = $value;
 		$curLibrary->find();
@@ -93,7 +90,7 @@ abstract class ObjectEditor extends Admin_Admin
 	function getExistingObjectById($id){
 		$objectType = $this->getObjectType();
 		$idColumn = $this->getIdKeyColumn();
-		/** @var DB_DataObject $curLibrary */
+		/** @var DataObject $curLibrary */
 		$curLibrary = new $objectType;
 		$curLibrary->$idColumn = $id;
 		$curLibrary->find();
@@ -107,7 +104,7 @@ abstract class ObjectEditor extends Admin_Admin
 
 	function insertObject($structure){
 		$objectType = $this->getObjectType();
-		/** @var DB_DataObject $newObject */
+		/** @var DataObject $newObject */
 		$newObject = new $objectType;
 		//Check to see if we are getting default values from the
 		$validationResults = $this->updateFromUI($newObject, $structure);
@@ -115,8 +112,8 @@ abstract class ObjectEditor extends Admin_Admin
 			$ret = $newObject->insert();
 			if (!$ret) {
 				global $logger;
-				if ($newObject->_lastError) {
-					$errorDescription = $newObject->_lastError->getUserInfo();
+				if ($newObject->getLastError()) {
+					$errorDescription = $newObject->getLastError();
 				} else {
 					$errorDescription = 'Unknown error';
 				}
@@ -124,7 +121,7 @@ abstract class ObjectEditor extends Admin_Admin
 				@session_start();
 				$_SESSION['lastError'] = "An error occurred inserting {$this->getObjectType()} <br/>{$errorDescription}";
 
-				$logger->log(mysql_error(), Logger::LOG_DEBUG);
+				$logger->log($errorDescription, Logger::LOG_DEBUG);
 				return false;
 			}
 		} else {
@@ -264,7 +261,12 @@ abstract class ObjectEditor extends Admin_Admin
 		die();
 	}
 
-	function getRedirectLocation($objectAction, $curObject){
+	/**
+	 * @param string $objectAction
+	 * @param DataObject $curObject
+	 * @return string|null
+	 */
+	function getRedirectLocation(/** @noinspection PhpUnusedParameterInspection */$objectAction, $curObject){
 		return null;
 	}
 	function showReturnToList(){
@@ -302,7 +304,11 @@ abstract class ObjectEditor extends Admin_Admin
 		return array();
 	}
 
-	function getAdditionalObjectActions($existingObject){
+	/**
+	 * @param DataObject $existingObject
+	 * @return array
+	 */
+	function getAdditionalObjectActions(/** @noinspection PhpUnusedParameterInspection */ $existingObject){
 		return array();
 	}
 

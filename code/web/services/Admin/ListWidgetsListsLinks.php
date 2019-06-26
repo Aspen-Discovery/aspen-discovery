@@ -34,8 +34,7 @@ class ListWidgetsListsLinks extends Admin_Admin {
 				$this->launchEdit($_REQUEST['widgetId'], $_REQUEST['widgetListId']);
 				break;
 		}
-		$interface->assign('sidebar', 'Search/home-sidebar.tpl');
-		$interface->display('layout.tpl');
+		$this->display('listWidgetListLinks.tpl', 'List Widget Links');
 	}
 
 
@@ -83,7 +82,6 @@ class ListWidgetsListsLinks extends Admin_Admin {
 	private function launchEdit($widgetId, $widgetListId)
 	{
 		global $interface;
-		$interface->setPageTitle('List Widgets');
 
 		//Get Info about the Widget
 		$widget = new ListWidget();
@@ -110,7 +108,6 @@ class ListWidgetsListsLinks extends Admin_Admin {
 			$availableLinks[$listWidgetLinks->id] = clone($listWidgetLinks);
 		}
 		$interface->assign('availableLinks', $availableLinks);
-		$interface->setTemplate('listWidgetListLinks.tpl');
 	}
 
 	private function setRequestValues($id, $name, $listWidgetListsId, $link, $weight)

@@ -109,7 +109,6 @@ class EditList extends Action
 
 		// Send list to template so title/description can be displayed:
 		$interface->assign('list', $list);
-		$interface->setTemplate('editList.tpl');
-		$interface->display('layout.tpl');
+		$this->display('editList.tpl', 'Edit List');
 	}
 }

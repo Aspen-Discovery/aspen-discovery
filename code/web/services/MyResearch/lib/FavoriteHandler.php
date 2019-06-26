@@ -30,16 +30,16 @@
  */
 class FavoriteHandler
 {
- /** @var UserList */
+    /** @var UserList */
 	private $list;
 	/** @var User */
 	private $user;
 	private $listId;
 	private $allowEdit;
-	private $favorites = array(),
-					$ids = array(),  //TODO: replace all uses of $this->ds with $this->favorites
-					$catalogIds = array(),
-					$archiveIds = array();
+	private $favorites = array();
+	private $ids = array();  //TODO: replace all uses of $this->ids with $this->favorites
+	private $catalogIds = array();
+	private $archiveIds = array();
 	private $defaultSort = 'dateAdded'; // initial setting (Use a userlist sorting option initially)
 	private $sort;
 	private $isUserListSort; // true for sorting options not done by Solr

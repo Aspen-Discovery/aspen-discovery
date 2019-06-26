@@ -3,14 +3,14 @@
 		{if count($relatedContentTypes) == 0 && count($relatedProjectsLibrary) == 0 && count($relatedProjectsOther) == 0}
 			<div class="row">
 				<div class="col-xs-12">
-					No content is available in the archive yet, please check back later.
+					{translate text="no_archive_content" defaultText="No content is available in the archive yet, please check back later."}
 				</div>
 			</div>
 		{else}
 			{if count($relatedProjectsLibrary) > 0}
 				<div class="row">
 					<div class="col-xs-12">
-						<h3><a href="{$libraryProjectsUrl}">Collections from {$archiveName}</a></h3>
+						<h3><a href="{$libraryProjectsUrl}">{translate text="Collections from %1%" 1=$archiveName}</a></h3>
 						<div id="relatedProjectScroller" class="jcarousel-wrapper">
 							<a href="#" class="jcarousel-control-prev"><i class="glyphicon glyphicon-chevron-left"></i></a>
 							<a href="#" class="jcarousel-control-next"><i class="glyphicon glyphicon-chevron-right"></i></a>
@@ -37,7 +37,7 @@
 			{if count($relatedProjectsOther) > 0}
 				<div class="row">
 					<div class="col-xs-12">
-						<h3><a href="{$otherProjectsUrl}">{if count($relatedProjectsLibrary) > 0}More collections{else}Collections{/if} from the archive</a></h3>
+						<h3><a href="{$otherProjectsUrl}">{if count($relatedProjectsLibrary) > 0}{translate text="More collections from the archive"}{else}{translate text="Collections from the archive"}{/if}</a></h3>
 						<div id="relatedProjectOtherScroller" class="jcarousel-wrapper">
 							<a href="#" class="jcarousel-control-prev"><i class="glyphicon glyphicon-chevron-left"></i></a>
 							<a href="#" class="jcarousel-control-next"><i class="glyphicon glyphicon-chevron-right"></i></a>
@@ -63,7 +63,7 @@
 
 			<div class="row">
 				<div class="col-xs-12">
-					<h3>Types of materials in the archive</h3>
+					<h3>{translate text="Types of materials in the archive"}</h3>
 					<div id="relatedContentTypesContainer" class="jcarousel-wrapper">
 						<a href="#" class="jcarousel-control-prev"><i class="glyphicon glyphicon-chevron-left"></i></a>
 						<a href="#" class="jcarousel-control-next"><i class="glyphicon glyphicon-chevron-right"></i></a>

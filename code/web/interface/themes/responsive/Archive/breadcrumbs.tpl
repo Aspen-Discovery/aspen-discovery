@@ -2,18 +2,16 @@
 	{if $lastSearch}
 		<a href="{$lastSearch|escape}#record{$id|escape:"url"}">{translate text="Archive Search Results"}</a> <span class="divider">&raquo;</span>
 	{else}
-		<a href="{$path}/Archive/Home">Local Digital Archive</a> <span class="divider">&raquo;</span>
+		<a href="{$path}/Archive/Home">{translate text="Local Digital Archive"}</a> <span class="divider">&raquo;</span>
 	{/if}
-	{if $breadcrumbText}
-		<em>{$breadcrumbText|truncate:30:"..."|escape}</em> <span class="divider">&raquo;</span>
+	{if $pageTitleShort}
+		<em>{$pageTitleShort}</em> <span class="divider">&raquo;</span>
 	{/if}
 	{if !empty($recordCount)}
 		{if $displayMode == 'covers'}
-			There are {$recordCount|number_format} total results.
+			{translate text="There are %1% total results" 1=$recordCount|number_format}.
 		{else}
-			{translate text="Showing"}
-			{$recordStart} - {$recordEnd}
-			{translate text='of'} {$recordCount|number_format}
+			{translate text="Showing %1% - %2% of %3%" 1=$recordStart 2=$recordEnd 3=$recordCount|number_format}
 		{/if}
 	{/if}
 {/strip}

@@ -56,11 +56,7 @@ class GroupedWork_Home extends Action{
 		$interface->assign('semanticData', json_encode($recordDriver->getSemanticData()));
 		$timer->logTime('Loaded semantic data');
 
-		// Send down text for inclusion in breadcrumbs
-		$interface->assign('breadcrumbText', $recordDriver->getBreadcrumb());
-		$timer->logTime('Loaded breadcrumbs');
-
 		// Display Page
-		$this->display('full-record.tpl', $recordDriver->getTitle());
+		$this->display('full-record.tpl', $recordDriver->getTitle(),'Search/home-sidebar.tpl', false);
 	}
 }

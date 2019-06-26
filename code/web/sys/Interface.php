@@ -268,14 +268,29 @@ class UInterface extends Smarty
 		$this->assign('pageTemplate', $tpl);
 	}
 
-	function setPageTitle($title)
+	/**
+	 * @return string|null
+	 */
+	function getTemplate(){
+		return $this->getVariable('pageTemplate');
+	}
+
+	function setPageTitle($title, $translateTitle = true)
 	{
 		//Marmot override, add the name of the site to the title unless we are using the mobile interface.
-		$this->assign('pageTitleShort', $title);
-		if ($this->isMobile){
-			$this->assign('pageTitle', $title);
+		if ($translateTitle){
+			$translatedTitle = translate($title);
+			$translatedTitleAttribute = translate(['text'=>$title, 'inAttribute'=>true]);
 		}else{
-			$this->assign('pageTitle', $title . ' | ' . $this->get_template_vars('librarySystemName'));
+			$translatedTitle = $title;
+			$translatedTitleAttribute = $title;
+		}
+		$this->assign('pageTitleShort', $translatedTitle);
+		$this->assign('pageTitleShortAttribute', $translatedTitleAttribute);
+		if ($this->isMobile){
+			$this->assign('pageTitle', $translatedTitle);
+		}else{
+			$this->assign('pageTitle', $translatedTitle . ' | ' . $this->get_template_vars('librarySystemName'));
 		}
 	}
 

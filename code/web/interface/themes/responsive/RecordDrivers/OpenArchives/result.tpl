@@ -29,7 +29,7 @@
 		{if !empty($summSnippets)}
 			{foreach from=$summSnippets item=snippet}
 				<div class="row">
-					<div class="result-label col-tn-3 col-xs-3">{translate text=$snippet.caption}: </div>
+					<div class="result-label col-tn-3 col-xs-3">{translate text=$snippet.caption} </div>
 					<div class="result-value col-tn-9 col-xs-9">
 						{if !empty($snippet.snippet)}<span class="quotestart">&#8220;</span>...{$snippet.snippet|highlight}...<span class="quoteend">&#8221;</span><br />{/if}
 					</div>
@@ -39,7 +39,7 @@
 
 		{if !empty($type)}
 			<div class="row">
-				<div class="result-label col-tn-3">Type: </div>
+				<div class="result-label col-tn-3">{translate text="Type"} </div>
 				<div class="result-value col-tn-8 notranslate">
 					{implode subject=$type}
 				</div>
@@ -48,7 +48,7 @@
 
 		{if !empty($source)}
 			<div class="row">
-				<div class="result-label col-tn-3">Source: </div>
+				<div class="result-label col-tn-3">{translate text="Source"} </div>
 				<div class="result-value col-tn-8 notranslate">
 					{implode subject=$source glue="<br/>"}
 				</div>
@@ -57,7 +57,7 @@
 
 		{if !empty($publisher)}
 			<div class="row">
-				<div class="result-label col-tn-3">Publisher: </div>
+				<div class="result-label col-tn-3">{translate text="Publisher"} </div>
 				<div class="result-value col-tn-8 notranslate">
 					{implode subject=$publisher}
 				</div>
@@ -66,7 +66,7 @@
 
 		{if !empty($date)}
 			<div class="row">
-				<div class="result-label col-tn-3">Date: </div>
+				<div class="result-label col-tn-3">{translate text="Date"} </div>
 				<div class="result-value col-tn-8 notranslate">
 					{implode subject=$date}
 				</div>
@@ -76,7 +76,7 @@
 		{* Description Section *}
 		{if $description}
 			<div class="row visible-xs">
-				<div class="result-label col-tn-3 col-xs-3">Description:</div>
+				<div class="result-label col-tn-3 col-xs-3">{translate text="Description"}</div>
 				<div class="result-value col-tn-9 col-xs-9"><a id="descriptionLink{$resultIndex|escape}" href="#" onclick="$('#descriptionValue{$resultIndex|escape},#descriptionLink{$resultIndex|escape}').toggleClass('hidden-xs');return false;">Click to view</a></div>
 			</div>
 

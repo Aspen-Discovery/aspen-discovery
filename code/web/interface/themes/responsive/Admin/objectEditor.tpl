@@ -11,9 +11,9 @@
 		{/if}
 		<p>
 			{if $showReturnToList}
-				<a class="btn btn-default" href='{$path}/{$module}/{$toolName}?objectAction=list'>Return to List</a>
+				<a class="btn btn-default" href='{$path}/{$module}/{$toolName}?objectAction=list'>{translate text="Return to List"}</a>
 			{/if}
-			{if $id > 0 && $canDelete}<a class="btn btn-danger" href='{$path}/{$module}/{$toolName}?id={$id}&amp;objectAction=delete' onclick='return confirm("Are you sure you want to delete this {$objectType}?")'>Delete</a>{/if}
+			{if $id > 0 && $canDelete}<a class="btn btn-danger" href='{$path}/{$module}/{$toolName}?id={$id}&amp;objectAction=delete' onclick='return confirm("Are you sure you want to delete this {$objectType}?")'>{translate text="Delete"}</a>{/if}
 		</p>
 		<div class="btn-group">
 			{foreach from=$additionalObjectActions item=action}

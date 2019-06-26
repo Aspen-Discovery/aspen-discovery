@@ -1,7 +1,4 @@
 {strip}
-	{*<h2>
-		{$pageTitleShort}
-	</h2>*}
 	<div class="result-head">
 		{* User's viewing mode toggle switch *}
 		{*

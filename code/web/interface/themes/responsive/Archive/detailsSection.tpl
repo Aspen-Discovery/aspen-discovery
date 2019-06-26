@@ -1,7 +1,7 @@
 {strip}
 	{foreach from=$creators item=entity}
 		<div class="row">
-			<div class="result-label col-sm-4">{if $entity.role}{$entity.role|ucwords}:{/if}</div>
+			<div class="result-label col-sm-4">{if $entity.role}{$entity.role|translate|ucwords}:{/if}</div>
 			<div class="result-value col-sm-8">
 				<a href='{$entity.link}'>
 					{$entity.label}
@@ -17,7 +17,7 @@
 		{foreach from=$marriages item=marriage}
 			<div class="row">
 				<div class="result-label col-sm-4">
-					Married
+					{translate text="Married"}
 				</div>
 				<div class="result-value col-sm-8">
 					{$marriage.spouseName}{if $marriage.formattedMarriageDate} - {$marriage.formattedMarriageDate}{/if}
@@ -32,7 +32,7 @@
 	{* Physical Description *}
 	{if !empty($physicalExtents)}
 		<div class="row">
-			<div class="result-label col-sm-4">Physical Description: </div>
+			<div class="result-label col-sm-4">{translate text="Physical Description"} </div>
 			<div class="result-value col-sm-8">
 				{foreach from=$physicalExtents item=extent}
 					{if $extent}
@@ -46,7 +46,7 @@
 	{* Date Created *}
 	{if $dateCreated}
 		<div class="row">
-			<div class="result-label col-sm-4">Date Created: </div>
+			<div class="result-label col-sm-4">{translate text="Date Created"} </div>
 			<div class="result-value col-sm-8">
 				{$dateCreated}
 			</div>
@@ -55,7 +55,7 @@
 
 	{if $dateIssued}
 		<div class="row">
-			<div class="result-label col-sm-4">Date of Publication: </div>
+			<div class="result-label col-sm-4">{translate text="Date of Publication"} </div>
 			<div class="result-value col-sm-8">
 				{$dateIssued}
 			</div>
@@ -64,7 +64,7 @@
 
 	{if $language}
 		<div class="row">
-			<div class="result-label col-sm-4">Language: </div>
+			<div class="result-label col-sm-4">{translate text="Language"} </div>
 			<div class="result-value col-sm-8">
 				{$language}
 			</div>

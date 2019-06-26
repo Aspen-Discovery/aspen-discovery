@@ -75,12 +75,10 @@ class GroupedWork_Series extends Action
 
 		$interface->assign('recordDriver', $recordDriver);
 
-		$interface->assign('breadcrumbText', $seriesTitle);
-
 		$this->setShowCovers();
 
 		// Display Page
-		$this->display('view-series.tpl', $seriesTitle);
+		$this->display('view-series.tpl', $seriesTitle,'Search/home-sidebar.tpl', false);
 	}
 
 }

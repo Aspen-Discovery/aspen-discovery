@@ -8,8 +8,6 @@ class IndexingStats extends Admin_Admin{
 		global $interface;
 		global $configArray;
 
-		$interface->setPageTitle('Indexing Statistics');
-
 		//Load the latest indexing stats
 		$baseDir = dirname($configArray['Reindex']['marcPath']);
 
@@ -53,9 +51,7 @@ class IndexingStats extends Admin_Admin{
 			$interface->assign('noStatsFound', true);
 		}
 
-		$interface->assign('sidebar', 'Search/home-sidebar.tpl');
-		$interface->setTemplate('reindexStats.tpl');
-		$interface->display('layout.tpl');
+		$this->display('reindexStats.tpl', 'Indexing Statistics');
 	}
 
 	function getAllowableRoles(){

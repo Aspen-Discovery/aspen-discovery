@@ -163,10 +163,7 @@ class MaterialsRequest_SummaryReport extends Admin_Admin {
 			$this->generateGraph($periodData, $statuses);
 		}
 
-		$interface->setTemplate('summaryReport.tpl');
-		$interface->assign('sidebar', 'Search/home-sidebar.tpl');
-		$interface->setPageTitle('Materials Request Summary Report');
-		$interface->display('layout.tpl');
+		$this->display('summaryReport.tpl', 'Materials Request Summary Report');
 	}
 
 	function exportToExcel($periodData, $statuses){

@@ -1,8 +1,8 @@
 {strip}
 	{if count($libraryLocations) > 1}
-		<form role="from">
+		<form role="form">
 			<div class="form-group">
-				<label for="selectLibrary">Select a Location</label>
+				<label for="selectLibrary">{translate text="Select a Location"}</label>
 				<select name="selectLibrary" id="selectLibrary"
 				        onchange="return AspenDiscovery.showLocationHoursAndMap();" class="form-control">
 					{foreach from=$libraryLocations item=curLocation}
@@ -27,7 +27,7 @@
 								<address>{$curLocation.address}
 									{if !empty($curLocation.map_link)}
 										<br/>
-									<a href="{$curLocation.map_link}">Directions</a>{/if}
+									<a href="{$curLocation.map_link}">{translate text="Directions"}</a>{/if}
 								</address>
 							</dd>
 						{/if}

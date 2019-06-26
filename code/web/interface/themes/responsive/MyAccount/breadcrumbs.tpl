@@ -1,9 +1,7 @@
 {strip}
 <a href="{$path}/MyAccount/Home">{translate text='Your Account'}</a> <span class="divider">&raquo;</span>
 {if !empty($pageTitleShort)}
-	<em>{$pageTitleShort|translate}</em>
-{else}
-	<em>{$pageTemplate|replace:'.tpl':''}</em>
+	<em>{$pageTitleShort}</em>
 {/if}
 <span class="divider"> &raquo; </span>
 {if !empty($recordCount)}

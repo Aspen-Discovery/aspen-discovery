@@ -8,7 +8,6 @@ class eContentSupport extends Action
 	{
 		global $interface;
 		global $configArray;
-		$interface->setPageTitle('eContent Support');
 
 		if (isset($_REQUEST['submit'])){
 			//Email the library with details of the support request

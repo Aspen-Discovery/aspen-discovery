@@ -34,13 +34,14 @@ abstract class MyAccount extends Action
 	}
 
 	/**
-	 * @param string $mainContentTemplate  Name of the SMARTY template file for the main content of the Account Page
-	 * @param string $pageTitle            What to display is the html title tag, gets ran through the translator
-	 * @param string|null $sidebar         Sets the sidebar on the page to be displayed
+	 * @param string $mainContentTemplate Name of the SMARTY template file for the main content of the Account Page
+	 * @param string $pageTitle What to display is the html title tag, gets ran through the translator
+	 * @param string|null $sidebar Sets the sidebar on the page to be displayed
+	 * @param bool $translateTitle
 	 */
-	function display($mainContentTemplate, $pageTitle='My Account', $sidebar='Search/home-sidebar.tpl') {
+	function display($mainContentTemplate, $pageTitle='My Account', $sidebar='Search/home-sidebar.tpl', $translateTitle = true) {
 		global $interface;
 		$interface->setPageTitle($pageTitle);
-		parent::display($mainContentTemplate, $pageTitle, $sidebar);
+		parent::display($mainContentTemplate, $pageTitle, $sidebar, $translateTitle);
 	}
 }

@@ -76,11 +76,7 @@ class MyAccount_SelectInterface extends Action{
 			die();
 		}
 
-		//Build the actual view
-		$interface->setTemplate('selectInterface.tpl');
-		$interface->setPageTitle('Select Library Catalog');
-
 		// Display Page
-		$interface->display('layout.tpl');
+		$this->display('selectInterface.tpl', 'Select Library Catalog', '');
 	}
 }

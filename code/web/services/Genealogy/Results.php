@@ -97,17 +97,11 @@ class Genealogy_Results extends Action {
 
 		// Set Interface Variables
 		//   Those we can construct BEFORE the search is executed
-		$interface->setPageTitle('Search Results');
 		$interface->assign('sortList',   $searchObject->getSortList());
 		$interface->assign('rssLink',    $searchObject->getRSSUrl());
 		$interface->assign('excelLink',  $searchObject->getExcelUrl());
 
 		$displayQuery = $searchObject->displayQuery();
-		$pageTitle = $displayQuery;
-		if (strlen($pageTitle) > 20){
-			$pageTitle = substr($pageTitle, 0, 20) . '...';
-		}
-		$pageTitle .= ' | Search Results';
 
 		$timer->logTime('Setup Search');
 
@@ -253,6 +247,6 @@ class Genealogy_Results extends Action {
 		// Done, display the page
 		$interface->assign('sectionLabel', 'Genealogy Database');
 		$interface->assign('sidebar', 'Search/results-sidebar.tpl');
-		$this->display($searchObject->getResultTotal() ? 'list.tpl' : 'list-none.tpl', $pageTitle, 'Search/results-sidebar.tpl');
+		$this->display($searchObject->getResultTotal() ? 'list.tpl' : 'list-none.tpl', $displayQuery, 'Search/results-sidebar.tpl', false);
 	}
 }

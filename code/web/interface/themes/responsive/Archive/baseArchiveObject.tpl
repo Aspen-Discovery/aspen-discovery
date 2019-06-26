@@ -18,7 +18,7 @@
 			<div id="main-content" class="col-xs-8 col-sm-7 col-md-8 col-lg-9">
 				{if count($alternateNames) > 0}
 					<div class="row">
-						<div class="result-label col-sm-4">Alternate Name{if count($alternateNames) > 1}s{/if}: </div>
+						<div class="result-label col-sm-4">{if count($alternateNames) > 1}{translate text="Alternate Names"}{else}{translate text="Alternate Name"}{/if} </div>
 						<div class="result-value col-sm-8">
 							{foreach from=$alternateNames item=alternateName}
 								{$alternateName}<br/>
@@ -29,7 +29,7 @@
 
 				{if strlen($placeStartDate)}
 					<div class="row">
-						<div class="result-label col-sm-4">Founded: </div>
+						<div class="result-label col-sm-4">{translate text="Founded"} </div>
 						<div class="result-value col-sm-8">
 							{$placeStartDate}
 						</div>
@@ -38,7 +38,7 @@
 
 				{if strlen($placeEndDate)}
 					<div class="row">
-						<div class="result-label col-sm-4">Dissolved: </div>
+						<div class="result-label col-sm-4">{translate text="Dissolved"} </div>
 						<div class="result-value col-sm-8">
 							{$placeEndDate}
 						</div>
@@ -47,7 +47,7 @@
 
 				{if strlen($organizationStartDate)}
 					<div class="row">
-						<div class="result-label col-sm-4">Established: </div>
+						<div class="result-label col-sm-4">{translate text="Established"} </div>
 						<div class="result-value col-sm-8">
 							{$organizationStartDate}
 						</div>
@@ -56,7 +56,7 @@
 
 				{if strlen($organizationEndDate)}
 					<div class="row">
-						<div class="result-label col-sm-4">Dissolved: </div>
+						<div class="result-label col-sm-4">{translate text="Dissolved"} </div>
 						<div class="result-value col-sm-8">
 							{$organizationEndDate}
 						</div>
@@ -65,7 +65,7 @@
 
 				{if $eventStartDate || $eventEndDate}
 					<div class="row">
-						<div class="result-label col-sm-4">Date: </div>
+						<div class="result-label col-sm-4">{translate text="Date"} </div>
 						<div class="result-value col-sm-8">
 							{$eventStartDate} {if $eventEndDate} to {$eventEndDate}{/if}
 						</div>
@@ -74,14 +74,14 @@
 
 				{if $relatedPlaces && $recordDriver->getType() == 'event'}
 					<div class="row">
-						<div class="result-label col-sm-4">Took place at: </div>
+						<div class="result-label col-sm-4">{translate text="Took place at"} </div>
 						<div class="result-value col-sm-8">
 							{foreach from=$relatedPlaces item=entity}
 								<a href='{$entity.link}'>
 									{$entity.label}
 								</a>
 								{if $entity.role}
-									&nbsp;({$entity.role})
+									&nbsp;({$entity.role|translate})
 								{/if}
 								{if $entity.note}
 									&nbsp;- {$entity.note}
@@ -94,7 +94,7 @@
 
 				{if $primaryUrl}
 					<div class="row">
-						<div class="result-label col-sm-4">Website: </div>
+						<div class="result-label col-sm-4">{translate text="Website"} </div>
 						<div class="result-value col-sm-8">
 							<a href="{$primaryUrl}">{$primaryUrl}</a>
 						</div>
@@ -103,7 +103,7 @@
 
 				{if $addressInfo && $addressInfo.hasDetailedAddress}
 					<div class="row">
-						<div class="result-label col-sm-4">Address: </div>
+						<div class="result-label col-sm-4">{translate text="Address"} </div>
 						<div class="result-value col-sm-8">
 							{$addressInfo.addressStreetNumber} {$addressInfo.addressStreet}
 							{if $addressInfo.address2}
@@ -133,7 +133,7 @@
 				{if $mapsKey && $addressInfo.latitude && $addressInfo.longitude}
 					{if $addressInfo.latitude && $addressInfo.longitude}
 						<div class="row">
-							<div class="result-label col-sm-4">Location: </div>
+							<div class="result-label col-sm-4">{translate text="Location"} </div>
 							<div class="result-value col-sm-8">
 								<iframe width="100%" height="" frameborder="0" style="border:0" src="https://www.google.com/maps/embed/v1/place?q={$addressInfo.latitude|escape}%2C%20{$addressInfo.longitude|escape}&key={$mapsKey}" allowfullscreen></iframe>
 							</div>

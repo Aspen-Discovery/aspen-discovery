@@ -3,8 +3,8 @@
 {else}
 	EBSCO Research <span class="divider">&raquo;</span>
 {/if}
-{if $breadcrumbText}
-	<em>{$breadcrumbText|truncate:30:"..."|escape}</em> <span class="divider">&raquo;</span>
+{if $pageTitleShort}
+	<em>{$pageTitleShort}</em> <span class="divider">&raquo;</span>
 {/if}
 {if !empty($recordCount)}
 	{translate text="Showing"}

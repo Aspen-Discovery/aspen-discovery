@@ -10,8 +10,6 @@ class EBSCO_Results extends Action{
 		$searchObject = EDS_API::getInstance();
 		$timer->logTime('Include search engine');
 
-		$interface->setPageTitle('EBSCO Search Results');
-
 		$sort = isset($_REQUEST['sort']) ? $_REQUEST['sort'] : null;
 		$filters = isset($_REQUEST['filter']) ? $_REQUEST['filter'] : array();
 		$searchObject->getSearchResults($_REQUEST['lookfor'], $sort, $filters);
@@ -62,9 +60,8 @@ class EBSCO_Results extends Action{
 		$interface->assign('exploreMoreSearchTerm', $exploreMoreSearchTerm);
 
 		$displayTemplate = 'EBSCO/list-list.tpl'; // structure for regular results
-		$interface->assign('breadcrumbText', $searchObject->displayQuery());
 		$interface->assign('subpage', $displayTemplate);
 		$interface->assign('sectionLabel', 'EBSCO Research Databases');
-		$this->display($summary['resultTotal'] > 0 ? 'list.tpl' : 'list-none.tpl', $pageTitle, 'EBSCO/results-sidebar.tpl');
+		$this->display($summary['resultTotal'] > 0 ? 'list.tpl' : 'list-none.tpl', $pageTitle, 'EBSCO/results-sidebar.tpl', false);
 	}
 }

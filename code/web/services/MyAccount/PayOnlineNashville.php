@@ -89,10 +89,7 @@ $receipt .= $process->ProcessPaymentResult->TotalAmount;
 		}
 
 		//Present a success or failure message
-		$interface->setPageTitle('Payment Results');
-		$interface->assign('sidebar', 'Search/home-sidebar.tpl');
-		$interface->setTemplate('onlinePaymentResult.tpl');
-		$interface->display('layout.tpl');
+		$this->display('onlinePaymentResult.tpl', 'Payment Results');
 	}
 
 	function convert_bill($response) {

@@ -14,10 +14,6 @@ class MaterialsRequest_Home extends Action
 
 	function launch()
 	{
-		global $interface;
-
-		$interface->setTemplate('home.tpl');
-		
-		$interface->display('layout.tpl');
+		$this->display('home.tpl', 'Materials Request');
 	}
 }

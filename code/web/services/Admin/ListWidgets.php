@@ -54,16 +54,13 @@ class Admin_ListWidgets extends ObjectEditor {
 		return 'id';
 	}
 	function canAddNew(){
-		$user = UserAccount::getLoggedInUser();
 		return UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryAdmin') || UserAccount::userHasRole('contentEditor') || UserAccount::userHasRole('libraryManager') || UserAccount::userHasRole('locationManager');
 	}
 	function canDelete(){
-		$user = UserAccount::getLoggedInUser();
 		return UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryAdmin');
 	}
 	function launch() {
 		global $interface;
-		$user = UserAccount::getLoggedInUser();
 
 		$interface->assign('canAddNew', $this->canAddNew());
 		$interface->assign('canDelete', $this->canDelete());
@@ -157,9 +154,7 @@ class Admin_ListWidgets extends ObjectEditor {
 			}
 		}
 
-		$interface->assign('sidebar', 'Search/home-sidebar.tpl');
-		$interface->setPageTitle('List Widgets');
-		$interface->display('layout.tpl');
+		$this->display($interface->getTemplate(), 'List Widgets');
 
 	}
 }

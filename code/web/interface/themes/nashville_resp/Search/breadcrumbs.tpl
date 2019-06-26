@@ -1,7 +1,7 @@
 {if $searchId}
 	<li>{translate text="Search"}: {$lookfor|capitalize|escape:"html"} <span class="divider">&raquo;</span></li>
-{elseif $pageTemplate!=""}
-	<li>{translate text=$pageTemplate|replace:'.tpl':''|capitalize|translate} <span class="divider">&raquo;</span></li>
+{elseif $pageTitleShort}
+	<li>{$pageTitleShort} <span class="divider">&raquo;</span></li>
 {/if}
 
 {* Moved result-head info here from list.tpl - JE 6/18/15 *}

@@ -4,7 +4,6 @@
 		{include file="Archive/search-results-navigation.tpl"}
 		<h2>
 			{$title}
-			{*{$title|escape} // plb 3/8/2017 not escaping because some titles use &amp; *}
 		</h2>
 
 		{if $canView}
@@ -18,10 +17,10 @@
 		{/if}
 		<div id="download-options">
 			{if $allowRequestsForArchiveMaterials}
-				<a class="btn btn-default" href="{$path}/Archive/RequestCopy?pid={$pid}">Request Copy</a>
+				<a class="btn btn-default" href="{$path}/Archive/RequestCopy?pid={$pid}">{translate text="Request Copy"}</a>
 			{/if}
 			{if $showClaimAuthorship}
-				<a class="btn btn-default" href="{$path}/Archive/ClaimAuthorship?pid={$pid}">Claim Authorship</a>
+				<a class="btn btn-default" href="{$path}/Archive/ClaimAuthorship?pid={$pid}">{translate text="Claim Authorship"}</a>
 			{/if}
 			{if $showFavorites == 1}
 				<a onclick="return AspenDiscovery.Archive.showSaveToListForm(this, '{$pid|escape}');" class="btn btn-default ">{translate text='Add to favorites'}</a>

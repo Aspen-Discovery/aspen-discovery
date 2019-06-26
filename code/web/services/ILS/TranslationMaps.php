@@ -16,8 +16,7 @@ class ILS_TranslationMaps extends ObjectEditor {
 				$interface->assign('additionalObjectActions', $this->getAdditionalObjectActions($translationMap));
 			}
 			$interface->assign('id', $id);
-			$pageTitleShort = "Import Translation Map Data";
-			$this->display('../ILS/importTranslationMapData.tpl', $pageTitleShort);
+			$this->display('../ILS/importTranslationMapData.tpl', "Import Translation Map Data");
 			exit();
 		}elseif($objectAction == 'doAppend' || $objectAction == 'doReload'){
 			$id = $_REQUEST['id'];
@@ -30,12 +29,15 @@ class ILS_TranslationMaps extends ObjectEditor {
 				$newValues = array();
 				if ($objectAction == 'doReload'){
 					/** @var TranslationMapValue $value */
+					/** @noinspection PhpUndefinedFieldInspection */
 					foreach($translationMap->translationMapValues as $value){
 						$value->delete();
 					}
+					/** @noinspection PhpUndefinedFieldInspection */
 					$translationMap->translationMapValues = array();
 					$translationMap->update();
 				}else{
+					/** @noinspection PhpUndefinedFieldInspection */
 					foreach($translationMap->translationMapValues as $value){
 						$newValues[$value->value] = $value;
 					}
@@ -60,6 +62,7 @@ class ILS_TranslationMaps extends ObjectEditor {
 						$newValues[$translationMapValue->value] = $translationMapValue;
 					}
 				}
+				/** @noinspection PhpUndefinedFieldInspection */
 				$translationMap->translationMapValues = $newValues;
 				$translationMap->update();
 			}else{
@@ -76,6 +79,7 @@ class ILS_TranslationMaps extends ObjectEditor {
 			if ($translationMap->find(true)){
 				$interface->assign('id', $id);
 				$interface->assign('additionalObjectActions', $this->getAdditionalObjectActions($translationMap));
+				/** @noinspection PhpUndefinedFieldInspection */
 				$interface->assign('translationMapValues', $translationMap->translationMapValues);
 				$this->display('../ILS/viewTranslationMapAsIni.tpl', 'View Translation Map Data');
 				exit();
@@ -123,13 +127,16 @@ class ILS_TranslationMaps extends ObjectEditor {
 		return 'id';
 	}
 	function canAddNew(){
-		$user = UserAccount::getLoggedInUser();
 		return UserAccount::userHasRole('opacAdmin');
 	}
 	function canDelete(){
-		$user = UserAccount::getLoggedInUser();
 		return UserAccount::userHasRole('opacAdmin');
 	}
+
+	/**
+	 * @param TranslationMap $existingObject
+	 * @return array
+	 */
 	function getAdditionalObjectActions($existingObject){
 		$actions = array();
 		if ($existingObject && $existingObject->id != ''){
@@ -144,15 +151,6 @@ class ILS_TranslationMaps extends ObjectEditor {
 		}
 
 		return $actions;
-	}
-	//TODO Add to ObjectEditor Class
-	function display($mainContentTemplate, $pageTitle, $sidebarTemplate='Search/home-sidebar.tpl') {
-		global $interface;
-		if (!empty($sidebarTemplate)) $interface->assign('sidebar', $sidebarTemplate);
-		$interface->setTemplate($mainContentTemplate);
-		$interface->setPageTitle($pageTitle);
-		$interface->assign('moreDetailsTemplate', 'GroupedWork/moredetails-accordion.tpl');
-		$interface->display('layout.tpl');
 	}
 
 }

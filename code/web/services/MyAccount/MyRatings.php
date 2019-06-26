@@ -80,9 +80,6 @@ class MyRatings extends MyAccount{
 		$interface->assign('notInterested', $notInterested);
 		$interface->assign('showNotInterested', false);
 
-		$interface->setPageTitle('My Ratings');
-		$interface->assign('sidebar', 'Search/home-sidebar.tpl');
-		$interface->setTemplate('myRatings.tpl');
-		$interface->display('layout.tpl');
+		$this->display('myRatings.tpl', 'My Ratings', 'Search/home-sidebar.tpl');
 	}
 }

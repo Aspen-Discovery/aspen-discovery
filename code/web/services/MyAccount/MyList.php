@@ -129,7 +129,7 @@ class MyAccount_MyList extends MyAccount {
 		$favList = new FavoriteHandler($list, $listUser, $userCanEdit);
 		$favList->buildListForDisplay();
 
-		$this->display('../MyAccount/list.tpl', isset($list->title) ? $list->title : 'My List');
+		$this->display('../MyAccount/list.tpl', isset($list->title) ? $list->title : translate('My List'), 'Search/home-sidebar.tpl', false);
 	}
 
 	function bulkAddTitles($list){

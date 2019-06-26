@@ -1,7 +1,7 @@
 {if $searchId}
 	<li>{translate text="Catalog Search"} <span class="divider">&raquo;</span> <em>{$lookfor|escape:"html"}</em> <span class="divider">&raquo;</span></li>
-{elseif $pageTemplate!=""}
-	<li>{translate text=$pageTemplate|replace:'.tpl':''|translate} <span class="divider">&raquo;</span></li>
+{elseif $pageTitleShort!=""}
+	<li>{$pageTitleShort} <span class="divider">&raquo;</span></li>
 {/if}
 {if !empty($recordCount)}
 	{if $displayMode == 'covers'}

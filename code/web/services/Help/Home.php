@@ -8,7 +8,6 @@ class Help_Home extends Action
 	function launch()
 	{
 		global $interface;
-		global $configArray;
 
 		// Sanitize the topic name to include only alphanumeric characters
 		// or underscores.

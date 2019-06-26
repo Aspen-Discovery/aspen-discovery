@@ -25,7 +25,6 @@ abstract class Archive_Object extends Action {
 		global $logger;
 
 		$pageTitle = $pageTitle == null ? $this->archiveObject->label : $pageTitle;
-		$interface->assign('breadcrumbText', $pageTitle);
 
 		// Set Search Navigation
 		// Retrieve User Search History
@@ -304,7 +303,7 @@ abstract class Archive_Object extends Action {
 		$title = $this->recordDriver->getFullTitle();
 
 		$interface->assign('title', $title);
-		$interface->setPageTitle($title);
+		$interface->setPageTitle($title, false);
 
 
 		$interface->assign('original_image', $this->recordDriver->getBookcoverUrl('original'));

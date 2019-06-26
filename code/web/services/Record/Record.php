@@ -285,9 +285,6 @@ abstract class Record_Record extends Action
 
 		$this->cacheId = 'Record|' . $_GET['id'] . '|' . get_class($this);
 
-		// Send down text for inclusion in breadcrumbs
-		$interface->assign('breadcrumbText', $this->recordDriver->getBreadcrumb());
-
 		// Set AddThis User
 		$interface->assign('addThis', isset($configArray['AddThis']['key']) ?
 		$configArray['AddThis']['key'] : false);

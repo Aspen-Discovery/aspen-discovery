@@ -23,8 +23,6 @@ class MaterialsRequest_IlsRequests extends MyAccount
 			}
 			$requestTemplate = $catalogConnection->getMaterialsRequestsPage($user);
 
-			$interface->assign('pageTitleShort', 'My Materials Requests');
-
 			$title = 'My Materials Requests';
 			$this->display($requestTemplate, $title);
 		}else{

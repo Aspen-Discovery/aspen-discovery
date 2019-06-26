@@ -419,7 +419,7 @@ class Search_Results extends Action {
 
 		$interface->assign('sectionLabel', 'Library Catalog');
 		// Done, display the page
-		$this->display($searchObject->getResultTotal() ? 'list.tpl' : 'list-none.tpl', $pageTitle, 'Search/results-sidebar.tpl');
+		$this->display($searchObject->getResultTotal() ? 'list.tpl' : 'list-none.tpl', $pageTitle, 'Search/results-sidebar.tpl', false);
 	} // End launch()
 
 }

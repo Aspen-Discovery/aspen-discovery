@@ -24,7 +24,7 @@
 
 			{if $summAuthor}
 				<div class="row">
-					<div class="result-label col-tn-3 col-xs-3">Author: </div>
+					<div class="result-label col-tn-3 col-xs-3">{translate text="Author"} </div>
 					<div class="result-value col-tn-9 col-xs-9 notranslate">
 						{if is_array($summAuthor)}
 							{foreach from=$summAuthor item=author}
@@ -39,7 +39,7 @@
 
 			{if $summSeries}
 				<div class="series{$summISBN} row">
-					<div class="result-label col-xs-3">Series: </div>
+					<div class="result-label col-xs-3">{translate text="Series"} </div>
 					<div class="result-value col-xs-9">
 						<a href="{$path}/GroupedWork/{$summId}/Series">{$summSeries.seriesTitle}</a>{if $summSeries.volume} volume {$summSeries.volume}{/if}
 					</div>
@@ -48,7 +48,7 @@
 
 			{if $listEntryNotes}
 				<div class="row">
-					<div class="result-label col-md-3">Notes: </div>
+					<div class="result-label col-md-3">{translate text="Notes"} </div>
 					<div class="user-list-entry-note result-value col-md-9">
 						{$listEntryNotes}
 					</div>
@@ -96,7 +96,7 @@
 			{* Description Section *}
 			{if $summDescription}
 				<div class="row visible-xs">
-					<div class="result-label col-tn-3 col-xs-3">Description:</div>
+					<div class="result-label col-tn-3 col-xs-3">{translate text="Description"}</div>
 					<div class="result-value col-tn-9 col-xs-9"><a id="descriptionLink{$summId|escape}" href="#" onclick="$('#descriptionValue{$summId|escape},#descriptionLink{$summId|escape}').toggleClass('hidden-xs');return false;">Click to view</a></div>
 				</div>
 			{/if}

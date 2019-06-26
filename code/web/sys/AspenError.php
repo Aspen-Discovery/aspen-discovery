@@ -136,8 +136,9 @@ class AspenError extends DataObject
 
         $interface->assign('error', $this);
         $interface->assign('debug', $configArray['System']['debug']);
-        $interface->setTemplate('../error.tpl');
-        $interface->display('layout.tpl');
+	    $interface->setTemplate('../error.tpl');
+	    $interface->setPageTitle('An Error has occurred');
+	    $interface->display('layout.tpl');
 
         // Exceptions we don't want to log
         $doLog = true;

@@ -6,6 +6,6 @@ class Help_OverDriveError extends Action{
 	function launch() {
 		global $interface;
 
-		$interface->display('Help/overdriveError.tpl');
+		$this->display('Help/overdriveError.tpl', 'Error in OverDrive');
 	}
 }

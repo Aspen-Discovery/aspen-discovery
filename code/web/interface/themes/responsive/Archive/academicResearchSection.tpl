@@ -1,7 +1,7 @@
 {strip}
 	{if $researchType}
 		<div class="row">
-			<div class="result-label col-sm-4">Research Type: </div>
+			<div class="result-label col-sm-4">{translate text="Research Type"} </div>
 			<div class="result-value col-sm-8">
 				{implode subject=$researchType}
 			</div>
@@ -9,7 +9,7 @@
 	{/if}
 	{if $researchLevel}
 		<div class="row">
-			<div class="result-label col-sm-4">Research Level: </div>
+			<div class="result-label col-sm-4">{translate text="Research Level"} </div>
 			<div class="result-value col-sm-8">
 				{$researchLevel}
 			</div>
@@ -17,7 +17,7 @@
 	{/if}
 	{if $peerReview}
 		<div class="row">
-			<div class="result-label col-sm-4">Peer Reviewed? </div>
+			<div class="result-label col-sm-4">{translate text="Peer Reviewed?"} </div>
 			<div class="result-value col-sm-8">
 				{$peerReview}
 			</div>
@@ -27,7 +27,7 @@
 
 		<div class="row">
 			<div class="result-label col-sm-4">
-				Supporting Departments:
+				{translate text="Supporting Departments"}
 			</div>
 			<div class="result-value col-sm-8">
 				{foreach from=$supportingDepartments item="academicPerson"}
@@ -46,7 +46,7 @@
 
 	{if $degreeName}
 		<div class="row">
-			<div class="result-label col-sm-4">Degree Name: </div>
+			<div class="result-label col-sm-4">{translate text="Degree Name"} </div>
 			<div class="result-value col-sm-8">
 				{$degreeName}
 			</div>
@@ -54,14 +54,14 @@
 	{/if}
 	{if $degreeDiscipline}
 		<div class="row">
-			<div class="result-label col-sm-4">Degree Discipline: </div>
+			<div class="result-label col-sm-4">{translate text="Degree Discipline"} </div>
 			<div class="result-value col-sm-8">
 				{$degreeDiscipline}
 			</div>
 		</div>
 	{/if}
 	{if $defenceDate}
-		Defence Date:{$defenceDate}<br/>
+		{translate text="Defence Date "} {$defenceDate}<br/>
 	{/if}
 	{if $acceptedDate}
 		{$acceptedDate}
@@ -71,7 +71,7 @@
 
 		{if $publicationPresentation.journalTitle}
 			<div class="row">
-				<div class="result-label col-sm-4">Published in:</div>
+				<div class="result-label col-sm-4">{translate text="Published in"}</div>
 				<div class="result-value col-sm-8">
 					{if $publicationPresentation.journalTitle}
 						{$publicationPresentation.journalTitle}
@@ -96,7 +96,7 @@
 		{/if}
 		{if $publicationPresentation.conferenceName}
 			<div class="row">
-				<div class="result-label col-sm-4">Presented At:</div>
+				<div class="result-label col-sm-4">{translate text="Presented At"}</div>
 				<div class="result-value col-sm-8">
 					{if $publicationPresentation.conferenceName}
 						{$publicationPresentation.conferenceName}

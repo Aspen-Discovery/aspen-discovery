@@ -8,15 +8,16 @@ abstract class Action
     abstract function launch();
 
 	/**
-	 * @param string $mainContentTemplate  Name of the SMARTY template file for the main content of the Full Record View Pages
-	 * @param string $pageTitle            What to display is the html title tag
-	 * @param bool|string $sidebarTemplate      Sets the sidebar template, set to false or empty string for no sidebar
+	 * @param string $mainContentTemplate Name of the SMARTY template file for the main content of the Full Record View Pages
+	 * @param string $pageTitle What to display is the html title tag
+	 * @param string $sidebarTemplate Sets the sidebar template, set to false or empty string for no sidebar
+	 * @param boolean $translateTitle
 	 */
-	function display($mainContentTemplate, $pageTitle, $sidebarTemplate='Search/home-sidebar.tpl') {
+	function display($mainContentTemplate, $pageTitle, $sidebarTemplate = 'Search/home-sidebar.tpl', $translateTitle = true) {
 		global $interface;
 		if (!empty($sidebarTemplate)) $interface->assign('sidebar', $sidebarTemplate);
 		$interface->setTemplate($mainContentTemplate);
-		$interface->setPageTitle($pageTitle);
+		$interface->setPageTitle($pageTitle, $translateTitle);
 		$interface->assign('moreDetailsTemplate', 'GroupedWork/moredetails-accordion.tpl');
 		$interface->display('layout.tpl');
 	}

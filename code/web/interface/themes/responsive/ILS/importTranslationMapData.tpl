@@ -1,6 +1,4 @@
 <div id="main-content">
-	{*<h1>{pageTitleShort}</h1>*}
-
 	<div class="btn-group">
 		<a class="btn btn-sm btn-default" href="/ILS/TranslationMaps?objectAction=edit&amp;id={$id}">Edit Map</a>
 		{foreach from=$additionalObjectActions item=action}

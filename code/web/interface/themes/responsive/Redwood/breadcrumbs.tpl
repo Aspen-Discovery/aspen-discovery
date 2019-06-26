@@ -4,7 +4,7 @@
 	{else}
 		<a href="{$path}/Redwood/Home">Digital Archive</a> <span class="divider">&raquo;</span>
 	{/if}
-	{if $breadcrumbText}
-		<em>{$breadcrumbText|truncate:30:"..."|escape}</em> <span class="divider">&raquo;</span>
+	{if $pageTitleShort}
+		<em>{$pageTitleShort}</em> <span class="divider">&raquo;</span>
 	{/if}
 {/strip}

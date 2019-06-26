@@ -1,7 +1,7 @@
 {strip}
 	{if $includesStamp}
 		<div class="row">
-			<div class="result-label col-sm-4">Includes Stamp: </div>
+			<div class="result-label col-sm-4">{translate text="Includes Stamp"} </div>
 			<div class="result-value col-sm-8">
 				Yes
 			</div>
@@ -9,7 +9,7 @@
 	{/if}
 	{if $postmarks}
 		<div class="row">
-			<div class="result-label col-sm-4">Postmark: </div>
+			<div class="result-label col-sm-4">{translate text="Postmark"} </div>
 			<div class="result-value col-sm-8">
 				{foreach from=$postmarks item=postmark}
 					{if $postmark.datePostmarked}
@@ -35,7 +35,7 @@
 	{if $correspondenceRecipient}
 		<div class="relatedPlace row">
 			<div class="result-label col-sm-4">
-				Correspondence Recipient:
+				{translate text="Correspondence Recipient"}
 			</div>
 			<div class="result-value col-sm-8">
 				{if $correspondenceRecipient.link}
@@ -51,7 +51,7 @@
 
 	{if $postcardPublisherNumber}
 		<div class="row">
-			<div class="result-label col-sm-4">Postcard Publisher Number: </div>
+			<div class="result-label col-sm-4">{translate text="Postcard Publisher Number"} </div>
 			<div class="result-value col-sm-8">
 				{$postcardPublisherNumber}
 			</div>

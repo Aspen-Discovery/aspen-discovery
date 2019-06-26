@@ -1459,7 +1459,7 @@ class GroupedWorkDriver extends IndexRecordDriver{
             }
             global $searchSource;
             if ($searchSource == 'econtent'){
-                if (!$manifestation['isEContent']){
+                if (!$manifestation->isEContent()){
                     $manifestation->setHideByDefault(true);
                 }
             }

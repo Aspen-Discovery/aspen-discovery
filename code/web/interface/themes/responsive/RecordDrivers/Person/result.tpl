@@ -10,9 +10,9 @@
 		<div class="col-md-7 text-center">
 			<a href="{$path}/Person/{$summId}">
 			{if $summPicture}
-			<img src="{$path}/files/thumbnail/{$summPicture}" class="alignleft listResultImage" alt="{translate text='Picture'}"/><br />
+			<img src="{$path}/files/thumbnail/{$summPicture}" class="alignleft listResultImage" alt="{translate text='Picture' inAttribute=true}"/><br />
 			{else}
-			<img src="{$path}/interface/themes/responsive/images/person.png" class="alignleft listResultImage" alt="{translate text='No Cover Image'}"/><br />
+			<img src="{$path}/interface/themes/responsive/images/person.png" class="alignleft listResultImage" alt="{translate text='No Cover Image' inAttribute=true}"/><br />
 			{/if}
 			</a>
 		</div>
@@ -35,31 +35,31 @@
 			<div class="resultDetails col-md-9">
 				{if $birthDate}
 					<div class="row">
-						<div class='result-label col-md-3'>Born: </div>
+						<div class='result-label col-md-3'>{translate text="Born"} </div>
 						<div class="col-md-9 result-value">{$birthDate}</div>
 					</div>
 				{/if}
 				{if $deathDate}
 					<div class="row">
-						<div class='result-label col-md-3'>Died: </div>
+						<div class='result-label col-md-3'>{translate text="Died"} </div>
 						<div class="col-md-9 result-value">{$deathDate}</div>
 					</div>
 				{/if}
 				{if $numObits}
 					<div class="row">
-						<div class='result-label col-md-3'>Num. Obits: </div>
+						<div class='result-label col-md-3'>{translate text="Num. Obits"} </div>
 						<div class="col-md-9 result-value">{$numObits}</div>
 					</div>
 				{/if}
 				{if $dateAdded}
 					<div class="row">
-						<div class='result-label col-md-3'>Added: </div>
+						<div class='result-label col-md-3'>{translate text="Added"} </div>
 						<div class="col-md-9 result-value">{$dateAdded|date_format}</div>
 					</div>
 				{/if}
 				{if $lastUpdate}
 					<div class="row">
-						<div class='result-label col-md-3'>Last Update: </div>
+						<div class='result-label col-md-3'>{translate text="Last Updated"} </div>
 						<div class="col-md-9 result-value">{$lastUpdate|date_format}</div>
 					</div>
 				{/if}

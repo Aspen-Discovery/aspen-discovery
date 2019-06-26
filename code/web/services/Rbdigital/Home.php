@@ -61,7 +61,7 @@ class Rbdigital_Home extends Action{
 			$interface->assign('semanticData', json_encode($recordDriver->getSemanticData()));
 
 			// Display Page
-			$this->display('full-record.tpl', $recordDriver->getTitle());
+			$this->display('full-record.tpl', $recordDriver->getTitle(), 'Search/home-sidebar.tpl', false);
 
 		}
 	}

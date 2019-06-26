@@ -33,17 +33,5 @@
 				</div>
 			</div>
 		</div>
-
-		{*
-		Remove this since we decided not to browse by clicking on the department.  If re-enabling, need to figure out conflicts
-		with this and the browseCollectionComponent
-		<div id="related-objects-for-exhibit">
-			<div id="exhibit-results-loading" class="row" style="display: none">
-				<div class="alert alert-info">
-					Updating results, please wait.
-				</div>
-			</div>
-		</div>
-		*}
 	</div>
 {/strip}

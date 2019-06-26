@@ -84,6 +84,6 @@ class Branch extends Action{
 			$interface->assign('semanticData', json_encode($semanticData));
 		}
 
-		$this->display('branch.tpl', $location->displayName);
+		$this->display('branch.tpl', $location->displayName,'Search/home-sidebar.tpl', false);
 	}
 }

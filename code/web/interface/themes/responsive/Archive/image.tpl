@@ -4,7 +4,6 @@
 		{include file="Archive/search-results-navigation.tpl"}
 		<h2>
 			{$title}
-			{*{$title|escape} // plb 3/8/2017 not escaping because some titles use &amp; *}
 		</h2>
 
 		{if $canView}
@@ -25,21 +24,21 @@
 		<div id="download-options">
 			{if $canView}
 				{if $anonymousLcDownload || ($loggedIn && $verifiedLcDownload)}
-					<a class="btn btn-default" href="/Archive/{$pid}/DownloadLC">Download Large Image</a>
+					<a class="btn btn-default" href="/Archive/{$pid}/DownloadLC">{translate text="Download Large Image"}</a>
 				{elseif (!$loggedIn && $verifiedLcDownload)}
-					<a class="btn btn-default" onclick="return AspenDiscovery.Account.followLinkIfLoggedIn(this)" href="/Archive/{$pid}/DownloadLC">Login to Download Large Image</a>
+					<a class="btn btn-default" onclick="return AspenDiscovery.Account.followLinkIfLoggedIn(this)" href="/Archive/{$pid}/DownloadLC">{translate text="Login to Download Large Image"}</a>
 				{/if}
 				{if $anonymousMasterDownload || ($loggedIn && $verifiedMasterDownload)}
-					<a class="btn btn-default" href="/Archive/{$pid}/DownloadOriginal">Download Original Image</a>
+					<a class="btn btn-default" href="/Archive/{$pid}/DownloadOriginal">{translate text="Download Original Image"}</a>
 				{elseif (!$loggedIn && $verifiedLcDownload)}
-					<a class="btn btn-default" onclick="return AspenDiscovery.Account.followLinkIfLoggedIn(this)" href="/Archive/{$pid}/DownloadOriginal">Login to Download Original Image</a>
+					<a class="btn btn-default" onclick="return AspenDiscovery.Account.followLinkIfLoggedIn(this)" href="/Archive/{$pid}/DownloadOriginal">{translate text="Login to Download Original Image"}</a>
 				{/if}
 			{/if}
 			{if $allowRequestsForArchiveMaterials}
-				<a class="btn btn-default" href="{$path}/Archive/RequestCopy?pid={$pid}">Request Copy</a>
+				<a class="btn btn-default" href="{$path}/Archive/RequestCopy?pid={$pid}">{translate text="Request Copy"}</a>
 			{/if}
 			{if $showClaimAuthorship}
-				<a class="btn btn-default" href="{$path}/Archive/ClaimAuthorship?pid={$pid}">Claim Authorship</a>
+				<a class="btn btn-default" href="{$path}/Archive/ClaimAuthorship?pid={$pid}">{translate text="Claim Authorship"}</a>
 			{/if}
 			{if $showFavorites == 1}
 				<a onclick="return AspenDiscovery.Archive.showSaveToListForm(this, '{$pid|escape}');" class="btn btn-default ">{translate text='Add to favorites'}</a>

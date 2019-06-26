@@ -6,7 +6,7 @@
 				{$entity.label}
 			</a>
 			{if $entity.role}
-				&nbsp;({$entity.role})
+				&nbsp;({$entity.role|translate})
 			{/if}
 			{if $entity.note}
 				&nbsp;- {$entity.note}

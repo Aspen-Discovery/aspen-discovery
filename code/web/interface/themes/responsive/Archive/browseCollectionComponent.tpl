@@ -3,7 +3,7 @@
 		<div class="exploreMoreBar row">
 			{*<div class="label-left">*}
 			<div class="label-top">
-				<div class="exploreMoreBarLabel"><div class="archiveComponentHeader">Browse All</div></div>
+				<div class="exploreMoreBarLabel"><div class="archiveComponentHeader">{translate text="Browse All"}</div></div>
 			</div>
 
 			<div class="col-xs-12 exploreMoreContainer">
@@ -12,7 +12,7 @@
 						<div id="exhibit-results-loading" class="col-xs-12" style="display: none">
 							<br/>
 							<div class="alert alert-info">
-								Updating results, please wait.
+								{translate text="Updating results, please wait."}
 							</div>
 						</div>
 					</div>

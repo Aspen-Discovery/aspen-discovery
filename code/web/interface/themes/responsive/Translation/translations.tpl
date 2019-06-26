@@ -1,5 +1,6 @@
+{strip}
 <div id="main-content" class="col-md-12">
-	<h3>Translations</h3>
+	<h3>{translate text="Translations"}</h3>
 	<form class="form-inline row">
 		<div class="form-group col-xs-12">
 			{if $translationModeActive}
@@ -9,7 +10,7 @@
 			{/if}
 
 			<button class="btn btn-primary" type="submit" name="exportAllTranslations">{translate text="Export All Translations"}</button>
-			<button class="btn btn-primary" type="submit" name="importTranslations">{translate text="Import Translations"}</button>
+			<a class="btn btn-primary" name="importTranslations" href="/Translation/ImportTranslations">{translate text="Import Translations"}</a>
 		</div>
 	</form>
 
@@ -38,3 +39,4 @@
 		</div>
 	</form>
 </div>
+{/strip}

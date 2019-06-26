@@ -33,6 +33,7 @@ class CiteList extends Action {
 
 		// Display Page
 		$interface->assign('listId', $list->id);
-		$this->display('listCitations.tpl', 'Citations for ' . $list->title);
+		$pageTitle = translate(['text' => 'Citations for %1%', '1'=>$list->title]);
+		$this->display('listCitations.tpl', $pageTitle, 'Search/home-sidebar.tpl', false);
 	}
 }

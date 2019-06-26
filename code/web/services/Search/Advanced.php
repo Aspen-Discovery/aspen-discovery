@@ -52,10 +52,7 @@ class Search_Advanced extends Search_AdvancedBase {
 			$interface->assign('searchFilters', $savedSearch->getFilterList());
 		}
 
-		$interface->setPageTitle('Advanced Search');
-		$interface->setTemplate('advanced.tpl');
-		$interface->assign('sidebar', 'Search/results-sidebar.tpl');
-		$interface->display('layout.tpl');
+		$this->display('advanced.tpl', 'Advanced Search', 'Search/results-sidebar.tpl');
 	}
 
 	/**

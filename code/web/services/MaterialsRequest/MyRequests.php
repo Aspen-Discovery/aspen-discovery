@@ -86,9 +86,7 @@ class MaterialsRequest_MyRequests extends MyAccount
 			exit;
 		}
 		$interface->assign('allRequests', $allRequests);
-		$interface->assign('pageTitleShort', 'My Materials Requests' );
 
-		$title = 'My Materials Requests';
-		$this->display('myMaterialRequests.tpl', $title);
+		$this->display('myMaterialRequests.tpl', 'My Materials Requests');
 	}
 }

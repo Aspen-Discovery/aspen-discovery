@@ -20,12 +20,8 @@ class Admin_OpCacheInfo extends Admin_Admin {
 		ob_end_clean();
 
 		$interface->assign("info", $info);
-		$interface->assign('title', 'Zend OpCache Information');
 
-		$interface->assign('sidebar', 'Search/home-sidebar.tpl');
-		$interface->setTemplate('adminInfo.tpl');
-		$interface->setPageTitle('Zend OpCache Information');
-		$interface->display('layout.tpl');
+		$this->display('adminInfo.tpl', 'Zend OpCache Information');
 	}
 
 	function getAllowableRoles() {

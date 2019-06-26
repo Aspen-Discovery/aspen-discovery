@@ -187,7 +187,7 @@
 				{/if}
 
 				{if (array_key_exists('userAdmin', $userRoles) || array_key_exists('opacAdmin', $userRoles))}
-					{if in_array($action, array('Administrators', 'DBMaintenance', 'UsageDashboard', 'SlownessReport', 'ErrorReport', 'PHPInfo', 'OpCacheInfo', 'Variables', 'CronLog', 'MemCacheInfo'))
+					{if in_array($action, array('Administrators', 'DBMaintenance', 'UsageDashboard', 'SlownessReport', 'ErrorReport', 'PHPInfo', 'OpCacheInfo', 'Variables', 'CronLog'))
 					|| ($module == 'Admin' && $action == 'Home')}
 						{assign var="curSection" value=true}
 					{else}
@@ -214,7 +214,6 @@
 									<div class="adminMenuLink{if $action == "SendGridSettings"} active{/if}"><a href="{$path}/Admin/SendGridSettings">{translate text="SendGrid Settings"}</a></div>
 									<div class="adminMenuLink{if $module == 'Admin' && $action == "Home"} active{/if}"><a href="{$path}/Admin/Home">{translate text="Solr Information"}</a></div>
 									<div class="adminMenuLink{if $action == "PHPInfo"} active{/if}"><a href="{$path}/Admin/PHPInfo">{translate text="PHP Information"}</a></div>
-									{*								<div class="adminMenuLink{if $action == "MemCacheInfo"} active{/if}"><a href="{$path}/Admin/MemCacheInfo">MemCache Information</a></div>*}
 									{*								<div class="adminMenuLink{if $action == "OpCacheInfo"} active{/if}"><a href="{$path}/Admin/OpCacheInfo">OpCache Information</a></div>*}
 									<div class="adminMenuLink{if $action == "Variables"} active{/if}"><a href="{$path}/Admin/Variables">{translate text="System Variables"}</a></div>
 									<div class="adminMenuLink{if $action == "CronLog"} active{/if}"><a href="{$path}/Admin/CronLog">{translate text="Cron Log"}</a></div>
@@ -293,7 +292,7 @@
 						<div id="catalogingMenu" class="panel-collapse collapse {if $curSection}in{/if}">
 							<div class="panel-body">
 								<div class="adminMenuLink{if $action == "MergedGroupedWorks"} active{/if}"><a href="{$path}/Admin/MergedGroupedWorks">{translate text="Grouped Work Merging"}</a></div>
-								<div class="adminMenuLink{if $action == "NonGroupedRecords"} active{/if}"><a href="{$path}/Admin/NonGroupedRecords">{translate text="Records To Not Merge"}</a></div>
+								<div class="adminMenuLink{if $action == "NonGroupedRecords"} active{/if}"><a href="{$path}/Admin/NonGroupedRecords">{translate text="Records To Not Group"}</a></div>
 								<div class="adminMenuLink{if $action == "AuthorEnrichment"} active{/if}"><a href="{$path}/Admin/AuthorEnrichment">{translate text="Author Enrichment"}</a></div>
 								{if array_key_exists('opacAdmin', $userRoles)}
 									<div class="adminMenuLink{if $action == "ARSettings"} active{/if}"><a href="{$path}/RenaissanceLearning/ARSettings">{translate text="Accelerated Reading Settings"}</a></div>

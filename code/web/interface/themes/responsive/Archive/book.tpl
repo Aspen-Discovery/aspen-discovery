@@ -15,25 +15,23 @@
 							<input type="radio" name="pageView" id="view-toggle-pdf" autocomplete="off" onchange="return AspenDiscovery.Archive.handleBookClick('{$pid}', AspenDiscovery.Archive.activeBookPage, 'pdf');">
 							{*TODO: set bookPID*}
 
-							View As PDF
+							{translate text="View As PDF"}
 						</label>
 						{/if}
 						<label class="btn btn-group-small btn-default">
 							<input type="radio" name="pageView" id="view-toggle-image" autocomplete="off" onchange="return AspenDiscovery.Archive.handleBookClick('{$pid}', AspenDiscovery.Archive.activeBookPage, 'image');">
-
-							View As Image
+							{translate text="View As Image"}
 						</label>
 						<label class="btn btn-group-small btn-default">
 							<input type="radio" name="pageView" id="view-toggle-transcription" autocomplete="off" onchange="return AspenDiscovery.Archive.handleBookClick('{$pid}', AspenDiscovery.Archive.activeBookPage, 'transcription');">
-
-							View Transcription
+							{translate text="View Transcription"}
 						</label>
 					</div>
 
 					<br>
 
 					<div id="view-pdf" width="100%" height="600px" style="display: none">
-						No PDF loaded
+						{translate text="No PDF loaded"}
 					</div>
 
 					<div id="view-image" style="display: none">
@@ -45,7 +43,7 @@
 					</div>
 
 					<div id="view-transcription" style="display: none" width="100%" height="600px;">
-						No transcription loaded
+						{translate text="No transcription loaded"}
 					</div>
 				{else}
 					{include file="Archive/noAccess.tpl"}
@@ -60,15 +58,15 @@
 			*}
 			<br/>
 			{if $hasPdf && ($anonymousMasterDownload || ($loggedIn && $verifiedMasterDownload))}
-				<a class="btn btn-default" href="/Archive/{$pid}/DownloadPDF">Download PDF</a>
+				<a class="btn btn-default" href="/Archive/{$pid}/DownloadPDF">{translate text="Download PDF"}</a>
 			{elseif ($hasPdf && !$loggedIn && $verifiedMasterDownload)}
-				<a class="btn btn-default" onclick="return AspenDiscovery.Account.followLinkIfLoggedIn(this)" href="/Archive/{$pid}/DownloadPDF">Login to Download PDF</a>
+				<a class="btn btn-default" onclick="return AspenDiscovery.Account.followLinkIfLoggedIn(this)" href="/Archive/{$pid}/DownloadPDF">{translate text="Login to Download PDF"}</a>
 			{/if}
 			{if $allowRequestsForArchiveMaterials}
-				<a class="btn btn-default" href="{$path}/Archive/RequestCopy?pid={$pid}">Request Copy</a>
+				<a class="btn btn-default" href="{$path}/Archive/RequestCopy?pid={$pid}">{translate text="Request Copy"}</a>
 			{/if}
 			{if $showClaimAuthorship}
-				<a class="btn btn-default" href="{$path}/Archive/ClaimAuthorship?pid={$pid}">Claim Authorship</a>
+				<a class="btn btn-default" href="{$path}/Archive/ClaimAuthorship?pid={$pid}">{translate text="Claim Authorship"}</a>
 			{/if}
 			{if $showFavorites == 1}
 				<a onclick="return AspenDiscovery.Archive.showSaveToListForm(this, '{$pid|escape}');" class="btn btn-default ">{translate text='Add to favorites'}</a>
