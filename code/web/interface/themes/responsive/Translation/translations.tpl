@@ -7,6 +7,9 @@
 			{else}
 				<button class="btn btn-primary" type="submit" name="startTranslationMode">{translate text="Start Translation Mode"}</button>
 			{/if}
+
+			<button class="btn btn-primary" type="submit" name="exportAllTranslations">{translate text="Export All Translations"}</button>
+			<button class="btn btn-primary" type="submit" name="importTranslations">{translate text="Import Translations"}</button>
 		</div>
 	</form>
 

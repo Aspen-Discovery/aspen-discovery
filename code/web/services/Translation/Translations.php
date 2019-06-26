@@ -14,6 +14,10 @@ class Translation_Translations extends Admin_Admin
 		$translationModeActive = $translator->translationModeActive();
 		$interface->assign('translationModeActive', $translationModeActive);
 
+		if (isset($_REQUEST['exportAllTranslations'])){
+			$this->exportAllTranslations();
+		}
+
 		if (isset($_REQUEST['translation_changed'])) {
 			foreach ($_REQUEST['translation_changed'] as $index => $value) {
 				if ($value == 1) {
@@ -59,5 +63,46 @@ class Translation_Translations extends Admin_Admin
 	function getAllowableRoles()
 	{
 		return ['opacAdmin', 'translator'];
+	}
+
+	private function exportAllTranslations()
+	{
+		header('Content-type: application/csv');
+		header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
+		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
+		$now = date('Y-m-d-H-i');
+		header("Content-Disposition: attachment; filename=aspen_translations_$now.csv");
+
+		$validLanguage = new Language();
+		$validLanguage->orderBy("weight");
+		$validLanguage->find();
+		$validLanguages = [];
+		echo('"Term"');
+		while ($validLanguage->fetch()){
+			$validLanguages[$validLanguage->code] = $validLanguage->id;
+			echo(",\"{$validLanguage->code}\"");
+		}
+		echo("\n");
+
+		$term = new TranslationTerm();
+		$term->orderBy('term');
+		$term->find();
+		while ($term->fetch()){
+			echo('"' . $term->term . '"');
+			foreach ($validLanguages as $languageId){
+				echo ",";
+				$translation = new Translation();
+				$translation->termId = $term->id;
+				$translation->languageId = $languageId;
+				if ($translation->find(true)){
+					if ($translation->translated || $languageId == 1){
+						echo('"' . $translation->translation . '"');
+					}
+				}
+			}
+			echo("\n");
+		}
+
+		die();
 	}
 }
