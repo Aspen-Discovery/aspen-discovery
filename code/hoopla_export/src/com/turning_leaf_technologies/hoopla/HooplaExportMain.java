@@ -262,6 +262,7 @@ public class HooplaExportMain {
 							}else{
 								logEntry.incErrors();
 								logEntry.addNote("Error loading data from " + url + " " + response.getResponseCode() + " " + response.getMessage());
+								startToken = null;
 							}
 
 							logEntry.saveResults();

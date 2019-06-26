@@ -6,6 +6,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -32,8 +33,10 @@ class HooplaExtractLogEntry {
         }
     }
 
+    private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     void addNote(String note) {
-        this.notes.add(note);
+        Date date = new Date();
+        this.notes.add(dateFormat.format(date) + " - " + note);
         saveResults();
     }
 
@@ -59,7 +62,7 @@ class HooplaExtractLogEntry {
 
     private static PreparedStatement insertLogEntry;
     private static PreparedStatement updateLogEntry;
-    boolean saveResults() {
+    void saveResults() {
         try {
             if (logEntryId == null){
                 insertLogEntry.setLong(1, startTime.getTime() / 1000);
@@ -85,10 +88,8 @@ class HooplaExtractLogEntry {
                 updateLogEntry.setLong(++curCol, logEntryId);
                 updateLogEntry.executeUpdate();
             }
-            return true;
         } catch (SQLException e) {
             logger.error("Error creating updating log", e);
-            return false;
         }
     }
     void setFinished() {
