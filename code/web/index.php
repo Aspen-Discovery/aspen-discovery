@@ -918,6 +918,13 @@ function loadModuleActionId(){
 		//Redirect things /Record/.b3246786/Home to the proper action
 		//Also things like /OverDrive/84876507-043b-b3ce-2930-91af93d2a4f0/Home
 	}elseif (preg_match("/($allRecordModules)\/([^\/?]+?)\/([^\/?]+)/", $requestURI, $matches)){
+		//Getting some weird cases where the action is replaced with an email address for uintah.
+		//As a workaround, if the action looks like an email, change it to Home
+		if (preg_match('/^[A-Z0-9][A-Z0-9._%+-]{0,63}@(?:[A-Z0-9-]{1,63}\.){1,8}[A-Z]{2,63}$/i', $matches[3])){
+			$requestURI = str_replace($matches[3], 'Home', $requestURI);
+			header('Location: ' . $requestURI);
+			die();
+		}
 		$_GET['module'] = $matches[1];
 		$_GET['id'] = $matches[2];
 		$_GET['action'] = $matches[3];
