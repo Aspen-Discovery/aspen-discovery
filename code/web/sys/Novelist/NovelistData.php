@@ -186,4 +186,13 @@ class NovelistData extends DataObject{
 	    }
     	return $this->_jsonData;
     }
+
+    public function setSeriesNote($seriesNote){
+	    if (strlen($seriesNote) > 255){
+		    require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
+		    $this->seriesNote = StringUtils::truncate($seriesNote, 255);
+	    }else{
+	    	$this->seriesNote = $seriesNote;
+	    }
+    }
 } 

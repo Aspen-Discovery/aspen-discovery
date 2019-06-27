@@ -307,11 +307,7 @@ class Novelist3{
 				}
 			}
 			$novelistData->seriesTitle = $seriesName;
-			$novelistData->seriesNote = $seriesData->series_note;
-			if (strlen($novelistData->seriesNote) > 255){
-				require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
-				$novelistData->seriesNote = StringUtils::truncate($novelistData->seriesNote, 255);
-			}
+			$novelistData->setSeriesNote($seriesData->series_note);
 		}
 		$novelistData->update();
 	}
@@ -341,7 +337,8 @@ class Novelist3{
 					$novelistDataForTitle->groupedRecordHasISBN = count($curTitle['allIsbns']) > 0;
 					$novelistDataForTitle->seriesTitle = $curTitle['series'];
 					$novelistDataForTitle->volume = $this->normalizeSeriesVolume($curTitle['volume']);
-					$novelistDataForTitle->seriesNote = $seriesData->series_note;
+					$novelistDataForTitle->setSeriesNote($seriesData->series_note);
+
 					$novelistDataForTitle->insert();
 				}elseif (empty($novelistDataForTitle->seriesTitle) || empty($novelistDataForTitle->volume)){
 					$novelistDataForTitle->seriesTitle = $curTitle['series'];
@@ -352,11 +349,7 @@ class Novelist3{
 		}
 		$novelistData->setSeriesTitles($seriesTitles);
 		$novelistData->seriesTitle = $seriesName;
-		$novelistData->seriesNote = $seriesData->series_note;
-		if (strlen($novelistData->seriesNote) > 255){
-			require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
-			$novelistData->seriesNote = StringUtils::truncate($novelistData->seriesNote, 255);
-		}
+		$novelistData->setSeriesNote($seriesData->series_note);
 
 		$novelistData->setSeriesCount(count($items));
 		$novelistData->setSeriesCountOwned($titlesOwned);
