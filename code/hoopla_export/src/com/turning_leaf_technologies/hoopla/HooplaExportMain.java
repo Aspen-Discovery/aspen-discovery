@@ -243,6 +243,7 @@ public class HooplaExportMain {
 							startToken = responseJSON.getString("nextStartToken");
 						}
 
+						int numTries = 0;
 						while (startToken != null) {
 							url = hooplaAPIBaseURL + "/api/v1/libraries/" + hooplaLibraryId + "/content?startToken=" + startToken;
 							response = NetworkUtils.getURL(url, logger, headers);
@@ -260,9 +261,21 @@ public class HooplaExportMain {
 									startToken = null;
 								}
 							}else{
-								logEntry.incErrors();
-								logEntry.addNote("Error loading data from " + url + " " + response.getResponseCode() + " " + response.getMessage());
-								startToken = null;
+								if (response.getResponseCode() == 401 || response.getResponseCode() == 504){
+									numTries++;
+									if (numTries >= 3){
+										logEntry.incErrors();
+										logEntry.addNote("Error loading data from " + url + " " + response.getResponseCode() + " " + response.getMessage());
+										startToken = null;
+									}else{
+										accessToken = getAccessToken(apiUsername, apiPassword);
+										headers.put("Authorization", "Bearer " + accessToken);
+									}
+								}else {
+									logEntry.incErrors();
+									logEntry.addNote("Error loading data from " + url + " " + response.getResponseCode() + " " + response.getMessage());
+									startToken = null;
+								}
 							}
 
 							logEntry.saveResults();
@@ -317,45 +330,54 @@ public class HooplaExportMain {
 					}
 					existingRecords.remove(hooplaId);
 				}else{
+					if (!curTitleActive){
+						logEntry.incSkipped();
+						continue;
+					}
 					recordUpdated = true;
 					logEntry.incAdded();
 				}
 
-				if (recordUpdated || doFullReload){
-					updateHooplaTitleInDB.setLong(1, hooplaId);
-					updateHooplaTitleInDB.setBoolean(2, curTitle.getBoolean("active"));
-					updateHooplaTitleInDB.setString(3, curTitle.getString("title"));
-					updateHooplaTitleInDB.setString(4, curTitle.getString("kind"));
-					updateHooplaTitleInDB.setBoolean(5, curTitle.getBoolean("pa"));
-					updateHooplaTitleInDB.setBoolean(6, curTitle.getBoolean("demo"));
-					updateHooplaTitleInDB.setBoolean(7, curTitle.getBoolean("profanity"));
-					updateHooplaTitleInDB.setString(8, curTitle.has("rating") ? curTitle.getString("rating") : "");
-					updateHooplaTitleInDB.setBoolean(9, curTitle.getBoolean("abridged"));
-					updateHooplaTitleInDB.setBoolean(10, curTitle.getBoolean("children"));
-					updateHooplaTitleInDB.setDouble(11, curTitle.getDouble("price"));
-					updateHooplaTitleInDB.setLong(12, rawChecksum);
-					updateHooplaTitleInDB.setString(13, rawResponse);
-					updateHooplaTitleInDB.setLong(14, startTimeForLogging);
-					updateHooplaTitleInDB.executeUpdate();
+				if (!curTitleActive){
+					//Title is currently active (and if we got this far exists, delete it)
+					//Delete the record if it exists
+					RemoveRecordFromWorkResult result = getRecordGroupingProcessor().removeRecordFromGroupedWork("hoopla", Long.toString(hooplaId));
+					if (result.reindexWork) {
+						getGroupedWorkIndexer().processGroupedWork(result.permanentId);
+					} else if (result.deleteWork) {
+						//Delete the work from solr and the database
+						getGroupedWorkIndexer().deleteRecord(result.permanentId, result.groupedWorkId);
+					}
+					logEntry.incDeleted();
+					deleteHooplaItemStmt.setLong(1, existingTitle.getId());
+					deleteHooplaItemStmt.executeUpdate();
+				}else {
+					if (recordUpdated || doFullReload){
+						updateHooplaTitleInDB.setLong(1, hooplaId);
+						updateHooplaTitleInDB.setBoolean(2, true);
+						updateHooplaTitleInDB.setString(3, curTitle.getString("title"));
+						updateHooplaTitleInDB.setString(4, curTitle.getString("kind"));
+						updateHooplaTitleInDB.setBoolean(5, curTitle.getBoolean("pa"));
+						updateHooplaTitleInDB.setBoolean(6, curTitle.getBoolean("demo"));
+						updateHooplaTitleInDB.setBoolean(7, curTitle.getBoolean("profanity"));
+						updateHooplaTitleInDB.setString(8, curTitle.has("rating") ? curTitle.getString("rating") : "");
+						updateHooplaTitleInDB.setBoolean(9, curTitle.getBoolean("abridged"));
+						updateHooplaTitleInDB.setBoolean(10, curTitle.getBoolean("children"));
+						updateHooplaTitleInDB.setDouble(11, curTitle.getDouble("price"));
+						updateHooplaTitleInDB.setLong(12, rawChecksum);
+						updateHooplaTitleInDB.setString(13, rawResponse);
+						updateHooplaTitleInDB.setLong(14, startTimeForLogging);
+						try {
+							updateHooplaTitleInDB.executeUpdate();
 
-					numUpdates++;
+							numUpdates++;
 
-					if (curTitleActive){
-						String groupedWorkId = groupRecord(curTitle, hooplaId);
-						indexRecord(groupedWorkId);
-					}else{
-						//Delete the record if it exists
-						RemoveRecordFromWorkResult result = getRecordGroupingProcessor().removeRecordFromGroupedWork("hoopla", Long.toString(hooplaId));
-						if (result.groupedWorkId != null){
-							//This was previously indexed, we should mark it as deleted.  If we are just refreshing
-							//an inactive record we don't care.
-							logEntry.incDeleted();
-						}
-						if (result.reindexWork){
-							getGroupedWorkIndexer().processGroupedWork(result.permanentId);
-						}else if (result.deleteWork){
-							//Delete the work from solr and the database
-							getGroupedWorkIndexer().deleteRecord(result.permanentId, result.groupedWorkId);
+							String groupedWorkId = groupRecord(curTitle, hooplaId);
+							indexRecord(groupedWorkId);
+						}catch (SQLException e){
+							logger.error("Error updating hoopla data in database ", e);
+							logEntry.addNote("Error updating hoopla data  in database " + e.toString());
+							logEntry.incErrors();
 						}
 					}
 				}
@@ -447,7 +469,7 @@ public class HooplaExportMain {
 				updateHooplaTitleInDB = aspenConn.prepareStatement("INSERT INTO hoopla_export (hooplaId, active, title, kind, pa, demo, profanity, rating, abridged, children, price, rawChecksum, rawResponse, dateFirstDetected) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?) ON DUPLICATE KEY " +
 						"UPDATE active = VALUES(active), title = VALUES(title), kind = VALUES(kind), pa = VALUES(pa), demo = VALUES(demo), profanity = VALUES(profanity), " +
 						"rating = VALUES(rating), abridged = VALUES(abridged), children = VALUES(children), price = VALUES(price), rawChecksum = VALUES(rawChecksum), rawResponse = VALUES(rawResponse)");
-				deleteHooplaItemStmt = aspenConn.prepareStatement("UPDATE hoopla_export SET active = 0 where id = ?");
+				deleteHooplaItemStmt = aspenConn.prepareStatement("DELETE FROM hoopla_export where id = ?");
 			}else{
 				logger.error("Aspen database connection information was not provided");
 				System.exit(1);

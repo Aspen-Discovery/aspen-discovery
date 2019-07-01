@@ -20,6 +20,7 @@ class HooplaExtractLogEntry {
     private int numAdded = 0;
     private int numDeleted = 0;
     private int numUpdated = 0;
+    private int numSkipped = 0;
     private Logger logger;
 
     HooplaExtractLogEntry(Connection dbConn, Logger logger){
@@ -27,7 +28,7 @@ class HooplaExtractLogEntry {
         this.startTime = new Date();
         try {
             insertLogEntry = dbConn.prepareStatement("INSERT into hoopla_export_log (startTime) VALUES (?)", PreparedStatement.RETURN_GENERATED_KEYS);
-            updateLogEntry = dbConn.prepareStatement("UPDATE hoopla_export_log SET lastUpdate = ?, endTime = ?, notes = ?, numProducts = ?, numErrors = ?, numAdded = ?, numUpdated = ?, numDeleted = ? WHERE id = ?", PreparedStatement.RETURN_GENERATED_KEYS);
+            updateLogEntry = dbConn.prepareStatement("UPDATE hoopla_export_log SET lastUpdate = ?, endTime = ?, notes = ?, numProducts = ?, numErrors = ?, numAdded = ?, numUpdated = ?, numDeleted = ?, numSkipped = ? WHERE id = ?", PreparedStatement.RETURN_GENERATED_KEYS);
         } catch (SQLException e) {
             logger.error("Error creating prepared statements to update log", e);
         }
@@ -85,6 +86,7 @@ class HooplaExtractLogEntry {
                 updateLogEntry.setInt(++curCol, numAdded);
                 updateLogEntry.setInt(++curCol, numUpdated);
                 updateLogEntry.setInt(++curCol, numDeleted);
+                updateLogEntry.setInt(++curCol, numSkipped);
                 updateLogEntry.setLong(++curCol, logEntryId);
                 updateLogEntry.executeUpdate();
             }
@@ -115,5 +117,9 @@ class HooplaExtractLogEntry {
 
     boolean hasErrors() {
         return numErrors > 0;
+    }
+
+    void incSkipped() {
+        numSkipped++;
     }
 }
