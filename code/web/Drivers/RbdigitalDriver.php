@@ -38,6 +38,10 @@ class RbdigitalDriver extends AbstractEContentDriver
         }
     }
 
+    public function getUserInterfaceURL(){
+    	return $this->userInterfaceURL;
+    }
+
     public function hasNativeReadingHistory()
     {
         return false;
@@ -122,6 +126,14 @@ class RbdigitalDriver extends AbstractEContentDriver
                 $checkouts[] = $checkout;
             }
 
+            //Look for magazines
+	        $patronMagazinesUrl = $this->webServiceURL . '/v1/libraries/' . $this->libraryId . '/patrons/' . $rbdigitalId. '/patron-magazines/history';
+	        $patronMagazinesRaw = $this->curlWrapper->curlGetPage($patronMagazinesUrl);
+	        $patronMagazines = json_decode($patronMagazinesRaw);
+	        foreach ($patronMagazines->resultSet as $patronMagazine){
+
+	        }
+
         }
         $this->checkouts[$patron->id] = $checkouts;
 
@@ -167,6 +179,55 @@ class RbdigitalDriver extends AbstractEContentDriver
         }
         return $result;
     }
+
+	/**
+	* @param User $patron
+	* @param string $recordId
+	*
+	* @return array results (success, message)
+	*/
+	public function checkoutMagazine($patron, $recordId) {
+		$result = ['success' => false, 'message' => 'Unknown error'];
+		$rbdigitalId = $this->getRbdigitalId($patron);
+		if ($rbdigitalId == false) {
+			$result['message'] = 'Sorry, you are not registered with Rbdigital.  You will need to create an account there before continuing.';
+		} else {
+			//Get the current issue for the magazine
+			require_once ROOT_DIR . '/sys/Rbdigital/RbdigitalMagazine.php';
+			$product = new RbdigitalMagazine();
+			$product->magazineId = $recordId;
+			if ($product->find(true)) {
+				require_once ROOT_DIR . '/RecordDrivers/RbdigitalRecordDriver.php';
+				$actionUrl = $this->webServiceURL . '/v1/libraries/' . $this->libraryId . '/patrons/' . $rbdigitalId. '/patron-magazines/' . $product->issueId;
+				// /v{version}/libraries/{libraryId}/patrons/{patronId}/patron-magazines/{issueId}
+
+				$rawResponse = $this->curlWrapper->curlPostPage($actionUrl, '');
+				if ($rawResponse == false){
+					$result['message'] = "Invalid information returned from API, please retry your checkout after a few minutes.";
+					global $logger;
+					$logger->log("Invalid information from rbdigital api\r\n$actionUrl\r\n$rawResponse", Logger::LOG_ERROR);
+					$logger->log(print_r($this->curlWrapper->getHeaders(), true), Logger::LOG_ERROR);
+					$curl_info = curl_getinfo($this->curlWrapper->curl_connection);
+					$logger->log(print_r($curl_info, true), Logger::LOG_ERROR);
+				}else{
+					$response = json_decode($rawResponse);
+					if (!empty($response->output) && $response->output == 'SUCCESS') {
+						$this->trackUserUsageOfRbdigital($patron);
+						$this->trackMagazineCheckout($recordId);
+
+						$result['success'] = true;
+						$result['message'] = 'Your title was checked out successfully. You can read the magazine from the rbdigital app.';
+					} else {
+						$result['message'] = $response->output;
+					}
+
+				}
+			}else{
+				$result['message'] = "Could not find magazine to checkout";
+			}
+		}
+		return $result;
+	}
 
     public function createAccount(User $user) {
         $result = ['success' => false, 'message' => 'Unknown error'];
@@ -637,7 +698,31 @@ class RbdigitalDriver extends AbstractEContentDriver
         }
     }
 
-    /**
+	/**
+	 * @param int $rbdigitalId
+	 */
+	function trackMagazineCheckout($rbdigitalId): void
+	{
+		require_once ROOT_DIR . '/sys/Rbdigital/RbdigitalMagazineUsage.php';
+		$recordUsage = new RbdigitalMagazineUsage();
+		$product = new RbdigitalMagazine();
+		$product->magazineId = $rbdigitalId;
+		if ($product->find(true)) {
+			$recordUsage->magazineId = $product->id;
+			$recordUsage->year = date('Y');
+			$recordUsage->month = date('n');
+			if ($recordUsage->find(true)) {
+				$recordUsage->timesCheckedOut++;
+				$recordUsage->update();
+			} else {
+				$recordUsage->timesCheckedOut = 1;
+				$recordUsage->timesHeld = 0;
+				$recordUsage->insert();
+			}
+		}
+	}
+
+	/**
      * @param int $rbdigitalId
      */
     function trackRecordHold($rbdigitalId): void

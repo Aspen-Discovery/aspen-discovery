@@ -39,6 +39,22 @@ AspenDiscovery.Rbdigital = (function(){
             return false;
         },
 
+        checkOutMagazine: function (id) {
+            if (Globals.loggedIn){
+                //Get any prompts needed for checking out a title
+                let promptInfo = AspenDiscovery.Rbdigital.getMagazineCheckOutPrompts(id);
+                // noinspection JSUnresolvedVariable
+                if (!promptInfo.promptNeeded){
+                    AspenDiscovery.Rbdigital.doMagazineCheckOut(promptInfo.patronId, id);
+                }
+            }else{
+                AspenDiscovery.Account.ajaxLogin(null, function(){
+                    AspenDiscovery.Rbdigital.checkOutMagazine(id);
+                });
+            }
+            return false;
+        },
+
         createAccount: function(action, patronId, id){
             if (Globals.loggedIn){
                 //Check form validation
@@ -133,6 +149,36 @@ AspenDiscovery.Rbdigital = (function(){
             return false;
         },
 
+        doMagazineCheckOut: function(patronId, id){
+            if (Globals.loggedIn){
+                let ajaxUrl = Globals.path + "/Rbdigital/AJAX?method=checkOutMagazine&patronId=" + patronId + "&id=" + id;
+                $.ajax({
+                    url: ajaxUrl,
+                    cache: false,
+                    success: function(data){
+                        if (data.success === true){
+                            AspenDiscovery.showMessageWithButtons("Magazine Checked Out Successfully", data.message, data.buttons);
+                        }else{
+                            // noinspection JSUnresolvedVariable
+                            AspenDiscovery.showMessage("Error Checking Out Magazine", data.message, false);
+                        }
+                    },
+                    dataType: 'json',
+                    async: false,
+                    error: function(){
+                        alert("An error occurred processing your request in Rbdigital.  Please try again in a few minutes.");
+                        //alert("ajaxUrl = " + ajaxUrl);
+                        AspenDiscovery.closeLightbox();
+                    }
+                });
+            }else{
+                AspenDiscovery.Account.ajaxLogin(null, function(){
+                    AspenDiscovery.Rbdigital.checkOutTitle(id);
+                }, false);
+            }
+            return false;
+        },
+
         doHold: function(patronId, id){
             let url = Globals.path + "/Rbdigital/AJAX?method=placeHold&patronId=" + patronId + "&id=" + id;
             $.ajax({
@@ -156,6 +202,30 @@ AspenDiscovery.Rbdigital = (function(){
 
         getCheckOutPrompts(id) {
             let url = Globals.path + "/Rbdigital/" + id + "/AJAX?method=getCheckOutPrompts";
+            let result = true;
+            $.ajax({
+                url: url,
+                cache: false,
+                success: function(data){
+                    result = data;
+                    // noinspection JSUnresolvedVariable
+                    if (data.promptNeeded){
+                        // noinspection JSUnresolvedVariable
+                        AspenDiscovery.showMessageWithButtons(data.promptTitle, data.prompts, data.buttons);
+                    }
+                },
+                dataType: 'json',
+                async: false,
+                error: function(){
+                    alert("An error occurred processing your request.  Please try again in a few minutes.");
+                    AspenDiscovery.closeLightbox();
+                }
+            });
+            return result;
+        },
+
+        getMagazineCheckOutPrompts(id) {
+            let url = Globals.path + "/Rbdigital/" + id + "/AJAX?method=getMagazineCheckOutPrompts";
             let result = true;
             $.ajax({
                 url: url,
