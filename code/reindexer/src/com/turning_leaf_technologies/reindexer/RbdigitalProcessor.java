@@ -234,7 +234,7 @@ class RbdigitalProcessor {
         } catch (JSONException e) {
             logger.error("Error parsing raw data for rbdigital", e);
         } catch (SQLException e) {
-            logger.error("Error loading information from Database for overdrive title", e);
+            logger.error("Error loading information from Database for rbdigital title", e);
         }
     }
 

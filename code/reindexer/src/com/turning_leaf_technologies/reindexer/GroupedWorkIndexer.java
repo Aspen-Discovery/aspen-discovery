@@ -34,6 +34,7 @@ public class GroupedWorkIndexer {
 	private HashMap<String, MarcRecordProcessor> ilsRecordProcessors = new HashMap<>();
 	private OverDriveProcessor overDriveProcessor;
 	private RbdigitalProcessor rbdigitalProcessor;
+	private RbdigitalMagazineProcessor rbdigitalMagazineProcessor;
 	private HooplaProcessor hooplaProcessor;
 	private HashMap<String, HashMap<String, String>> translationMaps = new HashMap<>();
 	private HashMap<String, LexileTitle> lexileInformation = new HashMap<>();
@@ -242,6 +243,8 @@ public class GroupedWorkIndexer {
 		overDriveProcessor = new OverDriveProcessor(this, dbConn, logger);
 
 		rbdigitalProcessor = new RbdigitalProcessor(this, dbConn, logger);
+
+		rbdigitalMagazineProcessor = new RbdigitalMagazineProcessor(this, dbConn, logger);
 
 		hooplaProcessor = new HooplaProcessor(this, dbConn, logger);
 
@@ -801,6 +804,9 @@ public class GroupedWorkIndexer {
 				break;
 			case "rbdigital":
 				rbdigitalProcessor.processRecord(groupedWork, identifier);
+				break;
+			case "rbdigital_magazine":
+				rbdigitalMagazineProcessor.processRecord(groupedWork, identifier);
 				break;
 			case "hoopla":
 				hooplaProcessor.processRecord(groupedWork, identifier);
