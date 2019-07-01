@@ -2,10 +2,7 @@ package com.turning_leaf_technologies.rbdigital;
 
 import org.apache.logging.log4j.Logger;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -24,7 +21,7 @@ class RbdigitalExtractLogEntry {
 	private int numMetadataChanges = 0;
 	private Logger logger;
 
-	RbdigitalExtractLogEntry(Connection dbConn, Logger logger){
+    RbdigitalExtractLogEntry(Connection dbConn, Logger logger){
 		this.logger = logger;
 		this.startTime = new Date();
 		try {
@@ -64,7 +61,7 @@ class RbdigitalExtractLogEntry {
 
 	private static PreparedStatement insertLogEntry;
 	private static PreparedStatement updateLogEntry;
-	boolean saveResults() {
+	void saveResults() {
 		try {
 			if (logEntryId == null){
 				insertLogEntry.setLong(1, startTime.getTime() / 1000);
@@ -77,7 +74,7 @@ class RbdigitalExtractLogEntry {
 				int curCol = 0;
 				updateLogEntry.setLong(++curCol, new Date().getTime() / 1000);
 				if (endTime == null){
-					updateLogEntry.setNull(++curCol, java.sql.Types.INTEGER);
+					updateLogEntry.setNull(++curCol, Types.INTEGER);
 				}else{
 					updateLogEntry.setLong(++curCol, endTime.getTime() / 1000);
 				}
@@ -92,10 +89,8 @@ class RbdigitalExtractLogEntry {
 				updateLogEntry.setLong(++curCol, logEntryId);
 				updateLogEntry.executeUpdate();
 			}
-			return true;
 		} catch (SQLException e) {
 			logger.error("Error creating updating log", e);
-			return false;
 		}
 	}
 	void setFinished() {
@@ -127,5 +122,9 @@ class RbdigitalExtractLogEntry {
 
 	boolean hasErrors() {
 		return numErrors > 0;
+	}
+
+	void incNumProducts(int numResults) {
+		this.numProducts += numResults;
 	}
 }

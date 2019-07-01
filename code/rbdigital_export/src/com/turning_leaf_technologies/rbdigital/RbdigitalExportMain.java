@@ -33,8 +33,11 @@ public class RbdigitalExportMain {
 
     //SQL Statements
     private static PreparedStatement updateRbdigitalItemStmt;
+    private static PreparedStatement updateRbdigitalMagazineStmt;
     private static PreparedStatement deleteRbdigitalItemStmt;
+    private static PreparedStatement deleteRbdigitalMagazineStmt;
     private static PreparedStatement getAllExistingRbdigitalItemsStmt;
+    private static PreparedStatement getAllExistingRbdigitalMagazinesStmt;
     private static PreparedStatement updateRbdigitalAvailabilityStmt;
     private static PreparedStatement getExistingRbdigitalAvailabilityStmt;
 
@@ -44,6 +47,7 @@ public class RbdigitalExportMain {
 
     //Existing records
     private static HashMap<String, RbdigitalTitle> existingRecords = new HashMap<>();
+    private static HashMap<String, RbdigitalMagazine> existingMagazines = new HashMap<>();
 
     //For Checksums
     private static CRC32 checksumCalculator = new CRC32();
@@ -76,6 +80,7 @@ public class RbdigitalExportMain {
 
             //Get a list of all existing records in the database
             loadExistingTitles();
+            loadExistingMagazines();
 
             //Do the actual work here
             int numChanges = extractRbdigitalData();
@@ -88,6 +93,7 @@ public class RbdigitalExportMain {
                 recordGroupingProcessorSingleton = null;
                 groupedWorkIndexer = null;
                 existingRecords = null;
+                existingMagazines = null;
             }
 
             if (logEntry.hasErrors()) {
@@ -139,6 +145,26 @@ public class RbdigitalExportMain {
                 logEntry.saveResults();
                 logger.warn("Deleted " + numDeleted + " old titles");
             }
+
+            for (RbdigitalMagazine rbdigitalMagazine : existingMagazines.values()) {
+                if (!rbdigitalMagazine.isDeleted()) {
+                    deleteRbdigitalMagazineStmt.setLong(1, rbdigitalMagazine.getId());
+                    deleteRbdigitalMagazineStmt.executeUpdate();
+                    RemoveRecordFromWorkResult result = getRecordGroupingProcessor().removeRecordFromGroupedWork("rbdigital_magazine", rbdigitalMagazine.getMagazineId());
+                    if (result.reindexWork){
+                        getGroupedWorkIndexer().processGroupedWork(result.permanentId);
+                    }else if (result.deleteWork){
+                        //Delete the work from solr and the database
+                        getGroupedWorkIndexer().deleteRecord(result.permanentId, result.groupedWorkId);
+                    }
+                    numDeleted++;
+                    logEntry.incDeleted();
+                }
+            }
+            if (numDeleted > 0) {
+                logEntry.saveResults();
+                logger.warn("Deleted " + numDeleted + " old magazines");
+            }
         }catch (SQLException e) {
             logger.error("Error deleting items", e);
             logEntry.addNote("Error deleting items " + e.toString());
@@ -159,6 +185,27 @@ public class RbdigitalExportMain {
                         allRecordsRS.getBoolean("deleted")
                         );
                 existingRecords.put(rbdigitalId, newTitle);
+            }
+        } catch (SQLException e) {
+            logger.error("Error loading existing titles", e);
+            logEntry.addNote("Error loading existing titles" + e.toString());
+            System.exit(-1);
+        }
+    }
+
+    private static void loadExistingMagazines() {
+        try {
+            if (existingMagazines == null) existingMagazines = new HashMap<>();
+            ResultSet allRecordsRS = getAllExistingRbdigitalMagazinesStmt.executeQuery();
+            while (allRecordsRS.next()) {
+                String magazineId = allRecordsRS.getString("magazineId");
+                RbdigitalMagazine newTitle = new RbdigitalMagazine(
+                        allRecordsRS.getLong("id"),
+                        magazineId,
+                        allRecordsRS.getLong("rawChecksum"),
+                        allRecordsRS.getBoolean("deleted")
+                );
+                existingMagazines.put(magazineId, newTitle);
             }
         } catch (SQLException e) {
             logger.error("Error loading existing titles", e);
@@ -204,7 +251,7 @@ public class RbdigitalExportMain {
                         JSONObject responseJSON = new JSONObject(response.getMessage());
                         int numPages = responseJSON.getInt("pageCount");
                         int numResults = responseJSON.getInt("resultSetCount");
-                        logger.info("Preparing to process " + numPages + " pages of audiobook and ebook results, " + numResults + " results");
+                        logEntry.addNote("Preparing to process " + numPages + " pages of audiobook and ebook results, " + numResults + " results");
                         logEntry.setNumProducts(numResults);
                         logEntry.saveResults();
                         //Process the first page of results
@@ -225,9 +272,8 @@ public class RbdigitalExportMain {
                     }
                 }
 
-                //TODO: Process magazines
                 // Get a list of magazines to process
-                String eMagazineUrl = baseUrl + "/v1/libraries/" + libraryId + "/search/emagazine/";
+                String eMagazineUrl = baseUrl + "/v1/libraries/" + libraryId + "/search/emagazine?page-size=100";
                 response = NetworkUtils.getURL(eMagazineUrl, logger, headers);
                 if (!response.isSuccess()) {
                     logEntry.incErrors();
@@ -237,7 +283,20 @@ public class RbdigitalExportMain {
                         JSONObject responseJSON = new JSONObject(response.getMessage());
                         int numPages = responseJSON.getInt("pageCount");
                         int numResults = responseJSON.getInt("resultSetCount");
-                        logger.info("Preparing to process " + numPages + " pages of emagazine results, " + numResults + " results");
+                        logEntry.addNote("Preparing to process " + numPages + " pages of emagazine results, " + numResults + " results");
+
+                        logEntry.incNumProducts(numResults);
+                        logEntry.saveResults();
+                        logger.debug("Processing page 0 of results");
+                        numChanges += processRbdigitalMagazines(responseJSON, doFullReload);
+                        for (int curPage = 1; curPage < numPages; curPage++) {
+                            logger.debug("Processing page " + curPage);
+                            bookUrl = baseUrl + "/v1/libraries/" + libraryId + "/search/emagazine?page-size=100&page-index=" + curPage;
+                            response = NetworkUtils.getURL(bookUrl, logger, headers);
+                            responseJSON = new JSONObject(response.getMessage());
+                            numChanges += processRbdigitalMagazines(responseJSON, doFullReload);
+                        }
+
                     } catch (JSONException e) {
                         logger.error("Error parsing response", e);
                         logEntry.addNote("Error parsing response: " + e.toString());
@@ -266,6 +325,71 @@ public class RbdigitalExportMain {
         } catch (SQLException e) {
             logger.error("Error loading settings from the database");
         }
+        return numChanges;
+    }
+
+    private static int processRbdigitalMagazines(JSONObject responseJSON, boolean doFullReload) {
+        int numChanges = 0;
+        try {
+            JSONArray items = responseJSON.getJSONArray("items");
+            for (int i = 0; i < items.length(); i++) {
+                JSONObject curItem = items.getJSONObject(i);
+                JSONObject itemDetails = curItem.getJSONObject("item");
+                checksumCalculator.reset();
+                String itemDetailsAsString = itemDetails.toString();
+                checksumCalculator.update(itemDetailsAsString.getBytes());
+                long itemChecksum = checksumCalculator.getValue();
+
+                long magazineId = itemDetails.getLong("magazineId");
+                String magazineIdString = Long.toString(magazineId);
+                logger.debug("Processing magazine " + magazineId );
+
+                RbdigitalMagazine existingMagazine = existingMagazines.get(magazineIdString);
+                boolean metadataChanged = false;
+                if (existingMagazine != null){
+                    logger.debug("Magazine already exists");
+                    if (existingMagazine.getChecksum() != itemChecksum || existingMagazine.isDeleted()){
+                        logger.debug("Updating magazine details");
+                        metadataChanged = true;
+                    }
+                    existingMagazines.remove(magazineIdString);
+                }else{
+                    logger.debug("Adding magazine " + magazineId);
+                    metadataChanged = true;
+                }
+                if (metadataChanged || doFullReload) {
+                    logEntry.incMetadataChanges();
+                    //Update the database
+                    updateRbdigitalMagazineStmt.setLong(1, magazineId);
+                    updateRbdigitalMagazineStmt.setLong(2, itemDetails.getLong("issueId"));
+                    updateRbdigitalMagazineStmt.setString(3, itemDetails.getString("title"));
+                    updateRbdigitalMagazineStmt.setString(4, itemDetails.getString("publisher"));
+                    updateRbdigitalMagazineStmt.setString(5, itemDetails.getString("mediaType"));
+                    updateRbdigitalMagazineStmt.setString(6, itemDetails.getString("language"));
+                    updateRbdigitalMagazineStmt.setLong(7, itemChecksum);
+                    updateRbdigitalMagazineStmt.setString(8, itemDetailsAsString);
+                    updateRbdigitalMagazineStmt.setLong(9, startTimeForLogging);
+                    updateRbdigitalMagazineStmt.setLong(10, startTimeForLogging);
+                    int result = updateRbdigitalMagazineStmt.executeUpdate();
+                    if (result == 1) {
+                        //A result of 1 indicates a new row was inserted
+                        logEntry.incAdded();
+                    }
+                }
+
+                String groupedWorkId = null;
+                if (metadataChanged || doFullReload) {
+                    groupedWorkId = groupRbdigitalMagazine(itemDetails, magazineIdString);
+
+                    logEntry.incUpdated();
+                    indexRbdigitalRecord(groupedWorkId);
+                    numChanges++;
+                }
+            }
+        } catch (Exception e) {
+            logger.error("Error processing titles", e);
+        }
+        logEntry.saveResults();
         return numChanges;
     }
 
@@ -408,6 +532,15 @@ public class RbdigitalExportMain {
         return getRecordGroupingProcessor().processRecord(primaryIdentifier, title, subtitle, author, mediaType, true);
     }
 
+    private static String groupRbdigitalMagazine(JSONObject itemDetails, String magazineId) throws JSONException {
+        String title = itemDetails.getString("title");
+        String author = itemDetails.getString("publisher");
+        String mediaType = itemDetails.getString("mediaType");
+
+        RecordIdentifier primaryIdentifier = new RecordIdentifier("rbdigital_magazine", magazineId);
+        return getRecordGroupingProcessor().processRecord(primaryIdentifier, title, "", author, mediaType, true);
+    }
+
     private static RecordGroupingProcessor getRecordGroupingProcessor(){
         if (recordGroupingProcessorSingleton == null) {
             recordGroupingProcessorSingleton = new RecordGroupingProcessor(aspenConn, serverName, logger, false);
@@ -446,7 +579,12 @@ public class RbdigitalExportMain {
                                 "VALUES (?, ?, ?, ?, ?, ?, ?) " +
                                 "ON DUPLICATE KEY UPDATE isAvailable = VALUES(isAvailable), isOwned = VALUES(isOwned), " +
                                 "name = VALUES(name), rawChecksum = VALUES(rawChecksum), rawResponse = VALUES(rawResponse), lastChange = VALUES(lastChange)");
-
+                getAllExistingRbdigitalMagazinesStmt = aspenConn.prepareStatement("SELECT id, magazineId, rawChecksum, deleted from rbdigital_magazine");
+                updateRbdigitalMagazineStmt = aspenConn.prepareStatement("INSERT INTO rbdigital_magazine (magazineId, issueId, title, publisher, mediaType, language, rawChecksum, rawResponse, lastChange, dateFirstDetected) " +
+                                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
+                                "ON DUPLICATE KEY UPDATE magazineId = VALUES(magazineId), issueId = VALUES(issueId), title = VALUES(title), publisher = VALUES(publisher), " +
+                                "mediaType = VALUES(mediaType), language = VALUES(language), rawChecksum = VALUES(rawChecksum), rawResponse = VALUES(rawResponse), lastChange = VALUES(lastChange), deleted = 0");
+                deleteRbdigitalMagazineStmt = aspenConn.prepareStatement("UPDATE rbdigital_magazine SET deleted = 1 where id = ?");
             }else{
                 logger.error("Aspen database connection information was not provided");
                 System.exit(1);
