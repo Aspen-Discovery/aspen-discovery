@@ -60,6 +60,14 @@ function getHooplaUpdates()
 			)
 		),
 
+		'hoopla_exportLog_skips' => array(
+			'title' => 'Add skips for hoopla export log',
+			'description' => 'Add additional info to Hoopla export log.',
+			'sql' => array(
+				"ALTER TABLE hoopla_export_log ADD COLUMN numSkipped INT(11) DEFAULT 0",
+			)
+		),
+
 		'hoopla_export_include_raw_data' => array(
 			'title' => 'Update Hoopla export raw data',
 			'description' => 'Update Hoopla export table to add raw data from API calls',
