@@ -28,7 +28,7 @@ class Admin_SlownessReport extends Admin_Admin
 			$slowPages[$key]['average'] = $averageSlowness;
 			$slowPages[$key]['total'] = $totalCount;
 		}
-		$slowPages = $this->getSlowPageStats($lastMonth, $lastMonthYear, 'last_month', $slowPages);
+		//$slowPages = $this->getSlowPageStats($lastMonth, $lastMonthYear, 'last_month', $slowPages);
 		ksort($slowPages);
 		$interface->assign('slowPages', $slowPages);
 
@@ -41,7 +41,7 @@ class Admin_SlownessReport extends Admin_Admin
 			$slowAsyncRequests[$key]['average'] = $averageSlowness;
 			$slowAsyncRequests[$key]['total'] = $totalCount;
 		}
-		$slowAsyncRequests = $this->getSlowAsyncRequestStats($lastMonth, $lastMonthYear, 'last_month', $slowAsyncRequests);
+		//$slowAsyncRequests = $this->getSlowAsyncRequestStats($lastMonth, $lastMonthYear, 'last_month', $slowAsyncRequests);
 		ksort($slowAsyncRequests);
 		$interface->assign('slowAsyncRequests', $slowAsyncRequests);
 
@@ -64,7 +64,6 @@ class Admin_SlownessReport extends Admin_Admin
 		$usage->find();
 		while($usage->fetch()){
 			if (isset($stats[$usage->module . '_' . $usage->action])){
-				$stats[$usage->module . '_' . $usage->action] = $usage->timesSlow;
 				$stats[$usage->module . '_' . $usage->action][$setName.'_fast'] = ($usage->timesFast == null ? 0 : $usage->timesFast);
 				$stats[$usage->module . '_' . $usage->action][$setName.'_acceptable'] = ($usage->timesAcceptable == null ? 0 : $usage->timesAcceptable);
 				$stats[$usage->module . '_' . $usage->action][$setName.'_slow'] = ($usage->timesSlow== null ? 0 : $usage->timesSlow);
