@@ -2,10 +2,10 @@
 
 require_once ROOT_DIR . '/RecordDrivers/RecordInterface.php';
 require_once ROOT_DIR . '/RecordDrivers/GroupedWorkSubDriver.php';
-require_once ROOT_DIR . '/sys/Rbdigital/RbdigitalProduct.php';
-class RbdigitalRecordDriver extends GroupedWorkSubDriver {
+require_once ROOT_DIR . '/sys/Rbdigital/RbdigitalMagazine.php';
+class RbdigitalMagazineDriver extends GroupedWorkSubDriver {
     private $id;
-    /** @var RbdigitalProduct */
+    /** @var RbdigitalMagazine */
     private $rbdigitalProduct;
     private $rbdigitalRawMetadata;
     private $valid;
@@ -14,8 +14,8 @@ class RbdigitalRecordDriver extends GroupedWorkSubDriver {
     public function __construct($recordId, $groupedWork = null) {
         $this->id = $recordId;
 
-        $this->rbdigitalProduct = new RbdigitalProduct();
-        $this->rbdigitalProduct->rbdigitalId = $recordId;
+        $this->rbdigitalProduct = new RbdigitalMagazine();
+        $this->rbdigitalProduct->magazineId = $recordId;
         if ($this->rbdigitalProduct->find(true)) {
             $this->valid = true;
             $this->rbdigitalRawMetadata = json_decode($this->rbdigitalProduct->rawResponse);
@@ -29,7 +29,7 @@ class RbdigitalRecordDriver extends GroupedWorkSubDriver {
     }
 
     public function getIdWithSource(){
-        return 'rbdigital:' . $this->id;
+        return 'rbdigital_magazine:' . $this->id;
     }
 
     /**
@@ -40,7 +40,7 @@ class RbdigitalRecordDriver extends GroupedWorkSubDriver {
 		    require_once ROOT_DIR . '/sys/Grouping/GroupedWorkPrimaryIdentifier.php';
 		    require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 		    $groupedWork = new GroupedWork();
-		    $query = "SELECT grouped_work.* FROM grouped_work INNER JOIN grouped_work_primary_identifiers ON grouped_work.id = grouped_work_id WHERE type='rbdigital' AND identifier = '" . $this->getUniqueID() . "'";
+		    $query = "SELECT grouped_work.* FROM grouped_work INNER JOIN grouped_work_primary_identifiers ON grouped_work.id = grouped_work_id WHERE type='rbdigital_magazine' AND identifier = '" . $this->getUniqueID() . "'";
 		    $groupedWork->query($query);
 
 		    if ($groupedWork->N == 1){
@@ -50,26 +50,18 @@ class RbdigitalRecordDriver extends GroupedWorkSubDriver {
 	    }
     }
 
-    public function getRbdigitalBookcoverUrl($size = 'small')
+    public function getRbdigitalBookcoverUrl()
     {
         $images = $this->rbdigitalRawMetadata->images;
         foreach ($images as $image) {
-            if ($image->name == 'medium' && $size == 'small') {
-                return $image->url;
-            }
-            if ($image->name == 'large' && $size == 'medium') {
-                return $image->url;
-            }
-            if ($image->name == 'xx-large' && $size == 'large') {
-                return $image->url;
-            }
+            return $image->url;
         }
         return null;
     }
 
     public function getModule()
     {
-        return 'Rbdigital';
+        return 'RbdigitalMagazine';
     }
 
     /**
@@ -98,10 +90,6 @@ class RbdigitalRecordDriver extends GroupedWorkSubDriver {
     public function getTitle()
     {
         $title = $this->rbdigitalProduct->title;
-        $subtitle = $this->getSubtitle();
-        if (strlen($subtitle) > 0) {
-            $title .= ': ' . $subtitle;
-        }
         return $title;
     }
 
@@ -133,7 +121,7 @@ class RbdigitalRecordDriver extends GroupedWorkSubDriver {
 
     public function getDescription()
     {
-        return $this->rbdigitalRawMetadata->shortDescription;
+        return $this->rbdigitalRawMetadata->description;
     }
 
     public function getMoreDetailsOptions()
@@ -196,7 +184,6 @@ class RbdigitalRecordDriver extends GroupedWorkSubDriver {
     public function getISBNs()
     {
         $isbns = [];
-        $isbns[] = $this->rbdigitalRawMetadata->isbn;
         return $isbns;
     }
 
@@ -209,15 +196,24 @@ class RbdigitalRecordDriver extends GroupedWorkSubDriver {
     {
         $actions = array();
         if ($isAvailable){
-            $actions[] = array(
-                'title' => 'Check Out Rbdigital',
-                'onclick' => "return AspenDiscovery.Rbdigital.checkOutTitle('{$this->id}');",
-                'requireLogin' => false,
-            );
+//            $actions[] = array(
+//                'title' => 'Check Out Rbdigital',
+//                'onclick' => "return AspenDiscovery.Rbdigital.checkOutMagazine('{$this->id}');",
+//                'requireLogin' => false,
+//            );
+	        require_once ROOT_DIR . '/Drivers/RbdigitalDriver.php';
+	        $rbdigitalDriver = new RbdigitalDriver();
+
+	        $actions[] = array(
+		        'title' => 'Access Online',
+		        'url' => $rbdigitalDriver->getUserInterfaceURL() . '/magazine/' . $this->rbdigitalProduct->magazineId . '/' . $this->rbdigitalProduct->issueId,
+		        'onclick' => "",
+		        'requireLogin' => false,
+	        );
         }else{
             $actions[] = array(
                 'title' => 'Place Hold Rbdigital',
-                'onclick' => "return AspenDiscovery.Rbdigital.placeHold('{$this->id}');",
+                'onclick' => "return AspenDiscovery.Rbdigital.placeHoldMagazine('{$this->id}');",
                 'requireLogin' => false,
             );
         }
@@ -230,23 +226,7 @@ class RbdigitalRecordDriver extends GroupedWorkSubDriver {
      */
     function getContributors()
     {
-        // TODO: Implement getContributors() method.
-        $contributors = array();
-        if (isset($this->rbdigitalRawMetadata->authors)){
-            $authors = $this->rbdigitalRawMetadata->authors;
-            foreach ($authors as $author) {
-                //TODO: Reverse name?
-                $contributors[] = $author->text;
-            }
-        }
-        if (isset($this->rbdigitalRawMetadata->narrators)){
-            $authors = $this->rbdigitalRawMetadata->narrators;
-            foreach ($authors as $author) {
-                //TODO: Reverse name?
-                $contributors[] = $author->text . '|Narrator';
-            }
-        }
-        return $contributors;
+        return [];
     }
 
     /**
@@ -266,13 +246,7 @@ class RbdigitalRecordDriver extends GroupedWorkSubDriver {
      */
     function getFormats()
     {
-        if ($this->rbdigitalProduct->mediaType == "eAudio") {
-            return ['eAudiobook'];
-        } elseif ($this->rbdigitalProduct->mediaType == "eMagazine"){
-            return ['eMagazine'];
-        } else {
-            return ['eBook'];
-        }
+        return ['eMagazine'];
     }
 
     /**
@@ -282,11 +256,7 @@ class RbdigitalRecordDriver extends GroupedWorkSubDriver {
      */
     function getFormatCategory()
     {
-        if ($this->rbdigitalProduct->mediaType == "eAudio"){
-            return ['eBook', 'Audio Books'];
-        } else {
-            return ['eBook'];
-        }
+        return ['eBook'];
     }
 
     public function getLanguage()
@@ -295,7 +265,6 @@ class RbdigitalRecordDriver extends GroupedWorkSubDriver {
     }
 
     public function getNumHolds(){
-        //TODO:  Check to see if we can determine number of holds on a title
         return 0;
     }
 
@@ -314,7 +283,7 @@ class RbdigitalRecordDriver extends GroupedWorkSubDriver {
      */
     function getPrimaryAuthor()
     {
-        return $this->rbdigitalProduct->primaryAuthor;
+        return "";
     }
 
     /**
@@ -322,7 +291,7 @@ class RbdigitalRecordDriver extends GroupedWorkSubDriver {
      */
     function getPublishers()
     {
-        return [$this->rbdigitalRawMetadata->publisher->text];
+        return [$this->rbdigitalRawMetadata->publisher];
     }
 
     /**
@@ -330,16 +299,16 @@ class RbdigitalRecordDriver extends GroupedWorkSubDriver {
      */
     function getPublicationDates()
     {
-        return [$this->rbdigitalRawMetadata->releasedDate];
+        return [$this->rbdigitalRawMetadata->coverDate];
     }
 
-	protected function getRecordType()
+    protected function getRecordType()
     {
-        return 'rbdigital';
+        return 'rbdigital_magazine';
     }
 
     function getRelatedRecord() {
-        $id = 'rbdigital:' . $this->id;
+        $id = 'rbdigital_magazine:' . $this->id;
         return $this->getGroupedWorkDriver()->getRelatedRecord($id);
     }
 
@@ -384,11 +353,7 @@ class RbdigitalRecordDriver extends GroupedWorkSubDriver {
      */
     function getSubtitle()
     {
-        if ($this->rbdigitalRawMetadata->hasSubtitle) {
-            return $this->rbdigitalRawMetadata->subtitle;
-        } else {
-            return "";
-        }
+        return "";
     }
 
     function isValid(){
@@ -398,10 +363,8 @@ class RbdigitalRecordDriver extends GroupedWorkSubDriver {
     function loadSubjects()
     {
         $subjects = [];
-        if ($this->rbdigitalRawMetadata->genres) {
-            foreach ($this->rbdigitalRawMetadata->genres as $genre){
-                $subjects[] = $genre->text;
-            }
+        if ($this->rbdigitalRawMetadata->genre) {
+            $subjects[] = $this->rbdigitalRawMetadata->genre;
         }
         global $interface;
         $interface->assign('subjects', $subjects);
@@ -414,7 +377,7 @@ class RbdigitalRecordDriver extends GroupedWorkSubDriver {
     public function getAccessOnlineLinkUrl($patron)
     {
         global $configArray;
-        return $configArray['Site']['url'] . '/Rbdigital/' . $this->id . '/AccessOnline?patronId=' . $patron->id;
+        return $configArray['Site']['url'] . '/RbdigitalMagazine/' . $this->id . '/AccessOnline?patronId=' . $patron->id;
     }
 
 	function getStatusSummary()
@@ -425,13 +388,12 @@ class RbdigitalRecordDriver extends GroupedWorkSubDriver {
 			$statusSummary['status'] = "Available from Rbdigital";
 			$statusSummary['available'] = true;
 			$statusSummary['class'] = 'available';
-			$statusSummary['showPlaceHold'] = false;
 			$statusSummary['showCheckout'] = true;
 		}else{
+			//Rbdigital magazines do not have the ability to place holds
 			$statusSummary['status'] = 'Checked Out';
 			$statusSummary['class'] = 'checkedOut';
 			$statusSummary['available'] = false;
-			$statusSummary['showPlaceHold'] = true;
 			$statusSummary['showCheckout'] = false;
 		}
 		return $statusSummary;

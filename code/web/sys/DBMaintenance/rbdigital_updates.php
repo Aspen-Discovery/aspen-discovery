@@ -88,11 +88,11 @@ function getRbdigitalUpdates() {
         ),
 
         'track_rbdigital_record_usage' => array(
-            'title' => 'Rbdigital Record Usage',
-            'description' => 'Add a table to track how records within Rbdigital are used.',
-            'continueOnError' => true,
-            'sql' => array(
-                "CREATE TABLE rbdigital_record_usage (
+			'title' => 'Rbdigital Record Usage',
+			'description' => 'Add a table to track how records within Rbdigital are used.',
+			'continueOnError' => true,
+			'sql' => array(
+				"CREATE TABLE rbdigital_record_usage (
                     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     rbdigitalId INT(11),
                     year INT(4) NOT NULL,
@@ -100,10 +100,27 @@ function getRbdigitalUpdates() {
                     timesHeld INT(11) NOT NULL,
                     timesCheckedOut INT(11) NOT NULL
                 ) ENGINE = InnoDB",
-                "ALTER TABLE rbdigital_record_usage ADD INDEX (rbdigitalId, year, month)",
-                "ALTER TABLE rbdigital_record_usage ADD INDEX (year, month)",
-            ),
-        ),
+				"ALTER TABLE rbdigital_record_usage ADD INDEX (rbdigitalId, year, month)",
+				"ALTER TABLE rbdigital_record_usage ADD INDEX (year, month)",
+			),
+		),
+
+		'track_rbdigital_magazine_usage' => array(
+			'title' => 'Rbdigital Magazine Usage',
+			'description' => 'Add a table to track how magazines within Rbdigital are used.',
+			'continueOnError' => true,
+			'sql' => array(
+				"CREATE TABLE rbdigital_magazine_usage (
+                    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                    magazineId INT(11),
+                    year INT(4) NOT NULL,
+                    month INT(2) NOT NULL,
+                    timesCheckedOut INT(11) NOT NULL
+                ) ENGINE = InnoDB",
+				"ALTER TABLE rbdigital_magazine_usage ADD INDEX (magazineId, year, month)",
+				"ALTER TABLE rbdigital_magazine_usage ADD INDEX (year, month)",
+			),
+		),
 
         'rbdigital_add_settings' => array(
             'title' => 'Add Rbdigital Settings',
@@ -135,5 +152,28 @@ function getRbdigitalUpdates() {
                 "ALTER TABLE rbdigital_export_log ADD COLUMN numMetadataChanges INT(11) DEFAULT 0",
             )
         ),
+
+		'rbdigital_magazine_export' => array(
+			'title' => 'Rbdigital magazine tables',
+			'description' => 'Create tables to store data exported from rbdigital.',
+			'sql' => array(
+				"CREATE TABLE rbdigital_magazine (
+                        id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                        magazineId VARCHAR(25) NOT NULL,
+                        issueId VARCHAR(25) NOT NULL,
+                        title VARCHAR(255),
+                        publisher VARCHAR(255),
+                        mediaType VARCHAR(50),
+                        language VARCHAR(50),
+                        rawChecksum BIGINT,
+                        rawResponse MEDIUMTEXT,
+                        dateFirstDetected bigint(20) DEFAULT NULL,
+                        lastChange INT(11) NOT NULL,
+                        deleted TINYINT NOT NULL DEFAULT 0,
+                        UNIQUE(magazineId, issueId)
+                    ) ENGINE = InnoDB",
+				"ALTER TABLE rbdigital_magazine ADD INDEX(lastChange)"
+			),
+		),
 	);
 }

@@ -70,6 +70,16 @@ class BookCoverProcessor{
                 if ($this->getHooplaCover($this->id)) {
                     return;
                 }
+            } else if ($this->type == 'rbdigital') {
+	            //Will exit if we find a cover
+	            if ($this->getRbdigitalCover($this->id)) {
+		            return;
+	            }
+            } else if ($this->type == 'rbdigital_magazine') {
+	            //Will exit if we find a cover
+	            if ($this->getRbdigitalMagazineCover($this->id)) {
+		            return;
+	            }
             } elseif ($this->type == 'Colorado State Government Documents') {
                 if ($this->getColoradoGovDocCover()) {
                     return;
@@ -116,7 +126,7 @@ class BookCoverProcessor{
                 if ($this->getSideLoadedCover($this->type . ':' . $this->id)) {
                     return;
                 }
-            } elseif (stripos($this->type, 'rbdigital') !== false || stripos($this->type, 'zinio') !== false) {
+            } elseif (stripos($this->type, 'zinio') !== false) {
                 if ($this->getZinioCover($this->type . ':' . $this->id)) {
                     return;
                 }
@@ -275,10 +285,23 @@ class BookCoverProcessor{
         require_once ROOT_DIR . '/RecordDrivers/RbdigitalRecordDriver.php';
         $driver = new RbdigitalRecordDriver($id);
         if ($driver) {
-            $coverUrl = $driver->getBookcoverUrl('large');
+            $coverUrl = $driver->getRbdigitalBookcoverUrl('large');
             return $this->processImageURL('rbdigital', $coverUrl, true);
         }
         return false;
+    }
+
+    private function getRbdigitalMagazineCover($id){
+	    if (strpos($id, ':') !== false){
+		    list(, $id) = explode(":", $id);
+	    }
+	    require_once ROOT_DIR . '/RecordDrivers/RbdigitalMagazineDriver.php';
+	    $driver = new RbdigitalMagazineDriver($id);
+	    if ($driver) {
+		    $coverUrl = $driver->getRbdigitalBookcoverUrl();
+		    return $this->processImageURL('rbdigital_magazine', $coverUrl, true);
+	    }
+	    return false;
     }
 
 	private function loadParameters(){
@@ -913,7 +936,11 @@ class BookCoverProcessor{
 					if ($this->getHooplaCover($relatedRecord->id)){
 						return true;
 					}
-				} elseif (stripos($relatedRecord->source, 'rbdigital') !== false){
+				} elseif (strcasecmp($relatedRecord->source, 'rbdigital_magazine') == 0){
+					if ($this->getRbdigitalMagazineCover($relatedRecord->id)) {
+						return true;
+					}
+				} elseif (strcasecmp($relatedRecord->source, 'rbdigital') == 0){
 					if ($this->getRbdigitalCover($relatedRecord->id)) {
 						return true;
 					}

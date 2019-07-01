@@ -152,7 +152,10 @@ class RecordDriverFactory {
         }elseif ($recordType == 'rbdigital'){
             require_once ROOT_DIR . '/RecordDrivers/RbdigitalRecordDriver.php';
             $recordDriver = new RbdigitalRecordDriver($recordId, $groupedWork);
-        }elseif ($recordType == 'external_econtent'){
+		}elseif ($recordType == 'rbdigital_magazine'){
+			require_once ROOT_DIR . '/RecordDrivers/RbdigitalMagazineDriver.php';
+			$recordDriver = new RbdigitalMagazineDriver($recordId, $groupedWork);
+		}elseif ($recordType == 'external_econtent'){
 			require_once ROOT_DIR . '/RecordDrivers/ExternalEContentDriver.php';
 			$recordDriver = new ExternalEContentDriver($recordId, $groupedWork);
 		}elseif ($recordType == 'hoopla'){

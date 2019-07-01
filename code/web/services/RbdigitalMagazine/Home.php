@@ -1,9 +1,9 @@
 <?php
 
-require_once ROOT_DIR . '/sys/Rbdigital/RbdigitalProduct.php';
-require_once ROOT_DIR . '/RecordDrivers/RbdigitalRecordDriver.php';
+require_once ROOT_DIR . '/sys/Rbdigital/RbdigitalMagazine.php';
+require_once ROOT_DIR . '/RecordDrivers/RbdigitalMagazineDriver.php';
 
-class Rbdigital_Home extends Action{
+class RbdigitalMagazine_Home extends Action{
 	private $id;
 
 	function launch(){
@@ -18,7 +18,7 @@ class Rbdigital_Home extends Action{
 
 		$this->id = strip_tags($_REQUEST['id']);
 		$interface->assign('id', $this->id);
-		$recordDriver = new RbdigitalRecordDriver($this->id);
+		$recordDriver = new RbdigitalMagazineDriver($this->id);
 
 		if (!$recordDriver->isValid()){
 			$this->display('../Record/invalidRecord.tpl', 'Invalid Record');
@@ -34,7 +34,7 @@ class Rbdigital_Home extends Action{
 			$interface->assign('groupedWorkDriver', $recordDriver->getGroupedWorkDriver());
 
 			//Load status summary
-            $holdingsSummary = $recordDriver->getStatusSummary();
+			$holdingsSummary = $recordDriver->getStatusSummary();
 			$interface->assign('holdingsSummary', $holdingsSummary);
 
 			//Load the citations
