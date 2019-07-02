@@ -1,5 +1,5 @@
 {strip}
-	<div id="rbdigitalCheckout_{$record.recordId|escape}" class="result row">
+	<div id="rbdigitalMagazineCheckout_{$record.recordId|escape}" class="result row">
 
 		{* Cover Column *}
 		{if $showCovers}
@@ -7,9 +7,7 @@
 			<div class="col-xs-3 col-sm-4 col-md-3 checkedOut-covers-column">
 				<div class="row">
 					<div class="selectTitle hidden-xs col-sm-1">
-						{if !isset($record.canrenew) || $record.canrenew == true}
-							<input type="checkbox" name="selected[{$record.userId}|{$record.recordId}]" class="titleSelect" id="selected{$record.recordId}">
-						{/if}
+
 					</div>
 					<div class="{*coverColumn *}text-center col-xs-12 col-sm-10">
 						{if $disableCoverArt != 1}{*TODO: should become part of $showCovers *}
@@ -28,9 +26,7 @@
 			</div>
 		{else}
 			<div class="col-xs-1">
-				{if !isset($record.canrenew) || $record.canrenew == true}
-					<input type="checkbox" name="selected[{$record.userId}|{$record.recordId}]" class="titleSelect" id="selected{$record.recordId}">
-				{/if}
+
 			</div>
 		{/if}
 
@@ -53,10 +49,10 @@
 			</div>
 			<div class="row">
 				<div class="resultDetails col-xs-12 col-md-9">
-					{if strlen($record.author) > 0}
+					{if strlen($record.publisher) > 0}
 						<div class="row">
-							<div class="result-label col-tn-4 col-lg-3">{translate text='Author'}</div>
-							<div class="result-value col-tn-8 col-lg-9">{$record.author}</div>
+							<div class="result-label col-tn-4 col-lg-3">{translate text='Publisher'}</div>
+							<div class="result-value col-tn-8 col-lg-9">{$record.publisher}</div>
 						</div>
 					{/if}
 
@@ -82,24 +78,13 @@
 							</div>
 						</div>
 					{/if}
-
-					<div class="row">
-						<div class="result-label col-tn-4 col-lg-3">{translate text='Expires'}</div>
-						<div class="result-value col-tn-8 col-lg-9">{$record.dueDate|date_format}</div>
-					</div>
 				</div>
 
 				{* Actions for Title *}
 				<div class="col-xs-9 col-sm-8 col-md-4 col-lg-3">
 					<div class="btn-group btn-group-vertical btn-block">
 						<a href="{$record.accessOnlineUrl}" target="_blank" class="btn btn-sm btn-primary">{translate text='Open in Rbdigital'}</a>
-						{if $record.downloadUrl}
-							<a href="{$record.downloadUrl}" target="_blank" class="btn btn-sm btn-primary">{translate text='Download'}</a>
-						{/if}
-						{if $record.canRenew}
-							<a href="#" onclick="return AspenDiscovery.Rbdigital.renewCheckout('{$record.userId}', '{$record.recordId}');" class="btn btn-sm btn-info">{translate text='Renew Checkout'}</a>
-						{/if}
-						<a href="#" onclick="return AspenDiscovery.Rbdigital.returnCheckout('{$record.userId}', '{$record.recordId}');" class="btn btn-sm btn-warning">{translate text='Return&nbsp;Now'}</a>
+						<a href="#" onclick="return AspenDiscovery.Rbdigital.returnMagazine('{$record.userId}', '{$record.recordId}');" class="btn btn-sm btn-warning">{translate text='Return&nbsp;Now'}</a>
 					</div>
 				</div>
 			</div>

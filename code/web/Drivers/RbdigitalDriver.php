@@ -127,11 +127,45 @@ class RbdigitalDriver extends AbstractEContentDriver
             }
 
             //Look for magazines
-	        $patronMagazinesUrl = $this->webServiceURL . '/v1/libraries/' . $this->libraryId . '/patrons/' . $rbdigitalId. '/patron-magazines/history';
+	        $patronMagazinesUrl = $this->webServiceURL . '/v1/libraries/' . $this->libraryId . '/patrons/' . $rbdigitalId. '/patron-magazines/history?pageIndex=0&pageSize=100';
 	        $patronMagazinesRaw = $this->curlWrapper->curlGetPage($patronMagazinesUrl);
 	        $patronMagazines = json_decode($patronMagazinesRaw);
 	        foreach ($patronMagazines->resultSet as $patronMagazine){
+		        $patronMagazineDetails = $patronMagazine->item;
+		        $checkout = array();
+		        $checkout['checkoutSource'] = 'RbdigitalMagazine';
 
+		        $checkout['id'] = $patronMagazineDetails->issueId;
+		        $checkout['recordId'] = $patronMagazineDetails->magazineId;
+		        $checkout['title'] = $patronMagazineDetails->title;
+		        $checkout['publisher'] = $patronMagazineDetails->publisher;
+				$checkout['canRenew'] = false;
+		        $checkout['downloadUrl'] = $patronCheckout->downloadUrl;
+		        $checkout['accessOnlineUrl'] = '';
+
+		        if ($checkout['id'] && strlen($checkout['id']) > 0){
+			        require_once ROOT_DIR . '/RecordDrivers/RbdigitalMagazineDriver.php';
+			        $recordDriver = new RbdigitalMagazineDriver($checkout['recordId']);
+			        if ($recordDriver->isValid()){
+				        $checkout['coverUrl']      = $recordDriver->getBookcoverUrl('medium');
+				        $checkout['groupedWorkId'] = $recordDriver->getGroupedWorkId();
+				        $checkout['ratingData']    = $recordDriver->getRatingData();
+				        $checkout['format']        = $recordDriver->getPrimaryFormat();
+				        $checkout['title']         = $recordDriver->getTitle();
+				        $curTitle['title_sort']    = $recordDriver->getTitle();
+				        $checkout['linkUrl']       = $recordDriver->getLinkUrl();
+				        $checkout['accessOnlineUrl'] = $recordDriver->getAccessOnlineLinkUrl($patron);
+			        }else{
+				        $checkout['coverUrl'] = "";
+				        $checkout['groupedWorkId'] = "";
+				        $checkout['format'] = $patronCheckout->mediaType;
+			        }
+		        }
+
+		        $checkout['user'] = $patron->getNameAndLibraryLabel();
+		        $checkout['userId'] = $patron->id;
+
+		        $checkouts[] = $checkout;
 	        }
 
         }
@@ -201,27 +235,14 @@ class RbdigitalDriver extends AbstractEContentDriver
 				$actionUrl = $this->webServiceURL . '/v1/libraries/' . $this->libraryId . '/patrons/' . $rbdigitalId. '/patron-magazines/' . $product->issueId;
 				// /v{version}/libraries/{libraryId}/patrons/{patronId}/patron-magazines/{issueId}
 
-				$rawResponse = $this->curlWrapper->curlPostPage($actionUrl, '');
-				if ($rawResponse == false){
-					$result['message'] = "Invalid information returned from API, please retry your checkout after a few minutes.";
-					global $logger;
-					$logger->log("Invalid information from rbdigital api\r\n$actionUrl\r\n$rawResponse", Logger::LOG_ERROR);
-					$logger->log(print_r($this->curlWrapper->getHeaders(), true), Logger::LOG_ERROR);
-					$curl_info = curl_getinfo($this->curlWrapper->curl_connection);
-					$logger->log(print_r($curl_info, true), Logger::LOG_ERROR);
-				}else{
-					$response = json_decode($rawResponse);
-					if (!empty($response->output) && $response->output == 'SUCCESS') {
-						$this->trackUserUsageOfRbdigital($patron);
-						$this->trackMagazineCheckout($recordId);
+				//Rbdigital does not return a status so we assume that it checked out ok
+				$this->curlWrapper->curlPostPage($actionUrl, '');
 
-						$result['success'] = true;
-						$result['message'] = 'Your title was checked out successfully. You can read the magazine from the rbdigital app.';
-					} else {
-						$result['message'] = $response->output;
-					}
+				$this->trackUserUsageOfRbdigital($patron);
+				$this->trackMagazineCheckout($recordId);
 
-				}
+				$result['success'] = true;
+				$result['message'] = 'The magazine was checked out successfully. You can read the magazine from the rbdigital app.';
 			}else{
 				$result['message'] = "Could not find magazine to checkout";
 			}
@@ -363,6 +384,44 @@ class RbdigitalDriver extends AbstractEContentDriver
         }
         return $result;
     }
+
+	/**
+	 * Return a magazine currently checked out to the user
+	 *
+	 * @param $patron     User
+	 * @param $magazineId   string
+	 * @return array
+	 */
+	public function returnMagazine($patron, $magazineId)
+	{
+		$result = ['success' => false, 'message' => 'Unknown error'];
+
+		$rbdigitalId = $this->getRbdigitalId($patron);
+		if ($rbdigitalId == false) {
+			$result['message'] = 'Sorry, you are not registered with Rbdigital.  You will need to create an account there before continuing.';
+		} else {
+			require_once ROOT_DIR . '/sys/Rbdigital/RbdigitalMagazine.php';
+			$product = new RbdigitalMagazine();
+			$product->magazineId = $magazineId;
+			if ($product->find(true)) {
+				$actionUrl = $this->webServiceURL . '/v1/libraries/' . $this->libraryId . '/patrons/' . $rbdigitalId . '/patron-magazines/' . $product->issueId;
+
+				$rawResponse = $this->curlWrapper->curlSendPage($actionUrl, 'DELETE');
+				$response = json_decode($rawResponse);
+				if ($response == false) {
+					$result['message'] = "Invalid information returned from API, please retry your action after a few minutes.";
+					global $logger;
+					$logger->log("Invalid information from rbdigital api " . $rawResponse, Logger::LOG_ERROR);
+				} else {
+					$result['success'] = true;
+					$result['message'] = "Your title was returned successfully.";
+				}
+			}else{
+				$result['message'] = "Could not find the magazine to return";
+			}
+		}
+		return $result;
+	}
 
     private $holds = array();
     /**
@@ -602,6 +661,12 @@ class RbdigitalDriver extends AbstractEContentDriver
 
     }
 
+	public function redirectToRbdigitalMagazine(/** @noinspection PhpUnusedParameterInspection */ User $patron, RbdigitalMagazineDriver $recordDriver)
+	{
+		header('Location:' . $recordDriver->getRbdigitalLinkUrl());
+		die();
+	}
+
     public function redirectToRbdigital(/** @noinspection PhpUnusedParameterInspection */ User $patron, RbdigitalRecordDriver $recordDriver)
     {
         header('Location:' . $this->userInterfaceURL . '/book/' . $recordDriver->getUniqueID());
@@ -716,7 +781,6 @@ class RbdigitalDriver extends AbstractEContentDriver
 				$recordUsage->update();
 			} else {
 				$recordUsage->timesCheckedOut = 1;
-				$recordUsage->timesHeld = 0;
 				$recordUsage->insert();
 			}
 		}

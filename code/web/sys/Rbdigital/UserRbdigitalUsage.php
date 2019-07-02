@@ -9,5 +9,5 @@ class UserRbdigitalUsage extends DataObject
     public $recordId;
     public $year;
     public $month;
-    public $usageCount; //Number of holds/clicks to online for sideloads
+    public $usageCount; //Number of holds/clicks
 }

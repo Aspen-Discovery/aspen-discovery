@@ -196,20 +196,18 @@ class RbdigitalMagazineDriver extends GroupedWorkSubDriver {
     {
         $actions = array();
         if ($isAvailable){
-//            $actions[] = array(
-//                'title' => 'Check Out Rbdigital',
-//                'onclick' => "return AspenDiscovery.Rbdigital.checkOutMagazine('{$this->id}');",
-//                'requireLogin' => false,
-//            );
-	        require_once ROOT_DIR . '/Drivers/RbdigitalDriver.php';
-	        $rbdigitalDriver = new RbdigitalDriver();
+            $actions[] = array(
+                'title' => 'Check Out Rbdigital',
+                'onclick' => "return AspenDiscovery.Rbdigital.checkOutMagazine('{$this->id}');",
+                'requireLogin' => false,
+            );
 
-	        $actions[] = array(
-		        'title' => 'Access Online',
-		        'url' => $rbdigitalDriver->getUserInterfaceURL() . '/magazine/' . $this->rbdigitalProduct->magazineId . '/' . $this->rbdigitalProduct->issueId,
-		        'onclick' => "",
-		        'requireLogin' => false,
-	        );
+//	        $actions[] = array(
+//		        'title' => 'Access Online',
+//		        'url' => $this->getRbdigitalLinkUrl(),
+//		        'onclick' => "",
+//		        'requireLogin' => false,
+//	        );
         }else{
             $actions[] = array(
                 'title' => 'Place Hold Rbdigital',
@@ -397,5 +395,12 @@ class RbdigitalMagazineDriver extends GroupedWorkSubDriver {
 			$statusSummary['showCheckout'] = false;
 		}
 		return $statusSummary;
+	}
+
+	function getRbdigitalLinkUrl()
+	{
+		require_once ROOT_DIR . '/Drivers/RbdigitalDriver.php';
+		$rbdigitalDriver = new RbdigitalDriver();
+		return $rbdigitalDriver->getUserInterfaceURL() . '/magazine/' . $this->rbdigitalProduct->magazineId . '/' . $this->rbdigitalProduct->issueId;
 	}
 }

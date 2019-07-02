@@ -306,4 +306,23 @@ class Rbdigital_AJAX extends Action {
             return json_encode(array('result'=>false, 'message'=>'You must be logged in to return titles.'));
         }
     }
+
+	function returnMagazine(){
+		$user = UserAccount::getLoggedInUser();
+		$id = $_REQUEST['recordId'];
+		if ($user){
+			$patronId = $_REQUEST['patronId'];
+			$patron = $user->getUserReferredTo($patronId);
+			if ($patron) {
+				require_once ROOT_DIR . '/Drivers/RbdigitalDriver.php';
+				$driver = new RbdigitalDriver();
+				$result = $driver->returnMagazine($patron, $id);
+				return json_encode($result);
+			}else{
+				return json_encode(array('result'=>false, 'message'=>'Sorry, it looks like you don\'t have permissions to modify checkouts for that user.'));
+			}
+		}else{
+			return json_encode(array('result'=>false, 'message'=>'You must be logged in to return titles.'));
+		}
+	}
 }

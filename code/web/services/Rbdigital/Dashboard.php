@@ -4,6 +4,7 @@ require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/sys/Rbdigital/UserRbdigitalUsage.php';
 require_once ROOT_DIR . '/sys/Rbdigital/RbdigitalRecordUsage.php';
+require_once ROOT_DIR . '/sys/Rbdigital/RbdigitalMagazineUsage.php';
 
 class Rbdigital_Dashboard extends Admin_Admin
 {
@@ -33,26 +34,36 @@ class Rbdigital_Dashboard extends Admin_Admin
         $activeUsersAllTime = $this->getUserStats(null, null);
         $interface->assign('activeUsersAllTime', $activeUsersAllTime);
 
-        list($activeRecordsThisMonth, $loansThisMonth, $holdsThisMonth) = $this->getRecordStats($thisMonth, $thisYear);
+        list($activeRecordsThisMonth, $loansThisMonth, $holdsThisMonth, $activeMagazinesThisMonth, $magazineLoansThisMonth) = $this->getRecordStats($thisMonth, $thisYear);
         $interface->assign('activeRecordsThisMonth', $activeRecordsThisMonth);
         $interface->assign('loansThisMonth', $loansThisMonth);
         $interface->assign('holdsThisMonth', $holdsThisMonth);
-        list($activeRecordsLastMonth, $loansLastMonth, $holdsLastMonth) = $this->getRecordStats($lastMonth, $lastMonthYear);
+	    $interface->assign('activeMagazinesThisMonth', $activeMagazinesThisMonth);
+	    $interface->assign('magazineLoansThisMonth', $magazineLoansThisMonth);
+        list($activeRecordsLastMonth, $loansLastMonth, $holdsLastMonth, $activeMagazinesLastMonth, $magazineLoansLastMonth) = $this->getRecordStats($lastMonth, $lastMonthYear);
         $interface->assign('activeRecordsLastMonth', $activeRecordsLastMonth);
         $interface->assign('loansLastMonth', $loansLastMonth);
         $interface->assign('holdsLastMonth', $holdsLastMonth);
-        list($activeRecordsThisYear, $loansThisYear, $holdsThisYear) = $this->getRecordStats(null, $thisYear);
+	    $interface->assign('activeMagazinesLastMonth', $activeMagazinesLastMonth);
+	    $interface->assign('magazineLoansLastMonth', $magazineLoansLastMonth);
+        list($activeRecordsThisYear, $loansThisYear, $holdsThisYear, $activeMagazinesThisYear, $magazineLoansThisYear) = $this->getRecordStats(null, $thisYear);
         $interface->assign('activeRecordsThisYear', $activeRecordsThisYear);
         $interface->assign('loansThisYear', $loansThisYear);
         $interface->assign('holdsThisYear', $holdsThisYear);
-        list($activeRecordsLastYear, $loansLastYear, $holdsLastYear) = $this->getRecordStats(null, $lastYear);
+	    $interface->assign('activeMagazinesThisYear', $activeMagazinesThisYear);
+	    $interface->assign('magazineLoansThisYear', $magazineLoansThisYear);
+        list($activeRecordsLastYear, $loansLastYear, $holdsLastYear, $activeMagazinesLastYear, $magazineLoansLastYear) = $this->getRecordStats(null, $lastYear);
         $interface->assign('activeRecordsLastYear', $activeRecordsLastYear);
         $interface->assign('loansLastYear', $loansLastYear);
         $interface->assign('holdsLastYear', $holdsLastYear);
-        list($activeRecordsAllTime, $loansAllTime, $holdsAllTime) = $this->getRecordStats(null, null);
+	    $interface->assign('activeMagazinesLastYear', $activeMagazinesLastYear);
+	    $interface->assign('magazineLoansLastYear', $magazineLoansLastYear);
+        list($activeRecordsAllTime, $loansAllTime, $holdsAllTime, $activeMagazinesAllTime, $magazineLoansAllTime) = $this->getRecordStats(null, null);
         $interface->assign('activeRecordsAllTime', $activeRecordsAllTime);
         $interface->assign('loansAllTime', $loansAllTime);
         $interface->assign('holdsAllTime', $holdsAllTime);
+	    $interface->assign('activeMagazinesAllTime', $activeMagazinesAllTime);
+	    $interface->assign('magazineLoansAllTime', $magazineLoansAllTime);
 
         $this->display('dashboard.tpl', 'Rbdigital Dashboard');
     }
@@ -99,8 +110,26 @@ class Rbdigital_Dashboard extends Admin_Admin
         $usage->selectAdd('SUM(timesCheckedOut) as totalCheckouts');
         $usage->find(true);
 
+	    $magazineUsage = new RbdigitalMagazineUsage();
+	    if ($month != null){
+		    $magazineUsage->month = $month;
+	    }
+	    if ($year != null){
+		    $magazineUsage->year = $year;
+	    }
+	    $magazineUsage->selectAdd(null);
+	    $magazineUsage->selectAdd('COUNT(id) as recordsUsed');
+	    $magazineUsage->selectAdd('SUM(timesCheckedOut) as totalCheckouts');
+	    $magazineUsage->find(true);
+
         /** @noinspection PhpUndefinedFieldInspection */
-        return [$usage->recordsUsed, (($usage->totalCheckouts != null) ? $usage->totalCheckouts : 0), (($usage->totalHolds != null) ? $usage->totalHolds : 0)];
+        return [
+        	$usage->recordsUsed,
+	        (($usage->totalCheckouts != null) ? $usage->totalCheckouts : 0),
+	        (($usage->totalHolds != null) ? $usage->totalHolds : 0),
+	        $magazineUsage->recordsUsed,
+	        (($magazineUsage->totalCheckouts != null) ? $magazineUsage->totalCheckouts : 0),
+        ];
     }
 
 }

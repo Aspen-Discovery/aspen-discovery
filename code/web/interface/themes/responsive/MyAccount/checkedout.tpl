@@ -51,6 +51,8 @@
 								{include file="MyAccount/hooplaCheckedOutTitle.tpl" record=$checkedOutTitle resultIndex=$smarty.foreach.checkedOutTitleLoop.iteration}
 							{elseif $checkedOutTitle.checkoutSource == 'Rbdigital'}
 								{include file="MyAccount/rbdigitalCheckedOutTitle.tpl" record=$checkedOutTitle resultIndex=$smarty.foreach.checkedOutTitleLoop.iteration}
+							{elseif $checkedOutTitle.checkoutSource == 'RbdigitalMagazine'}
+								{include file="MyAccount/rbdigitalCheckedOutMagazine.tpl" record=$checkedOutTitle resultIndex=$smarty.foreach.checkedOutTitleLoop.iteration}
 							{else}
 								<div class="row">
 									{translate text="Unknown record source"} {$checkedOutTitle.checkoutSource}

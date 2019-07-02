@@ -76,7 +76,7 @@ AspenDiscovery.Rbdigital = (function(){
                 }else{
                     $("#password_validation").hide();
                 }
-                formValues += '&password=' +  encodeURIComponent($('#password1').val());
+                formValues += '&password=' +  password1;
                 formValues += '&libraryCard=' +  encodeURIComponent($('#libraryCard').val());
                 formValues += '&firstName=' + encodeURIComponent($('#firstName').val());
                 formValues += '&lastName=' + encodeURIComponent($('#lastName').val());
@@ -328,6 +328,29 @@ AspenDiscovery.Rbdigital = (function(){
                 async: false,
                 error: function(){
                     AspenDiscovery.showMessage("Error Returning Checkout", "An error occurred processing your request in Rbdigital.  Please try again in a few minutes.", false);
+                }
+            });
+        },
+
+        returnMagazine: function(patronId, recordId){
+            let url = Globals.path + "/Rbdigital/AJAX?method=returnMagazine&patronId=" + patronId + "&recordId=" + recordId;
+            $.ajax({
+                url: url,
+                cache: false,
+                success: function(data){
+                    if (data.success) {
+                        AspenDiscovery.showMessage("Magazine Returned", data.message, true);
+                        $("#rbdigitalMagazineCheckout_" + recordId).hide();
+                        AspenDiscovery.Account.loadMenuData();
+                    }else{
+                        AspenDiscovery.showMessage("Error Returning Magazine", data.message, true);
+                    }
+
+                },
+                dataType: 'json',
+                async: false,
+                error: function(){
+                    AspenDiscovery.showMessage("Error Returning Magazine", "An error occurred processing your request in Rbdigital.  Please try again in a few minutes.", false);
                 }
             });
         }
