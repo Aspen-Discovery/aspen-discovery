@@ -42,6 +42,8 @@ public class Scope implements Comparable<Scope>{
 	private boolean includeOnlineMaterialsInAvailableToggle  = true;
 
 	private HooplaScope hooplaScope;
+	private RbdigitalScope rbdigitalScope;
+
 	public String getScopeName() {
 		return scopeName;
 	}
@@ -310,11 +312,19 @@ public class Scope implements Comparable<Scope>{
 		return hooplaScope;
 	}
 
-	public void setHooplaScope(HooplaScope hooplaScope) {
+	void setHooplaScope(HooplaScope hooplaScope) {
 		this.hooplaScope = hooplaScope;
 	}
 
-	public class InclusionResult{
+    void setRbdigitalScope(RbdigitalScope rbdigitalScope) {
+        this.rbdigitalScope = rbdigitalScope;
+    }
+
+    public RbdigitalScope getRbdigitalScope() {
+        return rbdigitalScope;
+    }
+
+    public class InclusionResult{
 		public boolean isIncluded;
 		public String localUrl;
 

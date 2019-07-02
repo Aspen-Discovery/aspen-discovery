@@ -175,5 +175,20 @@ function getRbdigitalUpdates() {
 				"ALTER TABLE rbdigital_magazine ADD INDEX(lastChange)"
 			),
 		),
+
+		'rbdigital_scoping' => [
+			'title' => 'Rbdigital Scoping',
+			'description' => 'Add a table to define what information should be included within search results',
+			'sql' => [
+				'CREATE TABLE rbdigital_scopes (
+    				id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    				name VARCHAR(50) NOT NULL,
+    				includeEBooks TINYINT DEFAULT 1,
+    				includeEAudiobook TINYINT DEFAULT 1,
+    				includeEMagazines TINYINT DEFAULT 1,
+    				restrictToChildrensMaterial TINYINT DEFAULT 0
+				) ENGINE = InnoDB'
+			]
+		],
 	);
 }

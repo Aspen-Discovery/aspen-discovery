@@ -1,6 +1,5 @@
 <?php
 
-
 class HooplaScope extends DataObject
 {
 	public $__table = 'hoopla_scopes';

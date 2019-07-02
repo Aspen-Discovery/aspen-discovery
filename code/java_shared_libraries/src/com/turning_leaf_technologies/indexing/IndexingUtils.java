@@ -16,10 +16,11 @@ public class IndexingUtils {
         //Setup translation maps for system and location
         try {
             HashMap<Long, HooplaScope> hooplaScopes = loadHooplaScopes(dbConn, logger);
+            HashMap<Long, RbdigitalScope> rbdigitalScopes = loadRbdigitalScopes(dbConn, logger);
 
-            loadLibraryScopes(scopes, hooplaScopes, dbConn);
+            loadLibraryScopes(scopes, hooplaScopes, rbdigitalScopes, dbConn);
 
-            loadLocationScopes(scopes, hooplaScopes, dbConn);
+            loadLocationScopes(scopes, hooplaScopes, rbdigitalScopes, dbConn);
         } catch (SQLException e) {
             logger.error("Error setting up scopes", e);
         }
@@ -64,7 +65,31 @@ public class IndexingUtils {
         return hooplaScopes;
     }
 
-    private static void loadLocationScopes(TreeSet<Scope> scopes, HashMap<Long, HooplaScope> hooplaScopes, Connection dbConn) throws SQLException {
+    private static HashMap<Long, RbdigitalScope> loadRbdigitalScopes(Connection dbConn, Logger logger) {
+        HashMap<Long, RbdigitalScope> rbdigitalScopes = new HashMap<>();
+        try {
+            PreparedStatement rbdigitalScopeStmt = dbConn.prepareStatement("SELECT * from rbdigital_scopes", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+            ResultSet rbdigitalScopesRS = rbdigitalScopeStmt.executeQuery();
+
+            while (rbdigitalScopesRS.next()){
+                RbdigitalScope rbdigitalScope = new RbdigitalScope();
+                rbdigitalScope.setId(rbdigitalScopesRS.getLong("id"));
+                rbdigitalScope.setName(rbdigitalScopesRS.getString("name"));
+                rbdigitalScope.setIncludeEBooks(rbdigitalScopesRS.getBoolean("includeEBooks"));
+                rbdigitalScope.setIncludeEMagazines(rbdigitalScopesRS.getBoolean("includeEMagazines"));
+                rbdigitalScope.setIncludeEAudiobook(rbdigitalScopesRS.getBoolean("includeEAudiobook"));
+                rbdigitalScope.setRestrictToChildrensMaterial(rbdigitalScopesRS.getBoolean("restrictToChildrensMaterial"));
+
+                rbdigitalScopes.put(rbdigitalScope.getId(), rbdigitalScope);
+            }
+
+        }catch (SQLException e) {
+            logger.error("Error loading hoopla scopes", e);
+        }
+        return rbdigitalScopes;
+    }
+
+    private static void loadLocationScopes(TreeSet<Scope> scopes, HashMap<Long, HooplaScope> hooplaScopes, HashMap<Long, RbdigitalScope> rbdigitalScopes, Connection dbConn) throws SQLException {
         PreparedStatement locationInformationStmt = dbConn.prepareStatement("SELECT library.libraryId, locationId, code, subLocation, ilsCode, " +
                         "library.subdomain, location.facetLabel, location.displayName, library.pTypes, library.restrictOwningBranchesAndSystems, location.publicListsToInclude, " +
                         "library.enableOverdriveCollection as enableOverdriveCollectionLibrary, " +
@@ -75,7 +100,8 @@ public class IndexingUtils {
                         "location.additionalLocationsToShowAvailabilityFor, includeAllLibraryBranchesInFacets, " +
                         "location.includeAllRecordsInShelvingFacets, location.includeAllRecordsInDateAddedFacets, location.baseAvailabilityToggleOnLocalHoldingsOnly, " +
                         "location.includeOnlineMaterialsInAvailableToggle, location.includeLibraryRecordsToInclude, " +
-                        "library.hooplaScopeId as hooplaScopeLibrary, location.hooplaScopeId as hooplaScopeLocation " +
+                        "library.hooplaScopeId as hooplaScopeLibrary, location.hooplaScopeId as hooplaScopeLocation, " +
+                        "library.rbdigitalScopeId as rbdigitalScopeLibrary, location.rbdigitalScopeId as rbdigitalScopeLocation " +
                         "FROM location INNER JOIN library on library.libraryId = location.libraryId ORDER BY code ASC",
                 ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
         PreparedStatement locationOwnedRecordRulesStmt = dbConn.prepareStatement("SELECT location_records_owned.*, indexing_profiles.name FROM location_records_owned INNER JOIN indexing_profiles ON indexingProfileId = indexing_profiles.id WHERE locationId = ?",
@@ -137,6 +163,16 @@ public class IndexingUtils {
                 }
             }else{
                 locationScopeInfo.setHooplaScope(hooplaScopes.get(hooplaScopeLocation));
+            }
+
+            long rbdigitalScopeLocation = locationInformationRS.getLong("rbdigitalScopeLocation");
+            long rbdigitalScopeLibrary = locationInformationRS.getLong("rbdigitalScopeLibrary");
+            if (rbdigitalScopeLocation == -1 ){
+                if (rbdigitalScopeLibrary != -1) {
+                    locationScopeInfo.setRbdigitalScope(rbdigitalScopes.get(rbdigitalScopeLibrary));
+                }
+            }else{
+                locationScopeInfo.setRbdigitalScope(rbdigitalScopes.get(rbdigitalScopeLocation));
             }
 
             //Load information about what should be included in the scope
@@ -206,11 +242,11 @@ public class IndexingUtils {
     }
 
     private static PreparedStatement libraryRecordInclusionRulesStmt;
-    private static void loadLibraryScopes(TreeSet<Scope> scopes, HashMap<Long, HooplaScope> hooplaScopes, Connection dbConn) throws SQLException {
+    private static void loadLibraryScopes(TreeSet<Scope> scopes, HashMap<Long, HooplaScope> hooplaScopes, HashMap<Long, RbdigitalScope> rbdigitalScopes, Connection dbConn) throws SQLException {
         PreparedStatement libraryInformationStmt = dbConn.prepareStatement("SELECT libraryId, ilsCode, subdomain, " +
                         "displayName, facetLabel, pTypes, enableOverdriveCollection, restrictOwningBranchesAndSystems, publicListsToInclude, " +
                         "additionalLocationsToShowAvailabilityFor, includeOverdriveAdult, includeOverdriveTeen, includeOverdriveKids, " +
-                        "includeAllRecordsInShelvingFacets, includeAllRecordsInDateAddedFacets, includeOnlineMaterialsInAvailableToggle, hooplaScopeId " +
+                        "includeAllRecordsInShelvingFacets, includeAllRecordsInDateAddedFacets, includeOnlineMaterialsInAvailableToggle, hooplaScopeId, rbdigitalScopeId " +
                         "FROM library ORDER BY ilsCode ASC",
                 ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
         PreparedStatement libraryOwnedRecordRulesStmt = dbConn.prepareStatement("SELECT library_records_owned.*, indexing_profiles.name from library_records_owned INNER JOIN indexing_profiles ON indexingProfileId = indexing_profiles.id WHERE libraryId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
@@ -257,6 +293,11 @@ public class IndexingUtils {
             long hooplaScopeLibrary = libraryInformationRS.getLong("hooplaScopeId");
             if (hooplaScopeLibrary != -1) {
                 newScope.setHooplaScope(hooplaScopes.get(hooplaScopeLibrary));
+            }
+
+            long rbdigitalScopeLibrary = libraryInformationRS.getLong("rbdigitalScopeId");
+            if (rbdigitalScopeLibrary != -1) {
+                newScope.setRbdigitalScope(rbdigitalScopes.get(rbdigitalScopeLibrary));
             }
 
             newScope.setRestrictOwningLibraryAndLocationFacets(libraryInformationRS.getBoolean("restrictOwningBranchesAndSystems"));

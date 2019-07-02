@@ -42,6 +42,7 @@ class Location extends DataObject
 	public $includeOverDriveTeen;
 	public $includeOverDriveKids;
 	public $hooplaScopeId;
+	public $rbdigitalScopeId;
 	public $showHoldButton;
 	public $showStandardReviews;
 	public $repeatSearchOption;
@@ -174,6 +175,16 @@ class Location extends DataObject
 	    $hooplaScopes[-1] = 'none';
 	    while ($hooplaScope->fetch()){
 		    $hooplaScopes[$hooplaScope->id] = $hooplaScope->name;
+	    }
+
+	    require_once ROOT_DIR . '/sys/Rbdigital/RbdigitalScope.php';
+	    $rbdigitalScope = new RbdigitalScope();
+	    $rbdigitalScope->orderBy('name');
+	    $rbdigitalScopes = [];
+	    $rbdigitalScope->find();
+	    $rbdigitalScopes[-1] = 'none';
+	    while ($rbdigitalScope->fetch()){
+		    $rbdigitalScopes[$rbdigitalScope->id] = $rbdigitalScope->name;
 	    }
 
 	    $structure = array(
@@ -341,8 +352,12 @@ class Location extends DataObject
 			)),
 
 		    'hooplaSection' => array('property'=>'hooplaSection', 'type' => 'section', 'label' =>'Hoopla', 'hideInLists' => true, 'properties' => array(
-			    'hooplaScopeId' => array('property'=>'hooplaScopeId', 'type'=>'enum','values'=>$hooplaScopes, 'description'=>'The hoopla scope to use', 'hideInLists' => true, 'default'=>-1),
+			    'hooplaScopeId' => array('property'=>'hooplaScopeId', 'type'=>'enum','values'=>$hooplaScopes, 'label'=>'Hoopla Scope', 'description'=>'The hoopla scope to use', 'hideInLists' => true, 'default'=>-1),
 	        )),
+
+		    'rbdigitalSection' => array('property'=>'rbdigitalSection', 'type' => 'section', 'label' =>'Rbdigital', 'hideInLists' => true, 'properties' => array(
+			    'rbdigitalScopeId'        => array('property'=>'rbdigitalScopeId', 'type'=>'enum','values'=>$rbdigitalScopes,  'label'=>'Rbdigital Scope', 'description'=>'The rbdigital scope to use', 'hideInLists' => true, 'default'=>-1),
+		    )),
 
 			array(
 				'property' => 'hours',

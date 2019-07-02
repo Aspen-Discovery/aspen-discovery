@@ -73,6 +73,7 @@ class Library extends DataObject
 	public $overdriveAdvantageProductsKey;
 	public $hooplaLibraryID;
 	public $hooplaScopeId;
+	public $rbdigitalScopeId;
 	public $systemsToRepeatIn;
 	public $additionalLocationsToShowAvailabilityFor;
 	public $homeLink;
@@ -380,6 +381,16 @@ class Library extends DataObject
 		$hooplaScopes[-1] = 'none';
 		while ($hooplaScope->fetch()){
 			$hooplaScopes[$hooplaScope->id] = $hooplaScope->name;
+		}
+
+		require_once ROOT_DIR . '/sys/Rbdigital/RbdigitalScope.php';
+		$rbdigitalScope = new RbdigitalScope();
+		$rbdigitalScope->orderBy('name');
+		$rbdigitalScopes = [];
+		$rbdigitalScope->find();
+		$rbdigitalScopes[-1] = 'none';
+		while ($rbdigitalScope->fetch()){
+			$rbdigitalScopes[$rbdigitalScope->id] = $rbdigitalScope->name;
 		}
 
 		//$Instructions = 'For more information on ???, see the <a href="">online documentation</a>.';
@@ -788,7 +799,10 @@ class Library extends DataObject
 			)),
 			'hooplaSection' => array('property'=>'hooplaSection', 'type' => 'section', 'label' =>'Hoopla', 'hideInLists' => true, 'properties' => array(
 				'hooplaLibraryID'      => array('property'=>'hooplaLibraryID', 'type'=>'integer', 'label'=>'Hoopla Library ID', 'description'=>'The ID Number Hoopla uses for this library', 'hideInLists' => true),
-                'hooplaScopeId'        => array('property'=>'hooplaScopeId', 'type'=>'enum','values'=>$hooplaScopes, 'description'=>'The hoopla scope to use', 'hideInLists' => true, 'default'=>-1),
+                'hooplaScopeId'        => array('property'=>'hooplaScopeId', 'type'=>'enum','values'=>$hooplaScopes, 'label'=>'Hoopla Scope', 'description'=>'The hoopla scope to use', 'hideInLists' => true, 'default'=>-1),
+			)),
+			'rbdigitalSection' => array('property'=>'rbdigitalSection', 'type' => 'section', 'label' =>'Rbdigital', 'hideInLists' => true, 'properties' => array(
+				'rbdigitalScopeId'        => array('property'=>'rbdigitalScopeId', 'type'=>'enum','values'=>$rbdigitalScopes, 'label'=>'Rbdigital Scope', 'description'=>'The rbdigital scope to use', 'hideInLists' => true, 'default'=>-1),
 			)),
 			'genealogySection' => array('property' => 'genealogySection', 'type' => 'section', 'label' => 'Genealogy', 'hideInLists' =>true,
                 'properties' => [

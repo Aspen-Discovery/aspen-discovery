@@ -1726,6 +1726,15 @@ function getLibraryLocationUpdates(){
 				'ALTER TABLE library ADD COLUMN hooplaScopeId INT(11) default -1',
 				'ALTER TABLE location ADD COLUMN hooplaScopeId INT(11) default -1',
 			]
+		],
+
+		'library_location_rbdigital_scoping' => [
+			'title' => 'Library and Location Scoping of Rbdigital',
+			'description' => 'Add information about how to scope rbdigital records',
+			'sql' => [
+				'ALTER TABLE library ADD COLUMN rbdigitalScopeId INT(11) default -1',
+				'ALTER TABLE location ADD COLUMN rbdigitalScopeId INT(11) default -1',
+			]
 		]
 	);
 }

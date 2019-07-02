@@ -1,5 +1,6 @@
 package com.turning_leaf_technologies.reindexer;
 
+import com.turning_leaf_technologies.indexing.RbdigitalScope;
 import com.turning_leaf_technologies.indexing.Scope;
 import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -99,9 +100,11 @@ class RbdigitalProcessor {
                 }
 
                 String targetAudience = productRS.getString("audience");
+                boolean isChildrens = false;
                 if (targetAudience.contains("Childrens")){
                     groupedWork.addTargetAudience("Juvenile");
                     groupedWork.addTargetAudienceFull("Juvenile");
+                    isChildrens = true;
                 }else if (targetAudience.contains("Young Adult")){
                     groupedWork.addTargetAudience("Young Adult");
                     groupedWork.addTargetAudienceFull("Adolescent (14-17)");
@@ -160,6 +163,7 @@ class RbdigitalProcessor {
                 groupedWork.addGenreFacet(genresToAdd);
                 groupedWork.addTopicFacet(topicsToAdd);
                 groupedWork.addTopic(topicsToAdd);
+                groupedWork.addSubjects(topicsToAdd);
 
                 boolean isFiction = productRS.getBoolean("isFiction");
                 if (!isFiction){
@@ -210,19 +214,33 @@ class RbdigitalProcessor {
                         itemInfo.setDetailedStatus("Checked Out");
                     }
                     for (Scope scope : indexer.getScopes()) {
-                        ScopingInfo scopingInfo = itemInfo.addScope(scope);
-                        scopingInfo.setAvailable(available);
-                        if (available) {
-                            scopingInfo.setStatus("Available Online");
-                            scopingInfo.setGroupedStatus("Available Online");
-                        } else {
-                            scopingInfo.setStatus("Checked Out");
-                            scopingInfo.setGroupedStatus("Checked Out");
+                        boolean okToAdd = false;
+                        RbdigitalScope rbdigitalScope = scope.getRbdigitalScope();
+                        if (rbdigitalScope != null) {
+                            if (rbdigitalScope.isIncludeEBooks() && formatCategory.equals("eBook")){
+                                okToAdd = true;
+                            }else if (rbdigitalScope.isIncludeEAudiobook() && primaryFormat.equals("eAudiobook")){
+                                okToAdd = true;
+                            }
+                            if (rbdigitalScope.isRestrictToChildrensMaterial() && !isChildrens){
+                                okToAdd = false;
+                            }
                         }
-                        scopingInfo.setHoldable(true);
-                        scopingInfo.setLibraryOwned(true);
-                        scopingInfo.setLocallyOwned(true);
-                        scopingInfo.setInLibraryUseOnly(false);
+                        if (okToAdd){
+                            ScopingInfo scopingInfo = itemInfo.addScope(scope);
+                            scopingInfo.setAvailable(available);
+                            if (available) {
+                                scopingInfo.setStatus("Available Online");
+                                scopingInfo.setGroupedStatus("Available Online");
+                            } else {
+                                scopingInfo.setStatus("Checked Out");
+                                scopingInfo.setGroupedStatus("Checked Out");
+                            }
+                            scopingInfo.setHoldable(true);
+                            scopingInfo.setLibraryOwned(true);
+                            scopingInfo.setLocallyOwned(true);
+                            scopingInfo.setInLibraryUseOnly(false);
+                        }
                     }
                 }
                 rbdigitalRecord.addItem(itemInfo);

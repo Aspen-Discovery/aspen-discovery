@@ -381,7 +381,7 @@
 				{/if}
 
 				{if (array_key_exists('libraryAdmin', $userRoles) || array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles))}
-					{if $module == 'Rbdigital' && in_array($action, array('Settings', 'IndexingLog', 'Dashboard'))}
+					{if $module == 'Rbdigital' && in_array($action, array('Settings', 'IndexingLog', 'Scopes', 'Dashboard'))}
 						{assign var="curSection" value=true}
 					{else}
 						{assign var="curSection" value=false}
@@ -397,6 +397,7 @@
 						<div id="rbdigitalMenu" class="panel-collapse collapse {if $curSection}in{/if}">
 							<div class="panel-body">
 								<div class="adminMenuLink{if $action == "Settings"} active{/if}"><a href="{$path}/Rbdigital/Settings">{translate text="Settings"}</a></div>
+								<div class="adminMenuLink{if $action == "Scopes"} active{/if}"><a href="{$path}/Rbdigital/Scopes">{translate text="Scopes"}</a></div>
 								<div class="adminMenuLink{if $action == "IndexingLog"} active{/if}"><a href="{$path}/Rbdigital/IndexingLog">{translate text="Indexing Log"}</a></div>
 								<div class="adminMenuLink{if $action == "Dashboard"} active{/if}"><a href="{$path}/Rbdigital/Dashboard">{translate text="Dashboard"}</a></div>
 							</div>

@@ -1,5 +1,6 @@
 package com.turning_leaf_technologies.reindexer;
 
+import com.turning_leaf_technologies.indexing.RbdigitalScope;
 import com.turning_leaf_technologies.indexing.Scope;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONException;
@@ -55,9 +56,11 @@ class RbdigitalMagazineProcessor {
                 groupedWork.setTitle(title, title, title, primaryFormat);
 
                 String targetAudience = rawResponse.getString("audience");
+                boolean isChildrens = false;
                 if (targetAudience.equals("G")){
                     groupedWork.addTargetAudience("Juvenile");
                     groupedWork.addTargetAudienceFull("Juvenile");
+                    isChildrens = true;
                 }else if (targetAudience.contains("PG")){
                     groupedWork.addTargetAudience("Young Adult");
                     groupedWork.addTargetAudienceFull("Adolescent (14-17)");
@@ -86,6 +89,8 @@ class RbdigitalMagazineProcessor {
                 groupedWork.addGenreFacet(genresToAdd);
                 groupedWork.addTopicFacet(topicsToAdd);
                 groupedWork.addTopic(topicsToAdd);
+
+                groupedWork.addSubjects(topicsToAdd);
 
                 groupedWork.addLiteraryForm("Non Fiction");
                 groupedWork.addLiteraryFormFull("Non Fiction");
@@ -120,23 +125,34 @@ class RbdigitalMagazineProcessor {
                     itemInfo.setDetailedStatus("Checked Out");
                 }
                 for (Scope scope : indexer.getScopes()) {
-                    ScopingInfo scopingInfo = itemInfo.addScope(scope);
-                    scopingInfo.setAvailable(available);
-                    if (available) {
-                        scopingInfo.setStatus("Available Online");
-                        scopingInfo.setGroupedStatus("Available Online");
-                    } else {
-                        scopingInfo.setStatus("Checked Out");
-                        scopingInfo.setGroupedStatus("Checked Out");
+                    boolean okToAdd = false;
+                    RbdigitalScope rbdigitalScope = scope.getRbdigitalScope();
+                    if (rbdigitalScope != null) {
+                        if (rbdigitalScope.isIncludeEMagazines()) {
+                            okToAdd = true;
+                        }
+                        if (rbdigitalScope.isRestrictToChildrensMaterial() && !isChildrens){
+                            okToAdd = false;
+                        }
                     }
-                    scopingInfo.setHoldable(true);
-                    scopingInfo.setLibraryOwned(true);
-                    scopingInfo.setLocallyOwned(true);
-                    scopingInfo.setInLibraryUseOnly(false);
+                    if (okToAdd) {
+                        ScopingInfo scopingInfo = itemInfo.addScope(scope);
+                        scopingInfo.setAvailable(available);
+                        if (available) {
+                            scopingInfo.setStatus("Available Online");
+                            scopingInfo.setGroupedStatus("Available Online");
+                        } else {
+                            scopingInfo.setStatus("Checked Out");
+                            scopingInfo.setGroupedStatus("Checked Out");
+                        }
+                        scopingInfo.setHoldable(true);
+                        scopingInfo.setLibraryOwned(true);
+                        scopingInfo.setLocallyOwned(true);
+                        scopingInfo.setInLibraryUseOnly(false);
+                    }
                 }
 
                 rbdigitalRecord.addItem(itemInfo);
-
             }
             productRS.close();
         }catch (NullPointerException e) {
