@@ -319,6 +319,9 @@ public class UpdateReadingHistory implements IProcessHandler {
 				case "Rbdigital":
 					sourceId = checkedOutItem.getString("recordId");
 					break;
+				case "RbdigitalMagazine":
+					sourceId = checkedOutItem.getString("recordId");
+					break;
 				case "eContent":
 					source = checkedOutItem.getString("recordType");
 					sourceId = checkedOutItem.getString("id");
