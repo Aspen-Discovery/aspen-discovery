@@ -593,6 +593,7 @@ class RbdigitalDriver extends AbstractEContentDriver
 
             $summary = array();
             $summary['numCheckedOut'] = empty($response->audioBooks->checkouts) ? 0 : count($response->audioBooks->checkouts);
+	        $summary['numCheckedOut'] += empty($response->magazines->checkouts) ? 0 : count($response->magazines->checkouts);
 
             //Rbdigital automatically checks holds out so nothing is available
             $summary['numAvailableHolds'] = 0;

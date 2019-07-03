@@ -161,6 +161,7 @@ class Rbdigital_AJAX extends Action {
 		global $interface;
 		$id = $_REQUEST['id'];
 		$interface->assign('id', $id);
+		$interface->assign('checkoutType', 'book');
 
 		$users = $user->getRelatedEcontentUsers('rbdigital');
 		$usersWithRbdigitalAccess = [];
@@ -208,6 +209,7 @@ class Rbdigital_AJAX extends Action {
 		global $interface;
 		$id = $_REQUEST['id'];
 		$interface->assign('id', $id);
+		$interface->assign('checkoutType', 'magazine');
 
 		$users = $user->getRelatedEcontentUsers('rbdigital');
 		$usersWithRbdigitalAccess = [];
@@ -227,7 +229,7 @@ class Rbdigital_AJAX extends Action {
 					'promptNeeded' => true,
 					'promptTitle'  => $promptTitle,
 					'prompts'      => $interface->fetch('Rbdigital/ajax-checkout-prompt.tpl'),
-					'buttons'      => '<input class="btn btn-primary" type="submit" name="submit" value="Checkout MAgazine" onclick="return AspenDiscovery.Rbdigital.processMagazineCheckoutPrompts();">'
+					'buttons'      => '<input class="btn btn-primary" type="submit" name="submit" value="Checkout Magazine" onclick="return AspenDiscovery.Rbdigital.processCheckoutPrompts();">'
 				)
 			);
 		} elseif (count($usersWithRbdigitalAccess) == 1){

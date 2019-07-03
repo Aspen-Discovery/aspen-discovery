@@ -88,7 +88,7 @@ class Hoopla_AJAX extends Action
 					return
 						array(
 							'title'   => 'Hoopla Check Out',
-							'body'    => $interface->fetch('Hoopla/ajax-hoopla-checkout-prompt.tpl'),
+							'body'    => $interface->fetch('Hoopla/ajax-checkout-prompt.tpl'),
 							'buttons' => '<button class="btn btn-primary" type= "button" title="Check Out" onclick="return AspenDiscovery.Hoopla.checkOutHooplaTitle(\'' . $id . '\');">Check Out</button>'
 						);
 				} elseif (count($hooplaUsers) == 1) {

@@ -288,6 +288,18 @@ AspenDiscovery.Rbdigital = (function(){
             return false;
         },
 
+        processCheckoutPrompts: function(){
+            let id = $("#id").val();
+            let checkoutType = $("#checkoutType").val();
+            let patronId = $("#patronId option:selected").val();
+            AspenDiscovery.closeLightbox();
+            if (checkoutType === 'book'){
+                return AspenDiscovery.Rbdigital.doCheckOut(patronId, id);
+            }else{
+                return AspenDiscovery.Rbdigital.doMagazineCheckOut(patronId, id);
+            }
+        },
+
         renewCheckout: function(patronId, recordId){
             let url = Globals.path + "/Rbdigital/AJAX?method=renewCheckout&patronId=" + patronId + "&recordId=" + recordId;
             $.ajax({
