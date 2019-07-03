@@ -242,6 +242,15 @@ class Search_Results extends Action {
         $spellingSuggestions = $searchObject->getSpellingSuggestions();
         $interface->assign('spellingSuggestions', $spellingSuggestions['suggestions']);
 
+		//Look for suggestions for the search (but not if facets are applied)
+		//DELETE THIS, just for testing
+		if ((!isset($facetSet) || count($facetSet) == 0) && $searchObject->getResultTotal() <= 5) {
+			require_once ROOT_DIR . '/services/Search/lib/SearchSuggestions.php';
+			$searchSuggestions = new SearchSuggestions();
+			$allSuggestions = $searchSuggestions->getAllSuggestions($searchObject->displayQuery(), $searchObject->getSearchIndex(), 'grouped_works');
+			$interface->assign('searchSuggestions', $allSuggestions);
+		}
+
 		// No Results Actions //
 		if ($searchObject->getResultTotal() == 0) {
 			//Check to see if we can automatically replace the search with a spelling result
@@ -266,22 +275,21 @@ class Search_Results extends Action {
 	                        exit();
                         }
                     }
+                    if ($library->allowAutomaticSearchReplacements && count($allSuggestions) > 0){
+	                    $firstSuggestion = reset($allSuggestions);
+	                    $thisUrl = $_SERVER['REQUEST_URI'] . "&replacementTerm=" . urlencode($firstSuggestion['phrase']);
+	                    header("Location: " . $thisUrl);
+	                    exit();
+                    }
 				}
 			}
-
-			//Look for suggestions for the search (but not if facets are applied)
-            if (!isset($facetSet) || count($facetSet) == 0) {
-                require_once ROOT_DIR . '/services/Search/lib/SearchSuggestions.php';
-                $searchSuggestions = new SearchSuggestions();
-                $allSuggestions = $searchSuggestions->getAllSuggestions($searchObject->displayQuery(), $searchObject->getSearchIndex(), 'grouped_works');
-                $interface->assign('searchSuggestions', $allSuggestions);
-            }
 
             //Check to see if we are not using a Keyword search and the Keyword search would provide results
             if (!$searchObject->isAdvanced()){
 	            $searchTerms = $searchObject->getSearchTerms();
 	            if (count($searchTerms) == 1 && $searchTerms[0]['index'] != 'Keyword'){
 		            $keywordSearchObject = clone $searchObject;
+		            $keywordSearchObject->setPrimarySearch(false);
 		            $keywordSearchObject->setSearchTerms(['index'=>'Keyword','lookfor'=>$searchTerms[0]['lookfor']]);
 		            $keywordSearchObject->disableSpelling();
 		            $keywordSearchObject->clearFacets();

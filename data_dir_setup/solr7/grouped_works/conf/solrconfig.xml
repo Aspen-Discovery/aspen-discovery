@@ -694,6 +694,7 @@
       <str name="echoParams">explicit</str>
       <int name="rows">10</int>
       <str name="spellcheck.dictionary">default</str>
+      <str name="spellcheck.dictionary">wordbreak</str>
     </lst>
     <arr name="last-components">
       <str>spellcheck</str>
@@ -822,21 +823,20 @@
       <!-- minimum length of a query term to be considered for correction -->
       <int name="minQueryLength">4</int>
       <!-- maximum threshold of documents a query term can appear to be considered for correction -->
-      <float name="maxQueryFrequency">0.01</float>
-      <!-- uncomment this to require suggestions to occur in 1% of the documents
-        <float name="thresholdTokenFrequency">.01</float>
-      -->
+      <float name="maxQueryFrequency">10</float>
+      <!-- uncomment this to require suggestions to occur in 1% of the documents -->
+      <float name="thresholdTokenFrequency">2</float>
     </lst>
 
     <!-- a spellchecker that can break or combine words.  See "/spell" handler below for usage -->
-    <!--<lst name="spellchecker">-->
-      <!--<str name="name">wordbreak</str>-->
-      <!--<str name="classname">solr.WordBreakSolrSpellChecker</str>-->
-      <!--<str name="field">name</str>-->
-      <!--<str name="combineWords">true</str>-->
-      <!--<str name="breakWords">true</str>-->
-      <!--<int name="maxChanges">10</int>-->
-    <!--</lst>-->
+    <lst name="spellchecker">
+      <str name="name">wordbreak</str>
+      <str name="classname">solr.WordBreakSolrSpellChecker</str>
+      <str name="field">spelling</str>
+      <str name="combineWords">true</str>
+      <str name="breakWords">true</str>
+      <int name="maxChanges">1</int>
+    </lst>
   </searchComponent>
 
   <!-- A request handler for demonstrating the spellcheck component.
@@ -859,6 +859,7 @@
            collations (re-written queries) can include a combination of
            corrections from both spellcheckers -->
       <str name="spellcheck.dictionary">default</str>
+      <str name="spellcheck.dictionary">wordbreak</str>
       <str name="spellcheck">on</str>
       <str name="spellcheck.extendedResults">true</str>
       <str name="spellcheck.count">10</str>
@@ -866,7 +867,7 @@
       <str name="spellcheck.maxResultsForSuggest">5</str>
       <str name="spellcheck.collate">true</str>
       <str name="spellcheck.collateExtendedResults">true</str>
-      <str name="spellcheck.maxCollationTries">10</str>
+      <str name="spellcheck.maxCollationTries">25</str>
       <str name="spellcheck.maxCollations">5</str>
     </lst>
     <arr name="last-components">

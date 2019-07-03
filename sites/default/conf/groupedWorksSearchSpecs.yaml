@@ -113,7 +113,7 @@ Author:
     - author_exact:
       - [localized_callnumber, 2200]
     - author_left:
-      - [localized_callnumber, 1400]
+      - [text_left, 1400]
     - author:
       - [onephrase, 350]
       - [proximal, 200]
@@ -129,7 +129,7 @@ AuthorProper:
     - author_exact:
       - [exact, 2200]
     - author_left:
-      - [exact, 1400]
+      - [text_left, 1400]
     - auth_author:
       - [onephrase, 350]
     - auth_author2:
@@ -198,26 +198,20 @@ SubjectProper:
 Title:
   QueryFields:
     - title_exact:
-      - [localized_callnumber, 2400]
+      - [localized_callnumber, 10000]
     - title_left:
-      - [localized_callnumber, 1600]
-    -
-      - [OR, 50]
-      - title_exact:
-        - [localized_callnumber, 2400]
-      - title_left:
-        - [localized_callnumber, 1600]
-      - title_proper:
-        - [exact, 800]
-        - [onephrase, 500]
-        - [and, 200]
-      - title:
-        - [onephrase, 200]
-        - [and, 125]
-      - title_alt:
-        - [and, 100]
-      - title_new:
-        - [and, 50]
+      - [text_left, 8000]
+    - title_proper:
+      - [exact, 800]
+      - [onephrase, 500]
+      - [and, 200]
+    - title:
+      - [onephrase, 200]
+      - [and, 125]
+    - title_alt:
+      - [and, 100]
+    - title_new:
+      - [and, 50]
     - series_proper:
       - [exact, 800]
       - [onephrase, 300]
@@ -234,7 +228,7 @@ TitleProper:
     - title_exact:
       - [localized_callnumber, 2400]
     - title_left:
-      - [localized_callnumber, 1600]
+      - [text_left, 1600]
     - title_proper:
       - [onephrase, 850]
     - series_proper:
@@ -243,14 +237,16 @@ TitleProper:
 StartOfTitle:
   QueryFields:
     - title_left:
-      - [localized_callnumber, 1600]
+      - [text_left, 1600]
 
 Series:
   QueryFields:
     - series_proper:
       - [localized_callnumber, 2400]
+      - [text_left, 750]
       - [onephrase, 500]
     - series:
+      - [text_left, 1000]
       - [onephrase, 500]
       - [and, 100]
     - series2:
@@ -262,6 +258,8 @@ SeriesProper:
     - series_proper:
       - [localized_callnumber, 2400]
       - [onephrase, 500]
+    - series:
+      - [exact, 1000]
 
 # This is proving slow based of the number of things we are searching.
 # Try reorganizing to match things better and ensure that we don't look at similar fields multiple times.
@@ -271,9 +269,9 @@ Keyword:
     -
       - [OR, 500]
       - title_exact:
-        - [localized_callnumber, 7000]
+        - [localized_callnumber, 10000]
       - title_left:
-        - [localized_callnumber, 3000]
+        - [text_left, 8000]
       - title_proper:
         - [onephrase, 800]
         - [and, 500]
@@ -293,7 +291,7 @@ Keyword:
       - author_exact:
         - [localized_callnumber, 2000]
       - author_left:
-        - [localized_callnumber, 1000]
+        - [text_left, 1000]
       - author:
         - [onephrase, 800]
         - [proximal, 200]
@@ -327,13 +325,14 @@ Keyword:
       - local_callnumber_exact:
         - [localized_callnumber, 400]
       - local_callnumber_left:
-        - [localized_callnumber, 300]
+        - [text_left, 300]
       - local_callnumber:
         - [onephrase, ~]
 # Series
     -
-      - [OR, ~]
+      - [OR, 300]
       - series:
+        - [exact_quoted, 1500]
         - [onephrase, 600]
         - [and, 50]
       - series2:
@@ -361,15 +360,15 @@ KeywordProper:
     - title_exact:
       - [localized_callnumber, 2400]
     - title_left:
-      - [localized_callnumber, 1600]
+      - [text_left, 1600]
     - author_exact:
       - [localized_callnumber, 2200]
     - author_left:
-      - [localized_callnumber, 1000]
+      - [text_left, 1000]
     - title_proper:
       - [onephrase, 850]
     - series_proper:
-      - [onephrase, 50]
+      - [onephrase, 500]
     - auth_author:
       - [onephrase, 300]
     - auth_author2:
@@ -405,7 +404,7 @@ KeywordProper:
     - local_callnumber_exact:
       - [localized_callnumber, 800]
     - local_callnumber_left:
-      - [localized_callnumber, 300]
+      - [text_left, 300]
     - barcode:
       - [onephrase, ~]
 
@@ -423,7 +422,7 @@ LocalCallNumber:
     - local_callnumber_exact:
       - [localized_callnumber, 800]
     - local_callnumber_left:
-      - [localized_callnumber, 300]
+      - [text_left, 300]
     - local_callnumber:
       - [exact, ~]
 

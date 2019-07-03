@@ -668,12 +668,6 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 			$this->resultsTotal = 0;
 		}
 
-		// Process spelling suggestions if no index error resulted from the query
-		if ($this->spellcheckEnabled && !isset($this->indexResult['error'])) {
-			// Shingle dictionary
-			$this->processSpelling();
-		}
-
 		// If extra processing is needed for recommendations, do it now:
 		if ($recommendations && is_array($this->recommend)) {
 		    foreach($this->recommend as $currentSet) {

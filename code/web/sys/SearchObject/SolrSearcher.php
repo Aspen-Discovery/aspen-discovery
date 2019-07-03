@@ -20,7 +20,7 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 
     // Spelling
     protected $spellcheckEnabled    = true;
-    protected $spellingWordSuggestions   = array();
+    //protected $spellingWordSuggestions   = array();
     protected $spellingLimit = 5;
     protected $spellQuery    = array();
     protected $dictionary    = 'default';
@@ -263,11 +263,6 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
             $this->resultsTotal = 0;
         }
 
-        // Process spelling suggestions if no index error resulted from the query
-        if ($this->spellcheckEnabled && !isset($this->indexResult['error'])) {
-            $this->processSpelling();
-        }
-
         // If extra processing is needed for recommendations, do it now:
         if ($recommendations && is_array($this->recommend)) {
             foreach($this->recommend as $currentSet) {
@@ -319,92 +314,45 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 
         $correctlySpelled = isset($this->indexResult['spellcheck']) ? $this->indexResult['spellcheck']['correctlySpelled'] : true;
         $spellingCollations = isset($this->indexResult['spellcheck']['collations']) ? $this->indexResult['spellcheck']['collations'] : array();
-        if (count($spellingCollations) > 0){
-            foreach ($spellingCollations as $collation) {
-                if ($collation[0] == 'collation'){
-                    $label = $collation[1]['collationQuery'];
-                    $freq = $collation[1]['hits'];
-                    $oldTerms = [];
-                    $newTerms = [];
-                    foreach ($collation[1]['misspellingsAndCorrections'] as $replacements){
-                        $oldTerms[] = $replacements[0];
-                        $newTerms[] = $replacements[1];
-                    }
-                    $returnArray[$label] = array(
-                        'freq'        => $freq,
-                        'replace_url' => $this->renderLinkWithReplacedTerm($oldTerms, $newTerms),
-                        'phrase' => $label
-                    );
-                }
-            }
-        }elseif (count($this->spellingWordSuggestions) > 0){
-            //TODO: Delete this?
-            $tokens = $this->spellingTokens($this->buildSpellingQuery());
-
-            foreach ($this->spellingWordSuggestions as $term => $details) {
-                // Find out if our suggestion is part of a token
-                $inToken = false;
-                $targetTerm = "";
-                foreach ($tokens as $token) {
-                    // TODO - Do we need stricter matching here?
-                    //   Similar to that in replaceSearchTerm()?
-                    if (stripos($token, $term) !== false) {
-                        $inToken = true;
-                        // We need to replace the whole token
-                        $targetTerm = $token;
-                        // Go and replace this token
-                        $returnArray = $this->doSpellingReplace($term, $targetTerm, $inToken, $details, $returnArray);
-                    }
-                }
-                // If no tokens we found, just look
-                //    for the suggestion 'as is'
-                if ($targetTerm == "") {
-                    $targetTerm = $term;
-                    $returnArray = $this->doSpellingReplace($term, $targetTerm, $inToken, $details, $returnArray);
-                }
-            }
+        if (count($spellingCollations) > 0) {
+	        foreach ($spellingCollations as $collation) {
+		        if ($collation[0] == 'collation') {
+			        $label = $collation[1]['collationQuery'];
+			        $freq = $collation[1]['hits'];
+			        $oldTerms = [];
+			        $newTerms = [];
+			        $okToUseSuggestion = true;
+			        foreach ($collation[1]['misspellingsAndCorrections'] as $replacements) {
+				        $oldTerms[] = $replacements[0];
+				        $newTerms[] = $replacements[1];
+				        //Solr sometimes just
+				        if (strpos($replacements[1], ' ') > 0){
+				        	$replacementWords = explode(' ', $replacements[1]);
+				        	foreach ($replacementWords as $word){
+				        		if (strlen($word) == 1){
+				        			$okToUseSuggestion = false;
+						        }
+					        }
+				        }
+			        }
+			        if ($okToUseSuggestion){
+				        $returnArray[sprintf('%08d', $freq) . $label] = array(
+					        'freq' => $freq,
+					        'replace_url' => $this->renderLinkWithReplacedTerm($oldTerms, $newTerms),
+					        'phrase' => $label
+				        );
+			        }
+		        }
+	        }
         }
+
+	    //Sort the collations based to get the result that has the most docs in it.
+		krsort($returnArray);
 
         return [
             'correctlySpelled' => $correctlySpelled,
             'suggestions' => $returnArray
         ];
-    }
-
-    /**
-     * Process one instance of a spelling replacement and modify the return
-     *   data structure with the details of what was done.
-     *
-     * @access  public
-     * @param   string   $term        The actually term we're replacing
-     * @param   string   $targetTerm  The term above, or the token it is inside
-     * @param   boolean  $inToken     Flag for whether the token or term is used
-     * @param   array    $details     The spelling suggestions
-     * @param   array    $returnArray Return data structure so far
-     * @return  array    $returnArray modified
-     */
-    private function doSpellingReplace($term, $targetTerm, $inToken, $details, $returnArray)
-    {
-        $returnArray[$targetTerm]['freq'] = $details['freq'];
-        foreach ($details['suggestions'] as $word => $freq) {
-            // If the suggested word is part of a token
-            if ($inToken) {
-                // We need to make sure we replace the whole token
-                $replacement = str_replace($term, $word, $targetTerm);
-            } else {
-                $replacement = $word;
-            }
-            //  Do we need to show the whole, modified query?
-            $label = $this->getDisplayQueryWithReplacedTerm($targetTerm, $replacement);
-
-            // Basic spelling suggestion data
-            $returnArray[$targetTerm]['suggestions'][$label] = array(
-                'freq'        => $freq,
-                'replace_url' => $this->renderLinkWithReplacedTerm($targetTerm, $replacement)
-            );
-        }
-
-        return $returnArray;
     }
 
     /**
@@ -432,94 +380,6 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
             // Return the list put together as a string
             return join(" ", $this->spellQuery);
         }
-    }
-
-    /**
-     * Process spelling suggestions from the results object.  This is then used by getSpellingSuggestions
-     * to convert the raw suggestions into something we can use in the user interface.
-     *
-     * @access  private
-     */
-    protected function processSpelling()
-    {
-        // Do nothing if spelling is disabled
-        if (!$this->spellcheckEnabled) {
-            return;
-        }
-
-        // Do nothing if there are no suggestions
-        $spellingWordSuggestions = isset($this->indexResult['spellcheck']['suggestions']) ?  $this->indexResult['spellcheck']['suggestions'] : array();
-
-        $suggestionList = array();
-
-        // Loop through the array of search terms we have suggestions for
-        foreach ($spellingWordSuggestions as $suggestion) {
-            $ourTerm = $suggestion[0];
-
-            // Skip numeric terms if numeric suggestions are disabled
-            if (is_numeric($ourTerm)) {
-                continue;
-            }
-
-            $ourHit  = $suggestion[1]['origFreq'];
-            $count   = $suggestion[1]['numFound'];
-            $newList = $suggestion[1]['suggestion'];
-
-            $validTerm = true;
-
-            // Make sure the suggestion is for a valid search term.
-            // Sometimes shingling will have bridged two search fields (in
-            // an advanced search) or skipped over a stop word.
-            if (!$this->findSearchTerm($ourTerm)) {
-                $validTerm = false;
-            }
-
-            // Unless this term had no hits
-            if ($ourHit != 0) {
-                // Filter out suggestions we are already using
-                $newList = $this->filterSpellingTerms($newList);
-            }
-
-            // Make sure it has suggestions and is valid
-            if (count($newList) > 0 && $validTerm) {
-                // Did we get more suggestions then our limit?
-                if ($count > $this->spellingLimit) {
-                    // Cut the list at the limit
-                    array_splice($newList, $this->spellingLimit);
-                }
-                $suggestionList[$ourTerm]['freq'] = $ourHit;
-                // Format the list nicely
-                foreach ($newList as $item) {
-                    if (is_array($item)) {
-                        $suggestionList[$ourTerm]['suggestions'][$item['word']] = $item['freq'];
-                    } else {
-                        $suggestionList[$ourTerm]['suggestions'][$item] = 0;
-                    }
-                }
-            }
-        }
-
-        $this->spellingWordSuggestions = $suggestionList;
-    }
-
-    /**
-     * Filter a list of spelling suggestions to remove suggestions
-     *   we are already searching for
-     *
-     * @access  private
-     * @param   array    $termList List of suggestions
-     * @return  array    Filtered list
-     */
-    protected function filterSpellingTerms($termList) {
-        $newList = array();
-        if (count($termList) == 0) return $newList;
-
-        foreach ($termList as $term) {
-            if (!$this->findSearchTerm($term['word'])) {
-                $newList[] = $term;
-            }
-        }
-        return $newList;
     }
 
     public function getUniqueField(){
@@ -791,8 +651,11 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
         if (isset($suggestions['suggest'])){
             foreach ($suggestions['suggest'] as $suggestionType => $suggestedSearchesByType){
                 foreach ($suggestedSearchesByType as $term => $suggestionsForTerm) {
-                    foreach ($suggestionsForTerm['suggestions'] as $suggestion) {
+                    foreach ($suggestionsForTerm['suggestions'] as $index => $suggestion) {
                         $nonHighlightedTerm = preg_replace('~</?b>~', '', $suggestion['term']);
+                        if (strcasecmp($nonHighlightedTerm, $searchTerm) === 0){
+                        	continue;
+                        }
                         //Remove the old value if this is a duplicate (after incrementing the weight)
                         foreach ($allSuggestions as $key => $value) {
                             if ($value['nonHighlightedTerm'] == $nonHighlightedTerm) {
@@ -801,7 +664,7 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
                                 break;
                             }
                         }
-                        $allSuggestions[str_pad($suggestion['weight'], 10, '0', STR_PAD_LEFT) . $nonHighlightedTerm] = array('phrase'=>$suggestion['term'], 'numSearches'=>$suggestion['weight'], 'numResults'=>$suggestion['weight'], 'nonHighlightedTerm' => $nonHighlightedTerm);
+                        $allSuggestions[str_pad(($suggestion['weight'] + count($suggestionsForTerm['suggestions']) - $index), 10, '0', STR_PAD_LEFT) . $nonHighlightedTerm] = array('phrase'=>$suggestion['term'], 'numSearches'=>$suggestion['weight'], 'numResults'=>$suggestion['weight'], 'nonHighlightedTerm' => $nonHighlightedTerm);
                     }
                 }
             }

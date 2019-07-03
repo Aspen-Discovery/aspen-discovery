@@ -61,6 +61,8 @@
 		{if $pageLinks.all}<div class="text-center">{$pageLinks.all}</div>{/if}
 	{/if}
 
+	{include file="Search/searchSuggestions.tpl"}
+
 	{include file="Search/spellingSuggestions.tpl"}
 
 	{if $showProspectorLink}

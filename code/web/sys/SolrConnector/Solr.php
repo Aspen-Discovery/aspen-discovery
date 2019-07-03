@@ -468,22 +468,30 @@ abstract class Solr {
 	}
 
     /**
-     * Get spelling suggestions based on input phrase.
+     * Get search suggestions based on input phrase.
      *
      * @access    public
      * @param string $phrase The input phrase
      * @param string $suggestionHandler
-     * @return    array     An array of spelling suggestions
+     * @return    array     An array of search suggestions
      */
     function getSearchSuggestions($phrase, $suggestionHandler = 'suggest')
     {
         // Query String Parameters
         $options = array(
-            'q'					=> $phrase,
-            'rows'			 => 0,
-            'start'			=> 1,
-            'indent'		 => 'yes',
+            'q'			=> $phrase,
+	        'q.op'      => 'AND',
+            'rows'		=> 0,
+            'start'		=> 1,
+            'indent'	=> 'yes',
         );
+
+	    $searchLibrary = Library::getSearchLibrary($this->searchSource);
+	    $searchLocation = Location::getSearchLocation($this->searchSource);
+	    $scopingFilters = $this->getScopingFilters($searchLibrary, $searchLocation);
+	    if (is_array($scopingFilters) && count($scopingFilters)) {
+		    $options['cfq'] = $scopingFilters;
+	    }
 
         $result = $this->_select('GET', $options, false, $suggestionHandler);
         if ($result instanceof AspenError) {
@@ -715,6 +723,7 @@ abstract class Solr {
 			$noWildCardLookFor = str_replace('*', '', $lookfor);
 		}
 		$values['localized_callnumber'] = str_replace(array('"', ':', '/'), ' ', $noWildCardLookFor);
+		$values['text_left'] = str_replace(array('"', ':', '/'), ' ', $noWildCardLookFor) . '*';
 
 		// Apply custom munge operations if necessary
 		if (is_array($custom) && $basic) {
@@ -1232,6 +1241,7 @@ abstract class Solr {
 			//Determine which fields should be treated as enums
 			global $solrScope;
 			if (preg_match('/.*(grouped_works).*/i', $this->host)) {
+				$options["f.series_facet.facet.mincount"] = 2;
 				$options["f.target_audience_full.facet.method"] = 'enum';
 				$options["f.target_audience.facet.method"] = 'enum';
 				$options["f.literary_form_full.facet.method"] = 'enum';
@@ -1326,16 +1336,21 @@ abstract class Solr {
 		if ($spell != '') {
 			$options['spellcheck'] = 'true';
 			$options['spellcheck.q'] = $spell;
-			if ($dictionary != null) {
-				$options['spellcheck.dictionary'] = $dictionary;
-			}
+//			if ($dictionary != null) {
+//				$options['spellcheck.dictionary'] = $dictionary;
+//			}
 			$options['spellcheck.extendedResults'] = 'true';
-            $options['spellcheck.count'] = 4;
+            $options['spellcheck.count'] = 5;
             $options['spellcheck.onlyMorePopular'] = 'true';
-            $options['spellcheck.maxResultsForSuggest'] = $limit;
-            $options['spellcheck.collate'] = 'true';
-            $options['spellcheck.maxCollations'] = 4;
+            $options['spellcheck.maxResultsForSuggest'] = 5;
+			$options['spellcheck.alternativeTermCount'] = 5;
+			$options['spellcheck.collate'] = 'true';
+			$options['spellcheck.collateParam.q.op'] = 'AND';
+			$options['spellcheck.collateParam.mm'] = '100%';
+			$options['spellcheck.maxCollations'] = 5;
             $options['spellcheck.collateExtendedResults'] = 'true';
+			$options['spellcheck.maxCollationTries'] = 25;
+			$options['spellcheck.accuracy'] = .5;
 		}
 
 		// Enable highlighting
