@@ -702,7 +702,7 @@ class CatalogConnection
 				$historyEntryDB->source       = $source;
 				$historyEntryDB->sourceId     = $sourceId;
 				$historyEntryDB->title        = substr($checkout['title'], 0, 150);
-				$historyEntryDB->author       = substr($checkout['author'], 0, 75);
+				$historyEntryDB->author       = isset($checkout['author']) ? substr($checkout['author'], 0, 75) : "";
 				$historyEntryDB->format       = substr($checkout['format'], 0, 50);
 				$historyEntryDB->checkOutDate = time();
 				if (!$historyEntryDB->insert()){
