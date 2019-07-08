@@ -1684,28 +1684,64 @@ class Koha extends AbstractIlsDriver {
 	//TODO: Switch to use the database to retrieve this information
 	function getMaterialsRequests(User $user)
 	{
-		$this->loginToKohaOpac($user);
-
-		$catalogUrl = $this->accountProfile->vendorOpacUrl;
-		$requestsPage = $this->getKohaPage($catalogUrl . '/cgi-bin/koha/opac-suggestions.pl');
-
-		$matches = [];
+		$this->initDatabaseConnection();
+		/** @noinspection SqlResolve */
+		$sql = "SELECT * FROM suggestions where suggestedby = " . mysqli_escape_string($this->dbConnection, $user->username);
+		$results = mysqli_query($this->dbConnection, $sql);
 		$allRequests = [];
-		/** @noinspection HtmlUnknownAttribute */
-		if (preg_match('%<table id="suggestt" .*?<tbody>(.*)</tbody>%s', $requestsPage, $matches)) {
-			$tableBody = $matches[1];
-			preg_match_all('%<tr>.*?<input type="checkbox" class="cb" name="delete_field" value="(.*?)" />.*?<td>(.*?)</td>\s+<td>(.*?)</td>\s+<td>\s+<span class="tdlabel">Note: </span>(.*?)</td>\s+<td>(.*?)</td>\s+<td>\s+<span class="tdlabel">Status:</span>(.*?)</td>%s', $tableBody, $tableRows, PREG_SET_ORDER);
-			foreach ($tableRows as $tableRow){
-				$request = [];
-				$request['id'] = $tableRow[1];
-				$request['summary'] = trim($tableRow[2]);
-				$request['suggestedOn'] = trim($tableRow[3]);
-				$request['note'] = trim($tableRow[4]);
-				$request['managedBy'] = trim($tableRow[5]);
-				$request['status'] = trim($tableRow[6]);
-				$allRequests[] = $request;
+		if ($curRow = $results->fetch_assoc()){
+			$managedBy = $curRow['managedby'];
+			/** @noinspection SqlResolve */
+			$userSql = "SELECT firstname, surname FROM borrowers where borrowernumber = " . mysqli_escape_string($this->dbConnection, $managedBy);
+			$userResults = mysqli_query($this->dbConnection, $userSql);
+			if ($userResult = $userResults->fetch_assoc()){
+				$managedByStr = $userResult['firstname'] . ' ' . $userResult['surname'];
+			}else{
+				$managedByStr = '';
 			}
+			$request = [];
+			$request['id'] = $curRow['suggestionid'];
+			$request['summary'] = $curRow['title'];
+			if (!empty($curRow['itemtype'])){
+				$request['summary'] .= ' - ' . $curRow['itemtype'];
+			}
+			if (!empty($curRow['author'])){
+				$request['summary'] .= '<br/>' . $curRow['author'];
+			}
+			if (!empty($curRow['copyrightdate'])){
+				$request['summary'] .= '<br/>' . $curRow['copyrightdate'];
+			}
+			$request['suggestedOn'] =$curRow['suggesteddate'];
+			$request['note'] = $curRow['note'];
+			$request['managedBy'] =$managedByStr;
+			$request['status'] = ucwords(strtolower($curRow['STATUS']));
+			if (!empty($curRow['reason'])){
+				$request['status'] .= ' (' . $curRow['reason'] . ')';
+			}
+			$allRequests[] = $request;
 		}
+//		$this->loginToKohaOpac($user);
+//
+//		$catalogUrl = $this->accountProfile->vendorOpacUrl;
+//		$requestsPage = $this->getKohaPage($catalogUrl . '/cgi-bin/koha/opac-suggestions.pl');
+//
+//		$matches = [];
+//		$allRequests = [];
+//		/** @noinspection HtmlUnknownAttribute */
+//		if (preg_match('%<table id="suggestt" .*?<tbody>(.*)</tbody>%s', $requestsPage, $matches)) {
+//			$tableBody = $matches[1];
+//			preg_match_all('%<tr>.*?<input type="checkbox" class="cb" name="delete_field" value="(.*?)" />.*?<td>(.*?)</td>\s+<td>(.*?)</td>\s+<td>\s+<span class="tdlabel">Note: </span>(.*?)</td>\s+<td>(.*?)</td>\s+<td>\s+<span class="tdlabel">Status:</span>(.*?)</td>%s', $tableBody, $tableRows, PREG_SET_ORDER);
+//			foreach ($tableRows as $tableRow){
+//				$request = [];
+//				$request['id'] = $tableRow[1];
+//				$request['summary'] = trim($tableRow[2]);
+//				$request['suggestedOn'] = trim($tableRow[3]);
+//				$request['note'] = trim($tableRow[4]);
+//				$request['managedBy'] = trim($tableRow[5]);
+//				$request['status'] = trim($tableRow[6]);
+//				$allRequests[] = $request;
+//			}
+//		}
 
 		return $allRequests;
 	}
