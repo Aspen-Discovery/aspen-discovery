@@ -52,3 +52,5 @@
 
 # CRON for Aspen (book cover cache cleanup etc.)
 00 20 * * * cd /usr/local/aspen-discovery/code/cron; java -jar cron.jar basinlibraries.production
+
+00 01 * * * certbot renew
