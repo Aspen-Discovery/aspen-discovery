@@ -225,4 +225,11 @@ abstract class AbstractIlsDriver extends AbstractDriver
 	{
 		return 0;
 	}
+
+	function importListsFromIls($patron)
+	{
+		return array(
+			'success' => false,
+			'errors' => array('Importing Lists has not been implemented for this ILS.'));
+	}
 }

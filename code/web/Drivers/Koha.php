@@ -1681,6 +1681,7 @@ class Koha extends AbstractIlsDriver {
 		return $numRequests;
 	}
 
+	//TODO: Switch to use the database to retrieve this information
 	function getMaterialsRequests(User $user)
 	{
 		$this->loginToKohaOpac($user);
@@ -1808,5 +1809,91 @@ class Koha extends AbstractIlsDriver {
 			list($day, $month, $year) = explode('-', $date);
 			return "$day/$month/$year";
 		}
+	}
+
+	/**
+	 * Import Lists from the ILS
+	 *
+	 * @param  User $patron
+	 * @return array - an array of results including the names of the lists that were imported as well as number of titles.
+	 */
+	function importListsFromIls($patron){
+		require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+		require_once ROOT_DIR . '/sys/Grouping/GroupedWorkPrimaryIdentifier.php';
+		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+		$this->initDatabaseConnection();
+		$user = UserAccount::getLoggedInUser();
+		$results = array(
+			'totalTitles' => 0,
+			'totalLists' => 0
+		);
+
+		//Get the lists for the user from the database
+		/** @noinspection SqlResolve */
+		$listSql = "SELECT * FROM virtualshelves where owner = {$patron->username}";
+		$listResults = mysqli_query($this->dbConnection, $listSql);
+		while ($curList = $listResults->fetch_assoc()){
+			$shelfNumber = $curList['shelfnumber'];
+			$title = $curList['shelfname'];
+			//Create the list (or find one that already exists)
+			$newList = new UserList();
+			$newList->user_id = $user->id;
+			$newList->title = $title;
+			if (!$newList->find(true)){
+				$newList->public = $curList['category'] == 2;
+				$newList->insert();
+			}
+
+			$currentListTitles = $newList->getListTitles();
+
+			/** @noinspection SqlResolve */
+			$listContentsSql = "SELECT * FROM virtualshelfcontents where shelfnumber = {$shelfNumber}";
+			$listContentResults = mysqli_query($this->dbConnection, $listContentsSql);
+			while ($curTitle = $listContentResults->fetch_assoc()){
+				$bibNumber = $curTitle['biblionumber'];
+				$primaryIdentifier = new GroupedWorkPrimaryIdentifier();
+				$groupedWork = new GroupedWork();
+				$primaryIdentifier->identifier = $bibNumber;
+				$primaryIdentifier->type = $this->accountProfile->recordSource;
+
+				if ($primaryIdentifier->find(true)){
+					$groupedWork->id = $primaryIdentifier->grouped_work_id;
+					if ($groupedWork->find(true)){
+						//Check to see if this title is already on the list.
+						$resourceOnList = false;
+						foreach ($currentListTitles as $currentTitle){
+							if ($currentTitle->groupedWorkPermanentId == $groupedWork->permanent_id){
+								$resourceOnList = true;
+								break;
+							}
+						}
+
+						if (!$resourceOnList){
+							$listEntry = new UserListEntry();
+							$listEntry->groupedWorkPermanentId = $groupedWork->permanent_id;
+							$listEntry->listId = $newList->id;
+							$listEntry->notes = '';
+							$listEntry->dateAdded = time();
+							$listEntry->insert();
+						}
+					}else{
+						if (!isset($results['errors'])){
+							$results['errors'] = array();
+						}
+						$results['errors'][] = "\"$bibNumber\" on list $title could not be found in the catalog and was not imported.";
+					}
+				}else{
+					//The title is not in the resources, add an error to the results
+					if (!isset($results['errors'])){
+						$results['errors'] = array();
+					}
+					$results['errors'][] = "\"$bibNumber\" on list $title could not be found in the catalog and was not imported.";
+				}
+				$results['totalTitles']++;
+			}
+			$results['totalLists']++;
+		}
+
+		return $results;
 	}
 }

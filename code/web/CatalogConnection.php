@@ -803,13 +803,7 @@ class CatalogConnection
 	}
 
 	public function importListsFromIls($patron){
-		if ($this->checkFunction('importListsFromIls')){
-			return $this->driver->importListsFromIls($patron);
-		}else{
-			return array(
-					'success' => false,
-					'errors' => array('Importing Lists has not been implemented for this ILS.'));
-		}
+		return $this->driver->importListsFromIls($patron);
 	}
 
 	public function getShowUsernameField() {

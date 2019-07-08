@@ -109,13 +109,10 @@ class User extends DataObject
 
 		$lists = array();
 
-		$escapedId = $this->escape($this->id);
-		$sql = "SELECT user_list.* FROM user_list " .
-							 "WHERE user_list.user_id = '$escapedId' " .
-							 "ORDER BY user_list.title";
 		$list = new UserList();
-		$list->query($sql);
-		if ($list->N) {
+		$list->user_id = $this->id;
+		$list->orderBy('title');
+		if ($list->find()) {
 			while ($list->fetch()) {
 				$lists[] = clone($list);
 			}
@@ -1427,7 +1424,6 @@ class User extends DataObject
         }else{
 	        return false;
         }
-
 	}
 
 	/**
