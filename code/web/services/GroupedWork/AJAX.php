@@ -139,6 +139,7 @@ class GroupedWork_AJAX {
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 		$id = $_REQUEST['id'];
 		$recordDriver = new GroupedWorkDriver($id);
+		$interface->assign('recordDriver', $recordDriver);
 
 		$enrichmentResult = array();
 		$enrichmentData = $recordDriver->loadEnrichment();
@@ -209,6 +210,19 @@ class GroupedWork_AJAX {
 			}
 		}
 		$memoryWatcher->logMemory('Loaded additional go deeper data');
+
+		//Load Series Summary
+		$indexedSeries = $recordDriver->getIndexedSeries();
+		$series = $recordDriver->getSeries();
+		if (!empty($indexedSeries) || !empty($series)){
+			global $library;
+			foreach ($library->showInMainDetails as $detailOption) {
+				$interface->assign($detailOption, true);
+			}
+			$interface->assign('indexedSeries', $indexedSeries);
+			$interface->assign('series', $series);
+			$enrichmentResult['seriesSummary'] = $interface->fetch('GroupedWork/series-summary.tpl');
+		}
 
 		return json_encode($enrichmentResult);
 	}
@@ -902,6 +916,33 @@ class GroupedWork_AJAX {
 		$jsonData = json_decode($rawNovelistData);
 		$novelistData = $jsonData->body;
 		echo($novelistData);
+	}
+
+	function getSeriesSummary(){
+		global $interface;
+		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+		$id = $_REQUEST['id'];
+		$recordDriver = new GroupedWorkDriver($id);
+		$interface->assign('recordDriver', $recordDriver);
+		$indexedSeries = $recordDriver->getIndexedSeries();
+		$series = $recordDriver->getSeries();
+		$result = [
+			'result' => false,
+			'message' => 'No series exist for this record'
+		];
+		if (!empty($indexedSeries) || !empty($series)){
+			global $library;
+			foreach ($library->showInSearchResultsMainDetails as $detailOption) {
+				$interface->assign($detailOption, true);
+			}
+			$interface->assign('indexedSeries', $indexedSeries);
+			$interface->assign('series', $series);
+			$result = [
+				'result' => true,
+				'seriesSummary' => $interface->fetch('GroupedWork/series-summary.tpl')
+			];
+		}
+		return json_encode($result);
 	}
 
 	function reloadCover(){

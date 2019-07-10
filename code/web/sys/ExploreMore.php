@@ -486,10 +486,9 @@ class ExploreMore {
 					}
 				}
 			}
-
-		} else {
-			global $logger;
-			$logger->log('Islandora Search Failed.', Logger::LOG_WARNING);
+//		} else {
+//			global $logger;
+//			$logger->log('Islandora is not active.', Logger::LOG_WARNING);
 		}
 
 		$interface->assign('exploreMoreOptions', $exploreMoreOptions);

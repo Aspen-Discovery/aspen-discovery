@@ -525,6 +525,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 	{
 		global $interface;
 		global $memoryWatcher;
+		global $timer;
 		$html = array();
 		if (isset($this->indexResult['response'])) {
 			$allWorkIds = array();
@@ -533,6 +534,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 			}
 			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 			GroupedWorkDriver::loadArchiveLinksForWorks($allWorkIds);
+			$timer->logTime('Loaded archive links');
 			for ($x = 0; $x < count($this->indexResult['response']['docs']); $x++) {
 				$memoryWatcher->logMemory("Started loading record information for index $x");
 				$current = &$this->indexResult['response']['docs'][$x];
@@ -554,6 +556,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 				$record = 0;
 				unset($record);
 				$memoryWatcher->logMemory("Finished loading record information for index $x");
+				$timer->logTime('Loaded search result for ' . $current['id']);
 			}
 		}
 		return $html;
@@ -824,7 +827,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 		}else{
 			$query = $this->indexEngine->buildQuery($search, false);
 		}
-		$timer->logTime("build query");
+		$timer->logTime("build query in grouped work searcher");
 		if (($query instanceof AspenError)) {
 			return $query;
 		}
@@ -1040,15 +1043,12 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 	 * @param   array   $filter         Array of field => on-screen description
 	 *                                  listing all of the desired facet fields;
 	 *                                  set to null to get all configured values.
-	 * @param   bool    $expandingLinks If true, we will include expanding URLs
-	 *                                  (i.e. get all matches for a facet, not
-	 *                                  just a limit to the current search) in
-	 *                                  the return array.
 	 * @return  array   Facets data arrays
 	 */
-	public function getFacetList($filter = null, $expandingLinks = false)
+	public function getFacetList($filter = null)
 	{
 		global $solrScope;
+		global $timer;
 		// If there is no filter, we'll use all facets as the filter:
 		if (is_null($filter)) {
 			$filter = $this->facetConfig;
@@ -1150,13 +1150,8 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 				$currentSettings['display'] = $translate ? translate($facet[0]) : $facet[0];
 				$currentSettings['count'] = $facet[1];
 				$currentSettings['isApplied'] = false;
-				$currentSettings['url'] = $this->renderLinkWithFilter("$field:".$facet[0]);
-				// If we want to have expanding links (all values matching the facet)
-				// in addition to limiting links (filter current search with facet),
-				// do some extra work:
-				if ($expandingLinks) {
-					$currentSettings['expandUrl'] = $this->getExpandingFacetLink($field, $facet[0]);
-				}
+				$currentSettings['url'] = $this->renderLinkWithFilter($field, $facet[0]);
+
 				// Is this field a current filter?
 				if (in_array($field, array_keys($this->filterList))) {
 					// and is this value a selected filter?
@@ -1170,7 +1165,6 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 				$valueKey = $facet[0];
 				$okToAdd = true;
 				if ($doInstitutionProcessing){
-					//Special processing for Marmot digital library
 					if ($facet[0] == $currentLibrary->facetLabel){
 						$valueKey = '1' . $valueKey;
 						$numValidLibraries++;
@@ -1183,7 +1177,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 						$valueKey = '1' . $valueKey;
 						$foundInstitution = true;
 						$numValidLibraries++;
-					}elseif ($facet[0] == 'Digital Collection' || $facet[0] == 'Marmot Digital Library'){
+					}elseif ($facet[0] == 'Digital Collection'){
 						$valueKey = '2' . $valueKey;
 						$foundInstitution = true;
 						$numValidLibraries++;
@@ -1215,7 +1209,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 						}else if ($field == 'available_at' && !is_null($additionalAvailableAtLocations) && in_array($facet[0], $additionalAvailableAtLocations)){
 							$valueKey = '4' . $valueKey;
 							$numValidRelatedLocations++;
-						}elseif ($facet[0] == 'Marmot Digital Library' || $facet[0] == 'Digital Collection' || $facet[0] == 'OverDrive' || $facet[0] == 'Online'){
+						}elseif ($facet[0] == 'Digital Collection' || $facet[0] == 'OverDrive' || $facet[0] == 'Online'){
 							$valueKey = '5' . $valueKey;
 							$numValidRelatedLocations++;
 						}
@@ -1237,7 +1231,6 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
                         'count' => 0,
                         'isApplied' => false,
                         'url' => null,
-                        'expandUrl' => null,
 				);
 			}
 			if (!$foundBranch && $doBranchProcessing && !is_null($activeLocationFacet)){
@@ -1248,7 +1241,6 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
                         'count' => 0,
                         'isApplied' => false,
                         'url' => null,
-                        'expandUrl' => null,
 				);
 				$numValidRelatedLocations++;
 			}
@@ -1276,6 +1268,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 			if ($list[$field]['showAlphabetically']){
 				ksort($list[$field]['list']);
 			}
+			$timer->logTime("Processed facet $field Translated? $translate Num values: " . count($data));
 		}
 		return $list;
 	}

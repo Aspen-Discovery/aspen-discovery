@@ -668,15 +668,23 @@ function display_if_inconsistent($params, $content, /** @noinspection PhpUnusedP
 }
 
 function display_if_field_inconsistent($params, $content, /** @noinspection PhpUnusedParameterInspection */  &$smarty, /** @noinspection PhpUnusedParameterInspection */ &$repeat){
-    //This function is called twice, once for the opening tag and once for the
-    //closing tag.  Content is only set if
-    if (isset($content)) {
+	if (isset($content)) {
+		global $interface;
         $array = $params['array'];
         $key = $params['key'];
+        $var = $params['var'];
 
         if (count($array) === 1) {
             // If we have only one row of items, display that row
-            return empty($array[0]->$key) ? '' : $content;
+            if (empty($array[0]->$key)){
+	            $interface->assign($var, false);
+	            $returnValue = '';
+            } else {
+	            $interface->assign($var, true);
+	            $returnValue = $content;
+            }
+
+            return $returnValue;
         }
         $consistent = true;
         $firstValue = null;
@@ -693,12 +701,14 @@ function display_if_field_inconsistent($params, $content, /** @noinspection PhpU
             $iterationNumber++;
         }
         if ($consistent == false){
+	        $interface->assign($var, true);
             return $content;
         }else{
+	        $interface->assign($var, false);
             return "";
         }
     }
-    return null;
+	return null;
 }
 
 function display_if_set($params, $content, /** @noinspection PhpUnusedParameterInspection */ &$smarty, /** @noinspection PhpUnusedParameterInspection */ &$repeat){

@@ -33,7 +33,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 	 * we will already have this data available, so we might as well
 	 * just pass it into the constructor.
 	 *
-	 * @param   array|File_MARC_Record||string   $recordData     Data to construct the driver from
+	 * @param   array|File_MARC_Record|string   $recordData     Data to construct the driver from
 	 * @param  GroupedWork $groupedWork ;
 	 * @access  public
 	 */
@@ -41,9 +41,11 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 	{
         // Call the parent's constructor...
         if ($recordData instanceof File_MARC_Record) {
+        	//Full MARC record
 			$this->marcRecord = $recordData;
             $this->valid = true;
 		} elseif (is_string($recordData)) {
+        	//Just the id
 			require_once ROOT_DIR . '/sys/MarcLoader.php';
 			if (strpos($recordData, ':') !== false) {
 				$recordInfo = explode(':', $recordData);
@@ -66,9 +68,12 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 					$this->indexingProfile = $indexingProfiles['ils'];
 				}
 			}
-			//Load the marc record so validation happens
-            $this->getMarcRecord();
+			//Check if it's valid by checking if the marc record exists,
+	        //but don't load for performance.
+	        $this->valid = MarcLoader::marcExistsForILSId($this->getIdWithSource());
+            //$this->getMarcRecord($this->getUniqueID());
 		} else {
+        	//Array of information, this likely never happens
 			// Also process the MARC record:
 			require_once ROOT_DIR . '/sys/MarcLoader.php';
 			$this->marcRecord = MarcLoader::loadMarcRecordFromRecord($recordData);
@@ -1481,7 +1486,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 		$notes = array();
 		foreach ($additionalNotesFields as $tag => $label) {
 			/** @var File_MARC_Data_Field[] $marcFields */
-			$marcFields = $this->marcRecord->getFields($tag);
+			$marcFields = $this->getMarcRecord()->getFields($tag);
 			foreach ($marcFields as $marcField) {
 				$noteText = array();
 				foreach ($marcField->getSubFields() as $subfield) {

@@ -12,6 +12,5 @@ function mergeItemSummary($localCopies, $itemSummary) {
             $localCopies[$key] = $item;
         }
     }
-    ksort($localCopies);
     return $localCopies;
 }

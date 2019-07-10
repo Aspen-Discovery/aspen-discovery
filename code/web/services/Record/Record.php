@@ -35,7 +35,6 @@ abstract class Record_Record extends Action
 	{
 		global $interface;
 		global $configArray;
-		global $library;
 		global $timer;
 
 		$interface->assign('page_body_style', 'sidebar_left');
@@ -87,6 +86,7 @@ abstract class Record_Record extends Action
 
 		// Process MARC Data
 		$marcRecord = $this->recordDriver->getMarcRecord();
+		$timer->logTime("Loaded MARC Record");
 		if ($marcRecord) {
 			$this->marcRecord = $marcRecord;
 			$interface->assign('marc', $marcRecord);
@@ -226,7 +226,7 @@ abstract class Record_Record extends Action
 		}
 		$timer->logTime('Processed the marc record');
 
-		$timer->logTime("Got basic data from Marc Record subaction = $subAction, record_id = $record_id");
+		$timer->logTime("Got basic data from Marc Record sub action = $subAction, record_id = $record_id");
 		//stop if this is not the main action.
 		if ($subAction == true){
 			return;
@@ -236,25 +236,18 @@ abstract class Record_Record extends Action
 		$interface->assign('bookCoverUrl', $this->recordDriver->getBookcoverUrl('large'));
 
 		//Load accelerated reader data
-		if (isset($record['accelerated_reader_interest_level'])){
-			$arData = array(
-				'interestLevel' => $record['accelerated_reader_interest_level'],
-				'pointValue' => $record['accelerated_reader_point_value'],
-				'readingLevel' => $record['accelerated_reader_reading_level']
-			);
+		$arData = $this->recordDriver->getAcceleratedReaderData();
+		if (!empty($arData)) {
 			$interface->assign('arData', $arData);
 		}
 
-		if (isset($record['lexile_score']) && $record['lexile_score'] > -1){
-			$lexileScore = $record['lexile_score'];
-			if (isset($record['lexile_code'])){
-				$lexileScore = $record['lexile_code'] . $lexileScore;
-			}
-			$interface->assign('lexileScore', $lexileScore . 'L');
+		$lexileData = $this->recordDriver->getLexileDisplayString();
+		if (!empty($lexileData)){
+			$interface->assign('lexileScore', $lexileData);
 		}
 
-		if (isset($record['fountas_pinnell'])){
-			$fountasPinnell = $record['fountas_pinnell'];
+		$fountasPinnell = $this->recordDriver->getFountasPinnellLevel();
+		if (!empty($fountasPinnell)){
 			$interface->assign('fountasPinnell', $fountasPinnell);
 		}
 
@@ -284,10 +277,6 @@ abstract class Record_Record extends Action
 		$_SESSION['lastSearchURL'] : false);
 
 		$this->cacheId = 'Record|' . $_GET['id'] . '|' . get_class($this);
-
-		// Set AddThis User
-		$interface->assign('addThis', isset($configArray['AddThis']['key']) ?
-		$configArray['AddThis']['key'] : false);
 
 		//Get Next/Previous Links
 		$searchSource = isset($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : 'local';

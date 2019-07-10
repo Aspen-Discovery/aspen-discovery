@@ -74,42 +74,47 @@ class Grouping_Variation
         return $this->_statusInformation;
     }
 
+    private $_actions = null;
     /**
      * @return array
      */
     public function getActions(): array
     {
-        if ($this->getNumRelatedRecords() == 1) {
-            $firstRecord = $this->getFirstRecord();
-            return $firstRecord->getActions();
-        } else {
-            //Figure out what the preferred record is to place a hold on.  Since sorting has been done properly, this should always be the first
-            $bestRecord = $this->getFirstRecord();
+    	if ($this->_actions == null){
+		    if ($this->getNumRelatedRecords() == 1) {
+			    $firstRecord = $this->getFirstRecord();
+			    $this->_actions = $firstRecord->getActions();
+		    } else {
+			    //Figure out what the preferred record is to place a hold on.  Since sorting has been done properly, this should always be the first
+			    $bestRecord = $this->getFirstRecord();
 
-            if ($this->getNumRelatedRecords() > 1 && array_key_exists($bestRecord->getStatusInformation()->getGroupedStatus(), GroupedWorkDriver::$statusRankings) && GroupedWorkDriver::$statusRankings[ $bestRecord->getStatusInformation()->getGroupedStatus() ] <= 5) {
-                // Check to set prompt for Alternate Edition for any grouped status equal to or less than that of "Checked Out"
-                $promptForAlternateEdition = false;
-                foreach ($this->_records as $relatedRecord) {
-                    if ($relatedRecord->getStatusInformation()->isAvailable() && $relatedRecord->isHoldable()) {
-                        $promptForAlternateEdition = true;
-                        unset($relatedRecord);
-                        break;
-                    }
-                }
-                if ($promptForAlternateEdition) {
-                    $alteredActions = array();
-                    foreach ($bestRecord->getActions() as $action) {
-                        $action['onclick'] = str_replace('Record.showPlaceHold', 'Record.showPlaceHoldEditions', $action['onclick']);
-                        $alteredActions[] = $action;
-                    }
-                    return $alteredActions;
-                } else {
-                    return $bestRecord->getActions();
-                }
-            } else {
-                return $bestRecord->getActions();
-            }
-        }
+			    if ($this->getNumRelatedRecords() > 1 && array_key_exists($bestRecord->getStatusInformation()->getGroupedStatus(), GroupedWorkDriver::$statusRankings) && GroupedWorkDriver::$statusRankings[ $bestRecord->getStatusInformation()->getGroupedStatus() ] <= 5) {
+				    // Check to set prompt for Alternate Edition for any grouped status equal to or less than that of "Checked Out"
+				    $promptForAlternateEdition = false;
+				    foreach ($this->_records as $relatedRecord) {
+					    if ($relatedRecord->getStatusInformation()->isAvailable() && $relatedRecord->isHoldable()) {
+						    $promptForAlternateEdition = true;
+						    unset($relatedRecord);
+						    break;
+					    }
+				    }
+				    if ($promptForAlternateEdition) {
+					    $alteredActions = array();
+					    foreach ($bestRecord->getActions() as $action) {
+						    $action['onclick'] = str_replace('Record.showPlaceHold', 'Record.showPlaceHoldEditions', $action['onclick']);
+						    $alteredActions[] = $action;
+					    }
+					    $this->_actions = $alteredActions;
+				    } else {
+					    $this->_actions = $bestRecord->getActions();
+				    }
+			    } else {
+				    $this->_actions = $bestRecord->getActions();
+			    }
+		    }
+	    }
+    	return $this->_actions;
+
     }
 
     /**
@@ -129,17 +134,24 @@ class Grouping_Variation
         return reset($this->_records);
     }
 
+    private $_itemSummary = null;
     /**
      * @return array
      */
     function getItemSummary()
     {
-        require_once ROOT_DIR . '/sys/Utils/GroupingUtils.php';
-        $itemSummary = [];
-        foreach ($this->_records as $record){
-            $itemSummary = mergeItemSummary($itemSummary, $record->getItemSummary());
-        }
-        return $itemSummary;
+    	if ($this->_itemSummary == null){
+		    global $timer;
+		    require_once ROOT_DIR . '/sys/Utils/GroupingUtils.php';
+		    $itemSummary = [];
+		    foreach ($this->_records as $record){
+			    $itemSummary = mergeItemSummary($itemSummary, $record->getItemSummary());
+		    }
+		    ksort($itemSummary);
+		    $this->_itemSummary = $itemSummary;
+		    $timer->logTime("Got item summary for variation");
+	    }
+        return $this->_itemSummary;
     }
 
     public function getCopies(){

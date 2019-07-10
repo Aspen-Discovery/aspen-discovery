@@ -646,7 +646,7 @@ class Archive_AJAX extends Action {
 		if (isset($response['facet_counts']) && isset($response['facet_counts']['facet_fields'][$facetName])){
 			$facetFieldData = $response['facet_counts']['facet_fields'][$facetName];
 			foreach ($facetFieldData as $field){
-				$searchLink = $searchObject->renderLinkWithFilter("$facetName:$field[0]");
+				$searchLink = $searchObject->renderLinkWithFilter($facetName, $field[0]);
 				$facetValues[$field[0]] = array(
 						'display' => $field[0],
 						'url' => $searchLink,

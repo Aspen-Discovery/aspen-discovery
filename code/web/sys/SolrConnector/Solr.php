@@ -1135,7 +1135,7 @@ abstract class Solr {
 				$options['q'] = $this->_buildAdvancedQuery($handler, $query);
 			}
 		}
-		$timer->logTime("build query");
+		$timer->logTime("build query in Solr");
 
 		// Limit Fields
 		if ($fields) {

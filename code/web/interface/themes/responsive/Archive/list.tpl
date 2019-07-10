@@ -8,28 +8,28 @@
 
 	{* Listing Options *}
 	<div class="resulthead">
-		{if $solrSearchDebug}
+		{if !empty($solrSearchDebug)}
 			<div id="solrSearchOptionsToggle" onclick="$('#solrSearchOptions').toggle()">Show Search Options</div>
 			<div id="solrSearchOptions" style="display:none">
 				<pre>Search options: {$solrSearchDebug}</pre>
 			</div>
 		{/if}
 
-		{if $solrLinkDebug}
+		{if !empty($solrLinkDebug)}
 			<div id='solrLinkToggle' onclick='$("#solrLink").toggle()'>Show Solr Link</div>
 			<div id='solrLink' style='display:none'>
 				<pre>{$solrLinkDebug}</pre>
 			</div>
 		{/if}
 
-		{if $debugTiming}
+		{if !empty($debugTiming)}
 			<div id='solrTimingToggle' onclick='$("#solrTiming").toggle()'>Show Solr Timing</div>
 			<div id='solrTiming' style='display:none'>
 				<pre>{$debugTiming}</pre>
 			</div>
 		{/if}
 
-		{if $spellingSuggestions}
+		{if !empty($spellingSuggestions)}
 			<br /><br /><div class="correction"><strong>{translate text='spell_suggest'}</strong>:<br/>
 			{foreach from=$spellingSuggestions item=details key=term name=termLoop}
 				{$details.phrase|escape} ($details.freq) &raquo; {foreach from=$details.suggestions item=data key=word name=suggestLoop}<a href="{$data.replace_url|escape}">{$data.phrase|escape}</a>{if $data.expand_url} <a href="{$data.expand_url|escape}"><img src="{$path}/images/silk/expand.png" alt="{translate text='spell_expand_alt'}"/></a> {/if}{if !$smarty.foreach.suggestLoop.last}, {/if}{/foreach}{if !$smarty.foreach.termLoop.last}<br/>{/if}

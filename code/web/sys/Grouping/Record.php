@@ -392,16 +392,21 @@ class Grouping_Record
         $this->_callNumber = $callNumber;
     }
 
+    private $_allActions = null;
     /**
      * @return array
      */
     public function getActions(): array
     {
-    	$actionsToReturn = $this->_actions;
-    	foreach ($this->_items as $item){
-		    $actionsToReturn = array_merge($actionsToReturn, $item->getActions());
+    	if ($this->_allActions == null){
+		    $actionsToReturn = $this->_actions;
+		    foreach ($this->_items as $item){
+			    $actionsToReturn = array_merge($actionsToReturn, $item->getActions());
+		    }
+		    $this->_allActions = $actionsToReturn;
 	    }
-        return $actionsToReturn;
+
+        return $this->_allActions;
     }
 
     /**

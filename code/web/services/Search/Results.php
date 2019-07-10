@@ -362,28 +362,6 @@ class Search_Results extends Action {
 			$interface->assign('recordStart', $summary['startRecord']);
 			$interface->assign('recordEnd',   $summary['endRecord']);
 			$memoryWatcher->logMemory('Get Result Summary');
-
-			$facetSet = $searchObject->getFacetList();
-			$interface->assign('facetSet', $facetSet);
-			$memoryWatcher->logMemory('Get Facet List');
-
-			//Check to see if a format category is already set
-			$categorySelected = false;
-			if (isset($facetSet['top'])){
-				foreach ($facetSet['top'] as $cluster){
-					if ($cluster['label'] == 'Category'){
-						foreach ($cluster['list'] as $thisFacet){
-							if ($thisFacet['isApplied']){
-								$categorySelected = true;
-								break;
-							}
-						}
-					}
-					if ($categorySelected) break;
-				}
-			}
-			$interface->assign('categorySelected', $categorySelected);
-			$timer->logTime('load selected category');
 		}
 
 		// What Mode will search results be Displayed In //

@@ -1,4 +1,4 @@
-{if $searchSuggestions}
+{if !empty($searchSuggestions)}
     <div id="searchSuggestions">
         <h3>{translate text="Similar Searches"}</h3>
         <p>{translate text="similar_search_instructions" defaultText="These searches are similar to the search you tried. Would you like to try one of these instead?"}</p>

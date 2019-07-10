@@ -9,18 +9,8 @@
 		</div>
 	{/if}
 
-	{if $recordDriver->getSeries()}
-		<div class="series row">
-			<div class="result-label col-md-3">{translate text="Series"} </div>
-			<div class="col-md-9 result-value">
-				{assign var=summSeries value=$recordDriver->getSeries()}
-				{if $summSeries.fromNovelist}
-					<a href="{$path}/GroupedWork/{$recordDriver->getPermanentId()}/Series">{$summSeries.seriesTitle}</a>{if $summSeries.volume} volume {$summSeries.volume}{/if}
-				{else}
-					<a href="{$path}/Search/Results?lookfor={$summSeries.seriesTitle}">{$summSeries.seriesTitle}</a>{if $summSeries.volume} volume {$summSeries.volume}{/if}
-				{/if}
-			</div>
-		</div>
+	{if $showSeries}
+		<div class="series row" id="seriesPlaceholder{$recordDriver->getPermanentId()}"></div>
 	{/if}
 
 	{if $showPublicationDetails && $recordDriver->getPublicationDetails()}

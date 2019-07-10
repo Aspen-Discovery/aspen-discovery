@@ -156,15 +156,13 @@ abstract class SearchObject_BaseSearcher
 	 * Does the object already contain the specified filter?
 	 *
 	 * @access  public
-	 * @param   string  $filter     A filter string from url : "field:value"
+	 * @param   string  $filterName     The name of the filter
+	 * @param   string  $value          The value of the filter
 	 * @return  bool
 	 */
-	public function hasFilter($filter)
+	public function hasFilter($filterName, $value)
 	{
-		// Extract field and value from URL string:
-		list($field, $value) = $this->parseFilter($filter);
-
-		if (isset($this->filterList[$field]) && in_array($value, $this->filterList[$field])) {
+		if (isset($this->filterList[$filterName]) && in_array($value, $this->filterList[$filterName])) {
 			return true;
 		}
 		return false;
@@ -180,83 +178,67 @@ abstract class SearchObject_BaseSearcher
 	 *   array checking for duplicates.
 	 *
 	 * @access  public
-	 * @param   string  $newFilter   A filter string from url : "field:value"
+	 * @param   string|array  $newFilter   A filter string from url : "field:value"
 	 */
 	public function addFilter($newFilter)
 	{
-		if (strlen($newFilter) == 0){
-			return;
+		if (is_array($newFilter)){
+			$field = $newFilter[0];
+			$value = $newFilter[1];
+		}else{
+			if (strlen($newFilter) == 0){
+				return;
+			}
+			// Extract field and value from URL string:
+			list($field, $value) = $this->parseFilter($newFilter);
 		}
-		// Extract field and value from URL string:
-		list($field, $value) = $this->parseFilter($newFilter);
+
 		if ($field == ''){
 			$field = count($this->filterList) + 1;
 		}
 
-		$searchLibrary = Library::getActiveLibrary();
-		global $locationSingleton;
-		$searchLocation = $locationSingleton->getActiveLocation();
-		$userLocation = Location::getUserHomeLocation();
 		global $solrScope;
 
 		// Check for duplicates -- if it's not in the array, we can add it
-		if (!$this->hasFilter($field)) {
+		if (!$this->hasFilter($field, $value)) {
 			if (!is_numeric($field)){
-				if (strcmp($field, 'literary-form') === 0){
+				if ($field === 'literary-form'){
 					$field = 'literary_form';
-				}else if (strcmp($field, 'literary-form-full') == 0){
+				}else if ($field === 'literary-form-full'){
 					$field = 'literary_form_full';
-				}else if (strcmp($field, 'target-audience') == 0){
+				}else if ($field === 'target-audience'){
 					$field = 'target_audience';
-				}else if (strcmp($field, 'target-audience-full') == 0){
+				}else if ($field === 'target-audience-full'){
 					$field = 'target_audience_full';
 				}
 
-				//See if the filter should be localized
-				if (isset($searchLibrary)){
-					if (strcmp($field, 'time_since_added') === 0){
-						$field = 'local_time_since_added_' . $searchLibrary->subdomain;
-					}elseif (strcmp($field, 'itype') === 0){
-						$field = 'itype_' . $searchLibrary->subdomain;
-					}elseif (strcmp($field, 'detailed_location') === 0){
-						$field = 'detailed_location_' . $searchLibrary->subdomain;
-					}
-				}
-
 				if ($solrScope){
-					if (strcmp($field, 'availability_toggle') == 0){
+					if ($field === 'availability_toggle'){
 						$field = 'availability_toggle_' . $solrScope;
-					}elseif (strcmp($field, 'format') == 0){
+					}elseif ($field === 'format'){
 						$field = 'format_' . $solrScope;
-					}elseif (strcmp($field, 'format_category') == 0){
+					}elseif ($field === 'format_category'){
 						$field = 'format_category_' . $solrScope;
-					}elseif (strcmp($field, 'econtent_source') == 0){
+					}elseif ($field === 'econtent_source'){
 						$field = 'econtent_source_' . $solrScope;
-					}elseif (strcmp($field, 'econtent_protection_type') == 0){
+					}elseif ($field === 'econtent_protection_type'){
 						$field = 'econtent_protection_type_' . $solrScope;
-					}elseif ((strcmp($field, 'collection') == 0) || (strcmp($field, 'collection_group') == 0)){
+					}elseif (($field === 'collection') || ($field === 'collection_group')){
 						$field = 'collection_' . $solrScope;
-					}elseif ((strcmp($field, 'detailed_location') == 0) || (strcmp($field, 'detailed_location') == 0)){
+					}elseif ($field === 'detailed_location'){
 						$field = 'detailed_location_' . $solrScope;
-					}elseif ((strcmp($field, 'owning_location') == 0) || (strcmp($field, 'owning_location') == 0)){
+					}elseif ($field === 'owning_location'){
 						$field = 'owning_location_' . $solrScope;
-					}elseif ((strcmp($field, 'owning_system') == 0) || (strcmp($field, 'owning_system') == 0)){
+					}elseif ($field === 'owning_system'){
 						$field = 'owning_system_' . $solrScope;
-					}elseif ((strcmp($field, 'available_at') == 0) || (strcmp($field, 'available_at') == 0)){
+					}elseif ($field === 'available_at'){
 						$field = 'available_at_' . $solrScope;
-					}
-				}
-
-				if (isset($userLocation)){
-					if (strcmp($field, 'availability_toggle') == 0){
-						$field = 'availability_toggle_' . $userLocation->code;
-					}
-				}
-				if (isset($searchLocation)){
-					if ((strcmp($field, 'time_since_added') == 0) && $searchLocation->restrictSearchByLocation){
-						$field = 'local_time_since_added_' . $searchLocation->code;
-					}elseif (strcmp($field, 'availability_toggle') == 0){
-						$field = 'availability_toggle_' . $searchLocation->code;
+					}elseif ($field === 'time_since_added'){
+						$field = 'local_time_since_added_' . $solrScope;
+					}elseif ($field === 'itype'){
+						$field = 'itype_' . $solrScope;
+					}elseif ($field === 'detailed_location'){
+						$field = 'detailed_location_' . $solrScope;
 					}
 				}
 			}
@@ -389,16 +371,17 @@ abstract class SearchObject_BaseSearcher
 	 * Return a url for the current search with an additional filter
 	 *
 	 * @access  public
-	 * @param   string   $newFilter   A filter to add to the search url
+	 * @param   string   $field  The name of the field to filter on
+	 * @param   string   $filterValue The value to filter on
 	 * @return  string   URL of a new search
 	 */
-	public function renderLinkWithFilter($newFilter)
+	public function renderLinkWithFilter($field, $filterValue)
 	{
 		// Stash our old data for a minute
 		$oldFilterList = $this->filterList;
 		$oldPage       = $this->page;
 		// Availability facet can have only one item selected at a time
-		if (strpos($newFilter, 'availability_toggle') === 0){
+		if ($field === 'availability_toggle'){
 			foreach ($this->filterList as $name => $value){
 				if (strpos($name, 'availability_toggle') === 0){
 					unset ($this->filterList[$name]);
@@ -406,7 +389,7 @@ abstract class SearchObject_BaseSearcher
 			}
 		}
 		// Add the new filter
-		$this->addFilter($newFilter);
+		$this->addFilter([$field, $filterValue]);
 		// Remove page number
 		$this->page = 1;
 		// Get the new url
@@ -1215,8 +1198,8 @@ abstract class SearchObject_BaseSearcher
 				$facets[$field]['toggleUrl'] = $deselect[$field];
 			} else {
 				$facets[$field]['selected'] = false;
-				$facets[$field]['toggleUrl'] =
-				$this->renderLinkWithFilter($details['filter']);
+				list($fieldName, $value) = explode(":", $details['filter'], 2);
+				$facets[$field]['toggleUrl'] = $this->renderLinkWithFilter($fieldName, $value);
 			}
 		}
 		return $facets;
@@ -1252,35 +1235,6 @@ abstract class SearchObject_BaseSearcher
 		return $summary;
 	}
 
-	/**
-	 * Get a link to a blank search restricted by the specified facet value.
-	 *
-	 * @access  protected
-	 * @param   string      $field      The facet field to limit on
-	 * @param   string      $value      The facet value to limit with
-	 * @return  string                  The URL to the desired search
-	 */
-	protected function getExpandingFacetLink($field, $value)
-	{
-		// Stash our old search
-		$temp_data = $this->searchTerms;
-		$temp_type = $this->searchType;
-
-		// Add an empty search
-		$this->searchType = $this->basicSearchType;
-		$this->setBasicQuery('');
-
-		// Get the link:
-		$url = $this->renderLinkWithFilter("{$field}:{$value}");
-
-		// Restore our old search
-		$this->searchTerms = $temp_data;
-		$this->searchType  = $temp_type;
-
-		// Send back the requested link>
-		return $url;
-	}
-
     /**
 	 * Returns the stored list of facets for the last search
 	 *
@@ -1288,13 +1242,9 @@ abstract class SearchObject_BaseSearcher
 	 * @param   array   $filter         Array of field => on-screen description
 	 *                                  listing all of the desired facet fields;
 	 *                                  set to null to get all configured values.
-	 * @param   bool    $expandingLinks If true, we will include expanding URLs
-	 *                                  (i.e. get all matches for a facet, not
-	 *                                  just a limit to the current search) in
-	 *                                  the return array.
 	 * @return  array   Facets data arrays
 	 */
-    public function getFacetList(/** @noinspection PhpUnusedParameterInspection */$filter = null, /** @noinspection PhpUnusedParameterInspection */$expandingLinks = false)
+    public function getFacetList(/** @noinspection PhpUnusedParameterInspection */$filter = null)
 	{
 		// Assume no facets by default -- child classes can override this to extract
 		// the necessary details from the results saved by processSearch().

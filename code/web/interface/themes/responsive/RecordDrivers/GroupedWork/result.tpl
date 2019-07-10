@@ -234,7 +234,6 @@
 						{* relatedManifestationsValue ID is used by the Formats button *}
 
 						{include file="GroupedWork/relatedManifestations.tpl" id=$summId workId=$summId}
-
 					</div>
 				</div>
 

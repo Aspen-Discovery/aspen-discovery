@@ -155,21 +155,28 @@ class Grouping_Manifestation
      */
     function getActions(): array
     {
-        $firstVariation = reset($this->_variations);
+    	$firstVariation = reset($this->_variations);
         return $firstVariation->getActions();
     }
 
+	private $_itemSummary = null;
     /**
      * @return array
      */
     function getItemSummary()
     {
-        require_once ROOT_DIR . '/sys/Utils/GroupingUtils.php';
-        $itemSummary = [];
-        foreach ($this->_variations as $variation) {
-            $itemSummary = mergeItemSummary($itemSummary, $variation->getItemSummary());
-        }
-        return $itemSummary;
+	    if ($this->_itemSummary == null){
+	        global $timer;
+	        require_once ROOT_DIR . '/sys/Utils/GroupingUtils.php';
+	        $itemSummary = [];
+	        foreach ($this->_variations as $variation) {
+	            $itemSummary = mergeItemSummary($itemSummary, $variation->getItemSummary());
+	        }
+		    ksort($itemSummary);
+		    $this->_itemSummary = $itemSummary;
+	        $timer->logTime("Got item summary for manifestation");
+	    }
+	    return $this->_itemSummary;
     }
 
     /**

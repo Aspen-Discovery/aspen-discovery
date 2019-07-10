@@ -4,14 +4,14 @@
   <p class="error">{translate text='nohit_parse_error'}</p>
 {/if}
 
-{if $solrSearchDebug}
+{if !empty($solrSearchDebug)}
   <div id="solrSearchOptionsToggle" onclick="$('#solrSearchOptions').toggle()">Show Search Options</div>
   <div id="solrSearchOptions" style="display:none">
     <pre>Search options: {$solrSearchDebug}</pre>
   </div>
 {/if}
 
-{if $solrLinkDebug}
+{if !empty($solrLinkDebug)}
   <div id='solrLinkToggle' onclick='$("#solrLink").toggle()'>Show Solr Link</div>
   <div id='solrLink' style='display:none'>
     <pre>{$solrLinkDebug}</pre>

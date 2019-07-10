@@ -89,10 +89,8 @@ class TopFacets implements RecommendationInterface
 	{
 		global $interface;
 
-		// Grab the facet set -- note that we need to take advantage of the third
-		// parameter to getFacetList in order to pass down row and column
-		// information for inclusion in the final list.
-		$facetList = $this->searchObject->getFacetList($this->facets, false);
+		// Grab the facet set
+		$facetList = $this->searchObject->getFacetList($this->facets);
 		foreach ($facetList as $facetSetkey => $facetSet){
 			if ($facetSet['label'] == 'Category' || $facetSet['label'] == 'Format Category'){
 				$validCategories = array(

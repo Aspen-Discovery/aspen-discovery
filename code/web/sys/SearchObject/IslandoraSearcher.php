@@ -757,13 +757,9 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 	 * @param   array   $filter         Array of field => on-screen description
 	 *                                  listing all of the desired facet fields;
 	 *                                  set to null to get all configured values.
-	 * @param   bool    $expandingLinks If true, we will include expanding URLs
-	 *                                  (i.e. get all matches for a facet, not
-	 *                                  just a limit to the current search) in
-	 *                                  the return array.
 	 * @return  array   Facets data arrays
 	 */
-	public function getFacetList($filter = null, $expandingLinks = false)
+	public function getFacetList($filter = null)
 	{
 		require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
 		$fedoraUtils = FedoraUtils::getInstance();
@@ -837,13 +833,7 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 				}
 				$currentSettings['count'] = $facet[1];
 				$currentSettings['isApplied'] = false;
-				$currentSettings['url'] = $this->renderLinkWithFilter("$field:".$facet[0]);
-				// If we want to have expanding links (all values matching the facet)
-				// in addition to limiting links (filter current search with facet),
-				// do some extra work:
-				if ($expandingLinks) {
-					$currentSettings['expandUrl'] = $this->getExpandingFacetLink($field, $facet[0]);
-				}
+				$currentSettings['url'] = $this->renderLinkWithFilter($field, $facet[0]);
 
 				// Is this field a current filter?
 				if (in_array($field, array_keys($this->filterList))) {

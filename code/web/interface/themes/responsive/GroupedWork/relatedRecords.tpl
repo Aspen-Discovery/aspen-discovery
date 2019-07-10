@@ -2,51 +2,56 @@
 	<table class="table table-striped table-condensed">
 		<thead>
 		<tr>
-			{display_if_field_inconsistent array=$relatedRecords key="publicationDate"}
+			{display_if_field_inconsistent array=$relatedRecords key="publicationDate" var=showRecordPublicationDate}
 				<th>{translate text="Pub. Date"}</th>
 			{/display_if_field_inconsistent}
+
+			{assign var=showRecordEcontentSource value=false}
 			{if in_array(strtolower($relatedManifestation->format), array('ebook', 'eaudiobook', 'emagazine', 'evideo'))}
+				{assign var=showRecordEcontentSource value=true}
 				<th>{translate text="Source"}</th>
 			{/if}
-			{display_if_field_inconsistent array=$relatedRecords key="edition"}
+
+			{display_if_field_inconsistent array=$relatedRecords key="edition" var=showRecordEdition}
 				<th>{translate text="Edition"}</th>
 			{/display_if_field_inconsistent}
-			{display_if_field_inconsistent array=$relatedRecords key="publisher"}
+
+			{display_if_field_inconsistent array=$relatedRecords key="publisher" var=showRecordPublisher}
 				<th>{translate text="Publisher"}</th>
 			{/display_if_field_inconsistent}
-			{display_if_field_inconsistent array=$relatedRecords key="physical"}
+
+			{display_if_field_inconsistent array=$relatedRecords key="physical" var=showRecordPhysical}
 				<th>{translate text="Phys Desc."}</th>
 			{/display_if_field_inconsistent}
-			{display_if_field_inconsistent array=$relatedRecords key="language"}
+
+			{display_if_field_inconsistent array=$relatedRecords key="language" var=showRecordLanguage}
 				<th>{translate text="Language"}</th>
 			{/display_if_field_inconsistent}
+
 			<th>{translate text="Availability"}</th>
 			<th></th>
 		</tr>
 		</thead>
 		{foreach from=$relatedRecords item=relatedRecord key=index}
 			<tr{if !empty($promptAlternateEdition) && $index===0} class="danger"{/if}>
-				{* <td>
-				{$relatedRecord.holdRatio}
-				</td> *}
-				{display_if_field_inconsistent array=$relatedRecords key="publicationDate"}
+				{if $showRecordPublicationDate}
 					<td><a href="{$relatedRecord->getUrl()}">{$relatedRecord->publicationDate}</a></td>
-				{/display_if_field_inconsistent}
-				{if in_array(strtolower($relatedManifestation->format), array('ebook', 'eaudiobook', 'emagazine', 'evideo'))}
+				{/if}
+				{if $showRecordEcontentSource}
 					<td><a href="{$relatedRecord->getUrl()}">{$relatedRecord->getEContentSource()}</a></td>
 				{/if}
-				{display_if_field_inconsistent array=$relatedRecords key="edition"}
+				{if $showRecordEdition}
 					<td>{*<a href="{$relatedRecord->getUrl()}">*}{$relatedRecord->edition}{*</a>*}</td>
-				{/display_if_field_inconsistent}
-				{display_if_field_inconsistent array=$relatedRecords key="publisher"}
+				{/if}
+				{if $showRecordPublisher}
 					<td><a href="{$relatedRecord->getUrl()}">{$relatedRecord->publisher}</a></td>
-				{/display_if_field_inconsistent}
-				{display_if_field_inconsistent array=$relatedRecords key="physical"}
+				{/if}
+				{if $showRecordPhysical}
 					<td><a href="{$relatedRecord->getUrl()}">{$relatedRecord->physical}</a></td>
-				{/display_if_field_inconsistent}
-				{display_if_field_inconsistent array=$relatedRecords key="language"}
+				{/if}
+				{if $showRecordLanguage}
 					<td><a href="{$relatedRecord->getUrl()}">{implode subject=$relatedRecord->language glue="," translate=true}</a></td>
-				{/display_if_field_inconsistent}
+				{/if}
 				<td>
 					{include file='GroupedWork/statusIndicator.tpl' statusInformation=$relatedRecord->getStatusInformation() viewingIndividualRecord=1}
 					{include file='GroupedWork/copySummary.tpl' summary=$relatedRecord->getItemSummary() totalCopies=$relatedRecord->getCopies() itemSummaryId=$relatedRecord->id recordViewUrl=$relatedRecord->getUrl()}

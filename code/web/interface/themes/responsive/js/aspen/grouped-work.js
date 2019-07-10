@@ -118,6 +118,10 @@ AspenDiscovery.GroupedWork = (function(){
 					}else{
 						$('#seriesPanel').hide();
 					}
+					let seriesSummary = data.seriesSummary;
+					if (seriesSummary){
+						$('#seriesPlaceholder' + id).html(seriesSummary);
+					}
 					let showGoDeeperData = data.showGoDeeper;
 					if (showGoDeeperData) {
 						//$('#goDeeperLink').show();
@@ -194,12 +198,12 @@ AspenDiscovery.GroupedWork = (function(){
 		},
 
 		loadReviewInfo: function (id) {
-			var url = Globals.path + "/GroupedWork/" + encodeURIComponent(id) + "/AJAX?method=getReviewInfo";
+			let url = Globals.path + "/GroupedWork/" + encodeURIComponent(id) + "/AJAX?method=getReviewInfo";
 			$.getJSON(url, function(data) {
 				if (data.numSyndicatedReviews == 0){
 					$("#syndicatedReviewsPanel").hide();
 				}else{
-					var syndicatedReviewsData = data.syndicatedReviewsHtml;
+					let syndicatedReviewsData = data.syndicatedReviewsHtml;
 					if (syndicatedReviewsData && syndicatedReviewsData.length > 0) {
 						$("#syndicatedReviewPlaceholder").html(syndicatedReviewsData);
 					}
@@ -208,7 +212,7 @@ AspenDiscovery.GroupedWork = (function(){
 				if (data.numCustomerReviews == 0){
 					$("#borrowerReviewsPanel").hide();
 				}else{
-					var customerReviewsData = data.customerReviewsHtml;
+					let customerReviewsData = data.customerReviewsHtml;
 					if (customerReviewsData && customerReviewsData.length > 0) {
 						$("#customerReviewPlaceholder").html(customerReviewsData);
 					}
@@ -216,9 +220,21 @@ AspenDiscovery.GroupedWork = (function(){
 			});
 		},
 
+		loadSeriesSummary: function (recordId){
+			let url = Globals.path + '/GroupedWork/' + recordId + '/AJAX?method=getSeriesSummary';
+			$.getJSON(
+				url, function(data){
+					if (data.result == true){
+						$("#seriesPlaceholder" + recordId).html(data.seriesSummary);
+					}
+				}
+			);
+			return false;
+		},
+
 		markNotInterested: function (recordId){
 			if (Globals.loggedIn){
-				var url = Globals.path + '/GroupedWork/' + recordId + '/AJAX?method=markNotInterested';
+				let url = Globals.path + '/GroupedWork/' + recordId + '/AJAX?method=markNotInterested';
 				$.getJSON(
 						url, function(data){
 							if (data.result == true){

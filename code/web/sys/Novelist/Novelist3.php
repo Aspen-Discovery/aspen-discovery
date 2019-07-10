@@ -180,7 +180,7 @@ class Novelist3{
 						enableErrorHandler();
 
 						$response = $req->getResponseBody();
-						$timer->logTime("Made call to Novelist for enrichment information");
+						$timer->logTime("Made call to Novelist for enrichment information $isbn");
 
 
 						//Parse the JSON

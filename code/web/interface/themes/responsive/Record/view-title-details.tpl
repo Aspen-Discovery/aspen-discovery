@@ -52,24 +52,8 @@
 		</div>
 	{/if}
 
-	{assign var=series value=$recordDriver->getSeries()}
-	{if $series}
-		<div class="series row">
-			<div class="result-label col-sm-4">{translate text="Series"} </div>
-			<div class="col-sm-8 result-value">
-				{if is_array($series) && !isset($series.seriesTitle)}
-					{foreach from=$series item=seriesItem name=loop}
-						<a href="{$path}/Search/Results?searchIndex=Series&lookfor=%22{$seriesItem.seriesTitle|removeTrailingPunctuation|escape:"url"}%22">{$seriesItem.seriesTitle|removeTrailingPunctuation|escape}</a>{if $seriesItem.volume} volume {$seriesItem.volume}{/if}<br/>
-					{/foreach}
-				{else}
-					{if $series.fromNovelist}
-						<a href="{$path}/GroupedWork/{$recordDriver->getPermanentId()}/Series">{$series.seriesTitle}</a>{if $series.volume} volume {$series.volume}{/if}<br>
-					{else}
-						<a href="{$path}/Search/Results?searchIndex=Series&lookfor={$series.seriesTitle}">{$series.seriesTitle}</a>{if $series.volume} volume {$series.volume}{/if}
-					{/if}
-				{/if}
-			</div>
-		</div>
+	{if $showSeries}
+		<div class="series row" id="seriesPlaceholder{$recordDriver->getPermanentId()}"></div>
 	{/if}
 
 	{if $showPublicationDetails && $recordDriver->getPublicationDetails()}

@@ -1325,7 +1325,6 @@ class GroupedWorkDriver extends IndexRecordDriver{
     public function getRelatedManifestations() {
         global $timer;
         global $memoryWatcher;
-        global $interface;
         $timer->logTime("Starting to load related records in getRelatedManifestations");
         $relatedRecords = $this->getRelatedRecords();
         $timer->logTime("Finished loading related records in getRelatedManifestations");
@@ -1604,6 +1603,7 @@ class GroupedWorkDriver extends IndexRecordDriver{
 		// Obtain and assign snippet (highlighting) information:
 		$snippets = $this->getHighlightedSnippets();
 		$interface->assign('summSnippets', $snippets);
+		$timer->logTime("Loaded highlighted snippets");
 
 		$summPublisher    = null;
 		$summPubDate      = null;
@@ -1680,6 +1680,7 @@ class GroupedWorkDriver extends IndexRecordDriver{
 
 		$interface->assign('recordDriver', $this);
 
+		$timer->logTime("Assigned all information to show search results");
 		return 'RecordDrivers/GroupedWork/result.tpl';
 	}
 
