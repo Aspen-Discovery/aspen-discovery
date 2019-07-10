@@ -4,43 +4,41 @@
 	<br>
 	{foreach from=$topFacetSet item=cluster key=title}
 		{if $cluster.label == 'Category' || $cluster.label == 'Format Category'}
-			{if ($categorySelected == false)}
-				<div class="formatCategories top-facet" id="formatCategories">
-					<div id="categoryValues" class="row">
-						{foreach from=$cluster.list item=thisFacet name="narrowLoop"}
-							{if $thisFacet.isApplied}
-								<div class="categoryValue categoryValue_{$thisFacet.value|lower|replace:' ':''} col-tn-2">
-									<a href="{$thisFacet.removalUrl|escape}" class="removeFacetLink" title="Remove Filter">
-										<div class="row">
-											<div class="col-xs-6">
-												<img src="{img filename=$thisFacet.imageNameSelected}" alt="{translate text=$thisFacet.value|escape inAttribute=true}">
-											</div>
-											<div class="col-xs-6 formatCategoryLabel">
-												{translate text=$thisFacet.value|escape}
-												<br>({translate text=Remove})
-											</div>
+			<div class="formatCategories top-facet" id="formatCategories">
+				<div id="categoryValues" class="row">
+					{foreach from=$cluster.list item=thisFacet name="narrowLoop"}
+						{if $thisFacet.isApplied}
+							<div class="categoryValue categoryValue_{$thisFacet.value|lower|replace:' ':''} col-tn-2">
+								<a href="{$thisFacet.removalUrl|escape}" class="removeFacetLink" title="Remove Filter">
+									<div class="row">
+										<div class="col-xs-6">
+											<img src="{img filename=$thisFacet.imageNameSelected}" alt="{translate text=$thisFacet.value|escape inAttribute=true}">
 										</div>
-									</a>
-								</div>
-							{else}
-								<div class="categoryValue categoryValue_{translate inAttribute=true text=$thisFacet.value|lower|replace:' ':''} col-tn-2">
-									<a href="{$thisFacet.url|escape}">
-										<div class="row">
-											<div class="col-xs-6">
-												<img src="{img filename=$thisFacet.imageName}" alt="{translate inAttribute=true text=$thisFacet.value|escape}">
-											</div>
-											<div class="col-xs-6 formatCategoryLabel">
-												{translate text=$thisFacet.value|escape}<br>({$thisFacet.count|number_format:0:".":","})
-											</div>
+										<div class="col-xs-6 formatCategoryLabel">
+											{translate text=$thisFacet.value|escape}
+											<br>({translate text=Remove})
 										</div>
-									</a>
-								</div>
-							{/if}
-						{/foreach}
-					</div>
-					<div class="clearfix"></div>
+									</div>
+								</a>
+							</div>
+						{else}
+							<div class="categoryValue categoryValue_{translate inAttribute=true text=$thisFacet.value|lower|replace:' ':''} col-tn-2">
+								<a href="{$thisFacet.url|escape}">
+									<div class="row">
+										<div class="col-xs-6">
+											<img src="{img filename=$thisFacet.imageName}" alt="{translate inAttribute=true text=$thisFacet.value|escape}">
+										</div>
+										<div class="col-xs-6 formatCategoryLabel">
+											{translate text=$thisFacet.value|escape}<br>({$thisFacet.count|number_format:0:".":","})
+										</div>
+									</div>
+								</a>
+							</div>
+						{/if}
+					{/foreach}
 				</div>
-			{/if}
+				<div class="clearfix"></div>
+			</div>
 		{elseif preg_match('/available/i', $cluster.label)}
 			<div id="availabilityControlContainer" class="row text-center top-facet">
 				<div id="availabilityControl" class="btn-group" data-toggle="buttons-radio">
