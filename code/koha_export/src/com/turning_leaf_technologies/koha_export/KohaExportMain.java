@@ -119,14 +119,14 @@ public class KohaExportMain {
 					//Close the connection
 					dbConn.close();
 				} catch (Exception e) {
-					System.out.println("Error closing connection: " + e.toString());
+					System.out.println("Error closing aspen connection: " + e.toString());
 					e.printStackTrace();
 				}
 				try {
 					//Close the connection
 					kohaConn.close();
 				} catch (Exception e) {
-					System.out.println("Error closing connection: " + e.toString());
+					System.out.println("Error closing koha connection: " + e.toString());
 					e.printStackTrace();
 				}
 				Date currentTime = new Date();
@@ -486,8 +486,8 @@ public class KohaExportMain {
 	private static int updateRecords(Connection dbConn, Connection kohaConn) {
 		int totalChanges = 0;
 
-		//Get the time the last extract was done
 		try{
+			//Get the time the last extract was done
 			logger.info("Starting to load changed records from Koha using the Database connection");
 			long lastKohaExtractTime = indexingProfile.getLastUpdateOfChangedRecords();
 			if (lastKohaExtractTime == 0){

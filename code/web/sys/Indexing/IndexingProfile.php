@@ -74,6 +74,7 @@ class IndexingProfile extends DataObject{
     public $runFullUpdate;
     public $lastUpdateOfChangedRecords;
     public $lastUpdateOfAllRecords;
+    public $lastUpdateFromMarcExport;
 
     static function getObjectStructure(){
 		$translationMapStructure = TranslationMap::getObjectStructure();
@@ -156,7 +157,8 @@ class IndexingProfile extends DataObject{
 
             'runFullUpdate' => array('property' => 'runFullUpdate', 'type' => 'checkbox', 'label' => 'Run Full Update', 'description'=>'Whether or not a full update of all records should be done on the next pass of indexing', 'default'=>0),
             'lastUpdateOfChangedRecords' => array('property' => 'lastUpdateOfChangedRecords', 'type' => 'integer', 'label' => 'Last Update of Changed Records', 'description'=>'The timestamp when just changes were loaded', 'default'=>0),
-            'lastUpdateOfAllRecords' => array('property' => 'lastUpdateOfAllRecords', 'type' => 'integer', 'label' => 'Last Update of All Records', 'description'=>'The timestamp when just changes were loaded', 'default'=>0),
+            'lastUpdateOfAllRecords' => array('property' => 'lastUpdateOfAllRecords', 'type' => 'integer', 'label' => 'Last Update of All Records', 'description'=>'The timestamp when all records were loaded from the API', 'default'=>0),
+			'lastUpdateFromMarcExport' => array('property' => 'lastUpdateFromMarcExport', 'type' => 'integer', 'label' => 'Last Update from MARC Export', 'description'=>'The timestamp when all records were loaded from a MARC export', 'default'=>0),
 
             'translationMaps' => array(
 				'property' => 'translationMaps',

@@ -85,7 +85,7 @@ public class SplitFile {
                 fcount++;
                 String outName = String.format("%s-%02d%s", outBase, fcount, ".mrc");
                 OutputStream outStream = new FileOutputStream(outName);
-                MarcWriter writer = new MarcStreamWriter(outStream, true);
+                MarcWriter writer = new MarcStreamWriter(outStream, "UTF-8", true);
                 // System.out.println(String.format("Opened file %s\n", outName));
                 for (int i=0; i<count && reader.hasNext(); i++) {
                     Record record = reader.next();

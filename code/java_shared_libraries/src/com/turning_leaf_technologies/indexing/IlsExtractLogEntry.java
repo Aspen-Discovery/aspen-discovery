@@ -20,6 +20,7 @@ public class IlsExtractLogEntry {
 	private int numAdded = 0;
 	private int numDeleted = 0;
 	private int numUpdated = 0;
+	private int numSkipped = 0;
 	private Logger logger;
 
 	public IlsExtractLogEntry(Connection dbConn, String indexingProfile, Logger logger){
@@ -28,7 +29,7 @@ public class IlsExtractLogEntry {
 		this.indexingProfile = indexingProfile;
 		try {
 			insertLogEntry = dbConn.prepareStatement("INSERT into ils_extract_log (startTime, indexingProfile) VALUES (?, ?)", PreparedStatement.RETURN_GENERATED_KEYS);
-			updateLogEntry = dbConn.prepareStatement("UPDATE ils_extract_log SET lastUpdate = ?, endTime = ?, notes = ?, numProducts = ?, numErrors = ?, numAdded = ?, numUpdated = ?, numDeleted = ? WHERE id = ?", PreparedStatement.RETURN_GENERATED_KEYS);
+			updateLogEntry = dbConn.prepareStatement("UPDATE ils_extract_log SET lastUpdate = ?, endTime = ?, notes = ?, numProducts = ?, numErrors = ?, numAdded = ?, numUpdated = ?, numDeleted = ?, numSkipped = ? WHERE id = ?", PreparedStatement.RETURN_GENERATED_KEYS);
 		} catch (SQLException e) {
 			logger.error("Error creating prepared statements to update log", e);
 		}
@@ -85,6 +86,7 @@ public class IlsExtractLogEntry {
 				updateLogEntry.setInt(++curCol, numAdded);
 				updateLogEntry.setInt(++curCol, numUpdated);
 				updateLogEntry.setInt(++curCol, numDeleted);
+				updateLogEntry.setInt(++curCol, numSkipped);
 				updateLogEntry.setLong(++curCol, logEntryId);
 				updateLogEntry.executeUpdate();
 			}
@@ -111,8 +113,14 @@ public class IlsExtractLogEntry {
 	public void incUpdated(){
 		numUpdated++;
 	}
+	public void incSkipped(){
+		numSkipped++;
+	}
 	public void setNumProducts(int size) {
 		numProducts = size;
+	}
+	public void incProducts(){
+		numProducts++;
 	}
 
 	public boolean hasErrors() {

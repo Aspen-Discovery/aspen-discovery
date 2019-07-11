@@ -821,20 +821,6 @@ public class GroupedWorkIndexer {
 		}
 	}
 
-	/*private void updateGroupedWorkForSecondaryIdentifier(GroupedWorkSolr groupedWork, String type, String identifier) {
-		type = type.toLowerCase();
-		if (type.equals("isbn")){
-			groupedWork.addIsbn(identifier);
-		}else if (type.equals("upc")){
-			groupedWork.addUpc(identifier);
-		}else if (type.equals("order")){
-			//Add as an alternate id
-			groupedWork.addAlternateId(identifier);
-		}else if (!type.equals("issn") && !type.equals("oclc")){
-			logger.warn("Unknown identifier type " + type);
-		}
-	}*/
-
 	/**
 	 * System translation maps are used for things that are not customizable (or that shouldn't be customized)
 	 * by library.  For example, translations of language codes, or things where MARC standards define the values.

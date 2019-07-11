@@ -107,6 +107,7 @@ public class IndexingProfile {
 
 	private long lastUpdateOfChangedRecords;
 	private long lastUpdateOfAllRecords;
+	private long lastUpdateFromMarcExport;
 	private boolean runFullUpdate;
 
 	public static IndexingProfile loadIndexingProfile(Connection dbConn, String profileToLoad, Logger logger) {
@@ -168,6 +169,8 @@ public class IndexingProfile {
 
 				indexingProfile.setLastUpdateOfChangedRecords(indexingProfileRS.getLong("lastUpdateOfChangedRecords"));
 				indexingProfile.setLastUpdateOfAllRecords(indexingProfileRS.getLong("lastUpdateOfAllRecords"));
+				indexingProfile.setLastUpdateFromMarcExport(indexingProfileRS.getLong("lastUpdateFromMarcExport"));
+
 				indexingProfile.setRunFullUpdate(indexingProfileRS.getBoolean("runFullUpdate"));
 			} else {
 				logger.error("Unable to find " + profileToLoad + " indexing profile, please create a profile with the name ils.");
@@ -509,7 +512,7 @@ public class IndexingProfile {
 		return lastUpdateOfChangedRecords;
 	}
 
-	public void setLastUpdateOfChangedRecords(long lastUpdateOfChangedRecords) {
+	private void setLastUpdateOfChangedRecords(long lastUpdateOfChangedRecords) {
 		this.lastUpdateOfChangedRecords = lastUpdateOfChangedRecords;
 	}
 
@@ -517,7 +520,7 @@ public class IndexingProfile {
 		return lastUpdateOfAllRecords;
 	}
 
-	public void setLastUpdateOfAllRecords(long lastUpdateOfAllRecords) {
+	private void setLastUpdateOfAllRecords(long lastUpdateOfAllRecords) {
 		this.lastUpdateOfAllRecords = lastUpdateOfAllRecords;
 	}
 
@@ -525,7 +528,15 @@ public class IndexingProfile {
 		return runFullUpdate;
 	}
 
-	public void setRunFullUpdate(boolean runFullUpdate) {
+	private void setRunFullUpdate(boolean runFullUpdate) {
 		this.runFullUpdate = runFullUpdate;
+	}
+
+	private void setLastUpdateFromMarcExport(long lastUpdateFromMarcExport) {
+		this.lastUpdateFromMarcExport = lastUpdateFromMarcExport;
+	}
+
+	public long getLastUpdateFromMarcExport() {
+		return lastUpdateFromMarcExport;
 	}
 }

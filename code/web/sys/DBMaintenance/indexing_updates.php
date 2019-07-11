@@ -360,7 +360,15 @@ function getIndexingUpdates() {
             )
         ),
 
-        'track_ils_user_usage' => array(
+		'ils_exportLog_skips' => array(
+			'title' => 'ILS export log add skips',
+			'description' => 'Add tracking of skipped records to export log',
+			'sql' => array(
+				"ALTER TABLE ils_extract_log ADD COLUMN numSkipped INT(11) DEFAULT 0",
+			)
+		),
+
+		'track_ils_user_usage' => array(
             'title' => 'ILS Usage by user',
             'description' => 'Add a table to track how often a particular user uses the ils and side loads.',
             'sql' => array(
@@ -396,14 +404,22 @@ function getIndexingUpdates() {
         ),
 
         'indexing_profile_add_continuous_update_fields' => [
-            'title' => 'Indexing Profile Add Continuous Update Fields',
-            'description' => 'Add fields to track when last updates were done and to trigger full updates',
-            'sql' => [
-                'ALTER TABLE indexing_profiles ADD COLUMN runFullUpdate TINYINT(1) DEFAULT 0',
-                'ALTER TABLE indexing_profiles ADD COLUMN lastUpdateOfChangedRecords INT(11) DEFAULT 0',
-                'ALTER TABLE indexing_profiles ADD COLUMN lastUpdateOfAllRecords INT(11) DEFAULT 0'
-            ]
-        ],
+			'title' => 'Indexing Profile Add Continuous Update Fields',
+			'description' => 'Add fields to track when last updates were done and to trigger full updates',
+			'sql' => [
+				'ALTER TABLE indexing_profiles ADD COLUMN runFullUpdate TINYINT(1) DEFAULT 0',
+				'ALTER TABLE indexing_profiles ADD COLUMN lastUpdateOfChangedRecords INT(11) DEFAULT 0',
+				'ALTER TABLE indexing_profiles ADD COLUMN lastUpdateOfAllRecords INT(11) DEFAULT 0'
+			]
+		],
+
+		'indexing_profile_last_marc_export' => [
+			'title' => 'Indexing Profile Add Last Update MARC Export time',
+			'description' => 'Add fields to track when last updates were done and to trigger full updates',
+			'sql' => [
+				'ALTER TABLE indexing_profiles ADD COLUMN lastUpdateFromMarcExport INT(11) DEFAULT 0',
+			]
+		],
 
         'authorities' => [
             'title' => 'Authority Tables',

@@ -21,7 +21,7 @@
 		<div>
 			<table class="logEntryDetails table table-bordered table-striped">
 				<thead>
-				<tr><th>Id</th><th>Indexing Profile</th><th>Started</th><th>Last Update</th><th>Finished</th><th>Elapsed</th><th>Total Products</th><th>Num Errors</th><th>Products Added</th><th>Products Deleted</th><th>Products Updated</th><th>Notes</th></tr>
+				<tr><th>Id</th><th>Indexing Profile</th><th>Started</th><th>Last Update</th><th>Finished</th><th>Elapsed</th><th>Total Products</th><th>Num Errors</th><th>Products Added</th><th>Products Deleted</th><th>Products Updated</th><th>Products Skipped</th><th>Notes</th></tr>
 				</thead>
 				<tbody>
 				{foreach from=$logEntries item=logEntry}
@@ -37,6 +37,7 @@
 						<td>{$logEntry->numAdded}</td>
 						<td>{$logEntry->numDeleted}</td>
 						<td>{$logEntry->numUpdated}</td>
+						<td>{$logEntry->numSkipped}</td>
 						<td><a href="#" onclick="return AspenDiscovery.Admin.showExtractNotes('{$logEntry->id}', 'ils');">Show Notes</a></td>
 					</tr>
 				{/foreach}

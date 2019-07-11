@@ -85,13 +85,17 @@ public class NetworkUtils {
     }
 
     public static WebServiceResponse postToURL(String url, String postData, String contentType, String referer, Logger logger, String authentication) {
+        return NetworkUtils.postToURL(url, postData, contentType, referer, logger, authentication, 10000, 300000);
+    }
+
+    public static WebServiceResponse postToURL(String url, String postData, String contentType, String referer, Logger logger, String authentication, int connectTimeout, int readTimeout) {
         WebServiceResponse retVal;
         HttpURLConnection conn = null;
         try {
             URL emptyIndexURL = new URL(url);
             conn = (HttpURLConnection) emptyIndexURL.openConnection();
-            conn.setConnectTimeout(10000);
-            conn.setReadTimeout(300000);
+            conn.setConnectTimeout(connectTimeout);
+            conn.setReadTimeout(readTimeout);
             if (authentication != null){
                 conn.setRequestProperty("Authorization", "Basic " + Base64.encodeBase64String(authentication.getBytes()));
             }
@@ -136,23 +140,29 @@ public class NetworkUtils {
                 logger.info("Received error " + conn.getResponseCode() + " posting to " + url + " data " + postData);
                 logger.info(postData);
                 // Get any errors
-                BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
-                String line;
-                while ((line = rd.readLine()) != null) {
-                    response.append(line);
-                }
-
-                rd.close();
-
-                if (response.length() == 0) {
-                    //Try to load the regular body as well
-                    // Get the response
-                    BufferedReader rd2 = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                    while ((line = rd2.readLine()) != null) {
+                InputStream errorStream = conn.getErrorStream();
+                if (errorStream != null) {
+                    BufferedReader rd = new BufferedReader(new InputStreamReader(errorStream));
+                    String line;
+                    while ((line = rd.readLine()) != null) {
                         response.append(line);
                     }
 
                     rd.close();
+                }
+
+                if (response.length() == 0) {
+                    //Try to load the regular body as well
+                    // Get the response
+                    InputStream inputStream = conn.getInputStream();
+                    if (inputStream != null) {
+                        String line;
+                        BufferedReader rd2 = new BufferedReader(new InputStreamReader(inputStream));
+                        while ((line = rd2.readLine()) != null) {
+                            response.append(line);
+                        }
+                        rd2.close();
+                    }
                 }
                 retVal = new WebServiceResponse(false, conn.getResponseCode(), response.toString());
             }

@@ -4,6 +4,7 @@ import com.turning_leaf_technologies.config.ConfigUtil;
 import com.turning_leaf_technologies.indexing.IndexingProfile;
 import com.turning_leaf_technologies.indexing.RecordIdentifier;
 import com.turning_leaf_technologies.logging.LoggingUtil;
+import com.turning_leaf_technologies.marc.MarcUtil;
 import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
@@ -11,19 +12,14 @@ import org.json.JSONObject;
 import org.marc4j.MarcException;
 import org.marc4j.MarcPermissiveStreamReader;
 import org.marc4j.MarcReader;
-import org.marc4j.MarcStreamWriter;
 import org.marc4j.marc.*;
 
 import java.io.*;
-import java.nio.file.*;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.sql.*;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Date;
 import java.util.regex.Pattern;
-import java.util.zip.CRC32;
 
 /**
  * Groups records so that we can show single multiple titles as one rather than as multiple lines.
@@ -760,13 +756,12 @@ public class RecordGrouperMain {
 		}
 	}
 
-	private static SimpleDateFormat oo8DateFormat = new SimpleDateFormat("yyMMdd");
-	private static SimpleDateFormat oo5DateFormat = new SimpleDateFormat("yyyyMMdd");
+
 	private static boolean writeIndividualMarc(IndexingProfile indexingProfile, Record marcRecord, String recordNumber, TreeSet<String> marcRecordsWritten, TreeSet<String> marcRecordsOverwritten) {
 		boolean marcRecordUpToDate = false;
 		//Copy the record to the individual marc path
 		if (recordNumber != null){
-			long checksum = getChecksum(marcRecord);
+			long checksum = MarcUtil.getChecksum(marcRecord);
 			File individualFile = indexingProfile.getFileForIlsRecord(recordNumber);
 
 			String recordNumberWithSource = indexingProfile.getName() + ":" + recordNumber;
@@ -787,7 +782,7 @@ public class RecordGrouperMain {
 					try {
 						MarcReader marcReader = new MarcPermissiveStreamReader(new FileInputStream(individualFile), true, true);
 						Record recordOnDisk = marcReader.next();
-						Long actualChecksum = getChecksum(recordOnDisk);
+						Long actualChecksum = MarcUtil.getChecksum(recordOnDisk);
 						if (!actualChecksum.equals(checksum)){
 							//checksum in the database is wrong
 							marcRecordUpToDate = false;
@@ -801,8 +796,8 @@ public class RecordGrouperMain {
 
 			if (!marcRecordUpToDate){
 				try {
-					outputMarcRecord(marcRecord, individualFile);
-					getDateAddedForRecord(marcRecord, recordNumber, indexingProfile.getName(), individualFile);
+					MarcUtil.outputMarcRecord(marcRecord, individualFile, logger);
+					MarcUtil.getDateAddedForRecord(marcRecord, recordNumber, indexingProfile.getName(), individualFile, logger);
 					updateMarcRecordChecksum(recordNumber, indexingProfile.getName(), checksum);
 					//logger.debug("checksum changed for " + recordNumber + " was " + existingChecksum + " now its " + checksum);
 				} catch (IOException e) {
@@ -811,7 +806,7 @@ public class RecordGrouperMain {
 			}else {
 				//Update date first detected if needed
 				if (marcRecordFirstDetectionDates.containsKey(recordNumberWithSource) && marcRecordFirstDetectionDates.get(recordNumberWithSource) == null){
-					getDateAddedForRecord(marcRecord, recordNumber, indexingProfile.getName(), individualFile);
+					MarcUtil.getDateAddedForRecord(marcRecord, recordNumber, indexingProfile.getName(), individualFile, logger);
 					updateMarcRecordChecksum(recordNumber, indexingProfile.getName(), checksum);
 				}
 			}
@@ -822,52 +817,7 @@ public class RecordGrouperMain {
 		return marcRecordUpToDate;
 	}
 
-	private static void getDateAddedForRecord(Record marcRecord, String recordNumber, String source, File individualFile) {
-		//Set first detection date based on the creation date of the file
-		if (individualFile.exists()){
-			Path filePath = individualFile.toPath();
-			try {
-				//First get the date we first saw the file
-				BasicFileAttributes attributes = Files.readAttributes(filePath, BasicFileAttributes.class);
-				long timeAdded = attributes.creationTime().toMillis() / 1000;
-				//Check within the bib to see if there is an earlier date, first the 008
-				//Which should contain the creation date
-				ControlField oo8 = (ControlField)marcRecord.getVariableField("008");
-				if (oo8 != null){
-					if (oo8.getData().length() >= 6){
-						String dateAddedStr = oo8.getData().substring(0, 6);
-						try {
-							Date dateAdded = oo8DateFormat.parse(dateAddedStr);
-							if (dateAdded.getTime() / 1000 < timeAdded){
-								timeAdded = dateAdded.getTime() / 1000;
-							}
-						}catch(ParseException e){
-							//Could not parse the date, but that's ok
-						}
-					}
-				}
-				//Now the 005 which has last transaction date.   Not ideal, but ok if it's earlier than
-				//what we have.
-				ControlField oo5 = (ControlField)marcRecord.getVariableField("005");
-				if (oo5 != null){
-					if (oo5.getData().length() >= 8){
-						String dateAddedStr = oo5.getData().substring(0, 8);
-						try {
-							Date dateAdded = oo5DateFormat.parse(dateAddedStr);
-							if (dateAdded.getTime() / 1000 < timeAdded){
-								timeAdded = dateAdded.getTime() / 1000;
-							}
-						}catch(ParseException e){
-							//Could not parse the date, but that's ok
-						}
-					}
-				}
-				marcRecordFirstDetectionDates.put(source + ":" + recordNumber, timeAdded);
-			}catch (Exception e){
-				logger.debug("Error loading creation time for " + filePath, e);
-			}
-		}
-	}
+
 
 	private static Long getExistingChecksum(String recordNumber) {
 		return marcRecordChecksums.get(recordNumber);
@@ -890,31 +840,6 @@ public class RecordGrouperMain {
 		}catch (SQLException e){
 			logger.error("Unable to update checksum for ils marc record", e);
 		}
-	}
-
-	private static void outputMarcRecord(Record marcRecord, File individualFile) throws IOException {
-		if (!individualFile.getParentFile().exists() && !individualFile.getParentFile().mkdirs()){
-			logger.error("Unable to create directory for " + individualFile.getAbsolutePath());
-		}
-		MarcStreamWriter writer2 = new MarcStreamWriter(new FileOutputStream(individualFile,false), "UTF-8");
-		writer2.setAllowOversizeEntry(true);
-		writer2.write(marcRecord);
-		writer2.close();
-	}
-
-	private static Pattern specialCharPattern = Pattern.compile("\\p{C}");
-	private static long getChecksum(Record marcRecord) {
-		CRC32 crc32 = new CRC32();
-		String marcRecordContents = marcRecord.toString();
-		//There can be slight differences in how the record length gets calculated between ILS export and what is written
-		//by MARC4J since there can be differences in whitespace and encoding.
-		// Remove the text LEADER
-		// Remove the length of the record
-		// Remove characters in position 12-16 (position of data)
-		marcRecordContents = marcRecordContents.substring(12, 19) + marcRecordContents.substring(24).trim();
-		marcRecordContents = specialCharPattern.matcher(marcRecordContents).replaceAll("?");
-		crc32.update(marcRecordContents.getBytes());
-		return crc32.getValue();
 	}
 
 	private static StringBuffer notes = new StringBuffer();

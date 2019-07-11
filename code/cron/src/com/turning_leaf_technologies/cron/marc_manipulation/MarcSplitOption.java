@@ -27,7 +27,7 @@ class MarcSplitOption {
 				logger.error("Error creating directories for file " + basePath);
 			}
 		}
-		marcWriter = new MarcStreamWriter(new FileOutputStream(basePath + "/" + filename));
+		marcWriter = new MarcStreamWriter(new FileOutputStream(basePath + "/" + filename), "UTF-8");
 	}
 
 	void setLocationsToInclude(String locationsToInclude) {

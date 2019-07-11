@@ -140,7 +140,7 @@ public class SymphonyExportMain {
 			}
 			//Always process since we only received one export and we are gradually removing records as they appear in the full export.
 			try{
-				MarcWriter writer = new MarcStreamWriter(new FileOutputStream(ordersFileMarc, false));
+				MarcWriter writer = new MarcStreamWriter(new FileOutputStream(ordersFileMarc, false), "UTF-8");
 				BufferedReader ordersReader = new BufferedReader(new InputStreamReader(new FileInputStream(ordersFile)));
 				String line = ordersReader.readLine();
 				int numOrderRecordsWritten = 0;
