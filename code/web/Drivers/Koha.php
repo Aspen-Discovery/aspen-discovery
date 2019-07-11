@@ -374,7 +374,7 @@ class Koha extends AbstractIlsDriver {
 					$outstandingFines = $this->getOutstandingFineTotal($user);
 					$user->_fines    = sprintf('$%0.2f', $outstandingFines);
 					$user->_finesVal = floatval($outstandingFines);
-					$timer->logTime("Loaded base patron information for Koha");
+					$timer->logTime("Loaded base patron information for Koha $username");
 
 					//Get number of items checked out
 					/** @noinspection SqlResolve */
@@ -1673,7 +1673,7 @@ class Koha extends AbstractIlsDriver {
 		$this->initDatabaseConnection();
 
 		/** @noinspection SqlResolve */
-		$sql = "SELECT count(*) as numRequests FROM koha_uintah.suggestions where suggestedby = {$user->username}";
+		$sql = "SELECT count(*) as numRequests FROM suggestions where suggestedby = {$user->username}";
 		$results = mysqli_query($this->dbConnection, $sql);
 		if ($curRow = $results->fetch_assoc()){
 			$numRequests = $curRow['numRequests'];
@@ -1686,15 +1686,15 @@ class Koha extends AbstractIlsDriver {
 	{
 		$this->initDatabaseConnection();
 		/** @noinspection SqlResolve */
-		$sql = "SELECT * FROM suggestions where suggestedby = " . mysqli_escape_string($this->dbConnection, $user->username);
+		$sql = "SELECT * FROM suggestions where suggestedby = {$user->username}";
 		$results = mysqli_query($this->dbConnection, $sql);
 		$allRequests = [];
-		if ($curRow = $results->fetch_assoc()){
+		while ($curRow = $results->fetch_assoc()){
 			$managedBy = $curRow['managedby'];
 			/** @noinspection SqlResolve */
 			$userSql = "SELECT firstname, surname FROM borrowers where borrowernumber = " . mysqli_escape_string($this->dbConnection, $managedBy);
 			$userResults = mysqli_query($this->dbConnection, $userSql);
-			if ($userResult = $userResults->fetch_assoc()){
+			if ($userResults && $userResult = $userResults->fetch_assoc()){
 				$managedByStr = $userResult['firstname'] . ' ' . $userResult['surname'];
 			}else{
 				$managedByStr = '';
