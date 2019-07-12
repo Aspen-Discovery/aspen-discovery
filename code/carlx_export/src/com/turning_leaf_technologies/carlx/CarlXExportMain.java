@@ -174,7 +174,7 @@ public class CarlXExportMain {
 
 			//Pause before running the next export (longer if we didn't get any actual changes)
 			try {
-				if (numChanges == 0) {
+				if (numChanges == 0 || logEntry.hasErrors()) {
 					Thread.sleep(1000 * 60 * 5);
 				}else {
 					Thread.sleep(1000 * 60);
@@ -203,9 +203,11 @@ public class CarlXExportMain {
 				return 0;
 			}
 			//Update all records based on the MARC export
+			logEntry.addNote("Updating based on MARC extract");
 			return updateRecordsUsingMarcExtract(exportedMarcFiles, dbConn, latestMarcFile / 1000);
 		}else{
 			//Get updates from the API
+			logEntry.addNote("Updating based on API");
 			return updateRecordsUsingAPI(dbConn, carlXInstanceInformation);
 		}
 	}
@@ -436,6 +438,7 @@ public class CarlXExportMain {
 			DateFormat timeFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 			timeFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
 			String beginTimeString = timeFormat.format(lastExtractTimestamp);
+			logEntry.addNote("Updating changes since " + beginTimeString);
 
 			ArrayList<String> updatedBibs = new ArrayList<>();
 			ArrayList<String> createdBibs = new ArrayList<>();
@@ -472,9 +475,9 @@ public class CarlXExportMain {
 			// so we can fetch MARC records for them.
 			itemUpdates = fetchItemInformation(updatedItemIDs);
 			if (hadErrors) {
-				logger.error("Failed to Fetch Item Information for updated items, exiting");
+				logger.error("Failed to Fetch Item Information for updated items");
 				logEntry.incErrors();
-				logEntry.addNote("Failed to Fetch Item Information for updated items, exiting");
+				logEntry.addNote("Failed to Fetch Item Information for updated items");
 				return totalChanges;
 			} else {
 				logger.info("Fetched Item information for updated items");
@@ -484,37 +487,46 @@ public class CarlXExportMain {
 					}
 				}
 			}
-			createdItems = fetchItemInformation(createdItemIDs);
-			if (hadErrors) {
-				logger.error("Failed to Fetch Item Information for created items, exiting");
-				logEntry.incErrors();
-				logEntry.addNote("Failed to Fetch Item Information for created items, exiting");
-				return totalChanges;
-			} else {
-				logger.info("Fetched Item information for created items");
-				for (ItemChangeInfo itemUpdate : createdItems){
-					if (!createdBibs.contains(itemUpdate.getBID()) && !updatedBibs.contains(itemUpdate.getBID())){
-						updatedBibs.add(itemUpdate.getBID());
-					}
-				}
-			}
-			deletedItems = fetchItemInformation(deletedItemIDs);
-			if (hadErrors) {
-				logger.error("Failed to Fetch Item Information for deleted items, exiting");
-				logEntry.incErrors();
-				logEntry.addNote("Failed to Fetch Item Information for deleted items, exiting");
-				return totalChanges;
-			} else {
-				logger.info("Fetched Item information for deleted items");
-				for (ItemChangeInfo itemUpdate : deletedItems){
-					if (!deletedBibs.contains(itemUpdate.getBID()) && !updatedBibs.contains(itemUpdate.getBID())){
-						updatedBibs.add(itemUpdate.getBID());
+
+			if (createdItemIDs.size() > 0) {
+				createdItems = fetchItemInformation(createdItemIDs);
+				if (hadErrors) {
+					logger.error("Failed to Fetch Item Information for created items");
+					logEntry.incErrors();
+					logEntry.addNote("Failed to Fetch Item Information for created items");
+					return totalChanges;
+				} else {
+					logger.info("Fetched Item information for created items");
+					for (ItemChangeInfo itemUpdate : createdItems) {
+						if (!createdBibs.contains(itemUpdate.getBID()) && !updatedBibs.contains(itemUpdate.getBID())) {
+							updatedBibs.add(itemUpdate.getBID());
+						}
 					}
 				}
 			}
 
+			if (deletedItemIDs.size() > 0) {
+				deletedItems = fetchItemInformation(deletedItemIDs);
+				if (hadErrors) {
+					logger.error("Failed to Fetch Item Information for deleted items");
+					//logEntry.incErrors();
+					logEntry.addNote("Failed to Fetch Item Information for deleted items");
+					//return totalChanges;
+				} else {
+					logger.info("Fetched Item information for deleted items");
+					for (ItemChangeInfo itemUpdate : deletedItems) {
+						if (!deletedBibs.contains(itemUpdate.getBID()) && !updatedBibs.contains(itemUpdate.getBID())) {
+							updatedBibs.add(itemUpdate.getBID());
+						}
+					}
+				}
+			}
+
+			//Update total products to be processed
+			logEntry.setNumProducts(updatedBibs.size() + createdBibs.size() + deletedBibs.size());
+
 			// Update Changed Bibs
-			totalChanges = updateBibRecords(updatedBibs, updatedItemIDs, createdItemIDs, deletedItemIDs, itemUpdates, createdItems);
+			totalChanges = updateBibRecords(updatedBibs, updatedItemIDs, createdItemIDs, deletedItemIDs, itemUpdates, createdItems, false);
 			logger.debug("Done updating Bib Records");
 			logEntry.saveResults();
 			//This should not be needed since we add anything where just the item was added above
@@ -547,14 +559,12 @@ public class CarlXExportMain {
 			}
 			logEntry.saveResults();
 
-			//TODO: Process New Bibs
+			//Process New Bibs
 			if (createdBibs.size() > 0) {
-				logger.debug("There are " + createdBibs.size() + " that still need to be processed");
-				for (String createdBibId : createdBibs) {
-					logger.debug("Bib " + createdBibId + " is new and should be created.");
-					totalChanges += updateBibRecords(createdBibs, updatedItemIDs, createdItemIDs, deletedItemIDs, itemUpdates, createdItems);
-				}
+				logger.debug("There are " + createdBibs.size() + " that need to be processed");
+				totalChanges += updateBibRecords(createdBibs, updatedItemIDs, createdItemIDs, deletedItemIDs, itemUpdates, createdItems, true);
 			}
+			logEntry.saveResults();
 
 			if (indexingProfile.isRunFullUpdate()) {
 				PreparedStatement updateVariableStmt = dbConn.prepareStatement("UPDATE indexing_profiles set lastUpdateOfAllRecords = ?, runFullUpdate = 0 WHERE id = ?");
@@ -572,7 +582,7 @@ public class CarlXExportMain {
 				}
 			}
 		} catch (Exception e){
-			logger.error("Error loading changed records from Koha database", e);
+			logger.error("Error loading changed records from CARL.X", e);
 			logEntry.incErrors();
 			//Don't quit since that keeps the exporter from running continuously
 		}
@@ -581,7 +591,7 @@ public class CarlXExportMain {
 	}
 
 	private static CarlXInstanceInformation initializeCarlXConnection() throws SQLException {
-		//Get information about the account profile for koha
+		//Get information about the account profile for Carl.X
 		PreparedStatement accountProfileStmt = dbConn.prepareStatement("SELECT * from account_profiles WHERE driver = 'CarlX'");
 		ResultSet accountProfileRS = accountProfileStmt.executeQuery();
 		CarlXInstanceInformation carlXInstanceInformation = null;
@@ -772,7 +782,7 @@ public class CarlXExportMain {
 		return totalChanges;
 	}
 
-	private static int updateBibRecords(ArrayList<String> updatedBibs, ArrayList<String> updatedItemIDs, ArrayList<String> createdItemIDs, ArrayList<String> deletedItemIDs, ArrayList<ItemChangeInfo> itemUpdates, ArrayList<ItemChangeInfo> createdItems) {
+	private static int updateBibRecords(ArrayList<String> updatedBibs, ArrayList<String> updatedItemIDs, ArrayList<String> createdItemIDs, ArrayList<String> deletedItemIDs, ArrayList<ItemChangeInfo> itemUpdates, ArrayList<ItemChangeInfo> createdItems, boolean isNew) {
 		// Fetch new Marc Data
 		// Note: There is an Include949ItemData flag, but it hasn't been implemented by TLC yet. plb 9-15-2016
 		// Build Marc Fetching Soap Request
@@ -907,6 +917,12 @@ public class CarlXExportMain {
 
 								String permanentId = groupRecord(dbConn, updatedMarcRecordFromAPICall);
 								getGroupedWorkIndexer(dbConn).processGroupedWork(permanentId);
+
+								if (isNew){
+									logEntry.incAdded();
+								}else {
+									logEntry.incUpdated();
+								}
 
 								numUpdates++;
 								if (numUpdates % 100 == 0){
@@ -1144,6 +1160,7 @@ public class CarlXExportMain {
 	}
 
 	private static ArrayList<ItemChangeInfo> fetchItemInformation(ArrayList<String> itemIDs) {
+		hadErrors = false;
 		ArrayList<ItemChangeInfo> itemUpdates = new ArrayList<>();
 		logger.debug("Getting item information for " + itemIDs.size() + " Item IDs");
 		if (itemIDs.size() > 100){
@@ -1329,13 +1346,17 @@ public class CarlXExportMain {
 						}
 					} else {
 						logger.error("Did not get a successful SOAP response " + responseStatusCode + " loading item information");
+						logEntry.addNote("Did not get a successful SOAP response " + responseStatusCode + " loading item information");
+						hadErrors = true;
 					}
 				}else{
 					logger.error("Did not get a successful SOAP response " + ItemInformationSOAPResponse.getResponseCode() + "\r\n" + ItemInformationSOAPResponse.getMessage());
+					logEntry.addNote("Did not get a successful SOAP response " + ItemInformationSOAPResponse.getResponseCode() + "<br/>" + ItemInformationSOAPResponse.getMessage());
 					hadErrors = true;
 				}
 			} catch (Exception e) {
 				logger.error("Error Retrieving SOAP updated items", e);
+				logEntry.addNote("Error Retrieving SOAP updated items " + e.toString());
 				hadErrors = true;
 			}
 		}
@@ -1374,12 +1395,15 @@ public class CarlXExportMain {
 
 	private static void updateItemDataFieldWithChangeInfo(DataField itemField, ItemChangeInfo changeInfo) {
 		updateItemSubfield(itemField, indexingProfile.getItemRecordNumberSubfield(), changeInfo.getItemId());
-		updateItemSubfield(itemField, indexingProfile.getLocationSubfield(), changeInfo.getLocation());
-		updateItemSubfield(itemField, indexingProfile.getShelvingLocationSubfield(), changeInfo.getShelvingLocation());
-		updateItemSubfield(itemField, indexingProfile.getItemStatusSubfield(), changeInfo.getStatus());
 		if (indexingProfile.getCallNumberSubfield() != ' ' && !changeInfo.getCallNumber().isEmpty()) {
 			updateItemSubfield(itemField, indexingProfile.getCallNumberSubfield(), changeInfo.getCallNumber());
 		}
+		updateItemSubfield(itemField, indexingProfile.getLocationSubfield(), changeInfo.getLocation());
+		updateItemSubfield(itemField, indexingProfile.getShelvingLocationSubfield(), changeInfo.getShelvingLocation());
+		if (indexingProfile.getITypeSubfield() != ' ' && !changeInfo.getYearToDateCheckouts().isEmpty()) {
+			updateItemSubfield(itemField, indexingProfile.getITypeSubfield(), changeInfo.getiType());
+		}
+		updateItemSubfield(itemField, indexingProfile.getItemStatusSubfield(), changeInfo.getStatus());
 
 		if (indexingProfile.getTotalCheckoutsSubfield() != ' ' && !changeInfo.getTotalCheckouts().isEmpty()) {
 			updateItemSubfield(itemField, indexingProfile.getTotalCheckoutsSubfield(), changeInfo.getTotalCheckouts());
@@ -1389,9 +1413,7 @@ public class CarlXExportMain {
 			updateItemSubfield(itemField, indexingProfile.getYearToDateCheckoutsSubfield(), changeInfo.getYearToDateCheckouts());
 		}
 
-		if (indexingProfile.getITypeSubfield() != ' ' && !changeInfo.getYearToDateCheckouts().isEmpty()) {
-			updateItemSubfield(itemField, indexingProfile.getITypeSubfield(), changeInfo.getiType());
-		}
+
 
 		if (indexingProfile.getDueDateSubfield() != ' ') {
 			if (changeInfo.getDueDate() == null) {

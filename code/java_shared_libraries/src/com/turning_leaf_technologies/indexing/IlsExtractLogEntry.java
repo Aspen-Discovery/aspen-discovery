@@ -98,7 +98,7 @@ public class IlsExtractLogEntry {
 	}
 	public void setFinished() {
 		this.endTime = new Date();
-		this.addNote("Finished Koha extraction");
+		this.addNote("Finished ILS extraction");
 		this.saveResults();
 	}
 	public void incErrors(){
