@@ -1,0 +1,31 @@
+Version
+- 2019.07B
+Released
+-
+Major new functionality
+- My Account updates
+  - Updated account menu to load account information from each source (ILS, OverDrive, RBdigital, and Hoopla) independently
+  - Allow the ability to show checkouts and holds from each source either independently or combined
+- Reading History updates
+  - Allow searching within Reading History
+  - Allow titles within Reading History to be added to lists
+
+Major revisions to existing functionality
+- Improve performance for loading account information
+- Break up settings form into multiple sections to make it easier to navigate
+- RBdigital Updates
+  - Store username and password to allow automatic loging to RBdigital
+
+Minor revisions to existing functionality
+- Correct capitalization of RBdigital
+- Update account menu after placing holds or checking out titles to show new counts
+- Update ratings facet to show specific rating rather than showing everything rated at or below that rating.
+- Fix changing birth date for Koha users
+- Make page titles on all pages h1 rather than h2 for accessibility
+- Fix issues saving session data when extending remember me
+- Update pager to allow pagination via AJAX loads
+
+Upgrade of system components
+
+Additional technical changes
+- Added cleanup of Reading History table

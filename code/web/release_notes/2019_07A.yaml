@@ -1,0 +1,29 @@
+Version
+- 2019.07A
+Released
+- July 10, 2019
+
+Major new functionality
+- RBdigital Magazine integration
+  - Add RBdigital Magazines to search results and create a page to view all details for each title
+  - Allow checkouts of RBdigital Magazines from search results or full page view
+  - View checkouts of RBdigital Magazines within account
+  - View RBdigital Magazines in Reading History
+- Allow Lists from Koha to be imported into Aspen Discovery
+
+Major revisions to existing functionality
+- Improvements for search suggestions and spelling suggestions
+- Update RBdigital integration to allow scoping of holdings for each library and location
+- Performance updates to full record page and search results
+- Load series information asynchronously for better performance
+- Improve performance loading materials requests from Koha
+- Improve searching of series data
+- Improve searching by the start of fields
+
+Minor revisions to existing functionality
+- Update loading materials requests from Koha to properly handle multiple requests
+
+Upgrade of system components
+
+Additional technical changes
+- Remove unused code
