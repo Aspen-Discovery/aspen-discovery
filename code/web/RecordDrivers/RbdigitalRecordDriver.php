@@ -2,10 +2,10 @@
 
 require_once ROOT_DIR . '/RecordDrivers/RecordInterface.php';
 require_once ROOT_DIR . '/RecordDrivers/GroupedWorkSubDriver.php';
-require_once ROOT_DIR . '/sys/Rbdigital/RbdigitalProduct.php';
-class RbdigitalRecordDriver extends GroupedWorkSubDriver {
+require_once ROOT_DIR . '/sys/RBdigital/RBdigitalProduct.php';
+class RBdigitalRecordDriver extends GroupedWorkSubDriver {
     private $id;
-    /** @var RbdigitalProduct */
+    /** @var RBdigitalProduct */
     private $rbdigitalProduct;
     private $rbdigitalRawMetadata;
     private $valid;
@@ -14,7 +14,7 @@ class RbdigitalRecordDriver extends GroupedWorkSubDriver {
     public function __construct($recordId, $groupedWork = null) {
         $this->id = $recordId;
 
-        $this->rbdigitalProduct = new RbdigitalProduct();
+        $this->rbdigitalProduct = new RBdigitalProduct();
         $this->rbdigitalProduct->rbdigitalId = $recordId;
         if ($this->rbdigitalProduct->find(true)) {
             $this->valid = true;
@@ -50,7 +50,7 @@ class RbdigitalRecordDriver extends GroupedWorkSubDriver {
 	    }
     }
 
-    public function getRbdigitalBookcoverUrl($size = 'small')
+    public function getRBdigitalBookcoverUrl($size = 'small')
     {
         $images = $this->rbdigitalRawMetadata->images;
         foreach ($images as $image) {
@@ -69,7 +69,7 @@ class RbdigitalRecordDriver extends GroupedWorkSubDriver {
 
     public function getModule()
     {
-        return 'Rbdigital';
+        return 'RBdigital';
     }
 
     /**
@@ -87,7 +87,7 @@ class RbdigitalRecordDriver extends GroupedWorkSubDriver {
         $interface->assign('groupedWorkDetails', $groupedWorkDetails);
 
         $interface->assign('rbdigitalExtract', $this->rbdigitalRawMetadata);
-        return 'RecordDrivers/Rbdigital/staff-view.tpl';
+        return 'RecordDrivers/RBdigital/staff-view.tpl';
     }
 
     /**
@@ -166,12 +166,12 @@ class RbdigitalRecordDriver extends GroupedWorkSubDriver {
 
         $moreDetailsOptions['moreDetails'] = array(
             'label' => 'More Details',
-            'body' => $interface->fetch('Rbdigital/view-more-details.tpl'),
+            'body' => $interface->fetch('RBdigital/view-more-details.tpl'),
         );
         $this->loadSubjects();
         $moreDetailsOptions['subjects'] = array(
             'label' => 'Subjects',
-            'body' => $interface->fetch('RecordDrivers/Rbdigital/view-subjects.tpl'),
+            'body' => $interface->fetch('RecordDrivers/RBdigital/view-subjects.tpl'),
         );
         $moreDetailsOptions['citations'] = array(
             'label' => 'Citations',
@@ -210,14 +210,14 @@ class RbdigitalRecordDriver extends GroupedWorkSubDriver {
         $actions = array();
         if ($isAvailable){
             $actions[] = array(
-                'title' => 'Check Out Rbdigital',
-                'onclick' => "return AspenDiscovery.Rbdigital.checkOutTitle('{$this->id}');",
+                'title' => 'Check Out RBdigital',
+                'onclick' => "return AspenDiscovery.RBdigital.checkOutTitle('{$this->id}');",
                 'requireLogin' => false,
             );
         }else{
             $actions[] = array(
-                'title' => 'Place Hold Rbdigital',
-                'onclick' => "return AspenDiscovery.Rbdigital.placeHold('{$this->id}');",
+                'title' => 'Place Hold RBdigital',
+                'onclick' => "return AspenDiscovery.RBdigital.placeHold('{$this->id}');",
                 'requireLogin' => false,
             );
         }
@@ -257,7 +257,7 @@ class RbdigitalRecordDriver extends GroupedWorkSubDriver {
      */
     function getEditions()
     {
-        // No specific information provided by Rbdigital
+        // No specific information provided by RBdigital
         return array();
     }
 
@@ -414,7 +414,7 @@ class RbdigitalRecordDriver extends GroupedWorkSubDriver {
     public function getAccessOnlineLinkUrl($patron)
     {
         global $configArray;
-        return $configArray['Site']['url'] . '/Rbdigital/' . $this->id . '/AccessOnline?patronId=' . $patron->id;
+        return $configArray['Site']['url'] . '/RBdigital/' . $this->id . '/AccessOnline?patronId=' . $patron->id;
     }
 
 	function getStatusSummary()
@@ -422,7 +422,7 @@ class RbdigitalRecordDriver extends GroupedWorkSubDriver {
 		$relatedRecord = $this->getRelatedRecord();
 		$statusSummary = array();
 		if ($relatedRecord->getAvailableCopies() > 0){
-			$statusSummary['status'] = "Available from Rbdigital";
+			$statusSummary['status'] = "Available from RBdigital";
 			$statusSummary['available'] = true;
 			$statusSummary['class'] = 'available';
 			$statusSummary['showPlaceHold'] = false;

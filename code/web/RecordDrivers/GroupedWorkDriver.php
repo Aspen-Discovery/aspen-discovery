@@ -1381,7 +1381,7 @@ class GroupedWorkDriver extends IndexRecordDriver{
 
         	/** @var Language $activeLanguage */
         	global $activeLanguage;
-        	if ($activeLanguage->code != 'en' && ($searchPreferenceLanguage > 0)){
+        	if ($activeLanguage->code != 'en' && ($searchPreferenceLanguage == 2)){
         		$selectedLanguage = $activeLanguage->facetValue;
 	        }
         }

@@ -150,11 +150,11 @@ class RecordDriverFactory {
 			require_once ROOT_DIR . '/RecordDrivers/OverDriveRecordDriver.php';
 			$recordDriver = new OverDriveRecordDriver($recordId, $groupedWork);
         }elseif ($recordType == 'rbdigital'){
-            require_once ROOT_DIR . '/RecordDrivers/RbdigitalRecordDriver.php';
-            $recordDriver = new RbdigitalRecordDriver($recordId, $groupedWork);
+            require_once ROOT_DIR . '/RecordDrivers/RBdigitalRecordDriver.php';
+            $recordDriver = new RBdigitalRecordDriver($recordId, $groupedWork);
 		}elseif ($recordType == 'rbdigital_magazine'){
-			require_once ROOT_DIR . '/RecordDrivers/RbdigitalMagazineDriver.php';
-			$recordDriver = new RbdigitalMagazineDriver($recordId, $groupedWork);
+			require_once ROOT_DIR . '/RecordDrivers/RBdigitalMagazineDriver.php';
+			$recordDriver = new RBdigitalMagazineDriver($recordId, $groupedWork);
 		}elseif ($recordType == 'external_econtent'){
 			require_once ROOT_DIR . '/RecordDrivers/ExternalEContentDriver.php';
 			$recordDriver = new ExternalEContentDriver($recordId, $groupedWork);

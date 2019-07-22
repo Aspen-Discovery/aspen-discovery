@@ -7,7 +7,7 @@
 
 	<span class='availableHoldsNoticePlaceHolder'></span>
 
-	<h2>{translate text='My Materials Requests'}</h2>
+	<h1>{translate text='My Materials Requests'}</h1>
 	{if !empty($error)}
 		<div class="alert alert-danger">{$error}</div>
 	{else}

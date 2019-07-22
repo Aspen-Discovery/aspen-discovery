@@ -170,25 +170,6 @@ class CarlX extends SIP2Driver{
 						$user->_expireClose = 1;
 					}
 
-					//Load summary information for number of holds, checkouts, etc
-					$patronSummaryRequest = new stdClass();
-					$patronSummaryRequest->SearchType = 'Patron ID';
-					$patronSummaryRequest->SearchID  = $username;
-					$patronSummaryRequest->Modifiers = '';
-
-					$patronSummaryResponse = $this->doSoapRequest('getPatronSummaryOverview', $patronSummaryRequest, $this->patronWsdl);
-
-					if (!empty($patronSummaryResponse) && is_object($patronSummaryResponse)) {
-						$user->_numCheckedOutIls     = $patronSummaryResponse->ChargedItemsCount + $patronSummaryResponse->OverdueItemsCount;
-						$user->_numHoldsAvailableIls = $patronSummaryResponse->HoldItemsCount;
-						$user->_numHoldsRequestedIls = $patronSummaryResponse->UnavailableHoldsCount;
-						$user->_numHoldsIls          = $user->_numHoldsAvailableIls + $user->_numHoldsRequestedIls;
-
-						$outstandingFines = $patronSummaryResponse->FineTotal + $patronSummaryResponse->LostItemFeeTotal;
-						$user->_fines      = sprintf('$%0.2f', $outstandingFines);
-						$user->_finesVal   = floatval($outstandingFines);
-					}
-
 					if ($userExistsInDB){
 						$user->update();
 					}else{
@@ -659,14 +640,14 @@ class CarlX extends SIP2Driver{
 					require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 					$recordDriver = new MarcRecordDriver($carlID); // This needs the $carlID
 					if ($recordDriver->isValid()){
-						$curTitle['coverUrl']      = $recordDriver->getBookcoverUrl('medium');
+						$curTitle['coverUrl'] = $recordDriver->getBookcoverUrl('medium');
+						$curTitle['ratingData']    = $recordDriver->getRatingData();
 						$curTitle['groupedWorkId'] = $recordDriver->getGroupedWorkId();
 						$curTitle['format']        = $recordDriver->getPrimaryFormat();
-						$curTitle['ratingData']    = $recordDriver->getRatingData();
-						$curTitle['link']          = $recordDriver->getLinkUrl();
 						$curTitle['title']         = $recordDriver->getTitle();
 						$curTitle['title_sort']    = $recordDriver->getSortableTitle();
 						$curTitle['author']        = $recordDriver->getPrimaryAuthor();
+						$curTitle['link']          = $recordDriver->getLinkUrl();
 					}else{
 						$curTitle['coverUrl']     = "";
 					}
@@ -1754,6 +1735,38 @@ class CarlX extends SIP2Driver{
 			return $newUser;
 		}
 		return false;
+	}
+
+	public function getAccountSummary(User $user)
+	{
+		$accountSummary = [
+			'numCheckedOut' => 0,
+			'numOverdue' => 0,
+			'numAvailableHolds' => 0,
+			'numUnavailableHolds' => 0,
+			'totalFines' => 0
+		];
+
+		//Load summary information for number of holds, checkouts, etc
+		$patronSummaryRequest = new stdClass();
+		$patronSummaryRequest->SearchType = 'Patron ID';
+		$patronSummaryRequest->SearchID  = $user->cat_username;
+		$patronSummaryRequest->Modifiers = '';
+
+		$patronSummaryResponse = $this->doSoapRequest('getPatronSummaryOverview', $patronSummaryRequest, $this->patronWsdl);
+
+		if (!empty($patronSummaryResponse) && is_object($patronSummaryResponse)) {
+			$accountSummary['numCheckedOut'] += $patronSummaryResponse->ChargedItemsCount;
+			$accountSummary['numCheckedOut'] += $patronSummaryResponse->OverdueItemsCount;
+			$accountSummary['numOverdue'] = $patronSummaryResponse->OverdueItemsCount;
+			$accountSummary['numAvailableHolds'] = $patronSummaryResponse->HoldItemsCount;
+			$accountSummary['numUnavailableHolds'] = $patronSummaryResponse->UnavailableHoldsCount;
+
+			$outstandingFines = $patronSummaryResponse->FineTotal + $patronSummaryResponse->LostItemFeeTotal;
+			$accountSummary['totalFines'] = floatval($outstandingFines);
+		}
+
+		return $accountSummary;
 	}
 
 }

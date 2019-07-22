@@ -1,13 +1,13 @@
 {strip}
 	<div id="main-content" class="col-sm-12">
-		<h2>Open Archives Dashboard</h2>
+		<h1>Open Archives Dashboard</h1>
 		{foreach from=$collections item=collectionName key=collectionId}
-			<h3>{$collectionName}</h3>
+			<h2>{$collectionName}</h2>
 
 			<div class="dashboardCategory">
 				<div class="row">
 					<div class="col-sm-10 col-sm-offset-1">
-						<h4 class="dashboardCategoryLabel">Records Viewed</h4>
+						<h3 class="dashboardCategoryLabel">Records Viewed</h3>
 					</div>
 				</div>
 				<div class="row">
@@ -29,7 +29,7 @@
 			<div class="dashboardCategory">
 				<div class="row">
 					<div class="col-sm-10 col-sm-offset-1">
-						<h4 class="dashboardCategoryLabel">Records Used (clicked on)</h4>
+						<h3 class="dashboardCategoryLabel">Records Used (clicked on)</h3>
 					</div>
 				</div>
 				<div class="row">
@@ -51,7 +51,7 @@
 			<div class="dashboardCategory">
 				<div class="row">
 					<div class="col-sm-10 col-sm-offset-1">
-						<h4 class="dashboardCategoryLabel">Active Users</h4>
+						<h3 class="dashboardCategoryLabel">Active Users</h3>
 					</div>
 				</div>
 				<div class="row">

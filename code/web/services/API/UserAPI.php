@@ -583,7 +583,7 @@ class UserAPI extends Action {
 		if ($user && !($user instanceof AspenError)){
             require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
             $driver = new OverDriveDriver();
-			$eContentCheckedOutItems = $driver->getCheckouts($user);
+			$eContentCheckedOutItems = $driver->getCheckouts($user, false);
 			return array('success'=>true, 'items'=>$eContentCheckedOutItems['items']);
 		}else{
 			return array('success'=>false, 'message'=>'Login unsuccessful');
@@ -738,7 +738,7 @@ class UserAPI extends Action {
 			list($username, $password) = $this->loadUsernameAndPassword();
 			$user = UserAccount::validateAccount($username, $password);
 			if ($user && !($user instanceof AspenError)) {
-				$allCheckedOut = $user->getCheckouts(false);
+				$allCheckedOut = $user->getCheckouts(false, true);
 
 				return array('success' => true, 'checkedOutItems' => $allCheckedOut);
 			} else {

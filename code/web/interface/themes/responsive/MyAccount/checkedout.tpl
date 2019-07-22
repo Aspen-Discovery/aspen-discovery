@@ -9,7 +9,7 @@
 		{* Alternate Mobile MyAccount Menu *}
 		{include file="MyAccount/mobilePageHeader.tpl"}
 		<span class='availableHoldsNoticePlaceHolder'></span>
-		<h2>{translate text='Checked Out Titles'}</h2>
+		<h1>{translate text='Checked Out Titles'}</h1>
 		{if $libraryHoursMessage}
 			<div class="libraryHours alert alert-success">{$libraryHoursMessage}</div>
 		{/if}
@@ -17,71 +17,60 @@
 		{if $offline}
 			<div class="alert alert-warning">{translate text=offline_notice defaultText="<strong>The library system is currently offline.</strong> We are unable to retrieve information about your account at this time."}</div>
 		{else}
+			<ul class="nav nav-tabs" role="tablist" id="checkoutsTab">
+				<li role="presentation"{if $tab=='all'} class="active"{/if}><a href="#all" aria-controls="all" role="tab" data-toggle="tab">{translate text="All"} <span class="badge"><span class="checkouts-placeholder">&nbsp;</span></span></a></li>
+				<li role="presentation"{if $tab=='ils'} class="active"{/if}><a href="#ils" aria-controls="ils" role="tab" data-toggle="tab">{translate text="Physical Materials"} <span class="badge"><span class="ils-checkouts-placeholder">&nbsp;</span></span></a></li>
+				{if $user->isValidForEContentSource('overdrive')}
+					<li role="presentation"{if $tab=='overdrive'} class="active"{/if}><a href="#overdrive" aria-controls="overdrive" role="tab" data-toggle="tab">{translate text="OverDrive"} <span class="badge"><span class="overdrive-checkouts-placeholder">&nbsp;</span></span></a></li>
+				{/if}
+				{if $user->isValidForEContentSource('hoopla')}
+					<li role="presentation"{if $tab=='hoopla'} class="active"{/if}><a href="#hoopla" aria-controls="hoopla" role="tab" data-toggle="tab">{translate text="Hoopla"} <span class="badge"><span class="hoopla-checkouts-placeholder">&nbsp;</span></span></a></li>
+				{/if}
+				{if $user->isValidForEContentSource('rbdigital')}
+					<li role="presentation"{if $tab=='rbdigital'} class="active"{/if}><a href="#rbdigital" aria-controls="rbdigital" role="tab" data-toggle="tab">{translate text="RBdigital"} <span class="badge"><span class="rbdigital-checkouts-placeholder">&nbsp;</span></span></a></li>
+				{/if}
+			</ul>
 
-			{if $transList}
-				<form id="renewForm" action="{$path}/MyAccount/CheckedOut">
-					<div id="pager" class="navbar form-inline">
-						<label for="accountSort" class="control-label">{translate text='Sort by'}&nbsp;</label>
-						<select name="accountSort" id="accountSort" class="form-control" onchange="AspenDiscovery.Account.changeAccountSort($(this).val());">
-							{foreach from=$sortOptions item=sortDesc key=sortVal}
-								<option value="{$sortVal}"{if $defaultSortOption == $sortVal} selected="selected"{/if}>{translate text=$sortDesc}</option>
-							{/foreach}
-						</select>
-
-						<label for="hideCovers" class="control-label checkbox pull-right"> {translate text="Hide Covers"} <input id="hideCovers" type="checkbox" onclick="AspenDiscovery.Account.toggleShowCovers(!$(this).is(':checked'))" {if $showCovers == false}checked="checked"{/if}></label>
-					</div>
-
-					<div class="btn-group">
-						{if !$hasOnlyEContentCheckOuts}
-							<a href="#" onclick="AspenDiscovery.Account.renewSelectedTitles()" class="btn btn-sm btn-default">{translate text="Renew Selected Items"}</a>
-							<a href="#" onclick="AspenDiscovery.Account.renewAll()" class="btn btn-sm btn-default">{translate text="Renew All"}</a>
-						{/if}
-						<a href="{$path}/MyAccount/CheckedOut?exportToExcel{if isset($defaultSortOption)}&accountSort={$defaultSortOption}{/if}" class="btn btn-sm btn-default" id="exportToExcelTop">{translate text="Export to Excel"}</a>
-					</div>
-
-					<br>
-
-					<div class="striped">
-						{foreach from=$transList item=checkedOutTitle name=checkedOutTitleLoop key=checkedOutKey}
-							{if $checkedOutTitle.checkoutSource == 'ILS'}
-								{include file="MyAccount/ilsCheckedOutTitle.tpl" record=$checkedOutTitle resultIndex=$smarty.foreach.checkedOutTitleLoop.iteration}
-							{elseif $checkedOutTitle.checkoutSource == 'OverDrive'}
-								{include file="MyAccount/overdriveCheckedOutTitle.tpl" record=$checkedOutTitle resultIndex=$smarty.foreach.checkedOutTitleLoop.iteration}
-							{elseif $checkedOutTitle.checkoutSource == 'Hoopla'}
-								{include file="MyAccount/hooplaCheckedOutTitle.tpl" record=$checkedOutTitle resultIndex=$smarty.foreach.checkedOutTitleLoop.iteration}
-							{elseif $checkedOutTitle.checkoutSource == 'Rbdigital'}
-								{include file="MyAccount/rbdigitalCheckedOutTitle.tpl" record=$checkedOutTitle resultIndex=$smarty.foreach.checkedOutTitleLoop.iteration}
-							{elseif $checkedOutTitle.checkoutSource == 'RbdigitalMagazine'}
-								{include file="MyAccount/rbdigitalCheckedOutMagazine.tpl" record=$checkedOutTitle resultIndex=$smarty.foreach.checkedOutTitleLoop.iteration}
-							{else}
-								<div class="row">
-									{translate text="Unknown record source"} {$checkedOutTitle.checkoutSource}
-								</div>
-							{/if}
-						{/foreach}
-					</div>
-
-					{if translate('CheckedOut_Econtent_notice')}
-						<p class="alert alert-info">
-							{translate text='CheckedOut_Econtent_notice' defaultText="Most eBooks and eAudiobooks cannot be renewed before they expire.  <br> However, eContent from OverDrive can be renewed within the OverDrive app starting 3 days before the due date if the title is not on hold by other patrons. You may need to download the title again after renewal.<br> For other content, if you want to renew, please wait for the title to expire and then check it out again.  You may need to download the title again after you check it out. You may be able to place a new hold on the title a few days before the title expires to help ensure continuous reading/listening."}
-						</p>
-					{/if}
-
-					<div class="btn-group">
-						{if !$hasOnlyEContentCheckOuts}
-							<a href="#" onclick="AspenDiscovery.Account.renewSelectedTitles()" class="btn btn-sm btn-default">{translate text="Renew Selected Items"}</a>
-							<a href="#" onclick="AspenDiscovery.Account.renewAll()" class="btn btn-sm btn-default">{translate text="Renew All"}</a>
-						{/if}
-						<a href="{$path}/MyAccount/CheckedOut?exportToExcel{if isset($defaultSortOption)}&accountSort={$defaultSortOption}{/if}" class="btn btn-sm btn-default" id="exportToExcelTop">{translate text="Export to Excel"}</a>
-					</div>
-				</form>
-			{else}
-				{translate text='You do not have any items checked out'}.
-			{/if}
+			<!-- Tab panes -->
+			<div class="tab-content" id="checkouts">
+				<div role="tabpanel" class="tab-pane{if $tab=='all'} active{/if}" id="all"><div id="allCheckoutsPlaceholder">{translate text="Loading checkouts from all sources"}</div></div>
+				<div role="tabpanel" class="tab-pane{if $tab=='ils'} active{/if}" id="ils"><div id="ilsCheckoutsPlaceholder">{translate text="Loading checkouts of physical materials"}</div></div>
+				{if $user->isValidForEContentSource('overdrive')}
+					<div role="tabpanel" class="tab-pane{if $tab=='overdrive'} active{/if}" id="overdrive"><div id="overdriveCheckoutsPlaceholder">{translate text="Loading checkouts from OverDrive"}</div></div>
+				{/if}
+				{if $user->isValidForEContentSource('hoopla')}
+					<div role="tabpanel" class="tab-pane{if $tab=='hoopla'} active{/if}" id="hoopla"><div id="hooplaCheckoutsPlaceholder">{translate text="Loading checkouts from Hoopla"}</div></div>
+				{/if}
+				{if $user->isValidForEContentSource('rbdigital')}
+					<div role="tabpanel" class="tab-pane{if $tab=='rbdigital'} active{/if}" id="rbdigital"><div id="rbdigitalCheckoutsPlaceholder">{translate text="Loading checkouts from RBdigital"}</div></div>
+				{/if}
+			</div>
+			<script type="text/javascript">
+				{literal}
+				$(document).ready(function() {
+                    $("a[href='#all']").on('show.bs.tab', function () {
+                        AspenDiscovery.Account.loadCheckouts('all');
+                    });
+                    $("a[href='#ils']").on('show.bs.tab', function () {
+                        AspenDiscovery.Account.loadCheckouts('ils');
+                    });
+                    $("a[href='#overdrive']").on('show.bs.tab', function () {
+                        AspenDiscovery.Account.loadCheckouts('overdrive');
+                    });
+                    $("a[href='#hoopla']").on('show.bs.tab', function () {
+                        AspenDiscovery.Account.loadCheckouts('hoopla');
+                    });
+                    $("a[href='#rbdigital']").on('show.bs.tab', function () {
+                        AspenDiscovery.Account.loadCheckouts('rbdigital');
+                    });
+                    {/literal}
+                    AspenDiscovery.Account.loadCheckouts('{$tab}');
+					{literal}
+                });
+                {/literal}
+			</script>
 		{/if}
 	{else}
-		You must login to view this information. Click
-		<a href="{$path}/MyAccount/Login">here</a>
-		to login.
+		{translate text="login_to_view_account_notice" defaultText="You must login to view this information. Click <a href="{$path}/MyAccount/Login">here</a> to login."}
 	{/if}
 {/strip}

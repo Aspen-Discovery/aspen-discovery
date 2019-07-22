@@ -746,8 +746,8 @@ class MillenniumHolds{
 
 
 		}else{
-			if (!empty($_REQUEST['canceldate'])){
-				$date = $_REQUEST['canceldate'];
+			if (!empty($_REQUEST['cancelDate'])){
+				$date = $_REQUEST['cancelDate'];
 			}else{
 				if ($library->defaultNotNeededAfterDays == 0){
 					//Default to a date 6 months (half a year) in the future.
@@ -875,8 +875,8 @@ class MillenniumHolds{
 
 
 		}else{
-			if (!empty($_REQUEST['canceldate'])){
-				$date = $_REQUEST['canceldate'];
+			if (!empty($_REQUEST['cancelDate'])){
+				$date = $_REQUEST['cancelDate'];
 			}else{
 				global $library;
 				if ($library->defaultNotNeededAfterDays == 0){

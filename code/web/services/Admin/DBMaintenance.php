@@ -70,7 +70,7 @@ class DBMaintenance extends Admin_Admin {
 		require_once ROOT_DIR . '/sys/DBMaintenance/hoopla_updates.php';
 		$hoopla_updates = getHooplaUpdates();
         require_once ROOT_DIR . '/sys/DBMaintenance/rbdigital_updates.php';
-        $rbdigital_updates = getRbdigitalUpdates();
+        $rbdigital_updates = getRBdigitalUpdates();
         require_once ROOT_DIR . '/sys/DBMaintenance/sierra_api_updates.php';
 		$sierra_api_updates = getSierraAPIUpdates();
 		require_once ROOT_DIR . '/sys/DBMaintenance/overdrive_updates.php';

@@ -8,6 +8,9 @@
  */
 class Pager {
 	private $options;
+	private $_currentPage;
+	private $_totalPages;
+	private $_baseUrl;
 
 	/**
 	 * Constructor
@@ -20,22 +23,9 @@ class Pager {
 	public function __construct($options = array()) {
 		// Set default Pager options:
 		$finalOptions = array(
-			'mode' => 'sliding',
-			'path' => "",
-			'delta' => 2,
 			'perPage' => 20,
-			'nextImg' => translate('Next') . ' &raquo;',
-			'prevImg' => '&laquo; ' . translate('Prev'),
-			'separator' => '',
-			'spacesBeforeSeparator' => 0,
-			'spacesAfterSeparator' => 0,
-			'append' => false,
-			'clearIfVoid' => true,
 			'urlVar' => 'page',
-			'curPageSpanPre' => '<li><span>',
-			'curPageSpanPost' => '</span></li>',
-			'curPageClaas' => 'active',
-            'totalItems' => 0
+			'totalItems' => 0
 		);
 
 		// Override defaults with user-provided values:
@@ -43,6 +33,8 @@ class Pager {
 			$finalOptions[$optionName] = $optionValue;
 		}
 		$this->options = $finalOptions;
+
+		if (isset($this->options))
 
 		$urlVar = $this->options['urlVar'];
 		$this->_currentPage = (isset($_REQUEST[$urlVar]) && is_numeric($_REQUEST[$urlVar])) ? $_REQUEST[$urlVar] : 1;
@@ -52,7 +44,6 @@ class Pager {
         //remove the page parameter
         $this->_baseUrl = preg_replace("/\?{$this->options['urlVar']}=\d+&/",'?', $this->_baseUrl);
         $this->_baseUrl = preg_replace("/{$this->options['urlVar']}=\d+&|[?&]{$this->options['urlVar']}=\d+/",'', $this->_baseUrl);
-
 	}
 
     private function curPageURL() {
@@ -81,8 +72,8 @@ class Pager {
             $linksText = '<nav aria-label="Page navigation">';
             $linksText .= '<ul class="pagination justify-content-end">';
             if ($this->getCurrentPage() != 1) {
-                $linksText .=  '<li class="page-item"><a class="page-link" href="' .  $this->getPageUrl(1) . '">[1]</a></li>';
-                $linksText .=  '<li class="page-item"><a class="page-link" href="' .  $this->getPageUrl(1) . '">&laquo; ' . translate('Prev') . '</a></li>';
+                $linksText .=  '<li class="page-item">' . $this->renderLink(1) . '[1]</a></li>';
+                $linksText .=  '<li class="page-item">' . $this->renderLink(1) . '&laquo; ' . translate('Prev') . '</a></li>';
             }
 
             //Print links to pages before and after the current
@@ -104,11 +95,11 @@ class Pager {
             }
             for ($i = $firstPageToPrint; $i <= $lastPageToPrint; $i++) {
                 $active = ($this->_currentPage == $i) ? ' active' : '';
-                $linksText .=  '<li class="page-item' . $active . '"><a class="page-link" href="' .  $this->getPageUrl($i) . "\">$i</a></li>";
+                $linksText .=  '<li class="page-item' . $active . '">' . $this->renderLink($i) . "$i</a></li>";
             }
             if ($this->_currentPage != $this->_totalPages) {
-                $linksText .=  '<li class="page-item"><a class="page-link" href="' .  $this->getPageUrl($this->_currentPage + 1) . '">' . translate('Next') . ' &raquo;</a></li>';
-                $linksText .=  '<li class="page-item"><a class="page-link" href="' .  $this->getPageUrl($this->getTotalPages()) . '">['.$this->getTotalPages().']</a></li>';
+                $linksText .=  '<li class="page-item">' .  $this->renderLink($this->_currentPage + 1) . translate('Next') . ' &raquo;</a></li>';
+                $linksText .=  '<li class="page-item">' . $this->renderLink($this->getTotalPages()) . '['.$this->getTotalPages().']</a></li>';
             }
             $linksText .= '</ul>';
             $linksText .= '</nav>';
@@ -117,17 +108,16 @@ class Pager {
             $links['all'] = null;
         }
         return $links;
-		$links = $this->pager->getLinks();
-        $allLinks = $links['all'];
-		$allLinks = str_replace('<a', '<li><a', $allLinks);
-		$allLinks = str_replace('</a>', '</li></a>', $allLinks);
-		if (strlen($allLinks) > 0){
-			$links['all'] = '<ul class="pagination">' . $allLinks . '</ul>';
-		}else{
-			$links['all'] = null;
-		}
+	}
 
-		return $links;
+	public function renderLink($pageNumber){
+		if (empty($this->options['linkRenderingFunction'])){
+			return '<a class="page-link" href="' .  $this->getPageUrl($pageNumber) . '">';
+		}else{
+			$object = $this->options['linkRenderingObject'];
+			$function = $this->options['linkRenderingFunction'];
+			return $object->$function($pageNumber, $this->options);
+		}
 	}
 
 	public function isLastPage() {
@@ -160,11 +150,12 @@ class Pager {
     }
 
     public function getPageUrl($page) {
-	    if (strpos($this->_baseUrl, '?') > 0) {
-            $url = $this->_baseUrl . '&' . $this->options['urlVar'] . '=' . $page;
-        } else {
-            $url = $this->_baseUrl . '?' . $this->options['urlVar'] . '=' . $page;
-        }
+		if (strpos($this->_baseUrl, '?') > 0) {
+			$url = $this->_baseUrl . '&' . $this->options['urlVar'] . '=' . $page;
+		} else {
+			$url = $this->_baseUrl . '?' . $this->options['urlVar'] . '=' . $page;
+		}
+
 	    return $url;
     }
 

@@ -232,9 +232,9 @@ class Koha extends AbstractIlsDriver {
 				require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 				$recordDriver = new MarcRecordDriver($checkout['recordId']);
 				if ($recordDriver->isValid()){
-					$checkout['coverUrl']      = $recordDriver->getBookcoverUrl('medium');
-					$checkout['groupedWorkId'] = $recordDriver->getGroupedWorkId();
+					$checkout['coverUrl'] = $recordDriver->getBookcoverUrl('medium');
 					$checkout['ratingData']    = $recordDriver->getRatingData();
+					$checkout['groupedWorkId'] = $recordDriver->getGroupedWorkId();
 					$checkout['format']        = $recordDriver->getPrimaryFormat();
 					$checkout['author']        = $recordDriver->getPrimaryAuthor();
 					$checkout['title']         = $recordDriver->getTitle();
@@ -369,49 +369,7 @@ class Koha extends AbstractIlsDriver {
 					$user->_zip      = $userFromDb['zipcode'];
 					$user->phone    = $userFromDb['phone'];
 
-					//Get fines
-					//Load fines from database
-					$outstandingFines = $this->getOutstandingFineTotal($user);
-					$user->_fines    = sprintf('$%0.2f', $outstandingFines);
-					$user->_finesVal = floatval($outstandingFines);
 					$timer->logTime("Loaded base patron information for Koha $username");
-
-					//Get number of items checked out
-					/** @noinspection SqlResolve */
-					$checkedOutItemsRS = mysqli_query($this->dbConnection, 'SELECT count(*) as numCheckouts FROM issues WHERE borrowernumber = ' . $user->username, MYSQLI_USE_RESULT);
-					$numCheckouts = 0;
-					if ($checkedOutItemsRS){
-					    $checkedOutItems = $checkedOutItemsRS->fetch_assoc();
-					    $numCheckouts = $checkedOutItems['numCheckouts'];
-					    $checkedOutItemsRS->close();
-					}
-					$user->_numCheckedOutIls = $numCheckouts;
-					$timer->logTime("Loaded checkouts for Koha");
-
-					//Get number of available holds
-					/** @noinspection SqlResolve */
-					$availableHoldsRS = mysqli_query($this->dbConnection, 'SELECT count(*) as numHolds FROM reserves WHERE found = "W" and borrowernumber = ' . $user->username, MYSQLI_USE_RESULT);
-					$numAvailableHolds = 0;
-					if ($availableHoldsRS){
-					    $availableHolds = $availableHoldsRS->fetch_assoc();
-					    $numAvailableHolds = $availableHolds['numHolds'];
-					    $availableHoldsRS->close();
-					}
-					$user->_numHoldsAvailableIls = $numAvailableHolds;
-					$timer->logTime("Loaded available holds for Koha");
-
-					//Get number of unavailable
-					/** @noinspection SqlResolve */
-					$waitingHoldsRS = mysqli_query($this->dbConnection, 'SELECT count(*) as numHolds FROM reserves WHERE (found <> "W" or found is null) and borrowernumber = ' . $user->username, MYSQLI_USE_RESULT);
-					$numWaitingHolds = 0;
-					if ($waitingHoldsRS){
-					    $waitingHolds = $waitingHoldsRS->fetch_assoc();
-					    $numWaitingHolds = $waitingHolds['numHolds'];
-					    $waitingHoldsRS->close();
-					}
-					$user->_numHoldsRequestedIls = $numWaitingHolds;
-					$user->_numHoldsIls = $user->_numHoldsAvailableIls + $user->_numHoldsRequestedIls;
-					$timer->logTime("Loaded total holds for Koha");
 
 					$homeBranchCode = strtolower($userFromDb['branchcode']);
 					$location = new Location();
@@ -470,24 +428,6 @@ class Koha extends AbstractIlsDriver {
 					    //Get display names that aren't stored
 					    $user->_homeLocationCode = $location->code;
 					    $user->_homeLocation     = $location->displayName;
-					}
-
-					$user->_expires = $userFromDb['dateexpiry']; //TODO: format is year-month-day; millennium is month-day-year; needs converting??
-
-					$user->_expired     = 0; // default setting
-					$user->_expireClose = 0;
-
-					if (!empty($userFromDb['dateexpiry'])) { // TODO: probably need a better check of this field
-					    list ($yearExp, $monthExp, $dayExp) = explode('-', $userFromDb['dateexpiry']);
-					    $timeExpire   = strtotime($monthExp . "/" . $dayExp . "/" . $yearExp);
-					    $timeNow      = time();
-					    $timeToExpire = $timeExpire - $timeNow;
-					    if ($timeToExpire <= 30 * 24 * 60 * 60) {
-					        if ($timeToExpire <= 0) {
-					            $user->_expired = 1;
-					        }
-					        $user->_expireClose = 1;
-					    }
 					}
 
 					$user->_noticePreferenceLabel = 'Unknown';
@@ -773,9 +713,8 @@ class Koha extends AbstractIlsDriver {
 			//If the hold is successful we go back to the account page and can see
 
 			$hold_result['id'] = $recordId;
-            /** @noinspection HtmlUnknownAnchorTarget */
             if ($placeHoldResponse->title) {
-				//We redirected to the holds page, everything seems to be good
+				//everything seems to be good
 				$holds = $this->getHolds($patron, 1, -1, 'title');
 				$hold_result['success'] = true;
 				$hold_result['message'] = "Your hold was placed successfully.";
@@ -788,6 +727,9 @@ class Koha extends AbstractIlsDriver {
 						break;
 					}
 				}
+	            /** @var Memcache $memCache */
+	            global $memCache;
+	            $memCache->delete('koha_summary_' . $patron->id);
 			}else{
 				$hold_result['success'] = false;
 				//Look for an alert message
@@ -868,6 +810,9 @@ class Koha extends AbstractIlsDriver {
                     break;
                 }
             }
+			/** @var Memcache $memCache */
+			global $memCache;
+			$memCache->delete('koha_summary_' . $patron->id);
         }else{
             $hold_result['success'] = false;
             //Look for an alert message
@@ -1029,6 +974,9 @@ class Koha extends AbstractIlsDriver {
 				}
 			}
 			if ($allCancelsSucceed){
+				/** @var Memcache $memCache */
+				global $memCache;
+				$memCache->delete('koha_summary_' . $patron->id);
 				return array(
 					'title' => $titles,
 					'success' => true,
@@ -1080,6 +1028,9 @@ class Koha extends AbstractIlsDriver {
             //We renewed the hold
             $success = true;
             $message = 'Your item was successfully renewed';
+	        /** @var Memcache $memCache */
+	        global $memCache;
+	        $memCache->delete('koha_summary_' . $patron->id);
         }else{
             $success = false;
             $message = 'The item could not be renewed';
@@ -1584,7 +1535,7 @@ class Koha extends AbstractIlsDriver {
 	function hasMaterialsRequestSupport(){
 		return true;
 	}
-	function getNewMaterialsRequestForm()
+	function getNewMaterialsRequestForm(User $user)
 	{
 		global $interface;
 		require_once ROOT_DIR . '/sys/Indexing/TranslationMap.php';
@@ -1609,6 +1560,7 @@ class Koha extends AbstractIlsDriver {
 		$interface->assign('pickupLocations', $pickupLocations);
 
 		$fields = [
+			array('property'=>'patronId', 'type'=>'hidden','label'=>'Patron Id', 'default'=>$user->id),
 			array('property'=>'title', 'type'=>'text', 'label'=>'Title', 'description'=>'The title of the item to be purchased', 'maxLength'=>255, 'required' => true),
 			array('property'=>'author', 'type'=>'text', 'label'=>'Author', 'description'=>'The author of the item to be purchased', 'maxLength'=>80, 'required' => false),
 			array('property'=>'copyrightdate', 'type'=>'text', 'label'=>'Copyright Date', 'description'=>'Copyright or publication year, for example: 2016', 'maxLength'=>4, 'required' => false),
@@ -1769,6 +1721,10 @@ class Koha extends AbstractIlsDriver {
 		];
 		$this->postToKohaPage($catalogUrl . '/cgi-bin/koha/opac-suggestions.pl', $postFields);
 
+		/** @var Memcache $memCache */
+		global $memCache;
+		$memCache->delete('koha_summary_' . $user->id);
+
 		return [
 			'success' => true,
 			'message' => 'deleted your requests'
@@ -1811,10 +1767,9 @@ class Koha extends AbstractIlsDriver {
 		}
 
 		global $interface;
-		$patronUpdateFields[] = array('property'=>'updateScope', 'type'=>'hidden', 'label'=>'Update Scope', 'description'=>'', 'value' => 'contact');
-		/** @noinspection PhpUndefinedFieldInspection */
-		$user->updateScope = 'contact';
-		$interface->assign('submitUrl', '/MyAccount/Profile');
+		$patronUpdateFields[] = array('property'=>'updateScope', 'type'=>'hidden', 'label'=>'Update Scope', 'description'=>'', 'default' => 'contact');
+		$patronUpdateFields[] = array('property'=>'patronId', 'type'=>'hidden', 'label'=>'Active Patron', 'description'=>'', 'default' => $user->id);
+		$interface->assign('submitUrl', '/MyAccount/ContactInformation');
 		$interface->assign('structure', $patronUpdateFields);
 		$interface->assign('object', $user);
 		$interface->assign('saveButtonText', 'Update Contact Information');
@@ -1828,7 +1783,7 @@ class Koha extends AbstractIlsDriver {
 			return $date;
 		}else{
 			list($year, $month, $day) = explode('-', $date);
-			return "$day-$month-$year";
+			return "$month-$day-$year";
 		}
 	}
 
@@ -1842,8 +1797,8 @@ class Koha extends AbstractIlsDriver {
 		if (strlen($date) == 0){
 			return $date;
 		}else{
-			list($day, $month, $year) = explode('-', $date);
-			return "$day/$month/$year";
+			list($month, $day, $year) = explode('-', $date);
+			return "$month/$day/$year";
 		}
 	}
 
@@ -1931,5 +1886,105 @@ class Koha extends AbstractIlsDriver {
 		}
 
 		return $results;
+	}
+
+	public function getAccountSummary($user)
+	{
+		/** @var Memcache $memCache */
+		global $memCache;
+		global $timer;
+		global $configArray;
+
+		$accountSummary = $memCache->get('koha_summary_' . $user->id);
+		if ($accountSummary == false || isset($_REQUEST['reload'])) {
+			$accountSummary = [
+				'numCheckedOut' => 0,
+				'numOverdue' => 0,
+				'numAvailableHolds' => 0,
+				'numUnavailableHolds' => 0,
+				'totalFines' => 0
+			];
+			$this->initDatabaseConnection();
+
+			//Get number of items checked out
+			/** @noinspection SqlResolve */
+			$checkedOutItemsRS = mysqli_query($this->dbConnection, 'SELECT count(*) as numCheckouts FROM issues WHERE borrowernumber = ' . $user->username, MYSQLI_USE_RESULT);
+			$numCheckouts = 0;
+			if ($checkedOutItemsRS) {
+				$checkedOutItems = $checkedOutItemsRS->fetch_assoc();
+				$numCheckouts = $checkedOutItems['numCheckouts'];
+				$checkedOutItemsRS->close();
+			}
+			$accountSummary['numCheckedOut'] = $numCheckouts;
+
+			$now = date('Y-m-d H:i:s');
+			$overdueItemsRS = mysqli_query($this->dbConnection, 'SELECT count(*) as numOverdue FROM issues WHERE date_due < \'' . $now. '\' AND borrowernumber = ' . $user->username, MYSQLI_USE_RESULT);
+			$numOverdue = 0;
+			if ($overdueItemsRS) {
+				$overdueItems = $overdueItemsRS->fetch_assoc();
+				$numOverdue = $overdueItems['numOverdue'];
+				$overdueItemsRS->close();
+			}
+			$accountSummary['numOverdue'] = $numOverdue;
+			$timer->logTime("Loaded checkouts for Koha");
+
+			//Get number of available holds
+			/** @noinspection SqlResolve */
+			$availableHoldsRS = mysqli_query($this->dbConnection, 'SELECT count(*) as numHolds FROM reserves WHERE found = "W" and borrowernumber = ' . $user->username, MYSQLI_USE_RESULT);
+			$numAvailableHolds = 0;
+			if ($availableHoldsRS) {
+				$availableHolds = $availableHoldsRS->fetch_assoc();
+				$numAvailableHolds = $availableHolds['numHolds'];
+				$availableHoldsRS->close();
+			}
+			$accountSummary['numAvailableHolds'] = $numAvailableHolds;
+			$timer->logTime("Loaded available holds for Koha");
+
+			//Get number of unavailable
+			/** @noinspection SqlResolve */
+			$waitingHoldsRS = mysqli_query($this->dbConnection, 'SELECT count(*) as numHolds FROM reserves WHERE (found <> "W" or found is null) and borrowernumber = ' . $user->username, MYSQLI_USE_RESULT);
+			$numWaitingHolds = 0;
+			if ($waitingHoldsRS) {
+				$waitingHolds = $waitingHoldsRS->fetch_assoc();
+				$numWaitingHolds = $waitingHolds['numHolds'];
+				$waitingHoldsRS->close();
+			}
+			$accountSummary['numUnavailableHolds'] = $numWaitingHolds;
+			$timer->logTime("Loaded total holds for Koha");
+
+			//Get fines
+			//Load fines from database
+			$outstandingFines = $this->getOutstandingFineTotal($user);
+			$accountSummary['totalFines'] = floatval($outstandingFines);
+
+			//Get expiration information
+			$sql = "SELECT dateexpiry from borrowers where borrowernumber = {$user->username}";
+
+			$lookupUserResult = mysqli_query($this->dbConnection, $sql, MYSQLI_USE_RESULT);
+			if ($lookupUserResult) {
+				$userFromDb = $lookupUserResult->fetch_assoc();
+				$accountSummary['expires'] = $userFromDb['dateexpiry']; //TODO: format is year-month-day; millennium is month-day-year; needs converting??
+
+				$accountSummary['expired'] = 0; // default setting
+				$accountSummary['expireClose'] = 0;
+
+				if (!empty($userFromDb['dateexpiry'])) { // TODO: probably need a better check of this field
+					list ($yearExp, $monthExp, $dayExp) = explode('-', $userFromDb['dateexpiry']);
+					$timeExpire = strtotime($monthExp . "/" . $dayExp . "/" . $yearExp);
+					$timeNow = time();
+					$timeToExpire = $timeExpire - $timeNow;
+					if ($timeToExpire <= 30 * 24 * 60 * 60) {
+						if ($timeToExpire <= 0) {
+							$accountSummary['expired'] = 1;
+						}
+						$accountSummary['expireClose'] = 1;
+					}
+				}
+				$lookupUserResult->close();
+			}
+
+			$memCache->set('koha_summary_' . $user->id, $accountSummary, $configArray['Caching']['account_summary']);
+		}
+		return $accountSummary;
 	}
 }

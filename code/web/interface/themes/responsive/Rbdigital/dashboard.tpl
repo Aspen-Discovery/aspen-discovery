@@ -1,6 +1,6 @@
 {strip}
 	<div id="main-content" class="col-sm-12">
-		<h3>{translate text="Rbdigital Dashboard"}</h3>
+		<h3>{translate text="RBdigital Dashboard"}</h3>
 		<div class="dashboardCategory">
 			<div class="row">
 				<div class="col-sm-10 col-sm-offset-1">

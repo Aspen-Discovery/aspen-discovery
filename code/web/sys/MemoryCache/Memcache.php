@@ -6,7 +6,24 @@ class Memcache
 	private $enableDbCache = true;
     private $vars = array();
 
-    public function get($name){
+    public function __destruct()
+    {
+    	//Clear old expired memory cache entries.  This can be done VERY sporadically.
+    	$random = rand(0, 1000);
+    	if ($random == 1) {
+		    try {
+			    $cachedValue = new CachedValue();
+			    $cachedValue->whereAdd(false);
+			    $cachedValue->whereAdd("expirationTime <= " . time());
+			    $cachedValue->delete(true);
+		    } catch (Exception $e) {
+			    global $logger;
+			    $logger->log("Could not clear cache of old values", Logger::LOG_DEBUG);
+		    }
+	    }
+    }
+
+	public function get($name){
     	if (array_key_exists($name, $this->vars)) {
             return $this->vars[$name];
         }elseif($this->enableDbCache){
@@ -49,12 +66,14 @@ class Memcache
 				    }
 
 				    if ($isNew) {
-					    $cachedValue->insert();
+				    	$result = $cachedValue->insert();
 				    } else {
-					    $cachedValue->update();
+					    $result = $cachedValue->update();
 				    }
 			    } catch (Exception $e) {
 				    //Table has not been created ignore
+				    global $logger;
+				    $logger->log("error caching data", Logger::LOG_DEBUG);
 			    }
 		    }else{
 		    	global $logger;

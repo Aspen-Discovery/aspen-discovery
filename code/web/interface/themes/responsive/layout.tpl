@@ -12,7 +12,6 @@
 		{if !empty($google_verification_key)}
 			<meta name="google-site-verification" content="{$google_verification_key}">
 		{/if}
-		{if !empty($addHeader)}{$addHeader}{/if}
 
 		{if !empty($metadataTemplate)}
 			{include file=$metadataTemplate}

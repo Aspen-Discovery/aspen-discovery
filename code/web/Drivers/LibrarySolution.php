@@ -279,8 +279,7 @@ class LibrarySolution extends AbstractIlsDriver {
 	 * This is responsible for retrieving all transactions (i.e. checked out items)
 	 * by a specific patron.
 	 *
-	 * @param User $user    The user to load transactions for
-	 *
+	 * @param User $user The user to load transactions for
 	 * @return mixed        Array of the patron's transactions on success,
 	 * AspenError otherwise.
 	 * @access public
@@ -322,8 +321,8 @@ class LibrarySolution extends AbstractIlsDriver {
 					$recordDriver = new MarcRecordDriver( $this->accountProfile->recordSource . ":" . $curTitle['recordId']);
 					if ($recordDriver->isValid()){
 						$curTitle['coverUrl'] = $recordDriver->getBookcoverUrl('medium');
-						$curTitle['groupedWorkId'] = $recordDriver->getGroupedWorkId();
 						$curTitle['ratingData'] = $recordDriver->getRatingData();
+						$curTitle['groupedWorkId'] = $recordDriver->getGroupedWorkId();
 						$formats = $recordDriver->getFormats();
 						$curTitle['format'] = reset($formats);
 						$curTitle['author'] = $recordDriver->getPrimaryAuthor();

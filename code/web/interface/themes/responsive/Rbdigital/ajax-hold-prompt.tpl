@@ -1,7 +1,7 @@
 {strip}
 <form method="post" action="" id="holdPromptsForm" class="form">
 	<div>
-		<input type="hidden" name="id" value="{$id}"/>
+		<input type="hidden" name="id" id="id" value="{$id}"/>
 		{if count($users) > 1} {* Linked Users contains the active user as well*}
 			<div id='pickupLocationOptions' class="form-group">
 				<label class='control-label' for="patronId">{translate text="Place hold for account"}: </label>

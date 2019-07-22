@@ -2,10 +2,10 @@
 	<div class="col-xs-12">
 		{* Search Navigation *}
 		{include file="Archive/search-results-navigation.tpl"}
-		<h2>
+		<h1>
 			{$title}
 			{*{$title|escape} // plb 3/8/2017 not escaping because some titles use &amp; *}
-		</h2>
+		</h1>
 
 		{if $canView}
 			<video width="100%" controls poster="{$medium_image}" id="player" oncontextmenu="return false;">

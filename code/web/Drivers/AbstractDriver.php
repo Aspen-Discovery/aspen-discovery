@@ -21,18 +21,17 @@ abstract class AbstractDriver
         return;
     }
 
-    /**
-     * Get Patron Checkouts
-     *
-     * This is responsible for retrieving all checkouts (i.e. checked out items)
-     * by a specific patron.
-     *
-     * @param User $user    The user to load transactions for
-     *
-     * @return array        Array of the patron's transactions on success
-     * @access public
-     */
-    public abstract function getCheckouts($user);
+	/**
+	 * Get Patron Checkouts
+	 *
+	 * This is responsible for retrieving all checkouts (i.e. checked out items)
+	 * by a specific patron.
+	 *
+	 * @param User $user The user to load transactions for
+	 * @return array        Array of the patron's transactions on success
+	 * @access public
+	 */
+    public abstract function getCheckouts(User $user);
 
     /**
      * @return boolean true if the driver can renew all titles in a single pass

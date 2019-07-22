@@ -62,7 +62,7 @@
 
 					<div class="row">
 						<div class="result-label col-tn-4 col-lg-3">{translate text='Format'}</div>
-						<div class="result-value col-tn-8 col-lg-9">{$record.format|translate} - Rbdigital</div>
+						<div class="result-value col-tn-8 col-lg-9">{$record.format|translate} - RBdigital</div>
 					</div>
 
 					{if $showRatings && $record.groupedWorkId && $record.ratingData}
@@ -92,14 +92,14 @@
 				{* Actions for Title *}
 				<div class="col-xs-9 col-sm-8 col-md-4 col-lg-3">
 					<div class="btn-group btn-group-vertical btn-block">
-						<a href="{$record.accessOnlineUrl}" target="_blank" class="btn btn-sm btn-primary">{translate text='Open in Rbdigital'}</a>
+						<a href="{$record.accessOnlineUrl}" target="_blank" class="btn btn-sm btn-primary">{translate text='Open in RBdigital'}</a>
 						{if $record.downloadUrl}
 							<a href="{$record.downloadUrl}" target="_blank" class="btn btn-sm btn-primary">{translate text='Download'}</a>
 						{/if}
 						{if $record.canRenew}
-							<a href="#" onclick="return AspenDiscovery.Rbdigital.renewCheckout('{$record.userId}', '{$record.recordId}');" class="btn btn-sm btn-info">{translate text='Renew Checkout'}</a>
+							<a href="#" onclick="return AspenDiscovery.RBdigital.renewCheckout('{$record.userId}', '{$record.recordId}');" class="btn btn-sm btn-info">{translate text='Renew Checkout'}</a>
 						{/if}
-						<a href="#" onclick="return AspenDiscovery.Rbdigital.returnCheckout('{$record.userId}', '{$record.recordId}');" class="btn btn-sm btn-warning">{translate text='Return&nbsp;Now'}</a>
+						<a href="#" onclick="return AspenDiscovery.RBdigital.returnCheckout('{$record.userId}', '{$record.recordId}');" class="btn btn-sm btn-warning">{translate text='Return&nbsp;Now'}</a>
 					</div>
 				</div>
 			</div>

@@ -71,7 +71,7 @@
 				{* Actions for Title *}
 				<div class="col-xs-9 col-sm-8 col-md-4 col-lg-3">
 					<div class="btn-group btn-group-vertical btn-block">
-						<button onclick="return AspenDiscovery.Rbdigital.cancelHold('{$record.userId}', '{$record.id}');" class="btn btn-sm btn-warning">Cancel Hold</button>
+						<button onclick="return AspenDiscovery.RBdigital.cancelHold('{$record.userId}', '{$record.id}');" class="btn btn-sm btn-warning">Cancel Hold</button>
 					</div>
 
 				</div>

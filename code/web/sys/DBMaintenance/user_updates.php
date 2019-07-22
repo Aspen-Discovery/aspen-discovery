@@ -158,13 +158,22 @@ function getUserUpdates(){
         ),
 
         'user_add_rbdigital_id' => array(
-            'title' => 'User Rbdigital Id',
+            'title' => 'User RBdigital Id',
             'description' => 'Stores user rbdigital id for a user',
             'sql' => array(
                 "ALTER TABLE user ADD COLUMN rbdigitalId INT(11) DEFAULT -1;",
                 "ALTER TABLE user ADD COLUMN rbdigitalLastAccountCheck INT(11)",
             ),
         ),
+
+		'user_add_rbdigital_username_password' => array(
+			'title' => 'User RBdigital Username and Password',
+			'description' => 'Stores rbdigital username and password for a user for automatic login',
+			'sql' => array(
+				"ALTER TABLE user ADD COLUMN rbdigitalUsername VARCHAR(50);",
+				"ALTER TABLE user ADD COLUMN rbdigitalPassword VARCHAR(50)",
+			),
+		),
 
 		'user_languages' => [
 			'title' => 'User Language Preferences',

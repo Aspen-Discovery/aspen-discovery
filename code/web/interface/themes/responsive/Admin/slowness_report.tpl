@@ -1,7 +1,7 @@
 {strip}
 	<div id="main-content" class="col-sm-12">
-		<h2>Slowness Dashboard</h2>
-		<h3>Slow Pages</h3>
+		<h1>Slowness Dashboard</h1>
+		<h2>Slow Pages</h2>
 		<table id="slowPages" class="table table-striped table-condensed tablesorter">
 			<thead>
 				<tr>
@@ -51,7 +51,7 @@
 			</tbody>
 		</table>
 
-		<h3>Slow Asynchronous Requests</h3>
+		<h2>Slow Asynchronous Requests</h2>
 		<table id="slowRequests" class="table table-striped table-condensed tablesorter">
 			<thead>
 				<tr>

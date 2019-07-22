@@ -1,6 +1,6 @@
 {strip}
 <div id="page-content" class="col-xs-12">
-	<h2>{translate text='Login to your account'}</h2>
+	<h1>{translate text='Login to your account'}</h1>
 	<div id="loginFormWrapper">
 		{if $message}{* Errors for Full Login Page *}
 			<p class="alert alert-danger" id="loginError" >{$message|translate}</p>

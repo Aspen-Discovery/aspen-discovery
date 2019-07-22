@@ -6,9 +6,9 @@
 {/if}
 <div class="col-xs-12">
 	{if !empty($seriesTitle)}
-	<h2 class="notranslate">
+	<h1 class="notranslate">
 		{$seriesTitle}
-	</h2>
+	</h1>
 	{/if}
 	{if $seriesAuthors}
 	<div class="row">

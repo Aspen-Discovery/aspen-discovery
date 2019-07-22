@@ -299,15 +299,15 @@ AspenDiscovery.Archive = (function(){
 			AspenDiscovery.Archive.changeActiveBookViewer(bookViewer, pagePid);
 
 			// store in browser history
-			var stateObj = {
+			let stateObj = {
 				bookPid: bookPid,
 				pagePid: pagePid,
 				viewer: bookViewer,
 				page: 'Book'
-			},
-					newUrl = AspenDiscovery.buildUrl(document.location.origin + document.location.pathname, 'bookPid', bookPid),
-					newUrl = AspenDiscovery.buildUrl(newUrl, 'pagePid', pagePid),
-					newUrl = AspenDiscovery.buildUrl(newUrl, 'viewer', bookViewer);
+			};
+			let newUrl = AspenDiscovery.buildUrl(document.location.origin + document.location.pathname, 'bookPid', bookPid);
+			newUrl = AspenDiscovery.buildUrl(newUrl, 'pagePid', pagePid);
+			newUrl = AspenDiscovery.buildUrl(newUrl, 'viewer', bookViewer);
 			//Push the new url, but only if we aren't going back where we just were.
 			if (document.location.href != newUrl){
 				history.pushState(stateObj, '', newUrl);

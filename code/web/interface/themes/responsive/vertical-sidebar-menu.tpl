@@ -13,7 +13,7 @@
 				{if $loggedIn}{* Logged In *}
 					<div class="menu-bar-option">
 						<a href="#" onclick="AspenDiscovery.Menu.SideBar.showAccount(this)" class="menu-icon" title="Account">
-							<img src="{img filename='/interface/themes/responsive/images/Account.png'}" alt="Account">
+							<img src="{img filename='/interface/themes/responsive/images/Account.png'}" alt="Account Menu Icon">
 							<div class="menu-bar-label rotated-text"><span class="rotated-text-inner">{translate text="Account"}</span></div>
 						</a>
 					</div>

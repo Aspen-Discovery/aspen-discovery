@@ -256,6 +256,8 @@ if ($isLoggedIn) {
 	$interface->assign('activeUserId', $activeUserId);
 	$activeUserObject = UserAccount::getActiveUserObj();
 	$interface->assign('user', $activeUserObject);
+	$userIsStaff = $activeUserObject->isStaff();
+	$interface->assign('userIsStaff', $userIsStaff);
 } else if ( (isset($_POST['username']) && isset($_POST['password']) && ($action != 'Account' && $module != 'AJAX')) || isset($_REQUEST['casLogin']) ) {
 	//The user is trying to log in
     try {
@@ -877,7 +879,7 @@ function loadModuleActionId(){
 	$requestURI = $_SERVER['REQUEST_URI'];
 	/** IndexingProfile[] $indexingProfiles */
 	global $indexingProfiles;
-	$allRecordModules = "OverDrive|GroupedWork|Record|ExternalEContent|Person|Library|Rbdigital|Hoopla|RbdigitalMagazine";
+	$allRecordModules = "OverDrive|GroupedWork|Record|ExternalEContent|Person|Library|RBdigital|Hoopla|RBdigitalMagazine";
 	foreach ($indexingProfiles as $profile){
 		$allRecordModules .= '|' . $profile->recordUrlComponent;
 	}

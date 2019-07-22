@@ -6,12 +6,12 @@
 		{include file="GroupedWork/search-results-navigation.tpl"}
 
 		{* Display Title *}
-		<h2>
+		<h1>
 			{$recordDriver->getTitle()|removeTrailingPunctuation|escape}{if $recordDriver->getSubtitle()}: {$recordDriver->getSubtitle()|removeTrailingPunctuation|escape}{/if}
 			{if $recordDriver->getFormats()}
 				<br><small>({implode subject=$recordDriver->getFormats() glue=", "})</small>
 			{/if}
-		</h2>
+		</h1>
 
 		<div class="row">
 			<div class="col-xs-4 col-sm-5 col-md-4 col-lg-3 text-center">
@@ -37,7 +37,7 @@
 
 				<div class="row">
 					<div id="record-details-column" class="col-xs-12 col-sm-9">
-						{include file="Rbdigital/view-title-details.tpl"}
+						{include file="RBdigital/view-title-details.tpl"}
 					</div>
 
 					<div id="recordTools" class="col-xs-12 col-sm-6 col-md-3">
@@ -46,7 +46,7 @@
 								{* Show hold/checkout button as appropriate *}
 								{if $holdingsSummary.showCheckout}
 									{* Checkout link *}
-									<a href="#" class="btn btn-sm btn-block btn-primary" id="checkout{$recordDriver->getUniqueID()|escape:"url"}" onclick="return AspenDiscovery.Rbdigital.checkOutMagazine('{$recordDriver->getUniqueID()}')">{translate text="Checkout"}</a>
+									<a href="#" class="btn btn-sm btn-block btn-primary" id="checkout{$recordDriver->getUniqueID()|escape:"url"}" onclick="return AspenDiscovery.RBdigital.checkOutMagazine('{$recordDriver->getUniqueID()}')">{translate text="Checkout"}</a>
 								{/if}
 							</div>
 						</div>

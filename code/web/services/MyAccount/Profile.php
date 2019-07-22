@@ -17,6 +17,7 @@ class MyAccount_Profile extends MyAccount
 		if ($user) {
 			// Determine which user we are showing/updating settings for
 			$linkedUsers = $user->getLinkedUsers();
+
 			$patronId    = isset($_REQUEST['patronId']) ? $_REQUEST['patronId'] : $user->id;
 			/** @var User $patron */
 			$patron      = $user->getUserReferredTo($patronId);
@@ -94,16 +95,7 @@ class MyAccount_Profile extends MyAccount
 				}  elseif ($updateScope == 'userPreference') {
 					$patron->updateUserPreferences();
 				}  elseif ($updateScope == 'staffSettings') {
-
-					$patron->updateUserPreferences(); // update bypass auto logout option
-
-					if (isset($_REQUEST['materialsRequestEmailSignature'])) {
-						$patron->setMaterialsRequestEmailSignature($_REQUEST['materialsRequestEmailSignature']);
-					}
-					if (isset($_REQUEST['materialsRequestReplyToAddress'])) {
-						$patron->setMaterialsRequestReplyToAddress($_REQUEST['materialsRequestReplyToAddress']);
-					}
-					$patron->setStaffSettings();
+					$patron->updateStaffSettings();
 				} elseif ($updateScope == 'overdrive') {
 					$patron->updateOverDriveOptions();
 				} elseif ($updateScope == 'hoopla') {
@@ -166,9 +158,6 @@ class MyAccount_Profile extends MyAccount
 				}
 				$interface->assign('locationList', $locationList);
 			}
-
-			$userIsStaff = $patron->isStaff();
-			$interface->assign('userIsStaff', $userIsStaff);
 
 			$interface->assign('profile', $patron); //
 			$interface->assign('barcodePin', $patron->getAccountProfile()->loginConfiguration == 'barcode_pin');

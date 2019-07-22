@@ -17,7 +17,7 @@
 	<span class='availableHoldsNoticePlaceHolder'></span>
 
 	<div class="resulthead">
-		<h3>{translate text='My Ratings'}</h3>
+		<h1>{translate text='Titles You Rated'}</h1>
 
 		<div class="page">
 			{if $ratings}
@@ -64,7 +64,7 @@
 				{/if}
 
 			{if $notInterested}
-				<h3>{translate text='Not Interested'}</h3>
+				<h1>{translate text="Titles You Don't Want Recommended"}</h1>
 				<table class="myAccountTable table table-striped" id="notInterestedTable">
 					<thead>
 						<tr>

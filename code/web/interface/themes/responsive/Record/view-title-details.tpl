@@ -3,8 +3,8 @@
 
 	{if $recordDriver->getUniformTitle()}
 		<div class="row">
-			<div class="result-label col-sm-4">{translate text="Uniform Title"} </div>
-			<div class="col-sm-8 result-value">
+			<div class="result-label col-tn-3">{translate text="Uniform Title"} </div>
+			<div class="col-tn-9 result-value">
 				{foreach from=$recordDriver->getUniformTitle() item=uniformTitle}
 					<a href="{$path}/Search/Results?lookfor={$uniformTitle|escape:"url"}">{$uniformTitle|highlight}</a><br/>
 				{/foreach}
@@ -14,8 +14,8 @@
 
 	{if $recordDriver->getAuthor()}
 		<div class="row">
-			<div class="result-label col-sm-4">{translate text="Author"} </div>
-			<div class="col-sm-8 result-value">
+			<div class="result-label col-tn-3">{translate text="Author"} </div>
+			<div class="col-tn-9 result-value">
 				<a href='{$path}/Author/Home?author="{$recordDriver->getAuthor()|escape:"url"}"'>{$recordDriver->getAuthor()|highlight}</a><br/>
 			</div>
 		</div>
@@ -23,8 +23,8 @@
 
 	{if $recordDriver->getDetailedContributors()}
 		<div class="row">
-			<div class="result-label col-sm-4">{translate text='Contributors'}</div>
-			<div class="col-sm-8 result-value">
+			<div class="result-label col-tn-3">{translate text='Contributors'}</div>
+			<div class="col-tn-9 result-value">
 				{foreach from=$recordDriver->getDetailedContributors() item=contributor name=loop}
 					{if $smarty.foreach.loop.index == 5}
 						<div id="showAdditionalContributorsLink">
@@ -58,8 +58,8 @@
 
 	{if $showPublicationDetails && $recordDriver->getPublicationDetails()}
 		<div class="row">
-			<div class="result-label col-sm-4">{translate text='Published'}</div>
-			<div class="col-sm-8 result-value">
+			<div class="result-label col-tn-3">{translate text='Published'}</div>
+			<div class="col-tn-9 result-value">
 				{implode subject=$recordDriver->getPublicationDetails() glue=", "}
 			</div>
 		</div>
@@ -67,8 +67,8 @@
 
 	{if $showFormats}
 	<div class="row">
-		<div class="result-label col-sm-4">{translate text='Format'}</div>
-		<div class="col-sm-8 result-value">
+		<div class="result-label col-tn-3">{translate text='Format'}</div>
+		<div class="col-tn-9 result-value">
 			{implode subject=$recordFormat glue=", ", translate=true}
 		</div>
 	</div>
@@ -76,8 +76,8 @@
 
 	{if $showEditions && $recordDriver->getEditions()}
 		<div class="row">
-			<div class="result-label col-sm-4">{translate text='Edition'}</div>
-			<div class="col-sm-8 result-value">
+			<div class="result-label col-tn-3">{translate text='Edition'}</div>
+			<div class="col-tn-9 result-value">
 				{implode subject=$recordDriver->getEditions() glue=", "}
 			</div>
 		</div>
@@ -85,8 +85,8 @@
 
 	{if $showISBNs && count($recordDriver->getISBNs()) > 0}
 		<div class="row">
-			<div class="result-label col-sm-4">{translate text='ISBN'}</div>
-			<div class="col-sm-8 result-value">
+			<div class="result-label col-tn-3">{translate text='ISBN'}</div>
+			<div class="col-tn-9 result-value">
 				{implode subject=$recordDriver->getISBNs() glue=", "}
 			</div>
 		</div>
@@ -94,8 +94,8 @@
 
 	{if $showPhysicalDescriptions && $physicalDescriptions}
 		<div class="row">
-			<div class="result-label col-sm-4">{translate text='Physical Desc'}</div>
-			<div class="col-sm-8 result-value">
+			<div class="result-label col-tn-3">{translate text='Physical Desc'}</div>
+			<div class="col-tn-9 result-value">
 				{implode subject=$physicalDescriptions glue="<br>"}
 			</div>
 		</div>
@@ -103,8 +103,8 @@
 
 	{if !empty($showArInfo) && $recordDriver->getAcceleratedReaderDisplayString()}
 		<div class="row">
-			<div class="result-label col-sm-4">{translate text='Accelerated Reader'} </div>
-			<div class="result-value col-sm-8">
+			<div class="result-label col-tn-3">{translate text='Accelerated Reader'} </div>
+			<div class="result-value col-tn-9">
 				{$recordDriver->getAcceleratedReaderDisplayString()}
 			</div>
 		</div>
@@ -112,8 +112,8 @@
 
 	{if !empty($showLexileInfo) && $recordDriver->getLexileDisplayString()}
 		<div class="row">
-			<div class="result-label col-sm-4">{translate text='Lexile measure'} </div>
-			<div class="result-value col-sm-8">
+			<div class="result-label col-tn-3">{translate text='Lexile measure'} </div>
+			<div class="result-value col-tn-9">
 				{$recordDriver->getLexileDisplayString()}
 			</div>
 		</div>
@@ -121,8 +121,8 @@
 
 	{if !empty($showFountasPinnell) && $recordDriver->getFountasPinnellLevel()}
 		<div class="row">
-			<div class="result-label col-sm-4">{translate text='Fountas &amp; Pinnell'}</div>
-			<div class="col-sm-8 result-value">
+			<div class="result-label col-tn-3">{translate text='Fountas &amp; Pinnell'}</div>
+			<div class="col-tn-9 result-value">
 				{$recordDriver->getFountasPinnellLevel()|escape}
 			</div>
 		</div>
@@ -130,15 +130,15 @@
 
 	{if $mpaaRating}
 		<div class="row">
-			<div class="result-label col-sm-4">{translate text='Rating'}</div>
-			<div class="col-sm-8 result-value">{$mpaaRating|escape}</div>
+			<div class="result-label col-tn-3">{translate text='Rating'}</div>
+			<div class="col-tn-9 result-value">{$mpaaRating|escape}</div>
 		</div>
 	{/if}
 
 	{* Detailed status information *}
 	<div class="row">
-		<div class="result-label col-sm-4">{translate text='Status'}</div>
-		<div class="col-sm-8 result-value">
+		<div class="result-label col-tn-3">{translate text='Status'}</div>
+		<div class="col-tn-9 result-value">
 			{if $statusSummary}
 				{include file='GroupedWork/statusIndicator.tpl' statusInformation=$statusSummary->getStatusInformation() viewingIndividualRecord=1}
 				{include file='GroupedWork/copySummary.tpl' summary=$statusSummary->getItemSummary() totalCopies=$statusSummary->getCopies() itemSummaryId=$statusSummary->id}

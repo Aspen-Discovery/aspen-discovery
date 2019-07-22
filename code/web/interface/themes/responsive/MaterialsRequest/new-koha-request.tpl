@@ -1,6 +1,6 @@
 <div id="page-content" class="content">
 	<div id="main-content">
-		<h2>Enter a new purchase suggestion</h2>
+		<h1>Enter a new purchase suggestion</h1>
 		<div id="materialsRequest">
 			<div class="materialsRequestExplanation alert alert-info">
 				<p>
@@ -10,9 +10,6 @@
 				Only certain fields (marked in red) are required, but the more information you enter the easier it will be for the librarians to find the title you're requesting. The "Notes" field can be used to provide any additional information.
 				</p>
 			</div>
-			<form id="materialsRequestForm" action="{$path}/MaterialsRequest/Submit" method="post" class="form form-horizontal" role="form">
-				{include file="MaterialsRequest/request-form-fields.tpl"}
-			</form>
 			<div id="materialsRequestFormContainer">
 				{$materialsRequestForm}
 			</div>

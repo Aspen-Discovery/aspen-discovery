@@ -1,4 +1,5 @@
 AspenDiscovery.OverDrive = (function(){
+	// noinspection JSUnusedGlobalSymbols
 	return {
 		cancelOverDriveHold: function(patronId, overdriveId){
 			if (confirm("Are you sure you want to cancel this hold?")){
@@ -11,6 +12,7 @@ AspenDiscovery.OverDrive = (function(){
 							AspenDiscovery.showMessage("Hold Cancelled", data.message, true);
 							//remove the row from the holds list
 							$("#overDriveHold_" + overdriveId).hide();
+							AspenDiscovery.Account.loadMenuData();
 						}else{
 							AspenDiscovery.showMessage("Error Cancelling Hold", data.message, false);
 						}
@@ -78,10 +80,11 @@ AspenDiscovery.OverDrive = (function(){
 					success: function(data){
 						if (data.success === true){
 							AspenDiscovery.showMessageWithButtons("Title Checked Out Successfully", data.message, data.buttons);
+							AspenDiscovery.Account.loadMenuData();
 						}else{
 							if (data.noCopies === true){
 								AspenDiscovery.closeLightbox();
-								ret = confirm(data.message);
+								let ret = confirm(data.message);
 								if (ret === true){
 									AspenDiscovery.OverDrive.placeHold(overdriveId);
 								}
@@ -116,6 +119,7 @@ AspenDiscovery.OverDrive = (function(){
 						AspenDiscovery.OverDrive.doOverDriveCheckout(patronId, overdriveId);
 					}else{
 						AspenDiscovery.showMessage("Placed Hold", data.message, true);
+						AspenDiscovery.Account.loadMenuData();
 					}
 				},
 				dataType: 'json',
@@ -209,14 +213,10 @@ AspenDiscovery.OverDrive = (function(){
 					url: ajaxUrl,
 					cache: false,
 					success: function(data){
-						AspenDiscovery.showMessage("Title Returned", data.message);
+						AspenDiscovery.showMessage("Title Returned", data.message, data.success);
 						if (data.success){
-							//Reload the page
-							setTimeout(function(){
-								AspenDiscovery.closeLightbox();
-								//Refresh the page
-								window.location.href = window.location.href ;
-							}, 3000);
+							$(".overdrive_checkout_" + overDriveId).hide();
+							AspenDiscovery.Account.loadMenuData();
 						}
 					},
 					dataType: 'json',
@@ -230,14 +230,15 @@ AspenDiscovery.OverDrive = (function(){
 		},
 
 		selectOverDriveDownloadFormat: function(patronId, overDriveId){
-			var selectedOption = $("#downloadFormat_" + overDriveId + " option:selected");
-			var selectedFormatId = selectedOption.val();
-			var selectedFormatText = selectedOption.text();
+			let selectedOption = $("#downloadFormat_" + overDriveId + " option:selected");
+			let selectedFormatId = selectedOption.val();
+			let selectedFormatText = selectedOption.text();
+			// noinspection EqualityComparisonWithCoercionJS
 			if (selectedFormatId == -1){
 				alert("Please select a format to download.");
 			}else{
 				if (confirm("Are you sure you want to download the " + selectedFormatText + " format? You cannot change format after downloading.")){
-					var ajaxUrl = Globals.path + "/OverDrive/AJAX?method=selectOverDriveDownloadFormat&patronId=" + patronId + "&overDriveId=" + overDriveId + "&formatId=" + selectedFormatId;
+					let ajaxUrl = Globals.path + "/OverDrive/AJAX?method=selectOverDriveDownloadFormat&patronId=" + patronId + "&overDriveId=" + overDriveId + "&formatId=" + selectedFormatId;
 					$.ajax({
 						url: ajaxUrl,
 						cache: false,

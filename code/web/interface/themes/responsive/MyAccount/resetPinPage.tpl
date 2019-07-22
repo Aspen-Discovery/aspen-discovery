@@ -1,0 +1,83 @@
+{strip}
+	<div id="main-content">
+		{if $loggedIn}
+			{if !empty($profile->_web_note)}
+				<div class="row">
+					<div id="web_note" class="alert alert-info text-center col-xs-12">{$profile->_web_note}</div>
+				</div>
+			{/if}
+
+			{* Alternate Mobile MyAccount Menu *}
+			{include file="MyAccount/mobilePageHeader.tpl"}
+
+			<span class='availableHoldsNoticePlaceHolder'></span>
+
+			<h1>{translate text='Reset PIN/Password'}</h1>
+			{if $offline}
+				<div class="alert alert-warning">{translate text=offline_notice defaultText="<strong>The library system is currently offline.</strong> We are unable to retrieve information about your account at this time."}</div>
+			{else}
+				{if !empty($profileUpdateErrors)}
+					{foreach from=$profileUpdateErrors item=errorMsg}
+						<div class="alert alert-danger">{$errorMsg}</div>
+					{/foreach}
+				{/if}
+				{if !empty($profileUpdateMessage)}
+					{foreach from=$profileUpdateMessage item=msg}
+						<div class="alert alert-success">{$msg}</div>
+					{/foreach}
+				{/if}
+
+				{* Empty action attribute uses the page loaded. this keeps the selected user patronId in the parameters passed back to server *}
+				<form action="" method="post" class="form-horizontal" id="pinForm">
+					<input type="hidden" name="updateScope" value="pin">
+					<div class="form-group">
+						<div class="col-xs-4"><label for="pin" class="control-label">{translate text='Old %1%' 1=$passwordLabel}</label></div>
+						<div class="col-xs-8">
+							<input type="password" name="pin" id="pin" value="" size="4" maxlength="30" class="form-control required digits">
+						</div>
+					</div>
+					<div class="form-group">
+						<div class="col-xs-4"><label for="pin1" class="control-label">{translate text='New %1%' 1=$passwordLabel}</label></div>
+						<div class="col-xs-8">
+							<input type="password" name="pin1" id="pin1" value="" size="4" maxlength="30" class="form-control required digits">
+						</div>
+					</div>
+					<div class="form-group">
+						<div class="col-xs-4"><label for="pin2" class="control-label">{translate text='Re-enter New %1%' 1=$passwordLabel}</label></div>
+						<div class="col-xs-8">
+								<input type="password" name="pin2" id="pin2" value="" size="4" maxlength="30" class="form-control required digits">
+						</div>
+					</div>
+					<div class="form-group">
+						<div class="col-xs-8 col-xs-offset-4">
+							<button type="submit" name="update" class="btn btn-primary">{translate text="Update"}</button>
+						</div>
+					</div>
+					<script type="text/javascript">
+						{* input classes  'required', 'digits' are validation rules for the validation plugin *}
+						{literal}
+						$("#pinForm").validate({
+							rules: {
+								pin2: {
+									equalTo: "#pin1"
+								}
+							}
+						});
+						{/literal}
+					</script>
+				</form>
+
+				<script type="text/javascript">
+					{* Initiate any checkbox with a data attribute set to data-switch=""  as a bootstrap switch *}
+					{literal}
+					$(function(){ $('input[type="checkbox"][data-switch]').bootstrapSwitch()});
+					{/literal}
+				</script>
+			{/if}
+		{else}
+			<div class="page">
+				You must login to view this information. Click <a href="{$path}/MyResearch/Login">here</a> to login.
+			</div>
+		{/if}
+	</div>
+{/strip}

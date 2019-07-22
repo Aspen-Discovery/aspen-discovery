@@ -2,9 +2,9 @@
 	<div class="col-xs-12">
 		{* Search Navigation *}
 		{include file="Archive/search-results-navigation.tpl"}
-		<h2>
+		<h1>
 			{$title}
-		</h2>
+		</h1>
 
 		{if $canView}
 			<div class="main-project-image" oncontextmenu="return false;">

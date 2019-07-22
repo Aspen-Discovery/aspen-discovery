@@ -170,34 +170,6 @@ class CatalogConnection
 	public function updateUserWithAdditionalRuntimeInformation($user){
 		global $timer;
 		$timer->logTime("Starting to Update Additional Runtime information for user " . $user->id);
-        require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
-        $overDriveDriver = new OverDriveDriver();
-		if ($user->isValidForEContentSource('overdrive') && $overDriveDriver->isUserValidForOverDrive($user)){
-			$overDriveSummary = $overDriveDriver->getAccountSummary($user);
-			$user->setNumCheckedOutOverDrive($overDriveSummary['numCheckedOut']);
-			$user->setNumHoldsAvailableOverDrive($overDriveSummary['numAvailableHolds']);
-			$user->setNumHoldsRequestedOverDrive($overDriveSummary['numUnavailableHolds']);
-			$timer->logTime("Updated runtime information from OverDrive");
-		}
-
-		if ($user->isValidForEContentSource('hoopla')){
-			require_once ROOT_DIR . '/Drivers/HooplaDriver.php';
-			$driver = new HooplaDriver();
-			$hooplaSummary = $driver->getAccountSummary($user);
-			$hooplaCheckOuts = isset($hooplaSummary->currentlyBorrowed) ? $hooplaSummary->currentlyBorrowed : 0;
-			$user->setNumCheckedOutHoopla($hooplaCheckOuts);
-			$timer->logTime("Updated runtime information from Hoopla");
-		}
-
-		if ($user->isValidForEContentSource('rbdigital')) {
-		    require_once ROOT_DIR . '/Drivers/RbdigitalDriver.php';
-		    $driver = new RbdigitalDriver();
-            $rbdigitalSummary = $driver->getAccountSummary($user);
-            $user->setNumCheckedOutRbdigital($rbdigitalSummary['numCheckedOut']);
-            $user->setNumHoldsAvailableRbdigital($rbdigitalSummary['numAvailableHolds']);
-            $user->setNumHoldsRequestedRbdigital($rbdigitalSummary['numUnavailableHolds']);
-			$timer->logTime("Updated runtime information from Rbdigital");
-        }
 
 		$homeLibrary = Library::getLibraryForLocation($user->homeLocationId);
 		if ($homeLibrary){
@@ -214,17 +186,6 @@ class CatalogConnection
 			}elseif($homeLibrary->enableMaterialsRequest == 2){
 				$user->setNumMaterialsRequests($this->getNumMaterialsRequests($user));
 			}
-		}
-
-
-		if ($user->trackReadingHistory && $user->initialReadingHistoryLoaded){
-			require_once ROOT_DIR . '/sys/ReadingHistoryEntry.php';
-			$readingHistoryDB = new ReadingHistoryEntry();
-            $readingHistoryDB->userId = $user->id;
-			$readingHistoryDB->deleted = 0;
-			$readingHistoryDB->groupBy('groupedWorkPermanentId');
-            $user->setReadingHistorySize($readingHistoryDB->count());
-			$timer->logTime("Updated reading history size");
 		}
 
 		$timer->logTime("Updated Additional Runtime information for user " . $user->id);
@@ -262,13 +223,12 @@ class CatalogConnection
 	 * This is responsible for retrieving all transactions (i.e. checked out items)
 	 * by a specific patron.
 	 *
-	 * @param User $user    The user to load transactions for
-	 *
-	 * @return mixed        Array of the patron's transactions on success,
+	 * @param User $user        The user to load transactions for
+	 * @return mixed            Array of the patron's transactions on success,
 	 * AspenError otherwise.
 	 * @access public
 	 */
-	public function getCheckouts($user)
+	public function getCheckouts(User $user)
 	{
 		$transactions = $this->driver->getCheckouts($user);
 		foreach ($transactions as $key => $curTitle){
@@ -321,7 +281,10 @@ class CatalogConnection
 	 *                              If an error occurs, return a AspenError
 	 * @access  public
 	 */
-	function getReadingHistory($patron, $page = 1, $recordsPerPage = -1, $sortOption = "checkedOut"){
+	function getReadingHistory($patron, $page = 1, $recordsPerPage = 20, $sortOption = "checkedOut", $filter = ""){
+		global $timer;
+		$timer->logTime("Starting to load reading history");
+
 		//Get reading history from the database unless we specifically want to load from the driver.
         $result = array('historyActive'=>$patron->trackReadingHistory, 'titles'=>array(), 'numTitles'=> 0);
         if (!$patron->trackReadingHistory){
@@ -330,49 +293,55 @@ class CatalogConnection
         if (!$patron->initialReadingHistoryLoaded) {
             if ($this->driver->hasNativeReadingHistory()){
                 //Load existing reading history from the ILS
-                $moreRecordsToLoad = true;
-                while ($moreRecordsToLoad) {
-                    $moreRecordsToLoad = false;
-                    $result = $this->driver->getReadingHistory($patron, -1, -1, $sortOption);
-                    if ($result['numTitles'] > 0){
-                        foreach ($result['titles'] as $title){
-                            if ($title['permanentId'] != null){
-                                $userReadingHistoryEntry = new ReadingHistoryEntry();
-                                $userReadingHistoryEntry->userId = $patron->id;
-                                $userReadingHistoryEntry->groupedWorkPermanentId = $title['permanentId'];
-                                $userReadingHistoryEntry->source = $this->accountProfile->recordSource;
-                                $userReadingHistoryEntry->sourceId = $title['recordId'];
-                                $userReadingHistoryEntry->title = $title['title'];
-                                $userReadingHistoryEntry->author = $title['author'];
-                                $userReadingHistoryEntry->format = $title['format'];
-                                $userReadingHistoryEntry->checkOutDate = $title['checkout'];
-                                $userReadingHistoryEntry->checkInDate = null;
-                                $userReadingHistoryEntry->deleted = 0;
-                                $userReadingHistoryEntry->insert();
-                            }
+                $result = $this->driver->getReadingHistory($patron, -1, -1, $sortOption);
+                if ($result['numTitles'] > 0){
+                    foreach ($result['titles'] as $title){
+                        if ($title['permanentId'] != null){
+                            $userReadingHistoryEntry = new ReadingHistoryEntry();
+                            $userReadingHistoryEntry->userId = $patron->id;
+                            $userReadingHistoryEntry->groupedWorkPermanentId = $title['permanentId'];
+                            $userReadingHistoryEntry->source = $this->accountProfile->recordSource;
+                            $userReadingHistoryEntry->sourceId = $title['recordId'];
+                            $userReadingHistoryEntry->title = $title['title'];
+                            $userReadingHistoryEntry->author = $title['author'];
+                            $userReadingHistoryEntry->format = $title['format'];
+                            $userReadingHistoryEntry->checkOutDate = $title['checkout'];
+                            $userReadingHistoryEntry->checkInDate = null;
+                            $userReadingHistoryEntry->deleted = 0;
+                            $userReadingHistoryEntry->insert();
                         }
                     }
-                    //TODO: Check to see if there is more to load
                 }
+	            $timer->logTime("Finished loading native reading history");
             }
             $patron->initialReadingHistoryLoaded = true;
             $patron->update();
         }
         //Do the
-        $this->updateReadingHistoryBasedOnCurrentCheckouts($patron);
+		if ($page == 1) {
+			$this->updateReadingHistoryBasedOnCurrentCheckouts($patron);
+			$timer->logTime("Finished updating reading history based on current checkouts");
+		}
 
         require_once ROOT_DIR . '/sys/ReadingHistoryEntry.php';
         $readingHistoryDB = new ReadingHistoryEntry();
         $readingHistoryDB->userId = $patron->id;
-        $readingHistoryDB->deleted = 0; //Only show titles that have not been deleted
+        $readingHistoryDB->whereAdd('deleted =  0'); //Only show titles that have not been deleted
+		if (!empty($filter)){
+			$escapedFilter = $readingHistoryDB->escape('%' . $filter . '%');
+			$readingHistoryDB->whereAdd("title LIKE $escapedFilter OR author LIKE $escapedFilter OR format LIKE $escapedFilter");
+		}
         $readingHistoryDB->selectAdd();
         $readingHistoryDB->selectAdd('groupedWorkPermanentId');
-        $readingHistoryDB->selectAdd('title');
-        $readingHistoryDB->selectAdd('author');
+        $readingHistoryDB->selectAdd('MAX(title) as title');
+        $readingHistoryDB->selectAdd('MAX(author) as author');
+		$readingHistoryDB->selectAdd('MAX(checkInDate) as checkInDate');
         $readingHistoryDB->selectAdd('MAX(checkOutDate) as checkOutDate');
+		$readingHistoryDB->selectAdd('SUM(CASE WHEN checkInDate IS NULL THEN 1 END) as checkedOut');
+        $readingHistoryDB->selectAdd('COUNT(id) as timesUsed');
         $readingHistoryDB->selectAdd('GROUP_CONCAT(DISTINCT(format)) as format');
         if ($sortOption == "checkedOut"){
-            $readingHistoryDB->orderBy('MAX(checkOutDate) DESC, title ASC');
+            $readingHistoryDB->orderBy('checkedOut DESC, MAX(checkOutDate) DESC, title ASC');
         }else if ($sortOption == "returned"){
             $readingHistoryDB->orderBy('checkInDate DESC, title ASC');
         }else if ($sortOption == "title"){
@@ -382,21 +351,25 @@ class CatalogConnection
         }else if ($sortOption == "format"){
             $readingHistoryDB->orderBy('format ASC, title ASC, MAX(checkOutDate) DESC');
         }
-        $readingHistoryDB->groupBy(['groupedWorkPermanentId', 'title', 'author']);
+        $readingHistoryDB->groupBy(['groupedWorkPermanentId']);
 
         $numTitles = $readingHistoryDB->count();
 
         if ($recordsPerPage != -1){
-            $readingHistoryDB->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
+            $firstIndex = ($page - 1) * $recordsPerPage;
+		    $readingHistoryDB->limit($firstIndex, $recordsPerPage);
+        }else{
+	        $firstIndex = 0;
         }
         $readingHistoryDB->find();
         $readingHistoryTitles = array();
 
         while ($readingHistoryDB->fetch()){
             $historyEntry = $this->getHistoryEntryForDatabaseEntry($readingHistoryDB);
-
+	        $historyEntry['index'] = ++$firstIndex;
             $readingHistoryTitles[] = $historyEntry;
         }
+		$timer->logTime("Loaded " . count($readingHistoryTitles) . " titles from the reading history");
 
         return array('historyActive'=>$patron->trackReadingHistory, 'titles'=>$readingHistoryTitles, 'numTitles'=> $numTitles);
 	}
@@ -637,17 +610,26 @@ class CatalogConnection
 
         require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
         $recordDriver = new GroupedWorkDriver($readingHistoryDB->groupedWorkPermanentId);
-
-		$historyEntry['deletable'] = true;
 		$historyEntry['title'] = $readingHistoryDB->title;
 		$historyEntry['author'] = $readingHistoryDB->author;
 		$historyEntry['format'] = $readingHistoryDB->format;
 		$historyEntry['checkout'] = $readingHistoryDB->checkOutDate;
 		$historyEntry['checkin'] = $readingHistoryDB->checkInDate;
-		$historyEntry['ratingData'] = $recordDriver->getRatingData();
-		$historyEntry['permanentId'] = $readingHistoryDB->groupedWorkPermanentId;
-		$historyEntry['linkUrl'] = $recordDriver->getLinkUrl();
-		$historyEntry['coverUrl'] = $recordDriver->getBookcoverUrl('small');
+		$historyEntry['timesUsed'] = $readingHistoryDB->timesUsed;
+		/** @noinspection PhpUndefinedFieldInspection */
+		$historyEntry['checkedOut'] = $readingHistoryDB->checkedOut == null ? false : true;
+		if ($recordDriver->isValid()){
+			$historyEntry['recordDriver'] = $recordDriver;
+			$historyEntry['permanentId'] = $readingHistoryDB->groupedWorkPermanentId;
+			$historyEntry['ratingData'] = $recordDriver->getRatingData();
+			$historyEntry['linkUrl'] = $recordDriver->getLinkUrl();
+			$historyEntry['coverUrl'] = $recordDriver->getBookcoverUrl('small');
+		}else{
+			$historyEntry['permanentId'] = '';
+			$historyEntry['ratingData'] = '';
+			$historyEntry['linkUrl'] = '';
+			$historyEntry['coverUrl'] = '';
+		}
 
 		return $historyEntry;
 	}
@@ -673,19 +655,20 @@ class CatalogConnection
 		}
 
 		//Update reading history based on current checkouts.  That way it never looks out of date
-		$checkouts = $patron->getCheckouts(false);
+		$checkouts = $patron->getCheckouts(false, 'all', false);
 		foreach ($checkouts as $checkout){
-			$sourceId = '?';
 			$source = $checkout['checkoutSource'];
 			if ($source == 'OverDrive'){
 				$sourceId = $checkout['overDriveId'];
 			}elseif ($source == 'Hoopla'){
 				$sourceId = $checkout['hooplaId'];
 			}elseif ($source == 'ILS'){
-				$sourceId = $checkout['fullId'];
+				$sourceId = $checkout['recordId'];
 			}elseif ($source == 'eContent'){
 				$source = $checkout['recordType'];
 				$sourceId = $checkout['id'];
+			}else{
+				$sourceId = $checkout['recordId'];
 			}
 			$key = $source . ':' . $sourceId;
 			if (array_key_exists($key, $activeHistoryTitles)){
@@ -718,7 +701,7 @@ class CatalogConnection
 			$historyEntryDB = new ReadingHistoryEntry();
 			$historyEntryDB->source = $historyEntry['source'];
 			$historyEntryDB->sourceId = $historyEntry['id'];
-			$historyEntryDB->checkInDate = null;
+			$historyEntryDB->whereAdd('checkInDate IS NULL');
 			if ($historyEntryDB->find(true)){
 				$historyEntryDB->checkInDate = time();
 				$numUpdates = $historyEntryDB->update();
@@ -762,7 +745,7 @@ class CatalogConnection
 			return $this->driver->renewAll($patron);
 		}else{
 			//Get all list of all transactions
-			$currentTransactions = $this->driver->getCheckouts($patron);
+			$currentTransactions = $this->driver->getCheckouts($patron, false);
 			$renewResult = array(
 				'success' => true,
 				'message' => array(),
@@ -864,9 +847,9 @@ class CatalogConnection
 		return $this->driver->hasMaterialsRequestSupport();
 	}
 
-	function getNewMaterialsRequestForm()
+	function getNewMaterialsRequestForm(User $user)
 	{
-		return $this->driver->getNewMaterialsRequestForm();
+		return $this->driver->getNewMaterialsRequestForm($user);
 	}
 
 	function processMaterialsRequestForm($user)
@@ -896,6 +879,11 @@ class CatalogConnection
 	function getPatronUpdateForm(User $user)
 	{
 		return $this->driver->getPatronUpdateForm($user);
+	}
+
+	public function getAccountSummary($user)
+	{
+		return $this->driver->getAccountSummary($user);
 	}
 
 

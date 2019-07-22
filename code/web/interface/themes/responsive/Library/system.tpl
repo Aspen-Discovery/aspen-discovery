@@ -1,7 +1,7 @@
 {strip}
-	<h2 class="notranslate">
+	<h1 class="notranslate">
 		{$library->displayName}
-	</h2>
+	</h1>
 
 
 	<div class="row">

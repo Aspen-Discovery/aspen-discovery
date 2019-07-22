@@ -180,7 +180,7 @@ class Record_AJAX extends Action {
 				$results = array(
 					'title' => empty($title) ? 'Place Hold' : 'Place Hold on ' . $title,
 					'modalBody' => $interface->fetch("Record/hold-popup.tpl"),
-					'modalButtons' => "<input type='submit' name='submit' id='requestTitleButton' value='Submit Hold Request' class='btn btn-primary' onclick='return AspenDiscovery.Record.submitHoldForm();'>"
+					'modalButtons' => "<button type='submit' name='submit' id='requestTitleButton' class='btn btn-primary' onclick='return AspenDiscovery.Record.submitHoldForm();'>" . translate("Submit Hold Request") . "</button>"
 				);
 			}
 
@@ -398,8 +398,8 @@ class Record_AJAX extends Action {
 							$return = $patron->placeVolumeHold($shortId, $_REQUEST['volume'], $campus);
 						}else{
 
-							if (!empty($_REQUEST['canceldate'])){
-								$cancelDate = $_REQUEST['canceldate'];
+							if (!empty($_REQUEST['cancelDate'])){
+								$cancelDate = $_REQUEST['cancelDate'];
 							}else{
 								if ($homeLibrary->defaultNotNeededAfterDays == 0){
 									//Default to a date 6 months (half a year) in the future.

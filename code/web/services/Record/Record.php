@@ -235,33 +235,13 @@ abstract class Record_Record extends Action
 		//Determine the cover to use
 		$interface->assign('bookCoverUrl', $this->recordDriver->getBookcoverUrl('large'));
 
-		//Load accelerated reader data
-		$arData = $this->recordDriver->getAcceleratedReaderData();
-		if (!empty($arData)) {
-			$interface->assign('arData', $arData);
-		}
 
-		$lexileData = $this->recordDriver->getLexileDisplayString();
-		if (!empty($lexileData)){
-			$interface->assign('lexileScore', $lexileData);
-		}
-
-		$fountasPinnell = $this->recordDriver->getFountasPinnellLevel();
-		if (!empty($fountasPinnell)){
-			$interface->assign('fountasPinnell', $fountasPinnell);
-		}
-
-		//Do actions needed if this is the main action.
-
-		//$interface->caching = 1;
 		$interface->assign('id', $this->id);
 		if (substr($this->id, 0, 1) == '.'){
 			$interface->assign('shortId', substr($this->id, 1));
 		}else{
 			$interface->assign('shortId', $this->id);
 		}
-
-		$interface->assign('addHeader', '<link rel="alternate" type="application/rdf+xml" title="RDF Representation" href="' . $configArray['Site']['path']  . '/Record/' . urlencode($this->id) . '/RDF" />');
 
 		// Define Default Tab
 		$tab = (isset($_GET['action'])) ? $_GET['action'] : 'Description';

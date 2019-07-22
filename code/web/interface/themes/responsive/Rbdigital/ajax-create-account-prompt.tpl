@@ -1,7 +1,7 @@
 {strip}
-    <form method="post" action="" id="createRbdigitalAccount" class="form">
+    <form method="post" action="" id="createRBdigitalAccount" class="form">
         <div>
-            Prior to checking out titles and placing holds in Rbdigital, you must create an account.  We've already filled
+            Prior to checking out titles and placing holds in RBdigital, you must create an account.  We've already filled
             out most of the information from your library account.  Simply select a username and password for your account
             and select submit.
         </div>

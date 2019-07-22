@@ -9,8 +9,6 @@ class ReadingHistory extends MyAccount
 	{
 		global $configArray;
 		global $interface;
-		$user = UserAccount::getLoggedInUser();
-
 		global $library;
 		$interface->assign('showRatings', $library->showRatings);
 
@@ -18,18 +16,22 @@ class ReadingHistory extends MyAccount
 		if (!$offlineMode) {
 			$interface->assign('offline', false);
 
+			$user = UserAccount::getActiveUserObj();
+
 			// Get My Transactions
 			if ($user) {
 				$linkedUsers = $user->getLinkedUsers();
-				$patronId = empty($_REQUEST['patronId']) ?  $user->id : $_REQUEST['patronId'];
-
-				$patron = $user->getUserReferredTo($patronId);
 				if (count($linkedUsers) > 0) {
 					array_unshift($linkedUsers, $user);
 					$interface->assign('linkedUsers', $linkedUsers);
 				}
+				$patronId = empty($_REQUEST['patronId']) ?  $user->id : $_REQUEST['patronId'];
+
+				$patron = $user->getUserReferredTo($patronId);
+
 				$interface->assign('selectedUser', $patronId); // needs to be set even when there is only one user so that the patronId hidden input gets a value in the reading history form.
 
+				$interface->assign('historyActive', $patron->trackReadingHistory);
 				//Check to see if there is an action to perform.
 				if (!empty($_REQUEST['readingHistoryAction']) && $_REQUEST['readingHistoryAction'] != 'exportToExcel'){
 					//Perform the requested action
@@ -51,62 +53,12 @@ class ReadingHistory extends MyAccount
 					if (isset($_REQUEST['patronId'])){
 						$params[] = 'patronId=' . $_REQUEST['patronId'];
 					}
-					if (count($params) > 0){
+					if (!empty($params)){
 						$additionalParams = implode('&', $params);
 						$newLocation .= '?' . $additionalParams;
 					}
 					header("Location: $newLocation");
 					die();
-				}
-
-				// Define sorting options
-				$sortOptions = array('title' => 'Title',
-				                     'author' => 'Author',
-				                     'checkedOut' => 'Checkout Date',
-				                     'format' => 'Format',
-				);
-				$selectedSortOption = isset($_REQUEST['accountSort']) ? $_REQUEST['accountSort'] : 'checkedOut';
-				$interface->assign('sortOptions', $sortOptions);
-
-				$interface->assign('defaultSortOption', $selectedSortOption);
-				$page = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
-				$interface->assign('page', $page);
-
-				$recordsPerPage = isset($_REQUEST['pageSize']) && (is_numeric($_REQUEST['pageSize'])) ? $_REQUEST['pageSize'] : 25;
-				$interface->assign('recordsPerPage', $recordsPerPage);
-				if (isset($_REQUEST['readingHistoryAction']) && $_REQUEST['readingHistoryAction'] == 'exportToExcel'){
-					$recordsPerPage = -1;
-					$page = 1;
-				}
-
-				if (!$patron){
-					AspenError::raiseError(new AspenError("The patron provided is invalid"));
-				}
-				$result = $patron->getReadingHistory($page, $recordsPerPage, $selectedSortOption);
-
-				$link = $_SERVER['REQUEST_URI'];
-				if (preg_match('/[&?]page=/', $link)){
-					$link = preg_replace("/page=\\d+/", "page=%d", $link);
-				}else if (strpos($link, "?") > 0){
-					$link .= "&page=%d";
-				}else{
-					$link .= "?page=%d";
-				}
-				if ($recordsPerPage != '-1'){
-					$options = array('totalItems' => $result['numTitles'],
-					                 'fileName'   => $link,
-					                 'perPage'    => $recordsPerPage,
-					                 'append'     => false,
-					                 );
-					$pager = new Pager($options);
-					$interface->assign('pageLinks', $pager->getLinks());
-				}
-				if (!($result instanceof AspenError)) {
-					$interface->assign('historyActive', $result['historyActive']);
-					$interface->assign('transList', $result['titles']);
-					if (isset($_REQUEST['readingHistoryAction']) && $_REQUEST['readingHistoryAction'] == 'exportToExcel'){
-						$this->exportToExcel($result['titles']);
-					}
 				}
 			}
 		}
@@ -115,59 +67,62 @@ class ReadingHistory extends MyAccount
 	}
 
 	public function exportToExcel($readingHistory) {
-		//PHPEXCEL
-		// Create new PHPExcel object
-		$objPHPExcel = new PHPExcel();
+		try{
+			// Create new PHPExcel object
+			$objPHPExcel = new PHPExcel();
 
-		// Set properties
-		$objPHPExcel->getProperties()->setCreator("DCL")
-		->setLastModifiedBy("DCL")
-		->setTitle("Office 2007 XLSX Document")
-		->setSubject("Office 2007 XLSX Document")
-		->setDescription("Office 2007 XLSX, generated using PHP.")
-		->setKeywords("office 2007 openxml php")
-		->setCategory("Checked Out Items");
+			// Set properties
+			$objPHPExcel->getProperties()->setCreator("DCL")
+			->setLastModifiedBy("DCL")
+			->setTitle("Office 2007 XLSX Document")
+			->setSubject("Office 2007 XLSX Document")
+			->setDescription("Office 2007 XLSX, generated using PHP.")
+			->setKeywords("office 2007 openxml php")
+			->setCategory("Checked Out Items");
 
-		$objPHPExcel->setActiveSheetIndex(0)
-		->setCellValue('A1', 'Reading History')
-		->setCellValue('A3', 'Title')
-		->setCellValue('B3', 'Author')
-		->setCellValue('C3', 'Format')
-		->setCellValue('D3', 'From')
-		->setCellValue('E3', 'To');
-
-		$a=4;
-		//Loop Through The Report Data
-		foreach ($readingHistory as $row) {
-
-			$format = is_array($row['format']) ? implode(',', $row['format']) : $row['format'];
-			$lastCheckout = isset($row['lastCheckout']) ? date('Y-M-d', $row['lastCheckout']) : '';
 			$objPHPExcel->setActiveSheetIndex(0)
-			->setCellValue('A'.$a, $row['title'])
-			->setCellValue('B'.$a, $row['author'])
-			->setCellValue('C'.$a, $format)
-			->setCellValue('D'.$a, date('Y-M-d', $row['checkout']))
-			->setCellValue('E'.$a, $lastCheckout);
+			->setCellValue('A1', 'Reading History')
+			->setCellValue('A3', 'Title')
+			->setCellValue('B3', 'Author')
+			->setCellValue('C3', 'Format')
+			->setCellValue('D3', 'From')
+			->setCellValue('E3', 'To');
 
-			$a++;
+			$a=4;
+			//Loop Through The Report Data
+			foreach ($readingHistory as $row) {
+
+				$format = is_array($row['format']) ? implode(',', $row['format']) : $row['format'];
+				$lastCheckout = isset($row['lastCheckout']) ? date('Y-M-d', $row['lastCheckout']) : '';
+				$objPHPExcel->setActiveSheetIndex(0)
+				->setCellValue('A'.$a, $row['title'])
+				->setCellValue('B'.$a, $row['author'])
+				->setCellValue('C'.$a, $format)
+				->setCellValue('D'.$a, date('Y-M-d', $row['checkout']))
+				->setCellValue('E'.$a, $lastCheckout);
+
+				$a++;
+			}
+			$objPHPExcel->getActiveSheet()->getColumnDimension('A')->setAutoSize(true);
+			$objPHPExcel->getActiveSheet()->getColumnDimension('B')->setAutoSize(true);
+			$objPHPExcel->getActiveSheet()->getColumnDimension('C')->setAutoSize(true);
+			$objPHPExcel->getActiveSheet()->getColumnDimension('D')->setAutoSize(true);
+			$objPHPExcel->getActiveSheet()->getColumnDimension('E')->setAutoSize(true);
+
+			// Rename sheet
+			$objPHPExcel->getActiveSheet()->setTitle('Reading History');
+
+			// Redirect output to a client's web browser (Excel5)
+			header('Content-Type: application/vnd.ms-excel');
+			header('Content-Disposition: attachment;filename="ReadingHistory.xls"');
+			header('Cache-Control: max-age=0');
+
+			$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
+			$objWriter->save('php://output');
+		}catch (Exception $e){
+			global $logger;
+			$logger->log("Error exporting to Excel " . $e, Logger::LOG_ERROR );
 		}
-		$objPHPExcel->getActiveSheet()->getColumnDimension('A')->setAutoSize(true);
-		$objPHPExcel->getActiveSheet()->getColumnDimension('B')->setAutoSize(true);
-		$objPHPExcel->getActiveSheet()->getColumnDimension('C')->setAutoSize(true);
-		$objPHPExcel->getActiveSheet()->getColumnDimension('D')->setAutoSize(true);
-		$objPHPExcel->getActiveSheet()->getColumnDimension('E')->setAutoSize(true);
-
-		// Rename sheet
-		$objPHPExcel->getActiveSheet()->setTitle('Reading History');
-
-		// Redirect output to a client's web browser (Excel5)
-		header('Content-Type: application/vnd.ms-excel');
-		header('Content-Disposition: attachment;filename="ReadingHistory.xls"');
-		header('Cache-Control: max-age=0');
-
-		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
-		$objWriter->save('php://output');
 		exit;
-
 	}
 }

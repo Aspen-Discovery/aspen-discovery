@@ -1,6 +1,6 @@
 <div id="page-content" class="content">
 	<div id="main-content">
-		<h2>{translate text='Materials Request'}</h2>
+		<h1>{translate text='Materials Request'}</h1>
 		<div id="materialsRequest">
 			<div class="materialsRequestExplanation alert alert-info">
 				{if empty($newMaterialsRequestSummary)}

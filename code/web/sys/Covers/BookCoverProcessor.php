@@ -72,12 +72,12 @@ class BookCoverProcessor{
                 }
             } else if ($this->type == 'rbdigital') {
 	            //Will exit if we find a cover
-	            if ($this->getRbdigitalCover($this->id)) {
+	            if ($this->getRBdigitalCover($this->id)) {
 		            return;
 	            }
             } else if ($this->type == 'rbdigital_magazine') {
 	            //Will exit if we find a cover
-	            if ($this->getRbdigitalMagazineCover($this->id)) {
+	            if ($this->getRBdigitalMagazineCover($this->id)) {
 		            return;
 	            }
             } elseif ($this->type == 'Colorado State Government Documents') {
@@ -278,27 +278,27 @@ class BookCoverProcessor{
 		return false;
 	}
 
-	private function getRbdigitalCover($id){
+	private function getRBdigitalCover($id){
         if (strpos($id, ':') !== false){
             list(, $id) = explode(":", $id);
         }
-        require_once ROOT_DIR . '/RecordDrivers/RbdigitalRecordDriver.php';
-        $driver = new RbdigitalRecordDriver($id);
+        require_once ROOT_DIR . '/RecordDrivers/RBdigitalRecordDriver.php';
+        $driver = new RBdigitalRecordDriver($id);
         if ($driver) {
-            $coverUrl = $driver->getRbdigitalBookcoverUrl('large');
+            $coverUrl = $driver->getRBdigitalBookcoverUrl('large');
             return $this->processImageURL('rbdigital', $coverUrl, true);
         }
         return false;
     }
 
-    private function getRbdigitalMagazineCover($id){
+    private function getRBdigitalMagazineCover($id){
 	    if (strpos($id, ':') !== false){
 		    list(, $id) = explode(":", $id);
 	    }
-	    require_once ROOT_DIR . '/RecordDrivers/RbdigitalMagazineDriver.php';
-	    $driver = new RbdigitalMagazineDriver($id);
+	    require_once ROOT_DIR . '/RecordDrivers/RBdigitalMagazineDriver.php';
+	    $driver = new RBdigitalMagazineDriver($id);
 	    if ($driver) {
-		    $coverUrl = $driver->getRbdigitalBookcoverUrl();
+		    $coverUrl = $driver->getRBdigitalBookcoverUrl();
 		    return $this->processImageURL('rbdigital_magazine', $coverUrl, true);
 	    }
 	    return false;
@@ -937,11 +937,11 @@ class BookCoverProcessor{
 						return true;
 					}
 				} elseif (strcasecmp($relatedRecord->source, 'rbdigital_magazine') == 0){
-					if ($this->getRbdigitalMagazineCover($relatedRecord->id)) {
+					if ($this->getRBdigitalMagazineCover($relatedRecord->id)) {
 						return true;
 					}
 				} elseif (strcasecmp($relatedRecord->source, 'rbdigital') == 0){
-					if ($this->getRbdigitalCover($relatedRecord->id)) {
+					if ($this->getRBdigitalCover($relatedRecord->id)) {
 						return true;
 					}
 				}elseif (strcasecmp($relatedRecord->source, 'Colorado State Government Documents') == 0){

@@ -894,7 +894,7 @@ class Archive_AJAX extends Action {
 
 		$userLists = new UserList();
 		$userLists->user_id = UserAccount::getActiveUserId();
-		$userLists->deleted = 0;
+		$userLists->whereAdd('deleted = 0');
 		$userLists->orderBy('title');
 		$userLists->find();
 		while ($userLists->fetch()){
@@ -951,7 +951,7 @@ class Archive_AJAX extends Action {
 					$existingList = new UserList();
 					$existingList->user_id = UserAccount::getActiveUserId();
 					$existingList->title = "My Favorites";
-					$existingList->deleted = 0;
+					$existingList->whereAdd('deleted = 0');
 					//Make sure we don't create duplicate My Favorites List
 					if ($existingList->find(true)){
 						$userList = $existingList;

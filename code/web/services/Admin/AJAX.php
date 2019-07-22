@@ -164,8 +164,8 @@ class Admin_AJAX extends Action {
             require_once ROOT_DIR . '/sys/Hoopla/HooplaExportLogEntry.php';
             $extractLog = new HooplaExportLogEntry();
         }elseif ($source == 'rbdigital'){
-            require_once ROOT_DIR . '/sys/Rbdigital/RbdigitalExportLogEntry.php';
-            $extractLog = new RbdigitalExportLogEntry();
+            require_once ROOT_DIR . '/sys/RBdigital/RBdigitalExportLogEntry.php';
+            $extractLog = new RBdigitalExportLogEntry();
         }
 
         if ($extractLog == null){

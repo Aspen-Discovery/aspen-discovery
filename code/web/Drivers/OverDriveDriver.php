@@ -381,14 +381,14 @@ class OverDriveDriver extends AbstractEContentDriver{
 	}
 
 	private $checkouts = array();
-    /**
-     * Loads information about items that the user has checked out in OverDrive
-     *
-     * @param User $patron
-     * @param boolean $forSummary
-     *
-     * @return array
-     */
+
+	/**
+	 * Loads information about items that the user has checked out in OverDrive
+	 *
+	 * @param User $patron
+	 * @param bool $forSummary
+	 * @return array
+	 */
 	public function getCheckouts($patron, $forSummary = false){
 		if (isset($this->checkouts[$patron->id])){
 			return $this->checkouts[$patron->id];
@@ -503,12 +503,12 @@ class OverDriveDriver extends AbstractEContentDriver{
 					}
 					$formats = $overDriveRecord->getFormats();
 					$bookshelfItem['format']     = reset($formats);
-					$bookshelfItem['coverUrl']   = $overDriveRecord->getCoverUrl('medium');
+					$bookshelfItem['coverUrl'] = $overDriveRecord->getCoverUrl('medium');
+					$bookshelfItem['ratingData'] = $overDriveRecord->getRatingData();
 					$bookshelfItem['recordUrl']  = $configArray['Site']['path'] . '/OverDrive/' . $overDriveRecord->getUniqueID() . '/Home';
 					$bookshelfItem['title']      = $overDriveRecord->getTitle();
 					$bookshelfItem['author']     = $overDriveRecord->getAuthor();
 					$bookshelfItem['linkUrl']    = $overDriveRecord->getLinkUrl(false);
-					$bookshelfItem['ratingData'] = $overDriveRecord->getRatingData();
 				}
 				$bookshelfItem['user'] = $patron->getNameAndLibraryLabel();
 				$bookshelfItem['userId'] = $patron->id;
@@ -612,6 +612,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 		if ($patron == false){
 			return array(
 				'numCheckedOut' => 0,
+				'numOverdue' => 0,
 				'numAvailableHolds' => 0,
 				'numUnavailableHolds' => 0,
 				'checkedOut' => array(),
@@ -637,7 +638,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 			$summary['holds'] = $holds;
 
 			$timer->logTime("Finished loading titles from overdrive summary");
-			$memCache->set('overdrive_summary_' . $patron->id, $summary, $configArray['Caching']['overdrive_summary']);
+			$memCache->set('overdrive_summary_' . $patron->id, $summary, $configArray['Caching']['account_summary']);
 		}
 
 		return $summary;
@@ -671,9 +672,9 @@ class OverDriveDriver extends AbstractEContentDriver{
             $this->trackRecordHold($overDriveId);
 
             $holdResult['success'] = true;
-			$holdResult['message'] = 'Your hold was placed successfully.  You are number ' . $response->holdListPosition . ' on the wait list.';
+			$holdResult['message'] = translate(['text'=>'overdrive_hold_success', 'defaultText' => 'Your hold was placed successfully.  You are number %1% on the wait list.', 1=>$response->holdListPosition]);
 		}else{
-			$holdResult['message'] = 'Sorry, but we could not place a hold for you on this title.';
+			$holdResult['message'] = translate('Sorry, but we could not place a hold for you on this title.');
 			if (isset($response->message)) $holdResult['message'] .= "  {$response->message}";
 		}
 		$user->clearCache();
@@ -705,9 +706,9 @@ class OverDriveDriver extends AbstractEContentDriver{
 		$cancelHoldResult['message'] = '';
 		if ($response === true){
 			$cancelHoldResult['success'] = true;
-			$cancelHoldResult['message'] = 'Your hold was cancelled successfully.';
+			$cancelHoldResult['message'] = translate('Your hold was cancelled successfully.');
 		}else{
-			$cancelHoldResult['message'] = 'There was an error cancelling your hold.';
+			$cancelHoldResult['message'] = translate('There was an error cancelling your hold.');
 		    if (isset($response->message)) $cancelHoldResult['message'] .= "  {$response->message}";
 		}
 		$memCache->delete('overdrive_summary_' . $user->id);
@@ -741,23 +742,23 @@ class OverDriveDriver extends AbstractEContentDriver{
 		//print_r($response);
 		if (isset($response->expires)) {
 			$result['success'] = true;
-			$result['message'] = 'Your title was checked out successfully. You may now download the title from your Account.';
+			$result['message'] = translate(['text'=>'overdrive_checkout_success', 'defaultText'=>'Your title was checked out successfully. You may now download the title from your Account.']);
             $this->trackUserUsageOfOverDrive($user);
             $this->trackRecordCheckout($overDriveId);
         }else{
-			$result['message'] = 'Sorry, we could not checkout this title to you.';
+			$result['message'] = translate('Sorry, we could not checkout this title to you.');
 			if (isset($response->errorCode) && $response->errorCode == 'PatronHasExceededCheckoutLimit'){
-				$result['message'] .= "\r\n\r\nYou have reached the maximum number of OverDrive titles you can checkout one time.";
+				$result['message'] .= "\r\n\r\n" . translate(['text'=>'overdrive_exceeded_checkouts', 'defaultText'=>'You have reached the maximum number of OverDrive titles you can checkout one time.']);
 			}else{
 				if (isset($response->message)) $result['message'] .= "  {$response->message}";
 			}
 
 			if (isset($response->errorCode) && ($response->errorCode == 'NoCopiesAvailable' || $response->errorCode == 'PatronHasExceededCheckoutLimit')) {
 				$result['noCopies'] = true;
-				$result['message'] .= "\r\n\r\nWould you like to place a hold instead?";
+				$result['message'] .= "\r\n\r\n" . translate('Would you like to place a hold instead?');
 			}else{
 				//Give more information about why it might gave failed, ie expired card or too much fines
-				$result['message'] = 'Sorry, we could not checkout this title to you.  Please verify that your card has not expired and that you do not have excessive fines.';
+				$result['message'] =  translate(['text'=>'overdrive_checkout_failed', 'defaultText'=>'Sorry, we could not checkout this title to you.  Please verify that your card has not expired and that you do not have excessive fines.']);
 			}
 
 		}
@@ -790,9 +791,9 @@ class OverDriveDriver extends AbstractEContentDriver{
 		$cancelHoldResult['message'] = '';
 		if ($response === true){
 			$cancelHoldResult['success'] = true;
-			$cancelHoldResult['message'] = 'Your item was returned successfully.';
+			$cancelHoldResult['message'] = translate('Your item was returned successfully.');
 		}else{
-			$cancelHoldResult['message'] = 'There was an error returning this item.';
+			$cancelHoldResult['message'] =translate( 'There was an error returning this item.');
 			if (isset($response->message)) $cancelHoldResult['message'] .= "  {$response->message}";
 		}
 
@@ -819,11 +820,11 @@ class OverDriveDriver extends AbstractEContentDriver{
 
 		if (isset($response->linkTemplates->downloadLink)){
 			$result['success'] = true;
-			$result['message'] = 'This format was locked in';
+			$result['message'] = translate('This format was locked in');
 			$downloadLink = $this->getDownloadLink($overDriveId, $formatId, $user);
 			$result = $downloadLink;
 		}else{
-			$result['message'] = 'Sorry, but we could not select a format for you.';
+			$result['message'] = translate('Sorry, but we could not select a format for you.');
 			if (isset($response->message)) $result['message'] .= "  {$response->message}";
 		}
 		$memCache->delete('overdrive_summary_' . $user->id);
@@ -879,10 +880,10 @@ class OverDriveDriver extends AbstractEContentDriver{
 
 		if (isset($response->links->contentlink)){
 			$result['success'] = true;
-			$result['message'] = 'Created Download Link';
+			$result['message'] = translate('Created Download Link');
 			$result['downloadUrl'] = $response->links->contentlink->href;
 		}else{
-			$result['message'] = 'Sorry, but we could not get a download link for you.';
+			$result['message'] = translate('Sorry, but we could not get a download link for you.');
 			if (isset($response->message)) $result['message'] .= "  {$response->message}";
 		}
 

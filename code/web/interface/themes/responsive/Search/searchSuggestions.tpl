@@ -5,7 +5,7 @@
         <div class="row">
             {foreach from=$searchSuggestions item=suggestion}
                 <div class="col-xs-6 col-sm-4 col-md-3 text-left">
-                    <a class='btn btn-xs btn-default btn-block' href="/Search/Results?lookfor={$suggestion.phrase|escape:url}&searchIndex={$searchIndex|escape:url}" title="{$suggestion.phrase|strip_tags}">{$suggestion.phrase|truncate:25:'...'}</a>
+                    <a class='btn btn-xs btn-default btn-block' href="/Search/Results?lookfor={$suggestion.phrase|strip_tags|escape:url}&searchIndex={$searchIndex|escape:url}" title="{$suggestion.phrase|strip_tags}">{$suggestion.phrase|truncate:25:'...'}</a>
                 </div>
             {/foreach}
         </div>

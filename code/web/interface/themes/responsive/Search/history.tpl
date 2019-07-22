@@ -13,7 +13,7 @@
 
 		{if !$noHistory}
 			{if $saved}
-				<h2>{translate text="history_saved_searches"}</h2>
+				<h1>{translate text="history_saved_searches"}</h1>
 				<table class="table table-bordered table-striped" width="100%">
 					<tr>
 						<th width="4%">{translate text="history_id"}</th>

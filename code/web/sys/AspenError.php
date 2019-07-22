@@ -125,7 +125,6 @@ class AspenError extends DataObject
         //Clear any output that has been generated so far so the user just gets the error message.
         if (!$configArray['System']['debug']){
             @ob_clean();
-            header("Content-Type: text/html");
         }
 
         // Display an error screen to the user:
@@ -136,7 +135,8 @@ class AspenError extends DataObject
 
         $interface->assign('error', $this);
         $interface->assign('debug', $configArray['System']['debug']);
-	    $interface->setTemplate('../error.tpl');
+
+        $interface->setTemplate('../error.tpl');
 	    $interface->setPageTitle('An Error has occurred');
 	    $interface->display('layout.tpl');
 

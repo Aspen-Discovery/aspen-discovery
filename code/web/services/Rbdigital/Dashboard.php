@@ -2,11 +2,11 @@
 
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/Admin.php';
-require_once ROOT_DIR . '/sys/Rbdigital/UserRbdigitalUsage.php';
-require_once ROOT_DIR . '/sys/Rbdigital/RbdigitalRecordUsage.php';
-require_once ROOT_DIR . '/sys/Rbdigital/RbdigitalMagazineUsage.php';
+require_once ROOT_DIR . '/sys/RBdigital/UserRBdigitalUsage.php';
+require_once ROOT_DIR . '/sys/RBdigital/RBdigitalRecordUsage.php';
+require_once ROOT_DIR . '/sys/RBdigital/RBdigitalMagazineUsage.php';
 
-class Rbdigital_Dashboard extends Admin_Admin
+class RBdigital_Dashboard extends Admin_Admin
 {
     function launch()
     {
@@ -65,7 +65,7 @@ class Rbdigital_Dashboard extends Admin_Admin
 	    $interface->assign('activeMagazinesAllTime', $activeMagazinesAllTime);
 	    $interface->assign('magazineLoansAllTime', $magazineLoansAllTime);
 
-        $this->display('dashboard.tpl', 'Rbdigital Dashboard');
+        $this->display('dashboard.tpl', 'RBdigital Dashboard');
     }
 
     function getAllowableRoles(){
@@ -79,7 +79,7 @@ class Rbdigital_Dashboard extends Admin_Admin
      */
     public function getUserStats($month, $year): int
     {
-        $userUsage = new UserRbdigitalUsage();
+        $userUsage = new UserRBdigitalUsage();
         if ($month != null){
             $userUsage->month = $month;
         }
@@ -97,7 +97,7 @@ class Rbdigital_Dashboard extends Admin_Admin
      */
     public function getRecordStats($month, $year): array
     {
-        $usage = new RbdigitalRecordUsage();
+        $usage = new RBdigitalRecordUsage();
         if ($month != null){
             $usage->month = $month;
         }
@@ -110,7 +110,7 @@ class Rbdigital_Dashboard extends Admin_Admin
         $usage->selectAdd('SUM(timesCheckedOut) as totalCheckouts');
         $usage->find(true);
 
-	    $magazineUsage = new RbdigitalMagazineUsage();
+	    $magazineUsage = new RBdigitalMagazineUsage();
 	    if ($month != null){
 		    $magazineUsage->month = $month;
 	    }

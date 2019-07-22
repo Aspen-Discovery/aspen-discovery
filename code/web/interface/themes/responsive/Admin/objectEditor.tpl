@@ -7,7 +7,7 @@
 {strip}
 	<div class="col-xs-12">
 		{if !empty($pageTitleShort) || !empty($objectName)}
-			<h2>{if !empty($pageTitleShort)}{$pageTitleShort} - {/if}{$objectName}</h2>
+			<h1>{if !empty($pageTitleShort)}{$pageTitleShort} - {/if}{$objectName}</h1>
 		{/if}
 		<p>
 			{if $showReturnToList}

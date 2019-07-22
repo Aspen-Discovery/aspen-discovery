@@ -1,14 +1,14 @@
 <?php
 require_once ROOT_DIR . '/Action.php';
-class RbdigitalMagazine_AccessOnline extends Action
+class RBdigitalMagazine_AccessOnline extends Action
 {
     function launch(){
         global $interface;
 
         $id = strip_tags($_REQUEST['id']);
         $interface->assign('id', $id);
-        require_once ROOT_DIR . '/RecordDrivers/RbdigitalMagazineDriver.php';
-        $recordDriver = new RbdigitalMagazineDriver($id);
+        require_once ROOT_DIR . '/RecordDrivers/RBdigitalMagazineDriver.php';
+        $recordDriver = new RBdigitalMagazineDriver($id);
 
         $user = UserAccount::getLoggedInUser();
 
@@ -22,9 +22,9 @@ class RbdigitalMagazine_AccessOnline extends Action
                 }
 
                 //Do the redirection
-                require_once ROOT_DIR . '/Drivers/RbdigitalDriver.php';
-                $rbdigitalDriver = new RbdigitalDriver();
-                $rbdigitalDriver->redirectToRbdigitalMagazine($patron, $recordDriver);
+                require_once ROOT_DIR . '/Drivers/RBdigitalDriver.php';
+                $rbdigitalDriver = new RBdigitalDriver();
+                $rbdigitalDriver->redirectToRBdigitalMagazine($patron, $recordDriver);
                 //We don't actually get to here since the redirect happens above
                 die();
             }else{

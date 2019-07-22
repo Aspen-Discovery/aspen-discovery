@@ -25,9 +25,16 @@ var AspenDiscovery = (function(){
 			// if the state is the page you expect, pull the name and load it.
 			if (history.state && history.state.page === "MapExhibit") {
 				AspenDiscovery.Archive.handleMapClick(history.state.marker, history.state.exhibitPid, history.state.placePid, history.state.label, false, history.state.showTimeline);
-			}
-			else if (history.state && history.state.page === "Book") {
+			}else if (history.state && history.state.page === "Book") {
 				AspenDiscovery.Archive.handleBookClick(history.state.bookPid, history.state.pagePid, history.state.viewer);
+			}else if (history.state && history.state.page === "Checkouts") {
+				let selector = '#checkoutsTab a[href="#' + history.state.source + '"]';
+				$(selector).tab('show');
+			}else if (history.state && history.state.page === "Holds") {
+				let selector = '#holdsTab a[href="#' + history.state.source + '"]';
+				$(selector).tab('show');
+			}else if (history.state && history.state.page === "ReadingHistory") {
+				AspenDiscovery.Account.loadReadingHistory(history.state.selectedUser, history.state.sort, history.state.page, history.state.showCovers, history.state.filter);
 			}
 		});
 	});
@@ -39,7 +46,7 @@ var AspenDiscovery = (function(){
 		},
 
 		changePageSize: function(){
-			var url = window.location.href;
+			let url = window.location.href;
 			if (url.match(/[&?]pageSize=\d+/)) {
 				url = url.replace(/pageSize=\d+/, "pageSize=" + $("#pageSize").val());
 			} else {
@@ -53,7 +60,7 @@ var AspenDiscovery = (function(){
 		},
 
 		closeLightbox: function(callback){
-			var modalDialog = $("#modalDialog");
+			let modalDialog = $("#modalDialog");
 			if (modalDialog.is(":visible")){
 				modalDialog.modal('hide');
 				if (callback !== undefined){
@@ -67,8 +74,8 @@ var AspenDiscovery = (function(){
 
 		initCarousels: function(carouselClass){
 			carouselClass = carouselClass || '.jcarousel';
-			var jcarousel = $(carouselClass),
-					wrapper   = jcarousel.parents('.jcarousel-wrapper');
+			var jcarousel = $(carouselClass);
+			let wrapper   = jcarousel.parents('.jcarousel-wrapper');
 			// console.log('init Carousels called for ', jcarousel);
 
 			jcarousel.on('jcarousel:reload jcarousel:create', function() {
@@ -76,7 +83,7 @@ var AspenDiscovery = (function(){
 				var Carousel       = $(this);
 				var width          = Carousel.innerWidth();
 				var liTags         = Carousel.find('li');
-				if (liTags == null || liTags === undefined || liTags.length === 0){
+				if (liTags == null ||liTags.length === 0){
 					return;
 				}
 				var leftMargin     = +liTags.css('margin-left').replace('px', ''),
@@ -180,9 +187,9 @@ var AspenDiscovery = (function(){
 		},
 
 		getQuerystringParameters: function(){
-			var vars = [],
-					q = location.search.substr(1);
-			if(q != undefined){
+			let vars = [];
+			let q = location.search.substr(1);
+			if(q !== undefined){
 				q = q.split('&');
 				for(var i = 0; i < q.length; i++){
 					var hash = q[i].split('=');
@@ -272,10 +279,10 @@ var AspenDiscovery = (function(){
 			// if autoclose is set as number greater than 1 autoClose will be the custom timeout interval in milliseconds, otherwise
 			//     autoclose is treated as an on/off switch. Default timeout interval of 3 seconds.
 			// if refreshAfterClose is set but not autoClose, the page will reload when the box is closed by the user.
-			if (autoClose == undefined){
+			if (autoClose === undefined){
 				autoClose = false;
 			}
-			if (refreshAfterClose == undefined){
+			if (refreshAfterClose === undefined){
 				refreshAfterClose = false;
 			}
 			$("#myModalLabel").html(title);
@@ -285,10 +292,9 @@ var AspenDiscovery = (function(){
 			modalDialog.modal('show');
 			if (autoClose) {
 				setTimeout(function(){
-							if (refreshAfterClose) location.reload(true);
-							else AspenDiscovery.closeLightbox();
-						}
-						, autoClose > 1 ? autoClose : 3000);
+					if (refreshAfterClose) location.reload(true);
+					else AspenDiscovery.closeLightbox();
+				}, autoClose > 1 ? autoClose : 3000);
 			}else if (refreshAfterClose) {
 				modalDialog.on('hide.bs.modal', function(){
 					location.reload(true)

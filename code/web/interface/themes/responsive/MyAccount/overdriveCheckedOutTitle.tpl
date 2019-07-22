@@ -1,5 +1,5 @@
 {strip}
-	<div id="overdrive_{$record.recordId|escape}" class="result row">
+	<div class="result row overdrive_checkout_{$record.recordId|escape}">
 
 		{* Cover Column *}
 		{if $showCovers}

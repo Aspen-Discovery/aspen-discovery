@@ -7,7 +7,10 @@
 
 	<span class='availableHoldsNoticePlaceHolder'></span>
 
-	<h2>{translate text='My Materials Requests'}</h2>
+	<h1>{translate text='My Materials Requests'}</h1>
+
+	{include file="MyAccount/switch-linked-user-form.tpl" label="Viewing Requests for" actionPath="/MyAccount/ReadingHistory"}
+
 	{if !empty($error)}
 		<div class="alert alert-danger">{$error}</div>
 	{else}
@@ -20,7 +23,6 @@
 							<th>{translate text="Summary"}</th>
 							<th>{translate text="Suggested On"}</th>
 							<th>{translate text="Note"}</th>
-							<th>{translate text="Managed By"}</th>
 							<th>{translate text="Status"}</th>
 						</tr>
 					</thead>
@@ -28,12 +30,11 @@
 						{foreach from=$allRequests item=request}
 							<tr>
 								<td>
-									<input type="checkbox" name="delete_field" value="{$request.id}"/>
+									<input type="checkbox" name="delete_field" value="{$request.id}" title="{translate text="Select Request" inAttribute=true}" aria-label="{translate text="Select Request" inAttribute=true}"/>
 								</td>
 								<td>{$request.summary}</td>
 								<td>{$request.suggestedOn}</td>
 								<td>{$request.note}</td>
-								<td>{$request.managedBy}</td>
 								<td>{$request.status}</td>
 							</tr>
 						{/foreach}
@@ -45,7 +46,7 @@
 		{else}
 			<div class="alert alert-warning">There are no {translate text='materials request'}s that meet your criteria.</div>
 		{/if}
-		<div id="createNewMaterialsRequest"><a href="{$path}/MaterialsRequest/NewRequestIls" class="btn btn-primary btn-sm">{translate text='Submit a New Materials Request'}</a></div>
+		<div id="createNewMaterialsRequest"><a href="{$path}/MaterialsRequest/NewRequestIls?patronId={$patronId}" class="btn btn-primary btn-sm">{translate text='Submit a New Materials Request'}</a></div>
 	{/if}
 </div>
 <script type="text/javascript">

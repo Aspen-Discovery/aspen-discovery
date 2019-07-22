@@ -1,5 +1,5 @@
 {if $searchId}
-	<li>{translate text="Catalog Search"} <span class="divider">&raquo;</span> <em>{$lookfor|escape:"html"}</em> <span class="divider">&raquo;</span></li>
+	<li>{translate text="Catalog Search"} <span class="divider">&raquo;</span> {if !empty($lookfor)}<em>{$lookfor|escape:"html"}</em> <span class="divider">&raquo;</span>{/if}</li>
 {elseif $pageTitleShort!=""}
 	<li>{$pageTitleShort} <span class="divider">&raquo;</span></li>
 {/if}

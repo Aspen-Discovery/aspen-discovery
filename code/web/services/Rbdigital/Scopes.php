@@ -2,24 +2,24 @@
 
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
-require_once ROOT_DIR . '/sys/Rbdigital/RbdigitalScope.php';
+require_once ROOT_DIR . '/sys/RBdigital/RBdigitalScope.php';
 
-class Rbdigital_Scopes extends ObjectEditor
+class RBdigital_Scopes extends ObjectEditor
 {
 	function getObjectType(){
-		return 'RbdigitalScope';
+		return 'RBdigitalScope';
 	}
 	function getToolName(){
 		return 'Scopes';
 	}
 	function getModule(){
-		return 'Rbdigital';
+		return 'RBdigital';
 	}
 	function getPageTitle(){
-		return 'Rbdigital Scopes';
+		return 'RBdigital Scopes';
 	}
 	function getAllObjects(){
-		$object = new RbdigitalScope();
+		$object = new RBdigitalScope();
 		$object->orderBy('name');
 		$object->find();
 		$objectList = array();
@@ -29,7 +29,7 @@ class Rbdigital_Scopes extends ObjectEditor
 		return $objectList;
 	}
 	function getObjectStructure(){
-		return RbdigitalScope::getObjectStructure();
+		return RBdigitalScope::getObjectStructure();
 	}
 	function getPrimaryKeyColumn(){
 		return 'id';

@@ -1,11 +1,12 @@
 AspenDiscovery.Record = (function(){
+	// noinspection JSUnusedGlobalSymbols
 	return {
 		showPlaceHold: function(module, id){
 			if (Globals.loggedIn){
 				let source;
 				let volume = null;
 				if (id.indexOf(":") > 0){
-					var idParts = id.split(":");
+					let idParts = id.split(":");
 					source = idParts[0];
 					id = idParts[1];
 					if (idParts.length > 2){
@@ -31,10 +32,10 @@ AspenDiscovery.Record = (function(){
 
 		showPlaceHoldEditions: function (module, id) {
 			if (Globals.loggedIn){
-				var source;
-				var volume = null;
+				let source;
+				let volume = null;
 				if (id.indexOf(":") > 0){
-					var idParts = id.split(":");
+					let idParts = id.split(":");
 					source = idParts[0];
 					id = idParts[1];
 					if (idParts.length > 2){
@@ -44,7 +45,7 @@ AspenDiscovery.Record = (function(){
 					source = 'ils';
 				}
 
-				var url = Globals.path + "/" + module + "/" + id + "/AJAX?method=getPlaceHoldEditionsForm&recordSource=" + source;
+				let url = Globals.path + "/" + module + "/" + id + "/AJAX?method=getPlaceHoldEditionsForm&recordSource=" + source;
 				if (volume != null){
 					url += "&volume=" + volume;
 				}
@@ -65,7 +66,7 @@ AspenDiscovery.Record = (function(){
 				AspenDiscovery.loadingMessage();
 				//var source; // source not used for booking at this time
 				if (id.indexOf(":") > 0){
-					var idParts = id.split(":", 2);
+					let idParts = id.split(":", 2);
 					//source = idParts[0];
 					id = idParts[1];
 				//}else{
@@ -83,8 +84,8 @@ AspenDiscovery.Record = (function(){
 		},
 
 		submitBookMaterialForm: function(){
-			var params = $('#bookMaterialForm').serialize();
-			var module = $('#module').val();
+			let params = $('#bookMaterialForm').serialize();
+			let module = $('#module').val();
 			AspenDiscovery.showMessage('Scheduling', 'Processing, please wait.');
 			$.getJSON(Globals.path + "/" + module +"/AJAX", params+'&method=bookMaterial', function(data){
 				if (data.modalBody) AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
@@ -95,19 +96,19 @@ AspenDiscovery.Record = (function(){
 		},
 
 		submitHoldForm: function(){
-			var id = $('#id').val()
-					,autoLogOut = $('#autologout').prop('checked')
-					,selectedItem = $('#selectedItem')
-					,module = $('#module').val()
-					,volume = $('#volume')
-					,params = {
-						'method': 'placeHold'
-						,campus: $('#campus').val()
-						,selectedUser: $('#user').val()
-						,canceldate: $('#canceldate').val()
-						,recordSource: $('#recordSource').val()
-						,account: $('#account').val()
-					};
+			let id = $('#id').val();
+			let autoLogOut = $('#autologout').prop('checked');
+			let selectedItem = $('#selectedItem');
+			let module = $('#module').val();
+			let volume = $('#volume');
+			let params = {
+				'method': 'placeHold'
+				,campus: $('#campus').val()
+				,selectedUser: $('#user').val()
+				,cancelDate: $('#cancelDate').val()
+				,recordSource: $('#recordSource').val()
+				,account: $('#account').val()
+			};
 			if (autoLogOut){
 				params['autologout'] = true;
 			}
@@ -117,7 +118,7 @@ AspenDiscovery.Record = (function(){
 			if (volume.length > 0){
 				params['volume'] = volume.val();
 			}
-			if (params['campus'] == 'undefined'){
+			if (params['campus'] === 'undefined'){
 				alert("Please select a location to pick up your hold when it is ready.");
 				return false;
 			}
@@ -127,6 +128,7 @@ AspenDiscovery.Record = (function(){
 						$('.modal-body').html(data.message);
 					}else{
 						AspenDiscovery.showMessage('Hold Placed Successfully', data.message, false, autoLogOut);
+						AspenDiscovery.Account.loadMenuData();
 					}
 				}else{
 					AspenDiscovery.showMessage('Hold Failed', data.message, false, autoLogOut);
@@ -135,7 +137,7 @@ AspenDiscovery.Record = (function(){
 		},
 
 		reloadCover: function(module, id){
-			var url = Globals.path + '/' +module + '/' + id + '/AJAX?method=reloadCover';
+			let url = Globals.path + '/' +module + '/' + id + '/AJAX?method=reloadCover';
 			$.getJSON(url, function (data){
 						AspenDiscovery.showMessage("Success", data.message, true, true);
 						setTimeout("AspenDiscovery.closeLightbox();", 3000);

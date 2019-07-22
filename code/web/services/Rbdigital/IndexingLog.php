@@ -3,9 +3,9 @@
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/sys/Pager.php';
-require_once ROOT_DIR . '/sys/Rbdigital/RbdigitalExportLogEntry.php';
+require_once ROOT_DIR . '/sys/RBdigital/RBdigitalExportLogEntry.php';
 
-class Rbdigital_IndexingLog extends Admin_Admin
+class RBdigital_IndexingLog extends Admin_Admin
 {
 	function launch()
 	{
@@ -13,9 +13,9 @@ class Rbdigital_IndexingLog extends Admin_Admin
 		global $configArray;
 
 		$logEntries = array();
-		$logEntry = new RbdigitalExportLogEntry();
+		$logEntry = new RBdigitalExportLogEntry();
 		$total = $logEntry->count();
-		$logEntry = new RbdigitalExportLogEntry();
+		$logEntry = new RBdigitalExportLogEntry();
 		$logEntry->orderBy('startTime DESC');
 		$page = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
 		$pageSize = isset($_REQUEST['pageSize']) ? $_REQUEST['pageSize'] : 30; // to adjust number of items listed on a page
@@ -29,13 +29,13 @@ class Rbdigital_IndexingLog extends Admin_Admin
 		$interface->assign('logEntries', $logEntries);
 
 		$options = array('totalItems' => $total,
-		                 'fileName'   => $configArray['Site']['path'].'/Rbdigital/IndexingLog?page=%d'. (empty($_REQUEST['pageSize']) ? '' : '&pageSize=' . $_REQUEST['pageSize']),
+		                 'fileName'   => $configArray['Site']['path'].'/RBdigital/IndexingLog?page=%d'. (empty($_REQUEST['pageSize']) ? '' : '&pageSize=' . $_REQUEST['pageSize']),
 		                 'perPage'    => $pageSize,
 		);
 		$pager = new Pager($options);
 		$interface->assign('pageLinks', $pager->getLinks());
 
-		$this->display('rbdigitalExportLog.tpl', 'Rbdigital Export Log');
+		$this->display('rbdigitalExportLog.tpl', 'RBdigital Export Log');
 	}
 
 	function getAllowableRoles(){

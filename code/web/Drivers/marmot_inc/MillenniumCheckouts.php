@@ -39,8 +39,7 @@ class MillenniumCheckouts {
 	 * This is responsible for retrieving all transactions (i.e. checked out items)
 	 * by a specific patron.
 	 *
-	 * @param User $user    The user to load transactions for
-	 *
+	 * @param User $user The user to load transactions for
 	 * @return mixed        Array of the patron's transactions on success,
 	 * AspenError otherwise.
 	 * @access public
@@ -183,9 +182,9 @@ class MillenniumCheckouts {
 						require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 						$recordDriver = new MarcRecordDriver($this->driver->accountProfile->recordSource . ":" . $curTitle['recordId']);
 						if ($recordDriver->isValid()) {
-							$curTitle['coverUrl']      = $recordDriver->getBookcoverUrl('medium');
-							$curTitle['groupedWorkId'] = $recordDriver->getGroupedWorkId();
+							$curTitle['coverUrl'] = $recordDriver->getBookcoverUrl('medium');
 							$curTitle['ratingData']    = $recordDriver->getRatingData();
+							$curTitle['groupedWorkId'] = $recordDriver->getGroupedWorkId();
 							$curTitle['format']        = $recordDriver->getPrimaryFormat();
 							$curTitle['author']        = $recordDriver->getPrimaryAuthor();
 							//Always use title from the index since classic will show 240 rather than 245

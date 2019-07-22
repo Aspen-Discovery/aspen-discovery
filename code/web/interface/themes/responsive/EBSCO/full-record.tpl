@@ -1,12 +1,12 @@
 {strip}
 	<div class="col-xs-12">
 		{* Display Title *}
-		<h2>
+		<h1>
 			{$recordDriver->getTitle()|escape}
 			{if $recordDriver->getFormats()}
 				<br/><small>({implode subject=$recordDriver->getFormats() glue=", "})</small>
 			{/if}
-		</h2>
+		</h1>
 
 		<div class="row">
 			<div id="main-content" class="col-tn-12">

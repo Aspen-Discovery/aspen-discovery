@@ -219,7 +219,7 @@ class UInterface extends Smarty
 	function setFinesRelatedTemplateVariables() {
 
 		if (UserAccount::isLoggedIn()){
-			$user = UserAccount::getLoggedInUser();
+			$user = UserAccount::getActiveUserObj();
 			//Figure out if we should show a link to pay fines.
 			$homeLibrary = Library::getLibraryForLocation($user->homeLocationId);
 			$showECommerceLink     = isset($homeLibrary) && $homeLibrary->showEcommerceLink == 1;
@@ -494,10 +494,10 @@ class UInterface extends Smarty
 		$this->assign('showHoldButton', $showHoldButton);
 		$this->assign('showHoldButtonInSearchResults', $showHoldButtonInSearchResults);
 		$this->assign('showNotInterested', true);
-		$this->assign('librarySystemName', 'Marmot'); //TODO: need better default
 
 		$this->assign('showRatings', $library->showRatings);
 		$this->assign('allowPinReset', $library->allowPinReset);
+		$this->assign('allowAccountLinking', ($library->allowLinkedAccounts == 1));
 		$this->assign('librarySystemName', $library->displayName);
 		$this->assign('showLibraryHoursAndLocationsLink', $library->showLibraryHoursAndLocationsLink);
 		//Check to see if we should just call it library location

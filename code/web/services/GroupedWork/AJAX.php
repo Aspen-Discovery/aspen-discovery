@@ -783,7 +783,7 @@ class GroupedWork_AJAX {
 
 		$userLists = new UserList();
 		$userLists->user_id = UserAccount::getActiveUserId();
-		$userLists->deleted = 0;
+		$userLists->whereAdd('deleted = 0');
 		$userLists->orderBy('title');
 		$userLists->find();
 		while ($userLists->fetch()){

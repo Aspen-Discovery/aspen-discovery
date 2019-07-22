@@ -1,9 +1,9 @@
 {strip}
 	<div id="page-content" class="col-xs-12">
 
-		<h2>{translate text='Reset My PIN'}</h2>
+		<h1>{translate text='Reset My PIN'}</h1>
 		<div class="alert alert-info">
-			Please enter a new 4 digit PIN number.
+			{translate text="Please enter a new 4 digit PIN number."}
 		</div>
 
 		<form id="resetPin" method="POST" action="{$path}/MyAccount/ResetPin" class="form-horizontal">

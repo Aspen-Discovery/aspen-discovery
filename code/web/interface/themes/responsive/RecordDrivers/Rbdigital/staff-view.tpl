@@ -33,7 +33,7 @@
 	</table>
 
 	{if $rbdigitalExtract}
-	<h3>Rbdigital Extract Information</h3>
+	<h3>RBdigital Extract Information</h3>
 	<pre>
 		{$rbdigitalExtract|print_r}
 	</pre>

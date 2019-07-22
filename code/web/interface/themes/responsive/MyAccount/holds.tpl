@@ -9,86 +9,59 @@
 		{* Alternate Mobile MyAccount Menu *}
 		{include file="MyAccount/mobilePageHeader.tpl"}
 		<span class='availableHoldsNoticePlaceHolder'></span>
+		<h1>{translate text='Titles On Hold'}</h1>
 		{* Check to see if there is data for the section *}
-		<p class="holdSectionBody">
 		{if $libraryHoursMessage}
 			<div class="libraryHours alert alert-success">{$libraryHoursMessage}</div>
 		{/if}
 		{if $offline}
 			<div class="alert alert-warning">{translate text=offline_notice defaultText="<strong>The library system is currently offline.</strong> We are unable to retrieve information about your account at this time."}</div>
 		{else}
-			<p id="overdrive_holds_inclusion_notice">
-				{translate text="Items on hold includes titles in Overdrive."}
-			</p>
-			{foreach from=$recordList item=sectionData key=sectionKey}
-				<h3>{if $sectionKey == 'available'}{translate text="Holds Ready For Pickup"}{else}{translate text="Pending Holds"}{/if}</h3>
-				<p class="alert alert-info">
-					{if $sectionKey == 'available'}
-						{translate text="available hold summary" defaultText="These titles have arrived at the library or are available online for you to use."}
-						{*These titles have arrived at the library or are available online for you to use.*}
-					{else}
-						{if not $notification_method or $notification_method eq 'Unknown'}
-							{translate text="unavailable_hold_summary_no_notification" defaultText="These titles are currently checked out to other patrons. We will notify you when a title is available."}
-						{else}
-							{translate text="unavailable_hold_summary_with_notification" defaultText="These titles are currently checked out to other patrons. We will notify you via %1% when a title is available." 1=$notification_method}
-						{/if}
-					{/if}
-				</p>
-				{if is_array($recordList.$sectionKey) && count($recordList.$sectionKey) > 0}
-					<div id="pager" class="navbar form-inline">
-						<label for="{$sectionKey}HoldSort" class="control-label">{translate text='Sort by'}&nbsp;</label>
-						<select name="{$sectionKey}HoldSort" id="{$sectionKey}HoldSort" class="form-control" onchange="AspenDiscovery.Account.changeAccountSort($(this).val(), '{$sectionKey}HoldSort');">
-							{foreach from=$sortOptions[$sectionKey] item=sortDesc key=sortVal}
-								<option value="{$sortVal}"{if $defaultSortOption[$sectionKey] == $sortVal} selected="selected"{/if}>{translate text=$sortDesc}</option>
-							{/foreach}
-						</select>
-
-						{if !$hideCoversFormDisplayed}
-							{* Display the Hide Covers switch above the first section that has holds; and only display it once *}
-							<label for="hideCovers" class="control-label checkbox pull-right"> {translate text="Hide Covers"} <input id="hideCovers" type="checkbox" onclick="AspenDiscovery.Account.toggleShowCovers(!$(this).is(':checked'))" {if $showCovers == false}checked="checked"{/if}></label>
-							{assign var="hideCoversFormDisplayed" value=true}
-						{/if}
-					</div>
-					<div class="striped">
-						{foreach from=$recordList.$sectionKey item=record name="recordLoop"}
-							{if $record.holdSource == 'ILS'}
-								{include file="MyAccount/ilsHold.tpl" record=$record section=$sectionKey resultIndex=$smarty.foreach.recordLoop.iteration}
-							{elseif $record.holdSource == 'OverDrive'}
-								{include file="MyAccount/overdriveHold.tpl" record=$record section=$sectionKey resultIndex=$smarty.foreach.recordLoop.iteration}
-							{elseif $record.holdSource == 'Rbdigital'}
-								{include file="MyAccount/rbdigitalHold.tpl" record=$record section=$sectionKey resultIndex=$smarty.foreach.recordLoop.iteration}
-							{else}
-								<div class="row">
-									Unknown record source {$record.holdSource}
-								</div>
-							{/if}
-						{/foreach}
-					</div>
-					{* Code to handle updating multiple holds at one time *}
-					<br>
-					<div class="holdsWithSelected{$sectionKey}">
-						<form id="withSelectedHoldsFormBottom{$sectionKey}" action="{$fullPath}">
-							<div>
-								<input type="hidden" name="withSelectedAction" value="">
-								<div id="holdsUpdateSelected{$sectionKey}Bottom" class="holdsUpdateSelected{$sectionKey}">
-									<button type="submit" class="btn btn-sm btn-default" id="exportToExcel{if $sectionKey=='available'}Available{else}Unavailable{/if}Bottom" name="exportToExcel{if $sectionKey=='available'}Available{else}Unavailable{/if}">{translate text="Export to Excel"}</button>
-								</div>
-							</div>
-						</form>
-					</div>
-				{else} {* Check to see if records are available *}
-					{if $sectionKey == 'available'}
-						{translate text="no_holds_ready_pickup" defaultText='You do not have any holds that are ready to be picked up.'}
-					{else}
-						{translate text='You do not have any pending holds.'}
-					{/if}
-
+			<ul class="nav nav-tabs" role="tablist" id="holdsTab">
+				<li role="presentation"{if $tab=='all'} class="active"{/if}><a href="#all" aria-controls="all" role="tab" data-toggle="tab">{translate text="All"} <span class="badge"><span class="holds-placeholder">&nbsp;</span></span></a></li>
+				<li role="presentation"{if $tab=='ils'} class="active"{/if}><a href="#ils" aria-controls="ils" role="tab" data-toggle="tab">{translate text="Physical Materials"} <span class="badge"><span class="ils-holds-placeholder">&nbsp;</span></span></a></li>
+				{if $user->isValidForEContentSource('overdrive')}
+					<li role="presentation"{if $tab=='overdrive'} class="active"{/if}><a href="#overdrive" aria-controls="overdrive" role="tab" data-toggle="tab">{translate text="OverDrive"} <span class="badge"><span class="overdrive-holds-placeholder">&nbsp;</span></span></a></li>
 				{/if}
-			{/foreach}
+				{if $user->isValidForEContentSource('rbdigital')}
+					<li role="presentation"{if $tab=='rbdigital'} class="active"{/if}><a href="#rbdigital" aria-controls="rbdigital" role="tab" data-toggle="tab">{translate text="RBdigital"} <span class="badge"><span class="rbdigital-holds-placeholder">&nbsp;</span></span></a></li>
+				{/if}
+			</ul>
+
+			<!-- Tab panes -->
+			<div class="tab-content" id="holds">
+				<div role="tabpanel" class="tab-pane{if $tab=='all'} active{/if}" id="all"><div id="allHoldsPlaceholder">{translate text="Loading holds from all sources"}</div></div>
+				<div role="tabpanel" class="tab-pane{if $tab=='ils'} active{/if}" id="ils"><div id="ilsHoldsPlaceholder">{translate text="Loading holds of physical materials"}</div></div>
+				{if $user->isValidForEContentSource('overdrive')}
+					<div role="tabpanel" class="tab-pane{if $tab=='overdrive'} active{/if}" id="overdrive"><div id="overdriveHoldsPlaceholder">{translate text="Loading holds from OverDrive"}</div></div>
+				{/if}
+				{if $user->isValidForEContentSource('rbdigital')}
+					<div role="tabpanel" class="tab-pane{if $tab=='rbdigital'} active{/if}" id="rbdigital"><div id="rbdigitalHoldsPlaceholder">{translate text="Loading holds from RBdigital"}</div></div>
+				{/if}
+			</div>
+			<script type="text/javascript">
+				{literal}
+                $(document).ready(function() {
+                    $("a[href='#all']").on('show.bs.tab', function (e) {
+                        AspenDiscovery.Account.loadHolds('all');
+                    });
+                    $("a[href='#ils']").on('show.bs.tab', function (e) {
+                        AspenDiscovery.Account.loadHolds('ils');
+                    });
+                    $("a[href='#overdrive']").on('show.bs.tab', function (e) {
+                        AspenDiscovery.Account.loadHolds('overdrive');
+                    });
+                    $("a[href='#rbdigital']").on('show.bs.tab', function (e) {
+                        AspenDiscovery.Account.loadHolds('rbdigital');
+                    });
+					{/literal}
+                    AspenDiscovery.Account.loadHolds('{$tab}');
+					{literal}
+                });
+				{/literal}
+			</script>
 		{/if}
 	{else} {* Check to see if user is logged in *}
-		You must login to view this information. Click
-		<a href="{$path}/MyAccount/Login">here</a>
-		to login.
+		{translate text="login_to_view_account_notice" defaultText="You must login to view this information. Click <a href="{$path}/MyAccount/Login">here</a> to login."}
 	{/if}
 {/strip}

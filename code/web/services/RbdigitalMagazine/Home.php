@@ -1,9 +1,9 @@
 <?php
 
-require_once ROOT_DIR . '/sys/Rbdigital/RbdigitalMagazine.php';
-require_once ROOT_DIR . '/RecordDrivers/RbdigitalMagazineDriver.php';
+require_once ROOT_DIR . '/sys/RBdigital/RBdigitalMagazine.php';
+require_once ROOT_DIR . '/RecordDrivers/RBdigitalMagazineDriver.php';
 
-class RbdigitalMagazine_Home extends Action{
+class RBdigitalMagazine_Home extends Action{
 	private $id;
 
 	function launch(){
@@ -18,7 +18,7 @@ class RbdigitalMagazine_Home extends Action{
 
 		$this->id = strip_tags($_REQUEST['id']);
 		$interface->assign('id', $this->id);
-		$recordDriver = new RbdigitalMagazineDriver($this->id);
+		$recordDriver = new RBdigitalMagazineDriver($this->id);
 
 		if (!$recordDriver->isValid()){
 			$this->display('../Record/invalidRecord.tpl', 'Invalid Record');

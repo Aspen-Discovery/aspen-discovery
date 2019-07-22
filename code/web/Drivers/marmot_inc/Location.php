@@ -177,8 +177,8 @@ class Location extends DataObject
 		    $hooplaScopes[$hooplaScope->id] = $hooplaScope->name;
 	    }
 
-	    require_once ROOT_DIR . '/sys/Rbdigital/RbdigitalScope.php';
-	    $rbdigitalScope = new RbdigitalScope();
+	    require_once ROOT_DIR . '/sys/RBdigital/RBdigitalScope.php';
+	    $rbdigitalScope = new RBdigitalScope();
 	    $rbdigitalScope->orderBy('name');
 	    $rbdigitalScopes = [];
 	    $rbdigitalScope->find();
@@ -355,8 +355,8 @@ class Location extends DataObject
 			    'hooplaScopeId' => array('property'=>'hooplaScopeId', 'type'=>'enum','values'=>$hooplaScopes, 'label'=>'Hoopla Scope', 'description'=>'The hoopla scope to use', 'hideInLists' => true, 'default'=>-1),
 	        )),
 
-		    'rbdigitalSection' => array('property'=>'rbdigitalSection', 'type' => 'section', 'label' =>'Rbdigital', 'hideInLists' => true, 'properties' => array(
-			    'rbdigitalScopeId'        => array('property'=>'rbdigitalScopeId', 'type'=>'enum','values'=>$rbdigitalScopes,  'label'=>'Rbdigital Scope', 'description'=>'The rbdigital scope to use', 'hideInLists' => true, 'default'=>-1),
+		    'rbdigitalSection' => array('property'=>'rbdigitalSection', 'type' => 'section', 'label' =>'RBdigital', 'hideInLists' => true, 'properties' => array(
+			    'rbdigitalScopeId'        => array('property'=>'rbdigitalScopeId', 'type'=>'enum','values'=>$rbdigitalScopes,  'label'=>'RBdigital Scope', 'description'=>'The rbdigital scope to use', 'hideInLists' => true, 'default'=>-1),
 		    )),
 
 			array(

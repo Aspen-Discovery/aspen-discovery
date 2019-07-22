@@ -11,12 +11,13 @@
 
 		<span class='availableHoldsNoticePlaceHolder'></span>
 
-		{* Internal Grid *}
-		<h2 class="myAccountTitle">{translate text='Recommended for you'}</h2>
+		<h1 class="myAccountTitle">{translate text='Recommended for you'}</h1>
 
-		<div id="pager" class="navbar form-inline">
-			<label for="hideCovers" class="control-label checkbox pull-right"> {translate text='Hide Covers'} <input id="hideCovers" type="checkbox" onclick="AspenDiscovery.Account.toggleShowCovers(!$(this).is(':checked'))" {if $showCovers == false}checked="checked"{/if}></label>
-		</div>
+		{if count($resourceList) > 0}
+			<div id="pager" class="navbar form-inline">
+				<label for="hideCovers" class="control-label checkbox pull-right"> {translate text='Hide Covers'} <input id="hideCovers" type="checkbox" onclick="AspenDiscovery.Account.toggleShowCovers(!$(this).is(':checked'))" {if $showCovers == false}checked="checked"{/if}></label>
+			</div>
+		{/if}
 
 		<div class="striped">
 			{foreach from=$resourceList item=suggestion name=recordLoop}

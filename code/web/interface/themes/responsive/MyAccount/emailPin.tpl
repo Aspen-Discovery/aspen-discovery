@@ -1,7 +1,7 @@
 {strip}
 <div id="page-content" class="col-xs-12">
 
-	<h2>{translate text='Forget Your PIN?'}</h2>
+	<h1>{translate text='Forget Your PIN?'}</h1>
 	<div class="alert alert-info">Please enter your complete card number.  Your current PIN number will be sent to the email address on file for your account.</div>
 
 	<form id="emailPin" method="POST" action="{$path}/MyAccount/EmailPin" class="form-horizontal">

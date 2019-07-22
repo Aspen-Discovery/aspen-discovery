@@ -1,4 +1,4 @@
-<h2>{translate text='Invalid Record'}</h2>
+<h1>{translate text='Invalid Record'}</h1>
 
 <p class="alert alert-warning">Sorry, we could not find a record with an id of <b>{$id}</b> in our catalog.	Please try your search again.</p>
 {if $materialRequestType == 1 }

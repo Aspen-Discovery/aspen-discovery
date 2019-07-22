@@ -1,8 +1,8 @@
 {strip}
 	<div class="resulthead">
-		<h2>
+		<h1>
 			{$pageTitleShort}
-		</h2>
+		</h1>
 
 		<div class="clearer"></div>
 	</div>

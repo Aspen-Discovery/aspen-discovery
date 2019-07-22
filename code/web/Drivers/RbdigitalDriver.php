@@ -1,7 +1,7 @@
 <?php
 
 require_once ROOT_DIR . '/Drivers/AbstractEContentDriver.php';
-class RbdigitalDriver extends AbstractEContentDriver
+class RBdigitalDriver extends AbstractEContentDriver
 {
 	private $valid = false;
     private $webServiceURL;
@@ -13,9 +13,9 @@ class RbdigitalDriver extends AbstractEContentDriver
     private $curlWrapper;
 
     public function __construct() {
-        require_once ROOT_DIR . '/sys/Rbdigital/RbdigitalSetting.php';
+        require_once ROOT_DIR . '/sys/RBdigital/RBdigitalSetting.php';
         try{
-	        $rbdigitalSettings = new RbdigitalSetting();
+	        $rbdigitalSettings = new RBdigitalSetting();
 	        if ($rbdigitalSettings->find(true)){
 		        $this->valid = true;
 
@@ -34,7 +34,7 @@ class RbdigitalDriver extends AbstractEContentDriver
 	        }
         }catch (Exception $e){
         	global $logger;
-        	$logger->log("Could not load Rbdigital settings", Logger::LOG_ALERT);
+        	$logger->log("Could not load RBdigital settings", Logger::LOG_ALERT);
         }
     }
 
@@ -66,7 +66,7 @@ class RbdigitalDriver extends AbstractEContentDriver
         }
 
         //Get the rbdigital id for the patron
-        $rbdigitalId = $this->getRbdigitalId($patron);
+        $rbdigitalId = $this->getRBdigitalId($patron);
 
         $checkouts = array();
 
@@ -77,7 +77,7 @@ class RbdigitalDriver extends AbstractEContentDriver
             $patronCheckouts = json_decode($patronCheckoutsRaw);
             foreach ($patronCheckouts as $patronCheckout){
                 $checkout = array();
-                $checkout['checkoutSource'] = 'Rbdigital';
+                $checkout['checkoutSource'] = 'RBdigital';
 
                 $checkout['id'] = $patronCheckout->transactionId;
                 $checkout['recordId'] = $patronCheckout->isbn;
@@ -101,12 +101,12 @@ class RbdigitalDriver extends AbstractEContentDriver
                 $checkout['accessOnlineUrl'] = '';
 
                 if ($checkout['id'] && strlen($checkout['id']) > 0){
-                    require_once ROOT_DIR . '/RecordDrivers/RbdigitalRecordDriver.php';
-                    $recordDriver = new RbdigitalRecordDriver($checkout['recordId']);
+                    require_once ROOT_DIR . '/RecordDrivers/RBdigitalRecordDriver.php';
+                    $recordDriver = new RBdigitalRecordDriver($checkout['recordId']);
                     if ($recordDriver->isValid()){
-                        $checkout['coverUrl']      = $recordDriver->getBookcoverUrl('medium');
-                        $checkout['groupedWorkId'] = $recordDriver->getGroupedWorkId();
-                        $checkout['ratingData']    = $recordDriver->getRatingData();
+                        $checkout['coverUrl'] = $recordDriver->getBookcoverUrl('medium');
+	                    $checkout['ratingData']    = $recordDriver->getRatingData();
+	                    $checkout['groupedWorkId'] = $recordDriver->getGroupedWorkId();
                         $checkout['format']        = $recordDriver->getPrimaryFormat();
                         $checkout['author']        = $recordDriver->getPrimaryAuthor();
                         $checkout['title']         = $recordDriver->getTitle();
@@ -133,7 +133,7 @@ class RbdigitalDriver extends AbstractEContentDriver
 	        foreach ($patronMagazines->resultSet as $patronMagazine){
 		        $patronMagazineDetails = $patronMagazine->item;
 		        $checkout = array();
-		        $checkout['checkoutSource'] = 'RbdigitalMagazine';
+		        $checkout['checkoutSource'] = 'RBdigitalMagazine';
 
 		        $checkout['id'] = $patronMagazineDetails->issueId;
 		        $checkout['recordId'] = $patronMagazineDetails->magazineId;
@@ -144,8 +144,8 @@ class RbdigitalDriver extends AbstractEContentDriver
 		        $checkout['accessOnlineUrl'] = '';
 
 		        if ($checkout['id'] && strlen($checkout['id']) > 0){
-			        require_once ROOT_DIR . '/RecordDrivers/RbdigitalMagazineDriver.php';
-			        $recordDriver = new RbdigitalMagazineDriver($checkout['recordId']);
+			        require_once ROOT_DIR . '/RecordDrivers/RBdigitalMagazineDriver.php';
+			        $recordDriver = new RBdigitalMagazineDriver($checkout['recordId']);
 			        if ($recordDriver->isValid()){
 				        $checkout['coverUrl']      = $recordDriver->getBookcoverUrl('medium');
 				        $checkout['groupedWorkId'] = $recordDriver->getGroupedWorkId();
@@ -182,11 +182,11 @@ class RbdigitalDriver extends AbstractEContentDriver
      */
     public function checkOutTitle($patron, $recordId) {
         $result = ['success' => false, 'message' => 'Unknown error'];
-        $rbdigitalId = $this->getRbdigitalId($patron);
+        $rbdigitalId = $this->getRBdigitalId($patron);
         if ($rbdigitalId == false) {
-            $result['message'] = 'Sorry, you are not registered with Rbdigital.  You will need to create an account there before continuing.';
+            $result['message'] = 'Sorry, you are not registered with RBdigital.  You will need to create an account there before continuing.';
         } else {
-            require_once ROOT_DIR . '/RecordDrivers/RbdigitalRecordDriver.php';
+            require_once ROOT_DIR . '/RecordDrivers/RBdigitalRecordDriver.php';
             $actionUrl = $this->webServiceURL . '/v1/libraries/' . $this->libraryId . '/patrons/' . $rbdigitalId. '/checkouts/' . $recordId;
 
             $rawResponse = $this->curlWrapper->curlPostPage($actionUrl, '');
@@ -200,11 +200,15 @@ class RbdigitalDriver extends AbstractEContentDriver
                 $logger->log(print_r($curl_info, true), Logger::LOG_ERROR);
             }else{
                 if (!empty($response->output) && $response->output == 'SUCCESS') {
-                    $this->trackUserUsageOfRbdigital($patron);
+                    $this->trackUserUsageOfRBdigital($patron);
                     $this->trackRecordCheckout($recordId);
 
                     $result['success'] = true;
-                    $result['message'] = 'Your title was checked out successfully. You can read or listen to the title from your account.';
+                    $result['message'] = translate(['text'=>'rbdigital-checkout-success', 'defaultText'=>'Your title was checked out successfully. You can read or listen to the title from your account.']);
+
+	                /** @var Memcache $memCache */
+	                global $memCache;
+	                $memCache->delete('rbdigital_summary_' . $patron->id);
                 } else {
                     $result['message'] = $response->output;
                 }
@@ -222,27 +226,31 @@ class RbdigitalDriver extends AbstractEContentDriver
 	*/
 	public function checkoutMagazine($patron, $recordId) {
 		$result = ['success' => false, 'message' => 'Unknown error'];
-		$rbdigitalId = $this->getRbdigitalId($patron);
+		$rbdigitalId = $this->getRBdigitalId($patron);
 		if ($rbdigitalId == false) {
-			$result['message'] = 'Sorry, you are not registered with Rbdigital.  You will need to create an account there before continuing.';
+			$result['message'] = 'Sorry, you are not registered with RBdigital.  You will need to create an account there before continuing.';
 		} else {
 			//Get the current issue for the magazine
-			require_once ROOT_DIR . '/sys/Rbdigital/RbdigitalMagazine.php';
-			$product = new RbdigitalMagazine();
+			require_once ROOT_DIR . '/sys/RBdigital/RBdigitalMagazine.php';
+			$product = new RBdigitalMagazine();
 			$product->magazineId = $recordId;
 			if ($product->find(true)) {
-				require_once ROOT_DIR . '/RecordDrivers/RbdigitalRecordDriver.php';
+				require_once ROOT_DIR . '/RecordDrivers/RBdigitalRecordDriver.php';
 				$actionUrl = $this->webServiceURL . '/v1/libraries/' . $this->libraryId . '/patrons/' . $rbdigitalId. '/patron-magazines/' . $product->issueId;
 				// /v{version}/libraries/{libraryId}/patrons/{patronId}/patron-magazines/{issueId}
 
-				//Rbdigital does not return a status so we assume that it checked out ok
+				//RBdigital does not return a status so we assume that it checked out ok
 				$this->curlWrapper->curlPostPage($actionUrl, '');
 
-				$this->trackUserUsageOfRbdigital($patron);
+				$this->trackUserUsageOfRBdigital($patron);
 				$this->trackMagazineCheckout($recordId);
 
 				$result['success'] = true;
 				$result['message'] = 'The magazine was checked out successfully. You can read the magazine from the rbdigital app.';
+
+				/** @var Memcache $memCache */
+				global $memCache;
+				$memCache->delete('rbdigital_summary_' . $patron->id);
 			}else{
 				$result['message'] = "Could not find magazine to checkout";
 			}
@@ -289,7 +297,7 @@ class RbdigitalDriver extends AbstractEContentDriver
     }
 
     public function isUserRegistered(User $user){
-        if ($this->getRbdigitalId($user) != false) {
+        if ($this->getRBdigitalId($user) != false) {
             return true;
         }else{
             return false;
@@ -326,9 +334,9 @@ class RbdigitalDriver extends AbstractEContentDriver
     {
         $result = ['success' => false, 'message' => 'Unknown error'];
 
-        $rbdigitalId = $this->getRbdigitalId($patron);
+        $rbdigitalId = $this->getRBdigitalId($patron);
         if ($rbdigitalId == false) {
-            $result['message'] = 'Sorry, you are not registered with Rbdigital.  You will need to create an account there before continuing.';
+            $result['message'] = 'Sorry, you are not registered with RBdigital.  You will need to create an account there before continuing.';
         } else {
             $actionUrl = $this->webServiceURL . '/v1/libraries/' . $this->libraryId . '/patrons/' . $rbdigitalId. '/checkouts/' . $recordId;
 
@@ -361,9 +369,9 @@ class RbdigitalDriver extends AbstractEContentDriver
     {
         $result = ['success' => false, 'message' => 'Unknown error'];
 
-        $rbdigitalId = $this->getRbdigitalId($patron);
+        $rbdigitalId = $this->getRBdigitalId($patron);
         if ($rbdigitalId == false) {
-            $result['message'] = 'Sorry, you are not registered with Rbdigital.  You will need to create an account there before continuing.';
+            $result['message'] = 'Sorry, you are not registered with RBdigital.  You will need to create an account there before continuing.';
         } else {
             $actionUrl = $this->webServiceURL . '/v1/libraries/' . $this->libraryId . '/patrons/' . $rbdigitalId. '/checkouts/' . $recordId;
 
@@ -377,6 +385,10 @@ class RbdigitalDriver extends AbstractEContentDriver
                 if (!empty($response->message) && $response->message == 'success') {
                     $result['success'] = true;
                     $result['message'] = "Your title was returned successfully.";
+
+	                /** @var Memcache $memCache */
+	                global $memCache;
+	                $memCache->delete('rbdigital_summary_' . $patron->id);
                 } else {
                     $result['message'] = $response->message;
                 }
@@ -396,12 +408,12 @@ class RbdigitalDriver extends AbstractEContentDriver
 	{
 		$result = ['success' => false, 'message' => 'Unknown error'];
 
-		$rbdigitalId = $this->getRbdigitalId($patron);
+		$rbdigitalId = $this->getRBdigitalId($patron);
 		if ($rbdigitalId == false) {
-			$result['message'] = 'Sorry, you are not registered with Rbdigital.  You will need to create an account there before continuing.';
+			$result['message'] = 'Sorry, you are not registered with RBdigital.  You will need to create an account there before continuing.';
 		} else {
-			require_once ROOT_DIR . '/sys/Rbdigital/RbdigitalMagazine.php';
-			$product = new RbdigitalMagazine();
+			require_once ROOT_DIR . '/sys/RBdigital/RBdigitalMagazine.php';
+			$product = new RBdigitalMagazine();
 			$product->magazineId = $magazineId;
 			if ($product->find(true)) {
 				$actionUrl = $this->webServiceURL . '/v1/libraries/' . $this->libraryId . '/patrons/' . $rbdigitalId . '/patron-magazines/' . $product->issueId;
@@ -414,7 +426,11 @@ class RbdigitalDriver extends AbstractEContentDriver
 					$logger->log("Invalid information from rbdigital api " . $rawResponse, Logger::LOG_ERROR);
 				} else {
 					$result['success'] = true;
-					$result['message'] = "Your title was returned successfully.";
+					$result['message'] = "The magazine was returned successfully.";
+
+					/** @var Memcache $memCache */
+					global $memCache;
+					$memCache->delete('rbdigital_summary_' . $patron->id);
 				}
 			}else{
 				$result['message'] = "Could not find the magazine to return";
@@ -440,7 +456,7 @@ class RbdigitalDriver extends AbstractEContentDriver
             return $this->holds[$patron->id];
         }
 
-        $rbdigitalId = $this->getRbdigitalId($patron);
+        $rbdigitalId = $this->getRBdigitalId($patron);
 
         $patronHoldsUrl = $this->webServiceURL . '/v1/libraries/' . $this->libraryId . '/patrons/' . $rbdigitalId. '/holds';
 
@@ -460,10 +476,10 @@ class RbdigitalDriver extends AbstractEContentDriver
             $hold = array();
             $hold['id'] = $tmpHold->isbn;
             $hold['transactionId'] = $tmpHold->transactionId;
-            $hold['holdSource'] = 'Rbdigital';
+            $hold['holdSource'] = 'RBdigital';
 
-            require_once ROOT_DIR . '/RecordDrivers/RbdigitalRecordDriver.php';
-            $recordDriver = new RbdigitalRecordDriver($hold['id']);
+            require_once ROOT_DIR . '/RecordDrivers/RBdigitalRecordDriver.php';
+            $recordDriver = new RBdigitalRecordDriver($hold['id']);
             if ($recordDriver->isValid()) {
                 $hold['coverUrl'] = $recordDriver->getBookcoverUrl('medium');
                 $hold['title'] = $recordDriver->getTitle();
@@ -498,9 +514,9 @@ class RbdigitalDriver extends AbstractEContentDriver
     public function placeHold($patron, $recordId)
     {
         $result = ['success' => false, 'message' => 'Unknown error'];
-        $rbdigitalId = $this->getRbdigitalId($patron);
+        $rbdigitalId = $this->getRBdigitalId($patron);
         if ($rbdigitalId == false) {
-            $result['message'] = 'Sorry, you are not registered with Rbdigital.  You will need to create an account there before continuing.';
+            $result['message'] = 'Sorry, you are not registered with RBdigital.  You will need to create an account there before continuing.';
         } else {
             $actionUrl = $this->webServiceURL . '/v1/libraries/' . $this->libraryId . '/patrons/' . $rbdigitalId. '/holds/' . $recordId;
 
@@ -515,10 +531,14 @@ class RbdigitalDriver extends AbstractEContentDriver
                 $logger->log(print_r($curl_info, true), Logger::LOG_ERROR);
             }else{
                 if (is_numeric($response)) {
-                    $this->trackUserUsageOfRbdigital($patron);
+                    $this->trackUserUsageOfRBdigital($patron);
                     $this->trackRecordHold($recordId);
                     $result['success'] = true;
                     $result['message'] = "Your hold was placed successfully.";
+
+	                /** @var Memcache $memCache */
+	                global $memCache;
+	                $memCache->delete('rbdigital_summary_' . $patron->id);
                 } else {
                     $result['message'] = $response->message;
                 }
@@ -537,9 +557,9 @@ class RbdigitalDriver extends AbstractEContentDriver
     function cancelHold($patron, $recordId)
     {
         $result = ['success' => false, 'message' => 'Unknown error'];
-        $rbdigitalId = $this->getRbdigitalId($patron);
+        $rbdigitalId = $this->getRBdigitalId($patron);
         if ($rbdigitalId == false) {
-            $result['message'] = 'Sorry, you are not registered with Rbdigital.  You will need to create an account there before continuing.';
+            $result['message'] = 'Sorry, you are not registered with RBdigital.  You will need to create an account there before continuing.';
         } else {
             $actionUrl = $this->webServiceURL . '/v1/libraries/' . $this->libraryId . '/patrons/' . $rbdigitalId. '/holds/' . $recordId;
 
@@ -553,6 +573,9 @@ class RbdigitalDriver extends AbstractEContentDriver
                 if (!empty($response->message) && $response->message == 'success') {
                     $result['success'] = true;
                     $result['message'] = "Your hold was cancelled successfully.";
+	                /** @var Memcache $memCache */
+                    global $memCache;
+                    $memCache->delete('rbdigital_summary_' . $patron->id);
                 } else {
                     $result['message'] = $response->message;
                 }
@@ -583,7 +606,7 @@ class RbdigitalDriver extends AbstractEContentDriver
         $summary = $memCache->get('rbdigital_summary_' . $patron->id);
         if ($summary == false || isset($_REQUEST['reload'])){
             //Get the rbdigital id for the patron
-            $rbdigitalId = $this->getRbdigitalId($patron);
+            $rbdigitalId = $this->getRBdigitalId($patron);
 
             //Get account information from api
             $patronSummaryUrl = $this->webServiceURL . '/v1/tenants/' . $this->libraryId . '/patrons/' . $rbdigitalId. '/patron-config';
@@ -595,12 +618,12 @@ class RbdigitalDriver extends AbstractEContentDriver
             $summary['numCheckedOut'] = empty($response->audioBooks->checkouts) ? 0 : count($response->audioBooks->checkouts);
 	        $summary['numCheckedOut'] += empty($response->magazines->checkouts) ? 0 : count($response->magazines->checkouts);
 
-            //Rbdigital automatically checks holds out so nothing is available
+            //RBdigital automatically checks holds out so nothing is available
             $summary['numAvailableHolds'] = 0;
             $summary['numUnavailableHolds'] = empty($response->audioBooks->holds) ? 0 : count($response->audioBooks->holds);
 
             $timer->logTime("Finished loading titles from rbdigital summary");
-            $memCache->set('rbdigital_summary_' . $patron->id, $summary, $configArray['Caching']['overdrive_summary']);
+            $memCache->set('rbdigital_summary_' . $patron->id, $summary, $configArray['Caching']['account_summary']);
         }
 
         return $summary;
@@ -613,7 +636,7 @@ class RbdigitalDriver extends AbstractEContentDriver
      * @param User $user
      * @return int|false
      */
-    public function getRbdigitalId(User $user)
+    public function getRBdigitalId(User $user)
     {
         if (!empty($user->rbdigitalId) && $user->rbdigitalId != -1 && !isset($_REQUEST['reload'])){
             return $user->rbdigitalId;
@@ -662,20 +685,20 @@ class RbdigitalDriver extends AbstractEContentDriver
 
     }
 
-	public function redirectToRbdigitalMagazine(/** @noinspection PhpUnusedParameterInspection */ User $patron, RbdigitalMagazineDriver $recordDriver)
+	public function redirectToRBdigitalMagazine(/** @noinspection PhpUnusedParameterInspection */ User $patron, RBdigitalMagazineDriver $recordDriver)
 	{
-		header('Location:' . $recordDriver->getRbdigitalLinkUrl());
+		header('Location:' . $recordDriver->getRBdigitalLinkUrl());
 		die();
 	}
 
-    public function redirectToRbdigital(/** @noinspection PhpUnusedParameterInspection */ User $patron, RbdigitalRecordDriver $recordDriver)
+    public function redirectToRBdigital(/** @noinspection PhpUnusedParameterInspection */ User $patron, RBdigitalRecordDriver $recordDriver)
     {
         header('Location:' . $this->userInterfaceURL . '/book/' . $recordDriver->getUniqueID());
         die();
 //        $result = ['success' => false, 'message' => 'Unknown error'];
-//        $rbdigitalId = $this->getRbdigitalId($patron);
+//        $rbdigitalId = $this->getRBdigitalId($patron);
 //        if ($rbdigitalId == false) {
-//            $result['message'] = 'Sorry, you are not registered with Rbdigital.  You will need to create an account there before continuing.';
+//            $result['message'] = 'Sorry, you are not registered with RBdigital.  You will need to create an account there before continuing.';
 //        } else {
 //            //Get the link to redirect to with the proper bearer information
 //            /*
@@ -723,10 +746,10 @@ class RbdigitalDriver extends AbstractEContentDriver
     /**
      * @param $user
      */
-    public function trackUserUsageOfRbdigital($user): void
+    public function trackUserUsageOfRBdigital($user): void
     {
-        require_once ROOT_DIR . '/sys/Rbdigital/UserRbdigitalUsage.php';
-        $userUsage = new UserRbdigitalUsage();
+        require_once ROOT_DIR . '/sys/RBdigital/UserRBdigitalUsage.php';
+        $userUsage = new UserRBdigitalUsage();
         $userUsage->userId = $user->id;
         $userUsage->year = date('Y');
         $userUsage->month = date('n');
@@ -745,9 +768,9 @@ class RbdigitalDriver extends AbstractEContentDriver
      */
     function trackRecordCheckout($rbdigitalId): void
     {
-        require_once ROOT_DIR . '/sys/Rbdigital/RbdigitalRecordUsage.php';
-        $recordUsage = new RbdigitalRecordUsage();
-        $product = new RbdigitalProduct();
+        require_once ROOT_DIR . '/sys/RBdigital/RBdigitalRecordUsage.php';
+        $recordUsage = new RBdigitalRecordUsage();
+        $product = new RBdigitalProduct();
         $product->rbdigitalId = $rbdigitalId;
         if ($product->find(true)) {
             $recordUsage->rbdigitalId = $product->id;
@@ -769,9 +792,9 @@ class RbdigitalDriver extends AbstractEContentDriver
 	 */
 	function trackMagazineCheckout($rbdigitalId): void
 	{
-		require_once ROOT_DIR . '/sys/Rbdigital/RbdigitalMagazineUsage.php';
-		$recordUsage = new RbdigitalMagazineUsage();
-		$product = new RbdigitalMagazine();
+		require_once ROOT_DIR . '/sys/RBdigital/RBdigitalMagazineUsage.php';
+		$recordUsage = new RBdigitalMagazineUsage();
+		$product = new RBdigitalMagazine();
 		$product->magazineId = $rbdigitalId;
 		if ($product->find(true)) {
 			$recordUsage->magazineId = $product->id;
@@ -792,10 +815,10 @@ class RbdigitalDriver extends AbstractEContentDriver
      */
     function trackRecordHold($rbdigitalId): void
     {
-        require_once ROOT_DIR . '/sys/Rbdigital/RbdigitalRecordUsage.php';
-        require_once ROOT_DIR . '/sys/Rbdigital/RbdigitalProduct.php';
-        $recordUsage = new RbdigitalRecordUsage();
-        $product = new RbdigitalProduct();
+        require_once ROOT_DIR . '/sys/RBdigital/RBdigitalRecordUsage.php';
+        require_once ROOT_DIR . '/sys/RBdigital/RBdigitalProduct.php';
+        $recordUsage = new RBdigitalRecordUsage();
+        $product = new RBdigitalProduct();
         $product->rbdigitalId = $rbdigitalId;
         if ($product->find(true)){
             $recordUsage->rbdigitalId = $product->id;

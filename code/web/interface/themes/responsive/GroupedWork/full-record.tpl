@@ -5,11 +5,11 @@
 		{include file="GroupedWork/search-results-navigation.tpl"}
 
 		{* Display Title *}
-		<h2 class="notranslate">
+		<h1 class="notranslate">
 			{$recordDriver->getShortTitle()|removeTrailingPunctuation|escape}{if $recordDriver->getSubtitle()}
 				: {$recordDriver->getSubtitle()|removeTrailingPunctuation|escape}
 			{/if}
-		</h2>
+		</h1>
 
 		<div class="row">
 			<div class="col-xs-4 col-sm-5 col-md-4 col-lg-3 text-center">

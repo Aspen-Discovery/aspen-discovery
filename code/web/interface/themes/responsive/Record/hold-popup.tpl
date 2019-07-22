@@ -39,7 +39,7 @@
 			{* Responsive theme enforces that the user is always logged in before getting here*}
 			<div id="holdOptions">
 				<div id="pickupLocationOptions" class="form-group">
-					<label class="control-label" for="campus">{translate text="I want to pick this up at"}: </label>
+					<label class="control-label" for="campus">{translate text="I want to pick this up at"} </label>
 					<div class="controls">
 						<select name="campus" id="campus" class="form-control">
 							{if count($pickupLocations) > 0}
@@ -93,14 +93,14 @@
 					</script>
 				{if $showHoldCancelDate == 1}
 					<div id="cancelHoldDate" class="form-group">
-						<label class="control-label" for="canceldate">{translate text="Automatically cancel this hold if not filled by"}:</label>
+						<label class="control-label" for="cancelDate">{translate text="Automatically cancel this hold if not filled by"}:</label>
 						<div class="input-group input-append date controls" id="cancelDatePicker">
 							{* TODO: defaultNotNeeded not implemented yet. plb 4-1-2015 *}
 							{* data-provide attribute loads the datepicker through bootstrap data api *}
 							{* start date sets minimum. date sets initial value: days from today, eg +8d is 8 days from now. *}
-							<input type="text" name="canceldate" id="canceldate" placeholder="mm/dd/yyyy" class="form-control" size="10" {*if $defaultNotNeededAfterDays}value="{$defaultNotNeededAfterDays}"{/if*}
+							<input type="text" name="cancelDate" id="cancelDate" placeholder="mm/dd/yyyy" class="form-control" size="10" {*if $defaultNotNeededAfterDays}value="{$defaultNotNeededAfterDays}"{/if*}
 							       data-provide="datepicker" data-date-format="mm/dd/yyyy" data-date-start-date="0d"{*if $defaultNotNeededAfterDays} data-date="+{$defaultNotNeededAfterDays}d"{/if*}>
-							<span class="input-group-addon"><span class="glyphicon glyphicon-calendar" onclick="$('#canceldate').focus().datepicker('show')" aria-hidden="true"></span></span>
+							<span class="input-group-addon"><span class="glyphicon glyphicon-calendar" onclick="$('#cancelDate').focus().datepicker('show')" aria-hidden="true"></span></span>
 						</div>
 						<div class="loginFormRow">
 							<i>{translate text="automatic_cancellation_notice"}</i>
@@ -117,7 +117,7 @@
 				{/if}
 				<br>
 				<div class="form-group">
-					<label for="autologout" class="checkbox"><input type="checkbox" name="autologout" id="autologout" {if $isOpac == true}checked="checked"{/if}> Log me out after requesting the item.</label>
+					<label for="autologout" class="checkbox"><input type="checkbox" name="autologout" id="autologout" {if $isOpac == true}checked="checked"{/if}> {translate text="Log me out after requesting the item."}</label>
 					<input type="hidden" name="holdType" value="hold">
 				</div>
 			</div>

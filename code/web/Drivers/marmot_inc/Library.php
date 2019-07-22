@@ -383,8 +383,8 @@ class Library extends DataObject
 			$hooplaScopes[$hooplaScope->id] = $hooplaScope->name;
 		}
 
-		require_once ROOT_DIR . '/sys/Rbdigital/RbdigitalScope.php';
-		$rbdigitalScope = new RbdigitalScope();
+		require_once ROOT_DIR . '/sys/RBdigital/RBdigitalScope.php';
+		$rbdigitalScope = new RBdigitalScope();
 		$rbdigitalScope->orderBy('name');
 		$rbdigitalScopes = [];
 		$rbdigitalScope->find();
@@ -801,8 +801,8 @@ class Library extends DataObject
 				'hooplaLibraryID'      => array('property'=>'hooplaLibraryID', 'type'=>'integer', 'label'=>'Hoopla Library ID', 'description'=>'The ID Number Hoopla uses for this library', 'hideInLists' => true),
                 'hooplaScopeId'        => array('property'=>'hooplaScopeId', 'type'=>'enum','values'=>$hooplaScopes, 'label'=>'Hoopla Scope', 'description'=>'The hoopla scope to use', 'hideInLists' => true, 'default'=>-1),
 			)),
-			'rbdigitalSection' => array('property'=>'rbdigitalSection', 'type' => 'section', 'label' =>'Rbdigital', 'hideInLists' => true, 'properties' => array(
-				'rbdigitalScopeId'        => array('property'=>'rbdigitalScopeId', 'type'=>'enum','values'=>$rbdigitalScopes, 'label'=>'Rbdigital Scope', 'description'=>'The rbdigital scope to use', 'hideInLists' => true, 'default'=>-1),
+			'rbdigitalSection' => array('property'=>'rbdigitalSection', 'type' => 'section', 'label' =>'RBdigital', 'hideInLists' => true, 'properties' => array(
+				'rbdigitalScopeId'        => array('property'=>'rbdigitalScopeId', 'type'=>'enum','values'=>$rbdigitalScopes, 'label'=>'RBdigital Scope', 'description'=>'The RBdigital scope to use', 'hideInLists' => true, 'default'=>-1),
 			)),
 			'genealogySection' => array('property' => 'genealogySection', 'type' => 'section', 'label' => 'Genealogy', 'hideInLists' =>true,
                 'properties' => [

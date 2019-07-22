@@ -1,6 +1,6 @@
 {strip}
 <div id="main-content" class="col-md-12">
-		<h3>List Widget</h3>
+		<h1>List Widget</h1>
 		<div class="btn-group">
 			<a class="btn btn-sm btn-default" href="{$path}/Admin/ListWidgets">All Widgets</a>
 			<a class="btn btn-sm btn-default" href="{$path}/Admin/ListWidgets?objectAction=edit&amp;id={$object->id}">Edit</a>

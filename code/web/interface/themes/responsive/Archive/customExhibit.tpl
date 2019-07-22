@@ -12,9 +12,9 @@
 		</div>
 	{/if}
 
-	<h2>
+	<h1>
 		{$title}
-	</h2>
+	</h1>
 
 	<div class="row">
 		<div class="col-tn-12">

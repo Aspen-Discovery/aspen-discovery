@@ -2,24 +2,24 @@
 
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
-require_once ROOT_DIR . '/sys/Rbdigital/RbdigitalSetting.php';
+require_once ROOT_DIR . '/sys/RBdigital/RBdigitalSetting.php';
 
-class Rbdigital_Settings extends ObjectEditor
+class RBdigital_Settings extends ObjectEditor
 {
     function getObjectType(){
-        return 'RbdigitalSetting';
+        return 'RBdigitalSetting';
     }
     function getToolName(){
         return 'Settings';
     }
     function getModule(){
-        return 'Rbdigital';
+        return 'RBdigital';
     }
     function getPageTitle(){
-        return 'Rbdigital Settings';
+        return 'RBdigital Settings';
     }
     function getAllObjects(){
-        $object = new RbdigitalSetting();
+        $object = new RBdigitalSetting();
         $object->find();
         $objectList = array();
         while ($object->fetch()){
@@ -28,7 +28,7 @@ class Rbdigital_Settings extends ObjectEditor
         return $objectList;
     }
     function getObjectStructure(){
-        return RbdigitalSetting::getObjectStructure();
+        return RBdigitalSetting::getObjectStructure();
     }
     function getPrimaryKeyColumn(){
         return 'id';

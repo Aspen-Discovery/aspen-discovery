@@ -3,19 +3,19 @@
  * Updates related to rbdigital for cleanliness
  */
 
-function getRbdigitalUpdates() {
+function getRBdigitalUpdates() {
 	return array(
-        'variables_lastRbdigitalExport' => array(
-            'title' => 'Variables Last Rbdigital Export Time',
-            'description' => 'Add a variable for when Rbdigital data was extracted from the API last.',
+        'variables_lastRBdigitalExport' => array(
+            'title' => 'Variables Last RBdigital Export Time',
+            'description' => 'Add a variable for when RBdigital data was extracted from the API last.',
             'sql' => array(
-                "INSERT INTO variables (name, value) VALUES ('lastRbdigitalExport', 'false')",
+                "INSERT INTO variables (name, value) VALUES ('lastRBdigitalExport', 'false')",
             ),
         ),
 
         'rbdigital_exportTables' => array(
-            'title' => 'Rbdigital title tables',
-            'description' => 'Create tables to store data exported from rbdigital.',
+            'title' => 'RBdigital title tables',
+            'description' => 'Create tables to store data exported from RBdigital.',
             'sql' => array(
                 "CREATE TABLE rbdigital_title (
                         id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -38,8 +38,8 @@ function getRbdigitalUpdates() {
         ),
 
         'rbdigital_availability' => array(
-            'title' => 'Rbdigital availability tables',
-            'description' => 'Create tables to store data exported from rbdigital.',
+            'title' => 'RBdigital availability tables',
+            'description' => 'Create tables to store data exported from RBdigital.',
             'sql' => array(
                 "CREATE TABLE rbdigital_availability (
                         id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -57,8 +57,8 @@ function getRbdigitalUpdates() {
         ),
 
         'rbdigital_exportLog' => array(
-            'title' => 'Rbdigital export log',
-            'description' => 'Create log for rbdigital export.',
+            'title' => 'RBdigital export log',
+            'description' => 'Create log for RBdigital export.',
             'sql' => array(
                 "CREATE TABLE IF NOT EXISTS rbdigital_export_log(
                         `id` INT NOT NULL AUTO_INCREMENT COMMENT 'The id of log', 
@@ -72,8 +72,8 @@ function getRbdigitalUpdates() {
         ),
 
         'track_rbdigital_user_usage' => array(
-            'title' => 'Rbdigital Usage by user',
-            'description' => 'Add a table to track how often a particular user uses Rbdigital.',
+            'title' => 'RBdigital Usage by user',
+            'description' => 'Add a table to track how often a particular user uses RBdigital.',
             'sql' => array(
                 "CREATE TABLE user_rbdigital_usage (
                     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -88,8 +88,8 @@ function getRbdigitalUpdates() {
         ),
 
         'track_rbdigital_record_usage' => array(
-			'title' => 'Rbdigital Record Usage',
-			'description' => 'Add a table to track how records within Rbdigital are used.',
+			'title' => 'RBdigital Record Usage',
+			'description' => 'Add a table to track how records within RBdigital are used.',
 			'continueOnError' => true,
 			'sql' => array(
 				"CREATE TABLE rbdigital_record_usage (
@@ -106,8 +106,8 @@ function getRbdigitalUpdates() {
 		),
 
 		'track_rbdigital_magazine_usage' => array(
-			'title' => 'Rbdigital Magazine Usage',
-			'description' => 'Add a table to track how magazines within Rbdigital are used.',
+			'title' => 'RBdigital Magazine Usage',
+			'description' => 'Add a table to track how magazines within RBdigital are used.',
 			'continueOnError' => true,
 			'sql' => array(
 				"CREATE TABLE rbdigital_magazine_usage (
@@ -123,8 +123,8 @@ function getRbdigitalUpdates() {
 		),
 
         'rbdigital_add_settings' => array(
-            'title' => 'Add Rbdigital Settings',
-            'description' => 'Add Settings for Rbdigital to move configuration out of ini',
+            'title' => 'Add RBdigital Settings',
+            'description' => 'Add Settings for RBdigital to move configuration out of ini',
             'sql' => array(
                 "CREATE TABLE IF NOT EXISTS rbdigital_settings(
 						id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -140,8 +140,8 @@ function getRbdigitalUpdates() {
         ),
 
         'rbdigital_exportLog_update' => array(
-            'title' => 'Better Rbdigital export log',
-            'description' => 'Add additional info for Rbdigital export log.',
+            'title' => 'Better RBdigital export log',
+            'description' => 'Add additional info for RBdigital export log.',
             'sql' => array(
                 "ALTER TABLE rbdigital_export_log ADD COLUMN numProducts INT(11) DEFAULT 0",
                 "ALTER TABLE rbdigital_export_log ADD COLUMN numErrors INT(11) DEFAULT 0",
@@ -154,8 +154,8 @@ function getRbdigitalUpdates() {
         ),
 
 		'rbdigital_magazine_export' => array(
-			'title' => 'Rbdigital magazine tables',
-			'description' => 'Create tables to store data exported from rbdigital.',
+			'title' => 'RBdigital magazine tables',
+			'description' => 'Create tables to store data exported from RBdigital.',
 			'sql' => array(
 				"CREATE TABLE rbdigital_magazine (
                         id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -177,7 +177,7 @@ function getRbdigitalUpdates() {
 		),
 
 		'rbdigital_scoping' => [
-			'title' => 'Rbdigital Scoping',
+			'title' => 'RBdigital Scoping',
 			'description' => 'Add a table to define what information should be included within search results',
 			'sql' => [
 				'CREATE TABLE rbdigital_scopes (

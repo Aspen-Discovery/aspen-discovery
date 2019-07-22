@@ -97,7 +97,7 @@
 
 					<div class="row">
 						<div class="result-label col-tn-4 col-lg-3">{translate text='Format'}</div>
-						<div class="result-value col-tn-8 col-lg-9">{$record.format}</div>
+						<div class="result-value col-tn-8 col-lg-9">{$record.format|translate}</div>
 					</div>
 
 					{if !empty($record.barcode)}
@@ -130,13 +130,13 @@
 						<div class="result-value col-tn-8 col-lg-9">
 							{$record.dueDate|date_format}
 							{if $record.overdue}
-								<span class="overdueLabel"> OVERDUE</span>
+								<span class="overdueLabel"> {translate text="OVERDUE"}</span>
 							{elseif $record.daysUntilDue == 0}
-								<span class="dueSoonLabel"> (Due today)</span>
+								<span class="dueSoonLabel"> ({translate text="Due today"})</span>
 							{elseif $record.daysUntilDue == 1}
-								<span class="dueSoonLabel"> (Due tomorrow)</span>
+								<span class="dueSoonLabel"> ({translate text="Due tomorrow"})</span>
 							{elseif $record.daysUntilDue <= 7}
-								<span class="dueSoonLabel"> (Due in {$record.daysUntilDue} days)</span>
+								<span class="dueSoonLabel"> ({translate text="Due in %1% days" 1=$record.daysUntilDue})</span>
 							{/if}
 						</div>
 					</div>
@@ -146,7 +146,7 @@
 							<div class="result-label col-tn-4 col-lg-3">{translate text='Fine'}</div>
 							<div class="result-value col-tn-8 col-lg-9">
 								{if $record.fine}
-									<span class="overdueLabel"> {$record.fine} (up to now) </span>
+									<span class="overdueLabel"> {translate text="%1% (up to now)" 1=$record.fine} </span>
 								{/if}
 							</div>
 						</div>
@@ -156,7 +156,7 @@
 						<div class="row">
 							<div class="result-label col-tn-4 col-lg-3">{translate text='Renewed'}</div>
 							<div class="result-value col-tn-8 col-lg-9">
-								{$record.renewCount} times
+								{translate text="%1% times" 1=$record.renewCount}
 							</div>
 						</div>
 					{/if}
@@ -179,7 +179,7 @@
 						{if !isset($record.canrenew) || $record.canrenew == true}
 							<a href="#" onclick="return AspenDiscovery.Account.renewTitle('{$record.userId}', '{$record.recordId}', '{$record.renewIndicator}');" class="btn btn-sm btn-primary">{translate text='Renew'}</a>
 						{else}
-							Sorry, this title cannot be renewed
+							{translate text="Sorry, this title cannot be renewed"}
 						{/if}
 					</div>
 				</div>

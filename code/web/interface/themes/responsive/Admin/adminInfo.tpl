@@ -1,6 +1,6 @@
 {strip}
 	<div id="main-content" class="col-xs-12">
-		<h2>{$title}</h2>
+		<h1>{$title}</h1>
 		{$info}
 	</div>
 {/strip}

@@ -11,10 +11,10 @@
 		</div>
 	{/if}
 
-	<h2>
+	<h1>
 		{$title}
 		{*{$title|escape} // plb 3/8/2017 not escaping because some titles use &amp; *}
-	</h2>
+	</h1>
 
 	<div class="lead">
 		{if $thumbnail && !$main_image}

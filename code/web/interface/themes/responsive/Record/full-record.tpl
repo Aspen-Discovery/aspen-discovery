@@ -13,7 +13,7 @@
 			</div>
 		{else}
 			{* Display Title *}
-			<h2>
+			<h1>
 				{*{$recordDriver->getTitle()|escape}*}{* // ever a case when the trailing punction is needed? *}
 				{$recordDriver->getTitle()|removeTrailingPunctuation}
 				{if $recordDriver->getTitleSection()}
@@ -22,7 +22,7 @@
 				{if $recordDriver->getFormats()}
 					<br><small>({implode subject=$recordDriver->getFormats() glue=", ", translate=true})</small>
 				{/if}
-			</h2>
+			</h1>
 
 			<div class="row">
 				<div class="col-xs-4 col-sm-5 col-md-4 col-lg-3 text-center">

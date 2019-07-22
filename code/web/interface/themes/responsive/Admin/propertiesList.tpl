@@ -1,5 +1,5 @@
 
-<h2 id="pageTitle">{$pageTitleShort}</h2>
+<h1 id="pageTitle">{$pageTitleShort}</h1>
 {if $lastError}
 	<div class="alert alert-danger">
 		{$lastError}

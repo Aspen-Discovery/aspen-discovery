@@ -2,10 +2,10 @@
 
 require_once ROOT_DIR . '/RecordDrivers/RecordInterface.php';
 require_once ROOT_DIR . '/RecordDrivers/GroupedWorkSubDriver.php';
-require_once ROOT_DIR . '/sys/Rbdigital/RbdigitalMagazine.php';
-class RbdigitalMagazineDriver extends GroupedWorkSubDriver {
+require_once ROOT_DIR . '/sys/RBdigital/RBdigitalMagazine.php';
+class RBdigitalMagazineDriver extends GroupedWorkSubDriver {
     private $id;
-    /** @var RbdigitalMagazine */
+    /** @var RBdigitalMagazine */
     private $rbdigitalProduct;
     private $rbdigitalRawMetadata;
     private $valid;
@@ -14,7 +14,7 @@ class RbdigitalMagazineDriver extends GroupedWorkSubDriver {
     public function __construct($recordId, $groupedWork = null) {
         $this->id = $recordId;
 
-        $this->rbdigitalProduct = new RbdigitalMagazine();
+        $this->rbdigitalProduct = new RBdigitalMagazine();
         $this->rbdigitalProduct->magazineId = $recordId;
         if ($this->rbdigitalProduct->find(true)) {
             $this->valid = true;
@@ -50,7 +50,7 @@ class RbdigitalMagazineDriver extends GroupedWorkSubDriver {
 	    }
     }
 
-    public function getRbdigitalBookcoverUrl()
+    public function getRBdigitalBookcoverUrl()
     {
         $images = $this->rbdigitalRawMetadata->images;
         foreach ($images as $image) {
@@ -61,7 +61,7 @@ class RbdigitalMagazineDriver extends GroupedWorkSubDriver {
 
     public function getModule()
     {
-        return 'RbdigitalMagazine';
+        return 'RBdigitalMagazine';
     }
 
     /**
@@ -79,7 +79,7 @@ class RbdigitalMagazineDriver extends GroupedWorkSubDriver {
         $interface->assign('groupedWorkDetails', $groupedWorkDetails);
 
         $interface->assign('rbdigitalExtract', $this->rbdigitalRawMetadata);
-        return 'RecordDrivers/Rbdigital/staff-view.tpl';
+        return 'RecordDrivers/RBdigital/staff-view.tpl';
     }
 
     /**
@@ -154,12 +154,12 @@ class RbdigitalMagazineDriver extends GroupedWorkSubDriver {
 
         $moreDetailsOptions['moreDetails'] = array(
             'label' => 'More Details',
-            'body' => $interface->fetch('Rbdigital/view-more-details.tpl'),
+            'body' => $interface->fetch('RBdigital/view-more-details.tpl'),
         );
         $this->loadSubjects();
         $moreDetailsOptions['subjects'] = array(
             'label' => 'Subjects',
-            'body' => $interface->fetch('RecordDrivers/Rbdigital/view-subjects.tpl'),
+            'body' => $interface->fetch('RecordDrivers/RBdigital/view-subjects.tpl'),
         );
         $moreDetailsOptions['citations'] = array(
             'label' => 'Citations',
@@ -197,21 +197,21 @@ class RbdigitalMagazineDriver extends GroupedWorkSubDriver {
         $actions = array();
         if ($isAvailable){
             $actions[] = array(
-                'title' => 'Check Out Rbdigital',
-                'onclick' => "return AspenDiscovery.Rbdigital.checkOutMagazine('{$this->id}');",
+                'title' => 'Check Out RBdigital',
+                'onclick' => "return AspenDiscovery.RBdigital.checkOutMagazine('{$this->id}');",
                 'requireLogin' => false,
             );
 
 //	        $actions[] = array(
 //		        'title' => 'Access Online',
-//		        'url' => $this->getRbdigitalLinkUrl(),
+//		        'url' => $this->getRBdigitalLinkUrl(),
 //		        'onclick' => "",
 //		        'requireLogin' => false,
 //	        );
         }else{
             $actions[] = array(
-                'title' => 'Place Hold Rbdigital',
-                'onclick' => "return AspenDiscovery.Rbdigital.placeHoldMagazine('{$this->id}');",
+                'title' => 'Place Hold RBdigital',
+                'onclick' => "return AspenDiscovery.RBdigital.placeHoldMagazine('{$this->id}');",
                 'requireLogin' => false,
             );
         }
@@ -235,7 +235,7 @@ class RbdigitalMagazineDriver extends GroupedWorkSubDriver {
      */
     function getEditions()
     {
-        // No specific information provided by Rbdigital
+        // No specific information provided by RBdigital
         return array();
     }
 
@@ -375,7 +375,7 @@ class RbdigitalMagazineDriver extends GroupedWorkSubDriver {
     public function getAccessOnlineLinkUrl($patron)
     {
         global $configArray;
-        return $configArray['Site']['url'] . '/RbdigitalMagazine/' . $this->id . '/AccessOnline?patronId=' . $patron->id;
+        return $configArray['Site']['url'] . '/RBdigitalMagazine/' . $this->id . '/AccessOnline?patronId=' . $patron->id;
     }
 
 	function getStatusSummary()
@@ -383,12 +383,12 @@ class RbdigitalMagazineDriver extends GroupedWorkSubDriver {
 		$relatedRecord = $this->getRelatedRecord();
 		$statusSummary = array();
 		if ($relatedRecord->getAvailableCopies() > 0){
-			$statusSummary['status'] = "Available from Rbdigital";
+			$statusSummary['status'] = "Available from RBdigital";
 			$statusSummary['available'] = true;
 			$statusSummary['class'] = 'available';
 			$statusSummary['showCheckout'] = true;
 		}else{
-			//Rbdigital magazines do not have the ability to place holds
+			//RBdigital magazines do not have the ability to place holds
 			$statusSummary['status'] = 'Checked Out';
 			$statusSummary['class'] = 'checkedOut';
 			$statusSummary['available'] = false;
@@ -397,10 +397,10 @@ class RbdigitalMagazineDriver extends GroupedWorkSubDriver {
 		return $statusSummary;
 	}
 
-	function getRbdigitalLinkUrl()
+	function getRBdigitalLinkUrl()
 	{
-		require_once ROOT_DIR . '/Drivers/RbdigitalDriver.php';
-		$rbdigitalDriver = new RbdigitalDriver();
+		require_once ROOT_DIR . '/Drivers/RBdigitalDriver.php';
+		$rbdigitalDriver = new RBdigitalDriver();
 		return $rbdigitalDriver->getUserInterfaceURL() . '/magazine/' . $this->rbdigitalProduct->magazineId . '/' . $this->rbdigitalProduct->issueId;
 	}
 }

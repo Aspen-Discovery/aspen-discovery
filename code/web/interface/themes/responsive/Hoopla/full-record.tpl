@@ -6,13 +6,13 @@
 		{include file="GroupedWork/search-results-navigation.tpl"}
 
 		{* Display Title *}
-		<h2>
+		<h1>
 			{$recordDriver->getTitle()|escape}
 			{if $recordDriver->getSubtitle()}: {$recordDriver->getSubtitle()|escape}{/if}
 			{if $recordDriver->getFormats()}
 				<br/><small>({implode subject=$recordDriver->getFormats() glue=", "})</small>
 			{/if}
-		</h2>
+		</h1>
 
 		<div class="row">
 			<div class="col-xs-4 col-sm-5 col-md-4 col-lg-3 text-center">

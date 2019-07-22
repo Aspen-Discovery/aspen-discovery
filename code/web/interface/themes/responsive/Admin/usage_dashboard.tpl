@@ -1,12 +1,12 @@
 {strip}
 	<div id="main-content" class="col-sm-12">
-		<h2>{translate text="Aspen Discovery Usage Dashboard"}</h2>
-		<h3>{translate text="General Usage"}</h3>
+		<h1>{translate text="Aspen Discovery Usage Dashboard"}</h1>
+		<h2>{translate text="General Usage"}</h2>
 		<div class="row">
 			<div class="dashboardCategory col-sm-6">
 				<div class="row">
 					<div class="col-sm-10 col-sm-offset-1">
-						<h4 class="dashboardCategoryLabel">{translate text="Page Views"}</h4>
+						<h3 class="dashboardCategoryLabel">{translate text="Page Views"}</h3>
 					</div>
 				</div>
 				<div class="row">
@@ -28,7 +28,7 @@
 			<div class="dashboardCategory col-sm-6">
 				<div class="row">
 					<div class="col-sm-10 col-sm-offset-1">
-						<h4 class="dashboardCategoryLabel">{translate text="Asynchronous Requests"}</h4>
+						<h3 class="dashboardCategoryLabel">{translate text="Asynchronous Requests"}</h3>
 					</div>
 				</div>
 				<div class="row">
@@ -50,7 +50,7 @@
 			<div class="dashboardCategory col-sm-6">
 				<div class="row">
 					<div class="col-sm-10 col-sm-offset-1">
-						<h4 class="dashboardCategoryLabel">{translate text="Covers Requested"}</h4>
+						<h3 class="dashboardCategoryLabel">{translate text="Covers Requested"}</h3>
 					</div>
 				</div>
 				<div class="row">
@@ -72,7 +72,7 @@
 			<div class="dashboardCategory col-sm-6">
 				<div class="row">
 					<div class="col-sm-10 col-sm-offset-1">
-						<h4 class="dashboardCategoryLabel">{translate text="Errors"}</h4>
+						<h3 class="dashboardCategoryLabel">{translate text="Errors"}</h3>
 					</div>
 				</div>
 				<div class="row">
@@ -92,12 +92,12 @@
 			</div>
 		</div>
 
-		<h3>Searches</h3>
+		<h2>Searches</h2>
 		<div class="row">
 			<div class="dashboardCategory col-sm-6">
 				<div class="row">
 					<div class="col-sm-10 col-sm-offset-1">
-						<h4 class="dashboardCategoryLabel">{translate text="Grouped Work Searches"}</h4>
+						<h3 class="dashboardCategoryLabel">{translate text="Grouped Work Searches"}</h3>
 					</div>
 				</div>
 				<div class="row">
@@ -119,7 +119,7 @@
 			<div class="dashboardCategory col-sm-6">
 				<div class="row">
 					<div class="col-sm-10 col-sm-offset-1">
-						<h4 class="dashboardCategoryLabel">{translate text="Open Archives Searches"}</h4>
+						<h3 class="dashboardCategoryLabel">{translate text="Open Archives Searches"}</h3>
 					</div>
 				</div>
 				<div class="row">
@@ -141,7 +141,7 @@
 			<div class="dashboardCategory col-sm-6">
 				<div class="row">
 					<div class="col-sm-10 col-sm-offset-1">
-						<h4 class="dashboardCategoryLabel">{translate text="User List Searches"}</h4>
+						<h3 class="dashboardCategoryLabel">{translate text="User List Searches"}</h3>
 					</div>
 				</div>
 				<div class="row">

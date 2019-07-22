@@ -1,7 +1,7 @@
 {strip}
 	{*<div class="col-xs-12 col-sm-6 col-md-5 col-lg-4">*}
 	<div class="col-tn-12 col-xs-12 col-sm-3 col-md-3 col-lg-3">
-		<div id="header-logo"> {* Image also has this id *}
+		<div id="header-logo-wrapper">
 			<a href="{$logoLink}/">
 
 				<img src="{if $responsiveLogo}{$responsiveLogo}{else}{img filename="logo_responsive.png"}{/if}"

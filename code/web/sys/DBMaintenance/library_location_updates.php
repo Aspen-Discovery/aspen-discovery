@@ -1729,7 +1729,7 @@ function getLibraryLocationUpdates(){
 		],
 
 		'library_location_rbdigital_scoping' => [
-			'title' => 'Library and Location Scoping of Rbdigital',
+			'title' => 'Library and Location Scoping of RBdigital',
 			'description' => 'Add information about how to scope rbdigital records',
 			'sql' => [
 				'ALTER TABLE library ADD COLUMN rbdigitalScopeId INT(11) default -1',

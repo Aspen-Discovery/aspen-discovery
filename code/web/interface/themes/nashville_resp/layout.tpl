@@ -16,7 +16,6 @@
 		{if !empty($google_verification_key)}
 		<meta name="google-site-verification" content="{$google_verification_key}">
 		{/if}
-			{if !empty($addHeader)}{$addHeader}{/if}
 			<meta property="og:site_name" content="{$site.title|removeTrailingPunctuation|escape:html}"/>
 		{if !empty($og_title)}
 		<meta property="og:title" content="{$og_title|removeTrailingPunctuation|escape:html}"/>

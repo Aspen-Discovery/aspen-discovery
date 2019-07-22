@@ -9,7 +9,7 @@
 			{/foreach}
 			<a class="btn btn-sm btn-default" href='/Admin/IndexingProfiles?objectAction=list'>Return to List</a>
 		</div>
-		<h2>{$IndexProfileName}</h2>
+		<h1>{$IndexProfileName}</h1>
 		<table class="table table-striped table-bordered">
 			<tr>
 				<th>File Name</th>

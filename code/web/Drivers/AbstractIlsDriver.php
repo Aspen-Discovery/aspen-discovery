@@ -181,7 +181,7 @@ abstract class AbstractIlsDriver extends AbstractDriver
 	function hasMaterialsRequestSupport(){
     	return false;
 	}
-	function getNewMaterialsRequestForm()
+	function getNewMaterialsRequestForm(User $user)
 	{
 		return 'not supported';
 	}
@@ -226,10 +226,24 @@ abstract class AbstractIlsDriver extends AbstractDriver
 		return 0;
 	}
 
-	function importListsFromIls($patron)
+	function importListsFromIls(User $patron)
 	{
 		return array(
 			'success' => false,
 			'errors' => array('Importing Lists has not been implemented for this ILS.'));
+	}
+
+	public function getAccountSummary(User $user)
+	{
+		return [
+			'numCheckedOut' => 0,
+			'numOverdue' => 0,
+			'numAvailableHolds' => 0,
+			'numUnavailableHolds' => 0,
+			'totalFines' => 0,
+			'expires' => '',
+			'expired' => 0,
+			'expireClose' => 0,
+		];
 	}
 }

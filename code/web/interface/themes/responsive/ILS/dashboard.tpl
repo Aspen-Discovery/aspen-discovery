@@ -1,12 +1,12 @@
 {strip}
 	<div id="main-content" class="col-sm-12">
-		<h2>ILS & Side Loading Dashboard</h2>
+		<h1>ILS & Side Loading Dashboard</h1>
 		{foreach from=$profiles item=profileName key=profileId}
-			<h3>Profile: {$profileName}</h3>
+			<h2>Profile: {$profileName}</h2>
 			<div class="dashboardCategory">
 				<div class="row">
 					<div class="col-sm-10 col-sm-offset-1">
-						<h4 class="dashboardCategoryLabel">Active Users</h4>
+						<h3 class="dashboardCategoryLabel">Active Users</h3>
 					</div>
 				</div>
 				<div class="row">
@@ -28,7 +28,7 @@
 			<div class="dashboardCategory">
 				<div class="row">
 					<div class="col-sm-10 col-sm-offset-1">
-						<h4 class="dashboardCategoryLabel">Records Held or Accessed Online</h4>
+						<h3 class="dashboardCategoryLabel">Records Held or Accessed Online</h3>
 					</div>
 				</div>
 				<div class="row">

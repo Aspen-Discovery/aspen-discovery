@@ -255,13 +255,18 @@ abstract class DataObject
         $query = 'SELECT COUNT(*) from ' . $this->__table;
 
 	    $query .= $this->getWhereClause($aspen_db);
+	    $query .= $this->__groupBy;
         $this->__lastQuery = $query;
         $this->__queryStmt = $aspen_db->prepare($query);
         if ($this->__queryStmt->execute()){
-            if ($this->__queryStmt->rowCount()) {
-                $data = $this->__queryStmt->fetch();
-                return $data[0];
-            }
+        	if (!empty($this->__groupBy)){
+        		return $this->__queryStmt->rowCount();
+	        }else{
+		        if ($this->__queryStmt->rowCount()) {
+			        $data = $this->__queryStmt->fetch();
+			        return $data[0];
+		        }
+	        }
         } else {
             echo("Failed to execute " . $query);
         }

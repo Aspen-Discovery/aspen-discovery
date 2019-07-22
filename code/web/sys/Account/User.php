@@ -35,7 +35,9 @@ class User extends DataObject
 	public $preferredLibraryInterface;
 	public $noPromptForUserReviews; //tinyint(1)
     public $rbdigitalId;
-    public $rbdigitalLastAccountCheck;
+	public $rbdigitalUsername;
+	public $rbdigitalPassword;
+	public $rbdigitalLastAccountCheck;
 
 	private $roles;
 	private $masqueradingRoles;
@@ -80,10 +82,10 @@ class User extends DataObject
 	private $_numHoldsOverDrive = 0;
 	private $_numHoldsAvailableOverDrive = 0;
 	private $_numHoldsRequestedOverDrive = 0;
-    private $_numCheckedOutRbdigital = 0;
-    private $_numHoldsRbdigital = 0;
-    private $_numHoldsAvailableRbdigital = 0;
-    private $_numHoldsRequestedRbdigital = 0;
+    private $_numCheckedOutRBdigital = 0;
+    private $_numHoldsRBdigital = 0;
+    private $_numHoldsAvailableRBdigital = 0;
+    private $_numHoldsRequestedRBdigital = 0;
 	private $_numCheckedOutHoopla = 0;
 	public $_numBookings;
 	public $_notices;
@@ -447,13 +449,15 @@ class User extends DataObject
 			$userHomeLibrary = Library::getPatronHomeLibrary($this);
 			if ($userHomeLibrary){
 			    if ($source == 'overdrive'){
-			        return $userHomeLibrary->enableOverdriveCollection;
+				    require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+				    $overDriveDriver = new OverDriveDriver();
+			        return $userHomeLibrary->enableOverdriveCollection && $overDriveDriver->isUserValidForOverDrive($this);
                 }elseif ($source == 'hoopla'){
 			        return $userHomeLibrary->hooplaLibraryID > 0;
                 }elseif ($source == 'rbdigital'){
-				    require_once ROOT_DIR . '/sys/Rbdigital/RbdigitalSetting.php';
+				    require_once ROOT_DIR . '/sys/RBdigital/RBdigitalSetting.php';
 				    try{
-					    $rbdigitalSettings = new RbdigitalSetting();
+					    $rbdigitalSettings = new RBdigitalSetting();
 					    $rbdigitalSettings->find();
 					    return $rbdigitalSettings->N > 0;
 				    }catch (Exception $e){
@@ -682,8 +686,34 @@ class User extends DataObject
 			$this->hooplaCheckOutConfirmation = 0;
 		}
 		$this->update();
-		}
+	}
 
+	public function updateRbdigitalOptions()
+	{
+		if (isset($_REQUEST['rbdigitalUsername'])){
+			$this->rbdigitalUsername = strip_tags($_REQUEST['rbdigitalUsername']);
+		}
+		if (isset($_REQUEST['rbdigitalPassword'])){
+			$this->rbdigitalPassword = strip_tags($_REQUEST['rbdigitalPassword']);
+		}
+		$this->update();
+		return true;
+	}
+
+	function updateStaffSettings(){
+		if (isset($_REQUEST['bypassAutoLogout']) && ($_REQUEST['bypassAutoLogout'] == 'yes' || $_REQUEST['bypassAutoLogout'] == 'on')){
+			$this->bypassAutoLogout = 1;
+		}else{
+			$this->bypassAutoLogout = 0;
+		}
+		if (isset($_REQUEST['materialsRequestEmailSignature'])) {
+			$this->setMaterialsRequestEmailSignature($_REQUEST['materialsRequestEmailSignature']);
+		}
+		if (isset($_REQUEST['materialsRequestReplyToAddress'])) {
+			$this->setMaterialsRequestReplyToAddress($_REQUEST['materialsRequestReplyToAddress']);
+		}
+		$this->update();
+	}
 	function updateUserPreferences(){
 		// Validate that the input data is correct
 		if (isset($_POST['myLocation1']) && !is_array($_POST['myLocation1']) && preg_match('/^\d{1,3}$/', $_POST['myLocation1']) == 0){
@@ -692,11 +722,7 @@ class User extends DataObject
 		if (isset($_POST['myLocation2']) && !is_array($_POST['myLocation2']) && preg_match('/^\d{1,3}$/', $_POST['myLocation2']) == 0){
 			AspenError::raiseError('The 2nd location had an incorrect format.');
 		}
-		if (isset($_REQUEST['bypassAutoLogout']) && ($_REQUEST['bypassAutoLogout'] == 'yes' || $_REQUEST['bypassAutoLogout'] == 'on')){
-			$this->bypassAutoLogout = 1;
-		}else{
-			$this->bypassAutoLogout = 0;
-		}
+
 		if (isset($_REQUEST['profileLanguage'])){
 			$this->interfaceLanguage = $_REQUEST['profileLanguage'];
 		}
@@ -795,7 +821,7 @@ class User extends DataObject
 
 	public function getNumCheckedOutTotal($includeLinkedUsers = true) {
 		$this->updateRuntimeInformation();
-		$myCheckouts = $this->_numCheckedOutIls + $this->_numCheckedOutOverDrive + $this->_numCheckedOutHoopla + $this->_numCheckedOutRbdigital;
+		$myCheckouts = $this->_numCheckedOutIls + $this->_numCheckedOutOverDrive + $this->_numCheckedOutHoopla + $this->_numCheckedOutRBdigital;
 		if ($includeLinkedUsers) {
 			if ($this->getLinkedUsers() != null) {
 				/** @var User $user */
@@ -809,7 +835,7 @@ class User extends DataObject
 
 	public function getNumHoldsTotal($includeLinkedUsers = true) {
 		$this->updateRuntimeInformation();
-		$myHolds = $this->_numHoldsIls + $this->_numHoldsOverDrive + $this->_numHoldsRbdigital;
+		$myHolds = $this->_numHoldsIls + $this->_numHoldsOverDrive + $this->_numHoldsRBdigital;
 		if ($includeLinkedUsers) {
 			if ($this->getLinkedUsers() != null) {
 				/** @var User $user */
@@ -823,7 +849,7 @@ class User extends DataObject
 
 	public function getNumHoldsAvailableTotal($includeLinkedUsers = true){
 		$this->updateRuntimeInformation();
-		$myHolds = $this->_numHoldsAvailableIls + $this->_numHoldsAvailableOverDrive + $this->_numHoldsAvailableRbdigital;
+		$myHolds = $this->_numHoldsAvailableIls + $this->_numHoldsAvailableOverDrive + $this->_numHoldsAvailableRBdigital;
 		if ($includeLinkedUsers){
 			if ($this->getLinkedUsers() != null) {
 				/** @var User $user */
@@ -878,79 +904,101 @@ class User extends DataObject
 	 * 2) OverDrive
 	 *
 	 * @param bool $includeLinkedUsers
+	 * @param string $source
 	 * @return array
 	 */
-	public function getCheckouts($includeLinkedUsers = true){
+	public function getCheckouts($includeLinkedUsers = true, $source = 'all'){
 		global $timer;
 		//Get checked out titles from the ILS
-		$ilsCheckouts = $this->getCatalogDriver()->getCheckouts($this);
-        $allCheckedOut = $ilsCheckouts;
-		$timer->logTime("Loaded transactions from catalog.");
-
-		//Get checked out titles from OverDrive
-		//Do not load OverDrive titles if the parent barcode (if any) is the same as the current barcode
-		if ($this->isValidForEContentSource('overdrive')){
-            require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
-            $driver = new OverDriveDriver();
-			$overDriveCheckedOutItems = $driver->getCheckouts($this);
-            $allCheckedOut = array_merge($ilsCheckouts, $overDriveCheckedOutItems);
+		if ($source == 'all' || $source == 'ils'){
+			$ilsCheckouts = $this->getCatalogDriver()->getCheckouts($this);
+			$allCheckedOut = $ilsCheckouts;
+			$timer->logTime("Loaded transactions from catalog. {$this->id}");
+		}else{
+			$allCheckedOut = [];
 		}
 
-		//Get checked out titles from Hoopla
-		//Do not load Hoopla titles if the parent barcode (if any) is the same as the current barcode
-		if ($this->isValidForEContentSource('hoopla')){
-            require_once ROOT_DIR . '/Drivers/HooplaDriver.php';
-            $hooplaDriver = new HooplaDriver();
-            $hooplaCheckedOutItems = $hooplaDriver->getCheckouts($this);
-            $allCheckedOut = array_merge($allCheckedOut, $hooplaCheckedOutItems);
-        }
+		if ($source == 'all' || $source == 'overdrive') {
+			//Get checked out titles from OverDrive
+			//Do not load OverDrive titles if the parent barcode (if any) is the same as the current barcode
+			if ($this->isValidForEContentSource('overdrive')) {
+				require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+				$driver = new OverDriveDriver();
+				$overDriveCheckedOutItems = $driver->getCheckouts($this, false);
+				$allCheckedOut = array_merge($allCheckedOut, $overDriveCheckedOutItems);
+				$timer->logTime("Loaded transactions from overdrive. {$this->id}");
+			}
+		}
 
-        if ($this->isValidForEContentSource('rbdigital')){
-            require_once ROOT_DIR . '/Drivers/RbdigitalDriver.php';
-            $rbdigitalDriver = new RbdigitalDriver();
-            $rbdigitalCheckedOutItems = $rbdigitalDriver->getCheckouts($this);
-            $allCheckedOut = array_merge($allCheckedOut, $rbdigitalCheckedOutItems);
-        }
+		if ($source == 'all' || $source == 'hoopla') {
+			//Get checked out titles from Hoopla
+			//Do not load Hoopla titles if the parent barcode (if any) is the same as the current barcode
+			if ($this->isValidForEContentSource('hoopla')) {
+				require_once ROOT_DIR . '/Drivers/HooplaDriver.php';
+				$hooplaDriver = new HooplaDriver();
+				$hooplaCheckedOutItems = $hooplaDriver->getCheckouts($this);
+				$allCheckedOut = array_merge($allCheckedOut, $hooplaCheckedOutItems);
+				$timer->logTime("Loaded transactions from hoopla. {$this->id}");
+			}
+		}
+
+		if ($source == 'all' || $source == 'rbdigital') {
+			if ($this->isValidForEContentSource('rbdigital')) {
+				require_once ROOT_DIR . '/Drivers/RBdigitalDriver.php';
+				$rbdigitalDriver = new RBdigitalDriver();
+				$rbdigitalCheckedOutItems = $rbdigitalDriver->getCheckouts($this);
+				$allCheckedOut = array_merge($allCheckedOut, $rbdigitalCheckedOutItems);
+				$timer->logTime("Loaded transactions from rbdigital. {$this->id}");
+			}
+		}
 
 		if ($includeLinkedUsers) {
 			if ($this->getLinkedUsers() != null) {
 				/** @var User $user */
 				foreach ($this->getLinkedUsers() as $linkedUser) {
-					$allCheckedOut = array_merge($allCheckedOut, $linkedUser->getCheckouts(false));
+					$allCheckedOut = array_merge($allCheckedOut, $linkedUser->getCheckouts(false, $source));
 				}
 			}
 		}
 		return $allCheckedOut;
 	}
 
-	public function getHolds($includeLinkedUsers = true, $unavailableSort = 'sortTitle', $availableSort = 'expire'){
-		$ilsHolds = $this->getCatalogDriver()->getHolds($this);
-		if ($ilsHolds instanceof AspenError) {
-			$ilsHolds = array();
-		}
-        $allHolds = $ilsHolds;
-
-		//Get holds from OverDrive
-		if ($this->isValidForEContentSource('overdrive')){
-            require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
-            $driver = new OverDriveDriver();
-			$overDriveHolds = $driver->getHolds($this);
-            $allHolds = array_merge_recursive($allHolds, $overDriveHolds);
+	public function getHolds($includeLinkedUsers = true, $unavailableSort = 'sortTitle', $availableSort = 'expire', $source='all'){
+		if ($source == 'all' || $source == 'ils') {
+			$ilsHolds = $this->getCatalogDriver()->getHolds($this);
+			if ($ilsHolds instanceof AspenError) {
+				$ilsHolds = array();
+			}
+			$allHolds = $ilsHolds;
+		}else{
+			$allHolds = [];
 		}
 
-        //Get holds from Rbdigital
-        if ($this->isValidForEContentSource('rbdigital')){
-            require_once ROOT_DIR . '/Drivers/RbdigitalDriver.php';
-            $driver = new RbdigitalDriver();
-            $rbdigitalHolds = $driver->getHolds($this);
-            $allHolds = array_merge_recursive($allHolds, $rbdigitalHolds);
-        }
+		if ($source == 'all' || $source == 'overdrive') {
+			//Get holds from OverDrive
+			if ($this->isValidForEContentSource('overdrive')) {
+				require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+				$driver = new OverDriveDriver();
+				$overDriveHolds = $driver->getHolds($this);
+				$allHolds = array_merge_recursive($allHolds, $overDriveHolds);
+			}
+		}
+
+		if ($source == 'all' || $source == 'rbdigital') {
+			//Get holds from RBdigital
+			if ($this->isValidForEContentSource('rbdigital')) {
+				require_once ROOT_DIR . '/Drivers/RBdigitalDriver.php';
+				$driver = new RBdigitalDriver();
+				$rbdigitalHolds = $driver->getHolds($this);
+				$allHolds = array_merge_recursive($allHolds, $rbdigitalHolds);
+			}
+		}
 
 		if ($includeLinkedUsers) {
 			if ($this->getLinkedUsers() != null) {
 				/** @var User $user */
 				foreach ($this->getLinkedUsers() as $user) {
-					$allHolds = array_merge_recursive($allHolds, $user->getHolds(false, $unavailableSort, $availableSort));
+					$allHolds = array_merge_recursive($allHolds, $user->getHolds(false, $unavailableSort, $availableSort, $source));
 				}
 			}
 		}
@@ -1328,8 +1376,8 @@ class User extends DataObject
 		return $renewAllResults;
 	}
 
-	public function getReadingHistory($page, $recordsPerPage, $selectedSortOption) {
-		return $this->getCatalogDriver()->getReadingHistory($this, $page, $recordsPerPage, $selectedSortOption);
+	public function getReadingHistory($page, $recordsPerPage, $selectedSortOption, $filter) {
+		return $this->getCatalogDriver()->getReadingHistory($this, $page, $recordsPerPage, $selectedSortOption, $filter);
 	}
 
 	public function doReadingHistoryAction($readingHistoryAction, $selectedTitles){
@@ -1486,18 +1534,18 @@ class User extends DataObject
 		$this->_numHoldsOverDrive += $val;
 	}
 
-    function setNumCheckedOutRbdigital($val){
-        $this->_numCheckedOutRbdigital = $val;
+    function setNumCheckedOutRBdigital($val){
+        $this->_numCheckedOutRBdigital = $val;
     }
 
-    function setNumHoldsAvailableRbdigital($val){
-        $this->_numHoldsAvailableRbdigital = $val;
-        $this->_numHoldsRbdigital += $val;
+    function setNumHoldsAvailableRBdigital($val){
+        $this->_numHoldsAvailableRBdigital = $val;
+        $this->_numHoldsRBdigital += $val;
     }
 
-    function setNumHoldsRequestedRbdigital($val){
-        $this->_numHoldsRequestedRbdigital = $val;
-        $this->_numHoldsRbdigital += $val;
+    function setNumHoldsRequestedRBdigital($val){
+        $this->_numHoldsRequestedRBdigital = $val;
+        $this->_numHoldsRBdigital += $val;
     }
 
 	function setNumMaterialsRequests($val){
@@ -1532,7 +1580,21 @@ class User extends DataObject
 	}
 
 	function getReadingHistorySize(){
-		$this->updateRuntimeInformation();
+		if ($this->_readingHistorySize == null){
+			if ($this->trackReadingHistory && $this->initialReadingHistoryLoaded){
+				global $timer;
+				require_once ROOT_DIR . '/sys/ReadingHistoryEntry.php';
+				$readingHistoryDB = new ReadingHistoryEntry();
+				$readingHistoryDB->userId = $this->id;
+				$readingHistoryDB->whereAdd('deleted = 0');
+				$readingHistoryDB->groupBy('groupedWorkPermanentId');
+				$this->_readingHistorySize = $readingHistoryDB->count();
+				$timer->logTime("Updated reading history size");
+			}else{
+				$this->_readingHistorySize = 0;
+			}
+		}
+
 		return $this->_readingHistorySize;
 	}
 

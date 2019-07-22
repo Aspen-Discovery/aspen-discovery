@@ -35,8 +35,6 @@
 		<input type='hidden' name='id' value='{$id}' />
 		{/if}
 
-		<br/>
-		
 		{foreach from=$structure item=property}
 			{include file="DataObjectUtil/property.tpl"}
 		{/foreach}

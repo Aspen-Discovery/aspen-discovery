@@ -1,6 +1,6 @@
 {strip}
 	<div id="main-content" class="col-md-12">
-		<h3>Rbdigital Export Log</h3>
+		<h3>RBdigital Export Log</h3>
 		<hr>
 
 		<h4>Filter by</h4>

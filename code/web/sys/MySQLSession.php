@@ -32,6 +32,10 @@ class MySQLSession extends SessionInterface {
 			}else{
 				// updated the session in the database to show that we just used it
                 MySQLSession::$active_session = $s;
+                //Update the cookie to extend session time as well
+				if ($s->remember_me){
+					setcookie(session_name(),session_id(),time()+self::$rememberMeLifetime,'/');
+				}
 			}
 		} else {
 			$createSession = true;
@@ -70,7 +74,11 @@ class MySQLSession extends SessionInterface {
             ////TODO: Make sure this doesn't break anything
             if (isset($_REQUEST['method'])) {
                 $method = $_REQUEST['method'];
-                if ($method != 'loginUser') {
+                if ($method != 'loginUser'
+	                && !isset($_REQUEST['showCovers'])
+	                && !isset($_REQUEST['sort'])
+	                && !isset($_REQUEST['availableHoldSort'])
+	                && !isset($_REQUEST['unavailableHoldSort'])) {
                     return true;
                 }
             } else {
@@ -92,11 +100,6 @@ class MySQLSession extends SessionInterface {
         }
         if (isset($_SESSION['rememberMe']) && ($_SESSION['rememberMe'] == true || $_SESSION['rememberMe'] === "true")){
             $s->remember_me = 1;
-            setcookie(session_name(),session_id(),time()+self::$rememberMeLifetime,'/');
-        //}else{
-            //$s->remember_me = 0;
-            //setcookie(session_name(),session_id(),0,'/');
-            //session_set_cookie_params(0);
         }
         parent::write($sess_id, $data);
         $ret = $s->update();

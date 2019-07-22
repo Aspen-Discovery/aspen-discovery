@@ -251,7 +251,7 @@ AspenDiscovery.GroupedWork = (function(){
 		},
 
 		reloadCover: function (id){
-			var url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=reloadCover';
+			let url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=reloadCover';
 			$.getJSON(url, function (data){
 						AspenDiscovery.showMessage("Success", data.message, true, true);
 					}
@@ -264,7 +264,7 @@ AspenDiscovery.GroupedWork = (function(){
 		},
 
 		reloadIslandora: function(id){
-			var url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=reloadIslandora';
+			let url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=reloadIslandora';
 			$.getJSON(url, function (data){
 					AspenDiscovery.showMessage("Success", data.message, true, true);
 				}
@@ -304,45 +304,21 @@ AspenDiscovery.GroupedWork = (function(){
 			return false;
 		},
 
-		saveTag: function(id){
-			var tag = $("#tags_to_apply").val();
-			$("#saveToList-button").prop('disabled', true);
-
-			var url = Globals.path + "/GroupedWork/" + id + "/AJAX";
-			var params = "method=SaveTag&" +
-					"tag=" + encodeURIComponent(tag);
-			$.ajax({
-				url: url+'?'+params,
-				dataType: "json",
-				success: function(data) {
-					if (data.success) {
-						AspenDiscovery.showMessage("Success", data.message);
-						setTimeout("AspenDiscovery.closeLightbox();", 3000);
-					} else {
-						AspenDiscovery.showMessage("Error adding tags", "There was an unexpected error adding tags to this title.<br/>" + data.message);
-					}
-
-				},
-				error: function(jqXHR, textStatus) {
-					AspenDiscovery.showMessage("Error adding tags", "There was an unexpected error adding tags to this title.<br/>" + textStatus);
-				}
-			});
-		},
-
 		saveToList: function(id){
 			if (Globals.loggedIn){
-				var listId = $('#addToList-list').val(),
-						notes  = $('#addToList-notes').val(),
-						url    = Globals.path + "/GroupedWork/" + encodeURIComponent(id) + "/AJAX",
-						params = {
-							'method':'saveToList'
-							,notes:notes
-							,listId:listId
-						};
+				let listId = $('#addToList-list').val();
+				let notes  = $('#addToList-notes').val();
+				let url    = Globals.path + "/GroupedWork/" + encodeURIComponent(id) + "/AJAX";
+				let params = {
+					'method':'saveToList'
+					,notes:notes
+					,listId:listId
+				};
 				$.getJSON(url, params,
 						function(data) {
 							if (data.success) {
 								AspenDiscovery.showMessage("Added Successfully", data.message, 2000); // auto-close after 2 seconds.
+								AspenDiscovery.Account.loadListData();
 							} else {
 								AspenDiscovery.showMessage("Error", data.message);
 							}
@@ -448,7 +424,7 @@ AspenDiscovery.GroupedWork = (function(){
 		showSaveToListForm: function (trigger, id){
 			if (Globals.loggedIn){
 				AspenDiscovery.loadingMessage();
-				var url = Globals.path + "/GroupedWork/" + id + "/AJAX?method=getSaveToListForm";
+				let url = Globals.path + "/GroupedWork/" + id + "/AJAX?method=getSaveToListForm";
 				$.getJSON(url, function(data){
 					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 				}).fail(AspenDiscovery.ajaxFail);
