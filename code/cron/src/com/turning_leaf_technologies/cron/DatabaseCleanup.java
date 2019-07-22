@@ -27,8 +27,53 @@ public class DatabaseCleanup implements IProcessHandler {
 		removeUserDataForDeletedUsers(dbConn, logger, processLog);
 		removeOldCachedObjects(dbConn, logger, processLog);
 
+		cleanupReadingHistory(dbConn, logger, processLog);
+
 		processLog.setFinished();
 		processLog.saveToDatabase(dbConn, logger);
+	}
+
+	private void cleanupReadingHistory(Connection dbConn, Logger logger, CronProcessLogEntry processLog) {
+		//Remove long searches
+		try {
+			long now = new Date().getTime() / 1000;
+
+			//Look for anything where the source is part of the sourceId
+			PreparedStatement updateSourceStmt = dbConn.prepareStatement("UPDATE user_reading_history_work set sourceId = ? where id = ?");
+			PreparedStatement sourceInIdStmt = dbConn.prepareStatement("SELECT * from user_reading_history_work WHERE sourceId like '%:%'");
+			ResultSet sourceInIdRS = sourceInIdStmt.executeQuery();
+			int numUpdates = 0;
+			while (sourceInIdRS.next()){
+				String sourceId = sourceInIdRS.getString("sourceId");
+				long readingHistoryId = sourceInIdRS.getLong("id");
+				String newId = sourceId.substring(sourceId.indexOf(":") + 1);
+				updateSourceStmt.setString(1, newId);
+				updateSourceStmt.setLong(2, readingHistoryId);
+				updateSourceStmt.executeUpdate();
+				numUpdates++;
+			}
+			if (numUpdates > 0){
+				processLog.addNote("Updated " + numUpdates + " records where the sourceId had the source in it");
+			}
+
+			//Remove records with a sourceId of ?
+			PreparedStatement deleteQuestionIdsStmt = dbConn.prepareStatement("DELETE from user_reading_history_work WHERE sourceId = '?'");
+			int numDeletions = deleteQuestionIdsStmt.executeUpdate();
+			if (numDeletions > 0){
+				processLog.addNote("Deleted " + numDeletions + " records where the sourceId was a ?");
+			}
+
+
+			processLog.addNote("Finished cleaning up reading history");
+			processLog.incUpdated();
+
+			processLog.saveToDatabase(dbConn, logger);
+		} catch (SQLException e) {
+			processLog.incErrors();
+			processLog.addNote("Unable to cleanup reading history. " + e.toString());
+			logger.error("Error cleaning up reading history", e);
+			processLog.saveToDatabase(dbConn, logger);
+		}
 	}
 
 	private void removeOldCachedObjects(Connection dbConn, Logger logger, CronProcessLogEntry processLog) {
