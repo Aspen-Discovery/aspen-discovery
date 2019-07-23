@@ -1210,7 +1210,7 @@ class MyAccount_AJAX
 		global $configArray;
 	    $source = $_REQUEST['source'];
 	    $user = UserAccount::getActiveUserObj();
-	    $allCheckedOut = $user->getCheckouts(true, $source, true);
+	    $allCheckedOut = $user->getCheckouts(true, $source);
 	    $selectedSortOption = $this->setSort('sort', 'checkout');
 	    if ($selectedSortOption == null) {
 		    $selectedSortOption = 'dueDate';
@@ -1558,6 +1558,81 @@ class MyAccount_AJAX
 		exit;
 	}
 
+	public function exportReadingHistory(){
+		$user = UserAccount::getActiveUserObj();
+		if ($user){
+			$selectedSortOption = $this->setSort('sort', 'readingHistory');
+			if ($selectedSortOption == null) {
+				$selectedSortOption = 'checkedOut';
+			}
+			$readingHistory = $user->getReadingHistory(1, -1, $selectedSortOption, '', true);
+
+			try{
+				// Create new PHPExcel object
+				$objPHPExcel = new PHPExcel();
+
+				// Set properties
+				$objPHPExcel->getProperties()->setCreator("Aspen Discovery")
+					->setLastModifiedBy("Aspen Discovery")
+					->setTitle("Reading History for " . $user->displayName)
+					->setCategory("Reading History");
+
+				$objPHPExcel->setActiveSheetIndex(0)
+					->setCellValue('A1', 'Reading History')
+					->setCellValue('A3', 'Title')
+					->setCellValue('B3', 'Author')
+					->setCellValue('C3', 'Format')
+					->setCellValue('D3', 'Times Used')
+					->setCellValue('E3', 'Last Used');
+
+				$a=4;
+				//Loop Through The Report Data
+				foreach ($readingHistory['titles'] as $row) {
+
+					$format = is_array($row['format']) ? implode(',', $row['format']) : $row['format'];
+					if ($row['checkedOut']){
+						$lastCheckout = translate('In Use');
+					}else{
+						if (is_numeric($row['checkout'])){
+							$lastCheckout = date('M Y', $row['checkout']);
+						}else{
+							$lastCheckout = $row['checkout'];
+						}
+					}
+
+					$objPHPExcel->setActiveSheetIndex(0)
+						->setCellValue('A'.$a, $row['title'])
+						->setCellValue('B'.$a, $row['author'])
+						->setCellValue('C'.$a, $format)
+						->setCellValue('D'.$a, $row['timesUsed'])
+						->setCellValue('E'.$a, $lastCheckout);
+
+					$a++;
+				}
+				$objPHPExcel->getActiveSheet()->getColumnDimension('A')->setAutoSize(true);
+				$objPHPExcel->getActiveSheet()->getColumnDimension('B')->setAutoSize(true);
+				$objPHPExcel->getActiveSheet()->getColumnDimension('C')->setAutoSize(true);
+				$objPHPExcel->getActiveSheet()->getColumnDimension('D')->setAutoSize(true);
+				$objPHPExcel->getActiveSheet()->getColumnDimension('E')->setAutoSize(true);
+
+				// Rename sheet
+				$objPHPExcel->getActiveSheet()->setTitle('Reading History');
+
+				// Redirect output to a client's web browser (Excel5)
+				header('Content-Type: application/vnd.ms-excel');
+				header('Content-Disposition: attachment;filename="ReadingHistory.xls"');
+				header('Cache-Control: max-age=0');
+
+				$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
+				$objWriter->save('php://output');
+			}catch (Exception $e){
+				global $logger;
+				$logger->log("Error exporting to Excel " . $e, Logger::LOG_ERROR );
+			}
+		}
+		exit;
+	}
+
     public function getCheckouts(){
 		global $interface;
 
@@ -1607,7 +1682,7 @@ class MyAccount_AJAX
 			    $interface->assign('showNotInterested', false);
 
 			    // Get My Transactions
-			    $allCheckedOut = $user->getCheckouts(true, $source, true);
+			    $allCheckedOut = $user->getCheckouts(true, $source);
 
 			    $selectedSortOption = $this->setSort('sort', 'checkout');
 			    if ($selectedSortOption == null || !array_key_exists($selectedSortOption, $sortOptions)) {
@@ -1764,6 +1839,7 @@ class MyAccount_AJAX
 		    $user = UserAccount::getActiveUserObj();
 		    if ($user) {
 			    $patronId = empty($_REQUEST['patronId']) ? $user->id : $_REQUEST['patronId'];
+			    $interface->assign('selectedUser', $patronId);
 
 			    $patron = $user->getUserReferredTo($patronId);
 			    if (!$patron) {
@@ -1787,16 +1863,12 @@ class MyAccount_AJAX
 			    $interface->assign('page', $page);
 
 			    $recordsPerPage = 20;
-			    if (isset($_REQUEST['readingHistoryAction']) && $_REQUEST['readingHistoryAction'] == 'exportToExcel') {
-				    $recordsPerPage = -1;
-				    $page = 1;
-			    }
 			    $interface->assign('curPage', $page);
 
 			    $filter = isset($_REQUEST['readingHistoryFilter']) ? $_REQUEST['readingHistoryFilter'] : '';
 			    $interface->assign('readingHistoryFilter', $filter);
 
-			    $result = $patron->getReadingHistory($page, $recordsPerPage, $selectedSortOption, $filter);
+			    $result = $patron->getReadingHistory($page, $recordsPerPage, $selectedSortOption, $filter, false);
 
 			    $link = $_SERVER['REQUEST_URI'];
 			    if (preg_match('/[&?]page=/', $link)) {
@@ -1932,5 +2004,30 @@ class MyAccount_AJAX
 			ksort($allCheckedOut);
 		}
 		return $allCheckedOut;
+	}
+
+	function deleteReadingHistoryEntry(){
+		$result = [
+			'success' => false,
+			'title' => translate('Error'),
+			'message' => translate('Unknown error'),
+		];
+
+		$user = UserAccount::getActiveUserObj();
+		if ($user) {
+			$patronId = $_REQUEST['patronId'];
+			$patron = $user->getUserReferredTo($patronId);
+			if ($patron == null){
+				$result['message'] = 'You do not have permissions to delete reading history for this user';
+			}else{
+				$permanentId = $_REQUEST['permanentId'];
+				$selectedTitles = [$permanentId => $permanentId];
+				$readingHistoryAction = 'deleteMarked';
+				$result = $patron->doReadingHistoryAction($readingHistoryAction, $selectedTitles);
+			}
+		}else{
+			$result['message'] = 'You must be logged in to delete from the reading history';
+		}
+		return $result;
 	}
 }

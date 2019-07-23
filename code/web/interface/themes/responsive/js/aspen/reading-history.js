@@ -1,5 +1,19 @@
 AspenDiscovery.Account.ReadingHistory = (function(){
 	return {
+		deleteEntry: function (patronId, id){
+			if (confirm('The item will be irreversibly deleted from your reading history.  Proceed?')){
+				let url = Globals.path + "/MyAccount/AJAX?method=deleteReadingHistoryEntry&patronId=" + patronId + "&permanentId=" + id;
+				$.getJSON(url, function(data){
+					if (data.success){
+						$("#readingHistoryEntry" + id).hide();
+					}else{
+						AspenDiscovery.showMessage(data.title, data.message);
+					}
+				}).fail(AspenDiscovery.ajaxFail);
+			}
+			return false;
+		},
+
 		deletedMarkedAction: function (){
 			if (confirm('The marked items will be irreversibly deleted from your reading history.  Proceed?')){
 				$('#readingHistoryAction').val('deleteMarked');
@@ -31,8 +45,8 @@ AspenDiscovery.Account.ReadingHistory = (function(){
 		},
 
 		exportListAction: function (){
-			$('#readingHistoryAction').val('exportToExcel');
-			$('#readingListForm').submit();
+			let url = Globals.path + "/MyAccount/AJAX?method=exportReadingHistory";
+			document.location.href = url;
 			return false;
 		}
 	};

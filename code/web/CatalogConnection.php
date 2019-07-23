@@ -272,16 +272,17 @@ class CatalogConnection
 	 *
 	 * This is responsible for retrieving a history of checked out items for the patron.
 	 *
-	 * @param   User   $patron     The patron array
-	 * @param   int     $page
-	 * @param   int     $recordsPerPage
-	 * @param   string  $sortOption
-	 *
+	 * @param User $patron The patron array
+	 * @param int $page
+	 * @param int $recordsPerPage
+	 * @param string $sortOption
+	 * @param string $filter
+	 * @param bool $forExport
 	 * @return  array               Array of the patron's reading list
 	 *                              If an error occurs, return a AspenError
 	 * @access  public
 	 */
-	function getReadingHistory($patron, $page = 1, $recordsPerPage = 20, $sortOption = "checkedOut", $filter = ""){
+	function getReadingHistory($patron, $page = 1, $recordsPerPage = 20, $sortOption = "checkedOut", $filter = "", $forExport = false){
 		global $timer;
 		$timer->logTime("Starting to load reading history");
 
@@ -365,7 +366,7 @@ class CatalogConnection
         $readingHistoryTitles = array();
 
         while ($readingHistoryDB->fetch()){
-            $historyEntry = $this->getHistoryEntryForDatabaseEntry($readingHistoryDB);
+            $historyEntry = $this->getHistoryEntryForDatabaseEntry($readingHistoryDB, $forExport);
 	        $historyEntry['index'] = ++$firstIndex;
             $readingHistoryTitles[] = $historyEntry;
         }
@@ -384,10 +385,16 @@ class CatalogConnection
 	 * @param   User    $patron         The user to do the reading history action on
 	 * @param   string  $action         The action to perform
 	 * @param   array   $selectedTitles The titles to do the action on if applicable
+	 * @return array
 	 */
 	function doReadingHistoryAction($patron, $action, $selectedTitles){
+		$result = [
+			'success' => false,
+			'message' => translate('Unknown error')
+		];
 		if ($action == 'deleteMarked'){
             //Remove titles from database (do not remove from ILS)
+			$numDeleted = 0;
             foreach ($selectedTitles as $id => $titleId){
                 $readingHistoryDB = new ReadingHistoryEntry();
                 $readingHistoryDB->userId = $patron->id;
@@ -397,6 +404,7 @@ class CatalogConnection
                     while ($readingHistoryDB->fetch()){
                         $readingHistoryDB->deleted = 1;
                         $readingHistoryDB->update();
+                        $numDeleted++;
                     }
                 }else{
                     $readingHistoryDB = new ReadingHistoryEntry();
@@ -405,9 +413,12 @@ class CatalogConnection
                     if ($readingHistoryDB->find(true)){
                         $readingHistoryDB->deleted = 1;
                         $readingHistoryDB->update();
+	                    $numDeleted++;
                     }
                 }
             }
+            $result['success'] = true;
+            $result['message'] = translate(['text' => 'Deleted %1% entries from Reading History.', 1 => $numDeleted]);
         }elseif ($action == 'deleteAll'){
             //Remove all titles from database (do not remove from ILS)
             $readingHistoryDB = new ReadingHistoryEntry();
@@ -417,8 +428,8 @@ class CatalogConnection
                 $readingHistoryDB->deleted = 1;
                 $readingHistoryDB->update();
             }
-        }elseif ($action == 'exportList'){
-            //Leave this unimplemented for now.
+			$result['success'] = true;
+			$result['message'] = translate('Deleted all entries from Reading History.');
         }elseif ($action == 'optOut'){
             //Delete the reading history (permanently this time since we are opting out)
             $readingHistoryDB = new ReadingHistoryEntry();
@@ -428,19 +439,20 @@ class CatalogConnection
             //Opt out within Aspen since the ILS does not seem to implement this functionality
             $patron->trackReadingHistory = false;
             $patron->update();
+			$result['success'] = true;
+			$result['message'] = translate('You have been opted out of tracking Reading History');
         }elseif ($action == 'optIn'){
             //Opt in within Aspen since the ILS does not seem to implement this functionality
             $patron->trackReadingHistory = true;
             $patron->update();
 
-            //TODO: Load the reading history from the ILS if available
-            if ($this->driver->hasNativeReadingHistory()){
-
-            }
+			$result['success'] = true;
+			$result['message'] = translate('You have been opted out in to tracking Reading History');
         }
         if ($this->driver->performsReadingHistoryUpdatesOfILS()){
             $this->driver->doReadingHistoryAction($patron, $action, $selectedTitles);
         }
+        return $result;
 	}
 
 
@@ -605,30 +617,34 @@ class CatalogConnection
 	 * @param ReadingHistoryEntry $readingHistoryDB
 	 * @return mixed
 	 */
-	public function getHistoryEntryForDatabaseEntry($readingHistoryDB) {
+	public function getHistoryEntryForDatabaseEntry($readingHistoryDB, $forExport = false) {
 		$historyEntry = array();
 
-        require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-        $recordDriver = new GroupedWorkDriver($readingHistoryDB->groupedWorkPermanentId);
-		$historyEntry['title'] = $readingHistoryDB->title;
+        $historyEntry['title'] = $readingHistoryDB->title;
 		$historyEntry['author'] = $readingHistoryDB->author;
 		$historyEntry['format'] = $readingHistoryDB->format;
 		$historyEntry['checkout'] = $readingHistoryDB->checkOutDate;
 		$historyEntry['checkin'] = $readingHistoryDB->checkInDate;
+		/** @noinspection PhpUndefinedFieldInspection */
 		$historyEntry['timesUsed'] = $readingHistoryDB->timesUsed;
 		/** @noinspection PhpUndefinedFieldInspection */
 		$historyEntry['checkedOut'] = $readingHistoryDB->checkedOut == null ? false : true;
-		if ($recordDriver->isValid()){
-			$historyEntry['recordDriver'] = $recordDriver;
-			$historyEntry['permanentId'] = $readingHistoryDB->groupedWorkPermanentId;
-			$historyEntry['ratingData'] = $recordDriver->getRatingData();
-			$historyEntry['linkUrl'] = $recordDriver->getLinkUrl();
-			$historyEntry['coverUrl'] = $recordDriver->getBookcoverUrl('small');
-		}else{
-			$historyEntry['permanentId'] = '';
-			$historyEntry['ratingData'] = '';
-			$historyEntry['linkUrl'] = '';
-			$historyEntry['coverUrl'] = '';
+		if (!$forExport){
+			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+			$recordDriver = new GroupedWorkDriver($readingHistoryDB->groupedWorkPermanentId);
+
+			if ($recordDriver->isValid()){
+				$historyEntry['recordDriver'] = $recordDriver;
+				$historyEntry['permanentId'] = $readingHistoryDB->groupedWorkPermanentId;
+				$historyEntry['ratingData'] = $recordDriver->getRatingData();
+				$historyEntry['linkUrl'] = $recordDriver->getLinkUrl();
+				$historyEntry['coverUrl'] = $recordDriver->getBookcoverUrl('small');
+			}else{
+				$historyEntry['permanentId'] = '';
+				$historyEntry['ratingData'] = '';
+				$historyEntry['linkUrl'] = '';
+				$historyEntry['coverUrl'] = '';
+			}
 		}
 
 		return $historyEntry;

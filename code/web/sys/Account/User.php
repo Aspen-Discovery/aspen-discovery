@@ -1376,13 +1376,14 @@ class User extends DataObject
 		return $renewAllResults;
 	}
 
-	public function getReadingHistory($page, $recordsPerPage, $selectedSortOption, $filter) {
-		return $this->getCatalogDriver()->getReadingHistory($this, $page, $recordsPerPage, $selectedSortOption, $filter);
+	public function getReadingHistory($page, $recordsPerPage, $selectedSortOption, $filter, $forExport) {
+		return $this->getCatalogDriver()->getReadingHistory($this, $page, $recordsPerPage, $selectedSortOption, $filter, $forExport);
 	}
 
 	public function doReadingHistoryAction($readingHistoryAction, $selectedTitles){
-		$this->getCatalogDriver()->doReadingHistoryAction($this, $readingHistoryAction, $selectedTitles);
+		$results = $this->getCatalogDriver()->doReadingHistoryAction($this, $readingHistoryAction, $selectedTitles);
 		$this->clearCache();
+		return $results;
 	}
 
 	/**

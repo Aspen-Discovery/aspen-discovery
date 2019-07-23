@@ -1290,7 +1290,7 @@ class UserAPI extends Action {
 			list($username, $password) = $this->loadUsernameAndPassword();
 			$user = UserAccount::validateAccount($username, $password);
 			if ($user && !($user instanceof AspenError)) {
-				$readingHistory = $this->getCatalogConnection()->getReadingHistory($user);
+				$readingHistory = $this->getCatalogConnection()->getReadingHistory($user, false);
 
 				return array('success' => true, 'readingHistory' => $readingHistory['titles']);
 			} else {

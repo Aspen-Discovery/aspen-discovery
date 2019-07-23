@@ -12,9 +12,6 @@
 					<div class="btn-group btn-group-sm">
 						{if $historyActive == true}
 							<button class="btn btn-sm btn-info" onclick="return AspenDiscovery.Account.ReadingHistory.exportListAction()">{translate text="Export To Excel"}</button>
-							{if $transList}
-								<button class="btn btn-sm btn-warning" onclick="return AspenDiscovery.Account.ReadingHistory.deletedMarkedAction()">{translate text="Delete Marked"}</button>
-							{/if}
 						{else}
 							<button class="btn btn-sm btn-primary" onclick="return AspenDiscovery.Account.ReadingHistory.optInAction()">{translate text="Start Recording My Reading History"}</button>
 						{/if}
