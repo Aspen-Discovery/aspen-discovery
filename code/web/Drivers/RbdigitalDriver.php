@@ -140,7 +140,6 @@ class RBdigitalDriver extends AbstractEContentDriver
 		        $checkout['title'] = $patronMagazineDetails->title;
 		        $checkout['publisher'] = $patronMagazineDetails->publisher;
 				$checkout['canRenew'] = false;
-		        $checkout['downloadUrl'] = $patronCheckout->downloadUrl;
 		        $checkout['accessOnlineUrl'] = '';
 
 		        if ($checkout['id'] && strlen($checkout['id']) > 0){
