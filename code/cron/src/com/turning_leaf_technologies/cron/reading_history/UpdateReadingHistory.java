@@ -316,10 +316,10 @@ public class UpdateReadingHistory implements IProcessHandler {
 				case "Hoopla":
 					sourceId = checkedOutItem.getString("hooplaId");
 					break;
-				case "Rbdigital":
+				case "RBdigital":
 					sourceId = checkedOutItem.getString("recordId");
 					break;
-				case "RbdigitalMagazine":
+				case "RBdigitalMagazine":
 					sourceId = checkedOutItem.getString("recordId");
 					break;
 				case "eContent":
