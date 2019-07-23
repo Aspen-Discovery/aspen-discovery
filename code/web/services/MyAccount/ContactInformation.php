@@ -8,6 +8,7 @@ class MyAccount_ContactInformation extends MyAccount
 	{
 		global $configArray;
 		global $interface;
+		global $offlineMode;
 		$user = UserAccount::getLoggedInUser();
 
 		$ils = $configArray['Catalog']['ils'];
@@ -84,7 +85,6 @@ class MyAccount_ContactInformation extends MyAccount
 			$interface->assign('pickupLocations', $pickupLocations);
 
 			// Save/Update Actions
-			global $offlineMode;
 			if (isset($_POST['updateScope']) && !$offlineMode) {
 				$updateScope = $_REQUEST['updateScope'];
 				if ($updateScope == 'contact') {
@@ -115,6 +115,9 @@ class MyAccount_ContactInformation extends MyAccount
 			}
 
 			$interface->assign('profile', $patron); //
+		}else{
+			$canUpdateContactInfo = false;
+			$canUpdateAddress = false;
 		}
 
 		// switch for hack for Millennium driver profile updating when updating is allowed but address updating is not allowed.
