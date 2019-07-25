@@ -1910,7 +1910,7 @@ class MyAccount_AJAX
     }
 
     function renderReadingHistoryPaginationLink($page, $options){
-	    return "<a class='page-link' onclick='AspenDiscovery.Account.loadReadingHistory(\"{$options['patronId']}\", \"{$options['sort']}\", \"{$page}\", \"{$options['showCovers']}\", \"{$options['filter']}\");'>";
+	    return "<a class='page-link' onclick='AspenDiscovery.Account.loadReadingHistory(\"{$options['patronId']}\", \"{$options['sort']}\", \"{$page}\", undefined, \"{$options['filter']}\");AspenDiscovery.goToAnchor(\"topOfList\")'>";
     }
 
 	private function isValidTimeStamp($timestamp) {

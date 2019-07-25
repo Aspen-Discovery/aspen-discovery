@@ -31,9 +31,15 @@ class ReadingHistory extends MyAccount
 
 				$interface->assign('selectedUser', $patronId); // needs to be set even when there is only one user so that the patronId hidden input gets a value in the reading history form.
 
+				if (isset($_REQUEST['page']) && is_numeric($_REQUEST['page'])){
+					$interface->assign('page', $_REQUEST['page']);
+				}
+				if (isset($_REQUEST['readingHistoryFilter'])){
+					$interface->assign('readingHistoryFilter', strip_tags($_REQUEST['readingHistoryFilter']));
+				}
 				$interface->assign('historyActive', $patron->trackReadingHistory);
 				//Check to see if there is an action to perform.
-				if (!empty($_REQUEST['readingHistoryAction']) && $_REQUEST['readingHistoryAction'] != 'exportToExcel'){
+				if (!empty($_REQUEST['readingHistoryAction'])){
 					//Perform the requested action
 					$selectedTitles = isset($_REQUEST['selected']) ? $_REQUEST['selected'] : array();
 					$readingHistoryAction = $_REQUEST['readingHistoryAction'];
@@ -43,12 +49,6 @@ class ReadingHistory extends MyAccount
 					$newLocation = "{$configArray['Site']['path']}/MyAccount/ReadingHistory";
 					if (isset($_REQUEST['page']) && $readingHistoryAction != 'deleteAll' && $readingHistoryAction != 'optOut'){
 						$params[] = 'page=' . $_REQUEST['page'];
-					}
-					if (isset($_REQUEST['accountSort'])){
-						$params[] = 'accountSort=' . $_REQUEST['accountSort'];
-					}
-					if (isset($_REQUEST['pageSize'])){
-						$params[] = 'pageSize=' . $_REQUEST['pageSize'];
 					}
 					if (isset($_REQUEST['patronId'])){
 						$params[] = 'patronId=' . $_REQUEST['patronId'];

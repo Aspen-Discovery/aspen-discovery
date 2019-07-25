@@ -45,7 +45,7 @@
 				<script type="text/javascript">
 					{literal}
                     $(document).ready(function() {
-                        AspenDiscovery.Account.loadReadingHistory({/literal}{$selectedUser}{literal});
+                        AspenDiscovery.Account.loadReadingHistory({/literal}{$selectedUser}, undefined, {$page}, undefined, '{$readingHistoryFilter|escape}'{literal});
                     });
 					{/literal}
 				</script>

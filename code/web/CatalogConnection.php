@@ -319,7 +319,7 @@ class CatalogConnection
             $patron->update();
         }
         //Do the
-		if ($page == 1) {
+		if ($page == 1 && empty($filter)) {
 			$this->updateReadingHistoryBasedOnCurrentCheckouts($patron);
 			$timer->logTime("Finished updating reading history based on current checkouts");
 		}

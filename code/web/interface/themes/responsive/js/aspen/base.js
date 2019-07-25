@@ -72,6 +72,10 @@ var AspenDiscovery = (function(){
 			}
 		},
 
+		goToAnchor: function(anchorName) {
+			$('html,body').animate({scrollTop: $("#" + anchorName).offset().top},'slow');
+		},
+
 		initCarousels: function(carouselClass){
 			carouselClass = carouselClass || '.jcarousel';
 			var jcarousel = $(carouselClass);
