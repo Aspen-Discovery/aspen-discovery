@@ -147,9 +147,9 @@
 								{if $user->isValidForEContentSource('overdrive')}
 									<li class="myAccountLink">&nbsp;&nbsp;&raquo;&nbsp;<a href="{$path}/MyAccount/OverDriveOptions">{translate text='OverDrive Options'}</a></li>
 								{/if}
-								{if $user->isValidForEContentSource('rbdigital')}
-									<li class="myAccountLink">&nbsp;&nbsp;&raquo;&nbsp;<a href="{$path}/MyAccount/RBdigitalOptions">{translate text='RBdigital Options'}</a></li>
-								{/if}
+{*								{if $user->isValidForEContentSource('rbdigital')}*}
+{*									<li class="myAccountLink">&nbsp;&nbsp;&raquo;&nbsp;<a href="{$path}/MyAccount/RBdigitalOptions">{translate text='RBdigital Options'}</a></li>*}
+{*								{/if}*}
 								{if $user->isValidForEContentSource('hoopla')}
 									<li class="myAccountLink">&nbsp;&nbsp;&raquo;&nbsp;<a href="{$path}/MyAccount/HooplaOptions">{translate text='Hoopla Options'}</a></li>
 								{/if}
