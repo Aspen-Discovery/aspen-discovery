@@ -33,7 +33,6 @@
 				<div id="pager" class="col-xs-12">
 					<div class="row">
 						<div class="form-group col-sm-3" id="sortOptions">
-							<label for="sortMethod" class="control-label">&nbsp;</label>
 							<select aria-label="{translate text="Sort By" inAttribute=true}" class="sortMethod form-control" id="sortMethod" name="accountSort" onchange="return AspenDiscovery.Account.loadReadingHistory($('#readingListForm input[name=patronId]').val(),$('#sortMethod option:selected').val(), 1,undefined, $('#readingHistoryFilter').val())">
 								{foreach from=$sortOptions item=sortOptionLabel key=sortOption}
 									<option value="{$sortOption}" {if $sortOption == $defaultSortOption}selected="selected"{/if}>{translate text="Sort By %1%" 1=$sortOptionLabel}</option>

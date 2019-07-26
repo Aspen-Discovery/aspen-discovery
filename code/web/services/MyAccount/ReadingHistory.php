@@ -33,9 +33,13 @@ class ReadingHistory extends MyAccount
 
 				if (isset($_REQUEST['page']) && is_numeric($_REQUEST['page'])){
 					$interface->assign('page', $_REQUEST['page']);
+				}else{
+					$interface->assign('page', 1);
 				}
 				if (isset($_REQUEST['readingHistoryFilter'])){
 					$interface->assign('readingHistoryFilter', strip_tags($_REQUEST['readingHistoryFilter']));
+				}else{
+					$interface->assign('readingHistoryFilter', '');
 				}
 				$interface->assign('historyActive', $patron->trackReadingHistory);
 				//Check to see if there is an action to perform.

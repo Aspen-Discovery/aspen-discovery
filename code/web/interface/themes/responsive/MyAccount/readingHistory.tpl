@@ -25,8 +25,9 @@
 							{translate text="Display of the patron's reading history is disabled in Masquerade Mode."}
 						</div>
 					</div>
-				{else}
-					{include file="MyAccount/switch-linked-user-form.tpl" label="Viewing Reading History for" actionPath="/MyAccount/ReadingHistory"}
+{* MDN 7/26/2019 Do not allow access to reading history for linked users *}
+{*				{else}*}
+{*					{include file="MyAccount/switch-linked-user-form.tpl" label="Viewing Reading History for" actionPath="/MyAccount/ReadingHistory"}*}
 				{/if}
 
 				<div class="row">

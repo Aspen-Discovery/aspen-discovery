@@ -16,7 +16,8 @@
 			{if $offline}
 				<div class="alert alert-warning">{translate text=offline_notice defaultText="<strong>The library system is currently offline.</strong> We are unable to retrieve information about your account at this time."}</div>
 			{else}
-				{include file="MyAccount/switch-linked-user-form.tpl" label="View Account Settings for" actionPath="/MyAccount/LinkedAccounts"}
+{* MDN 7/26/2019 Do not allow access to linked accounts for linked users *}
+{*                {include file="MyAccount/switch-linked-user-form.tpl" label="View Account Settings for" actionPath="/MyAccount/LinkedAccounts"}*}
 
 				<p class="alert alert-info">
 					{translate text="linked_account_explanation" defaultText="Linked accounts allow you to easily maintain multiple accounts for the library so you can see all of your information in one place. Information from linked accounts will appear when you view your checkouts, holds, etc in the main account."}

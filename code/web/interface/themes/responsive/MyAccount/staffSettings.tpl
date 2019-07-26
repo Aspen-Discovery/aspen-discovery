@@ -16,7 +16,8 @@
 			{if $offline}
 				<div class="alert alert-warning">{translate text=offline_notice defaultText="<strong>The library system is currently offline.</strong> We are unable to retrieve information about your account at this time."}</div>
 			{else}
-				{include file="MyAccount/switch-linked-user-form.tpl" label="View Account Settings for" actionPath="/MyAccount/StaffSettings"}
+{* MDN 7/26/2019 Do not allow access for linked users *}
+{*				{include file="MyAccount/switch-linked-user-form.tpl" label="View Account Settings for" actionPath="/MyAccount/StaffSettings"}*}
 
 				{* Display user roles if the user has any roles*}
 				{if count($profile->roles) > 0}

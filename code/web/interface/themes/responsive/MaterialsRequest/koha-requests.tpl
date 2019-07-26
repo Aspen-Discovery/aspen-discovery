@@ -9,7 +9,8 @@
 
 	<h1>{translate text='My Materials Requests'}</h1>
 
-	{include file="MyAccount/switch-linked-user-form.tpl" label="Viewing Requests for" actionPath="/MyAccount/ReadingHistory"}
+    {* MDN 7/26/2019 Do not allow access for linked users *}
+    {*	{include file="MyAccount/switch-linked-user-form.tpl" label="Viewing Requests for" actionPath="/MyAccount/ReadingHistory"}*}
 
 	{if !empty($error)}
 		<div class="alert alert-danger">{$error}</div>

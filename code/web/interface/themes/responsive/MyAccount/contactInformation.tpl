@@ -16,7 +16,8 @@
 			{if $offline}
 				<div class="alert alert-warning">{translate text=offline_notice defaultText="<strong>The library system is currently offline.</strong> We are unable to retrieve information about your account at this time."}</div>
 			{else}
-				{include file="MyAccount/switch-linked-user-form.tpl" label="View Contact Information for" actionPath="/MyAccount/ContactInformation"}
+{* MDN 7/26/2019 Do not allow access to contact information for linked users *}
+{*				{include file="MyAccount/switch-linked-user-form.tpl" label="View Contact Information for" actionPath="/MyAccount/ContactInformation"}*}
 
 				{if !empty($profileUpdateErrors)}
 					{foreach from=$profileUpdateErrors item=errorMsg}
