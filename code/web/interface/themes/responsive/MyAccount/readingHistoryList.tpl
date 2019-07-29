@@ -4,7 +4,7 @@
 		{* Reading History Actions *}
 		<div class="row">
 			<input type="hidden" name="page" value="{$page}">
-			<input type="hidden" name="patronId" value="{$selectedUser}">
+			<input type="hidden" name="patronId" id="patronId" value="{$selectedUser}">
 			<input type="hidden" name="readingHistoryAction" id="readingHistoryAction" value="">
 			<div id="readingListActionsTop" class="col-xs-6">
 				<div class="btn-group btn-group-sm">
@@ -33,25 +33,25 @@
 				<div id="pager" class="col-xs-12">
 					<div class="row">
 						<div class="form-group col-sm-3" id="sortOptions">
-							<select aria-label="{translate text="Sort By" inAttribute=true}" class="sortMethod form-control" id="sortMethod" name="accountSort" onchange="return AspenDiscovery.Account.loadReadingHistory($('#readingListForm input[name=patronId]').val(),$('#sortMethod option:selected').val(), 1,undefined, $('#readingHistoryFilter').val())">
+							<select aria-label="{translate text="Sort By" inAttribute=true}" class="sortMethod form-control" id="sortMethod" name="accountSort" onchange="return AspenDiscovery.Account.loadReadingHistory($('#patronId').val(),$('#sortMethod option:selected').val(), 1,undefined, $('#readingHistoryFilter').val())">
 								{foreach from=$sortOptions item=sortOptionLabel key=sortOption}
 									<option value="{$sortOption}" {if $sortOption == $defaultSortOption}selected="selected"{/if}>{translate text="Sort By %1%" 1=$sortOptionLabel}</option>
 								{/foreach}
 							</select>
 						</div>
-						<div class="form-group col-sm-7" id="readingHistoryFilter">
-							<form class="form-inline" name="readingHistoryFilterForm" onsubmit="return AspenDiscovery.Account.loadReadingHistory($('#readingListForm input[name=patronId]').val(),$('#sortMethod option:selected').val(), 1,undefined, $('#readingHistoryFilter').val());">
+						<div class="form-group col-sm-7">
+							<form class="form-inline" name="readingHistoryFilterForm" onsubmit="return AspenDiscovery.Account.loadReadingHistory($('#patronId').val(),$('#sortMethod option:selected').val(), 1,undefined, $('#readingHistoryFilter').val());">
 								<div class="input-group">
 									<input aria-label="{translate text="Filter Reading History" inAttribute=true}" type="text" class="form-control" name="readingHistoryFilter" id="readingHistoryFilter" value="{$readingHistoryFilter}"/>
 									<span class="input-group-btn">
-										<button type="submit" class="btn btn-default" onclick="return AspenDiscovery.Account.loadReadingHistory($('#readingListForm input[name=patronId]').val(),$('#sortMethod option:selected').val(), 1,undefined, $('#readingHistoryFilter').val())">Filter</button>
+										<button type="submit" class="btn btn-default" onclick="return AspenDiscovery.Account.loadReadingHistory($('#patronId').val(),$('#sortMethod option:selected').val(), 1,undefined, $('#readingHistoryFilter').val())">Filter</button>
 									</span>
 								</div>
 							</form>
 						</div>
 
 						<div class="form-group col-sm-2" id="coverOptions">
-							<label for="hideCovers" class="control-label checkbox pull-right"> {translate text='Hide Covers'} <input id="hideCovers" type="checkbox" onclick="AspenDiscovery.Account.loadReadingHistory($('#readingListForm input[name=patronId]').val(),$('#sortMethod option:selected').val(), {$curPage},!$(this).is(':checked'), $('#readingHistoryFilter').val())" {if $showCovers == false}checked="checked"{/if}></label>
+							<label for="hideCovers" class="control-label checkbox pull-right"> {translate text='Hide Covers'} <input id="hideCovers" type="checkbox" onclick="AspenDiscovery.Account.loadReadingHistory($('#patronId').val(),$('#sortMethod option:selected').val(), {$curPage},!$(this).is(':checked'), $('#readingHistoryFilter').val())" {if $showCovers == false}checked="checked"{/if}></label>
 						</div>
 					</div>
 				</div>
