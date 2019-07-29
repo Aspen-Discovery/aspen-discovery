@@ -1069,8 +1069,8 @@ class Koha extends AbstractIlsDriver {
                     'date' => $allFeesRow['date'],
                     'reason' => $allFeesRow['accounttype'],
                     'message' => $allFeesRow['description'],
-                    'amount' => StringUtils::money_format('%.2n', $allFeesRow['amount']),
-                    'amountOutstanding' => StringUtils::money_format('%.2n', $allFeesRow['amountoutstanding']),
+                    'amount' => StringUtils::formatMoney('%.2n', $allFeesRow['amount']),
+                    'amountOutstanding' => StringUtils::formatMoney('%.2n', $allFeesRow['amountoutstanding']),
                 ];
                 $fines[] = $curFine;
             }
