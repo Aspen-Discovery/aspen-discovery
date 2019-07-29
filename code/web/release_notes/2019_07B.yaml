@@ -14,7 +14,7 @@ Major revisions to existing functionality
 - Improve performance for loading account information
 - Break up settings form into multiple sections to make it easier to navigate
 - RBdigital Updates
-  - Store username and password to allow automatic loging to RBdigital
+  - Store username and password to allow automatic log in to RBdigital
 
 Minor revisions to existing functionality
 - Correct capitalization of RBdigital
