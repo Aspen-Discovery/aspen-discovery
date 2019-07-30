@@ -1279,21 +1279,17 @@ class Location extends DataObject
 		$facet->weight = count($defaultFacets) + 1;
 		$defaultFacets[] = $facet;
 
-		if ($configArray['Index']['enableDetailedAvailability']){
-			$facet = new LocationFacetSetting();
-			$facet->setupTopFacet('availability_toggle', 'Available?');
-			$facet->locationId = $locationId;
-			$facet->weight = count($defaultFacets) + 1;
-			$defaultFacets[] = $facet;
-		}
+		$facet = new LocationFacetSetting();
+		$facet->setupTopFacet('availability_toggle', 'Available?');
+		$facet->locationId = $locationId;
+		$facet->weight = count($defaultFacets) + 1;
+		$defaultFacets[] = $facet;
 
-		if ($configArray['Index']['enableDetailedAvailability']){
-			$facet = new LocationFacetSetting();
-			$facet->setupSideFacet('available_at', 'Available Now At', true);
-			$facet->locationId = $locationId;
-			$facet->weight = count($defaultFacets) + 1;
-			$defaultFacets[] = $facet;
-		}
+		$facet = new LocationFacetSetting();
+		$facet->setupSideFacet('available_at', 'Available Now At', true);
+		$facet->locationId = $locationId;
+		$facet->weight = count($defaultFacets) + 1;
+		$defaultFacets[] = $facet;
 
 		$facet = new LocationFacetSetting();
 		$facet->setupSideFacet('format', 'Format', true);
