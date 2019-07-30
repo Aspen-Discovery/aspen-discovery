@@ -3961,12 +3961,6 @@ ALTER TABLE `overdrive_api_product_metadata`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `overdrive_api_product_subjects`
---
-ALTER TABLE `overdrive_api_product_subjects`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
 -- AUTO_INCREMENT for table `overdrive_extract_log`
 --
 ALTER TABLE `overdrive_extract_log`
