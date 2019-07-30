@@ -153,12 +153,12 @@ class File_MARCXML extends File_MARCBASE
             break;
 
         default:
-            throw new File_MARC_Exception(File_MARC_Exception::$messages[File_MARC_Exception::ERROR_INVALID_SOURCE], File_MARC_Exception::ERROR_INVALID_SOURCE);
+            AspenError::raiseError(File_MARC_Exception::$messages[File_MARC_Exception::ERROR_INVALID_SOURCE]);
         }
 
         if (!$this->source) {
             $errorMessage = File_MARC_Exception::formatError(File_MARC_Exception::$messages[File_MARC_Exception::ERROR_INVALID_FILE], array('filename' => $source));
-            throw new File_MARC_Exception($errorMessage, File_MARC_Exception::ERROR_INVALID_FILE);
+	        AspenError::raiseError($errorMessage);
         }
     }
     // }}}

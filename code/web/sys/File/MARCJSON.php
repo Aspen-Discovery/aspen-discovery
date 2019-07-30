@@ -125,7 +125,7 @@ class File_MARCJSON extends File_MARCBASE
 
         if (!$this->text) {
             $errorMessage = File_MARC_Exception::formatError(File_MARC_Exception::$messages[File_MARC_Exception::ERROR_INVALID_FILE], array('filename' => $source));
-            throw new File_MARC_Exception($errorMessage, File_MARC_Exception::ERROR_INVALID_FILE);
+            AspenError::raiseError($errorMessage);
         }
     }
     // }}}
@@ -153,7 +153,7 @@ class File_MARCJSON extends File_MARCBASE
      * ?>
      * </code>
      *
-     * @return File_MARC_Record next record, or false if there are
+     * @return File_MARC_Record|false next record, or false if there are
      * no more records
      */
     function next()
