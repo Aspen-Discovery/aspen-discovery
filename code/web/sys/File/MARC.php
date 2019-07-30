@@ -39,7 +39,6 @@
  * @example   marc_yaz.php Pretty print a MARC record retrieved through the PECL yaz extension
  */
 
-require_once 'PEAR/Exception.php';
 require_once ROOT_DIR . '/sys/File/MARCBASE.php';
 require_once ROOT_DIR . '/sys/File/MARC/Record.php';
 require_once ROOT_DIR . '/sys/File/MARC/Field.php';
