@@ -47,7 +47,7 @@
  * @license  http://www.gnu.org/copyleft/lesser.html  LGPL License 2.1
  * @link     http://pear.php.net/package/File_MARC
  */
-class File_MARC_Exception extends PEAR_Exception
+class File_MARC_Exception extends AspenError
 {
     // {{{ Error codes
     /**
