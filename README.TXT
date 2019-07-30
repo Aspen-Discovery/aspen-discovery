@@ -1,14 +1,25 @@
-Aspen Discovery Layer originally based on VuFind with synchronization to VuFind source up to version 1.3
-Additional features include
-- Record Grouping/FRBR
-- OverDrive support
-- Browse functionality
-- Novelist integration
-- Reading Recommendations
-- Consortial Support
-- Administration Panel
-- etc
+Aspen Discovery
+Copyright (C) 2019 Turning Leaf Technologies, LLC
 
-We develop based off branches, the latest branch deployed in production can be seen in the the footer at 
-http://aspen.demo.
+This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+============================================================================
+Aspen Discovery was originally derived from VuFind by Villanova University and Pika by Marmot Library Network. Significant changes have been made in this branch of the application. 
+
+All code is covered by the GNU General Public License version 3 with notable contributions by:
+- Mark Noble - Marmot Library Network and Turning Leaf Technologies, LLC
+- Pascal Brammeier - Marmot Library Network
+- James Staub - Nashville Public Library
+- Demian Katz - Villanova University 
+- Chris Hallberg - Villanova University
+- Many other developers have contributed, especially to VuFind and we thank any unnamed developers that have contributed.
+
+Code contributions have been sponsored by many public, academic, and school libraries in the form of direct code contributions as well as service subscriptions.  We thank all sponsors for their generous support. 
+
+Aspen Discovery also uses an number of open source libraries to provide functionality.  These libraries are credited within the source code 
+
+For more information about setting up or contributing to Aspen Discovery, visit https://www.turningleaftechnologies.com.
