@@ -1793,7 +1793,7 @@ class Library extends DataObject
 
 
 		$facet = new LibraryFacetSetting();
-		$facet->setupSideFacet('available_at', 'Available Now At');
+		$facet->setupSideFacet('available_at', 'Available Now At', true);
 		$facet->libraryId = $libraryId;
 		$facet->weight = count($defaultFacets) + 1;
 		$defaultFacets[] = $facet;
