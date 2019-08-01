@@ -7,7 +7,7 @@ class TranslationMap extends DataObject{
 	public $id;
 	public $indexingProfileId;
 	public $name;
-	public $usesRegularExpressions;
+	public /** @noinspection PhpUnused */ $usesRegularExpressions;
 
     static function getObjectStructure(){
 		$indexingProfiles = array();
@@ -64,6 +64,7 @@ class TranslationMap extends DataObject{
 
 	public function __set($name, $value){
 		if ($name == "translationMapValues") {
+			/** @noinspection PhpUndefinedFieldInspection */
 			$this->translationMapValues = $value;
 		}
 	}
@@ -100,6 +101,7 @@ class TranslationMap extends DataObject{
 
 	public function saveMapValues(){
 		if (isset ($this->translationMapValues)){
+			/** @var TranslationMapValue $value */
 			foreach ($this->translationMapValues as $value){
 				if (isset($value->deleteOnSave) && $value->deleteOnSave == true){
 					$value->delete();
@@ -117,30 +119,9 @@ class TranslationMap extends DataObject{
 		}
 	}
 
+	/** @noinspection PhpUnused */
 	public function getEditLink(){
 		return '/ILS/TranslationMaps?objectAction=edit&id=' . $this->id;
 	}
 
-	public function mapValue($valueToMap){
-		/** @var TranslationMapValue[] $value */
-		$default = null;
-		foreach ($this->translationMapValues as $value){
-			if ($value->value == '#'){
-				$default = $value->translation;
-			}else{
-				if ($this->usesRegularExpressions){
-					if (preg_match('/' . $value->value . '/', $valueToMap)){
-						return $valueToMap;
-					}else{
-						if (strcasecmp($value, $valueToMap)){
-							return $valueToMap;
-						}
-					}
-				}
-			}
-		}
-		if ($default){
-			return $default;
-		}
-	}
 }

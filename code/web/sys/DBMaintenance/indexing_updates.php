@@ -444,7 +444,7 @@ function getIndexingUpdates() {
 
         'accelerated_reader' => [
             'title' => 'Accelerated Reader',
-            'description' => 'Setup Acclerated Reader in the database to reduce memory usage during indexing',
+            'description' => 'Setup Accelerated Reader in the database to reduce memory usage during indexing',
             'sql' => [
                 "CREATE TABLE accelerated_reading_titles (
                     arBookId INT NOT NULL PRIMARY KEY,
@@ -487,5 +487,126 @@ function getIndexingUpdates() {
                 ) ENGINE = InnoDB",
             ]
         ],
+
+		'format_status_maps' => [
+			'title' => 'Format and Status Maps',
+			'description' => 'Setup Format and Status Maps for Indexing Profiles',
+			'sql' => [
+				"CREATE TABLE IF NOT EXISTS `format_map_values` (
+                  `id` int(11) NOT NULL AUTO_INCREMENT,
+                  `indexingProfileId` int(11) NOT NULL,
+                  `value` varchar(50) NOT NULL,
+                  `format` varchar(255) NOT NULL,
+                  `formatCategory` varchar(255) NOT NULL,
+                  `formatBoost` tinyint NOT NULL,
+                  PRIMARY KEY (`id`),
+                  UNIQUE KEY (`indexingProfileId`,`value`)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8",
+				"CREATE TABLE IF NOT EXISTS `status_map_values` (
+                  `id` int(11) NOT NULL AUTO_INCREMENT,
+                  `indexingProfileId` int(11) NOT NULL,
+                  `value` varchar(50) NOT NULL,
+                  `status` varchar(50) NOT NULL,
+                  `groupedStatus` varchar(50) NOT NULL,
+                  PRIMARY KEY (`id`),
+                  UNIQUE KEY (`indexingProfileId`,`value`)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8"
+			],
+		],
+
+		'convert_to_format_status_maps' => [
+			'title' => 'Convert to Format Status Maps',
+			'description' => 'Convert translation maps to format and status maps',
+			'sql' => [
+				"createFormatAndStatusMapsFromTranslationMaps"
+			],
+		],
+
+		'format_status_suppression' => [
+			'title' => 'Format and status suppression',
+			'description' => 'Add suppression to format and status suppression maps',
+			'sql' => [
+				"ALTER TABLE format_map_values ADD COLUMN suppress TINYINT(1) DEFAULT 0",
+				"ALTER TABLE status_map_values ADD COLUMN suppress TINYINT(1) DEFAULT 0",
+			],
+		],
 	);
+}
+
+function createFormatAndStatusMapsFromTranslationMaps(&$update){
+	require_once ROOT_DIR . '/sys/Indexing/IndexingProfile.php';
+	require_once ROOT_DIR . '/sys/Indexing/TranslationMap.php';
+	require_once ROOT_DIR . '/sys/Indexing/TranslationMapValue.php';
+	require_once ROOT_DIR . '/sys/Indexing/StatusMapValue.php';
+	require_once ROOT_DIR . '/sys/Indexing/FormatMapValue.php';
+
+	$indexingProfile = new IndexingProfile();
+	$indexingProfile->find();
+	while ($indexingProfile->fetch()){
+		$translationMaps = $indexingProfile->translationMaps;
+		$statusMap = null;
+		$groupedStatusMap = null;
+		$formatMap = null;
+		$formatBoostMap = null;
+		$formatCategoryMap = null;
+		/** @var TranslationMap $translationMap */
+		foreach ($translationMaps as $translationMap){
+			if ($translationMap->name == 'item_status'){
+				$statusMap = $translationMap;
+			}elseif ($translationMap->name == 'item_grouped_status'){
+				$groupedStatusMap = $translationMap;
+			}elseif ($translationMap->name == 'format'){
+				$formatMap = $translationMap;
+			}elseif ($translationMap->name == 'format_boost'){
+				$formatBoostMap = $translationMap;
+			}elseif ($translationMap->name == 'format_category'){
+				$formatCategoryMap = $translationMap;
+			}
+		}
+
+		if ($statusMap != null) {
+			/** @var TranslationMapValue $value */
+			foreach ($statusMap->translationMapValues as $value) {
+				$indexingProfile->setStatusMapValue($value->value, $value->translation, null);
+				$value->delete();
+			}
+			$statusMap->delete();
+		}
+
+		if ($groupedStatusMap != null) {
+			/** @var TranslationMapValue $value */
+			foreach ($groupedStatusMap->translationMapValues as $value) {
+				$indexingProfile->setStatusMapValue($value->value, null, $value->translation);
+				$value->delete();
+			}
+			$groupedStatusMap->delete();
+		}
+
+		if ($formatMap != null){
+			/** @var TranslationMapValue $value */
+			foreach ($formatMap->translationMapValues as $value){
+				$indexingProfile->setFormatMapValue($value->value, $value->translation, null, null);
+				$value->delete();
+			}
+			$formatMap->delete();
+		}
+
+		if ($formatCategoryMap != null) {
+			/** @var TranslationMapValue $value */
+			foreach ($formatCategoryMap->translationMapValues as $value) {
+				$indexingProfile->setFormatMapValue($value->value, null, $value->translation, null);
+				$value->delete();
+			}
+			$formatCategoryMap->delete();
+		}
+
+		if ($formatBoostMap != null) {
+			/** @var TranslationMapValue $value */
+			foreach ($formatBoostMap->translationMapValues as $value) {
+				$indexingProfile->setFormatMapValue($value->value, null, null, $value->translation);
+				$value->delete();
+			}
+			$formatBoostMap->delete();
+		}
+	}
 }

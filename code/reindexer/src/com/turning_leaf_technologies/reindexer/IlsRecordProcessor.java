@@ -83,6 +83,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 	HashMap<String, TranslationMap> translationMaps = new HashMap<>();
 	private ArrayList<TimeToReshelve> timesToReshelve = new ArrayList<>();
+	HashSet<String> formatsToSuppress = new HashSet<>();
+	HashSet<String> statusesToSuppress = new HashSet<>();
 
 	IlsRecordProcessor(GroupedWorkIndexer indexer, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, logger);
@@ -218,7 +220,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 	}
 	private void loadTranslationMapsForProfile(Connection dbConn, long id) throws SQLException{
-		//Load default system values which will be overwritten below
+		//TODO: Load default system values which will be overwritten below
 
 
 		PreparedStatement getTranslationMapsStmt = dbConn.prepareStatement("SELECT * from translation_maps WHERE indexingProfileId = ?");
@@ -235,6 +237,46 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			}
 			translationMaps.put(map.getMapName(), map);
 		}
+
+		//Status and Format maps are special.  We store them as part of the indexing profile.
+		PreparedStatement getFormatMapStmt = dbConn.prepareStatement("SELECT * from format_map_values WHERE indexingProfileId = ?");
+		getFormatMapStmt.setLong(1, id);
+		ResultSet formatMapRS = getFormatMapStmt.executeQuery();
+		TranslationMap formatMap = new TranslationMap(profileType, "format", false, logger);
+		translationMaps.put(formatMap.getMapName(), formatMap);
+		TranslationMap formatCategoryMap = new TranslationMap(profileType, "format_category", false, logger);
+		translationMaps.put(formatCategoryMap.getMapName(), formatCategoryMap);
+		TranslationMap formatBoostMap = new TranslationMap(profileType, "format_boost", false, logger);
+		translationMaps.put(formatBoostMap.getMapName(), formatBoostMap);
+		while (formatMapRS.next()){
+			String format = formatMapRS.getString("value");
+			if (formatMapRS.getBoolean("suppress")){
+				formatsToSuppress.add(format);
+			}else{
+				formatMap.addValue(format, formatMapRS.getString("format"));
+				formatCategoryMap.addValue(format, formatMapRS.getString("formatCategory"));
+				formatBoostMap.addValue(format, formatMapRS.getString("formatBoost"));
+			}
+		}
+		formatMapRS.close();
+
+		PreparedStatement getStatusMapStmt = dbConn.prepareStatement("SELECT * from status_map_values WHERE indexingProfileId = ?");
+		getStatusMapStmt.setLong(1, id);
+		ResultSet statusMapRS = getStatusMapStmt.executeQuery();
+		TranslationMap itemStatusMap = new TranslationMap(profileType, "item_status", false, logger);
+		translationMaps.put(itemStatusMap.getMapName(), itemStatusMap);
+		TranslationMap itemGroupedStatusMap = new TranslationMap(profileType, "item_grouped_status", false, logger);
+		translationMaps.put(itemGroupedStatusMap.getMapName(), itemGroupedStatusMap);
+		while (statusMapRS.next()){
+			String status = statusMapRS.getString("value");
+			if (statusMapRS.getBoolean("suppress")){
+				statusesToSuppress.add(status);
+			}else{
+				itemStatusMap.addValue(status, statusMapRS.getString("status"));
+				itemGroupedStatusMap.addValue(status, statusMapRS.getString("groupedStatus"));
+			}
+		}
+		statusMapRS.close();
 	}
 
 	private void loadHoldsByIdentifier(Connection dbConn, Logger logger) {
@@ -742,6 +784,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		itemInfo.setItemIdentifier(getItemSubfieldData(itemRecordNumberSubfieldIndicator, itemField));
 
 		String itemStatus = getItemStatus(itemField, recordInfo.getRecordIdentifier());
+		if (statusesToSuppress.contains(itemStatus)){
+			return;
+		}
 
 		String itemLocation = getItemSubfieldData(locationSubfieldIndicator, itemField);
 		itemInfo.setLocationCode(itemLocation);
@@ -1270,10 +1315,13 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			if (statusSubfield == null) {
 				return true;
 			} else {
-				if (statusesToSuppressPattern != null && statusesToSuppressPattern.matcher(statusSubfield.getData()).matches()) {
-
+				String statusValue = statusSubfield.getData();
+				if (statusesToSuppressPattern != null && statusesToSuppressPattern.matcher(statusValue).matches()) {
+					return true;
+				}else if (statusesToSuppress.contains(statusValue)){
 					return true;
 				}
+
 			}
 		}
 		Subfield locationSubfield = curItem.getSubfield(locationSubfieldIndicator);
@@ -1289,7 +1337,19 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			if (collectionSubfieldValue == null){
 				return true;
 			}else{
-				return collectionsToSuppressPattern != null && collectionsToSuppressPattern.matcher(collectionSubfieldValue.getData().trim()).matches();
+				if (collectionsToSuppressPattern != null && collectionsToSuppressPattern.matcher(collectionSubfieldValue.getData().trim()).matches()){
+					return true;
+				}
+			}
+		}
+		if (formatSubfield != ' '){
+			Subfield formatSubfieldValue = curItem.getSubfield(formatSubfield);
+			if (formatSubfieldValue != null){
+				String formatValue = formatSubfieldValue.getData();
+				//noinspection RedundantIfStatement
+				if (formatsToSuppress.contains(formatValue)){
+					return true;
+				}
 			}
 		}
 		return false;

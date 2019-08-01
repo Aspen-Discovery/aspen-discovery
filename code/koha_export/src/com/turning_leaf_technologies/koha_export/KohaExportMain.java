@@ -222,6 +222,8 @@ public class KohaExportMain {
 			PreparedStatement getTranslationMapStmt = dbConn.prepareStatement("SELECT id from translation_maps WHERE name = ? and indexingProfileId = ?");
 			PreparedStatement getExistingValuesForMapStmt = dbConn.prepareStatement("SELECT * from translation_map_values where translationMapId = ?");
 			PreparedStatement insertTranslationStmt = dbConn.prepareStatement("INSERT INTO translation_map_values (translationMapId, value, translation) VALUES (?, ?, ?)");
+			PreparedStatement getExistingValuesForFormatMapStmt = dbConn.prepareStatement("SELECT * from format_map_values where indexingProfileId = ?");
+			PreparedStatement insertFormatStmt = dbConn.prepareStatement("INSERT INTO format_map_values (indexingProfileId, value, format, formatCategory, formatBoost) VALUES (?, ?, ?, 'Other', 1)");
 
 			//Load branches into location
 			PreparedStatement kohaBranchesStmt = kohaConn.prepareStatement("SELECT branchcode, branchname from branches");
@@ -241,11 +243,10 @@ public class KohaExportMain {
 			existingValues = getExistingTranslationMapValues(getExistingValuesForMapStmt, translationMapId);
 			updateTranslationMap(kohaCCodesStmt, "authorised_value", "lib", insertTranslationStmt, translationMapId, existingValues);
 
-			//Load itemtypes into formats
+			//Load itemtypes into formats for the indexing profile
 			PreparedStatement kohaItemTypesStmt = kohaConn.prepareStatement("SELECT itemtype, description FROM itemtypes");
-			translationMapId = getTranslationMapId(createTranslationMapStmt, getTranslationMapStmt, "format");
-			existingValues = getExistingTranslationMapValues(getExistingValuesForMapStmt, translationMapId);
-			updateTranslationMap(kohaItemTypesStmt, "itemtype", "description", insertTranslationStmt, translationMapId, existingValues);
+			existingValues = getExistingFormatValues(getExistingValuesForFormatMapStmt, indexingProfile.getId());
+			updateFormatMap(kohaItemTypesStmt, "itemtype", "description", insertFormatStmt, indexingProfile.getId(), existingValues);
 
 			//Also load item types into itype
 			translationMapId = getTranslationMapId(createTranslationMapStmt, getTranslationMapStmt, "itype");
@@ -254,6 +255,29 @@ public class KohaExportMain {
 
 		}catch (SQLException e) {
 			logger.error("Error updating translation maps", e);
+		}
+	}
+
+	private static void updateFormatMap(PreparedStatement kohaValuesStmt, String valueColumn, String translationColumn, PreparedStatement insertFormatStmt, Long indexingProfileId, HashMap<String, String> existingValues) throws SQLException {
+		ResultSet kohaValuesRS = kohaValuesStmt.executeQuery();
+		while (kohaValuesRS.next()) {
+			String value = kohaValuesRS.getString(valueColumn);
+			String translation = kohaValuesRS.getString(translationColumn);
+			if (existingValues.containsKey(value)){
+				if (!existingValues.get(value).equals(translation)){
+					logger.warn("Translation for " + value + " has changed from " + existingValues.get(value) + " to " + translation);
+				}
+			} else {
+				if (translation == null){
+					translation = value;
+				}
+				if (value.length() > 0) {
+					insertFormatStmt.setLong(1, indexingProfileId);
+					insertFormatStmt.setString(2, value);
+					insertFormatStmt.setString(3, translation);
+					insertFormatStmt.executeUpdate();
+				}
+			}
 		}
 	}
 
@@ -278,6 +302,16 @@ public class KohaExportMain {
 				}
 			}
 		}
+	}
+
+	private static HashMap<String, String> getExistingFormatValues(PreparedStatement getExistingValuesForMapStmt, Long indexingProfileId) throws SQLException {
+		HashMap<String, String> existingValues = new HashMap<>();
+		getExistingValuesForMapStmt.setLong(1, indexingProfileId);
+		ResultSet getExistingValuesForMapRS = getExistingValuesForMapStmt.executeQuery();
+		while (getExistingValuesForMapRS.next()) {
+			existingValues.put(getExistingValuesForMapRS.getString("value"), getExistingValuesForMapRS.getString("format"));
+		}
+		return existingValues;
 	}
 
 	private static HashMap<String, String> getExistingTranslationMapValues(PreparedStatement getExistingValuesForMapStmt, Long translationMapId) throws SQLException {

@@ -29,6 +29,8 @@ class DBMaintenance extends Admin_Admin {
 
 						if (method_exists($this, $sql)) {
 							$this->$sql($update);
+						}elseif (function_exists($sql)){
+							$sql($update);
 						} else {
 							if (!$this->runSQLStatement($update, $sql)) {
 								break;

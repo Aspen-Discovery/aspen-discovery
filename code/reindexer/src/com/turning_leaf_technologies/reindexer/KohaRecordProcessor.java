@@ -389,6 +389,8 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 					} else if (urlSubfield.contains("ebrary.com")) {
 						sourceType = "Ebook Central";
 						break;
+					//TODO: Remove Cloud Library
+					//TODO: Remove Hoopla
 					} else {
 						logger.debug("URL is not overdrive");
 					}
