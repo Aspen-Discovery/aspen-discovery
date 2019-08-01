@@ -75,55 +75,61 @@ class RBdigitalDriver extends AbstractEContentDriver
 
 	        $patronCheckoutsRaw = $this->curlWrapper->curlGetPage($patronCheckoutUrl);
 	        $patronCheckouts = json_decode($patronCheckoutsRaw);
-	        foreach ($patronCheckouts as $patronCheckout) {
-		        $checkout = array();
-		        $checkout['checkoutSource'] = 'RBdigital';
+	        if (isset($patronCheckouts->message)){
+	        	//Error in RBdigital APIS
+		        global $logger;
+		        $logger->log("Error in RBdigital {$patronCheckouts->message}", Logger::LOG_WARNING);
+	        }else{
+		        foreach ($patronCheckouts as $patronCheckout) {
+			        $checkout = array();
+			        $checkout['checkoutSource'] = 'RBdigital';
 
-		        $checkout['id'] = $patronCheckout->transactionId;
-		        $checkout['recordId'] = $patronCheckout->isbn;
-		        $checkout['title'] = $patronCheckout->title;
-		        $checkout['author'] = $patronCheckout->authors;
+			        $checkout['id'] = $patronCheckout->transactionId;
+			        $checkout['recordId'] = $patronCheckout->isbn;
+			        $checkout['title'] = $patronCheckout->title;
+			        $checkout['author'] = $patronCheckout->authors;
 
-		        $dateDue = DateTime::createFromFormat('Y-m-d', $patronCheckout->expiration);
-		        if ($dateDue) {
-			        $dueTime = $dateDue->getTimestamp();
-		        } else {
-			        $dueTime = null;
-		        }
-		        $checkout['dueDate'] = $dueTime;
-		        $checkout['itemId'] = $patronCheckout->isbn;
-		        $checkout['canRenew'] = $patronCheckout->canRenew;
-		        $checkout['hasDrm'] = $patronCheckout->hasDrm;
-		        $checkout['downloadUrl'] = $patronCheckout->downloadUrl;
-		        if (strlen($checkout['downloadUrl']) == 0) {
-			        $checkout['output'] = $patronCheckout->output;
-		        }
-		        $checkout['accessOnlineUrl'] = '';
-
-		        if ($checkout['id'] && strlen($checkout['id']) > 0) {
-			        require_once ROOT_DIR . '/RecordDrivers/RBdigitalRecordDriver.php';
-			        $recordDriver = new RBdigitalRecordDriver($checkout['recordId']);
-			        if ($recordDriver->isValid()) {
-				        $checkout['coverUrl'] = $recordDriver->getBookcoverUrl('medium');
-				        $checkout['ratingData'] = $recordDriver->getRatingData();
-				        $checkout['groupedWorkId'] = $recordDriver->getGroupedWorkId();
-				        $checkout['format'] = $recordDriver->getPrimaryFormat();
-				        $checkout['author'] = $recordDriver->getPrimaryAuthor();
-				        $checkout['title'] = $recordDriver->getTitle();
-				        $curTitle['title_sort'] = $recordDriver->getTitle();
-				        $checkout['linkUrl'] = $recordDriver->getLinkUrl();
-				        $checkout['accessOnlineUrl'] = $recordDriver->getAccessOnlineLinkUrl($patron);
+			        $dateDue = DateTime::createFromFormat('Y-m-d', $patronCheckout->expiration);
+			        if ($dateDue) {
+				        $dueTime = $dateDue->getTimestamp();
 			        } else {
-				        $checkout['coverUrl'] = "";
-				        $checkout['groupedWorkId'] = "";
-				        $checkout['format'] = $patronCheckout->mediaType;
+				        $dueTime = null;
 			        }
+			        $checkout['dueDate'] = $dueTime;
+			        $checkout['itemId'] = $patronCheckout->isbn;
+			        $checkout['canRenew'] = $patronCheckout->canRenew;
+			        $checkout['hasDrm'] = $patronCheckout->hasDrm;
+			        $checkout['downloadUrl'] = $patronCheckout->downloadUrl;
+			        if (strlen($checkout['downloadUrl']) == 0) {
+				        $checkout['output'] = $patronCheckout->output;
+			        }
+			        $checkout['accessOnlineUrl'] = '';
+
+			        if ($checkout['id'] && strlen($checkout['id']) > 0) {
+				        require_once ROOT_DIR . '/RecordDrivers/RBdigitalRecordDriver.php';
+				        $recordDriver = new RBdigitalRecordDriver($checkout['recordId']);
+				        if ($recordDriver->isValid()) {
+					        $checkout['coverUrl'] = $recordDriver->getBookcoverUrl('medium');
+					        $checkout['ratingData'] = $recordDriver->getRatingData();
+					        $checkout['groupedWorkId'] = $recordDriver->getGroupedWorkId();
+					        $checkout['format'] = $recordDriver->getPrimaryFormat();
+					        $checkout['author'] = $recordDriver->getPrimaryAuthor();
+					        $checkout['title'] = $recordDriver->getTitle();
+					        $curTitle['title_sort'] = $recordDriver->getTitle();
+					        $checkout['linkUrl'] = $recordDriver->getLinkUrl();
+					        $checkout['accessOnlineUrl'] = $recordDriver->getAccessOnlineLinkUrl($patron);
+				        } else {
+					        $checkout['coverUrl'] = "";
+					        $checkout['groupedWorkId'] = "";
+					        $checkout['format'] = $patronCheckout->mediaType;
+				        }
+			        }
+
+			        $checkout['user'] = $patron->getNameAndLibraryLabel();
+			        $checkout['userId'] = $patron->id;
+
+			        $checkouts[] = $checkout;
 		        }
-
-		        $checkout['user'] = $patron->getNameAndLibraryLabel();
-		        $checkout['userId'] = $patron->id;
-
-		        $checkouts[] = $checkout;
 	        }
 
 	        //Look for magazines
@@ -475,29 +481,35 @@ class RBdigitalDriver extends AbstractEContentDriver
             return $holds;
         }
 
-        foreach ($patronHolds as $tmpHold) {
-            $hold = array();
-            $hold['id'] = $tmpHold->isbn;
-            $hold['transactionId'] = $tmpHold->transactionId;
-            $hold['holdSource'] = 'RBdigital';
+	    if (isset($patronHolds->message)){
+		    //Error in RBdigital APIS
+		    global $logger;
+		    $logger->log("Error in RBdigital {$patronHolds->message}", Logger::LOG_WARNING);
+	    }else {
+		    foreach ($patronHolds as $tmpHold) {
+			    $hold = array();
+			    $hold['id'] = $tmpHold->isbn;
+			    $hold['transactionId'] = $tmpHold->transactionId;
+			    $hold['holdSource'] = 'RBdigital';
 
-            require_once ROOT_DIR . '/RecordDrivers/RBdigitalRecordDriver.php';
-            $recordDriver = new RBdigitalRecordDriver($hold['id']);
-            if ($recordDriver->isValid()) {
-                $hold['coverUrl'] = $recordDriver->getBookcoverUrl('medium');
-                $hold['title'] = $recordDriver->getTitle();
-                $hold['sortTitle'] = $recordDriver->getTitle();
-                $hold['author'] = $recordDriver->getPrimaryAuthor();
-                $hold['linkUrl'] = $recordDriver->getLinkUrl(false);
-                $hold['format'] = $recordDriver->getFormats();
-                $hold['ratingData'] = $recordDriver->getRatingData();
-            }
-            $hold['user'] = $patron->getNameAndLibraryLabel();
-            $hold['userId'] = $patron->id;
+			    require_once ROOT_DIR . '/RecordDrivers/RBdigitalRecordDriver.php';
+			    $recordDriver = new RBdigitalRecordDriver($hold['id']);
+			    if ($recordDriver->isValid()) {
+				    $hold['coverUrl'] = $recordDriver->getBookcoverUrl('medium');
+				    $hold['title'] = $recordDriver->getTitle();
+				    $hold['sortTitle'] = $recordDriver->getTitle();
+				    $hold['author'] = $recordDriver->getPrimaryAuthor();
+				    $hold['linkUrl'] = $recordDriver->getLinkUrl(false);
+				    $hold['format'] = $recordDriver->getFormats();
+				    $hold['ratingData'] = $recordDriver->getRatingData();
+			    }
+			    $hold['user'] = $patron->getNameAndLibraryLabel();
+			    $hold['userId'] = $patron->id;
 
-            $key = $hold['holdSource'] . $hold['id'] . $hold['user'];
-            $holds['unavailable'][$key] = $hold;
-        }
+			    $key = $hold['holdSource'] . $hold['id'] . $hold['user'];
+			    $holds['unavailable'][$key] = $hold;
+		    }
+	    }
 
         return $holds;
     }
@@ -684,18 +696,16 @@ class RBdigitalDriver extends AbstractEContentDriver
         }
     }
 
-    public function registerAccount($user){
-
-    }
-
 	public function redirectToRBdigitalMagazine(/** @noinspection PhpUnusedParameterInspection */ User $patron, RBdigitalMagazineDriver $recordDriver)
 	{
+		$this->addBearerTokenHeader($patron);
 		header('Location:' . $recordDriver->getRBdigitalLinkUrl());
 		die();
 	}
 
-    public function redirectToRBdigital(/** @noinspection PhpUnusedParameterInspection */ User $patron, RBdigitalRecordDriver $recordDriver)
+    public function redirectToRBdigital(User $patron, RBdigitalRecordDriver $recordDriver)
     {
+	    $this->addBearerTokenHeader($patron);
         header('Location:' . $this->userInterfaceURL . '/book/' . $recordDriver->getUniqueID());
         die();
 //        $result = ['success' => false, 'message' => 'Unknown error'];
@@ -717,30 +727,7 @@ class RBdigitalDriver extends AbstractEContentDriver
 //                …and should then be able to set an authorization header using…
 //                bearer 5cc2063fd2b76b28943deb32
 //             */
-//            $tokenUrl = $this->webServiceURL . '/v1/tokens/';
-//            $userData = [
-//                'UserName' => $rbdigitalId,
-//                'Password' => $_REQUEST['password'],
-//                'libraryId' => $this->libraryId,
-//            ];
-//            $rawResponse = $this->curlWrapper->curlPostPage($tokenUrl, json_encode($userData));
-//            $response = json_decode($rawResponse);
-//
-//            if ($response == false){
-//                $result['message'] = "Invalid information returned from API, please retry your hold after a few minutes.";
-//                global $logger;
-//                $logger->log("Invalid information from rbdigital api\r\n$tokenUrl\r\n$rawResponse", Logger::LOG_ERROR);
-//                $logger->log(print_r($this->curlWrapper->getHeaders(), true), Logger::LOG_ERROR);
-//                $curl_info = curl_getinfo($this->curlWrapper->curl_connection);
-//                $logger->log(print_r($curl_info, true), Logger::LOG_ERROR);
-//            }else{
-//                //We should get back a bearer token
-//                if ($response->result == true) {
-//                    $bearerToken = $response->bearer;
-//                }else{
-//                    $result['message'] = "Did not get a bearer token from the API";
-//                }
-//            }
+
 //        }
 //        return $result;
 
@@ -838,4 +825,37 @@ class RBdigitalDriver extends AbstractEContentDriver
         }
 
     }
+
+	/**
+	 * @param User $patron
+	 * @return void
+	 */
+	private function addBearerTokenHeader(User $patron)
+	{
+		if (!empty($patron->rbdigitalUsername) && !empty($patron->rbdigitalPassword)) {
+			$tokenUrl = $this->webServiceURL . '/v1/tokens/';
+			$userData = [
+				'libraryId' => $this->libraryId,
+				'UserName' => $patron->rbdigitalUsername,
+				'Password' => $patron->rbdigitalPassword,
+			];
+			$rawResponse = $this->curlWrapper->curlPostPage($tokenUrl, $userData);
+			$response = json_decode($rawResponse);
+
+			if ($response == false) {
+				$result['message'] = "Invalid information returned from API, please retry your hold after a few minutes.";
+				global $logger;
+				$logger->log("Invalid information from rbdigital api\r\n$tokenUrl\r\n$rawResponse", Logger::LOG_ERROR);
+				$logger->log(print_r($this->curlWrapper->getHeaders(), true), Logger::LOG_ERROR);
+				$curl_info = curl_getinfo($this->curlWrapper->curl_connection);
+				$logger->log(print_r($curl_info, true), Logger::LOG_ERROR);
+			} else {
+				//We should get back a bearer token
+				if ($response->result == true) {
+					$bearerToken = $response->bearer;
+					header('Authorization: bearer ' . $bearerToken);
+				}
+			}
+		}
+	}
 }
