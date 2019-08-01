@@ -267,10 +267,15 @@ public class KohaExportMain {
 					logger.warn("Translation for " + value + " has changed from " + existingValues.get(value) + " to " + translation);
 				}
 			} else {
-				insertTranslationStmt.setLong(1, translationMapId);
-				insertTranslationStmt.setString(2, value);
-				insertTranslationStmt.setString(3, translation);
-				insertTranslationStmt.executeUpdate();
+				if (translation == null){
+					translation = value;
+				}
+				if (value.length() > 0) {
+					insertTranslationStmt.setLong(1, translationMapId);
+					insertTranslationStmt.setString(2, value);
+					insertTranslationStmt.setString(3, translation);
+					insertTranslationStmt.executeUpdate();
+				}
 			}
 		}
 	}
@@ -614,6 +619,10 @@ public class KohaExportMain {
 		//Load the existing marc record from file
 		try {
 			File marcFile = indexingProfile.getFileForIlsRecord(curBibId);
+			if (!marcFile.getParentFile().exists()){
+				//noinspection ResultOfMethodCallIgnored
+				marcFile.getParentFile().mkdirs();
+			}
 
 			//Create a new record from data in the database (faster and more reliable than using ILSDI or OAI export)
 			getBaseMarcRecordStmt.setString(1, curBibId);
@@ -685,7 +694,6 @@ public class KohaExportMain {
 					//Reindex the record
 					getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
 				}
-
 			}
 
 		}catch (Exception e) {
