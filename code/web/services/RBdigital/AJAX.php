@@ -2,6 +2,7 @@
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/sys/HTTP/HTTP_Request.php';
 
+/** @noinspection PhpUnused */
 class RBdigital_AJAX extends Action {
 
 	function launch() {
@@ -83,6 +84,7 @@ class RBdigital_AJAX extends Action {
 		}
 	}
 
+	/** @noinspection PhpUnused */
 	function createAccount(){
         $user = UserAccount::getLoggedInUser();
 
@@ -112,22 +114,14 @@ class RBdigital_AJAX extends Action {
         }
     }
 
+	/** @noinspection PhpUnused */
 	function getHoldPrompts(){
         $user = UserAccount::getLoggedInUser();
         global $interface;
         $id = $_REQUEST['id'];
         $interface->assign('id', $id);
 
-        $users = $user->getRelatedEcontentUsers('rbdigital');
-        $usersWithRBdigitalAccess = [];
-        require_once ROOT_DIR . '/Drivers/RBdigitalDriver.php';
-        $driver = new RBdigitalDriver();
-        foreach ($users as $tmpUser) {
-            if ($driver->getRBdigitalId($tmpUser) != false) {
-                $usersWithRBdigitalAccess[] = $tmpUser;
-            }
-        }
-        $interface->assign('users', $usersWithRBdigitalAccess);
+		$usersWithRBdigitalAccess = $this->getRBdigitalUsers($user);
 
         if (count($usersWithRBdigitalAccess) > 1){
             $promptTitle = 'RBdigital Hold Options';
@@ -159,6 +153,7 @@ class RBdigital_AJAX extends Action {
         }
 	}
 
+	/** @noinspection PhpUnused */
 	function getCheckOutPrompts(){
 		$user = UserAccount::getLoggedInUser();
 		global $interface;
@@ -166,16 +161,7 @@ class RBdigital_AJAX extends Action {
 		$interface->assign('id', $id);
 		$interface->assign('checkoutType', 'book');
 
-		$users = $user->getRelatedEcontentUsers('rbdigital');
-		$usersWithRBdigitalAccess = [];
-		require_once ROOT_DIR . '/Drivers/RBdigitalDriver.php';
-		$driver = new RBdigitalDriver();
-		foreach ($users as $tmpUser) {
-		    if ($driver->getRBdigitalId($tmpUser) != false) {
-                $usersWithRBdigitalAccess[] = $tmpUser;
-            }
-        }
-		$interface->assign('users', $usersWithRBdigitalAccess);
+		$usersWithRBdigitalAccess = $this->getRBdigitalUsers($user);
 
 		if (count($usersWithRBdigitalAccess) > 1){
 			$promptTitle = 'RBdigital Checkout Options';
@@ -207,6 +193,7 @@ class RBdigital_AJAX extends Action {
 		}
 	}
 
+	/** @noinspection PhpUnused */
 	function getMagazineCheckOutPrompts(){
 		$user = UserAccount::getLoggedInUser();
 		global $interface;
@@ -214,16 +201,7 @@ class RBdigital_AJAX extends Action {
 		$interface->assign('id', $id);
 		$interface->assign('checkoutType', 'magazine');
 
-		$users = $user->getRelatedEcontentUsers('rbdigital');
-		$usersWithRBdigitalAccess = [];
-		require_once ROOT_DIR . '/Drivers/RBdigitalDriver.php';
-		$driver = new RBdigitalDriver();
-		foreach ($users as $tmpUser) {
-			if ($driver->getRBdigitalId($tmpUser) != false) {
-				$usersWithRBdigitalAccess[] = $tmpUser;
-			}
-		}
-		$interface->assign('users', $usersWithRBdigitalAccess);
+		$usersWithRBdigitalAccess = $this->getRBdigitalUsers($user);
 
 		if (count($usersWithRBdigitalAccess) > 1){
 			$promptTitle = 'RBdigital Checkout Options';
@@ -293,6 +271,7 @@ class RBdigital_AJAX extends Action {
         }
     }
 
+	/** @noinspection PhpUnused */
     function returnCheckout(){
         $user = UserAccount::getLoggedInUser();
         $id = $_REQUEST['recordId'];
@@ -312,6 +291,7 @@ class RBdigital_AJAX extends Action {
         }
     }
 
+	/** @noinspection PhpUnused */
 	function returnMagazine(){
 		$user = UserAccount::getLoggedInUser();
 		$id = $_REQUEST['recordId'];
@@ -329,5 +309,25 @@ class RBdigital_AJAX extends Action {
 		}else{
 			return json_encode(array('result'=>false, 'message'=>'You must be logged in to return titles.'));
 		}
+	}
+
+	/**
+	 * @param User $user
+	 * @return User[]
+	 */
+	private function getRBdigitalUsers(User $user)
+	{
+		global $interface;
+		$users = $user->getRelatedEcontentUsers('rbdigital');
+		$usersWithRBdigitalAccess = [];
+		require_once ROOT_DIR . '/Drivers/RBdigitalDriver.php';
+		$driver = new RBdigitalDriver();
+		foreach ($users as $tmpUser) {
+			if ($driver->getRBdigitalId($tmpUser) != false) {
+				$usersWithRBdigitalAccess[] = $tmpUser;
+			}
+		}
+		$interface->assign('users', $usersWithRBdigitalAccess);
+		return $usersWithRBdigitalAccess;
 	}
 }
