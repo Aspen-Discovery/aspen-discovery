@@ -97,7 +97,7 @@ $.fn.rater.rate = function($this, opts, rating) {
 		var $on = $this.find('.ui-rater-starsOn'),
 				$off = $this.find('.ui-rater-starsOff');
 		$off.fadeTo(600, 0.4, function() {
-			$.getJSON(opts.url, {method: 'RateTitle', id: opts.id, rating: rating}, function(data) {
+			$.getJSON(opts.url, {method: 'rateTitle', id: opts.id, rating: rating}, function(data) {
 				if (data.error) {
 					AspenDiscovery.showMessage('Error', data.error);
 					$off.fadeTo(500, 1).mouseleave(); // Reset rater in light of failure

@@ -6,7 +6,6 @@ class MyAccount_RBdigitalOptions extends MyAccount
 {
 	function launch()
 	{
-		global $configArray;
 		global $interface;
 		$user = UserAccount::getLoggedInUser();
 
@@ -41,5 +40,4 @@ class MyAccount_RBdigitalOptions extends MyAccount
 
 		$this->display('rbdigitalOptions.tpl', 'RBdigital Options');
 	}
-
 }

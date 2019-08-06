@@ -1,5 +1,6 @@
 <?php
 
+/** @noinspection PhpUnused */
 class GroupedWork_AJAX {
 	function launch() {
 		global $timer;
@@ -16,12 +17,12 @@ class GroupedWork_AJAX {
 		}
 	}
 
-
 	/**
 	 * Alias of deleteUserReview()
 	 *
 	 * @return string
 	 */
+	/** @noinspection PhpUnused */
 	function clearUserRating(){
 		return $this->deleteUserReview();
 	}
@@ -47,6 +48,7 @@ class GroupedWork_AJAX {
 		return json_encode($result);
 	}
 
+	/** @noinspection PhpUnused */
 	function forceRegrouping(){
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
@@ -88,6 +90,7 @@ class GroupedWork_AJAX {
 		}
 	}
 
+	/** @noinspection PhpUnused */
 	function forceReindex(){
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
@@ -131,6 +134,7 @@ class GroupedWork_AJAX {
 		return json_encode($result);
 	}
 
+	/** @noinspection PhpUnused */
 	function getEnrichmentInfo(){
 		global $configArray;
 		global $interface;
@@ -227,6 +231,7 @@ class GroupedWork_AJAX {
 		return json_encode($enrichmentResult);
 	}
 
+	/** @noinspection PhpUnused */
 	function getMoreLikeThis(){
 		global $configArray;
 		global $memoryWatcher;
@@ -262,7 +267,7 @@ class GroupedWork_AJAX {
 
 	function getScrollerTitle($record, $index, $scrollerName){
 		$cover = $record['mediumCover'];
-		$title = preg_replace("/\\s*(\\/|:)\\s*$/","", $record['title']);
+		$title = preg_replace("~\\s*([/:])\\s*$~","", $record['title']);
 		$series = '';
 		if (isset($record['series']) && $record['series'] != null){
 			if (is_array($record['series'])){
@@ -330,6 +335,7 @@ class GroupedWork_AJAX {
 		);
 	}
 
+	/** @noinspection PhpUnused */
 	function getGoDeeperData(){
 		require_once(ROOT_DIR . '/Drivers/marmot_inc/GoDeeperData.php');
 		$dataType = strip_tags($_REQUEST['dataType']);
@@ -349,6 +355,7 @@ class GroupedWork_AJAX {
 
 	}
 
+	/** @noinspection PhpUnused */
 	function getWorkInfo(){
 		global $interface;
 
@@ -393,16 +400,16 @@ class GroupedWork_AJAX {
 
 		$modalBody = $interface->fetch('GroupedWork/work-details.tpl');
 		$results = array(
-				'title' => "<a href='$url'>{$recordDriver->getTitle()}</a>",
-				'modalBody' => $modalBody,
-				'modalButtons' => "<button onclick=\"return AspenDiscovery.GroupedWork.showSaveToListForm(this, '$escapedId');\" class=\"modal-buttons btn btn-primary\" style='float: left'>$buttonLabel</button>"
-					."<a href='$url'><button class='modal-buttons btn btn-primary'>" . translate("More Info") . "</button></a>"
+			'title' => "<a href='$url'>{$recordDriver->getTitle()}</a>",
+			'modalBody' => $modalBody,
+			'modalButtons' => "<button onclick=\"return AspenDiscovery.GroupedWork.showSaveToListForm(this, '$escapedId');\" class=\"modal-buttons btn btn-primary\" style='float: left'>$buttonLabel</button>"
+				."<a href='$url'><button class='modal-buttons btn btn-primary'>" . translate("More Info") . "</button></a>"
 		);
 		return json_encode($results);
 	}
 
-
-	function RateTitle(){
+	/** @noinspection PhpUnused */
+	function rateTitle(){
 		require_once(ROOT_DIR . '/sys/LocalEnrichment/UserWorkReview.php');
 		if (!UserAccount::isLoggedIn()){
 			return json_encode(array('error'=>'Please login to rate this title.'));
@@ -454,6 +461,7 @@ class GroupedWork_AJAX {
 
 	}
 
+	/** @noinspection PhpUnused */
 	function getReviewInfo(){
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 		$id = $_REQUEST['id'];
@@ -484,6 +492,7 @@ class GroupedWork_AJAX {
 		return json_encode($results);
 	}
 
+	/** @noinspection PhpUnused */
 	function getPromptForReviewForm() {
 		$user = UserAccount::getActiveUserObj();
 		if ($user) {
@@ -518,6 +527,7 @@ class GroupedWork_AJAX {
 		return json_encode($results);
 	}
 
+	/** @noinspection PhpUnused */
 	function setNoMoreReviews(){
 		$user = UserAccount::getActiveUserObj();
 		if ($user) {
@@ -529,6 +539,7 @@ class GroupedWork_AJAX {
 		}
 	}
 
+	/** @noinspection PhpUnused */
 	function getReviewForm(){
 		global $interface;
 		$id = $_REQUEST['id'];
@@ -561,6 +572,7 @@ class GroupedWork_AJAX {
 		return json_encode($results);
 	}
 
+	/** @noinspection PhpUnused */
 	function saveReview() {
 		$result = array();
 
@@ -612,6 +624,7 @@ class GroupedWork_AJAX {
 		return json_encode($result);
 	}
 
+	/** @noinspection PhpUnused */
 	function getEmailForm(){
 		global $interface;
 		require_once ROOT_DIR . '/sys/Email/Mailer.php';
@@ -634,6 +647,7 @@ class GroupedWork_AJAX {
 		return json_encode($results);
 	}
 
+	/** @noinspection PhpUnused */
 	function sendEmail()
 	{
 		global $interface;
@@ -706,6 +720,7 @@ class GroupedWork_AJAX {
 		return json_encode($result);
 	}
 
+	/** @noinspection PhpUnused */
 	function saveToList(){
 		$result = array();
 
@@ -768,6 +783,7 @@ class GroupedWork_AJAX {
 		return json_encode($result);
 	}
 
+	/** @noinspection PhpUnused */
 	function getSaveToListForm(){
 		global $interface;
 
@@ -815,6 +831,7 @@ class GroupedWork_AJAX {
 		return json_encode($results);
 	}
 
+	/** @noinspection PhpUnused */
 	function markNotInterested(){
 		$result = array(
 			'result' => false,
@@ -854,6 +871,7 @@ class GroupedWork_AJAX {
 		return json_encode($result);
 	}
 
+	/** @noinspection PhpUnused */
 	function clearNotInterested(){
 		$idToClear = $_REQUEST['id'];
 		require_once ROOT_DIR . '/sys/LocalEnrichment/NotInterested.php';
@@ -868,6 +886,7 @@ class GroupedWork_AJAX {
 		return json_encode($result);
 	}
 
+	/** @noinspection PhpUnused */
 	function getProspectorInfo(){
 		require_once ROOT_DIR . '/Drivers/marmot_inc/Prospector.php';
 		global $interface;
@@ -908,16 +927,7 @@ class GroupedWork_AJAX {
 		return json_encode($result);
 	}
 
-	function getNovelistData(){
-		$url = $_REQUEST['novelistUrl'];
-		$rawNovelistData = file_get_contents($url);
-		//Trim off the wrapping data ();
-		$rawNovelistData = substr($rawNovelistData, 1, -2);
-		$jsonData = json_decode($rawNovelistData);
-		$novelistData = $jsonData->body;
-		echo($novelistData);
-	}
-
+	/** @noinspection PhpUnused */
 	function getSeriesSummary(){
 		global $interface;
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
@@ -945,6 +955,7 @@ class GroupedWork_AJAX {
 		return json_encode($result);
 	}
 
+	/** @noinspection PhpUnused */
 	function reloadCover(){
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 		$id = $_REQUEST['id'];
@@ -965,6 +976,7 @@ class GroupedWork_AJAX {
 		return json_encode(array('success' => true, 'message' => 'Covers have been reloaded.  You may need to refresh the page to clear your local cache.'));
 	}
 
+	/** @noinspection PhpUnused */
 	function reloadIslandora(){
 		$id = $_REQUEST['id'];
 		$samePikaCleared = false;
@@ -988,5 +1000,40 @@ class GroupedWork_AJAX {
 				'success' => $samePikaCleared,
 				'message' => $cacheMessage
 		));
+	}
+
+	function getCopyDetails(){
+		global $interface;
+
+		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+		$id = $_REQUEST['id'];
+		$recordDriver = new GroupedWorkDriver($id);
+		$interface->assign('recordDriver', $recordDriver);
+
+		$recordId = $_REQUEST['recordId'];
+
+		$relatedManifestation = null;
+		foreach ($recordDriver->getRelatedManifestations() as $relatedManifestation){
+			if ($relatedManifestation->format == $relatedManifestation){
+				break;
+			}
+		}
+		$interface->assign('itemSummaryId', $id);
+		$interface->assign('relatedManifestation', $relatedManifestation);
+
+		if ($recordId != $id){
+			$record = $recordDriver->getRelatedRecord($recordId);
+			$summary = $record->getItemSummary();
+		}else{
+			$summary = $relatedManifestation->getItemSummary();
+		}
+		$interface->assign('summary', $summary);
+
+		$modalBody = $interface->fetch('GroupedWork/copyDetails.tpl');
+		$results = array(
+			'title' => translate("Copy Summary"),
+			'modalBody' => $modalBody,
+		);
+		return json_encode($results);
 	}
 }

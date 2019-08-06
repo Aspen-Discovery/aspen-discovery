@@ -330,53 +330,39 @@ AspenDiscovery.GroupedWork = (function(){
 
 		sendEmail: function(id){
 			if (Globals.loggedIn){
-				var from = $('#from').val(),
-						to = $('#to').val(),
-						message = $('#message').val(),
-						related_record = $('#related_record').val(),
-						url = Globals.path + "/GroupedWork/" + encodeURIComponent(id) + "/AJAX",
-						params = {
-							'method' : 'sendEmail',
-							from : from,
-							to : to,
-							message : message,
-							related_record : related_record
-						};
-				$.getJSON(url, params,
-						function(data) {
-							if (data.result) {
-								AspenDiscovery.showMessage("Success", data.message);
-							} else {
-								AspenDiscovery.showMessage("Error", data.message);
-							}
-						}
-				).fail(AspenDiscovery.ajaxFail);
+				let from = $('#from').val();
+				let to = $('#to').val();
+				let message = $('#message').val();
+				let related_record = $('#related_record').val();
+				let url = Globals.path + "/GroupedWork/" + encodeURIComponent(id) + "/AJAX";
+				let params = {
+					'method' : 'sendEmail',
+					from : from,
+					to : to,
+					message : message,
+					related_record : related_record
+				};
+				$.getJSON(url, params, function(data) {
+					if (data.result) {
+						AspenDiscovery.showMessage("Success", data.message);
+					} else {
+						AspenDiscovery.showMessage("Error", data.message);
+					}
+				}).fail(AspenDiscovery.ajaxFail);
 			}
 			return false;
 		},
 
-		sendSMS: function(id){
-			if (Globals.loggedIn){
-				var phoneNumber = $('#sms_phone_number').val(),
-						provider = $('#provider').val(),
-						related_record = $('#related_record').val(),
-						url = Globals.path + "/GroupedWork/" + encodeURIComponent(id) + "/AJAX",
-						params = {
-							'method' : 'sendSMS',
-							provider : provider,
-							sms_phone_number : phoneNumber,
-							related_record : related_record
-						};
-				$.getJSON(url, params,
-						function(data) {
-							if (data.result) {
-								AspenDiscovery.showMessage("Success", data.message);
-							} else {
-								AspenDiscovery.showMessage("Error", data.message);
-							}
-						}
-				).fail(AspenDiscovery.ajaxFail);
-			}
+		showCopyDetails: function(id, format, recordId){
+			let url = Globals.path + "/GroupedWork/" + encodeURIComponent(id) + "/AJAX";
+			let params = {
+				'method' : 'getCopyDetails',
+				format : format,
+				recordId : recordId,
+			};
+			$.getJSON(url, params, function(data){
+				AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+			}).fail(AspenDiscovery.ajaxFail);
 			return false;
 		},
 
