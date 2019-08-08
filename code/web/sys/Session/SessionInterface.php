@@ -1,6 +1,8 @@
 <?php
 
-require_once ROOT_DIR . '/services/MyResearch/lib/Search.php';
+if (file_exists(ROOT_DIR . '/services/MyResearch/lib/Search.php')) {
+	require_once ROOT_DIR . '/services/MyResearch/lib/Search.php';
+}
 
 class SessionInterface {
 
@@ -19,10 +21,10 @@ class SessionInterface {
 
 	// the following need to be static since they are used as callback functions
 	static public function open($sess_path, $sess_name) {
-	    return true;
+		return true;
 	}
 	static public function close() {
-	    return true;
+		return true;
 	}
 	static public function read($sess_id) { }
 	static public function write($sess_id, $data) { }
@@ -32,15 +34,17 @@ class SessionInterface {
 	//      parent::destroy() in addition to any new behavior.
 	static public function destroy($sess_id)
 	{
-		// Delete the searches stored for this session
-		$search = new SearchEntry();
-		$searchList = $search->getSearches($sess_id);
-		// Make sure there are some
-		if (count($searchList) > 0) {
-			foreach ($searchList as $oldSearch) {
-				// And make sure they aren't saved
-				if ($oldSearch->saved == 0) {
-					$oldSearch->delete();
+		if (class_exists('SearchEntry')){
+			// Delete the searches stored for this session
+			$search = new SearchEntry();
+			$searchList = $search->getSearches($sess_id);
+			// Make sure there are some
+			if (count($searchList) > 0) {
+				foreach ($searchList as $oldSearch) {
+					// And make sure they aren't saved
+					if ($oldSearch->saved == 0) {
+						$oldSearch->delete();
+					}
 				}
 			}
 		}

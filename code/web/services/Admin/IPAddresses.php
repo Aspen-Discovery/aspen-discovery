@@ -2,12 +2,12 @@
 
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
-require_once ROOT_DIR . '/Drivers/marmot_inc/subnet.php';
+require_once ROOT_DIR . '/sys/IP/IPLookup.php';
 
 class IPAddresses extends ObjectEditor
 {
 	function getObjectType(){
-		return 'subnet';
+		return 'IPAddress';
 	}
 	function getToolName(){
 		return 'IPAddresses';
@@ -16,7 +16,7 @@ class IPAddresses extends ObjectEditor
 		return 'Location IP Addresses';
 	}
 	function getAllObjects(){
-		$object = new subnet();
+		$object = new IPAddress();
 		$object->orderBy('ip');
 		$object->find();
 		$objectList = array();

@@ -40,7 +40,23 @@ class AspenError extends DataObject
 				$this->_rawBacktrace = $backtrace;
 			}
 			foreach ($this->_rawBacktrace as $backtraceLine){
-				$this->backtrace .= "{$backtraceLine['class']}{$backtraceLine['type']}{$backtraceLine['function']} [{$backtraceLine['line']}] - {$backtraceLine['file']}<br/>";
+				if (isset($backtraceLine['class'])){
+					$this->backtrace .= $backtraceLine['class'];
+				}
+				if (isset($backtraceLine['type'])){
+					$this->backtrace .= $backtraceLine['type'];
+				}
+				if (isset($backtraceLine['function'])){
+					$this->backtrace .= $backtraceLine['function'];
+				}
+				$this->backtrace .= ' ';
+				if (isset($backtraceLine['line'])){
+					$this->backtrace .= ' [' . $backtraceLine['line'] . ']';
+				}
+				if (isset($backtraceLine['file'])){
+					$this->backtrace .= ' - ' . $backtraceLine['file'];
+				}
+				$this->backtrace .= '<br/>';
 			}
 		}
     }

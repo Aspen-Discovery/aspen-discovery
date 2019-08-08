@@ -1,5 +1,5 @@
 <?php
-require_once ROOT_DIR . '/Drivers/marmot_inc/FacetSetting.php';
+require_once ROOT_DIR . '/sys/LibraryLocation/FacetSetting.php';
 
 class LocationFacetSetting extends FacetSetting {
 	public $__table = 'location_facet_setting';    // table name

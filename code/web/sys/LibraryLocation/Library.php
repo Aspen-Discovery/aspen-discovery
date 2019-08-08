@@ -1,20 +1,36 @@
 <?php
 
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
-require_once ROOT_DIR . '/Drivers/marmot_inc/Holiday.php';
-require_once ROOT_DIR . '/Drivers/marmot_inc/LibraryFacetSetting.php';
-require_once ROOT_DIR . '/Drivers/marmot_inc/LibraryArchiveSearchFacetSetting.php';
-require_once ROOT_DIR . '/Drivers/marmot_inc/LibraryCombinedResultSection.php';
-require_once ROOT_DIR . '/sys/Indexing/LibraryRecordOwned.php';
-require_once ROOT_DIR . '/sys/Indexing/LibraryRecordToInclude.php';
-require_once ROOT_DIR . '/sys/Browse/LibraryBrowseCategory.php';
-require_once ROOT_DIR . '/sys/LibraryMoreDetails.php';
-require_once ROOT_DIR . '/sys/LibraryArchiveMoreDetails.php';
-require_once ROOT_DIR . '/sys/LibraryLink.php';
-require_once ROOT_DIR . '/sys/LibraryTopLinks.php';
-require_once ROOT_DIR . '/sys/MaterialsRequestFieldsToDisplay.php';
-require_once ROOT_DIR . '/sys/MaterialsRequestFormats.php';
-require_once ROOT_DIR . '/sys/MaterialsRequestFormFields.php';
+require_once ROOT_DIR . '/sys/LibraryLocation/Holiday.php';
+require_once ROOT_DIR . '/sys/LibraryLocation/LibraryFacetSetting.php';
+require_once ROOT_DIR . '/sys/LibraryLocation/LibraryArchiveSearchFacetSetting.php';
+require_once ROOT_DIR . '/sys/LibraryLocation/LibraryCombinedResultSection.php';
+if (file_exists(ROOT_DIR . '/sys/Indexing/LibraryRecordOwned.php')) {
+	require_once ROOT_DIR . '/sys/Indexing/LibraryRecordOwned.php';
+}
+if (file_exists(ROOT_DIR . '/sys/Indexing/LibraryRecordToInclude.php')) {
+	require_once ROOT_DIR . '/sys/Indexing/LibraryRecordToInclude.php';
+}
+if (file_exists(ROOT_DIR . '/sys/Browse/LibraryBrowseCategory.php')) {
+	require_once ROOT_DIR . '/sys/Browse/LibraryBrowseCategory.php';
+}
+if (file_exists(ROOT_DIR . '/sys/LibraryMoreDetails.php')) {
+	require_once ROOT_DIR . '/sys/LibraryMoreDetails.php';
+}
+if (file_exists(ROOT_DIR . '/sys/LibraryArchiveMoreDetails.php')) {
+	require_once ROOT_DIR . '/sys/LibraryArchiveMoreDetails.php';
+}
+require_once ROOT_DIR . '/sys/LibraryLocation/LibraryLink.php';
+require_once ROOT_DIR . '/sys/LibraryLocation/LibraryTopLinks.php';
+if (file_exists(ROOT_DIR . '/sys/MaterialsRequestFieldsToDisplay.php')) {
+	require_once ROOT_DIR . '/sys/MaterialsRequestFieldsToDisplay.php';
+}
+if (file_exists(ROOT_DIR . '/sys/MaterialsRequestFormats.php')) {
+	require_once ROOT_DIR . '/sys/MaterialsRequestFormats.php';
+}
+if (file_exists(ROOT_DIR . '/sys/MaterialsRequestFormFields.php')) {
+	require_once ROOT_DIR . '/sys/MaterialsRequestFormFields.php';
+}
 
 class Library extends DataObject
 {
@@ -1186,7 +1202,6 @@ class Library extends DataObject
 	static function getLibraryForLocation($locationId){
 		if (isset($locationId)){
 			$libLookup = new Library();
-			require_once(ROOT_DIR . '/Drivers/marmot_inc/Location.php');
 			$libLookup->whereAdd('libraryId = (SELECT libraryId FROM location WHERE locationId = ' . $libLookup->escape($locationId) . ')');
 			$libLookup->find();
 			if ($libLookup->N > 0){

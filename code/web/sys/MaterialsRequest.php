@@ -152,7 +152,6 @@ class MaterialsRequest extends DataObject
 	}
 
 	function getHoldLocationName($locationId) {
-		require_once ROOT_DIR . '/Drivers/marmot_inc/Location.php';
 		$holdLocation = new Location();
 		if ($holdLocation->get($locationId)) {
 			return $holdLocation->holdingBranchLabel;

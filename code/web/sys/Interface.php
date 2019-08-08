@@ -4,7 +4,7 @@ require_once 'Smarty/Smarty.class.php';
 require_once ROOT_DIR . '/sys/mobile_device_detect.php';
 require_once ROOT_DIR . '/sys/Theming/Theme.php';
 require_once ROOT_DIR . '/sys/Variable.php';
-require_once ROOT_DIR . '/services/MyResearch/lib/Session.php';
+require_once ROOT_DIR . '/sys/Session/Session.php';
 
 // Smarty Extension class
 class UInterface extends Smarty
@@ -91,7 +91,12 @@ class UInterface extends Smarty
         }else {
             if (!is_dir($this->compile_dir)) {
                 if (!mkdir($this->compile_dir, 0755, true)){
-                    echo("Could not create compile directory {$this->compile_dir}");
+                	if (empty($this->compile_dir)){
+		                echo("compile directory was empty, specify in System - interface compile dir");
+	                }else{
+		                echo("Could not create compile directory {$this->compile_dir}");
+	                }
+
                     die();
                 }
             }
@@ -519,10 +524,15 @@ class UInterface extends Smarty
 		}
 
 		//Determine whether or not materials request functionality should be enabled
-		require_once ROOT_DIR . '/sys/MaterialsRequest.php';
-		$this->assign('enableAspenMaterialsRequest', MaterialsRequest::enableAspenMaterialsRequest());
-		$materialRequestType = $library->enableMaterialsRequest;
-		$this->assign('materialRequestType', $materialRequestType);
+		if (file_exists(ROOT_DIR . '/sys/MaterialsRequest.php')) {
+			require_once ROOT_DIR . '/sys/MaterialsRequest.php';
+			$this->assign('enableAspenMaterialsRequest', MaterialsRequest::enableAspenMaterialsRequest());
+			$materialRequestType = $library->enableMaterialsRequest;
+			$this->assign('materialRequestType', $materialRequestType);
+		}else{
+			$this->assign('enableAspenMaterialsRequest', false);
+		}
+
 
 		//Load library links
 		/** @noinspection PhpUndefinedFieldInspection */

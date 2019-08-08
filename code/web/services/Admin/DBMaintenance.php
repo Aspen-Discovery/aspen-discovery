@@ -2004,9 +2004,9 @@ class DBMaintenance extends Admin_Admin {
 	}
 
 	function createDefaultIpRanges() {
-		require_once ROOT_DIR . '/Drivers/marmot_inc/ipcalc.php';
-		require_once ROOT_DIR . '/Drivers/marmot_inc/subnet.php';
-		$subnet = new subnet();
+		require_once ROOT_DIR . 'sys/IP/IPAddress.php';
+		require_once ROOT_DIR . 'sys/IP/ipcalc.php';
+		$subnet = new IPAddress();
 		$subnet->find();
 		while ($subnet->fetch()) {
 			$subnet->update();

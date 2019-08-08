@@ -1,12 +1,18 @@
 <?php
 
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
-require_once ROOT_DIR . '/Drivers/marmot_inc/LocationHours.php';
-require_once ROOT_DIR . '/Drivers/marmot_inc/LocationFacetSetting.php';
-require_once ROOT_DIR . '/Drivers/marmot_inc/LocationCombinedResultSection.php';
-require_once ROOT_DIR . '/sys/Browse/LocationBrowseCategory.php';
-require_once ROOT_DIR . '/sys/Indexing/LocationRecordOwned.php';
-require_once ROOT_DIR . '/sys/Indexing/LocationRecordToInclude.php';
+require_once ROOT_DIR . '/sys/LibraryLocation/LocationHours.php';
+require_once ROOT_DIR . '/sys/LibraryLocation/LocationFacetSetting.php';
+require_once ROOT_DIR . '/sys/LibraryLocation/LocationCombinedResultSection.php';
+if (file_exists(ROOT_DIR . '/sys/Browse/LocationBrowseCategory.php')) {
+	require_once ROOT_DIR . '/sys/Browse/LocationBrowseCategory.php';
+}
+if (file_exists(ROOT_DIR . '/sys/Indexing/LocationRecordOwned.php')) {
+	require_once ROOT_DIR . '/sys/Indexing/LocationRecordOwned.php';
+}
+if (file_exists(ROOT_DIR . '/sys/Indexing/LocationRecordToInclude.php')) {
+	require_once ROOT_DIR . '/sys/Indexing/LocationRecordToInclude.php';
+}
 
 
 class Location extends DataObject
@@ -787,8 +793,8 @@ class Location extends DataObject
 		if ($this->ipLocation == false || $this->ipId == false){
 			$timer->logTime('Starting getIPLocation');
 			//echo("Active IP is $activeIp");
-			require_once ROOT_DIR . '/Drivers/marmot_inc/subnet.php';
-			$subnet = new subnet();
+			require_once ROOT_DIR . '/sys/IP/IPAddress.php';
+			$subnet = new IPAddress();
 			$ipVal = ip2long($activeIp);
 
 			$this->ipLocation = null;
@@ -1117,7 +1123,7 @@ class Location extends DataObject
 			$todayFormatted = date('Y-m-d', $timeToCheck);
 
 			// check to see if today is a holiday
-			require_once ROOT_DIR . '/Drivers/marmot_inc/Holiday.php';
+			require_once ROOT_DIR . '/sys/LibraryLocation/Holiday.php';
 			$holiday = new Holiday();
 			$holiday->date = $todayFormatted;
 			$holiday->libraryId = $location->libraryId;
@@ -1132,7 +1138,6 @@ class Location extends DataObject
 			$dayOfWeekToday = strftime ('%w', $timeToCheck);
 
 			// find library hours for the above day of the week
-			require_once ROOT_DIR . '/Drivers/marmot_inc/LocationHours.php';
 			$hours = new LocationHours();
 			$hours->locationId = $locationId;
 			$hours->day = $dayOfWeekToday;

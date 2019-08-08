@@ -1,12 +1,6 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: mnoble
- * Date: 11/17/2017
- * Time: 4:01 PM
- */
 
-require_once ROOT_DIR . '/Drivers/marmot_inc/CombinedResultSection.php';
+require_once ROOT_DIR . '/sys/LibraryLocation/CombinedResultSection.php';
 class LocationCombinedResultSection extends CombinedResultSection{
 	public $__table = 'location_combined_results_section';    // table name
 	public $locationId;

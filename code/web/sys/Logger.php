@@ -29,7 +29,7 @@ class Logger
             $this->logDebugs = true;
             $this->logWarnings = true;
         }
-		$this->logFilePath = '/var/log/aspen-discovery/' . $serverName . '/messages.log';
+		$this->logFilePath = '/var/log/' . $configArray['System']['applicationName'] . '/' . $serverName . '/messages.log';
 	}
 
 	public function log($msg, $level)

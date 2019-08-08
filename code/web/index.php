@@ -1,5 +1,8 @@
 <?php
 require_once 'bootstrap.php';
+if (file_exists('bootstrap_aspen.php')) {
+	require_once 'bootstrap_aspen.php';
+}
 
 global $aspenUsage;
 
@@ -989,7 +992,7 @@ function initializeSession(){
 	$session_lifetime = $configArray['Session']['lifetime'];
 	$session_rememberMeLifetime = $configArray['Session']['rememberMeLifetime'];
 	//register_shutdown_function('session_write_close');
-	$sessionClass = ROOT_DIR . '/sys/' . $session_type . '.php';
+	$sessionClass = ROOT_DIR . '/sys/Session/' . $session_type . '.php';
     /** @noinspection PhpIncludeInspection */
 	require_once $sessionClass;
 	if (class_exists($session_type)) {

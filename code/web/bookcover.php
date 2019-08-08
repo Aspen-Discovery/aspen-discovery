@@ -1,5 +1,6 @@
 <?php
 require_once 'bootstrap.php';
+require_once 'bootstrap_aspen.php';
 
 global $aspenUsage;
 $aspenUsage->coverViews++;

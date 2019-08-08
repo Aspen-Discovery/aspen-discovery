@@ -1,7 +1,7 @@
 <?php
 
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
-class subnet extends DataObject
+class IPAddress extends DataObject
 {
 	public $__table = 'ip_lookup';   // table name
 	public $id;                      //int(25)
@@ -32,7 +32,7 @@ class subnet extends DataObject
 		$ipAddress = $this->ip;
 		$subnet_and_mask = explode('/', $ipAddress);
 		if (count($subnet_and_mask) == 2){
-			require_once ROOT_DIR . '/Drivers/marmot_inc/ipcalc.php';
+			require_once ROOT_DIR . '/sys/IP/ipcalc.php';
 			$ipRange = getIpRange($ipAddress);
 			$startIp = $ipRange[0];
 			$endIp = $ipRange[1];

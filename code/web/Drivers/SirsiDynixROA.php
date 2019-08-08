@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: mnoble
- * Date: 4/10/2017
- * Time: 1:50 PM
- */
 
 require_once ROOT_DIR . '/Drivers/HorizonAPI.php';
 require_once ROOT_DIR . '/sys/Account/User.php';

@@ -2,5 +2,5 @@
   RewriteEngine Off
 </IfModule>
 
-# Dynamic CSS
+# Disable Dynamic CSS
 AddType text/css .css

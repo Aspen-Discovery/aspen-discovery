@@ -3,7 +3,6 @@
 require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
 require_once ROOT_DIR . '/sys/SearchObject/SolrSearcher.php';
 require_once ROOT_DIR . '/RecordDrivers/RecordDriverFactory.php';
-require_once ROOT_DIR . '/Drivers/marmot_inc/Location.php';
 
 class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 {
