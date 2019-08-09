@@ -289,7 +289,7 @@ class GroupedWorksSolrConnector extends Solr
 			$searchPreferenceLanguage = 0;
 		}
 
-		if ($activeLanguage->code == 'en' || $searchPreferenceLanguage <= 0){
+		if ($activeLanguage == null || $activeLanguage->code == 'en' || $searchPreferenceLanguage <= 0){
 			$applyHoldingsBoost = true;
 			if (isset($searchLibrary) && !is_null($searchLibrary)) {
 				$applyHoldingsBoost = $searchLibrary->applyNumberOfHoldingsBoost;
@@ -339,7 +339,7 @@ class GroupedWorksSolrConnector extends Solr
 		}
 
 		global $activeLanguage;
-		if ($activeLanguage->code != 'en'){
+		if ($activeLanguage != null && $activeLanguage->code != 'en'){
 			if (UserAccount::isLoggedIn()){
 				$searchPreferenceLanguage = UserAccount::getActiveUserObj()->searchPreferenceLanguage;
 			}elseif (isset($_COOKIE['searchPreferenceLanguage'])){

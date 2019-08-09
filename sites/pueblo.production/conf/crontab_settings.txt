@@ -40,8 +40,8 @@
 #############################################
 # New York Times Best seller Lists Updating #
 #############################################
-07 7 * * 0-1 php /usr/local/aspen-discovery/code/web/cron/updateNYTLists.php basinlibraries.production
-# update on Sundays and Mondays at 7:07
+15 7 * * 0-1 php /usr/local/aspen-discovery/code/web/cron/updateNYTLists.php basinlibraries.production
+# update on Sundays and Mondays at 7:15
 
 ################
 # Pika Cleanup #

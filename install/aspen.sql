@@ -2533,6 +2533,7 @@ CREATE TABLE `user` (
 
 INSERT INTO `user` (`id`, `username`, `password`, `firstname`, `lastname`, `email`, `cat_username`, `cat_password`, `college`, `major`, `created`, `homeLocationId`, `myLocation1Id`, `myLocation2Id`, `trackReadingHistory`, `bypassAutoLogout`, `displayName`, `disableCoverArt`, `disableRecommendations`, `phone`, `patronType`, `overdriveEmail`, `promptForOverdriveEmail`, `preferredLibraryInterface`, `initialReadingHistoryLoaded`, `noPromptForUserReviews`, `source`) VALUES
 (1, 'aspen_admin', 'password', 'Aspen', 'Administrator', '', 'aspen_admin', 'password', '', '', '0000-00-00 00:00:00', 0, 0, 0, 0, 0, '', 0, 0, '', '', '', 1, NULL, 0, 0, 'ils');
+INSERT INTO user (username, password, firstname, lastname, displayName, email, cat_username, cat_password, source, created, homeLocationId, myLocation1Id, myLocation2Id) VALUES ('nyt_user', 'nyt_password', 'New York Times', 'The New York Times', '', '', 'nyt_user', 'nyt_password', 'admin', NOW(), 1, 1, 1);
 
 -- --------------------------------------------------------
 
