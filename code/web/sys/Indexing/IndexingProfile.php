@@ -532,6 +532,8 @@ class IndexingProfile extends DataObject{
 			$statusValue = new StatusMapValue();
 			$statusValue->value = $value;
 			$statusValue->indexingProfileId = $this->id;
+			$statusValue->status = ' ';
+			$statusValue->groupedStatus = 'Currently Unavailable';
 		}
 		if ($status != null){
 			$statusValue->status = $status;
@@ -540,6 +542,7 @@ class IndexingProfile extends DataObject{
 			$statusValue->groupedStatus = $groupedStatus;
 		}
 		$statusValue->update();
+		$statusMap[$statusValue->id] = $statusValue;
 	}
 
 	public function setFormatMapValue($value, $format = null, $formatCategory = null, $formatBoost = null){
@@ -547,7 +550,7 @@ class IndexingProfile extends DataObject{
 		$formatExists = false;
 		/** @var FormatMapValue $formatValue */
 		foreach ($formatMap as $formatValue){
-			if ($formatValue->value == $value){
+			if (strcasecmp($formatValue->value, $value) == 0){
 				$formatExists = true;
 				break;
 			}
@@ -556,6 +559,7 @@ class IndexingProfile extends DataObject{
 			$formatValue = new FormatMapValue();
 			$formatValue->value = $value;
 			$formatValue->indexingProfileId = $this->id;
+			$formatValue->format = ' ';
 			$formatValue->formatCategory = 'Other';
 			$formatValue->formatBoost = 1;
 		}
@@ -569,5 +573,6 @@ class IndexingProfile extends DataObject{
 			$formatValue->formatBoost = $formatBoost;
 		}
 		$formatValue->update();
+		$formatMap[$formatValue->id] = $formatValue;
 	}
 }
