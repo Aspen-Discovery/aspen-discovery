@@ -39,7 +39,7 @@ abstract class HorizonROA extends AbstractIlsDriver
 		$headers  = array(
 			'Accept: application/json',
 			'Content-Type: application/json',
-			'SD-Originating-App-Id: Pika',
+			'SD-Originating-App-Id: ' . $configArray['System']['applicationName'],
 			'x-sirs-clientID: ' . $clientId,
 		);
 		if ($sessionToken != null) {
@@ -52,8 +52,7 @@ abstract class HorizonROA extends AbstractIlsDriver
 			curl_setopt($ch, CURLOPT_HTTPGET, true);
 		} elseif ($customRequest == 'POST') {
 			curl_setopt($ch, CURLOPT_POST, true);
-		}
-		else {
+		} else {
 			curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $customRequest);
 		}
 		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
@@ -1350,31 +1349,18 @@ abstract class HorizonROA extends AbstractIlsDriver
 	}
 	public function selfRegister() {
 		global $configArray;
-		// global $interface;
-		// Get a staff token
-		if(!$staffSessionToken = $this->getStaffSessionToken()) {
-			return ['success' => false, 'barcode' => ''];
+
+		$patronFields = $this->getSelfRegistrationFields();
+		$body = [];
+		foreach ($patronFields as $field){
+			if (isset($_REQUEST[$field['property']])){
+				$body[$field['property']] = $_REQUEST[$field['property']];
+			}
 		}
-		// remove things from post
-		unset($_POST['objectAction']);
-		unset($_POST['id']);
-		unset($_POST['submit']);
-		$profile = $configArray['Catalog']['webServiceSelfRegProfile'];
-		$entries = [];
-		foreach ($_POST as $column=>$value) {
-			$column = trim($column);
-			$value  = trim($value);
-			$entry  = ["column"=>$column, "value"=>$value];
-			$entries[] = $entry;
-		}
-		$body = [
-			"profile" => $profile,
-			"entries" => $entries
+		$extraHeaders = [
+			'SD-Working-LibraryID: WCPL'
 		];
-		//$body = json_encode($body); // gets encoded in getWebServiceResponse
-		$secret = $configArray['Catalog']['webServiceSecret'];
-		$xtraHeaders = ['x-sirs-secret'=>$secret];
-		$res = $this->getWebServiceResponse($this->webServiceURL . '/rest/standard/createSelfRegisteredPatron', $body, $staffSessionToken, "POST", $xtraHeaders);
+		$res = $this->getWebServiceResponse($this->webServiceURL . '/user/patron/register', $body, null, "POST", $extraHeaders);
 		if(!$res || isset($res->Fault)) {
 			return ['success' => false, 'barcode' => ''];
 		}
@@ -1389,38 +1375,45 @@ abstract class HorizonROA extends AbstractIlsDriver
 	 */
 	public function getSelfRegistrationFields()
 	{
-		global $configArray;
 		// SelfRegistrationEnabled?
-		$wsProfile = $configArray['Catalog']['webServiceSelfRegProfile'];
 		/** @noinspection PhpUnusedLocalVariableInspection */
-		$r = $this->getWebServiceResponse($this->webServiceURL . '/rest/standard/isPatronSelfRegistrationEnabled?profile='.$wsProfile);
-		// get sef reg fields
-		$res = $this->getWebServiceResponse($this->webServiceURL . '/rest/standard/lookupSelfRegistrationFields');
-		if(!$res) {
+		$patronRegDescribeResponse = $this->getWebServiceResponse($this->webServiceURL . '/user/patron/register/describe');
+
+		if(!$patronRegDescribeResponse) {
 			return false;
 		}
 		// build form fields
 		$fields = [];
-		foreach($res->registrationField as $field) {
-			$f = [
-				'property' => $field->column,
-				'label' => $field->label,
-				'maxLength' => $field->length,
-				'required' => $field->required,
+		foreach($patronRegDescribeResponse->params as $roaField) {
+			$aspenField = [
+				'property' => $roaField->name,
+				'label' => $roaField->name,
+				'required' => $roaField->required,
 			];
-			if (isset($field->values)) {
-				// select list
-				$f['type'] = 'enum';
-				$values = [];
-				foreach($field->values->value as $value) {
-					$key = $value->code;
-					$values[$key] = $value->description;
-				}
-				$f['values'] = $values;
-			} else {
-				$f['type'] = 'text';
+			if (isset($roaField->max)){
+				$aspenField['maxLength'] = $roaField->max;
 			}
-			$fields[] = $f;
+
+			if ($roaField->type == 'resource') {
+				$resourceResponse = $this->getWebServiceResponse($this->webServiceURL . $roaField->uri . '/simpleQuery?key=*');
+				if ($resourceResponse) {
+					$values = [];
+					foreach ($resourceResponse as $resource) {
+						$values[$resource->key] = $resource->fields->displayName;
+					}
+					$aspenField['values'] = $values;
+				}
+				$aspenField['type'] = 'enum';
+				//TODO:  We will want to provide these at some point.
+				continue;
+			}elseif ($roaField->type == 'list'){
+				//TODO:  We will want to provide these at some point.
+				continue;
+			}else{
+				$aspenField['type'] = 'text';
+			}
+
+			$fields[] = $aspenField;
 		}
 		return $fields;
 	}
