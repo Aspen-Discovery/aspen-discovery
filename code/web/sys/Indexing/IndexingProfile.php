@@ -523,7 +523,7 @@ class IndexingProfile extends DataObject{
 		$statusExists = false;
 		/** @var StatusMapValue $statusValue */
 		foreach ($statusMap as $statusValue){
-			if ($statusValue->value == $value){
+			if (strcasecmp($statusValue->value, $value) == 0){
 				$statusExists = true;
 				break;
 			}
