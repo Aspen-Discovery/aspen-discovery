@@ -1072,6 +1072,40 @@ class MyAccount_AJAX
 		return $result;
 	}
 
+	function getMenuDataCloudLibrary(){
+		global $timer;
+		$result = [
+			'success' => false,
+			'message' => 'Unknown error'
+		];
+		if (UserAccount::isLoggedIn()){
+			$user = UserAccount::getActiveUserObj();
+			if ($user->isValidForEContentSource('cloud_library')) {
+				require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
+				$driver = new CloudLibraryDriver();
+				$cloudLibrarySummary = $driver->getAccountSummary($user);
+				if ($user->getLinkedUsers() != null) {
+					/** @var User $user */
+					foreach ($user->getLinkedUsers() as $linkedUser) {
+						$linkedUserSummary = $driver->getAccountSummary($linkedUser);
+						$cloudLibrarySummary['numCheckedOut'] += $linkedUserSummary['numCheckedOut'];
+						$cloudLibrarySummary['numUnavailableHolds'] += $linkedUserSummary['numUnavailableHolds'];
+					}
+				}
+				$timer->logTime("Loaded Cloud Library Summary for User and linked users");
+				$result = [
+					'success' => true,
+					'summary' => $cloudLibrarySummary
+				];
+			}else{
+				$result['message'] = 'Unknown error';
+			}
+		}else{
+			$result['message'] = 'You must be logged in to get menu data';
+		}
+		return $result;
+	}
+
 	function getMenuDataHoopla(){
 		global $timer;
 		$result = [

@@ -463,7 +463,16 @@ class User extends DataObject
 				    }catch (Exception $e){
 				    	return false;
 				    }
-                }
+                }elseif ($source == 'cloud_library'){
+				    require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibrarySetting.php';
+				    try{
+					    $cloudLibrarySettings = new CloudLibrarySetting();
+					    $cloudLibrarySettings->find();
+					    return $cloudLibrarySettings->N > 0;
+				    }catch (Exception $e){
+					    return false;
+				    }
+			    }
 			}
 		}
 		return false;
@@ -952,6 +961,16 @@ class User extends DataObject
 			}
 		}
 
+		if ($source == 'all' || $source == 'cloud_library') {
+			if ($this->isValidForEContentSource('cloud_library')) {
+				require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
+				$cloudLibraryDriver = new CloudLibraryDriver();
+				$cloudLibraryCheckedOutItems = $cloudLibraryDriver->getCheckouts($this);
+				$allCheckedOut = array_merge($allCheckedOut, $cloudLibraryCheckedOutItems);
+				$timer->logTime("Loaded transactions from cloud_library. {$this->id}");
+			}
+		}
+
 		if ($includeLinkedUsers) {
 			if ($this->getLinkedUsers() != null) {
 				/** @var User $user */
@@ -991,6 +1010,16 @@ class User extends DataObject
 				$driver = new RBdigitalDriver();
 				$rbdigitalHolds = $driver->getHolds($this);
 				$allHolds = array_merge_recursive($allHolds, $rbdigitalHolds);
+			}
+		}
+
+		if ($source == 'all' || $source == 'cloud_library') {
+			//Get holds from RBdigital
+			if ($this->isValidForEContentSource('cloud_library')) {
+				require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
+				$driver = new CloudLibraryDriver();
+				$cloudLibraryHolds = $driver->getHolds($this);
+				$allHolds = array_merge_recursive($allHolds, $cloudLibraryHolds);
 			}
 		}
 

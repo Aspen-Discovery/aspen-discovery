@@ -1918,6 +1918,7 @@ class Koha extends AbstractIlsDriver {
 			$accountSummary['numCheckedOut'] = $numCheckouts;
 
 			$now = date('Y-m-d H:i:s');
+			/** @noinspection SqlResolve */
 			$overdueItemsRS = mysqli_query($this->dbConnection, 'SELECT count(*) as numOverdue FROM issues WHERE date_due < \'' . $now. '\' AND borrowernumber = ' . $user->username, MYSQLI_USE_RESULT);
 			$numOverdue = 0;
 			if ($overdueItemsRS) {

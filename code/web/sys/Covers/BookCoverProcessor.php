@@ -80,6 +80,11 @@ class BookCoverProcessor{
 	            if ($this->getRBdigitalMagazineCover($this->id)) {
 		            return;
 	            }
+            } else if ($this->type == 'cloud_library') {
+	            //Will exit if we find a cover
+	            if ($this->getCloudLibraryCover($this->id, true)) {
+		            return;
+	            }
             } elseif ($this->type == 'Colorado State Government Documents') {
                 if ($this->getColoradoGovDocCover()) {
                     return;
@@ -122,10 +127,6 @@ class BookCoverProcessor{
                     return;
                 }
                 // Cloud Library
-            } elseif (stripos($this->type, 'cloud') !== false) {
-                if ($this->getSideLoadedCover($this->type . ':' . $this->id)) {
-                    return;
-                }
             } elseif (stripos($this->type, 'zinio') !== false) {
                 if ($this->getZinioCover($this->type . ':' . $this->id)) {
                     return;
@@ -303,6 +304,27 @@ class BookCoverProcessor{
 	    }
 	    return false;
     }
+
+	private function getCloudLibraryCover($id, $createDefaultIfNotFound = false){
+		if (strpos($id, ':') !== false){
+			list(, $id) = explode(":", $id);
+		}
+		require_once ROOT_DIR . '/RecordDrivers/CloudLibraryRecordDriver.php';
+		$driver = new CloudLibraryRecordDriver($id);
+		if ($driver) {
+			$coverUrl = $driver->getCloudLibraryBookcoverUrl();
+			if ($coverUrl != null) {
+				return $this->processImageURL('cloud_library', $coverUrl, true);
+			}else{
+				if ($createDefaultIfNotFound){
+					return $this->getDefaultCover($driver);
+				}else{
+					return false;
+				}
+			}
+		}
+		return false;
+	}
 
 	private function loadParameters(){
 		//Check parameters
@@ -603,7 +625,7 @@ class BookCoverProcessor{
 	/**
 	 * Display a "cover unavailable" graphic and terminate execution.
 	 */
-	function getDefaultCover(){
+	function getDefaultCover($recordDriver = null){
 		//Get the resource for the cover so we can load the title and author
 		$title = '';
 		$author = '';
@@ -616,10 +638,11 @@ class BookCoverProcessor{
 				$this->category = 'blank';
 			}
 		}else{
-		    //TODO: Do we need to check other types of record drivers/
-			require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
-			$recordDriver = new MarcRecordDriver($this->id);
-			if ($recordDriver->isValid()){
+			if ($recordDriver == null){
+				require_once ROOT_DIR . '/RecordDrivers/RecordDriverFactory.php';
+				$recordDriver = RecordDriverFactory::initRecordDriverById($this->type . ':' . $this->id);
+			}
+		    if ($recordDriver->isValid()){
 				$title = $recordDriver->getTitle();
 				$author = $recordDriver->getAuthor();
 			}
@@ -944,6 +967,10 @@ class BookCoverProcessor{
 					if ($this->getRBdigitalCover($relatedRecord->id)) {
 						return true;
 					}
+				} elseif (strcasecmp($relatedRecord->source, 'cloud_library') == 0){
+					if ($this->getCloudLibraryCover($relatedRecord->id)) {
+						return true;
+					}
 				}elseif (strcasecmp($relatedRecord->source, 'Colorado State Government Documents') == 0){
 					if ($this->getColoradoGovDocCover()){
 						return true;
@@ -981,10 +1008,6 @@ class BookCoverProcessor{
 						return true;
 					}
 				} elseif (stripos($relatedRecord->source, 'Odilo') !== false){
-					if ($this->getSideLoadedCover($relatedRecord->id)) {
-						return true;
-					}
-				} elseif (stripos($relatedRecord->source, 'cloud') !== false){
 					if ($this->getSideLoadedCover($relatedRecord->id)) {
 						return true;
 					}

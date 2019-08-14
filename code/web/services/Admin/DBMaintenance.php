@@ -85,8 +85,10 @@ class DBMaintenance extends Admin_Admin {
         $open_archives_updates = getOpenArchivesUpdates();
         require_once ROOT_DIR . '/sys/DBMaintenance/redwood_archive_updates.php';
         $redwood_updates = getRedwoodArchiveUpdates();
+		require_once ROOT_DIR . '/sys/DBMaintenance/cloud_library_updates.php';
+		$cloudLibraryUpdates = getCloudLibraryUpdates();
 
-        /** @noinspection SqlResolve */
+		/** @noinspection SqlResolve */
         /** @noinspection SqlWithoutWhere */
         return array_merge(
 			$library_location_updates,
@@ -103,6 +105,7 @@ class DBMaintenance extends Admin_Admin {
 	        $translation_updates,
             $open_archives_updates,
             $redwood_updates,
+	        $cloudLibraryUpdates,
 			array(
 				'index_search_stats' => array(
 					'title' => 'Index search stats table',

@@ -57,6 +57,14 @@
 											</a>
 										</li>
 									{/if}
+                                    {if $user->isValidForEContentSource('cloud_library')}
+										<li class="myAccountLink">
+											&nbsp;&nbsp;&raquo;&nbsp;
+											<a href="{$path}/MyAccount/CheckedOut?tab=cloud_library" id="checkedOutCloudLibrary">
+                                                {translate text="Cloud Library"} {if !$offline}<span class="badge"><span class="cloud_library-checkouts-placeholder">??</span></span>{/if}
+											</a>
+										</li>
+                                    {/if}
 									{if $user->isValidForEContentSource('hoopla')}
 										<li class="myAccountLink">
 											&nbsp;&nbsp;&raquo;&nbsp;
@@ -95,6 +103,14 @@
 											</a>
 										</li>
 									{/if}
+                                    {if $user->isValidForEContentSource('cloud_library')}
+										<li class="myAccountLink">
+											&nbsp;&nbsp;&raquo;&nbsp;
+											<a href="{$path}/MyAccount/Holds?tab=cloud_library" id="holdsCloudLibrary">
+                                                {translate text="Cloud Library"} {if !$offline}<span class="badge"><span class="cloud_library-holds-placeholder">??</span></span>{/if}
+											</a>
+										</li>
+                                    {/if}
 								</ul>
 
 								{if $enableMaterialsBooking}
@@ -484,6 +500,31 @@
 						</div>
 					</div>
 				{/if}
+
+                {if (array_key_exists('libraryAdmin', $userRoles) || array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles))}
+                    {if $module == 'CloudLibrary' && in_array($action, array('Settings', 'IndexingLog', 'Scopes', 'Dashboard'))}
+                        {assign var="curSection" value=true}
+                    {else}
+                        {assign var="curSection" value=false}
+                    {/if}
+					<div class="panel{if $curSection} active{/if}">
+						<a href="#cloudLibraryMenu" data-toggle="collapse" data-parent="#adminMenuAccordion">
+							<div class="panel-heading">
+								<div class="panel-title">
+                                    {translate text="Cloud Library"}
+								</div>
+							</div>
+						</a>
+						<div id="cloudLibraryMenu" class="panel-collapse collapse {if $curSection}in{/if}">
+							<div class="panel-body">
+								<div class="adminMenuLink"><a href="{$path}/CloudLibrary/Settings">{translate text="Settings"}</a></div>
+								<div class="adminMenuLink"><a href="{$path}/CloudLibrary/Scopes">{translate text="Scopes"}</a></div>
+								<div class="adminMenuLink"><a href="{$path}/CloudLibrary/IndexingLog">{translate text="Indexing Log"}</a></div>
+								<div class="adminMenuLink"><a href="{$path}/CloudLibrary/Dashboard">{translate text="Dashboard"}</a></div>
+							</div>
+						</div>
+					</div>
+                {/if}
 
 				{if $islandoraEnabled && (array_key_exists('archives', $userRoles) || array_key_exists('opacAdmin', $userRoles))}
 					{if in_array($action, array('ArchiveSubjects', 'ArchivePrivateCollections', 'ArchiveRequests', 'AuthorshipClaims', 'ClearArchiveCache', 'ArchiveUsage'))}

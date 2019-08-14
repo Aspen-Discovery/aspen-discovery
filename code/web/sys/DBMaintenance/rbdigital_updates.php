@@ -5,19 +5,19 @@
 
 function getRBdigitalUpdates() {
 	return array(
-        'variables_lastRBdigitalExport' => array(
-            'title' => 'Variables Last RBdigital Export Time',
-            'description' => 'Add a variable for when RBdigital data was extracted from the API last.',
-            'sql' => array(
-                "INSERT INTO variables (name, value) VALUES ('lastRBdigitalExport', 'false')",
-            ),
-        ),
+		'variables_lastRBdigitalExport' => array(
+			'title' => 'Variables Last RBdigital Export Time',
+			'description' => 'Add a variable for when RBdigital data was extracted from the API last.',
+			'sql' => array(
+				"INSERT INTO variables (name, value) VALUES ('lastRBdigitalExport', 'false')",
+			),
+		),
 
-        'rbdigital_exportTables' => array(
-            'title' => 'RBdigital title tables',
-            'description' => 'Create tables to store data exported from RBdigital.',
-            'sql' => array(
-                "CREATE TABLE rbdigital_title (
+		'rbdigital_exportTables' => array(
+			'title' => 'RBdigital title tables',
+			'description' => 'Create tables to store data exported from RBdigital.',
+			'sql' => array(
+				"CREATE TABLE rbdigital_title (
                         id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                         rbdigitalId VARCHAR(25) NOT NULL,
                         title VARCHAR(255),
@@ -33,15 +33,15 @@ function getRBdigitalUpdates() {
                         deleted TINYINT NOT NULL DEFAULT 0,
                         UNIQUE(rbdigitalId)
                     ) ENGINE = InnoDB",
-                "ALTER TABLE rbdigital_title ADD INDEX(lastChange)"
-            ),
-        ),
+				"ALTER TABLE rbdigital_title ADD INDEX(lastChange)"
+			),
+		),
 
-        'rbdigital_availability' => array(
-            'title' => 'RBdigital availability tables',
-            'description' => 'Create tables to store data exported from RBdigital.',
-            'sql' => array(
-                "CREATE TABLE rbdigital_availability (
+		'rbdigital_availability' => array(
+			'title' => 'RBdigital availability tables',
+			'description' => 'Create tables to store data exported from RBdigital.',
+			'sql' => array(
+				"CREATE TABLE rbdigital_availability (
                         id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                         rbdigitalId VARCHAR(25) NOT NULL,
                         isAvailable TINYINT NOT NULL DEFAULT 1,
@@ -52,15 +52,15 @@ function getRBdigitalUpdates() {
                         lastChange INT(11) NOT NULL,
                         UNIQUE(rbdigitalId)
                     ) ENGINE = InnoDB",
-                "ALTER TABLE rbdigital_availability ADD INDEX(lastChange)"
-            ),
-        ),
+				"ALTER TABLE rbdigital_availability ADD INDEX(lastChange)"
+			),
+		),
 
-        'rbdigital_exportLog' => array(
-            'title' => 'RBdigital export log',
-            'description' => 'Create log for RBdigital export.',
-            'sql' => array(
-                "CREATE TABLE IF NOT EXISTS rbdigital_export_log(
+		'rbdigital_exportLog' => array(
+			'title' => 'RBdigital export log',
+			'description' => 'Create log for RBdigital export.',
+			'sql' => array(
+				"CREATE TABLE IF NOT EXISTS rbdigital_export_log(
                         `id` INT NOT NULL AUTO_INCREMENT COMMENT 'The id of log', 
                         `startTime` INT(11) NOT NULL COMMENT 'The timestamp when the run started', 
                         `endTime` INT(11) NULL COMMENT 'The timestamp when the run ended', 
@@ -68,26 +68,26 @@ function getRBdigitalUpdates() {
                         `notes` TEXT COMMENT 'Additional information about the run', 
                         PRIMARY KEY ( `id` )
                         ) ENGINE = InnoDB;",
-            )
-        ),
+			)
+		),
 
-        'track_rbdigital_user_usage' => array(
-            'title' => 'RBdigital Usage by user',
-            'description' => 'Add a table to track how often a particular user uses RBdigital.',
-            'sql' => array(
-                "CREATE TABLE user_rbdigital_usage (
+		'track_rbdigital_user_usage' => array(
+			'title' => 'RBdigital Usage by user',
+			'description' => 'Add a table to track how often a particular user uses RBdigital.',
+			'sql' => array(
+				"CREATE TABLE user_rbdigital_usage (
                     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     userId INT(11) NOT NULL,
                     year INT(4) NOT NULL,
                     month INT(2) NOT NULL,
                     usageCount INT(11)
                 ) ENGINE = InnoDB",
-                "ALTER TABLE user_rbdigital_usage ADD INDEX (userId, year, month)",
-                "ALTER TABLE user_rbdigital_usage ADD INDEX (year, month)",
-            ),
-        ),
+				"ALTER TABLE user_rbdigital_usage ADD INDEX (userId, year, month)",
+				"ALTER TABLE user_rbdigital_usage ADD INDEX (year, month)",
+			),
+		),
 
-        'track_rbdigital_record_usage' => array(
+		'track_rbdigital_record_usage' => array(
 			'title' => 'RBdigital Record Usage',
 			'description' => 'Add a table to track how records within RBdigital are used.',
 			'continueOnError' => true,
@@ -122,11 +122,11 @@ function getRBdigitalUpdates() {
 			),
 		),
 
-        'rbdigital_add_settings' => array(
-            'title' => 'Add RBdigital Settings',
-            'description' => 'Add Settings for RBdigital to move configuration out of ini',
-            'sql' => array(
-                "CREATE TABLE IF NOT EXISTS rbdigital_settings(
+		'rbdigital_add_settings' => array(
+			'title' => 'Add RBdigital Settings',
+			'description' => 'Add Settings for RBdigital to move configuration out of ini',
+			'sql' => array(
+				"CREATE TABLE IF NOT EXISTS rbdigital_settings(
 						id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 						apiUrl VARCHAR(255),
 						userInterfaceUrl VARCHAR(255),
@@ -136,22 +136,22 @@ function getRBdigitalUpdates() {
 						lastUpdateOfChangedRecords INT(11) DEFAULT 0,
 						lastUpdateOfAllRecords INT(11) DEFAULT 0
 					)",
-            ),
-        ),
+			),
+		),
 
-        'rbdigital_exportLog_update' => array(
-            'title' => 'Better RBdigital export log',
-            'description' => 'Add additional info for RBdigital export log.',
-            'sql' => array(
-                "ALTER TABLE rbdigital_export_log ADD COLUMN numProducts INT(11) DEFAULT 0",
-                "ALTER TABLE rbdigital_export_log ADD COLUMN numErrors INT(11) DEFAULT 0",
+		'rbdigital_exportLog_update' => array(
+			'title' => 'Better RBdigital export log',
+			'description' => 'Add additional info for RBdigital export log.',
+			'sql' => array(
+				"ALTER TABLE rbdigital_export_log ADD COLUMN numProducts INT(11) DEFAULT 0",
+				"ALTER TABLE rbdigital_export_log ADD COLUMN numErrors INT(11) DEFAULT 0",
 				"ALTER TABLE rbdigital_export_log ADD COLUMN numAdded INT(11) DEFAULT 0",
-                "ALTER TABLE rbdigital_export_log ADD COLUMN numDeleted INT(11) DEFAULT 0",
-                "ALTER TABLE rbdigital_export_log ADD COLUMN numUpdated INT(11) DEFAULT 0",
-                "ALTER TABLE rbdigital_export_log ADD COLUMN numAvailabilityChanges INT(11) DEFAULT 0",
-                "ALTER TABLE rbdigital_export_log ADD COLUMN numMetadataChanges INT(11) DEFAULT 0",
-            )
-        ),
+				"ALTER TABLE rbdigital_export_log ADD COLUMN numDeleted INT(11) DEFAULT 0",
+				"ALTER TABLE rbdigital_export_log ADD COLUMN numUpdated INT(11) DEFAULT 0",
+				"ALTER TABLE rbdigital_export_log ADD COLUMN numAvailabilityChanges INT(11) DEFAULT 0",
+				"ALTER TABLE rbdigital_export_log ADD COLUMN numMetadataChanges INT(11) DEFAULT 0",
+			)
+		),
 
 		'rbdigital_magazine_export' => array(
 			'title' => 'RBdigital magazine tables',

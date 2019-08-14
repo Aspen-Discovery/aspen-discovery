@@ -26,7 +26,7 @@ AspenDiscovery.Admin = (function(){
 		},
 
 		showExtractNotes: function (id, source){
-			AspenDiscovery.Account.ajaxLightbox("/Admin/AJAX?method=getExtractNotes&source=overdrive&id=" + id + "&source=" + source, true);
+			AspenDiscovery.Account.ajaxLightbox("/Admin/AJAX?method=getExtractNotes&id=" + id + "&source=" + source, true);
 			return false;
 		},
 		loadGoogleFontPreview: function (fontSelector) {

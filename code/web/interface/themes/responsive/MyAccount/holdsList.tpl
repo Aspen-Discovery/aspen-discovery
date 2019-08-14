@@ -35,7 +35,9 @@
 					{include file="MyAccount/overdriveHold.tpl" record=$record section=$sectionKey resultIndex=$smarty.foreach.recordLoop.iteration}
 				{elseif $record.holdSource == 'RBdigital'}
 					{include file="MyAccount/rbdigitalHold.tpl" record=$record section=$sectionKey resultIndex=$smarty.foreach.recordLoop.iteration}
-				{else}
+                {elseif $record.holdSource == 'CloudLibrary'}
+                    {include file="MyAccount/cloudLibraryHold.tpl" record=$record section=$sectionKey resultIndex=$smarty.foreach.recordLoop.iteration}
+                {else}
 					<div class="row">
 						Unknown record source {$record.holdSource}
 					</div>

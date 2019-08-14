@@ -25,10 +25,11 @@ public class IndexingUtils {
         try {
             HashMap<Long, HooplaScope> hooplaScopes = loadHooplaScopes(dbConn, logger);
             HashMap<Long, RbdigitalScope> rbdigitalScopes = loadRbdigitalScopes(dbConn, logger);
+            HashMap<Long, CloudLibraryScope> cloudLibraryScopes = loadCloudLibraryScopes(dbConn, logger);
 
-            loadLibraryScopes(scopes, hooplaScopes, rbdigitalScopes, dbConn);
+            loadLibraryScopes(scopes, hooplaScopes, rbdigitalScopes, cloudLibraryScopes, dbConn);
 
-            loadLocationScopes(scopes, hooplaScopes, rbdigitalScopes, dbConn);
+            loadLocationScopes(scopes, hooplaScopes, rbdigitalScopes, cloudLibraryScopes, dbConn);
         } catch (SQLException e) {
             logger.error("Error setting up scopes", e);
         }
@@ -92,12 +93,35 @@ public class IndexingUtils {
             }
 
         }catch (SQLException e) {
-            logger.error("Error loading hoopla scopes", e);
+            logger.error("Error loading RBdigital scopes", e);
         }
         return rbdigitalScopes;
     }
 
-    private static void loadLocationScopes(TreeSet<Scope> scopes, HashMap<Long, HooplaScope> hooplaScopes, HashMap<Long, RbdigitalScope> rbdigitalScopes, Connection dbConn) throws SQLException {
+    private static HashMap<Long, CloudLibraryScope> loadCloudLibraryScopes(Connection dbConn, Logger logger) {
+        HashMap<Long, CloudLibraryScope> cloudLibraryScopes = new HashMap<>();
+        try {
+            PreparedStatement cloudLibraryScopeStmt = dbConn.prepareStatement("SELECT * from cloud_library_scopes", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+            ResultSet cloudLibraryScopesRS = cloudLibraryScopeStmt.executeQuery();
+
+            while (cloudLibraryScopesRS.next()){
+                CloudLibraryScope cloudLibraryScope = new CloudLibraryScope();
+                cloudLibraryScope.setId(cloudLibraryScopesRS.getLong("id"));
+                cloudLibraryScope.setName(cloudLibraryScopesRS.getString("name"));
+                cloudLibraryScope.setIncludeEBooks(cloudLibraryScopesRS.getBoolean("includeEBooks"));
+                cloudLibraryScope.setIncludeEAudiobook(cloudLibraryScopesRS.getBoolean("includeEAudiobook"));
+                cloudLibraryScope.setRestrictToChildrensMaterial(cloudLibraryScopesRS.getBoolean("restrictToChildrensMaterial"));
+
+                cloudLibraryScopes.put(cloudLibraryScope.getId(), cloudLibraryScope);
+            }
+
+        }catch (SQLException e) {
+            logger.error("Error loading Cloud Library scopes", e);
+        }
+        return cloudLibraryScopes;
+    }
+
+    private static void loadLocationScopes(TreeSet<Scope> scopes, HashMap<Long, HooplaScope> hooplaScopes, HashMap<Long, RbdigitalScope> rbdigitalScopes, HashMap<Long, CloudLibraryScope> cloudLibraryScopes, Connection dbConn) throws SQLException {
         PreparedStatement locationInformationStmt = dbConn.prepareStatement("SELECT library.libraryId, locationId, code, subLocation, ilsCode, " +
                         "library.subdomain, location.facetLabel, location.displayName, library.pTypes, library.restrictOwningBranchesAndSystems, location.publicListsToInclude, " +
                         "library.enableOverdriveCollection as enableOverdriveCollectionLibrary, " +
@@ -109,7 +133,8 @@ public class IndexingUtils {
                         "location.includeAllRecordsInShelvingFacets, location.includeAllRecordsInDateAddedFacets, location.baseAvailabilityToggleOnLocalHoldingsOnly, " +
                         "location.includeOnlineMaterialsInAvailableToggle, location.includeLibraryRecordsToInclude, " +
                         "library.hooplaScopeId as hooplaScopeLibrary, location.hooplaScopeId as hooplaScopeLocation, " +
-                        "library.rbdigitalScopeId as rbdigitalScopeLibrary, location.rbdigitalScopeId as rbdigitalScopeLocation " +
+                        "library.rbdigitalScopeId as rbdigitalScopeLibrary, location.rbdigitalScopeId as rbdigitalScopeLocation, " +
+                        "library.cloudLibraryScopeId as cloudLibraryScopeLibrary, location.cloudLibraryScopeId as cloudLibraryScopeLocation " +
                         "FROM location INNER JOIN library on library.libraryId = location.libraryId ORDER BY code ASC",
                 ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
         PreparedStatement locationOwnedRecordRulesStmt = dbConn.prepareStatement("SELECT location_records_owned.*, indexing_profiles.name FROM location_records_owned INNER JOIN indexing_profiles ON indexingProfileId = indexing_profiles.id WHERE locationId = ?",
@@ -183,6 +208,16 @@ public class IndexingUtils {
                 locationScopeInfo.setRbdigitalScope(rbdigitalScopes.get(rbdigitalScopeLocation));
             }
 
+            long cloudLibraryScopeLocation = locationInformationRS.getLong("cloudLibraryScopeLocation");
+            long cloudLibraryScopeLibrary = locationInformationRS.getLong("cloudLibraryScopeLibrary");
+            if (cloudLibraryScopeLocation == -1 ){
+                if (cloudLibraryScopeLibrary != -1) {
+                    locationScopeInfo.setCloudLibraryScope(cloudLibraryScopes.get(cloudLibraryScopeLibrary));
+                }
+            }else{
+                locationScopeInfo.setCloudLibraryScope(cloudLibraryScopes.get(cloudLibraryScopeLocation));
+            }
+
             //Load information about what should be included in the scope
             locationOwnedRecordRulesStmt.setLong(1, locationId);
             ResultSet locationOwnedRecordRulesRS = locationOwnedRecordRulesStmt.executeQuery();
@@ -250,11 +285,12 @@ public class IndexingUtils {
     }
 
     private static PreparedStatement libraryRecordInclusionRulesStmt;
-    private static void loadLibraryScopes(TreeSet<Scope> scopes, HashMap<Long, HooplaScope> hooplaScopes, HashMap<Long, RbdigitalScope> rbdigitalScopes, Connection dbConn) throws SQLException {
+    private static void loadLibraryScopes(TreeSet<Scope> scopes, HashMap<Long, HooplaScope> hooplaScopes, HashMap<Long, RbdigitalScope> rbdigitalScopes, HashMap<Long, CloudLibraryScope> cloudLibraryScopes, Connection dbConn) throws SQLException {
         PreparedStatement libraryInformationStmt = dbConn.prepareStatement("SELECT libraryId, ilsCode, subdomain, " +
                         "displayName, facetLabel, pTypes, enableOverdriveCollection, restrictOwningBranchesAndSystems, publicListsToInclude, " +
                         "additionalLocationsToShowAvailabilityFor, includeOverdriveAdult, includeOverdriveTeen, includeOverdriveKids, " +
-                        "includeAllRecordsInShelvingFacets, includeAllRecordsInDateAddedFacets, includeOnlineMaterialsInAvailableToggle, hooplaScopeId, rbdigitalScopeId " +
+                        "includeAllRecordsInShelvingFacets, includeAllRecordsInDateAddedFacets, includeOnlineMaterialsInAvailableToggle, " +
+                        "hooplaScopeId, rbdigitalScopeId, cloudLibraryScopeId " +
                         "FROM library ORDER BY ilsCode ASC",
                 ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
         PreparedStatement libraryOwnedRecordRulesStmt = dbConn.prepareStatement("SELECT library_records_owned.*, indexing_profiles.name from library_records_owned INNER JOIN indexing_profiles ON indexingProfileId = indexing_profiles.id WHERE libraryId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
@@ -306,6 +342,11 @@ public class IndexingUtils {
             long rbdigitalScopeLibrary = libraryInformationRS.getLong("rbdigitalScopeId");
             if (rbdigitalScopeLibrary != -1) {
                 newScope.setRbdigitalScope(rbdigitalScopes.get(rbdigitalScopeLibrary));
+            }
+
+            long cloudLibraryScopeLibrary = libraryInformationRS.getLong("cloudLibraryScopeId");
+            if (cloudLibraryScopeLibrary != -1) {
+                newScope.setCloudLibraryScope(cloudLibraryScopes.get(cloudLibraryScopeLibrary));
             }
 
             newScope.setRestrictOwningLibraryAndLocationFacets(libraryInformationRS.getBoolean("restrictOwningBranchesAndSystems"));

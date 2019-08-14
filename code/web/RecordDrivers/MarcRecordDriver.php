@@ -844,7 +844,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 		global $configArray;
 		$recordId = $this->getUniqueID();
 
-		return $configArray['Site']['path'] . "/{$this->indexingProfile->recordUrlComponent}/$recordId";
+		return $configArray['Site']['path'] . "/" . $this->getModule() . "/$recordId";
 	}
 
 	public function getItemActions($itemInfo)

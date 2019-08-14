@@ -23,7 +23,9 @@
 					{include file="MyAccount/rbdigitalCheckedOutTitle.tpl" record=$checkedOutTitle resultIndex=$smarty.foreach.checkedOutTitleLoop.iteration}
 				{elseif $checkedOutTitle.checkoutSource == 'RBdigitalMagazine'}
 					{include file="MyAccount/rbdigitalCheckedOutMagazine.tpl" record=$checkedOutTitle resultIndex=$smarty.foreach.checkedOutTitleLoop.iteration}
-				{else}
+                {elseif $checkedOutTitle.checkoutSource == 'CloudLibrary'}
+                    {include file="MyAccount/cloudLibraryCheckedOutTitle.tpl" record=$checkedOutTitle resultIndex=$smarty.foreach.checkedOutTitleLoop.iteration}
+                {else}
 					<div class="row">
 						{translate text="Unknown record source"} {$checkedOutTitle.checkoutSource}
 					</div>

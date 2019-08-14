@@ -166,6 +166,9 @@ class Admin_AJAX extends Action {
         }elseif ($source == 'rbdigital'){
             require_once ROOT_DIR . '/sys/RBdigital/RBdigitalExportLogEntry.php';
             $extractLog = new RBdigitalExportLogEntry();
+        }elseif ($source == 'cloud_library'){
+	        require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibraryExportLogEntry.php';
+	        $extractLog = new CloudLibraryExportLogEntry();
         }
 
         if ($extractLog == null){

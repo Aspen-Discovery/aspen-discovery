@@ -47,10 +47,12 @@
 
 {if $marcRecord}
 	<table class="table-striped table table-condensed notranslate">
-		<tr>
-			<th>Last File Modification Time</th>
-			<td>{$lastMarcModificationTime|date_format:"%b %d, %Y %r"}</td>
-		</tr>
+		{if !empty($lastMarcModificationTime)}
+			<tr>
+				<th>Last File Modification Time</th>
+				<td>{$lastMarcModificationTime|date_format:"%b %d, %Y %r"}</td>
+			</tr>
+		{/if}
 		<tr>
 			<th>Last Grouped Work Modification Time</th>
 			<td>{$lastGroupedWorkModificationTime|date_format:"%b %d, %Y %r"}</td>

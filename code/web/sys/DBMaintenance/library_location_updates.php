@@ -1730,10 +1730,19 @@ function getLibraryLocationUpdates(){
 
 		'library_location_rbdigital_scoping' => [
 			'title' => 'Library and Location Scoping of RBdigital',
-			'description' => 'Add information about how to scope rbdigital records',
+			'description' => 'Add information about how to scope RBdigital records',
 			'sql' => [
 				'ALTER TABLE library ADD COLUMN rbdigitalScopeId INT(11) default -1',
 				'ALTER TABLE location ADD COLUMN rbdigitalScopeId INT(11) default -1',
+			]
+		],
+
+		'library_location_cloud_library_scoping' => [
+			'title' => 'Library and Location Scoping of Cloud Library',
+			'description' => 'Add information about how to scope Cloud Library records',
+			'sql' => [
+				'ALTER TABLE library ADD COLUMN cloudLibraryScopeId INT(11) default -1',
+				'ALTER TABLE location ADD COLUMN cloudLibraryScopeId INT(11) default -1',
 			]
 		]
 	);

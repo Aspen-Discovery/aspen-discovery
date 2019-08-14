@@ -155,6 +155,9 @@ class RecordDriverFactory {
 		}elseif ($recordType == 'rbdigital_magazine'){
 			require_once ROOT_DIR . '/RecordDrivers/RBdigitalMagazineDriver.php';
 			$recordDriver = new RBdigitalMagazineDriver($recordId, $groupedWork);
+		}elseif ($recordType == 'cloud_library'){
+			require_once ROOT_DIR . '/RecordDrivers/CloudLibraryRecordDriver.php';
+			$recordDriver = new CloudLibraryRecordDriver($recordId, $groupedWork);
 		}elseif ($recordType == 'external_econtent'){
 			require_once ROOT_DIR . '/RecordDrivers/ExternalEContentDriver.php';
 			$recordDriver = new ExternalEContentDriver($recordId, $groupedWork);

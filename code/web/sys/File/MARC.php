@@ -162,7 +162,7 @@ class File_MARC extends File_MARCBASE
             $this->source = fopen($source, 'rb');
             if (!$this->source) {
                  $errorMessage = File_MARC_Exception::formatError(File_MARC_Exception::$messages[File_MARC_Exception::ERROR_INVALID_FILE], array('filename' => $source));
-                 throw new File_MARC_Exception($errorMessage, File_MARC_Exception::ERROR_INVALID_FILE);
+                 AspenError::raiseError(new File_MARC_Exception($errorMessage, File_MARC_Exception::ERROR_INVALID_FILE));
             }
             break;
 
@@ -172,7 +172,7 @@ class File_MARC extends File_MARCBASE
             break;
 
         default:
-            throw new File_MARC_Exception(File_MARC_Exception::$messages[File_MARC_Exception::ERROR_INVALID_SOURCE], File_MARC_Exception::ERROR_INVALID_SOURCE);
+	        AspenError::raiseError(new File_MARC_Exception(File_MARC_Exception::$messages[File_MARC_Exception::ERROR_INVALID_SOURCE], File_MARC_Exception::ERROR_INVALID_SOURCE));
         }
     }
     // }}}
@@ -229,7 +229,7 @@ class File_MARC extends File_MARCBASE
      * ?>
      * </code>
      *
-     * @return File_MARC_Record next record, or false if there are
+     * @return File_MARC_Record|false next record, or false if there are
      * no more records
      */
     function next()
@@ -274,7 +274,7 @@ class File_MARC extends File_MARCBASE
         }
 
         if (substr($text, -1, 1) != File_MARC::END_OF_RECORD)
-             throw new File_MARC_Exception(File_MARC_Exception::$messages[File_MARC_Exception::ERROR_INVALID_TERMINATOR], File_MARC_Exception::ERROR_INVALID_TERMINATOR);
+	        AspenError::raiseError(new File_MARC_Exception(File_MARC_Exception::$messages[File_MARC_Exception::ERROR_INVALID_TERMINATOR], File_MARC_Exception::ERROR_INVALID_TERMINATOR));
 
         // Store leader
         $marc->setLeader(substr($text, 0, File_MARC::LEADER_LEN));

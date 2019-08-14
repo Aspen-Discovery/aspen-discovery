@@ -35,6 +35,7 @@ public class GroupedWorkIndexer {
 	private OverDriveProcessor overDriveProcessor;
 	private RbdigitalProcessor rbdigitalProcessor;
 	private RbdigitalMagazineProcessor rbdigitalMagazineProcessor;
+	private CloudLibraryProcessor cloudLibraryProcessor;
 	private HooplaProcessor hooplaProcessor;
 	private HashMap<String, HashMap<String, String>> translationMaps = new HashMap<>();
 	private HashMap<String, LexileTitle> lexileInformation = new HashMap<>();
@@ -245,6 +246,8 @@ public class GroupedWorkIndexer {
 		rbdigitalProcessor = new RbdigitalProcessor(this, dbConn, logger);
 
 		rbdigitalMagazineProcessor = new RbdigitalMagazineProcessor(this, dbConn, logger);
+
+		cloudLibraryProcessor = new CloudLibraryProcessor(this, dbConn, logger);
 
 		hooplaProcessor = new HooplaProcessor(this, dbConn, logger);
 
@@ -810,6 +813,9 @@ public class GroupedWorkIndexer {
 				break;
 			case "hoopla":
 				hooplaProcessor.processRecord(groupedWork, identifier);
+				break;
+			case "cloud_library":
+				cloudLibraryProcessor.processRecord(groupedWork, identifier);
 				break;
 			default:
 				if (ilsRecordProcessors.containsKey(type)) {

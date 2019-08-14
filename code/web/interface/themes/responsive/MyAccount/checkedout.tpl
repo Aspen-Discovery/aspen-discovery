@@ -29,6 +29,9 @@
 				{if $user->isValidForEContentSource('rbdigital')}
 					<li role="presentation"{if $tab=='rbdigital'} class="active"{/if}><a href="#rbdigital" aria-controls="rbdigital" role="tab" data-toggle="tab">{translate text="RBdigital"} <span class="badge"><span class="rbdigital-checkouts-placeholder">&nbsp;</span></span></a></li>
 				{/if}
+                {if $user->isValidForEContentSource('cloud_library')}
+					<li role="presentation"{if $tab=='cloud_library'} class="active"{/if}><a href="#cloud_library" aria-controls="cloud_library" role="tab" data-toggle="tab">{translate text="Cloud Library"} <span class="badge"><span class="cloud_library-checkouts-placeholder">&nbsp;</span></span></a></li>
+                {/if}
 			</ul>
 
 			<!-- Tab panes -->
@@ -44,6 +47,9 @@
 				{if $user->isValidForEContentSource('rbdigital')}
 					<div role="tabpanel" class="tab-pane{if $tab=='rbdigital'} active{/if}" id="rbdigital"><div id="rbdigitalCheckoutsPlaceholder">{translate text="Loading checkouts from RBdigital"}</div></div>
 				{/if}
+                {if $user->isValidForEContentSource('cloud_library')}
+					<div role="tabpanel" class="tab-pane{if $tab=='cloud_library'} active{/if}" id="cloud_library"><div id="cloud_libraryCheckoutsPlaceholder">{translate text="Loading checkouts from Cloud Library"}</div></div>
+                {/if}
 			</div>
 			<script type="text/javascript">
 				{literal}
@@ -62,6 +68,9 @@
                     });
                     $("a[href='#rbdigital']").on('show.bs.tab', function () {
                         AspenDiscovery.Account.loadCheckouts('rbdigital');
+                    });
+                    $("a[href='#cloud_library']").on('show.bs.tab', function () {
+                        AspenDiscovery.Account.loadCheckouts('cloud_library');
                     });
                     {/literal}
                     AspenDiscovery.Account.loadCheckouts('{$tab}');

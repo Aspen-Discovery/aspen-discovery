@@ -59,7 +59,7 @@ abstract class MarcRecordProcessor {
 							groupedWork.addEra(curSubfield.getData());
 						}
 					}
-					subjects.add(curSubject.toString());
+					subjects.add(curSubject.toString().replaceAll("[|]", " -- "));
 					break;
 				}
 				case "610": {
@@ -83,7 +83,7 @@ abstract class MarcRecordProcessor {
 							groupedWork.addEra(curSubfield.getData());
 						}
 					}
-					subjects.add(curSubject.toString());
+					subjects.add(curSubject.toString().replaceAll("[|]", " -- "));
 					break;
 				}
 				case "611": {
@@ -112,7 +112,7 @@ abstract class MarcRecordProcessor {
 							groupedWork.addEra(curSubfield.getData());
 						}
 					}
-					subjects.add(curSubject.toString());
+					subjects.add(curSubject.toString().replaceAll("[|]", " -- "));
 					break;
 				}
 				case "630": {
@@ -140,7 +140,7 @@ abstract class MarcRecordProcessor {
 							groupedWork.addEra(curSubfield.getData());
 						}
 					}
-					subjects.add(curSubject.toString());
+					subjects.add(curSubject.toString().replaceAll("[|]", " -- "));
 					break;
 				}
 				case "648": {
@@ -156,7 +156,7 @@ abstract class MarcRecordProcessor {
 							groupedWork.addEra(curSubfield.getData());
 						}
 					}
-					subjects.add(curSubject);
+					subjects.add(curSubject.replaceAll("[|]", " -- "));
 					break;
 				}
 				case "650": {
@@ -204,7 +204,7 @@ abstract class MarcRecordProcessor {
 							groupedWork.addEra(curSubfield.getData());
 						}
 					}
-					subjects.add(curSubject.toString());
+					subjects.add(curSubject.toString().replaceAll("[|]", " -- "));
 					break;
 				}
 				case "651": {
@@ -232,7 +232,7 @@ abstract class MarcRecordProcessor {
 							groupedWork.addGeographic(curSubfield.getData());
 						}
 					}
-					subjects.add(curSubject.toString());
+					subjects.add(curSubject.toString().replaceAll("[|]", " -- "));
 					break;
 				}
 				case "655": {
@@ -260,7 +260,7 @@ abstract class MarcRecordProcessor {
 							groupedWork.addGenre(curSubfield.getData());
 						}
 					}
-					subjects.add(curSubject.toString());
+					subjects.add(curSubject.toString().replaceAll("[|]", " -- "));
 					break;
 				}
 				case "690": {
@@ -273,7 +273,7 @@ abstract class MarcRecordProcessor {
 							groupedWork.addTopic(curSubfield.getData());
 						}
 					}
-					subjects.add(curSubject.toString());
+					subjects.add(curSubject.toString().replaceAll("[|]", " -- "));
 					break;
 				}
 			}
@@ -286,18 +286,8 @@ abstract class MarcRecordProcessor {
 		loadTitles(groupedWork, record, format);
 		loadAuthors(groupedWork, record, identifier);
 		loadSubjects(groupedWork, record);
-		/*List<DataField> seriesFields = getDataFields(record, "490");
-		HashSet<String> allSeries = new HashSet<>();
-		for (DataField seriesField : seriesFields){
-			if (seriesField.getIndicator1() == '0' || seriesField.getIndicator1() == '1'){
-				if (seriesField.getSubfield('a') != null){
-					allSeries.add()
-				}
 
-			}
-		}*/
 		List<DataField> seriesFields = MarcUtil.getDataFields(record, "830");
-		HashSet<String> seriesWithVolumes = new HashSet<>();
 		for (DataField seriesField : seriesFields){
 			String series = StringUtils.trimTrailingPunctuation(MarcUtil.getSpecifiedSubfieldsAsString(seriesField, "ap","")).toString();
 			//Remove anything in parenthesis since it's normally just the format
@@ -719,7 +709,7 @@ abstract class MarcRecordProcessor {
 
 	}
 
-	Set<String> getPublicationDates(Record record) {
+	private Set<String> getPublicationDates(Record record) {
 		List<DataField> rdaFields = record.getDataFields("264");
 		HashSet<String> publicationDates = new HashSet<>();
 		String date;
@@ -747,7 +737,7 @@ abstract class MarcRecordProcessor {
 		return publicationDates;
 	}
 
-	Set<String> getPublishers(Record record){
+	private Set<String> getPublishers(Record record){
 		Set<String> publisher = new LinkedHashSet<>();
 		//First check for 264 fields
 		List<DataField> rdaFields = MarcUtil.getDataFields(record, "264");

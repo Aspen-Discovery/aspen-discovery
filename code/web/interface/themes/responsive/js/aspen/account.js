@@ -151,6 +151,8 @@ AspenDiscovery.Account = (function(){
 					label = 'Hoopla Checkouts';
 				}else if (source === 'rbdigital'){
 					label = 'RBdigital Checkouts';
+				}else if (source === 'cloud_library'){
+					label = 'Cloud Library Checkouts';
 				}
 				history.pushState(stateObj, label, newUrl);
 			}
@@ -303,6 +305,17 @@ AspenDiscovery.Account = (function(){
 					totalCheckouts += parseInt(data.summary.numCheckedOut);
 					$(".checkouts-placeholder").html(totalCheckouts);
 					$(".rbdigital-holds-placeholder").html(data.summary.numUnavailableHolds);
+					totalHolds += parseInt(data.summary.numUnavailableHolds);
+					$(".holds-placeholder").html(totalHolds);
+				}
+			});
+			let cloudLibraryUrl = Globals.path + "/MyAccount/AJAX?method=getMenuDataCloudLibrary&activeModule=" + Globals.activeModule + '&activeAction=' + Globals.activeAction;
+			$.getJSON(cloudLibraryUrl, function(data){
+				if (data.success) {
+					$(".cloud_library-checkouts-placeholder").html(data.summary.numCheckedOut);
+					totalCheckouts += parseInt(data.summary.numCheckedOut);
+					$(".checkouts-placeholder").html(totalCheckouts);
+					$(".cloud_library-holds-placeholder").html(data.summary.numUnavailableHolds);
 					totalHolds += parseInt(data.summary.numUnavailableHolds);
 					$(".holds-placeholder").html(totalHolds);
 				}

@@ -43,6 +43,7 @@ public class Scope implements Comparable<Scope>{
 
 	private HooplaScope hooplaScope;
 	private RbdigitalScope rbdigitalScope;
+	private CloudLibraryScope cloudLibraryScope;
 
 	public String getScopeName() {
 		return scopeName;
@@ -324,7 +325,15 @@ public class Scope implements Comparable<Scope>{
         return rbdigitalScope;
     }
 
-    public class InclusionResult{
+	void setCloudLibraryScope(CloudLibraryScope cloudLibraryScope) {
+		this.cloudLibraryScope = cloudLibraryScope;
+	}
+
+	public CloudLibraryScope getCloudLibraryScope() {
+		return cloudLibraryScope;
+	}
+
+	public class InclusionResult{
 		public boolean isIncluded;
 		public String localUrl;
 

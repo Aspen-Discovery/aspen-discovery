@@ -90,6 +90,7 @@ class Library extends DataObject
 	public $hooplaLibraryID;
 	public $hooplaScopeId;
 	public $rbdigitalScopeId;
+	public $cloudLibraryScopeId;
 	public $systemsToRepeatIn;
 	public $additionalLocationsToShowAvailabilityFor;
 	public $homeLink;
@@ -407,6 +408,16 @@ class Library extends DataObject
 		$rbdigitalScopes[-1] = 'none';
 		while ($rbdigitalScope->fetch()){
 			$rbdigitalScopes[$rbdigitalScope->id] = $rbdigitalScope->name;
+		}
+
+		require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibraryScope.php';
+		$cloudLibraryScope = new CloudLibraryScope();
+		$cloudLibraryScope->orderBy('name');
+		$cloudLibraryScopes = [];
+		$cloudLibraryScope->find();
+		$cloudLibraryScopes[-1] = 'none';
+		while ($cloudLibraryScope->fetch()){
+			$cloudLibraryScopes[$cloudLibraryScope->id] = $cloudLibraryScope->name;
 		}
 
 		//$Instructions = 'For more information on ???, see the <a href="">online documentation</a>.';
@@ -819,6 +830,9 @@ class Library extends DataObject
 			)),
 			'rbdigitalSection' => array('property'=>'rbdigitalSection', 'type' => 'section', 'label' =>'RBdigital', 'hideInLists' => true, 'properties' => array(
 				'rbdigitalScopeId'        => array('property'=>'rbdigitalScopeId', 'type'=>'enum','values'=>$rbdigitalScopes, 'label'=>'RBdigital Scope', 'description'=>'The RBdigital scope to use', 'hideInLists' => true, 'default'=>-1),
+			)),
+			'cloudLibrarySection' => array('property'=>'cloudLibrarySection', 'type' => 'section', 'label' =>'Cloud Library', 'hideInLists' => true, 'properties' => array(
+				'cloudLibraryScopeId'        => array('property'=>'cloudLibraryScopeId', 'type'=>'enum','values'=>$cloudLibraryScopes,  'label'=>'Cloud Library Scope', 'description'=>'The Cloud Library scope to use', 'hideInLists' => true, 'default'=>-1),
 			)),
 			'genealogySection' => array('property' => 'genealogySection', 'type' => 'section', 'label' => 'Genealogy', 'hideInLists' =>true,
                 'properties' => [

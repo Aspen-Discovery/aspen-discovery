@@ -169,7 +169,7 @@ class CurlWrapper {
 		return curl_exec($this->curl_connection);
 	}
 
-    public function curlSendPage(string $url, string $httpMethod)
+    public function curlSendPage(string $url, string $httpMethod, $body = null)
     {
         $this->curl_connect($url);
         if ($httpMethod == 'GET'){
@@ -181,12 +181,25 @@ class CurlWrapper {
         }else {
             curl_setopt($this->curl_connection, CURLOPT_CUSTOMREQUEST, $httpMethod);
         }
+        if ($body != null){
+	        curl_setopt($this->curl_connection, CURLOPT_POSTFIELDS, $body);
+        }
         $return = curl_exec($this->curl_connection);
         if (!$return) { // log curl error
+        	global $configArray;
+	        if (!$configArray['Site']['isProduction']){
+		        $curl_err = curl_error($this->curl_connection);
+		        $curl_info = curl_getinfo($this->curl_connection);
+	        }
             global $logger;
             $logger->log('curl get error : '.curl_error($this->curl_connection), Logger::LOG_ERROR);
         }
         return $return;
+    }
+
+    function getResponseCode(){
+	    $curl_info = curl_getinfo($this->curl_connection);
+	    return $curl_info['http_code'];
     }
 
     function getHeaders()
