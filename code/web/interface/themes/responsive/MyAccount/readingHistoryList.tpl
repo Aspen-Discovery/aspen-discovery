@@ -3,6 +3,7 @@
 		{* Do not display Reading History in Masquerade Mode, unless the library has allowed it *}
 		{* Reading History Actions *}
 		<div class="row">
+			<form id="readingListForm">
 			<input type="hidden" name="page" value="{$page}">
 			<input type="hidden" name="patronId" id="patronId" value="{$selectedUser}">
 			<input type="hidden" name="readingHistoryAction" id="readingHistoryAction" value="">
@@ -25,6 +26,7 @@
 					</div>
 				</div>
 			{/if}
+			</form>
 
 			<hr>
 
@@ -69,9 +71,6 @@
 						<div id="readingListActionsBottom" class="btn-group btn-group-sm">
 							{if $historyActive == true}
 								<button class="btn btn-sm btn-info" onclick="return AspenDiscovery.Account.ReadingHistory.exportListAction()">{translate text="Export To Excel"}</button>
-								{if $transList}
-									<button class="btn btn-sm btn-warning" onclick="return AspenDiscovery.Account.ReadingHistory.deletedMarkedAction()">{translate text="Delete Marked"}</button>
-								{/if}
 							{else}
 								<button class="btn btn-sm btn-primary" onclick="return AspenDiscovery.Account.ReadingHistory.optInAction()">{translate text="Start Recording My Reading History"}</button>
 							{/if}
