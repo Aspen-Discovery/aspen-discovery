@@ -2,7 +2,7 @@
 
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
-require_once ROOT_DIR . '/sys/IP/IPLookup.php';
+require_once ROOT_DIR . '/sys/IP/IPAddress.php';
 
 class IPAddresses extends ObjectEditor
 {
