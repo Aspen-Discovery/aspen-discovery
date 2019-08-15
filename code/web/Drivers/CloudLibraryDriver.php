@@ -35,6 +35,8 @@ class CloudLibraryDriver extends AbstractEContentDriver
 
 		require_once ROOT_DIR . '/RecordDrivers/CloudLibraryRecordDriver.php';
 
+		$settings = $this->getSettings();
+
 		$circulation = $this->getPatronCirculation($user);
 		$checkouts = [];
 
@@ -64,6 +66,12 @@ class CloudLibraryDriver extends AbstractEContentDriver
 					$checkout['title'] = 'Unknown Cloud Library Title';
 					$checkout['author'] = '';
 					$checkout['format'] = 'Unknown - Cloud Library';
+				}
+
+				if ($recordDriver->getPrimaryFormat() == 'MP3'){
+					$checkout['accessOnlineUrl'] = $settings->userInterfaceUrl . '/AudioPlayer/' . $checkout['recordId'];
+				}else{
+					$checkout['accessOnlineUrl'] = $settings->userInterfaceUrl . '/EPubRead/' . $checkout['recordId'];
 				}
 
 				$checkout['user'] = $user->getNameAndLibraryLabel();
@@ -119,7 +127,6 @@ class CloudLibraryDriver extends AbstractEContentDriver
 		$result = ['success' => false, 'message' => 'Unknown error'];
 		$settings = $this->getSettings();
 		$patronId = $patron->getBarcode();
-		$patronId = "tltech02";
 		$apiPath = "/cirrus/library/{$settings->libraryId}/checkin";
 		$requestBody =
 			"<CheckinRequest>
@@ -222,14 +229,14 @@ class CloudLibraryDriver extends AbstractEContentDriver
 		$result = ['success' => false, 'message' => 'Unknown error'];
 		$settings = $this->getSettings();
 		$patronId = $patron->getBarcode();
-		$patronId = "tltech02";
-		$apiPath = "/cirrus/library/{$settings->libraryId}/placehold";
+		$password = $patron->getPasswordOrPin();
+		$apiPath = "/cirrus/library/{$settings->libraryId}/placehold?password=$password";
 		$requestBody =
 			"<PlaceHoldRequest>
 				<ItemId>{$recordId}</ItemId>
 				<PatronId>{$patronId}</PatronId>
 			</PlaceHoldRequest>";
-		$placeHoldResponse = $this->callCloudLibraryUrl($settings, $apiPath, 'POST', $requestBody);
+		$this->callCloudLibraryUrl($settings, $apiPath, 'POST', $requestBody);
 		$responseCode = $this->curlWrapper->getResponseCode();
 		if ($responseCode == '201'){
 			$this->trackUserUsageOfCloudLibrary($patron);
@@ -265,14 +272,13 @@ class CloudLibraryDriver extends AbstractEContentDriver
 		$result = ['success' => false, 'message' => 'Unknown error'];
 		$settings = $this->getSettings();
 		$patronId = $patron->getBarcode();
-		$patronId = "tltech02";
 		$apiPath = "/cirrus/library/{$settings->libraryId}/cancelhold";
 		$requestBody =
 			"<CancelHoldRequest>
 				<ItemId>{$recordId}</ItemId>
 				<PatronId>{$patronId}</PatronId>
 			</CancelHoldRequest>";
-		$cancelHoldResponse = $this->callCloudLibraryUrl($settings, $apiPath, 'POST', $requestBody);
+		$this->callCloudLibraryUrl($settings, $apiPath, 'POST', $requestBody);
 		$responseCode = $this->curlWrapper->getResponseCode();
 		if ($responseCode == '200'){
 			$result['success'] = true;
@@ -308,10 +314,6 @@ class CloudLibraryDriver extends AbstractEContentDriver
 
 		$summary = $memCache->get('cloud_library_summary_' . $patron->id);
 		if ($summary == false || isset($_REQUEST['reload'])){
-			//Get the rbdigital id for the patron
-			$patronId = $patron->getBarcode();
-			$patronId = "tltech02";
-
 			//Get account information from api
 			$circulation = $this->getPatronCirculation($patron);
 
@@ -338,32 +340,38 @@ class CloudLibraryDriver extends AbstractEContentDriver
 	public function checkOutTitle($user, $titleId)
 	{
 		$result = ['success' => false, 'message' => 'Unknown error'];
-		$settings = $this->getSettings();
-		$patronId = $user->getBarcode();
-		$patronId = "tltech02";
-		$apiPath = "/cirrus/library/{$settings->libraryId}/checkout";
-		$requestBody =
-			"<CheckoutRequest>
+
+//		if (!$this->checkAuthentication($user)){
+//			$result['message'] = 'You must sign up for a Cloud Library account';
+//		}else{
+			$settings = $this->getSettings();
+			$patronId = $user->getBarcode();
+			$password = $user->getPasswordOrPin();
+			$apiPath = "/cirrus/library/{$settings->libraryId}/checkout?password=$password";
+			$requestBody =
+				"<CheckoutRequest>
 				<ItemId>{$titleId}</ItemId>
 				<PatronId>{$patronId}</PatronId>
 			</CheckoutRequest>";
-		$checkoutResponse = $this->callCloudLibraryUrl($settings, $apiPath, 'POST', $requestBody);
-		if ($checkoutResponse != null){
-			$checkoutXml = simplexml_load_string($checkoutResponse);
-			if (isset($checkoutXml->Error)){
-			$result['message'] = $checkoutXml->Error->Message;
-			}else {
-				$this->trackUserUsageOfCloudLibrary($user);
-				$this->trackRecordCheckout($titleId);
+			$checkoutResponse = $this->callCloudLibraryUrl($settings, $apiPath, 'POST', $requestBody);
+			if ($checkoutResponse != null){
+				$checkoutXml = simplexml_load_string($checkoutResponse);
+				if (isset($checkoutXml->Error)){
+					$result['message'] = $checkoutXml->Error->Message;
+				}else {
+					$this->trackUserUsageOfCloudLibrary($user);
+					$this->trackRecordCheckout($titleId);
 
-				$result['success'] = true;
-				$result['message'] = translate(['text' => 'cloud_library-checkout-success', 'defaultText' => 'Your title was checked out successfully. You can read or listen to the title from your account.']);
+					$result['success'] = true;
+					$result['message'] = translate(['text' => 'cloud_library-checkout-success', 'defaultText' => 'Your title was checked out successfully. You can read or listen to the title from your account.']);
 
-				/** @var Memcache $memCache */
-				global $memCache;
-				$memCache->delete('cloud_library_summary_' . $user->id);
+					/** @var Memcache $memCache */
+					global $memCache;
+					$memCache->delete('cloud_library_summary_' . $user->id);
+				}
 			}
-		}
+//		}
+
 		return $result;
 	}
 
@@ -373,8 +381,8 @@ class CloudLibraryDriver extends AbstractEContentDriver
 		if (!isset($this->circulationInfo[$user->id])){
 			$settings = $this->getSettings();
 			$patronId = $user->getBarcode();
-			$patronId = "tltech02";
-			$apiPath = "/cirrus/library/{$settings->libraryId}/circulation/patron/$patronId";
+			$password = $user->getPasswordOrPin();
+			$apiPath = "/cirrus/library/{$settings->libraryId}/circulation/patron/$patronId?password=$password";
 			$circulationInfo = $this->callCloudLibraryUrl($settings, $apiPath);
 			$this->circulationInfo[$user->id] = simplexml_load_string($circulationInfo);
 		}
@@ -474,6 +482,23 @@ class CloudLibraryDriver extends AbstractEContentDriver
 				$recordUsage->timesHeld = 1;
 				$recordUsage->insert();
 			}
+		}
+	}
+
+	function checkAuthentication(User $user){
+		$settings = $this->getSettings();
+		$patronId = $user->getBarcode();
+		$password = $user->getPasswordOrPin();
+		$apiPath = "/cirrus/library/{$settings->libraryId}/patron/$patronId";
+		if (false){
+			$apiPath .= "?password=$password";
+		}
+		$authenticationResponse = $this->callCloudLibraryUrl($settings, $apiPath);
+		$authentication = simplexml_load_string($authenticationResponse);
+		if ($authentication->result == 'SUCCESS'){
+			return true;
+		}else{
+			return false;
 		}
 	}
 }

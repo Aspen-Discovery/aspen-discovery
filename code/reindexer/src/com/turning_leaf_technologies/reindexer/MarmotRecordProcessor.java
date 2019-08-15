@@ -105,6 +105,8 @@ class MarmotRecordProcessor extends IIIRecordProcessor {
 				boolean isEContent = false;
 				boolean isOverDrive = false;
 				boolean isHoopla = false;
+				boolean isCloudLibrary = false;
+				boolean isOneClickDigital = false;
 				if (useEContentSubfield){
 					if (itemField.getSubfield(eContentSubfieldIndicator) != null){
 						String eContentData = itemField.getSubfield(eContentSubfieldIndicator).getData();
@@ -123,11 +125,15 @@ class MarmotRecordProcessor extends IIIRecordProcessor {
 								isOverDrive = true;
 							}else if (source.equalsIgnoreCase("hoopla")){
 								isHoopla = true;
+							} else if (source.contains("cloudlibrary")) {
+								isCloudLibrary = true;
+							} else if (source.contains("oneclickdigital")) {
+								isOneClickDigital = true;
 							}
 						}
 					}
 				}
-				if (!isOverDrive && !isHoopla && isEContent){
+				if (!isOverDrive && !isHoopla && !isOneClickDigital && !isCloudLibrary && isEContent){
 					RecordInfo eContentRecord = getEContentIlsRecord(groupedWork, record, identifier, itemField);
 					if (eContentRecord != null) {
 						unsuppressedEcontentRecords.add(eContentRecord);

@@ -235,6 +235,8 @@ class AspencatRecordProcessor extends IlsRecordProcessor {
 				boolean isEContent = false;
 				boolean isOverDrive = false;
 				boolean isHoopla = false;
+				boolean isCloudLibrary = false;
+				boolean isOneClickDigital = false;
 				if (itemField.getSubfield(iTypeSubfield) != null){
 					String iType = itemField.getSubfield(iTypeSubfield).getData().toLowerCase();
 					if (iType.equals("ebook") || iType.equals("eaudio") || iType.equals("online") || iType.equals("oneclick")){
@@ -246,6 +248,10 @@ class AspencatRecordProcessor extends IlsRecordProcessor {
 								isOverDrive = true;
 							} else if (sourceType.contains("hoopla")) {
 								isHoopla = true;
+							} else if (sourceType.contains("cloudlibrary")) {
+								isCloudLibrary = true;
+							} else if (sourceType.contains("oneclickdigital")) {
+								isOneClickDigital = true;
 							} else {
 								logger.debug("Found eContent Source " + sourceType);
 							}
@@ -255,7 +261,7 @@ class AspencatRecordProcessor extends IlsRecordProcessor {
 						}
 					}
 				}
-				if (!isOverDrive && !isHoopla && isEContent){
+				if (!isOverDrive && !isHoopla && !isOneClickDigital && !isCloudLibrary && isEContent){
 					RecordInfo eContentRecord = getEContentIlsRecord(groupedWork, record, identifier, itemField);
 					if (eContentRecord != null) {
 						unsuppressedEcontentRecords.add(eContentRecord);

@@ -83,8 +83,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 	HashMap<String, TranslationMap> translationMaps = new HashMap<>();
 	private ArrayList<TimeToReshelve> timesToReshelve = new ArrayList<>();
-	HashSet<String> formatsToSuppress = new HashSet<>();
-	HashSet<String> statusesToSuppress = new HashSet<>();
+	private HashSet<String> formatsToSuppress = new HashSet<>();
+	private HashSet<String> statusesToSuppress = new HashSet<>();
 
 	IlsRecordProcessor(GroupedWorkIndexer indexer, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, logger);

@@ -136,9 +136,14 @@ class MarcLoader{
 	public static function marcExistsForILSId($id){
 		global $indexingProfiles;
 		if (strpos($id, ':') !== false){
-			$recordInfo = explode(':', $id);
+			$recordInfo = explode(':', $id, 2);
 			$recordType = $recordInfo[0];
 			$ilsId = $recordInfo[1];
+			if ($recordType == 'external_econtent'){
+				$recordInfo = explode(':', $ilsId);
+				$recordType = $recordInfo[0];
+				$ilsId = $recordInfo[1];
+			}
 		}else{
 			//Try to infer the indexing profile from the module
 			/** @var IndexingProfile $activeRecordProfile */
