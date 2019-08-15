@@ -66,6 +66,15 @@
 						</div>
 					</div>
 					{/if}
+
+                    {if !empty($record.position)}
+						<div class="row">
+							<div class="result-label col-tn-3">{translate text='Position'}</div>
+							<div class="col-tn-9 result-value">
+                                {$record.position}
+							</div>
+						</div>
+                    {/if}
 				</div>
 
 				{* Actions for Title *}

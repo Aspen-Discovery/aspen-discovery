@@ -62,16 +62,15 @@ class CloudLibraryDriver extends AbstractEContentDriver
 					$checkout['groupedWorkId'] = $recordDriver->getGroupedWorkId();
 					$checkout['format'] = $recordDriver->getPrimaryFormat();
 					$checkout['linkUrl'] = $recordDriver->getLinkUrl();
+					if ($recordDriver->getPrimaryFormat() == 'MP3'){
+						$checkout['accessOnlineUrl'] = $settings->userInterfaceUrl . '/AudioPlayer/' . $checkout['recordId'];
+					}else{
+						$checkout['accessOnlineUrl'] = $settings->userInterfaceUrl . '/EPubRead/' . $checkout['recordId'];
+					}
 				} else {
 					$checkout['title'] = 'Unknown Cloud Library Title';
 					$checkout['author'] = '';
 					$checkout['format'] = 'Unknown - Cloud Library';
-				}
-
-				if ($recordDriver->getPrimaryFormat() == 'MP3'){
-					$checkout['accessOnlineUrl'] = $settings->userInterfaceUrl . '/AudioPlayer/' . $checkout['recordId'];
-				}else{
-					$checkout['accessOnlineUrl'] = $settings->userInterfaceUrl . '/EPubRead/' . $checkout['recordId'];
 				}
 
 				$checkout['user'] = $user->getNameAndLibraryLabel();
@@ -184,6 +183,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 
 				$hold['id'] = (string)$holdFromCloudLibrary->ItemId;
 				$hold['transactionId'] = (string)$holdFromCloudLibrary->ItemId;
+				$hold['position'] = (string)$holdFromCloudLibrary->Position;
 
 				$recordDriver = new CloudLibraryRecordDriver((string)$holdFromCloudLibrary->ItemId);
 				if ($recordDriver->isValid()) {
@@ -204,6 +204,36 @@ class CloudLibraryDriver extends AbstractEContentDriver
 
 				$key = $hold['holdSource'] . $hold['id'] . $hold['user'];
 				$holds['unavailable'][$key] = $hold;
+			}
+		}
+
+		if (isset($circulation->Reserves->Item)) {
+			foreach ($circulation->Reserves->Item as $holdFromCloudLibrary) {
+				$hold = [];
+				$hold['holdSource'] = 'CloudLibrary';
+
+				$hold['id'] = (string)$holdFromCloudLibrary->ItemId;
+				$hold['transactionId'] = (string)$holdFromCloudLibrary->ItemId;
+
+				$recordDriver = new CloudLibraryRecordDriver((string)$holdFromCloudLibrary->ItemId);
+				if ($recordDriver->isValid()) {
+					$hold['title'] = $recordDriver->getTitle();
+					$curTitle['sortTitle'] = $recordDriver->getTitle();
+					$hold['author'] = $recordDriver->getPrimaryAuthor();
+					$hold['coverUrl'] = $recordDriver->getBookcoverUrl('medium');
+					$hold['ratingData'] = $recordDriver->getRatingData();
+					$hold['format'] = $recordDriver->getPrimaryFormat();
+					$hold['linkUrl'] = $recordDriver->getLinkUrl();
+				} else {
+					$hold['title'] = 'Unknown';
+					$hold['author'] = 'Unknown';
+				}
+
+				$hold['user'] = $user->getNameAndLibraryLabel();
+				$hold['userId'] = $user->id;
+
+				$key = $hold['holdSource'] . $hold['id'] . $hold['user'];
+				$holds['available'][$key] = $hold;
 			}
 		}
 
@@ -321,8 +351,9 @@ class CloudLibraryDriver extends AbstractEContentDriver
 			$summary['numCheckedOut'] = empty($circulation->Checkouts->Item) ? 0 : count($circulation->Checkouts->Item);
 
 			//RBdigital automatically checks holds out so nothing is available
-			$summary['numAvailableHolds'] = 0;
+			$summary['numAvailableHolds'] = empty($circulation->Reserves->Item) ? 0 : count($circulation->Reserves->Item);
 			$summary['numUnavailableHolds'] = empty($circulation->Holds->Item) ? 0 : count($circulation->Holds->Item);
+			$summary['numHolds'] = $summary['numAvailableHolds'] + $summary['numUnavailableHolds'];
 
 			$timer->logTime("Finished loading titles from Cloud Library summary");
 			$memCache->set('cloud_library_summary_' . $patron->id, $summary, $configArray['Caching']['account_summary']);

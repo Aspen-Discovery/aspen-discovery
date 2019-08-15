@@ -1090,6 +1090,8 @@ class MyAccount_AJAX
 						$linkedUserSummary = $driver->getAccountSummary($linkedUser);
 						$cloudLibrarySummary['numCheckedOut'] += $linkedUserSummary['numCheckedOut'];
 						$cloudLibrarySummary['numUnavailableHolds'] += $linkedUserSummary['numUnavailableHolds'];
+						$cloudLibrarySummary['numAvailableHolds'] += $linkedUserSummary['numAvailableHolds'];
+						$cloudLibrarySummary['numHolds'] += $linkedUserSummary['numHolds'];
 					}
 				}
 				$timer->logTime("Loaded Cloud Library Summary for User and linked users");
