@@ -245,7 +245,7 @@ public class RbdigitalExportMain {
                 WebServiceResponse response = NetworkUtils.getURL(bookUrl, logger, headers);
                 if (!response.isSuccess()) {
                     logEntry.incErrors();
-                    logEntry.addNote(response.getMessage());
+                    logEntry.addNote("Error calling " + bookUrl + ": " + response.getResponseCode() + " " + response.getMessage());
                 } else {
                     try {
                         JSONObject responseJSON = new JSONObject(response.getMessage());
@@ -288,13 +288,13 @@ public class RbdigitalExportMain {
                         logEntry.incNumProducts(numResults);
                         logEntry.saveResults();
                         logger.debug("Processing page 0 of results");
-                        numChanges += processRbdigitalMagazines(responseJSON, doFullReload);
+                        numChanges += processRbdigitalMagazines(responseJSON, doFullReload, baseUrl, libraryId, headers);
                         for (int curPage = 1; curPage < numPages; curPage++) {
                             logger.debug("Processing page " + curPage);
                             bookUrl = baseUrl + "/v1/libraries/" + libraryId + "/search/emagazine?page-size=100&page-index=" + curPage;
                             response = NetworkUtils.getURL(bookUrl, logger, headers);
                             responseJSON = new JSONObject(response.getMessage());
-                            numChanges += processRbdigitalMagazines(responseJSON, doFullReload);
+                            numChanges += processRbdigitalMagazines(responseJSON, doFullReload, baseUrl, libraryId, headers);
                         }
 
                     } catch (JSONException e) {
@@ -328,7 +328,7 @@ public class RbdigitalExportMain {
         return numChanges;
     }
 
-    private static int processRbdigitalMagazines(JSONObject responseJSON, boolean doFullReload) {
+    private static int processRbdigitalMagazines(JSONObject responseJSON, boolean doFullReload, String baseUrl, String libraryId, HashMap<String, String> headers) {
         int numChanges = 0;
         try {
             JSONArray items = responseJSON.getJSONArray("items");
@@ -377,9 +377,13 @@ public class RbdigitalExportMain {
                     }
                 }
 
-                String groupedWorkId = null;
+                //Load issue information
+//                String issuesUrl = baseUrl + "/v1/libraries/" + libraryId + "/magazines/" + magazineId + "/issues?pageIndex=1&pageSize=100";
+//                WebServiceResponse response = NetworkUtils.getURL(issuesUrl, logger, headers);
+//                JSONObject issuesObject = new JSONObject(response.getMessage());
+
                 if (metadataChanged || doFullReload) {
-                    groupedWorkId = groupRbdigitalMagazine(itemDetails, magazineIdString);
+                    String groupedWorkId = groupRbdigitalMagazine(itemDetails, magazineIdString);
 
                     logEntry.incUpdated();
                     indexRbdigitalRecord(groupedWorkId);
