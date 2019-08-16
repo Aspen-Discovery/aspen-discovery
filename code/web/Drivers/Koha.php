@@ -1586,6 +1586,18 @@ class Koha extends AbstractIlsDriver {
 	}
 	function getNewMaterialsRequestForm(User $user)
 	{
+		$this->initDatabaseConnection();
+
+		/** @noinspection SqlResolve */
+		$sql = "SELECT * FROM systempreferences where variable like 'OpacSuggestion%';";
+		$results = mysqli_query($this->dbConnection, $sql);
+		$kohaPreferences = [];
+		while ($curRow = $results->fetch_assoc()){
+			$kohaPreferences[$curRow['variable']] = $curRow['value'];
+		}
+
+		$mandatoryFields = array_flip(explode(',', $kohaPreferences['OPACSuggestionMandatoryFields']));
+
 		global $interface;
 		require_once ROOT_DIR . '/sys/Indexing/TranslationMap.php';
 		$itypeMap = new TranslationMap();
@@ -1623,6 +1635,13 @@ class Koha extends AbstractIlsDriver {
 			array('property'=>'note', 'type'=>'textarea', 'label'=>'Note', 'description'=>'', 'required' => false),
 		];
 
+		foreach ($fields as &$field){
+			if (array_key_exists($field['property'], $mandatoryFields)){
+				$field['required'] = true;
+			}else{
+				$field['required'] = false;
+			}
+		}
 
 		$interface->assign('submitUrl', '/MaterialsRequest/NewRequestIls');
 		$interface->assign('structure', $fields);
