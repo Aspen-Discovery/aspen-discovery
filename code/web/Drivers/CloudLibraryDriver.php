@@ -50,7 +50,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 				$checkout['dueDate'] = (string)$checkoutFromCloudLibrary->EventEndDateInUTC;
 
 				//Checkouts cannot be renewed in CloudLibrary
-				$checkout['canrenew'] = false;
+				$checkout['canRenew'] = false;
 
 				$recordDriver = new CloudLibraryRecordDriver((string)$checkoutFromCloudLibrary->ItemId);
 				if ($recordDriver->isValid()) {

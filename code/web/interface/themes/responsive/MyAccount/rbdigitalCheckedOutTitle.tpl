@@ -7,7 +7,7 @@
 			<div class="col-xs-3 col-sm-4 col-md-3 checkedOut-covers-column">
 				<div class="row">
 					<div class="selectTitle hidden-xs col-sm-1">
-						{if !isset($record.canrenew) || $record.canrenew == true}
+						{if !isset($record.canRenew) || $record.canRenew == true}
 							<input type="checkbox" name="selected[{$record.userId}|{$record.recordId}]" class="titleSelect" id="selected{$record.recordId}">
 						{/if}
 					</div>
@@ -28,7 +28,7 @@
 			</div>
 		{else}
 			<div class="col-xs-1">
-				{if !isset($record.canrenew) || $record.canrenew == true}
+				{if !isset($record.canRenew) || $record.canRenew == true}
 					<input type="checkbox" name="selected[{$record.userId}|{$record.recordId}]" class="titleSelect" id="selected{$record.recordId}">
 				{/if}
 			</div>

@@ -205,7 +205,7 @@ class Koha extends AbstractIlsDriver {
 		$this->initDatabaseConnection();
 
         /** @noinspection SqlResolve */
-        $sql = "SELECT issues.*, items.biblionumber, title, author from issues left join items on items.itemnumber = issues.itemnumber left join biblio ON items.biblionumber = biblio.biblionumber where borrowernumber = {$patron->username}";
+        $sql = "SELECT issues.*, items.biblionumber, title, author, auto_renew, auto_renew_error from issues left join items on items.itemnumber = issues.itemnumber left join biblio ON items.biblionumber = biblio.biblionumber where borrowernumber = {$patron->username}";
 		$results = mysqli_query($this->dbConnection, $sql);
 		while ($curRow = $results->fetch_assoc()){
 			$checkout = array();
@@ -227,6 +227,22 @@ class Koha extends AbstractIlsDriver {
 			$checkout['itemId'] = $curRow['itemnumber'];
 			$checkout['renewIndicator'] = $curRow['itemnumber'];
 			$checkout['renewCount'] = $curRow['renewals'];
+
+			$checkout['canRenew'] = !$curRow['auto_renew'];
+			$checkout['autoRenew'] = $curRow['auto_renew'];
+			$autoRenewError = $curRow['auto_renew_error'];
+			if ($autoRenewError){
+				if ($autoRenewError == 'on_reserve'){
+					$autoRenewError = translate(['text' => 'koha_auto_renew_on_reserve', 'defaultText' => 'Cannot auto renew, on hold for another player']);
+				}elseif ($autoRenewError == 'too_many'){
+					$autoRenewError = translate(['text' => 'koha_auto_renew_too_many', 'defaultText' => 'Cannot auto renew, too many renewals']);
+				}elseif ($autoRenewError == 'auto_account_expired'){
+					$autoRenewError = translate(['text' => 'koha_auto_renew_auto_account_expired', 'defaultText' => 'Cannot auto renew, your account has expired']);
+				}elseif ($autoRenewError == 'auto_too_soon'){
+					$autoRenewError = translate(['text' => 'koha_auto_renew_auto_too_soon', 'defaultText' => 'Cannot auto renew, too soon to renew']);
+				}
+			}
+			$checkout['autoRenewError'] = $autoRenewError;
 
 			if ($checkout['id'] && strlen($checkout['id']) > 0){
 				require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';

@@ -3,32 +3,32 @@
 
 		{* Cover Column *}
 		{if $showCovers}
-		{*<div class="col-xs-4">*}
-		<div class="col-xs-3 col-sm-4 col-md-3">
-			<div class="row">
-				<div class="selectTitle col-xs-12 col-sm-1">
-					{if !isset($record.canrenew) || $record.canrenew == true}
-					<input type="checkbox" name="selected[{$record.userId}|{$record.recordId}|{$record.renewIndicator}]" class="titleSelect" id="selected{$record.itemId}">
-					{/if}
-				</div>
-				<div class="{*coverColumn *}text-center col-xs-12 col-sm-10">
-					{if $disableCoverArt != 1}{*TODO: should become part of $showCovers *}
-						{if $record.coverUrl}
-							{if $record.recordId && !empty($record.linkUrl)}
-								<a href="{$record.linkUrl}" id="descriptionTrigger{$record.recordId|escape:"url"}">
+			{*<div class="col-xs-4">*}
+			<div class="col-xs-3 col-sm-4 col-md-3">
+				<div class="row">
+					<div class="selectTitle col-xs-12 col-sm-1">
+						{if !isset($record.canRenew) || $record.canRenew == true}
+						<input type="checkbox" name="selected[{$record.userId}|{$record.recordId}|{$record.renewIndicator}]" class="titleSelect" id="selected{$record.itemId}">
+						{/if}
+					</div>
+					<div class="{*coverColumn *}text-center col-xs-12 col-sm-10">
+						{if $disableCoverArt != 1}{*TODO: should become part of $showCovers *}
+							{if $record.coverUrl}
+								{if $record.recordId && !empty($record.linkUrl)}
+									<a href="{$record.linkUrl}" id="descriptionTrigger{$record.recordId|escape:"url"}">
+										<img src="{$record.coverUrl}" class="listResultImage img-thumbnail img-responsive" alt="{translate text='Cover Image' inAttribute=true}">
+									</a>
+								{else} {* Cover Image but no Record-View link *}
 									<img src="{$record.coverUrl}" class="listResultImage img-thumbnail img-responsive" alt="{translate text='Cover Image' inAttribute=true}">
-								</a>
-							{else} {* Cover Image but no Record-View link *}
-								<img src="{$record.coverUrl}" class="listResultImage img-thumbnail img-responsive" alt="{translate text='Cover Image' inAttribute=true}">
+								{/if}
 							{/if}
 						{/if}
-					{/if}
+					</div>
 				</div>
 			</div>
-		</div>
 		{else}
 			<div class="col-xs-1">
-				{if !isset($record.canrenew) || $record.canrenew == true}
+				{if !isset($record.canRenew) || $record.canRenew == true}
 					<input type="checkbox" name="selected[{$record.userId}|{$record.recordId}|{$record.renewIndicator}]" class="titleSelect" id="selected{$record.itemId}">
 				{/if}
 			</div>
@@ -176,8 +176,14 @@
 				{*<div class="{if $showCovers}col-xs-9 col-sm-8 col-md-4 col-lg-3{else}col-xs-11{/if}">*}
 				<div class="col-xs-12 col-md-3">
 					<div class="btn-group btn-group-vertical btn-block">
-						{if !isset($record.canrenew) || $record.canrenew == true}
+						{if !isset($record.canRenew) || $record.canRenew == true}
 							<a href="#" onclick="return AspenDiscovery.Account.renewTitle('{$record.userId}', '{$record.recordId}', '{$record.renewIndicator}');" class="btn btn-sm btn-primary">{translate text='Renew'}</a>
+						{elseif isset($record.autoRenew) && $record.autoRenew == true}
+							{if !empty($record.autoRenewError)}
+								{$record.autoRenewError}
+							{else}
+                                {translate text="This title will auto renew"}
+							{/if}
 						{else}
 							{translate text="Sorry, this title cannot be renewed"}
 						{/if}

@@ -458,7 +458,7 @@ abstract class HorizonROA extends AbstractIlsDriver
 						$curTitle['dueDate']        = strtotime($dueDate);
 						$curTitle['checkoutdate']   = strtotime($checkOutDate);
 						$curTitle['renewCount']     = $checkout->renewalCount;
-						$curTitle['canrenew']       = $this->canRenew($itemType);
+						$curTitle['canRenew']       = $this->canRenew($itemType);
 						$curTitle['format']         = 'Unknown'; //TODO: I think this makes sorting working better
 						$curTitle['overdue']        = $checkout->overdue; // (optional) CatalogConnection method will calculate this based on due date
 						$curTitle['fine']           = $fine;

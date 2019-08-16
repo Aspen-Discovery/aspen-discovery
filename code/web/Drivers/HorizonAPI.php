@@ -700,7 +700,7 @@ abstract class HorizonAPI extends Horizon{
 				$curTitle['dueDate']         = strtotime((string)$itemOut->dueDate);
 				$curTitle['checkoutDate']    = (string)$itemOut->ckoDate;
 				$curTitle['renewCount']      = (string)$itemOut->renewals;
-				$curTitle['canrenew']        = true; //TODO: Figure out if the user can renew the title or not
+				$curTitle['canRenew']        = true; //TODO: Figure out if the user can renew the title or not
 				$curTitle['renewIndicator']  = (string)$itemOut->itemBarcode;
 				$curTitle['barcode']         = (string)$itemOut->itemBarcode;
 				$curTitle['holdQueueLength'] = $this->getNumHolds($bibId);

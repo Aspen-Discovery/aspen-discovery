@@ -156,12 +156,12 @@ class MillenniumCheckouts {
 						if (stripos($sKeys[$i], "RENEW") > -1) {
 							$matches = array();
 							if (preg_match('/<input\s*type="checkbox"\s*name="renew(\d+)"\s*id="renew(\d+)"\s*value="(.*?)"\s*\/>/', $scols[$i], $matches)) {
-								$curTitle['canrenew']       = $patronCanRenew;
+								$curTitle['canRenew']       = $patronCanRenew;
 								$curTitle['itemindex']      = $matches[1];
 								$curTitle['itemId']         = $matches[3];
 								$curTitle['renewIndicator'] = $curTitle['itemId'] . '|' . $curTitle['itemindex'];
 							} else {
-								$curTitle['canrenew'] = false;
+								$curTitle['canRenew'] = false;
 							}
 
 						}

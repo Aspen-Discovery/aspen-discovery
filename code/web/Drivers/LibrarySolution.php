@@ -310,7 +310,7 @@ class LibrarySolution extends AbstractIlsDriver {
 				$curTitle['dueDate'] = $dueDate;
 				/*$curTitle['renewCount']
 				$curTitle['barcode']
-				$curTitle['canrenew']
+				$curTitle['canRenew']
 				$curTitle['itemindex']
 				$curTitle['renewIndicator']
 				*/
