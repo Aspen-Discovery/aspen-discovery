@@ -61,7 +61,16 @@ body .container{ldelim}
 
 {if $primaryBackgroundColor}
 #home-page-search, #horizontal-search-box, #explore-more-sidebar,.searchTypeHome,.searchSource,.menu-bar,#vertical-menu-bar{ldelim}
-    background-color: {$primaryBackgroundColor}
+    background-color: {$primaryBackgroundColor};
+{rdelim}
+#vertical-menu-bar .menu-bar-option.menu-icon-selected,.exploreMoreBar .label-top, .exploreMoreBar .label-top img{ldelim}
+    background-color: {$primaryBackgroundColorLightened80};
+{rdelim}
+.exploreMoreBar{ldelim}
+    border-color: {$primaryBackgroundColorLightened80};
+{rdelim}
+#vertical-menu-bar .menu-bar-option:hover{ldelim}
+    background-color: {$primaryBackgroundColorLightened60};
 {rdelim}
 {/if}
 
@@ -92,7 +101,6 @@ body .container{ldelim}
 .browse-category.selected,.browse-category.selected:hover,#browse-sub-category-menu button.selected,#browse-sub-category-menu button.selected:hover,.active .panel-heading{ldelim}
     color: {$secondaryForegroundColor} !important;
 {rdelim}
-
 {/if}
 
 {if $tertiaryBackgroundColor}

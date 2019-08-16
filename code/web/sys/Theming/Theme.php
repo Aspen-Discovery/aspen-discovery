@@ -159,6 +159,7 @@ class Theme extends DataObject
      */
     public function generateCss($allAppliedThemes) {
         global $interface;
+        require_once ROOT_DIR . '/sys/Utils/ColorUtils.php';
         foreach ($allAppliedThemes as $theme) {
             if ($interface->getVariable('headerBackgroundColor') == null && !$theme->headerBackgroundColorDefault) {
                 $interface->assign('headerBackgroundColor', $theme->headerBackgroundColor);
@@ -188,6 +189,10 @@ class Theme extends DataObject
             }
             if ($interface->getVariable('primaryBackgroundColor') == null && !$theme->primaryBackgroundColorDefault) {
                 $interface->assign('primaryBackgroundColor', $theme->primaryBackgroundColor);
+	            $lightened80 = ColorUtils::lightenColor($theme->primaryBackgroundColor, 1.8);
+	            $interface->assign('primaryBackgroundColorLightened80', $lightened80);
+	            $lightened60 = ColorUtils::lightenColor($theme->primaryBackgroundColor, 1.6);
+	            $interface->assign('primaryBackgroundColorLightened60', $lightened60);
             }
             if ($interface->getVariable('primaryForegroundColor') == null && !$theme->primaryForegroundColorDefault) {
                 $interface->assign('primaryForegroundColor', $theme->primaryForegroundColor);

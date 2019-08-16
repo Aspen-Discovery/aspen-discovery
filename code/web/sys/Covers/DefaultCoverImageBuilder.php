@@ -1,5 +1,6 @@
 <?php
 
+require_once ROOT_DIR . '/sys/Utils/ColorUtils.php';
 require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
 require_once ROOT_DIR . '/sys/Covers/CoverImageUtils.php';
 
@@ -81,8 +82,8 @@ class DefaultCoverImageBuilder
         //We want a number from 10 to 360
         $color_seed = (int)_map(_clip($counts, 2, 80), 2, 80, 10, 360);
 
-        $this->foregroundColor = ColorHSLToRGB($color_seed, $base_saturation, $base_brightness - ($counts % 20) / 100);
-        $this->backgroundColor = ColorHSLToRGB(
+        $this->foregroundColor = ColorUtils::colorHSLToRGB($color_seed, $base_saturation, $base_brightness - ($counts % 20) / 100);
+        $this->backgroundColor = ColorUtils::colorHSLToRGB(
             ($color_seed + $color_distance) % 360,
             $base_saturation,
             $base_brightness
