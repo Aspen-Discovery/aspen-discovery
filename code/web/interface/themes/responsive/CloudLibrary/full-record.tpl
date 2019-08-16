@@ -37,7 +37,7 @@
 
 				<div class="row">
 					<div id="record-details-column" class="col-xs-12 col-sm-9">
-						{include file="RBdigital/view-title-details.tpl"}
+						{include file="CloudLibrary/view-title-details.tpl"}
 					</div>
 
 					<div id="recordTools" class="col-xs-12 col-sm-6 col-md-3">
@@ -46,11 +46,11 @@
 								{* Show hold/checkout button as appropriate *}
 								{if $holdingsSummary.showPlaceHold}
 									{* Place hold link *}
-									<a href="#" class="btn btn-sm btn-block btn-primary" id="placeHold{$recordDriver->getUniqueID()|escape:"url"}" onclick="return AspenDiscovery.RBdigital.placeHold('{$recordDriver->getUniqueID()}')">{translate text="Place Hold"}</a>
+									<a href="#" class="btn btn-sm btn-block btn-primary" id="placeHold{$recordDriver->getUniqueID()|escape:"url"}" onclick="return AspenDiscovery.CloudLibrary.placeHold('{$recordDriver->getUniqueID()}')">{translate text="Place Hold"}</a>
 								{/if}
 								{if $holdingsSummary.showCheckout}
 									{* Checkout link *}
-									<a href="#" class="btn btn-sm btn-block btn-primary" id="checkout{$recordDriver->getUniqueID()|escape:"url"}" onclick="return AspenDiscovery.RBdigital.checkOutTitle('{$recordDriver->getUniqueID()}')">{translate text="Checkout"}</a>
+									<a href="#" class="btn btn-sm btn-block btn-primary" id="checkout{$recordDriver->getUniqueID()|escape:"url"}" onclick="return AspenDiscovery.CloudLibrary.checkOutTitle('{$recordDriver->getUniqueID()}')">{translate text="Checkout"}</a>
 								{/if}
 							</div>
 						</div>

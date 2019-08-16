@@ -372,36 +372,32 @@ class CloudLibraryDriver extends AbstractEContentDriver
 	{
 		$result = ['success' => false, 'message' => 'Unknown error'];
 
-//		if (!$this->checkAuthentication($user)){
-//			$result['message'] = 'You must sign up for a Cloud Library account';
-//		}else{
-			$settings = $this->getSettings();
-			$patronId = $user->getBarcode();
-			$password = $user->getPasswordOrPin();
-			$apiPath = "/cirrus/library/{$settings->libraryId}/checkout?password=$password";
-			$requestBody =
-				"<CheckoutRequest>
-				<ItemId>{$titleId}</ItemId>
-				<PatronId>{$patronId}</PatronId>
-			</CheckoutRequest>";
-			$checkoutResponse = $this->callCloudLibraryUrl($settings, $apiPath, 'POST', $requestBody);
-			if ($checkoutResponse != null){
-				$checkoutXml = simplexml_load_string($checkoutResponse);
-				if (isset($checkoutXml->Error)){
-					$result['message'] = $checkoutXml->Error->Message;
-				}else {
-					$this->trackUserUsageOfCloudLibrary($user);
-					$this->trackRecordCheckout($titleId);
+		$settings = $this->getSettings();
+		$patronId = $user->getBarcode();
+		$password = $user->getPasswordOrPin();
+		$apiPath = "/cirrus/library/{$settings->libraryId}/checkout?password=$password";
+		$requestBody =
+			"<CheckoutRequest>
+			<ItemId>{$titleId}</ItemId>
+			<PatronId>{$patronId}</PatronId>
+		</CheckoutRequest>";
+		$checkoutResponse = $this->callCloudLibraryUrl($settings, $apiPath, 'POST', $requestBody);
+		if ($checkoutResponse != null){
+			$checkoutXml = simplexml_load_string($checkoutResponse);
+			if (isset($checkoutXml->Error)){
+				$result['message'] = $checkoutXml->Error->Message;
+			}else {
+				$this->trackUserUsageOfCloudLibrary($user);
+				$this->trackRecordCheckout($titleId);
 
-					$result['success'] = true;
-					$result['message'] = translate(['text' => 'cloud_library-checkout-success', 'defaultText' => 'Your title was checked out successfully. You can read or listen to the title from your account.']);
+				$result['success'] = true;
+				$result['message'] = translate(['text' => 'cloud_library-checkout-success', 'defaultText' => 'Your title was checked out successfully. You can read or listen to the title from your account.']);
 
-					/** @var Memcache $memCache */
-					global $memCache;
-					$memCache->delete('cloud_library_summary_' . $user->id);
-				}
+				/** @var Memcache $memCache */
+				global $memCache;
+				$memCache->delete('cloud_library_summary_' . $user->id);
 			}
-//		}
+		}
 
 		return $result;
 	}
@@ -473,6 +469,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 	function trackRecordCheckout($recordId): void
 	{
 		require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibraryRecordUsage.php';
+		require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibraryProduct.php';
 		$recordUsage = new CloudLibraryRecordUsage();
 		$product = new CloudLibraryProduct();
 		$product->cloudLibraryId = $recordId;
