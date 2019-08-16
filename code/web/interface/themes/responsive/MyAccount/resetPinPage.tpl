@@ -33,7 +33,7 @@
 					<div class="form-group">
 						<div class="col-xs-4"><label for="pin" class="control-label">{translate text='Old %1%' 1=$passwordLabel}</label></div>
 						<div class="col-xs-8">
-							<input type="password" name="pin" id="pin" value="" size="4" maxlength="30" class="form-control required digits">
+							<input type="password" name="pin" id="pin" value="" size="4" maxlength="30" class="form-control required">
 						</div>
 					</div>
 					<div class="form-group">

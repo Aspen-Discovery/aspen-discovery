@@ -1350,18 +1350,35 @@ class Koha extends AbstractIlsDriver {
 		return 'kohaEmailResetPinLink.tpl';
 	}
 
-	function getSelfRegistrationFields(){
-		//TODO: Load these from the Koha database
-		//global $library;
+	function getSelfRegistrationFields($type = 'selfReg'){
+		$this->initDatabaseConnection();
+
+		/** @noinspection SqlResolve */
+		$sql = "SELECT * FROM systempreferences where variable like 'PatronSelf%';";
+		$results = mysqli_query($this->dbConnection, $sql);
+		$kohaPreferences = [];
+		while ($curRow = $results->fetch_assoc()){
+			$kohaPreferences[$curRow['variable']] = $curRow['value'];
+		}
+
+		if ($type == 'selfReg') {
+			$unwantedFields = explode('|', $kohaPreferences['PatronSelfModificationBorrowerUnwantedField']);
+		}else{
+			$unwantedFields = explode('|', $kohaPreferences['PatronSelfRegistrationBorrowerUnwantedField']);
+		}
+		$requiredFields = explode('|', $kohaPreferences['PatronSelfRegistrationBorrowerMandatoryField']);
+		$validLibraries = array_flip(explode('|', $kohaPreferences['PatronSelfRegistrationLibraryList']));
+
 		$fields = array();
 		$location = new Location();
-		//$location->libraryId = $library->libraryId;
 		$location->validHoldPickupBranch = 1;
 
 		$pickupLocations = array();
 		if ($location->find()) {
 			while($location->fetch()) {
-				$pickupLocations[$location->code] = $location->displayName;
+				if (count($validLibraries) == 0 || array_key_exists($location->code, $validLibraries)) {
+					$pickupLocations[$location->code] = $location->displayName;
+				}
 			}
 			asort($pickupLocations);
 		}
@@ -1427,6 +1444,34 @@ class Koha extends AbstractIlsDriver {
 			'borrower_altcontactcountry' => array('property'=>'borrower_altcontactcountry', 'type'=>'text', 'label'=>'Country', 'description'=>'Country', 'maxLength' => 32, 'required' => false),
 			'borrower_altcontactphone' => array('property'=>'borrower_altcontactphone', 'type'=>'text', 'label'=>'Phone (xxx-xxx-xxxx)', 'description'=>'Phone', 'maxLength' => 128, 'required' => false),
 		]);
+		if ($type == 'selfReg') {
+			$fields['passwordSection'] = array('property' => 'passwordSection', 'type' => 'section', 'label' => 'PIN', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => [
+				'borrower_password' => array('property' => 'borrower_password', 'type' => 'password', 'label' => 'PIN', 'description' => 'Your PIN must be at least 3 characters long.  If you do not enter a password a system generated password will be created.', 'minLength' => 3, 'maxLength' => 25, 'showConfirm' => false, 'required' => false),
+				'borrower_password2' => array('property' => 'borrower_password2', 'type' => 'password', 'label' => 'Confirm PIN', 'description' => 'Reenter your PIN', 'minLength' => 3, 'maxLength' => 25, 'showConfirm' => false, 'required' => false),
+			]);
+		}
+
+		$unwantedFields = array_flip($unwantedFields);
+		if (array_key_exists('password', $unwantedFields)){
+			$unwantedFields['password2'] = true;
+		}
+		$requiredFields = array_flip($requiredFields);
+		if (array_key_exists('password', $requiredFields)){
+			$requiredFields['password2'] = true;
+		}
+		foreach ($fields as $sectionKey => &$section){
+			foreach ($section['properties'] as $fieldKey => &$field){
+				$fieldName = str_replace('borrower_', '', $fieldKey);
+				if (array_key_exists($fieldName, $unwantedFields)){
+					unset($section['properties'][$fieldKey]);
+				}else{
+					$field['required'] = array_key_exists($fieldName, $requiredFields);
+				}
+			}
+			if (empty($section['properties'])){
+				unset ($fields[$sectionKey]);
+			}
+		}
 
 		return $fields;
 	}
@@ -1451,44 +1496,48 @@ class Koha extends AbstractIlsDriver {
 		}
 
 		$postFields = [];
-		$postFields['borrower_branchcode'] = $_REQUEST['borrower_branchcode'];
-		$postFields['borrower_title'] = $_REQUEST['borrower_title'];
-		$postFields['borrower_surname'] = $_REQUEST['borrower_surname'];
-		$postFields['borrower_firstname'] = $_REQUEST['borrower_firstname'];
-		$postFields['borrower_dateofbirth'] = str_replace('-', '/', $_REQUEST['borrower_dateofbirth']);
-		$postFields['borrower_initials'] = $_REQUEST['borrower_initials'];
-		$postFields['borrower_othernames'] = $_REQUEST['borrower_othernames'];
-		$postFields['borrower_sex'] = $_REQUEST['borrower_sex'];
-		$postFields['borrower_address'] = $_REQUEST['borrower_address'];
-		$postFields['borrower_address2'] = $_REQUEST['borrower_address2'];
-		$postFields['borrower_city'] = $_REQUEST['borrower_city'];
-		$postFields['borrower_state'] = $_REQUEST['borrower_state'];
-		$postFields['borrower_zipcode'] = $_REQUEST['borrower_zipcode'];
-		$postFields['borrower_country'] = $_REQUEST['borrower_country'];
-		$postFields['borrower_phone'] = $_REQUEST['borrower_phone'];
-		$postFields['borrower_email'] = $_REQUEST['borrower_email'];
-		$postFields['borrower_phonepro'] = $_REQUEST['borrower_phonepro'];
-		$postFields['borrower_mobile'] = $_REQUEST['borrower_mobile'];
-		$postFields['borrower_emailpro'] = $_REQUEST['borrower_emailpro'];
-		$postFields['borrower_fax'] = $_REQUEST['borrower_fax'];
-		$postFields['borrower_B_address'] = $_REQUEST['borrower_B_address'];
-		$postFields['borrower_B_address2'] = $_REQUEST['borrower_B_address2'];
-		$postFields['borrower_B_city'] = $_REQUEST['borrower_B_city'];
-		$postFields['borrower_B_state'] = $_REQUEST['borrower_B_state'];
-		$postFields['borrower_B_zipcode'] = $_REQUEST['borrower_B_zipcode'];
-		$postFields['borrower_B_country'] = $_REQUEST['borrower_B_country'];
-		$postFields['borrower_B_phone'] = $_REQUEST['borrower_B_phone'];
-		$postFields['borrower_B_email'] = $_REQUEST['borrower_B_email'];
-		$postFields['borrower_contactnote'] = $_REQUEST['borrower_contactnote'];
-		$postFields['borrower_altcontactsurname'] = $_REQUEST['borrower_altcontactsurname'];
-		$postFields['borrower_altcontactfirstname'] = $_REQUEST['borrower_altcontactfirstname'];
-		$postFields['borrower_altcontactaddress1'] = $_REQUEST['borrower_altcontactaddress1'];
-		$postFields['borrower_altcontactaddress2'] = $_REQUEST['borrower_altcontactaddress2'];
-		$postFields['borrower_altcontactaddress3'] = $_REQUEST['borrower_altcontactaddress3'];
-		$postFields['borrower_altcontactstate'] = $_REQUEST['borrower_altcontactstate'];
-		$postFields['borrower_altcontactzipcode'] = $_REQUEST['borrower_altcontactzipcode'];
-		$postFields['borrower_altcontactcountry'] = $_REQUEST['borrower_altcontactcountry'];
-		$postFields['borrower_altcontactphone'] = $_REQUEST['borrower_altcontactphone'];
+		$postFields = $this->setPostField($postFields, 'borrower_branchcode');
+		$postFields = $this->setPostField($postFields, 'borrower_title');
+		$postFields = $this->setPostField($postFields, 'borrower_surname');
+		$postFields = $this->setPostField($postFields, 'borrower_firstname');
+		if (isset($_REQUEST['borrower_dateofbirth'])) {
+			$postFields['borrower_dateofbirth'] = str_replace('-', '/', $_REQUEST['borrower_dateofbirth']);
+		}
+		$postFields = $this->setPostField($postFields, 'borrower_initials');
+		$postFields = $this->setPostField($postFields, 'borrower_othernames');
+		$postFields = $this->setPostField($postFields, 'borrower_sex');
+		$postFields = $this->setPostField($postFields, 'borrower_address');
+		$postFields = $this->setPostField($postFields, 'borrower_address2');
+		$postFields = $this->setPostField($postFields, 'borrower_city');
+		$postFields = $this->setPostField($postFields, 'borrower_state');
+		$postFields = $this->setPostField($postFields, 'borrower_zipcode');
+		$postFields = $this->setPostField($postFields, 'borrower_country');
+		$postFields = $this->setPostField($postFields, 'borrower_phone');
+		$postFields = $this->setPostField($postFields, 'borrower_email');
+		$postFields = $this->setPostField($postFields, 'borrower_phonepro');
+		$postFields = $this->setPostField($postFields, 'borrower_mobile');
+		$postFields = $this->setPostField($postFields, 'borrower_emailpro');
+		$postFields = $this->setPostField($postFields, 'borrower_fax');
+		$postFields = $this->setPostField($postFields, 'borrower_B_address');
+		$postFields = $this->setPostField($postFields, 'borrower_B_address2');
+		$postFields = $this->setPostField($postFields, 'borrower_B_city');
+		$postFields = $this->setPostField($postFields, 'borrower_B_state');
+		$postFields = $this->setPostField($postFields, 'borrower_B_zipcode');
+		$postFields = $this->setPostField($postFields, 'borrower_B_country');
+		$postFields = $this->setPostField($postFields, 'borrower_B_phone');
+		$postFields = $this->setPostField($postFields, 'borrower_B_email');
+		$postFields = $this->setPostField($postFields, 'borrower_contactnote');
+		$postFields = $this->setPostField($postFields, 'borrower_altcontactsurname');
+		$postFields = $this->setPostField($postFields, 'borrower_altcontactfirstname');
+		$postFields = $this->setPostField($postFields, 'borrower_altcontactaddress1');
+		$postFields = $this->setPostField($postFields, 'borrower_altcontactaddress2');
+		$postFields = $this->setPostField($postFields, 'borrower_altcontactaddress3');
+		$postFields = $this->setPostField($postFields, 'borrower_altcontactstate');
+		$postFields = $this->setPostField($postFields, 'borrower_altcontactzipcode');
+		$postFields = $this->setPostField($postFields, 'borrower_altcontactcountry');
+		$postFields = $this->setPostField($postFields, 'borrower_altcontactphone');
+		$postFields = $this->setPostField($postFields, 'borrower_password');
+		$postFields = $this->setPostField($postFields, 'borrower_password2');
 		$postFields['captcha'] = $captcha;
 		$postFields['captcha_digest'] = $captchaDigest;
 		$postFields['action'] = 'create';
@@ -1740,15 +1789,14 @@ class Koha extends AbstractIlsDriver {
 	function getPatronUpdateForm($user)
 	{
 		//This is very similar to a patron self so we are going to get those fields and then modify
-		$patronUpdateFields = $this->getSelfRegistrationFields();
+		$patronUpdateFields = $this->getSelfRegistrationFields('patronUpdate');
 		//Display sections as headings
-		$patronUpdateFields['librarySection']['renderAsHeading'] = true;
-		$patronUpdateFields['identitySection']['renderAsHeading'] = true;
-		$patronUpdateFields['mainAddressSection']['renderAsHeading'] = true;
-		$patronUpdateFields['contactInformationSection']['renderAsHeading'] = true;
-		$patronUpdateFields['additionalContactInformationSection']['renderAsHeading'] = true;
-		$patronUpdateFields['alternateAddressSection']['renderAsHeading'] = true;
-		$patronUpdateFields['alternateContactSection']['renderAsHeading'] = true;
+		foreach ($patronUpdateFields as &$section){
+			if ($section['type'] == 'section'){
+				$section['renderAsHeading'] = true;
+			}
+		}
+
 
 		$this->initDatabaseConnection();
 		//Set default values
@@ -1987,5 +2035,17 @@ class Koha extends AbstractIlsDriver {
 			$memCache->set('koha_summary_' . $user->id, $accountSummary, $configArray['Caching']['account_summary']);
 		}
 		return $accountSummary;
+	}
+
+	/**
+	 * @param array $postFields
+	 * @return array
+	 */
+	private function setPostField(array $postFields, string $variableName): array
+	{
+		if (isset($_REQUEST[$variableName])) {
+			$postFields[$variableName] = $_REQUEST[$variableName];
+		}
+		return $postFields;
 	}
 }
