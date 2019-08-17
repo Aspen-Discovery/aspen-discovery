@@ -718,7 +718,7 @@ public class KohaExportMain {
 				}else{
 					logEntry.incAdded();
 				}
-				MarcWriter writer = new MarcStreamWriter(new FileOutputStream(marcFile), "UTF-8");
+				MarcWriter writer = new MarcStreamWriter(new FileOutputStream(marcFile), "UTF-8", true);
 				writer.write(marcRecord);
 				writer.close();
 

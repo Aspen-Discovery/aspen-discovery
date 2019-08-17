@@ -1557,7 +1557,7 @@ public class CarlXExportMain {
 
 		MarcWriter writer;
 		try {
-			writer = new MarcStreamWriter(new FileOutputStream(marcFile, false), "UTF-8");
+			writer = new MarcStreamWriter(new FileOutputStream(marcFile, false), "UTF-8", true);
 			writer.write(marcObject);
 			writer.close();
 			logger.debug("  Created Saved updated MARC record to " + marcFile.getAbsolutePath());

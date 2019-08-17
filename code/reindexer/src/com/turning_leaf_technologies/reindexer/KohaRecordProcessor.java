@@ -151,7 +151,7 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 					//We still will want to record those counts.
 					String translatedFormat = translateValue("format", iType, recordInfo.getRecordIdentifier());
 					//If the format is book, ignore it for now.  We will use the default method later.
-					if (translatedFormat == null || translatedFormat.equalsIgnoreCase("book")){
+					if (translatedFormat == null){
 						translatedFormat = "";
 					}
 					itemTypeToFormat.put(iType, translatedFormat);

@@ -1131,7 +1131,7 @@ public class SierraExportAPIMain {
 									logger.error("Could not create directories for " + marcFile.getAbsolutePath());
 								}
 							}
-							MarcWriter marcWriter = new MarcStreamWriter(new FileOutputStream(marcFile), "UTF-8");
+							MarcWriter marcWriter = new MarcStreamWriter(new FileOutputStream(marcFile), "UTF-8", true);
 							marcWriter.write(marcRecord);
 							marcWriter.close();
 							logger.debug("Wrote marc record for " + identifier.getIdentifier());

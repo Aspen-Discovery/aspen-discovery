@@ -461,7 +461,7 @@ public class MarcUtil {
 		if (!individualFile.getParentFile().exists() && !individualFile.getParentFile().mkdirs()){
 			logger.error("Unable to create directory for " + individualFile.getAbsolutePath());
 		}
-		MarcStreamWriter writer2 = new MarcStreamWriter(new FileOutputStream(individualFile,false), "UTF-8");
+		MarcStreamWriter writer2 = new MarcStreamWriter(new FileOutputStream(individualFile,false), "UTF-8", true);
 		writer2.setAllowOversizeEntry(true);
 		writer2.write(marcRecord);
 		writer2.close();

@@ -193,7 +193,7 @@ public class HorizonExportMain {
 			}
 
 			FileOutputStream marcOutputStream = new FileOutputStream(marcFile);
-			MarcStreamWriter updateWriter = new MarcStreamWriter(marcOutputStream, "UTF-8");
+			MarcStreamWriter updateWriter = new MarcStreamWriter(marcOutputStream, "UTF-8",true);
 			updateWriter.setAllowOversizeEntry(true);
 			updateWriter.write(recordToUpdate);
 			updateWriter.close();

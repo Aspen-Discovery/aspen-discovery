@@ -125,7 +125,7 @@ public class MergeMarcUpdatesAndDeletes implements IProcessHandler {
 						MarcReader mainReader = new MarcPermissiveStreamReader(marcFileStream, true, true, marcEncoding);
 
 						FileOutputStream marcOutputStream = new FileOutputStream(mergedFile);
-						MarcStreamWriter mainWriter = new MarcStreamWriter(marcOutputStream, "UTF-8");
+						MarcStreamWriter mainWriter = new MarcStreamWriter(marcOutputStream, "UTF-8", true);
 						while (mainReader.hasNext()) {
 							curBib = mainReader.next();
 							String recordId = getRecordIdFromMarcRecord(curBib);

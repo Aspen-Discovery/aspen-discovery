@@ -145,7 +145,7 @@ class CloudLibraryMarcHandler extends DefaultHandler {
     private void processMarcRecord() {
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
 
-        MarcWriter writer = new MarcStreamWriter(stream);
+        MarcWriter writer = new MarcStreamWriter(stream, "UTF-8", true);
         writer.write(marcRecord);
         String marcAsString;
         try {
