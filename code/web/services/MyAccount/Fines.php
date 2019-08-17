@@ -14,6 +14,8 @@ class Fines extends MyAccount
 		$interface->assign('showDate', $ils == 'Koha' || $ils == 'Horizon' || $ils == 'CarlX' || $ils == 'Symphony');
 		$interface->assign('showReason', $ils != 'Koha');
 
+		$interface->setFinesRelatedTemplateVariables();
+
 		if (UserAccount::isLoggedIn()) {
 			global $offlineMode;
 			if (!$offlineMode) {
@@ -23,10 +25,14 @@ class Fines extends MyAccount
                 $useOutstanding = $user->getCatalogDriver()->showOutstandingFines();
                 $interface->assign('showOutstanding', $useOutstanding);
 
+				$showFinePayments = $configArray['Catalog']['showFinePayments'];
+				$interface->assign('showFinePayments', $showFinePayments);
+
 				$interface->assign('userFines', $fines);
 
                 $userAccountLabel = [];
-                $fineTotals = [];
+                $fineTotalFormatted = [];
+				$fineTotalVal = [];
                 $outstandingTotal = [];
 				// Get Account Labels, Add Up Totals
 				foreach ($fines as $userId => $finesDetails) {
@@ -45,19 +51,17 @@ class Fines extends MyAccount
 						}
 					}
 
-					$fineTotals[$userId] = $this->currency_symbol . number_format($total, 2);
+					$fineTotalsVal[$userId] = $total;
+					$fineTotalsFormatted[$userId] = $this->currency_symbol . number_format($total, 2);
 
 					if ($useOutstanding) {
 						$outstandingTotal[$userId] = $this->currency_symbol . number_format($totalOutstanding, 2);
 					}
-
-					$showFinePayments = $configArray['Catalog']['showFinePayments'];
-					$interface->assign('showFinePayments', $showFinePayments);
-
 				}
 
 				$interface->assign('userAccountLabel', $userAccountLabel);
-				$interface->assign('fineTotals', $fineTotals);
+				$interface->assign('fineTotalsFormatted', $fineTotalsFormatted);
+				$interface->assign('fineTotalsVal', $fineTotalsVal);
 				if ($useOutstanding) $interface->assign('outstandingTotal', $outstandingTotal);
 			}
 		}

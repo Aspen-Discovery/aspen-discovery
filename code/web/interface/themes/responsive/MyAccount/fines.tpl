@@ -79,29 +79,29 @@
 							{if $showReason}
 								<td></td>
 							{/if}
-							<th>{$fineTotals.$userId}</th>
+							<th>{$fineTotalsFormatted.$userId}</th>
 							{if $showOutstanding}
 								<th>{$outstandingTotal.$userId}</th>
 							{/if}
 						</tr>
 						</tfoot>
 					</table>
+
+					{if $showFinePayments}
+                        {* We are doing an actual payment of fines online *}
+                        {include file="MyAccount/finePayments.tpl"}
+                    {else}
+						{* Pay Fines Button *}
+                        {if $showECommerceLink && $fineTotalsVal.$userId > $minimumFineAmount}
+							<a href="{$eCommerceLink}" target="_blank"{if $showRefreshAccountButton} onclick="AspenDiscovery.Account.ajaxLightbox('{$path}/AJAX/JSON?method=getPayFinesAfterAction')"{/if}>
+								<div class="btn btn-sm btn-primary">{if $payFinesLinkText}{$payFinesLinkText}{else}{translate text="Click to Pay Fines Online"}{/if}</div>
+							</a>
+                        {/if}
+                    {/if}
 				{else}
 					<p class="alert alert-success">{translate text="no_fines_for_account_message" defaultText="This account does not have any fines within the system."}</p>
 				{/if}
 			{/foreach}
-
-			{if $showFinePayments}
-				{* We are doing an actual payment of fines online *}
-				{include file="MyAccount/finePayments.tpl"}
-			{else}
-				{* Pay Fines Button *}
-				{if $showECommerceLink && $profile->_finesVal > $minimumFineAmount}
-					<a href="{$eCommerceLink}" target="_blank"{if $showRefreshAccountButton} onclick="AspenDiscovery.Account.ajaxLightbox('{$path}/AJAX/JSON?method=getPayFinesAfterAction')"{/if}>
-						<div class="btn btn-sm btn-primary">{if $payFinesLinkText}{$payFinesLinkText}{else}{translate text="Click to Pay Fines Online"}{/if}</div>
-					</a>
-				{/if}
-			{/if}
 
 		{else}
 			<p class="alert alert-success">{translate text="no_fines_message" defaultText="You do not have any fines within the system."}</p>

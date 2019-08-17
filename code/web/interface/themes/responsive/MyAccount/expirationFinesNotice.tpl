@@ -3,7 +3,7 @@
 	{if ($ilsSummary.totalFines > 0 && $showFines) || ($showExpirationWarnings && $ilsSummary.expireClose)}
 		<div id="myAccountFines">
 			{if $ilsSummary.totalFines > 0 && $showFines}
-				{if $showECommerceLink && $totalFines > $minimumFineAmount}
+				{if $showECommerceLink && $ilsSummary.totalFines > $minimumFineAmount}
 					<div class="myAccountLink">
 						<a href="{$eCommerceLink}" target="_blank"{if $showRefreshAccountButton} onclick="AspenDiscovery.Account.ajaxLightbox('{$path}/AJAX/JSON?method=getPayFinesAfterAction')"{/if}  style="color:red; font-weight:bold;">
 							{if count($user->getLinkedUsers())>0}
