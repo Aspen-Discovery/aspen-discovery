@@ -252,11 +252,10 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			String format = formatMapRS.getString("value");
 			if (formatMapRS.getBoolean("suppress")){
 				formatsToSuppress.add(format);
-			}else{
-				formatMap.addValue(format, formatMapRS.getString("format"));
-				formatCategoryMap.addValue(format, formatMapRS.getString("formatCategory"));
-				formatBoostMap.addValue(format, formatMapRS.getString("formatBoost"));
 			}
+			formatMap.addValue(format, formatMapRS.getString("format"));
+			formatCategoryMap.addValue(format, formatMapRS.getString("formatCategory"));
+			formatBoostMap.addValue(format, formatMapRS.getString("formatBoost"));
 		}
 		formatMapRS.close();
 
@@ -271,10 +270,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			String status = statusMapRS.getString("value");
 			if (statusMapRS.getBoolean("suppress")){
 				statusesToSuppress.add(status);
-			}else{
-				itemStatusMap.addValue(status, statusMapRS.getString("status"));
-				itemGroupedStatusMap.addValue(status, statusMapRS.getString("groupedStatus"));
 			}
+			itemStatusMap.addValue(status, statusMapRS.getString("status"));
+			itemGroupedStatusMap.addValue(status, statusMapRS.getString("groupedStatus"));
 		}
 		statusMapRS.close();
 	}

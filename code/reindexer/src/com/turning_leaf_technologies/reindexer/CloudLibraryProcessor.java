@@ -57,6 +57,7 @@ class CloudLibraryProcessor extends MarcRecordProcessor{
                         primaryFormat = "eAudiobook";
                         break;
                     case "EPUB":
+                    case "PDF":
                         formatCategory = "eBook";
                         primaryFormat = "eBook";
                         break;
