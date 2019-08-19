@@ -216,7 +216,11 @@ public class OaiIndexerMain {
                             if (month == 12){
                                 endDate = (year + 1) + "-01-01";
                             }
-                            oaiUrl = baseUrl + "?verb=ListRecords&metadataPrefix=oai_dc&set=" + oaiSet + "&from=" + startDate + "&until=" + endDate;
+                            oaiUrl = baseUrl + "?verb=ListRecords&metadataPrefix=oai_dc&from=" + startDate + "&until=" + endDate;
+                            if (oaiSet.length() > 0){
+                                oaiUrl += "&set=" + oaiSet;
+                            }
+
                         }
                         try {
                             logger.info("Loading from " + oaiUrl);
@@ -386,7 +390,14 @@ public class OaiIndexerMain {
                                         solrRecord.setRights(textContent);
                                         break;
                                     case "dc:date":
-                                        String[] dateRange = textContent.split(";");
+                                        String[] dateRange;
+                                        if (textContent.contains(";")) {
+                                            dateRange = textContent.split(";");
+                                        }else if (textContent.contains(" -- ")){
+                                            dateRange = textContent.split(" -- ");
+                                        }else{
+                                            dateRange = new String[]{textContent};
+                                        }
                                         for (int tmpIndex = 0; tmpIndex < dateRange.length; tmpIndex++){
                                             dateRange[tmpIndex] = dateRange[tmpIndex].trim();
                                         }
@@ -405,6 +416,7 @@ public class OaiIndexerMain {
         boolean addedToIndex = false;
         try {
             if (solrRecord.getIdentifier() == null || solrRecord.getTitle() == null) {
+
                 logger.debug("Skipping record because no identifier was provided.");
             } else {
                 boolean subjectMatched = true;
