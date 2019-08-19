@@ -5,6 +5,7 @@ class CurlWrapper {
 	private $cookieJar;
 	private $headers = [];
 	public $curl_connection; // need access in order to check for curl errors.
+	public $timeout = 5;
 
     public function __construct() {
         global $interface;
@@ -62,7 +63,7 @@ class CurlWrapper {
 			$this->curl_connection = curl_init($curlUrl);
 			$default_curl_options = array(
 				CURLOPT_CONNECTTIMEOUT => 1,
-				CURLOPT_TIMEOUT => 5,
+				CURLOPT_TIMEOUT => $this->timeout,
 				CURLOPT_HTTPHEADER => $this->headers,
 				CURLOPT_RETURNTRANSFER => true,
 				CURLOPT_SSL_VERIFYPEER => false,

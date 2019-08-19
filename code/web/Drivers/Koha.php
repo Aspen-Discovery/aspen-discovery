@@ -372,7 +372,7 @@ class Koha extends AbstractIlsDriver {
 					    $user->displayName = '';
 					}
 					$user->_fullname     = $userFromDb['firstname'] . ' ' . $userFromDb['surname'];
-					$user->cat_username = $barcode;
+					$user->cat_username = $userFromDb['cardnumber'];
 					$user->cat_password = $password;
 					$user->email        = $userFromDb['email'];
 					$user->patronType   = $userFromDb['categorycode'];
@@ -1289,6 +1289,7 @@ class Koha extends AbstractIlsDriver {
 				'summaryPage' => $sResult
 			);
 		}else{
+			$info = curl_getinfo($this->opacCurlWrapper->curl_connection);
 			$result =array(
 				'success' => false,
 			);
@@ -1304,6 +1305,8 @@ class Koha extends AbstractIlsDriver {
 	protected function postToKohaPage($kohaUrl, $postParams) {
 		if ($this->opacCurlWrapper == null){
 			$this->opacCurlWrapper = new CurlWrapper();
+			//Extend timeout when talking to Koha via HTTP
+			$this->opacCurlWrapper->timeout = 10;
 		}
 		return $this->opacCurlWrapper->curlPostPage($kohaUrl, $postParams);
 	}
@@ -1311,6 +1314,8 @@ class Koha extends AbstractIlsDriver {
 	protected function getKohaPage($kohaUrl){
 		if ($this->opacCurlWrapper == null){
 			$this->opacCurlWrapper = new CurlWrapper();
+			//Extend timeout when talking to Koha via HTTP
+			$this->opacCurlWrapper->timeout = 10;
 		}
 		return $this->opacCurlWrapper->curlGetPage($kohaUrl);
 	}
@@ -1679,31 +1684,35 @@ class Koha extends AbstractIlsDriver {
 	 */
 	function processMaterialsRequestForm($user)
 	{
-		$this->loginToKohaOpac($user);
-		$postFields = [
-			'title' => $_REQUEST['title'],
-			'author' => $_REQUEST['author'],
-			'copyrightdate' => $_REQUEST['copyrightdate'],
-			'isbn' => $_REQUEST['isbn'],
-			'publishercode' => $_REQUEST['publishercode'],
-			'collectiontitle' => $_REQUEST['collectiontitle'],
-			'place' => $_REQUEST['place'],
-			'quantity' => $_REQUEST['quantity'],
-			'itemtype' => $_REQUEST['itemtype'],
-			'branchcode' => $_REQUEST['branchcode'],
-			'note' => $_REQUEST['note'],
-			'negcap' => '',
-			'suggested_by_anyone' => 0,
-			'op' => 'add_confirm'
-		];
-		$catalogUrl = $this->accountProfile->vendorOpacUrl;
-		$submitSuggestionResponse = $this->postToKohaPage($catalogUrl . '/cgi-bin/koha/opac-suggestions.pl', $postFields);
-		if (preg_match('%<div class="alert alert-error">(.*?)</div>%s', $submitSuggestionResponse, $matches)) {
-			return ['success' => false, 'message' => $matches[1]];
-		}elseif (preg_match('/Your purchase suggestions/', $submitSuggestionResponse)){
-			return ['success' => true, 'message' => 'Successfully submitted your request'];
+		$loginResult = $this->loginToKohaOpac($user);
+		if (!$loginResult['success']){
+			return ['success' => false, 'message' => 'Unable to login to Koha'];
 		}else{
-			return ['success' => false, 'message' => 'Unknown error submitting request'];
+			$postFields = [
+				'title' => $_REQUEST['title'],
+				'author' => $_REQUEST['author'],
+				'copyrightdate' => $_REQUEST['copyrightdate'],
+				'isbn' => $_REQUEST['isbn'],
+				'publishercode' => $_REQUEST['publishercode'],
+				'collectiontitle' => $_REQUEST['collectiontitle'],
+				'place' => $_REQUEST['place'],
+				'quantity' => $_REQUEST['quantity'],
+				'itemtype' => $_REQUEST['itemtype'],
+				'branchcode' => $_REQUEST['branchcode'],
+				'note' => $_REQUEST['note'],
+				'negcap' => '',
+				'suggested_by_anyone' => 0,
+				'op' => 'add_confirm'
+			];
+			$catalogUrl = $this->accountProfile->vendorOpacUrl;
+			$submitSuggestionResponse = $this->postToKohaPage($catalogUrl . '/cgi-bin/koha/opac-suggestions.pl', $postFields);
+			if (preg_match('%<div class="alert alert-error">(.*?)</div>%s', $submitSuggestionResponse, $matches)) {
+				return ['success' => false, 'message' => $matches[1]];
+			}elseif (preg_match('/Your purchase suggestions/', $submitSuggestionResponse)){
+				return ['success' => true, 'message' => 'Successfully submitted your request'];
+			}else{
+				return ['success' => false, 'message' => 'Unknown error submitting request'];
+			}
 		}
 	}
 
