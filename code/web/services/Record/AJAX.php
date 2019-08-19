@@ -5,28 +5,31 @@ require_once ROOT_DIR . '/sys/HTTP/HTTP_Request.php';
 
 global $configArray;
 
-class Record_AJAX extends Action {
+/** @noinspection PhpUnused */
+class Record_AJAX extends Action
+{
 
-	function launch() {
+	function launch()
+	{
 		global $timer;
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
 		$timer->logTime("Starting method $method");
 		if (method_exists($this, $method)) {
 			// Methods intend to return JSON data
-			if (in_array($method, array('getPlaceHoldForm', 'getPlaceHoldEditionsForm', 'getBookMaterialForm', 'placeHold', 'reloadCover', 'bookMaterial'))){
-				header('Content-type: text/plain');
+			if (in_array($method, array('getPlaceHoldForm', 'getPlaceHoldEditionsForm', 'getBookMaterialForm', 'placeHold', 'reloadCover', 'bookMaterial'))) {
+				header('Content-type: application/json');
 				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 				header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-				echo $this->json_utf8_encode($this->$method());
-			}else if (in_array($method, array('getBookingCalendar'))){
+				echo json_encode($this->$method());
+			} else if (in_array($method, array('getBookingCalendar'))) {
 				header('Content-type: text/html');
 				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 				header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
 				echo $this->$method();
-			}else if ($method == 'downloadMarc'){
+			} else if ($method == 'downloadMarc') {
 				echo $this->$method();
-			}else{
-				header ('Content-type: text/xml');
+			} else {
+				header('Content-type: text/xml');
 				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 				header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
 
@@ -38,12 +41,15 @@ class Record_AJAX extends Action {
 				echo $xmlResponse;
 			}
 		} else {
-			$output = json_encode(array('error'=>'invalid_method'));
+			$output = json_encode(array('error' => 'invalid_method'));
 			echo $output;
 		}
 	}
 
-	function downloadMarc(){
+
+	/** @noinspection PhpUnused */
+	function downloadMarc()
+	{
 		$id = $_REQUEST['id'];
 		$marcData = MarcLoader::loadMarcRecordByILSId($id);
 		header('Content-Description: File Transfer');
@@ -60,55 +66,16 @@ class Record_AJAX extends Action {
 		echo($marcData->toRaw());
 	}
 
-	function IsLoggedIn()
+	/** @noinspection PhpUnused */
+	function getPlaceHoldForm()
 	{
-		return "<result>" .
-		(UserAccount::isLoggedIn() ? "True" : "False") . "</result>";
-	}
-
-	function getProspectorInfo(){
-		require_once ROOT_DIR . '/Drivers/marmot_inc/Prospector.php';
-		global $configArray;
-		global $interface;
-		$id = $_REQUEST['id'];
-		$interface->assign('id', $id);
-
-		/** @var SearchObject_GroupedWorkSearcher $searchObject */
-		$searchObject = SearchObjectFactory::initSearchObject();
-		$searchObject->init();
-
-		// Retrieve Full record from Solr
-		if (!($record = $searchObject->getRecord($id))) {
-			AspenError::raiseError(new AspenError('Record Does Not Exist'));
-		}
-
-		$prospector = new Prospector();
-
-		$searchTerms = array(
-			array(
-				'lookfor' => $record['title'],
-				'index' => 'Title'
-			),
-		);
-		if (isset($record['author'])){
-			$searchTerms[] = array(
-				'lookfor' => $record['author'],
-				'index' => 'Author'
-			);
-		}
-		$prospectorResults = $prospector->getTopSearchResults($searchTerms, 10);
-		$interface->assign('prospectorResults', $prospectorResults['records']);
-		return $interface->fetch('Record/ajax-prospector.tpl');
-	}
-
-	function getPlaceHoldForm(){
 		global $interface;
 		$user = UserAccount::getLoggedInUser();
 		if (UserAccount::isLoggedIn()) {
 			$id = $_REQUEST['id'];
 			$recordSource = $_REQUEST['recordSource'];
 			$interface->assign('recordSource', $recordSource);
-			if (isset($_REQUEST['volume'])){
+			if (isset($_REQUEST['volume'])) {
 				$interface->assign('volume', $_REQUEST['volume']);
 			}
 
@@ -118,12 +85,12 @@ class Record_AJAX extends Action {
 			//Determine if we should show a warning
 			$ptype = new PType();
 			$ptype->pType = UserAccount::getUserPType();
-			if ($ptype->find(true)){
+			if ($ptype->find(true)) {
 				$maxHolds = $ptype->maxHolds;
 			}
 			$currentHolds = $user->_numHoldsIls;
 			//TODO: this check will need to account for linked accounts now
-			if ($maxHolds != -1 && ($currentHolds + 1 > $maxHolds)){
+			if ($maxHolds != -1 && ($currentHolds + 1 > $maxHolds)) {
 				$interface->assign('showOverHoldLimit', true);
 				$interface->assign('maxHolds', $maxHolds);
 				$interface->assign('currentHolds', $currentHolds);
@@ -143,6 +110,13 @@ class Record_AJAX extends Action {
 				}
 			}
 
+			if (!$multipleAccountPickupLocations){
+				$rememberHoldPickupLocation = $user->rememberHoldPickupLocation;
+				$interface->assign('rememberHoldPickupLocation', $rememberHoldPickupLocation);
+			}else{
+				$rememberHoldPickupLocation = false;
+			}
+
 			$interface->assign('pickupLocations', $locations);
 			$interface->assign('multipleUsers', $multipleAccountPickupLocations); // switch for displaying the account drop-down (used for linked accounts)
 
@@ -154,12 +128,12 @@ class Record_AJAX extends Action {
 
 			$holdDisclaimers = array();
 			$patronLibrary = $user->getHomeLibrary();
-			if (strlen($patronLibrary->holdDisclaimer) > 0){
+			if (strlen($patronLibrary->holdDisclaimer) > 0) {
 				$holdDisclaimers[$patronLibrary->displayName] = $patronLibrary->holdDisclaimer;
 			}
-			foreach ($linkedUsers as $linkedUser){
+			foreach ($linkedUsers as $linkedUser) {
 				$linkedLibrary = $linkedUser->getHomeLibrary();
-				if (strlen($linkedLibrary->holdDisclaimer) > 0){
+				if (strlen($linkedLibrary->holdDisclaimer) > 0) {
 					$holdDisclaimers[$linkedLibrary->displayName] = $linkedLibrary->holdDisclaimer;
 				}
 			}
@@ -170,35 +144,77 @@ class Record_AJAX extends Action {
 			$marcRecord = new MarcRecordDriver($id);
 			$title = rtrim($marcRecord->getTitle(), ' /');
 			$interface->assign('id', $marcRecord->getId());
-			if (count($locations) == 0){
+
+			//Figure out what types of holds to allow
+			$items = $marcRecord->getCopies();
+			$format = $marcRecord->getPrimaryFormat();
+			/** IndexingProfile[] */
+			global $indexingProfiles;
+			$indexingProfile = $indexingProfiles[$marcRecord->getRecordType()];
+			$formatMap = $indexingProfile->formatMap;
+			/** @var FormatMapValue $formatMapValue */
+			$holdType = 'none';
+			foreach ($formatMap as $formatMapValue){
+				if ($formatMapValue->format == $format){
+					$holdType = $formatMapValue->holdType;
+				}
+			}
+
+			$interface->assign('items', $items);
+			$interface->assign('holdType', $holdType);
+
+			//See if we can bypass the holds form
+			$bypassHolds = false;
+			if ($rememberHoldPickupLocation){
+				if ($holdType == 'bib'){
+					$bypassHolds = true;
+				}elseif ($holdType != 'none' && count($items) == 1 ){
+					$bypassHolds = true;
+				}
+			}
+
+			if ($bypassHolds){
+				if ($holdType == 'item' && isset($_REQUEST['selectedItem'])) {
+					$results = $user->placeItemHold($id, $_REQUEST['selectedItem'], $user->_homeLocationCode, null);
+				} else {
+					//TODO: Handle volume level holds
+					$results = $user->placeHold($id, $user->_homeLocationCode, null);
+				}
+				$results['holdFormBypassed'] = true;
+			}else if (count($locations) == 0) {
 				$results = array(
+					'holdFormBypassed' => false,
 					'title' => 'Unable to place hold',
 					'modalBody' => '<p>Sorry, no copies of this title are available to your account.</p>',
 					'modalButtons' => ""
 				);
-			}else{
+			} else {
 				$results = array(
+					'holdFormBypassed' => false,
 					'title' => empty($title) ? 'Place Hold' : 'Place Hold on ' . $title,
 					'modalBody' => $interface->fetch("Record/hold-popup.tpl"),
 					'modalButtons' => "<button type='submit' name='submit' id='requestTitleButton' class='btn btn-primary' onclick='return AspenDiscovery.Record.submitHoldForm();'>" . translate("Submit Hold Request") . "</button>"
 				);
 			}
 
-		}else{
+		} else {
 			$results = array(
-					'title' => 'Please login',
-					'modalBody' => "You must be logged in.  Please close this dialog and login before placing your hold.",
-					'modalButtons' => ""
+				'holdFormBypassed' => false,
+				'title' => 'Please login',
+				'modalBody' => "You must be logged in.  Please close this dialog and login before placing your hold.",
+				'modalButtons' => ""
 			);
 		}
 		return $results;
 	}
 
-	function getPlaceHoldEditionsForm() {
+	/** @noinspection PhpUnused */
+	function getPlaceHoldEditionsForm()
+	{
 		global $interface;
 		if (UserAccount::isLoggedIn()) {
 
-			$id           = $_REQUEST['id'];
+			$id = $_REQUEST['id'];
 			$recordSource = $_REQUEST['recordSource'];
 			$interface->assign('recordSource', $recordSource);
 			if (isset($_REQUEST['volume'])) {
@@ -215,9 +231,9 @@ class Record_AJAX extends Action {
 			$results = array(
 				'title' => 'Place Hold on Alternate Edition?',
 				'modalBody' => $interface->fetch('Record/hold-select-edition-popup.tpl'),
-				'modalButtons' => '<a href="#" class="btn btn-primary" onclick="return AspenDiscovery.Record.showPlaceHold(\'Record\', \'' . $id . '\', false);">No, place a hold on this edition</a>'
+				'modalButtons' => '<a href="#" class="btn btn-primary" onclick="return AspenDiscovery.Record.showPlaceHold(\'Record\', \'' . $recordSource . '\', \'' . $id . '\');">No, place a hold on this edition</a>'
 			);
-		}else{
+		} else {
 			$results = array(
 				'title' => 'Please login',
 				'modalBody' => "You must be logged in.  Please close this dialog and login before placing your hold.",
@@ -225,11 +241,13 @@ class Record_AJAX extends Action {
 			);
 		}
 		return $results;
-		}
+	}
 
-	function getBookMaterialForm($errorMessage = null){
+	/** @noinspection PhpUnused */
+	function getBookMaterialForm($errorMessage = null)
+	{
 		global $interface;
-		if (UserAccount::isLoggedIn()){
+		if (UserAccount::isLoggedIn()) {
 			$id = $_REQUEST['id'];
 
 			require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
@@ -238,36 +256,40 @@ class Record_AJAX extends Action {
 			$interface->assign('id', $id);
 			if ($errorMessage) $interface->assign('errorMessage', $errorMessage);
 			$results = array(
-					'title' => 'Schedule ' . $title,
-					'modalBody' => $interface->fetch("Record/book-materials-form.tpl"),
-					'modalButtons' => '<button class="btn btn-primary" onclick="$(\'#bookMaterialForm\').submit()">Schedule Item</button>'
-			    // Clicking invokes submit event, which allows the validator to act before calling the ajax handler
+				'title' => 'Schedule ' . $title,
+				'modalBody' => $interface->fetch("Record/book-materials-form.tpl"),
+				'modalButtons' => '<button class="btn btn-primary" onclick="$(\'#bookMaterialForm\').submit()">Schedule Item</button>'
+				// Clicking invokes submit event, which allows the validator to act before calling the ajax handler
 			);
-		}else{
+		} else {
 			$results = array(
-					'title' => 'Please login',
-					'modalBody' => "You must be logged in.  Please close this dialog and login before scheduling this item.",
-					'modalButtons' => ""
+				'title' => 'Please login',
+				'modalBody' => "You must be logged in.  Please close this dialog and login before scheduling this item.",
+				'modalButtons' => ""
 			);
 		}
 		return $results;
 	}
 
-	function getBookingCalendar(){
+	/** @noinspection PhpUnused */
+	function getBookingCalendar()
+	{
 		$recordId = $_REQUEST['id'];
-		if (strpos($recordId, ':') !== false) list(,$recordId) = explode(':', $recordId, 2); // remove any prefix from the recordId
+		if (strpos($recordId, ':') !== false) list(, $recordId) = explode(':', $recordId, 2); // remove any prefix from the recordId
 		if (!empty($recordId)) {
 			$user = UserAccount::getLoggedInUser();
 			$catalog = $user->getCatalogDriver();
-//			$catalog = CatalogFactory::getCatalogConnectionInstance();
 			return $catalog->getBookingCalendar($recordId);
 		}
+		return null;
 	}
 
-	function bookMaterial(){
-		if (!empty($_REQUEST['id'])){
+	/** @noinspection PhpUnused */
+	function bookMaterial()
+	{
+		if (!empty($_REQUEST['id'])) {
 			$recordId = $_REQUEST['id'];
-			if (strpos($recordId, ':') !== false) list(,$recordId) = explode(':', $recordId, 2); // remove any prefix from the recordId
+			if (strpos($recordId, ':') !== false) list(, $recordId) = explode(':', $recordId, 2); // remove any prefix from the recordId
 		}
 		if (empty($recordId)) {
 			return array('success' => false, 'message' => 'Item ID is required.');
@@ -279,8 +301,8 @@ class Record_AJAX extends Action {
 		}
 
 		$startTime = empty($_REQUEST['startTime']) ? null : $_REQUEST['startTime'];
-		$endDate   = empty($_REQUEST['endDate'])   ? null : $_REQUEST['endDate'];
-		$endTime   = empty($_REQUEST['endTime'])   ? null : $_REQUEST['endTime'];
+		$endDate = empty($_REQUEST['endDate']) ? null : $_REQUEST['endDate'];
+		$endTime = empty($_REQUEST['endTime']) ? null : $_REQUEST['endTime'];
 
 		$user = UserAccount::getLoggedInUser();
 		if ($user) { // The user is already logged in
@@ -291,49 +313,25 @@ class Record_AJAX extends Action {
 		}
 	}
 
-	function json_utf8_encode($result) { // TODO: add to other ajax.php or make part of a ajax base class
-		try {
-			require_once ROOT_DIR . '/sys/Utils/ArrayUtils.php';
-			$utf8EncodedValue = ArrayUtils::utf8EncodeArray($result);
-			$output           = json_encode($utf8EncodedValue);
-			$error            = json_last_error();
-			if ($error != JSON_ERROR_NONE || $output === FALSE) {
-				if (function_exists('json_last_error_msg')) {
-					$output = json_encode(array('error' => 'error_encoding_data', 'message' => json_last_error_msg()));
-				} else {
-					$output = json_encode(array('error' => 'error_encoding_data', 'message' => json_last_error()));
-				}
-				global $configArray;
-				if ($configArray['System']['debug']) {
-					print_r($utf8EncodedValue);
-				}
-			}
-		}
-		catch (Exception $e){
-			$output = json_encode(array('error'=>'error_encoding_data', 'message' => $e));
-			global $logger;
-			$logger->log("Error encoding json data $e", Logger::LOG_ERROR);
-		}
-		return $output;
-	}
-
-	function placeHold(){
+	function placeHold()
+	{
 		global $interface;
 		$recordId = $_REQUEST['id'];
-		if (strpos($recordId, ':') > 0){
+		if (strpos($recordId, ':') > 0) {
+			/** @noinspection PhpUnusedLocalVariableInspection */
 			list($source, $shortId) = explode(':', $recordId, 2);
-		}else{
+		} else {
 			$shortId = $recordId;
 		}
 
 		$user = UserAccount::getLoggedInUser();
-		if ($user){
+		if ($user) {
 			//The user is already logged in
 
-			if (!empty($_REQUEST['campus'])) {
-			 //Check to see what account we should be placing a hold for
+			if (!empty($_REQUEST['pickupBranch'])) {
+				//Check to see what account we should be placing a hold for
 				//Rather than asking the user for this explicitly, we do it based on the pickup location
-				$campus = $_REQUEST['campus'];
+				$pickupBranch = $_REQUEST['pickupBranch'];
 
 				$patron = null;
 				if (!empty($_REQUEST['selectedUser'])) {
@@ -351,14 +349,13 @@ class Record_AJAX extends Action {
 							}
 						}
 					}
-				}
-				else {
+				} else {
 					//block below sets the $patron variable to place the hold through pick-up location. (shouldn't be needed anymore. plb 10-27-2015)
 					$location = new Location();
 					/** @var Location[] $userPickupLocations */
 					$userPickupLocations = $location->getPickupBranches($user);
 					foreach ($userPickupLocations as $tmpLocation) {
-						if ($tmpLocation->code == $campus) {
+						if ($tmpLocation->code == $pickupBranch) {
 							$patron = $user;
 							break;
 						}
@@ -371,7 +368,7 @@ class Record_AJAX extends Action {
 							/** @var Location[] $userPickupLocations */
 							$userPickupLocations = $location->getPickupBranches($tmpUser);
 							foreach ($userPickupLocations as $tmpLocation) {
-								if ($tmpLocation->code == $campus) {
+								if ($tmpLocation->code == $pickupBranch) {
 									$patron = $tmpUser;
 									break;
 								}
@@ -386,38 +383,49 @@ class Record_AJAX extends Action {
 					$results = array(
 						'success' => false,
 						'message' => 'You must select a valid user to place the hold for.',
-						'title'   => 'Select valid user',
+						'title' => 'Select valid user',
 					);
 				} else {
 					$homeLibrary = $patron->getHomeLibrary();
+					if (isset($_REQUEST['rememberHoldPickupLocation']) && ($_REQUEST['rememberHoldPickupLocation'] == 'true' || $_REQUEST['rememberHoldPickupLocation'] == 'on')){
+						if ($user->rememberHoldPickupLocation == false){
+							$user->rememberHoldPickupLocation = true;
 
-					if (isset($_REQUEST['selectedItem'])) {
-						$return = $patron->placeItemHold($shortId, $_REQUEST['selectedItem'], $campus);
-					} else {
-						if (isset($_REQUEST['volume'])){
-							$return = $patron->placeVolumeHold($shortId, $_REQUEST['volume'], $campus);
-						}else{
-
-							if (!empty($_REQUEST['cancelDate'])){
-								$cancelDate = $_REQUEST['cancelDate'];
-							}else{
-								if ($homeLibrary->defaultNotNeededAfterDays == 0){
-									//Default to a date 6 months (half a year) in the future.
-									$sixMonthsFromNow = time() + 182.5 * 24 * 60 * 60;
-									$cancelDate = date('m/d/Y', $sixMonthsFromNow);
-								}else{
-									//Default to a date 6 months (half a year) in the future.
-									$nnaDate = time() + $homeLibrary->defaultNotNeededAfterDays * 24 * 60 * 60;
-									$cancelDate = date('m/d/Y', $nnaDate);
-								}
+							//Get the branch id for the hold
+							$holdBranch = new Location();
+							$holdBranch->code = $pickupBranch;
+							if ($holdBranch->find(true)){
+								$user->homeLocationId = $holdBranch->locationId;
 							}
+							$user->update();
+						}
+					}
+					$holdType = $_REQUEST['holdType'];
 
-							$return = $patron->placeHold($shortId, $campus, $cancelDate);
+					if (!empty($_REQUEST['cancelDate'])) {
+						$cancelDate = $_REQUEST['cancelDate'];
+					} else {
+						if ($homeLibrary->defaultNotNeededAfterDays <= 0) {
+							$cancelDate = null;
+						} else {
+							//Default to a date 6 months (half a year) in the future.
+							$nnaDate = time() + $homeLibrary->defaultNotNeededAfterDays * 24 * 60 * 60;
+							$cancelDate = date('m/d/Y', $nnaDate);
+						}
+					}
+
+					if ($holdType == 'item' && isset($_REQUEST['selectedItem'])) {
+						$return = $patron->placeItemHold($shortId, $_REQUEST['selectedItem'], $pickupBranch, $cancelDate);
+					} else {
+						if (isset($_REQUEST['volume'])) {
+							$return = $patron->placeVolumeHold($shortId, $_REQUEST['volume'], $pickupBranch);
+						} else {
+							$return = $patron->placeHold($shortId, $pickupBranch, $cancelDate);
 						}
 					}
 
 					if (isset($return['items'])) {
-						$interface->assign('campus', $campus);
+						$interface->assign('pickupBranch', $pickupBranch);
 						$items = $return['items'];
 						$interface->assign('items', $items);
 						$interface->assign('message', $return['message']);
@@ -452,7 +460,7 @@ class Record_AJAX extends Action {
 						$results = array(
 							'success' => $return['success'],
 							'message' => $interface->fetch('Record/hold-success-popup.tpl'),
-							'title'   => isset($return['title']) ? $return['title'] : '',
+							'title' => isset($return['title']) ? $return['title'] : '',
 						);
 						if (isset($_REQUEST['autologout'])) {
 							$masqueradeMode = UserAccount::isUserMasquerading();
@@ -495,7 +503,9 @@ class Record_AJAX extends Action {
 		return $results;
 	}
 
-	function reloadCover(){
+	/** @noinspection PhpUnused */
+	function reloadCover()
+	{
 		require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 		$id = $_REQUEST['id'];
 		$recordDriver = new MarcRecordDriver($id);
@@ -515,7 +525,7 @@ class Record_AJAX extends Action {
 		//Also reload covers for the grouped work
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 		$groupedWorkDriver = new GroupedWorkDriver($recordDriver->getGroupedWorkId());
-		global $configArray;
+
 		//Reload small cover
 		$smallCoverUrl = str_replace('&amp;', '&', $groupedWorkDriver->getBookcoverUrl('small', true)) . '&reload';
 		file_get_contents($smallCoverUrl);

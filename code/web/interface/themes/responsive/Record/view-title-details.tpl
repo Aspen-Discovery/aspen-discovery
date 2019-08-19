@@ -140,6 +140,7 @@
 		<div class="result-label col-tn-3">{translate text='Status'}</div>
 		<div class="col-tn-9 result-value">
 			{if $statusSummary}
+				{assign var=workId value=$recordDriver->getPermanentId()}
 				{include file='GroupedWork/statusIndicator.tpl' statusInformation=$statusSummary->getStatusInformation() viewingIndividualRecord=1}
 				{include file='GroupedWork/copySummary.tpl' summary=$statusSummary->getItemSummary() totalCopies=$statusSummary->getCopies() itemSummaryId=$statusSummary->id}
 			{else}

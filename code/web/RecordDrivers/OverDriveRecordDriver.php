@@ -58,7 +58,7 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 		return 'OverDrive';
 	}
 
-    protected function getRecordType()
+    public function getRecordType()
     {
         return 'overdrive';
     }

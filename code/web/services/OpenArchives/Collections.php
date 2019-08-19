@@ -9,7 +9,7 @@ class OpenArchives_Collections extends ObjectEditor {
 		return 'OpenArchivesCollection';
 	}
 	function getToolName(){
-		return 'OpenArchivesCollections';
+		return 'Collections';
 	}
     function getModule(){
         return 'OpenArchives';

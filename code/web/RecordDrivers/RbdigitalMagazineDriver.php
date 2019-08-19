@@ -300,7 +300,7 @@ class RBdigitalMagazineDriver extends GroupedWorkSubDriver {
         return [$this->rbdigitalRawMetadata->coverDate];
     }
 
-    protected function getRecordType()
+    public function getRecordType()
     {
         return 'rbdigital_magazine';
     }

@@ -46,6 +46,8 @@ class User extends DataObject
 	public $interfaceLanguage;
 	public $searchPreferenceLanguage;
 
+	public $rememberHoldPickupLocation;
+
 	/** @var User $parentUser */
 	private $parentUser;
 	/** @var User[] $linkedUsers */
@@ -765,10 +767,10 @@ class User extends DataObject
 					$this->myLocation2Id = $_POST['myLocation2'];
 				}
 			}
-
 		}
 
 		$this->noPromptForUserReviews = (isset($_POST['noPromptForUserReviews']) && $_POST['noPromptForUserReviews'] == 'on')? 1 : 0;
+		$this->rememberHoldPickupLocation = (isset($_POST['rememberHoldPickupLocation']) && $_POST['rememberHoldPickupLocation'] == 'on')? 1 : 0;
 		$this->clearCache();
 		return $this->update();
 	}
@@ -1302,12 +1304,13 @@ class User extends DataObject
 	 * @param   string  $recordId   The id of the bib record
 	 * @param   string  $itemId     The id of the item to hold
 	 * @param   string  $pickupBranch The branch where the user wants to pickup the item when available
+	 * @param null|string $cancelDate The date to automatically cancel the hold if not filled
 	 * @return  mixed               True if successful, false if unsuccessful
 	 *                              If an error occurs, return a AspenError
 	 * @access  public
 	 */
-	function placeItemHold($recordId, $itemId, $pickupBranch) {
-		$result = $this->getCatalogDriver()->placeItemHold($this, $recordId, $itemId, $pickupBranch);
+	function placeItemHold($recordId, $itemId, $pickupBranch, $cancelDate = null) {
+		$result = $this->getCatalogDriver()->placeItemHold($this, $recordId, $itemId, $pickupBranch, $cancelDate);
 		$this->updateAltLocationForHold($pickupBranch);
 		if ($result['success']){
 			$this->clearCache();

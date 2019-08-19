@@ -666,4 +666,21 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
         }
         return $allSuggestions;
     }
+
+	protected function getFieldsToReturn() {
+		return '*,score';
+	}
+
+	/**
+	 * Retrieves a document specified by the ID.
+	 *
+	 * @param   string  $id         The document to retrieve from Solr
+	 * @access  public
+	 * @throws  object              PEAR Error
+	 * @return  array              The requested resource
+	 */
+	function getRecord($id)
+	{
+		return $this->indexEngine->getRecord($id, $this->getFieldsToReturn());
+	}
 }

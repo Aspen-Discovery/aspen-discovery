@@ -9,6 +9,8 @@ class FormatMapValue extends DataObject{
 	public $formatCategory;
 	public $formatBoost;
 	public $suppress;
+	public $holdType;
+
 
     static function getObjectStructure(){
 	    $formatCategories = [
@@ -26,6 +28,7 @@ class FormatMapValue extends DataObject{
 			'format' => array('property'=>'format', 'type'=>'text', 'label'=>'Format', 'description'=>'The detailed format', 'maxLength' => '255', 'required' => true),
 			'formatCategory' => array('property'=>'formatCategory', 'type'=>'enum', 'label'=>'Format Category', 'description'=>'The Format Category', 'values' => $formatCategories, 'required' => true),
 			'formatBoost' => array('property'=>'formatBoost', 'type'=>'integer', 'label'=>'Format Boost', 'description'=>'The Format Boost to apply during indexing', 'default' => 1, 'required' => true),
+			'holdType' => array('property'=>'holdType', 'type'=>'enum', 'values' => ['bib'=>'Bib Only', 'item'=>'Item Only', 'either'=>'Either Bib or Item', 'none' => 'No Holds Allowed'], 'label'=>'Hold Type', 'description'=>'Types of Holds to allow', 'default' => 'bib', 'required' => true),
 			'suppress' => array('property'=>'suppress', 'type'=>'checkbox', 'label'=>'Suppress?', 'description'=>'Suppress from the catalog', 'default' => 0, 'required' => true),
 		);
 		return $structure;

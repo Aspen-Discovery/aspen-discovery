@@ -1420,19 +1420,6 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 	/**
 	 * Retrieves a document specified by the ID.
 	 *
-	 * @param   string  $id         The document to retrieve from Solr
-	 * @access  public
-	 * @throws  object              PEAR Error
-	 * @return  array              The requested resource
-	 */
-	function getRecord($id)
-	{
-		return $this->indexEngine->getRecord($id, $this->getFieldsToReturn());
-	}
-
-	/**
-	 * Retrieves a document specified by the ID.
-	 *
 	 * @param   string[]  $ids        An array of documents to retrieve from Solr
 	 * @access  public
 	 * @throws  object              PEAR Error
@@ -1480,7 +1467,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 		return $this->indexEngine->getRecordByIsbn($isbn, $this->getFieldsToReturn());
 	}
 
-	private function getFieldsToReturn() {
+	protected function getFieldsToReturn() {
 		if (isset($_REQUEST['allFields'])){
 			$fieldsToReturn = '*,score';
 		}else{

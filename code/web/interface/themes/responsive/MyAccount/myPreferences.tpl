@@ -90,6 +90,17 @@
 							{/if}
 						{/if}
 
+						<div class="form-group">
+							<div class="col-xs-4"><label for="rememberHoldPickupLocation" class="control-label" style="text-align:left">{translate text='one_click_hold_prefs' defaultText='Bypass pickup location prompt when placing holds'}</label></div>
+							<div class="col-xs-8">
+                                {if $edit == true}
+									<input type="checkbox" class="form-control" name="rememberHoldPickupLocation" id="rememberHoldPickupLocation" {if $profile->rememberHoldPickupLocation==1}checked='checked'{/if} data-switch="">
+                                {else}
+                                    {if $profile->rememberHoldPickupLocation==0}No{else}Yes{/if}
+                                {/if}
+							</div>
+						</div>
+
 						{if !$offline && $edit == true}
 							<div class="form-group">
 								<div class="col-xs-8 col-xs-offset-4">

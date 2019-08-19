@@ -47,7 +47,7 @@ class HoldItems extends Action
 
 		$hold_message_data = array(
           'successful' => 'all',
-          'campus' => $_REQUEST['campus'],
+          'pickupBranch' => $_REQUEST['pickupBranch'],
           'titles' => array()
 		);
 

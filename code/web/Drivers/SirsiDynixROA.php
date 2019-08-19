@@ -1141,13 +1141,13 @@ abstract class SirsiDynixROA extends HorizonAPI
 	 * @param   User $patron The User to place a hold for
 	 * @param   string $recordId The id of the bib record
 	 * @param   string $itemId The id of the item to hold
-	 * @param   string $campus The Pickup Location
+	 * @param   string $pickupBranch The Pickup Location
 	 * @param   string $type Whether to place a hold or recall
 	 * @return  mixed               True if successful, false if unsuccessful
 	 *                              If an error occurs, return a AspenError
 	 * @access  public
 	 */
-	function placeItemHold($patron, $recordId, $itemId, $campus = null, $type = 'request', $cancelIfNotFilledByDate = null)
+	function placeItemHold($patron, $recordId, $itemId, $pickupBranch = null, $type = 'request', $cancelIfNotFilledByDate = null)
 	{
 
 		//Get the session token for the user
@@ -1199,8 +1199,8 @@ abstract class SirsiDynixROA extends HorizonAPI
 				return $result;
 
 			} else {
-				if (empty($campus)) {
-					$campus = $patron->_homeLocationCode;
+				if (empty($pickupBranch)) {
+					$pickupBranch = $patron->_homeLocationCode;
 				}
 				//create the hold using the web service
 				$webServiceURL = $this->getWebServiceURL();
@@ -1209,7 +1209,7 @@ abstract class SirsiDynixROA extends HorizonAPI
 					'patronBarcode' => $patron->getBarcode(),
 					'pickupLibrary' => array(
 						'resource' => '/policy/library',
-						'key' => strtoupper($campus)
+						'key' => strtoupper($pickupBranch)
 					),
 				);
 

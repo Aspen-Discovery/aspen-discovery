@@ -471,7 +471,7 @@ abstract class GroupedWorkSubDriver extends RecordInterface
         return array();
     }
 
-    protected abstract function getRecordType();
+    abstract public function getRecordType();
 
     public abstract function getSemanticData() ;
 

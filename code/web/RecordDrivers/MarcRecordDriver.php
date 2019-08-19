@@ -218,6 +218,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 	 * @access  protected
 	 * @return array
 	 */
+	/** @noinspection PhpUnused */
 	public function getAllSubjectHeadings()
 	{
 		// These are the fields that may contain subject headings:
@@ -508,6 +509,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 	 *
 	 * @return  array
 	 */
+	/** @noinspection PhpUnused */
 	public function getUniformTitle()
 	{
 		return $this->getFieldArray('240', array('a', 'd', 'f', 'g', 'h', 'k', 'l', 'm', 'n', 'o', 'p', 'r', 's'));
@@ -563,6 +565,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 	 * @access  protected
 	 * @return  string
 	 */
+	/** @noinspection PhpUnused */
 	public function getTitleSection()
 	{
 		return $this->getFirstFieldValue('245', array('n', 'p'));
@@ -589,6 +592,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 
 	private $detailedContributors = null;
 
+	/** @noinspection PhpUnused */
 	public function getDetailedContributors()
 	{
 		if ($this->detailedContributors == null) {
@@ -602,7 +606,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 				);
 				if ($field->getSubfield('4') != null) {
 					$contributorRole = $field->getSubfield('4')->getData();
-					$contributorRole = preg_replace('/[\s,\.;]+$/', '', $contributorRole);
+					$contributorRole = preg_replace('/[\s,.;]+$/', '', $contributorRole);
 					$curContributor['role'] = mapValue('contributor_role', $contributorRole);
 				} elseif ($field->getSubfield('e') != null) {
 					$curContributor['role'] = $field->getSubfield('e')->getData();
@@ -684,8 +688,10 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 	/**
 	 * @param File_MARC_Record $marcRecord
 	 * @param bool $allowExternalDescription
+	 *
 	 * @return array|string
 	 */
+	/** @noinspection PhpUnused */
 	function loadDescriptionFromMarc($marcRecord, $allowExternalDescription = true)
 	{
 		/** @var Memcache $memCache */
@@ -880,15 +886,16 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 		}
 
 		if ($isHoldable && $showHoldButton) {
+			$source = $this->profileType;
+			$id = $this->id;
 			if (!is_null($volumeData) && count($volumeData) > 0) {
 				foreach ($volumeData as $volumeInfo) {
 					if (isset($volumeInfo->holdable) && $volumeInfo->holdable) {
-						$id = $this->getIdWithSource();
-						$id .= ':' . $volumeInfo->volumeId;
+						$volume = $volumeInfo->volumeId;
 						$actions[] = array(
 								'title' => 'Hold ' . $volumeInfo->displayLabel,
 								'url' => '',
-								'onclick' => "return AspenDiscovery.Record.showPlaceHold('{$this->getModule()}', '$id');",
+								'onclick' => "return AspenDiscovery.Record.showPlaceHold('{$this->getModule()}', '$source', $id', '$volume');",
 								'requireLogin' => false,
 						);
 					}
@@ -897,7 +904,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 				$actions[] = array(
 						'title' => 'Place Hold',
 						'url' => '',
-						'onclick' => "return AspenDiscovery.Record.showPlaceHold('{$this->getModule()}', '{$this->getIdWithSource()}');",
+						'onclick' => "return AspenDiscovery.Record.showPlaceHold('{$this->getModule()}', '$source', '$id');",
 						'requireLogin' => false,
 				);
 			}
@@ -954,6 +961,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 	 * @access  protected
 	 * @return  array
 	 */
+	/** @noinspection PhpUnused */
 	public function getPhysicalDescriptions()
 	{
 		$physicalDescription1 = $this->getFieldArray("300", array('a', 'b', 'c', 'e', 'f', 'g'));
@@ -1150,6 +1158,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 				'openByDefault' => true
 		);
 		//Other editions if applicable (only if we aren't the only record!)
+		/** @noinspection DuplicatedCode */
 		$groupedWorkDriver = $this->getGroupedWorkDriver();
 		if ($groupedWorkDriver != null){
 			$relatedRecords = $groupedWorkDriver->getRelatedRecords();
@@ -1304,7 +1313,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 		}
 	}
 
-	protected function getRecordType()
+	public function getRecordType()
 	{
 		if ($this->profileType) {
 			return $this->profileType;

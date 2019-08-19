@@ -847,18 +847,18 @@ class UserAPI extends Action {
 	 * <li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li>
 	 * <li>password - The pin number for the user. </li>
 	 * <li>bibId    - The id of the record within the ILS.</li>
-	 * <li>campus   � the location where the patron would like to pickup the title (optional). If not provided, the patron's home location will be used.</li>
+	 * <li>pickupBranch   - the location where the patron would like to pickup the title (optional). If not provided, the patron's home location will be used.</li>
 	 * </ul>
 	 *
 	 * Returns JSON encoded data as follows:
 	 * <ul>
-	 * <li>success � true if the account is valid and the hold could be placed, false if the username or password were incorrect or the hold could not be placed.</li>
-	 * <li>holdMessage � a reason why the method failed if success is false, or information about hold queue position if successful.</li>
+	 * <li>success - true if the account is valid and the hold could be placed, false if the username or password were incorrect or the hold could not be placed.</li>
+	 * <li>holdMessage - a reason why the method failed if success is false, or information about hold queue position if successful.</li>
 	 * </ul>
 	 *
 	 * Sample Call:
 	 * <code>
-	 * http://catalog.douglascountylibraries.org/API/UserAPI?method=renewAll&username=23025003575917&password=7604&bibId=1004012&campus=pa
+	 * http://catalog.douglascountylibraries.org/API/UserAPI?method=renewAll&username=23025003575917&password=7604&bibId=1004012&pickupBranch=pa
 	 * </code>
 	 *
 	 * Sample Response (successful hold):
@@ -885,8 +885,8 @@ class UserAPI extends Action {
 
 		$patron = UserAccount::validateAccount($username, $password);
 		if ($patron && !($patron instanceof AspenError)){
-			if (isset($_REQUEST['campus'])){
-				$pickupBranch=trim($_REQUEST['campus']);
+			if (isset($_REQUEST['pickupBranch'])){
+				$pickupBranch=trim($_REQUEST['pickupBranch']);
 			}else{
 				$pickupBranch = $patron->_homeLocationCode;
 			}
@@ -904,8 +904,8 @@ class UserAPI extends Action {
 
 		$patron = UserAccount::validateAccount($username, $password);
 		if ($patron && !($patron instanceof AspenError)){
-			if (isset($_REQUEST['campus'])){
-				$pickupBranch=trim($_REQUEST['campus']);
+			if (isset($_REQUEST['pickupBranch'])){
+				$pickupBranch=trim($_REQUEST['pickupBranch']);
 			}else{
 				$pickupBranch = $patron->_homeLocationCode;
 			}

@@ -3,8 +3,7 @@
 	<div class="result row ilsHold_{$record.recordId}">
 		{* Cover column *}
 		{if $showCovers}
-		<div class="col-xs-4 col-sm-3">
-			{*<div class="row">*}
+			<div class="col-xs-4 col-sm-3">
 				<div class="{*col-xs-10 *}text-center">
 					{if $record.coverUrl}
 						{if $record.recordId && $record.linkUrl}
@@ -17,12 +16,11 @@
 					{/if}
 
 				</div>
-			{*</div>*}
-		</div>
-
+			</div>
 		{/if}
+
 		{* Details Column*}
-			<div class="{if $showCovers}col-xs-8 col-sm-9{else}col-xs-12{/if}">
+		<div class="{if $showCovers}col-xs-8 col-sm-9{else}col-xs-12{/if}">
 			{* Title *}
 			<div class="row">
 				<div class="col-xs-12">
@@ -68,6 +66,15 @@
 								{else}
 									<a href='{$path}/Author/Home?author="{$record.author|escape:"url"}"'>{$record.author|highlight}</a>
 								{/if}
+							</div>
+						</div>
+					{/if}
+
+					{if $record.callNumber}
+						<div class="row">
+							<div class="result-label col-tn-4">{translate text='Call Number'}</div>
+							<div class="col-tn-8 result-value">
+								{$record.callNumber}
 							</div>
 						</div>
 					{/if}

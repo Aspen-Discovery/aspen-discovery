@@ -649,7 +649,7 @@ class Koha extends AbstractIlsDriver {
 		$hold_result['success'] = false;
 
 		//Set pickup location
-		$campus = strtoupper($pickupBranch);
+		$pickupBranch = strtoupper($pickupBranch);
 
 		//Get a specific item number to place a hold on even though we are placing a title level hold.
 		//because.... Koha
@@ -717,11 +717,12 @@ class Koha extends AbstractIlsDriver {
                 'patron_id' => $patron->username,
                 'bib_id' => $recordDriver->getId(),
                 'request_location' => $active_ip,
-                'pickup_location' => $campus
-                //TODO: Handle these options
-                //needed_before_date (Optional)
-                //pickup_expiry_date (Optional)
+                'pickup_location' => $pickupBranch
             ];
+
+			if ($cancelDate != null){
+				$holdParams['needed_before_data'] = $this->aspenDateToKohaDate($cancelDate);
+			}
 
             $placeHoldURL = $this->getWebServiceUrl() . '/cgi-bin/koha/ilsdi.pl?' . http_build_query($holdParams);
             $placeHoldResponse = $this->getXMLWebServiceResponse($placeHoldURL);
@@ -760,20 +761,21 @@ class Koha extends AbstractIlsDriver {
 	 *
 	 * This is responsible for both placing item level holds.
 	 *
-	 * @param   User    $patron     The User to place a hold for
-	 * @param   string  $recordId   The id of the bib record
-	 * @param   string  $itemId     The id of the item to hold
-	 * @param   string  $pickupBranch The branch where the user wants to pickup the item when available
+	 * @param User $patron The User to place a hold for
+	 * @param string $recordId The id of the bib record
+	 * @param string $itemId The id of the item to hold
+	 * @param string $pickupBranch The branch where the user wants to pickup the item when available
+	 * @param null|string $cancelDate The date to automatically cancel the hold if not filled
 	 * @return  mixed               True if successful, false if unsuccessful
 	 *                              If an error occurs, return a AspenError
 	 * @access  public
 	 */
-	function placeItemHold($patron, $recordId, $itemId, $pickupBranch) {
+	function placeItemHold($patron, $recordId, $itemId, $pickupBranch, $cancelDate = null) {
 		$hold_result = array();
 		$hold_result['success'] = false;
 
 		require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
-		$recordDriver = new MarcRecordDriver($recordId);
+		$recordDriver = new MarcRecordDriver($this->getIndexingProfile()->name . ':' .$recordId);
 		if (!$recordDriver->isValid()){
 			$hold_result['message'] = 'Unable to find a valid record for this title.  Please try your search again.';
 			return $hold_result;
@@ -781,38 +783,37 @@ class Koha extends AbstractIlsDriver {
 		$hold_result['title'] = $recordDriver->getTitle();
 
 		//Set pickup location
-		if (isset($_REQUEST['campus'])){
-			$campus=trim($_REQUEST['campus']);
+		if (isset($_REQUEST['pickupBranch'])){
+			$pickupBranch=trim($_REQUEST['pickupBranch']);
 		}else{
-			$campus = $patron->homeLocationId;
+			$pickupBranch = $patron->homeLocationId;
 			//Get the code for the location
 			$locationLookup = new Location();
-			$locationLookup->locationId = $campus;
+			$locationLookup->locationId = $pickupBranch;
 			$locationLookup->find();
 			if ($locationLookup->N > 0){
 				$locationLookup->fetch();
-				$campus = $locationLookup->code;
+				$pickupBranch = $locationLookup->code;
 			}
 		}
-		$campus = strtoupper($campus);
+		$pickupBranch = strtoupper($pickupBranch);
 
-        global $active_ip;
         $holdParams = [
             'service' => 'HoldItem',
             'patron_id' => $patron->username,
             'bib_id' => $recordDriver->getId(),
             'item_id' => $itemId,
-            'request_location' => $active_ip,
-            'pickup_location' => $campus
-            //TODO: Handle these options
-            //needed_before_date (Optional)
-            //pickup_expiry_date (Optional)
+	        //'request_location' => $active_ip, //Not allowed for HoldItem, but required for HoldTitle
+            'pickup_location' => $pickupBranch
         ];
+		if ($cancelDate != null){
+			$holdParams['needed_before_data'] = $this->aspenDateToKohaDate($cancelDate);
+		}
 
         $placeHoldURL = $this->getWebServiceUrl() . '/cgi-bin/koha/ilsdi.pl?' . http_build_query($holdParams);
         $placeHoldResponse = $this->getXMLWebServiceResponse($placeHoldURL);
 
-		if ($placeHoldResponse->title) {
+		if ($placeHoldResponse->pickup_location) {
             //We redirected to the holds page, everything seems to be good
             $holds = $this->getHolds($patron, 1, -1, 'title');
             $hold_result['success'] = true;
@@ -863,7 +864,7 @@ class Koha extends AbstractIlsDriver {
 		$this->initDatabaseConnection();
 
         /** @noinspection SqlResolve */
-		$sql = "SELECT *, title, author FROM reserves inner join biblio on biblio.biblionumber = reserves.biblionumber where borrowernumber = {$patron->username}";
+		$sql = "SELECT reserves.*, biblio.title, biblio.author, items.itemcallnumber FROM reserves inner join biblio on biblio.biblionumber = reserves.biblionumber left join items on items.itemnumber = reserves.itemnumber where borrowernumber = {$patron->username}";
 		$results = mysqli_query($this->dbConnection, $sql);
 		while ($curRow = $results->fetch_assoc()){
 			//Each row in the table represents a hold
@@ -874,6 +875,9 @@ class Koha extends AbstractIlsDriver {
 			$curHold['shortId'] = $curRow['biblionumber'];
 			$curHold['recordId'] = $curRow['biblionumber'];
 			$curHold['title'] = $curRow['title'];
+			if (isset($curRow['itemcallnumber'])){
+				$curHold['callNumber'] = $curRow['itemcallnumber'];
+			}
 			$curHold['create'] = date_parse_from_format('Y-m-d H:i:s', $curRow['reservedate']);
 			if (!empty($curRow['expirationdate'])){
                 $dateTime = date_create_from_format('Y-m-d', $curRow['expirationdate']);

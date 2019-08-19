@@ -71,12 +71,6 @@ class AJAX extends Action {
 		}
 	}
 
-	function IsLoggedIn()
-	{
-		echo "<result>" .
-		(UserAccount::isLoggedIn() ? "True" : "False") . "</result>";
-	}
-
 	// Email Search Results
 	function sendEmail()
 	{

@@ -422,13 +422,13 @@ abstract class HorizonAPI extends Horizon{
 				return $result;
 
 			} else {
-				if (isset($_REQUEST['campus'])){
-					$campus=trim($_REQUEST['campus']);
+				if (isset($_REQUEST['pickupBranch'])){
+					$pickupBranch=trim($_REQUEST['pickupBranch']);
 				}else{
-					$campus = $patron->homeLocationId;
+					$pickupBranch = $patron->homeLocationId;
 				}
 				//create the hold using the web service
-				$createHoldUrl = $configArray['Catalog']['webServiceUrl'] . '/standard/createMyHold?clientID=' . $configArray['Catalog']['clientId'] . '&sessionToken=' . $sessionToken . '&pickupLocation=' . $campus . '&titleKey=' . $recordId ;
+				$createHoldUrl = $configArray['Catalog']['webServiceUrl'] . '/standard/createMyHold?clientID=' . $configArray['Catalog']['clientId'] . '&sessionToken=' . $sessionToken . '&pickupLocation=' . $pickupBranch . '&titleKey=' . $recordId ;
 				if ($itemId){
 					$createHoldUrl .= '&itemKey=' . $itemId;
 				}

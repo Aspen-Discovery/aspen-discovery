@@ -75,7 +75,7 @@ class SideLoadedRecord extends ExternalEContentDriver {
 		return $this->filterAndSortMoreDetailsOptions($moreDetailsOptions);
 	}
 
-	protected function getRecordType(){
+	public function getRecordType(){
 		return $this->profileType;
 	}
 }

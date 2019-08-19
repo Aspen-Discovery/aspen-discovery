@@ -329,7 +329,7 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 		return [$this->hooplaRawMetadata->year];
 	}
 
-	protected function getRecordType()
+	public function getRecordType()
 	{
 		return 'hoopla';
 	}

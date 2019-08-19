@@ -57,11 +57,12 @@ abstract class AbstractIlsDriver extends AbstractDriver
      * @param   string  $recordId   The id of the bib record
      * @param   string  $itemId     The id of the item to hold
      * @param   string  $pickupBranch The branch where the user wants to pickup the item when available
+     * @param null|string $cancelDate The date to automatically cancel the hold if not filled
      * @return  mixed               True if successful, false if unsuccessful
      *                              If an error occurs, return a AspenError
      * @access  public
      */
-    abstract function placeItemHold($patron, $recordId, $itemId, $pickupBranch);
+    abstract function placeItemHold($patron, $recordId, $itemId, $pickupBranch, $cancelDate = null);
 
     abstract function freezeHold($patron, $recordId, $itemToFreezeId, $dateToReactivate);
 

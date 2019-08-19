@@ -578,11 +578,12 @@ class LibrarySolution extends AbstractIlsDriver {
 	 * @param   string  $recordId   The id of the bib record
 	 * @param   string  $itemId     The id of the item to hold
 	 * @param   string  $pickupBranch The branch where the user wants to pickup the item when available
+	 * @param   null|string $cancelDate The date to automatically cancel the hold if not filled
 	 * @return  mixed               True if successful, false if unsuccessful
 	 *                              If an error occurs, return a AspenError
 	 * @access  public
 	 */
-	function placeItemHold($patron, $recordId, $itemId, $pickupBranch){
+	function placeItemHold($patron, $recordId, $itemId, $pickupBranch, $cancelDate = null){
 		return array('success' => false, 'message' => 'Unable to place Item level holds in Library.Solution at this time');
 	}
 

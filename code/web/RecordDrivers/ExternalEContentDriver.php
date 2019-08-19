@@ -129,7 +129,7 @@ class ExternalEContentDriver extends BaseEContentDriver{
 		return $this->filterAndSortMoreDetailsOptions($moreDetailsOptions);
 	}
 
-	protected function getRecordType(){
+	public function getRecordType(){
 		return $this->profileType;
 	}
 

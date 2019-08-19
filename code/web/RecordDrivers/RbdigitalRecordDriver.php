@@ -333,7 +333,7 @@ class RBdigitalRecordDriver extends GroupedWorkSubDriver {
         return [$this->rbdigitalRawMetadata->releasedDate];
     }
 
-	protected function getRecordType()
+	public function getRecordType()
     {
         return 'rbdigital';
     }

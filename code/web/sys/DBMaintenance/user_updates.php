@@ -183,5 +183,14 @@ function getUserUpdates(){
 				"ALTER TABLE user ADD COLUMN searchPreferenceLanguage TINYINT(1) DEFAULT '-1'",
 			],
 		],
+
+		'user_rememberHoldPickupLocation' => [
+			'title' => 'User Remember Hold Pickup Location',
+			'description' => 'Add a switch to determine if the user\'s hold pickup location should be remembered',
+			'sql' => [
+				"ALTER TABLE user ADD COLUMN rememberHoldPickupLocation TINYINT(1) DEFAULT '0'",
+				"ALTER TABLE user ADD COLUMN alwaysHoldNextAvailable TINYINT(1) DEFAULT '0'",
+			],
+		]
 	);
 }

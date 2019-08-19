@@ -23,9 +23,9 @@
 			{* Responsive theme enforces that the user is always logged in before getting here*}
 			<div id="holdOptions">
 				<div id="pickupLocationOptions" class="form-group">
-					<label class="control-label" for="campus">{translate text="I want to pick this up at"} </label>
+					<label class="control-label" for="pickupBranch">{translate text="I want to pick this up at"} </label>
 					<div class="controls">
-						<select name="campus" id="campus" class="form-control">
+						<select name="pickupBranch" id="pickupBranch" class="form-control">
 							{if count($pickupLocations) > 0}
 								{foreach from=$pickupLocations item=location}
 									{if is_string($location)}
@@ -53,7 +53,7 @@
 					<script type="text/javascript">
 						{literal}
 						$(function(){
-							var userNames = {
+							let userNames = {
 							{/literal}
 							{$activeUserId}: "{$userDisplayName|escape:javascript} - {$user->getHomeLibrarySystemName()}",
 							{assign var="linkedUsers" value=$user->getLinkedUsers()}
@@ -62,15 +62,15 @@
 							{/foreach}
 							{literal}
 								};
-							$('#campus').change(function(){
-								var users = $('option:selected', this).data('users'),
-										options = '';
+							$('#pickupBranch').change(function(){
+								let users = $('option:selected', this).data('users');
+								let options = '';
 								$.each(users, function(indexIgnored,userId){
 										options += '<option value="'+userId+'">'+userNames[userId]+'</option>'
 									});
 									$('#userOption select').html(options);
 							}).change(); /* trigger on initial load */
-						})
+						});
 						{/literal}
 						{* /* when hiding single account pick-up locations */
 						if (Array.isArray(users) && users.length > 1) {

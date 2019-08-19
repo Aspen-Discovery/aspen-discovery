@@ -2,7 +2,7 @@
 <div class="contents">
 	{if $hold_message_data.showItemForm}
 	<form action='{$path}/MyAccount/HoldItems' method="POST">
-		<input type='hidden' name='campus' value='{$hold_message_data.campus}' />
+		<input type='hidden' name='pickupBranch' value='{$hold_message_data.pickupBranch}' />
 	{/if}
 	{if $hold_message_data.error}
 		<div class='alert alert-danger'>{$hold_message_data.error}</div>

@@ -530,6 +530,14 @@ function getIndexingUpdates() {
 				"ALTER TABLE status_map_values ADD COLUMN suppress TINYINT(1) DEFAULT 0",
 			],
 		],
+
+		'format_holdType' => [
+			'title' => 'Set Hold Type by Format',
+			'description' => 'Add information about the types of holds to allow for particular formats',
+			'sql' => [
+				"ALTER TABLE format_map_values ADD holdType ENUM('bib','item','either','none') DEFAULT 'bib'",
+			],
+		],
 	);
 }
 

@@ -30,8 +30,10 @@
 				{if !$hasRatings}
 					<p>
 						You have not rated any titles.
+					</p>
+					<p>
 						If you rate titles, we can provide you with suggestions for titles you might like to read.
-						Suggestions are based on titles you likeand information within the catalog.
+						Suggestions are based on titles you like and information within the catalog.
 						Library staff does not have access to your suggestions.
 					</p>
 				{else}
