@@ -60,7 +60,7 @@
 										<label for="rememberHoldPickupLocation" class="checkbox"><input type="checkbox" name="rememberHoldPickupLocation" id="rememberHoldPickupLocation"> {translate text="Always use this pickup location"}</label>
 									</div>
 								{else}
-									<input type="hidden" name="rememberHoldPickupLocation" value="off">
+									<input type="hidden" name="rememberHoldPickupLocation"  id="rememberHoldPickupLocation" value="off">
 								{/if}
 							</div>
 						</div>

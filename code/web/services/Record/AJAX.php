@@ -396,6 +396,7 @@ class Record_AJAX extends Action
 							$holdBranch->code = $pickupBranch;
 							if ($holdBranch->find(true)){
 								$user->homeLocationId = $holdBranch->locationId;
+								$user->_homeLocationCode = $holdBranch->code;
 							}
 							$user->update();
 						}

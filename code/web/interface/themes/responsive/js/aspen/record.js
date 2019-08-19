@@ -91,7 +91,7 @@ AspenDiscovery.Record = (function(){
 				cancelDate: $('#cancelDate').val(),
 				recordSource: $('#recordSource').val(),
 				account: $('#account').val(),
-				rememberHoldPickupLocation: $('#rememberHoldPickupLocation').val()
+				rememberHoldPickupLocation: $('#rememberHoldPickupLocation').prop('checked')
 			};
 			if (autoLogOut){
 				params['autologout'] = true;
