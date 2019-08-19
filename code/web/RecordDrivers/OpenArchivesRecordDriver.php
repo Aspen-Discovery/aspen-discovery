@@ -3,6 +3,25 @@
 require_once 'IndexRecordDriver.php';
 class OpenArchivesRecordDriver extends IndexRecordDriver
 {
+	private $valid;
+
+	public function __construct($recordData){
+		if (is_array($recordData)){
+			parent::__construct($recordData);
+			$this->valid =true;
+		}else{
+			require_once ROOT_DIR . '/sys/SearchObject/OpenArchivesSearcher.php';
+			$searchObject = new SearchObject_OpenArchivesSearcher();
+			$recordData = $searchObject->getRecord($recordData);
+			parent::__construct($recordData);
+			$this->valid =true;
+		}
+	}
+
+	public function isValid(){
+		return $this->valid;
+	}
+
     public function getListEntry($user, $listId = null, $allowEdit = true)
     {
         return $this->getSearchResult('list');
@@ -21,7 +40,9 @@ class OpenArchivesRecordDriver extends IndexRecordDriver
         }else{
             $interface->assign('description', '');
         }
-        $interface->assign('type', $this->fields['type']);
+        if (isset($this->fields['type'])) {
+	        $interface->assign('type', $this->fields['type']);
+        }
         $interface->assign('source', isset($this->fields['source']) ? $this->fields['source'] : '');
         $interface->assign('publisher', isset($this->fields['publisher']) ? $this->fields['publisher'] : '');
         if (array_key_exists('date', $this->fields)) {

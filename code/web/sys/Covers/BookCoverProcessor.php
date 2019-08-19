@@ -644,7 +644,11 @@ class BookCoverProcessor{
 			}
 		    if ($recordDriver->isValid()){
 				$title = $recordDriver->getTitle();
-				$author = $recordDriver->getAuthor();
+				if ($recordDriver instanceof OpenArchivesRecordDriver) {
+					$author = '';
+				}else{
+					$author = $recordDriver->getAuthor();
+				}
 			}
 		}
 
