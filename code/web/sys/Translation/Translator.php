@@ -85,7 +85,11 @@ class Translator
 					try{
 						$translationTerm->insert();
 					}catch(Exception $e){
-						return "TERM TOO LONG for translation \"$phrase\"";
+						if (UserAccount::isLoggedIn() && UserAccount::userHasRole('translator')) {
+							return "TERM TOO LONG for translation \"$phrase\"";
+						}else{
+							return $phrase;
+						}
 					}
 
 				}
