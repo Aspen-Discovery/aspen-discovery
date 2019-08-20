@@ -341,7 +341,14 @@ public class OaiIndexerMain {
                                         break;
                                     case "dc:identifier":
                                         if (textContent.startsWith("http")){
-                                            solrRecord.setIdentifier(textContent);
+                                            if (solrRecord.getIdentifier() == null) {
+                                                solrRecord.setIdentifier(textContent);
+                                            }else{
+                                                //Keep the longest identifier
+                                                if (solrRecord.getIdentifier().length() < textContent.length()){
+                                                    solrRecord.setIdentifier(textContent);
+                                                }
+                                            }
                                         } else if (solrRecord.getIdentifier() == null){
                                             solrRecord.setIdentifier(textContent);
                                         }
