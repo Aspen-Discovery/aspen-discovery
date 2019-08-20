@@ -351,7 +351,7 @@ public class KohaExportMain {
 		try {
 			PreparedStatement kohaPatronTypeStmt = kohaConn.prepareStatement("SELECT * from categories");
 			PreparedStatement existingAspenPatronTypesStmt = dbConn.prepareStatement("SELECT id from ptype where pType = ?");
-			PreparedStatement addAspenPatronTypeStmt = dbConn.prepareStatement("INSERT INTO pType (pType) VALUES (?)");
+			PreparedStatement addAspenPatronTypeStmt = dbConn.prepareStatement("INSERT INTO ptype (pType) VALUES (?)");
 
 			ResultSet kohaPTypes = kohaPatronTypeStmt.executeQuery();
 			while (kohaPTypes.next()){
