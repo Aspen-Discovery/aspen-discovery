@@ -104,6 +104,9 @@ public class KohaExportMain {
 				updateBranchInfo(dbConn, kohaConn);
 				logEntry.addNote("Finished updating branch information");
 
+				updatePatronTypes(dbConn, kohaConn);
+				logEntry.addNote("Finished updating patron types");
+
 				updateTranslationMaps(dbConn, kohaConn);
 				logEntry.addNote("Finished updating translation maps");
 
@@ -246,7 +249,7 @@ public class KohaExportMain {
 			//Load itemtypes into formats for the indexing profile
 			PreparedStatement kohaItemTypesStmt = kohaConn.prepareStatement("SELECT itemtype, description FROM itemtypes");
 			existingValues = getExistingFormatValues(getExistingValuesForFormatMapStmt, indexingProfile.getId());
-			updateFormatMap(kohaItemTypesStmt, "itemtype", "description", insertFormatStmt, indexingProfile.getId(), existingValues);
+			updateFormatMap(kohaItemTypesStmt, insertFormatStmt, indexingProfile.getId(), existingValues);
 
 			//Also load item types into itype
 			translationMapId = getTranslationMapId(createTranslationMapStmt, getTranslationMapStmt, "itype");
@@ -258,11 +261,11 @@ public class KohaExportMain {
 		}
 	}
 
-	private static void updateFormatMap(PreparedStatement kohaValuesStmt, String valueColumn, String translationColumn, PreparedStatement insertFormatStmt, Long indexingProfileId, HashMap<String, String> existingValues) throws SQLException {
+	private static void updateFormatMap(PreparedStatement kohaValuesStmt, PreparedStatement insertFormatStmt, Long indexingProfileId, HashMap<String, String> existingValues) throws SQLException {
 		ResultSet kohaValuesRS = kohaValuesStmt.executeQuery();
 		while (kohaValuesRS.next()) {
-			String value = kohaValuesRS.getString(valueColumn);
-			String translation = kohaValuesRS.getString(translationColumn);
+			String value = kohaValuesRS.getString("itemtype");
+			String translation = kohaValuesRS.getString("description");
 			if (existingValues.containsKey(value)){
 				if (!existingValues.get(value).equals(translation)){
 					logger.warn("Translation for " + value + " has changed from " + existingValues.get(value) + " to " + translation);
@@ -342,6 +345,28 @@ public class KohaExportMain {
 			}
 		}
 		return translationMapId;
+	}
+
+	private static void updatePatronTypes(Connection dbConn, Connection kohaConn) {
+		try {
+			PreparedStatement kohaPatronTypeStmt = kohaConn.prepareStatement("SELECT * from categories");
+			PreparedStatement existingAspenPatronTypesStmt = dbConn.prepareStatement("SELECT id from ptype where pType = ?");
+			PreparedStatement addAspenPatronTypeStmt = dbConn.prepareStatement("INSERT INTO pType (pType) VALUES (?)");
+
+			ResultSet kohaPTypes = kohaPatronTypeStmt.executeQuery();
+			while (kohaPTypes.next()){
+				existingAspenPatronTypesStmt.setString(1, kohaPTypes.getString("categorycode"));
+				ResultSet existingAspenPatronTypesRS = existingAspenPatronTypesStmt.executeQuery();
+				if (!existingAspenPatronTypesRS.next()){
+					addAspenPatronTypeStmt.setString(1, kohaPTypes.getString("categorycode"));
+					addAspenPatronTypeStmt.executeUpdate();
+				}
+				existingAspenPatronTypesRS.close();
+			}
+			kohaPTypes.close();
+		}catch (Exception e) {
+			logger.error("Error updating patron type information from Koha", e);
+		}
 	}
 
 	private static void updateBranchInfo(Connection dbConn, Connection kohaConn) {

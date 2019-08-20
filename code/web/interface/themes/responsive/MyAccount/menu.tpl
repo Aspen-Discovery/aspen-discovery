@@ -266,11 +266,9 @@
 
 								{* OPAC Admin Actions*}
 								{if array_key_exists('opacAdmin', $userRoles)}
-									{* Sierra/Millennium OPAC Admin Actions*}
-									{if ($ils == 'Millennium' || $ils == 'Sierra' || $ils == 'Horizon')}
-										<div class="adminMenuLink"><a href="{$path}/Admin/PTypes">{translate text="P-Types"}</a></div>
-									{/if}
-									{if ($ils == 'Millennium' || $ils == 'Sierra')}
+									<div class="adminMenuLink"><a href="{$path}/Admin/PTypes">{translate text="Patron Types"}</a></div>
+                                    {* Sierra/Millennium OPAC Admin Actions*}
+                                    {if ($ils == 'Millennium' || $ils == 'Sierra')}
 										<div class="adminMenuLink"><a href="{$path}/Admin/LoanRules">{translate text="Loan Rules"}</a></div>
 										<div class="adminMenuLink"><a href="{$path}/Admin/LoanRuleDeterminers">{translate text="Loan Rule Determiners"}</a></div>
 									{/if}

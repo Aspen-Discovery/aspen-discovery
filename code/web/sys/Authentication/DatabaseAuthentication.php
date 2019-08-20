@@ -7,6 +7,9 @@ class DatabaseAuthentication implements Authentication {
 	}
 
 	public function authenticate($validatedViaSSO) {
+		if (!isset($_POST['username']) || !isset($_POST['password'])){
+			return new AspenError('authentication_error_blank');
+		}
 		$username = $_POST['username'];
 		$password = $_POST['password'];
 		return $this->login($username, $password);

@@ -14,7 +14,7 @@ class PTypes extends ObjectEditor
 		return 'PTypes';
 	}
 	function getPageTitle(){
-		return 'PTypes';
+		return 'Patron Types';
 	}
 	function getAllObjects(){
 		$libraryList = array();

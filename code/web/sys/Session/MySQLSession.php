@@ -75,6 +75,8 @@ class MySQLSession extends SessionInterface {
             if (isset($_REQUEST['method'])) {
                 $method = $_REQUEST['method'];
                 if ($method != 'loginUser'
+	                && $method != 'initiateMasquerade'
+	                && $method != 'endMasquerade'
 	                && !isset($_REQUEST['showCovers'])
 	                && !isset($_REQUEST['sort'])
 	                && !isset($_REQUEST['availableHoldSort'])

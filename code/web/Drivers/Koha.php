@@ -310,12 +310,9 @@ class Koha extends AbstractIlsDriver {
      * @return AspenError|User|null
      */
 	public function patronLogin($username, $password, $validatedViaSSO) {
-		global $logger;
 		//Remove any spaces from the barcode
 		$username = trim($username);
 		$password = trim($password);
-
-		global $timer;
 
 		//Use MySQL connection to load data
 		$this->initDatabaseConnection();
@@ -340,129 +337,15 @@ class Koha extends AbstractIlsDriver {
             $authenticationResponse = $this->getXMLWebServiceResponse($authenticationURL);
             if (isset($authenticationResponse->id)){
 				$patronId = $authenticationResponse->id;
-				/** @noinspection SqlResolve */
-				$sql = "SELECT borrowernumber, cardnumber, surname, firstname, streetnumber, streettype, address, address2, city, state, zipcode, country, email, phone, mobile, categorycode, dateexpiry, password, userid, branchcode from borrowers where borrowernumber = $patronId";
-
-				$lookupUserResult = mysqli_query($this->dbConnection, $sql, MYSQLI_USE_RESULT);
-				if ($lookupUserResult) {
-					$userFromDb = $lookupUserResult->fetch_assoc();
-					$lookupUserResult->close();
-
-					$userExistsInDB = false;
-					$user = new User();
-					//Get the unique user id from Millennium
-					$user->source = $this->accountProfile->name;
-					$user->username = $userFromDb['borrowernumber'];
-					if ($user->find(true)){
-					    $userExistsInDB = true;
+				$result = $this->loadPatronInfoFromDB($patronId, $password);
+				if ($result == false){
+					global $logger;
+					$logger->log("MySQL did not return a result for getUserInfoStmt", Logger::LOG_ERROR);
+					if ($i == count($barcodesToTest) -1){
+						return new AspenError('authentication_error_technical');
 					}
-
-					$forceDisplayNameUpdate = false;
-					$firstName = $userFromDb['firstname'];
-					if ($user->firstname != $firstName) {
-					    $user->firstname = $firstName;
-					    $forceDisplayNameUpdate = true;
-					}
-					$lastName = $userFromDb['surname'];
-					if ($user->lastname != $lastName){
-					    $user->lastname = isset($lastName) ? $lastName : '';
-					    $forceDisplayNameUpdate = true;
-					}
-					if ($forceDisplayNameUpdate){
-					    $user->displayName = '';
-					}
-					$user->_fullname     = $userFromDb['firstname'] . ' ' . $userFromDb['surname'];
-					$user->cat_username = $userFromDb['cardnumber'];
-					$user->cat_password = $password;
-					$user->email        = $userFromDb['email'];
-					$user->patronType   = $userFromDb['categorycode'];
-					$user->_web_note     = '';
-
-					$user->_address1 = trim($userFromDb['streetnumber'] . ' ' . $userFromDb['address']);
-					$user->_address2 = $userFromDb['address2'];
-					$user->_city     = $userFromDb['city'];
-					$user->_state    = $userFromDb['state'];
-					$user->_zip      = $userFromDb['zipcode'];
-					$user->phone    = $userFromDb['phone'];
-
-					$timer->logTime("Loaded base patron information for Koha $username");
-
-					$homeBranchCode = strtolower($userFromDb['branchcode']);
-					$location = new Location();
-					$location->code = $homeBranchCode;
-					if (!$location->find(1)){
-					    unset($location);
-					    $user->homeLocationId = 0;
-					    // Logging for Diagnosing PK-1846
-					    global $logger;
-					    $logger->log('Koha Driver: No Location found, user\'s homeLocationId being set to 0. User : '.$user->id, Logger::LOG_WARNING);
-					}
-
-					if ((empty($user->homeLocationId) || $user->homeLocationId == -1) || (isset($location) && $user->homeLocationId != $location->locationId)) { // When homeLocation isn't set or has changed
-					    if ((empty($user->homeLocationId) || $user->homeLocationId == -1) && !isset($location)) {
-					        // homeBranch Code not found in location table and the user doesn't have an assigned home location,
-					        // try to find the main branch to assign to user
-					        // or the first location for the library
-					        global $library;
-
-					        $location            = new Location();
-					        $location->libraryId = $library->libraryId;
-					        $location->orderBy('isMainBranch desc'); // gets the main branch first or the first location
-					        if (!$location->find(true)) {
-					            // Seriously no locations even?
-					            global $logger;
-					            $logger->log('Failed to find any location to assign to user as home location', Logger::LOG_ERROR);
-					            unset($location);
-					        }
-					    }
-					    if (isset($location)) {
-					        $user->homeLocationId = $location->locationId;
-					        if (empty($user->myLocation1Id)) {
-					            $user->myLocation1Id  = ($location->nearbyLocation1 > 0) ? $location->nearbyLocation1 : $location->locationId;
-					            /** @var /Location $location */
-					            //Get display name for preferred location 1
-					            $myLocation1             = new Location();
-					            $myLocation1->locationId = $user->myLocation1Id;
-					            if ($myLocation1->find(true)) {
-					                $user->_myLocation1 = $myLocation1->displayName;
-					            }
-					        }
-
-					        if (empty($user->myLocation2Id)){
-					            $user->myLocation2Id  = ($location->nearbyLocation2 > 0) ? $location->nearbyLocation2 : $location->locationId;
-					            //Get display name for preferred location 2
-					            $myLocation2             = new Location();
-					            $myLocation2->locationId = $user->myLocation2Id;
-					            if ($myLocation2->find(true)) {
-					                $user->_myLocation2 = $myLocation2->displayName;
-					            }
-					        }
-					    }
-					}
-
-					if (isset($location)){
-					    //Get display names that aren't stored
-					    $user->_homeLocationCode = $location->code;
-					    $user->_homeLocation     = $location->displayName;
-					}
-
-					$user->_noticePreferenceLabel = 'Unknown';
-
-					if ($userExistsInDB){
-					    $user->update();
-					}else{
-					    $user->created = date('Y-m-d');
-					    $user->insert();
-					}
-
-					$timer->logTime("patron logged in successfully");
-
-					return $user;
 				}else{
-				    $logger->log("MySQL did not return a result for getUserInfoStmt", Logger::LOG_ERROR);
-				    if ($i == count($barcodesToTest) -1){
-				        return new AspenError('authentication_error_technical');
-				    }
+					return $result;
 				}
             }else{
 				//User is not valid, check to see if they have a valid account in Koha so we can return a different error
@@ -472,6 +355,14 @@ class Koha extends AbstractIlsDriver {
 				$lookupUserResult = mysqli_query($this->dbConnection, $sql);
 				if ($lookupUserResult->num_rows > 0) {
 				    $userExistsInDB = true;
+				    if (UserAccount::isUserMasquerading()){
+					    $lookupUserRow = $lookupUserResult->fetch_assoc();
+					    $patronId = $lookupUserRow['borrowernumber'];
+					    $newUser = $this->loadPatronInfoFromDB($patronId, null);
+					    if (!empty($newUser) && !($newUser instanceof AspenError)) {
+						    return $newUser;
+					    }
+				    }
 				}
             }
 		}
@@ -480,6 +371,131 @@ class Koha extends AbstractIlsDriver {
 		}else{
 			return null;
 		}
+	}
+
+	private function loadPatronInfoFromDB($patronId, $password){
+		global $timer;
+		/** @noinspection SqlResolve */
+		$sql = "SELECT borrowernumber, cardnumber, surname, firstname, streetnumber, streettype, address, address2, city, state, zipcode, country, email, phone, mobile, categorycode, dateexpiry, password, userid, branchcode from borrowers where borrowernumber = $patronId";
+
+		$userExistsInDB = false;
+
+		$lookupUserResult = mysqli_query($this->dbConnection, $sql, MYSQLI_USE_RESULT);
+		if ($lookupUserResult) {
+			$userFromDb = $lookupUserResult->fetch_assoc();
+			$lookupUserResult->close();
+
+			$user = new User();
+			//Get the unique user id from Millennium
+			$user->source = $this->accountProfile->name;
+			$user->username = $userFromDb['borrowernumber'];
+			if ($user->find(true)){
+				$userExistsInDB = true;
+			}
+
+			$forceDisplayNameUpdate = false;
+			$firstName = $userFromDb['firstname'];
+			if ($user->firstname != $firstName) {
+				$user->firstname = $firstName;
+				$forceDisplayNameUpdate = true;
+			}
+			$lastName = $userFromDb['surname'];
+			if ($user->lastname != $lastName){
+				$user->lastname = isset($lastName) ? $lastName : '';
+				$forceDisplayNameUpdate = true;
+			}
+			if ($forceDisplayNameUpdate){
+				$user->displayName = '';
+			}
+			$user->_fullname     = $userFromDb['firstname'] . ' ' . $userFromDb['surname'];
+			$user->cat_username = $userFromDb['cardnumber'];
+			$user->cat_password = $password;
+			$user->email        = $userFromDb['email'];
+			$user->patronType   = $userFromDb['categorycode'];
+			$user->_web_note     = '';
+
+			$user->_address1 = trim($userFromDb['streetnumber'] . ' ' . $userFromDb['address']);
+			$user->_address2 = $userFromDb['address2'];
+			$user->_city     = $userFromDb['city'];
+			$user->_state    = $userFromDb['state'];
+			$user->_zip      = $userFromDb['zipcode'];
+			$user->phone    = $userFromDb['phone'];
+
+			$timer->logTime("Loaded base patron information for Koha $patronId");
+
+			$homeBranchCode = strtolower($userFromDb['branchcode']);
+			$location = new Location();
+			$location->code = $homeBranchCode;
+			if (!$location->find(1)){
+				unset($location);
+				$user->homeLocationId = 0;
+				// Logging for Diagnosing PK-1846
+				global $logger;
+				$logger->log('Koha Driver: No Location found, user\'s homeLocationId being set to 0. User : '.$user->id, Logger::LOG_WARNING);
+			}
+
+			if ((empty($user->homeLocationId) || $user->homeLocationId == -1) || (isset($location) && $user->homeLocationId != $location->locationId)) { // When homeLocation isn't set or has changed
+				if ((empty($user->homeLocationId) || $user->homeLocationId == -1) && !isset($location)) {
+					// homeBranch Code not found in location table and the user doesn't have an assigned home location,
+					// try to find the main branch to assign to user
+					// or the first location for the library
+					global $library;
+
+					$location            = new Location();
+					$location->libraryId = $library->libraryId;
+					$location->orderBy('isMainBranch desc'); // gets the main branch first or the first location
+					if (!$location->find(true)) {
+						// Seriously no locations even?
+						global $logger;
+						$logger->log('Failed to find any location to assign to user as home location', Logger::LOG_ERROR);
+						unset($location);
+					}
+				}
+				if (isset($location)) {
+					$user->homeLocationId = $location->locationId;
+					if (empty($user->myLocation1Id)) {
+						$user->myLocation1Id  = ($location->nearbyLocation1 > 0) ? $location->nearbyLocation1 : $location->locationId;
+						/** @var /Location $location */
+						//Get display name for preferred location 1
+						$myLocation1             = new Location();
+						$myLocation1->locationId = $user->myLocation1Id;
+						if ($myLocation1->find(true)) {
+							$user->_myLocation1 = $myLocation1->displayName;
+						}
+					}
+
+					if (empty($user->myLocation2Id)){
+						$user->myLocation2Id  = ($location->nearbyLocation2 > 0) ? $location->nearbyLocation2 : $location->locationId;
+						//Get display name for preferred location 2
+						$myLocation2             = new Location();
+						$myLocation2->locationId = $user->myLocation2Id;
+						if ($myLocation2->find(true)) {
+							$user->_myLocation2 = $myLocation2->displayName;
+						}
+					}
+				}
+			}
+
+			if (isset($location)){
+				//Get display names that aren't stored
+				$user->_homeLocationCode = $location->code;
+				$user->_homeLocation     = $location->displayName;
+			}
+
+			$user->_noticePreferenceLabel = 'Unknown';
+
+			if ($userExistsInDB){
+				$user->update();
+			}else{
+				$user->created = date('Y-m-d');
+				$user->insert();
+			}
+
+			$timer->logTime("patron logged in successfully");
+
+			return $user;
+		}
+		return $userExistsInDB;
 	}
 
 	function initDatabaseConnection(){
@@ -2055,6 +2071,7 @@ class Koha extends AbstractIlsDriver {
 			$accountSummary['totalFines'] = floatval($outstandingFines);
 
 			//Get expiration information
+			/** @noinspection SqlResolve */
 			$sql = "SELECT dateexpiry from borrowers where borrowernumber = {$user->username}";
 
 			$lookupUserResult = mysqli_query($this->dbConnection, $sql, MYSQLI_USE_RESULT);
@@ -2095,5 +2112,25 @@ class Koha extends AbstractIlsDriver {
 			$postFields[$variableName] = $_REQUEST[$variableName];
 		}
 		return $postFields;
+	}
+
+	public function findNewUser($patronBarcode) {
+		// Check the Koha database to see if the patron exists
+		//Use MySQL connection to load data
+		$this->initDatabaseConnection();
+
+		/** @noinspection SqlResolve */
+		$sql = "SELECT borrowernumber, cardnumber, userId from borrowers where cardnumber = '$patronBarcode' OR userId = '$patronBarcode'";
+
+		$lookupUserResult = mysqli_query($this->dbConnection, $sql);
+		if ($lookupUserResult->num_rows > 0) {
+			$lookupUserRow = $lookupUserResult->fetch_assoc();
+			$patronId = $lookupUserRow['borrowernumber'];
+			$newUser = $this->loadPatronInfoFromDB($patronId, null);
+			if (!empty($newUser) && !($newUser instanceof AspenError)) {
+				return $newUser;
+			}
+		}
+		return false;
 	}
 }

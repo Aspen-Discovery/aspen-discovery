@@ -76,7 +76,8 @@ class ILSAuthentication implements Authentication {
 		$this->password = $password;
 
 		$logger->log("validating account for user '{$this->username}', '{$this->password}' via the ILS", Logger::LOG_DEBUG);
-		if($this->username == '' || ($this->password == '' && !$validatedViaSSO)){
+		//Password is not required if we have validated via single sign on or if the user is masquerading
+		if($this->username == '' || ($this->password == '' && !$validatedViaSSO && !UserAccount::isUserMasquerading())){
 			$validUser = new AspenError('authentication_error_blank');
 		} else {
 			// Connect to the correct catalog depending on the driver for this account

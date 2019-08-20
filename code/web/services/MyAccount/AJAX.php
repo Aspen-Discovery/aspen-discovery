@@ -18,24 +18,7 @@ class MyAccount_AJAX
 				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 				header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
 				$result = $this->$method();
-				try {
-					require_once ROOT_DIR . '/sys/Utils/ArrayUtils.php';
-					$output = json_encode($result);
-					$error = json_last_error();
-					if ($error != JSON_ERROR_NONE || $output === FALSE) {
-						if (function_exists('json_last_error_msg')) {
-							$output = json_encode(array('error' => 'error_encoding_data', 'message' => json_last_error_msg()));
-						} else {
-							$output = json_encode(array('error' => 'error_encoding_data', 'message' => json_last_error()));
-						}
-					}
-				} catch (Exception $e) {
-					$output = json_encode(array('error' => 'error_encoding_data', 'message' => $e));
-					global $logger;
-					$logger->log("Error encoding json data $e", Logger::LOG_ERROR);
-				}
-				echo $output;
-
+				echo json_encode($result);
 			}
 		}else {
 			echo json_encode(array('error'=>'invalid_method'));

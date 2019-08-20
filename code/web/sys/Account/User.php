@@ -246,8 +246,8 @@ class User extends DataObject
 		$masqueradeMode = UserAccount::isUserMasquerading();
 		if ($masqueradeMode && !$isGuidingUser) {
 			if (is_null($this->masqueradingRoles)) {
-				global /** @var User $guidingUser */
-				$guidingUser;
+				/** @var User $guidingUser */
+				$guidingUser = UserAccount::getGuidingUserObject();
 				$guidingUserRoles = $guidingUser->getRoles(true);
 				if (in_array('opacAdmin', $guidingUserRoles)) {
 					$this->masqueradingRoles = $this->roles;

@@ -54,9 +54,11 @@ class MyAccount_Masquerade extends MyAccount
 							//$logger->log("Testing a different login configuration", Logger::LOG_ERROR);
 							// Check for another ILS with a different login configuration
 							$accountProfile = new AccountProfile();
+							$accountProfile->selectAdd();
+							$accountProfile->selectAdd('loginConfiguration');
 							$accountProfile->groupBy('loginConfiguration');
-							$numConfigurations = $accountProfile->count('loginConfiguration');
-							if ($numConfigurations > 1) {
+							$numConfigurations = $accountProfile->find();
+							if ($accountProfile->N > 1) {
 								// Now that we know there is more than loginConfiguration type, check the opposite column
 								$masqueradedUser = new User();
 								if ($user->getAccountProfile()->loginConfiguration == 'barcode_pin') {
@@ -138,15 +140,16 @@ class MyAccount_Masquerade extends MyAccount
 							//$logger->log("New Guiding User " . (empty($guidingUser) ? 'none' : $guidingUser->id), Logger::LOG_ERROR);
 							// NOW login in as masquerade user
 							//$logger->log("Masqueraded User " . (empty($masqueradedUser) ? 'none' : $masqueradedUser->id), Logger::LOG_ERROR);
-							$_REQUEST['username'] = $masqueradedUser->cat_username;
-							$_REQUEST['password'] = $masqueradedUser->cat_password;
+//							$_REQUEST['username'] = $masqueradedUser->cat_username;
+//							$_REQUEST['password'] = $masqueradedUser->cat_password;
 							//$logger->log("Masquerade Login " . $_REQUEST['username'] . " " . $_REQUEST['password'], Logger::LOG_ERROR);
-							$user                 = UserAccount::login();
+							$user                 = $masqueradedUser;
 							//$logger->log("New User " . (empty($user) ? 'none' : $user->id), Logger::LOG_ERROR);
 							if (!empty($user) && !($user instanceof AspenError)){
 								@session_start(); // (suppress notice if the session is already started)
 								$_SESSION['guidingUserId'] = $guidingUser->id;
 								$_SESSION['activeUserId'] = $user->id;
+								@session_commit();
 								return array('success' => true);
 							} else {
 								unset($_SESSION['guidingUserId']);
