@@ -241,7 +241,6 @@ public class OaiIndexerMain {
                                     Node curRecordNode = allRecords.item(i);
                                     if (curRecordNode instanceof Element) {
                                         Element curRecordElement = (Element) curRecordNode;
-
                                         if (indexElement(curRecordElement, existingRecords, collectionId, collectionName, subjectFilters, allExistingCollectionSubjects)) {
                                             numRecordsLoaded++;
                                         }else{
@@ -400,6 +399,7 @@ public class OaiIndexerMain {
                                         }
                                         for (int tmpIndex = 0; tmpIndex < dateRange.length; tmpIndex++){
                                             dateRange[tmpIndex] = dateRange[tmpIndex].trim();
+                                            dateRange[tmpIndex] = dateRange[tmpIndex].replaceAll("/", "-");
                                         }
                                         solrRecord.addDates(dateRange);
 
