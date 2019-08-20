@@ -141,7 +141,7 @@ function getUserUpdates(){
             ),
         ),
 
-        'user_hoopla_confirmation_checkout' => array(
+        'user_hoopla_confirmation_checkout_prompt' => array(
             'title' => 'Hoopla Checkout Confirmation Prompt',
             'description' => 'Stores user preference whether or not to prompt for confirmation before checking out a title from Hoopla',
             'sql' => array(

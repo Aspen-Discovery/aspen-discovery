@@ -16,6 +16,7 @@ AspenDiscovery.Hoopla = (function(){
 				$.getJSON(url, params, function (data) {
 					if (data.success) {
 						AspenDiscovery.showMessageWithButtons(data.title, data.message, data.buttons);
+						AspenDiscovery.Account.loadMenuData();
 					} else {
 						AspenDiscovery.showMessage("Checking Out Title", data.message);
 					}
@@ -58,6 +59,7 @@ AspenDiscovery.Hoopla = (function(){
 			} else {
 				AspenDiscovery.Account.ajaxLogin(null, function () {
 					AspenDiscovery.Hoopla.returnCheckout(patronId, hooplaId);
+					AspenDiscovery.Account.loadMenuData();
 				}, false);
 			}
 			return false;

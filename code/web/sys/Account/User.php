@@ -242,7 +242,6 @@ class User extends DataObject
 			}
 		}
 
-
 		$masqueradeMode = UserAccount::isUserMasquerading();
 		if ($masqueradeMode && !$isGuidingUser) {
 			if (is_null($this->masqueradingRoles)) {
