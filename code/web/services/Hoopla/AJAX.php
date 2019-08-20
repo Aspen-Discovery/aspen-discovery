@@ -1,5 +1,6 @@
 <?php
 
+/** @noinspection PhpUnused */
 class Hoopla_AJAX extends Action
 {
 	function launch() {
@@ -18,7 +19,7 @@ class Hoopla_AJAX extends Action
 		}
 	}
 
-
+	/** @noinspection PhpUnused */
 	function reloadCover(){
 		require_once ROOT_DIR . '/RecordDrivers/HooplaRecordDriver.php';
 		$id = $_REQUEST['id'];
@@ -55,9 +56,7 @@ class Hoopla_AJAX extends Action
 	}
 
 
-	/**
-	 * @return array
-	 */
+	/** @noinspection PhpUnused */
 	function getCheckOutPrompts(){
 		$user = UserAccount::getLoggedInUser();
 		$id = $_REQUEST['id'];
@@ -101,26 +100,19 @@ class Hoopla_AJAX extends Action
 					if (!$checkOutStatus) {
 						require_once ROOT_DIR . '/RecordDrivers/HooplaRecordDriver.php';
 						$hooplaRecord = new HooplaRecordDriver($id);
-                        try {
-                            // Base Hoopla Title View Url
-                            $accessLink = $hooplaRecord->getAccessLink();
-                            $hooplaRegistrationUrl = $accessLink['url'];
-                            $hooplaRegistrationUrl .= (parse_url($hooplaRegistrationUrl, PHP_URL_QUERY) ? '&' : '?') . 'showRegistration=true'; // Add Registration URL parameter
 
-                            return array(
-                                    'title'   => 'Create Hoopla Account',
-                                    'body'    => $interface->fetch('Hoopla/ajax-hoopla-single-user-checkout-prompt.tpl'),
-                                    'buttons' =>
-                                        '<button id="theHooplaButton" class="btn btn-default" type="button" title="Check Out" onclick="return AspenDiscovery.Hoopla.checkOutHooplaTitle(\'' . $id . '\', ' . $hooplaUser->id . ')">I registered, Check Out now</button>'
-                                        .'<a class="btn btn-primary" role="button" href="'.$hooplaRegistrationUrl.'" target="_blank" title="Register at Hoopla" onclick="$(\'#theHooplaButton+a,#theHooplaButton\').toggleClass(\'btn-primary btn-default\');">Register at Hoopla</a>'
-                                );
-                        } catch (File_MARC_Exception $e) {
-                            return array(
-                                    'title'   => 'Error',
-                                    'body'    => 'Could not load MARC record for Hoopla checkout.',
-                                    'buttons' => ''
-                                );
-                        }
+                        // Base Hoopla Title View Url
+                        $accessLink = $hooplaRecord->getAccessLink();
+                        $hooplaRegistrationUrl = $accessLink['url'];
+                        $hooplaRegistrationUrl .= (parse_url($hooplaRegistrationUrl, PHP_URL_QUERY) ? '&' : '?') . 'showRegistration=true'; // Add Registration URL parameter
+
+                        return array(
+                            'title'   => 'Create Hoopla Account',
+                            'body'    => $interface->fetch('Hoopla/ajax-hoopla-single-user-checkout-prompt.tpl'),
+                            'buttons' =>
+                                '<button id="theHooplaButton" class="btn btn-default" type="button" title="Check Out" onclick="return AspenDiscovery.Hoopla.checkOutHooplaTitle(\'' . $id . '\', ' . $hooplaUser->id . ')">I registered, Check Out now</button>'
+                                .'<a class="btn btn-primary" role="button" href="'.$hooplaRegistrationUrl.'" target="_blank" title="Register at Hoopla" onclick="$(\'#theHooplaButton+a,#theHooplaButton\').toggleClass(\'btn-primary btn-default\');">Register at Hoopla</a>'
+                        );
 					}
 					if ($hooplaUser->hooplaCheckOutConfirmation) {
 						$interface->assign('hooplaPatronStatus', $checkOutStatus);
@@ -168,6 +160,7 @@ class Hoopla_AJAX extends Action
 
 	}
 
+	/** @noinspection PhpUnused */
 	function checkOutHooplaTitle() {
 		$user = UserAccount::getLoggedInUser();
 		if ($user){
@@ -209,6 +202,7 @@ class Hoopla_AJAX extends Action
 		}
 	}
 
+	/** @noinspection PhpUnused */
 	function returnCheckout() {
 		$user = UserAccount::getLoggedInUser();
 		if ($user){
