@@ -201,6 +201,11 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 			return "On Hold Shelf";
 		}
 
+		String subLocationData = getItemSubfieldData(subLocationSubfield, itemField);
+		if (subLocationData != null && subLocationData.equalsIgnoreCase("ON-ORDER")){
+			return "On Order";
+		}
+
 		//Determining status for Koha relies on a number of different fields
 		String status = getStatusFromSubfield(itemField, '0', "Withdrawn");
 		if (status != null) return status;
