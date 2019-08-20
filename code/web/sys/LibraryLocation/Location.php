@@ -179,7 +179,8 @@ class Location extends DataObject
         $hooplaScope->orderBy('name');
 	    $hooplaScopes = [];
 	    $hooplaScope->find();
-	    $hooplaScopes[-1] = 'none';
+	    $hooplaScopes[-2] = 'None';
+	    $hooplaScopes[-1] = 'Use Library Setting';
 	    while ($hooplaScope->fetch()){
 		    $hooplaScopes[$hooplaScope->id] = $hooplaScope->name;
 	    }
@@ -189,6 +190,7 @@ class Location extends DataObject
 	    $rbdigitalScope->orderBy('name');
 	    $rbdigitalScopes = [];
 	    $rbdigitalScope->find();
+	    $rbdigitalScopes[-2] = 'None';
 	    $rbdigitalScopes[-1] = 'Use Library Setting';
 	    while ($rbdigitalScope->fetch()){
 		    $rbdigitalScopes[$rbdigitalScope->id] = $rbdigitalScope->name;
@@ -199,6 +201,7 @@ class Location extends DataObject
 	    $cloudLibraryScope->orderBy('name');
 	    $cloudLibraryScopes = [];
 	    $cloudLibraryScope->find();
+	    $cloudLibraryScopes[-2] = 'None';
 	    $cloudLibraryScopes[-1] = 'Use Library Setting';
 	    while ($cloudLibraryScope->fetch()){
 		    $cloudLibraryScopes[$cloudLibraryScope->id] = $cloudLibraryScope->name;

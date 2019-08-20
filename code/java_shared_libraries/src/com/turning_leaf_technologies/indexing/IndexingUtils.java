@@ -1,8 +1,5 @@
 package com.turning_leaf_technologies.indexing;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -11,11 +8,7 @@ import java.util.HashMap;
 import java.util.Objects;
 import java.util.TreeSet;
 
-import com.turning_leaf_technologies.marc.MarcUtil;
 import org.apache.logging.log4j.Logger;
-import org.marc4j.MarcPermissiveStreamReader;
-import org.marc4j.MarcReader;
-import org.marc4j.marc.Record;
 
 public class IndexingUtils {
 
@@ -190,11 +183,13 @@ public class IndexingUtils {
 
             long hooplaScopeLocation = locationInformationRS.getLong("hooplaScopeLocation");
             long hooplaScopeLibrary = locationInformationRS.getLong("hooplaScopeLibrary");
+
+            //No records
             if (hooplaScopeLocation == -1 ){
                 if (hooplaScopeLibrary != -1) {
                     locationScopeInfo.setHooplaScope(hooplaScopes.get(hooplaScopeLibrary));
                 }
-            }else{
+            }else if (hooplaScopeLocation != -2 ) {
                 locationScopeInfo.setHooplaScope(hooplaScopes.get(hooplaScopeLocation));
             }
 
@@ -204,7 +199,7 @@ public class IndexingUtils {
                 if (rbdigitalScopeLibrary != -1) {
                     locationScopeInfo.setRbdigitalScope(rbdigitalScopes.get(rbdigitalScopeLibrary));
                 }
-            }else{
+            }else if (rbdigitalScopeLocation == -2 ){
                 locationScopeInfo.setRbdigitalScope(rbdigitalScopes.get(rbdigitalScopeLocation));
             }
 
@@ -214,7 +209,7 @@ public class IndexingUtils {
                 if (cloudLibraryScopeLibrary != -1) {
                     locationScopeInfo.setCloudLibraryScope(cloudLibraryScopes.get(cloudLibraryScopeLibrary));
                 }
-            }else{
+            }else if (rbdigitalScopeLocation == -2 ){
                 locationScopeInfo.setCloudLibraryScope(cloudLibraryScopes.get(cloudLibraryScopeLocation));
             }
 

@@ -1098,9 +1098,6 @@ class Library extends DataObject
             unset($structure['ilsSection']['properties']['selfRegistrationSection']['properties']['promptForBirthDateInSelfReg']);
 	        unset($structure['ilsSection']['properties']['selfRegistrationSection']['properties']['selfRegistrationTemplate']);
         }
-        if (!$configArray['Hoopla']['enabled']){
-            unset($structure['hooplaSection']);
-        }
         if (!$configArray['EDS']['enabled']){
             unset($structure['edsSection']);
         }
