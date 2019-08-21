@@ -57,6 +57,9 @@ class Grouping_Record
         $this->formatCategory = $recordDetails[2];
         $this->edition = $recordDetails[3];
         $this->language = $recordDetails[4];
+        if ($this->language == ''){
+        	$this->language = 'English';
+        }
         $this->publisher = $recordDetails[5];
         $this->publicationDate = $recordDetails[6];
         $this->physical = $recordDetails[7];
