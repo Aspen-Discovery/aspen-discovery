@@ -104,6 +104,9 @@ public class HooplaExportMain {
 			long elapsedTime = endTime - startTime.getTime();
 			logger.info("Elapsed Minutes " + (elapsedTime / 60000));
 
+			//Mark that indexing has finished
+
+
 			logEntry.setFinished();
 
 			disconnectDatabase(aspenConn);
@@ -197,7 +200,7 @@ public class HooplaExportMain {
 				String apiPassword = getSettingsRS.getString("apiPassword");
 				String hooplaLibraryId = getSettingsRS.getString("libraryId");
 				long lastUpdateOfChangedRecords = getSettingsRS.getLong("lastUpdateOfChangedRecords");
-				long lastUpdateOfAllRecords = getSettingsRS.getLong("lastUpdateOfChangedRecords");
+				long lastUpdateOfAllRecords = getSettingsRS.getLong("lastUpdateOfAllRecords");
 				long lastUpdate = Math.max(lastUpdateOfChangedRecords, lastUpdateOfAllRecords);
 				boolean doFullReload = getSettingsRS.getBoolean("runFullUpdate");
 				long settingsId = getSettingsRS.getLong("id");
@@ -281,6 +284,19 @@ public class HooplaExportMain {
 							logEntry.saveResults();
 						}
 					}
+				}
+
+				//Set the extract time
+				if (doFullReload){
+					PreparedStatement updateSettingsStmt = aspenConn.prepareStatement("UPDATE hoopla_settings set lastUpdateOfAllRecords = ? where id = ?");
+					updateSettingsStmt.setLong(1, startTimeForLogging);
+					updateSettingsStmt.setLong(2, settingsId);
+					updateSettingsStmt.executeUpdate();
+				}else{
+					PreparedStatement updateSettingsStmt = aspenConn.prepareStatement("UPDATE hoopla_settings set lastUpdateOfChangedRecords = ? where id = ?");
+					updateSettingsStmt.setLong(1, startTimeForLogging);
+					updateSettingsStmt.setLong(2, settingsId);
+					updateSettingsStmt.executeUpdate();
 				}
 			}
 			if (numSettings == 0){
