@@ -77,17 +77,6 @@ public class HooplaExportMain {
 			//Do work here
 			int numChanges = exportHooplaData();
 
-			//Mark any records that no longer exist in search results as deleted
-			//TODO: Can we detect records that were deleted in the API or should this only be done on a full reload
-			//With Hoopla should we just do a full reload once a night rather than realtime changes?
-			//Since the records should not change often
-			if (!logEntry.hasErrors()){
-				numChanges += deleteItems();
-			}else{
-				logEntry.addNote("Not deleting items because there were errors");
-			}
-
-
 			if (groupedWorkIndexer != null) {
 				groupedWorkIndexer.finishIndexingFromExtract();
 				recordGroupingProcessorSingleton = null;
@@ -131,7 +120,7 @@ public class HooplaExportMain {
 				if (hooplaTitle.isActive()) {
 					deleteHooplaItemStmt.setLong(1, hooplaTitle.getId());
 					deleteHooplaItemStmt.executeUpdate();
-					RemoveRecordFromWorkResult result = getRecordGroupingProcessor().removeRecordFromGroupedWork("rbdigital", Long.toString(hooplaTitle.getHooplaId()));
+					RemoveRecordFromWorkResult result = getRecordGroupingProcessor().removeRecordFromGroupedWork("hoopla", Long.toString(hooplaTitle.getHooplaId()));
 					if (result.reindexWork){
 						getGroupedWorkIndexer().processGroupedWork(result.permanentId);
 					}else if (result.deleteWork){
@@ -221,6 +210,7 @@ public class HooplaExportMain {
 				//Formulate the first call depending on if we are doing a full reload or not
 				String url = hooplaAPIBaseURL + "/api/v1/libraries/" + hooplaLibraryId + "/content";
 				if (!doFullReload && lastUpdate > 0) {
+					logEntry.addNote("Extracting records since " + new Date(lastUpdate * 1000).toString());
 					url += "?startTime=" + lastUpdate;
 				}
 
@@ -284,6 +274,10 @@ public class HooplaExportMain {
 							logEntry.saveResults();
 						}
 					}
+				}
+
+				if (doFullReload){
+					numChanges += deleteItems();
 				}
 
 				//Set the extract time
