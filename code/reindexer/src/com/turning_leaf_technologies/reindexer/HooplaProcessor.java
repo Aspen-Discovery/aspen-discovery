@@ -214,6 +214,8 @@ class HooplaProcessor {
 				itemInfo.setShelfLocation("Online Hoopla Collection");
 				itemInfo.setCallNumber("Online Hoopla");
 				itemInfo.setSortableCallNumber("Online Hoopla");
+				itemInfo.setFormat(primaryFormat);
+				itemInfo.setFormatCategory(formatCategory);
 				//Hoopla is always 1 copy unlimited use
 				itemInfo.setNumCopies(1);
 
@@ -288,11 +290,11 @@ class HooplaProcessor {
 			}
 			productRS.close();
 		}catch (NullPointerException e) {
-			logger.error("Null pointer exception processing rbdigital record ", e);
+			logger.error("Null pointer exception processing Hoopla record ", e);
 		} catch (JSONException e) {
-			logger.error("Error parsing raw data for rbdigital", e);
+			logger.error("Error parsing raw data for Hoopla", e);
 		} catch (SQLException e) {
-			logger.error("Error loading information from Database for overdrive title", e);
+			logger.error("Error loading information from Database for Hoopla title", e);
 		}
 	}
 

@@ -198,6 +198,8 @@ class RbdigitalProcessor {
                 itemInfo.setShelfLocation("Online Rbdigital Collection");
                 itemInfo.setCallNumber("Online Rbdigital");
                 itemInfo.setSortableCallNumber("Online Rbdigital");
+                itemInfo.setFormat(primaryFormat);
+                itemInfo.setFormatCategory(formatCategory);
                 //We don't currently have a way to determine how many copies are owned
                 itemInfo.setNumCopies(1);
 

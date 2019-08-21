@@ -7,6 +7,7 @@ import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.SolrInputField;
+import org.marc4j.marc.Record;
 
 import java.util.*;
 import java.util.regex.Pattern;
@@ -288,24 +289,46 @@ public class GroupedWorkSolr implements Cloneable {
 		Date dateAdded = getDateAdded();
 		doc.addField("date_added", dateAdded);
 
-		if (dateAdded == null){
-			//Determine date added based on publication date
-			if (earliestPublicationDate != null){
-				//Return number of days since the given year
-				Calendar publicationDate = GregorianCalendar.getInstance();
-				publicationDate.set(earliestPublicationDate.intValue(), Calendar.DECEMBER, 31);
-
-				long indexTime = DateUtils.getIndexDate().getTime();
-				long publicationTime = publicationDate.getTime().getTime();
-				long bibDaysSinceAdded = (indexTime - publicationTime) / (long)(1000 * 60 * 60 * 24);
-				doc.addField("days_since_added", Long.toString(bibDaysSinceAdded));
-				doc.addField("time_since_added", DateUtils.getTimeSinceAddedForDate(publicationDate.getTime()));
-			}else{
-				doc.addField("days_since_added", Long.toString(Integer.MAX_VALUE));
-			}
+		//Check to see if all items are on order.  If so, add on order keywords
+		boolean allItemsOnOrder = true;
+		int numItems = 0;
+        for (RecordInfo record : relatedRecords.values()) {
+            for (ItemInfo item : record.getRelatedItems()) {
+                numItems++;
+                if (!(item.isOrderItem() || (item.getStatusCode() != null && item.getStatusCode().equals("On Order")))) {
+                    allItemsOnOrder = false;
+                }
+            }
+        }
+		if (numItems == 0){
+		    allItemsOnOrder = false;
+        }
+		if (allItemsOnOrder){
+			addKeywords("On Order");
+			addKeywords("Coming Soon");
+			doc.addField("days_since_added", -1);
+			doc.addField("time_since_added", "On Order");
 		}else{
-			doc.addField("days_since_added", DateUtils.getDaysSinceAddedForDate(dateAdded));
-			doc.addField("time_since_added", DateUtils.getTimeSinceAddedForDate(dateAdded));
+			//Check to see if all items are either on order or
+			if (dateAdded == null){
+				//Determine date added based on publication date
+				if (earliestPublicationDate != null){
+					//Return number of days since the given year
+					Calendar publicationDate = GregorianCalendar.getInstance();
+					publicationDate.set(earliestPublicationDate.intValue(), Calendar.JANUARY, 1);
+
+					long indexTime = DateUtils.getIndexDate().getTime();
+					long publicationTime = publicationDate.getTime().getTime();
+					long bibDaysSinceAdded = (indexTime - publicationTime) / (long)(1000 * 60 * 60 * 24);
+					doc.addField("days_since_added", Long.toString(bibDaysSinceAdded));
+					doc.addField("time_since_added", DateUtils.getTimeSinceAddedForDate(publicationDate.getTime()));
+				}else{
+					doc.addField("days_since_added", Long.toString(Integer.MAX_VALUE));
+				}
+			}else{
+				doc.addField("days_since_added", DateUtils.getDaysSinceAddedForDate(dateAdded));
+				doc.addField("time_since_added", DateUtils.getTimeSinceAddedForDate(dateAdded));
+			}
 		}
 
 		doc.addField("barcode", barcodes);
@@ -476,24 +499,28 @@ public class GroupedWorkSolr implements Cloneable {
 						addUniqueFieldValue(doc, "detailed_location_" + curScopeName, curItem.getShelfLocation());
 					}
 					if (curScope.isLocallyOwned() || curScope.isLibraryOwned() || curScopeDetails.isIncludeAllRecordsInDateAddedFacets()) {
-						//Date Added To Catalog needs to be the earliest date added for the catalog.
-						Date dateAdded = curItem.getDateAdded();
 						Integer daysSinceAdded;
-						//See if we need to override based on publication date if not provided.
-						//Should be set by individual driver though.
-						if (dateAdded == null){
-							if (earliestPublicationDate != null){
-								//Return number of days since the given year
-								Calendar publicationDate = GregorianCalendar.getInstance();
-								//We don't know when in the year it is published, so assume January 1st which could be wrong
-								publicationDate.set(earliestPublicationDate.intValue(), Calendar.JANUARY, 1);
+						if (curItem.isOrderItem() || (curItem.getStatusCode() != null && curItem.getStatusCode().equals("On Order"))){
+							daysSinceAdded = -1;
+						}else {
+							//Date Added To Catalog needs to be the earliest date added for the catalog.
+							Date dateAdded = curItem.getDateAdded();
+							//See if we need to override based on publication date if not provided.
+							//Should be set by individual driver though.
+							if (dateAdded == null) {
+								if (earliestPublicationDate != null) {
+									//Return number of days since the given year
+									Calendar publicationDate = GregorianCalendar.getInstance();
+									//We don't know when in the year it is published, so assume January 1st which could be wrong
+									publicationDate.set(earliestPublicationDate.intValue(), Calendar.JANUARY, 1);
 
-								daysSinceAdded = DateUtils.getDaysSinceAddedForDate(publicationDate.getTime());
-							}else{
-								daysSinceAdded = Integer.MAX_VALUE;
+									daysSinceAdded = DateUtils.getDaysSinceAddedForDate(publicationDate.getTime());
+								} else {
+									daysSinceAdded = Integer.MAX_VALUE;
+								}
+							} else {
+								daysSinceAdded = DateUtils.getDaysSinceAddedForDate(dateAdded);
 							}
-						}else{
-							daysSinceAdded = DateUtils.getDaysSinceAddedForDate(dateAdded);
 						}
 
 						updateMaxValueField(doc, "local_days_since_added_" + curScopeName, daysSinceAdded);

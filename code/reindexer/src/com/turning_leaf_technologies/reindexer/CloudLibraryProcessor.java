@@ -152,9 +152,9 @@ class CloudLibraryProcessor extends MarcRecordProcessor{
             }
             productRS.close();
         }catch (NullPointerException e) {
-            logger.error("Null pointer exception processing rbdigital record ", e);
+            logger.error("Null pointer exception processing Cloud Library record ", e);
         } catch (SQLException e) {
-            logger.error("Error loading information from Database for rbdigital title", e);
+            logger.error("Error loading information from Database for Cloud Library title", e);
         }
     }
 
