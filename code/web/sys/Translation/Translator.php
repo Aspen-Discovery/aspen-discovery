@@ -66,6 +66,9 @@ class Translator
 	 */
 	function translate($phrase, $defaultText = '', $replacementValues = [], $inAttribute = false)
 	{
+		if ($phrase == ''){
+			return $phrase;
+		}
 		//TODO: Determine if there is a performance improvement to preloading all of this, or if caching within Memcache is good enough
 		/** @var Language */
 		global $activeLanguage;
