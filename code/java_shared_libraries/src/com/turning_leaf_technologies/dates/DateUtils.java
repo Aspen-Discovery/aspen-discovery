@@ -14,7 +14,7 @@ public class DateUtils {
         if (curDate == null){
             return null;
         }
-        return (int)(indexDate.getTime() - curDate.getTime()) / (1000 * 60 * 60 * 24);
+        return (int)((indexDate.getTime() - curDate.getTime()) / (1000 * 60 * 60 * 24));
     }
     private static Date indexDate = new Date();
     public static Date getIndexDate(){
