@@ -1212,6 +1212,15 @@ function getLibraryLocationUpdates(){
 			),
 		),
 
+		'public_lists_to_include_defaults'  => array(
+			'title' => 'Public Lists to Include Defaults',
+			'description' => 'Set correct defaults for public list inclusion',
+			'sql' => array(
+				"ALTER TABLE `library` CHANGE COLUMN publicListsToInclude publicListsToInclude TINYINT(1) DEFAULT 4",
+				"ALTER TABLE `location` CHANGE COLUMN publicListsToInclude publicListsToInclude TINYINT(1) DEFAULT 6",
+			),
+		),
+
 
 			'enable_archive' => array(
 					'title' => 'Enable Archive for libraries',

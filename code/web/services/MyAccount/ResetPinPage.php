@@ -2,18 +2,15 @@
 
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
 
+/** @noinspection PhpUnused */
 class MyAccount_ResetPinPage extends MyAccount
 {
 	function launch()
 	{
-		global $configArray;
 		global $interface;
 		$user = UserAccount::getLoggedInUser();
 
 		if ($user) {
-			// Determine which user we are showing/updating settings for
-			$linkedUsers = $user->getLinkedUsers();
-
 			/** @var Library $librarySingleton */
 			global $librarySingleton;
 			// Get Library Settings from the home library of the current user-account being displayed

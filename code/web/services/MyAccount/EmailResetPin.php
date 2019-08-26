@@ -3,9 +3,8 @@
 require_once ROOT_DIR . "/Action.php";
 require_once ROOT_DIR . '/CatalogConnection.php';
 
-class EmailResetPin extends Action{
-	protected $catalog;
-
+/** @noinspection PhpUnused */
+class MyAccount_EmailResetPin extends Action{
 	function launch($msg = null)
 	{
 		global $interface;
@@ -14,9 +13,9 @@ class EmailResetPin extends Action{
 		$interface->assign('usernameLabel', str_replace('Your', '', $library->loginFormUsernameLabel ? $library->loginFormUsernameLabel : 'Name'));
 		$interface->assign('passwordLabel', str_replace('Your', '', $library->loginFormPasswordLabel ? $library->loginFormPasswordLabel : 'Library Card Number'));
 
-		$this->catalog = CatalogFactory::getCatalogConnectionInstance(null, null);
+		$catalog = CatalogFactory::getCatalogConnectionInstance(null, null);
 		if (isset($_REQUEST['submit'])){
-			$emailResult = $this->catalog->processEmailResetPinForm();
+			$emailResult = $catalog->processEmailResetPinForm();
 
 			$interface->assign('emailResult', $emailResult);
 			$this->display('emailResetPinResults.tpl', 'Email to Reset Pin');
@@ -34,7 +33,7 @@ class EmailResetPin extends Action{
 				$interface->assign('resendEmail', $_REQUEST['resendEmail']);
 			}
 
-			$this->display($this->catalog->getEmailResetPinTemplate(), 'Reset ' . $interface->getVariable('passwordLabel'));
+			$this->display($catalog->getEmailResetPinTemplate(), 'Reset ' . $interface->getVariable('passwordLabel'));
 		}
 	}
 }
