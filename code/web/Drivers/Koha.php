@@ -2,6 +2,8 @@
 
 require_once ROOT_DIR . '/sys/CurlWrapper.php';
 require_once ROOT_DIR . '/Drivers/AbstractIlsDriver.php';
+
+/** @noinspection PhpUnused */
 class Koha extends AbstractIlsDriver {
 	private $dbConnection = null;
 
@@ -9,94 +11,6 @@ class Koha extends AbstractIlsDriver {
 	private $curlWrapper;
 	/** @var CurlWrapper */
 	private $opacCurlWrapper;
-
-	/**
-	 * @return array
-	 */
-	private static $holdingSortingData = null;
-	protected static function getSortingDataForHoldings() {
-		if (self::$holdingSortingData == null){
-		    /** @var User $user */
-		    $user = UserAccount::getLoggedInUser();
-            global $library;
-			global $locationSingleton; /** @var $locationSingleton Location */
-
-			$holdingSortingData = array();
-
-			//Get location information so we can put things into sections
-			$physicalLocation = $locationSingleton->getPhysicalLocation();
-			if ($physicalLocation != null) {
-				$holdingSortingData['physicalBranch'] = $physicalLocation->holdingBranchLabel;
-			} else {
-				$holdingSortingData['physicalBranch'] = '';
-			}
-			$holdingSortingData['homeBranch'] = '';
-			$homeBranchId = 0;
-			$holdingSortingData['nearbyBranch1'] = '';
-			$nearbyBranch1Id = 0;
-			$holdingSortingData['nearbyBranch2'] = '';
-			$nearbyBranch2Id = 0;
-
-			//Set location information based on the user login.  This will override information based
-			if (isset($user) && $user != false) {
-				$homeBranchId = $user->homeLocationId;
-				$nearbyBranch1Id = $user->myLocation1Id;
-				$nearbyBranch2Id = $user->myLocation2Id;
-			}
-			//Load the holding label for the user's home location.
-			$userLocation = new Location();
-			$userLocation->whereAdd("locationId = '$homeBranchId'");
-			$userLocation->find();
-			if ($userLocation->N == 1) {
-				$userLocation->fetch();
-				$holdingSortingData['homeBranch'] = $userLocation->holdingBranchLabel;
-			}
-			//Load nearby branch 1
-			$nearbyLocation1 = new Location();
-			$nearbyLocation1->whereAdd("locationId = '$nearbyBranch1Id'");
-			$nearbyLocation1->find();
-			if ($nearbyLocation1->N == 1) {
-				$nearbyLocation1->fetch();
-				$holdingSortingData['nearbyBranch1'] = $nearbyLocation1->holdingBranchLabel;
-			}
-			//Load nearby branch 2
-			$nearbyLocation2 = new Location();
-			$nearbyLocation2->whereAdd();
-			$nearbyLocation2->whereAdd("locationId = '$nearbyBranch2Id'");
-			$nearbyLocation2->find();
-			if ($nearbyLocation2->N == 1) {
-				$nearbyLocation2->fetch();
-				$holdingSortingData['nearbyBranch2'] = $nearbyLocation2->holdingBranchLabel;
-			}
-
-			//Get a list of the display names for all locations based on holding label.
-			$locationLabels = array();
-			$location = new Location();
-			$location->find();
-			$holdingSortingData['libraryLocationLabels'] = array();
-			$locationCodes = array();
-			while ($location->fetch()) {
-				if (strlen($location->holdingBranchLabel) > 0 && $location->holdingBranchLabel != '???') {
-					if ($library && $library->libraryId == $location->libraryId) {
-						$cleanLabel = str_replace('/', '\/', $location->holdingBranchLabel);
-						$libraryLocationLabels[] = str_replace('.', '\.', $cleanLabel);
-					}
-
-					$locationLabels[$location->holdingBranchLabel] = $location->displayName;
-					$locationCodes[$location->code] = $location->holdingBranchLabel;
-				}
-			}
-			if (count($holdingSortingData['libraryLocationLabels']) > 0) {
-				$holdingSortingData['libraryLocationLabels'] = '/^(' . join('|', $holdingSortingData['libraryLocationLabels']) . ').*/i';
-			} else {
-				$holdingSortingData['libraryLocationLabels'] = '';
-			}
-			self::$holdingSortingData = $holdingSortingData;
-			global $timer;
-			$timer->logTime("Finished loading sorting information for holdings");
-		}
-		return self::$holdingSortingData;
-	}
 
 	/**
 	 * @param User $patron                    The User Object to make updates to
@@ -1305,6 +1219,7 @@ class Koha extends AbstractIlsDriver {
 				'summaryPage' => $sResult
 			);
 		}else{
+			/** @noinspection PhpUnusedLocalVariableInspection */
 			$info = curl_getinfo($this->opacCurlWrapper->curl_connection);
 			$result =array(
 				'success' => false,
@@ -2132,5 +2047,173 @@ class Koha extends AbstractIlsDriver {
 			}
 		}
 		return false;
+	}
+
+	public function showNotificationSettings()
+	{
+		/** @noinspection SqlResolve */
+		$sql = "SELECT * from systempreferences where variable = 'EnhancedMessagingPreferencesOPAC' OR variable = 'EnhancedMessagingPreferences'";
+		$preferenceRS = mysqli_query($this->dbConnection, $sql);
+		$allowed = true;
+		while ($row = mysqli_fetch_assoc($preferenceRS)){
+			if ($row['value'] == 0){
+				$allowed = false;
+			}
+		}
+		return $allowed;
+	}
+
+	public function getNotificationSettingsTemplate(User $user)
+	{
+		global $interface;
+		$this->initDatabaseConnection();
+
+		//Figure out if SMS and Phone notifications are enabled
+		/** @noinspection SqlResolve */
+		$systemPreferencesSql = "SELECT * FROM systempreferences where variable = 'SMSSendDriver' OR variable ='TalkingTechItivaPhoneNotification'";
+		$systemPreferencesRS = mysqli_query($this->dbConnection, $systemPreferencesSql);
+		while ($systemPreference = $systemPreferencesRS->fetch_assoc()) {
+			if ($systemPreference['variable'] == 'SMSSendDriver'){
+				$interface->assign('enableSmsMessaging', !empty($systemPreference['value']));
+				//Load sms number and provider
+				//Load available providers
+				/** @noinspection SqlResolve */
+				$smsProvidersSql = "SELECT * FROM sms_providers";
+				$smsProvidersRS = mysqli_query($this->dbConnection, $smsProvidersSql);
+				$smsProviders = [];
+				while ($smsProvider = $smsProvidersRS->fetch_assoc()) {
+					$smsProviders[$smsProvider['id']] = $smsProvider['name'];
+				}
+				$interface->assign('smsProviders', $smsProviders);
+			}elseif ($systemPreference['variable'] == 'TalkingTechItivaPhoneNotification'){
+				$interface->assign('enablePhoneMessaging', !empty($systemPreference['value']));
+			}
+		}
+
+		/** @noinspection SqlResolve */
+		$borrowerSql = "SELECT smsalertnumber, sms_provider_id FROM borrowers where borrowernumber = {$user->username}";
+		$borrowerRS = mysqli_query($this->dbConnection, $borrowerSql);
+		if ($borrowerRow = mysqli_fetch_assoc($borrowerRS)){
+			$interface->assign('smsAlertNumber', $borrowerRow['smsalertnumber']);
+			$interface->assign('smsProviderId', $borrowerRow['sms_provider_id']);
+		}
+
+		//Lookup which transports are allowed
+		/** @noinspection SqlResolve */
+		$transportSettingSql = "SELECT message_attribute_id, MAX(is_digest) as allowDigests, message_transport_type FROM message_transports GROUP by message_attribute_id, message_transport_type";
+		$transportSettingRS = mysqli_query($this->dbConnection, $transportSettingSql);
+		$messagingSettings = [];
+		while ($transportSetting = $transportSettingRS->fetch_assoc()) {
+			$transportId = $transportSetting['message_attribute_id'];
+			if (!array_key_exists($transportId, $messagingSettings)){
+				$messagingSettings[$transportId] = [
+					'allowDigests' => $transportSetting['allowDigests'],
+					'allowableTransports' => [],
+					'wantsDigest' => 0,
+					'selectedTransports' => [],
+				];
+			}
+			$messagingSettings[$transportId]['allowableTransports'][$transportSetting['message_transport_type']] = $transportSetting['message_transport_type'];
+		}
+
+		//Get the list of notices to display information for
+		/** @noinspection SqlResolve */
+		$messageAttributesSql = "SELECT * FROM message_attributes";
+		$messageAttributesRS = mysqli_query($this->dbConnection, $messageAttributesSql);
+		$messageAttributes = [];
+		while ($messageType = $messageAttributesRS->fetch_assoc()){
+			switch ($messageType['message_name']){
+				case "Item_Due":
+					$messageType['label'] = 'Item due';
+					break;
+				case "Advance_Notice":
+					$messageType['label'] = 'Advanced notice';
+					break;
+				case "Hold_Filled":
+					$messageType['label'] = 'Hold filled';
+					break;
+				case "Item_Check_in":
+					$messageType['label'] = 'Item check-in';
+					break;
+				case "Item_Checkout":
+					$messageType['label'] = 'Item checkout';
+					break;
+			}
+			$messageAttributes[] = $messageType;
+		}
+		$interface->assign('messageAttributes', $messageAttributes);
+
+		//Get messaging settings for the user
+		/** @noinspection SqlResolve */
+		$userMessagingSettingsSql = "SELECT borrower_message_preferences.message_attribute_id,
+				borrower_message_preferences.wants_digest,
+			    borrower_message_preferences.days_in_advance,
+				borrower_message_transport_preferences.message_transport_type
+			FROM   borrower_message_preferences
+			LEFT JOIN borrower_message_transport_preferences
+			ON     borrower_message_transport_preferences.borrower_message_preference_id = borrower_message_preferences.borrower_message_preference_id
+			WHERE  borrower_message_preferences.borrowernumber = {$user->username}";
+		$userMessagingSettingsRS = mysqli_query($this->dbConnection, $userMessagingSettingsSql);
+		while ($userMessagingSetting = mysqli_fetch_assoc($userMessagingSettingsRS)) {
+			$messageType = $userMessagingSetting['message_attribute_id'];
+			if ($userMessagingSetting['wants_digest']) {
+				$messagingSettings[$messageType]['wantsDigest'] = $userMessagingSetting['wants_digest'];
+			}
+			if ($userMessagingSetting['days_in_advance'] != null) {
+				$messagingSettings[$messageType]['daysInAdvance'] = $userMessagingSetting['days_in_advance'];
+			}
+			if ($userMessagingSetting['message_transport_type'] != null){
+				$messagingSettings[$messageType]['selectedTransports'][$userMessagingSetting['message_transport_type']] = $userMessagingSetting['message_transport_type'];
+			}
+		}
+		$interface->assign('messagingSettings', $messagingSettings);
+
+		$validNoticeDays = [];
+		for ($i = 0; $i <= 30; $i++){
+			$validNoticeDays[$i] = $i;
+		}
+		$interface->assign('validNoticeDays', $validNoticeDays);
+		return 'kohaNotificationSettings.tpl';
+	}
+
+	public function processNotificationSettingsForm(User $user)
+	{
+		$result = $this->loginToKohaOpac($user);
+		if (!$result['success']){
+			return $result;
+		}else{
+			$params = $_POST;
+			unset ($params['submit']);
+
+			$catalogUrl = $this->accountProfile->vendorOpacUrl;
+			$updateMessageUrl = "$catalogUrl/cgi-bin/koha/opac-messaging.pl?";
+			$getParams = [];
+			foreach ($params as $key => $value){
+				//Koha is using non standard HTTP functionality
+				//where array values are being passed without array bracket values
+				if (is_array($value)){
+					foreach ($value as $arrayValue){
+						$getParams[] = urlencode($key) . '=' . urlencode($arrayValue);
+					}
+				}else{
+					$getParams[] = urlencode($key) . '=' . urlencode($value);
+				}
+			}
+
+			$updateMessageUrl .= implode('&', $getParams);
+			$result = $this->getKohaPage($updateMessageUrl);
+			if (strpos($result, 'Settings updated') !== false){
+				$result = [
+					'success' => true,
+					'message' => 'Settings updated'
+				];
+			}else{
+				$result = [
+					'success' => false,
+					'message' => 'Sorry your settings could not be updated, please contact the library.'
+				];
+			}
+		}
+		return $result;
 	}
 }

@@ -1638,6 +1638,14 @@ class User extends DataObject
 			return null;
 		}
 	}
+
+	function showNotificationSettings(){
+		if ($this->getCatalogDriver() != null){
+			return $this->getCatalogDriver()->showNotificationSettings();
+		}else{
+			return false;
+		}
+	}
 }
 
 function modifiedEmpty($var) {

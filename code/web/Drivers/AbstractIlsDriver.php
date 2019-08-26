@@ -247,4 +247,21 @@ abstract class AbstractIlsDriver extends AbstractDriver
 			'expireClose' => 0,
 		];
 	}
+
+	public function showNotificationSettings()
+	{
+		return false;
+	}
+
+	public function getNotificationSettingsTemplate(User $user)
+	{
+		return null;
+	}
+
+	public function processNotificationSettingsForm(User $user)
+	{
+		return array(
+			'success' => false,
+			'errors' => array('Notification Settings are not implemented for this ILS'));
+	}
 }

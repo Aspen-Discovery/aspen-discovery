@@ -626,8 +626,8 @@ class ExploreMore {
                         if ($numCatalogResultsAdded == 4 && $numCatalogResults > 5) {
                             //Add a link to remaining results
                             $exploreMoreOptions[] = array(
-                                'label' => "Open Archives Results ($numCatalogResults)",
-                                'description' => "Open Archives Results ($numCatalogResults)",
+                                'label' => "Archive Results ($numCatalogResults)",
+                                'description' => "Archive Results ($numCatalogResults)",
                                 //TODO: Provide a better title
                                 'image' => $configArray['Site']['path'] . '/interface/themes/responsive/images/library_symbol.png',
                                 'link' => $searchObjectSolr->renderSearchUrl(),

@@ -903,5 +903,18 @@ class CatalogConnection
 		return $this->driver->getAccountSummary($user);
 	}
 
+	public function showNotificationSettings()
+	{
+		return $this->driver->showNotificationSettings();
+	}
 
+	public function getNotificationSettingsTemplate(User $user)
+	{
+		return $this->driver->getNotificationSettingsTemplate($user);
+	}
+
+	public function processNotificationSettingsForm(User $user)
+	{
+		return $this->driver->processNotificationSettingsForm($user);
+	}
 }
