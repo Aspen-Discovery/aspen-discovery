@@ -174,8 +174,8 @@ class SearchSources{
 
 		if ($searchOpenArchives){
             $searchOptions['open_archives'] = array(
-                'name' => 'Open Archive',
-                'description' => 'Open Archive Information',
+                'name' => 'Archives',
+                'description' => 'Archive Information',
                 'catalogType' => 'open_archives'
             );
         }

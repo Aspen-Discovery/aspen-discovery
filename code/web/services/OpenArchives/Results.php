@@ -180,7 +180,7 @@ class OpenArchives_Results extends Action {
         $interface->assign('exploreMoreSearchTerm', $exploreMoreSearchTerm);
 
         // Done, display the page
-        $interface->assign('sectionLabel', 'Open Archives Results');
+        $interface->assign('sectionLabel', 'Archive Results');
         $this->display($searchObject->getResultTotal() ? 'list.tpl' : 'list-none.tpl','Archive Search Results', 'Search/results-sidebar.tpl');
     } // End launch()
 }
