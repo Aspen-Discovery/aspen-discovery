@@ -135,10 +135,14 @@ function loadSearchInformation(){
 	/** @var $indexingProfiles IndexingProfile[] */
 	global $sideLoadSettings;
 	$sideLoadSettings = array();
-	$sideLoadSetting = new SideLoad();
-	$sideLoadSetting->orderBy('name');
-	$sideLoadSetting->find();
-	while ($sideLoadSetting->fetch()){
-		$sideLoadSettings[$sideLoadSetting->name] = clone($sideLoadSetting);
+	try {
+		$sideLoadSetting = new SideLoad();
+		$sideLoadSetting->orderBy('name');
+		$sideLoadSetting->find();
+		while ($sideLoadSetting->fetch()) {
+			$sideLoadSettings[$sideLoadSetting->name] = clone($sideLoadSetting);
+		}
+	}catch (PDOException $e){
+		//Ignore, the tables have not been created yet.
 	}
 }
