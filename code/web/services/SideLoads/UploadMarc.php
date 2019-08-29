@@ -18,7 +18,6 @@ class SideLoads_UploadMarc extends Admin_Admin
 				$uploadedFile = $_FILES['marcFile'];
 				if (isset($uploadedFile["error"]) && $uploadedFile["error"] == 4){
 					$interface->assign('error', "No MARC file was uploaded");
-					//No image supplied, use the existing value
 				}else if (isset($uploadedFile["error"]) && $uploadedFile["error"] > 0){
 					$interface->assign('error', "Error in file upload for MARC File");
 				}else{

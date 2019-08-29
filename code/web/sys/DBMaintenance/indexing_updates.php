@@ -548,7 +548,7 @@ function getIndexingUpdates() {
 					`name` varchar(50) NOT NULL,
 					`marcPath` varchar(100) NOT NULL,
 					`filenamesToInclude` varchar(250) DEFAULT '.*\\\\.ma?rc',
-					`marcEncoding` enum('MARC8','UTF','UNIMARC','ISO8859_1','BESTGUESS') NOT NULL DEFAULT 'MARC8',
+					`marcEncoding` enum('MARC8','UTF8','UNIMARC','ISO8859_1','BESTGUESS') NOT NULL DEFAULT 'MARC8',
 					`individualMarcPath` varchar(100) NOT NULL,
 					`numCharsToCreateFolderFrom` int(11) DEFAULT 4,
 					`createFolderFromLeadingCharacters` tinyint(1) DEFAULT 0,

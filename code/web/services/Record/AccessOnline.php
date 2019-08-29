@@ -55,7 +55,12 @@ class Record_AccessOnline extends Record_Record
 	{
 		require_once ROOT_DIR . '/sys/Indexing/UserSideLoadUsage.php';
 		$userUsage = new UserSideLoadUsage();
-		$userUsage->userId = UserAccount::getActiveUserId();
+		if (UserAccount::getActiveUserId() == false){
+			//User is not logged in
+			$userUsage->userId = -1;
+		}else{
+			$userUsage->userId = UserAccount::getActiveUserId();
+		}
 		$userUsage->sideLoadId = $sideLoadId;
 		$userUsage->year = date('Y');
 		$userUsage->month = date('n');
