@@ -9,13 +9,13 @@ import java.util.*;
 import java.util.Date;
 
 import com.turning_leaf_technologies.config.ConfigUtil;
+import com.turning_leaf_technologies.grouping.BaseMarcRecordGrouper;
 import com.turning_leaf_technologies.grouping.MarcRecordGrouper;
 import com.turning_leaf_technologies.grouping.RemoveRecordFromWorkResult;
 import com.turning_leaf_technologies.indexing.IlsExtractLogEntry;
 import com.turning_leaf_technologies.indexing.IndexingProfile;
 import com.turning_leaf_technologies.indexing.RecordIdentifier;
 import com.turning_leaf_technologies.logging.LoggingUtil;
-import com.turning_leaf_technologies.marc.MarcUtil;
 import com.turning_leaf_technologies.net.NetworkUtils;
 import com.turning_leaf_technologies.net.WebServiceResponse;
 import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
@@ -56,10 +56,6 @@ public class CarlXExportMain {
 	private static boolean hadErrors = false;
 	private static long startTimeForLogging;
 
-	//Existing records
-	private static HashMap<String, IlsTitle> existingRecords = new HashMap<>();
-	private static PreparedStatement insertMarcRecordChecksum;
-
 	public static void main(String[] args) {
 		if (args.length == 0) {
 			System.out.println("You must provide the server name as the first argument.");
@@ -96,8 +92,6 @@ public class CarlXExportMain {
 				if (dbConn == null) {
 					logger.error("Could not establish connection to database at " + databaseConnectionInfo);
 					System.exit(1);
-				}else{
-					insertMarcRecordChecksum = dbConn.prepareStatement("INSERT INTO ils_marc_checksums (ilsId, source, checksum, dateFirstDetected) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE checksum = VALUES(checksum), dateFirstDetected=VALUES(dateFirstDetected)");
 				}
 
 				logEntry = new IlsExtractLogEntry(dbConn, profileToLoad, logger);
@@ -162,7 +156,6 @@ public class CarlXExportMain {
 						groupedWorkIndexer.finishIndexingFromExtract();
 						recordGroupingProcessorSingleton = null;
 						groupedWorkIndexer = null;
-						existingRecords = null;
 					}
 				}catch(Exception e){
 					System.out.println("Error closing connection: " + e.toString());
@@ -225,7 +218,11 @@ public class CarlXExportMain {
 	private static int updateRecordsUsingMarcExtract(File[] exportedMarcFiles, Connection dbConn, Long latestMarcExport) {
 		int totalChanges = 0;
 		MarcRecordGrouper recordGroupingProcessor = getRecordGroupingProcessor(dbConn);
-		if (!loadExistingTitles()){
+		if (!recordGroupingProcessor.isValid()){
+			logEntry.addNote("Record Grouping Processor was not valid");
+			logEntry.incErrors();
+			return totalChanges;
+		}else if (!recordGroupingProcessor.loadExistingTitles(logEntry)){
 			return totalChanges;
 		}
 
@@ -250,14 +247,14 @@ public class CarlXExportMain {
 						}else if (!recordIdentifier.isSuppressed()) {
 							String recordNumber = recordIdentifier.getIdentifier();
 
-							MarcStatus marcStatus = writeIndividualMarc(indexingProfile, curBib, recordNumber);
-							if (marcStatus != MarcStatus.UNCHANGED || indexingProfile.isRunFullUpdate()) {
-								String permanentId = recordGroupingProcessor.processMarcRecord(curBib, marcStatus != MarcStatus.UNCHANGED);
+							BaseMarcRecordGrouper.MarcStatus marcStatus = recordGroupingProcessor.writeIndividualMarc(indexingProfile, curBib, recordNumber, logger);
+							if (marcStatus != BaseMarcRecordGrouper.MarcStatus.UNCHANGED || indexingProfile.isRunFullUpdate()) {
+								String permanentId = recordGroupingProcessor.processMarcRecord(curBib, marcStatus != BaseMarcRecordGrouper.MarcStatus.UNCHANGED);
 								if (permanentId == null){
 									//Delete the record since it is suppressed
 									deleteRecord = true;
 								}else {
-									if (marcStatus == MarcStatus.NEW){
+									if (marcStatus == BaseMarcRecordGrouper.MarcStatus.NEW){
 										logEntry.incAdded();
 									}else {
 										logEntry.incUpdated();
@@ -269,7 +266,7 @@ public class CarlXExportMain {
 								logEntry.incSkipped();
 							}
 							//Mark that the record was processed
-							existingRecords.remove(recordIdentifier.getIdentifier());
+							recordGroupingProcessor.removeExistingRecord(recordIdentifier.getIdentifier());
 							lastRecordProcessed = recordNumber;
 						}else{
 							//Delete the record since it is suppressed
@@ -320,99 +317,6 @@ public class CarlXExportMain {
 		return totalChanges;
 	}
 
-	private static boolean loadExistingTitles() {
-		try {
-			if (existingRecords == null) existingRecords = new HashMap<>();
-			PreparedStatement getAllExistingRecordsStmt = dbConn.prepareStatement("SELECT * FROM ils_marc_checksums where source = ?;");
-			getAllExistingRecordsStmt.setString(1, indexingProfile.getName());
-			ResultSet allRecordsRS = getAllExistingRecordsStmt.executeQuery();
-			while (allRecordsRS.next()) {
-				String ilsId = allRecordsRS.getString("ilsId");
-				IlsTitle newTitle = new IlsTitle(
-						allRecordsRS.getLong("checksum"),
-						allRecordsRS.getLong("dateFirstDetected")
-				);
-				existingRecords.put(ilsId, newTitle);
-			}
-			allRecordsRS.close();
-			getAllExistingRecordsStmt.close();
-			return true;
-		} catch (SQLException e) {
-			logger.error("Error loading existing titles", e);
-			logEntry.addNote("Error loading existing titles" + e.toString());
-			return false;
-		}
-	}
-
-	public enum MarcStatus {
-		UNCHANGED, CHANGED, NEW
-	}
-
-	//TODO: This also exists in RecordGrouperMain.  See if we can combine the two
-	private static MarcStatus writeIndividualMarc(IndexingProfile indexingProfile, Record marcRecord, String recordNumber) {
-		MarcStatus marcRecordStatus = MarcStatus.UNCHANGED;
-		//Copy the record to the individual marc path
-		if (recordNumber != null){
-			long checksum = MarcUtil.getChecksum(marcRecord);
-			File individualFile = indexingProfile.getFileForIlsRecord(recordNumber);
-
-			Long existingChecksum = getExistingChecksum(recordNumber);
-			//If we are doing partial regrouping or full regrouping without clearing the previous results,
-			//Check to see if the record needs to be written before writing it.
-			boolean checksumUpToDate = false;
-			if (!indexingProfile.isRunFullUpdate()){
-				checksumUpToDate = existingChecksum != null && existingChecksum.equals(checksum);
-			}
-			boolean fileExists = individualFile.exists();
-			if (!fileExists){
-				marcRecordStatus = MarcStatus.NEW;
-			}else if (!checksumUpToDate){
-				marcRecordStatus = MarcStatus.CHANGED;
-			}
-
-			if (marcRecordStatus != MarcStatus.UNCHANGED || indexingProfile.isRunFullUpdate()){
-				try {
-					MarcUtil.outputMarcRecord(marcRecord, individualFile, logger);
-					Long dateAdded = MarcUtil.getDateAddedForRecord(marcRecord, recordNumber, indexingProfile.getName(), individualFile, logger);
-					updateMarcRecordChecksum(recordNumber, indexingProfile.getName(), checksum, dateAdded);
-					//logger.debug("checksum changed for " + recordNumber + " was " + existingChecksum + " now its " + checksum);
-				} catch (IOException e) {
-					logger.error("Error writing marc", e);
-				}
-			}else {
-				//Update date first detected if needed
-				IlsTitle existingTitle = existingRecords.get(recordNumber);
-				if (existingTitle != null && existingTitle.getDateFirstDetected() == null){
-					Long dateAdded = MarcUtil.getDateAddedForRecord(marcRecord, recordNumber, indexingProfile.getName(), individualFile, logger);
-					updateMarcRecordChecksum(recordNumber, indexingProfile.getName(), checksum, dateAdded);
-				}
-			}
-		}else{
-			logger.error("Error did not find record number for MARC record");
-		}
-		return marcRecordStatus;
-	}
-
-	private static void updateMarcRecordChecksum(String recordNumber, String source, long checksum, long dateFirstDetected) {
-		try{
-			insertMarcRecordChecksum.setString(1, recordNumber);
-			insertMarcRecordChecksum.setString(2, source);
-			insertMarcRecordChecksum.setLong(3, checksum);
-			insertMarcRecordChecksum.setLong(4, dateFirstDetected);
-			insertMarcRecordChecksum.executeUpdate();
-		}catch (SQLException e){
-			logger.error("Unable to update checksum for ils marc record", e);
-		}
-	}
-
-	private static Long getExistingChecksum(String recordNumber) {
-		IlsTitle curTitle = existingRecords.get(recordNumber);
-		if (curTitle != null){
-			return curTitle.getChecksum();
-		}
-		return null;
-	}
-
 	private static int updateRecordsUsingAPI(Connection dbConn, CarlXInstanceInformation carlXInstanceInformation){
 		int totalChanges = 0;
 		// Get MarcOut WSDL url for SOAP calls
@@ -430,6 +334,7 @@ public class CarlXExportMain {
 					lastCarlXExtractTime = new Date().getTime() / 1000 - 24 * 60 * 60;
 				}
 			}
+
 			Timestamp lastExtractTimestamp = new Timestamp(lastCarlXExtractTime * 1000);
 
 			//Get a list of bibs that have changed.  CARL.X does not have a way to load all BIBs in the system
@@ -446,9 +351,9 @@ public class CarlXExportMain {
 			ArrayList<String> updatedItemIDs = new ArrayList<>();
 			ArrayList<String> createdItemIDs = new ArrayList<>();
 			ArrayList<String> deletedItemIDs = new ArrayList<>();
-			ArrayList<ItemChangeInfo> itemUpdates = new ArrayList<>();
+			ArrayList<ItemChangeInfo> itemUpdates;
 			ArrayList<ItemChangeInfo> createdItems = new ArrayList<>();
-			ArrayList<ItemChangeInfo> deletedItems = new ArrayList<>();
+			ArrayList<ItemChangeInfo> deletedItems;
 
 			if (!getChangedBibsFromCarlXApi(beginTimeString, updatedBibs, createdBibs, deletedBibs)) {
 				//Halt execution
@@ -626,160 +531,6 @@ public class CarlXExportMain {
 			System.exit(1);
 		}
 		return carlXInstanceInformation;
-	}
-
-	private static int updateChangedItems(ArrayList<String> createdItemIDs, ArrayList<String> deletedItemIDs, ArrayList<ItemChangeInfo> itemUpdates, ArrayList<ItemChangeInfo> createdItems) {
-		// Now update left over item updates & new items.  If they are left here they would be related to a MARC record that
-		// didn't change (which shouldn't happen, but seems to)
-		int totalChanges = 0;
-		if (itemUpdates.size() > 0 || createdItems.size() > 0) {
-			logger.debug("Found " + itemUpdates.size() + " items that were changed and " + createdItems.size() + " items that were created that we didn't associate to Bibs");
-			// Item Updates
-			for (int i = itemUpdates.size() -1; i >= 0; i--) {
-				ItemChangeInfo item = itemUpdates.get(i);
-				String currentUpdateItemID = item.getItemId();
-				String currentBibID = item.getBID();
-				logger.debug("Updating item " + currentUpdateItemID + " on " + currentBibID);
-
-				if (!currentBibID.isEmpty()) {
-					String fullBibID = getFileIdForRecordNumber(currentBibID);
-					Record currentMarcRecord = loadMarc(fullBibID);
-					if (currentMarcRecord != null) {
-						boolean itemFound = false;
-						List<VariableField> currentMarcDataFields = currentMarcRecord.getVariableFields(indexingProfile.getItemTag());
-						logger.debug("Found " + currentMarcDataFields.size() + " items in the bib already");
-						for (VariableField itemFieldVar: currentMarcDataFields) {
-							DataField currentDataField = (DataField) itemFieldVar;
-							String currentItemID = currentDataField.getSubfield(indexingProfile.getItemRecordNumberSubfield()).getData();
-							logger.debug("  Checking item " + currentItemID + " on the bib");
-							if (currentItemID.equals(currentUpdateItemID)) { // check ItemIDs for other item matches for this bib?
-								if (item.isSuppressed()){
-									logger.debug("Suppressed Item " + currentItemID + " found on Bib " + fullBibID + "; Deleting.");
-									currentMarcRecord.removeVariableField(currentDataField);
-								}else{
-									logger.debug("Item " + currentItemID + " found on Bib " + fullBibID + "; Updating.");
-									currentMarcRecord.removeVariableField(currentDataField);
-									updateItemDataFieldWithChangeInfo(currentDataField, item);
-									currentMarcRecord.addVariableField(currentDataField);
-									logger.debug("Updated field\r\n" + currentDataField.toString() + "\r\n" + item.toString());
-								}
-								itemFound = true;
-								break;
-							} else if (createdItemIDs.contains(currentItemID)) {
-								logger.debug("New Item " + currentItemID + "found on Bib " + fullBibID + "; Updating instead.");
-								int indexOfItem = createdItemIDs.indexOf(currentItemID);
-								ItemChangeInfo createdItem = createdItems.get(indexOfItem);
-								updateItemDataFieldWithChangeInfo(currentDataField, createdItem);
-								currentMarcRecord.addVariableField(currentDataField);
-								createdItems.remove(createdItem); // remove Item Change Info
-								createdItemIDs.remove(currentItemID); // remove itemId for list
-							} else if (deletedItemIDs.contains(currentItemID)) {
-								currentMarcRecord.removeVariableField(currentDataField);
-								deletedItemIDs.remove(currentItemID);
-							}
-						}
-
-						if (!itemFound) {
-							logger.debug("Item "+ currentUpdateItemID + " to update was not found in Marc Record " + fullBibID +"; Adding instead.\r\n" + item);
-							DataField itemField = createItemDataFieldWithChangeInfo(item);
-							currentMarcRecord.addVariableField(itemField);
-							logger.debug("New item field\r\n" + itemField);
-						}else{
-							itemUpdates.remove(item);
-						}
-
-						saveMarc(currentMarcRecord, fullBibID);
-
-						//Regroup and reindex the record
-						String permanentId = groupRecord(dbConn, currentMarcRecord);
-						getGroupedWorkIndexer(dbConn).processGroupedWork(permanentId);
-
-						totalChanges++;
-
-					} else {
-						// TODO: Do Marc Lookup & rebuild Marc Record?
-						logger.warn("Existing Marc Record for BID " + fullBibID + " failed to load; Can not update item: " + currentUpdateItemID);
-					}
-				} else {
-					logger.warn("Received Item "+ currentUpdateItemID + " to update without a Bib ID. No Record was updated.");
-				}
-			}
-
-
-			// Now add left-over Created Items
-			for (ItemChangeInfo item : createdItems) {
-				String currentCreatedItemID = item.getItemId();
-				StringBuilder currentBibID = new StringBuilder(item.getBID());
-				if (currentBibID.length() > 0) {
-					String shortBib = currentBibID.toString();
-					//Pad the bib id based on what we get from the MARC export
-					while (currentBibID.length() < 10){
-						currentBibID.insert(0, "0");
-					}
-					currentBibID.insert(0, "CARL");
-					logger.debug("Updating " + currentBibID);
-					Record currentMarcRecord = loadMarc(currentBibID.toString());
-					boolean saveRecord = false;
-					if (currentMarcRecord != null) {
-						boolean itemFound = false;
-						List<VariableField> currentMarcDataFields = currentMarcRecord.getVariableFields(indexingProfile.getItemTag());
-						for (VariableField itemFieldVar: currentMarcDataFields) {
-							DataField currentDataField = (DataField) itemFieldVar;
-							if (currentDataField.getTag().equals(indexingProfile.getItemTag())) {
-								String currentItemID = currentDataField.getSubfield(indexingProfile.getItemRecordNumberSubfield()).getData();
-								if (currentItemID.equals(currentCreatedItemID)) { // check ItemIDs for other item matches for this bib?
-									if (item.isSuppressed()){
-										logger.debug("Suppressed Item " + currentItemID + " found on Bib " + currentBibID + "; Deleting.");
-										currentMarcRecord.removeVariableField(currentDataField);
-									}else{
-										logger.debug("Item " + currentItemID + " found on Bib " + currentBibID + "; Updating.");
-										currentMarcRecord.removeVariableField(currentDataField);
-										updateItemDataFieldWithChangeInfo(currentDataField, item);
-										currentMarcRecord.addVariableField(currentDataField);
-									}
-									saveRecord = true;
-									itemFound = true;
-									break;
-								} else if (deletedItemIDs.contains(currentItemID)) {
-									currentMarcRecord.removeVariableField(currentDataField);
-									deletedItemIDs.remove(currentItemID);
-									saveRecord = true;
-								}
-							}
-						}
-						if (!itemFound) {
-							logger.info("Item "+ currentCreatedItemID + "to create being added to " + currentBibID);
-							DataField itemField = createItemDataFieldWithChangeInfo(item);
-							currentMarcRecord.addVariableField(itemField);
-							logger.debug(item + "\r\n" + itemField);
-							saveRecord = true;
-						}
-					} else {
-						logger.debug("Existing Marc Record for BID " + currentBibID + " failed to load; Creating new Marc Record for new item: " + currentCreatedItemID);
-						currentMarcRecord = buildMarcRecordFromAPICall(shortBib);  //TODO: Collect BIDs and do a bulk call instead?
-						if (currentMarcRecord != null) {
-							DataField itemField = createItemDataFieldWithChangeInfo(item);
-							currentMarcRecord.addVariableField(itemField);
-							saveRecord = true;
-						} else {
-							logger.info("Failed to load new marc record " + currentBibID + " (" + shortBib + ") from API call for created Item " + currentCreatedItemID);
-						}
-					}
-					if (saveRecord) {
-						saveMarc(currentMarcRecord, currentBibID.toString());
-
-						//Regroup and reindex the record
-						String permanentId = groupRecord(dbConn, currentMarcRecord);
-						getGroupedWorkIndexer(dbConn).processGroupedWork(permanentId);
-
-						totalChanges++;
-					}
-				} else {
-					logger.warn("Received Item "+ currentCreatedItemID + "to create without a Bib ID. No Record was created.");
-				}
-			}
-		}
-		return totalChanges;
 	}
 
 	private static int updateBibRecords(ArrayList<String> updatedBibs, ArrayList<String> updatedItemIDs, ArrayList<String> createdItemIDs, ArrayList<String> deletedItemIDs, ArrayList<ItemChangeInfo> itemUpdates, ArrayList<ItemChangeInfo> createdItems, boolean isNew) {
@@ -1466,67 +1217,6 @@ public class CarlXExportMain {
 		}
 	}
 
-	private static DataField createItemDataFieldWithChangeInfo(ItemChangeInfo changeInfo) {
-		DataField itemField = MarcFactoryImpl.newInstance().newDataField(indexingProfile.getItemTag(), ' ', ' ');
-		itemField.addSubfield(new SubfieldImpl(indexingProfile.getItemRecordNumberSubfield(), changeInfo.getItemId()));
-		itemField.addSubfield(new SubfieldImpl(indexingProfile.getLocationSubfield(), changeInfo.getLocation()));
-		itemField.addSubfield(new SubfieldImpl(indexingProfile.getShelvingLocationSubfield(), changeInfo.getShelvingLocation()));
-		itemField.addSubfield(new SubfieldImpl(indexingProfile.getItemStatusSubfield(), changeInfo.getStatus()));
-
-		if (indexingProfile.getCallNumberSubfield() != ' ') {
-			itemField.addSubfield(new SubfieldImpl(indexingProfile.getCallNumberSubfield(), changeInfo.getCallNumber()));
-		}
-
-		if (indexingProfile.getTotalCheckoutsSubfield() != ' ') {
-			itemField.addSubfield(new SubfieldImpl(indexingProfile.getTotalCheckoutsSubfield(), changeInfo.getTotalCheckouts()));
-		}
-
-		if (indexingProfile.getYearToDateCheckoutsSubfield() != ' ') {
-			itemField.addSubfield(new SubfieldImpl(indexingProfile.getYearToDateCheckoutsSubfield(), changeInfo.getYearToDateCheckouts()));
-		}
-
-		if (indexingProfile.getITypeSubfield() != ' ') {
-			itemField.addSubfield(new SubfieldImpl(indexingProfile.getITypeSubfield(), changeInfo.getiType()));
-		}
-
-		if (indexingProfile.getDueDateSubfield() != ' ') {
-			if (changeInfo.getDueDate() == null) {
-					if (indexingProfile.getDueDateFormat().contains("-")){
-						itemField.addSubfield(new SubfieldImpl(indexingProfile.getDueDateSubfield(), "  -  -  "));
-					} else {
-						itemField.addSubfield(new SubfieldImpl(indexingProfile.getDueDateSubfield(), "      "));
-					}
-			} else {
-				itemField.addSubfield(new SubfieldImpl(indexingProfile.getDueDateSubfield(), changeInfo.getDueDate()));
-			}
-		}
-
-		if (indexingProfile.getDateCreatedSubfield() != ' ') {
-			if (changeInfo.getDueDate() == null) {
-					if (indexingProfile.getDateCreatedFormat().contains("-")){
-						itemField.addSubfield(new SubfieldImpl(indexingProfile.getDateCreatedSubfield(), "  -  -  "));
-					} else {
-						itemField.addSubfield(new SubfieldImpl(indexingProfile.getDateCreatedSubfield(), "      "));
-					}
-			} else {
-				itemField.addSubfield(new SubfieldImpl(indexingProfile.getDateCreatedSubfield(), changeInfo.getDueDate()));
-			}
-		}
-
-		if (indexingProfile.getLastCheckinDateSubfield() != ' ') {
-			if (changeInfo.getDueDate() == null) {
-					if (indexingProfile.getLastCheckinFormat().contains("-")){
-						itemField.addSubfield(new SubfieldImpl(indexingProfile.getLastCheckinDateSubfield(), "  -  -  "));
-					} else {
-						itemField.addSubfield(new SubfieldImpl(indexingProfile.getLastCheckinDateSubfield(), "      "));
-					}
-			} else {
-				itemField.addSubfield(new SubfieldImpl(indexingProfile.getLastCheckinDateSubfield(), changeInfo.getDueDate()));
-			}
-		}
-		return itemField;
-	}
-
 	private static Record loadMarc(String curBibId) {
 		//Load the existing marc record from file
 		try {
@@ -1593,54 +1283,6 @@ public class CarlXExportMain {
 		doc.getDocumentElement().normalize();
 
 		return doc;
-	}
-
-	private static Record buildMarcRecordFromAPICall(String BibID) {
-		Record marcRecordFromAPICall = null;
-		try {
-			String getMarcRecordsSoapRequest = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:mar=\"http://tlcdelivers.com/cx/schemas/marcoutAPI\" xmlns:req=\"http://tlcdelivers.com/cx/schemas/request\">\n" +
-					"<soapenv:Header/>\n" +
-					"<soapenv:Body>\n" +
-					"<mar:GetMARCRecordsRequest>\n" +
-					"<mar:BID>" + BibID + "</mar:BID>" +
-					"<mar:Include949ItemData>1</mar:Include949ItemData>\n" +
-					"<mar:IncludeOnlyUnsuppressed>1</mar:IncludeOnlyUnsuppressed>\n" +
-					"<mar:Modifiers>\n" +
-					"</mar:Modifiers>\n" +
-					"</mar:GetMARCRecordsRequest>\n" +
-					"</soapenv:Body>\n" +
-					"</soapenv:Envelope>";
-
-			WebServiceResponse marcRecordSOAPResponse = NetworkUtils.postToURL(marcOutURL, getMarcRecordsSoapRequest, "text/xml", null, logger);
-			if (marcRecordSOAPResponse.isSuccess()) {
-
-				// Parse Response
-				Document doc = createXMLDocumentForSoapResponse(marcRecordSOAPResponse);
-				Node soapEnvelopeNode = doc.getFirstChild();
-				Node soapBodyNode = soapEnvelopeNode.getLastChild();
-				Node getMarcRecordsResponseNode = soapBodyNode.getFirstChild();
-				NodeList marcRecordInfo = getMarcRecordsResponseNode.getChildNodes();
-				Node marcRecordsResponseStatus = getMarcRecordsResponseNode.getFirstChild().getFirstChild();
-				String responseStatusCode = marcRecordsResponseStatus.getFirstChild().getTextContent();
-
-				if (responseStatusCode.equals("0")) { // Successful response
-					Node marcRecordNode = marcRecordInfo.item(1);
-
-					// Build Marc Object from the API data
-					marcRecordFromAPICall = buildMarcRecordFromAPIResponse(marcRecordNode, BibID);
-				} else {
-					String shortErrorMessage = marcRecordsResponseStatus.getChildNodes().item(2).getTextContent();
-					logger.error("Error Response for API call for getting Marc Records : " + shortErrorMessage);
-				}
-			}else{
-				//Call failed
-				//hadErrors = true;
-				logger.error("error getting marc record for " + BibID);
-			}
-		} catch(Exception e){
-			logger.error("Error Creating SOAP Request for Marc Records", e);
-		}
-		return marcRecordFromAPICall;
 	}
 
 	private static void exportHolds(Connection carlxConn, Connection dbConn) {
@@ -1715,7 +1357,7 @@ public class CarlXExportMain {
 
 	private static MarcRecordGrouper getRecordGroupingProcessor(Connection dbConn){
 		if (recordGroupingProcessorSingleton == null) {
-			recordGroupingProcessorSingleton = new MarcRecordGrouper(dbConn, indexingProfile, logger, false);
+			recordGroupingProcessorSingleton = new MarcRecordGrouper(serverName, dbConn, indexingProfile, logger, false);
 		}
 		return recordGroupingProcessorSingleton;
 	}

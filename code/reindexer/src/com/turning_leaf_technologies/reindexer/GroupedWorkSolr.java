@@ -1723,7 +1723,7 @@ public class GroupedWorkSolr implements Cloneable {
 			for (RecordInfo relatedRecord : relatedRecords.values()) {
 				if (relatedRecord.getSource().equals("hoopla")) {
 					hooplaRecordsAsArray.add(relatedRecord);
-				}else if(relatedRecord.getSource().equals("overdrive") || relatedRecord.getSource().equals("rbdigital")){
+				}else if(relatedRecord.getSource().equals("overdrive") || relatedRecord.getSource().equals("rbdigital") || relatedRecord.getSource().equals("cloud_library")){
 					otherRecordsAsArray.add(relatedRecord);
 				}
 			}

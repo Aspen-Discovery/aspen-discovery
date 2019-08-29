@@ -131,4 +131,14 @@ function loadSearchInformation(){
 	while ($indexingProfile->fetch()){
 		$indexingProfiles[$indexingProfile->name] = clone($indexingProfile);
 	}
+	require_once ROOT_DIR . '/sys/Indexing/SideLoad.php';
+	/** @var $indexingProfiles IndexingProfile[] */
+	global $sideLoadSettings;
+	$sideLoadSettings = array();
+	$sideLoadSetting = new SideLoad();
+	$sideLoadSetting->orderBy('name');
+	$sideLoadSetting->find();
+	while ($sideLoadSetting->fetch()){
+		$sideLoadSettings[$sideLoadSetting->name] = clone($sideLoadSetting);
+	}
 }

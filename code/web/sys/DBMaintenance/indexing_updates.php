@@ -23,7 +23,7 @@ function getIndexingUpdates() {
                   `id` int(11) NOT NULL AUTO_INCREMENT,
                   `name` varchar(50) NOT NULL,
                   `marcPath` varchar(100) NOT NULL,
-                  `marcEncoding` enum('MARC8','UTF','UNIMARC','ISO8859_1','BESTGUESS') NOT NULL DEFAULT 'MARC8',
+                  `marcEncoding` enum('MARC8','UTF8','UNIMARC','ISO8859_1','BESTGUESS') NOT NULL DEFAULT 'UTF8',
                   `individualMarcPath` varchar(100) NOT NULL,
                   `groupingClass` varchar(100) NOT NULL DEFAULT 'MarcRecordGrouper',
                   `indexingClass` varchar(50) NOT NULL,
@@ -538,6 +538,138 @@ function getIndexingUpdates() {
 				"ALTER TABLE format_map_values ADD holdType ENUM('bib','item','either','none') DEFAULT 'bib'",
 			],
 		],
+
+		'sideloads' => [
+			'title' => 'Sideload setup',
+			'description' => 'Setup sideloads table to store information about how to index eContent from MARC record uploads',
+			'sql' => [
+				"CREATE TABLE IF NOT EXISTS `sideloads` (
+					`id` int(11) NOT NULL AUTO_INCREMENT,
+					`name` varchar(50) NOT NULL,
+					`marcPath` varchar(100) NOT NULL,
+					`filenamesToInclude` varchar(250) DEFAULT '.*\\\\.ma?rc',
+					`marcEncoding` enum('MARC8','UTF','UNIMARC','ISO8859_1','BESTGUESS') NOT NULL DEFAULT 'MARC8',
+					`individualMarcPath` varchar(100) NOT NULL,
+					`numCharsToCreateFolderFrom` int(11) DEFAULT 4,
+					`createFolderFromLeadingCharacters` tinyint(1) DEFAULT 0,
+					`groupingClass` varchar(100) NOT NULL DEFAULT 'SideLoadedRecordGrouper',
+					`indexingClass` varchar(50) NOT NULL DEFAULT 'SideLoadedEContentProcessor',
+					`recordDriver` varchar(100) NOT NULL DEFAULT 'SideLoadedRecord',
+					`recordUrlComponent` varchar(25) NOT NULL DEFAULT 'DefineThis',
+					`recordNumberTag` char(3) NOT NULL DEFAULT '001',
+					`recordNumberSubfield` char(1) DEFAULT 'a',
+					`recordNumberPrefix` varchar(10) NOT NULL,
+					`suppressItemlessBibs` TINYINT(1) NOT NULL DEFAULT '1',
+					`itemTag` char(3) NOT NULL,
+					`itemRecordNumber` char(1) DEFAULT NULL,
+					`location` char(1) DEFAULT NULL,
+					`locationsToSuppress` varchar(255),
+					`itemUrl` char(1) DEFAULT NULL,
+					`format` char(1) DEFAULT NULL,
+					`formatSource` enum('bib','item', 'specified') NOT NULL DEFAULT 'bib',
+					`specifiedFormat` varchar(50) DEFAULT NULL,
+					`specifiedFormatCategory` varchar(50) DEFAULT NULL,
+					`specifiedFormatBoost` int DEFAULT NULL,
+					runFullUpdate TINYINT(1) DEFAULT 0,
+					lastUpdateOfChangedRecords INT(11) DEFAULT 0,
+					lastUpdateOfAllRecords INT(11) DEFAULT 0,
+					PRIMARY KEY (`id`),
+					UNIQUE KEY `name` (`name`)
+                ) ENGINE=InnoDB  DEFAULT CHARSET=utf8",
+			]
+		],
+
+		'track_sideload_user_usage' => array(
+			'title' => 'Sideload Usage by user',
+			'description' => 'Add a table to track how often a particular user uses side loads.',
+			'sql' => array(
+				"CREATE TABLE user_sideload_usage (
+	                id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+	                userId INT(11) NOT NULL,
+	                sideloadId INT(11) NOT NULL,
+	                year INT(4) NOT NULL,
+	                month INT(2) NOT NULL,
+	                usageCount INT(11) DEFAULT 0
+	            ) ENGINE = InnoDB",
+				"ALTER TABLE user_sideload_usage ADD INDEX (userId, sideloadId, year, month)",
+				"ALTER TABLE user_sideload_usage ADD INDEX (year, month)",
+			),
+		),
+
+		'track_sideload_record_usage' => array(
+			'title' => 'Side Load Record Usage',
+			'description' => 'Add a table to track how side loaded records are used.',
+			'continueOnError' => true,
+			'sql' => array(
+				"CREATE TABLE sideload_record_usage (
+	                id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+	                sideloadId INT(11) NOT NULL,
+	                recordId VARCHAR(36),
+	                year INT(4) NOT NULL,
+	                month INT(2) NOT NULL,
+	                timesUsed INT(11) NOT NULL
+	            ) ENGINE = InnoDB",
+				"ALTER TABLE sideload_record_usage ADD INDEX (sideloadId, year, month)",
+				"ALTER TABLE sideload_record_usage ADD INDEX (year, month)",
+			),
+		),
+
+		'sideload_log' => array(
+			'title' => 'Side Load log',
+			'description' => 'Create log for Side Load Processing.',
+			'sql' => array(
+				"CREATE TABLE IF NOT EXISTS sideload_log(
+	                `id` INT NOT NULL AUTO_INCREMENT COMMENT 'The id of log', 
+	                `startTime` INT(11) NOT NULL COMMENT 'The timestamp when the run started', 
+	                `endTime` INT(11) NULL COMMENT 'The timestamp when the run ended', 
+	                `lastUpdate` INT(11) NULL COMMENT 'The timestamp when the run last updated (to check for stuck processes)', 
+	                `notes` TEXT COMMENT 'Additional information about the run', 
+	                numSideLoadsUpdated INT(11) DEFAULT 0,
+	                sideLoadsUpdated MEDIUMTEXT,
+	                numProducts INT(11) DEFAULT 0,
+	                numErrors INT(11) DEFAULT 0,
+	                numAdded INT(11) DEFAULT 0,
+	                numDeleted INT(11) DEFAULT 0,
+	                numUpdated INT(11) DEFAULT 0,
+	                numSkipped INT(11) DEFAULT 0,
+	                PRIMARY KEY ( `id` )
+                ) ENGINE = InnoDB;",
+			)
+		),
+
+		'sideload_scoping' => [
+			'title' => 'Side Load Scoping',
+			'description' => 'Add a table to define what information should be included within search results',
+			'sql' => [
+				'CREATE TABLE sideload_scopes (
+    				id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    				name VARCHAR(50) NOT NULL,
+    				sideLoadId INT(11) NOT NULL,
+    				restrictToChildrensMaterial TINYINT DEFAULT 0
+				) ENGINE = InnoDB'
+			]
+		],
+
+		'library_location_side_load_scoping' => [
+			'title' => 'Library and Location Scoping of Side Loads',
+			'description' => 'Add tables to determine how side loads are sccoped',
+			'sql' => [
+				'CREATE TABLE library_sideload_scopes (
+    				id int(11) NOT NULL AUTO_INCREMENT,
+    				libraryId INT(11) NOT NULL,
+    				sideLoadScopeId INT(11) NOT NULL,
+					PRIMARY KEY (`id`),
+					UNIQUE (libraryId, sideLoadScopeId)
+				) ENGINE = InnoDB',
+				'CREATE TABLE IF NOT EXISTS location_sideload_scopes (
+					id int(11) NOT NULL AUTO_INCREMENT,
+					locationId int(11) NOT NULL,
+					sideLoadScopeId int(11) NOT NULL,
+					PRIMARY KEY (`id`),
+					UNIQUE (locationId, sideLoadScopeId)
+                ) ENGINE=InnoDB',
+			]
+		]
 	);
 }
 

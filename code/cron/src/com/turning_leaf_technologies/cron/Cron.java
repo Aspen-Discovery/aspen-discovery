@@ -51,8 +51,8 @@ public class Cron {
 		}
 
 		//Create a log entry for the cron process
-		CronLogEntry cronEntry = new CronLogEntry();
-		if (!cronEntry.saveToDatabase(dbConn, logger)){
+		CronLogEntry cronEntry = new CronLogEntry(dbConn, logger);
+		if (!cronEntry.saveResults()){
 			logger.error("Could not save log entry to database, quitting");
 			return;
 		}
@@ -143,7 +143,7 @@ public class Cron {
 
 		cronEntry.setFinished();
 		cronEntry.addNote("Cron run finished");
-		cronEntry.saveToDatabase(dbConn, logger);
+		cronEntry.saveResults();
 	}
 
 	private static void markProcessStarted(ProcessToRun processToRun) {

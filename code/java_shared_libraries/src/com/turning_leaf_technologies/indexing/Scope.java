@@ -3,6 +3,7 @@ package com.turning_leaf_technologies.indexing;
 import com.sun.istack.internal.NotNull;
 import org.marc4j.marc.Record;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
@@ -44,6 +45,8 @@ public class Scope implements Comparable<Scope>{
 	private HooplaScope hooplaScope;
 	private RbdigitalScope rbdigitalScope;
 	private CloudLibraryScope cloudLibraryScope;
+
+	private HashMap<Long, SideLoadScope> sideLoadScopes = new HashMap<Long, SideLoadScope>();
 
 	public String getScopeName() {
 		return scopeName;
@@ -194,6 +197,7 @@ public class Scope implements Comparable<Scope>{
 		return libraryScope;
 	}
 
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean isRestrictOwningLibraryAndLocationFacets() {
 		return restrictOwningLibraryAndLocationFacets;
 	}
@@ -285,6 +289,7 @@ public class Scope implements Comparable<Scope>{
 		this.includeAllRecordsInDateAddedFacets = includeAllRecordsInDateAddedFacets;
 	}
 
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean isBaseAvailabilityToggleOnLocalHoldingsOnly() {
 		return baseAvailabilityToggleOnLocalHoldingsOnly;
 	}
@@ -331,6 +336,14 @@ public class Scope implements Comparable<Scope>{
 
 	public CloudLibraryScope getCloudLibraryScope() {
 		return cloudLibraryScope;
+	}
+
+	public void addSideLoadScope(SideLoadScope scope){
+		sideLoadScopes.put(scope.getSideLoadId(), scope);
+	}
+
+	public SideLoadScope getSideLoadScope(long sideLoadId){
+		return sideLoadScopes.get(sideLoadId);
 	}
 
 	public class InclusionResult{

@@ -1,15 +1,13 @@
 package com.turning_leaf_technologies.indexing;
 
-import java.io.File;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 
 import org.apache.logging.log4j.Logger;
 
-public class IndexingProfile {
+public class IndexingProfile extends BaseIndexingSettings {
 	private char callNumberCutterSubfield;
 	private char callNumberPoststampSubfield;
 	private char volume;
@@ -18,16 +16,6 @@ public class IndexingProfile {
 	private char iCode2Subfield;
 	private char lastYearCheckoutsSubfield;
 	private char barcodeSubfield;
-	private Long id;
-	private String name;
-	private String marcPath;
-	private String marcEncoding;
-	private String individualMarcPath;
-	private int numCharsToCreateFolderFrom;
-	private boolean createFolderFromLeadingCharacters;
-	private String recordNumberTag;
-	private char recordNumberSubfield;
-	private String recordNumberPrefix;
 	private String itemTag ;
 	private char itemRecordNumberSubfield;
 	private String lastCheckinFormat;
@@ -48,18 +36,12 @@ public class IndexingProfile {
 	private SimpleDateFormat dueDateFormatter;
 	private char eContentDescriptor = ' ';
 	private boolean doAutomaticEcontentSuppression;
-
-
-	public String getFilenamesToInclude() {
-		return filenamesToInclude;
-	}
+	private char format;
+	private boolean groupUnchangedFiles;
+	private long lastUpdateFromMarcExport;
 
 	private void setFilenamesToInclude(String filenamesToInclude) {
 		this.filenamesToInclude = filenamesToInclude;
-	}
-
-	public String getGroupingClass() {
-		return groupingClass;
 	}
 
 	private void setGroupingClass(String groupingClass) {
@@ -97,18 +79,6 @@ public class IndexingProfile {
 	private void setGroupUnchangedFiles(boolean groupUnchangedFiles) {
 		this.groupUnchangedFiles = groupUnchangedFiles;
 	}
-
-	private String filenamesToInclude;
-	private String groupingClass;
-	private String specifiedFormatCategory;
-	private String formatSource;
-	private char format;
-	private boolean groupUnchangedFiles;
-
-	private long lastUpdateOfChangedRecords;
-	private long lastUpdateOfAllRecords;
-	private long lastUpdateFromMarcExport;
-	private boolean runFullUpdate;
 
 	public static IndexingProfile loadIndexingProfile(Connection dbConn, String profileToLoad, Logger logger) {
 		//Get the Indexing Profile from the database
@@ -182,24 +152,6 @@ public class IndexingProfile {
 		return indexingProfile;
 	}
 
-	public File getFileForIlsRecord(String recordNumber) {
-		StringBuilder shortId = new StringBuilder(recordNumber.replace(".", ""));
-		while (shortId.length() < 9){
-			shortId.insert(0, "0");
-		}
-
-		String subFolderName;
-		if (isCreateFolderFromLeadingCharacters()){
-			subFolderName        = shortId.substring(0, getNumCharsToCreateFolderFrom());
-		}else{
-			subFolderName        = shortId.substring(0, shortId.length() - getNumCharsToCreateFolderFrom());
-		}
-
-		String basePath           = getIndividualMarcPath() + "/" + subFolderName;
-		String individualFilename = basePath + "/" + shortId + ".mrc";
-		return new File(individualFilename);
-	}
-
 	public String getItemTag() {
 		return itemTag;
 	}
@@ -208,48 +160,24 @@ public class IndexingProfile {
 		this.itemTag = itemTag;
 	}
 
-	public Long getId() {
-		return id;
-	}
-
 	public void setId(Long id) {
 		this.id = id;
-	}
-
-	public String getName() {
-		return name;
 	}
 
 	public void setName(String name) {
 		this.name = name;
 	}
 
-	private String getIndividualMarcPath() {
-		return individualMarcPath;
-	}
-
 	private void setIndividualMarcPath(String individualMarcPath) {
 		this.individualMarcPath = individualMarcPath;
-	}
-
-	private int getNumCharsToCreateFolderFrom() {
-		return numCharsToCreateFolderFrom;
 	}
 
 	private void setNumCharsToCreateFolderFrom(int numCharsToCreateFolderFrom) {
 		this.numCharsToCreateFolderFrom = numCharsToCreateFolderFrom;
 	}
 
-	private boolean isCreateFolderFromLeadingCharacters() {
-		return createFolderFromLeadingCharacters;
-	}
-
 	private void setCreateFolderFromLeadingCharacters(boolean createFolderFromLeadingCharacters) {
 		this.createFolderFromLeadingCharacters = createFolderFromLeadingCharacters;
-	}
-
-	public String getRecordNumberTag() {
-		return recordNumberTag;
 	}
 
 	private void setRecordNumberTag(String recordNumberTag) {
@@ -371,24 +299,12 @@ public class IndexingProfile {
 		this.dueDateSubfield = dueDateSubfield;
 	}
 
-	public String getMarcPath() {
-		return marcPath;
-	}
-
 	public void setMarcPath(String marcPath) {
 		this.marcPath = marcPath;
 	}
 
-	public String getMarcEncoding() {
-		return marcEncoding;
-	}
-
 	private void setMarcEncoding(String marcEncoding) {
 		this.marcEncoding = marcEncoding;
-	}
-
-	public String getRecordNumberPrefix() {
-		return recordNumberPrefix;
 	}
 
 	private void setRecordNumberPrefix(String recordNumberPrefix) {
@@ -413,15 +329,6 @@ public class IndexingProfile {
 
 	public boolean useEContentSubfield() {
 		return this.eContentDescriptor != ' ';
-	}
-
-	private static char getCharFromRecordSet(ResultSet indexingProfilesRS, String fieldName) throws SQLException {
-		char result = ' ';
-		String databaseValue = indexingProfilesRS.getString(fieldName);
-		if (!indexingProfilesRS.wasNull() && databaseValue.length() > 0){
-			result = databaseValue.charAt(0);
-		}
-		return result;
 	}
 
 	public SimpleDateFormat getDueDateFormatter() {
@@ -500,32 +407,16 @@ public class IndexingProfile {
 		this.itemUrl = itemUrl;
 	}
 
-	public char getRecordNumberSubfield() {
-		return recordNumberSubfield;
-	}
-
 	private void setRecordNumberSubfield(char recordNumberSubfield) {
 		this.recordNumberSubfield = recordNumberSubfield;
-	}
-
-	public long getLastUpdateOfChangedRecords() {
-		return lastUpdateOfChangedRecords;
 	}
 
 	private void setLastUpdateOfChangedRecords(long lastUpdateOfChangedRecords) {
 		this.lastUpdateOfChangedRecords = lastUpdateOfChangedRecords;
 	}
 
-	public long getLastUpdateOfAllRecords() {
-		return lastUpdateOfAllRecords;
-	}
-
 	private void setLastUpdateOfAllRecords(long lastUpdateOfAllRecords) {
 		this.lastUpdateOfAllRecords = lastUpdateOfAllRecords;
-	}
-
-	public boolean isRunFullUpdate() {
-		return runFullUpdate;
 	}
 
 	private void setRunFullUpdate(boolean runFullUpdate) {

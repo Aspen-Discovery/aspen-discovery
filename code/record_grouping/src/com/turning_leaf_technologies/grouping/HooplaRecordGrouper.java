@@ -17,8 +17,8 @@ class HooplaRecordGrouper extends MarcRecordGrouper {
 	 * @param logger         - A logger to store debug and error messages to.
 	 * @param fullRegrouping - Whether or not we are doing full regrouping or if we are only grouping changes.
 	 */
-	HooplaRecordGrouper(Connection dbConnection, IndexingProfile profile, Logger logger, boolean fullRegrouping) {
-		super(dbConnection, profile, logger, fullRegrouping);
+	HooplaRecordGrouper(String serverName, Connection dbConnection, IndexingProfile profile, Logger logger, boolean fullRegrouping) {
+		super(serverName, dbConnection, profile, logger, fullRegrouping);
 	}
 
 	protected String setGroupingCategoryForWork(Record marcRecord, String loadFormatFrom, char formatSubfield, String specifiedFormatCategory, GroupedWorkBase workForTitle) {

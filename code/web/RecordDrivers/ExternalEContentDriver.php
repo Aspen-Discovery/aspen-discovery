@@ -2,10 +2,6 @@
 
 require_once ROOT_DIR . '/RecordDrivers/BaseEContentDriver.php';
 class ExternalEContentDriver extends BaseEContentDriver{
-	function getValidProtectionTypes(){
-		return array('external');
-	}
-
 	function isItemAvailable($itemId, $totalCopies){
 		return true;
 	}
@@ -129,10 +125,6 @@ class ExternalEContentDriver extends BaseEContentDriver{
 		return $this->filterAndSortMoreDetailsOptions($moreDetailsOptions);
 	}
 
-	public function getRecordType(){
-		return $this->profileType;
-	}
-
 	function getModule(){
 		return 'ExternalEContent';
 	}
@@ -148,13 +140,10 @@ class ExternalEContentDriver extends BaseEContentDriver{
 			$eContentData = trim($itemField->getSubfield('w') != null ? $itemField->getSubfield('w')->getData() : '');
 			if ($eContentData && strpos($eContentData, ':') > 0){
 				$eContentFieldData = explode(':', $eContentData);
-				$protectionType = trim($eContentFieldData[1]);
-				if ($this->isValidProtectionType($protectionType)){
-					if ($this->isValidForUser($locationCode, $eContentFieldData)){
-						$iTypeField = $itemField->getSubfield($configArray['Reindex']['iTypeSubfield'])->getData();
-						$format = mapValue('econtent_itype_format', $iTypeField);
-						$formats[$format] = $format;
-					}
+				if ($this->isValidForUser($locationCode, $eContentFieldData)){
+					$iTypeField = $itemField->getSubfield($configArray['Reindex']['iTypeSubfield'])->getData();
+					$format = mapValue('econtent_itype_format', $iTypeField);
+					$formats[$format] = $format;
 				}
 			}
 		}
@@ -164,41 +153,6 @@ class ExternalEContentDriver extends BaseEContentDriver{
 	function getEContentFormat($fileOrUrl, $iType)
 	{
 		return mapValue('econtent_itype_format', $iType);
-	}
-
-	public function getItemActions($itemInfo){
-		return $this->createActionsFromUrls($itemInfo['relatedUrls']);
-	}
-
-	public function getRecordActions($isAvailable, $isHoldable, $isBookable, $relatedUrls = null, $volumeData = null){
-		return $this->createActionsFromUrls($relatedUrls);
-	}
-
-	function createActionsFromUrls($relatedUrls){
-		$actions = array();
-		foreach ($relatedUrls as $urlInfo){
-			//Revert to access online per Karen at CCU.  If people want to switch it back, we can add a per library switch
-			//$title = 'Online ' . $urlInfo['source'];
-			$title = 'Access Online';
-			$alt = 'Available online from ' . $urlInfo['source'];
-			$fileOrUrl = isset($urlInfo['url']) ? $urlInfo['url'] : $urlInfo['file'];
-			if (strlen($fileOrUrl) > 0){
-				if (strlen($fileOrUrl) >= 3){
-					$extension =strtolower(substr($fileOrUrl, strlen($fileOrUrl), 3));
-					if ($extension == 'pdf'){
-						$title = 'Access PDF';
-					}
-				}
-				$actions[] = array(
-						'url' => $fileOrUrl,
-						'title' => $title,
-						'requireLogin' => false,
-						'alt' => $alt,
-				);
-			}
-		}
-
-		return $actions;
 	}
 
 	function getRecordUrl()

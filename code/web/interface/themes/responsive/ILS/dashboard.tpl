@@ -1,6 +1,6 @@
 {strip}
 	<div id="main-content" class="col-sm-12">
-		<h1>ILS & Side Loading Dashboard</h1>
+		<h1>ILS Usage Dashboard</h1>
 		{foreach from=$profiles item=profileName key=profileId}
 			<h2>Profile: {$profileName}</h2>
 			<div class="dashboardCategory">

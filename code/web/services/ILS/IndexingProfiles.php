@@ -4,6 +4,8 @@ require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/Indexing/IndexingProfile.php';
+
+/** @noinspection PhpUnused */
 class ILS_IndexingProfiles extends ObjectEditor {
 	function launch()
 	{
@@ -47,7 +49,7 @@ class ILS_IndexingProfiles extends ObjectEditor {
 		return 'IndexingProfiles';
 	}
 	function getPageTitle(){
-		return 'Indexing Profiles';
+		return 'ILS Indexing Information';
 	}
 	function getAllObjects(){
 		$list = array();
@@ -91,12 +93,7 @@ class ILS_IndexingProfiles extends ObjectEditor {
 		if ($existingObject && $existingObject->id != ''){
 			$actions[] = array(
 				'text' => 'View MARC files',
-				'url' => '/Admin/IndexingProfiles?objectAction=viewMarcFiles&id=' . $existingObject->id,
-			);
-		} else {
-			$actions[] = array(
-				'text' => 'Populate as a Sideload',
-				'onclick' => "$('#indexingClass').val('SideLoadedEContent');$('#groupingClass').val('SideLoadedRecordGrouper');$('#recordDriver').val('SideLoadedRecord');$('#catalogDriver').val('na');$('#recordUrlComponent').val('');$(this).parent().after($('<div>Remember to update the relevant library and location Records to Include/Own settings.</div>').addClass('alert alert-warning')); return false",
+				'url' => '/ILS/IndexingProfiles?objectAction=viewMarcFiles&id=' . $existingObject->id,
 			);
 		}
 

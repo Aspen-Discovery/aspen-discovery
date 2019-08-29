@@ -1,5 +1,6 @@
 package com.turning_leaf_technologies.indexing;
 
+import com.turning_leaf_technologies.logging.BaseLogEntry;
 import org.apache.logging.log4j.Logger;
 
 import java.sql.Connection;
@@ -9,7 +10,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 
-public class IlsExtractLogEntry {
+public class IlsExtractLogEntry implements BaseLogEntry {
 	private Long logEntryId = null;
 	private String indexingProfile;
 	private Date startTime;
@@ -35,6 +36,7 @@ public class IlsExtractLogEntry {
 		}
 		this.saveResults();
 	}
+	@Override
 	public void addNote(String note) {
 		this.notes.add(note);
 	}
@@ -61,6 +63,7 @@ public class IlsExtractLogEntry {
 	
 	private static PreparedStatement insertLogEntry;
 	private static PreparedStatement updateLogEntry;
+	@Override
 	@SuppressWarnings("UnusedReturnValue")
 	public boolean saveResults() {
 		try {
@@ -96,11 +99,13 @@ public class IlsExtractLogEntry {
 			return false;
 		}
 	}
+	@Override
 	public void setFinished() {
 		this.endTime = new Date();
 		this.addNote("Finished ILS extraction");
 		this.saveResults();
 	}
+
 	public void incErrors(){
 		numErrors++;
 	}
@@ -122,7 +127,6 @@ public class IlsExtractLogEntry {
 	public void incProducts(){
 		numProducts++;
 	}
-
 	public boolean hasErrors() {
 		return numErrors > 0;
 	}

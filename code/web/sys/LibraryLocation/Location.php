@@ -13,7 +13,9 @@ if (file_exists(ROOT_DIR . '/sys/Indexing/LocationRecordOwned.php')) {
 if (file_exists(ROOT_DIR . '/sys/Indexing/LocationRecordToInclude.php')) {
 	require_once ROOT_DIR . '/sys/Indexing/LocationRecordToInclude.php';
 }
-
+if (file_exists(ROOT_DIR . '/sys/Indexing/LocationSideLoadScope.php')) {
+	require_once ROOT_DIR . '/sys/Indexing/LocationSideLoadScope.php';
+}
 
 class Location extends DataObject
 {
@@ -158,6 +160,9 @@ class Location extends DataObject
 		$locationRecordToIncludeStructure = LocationRecordToInclude::getObjectStructure();
 		unset($locationRecordToIncludeStructure['locationId']);
 		unset($locationRecordToIncludeStructure['weight']);
+
+	    $locationSideLoadScopeStructure = LocationSideLoadScope::getObjectStructure();
+	    unset($locationSideLoadScopeStructure['locationId']);
 
 		$combinedResultsStructure = LocationCombinedResultSection::getObjectStructure();
 		unset($combinedResultsStructure['locationId']);
@@ -426,6 +431,21 @@ class Location extends DataObject
 				'canEdit' => false,
 			),
 			'includeLibraryRecordsToInclude' => array('property'=>'includeLibraryRecordsToInclude', 'type'=>'checkbox', 'label'=>'Include Library Records To Include', 'description'=>'Whether or not the records to include from the parent library should be included for this location', 'hideInLists' => true, 'default' => true),
+
+		    'sideLoadScopes' => array(
+			    'property' => 'sideLoadScopes',
+			    'type' => 'oneToMany',
+			    'label' => 'Side Loaded eContent Scopes',
+			    'description' => 'Information about what Side Loads to include in this scope',
+			    'keyThis' => 'libraryId',
+			    'keyOther' => 'libraryId',
+			    'subObjectType' => 'LocationSideLoadScope',
+			    'structure' => $locationSideLoadScopeStructure,
+			    'sortable' => false,
+			    'storeDb' => true,
+			    'allowEdit' => false,
+			    'canEdit' => false,
+		    ),
 		);
 
 		if (UserAccount::userHasRole('locationManager') || UserAccount::userHasRole('libraryManager')){
@@ -442,7 +462,7 @@ class Location extends DataObject
 			unset($structure['facets']);
 			unset($structure['recordsOwned']);
 			unset($structure['recordsToInclude']);
-
+			unset($structure['sideLoadScopes']);
 		}
 
 		if (UserAccount::userHasRole('locationManager')){
@@ -982,6 +1002,17 @@ class Location extends DataObject
 				}
 			}
 			return $this->recordsToInclude;
+		}elseif ($name == 'sideLoadScopes'){
+			if (!isset($this->sideLoadScopes) && $this->locationId){
+				$this->sideLoadScopes = array();
+				$object = new LocationSideLoadScope();
+				$object->locationId = $this->locationId;
+				$object->find();
+				while($object->fetch()){
+					$this->sideLoadScopes[$object->id] = clone($object);
+				}
+			}
+			return $this->sideLoadScopes;
 		}elseif  ($name == 'browseCategories'){
 			if (!isset($this->browseCategories) && $this->locationId){
 				$this->browseCategories = array();
@@ -1032,6 +1063,9 @@ class Location extends DataObject
 		}elseif ($name == 'recordsToInclude'){
 			/** @noinspection PhpUndefinedFieldInspection */
 			$this->recordsToInclude = $value;
+		}elseif ($name == 'sideLoadScopes'){
+			/** @noinspection PhpUndefinedFieldInspection */
+			$this->sideLoadScopes = $value;
 		}elseif ($name == 'combinedResultSections') {
 			/** @noinspection PhpUndefinedFieldInspection */
 			$this->combinedResultSections = $value;
@@ -1054,6 +1088,7 @@ class Location extends DataObject
 			$this->saveMoreDetailsOptions();
 			$this->saveRecordsOwned();
 			$this->saveRecordsToInclude();
+			$this->saveSideLoadScopes();
 			$this->saveCombinedResultSections();
 		}
 		return $ret;
@@ -1073,6 +1108,7 @@ class Location extends DataObject
 			$this->saveMoreDetailsOptions();
 			$this->saveRecordsOwned();
 			$this->saveRecordsToInclude();
+			$this->saveSideLoadScopes();
 			$this->saveCombinedResultSections();
 		}
 		return $ret;
@@ -1290,6 +1326,18 @@ class Location extends DataObject
 		$object->locationId = $this->locationId;
 		$object->delete(true);
 		$this->recordsToInclude = array();
+	}
+
+	public function saveSideLoadScopes(){
+		if (isset ($this->sideLoadScopes) && is_array($this->sideLoadScopes)){
+			$this->saveOneToManyOptions($this->sideLoadScopes);
+			unset($this->sideLoadScopes);
+		}
+	}
+
+	public function clearSideLoadScopes(){
+		$this->clearOneToManyOptions('LocationSideLoadScope');
+		$this->sideLoadScopes = array();
 	}
 
 	static function getDefaultFacets($locationId = -1){
@@ -1518,7 +1566,7 @@ class Location extends DataObject
 	private function clearOneToManyOptions($oneToManyDBObjectClassName) {
 	    /** @var DataObject $oneToManyDBObject */
 		$oneToManyDBObject = new $oneToManyDBObjectClassName();
-		$oneToManyDBObject->libraryId = $this->libraryId;
+		$oneToManyDBObject->locationId = $this->locationId;
 		$oneToManyDBObject->delete(true);
 	}
 

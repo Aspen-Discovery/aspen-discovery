@@ -12,7 +12,7 @@ public class OverDriveRecordGrouper extends RecordGroupingProcessor {
     private PreparedStatement getOverDriveProductInfoStmt;
 
     public OverDriveRecordGrouper(Connection dbConnection, String serverName, Logger logger, boolean fullRegrouping) {
-        super(dbConnection, serverName, logger, fullRegrouping);
+        super(dbConnection, serverName, logger);
 
         try {
             getOverDriveProductInfoStmt = dbConnection.prepareStatement("SELECT mediaType, title, subtitle, series, primaryCreatorName from overdrive_api_products WHERE overdriveId = ?");

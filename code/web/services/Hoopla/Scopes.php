@@ -4,6 +4,7 @@ require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/Hoopla/HooplaScope.php';
 
+/** @noinspection PhpUnused */
 class Hoopla_Scopes extends ObjectEditor
 {
 	function getObjectType(){

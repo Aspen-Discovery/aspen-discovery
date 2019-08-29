@@ -882,8 +882,13 @@ function loadModuleActionId(){
 	$requestURI = $_SERVER['REQUEST_URI'];
 	/** IndexingProfile[] $indexingProfiles */
 	global $indexingProfiles;
+	/** SideLoad[] $sideLoadSettings */
+	global $sideLoadSettings;
 	$allRecordModules = "OverDrive|GroupedWork|Record|ExternalEContent|Person|Library|RBdigital|Hoopla|RBdigitalMagazine|CloudLibrary";
 	foreach ($indexingProfiles as $profile){
+		$allRecordModules .= '|' . $profile->recordUrlComponent;
+	}
+	foreach ($sideLoadSettings as $profile){
 		$allRecordModules .= '|' . $profile->recordUrlComponent;
 	}
 	if (preg_match("/(MyAccount)\/([^\/?]+)\/([^\/?]+)(\?.+)?/", $requestURI, $matches)){
@@ -969,6 +974,21 @@ function loadModuleActionId(){
 		/** @var IndexingProfile $profile */
 		global $indexingProfiles;
 		foreach ($indexingProfiles as $profile) {
+			if ($profile->recordUrlComponent == $_REQUEST['module']) {
+				$newId = $profile->name . ':' . $_REQUEST['id'];
+				$_GET['id'] = $newId;
+				$_REQUEST['id'] = $newId;
+				if (!file_exists(ROOT_DIR . '/services/' . $_REQUEST['module'])){
+					$_GET['module'] = 'Record';
+					$_REQUEST['module'] = 'Record';
+				}
+				$activeRecordProfile = $profile;
+				break;
+			}
+		}
+		/** @var SideLoad[] */
+		global $sideLoadSettings;
+		foreach ($sideLoadSettings as $profile) {
 			if ($profile->recordUrlComponent == $_REQUEST['module']) {
 				$newId = $profile->name . ':' . $_REQUEST['id'];
 				$_GET['id'] = $newId;

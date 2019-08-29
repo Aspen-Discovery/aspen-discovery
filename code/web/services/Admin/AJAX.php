@@ -169,6 +169,9 @@ class Admin_AJAX extends Action {
         }elseif ($source == 'cloud_library'){
 	        require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibraryExportLogEntry.php';
 	        $extractLog = new CloudLibraryExportLogEntry();
+        }elseif ($source == 'sideload'){
+	        require_once ROOT_DIR . '/sys/Indexing/SideLoadLogEntry.php';
+	        $extractLog = new SideLoadLogEntry();
         }
 
         if ($extractLog == null){

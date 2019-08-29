@@ -271,7 +271,7 @@ public class CloudLibraryExportMain {
 
     private static RecordGroupingProcessor getRecordGroupingProcessor(){
         if (recordGroupingProcessorSingleton == null) {
-            recordGroupingProcessorSingleton = new RecordGroupingProcessor(aspenConn, serverName, logger, false);
+            recordGroupingProcessorSingleton = new RecordGroupingProcessor(aspenConn, serverName, logger);
         }
         return recordGroupingProcessorSingleton;
     }

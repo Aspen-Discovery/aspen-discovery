@@ -3,8 +3,6 @@
 require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 
 abstract class BaseEContentDriver  extends MarcRecordDriver {
-	abstract function getValidProtectionTypes();
-
 	/**
 	 * Constructor.  We build the object using all the data retrieved
 	 * from the (Solr) index.  Since we have to
@@ -21,10 +19,6 @@ abstract class BaseEContentDriver  extends MarcRecordDriver {
 	}
 
 
-	protected function isValidProtectionType($protectionType) {
-		return in_array(strtolower($protectionType), $this->getValidProtectionTypes());
-	}
-
 	abstract function isEContentHoldable($locationCode, $eContentFieldData);
 	abstract function isLocalItem($locationCode, $eContentFieldData);
 	abstract function isLibraryItem($locationCode, $eContentFieldData);
@@ -40,6 +34,50 @@ abstract class BaseEContentDriver  extends MarcRecordDriver {
 		return false;
 	}
 
+	public function getItemActions($itemInfo){
+		return $this->createActionsFromUrls($itemInfo['relatedUrls']);
+	}
 
+	public function getRecordActions($isAvailable, $isHoldable, $isBookable, $relatedUrls = null, $volumeData = null){
+		return $this->createActionsFromUrls($relatedUrls);
+	}
 
+	function createActionsFromUrls($relatedUrls){
+		global $configArray;
+		$actions = array();
+		$i = 0;
+		foreach ($relatedUrls as $urlInfo){
+			//Revert to access online per Karen at CCU.  If people want to switch it back, we can add a per library switch
+			$title = 'Access Online';
+			$alt = 'Available online from ' . $urlInfo['source'];
+			$action = $configArray['Site']['url'] . '/' . $this->getModule() . '/' . $this->id . "/AccessOnline?index=$i";
+			$fileOrUrl = isset($urlInfo['url']) ? $urlInfo['url'] : $urlInfo['file'];
+			if (strlen($fileOrUrl) > 0){
+				if (strlen($fileOrUrl) >= 3){
+					$extension =strtolower(substr($fileOrUrl, strlen($fileOrUrl), 3));
+					if ($extension == 'pdf'){
+						$title = 'Access PDF';
+					}
+				}
+				$actions[] = array(
+					'url' => $action,
+					'redirectUrl' => $fileOrUrl,
+					'title' => $title,
+					'requireLogin' => false,
+					'alt' => $alt,
+				);
+				$i++;
+			}
+		}
+
+		return $actions;
+	}
+
+	function getRelatedRecord() {
+		return $this->getGroupedWorkDriver()->getRelatedRecord($this->getIdWithSource());
+	}
+
+	public function getRecordType(){
+		return $this->profileType;
+	}
 }

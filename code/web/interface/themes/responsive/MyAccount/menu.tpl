@@ -406,7 +406,7 @@
 						<a href="#ilsMenu" data-toggle="collapse" data-parent="#adminMenuAccordion">
 							<div class="panel-heading">
 								<div class="panel-title">
-									{translate text="ILS &amp; Side Loads"}
+									{translate text="ILS Integration"}
 								</div>
 							</div>
 						</a>
@@ -519,6 +519,31 @@
 								<div class="adminMenuLink"><a href="{$path}/CloudLibrary/Scopes">{translate text="Scopes"}</a></div>
 								<div class="adminMenuLink"><a href="{$path}/CloudLibrary/IndexingLog">{translate text="Indexing Log"}</a></div>
 								<div class="adminMenuLink"><a href="{$path}/CloudLibrary/Dashboard">{translate text="Dashboard"}</a></div>
+							</div>
+						</div>
+					</div>
+                {/if}
+
+                {if (array_key_exists('libraryAdmin', $userRoles) || array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles))}
+                    {if $module == 'SideLoads' && in_array($action, array('IndexingLog', 'Scopes', 'SideLoads', 'Dashboard'))}
+                        {assign var="curSection" value=true}
+                    {else}
+                        {assign var="curSection" value=false}
+                    {/if}
+					<div class="panel{if $curSection} active{/if}">
+						<a href="#sideLoadMenu" data-toggle="collapse" data-parent="#adminMenuAccordion">
+							<div class="panel-heading">
+								<div class="panel-title">
+                                    {translate text="Side Loaded eContent"}
+								</div>
+							</div>
+						</a>
+						<div id="sideLoadMenu" class="panel-collapse collapse {if $curSection}in{/if}">
+							<div class="panel-body">
+								<div class="adminMenuLink"><a href="{$path}/SideLoads/SideLoads">{translate text="Side Load Configurations"}</a></div>
+								<div class="adminMenuLink"><a href="{$path}/SideLoads/Scopes">{translate text="Scopes"}</a></div>
+								<div class="adminMenuLink"><a href="{$path}/SideLoads/IndexingLog">{translate text="Indexing Log"}</a></div>
+                                <div class="adminMenuLink"><a href="{$path}/SideLoads/Dashboard">{translate text="Dashboard"}</a></div>
 							</div>
 						</div>
 					</div>

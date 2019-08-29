@@ -11,6 +11,9 @@ if (file_exists(ROOT_DIR . '/sys/Indexing/LibraryRecordOwned.php')) {
 if (file_exists(ROOT_DIR . '/sys/Indexing/LibraryRecordToInclude.php')) {
 	require_once ROOT_DIR . '/sys/Indexing/LibraryRecordToInclude.php';
 }
+if (file_exists(ROOT_DIR . '/sys/Indexing/LibrarySideLoadScope.php')) {
+	require_once ROOT_DIR . '/sys/Indexing/LibrarySideLoadScope.php';
+}
 if (file_exists(ROOT_DIR . '/sys/Browse/LibraryBrowseCategory.php')) {
 	require_once ROOT_DIR . '/sys/Browse/LibraryBrowseCategory.php';
 }
@@ -333,6 +336,9 @@ class Library extends DataObject
 		$libraryRecordToIncludeStructure = LibraryRecordToInclude::getObjectStructure();
 		unset($libraryRecordToIncludeStructure['libraryId']);
 		unset($libraryRecordToIncludeStructure['weight']);
+
+		$librarySideLoadScopeStructure = LibrarySideLoadScope::getObjectStructure();
+		unset($librarySideLoadScopeStructure['libraryId']);
 
 		$manageMaterialsRequestFieldsToDisplayStructure = MaterialsRequestFieldsToDisplay::getObjectStructure();
 		unset($manageMaterialsRequestFieldsToDisplayStructure['libraryId']); //needed?
@@ -1048,6 +1054,21 @@ class Library extends DataObject
 				'allowEdit' => false,
 				'canEdit' => false,
 			),
+
+			'sideLoadScopes' => array(
+				'property' => 'sideLoadScopes',
+				'type' => 'oneToMany',
+				'label' => 'Side Loaded eContent Scopes',
+				'description' => 'Information about what Side Loads to include in this scope',
+				'keyThis' => 'libraryId',
+				'keyOther' => 'libraryId',
+				'subObjectType' => 'LibrarySideLoadScope',
+				'structure' => $librarySideLoadScopeStructure,
+				'sortable' => false,
+				'storeDb' => true,
+				'allowEdit' => false,
+				'canEdit' => false,
+			),
 		);
 
 		if (UserAccount::userHasRole('libraryManager')){
@@ -1071,6 +1092,7 @@ class Library extends DataObject
 			unset($structure['facets']);
 			unset($structure['recordsOwned']);
 			unset($structure['recordsToInclude']);
+			unset($structure['sideLoadScopes']);
 		}
 
 		//Update settings based on what we have access to
@@ -1332,6 +1354,17 @@ class Library extends DataObject
 				}
 			}
 			return $this->recordsToInclude;
+		}elseif ($name == 'sideLoadScopes'){
+			if (!isset($this->sideLoadScopes) && $this->libraryId){
+				$this->sideLoadScopes = array();
+				$object = new LibrarySideLoadScope();
+				$object->libraryId = $this->libraryId;
+				$object->find();
+				while($object->fetch()){
+					$this->sideLoadScopes[$object->id] = clone($object);
+				}
+			}
+			return $this->sideLoadScopes;
 		}elseif  ($name == 'browseCategories') {
 			if (!isset($this->browseCategories) && $this->libraryId) {
 				$this->browseCategories    = array();
@@ -1434,6 +1467,8 @@ class Library extends DataObject
 			$this->recordsOwned = $value;
 		}elseif ($name == 'recordsToInclude'){
 			$this->recordsToInclude = $value;
+		}elseif ($name == 'sideLoadScopes'){
+			$this->sideLoadScopes = $value;
 		}elseif ($name == 'libraryTopLinks'){
 			$this->libraryTopLinks = $value;
 		}elseif ($name == 'browseCategories') {
@@ -1524,6 +1559,7 @@ class Library extends DataObject
 			$this->saveArchiveSearchFacets();
 			$this->saveRecordsOwned();
 			$this->saveRecordsToInclude();
+			$this->saveSideLoadScopes();
 			$this->saveMaterialsRequestFieldsToDisplay();
 			$this->saveMaterialsRequestFormFields();
 			$this->saveLibraryLinks();
@@ -1573,6 +1609,7 @@ class Library extends DataObject
 			$this->saveArchiveSearchFacets();
 			$this->saveRecordsOwned();
 			$this->saveRecordsToInclude();
+			$this->saveSideLoadScopes();
 			$this->saveMaterialsRequestFieldsToDisplay();
 			$this->saveMaterialsRequestFormats();
 			$this->saveMaterialsRequestFormFields();
@@ -1644,6 +1681,18 @@ class Library extends DataObject
 	public function clearRecordsToInclude(){
 		$this->clearOneToManyOptions('LibraryRecordToInclude');
 		$this->recordsToInclude = array();
+	}
+
+	public function saveSideLoadScopes(){
+		if (isset ($this->sideLoadScopes) && is_array($this->sideLoadScopes)){
+			$this->saveOneToManyOptions($this->sideLoadScopes);
+			unset($this->sideLoadScopes);
+		}
+	}
+
+	public function clearSideLoadScopes(){
+		$this->clearOneToManyOptions('LibrarySideLoadScope');
+		$this->sideLoadScopes = array();
 	}
 
 	public function saveMaterialsRequestFieldsToDisplay(){

@@ -1753,6 +1753,6 @@ function getLibraryLocationUpdates(){
 				'ALTER TABLE library ADD COLUMN cloudLibraryScopeId INT(11) default -1',
 				'ALTER TABLE location ADD COLUMN cloudLibraryScopeId INT(11) default -1',
 			]
-		]
+		],
 	);
 }

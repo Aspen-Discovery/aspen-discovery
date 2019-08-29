@@ -781,7 +781,7 @@ public class KohaExportMain {
 
 	private static MarcRecordGrouper getRecordGroupingProcessor(){
 		if (recordGroupingProcessorSingleton == null) {
-			recordGroupingProcessorSingleton = new MarcRecordGrouper(dbConn, indexingProfile, logger, false);
+			recordGroupingProcessorSingleton = new MarcRecordGrouper(serverName, dbConn, indexingProfile, logger, false);
 		}
 		return recordGroupingProcessorSingleton;
 	}

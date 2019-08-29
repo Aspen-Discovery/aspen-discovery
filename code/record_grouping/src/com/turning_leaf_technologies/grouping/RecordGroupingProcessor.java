@@ -33,7 +33,6 @@ public class RecordGroupingProcessor {
 	private int numRecordsProcessed = 0;
 	private int numGroupedWorksAdded = 0;
 
-	private boolean fullRegrouping;
 	private long startTime = new Date().getTime();
 
 	HashMap<String, HashMap<String, String>> translationMaps = new HashMap<>();
@@ -46,9 +45,8 @@ public class RecordGroupingProcessor {
 	/**
 	 * Default constructor for use by subclasses.  Should only be used within Record Grouping module
 	 */
-	RecordGroupingProcessor(Logger logger, boolean fullRegrouping){
+	RecordGroupingProcessor(Logger logger){
 		this.logger = logger;
-		this.fullRegrouping = fullRegrouping;
 	}
 
 	/**
@@ -57,12 +55,9 @@ public class RecordGroupingProcessor {
 	 * @param dbConnection   - The Connection to the database
 	 * @param serverName     - The server we are grouping data for
 	 * @param logger         - A logger to store debug and error messages to.
-	 * @param fullRegrouping - Whether or not we are doing full regrouping or if we are only grouping changes.
-	 *                         Determines if old works are loaded at the beginning.
 	 */
-	public RecordGroupingProcessor(Connection dbConnection, String serverName, Logger logger, boolean fullRegrouping) {
+	public RecordGroupingProcessor(Connection dbConnection, String serverName, Logger logger) {
 		this.logger = logger;
-		this.fullRegrouping = fullRegrouping;
 
 		setupDatabaseStatements(dbConnection);
 

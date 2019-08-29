@@ -7,15 +7,29 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 
+import com.turning_leaf_technologies.logging.BaseLogEntry;
 import org.apache.logging.log4j.Logger;
 
-public class CronLogEntry {
+public class CronLogEntry implements BaseLogEntry {
 	private Long logEntryId = null;
 	private Date startTime;
 	private Date endTime;
 	private ArrayList<String> notes = new ArrayList<>();
-	public CronLogEntry(){
+
+	private Logger logger;
+	private static PreparedStatement insertLogEntry;
+	private static PreparedStatement updateLogEntry;
+
+	public CronLogEntry(Connection dbConn, Logger logger){
+		this.logger = logger;
 		this.startTime = new Date();
+
+		try {
+			insertLogEntry = dbConn.prepareStatement("INSERT into cron_log (startTime) VALUES (?)", PreparedStatement.RETURN_GENERATED_KEYS);
+			updateLogEntry = dbConn.prepareStatement("UPDATE cron_log SET lastUpdate = ?, endTime = ?, notes = ? WHERE id = ?", PreparedStatement.RETURN_GENERATED_KEYS);
+		} catch (SQLException e) {
+			logger.error("Error creating prepared statements to update log", e);
+		}
 	}
 	private Date getLastUpdate() {
 		//The last time the log entry was updated so we can tell if a process is stuck
@@ -48,16 +62,9 @@ public class CronLogEntry {
 		return notesText.toString();
 	}
 
-	private static boolean statementsPrepared = false;
-	private static PreparedStatement insertLogEntry;
-	private static PreparedStatement updateLogEntry;
-	public boolean saveToDatabase(Connection dbConn, Logger logger) {
+
+	public boolean saveResults() {
 		try {
-			if (!statementsPrepared){
-				insertLogEntry = dbConn.prepareStatement("INSERT into cron_log (startTime) VALUES (?)", PreparedStatement.RETURN_GENERATED_KEYS);
-				updateLogEntry = dbConn.prepareStatement("UPDATE cron_log SET lastUpdate = ?, endTime = ?, notes = ? WHERE id = ?", PreparedStatement.RETURN_GENERATED_KEYS);
-				statementsPrepared = true;
-			}
 			if (logEntryId == null){
 				insertLogEntry.setLong(1, startTime.getTime() / 1000);
 				insertLogEntry.executeUpdate();

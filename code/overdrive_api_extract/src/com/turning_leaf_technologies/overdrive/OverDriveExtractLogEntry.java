@@ -7,9 +7,10 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 
+import com.turning_leaf_technologies.logging.BaseLogEntry;
 import org.apache.logging.log4j.Logger;
 
-class OverDriveExtractLogEntry {
+class OverDriveExtractLogEntry implements BaseLogEntry {
 	private Long logEntryId = null;
 	private Date startTime;
 	private Date endTime;
@@ -34,7 +35,7 @@ class OverDriveExtractLogEntry {
 			logger.error("Error creating prepared statements to update log", e);
 		}
 	}
-	void addNote(String note) {
+	public void addNote(String note) {
 		this.notes.add(note);
 	}
 	
@@ -60,7 +61,7 @@ class OverDriveExtractLogEntry {
 	
 	private static PreparedStatement insertLogEntry;
 	private static PreparedStatement updateLogEntry;
-	boolean saveResults() {
+	public boolean saveResults() {
 		try {
 			if (logEntryId == null){
 				insertLogEntry.setLong(1, startTime.getTime() / 1000);
@@ -95,7 +96,7 @@ class OverDriveExtractLogEntry {
 			return false;
 		}
 	}
-	void setFinished() {
+	public void setFinished() {
 		this.endTime = new Date();
 		this.addNote("Finished OverDrive extraction");
 		this.saveResults();

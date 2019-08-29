@@ -1,7 +1,7 @@
 <?php
 
 require_once ROOT_DIR . '/RecordDrivers/ExternalEContentDriver.php';
-class SideLoadedRecord extends ExternalEContentDriver {
+class SideLoadedRecord extends BaseEContentDriver {
 	/**
 	 * Constructor.  We build the object using data from the Side-loaded records stored on disk.
 	 * Will be similar to a MarcRecord with slightly different functionality
@@ -19,8 +19,8 @@ class SideLoadedRecord extends ExternalEContentDriver {
 		$recordId = $this->getUniqueID();
 
 		/** @var IndexingProfile[] $indexingProfiles */
-		global $indexingProfiles;
-		$indexingProfile = $indexingProfiles[$this->profileType];
+		global $sideLoadSettings;
+		$indexingProfile = $sideLoadSettings[$this->profileType];
 
 		return $configArray['Site']['path'] . "/{$indexingProfile->recordUrlComponent}/$recordId";
 	}
@@ -40,7 +40,7 @@ class SideLoadedRecord extends ExternalEContentDriver {
 		//Get copies for the record
 		$this->assignCopiesInformation();
 
-		$interface->assign('items', $recordInfo['itemSummary']);
+		$interface->assign('items', $recordInfo->getItemSummary());
 
 		//Load more details options
 		$moreDetailsOptions = $this->getBaseMoreDetailsOptions($isbn);
@@ -77,5 +77,41 @@ class SideLoadedRecord extends ExternalEContentDriver {
 
 	public function getRecordType(){
 		return $this->profileType;
+	}
+
+	function isEContentHoldable($locationCode, $eContentFieldData)
+	{
+		return false;
+	}
+
+	function isLocalItem($locationCode, $eContentFieldData)
+	{
+		return true;
+	}
+
+	function isLibraryItem($locationCode, $eContentFieldData)
+	{
+		return true;
+	}
+
+	function isItemAvailable($itemId, $totalCopies)
+	{
+		return true;
+	}
+
+	function isValidForUser($locationCode, $eContentFieldData)
+	{
+		return true;
+	}
+
+	function getSharing($locationCode, $eContentFieldData)
+	{
+		return '';
+	}
+
+	function getEContentFormat($fileOrUrl, $iType)
+	{
+		// TODO: Implement getEContentFormat() method.
+		return '';
 	}
 }

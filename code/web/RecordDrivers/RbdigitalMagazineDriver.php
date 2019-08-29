@@ -201,13 +201,6 @@ class RBdigitalMagazineDriver extends GroupedWorkSubDriver {
                 'onclick' => "return AspenDiscovery.RBdigital.checkOutMagazine('{$this->id}');",
                 'requireLogin' => false,
             );
-
-//	        $actions[] = array(
-//		        'title' => 'Access Online',
-//		        'url' => $this->getRBdigitalLinkUrl(),
-//		        'onclick' => "",
-//		        'requireLogin' => false,
-//	        );
         }else{
             $actions[] = array(
                 'title' => 'Place Hold RBdigital',

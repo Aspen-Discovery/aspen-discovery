@@ -94,19 +94,13 @@ public class HooplaExportMain {
 			logger.info("Elapsed Minutes " + (elapsedTime / 60000));
 
 			//Mark that indexing has finished
-
-
 			logEntry.setFinished();
 
 			disconnectDatabase(aspenConn);
 
-			//Pause before running the next export (longer if we didn't get any actual changes)
+			//Pause 24 hours before running the next export.
 			try {
-				if (numChanges == 0) {
-					Thread.sleep(1000 * 60 * 5);
-				}else {
-					Thread.sleep(1000 * 60);
-				}
+				Thread.sleep(1000 * 60 * 60 * 24);
 			} catch (InterruptedException e) {
 				logger.info("Thread was interrupted");
 			}
@@ -509,7 +503,7 @@ public class HooplaExportMain {
 
 	private static RecordGroupingProcessor getRecordGroupingProcessor(){
 		if (recordGroupingProcessorSingleton == null) {
-			recordGroupingProcessorSingleton = new RecordGroupingProcessor(aspenConn, serverName, logger, false);
+			recordGroupingProcessorSingleton = new RecordGroupingProcessor(aspenConn, serverName, logger);
 		}
 		return recordGroupingProcessorSingleton;
 	}

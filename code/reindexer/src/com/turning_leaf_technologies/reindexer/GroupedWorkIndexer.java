@@ -32,6 +32,7 @@ public class GroupedWorkIndexer {
 	private int totalRecordsHandled = 0;
 	private ConcurrentUpdateSolrClient updateServer;
 	private HashMap<String, MarcRecordProcessor> ilsRecordProcessors = new HashMap<>();
+	private HashMap<String, SideLoadedEContentProcessor> sideLoadProcessors = new HashMap<>();
 	private OverDriveProcessor overDriveProcessor;
 	private RbdigitalProcessor rbdigitalProcessor;
 	private RbdigitalMagazineProcessor rbdigitalMagazineProcessor;
@@ -178,61 +179,76 @@ public class GroupedWorkIndexer {
 		try {
 			PreparedStatement uniqueIdentifiersStmt = dbConn.prepareStatement("SELECT DISTINCT type FROM grouped_work_primary_identifiers");
 			PreparedStatement getIndexingProfile = dbConn.prepareStatement("SELECT * from indexing_profiles where name = ?");
+			PreparedStatement getSideLoadSettings = dbConn.prepareStatement("SELECT * from sideloads where name = ?");
+
 			ResultSet uniqueIdentifiersRS = uniqueIdentifiersStmt.executeQuery();
 
 			while (uniqueIdentifiersRS.next()){
-				String curIdentifier = uniqueIdentifiersRS.getString("type");
-				getIndexingProfile.setString(1, curIdentifier);
+				String curType = uniqueIdentifiersRS.getString("type");
+				getIndexingProfile.setString(1, curType);
 				ResultSet indexingProfileRS = getIndexingProfile.executeQuery();
 				if (indexingProfileRS.next()){
-					String ilsIndexingClassString =    indexingProfileRS.getString("indexingClass");
+					String ilsIndexingClassString = indexingProfileRS.getString("indexingClass");
 					switch (ilsIndexingClassString) {
 						case "Marmot":
-							ilsRecordProcessors.put(curIdentifier, new MarmotRecordProcessor(this, dbConn, indexingProfileRS, logger, fullReindex));
+							ilsRecordProcessors.put(curType, new MarmotRecordProcessor(this, dbConn, indexingProfileRS, logger, fullReindex));
 							break;
 						case "Nashville":
-							ilsRecordProcessors.put(curIdentifier, new NashvilleRecordProcessor(this, dbConn, indexingProfileRS, logger, fullReindex));
+							ilsRecordProcessors.put(curType, new NashvilleRecordProcessor(this, dbConn, indexingProfileRS, logger, fullReindex));
 							break;
 						case "NashvilleSchools":
-							ilsRecordProcessors.put(curIdentifier, new NashvilleSchoolsRecordProcessor(this, dbConn, indexingProfileRS, logger, fullReindex));
+							ilsRecordProcessors.put(curType, new NashvilleSchoolsRecordProcessor(this, dbConn, indexingProfileRS, logger, fullReindex));
 							break;
 						case "WCPL":
-							ilsRecordProcessors.put(curIdentifier, new WCPLRecordProcessor(this, dbConn, indexingProfileRS, logger, fullReindex));
+							ilsRecordProcessors.put(curType, new WCPLRecordProcessor(this, dbConn, indexingProfileRS, logger, fullReindex));
 							break;
 						case "Aspencat":
-							ilsRecordProcessors.put(curIdentifier, new AspencatRecordProcessor(this, dbConn, configIni, indexingProfileRS, logger, fullReindex));
+							ilsRecordProcessors.put(curType, new AspencatRecordProcessor(this, dbConn, configIni, indexingProfileRS, logger, fullReindex));
 							break;
 						case "Flatirons":
-							ilsRecordProcessors.put(curIdentifier, new FlatironsRecordProcessor(this, dbConn, indexingProfileRS, logger, fullReindex));
+							ilsRecordProcessors.put(curType, new FlatironsRecordProcessor(this, dbConn, indexingProfileRS, logger, fullReindex));
 							break;
 						case "Arlington":
-							ilsRecordProcessors.put(curIdentifier, new ArlingtonRecordProcessor(this, dbConn, indexingProfileRS, logger, fullReindex));
+							ilsRecordProcessors.put(curType, new ArlingtonRecordProcessor(this, dbConn, indexingProfileRS, logger, fullReindex));
 							break;
 						case "CarlX":
-							ilsRecordProcessors.put(curIdentifier, new CarlXRecordProcessor(this, dbConn, indexingProfileRS, logger, fullReindex));
+							ilsRecordProcessors.put(curType, new CarlXRecordProcessor(this, dbConn, indexingProfileRS, logger, fullReindex));
 							break;
 						case "SantaFe":
-							ilsRecordProcessors.put(curIdentifier, new SantaFeRecordProcessor(this, dbConn, indexingProfileRS, logger, fullReindex));
+							ilsRecordProcessors.put(curType, new SantaFeRecordProcessor(this, dbConn, indexingProfileRS, logger, fullReindex));
 							break;
 						case "AACPL":
-							ilsRecordProcessors.put(curIdentifier, new AACPLRecordProcessor(this, dbConn, indexingProfileRS, logger, fullReindex));
+							ilsRecordProcessors.put(curType, new AACPLRecordProcessor(this, dbConn, indexingProfileRS, logger, fullReindex));
 							break;
 						case "Lion":
-							ilsRecordProcessors.put(curIdentifier, new LionRecordProcessor(this, dbConn, indexingProfileRS, logger, fullReindex));
+							ilsRecordProcessors.put(curType, new LionRecordProcessor(this, dbConn, indexingProfileRS, logger, fullReindex));
 							break;
 						case "SideLoadedEContent":
-							ilsRecordProcessors.put(curIdentifier, new SideLoadedEContentProcessor(this, dbConn, indexingProfileRS, logger, fullReindex));
+							ilsRecordProcessors.put(curType, new SideLoadedEContentProcessor(this, dbConn, indexingProfileRS, logger, fullReindex));
 							break;
 						case "Koha":
-							ilsRecordProcessors.put(curIdentifier, new KohaRecordProcessor(this, dbConn, indexingProfileRS, logger, fullReindex));
+							ilsRecordProcessors.put(curType, new KohaRecordProcessor(this, dbConn, indexingProfileRS, logger, fullReindex));
 							break;
 						default:
 							logger.error("Unknown indexing class " + ilsIndexingClassString);
 							okToIndex = false;
 							return;
 					}
-				}else{
-					logger.debug("Could not find indexing profile for type " + curIdentifier);
+				}else if (!curType.equals("cloud_library") && !curType.equals("rbdigital") && !curType.equals("hoopla") && !curType.equals("overdrive")) {
+					getSideLoadSettings.setString(1, curType);
+					ResultSet getSideLoadSettingsRS = getSideLoadSettings.executeQuery();
+					if (getSideLoadSettingsRS.next()){
+						String sideLoadIndexingClassString = getSideLoadSettingsRS.getString("indexingClass");
+						if ("SideLoadedEContent".equals(sideLoadIndexingClassString) || "SideLoadedEContentProcessor".equals(sideLoadIndexingClassString)) {
+							sideLoadProcessors.put(curType, new SideLoadedEContentProcessor(this, dbConn, getSideLoadSettingsRS, logger, fullReindex));
+						} else {
+							logger.error("Unknown side load processing class " + sideLoadIndexingClassString);
+							okToIndex = false;
+							return;
+						}
+					}else{
+						logger.error("Could not find indexing profile or side load settings for type " + curType);
+					}
 				}
 			}
 
@@ -820,6 +836,8 @@ public class GroupedWorkIndexer {
 			default:
 				if (ilsRecordProcessors.containsKey(type)) {
 					ilsRecordProcessors.get(type).processRecord(groupedWork, identifier);
+				}else if (sideLoadProcessors.containsKey(type)){
+					sideLoadProcessors.get(type).processRecord(groupedWork, identifier);
 				}else{
 					logger.debug("Could not find a record processor for type " + type);
 				}

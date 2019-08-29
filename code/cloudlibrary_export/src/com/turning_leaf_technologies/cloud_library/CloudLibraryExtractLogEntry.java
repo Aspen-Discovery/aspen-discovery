@@ -1,5 +1,6 @@
 package com.turning_leaf_technologies.cloud_library;
 
+import com.turning_leaf_technologies.logging.BaseLogEntry;
 import org.apache.logging.log4j.Logger;
 
 import java.sql.*;
@@ -7,7 +8,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
-class CloudLibraryExtractLogEntry {
+class CloudLibraryExtractLogEntry implements BaseLogEntry {
 	private Long logEntryId = null;
 	private Date startTime;
 	private Date endTime;
@@ -34,7 +35,7 @@ class CloudLibraryExtractLogEntry {
 	}
 
 	private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-	void addNote(String note) {
+	public void addNote(String note) {
 		Date date = new Date();
 		this.notes.add(dateFormat.format(date) + " - " + note);
 		saveResults();
@@ -62,7 +63,7 @@ class CloudLibraryExtractLogEntry {
 
 	private static PreparedStatement insertLogEntry;
 	private static PreparedStatement updateLogEntry;
-	void saveResults() {
+	public boolean saveResults() {
 		try {
 			if (logEntryId == null){
 				insertLogEntry.setLong(1, startTime.getTime() / 1000);
@@ -90,11 +91,13 @@ class CloudLibraryExtractLogEntry {
 				updateLogEntry.setLong(++curCol, logEntryId);
 				updateLogEntry.executeUpdate();
 			}
+			return true;
 		} catch (SQLException e) {
 			logger.error("Error creating updating log", e);
+			return false;
 		}
 	}
-	void setFinished() {
+	public void setFinished() {
 		this.endTime = new Date();
 		this.addNote("Finished Cloud Library extraction");
 		this.saveResults();

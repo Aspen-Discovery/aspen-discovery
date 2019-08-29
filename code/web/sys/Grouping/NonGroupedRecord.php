@@ -9,11 +9,18 @@ class NonGroupedRecord extends DataObject{
 
 	static function getObjectStructure() {
 		global $indexingProfiles;
+		global $sideLoadSettings;
 		$availableSources = array();
 		foreach ($indexingProfiles as $profile){
 			$availableSources[$profile->name] = $profile->name;
 		}
-		$availableSources['overdrive'] = 'overdrive';
+		foreach ($sideLoadSettings as $profile){
+			$availableSources[$profile->name] = $profile->name;
+		}
+		$availableSources['cloud_library'] = 'Cloud Library';
+		$availableSources['hoopla'] = 'Hoopla';
+		$availableSources['overdrive'] = 'Overdrive';
+		$availableSources['rbdigital'] = 'RBdigital';
 
 		$structure = array(
 			array(

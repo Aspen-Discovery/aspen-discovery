@@ -2,15 +2,13 @@
 
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
 
+/** @noinspection PhpUnused */
 class MyAccount_HooplaOptions extends MyAccount
 {
 	function launch()
 	{
-		global $configArray;
 		global $interface;
 		$user = UserAccount::getLoggedInUser();
-
-		$ils = $configArray['Catalog']['ils'];
 
 		if ($user) {
 			// Determine which user we are showing/updating settings for

@@ -19,10 +19,11 @@ public class IndexingUtils {
             HashMap<Long, HooplaScope> hooplaScopes = loadHooplaScopes(dbConn, logger);
             HashMap<Long, RbdigitalScope> rbdigitalScopes = loadRbdigitalScopes(dbConn, logger);
             HashMap<Long, CloudLibraryScope> cloudLibraryScopes = loadCloudLibraryScopes(dbConn, logger);
+            HashMap<Long, SideLoadScope> sideLoadScopes = loadSideLoadScopes(dbConn, logger);
 
-            loadLibraryScopes(scopes, hooplaScopes, rbdigitalScopes, cloudLibraryScopes, dbConn);
+            loadLibraryScopes(scopes, hooplaScopes, rbdigitalScopes, cloudLibraryScopes, sideLoadScopes, dbConn);
 
-            loadLocationScopes(scopes, hooplaScopes, rbdigitalScopes, cloudLibraryScopes, dbConn);
+            loadLocationScopes(scopes, hooplaScopes, rbdigitalScopes, cloudLibraryScopes, sideLoadScopes, dbConn);
         } catch (SQLException e) {
             logger.error("Error setting up scopes", e);
         }
@@ -114,7 +115,29 @@ public class IndexingUtils {
         return cloudLibraryScopes;
     }
 
-    private static void loadLocationScopes(TreeSet<Scope> scopes, HashMap<Long, HooplaScope> hooplaScopes, HashMap<Long, RbdigitalScope> rbdigitalScopes, HashMap<Long, CloudLibraryScope> cloudLibraryScopes, Connection dbConn) throws SQLException {
+    private static HashMap<Long, SideLoadScope> loadSideLoadScopes(Connection dbConn, Logger logger){
+        HashMap<Long, SideLoadScope> sideLoadScopes = new HashMap<>();
+        try {
+            PreparedStatement sideLoadScopeStmt = dbConn.prepareStatement("SELECT * from sideload_scopes", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+            ResultSet sideLoadScopesRS = sideLoadScopeStmt.executeQuery();
+
+            while (sideLoadScopesRS.next()){
+                SideLoadScope sideLoadScope = new SideLoadScope();
+                sideLoadScope.setId(sideLoadScopesRS.getLong("id"));
+                sideLoadScope.setName(sideLoadScopesRS.getString("name"));
+                sideLoadScope.setSideLoadId(sideLoadScopesRS.getLong("sideLoadId"));
+                sideLoadScope.setRestrictToChildrensMaterial(sideLoadScopesRS.getBoolean("restrictToChildrensMaterial"));
+
+                sideLoadScopes.put(sideLoadScope.getId(), sideLoadScope);
+            }
+
+        }catch (SQLException e) {
+            logger.error("Error loading Side Load scopes", e);
+        }
+        return sideLoadScopes;
+    }
+
+    private static void loadLocationScopes(TreeSet<Scope> scopes, HashMap<Long, HooplaScope> hooplaScopes, HashMap<Long, RbdigitalScope> rbdigitalScopes, HashMap<Long, CloudLibraryScope> cloudLibraryScopes, HashMap<Long, SideLoadScope> sideLoadScopes, Connection dbConn) throws SQLException {
         PreparedStatement locationInformationStmt = dbConn.prepareStatement("SELECT library.libraryId, locationId, code, subLocation, ilsCode, " +
                         "library.subdomain, location.facetLabel, location.displayName, library.pTypes, library.restrictOwningBranchesAndSystems, location.publicListsToInclude, " +
                         "library.enableOverdriveCollection as enableOverdriveCollectionLibrary, " +
@@ -134,6 +157,8 @@ public class IndexingUtils {
                 ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
         PreparedStatement locationRecordInclusionRulesStmt = dbConn.prepareStatement("SELECT location_records_to_include.*, indexing_profiles.name FROM location_records_to_include INNER JOIN indexing_profiles ON indexingProfileId = indexing_profiles.id WHERE locationId = ?",
                 ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+        PreparedStatement librarySideLoadScopesStmt = dbConn.prepareStatement("SELECT * from library_sideload_scopes WHERE libraryId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+        PreparedStatement locationSideLoadScopesStmt = dbConn.prepareStatement("SELECT * from location_sideload_scopes WHERE locationId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 
         ResultSet locationInformationRS = locationInformationStmt.executeQuery();
         while (locationInformationRS.next()){
@@ -213,6 +238,21 @@ public class IndexingUtils {
                 locationScopeInfo.setCloudLibraryScope(cloudLibraryScopes.get(cloudLibraryScopeLocation));
             }
 
+            locationSideLoadScopesStmt.setLong(1, locationId);
+            ResultSet locationSideLoadScopesRS = locationSideLoadScopesStmt.executeQuery();
+            while (locationSideLoadScopesRS.next()){
+                long scopeId = locationSideLoadScopesRS.getLong("sideLoadScopeId");
+                if (scopeId == -1){
+                    librarySideLoadScopesStmt.setLong(1, libraryId);
+                    ResultSet librarySideLoadScopesRS = librarySideLoadScopesStmt.executeQuery();
+                    while (librarySideLoadScopesRS.next()){
+                        locationScopeInfo.addSideLoadScope(sideLoadScopes.get(librarySideLoadScopesRS.getLong("sideLoadScopeId")));
+                    }
+                }else{
+                    locationScopeInfo.addSideLoadScope(sideLoadScopes.get(scopeId));
+                }
+            }
+
             //Load information about what should be included in the scope
             locationOwnedRecordRulesStmt.setLong(1, locationId);
             ResultSet locationOwnedRecordRulesRS = locationOwnedRecordRulesStmt.executeQuery();
@@ -280,7 +320,7 @@ public class IndexingUtils {
     }
 
     private static PreparedStatement libraryRecordInclusionRulesStmt;
-    private static void loadLibraryScopes(TreeSet<Scope> scopes, HashMap<Long, HooplaScope> hooplaScopes, HashMap<Long, RbdigitalScope> rbdigitalScopes, HashMap<Long, CloudLibraryScope> cloudLibraryScopes, Connection dbConn) throws SQLException {
+    private static void loadLibraryScopes(TreeSet<Scope> scopes, HashMap<Long, HooplaScope> hooplaScopes, HashMap<Long, RbdigitalScope> rbdigitalScopes, HashMap<Long, CloudLibraryScope> cloudLibraryScopes, HashMap<Long, SideLoadScope> sideLoadScopes, Connection dbConn) throws SQLException {
         PreparedStatement libraryInformationStmt = dbConn.prepareStatement("SELECT libraryId, ilsCode, subdomain, " +
                         "displayName, facetLabel, pTypes, enableOverdriveCollection, restrictOwningBranchesAndSystems, publicListsToInclude, " +
                         "additionalLocationsToShowAvailabilityFor, includeOverdriveAdult, includeOverdriveTeen, includeOverdriveKids, " +
@@ -291,6 +331,8 @@ public class IndexingUtils {
         PreparedStatement libraryOwnedRecordRulesStmt = dbConn.prepareStatement("SELECT library_records_owned.*, indexing_profiles.name from library_records_owned INNER JOIN indexing_profiles ON indexingProfileId = indexing_profiles.id WHERE libraryId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
         libraryRecordInclusionRulesStmt = dbConn.prepareStatement("SELECT library_records_to_include.*, indexing_profiles.name from library_records_to_include INNER JOIN indexing_profiles ON indexingProfileId = indexing_profiles.id WHERE libraryId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
         ResultSet libraryInformationRS = libraryInformationStmt.executeQuery();
+        PreparedStatement librarySideLoadScopesStmt = dbConn.prepareStatement("SELECT * from library_sideload_scopes WHERE libraryId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+
         while (libraryInformationRS.next()){
             String facetLabel = libraryInformationRS.getString("facetLabel");
             String subdomain = libraryInformationRS.getString("subdomain");
@@ -342,6 +384,12 @@ public class IndexingUtils {
             long cloudLibraryScopeLibrary = libraryInformationRS.getLong("cloudLibraryScopeId");
             if (cloudLibraryScopeLibrary != -1) {
                 newScope.setCloudLibraryScope(cloudLibraryScopes.get(cloudLibraryScopeLibrary));
+            }
+
+            librarySideLoadScopesStmt.setLong(1, libraryId);
+            ResultSet librarySideLoadScopesRS = librarySideLoadScopesStmt.executeQuery();
+            while (librarySideLoadScopesRS.next()){
+                newScope.addSideLoadScope(sideLoadScopes.get(librarySideLoadScopesRS.getLong("sideLoadScopeId")));
             }
 
             newScope.setRestrictOwningLibraryAndLocationFacets(libraryInformationRS.getBoolean("restrictOwningBranchesAndSystems"));

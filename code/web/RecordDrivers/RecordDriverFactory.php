@@ -175,14 +175,21 @@ class RecordDriverFactory {
 		}else{
 			/** @var IndexingProfile[] $indexingProfiles */
 			global $indexingProfiles;
+			/** @var SideLoad[] $sideLoadSettings */
+			global $sideLoadSettings;
 
-			if (array_key_exists($recordType, $indexingProfiles)){
+			if (array_key_exists($recordType, $indexingProfiles)) {
 				$indexingProfile = $indexingProfiles[$recordType];
 				$driverName = $indexingProfile->recordDriver;
 				$driverPath = ROOT_DIR . "/RecordDrivers/{$driverName}.php";
 				require_once $driverPath;
 				$recordDriver = new $driverName($id, $groupedWork);
-
+			}else if (array_key_exists($recordType, $sideLoadSettings)){
+				$indexingProfile = $sideLoadSettings[$recordType];
+				$driverName = $indexingProfile->recordDriver;
+				$driverPath = ROOT_DIR . "/RecordDrivers/{$driverName}.php";
+				require_once $driverPath;
+				$recordDriver = new $driverName($id, $groupedWork);
 			}else{
 				//Check to see if this is an object from the archive
 				$driverNameParts = explode('_', $recordType);

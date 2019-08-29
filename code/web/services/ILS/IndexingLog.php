@@ -9,8 +9,7 @@ class ILS_IndexingLog extends Admin_Admin
 {
 	function launch()
 	{
-		global $interface,
-		       $configArray;
+		global $interface;
 
 		$logEntries = array();
 		$logEntry = new IlsExtractLogEntry();
@@ -27,7 +26,6 @@ class ILS_IndexingLog extends Admin_Admin
 		$interface->assign('logEntries', $logEntries);
 
 		$options = array('totalItems' => $total,
-		                 'fileName'   => $configArray['Site']['path'].'/ILS/IndexingLog?page=%d',
 		                 'perPage'    => 30,
 		);
 		$pager = new Pager($options);

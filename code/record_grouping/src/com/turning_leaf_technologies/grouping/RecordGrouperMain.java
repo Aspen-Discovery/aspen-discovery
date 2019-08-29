@@ -1,8 +1,10 @@
 package com.turning_leaf_technologies.grouping;
 
 import com.turning_leaf_technologies.config.ConfigUtil;
+import com.turning_leaf_technologies.indexing.BaseIndexingSettings;
 import com.turning_leaf_technologies.indexing.IndexingProfile;
 import com.turning_leaf_technologies.indexing.RecordIdentifier;
+import com.turning_leaf_technologies.indexing.SideLoadSettings;
 import com.turning_leaf_technologies.logging.LoggingUtil;
 import com.turning_leaf_technologies.marc.MarcUtil;
 import com.turning_leaf_technologies.strings.StringUtils;
@@ -116,7 +118,7 @@ public class RecordGrouperMain {
 				author = getInputFromCommandLine("Enter the author");
 				format = getInputFromCommandLine("Enter the format");
 			}
-			RecordGroupingProcessor processor = new RecordGroupingProcessor(dbConn, serverName, logger, false);
+			RecordGroupingProcessor processor = new RecordGroupingProcessor(dbConn, serverName, logger);
 			GroupedWorkBase work = GroupedWorkFactory.getInstance(-1, processor);
 			work.setTitle(title, 0, subtitle);
 			work.setAuthor(author);
@@ -260,7 +262,7 @@ public class RecordGrouperMain {
 		RecordGroupingProcessor recordGroupingProcessor = null;
 		OverDriveRecordGrouper overDriveRecordGrouper;
 		if (!onlyDoCleanup) {
-			recordGroupingProcessor = new RecordGroupingProcessor(dbConn, serverName, logger, fullRegrouping);
+			recordGroupingProcessor = new RecordGroupingProcessor(dbConn, serverName, logger);
 			overDriveRecordGrouper = new OverDriveRecordGrouper(dbConn, serverName, logger, fullRegrouping);
 
 			if (!explodeMarcsOnly) {
@@ -304,10 +306,33 @@ public class RecordGrouperMain {
 			if (indexingProfileToRun == null || indexingProfileToRun.equalsIgnoreCase("rbdigital")) {
 				groupRbdigitalRecords(dbConn, recordGroupingProcessor, explodeMarcsOnly);
 			}
+			//TODO: group hoopla
+			//TODO: group cloud library
+
 			if (indexingProfiles.size() > 0) {
 				groupIlsRecords(dbConn, indexingProfiles, explodeMarcsOnly);
 			}
 
+			//Group side loaded records
+			ArrayList<SideLoadSettings> sideLoadSettings = new ArrayList<>();
+			try{
+				PreparedStatement getSideLoadSettingsStmt = dbConn.prepareStatement("SELECT name FROM sideloads");
+				if (indexingProfileToRun != null){
+					getSideLoadSettingsStmt = dbConn.prepareStatement("SELECT name FROM sideloads where name like '" + indexingProfileToRun + "'");
+				}
+				ResultSet sideLoadSettingsRS = getSideLoadSettingsStmt.executeQuery();
+				while (sideLoadSettingsRS.next()){
+					SideLoadSettings settings = new SideLoadSettings(sideLoadSettingsRS);
+
+					sideLoadSettings.add(settings);
+				}
+			} catch (Exception e){
+				logger.error("Error loading side load settings", e);
+				System.exit(1);
+			}
+			if (indexingProfiles.size() > 0) {
+				groupSideLoads(dbConn, sideLoadSettings, explodeMarcsOnly);
+			}
 		}
 
 		if (!explodeMarcsOnly) {
@@ -545,6 +570,121 @@ public class RecordGrouperMain {
 		}
 	}
 
+
+	private static void groupSideLoads(Connection dbConnection, ArrayList<SideLoadSettings> sideLoadSettings, boolean explodeMarcsOnly) {
+		for (SideLoadSettings curSettings : sideLoadSettings) {
+			addNoteToGroupingLog("Processing side load settings " + curSettings.getName());
+
+			String marcPath = curSettings.getMarcPath();
+
+			//Check to see if we should process the profile
+			boolean processProfile = false;
+			ArrayList<File> filesToProcess = new ArrayList<>();
+			//Check to see if we have any new files, if so we will process all of them to be sure deletes and overlays process properly
+			Pattern filesToMatchPattern = Pattern.compile(curSettings.getFilenamesToInclude(), Pattern.CASE_INSENSITIVE);
+			File[] catalogBibFiles = new File(marcPath).listFiles();
+			if (catalogBibFiles != null) {
+				for (File curBibFile : catalogBibFiles) {
+					if (filesToMatchPattern.matcher(curBibFile.getName()).matches()) {
+						filesToProcess.add(curBibFile);
+						//If the file has changed since the last grouping time we should process it again
+						if (curBibFile.lastModified() > lastGroupingTime * 1000){
+							processProfile = true;
+						}
+					}
+				}
+			}
+			if (fullRegrouping || fullRegroupingNoClear){
+				processProfile = true;
+			}
+
+			if (!processProfile) {
+				addNoteToGroupingLog("Skipping processing profile " + curSettings.getName() + " because nothing has changed");
+			}else{
+				loadIlsChecksums(dbConnection, curSettings.getName());
+				loadExistingPrimaryIdentifiers(dbConnection, curSettings.getName());
+
+				SideLoadedRecordGrouper recordGroupingProcessor;
+				if ("SideLoadedRecordGrouper".equals(curSettings.getGroupingClass())) {
+					recordGroupingProcessor = new SideLoadedRecordGrouper(serverName, dbConnection, curSettings, logger, fullRegrouping);
+				} else {
+					logger.error("Unknown class for record grouping " + curSettings.getGroupingClass());
+					continue;
+				}
+
+				String marcEncoding = curSettings.getMarcEncoding();
+				TreeSet<String> recordNumbersInExport = new TreeSet<>();
+				TreeSet<String> suppressedRecordNumbersInExport = new TreeSet<>();
+				TreeSet<String> marcRecordsOverwritten = new TreeSet<>();
+				TreeSet<String> marcRecordsWritten = new TreeSet<>();
+
+				String lastRecordProcessed = "";
+				for (File curBibFile : filesToProcess) {
+					int numRecordsProcessed = 0;
+					int numRecordsRead = 0;
+					try {
+						FileInputStream marcFileStream = new FileInputStream(curBibFile);
+						MarcReader catalogReader = new MarcPermissiveStreamReader(marcFileStream, true, true, marcEncoding);
+						while (catalogReader.hasNext()) {
+							try{
+								Record curBib = catalogReader.next();
+								RecordIdentifier recordIdentifier = recordGroupingProcessor.getPrimaryIdentifierFromMarcRecord(curBib, curSettings.getName());
+								if (recordIdentifier == null) {
+									//logger.debug("Record with control number " + curBib.getControlNumber() + " was suppressed or is eContent");
+									String controlNumber = curBib.getControlNumber();
+									if (controlNumber == null) {
+										logger.warn("Bib did not have control number or identifier");
+									}
+								}else if (!recordIdentifier.isSuppressed()) {
+									String recordNumber = recordIdentifier.getIdentifier();
+
+									boolean marcUpToDate = writeIndividualMarc(curSettings, curBib, recordNumber, marcRecordsWritten, marcRecordsOverwritten);
+									recordNumbersInExport.add(recordIdentifier.toString());
+									if (!explodeMarcsOnly) {
+										if (!marcUpToDate || fullRegroupingNoClear) {
+											if (recordGroupingProcessor.processMarcRecord(curBib, !marcUpToDate) == null) {
+												suppressedRecordNumbersInExport.add(recordIdentifier.toString());
+											}
+											numRecordsProcessed++;
+										}
+										//Mark that the record was processed
+										String fullId = recordIdentifier.toString().toLowerCase();
+										marcRecordIdsInDatabase.remove(fullId);
+										primaryIdentifiersInDatabase.remove(fullId);
+									}
+									lastRecordProcessed = recordNumber;
+								}
+							}catch (MarcException me){
+								logger.warn("Error processing individual record  on record " + numRecordsRead + " of " + curBibFile.getAbsolutePath() + " the last record processed was " + lastRecordProcessed + " trying to continue", me);
+							}
+							numRecordsRead++;
+							if (numRecordsRead % 100000 == 0) {
+								recordGroupingProcessor.dumpStats();
+							}
+							if (numRecordsRead % 5000 == 0) {
+								updateLastUpdateTimeInLog();
+								//Let the hard drives rest a bit so other things can happen.
+								Thread.sleep(100);
+							}
+						}
+						marcFileStream.close();
+					} catch (Exception e) {
+						logger.error("Error loading catalog bibs on record " + numRecordsRead + " in profile " + curSettings.getName() + " the last record processed was " + lastRecordProcessed, e);
+					}
+					logger.info("Finished grouping " + numRecordsRead + " records with " + numRecordsProcessed + " actual changes from the ils file " + curBibFile.getName() + " in profile " + curSettings.getName());
+					addNoteToGroupingLog("&nbsp;&nbsp; - Finished grouping " + numRecordsRead + " records from the ils file " + curBibFile.getName());
+				}
+
+				addNoteToGroupingLog("&nbsp;&nbsp; - Records Processed:" + recordNumbersInExport.size());
+				addNoteToGroupingLog("&nbsp;&nbsp; - Records Suppressed:" + suppressedRecordNumbersInExport.size());
+				addNoteToGroupingLog("&nbsp;&nbsp; - Records Written:" + marcRecordsWritten.size());
+				addNoteToGroupingLog("&nbsp;&nbsp; - Records Overwritten:" + marcRecordsOverwritten.size());
+
+				removeDeletedRecords(curSettings.getName());
+			}
+		}
+	}
+
 	private static void groupIlsRecords(Connection dbConnection, ArrayList<IndexingProfile> indexingProfiles, boolean explodeMarcsOnly) {
 		//Get indexing profiles
 		for (IndexingProfile curProfile : indexingProfiles) {
@@ -582,13 +722,13 @@ public class RecordGrouperMain {
 				MarcRecordGrouper recordGroupingProcessor;
 				switch (curProfile.getGroupingClass()) {
 					case "MarcRecordGrouper":
-						recordGroupingProcessor = new MarcRecordGrouper(dbConnection, curProfile, logger, fullRegrouping);
+						recordGroupingProcessor = new MarcRecordGrouper(serverName, dbConnection, curProfile, logger, fullRegrouping);
 						break;
 					case "SideLoadedRecordGrouper":
-						recordGroupingProcessor = new SideLoadedRecordGrouper(dbConnection, curProfile, logger, fullRegrouping);
-						break;
+						logger.error("Side Load settings should be updated for " + curProfile.getName());
+						continue;
 					case "HooplaRecordGrouper":
-						recordGroupingProcessor = new HooplaRecordGrouper(dbConnection, curProfile, logger, fullRegrouping);
+						recordGroupingProcessor = new HooplaRecordGrouper(serverName, dbConnection, curProfile, logger, fullRegrouping);
 						break;
 					default:
 						logger.error("Unknown class for record grouping " + curProfile.getGroupingClass());
@@ -757,14 +897,14 @@ public class RecordGrouperMain {
 	}
 
 
-	private static boolean writeIndividualMarc(IndexingProfile indexingProfile, Record marcRecord, String recordNumber, TreeSet<String> marcRecordsWritten, TreeSet<String> marcRecordsOverwritten) {
+	private static boolean writeIndividualMarc(BaseIndexingSettings indexingSettings, Record marcRecord, String recordNumber, TreeSet<String> marcRecordsWritten, TreeSet<String> marcRecordsOverwritten) {
 		boolean marcRecordUpToDate = false;
 		//Copy the record to the individual marc path
 		if (recordNumber != null){
 			long checksum = MarcUtil.getChecksum(marcRecord);
-			File individualFile = indexingProfile.getFileForIlsRecord(recordNumber);
+			File individualFile = indexingSettings.getFileForIlsRecord(recordNumber);
 
-			String recordNumberWithSource = indexingProfile.getName() + ":" + recordNumber;
+			String recordNumberWithSource = indexingSettings.getName() + ":" + recordNumber;
 			Long existingChecksum = getExistingChecksum(recordNumberWithSource);
 			//If we are doing partial regrouping or full regrouping without clearing the previous results,
 			//Check to see if the record needs to be written before writing it.
@@ -797,8 +937,8 @@ public class RecordGrouperMain {
 			if (!marcRecordUpToDate){
 				try {
 					MarcUtil.outputMarcRecord(marcRecord, individualFile, logger);
-					MarcUtil.getDateAddedForRecord(marcRecord, recordNumber, indexingProfile.getName(), individualFile, logger);
-					updateMarcRecordChecksum(recordNumber, indexingProfile.getName(), checksum);
+					MarcUtil.getDateAddedForRecord(marcRecord, recordNumber, indexingSettings.getName(), individualFile, logger);
+					updateMarcRecordChecksum(recordNumber, indexingSettings.getName(), checksum);
 					//logger.debug("checksum changed for " + recordNumber + " was " + existingChecksum + " now its " + checksum);
 				} catch (IOException e) {
 					logger.error("Error writing marc", e);
@@ -806,8 +946,8 @@ public class RecordGrouperMain {
 			}else {
 				//Update date first detected if needed
 				if (marcRecordFirstDetectionDates.containsKey(recordNumberWithSource) && marcRecordFirstDetectionDates.get(recordNumberWithSource) == null){
-					MarcUtil.getDateAddedForRecord(marcRecord, recordNumber, indexingProfile.getName(), individualFile, logger);
-					updateMarcRecordChecksum(recordNumber, indexingProfile.getName(), checksum);
+					MarcUtil.getDateAddedForRecord(marcRecord, recordNumber, indexingSettings.getName(), individualFile, logger);
+					updateMarcRecordChecksum(recordNumber, indexingSettings.getName(), checksum);
 				}
 			}
 		}else{
