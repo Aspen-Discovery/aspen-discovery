@@ -2051,6 +2051,7 @@ class Koha extends AbstractIlsDriver {
 
 	public function showNotificationSettings()
 	{
+		$this->initDatabaseConnection();
 		/** @noinspection SqlResolve */
 		$sql = "SELECT * from systempreferences where variable = 'EnhancedMessagingPreferencesOPAC' OR variable = 'EnhancedMessagingPreferences'";
 		$preferenceRS = mysqli_query($this->dbConnection, $sql);

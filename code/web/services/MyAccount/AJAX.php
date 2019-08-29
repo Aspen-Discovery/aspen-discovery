@@ -1103,16 +1103,26 @@ class MyAccount_AJAX
 				require_once ROOT_DIR . '/Drivers/HooplaDriver.php';
 				$driver = new HooplaDriver();
 				$hooplaSummaryRaw = $driver->getAccountSummary($user);
-				$hooplaSummary = [
-					'numCheckedOut' => $hooplaSummaryRaw->currentlyBorrowed,
-					'numCheckoutsRemaining' => $hooplaSummaryRaw->borrowsRemaining,
-				];
+				if ($hooplaSummaryRaw == false){
+					$hooplaSummary = [
+						'numCheckedOut' => 0,
+						'numCheckoutsRemaining' => 0,
+					];
+				}else{
+					$hooplaSummary = [
+						'numCheckedOut' => $hooplaSummaryRaw->currentlyBorrowed,
+						'numCheckoutsRemaining' => $hooplaSummaryRaw->borrowsRemaining,
+					];
+				}
+
 				if ($user->getLinkedUsers() != null) {
 					/** @var User $user */
 					foreach ($user->getLinkedUsers() as $linkedUser) {
 						$linkedUserSummary = $driver->getAccountSummary($linkedUser);
-						$hooplaSummary['numCheckedOut'] += $linkedUserSummary->currentlyBorrowed;
-						$hooplaSummary['numCheckoutsRemaining'] += $linkedUserSummary->borrowsRemaining;
+						if ($linkedUserSummary != false) {
+							$hooplaSummary['numCheckedOut'] += $linkedUserSummary->currentlyBorrowed;
+							$hooplaSummary['numCheckoutsRemaining'] += $linkedUserSummary->borrowsRemaining;
+						}
 					}
 				}
 				$timer->logTime("Loaded Hoopla Summary for User and linked users");
