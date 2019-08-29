@@ -254,8 +254,7 @@ public class IndexingUtils {
             }
 
             //Load information about what should be included in the scope
-            locationOwnedRecordRulesStmt.setLong(1, locationId);
-            ResultSet locationOwnedRecordRulesRS = locationOwnedRecordRulesStmt.executeQuery();
+            locationOwnedRecordRulesStmt.setLong(1, locationId);ResultSet locationOwnedRecordRulesRS = locationOwnedRecordRulesStmt.executeQuery();
             while (locationOwnedRecordRulesRS.next()){
                 locationScopeInfo.addOwnershipRule(new OwnershipRule(locationOwnedRecordRulesRS.getString("name"), locationOwnedRecordRulesRS.getString("location"), locationOwnedRecordRulesRS.getString("subLocation")));
             }
