@@ -2174,7 +2174,7 @@ class Koha extends AbstractIlsDriver {
 			$validNoticeDays[$i] = $i;
 		}
 		$interface->assign('validNoticeDays', $validNoticeDays);
-		return 'kohaNotificationSettings.tpl';
+		return 'kohaMessagingSettings.tpl';
 	}
 
 	public function processMessagingSettingsForm(User $user)

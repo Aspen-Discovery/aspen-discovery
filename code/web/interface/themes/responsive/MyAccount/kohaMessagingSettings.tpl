@@ -19,7 +19,7 @@
 			<div class="alert alert-danger">{$result.message}</div>
 	    {/if}
     {/if}
-    <form method="post" action="/MyAccount/NotificationSettings" name="kohaMessaging">
+    <form method="post" action="/MyAccount/MessagingSettings" name="kohaMessaging">
         <input type="hidden" name="modify" value="yes">
 
         <table class="table table-bordered table-condensed table-striped">
