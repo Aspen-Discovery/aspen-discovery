@@ -1754,5 +1754,13 @@ function getLibraryLocationUpdates(){
 				'ALTER TABLE location ADD COLUMN cloudLibraryScopeId INT(11) default -1',
 			]
 		],
+
+		'library_show_quick_copy' => [
+			'title' => 'Library Show Quick Copy',
+			'description' => 'Add a column for whether or not quick copy should be shown',
+			'sql' => [
+				'ALTER TABLE library ADD COLUMN showQuickCopy TINYINT(1) default 1',
+			]
+		]
 	);
 }

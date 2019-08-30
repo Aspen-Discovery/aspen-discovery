@@ -434,6 +434,7 @@ class UInterface extends Smarty
 		$this->assign('showRatings', $library->showRatings);
 		$this->assign('show856LinksAsTab', $library->show856LinksAsTab);
 		$this->assign('showSearchTools', $library->showSearchTools);
+		$this->assign('showQuickCopy', $library->showQuickCopy);
 		$this->assign('alwaysShowSearchResultsMainDetails', $library->alwaysShowSearchResultsMainDetails);
 		$this->assign('showExpirationWarnings', $library->showExpirationWarnings);
 		$this->assign('expiredMessage', $library->expiredMessage);

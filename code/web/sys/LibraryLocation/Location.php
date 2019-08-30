@@ -1295,13 +1295,6 @@ class Location extends DataObject
 		}
 	}
 
-	public function clearRecordsOwned(){
-		$object = new LocationRecordOwned();
-		$object->locationId = $this->locationId;
-		$object->delete(true);
-		$this->recordsOwned = array();
-	}
-
 	public function saveRecordsToInclude(){
 		if (isset ($this->recordsToInclude) && is_array($this->recordsToInclude)){
 			/** @var LibraryRecordOwned $object */
@@ -1321,23 +1314,11 @@ class Location extends DataObject
 		}
 	}
 
-	public function clearRecordsToInclude(){
-		$object = new LibraryRecordToInclude();
-		$object->locationId = $this->locationId;
-		$object->delete(true);
-		$this->recordsToInclude = array();
-	}
-
 	public function saveSideLoadScopes(){
 		if (isset ($this->sideLoadScopes) && is_array($this->sideLoadScopes)){
 			$this->saveOneToManyOptions($this->sideLoadScopes);
 			unset($this->sideLoadScopes);
 		}
-	}
-
-	public function clearSideLoadScopes(){
-		$this->clearOneToManyOptions('LocationSideLoadScope');
-		$this->sideLoadScopes = array();
 	}
 
 	static function getDefaultFacets($locationId = -1){

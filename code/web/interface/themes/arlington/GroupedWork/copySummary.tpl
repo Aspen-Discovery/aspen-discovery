@@ -1,6 +1,6 @@
 {strip}
 	{if $format == 'Journal' || $format == 'Newspaper' || $format == 'Print Periodical' || $format == 'Magazine'}
-		{if $recordViewUrl}
+		{if $recordViewUrl && $showQuickCopy}
 			<div class="itemSummary">
 				&nbsp;&nbsp;<a href="{$recordViewUrl}#copiesPanelBody">
 					{translate text="Quick Copy View"}
@@ -34,44 +34,46 @@
 			{if !$inPopUp}
 				{assign var=numRemainingCopies value=$totalCopies-$numDefaultItems}
 				{if $numRemainingCopies > 0}
-					<div class="itemSummary">
+					{if $showQuickCopy}
+						<div class="itemSummary">
 						&nbsp;&nbsp;<a href="#" onclick="return AspenDiscovery.showElementInPopup('Copy Summary', '#itemSummaryPopup_{$itemSummaryId|escapeCSS}_{$relatedManifestation.format|escapeCSS}'{if $recordViewUrl}, '#itemSummaryPopupButtons_{$itemSummaryId|escapeCSS}_{$relatedManifestation.format|escapeCSS}'{/if});">
-							{translate text="Quick Copy View"}
+                            {translate text="Quick Copy View"}
 						</a>
 					</div>
-					<div id="itemSummaryPopup_{$itemSummaryId|escapeCSS}_{$relatedManifestation.format|escapeCSS}" class="itemSummaryPopup" style="display: none">
-						<table class="table table-striped table-condensed itemSummaryTable">
-							<thead>
-							<tr>
-								<th>Avail. Copies</th>
-								<th>Location</th>
-								<th>Call #</th>
-							</tr>
-							</thead>
-							<tbody>
-							{assign var=numRowsShown value=0}
-							{foreach from=$summary item="item"}
-								<tr {if $item.availableCopies}class="available" {/if}>
-									{if $item.onOrderCopies > 0}
-										{if $showOnOrderCounts}
-											<td>{$item.onOrderCopies} on order</td>
-										{else}
-											<td>Copies on order</td>
-										{/if}
-									{else}
-										<td>{$item.availableCopies} of {$item.totalCopies}</td>
-									{/if}
-									<td class="notranslate">{$item.shelfLocation}</td>
-									<td class="notranslate">
-										{if !$item.isEContent}
-											{$item.callNumber}
-										{/if}
-									</td>
+						<div id="itemSummaryPopup_{$itemSummaryId|escapeCSS}_{$relatedManifestation.format|escapeCSS}" class="itemSummaryPopup" style="display: none">
+							<table class="table table-striped table-condensed itemSummaryTable">
+								<thead>
+								<tr>
+									<th>Avail. Copies</th>
+									<th>Location</th>
+									<th>Call #</th>
 								</tr>
-							{/foreach}
-							</tbody>
-						</table>
-					</div>
+								</thead>
+								<tbody>
+                                {assign var=numRowsShown value=0}
+                                {foreach from=$summary item="item"}
+									<tr {if $item.availableCopies}class="available" {/if}>
+                                        {if $item.onOrderCopies > 0}
+                                            {if $showOnOrderCounts}
+												<td>{$item.onOrderCopies} on order</td>
+                                            {else}
+												<td>Copies on order</td>
+                                            {/if}
+                                        {else}
+											<td>{$item.availableCopies} of {$item.totalCopies}</td>
+                                        {/if}
+										<td class="notranslate">{$item.shelfLocation}</td>
+										<td class="notranslate">
+                                            {if !$item.isEContent}
+                                                {$item.callNumber}
+                                            {/if}
+										</td>
+									</tr>
+                                {/foreach}
+								</tbody>
+							</table>
+						</div>
+					{/if}
 					{if $recordViewUrl}
 						<div id="itemSummaryPopupButtons_{$itemSummaryId|escapeCSS}_{$relatedManifestation.format|escapeCSS}" {*class="itemSummaryPopup"*} style="display: none">
 							<a href="{$recordViewUrl}" class="btn btn-primary" role="button">{translate text="See Full Copy Details"}</a>

@@ -45,8 +45,8 @@ class Library extends DataObject
 	public $displayName; 			//varchar(50)
 	public $showDisplayNameInHeader;
 	public $headerText;
-	public $abbreviatedDisplayName;
-	public $systemMessage;
+	public /** @noinspection PhpUnused */ $abbreviatedDisplayName;
+	public /** @noinspection PhpUnused */ $systemMessage;
 	public $ilsCode;
 	public $themeName; 				//varchar(15)
     public $theme;
@@ -56,7 +56,7 @@ class Library extends DataObject
 	public $allowFreezeHolds;   //tinyint(4)
 	public $scope; 					//smallint(6)
 	public $useScope;		 		//tinyint(4)
-	public $hideCommentsWithBadWords; //tinyint(4)
+	public /** @noinspection PhpUnused */ $hideCommentsWithBadWords; //tinyint(4)
 	public $showStandardReviews;
 	public $showHoldButton;
 	public $showHoldButtonInSearchResults;
@@ -66,10 +66,10 @@ class Library extends DataObject
 	public $showComments; // User Reviews switch
 	public $showRatings; // User Ratings
 	public $showFavorites;
-	public $showTableOfContentsTab;
+	public /** @noinspection PhpUnused */ $showTableOfContentsTab;
 	public $inSystemPickupsOnly;
 	public $validPickupSystems;
-	public $pTypes;
+	public /** @noinspection PhpUnused */ $pTypes;
 	public $defaultPType;
 	public $facetLabel;
 	public $showAvailableAtAnyLocation;
@@ -77,57 +77,58 @@ class Library extends DataObject
 	public $payFinesLink;
 	public $payFinesLinkText;
 	public $minimumFineAmount;
-	public $showRefreshAccountButton;    // specifically to refresh account after paying fines onlinepublic $repeatSearchOption;
-	public $repeatInOnlineCollection;
-	public $repeatInProspector;
-	public $repeatInWorldCat;
+	public $showRefreshAccountButton;    // specifically to refresh account after paying fines online
+	public /** @noinspection PhpUnused */ $repeatSearchOption;
+	public /** @noinspection PhpUnused */ $repeatInOnlineCollection;
+	public /** @noinspection PhpUnused */ $repeatInProspector;
+	public /** @noinspection PhpUnused */ $repeatInWorldCat;
 	public $enableOverdriveCollection;
-	public $includeOverDriveAdult;
-	public $includeOverDriveTeen;
-	public $includeOverDriveKids;
-	public $repeatInOverdrive;
+	public /** @noinspection PhpUnused */ $includeOverDriveAdult;
+	public /** @noinspection PhpUnused */ $includeOverDriveTeen;
+	public /** @noinspection PhpUnused */ $includeOverDriveKids;
+	public /** @noinspection PhpUnused */ $repeatInOverdrive;
 	public $overdriveAuthenticationILSName;
 	public $overdriveRequirePin;
-	public $overdriveAdvantageName;
-	public $overdriveAdvantageProductsKey;
+	public /** @noinspection PhpUnused */ $overdriveAdvantageName;
+	public /** @noinspection PhpUnused */ $overdriveAdvantageProductsKey;
 	public $hooplaLibraryID;
-	public $hooplaScopeId;
-	public $rbdigitalScopeId;
-	public $cloudLibraryScopeId;
-	public $systemsToRepeatIn;
+	public /** @noinspection PhpUnused */ $hooplaScopeId;
+	public /** @noinspection PhpUnused */ $rbdigitalScopeId;
+	public /** @noinspection PhpUnused */ $cloudLibraryScopeId;
+	public /** @noinspection PhpUnused */ $systemsToRepeatIn;
 	public $additionalLocationsToShowAvailabilityFor;
 	public $homeLink;
-	public $homeLinkText;
-	public $useHomeLinkInBreadcrumbs;
+	public /** @noinspection PhpUnused */ $homeLinkText;
+	public /** @noinspection PhpUnused */ $useHomeLinkInBreadcrumbs;
 	public $useHomeLinkForLogo;
 	public $showAdvancedSearchbox;
 	public $enableProspectorIntegration;
-	public $showProspectorResultsAtEndOfSearch;
-	public $prospectorCode;
-	public $enableGenealogy;
+	public /** @noinspection PhpUnused */ $showProspectorResultsAtEndOfSearch;
+	public /** @noinspection PhpUnused */ $prospectorCode;
+	public /** @noinspection PhpUnused */ $enableGenealogy;
 	public $showHoldCancelDate;
-	public $enableCourseReserves;
-	public $enableSelfRegistration;
-	public $promptForBirthDateInSelfReg;
+	public /** @noinspection PhpUnused */ $enableCourseReserves;
+	public /** @noinspection PhpUnused */ $enableSelfRegistration;
+	public/** @noinspection PhpUnused */  $promptForBirthDateInSelfReg;
 	public $showItsHere;
 	public $holdDisclaimer;
 	public $enableMaterialsRequest;
 	public $externalMaterialsRequestUrl;
-	public $eContentLinkRules;
-	public $includeNovelistEnrichment;
+	public /** @noinspection PhpUnused */ $eContentLinkRules;
+	public /** @noinspection PhpUnused */ $includeNovelistEnrichment;
 	public $applyNumberOfHoldingsBoost;
-	public $allowAutomaticSearchReplacements;
+	public /** @noinspection PhpUnused */ $allowAutomaticSearchReplacements;
 	public $show856LinksAsTab;
-	public $worldCatUrl;
-	public $worldCatQt;
-	public $preferSyndeticsSummary;
+	public /** @noinspection PhpUnused */ $worldCatUrl;
+	public /** @noinspection PhpUnused */ $worldCatQt;
+	public /** @noinspection PhpUnused */ $preferSyndeticsSummary;
 	public $showSimilarAuthors;
 	public $showSimilarTitles;
-	public $showGoDeeper;
+	public /** @noinspection PhpUnused */ $showGoDeeper;
 	public $defaultNotNeededAfterDays;
-	public $showCheckInGrid;
-	public $publicListsToInclude;
-	public $showWikipediaContent;
+	public /** @noinspection PhpUnused */ $showCheckInGrid;
+	public /** @noinspection PhpUnused */ $publicListsToInclude;
+	public /** @noinspection PhpUnused */ $showWikipediaContent;
 	public $eContentSupportAddress;
 	public $restrictOwningBranchesAndSystems;
 	public $allowPatronAddressUpdates;
@@ -147,16 +148,17 @@ class Library extends DataObject
 	public $generalContactLink;
 
 	public $allowPinReset;
-	public $preventExpiredCardLogin;
+	public /** @noinspection PhpUnused */ $preventExpiredCardLogin;
 	public $showLibraryHoursAndLocationsLink;
-	public $showLibraryHoursNoticeOnAccountPages;
+	public /** @noinspection PhpUnused */ $showLibraryHoursNoticeOnAccountPages;
 	public $showSearchTools;
+	public $showQuickCopy;
 	public $showShareOnExternalSites;
 	public $showGoodReadsReviews;
 	public $showStaffView;
-	public $barcodePrefix;
-	public $minBarcodeLength;
-	public $maxBarcodeLength;
+	public /** @noinspection PhpUnused */ $barcodePrefix;
+	public /** @noinspection PhpUnused */ $minBarcodeLength;
+	public /** @noinspection PhpUnused */ $maxBarcodeLength;
 	public $econtentLocationsToInclude;
 	public $showExpirationWarnings;
 	public $availabilityToggleLabelSuperScope;
@@ -164,19 +166,19 @@ class Library extends DataObject
 	public $availabilityToggleLabelAvailable;
 	public $availabilityToggleLabelAvailableOnline;
 	public $includeOnlineMaterialsInAvailableToggle;
-	public $loginFormUsernameLabel;
+	public /** @noinspection PhpUnused */ $loginFormUsernameLabel;
 	public $loginFormPasswordLabel;
 	public $showDetailedHoldNoticeInformation;
 	public $treatPrintNoticesAsPhoneNotices;
-	public $includeDplaResults;
+	public /** @noinspection PhpUnused */ $includeDplaResults;
 	public $showInMainDetails;
 	public $showInSearchResultsMainDetails;
-	public $selfRegistrationFormMessage;
-	public $selfRegistrationSuccessMessage;
-	public $selfRegistrationTemplate;
+	public /** @noinspection PhpUnused */ $selfRegistrationFormMessage;
+	public /** @noinspection PhpUnused */ $selfRegistrationSuccessMessage;
+	public /** @noinspection PhpUnused */ $selfRegistrationTemplate;
 	public $addSMSIndicatorToPhone;
-	public $defaultBrowseMode;
-	public $browseCategoryRatingsMode;
+	public /** @noinspection PhpUnused */ $defaultBrowseMode;
+	public /** @noinspection PhpUnused */ $browseCategoryRatingsMode;
 	public $enableMaterialsBooking;
 	public $allowLinkedAccounts;
 	public $showSidebarMenu;
@@ -188,32 +190,32 @@ class Library extends DataObject
 	public $archiveRequestMaterialsHeader;
 	public $claimAuthorshipHeader;
 	public $archiveRequestEmail;
-	public $hideAllCollectionsFromOtherLibraries;
-	public $collectionsToHide;
-	public $objectsToHide;
-	public $defaultArchiveCollectionBrowseMode;
-	public $showLCSubjects; // Library of Congress Subjects
-	public $showBisacSubjects;
-	public $showFastAddSubjects;
-	public $showOtherSubjects;
+	public /** @noinspection PhpUnused */ $hideAllCollectionsFromOtherLibraries;
+	public /** @noinspection PhpUnused */ $collectionsToHide;
+	public /** @noinspection PhpUnused */ $objectsToHide;
+	public /** @noinspection PhpUnused */ $defaultArchiveCollectionBrowseMode;
+	public /** @noinspection PhpUnused */ $showLCSubjects; // Library of Congress Subjects
+	public /** @noinspection PhpUnused */ $showBisacSubjects;
+	public /** @noinspection PhpUnused */ $showFastAddSubjects;
+	public /** @noinspection PhpUnused */ $showOtherSubjects;
 	public $maxFinesToAllowAccountUpdates;
-	public $edsApiProfile;
-	public $edsApiUsername;
-	public $edsApiPassword;
-	public $edsSearchProfile;
+	public /** @noinspection PhpUnused */ $edsApiProfile;
+	public /** @noinspection PhpUnused */ $edsApiUsername;
+	public /** @noinspection PhpUnused */ $edsApiPassword;
+	public /** @noinspection PhpUnused */ $edsSearchProfile;
 	protected $patronNameDisplayStyle; //Needs to be protected so __get and __set are called
 	private $patronNameDisplayStyleChanged = false; //Track changes so we can clear values for existing patrons
-	public $includeAllRecordsInShelvingFacets;
-	public $includeAllRecordsInDateAddedFacets;
+	public /** @noinspection PhpUnused */ $includeAllRecordsInShelvingFacets;
+	public /** @noinspection PhpUnused */ $includeAllRecordsInDateAddedFacets;
 	public $alwaysShowSearchResultsMainDetails;
-	public $casHost;
-	public $casPort;
-	public $casContext;
-	public $masqueradeAutomaticTimeoutLength;
+	public /** @noinspection PhpUnused */ $casHost;
+	public /** @noinspection PhpUnused */ $casPort;
+	public /** @noinspection PhpUnused */ $casContext;
+	public /** @noinspection PhpUnused */ $masqueradeAutomaticTimeoutLength;
 	public $allowMasqueradeMode;
 	public $allowReadingHistoryDisplayInMasqueradeMode;
-	public $newMaterialsRequestSummary;  // (Text at the top of the Materials Request Form.)
-	public $materialsRequestDaysToPreserve;
+	public /** @noinspection PhpUnused */ $newMaterialsRequestSummary;  // (Text at the top of the Materials Request Form.)
+	public /** @noinspection PhpUnused */ $materialsRequestDaysToPreserve;
 	public $showGroupedHoldCopiesCount;
 	public $interLibraryLoanName;
 	public $interLibraryLoanUrl;
@@ -222,24 +224,24 @@ class Library extends DataObject
 	public $showOnOrderCounts;
 
 	//Combined Results (Bento Box)
-	public $enableCombinedResults;
-	public $combinedResultsLabel;
-	public $defaultToCombinedResults;
+	public /** @noinspection PhpUnused */ $enableCombinedResults;
+	public /** @noinspection PhpUnused */ $combinedResultsLabel;
+	public /** @noinspection PhpUnused */ $defaultToCombinedResults;
 
 	// Archive Request Form Field Settings
-	public $archiveRequestFieldName;
-	public $archiveRequestFieldAddress;
-	public $archiveRequestFieldAddress2;
-	public $archiveRequestFieldCity;
-	public $archiveRequestFieldState;
-	public $archiveRequestFieldZip;
-	public $archiveRequestFieldCountry;
-	public $archiveRequestFieldPhone;
-	public $archiveRequestFieldAlternatePhone;
-	public $archiveRequestFieldFormat;
-	public $archiveRequestFieldPurpose;
+	public /** @noinspection PhpUnused */ $archiveRequestFieldName;
+	public /** @noinspection PhpUnused */ $archiveRequestFieldAddress;
+	public /** @noinspection PhpUnused */ $archiveRequestFieldAddress2;
+	public /** @noinspection PhpUnused */ $archiveRequestFieldCity;
+	public /** @noinspection PhpUnused */ $archiveRequestFieldState;
+	public /** @noinspection PhpUnused */ $archiveRequestFieldZip;
+	public /** @noinspection PhpUnused */ $archiveRequestFieldCountry;
+	public /** @noinspection PhpUnused */ $archiveRequestFieldPhone;
+	public /** @noinspection PhpUnused */ $archiveRequestFieldAlternatePhone;
+	public /** @noinspection PhpUnused */ $archiveRequestFieldFormat;
+	public /** @noinspection PhpUnused */ $archiveRequestFieldPurpose;
 
-	public $archiveMoreDetailsRelatedObjectsOrEntitiesDisplayMode;
+	public /** @noinspection PhpUnused */ $archiveMoreDetailsRelatedObjectsOrEntitiesDisplayMode;
 
 	//OAI
     public $enableOpenArchives;
@@ -300,15 +302,15 @@ class Library extends DataObject
 		unset($facetSettingStructure['showAsDropDown']);
 		//unset($facetSettingStructure['sortMode']);
 
-		$archiveSearchfacetSettingStructure = LibraryArchiveSearchFacetSetting::getObjectStructure();
-		unset($archiveSearchfacetSettingStructure['weight']);
-		unset($archiveSearchfacetSettingStructure['libraryId']);
-		unset($archiveSearchfacetSettingStructure['numEntriesToShowByDefault']);
-		unset($archiveSearchfacetSettingStructure['showAsDropDown']);
-		unset($archiveSearchfacetSettingStructure['showAboveResults']);
-		unset($archiveSearchfacetSettingStructure['showInAdvancedSearch']);
-		unset($archiveSearchfacetSettingStructure['showInAuthorResults']);
-		//unset($archiveSearchfacetSettingStructure['sortMode']);
+		$archiveSearchFacetSettingStructure = LibraryArchiveSearchFacetSetting::getObjectStructure();
+		unset($archiveSearchFacetSettingStructure['weight']);
+		unset($archiveSearchFacetSettingStructure['libraryId']);
+		unset($archiveSearchFacetSettingStructure['numEntriesToShowByDefault']);
+		unset($archiveSearchFacetSettingStructure['showAsDropDown']);
+		unset($archiveSearchFacetSettingStructure['showAboveResults']);
+		unset($archiveSearchFacetSettingStructure['showInAdvancedSearch']);
+		unset($archiveSearchFacetSettingStructure['showInAuthorResults']);
+		//unset($archiveSearchFacetSettingStructure['sortMode']);
 
 		$libraryMoreDetailsStructure = LibraryMoreDetails::getObjectStructure();
 		unset($libraryMoreDetailsStructure['weight']);
@@ -428,6 +430,8 @@ class Library extends DataObject
 
 		//$Instructions = 'For more information on ???, see the <a href="">online documentation</a>.';
 
+		/** @noinspection HtmlRequiredAltAttribute */
+		/** @noinspection RequiredAttributes */
 		$structure = array(
 			'isDefault' => array('property' => 'isDefault', 'type'=>'checkbox', 'label' => 'Default Library (one per install!)', 'description' => 'The default library instance for loading scoping information etc', 'hideInLists' => true),
 			'libraryId' => array('property'=>'libraryId', 'type'=>'label', 'label'=>'Library Id', 'description'=>'The unique id of the library within the database'),
@@ -447,7 +451,7 @@ class Library extends DataObject
 				'headerText' => array('property'=>'headerText', 'type'=>'html', 'label'=>'Header Text', 'description'=>'Optional Text to display in the header, between the logo and the log in/out buttons.  Will apply to all pages.', 'allowableTags' => '<a><b><em><div><span><p><strong><sub><sup><h1><h2><h3><h4><h5><h6><img>', 'hideInLists' => true),
 				'showSidebarMenu' => array('property'=>'showSidebarMenu', 'type'=>'checkbox', 'label'=>'Display Sidebar Menu', 'description'=>'Determines whether or not the sidebar menu will be shown.  Must also be enabled in config.ini.', 'hideInLists' => true, 'default' => true),
 				'sidebarMenuButtonText' => array('property'=>'sidebarMenuButtonText', 'type'=>'text', 'label'=>'Sidebar Help Button Text', 'description'=>'The text to show for the help/menu button in the sidebar', 'size'=>'40', 'hideInLists' => true, 'default' => 'Help'),
-				'useHomeLinkInBreadcrumbs' => array('property'=>'useHomeLinkInBreadcrumbs', 'type'=>'checkbox', 'label'=>'Use Home Link in Breadcrumbs', 'description'=>'Whether or not the home link should be used in the breadcumbs.', 'hideInLists' => true,),
+				'useHomeLinkInBreadcrumbs' => array('property'=>'useHomeLinkInBreadcrumbs', 'type'=>'checkbox', 'label'=>'Use Home Link in Breadcrumbs', 'description'=>'Whether or not the home link should be used in the breadcrumbs.', 'hideInLists' => true,),
 				'useHomeLinkForLogo' => array('property'=>'useHomeLinkForLogo', 'type'=>'checkbox', 'label'=>'Use Home Link for Logo', 'description'=>'Whether or not the home link should be used as the link for the main logo.', 'hideInLists' => true,),
 				'homeLinkText' => array('property'=>'homeLinkText', 'type'=>'text', 'label'=>'Home Link Text', 'description'=>'The text to show for the Home breadcrumb link', 'size'=>'40', 'hideInLists' => true, 'default' => 'Home'),
 				'showLibraryHoursAndLocationsLink' => array('property'=>'showLibraryHoursAndLocationsLink', 'type'=>'checkbox', 'label'=>'Show Library Hours and Locations Link', 'description'=>'Whether or not the library hours and locations link is shown on the home page.', 'hideInLists' => true, 'default' => true),
@@ -463,7 +467,7 @@ class Library extends DataObject
 				'youtubeLink' => array('property'=>'youtubeLink', 'type'=>'text', 'label'=>'Youtube Link Url', 'description'=>'The url to Youtube (leave blank if the library does not have a Youtube account', 'size'=>'40', 'maxLength' => 255, 'hideInLists' => true/*, 'default' => 'Home'*/),
 				'instagramLink' => array('property'=>'instagramLink', 'type'=>'text', 'label'=>'Instagram Link Url', 'description'=>'The url to Instagram (leave blank if the library does not have a Instagram account', 'size'=>'40', 'maxLength' => 255, 'hideInLists' => true/*, 'default' => 'Home'*/),
 				'goodreadsLink' => array('property'=>'goodreadsLink', 'type'=>'text', 'label'=>'GoodReads Link Url', 'description'=>'The url to GoodReads (leave blank if the library does not have a GoodReads account', 'size'=>'40', 'maxLength' => 255, 'hideInLists' => true/*, 'default' => 'Home'*/),
-				'generalContactLink' => array('property'=>'generalContactLink', 'type'=>'text', 'label'=>'General Contact Link Url', 'description'=>'The url to a General Contact Page, i.e webform or mailto link', 'size'=>'40', 'maxLength' => 255, 'hideInLists' => true/*, 'default' => 'Home'*/),
+				'generalContactLink' => array('property'=>'generalContactLink', 'type'=>'text', 'label'=>'General Contact Link Url', 'description'=>'The url to a General Contact Page, i.e web form or mailto link', 'size'=>'40', 'maxLength' => 255, 'hideInLists' => true/*, 'default' => 'Home'*/),
 			)),
 			// defaults should be blank so that icons don't appear on page when the link is not set. plb 1-21-2015
 
@@ -520,7 +524,7 @@ class Library extends DataObject
 				'loginSection' => array('property' => 'loginSection', 'type' => 'section', 'label' => 'Login', 'hideInLists' => true,
 						'helpLink' => 'https://docs.google.com/document/d/13vk5Cx_bWRwc_XtwwzKei92ZeTGS8LcMnZadE2CxaBU', 'properties' => array(
 					'showLoginButton'         => array('property'=>'showLoginButton', 'type'=>'checkbox', 'label'=>'Show Login Button', 'description'=>'Whether or not the login button is displayed so patrons can login to the site', 'hideInLists' => true, 'default' => 1),
-					'preventExpiredCardLogin' => array('property'=>'preventExpiredCardLogin', 'type'=>'checkbox', 'label'=>'Prevent Login for Expired Cards', 'description'=>'Users with expired cards will not be allowed to login. They will recieve an expired card notice instead.', 'hideInLists' => true, 'default' => 0),
+					'preventExpiredCardLogin' => array('property'=>'preventExpiredCardLogin', 'type'=>'checkbox', 'label'=>'Prevent Login for Expired Cards', 'description'=>'Users with expired cards will not be allowed to login. They will receive an expired card notice instead.', 'hideInLists' => true, 'default' => 0),
 					'loginFormUsernameLabel'  => array('property'=>'loginFormUsernameLabel', 'type'=>'text', 'label'=>'Login Form Username Label', 'description'=>'The label to show for the username when logging in', 'size'=>'100', 'hideInLists' => true, 'default'=>'Your Name'),
 					'loginFormPasswordLabel'  => array('property'=>'loginFormPasswordLabel', 'type'=>'text', 'label'=>'Login Form Password Label', 'description'=>'The label to show for the password when logging in', 'size'=>'100', 'hideInLists' => true, 'default'=>'Library Card Number'),
 				)),
@@ -565,11 +569,12 @@ class Library extends DataObject
 				)),
 				'searchResultsSection' => array('property' => 'searchResultsSection', 'type' => 'section', 'label' => 'Search Results', 'hideInLists' => true, 'properties' => array(
 					'showSearchTools'                        => array('property' => 'showSearchTools',                    'type' => 'checkbox',    'label' => 'Show Search Tools',                                          'description' => 'Turn on to activate search tools (save search, export to excel, rss feed, etc).', 'hideInLists' => true),
+					'showQuickCopy'                          => array('property' => 'showQuickCopy',                      'type' => 'checkbox',    'label' => 'Show Quick Copy',                                            'description' => 'Turn on to to show Quick Copy Link in search results.', 'hideInLists' => true),
 					'showInSearchResultsMainDetails'         => array('property' => 'showInSearchResultsMainDetails',     'type' => 'multiSelect', 'label' => 'Optional details to show for a record in search results : ', 'description' => 'Selected details will be shown in the main details section of a record on a search results page.', 'listStyle' => 'checkboxSimple', 'values' => self::$searchResultsMainDetailsOptions),
 					'alwaysShowSearchResultsMainDetails'     => array('property' => 'alwaysShowSearchResultsMainDetails', 'type' => 'checkbox',    'label' => 'Always Show Selected Search Results Main Details',           'description' => 'Turn on to always show the selected details even when there is no info supplied for a detail, or the detail varies due to multiple formats and/or editions). Does not apply to Series & Language', 'hideInLists' => true),
 				)),
 				'searchFacetsSection' => array('property' => 'searchFacetsSection', 'type' => 'section', 'label' => 'Search Facets', 'hideInLists' => true, 'properties' => array(
-					'availabilityToggleLabelSuperScope'        => array('property' => 'availabilityToggleLabelSuperScope',        'type' => 'text',     'label' => 'SuperScope Toggle Label',                                  'description' => 'The label to show when viewing super scope i.e. Consortium Name / Entire Collection / Everything.  Does not show if superscope is not enabled.', 'default' => 'Entire Collection'),
+					'availabilityToggleLabelSuperScope'        => array('property' => 'availabilityToggleLabelSuperScope',        'type' => 'text',     'label' => 'SuperScope Toggle Label',                                  'description' => 'The label to show when viewing super scope i.e. Consortium Name / Entire Collection / Everything.  Does not show if super scope is not enabled.', 'default' => 'Entire Collection'),
 					'availabilityToggleLabelLocal'             => array('property' => 'availabilityToggleLabelLocal',             'type' => 'text',     'label' => 'Local Collection Toggle Label',                            'description' => 'The label to show when viewing the local collection i.e. Library Name / Local Collection.  Leave blank to hide the button.', 'default' => ''),
 					'availabilityToggleLabelAvailable'         => array('property' => 'availabilityToggleLabelAvailable',         'type' => 'text',     'label' => 'Available Toggle Label',                                   'description' => 'The label to show when viewing available items i.e. Available Now / Available Locally / Available Here.', 'default' => 'Available Now'),
 					'availabilityToggleLabelAvailableOnline'   => array('property' => 'availabilityToggleLabelAvailableOnline',   'type' => 'text', 'label' => 'Available Online Toggle Label', 'description' => 'The label to show when viewing available items i.e. Available Online.', 'default' => 'Available Online'),
@@ -644,7 +649,7 @@ class Library extends DataObject
 				'preferSyndeticsSummary'   => array('property'=>'preferSyndeticsSummary', 'type'=>'checkbox', 'label'=>'Prefer Syndetics/Content Cafe Description', 'description'=>'Whether or not the Description loaded from an enrichment service should be preferred over the Description in the Marc Record.', 'hideInLists' => true, 'default' => 1),
 				'showSimilarAuthors'       => array('property'=>'showSimilarAuthors', 'type'=>'checkbox', 'label'=>'Show Similar Authors', 'description'=>'Whether or not Similar Authors from Novelist is shown.', 'default' => 1, 'hideInLists' => true,),
 				'showSimilarTitles'        => array('property'=>'showSimilarTitles', 'type'=>'checkbox', 'label'=>'Show Similar Titles', 'description'=>'Whether or not Similar Titles from Novelist is shown.', 'default' => 1, 'hideInLists' => true,),
-				'showGoDeeper'             => array('property'=>'showGoDeeper', 'type'=>'checkbox', 'label'=>'Show Content Enrichment (TOC, Excerpts, etc)', 'description'=>'Whether or not additional content enrichment like Table of Contents, Exceprts, etc are shown to the user', 'default' => 1, 'hideInLists' => true,),
+				'showGoDeeper'             => array('property'=>'showGoDeeper', 'type'=>'checkbox', 'label'=>'Show Content Enrichment (TOC, Excerpts, etc)', 'description'=>'Whether or not additional content enrichment like Table of Contents, Excerpts, etc are shown to the user', 'default' => 1, 'hideInLists' => true,),
 				'showRatings'              => array('property'=>'showRatings', 'type'=>'checkbox', 'label'=>'Enable User Ratings', 'description'=>'Whether or not ratings are shown', 'hideInLists' => true, 'default' => 1),
 				'showComments'             => array('property'=>'showComments', 'type'=>'checkbox', 'label'=>'Enable User Reviews', 'description'=>'Whether or not user reviews are shown (also disables adding user reviews)', 'hideInLists' => true, 'default' => 1),
 				// showComments & hideCommentsWithBadWords moved from full record display to this section. plb 6-30-2015
@@ -936,7 +941,7 @@ class Library extends DataObject
 						'keyThis' => 'libraryId',
 						'keyOther' => 'libraryId',
 						'subObjectType' => 'LibraryArchiveSearchFacetSetting',
-						'structure' => $archiveSearchfacetSettingStructure,
+						'structure' => $archiveSearchFacetSettingStructure,
 						'sortable' => true,
 						'storeDb' => true,
 						'allowEdit' => true,
@@ -1452,36 +1457,52 @@ class Library extends DataObject
 
 	public function __set($name, $value){
 		if ($name == "holidays") {
+			/** @noinspection PhpUndefinedFieldInspection */
 			$this->holidays = $value;
 		}elseif ($name == "moreDetailsOptions") {
+			/** @noinspection PhpUndefinedFieldInspection */
 			$this->moreDetailsOptions = $value;
 		}elseif ($name == "archiveMoreDetailsOptions") {
+			/** @noinspection PhpUndefinedFieldInspection */
 			$this->archiveMoreDetailsOptions = $value;
 		}elseif ($name == "facets") {
+			/** @noinspection PhpUndefinedFieldInspection */
 			$this->facets = $value;
 		}elseif ($name == "archiveSearchFacets") {
+			/** @noinspection PhpUndefinedFieldInspection */
 			$this->archiveSearchFacets = $value;
 		}elseif ($name == 'libraryLinks'){
+			/** @noinspection PhpUndefinedFieldInspection */
 			$this->libraryLinks = $value;
 		}elseif ($name == 'recordsOwned'){
+			/** @noinspection PhpUndefinedFieldInspection */
 			$this->recordsOwned = $value;
 		}elseif ($name == 'recordsToInclude'){
+			/** @noinspection PhpUndefinedFieldInspection */
 			$this->recordsToInclude = $value;
 		}elseif ($name == 'sideLoadScopes'){
+			/** @noinspection PhpUndefinedFieldInspection */
 			$this->sideLoadScopes = $value;
 		}elseif ($name == 'libraryTopLinks'){
+			/** @noinspection PhpUndefinedFieldInspection */
 			$this->libraryTopLinks = $value;
 		}elseif ($name == 'browseCategories') {
+			/** @noinspection PhpUndefinedFieldInspection */
 			$this->browseCategories = $value;
 		}elseif ($name == 'materialsRequestFieldsToDisplay') {
+			/** @noinspection PhpUndefinedFieldInspection */
 			$this->materialsRequestFieldsToDisplay = $value;
 		}elseif ($name == 'materialsRequestFormats') {
+			/** @noinspection PhpUndefinedFieldInspection */
 			$this->materialsRequestFormats = $value;
 		}elseif ($name == 'materialsRequestFormFields') {
+			/** @noinspection PhpUndefinedFieldInspection */
 			$this->materialsRequestFormFields = $value;
 		}elseif ($name == 'exploreMoreBar') {
+			/** @noinspection PhpUndefinedFieldInspection */
 			$this->exploreMoreBar = $value;
 		}elseif ($name == 'combinedResultSections') {
+			/** @noinspection PhpUndefinedFieldInspection */
 			$this->combinedResultSections = $value;
 		}elseif ($name == 'patronNameDisplayStyle'){
 			if ($this->patronNameDisplayStyle != $value){
@@ -1630,21 +1651,11 @@ class Library extends DataObject
 		}
 	}
 
-	public function clearBrowseCategories(){
-		$this->clearOneToManyOptions('LibraryBrowseCategory');
-		$this->browseCategories = array();
-	}
-
 	public function saveLibraryLinks(){
 		if (isset ($this->libraryLinks) && is_array($this->libraryLinks)){
 			$this->saveOneToManyOptions($this->libraryLinks);
 			unset($this->libraryLinks);
 		}
-	}
-
-	public function clearLibraryLinks(){
-		$this->clearOneToManyOptions('LibraryLink');
-		$this->libraryLinks = array();
 	}
 
 	public function saveLibraryTopLinks(){
@@ -1654,21 +1665,11 @@ class Library extends DataObject
 		}
 	}
 
-	public function clearLibraryTopLinks(){
-		$this->clearOneToManyOptions('LibraryTopLinks');
-		$this->libraryTopLinks = array();
-	}
-
 	public function saveRecordsOwned(){
 		if (isset ($this->recordsOwned) && is_array($this->recordsOwned)){
 			$this->saveOneToManyOptions($this->recordsOwned);
 			unset($this->recordsOwned);
 		}
-	}
-
-	public function clearRecordsOwned(){
-		$this->clearOneToManyOptions('LibraryRecordOwned');
-		$this->recordsOwned = array();
 	}
 
 	public function saveRecordsToInclude(){
@@ -1678,21 +1679,11 @@ class Library extends DataObject
 		}
 	}
 
-	public function clearRecordsToInclude(){
-		$this->clearOneToManyOptions('LibraryRecordToInclude');
-		$this->recordsToInclude = array();
-	}
-
 	public function saveSideLoadScopes(){
 		if (isset ($this->sideLoadScopes) && is_array($this->sideLoadScopes)){
 			$this->saveOneToManyOptions($this->sideLoadScopes);
 			unset($this->sideLoadScopes);
 		}
-	}
-
-	public function clearSideLoadScopes(){
-		$this->clearOneToManyOptions('LibrarySideLoadScope');
-		$this->sideLoadScopes = array();
 	}
 
 	public function saveMaterialsRequestFieldsToDisplay(){
@@ -1710,8 +1701,7 @@ class Library extends DataObject
 					$deleteCheck = $object->delete();
 					if (!$deleteCheck) {
 						$errorString = 'Materials Request(s) are present for the format "' . $object->format . '".';
-						$error       = $this->raiseError($errorString, Logger::LOG_ERROR);
-						$error->addUserInfo($errorString);
+						$error       = new AspenError($errorString);
 						return $error;
 					}
 				}else{
@@ -1725,6 +1715,7 @@ class Library extends DataObject
 			}
 			unset($this->materialsRequestFormats);
 		}
+		return true;
 	}
 
 	public function saveMaterialsRequestFormFields(){
@@ -1753,6 +1744,7 @@ class Library extends DataObject
 	private function clearOneToManyOptions($oneToManyDBObjectClassName) {
 		/** @var DataObject $oneToManyDBObject */
 		$oneToManyDBObject = new $oneToManyDBObjectClassName();
+		/** @noinspection PhpUndefinedFieldInspection */
 		$oneToManyDBObject->libraryId = $this->libraryId;
 		$oneToManyDBObject->delete(true);
 
@@ -1767,6 +1759,7 @@ class Library extends DataObject
 
 	public function clearExploreMoreBar(){
 		$this->clearOneToManyOptions('ArchiveExploreMoreBar');
+		/** @noinspection PhpUndefinedFieldInspection */
 		$this->exploreMoreBar = array();
 	}
 
@@ -1786,21 +1779,25 @@ class Library extends DataObject
 
 	public function clearMoreDetailsOptions(){
 		$this->clearOneToManyOptions('LibraryMoreDetails');
+		/** @noinspection PhpUndefinedFieldInspection */
 		$this->moreDetailsOptions = array();
 	}
 
 	public function clearArchiveMoreDetailsOptions(){
 		$this->clearOneToManyOptions('LibraryArchiveMoreDetails');
+		/** @noinspection PhpUndefinedFieldInspection */
 		$this->archiveMoreDetailsOptions = array();
 	}
 
 	public function clearMaterialsRequestFormFields(){
 		$this->clearOneToManyOptions('MaterialsRequestFormFields');
+		/** @noinspection PhpUndefinedFieldInspection */
 		$this->materialsRequestFormFields = array();
 	}
 
 	public function clearMaterialsRequestFormats(){
 		$this->clearOneToManyOptions('MaterialsRequestFormats');
+		/** @noinspection PhpUndefinedFieldInspection */
 		$this->materialsRequestFormats = array();
 	}
 
@@ -1837,11 +1834,6 @@ class Library extends DataObject
 		}
 	}
 
-	public function clearCombinedResultSections(){
-		$this->clearOneToManyOptions('LibraryCombinedResultSection');
-		$this->combinedResultSections = array();
-	}
-
 	public function saveHolidays(){
 		if (isset ($this->holidays) && is_array($this->holidays)){
 			$this->saveOneToManyOptions($this->holidays);
@@ -1850,7 +1842,6 @@ class Library extends DataObject
 	}
 
 	static function getDefaultFacets($libraryId = -1){
-		global $configArray;
 		$defaultFacets = array();
 
 		$facet = new LibraryFacetSetting();
@@ -2020,10 +2011,10 @@ class Library extends DataObject
 
 	public function getArchiveRequestFormStructure() {
 		$defaultForm = ArchiveRequest::getObjectStructure();
-		foreach ($defaultForm as $index => &$formfield) {
-			$libraryPropertyName = 'archiveRequestField' . ucfirst($formfield['property']);
+		foreach ($defaultForm as $index => &$formField) {
+			$libraryPropertyName = 'archiveRequestField' . ucfirst($formField['property']);
 			if (isset($this->$libraryPropertyName)) {
-				$setting = is_null($this->$libraryPropertyName) ? $formfield['default'] : $this->$libraryPropertyName;
+				$setting = is_null($this->$libraryPropertyName) ? $formField['default'] : $this->$libraryPropertyName;
 				switch ($setting) {
 					case 0:
 						//unset field
@@ -2031,11 +2022,11 @@ class Library extends DataObject
 						break;
 					case 1:
 						// set field as optional
-						$formfield['required'] = false;
+						$formField['required'] = false;
 						break;
 					case 2:
 						// set field as required
-						$formfield['required'] = true;
+						$formField['required'] = true;
 						break;
 				}
 
