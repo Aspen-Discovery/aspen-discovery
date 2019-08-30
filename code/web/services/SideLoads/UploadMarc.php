@@ -8,28 +8,29 @@ class SideLoads_UploadMarc extends Admin_Admin
 	function launch()
 	{
 		global $interface;
+		global $logger;
 		$id = $_REQUEST['id'];
 		$sideload = new SideLoad();
 		$sideload->id = $id;
 		if ($sideload->find(true)) {
 			$interface->assign('sideload', $sideload);
-			if (isset($_REQUEST['marcFile'])){
-				echo("MARC File Found <pre>" . print_r($_REQUEST['marcFile']) . "</pre><br/>");
+			if (isset($_REQUEST['marcFile'])) {
+				$logger->log("MARC File Found " . print_r($_REQUEST['marcFile']), Logger::LOG_ALERT);
 				$replaceExisting = isset($_REQUEST['replaceExisting']) && $_REQUEST['replaceExisting'] == 'on';
 				$uploadedFile = $_FILES['marcFile'];
-				if (isset($uploadedFile["error"]) && $uploadedFile["error"] == 4){
+				if (isset($uploadedFile["error"]) && $uploadedFile["error"] == 4) {
 					$interface->assign('error', "No MARC file was uploaded");
-				}else if (isset($uploadedFile["error"]) && $uploadedFile["error"] > 0){
+				} else if (isset($uploadedFile["error"]) && $uploadedFile["error"] > 0) {
 					$interface->assign('error', "Error in file upload for MARC File");
-				}else{
+				} else {
 					//File was uploaded, need to verify it was the correct typ
 					$fileType = $uploadedFile["type"];
 					$uploadPath = $sideload->marcPath;
-					if ($replaceExisting){
-						echo("Replace existing is on, removing old files<br/>");
-						$files = glob($uploadPath .'/*'); // get all file names
-						foreach($files as $file){
-							if(is_file($file)) {
+					if ($replaceExisting) {
+						$logger->log("Replace existing is on, removing old files", Logger::LOG_ALERT);
+						$files = glob($uploadPath . '/*'); // get all file names
+						foreach ($files as $file) {
+							if (is_file($file)) {
 								unlink($file);
 							}
 						}
@@ -47,7 +48,7 @@ class SideLoads_UploadMarc extends Admin_Admin
 						} else {
 							$interface->assign('error', "Could not unzip the file");
 						}
-					}elseif ($fileType == 'application/x-gzip'){
+					} elseif ($fileType == 'application/x-gzip') {
 						// Raising this value may increase performance
 						$buffer_size = 4096; // read 4kb at a time
 						$out_file_name = str_replace('.gz', '', $destFullPath);
@@ -62,15 +63,17 @@ class SideLoads_UploadMarc extends Admin_Admin
 						fclose($out_file);
 						gzclose($file);
 						$interface->assign('message', "The file was uploaded and unzipped successfully");
-					}else{
+					} else {
 						$copyResult = copy($uploadedFile["tmp_name"], $destFullPath);
-						if ($copyResult){
+						if ($copyResult) {
 							$interface->assign('message', "The file was uploaded successfully");
-						}else{
+						} else {
 							$interface->assign('error', "Could not copy the file to $uploadPath");
 						}
 					}
 				}
+			}else{
+				$logger->log("No MARC File Found", Logger::LOG_ALERT);
 			}
 		}else{
 			$interface->assign('error', "Could not find the specified Side Load configuration.");
