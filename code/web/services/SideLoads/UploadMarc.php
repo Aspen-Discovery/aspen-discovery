@@ -14,6 +14,7 @@ class SideLoads_UploadMarc extends Admin_Admin
 		if ($sideload->find(true)) {
 			$interface->assign('sideload', $sideload);
 			if (isset($_REQUEST['marcFile'])){
+				echo("MARC File Found <pre>" . print_r($_REQUEST['marcFile']) . "</pre><br/>");
 				$replaceExisting = isset($_REQUEST['replaceExisting']) && $_REQUEST['replaceExisting'] == 'on';
 				$uploadedFile = $_FILES['marcFile'];
 				if (isset($uploadedFile["error"]) && $uploadedFile["error"] == 4){
@@ -23,9 +24,9 @@ class SideLoads_UploadMarc extends Admin_Admin
 				}else{
 					//File was uploaded, need to verify it was the correct typ
 					$fileType = $uploadedFile["type"];
-
 					$uploadPath = $sideload->marcPath;
 					if ($replaceExisting){
+						echo("Replace existing is on, removing old files<br/>");
 						$files = glob($uploadPath .'/*'); // get all file names
 						foreach($files as $file){
 							if(is_file($file)) {
@@ -70,7 +71,6 @@ class SideLoads_UploadMarc extends Admin_Admin
 						}
 					}
 				}
-
 			}
 		}else{
 			$interface->assign('error', "Could not find the specified Side Load configuration.");
