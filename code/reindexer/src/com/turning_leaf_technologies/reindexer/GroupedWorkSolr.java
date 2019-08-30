@@ -7,7 +7,6 @@ import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.SolrInputField;
-import org.marc4j.marc.Record;
 
 import java.util.*;
 import java.util.regex.Pattern;

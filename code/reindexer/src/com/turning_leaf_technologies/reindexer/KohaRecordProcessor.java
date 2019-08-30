@@ -142,7 +142,7 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 		for(DataField item : items){
 			Subfield iTypeSubField = item.getSubfield(iTypeSubfield);
 			if (iTypeSubField != null){
-				String iType = iTypeSubField.getData().toLowerCase();
+				String iType = iTypeSubField.getData().toLowerCase().trim();
 				if (itemCountsByItype.containsKey(iType)){
 					itemCountsByItype.put(iType, itemCountsByItype.get(iType) + 1);
 				}else{
@@ -310,7 +310,7 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 				//Check to see if the item has an eContent indicator
 				boolean isEContent = false;
 				if (itemField.getSubfield(iTypeSubfield) != null){
-					String iType = itemField.getSubfield(iTypeSubfield).getData().toLowerCase();
+					String iType = itemField.getSubfield(iTypeSubfield).getData().toLowerCase().trim();
 					if (iType.equals("ebook") || iType.equals("eaudio") || iType.equals("online") || iType.equals("oneclick")){
 						isEContent = true;
 					}
@@ -335,7 +335,7 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 				boolean isCloudLibrary = false;
 				boolean isOneClickDigital = false;
 				if (itemField.getSubfield(iTypeSubfield) != null){
-					String iType = itemField.getSubfield(iTypeSubfield).getData().toLowerCase();
+					String iType = itemField.getSubfield(iTypeSubfield).getData().toLowerCase().trim();
 					if (iType.equals("ebook") || iType.equals("eaudio") || iType.equals("online") || iType.equals("oneclick")){
 						isEContent = true;
 						String sourceType = getSourceType(record, itemField);
