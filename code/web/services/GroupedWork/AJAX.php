@@ -1011,10 +1011,11 @@ class GroupedWork_AJAX {
 		$interface->assign('recordDriver', $recordDriver);
 
 		$recordId = $_REQUEST['recordId'];
+		$selectedFormat = $_REQUEST['format'];
 
 		$relatedManifestation = null;
 		foreach ($recordDriver->getRelatedManifestations() as $relatedManifestation){
-			if ($relatedManifestation->format == $relatedManifestation){
+			if ($relatedManifestation->format == $selectedFormat){
 				break;
 			}
 		}
@@ -1023,7 +1024,16 @@ class GroupedWork_AJAX {
 
 		if ($recordId != $id){
 			$record = $recordDriver->getRelatedRecord($recordId);
-			$summary = $record->getItemSummary();
+			if ($record != null){
+				$summary = $record->getItemSummary();
+			}else{
+				foreach ($relatedManifestation->getVariations() as $variation){
+					if ($recordId == $id . '_' . $variation->label){
+						$summary = $variation->getItemSummary();
+						break;
+					}
+				}
+			}
 		}else{
 			$summary = $relatedManifestation->getItemSummary();
 		}
