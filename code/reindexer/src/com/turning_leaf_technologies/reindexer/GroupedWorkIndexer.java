@@ -234,7 +234,7 @@ public class GroupedWorkIndexer {
 							okToIndex = false;
 							return;
 					}
-				}else if (!curType.equals("cloud_library") && !curType.equals("rbdigital") && !curType.equals("hoopla") && !curType.equals("overdrive")) {
+				}else if (!curType.equals("cloud_library") && !curType.equals("rbdigital") && !curType.equals("rbdigital_magazine") && !curType.equals("hoopla") && !curType.equals("overdrive")) {
 					getSideLoadSettings.setString(1, curType);
 					ResultSet getSideLoadSettingsRS = getSideLoadSettings.executeQuery();
 					if (getSideLoadSettingsRS.next()){
