@@ -154,8 +154,8 @@
 							<ul class="account-submenu">
 								<li class="myAccountLink">&nbsp;&nbsp;&raquo;&nbsp;<a href="{$path}/MyAccount/MyPreferences">{translate text='My Preferences'}</a></li>
 								<li class="myAccountLink">&nbsp;&nbsp;&raquo;&nbsp;<a href="{$path}/MyAccount/ContactInformation">{translate text='Contact Information'}</a></li>
-                                {if $user->showNotificationSettings()}
-									<li class="myAccountLink">&nbsp;&nbsp;&raquo;&nbsp;<a href="{$path}/MyAccount/NotificationSettings">{translate text='Notification Settings'}</a></li>
+                                {if $user->showMessagingSettings()}
+									<li class="myAccountLink">&nbsp;&nbsp;&raquo;&nbsp;<a href="{$path}/MyAccount/MessagingSettings">{translate text='Messaging Settings'}</a></li>
                                 {/if}
 								{if $allowAccountLinking}
 									<li class="myAccountLink">&nbsp;&nbsp;&raquo;&nbsp;<a href="{$path}/MyAccount/LinkedAccounts">{translate text='Linked Accounts'}</a></li>

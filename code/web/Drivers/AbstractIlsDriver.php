@@ -248,17 +248,17 @@ abstract class AbstractIlsDriver extends AbstractDriver
 		];
 	}
 
-	public function showNotificationSettings()
+	public function showMessagingSettings()
 	{
 		return false;
 	}
 
-	public function getNotificationSettingsTemplate(User $user)
+	public function getMessagingSettingsTemplate(User $user)
 	{
 		return null;
 	}
 
-	public function processNotificationSettingsForm(User $user)
+	public function processMessagingSettingsForm(User $user)
 	{
 		return array(
 			'success' => false,

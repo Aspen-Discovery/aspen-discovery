@@ -1639,9 +1639,9 @@ class User extends DataObject
 		}
 	}
 
-	function showNotificationSettings(){
+	function showMessagingSettings(){
 		if ($this->getCatalogDriver() != null){
-			return $this->getCatalogDriver()->showNotificationSettings();
+			return $this->getCatalogDriver()->showMessagingSettings();
 		}else{
 			return false;
 		}

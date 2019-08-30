@@ -903,18 +903,18 @@ class CatalogConnection
 		return $this->driver->getAccountSummary($user);
 	}
 
-	public function showNotificationSettings()
+	public function showMessagingSettings()
 	{
-		return $this->driver->showNotificationSettings();
+		return $this->driver->showMessagingSettings();
 	}
 
-	public function getNotificationSettingsTemplate(User $user)
+	public function getMessagingSettingsTemplate(User $user)
 	{
-		return $this->driver->getNotificationSettingsTemplate($user);
+		return $this->driver->getMessagingSettingsTemplate($user);
 	}
 
-	public function processNotificationSettingsForm(User $user)
+	public function processMessagingSettingsForm(User $user)
 	{
-		return $this->driver->processNotificationSettingsForm($user);
+		return $this->driver->processMessagingSettingsForm($user);
 	}
 }

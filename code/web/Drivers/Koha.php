@@ -2049,7 +2049,7 @@ class Koha extends AbstractIlsDriver {
 		return false;
 	}
 
-	public function showNotificationSettings()
+	public function showMessagingSettings()
 	{
 		$this->initDatabaseConnection();
 		/** @noinspection SqlResolve */
@@ -2064,7 +2064,7 @@ class Koha extends AbstractIlsDriver {
 		return $allowed;
 	}
 
-	public function getNotificationSettingsTemplate(User $user)
+	public function getMessagingSettingsTemplate(User $user)
 	{
 		global $interface;
 		$this->initDatabaseConnection();
@@ -2177,7 +2177,7 @@ class Koha extends AbstractIlsDriver {
 		return 'kohaNotificationSettings.tpl';
 	}
 
-	public function processNotificationSettingsForm(User $user)
+	public function processMessagingSettingsForm(User $user)
 	{
 		$result = $this->loginToKohaOpac($user);
 		if (!$result['success']){
