@@ -14,7 +14,7 @@ class SideLoads_UploadMarc extends Admin_Admin
 		$sideload->id = $id;
 		if ($sideload->find(true)) {
 			$interface->assign('sideload', $sideload);
-			if (isset($_REQUEST['marcFile'])) {
+			if (isset($_FILES['marcFile'])) {
 				$logger->log("MARC File Found " . print_r($_REQUEST['marcFile']), Logger::LOG_ALERT);
 				$replaceExisting = isset($_REQUEST['replaceExisting']) && $_REQUEST['replaceExisting'] == 'on';
 				$uploadedFile = $_FILES['marcFile'];
