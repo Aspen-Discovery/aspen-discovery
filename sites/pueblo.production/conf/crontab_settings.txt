@@ -11,8 +11,8 @@
 #
 # ie :
 # git pull origin {current branch}
-# sudo /usr/local/aspen-discovery/code/cron/check_crontab.sh basinlibraries.production
-# sudo crontab < /usr/local/aspen-discovery/sites/basinlibraries.production/conf/crontab_settings.txt
+# sudo /usr/local/aspen-discovery/code/cron/check_crontab.sh pueblo.production
+# sudo crontab < /usr/local/aspen-discovery/sites/pueblo.production/conf/crontab_settings.txt
 
 ###################
 # * * * * *  command to execute
