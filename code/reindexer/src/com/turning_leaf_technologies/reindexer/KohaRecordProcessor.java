@@ -345,7 +345,7 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 								isOverDrive = true;
 							} else if (sourceType.contains("hoopla")) {
 								isHoopla = true;
-							} else if (sourceType.contains("cloudlibrary")) {
+							} else if (sourceType.contains("cloudlibrary") || sourceType.contains("3m")) {
 								isCloudLibrary = true;
 							} else if (sourceType.contains("oneclickdigital")) {
 								isOneClickDigital = true;
@@ -403,7 +403,7 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 					} else if (urlSubfield.contains("oneclickdigital")) {
 						sourceType = "oneclickdigital";
 						break;
-					} else if (urlSubfield.contains("yourcloudlibrary")) {
+					} else if (urlSubfield.contains("yourcloudlibrary") || urlSubfield.contains("3m.com")) {
 						sourceType = "cloudlibrary";
 						break;
 					} else if (urlSubfield.contains("hoopla")) {

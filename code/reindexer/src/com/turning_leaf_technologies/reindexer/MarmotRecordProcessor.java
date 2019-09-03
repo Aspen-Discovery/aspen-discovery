@@ -125,7 +125,7 @@ class MarmotRecordProcessor extends IIIRecordProcessor {
 								isOverDrive = true;
 							}else if (source.equalsIgnoreCase("hoopla")){
 								isHoopla = true;
-							} else if (source.contains("cloudlibrary")) {
+							} else if (source.contains("cloudlibrary") || source.contains("3m")) {
 								isCloudLibrary = true;
 							} else if (source.contains("oneclickdigital")) {
 								isOneClickDigital = true;

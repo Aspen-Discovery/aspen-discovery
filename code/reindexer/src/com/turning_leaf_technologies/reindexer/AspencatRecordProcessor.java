@@ -248,7 +248,7 @@ class AspencatRecordProcessor extends IlsRecordProcessor {
 								isOverDrive = true;
 							} else if (sourceType.contains("hoopla")) {
 								isHoopla = true;
-							} else if (sourceType.contains("cloudlibrary")) {
+							} else if (sourceType.contains("cloudlibrary") || sourceType.contains("3m")) {
 								isCloudLibrary = true;
 							} else if (sourceType.contains("oneclickdigital")) {
 								isOneClickDigital = true;
