@@ -11,7 +11,7 @@ function addSearch(group, term, field)
 	newSearch += "<div class='row form-inline'>";
 	// Label
 	newSearch += "<div class='searchLabel col-sm-2'>"
-			+ ((groupSearches[group] == 0) ? searchLabel+' :' : '&nbsp;')
+			+ ((groupSearches[group] == 0) ? searchLabel+' ' : '&nbsp;')
 			+ '</div>';
 
 	// Terms
