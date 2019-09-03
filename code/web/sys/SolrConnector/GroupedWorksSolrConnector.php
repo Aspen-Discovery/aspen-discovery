@@ -295,23 +295,23 @@ class GroupedWorksSolrConnector extends Solr
 				$applyHoldingsBoost = $searchLibrary->applyNumberOfHoldingsBoost;
 			}
 			if ($applyHoldingsBoost) {
-				$boostFactors[] = 'sum(num_holdings,popularity,format_boost)';
+				$boostFactors[] = 'product(format_boost,max(num_holdings,1),div(max(popularity,1),max(num_holdings,1)))';
 			} else {
-				$boostFactors[] = 'sum(popularity,format_boost)';
+				$boostFactors[] = 'div(popularity,format_boost)';
 			}
 		}else{
 			if ($searchPreferenceLanguage == 1) {
 				//Apply a ridiculously high boost if the user wants to see foreign language materials first
 				$boostFactors[] = 'product(999999999,termfreq(language,' . $activeLanguage->facetValue . '))';
 			}
-			$boostFactors[] = 'sum(format_boost)';
+			$boostFactors[] = 'format_boost';
 		}
 
 		//Add rating as part of the ranking, normalize so ratings of less that 2.5 are below unrated entries.
-		$boostFactors[] = 'sum(rating,1)';
+		$boostFactors[] = 'max(rating,1)';
 
 		global $solrScope;
-		$boostFactors[] = "sum(lib_boost_{$solrScope},1)";
+		$boostFactors[] = "max(lib_boost_{$solrScope},1)";
 
 		return $boostFactors;
 	}
