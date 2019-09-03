@@ -10,11 +10,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class DateUtils {
-    public static Integer getDaysSinceAddedForDate(Date curDate){
+    public static Long getDaysSinceAddedForDate(Date curDate){
         if (curDate == null){
             return null;
         }
-        return (int)((indexDate.getTime() - curDate.getTime()) / (1000 * 60 * 60 * 24));
+        return ((indexDate.getTime() - curDate.getTime()) / (long)(1000 * 60 * 60 * 24));
     }
     private static Date indexDate = new Date();
     public static Date getIndexDate(){
@@ -24,8 +24,7 @@ public class DateUtils {
         if (curDate == null) {
             return null;
         }
-        long timeDifferenceDays = (indexDate.getTime() - curDate.getTime())
-                / (1000 * 60 * 60 * 24);
+        long timeDifferenceDays = (indexDate.getTime() - curDate.getTime()) / (long)(1000 * 60 * 60 * 24);
         return getTimeSinceAdded(timeDifferenceDays);
     }
     public static LinkedHashSet<String> getTimeSinceAdded(long timeDifferenceDays){

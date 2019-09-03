@@ -498,9 +498,9 @@ public class GroupedWorkSolr implements Cloneable {
 						addUniqueFieldValue(doc, "detailed_location_" + curScopeName, curItem.getShelfLocation());
 					}
 					if (curScope.isLocallyOwned() || curScope.isLibraryOwned() || curScopeDetails.isIncludeAllRecordsInDateAddedFacets()) {
-						Integer daysSinceAdded;
+						Long daysSinceAdded;
 						if (curItem.isOrderItem() || (curItem.getStatusCode() != null && curItem.getStatusCode().equals("On Order"))){
-							daysSinceAdded = -1;
+							daysSinceAdded = -1L;
 						}else {
 							//Date Added To Catalog needs to be the earliest date added for the catalog.
 							Date dateAdded = curItem.getDateAdded();
@@ -515,7 +515,7 @@ public class GroupedWorkSolr implements Cloneable {
 
 									daysSinceAdded = DateUtils.getDaysSinceAddedForDate(publicationDate.getTime());
 								} else {
-									daysSinceAdded = Integer.MAX_VALUE;
+									daysSinceAdded = Long.MAX_VALUE;
 								}
 							} else {
 								daysSinceAdded = DateUtils.getDaysSinceAddedForDate(dateAdded);
@@ -552,7 +552,7 @@ public class GroupedWorkSolr implements Cloneable {
 		for (Scope scope : groupedWorkIndexer.getScopes()){
 			SolrInputField field = doc.getField("local_days_since_added_" + scope.getScopeName());
 			if (field != null){
-				Integer daysSinceAdded = (Integer)field.getFirstValue();
+				Long daysSinceAdded = (Long)field.getFirstValue();
 				doc.addField("local_time_since_added_" + scope.getScopeName(), DateUtils.getTimeSinceAdded(daysSinceAdded));
 			}
 		}
@@ -744,6 +744,17 @@ public class GroupedWorkSolr implements Cloneable {
 		Object curValue = doc.getFieldValue(fieldName);
 		if (curValue == null){
 			doc.addField(fieldName, value);
+		}
+	}
+
+	private void updateMaxValueField(SolrInputDocument doc, String fieldName, long value) {
+		Object curValue = doc.getFieldValue(fieldName);
+		if (curValue == null){
+			doc.addField(fieldName, value);
+		}else{
+			if ((Long)curValue < value){
+				doc.setField(fieldName, value);
+			}
 		}
 	}
 
