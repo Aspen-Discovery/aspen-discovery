@@ -15,6 +15,7 @@ AspenDiscovery.Lists = (function(){
 		submitListForm: function(action){
 			$('#myListActionHead').val(action);
 			$('#myListFormHead').submit();
+			AspenDiscovery.Account.loadListData();
 			return false;
 		},
 
@@ -44,9 +45,10 @@ AspenDiscovery.Lists = (function(){
 					method  : 'getEmailMyListForm'
 					,listId : listId
 				},
-					function(data){
-						AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
-			});
+				function(data){
+					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+				}
+			);
 			return false;
 		},
 
