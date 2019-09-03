@@ -29,18 +29,18 @@
 #############
 # Indexing Tasks #
 #############
-@reboot sleep 60 /usr/local/aspen-discovery/sites/basinlibraries.production/; ./start_background_processes.sh
-5 * * * * php /usr/local/aspen-discovery/code/web/cron/updateSuggesters.php basinlibraries.production
+@reboot sleep 60 /usr/local/aspen-discovery/sites/pueblo.production/; ./start_background_processes.sh
+5 * * * * php /usr/local/aspen-discovery/code/web/cron/updateSuggesters.php pueblo.production
 
 ########################################################
 # Regular extracts that don't need to run continuously #
 ########################################################
-0 2 * * 0 cd /usr/local/aspen-discovery/code/oai_indexer; java -jar oai_indexer.jar basinlibraries.production
+0 2 * * 0 cd /usr/local/aspen-discovery/code/oai_indexer; java -jar oai_indexer.jar pueblo.production
 
 #############################################
 # New York Times Best seller Lists Updating #
 #############################################
-15 7 * * 0-1 php /usr/local/aspen-discovery/code/web/cron/updateNYTLists.php basinlibraries.production
+15 7 * * 0-1 php /usr/local/aspen-discovery/code/web/cron/updateNYTLists.php pueblo.production
 # update on Sundays and Mondays at 7:15
 
 ################
@@ -51,6 +51,6 @@
 26 0 * * * cd /tmp; rm -rf CURLCOOKIE*
 
 # CRON for Aspen (book cover cache cleanup etc.)
-00 20 * * * cd /usr/local/aspen-discovery/code/cron; java -jar cron.jar basinlibraries.production
+00 20 * * * cd /usr/local/aspen-discovery/code/cron; java -jar cron.jar pueblo.production
 
 00 01 * * * certbot renew
