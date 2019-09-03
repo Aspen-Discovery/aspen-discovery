@@ -230,7 +230,7 @@ class UserList extends DataObject
 			$listEntry = new UserListEntry();
 			$listEntry->groupedWorkPermanentId = $workToRemove;
 			$listEntry->listId = $this->id;
-			$listEntry->delete();
+			$listEntry->delete(true);
 		}
 
 		unset($this->listTitles[$this->id]);

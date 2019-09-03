@@ -1,4 +1,5 @@
 AspenDiscovery.Lists = (function(){
+	// noinspection JSUnusedGlobalSymbols
 	return {
 		addToHomePage: function(listId){
 			AspenDiscovery.Account.ajaxLightbox(Globals.path + '/MyAccount/AJAX?method=getAddBrowseCategoryFromListForm&listId=' + listId, true);
@@ -10,14 +11,6 @@ AspenDiscovery.Lists = (function(){
 			$('#listEditControls,#FavSave').show();
 			return false;
 		},
-		//editListAction: function (){
-		//	$('#listDescription').hide();
-		//	$('#listTitle').hide();
-		//	$('#listEditControls').show();
-		//	$('#FavEdit').hide();
-		//	$('#FavSave').show();
-		//	return false;
-		//},
 
 		submitListForm: function(action){
 			$('#myListActionHead').val(action);
@@ -44,15 +37,8 @@ AspenDiscovery.Lists = (function(){
 			return this.submitListForm('saveList');
 		},
 
-		deleteAllListItemsAction: function (){
-			if (confirm("Are you sure you want to delete all titles from this list?  This cannot be undone.")){
-				this.submitListForm('deleteAll');
-			}
-			return false;
-		},
-
 		emailListAction: function (listId) {
-			var urlToDisplay = Globals.path + '/MyAccount/AJAX';
+			let urlToDisplay = Globals.path + '/MyAccount/AJAX';
 			AspenDiscovery.loadingMessage();
 			$.getJSON(urlToDisplay, {
 					method  : 'getEmailMyListForm'
@@ -64,8 +50,8 @@ AspenDiscovery.Lists = (function(){
 			return false;
 		},
 
-		SendMyListEmail: function () {
-			var url = Globals.path + "/MyAccount/AJAX";
+		sendMyListEmail: function () {
+			let url = Globals.path + "/MyAccount/AJAX";
 
 			$.getJSON(url,
 				{ // form inputs passed as data
@@ -73,7 +59,7 @@ AspenDiscovery.Lists = (function(){
 					,to      : $('#emailListForm input[name="to"]').val()
 					,from    : $('#emailListForm input[name="from"]').val()
 					,message : $('#emailListForm textarea[name="message"]').val()
-					,method  : 'sendMyListEmail' // serverside method
+					,method  : 'sendMyListEmail'
 				},
 				function(data) {
 					if (data.result) {
@@ -105,7 +91,7 @@ AspenDiscovery.Lists = (function(){
 		},
 
 		changeList: function (){
-			var availableLists = $("#availableLists");
+			let availableLists = $("#availableLists");
 			window.location = Globals.path + "/MyAccount/MyList/" + availableLists.val();
 		},
 
@@ -119,12 +105,6 @@ AspenDiscovery.Lists = (function(){
 				window.location = Globals.path + "/MyAccount/ImportListsFromClassic";
 			}
 			return false;
-		}//,
-
-		//setDefaultSort: function(selectedElement, selectedValue) {
-		//	$('#default-sort').val(selectedValue);
-		//	$('#default-sort + div>ul li').css('background-color', 'inherit');
-		//	$(selectedElement).css('background-color', 'gray');
-		//}
+		}
 	};
 }(AspenDiscovery.Lists || {}));

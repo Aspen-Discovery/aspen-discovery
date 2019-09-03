@@ -31,7 +31,7 @@
 	{literal}
 	$("#emailListForm").validate({
 		submitHandler: function(){
-			AspenDiscovery.Lists.SendMyListEmail();
+			AspenDiscovery.Lists.sendMyListEmail();
 		}
 	});
 	{/literal}
