@@ -311,7 +311,7 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 				boolean isEContent = false;
 				if (itemField.getSubfield(iTypeSubfield) != null){
 					String iType = itemField.getSubfield(iTypeSubfield).getData().toLowerCase().trim();
-					if (iType.equals("ebook") || iType.equals("eaudio") || iType.equals("online") || iType.equals("oneclick")){
+					if (iType.equals("ebook") || iType.equals("eaudio") || iType.equals("online") || iType.equals("oneclick") || iType.equals("eaudiobook")){
 						isEContent = true;
 					}
 				}
@@ -336,7 +336,7 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 				boolean isOneClickDigital = false;
 				if (itemField.getSubfield(iTypeSubfield) != null){
 					String iType = itemField.getSubfield(iTypeSubfield).getData().toLowerCase().trim();
-					if (iType.equals("ebook") || iType.equals("eaudio") || iType.equals("online") || iType.equals("oneclick")){
+					if (iType.equals("ebook") || iType.equals("eaudio") || iType.equals("online") || iType.equals("oneclick") || iType.equals("eaudiobook")){
 						isEContent = true;
 						String sourceType = getSourceType(record, itemField);
 						if (sourceType != null){
@@ -408,6 +408,9 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 						break;
 					} else if (urlSubfield.contains("hoopla")) {
 						sourceType = "hoopla";
+						break;
+					} else if (urlSubfield.contains("freading.com")) {
+						sourceType = "Freading";
 						break;
 					} else {
 						logger.debug("URL is not overdrive");
