@@ -28,7 +28,8 @@ class MyAccount_Edit extends Action
 
 		if (!UserAccount::isLoggedIn()) {
 			require_once ROOT_DIR . '/services/MyAccount/Login.php';
-			MyAccount_Login::launch();
+			$launchAction = new MyAccount_Login();
+			$launchAction->launch();
 			exit();
 		}else{
 			$user = UserAccount::getLoggedInUser();

@@ -18,7 +18,8 @@ class History extends Action {
 		// history:
 		if (isset($_REQUEST['require_login']) && !UserAccount::isLoggedIn()) {
 			require_once ROOT_DIR . '/services/MyAccount/Login.php';
-			MyAccount_Login::launch();
+			$launchAction = new MyAccount_Login();
+			$launchAction->launch();
 			exit();
 		}
 
