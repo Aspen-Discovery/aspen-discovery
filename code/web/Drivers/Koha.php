@@ -118,6 +118,14 @@ class Koha extends AbstractIlsDriver {
 
 		$this->initDatabaseConnection();
 
+		/** @noinspection SqlResolve */
+		$sql = "SELECT * FROM systempreferences where variable like 'OpacRenewalAllowed';";
+		$results = mysqli_query($this->dbConnection, $sql);
+		$kohaPreferences = [];
+		while ($curRow = $results->fetch_assoc()){
+			$kohaPreferences[$curRow['variable']] = $curRow['value'];
+		}
+
         /** @noinspection SqlResolve */
         $sql = "SELECT issues.*, items.biblionumber, title, author, auto_renew, auto_renew_error from issues left join items on items.itemnumber = issues.itemnumber left join biblio ON items.biblionumber = biblio.biblionumber where borrowernumber = {$patron->username}";
 		$results = mysqli_query($this->dbConnection, $sql);
@@ -142,7 +150,7 @@ class Koha extends AbstractIlsDriver {
 			$checkout['renewIndicator'] = $curRow['itemnumber'];
 			$checkout['renewCount'] = $curRow['renewals'];
 
-			$checkout['canRenew'] = !$curRow['auto_renew'];
+			$checkout['canRenew'] = !$curRow['auto_renew'] && $kohaPreferences['OpacRenewalAllowed'];
 			$checkout['autoRenew'] = $curRow['auto_renew'];
 			$autoRenewError = $curRow['auto_renew_error'];
 			if ($autoRenewError){
