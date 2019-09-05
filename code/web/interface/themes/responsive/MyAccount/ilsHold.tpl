@@ -1,6 +1,6 @@
 {strip}
 	{* Overall hold *}
-	<div class="result row ilsHold_{$record.recordId}">
+	<div class="result row ilsHold_{$record.recordId}_{$record.cancelId}">
 		{* Cover column *}
 		{if $showCovers}
 			<div class="col-xs-4 col-sm-3">

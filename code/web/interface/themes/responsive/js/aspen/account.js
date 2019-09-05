@@ -587,7 +587,7 @@ AspenDiscovery.Account = (function(){
 				$.getJSON(Globals.path + "/MyAccount/AJAX?method=cancelHold&patronId=" + patronId + "&recordId=" + recordId + "&cancelId="+holdIdToCancel, function(data){
 					AspenDiscovery.showMessage(data.title, data.body, data.success);
 					if (data.success){
-						$('.ilsHold_' + recordId).hide();
+						$('.ilsHold_' + recordId + '_' + holdIdToCancel).hide();
 						AspenDiscovery.Account.loadMenuData();
 					}
 				}).fail(AspenDiscovery.ajaxFail)
