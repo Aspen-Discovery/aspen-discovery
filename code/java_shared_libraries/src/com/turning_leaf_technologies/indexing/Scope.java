@@ -73,7 +73,7 @@ public class Scope implements Comparable<Scope>{
 	}
 
 	void setFacetLabel(String facetLabel) {
-		this.facetLabel = facetLabel;
+		this.facetLabel = facetLabel.trim();
 	}
 
 	/**

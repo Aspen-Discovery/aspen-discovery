@@ -378,9 +378,9 @@ public class RbdigitalExportMain {
                 }
 
                 //Load issue information
-//                String issuesUrl = baseUrl + "/v1/libraries/" + libraryId + "/magazines/" + magazineId + "/issues?pageIndex=1&pageSize=100";
-//                WebServiceResponse response = NetworkUtils.getURL(issuesUrl, logger, headers);
-//                JSONObject issuesObject = new JSONObject(response.getMessage());
+                String issuesUrl = baseUrl + "/v1/libraries/" + libraryId + "/magazines/" + magazineId + "/issues?pageIndex=0&pageSize=100";
+                WebServiceResponse response = NetworkUtils.getURL(issuesUrl, logger, headers);
+                JSONObject issuesObject = new JSONObject(response.getMessage());
 
                 if (metadataChanged || doFullReload) {
                     String groupedWorkId = groupRbdigitalMagazine(itemDetails, magazineIdString);

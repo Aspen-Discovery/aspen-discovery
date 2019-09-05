@@ -14,17 +14,13 @@ public class DateUtils {
         if (curDate == null){
             return null;
         }
-        return ((indexDate.getTime() - curDate.getTime()) / (long)(1000 * 60 * 60 * 24));
-    }
-    private static Date indexDate = new Date();
-    public static Date getIndexDate(){
-        return indexDate;
+        return ((new Date().getTime() - curDate.getTime()) / (long)(1000 * 60 * 60 * 24));
     }
     public static LinkedHashSet<String> getTimeSinceAddedForDate(Date curDate) {
         if (curDate == null) {
             return null;
         }
-        long timeDifferenceDays = (indexDate.getTime() - curDate.getTime()) / (long)(1000 * 60 * 60 * 24);
+        long timeDifferenceDays = (new Date().getTime() - curDate.getTime()) / (long)(1000 * 60 * 60 * 24);
         return getTimeSinceAdded(timeDifferenceDays);
     }
     public static LinkedHashSet<String> getTimeSinceAdded(long timeDifferenceDays){

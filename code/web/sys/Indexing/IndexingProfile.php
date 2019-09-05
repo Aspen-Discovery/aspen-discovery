@@ -326,6 +326,7 @@ class IndexingProfile extends DataObject{
 				if ($this->id) { // When this is a new Indexing Profile, there are no maps yet.
 					$formatMap = new FormatMapValue();
 					$formatMap->indexingProfileId = $this->id;
+					$formatMap->orderBy('value');
 					$formatMap->find();
 					while ($formatMap->fetch()) {
 						$this->formatMap[$formatMap->id] = clone($formatMap);

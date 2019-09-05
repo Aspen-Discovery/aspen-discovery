@@ -213,7 +213,8 @@ public class GroupedWorkSolr implements Cloneable {
 		}
 		doc.addField("title", fullTitle);
 		doc.addField("title_display", displayTitle);
-		doc.addField("title_full", fullTitles);
+		//This is set lower now with additional titles added with formats
+		//doc.addField("title_full", fullTitles);
 
 		doc.addField("subtitle_display", subTitle);
 		doc.addField("title_short", title);
@@ -291,15 +292,20 @@ public class GroupedWorkSolr implements Cloneable {
 		//Check to see if all items are on order.  If so, add on order keywords
 		boolean allItemsOnOrder = true;
 		int numItems = 0;
-        for (RecordInfo record : relatedRecords.values()) {
+		for (RecordInfo record : relatedRecords.values()) {
             for (ItemInfo item : record.getRelatedItems()) {
                 numItems++;
                 if (!(item.isOrderItem() || (item.getStatusCode() != null && item.getStatusCode().equals("On Order")))) {
                     allItemsOnOrder = false;
                 }
             }
+            if (record.getFormatCategories().size() > 0) {
+				fullTitles.add(fullTitle + " " + record.getFormatCategories().toString());
+			}
         }
-		if (numItems == 0){
+		doc.addField("title_full", fullTitles);
+
+        if (numItems == 0){
 		    allItemsOnOrder = false;
         }
 		if (allItemsOnOrder){
@@ -316,7 +322,7 @@ public class GroupedWorkSolr implements Cloneable {
 					Calendar publicationDate = GregorianCalendar.getInstance();
 					publicationDate.set(earliestPublicationDate.intValue(), Calendar.JANUARY, 1);
 
-					long indexTime = DateUtils.getIndexDate().getTime();
+					long indexTime = new Date().getTime();
 					long publicationTime = publicationDate.getTime().getTime();
 					long bibDaysSinceAdded = (indexTime - publicationTime) / (long)(1000 * 60 * 60 * 24);
 					doc.addField("days_since_added", Long.toString(bibDaysSinceAdded));

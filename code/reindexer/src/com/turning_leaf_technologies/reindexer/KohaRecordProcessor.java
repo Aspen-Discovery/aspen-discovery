@@ -140,26 +140,47 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 		String mostPopularIType = "";		//Get a list of all the formats based on the items
 		List<DataField> items = MarcUtil.getDataFields(record, itemTag);
 		for(DataField item : items){
-			Subfield iTypeSubField = item.getSubfield(iTypeSubfield);
-			if (iTypeSubField != null){
-				String iType = iTypeSubField.getData().toLowerCase().trim();
-				if (itemCountsByItype.containsKey(iType)){
-					itemCountsByItype.put(iType, itemCountsByItype.get(iType) + 1);
-				}else{
-					itemCountsByItype.put(iType, 1);
-					//Translate the iType to see what formats we get.  Some item types do not have a format by default and use the default translation
-					//We still will want to record those counts.
-					String translatedFormat = translateValue("format", iType, recordInfo.getRecordIdentifier());
-					//If the format is book, ignore it for now.  We will use the default method later.
-					if (translatedFormat == null){
-						translatedFormat = "";
+			boolean foundFormatFromSublocation = false;
+			Subfield subLocationField = item.getSubfield(subLocationSubfield);
+			if (subLocationField != null){
+				String subLocation = subLocationField.getData().toLowerCase().trim();
+				if (hasTranslation("format", subLocation)){
+					String translatedLocation = translateValue("format", subLocation, recordInfo.getRecordIdentifier());
+					if (itemCountsByItype.containsKey(subLocation)) {
+						itemCountsByItype.put(subLocation, itemCountsByItype.get(subLocation) + 1);
+					} else {
+						itemCountsByItype.put(subLocation, 1);
 					}
-					itemTypeToFormat.put(iType, translatedFormat);
+					foundFormatFromSublocation = true;
+					itemTypeToFormat.put(subLocation, translatedLocation);
+					if (itemCountsByItype.get(subLocation) > mostUsedCount){
+						mostPopularIType = subLocation;
+						mostUsedCount = itemCountsByItype.get(subLocation);
+					}
 				}
+			}
 
-				if (itemCountsByItype.get(iType) > mostUsedCount){
-					mostPopularIType = iType;
-					mostUsedCount = itemCountsByItype.get(iType);
+			if (!foundFormatFromSublocation) {
+				Subfield iTypeSubField = item.getSubfield(iTypeSubfield);
+				if (iTypeSubField != null) {
+					String iType = iTypeSubField.getData().toLowerCase().trim();
+					if (itemCountsByItype.containsKey(iType)) {
+						itemCountsByItype.put(iType, itemCountsByItype.get(iType) + 1);
+					} else {
+						itemCountsByItype.put(iType, 1);
+						//Translate the iType to see what formats we get.  Some item types do not have a format by default and use the default translation
+						//We still will want to record those counts.
+						String translatedFormat = translateValue("format", iType, recordInfo.getRecordIdentifier());
+						if (translatedFormat == null) {
+							translatedFormat = "";
+						}
+						itemTypeToFormat.put(iType, translatedFormat);
+					}
+
+					if (itemCountsByItype.get(iType) > mostUsedCount) {
+						mostPopularIType = iType;
+						mostUsedCount = itemCountsByItype.get(iType);
+					}
 				}
 			}
 		}

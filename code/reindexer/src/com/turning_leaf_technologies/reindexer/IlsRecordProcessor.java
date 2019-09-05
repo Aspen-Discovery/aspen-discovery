@@ -1362,7 +1362,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		return translateValue(mapName, value, identifier, true);
 	}
 
-	private boolean hasTranslation(String mapName, String value) {
+	protected boolean hasTranslation(String mapName, String value) {
 		return translationMaps.containsKey(mapName) && translationMaps.get(mapName).hasTranslation(value);
 	}
 
