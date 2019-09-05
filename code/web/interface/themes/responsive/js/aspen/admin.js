@@ -42,7 +42,6 @@ AspenDiscovery.Admin = (function(){
 				$("#propertyRowexternalMaterialsRequestUrl").hide();
 				$("#propertyRowmaxRequestsPerYear").hide();
 				$("#propertyRowmaxOpenRequests").hide();
-				$("#propertyRownewMaterialsRequestSummary").hide();
 				$("#propertyRowmaterialsRequestDaysToPreserve").hide();
 				$("#propertyRowmaterialsRequestFieldsToDisplay").hide();
 				$("#propertyRowmaterialsRequestFormats").hide();
@@ -51,7 +50,6 @@ AspenDiscovery.Admin = (function(){
 				$("#propertyRowexternalMaterialsRequestUrl").hide();
 				$("#propertyRowmaxRequestsPerYear").show();
 				$("#propertyRowmaxOpenRequests").show();
-				$("#propertyRownewMaterialsRequestSummary").show();
 				$("#propertyRowmaterialsRequestDaysToPreserve").show();
 				$("#propertyRowmaterialsRequestFieldsToDisplay").show();
 				$("#propertyRowmaterialsRequestFormats").show();
@@ -60,7 +58,6 @@ AspenDiscovery.Admin = (function(){
 				$("#propertyRowexternalMaterialsRequestUrl").show();
 				$("#propertyRowmaxRequestsPerYear").hide();
 				$("#propertyRowmaxOpenRequests").hide();
-				$("#propertyRownewMaterialsRequestSummary").hide();
 				$("#propertyRowmaterialsRequestDaysToPreserve").hide();
 				$("#propertyRowmaterialsRequestFieldsToDisplay").hide();
 				$("#propertyRowmaterialsRequestFormats").hide();

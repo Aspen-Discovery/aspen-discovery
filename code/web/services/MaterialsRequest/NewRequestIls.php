@@ -10,6 +10,7 @@ class MaterialsRequest_NewRequestIls extends Action
 	{
 		global $configArray;
 		global $interface;
+		global $library;
 
 		if (!UserAccount::isLoggedIn()) {
 			header('Location: ' . $configArray['Site']['path'] . '/MyAccount/Home?followupModule=MaterialsRequest&followupAction=NewRequestIls');
@@ -19,6 +20,8 @@ class MaterialsRequest_NewRequestIls extends Action
 			$patronId = empty($_REQUEST['patronId']) ?  $user->id : $_REQUEST['patronId'];
 			$patron = $user->getUserReferredTo($patronId);
 			$interface->assign('patronId', $patronId);
+
+			$interface->assign('newMaterialsRequestSummary', $library->newMaterialsRequestSummary);
 
 			$catalogConnection = CatalogFactory::getCatalogConnectionInstance();
 			if (isset($_REQUEST['submit'])){
