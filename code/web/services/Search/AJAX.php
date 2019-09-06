@@ -8,63 +8,12 @@ class AJAX extends Action {
 	{
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
 		if (method_exists($this, $method)) {
-			$text_methods = array('SysListTitles', 'getEmailForm', 'sendEmail', 'getDplaResults');
-			//TODO re-config to use the JSON outputting here.
-			$json_methods = array('getAutoSuggestList', 'getMoreSearchResults', 'getListTitles', 'loadExploreMoreBar');
-			// Plain Text Methods //
-			if (in_array($method, $text_methods)) {
-				header('Content-type: text/plain');
-				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
-				header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-				$this->$method();
-			} // JSON Methods //
-			elseif (in_array($method, $json_methods)) {
-				//			$response = $this->$method();
+			header('Content-type: application/json');
+			header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
+			header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
 
-				//			header ('Content-type: application/json');
-				header('Content-type: application/json; charset=utf-8');
-				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
-				header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-
-				try {
-					$result = $this->$method();
-					if (true){
-						$output = json_encode($result);
-					}else{
-						require_once ROOT_DIR . '/sys/Utils/ArrayUtils.php';
-						$utf8EncodedValue = ArrayUtils::utf8EncodeArray($result);
-						$output = json_encode($utf8EncodedValue);
-						$error = json_last_error();
-						if ($error != JSON_ERROR_NONE || $output === FALSE) {
-							if (function_exists('json_last_error_msg')) {
-								$output = json_encode(array('error' => 'error_encoding_data', 'message' => json_last_error_msg()));
-							} else {
-								$output = json_encode(array('error' => 'error_encoding_data', 'message' => json_last_error()));
-							}
-							global $configArray;
-							if ($configArray['System']['debug']) {
-								print_r($utf8EncodedValue);
-							}
-						}
-					}
-
-
-				} catch (Exception $e) {
-					$output = json_encode(array('error' => 'error_encoding_data', 'message' => $e));
-					global $logger;
-					$logger->log("Error encoding json data $e", Logger::LOG_ERROR);
-				}
-
-				echo $output;
-			} else {
-				header('Content-type: text/xml');
-				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
-				header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-				echo '<?xml version="1.0" encoding="UTF-8"?' . ">\n";
-				echo "<AJAXResponse>\n";
-				$this->$method();
-				echo '</AJAXResponse>';
-			}
+			$result = $this->$method();
+			echo json_encode($result);
 		}else {
 			$output = json_encode(array('error'=>'invalid_method'));
 			echo $output;
@@ -114,9 +63,10 @@ class AJAX extends Action {
 			);
 		}
 
-		echo json_encode($result);
+		return $result;
 	}
 
+	/** @noinspection PhpUnused */
 	function getAutoSuggestList(){
 		require_once ROOT_DIR . '/services/Search/lib/SearchSuggestions.php';
 		global $timer;
@@ -151,6 +101,7 @@ class AJAX extends Action {
 		return $searchSuggestions;
 	}
 
+	/** @noinspection PhpUnused */
 	function getProspectorResults(){
 		$prospectorSavedSearchId = $_GET['prospectorSavedSearchId'];
 
@@ -177,16 +128,6 @@ class AJAX extends Action {
 		$interface->assign('prospectorLink', $prospectorLink);
 		$timer->logTime('load Prospector titles');
 		echo $interface->fetch('Search/ajax-prospector.tpl');
-	}
-
-	/**
-	 * For historical purposes.	Make sure the old API wll still work.
-	 */
-	function SysListTitles(){
-		if (!isset($_GET['id'])){
-			$_GET['id'] = $_GET['name'];
-		}
-		return $this->getListTitles();
 	}
 
 	/**
@@ -261,6 +202,7 @@ class AJAX extends Action {
 		return $listData;
 	}
 
+	/** @noinspection PhpUnused */
 	function getEmailForm(){
 		global $interface;
 		$results = array(
@@ -268,9 +210,10 @@ class AJAX extends Action {
 			'modalBody' => $interface->fetch('Search/email.tpl'),
 			'modalButtons' => "<span class='tool btn btn-primary' onclick='$(\"#emailSearchForm\").submit();'>Send Email</span>"
 		);
-		echo json_encode($results);
+		return $results;
 	}
 
+	/** @noinspection PhpUnused */
 	function getDplaResults(){
 		require_once ROOT_DIR . '/sys/SearchObject/DPLA.php';
 		$dpla = new DPLA();
@@ -284,9 +227,10 @@ class AJAX extends Action {
 		);
 
 		//Format the results
-		echo(json_encode($returnVal));
+		return $returnVal;
 	}
 
+	/** @noinspection PhpUnused */
 	function getMoreSearchResults($displayMode = 'covers'){
 		// Called Only for Covers mode //
 		$success = true; // set to false on error
@@ -336,6 +280,7 @@ class AJAX extends Action {
 		return $result;
 	}
 
+	/** @noinspection PhpUnused */
 	function loadExploreMoreBar(){
 		global $interface;
 
@@ -364,21 +309,4 @@ class AJAX extends Action {
 		return $result;
 	}
 
-}
-
-function ar2xml($ar)
-{
-	$doc = new DOMDocument('1.0', 'utf-8');
-	$doc->formatOutput = true;
-	foreach ($ar as $facet => $value) {
-		$element = $doc->createElement($facet);
-		foreach ($value as $term => $cnt) {
-			$child = $doc->createElement('term', $term);
-			$child->setAttribute('count', $cnt);
-			$element->appendChild($child);
-		}
-		$doc->appendChild($element);
-	}
-
-	return strstr($doc->saveXML(), "\n");
 }

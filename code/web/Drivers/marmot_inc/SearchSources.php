@@ -10,16 +10,7 @@ class SearchSources{
 		//Check to see if marmot catalog is a valid option
 		global $library;
 		global $configArray;
-		$repeatSearchSetting = '';
-		$repeatInWorldCat = false;
-		$repeatInProspector = true;
-		$repeatInOverdrive = false;
-		$systemsToRepeatIn = array();
-		$searchGenealogy = true;
-		$repeatCourseReserves = false;
-		$searchArchive = false;
 		$searchEbsco = false;
-        $searchOpenArchives = false;
 
 		/** @var $locationSingleton Location */
 		global $locationSingleton;
@@ -70,7 +61,6 @@ class SearchSources{
 		}else{
 			$searchOptions['local'] = array(
 				'name' => 'Entire Library Catalog',
-                //'name' => strlen($library->abbreviatedDisplayName) > 0 ? $library->abbreviatedDisplayName :  $library->displayName,
                 'description' => "The {$library->displayName} catalog.",
 				'catalogType' => 'catalog'
 			);

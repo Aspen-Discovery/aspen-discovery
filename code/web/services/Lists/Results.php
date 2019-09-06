@@ -86,7 +86,7 @@ class Lists_Results extends Action {
         $currentPage = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
         $interface->assign('page', $currentPage);
 
-        if ($searchObject->getResultTotal() < 1) {
+        if ($searchObject->getResultTotal() == 0) {
             // No record found
             $interface->assign('subpage', 'Lists/list-none.tpl');
             $interface->setTemplate('list.tpl');
@@ -113,7 +113,7 @@ class Lists_Results extends Action {
                 }
             }
 
-            $timer->logTime('no hits processing');
+	        $timer->logTime('no hits processing');
 
         } else {
             $timer->logTime('save search');

@@ -6,7 +6,7 @@
 		<input type="hidden" name="view" id="view" value="{$displayMode}">
 
 		{if isset($showCovers)}
-			<input type="hidden" name="showCovers"{* id="showCovers"*} value="{if $showCovers}on{else}off{/if}">
+			<input type="hidden" name="showCovers" value="{if $showCovers}on{else}off{/if}">
 		{/if}
 
 		{assign var="hiddenSearchSource" value=false}
@@ -24,24 +24,25 @@
 				<div class="{if $hiddenSearchSource}col-lg-9 col-md-9{else}col-lg-6 col-md-6{/if} col-sm-10 col-xs-12">
 					{* Main Search Term Box *}
 					<textarea class="form-control"{/strip}
-							          id="lookfor"
-							          name="lookfor"
-							          title="Enter one or more terms to search for.	Surrounding a term with quotes will limit result to only those that exactly match the term."
-							          onkeyup="return AspenDiscovery.Searches.resetSearchType()"
-							          onfocus="$(this).select()"
-							          autocomplete="off"
-							          rows="1"
-							          aria-label="Search Terms"
-											{strip}>
-								{if !empty($lookfor)}{$lookfor|escape:"html"}{/if}
-								</textarea>
+				          id="lookfor"
+				          name="lookfor"
+				          title="Enter one or more terms to search for.	Surrounding a term with quotes will limit result to only those that exactly match the term."
+				          onkeyup="return AspenDiscovery.Searches.resetSearchType()"
+				          onfocus="$(this).select()"
+				          autocomplete="off"
+				          rows="1"
+				          aria-label="Search Terms"
+						{strip}>
+						{if !empty($lookfor)}{$lookfor|escape:"html"}{/if}
+					</textarea>
 				</div>
 
 				{* Search Type *}
-				<div class="col-lg-2 col-lg-offset-0 col-md-2 col-md-offset-0 {if $hiddenSearchSource}
-				col-sm-10 col-sm-offset-2 col-xs-12 col-xs-offset-0
+				<div class="col-lg-2 col-lg-offset-0 col-md-2 col-md-offset-0
+				{if $hiddenSearchSource}
+					col-sm-10 col-sm-offset-2 col-xs-12 col-xs-offset-0
 				{else}
-				col-sm-3 col-sm-offset-4 col-xs-5 col-xs-offset-0
+					col-sm-3 col-sm-offset-4 col-xs-5 col-xs-offset-0
 				{/if}">
 					<select name="searchIndex" class="searchTypeHorizontal form-control catalogType" id="searchIndex" title="The method of searching." aria-label="Search Index">
 						{foreach from=$catalogSearchIndexes item=searchDesc key=searchVal}
@@ -94,21 +95,20 @@
 					{* Keep Applied Filters Checkbox *}
 					{if !empty($filterList)}
 						<label for="keepFiltersSwitch" id="keepFiltersSwitchLabel">
-							<input id="keepFiltersSwitch" type="checkbox" onclick="AspenDiscovery.Searches.filterAll(this);"> {translate text='Keep Applied Filters'}</label>
+							<input id="keepFiltersSwitch" type="checkbox" onclick="AspenDiscovery.Searches.filterAll(this);"> {translate text='Keep Applied Filters'}
+						</label>
 					{/if}
 
 					{* Return to Advanced Search Link *}
 					{if !empty($searchType) && $searchType == 'advanced'}
 						<div>
-							&nbsp;
-							<a id="advancedSearchLink" href="{$path}/Search/Advanced">{translate text='Edit This Advanced Search'}</a>
+							&nbsp;<a id="advancedSearchLink" href="{$path}/Search/Advanced">{translate text='Edit This Advanced Search'}</a>
 						</div>
 
-						{* Show Advanced Search Link *}
-						{elseif $showAdvancedSearchbox}
+					{* Show Advanced Search Link *}
+					{elseif $showAdvancedSearchbox}
 						<div>
-							&nbsp;
-							<a id="advancedSearchLink" href="{$path}/Search/Advanced">{translate text='Advanced Search'}</a>
+							&nbsp;<a id="advancedSearchLink" href="{$path}/Search/Advanced">{translate text='Advanced Search'}</a>
 						</div>
 					{/if}
 				</div>
@@ -127,7 +127,7 @@
 			<div id="keepFilters" style="display:none;">
 				{foreach from=$filterList item=data key=field}
 					{foreach from=$data item=value}
-						<input class="existingFilter" type="checkbox" name="filter[]" value='{$value.field}:"{$value.value|escape}"'>
+						<input aria-hidden="true" aria-label="Keep existing filter" class="existingFilter" type="checkbox" name="filter[]" value='{$value.field}:"{$value.value|escape}"'>
 					{/foreach}
 				{/foreach}
 			</div>
