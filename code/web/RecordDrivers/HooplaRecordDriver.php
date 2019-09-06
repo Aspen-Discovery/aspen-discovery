@@ -98,8 +98,27 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 	 */
 	public function getTableOfContents()
 	{
+		$tableOfContents = array();
 		$segments = $this->hooplaRawMetadata->segments;
-		return $segments;
+		if (!empty($segments)){
+			foreach ($segments as $segment){
+				$label = $segment->name;
+				if ($segment->seconds){
+					$hours = floor($segment->seconds / 3600);
+					$mins = floor($segment->seconds / 60 % 60);
+					$secs = floor($segment->seconds % 60);
+
+					if ($hours > 0){
+						$label .= sprintf(' (%01d:%02d:%02d)', $hours, $mins, $secs);
+					}else{
+						$label .= sprintf(' (%01d:%02d)', $mins, $secs);
+					}
+
+				}
+				$tableOfContents[] = $label;
+			}
+		}
+		return $tableOfContents;
 	}
 
 	/**

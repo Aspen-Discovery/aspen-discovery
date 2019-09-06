@@ -9,8 +9,6 @@ class HooplaDriver extends AbstractEContentDriver{
 	private $accessToken;
 	private $hooplaEnabled = false;
 
-
-
 	public function __construct()
 	{
 		require_once ROOT_DIR . '/sys/Hoopla/HooplaSetting.php';
