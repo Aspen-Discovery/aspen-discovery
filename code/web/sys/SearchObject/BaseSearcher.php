@@ -1316,6 +1316,7 @@ abstract class SearchObject_BaseSearcher
 		$this->resultsTotal = $minified->r;
 		$this->filterList   = $minified->f;
 		$this->searchType   = $minified->ty;
+		$this->searchSource   = $minified->ss;
 		$this->sort         = $minified->sr;
 
 		// Search terms, we need to expand keys
@@ -2326,7 +2327,7 @@ class minSO
 	public $f = array();
 	public $hf = array();
 	public $fc = array();
-	public $id, $i, $s, $r, $ty, $sr, $q;
+	public $id, $i, $s, $r, $ty, $sr, $q, $ss;
 
 	/**
 	 * Constructor. Building minified object from the
@@ -2342,6 +2343,7 @@ class minSO
 		$this->id = $searchObject->getSearchId();
 		$this->i  = $searchObject->getStartTime();
 		$this->s  = $searchObject->getQuerySpeed();
+		$this->ss = $searchObject->getSearchSource();
 		$this->r  = $searchObject->getResultTotal();
 		$this->ty = $searchObject->getSearchType();
 		$this->sr = $searchObject->getSort();

@@ -487,10 +487,12 @@ if ($action == "AJAX" || $action == "JSON" || $module == 'API'){
 		if (!is_null($savedSearch)){
 			$interface->assign('lookfor',             $savedSearch->displayQuery());
 			$interface->assign('searchType',          $savedSearch->getSearchType());
-			$searchIndex = $savedSearch->getSearchIndex();
-			$interface->assign('searchIndex',         $searchIndex);
+			$interface->assign('searchIndex',         $savedSearch->getSearchIndex());
 			$interface->assign('filterList', $savedSearch->getFilterList());
 			$interface->assign('savedSearch', $savedSearch->isSavedSearch());
+			if (!isset($_GET['searchSource'])){
+				$interface->assign('searchSource', $savedSearch->getSearchSource());
+			}
 		}
 		$timer->logTime('Load last search for redisplay');
 	}
