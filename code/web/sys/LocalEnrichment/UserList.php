@@ -75,10 +75,10 @@ class UserList extends DataObject
 		// (This prevents list strangeness when our searches don't find the ID in the search indexes)
 		$listEntry->whereAdd(
 			'(
-     (user_list_entry.groupedWorkPermanentId NOT LIKE "%:%" AND user_list_entry.groupedWorkPermanentId IN (SELECT permanent_id FROM grouped_work) )
-    OR
-    (user_list_entry.groupedWorkPermanentId LIKE "%:%" AND user_list_entry.groupedWorkPermanentId IN (SELECT pid FROM islandora_object_cache) )
-)'
+			     (user_list_entry.groupedWorkPermanentId NOT LIKE "%:%" AND user_list_entry.groupedWorkPermanentId IN (SELECT permanent_id FROM grouped_work) )
+			    OR
+			    (user_list_entry.groupedWorkPermanentId LIKE "%:%" AND user_list_entry.groupedWorkPermanentId IN (SELECT pid FROM islandora_object_cache) )
+			)'
 		);
 
 		return $listEntry->count();
@@ -89,6 +89,9 @@ class UserList extends DataObject
 			$this->created     = time();
 			$this->dateUpdated = time();
 		}
+		/** @var Memcache $memCache */
+		global $memCache;
+		$memCache->delete('user_list_data_' . UserAccount::getActiveUserId());
 		return parent::insert();
 	}
 	function update(){
@@ -99,13 +102,22 @@ class UserList extends DataObject
 		$result            = parent::update();
 		if ($result) {
 			$this->flushUserListBrowseCategory();
+			/** @var Memcache $memCache */
+			global $memCache;
+			$memCache->delete('user_list_data_' . UserAccount::getActiveUserId());
 		}
+
 		return $result;
 	}
 	function delete($useWhere = false){
 		$this->deleted = 1;
 		$this->dateUpdated = time();
-		return parent::update();
+		$ret = parent::update();
+
+		/** @var Memcache $memCache */
+		global $memCache;
+		$memCache->delete('user_list_data_' . UserAccount::getActiveUserId());
+		return $ret;
 	}
 
 	/**
@@ -234,6 +246,10 @@ class UserList extends DataObject
 		}
 
 		unset($this->listTitles[$this->id]);
+
+		/** @var Memcache $memCache */
+		global $memCache;
+		$memCache->delete('user_list_data_' . UserAccount::getActiveUserId());
 	}
 
 	/**

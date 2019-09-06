@@ -1,5 +1,6 @@
 <?php
 
+/** @noinspection PhpUnused */
 class MyAccount_AJAX
 {
 	const SORT_LAST_ALPHA = 'zzzzz';
@@ -25,6 +26,7 @@ class MyAccount_AJAX
 		}
 	}
 
+	/** @noinspection PhpUnused */
 	function getAddBrowseCategoryFromListForm(){
 		global $interface;
 
@@ -48,6 +50,7 @@ class MyAccount_AJAX
 		return $results;
 	}
 
+	/** @noinspection PhpUnused */
 	function addAccountLink(){
 		if (!UserAccount::isLoggedIn()){
 			$result = array(
@@ -85,6 +88,7 @@ class MyAccount_AJAX
 		return $result;
 	}
 
+	/** @noinspection PhpUnused */
 	function removeAccountLink(){
 		if (!UserAccount::isLoggedIn()){
 			$result = array(
@@ -109,6 +113,7 @@ class MyAccount_AJAX
 		return $result;
 	}
 
+	/** @noinspection PhpUnused */
 	function getAddAccountLinkForm(){
 		global $interface;
 		global $library;
@@ -125,6 +130,7 @@ class MyAccount_AJAX
 		return $formDefinition;
 	}
 
+	/** @noinspection PhpUnused */
 	function getBulkAddToListForm()	{
 		global $interface;
 		// Display Page
@@ -138,6 +144,7 @@ class MyAccount_AJAX
 		return $formDefinition;
 	}
 
+	/** @noinspection PhpUnused */
 	function saveSearch()
 	{
 		$searchId = $_REQUEST['searchId'];
@@ -426,6 +433,7 @@ class MyAccount_AJAX
 				$list = new UserList();
 				$list->title = strip_tags($title);
 				$list->user_id = $user->id;
+				$list->deleted = "0";
 				//Check to see if there is already a list with this id
 				$existingList = false;
 				if ($list->find(true)) {
@@ -477,6 +485,7 @@ class MyAccount_AJAX
 		return $return;
 	}
 
+	/** @noinspection PhpUnused */
 	function getCreateListForm()
 	{
 		global $interface;
@@ -1284,9 +1293,9 @@ class MyAccount_AJAX
 		    $a=4;
 		    //Loop Through The Report Data
 	        foreach ($allCheckedOut as $row) {
-			    $titleCell = preg_replace("/(\/|:)$/", "", $row['title']);
+			    $titleCell = preg_replace("~([/:])$~", "", $row['title']);
 			    if (isset ($row['title2'])) {
-				    $titleCell .= preg_replace("/(\/|:)$/", "", $row['title2']);
+				    $titleCell .= preg_replace("~([/:])$~", "", $row['title2']);
 			    }
 
 			    if (isset ($row['author'])) {
@@ -1445,9 +1454,9 @@ class MyAccount_AJAX
 				$curRow++;
 				//Loop Through The Report Data
 				foreach ($allHolds[$exportType] as $row) {
-					$titleCell = preg_replace("/(\/|:)$/", "", $row['title']);
+					$titleCell =  preg_replace("~([/:])$~", "", $row['title']);
 					if (isset ($row['title2'])){
-						$titleCell .= preg_replace("/(\/|:)$/", "", $row['title2']);
+						$titleCell .= preg_replace("~([/:])$~", "", $row['title2']);
 					}
 
 					if (isset ($row['author'])){
@@ -1995,7 +2004,7 @@ class MyAccount_AJAX
 				$sortKey = (empty($curTitle['author']) ? $this::SORT_LAST_ALPHA : $curTitle['author']) . '-' . $sortTitle;
 			} elseif ($selectedSortOption == 'dueDate') {
 				if (isset($curTitle['dueDate'])) {
-					if (preg_match('/.*?(\\d{1,2})[-\/](\\d{1,2})[-\/](\\d{2,4}).*/', $curTitle['dueDate'], $matches)) {
+					if (preg_match('~.*?(\\d{1,2})[-/](\\d{1,2})[-/](\\d{2,4}).*~', $curTitle['dueDate'], $matches)) {
 						$sortKey = $matches[3] . '-' . $matches[1] . '-' . $matches[2] . '-' . $sortTitle;
 					} else {
 						$sortKey = $curTitle['dueDate'] . '-' . $sortTitle;
@@ -2035,6 +2044,7 @@ class MyAccount_AJAX
 		return $allCheckedOut;
 	}
 
+	/** @noinspection PhpUnused */
 	function deleteReadingHistoryEntry(){
 		$result = [
 			'success' => false,

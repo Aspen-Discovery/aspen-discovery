@@ -76,6 +76,7 @@ class MyAccount_MyList extends MyAccount {
 					$list->update();
 				}elseif ($actionToPerform == 'deleteList'){
 					$list->delete();
+
 					header("Location: {$configArray['Site']['path']}/MyAccount/Home");
 					die();
 				}elseif ($actionToPerform == 'bulkAddTitles'){
@@ -101,9 +102,6 @@ class MyAccount_MyList extends MyAccount {
 				$list->removeListEntry($recordToDelete);
 				$list->update();
 			}
-			/** @var Memcache $memCache */
-			global $memCache;
-			$memCache->delete('user_list_data_' . UserAccount::getActiveUserId());
 
 			//Redirect back to avoid having the parameters stay in the URL.
 			header("Location: {$configArray['Site']['path']}/MyAccount/MyList/{$list->id}");

@@ -49,6 +49,14 @@
 											</a>
 										</li>
 									{/if}
+									{if $user->isValidForEContentSource('hoopla')}
+										<li class="myAccountLink">
+											&nbsp;&nbsp;&raquo;&nbsp;
+											<a href="{$path}/MyAccount/CheckedOut?tab=hoopla" id="checkedOutHoopla">
+									            {translate text="Hoopla"} {if !$offline}<span class="badge"><span class="hoopla-checkouts-placeholder">??</span></span>{/if}
+											</a>
+										</li>
+									{/if}
 									{if $user->isValidForEContentSource('rbdigital')}
 										<li class="myAccountLink">
 											&nbsp;&nbsp;&raquo;&nbsp;
@@ -57,19 +65,11 @@
 											</a>
 										</li>
 									{/if}
-                                    {if $user->isValidForEContentSource('cloud_library')}
+									{if $user->isValidForEContentSource('cloud_library')}
 										<li class="myAccountLink">
-											&nbsp;&nbsp;&raquo;&nbsp;
+										&nbsp;&nbsp;&raquo;&nbsp;
 											<a href="{$path}/MyAccount/CheckedOut?tab=cloud_library" id="checkedOutCloudLibrary">
-                                                {translate text="Cloud Library"} {if !$offline}<span class="badge"><span class="cloud_library-checkouts-placeholder">??</span></span>{/if}
-											</a>
-										</li>
-                                    {/if}
-									{if $user->isValidForEContentSource('hoopla')}
-										<li class="myAccountLink">
-											&nbsp;&nbsp;&raquo;&nbsp;
-											<a href="{$path}/MyAccount/CheckedOut?tab=hoopla" id="checkedOutHoopla">
-												{translate text="Hoopla"} {if !$offline}<span class="badge"><span class="hoopla-checkouts-placeholder">??</span></span>{/if}
+											    {translate text="Cloud Library"} {if !$offline}<span class="badge"><span class="cloud_library-checkouts-placeholder">??</span></span>{/if}
 											</a>
 										</li>
 									{/if}
@@ -206,10 +206,14 @@
 						<div class="panel-body">
 							<div id="lists-placeholder"><img src="{$path}/images/loading.gif" alt="loading"></div>
 
-							<a href="#" onclick="return AspenDiscovery.Account.showCreateListForm();" class="btn btn-sm btn-primary">{translate text='Create a New List'}</a>
+							<div class="myAccountLink">
+								<a href="#" onclick="return AspenDiscovery.Account.showCreateListForm();" class="btn btn-sm btn-primary">{translate text='Create a New List'}</a>
+							</div>
 							{if $showConvertListsFromClassic}
-								<div class="myAccountLink"><a href="{$path}/MyAccount/ImportListsFromClassic" class="btn btn-sm btn-default">{translate text="Import From Old Catalog"}</a></div>
 								<br>
+								<div class="myAccountLink">
+									<a href="{$path}/MyAccount/ImportListsFromClassic" class="btn btn-sm btn-default">{translate text="Import From Old Catalog"}</a>
+								</div>
 							{/if}
 						</div>
 					</div>

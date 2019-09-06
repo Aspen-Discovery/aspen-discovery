@@ -654,6 +654,7 @@ AspenDiscovery.Archive = (function(){
 						function(data) {
 							if (data.success) {
 								AspenDiscovery.showMessage("Added Successfully", data.message, 2000); // auto-close after 2 seconds.
+								AspenDiscovery.Account.loadListData();
 							} else {
 								AspenDiscovery.showMessage("Error", data.message);
 							}
