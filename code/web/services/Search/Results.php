@@ -299,8 +299,6 @@ class Search_Results extends Action {
 			            $interface->assign('keywordResultsCount', $keywordSearchObject->getResultTotal());
 		            }
 	            }
-
-
             }
 
 			// No record found

@@ -662,7 +662,7 @@ class ExploreMore {
 		global $configArray;
 		if ($activeSection != 'catalog') {
 			if (strlen($searchTerm) > 0) {
-				/** @var SearchObject_GroupedWorkSearcher $searchObject */
+				/** @var SearchObject_GroupedWorkSearcher $searchObjectSolr */
 				$searchObjectSolr = SearchObjectFactory::initSearchObject();
 				$searchObjectSolr->init('local');
                 $searchObjectSolr->disableSpelling();
@@ -672,8 +672,10 @@ class ExploreMore {
 				));
 				$searchObjectSolr->clearHiddenFilters();
 				$searchObjectSolr->clearFilters();
-				$searchObjectSolr->addFilter('literary_form_full:Non Fiction');
-				$searchObjectSolr->addFilter('target_audience:Adult');
+				if ($activeSection == 'open_archives' || $activeSection == 'archive') {
+					$searchObjectSolr->addFilter('literary_form_full:Non Fiction');
+					$searchObjectSolr->addFilter('target_audience:(Adult OR Unknown)');
+				}
 				$searchObjectSolr->setPage(1);
 				$searchObjectSolr->setLimit(5);
 				$results = $searchObjectSolr->processSearch(true, false);
