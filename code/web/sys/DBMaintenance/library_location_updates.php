@@ -1761,6 +1761,15 @@ function getLibraryLocationUpdates(){
 			'sql' => [
 				'ALTER TABLE library ADD COLUMN showQuickCopy TINYINT(1) default 1',
 			]
+		],
+
+		'location_allow_multiple_open_hours_per_day' => [
+			'title' => 'Location Allow Multiple Open Hours Per Day',
+			'description' => 'Add a column for whether or not quick copy should be shown',
+			'sql' => [
+				'ALTER TABLE location_hours DROP INDEX locationId',
+				'ALTER TABLE location_hours ADD INDEX location (locationId, day, open)',
+			]
 		]
 	);
 }

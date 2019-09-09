@@ -206,6 +206,7 @@ function readConfig()
 		if ($logger){
 			$logger->log('Did not find servername for server ' . $fullServerName, Logger::LOG_ERROR);
 		}
+		require_once ROOT_DIR . '/sys/AspenError.php';
 		AspenError::raiseError("Invalid configuration, could not find site for " . $fullServerName);
 	}
 

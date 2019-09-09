@@ -1,5 +1,5 @@
 <?php
-
+require_once ROOT_DIR . '/sys/DB/DataObject.php';
 
 class AspenError extends DataObject
 {
@@ -128,8 +128,10 @@ class AspenError extends DataObject
         }
 
         global $aspenUsage;
-        $aspenUsage->pagesWithErrors++;
-	    $aspenUsage->update();
+        if (!empty($aspenUsage)) {
+	        $aspenUsage->pagesWithErrors++;
+	        $aspenUsage->update();
+        }
 
 	    try{
 		    $this->insert();
@@ -146,6 +148,7 @@ class AspenError extends DataObject
         // Display an error screen to the user:
         global $interface;
         if (!isset($interface) || $interface == false){
+        	require_once ROOT_DIR . '/sys/Interface.php';
             $interface = new UInterface();
         }
 
