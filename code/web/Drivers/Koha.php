@@ -301,11 +301,9 @@ class Koha extends AbstractIlsDriver {
 		$sql = "SELECT borrowernumber, cardnumber, surname, firstname, streetnumber, streettype, address, address2, city, state, zipcode, country, email, phone, mobile, categorycode, dateexpiry, password, userid, branchcode from borrowers where borrowernumber = $patronId";
 
 		$userExistsInDB = false;
-
 		$lookupUserResult = mysqli_query($this->dbConnection, $sql, MYSQLI_USE_RESULT);
 		if ($lookupUserResult) {
 			$userFromDb = $lookupUserResult->fetch_assoc();
-			$lookupUserResult->close();
 
 			$user = new User();
 			//Get the unique user id from Millennium
@@ -331,6 +329,13 @@ class Koha extends AbstractIlsDriver {
 			}
 			$user->_fullname     = $userFromDb['firstname'] . ' ' . $userFromDb['surname'];
 			$user->cat_username = $userFromDb['cardnumber'];
+			if ($userExistsInDB){
+				$passwordChanged = ($user->cat_password != $password);
+				if ($passwordChanged){
+					//The password has changed, disable account linking and give users the appropriate messages
+					$user->disableLinkingDueToPasswordChange();
+				}
+			}
 			$user->cat_password = $password;
 			$user->email        = $userFromDb['email'];
 			$user->patronType   = $userFromDb['categorycode'];
@@ -1282,13 +1287,13 @@ class Koha extends AbstractIlsDriver {
 		$postResults = $this->postToKohaPage($catalogUrl . '/cgi-bin/koha/opac-password-recovery.pl', $postVariables);
 
 		$messageInformation = [];
-		if (preg_match('%<div class="alert alert-warning">(.*?)</div>%s', $postResults, $messageInformation)){
+		if (preg_match('%<div class="alert alert-warning">(.*?)</div>%s', $postResults, $messageInformation)) {
 			$error = $messageInformation[1];
 			$error = str_replace('<h3>', '<h4>', $error);
 			$error = str_replace('</h3>', '</h4>', $error);
 			$error = str_replace('/cgi-bin/koha/opac-password-recovery.pl', '/MyAccount/EmailResetPin', $error);
 			$result['error'] = trim($error);
-		}elseif (preg_match('%<div id="password-recovery">\s+<div class="alert alert-info">(.*?)<a href="/cgi-bin/koha/opac-main.pl"">Return to the main page</a>\s+</div>\s+</div>%s', $postResults, $messageInformation)) {
+		}elseif (preg_match('%<div id="password-recovery">\s+<div class="alert alert-info">(.*?)<a href="/cgi-bin/koha/opac-main.pl">Return to the main page</a>\s+</div>\s+</div>%s', $postResults, $messageInformation)) {
 			$message = $messageInformation[1];
 			$result['success'] = true;
 			$result['message'] = trim($message);
@@ -1669,7 +1674,6 @@ class Koha extends AbstractIlsDriver {
 		return $numRequests;
 	}
 
-	//TODO: Switch to use the database to retrieve this information
 	function getMaterialsRequests(User $user)
 	{
 		$this->initDatabaseConnection();

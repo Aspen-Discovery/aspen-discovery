@@ -264,4 +264,40 @@ abstract class AbstractIlsDriver extends AbstractDriver
 			'success' => false,
 			'errors' => array('Notification Settings are not implemented for this ILS'));
 	}
+
+	public function bookMaterial($patron, $recordId, $startDate, $startTime, $endDate, $endTime)
+	{
+		return array('success' => false, 'message' => 'Not Implemented.');
+	}
+
+	public function cancelBookedMaterial($patron, $cancelIds)
+	{
+		return array('success' => false, 'message' => 'Not Implemented.');
+	}
+
+	public function cancelAllBookedMaterial($patron)
+	{
+		return array('success' => false, 'message' => 'Not Implemented.');
+	}
+
+	public function getMyBookings(User $patron)
+	{
+		return [];
+	}
+
+	public function placeVolumeHold($patron, $recordId, $volumeId, $pickupBranch)
+	{
+		return array(
+			'success' => false,
+			'message' => 'Volume level holds have not been implemented for this ILS.');
+	}
+
+	public function requestPinReset($patronBarcode)
+	{
+		return array(
+			'success' => false,
+			'error' => 'This functionality is not available in the ILS.',
+		);
+	}
+
 }

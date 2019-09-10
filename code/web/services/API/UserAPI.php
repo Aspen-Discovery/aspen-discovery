@@ -24,29 +24,8 @@ class UserAPI extends Action {
 
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
 		if (method_exists($this, $method)) {
-			try{
-				$result = $this->$method();
-				require_once ROOT_DIR . '/sys/Utils/ArrayUtils.php';
-				$utf8EncodedValue = ArrayUtils::utf8EncodeArray(array('result'=>$result));
-				$output = json_encode($utf8EncodedValue);
-				$error = json_last_error();
-				if ($error != JSON_ERROR_NONE || $output === FALSE){
-					if (function_exists('json_last_error_msg')){
-						$output = json_encode(array('error'=>'error_encoding_data', 'message' => json_last_error_msg()));
-					}else{
-						$output = json_encode(array('error'=>'error_encoding_data', 'message' => json_last_error()));
-					}
-					global $configArray;
-					if ($configArray['System']['debug']){
-						print_r($utf8EncodedValue);
-					}
-				}
-			}catch (Exception $e){
-				$output = json_encode(array('error'=>'error_encoding_data', 'message' => $e));
-				global $logger;
-				$logger->log("Error encoding json data $e", Logger::LOG_ERROR);
-			}
-
+			$result = $this->$method();
+			$output = json_encode($result);
 		} else {
 			$output = json_encode(array('error'=>'invalid_method'));
 		}
@@ -1194,8 +1173,8 @@ class UserAPI extends Action {
 	 *
 	 * Returns:
 	 * <ul>
-	 * <li>success � true if the account is valid and the hold could be activated, false if the username or password were incorrect or the hold could not be activated.</li>
-	 * <li>holdMessage � a reason why the method failed if success is false</li>
+	 * <li>success - true if the account is valid and the hold could be activated, false if the username or password were incorrect or the hold could not be activated.</li>
+	 * <li>holdMessage - a reason why the method failed if success is false</li>
 	 * </ul>
 	 *
 	 * Sample Call:
@@ -1330,7 +1309,7 @@ class UserAPI extends Action {
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !($user instanceof AspenError)){
-			$this->getCatalogConnection()->doReadingHistoryAction('optIn', array());
+			$this->getCatalogConnection()->doReadingHistoryAction($user, 'optIn', array());
 			return array('success'=>true);
 		}else{
 			return array('success'=>false, 'message'=>'Login unsuccessful');
@@ -1348,7 +1327,7 @@ class UserAPI extends Action {
 	 *
 	 * Returns:
 	 * <ul>
-	 * <li>success � true if the account is valid and the reading history could be turned off, false if the username or password were incorrect or the reading history could not be turned off.</li>
+	 * <li>success - true if the account is valid and the reading history could be turned off, false if the username or password were incorrect or the reading history could not be turned off.</li>
 	 * </ul>
 	 *
 	 * Sample Call:
@@ -1367,7 +1346,7 @@ class UserAPI extends Action {
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !($user instanceof AspenError)){
-			$this->getCatalogConnection()->doReadingHistoryAction('optOut', array());
+			$this->getCatalogConnection()->doReadingHistoryAction($user,'optOut', array());
 			return array('success'=>true);
 		}else{
 			return array('success'=>false, 'message'=>'Login unsuccessful');
@@ -1386,7 +1365,7 @@ class UserAPI extends Action {
 	 *
 	 * Returns:
 	 * <ul>
-	 * <li>success � true if the account is valid and the reading history could cleared, false if the username or password were incorrect or the reading history could not be cleared.</li>
+	 * <li>success - true if the account is valid and the reading history could cleared, false if the username or password were incorrect or the reading history could not be cleared.</li>
 	 * </ul>
 	 *
 	 * Sample Call:
@@ -1404,7 +1383,7 @@ class UserAPI extends Action {
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !($user instanceof AspenError)){
-			$this->getCatalogConnection()->doReadingHistoryAction('deleteAll', array());
+			$this->getCatalogConnection()->doReadingHistoryAction($user,'deleteAll', array());
 			return array('success'=>true);
 		}else{
 			return array('success'=>false, 'message'=>'Login unsuccessful');
@@ -1423,7 +1402,7 @@ class UserAPI extends Action {
 	 *
 	 * Returns:
 	 * <ul>
-	 * <li>success � true if the account is valid and the items could be removed from the reading history, false if the username or password were incorrect or the items could not be removed from the reading history.</li>
+	 * <li>success - true if the account is valid and the items could be removed from the reading history, false if the username or password were incorrect or the items could not be removed from the reading history.</li>
 	 * </ul>
 	 *
 	 * Sample Call:
@@ -1443,7 +1422,7 @@ class UserAPI extends Action {
 		$selectedTitles = $_REQUEST['selected'];
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !($user instanceof AspenError)){
-			$this->getCatalogConnection()->doReadingHistoryAction('deleteMarked', $selectedTitles);
+			$this->getCatalogConnection()->doReadingHistoryAction($user,'deleteMarked', $selectedTitles);
 			return array('success'=>true);
 		}else{
 			return array('success'=>false, 'message'=>'Login unsuccessful');

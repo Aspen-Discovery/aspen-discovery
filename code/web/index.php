@@ -376,6 +376,7 @@ if ($module == null && $action == null){
 }
 //Override MyAccount Home as needed
 if ($module == 'MyAccount' && $action == 'Home' && UserAccount::isLoggedIn()){
+	//TODO: Update the redirect now that we aren't loading checkouts and holds inline
 	$user = UserAccount::getLoggedInUser();
 	if ($user->getNumCheckedOutTotal() > 0){
 		$action ='CheckedOut';
@@ -415,6 +416,7 @@ $interface->assign('searchSource', $searchSource);
 
 //Determine if the top search box and breadcrumbs should be shown.  Not showing these
 //Does have a slight performance advantage.
+global $isAJAX;
 $isAJAX = false;
 if ($action == "AJAX" || $action == "JSON" || $module == 'API'){
 	$isAJAX = true;
@@ -893,28 +895,28 @@ function loadModuleActionId(){
 	foreach ($sideLoadSettings as $profile){
 		$allRecordModules .= '|' . $profile->recordUrlComponent;
 	}
-	if (preg_match("/(MyAccount)\/([^\/?]+)\/([^\/?]+)(\?.+)?/", $requestURI, $matches)){
+	if (preg_match("~(MyAccount)/([^/?]+)/([^/?]+)(\?.+)?~", $requestURI, $matches)){
 		$_GET['module'] = $matches[1];
 		$_GET['id'] = $matches[3];
 		$_GET['action'] = $matches[2];
 		$_REQUEST['module'] = $matches[1];
 		$_REQUEST['id'] = $matches[3];
 		$_REQUEST['action'] = $matches[2];
-	}elseif (preg_match("/(MyAccount)\/([^\/?]+)(\?.+)?/", $requestURI, $matches)){
+	}elseif (preg_match("~(MyAccount)/([^/?]+)(\?.+)?~", $requestURI, $matches)){
 		$_GET['module'] = $matches[1];
 		$_GET['action'] = $matches[2];
 		$_REQUEST['id'] = '';
 		$_REQUEST['module'] = $matches[1];
 		$_REQUEST['action'] = $matches[2];
 		$_REQUEST['id'] = '';
-	}elseif (preg_match("/(MyAccount)\/?/", $requestURI, $matches)){
+	}elseif (preg_match("~(MyAccount)/?~", $requestURI, $matches)){
 		$_GET['module'] = $matches[1];
 		$_GET['action'] = 'Home';
 		$_REQUEST['id'] = '';
 		$_REQUEST['module'] = $matches[1];
 		$_REQUEST['action'] = 'Home';
 		$_REQUEST['id'] = '';
-	}elseif (preg_match('/\/(Archive)\/((?:[\\w\\d:]|%3A)+)\/([^\/?]+)/', $requestURI, $matches)){
+	}elseif (preg_match('~/(Archive)/((?:[\\w\\d:]|%3A)+)/([^/?]+)~', $requestURI, $matches)){
 		$_GET['module'] = $matches[1];
 		$_GET['id'] =  urldecode($matches[2]); // Decodes colons % codes back into colons.
 		$_GET['action'] = $matches[3];
@@ -922,14 +924,14 @@ function loadModuleActionId(){
 		$_REQUEST['id'] = urldecode($matches[2]);  // Decodes colons % codes back into colons.
 		$_REQUEST['action'] = $matches[3];
 		//Redirect things /GroupedWork/AJAX to the proper action
-	}elseif (preg_match("/($allRecordModules)\/([a-zA-Z]+)(?:\?|\/?$)/", $requestURI, $matches)){
+	}elseif (preg_match("~($allRecordModules)/([a-zA-Z]+)(?:\?|/?$)~", $requestURI, $matches)){
 		$_GET['module'] = $matches[1];
 		$_GET['action'] = $matches[2];
 		$_REQUEST['module'] = $matches[1];
 		$_REQUEST['action'] = $matches[2];
 		//Redirect things /Record/.b3246786/Home to the proper action
 		//Also things like /OverDrive/84876507-043b-b3ce-2930-91af93d2a4f0/Home
-	}elseif (preg_match("/($allRecordModules)\/([^\/?]+?)\/([^\/?]+)/", $requestURI, $matches)){
+	}elseif (preg_match("~($allRecordModules)/([^/?]+?)/([^/?]+)~", $requestURI, $matches)){
 		//Getting some weird cases where the action is replaced with an email address for uintah.
 		//As a workaround, if the action looks like an email, change it to Home
 		if (preg_match('/^[A-Z0-9][A-Z0-9._%+-]{0,63}@(?:[A-Z0-9-]{1,63}\.){1,8}[A-Z]{2,63}$/i', $matches[3])){
@@ -944,14 +946,14 @@ function loadModuleActionId(){
 		$_REQUEST['id'] = $matches[2];
 		$_REQUEST['action'] = $matches[3];
 		//Redirect things /Record/.b3246786 to the proper action
-	}elseif (preg_match("/($allRecordModules)\/([^\/?]+?)(?:\?|\/?$)/", $requestURI, $matches)){
+	}elseif (preg_match("~($allRecordModules)/([^/?]+?)(?:\?|/?$)~", $requestURI, $matches)){
 		$_GET['module'] = $matches[1];
 		$_GET['id'] = $matches[2];
 		$_GET['action'] = 'Home';
 		$_REQUEST['module'] = $matches[1];
 		$_REQUEST['id'] = $matches[2];
 		$_REQUEST['action'] = 'Home';
-	}elseif (preg_match("/([^\/?]+)\/([^\/?]+)/", $requestURI, $matches)){
+	}elseif (preg_match("~([^/?]+)/([^/?]+)~", $requestURI, $matches)){
 		$_GET['module'] = $matches[1];
 		$_GET['action'] = $matches[2];
 		$_REQUEST['module'] = $matches[1];

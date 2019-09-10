@@ -118,6 +118,14 @@ function getUserUpdates(){
 			),
 		),
 
+		'user_linking_disable_link' => array(
+			'title' => 'Allow user links to be temporarily disabled',
+			'description' => 'Allow user links to be temporarily disabled.',
+			'sql' => array(
+				"ALTER TABLE `user_link` ADD COLUMN `linkingDisabled` TINYINT(1) DEFAULT 0",
+			),
+		),
+
 		'user_link_blocking' => array(
 			'title' => 'Setup blocking controls for the linking of user accounts',
 			'description' => 'Setup for the blocking of linking user accounts. Either an account can not link to any account, or a specific account can link to a specific account.',
@@ -191,6 +199,35 @@ function getUserUpdates(){
 				"ALTER TABLE user ADD COLUMN rememberHoldPickupLocation TINYINT(1) DEFAULT '0'",
 				"ALTER TABLE user ADD COLUMN alwaysHoldNextAvailable TINYINT(1) DEFAULT '0'",
 			],
-		]
+		],
+
+		'user_messages' => [
+			'title' => 'User messaging',
+			'description' => 'Add the ability to send messages to users',
+			'sql' => [
+				'CREATE TABLE user_messages (
+    				id INT(11) AUTO_INCREMENT PRIMARY KEY,
+    				userId INT(11),
+    				messageType VARCHAR(50),
+    				messageLevel ENUM (\'success\', \'info\', \'warning\', \'danger\') DEFAULT \'info\',
+    				message MEDIUMTEXT,
+    				isDismissed TINYINT(1) DEFAULT 0,
+    				INDEX (userId, isDismissed)   				
+				)'
+			]
+		],
+
+		'user_message_actions' => [
+			'title' => 'Add actions to user messaging',
+			'description' => 'Let users take actions (other than dismissing) on messages',
+			'sql' => [
+				'ALTER TABLE user_messages ADD COLUMN action1 VARCHAR(255)',
+				'ALTER TABLE user_messages ADD COLUMN action1Title VARCHAR(50)',
+				'ALTER TABLE user_messages ADD COLUMN action2 VARCHAR(255)',
+				'ALTER TABLE user_messages ADD COLUMN action2Title VARCHAR(50)',
+			]
+		],
+
+
 	);
 }

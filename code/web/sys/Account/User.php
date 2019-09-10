@@ -338,6 +338,7 @@ class User extends DataObject
 				require_once ROOT_DIR . '/sys/Account/UserLink.php';
 				$userLink = new UserLink();
 				$userLink->primaryAccountId = $this->id;
+				$userLink->linkingDisabled = "0";
 				$userLink->find();
 				while ($userLink->fetch()){
 					if (!$this->isBlockedAccount($userLink->linkedAccountId)) {
@@ -368,23 +369,30 @@ class User extends DataObject
 	function getLinkedUserObjects(){
 		if (is_null($this->linkedUserObjects)){
 			$this->linkedUserObjects = array();
-			/* var Library $library */
-			global $library;
-			if ($this->id && $library->allowLinkedAccounts){
-				require_once ROOT_DIR . '/sys/Account/UserLink.php';
-				$userLink = new UserLink();
-				$userLink->primaryAccountId = $this->id;
-				$userLink->find();
-				while ($userLink->fetch()){
-					if (!$this->isBlockedAccount($userLink->linkedAccountId)) {
-						$linkedUser = new User();
-						$linkedUser->id = $userLink->linkedAccountId;
-						if ($linkedUser->find(true)){
-							/** @var User $userData */
-							$this->linkedUserObjects[] = clone($linkedUser);
+			try {
+				/* var Library $library */
+				global $library;
+				if ($this->id && $library->allowLinkedAccounts) {
+					require_once ROOT_DIR . '/sys/Account/UserLink.php';
+					$userLink = new UserLink();
+					$userLink->primaryAccountId = $this->id;
+					$userLink->linkingDisabled = "0";
+					$userLink->find();
+					while ($userLink->fetch()) {
+						if (!$this->isBlockedAccount($userLink->linkedAccountId)) {
+							$linkedUser = new User();
+							$linkedUser->id = $userLink->linkedAccountId;
+							if ($linkedUser->find(true)) {
+								/** @var User $userData */
+								$this->linkedUserObjects[] = clone($linkedUser);
+							}
 						}
 					}
 				}
+			}catch (Exception $e){
+				//Tables are likely not fully updated
+				global $logger;
+				$logger->log("Error loading linked users $e", Logger::LOG_ERROR);
 			}
 		}
 		return $this->linkedUserObjects;
@@ -493,6 +501,7 @@ class User extends DataObject
 				require_once ROOT_DIR . '/sys/Account/UserLink.php';
 				$userLink = new UserLink();
 				$userLink->linkedAccountId = $this->id;
+				$userLink->linkingDisabled = "0";
 				$userLink->find();
 				while ($userLink->fetch()){
 					$linkedUser = new User();
@@ -1644,6 +1653,50 @@ class User extends DataObject
 			return $this->getCatalogDriver()->showMessagingSettings();
 		}else{
 			return false;
+		}
+	}
+
+	function getMessages(){
+		require_once ROOT_DIR . '/sys/Account/UserMessage.php';
+		$userMessage = new UserMessage();
+		$userMessage->userId = $this->id;
+		$userMessage->isDismissed = "0";
+		$messages = [];
+		$userMessage->find();
+		while ($userMessage->fetch()){
+			$messages[] = clone $userMessage;
+		}
+		return $messages;
+	}
+
+	function disableLinkingDueToPasswordChange()
+	{
+		require_once ROOT_DIR . '/sys/Account/UserMessage.php';
+		require_once ROOT_DIR . '/sys/Account/UserLink.php';
+
+		$userLinks = new UserLink();
+		$userLinks->linkedAccountId = $this->id;
+		if ($userLinks->find()){
+			$userMessage = new UserMessage();
+			$userMessage->userId = $this->id;
+			$userMessage->messageType = 'confirm_linked_accts';
+			$userMessage->message = "Other accounts have linked to your account.  Do you want to continue allowing them to link to you?";
+			$userMessage->action1Title = "Yes";
+			$userMessage->action1 = "return AspenDiscovery.Account.enableAccountLinking()";
+			$userMessage->action2Title = "No";
+			$userMessage->action2 = "return AspenDiscovery.Account.stopAccountLinking()";
+			$userMessage->messageLevel = 'warning';
+			$userMessage->insert();
+			while ($userLinks->fetch()){
+				$userMessage = new UserMessage();
+				$userMessage->userId = $userLinks->primaryAccountId;;
+				$userMessage->messageType = 'linked_acct_notify_pause_' . $this->id;
+				$userMessage->messageLevel = 'info';
+				$userMessage->message = "An account you are linking to changed their login. Account linking with them has been temporarily disabled.";
+				$userMessage->insert();
+				$userLinks->linkingDisabled = 1;
+				$userLinks->update();
+			}
 		}
 	}
 }

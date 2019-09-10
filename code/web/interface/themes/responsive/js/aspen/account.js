@@ -926,10 +926,37 @@ AspenDiscovery.Account = (function(){
 			let url = Globals.path + "/MyAccount/AJAX";
 			let params = {method:"endMasquerade"};
 			$.getJSON(url, params).done(function(){
-					location.href = Globals.path + '/MyAccount/Home';
+				location.href = Globals.path + '/MyAccount/Home';
 			}).fail(AspenDiscovery.ajaxFail);
 			return false;
-		}
+		},
 
+		dismissMessage(messageId) {
+			let url = Globals.path + "/MyAccount/AJAX";
+			let params = {
+				method: "dismissMessage",
+				messageId: messageId
+			};
+			$.getJSON(url, params).fail(AspenDiscovery.ajaxFail);
+			return false;
+		},
+
+		enableAccountLinking(){
+			let url = Globals.path + "/MyAccount/AJAX";
+			let params = {
+				method: "enableAccountLinking",
+			};
+			$.getJSON(url, params).fail(AspenDiscovery.ajaxFail);
+			return false;
+		},
+
+		stopAccountLinking(){
+			let url = Globals.path + "/MyAccount/AJAX";
+			let params = {
+				method: "stopAccountLinking",
+			};
+			$.getJSON(url, params).fail(AspenDiscovery.ajaxFail);
+			return false;
+		},
 	};
 }(AspenDiscovery.Account || {}));

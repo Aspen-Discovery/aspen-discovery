@@ -57,6 +57,19 @@
 			</div>
 		</div>
 
+		{foreach from=$messages item="message"}
+			<div class="alert alert-{$message->messageLevel} row alert-dismissable">
+				<button type="button" class="close" data-dismiss="alert" aria-label="Close" onclick="AspenDiscovery.Account.dismissMessage({$message->id})"><span aria-hidden="true">&times;</span></button>
+				{$message->message|translate}
+				{if !empty($message->action1Title) && !empty($message->action1)}
+					&nbsp;<a data-dismiss="alert" class="btn btn-default" onclick="{$message->action1}">{$message->action1Title}</a>
+				{/if}
+                {if !empty($message->action2Title) && !empty($message->action2)}
+	                &nbsp;<a data-dismiss="alert" class="btn btn-default" onclick="{$message->action2}">{$message->action2Title}</a>
+                {/if}
+			</div>
+		{/foreach}
+
 		{if $enableLanguageSelector}
 			{include file="language-selection-navbar.tpl"}
 		{/if}

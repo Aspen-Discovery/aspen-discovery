@@ -19,6 +19,15 @@ abstract class Action
 		$interface->setTemplate($mainContentTemplate);
 		$interface->setPageTitle($pageTitle, $translateTitle);
 		$interface->assign('moreDetailsTemplate', 'GroupedWork/moredetails-accordion.tpl');
+		global $isAJAX;
+		if (!$isAJAX && UserAccount::isLoggedIn()){
+			try {
+				$messages = UserAccount::getActiveUserObj()->getMessages();
+				$interface->assign('messages', $messages);
+			}catch (Exception $e){
+				//Messages table doesn't exist, ignore
+			}
+		}
 		$interface->display('layout.tpl');
 	}
 

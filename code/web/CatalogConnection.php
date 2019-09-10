@@ -139,6 +139,7 @@ class CatalogConnection
 				return null;
 			}
 		}else {
+			//Catalog is online, do the login
 			$user = $this->driver->patronLogin($username, $password, $validatedViaSSO);
 		}
 
@@ -257,6 +258,7 @@ class CatalogConnection
 	 * This is responsible for retrieving all fines by a specific patron.
 	 *
 	 * @param User $patron The patron from patronLogin
+	 * @param bool $includeMessages Whether or not messages should be included in the output
 	 *
 	 * @return mixed        Array of the patron's fines on success, AspenError
 	 * otherwise.
@@ -520,7 +522,7 @@ class CatalogConnection
             require_once ROOT_DIR . '/sys/ILS/ILSRecordUsage.php';
             $recordUsage = new ILSRecordUsage();
             $recordUsage->indexingProfileId = $indexingProfileId;
-            $recordUsage->recordId = $recordId;
+			$recordUsage->recordId = $recordId;
             $recordUsage->year = date('Y');
             $recordUsage->month = date('n');
             if ($recordUsage->find(true)) {
@@ -557,17 +559,14 @@ class CatalogConnection
 		return $errors = $this->driver->updatePatronInfo($user, $canUpdateContactInfo);
 	}
 
-	// TODO Millennium only at this time, set other drivers to return false.
 	function bookMaterial($patron, $recordId, $startDate, $startTime = null, $endDate = null, $endTime = null){
 		return $this->driver->bookMaterial($patron, $recordId, $startDate, $startTime, $endDate, $endTime);
 	}
 
-	// TODO Millennium only at this time, set other drivers to return false.
 	function cancelBookedMaterial($patron, $cancelIds){
 		return $this->driver->cancelBookedMaterial($patron, $cancelIds);
 	}
 
-	// TODO Millennium only at this time, set other drivers to return false.
 	function cancelAllBookedMaterial($patron){
 		return $this->driver->cancelAllBookedMaterial($patron);
 	}
@@ -616,6 +615,7 @@ class CatalogConnection
 
 	/**
 	 * @param ReadingHistoryEntry $readingHistoryDB
+	 * @param bool $forExport True if this is being ysed while exporting to Excel
 	 * @return mixed
 	 */
 	public function getHistoryEntryForDatabaseEntry($readingHistoryDB, $forExport = false) {
@@ -672,7 +672,7 @@ class CatalogConnection
 		}
 
 		//Update reading history based on current checkouts.  That way it never looks out of date
-		$checkouts = $patron->getCheckouts(false, 'all', false);
+		$checkouts = $patron->getCheckouts(false, 'all');
 		foreach ($checkouts as $checkout){
 			$source = $checkout['checkoutSource'];
 			if ($source == 'OverDrive'){
@@ -762,7 +762,7 @@ class CatalogConnection
 			return $this->driver->renewAll($patron);
 		}else{
 			//Get all list of all transactions
-			$currentTransactions = $this->driver->getCheckouts($patron, false);
+			$currentTransactions = $this->driver->getCheckouts($patron);
 			$renewResult = array(
 				'success' => true,
 				'message' => array(),
@@ -793,13 +793,7 @@ class CatalogConnection
 	}
 
 	public function placeVolumeHold($patron, $recordId, $volumeId, $pickupBranch) {
-		if ($this->checkFunction('placeVolumeHold')){
-			return $this->driver->placeVolumeHold($patron, $recordId, $volumeId, $pickupBranch);
-		}else{
-			return array(
-					'success' => false,
-					'message' => 'Volume level holds have not been implemented for this ILS.');
-		}
+		return $this->driver->placeVolumeHold($patron, $recordId, $volumeId, $pickupBranch);
 	}
 
 	public function importListsFromIls($patron){
@@ -822,15 +816,15 @@ class CatalogConnection
      * @return string[] a message to the user letting them know what happened
      */
     function updatePin($user, $oldPin, $newPin){
-    	return $this->driver->updatePin($user, $oldPin, $newPin);
+    	$result = $this->driver->updatePin($user, $oldPin, $newPin);
+    	if ($result['success']){
+    		$user->disableLinkingDueToPasswordChange();
+	    }
+    	return $result;
     }
 
     function requestPinReset($patronBarcode){
-        if ($this->checkFunction('requestPinReset')) {
-            return $this->driver->requestPinReset($patronBarcode);
-        }else{
-            return false;
-        }
+        return $this->driver->requestPinReset($patronBarcode);
     }
 
     function showOutstandingFines()
@@ -879,6 +873,7 @@ class CatalogConnection
 		return $this->driver->getNumMaterialsRequests($user);
 	}
 
+	/** @noinspection PhpUnused */
 	function getMaterialsRequests(User $user)
 	{
 		return $this->driver->getMaterialsRequests($user);
