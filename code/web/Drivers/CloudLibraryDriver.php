@@ -49,8 +49,18 @@ class CloudLibraryDriver extends AbstractEContentDriver
 				$checkout['recordId'] = (string)$checkoutFromCloudLibrary->ItemId;
 				$checkout['dueDate'] = (string)$checkoutFromCloudLibrary->EventEndDateInUTC;
 
-				//Checkouts cannot be renewed in CloudLibrary
-				$checkout['canRenew'] = false;
+				try {
+					$dueDate = new DateTime($checkout['dueDate'], new DateTimeZone('UTC'));
+					$timeDiff = $dueDate->getTimestamp() - time();
+					//Checkouts cannot be renewed 3 days before the title is due
+					if ($timeDiff < (3*24*60*60)){
+						$checkout['canRenew'] = true;
+					}else{
+						$checkout['canRenew'] = false;
+					}
+				} catch (Exception $e) {
+					$checkout['canRenew'] = false;
+				}
 
 				$recordDriver = new CloudLibraryRecordDriver((string)$checkoutFromCloudLibrary->ItemId);
 				if ($recordDriver->isValid()) {
@@ -111,7 +121,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 	 */
 	public function renewCheckout($patron, $recordId)
 	{
-		return false;
+		return $this->checkOutTitle($patron, $recordId);
 	}
 
 	/**

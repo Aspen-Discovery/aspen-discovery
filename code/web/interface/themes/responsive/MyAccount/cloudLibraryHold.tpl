@@ -1,5 +1,5 @@
 {strip}
-	<div class="result row" id="rbdigitalHold_{$record.id}">
+	<div class="result row" id="cloudLibraryHold_{$record.id}">
 		{* Cover column *}
 		{if $showCovers}
 		<div class="col-xs-4 col-sm-3">
@@ -80,7 +80,10 @@
 				{* Actions for Title *}
 				<div class="col-xs-9 col-sm-8 col-md-4 col-lg-3">
 					<div class="btn-group btn-group-vertical btn-block">
-						<button onclick="return AspenDiscovery.RBdigital.cancelHold('{$record.userId}', '{$record.id}');" class="btn btn-sm btn-warning">Cancel Hold</button>
+                        {if $section == 'available'}
+                            <button onclick="return AspenDiscovery.CloudLibrary.checkOutTitle('{$record.userId}', '{$record.id}');" class="btn btn-sm btn-warning">{translate text="Checkout"}</button>
+                        {/if}
+						<button onclick="return AspenDiscovery.CloudLibrary.cancelHold('{$record.userId}', '{$record.id}');" class="btn btn-sm btn-warning">Cancel Hold</button>
 					</div>
 
 				</div>

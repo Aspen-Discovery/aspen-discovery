@@ -8727,6 +8727,9 @@ ul.account-submenu {
   padding-left: 1em;
   text-indent: -1em;
 }
+.btn-wrap {
+  white-space: normal !important;
+}
 #home-page-search {
   background-color: #00a4e3;
   padding: 20px 0 10px;

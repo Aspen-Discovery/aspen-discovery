@@ -207,12 +207,11 @@ AspenDiscovery.CloudLibrary = (function(){
                 success: function(data){
                     if (data.success) {
                         AspenDiscovery.showMessage("Title Returned", data.message, true);
-                        $("#cloudLibraryCheckout_" + recordId).hide();
+                        $(".cloudLibraryCheckout_" + recordId).hide();
                         AspenDiscovery.Account.loadMenuData();
                     }else{
                         AspenDiscovery.showMessage("Error Returning Title", data.message, true);
                     }
-
                 },
                 dataType: 'json',
                 async: false,

@@ -33,12 +33,6 @@
 			{/foreach}
 		</div>
 
-		{if $source=='all' || $source=='overdrive'}
-			<p class="alert alert-info">
-				{translate text='CheckedOut_Econtent_notice' defaultText="eContent from OverDrive can be renewed within the OverDrive app starting 3 days before the due date if the title is not on hold for patrons. You may need to download the title again after you renew it."}
-			</p>
-		{/if}
-
 		<br/>
 
 		<div class="btn-group">

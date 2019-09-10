@@ -8,26 +8,13 @@ class OverDrive_AJAX extends Action {
 
 	function launch() {
 		$method = $_GET['method'];
-		if (in_array($method, array('checkOutTitle', 'placeHold', 'cancelHold', 'getHoldPrompts', 'returnCheckout', 'selectOverDriveDownloadFormat', 'getDownloadLink', 'getCheckOutPrompts'))){
-			header('Content-type: text/plain');
+		if (method_exists($this, $method)) {
+			header('Content-type: application/json');
 			header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 			header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
 			echo $this->$method();
-		}else{
-			header ('Content-type: text/xml');
-			header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
-			header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-
-			$xmlResponse = '<?xml version="1.0" encoding="UTF-8"?' . ">\n";
-			$xmlResponse .= "<AJAXResponse>\n";
-			if (method_exists($this, $method)) {
-				$xmlResponse .= $this->$_GET['method']();
-			} else {
-				$xmlResponse .= '<Error>Invalid Method</Error>';
-			}
-			$xmlResponse .= '</AJAXResponse>';
-
-			echo $xmlResponse;
+		}else {
+			echo json_encode(array('error'=>'invalid_method'));
 		}
 	}
 
@@ -63,6 +50,25 @@ class OverDrive_AJAX extends Action {
 			}
 		}else{
 			return json_encode(array('result'=>false, 'message'=>'You must be logged in to place a hold.'));
+		}
+	}
+
+	function renewTitle(){
+		$user = UserAccount::getLoggedInUser();
+		$overDriveId = $_REQUEST['overDriveId'];
+		if ($user){
+			$patronId = $_REQUEST['patronId'];
+			$patron = $user->getUserReferredTo($patronId);
+			if ($patron) {
+				require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+                $driver = new OverDriveDriver();
+				$result = $driver->renewCheckout($patron, $overDriveId);
+				return json_encode($result);
+			}else{
+				return json_encode(array('result'=>false, 'message'=>'Sorry, it looks like you don\'t have permissions to modify checkouts for that user.'));
+			}
+		}else{
+			return json_encode(array('result'=>false, 'message'=>'You must be logged in to renew titles.'));
 		}
 	}
 

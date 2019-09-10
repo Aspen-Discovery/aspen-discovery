@@ -950,7 +950,7 @@ class OverDriveDriver extends AbstractEContentDriver{
      */
     public function renewCheckout($patron, $recordId)
     {
-        return false;
+        return $this->checkOutTitle($patron, $recordId);
     }
 
     /**

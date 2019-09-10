@@ -1,5 +1,5 @@
 {strip}
-	<div id="cloudLibraryCheckout_{$record.recordId|escape}" class="result row">
+	<div class="result row cloudLibraryCheckout_{$record.recordId|escape}">
 
 		{* Cover Column *}
 		{if $showCovers}
@@ -93,7 +93,7 @@
 				<div class="col-xs-9 col-sm-8 col-md-4 col-lg-3">
 					<div class="btn-group btn-group-vertical btn-block">
 						{if !empty($record.accessOnlineUrl)}
-							<a href="{$record.accessOnlineUrl}" target="_blank" class="btn btn-sm btn-primary">{translate text='Open in Cloud Library'}</a>
+							<a href="{$record.accessOnlineUrl}" target="_blank" class="btn btn-sm btn-primary btn-wrap">{translate text='Open in Cloud Library'}</a>
 						{/if}
 						{if $record.canRenew}
 							<a href="#" onclick="return AspenDiscovery.CloudLibrary.renewCheckout('{$record.userId}', '{$record.recordId}');" class="btn btn-sm btn-info">{translate text='Renew Checkout'}</a>

@@ -205,6 +205,27 @@ AspenDiscovery.OverDrive = (function(){
 			AspenDiscovery.OverDrive.doOverDriveHold(patronId, overdriveId, overdriveEmail, promptForOverdriveEmail);
 		},
 
+		renewCheckout: function(patronId, recordId){
+			let url = Globals.path + "/OverDrive/AJAX?method=renewCheckout&patronId=" + patronId + "&overDriveId=" + recordId;
+			$.ajax({
+				url: url,
+				cache: false,
+				success: function(data){
+					if (data.success) {
+						AspenDiscovery.showMessage("Title Renewed", data.message, true);
+					}else{
+						AspenDiscovery.showMessage("Unable to Renew Title", data.message, true);
+					}
+
+				},
+				dataType: 'json',
+				async: false,
+				error: function(){
+					AspenDiscovery.showMessage("Error Renewing Checkout", "An error occurred processing your request in OverDrive.  Please try again in a few minutes.", false);
+				}
+			});
+		},
+
 		returnCheckout: function (patronId, overDriveId){
 			if (confirm('Are you sure you want to return this title?')){
 				AspenDiscovery.showMessage("Returning Title", "Returning your title in OverDrive.  This may take a minute.");

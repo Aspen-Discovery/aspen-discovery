@@ -95,9 +95,7 @@
 						<div class="result-label col-md-4 col-lg-3">{translate text='Download'}</div>
 						<div class="result-value col-md-8 col-lg-9">
 							{if $record.formatSelected}
-								You downloaded the
-								<strong>{$record.selectedFormat.name}</strong>
-								format of this title.
+								{translate text="overdrive_locked_in_format" defaultText="You downloaded the <strong>%1%</strong> format of this title." 1=$record.selectedFormat.name}
 							{else}
 								<div class="form-inline">
 									<label for="downloadFormat_{$record.overDriveId}">{translate text="Select one format to download."}</label>
@@ -129,6 +127,9 @@
 						{/if}
 						{if $record.formatSelected && empty($record.overdriveVideo)}
 							<a href="#" onclick="return AspenDiscovery.OverDrive.followOverDriveDownloadLink('{$record.userId}', '{$record.overDriveId}', '{$record.selectedFormat.format}')" class="btn btn-sm btn-primary">{translate text="Download&nbsp;Again"}</a>
+						{/if}
+						{if $record.canRenew}
+							<a href="#" onclick="return AspenDiscovery.OverDrive.renewCheckout('{$record.userId}', '{$record.overDriveId}');" class="btn btn-sm btn-info">{translate text='Renew Checkout'}</a>
 						{/if}
 						{if $record.earlyReturn}
 							<a href="#" onclick="return AspenDiscovery.OverDrive.returnCheckout('{$record.userId}', '{$record.overDriveId}');" class="btn btn-sm btn-warning">{translate text="Return&nbsp;Now"}</a>
