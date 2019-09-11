@@ -3,8 +3,6 @@ require_once ROOT_DIR . '/sys/DB/DataObject.php';
 
 class AspenError extends DataObject
 {
-    static $errorCallback = null;
-
     public $__table = 'errors';
     public $id;
 	public $module;
@@ -130,7 +128,11 @@ class AspenError extends DataObject
         global $aspenUsage;
         if (!empty($aspenUsage)) {
 	        $aspenUsage->pagesWithErrors++;
-	        $aspenUsage->update();
+	        try {
+		        $aspenUsage->update();
+	        }catch(Exception $e){
+	        	//Table does not exist yet
+	        }
         }
 
 	    try{

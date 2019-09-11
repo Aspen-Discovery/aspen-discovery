@@ -10,7 +10,6 @@ class MyAccount_Login extends Action
 		global $module;
 		global $action;
 		global $library;
-		global $configArray;
 
 		// We should never access this module directly -- this is called by other
 		// actions as a support function.  If accessed directly, just redirect to
