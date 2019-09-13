@@ -1567,22 +1567,20 @@ class Koha extends AbstractIlsDriver {
 
 		$mandatoryFields = array_flip(explode(',', $kohaPreferences['OPACSuggestionMandatoryFields']));
 
-		global $interface;
-		require_once ROOT_DIR . '/sys/Indexing/TranslationMap.php';
-		$itypeMap = new TranslationMap();
-		$itypeMap->name = 'itype';
-		$itypeMap->indexingProfileId = $this->getIndexingProfile()->id;
-		$iTypes = [];
-		if ($itypeMap->find(true)){
-			/** @var TranslationMapValue $value */
-			/** @noinspection PhpUndefinedFieldInspection */
-			foreach ($itypeMap->translationMapValues as $value){
-				$iTypes[$value->value] = $value->translation;
-			}
+		/** @noinspection SqlResolve */
+		$itemTypesSQL = "SELECT * FROM authorised_values where category = 'SUGGEST_FORMAT' order by lib_opac ASC";
+		$itemTypesRS = mysqli_query($this->dbConnection, $itemTypesSQL);
+		$itemTypes = [];
+		while ($curRow = $itemTypesRS->fetch_assoc()){
+			$itemTypes[$curRow['authorised_value']] = $curRow['lib_opac'];
 		}
+
+		global $interface;
+
 		$pickupLocations = [];
 		$locations = new Location();
 		$locations->orderBy('displayName');
+		$locations->whereAdd('validHoldPickupBranch != 2');
 		$locations->find();
 		while ($locations->fetch()) {
 			$pickupLocations[$locations->code] = $locations->displayName;
@@ -1599,7 +1597,7 @@ class Koha extends AbstractIlsDriver {
 			array('property'=>'collectiontitle', 'type'=>'text', 'label'=>'Collection', 'description'=>'', 'maxLength'=>80, 'required' => false),
 			array('property'=>'place', 'type'=>'text', 'label'=>'Publication place', 'description'=>'', 'maxLength'=>80, 'required' => false),
 			array('property'=>'quantity', 'type'=>'text', 'label'=>'Quantity', 'description'=>'', 'maxLength'=>4, 'required' => false),
-			array('property'=>'itemtype', 'type'=>'enum', 'values'=>$iTypes, 'label'=>'Item type', 'description'=>'', 'required' => false),
+			array('property'=>'itemtype', 'type'=>'enum', 'values'=>$itemTypes, 'label'=>'Item type', 'description'=>'', 'required' => false),
 			array('property'=>'branchcode', 'type'=>'enum', 'values'=>$pickupLocations, 'label'=>'Library', 'description'=>'', 'required' => false),
 			array('property'=>'note', 'type'=>'textarea', 'label'=>'Note', 'description'=>'', 'required' => false),
 		];
