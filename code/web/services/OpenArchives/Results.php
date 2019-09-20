@@ -9,7 +9,6 @@ class OpenArchives_Results extends Action {
     function launch()
     {
         global $interface;
-        global $configArray;
         global $timer;
 	    global $aspenUsage;
 	    $aspenUsage->openArchivesSearches++;
@@ -30,11 +29,6 @@ class OpenArchives_Results extends Action {
             echo $searchObject->buildRSS();
             // And we're done
             exit();
-        }else if ($searchObject->getView() == 'excel'){
-            // Throw the Excel spreadsheet to screen for download
-            echo $searchObject->buildExcel();
-            // And we're done
-            exit();
         }
         $displayMode = $searchObject->getView();
         if ($displayMode == 'covers') {
@@ -45,7 +39,6 @@ class OpenArchives_Results extends Action {
         //   Those we can construct BEFORE the search is executed
         $interface->assign('sortList',   $searchObject->getSortList());
         $interface->assign('rssLink',    $searchObject->getRSSUrl());
-        $interface->assign('excelLink',  $searchObject->getExcelUrl());
 
         // Hide Covers when the user has set that setting on the Search Results Page
         $this->setShowCovers();

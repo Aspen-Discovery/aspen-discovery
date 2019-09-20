@@ -683,4 +683,13 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 	{
 		return $this->indexEngine->getRecord($id, $this->getFieldsToReturn());
 	}
+
+	/**
+	 * Set whether or not this is a primary search.  If it is, we will show links to it in search result debugging
+	 * @param boolean $flag
+	 */
+	public function setPrimarySearch($flag){
+		parent::setPrimarySearch($flag);
+		$this->indexEngine->isPrimarySearch = $flag;
+	}
 }

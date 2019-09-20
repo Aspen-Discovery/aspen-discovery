@@ -42,7 +42,10 @@ class SideFacets implements RecommendationInterface
         }else if ($searchObject->getSearchType() == 'lists') {
             $config           = getExtraConfigArray('listsFacets');
             $this->mainFacets = isset($config[$mainSection]) ? $config[$mainSection] : array();
-        } elseif ($searchObject->getSearchType() == 'islandora'){
+		}else if ($searchObject->getSearchType() == 'websites') {
+			$config           = getExtraConfigArray('websiteFacets');
+			$this->mainFacets = isset($config[$mainSection]) ? $config[$mainSection] : array();
+		} elseif ($searchObject->getSearchType() == 'islandora'){
 			$searchLibrary = Library::getActiveLibrary();
 			$hasArchiveSearchLibraryFacets = ($searchLibrary != null && (count($searchLibrary->archiveSearchFacets) > 0));
 			if ($hasArchiveSearchLibraryFacets){

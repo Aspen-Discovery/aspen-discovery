@@ -212,4 +212,22 @@ public class StringUtils {
         return author;
     }
 
+    public static String getInputFromCommandLine(String prompt) {
+        //Prompt for the work to process
+        System.out.print(prompt + ": ");
+
+        //  open up standard input
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+
+        //  read the work from the command-line; need to use try/catch with the
+        //  readLine() method
+        String value = null;
+        try {
+            value = br.readLine().trim();
+        } catch (IOException ioe) {
+            System.out.println("IO error trying to read " + prompt);
+            System.exit(1);
+        }
+        return value;
+    }
 }

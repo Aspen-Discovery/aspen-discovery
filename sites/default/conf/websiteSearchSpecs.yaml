@@ -1,0 +1,23 @@
+WebsiteKeyword:
+  QueryFields:
+    - title:
+      - [exact, 1000]
+      - [and, 250]
+    - table_of_contents:
+      - [exact, 600]
+      - [and, 250]
+    - description:
+      - [exact, 500]
+      - [and, 125]
+    - keywords:
+      - [exact, 300]
+      - [and, 50]
+
+WebsiteTitle:
+  QueryFields:
+    - title:
+      - [exact, 1000]
+      - [and, 250]
+    - table_of_contents:
+      - [exact, 1000]
+      - [and, 250]

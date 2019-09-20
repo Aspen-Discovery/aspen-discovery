@@ -172,6 +172,9 @@ class Admin_AJAX extends Action {
         }elseif ($source == 'sideload'){
 	        require_once ROOT_DIR . '/sys/Indexing/SideLoadLogEntry.php';
 	        $extractLog = new SideLoadLogEntry();
+        }elseif ($source == 'website'){
+	        require_once ROOT_DIR . '/sys/WebsiteIndexing/WebsiteIndexLogEntry.php';
+	        $extractLog = new WebsiteIndexLogEntry();
         }
 
         if ($extractLog == null){
