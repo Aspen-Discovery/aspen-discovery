@@ -4,7 +4,7 @@ require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/sys/SystemLogging/SlowPage.php';
 require_once ROOT_DIR . '/sys/SystemLogging/SlowAjaxRequest.php';
 
-class Admin_SlownessReport extends Admin_Admin
+class Admin_PerformanceReport extends Admin_Admin
 {
 	function launch()
 	{
@@ -45,7 +45,7 @@ class Admin_SlownessReport extends Admin_Admin
 		ksort($slowAsyncRequests);
 		$interface->assign('slowAsyncRequests', $slowAsyncRequests);
 
-		$this->display('slowness_report.tpl', 'Slowness Report');
+		$this->display('performance_report.tpl', 'Performance Report');
 	}
 
 	function getAllowableRoles(){
