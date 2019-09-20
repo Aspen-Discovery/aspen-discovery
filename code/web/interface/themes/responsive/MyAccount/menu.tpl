@@ -289,7 +289,7 @@
 				{/if}
 
 				{if (array_key_exists('userAdmin', $userRoles) || array_key_exists('opacAdmin', $userRoles))}
-					{if in_array($action, array('Administrators', 'DBMaintenance', 'UsageDashboard', 'SlownessReport', 'ErrorReport', 'PHPInfo', 'OpCacheInfo', 'Variables', 'CronLog'))
+					{if in_array($action, array('Administrators', 'DBMaintenance', 'UsageDashboard', 'PerformanceReport', 'ErrorReport', 'PHPInfo', 'OpCacheInfo', 'Variables', 'CronLog'))
 					|| ($module == 'Admin' && $action == 'Home')}
 						{assign var="curSection" value=true}
 					{else}
@@ -312,7 +312,7 @@
 									<div class="adminMenuLink"><a href="{$path}/Admin/DBMaintenance">{translate text="DB Maintenance"}</a></div>
 									<div class="adminMenuLink"><a href="{$path}/Admin/UsageDashboard">{translate text="Usage Dashboard"}</a></div>
 									<div class="adminMenuLink"><a href="{$path}/Admin/ErrorReport">{translate text="Error Report"}</a></div>
-									<div class="adminMenuLink"><a href="{$path}/Admin/SlownessReport">{translate text="Slowness Report"}</a></div>
+									<div class="adminMenuLink"><a href="{$path}/Admin/PerformanceReport">{translate text="Performance Report"}</a></div>
 									<div class="adminMenuLink"><a href="{$path}/Admin/SendGridSettings">{translate text="SendGrid Settings"}</a></div>
 									<div class="adminMenuLink"><a href="{$path}/Admin/Home">{translate text="Solr Information"}</a></div>
 									<div class="adminMenuLink"><a href="{$path}/Admin/PHPInfo">{translate text="PHP Information"}</a></div>
@@ -604,6 +604,30 @@
 						</div>
 					</div>
 				{/if}
+
+                {if (array_key_exists('archives', $userRoles) || array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles))}
+                    {if $module == 'Websites' && in_array($action, array('Settings', 'Dashboard', 'IndexingLog'))}
+                        {assign var="curSection" value=true}
+                    {else}
+                        {assign var="curSection" value=false}
+                    {/if}
+					<div class="panel{if $curSection} active{/if}">
+						<a href="#websitesMenu" data-toggle="collapse" data-parent="#adminMenuAccordion">
+							<div class="panel-heading">
+								<div class="panel-title">
+                                    {translate text="Website Indexing"}
+								</div>
+							</div>
+						</a>
+						<div id="websitesMenu" class="panel-collapse collapse {if $curSection}in{/if}">
+							<div class="panel-body">
+								<div class="adminMenuLink"><a href="{$path}/Websites/Settings">{translate text="Settings"}</a></div>
+								<div class="adminMenuLink"><a href="{$path}/Websites/IndexingLog">{translate text="Indexing Log"}</a></div>
+								<div class="adminMenuLink"><a href="{$path}/Websites/Dashboard">{translate text="Dashboard"}</a></div>
+							</div>
+						</div>
+					</div>
+                {/if}
 
 				{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('circulationReports', $userRoles))}
 					{if $module == 'Circa'}
