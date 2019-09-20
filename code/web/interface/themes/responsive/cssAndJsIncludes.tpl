@@ -19,7 +19,7 @@
 	{/if}
 	{if $debugJs}
 
-		<script src="{$path}/js/jquery-1.9.1.min.js?v={$gitBranch|urlencode}"></script>
+		<script src="{$path}/js/jquery-1.11.0.min.js?v={$gitBranch|urlencode}"></script>
 		{* Load Libraries*}
 		<script src="{$path}/interface/themes/responsive/js/lib/jquery.tablesorter.min.js?v={$gitBranch|urlencode}"></script>
 		<script src="{$path}/interface/themes/responsive/js/lib/jquery.tablesorter.pager.min.js?v={$gitBranch|urlencode}"></script>
