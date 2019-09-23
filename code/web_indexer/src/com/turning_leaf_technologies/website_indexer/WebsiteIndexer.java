@@ -1,6 +1,7 @@
 package com.turning_leaf_technologies.website_indexer;
 
 import com.turning_leaf_technologies.strings.StringUtils;
+import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -134,13 +135,15 @@ class WebsiteIndexer {
     }
 
     private void processPage(String pageToProcess) {
-        //TODO: Add appropriate headers
-        CloseableHttpClient httpclient = HttpClients.createDefault();
-        HttpGet httpGet = new HttpGet(pageToProcess);
         try {
+            //TODO: Add appropriate headers
+            CloseableHttpClient httpclient = HttpClients.createDefault();
+            HttpGet httpGet = new HttpGet(pageToProcess);
             try (CloseableHttpResponse response1 = httpclient.execute(httpGet)) {
                 StatusLine status = response1.getStatusLine();
                 if (status.getStatusCode() == 200) {
+                    Header lastModifiedHeader = response1.getFirstHeader("Last-Modified");
+                    //TODO: check last modified date
                     HttpEntity entity1 = response1.getEntity();
                     ContentType contentType = ContentType.getOrDefault(entity1);
                     String mimeType = contentType.getMimeType();
@@ -192,9 +195,12 @@ class WebsiteIndexer {
                                         if (!linkUrl.startsWith(siteUrl)) {
                                             continue;
                                         }
-                                    } else if (linkUrl.startsWith("mailto")){
+                                    } else if (linkUrl.startsWith("mailto:") || linkUrl.startsWith("tel:")){
                                         continue;
                                     } else {
+                                        if (!linkUrl.startsWith("/")){
+                                            linkUrl = "/" + siteUrl;
+                                        }
                                         linkUrl = siteUrl + linkUrl;
                                     }
                                     if (!allLinks.containsKey(linkUrl)) {
