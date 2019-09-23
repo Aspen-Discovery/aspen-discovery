@@ -10,6 +10,8 @@ class Koha extends AbstractIlsDriver {
 	/** @var CurlWrapper */
 	private $curlWrapper;
 	/** @var CurlWrapper */
+	private $apiCurlWrapper;
+	/** @var CurlWrapper */
 	private $opacCurlWrapper;
 
 	/**
@@ -448,7 +450,7 @@ class Koha extends AbstractIlsDriver {
 		global $timer;
 		$timer->logTime("Created Koha Driver");
 		$this->curlWrapper = new CurlWrapper();
-
+		$this->apiCurlWrapper = new CurlWrapper();
 	}
 
 	function __destruct(){
@@ -1104,70 +1106,43 @@ class Koha extends AbstractIlsDriver {
             'message' => 'Unable to freeze your hold.'
         ];
 
-        $this->loginToKohaOpac($patron);
+        $oauthToken = $this->getOAuthToken();
+        if ($oauthToken == false){
+	        $result['message'] = 'Unable to authenticate with the ILS.  Please try again later or contact the library.';
+        }else{
+			$apiUrl = $this->getWebServiceUrl() . "/api/v1/holds/$itemToFreezeId/suspension";
+	        //$apiUrl = $this->getWebServiceURL() . "/api/v1/holds?patron_id={$patron->username}";
+	        $postParams = "";
+	        if (strlen($dateToReactivate) > 0){
+		        $postParams = [];
+			    $postParams['end_date'] = $dateToReactivate;
+		        $postParams = json_encode($postParams);
+	        }
 
-		$catalogUrl = $this->accountProfile->vendorOpacUrl;
-		$this->getKohaPage($catalogUrl . '/cgi-bin/koha/opac-user.pl#opac-user-holds');
-
-		$reactivateDate = $this->aspenDateToKohaDate($dateToReactivate);
-		$postVariables = [
-			'reserve_id' => $itemToFreezeId,
-			'suspend_until' => $reactivateDate,
-			'submit' => '',
-		];
-		//This doesn't actually return status so we have to assume it works
-		$headers = [
-			'Content-Type: application/x-www-form-urlencoded',
-			'Referer: ' . $catalogUrl . '/cgi-bin/koha/opac-user.pl'
-		];
-		$this->opacCurlWrapper->addCustomHeaders($headers, false);
-		$postResults = $this->postToKohaPage($catalogUrl . '/cgi-bin/koha/opac-modrequest-suspend.pl', $postVariables);
-		if ($postResults != 'Internal Server Error'){
-			$result = [
-				'success' => true,
-				'message' => 'The hold has been frozen.'
-			];
-		}else{
-			$result['message'] .= ' ' . $postResults;
-		}
-
-
-//        $oauthToken = $this->getOAuthToken();
-//        if ($oauthToken == false){
-//	        $result['message'] = 'Unable to authenticate with the ILS.  Please try again later or contact the library.';
-//        }else{
-//          $apiUrl = $this->getWebServiceUrl() . "/api/v1/holds/{$itemToFreezeId}/suspension";
-//          if (strlen($dateToReactivate) > 0){
-//	            $postParams = [
-//		            'end_date' => $dateToReactivate
-//	            ];
-//	            $postParams = json_encode($postParams);
-//          }else{
-//        	    $postParams = '';
-//          }
-//	        $this->curlWrapper->addCustomHeaders([
-//		        'Accept: application/json',
-//		        'Content-Type: application/x-www-form-urlencoded',
-//		        'Authorization: Bearer ' . $oauthToken,
-//		        //'Authorization: Basic ' . base64_encode($this->accountProfile->oAuthClientId . ':' . $this->accountProfile->oAuthClientSecret),
-//	        ], true);
-//	        $response = $this->curlWrapper->curlPostPage($apiUrl, $postParams);
-//	        if(!$response) {
-//		        return $result;
-//	        }else{
-//		        $hold_response = json_decode($response, false);
-//		        if (isset($hold_response->error)){
-//			        $result['message'] = $hold_response->error;
-//			        $result['success'] = true;
-//		        }else{
-//			        print_r($hold_response);
-//			        if ($hold_response->suspended && $hold_response->suspended == true) {
-//				        $result['message'] = 'Your hold was ' . translate('frozen') .' successfully.';
-//				        $result['success'] = true;
-//			        }
-//		        }
-//	        }
-//        }
+			$this->apiCurlWrapper->addCustomHeaders([
+				'Authorization: Bearer ' . $oauthToken,
+				'User-Agent: Aspen Discovery',
+				'Accept: */*',
+				'Cache-Control: no-cache',
+			    'Content-Type: application/json',
+				'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
+				'Accept-Encoding: gzip, deflate',
+			], true);
+			$response = $this->apiCurlWrapper->curlPostBodyData($apiUrl, $postParams, false);
+	        //$response = $this->curlWrapper->curlGetPage($apiUrl);
+			if(!$response) {
+			    return $result;
+			}else{
+			    $hold_response = json_decode($response, false);
+			    if (isset($hold_response->error)){
+			        $result['message'] = $hold_response->error;
+			        $result['success'] = true;
+			    }else{
+		            $result['message'] = 'Your hold was ' . translate('frozen') .' successfully.';
+			        $result['success'] = true;
+			    }
+			}
+        }
 
         return $result;
 	}
@@ -1178,29 +1153,31 @@ class Koha extends AbstractIlsDriver {
 			'message' => 'Unable to thaw your hold.'
 		];
 
-		$this->loginToKohaOpac($patron);
-
-		$catalogUrl = $this->accountProfile->vendorOpacUrl;
-		$this->getKohaPage($catalogUrl . '/cgi-bin/koha/opac-user.pl#opac-user-holds');
-
-		$postVariables = [
-			'reserve_id' => $itemToThawId,
-			'submit' => '',
-		];
-		$headers = [
-			'Content-Type: application/x-www-form-urlencoded'
-		];
-		$this->opacCurlWrapper->addCustomHeaders($headers, false);
-		//This doesn't actually return status so we have to assume it works
-		$postResults = $this->postToKohaPage($catalogUrl . '/cgi-bin/koha/opac-modrequest-suspend.pl', $postVariables);
-		if ($postResults != 'Internal Server Error'){
-			$result = [
-				'success' => true,
-				'message' => 'The hold has been thawed.'
-			];
+		$oauthToken = $this->getOAuthToken();
+		if ($oauthToken == false){
+			$result['message'] = 'Unable to authenticate with the ILS.  Please try again later or contact the library.';
 		}else{
-			$result['message'] .= ' ' . $postResults;
+			$apiUrl = $this->getWebServiceUrl() . "/api/v1/holds/$itemToThawId/suspension";
+
+			$this->apiCurlWrapper->addCustomHeaders([
+				'Authorization: Bearer ' . $oauthToken,
+				'User-Agent: Aspen Discovery',
+				'Accept: */*',
+				'Cache-Control: no-cache',
+				'Content-Type: application/json',
+				'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
+				'Accept-Encoding: gzip, deflate',
+			], true);
+			$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'DELETE', null);
+			if (strlen($response) > 0){
+				$result['message'] = $response;
+				$result['success'] = true;
+			}else{
+				$result['message'] = 'Your hold has been thawed successfully.';
+				$result['success'] = true;
+			}
 		}
+
         return $result;
 	}
 
