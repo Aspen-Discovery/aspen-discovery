@@ -178,7 +178,8 @@ class CurlWrapper {
         }elseif ($httpMethod == 'POST') {
             curl_setopt($this->curl_connection, CURLOPT_POST, true);
         }elseif ($httpMethod == 'PUT') {
-            curl_setopt($this->curl_connection, CURLOPT_PUT, true);
+            //curl_setopt($this->curl_connection, CURLOPT_PUT, true);
+	        curl_setopt($this->curl_connection, CURLOPT_CUSTOMREQUEST, "PUT");
         }else {
             curl_setopt($this->curl_connection, CURLOPT_CUSTOMREQUEST, $httpMethod);
         }
@@ -208,7 +209,7 @@ class CurlWrapper {
         return $this->headers;
     }
 
-    protected function setupDebugging(){
+    public function setupDebugging(){
 		$result1 = curl_setopt($this->curl_connection, CURLOPT_HEADER, true);
 		$result2 = curl_setopt($this->curl_connection, CURLOPT_VERBOSE, true);
 		return $result1 && $result2;

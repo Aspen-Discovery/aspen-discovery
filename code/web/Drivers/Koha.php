@@ -24,80 +24,165 @@ class Koha extends AbstractIlsDriver {
 		if (!$canUpdateContactInfo) {
 			$updateErrors[] = "Profile Information can not be updated.";
 		}else{
-			$catalogUrl = $this->accountProfile->vendorOpacUrl;
+			//TODO: Want modifications to go through the patron approval process rather than
+			//Having them update directly.  Once that works, switch to true
+			$updateUsingAPI = false;
+			if ($updateUsingAPI){
+				$postVariables = [
+					'address' => $_REQUEST['borrower_address'],
+					'address2' => $_REQUEST['borrower_address2'],
+					'altaddress_address' => $_REQUEST['borrower_B_address'],
+					'altaddress_address2' => $_REQUEST['borrower_B_address2'],
+					'altaddress_city' => $_REQUEST['borrower_B_city'],
+					'altaddress_country' => $_REQUEST['borrower_B_country'],
+					'altaddress_email' => $_REQUEST['borrower_B_email'],
+					//altaddress_notes
+					'altaddress_phone' => $_REQUEST['borrower_B_phone'],
+					'altaddress_postal_code' => $_REQUEST['borrower_B_zipcode'],
+					'altaddress_state' => $_REQUEST['borrower_B_state'],
+					//altaddress_street_number
+					//altaddress_street_type
+					'altcontact_address' => $_REQUEST['borrower_altcontactaddress1'],
+					'altcontact_address2' => $_REQUEST['borrower_altcontactaddress2'],
+					'altcontact_city' => $_REQUEST['borrower_altcontactaddress3'],
+					'altcontact_country' => $_REQUEST['borrower_altcontactcountry'],
+					'altcontact_firstname' => $_REQUEST['borrower_altcontactfirstname'],
+					'altcontact_phone' => $_REQUEST['borrower_altcontactphone'],
+					'altcontact_postal_code' => $_REQUEST['borrower_altcontactzipcode'],
+					'altcontact_state' => $_REQUEST['borrower_altcontactstate'],
+					'altcontact_surname' => $_REQUEST['borrower_altcontactsurname'],
+					'category_id' => $patron->patronType,
+					'city' => $_REQUEST['borrower_city'],
+					'country' => $_REQUEST['borrower_country'],
+					'date_of_birth' => $this->aspenDateToKohaDate($_REQUEST['borrower_dateofbirth']),
+					'email' => $_REQUEST['borrower_email'],
+					'fax' => $_REQUEST['borrower_fax'],
+					'firstname' => $_REQUEST['borrower_firstname'],
+					'gender' => $_REQUEST['borrower_sex'],
+					'initials' => $_REQUEST['borrower_initials'],
+					'library_id' => $_REQUEST['borrower_branchcode'],
+					'mobile' => $_REQUEST['borrower_mobile'],
+					'opac_notes' => $_REQUEST['borrower_contactnote'],
+					'other_name' => $_REQUEST['borrower_othernames'],
+					'phone' => $_REQUEST['borrower_phone'],
+					'postal_code' => $_REQUEST['borrower_zipcode'],
+					'secondary_email' => $_REQUEST['borrower_emailpro'],
+					'secondary_phone' => $_REQUEST['borrower_phonepro'],
+					'state' => $_REQUEST['borrower_state'],
+					'surname' => $_REQUEST['borrower_surname'],
+					'title' => $_REQUEST['borrower_title'],
+				];
 
-			$this->loginToKohaOpac($patron);
+				$oauthToken = $this->getOAuthToken();
+				if ($oauthToken == false){
+					$result['message'] = 'Unable to authenticate with the ILS.  Please try again later or contact the library.';
+				}else{
+					$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/{$patron->username}";
+					//$apiUrl = $this->getWebServiceURL() . "/api/v1/holds?patron_id={$patron->username}";
+					$postParams = json_encode($postVariables);
 
-			$updatePage = $this->getKohaPage($catalogUrl . '/cgi-bin/koha/opac-memberentry.pl');
-			//Get the csr token
-			$csr_token = '';
-			if (preg_match('%<input type="hidden" name="csrf_token" value="(.*?)" />%s', $updatePage, $matches)) {
-				$csr_token = $matches[1];
-			}
+					$this->apiCurlWrapper->addCustomHeaders([
+						'Authorization: Bearer ' . $oauthToken,
+						'User-Agent: Aspen Discovery',
+						'Accept: */*',
+						'Cache-Control: no-cache',
+						'Content-Type: application/json;charset=UTF-8',
+						'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
+					], true);
+					$this->apiCurlWrapper->setupDebugging();
+					$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'PUT', $postParams);
+					if($this->apiCurlWrapper->getResponseCode() != 200) {
+						if (strlen($response) > 0){
+							$jsonResponse = json_decode($response);
+							if ($jsonResponse){
+								$updateErrors[] = $jsonResponse->error;
+							}else {
+								$updateErrors[] = $response;
+							}
+						}else{
+							$updateErrors[] = "Error {$this->apiCurlWrapper->getResponseCode()} updating your account.";
+						}
 
-			$postVariables = [
-				'borrower_branchcode' => $_REQUEST['borrower_branchcode'],
-				'borrower_title' => $_REQUEST['borrower_title'],
-				'borrower_surname' => $_REQUEST['borrower_surname'],
-				'borrower_firstname' => $_REQUEST['borrower_firstname'],
-				'borrower_dateofbirth' => $this->aspenDateToKohaDate($_REQUEST['borrower_dateofbirth']),
-				'borrower_initials' => $_REQUEST['borrower_initials'],
-				'borrower_othernames' => $_REQUEST['borrower_othernames'],
-				'borrower_sex' => $_REQUEST['borrower_sex'],
-				'borrower_address' => $_REQUEST['borrower_address'],
-				'borrower_address2' => $_REQUEST['borrower_address2'],
-				'borrower_city' => $_REQUEST['borrower_city'],
-				'borrower_state' => $_REQUEST['borrower_state'],
-				'borrower_zipcode' => $_REQUEST['borrower_zipcode'],
-				'borrower_country' => $_REQUEST['borrower_country'],
-				'borrower_phone' => $_REQUEST['borrower_phone'],
-				'borrower_email' => $_REQUEST['borrower_email'],
-				'borrower_phonepro' => $_REQUEST['borrower_phonepro'],
-				'borrower_mobile' => $_REQUEST['borrower_mobile'],
-				'borrower_emailpro' => $_REQUEST['borrower_emailpro'],
-				'borrower_fax' => $_REQUEST['borrower_fax'],
-				'borrower_B_address' => $_REQUEST['borrower_B_address'],
-				'borrower_B_address2' => $_REQUEST['borrower_B_address2'],
-				'borrower_B_city' => $_REQUEST['borrower_B_city'],
-				'borrower_B_state' => $_REQUEST['borrower_B_state'],
-				'borrower_B_zipcode' => $_REQUEST['borrower_B_zipcode'],
-				'borrower_B_country' => $_REQUEST['borrower_B_country'],
-				'borrower_B_phone' => $_REQUEST['borrower_B_phone'],
-				'borrower_B_email' => $_REQUEST['borrower_B_email'],
-				'borrower_contactnote' => $_REQUEST['borrower_contactnote'],
-				'borrower_altcontactsurname' => $_REQUEST['borrower_altcontactsurname'],
-				'borrower_altcontactfirstname' => $_REQUEST['borrower_altcontactfirstname'],
-				'borrower_altcontactaddress1' => $_REQUEST['borrower_altcontactaddress1'],
-				'borrower_altcontactaddress2' => $_REQUEST['borrower_altcontactaddress2'],
-				'borrower_altcontactaddress3' => $_REQUEST['borrower_altcontactaddress3'],
-				'borrower_altcontactstate' => $_REQUEST['borrower_altcontactstate'],
-				'borrower_altcontactzipcode' => $_REQUEST['borrower_altcontactzipcode'],
-				'borrower_altcontactcountry' => $_REQUEST['borrower_altcontactcountry'],
-				'borrower_altcontactphone' => $_REQUEST['borrower_altcontactphone'],
+					}else{
+						$updateErrors[] = 'Your account was updated successfully.';
+					}
+				}
+			}else{
+				$catalogUrl = $this->accountProfile->vendorOpacUrl;
 
-				'csrf_token' => $csr_token,
-				'action' => 'update'
-			];
-			if (isset($_REQUEST['resendEmail'])){
-				$postVariables['resendEmail'] = strip_tags($_REQUEST['resendEmail']);
-			}
+				$this->loginToKohaOpac($patron);
 
-			$postResults = $this->postToKohaPage($catalogUrl . '/cgi-bin/koha/opac-memberentry.pl', $postVariables);
+				$updatePage = $this->getKohaPage($catalogUrl . '/cgi-bin/koha/opac-memberentry.pl');
+				//Get the csr token
+				$csr_token = '';
+				if (preg_match('%<input type="hidden" name="csrf_token" value="(.*?)" />%s', $updatePage, $matches)) {
+					$csr_token = $matches[1];
+				}
 
-			$messageInformation = [];
-			if (preg_match('%<div class="alert alert-warning">(.*?)</div>%s', $postResults, $messageInformation)){
-				$error = $messageInformation[1];
-				$error = str_replace('<h3>', '<h4>', $error);
-				$error = str_replace('</h3>', '</h4>', $error);
-				$updateErrors[] = trim($error);
-			}elseif (preg_match('%<div class="alert alert-success">(.*?)</div>%s', $postResults, $messageInformation)) {
-				$error = $messageInformation[1];
-				$error = str_replace('<h3>', '<h4>', $error);
-				$error = str_replace('</h3>', '</h4>', $error);
-				$updateErrors[] = trim($error);
-			}elseif (preg_match('%<div class="alert">(.*?)</div>%s', $postResults, $messageInformation)) {
-				$error = $messageInformation[1];
-				$updateErrors[] = trim($error);
+				$postVariables = [
+					'borrower_branchcode' => $_REQUEST['borrower_branchcode'],
+					'borrower_title' => $_REQUEST['borrower_title'],
+					'borrower_surname' => $_REQUEST['borrower_surname'],
+					'borrower_firstname' => $_REQUEST['borrower_firstname'],
+					'borrower_dateofbirth' => $this->aspenDateToKohaDate($_REQUEST['borrower_dateofbirth']),
+					'borrower_initials' => $_REQUEST['borrower_initials'],
+					'borrower_othernames' => $_REQUEST['borrower_othernames'],
+					'borrower_sex' => $_REQUEST['borrower_sex'],
+					'borrower_address' => $_REQUEST['borrower_address'],
+					'borrower_address2' => $_REQUEST['borrower_address2'],
+					'borrower_city' => $_REQUEST['borrower_city'],
+					'borrower_state' => $_REQUEST['borrower_state'],
+					'borrower_zipcode' => $_REQUEST['borrower_zipcode'],
+					'borrower_country' => $_REQUEST['borrower_country'],
+					'borrower_phone' => $_REQUEST['borrower_phone'],
+					'borrower_email' => $_REQUEST['borrower_email'],
+					'borrower_phonepro' => $_REQUEST['borrower_phonepro'],
+					'borrower_mobile' => $_REQUEST['borrower_mobile'],
+					'borrower_emailpro' => $_REQUEST['borrower_emailpro'],
+					'borrower_fax' => $_REQUEST['borrower_fax'],
+					'borrower_B_address' => $_REQUEST['borrower_B_address'],
+					'borrower_B_address2' => $_REQUEST['borrower_B_address2'],
+					'borrower_B_city' => $_REQUEST['borrower_B_city'],
+					'borrower_B_state' => $_REQUEST['borrower_B_state'],
+					'borrower_B_zipcode' => $_REQUEST['borrower_B_zipcode'],
+					'borrower_B_country' => $_REQUEST['borrower_B_country'],
+					'borrower_B_phone' => $_REQUEST['borrower_B_phone'],
+					'borrower_B_email' => $_REQUEST['borrower_B_email'],
+					'borrower_contactnote' => $_REQUEST['borrower_contactnote'],
+					'borrower_altcontactsurname' => $_REQUEST['borrower_altcontactsurname'],
+					'borrower_altcontactfirstname' => $_REQUEST['borrower_altcontactfirstname'],
+					'borrower_altcontactaddress1' => $_REQUEST['borrower_altcontactaddress1'],
+					'borrower_altcontactaddress2' => $_REQUEST['borrower_altcontactaddress2'],
+					'borrower_altcontactaddress3' => $_REQUEST['borrower_altcontactaddress3'],
+					'borrower_altcontactstate' => $_REQUEST['borrower_altcontactstate'],
+					'borrower_altcontactzipcode' => $_REQUEST['borrower_altcontactzipcode'],
+					'borrower_altcontactcountry' => $_REQUEST['borrower_altcontactcountry'],
+					'borrower_altcontactphone' => $_REQUEST['borrower_altcontactphone'],
+
+					'csrf_token' => $csr_token,
+					'action' => 'update'
+				];
+				if (isset($_REQUEST['resendEmail'])){
+					$postVariables['resendEmail'] = strip_tags($_REQUEST['resendEmail']);
+				}
+
+				$postResults = $this->postToKohaPage($catalogUrl . '/cgi-bin/koha/opac-memberentry.pl', $postVariables);
+
+				$messageInformation = [];
+				if (preg_match('%<div class="alert alert-warning">(.*?)</div>%s', $postResults, $messageInformation)){
+					$error = $messageInformation[1];
+					$error = str_replace('<h3>', '<h4>', $error);
+					$error = str_replace('</h3>', '</h4>', $error);
+					$updateErrors[] = trim($error);
+				}elseif (preg_match('%<div class="alert alert-success">(.*?)</div>%s', $postResults, $messageInformation)) {
+					$error = $messageInformation[1];
+					$error = str_replace('<h3>', '<h4>', $error);
+					$error = str_replace('</h3>', '</h4>', $error);
+					$updateErrors[] = trim($error);
+				}elseif (preg_match('%<div class="alert">(.*?)</div>%s', $postResults, $messageInformation)) {
+					$error = $messageInformation[1];
+					$updateErrors[] = trim($error);
+				}
 			}
 		}
 
@@ -129,7 +214,7 @@ class Koha extends AbstractIlsDriver {
 		}
 
         /** @noinspection SqlResolve */
-        $sql = "SELECT issues.*, items.biblionumber, title, author, auto_renew, auto_renew_error from issues left join items on items.itemnumber = issues.itemnumber left join biblio ON items.biblionumber = biblio.biblionumber where borrowernumber = {$patron->username}";
+        $sql = "SELECT issues.*, items.biblionumber, items.itype, title, author, auto_renew, auto_renew_error from issues left join items on items.itemnumber = issues.itemnumber left join biblio ON items.biblionumber = biblio.biblionumber where borrowernumber = {$patron->username}";
 		$results = mysqli_query($this->dbConnection, $sql);
 		while ($curRow = $results->fetch_assoc()){
 			$checkout = array();
@@ -167,6 +252,17 @@ class Koha extends AbstractIlsDriver {
 				}
 			}
 			$checkout['autoRenewError'] = $autoRenewError;
+
+			//Get the max checkouts by figuring out what rule the checkout was issued under
+			$patronType = $patron->patronType;
+			$itemType = $curRow['itype'];
+			$checkoutBranch = $curRow['branchcode'];
+			/** @noinspection SqlResolve */
+			$issuingRulesSql = "SELECT branchcode, categorycode, itemtype, auto_renew, renewalsallowed, renewalperiod FROM issuingrules where categorycode IN ('{$patronType}', '*') and itemtype IN('{$itemType}', '*') and branchcode IN ('{$checkoutBranch}', '*') order by branchcode desc, categorycode desc, itemtype desc limit 1";
+			$issuingRulesRS = mysqli_query($this->dbConnection, $issuingRulesSql);
+			while ($issuingRulesRow = $issuingRulesRS->fetch_assoc()){
+				$checkout['maxRenewals'] = $issuingRulesRow['renewalsallowed'];
+			}
 
 			if ($checkout['id'] && strlen($checkout['id']) > 0){
 				require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
@@ -469,10 +565,6 @@ class Koha extends AbstractIlsDriver {
 		return true;
 	}
 
-    public function hasReadingHistoryUpdatesOfILS(){
-        return false;
-    }
-
     /**
      * @param User $patron
      * @param int $page
@@ -677,21 +769,7 @@ class Koha extends AbstractIlsDriver {
 			$hold_result['id'] = $recordId;
             if ($placeHoldResponse->title) {
 				//everything seems to be good
-				$holds = $this->getHolds($patron, 1, -1, 'title');
-				$hold_result['success'] = true;
-				$hold_result['message'] = "Your hold was placed successfully.";
-				//Find the correct hold (will be unavailable)
-				foreach ($holds['unavailable'] as $holdInfo){
-					if ($holdInfo['id'] == $recordId){
-						if (isset($holdInfo['position'])){
-							$hold_result['message'] .= "  You are number <b>" . $holdInfo['position'] . "</b> in the queue.";
-						}
-						break;
-					}
-				}
-	            /** @var Memcache $memCache */
-	            global $memCache;
-	            $memCache->delete('koha_summary_' . $patron->id);
+	            $hold_result = $this->getHoldMessageForSuccessfulHold($patron, $recordId, $hold_result);
 			}else{
 				$hold_result['success'] = false;
 				//Look for an alert message
@@ -760,21 +838,7 @@ class Koha extends AbstractIlsDriver {
 
 		if ($placeHoldResponse->pickup_location) {
             //We redirected to the holds page, everything seems to be good
-            $holds = $this->getHolds($patron, 1, -1, 'title');
-            $hold_result['success'] = true;
-            $hold_result['message'] = "Your hold was placed successfully.";
-            //Find the correct hold (will be unavailable)
-            foreach ($holds['unavailable'] as $holdInfo){
-                if ($holdInfo['id'] == $recordId){
-                    if (isset($holdInfo['position'])){
-                        $hold_result['message'] .= "  You are number <b>" . $holdInfo['position'] . "</b> in the queue.";
-                    }
-                    break;
-                }
-            }
-			/** @var Memcache $memCache */
-			global $memCache;
-			$memCache->delete('koha_summary_' . $patron->id);
+			$hold_result = $this->getHoldMessageForSuccessfulHold($patron, $recordId, $hold_result);
         }else{
             $hold_result['success'] = false;
             //Look for an alert message
@@ -878,19 +942,6 @@ class Koha extends AbstractIlsDriver {
 		}
 
 		return $holds;
-	}
-
-	public function updateHold($requestId, $patronId, $type){
-		$xNum = "x" . $_REQUEST['x'];
-		//Strip the . off the front of the bib and the last char from the bib
-		if (isset($_REQUEST['cancelId'])){
-			$cancelId = $_REQUEST['cancelId'];
-		}else{
-			$cancelId = substr($requestId, 1, -1);
-		}
-		$locationId = $_REQUEST['location'];
-		$freezeValue = isset($_REQUEST['freeze']) ? 'on' : 'off';
-		return $this->updateHoldDetailed($patronId, $type, $xNum, $cancelId, $locationId, $freezeValue);
 	}
 
     /**
@@ -1296,24 +1347,29 @@ class Koha extends AbstractIlsDriver {
 		return 'kohaEmailResetPinLink.tpl';
 	}
 
-	function getSelfRegistrationFields($type = 'selfReg'){
+	function getSelfRegistrationFields($type = 'selfReg')
+	{
 		$this->initDatabaseConnection();
 
 		/** @noinspection SqlResolve */
 		$sql = "SELECT * FROM systempreferences where variable like 'PatronSelf%';";
 		$results = mysqli_query($this->dbConnection, $sql);
 		$kohaPreferences = [];
-		while ($curRow = $results->fetch_assoc()){
+		while ($curRow = $results->fetch_assoc()) {
 			$kohaPreferences[$curRow['variable']] = $curRow['value'];
 		}
 
 		if ($type == 'selfReg') {
 			$unwantedFields = explode('|', $kohaPreferences['PatronSelfModificationBorrowerUnwantedField']);
-		}else{
+		} else {
 			$unwantedFields = explode('|', $kohaPreferences['PatronSelfRegistrationBorrowerUnwantedField']);
 		}
 		$requiredFields = explode('|', $kohaPreferences['PatronSelfRegistrationBorrowerMandatoryField']);
-		$validLibraries = array_flip(explode('|', $kohaPreferences['PatronSelfRegistrationLibraryList']));
+		if (strlen($kohaPreferences['PatronSelfRegistrationLibraryList']) == 0) {
+			$validLibraries = [];
+		} else {
+			$validLibraries = array_flip(explode('|', $kohaPreferences['PatronSelfRegistrationLibraryList']));
+		}
 
 		$fields = array();
 		$location = new Location();
@@ -1506,23 +1562,45 @@ class Koha extends AbstractIlsDriver {
 
 	function updatePin(User $user, string $oldPin, string $newPin)
 	{
-		$catalogUrl = $this->accountProfile->vendorOpacUrl;
-		$this->loginToKohaOpac($user);
+		if ($user->cat_password != $oldPin){
+			return ['success' => false, 'errors' => "The old PIN provided is incorrect."];
+		}
+		$oauthToken = $this->getOAuthToken();
+		if ($oauthToken == false){
+			$result['message'] = 'Unable to authenticate with the ILS.  Please try again later or contact the library.';
+		}else{
+			$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/{$user->username}/password";
+			//$apiUrl = $this->getWebServiceURL() . "/api/v1/holds?patron_id={$patron->username}";
+			$postParams = [];
+			$postParams['password'] = $newPin;
+			$postParams['password_2'] = $newPin;
+			$postParams = json_encode($postParams);
 
-		$postFields = [
-			'Oldkey' => $oldPin,
-			'Newkey' => $newPin,
-			'Confirm' => $newPin
-		];
+			$this->apiCurlWrapper->addCustomHeaders([
+				'Authorization: Bearer ' . $oauthToken,
+				'User-Agent: Aspen Discovery',
+				'Accept: */*',
+				'Cache-Control: no-cache',
+				'Content-Type: application/json',
+				'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
+				'Accept-Encoding: gzip, deflate',
+			], true);
+			$response = $this->apiCurlWrapper->curlPostBodyData($apiUrl, $postParams, false);
+			if($this->apiCurlWrapper->getResponseCode() != 200) {
+				if (strlen($response) > 0){
+					$jsonResponse = json_decode($response);
+					if ($jsonResponse){
+						return ['success' => false, 'errors' => $jsonResponse->error];
+					}else {
+						return ['success' => false, 'errors' => $response];
+					}
+				}else{
+					return ['success' => false, 'errors' => "Error {$this->apiCurlWrapper->getResponseCode()} updating your PIN."];
+				}
 
-		$pinFormResponse = $this->postToKohaPage($catalogUrl . '/cgi-bin/koha/opac-passwd.pl', $postFields);
-		if (preg_match('%<div class="alert">(.*?)</div>%s', $pinFormResponse, $matches)) {
-			$error = $matches[1];
-			$error = str_replace('<h3>', '<h4>', $error);
-			$error = str_replace('</h3>', '</h4>', $error);
-			return ['success' => false, 'errors' => trim($error)];
-		}else if (preg_match('/Password updated/s', $pinFormResponse)) {
-			return ['success' => true, 'message' => 'Your password was updated successfully.'];
+			}else{
+				return ['success' => true, 'message' => 'Your password was updated successfully.'];
+			}
 		}
 		return ['success' => false, 'errors' => "Unknown error updating password."];
 	}
@@ -1545,7 +1623,7 @@ class Koha extends AbstractIlsDriver {
 		$mandatoryFields = array_flip(explode(',', $kohaPreferences['OPACSuggestionMandatoryFields']));
 
 		/** @noinspection SqlResolve */
-		$itemTypesSQL = "SELECT * FROM authorised_values where category = 'SUGGEST_FORMAT' order by lib_opac ASC";
+		$itemTypesSQL = "SELECT * FROM authorised_values where category = 'SUGGEST_FORMAT' order by lib_opac";
 		$itemTypesRS = mysqli_query($this->dbConnection, $itemTypesSQL);
 		$itemTypes = [];
 		while ($curRow = $itemTypesRS->fetch_assoc()){
@@ -1687,28 +1765,6 @@ class Koha extends AbstractIlsDriver {
 			}
 			$allRequests[] = $request;
 		}
-//		$this->loginToKohaOpac($user);
-//
-//		$catalogUrl = $this->accountProfile->vendorOpacUrl;
-//		$requestsPage = $this->getKohaPage($catalogUrl . '/cgi-bin/koha/opac-suggestions.pl');
-//
-//		$matches = [];
-//		$allRequests = [];
-//		/** @noinspection HtmlUnknownAttribute */
-//		if (preg_match('%<table id="suggestt" .*?<tbody>(.*)</tbody>%s', $requestsPage, $matches)) {
-//			$tableBody = $matches[1];
-//			preg_match_all('%<tr>.*?<input type="checkbox" class="cb" name="delete_field" value="(.*?)" />.*?<td>(.*?)</td>\s+<td>(.*?)</td>\s+<td>\s+<span class="tdlabel">Note: </span>(.*?)</td>\s+<td>(.*?)</td>\s+<td>\s+<span class="tdlabel">Status:</span>(.*?)</td>%s', $tableBody, $tableRows, PREG_SET_ORDER);
-//			foreach ($tableRows as $tableRow){
-//				$request = [];
-//				$request['id'] = $tableRow[1];
-//				$request['summary'] = trim($tableRow[2]);
-//				$request['suggestedOn'] = trim($tableRow[3]);
-//				$request['note'] = trim($tableRow[4]);
-//				$request['managedBy'] = trim($tableRow[5]);
-//				$request['status'] = trim($tableRow[6]);
-//				$allRequests[] = $request;
-//			}
-//		}
 
 		return $allRequests;
 	}
@@ -2006,6 +2062,7 @@ class Koha extends AbstractIlsDriver {
 
 	/**
 	 * @param array $postFields
+	 * @param string $variableName
 	 * @return array
 	 */
 	private function setPostField(array $postFields, string $variableName): array
@@ -2203,5 +2260,31 @@ class Koha extends AbstractIlsDriver {
 			}
 		}
 		return $result;
+	}
+
+	/**
+	 * @param $patron
+	 * @param $recordId
+	 * @param array $hold_result
+	 * @return array
+	 */
+	private function getHoldMessageForSuccessfulHold($patron, $recordId, array $hold_result): array
+	{
+		$holds = $this->getHolds($patron, 1, -1, 'title');
+		$hold_result['success'] = true;
+		$hold_result['message'] = "Your hold was placed successfully.";
+		//Find the correct hold (will be unavailable)
+		foreach ($holds['unavailable'] as $holdInfo) {
+			if ($holdInfo['id'] == $recordId) {
+				if (isset($holdInfo['position'])) {
+					$hold_result['message'] .= "  You are number <b>" . $holdInfo['position'] . "</b> in the queue.";
+				}
+				break;
+			}
+		}
+		/** @var Memcache $memCache */
+		global $memCache;
+		$memCache->delete('koha_summary_' . $patron->id);
+		return $hold_result;
 	}
 }

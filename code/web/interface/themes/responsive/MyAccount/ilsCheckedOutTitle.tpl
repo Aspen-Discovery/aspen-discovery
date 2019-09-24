@@ -156,7 +156,11 @@
 						<div class="row">
 							<div class="result-label col-tn-4 col-lg-3">{translate text='Renewed'}</div>
 							<div class="result-value col-tn-8 col-lg-9">
-								{translate text="%1% times" 1=$record.renewCount}
+								{if empty($record.maxRenewals)}
+									{translate text="%1% times" 1=$record.renewCount}
+								{else}
+                                    {translate text="%1% of %2% times" 1=$record.renewCount 2=$record.maxRenewals}
+								{/if}
 							</div>
 						</div>
 					{/if}
