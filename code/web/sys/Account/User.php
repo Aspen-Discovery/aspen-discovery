@@ -1065,7 +1065,7 @@ class User extends DataObject
 			// This will sort numerically correctly as well
 		};
 
-		if (count($allHolds['available'])) {
+		if (!empty($allHolds['available'])) {
 			switch ($availableSort) {
             case 'author' :
             case 'format' :
@@ -1088,7 +1088,7 @@ class User extends DataObject
 			}
 			uasort($allHolds['available'], $holdSort);
 		}
-		if (count($allHolds['unavailable'])) {
+		if (!empty($allHolds['unavailable'])) {
 			switch ($unavailableSort) {
             case 'author' :
             case 'location' :

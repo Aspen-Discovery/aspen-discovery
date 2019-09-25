@@ -1278,7 +1278,7 @@ class Koha extends AbstractIlsDriver {
 		if ($this->opacCurlWrapper == null){
 			$this->opacCurlWrapper = new CurlWrapper();
 			//Extend timeout when talking to Koha via HTTP
-			$this->opacCurlWrapper->timeout = 10;
+			$this->opacCurlWrapper->timeout = 20;
 		}
 		return $this->opacCurlWrapper->curlPostPage($kohaUrl, $postParams);
 	}
