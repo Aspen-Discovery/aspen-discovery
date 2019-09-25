@@ -121,7 +121,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 	 */
 	public function renewCheckout($patron, $recordId)
 	{
-		return $this->checkOutTitle($patron, $recordId);
+		return $this->checkOutTitle($patron, $recordId, true);
 	}
 
 	/**
@@ -376,9 +376,10 @@ class CloudLibraryDriver extends AbstractEContentDriver
 	 * @param User $user
 	 * @param string $titleId
 	 *
+	 * @param bool $fromRenew
 	 * @return array
 	 */
-	public function checkOutTitle($user, $titleId)
+	public function checkOutTitle($user, $titleId, $fromRenew = false)
 	{
 		$result = ['success' => false, 'message' => 'Unknown error'];
 
@@ -401,7 +402,11 @@ class CloudLibraryDriver extends AbstractEContentDriver
 				$this->trackRecordCheckout($titleId);
 
 				$result['success'] = true;
-				$result['message'] = translate(['text' => 'cloud_library-checkout-success', 'defaultText' => 'Your title was checked out successfully. You can read or listen to the title from your account.']);
+				if ($fromRenew){
+					$result['message'] = translate(['text' => 'cloud_library-renew-success', 'defaultText' => 'Your title was renewed successfully.']);
+				}else {
+					$result['message'] = translate(['text' => 'cloud_library-checkout-success', 'defaultText' => 'Your title was checked out successfully. You can read or listen to the title from your account.']);
+				}
 
 				/** @var Memcache $memCache */
 				global $memCache;
