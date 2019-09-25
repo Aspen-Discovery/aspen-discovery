@@ -1681,6 +1681,9 @@ class Koha extends AbstractIlsDriver {
 	 */
 	function processMaterialsRequestForm($user)
 	{
+		if (empty($user->cat_password)){
+			return ['success' => false, 'message' => 'Unable to place materials request in masquerade mode'];
+		}
 		$loginResult = $this->loginToKohaOpac($user);
 		if (!$loginResult['success']){
 			return ['success' => false, 'message' => 'Unable to login to Koha'];
