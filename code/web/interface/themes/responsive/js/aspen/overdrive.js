@@ -27,6 +27,58 @@ AspenDiscovery.OverDrive = (function(){
 			return false;
 		},
 
+		freezeHold: function(patronId, overDriveId, caller){
+			AspenDiscovery.loadingMessage();
+			let url = Globals.path + '/OverDrive/AJAX';
+			let params = {
+				patronId : patronId
+				,overDriveId : overDriveId
+			};
+			//Prompt the user for the date they want to reactivate the hold
+			params['method'] = 'getReactivationDateForm'; // set method for this form
+			$.getJSON(url, params, function(data){
+				AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons)
+			}).fail(AspenDiscovery.ajaxFail);
+		},
+
+		// called by ReactivationDateForm when fn freezeHold above has promptForReactivationDate is set
+		doFreezeHoldWithReactivationDate: function(caller){
+			let popUpBoxTitle = $(caller).text() || "Freezing Hold"; // freezing terminology can be customized, so grab text from click button: caller
+			let params = {
+				'method' : 'freezeHold'
+				,patronId : $('#patronId').val()
+				,overDriveId : $('#overDriveId').val()
+				,reactivationDate : $("#reactivationDate").val()
+			};
+			let url = Globals.path + '/OverDrive/AJAX';
+			AspenDiscovery.showMessage(popUpBoxTitle, "Updating your hold.  This may take a minute.");
+			$.getJSON(url, params, function(data){
+				if (data.success) {
+					AspenDiscovery.showMessage("Success", data.message, true, true);
+				} else {
+					AspenDiscovery.showMessage("Error", data.message);
+				}
+			}).fail(AspenDiscovery.ajaxFail);
+		},
+
+		thawHold: function(patronId, overDriveId, caller){
+			let popUpBoxTitle = $(caller).text() || "Thawing Hold";  // freezing terminology can be customized, so grab text from click button: caller
+			AspenDiscovery.showMessage(popUpBoxTitle, "Updating your hold.  This may take a minute.");
+			let url = Globals.path + '/OverDrive/AJAX';
+			let params = {
+				'method' : 'thawHold'
+				,patronId : patronId
+				,overDriveId : overDriveId
+			};
+			$.getJSON(url, params, function(data){
+				if (data.success) {
+					AspenDiscovery.showMessage("Success", data.message, true, true);
+				} else {
+					AspenDiscovery.showMessage("Error", data.message);
+				}
+			}).fail(AspenDiscovery.ajaxFail);
+		},
+
 		getCheckOutPrompts: function(overDriveId){
 			let url = Globals.path + "/OverDrive/" + overDriveId + "/AJAX?method=getCheckOutPrompts";
 			let result = true;

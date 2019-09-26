@@ -4,6 +4,7 @@
  * Complete integration via APIs including availability and account information.
  */
 require_once ROOT_DIR . '/Drivers/AbstractEContentDriver.php';
+require_once ROOT_DIR . '/sys/Utils/DateUtils.php';
 class OverDriveDriver extends AbstractEContentDriver{
 	public $version = 3;
 
@@ -278,7 +279,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 			}
 			curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 
-				$return = curl_exec($ch);
+			$return = curl_exec($ch);
 			curl_close($ch);
 			$returnVal = json_decode($return);
 			if ($returnVal != null){
@@ -290,8 +291,19 @@ class OverDriveDriver extends AbstractEContentDriver{
 		return false;
 	}
 
-	private function _callPatronDeleteUrl($user, $patronBarcode, $patronPin, $url){
-		$tokenData = $this->_connectToPatronAPI($user, $patronBarcode, $patronPin, false);
+	/**
+	 * @param User $user
+	 * @param $url
+	 * @return bool|mixed
+	 */
+	private function _callPatronDeleteUrl($user, $url){
+		$userBarcode = $user->getBarcode();
+		if ($this->getRequirePin($user)){
+			$userPin = $user->getPasswordOrPin();
+			$tokenData = $this->_connectToPatronAPI($user, $userBarcode, $userPin, false);
+		}else{
+			$tokenData = $this->_connectToPatronAPI($user, $userBarcode, null, false);
+		}
 		//TODO: Remove || true when oauth works
 		if ($tokenData || true){
 			$ch = curl_init($url);
@@ -562,6 +574,17 @@ class OverDriveDriver extends AbstractEContentDriver{
 				$hold['available']         = isset($curTitle->actions->checkout);
 				if ($hold['available']){
 					$hold['expire'] = strtotime($curTitle->holdExpires);
+				}else{
+					$hold['allowFreezeHolds'] = true;
+					$hold['canFreeze'] = true;
+					if (isset($curTitle->holdSuspension)){
+						$hold['frozen'] = true;
+						$hold['status'] = "Suspended";
+						if ($curTitle->holdSuspension->numberOfDays > 0) {
+							$numDaysSuspended = $curTitle->holdSuspension->numberOfDays;
+							$hold['status'] .= ' until ' . DateUtils::addDays(date('m/d/Y'), $numDaysSuspended, "m/d/Y");
+						}
+					}
 				}
 				$hold['holdSource'] = 'OverDrive';
 
@@ -683,6 +706,66 @@ class OverDriveDriver extends AbstractEContentDriver{
 		return $holdResult;
 	}
 
+	function freezeHold(User $user, $overDriveId, $reactivationDate)
+	{
+		/** @var Memcache $memCache */
+		global $memCache;
+
+		$url = $this->getSettings()->patronApiUrl . '/v1/patrons/me/holds/' . $overDriveId . '/suspension';
+		$params = array(
+			'emailAddress' => trim($user->overdriveEmail)
+		);
+		if (empty($reactivationDate)){
+			$params['suspensionType'] = 'indefinite';
+		}else{
+			//OverDrive always seems to place the suspension for 2 days less than it should be
+			$numberOfDaysToSuspend = (new DateTime())->diff(new DateTime($reactivationDate))->days + 2;
+			$params['suspensionType'] = 'limited';
+			$params['numberOfDays'] = $numberOfDaysToSuspend;
+		}
+		$response = $this->_callPatronUrl($user, $url, $params);
+
+		$holdResult = array();
+		$holdResult['success'] = false;
+		$holdResult['message'] = '';
+
+		if (isset($response->holdListPosition) && isset($response->holdSuspension)){
+			$holdResult['success'] = true;
+			$holdResult['message'] = translate(['text'=>'overdrive_freeze_hold_success', 'defaultText' => 'Your hold was frozen successfully.']);
+		}else{
+			$holdResult['message'] = translate('Sorry, but we could not freeze the hold on this title.');
+			if (isset($response->message)) $holdResult['message'] .= "  {$response->message}";
+		}
+		$user->clearCache();
+		$memCache->delete('overdrive_summary_' . $user->id);
+
+		return $holdResult;
+	}
+
+	function thawHold(User $user, $overDriveId)
+	{
+		/** @var Memcache $memCache */
+		global $memCache;
+
+		$url = $this->getSettings()->patronApiUrl . '/v1/patrons/me/holds/' . $overDriveId . '/suspension';
+		$response = $this->_callPatronDeleteUrl($user, $url);
+
+		$holdResult = array();
+		$holdResult['success'] = false;
+		$holdResult['message'] = '';
+
+		if ($response == true){
+			$holdResult['success'] = true;
+			$holdResult['message'] = translate(['text'=>'overdrive_thaw_hold_success', 'defaultText' => 'Your hold was thawed successfully.']);
+		}else{
+			$holdResult['message'] = translate('Sorry, but we could not thaw the hold on this title.');
+			if (isset($response->message)) $holdResult['message'] .= "  {$response->message}";
+		}
+		$user->clearCache();
+		$memCache->delete('overdrive_summary_' . $user->id);
+
+		return $holdResult;
+	}
 	/**
      * @param User    $user
      * @param string  $overDriveId
@@ -693,13 +776,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 		global $memCache;
 
 		$url = $this->getSettings()->patronApiUrl . '/v1/patrons/me/holds/' . $overDriveId;
-		$userBarcode = $user->getBarcode();
-		if ($this->getRequirePin($user)){
-            $userPin = $user->getPasswordOrPin();
-			$response = $this->_callPatronDeleteUrl($user, $userBarcode, $userPin, $url);
-		}else{
-			$response = $this->_callPatronDeleteUrl($user, $userBarcode, null, $url);
-		}
+		$response = $this->_callPatronDeleteUrl($user, $url);
 
 		$cancelHoldResult = array();
 		$cancelHoldResult['success'] = false;
@@ -778,13 +855,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 		global $memCache;
 
 		$url = $this->getSettings()->patronApiUrl . '/v1/patrons/me/checkouts/' . $overDriveId;
-		$userBarcode = $user->getBarcode();
-		if ($this->getRequirePin($user)){
-			$userPin = $user->getPasswordOrPin();
-			$response = $this->_callPatronDeleteUrl($user, $userBarcode, $userPin, $url);
-		}else{
-			$response = $this->_callPatronDeleteUrl($user, $userBarcode, null, $url);
-		}
+		$response = $this->_callPatronDeleteUrl($user, $url);
 
 		$cancelHoldResult = array();
 		$cancelHoldResult['success'] = false;
@@ -976,7 +1047,7 @@ class OverDriveDriver extends AbstractEContentDriver{
     /**
      * @param $overDriveId
      */
-    public function trackRecordCheckout($overDriveId): void
+    function trackRecordCheckout($overDriveId): void
     {
         require_once ROOT_DIR . '/sys/OverDrive/OverDriveRecordUsage.php';
         $recordUsage = new OverDriveRecordUsage();
@@ -996,7 +1067,7 @@ class OverDriveDriver extends AbstractEContentDriver{
     /**
      * @param $overDriveId
      */
-    public function trackRecordHold($overDriveId): void
+    function trackRecordHold($overDriveId): void
     {
         require_once ROOT_DIR . '/sys/OverDrive/OverDriveRecordUsage.php';
         $recordUsage = new OverDriveRecordUsage();

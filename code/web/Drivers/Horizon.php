@@ -2,6 +2,7 @@
 
 require_once ROOT_DIR . '/sys/CurlWrapper.php';
 require_once ROOT_DIR . '/Drivers/AbstractIlsDriver.php';
+require_once ROOT_DIR . '/sys/Utils/DateUtils.php';
 abstract class Horizon extends AbstractIlsDriver{
 
 	protected $db;
@@ -158,7 +159,7 @@ abstract class Horizon extends AbstractIlsDriver{
 
 				//print_r($row);
 				$checkout = '';
-				$duedate = $this->addDays('1970-01-01', $row['DUEDATE']);
+				$duedate = DateUtils::addDays('1970-01-01', $row['DUEDATE']);
 				$bib_num = $row['BIB_NUM'];
 				$item_num = $row['ITEM_NUM'];
 				$borrower_num = $row['BORROWER_NUM'];
@@ -174,7 +175,7 @@ abstract class Horizon extends AbstractIlsDriver{
 					$sqlStmt_cko = $this->_query($cko);
 
 					if ($row_cko = $this->_fetch_assoc($sqlStmt_cko)) {
-						$checkout = $this->addDays('1970-01-01', $row_cko['CHECKOUT']);
+						$checkout = DateUtils::addDays('1970-01-01', $row_cko['CHECKOUT']);
 					}
 
 					$due = "select convert(varchar(12),dateadd(dd, date, '01 jan 1970')) as DUEDATE " .
@@ -371,22 +372,6 @@ abstract class Horizon extends AbstractIlsDriver{
 		return $title;
 	}
 
-	function addDays($givendate,$day) {
-		$cd = strtotime($givendate);
-		$newdate = date('Y-m-d H:i:s', mktime(date('H',$cd),
-		date('i',$cd), date('s',$cd), date('m',$cd),
-		date('d',$cd)+$day, date('Y',$cd)));
-		return $newdate;
-	}
-
-	function addMinutes($givendate,$minutes) {
-		$cd = strtotime($givendate);
-		$newdate = date('Y-m-d H:i:s', mktime(date('H',$cd),
-		date('i',$cd) + $minutes, date('s',$cd), date('m',$cd),
-		date('d',$cd), date('Y',$cd)));
-		return $newdate;
-	}
-
 	protected function _query($query){
 		global $configArray;
 		if (strcasecmp($configArray['System']['operatingSystem'], 'windows') == 0){
@@ -429,7 +414,6 @@ abstract class Horizon extends AbstractIlsDriver{
      * @return array
      */
 	function emailPin($barcode){
-		global $configArray;
 		if ($this->useDb){
             /** @noinspection SqlResolve */
             $sql = "SELECT name, borrower.borrower#, bbarcode, pin#, email_name, email_address from borrower inner join borrower_barcode on borrower.borrower# = borrower_barcode.borrower# inner join borrower_address on borrower.borrower# = borrower_address.borrower#  where bbarcode= '" . mysql_escape_string($barcode) . "'";

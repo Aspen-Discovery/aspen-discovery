@@ -904,7 +904,7 @@ class Koha extends AbstractIlsDriver {
 				$curHold['frozen'] = true;
 				$curHold['status'] = "Suspended";
 				if ($curRow['suspend_until'] != null){
-					$curHold['status'] .= ' until ' . $curRow['suspend_until'];
+					$curHold['status'] .= ' until ' . date("m/d/Y", strtotime($curRow['suspend_until']));
 				}
 			}elseif ($curRow['found'] == 'W'){
 				$curHold['status'] = "Ready to Pickup";
@@ -1166,7 +1166,8 @@ class Koha extends AbstractIlsDriver {
 	        $postParams = "";
 	        if (strlen($dateToReactivate) > 0){
 		        $postParams = [];
-			    $postParams['end_date'] = $dateToReactivate;
+		        list($month, $day, $year) = explode('/', $dateToReactivate);
+		        $postParams['end_date'] = "$year-$month-$day";
 		        $postParams = json_encode($postParams);
 	        }
 
@@ -1872,6 +1873,21 @@ class Koha extends AbstractIlsDriver {
 		}else{
 			list($month, $day, $year) = explode('-', $date);
 			return "$month/$day/$year";
+		}
+	}
+
+	/**
+	 * Converts the string for submission to the web form which is different than the
+	 * format within the database.
+	 * @param string $date
+	 * @return string
+	 */
+	function aspenDateToKohaRestDate($date){
+		if (strlen($date) == 0){
+			return $date;
+		}else{
+			list($month, $day, $year) = explode('-', $date);
+			return "$year-$month-$day";
 		}
 	}
 

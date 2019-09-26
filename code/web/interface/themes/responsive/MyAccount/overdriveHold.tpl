@@ -60,10 +60,17 @@
 						</div>
 					{/if}
 
+					<div class="row">
+						<div class="result-label col-tn-4">{translate text='Source'}</div>
+						<div class="col-tn-8 result-value">
+                            OverDrive
+						</div>
+					</div>
+
 					{if $record.format}
 						<div class="row">
 							<div class="result-label col-tn-4">{translate text='Format'}</div>
-						<div class="col-tn-8 result-value">
+							<div class="col-tn-8 result-value">
 								{implode subject=$record.format glue=", "}
 							</div>
 						</div>
@@ -95,14 +102,20 @@
 								<strong>{$record.expire|date_format:"%b %d, %Y at %l:%M %p"}</strong>
 							</div>
 						</div>
-
 					{else}
 						{* Unavailable hold *}
 						<div class="row">
-							<div class="result-label col-tn-4">{translate text='Position'}</div>
-							<div class="col-tn-8 result-value">
-								{translate text="%1% out of %2%" 1=$record.holdQueuePosition 2=$record.holdQueueLength}
-							</div>
+							{if $record.frozen}
+							    <div class="result-label col-tn-4">{translate text='Status'}</div>
+							    <div class="col-tn-8 result-value">
+							        <span class="frozenHold">{$record.status}</span>
+							    </div>
+							{else}
+								<div class="result-label col-tn-4">{translate text='Position'}</div>
+								<div class="col-tn-8 result-value">
+									{translate text="%1% out of %2%" 1=$record.holdQueuePosition 2=$record.holdQueueLength}
+								</div>
+							{/if}
 						</div>
 					{/if}
 				</div>
@@ -114,6 +127,13 @@
 							<button onclick="return AspenDiscovery.OverDrive.doOverDriveCheckout('{$record.userId}', '{$record.overDriveId}');" class="btn btn-sm btn-primary">{translate text="Checkout"}</button>
 						{/if}
 						<button onclick="return AspenDiscovery.OverDrive.cancelOverDriveHold('{$record.userId}', '{$record.overDriveId}');" class="btn btn-sm btn-warning">{translate text="Cancel Hold"}</button>
+                        {if $record.allowFreezeHolds}
+                            {if $record.frozen}
+								<button onclick="return AspenDiscovery.OverDrive.thawHold('{$record.userId}', '{$record.overDriveId}', this);" class="btn btn-sm btn-default">{translate text="Thaw Hold"}</button>
+                            {elseif $record.canFreeze}
+								<button onclick="return AspenDiscovery.OverDrive.freezeHold('{$record.userId}', '{$record.overDriveId}', this);" class="btn btn-sm btn-default">{translate text="Freeze Hold"}</button>
+                            {/if}
+                        {/if}
 					</div>
 
 				</div>

@@ -260,4 +260,104 @@ class OverDrive_AJAX extends Action {
 			return json_encode(array('result'=>false, 'message'=>'You must be logged in to cancel holds.'));
 		}
 	}
+
+	function freezeHold() {
+		$user = UserAccount::getLoggedInUser();
+		$result = array(
+			'success' => false,
+			'message' => 'Error '.translate('freezing').' hold.'
+		);
+		if (!$user){
+			$result['message'] = 'You must be logged in to '. translate('freeze') .' a hold.  Please close this dialog and login again.';
+		} elseif (!empty($_REQUEST['patronId'])) {
+			$patronId = $_REQUEST['patronId'];
+			$patronOwningHold = $user->getUserReferredTo($patronId);
+
+			if ($patronOwningHold == false){
+				$result['message'] = 'Sorry, you do not have access to '. translate('freeze') .' holds for the supplied user.';
+			}else{
+				if (empty($_REQUEST['overDriveId'])) {
+					// We aren't getting all the expected data, so make a log entry & tell user.
+					global $logger;
+					$result['message'] = 'Information about the hold to be '. translate('frozen') .' was not provided.';
+				}else{
+					$overDriveId = $_REQUEST['overDriveId'];
+					$reactivationDate = isset($_REQUEST['reactivationDate']) ? $_REQUEST['reactivationDate'] : null;
+					$result = $patronOwningHold->freezeOverDriveHold($overDriveId, $reactivationDate);
+					if ($result['success']) {
+						$notice = translate('freeze_info_notice');
+						if (translate('frozen') != 'frozen') {
+							$notice = str_replace('frozen', translate('frozen'), $notice);  // Translate the phrase frozen from the notice.
+						}
+						$message = '<div class="alert alert-success">'.$result['message'] .'</div>'. ($notice ? '<div class="alert alert-info">'.$notice .'</div>' : '');
+						$result['message'] = $message;
+					}
+
+					if (!$result['success'] && is_array($result['message'])) {
+						/** @var string[] $messageArray */
+						$messageArray = $result['message'];
+						$result['message'] = implode('; ', $messageArray);
+						// Millennium Holds assumes there can be more than one item processed. Here we know only one got processed,
+						// but do implode as a fallback
+					}
+				}
+			}
+		} else {
+			// We aren't getting all the expected data, so make a log entry & tell user.
+			global $logger;
+			$logger->log('Freeze Hold, no patron Id was passed in AJAX call.', Logger::LOG_ERROR);
+			$result['message'] = 'No Patron was specified.';
+		}
+
+		return json_encode($result);
+	}
+
+	// called by js function Account.freezeHold
+	function getReactivationDateForm(){
+		global $interface;
+
+		$interface->assign('patronId', UserAccount::getActiveUserId());
+		$interface->assign('overDriveId', $_REQUEST['overDriveId']);
+
+		$title = translate('Freeze Hold'); // language customization
+		$results = array(
+			'title'        => $title,
+			'modalBody'    => $interface->fetch("OverDrive/reactivationDate.tpl"),
+			'modalButtons' => "<button class='tool btn btn-primary' id='doFreezeHoldWithReactivationDate' onclick='$(\".form\").submit(); return false;'>$title</button>"
+		);
+		return json_encode($results);
+	}
+
+	function thawHold() {
+		$user = UserAccount::getLoggedInUser();
+		$result = array( // set default response
+			'success' => false,
+			'message' => 'Error thawing hold.'
+		);
+
+		if (!$user){
+			$result['message'] = 'You must be logged in to '. translate('thaw') .' a hold.  Please close this dialog and login again.';
+		} elseif (!empty($_REQUEST['patronId'])) {
+			$patronId = $_REQUEST['patronId'];
+			$patronOwningHold = $user->getUserReferredTo($patronId);
+
+			if ($patronOwningHold == false){
+				$result['message'] = 'Sorry, you do not have access to '. translate('thaw') .' holds for the supplied user.';
+			}else{
+				if (empty($_REQUEST['overDriveId'])) {
+					$result['message'] = 'Information about the hold to be '. translate('thawed') .' was not provided.';
+				}else{
+					$overDriveId = $_REQUEST['overDriveId'];
+					$result = $patronOwningHold->thawOverDriveHold($overDriveId);
+				}
+			}
+		} else {
+			// We aren't getting all the expected data, so make a log entry & tell user.
+			global $logger;
+			$logger->log('Thaw Hold, no patron Id was passed in AJAX call.', Logger::LOG_ERROR);
+			$result['message'] = 'No Patron was specified.';
+		}
+
+		return json_encode($result);
+	}
 }

@@ -42,17 +42,24 @@
 				<div class="resultDetails col-xs-12 col-md-8 col-lg-9">
 					{if $record.author}
 						<div class="row">
-							<div class="result-label col-tn-3">{translate text='Author'}</div>
-							<div class="col-tn-9 result-value">
+							<div class="result-label col-tn-4">{translate text='Author'}</div>
+							<div class="col-tn-8 result-value">
 								<a href='{$path}/Author/Home?author="{$record.author|escape:"url"}"'>{$record.author|highlight}</a>
 							</div>
 						</div>
 					{/if}
 
+					<div class="row">
+						<div class="result-label col-tn-4">{translate text='Source'}</div>
+						<div class="col-tn-8 result-value">
+							RBdigital
+						</div>
+					</div>
+
 					{if $record.format}
 						<div class="row">
-							<div class="result-label col-tn-3">{translate text='Format'}</div>
-						<div class="col-tn-9 result-value">
+							<div class="result-label col-tn-4">{translate text='Format'}</div>
+						<div class="col-tn-8 result-value">
 								{implode subject=$record.format glue=", "}
 							</div>
 						</div>
@@ -60,8 +67,8 @@
 
 					{if $hasLinkedUsers}
 					<div class="row">
-						<div class="result-label col-tn-3">{translate text='On Hold For'}</div>
-						<div class="col-tn-9 result-value">
+						<div class="result-label col-tn-4">{translate text='On Hold For'}</div>
+						<div class="col-tn-8 result-value">
 							{$record.user}
 						</div>
 					</div>
@@ -73,7 +80,6 @@
 					<div class="btn-group btn-group-vertical btn-block">
 						<button onclick="return AspenDiscovery.CloudLibrary.cancelHold('{$record.userId}', '{$record.id}');" class="btn btn-sm btn-warning">Cancel Hold</button>
 					</div>
-
 				</div>
 			</div>
 		</div>

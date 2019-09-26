@@ -1383,6 +1383,18 @@ class User extends DataObject
 		return $result;
 	}
 
+	function freezeOverDriveHold($overDriveId, $reactivationDate){
+		require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+		$overDriveDriver = new OverDriveDriver();
+		return $overDriveDriver->freezeHold($this, $overDriveId, $reactivationDate);
+	}
+
+	function thawOverDriveHold($overDriveId){
+		require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+		$overDriveDriver = new OverDriveDriver();
+		return $overDriveDriver->thawHold($this, $overDriveId);
+	}
+
 	function renewCheckout($recordId, $itemId = null, $itemIndex = null){
 		$result = $this->getCatalogDriver()->renewCheckout($this, $recordId, $itemId, $itemIndex);
 		$this->clearCache();
