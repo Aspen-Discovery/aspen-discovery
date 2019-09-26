@@ -1121,4 +1121,72 @@ class OverDriveDriver extends AbstractEContentDriver{
             $recordUsage->insert();
         }
     }
+
+	function getOptions(User $patron)
+	{
+		if (!$this->isUserValidForOverDrive($patron)){
+			return array();
+		}
+		$url = $this->getSettings()->patronApiUrl . '/v1/patrons/me';
+		$response = $this->_callPatronUrl($patron, $url);
+		if ($response == false){
+			//The user is not authorized to use OverDrive
+			return array();
+		}else{
+			$options = [
+				'holdLimit' => $response->holdLimit,
+				'checkoutLimit' => $response->checkoutLimit,
+				'lendingPeriods' => []
+			];
+
+			foreach ($response->lendingPeriods as $lendingPeriod){
+				$options['lendingPeriods'][$lendingPeriod->formatType] = [
+					'formatType' => $lendingPeriod->formatType,
+					'lendingPeriod' => $lendingPeriod->lendingPeriod
+				];
+			}
+
+			foreach ($response->actions as $action){
+				if (isset($action->editLendingPeriod)){
+					$formatClassField = null;
+					$lendingPeriodField = null;
+					foreach($action->editLendingPeriod->fields as $field){
+						if ($field->name == 'formatClass'){
+							$formatClassField = $field;
+						}elseif ($field->name == 'lendingPeriodDays'){
+							$lendingPeriodField = $field;
+						}
+					}
+					if ($formatClassField != null && $lendingPeriodField != null){
+						$options['lendingPeriods'][$formatClassField->value]['options'] = $lendingPeriodField->options;
+					}
+				}
+			}
+		}
+		return $options;
+	}
+
+	function updateOptions(User $patron) {
+		if (!$this->isUserValidForOverDrive($patron)){
+			return false;
+		}
+
+		$existingOptions = $this->getOptions($patron);
+		foreach ($existingOptions['lendingPeriods'] as $lendingPeriod){
+			if ($_REQUEST[$lendingPeriod['formatType']] != $lendingPeriod['lendingPeriod']){
+				$url = $this->getSettings()->patronApiUrl . '/v1/patrons/me';
+
+				$params = array(
+					'formatClass' => strtolower($lendingPeriod['formatType']) ,
+					'lendingPeriodDays' => $_REQUEST[$lendingPeriod['formatType']],
+				);
+				$response = $this->_callPatronUrl($patron, $url, $params, 'PUT');
+
+				if ($this->lastHttpCode != 204){
+					return false;
+				}
+			}
+		}
+		return true;
+	}
 }

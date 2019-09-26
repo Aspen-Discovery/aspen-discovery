@@ -16,8 +16,8 @@
 			{if $offline}
 				<div class="alert alert-warning">{translate text=offline_notice defaultText="<strong>The library system is currently offline.</strong> We are unable to retrieve information about your account at this time."}</div>
 			{else}
-{* MDN 7/26/2019 Do not allow access for linked users *}
-{*				{include file="MyAccount/switch-linked-user-form.tpl" label="View Account Settings for" actionPath="/MyAccount/OverDriveOptions"}*}
+				{* MDN 7/26/2019 Do not allow access for linked users *}
+				{*				{include file="MyAccount/switch-linked-user-form.tpl" label="View Account Settings for" actionPath="/MyAccount/OverDriveOptions"}*}
 
 				{* Empty action attribute uses the page loaded. this keeps the selected user patronId in the parameters passed back to server *}
 				<form action="" method="post" class="form-horizontal">
@@ -31,20 +31,32 @@
 					<div class="form-group">
 						<div class="col-xs-4"><label for="promptForOverdriveEmail" class="control-label">{translate text='Prompt for OverDrive email'}</label></div>
 						<div class="col-xs-8">
-							{if $edit == true}
+                            {if $edit == true}
 								<input type="checkbox" name="promptForOverdriveEmail" id="promptForOverdriveEmail" {if $profile->promptForOverdriveEmail==1}checked='checked'{/if} data-switch="">
-							{else}
-								{if $profile->promptForOverdriveEmail==0}No{else}Yes{/if}
-							{/if}
+                            {else}
+                                {if $profile->promptForOverdriveEmail==0}No{else}Yes{/if}
+                            {/if}
 						</div>
 					</div>
-					<p class="help-block alert alert-warning">
-						{$overdrivePreferencesNotice}
-					</p>
+					<h2>{translate text="Default Lending Periods"}</h2>
+					{foreach from=$options.lendingPeriods item=lendingPeriod}
+						<div class="form-group">
+							<div class="col-xs-4"><label class="control-label">{$lendingPeriod.formatType}</label></div>
+							<div class="col-xs-8">
+								<div class="btn-group btn-group-toggle" data-toggle="buttons">
+									{foreach from=$lendingPeriod.options key=value item=optionName}
+										<label class="btn btn-default {if $optionName == $lendingPeriod.lendingPeriod}active{/if}">
+											<input type="radio" value="{$optionName}" name="{$lendingPeriod.formatType}" {if $optionName == $lendingPeriod.lendingPeriod}checked{/if} >{$optionName} days
+										</label>
+									{/foreach}
+								</div>
+							</div>
+						</div>
+					{/foreach}
 					{if !$offline && $edit == true}
 						<div class="form-group">
 							<div class="col-xs-8 col-xs-offset-4">
-								<button type="submit" name="updateOverDrive" class="btn btn-sm btn-primary">{translate text="Update Options"}</button>
+								<button type="submit" name="updateOverDrive" class="btn btn-primary">{translate text="Update Options"}</button>
 							</div>
 						</div>
 					{/if}

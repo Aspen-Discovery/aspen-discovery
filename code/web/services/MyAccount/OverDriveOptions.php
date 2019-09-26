@@ -35,6 +35,8 @@ class MyAccount_OverDriveOptions extends MyAccount
 				header("Location: " . $actionUrl);
 				exit();
 			} elseif (!$offlineMode) {
+				$currentOptions = $patron->getOverDriveOptions();
+				$interface->assign('options', $currentOptions);
 				$interface->assign('edit', true);
 			} else {
 				$interface->assign('edit', false);

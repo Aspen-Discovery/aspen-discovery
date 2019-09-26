@@ -695,6 +695,10 @@ class User extends DataObject
 			$this->overdriveEmail = strip_tags($_REQUEST['overdriveEmail']);
 		}
 		$this->update();
+
+		require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+		$overDriveDriver = new OverDriveDriver();
+		$overDriveDriver->updateOptions($this);
 	}
 
 	function updateHooplaOptions(){
@@ -1716,6 +1720,12 @@ class User extends DataObject
 				$userLinks->update();
 			}
 		}
+	}
+
+	function getOverDriveOptions() {
+		require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+		$overDriveDriver = new OverDriveDriver();
+		return $overDriveDriver->getOptions($this);
 	}
 }
 
