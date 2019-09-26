@@ -27,7 +27,7 @@ AspenDiscovery.OverDrive = (function(){
 			return false;
 		},
 
-		freezeHold: function(patronId, overDriveId, caller){
+		freezeHold: function(patronId, overDriveId){
 			AspenDiscovery.loadingMessage();
 			let url = Globals.path + '/OverDrive/AJAX';
 			let params = {
@@ -38,7 +38,7 @@ AspenDiscovery.OverDrive = (function(){
 			params['method'] = 'getReactivationDateForm'; // set method for this form
 			$.getJSON(url, params, function(data){
 				AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons)
-			}).fail(AspenDiscovery.ajaxFail);
+			}).error(AspenDiscovery.ajaxFail);
 		},
 
 		// called by ReactivationDateForm when fn freezeHold above has promptForReactivationDate is set
@@ -58,7 +58,7 @@ AspenDiscovery.OverDrive = (function(){
 				} else {
 					AspenDiscovery.showMessage("Error", data.message);
 				}
-			}).fail(AspenDiscovery.ajaxFail);
+			}).error(AspenDiscovery.ajaxFail);
 		},
 
 		thawHold: function(patronId, overDriveId, caller){
@@ -76,7 +76,22 @@ AspenDiscovery.OverDrive = (function(){
 				} else {
 					AspenDiscovery.showMessage("Error", data.message);
 				}
-			}).fail(AspenDiscovery.ajaxFail);
+			}).error(AspenDiscovery.ajaxFail);
+		},
+
+		setAutoCheckoutForHold: function(patronId, overDriveId, value){
+			let url = Globals.path + '/OverDrive/AJAX';
+			let params = {
+				'method' : 'setAutoCheckoutForHold'
+				,patronId : patronId
+				,overDriveId : overDriveId
+				,autoCheckout: value
+			};
+			$.getJSON(url, params, function(data){
+				if (!data.success) {
+					AspenDiscovery.showMessage("Error", data.message);
+				}
+			}).error(AspenDiscovery.ajaxFail);
 		},
 
 		getCheckOutPrompts: function(overDriveId){

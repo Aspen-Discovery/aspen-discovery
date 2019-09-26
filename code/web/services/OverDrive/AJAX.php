@@ -360,4 +360,38 @@ class OverDrive_AJAX extends Action {
 
 		return json_encode($result);
 	}
+
+	function setAutoCheckoutForHold(){
+		$user = UserAccount::getLoggedInUser();
+		$result = array( // set default response
+			'success' => false,
+			'message' => 'Error thawing hold.'
+		);
+
+		if (!$user){
+			$result['message'] = 'You must be logged in to set auto checkout for a hold.  Please close this dialog and login again.';
+		} elseif (!empty($_REQUEST['patronId'])) {
+			$patronId = $_REQUEST['patronId'];
+			$patronOwningHold = $user->getUserReferredTo($patronId);
+
+			if ($patronOwningHold == false){
+				$result['message'] = 'Sorry, you do not have access to update holds for the supplied user.';
+			}else{
+				if (empty($_REQUEST['overDriveId'])) {
+					$result['message'] = 'Information about the hold to be updated was not provided.';
+				}else{
+					$overDriveId = $_REQUEST['overDriveId'];
+					$autoCheckout = $_REQUEST['autoCheckout'];
+					$result = $patronOwningHold->setAutoCheckoutForOverDriveHold($overDriveId, $autoCheckout);
+				}
+			}
+		} else {
+			// We aren't getting all the expected data, so make a log entry & tell user.
+			global $logger;
+			$logger->log('Thaw Hold, no patron Id was passed in AJAX call.', Logger::LOG_ERROR);
+			$result['message'] = 'No Patron was specified.';
+		}
+
+		return json_encode($result);
+	}
 }

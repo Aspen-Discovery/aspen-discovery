@@ -34,6 +34,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 		'video-streaming' => 'OverDrive Video',
 		'ebook-mediado' => 'MediaDo Reader',
 	);
+	private $lastHttpCode;
 
 	private function getSettings(){
 	    if ($this->settings == null){
@@ -220,13 +221,14 @@ class OverDriveDriver extends AbstractEContentDriver{
 		return $this->requirePin;
 	}
 
-    /**
-     * @param User $user
-     * @param $url
-     * @param array $postParams
-     * @return bool|mixed
-     */
-	public function _callPatronUrl($user, $url, $postParams = null){
+	/**
+	 * @param User $user
+	 * @param $url
+	 * @param array $postParams
+	 * @param string $method
+	 * @return bool|mixed
+	 */
+	public function _callPatronUrl($user, $url, $postParams = null, $method = null){
 		global $configArray;
 
 		$userBarcode = $user->getBarcode();
@@ -279,14 +281,22 @@ class OverDriveDriver extends AbstractEContentDriver{
 			}
 			curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 
+			if (!empty($method)){
+				curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
+			}
+
 			$return = curl_exec($ch);
-			curl_close($ch);
 			$returnVal = json_decode($return);
 			if ($returnVal != null){
 				if (!isset($returnVal->message) || $returnVal->message != 'An unexpected error has occurred.'){
+					curl_close($ch);
 					return $returnVal;
 				}
+			}else{
+				$results = curl_getinfo($ch);
+				$this->lastHttpCode = $results['http_code'];
 			}
+			curl_close($ch);
 		}
 		return false;
 	}
@@ -575,6 +585,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 				if ($hold['available']){
 					$hold['expire'] = strtotime($curTitle->holdExpires);
 				}else{
+					$hold['autoCheckout'] = $curTitle->autoCheckout;
 					$hold['allowFreezeHolds'] = true;
 					$hold['canFreeze'] = true;
 					if (isset($curTitle->holdSuspension)){
@@ -759,6 +770,33 @@ class OverDriveDriver extends AbstractEContentDriver{
 			$holdResult['message'] = translate(['text'=>'overdrive_thaw_hold_success', 'defaultText' => 'Your hold was thawed successfully.']);
 		}else{
 			$holdResult['message'] = translate('Sorry, but we could not thaw the hold on this title.');
+			if (isset($response->message)) $holdResult['message'] .= "  {$response->message}";
+		}
+		$user->clearCache();
+		$memCache->delete('overdrive_summary_' . $user->id);
+
+		return $holdResult;
+	}
+
+	function setAutoCheckoutForOverDriveHold(User $user, $overDriveId, $autoCheckout) {
+		/** @var Memcache $memCache */
+		global $memCache;
+
+		$url = $this->getSettings()->patronApiUrl . '/v1/patrons/me/holds/' . $overDriveId;
+		$params = array(
+			'autoCheckout' => $autoCheckout
+		);
+		$response = $this->_callPatronUrl($user, $url, $params, 'PUT');
+
+		$holdResult = array();
+		$holdResult['success'] = false;
+		$holdResult['message'] = '';
+
+		if ($this->lastHttpCode == 204){
+			$holdResult['success'] = true;
+			$holdResult['message'] = translate(['text'=>'overdrive_auto_checkout_success', 'defaultText' => 'Auto checkout was changed successfully.']);
+		}else{
+			$holdResult['message'] = translate('Sorry, but we could change auto checkout for this title.');
 			if (isset($response->message)) $holdResult['message'] .= "  {$response->message}";
 		}
 		$user->clearCache();

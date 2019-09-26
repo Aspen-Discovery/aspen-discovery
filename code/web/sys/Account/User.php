@@ -1395,6 +1395,12 @@ class User extends DataObject
 		return $overDriveDriver->thawHold($this, $overDriveId);
 	}
 
+	function setAutoCheckoutForOverDriveHold($overDriveId, $autoCheckout){
+		require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+		$overDriveDriver = new OverDriveDriver();
+		return $overDriveDriver->setAutoCheckoutForOverDriveHold($this, $overDriveId, $autoCheckout);
+	}
+
 	function renewCheckout($recordId, $itemId = null, $itemIndex = null){
 		$result = $this->getCatalogDriver()->renewCheckout($this, $recordId, $itemId, $itemIndex);
 		$this->clearCache();
