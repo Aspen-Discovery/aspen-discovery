@@ -503,7 +503,7 @@ public class GroupedWorkSolr implements Cloneable {
 						addUniqueFieldValue(doc, "collection_" + curScopeName, curItem.getCollection());
 						addUniqueFieldValue(doc, "detailed_location_" + curScopeName, curItem.getShelfLocation());
 					}
-					if (curScope.isLocallyOwned() || curScope.isLibraryOwned() || curScopeDetails.isIncludeAllRecordsInDateAddedFacets()) {
+					if (curItem.isEContent() || curScope.isLocallyOwned() || curScope.isLibraryOwned() || curScopeDetails.isIncludeAllRecordsInDateAddedFacets()) {
 						Long daysSinceAdded;
 						if (curItem.isOrderItem() || (curItem.getStatusCode() != null && curItem.getStatusCode().equals("On Order"))){
 							daysSinceAdded = -1L;

@@ -75,6 +75,9 @@ public class UserListIndexerMain {
             //Disconnect from the database
             disconnectDatabase(dbConn);
 
+            listProcessor.close();
+            listProcessor = null;
+
             //Pause before running the next export (longer if we didn't get any actual changes)
             if (runContinuously) {
                 try {
@@ -109,6 +112,7 @@ public class UserListIndexerMain {
             finishedStatement.setString(1, "last_user_list_index_time");
             finishedStatement.setLong(2, startTime / 1000);
             finishedStatement.executeUpdate();
+            finishedStatement.close();
         } catch (SQLException e) {
             logger.error("Unable to update variables with completion time.", e);
         }

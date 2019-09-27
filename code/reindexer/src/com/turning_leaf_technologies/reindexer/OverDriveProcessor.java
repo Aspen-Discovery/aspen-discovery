@@ -6,11 +6,14 @@ import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import sun.nio.ch.SelectorImpl;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -23,6 +26,7 @@ class OverDriveProcessor {
 	private PreparedStatement getProductMetadataStmt;
 	private PreparedStatement getProductAvailabilityStmt;
 	private PreparedStatement getProductFormatsStmt;
+	private SimpleDateFormat publishDateFormatter = new SimpleDateFormat("MM/dd/yyyy");
 
 	OverDriveProcessor(GroupedWorkIndexer groupedWorkIndexer, Connection dbConn, Logger logger) {
 		this.indexer = groupedWorkIndexer;
@@ -98,12 +102,20 @@ class OverDriveProcessor {
 						}
 
 						boolean isOnOrder = false;
+						Date publishDate = null;
 						if (rawMetadataDecoded.has("onSaleDate")){
 							String onSaleDate = rawMetadataDecoded.getString("onSaleDate");
-
-
+						}else if (rawMetadataDecoded.has("publishDateText")){
+							String publishDateText = rawMetadataDecoded.getString("publishDateText");
+							try {
+								publishDate = publishDateFormatter.parse(publishDateText);
+								if (publishDate.after(new Date())){
+									isOnOrder = true;
+								}
+							} catch (ParseException e) {
+								logger.error("Error parsing publication date");
+							}
 						}
-
 
 						String fullTitle = title + " " + subtitle;
 						fullTitle = fullTitle.trim();
@@ -172,7 +184,12 @@ class OverDriveProcessor {
 							itemInfo.setShelfLocation("Online OverDrive Collection");
 							itemInfo.setCallNumber("Online OverDrive");
 							itemInfo.setSortableCallNumber("Online OverDrive");
-							itemInfo.setDateAdded(dateAdded);
+							if (isOnOrder) {
+								itemInfo.setIsOrderItem();
+								itemInfo.setDateAdded(publishDate);
+							}else{
+								itemInfo.setDateAdded(dateAdded);
+							}
 
 							overDriveRecord.addItem(itemInfo);
 
@@ -220,7 +237,10 @@ class OverDriveProcessor {
 											scopingInfo.setAvailable(available);
 											scopingInfo.setHoldable(true);
 
-											if (available) {
+											if (isOnOrder) {
+												scopingInfo.setStatus("On Order");
+												scopingInfo.setGroupedStatus("On Order");
+											}else if (available) {
 												scopingInfo.setStatus("Available Online");
 												scopingInfo.setGroupedStatus("Available Online");
 											} else {
@@ -257,7 +277,10 @@ class OverDriveProcessor {
 											if (curScope.isLibraryScope()) {
 												scopingInfo.setLibraryOwned(true);
 											}
-											if (available) {
+											if (isOnOrder) {
+												scopingInfo.setStatus("On Order");
+												scopingInfo.setGroupedStatus("On Order");
+											}else if (available) {
 												scopingInfo.setStatus("Available Online");
 												scopingInfo.setGroupedStatus("Available Online");
 											} else {

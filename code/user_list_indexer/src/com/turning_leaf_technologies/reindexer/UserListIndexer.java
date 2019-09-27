@@ -64,6 +64,18 @@ class UserListIndexer {
 		scopes = IndexingUtils.loadScopes(dbConn, logger);
 	}
 
+	void close() {
+		this.dbConn = null;
+		try {
+			groupedWorkServer.close();
+			groupedWorkServer = null;
+		} catch (IOException e) {
+			logger.error("Could not close grouped work server", e);
+		}
+		updateServer.close();
+		updateServer = null;
+	}
+
 	Long processPublicUserLists(boolean fullReindex, long lastReindexTime) {
 		Long numListsProcessed = 0L;
 		try{
