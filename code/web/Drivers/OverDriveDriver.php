@@ -370,21 +370,6 @@ class OverDriveDriver extends AbstractEContentDriver{
 		return $this->_callUrl("https://api.overdrive.com/v1/libraries/$libraryId/advantageAccounts");
 	}
 
-	public function getProductsInAccount($productsUrl = null, $start = 0, $limit = 25){
-		if ($productsUrl == null){
-            $accountId = $this->getSettings()->accountId;
-			$productsUrl = "https://api.overdrive.com/v1/collections/$accountId/products";
-		}
-		$productsUrl .= "?offset=$start&limit=$limit";
-		return $this->_callUrl($productsUrl);
-	}
-
-	public function getProductById($overDriveId, $productsKey = null){
-		$productsUrl = "https://api.overdrive.com/v1/collections/$productsKey/products";
-		$productsUrl .= "?crossRefId=$overDriveId";
-		return $this->_callUrl($productsUrl);
-	}
-
 	public function getProductMetadata($overDriveId, $productsKey = null){
 		if ($productsKey == null){
 			$productsKey = $this->getSettings()->productsKey;
@@ -427,116 +412,87 @@ class OverDriveDriver extends AbstractEContentDriver{
 			return array();
 		}
 
-		$checkedOutTitles = array();
+		$checkedOutTitles = [];
+		$supplementalMaterialIds = [];
 		if (isset($response->checkouts)){
 			foreach ($response->checkouts as $curTitle){
 				$bookshelfItem = array();
-				//Load data from api
-				$bookshelfItem['checkoutSource'] = 'OverDrive';
-				$bookshelfItem['overDriveId'] = $curTitle->reserveId;
-				$bookshelfItem['expiresOn'] = $curTitle->expires;
-                try {
-                    $expirationDate = new DateTime($curTitle->expires);
-                    $bookshelfItem['dueDate'] = $expirationDate->getTimestamp();
-                } catch (Exception $e) {
-                    $logger->log("Could not parse date for overdrive expiration " . $curTitle->expires, Logger::LOG_NOTICE);
-                }
-                try {
-                    $checkOutDate = new DateTime($curTitle->checkoutDate);
-                    $bookshelfItem['checkoutDate'] = $checkOutDate->getTimestamp();
-                } catch (Exception $e) {
-                    $logger->log("Could not parse date for overdrive checkout date " . $curTitle->checkoutDate, Logger::LOG_NOTICE);
-                }
-				$bookshelfItem['overdriveRead'] = false;
-				if (isset($curTitle->isFormatLockedIn) && $curTitle->isFormatLockedIn == 1){
-					$bookshelfItem['formatSelected'] = true;
+				if (isset($curTitle->links->bundledChildren)){
+					foreach ($curTitle->links->bundledChildren as $bundledChild){
+						if (preg_match('%.*/checkouts/(.*)%ix', $bundledChild->href, $matches)) {
+							$supplementalMaterialIds[$matches[1]] = $curTitle->reserveId;
+						}
+					}
+				}
+
+				if (array_key_exists($curTitle->reserveId, $supplementalMaterialIds)){
+					$parentCheckoutId = $supplementalMaterialIds[$curTitle->reserveId];
+					$parentCheckout = $checkedOutTitles['OverDrive' . $parentCheckoutId];
+					if (!isset($parentCheckout['supplementalMaterials'])) {
+						$parentCheckout['supplementalMaterials'] = [];
+					}
+					$supplementalMaterial = [
+						'checkoutSource' => 'OverDrive',
+						'overDriveId' => $curTitle->reserveId,
+						'isSupplemental' => true,
+						'userId' => $patron->id,
+					];
+					$supplementalMaterial = $this->loadCheckoutFormatInformation($curTitle, $supplementalMaterial);
+					$parentCheckout['supplementalMaterials'][] = $supplementalMaterial;
+					$checkedOutTitles['OverDrive' . $parentCheckoutId] = $parentCheckout;
 				}else{
-					$bookshelfItem['formatSelected'] = false;
-				}
-				$bookshelfItem['formats'] = array();
-				if (!$forSummary){
-					if (isset($curTitle->formats)){
-						foreach ($curTitle->formats as $id => $format){
-							if ($format->formatType == 'ebook-overdrive' || $format->formatType == 'ebook-mediado') {
-								$bookshelfItem['overdriveRead'] = true;
-							}else if ($format->formatType == 'audiobook-overdrive'){
-									$bookshelfItem['overdriveListen'] = true;
-							}else if ($format->formatType == 'video-streaming'){
-								$bookshelfItem['overdriveVideo'] = true;
-							}else{
-								$bookshelfItem['selectedFormat'] = array(
-									'name' => $this->format_map[$format->formatType],
-									'format' => $format->formatType,
-								);
-							}
-							$curFormat = array();
-							$curFormat['id'] = $id;
-							$curFormat['format'] = $format;
-							$curFormat['name'] = $format->formatType;
-							if (isset($format->links->self)){
-								$curFormat['downloadUrl'] = $format->links->self->href . '/downloadlink';
-							}
-							if ($format->formatType != 'ebook-overdrive' && $format->formatType != 'ebook-mediado' && $format->formatType != 'audiobook-overdrive' && $format->formatType != 'video-streaming'){
-								$bookshelfItem['formats'][] = $curFormat;
-							}else{
-								if (isset($curFormat['downloadUrl'])){
-									if ($format->formatType = 'ebook-overdrive' || $format->formatType == 'ebook-mediado') {
-										$bookshelfItem['overdriveReadUrl'] = $curFormat['downloadUrl'];
-									}else if ($format->formatType == 'video-streaming') {
-										$bookshelfItem['overdriveVideoUrl'] = $curFormat['downloadUrl'];
-									}else{
-										$bookshelfItem['overdriveListenUrl'] = $curFormat['downloadUrl'];
-									}
-								}
-							}
-						}
+					//Load data from api
+					$bookshelfItem['checkoutSource'] = 'OverDrive';
+					$bookshelfItem['overDriveId'] = $curTitle->reserveId;
+					$bookshelfItem['expiresOn'] = $curTitle->expires;
+					try {
+						$expirationDate = new DateTime($curTitle->expires);
+						$bookshelfItem['dueDate'] = $expirationDate->getTimestamp();
+					} catch (Exception $e) {
+						$logger->log("Could not parse date for overdrive expiration " . $curTitle->expires, Logger::LOG_NOTICE);
 					}
-					if (isset($curTitle->actions->format) && !$bookshelfItem['formatSelected']){
-						//Get the options for the format which includes the valid formats
-						$formatField = null;
-						foreach ($curTitle->actions->format->fields as $curFieldIndex => $curField){
-							if ($curField->name == 'formatType'){
-								$formatField = $curField;
-								break;
-							}
-						}
-						if (isset($formatField->options)){
-							foreach ($formatField->options as $index => $format){
-								$curFormat = array();
-								$curFormat['id'] = $format;
-								$curFormat['name'] = $this->format_map[$format];
-								$bookshelfItem['formats'][] = $curFormat;
-							}
-						//}else{
-							//No formats found for the title, do we need to do anything special?
-						}
+					try {
+						$checkOutDate = new DateTime($curTitle->checkoutDate);
+						$bookshelfItem['checkoutDate'] = $checkOutDate->getTimestamp();
+					} catch (Exception $e) {
+						$logger->log("Could not parse date for overdrive checkout date " . $curTitle->checkoutDate, Logger::LOG_NOTICE);
 					}
+					$bookshelfItem['overdriveRead'] = false;
+					if (isset($curTitle->isFormatLockedIn) && $curTitle->isFormatLockedIn == 1){
+						$bookshelfItem['formatSelected'] = true;
+					}else{
+						$bookshelfItem['formatSelected'] = false;
+					}
+					$bookshelfItem['formats'] = array();
+					if (!$forSummary){
+						$bookshelfItem = $this->loadCheckoutFormatInformation($curTitle, $bookshelfItem);
 
-					if (isset($curTitle->actions->earlyReturn)){
-						$bookshelfItem['earlyReturn']  = true;
+						if (isset($curTitle->actions->earlyReturn)){
+							$bookshelfItem['earlyReturn']  = true;
+						}
+						//Figure out which eContent record this is for.
+						require_once ROOT_DIR . '/RecordDrivers/OverDriveRecordDriver.php';
+						$overDriveRecord = new OverDriveRecordDriver($bookshelfItem['overDriveId']);
+						$bookshelfItem['recordId'] = $overDriveRecord->getUniqueID();
+						$groupedWorkId = $overDriveRecord->getGroupedWorkId();
+						if ($groupedWorkId != null){
+							$bookshelfItem['groupedWorkId'] = $overDriveRecord->getGroupedWorkId();
+						}
+						$formats = $overDriveRecord->getFormats();
+						$bookshelfItem['format']     = reset($formats);
+						$bookshelfItem['coverUrl'] = $overDriveRecord->getCoverUrl('medium');
+						$bookshelfItem['ratingData'] = $overDriveRecord->getRatingData();
+						$bookshelfItem['recordUrl']  = $configArray['Site']['path'] . '/OverDrive/' . $overDriveRecord->getUniqueID() . '/Home';
+						$bookshelfItem['title']      = $overDriveRecord->getTitle();
+						$bookshelfItem['author']     = $overDriveRecord->getAuthor();
+						$bookshelfItem['linkUrl']    = $overDriveRecord->getLinkUrl(false);
 					}
-					//Figure out which eContent record this is for.
-					require_once ROOT_DIR . '/RecordDrivers/OverDriveRecordDriver.php';
-					$overDriveRecord = new OverDriveRecordDriver($bookshelfItem['overDriveId']);
-					$bookshelfItem['recordId'] = $overDriveRecord->getUniqueID();
-					$groupedWorkId = $overDriveRecord->getGroupedWorkId();
-					if ($groupedWorkId != null){
-						$bookshelfItem['groupedWorkId'] = $overDriveRecord->getGroupedWorkId();
-					}
-					$formats = $overDriveRecord->getFormats();
-					$bookshelfItem['format']     = reset($formats);
-					$bookshelfItem['coverUrl'] = $overDriveRecord->getCoverUrl('medium');
-					$bookshelfItem['ratingData'] = $overDriveRecord->getRatingData();
-					$bookshelfItem['recordUrl']  = $configArray['Site']['path'] . '/OverDrive/' . $overDriveRecord->getUniqueID() . '/Home';
-					$bookshelfItem['title']      = $overDriveRecord->getTitle();
-					$bookshelfItem['author']     = $overDriveRecord->getAuthor();
-					$bookshelfItem['linkUrl']    = $overDriveRecord->getLinkUrl(false);
-				}
-				$bookshelfItem['user'] = $patron->getNameAndLibraryLabel();
-				$bookshelfItem['userId'] = $patron->id;
+					$bookshelfItem['user'] = $patron->getNameAndLibraryLabel();
+					$bookshelfItem['userId'] = $patron->id;
 
-				$key = $bookshelfItem['checkoutSource'] . $bookshelfItem['overDriveId'];
-				$checkedOutTitles[$key] = $bookshelfItem;
+					$key = $bookshelfItem['checkoutSource'] . $bookshelfItem['overDriveId'];
+					$checkedOutTitles[$key] = $bookshelfItem;
+				}
 			}
 		}
 		if (!$forSummary){
@@ -605,6 +561,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 					$overDriveRecord = new OverDriveRecordDriver($hold['overDriveId']);
 					$hold['recordId'] = $overDriveRecord->getUniqueID();
 					$hold['coverUrl'] = $overDriveRecord->getCoverUrl('medium');
+					/** @noinspection DuplicatedCode */
 					$hold['recordUrl'] = $configArray['Site']['path'] . '/OverDrive/' . $overDriveRecord->getUniqueID() . '/Home';
 					$hold['title'] = $overDriveRecord->getTitle();
 					$hold['sortTitle'] = $overDriveRecord->getTitle();
@@ -733,9 +690,14 @@ class OverDriveDriver extends AbstractEContentDriver{
 			$params['suspensionType'] = 'indefinite';
 		}else{
 			//OverDrive always seems to place the suspension for 2 days less than it should be
-			$numberOfDaysToSuspend = (new DateTime())->diff(new DateTime($reactivationDate))->days + 2;
-			$params['suspensionType'] = 'limited';
-			$params['numberOfDays'] = $numberOfDaysToSuspend;
+			try {
+				$numberOfDaysToSuspend = (new DateTime())->diff(new DateTime($reactivationDate))->days + 2;
+				$params['suspensionType'] = 'limited';
+				$params['numberOfDays'] = $numberOfDaysToSuspend;
+			} catch (Exception $e) {
+				return ['success'=>false,'message'=>'Unable to determine reactivation date'];
+			}
+
 		}
 		$response = $this->_callPatronUrl($user, $url, $params);
 
@@ -1002,34 +964,6 @@ class OverDriveDriver extends AbstractEContentDriver{
 		return $result;
 	}
 
-	public function getLibraryScopingId(){
-		//For econtent, we need to be more specific when restricting copies
-		//since patrons can't use copies that are only available to other libraries.
-		$searchLibrary = Library::getSearchLibrary();
-		$searchLocation = Location::getSearchLocation();
-		$activeLibrary = Library::getActiveLibrary();
-        global $locationSingleton;
-        $activeLocation = $locationSingleton->getActiveLocation();
-		$homeLibrary = Library::getPatronHomeLibrary();
-
-		//Load the holding label for the branch where the user is physically.
-		if (!is_null($homeLibrary)){
-			return $homeLibrary->includeOutOfSystemExternalLinks ? -1 : $homeLibrary->libraryId;
-		}else if (!is_null($activeLocation)){
-			$activeLibrary = Library::getLibraryForLocation($activeLocation->locationId);
-			return $activeLibrary->includeOutOfSystemExternalLinks ? -1 : $activeLibrary->libraryId;
-		}else if (isset($activeLibrary)) {
-			return $activeLibrary->includeOutOfSystemExternalLinks ? -1 : $activeLibrary->libraryId;
-		}else if (!is_null($searchLocation)){
-			$searchLibrary = Library::getLibraryForLocation($searchLibrary->locationId);
-			return $searchLibrary->includeOutOfSystemExternalLinks ? -1 : $searchLocation->libraryId;
-		}else if (isset($searchLibrary)) {
-			return $searchLibrary->includeOutOfSystemExternalLinks ? -1 : $searchLibrary->libraryId;
-		}else{
-			return -1;
-		}
-	}
-
 	public function hasNativeReadingHistory()
     {
         return false;
@@ -1072,7 +1006,8 @@ class OverDriveDriver extends AbstractEContentDriver{
     {
         require_once ROOT_DIR . '/sys/OverDrive/UserOverDriveUsage.php';
         $userUsage = new UserOverDriveUsage();
-        $userUsage->userId = $user->id;
+	    /** @noinspection DuplicatedCode */
+	    $userUsage->userId = $user->id;
         $userUsage->year = date('Y');
         $userUsage->month = date('n');
 
@@ -1183,7 +1118,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 					'formatClass' => strtolower($lendingPeriod['formatType']) ,
 					'lendingPeriodDays' => $_REQUEST[$lendingPeriod['formatType']],
 				);
-				$response = $this->_callPatronUrl($patron, $url, $params, 'PUT');
+				$this->_callPatronUrl($patron, $url, $params, 'PUT');
 
 				if ($this->lastHttpCode != 204){
 					return false;
@@ -1191,5 +1126,71 @@ class OverDriveDriver extends AbstractEContentDriver{
 			}
 		}
 		return true;
+	}
+
+	/**
+	 * @param $curTitle
+	 * @param array $bookshelfItem
+	 * @return array
+	 */
+	private function loadCheckoutFormatInformation($curTitle, array $bookshelfItem): array
+	{
+		if (isset($curTitle->formats)) {
+			foreach ($curTitle->formats as $id => $format) {
+				if ($format->formatType == 'ebook-overdrive' || $format->formatType == 'ebook-mediado') {
+					$bookshelfItem['overdriveRead'] = true;
+				} else if ($format->formatType == 'audiobook-overdrive') {
+					$bookshelfItem['overdriveListen'] = true;
+				} else if ($format->formatType == 'video-streaming') {
+					$bookshelfItem['overdriveVideo'] = true;
+				} else {
+					$bookshelfItem['selectedFormat'] = array(
+						'name' => $this->format_map[$format->formatType],
+						'format' => $format->formatType,
+					);
+				}
+				$curFormat = array();
+				$curFormat['id'] = $id;
+				$curFormat['format'] = $format;
+				$curFormat['name'] = $format->formatType;
+				if (isset($format->links->self)) {
+					$curFormat['downloadUrl'] = $format->links->self->href . '/downloadlink';
+				}
+				if ($format->formatType != 'ebook-overdrive' && $format->formatType != 'ebook-mediado' && $format->formatType != 'audiobook-overdrive' && $format->formatType != 'video-streaming') {
+					$bookshelfItem['formats'][] = $curFormat;
+				} else {
+					if (isset($curFormat['downloadUrl'])) {
+						if ($format->formatType = 'ebook-overdrive' || $format->formatType == 'ebook-mediado') {
+							$bookshelfItem['overdriveReadUrl'] = $curFormat['downloadUrl'];
+						} else if ($format->formatType == 'video-streaming') {
+							$bookshelfItem['overdriveVideoUrl'] = $curFormat['downloadUrl'];
+						} else {
+							$bookshelfItem['overdriveListenUrl'] = $curFormat['downloadUrl'];
+						}
+					}
+				}
+			}
+		}
+		if (isset($curTitle->actions->format) && !empty($bookshelfItem['formatSelected'])) {
+			//Get the options for the format which includes the valid formats
+			$formatField = null;
+			foreach ($curTitle->actions->format->fields as $curFieldIndex => $curField) {
+				if ($curField->name == 'formatType') {
+					$formatField = $curField;
+					break;
+				}
+			}
+			if (isset($formatField->options)) {
+				foreach ($formatField->options as $index => $format) {
+					$curFormat = array();
+					$curFormat['id'] = $format;
+					$curFormat['name'] = $this->format_map[$format];
+					$bookshelfItem['formats'][] = $curFormat;
+				}
+				//}else{
+				//No formats found for the title, do we need to do anything special?
+			}
+		}
+		return $bookshelfItem;
 	}
 }

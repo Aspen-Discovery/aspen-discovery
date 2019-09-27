@@ -128,6 +128,11 @@
 						{if $record.formatSelected && empty($record.overdriveVideo)}
 							<a href="#" onclick="return AspenDiscovery.OverDrive.followOverDriveDownloadLink('{$record.userId}', '{$record.overDriveId}', '{$record.selectedFormat.format}')" class="btn btn-sm btn-primary">{translate text="Download&nbsp;Again"}</a>
 						{/if}
+						{if !empty($record.supplementalMaterials)}
+							{foreach from=$record.supplementalMaterials item=supplement}
+								<a href="#" onclick="return AspenDiscovery.OverDrive.followOverDriveDownloadLink('{$record.userId}', '{$supplement.overDriveId}', '{$supplement.selectedFormat.format}')" class="btn btn-sm btn-primary btn-wrap">{translate text="Download Supplemental %1%" 1=$supplement.selectedFormat.name}</a>
+							{/foreach}
+						{/if}
 						{if $record.canRenew}
 							<a href="#" onclick="return AspenDiscovery.OverDrive.renewCheckout('{$record.userId}', '{$record.overDriveId}');" class="btn btn-sm btn-info">{translate text='Renew Checkout'}</a>
 						{/if}
