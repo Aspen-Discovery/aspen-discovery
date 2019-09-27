@@ -188,59 +188,17 @@ class CloudLibraryDriver extends AbstractEContentDriver
 
 		if (isset($circulation->Holds->Item)) {
 			foreach ($circulation->Holds->Item as $holdFromCloudLibrary) {
-				$hold = [];
-				$hold['holdSource'] = 'CloudLibrary';
-
-				$hold['id'] = (string)$holdFromCloudLibrary->ItemId;
-				$hold['transactionId'] = (string)$holdFromCloudLibrary->ItemId;
-				$hold['position'] = (string)$holdFromCloudLibrary->Position;
-
-				$recordDriver = new CloudLibraryRecordDriver((string)$holdFromCloudLibrary->ItemId);
-				if ($recordDriver->isValid()) {
-					$hold['title'] = $recordDriver->getTitle();
-					$curTitle['sortTitle'] = $recordDriver->getTitle();
-					$hold['author'] = $recordDriver->getPrimaryAuthor();
-					$hold['coverUrl'] = $recordDriver->getBookcoverUrl('medium');
-					$hold['ratingData'] = $recordDriver->getRatingData();
-					$hold['format'] = $recordDriver->getPrimaryFormat();
-					$hold['linkUrl'] = $recordDriver->getLinkUrl();
-				} else {
-					$hold['title'] = 'Unknown';
-					$hold['author'] = 'Unknown';
-				}
-
-				$hold['user'] = $user->getNameAndLibraryLabel();
-				$hold['userId'] = $user->id;
+				$hold = $this->loadCloudLibraryHoldInfo($user, $holdFromCloudLibrary);
 
 				$key = $hold['holdSource'] . $hold['id'] . $hold['user'];
+				$hold['position'] = (string)$holdFromCloudLibrary->Position;
 				$holds['unavailable'][$key] = $hold;
 			}
 		}
 
 		if (isset($circulation->Reserves->Item)) {
 			foreach ($circulation->Reserves->Item as $holdFromCloudLibrary) {
-				$hold = [];
-				$hold['holdSource'] = 'CloudLibrary';
-
-				$hold['id'] = (string)$holdFromCloudLibrary->ItemId;
-				$hold['transactionId'] = (string)$holdFromCloudLibrary->ItemId;
-
-				$recordDriver = new CloudLibraryRecordDriver((string)$holdFromCloudLibrary->ItemId);
-				if ($recordDriver->isValid()) {
-					$hold['title'] = $recordDriver->getTitle();
-					$curTitle['sortTitle'] = $recordDriver->getTitle();
-					$hold['author'] = $recordDriver->getPrimaryAuthor();
-					$hold['coverUrl'] = $recordDriver->getBookcoverUrl('medium');
-					$hold['ratingData'] = $recordDriver->getRatingData();
-					$hold['format'] = $recordDriver->getPrimaryFormat();
-					$hold['linkUrl'] = $recordDriver->getLinkUrl();
-				} else {
-					$hold['title'] = 'Unknown';
-					$hold['author'] = 'Unknown';
-				}
-
-				$hold['user'] = $user->getNameAndLibraryLabel();
-				$hold['userId'] = $user->id;
+				$hold = $this->loadCloudLibraryHoldInfo($user, $holdFromCloudLibrary);
 
 				$key = $hold['holdSource'] . $hold['id'] . $hold['user'];
 				$holds['available'][$key] = $hold;
@@ -465,6 +423,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 	{
 		require_once ROOT_DIR . '/sys/CloudLibrary/UserCloudLibraryUsage.php';
 		$userUsage = new UserCloudLibraryUsage();
+		/** @noinspection DuplicatedCode */
 		$userUsage->userId = $user->id;
 		$userUsage->year = date('Y');
 		$userUsage->month = date('n');
@@ -537,11 +496,45 @@ class CloudLibraryDriver extends AbstractEContentDriver
 			$apiPath .= "?password=$password";
 		}
 		$authenticationResponse = $this->callCloudLibraryUrl($settings, $apiPath);
+		/** @var SimpleXMLElement $authentication */
 		$authentication = simplexml_load_string($authenticationResponse);
+		/** @noinspection PhpUndefinedFieldInspection */
 		if ($authentication->result == 'SUCCESS'){
 			return true;
 		}else{
 			return false;
 		}
+	}
+
+	/**
+	 * @param $user
+	 * @param $holdFromCloudLibrary
+	 * @return array
+	 */
+	private function loadCloudLibraryHoldInfo(User $user, $holdFromCloudLibrary): array
+	{
+		$hold = [];
+		$hold['holdSource'] = 'CloudLibrary';
+
+		$hold['id'] = (string)$holdFromCloudLibrary->ItemId;
+		$hold['transactionId'] = (string)$holdFromCloudLibrary->ItemId;
+
+		$recordDriver = new CloudLibraryRecordDriver((string)$holdFromCloudLibrary->ItemId);
+		if ($recordDriver->isValid()) {
+			$hold['title'] = $recordDriver->getTitle();
+			$hold['sortTitle'] = $recordDriver->getTitle();
+			$hold['author'] = $recordDriver->getPrimaryAuthor();
+			$hold['coverUrl'] = $recordDriver->getBookcoverUrl('medium');
+			$hold['ratingData'] = $recordDriver->getRatingData();
+			$hold['format'] = $recordDriver->getPrimaryFormat();
+			$hold['linkUrl'] = $recordDriver->getLinkUrl();
+		} else {
+			$hold['title'] = 'Unknown';
+			$hold['author'] = 'Unknown';
+		}
+
+		$hold['user'] = $user->getNameAndLibraryLabel();
+		$hold['userId'] = $user->id;
+		return $hold;
 	}
 }
