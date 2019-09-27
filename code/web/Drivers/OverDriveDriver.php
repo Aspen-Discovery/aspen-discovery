@@ -695,6 +695,9 @@ class OverDriveDriver extends AbstractEContentDriver{
 			'reserveId' => $overDriveId,
 			'emailAddress' => trim($user->overdriveEmail)
 		);
+		if ($user->overdriveAutoCheckout){
+			$params['autoCheckout'] = true;
+		}
 		$response = $this->_callPatronUrl($user, $url, $params);
 
 		$holdResult = array();

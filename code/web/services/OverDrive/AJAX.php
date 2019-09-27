@@ -32,6 +32,14 @@ class OverDrive_AJAX extends Action {
 						$patron->update();
 					}
 				}
+				if (isset($_REQUEST['overdriveAutoCheckout'])){
+					if ($_REQUEST['overdriveAutoCheckout'] == '1' || $_REQUEST['overdriveAutoCheckout'] == 'yes' || $_REQUEST['overdriveAutoCheckout'] == 'on'){
+						$patron->overdriveAutoCheckout = 1;
+					}else{
+						$patron->overdriveAutoCheckout = 0;
+					}
+					$patron->update();
+				}
 				if (isset($_REQUEST['promptForOverdriveEmail'])){
 					if ($_REQUEST['promptForOverdriveEmail'] == 1 || $_REQUEST['promptForOverdriveEmail'] == 'yes' || $_REQUEST['promptForOverdriveEmail'] == 'on'){
 						$patron->promptForOverdriveEmail = 1;
@@ -177,6 +185,7 @@ class OverDrive_AJAX extends Action {
 		}
 
 		$interface->assign('overdriveEmail', $user->overdriveEmail);
+		$interface->assign('overdriveAutoCheckout', $user->overdriveAutoCheckout);
 		$interface->assign('promptForEmail', $promptForEmail);
 		if ($promptForEmail || count($overDriveUsers) > 1){
 			$promptTitle = 'OverDrive Hold Options';

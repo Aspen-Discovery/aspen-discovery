@@ -176,8 +176,11 @@ AspenDiscovery.OverDrive = (function(){
 			return false;
 		},
 
-		doOverDriveHold: function(patronId, overDriveId, overdriveEmail, promptForOverdriveEmail){
+		doOverDriveHold: function(patronId, overDriveId, overdriveEmail, promptForOverdriveEmail, overdriveAutoCheckout){
 			let url = Globals.path + "/OverDrive/AJAX?method=placeHold&patronId=" + patronId + "&overDriveId=" + overDriveId + "&overdriveEmail=" + overdriveEmail + "&promptForOverdriveEmail=" + promptForOverdriveEmail;
+			if (overdriveAutoCheckout !== undefined){
+				url += "&overdriveAutoCheckout=" + overdriveAutoCheckout;
+			}
 			$.ajax({
 				url: url,
 				cache: false,
@@ -262,6 +265,12 @@ AspenDiscovery.OverDrive = (function(){
 			let overdriveHoldPromptsForm = $("#overdriveHoldPromptsForm");
 			let patronId = $("#patronId").val();
 			let overdriveId = overdriveHoldPromptsForm.find("input[name=overdriveId]").val();
+			let overdriveAutoCheckout;
+			if (overdriveHoldPromptsForm.find("input[name=overdriveAutoCheckout]").is(":checked")){
+				overdriveAutoCheckout = 1;
+			}else{
+				overdriveAutoCheckout = 0;
+			}
 			let promptForOverdriveEmail;
 			if (overdriveHoldPromptsForm.find("input[name=promptForOverdriveEmail]").is(":checked")){
 				promptForOverdriveEmail = 0;
@@ -269,7 +278,7 @@ AspenDiscovery.OverDrive = (function(){
 				promptForOverdriveEmail = 1;
 			}
 			let overdriveEmail = overdriveHoldPromptsForm.find("input[name=overdriveEmail]").val();
-			AspenDiscovery.OverDrive.doOverDriveHold(patronId, overdriveId, overdriveEmail, promptForOverdriveEmail);
+			AspenDiscovery.OverDrive.doOverDriveHold(patronId, overdriveId, overdriveEmail, promptForOverdriveEmail, overdriveAutoCheckout);
 		},
 
 		renewCheckout: function(patronId, recordId){

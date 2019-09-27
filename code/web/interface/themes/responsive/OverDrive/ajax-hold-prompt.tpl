@@ -21,9 +21,14 @@
 			<div class="form-group">
 				<label for="overdriveEmail" class="control-label">{translate text="overdrive_email" defaultText="Enter an email to be notified when the title is ready for you."}</label>
 				<input type="text" class="email form-control" name="overdriveEmail" id="overdriveEmail" value="{$overdriveEmail}" size="40" maxlength="250"/>
-				</div>
+			</div>
+			<div class="form-group">
+				<label for="overdriveAutoCheckout" class="checkout">
+					<input type="checkbox" id="overdriveAutoCheckout" name="overdriveAutoCheckout" {if $overdriveAutoCheckout}checked="checked"{/if}> {translate text="overdrive_auto_checkout" defaultText="Automatically checkout when available"}
+				</label>
+			</div>
 			<div class="checkbox">
-				<label for="promptForOverdriveEmail" class="control-label"><input type="checkbox" name="promptForOverdriveEmail" id="promptForOverdriveEmail"/> {translate text="Remember this email"}</label>
+				<label for="promptForOverdriveEmail" class="control-label"><input type="checkbox" name="promptForOverdriveEmail" id="promptForOverdriveEmail"/> {translate text="Remember these settings"}</label>
 			</div>
 		{else}
 			<input type="hidden" name="overdriveEmail" value="{$overdriveEmail}"/>

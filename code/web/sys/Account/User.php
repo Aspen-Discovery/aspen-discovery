@@ -30,7 +30,8 @@ class User extends DataObject
 	public $disableRecommendations;     //tinyint
 	public $disableCoverArt;     //tinyint
 	public $overdriveEmail;
-	public $promptForOverdriveEmail;
+	public $overdriveAutoCheckout;
+	public $promptForOverdriveEmail; //Semantics of this have changed to not prompting for hold settings
 	public $hooplaCheckOutConfirmation;
 	public $preferredLibraryInterface;
 	public $noPromptForUserReviews; //tinyint(1)
@@ -690,6 +691,11 @@ class User extends DataObject
 			$this->promptForOverdriveEmail = 1;
 		}else{
 			$this->promptForOverdriveEmail = 0;
+		}
+		if (isset($_REQUEST['overdriveAutoCheckout']) && ($_REQUEST['overdriveAutoCheckout'] == 'yes' || $_REQUEST['overdriveAutoCheckout'] == 'on')){
+			$this->overdriveAutoCheckout = 1;
+		}else{
+			$this->overdriveAutoCheckout = 0;
 		}
 		if (isset($_REQUEST['overdriveEmail'])){
 			$this->overdriveEmail = strip_tags($_REQUEST['overdriveEmail']);

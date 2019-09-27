@@ -228,6 +228,12 @@ function getUserUpdates(){
 			]
 		],
 
-
+		'user_overdrive_auto_checkout' => [
+			'title' => 'OverDrive Automatic Checkout',
+			'description' => 'Let users automatically checkout overdrive titles',
+			'sql' => [
+				'ALTER TABLE user ADD COLUMN overdriveAutoCheckout TINYINT(1)',
+			]
+		]
 	);
 }
