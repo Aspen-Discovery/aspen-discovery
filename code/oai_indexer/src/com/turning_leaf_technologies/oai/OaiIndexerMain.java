@@ -159,7 +159,7 @@ public class OaiIndexerMain {
     private static void extractAndIndexOaiCollection(String collectionName, long collectionId, ArrayList<Pattern> subjectFilters, String baseUrl, String setNames, long currentTime) {
         //Get the existing records for the collection
         //Get existing records for the collection
-        HashMap<String, String> existingRecords = new HashMap<>();
+        HashMap<String, ExistingOAIRecord> existingRecords = new HashMap<>();
         if (!fullReload) {
             try {
                 updateServer.deleteByQuery("collection_name:\"" + collectionName + "\"");
@@ -177,7 +177,10 @@ public class OaiIndexerMain {
             getExistingRecordsForCollection.setLong(1, collectionId);
             ResultSet existingRecordsRS = getExistingRecordsForCollection.executeQuery();
             while (existingRecordsRS.next()) {
-                existingRecords.put(existingRecordsRS.getString("permanentUrl"), existingRecordsRS.getString("id"));
+                ExistingOAIRecord existingRecord = new ExistingOAIRecord();
+                existingRecord.url = existingRecordsRS.getString("permanentUrl");
+                existingRecord.id = existingRecordsRS.getLong("id");
+                existingRecords.put(existingRecord.url, existingRecord );
             }
         } catch (Exception e) {
             logger.error("Error loading records for collection " + collectionName, e);
@@ -278,9 +281,14 @@ public class OaiIndexerMain {
         if (existingRecords.size() > 0) {
             logger.info("Deleted " + existingRecords.size() + " records from " + collectionName + ".");
             try {
-                ArrayList<String> idsToDelete = new ArrayList<>(existingRecords.values());
-                for(String idToDelete : idsToDelete){
-                    deleteOpenArchivesRecord.setString(1, idToDelete);
+                ArrayList<Long> idsToDelete = new ArrayList<>();
+                for (ExistingOAIRecord existingOAIRecord : existingRecords.values()){
+                    if (!existingOAIRecord.processed){
+                        idsToDelete.add(existingOAIRecord.id);
+                    }
+                }
+                for(Long idToDelete : idsToDelete){
+                    deleteOpenArchivesRecord.setLong(1, idToDelete);
                     deleteOpenArchivesRecord.executeUpdate();
                 }
                 //3-19-2019 Don't commit so the index does not get cleared during run (but will clear at the end).
@@ -312,7 +320,7 @@ public class OaiIndexerMain {
         updateServer.setRequestWriter(new BinaryRequestWriter());
     }
 
-    private static boolean indexElement(Element curRecordElement, HashMap<String, String> existingRecords, Long collectionId, String collectionName, ArrayList<Pattern> subjectFilters, Set<String> collectionSubjects) {
+    private static boolean indexElement(Element curRecordElement, HashMap<String, ExistingOAIRecord> existingRecords, Long collectionId, String collectionName, ArrayList<Pattern> subjectFilters, Set<String> collectionSubjects) {
         OAISolrRecord solrRecord = new OAISolrRecord();
         solrRecord.setCollectionId(collectionId);
         solrRecord.setCollectionName(collectionName);
@@ -448,7 +456,7 @@ public class OaiIndexerMain {
                     solrRecord.setCollectionName(collectionName);
                     try {
                         if (existingRecords.containsKey(solrRecord.getIdentifier())) {
-                            solrRecord.setId(existingRecords.get(solrRecord.getIdentifier()));
+                            solrRecord.setId(Long.toString(existingRecords.get(solrRecord.getIdentifier()).id));
                             updateServer.add(solrRecord.getSolrDocument());
                             addedToIndex = true;
                         } else {
@@ -474,7 +482,7 @@ public class OaiIndexerMain {
             logger.error("I/O Error adding document to solr server", e);
         }
         if (addedToIndex) {
-            existingRecords.remove(solrRecord.getIdentifier());
+            existingRecords.get(solrRecord.getIdentifier()).processed = true;
         }
         return addedToIndex;
     }
