@@ -15,6 +15,7 @@ import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -107,13 +108,19 @@ class OverDriveProcessor {
 							String onSaleDate = rawMetadataDecoded.getString("onSaleDate");
 						}else if (rawMetadataDecoded.has("publishDateText")){
 							String publishDateText = rawMetadataDecoded.getString("publishDateText");
-							try {
-								publishDate = publishDateFormatter.parse(publishDateText);
-								if (publishDate.after(new Date())){
-									isOnOrder = true;
+							if (publishDateText.length() == 4){
+								GregorianCalendar publishCal = new GregorianCalendar();
+								publishCal.set(Integer.parseInt(publishDateText), 1, 1);
+								publishDate = publishCal.getTime();
+							}else {
+								try {
+									publishDate = publishDateFormatter.parse(publishDateText);
+									if (publishDate.after(new Date())) {
+										isOnOrder = true;
+									}
+								} catch (ParseException e) {
+									logger.error("Error parsing publication date");
 								}
-							} catch (ParseException e) {
-								logger.error("Error parsing publication date");
 							}
 						}
 
