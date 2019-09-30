@@ -289,7 +289,7 @@
 				{/if}
 
 				{if (array_key_exists('userAdmin', $userRoles) || array_key_exists('opacAdmin', $userRoles))}
-					{if in_array($action, array('Administrators', 'DBMaintenance', 'UsageDashboard', 'PerformanceReport', 'ErrorReport', 'PHPInfo', 'OpCacheInfo', 'Variables', 'CronLog'))
+					{if in_array($action, array('Modules', 'Administrators', 'DBMaintenance', 'UsageDashboard', 'PerformanceReport', 'ErrorReport', 'PHPInfo', 'OpCacheInfo', 'Variables', 'CronLog'))
 					|| ($module == 'Admin' && $action == 'Home')}
 						{assign var="curSection" value=true}
 					{else}
@@ -305,6 +305,9 @@
 						</a>
 						<div id="adminMenuGroup" class="panel-collapse collapse {if $curSection}in{/if}">
 							<div class="panel-body">
+                                {if array_key_exists('opacAdmin', $userRoles)}
+	                                <div class="adminMenuLink "><a href="{$path}/Admin/Modules">{translate text="Modules"}</a></div>
+								{/if}
 								{if array_key_exists('userAdmin', $userRoles)}
 									<div class="adminMenuLink "><a href="{$path}/Admin/Administrators">{translate text="Administrators"}</a></div>
 								{/if}

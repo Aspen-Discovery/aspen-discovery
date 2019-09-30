@@ -162,6 +162,14 @@ function getHooplaUpdates()
 			'sql' => [
 				'ALTER TABLE hoopla_settings ADD COLUMN excludeTitlesWithCopiesFromOtherVendors TINYINT DEFAULT 0'
 			]
+		],
+
+		'create_hoopla_module' => [
+			'title' => 'Create Hoopla Module',
+			'description' => 'Setup Hoopla module',
+			'sql' => [
+				"INSERT INTO modules (name, indexName, backgroundProcess) VALUES ('Hoopla', 'grouped_works', 'hoopla_export')"
+			]
 		]
 	);
 }

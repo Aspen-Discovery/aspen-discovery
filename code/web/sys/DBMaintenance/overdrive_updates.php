@@ -263,5 +263,13 @@ function getOverDriveUpdates() {
                 "ALTER TABLE overdrive_record_usage ADD INDEX (year, month)",
             ),
         ),
+
+	    'create_overdrive_module' => [
+		    'title' => 'Create OverDrive Module',
+		    'description' => 'Setup OverDrive module',
+		    'sql' => [
+			    "INSERT INTO modules (name, indexName, backgroundProcess) VALUES ('OverDrive', 'grouped_works', 'overdrive_extract')"
+		    ]
+	    ]
     );
 }

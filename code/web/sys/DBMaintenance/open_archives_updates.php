@@ -90,5 +90,13 @@ function getOpenArchivesUpdates() {
                 "ALTER TABLE user_open_archives_usage DROP COLUMN lastUsed",
             ),
         ),
+
+	    'create_open_archives_module' => [
+		    'title' => 'Create Open Archives Module',
+		    'description' => 'Setup Open Archives module',
+		    'sql' => [
+			    "INSERT INTO modules (name, indexName, backgroundProcess) VALUES ('Open Archives', 'open_archives', 'oai_indexer')"
+		    ]
+	    ]
     ];
 }

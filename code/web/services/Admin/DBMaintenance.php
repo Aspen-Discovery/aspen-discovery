@@ -91,6 +91,22 @@ class DBMaintenance extends Admin_Admin {
 		/** @noinspection SqlResolve */
         /** @noinspection SqlWithoutWhere */
         return array_merge(
+        	[
+        	    'modules' => [
+        	    	'title' => 'Create modules table',
+		            'description' => 'Create modules table to store information about modules',
+		            'sql' => [
+						'CREATE TABLE modules (
+    						id int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    						name VARCHAR(50) NOT NULL UNIQUE, 
+    						enabled TINYINT(1) DEFAULT 0,
+    						indexName VARCHAR(50) DEFAULT "",
+    						backgroundProcess VARCHAR(50) DEFAULT ""
+						) ENGINE=InnoDB DEFAULT CHARSET=utf8',
+			            'ALTER TABLE modules add INDEX (enabled)',
+					]
+	            ],
+	        ],
 			$library_location_updates,
 			$user_updates,
 			$grouped_work_updates,

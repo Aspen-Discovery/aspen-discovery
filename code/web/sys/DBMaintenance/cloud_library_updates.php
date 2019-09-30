@@ -132,5 +132,13 @@ function getCloudLibraryUpdates() {
 				) ENGINE = InnoDB'
 			]
 		],
+
+		'create_cloud_library_module' => [
+			'title' => 'Create OverDrive Module',
+			'description' => 'Setup OverDrive module',
+			'sql' => [
+				"INSERT INTO modules (name, indexName, backgroundProcess) VALUES ('Cloud Library', 'grouped_works', 'cloud_library_export')"
+			]
+		]
 	);
 }

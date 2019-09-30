@@ -190,5 +190,13 @@ function getRBdigitalUpdates() {
 				) ENGINE = InnoDB'
 			]
 		],
+
+		'create_rbdigital_module' => [
+			'title' => 'Create RBdigital Module',
+			'description' => 'Setup RBdigital module',
+			'sql' => [
+				"INSERT INTO modules (name, indexName, backgroundProcess) VALUES ('RBdigital', 'grouped_works', 'rbdigital_export')"
+			]
+		]
 	);
 }

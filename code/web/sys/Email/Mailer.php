@@ -40,7 +40,7 @@ class Mailer {
 			$apiBody->from = new stdClass();
 			$apiBody->from->email = $sendGridSettings->fromAddress;
 			$apiBody->reply_to = new stdClass();
-			$apiBody->reply_to->email = $replyTo == null ? $replyTo : $sendGridSettings->replyToAddress;
+			$apiBody->reply_to->email = (($replyTo != null) ? $replyTo : $sendGridSettings->replyToAddress);
 			$apiBody->subject = $subject;
 			$apiBody->content = [];
 			$content = new stdClass();

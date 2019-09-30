@@ -652,7 +652,7 @@ function getIndexingUpdates() {
 
 		'library_location_side_load_scoping' => [
 			'title' => 'Library and Location Scoping of Side Loads',
-			'description' => 'Add tables to determine how side loads are sccoped',
+			'description' => 'Add tables to determine how side loads are scoped',
 			'sql' => [
 				'CREATE TABLE library_sideload_scopes (
     				id int(11) NOT NULL AUTO_INCREMENT,
@@ -668,6 +668,20 @@ function getIndexingUpdates() {
 					PRIMARY KEY (`id`),
 					UNIQUE (locationId, sideLoadScopeId)
                 ) ENGINE=InnoDB',
+			]
+		],
+
+		'create_ils_modules' => [
+			'title' => 'Create base indexing',
+			'description' => 'Setup Modules for ILS, Sideloads, and list indexing',
+			'sql' => [
+				"INSERT INTO modules (name, indexName, backgroundProcess) VALUES ('Koha', 'grouped_works', 'koha_export')",
+				"INSERT INTO modules (name, indexName, backgroundProcess) VALUES ('CARL.X', 'grouped_works', 'carlx_export')",
+				"INSERT INTO modules (name, indexName, backgroundProcess) VALUES ('Sierra', 'grouped_works', 'sierra_export')",
+				"INSERT INTO modules (name, indexName, backgroundProcess) VALUES ('Horizon', 'grouped_works', 'horizon_export')",
+				"INSERT INTO modules (name, indexName, backgroundProcess) VALUES ('Symphony', 'grouped_works', 'symphony_export')",
+				"INSERT INTO modules (name, indexName, backgroundProcess) VALUES ('Side Loads', 'grouped_works', 'sideload_processing')",
+				"INSERT INTO modules (name, indexName, backgroundProcess, enabled) VALUES ('User Lists', 'lists', 'user_list_indexer', 1)"
 			]
 		]
 	);
