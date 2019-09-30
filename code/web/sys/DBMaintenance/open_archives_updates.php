@@ -95,7 +95,8 @@ function getOpenArchivesUpdates() {
 		    'title' => 'Create Open Archives Module',
 		    'description' => 'Setup Open Archives module',
 		    'sql' => [
-			    "INSERT INTO modules (name, indexName, backgroundProcess) VALUES ('Open Archives', 'open_archives', 'oai_indexer')"
+		    	//oai indexer runs daily so we don't check the background process
+			    "INSERT INTO modules (name, indexName, backgroundProcess) VALUES ('Open Archives', 'open_archives', '')"
 		    ]
 	    ]
     ];
