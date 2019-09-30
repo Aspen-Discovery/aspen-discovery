@@ -481,7 +481,7 @@ public class OaiIndexerMain {
         } catch (IOException e) {
             logger.error("I/O Error adding document to solr server", e);
         }
-        if (addedToIndex) {
+        if (addedToIndex && existingRecords.containsKey(solrRecord.getIdentifier())) {
             existingRecords.get(solrRecord.getIdentifier()).processed = true;
         }
         return addedToIndex;
