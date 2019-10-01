@@ -161,7 +161,7 @@ class AspenError extends DataObject
 	    $interface->setPageTitle('An Error has occurred');
 	    $interface->display('layout.tpl');
 
-        // Exceptions we don't want to log
+	    // Exceptions we don't want to log
         $doLog = true;
         // Microsoft Web Discussions Toolbar polls the server for these two files
         //    it's not script kiddie hacking, just annoying in logs, ignore them.
@@ -190,6 +190,12 @@ class AspenError extends DataObject
 
         global $logger;
         $logger->log($errorDetails, Logger::LOG_ERROR);
+
+        global $serverName;
+	    require_once ROOT_DIR . '/sys/Email/Mailer.php';
+	    $mailer = new Mailer();
+	    $emailErrorDetails = $this->url . "/n" . $errorDetails;
+	    $mailer->send("issues@turningleaftechnologies.com", "$serverName Error in User Interface", $emailErrorDetails);
 
         exit();
     }
