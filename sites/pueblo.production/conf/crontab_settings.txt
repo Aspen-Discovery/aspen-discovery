@@ -31,7 +31,7 @@
 #############
 @reboot sleep 60 /usr/local/aspen-discovery/sites/pueblo.production/; ./start_background_processes.sh
 5 * * * * php /usr/local/aspen-discovery/code/web/cron/updateSuggesters.php pueblo.production
-*/15 * * * * php /usr/local/aspen-discovery/code/web/cron/checkBackgroundProcesses.php pueblo.production
+*/5 * * * * php /usr/local/aspen-discovery/code/web/cron/checkBackgroundProcesses.php pueblo.production
 
 ########################################################
 # Regular extracts that don't need to run continuously #

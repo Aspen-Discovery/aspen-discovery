@@ -9,13 +9,13 @@ if ($configArray['System']['operatingSystem'] == 'windows'){
 	$processRegEx = '/.*?java\s+-jar\s(.*?)\.jar.*?\s+(\d+)/ix';
 	$processIdIndex = 2;
 	$processNameIndex = 1;
-	$solrRegex = "/{$serverName}\solr7/";
+	$solrRegex = "/{$serverName}\\\\solr7/ix";
 }else{
 	exec("ps -ef | grep java", $processes);
 	$processRegEx = '/(\d+)\s+.*?\d{2}:\d{2}:\d{2}\sjava\s-jar\s(.*?)\.jar.*/ix';
 	$processIdIndex = 1;
 	$processNameIndex = 2;
-	$solrRegex = "/{$serverName}\/solr7/";
+	$solrRegex = "/{$serverName}\/solr7/ix";
 }
 $solrRunning = false;
 foreach ($processes as $processInfo){
@@ -33,7 +33,14 @@ foreach ($processes as $processInfo){
 }
 
 if (!$solrRunning){
-	$results .= "Solr is not running for {$serverName} expected {$module->backgroundProcess}\r\n";
+	$results .= "Solr is not running for {$serverName}\r\n";
+	if ($configArray['System']['operatingSystem'] == 'windows') {
+		$solrCmd = "/web/aspen-discovery/sites/{$serverName}/{$serverName}.bat start";
+	}else{
+		$solrCmd = "/usr/local/aspen-discovery/sites/{$serverName}/{$serverName}.sh start";
+	}
+	$execResult = [];
+	exec($solrCmd, $execResult);
 }
 require_once ROOT_DIR . '/sys/Module.php';
 $module = new Module();
@@ -50,12 +57,14 @@ while ($module->fetch()){
 			//Attempt to restart the service
 			$local = $configArray['Site']['local'];
 			//The local path include web, get rid of that
-			$local = substr($local, 0, strrpos($local, '/') -1);
+			$local = substr($local, 0, strrpos($local, '/'));
 			$processPath = $local . '/' . $module->backgroundProcess;
 			if (file_exists($processPath)){
 				if (file_exists($processPath . "/{$module->backgroundProcess}.jar")){
 					$processStartCmd = "cd $processPath; java -jar {$module->backgroundProcess}.jar $serverName &";
-					exec($processStartCmd);
+					$execResult = [];
+					exec($processStartCmd, $execResult);
+					$results .= "Restarted '{$module->name}'\r\n";
 				}else{
 					$results .= "Could not automatically restart {$module->name}, the jar $processPath/{$module->backgroundProcess}.jar did not exist\r\n";
 				}
