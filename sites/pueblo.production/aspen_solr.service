@@ -5,7 +5,8 @@ After=network.target
 [Service]
 Type=simple
 User=solr
-ExecStart=/usr/local/aspen-discovery/sites/pueblo.production/pueblo.production.sh
+ExecStart=/usr/local/aspen-discovery/sites/pueblo.production/pueblo.production.sh start
+ExecStop=/usr/local/aspen-discovery/sites/pueblo.production/pueblo.production.sh stop
 Restart=on-abort
 
 [Install]
