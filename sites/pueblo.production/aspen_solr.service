@@ -4,10 +4,15 @@ After=network.target
 
 [Service]
 Type=simple
-User=solr
+User=root
 ExecStart=/usr/local/aspen-discovery/sites/pueblo.production/pueblo.production.sh start
 ExecStop=/usr/local/aspen-discovery/sites/pueblo.production/pueblo.production.sh stop
 Restart=on-abort
 
 [Install]
 WantedBy=multi-user.target
+
+REM
+REM sudo ln -s /usr/local/aspen-discovery/sites/basinlibraries.production/aspen_solr.service /etc/systemd/system/aspen_solr.service
+REM
+REM Need to figure out how to start appropriately
