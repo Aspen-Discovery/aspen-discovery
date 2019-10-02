@@ -32,6 +32,7 @@ foreach ($processes as $processInfo){
 	}
 }
 
+$results = "";
 if (!$solrRunning){
 	$results .= "Solr is not running for {$serverName}\r\n";
 	if ($configArray['System']['operatingSystem'] == 'windows') {
@@ -47,7 +48,6 @@ $module = new Module();
 $module->enabled = true;
 $module->find();
 
-$results = "";
 while ($module->fetch()){
 	if (!empty($module->backgroundProcess)){
 		if (isset($runningProcesses[$module->backgroundProcess])){
