@@ -758,7 +758,7 @@ class Koha extends AbstractIlsDriver {
             ];
 
 			if ($cancelDate != null){
-				$holdParams['needed_before_data'] = $this->aspenDateToKohaDate($cancelDate);
+				$holdParams['needed_before_date'] = $this->aspenDateToKohaDate($cancelDate);
 			}
 
             $placeHoldURL = $this->getWebServiceUrl() . '/cgi-bin/koha/ilsdi.pl?' . http_build_query($holdParams);
@@ -830,7 +830,7 @@ class Koha extends AbstractIlsDriver {
             'pickup_location' => $pickupBranch
         ];
 		if ($cancelDate != null){
-			$holdParams['needed_before_data'] = $this->aspenDateToKohaDate($cancelDate);
+			$holdParams['needed_before_date'] = $this->aspenDateToKohaDate($cancelDate);
 		}
 
         $placeHoldURL = $this->getWebServiceUrl() . '/cgi-bin/koha/ilsdi.pl?' . http_build_query($holdParams);
@@ -892,6 +892,10 @@ class Koha extends AbstractIlsDriver {
                 $dateTime = date_create_from_format('Y-m-d', $curRow['expirationdate']);
                 $curHold['expire'] = $dateTime->getTimestamp();
             }
+
+			if (!empty($curRow['cancellationdate'])){
+				$curHold['automaticCancellation'] = date_parse_from_format('Y-m-d H:i:s', $curRow['cancellationdate']);
+			}
 
 			$curHold['location'] = $curRow['branchcode'];
 			$curHold['locationUpdateable'] = false;
