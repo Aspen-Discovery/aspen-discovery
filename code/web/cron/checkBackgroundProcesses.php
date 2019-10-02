@@ -43,6 +43,7 @@ if (!$solrRunning){
 	$execResult = [];
 	exec($solrCmd, $execResult);
 	$results .= "Started solr using command \r\n$solrCmd\r\n";
+	$results .= implode("\r\n", $execResult);
 }
 require_once ROOT_DIR . '/sys/Module.php';
 $module = new Module();
