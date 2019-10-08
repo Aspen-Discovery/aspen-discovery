@@ -194,7 +194,7 @@ class AspenError extends DataObject
         global $serverName;
 	    require_once ROOT_DIR . '/sys/Email/Mailer.php';
 	    $mailer = new Mailer();
-	    $emailErrorDetails = $this->url . "/n" . $errorDetails;
+	    $emailErrorDetails = $this->url . "\n" . $errorDetails;
 	    $mailer->send("issues@turningleaftechnologies.com", "$serverName Error in User Interface", $emailErrorDetails);
 
         exit();
