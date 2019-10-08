@@ -341,7 +341,7 @@ class Search_Results extends Action {
 			$_SESSION['searchId'] = $searchObject->getSearchId();
 			if ($record['recordtype'] == 'list'){
 				$listId = substr($record['id'], 4);
-				header("Location: " . $configArray['Site']['path'] . "/MyResearch/MyList/{$listId}");
+				header("Location: " . $configArray['Site']['path'] . "/MyAccount/MyList/{$listId}");
 				exit();
 			}else{
 				header("Location: " . $configArray['Site']['path'] . "/Record/{$record['id']}/Home");

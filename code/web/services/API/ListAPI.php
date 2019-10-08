@@ -424,7 +424,7 @@ class ListAPI extends Action {
 			}
 			return array(
 				'cacheType' => 'general',
-				'fullListLink' => $configArray['Site']['path'] . '/MyResearch/MyList/' . $listId, // TODO: switch to /MyAccount/MyList/
+				'fullListLink' => $configArray['Site']['path'] . '/MyAccount/MyList/' . $listId,
 			);
 
 		}elseif (preg_match('/review:(.*)/', $listId, $reviewInfo)){

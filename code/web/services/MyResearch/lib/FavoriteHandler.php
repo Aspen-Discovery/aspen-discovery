@@ -22,7 +22,7 @@
  * FavoriteHandler Class
  *
  * This class contains shared logic for displaying lists of favorites (based on
- * earlier logic duplicated between the MyResearch/Home and MyResearch/MyList
+ * earlier logic duplicated between the MyAccount/Home and MyAccount/MyList
  * actions).
  *
  * @author      Demian Katz <demian.katz@villanova.edu>

@@ -2,7 +2,7 @@
 	<br/>
 	<div class="alert alert-info">{translate text='Select the Library Catalog you wish to use'}</div>
 	<div id="selectLibraryMenu">
-		<form id="selectLibrary" method="get" action="/MyResearch/SelectInterface" class="form">
+		<form id="selectLibrary" method="get" action="/MyAccount/SelectInterface" class="form">
 			<div>
 				<input type="hidden" name="gotoModule" value="{$gotoModule}"/>
 				<input type="hidden" name="gotoAction" value="{$gotoAction}"/>

@@ -72,6 +72,6 @@ class HoldItems extends Action
 		$_SESSION['hold_message'] = $hold_message_data;
 
         $logger->log('No referrer set, but there is a message to show, go to the main holds page', Logger::LOG_NOTICE);
-        header("Location: " . $configArray['Site']['path'] . '/MyResearch/Holds');
+        header("Location: " . $configArray['Site']['path'] . '/MyAccount/Holds');
 	}
 }

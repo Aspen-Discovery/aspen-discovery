@@ -546,7 +546,7 @@ class MyAccount_AJAX
 	{
 		global $interface;
 		$interface->assign('popupTitle', 'Modify PIN number');
-		$pageContent = $interface->fetch('MyResearch/modifyPinPopup.tpl');
+		$pageContent = $interface->fetch('MyAccount/modifyPinPopup.tpl');
 		$interface->assign('popupContent', $pageContent);
 		return $interface->fetch('popup-wrapper.tpl');
 	}

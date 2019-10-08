@@ -7,7 +7,7 @@
 		  <p>
 		  {translate text='This item is already part of the following list/lists'}:<br>
 		  {foreach from=$containingLists item="list"}
-		    <a href="{$path}/MyResearch/MyList/{$list.id}">{$list.title|escape:"html"}</a><br>
+		    <a href="{$path}/MyAccount/MyList/{$list.id}">{$list.title|escape:"html"}</a><br>
 		  {/foreach}
 		  </p>
 		{/if}
