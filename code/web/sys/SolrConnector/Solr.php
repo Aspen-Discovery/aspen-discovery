@@ -1837,7 +1837,7 @@ abstract class Solr {
 				}
 			} else {
 				//If we are tokenizing, remove any punctuation
-				$tmpWord = preg_replace('/[^\s\-\w.\'aàáâãåäæeèéêëiìíîïoòóôõöøuùúûü&]/', '', $words[$i]);
+				$tmpWord = preg_replace('/[^\s\-\w.\'aàáâãåäæeèéêëiìíîïoòóôõöøuùúûü&]/u', '', $words[$i]);
 				if (strlen($tmpWord) > 0){
 					$newWords[] = trim($tmpWord);
 				}
