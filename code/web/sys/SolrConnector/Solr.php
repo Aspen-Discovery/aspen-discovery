@@ -1967,8 +1967,8 @@ abstract class Solr {
 
 		//Look for any colons that are not identifying fields
 
-
-		return $input;
+		//Remove spaces from start/end of string
+		return trim($input);
 	}
 
 	public function isAdvanced($query)
