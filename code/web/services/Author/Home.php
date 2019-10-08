@@ -6,6 +6,7 @@ require_once ROOT_DIR . '/sys/HTTP/HTTP_Request.php';
 require_once ROOT_DIR . '/sys/Pager.php';
 require_once ROOT_DIR . '/sys/NovelistFactory.php';
 
+/** @noinspection PhpUnused */
 class Author_Home extends Action
 {
 	private $lang;
@@ -15,6 +16,13 @@ class Author_Home extends Action
 		global $configArray;
 		global $interface;
 		global $library;
+
+		if (!isset($_GET['author'])) {
+			$this->display('invalidAuthor.tpl', 'Unknown Author', 'Author/sidebar.tpl');
+			return;
+		} else {
+			$interface->assign('author', $_GET['author']);
+		}
 
 		//Check to see if the year has been set and if so, convert to a filter and resend.
 		$dateFilters = array('publishDate');
@@ -121,12 +129,6 @@ class Author_Home extends Action
 		}
 
 		$interface->caching = false;
-
-		if (!isset($_GET['author'])) {
-			AspenError::raiseError(new AspenError('Unknown Author'));
-		} else {
-			$interface->assign('author', $_GET['author']);
-		}
 
 		// What language should we use?
 		global $activeLanguage;
@@ -279,8 +281,12 @@ class Author_Home extends Action
 		//Get view & load template
 		$currentView  = $searchObject->getView();
 		$interface->assign('displayMode', $currentView);
-		$interface->assign('subpage', 'Search/list-' . $currentView .'.tpl');
+		if ($searchObject->getResultTotal() == 0){
+			$this->display('invalidAuthor.tpl', 'Unknown Author', 'Author/sidebar.tpl');
+		}else {
+			$interface->assign('subpage', 'Search/list-' . $currentView . '.tpl');
 
-		$this->display('home.tpl', $authorName, 'Author/sidebar.tpl', false);
+			$this->display('home.tpl', $authorName, 'Author/sidebar.tpl', false);
+		}
 	}
 }

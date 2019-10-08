@@ -62,20 +62,20 @@
 {/strip}
 
 {* Embedded Javascript For this Page *}
-	<script type="text/javascript">
-		$(document).ready(function (){ldelim}
-			{if $showWikipedia}
-				AspenDiscovery.Wikipedia.getWikipediaArticle('{$wikipediaAuthorName}');
-			{/if}
-            AspenDiscovery.Authors.loadEnrichmentInfo('{$firstWorkId}');
+<script type="text/javascript">
+	$(document).ready(function (){ldelim}
+		{if $showWikipedia}
+			AspenDiscovery.Wikipedia.getWikipediaArticle('{$wikipediaAuthorName}');
+		{/if}
+        AspenDiscovery.Authors.loadEnrichmentInfo('{$firstWorkId}');
 
-			{if !$onInternalIP}
-				{* Because content is served on the page, have to set the mode that was used, even if the user didn't chose the mode. *}
-				AspenDiscovery.Searches.displayMode = '{$displayMode}';
-			{else}
-				AspenDiscovery.Searches.displayMode = '{$displayMode}';
-				Globals.opac = 1; {* set to true to keep opac browsers from storing browse mode *}
-			{/if}
-			$('#'+AspenDiscovery.Searches.displayMode).parent('label').addClass('active'); {* show user which one is selected *}
-		{rdelim});
-	</script>
+		{if !$onInternalIP}
+			{* Because content is served on the page, have to set the mode that was used, even if the user didn't chose the mode. *}
+			AspenDiscovery.Searches.displayMode = '{$displayMode}';
+		{else}
+			AspenDiscovery.Searches.displayMode = '{$displayMode}';
+			Globals.opac = 1; {* set to true to keep opac browsers from storing browse mode *}
+		{/if}
+		$('#'+AspenDiscovery.Searches.displayMode).parent('label').addClass('active'); {* show user which one is selected *}
+	{rdelim});
+</script>

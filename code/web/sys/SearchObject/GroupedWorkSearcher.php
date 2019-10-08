@@ -162,10 +162,15 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 				// Remove our empty basic search (default)
 				$this->searchTerms = array();
 				// Prepare the search as a normal author search
-				$author = $_REQUEST['author'];
-				if (is_array($author)){
-					$author = array_pop($author);
+				if (isset($_REQUEST['author'])){
+					$author = $_REQUEST['author'];
+					if (is_array($author)){
+						$author = array_pop($author);
+					}
+				}else{
+					$author = 'Not Provided';
 				}
+
 				$this->searchTerms[] = array(
                     'index'   => 'Author',
                     'lookfor' => trim(strip_tags($author))

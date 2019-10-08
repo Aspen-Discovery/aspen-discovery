@@ -192,11 +192,12 @@ class AspenError extends DataObject
         $logger->log($errorDetails, Logger::LOG_ERROR);
 
         global $serverName;
-	    require_once ROOT_DIR . '/sys/Email/Mailer.php';
-	    $mailer = new Mailer();
-	    $emailErrorDetails = $this->url . "\n" . $errorDetails;
-	    $mailer->send("issues@turningleaftechnologies.com", "$serverName Error in User Interface", $emailErrorDetails);
-
+	    if ($configArray['Site']['isProduction']) {
+		    require_once ROOT_DIR . '/sys/Email/Mailer.php';
+		    $mailer = new Mailer();
+		    $emailErrorDetails = $this->url . "\n" . $errorDetails;
+		    $mailer->send("issues@turningleaftechnologies.com", "$serverName Error in User Interface", $emailErrorDetails);
+	    }
         exit();
     }
 }

@@ -935,7 +935,7 @@ abstract class SearchObject_BaseSearcher
 		return $list;
 	}
 
-/**
+	/**
 	 * Return a url for the current search with a new view
 	 *
 	 * @param string $newView The new view

@@ -8,8 +8,6 @@ require_once ROOT_DIR . '/sys/Pager.php';
 
 class Search_Results extends Action {
 
-	protected $viewOptions = array('list', 'covers');
-
 	function launch() {
 		global $interface;
 		global $configArray;
@@ -243,7 +241,6 @@ class Search_Results extends Action {
         $interface->assign('spellingSuggestions', $spellingSuggestions['suggestions']);
 
 		//Look for suggestions for the search (but not if facets are applied)
-		//DELETE THIS, just for testing
 		if ((!isset($facetSet) || count($facetSet) == 0) && $searchObject->getResultTotal() <= 5) {
 			require_once ROOT_DIR . '/services/Search/lib/SearchSuggestions.php';
 			$searchSuggestions = new SearchSuggestions();
@@ -275,9 +272,9 @@ class Search_Results extends Action {
 	                        exit();
                         }
                     }
-                    if ($library->allowAutomaticSearchReplacements && count($allSuggestions) > 0){
+                    if ($library->allowAutomaticSearchReplacements && !empty($allSuggestions)){
 	                    $firstSuggestion = reset($allSuggestions);
-	                    $thisUrl = $_SERVER['REQUEST_URI'] . "&replacementTerm=" . urlencode($firstSuggestion['phrase']);
+	                    $thisUrl = $_SERVER['REQUEST_URI'] . "&replacementTerm=" . urlencode($firstSuggestion['nonHighlightedTerm']);
 	                    header("Location: " . $thisUrl);
 	                    exit();
                     }
