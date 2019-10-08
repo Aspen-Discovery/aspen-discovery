@@ -78,7 +78,7 @@ while ($module->fetch()){
 }
 
 foreach ($runningProcesses as $process){
-	if ($process['name'] != 'cron'){
+	if ($process['name'] != 'cron' && $process['name'] != 'oai_indexer'){
 		$results .= "Found process '{$process['name']}' that does not have a module for it\r\n";
 	}
 }
