@@ -1,5 +1,6 @@
 <?php
 
+/** @noinspection PhpUnused */
 class Author_AJAX {
 	function launch() {
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
@@ -77,7 +78,7 @@ class Author_AJAX {
 				$wiki_lang = substr($activeLanguage->code, 0, 2);
 				$interface->assign('wiki_lang', $wiki_lang);
 				$authorInfo  = $memCache->get("wikipedia_article_{$authorName}_{$wiki_lang}" );
-				if ($authorInfo == false){
+				if ($authorInfo == false || isset($_REQUEST['reload'])){
 					require_once ROOT_DIR . '/services/Author/Wikipedia.php';
 					$wikipediaParser = new Author_Wikipedia();
 					$authorInfo = $wikipediaParser->getWikipedia($authorName, $wiki_lang);

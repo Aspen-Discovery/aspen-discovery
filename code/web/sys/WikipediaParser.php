@@ -59,7 +59,7 @@ class WikipediaParser {
 		$firstInfoBox = null;
 		foreach ($matches[1] as $m) {
 			// If this is the Infobox
-			if (substr($m, 0, 8) == "{Infobox") {
+			if (substr($m, 0, 8) == "{Infobox" || substr($m, 0, 9) == "{ infobox") {
 				// Keep the string for later, we need the body block that follows it
 				$infoboxStr = "{".$m."}";
 				if ($firstInfoBox == null){
