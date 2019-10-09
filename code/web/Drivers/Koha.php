@@ -1166,7 +1166,6 @@ class Koha extends AbstractIlsDriver {
 	        $result['message'] = 'Unable to authenticate with the ILS.  Please try again later or contact the library.';
         }else{
 			$apiUrl = $this->getWebServiceUrl() . "/api/v1/holds/$itemToFreezeId/suspension";
-	        //$apiUrl = $this->getWebServiceURL() . "/api/v1/holds?patron_id={$patron->username}";
 	        $postParams = "";
 	        if (strlen($dateToReactivate) > 0){
 		        $postParams = [];
@@ -1185,8 +1184,7 @@ class Koha extends AbstractIlsDriver {
 				'Accept-Encoding: gzip, deflate',
 			], true);
 			$response = $this->apiCurlWrapper->curlPostBodyData($apiUrl, $postParams, false);
-	        //$response = $this->curlWrapper->curlGetPage($apiUrl);
-			if(!$response) {
+	        if(!$response) {
 			    return $result;
 			}else{
 			    $hold_response = json_decode($response, false);
