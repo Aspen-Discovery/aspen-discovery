@@ -16,7 +16,6 @@ class BrowseCategory extends DataObject{
 	public $searchTerm;
 	public $defaultFilter;
 	public $sourceListId;
-	public $additionalWorksToInclude;
 	public $defaultSort;
 
 	public $numTimesShown;
@@ -101,6 +100,35 @@ class BrowseCategory extends DataObject{
 		return $ret;
 	}
 
+	public function delete($useWhere = false){
+		$ret = parent::delete($useWhere);
+		if ($ret && !empty($this->textId)){
+			//Remove from any libraries that use it.
+			require_once ROOT_DIR . '/sys/Browse/LibraryBrowseCategory.php';
+			$libraryBrowseCategory = new LibraryBrowseCategory();
+			$libraryBrowseCategory->browseCategoryTextId = $this->textId;
+			$libraryBrowseCategory->delete(true);
+
+			require_once ROOT_DIR . '/sys/Browse/LocationBrowseCategory.php';
+			$locationBrowseCategory = new LocationBrowseCategory();
+			$locationBrowseCategory->browseCategoryTextId = $this->textId;
+			$locationBrowseCategory->delete(true);
+
+			//Delete from parent sub categories as needed
+			require_once ROOT_DIR . '/sys/Browse/SubBrowseCategories.php';
+			$subBrowseCategory = new SubBrowseCategories();
+			$subBrowseCategory->subCategoryId = $this->id;
+			$subBrowseCategory->delete(true);
+
+			//Remove links to anything that is a subcategory of this
+			$subBrowseCategory = new SubBrowseCategories();
+			$subBrowseCategory->browseCategoryId = $this->id;
+			$subBrowseCategory->delete(true);
+		}
+
+		return $ret;
+	}
+
 	public function deleteCachedBrowseCategoryResults(){
 		// key structure
 		// $key = 'browse_category_' . $this->textId . '_' . $solrScope . '_' . $browseMode;
@@ -122,8 +150,7 @@ class BrowseCategory extends DataObject{
 			foreach ($solrScopes as $solrScope) {
 				foreach ($browseModes as $browseMode) {
 					$key = $keyFormat . '_' . $solrScope . '_' . $browseMode;
-					if ($memCache->get($key)) { // check if this key is in fact storing a value
-//					$success[$key] =
+					if ($memCache->get($key)) {
 						$memCache->delete($key);
 					}
 				}
@@ -209,6 +236,7 @@ class BrowseCategory extends DataObject{
 		return $structure;
 	}
 
+	/** @noinspection PhpUnused */
 	function validateTextId(){
 		//Setup validation return array
 		$validationResults = array(
