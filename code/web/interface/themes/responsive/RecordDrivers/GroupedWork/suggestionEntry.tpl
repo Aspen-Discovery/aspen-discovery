@@ -52,7 +52,7 @@
 
 			<div class="resultActions row">
 				<div class="col-xs-12">
-					{include file='GroupedWork/result-tools-horizontal.tpl' id=$summId shortId=$shortId summTitle=$summTitle ratingData=$summRating recordUrl=$summUrl showMoreInfo=true}
+					{include file='GroupedWork/result-tools-horizontal.tpl' ratingData=$summRating recordUrl=$summUrl showMoreInfo=true}
 				</div>
 			</div>
 		</div>

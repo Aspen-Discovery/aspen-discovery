@@ -106,9 +106,7 @@
 		{if !empty($record.permanentId) && $record.permanentId != -1}
 			<div class="row">
 				<div class="col-xs-12">
-					{include file='GroupedWork/result-tools-horizontal.tpl' recordDriver=$record.recordDriver id=$record.permanentId shortId=$record.permanentId ratingData=$record.ratingData recordUrl=$record.linkUrl showMoreInfo=true}
-					{* TODO: id & shortId shouldn't be needed to be specified here, otherwise need to note when used.
-						summTitle only used by cart div, which is disabled as of now. 12-28-2015 plb *}
+					{include file='GroupedWork/result-tools-horizontal.tpl' recordDriver=$record.recordDriver ratingData=$record.ratingData recordUrl=$record.linkUrl showMoreInfo=true}
 				</div>
 			</div>
 		{/if}
