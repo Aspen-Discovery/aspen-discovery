@@ -1410,14 +1410,18 @@ abstract class SearchObject_BaseSearcher
                 $search->search_object = serialize($this->minify());
                 $search->searchUrl = $this->renderSearchUrl();
 
-                $search->insert();
-                // Record the details
-                $this->searchId    = $search->id;
-                $this->savedSearch = false;
+                //MDN 10/10/2019 had cases where user was passing in invalid sources which
+	            //caused an error on insert.  Just ignore for now, but should eventually do more validation.
+                if (strlen($search->searchSource) <= 30){
+	                $search->insert();
+	                // Record the details
+	                $this->searchId    = $search->id;
+	                $this->savedSearch = false;
 
-                // Chicken and egg... We didn't know the id before insert
-                $search->search_object = serialize($this->minify());
-                $search->update();
+	                // Chicken and egg... We didn't know the id before insert
+	                $search->search_object = serialize($this->minify());
+	                $search->update();
+                }
             }
         }
 	}
