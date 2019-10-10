@@ -30,7 +30,7 @@
 # Indexing Tasks #
 #############
 @reboot sleep 60 /usr/local/aspen-discovery/sites/basinlibraries.production/; ./start_background_processes.sh
-5 * * * * php /usr/local/aspen-discovery/code/web/cron/updateSuggesters.php basinlibraries.production
+5 6 * * * php /usr/local/aspen-discovery/code/web/cron/updateSuggesters.php basinlibraries.production
 */5 * * * * php /usr/local/aspen-discovery/code/web/cron/checkBackgroundProcesses.php basinlibraries.production
 
 ########################################################
