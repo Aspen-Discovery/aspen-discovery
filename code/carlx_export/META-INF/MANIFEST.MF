@@ -18,6 +18,6 @@ Class-Path: ../java_shared_libraries/commons-beanutils-1.9.3.jar ../ja
  efault/solr-7.6.0/dist/solrj-lib/stax2-api-3.1.4.jar ../../sites/defa
  ult/solr-7.6.0/dist/solrj-lib/woodstox-core-asl-4.4.1.jar ../../sites
  /default/solr-7.6.0/dist/solrj-lib/zookeeper-3.4.11.jar ../record_gro
- uping/record_grouping.jar ../reindexer/reindexer.jar
+ uping/record_grouping.jar ../reindexer/reindexer.jar lib/ojdbc6.jar
 Main-Class: com.turning_leaf_technologies.carlx.CarlXExportMain
 
