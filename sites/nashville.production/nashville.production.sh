@@ -5,24 +5,12 @@ if [ -z "$1" ]
     echo "To use, run with start, stop or restart for the first parameter."
 fi
 
-if [[ $(hostname -s) == "HOBVMPLAP23" ]]
-  then
-    SOLRMEM="26g"
-elif [[ $(hostname -s) == "HOBVMPLAPT23" ]]
-    then
-      SOLRMEM="20g"
-else
-    SOLRMEM="20g"
-fi
-
 if [[ ( "$1" == "stop" ) || ( "$1" == "restart") ]]
 	then
-		../default/solr/bin/solr stop -p 8180 -d "/usr/local/aspen-discovery/sites/default/solr/jetty"
-		../default/solr/bin/solr stop -p 8080 -d "/usr/local/aspen-discovery/sites/default/solr/jetty"
+    	runuser solr -c '/usr/local/aspen-discovery/sites/default/solr-7.6.0/bin/solr stop -p 8080 -s "/data/aspen-discovery/nashville.production/solr7" -d "/usr/local/aspen-discovery/sites/default/solr-7.6.0/server"'
 fi
 
 if [[ ( "$1" == "start" ) || ( "$1" == "restart") ]]
 	then
-		../default/solr/bin/solr start -m $SOLRMEM -p 8180 -s "/data/pika/nashville.production/solr_master" -d "/usr/local/aspen-discovery/sites/default/solr/jetty"
-		../default/solr/bin/solr start -m $SOLRMEM -p 8080 -a "-Dsolr.masterport=8180" -s "/data/pika/nashville.production/solr_searcher" -d "/usr/local/aspen-discovery/sites/default/solr/jetty"
+    	runuser solr -c '/usr/local/aspen-discovery/sites/default/solr-7.6.0/bin/solr start -m 12g -p 8080 -s "/data/aspen-discovery/nashville.production/solr7" -d "/usr/local/aspen-discovery/sites/default/solr-7.6.0/server"'
 fi
