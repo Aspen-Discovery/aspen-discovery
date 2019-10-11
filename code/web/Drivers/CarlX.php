@@ -1769,4 +1769,8 @@ class CarlX extends SIP2Driver{
 		return $accountSummary;
 	}
 
+	public function showMessagingSettings()
+	{
+		return false;
+	}
 }

@@ -137,7 +137,7 @@ class User extends DataObject
 			//Based off the source of the user, get the AccountProfile
 			$accountProfile = $this->getAccountProfile();
 			if ($accountProfile){
-				$catalogDriver = $accountProfile->driver;
+				$catalogDriver = trim($accountProfile->driver);
 				if (!empty($catalogDriver)){
                     $this->catalogDriver = CatalogFactory::getCatalogConnectionInstance($catalogDriver, $accountProfile);
                 }
