@@ -77,7 +77,11 @@ function initDatabase(){
     } catch (PDOException $e) {
 	    global $serverName;
 	    echo("Server name: $serverName<br>\r\n");
-	    echo("Could not connect to database {$configArray['Database']['database_dsn']}, define database connection information in config.pwd.ini<br>\r\n$e\r\n");
+	    if ($configArray['System']['debug']) {
+		    echo("Could not connect to database {$configArray['Database']['database_dsn']}, define database connection information in config.pwd.ini<br>\r\n$e\r\n");
+	    }else{
+		    echo("Could not connect to database");
+	    }
 	    die();
     }
 }
