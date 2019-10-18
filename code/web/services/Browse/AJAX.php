@@ -187,7 +187,7 @@ class Browse_AJAX extends Action {
 		$result['searchUrl'] = '/MyAccount/SuggestedTitles';
 
 		require_once ROOT_DIR . '/services/MyResearch/lib/Suggestions.php';
-		$suggestions = Suggestions::getSuggestions(-1, -1,self::ITEMS_PER_PAGE);
+		$suggestions = Suggestions::getSuggestions(-1, 1,self::ITEMS_PER_PAGE);
 		$records = array();
 		foreach ($suggestions as $suggestedItemId => $suggestionData) {
 			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
@@ -285,7 +285,8 @@ class Browse_AJAX extends Action {
 					if ($this->browseMode == 'covers') {
 						// Rating Settings
 						global $library;
-						$location                  = Location::getActiveLocation();
+						global $locationSingleton;
+						$location                  = $locationSingleton->getActiveLocation();
 						$browseCategoryRatingsMode = null;
 						if ($location) $browseCategoryRatingsMode = $location->browseCategoryRatingsMode; // Try Location Setting
 						if (!$browseCategoryRatingsMode) $browseCategoryRatingsMode = $library->browseCategoryRatingsMode;  // Try Library Setting
@@ -381,7 +382,6 @@ class Browse_AJAX extends Action {
 		if (!empty($this->subCategories)) {
 			// passed URL variable, or first sub-category
 			if (!empty($_REQUEST['subCategoryTextId'])) {
-				$test = array_search($_REQUEST['subCategoryTextId'], $this->subCategories);
 				$subCategoryTextId = $_REQUEST['subCategoryTextId'];
 			} else {
 				$subCategoryTextId = $this->subCategories[0]->textId;
@@ -502,13 +502,17 @@ class Browse_AJAX extends Action {
 				return $result;
 			}
 		}
+		return null;
 	}
 
 	/**
 	 * Return a list of browse categories that are assigned to the home page for the current library.
 	 *
-	 * TODO: Support loading sub categories.
+	 * This is used in the Drupal module, but not in Aspen itself
+	 *
+	 * TODO: Load subcategories for the main categories
 	 */
+	/** @noinspection PhpUnusedPrivateMethodInspection */
 	private function getActiveBrowseCategories(){
 		//Figure out which library or location we are looking at
 		global $library;
