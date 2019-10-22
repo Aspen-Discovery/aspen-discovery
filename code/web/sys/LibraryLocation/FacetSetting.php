@@ -7,17 +7,18 @@ abstract class FacetSetting extends DataObject {
 	public $weight;
 	public $numEntriesToShowByDefault; //
 	public $showAsDropDown;   //True or false
+	public $multiSelect;
 	public $sortMode;         //alphabetically = alphabetically, num_results = by number of results
 	public $showAboveResults;
 	public $showInResults;
-	public $showInAuthorResults;
 	public $showInAdvancedSearch;
 	public $collapseByDefault;
 	public $useMoreFacetPopup;
+	public $translate;
 
 	public function getNumericColumnNames()
     {
-        return ['weight', 'showAsDropDown', 'showAboveResults', 'showInResults', 'showInAuthorResults', 'showInAdvancedSearch'];
+        return ['weight', 'showAsDropDown', 'multiSelect', 'showAboveResults', 'showInResults', 'showInAdvancedSearch', 'translate'];
     }
 
 
@@ -68,8 +69,7 @@ abstract class FacetSetting extends DataObject {
 			$availableFacets["system_list"] = "System List";
 		}
 
-
-			asort($availableFacets);
+		asort($availableFacets);
 		return $availableFacets;
 	}
 
@@ -82,10 +82,11 @@ abstract class FacetSetting extends DataObject {
 			'displayName' => array('property'=>'displayName', 'type'=>'text', 'label'=>'Display Name', 'description'=>'The full name of the facet for display to the user'),
 			'numEntriesToShowByDefault' => array('property'=>'numEntriesToShowByDefault', 'type'=>'integer', 'label'=>'Num Entries', 'description'=>'The number of values to show by default.', 'default' => '5'),
 			'showAsDropDown' => array('property' => 'showAsDropDown', 'type' => 'checkbox', 'label' => 'Drop Down?', 'description'=>'Whether or not the facets should be shown in a drop down list', 'default'=>'0'),
+			'multiSelect' => array('property' => 'multiSelect', 'type' => 'checkbox', 'label' => 'Multi Select?', 'description'=>'Whether or not to allow patrons to select multiple values', 'default'=>'0'),
+			'translate' => array('property' => 'translate', 'type' => 'checkbox', 'label' => 'Translate?', 'description'=>'Whether or not values are translated when displayed', 'default'=>'0'),
 			'sortMode' => array('property'=>'sortMode', 'type'=>'enum', 'label'=>'Sort', 'values' => array('alphabetically' => 'Alphabetically', 'num_results' => 'By number of results'), 'description'=>'How the facet values should be sorted.', 'default'=>'num_results'),
 			'showAboveResults' => array('property' => 'showAboveResults', 'type' => 'checkbox', 'label' => 'Show Above Results', 'description'=>'Whether or not the facets should be shown above the results', 'default'=>0),
 			'showInResults' => array('property' => 'showInResults', 'type' => 'checkbox', 'label' => 'Show on Results Page', 'description'=>'Whether or not the facets should be shown in regular search results', 'default'=>1),
-			'showInAuthorResults' => array('property' => 'showInAuthorResults', 'type' => 'checkbox', 'label' => 'Show for Author Searches', 'description'=>'Whether or not the facets should be shown when searching by author', 'default'=>1),
 			'showInAdvancedSearch' => array('property' => 'showInAdvancedSearch', 'type' => 'checkbox', 'label' => 'Show on Advanced Search', 'description'=>'Whether or not the facet should be an option on the Advanced Search Page', 'default'=>1),
 			'collapseByDefault' => array('property' => 'collapseByDefault', 'type' => 'checkbox', 'label' => 'Collapse by Default', 'description'=>'Whether or not the facet should be an collapsed by default.', 'default'=>1),
 			'useMoreFacetPopup' => array('property' => 'useMoreFacetPopup', 'type' => 'checkbox', 'label' => 'Use More Facet Popup', 'description'=>'Whether or not more facet options are shown in a popup box.', 'default'=>1),
@@ -100,7 +101,6 @@ abstract class FacetSetting extends DataObject {
 		$this->sortMode = 'num_results';
 		$this->showAboveResults = true;
 		$this->showInResults = true;
-		$this->showInAuthorResults = true;
 		$this->showInAdvancedSearch = true;
 		$this->numEntriesToShowByDefault = 0;
 	}
@@ -112,7 +112,6 @@ abstract class FacetSetting extends DataObject {
 		$this->sortMode = 'num_results';
 		$this->showAboveResults = false;
 		$this->showInResults = true;
-		$this->showInAuthorResults = true;
 		$this->showInAdvancedSearch = true;
 		$this->collapseByDefault = $collapseByDefault;
 		$this->useMoreFacetPopup = true;
@@ -125,7 +124,6 @@ abstract class FacetSetting extends DataObject {
 		$this->sortMode = 'num_results';
 		$this->showAboveResults = false;
 		$this->showInResults = false;
-		$this->showInAuthorResults = false;
 		$this->showInAdvancedSearch = true;
 		$this->collapseByDefault = true;
 		$this->useMoreFacetPopup = true;

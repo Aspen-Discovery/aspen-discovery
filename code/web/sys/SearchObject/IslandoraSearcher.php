@@ -42,15 +42,11 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 
 		// Get default facet settings
 		$this->allFacetSettings = getExtraConfigArray('islandoraFacets');
-		$this->facetConfig = array();
 		$facetLimit = $this->getFacetSetting('Results_Settings', 'facet_limit');
 		if (is_numeric($facetLimit)) {
 			$this->facetLimit = $facetLimit;
 		}
-		$translatedFacets = $this->getFacetSetting('Advanced_Settings', 'translated_facets');
-		if (is_array($translatedFacets)) {
-			$this->translatedFacets = $translatedFacets;
-		}
+
 		$pidFacets = $this->getFacetSetting('Advanced_Settings', 'pid_facets');
 		if (is_array($pidFacets)) {
 			$this->pidFacets = $pidFacets;
@@ -172,7 +168,6 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 
 		//********************
 		// Adjust facet options to use advanced settings
-		$this->facetConfig = isset($this->allFacetSettings['Advanced']) ? $this->allFacetSettings['Advanced'] : array();
 		$facetLimit = $this->getFacetSetting('Advanced_Settings', 'facet_limit');
 		if (is_numeric($facetLimit)) {
 			$this->facetLimit = $facetLimit;
@@ -183,12 +178,12 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 
 		//********************
 		// Basic Search logic
-		$this->searchTerms[] = array(
+		$this->searchTerms[] = [
             'index'   => $this->defaultIndex,
             'lookfor' => ""
-            );
+        ];
 
-            return true;
+        return true;
 	}
 
 	public function getFullSearchUrl() {
@@ -423,20 +418,6 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 	}
 
 	/**
-	 * Add a prefix to facet requirements. Serves to
-	 *    limits facet sets to smaller subsets.
-	 *
-	 *  eg. all facet data starting with 'R'
-	 *
-	 * @access  public
-	 * @param   string  $prefix   Data for prefix
-	 */
-	public function addFacetPrefix($prefix)
-	{
-		$this->facetPrefix = $prefix;
-	}
-
-	/**
 	 * Return a list of valid sort options -- overrides the base class with
 	 * custom behavior for Author/Search screen.
 	 *
@@ -596,9 +577,10 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 
 		// Build a list of facets we want from the index
 		$facetSet = array();
-		if (!empty($this->facetConfig)) {
+		$facetConfig = $this->getFacetConfig();
+		if (!empty($facetConfig)) {
 			$facetSet['limit'] = $this->facetLimit;
-			foreach ($this->facetConfig as $facetField => $facetName) {
+			foreach ($facetConfig as $facetField => $facetName) {
 				$facetSet['field'][] = $facetField;
 			}
 			if ($this->facetOffset != null) {
@@ -687,18 +669,12 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 	 *    and urls to remove them.
 	 *
 	 * @access  public
-	 * @param   bool   $excludeCheckboxFilters  Should we exclude checkbox filters
-	 *                                          from the list (to be used as a
-	 *                                          complement to getCheckboxFacets()).
 	 * @return  array    Field, values and removal urls
 	 */
-	public function getFilterList($excludeCheckboxFilters = false)
+	public function getFilterList()
 	{
 		require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
 		$fedoraUtils = FedoraUtils::getInstance();
-
-		// Get a list of checkbox filters to skip if necessary:
-		$skipList = $excludeCheckboxFilters ? array_keys($this->checkboxFacets) : array();
 
 		$list = array();
 		// Loop through all the current filter fields
@@ -765,7 +741,7 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 		$fedoraUtils = FedoraUtils::getInstance();
 		// If there is no filter, we'll use all facets as the filter:
 		if (is_null($filter)) {
-			$filter = $this->facetConfig;
+			$filter = $this->getFacetConfig();
 		}
 
 		// Start building the facet list:
@@ -1002,14 +978,6 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 
 	public function setApplyStandardFilters($flag){
 		$this->applyStandardFilters = $flag;
-	}
-
-	/**
-	 * @return array
-	 */
-	public function getFacetConfig()
-	{
-		return $this->facetConfig;
 	}
 
 	// Second Attempt to handle Exhibit Navigation

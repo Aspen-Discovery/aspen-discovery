@@ -8,7 +8,6 @@ class OverDrive_Home extends Action{
 
 	function launch(){
 		global $interface;
-		global $configArray;
 
 		if (isset($_REQUEST['searchId'])){
 			$_SESSION['searchId'] = $_REQUEST['searchId'];

@@ -22,10 +22,6 @@ class SearchObject_ListsSearcher extends SearchObject_SolrSearcher
         if (is_numeric($facetLimit)) {
             $this->facetLimit = $facetLimit;
         }
-        $translatedFacets = $this->getFacetSetting('Advanced_Settings', 'translated_facets');
-        if (is_array($translatedFacets)) {
-            $this->translatedFacets = $translatedFacets;
-        }
 
         // Load search preferences:
         $searchSettings = getExtraConfigArray('listsSearches');
@@ -57,7 +53,7 @@ class SearchObject_ListsSearcher extends SearchObject_SolrSearcher
         $this->indexEngine->debug = $this->debug;
         $this->indexEngine->debugSolrQuery = $this->debugSolrQuery;
 
-        $timer->logTime('Setup Open Archives Search Object');
+        $timer->logTime('Setup Lists Search Object');
     }
 
     /**
@@ -159,4 +155,24 @@ class SearchObject_ListsSearcher extends SearchObject_SolrSearcher
         }
         return $this->processSearchSuggestions($searchTerm, $suggestionHandler);
     }
+
+	//TODO: Convert this to use definitions
+	public function getFacetConfig(){
+		if ($this->facetConfig == null) {
+			$facetConfig = [];
+			$author = new LibraryFacetSetting();
+			$author->id = 1;
+			$author->multiSelect = true;
+			$author->facetName = "author_display";
+			$author->displayName = "Created By";
+			$author->numEntriesToShowByDefault = 5;
+			$author->translate = true;
+			$author->collapseByDefault = false;
+			$author->useMoreFacetPopup = true;
+			$facetConfig["author_display"] = $author;
+
+			$this->facetConfig = $facetConfig;
+		}
+		return $this->facetConfig;
+	}
 }

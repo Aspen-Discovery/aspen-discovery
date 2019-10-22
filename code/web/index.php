@@ -483,17 +483,17 @@ if ($action == "AJAX" || $action == "JSON" || $module == 'API'){
 	}*/
 
 	if (!($module == 'Search' && $action == 'Home')){
-		/** @var SearchObject_BaseSearcher $savedSearch */
-		$savedSearch = $searchObject->loadLastSearch();
+		/** @var SearchObject_BaseSearcher $activeSearch */
+		$activeSearch = $searchObject->loadLastSearch();
 		//Load information about the search so we can display it in the search box
-		if (!is_null($savedSearch)){
-			$interface->assign('lookfor',             $savedSearch->displayQuery());
-			$interface->assign('searchType',          $savedSearch->getSearchType());
-			$interface->assign('searchIndex',         $savedSearch->getSearchIndex());
-			$interface->assign('filterList', $savedSearch->getFilterList());
-			$interface->assign('savedSearch', $savedSearch->isSavedSearch());
+		if (!is_null($activeSearch)){
+			$interface->assign('lookfor', $activeSearch->displayQuery());
+			$interface->assign('searchType', $activeSearch->getSearchType());
+			$interface->assign('searchIndex', $activeSearch->getSearchIndex());
+			$interface->assign('filterList', $activeSearch->getFilterList());
+			$interface->assign('savedSearch', $activeSearch->isSavedSearch());
 			if (!isset($_GET['searchSource'])){
-				$interface->assign('searchSource', $savedSearch->getSearchSource());
+				$interface->assign('searchSource', $activeSearch->getSearchSource());
 			}
 		}
 		$timer->logTime('Load last search for redisplay');
@@ -604,10 +604,6 @@ if (isset($_SESSION['hold_message'])) {
 	$interface->assign('hold_message', formatHoldMessage($_SESSION['hold_message']));
 	unset($_SESSION['hold_message']);
 }*/
-
-// Process Solr shard settings
-processShards();
-$timer->logTime('Process Shards');
 
 // Call Action
 // Note: ObjectEditor classes typically have the class name of DB_Object with an 's' added to the end.
@@ -724,64 +720,6 @@ function processFollowup(){
 			header("Location: {$configArray['Site']['path']}/".$_REQUEST['followupModule']."/".$_REQUEST['followupAction']."?".$_REQUEST['recordId']);
 			die();
 			break;
-	}
-}
-
-/**
- * Process Solr-shard-related parameters and settings.
- *
- * @return void
- */
-function processShards()
-{
-	global $configArray;
-	global $interface;
-
-	// If shards are not configured, give up now:
-	if (!isset($configArray['IndexShards']) || empty($configArray['IndexShards'])) {
-		return;
-	}
-
-	// If a shard selection list is found as an incoming parameter, we should save
-	// it in the session for future reference:
-	$useDefaultShards = false;
-	if (array_key_exists('shard', $_REQUEST)) {
-		if ($_REQUEST['shard'] == ''){
-			$useDefaultShards = true;
-		}else{
-			$_SESSION['shards'] = $_REQUEST['shard'];
-		}
-
-	} else if (!array_key_exists('shards', $_SESSION)) {
-		$useDefaultShards = true;
-	}
-	if ($useDefaultShards){
-		// If no selection list was passed in, use the default...
-
-		// If we have a default from the configuration, use that...
-		if (isset($configArray['ShardPreferences']['defaultChecked'])
-				&& !empty($configArray['ShardPreferences']['defaultChecked'])
-				) {
-			$checkedShards = $configArray['ShardPreferences']['defaultChecked'];
-			$_SESSION['shards'] = is_array($checkedShards) ?
-			$checkedShards : array($checkedShards);
-		} else {
-			// If no default is configured, use all shards...
-			$_SESSION['shards'] = array_keys($configArray['IndexShards']);
-		}
-	}
-
-	// If we are configured to display shard checkboxes, send a list of shards
-	// to the interface, with keys being shard names and values being a boolean
-	// value indicating whether or not the shard is currently selected.
-	if (isset($configArray['ShardPreferences']['showCheckboxes'])
-	&& $configArray['ShardPreferences']['showCheckboxes'] == true
-	) {
-		$shards = array();
-		foreach ($configArray['IndexShards'] as $shardName => $shardAddress) {
-			$shards[$shardName] = in_array($shardName, $_SESSION['shards']);
-		}
-		$interface->assign('shards', $shards);
 	}
 }
 

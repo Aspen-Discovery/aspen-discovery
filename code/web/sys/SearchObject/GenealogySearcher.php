@@ -30,14 +30,9 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 		$timer->logTime('Created Index Engine for Genealogy');
 
 		$this->allFacetSettings = getExtraConfigArray('genealogyFacets');
-		$this->facetConfig = array();
 		$facetLimit = $this->getFacetSetting('Results_Settings', 'facet_limit');
 		if (is_numeric($facetLimit)) {
 			$this->facetLimit = $facetLimit;
-		}
-		$translatedFacets = $this->getFacetSetting('Advanced_Settings', 'translated_facets');
-		if (is_array($translatedFacets)) {
-			$this->translatedFacets = $translatedFacets;
 		}
 
 		// Load search preferences:
@@ -140,7 +135,6 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 
 		//********************
 		// Adjust facet options to use advanced settings
-		$this->facetConfig = isset($this->allFacetSettings['Advanced']) ? $this->allFacetSettings['Advanced'] : array();
 		$facetLimit = $this->getFacetSetting('Advanced_Settings', 'facet_limit');
 		if (is_numeric($facetLimit)) {
 			$this->facetLimit = $facetLimit;
@@ -254,20 +248,6 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 	}
 
 	/**
-	 * Add a prefix to facet requirements. Serves to
-	 *    limits facet sets to smaller subsets.
-	 *
-	 *  eg. all facet data starting with 'R'
-	 *
-	 * @access  public
-	 * @param   string  $prefix   Data for prefix
-	 */
-	public function addFacetPrefix($prefix)
-	{
-		$this->facetPrefix = $prefix;
-	}
-
-	/**
 	 * Return a list of valid sort options -- overrides the base class with
 	 * custom behavior for Author/Search screen.
 	 *
@@ -354,7 +334,7 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 	{
 		// If there is no filter, we'll use all facets as the filter:
 		if (is_null($filter)) {
-			$filter = $this->facetConfig;
+			$filter = $this->getFacetConfig();
 		}
 
 		// Start building the facet list:
@@ -375,6 +355,8 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
         }else{
             $allFacets = $this->indexResult['facet_counts']['facet_fields'];
         }
+
+		$facetConfig = $this->getFacetConfig();
 		foreach ($allFacets as $field => $data) {
 			// Skip filtered fields and empty arrays:
 			if (!in_array($field, $validFields) || count($data) < 1) {
@@ -389,8 +371,9 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 			$list[$field]['list']  = array();
 
 			// Should we translate values for the current facet?
-			$translate = in_array($field, $this->translatedFacets);
+			$translate = $facetConfig[$field]->translate;
 
+			$list[$field]['hasApplied'] = false;
 			// Loop through values:
 			foreach ($data as $facet) {
 				// Initialize the array of data about the current facet:
@@ -416,24 +399,6 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 
 				// Store the collected values:
 				$list[$field]['list'][$valueKey] = $currentSettings;
-			}
-
-			if ($field == 'veteranOf'){
-				//Add a field for Any war
-				$currentSettings = array();
-				$currentSettings['value'] = '[* TO *]';
-				$currentSettings['display'] = $translate ? translate('Any War') : 'Any War';
-				$currentSettings['count'] = '';
-				$currentSettings['isApplied'] = false;
-				if (in_array($field, array_keys($this->filterList))) {
-					// and is this value a selected filter?
-					if (in_array($currentSettings['value'], $this->filterList[$field])) {
-						$currentSettings['isApplied'] = true;
-						$currentSettings['removalUrl'] =  $this->renderLinkWithoutFilter("$field:{$currentSettings['value']}");
-					}
-				}
-				$currentSettings['url'] = $this->renderLinkWithFilter("veteranOf", $currentSettings['value']);
-				$list[$field]['list']['Any War'] = $currentSettings;
 			}
 
 			//How many facets should be shown by default
@@ -611,4 +576,78 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 	protected function getFieldsToReturn() {
         return 'id,recordtype,title,comments,firstName,lastName,middleName,maidenName,otherName,nickName,fullName,veteranOf,birthDate,birthYear,deathYear,ageAtDeath,cemeteryName,mortuaryName,sex,race,causeOfDeath,obituaryDate,obituarySource,obituaryText,spouseName,marriageDate,marriageComments';
     }
+
+	//TODO: Convert this to use definitions
+	public function getFacetConfig(){
+		if ($this->facetConfig == null) {
+			$facetConfig = [];
+			$birthYear = new LibraryFacetSetting();
+			$birthYear->id = 1;
+			$birthYear->facetName = "birthYear";
+			$birthYear->displayName = "Date of Birth";
+			$birthYear->collapseByDefault = true;
+			$facetConfig["birthYear"] = $birthYear;
+
+			$deathYear = new LibraryFacetSetting();
+			$deathYear->id = 2;
+			$deathYear->multiSelect = true;
+			$deathYear->facetName = "deathYear";
+			$deathYear->displayName = "Date of Death";
+			$deathYear->collapseByDefault = true;
+			$facetConfig["deathYear"] = $deathYear;
+
+			$veteranOf = new LibraryFacetSetting();
+			$veteranOf->id = 3;
+			$veteranOf->multiSelect = true;
+			$veteranOf->facetName = "veteranOf";
+			$veteranOf->displayName = "Veteran Of";
+			$veteranOf->numEntriesToShowByDefault = 5;
+			$veteranOf->collapseByDefault = true;
+			$veteranOf->useMoreFacetPopup = true;
+			$facetConfig["veteranOf"] = $veteranOf;
+
+			$cemeteryName = new LibraryFacetSetting();
+			$cemeteryName->id = 4;
+			$cemeteryName->multiSelect = true;
+			$cemeteryName->facetName = "cemeteryName";
+			$cemeteryName->displayName = "Cemetery Name";
+			$cemeteryName->numEntriesToShowByDefault = 5;
+			$cemeteryName->collapseByDefault = true;
+			$cemeteryName->useMoreFacetPopup = true;
+			$facetConfig["cemeteryName"] = $cemeteryName;
+
+			$cemeteryLocation = new LibraryFacetSetting();
+			$cemeteryLocation->id = 5;
+			$cemeteryLocation->multiSelect = true;
+			$cemeteryLocation->facetName = "cemeteryLocation";
+			$cemeteryLocation->displayName = "Cemetery Location";
+			$cemeteryLocation->numEntriesToShowByDefault = 5;
+			$cemeteryLocation->collapseByDefault = true;
+			$cemeteryLocation->useMoreFacetPopup = true;
+			$facetConfig["cemeteryLocation"] = $cemeteryLocation;
+
+			$mortuaryName = new LibraryFacetSetting();
+			$mortuaryName->id = 6;
+			$mortuaryName->multiSelect = true;
+			$mortuaryName->facetName = "mortuaryName";
+			$mortuaryName->displayName = "Mortuary Name";
+			$mortuaryName->numEntriesToShowByDefault = 5;
+			$mortuaryName->collapseByDefault = true;
+			$mortuaryName->useMoreFacetPopup = true;
+			$facetConfig["mortuaryName"] = $mortuaryName;
+
+			$obituarySource = new LibraryFacetSetting();
+			$obituarySource->id = 7;
+			$obituarySource->multiSelect = true;
+			$obituarySource->facetName = "obituarySource";
+			$obituarySource->displayName = "Obituary Source";
+			$obituarySource->numEntriesToShowByDefault = 5;
+			$obituarySource->collapseByDefault = true;
+			$obituarySource->useMoreFacetPopup = true;
+			$facetConfig["obituarySource"] = $obituarySource;
+
+			$this->facetConfig = $facetConfig;
+		}
+		return $this->facetConfig;
+	}
 }

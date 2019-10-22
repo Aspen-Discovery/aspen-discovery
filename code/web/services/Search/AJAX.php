@@ -309,4 +309,80 @@ class AJAX extends Action {
 		return $result;
 	}
 
+	/** @noinspection PhpUnused */
+	function lockFacet(){
+		$response = [
+			'success' => false,
+			'message' => 'Unknown error'
+		];
+		$facetToLock = $_REQUEST['facet'];
+
+		//Get the filters from the active search
+		$searchObject = SearchObjectFactory::initSearchObject();
+		/** @var SearchObject_BaseSearcher $activeSearch */
+		$activeSearch = $searchObject->loadLastSearch();
+		if (!is_null($activeSearch)) {
+			//Save filters to the session or user object
+			if (UserAccount::isLoggedIn()){
+				$user = UserAccount::getActiveUserObj();
+				$lockedFacets = !empty($user->lockedFacets) ? json_decode($user->lockedFacets, true) : [];
+			}else{
+				$lockedFacets = isset($_SESSION['lockedFilters']) ? $_SESSION['lockedFilters'] : [];
+			}
+			$lockedFacets[$facetToLock] = [];
+
+			$lockSection = $activeSearch->getSearchName();
+			$filters = $activeSearch->getFilterList();
+			foreach ($filters as $appliedFacets){
+				foreach ($appliedFacets as $appliedFacet){
+					if ($appliedFacet['field'] == $facetToLock){
+						$lockedFacets[$lockSection][$facetToLock][] = $appliedFacet['value'];
+					}
+				}
+			}
+			if (UserAccount::isLoggedIn()){
+				$user = UserAccount::getActiveUserObj();
+				$user->lockedFacets = json_encode($lockedFacets);
+				$user->update();
+			}else{
+				$_SESSION['lockedFilters'] = $lockedFacets;
+			}
+
+			$response['success'] = true;
+		}else{
+			$response['message'] = 'Could not load search to lock filters for';
+		}
+
+		return $response;
+	}
+
+	/** @noinspection PhpUnused */
+	function unlockFacet(){
+		$response = [
+			'success' => false,
+			'message' => 'Unknown error'
+		];
+
+		//Get the filters from the active search
+		$searchObject = SearchObjectFactory::initSearchObject();
+		/** @var SearchObject_BaseSearcher $activeSearch */
+		$activeSearch = $searchObject->loadLastSearch();
+		$lockSection = $activeSearch->getSearchName();
+
+		$facetToUnlock = $_REQUEST['facet'];
+		if (UserAccount::isLoggedIn()){
+			$user = UserAccount::getActiveUserObj();
+			$lockedFacets = !empty($user->lockedFacets) ? json_decode($user->lockedFacets, true) : [];
+		}else{
+			$lockedFacets = isset($_SESSION['lockedFilters']) ? $_SESSION['lockedFilters'] : [];
+		}
+		if (isset($lockedFacets[$lockSection][$facetToUnlock])){
+			unset($_SESSION['lockedFilters'][$lockSection][$facetToUnlock]);
+			$response['success'] = true;
+		}else{
+			$response['success'] = true;
+			$response['message'] = 'That facet is already unlocked';
+		}
+		return $response;
+	}
 }

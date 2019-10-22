@@ -8390,6 +8390,7 @@ hr.menu {
 .breadcrumbs {
   background-color: #fffcfa;
   padding: 3px;
+  margin-top: 4.6px;
 }
 .breadcrumb {
   padding: 0;
@@ -9888,20 +9889,23 @@ a.browse-thumbnail-sorted.active {
 }
 .sidebar-label {
   text-align: center;
-  background-color: #7c7c7d;
-  background: linear-gradient(to bottom, #7c7c7d, #414141);
+  background-color: #414141;
   color: #fff;
   padding: 3px 0;
-  margin-top: 20px;
+  margin-top: 4.6px;
 }
 .facetTitle,
 .exploreMoreTitle {
   background-color: #e8e8e8;
-  background: linear-gradient(to bottom, #e8e8e8, #d7d7d7);
   color: #555555;
-  padding: 8px 30px 6px 15px;
   border-top: 1px solid #f4f4f4;
   border-bottom: 1px solid #adadad;
+}
+.facetTitle {
+  padding: 8px 10px 6px 10px;
+}
+.exploreMoreTitle {
+  padding: 8px 30px 6px 15px;
 }
 .formatCategoryLabel {
   vertical-align: central;

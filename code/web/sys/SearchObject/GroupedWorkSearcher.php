@@ -27,7 +27,6 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 
 		global $configArray;
 		global $timer;
-		global $solrScope;
 		require_once ROOT_DIR . "/sys/SolrConnector/GroupedWorksSolrConnector.php";
 		// Initialise the index
 		$this->indexEngine = new GroupedWorksSolrConnector($configArray['Index']['url']);
@@ -35,17 +34,9 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 
 		// Get default facet settings
 		$this->allFacetSettings = getExtraConfigArray('groupedWorksFacets');
-		$this->facetConfig = array();
 		$facetLimit = $this->getFacetSetting('Results_Settings', 'facet_limit');
 		if (is_numeric($facetLimit)) {
 			$this->facetLimit = $facetLimit;
-		}
-		$translatedFacets = $this->getFacetSetting('Advanced_Settings', 'translated_facets');
-		if (is_array($translatedFacets)) {
-			$this->translatedFacets = $translatedFacets;
-			foreach ($translatedFacets as $translatedFacet){
-				$this->translatedFacets[] = $translatedFacet . '_'. $solrScope;
-			}
 		}
 
 		// Load search preferences:
@@ -73,11 +64,13 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 		if (isset($searchSettings['Sorting'])) {
 			$this->sortOptions = $searchSettings['Sorting'];
 		} else {
-			$this->sortOptions = array('relevance' => 'sort_relevance',
-								'popularity' => 'sort_popularity',
+			$this->sortOptions = array(
+				'relevance' => 'sort_relevance',
+				'popularity' => 'sort_popularity',
                 'year' => 'sort_year', 'year asc' => 'sort_year asc',
                 'callnumber' => 'sort_callnumber', 'author' => 'sort_author',
-                'title' => 'sort_title');
+                'title' => 'sort_title'
+			);
 		}
 
 		$this->indexEngine->debug = $this->debug;
@@ -183,7 +176,6 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 				// We already have the 'lookfor', just set the index
 				$this->searchTerms[0]['index'] = 'Author';
 				// We really want author facet data
-				$this->facetConfig = array();
 				$this->addFacet('authorStr');
 				// Offset the facet list by the current page of results, and
 				// allow up to ten total pages of results -- since we can't
@@ -254,7 +246,6 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 			$facets = Library::getDefaultFacets();
 		}
 
-		$this->facetConfig = array();
 		global $solrScope;
 		foreach ($facets as $facet){
 			$facetName = $facet->facetName;
@@ -294,10 +285,6 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 				if ($facet->facetName == 'time_since_added' && $searchLocation->restrictSearchByLocation) {
 					$facetName = 'local_time_since_added_' . $searchLocation->code;
 				}
-			}
-
-            if ($facet->showInAdvancedSearch){
-				$this->facetConfig[$facetName] = $facet->displayName;
 			}
 		}
 
@@ -643,20 +630,6 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 		if ($newSort == 'count' || $newSort == 'index') $this->facetSort = $newSort;
 	}
 
-	/**
-	 * Add a prefix to facet requirements. Serves to
-	 *    limits facet sets to smaller subsets.
-	 *
-	 *  eg. all facet data starting with 'R'
-	 *
-	 * @access  public
-	 * @param   string  $prefix   Data for prefix
-	 */
-	public function addFacetPrefix($prefix)
-	{
-		$this->facetPrefix = $prefix;
-	}
-
     public function supportsSuggestions()
     {
         return true;
@@ -853,9 +826,21 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 
 		$availabilityToggleValue = null;
 		$availabilityAtValue = null;
-		$formatValue = null;
-		$formatCategoryValue = null;
+		$formatValues = [];
+		$formatCategoryValues = [];
+		$facetConfig = $this->getFacetConfig();
 		foreach ($this->filterList as $field => $filter) {
+			$fieldPrefix = "";
+			$multiSelect = false;
+			if (isset($facetConfig[$field])) {
+				/** @var FacetSetting $facetInfo */
+				$facetInfo = $facetConfig[$field];
+				if ($facetInfo->multiSelect) {
+					$fieldPrefix = "{!tag={$facetInfo->id}}";
+					$multiSelect = true;
+				}
+			}
+			$fieldValue = "";
 			foreach ($filter as $value) {
 				$isAvailabilityToggle = false;
 				$isAvailableAt = false;
@@ -866,59 +851,88 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 					$availabilityAtValue = $value;
 					$isAvailableAt = true;
 				}elseif (substr($field, 0, strlen('format_category')) == 'format_category'){
-					$formatCategoryValue = $value;
+					$formatCategoryValues[] = $value;
 				}elseif (substr($field, 0, strlen('format')) == 'format'){
-					$formatValue = $value;
+					$formatValues[] = $value;
 				}
 				// Special case -- allow trailing wildcards:
+				$okToAdd = false;
 				if (substr($value, -1) == '*') {
-					$filterQuery[] = "$field:$value";
+					$okToAdd = true;
 				} elseif (preg_match('/\\A\\[.*?\\sTO\\s.*?]\\z/', $value)){
-					$filterQuery[] = "$field:$value";
+					$okToAdd = true;
 				} elseif (preg_match('/^\\(.*?\\)$/', $value)){
-					$filterQuery[] = "$field:$value";
+					$okToAdd = true;
 				} else {
 					if (!empty($value)){
-						if ($isAvailabilityToggle) {
-							$filterQuery['availability_toggle'] = "$field:\"$value\"";
-						}elseif ($isAvailableAt){
-							$filterQuery['available_at'] = "$field:\"$value\"";
+
+						if ($isAvailabilityToggle || $isAvailableAt) {
+							$okToAdd = true;
+							$value = "\"$value\"";
 						}else{
+							//The value is already specified as field:value
 							if (is_numeric($field)){
 								$filterQuery[] = $value;
 							}else {
-								$filterQuery[] = "$field:\"$value\"";
+								$okToAdd = true;
+								$value = "\"$value\"";
 							}
 						}
 					}
 				}
+				if ($okToAdd){
+					if ($multiSelect){
+						if (!empty($fieldValue)){
+							$fieldValue .= ' OR ';
+						}
+						$fieldValue .= $value;
+					}else {
+						if ($isAvailabilityToggle) {
+							$filterQuery['availability_toggle'] = "$fieldPrefix$field:$value";
+						} elseif ($isAvailableAt) {
+							$filterQuery['available_at'] = "$fieldPrefix$field:\"$value\"";
+						} else {
+							$filterQuery[] = "$fieldPrefix$field:$value";
+						}
+					}
+				}
+			}
+			if ($multiSelect){
+				$filterQuery[] = "$fieldPrefix$field:($fieldValue)";
 			}
 		}
 
 		//Check to see if we have both a format and availability facet applied.
-		$availabilityByFormatFieldName = null;
-		if ($availabilityToggleValue != null && ($formatCategoryValue != null || $formatValue != null)){
+		$availabilityByFormatFieldNames = [];
+		if ($availabilityToggleValue != null && (!empty($formatCategoryValues) || !empty($formatValues))){
 			global $solrScope;
 			//Make sure to process the more specific format first
-			if ($formatValue != null){
+			foreach ($formatValues as $formatValue){
 				$availabilityByFormatFieldName = 'availability_by_format_' . $solrScope . '_' . strtolower(preg_replace('/\W/', '_', $formatValue));
-			}else{
-				$availabilityByFormatFieldName = 'availability_by_format_' . $solrScope . '_' . strtolower(preg_replace('/\W/', '_', $formatCategoryValue));
+				$filterQuery[] = $availabilityByFormatFieldName . ':"' . $availabilityToggleValue . '"';
+				$availabilityByFormatFieldNames[] = $availabilityByFormatFieldName;
 			}
-			$filterQuery['availability_toggle'] = $availabilityByFormatFieldName . ':"' . $availabilityToggleValue . '"';
+			foreach ($formatCategoryValues as $formatCategoryValue){
+				$availabilityByFormatFieldName = 'availability_by_format_' . $solrScope . '_' . strtolower(preg_replace('/\W/', '_', $formatCategoryValue));
+				$filterQuery[] = $availabilityByFormatFieldName . ':"' . $availabilityToggleValue . '"';
+				$availabilityByFormatFieldNames[] = $availabilityByFormatFieldName;
+			}
+			unset($filterQuery['availability_toggle']);
 		}
 
 		//Check to see if we have both a format and available at facet applied
 		$availableAtByFormatFieldName = null;
-		if ($availabilityAtValue != null && ($formatCategoryValue != null || $formatValue != null)){
+		if ($availabilityAtValue != null && (!empty($formatCategoryValues) || !empty($formatValues))){
 			global $solrScope;
-			//Make sure to process the more specific format first
-			if ($formatValue != null){
-				$availableAtByFormatFieldName = 'available_at_by_format_' . $solrScope . '_' . strtolower(preg_replace('/\W/', '_', $formatValue));
-			}else{
-				$availableAtByFormatFieldName = 'available_at_by_format_' . $solrScope . '_' . strtolower(preg_replace('/\W/', '_', $formatCategoryValue));
+			foreach ($formatValues as $formatValue){
+				$availabilityByFormatFieldName = 'available_at_by_format_' . $solrScope . '_' . strtolower(preg_replace('/\W/', '_', $formatValue));
+				$filterQuery[] = $availabilityByFormatFieldName . ':"' . $availabilityToggleValue . '"';
 			}
-			$filterQuery['available_at'] = $availableAtByFormatFieldName . ':"' . $availabilityAtValue . '"';
+			foreach ($formatCategoryValues as $formatCategoryValue){
+				$availabilityByFormatFieldName = 'available_at_by_format_' . $solrScope . '_' . strtolower(preg_replace('/\W/', '_', $formatCategoryValue));
+				$filterQuery[] = $availabilityByFormatFieldName . ':"' . $availabilityToggleValue . '"';
+			}
+			unset($filterQuery['available_at']);
 		}
 
 
@@ -930,17 +944,20 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 
 		// Build a list of facets we want from the index
 		$facetSet = array();
-		if (!empty($this->facetConfig)) {
+		$facetConfig = $this->getFacetConfig();
+		if (!empty($facetConfig)) {
 			$facetSet['limit'] = $this->facetLimit;
-			foreach ($this->facetConfig as $facetField => $facetName) {
+			foreach ($facetConfig as $facetField => $facetInfo) {
 				if (strpos($facetField, 'availability_toggle') === 0){
-					if ($availabilityByFormatFieldName){
-						$facetSet['field'][] = $availabilityByFormatFieldName;
+					if (!empty($availabilityByFormatFieldName)){
+						foreach ($availabilityByFormatFieldNames as $availabilityByFormatFieldName){
+							$facetSet['field'][$availabilityByFormatFieldName] = $facetInfo;
+						}
 					}else{
-						$facetSet['field'][] = $facetField;
+						$facetSet['field'][$facetField] = $facetInfo;
 					}
 				}else{
-					$facetSet['field'][] = $facetField;
+					$facetSet['field'][$facetField] = $facetInfo;
 				}
 			}
 			if ($this->facetOffset != null) {
@@ -1055,7 +1072,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 		global $timer;
 		// If there is no filter, we'll use all facets as the filter:
 		if (is_null($filter)) {
-			$filter = $this->facetConfig;
+			$filter = $this->getFacetConfig();
 		}
 
 		// Start building the facet list:
@@ -1104,6 +1121,8 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 		}
 
 		$allFacets = $this->indexResult['facet_counts']['facet_fields'];
+		/** @var FacetSetting $facetConfig */
+		$facetConfig = $this->getFacetConfig();
 		foreach ($allFacets as $field => $data) {
 			// Skip filtered fields and empty arrays:
 			if (!in_array($field, $validFields) || count($data) < 1) {
@@ -1124,10 +1143,12 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 			}
 			// Initialize the settings for the current field
 			$list[$field] = array();
+			$list[$field]['field_name'] = $field;
 			// Add the on-screen label
 			$list[$field]['label'] = $filter[$field];
 			// Build our array of values for this field
 			$list[$field]['list']  = array();
+			$list[$field]['hasApplied'] = false;
 			$foundInstitution = false;
 			$doInstitutionProcessing = false;
 			$foundBranch = false;
@@ -1143,7 +1164,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 				$doBranchProcessing = true;
 			}
 			// Should we translate values for the current facet?
-			$translate = in_array($field, $this->translatedFacets);
+			$translate = $facetConfig[$field]->translate;
 			$numValidRelatedLocations = 0;
 			$numValidLibraries = 0;
 			// Loop through values:
@@ -1161,6 +1182,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 					// and is this value a selected filter?
 					if (in_array($facet[0], $this->filterList[$field])) {
 						$currentSettings['isApplied'] = true;
+						$list[$field]['hasApplied'] = true;
 						$currentSettings['removalUrl'] =  $this->renderLinkWithoutFilter("$field:{$facet[0]}");
 					}
 				}
@@ -1563,4 +1585,80 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 	{
 		return $this->indexEngine->getMoreLikeThese($ids, $notInterestedIds, $this->getFieldsToReturn(), $page, $limit);
 	}
+
+	/**
+	 * @return array
+	 */
+	public function getFacetConfig()
+	{
+		if ($this->facetConfig == null){
+			$facetConfig = [];
+			$searchLibrary = Library::getActiveLibrary();
+			global $locationSingleton;
+			$searchLocation = $locationSingleton->getActiveLocation();
+			$hasSearchLibraryFacets = ($searchLibrary != null && (count($searchLibrary->facets) > 0));
+			$hasSearchLocationFacets = ($searchLocation != null && (count($searchLocation->facets) > 0));
+			if ($hasSearchLocationFacets){
+				$facets = $searchLocation->facets;
+			}elseif ($hasSearchLibraryFacets){
+				$facets = $searchLibrary->facets;
+			}else{
+				$facets = Library::getDefaultFacets();
+			}
+			global $solrScope;
+			foreach ($facets as $facet){
+				$facetName = $facet->facetName;
+				//Adjust facet name for local scoping
+				if ($solrScope){
+					if ($facet->facetName == 'availability_toggle'){
+						$facetName = 'availability_toggle_' . $solrScope;
+					}elseif ($facet->facetName == 'format'){
+						$facetName = 'format_' . $solrScope;
+					}elseif ($facet->facetName == 'format_category'){
+						$facetName = 'format_category_' . $solrScope;
+					}elseif ($facet->facetName == 'econtent_source'){
+						$facetName = 'econtent_source_' . $solrScope;
+					}elseif ($facet->facetName == 'econtent_protection_type'){
+						$facetName = 'econtent_protection_type_' . $solrScope;
+					}elseif ($facet->facetName == 'detailed_location'){
+						$facetName = 'detailed_location_' . $solrScope;
+					}elseif ($facet->facetName == 'owning_location'){
+						$facetName = 'owning_location_' . $solrScope;
+					}elseif ($facet->facetName == 'owning_library'){
+						$facetName = 'owning_library_' . $solrScope;
+					}elseif ($facet->facetName == 'available_at'){
+						$facetName = 'available_at_' . $solrScope;
+					}elseif ($facet->facetName == 'collection' || $facet->facetName == 'collection_group'){
+						$facetName = 'collection_' . $solrScope;
+					}
+				}
+				if (isset($searchLibrary)){
+					if ($facet->facetName == 'time_since_added'){
+						$facetName = 'local_time_since_added_' . $searchLibrary->subdomain;
+					}elseif ($facet->facetName == 'itype'){
+						$facetName = 'itype_' . $searchLibrary->subdomain;
+					}
+				}
+				if (isset($searchLocation)){
+					if ($facet->facetName == 'time_since_added' && $searchLocation->restrictSearchByLocation){
+						$facetName = 'local_time_since_added_' . $searchLocation->code;
+					}
+				}
+
+				if ($this->isAdvanced()){
+					if ($facet->showInAdvancedSearch == 1) {
+						$facetConfig[$facetName] = $facet;
+					}
+				}else{
+					if ($facet->showInResults == 1){
+						$facetConfig[$facetName] = $facet;
+					}
+				}
+			}
+			$this->facetConfig = $facetConfig;
+		}
+
+		return $this->facetConfig;
+	}
+
 }

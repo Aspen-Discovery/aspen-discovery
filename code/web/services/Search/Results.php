@@ -202,10 +202,8 @@ class Search_Results extends Action {
 		$interface->assign('searchIndex',         $searchObject->getSearchIndex());
 
 		// We'll need recommendations no matter how many results we found:
-		$interface->assign('topRecommendations',
-		$searchObject->getRecommendationsTemplates('top'));
-		$interface->assign('sideRecommendations',
-		$searchObject->getRecommendationsTemplates('side'));
+		$interface->assign('topRecommendations', $searchObject->getRecommendationsTemplates('top'));
+		$interface->assign('sideRecommendations', $searchObject->getRecommendationsTemplates('side'));
 
 		// 'Finish' the search... complete timers and log search history.
 		$searchObject->close();
@@ -240,7 +238,8 @@ class Search_Results extends Action {
         $spellingSuggestions = $searchObject->getSpellingSuggestions();
         $interface->assign('spellingSuggestions', $spellingSuggestions['suggestions']);
 
-		//Look for suggestions for the search (but not if facets are applied)
+        //Look for suggestions for the search (but not if facets are applied)
+		$facetSet = $searchObject->getFacetList();
 		if ((!isset($facetSet) || count($facetSet) == 0) && $searchObject->getResultTotal() <= 5) {
 			require_once ROOT_DIR . '/services/Search/lib/SearchSuggestions.php';
 			$searchSuggestions = new SearchSuggestions();

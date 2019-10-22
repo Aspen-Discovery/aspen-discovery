@@ -30,6 +30,7 @@ class Browse_AJAX extends Action {
 		echo json_encode($response);
 	}
 
+	/** @noinspection PhpUnused */
 	function getAddBrowseCategoryForm(){
 		global $interface;
 
@@ -368,6 +369,7 @@ class Browse_AJAX extends Action {
 		return $this->textId;
 	}
 
+	/** @noinspection PhpUnused */
 	function getBrowseCategoryInfo($textId = null){
 		$textId = $this->setTextId($textId);
 		if ($textId == null){
@@ -419,6 +421,7 @@ class Browse_AJAX extends Action {
 		}
 	}
 
+	/** @noinspection PhpUnused */
 	function getBrowseSubCategoryInfo(){
 		$subCategoryTextId = isset($_REQUEST['subCategoryTextId']) ? $_REQUEST['subCategoryTextId'] : null;
 		if ($subCategoryTextId == null){
@@ -454,6 +457,7 @@ class Browse_AJAX extends Action {
 		return $result;
 	}
 
+	/** @noinspection PhpUnused */
 	function getMoreBrowseResults($textId = null, $pageToLoad = null) {
 		$textId = $this->setTextId($textId);
 		if ($textId == null){
@@ -530,6 +534,7 @@ class Browse_AJAX extends Action {
 			$browseCategories = $library->browseCategories;
 		}else{
 			//We have a location get data for that
+			/** @noinspection PhpUndefinedFieldInspection */
 			$browseCategories = $activeLocation->browseCategories;
 		}
 

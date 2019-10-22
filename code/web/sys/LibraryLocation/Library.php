@@ -309,7 +309,6 @@ class Library extends DataObject
 		unset($archiveSearchFacetSettingStructure['showAsDropDown']);
 		unset($archiveSearchFacetSettingStructure['showAboveResults']);
 		unset($archiveSearchFacetSettingStructure['showInAdvancedSearch']);
-		unset($archiveSearchFacetSettingStructure['showInAuthorResults']);
 		//unset($archiveSearchFacetSettingStructure['sortMode']);
 
 		$libraryMoreDetailsStructure = LibraryMoreDetails::getObjectStructure();

@@ -1198,6 +1198,7 @@ abstract class Solr {
 			$validFilters = array();
 			foreach ($filter as $id => $filterTerm){
 				list($fieldName, $term) = explode(":", $filterTerm, 2);
+				$fieldName = preg_replace('/{!tag=\d+}/', '', $fieldName);
 				if (!in_array($fieldName, $validFields)){
 					//Special handling for availability_by_format
 					if (preg_match("/^availability_by_format_([^_]+)_[\\w_]+$/", $fieldName)) {
@@ -1271,17 +1272,20 @@ abstract class Solr {
 				}
 			}
 
-
-
 			if (isset($facet['field'])){
-				$options['facet.field'] = $facet['field'];
-				if ($options['facet.field'] && is_array($options['facet.field'])){
-					foreach($options['facet.field'] as $key => $facetName){
-						if (strpos($facetName, 'availability_toggle') === 0 || strpos($facetName, 'availability_by_format') === 0){
-							$options['facet.field'][$key] = '{!ex=avail}' . $facetName;
-							$options["f.{$facetName}.facet.missing"] = 'true';
+				foreach($facet['field'] as $key => $facetInfo){
+					if ($facetInfo instanceof FacetSetting){
+						$facetName = $facetInfo->facetName;
+						if ($facetInfo->multiSelect) {
+							$options['facet.field'][] = "{!ex={$facetInfo->id}}" . $key;
+						}elseif (strpos($facetName, 'availability_toggle') === 0 || strpos($facetName, 'availability_by_format') === 0){
+							$options['facet.field'][] = '{!ex=avail}' . $key;
+							$options["f.{$key}.facet.missing"] = 'true';
+						}else{
+							$options['facet.field'][] = $key;
 						}
-						//Update facets for grouped core
+					}else{
+						$options['facet.field'][] = $facetInfo;
 					}
 				}
 			}else{
@@ -1323,6 +1327,13 @@ abstract class Solr {
 			foreach ($filters as $key => $value){
 				if (strpos($value, 'availability_toggle') === 0 || strpos($value, 'availability_by_format') === 0){
 					$filters[$key] = '{!tag=avail}' . $value;
+				}elseif (isset($facet['field'][$key])){
+					$facetSetting = $facet['field'][$key];
+					if ($facetSetting instanceof FacetSetting){
+						if ($facetSetting->multiSelect){
+							$filters[$key] = "{!tag={$facetSetting->id}}" . $value;
+						}
+					}
 				}
 			}
 		}
@@ -1631,7 +1642,6 @@ abstract class Solr {
 		if ($params) {
 			foreach ($params as $function => $value) {
 				if ($function != '') {
-					// Strip custom FacetFields when sharding makes it necessary:
 					if ($function === 'facet.field') {
 						// If we stripped all values, skip the parameter:
 						if (empty($value)) {
@@ -2102,6 +2112,10 @@ abstract class Solr {
 			$memCache->set("schema_fields_$solrScope", $fields, 24 * 60 * 60);
 		}
 		return $fields;
+	}
+
+	function getIndex(){
+		return $this->index;
 	}
 }
 

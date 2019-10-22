@@ -51,12 +51,12 @@ AspenDiscovery.Searches = (function(){
 		combinedResultsDefinedOrder: [],
 		reorderCombinedResults: function () {
 			if ($('#combined-results-column-0').is(':visible')) {
-				if ($('.combined-results-column-0', '#combined-results-column-0').length == 0){
+				if ($('.combined-results-column-0', '#combined-results-column-0').length === 0){
 					$('.combined-results-column-0').detach().appendTo('#combined-results-column-0');
 					$('.combined-results-column-1').detach().appendTo('#combined-results-column-1');
 				}
 			} else {
-				if ($('.combined-results-section', '#combined-results-all-column').length == 0) {
+				if ($('.combined-results-section', '#combined-results-all-column').length === 0) {
 					$.each(AspenDiscovery.Searches.combinedResultsDefinedOrder, function (i, id) {
 						el = $(id).parents('.combined-results-section').detach().appendTo('#combined-results-all-column');
 					});
@@ -94,7 +94,7 @@ AspenDiscovery.Searches = (function(){
 					params = AspenDiscovery.replaceQueryParam('page', this.curPage+1)+'&method=getMoreSearchResults',
 					divClass = this.displayModeClasses[this.displayMode];
 			params = AspenDiscovery.replaceQueryParam('view', this.displayMode, params); // set the view url parameter just in case.
-			if (params.search(/[?;&]replacementTerm=/) != -1) {
+			if (params.search(/[?;&]replacementTerm=/) !== -1) {
 				let searchTerm = location.search.split('replacementTerm=')[1].split('&')[0];
 				params = AspenDiscovery.replaceQueryParam('lookfor', searchTerm, params);
 			}
@@ -153,7 +153,6 @@ AspenDiscovery.Searches = (function(){
 				let from = $('#from').val();
 				let to = $('#to').val();
 				let message = $('#message').val();
-				let related_record = $('#related_record').val();
 				let sourceUrl = window.location.href;
 
 				let url = Globals.path + "/Search/AJAX";
@@ -214,26 +213,11 @@ AspenDiscovery.Searches = (function(){
 			AspenDiscovery.Searches.initialSearchLoaded = true;
 		},
 
-		processSearchForm: function(){
-			//Get the selected search type submit the form
-			let searchSource = $("#searchSource");
-			if (searchSource.val() === 'existing'){
-				$(".existingFilter").prop('checked', true);
-				let originalSearchSource = $("#existing_search_option").data('original_type');
-				searchSource.val(originalSearchSource);
-			}
-		},
-
 		resetSearchType: function(){
 			if ($("#lookfor").val() === ""){
 				$("#searchSource").val($("#default_search_type").val());
 			}
 			return true;
-		},
-
-		filterAll: function(){
-			// Go through all elements
-			$(".existingFilter").prop('checked', true);
 		},
 
 		loadExploreMoreBar: function(section, searchTerm){
@@ -243,12 +227,48 @@ AspenDiscovery.Searches = (function(){
 			let fullUrl = url + "?" + params;
 			$.getJSON(fullUrl,
 				function(data) {
-					if (data.success == true){
+					if (data.success === true){
 						$("#explore-more-bar-placeholder").html(data.exploreMoreBar);
 						AspenDiscovery.initCarousels();
 					}
 				}
 			);
-		}
+		},
+
+		lockFacet: function (clusterName) {
+			event.stopPropagation();
+			let url = Globals.path + "/Search/AJAX";
+			let params = "method=lockFacet&facet=" + encodeURIComponent(clusterName);
+			let fullUrl = url + "?" + params;
+			$.getJSON(fullUrl,
+				function(data) {
+					if (data.success === true){
+						$("#facetLock_lockIcon_" + clusterName).hide();
+						$("#facetLock_unlockIcon_" + clusterName).show();
+					}else{
+						AspenDiscovery.showMessage('Error', data.message, true);
+					}
+				}
+			);
+			return false;
+		},
+
+		unlockFacet: function (clusterName) {
+			event.stopPropagation();
+			let url = Globals.path + "/Search/AJAX";
+			let params = "method=unlockFacet&facet=" + encodeURIComponent(clusterName);
+			let fullUrl = url + "?" + params;
+			$.getJSON(fullUrl,
+				function(data) {
+					if (data.success === true){
+						$("#facetLock_lockIcon_" + clusterName).show();
+						$("#facetLock_unlockIcon_" + clusterName).hide();
+					}else{
+						AspenDiscovery.showMessage('Error', data.message, true);
+					}
+				}
+			);
+			return false;
+		},
 	}
 }(AspenDiscovery.Searches || {}));

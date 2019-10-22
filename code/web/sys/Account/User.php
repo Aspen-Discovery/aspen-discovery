@@ -39,6 +39,7 @@ class User extends DataObject
 	public $rbdigitalUsername;
 	public $rbdigitalPassword;
 	public $rbdigitalLastAccountCheck;
+	public $lockedFacets;
 
 	private $roles;
 	private $masqueradingRoles;

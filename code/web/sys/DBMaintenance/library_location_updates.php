@@ -1770,6 +1770,39 @@ function getLibraryLocationUpdates(){
 				'ALTER TABLE location_hours DROP INDEX locationId',
 				'ALTER TABLE location_hours ADD INDEX location (locationId, day, open)',
 			]
-		]
+		],
+
+		'facets_remove_author_results' => [
+			'title' => 'Remove showInAuthorResults from facets',
+			'description' => 'Remove showInAuthorResults from facets.',
+			'continueOnError' => false,
+			'sql' => [
+				"ALTER TABLE library_facet_setting DROP COLUMN showInAuthorResults",
+				"ALTER TABLE location_facet_setting DROP COLUMN showInAuthorResults",
+				"ALTER TABLE library_archive_search_facet_setting DROP COLUMN showInAuthorResults",
+			],
+		],
+
+		'facets_add_multi_select' => [
+			'title' => 'Multi-Select Facets',
+			'description' => 'Add the ability to make some facets multi-select.',
+			'continueOnError' => false,
+			'sql' => [
+				"ALTER TABLE library_facet_setting ADD COLUMN multiSelect TINYINT(1) DEFAULT 0",
+				"ALTER TABLE location_facet_setting ADD COLUMN multiSelect TINYINT(1) DEFAULT 0",
+				"ALTER TABLE library_archive_search_facet_setting ADD COLUMN multiSelect TINYINT(1) DEFAULT 0",
+			],
+		],
+
+		'facets_add_translation' => [
+			'title' => 'Translatable Facets',
+			'description' => 'Add the ability to make some facets translated.',
+			'continueOnError' => false,
+			'sql' => [
+				"ALTER TABLE library_facet_setting ADD COLUMN translate TINYINT(1) DEFAULT 0",
+				"ALTER TABLE location_facet_setting ADD COLUMN translate TINYINT(1) DEFAULT 0",
+				"ALTER TABLE library_archive_search_facet_setting ADD COLUMN translate TINYINT(1) DEFAULT 0",
+			],
+		],
 	);
 }

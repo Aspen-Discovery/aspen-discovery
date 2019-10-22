@@ -22,10 +22,6 @@ class SearchObject_OpenArchivesSearcher extends SearchObject_SolrSearcher
         if (is_numeric($facetLimit)) {
             $this->facetLimit = $facetLimit;
         }
-        $translatedFacets = $this->getFacetSetting('Advanced_Settings', 'translated_facets');
-        if (is_array($translatedFacets)) {
-            $this->translatedFacets = $translatedFacets;
-        }
 
         // Load search preferences:
         $searchSettings = getExtraConfigArray('openArchivesSearches');
@@ -158,4 +154,87 @@ class SearchObject_OpenArchivesSearcher extends SearchObject_SolrSearcher
         }
         return $this->processSearchSuggestions($searchTerm, $suggestionHandler);
     }
+
+    //TODO: Convert this to use definitions
+	public function getFacetConfig(){
+		if ($this->facetConfig == null) {
+			$facetConfig = [];
+			$collection = new LibraryFacetSetting();
+			$collection->id = 1;
+			$collection->multiSelect = true;
+			$collection->facetName = "collection_name";
+			$collection->displayName = "Collection";
+			$collection->numEntriesToShowByDefault = 5;
+			$collection->translate = true;
+			$collection->collapseByDefault = true;
+			$collection->useMoreFacetPopup = true;
+			$facetConfig["collection_name"] = $collection;
+
+			$creator = new LibraryFacetSetting();
+			$creator->id = 2;
+			$creator->multiSelect = true;
+			$creator->facetName = "creator_facet";
+			$creator->displayName = "Creator";
+			$creator->numEntriesToShowByDefault = 5;
+			$creator->collapseByDefault = true;
+			$creator->useMoreFacetPopup = true;
+			$facetConfig["creator_facet"] = $creator;
+
+			$contributor = new LibraryFacetSetting();
+			$contributor->id = 3;
+			$contributor->multiSelect = true;
+			$contributor->facetName = "contributor_facet";
+			$contributor->displayName = "Contributor";
+			$contributor->numEntriesToShowByDefault = 5;
+			$contributor->collapseByDefault = true;
+			$contributor->useMoreFacetPopup = true;
+			$facetConfig["contributor_facet"] = $contributor;
+
+			$type = new LibraryFacetSetting();
+			$type->id = 4;
+			$type->multiSelect = true;
+			$type->facetName = "type";
+			$type->displayName = "Type";
+			$type->numEntriesToShowByDefault = 5;
+			$type->collapseByDefault = true;
+			$type->useMoreFacetPopup = true;
+			$type->translate;
+			$facetConfig["type"] = $type;
+
+			$subject = new LibraryFacetSetting();
+			$subject->id = 5;
+			$subject->multiSelect = true;
+			$subject->facetName = "subject_facet";
+			$subject->displayName = "Subject";
+			$subject->numEntriesToShowByDefault = 5;
+			$subject->collapseByDefault = true;
+			$subject->useMoreFacetPopup = true;
+			$subject->translate;
+			$facetConfig["subject_facet"] = $subject;
+
+			$publisher = new LibraryFacetSetting();
+			$publisher->id = 6;
+			$publisher->multiSelect = true;
+			$publisher->facetName = "publisher_facet";
+			$publisher->displayName = "Publisher";
+			$publisher->numEntriesToShowByDefault = 5;
+			$publisher->collapseByDefault = true;
+			$publisher->useMoreFacetPopup = true;
+			$facetConfig["publisher_facet"] = $publisher;
+
+			$source = new LibraryFacetSetting();
+			$source->id = 7;
+			$source->multiSelect = true;
+			$source->facetName = "source";
+			$source->displayName = "Source";
+			$source->numEntriesToShowByDefault = 5;
+			$source->collapseByDefault = true;
+			$source->useMoreFacetPopup = true;
+			$facetConfig["source"] = $source;
+
+			$this->facetConfig = $facetConfig;
+		}
+		return $this->facetConfig;
+	}
+
 }

@@ -73,10 +73,8 @@ class OpenArchives_Results extends Action {
         $interface->assign('spellingSuggestions', $spellingSuggestions['suggestions']);
 
         // We'll need recommendations no matter how many results we found:
-        $interface->assign('topRecommendations',
-            $searchObject->getRecommendationsTemplates('top'));
-        $interface->assign('sideRecommendations',
-            $searchObject->getRecommendationsTemplates('side'));
+        $interface->assign('topRecommendations', $searchObject->getRecommendationsTemplates('top'));
+        $interface->assign('sideRecommendations', $searchObject->getRecommendationsTemplates('side'));
 
         // 'Finish' the search... complete timers and log search history.
         $searchObject->close();

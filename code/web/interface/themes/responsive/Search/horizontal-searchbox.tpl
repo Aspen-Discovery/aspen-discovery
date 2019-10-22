@@ -1,6 +1,6 @@
 {strip}
 <div id="horizontal-search-box" class="row">
-	<form method="get" action="{$path}/Union/Search" id="searchForm" class="form-inline" onsubmit="AspenDiscovery.Searches.processSearchForm();">
+	<form method="get" action="{$path}/Union/Search" id="searchForm" class="form-inline">
 
 		{* Hidden Inputs *}
 		<input type="hidden" name="view" id="view" value="{$displayMode}">
@@ -92,13 +92,6 @@
 				</div>
 
 				<div id="horizontal-search-additional" class="col-tn-5 col-xs-5 col-sm-12 col-md-8">
-					{* Keep Applied Filters Checkbox *}
-					{if !empty($filterList)}
-						<label for="keepFiltersSwitch" id="keepFiltersSwitchLabel">
-							<input id="keepFiltersSwitch" type="checkbox" onclick="AspenDiscovery.Searches.filterAll(this);"> {translate text='Keep Applied Filters'}
-						</label>
-					{/if}
-
 					{* Return to Advanced Search Link *}
 					{if !empty($searchType) && $searchType == 'advanced'}
 						<div>
@@ -121,17 +114,6 @@
 				{/if}
 			</div>
 		</div>
-
-		{if !empty($filterList)}
-			{* Data for searching within existing results *}
-			<div id="keepFilters" style="display:none;">
-				{foreach from=$filterList item=data key=field}
-					{foreach from=$data item=value}
-						<input aria-hidden="true" aria-label="Keep existing filter" class="existingFilter" type="checkbox" name="filter[]" value='{$value.field}:"{$value.value|escape}"'>
-					{/foreach}
-				{/foreach}
-			</div>
-		{/if}
 
 	</form>
 </div>

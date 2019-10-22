@@ -50,10 +50,8 @@ abstract class SearchObject_BaseSearcher
 	protected $resultsModule = 'Search';
 	protected $resultsAction = 'Results';
 	// Facets information
-	protected $facetConfig = array();    // Array of valid facet fields=>labels
+	protected $facetConfig;    // Array of valid facet fields=>labels
 	protected $facetOptions = array();
-	protected $checkboxFacets = array(); // Boolean facets represented as checkboxes
-	protected $translatedFacets = array();  // Facets that need to be translated
 	// Default Search Handler
 	protected $defaultIndex = null;
 	// Available sort options
@@ -289,8 +287,26 @@ abstract class SearchObject_BaseSearcher
 	 */
 	protected function getFacetLabel($field)
 	{
-		return isset($this->facetConfig[$field]) ?
-		$this->facetConfig[$field] : ucwords(str_replace("_"," ",translate($field)));
+		global $solrScope;
+		$shortField = str_replace("_$solrScope", '', $field);
+		$facetConfig = $this->getFacetConfig();
+		if (isset($facetConfig[$field])) {
+			$facetConfig = $facetConfig[$field];
+			if ($facetConfig instanceof FacetSetting) {
+				return $facetConfig->displayName;
+			} else {
+				return $facetConfig;
+			}
+		}elseif (isset($facetConfig[$shortField])){
+			$facetConfig = $facetConfig[$shortField];
+			if ($facetConfig instanceof FacetSetting){
+				return $facetConfig->displayName;
+			}else{
+				return $facetConfig;
+			}
+		}else{
+			return ucwords(str_replace("_"," ",translate($shortField)));
+		}
 	}
 
 	/**
@@ -309,44 +325,34 @@ abstract class SearchObject_BaseSearcher
 	 *    and urls to remove them.
 	 *
 	 * @access  public
-	 * @param   bool   $excludeCheckboxFilters  Should we exclude checkbox filters
-	 *                                          from the list (to be used as a
-	 *                                          complement to getCheckboxFacets()).
 	 * @return  array    Field, values and removal urls
 	 */
-	public function getFilterList($excludeCheckboxFilters = false)
+	public function getFilterList()
 	{
-		// Get a list of checkbox filters to skip if necessary:
-		$skipList = $excludeCheckboxFilters ? array_keys($this->checkboxFacets) : array();
-
 		$list = array();
+		$facetConfig = $this->getFacetConfig();
 		// Loop through all the current filter fields
 		foreach ($this->filterList as $field => $values) {
 			// and each value currently used for that field
-			$translate = in_array($field, $this->translatedFacets);
+			$translate = isset($facetConfig[$field]) && $facetConfig[$field]->translate;
 			foreach ($values as $value) {
-				// Add to the list unless it's in the list of fields to skip:
-				if (!in_array($field, $skipList)) {
-					$facetLabel = $this->getFacetLabel($field);
-					if ($field == 'veteranOf' && $value == '[* TO *]'){
-						$display = 'Any War';
-					}elseif ($field == 'available_at' && $value == '*') {
-						$anyLocationLabel = $this->getFacetSetting("Availability", "anyLocationLabel");
-						$display = $anyLocationLabel == '' ? "Any Marmot Location" : $anyLocationLabel;
-					}elseif ($field == 'available_at' && $value == '*') {
-						$anyLocationLabel = $this->getFacetSetting("Availability", "anyLocationLabel");
-						$display = $anyLocationLabel == '' ? "Any Marmot Location" : $anyLocationLabel;
-					}else{
-						$display = $translate ? translate($value) : $value;
-					}
-
-					$list[$facetLabel][] = array(
-                        'value'      => $value,     // raw value for use with Solr
-                        'display'    => $display,   // version to display to user
-                        'field'      => $field,
-                        'removalUrl' => $this->renderLinkWithoutFilter("$field:$value")
-					);
+				$facetLabel = $this->getFacetLabel($field);
+				if ($field == 'available_at' && $value == '*') {
+					$anyLocationLabel = $this->getFacetSetting("Availability", "anyLocationLabel");
+					$display = $anyLocationLabel == '' ? "Any Marmot Location" : $anyLocationLabel;
+				}elseif ($field == 'available_at' && $value == '*') {
+					$anyLocationLabel = $this->getFacetSetting("Availability", "anyLocationLabel");
+					$display = $anyLocationLabel == '' ? "Any Marmot Location" : $anyLocationLabel;
+				}else{
+					$display = $translate ? translate($value) : $value;
 				}
+
+				$list[$facetLabel][] = array(
+                    'value'      => $value,     // raw value for use with Solr
+                    'display'    => $display,   // version to display to user
+                    'field'      => $field,
+                    'removalUrl' => $this->renderLinkWithoutFilter("$field:$value")
+				);
 			}
 		}
 		return $list;
@@ -381,7 +387,7 @@ abstract class SearchObject_BaseSearcher
 		$oldFilterList = $this->filterList;
 		$oldPage       = $this->page;
 		// Availability facet can have only one item selected at a time
-		if ($field === 'availability_toggle'){
+		if (strpos($field, 'availability_toggle') === 0){
 			foreach ($this->filterList as $name => $value){
 				if (strpos($name, 'availability_toggle') === 0){
 					unset ($this->filterList[$name]);
@@ -802,6 +808,22 @@ abstract class SearchObject_BaseSearcher
 			} else {
 				$this->addFilter(strip_tags($_REQUEST['filter']));
 			}
+		} else {
+			//Check for locked filters
+			if (UserAccount::isLoggedIn()){
+				$user = UserAccount::getActiveUserObj();
+				$lockedFacets = !empty($user->lockedFacets) ? json_decode($user->lockedFacets, true) : [];
+			}else{
+				$lockedFacets = isset($_SESSION['lockedFilters']) ? $_SESSION['lockedFilters'] : [];
+			}
+			if (!empty($lockedFacets) && !empty($lockedFacets[$this->getSearchName()])){
+				$lockedFilters = $lockedFacets[$this->getSearchName()];
+				foreach ($lockedFilters as $fieldName => $values){
+					foreach ($values as $value){
+						$this->addFilter($fieldName . ':' . $value);
+					}
+				}
+			}
 		}
 	}
 
@@ -1134,7 +1156,7 @@ abstract class SearchObject_BaseSearcher
 	 *
 	 * @access  public
 	 * @param   string  $newField   Field name
-	 * @param   string  $newAlias   Optional on-screen display label
+	 * @param   string|FacetSetting  $newAlias   Optional on-screen display label
 	 */
 	public function addFacet($newField, $newAlias = null)
 	{
@@ -1146,63 +1168,6 @@ abstract class SearchObject_BaseSearcher
 
 	public function addFacetOptions($options){
 		$this->facetOptions = $options;
-	}
-
-	/**
-	 * Add a checkbox facet.  When the checkbox is checked, the specified filter
-	 * will be applied to the search.  When the checkbox is not checked, no filter
-	 * will be applied.
-	 *
-	 * @access  public
-	 * @param   string  $filter     [field]:[value] pair to associate with checkbox
-	 * @param   string  $desc       Description to associate with the checkbox
-	 */
-	public function addCheckboxFacet($filter, $desc) {
-		// Extract the facet field name from the filter, then add the
-		// relevant information to the array.
-		list($fieldName) = explode(':', $filter);
-		$this->checkboxFacets[$fieldName] =
-		array('desc' => $desc, 'filter' => $filter);
-	}
-
-	/**
-	 * Get information on the current state of the boolean checkbox facets.
-	 *
-	 * @access  public
-	 * @return  array
-	 */
-	public function getCheckboxFacets()
-	{
-		// Create a lookup array of filter removal URLs -- this will tell us
-		// if any of the boxes are checked, and help us uncheck them if they are.
-		//
-		// Note that this assumes that each boolean filter's field name will only
-		// show up once anywhere in the filter list -- this is why you can't use
-		// the same field both in the checkbox facet list and the regular facet
-		// list.
-		$filters = $this->getFilterList();
-		$deselect = array();
-		foreach($filters as $currentSet) {
-			foreach($currentSet as $current) {
-				$deselect[$current['field']] = $current['removalUrl'];
-			}
-		}
-
-		// Now build up an array of checkbox facets with status booleans and
-		// toggle URLs.
-		$facets = array();
-		foreach($this->checkboxFacets as $field => $details) {
-			$facets[$field] = $details;
-			if (isset($deselect[$field])) {
-				$facets[$field]['selected'] = true;
-				$facets[$field]['toggleUrl'] = $deselect[$field];
-			} else {
-				$facets[$field]['selected'] = false;
-				list($fieldName, $value) = explode(":", $details['filter'], 2);
-				$facets[$field]['toggleUrl'] = $this->renderLinkWithFilter($fieldName, $value);
-			}
-		}
-		return $facets;
 	}
 
 	/**
@@ -2302,6 +2267,19 @@ abstract class SearchObject_BaseSearcher
     public function getSearchSuggestions(/** @noinspection PhpUnusedParameterInspection */$searchTerm, $searchIndex){
         return [];
     }
+
+	/**
+	 * @return array
+	 */
+	public function getFacetConfig()
+	{
+		if ($this->facetConfig == null){
+			$this->facetConfig = [];
+		}
+		return $this->facetConfig;
+	}
+
+	abstract function getSearchName();
 }//End of SearchObject_Base
 
 /**

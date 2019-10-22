@@ -237,8 +237,7 @@ class Author_Home extends Action
 		$interface->assign('recordCount', $summary['resultTotal']);
 		$interface->assign('recordStart', $summary['startRecord']);
 		$interface->assign('recordEnd',   $summary['endRecord']);
-		$interface->assign('sideRecommendations',
-		$searchObject->getRecommendationsTemplates('side'));
+		$interface->assign('sideRecommendations', $searchObject->getRecommendationsTemplates('side'));
 
 		//Enable and disable functionality based on library settings
 		global $library;

@@ -673,8 +673,29 @@ class ExploreMore {
 				$searchObjectSolr->clearHiddenFilters();
 				$searchObjectSolr->clearFilters();
 				if ($activeSection == 'open_archives' || $activeSection == 'archive') {
-					$searchObjectSolr->addFilter('literary_form_full:Non Fiction');
-					$searchObjectSolr->addFilter('target_audience:(Adult OR Unknown)');
+					$facetConfig = $searchObjectSolr->getFacetConfig();
+					if (array_key_exists('literary_form', $facetConfig)){
+						$searchObjectSolr->addFilter('literary_form:"Non Fiction"');
+					}elseif (array_key_exists('literary_form_full', $facetConfig)){
+						$searchObjectSolr->addFilter('literary_form_full:"Non Fiction"');
+					}
+					if (array_key_exists('target_audience', $facetConfig)){
+						if ($facetConfig['target_audience']->multiSelect){
+							$searchObjectSolr->addFilter('target_audience:Adult');
+							$searchObjectSolr->addFilter('target_audience:Unknown');
+							$searchObjectSolr->addFilter('target_audience:General');
+						}else{
+							$searchObjectSolr->addFilter('target_audience:(Adult OR Unknown OR General)');
+						}
+					}elseif (array_key_exists('target_audience_full', $facetConfig)){
+						if ($facetConfig['target_audience_full']->multiSelect){
+							$searchObjectSolr->addFilter('target_audience_full:Adult');
+							$searchObjectSolr->addFilter('target_audience_full:Unknown');
+							$searchObjectSolr->addFilter('target_audience_full:General');
+						}else{
+							$searchObjectSolr->addFilter('target_audience_full:(Adult OR Unknown OR General)');
+						}
+					}
 				}
 				$searchObjectSolr->setPage(1);
 				$searchObjectSolr->setLimit(5);

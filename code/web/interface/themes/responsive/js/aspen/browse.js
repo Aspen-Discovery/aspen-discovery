@@ -158,13 +158,13 @@ AspenDiscovery.Browse = (function(){
 
 		changeBrowseSubCategory: function (subCategoryTextId) {
 			//console.log('change Browse Sub Category');
-			var url = Globals.path + '/Browse/AJAX',
-					params = {
-						method : 'getBrowseSubCategoryInfo'
-						,textId : AspenDiscovery.Browse.curCategory
-						,subCategoryTextId : subCategoryTextId
-						,browseMode : this.browseMode
-					};
+			let url = Globals.path + '/Browse/AJAX';
+			let params = {
+				method : 'getBrowseSubCategoryInfo'
+				,textId : AspenDiscovery.Browse.curCategory
+				,subCategoryTextId : subCategoryTextId
+				,browseMode : this.browseMode
+			};
 			// Set selected button as active
 			$('#browse-sub-category-menu button').removeClass('selected');
 			$('#browse-sub-category-'+subCategoryTextId).addClass('selected');
@@ -204,27 +204,27 @@ AspenDiscovery.Browse = (function(){
 		},
 
 		createBrowseCategory: function(){
-			var url = Globals.path + "/Browse/AJAX",
-					params = {
-							method:'createBrowseCategory'
-							,categoryName:$('#categoryName').val()
-							,addAsSubCategoryOf:$('#addAsSubCategoryOfSelect').val()
-							};
-				var searchId = $("#searchId");
-				if (searchId){
-					params['searchId'] = searchId.val()
+			let url = Globals.path + "/Browse/AJAX";
+			let	params = {
+				method:'createBrowseCategory'
+				,categoryName:$('#categoryName').val()
+				,addAsSubCategoryOf:$('#addAsSubCategoryOfSelect').val()
+			};
+			let searchId = $("#searchId");
+			if (searchId){
+				params['searchId'] = searchId.val()
+			}
+			let listId = $("#listId");
+			if (listId){
+				params['listId'] = listId.val()
+			}
+			$.getJSON(url, params, function (data) {
+				if (data.success == false) {
+					AspenDiscovery.showMessage("Unable to create category", data.message);
+				} else {
+					AspenDiscovery.showMessage("Successfully added", "This search was added to the homepage successfully.", true);
 				}
-				var listId = $("#listId");
-				if (listId){
-					params['listId'] = listId.val()
-				}
-				$.getJSON(url, params, function (data) {
-					if (data.success == false) {
-						AspenDiscovery.showMessage("Unable to create category", data.message);
-					} else {
-						AspenDiscovery.showMessage("Successfully added", "This search was added to the homepage successfully.", true);
-					}
-				}).fail(AspenDiscovery.ajaxFail);
+			}).fail(AspenDiscovery.ajaxFail);
 			return false;
 		},
 

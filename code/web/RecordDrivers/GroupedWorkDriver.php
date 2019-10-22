@@ -1344,33 +1344,33 @@ class GroupedWorkDriver extends IndexRecordDriver{
         $memoryWatcher->logMemory("Finished initial processing of related records");
 
         //Check to see if we have applied a format or format category facet
-        $selectedFormat = null;
-        $selectedFormatCategory = null;
-        $selectedAvailability = null;
+        $selectedFormat = [];
+        $selectedFormatCategory = [];
+        $selectedAvailability = [];
         $selectedDetailedAvailability = null;
-        $selectedLanguage = null;
+        $selectedLanguages = [];
         $selectedEcontentSources = [];
         if (isset($_REQUEST['filter'])){
             foreach ($_REQUEST['filter'] as $filter){
                 if (preg_match('/^format_category(?:\w*):"?(.+?)"?$/', $filter, $matches)){
-                    $selectedFormatCategory = urldecode($matches[1]);
+                    $selectedFormatCategory[] = urldecode($matches[1]);
                 }elseif (preg_match('/^format(?:\w*):"?(.+?)"?$/', $filter, $matches)){
-                    $selectedFormat = urldecode($matches[1]);
+                    $selectedFormat[] = urldecode($matches[1]);
                 }elseif (preg_match('/^availability_toggle(?:\w*):"?(.+?)"?$/', $filter, $matches)){
-                    $selectedAvailability = urldecode($matches[1]);
+                    $selectedAvailability[] = urldecode($matches[1]);
                 }elseif (preg_match('/^availability_by_format(?:[\w_]*):"?(.+?)"?$/', $filter, $matches)){
-                    $selectedAvailability = urldecode($matches[1]);
+                    $selectedAvailability[] = urldecode($matches[1]);
                 }elseif (preg_match('/^available_at(?:[\w_]*):"?(.+?)"?$/', $filter, $matches)) {
                     $selectedDetailedAvailability = urldecode($matches[1]);
                 }elseif (preg_match('/^econtent_source(?:[\w_]*):"?(.+?)"?$/', $filter, $matches)) {
                     $selectedEcontentSources[] = urldecode($matches[1]);
                 }elseif (preg_match('/^language:"?(.+?)"?$/', $filter, $matches)) {
-                    $selectedLanguage = urldecode($matches[1]);
+                    $selectedLanguages[] = urldecode($matches[1]);
                 }
             }
         }
 
-        if ($selectedLanguage == null){
+        if (empty($selectedLanguages)){
 	        if (UserAccount::isLoggedIn()){
 		        $searchPreferenceLanguage = UserAccount::getActiveUserObj()->searchPreferenceLanguage;
 	        }elseif (isset($_COOKIE['searchPreferenceLanguage'])){
@@ -1382,7 +1382,7 @@ class GroupedWorkDriver extends IndexRecordDriver{
         	/** @var Language $activeLanguage */
         	global $activeLanguage;
         	if ($activeLanguage->code != 'en' && ($searchPreferenceLanguage == 2)){
-        		$selectedLanguage = $activeLanguage->facetValue;
+		        $selectedLanguages[] = $activeLanguage->facetValue;
 	        }
         }
 
@@ -1395,49 +1395,71 @@ class GroupedWorkDriver extends IndexRecordDriver{
         }elseif ($searchLibrary){
             $isSuperScope = !$searchLibrary->restrictSearchByLibrary;
         }
+
+	    $addOnlineMaterialsToAvailableNow = true;
+	    if ($searchLocation != null) {
+		    $addOnlineMaterialsToAvailableNow = $searchLocation->includeOnlineMaterialsInAvailableToggle;
+	    } elseif ($searchLibrary != null) {
+		    $addOnlineMaterialsToAvailableNow = $searchLibrary->includeOnlineMaterialsInAvailableToggle;
+	    }
+
         /**
          * @var  $key
          * @var Grouping_Manifestation $manifestation
          */
         foreach ($relatedManifestations as $key => $manifestation) {
-
-            if ($selectedFormat && $selectedFormat != $manifestation->format) {
-                //Do a secondary check to see if we have a more detailed format in the facet
-                $detailedFormat = mapValue('format_by_detailed_format', $selectedFormat);
-                //Also check the reverse
-                $detailedFormat2 = mapValue('format_by_detailed_format', $manifestation->format);
-                if ($manifestation->format != $detailedFormat && $detailedFormat2 != $selectedFormat) {
-                    $manifestation->setHideByDefault(true);
+        	if (!empty($selectedFormat) && !in_array($manifestation->format, $selectedFormat)) {
+            	$allHidden = true;
+            	foreach ($selectedFormat as $tmpFormat){
+		            //Do a secondary check to see if we have a more detailed format in the facet
+		            $detailedFormat = mapValue('format_by_detailed_format', $tmpFormat);
+		            //Also check the reverse
+		            $detailedFormat2 = mapValue('format_by_detailed_format', $manifestation->format);
+		            if (!($manifestation->format != $detailedFormat && !in_array($detailedFormat2, $selectedFormat))) {
+			            $allHidden = false;
+		            }
+	            }
+                if ($allHidden){
+	                $manifestation->setHideByDefault(true);
                 }
             }
-            if ($selectedFormatCategory && $selectedFormatCategory != $manifestation->formatCategory) {
-                if (($manifestation->format == 'eAudiobook') && ($selectedFormatCategory == 'eBook' || $selectedFormatCategory == 'Audio Books')) {
+            if (!empty($selectedFormatCategory) && !in_array($manifestation->formatCategory, $selectedFormatCategory)) {
+                if (($manifestation->format == 'eAudiobook') && (in_array('eBook', $selectedFormatCategory)  || in_array('Audio Books', $selectedFormatCategory))) {
                     //This is a special case where the format is in 2 categories
-                } else if (($manifestation->format == 'VOX Books') && ($selectedFormatCategory == 'Books' || $selectedFormatCategory == 'Audio Books')) {
+                } else if (($manifestation->format == 'VOX Books') && (in_array('Books', $selectedFormatCategory) || in_array('Audio Books', $selectedFormatCategory))) {
                     //This is another special case where the format is in 2 categories
                 } else {
                     $manifestation->setHideByDefault(true);
                 }
             }
-            if ($selectedAvailability == 'Available Online' && !($manifestation->getStatusInformation()->isAvailableOnline())){
-                $manifestation->setHideByDefault(true);
-            }elseif ($selectedAvailability == 'Available Now') {
-                if ($manifestation->getStatusInformation()->isAvailableOnline()) {
-                    $addOnline = true;
-                    if ($searchLocation != null) {
-                        $addOnline = $searchLocation->includeOnlineMaterialsInAvailableToggle;
-                    } elseif ($searchLibrary != null) {
-                        $addOnline = $searchLibrary->includeOnlineMaterialsInAvailableToggle;
-                    }
-                    if (!$addOnline){
-                        $manifestation->setHideByDefault(true);
-                    }
-                }else if (!$manifestation->getStatusInformation()->isAvailableLocally() && !$isSuperScope){
-                    $manifestation->setHideByDefault(true);
-                }
-            }elseif($selectedAvailability == 'Entire Collection' && !$isSuperScope && (!$manifestation->getStatusInformation()->hasLocalItem() && !$manifestation->isEContent())){
-                $manifestation->setHideByDefault(true);
+            if (($manifestation->getStatusInformation()->isAvailableOnline())){
+            	$hide = true;
+	            if (in_array('Available Online', $selectedAvailability) || (in_array('Available Now', $selectedAvailability) && $addOnlineMaterialsToAvailableNow)){
+	            	$hide = false;
+	            }else if (in_array('Entire Collection', $selectedAvailability)){
+		            $hide = false;
+	            }
+	            $manifestation->setHideByDefault($hide);
+            }else{
+	            if (in_array('Available Now', $selectedAvailability)) {
+		            if ($manifestation->isEContent()) {
+			            if (!$manifestation->getStatusInformation()->isAvailableOnline()) {
+				            $manifestation->setHideByDefault(true);
+			            } elseif (!$addOnlineMaterialsToAvailableNow) {
+				            $manifestation->setHideByDefault(true);
+			            }
+		            }else if ($isSuperScope) {
+			            if (!$manifestation->getStatusInformation()->isAvailable()){
+				            $manifestation->setHideByDefault(true);
+			            }
+		            }else if (!$manifestation->getStatusInformation()->isAvailableLocally()){
+			            $manifestation->setHideByDefault(true);
+		            }
+	            }elseif(in_array('Entire Collection', $selectedAvailability) && !$isSuperScope && (!$manifestation->getStatusInformation()->hasLocalItem() && !$manifestation->isEContent())){
+		            $manifestation->setHideByDefault(true);
+	            }
             }
+
             if ($selectedDetailedAvailability){
                 $manifestationIsAvailable = false;
                 if ($manifestation->getStatusInformation()->isAvailableOnline()){
@@ -1464,20 +1486,51 @@ class GroupedWorkDriver extends IndexRecordDriver{
             }
 
             //Hide variations as needed
-            if ($selectedLanguage){
+            if (!empty($selectedLanguages)){
                 foreach ($manifestation->getVariations() as $variation){
-                    if ($variation->language != $selectedLanguage){
+                    if (!in_array($variation->language, $selectedLanguages)){
                         $variation->setHideByDefault(true);
                     }
                 }
             }
-            if (count($selectedEcontentSources) > 0){
+            if (!empty($selectedEcontentSources)){
                 foreach ($manifestation->getVariations() as $variation){
-                    if (!in_array($variation->econtentSource, $selectedEcontentSources)){
+                    if ($variation->isEContent() && !in_array($variation->econtentSource, $selectedEcontentSources)){
                         $variation->setHideByDefault(true);
                     }
                 }
             }
+	        if (!empty($selectedAvailability)){
+		        foreach ($manifestation->getVariations() as $variation){
+			        if (($variation->getStatusInformation()->isAvailableOnline())){
+				        $hide = true;
+				        if (in_array('Available Online', $selectedAvailability) || (in_array('Available Now', $selectedAvailability) && $addOnlineMaterialsToAvailableNow)){
+					        $hide = false;
+				        }else if (in_array('Entire Collection', $selectedAvailability)){
+					        $hide = false;
+				        }
+				        $variation->setHideByDefault($hide);
+			        }else {
+				        if (in_array('Available Now', $selectedAvailability)) {
+					        if ($variation->isEContent()) {
+						        if (!$variation->getStatusInformation()->isAvailableOnline()) {
+							        $variation->setHideByDefault(true);
+						        } elseif (!$addOnlineMaterialsToAvailableNow) {
+							        $variation->setHideByDefault(true);
+						        }
+					        } else if ($isSuperScope) {
+						        if (!$variation->getStatusInformation()->isAvailable()) {
+							        $variation->setHideByDefault(true);
+						        }
+					        } else if (!$variation->getStatusInformation()->isAvailableLocally()) {
+						        $variation->setHideByDefault(true);
+					        }
+				        } elseif (in_array('Entire Collection', $selectedAvailability) && !$isSuperScope && (!$variation->getStatusInformation()->hasLocalItem() && !$variation->isEContent())) {
+					        $variation->setHideByDefault(true);
+				        }
+			        }
+		        }
+	        }
 
             $relatedManifestations[$key] = $manifestation;
         }

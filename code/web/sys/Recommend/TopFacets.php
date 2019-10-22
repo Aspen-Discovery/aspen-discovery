@@ -14,10 +14,10 @@ class TopFacets implements RecommendationInterface
 	 * Establishes base settings for making recommendations.
 	 *
 	 * @access  public
-	 * @param   object  $searchObject   The SearchObject requesting recommendations.
+	 * @param   SearchObject_BaseSearcher  $searchObject   The SearchObject requesting recommendations.
 	 * @param   string  $params         Additional settings from the searches.ini.
 	 */
-	public function __construct($searchObject, $params) {
+	public function __construct(SearchObject_BaseSearcher $searchObject, $params) {
 		// Save the basic parameters:
 		/** @var SearchObject_SolrSearcher searchObject */
 		$this->searchObject = $searchObject;
@@ -72,9 +72,9 @@ class TopFacets implements RecommendationInterface
 	public function init()
 	{
 		// Turn on top facets in the search results:
-		foreach($this->facets as $name => $desc) {
-			$this->searchObject->addFacet($name, $desc);
-		}
+//		foreach($this->facets as $name => $desc) {
+//			$this->searchObject->addFacet($name, $this->facetSettings[$name]);
+//		}
 	}
 
 	/* process

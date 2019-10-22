@@ -86,8 +86,7 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
             }
         }
 
-        if ($preferredSection &&
-            is_array($this->allFacetSettings[$preferredSection])) {
+        if ($preferredSection && is_array($this->allFacetSettings[$preferredSection])) {
             foreach($this->allFacetSettings[$preferredSection] as $key => $value) {
                 $this->addFacet($key, $value);
             }
@@ -172,19 +171,42 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
                 unset($this->filterList[$field]);
             }
         }
+	    $facetConfig = $this->getFacetConfig();
         foreach ($this->filterList as $field => $filter) {
+	        /** @var FacetSetting $facetInfo */
+	        $facetInfo = $facetConfig[$field];
+	        $fieldPrefix = "";
+	        if ($facetInfo->multiSelect){
+		        $fieldPrefix = "{!tag={$facetInfo->id}}";
+	        }
+	        $fieldValue = "";
+	        $okToAdd = false;
             foreach ($filter as $value) {
                 // Special case -- allow trailing wildcards:
                 if (substr($value, -1) == '*') {
-                    $filterQuery[] = "$field:$value";
+	                $okToAdd = true;
                 } elseif (preg_match('/\\A\\[.*?\\sTO\\s.*?]\\z/', $value)){
-                    $filterQuery[] = "$field:$value";
+	                $okToAdd = true;
                 } else {
                     if (!empty($value)){
-                        $filterQuery[] = "$field:\"$value\"";
+	                    $okToAdd = true;
+	                    $value = "\"$value\"";
                     }
                 }
+	            if ($okToAdd){
+		            if ($facetInfo->multiSelect){
+			            if (!empty($fieldValue)){
+				            $fieldValue .= ' OR ';
+			            }
+			            $fieldValue .= $value;
+		            }else {
+			            $filterQuery[] = "$fieldPrefix$field:$value";
+		            }
+	            }
             }
+	        if ($facetInfo->multiSelect){
+		        $filterQuery[] = "$fieldPrefix$field:($fieldValue)";
+	        }
         }
 
         // If we are only searching one field use the DisMax handler
@@ -195,10 +217,11 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 
         // Build a list of facets we want from the index
         $facetSet = array();
-        if (!empty($this->facetConfig)) {
+        $facetConfig = $this->getFacetConfig();
+        if (!empty($facetConfig)) {
             $facetSet['limit'] = $this->facetLimit;
-            foreach ($this->facetConfig as $facetField => $facetName) {
-                $facetSet['field'][] = $facetField;
+            foreach ($facetConfig as $facetField => $facetInfo) {
+                $facetSet['field'][$facetField] = $facetInfo;
             }
             if ($this->facetOffset != null) {
                 $facetSet['offset'] = $this->facetOffset;
@@ -401,7 +424,7 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
     {
         // If there is no filter, we'll use all facets as the filter:
         if (is_null($filter)) {
-            $filter = $this->facetConfig;
+            $filter = $this->getFacetConfig();
         }
 
         // Start building the facet list:
@@ -423,6 +446,7 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
             $allFacets = $this->indexResult['facet_counts']['facet_fields'];
         }
 
+	    $facetConfig = $this->getFacetConfig();
         foreach ($allFacets as $field => $data) {
             // Skip filtered fields and empty arrays:
             if (!in_array($field, $validFields) || count($data) < 1) {
@@ -431,14 +455,17 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 
             // Initialize the settings for the current field
             $list[$field] = array();
+	        $list[$field]['field_name'] = $field;
+	        $list[$field]['locked'] = false;
             // Add the on-screen label
             $list[$field]['label'] = $filter[$field];
             // Build our array of values for this field
             $list[$field]['list']  = array();
 
             // Should we translate values for the current facet?
-            $translate = in_array($field, $this->translatedFacets);
+	        $translate = $facetConfig[$field]->translate;
 
+	        $list[$field]['hasApplied'] = false;
             // Loop through values:
             foreach ($data as $facet) {
                 // Initialize the array of data about the current facet:
@@ -454,6 +481,7 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
                     // and is this value a selected filter?
                     if (in_array($facet[0], $this->filterList[$field])) {
                         $currentSettings['isApplied'] = true;
+	                    $list[$field]['hasApplied'] = true;
                         $currentSettings['removalUrl'] =  $this->renderLinkWithoutFilter("$field:{$facet[0]}");
                     }
                 }
@@ -682,5 +710,9 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 	function getRecord($id)
 	{
 		return $this->indexEngine->getRecord($id, $this->getFieldsToReturn());
+	}
+
+	function getSearchName(){
+		return $this->indexEngine->getIndex() . '_' . $this->searchSource;
 	}
 }

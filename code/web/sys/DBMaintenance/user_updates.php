@@ -234,6 +234,15 @@ function getUserUpdates(){
 			'sql' => [
 				'ALTER TABLE user ADD COLUMN overdriveAutoCheckout TINYINT(1)',
 			]
-		]
+		],
+
+		'user_locked_filters' => [
+			'title' => 'User Locked Filters',
+			'description' => 'Add a column to store locked filters/facets to the interface',
+			'sql' => [
+				'ALTER TABLE user ADD COLUMN lockedFacets TEXT',
+			]
+		],
+
 	);
 }

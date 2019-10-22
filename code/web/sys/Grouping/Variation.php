@@ -173,4 +173,8 @@ class Grouping_Variation
     {
         $this->_hideByDefault = $hideByDefault;
     }
+
+    function isEContent(){
+    	return $this->isEcontent;
+    }
 }

@@ -2,7 +2,7 @@
 
 	{include file="login-sidebar.tpl"}
 
-	{if $recordCount || $sideRecommendations}
+	{if $sideRecommendations}
 		<div id="refineSearch">
 			{* Narrow Results *}
 			{if $sideRecommendations}
