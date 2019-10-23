@@ -41,6 +41,7 @@ class Union_AJAX extends Action {
 		echo $output;
 	}
 
+	/** @noinspection PhpUnused */
 	function getCombinedResults()
 	{
 		$source = $_REQUEST['source'];

@@ -377,7 +377,14 @@ class AJAX extends Action {
 			$lockedFacets = isset($_SESSION['lockedFilters']) ? $_SESSION['lockedFilters'] : [];
 		}
 		if (isset($lockedFacets[$lockSection][$facetToUnlock])){
-			unset($_SESSION['lockedFilters'][$lockSection][$facetToUnlock]);
+			unset($lockedFacets[$lockSection][$facetToUnlock]);
+			if (UserAccount::isLoggedIn()){
+				$user = UserAccount::getActiveUserObj();
+				$user->lockedFacets = json_encode($lockedFacets);
+				$user->update();
+			}else{
+				$_SESSION['lockedFilters'] = $lockedFacets;
+			}
 			$response['success'] = true;
 		}else{
 			$response['success'] = true;

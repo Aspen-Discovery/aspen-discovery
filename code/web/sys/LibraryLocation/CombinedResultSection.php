@@ -23,7 +23,7 @@ abstract class CombinedResultSection extends DataObject{
 			$validResultSources['dpla'] = 'DPLA';
 		}
 		$validResultSources['eds'] = 'EBSCO EDS';
-		$validResultSources['pika'] = 'Pika Results';
+		$validResultSources['pika'] = 'Catalog Results';
 		if ($configArray['Content']['Prospector']) {
 			$validResultSources['prospector'] = 'Prospector';
 		}

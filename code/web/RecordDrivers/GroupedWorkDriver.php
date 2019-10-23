@@ -673,7 +673,7 @@ class GroupedWorkDriver extends IndexRecordDriver{
         $memoryWatcher->logMemory("Loaded related records");
         if (count($relatedRecords) == 1){
             $firstRecord = reset($relatedRecords);
-            $linkUrl = $firstRecord['url'];
+            $linkUrl = $firstRecord->getUrl();
             $linkUrl .=  '?searchId=' . $interface->get_template_vars('searchId') . '&amp;recordIndex=' . $interface->get_template_vars('recordIndex') . '&amp;page='  . $interface->get_template_vars('page');
         }else{
             $linkUrl = '/GroupedWork/' . $id . '/Home?searchId=' . $interface->get_template_vars('searchId') . '&amp;recordIndex=' . $interface->get_template_vars('recordIndex') . '&amp;page='  . $interface->get_template_vars('page');
@@ -706,25 +706,25 @@ class GroupedWorkDriver extends IndexRecordDriver{
         $alwaysShowMainDetails = $library ? $library->alwaysShowSearchResultsMainDetails : false;
         foreach ($relatedRecords as $relatedRecord){
             if ($isFirst){
-                $summPublisher    = $relatedRecord['publisher'];
-                $summPubDate      = $relatedRecord['publicationDate'];
-                $summPhysicalDesc = $relatedRecord['physical'];
-                $summEdition      = $relatedRecord['edition'];
-                $summLanguage     = $relatedRecord['language'];
+                $summPublisher    = $relatedRecord->publisher;
+                $summPubDate      = $relatedRecord->publicationDate;
+                $summPhysicalDesc = $relatedRecord->physical;
+                $summEdition      = $relatedRecord->edition;
+                $summLanguage     = $relatedRecord->language;
             }else{
-                if ($summPublisher != $relatedRecord['publisher']){
+                if ($summPublisher != $relatedRecord->publisher){
                     $summPublisher = $alwaysShowMainDetails ? translate('Varies, see individual formats and editions') : null;
                 }
-                if ($summPubDate != $relatedRecord['publicationDate']){
+                if ($summPubDate != $relatedRecord->publicationDate){
                     $summPubDate = $alwaysShowMainDetails ? translate('Varies, see individual formats and editions') : null;
                 }
-                if ($summPhysicalDesc != $relatedRecord['physical']){
+                if ($summPhysicalDesc != $relatedRecord->physical){
                     $summPhysicalDesc = $alwaysShowMainDetails ? translate('Varies, see individual formats and editions') : null;
                 }
-                if ($summEdition != $relatedRecord['edition']){
+                if ($summEdition != $relatedRecord->edition){
                     $summEdition = $alwaysShowMainDetails ? translate('Varies, see individual formats and editions') : null;
                 }
-                if ($summLanguage != $relatedRecord['language']){
+                if ($summLanguage != $relatedRecord->language){
                     $summLanguage = $alwaysShowMainDetails ? translate('Varies, see individual formats and editions') : null;
                 }
             }
@@ -1403,134 +1403,14 @@ class GroupedWorkDriver extends IndexRecordDriver{
 		    $addOnlineMaterialsToAvailableNow = $searchLibrary->includeOnlineMaterialsInAvailableToggle;
 	    }
 
+	    global $searchSource;
+
         /**
          * @var  $key
          * @var Grouping_Manifestation $manifestation
          */
         foreach ($relatedManifestations as $key => $manifestation) {
-        	if (!empty($selectedFormat) && !in_array($manifestation->format, $selectedFormat)) {
-            	$allHidden = true;
-            	foreach ($selectedFormat as $tmpFormat){
-		            //Do a secondary check to see if we have a more detailed format in the facet
-		            $detailedFormat = mapValue('format_by_detailed_format', $tmpFormat);
-		            //Also check the reverse
-		            $detailedFormat2 = mapValue('format_by_detailed_format', $manifestation->format);
-		            if (!($manifestation->format != $detailedFormat && !in_array($detailedFormat2, $selectedFormat))) {
-			            $allHidden = false;
-		            }
-	            }
-                if ($allHidden){
-	                $manifestation->setHideByDefault(true);
-                }
-            }
-            if (!empty($selectedFormatCategory) && !in_array($manifestation->formatCategory, $selectedFormatCategory)) {
-                if (($manifestation->format == 'eAudiobook') && (in_array('eBook', $selectedFormatCategory)  || in_array('Audio Books', $selectedFormatCategory))) {
-                    //This is a special case where the format is in 2 categories
-                } else if (($manifestation->format == 'VOX Books') && (in_array('Books', $selectedFormatCategory) || in_array('Audio Books', $selectedFormatCategory))) {
-                    //This is another special case where the format is in 2 categories
-                } else {
-                    $manifestation->setHideByDefault(true);
-                }
-            }
-            if (($manifestation->getStatusInformation()->isAvailableOnline())){
-            	$hide = true;
-	            if (in_array('Available Online', $selectedAvailability) || (in_array('Available Now', $selectedAvailability) && $addOnlineMaterialsToAvailableNow)){
-	            	$hide = false;
-	            }else if (in_array('Entire Collection', $selectedAvailability)){
-		            $hide = false;
-	            }
-	            $manifestation->setHideByDefault($hide);
-            }else{
-	            if (in_array('Available Now', $selectedAvailability)) {
-		            if ($manifestation->isEContent()) {
-			            if (!$manifestation->getStatusInformation()->isAvailableOnline()) {
-				            $manifestation->setHideByDefault(true);
-			            } elseif (!$addOnlineMaterialsToAvailableNow) {
-				            $manifestation->setHideByDefault(true);
-			            }
-		            }else if ($isSuperScope) {
-			            if (!$manifestation->getStatusInformation()->isAvailable()){
-				            $manifestation->setHideByDefault(true);
-			            }
-		            }else if (!$manifestation->getStatusInformation()->isAvailableLocally()){
-			            $manifestation->setHideByDefault(true);
-		            }
-	            }elseif(in_array('Entire Collection', $selectedAvailability) && !$isSuperScope && (!$manifestation->getStatusInformation()->hasLocalItem() && !$manifestation->isEContent())){
-		            $manifestation->setHideByDefault(true);
-	            }
-            }
-
-            if ($selectedDetailedAvailability){
-                $manifestationIsAvailable = false;
-                if ($manifestation->getStatusInformation()->isAvailableOnline()){
-                    $manifestationIsAvailable = true;
-                }else if ($manifestation->getStatusInformation()->isAvailable()){
-                    foreach ($manifestation->getItemSummary() as $itemSummary) {
-                        if (strlen($itemSummary['shelfLocation']) && substr_compare($itemSummary['shelfLocation'], $selectedDetailedAvailability, 0)) {
-                            if ($itemSummary['available']) {
-                                $manifestationIsAvailable = true;
-                                break;
-                            }
-                        }
-                    }
-                }
-                if (!$manifestationIsAvailable){
-                    $manifestation->setHideByDefault(true);
-                }
-            }
-            global $searchSource;
-            if ($searchSource == 'econtent'){
-                if (!$manifestation->isEContent()){
-                    $manifestation->setHideByDefault(true);
-                }
-            }
-
-            //Hide variations as needed
-            if (!empty($selectedLanguages)){
-                foreach ($manifestation->getVariations() as $variation){
-                    if (!in_array($variation->language, $selectedLanguages)){
-                        $variation->setHideByDefault(true);
-                    }
-                }
-            }
-            if (!empty($selectedEcontentSources)){
-                foreach ($manifestation->getVariations() as $variation){
-                    if ($variation->isEContent() && !in_array($variation->econtentSource, $selectedEcontentSources)){
-                        $variation->setHideByDefault(true);
-                    }
-                }
-            }
-	        if (!empty($selectedAvailability)){
-		        foreach ($manifestation->getVariations() as $variation){
-			        if (($variation->getStatusInformation()->isAvailableOnline())){
-				        $hide = true;
-				        if (in_array('Available Online', $selectedAvailability) || (in_array('Available Now', $selectedAvailability) && $addOnlineMaterialsToAvailableNow)){
-					        $hide = false;
-				        }else if (in_array('Entire Collection', $selectedAvailability)){
-					        $hide = false;
-				        }
-				        $variation->setHideByDefault($hide);
-			        }else {
-				        if (in_array('Available Now', $selectedAvailability)) {
-					        if ($variation->isEContent()) {
-						        if (!$variation->getStatusInformation()->isAvailableOnline()) {
-							        $variation->setHideByDefault(true);
-						        } elseif (!$addOnlineMaterialsToAvailableNow) {
-							        $variation->setHideByDefault(true);
-						        }
-					        } else if ($isSuperScope) {
-						        if (!$variation->getStatusInformation()->isAvailable()) {
-							        $variation->setHideByDefault(true);
-						        }
-					        } else if (!$variation->getStatusInformation()->isAvailableLocally()) {
-						        $variation->setHideByDefault(true);
-					        }
-				        } elseif (in_array('Entire Collection', $selectedAvailability) && !$isSuperScope && (!$variation->getStatusInformation()->hasLocalItem() && !$variation->isEContent())) {
-					        $variation->setHideByDefault(true);
-				        }
-			        }
-		        }
-	        }
+        	$manifestation->setHideByDefault($selectedFormat, $selectedFormatCategory, $selectedAvailability, $selectedDetailedAvailability, $addOnlineMaterialsToAvailableNow, $selectedEcontentSources, $selectedLanguages, $searchSource, $isSuperScope);
 
             $relatedManifestations[$key] = $manifestation;
         }
