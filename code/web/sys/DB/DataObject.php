@@ -18,6 +18,8 @@ abstract class DataObject
 	private $__lastError;
 	private $__joins = [];
 
+	protected $__data = [];
+
 	function getNumericColumnNames(){
 		return [];
 	}
@@ -50,6 +52,7 @@ abstract class DataObject
 
 	public function fetch(){
 		$return = $this->__queryStmt->fetch(PDO::FETCH_INTO);
+		$this->__data = [];
 		return $return;
 	}
 

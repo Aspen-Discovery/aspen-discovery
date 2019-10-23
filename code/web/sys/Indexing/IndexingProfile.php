@@ -77,6 +77,7 @@ class IndexingProfile extends DataObject{
     public $lastUpdateOfChangedRecords;
     public $lastUpdateOfAllRecords;
     public $lastUpdateFromMarcExport;
+    private $data = [];
 
     static function getObjectStructure(){
 		$translationMapStructure = TranslationMap::getObjectStructure();
@@ -262,78 +263,78 @@ class IndexingProfile extends DataObject{
 
 	public function __get($name){
 		if ($name == "translationMaps") {
-			if (!isset($this->translationMaps)){
+			if (!isset($this->__data['translationMaps'])){
 				//Get the list of translation maps
-				$this->translationMaps = array();
+				$this->__data['translationMaps'] = array();
 				if ($this->id) { // When this is a new Indexing Profile, there are no maps yet.
 					$translationMap = new TranslationMap();
 					$translationMap->indexingProfileId = $this->id;
 					$translationMap->orderBy('name ASC');
 					$translationMap->find();
 					while($translationMap->fetch()){
-						$this->translationMaps[$translationMap->id] = clone($translationMap);
+						$this->__data['translationMaps'][$translationMap->id] = clone($translationMap);
 					}
 				}
 			}
-			return $this->translationMaps;
+			return $this->__data['translationMaps'];
 		}else if ($name == "timeToReshelve") {
-			if (!isset($this->timeToReshelve)) {
+			if (!isset($this->__data['timeToReshelve'])) {
 				//Get the list of translation maps
-				$this->timeToReshelve = array();
+				$this->__data['timeToReshelve'] = array();
 				if ($this->id) { // When this is a new Indexing Profile, there are no maps yet.
 					$timeToReshelve                    = new TimeToReshelve();
 					$timeToReshelve->indexingProfileId = $this->id;
 					$timeToReshelve->orderBy('weight ASC');
 					$timeToReshelve->find();
 					while ($timeToReshelve->fetch()) {
-						$this->timeToReshelve[$timeToReshelve->id] = clone($timeToReshelve);
+						$this->__data['timeToReshelve'][$timeToReshelve->id] = clone($timeToReshelve);
 					}
 				}
 			}
-			return $this->timeToReshelve;
+			return $this->__data['timeToReshelve'];
 		}else if ($name == "sierraFieldMappings") {
-			if (!isset($this->sierraFieldMappings)) {
+			if (!isset($this->__data['sierraFieldMappings'])) {
 				//Get the list of translation maps
-				$this->sierraFieldMappings = array();
+				$this->__data['sierraFieldMappings'] = array();
 				if ($this->id) { // When this is a new Indexing Profile, there are no maps yet.
 					$sierraFieldMapping = new SierraExportFieldMapping();
 					$sierraFieldMapping->indexingProfileId = $this->id;
 					$sierraFieldMapping->find();
 					while ($sierraFieldMapping->fetch()) {
-						$this->sierraFieldMappings[$sierraFieldMapping->id] = clone($sierraFieldMapping);
+						$this->__data['sierraFieldMappings'][$sierraFieldMapping->id] = clone($sierraFieldMapping);
 					}
 				}
 			}
-			return $this->sierraFieldMappings;
+			return $this->__data['sierraFieldMappings'];
 		}else if ($name == "statusMap") {
-			if (!isset($this->statusMap)) {
+			if (!isset($this->__data['statusMap'])) {
 				//Get the list of translation maps
-				$this->statusMap = array();
+				$this->__data['statusMap'] = array();
 				if ($this->id) { // When this is a new Indexing Profile, there are no maps yet.
 					$statusMap = new StatusMapValue();
 					$statusMap->indexingProfileId = $this->id;
 					$statusMap->find();
 					while ($statusMap->fetch()) {
-						$this->statusMap[$statusMap->id] = clone($statusMap);
+						$this->__data['statusMap'][$statusMap->id] = clone($statusMap);
 					}
 				}
 			}
-			return $this->statusMap;
+			return $this->__data['statusMap'];
 		}else if ($name == "formatMap") {
-			if (!isset($this->formatMap)) {
+			if (!isset($this->__data['formatMap'])) {
 				//Get the list of translation maps
-				$this->formatMap = array();
+				$this->__data['formatMap'] = array();
 				if ($this->id) { // When this is a new Indexing Profile, there are no maps yet.
 					$formatMap = new FormatMapValue();
 					$formatMap->indexingProfileId = $this->id;
 					$formatMap->orderBy('value');
 					$formatMap->find();
 					while ($formatMap->fetch()) {
-						$this->formatMap[$formatMap->id] = clone($formatMap);
+						$this->__data['formatMap'][$formatMap->id] = clone($formatMap);
 					}
 				}
 			}
-			return $this->formatMap;
+			return $this->__data['formatMap'];
 		}
 		return null;
 	}
@@ -341,19 +342,19 @@ class IndexingProfile extends DataObject{
 	public function __set($name, $value){
 		if ($name == "translationMaps") {
 			/** @noinspection PhpUndefinedFieldInspection */
-			$this->translationMaps = $value;
+			$this->__data['translationMaps'] = $value;
 		}else if ($name == "timeToReshelve") {
 			/** @noinspection PhpUndefinedFieldInspection */
-			$this->timeToReshelve = $value;
+			$this->__data['timeToReshelve'] = $value;
 		}else if ($name == "sierraFieldMappings") {
 			/** @noinspection PhpUndefinedFieldInspection */
-			$this->sierraFieldMappings = $value;
+			$this->__data['sierraFieldMappings'] = $value;
 		}else if ($name == "statusMap") {
 			/** @noinspection PhpUndefinedFieldInspection */
-			$this->statusMap = $value;
+			$this->__data['statusMap'] = $value;
 		}else if ($name == "formatMap") {
 			/** @noinspection PhpUndefinedFieldInspection */
-			$this->formatMap = $value;
+			$this->__data['formatMap'] = $value;
 		}
 	}
 
@@ -400,9 +401,9 @@ class IndexingProfile extends DataObject{
 	}
 
 	public function saveTranslationMaps(){
-		if (isset ($this->translationMaps)){
+		if (isset ($this->__data['translationMaps'])){
 			/** @var TranslationMap $translationMap */
-			foreach ($this->translationMaps as $translationMap){
+			foreach ($this->__data['translationMaps'] as $translationMap){
 				if (isset($translationMap->deleteOnSave) && $translationMap->deleteOnSave == true){
 					$translationMap->delete();
 				}else{
@@ -420,9 +421,9 @@ class IndexingProfile extends DataObject{
 	}
 
 	public function saveTimeToReshelve(){
-		if (isset ($this->timeToReshelve)){
+		if (isset ($this->__data['timeToReshelve'])){
 			/** @var TimeToReshelve $timeToReshelve */
-			foreach ($this->timeToReshelve as $timeToReshelve){
+			foreach ($this->__data['timeToReshelve'] as $timeToReshelve){
 				if (isset($timeToReshelve->deleteOnSave) && $timeToReshelve->deleteOnSave == true){
 					$timeToReshelve->delete();
 				}else{
@@ -435,14 +436,14 @@ class IndexingProfile extends DataObject{
 				}
 			}
 			//Clear array so it is reloaded the next time
-			unset($this->timeToReshelve);
+			unset($this->__data['timeToReshelve']);
 		}
 	}
 
 	public function saveSierraFieldMappings(){
-		if (isset ($this->sierraFieldMappings)){
+		if (isset ($this->__data['sierraFieldMappings'])){
 			/** @var SierraExportFieldMapping $sierraFieldMapping */
-			foreach ($this->sierraFieldMappings as $sierraFieldMapping){
+			foreach ($this->__data['sierraFieldMappings'] as $sierraFieldMapping){
 				if (isset($sierraFieldMapping->deleteOnSave) && $sierraFieldMapping->deleteOnSave == true){
 					$sierraFieldMapping->delete();
 				}else{
@@ -455,14 +456,14 @@ class IndexingProfile extends DataObject{
 				}
 			}
 			//Clear array so it is reloaded the next time
-			unset($this->sierraFieldMappings);
+			unset($this->__data['sierraFieldMappings']);
 		}
 	}
 
 	public function saveStatusMap(){
-		if (isset ($this->statusMap)){
+		if (isset ($this->__data['statusMap'])){
 			/** @var StatusMapValue $statusMapValue */
-			foreach ($this->statusMap as $statusMapValue){
+			foreach ($this->__data['statusMap'] as $statusMapValue){
 				if (isset($statusMapValue->deleteOnSave) && $statusMapValue->deleteOnSave == true){
 					$statusMapValue->delete();
 				}else{
@@ -475,14 +476,14 @@ class IndexingProfile extends DataObject{
 				}
 			}
 			//Clear array so it is reloaded the next time
-			unset($this->statusMap);
+			unset($this->__data['statusMap']);
 		}
 	}
 
 	public function saveFormatMap(){
-		if (isset ($this->formatMap)){
+		if (isset ($this->__data['formatMap'])){
 			/** @var FormatMapValue $formatMapValue */
-			foreach ($this->formatMap as $formatMapValue){
+			foreach ($this->__data['formatMap'] as $formatMapValue){
 				if (isset($formatMapValue->deleteOnSave) && $formatMapValue->deleteOnSave == true){
 					$formatMapValue->delete();
 				}else{
@@ -495,7 +496,7 @@ class IndexingProfile extends DataObject{
 				}
 			}
 			//Clear array so it is reloaded the next time
-			unset($this->formatMap);
+			unset($this->__data['formatMap']);
 		}
 	}
 
@@ -520,7 +521,7 @@ class IndexingProfile extends DataObject{
 	}
 
 	public function setStatusMapValue($value, $status = null, $groupedStatus = null){
-		$statusMap = $this->statusMap;
+		$statusMap = $this->__get('statusMap');
 		$statusExists = false;
 		/** @var StatusMapValue $statusValue */
 		foreach ($statusMap as $statusValue){
@@ -543,11 +544,11 @@ class IndexingProfile extends DataObject{
 			$statusValue->groupedStatus = $groupedStatus;
 		}
 		$statusValue->update();
-		$statusMap[$statusValue->id] = $statusValue;
+		$this->__data['statusMap'][$statusValue->id] = $statusValue;
 	}
 
 	public function setFormatMapValue($value, $format = null, $formatCategory = null, $formatBoost = null){
-		$formatMap = $this->formatMap;
+		$formatMap = $this->__get('formatMap');
 		$formatExists = false;
 		/** @var FormatMapValue $formatValue */
 		foreach ($formatMap as $formatValue){
@@ -574,6 +575,6 @@ class IndexingProfile extends DataObject{
 			$formatValue->formatBoost = $formatBoost;
 		}
 		$formatValue->update();
-		$formatMap[$formatValue->id] = $formatValue;
+		$this->__data['formatMap'][$formatValue->id] = $formatValue;
 	}
 }
