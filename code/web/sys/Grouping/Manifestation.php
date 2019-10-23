@@ -153,7 +153,9 @@ class Grouping_Manifestation
 		    }else if (in_array('Entire Collection', $selectedAvailability)){
 			    $hide = false;
 		    }
-		    $this->_hideByDefault = $hide;
+		    if ($hide){
+			    $this->_hideByDefault = true;
+		    }
 	    }else{
 		    if (in_array('Available Now', $selectedAvailability)) {
 			    if ($this->isEContent()) {

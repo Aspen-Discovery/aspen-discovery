@@ -1357,7 +1357,9 @@ class GroupedWorkDriver extends IndexRecordDriver{
                 }elseif (preg_match('/^format(?:\w*):"?(.+?)"?$/', $filter, $matches)){
                     $selectedFormat[] = urldecode($matches[1]);
                 }elseif (preg_match('/^availability_toggle(?:\w*):"?(.+?)"?$/', $filter, $matches)){
-                    $selectedAvailability[] = urldecode($matches[1]);
+                	if ($matches[1] != '"'){
+		                $selectedAvailability[] = urldecode($matches[1]);
+	                }
                 }elseif (preg_match('/^availability_by_format(?:[\w_]*):"?(.+?)"?$/', $filter, $matches)){
                     $selectedAvailability[] = urldecode($matches[1]);
                 }elseif (preg_match('/^available_at(?:[\w_]*):"?(.+?)"?$/', $filter, $matches)) {
