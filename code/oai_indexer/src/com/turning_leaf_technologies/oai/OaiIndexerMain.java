@@ -467,6 +467,10 @@ public class OaiIndexerMain {
                             if (rs.next()) {
                                 solrRecord.setId(rs.getString(1));
                                 updateServer.add(solrRecord.getSolrDocument());
+                                ExistingOAIRecord existingRecord = new ExistingOAIRecord();
+                                existingRecord.id = rs.getLong(1);
+                                existingRecord.url = solrRecord.getIdentifier();
+                                existingRecords.put(solrRecord.getIdentifier(), existingRecord);
                                 addedToIndex = true;
                             }
                             rs.close();

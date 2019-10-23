@@ -123,6 +123,10 @@ class OAISolrRecord {
         this.id = id;
     }
 
+    String getId(){
+        return this.id;
+    }
+
     void setCollectionName(String collection_name) {
         this.collection_name = collection_name;
     }
