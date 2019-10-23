@@ -890,7 +890,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 						if ($isAvailabilityToggle) {
 							$filterQuery['availability_toggle'] = "$fieldPrefix$field:$value";
 						} elseif ($isAvailableAt) {
-							$filterQuery['available_at'] = "$fieldPrefix$field:\"$value\"";
+							$filterQuery['available_at'] = "$fieldPrefix$field:$value";
 						} else {
 							$filterQuery[] = "$fieldPrefix$field:$value";
 						}

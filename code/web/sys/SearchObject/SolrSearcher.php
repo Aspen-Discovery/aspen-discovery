@@ -456,8 +456,9 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
             // Initialize the settings for the current field
             $list[$field] = array();
 	        $list[$field]['field_name'] = $field;
+	        $list[$field]['canLock'] = $facetConfig[$field]->canLock;
 	        $list[$field]['locked'] = false;
-            // Add the on-screen label
+	        // Add the on-screen label
             $list[$field]['label'] = $filter[$field];
             // Build our array of values for this field
             $list[$field]['list']  = array();

@@ -1794,6 +1794,17 @@ function getLibraryLocationUpdates(){
 			],
 		],
 
+		'facets_locking' => [
+			'title' => 'Lockable Facet Option',
+			'description' => 'Add the ability to make some facets lockable.',
+			'continueOnError' => false,
+			'sql' => [
+				"ALTER TABLE library_facet_setting ADD COLUMN canLock TINYINT(1) DEFAULT 0",
+				"ALTER TABLE location_facet_setting ADD COLUMN canLock TINYINT(1) DEFAULT 0",
+				"ALTER TABLE library_archive_search_facet_setting ADD COLUMN canLock TINYINT(1) DEFAULT 0",
+			],
+		],
+
 		'facets_add_translation' => [
 			'title' => 'Translatable Facets',
 			'description' => 'Add the ability to make some facets translated.',

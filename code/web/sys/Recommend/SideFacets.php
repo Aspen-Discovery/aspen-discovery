@@ -183,6 +183,7 @@ class SideFacets implements RecommendationInterface
 				//These are also done in apply Facet Settings, but are done here as well to cover other cases
 				$sideFacets[$facetKey]['collapseByDefault'] = $facetSetting->collapseByDefault;
 				$sideFacets[$facetKey]['locked'] = array_key_exists($facetKey, $lockedFacets);
+				$sideFacets[$facetKey]['canLock'] = $facetSetting->canLock;
 			}
 		}else{
 			//Process other searchers to add more facet popup
@@ -303,6 +304,7 @@ class SideFacets implements RecommendationInterface
 		$sideFacets[$facetKey]['collapseByDefault'] = $facetSetting->collapseByDefault;
 
 		$sideFacets[$facetKey]['locked'] = array_key_exists($facetKey, $lockedFacets);
+		$sideFacets[$facetKey]['canLock'] = $facetSetting->canLock;
 		return $sideFacets;
 	}
 }

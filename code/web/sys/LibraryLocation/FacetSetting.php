@@ -8,6 +8,7 @@ abstract class FacetSetting extends DataObject {
 	public $numEntriesToShowByDefault; //
 	public $showAsDropDown;   //True or false
 	public $multiSelect;
+	public $canLock;
 	public $sortMode;         //alphabetically = alphabetically, num_results = by number of results
 	public $showAboveResults;
 	public $showInResults;
@@ -18,7 +19,7 @@ abstract class FacetSetting extends DataObject {
 
 	public function getNumericColumnNames()
     {
-        return ['weight', 'showAsDropDown', 'multiSelect', 'showAboveResults', 'showInResults', 'showInAdvancedSearch', 'translate'];
+        return ['weight', 'showAsDropDown', 'multiSelect', 'canLock', 'showAboveResults', 'showInResults', 'showInAdvancedSearch', 'translate'];
     }
 
 
@@ -83,6 +84,7 @@ abstract class FacetSetting extends DataObject {
 			'numEntriesToShowByDefault' => array('property'=>'numEntriesToShowByDefault', 'type'=>'integer', 'label'=>'Num Entries', 'description'=>'The number of values to show by default.', 'default' => '5'),
 			'showAsDropDown' => array('property' => 'showAsDropDown', 'type' => 'checkbox', 'label' => 'Drop Down?', 'description'=>'Whether or not the facets should be shown in a drop down list', 'default'=>'0'),
 			'multiSelect' => array('property' => 'multiSelect', 'type' => 'checkbox', 'label' => 'Multi Select?', 'description'=>'Whether or not to allow patrons to select multiple values', 'default'=>'0'),
+			'canLock' => array('property' => 'canLock', 'type' => 'checkbox', 'label' => 'Can Lock?', 'description'=>'Whether or not to allow patrons can lock the facet', 'default'=>'0'),
 			'translate' => array('property' => 'translate', 'type' => 'checkbox', 'label' => 'Translate?', 'description'=>'Whether or not values are translated when displayed', 'default'=>'0'),
 			'sortMode' => array('property'=>'sortMode', 'type'=>'enum', 'label'=>'Sort', 'values' => array('alphabetically' => 'Alphabetically', 'num_results' => 'By number of results'), 'description'=>'How the facet values should be sorted.', 'default'=>'num_results'),
 			'showAboveResults' => array('property' => 'showAboveResults', 'type' => 'checkbox', 'label' => 'Show Above Results', 'description'=>'Whether or not the facets should be shown above the results', 'default'=>0),

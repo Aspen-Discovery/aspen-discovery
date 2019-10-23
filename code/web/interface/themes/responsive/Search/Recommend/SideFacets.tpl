@@ -23,10 +23,12 @@
 							<div class="facetTitle panel-title {if $cluster.collapseByDefault && !$cluster.hasApplied}collapsed{else}expanded{/if}" onclick="$(this).toggleClass('expanded');$(this).toggleClass('collapsed');$('#facetDetails_{$title}').toggle()">
 								{translate text=$cluster.label}
 
-								<span class="facetLock pull-right" id="facetLock_{$title}" {if !$cluster.hasApplied}style="display: none"{/if} title="Locking a facet will retain the selected filters in new searches until they are cleared">
-									<a id="facetLock_lockIcon_{$title}" {if $cluster.locked}style="display: none"{/if} onclick="return AspenDiscovery.Searches.lockFacet('{$title}');"><img src="/images/silk/lock_open.png" alt="Lock {$cluster.label}"></a>
-									<a id="facetLock_unlockIcon_{$title}" {if !$cluster.locked}style="display: none"{/if} onclick="return AspenDiscovery.Searches.unlockFacet('{$title}');"><img src="/images/silk/lock.png" alt="Lock {$cluster.label}"></a>
-								</span>
+								{if $cluster.canLock}
+									<span class="facetLock pull-right" id="facetLock_{$title}" {if !$cluster.hasApplied}style="display: none"{/if} title="Locking a facet will retain the selected filters in new searches until they are cleared">
+										<a id="facetLock_lockIcon_{$title}" {if $cluster.locked}style="display: none"{/if} onclick="return AspenDiscovery.Searches.lockFacet('{$title}');"><img src="/images/silk/lock_open.png" alt="Lock {$cluster.label}"></a>
+										<a id="facetLock_unlockIcon_{$title}" {if !$cluster.locked}style="display: none"{/if} onclick="return AspenDiscovery.Searches.unlockFacet('{$title}');"><img src="/images/silk/lock.png" alt="Lock {$cluster.label}"></a>
+									</span>
+								{/if}
 
 							</div>
 							<div id="facetDetails_{$title}" class="facetDetails" {if $cluster.collapseByDefault && !$cluster.hasApplied}style="display:none"{/if}>
