@@ -825,7 +825,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 		}
 
 		$availabilityToggleValue = null;
-		$availabilityAtValue = null;
+		$availabilityAtValues = [];
 		$formatValues = [];
 		$formatCategoryValues = [];
 		$facetConfig = $this->getFacetConfig();
@@ -848,7 +848,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 					$availabilityToggleValue = $value;
 					$isAvailabilityToggle = true;
 				}elseif (substr($field, 0, strlen('available_at')) == 'available_at'){
-					$availabilityAtValue = $value;
+					$availabilityAtValues[] = $value;
 					$isAvailableAt = true;
 				}elseif (substr($field, 0, strlen('format_category')) == 'format_category'){
 					$formatCategoryValues[] = $value;
@@ -922,16 +922,39 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 
 		//Check to see if we have both a format and available at facet applied
 		$availableAtByFormatFieldName = null;
-		if ($availabilityAtValue != null && (!empty($formatCategoryValues) || !empty($formatValues))){
+		if (!empty($availabilityAtValues) && (!empty($formatCategoryValues) || !empty($formatValues))){
 			global $solrScope;
-			foreach ($formatValues as $formatValue){
-				$availabilityByFormatFieldName = 'available_at_by_format_' . $solrScope . '_' . strtolower(preg_replace('/\W/', '_', $formatValue));
-				$filterQuery[] = $availabilityByFormatFieldName . ':"' . $availabilityToggleValue . '"';
+			$availabilityByFormatFilter = "";
+			if (!empty($formatValues)) {
+				$availabilityByFormatFilter .= '(';
+				foreach ($formatValues as $formatValue) {
+					$availabilityByFormatFieldName = 'available_at_by_format_' . $solrScope . '_' . strtolower(preg_replace('/\W/', '_', $formatValue));
+					foreach ($availabilityAtValues as $index => $availabilityAtValue) {
+						if ($index > 0){
+							$availabilityByFormatFilter .= ' OR ';
+						}
+						$availabilityByFormatFilter .= $availabilityByFormatFieldName . ':"' . $availabilityAtValue . '"';
+					}
+				}
+				$availabilityByFormatFilter .= ')';
 			}
-			foreach ($formatCategoryValues as $formatCategoryValue){
-				$availabilityByFormatFieldName = 'available_at_by_format_' . $solrScope . '_' . strtolower(preg_replace('/\W/', '_', $formatCategoryValue));
-				$filterQuery[] = $availabilityByFormatFieldName . ':"' . $availabilityToggleValue . '"';
+			if (!empty($formatCategoryValues)) {
+				if (strlen($availabilityByFormatFilter) > 0){
+					$availabilityByFormatFilter .= ' OR ';
+				}
+				$availabilityByFormatFilter .= '(';
+				foreach ($formatCategoryValues as $formatCategoryValue) {
+					$availabilityByFormatFieldName = 'available_at_by_format_' . $solrScope . '_' . strtolower(preg_replace('/\W/', '_', $formatCategoryValue));
+					foreach ($availabilityAtValues as $index => $availabilityAtValue) {
+						if ($index > 0){
+							$availabilityByFormatFilter .= ' OR ';
+						}
+						$availabilityByFormatFilter .= $availabilityByFormatFieldName . ':"' . $availabilityAtValue . '"';
+					}
+				}
+				$availabilityByFormatFilter .= ')';
 			}
+			$filterQuery[] = $availabilityByFormatFilter;
 			unset($filterQuery['available_at']);
 		}
 
