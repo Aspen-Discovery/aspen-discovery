@@ -890,6 +890,8 @@ abstract class Solr {
 						},
 						$params['lookfor']
 					);
+					require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
+					$lookfor = StringUtils::removeTrailingPunctuation($lookfor);
 					$modifiedQuery = $lookfor != $params['lookfor'];
 				}
 				if ($modifiedQuery){
