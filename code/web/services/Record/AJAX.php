@@ -193,8 +193,10 @@ class Record_AJAX extends Action
 					'holdFormBypassed' => false,
 					'title' => empty($title) ? 'Place Hold' : 'Place Hold on ' . $title,
 					'modalBody' => $interface->fetch("Record/hold-popup.tpl"),
-					'modalButtons' => "<button type='submit' name='submit' id='requestTitleButton' class='btn btn-primary' onclick='return AspenDiscovery.Record.submitHoldForm();'>" . translate("Submit Hold Request") . "</button>"
 				);
+				if ($holdType != 'none'){
+					$results['modalButtons'] = "<button type='submit' name='submit' id='requestTitleButton' class='btn btn-primary' onclick='return AspenDiscovery.Record.submitHoldForm();'>" . translate("Submit Hold Request") . "</button>";
+				}
 			}
 
 		} else {
