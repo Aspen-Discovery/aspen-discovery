@@ -1660,19 +1660,25 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 			foreach ($linkFields as $field) {
 				if ($field->getSubfield('u') != null) {
 					$url = $field->getSubfield('u')->getData();
-					if ($field->getSubfield('y') != null) {
-						$title = $field->getSubfield('y')->getData();
-					} else if ($field->getSubfield('3') != null) {
-						$title = $field->getSubfield('3')->getData();
-					} else if ($field->getSubfield('z') != null) {
-						$title = $field->getSubfield('z')->getData();
-					} else {
-						$title = $url;
+					//Only include fully formed links
+					if (!strpos($url, '://')){
+						$url = 'http://' . $url;
 					}
-					$links[] = array(
+					if (!strpos($url, 'http://')){
+						if ($field->getSubfield('y') != null) {
+							$title = $field->getSubfield('y')->getData();
+						} else if ($field->getSubfield('3') != null) {
+							$title = $field->getSubfield('3')->getData();
+						} else if ($field->getSubfield('z') != null) {
+							$title = $field->getSubfield('z')->getData();
+						} else {
+							$title = $url;
+						}
+						$links[] = array(
 							'title' => $title,
 							'url' => $url,
-					);
+						);
+					}
 				}
 			}
 		}
