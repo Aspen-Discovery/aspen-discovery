@@ -656,9 +656,11 @@ abstract class Solr {
 	{
 		if ($basic) {
 			$cleanedQuery = str_replace(':', ' ', $lookfor);
+			require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
+			$noTrailingPunctuation = StringUtils::removeTrailingPunctuation($cleanedQuery);
 
 			// Tokenize Input
-			$tokenized = $this->tokenizeInput($cleanedQuery);
+			$tokenized = $this->tokenizeInput($noTrailingPunctuation);
 
 			// Create AND'd and OR'd queries
 			$andQuery = implode(' AND ', $tokenized);
@@ -677,8 +679,8 @@ abstract class Solr {
 				}
 			}
 
-			$values['exact'] = str_replace(':', '\\:', $lookfor);
-			$values['exact_quoted'] = '"' . $lookfor . '"';
+			$values['exact'] = str_replace(':', '\\:', $noTrailingPunctuation);
+			$values['exact_quoted'] = '"' . $noTrailingPunctuation . '"';
 			$values['and'] = $andQuery;
 			$values['or'] = $orQuery;
 			$singleWordRemoval = "";
@@ -718,9 +720,9 @@ abstract class Solr {
 		}
 
 		//Create localized call number
-		$noWildCardLookFor = str_replace('*', '', $lookfor);
+		$noWildCardLookFor = str_replace('*', '', $noTrailingPunctuation);
 		if (strpos($lookfor, '*') !== false){
-			$noWildCardLookFor = str_replace('*', '', $lookfor);
+			$noWildCardLookFor = str_replace('*', '', $noTrailingPunctuation);
 		}
 		$values['localized_callnumber'] = str_replace(array('"', ':', '/'), ' ', $noWildCardLookFor);
 		$values['text_left'] = str_replace(array('"', ':', '/'), ' ', $noWildCardLookFor) . '*';
@@ -1845,7 +1847,7 @@ abstract class Solr {
 					$newWords[count($newWords)-1] .= ' ' . trim($words[$i]) . ' ' . trim($words[$i+1]);
 					$i = $i+1;
 				}
-			} else {
+			} elseif ($words[$i] != '--') { //The -- word shows up with subject searches.  It causes other errors so don't tokenize it.
 				//If we are tokenizing, remove any punctuation
 				$tmpWord = preg_replace('/[^\s\-\w.\'aàáâãåäæeèéêëiìíîïoòóôõöøuùúûü&]/u', '', $words[$i]);
 				if (strlen($tmpWord) > 0){

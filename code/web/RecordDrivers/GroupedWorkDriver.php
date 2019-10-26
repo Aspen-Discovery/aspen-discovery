@@ -1798,7 +1798,9 @@ class GroupedWorkDriver extends IndexRecordDriver{
         // TODO: get other subjects
 
         $normalizedSubjects = array();
+        require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
         foreach ($subjects as $subject){
+	        $subject = StringUtils::removeTrailingPunctuation($subject);
             $subjectLower = strtolower($subject);
             if (!array_key_exists($subjectLower, $subjects)){
                 $normalizedSubjects[$subjectLower] = $subject;

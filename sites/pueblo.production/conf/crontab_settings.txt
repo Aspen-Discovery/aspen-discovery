@@ -30,7 +30,7 @@
 # Indexing Tasks #
 #############
 @reboot sleep 60 /usr/local/aspen-discovery/sites/pueblo.production/; ./start_background_processes.sh
-5 6 * * * php /usr/local/aspen-discovery/code/web/cron/updateSuggesters.php pueblo.production
+5 2 * * * php /usr/local/aspen-discovery/code/web/cron/updateSuggesters.php pueblo.production
 */5 * * * * php /usr/local/aspen-discovery/code/web/cron/checkBackgroundProcesses.php pueblo.production
 
 ########################################################

@@ -125,4 +125,11 @@ class StringUtils
 		}
 	}
 
+	static function removeTrailingPunctuation($str) {
+		// We couldn't find the file, return an empty value:
+		$str = trim($str);
+		$str = preg_replace("~([-/:]+)$~","", $str);
+		$str = trim($str);
+		return $str;
+	}
 }

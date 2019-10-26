@@ -139,7 +139,7 @@ public class StringUtils {
         return sortTitle;
     }
 
-    private static Pattern trimPunctuationPattern = Pattern.compile("^(.*?)[\\s/,.;|]+$");
+    private static Pattern trimPunctuationPattern = Pattern.compile("^(.*?)[-\\s/,.;|]+$");
     public static String trimTrailingPunctuation(String format) {
         if (format == null){
             return "";
@@ -170,6 +170,23 @@ public class StringUtils {
             trimmedCollection.add(trimTrailingPunctuation(field));
         }
         return trimmedCollection;
+    }
+
+    private static Pattern replacePipePattern = Pattern.compile("\\|");
+    public static Collection<String> normalizeSubjects(Set<String> fieldList) {
+        HashSet<String> trimmedCollection = new HashSet<>();
+        for (String field : fieldList){
+            String trimmedField = trimTrailingPunctuation(field);
+            trimmedField = replacePipePattern.matcher(trimmedField).replaceAll(" -- ");
+            trimmedCollection.add(trimmedField);
+        }
+        return trimmedCollection;
+    }
+
+    public static String normalizeSubject(String field) {
+        String trimmedField = trimTrailingPunctuation(field);
+        trimmedField = replacePipePattern.matcher(trimmedField).replaceAll(" -- ");
+        return trimmedField;
     }
 
     /**

@@ -9,9 +9,6 @@
  * -------------------------------------------------------------
  */
 function smarty_modifier_removeTrailingPunctuation($str) {
-	// We couldn't find the file, return an empty value:
-	$str = trim($str);
-	$str = preg_replace("~([/:])$~","", $str);
-	$str = trim($str);
-	return $str;
+	require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
+	return StringUtils::removeTrailingPunctuation($str);
 }

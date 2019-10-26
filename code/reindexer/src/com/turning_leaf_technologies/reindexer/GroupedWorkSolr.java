@@ -1211,22 +1211,22 @@ public class GroupedWorkSolr implements Cloneable {
     }
 
 	void addTopic(Set<String> fieldList) {
-		this.topics.addAll(StringUtils.trimTrailingPunctuation(fieldList));
+		this.topics.addAll(StringUtils.normalizeSubjects(fieldList));
 	}
 
 	void addTopic(String fieldValue) {
-		this.topics.add(StringUtils.trimTrailingPunctuation(fieldValue));
+		this.topics.add(StringUtils.normalizeSubject(fieldValue));
 	}
 
 	void addTopicFacet(Set<String> fieldList) {
-		this.topicFacets.addAll(StringUtils.trimTrailingPunctuation(fieldList));
+		this.topicFacets.addAll(StringUtils.normalizeSubjects(fieldList));
 	}
 	void addTopicFacet(String fieldValue) {
-		this.topicFacets.add(StringUtils.trimTrailingPunctuation(fieldValue));
+		this.topicFacets.add(StringUtils.normalizeSubject(fieldValue));
 	}
 
 	void addSubjects(Set<String> fieldList) {
-		this.subjects.addAll(StringUtils.trimTrailingPunctuation(fieldList));
+		this.subjects.addAll(StringUtils.normalizeSubjects(fieldList));
 	}
 
 	void addSeries(Set<String> fieldList) {
@@ -1391,31 +1391,31 @@ public class GroupedWorkSolr implements Cloneable {
 	}
 
 	void addGenre(Set<String> fieldList) {
-		this.genres.addAll(StringUtils.trimTrailingPunctuation(fieldList));
+		this.genres.addAll(StringUtils.normalizeSubjects(fieldList));
 	}
 
 	void addGenre(String fieldValue) {
-		this.genres.add(StringUtils.trimTrailingPunctuation(fieldValue));
+		this.genres.add(StringUtils.normalizeSubject(fieldValue));
 	}
 
 	void addGenreFacet(Set<String> fieldList) {
-		this.genreFacets.addAll(StringUtils.trimTrailingPunctuation(fieldList));
+		this.genreFacets.addAll(StringUtils.normalizeSubjects(fieldList));
 	}
 
 	void addGenreFacet(String fieldValue) {
-		this.genreFacets.add(StringUtils.trimTrailingPunctuation(fieldValue));
+		this.genreFacets.add(StringUtils.normalizeSubject(fieldValue));
 	}
 
 	void addGeographic(String fieldValue) {
-		this.geographic.add(StringUtils.trimTrailingPunctuation(fieldValue));
+		this.geographic.add(StringUtils.normalizeSubject(fieldValue));
 	}
 
 	void addGeographicFacet(String fieldValue) {
-		this.geographicFacets.add(StringUtils.trimTrailingPunctuation(fieldValue));
+		this.geographicFacets.add(StringUtils.normalizeSubject(fieldValue));
 	}
 
 	void addEra(String fieldValue) {
-		this.eras.add(StringUtils.trimTrailingPunctuation(fieldValue));
+		this.eras.add(StringUtils.normalizeSubject(fieldValue));
 	}
 
 	void setLanguageBoost(Long languageBoost) {
@@ -1672,11 +1672,11 @@ public class GroupedWorkSolr implements Cloneable {
 	}
 
 	void addLCSubject(String lcSubject) {
-		this.lcSubjects.add(StringUtils.trimTrailingPunctuation(lcSubject));
+		this.lcSubjects.add(StringUtils.normalizeSubject(lcSubject));
 	}
 
 	void addBisacSubject(String bisacSubject) {
-		this.bisacSubjects.add(StringUtils.trimTrailingPunctuation(bisacSubject));
+		this.bisacSubjects.add(StringUtils.normalizeSubject(bisacSubject));
 	}
 
 	void addSystemLists(Set<String> systemLists) {
