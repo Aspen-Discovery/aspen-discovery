@@ -1171,7 +1171,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 				}
 			}
 		}
-		if (isset($curTitle->actions->format) && !empty($bookshelfItem['formatSelected'])) {
+		if (isset($curTitle->actions->format) && empty($bookshelfItem['formatSelected'])) {
 			//Get the options for the format which includes the valid formats
 			$formatField = null;
 			foreach ($curTitle->actions->format->fields as $curFieldIndex => $curField) {

@@ -326,8 +326,8 @@ AspenDiscovery.OverDrive = (function(){
 			return false;
 		},
 
-		selectOverDriveDownloadFormat: function(patronId, overDriveId){
-			let selectedOption = $("#downloadFormat_" + overDriveId + " option:selected");
+		selectOverDriveDownloadFormat: function(patronId, overDriveId, time){
+			let selectedOption = $("#downloadFormat_" + overDriveId + "_" + time + " option:selected");
 			let selectedFormatId = selectedOption.val();
 			let selectedFormatText = selectedOption.text();
 			// noinspection EqualityComparisonWithCoercionJS

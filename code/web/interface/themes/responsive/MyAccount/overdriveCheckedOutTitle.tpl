@@ -100,13 +100,13 @@
 								<div class="form-inline">
 									<label for="downloadFormat_{$record.overDriveId}">{translate text="Select one format to download."}</label>
 									<br>
-									<select name="downloadFormat_{$record.overDriveId}" id="downloadFormat_{$record.overDriveId}" class="input-sm form-control">
+									<select name="downloadFormat_{$record.overDriveId}" id="downloadFormat_{$record.overDriveId}_{$smarty.now}" class="input-sm form-control">
 										<option value="-1">{translate text="Select a Format"}</option>
 										{foreach from=$record.formats item=format}
 											<option value="{$format.id}">{$format.name|translate}</option>
 										{/foreach}
 									</select>
-									<a href="#" onclick="AspenDiscovery.OverDrive.selectOverDriveDownloadFormat('{$record.userId}', '{$record.overDriveId}')" class="btn btn-sm btn-primary">{translate text="Download"}</a>
+									<a href="#" onclick="AspenDiscovery.OverDrive.selectOverDriveDownloadFormat('{$record.userId}', '{$record.overDriveId}', '{$smarty.now}')" class="btn btn-sm btn-primary">{translate text="Download"}</a>
 								</div>
 							{/if}
 						</div>
