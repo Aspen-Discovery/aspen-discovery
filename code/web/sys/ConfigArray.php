@@ -262,25 +262,12 @@ function updateConfigForScoping($configArray) {
 
 	$subdomainsToTest = array();
 	if(strpos($fullServerName, '.')){
-		$serverComponents = explode('.', $fullServerName);
-		$tempSubdomain = '';
-		if (count($serverComponents) >= 3){
-			//URL is probably of the form subdomain.marmot.org or subdomain.opac.marmot.org
-			$subdomainsToTest[] = $serverComponents[0];
-			$tempSubdomain = $serverComponents[0];
-		} else if (count($serverComponents) == 2){
-			//URL could be either subdomain.localhost or marmot.org. Only use the subdomain
-			//If the second component is localhost.
-			if (strcasecmp($serverComponents[1], 'localhost') == 0){
-				$subdomainsToTest[] = $serverComponents[0];
-				$tempSubdomain = $serverComponents[0];
-			}
-		}
-		//Trim off test indicator when doing lookups for library/location
-		$lastChar = substr($tempSubdomain, -1);
-		if ($lastChar == '2' || $lastChar == '3' || $lastChar == 't' || $lastChar == 'd' || $lastChar == 'x'){
-			$subdomainsToTest[] = substr($tempSubdomain, 0, -1);
-		}
+		$subdomainsToTest = getSubdomainsToTestFromServerName($fullServerName, $subdomainsToTest);
+	}
+
+	//Also check the actual server name
+	if(strpos($_SERVER['SERVER_NAME'], '.')){
+		$subdomainsToTest = getSubdomainsToTestFromServerName($_SERVER['SERVER_NAME'], $subdomainsToTest);
 	}
 
 	$timer->logTime('found ' . count($subdomainsToTest) . ' subdomains to test');
@@ -393,4 +380,33 @@ function updateConfigForScoping($configArray) {
 	$timer->logTime('finished update config for scoping');
 
 	return $configArray;
+}
+
+/**
+ * @param $fullServerName
+ * @param array $subdomainsToTest
+ * @return array
+ */
+function getSubdomainsToTestFromServerName($fullServerName, array $subdomainsToTest): array
+{
+	$serverComponents = explode('.', $fullServerName);
+	$tempSubdomain = '';
+	if (count($serverComponents) >= 3) {
+		//URL is probably of the form subdomain.marmot.org or subdomain.opac.marmot.org
+		$subdomainsToTest[] = $serverComponents[0];
+		$tempSubdomain = $serverComponents[0];
+	} else if (count($serverComponents) == 2) {
+		//URL could be either subdomain.localhost or marmot.org. Only use the subdomain
+		//If the second component is localhost.
+		if (strcasecmp($serverComponents[1], 'localhost') == 0) {
+			$subdomainsToTest[] = $serverComponents[0];
+			$tempSubdomain = $serverComponents[0];
+		}
+	}
+	//Trim off test indicator when doing lookups for library/location
+	$lastChar = substr($tempSubdomain, -1);
+	if ($lastChar == '2' || $lastChar == '3' || $lastChar == 't' || $lastChar == 'd' || $lastChar == 'x') {
+		$subdomainsToTest[] = substr($tempSubdomain, 0, -1);
+	}
+	return $subdomainsToTest;
 }
