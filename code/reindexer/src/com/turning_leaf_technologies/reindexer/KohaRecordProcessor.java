@@ -157,12 +157,12 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 		HashMap<String, String> itemTypeToFormat = new HashMap<>();
 		int mostUsedCount = 0;
 		String mostPopularIType = "";		//Get a list of all the formats based on the items
-		List<DataField> items = MarcUtil.getDataFields(record, itemTag);
-		for(DataField item : items){
+		for(ItemInfo item : recordInfo.getRelatedItems()){
+			if (item.isEContent()) {continue;}
 			boolean foundFormatFromSublocation = false;
-			Subfield subLocationField = item.getSubfield(subLocationSubfield);
-			if (subLocationField != null){
-				String subLocation = subLocationField.getData().toLowerCase().trim();
+			String subLocationCode = item.getSubLocationCode();
+			if (subLocationCode != null){
+				String subLocation = subLocationCode.toLowerCase().trim();
 				if (hasTranslation("format", subLocation)){
 					String translatedLocation = translateValue("format", subLocation, recordInfo.getRecordIdentifier());
 					if (itemCountsByItype.containsKey(subLocation)) {
@@ -180,9 +180,9 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 			}
 
 			if (!foundFormatFromSublocation) {
-				Subfield iTypeSubField = item.getSubfield(iTypeSubfield);
-				if (iTypeSubField != null) {
-					String iType = iTypeSubField.getData().toLowerCase().trim();
+				String iTypeCode = item.getITypeCode();
+				if (iTypeCode != null) {
+					String iType = iTypeCode.toLowerCase().trim();
 					if (itemCountsByItype.containsKey(iType)) {
 						itemCountsByItype.put(iType, itemCountsByItype.get(iType) + 1);
 					} else {
@@ -505,7 +505,11 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 				suppressed = true;
 			}
 		}
-		return suppressed || super.isItemSuppressed(curItem);
+		if (suppressed){
+			return suppressed;
+		}else{
+			return super.isItemSuppressed(curItem);
+		}
 	}
 
 	protected String getShelfLocationForItem(ItemInfo itemInfo, DataField itemField, String identifier) {
