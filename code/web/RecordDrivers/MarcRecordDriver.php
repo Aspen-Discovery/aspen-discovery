@@ -1713,7 +1713,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 			$interface->assign('og_url', $this->getAbsoluteUrl());
 			return $semanticData;
 		}else{
-			AspenError::raiseError('MARC Record did not have an associated record in grouped work ' . $this->getPermanentId());
+			//AspenError::raiseError('MARC Record did not have an associated record in grouped work ' . $this->getPermanentId());
 			return null;
 		}
 	}
