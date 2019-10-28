@@ -824,7 +824,7 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 			$interface->assign('og_url', $this->getAbsoluteUrl());
 			return $semanticData;
 		}else{
-			AspenError::raiseError('OverDrive Record did not have an associated record in grouped work ' . $this->getPermanentId());
+			//AspenError::raiseError('OverDrive Record did not have an associated record in grouped work ' . $this->getPermanentId());
 			return null;
 		}
 	}
