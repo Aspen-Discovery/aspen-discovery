@@ -34,7 +34,7 @@ var AspenDiscovery = (function(){
 				let selector = '#holdsTab a[href="#' + history.state.source + '"]';
 				$(selector).tab('show');
 			}else if (history.state && history.state.page === "ReadingHistory") {
-				AspenDiscovery.Account.loadReadingHistory(history.state.selectedUser, history.state.sort, history.state.page, history.state.showCovers, history.state.filter);
+				AspenDiscovery.Account.loadReadingHistory(history.state.selectedUser, history.state.sort, history.state.pageNumber, history.state.showCovers, history.state.filter);
 			}
 		});
 	});
