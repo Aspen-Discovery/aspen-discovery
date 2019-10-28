@@ -60,6 +60,12 @@ abstract class Search_AdvancedBase extends Action{
 		// Process the facets, assuming they came back
 		$facets = array();
 		foreach ($facetList as $facet => $list) {
+			if ($list['label'] instanceof FacetSetting){
+				$facetLabel = $list['label']->displayName;
+			}else{
+				$facetLabel = $list['label'];
+			}
+			$facets[$facetLabel] = $list;
 			$currentList = array();
 			$valueSelected = false;
 			foreach ($list['list'] as $value) {
@@ -89,8 +95,12 @@ abstract class Search_AdvancedBase extends Action{
 			if (strpos($facet, 'availability_toggle') === false){
 				// Perform a natural case sort on the array of facet values:
 				natcasesort($keys);
+				if ($list['label'] instanceof FacetSetting){
+					$facets[$facetLabel]['values']['Any ' . $list['label']->displayName] = array('filter' => '','selected' => !$valueSelected );
+				}else{
+					$facets[$facetLabel]['values']['Any ' . $list['label']] = array('filter' => '','selected' => !$valueSelected );
+				}
 
-				$facets[$list['label']]['values']['Any ' . $list['label']] = array('filter' => '','selected' => !$valueSelected );
 			}else{
 				//Don't sort Available Now facet and make sure the Entire Collection is selected if no value is selected
 				if (!$valueSelected){
@@ -102,9 +112,9 @@ abstract class Search_AdvancedBase extends Action{
 				}
 			}
 
-			$facets[$list['label']]['facetName'] = $facet;
+			$facets[$facetLabel]['facetName'] = $facet;
 			foreach($keys as $key) {
-				$facets[$list['label']]['values'][$key] = $currentList[$key];
+				$facets[$facetLabel]['values'][$key] = $currentList[$key];
 			}
 		}
 		return $facets;
