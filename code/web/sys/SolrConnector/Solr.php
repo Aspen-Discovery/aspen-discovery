@@ -702,6 +702,13 @@ abstract class Solr {
 				}
 			}
 			$values['single_word_removal'] = $singleWordRemoval;
+			//Create localized call number
+			$noWildCardLookFor = str_replace('*', '', $noTrailingPunctuation);
+			if (strpos($lookfor, '*') !== false){
+				$noWildCardLookFor = str_replace('*', '', $noTrailingPunctuation);
+			}
+			$values['localized_callnumber'] = str_replace(array('"', ':', '/'), ' ', $noWildCardLookFor);
+			$values['text_left'] = str_replace(array('"', ':', '/'), ' ', $noWildCardLookFor) . '*';
 		} else {
 			// If we're skipping tokenization, we just want to pass $lookfor through
 			// unmodified (it's probably an advanced search that won't benefit from
@@ -709,23 +716,17 @@ abstract class Solr {
 			// except that we'll try to do the "one phrase" in quotes if possible.
 			$onephrase = strstr($lookfor, '"') ? $lookfor : '"' . $lookfor . '"';
 			$values = array(
-					'exact' => $onephrase,
-					'onephrase' => $onephrase,
-					'and' => $lookfor,
-					'or' => $lookfor,
-					'proximal' => $lookfor,
-					'single_word_removal' => $onephrase,
-					'exact_quoted' => '"' . $lookfor . '"',
+				'exact' => $onephrase,
+				'onephrase' => $onephrase,
+				'and' => $lookfor,
+				'or' => $lookfor,
+				'proximal' => $lookfor,
+				'single_word_removal' => $onephrase,
+				'exact_quoted' => '"' . $lookfor . '"',
+				'localized_callnumber' => str_replace(array('"', ':', '/'), ' ', $lookfor),
+				'text_left' => str_replace(array('"', ':', '/'), ' ', $lookfor) . '*',
 			);
 		}
-
-		//Create localized call number
-		$noWildCardLookFor = str_replace('*', '', $noTrailingPunctuation);
-		if (strpos($lookfor, '*') !== false){
-			$noWildCardLookFor = str_replace('*', '', $noTrailingPunctuation);
-		}
-		$values['localized_callnumber'] = str_replace(array('"', ':', '/'), ' ', $noWildCardLookFor);
-		$values['text_left'] = str_replace(array('"', ':', '/'), ' ', $noWildCardLookFor) . '*';
 
 		// Apply custom munge operations if necessary
 		if (is_array($custom) && $basic) {
