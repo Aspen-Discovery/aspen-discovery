@@ -1,44 +1,33 @@
 <?php
 
-require_once ROOT_DIR . '/Action.php';
-require_once ROOT_DIR . '/services/Admin/Admin.php';
-require_once ROOT_DIR . '/sys/Pager.php';
+require_once ROOT_DIR . '/services/Admin/IndexingLog.php';
 require_once ROOT_DIR . '/sys/RBdigital/RBdigitalExportLogEntry.php';
 
-class RBdigital_IndexingLog extends Admin_Admin
+/** @noinspection PhpUnused */
+class RBdigital_IndexingLog extends Admin_IndexingLog
 {
-	function launch()
+	function getIndexLogEntryObject(): DataObject
 	{
-		global $interface;
-		global $configArray;
-
-		$logEntries = array();
-		$logEntry = new RBdigitalExportLogEntry();
-		$total = $logEntry->count();
-		$logEntry = new RBdigitalExportLogEntry();
-		$logEntry->orderBy('startTime DESC');
-		$page = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
-		$pageSize = isset($_REQUEST['pageSize']) ? $_REQUEST['pageSize'] : 30; // to adjust number of items listed on a page
-		$interface->assign('recordsPerPage', $pageSize);
-		$interface->assign('page', $page);
-		$logEntry->limit(($page - 1) * $pageSize, $pageSize);
-		$logEntry->find();
-		while ($logEntry->fetch()){
-			$logEntries[] = clone($logEntry);
-		}
-		$interface->assign('logEntries', $logEntries);
-
-		$options = array('totalItems' => $total,
-		                 'fileName'   => $configArray['Site']['path'].'/RBdigital/IndexingLog?page=%d'. (empty($_REQUEST['pageSize']) ? '' : '&pageSize=' . $_REQUEST['pageSize']),
-		                 'perPage'    => $pageSize,
-		);
-		$pager = new Pager($options);
-		$interface->assign('pageLinks', $pager->getLinks());
-
-		$this->display('rbdigitalExportLog.tpl', 'RBdigital Export Log');
+		return new RBdigitalExportLogEntry();
 	}
 
-	function getAllowableRoles(){
-		return array('opacAdmin', 'libraryAdmin', 'cataloging');
+	function getTemplateName() : string
+	{
+		return 'rbdigitalExportLog.tpl';
+	}
+
+	function getTitle() : string
+	{
+		return 'RBdigital Export Log';
+	}
+
+	function getModule() : string{
+		return 'RBdigital';
+	}
+
+	function applyMinProcessedFilter(DataObject $indexingObject, $minProcessed){
+		if ($indexingObject instanceof RBdigitalExportLogEntry){
+			$indexingObject->whereAdd('(numAdded + numDeleted + numUpdated) >= ' . $minProcessed);
+		}
 	}
 }

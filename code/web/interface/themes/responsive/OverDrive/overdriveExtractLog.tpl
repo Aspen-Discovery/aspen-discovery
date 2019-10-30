@@ -1,7 +1,8 @@
 {strip}
 	<div id="main-content" class="col-md-12">
-		<h3>OverDrive Extract Log</h3>
+		<h1>OverDrive Extract Log</h1>
 
+        {include file='Admin/exportLogFilters.tpl'}
 		<div>
 			<table class="logEntryDetails table table-bordered table-striped">
 				<thead>
