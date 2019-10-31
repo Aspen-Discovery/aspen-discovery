@@ -1,6 +1,7 @@
 package com.turning_leaf_technologies.reindexer;
 
 import com.turning_leaf_technologies.marc.MarcUtil;
+import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.Record;
@@ -50,7 +51,7 @@ class WCPLRecordProcessor extends IlsRecordProcessor {
 		Long formatBoost = 0L;
 		HashSet<String> formatBoosts = translateCollection("format_boost", printFormats, ilsRecord.getRecordIdentifier());
 		for (String tmpFormatBoost : formatBoosts){
-			if (Util.isNumeric(tmpFormatBoost)) {
+			if (StringUtils.isNumeric(tmpFormatBoost)) {
 				Long tmpFormatBoostLong = Long.parseLong(tmpFormatBoost);
 				if (tmpFormatBoostLong > formatBoost) {
 					formatBoost = tmpFormatBoostLong;

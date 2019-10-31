@@ -166,7 +166,7 @@ class SearchObject_OpenArchivesSearcher extends SearchObject_SolrSearcher
 			$collection->displayName = "Collection";
 			$collection->numEntriesToShowByDefault = 5;
 			$collection->translate = true;
-			$collection->collapseByDefault = true;
+			$collection->collapseByDefault = false;
 			$collection->useMoreFacetPopup = true;
 			$facetConfig["collection_name"] = $collection;
 

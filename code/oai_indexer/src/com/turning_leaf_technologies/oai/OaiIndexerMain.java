@@ -29,6 +29,8 @@ public class OaiIndexerMain {
     private static Ini configIni;
     private static ConcurrentUpdateSolrClient updateServer;
 
+    private static Connection aspenConn;
+
     private static boolean fullReload = false;
 
     private static PreparedStatement getOpenArchiveCollections;
@@ -69,7 +71,6 @@ public class OaiIndexerMain {
     }
 
     private static void connectToDatabase() {
-        Connection aspenConn ;
         try{
             String databaseConnectionInfo = ConfigUtil.cleanIniValue(configIni.get("Database", "database_aspen_jdbc"));
             aspenConn = DriverManager.getConnection(databaseConnectionInfo);
@@ -133,6 +134,7 @@ public class OaiIndexerMain {
                     String baseUrl = collectionsRS.getString("baseUrl");
                     String setName = collectionsRS.getString("setName");
                     String subjectFilterString = collectionsRS.getString("subjectFilters");
+                    boolean loadOneMonthAtATime = collectionsRS.getBoolean("loadOneMonthAtATime");
                     ArrayList<Pattern> subjectFilters = new ArrayList<>();
                     if (subjectFilterString != null && subjectFilterString.length() > 0){
                         String[] subjectFiltersRaw =  subjectFilterString.split("\\s*(\\r\\n|\\n|\\r)\\s*");
@@ -142,7 +144,7 @@ public class OaiIndexerMain {
                             }
                         }
                     }
-                    extractAndIndexOaiCollection(collectionName, collectionId, subjectFilters, baseUrl, setName, currentTime);
+                    extractAndIndexOaiCollection(collectionName, collectionId, subjectFilters, baseUrl, setName, currentTime, loadOneMonthAtATime);
                 }
             }
         } catch (SQLException e) {
@@ -156,11 +158,14 @@ public class OaiIndexerMain {
         }
     }
 
-    private static void extractAndIndexOaiCollection(String collectionName, long collectionId, ArrayList<Pattern> subjectFilters, String baseUrl, String setNames, long currentTime) {
+    private static void extractAndIndexOaiCollection(String collectionName, long collectionId, ArrayList<Pattern> subjectFilters, String baseUrl, String setNames, long currentTime, boolean loadOneMonthAtATime) {
         //Get the existing records for the collection
         //Get existing records for the collection
+        OpenArchivesExtractLogEntry logEntry = createDbLogEntry(collectionName);
+
         HashMap<String, ExistingOAIRecord> existingRecords = new HashMap<>();
         if (!fullReload) {
+            //Only need to do this if we aren't doing a full reload since the full reload deletes everything
             try {
                 updateServer.deleteByQuery("collection_name:\"" + collectionName + "\"");
                 //3-19-2019 Don't commit so the index does not get cleared during run (but will clear at the end).
@@ -214,14 +219,22 @@ public class OaiIndexerMain {
                                 return;
                             }
                         } else {
-                            String startDate = year + "-" + String.format("%02d", month) + "-01";
-                            String endDate = year + "-" + String.format("%02d", month +1 ) + "-01";
-                            if (month == 12){
-                                endDate = (year + 1) + "-01-01";
+                            oaiUrl = baseUrl + "?verb=ListRecords&metadataPrefix=oai_dc";
+                            if (loadOneMonthAtATime) {
+                                String startDate = year + "-" + String.format("%02d", month) + "-01";
+                                String endDate = year + "-" + String.format("%02d", month + 1) + "-01";
+                                if (month == 12) {
+                                    endDate = (year + 1) + "-01-01";
+                                }
+                                oaiUrl += "&from=" + startDate + "&until=" + endDate;
                             }
-                            oaiUrl = baseUrl + "?verb=ListRecords&metadataPrefix=oai_dc&from=" + startDate + "&until=" + endDate;
                             if (oaiSet.length() > 0){
-                                oaiUrl += "&set=" + oaiSet;
+                                try {
+                                    oaiUrl += "&set=" + URLEncoder.encode(oaiSet, "UTF8");
+                                } catch (UnsupportedEncodingException e) {
+                                    logger.error("Error encoding resumption token", e);
+                                    return;
+                                }
                             }
 
                         }
@@ -243,8 +256,9 @@ public class OaiIndexerMain {
                                 for (int i = 0; i < allRecords.getLength(); i++) {
                                     Node curRecordNode = allRecords.item(i);
                                     if (curRecordNode instanceof Element) {
+                                        logEntry.incNumRecords();
                                         Element curRecordElement = (Element) curRecordNode;
-                                        if (indexElement(curRecordElement, existingRecords, collectionId, collectionName, subjectFilters, allExistingCollectionSubjects)) {
+                                        if (indexElement(curRecordElement, existingRecords, collectionId, collectionName, subjectFilters, allExistingCollectionSubjects, logEntry)) {
                                             numRecordsLoaded++;
                                         }else{
                                             numRecordsSkipped++;
@@ -268,7 +282,14 @@ public class OaiIndexerMain {
                         } catch (Exception e) {
                             logger.error("Error parsing OAI data ", e);
                         }
+                        logEntry.saveResults();
                     }
+                    if (!loadOneMonthAtATime){
+                        break;
+                    }
+                }
+                if (!loadOneMonthAtATime){
+                    break;
                 }
             }
         }
@@ -279,7 +300,6 @@ public class OaiIndexerMain {
         }
 
         if (existingRecords.size() > 0) {
-            logger.info("Deleted " + existingRecords.size() + " records from " + collectionName + ".");
             try {
                 ArrayList<Long> idsToDelete = new ArrayList<>();
                 for (ExistingOAIRecord existingOAIRecord : existingRecords.values()){
@@ -287,16 +307,23 @@ public class OaiIndexerMain {
                         idsToDelete.add(existingOAIRecord.id);
                     }
                 }
+                logger.info("Deleted " + idsToDelete.size() + " records from " + collectionName + ".");
                 for(Long idToDelete : idsToDelete){
                     deleteOpenArchivesRecord.setLong(1, idToDelete);
                     deleteOpenArchivesRecord.executeUpdate();
+                    logEntry.incDeleted();
                 }
                 //3-19-2019 Don't commit so the index does not get cleared during run (but will clear at the end).
             } catch (HttpSolrClient.RemoteSolrException rse) {
                 logger.error("Solr is not running properly, try restarting", rse);
+                logEntry.addNote("Solr is not running properly");
+                logEntry.incErrors();
+                logEntry.saveResults();
                 System.exit(-1);
             } catch (Exception e) {
                 logger.error("Error deleting ids from index", e);
+                logEntry.addNote("Error deleting ids from index " + e.toString());
+                logEntry.incErrors();
             }
         }
 
@@ -308,8 +335,26 @@ public class OaiIndexerMain {
             updateCollectionAfterIndexing.executeUpdate();
         } catch (SQLException e) {
             logger.error("Error updating the last fetch time for collection", e);
+            logEntry.addNote("Error updating the last fetch time for collection " + e.toString());
+            logEntry.incErrors();
         }
 
+        logEntry.setFinished();
+    }
+
+    private static OpenArchivesExtractLogEntry createDbLogEntry(String collectionName) {
+        Date startTime = new Date();
+        //Remove log entries older than 45 days
+        long earliestLogToKeep = (startTime.getTime() / 1000) - (60 * 60 * 24 * 45);
+        try {
+            int numDeletions = aspenConn.prepareStatement("DELETE from open_archives_export_log WHERE startTime < " + earliestLogToKeep).executeUpdate();
+            logger.info("Deleted " + numDeletions + " old log entries");
+        } catch (SQLException e) {
+            logger.error("Error deleting old log entries", e);
+        }
+
+        //Start a log entry
+        return new OpenArchivesExtractLogEntry(collectionName, aspenConn, logger);
     }
 
     private static void setupSolrClient(String solrPort) {
@@ -320,7 +365,7 @@ public class OaiIndexerMain {
         updateServer.setRequestWriter(new BinaryRequestWriter());
     }
 
-    private static boolean indexElement(Element curRecordElement, HashMap<String, ExistingOAIRecord> existingRecords, Long collectionId, String collectionName, ArrayList<Pattern> subjectFilters, Set<String> collectionSubjects) {
+    private static boolean indexElement(Element curRecordElement, HashMap<String, ExistingOAIRecord> existingRecords, Long collectionId, String collectionName, ArrayList<Pattern> subjectFilters, Set<String> collectionSubjects, OpenArchivesExtractLogEntry logEntry) {
         OAISolrRecord solrRecord = new OAISolrRecord();
         solrRecord.setCollectionId(collectionId);
         solrRecord.setCollectionName(collectionName);
@@ -328,7 +373,16 @@ public class OaiIndexerMain {
         NodeList children = curRecordElement.getChildNodes();
         for (int i = 0; i < children.getLength(); i++) {
             Node curChild = children.item(i);
-            if (curChild instanceof Element && ((Element)curChild).getTagName().equals("metadata")) {
+            if (curChild instanceof Element && ((Element)curChild).getTagName().equals("header")) {
+                Element headerElement = (Element)curChild;
+                if (headerElement.hasAttribute("status")){
+                    if (headerElement.getAttribute("status").equalsIgnoreCase("deleted")){
+                        //This record is deleted, no sense evaluating further. Don't mark it as skipped
+                        //If it is newly deleted, that will show in the stats if it was previously indexed.
+                        return false;
+                    }
+                }
+            }else if (curChild instanceof Element && ((Element)curChild).getTagName().equals("metadata")) {
                 Element metadataElement = (Element)curChild;
                 NodeList metadataChildren = metadataElement.getChildNodes();
                 for (int metaDataChildCtr = 0; metaDataChildCtr < metadataChildren.getLength(); metaDataChildCtr++) {
@@ -349,7 +403,7 @@ public class OaiIndexerMain {
                                         break;
                                     case "dc:identifier":
                                         if (textContent.startsWith("http")){
-                                            if (solrRecord.getIdentifier() == null) {
+                                            if (solrRecord.getIdentifier() == null || !solrRecord.getIdentifier().startsWith("http")) {
                                                 solrRecord.setIdentifier(textContent);
                                             }else{
                                                 //Keep the longest identifier
@@ -415,6 +469,7 @@ public class OaiIndexerMain {
                                         for (int tmpIndex = 0; tmpIndex < dateRange.length; tmpIndex++){
                                             dateRange[tmpIndex] = dateRange[tmpIndex].trim();
                                             dateRange[tmpIndex] = dateRange[tmpIndex].replaceAll("/", "-");
+                                            dateRange[tmpIndex] = dateRange[tmpIndex].replaceAll("ca.\\s+", "");
                                         }
                                         solrRecord.addDates(dateRange);
 
@@ -431,7 +486,7 @@ public class OaiIndexerMain {
         boolean addedToIndex = false;
         try {
             if (solrRecord.getIdentifier() == null || solrRecord.getTitle() == null) {
-
+                logEntry.incSkipped();
                 logger.debug("Skipping record because no identifier was provided.");
             } else {
                 boolean subjectMatched = true;
@@ -451,14 +506,22 @@ public class OaiIndexerMain {
                 }
                 if (!subjectMatched){
                     logger.debug("Skipping record because no subject matched.");
+                    logEntry.incSkipped();
                 }else {
                     solrRecord.setCollectionId(collectionId);
                     solrRecord.setCollectionName(collectionName);
                     try {
                         if (existingRecords.containsKey(solrRecord.getIdentifier())) {
-                            solrRecord.setId(Long.toString(existingRecords.get(solrRecord.getIdentifier()).id));
-                            updateServer.add(solrRecord.getSolrDocument());
-                            addedToIndex = true;
+                            ExistingOAIRecord existingRecord = existingRecords.get(solrRecord.getIdentifier());
+                            if (existingRecord.processed){
+                                logEntry.addNote("Record was already processed " + solrRecord.getIdentifier());
+                                logEntry.incSkipped();
+                            }else {
+                                solrRecord.setId(Long.toString(existingRecord.id));
+                                updateServer.add(solrRecord.getSolrDocument());
+                                addedToIndex = true;
+                                logEntry.incUpdated();
+                            }
                         } else {
                             addOpenArchivesRecord.setLong(1, collectionId);
                             addOpenArchivesRecord.setString(2, solrRecord.getIdentifier());
@@ -474,16 +537,23 @@ public class OaiIndexerMain {
                                 addedToIndex = true;
                             }
                             rs.close();
+                            logEntry.incAdded();
                         }
                     } catch (SQLException e) {
                         logger.error("Error adding record to database", e);
+                        logEntry.addNote("Error adding record to database " + e.toString());
+                        logEntry.incErrors();
                     }
                 }
             }
         } catch (SolrServerException e) {
             logger.error("Error adding document to solr server", e);
+            logEntry.addNote("Error adding document to solr server " + e.toString());
+            logEntry.incErrors();
         } catch (IOException e) {
             logger.error("I/O Error adding document to solr server", e);
+            logEntry.addNote("I/O Error adding document to solr server " + e.toString());
+            logEntry.incErrors();
         }
         if (addedToIndex && existingRecords.containsKey(solrRecord.getIdentifier())) {
             existingRecords.get(solrRecord.getIdentifier()).processed = true;

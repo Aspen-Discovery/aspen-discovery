@@ -352,10 +352,10 @@ public class GroupedWorkSolr implements Cloneable {
 			doc.addField("fountas_pinnell", fountasPinnell);
 		}
 		doc.addField("accelerated_reader_interest_level", StringUtils.trimTrailingPunctuation(acceleratedReaderInterestLevel));
-		if (Util.isNumeric(acceleratedReaderReadingLevel)) {
+		if (StringUtils.isNumeric(acceleratedReaderReadingLevel)) {
 			doc.addField("accelerated_reader_reading_level", acceleratedReaderReadingLevel);
 		}
-		if (Util.isNumeric(acceleratedReaderPointValue)) {
+		if (StringUtils.isNumeric(acceleratedReaderPointValue)) {
 			doc.addField("accelerated_reader_point_value", acceleratedReaderPointValue);
 		}
 		HashSet<String> eContentSources = getAllEContentSources();

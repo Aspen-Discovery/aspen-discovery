@@ -94,24 +94,6 @@ public class Util {
 		return crSeparatedString.toString();
 	}
 
-	static boolean isNumeric(String stringToTest) {
-		if (stringToTest == null){
-			return false;
-		}
-		if (stringToTest.length() == 0){
-			return false;
-		}
-		int numDecimals = 0;
-		for (char curChar : stringToTest.toCharArray()){
-			if (!Character.isDigit(curChar) && curChar != '.'){
-				return false;
-			}if (curChar == '.'){
-				numDecimals++;
-			}
-		}
-		return numDecimals <= 1;
-	}
-
 	static String getCleanDetailValue(String value) {
 		return value == null ? "" : value;
 	}

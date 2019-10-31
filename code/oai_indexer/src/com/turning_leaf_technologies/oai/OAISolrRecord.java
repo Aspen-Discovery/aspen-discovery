@@ -1,11 +1,13 @@
 package com.turning_leaf_technologies.oai;
 
+import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.solr.common.SolrInputDocument;
 
 import javax.security.auth.Subject;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.regex.Pattern;
 
 class OAISolrRecord {
     private String identifier;
@@ -59,8 +61,15 @@ class OAISolrRecord {
         this.contributor = contributor;
     }
 
+    Pattern datePattern = Pattern.compile("\\d{2,4}(-\\d{2,4}){0,2}");
     void addDates(String[] dates) {
-        Collections.addAll(this.date, dates);
+        for (String date : dates){
+            if (StringUtils.isNumeric(date)) {
+                this.date.add(date);
+            }else if(datePattern.matcher(date).matches()){
+                this.date.add(date);
+            }
+        }
     }
 
     SolrInputDocument getSolrDocument() {

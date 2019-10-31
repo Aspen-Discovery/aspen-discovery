@@ -3,18 +3,19 @@
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
 class OpenArchivesExportLogEntry extends DataObject
 {
-	public $__table = 'rbdigital_export_log';   // table name
+	public $__table = 'open_archives_export_log';   // table name
 	public $id;
 	public $collectionName;
 	public $startTime;
 	public $lastUpdate;
 	public $endTime;
 	public $notes;
-    public $numRecords;
+	public $numRecords;
     public $numErrors;
     public $numAdded;
     public $numDeleted;
     public $numUpdated;
+	public $numSkipped;
 
 	function keys() {
 		return array('id');

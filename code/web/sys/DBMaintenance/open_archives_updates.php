@@ -98,6 +98,37 @@ function getOpenArchivesUpdates() {
 		    	//oai indexer runs daily so we don't check the background process
 			    "INSERT INTO modules (name, indexName, backgroundProcess) VALUES ('Open Archives', 'open_archives', '')"
 		    ]
-	    ]
+	    ],
+
+	    'open_archives_loadOneMonthAtATime' => [
+		    'title' => 'OAI load one month at a time',
+		    'description' => 'Update OAI settings to control if records are loaded one month at a time',
+		    'sql' => [
+			    //oai indexer runs daily so we don't check the background process
+			    "ALTER TABLE open_archives_collection ADD COLUMN loadOneMonthAtATime TINYINT(1) DEFAULT 1"
+		    ]
+	    ],
+
+	    'open_archives_log' => array(
+		    'title' => 'Open Archives log',
+		    'description' => 'Create log for Side Load Processing.',
+		    'sql' => array(
+			    "CREATE TABLE IF NOT EXISTS open_archives_export_log(
+	                `id` INT NOT NULL AUTO_INCREMENT COMMENT 'The id of log', 
+	                `startTime` INT(11) NOT NULL COMMENT 'The timestamp when the run started', 
+	                `endTime` INT(11) NULL COMMENT 'The timestamp when the run ended', 
+	                `lastUpdate` INT(11) NULL COMMENT 'The timestamp when the run last updated (to check for stuck processes)', 
+	                `notes` TEXT COMMENT 'Additional information about the run', 
+	                collectionName MEDIUMTEXT,
+	                numRecords INT(11) DEFAULT 0,
+	                numErrors INT(11) DEFAULT 0,
+	                numAdded INT(11) DEFAULT 0,
+	                numDeleted INT(11) DEFAULT 0,
+	                numUpdated INT(11) DEFAULT 0,
+	                numUSkipped INT(11) DEFAULT 0,
+	                PRIMARY KEY ( `id` )
+                ) ENGINE = InnoDB;",
+		    )
+	    ),
     ];
 }

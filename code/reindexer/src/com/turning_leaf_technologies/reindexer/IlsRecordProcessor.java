@@ -622,7 +622,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				//Remaining fields have variable definitions based on content that has been loaded over the past year or so
 				if (eContentFields.length >= 4){
 					//If the 4th field is numeric, it is the number of copies that can be checked out.
-					if (Util.isNumeric(eContentFields[3].trim())){
+					if (StringUtils.isNumeric(eContentFields[3].trim())){
 						//ilsEContentItem.setNumberOfCopies(eContentFields[3].trim());
 						if (eContentFields.length >= 5){
 							itemInfo.seteContentFilename(eContentFields[4].trim());

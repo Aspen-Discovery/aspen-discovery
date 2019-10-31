@@ -11,7 +11,8 @@ class OpenArchivesCollection extends DataObject
     public $subjects;
     public $subjectFilters;
     public $fetchFrequency;
-    public $lastFetched;
+	public $loadOneMonthAtATime;
+	public $lastFetched;
 
     static function getObjectStructure(){
         return [
@@ -22,6 +23,7 @@ class OpenArchivesCollection extends DataObject
             'subjects' => array('property'=>'subjects', 'type'=>'textarea', 'label'=>'Available Subjects', 'description'=>'Subjects that exist within the collection', 'readOnly' => true, 'hideInLists' => true),
             'subjectFilters' => array('property'=>'subjectFilters', 'type'=>'textarea', 'label'=>'Subject Filters (each filter on it\'s own line, regular expressions ok)', 'description'=>'Subjects to filter by', 'hideInLists' => true),
             'fetchFrequency' => array('property'=>'fetchFrequency', 'type'=>'enum', 'values' => ['daily'=>'Daily', 'weekly'=>'Weekly', 'monthly'=>'Monthly', 'yearly'=>'Yearly', 'once'=>'Once'], 'label'=>'Frequency to Fetch', 'description'=>'How often the records should be fetched'),
+	        'loadOneMonthAtATime' => array('property'=>'loadOneMonthAtATime', 'type'=>'checkbox', 'label'=>'Fetch by Month', 'description'=>'Whether or not records should be fetched by month which increases performance on most servers'),
             'lastFetched' => array('property'=>'lastFetched', 'type'=>'integer', 'label'=>'Last Fetched (clear to force a new fetch)', 'description'=>'When the record was last fetched'),
         ];
     }
