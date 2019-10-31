@@ -131,4 +131,5 @@ class CloudLibraryExtractLogEntry implements BaseLogEntry {
 	void incNumProducts(int numResults) {
 		this.numProducts += numResults;
 	}
+
 }

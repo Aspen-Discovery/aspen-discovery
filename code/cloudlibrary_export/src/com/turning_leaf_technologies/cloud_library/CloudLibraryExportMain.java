@@ -187,12 +187,7 @@ public class CloudLibraryExportMain {
 
                 long settingsId = getSettingsRS.getLong("id");
                 String startDate = "2000-01-01";
-                if (doFullReload){
-                    //Un mark that a full update needs to be done
-                    PreparedStatement updateSettingsStmt = aspenConn.prepareStatement("UPDATE cloud_library_settings set runFullUpdate = 0 where id = ?");
-                    updateSettingsStmt.setLong(1, settingsId);
-                    updateSettingsStmt.executeUpdate();
-                }else{
+                if (!doFullReload){
                     lastExtractTime = Math.max(lastExtractTime, lastExtractTimeAll);
 
                     SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
@@ -209,33 +204,52 @@ public class CloudLibraryExportMain {
                     //Get a list of eBooks and eAudiobooks to process
                     String apiPath = "/cirrus/library/" + libraryId + "/data/marc?offset=" + curOffset +"&limit=50&startdate=" + startDate;
 
-                    WebServiceResponse response = callCloudLibrary(apiPath);
-                    if (response == null) {
-                        //Something really bad happened, we're done.
-                        return numChanges;
-                    }else if (!response.isSuccess()) {
-                        logEntry.incErrors();
-                        logEntry.addNote(response.getMessage());
-                    } else {
-                        try {
-                            SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
-                            SAXParser saxParser = saxParserFactory.newSAXParser();
-                            saxParser.parse(new ByteArrayInputStream(response.getMessage().getBytes(StandardCharsets.UTF_8)), handler);
-
-                            if (handler.getNumDocuments() > 0){
-                                curOffset += handler.getNumDocuments();
-                                numChanges += handler.getNumDocuments();
-                                moreRecords = true;
+                    //noinspection ConstantConditions
+                    for (int curTry = 1; curTry <= 3; curTry++){
+                        WebServiceResponse response = callCloudLibrary(apiPath);
+                        if (response == null) {
+                            //Something really bad happened, we're done.
+                            return numChanges;
+                        }else if (!response.isSuccess()) {
+                            if (response.getResponseCode() != 502){
+                                logEntry.incErrors();
+                                logEntry.addNote(response.getMessage());
+                                break;
+                            }else{
+                                if (curTry == 3){
+                                    logEntry.incErrors();
+                                    logEntry.addNote(response.getMessage());
+                                    break;
+                                }
                             }
-                            logEntry.saveResults();
-                        } catch (SAXException | ParserConfigurationException | IOException e) {
-                            logger.error("Error parsing response", e);
-                            logEntry.addNote("Error parsing response: " + e.toString());
+                        } else {
+                            try {
+                                SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
+                                SAXParser saxParser = saxParserFactory.newSAXParser();
+                                saxParser.parse(new ByteArrayInputStream(response.getMessage().getBytes(StandardCharsets.UTF_8)), handler);
+
+                                if (handler.getNumDocuments() > 0){
+                                    curOffset += handler.getNumDocuments();
+                                    numChanges += handler.getNumDocuments();
+                                    moreRecords = true;
+                                }
+                                logEntry.saveResults();
+                            } catch (SAXException | ParserConfigurationException | IOException e) {
+                                logger.error("Error parsing response", e);
+                                logEntry.addNote("Error parsing response: " + e.toString());
+                            }
+                            break;
                         }
                     }
+
                 }
 
-                if (doFullReload) {
+                if (doFullReload && !logEntry.hasErrors()) {
+                    //Un mark that a full update needs to be done
+                    PreparedStatement updateSettingsStmt = aspenConn.prepareStatement("UPDATE cloud_library_settings set runFullUpdate = 0 where id = ?");
+                    updateSettingsStmt.setLong(1, settingsId);
+                    updateSettingsStmt.executeUpdate();
+
                     //Mark any records that no longer exist in search results as deleted, but only if we are doing a full update
                     numChanges += deleteItems();
                 }
