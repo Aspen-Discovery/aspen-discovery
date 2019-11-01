@@ -13,7 +13,7 @@ class OverDrive_IndexingLog extends Admin_IndexingLog
 
 	function getTemplateName() : string
 	{
-		return 'overDriveExtractLog.tpl';
+		return 'overdriveExtractLog.tpl';
 	}
 
 	function getTitle() : string
