@@ -47,8 +47,7 @@ if (!$solrRunning){
 	}else{
 		$solrCmd = "/usr/local/aspen-discovery/sites/{$serverName}/{$serverName}.sh start";
 	}
-	$execResult = [];
-	exec($solrCmd, $execResult);
+	execInBackground($solrCmd);
 	$results .= "Started solr using command \r\n$solrCmd\r\n";
 	$results .= implode("\r\n", $execResult);
 }
