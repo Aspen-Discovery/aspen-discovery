@@ -26,7 +26,7 @@ foreach ($processes as $processInfo){
 		$processId = $matches[$processIdIndex];
 		$process = $matches[$processNameIndex];
 		if (array_key_exists($process, $runningProcesses)){
-			$results .= "There is more than one process for $process PID: {$runningProcesses[$process]} and $processId\r\n";
+			$results .= "There is more than one process for $process PID: {$runningProcesses[$process]['pid']} and $processId\r\n";
 		}else{
 			$runningProcesses[$process] = [
 				'name' => $process,
