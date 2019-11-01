@@ -103,7 +103,7 @@ class SideLoadLogEntry implements BaseLogEntry {
     }
     public void setFinished() {
         this.endTime = new Date();
-        this.addNote("Finished Hoopla extraction");
+        this.addNote("Finished Processing Side Loads");
         this.saveResults();
     }
     void incErrors(){
