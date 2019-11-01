@@ -1362,8 +1362,14 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		return translateValue(mapName, value, identifier, true);
 	}
 
-	protected boolean hasTranslation(String mapName, String value) {
-		return translationMaps.containsKey(mapName) && translationMaps.get(mapName).hasTranslation(value);
+	boolean hasTranslation(String mapName, String value) {
+		TranslationMap translationMap = translationMaps.get(mapName);
+		if (translationMap != null){
+			return translationMap.hasTranslation(value);
+		}else{
+			return false;
+		}
+
 	}
 
 	HashSet<String> unableToTranslateWarnings = new HashSet<>();
@@ -1388,6 +1394,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 					unableToTranslateWarnings.add("unable_to_find_" + mapName);
 				}
 			} else {
+				//Check to see if this is translated based off of regular expression
 				String concatenatedValue = mapName + ":" + value;
 				if (!unableToTranslateWarnings.contains(concatenatedValue)) {
 					if (reportErrors) {

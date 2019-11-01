@@ -98,6 +98,6 @@ public class TranslationMap {
 	}
 
 	public boolean hasTranslation(String value) {
-		return translationValues.containsKey(value);
+		return translationValues.containsKey(value) || usesRegularExpressions;
 	}
 }
