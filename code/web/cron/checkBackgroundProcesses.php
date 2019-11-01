@@ -70,9 +70,7 @@ while ($module->fetch()){
 			$processPath = $local . '/' . $module->backgroundProcess;
 			if (file_exists($processPath)){
 				if (file_exists($processPath . "/{$module->backgroundProcess}.jar")){
-//					execInBackground("cd $processPath; java -jar {$module->backgroundProcess}.jar $serverName");
-//					$execResult = [];
-//					exec($processStartCmd, $execResult);
+					execInBackground("cd $processPath; java -jar {$module->backgroundProcess}.jar $serverName");
 					$results .= "Restarted '{$module->name}'\r\n";
 				}else{
 					$results .= "Could not automatically restart {$module->name}, the jar $processPath/{$module->backgroundProcess}.jar did not exist\r\n";
