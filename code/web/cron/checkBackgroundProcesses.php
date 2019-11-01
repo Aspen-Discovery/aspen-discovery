@@ -17,22 +17,28 @@ if ($configArray['System']['operatingSystem'] == 'windows'){
 	$processNameIndex = 2;
 	$solrRegex = "/{$serverName}\/solr7/ix";
 }
+
+$results = "";
+
 $solrRunning = false;
 foreach ($processes as $processInfo){
 	if (preg_match($processRegEx, $processInfo, $matches)) {
 		$processId = $matches[$processIdIndex];
 		$process = $matches[$processNameIndex];
-		$runningProcesses[$process] = [
-			'name' => $process,
-			'pid' => $processId
-		];
+		if (array_key_exists($process, $runningProcesses)){
+			$runningProcesses[$process] = [
+				'name' => $process,
+				'pid' => $processId
+			];
+			$results .= "There is more than one process for $process PID: {$runningProcesses[$process]} and $processId\r\n";
+		}
+
 		//echo("Process: $process ($processId)\r\n");
 	}else if (preg_match($solrRegex, $processInfo, $matches)) {
 		$solrRunning = true;
 	}
 }
 
-$results = "";
 if (!$solrRunning){
 	$results .= "Solr is not running for {$serverName}\r\n";
 	if ($configArray['System']['operatingSystem'] == 'windows') {
