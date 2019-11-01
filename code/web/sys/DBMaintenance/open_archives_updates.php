@@ -125,7 +125,7 @@ function getOpenArchivesUpdates() {
 	                numAdded INT(11) DEFAULT 0,
 	                numDeleted INT(11) DEFAULT 0,
 	                numUpdated INT(11) DEFAULT 0,
-	                numUSkipped INT(11) DEFAULT 0,
+	                numSkipped INT(11) DEFAULT 0,
 	                PRIMARY KEY ( `id` )
                 ) ENGINE = InnoDB;",
 		    )
