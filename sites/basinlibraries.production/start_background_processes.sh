@@ -15,7 +15,7 @@ echo "Starting rbdigital export"
 cd /usr/local/aspen-discovery/code/rbdigital_export; java -jar rbdigital_export.jar basinlibraries.production &
 sleep 5
 echo "Starting User List Indexing"
-cd /usr/local/aspen-discovery/code/user_list_indexer; java -jar user_list_indexer.jar basinlibraries.production continuous &
+cd /usr/local/aspen-discovery/code/user_list_indexer; java -jar user_list_indexer.jar basinlibraries.production &
 sleep 5
 echo "Starting Side Load Processing"
 cd /usr/local/aspen-discovery/code/sideload_processing; java -jar sideload_processing.jar basinlibraries.production &

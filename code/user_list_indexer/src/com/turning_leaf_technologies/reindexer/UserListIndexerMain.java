@@ -45,9 +45,11 @@ public class UserListIndexerMain {
                 String firstArg = args[1].replaceAll("\\s", "");
                 if (firstArg.equalsIgnoreCase("full")) {
                     fullReindex = true;
-                } else if (firstArg.equalsIgnoreCase("continuous")) {
+                } else {
                     runContinuously = true;
                 }
+            }else{
+                runContinuously = true;
             }
 
             initializeIndexer();

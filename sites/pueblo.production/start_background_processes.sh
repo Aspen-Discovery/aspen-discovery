@@ -18,7 +18,7 @@ echo "Starting Hoopla export"
 cd /usr/local/aspen-discovery/code/hoopla_export; java -jar hoopla_export.jar pueblo.production &
 sleep 5
 echo "Starting User List Indexing"
-cd /usr/local/aspen-discovery/code/user_list_indexer; java -jar user_list_indexer.jar pueblo.production continuous &
+cd /usr/local/aspen-discovery/code/user_list_indexer; java -jar user_list_indexer.jar pueblo.production &
 sleep 5
 echo "Starting Side Load Processing"
 cd /usr/local/aspen-discovery/code/sideload_processing; java -jar sideload_processing.jar pueblo.production &
