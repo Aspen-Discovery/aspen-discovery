@@ -205,7 +205,7 @@ public class CloudLibraryExportMain {
                     String apiPath = "/cirrus/library/" + libraryId + "/data/marc?offset=" + curOffset +"&limit=50&startdate=" + startDate;
 
                     //noinspection ConstantConditions
-                    for (int curTry = 1; curTry <= 3; curTry++){
+                    for (int curTry = 1; curTry <= 4; curTry++){
                         WebServiceResponse response = callCloudLibrary(apiPath);
                         if (response == null) {
                             //Something really bad happened, we're done.
@@ -216,10 +216,16 @@ public class CloudLibraryExportMain {
                                 logEntry.addNote(response.getMessage());
                                 break;
                             }else{
-                                if (curTry == 3){
+                                if (curTry == 4){
                                     logEntry.incErrors();
                                     logEntry.addNote(response.getMessage());
                                     break;
+                                }else{
+                                    try {
+                                        Thread.sleep(1000);
+                                    } catch (InterruptedException e) {
+                                        logger.error("Thread was interrupted while waiting to retry for cloud library");
+                                    }
                                 }
                             }
                         } else {
