@@ -26,11 +26,12 @@ foreach ($processes as $processInfo){
 		$processId = $matches[$processIdIndex];
 		$process = $matches[$processNameIndex];
 		if (array_key_exists($process, $runningProcesses)){
+			$results .= "There is more than one process for $process PID: {$runningProcesses[$process]} and $processId\r\n";
+		}else{
 			$runningProcesses[$process] = [
 				'name' => $process,
 				'pid' => $processId
 			];
-			$results .= "There is more than one process for $process PID: {$runningProcesses[$process]} and $processId\r\n";
 		}
 
 		//echo("Process: $process ($processId)\r\n");
@@ -69,9 +70,9 @@ while ($module->fetch()){
 			$processPath = $local . '/' . $module->backgroundProcess;
 			if (file_exists($processPath)){
 				if (file_exists($processPath . "/{$module->backgroundProcess}.jar")){
-					$processStartCmd = "cd $processPath; java -jar {$module->backgroundProcess}.jar $serverName &";
-					$execResult = [];
-					exec($processStartCmd, $execResult);
+//					execInBackground("cd $processPath; java -jar {$module->backgroundProcess}.jar $serverName");
+//					$execResult = [];
+//					exec($processStartCmd, $execResult);
 					$results .= "Restarted '{$module->name}'\r\n";
 				}else{
 					$results .= "Could not automatically restart {$module->name}, the jar $processPath/{$module->backgroundProcess}.jar did not exist\r\n";
@@ -90,7 +91,18 @@ foreach ($runningProcesses as $process){
 }
 
 if (strlen($results) > 0){
-	require_once ROOT_DIR . '/sys/Email/Mailer.php';
-	$mailer = new Mailer();
-	$mailer->send("issues@turningleaftechnologies.com", "$serverName Error with Background processes", $results);
+	echo $results;
+
+//	require_once ROOT_DIR . '/sys/Email/Mailer.php';
+//	$mailer = new Mailer();
+//	$mailer->send("issues@turningleaftechnologies.com", "$serverName Error with Background processes", $results);
+}
+
+function execInBackground($cmd) {
+	if (substr(php_uname(), 0, 7) == "Windows"){
+		pclose(popen("start /B ". $cmd, "r"));
+	}
+	else {
+		exec($cmd . " > /dev/null &");
+	}
 }
