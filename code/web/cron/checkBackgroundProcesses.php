@@ -49,7 +49,6 @@ if (!$solrRunning){
 	}
 	execInBackground($solrCmd);
 	$results .= "Started solr using command \r\n$solrCmd\r\n";
-	$results .= implode("\r\n", $execResult);
 }
 require_once ROOT_DIR . '/sys/Module.php';
 $module = new Module();
@@ -88,11 +87,11 @@ foreach ($runningProcesses as $process){
 }
 
 if (strlen($results) > 0){
-	echo $results;
-
-//	require_once ROOT_DIR . '/sys/Email/Mailer.php';
-//	$mailer = new Mailer();
-//	$mailer->send("issues@turningleaftechnologies.com", "$serverName Error with Background processes", $results);
+	//For debugging
+	//	echo $results;
+	require_once ROOT_DIR . '/sys/Email/Mailer.php';
+	$mailer = new Mailer();
+	$mailer->send("issues@turningleaftechnologies.com", "$serverName Error with Background processes", $results);
 }
 
 function execInBackground($cmd) {
