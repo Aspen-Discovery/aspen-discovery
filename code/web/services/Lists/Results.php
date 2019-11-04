@@ -54,9 +54,22 @@ class Lists_Results extends Action {
 
         // Process Search
         $result = $searchObject->processSearch(true, true);
-        if ($result instanceof AspenError) {
+        if ($result instanceof AspenError || !empty($result['error'])) {
             /** @var AspenError $result */
-            AspenError::raiseError($result->getMessage());
+            $this->getKeywordSearchResults($searchObject, $interface);
+
+	        //Don't record an error, but send it to issues just to be sure everything looks good
+	        global $serverName;
+	        if ($configArray['Site']['isProduction']) {
+		        require_once ROOT_DIR . '/sys/Email/Mailer.php';
+		        $mailer = new Mailer();
+		        $emailErrorDetails = $_SERVER['REQUEST_URI'] . "\n" . $result['error']['msg'];
+		        $mailer->send("issues@turningleaftechnologies.com", "$serverName Error processing lists search", $emailErrorDetails);
+	        }
+
+	        $interface->assign('searchError', $result);
+	        $this->display('searchError.tpl', 'Error in Search');
+	        return;
         }
         $timer->logTime('Process Search');
 
@@ -172,4 +185,26 @@ class Lists_Results extends Action {
         $interface->assign('sectionLabel', 'List Results');
         $this->display($searchObject->getResultTotal() ? 'list.tpl' : 'list-none.tpl','List Search Results', 'Search/results-sidebar.tpl');
     } // End launch()
+
+	/**
+	 * @param SearchObject_ListsSearcher $searchObject
+	 * @param UInterface $interface
+	 */
+	private function getKeywordSearchResults(SearchObject_ListsSearcher $searchObject, UInterface $interface): void
+	{
+		//Check to see if we are not using a Keyword search and the Keyword search would provide results
+		if (!$searchObject->isAdvanced()) {
+			$searchTerms = $searchObject->getSearchTerms();
+			$keywordSearchObject = SearchObjectFactory::initSearchObject();
+			$keywordSearchObject->setPrimarySearch(false);
+			$keywordSearchObject->setSearchTerms(['index' => 'Keyword', 'lookfor' => $searchTerms[0]['lookfor']]);
+			$keywordSearchObject->disableSpelling();
+			$keywordSearchObject->clearFacets();
+			$keywordSearchObject->processSearch(false, false, false);
+			if ($keywordSearchObject->getResultTotal() > 0) {
+				$interface->assign('keywordResultsLink', $keywordSearchObject->renderSearchUrl());
+				$interface->assign('keywordResultsCount', $keywordSearchObject->getResultTotal());
+			}
+		}
+	}
 }

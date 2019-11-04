@@ -558,6 +558,9 @@ abstract class SearchObject_BaseSearcher
 			}else{
 				$type = strip_tags($type);
 			}
+
+			//The type should never have punctuation in it (quotes, colons, etc)
+			$type = preg_replace('/[:"\']/', '', $type);
 		} else {
 			$type = $this->defaultIndex;
 		}

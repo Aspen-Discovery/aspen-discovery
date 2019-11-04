@@ -1412,7 +1412,7 @@ abstract class Solr {
 		$timer->logTime("end solr setup");
 		$result = $this->_select($method, $options, $returnSolrError);
 		$timer->logTime("run select");
-		if ($result instanceof AspenError) {
+		if ($result instanceof AspenError && !$returnSolrError) {
 			AspenError::raiseError($result);
 		}
 

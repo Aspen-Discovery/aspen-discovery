@@ -95,6 +95,17 @@ class SearchObject_ListsSearcher extends SearchObject_SolrSearcher
             $this->initAdvancedSearch();
         }
 
+        //Validate we got good search terms
+	    foreach ($this->searchTerms as &$searchTerm){
+	    	if ($searchTerm['index'] == 'Keyword'){
+	    		$searchTerm['index'] = 'ListsKeyword';
+		    }elseif ($searchTerm['index'] == 'Title'){
+			    $searchTerm['index'] = 'ListsTitle';
+		    }elseif ($searchTerm['index'] == 'Author'){
+			    $searchTerm['index'] = 'ListsAuthor';
+		    }
+	    }
+
         // If a query override has been specified, log it here
         if (isset($_REQUEST['q'])) {
             $this->query = $_REQUEST['q'];

@@ -186,8 +186,21 @@ class Search_Results extends Action {
 
 		// Process Search
 		$result = $searchObject->processSearch(true, true);
-		if ($result instanceof AspenError) {
-			AspenError::raiseError($result->getMessage());
+		if ($result instanceof AspenError || !empty($result['error'])) {
+			$this->getKeywordSearchResults($searchObject, $interface);
+
+			//Don't record an error, but send it to issues just to be sure everything looks good
+			global $serverName;
+			if ($configArray['Site']['isProduction']) {
+				require_once ROOT_DIR . '/sys/Email/Mailer.php';
+				$mailer = new Mailer();
+				$emailErrorDetails = $_SERVER['REQUEST_URI'] . "\n" . $result['error']['message'];
+				$mailer->send("issues@turningleaftechnologies.com", "$serverName Error processing catalog search", $emailErrorDetails);
+			}
+
+			$interface->assign('searchError', $result);
+			$this->display('searchError.tpl', 'Error in Search');
+			return;
 		}
 		$timer->logTime('Process Search');
 		$memoryWatcher->logMemory('Process Search');
@@ -280,22 +293,7 @@ class Search_Results extends Action {
 				}
 			}
 
-            //Check to see if we are not using a Keyword search and the Keyword search would provide results
-            if (!$searchObject->isAdvanced()){
-	            $searchTerms = $searchObject->getSearchTerms();
-	            if (count($searchTerms) == 1 && $searchTerms[0]['index'] != 'Keyword'){
-		            $keywordSearchObject = clone $searchObject;
-		            $keywordSearchObject->setPrimarySearch(false);
-		            $keywordSearchObject->setSearchTerms(['index'=>'Keyword','lookfor'=>$searchTerms[0]['lookfor']]);
-		            $keywordSearchObject->disableSpelling();
-		            $keywordSearchObject->clearFacets();
-		            $keywordSearchObject->processSearch(false, false, false);
-		            if ($keywordSearchObject->getResultTotal() > 0){
-		            	$interface->assign('keywordResultsLink', $keywordSearchObject->renderSearchUrl());
-			            $interface->assign('keywordResultsCount', $keywordSearchObject->getResultTotal());
-		            }
-	            }
-            }
+			$this->getKeywordSearchResults($searchObject, $interface);
 
 			// No record found
 			$interface->assign('recordCount', 0);
@@ -401,5 +399,29 @@ class Search_Results extends Action {
 		// Done, display the page
 		$this->display($searchObject->getResultTotal() ? 'list.tpl' : 'list-none.tpl', $pageTitle, 'Search/results-sidebar.tpl', false);
 	} // End launch()
+
+	/**
+	 * @param SearchObject_GroupedWorkSearcher $searchObject
+	 * @param UInterface $interface
+	 */
+	private function getKeywordSearchResults(SearchObject_GroupedWorkSearcher $searchObject, UInterface $interface): void
+	{
+		//Check to see if we are not using a Keyword search and the Keyword search would provide results
+		if (!$searchObject->isAdvanced()) {
+			$searchTerms = $searchObject->getSearchTerms();
+			if (count($searchTerms) == 1 && $searchTerms[0]['index'] != 'Keyword') {
+				$keywordSearchObject = clone $searchObject;
+				$keywordSearchObject->setPrimarySearch(false);
+				$keywordSearchObject->setSearchTerms(['index' => 'Keyword', 'lookfor' => $searchTerms[0]['lookfor']]);
+				$keywordSearchObject->disableSpelling();
+				$keywordSearchObject->clearFacets();
+				$keywordSearchObject->processSearch(false, false, false);
+				if ($keywordSearchObject->getResultTotal() > 0) {
+					$interface->assign('keywordResultsLink', $keywordSearchObject->renderSearchUrl());
+					$interface->assign('keywordResultsCount', $keywordSearchObject->getResultTotal());
+				}
+			}
+		}
+	}
 
 }
