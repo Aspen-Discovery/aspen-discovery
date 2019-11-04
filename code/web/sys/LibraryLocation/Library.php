@@ -77,7 +77,6 @@ class Library extends DataObject
 	public $payFinesLink;
 	public $payFinesLinkText;
 	public $minimumFineAmount;
-	public $
 	public $showRefreshAccountButton;    // specifically to refresh account after paying fines online
 	public /** @noinspection PhpUnused */ $repeatSearchOption;
 	public /** @noinspection PhpUnused */ $repeatInOnlineCollection;
