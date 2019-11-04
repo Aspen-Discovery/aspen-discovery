@@ -166,6 +166,14 @@ class OverDrive_AJAX extends Action {
 	}
 
 	function getHoldPrompts(){
+		if (!UserAccount::isLoggedIn()){
+			return json_encode(
+				array(
+					'success' => false,
+					'message' => 'You must be logged in to place holds, please login again.'
+				)
+			);
+		}
 		$user = UserAccount::getLoggedInUser();
 		global $interface;
 		$id = $_REQUEST['id'];
@@ -187,10 +195,18 @@ class OverDrive_AJAX extends Action {
 		$interface->assign('overdriveEmail', $user->overdriveEmail);
 		$interface->assign('overdriveAutoCheckout', $user->overdriveAutoCheckout);
 		$interface->assign('promptForEmail', $promptForEmail);
-		if ($promptForEmail || count($overDriveUsers) > 1){
+		if (count($overDriveUsers) == 0){
+			return json_encode(
+				array(
+					'success' => false,
+					'message' => 'Could not find a valid user to place a hold for, please check with your library to validate your account'
+				)
+			);
+		}else if ($promptForEmail || count($overDriveUsers) > 1){
 			$promptTitle = 'OverDrive Hold Options';
 			return json_encode(
 				array(
+					'success' => true,
 					'promptNeeded' => true,
 					'promptTitle' => translate($promptTitle),
 					'prompts' => $interface->fetch('OverDrive/ajax-hold-prompt.tpl'),
@@ -200,6 +216,7 @@ class OverDrive_AJAX extends Action {
 		}else{
 			return json_encode(
 				array(
+					'success' => true,
 					'patronId' => reset($overDriveUsers)->id,
 					'promptNeeded' => false,
 					'overdriveEmail' => $user->overdriveEmail,

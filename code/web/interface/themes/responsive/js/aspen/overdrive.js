@@ -109,8 +109,7 @@ AspenDiscovery.OverDrive = (function(){
 				dataType: 'json',
 				async: false,
 				error: function(){
-					alert("An error occurred processing your request in OverDrive.  Please try again in a few minutes.");
-					AspenDiscovery.closeLightbox();
+					AspenDiscovery.showMessage('An Error occurred', "An error occurred processing your request in OverDrive.  Please try again in a few minutes.");
 				}
 			});
 			return result;
@@ -163,9 +162,7 @@ AspenDiscovery.OverDrive = (function(){
 					dataType: 'json',
 					async: false,
 					error: function(){
-						alert("An error occurred processing your request in OverDrive.  Please try again in a few minutes.");
-						//alert("ajaxUrl = " + ajaxUrl);
-						AspenDiscovery.closeLightbox();
+						AspenDiscovery.showMessage('An Error occurred', "An error occurred processing your request in OverDrive.  Please try again in a few minutes.");
 					}
 				});
 			}else{
@@ -212,35 +209,38 @@ AspenDiscovery.OverDrive = (function(){
 						win.focus();
 						//window.location.href = data.downloadUrl ;
 					}else{
-						alert(data.message);
+						AspenDiscovery.showMessage('An Error occurred', data.message);
 					}
 				},
 				dataType: 'json',
 				async: false,
 				error: function(){
-					alert("An error occurred processing your request in OverDrive.  Please try again in a few minutes.");
-					AspenDiscovery.closeLightbox();
+					AspenDiscovery.showMessage('An Error occurred', "An error occurred processing your request in OverDrive.  Please try again in a few minutes.");
 				}
 			});
 		},
 
 		getOverDriveHoldPrompts: function(overDriveId){
 			let url = Globals.path + "/OverDrive/" + overDriveId + "/AJAX?method=getHoldPrompts";
-			let result = true;
+			let result = false;
 			$.ajax({
 				url: url,
 				cache: false,
 				success: function(data){
-					result = data;
-					if (data.promptNeeded){
-						AspenDiscovery.showMessageWithButtons(data.promptTitle, data.prompts, data.buttons);
+					if (data.success){
+						result = data;
+						if (data.promptNeeded){
+							AspenDiscovery.showMessageWithButtons(data.promptTitle, data.prompts, data.buttons);
+						}
+					}else{
+						AspenDiscovery.showMessage('An Error occurred', data.message);
 					}
+
 				},
 				dataType: 'json',
 				async: false,
 				error: function(){
-					alert("An error occurred processing your request in OverDrive.  Please try again in a few minutes.");
-					AspenDiscovery.closeLightbox();
+					AspenDiscovery.showMessage('An Error occurred', "An error occurred processing your request in OverDrive.  Please try again in a few minutes.");
 				}
 			});
 			return result;
@@ -250,7 +250,7 @@ AspenDiscovery.OverDrive = (function(){
 			if (Globals.loggedIn){
 				//Get any prompts needed for placing holds (email and format depending on the interface.
 				let promptInfo = AspenDiscovery.OverDrive.getOverDriveHoldPrompts(overDriveId, 'hold');
-				if (!promptInfo.promptNeeded){
+				if (promptInfo !== false && !promptInfo.promptNeeded){
 					AspenDiscovery.OverDrive.doOverDriveHold(promptInfo.patronId, overDriveId, promptInfo.overdriveEmail, promptInfo.promptForOverdriveEmail);
 				}
 			}else{

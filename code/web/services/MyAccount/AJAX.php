@@ -62,19 +62,31 @@ class MyAccount_AJAX
 			$password = $_REQUEST['password'];
 
 			$accountToLink = UserAccount::validateAccount($username, $password);
+			$user = UserAccount::getLoggedInUser();
 
-			if ($accountToLink){
-				$user = UserAccount::getLoggedInUser();
-				$addResult = $user->addLinkedUser($accountToLink);
-				if ($addResult === true) {
-					$result = array(
-						'result' => true,
-						'message' => 'Successfully linked accounts.'
-					);
-				}else { // insert failure or user is blocked from linking account or account & account to link are the same account
+			if (!UserAccount::isLoggedIn()){
+				$result = array(
+					'result' => false,
+					'message' => 'You must be logged in to link accounts, please login again'
+				);
+			}elseif ($accountToLink){
+				if ($accountToLink->id != $user->id){
+					$addResult = $user->addLinkedUser($accountToLink);
+					if ($addResult === true) {
+						$result = array(
+							'result' => true,
+							'message' => 'Successfully linked accounts.'
+						);
+					}else { // insert failure or user is blocked from linking account or account & account to link are the same account
+						$result = array(
+							'result' => false,
+							'message' => 'Sorry, we could not link to that account.  Accounts cannot be linked if all libraries do not allow account linking.  Please contact your local library if you have questions.'
+						);
+					}
+				}else{
 					$result = array(
 						'result' => false,
-						'message' => 'Sorry, we could not link to that account.  Accounts cannot be linked if all libraries do not allow account linking.  Please contact your local library if you have questions.'
+						'message' => 'You cannot link to yourself.'
 					);
 				}
 			}else{
