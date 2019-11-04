@@ -75,7 +75,7 @@ public class HooplaExportMain {
 			loadExistingTitles();
 
 			//Do work here
-			int numChanges = exportHooplaData();
+			exportHooplaData();
 
 			if (groupedWorkIndexer != null) {
 				groupedWorkIndexer.finishIndexingFromExtract();
@@ -95,6 +95,7 @@ public class HooplaExportMain {
 
 			//Mark that indexing has finished
 			logEntry.setFinished();
+			logEntry = null;
 
 			disconnectDatabase(aspenConn);
 
@@ -107,7 +108,7 @@ public class HooplaExportMain {
 		}
 	}
 
-	private static int deleteItems() {
+	private static void deleteItems() {
 		int numDeleted = 0;
 		try {
 			for (HooplaTitle hooplaTitle : existingRecords.values()) {
@@ -133,7 +134,6 @@ public class HooplaExportMain {
 			logger.error("Error deleting items", e);
 			logEntry.addNote("Error deleting items " + e.toString());
 		}
-		return numDeleted;
 	}
 
 	private static void loadExistingTitles() {
@@ -150,6 +150,11 @@ public class HooplaExportMain {
 				);
 				existingRecords.put(hooplaId, newTitle);
 			}
+			allRecordsRS.close();
+			//noinspection UnusedAssignment
+			allRecordsRS = null;
+			getAllExistingHooplaItemsStmt.close();
+			getAllExistingHooplaItemsStmt = null;
 		} catch (SQLException e) {
 			logger.error("Error loading existing titles", e);
 			logEntry.addNote("Error loading existing titles" + e.toString());
@@ -170,8 +175,7 @@ public class HooplaExportMain {
 		logEntry = new HooplaExtractLogEntry(aspenConn, logger);
 	}
 
-	private static int exportHooplaData() {
-		int numChanges = 0;
+	private static void exportHooplaData() {
 		try{
 			PreparedStatement getSettingsStmt = aspenConn.prepareStatement("SELECT * from hoopla_settings");
 			ResultSet getSettingsRS = getSettingsStmt.executeQuery();
@@ -198,7 +202,7 @@ public class HooplaExportMain {
 				if (accessToken == null) {
 					logEntry.incErrors();
 					logEntry.addNote("Could not load access token");
-					return numChanges;
+					return;
 				}
 
 				//Formulate the first call depending on if we are doing a full reload or not
@@ -221,7 +225,7 @@ public class HooplaExportMain {
 					if (responseJSON.has("titles")) {
 						JSONArray responseTitles = responseJSON.getJSONArray("titles");
 						if (responseTitles != null && responseTitles.length() > 0) {
-							numChanges += updateTitlesInDB(responseTitles, doFullReload);
+							updateTitlesInDB(responseTitles, doFullReload);
 							logEntry.saveResults();
 						}
 
@@ -239,7 +243,7 @@ public class HooplaExportMain {
 								if (responseJSON.has("titles")) {
 									responseTitles = responseJSON.getJSONArray("titles");
 									if (responseTitles != null && responseTitles.length() > 0) {
-										numChanges += updateTitlesInDB(responseTitles, doFullReload);
+										updateTitlesInDB(responseTitles, doFullReload);
 									}
 								}
 								if (responseJSON.has("nextStartToken")) {
@@ -271,7 +275,7 @@ public class HooplaExportMain {
 				}
 
 				if (doFullReload){
-					numChanges += deleteItems();
+					deleteItems();
 				}
 
 				//Set the extract time
@@ -295,13 +299,10 @@ public class HooplaExportMain {
 			logEntry.addNote("Error exporting hoopla data " + e.toString());
 			logEntry.incErrors();
 		}
-		return numChanges;
 	}
 
 
-	private static int updateTitlesInDB(JSONArray responseTitles, boolean doFullReload) {
-		int numUpdates = 0;
-
+	private static void updateTitlesInDB(JSONArray responseTitles, boolean doFullReload) {
 		logEntry.incNumProducts(responseTitles.length());
 		for (int i = 0; i < responseTitles.length(); i++){
 			try {
@@ -374,8 +375,6 @@ public class HooplaExportMain {
 						try {
 							updateHooplaTitleInDB.executeUpdate();
 
-							numUpdates++;
-
 							String groupedWorkId = groupRecord(curTitle, hooplaId);
 							indexRecord(groupedWorkId);
 						}catch (SQLException e){
@@ -392,7 +391,6 @@ public class HooplaExportMain {
 			}
 		}
 
-		return numUpdates;
 	}
 
 	private static void indexRecord(String groupedWorkId) {
@@ -487,7 +485,13 @@ public class HooplaExportMain {
 
 	private static void disconnectDatabase(Connection aspenConn) {
 		try{
+			updateHooplaTitleInDB.close();
+			updateHooplaTitleInDB = null;
+			deleteHooplaItemStmt.close();
+			deleteHooplaItemStmt = null;
 			aspenConn.close();
+			//noinspection UnusedAssignment
+			aspenConn = null;
 		}catch (Exception e){
 			logger.error("Error closing database ", e);
 			System.exit(1);
