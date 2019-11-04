@@ -362,24 +362,29 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 		// Schema.org
 		// Get information about the record
 		require_once ROOT_DIR . '/RecordDrivers/LDRecordOffer.php';
-		$linkedDataRecord = new LDRecordOffer($this->getRelatedRecord());
-		$semanticData [] = array(
-			'@context' => 'http://schema.org',
-			'@type' => $linkedDataRecord->getWorkType(),
-			'name' => $this->getTitle(),
-			'creator' => $this->getPrimaryAuthor(),
-			'bookEdition' => $this->getEditions(),
-			'isAccessibleForFree' => true,
-			'image' => $this->getBookcoverUrl('medium'),
-			"offers" => $linkedDataRecord->getOffers()
-		);
+		$relatedRecord = $this->getGroupedWorkDriver()->getRelatedRecord($this->getIdWithSource());
+		if ($relatedRecord != null) {
+			$linkedDataRecord = new LDRecordOffer($this->getRelatedRecord());
+			$semanticData [] = array(
+				'@context' => 'http://schema.org',
+				'@type' => $linkedDataRecord->getWorkType(),
+				'name' => $this->getTitle(),
+				'creator' => $this->getPrimaryAuthor(),
+				'bookEdition' => $this->getEditions(),
+				'isAccessibleForFree' => true,
+				'image' => $this->getBookcoverUrl('medium'),
+				"offers" => $linkedDataRecord->getOffers()
+			);
 
-		global $interface;
-		$interface->assign('og_title', $this->getTitle());
-		$interface->assign('og_type', $this->getGroupedWorkDriver()->getOGType());
-		$interface->assign('og_image', $this->getBookcoverUrl('medium'));
-		$interface->assign('og_url', $this->getAbsoluteUrl());
-		return $semanticData;
+			global $interface;
+			$interface->assign('og_title', $this->getTitle());
+			$interface->assign('og_type', $this->getGroupedWorkDriver()->getOGType());
+			$interface->assign('og_image', $this->getBookcoverUrl('medium'));
+			$interface->assign('og_url', $this->getAbsoluteUrl());
+			return $semanticData;
+		}else{
+			return null;
+		}
 	}
 
 	/**

@@ -177,7 +177,7 @@ class Hoopla_AJAX extends Action
 				$driver = new HooplaDriver();
 				$result = $driver->checkOutTitle($patron, $id);
 				if (!empty($_REQUEST['stopHooplaConfirmation'])) {
-					$patron->hooplaCheckOutConfirmation = false;
+					$patron->hooplaCheckOutConfirmation = 0;
 					$patron->update();
 				}
 				if ($result['success']) {
