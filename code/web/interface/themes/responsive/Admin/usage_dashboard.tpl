@@ -93,7 +93,7 @@
 						<div class="dashboardValue">{$usageThisMonth.totalErrors|number_format}</div>
 					</div>
 					<div class="col-tn-6">
-						<div class="dashboardLabel">{translate text="This Month"}</div>
+						<div class="dashboardLabel">{translate text="Last Month"}</div>
 						<div class="dashboardValue">{$usageLastMonth.totalErrors|number_format}</div>
 					</div>
 					<div class="col-tn-6">
