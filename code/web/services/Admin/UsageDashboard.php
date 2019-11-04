@@ -18,9 +18,17 @@ class Admin_UsageDashboard extends Admin_Admin
 
 		$thisMonth = date('n');
 		$thisYear = date('Y');
+		$lastMonth = $thisMonth - 1;
+		$lastMonthYear = $thisYear;
+		if ($lastMonth == 0){
+			$lastMonth = 12;
+			$lastMonthYear--;
+		}
 
 		$usageThisMonth = $this->getStats($thisMonth, $thisYear);
 		$interface->assign('usageThisMonth', $usageThisMonth);
+		$usageLastMonth = $this->getStats($lastMonth, $lastMonthYear);
+		$interface->assign('usageLastMonth', $usageLastMonth);
 		$usageThisYear = $this->getStats(null, $thisYear);
 		$interface->assign('usageThisYear', $usageThisYear);
 		$usageAllTime = $this->getStats(null, null);

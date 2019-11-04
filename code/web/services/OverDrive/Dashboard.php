@@ -100,7 +100,7 @@ class OverDrive_Dashboard extends Admin_Admin
         $usage->find(true);
 
         /** @noinspection PhpUndefinedFieldInspection */
-        return [$usage->recordsUsed, $usage->totalCheckouts, $usage->totalHolds];
+        return [$usage->recordsUsed, ($usage->totalCheckouts == null ? 0 : $usage->totalCheckouts), ($usage->totalHolds == null ? 0 : $usage->totalHolds)];
     }
 
 }
