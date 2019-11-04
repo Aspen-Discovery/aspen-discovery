@@ -28,6 +28,7 @@ class OverDriveProcessor {
 	private PreparedStatement getProductAvailabilityStmt;
 	private PreparedStatement getProductFormatsStmt;
 	private SimpleDateFormat publishDateFormatter = new SimpleDateFormat("MM/dd/yyyy");
+	private SimpleDateFormat publishDateFormatter2 = new SimpleDateFormat("MM/yyyy");
 
 	OverDriveProcessor(GroupedWorkIndexer groupedWorkIndexer, Connection dbConn, Logger logger) {
 		this.indexer = groupedWorkIndexer;
@@ -119,7 +120,14 @@ class OverDriveProcessor {
 										isOnOrder = true;
 									}
 								} catch (ParseException e) {
-									logger.error("Error parsing publication date");
+									try {
+										publishDate = publishDateFormatter2.parse(publishDateText);
+										if (publishDate.after(new Date())) {
+											isOnOrder = true;
+										}
+									}catch (ParseException e2){
+										logger.error("Error parsing publication date " + publishDateText);
+									}
 								}
 							}
 						}
