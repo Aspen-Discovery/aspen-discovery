@@ -1,16 +1,15 @@
 Aspen Discovery
-Copyright (C) 2019 Turning Leaf Technologies, LLC
 
-This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 2 of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ============================================================================
-Aspen Discovery was originally derived from VuFind by Villanova University and Pika by Marmot Library Network. Significant changes have been made in this branch of the application. 
+Aspen Discovery was originally derived from VuFind by Villanova University and Pika by Marmot Library Network. Significant changes have been made in this fork of the application. 
 
-All code is covered by the GNU General Public License version 3 with notable contributions by:
+All code is covered by the GNU General Public License version 2 with notable contributions by:
 - Mark Noble - Marmot Library Network and Turning Leaf Technologies, LLC
 - Pascal Brammeier - Marmot Library Network
 - James Staub - Nashville Public Library
@@ -22,4 +21,4 @@ Code contributions have been sponsored by many public, academic, and school libr
 
 Aspen Discovery also uses an number of open source libraries to provide functionality.  These libraries are credited within the source code 
 
-For more information about setting up or contributing to Aspen Discovery, visit https://www.turningleaftechnologies.com.
+For more information about setting up or contributing to Aspen Discovery, visit https://bywatersolutions.com/projects/aspen-discovery.
