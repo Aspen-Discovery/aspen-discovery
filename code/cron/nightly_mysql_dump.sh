@@ -27,17 +27,17 @@
 #-------------------------------------------------------------------------
 
 if [[ $# -eq 0 ]]; then
-	echo "Please specify the Pika instance"
-	echo "eg: $0 marmot.production"
-	echo "If the main Pika database is not named 'pika', please specify the schema name as well"
-		echo "eg: $0 marmot.production vufind"
+	echo "Please specify the Aspen Discovery instance"
+	echo "eg: $0 nashville.production"
+	echo "If the main Aspen Discovery database is not named 'aspen', please specify the schema name as well"
+		echo "eg: $0 nashville.production aspen"
 else
-PIKASERVER=$1
+ASPENSERVER=$1
 
 if [[ $# -eq 2 ]]; then
 	DBNAME=$2
 else
-	DBNAME="pika"
+	DBNAME="aspen"
 fi
 echo "Dumping $DBNAME database"
 
@@ -49,19 +49,14 @@ echo "Dumping $DBNAME database"
 DATE=`date +%y%m%d`
 LOG="logger -t $0 -p local5.notice "
 
-DUMPFOLDER="/data/vufind-plus/${PIKASERVER}/sql_backup"
+DUMPFOLDER="/data/aspen-discovery/${ASPENSERVER}/sql_backup"
 if [ ! -e "$DUMPFOLDER" ]
 then
-	DUMPFOLDER="/data/pika/${PIKASERVER}/sql_backup"
+	DUMPFOLDER="/data/aspen-discovery/${ASPENSERVER}/sql_backup"
 fi
 echo "Dumping to $DUMPFOLDER"
 
-#REMOTE="10.1.2.2:/home/backup/venus"
-#LOCAL="/mnt/backup"
-#FILES="/data/vufind-plus/marmot.test/solr_searcher /data/vufind-plus/marmot.test/econtent  /var /home /etc /root /usr /bin /boot /lib /lib64 /opt /sbin"
-#TAROPT="-X /root/cron/exclude.txt --exclude-caches --ignore-failed-read --absolute-names"
-
-DATABASES="$DBNAME econtent"
+DATABASES="$DBNAME"
 DUMPOPT1="-u root --events"
 DUMPOPT2="-u root --events --single-transaction"
 
@@ -74,10 +69,6 @@ $LOG ">> Backup starting <<"
 #-------------------------------------------------------------
 #--- backup mysql --------------------------------------------
 #-------------------------------------------------------------
-#$LOG "~> purge yesterdays mysql dumps"
-#/bin/rm -f $DUMPFOLDER/*
-#$LOG "~> exit code $?"
-#---
 $LOG "~> dumping mysql database"
 mysqldump $DUMPOPT1 mysql > $DUMPFOLDER/mysql.$DATE.mysql.dump
 $LOG "~> exit code $?"
@@ -97,35 +88,6 @@ do
   gzip $DUMPFOLDER/$DB.$DATE.mysql.dump
   $LOG "~> exit code $?"
 done
-
-#-------------------------------------------------------------
-#--- make tarball --------------------------------------------
-#-------------------------------------------------------------
-#$LOG "~> mounting $REMOTE to $LOCAL"
-#mount $REMOTE $LOCAL
-#EXITCODE=$?
-#$LOG "~> exit code $EXITCODE"
-#if [ $EXITCODE -ne 0 ];then
-#  $LOG "!! script terminated abnormally"
-#  exit 1
-#else
-#  $LOG "~> backup filesystem starting"
-#  tar -czf $LOCAL/backup_$HOST.$DATE.tgz $TAROPT $FILES
-#  $LOG "~> exit code $?"
-#  $LOG "~> changing permissions to read-only on backup file"
-#  chmod 400 $LOCAL/backup_$HOST.$DATE.tgz
-#  $LOG "~> exit code $?"
-#  $LOG "~> unmounting $LOCAL"
-#  umount $LOCAL
-#  EXITCODE=$?
-#  $LOG "~> exit code $EXITCODE"
-#  if [ $EXITCODE -ne 0 ];then
-#    $LOG "!! script terminated abnormally"
-#    $LOG "!! $LOCAL needs UNMOUNTED BEFORE the next backup"
-#    exit 2
-#  fi
-#fi
-#-------------------------------------------------------------
 
 # Delete dump files older than 3 days
 # $DUMPFOLDER/$DB.$DATE.mysql.dump

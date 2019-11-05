@@ -5,7 +5,7 @@
 sleep 10
 
 #TODO: Check for which processes are included on the server, kill the old version, start the new version.
-echo "Starting koha export"
+echo "Starting carlx export"
 cd /usr/local/aspen-discovery/code/carlx_export; java -jar carlx_export.jar nashville.production &
 sleep 5
 echo "Starting Overdrive export"
