@@ -11,12 +11,12 @@ exp_internal 0 ; # 1 = verbose debugging to stdout
 log_user 0 ; # 1 = send screens to stdout
 
 set site [lindex $argv 0]
-set confpwd "/usr/local/VuFind-Plus/sites/$site/conf/config.pwd.ini"
+set confpwd "/usr/local/aspen-discovery/sites/$site/conf/config.pwd.ini"
 if {[file exists $confpwd] != 1} {
         puts "Please check spelling of site $site; config.pwd.ini not found at $confpwd"
         exit
 }
-set localPath "/data/pika/$site/marc"
+set localPath "/data/aspen-discovery/$site/ils/marc"
 if {[file exists $localPath] != 1} {
         puts "Please check spelling of site $site; /marc/ directory not found at $localPath"
         exit
