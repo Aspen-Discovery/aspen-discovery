@@ -214,7 +214,7 @@ class Koha extends AbstractIlsDriver {
 		}
 
         /** @noinspection SqlResolve */
-        $sql = "SELECT issues.*, items.biblionumber, items.itype, title, author, auto_renew, auto_renew_error from issues left join items on items.itemnumber = issues.itemnumber left join biblio ON items.biblionumber = biblio.biblionumber where borrowernumber = {$patron->username}";
+        $sql = "SELECT issues.*, items.biblionumber, items.itype, items.itemcallnumber, title, author, auto_renew, auto_renew_error from issues left join items on items.itemnumber = issues.itemnumber left join biblio ON items.biblionumber = biblio.biblionumber where borrowernumber = {$patron->username}";
 		$results = mysqli_query($this->dbConnection, $sql);
 		while ($curRow = $results->fetch_assoc()){
 			$checkout = array();
@@ -224,6 +224,9 @@ class Koha extends AbstractIlsDriver {
 			$checkout['recordId'] = $curRow['biblionumber'];
 			$checkout['shortId'] = $curRow['biblionumber'];
 			$checkout['title'] = $curRow['title'];
+			if (isset($curRow['itemcallnumber'])){
+				$checkout['callNumber'] = $curRow['itemcallnumber'];
+			}
 			$checkout['author'] = $curRow['author'];
 
 			$dateDue = DateTime::createFromFormat('Y-m-d H:i:s', $curRow['date_due']);

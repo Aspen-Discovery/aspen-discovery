@@ -81,6 +81,15 @@
 						</div>
 					{/if}
 
+                    {if $record.callNumber}
+						<div class="row">
+							<div class="result-label col-tn-4 col-lg-3">{translate text='Call Number'}</div>
+							<div class="col-tn-8 col-lg-9 result-value">
+                                {$record.callNumber}
+							</div>
+						</div>
+                    {/if}
+
 					{if !empty($record.publicationDate)}
 						<div class="row">
 							<div class="result-label col-tn-4 col-lg-3">{translate text='Published'}</div>
