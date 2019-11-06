@@ -214,7 +214,7 @@ class Koha extends AbstractIlsDriver {
 		}
 
         /** @noinspection SqlResolve */
-        $sql = "SELECT issues.*, items.biblionumber, items.itype, items.itemcallnumber, title, author, auto_renew, auto_renew_error from issues left join items on items.itemnumber = issues.itemnumber left join biblio ON items.biblionumber = biblio.biblionumber where borrowernumber = {$patron->username}";
+        $sql = "SELECT issues.*, items.biblionumber, items.itype, items.itemcallnumber, items.enumchron, title, author, auto_renew, auto_renew_error from issues left join items on items.itemnumber = issues.itemnumber left join biblio ON items.biblionumber = biblio.biblionumber where borrowernumber = {$patron->username}";
 		$results = mysqli_query($this->dbConnection, $sql);
 		while ($curRow = $results->fetch_assoc()){
 			$checkout = array();
@@ -226,6 +226,9 @@ class Koha extends AbstractIlsDriver {
 			$checkout['title'] = $curRow['title'];
 			if (isset($curRow['itemcallnumber'])){
 				$checkout['callNumber'] = $curRow['itemcallnumber'];
+			}
+			if (isset($curRow['enumchron'])){
+				$checkout['volume'] = $curRow['enumchron'];
 			}
 			$checkout['author'] = $curRow['author'];
 
@@ -722,8 +725,7 @@ class Koha extends AbstractIlsDriver {
 
 		//Get the items the user can place a hold on
 		if ($itemLevelHoldAllowed){
-		    //TODO: Handle item level holds
-			//Need to prompt for an item level hold
+		    //Need to prompt for an item level hold
 			$items = array();
 			if (!$itemLevelHoldOnly){
 				//Add a first title returned
@@ -876,7 +878,7 @@ class Koha extends AbstractIlsDriver {
 		$this->initDatabaseConnection();
 
         /** @noinspection SqlResolve */
-		$sql = "SELECT reserves.*, biblio.title, biblio.author, items.itemcallnumber FROM reserves inner join biblio on biblio.biblionumber = reserves.biblionumber left join items on items.itemnumber = reserves.itemnumber where borrowernumber = {$patron->username}";
+		$sql = "SELECT reserves.*, biblio.title, biblio.author, items.itemcallnumber, items.enumchron FROM reserves inner join biblio on biblio.biblionumber = reserves.biblionumber left join items on items.itemnumber = reserves.itemnumber where borrowernumber = {$patron->username}";
 		$results = mysqli_query($this->dbConnection, $sql);
 		while ($curRow = $results->fetch_assoc()){
 			//Each row in the table represents a hold
@@ -889,6 +891,9 @@ class Koha extends AbstractIlsDriver {
 			$curHold['title'] = $curRow['title'];
 			if (isset($curRow['itemcallnumber'])){
 				$curHold['callNumber'] = $curRow['itemcallnumber'];
+			}
+			if (isset($curRow['enumchron'])){
+				$curHold['volume'] = $curRow['enumchron'];
 			}
 			$curHold['create'] = date_parse_from_format('Y-m-d H:i:s', $curRow['reservedate']);
 			if (!empty($curRow['expirationdate'])){
