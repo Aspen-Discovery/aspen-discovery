@@ -958,5 +958,67 @@ AspenDiscovery.Account = (function(){
 			$.getJSON(url, params).fail(AspenDiscovery.ajaxFail);
 			return false;
 		},
+
+		createPayPalOrder(finesFormId) {
+			let url = Globals.path + "/MyAccount/AJAX";
+			let params = {
+				method: "createPayPalOrder",
+				patronId: $(finesFormId + " input[name=patronId]").val(),
+				fineTotal: $(finesFormId + " input[name=totalToPay]").val(),
+			};
+			$(finesFormId + " .selectedFine:checked").each(
+				function() {
+					let name = $(this).attr('name');
+					params[name] = $(this).val();
+				}
+			);
+			let orderInfo = false;
+			$.ajax({
+				url: url,
+				data: params,
+				dataType: 'json',
+				async: false,
+				method: 'GET'
+			}).success(
+				function (response){
+					if (response.success === false){
+						AspenDiscovery.showMessage("Error", response.message);
+						return false;
+					}else{
+						orderInfo = response.orderID;
+					}
+				}
+			).fail(AspenDiscovery.ajaxFail);
+
+			return orderInfo;
+		},
+
+		completePayPalOrder(orderId, patronId) {
+			let url = Globals.path + "/MyAccount/AJAX";
+			let params = {
+				method: "completePayPalOrder",
+				patronId: patronId,
+				orderId: orderId,
+			};
+			$.getJSON(url, params, function(data){
+				if (data.success) {
+					AspenDiscovery.showMessage('Thank you', 'Your payment was processed successfully, thank you', false, true);
+				} else {
+					AspenDiscovery.showMessage('Error', 'Unable to process your payment, please visit the library with your receipt', false);
+				}
+			}).fail(AspenDiscovery.ajaxFail);
+		},
+		updateFineTotal(finesFormId, userId) {
+			let totalFineAmt = 0;
+			let totalOutstandingAmt = 0;
+			$(finesFormId + " .selectedFine:checked").each(
+				function() {
+					totalFineAmt += $(this).data('fine_amt') * 1;
+					totalOutstandingAmt += $(this).data('outstanding_amt') * 1;
+				}
+			);
+			$('#formattedTotal' + userId).text("$" + totalFineAmt.toFixed(2));
+			$('#formattedOutstandingTotal' + userId).text("$" + totalOutstandingAmt.toFixed(2));
+		}
 	};
 }(AspenDiscovery.Account || {}));

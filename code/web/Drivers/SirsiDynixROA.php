@@ -1518,7 +1518,7 @@ abstract class SirsiDynixROA extends HorizonAPI
 	 * @param $includeMessages
 	 * @return array|AspenError
 	 */
-	public function getMyFines($patron, $includeMessages = false)
+	public function getFines($patron, $includeMessages = false)
 	{
 		$fines = array();
 		$sessionToken = $this->getSessionToken($patron);

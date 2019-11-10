@@ -1069,7 +1069,7 @@ abstract class HorizonROA extends AbstractIlsDriver
 		}
 		return $bibInfo;
 	}
-	public function getMyFines($patron, $includeMessages = false)
+	public function getFines($patron, $includeMessages = false)
 	{
 		$fines = array();
 		//Get the session token for the user

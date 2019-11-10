@@ -72,7 +72,7 @@ abstract class AbstractIlsDriver extends AbstractDriver
 
     abstract function updatePatronInfo($patron, $canUpdateContactInfo);
 
-    public abstract function getMyFines($patron, $includeMessages = false);
+    public abstract function getFines($patron, $includeMessages = false);
 
     /**
      * @return IndexingProfile|null
@@ -298,6 +298,14 @@ abstract class AbstractIlsDriver extends AbstractDriver
 			'success' => false,
 			'error' => 'This functionality is not available in the ILS.',
 		);
+	}
+
+	public function completeFinePayment(User $patron, UserPayment $payment)
+	{
+		return [
+			'success' => false,
+			'message' => 'This functionality has not been implemented for this ILS'
+		];
 	}
 
 }

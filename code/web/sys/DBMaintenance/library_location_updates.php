@@ -1815,5 +1815,18 @@ function getLibraryLocationUpdates(){
 				"ALTER TABLE library_archive_search_facet_setting ADD COLUMN translate TINYINT(1) DEFAULT 0",
 			],
 		],
+
+		'library_fine_updates_paypal' => [
+			'title' => 'Library Fine Updates PayPal',
+			'description' => 'Updates to library settings for PayPal integration.',
+			'continueOnError' => false,
+			'sql' => [
+				"ALTER TABLE library CHANGE COLUMN showEcommerceLink finePaymentType TINYINT(1)",
+				"ALTER TABLE library ADD COLUMN finesToPay TINYINT(1) DEFAULT 1",
+				"ALTER TABLE library ADD COLUMN payPalSandboxMode TINYINT(1) DEFAULT 1",
+				"ALTER TABLE library ADD COLUMN payPalClientId VARCHAR(80)",
+				"ALTER TABLE library ADD COLUMN payPalClientSecret VARCHAR(80)",
+			],
+		]
 	);
 }

@@ -1078,7 +1078,7 @@ class Koha extends AbstractIlsDriver {
 	 * @param bool $includeMessages
 	 * @return array
 	 */
-	public function getMyFines($patron, $includeMessages = false)
+	public function getFines($patron, $includeMessages = false)
     {
         require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
 
@@ -1094,9 +1094,12 @@ class Koha extends AbstractIlsDriver {
         if ($allFeesRS->num_rows > 0) {
             while ($allFeesRow = $allFeesRS->fetch_assoc()) {
                 $curFine = [
+                	'fineId' => $allFeesRow['accountlines_id'],
                     'date' => $allFeesRow['date'],
                     'reason' => $allFeesRow['accounttype'],
                     'message' => $allFeesRow['description'],
+	                'amountVal' => $allFeesRow['amount'],
+	                'amountOutstandingVal' => $allFeesRow['amountoutstanding'],
                     'amount' => StringUtils::formatMoney('%.2n', $allFeesRow['amount']),
                     'amountOutstanding' => StringUtils::formatMoney('%.2n', $allFeesRow['amountoutstanding']),
                 ];
@@ -2315,5 +2318,56 @@ class Koha extends AbstractIlsDriver {
 		global $memCache;
 		$memCache->delete('koha_summary_' . $patron->id);
 		return $hold_result;
+	}
+
+	public function completeFinePayment(User $patron, UserPayment $payment)
+	{
+		$result = [
+			'success' => false,
+			'message' => 'Unknown error completing fine payment'
+		];
+		$accountLinesPaid = explode(',', $payment->finesPaid);
+		$oauthToken = $this->getOAuthToken();
+		if ($oauthToken == false){
+			$result['message'] = 'Unable to authenticate with the ILS.  Please try again later or contact the library.';
+		}else{
+			$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/{$patron->username}/account/credits";
+			$postVariables = [
+				'account_lines_ids' => $accountLinesPaid,
+				'amount' => $payment->totalPaid,
+				'credit_type' => 'payment',
+				'payment_type' => $payment->paymentType,
+				'description' => 'Paid Online via Aspen Discovery'
+			];
+
+			$this->apiCurlWrapper->addCustomHeaders([
+				'Authorization: Bearer ' . $oauthToken,
+				'User-Agent: Aspen Discovery',
+				'Accept: */*',
+				'Cache-Control: no-cache',
+				'Content-Type: application/json;charset=UTF-8',
+				'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
+			], true);
+			$response = $this->apiCurlWrapper->curlPostBodyData($apiUrl, $postVariables);
+			if($this->apiCurlWrapper->getResponseCode() != 200) {
+				if (strlen($response) > 0){
+					$jsonResponse = json_decode($response);
+					if ($jsonResponse){
+						$result['message'] = $jsonResponse->errors[0]['message'];
+					}else {
+						$result['message'] = $response;
+					}
+				}else{
+					$result['message'] = "Error {$this->apiCurlWrapper->getResponseCode()} updating your payment, please visit the library with your receipt.";
+				}
+
+			}else{
+				$result = [
+					'success' => true,
+					'message' => 'Your fines have been paid successfully, thank you.'
+				];
+			}
+		}
+		return $result;
 	}
 }

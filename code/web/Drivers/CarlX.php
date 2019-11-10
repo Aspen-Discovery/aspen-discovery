@@ -1226,7 +1226,7 @@ class CarlX extends SIP2Driver{
 
 	}
 
-	public function getMyFines($user, $includeMessages = false) {
+	public function getFines($user, $includeMessages = false) {
 		$myFines = array();
 
 		$request = $this->getSearchbyPatronIdRequest($user);
@@ -1300,7 +1300,7 @@ class CarlX extends SIP2Driver{
 		return $myFines;
 	}
 
-//	public function getMyFines($user) {
+//	public function getFines($user) {
 //		$myFines = array();
 //
 //		$request = $this->getSearchbyPatronIdRequest($user);

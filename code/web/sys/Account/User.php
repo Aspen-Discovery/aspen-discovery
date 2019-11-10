@@ -1147,10 +1147,10 @@ class User extends DataObject
 	}
 
 	private $ilsFinesForUser;
-	public function getMyFines($includeLinkedUsers = true){
+	public function getFines($includeLinkedUsers = true){
 
 		if (!isset($this->ilsFinesForUser)){
-			$this->ilsFinesForUser = $this->getCatalogDriver()->getMyFines($this);
+			$this->ilsFinesForUser = $this->getCatalogDriver()->getFines($this);
 			if ($this->ilsFinesForUser instanceof AspenError) {
 				$this->ilsFinesForUser = array();
 			}
@@ -1161,7 +1161,7 @@ class User extends DataObject
 			if ($this->getLinkedUsers() != null) {
 				/** @var User $user */
 				foreach ($this->getLinkedUsers() as $user) {
-					$ilsFines += $user->getMyFines(false); // keep keys as userId
+					$ilsFines += $user->getFines(false); // keep keys as userId
 				}
 			}
 		}
@@ -1733,6 +1733,15 @@ class User extends DataObject
 		require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
 		$overDriveDriver = new OverDriveDriver();
 		return $overDriveDriver->getOptions($this);
+	}
+
+	function completeFinePayment(UserPayment $payment){
+		$result = $this->getCatalogDriver()->completeFinePayment($this, $payment);
+		if ($result['success']){
+			$payment->completed = 1;
+			$payment->update();
+		}
+		return $result;
 	}
 }
 

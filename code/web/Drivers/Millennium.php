@@ -1545,7 +1545,7 @@ class Millennium extends AbstractIlsDriver
 	 * @param bool $includeMessages
 	 * @return array
 	 */
-	public function getMyFines($patron = null, $includeMessages = false){
+	public function getFines($patron = null, $includeMessages = false){
 		//Load the information from millennium using CURL
 		$pageContents = $this->_fetchPatronInfoPage($patron, 'overdues');
 

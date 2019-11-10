@@ -227,11 +227,11 @@ class UInterface extends Smarty
 			$user = UserAccount::getActiveUserObj();
 			//Figure out if we should show a link to pay fines.
 			$homeLibrary = Library::getLibraryForLocation($user->homeLocationId);
-			$showECommerceLink     = isset($homeLibrary) && $homeLibrary->showEcommerceLink == 1;
+			$finePaymentType     = isset($homeLibrary) ? $homeLibrary->finePaymentType : 0;
 
-			if ($showECommerceLink) {
-				$this->assign('minimumFineAmount', $homeLibrary->minimumFineAmount);
-				$this->assign('payFinesLinkText', $homeLibrary->payFinesLinkText);
+			$this->assign('minimumFineAmount', $homeLibrary->minimumFineAmount);
+			$this->assign('payFinesLinkText', $homeLibrary->payFinesLinkText);
+			if ($finePaymentType == 1) {
 				$this->assign('showRefreshAccountButton', $homeLibrary->showRefreshAccountButton);
 
 				// Determine E-commerce Link
@@ -242,16 +242,18 @@ class UInterface extends Smarty
 					if (!empty($defaultECommerceLink)) {
 						$eCommerceLink = $defaultECommerceLink;
 					} else {
-						$showECommerceLink = false;
+						$finePaymentType = 0;
 					}
 				} elseif (!empty($homeLibrary->payFinesLink)) {
 						$eCommerceLink = $homeLibrary->payFinesLink;
 				} else {
-					$showECommerceLink = false;
+					$finePaymentType = 0;
 				}
 				$this->assign('eCommerceLink', $eCommerceLink);
+			}elseif ($finePaymentType == 2){
+				$this->assign('eCommerceLink', '/MyAccount/Fines');
 			}
-			$this->assign('showECommerceLink', $showECommerceLink);
+			$this->assign('finePaymentType', $finePaymentType);
 		}
 	}
 

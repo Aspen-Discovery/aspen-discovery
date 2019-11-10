@@ -2175,4 +2175,173 @@ class MyAccount_AJAX
 
 		return ['success' => true, 'message' => 'Account Linking Stopped'];
 	}
+
+	function createPayPalOrder(){
+		global $configArray;
+		$user = UserAccount::getLoggedInUser();
+		if ($user == null){
+			return ['success' => false, 'message' => 'You must be logged in to pay fines, please login again.'];
+		}else{
+			$patronId = $_REQUEST['patronId'];
+
+			$patron = $user->getUserReferredTo($patronId);
+
+			if ($patron == false){
+				return ['success' => false, 'message' => 'Could not find the patron referred to, please try again.'];
+			}
+			$userLibrary = $patron->getHomeLibrary();
+
+			if (empty($_REQUEST['selectedFine'])){
+				return ['success' => false, 'message' => 'Select at least one fine to pay.'];
+			}
+			$selectedFines = $_REQUEST['selectedFine'];
+			$fines = $patron->getFines(false);
+			$useOutstanding = $patron->getCatalogDriver()->showOutstandingFines();
+
+			$finesPaid = '';
+			$purchaseUnits = [];
+			$purchaseUnits['items'] = [];
+			require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
+			$totalFines = 0;
+			foreach ($selectedFines as $fineId => $status){
+				foreach ($fines[$patronId] as $fine){
+					if ($fine['fineId'] == $fineId){
+						if (!empty($finesPaid)){
+							$finesPaid .= ',';
+						}
+						$finesPaid .= $fineId;
+						$fineAmount = $useOutstanding ? $fine['amountOutstandingVal'] : $fine['amountVal'];
+						$purchaseUnits['items'][] = [
+							'custom_id' => $fineId,
+							'name' => StringUtils::trimStringToLengthAtWordBoundary($fine['reason'], 127, true),
+							'description' => StringUtils::trimStringToLengthAtWordBoundary($fine['message'], 127, true),
+							'unit_amount' => [
+								'currency_code' => 'USD',
+								'value' =>  round($fineAmount, 2),
+							],
+							'quantity' => 1
+						];
+						$totalFines += $fineAmount;
+					}
+				}
+			}
+			$purchaseUnits['amount'] = [
+				'currency_code' => 'USD',
+				'value' => $totalFines,
+				'breakdown' => [
+					'item_total' => [
+						'currency_code' => 'USD',
+						'value' =>  $totalFines,
+					],
+				]
+			];
+
+			if ($totalFines < $userLibrary->minimumFineAmount){
+				return ['success' => false, 'message' => translate(['text' => 'You must select at least %1% in fines to pay.', 1 =>sprintf('$%01.2f', $userLibrary->minimumFineAmount)])];
+			}
+
+			require_once ROOT_DIR . '/sys/Account/UserPayment.php';
+			$payment = new UserPayment();
+			$payment->userId = $patronId;
+			$payment->paymentType = 'paypal';
+			$payment->completed = 0;
+			$payment->finesPaid = $finesPaid;
+			$payment->totalPaid = $totalFines;
+			$paymentId = $payment->insert();
+
+			$purchaseUnits['custom_id'] = $paymentId;
+
+			require_once ROOT_DIR . '/sys/CurlWrapper.php';
+			$payPalAuthRequest = new CurlWrapper();
+
+			//Connect to PayPal
+			if ($userLibrary->payPalSandboxMode == 1){
+				$baseUrl = 'https://api.sandbox.paypal.com';
+			}else{
+				$baseUrl = 'https://api.paypal.com';
+			}
+
+			$clientId = $userLibrary->payPalClientId;
+			$clientSecret = $userLibrary->payPalClientSecret;
+
+			//Get the access token
+			$authInfo = base64_encode("$clientId:$clientSecret");
+			$payPalAuthRequest->addCustomHeaders([
+				"Accept: application/json",
+				"Accept-Language: en_US",
+				"Authorization: Basic $authInfo"
+			], true);
+			$postParams = [
+				'grant_type' => 'client_credentials',
+			];
+
+			$accessTokenUrl = $baseUrl . "/v1/oauth2/token";
+			$accessTokenResults = $payPalAuthRequest->curlPostPage($accessTokenUrl, $postParams);
+			$accessTokenResults = json_decode($accessTokenResults);
+			if (empty($accessTokenResults->access_token)){
+				return ['success' => false, 'message' => 'Unable to authenticate with PayPal, please try again in a few minutes.'];
+			}else{
+				$accessToken = $accessTokenResults->access_token;
+			}
+
+			//Setup the payment request (https://developer.paypal.com/docs/checkout/reference/server-integration/set-up-transaction/)
+			$payPalPaymentRequest = new CurlWrapper();
+			$payPalPaymentRequest->addCustomHeaders([
+				"Accept: application/json",
+				"Content-Type: application/json",
+				"Accept-Language: en_US",
+				"Authorization: Bearer $accessToken"
+			], false);
+			$paymentRequestUrl = $baseUrl . '/v2/checkout/orders';
+			$paymentRequestBody = [
+				'intent' => 'CAPTURE',
+				'application_context' => [
+					'brand_name' => $userLibrary->displayName,
+					'locale' => 'en-US',
+					'shipping_preferences' => 'NO_SHIPPING',
+					'user_action' => 'PAY_NOW',
+					'return_url' => $configArray['Site']['url'] . '/MyAccount/PayPalReturn',
+					'cancel_url' => $configArray['Site']['url'] . '/MyAccount/Fines'
+				],
+				'purchase_units' => [
+					0 => $purchaseUnits,
+				]
+			];
+
+			$paymentResponse = $payPalPaymentRequest->curlPostBodyData($paymentRequestUrl, $paymentRequestBody);
+			$paymentResponse = json_decode($paymentResponse);
+
+			if ($paymentResponse->status != 'CREATED'){
+				return ['success' => false, 'message' => 'Unable to create your order in PayPal.'];
+			}
+
+			//Log the request in the database so we can validate it on return
+			$payment->orderId = $paymentResponse->id;
+			$payment->update();
+
+			return ['success' => true, 'orderInfo' => $paymentResponse, 'orderID' => $paymentResponse->id];
+		}
+	}
+
+	function completePayPalOrder(){
+		$orderId = $_REQUEST['orderId'];
+		$patronId = $_REQUEST['patronId'];
+
+		//Get the order information
+		require_once ROOT_DIR . '/sys/Account/UserPayment.php';
+		$payment = new UserPayment();
+		$payment->orderId = $orderId;
+		$payment->userId = $patronId;
+		if ($payment->find(true)){
+			if ($payment->completed){
+				return ['success' => false, 'message' => 'This payment has already been processed'];
+			}else {
+				$user = UserAccount::getActiveUserObj();
+				$patron = $user->getUserReferredTo($patronId);
+				return $patron->completeFinePayment($payment);
+			}
+		}else{
+			return ['success' => false, 'message' => 'Unable to find the order you processed, please visit the library with your receipt'];
+		}
+	}
 }

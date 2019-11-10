@@ -657,7 +657,7 @@ class UserAPI extends Action {
 		$includeMessages = isset($_REQUEST['includeMessages']) ? $_REQUEST['includeMessages'] : false;
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !($user instanceof AspenError)){
-			$fines = $this->getCatalogConnection()->getMyFines($user, $includeMessages);
+			$fines = $this->getCatalogConnection()->getFines($user, $includeMessages);
 			return array('success'=>true, 'fines'=>$fines);
 		}else{
 			return array('success'=>false, 'message'=>'Login unsuccessful');
