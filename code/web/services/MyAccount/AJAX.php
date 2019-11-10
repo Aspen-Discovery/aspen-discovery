@@ -224,9 +224,9 @@ class MyAccount_AJAX
 		$cancelId = $_REQUEST['cancelId'];
 		$cancelButtonLabel = translate('Confirm Cancel Hold');
 		return array(
-				'title' => translate('Cancel Hold'),
-				'body' => translate("Are you sure you want to cancel this hold?"),
-				'buttons' => "<span class='tool btn btn-primary' onclick='AspenDiscovery.Account.cancelHold(\"$patronId\", \"$recordId\", \"$cancelId\")'>$cancelButtonLabel</span>",
+			'title' => translate('Cancel Hold'),
+			'body' => translate("Are you sure you want to cancel this hold?"),
+			'buttons' => "<span class='tool btn btn-primary' onclick='AspenDiscovery.Account.cancelHold(\"$patronId\", \"$recordId\", \"$cancelId\")'>$cancelButtonLabel</span>",
 		);
 	}
 
@@ -276,8 +276,8 @@ class MyAccount_AJAX
 	}
 
 	function cancelBooking() {
-        $totalCancelled = null;
-        $numCancelled = null;
+		$totalCancelled = null;
+		$numCancelled = null;
 		try {
 			$user = UserAccount::getLoggedInUser();
 
@@ -369,8 +369,8 @@ class MyAccount_AJAX
 					}
 
 					if (!$result['success'] && is_array($result['message'])) {
-					    /** @var string[] $messageArray */
-					    $messageArray = $result['message'];
+						/** @var string[] $messageArray */
+						$messageArray = $result['message'];
 						$result['message'] = implode('; ', $messageArray);
 						// Millennium Holds assumes there can be more than one item processed. Here we know only one got processed,
 						// but do implode as a fallback
@@ -680,9 +680,9 @@ class MyAccount_AJAX
 		$interface->assign('citationFormats', $citationFormats);
 		$pageContent = $interface->fetch('MyAccount/getCitationFormatPopup.tpl');
 		return array(
-				'title' => 'Select Citation Format',
-				'modalBody' => $pageContent,
-				'modalButtons' => '<input class="btn btn-primary" onclick="AspenDiscovery.Lists.processCiteListForm(); return false;" value="' . translate('Generate Citations') . '">'
+			'title' => 'Select Citation Format',
+			'modalBody' => $pageContent,
+			'modalButtons' => '<input class="btn btn-primary" onclick="AspenDiscovery.Lists.processCiteListForm(); return false;" value="' . translate('Generate Citations') . '">'
 		);
 	}
 
@@ -774,25 +774,25 @@ class MyAccount_AJAX
 		return $result;
 	}
 
-	function getEmailMyListForm(){
+	function getEmailMyListForm()
+	{
 		global $interface;
 		if (isset($_REQUEST['listId']) && ctype_digit($_REQUEST['listId'])) {
-		    $listId = $_REQUEST['listId'];
+			$listId = $_REQUEST['listId'];
 
-            $interface->assign('listId', $listId);
-            $formDefinition = array(
-                'title' => 'Email a list',
-                'modalBody' => $interface->fetch('MyAccount/emailListPopup.tpl'),
-//			'modalButtons' => '<input type="submit" name="submit" value="Send" class="btn btn-primary" onclick="$(\'#emailListForm\').submit();" />'
-                'modalButtons' => '<span class="tool btn btn-primary" onclick="$(\'#emailListForm\').submit();">Send Email</span>'
-            );
-            return $formDefinition;
-        } else {
-		    return [
-		        'success' => false,
-                'message' => 'You must provide the id of the list to email'
-            ];
-        }
+			$interface->assign('listId', $listId);
+			$formDefinition = array(
+				'title' => 'Email a list',
+				'modalBody' => $interface->fetch('MyAccount/emailListPopup.tpl'),
+				'modalButtons' => '<span class="tool btn btn-primary" onclick="$(\'#emailListForm\').submit();">Send Email</span>'
+			);
+			return $formDefinition;
+		} else {
+			return [
+				'success' => false,
+				'message' => 'You must provide the id of the list to email'
+			];
+		}
 	}
 
 	function renewCheckout() {
@@ -822,7 +822,6 @@ class MyAccount_AJAX
 						'message' => 'Sorry, it looks like you don\'t have access to that patron.'
 					);
 				}
-
 			}
 		} else {
 			//error message
@@ -849,22 +848,8 @@ class MyAccount_AJAX
 			);
 		} else {
 			if (isset($_REQUEST['selected'])) {
-
-//			global $configArray;
-//			try {
-//				$this->catalog = CatalogFactory::getCatalogConnectionInstance();
-//			} catch (PDOException $e) {
-//				// What should we do with this error?
-//				if ($configArray['System']['debug']) {
-//					echo '<pre>';
-//					echo 'DEBUG: ' . $e->getMessage();
-//					echo '</pre>';
-//				}
-//			}
-
 				$user = UserAccount::getLoggedInUser();
 				if (method_exists($user, 'renewCheckout')) {
-
 					$failure_messages = array();
 					$renewResults     = array();
 					foreach ($_REQUEST['selected'] as $selected => $ignore) {
@@ -901,8 +886,6 @@ class MyAccount_AJAX
 						'message' => 'Cannot Renew Items - ILS Not Supported.'
 					);
 				}
-
-
 			} else {
 				//error message
 				$renewResults = array(

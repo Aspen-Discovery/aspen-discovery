@@ -23,8 +23,8 @@ class MyAccount_Fines extends MyAccount
 				$user = UserAccount::getLoggedInUser();
 				$userLibrary = $user->getHomeLibrary();
 				$fines = $user->getFines();
-                $useOutstanding = $user->getCatalogDriver()->showOutstandingFines();
-                $interface->assign('showOutstanding', $useOutstanding);
+				$useOutstanding = $user->getCatalogDriver()->showOutstandingFines();
+				$interface->assign('showOutstanding', $useOutstanding);
 
 				if ($userLibrary->finePaymentType == 2){
 					$clientId = $userLibrary->payPalClientId;
@@ -35,7 +35,7 @@ class MyAccount_Fines extends MyAccount
 
 				$interface->assign('userFines', $fines);
 
-                $userAccountLabel = [];
+				$userAccountLabel = [];
 				$fineTotalsFormatted = [];
 				$fineTotalsVal = [];
                 $outstandingTotal = [];
