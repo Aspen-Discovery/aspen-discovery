@@ -253,7 +253,15 @@ class Search_Results extends Action {
 
         //Look for suggestions for the search (but not if facets are applied)
 		$facetSet = $searchObject->getFacetList();
-		if ((!isset($facetSet) || count($facetSet) == 0) && $searchObject->getResultTotal() <= 5) {
+		$hasAppliedFacets = false;
+		if (isset($facetSet)){
+			foreach ($facetSet as $facet){
+				if ($facet['hasApplied']){
+					$hasAppliedFacets = true;
+				}
+			}
+		}
+		if (!$hasAppliedFacets && $searchObject->getResultTotal() <= 5) {
 			require_once ROOT_DIR . '/services/Search/lib/SearchSuggestions.php';
 			$searchSuggestions = new SearchSuggestions();
 			$allSuggestions = $searchSuggestions->getAllSuggestions($searchObject->displayQuery(), $searchObject->getSearchIndex(), 'grouped_works');
@@ -264,14 +272,6 @@ class Search_Results extends Action {
 		if ($searchObject->getResultTotal() == 0) {
 			//Check to see if we can automatically replace the search with a spelling result
 			$disallowReplacements = isset($_REQUEST['disallowReplacements']) || isset($_REQUEST['replacementTerm']);
-			$hasAppliedFacets = false;
-			if (isset($facetSet)){
-				foreach ($facetSet as $facet){
-					if ($facet['hasApplied']){
-						$hasAppliedFacets = true;
-					}
-				}
-			}
 
 			if (!$disallowReplacements && !$hasAppliedFacets){
 				//We can try to find a suggestion, but only if we are not doing a phrase search.

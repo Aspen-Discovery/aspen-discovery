@@ -324,59 +324,59 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
             $this->indexResult['error'] : false;
     }
 
-    /**
-     * Turn the list of spelling suggestions into an array of urls
-     *   for on-screen use to implement the suggestions.
-     *
-     * @access  public
-     * @return  array     Spelling suggestion data arrays
-     */
-    public function getSpellingSuggestions()
-    {
-        $returnArray = array();
+	/**
+	 * Turn the list of spelling suggestions into an array of urls
+	 *   for on-screen use to implement the suggestions.
+	 *
+	 * @access  public
+	 * @return  array     Spelling suggestion data arrays
+	 */
+	public function getSpellingSuggestions()
+	{
+		$returnArray = array();
 
-        $correctlySpelled = isset($this->indexResult['spellcheck']) ? $this->indexResult['spellcheck']['correctlySpelled'] : true;
-        $spellingCollations = isset($this->indexResult['spellcheck']['collations']) ? $this->indexResult['spellcheck']['collations'] : array();
-        if (count($spellingCollations) > 0) {
-	        foreach ($spellingCollations as $collation) {
-		        if ($collation[0] == 'collation') {
-			        $label = $collation[1]['collationQuery'];
-			        $freq = $collation[1]['hits'];
-			        $oldTerms = [];
-			        $newTerms = [];
-			        $okToUseSuggestion = true;
-			        foreach ($collation[1]['misspellingsAndCorrections'] as $replacements) {
-				        $oldTerms[] = $replacements[0];
-				        $newTerms[] = $replacements[1];
-				        //Solr sometimes just
-				        if (strpos($replacements[1], ' ') > 0){
-				        	$replacementWords = explode(' ', $replacements[1]);
-				        	foreach ($replacementWords as $word){
-				        		if (strlen($word) == 1){
-				        			$okToUseSuggestion = false;
-						        }
-					        }
-				        }
-			        }
-			        if ($okToUseSuggestion){
-				        $returnArray[sprintf('%08d', $freq) . $label] = array(
-					        'freq' => $freq,
-					        'replace_url' => $this->renderLinkWithReplacedTerm($oldTerms, $newTerms),
-					        'phrase' => $label
-				        );
-			        }
-		        }
-	        }
-        }
+		$correctlySpelled = isset($this->indexResult['spellcheck']) ? $this->indexResult['spellcheck']['correctlySpelled'] : true;
+		$spellingCollations = isset($this->indexResult['spellcheck']['collations']) ? $this->indexResult['spellcheck']['collations'] : array();
+		if (count($spellingCollations) > 0) {
+			foreach ($spellingCollations as $collation) {
+				if ($collation[0] == 'collation') {
+					$label = $collation[1]['collationQuery'];
+					$freq = $collation[1]['hits'];
+					$oldTerms = [];
+					$newTerms = [];
+					$okToUseSuggestion = true;
+					foreach ($collation[1]['misspellingsAndCorrections'] as $replacements) {
+						$oldTerms[] = $replacements[0];
+						$newTerms[] = $replacements[1];
+						//Solr sometimes just
+						if (strpos($replacements[1], ' ') > 0) {
+							$replacementWords = explode(' ', $replacements[1]);
+							foreach ($replacementWords as $word) {
+								if (strlen($word) == 1) {
+									$okToUseSuggestion = false;
+								}
+							}
+						}
+					}
+					if ($okToUseSuggestion) {
+						$returnArray[sprintf('%08d', $freq) . $label] = array(
+							'freq' => $freq,
+							'replace_url' => $this->renderLinkWithReplacedTerm($oldTerms, $newTerms),
+							'phrase' => $label
+						);
+					}
+				}
+			}
+		}
 
-	    //Sort the collations based to get the result that has the most docs in it.
+		//Sort the collations based to get the result that has the most docs in it.
 		krsort($returnArray);
 
-        return [
-            'correctlySpelled' => $correctlySpelled,
-            'suggestions' => $returnArray
-        ];
-    }
+		return [
+			'correctlySpelled' => $correctlySpelled,
+			'suggestions' => $returnArray
+		];
+	}
 
     /**
      * Adapt the search query to a spelling query
