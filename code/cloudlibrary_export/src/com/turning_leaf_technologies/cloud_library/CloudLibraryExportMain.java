@@ -107,6 +107,7 @@ public class CloudLibraryExportMain {
 
             //Pause before running the next export (longer if we didn't get any actual changes)
             try {
+                System.gc();
                 if (numChanges == 0) {
                     Thread.sleep(1000 * 60 * 5);
                 }else {

@@ -100,6 +100,7 @@ public class HooplaExportMain {
 
 			//Pause 24 hours before running the next export.
 			try {
+				System.gc();
 				Thread.sleep(1000 * 60 * 60 * 24);
 			} catch (InterruptedException e) {
 				logger.info("Thread was interrupted");
