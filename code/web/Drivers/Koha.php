@@ -248,7 +248,7 @@ class Koha extends AbstractIlsDriver {
 			$autoRenewError = $curRow['auto_renew_error'];
 			if ($autoRenewError){
 				if ($autoRenewError == 'on_reserve'){
-					$autoRenewError = translate(['text' => 'koha_auto_renew_on_reserve', 'defaultText' => 'Cannot auto renew, on hold for another player']);
+					$autoRenewError = translate(['text' => 'koha_auto_renew_on_reserve', 'defaultText' => 'Cannot auto renew, on hold for another user']);
 				}elseif ($autoRenewError == 'too_many'){
 					$autoRenewError = translate(['text' => 'koha_auto_renew_too_many', 'defaultText' => 'Cannot auto renew, too many renewals']);
 				}elseif ($autoRenewError == 'auto_account_expired'){
