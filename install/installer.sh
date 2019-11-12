@@ -13,19 +13,25 @@ yum -y install php php-mcrypt php-gd php-curl php-mysql php-zip php-fileinfo
 yum -y install php-xml
 service httpd start
 chkconfig httpd on
+# New PHP ini file
+# - Change max_memory to 256M (from 128M)
+# - Increase max file size to 50M
+# - Increase max post size to 50M
 mv /etc/php.ini /etc/php.ini.old
 cp php.ini /etc/php.ini
 cp mariadb.repo /etc/yum.repos.d/mariadb.repo
-yum install MariaDB-server
+yum -y install MariaDB-server
 mv /etc/my.cnf /etc/my.cnf.old
 mv my.cnf /etc/my.cnf
 systemctl start mariadb
 systemctl enable mariadb
-yum install java-1.8.0-openjdk
-yum install unzip
+yum -y install java-1.8.0-openjdk
+yum -y install unzip
 
-#mysql_secure_installation
-#echo "Generate new root password for mariadb at: https://passwordsgenerator.net/ and store in passbolt"
+echo "Generate new root password for mariadb at: https://passwordsgenerator.net/ and store in passbolt"
+mysql_secure_installation
 #echo "Setting timezone to Mountain Time, update as necessary with timedatectl set-timezone timezone"
-#timedatectl set-timezone "America/Denver"
+echo "Enter the timezone of the server"
+read timezone
+timedatectl set-timezone $timezone
 #echo "Disable SELinux on boot"

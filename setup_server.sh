@@ -36,10 +36,6 @@ if [ $# = 1 ];then
   chgrp -v apache covers/*
   chmod -v g+w covers/*
   #-----------------
-  echo "adding hoopla data directory"
-  cd /data/aspen-discovery
-  mkdir hoopla hoopla/marc hoopla/marc_recs
-  #-----------------
   echo "setting up logs directory"
   cd /var/log
   mkdir aspen-discovery
@@ -47,38 +43,12 @@ if [ $# = 1 ];then
   mkdir $HOST
   cd $HOST
   #-----------------
-  echo "installing Smarty Template engine in php shared"
-  cp -r $WD/install/Smarty /usr/share/php
-  echo "creating Smarty compile & cache directories"
-  mkdir $WD/code/web/interface/compile $WD/code/web/interface/cache
-  echo "set ownership & permissions for Smarty compile & cache directories"
-  chgrp apache $WD/code/web/interface/compile $WD/code/web/interface/cache
-  chmod g+w $WD/code/web/interface/compile $WD/code/web/interface/cache
-  #-----------------
   echo "Creating symbolic link in /etc/httpd/conf.d to apache config file"
   ln -s $WD/sites/$HOST/httpd-$HOST.conf /etc/httpd/conf.d/httpd-$HOST.conf
-  #-----------------
-  echo "Copying mysql config file to /etc/my.cnf.d"
-  # Probably centos 7/mariadb setups only
-  cp $WD/install/my.cnf /etc/my.cnf.d/my.cnf
-  #-----------------
-#  echo "Creating symbolic link in /etc/my.cnf.d to mysql config file"
-#  # Probably centos 7/mariadb setups only
-#  ln -s $WD/install/my.cnf /etc/my.cnf.d/my.cnf
-#  #-----------------
-  #-----------------
-  echo "Copying mysql credentials file to ~/.my.cnf (NOTE: this file will need manual editing.)"
-  # Probably centos 7/mariadb setups only
-  cp $WD/install/.my.cnf ~/.my.cnf
   #-----------------
   echo "Installing Solr Files for $HOST"
   cd $WD/data_dir_setup/; ./update_solr_files.sh $HOST
   #-----------------
-  echo "Creating pika system service for $HOST"
-#  cat $WD/sites/default/pika_startup.sh |sed -r "s/\{servername\}/$HOST/"|sed -r "/mysqld/mariadb/" > /etc/init.d/pika.sh
-#  chmod u+x /etc/init.d/pika.sh
-#  CentOS7 version that uses mariadb instead
-
 
   echo ""
   cd $WD
