@@ -28,10 +28,21 @@ systemctl enable mariadb
 yum -y install java-1.8.0-openjdk
 yum -y install unzip
 
+#Create temp smarty directories
+cd /usr/local/aspen-discovery
+mkdir tmp
+chown -R apache:apache tmp
+chmod -R 755 tmp
+
+#Disable SELinux
+setenforce 0
+cp install/selinux.config /etc/selinux/config
+
 echo "Generate new root password for mariadb at: https://passwordsgenerator.net/ and store in passbolt"
 mysql_secure_installation
 #echo "Setting timezone to Mountain Time, update as necessary with timedatectl set-timezone timezone"
 echo "Enter the timezone of the server"
 read timezone
 timedatectl set-timezone $timezone
-#echo "Disable SELinux on boot"
+
+
