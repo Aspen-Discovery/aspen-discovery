@@ -44,6 +44,7 @@ public class WebsiteIndexerMain {
 			try {
 				String solrPort = configIni.get("Reindex", "solrPort");
 				ConcurrentUpdateSolrClient solrUpdateServer = setupSolrClient(solrPort);
+
 				PreparedStatement getSitesToIndexStmt = aspenConn.prepareStatement("SELECT * from website_indexing_settings");
 				ResultSet sitesToIndexRS = getSitesToIndexStmt.executeQuery();
 				while (sitesToIndexRS.next()) {

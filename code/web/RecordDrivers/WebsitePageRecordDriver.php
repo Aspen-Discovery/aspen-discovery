@@ -67,7 +67,7 @@ class WebsitePAgeRecordDriver extends IndexRecordDriver
         if ($absolutePath){
             $bookCoverUrl = $configArray['Site']['url'];
         }else{
-            $bookCoverUrl = $configArray['Site']['path'];
+            $bookCoverUrl = '';
         }
         $bookCoverUrl .= "/bookcover.php?id={$this->getUniqueID()}&size={$size}&type=webpage";
 

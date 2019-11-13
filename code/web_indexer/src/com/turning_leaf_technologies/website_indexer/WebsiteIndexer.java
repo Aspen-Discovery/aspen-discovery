@@ -10,12 +10,9 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
-import org.apache.solr.client.solrj.impl.BinaryRequestWriter;
 import org.apache.solr.client.solrj.impl.ConcurrentUpdateSolrClient;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
-import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrInputDocument;
-import org.ini4j.Ini;
 
 import java.sql.*;
 import java.util.HashMap;
@@ -29,6 +26,7 @@ class WebsiteIndexer {
     private String websiteName;
     private String searchCategory;
     private String siteUrl;
+    private String siteUrlShort;
     private boolean fullReload;
     private WebsiteIndexLogEntry logEntry;
     private Connection aspenConn;
@@ -46,6 +44,7 @@ class WebsiteIndexer {
         this.websiteId = websiteId;
         this.websiteName = websiteName;
         this.siteUrl = siteUrl;
+        this.siteUrlShort = siteUrl.replaceAll("http[s]?://", "");
         this.logEntry = logEntry;
         this.aspenConn = aspenConn;
         this.fullReload = fullReload;
@@ -187,6 +186,13 @@ class WebsiteIndexer {
                                     if (linkUrl.contains("#")) {
                                         linkUrl = linkUrl.substring(0, linkUrl.lastIndexOf("#"));
                                     }
+                                    //TODO: DO we want to trim off parameters always, this could be a setting?
+                                    if (linkUrl.contains("?")) {
+                                        linkUrl = linkUrl.substring(0, linkUrl.lastIndexOf("?"));
+                                    }
+                                    if (linkUrl.length() == 0){
+                                        continue;
+                                    }
                                     if (linkUrl.startsWith("http://")) {
                                         if (!linkUrl.startsWith(siteUrl)) {
                                             continue;
@@ -195,11 +201,13 @@ class WebsiteIndexer {
                                         if (!linkUrl.startsWith(siteUrl)) {
                                             continue;
                                         }
-                                    } else if (linkUrl.startsWith("mailto:") || linkUrl.startsWith("tel:")){
+                                    } else if (linkUrl.startsWith("mailto:") || linkUrl.startsWith("tel:") || linkUrl.startsWith("javascript:")) {
                                         continue;
+                                    } else if (linkUrl.startsWith(siteUrlShort)){
+                                        linkUrl = "https://" + linkUrl;
                                     } else {
                                         if (!linkUrl.startsWith("/")){
-                                            linkUrl = "/" + siteUrl;
+                                            linkUrl = "/" + linkUrl;
                                         }
                                         linkUrl = siteUrl + linkUrl;
                                     }

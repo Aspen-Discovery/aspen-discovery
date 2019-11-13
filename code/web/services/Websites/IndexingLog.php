@@ -29,7 +29,7 @@ class Websites_IndexingLog extends Admin_Admin
 		$interface->assign('logEntries', $logEntries);
 
 		$options = array('totalItems' => $total,
-			'fileName'   => $configArray['Site']['path'].'/Websites/IndexingLog?page=%d'. (empty($_REQUEST['pageSize']) ? '' : '&pageSize=' . $_REQUEST['pageSize']),
+			'fileName'   => '/Websites/IndexingLog?page=%d'. (empty($_REQUEST['pageSize']) ? '' : '&pageSize=' . $_REQUEST['pageSize']),
 			'perPage'    => $pageSize,
 		);
 		$pager = new Pager($options);

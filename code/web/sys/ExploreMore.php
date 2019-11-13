@@ -11,10 +11,6 @@ class ExploreMore {
 		global $interface;
 		global $timer;
 
-//		if (isset($configArray['Islandora']) && isset($configArray['Islandora']['solrUrl'])) {
-//			require_once ROOT_DIR . '/sys/Utils/FedoraUtils.php';
-//			$fedoraUtils = FedoraUtils::getInstance();
-//		}
 		$exploreMoreSectionsToShow = array();
 
 		$relatedPikaContent = array();
@@ -343,8 +339,8 @@ class ExploreMore {
         $exploreMoreOptions = $this->loadListOptions($activeSection, $exploreMoreOptions, $searchTerm);
 
 		if ($library->enableOpenArchives) {
-            $exploreMoreOptions = $this->loadOpenArchiveOptions($activeSection, $exploreMoreOptions, $searchTerm);
-        }
+			$exploreMoreOptions = $this->loadOpenArchiveOptions($activeSection, $exploreMoreOptions, $searchTerm);
+		}
 
 		$exploreMoreOptions = $this->loadEbscoOptions($activeSection, $exploreMoreOptions, $searchTerm);
 
