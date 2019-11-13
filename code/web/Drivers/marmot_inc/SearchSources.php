@@ -146,6 +146,26 @@ class SearchSources{
             'catalogType' => 'lists'
         );
 
+		//TODO: This should have a module switch
+		try {
+			require_once ROOT_DIR . '/sys/WebsiteIndexing/WebsiteIndexSetting.php';
+			$websiteSetting = new WebsiteIndexSetting();
+			$websiteSetting->selectAdd(null);
+			$websiteSetting->selectAdd('searchCategory');
+			$websiteSetting->groupBy('searchCategory');
+			$websiteSetting->find();
+			//TODO: Need to deal with searching different collections
+			while ($websiteSetting->fetch()) {
+				$searchOptions['websites'] = array(
+					'name' => $websiteSetting->searchCategory,
+					'description' => $websiteSetting->searchCategory,
+					'catalogType' => 'websites'
+				);
+			}
+		}catch (Exception $e){
+			//Website settings are likely not active in the database yet.
+		}
+
 		if ($searchEbsco){
 			$searchOptions['ebsco'] = array(
 				'name' => 'EBSCO',

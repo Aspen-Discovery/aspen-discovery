@@ -341,26 +341,30 @@ class User extends DataObject
 				$userLink = new UserLink();
 				$userLink->primaryAccountId = $this->id;
 				$userLink->linkingDisabled = "0";
-				$userLink->find();
-				while ($userLink->fetch()){
-					if (!$this->isBlockedAccount($userLink->linkedAccountId)) {
-						$linkedUser = new User();
-						$linkedUser->id = $userLink->linkedAccountId;
-						if ($linkedUser->find(true)){
-							/** @var User $userData */
-							$userData = $memCache->get("user_{$serverName}_{$linkedUser->id}");
-							if ($userData === false || isset($_REQUEST['reload'])){
-								//Load full information from the catalog
-                                $linkedUser = UserAccount::validateAccount($linkedUser->cat_username, $linkedUser->cat_password, $linkedUser->source, $this);
-                            }else{
-								$logger->log("Found cached linked user {$userData->id}", Logger::LOG_DEBUG);
-								$linkedUser = $userData;
-							}
-							if ($linkedUser && !($linkedUser instanceof AspenError)) {
-								$this->linkedUsers[] = clone($linkedUser);
+				try {
+					$userLink->find();
+					while ($userLink->fetch()) {
+						if (!$this->isBlockedAccount($userLink->linkedAccountId)) {
+							$linkedUser = new User();
+							$linkedUser->id = $userLink->linkedAccountId;
+							if ($linkedUser->find(true)) {
+								/** @var User $userData */
+								$userData = $memCache->get("user_{$serverName}_{$linkedUser->id}");
+								if ($userData === false || isset($_REQUEST['reload'])) {
+									//Load full information from the catalog
+									$linkedUser = UserAccount::validateAccount($linkedUser->cat_username, $linkedUser->cat_password, $linkedUser->source, $this);
+								} else {
+									$logger->log("Found cached linked user {$userData->id}", Logger::LOG_DEBUG);
+									$linkedUser = $userData;
+								}
+								if ($linkedUser && !($linkedUser instanceof AspenError)) {
+									$this->linkedUsers[] = clone($linkedUser);
+								}
 							}
 						}
 					}
+				}catch (PDOException $e){
+					//Disabling of linking has not been enabled yet. 
 				}
 			}
 		}

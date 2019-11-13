@@ -457,6 +457,11 @@ if ($action == "AJAX" || $action == "JSON" || $module == 'API'){
     $listSearchIndexes = SearchObjectFactory::initSearchObject('Lists');
     $interface->assign('listSearchIndexes', is_object($listSearchIndexes) ? $listSearchIndexes->getSearchIndexes() : array());
 
+	/** @var SearchObject_ListsSearcher $listSearchIndexes */
+	$websiteSearchIndexes = SearchObjectFactory::initSearchObject('Websites');
+	$interface->assign('websiteSearchIndexes', is_object($websiteSearchIndexes) ? $websiteSearchIndexes->getSearchIndexes() : array());
+
+
 	if ($library->enableGenealogy){
 		$genealogySearchObject = SearchObjectFactory::initSearchObject('Genealogy');
 		$interface->assign('genealogySearchIndexes', is_object($genealogySearchObject) ? $genealogySearchObject->getSearchIndexes() : array());

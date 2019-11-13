@@ -62,7 +62,15 @@ class Union_Search extends Action {
             $interface->assign('action', $action);
             $results = new Lists_Results();
             $results->launch();
-        }else if ($searchSource == 'ebsco'){
+		}else if ($searchSource == 'websites'){
+			require_once(ROOT_DIR . '/services/Websites/Results.php');
+			$module = 'Websites';
+			$interface->assign('module', $module);
+			$action = 'Results';
+			$interface->assign('action', $action);
+			$results = new Websites_Results();
+			$results->launch();
+		}else if ($searchSource == 'ebsco'){
 			require_once (ROOT_DIR . '/services/EBSCO/Results.php');
 			$module = 'EBSCO';
 			$interface->assign('module', $module);

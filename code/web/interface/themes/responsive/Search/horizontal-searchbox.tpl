@@ -61,6 +61,9 @@
 						{foreach from=$listSearchIndexes item=searchDesc key=searchVal}
 							<option data-search_source="lists" value="{$searchVal}"{if !empty($searchIndex) && $searchIndex == $searchVal} selected="selected"{/if}>{translate text="by"} {translate text=$searchDesc}</option>
 						{/foreach}
+                        {foreach from=$websiteSearchIndexes item=searchDesc key=searchVal}
+							<option data-search_source="websites" value="{$searchVal}"{if !empty($searchIndex) && $searchIndex == $searchVal} selected="selected"{/if}>{translate text="by"} {translate text=$searchDesc}</option>
+                        {/foreach}
 					</select>
 				</div>
 

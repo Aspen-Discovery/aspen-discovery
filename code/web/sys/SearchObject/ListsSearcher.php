@@ -15,7 +15,7 @@ class SearchObject_ListsSearcher extends SearchObject_SolrSearcher
 
         require_once ROOT_DIR . "/sys/SolrConnector/ListsSolrConnector.php";
         $this->indexEngine = new ListsSolrConnector($configArray['Index']['url']);
-        $timer->logTime('Created Index Engine for Open Archives');
+        $timer->logTime('Created Index Engine for Lists');
 
         $this->allFacetSettings = getExtraConfigArray('listsFacets');
         $facetLimit = $this->getFacetSetting('Results_Settings', 'facet_limit');
