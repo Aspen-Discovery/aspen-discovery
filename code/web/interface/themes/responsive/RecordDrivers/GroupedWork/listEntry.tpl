@@ -28,10 +28,10 @@
 					<div class="result-value col-tn-9 col-xs-9 notranslate">
 						{if is_array($summAuthor)}
 							{foreach from=$summAuthor item=author}
-								<a href='{$path}/Author/Home?author="{$author|escape:"url"}"'>{$author|highlight}</a>
+								<a href='/Author/Home?author="{$author|escape:"url"}"'>{$author|highlight}</a>
 							{/foreach}
 						{else}
-							<a href='{$path}/Author/Home?author="{$summAuthor|escape:"url"}"'>{$summAuthor|highlight}</a>
+							<a href='/Author/Home?author="{$summAuthor|escape:"url"}"'>{$summAuthor|highlight}</a>
 						{/if}
 					</div>
 				</div>
@@ -41,7 +41,7 @@
 				<div class="series{$summISBN} row">
 					<div class="result-label col-xs-3">{translate text="Series"} </div>
 					<div class="result-value col-xs-9">
-						<a href="{$path}/GroupedWork/{$summId}/Series">{$summSeries.seriesTitle}</a>{if $summSeries.volume} volume {$summSeries.volume}{/if}
+						<a href="/GroupedWork/{$summId}/Series">{$summSeries.seriesTitle}</a>{if $summSeries.volume} volume {$summSeries.volume}{/if}
 					</div>
 				</div>
 			{/if}
@@ -120,9 +120,9 @@
 		<div class="col-xs-2 col-sm-2 col-md-2 col-lg-1">
 			{if $listEditAllowed}
 				<div class="btn-group-vertical" role="group">
-					<a href="{$path}/MyAccount/Edit?id={$summId|escape:"url"}{if !is_null($listSelected)}&amp;list_id={$listSelected|escape:"url"}{/if}" class="btn btn-default">{translate text='Edit'}</a>
+					<a href="/MyAccount/Edit?id={$summId|escape:"url"}{if !is_null($listSelected)}&amp;list_id={$listSelected|escape:"url"}{/if}" class="btn btn-default">{translate text='Edit'}</a>
 					{* Use a different delete URL if we're removing from a specific list or the overall favorites: *}
-					<a href="{$path}/MyAccount/MyList/{$listSelected|escape:"url"}?delete={$summId|escape:"url"}" onclick="return confirm('Are you sure you want to delete this?');" class="btn btn-default">{translate text='Delete'}</a>
+					<a href="/MyAccount/MyList/{$listSelected|escape:"url"}?delete={$summId|escape:"url"}" onclick="return confirm('Are you sure you want to delete this?');" class="btn btn-default">{translate text='Delete'}</a>
 				</div>
 
 			{/if}

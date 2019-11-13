@@ -61,10 +61,10 @@
 							<div class="col-tn-8 result-value">
 								{if is_array($record.author)}
 									{foreach from=$record.author item=author}
-										<a href='{$path}/Author/Home?"author={$author|escape:"url"}"'>{$author|highlight}</a>
+										<a href='/Author/Home?"author={$author|escape:"url"}"'>{$author|highlight}</a>
 									{/foreach}
 								{else}
-									<a href='{$path}/Author/Home?author="{$record.author|escape:"url"}"'>{$record.author|highlight}</a>
+									<a href='/Author/Home?author="{$record.author|escape:"url"}"'>{$record.author|highlight}</a>
 								{/if}
 							</div>
 						</div>

@@ -22,7 +22,7 @@ class SideLoadedRecord extends BaseEContentDriver {
 		global $sideLoadSettings;
 		$indexingProfile = $sideLoadSettings[$this->profileType];
 
-		return $configArray['Site']['path'] . "/{$indexingProfile->recordUrlComponent}/$recordId";
+		return "/{$indexingProfile->recordUrlComponent}/$recordId";
 	}
 
 	public function getMoreDetailsOptions(){

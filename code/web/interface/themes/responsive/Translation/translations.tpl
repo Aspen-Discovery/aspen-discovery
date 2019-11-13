@@ -29,7 +29,7 @@
 				<div class="col-sm-1">
 					<a href="#" onclick="return AspenDiscovery.deleteTranslationTerm('{$term->id}');">
 						{* On delete action, also remove class 'required' to turn off form validation of the deleted input; so that the form can be submitted by the user  *}
-						<img src="{$path}/images/silk/delete.png" alt="delete term {$term->term|escape}">
+						<img src="/images/silk/delete.png" alt="delete term {$term->term|escape}">
 					</a>
 				</div>
 			</div>

@@ -6,7 +6,7 @@
 				{foreach from=$lcSubjects item=subject name=loop}
 					{foreach from=$subject item=subjectPart name=subloop}
 						{if !$smarty.foreach.subloop.first} -- {/if}
-						<a href="{$path}/Search/Results?lookfor=%22{$subjectPart.search|escape:"url"}%22&amp;searchIndex=Subject">{$subjectPart.title|escape}</a>
+						<a href="/Search/Results?lookfor=%22{$subjectPart.search|escape:"url"}%22&amp;searchIndex=Subject">{$subjectPart.title|escape}</a>
 					{/foreach}
 					<br>
 			{/foreach}
@@ -21,7 +21,7 @@
 				{foreach from=$bisacSubjects item=subject name=loop}
 					{foreach from=$subject item=subjectPart name=subloop}
 						{if !$smarty.foreach.subloop.first} -- {/if}
-						<a href="{$path}/Search/Results?lookfor=%22{$subjectPart.search|escape:"url"}%22&amp;searchIndex=Subject">{$subjectPart.title|escape}</a>
+						<a href="/Search/Results?lookfor=%22{$subjectPart.search|escape:"url"}%22&amp;searchIndex=Subject">{$subjectPart.title|escape}</a>
 					{/foreach}
 					<br>
 				{/foreach}
@@ -36,7 +36,7 @@
 				{foreach from=$oclcFastSubjects item=subject name=loop}
 					{foreach from=$subject item=subjectPart name=subloop}
 						{if !$smarty.foreach.subloop.first} -- {/if}
-						<a href="{$path}/Search/Results?lookfor=%22{$subjectPart.search|escape:"url"}%22&amp;searchIndex=Subject">{$subjectPart.title|escape}</a>
+						<a href="/Search/Results?lookfor=%22{$subjectPart.search|escape:"url"}%22&amp;searchIndex=Subject">{$subjectPart.title|escape}</a>
 					{/foreach}
 					<br>
 				{/foreach}
@@ -51,7 +51,7 @@
 				{foreach from=$localSubjects item=subject name=loop}
 					{foreach from=$subject item=subjectPart name=subloop}
 						{if !$smarty.foreach.subloop.first} -- {/if}
-						<a href="{$path}/Search/Results?lookfor=%22{$subjectPart.search|escape:"url"}%22&amp;searchIndex=Subject">{$subjectPart.title|escape}</a>
+						<a href="/Search/Results?lookfor=%22{$subjectPart.search|escape:"url"}%22&amp;searchIndex=Subject">{$subjectPart.title|escape}</a>
 					{/foreach}
 					<br>
 				{/foreach}
@@ -66,7 +66,7 @@
 				{foreach from=$otherSubjects item=subject name=loop}
 					{foreach from=$subject item=subjectPart name=subloop}
 						{if !$smarty.foreach.subloop.first} -- {/if}
-						<a href="{$path}/Search/Results?lookfor=%22{$subjectPart.search|escape:"url"}%22&amp;searchIndex=Subject">{$subjectPart.title|escape}</a>
+						<a href="/Search/Results?lookfor=%22{$subjectPart.search|escape:"url"}%22&amp;searchIndex=Subject">{$subjectPart.title|escape}</a>
 					{/foreach}
 					<br>
 				{/foreach}

@@ -21,10 +21,10 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 	/** @var  IndexingProfile $indexingProfile */
 	protected $indexingProfile;
 	protected $valid = null;
-    /**
-     * @var Grouping_Record
-     */
-    private $recordFromIndex;
+	/**
+	 * @var Grouping_Record
+	 */
+	private $recordFromIndex;
 
     /**
 	 * Constructor.  We build the object using all the data retrieved
@@ -39,11 +39,11 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 	 */
 	public function __construct($recordData, $groupedWork = null)
 	{
-        // Call the parent's constructor...
-        if ($recordData instanceof File_MARC_Record) {
-        	//Full MARC record
+		// Call the parent's constructor...
+		if ($recordData instanceof File_MARC_Record) {
+			//Full MARC record
 			$this->marcRecord = $recordData;
-            $this->valid = true;
+			$this->valid = true;
 		} elseif (is_string($recordData)) {
         	//Just the id
 			require_once ROOT_DIR . '/sys/MarcLoader.php';
@@ -72,11 +72,11 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 				}
 			}
 			//Check if it's valid by checking if the marc record exists,
-	        //but don't load for performance.
-	        $this->valid = MarcLoader::marcExistsForILSId($this->getIdWithSource());
-            //$this->getMarcRecord($this->getUniqueID());
+			//but don't load for performance.
+			$this->valid = MarcLoader::marcExistsForILSId($this->getIdWithSource());
+			//$this->getMarcRecord($this->getUniqueID());
 		} else {
-        	//Array of information, this likely never happens
+			//Array of information, this likely never happens
 			// Also process the MARC record:
 			require_once ROOT_DIR . '/sys/MarcLoader.php';
 			$this->marcRecord = MarcLoader::loadMarcRecordFromRecord($recordData);
@@ -124,10 +124,10 @@ class MarcRecordDriver extends GroupedWorkSubDriver
         return $this->id;
 	}
 
-    public function getIdWithSource()
-    {
-        return $this->profileType . ':' . $this->id;
-    }
+	public function getIdWithSource()
+	{
+		return $this->profileType . ':' . $this->id;
+	}
 
 	/**
 	 * Return the unique identifier of this record within the Solr index;
@@ -139,10 +139,8 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 	 */
 	public function getId()
 	{
-        return $this->id;
+		return $this->id;
 	}
-
-
 
 	/**
 	 * Return the unique identifier of this record within the Solr index;
@@ -175,9 +173,9 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 	 */
 	public function getStaffView()
 	{
-        global $interface;
-        $groupedWorkDetails = $this->getGroupedWorkDriver()->getGroupedWorkDetails();
-        $interface->assign('groupedWorkDetails', $groupedWorkDetails);
+		global $interface;
+		$groupedWorkDetails = $this->getGroupedWorkDriver()->getGroupedWorkDetails();
+		$interface->assign('groupedWorkDetails', $groupedWorkDetails);
 
 		$interface->assign('marcRecord', $this->getMarcRecord());
 
@@ -192,13 +190,13 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 		return 'RecordDrivers/Marc/staff.tpl';
 	}
 
-    /**
-     * The Table of Contents extracted from the record.
-     * Returns null if no Table of Contents is available.
-     *
-     * @access  public
-     * @return  array              Array of elements in the table of contents
-     */
+	/**
+	 * The Table of Contents extracted from the record.
+	 * Returns null if no Table of Contents is available.
+	 *
+	 * @access  public
+	 * @return  array              Array of elements in the table of contents
+	 */
 	public function getTableOfContents()
 	{
 		$tableOfContents = array();
@@ -334,8 +332,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 	private function getFirstFieldValue($field, $subfields = null)
 	{
 		$matches = $this->getFieldArray($field, $subfields);
-		return (is_array($matches) && count($matches) > 0) ?
-				$matches[0] : null;
+		return (is_array($matches) && count($matches) > 0) ? $matches[0] : null;
 	}
 
 	/**
@@ -492,11 +489,6 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 		}
 	}
 
-
-
-
-
-
 	/**
 	 * Get the full title of the record.
 	 *
@@ -538,16 +530,16 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 		/** @var File_MARC_Data_Field $titleField */
 		$titleField = $this->getMarcRecord()->getField('245');
 		if ($titleField != null) {
-            $subFieldA = $titleField->getSubfield('a');
-            if ($subFieldA != null && $titleField->getSubfield('a') != false){
-                $untrimmedTitle = $subFieldA->getData();
-                $charsToTrim = $titleField->getIndicator(2);
-                if (is_numeric($charsToTrim)) {
-                    return substr($untrimmedTitle, $charsToTrim);
-                } else {
-                    return $untrimmedTitle;
-                }
-            }
+			$subFieldA = $titleField->getSubfield('a');
+			if ($subFieldA != null && $titleField->getSubfield('a') != false) {
+				$untrimmedTitle = $subFieldA->getData();
+				$charsToTrim = $titleField->getIndicator(2);
+				if (is_numeric($charsToTrim)) {
+					return substr($untrimmedTitle, $charsToTrim);
+				} else {
+					return $untrimmedTitle;
+				}
+			}
 		}
 		return 'Unknown';
 	}
@@ -581,11 +573,11 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 
 	public function getAuthor()
 	{
-        $author = $this->getFirstFieldValue('100', array('a', 'd'));
-        if (empty($author)) {
-            $author = $this->getFirstFieldValue('110', array('a', 'b'));
-        }
-        return $author;
+		$author = $this->getFirstFieldValue('100', array('a', 'd'));
+		if (empty($author)) {
+			$author = $this->getFirstFieldValue('110', array('a', 'b'));
+		}
+		return $author;
 	}
 
 	public function getContributors()
@@ -619,7 +611,6 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 		}
 		return $this->detailedContributors;
 	}
-
 
 	function getDescriptionFast()
 	{
@@ -843,17 +834,15 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 	}
 
 	function getFormatCategory()
-    {
-        //TODO: Find a way of loading this (from record details?)
-        return array();
-    }
+	{
+		//TODO: Find a way of loading this (from record details?)
+		return array();
+	}
 
     function getRecordUrl()
 	{
-		global $configArray;
 		$recordId = $this->getUniqueID();
-
-		return $configArray['Site']['path'] . "/" . $this->getModule() . "/$recordId";
+		return "/" . $this->getModule() . "/$recordId";
 	}
 
 	public function getItemActions($itemInfo)
@@ -1040,20 +1029,20 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 		if ($this->isbns == null) {
 			// If ISBN is in the index, it should automatically be an array... but if
 			// it's not set at all, we should normalize the value to an empty array.
-            $isbns = array();
-            /** @var File_MARC_Data_Field[] $isbnFields */
-            if ($this->isValid()) {
-                $marcRecord = $this->getMarcRecord();
-                if ($marcRecord != null) {
-                    $isbnFields = $this->getMarcRecord()->getFields('020');
-                    foreach ($isbnFields as $isbnField) {
-                        if ($isbnField->getSubfield('a') != null) {
-                            $isbns[] = $isbnField->getSubfield('a')->getData();
-                        }
-                    }
-                }
-            }
-            $this->isbns = $isbns;
+			$isbns = array();
+			/** @var File_MARC_Data_Field[] $isbnFields */
+			if ($this->isValid()) {
+				$marcRecord = $this->getMarcRecord();
+				if ($marcRecord != null) {
+					$isbnFields = $this->getMarcRecord()->getFields('020');
+					foreach ($isbnFields as $isbnField) {
+						if ($isbnField->getSubfield('a') != null) {
+							$isbns[] = $isbnField->getSubfield('a')->getData();
+						}
+					}
+				}
+			}
+			$this->isbns = $isbns;
 		}
 		return $this->isbns;
 	}
@@ -1069,20 +1058,20 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 	public function getISSNs()
 	{
 		if ($this->issns == null) {
-            $issns = array();
-            /** @var File_MARC_Data_Field[] $isbnFields */
-            if ($this->isValid()) {
-                $marcRecord = $this->getMarcRecord();
-                if ($marcRecord != null) {
-                    $isbnFields = $this->getMarcRecord()->getFields('022');
-                    foreach ($isbnFields as $isbnField) {
-                        if ($isbnField->getSubfield('a') != null) {
-                            $issns[] = $isbnField->getSubfield('a')->getData();
-                        }
-                    }
-                }
-            }
-            $this->issns = $issns;
+			$issns = array();
+			/** @var File_MARC_Data_Field[] $isbnFields */
+			if ($this->isValid()) {
+				$marcRecord = $this->getMarcRecord();
+				if ($marcRecord != null) {
+					$isbnFields = $this->getMarcRecord()->getFields('022');
+					foreach ($isbnFields as $isbnField) {
+						if ($isbnField->getSubfield('a') != null) {
+							$issns[] = $isbnField->getSubfield('a')->getData();
+						}
+					}
+				}
+			}
+			$this->issns = $issns;
 		}
 		return $this->issns;
 	}
@@ -1095,23 +1084,23 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 	 */
 	public function getUPCs()
 	{
-	    if ($this->upcs == null){
-            // If UPCs is in the index, it should automatically be an array... but if
-            // it's not set at all, we should normalize the value to an empty array.
-            $this->upcs = array();
-            /** @var File_MARC_Data_Field[] $upcFields */
-            $marcRecord = $this->getMarcRecord();
-            if ($marcRecord != false) {
-                $upcFields = $marcRecord->getFields('024');
-                foreach ($upcFields as $upcField) {
-                    if ($upcField->getSubfield('a') != null) {
-                        $this->upcs[] = $upcField->getSubfield('a')->getData();
-                    }
-                }
-            }
-        }
+		if ($this->upcs == null) {
+			// If UPCs is in the index, it should automatically be an array... but if
+			// it's not set at all, we should normalize the value to an empty array.
+			$this->upcs = array();
+			/** @var File_MARC_Data_Field[] $upcFields */
+			$marcRecord = $this->getMarcRecord();
+			if ($marcRecord != false) {
+				$upcFields = $marcRecord->getFields('024');
+				foreach ($upcFields as $upcField) {
+					if ($upcField->getSubfield('a') != null) {
+						$this->upcs[] = $upcField->getSubfield('a')->getData();
+					}
+				}
+			}
+		}
 
-        return $this->upcs;
+		return $this->upcs;
 	}
 
 	public function getMoreDetailsOptions()
@@ -1339,7 +1328,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 					$this->marcRecord = false;
 				}else{
 				    $this->valid = true;
-                }
+				}
 			} catch (Exception $e) {
 				//Unable to load record this happens from time to time
 				$this->valid = false;

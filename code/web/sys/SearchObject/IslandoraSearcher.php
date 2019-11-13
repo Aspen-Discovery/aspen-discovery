@@ -487,11 +487,11 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 	protected function getBaseUrl()
 	{
 		if ($this->searchType == 'list') {
-			return $this->serverUrl . '/MyAccount/MyList/' .
+			return '/MyAccount/MyList/' .
 			urlencode($_GET['id']) . '?';
 		}
 		// Base URL is different for author searches:
-		return $this->serverUrl . '/Archive/Results?';
+		return '/Archive/Results?';
 	}
 
 	/**

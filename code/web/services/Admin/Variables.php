@@ -112,7 +112,7 @@ class Admin_Variables extends ObjectEditor{
 					global $configArray;
 					if (isset($configArray['Catalog']['enableLoginWhileOffline']) && empty($configArray['Catalog']['enableLoginWhileOffline'])) {
 						$_SESSION['lastError'] = "While offline logins are disabled offline mode can not be turned on with this variable.";
-						header("Location: {$configArray['Site']['path']}{$_SERVER['REQUEST_URI']}");
+						header("Location: {$_SERVER['REQUEST_URI']}");
 						die();
 					}
 				}

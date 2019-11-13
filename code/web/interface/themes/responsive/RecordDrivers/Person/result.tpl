@@ -8,11 +8,11 @@
 		</div>
 
 		<div class="col-md-7 text-center">
-			<a href="{$path}/Person/{$summId}">
+			<a href="/Person/{$summId}">
 			{if $summPicture}
-			<img src="{$path}/files/thumbnail/{$summPicture}" class="alignleft listResultImage" alt="{translate text='Picture' inAttribute=true}"/><br />
+			<img src="/files/thumbnail/{$summPicture}" class="alignleft listResultImage" alt="{translate text='Picture' inAttribute=true}"/><br />
 			{else}
-			<img src="{$path}/interface/themes/responsive/images/person.png" class="alignleft listResultImage" alt="{translate text='No Cover Image' inAttribute=true}"/><br />
+			<img src="/interface/themes/responsive/images/person.png" class="alignleft listResultImage" alt="{translate text='No Cover Image' inAttribute=true}"/><br />
 			{/if}
 			</a>
 		</div>
@@ -22,7 +22,7 @@
 		<div class="row">
 			{if $summScore}({$summScore}) {/if}
 			<strong>
-				<a href="{$path}/Person/{$summId}" class="title">{if !$summTitle}{translate text='Title not available'}{else}{$summTitle|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if}</a>
+				<a href="/Person/{$summId}" class="title">{if !$summTitle}{translate text='Title not available'}{else}{$summTitle|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if}</a>
 				{if $summTitleStatement}
 					<div class="searchResultSectionInfo">
 					{$summTitleStatement|removeTrailingPunctuation|truncate:180:"..."|highlight}

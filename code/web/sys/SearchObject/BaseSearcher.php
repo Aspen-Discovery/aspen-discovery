@@ -44,8 +44,6 @@ abstract class SearchObject_BaseSearcher
 	protected $resultsTotal = 0;
 
 	// OTHER VARIABLES
-	// Server URL
-	protected $serverUrl = "";
 	// Module and Action for building search results URLs
 	protected $resultsModule = 'Search';
 	protected $resultsAction = 'Results';
@@ -92,11 +90,7 @@ abstract class SearchObject_BaseSearcher
 	 */
 	public function __construct()
 	{
-		global $configArray;
 		global $timer;
-
-		// Get the start of the server URL and store
-		$this->serverUrl = $configArray['Site']['path'];
 
 		$timer->logTime('Setup Base Search Object');
 	}
@@ -454,7 +448,7 @@ abstract class SearchObject_BaseSearcher
 	 */
 	protected function getBaseUrl()
 	{
-		return $this->serverUrl."/{$this->resultsModule}/{$this->resultsAction}?";
+		return "/{$this->resultsModule}/{$this->resultsAction}?";
 	}
 
 	/**

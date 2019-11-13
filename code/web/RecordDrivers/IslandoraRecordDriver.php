@@ -738,9 +738,8 @@ abstract class IslandoraRecordDriver extends IndexRecordDriver {
      * @return string
      */
 	function getRecordUrl(){
-		global $configArray;
 		$recordId = $this->getUniqueID();
-        return $configArray['Site']['path'] . '/Archive/' . urlencode($recordId) . '/' . $this->getViewAction();
+        return '/Archive/' . urlencode($recordId) . '/' . $this->getViewAction();
 	}
 
     /**
@@ -757,8 +756,7 @@ abstract class IslandoraRecordDriver extends IndexRecordDriver {
 	public abstract function getViewAction();
 
 	protected function getPlaceholderImage() {
-		global $configArray;
-		return $configArray['Site']['path'] . '/interface/themes/responsive/images/History.png';
+		return '/interface/themes/responsive/images/History.png';
 	}
 
 	private $subjectHeadings = null;
@@ -809,13 +807,12 @@ abstract class IslandoraRecordDriver extends IndexRecordDriver {
 
 	private $subjectsWithLinks = null;
 	public function getAllSubjectsWithLinks() {
-		global $configArray;
 		if ($this->subjectsWithLinks == null) {
 			//Extract Subjects
 			$this->subjectsWithLinks = array();
 			$matches = $this->getModsValues('topic', 'mods');
 			foreach ($matches as $subjectPart) {
-				$subjectLink = $configArray['Site']['path'] . '/Archive/Results?lookfor=';
+				$subjectLink = '/Archive/Results?lookfor=';
 				if (strlen($subjectPart) > 0) {
 					$subjectLink .= '&filter[]=mods_subject_topic_ms%3A' . urlencode('"' .(string)$subjectPart . '"');
 					$this->subjectsWithLinks[] = array(

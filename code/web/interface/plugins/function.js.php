@@ -49,7 +49,6 @@ function smarty_function_js($params, &$smarty){
 	// so we can find CSS files:
 	global $configArray;
 
-	$path = $configArray['Site']['path'];
 	$local = $configArray['Site']['local'];
 	$themes = explode(',', $smarty->getThemes());
 	$themes[] = 'default';
@@ -63,7 +62,7 @@ function smarty_function_js($params, &$smarty){
 		// If the file exists on the local file system, set $js to the relative
 		// path needed to link to it from the web interface.
 		if (file_exists("{$local}/interface/themes/{$theme}/js/{$filename}")) {
-			$js = "{$path}/interface/themes/{$theme}/js/{$filename}";
+			$js = "/interface/themes/{$theme}/js/{$filename}";
 			break;
 		}
 	}
@@ -72,7 +71,7 @@ function smarty_function_js($params, &$smarty){
 	// still doesn't help, we shouldn't try to link to it:
 	if (!$js) {
 		if (file_exists("{$local}/js/{$filename}")) {
-			$js = "{$path}/js/{$filename}";
+			$js = "/js/{$filename}";
 		} else {
 			return '';
 		}

@@ -4,7 +4,7 @@
 	{if !empty($linkedUsers) && count($linkedUsers) > 1} {* Linked Users contains the active user as well *}
 		<div class="row">
 			<div class="col-tn-12">
-				<form action="{$path}{$actionPath}" method="get" class="form form-inline">
+				<form action="{$actionPath}" method="get" class="form form-inline">
 					<div id="linkedUserOptions" class="form-group">
 						<label class="control-label" for="patronId">{$label|translate}&nbsp;</label>
 

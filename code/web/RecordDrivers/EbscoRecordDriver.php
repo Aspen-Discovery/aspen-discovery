@@ -59,7 +59,7 @@ class EbscoRecordDriver extends RecordInterface {
 	public function getRecordUrl() {
 		//TODO: Switch back to an internal link once we do a full EBSCO implementation
 		//global $configArray;
-		//return $configArray['Site']['path'] . '/EBSCO/Home?id=' . urlencode($this->getUniqueID());
+		//return '/EBSCO/Home?id=' . urlencode($this->getUniqueID());
 		return $this->recordData->PLink;
 	}
 

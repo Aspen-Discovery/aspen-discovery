@@ -1,6 +1,6 @@
 {strip}
 	<div class="navbar navbar-skinny">
-		<form method="post" name="languagePreferencesForm" id="languagePreferencesForm" action="{$path}/AJAX/JSON" class="form form-inline pull-right">
+		<form method="post" name="languagePreferencesForm" id="languagePreferencesForm" action="/AJAX/JSON" class="form form-inline pull-right">
 			<input type="hidden" name="method" value="saveLanguagePreferences">
 			<div class="form-group">
 				<label for="searchPreferenceLanguage" class="control-label">{translate text="Prefer materials in %1%?" 1=$userLang->displayName}</label>&nbsp;

@@ -24,8 +24,6 @@ class WikipediaParser {
      * @author  Rushikesh Katikar <rushikesh.katikar@gmail.com>
      */
 	public function parseWikipedia($body, $lang = 'en') {
-		global $configArray;
-
 		// Check if data exists or not
 		if(!isset($body['query']['pages']) || isset($body['query']['pages']['-1'])) {
 			return new AspenError('No page found');
@@ -193,9 +191,9 @@ class WikipediaParser {
 
 		// Convert wikipedia links
 		$pattern[] = '/(\x5b\x5b)([^\x5d|]*)(\x5d\x5d)/Us';
-		$replacement[] = '<a href="' . $configArray['Site']['path'] . '/Search/Results?lookfor=%22$2%22&amp;type=Keyword">$2</a>';
+		$replacement[] = '<a href="' . '/Search/Results?lookfor=%22$2%22&amp;type=Keyword">$2</a>';
 		$pattern[] = '/(\x5b\x5b)([^\x5d]*)\x7c([^\x5d]*)(\x5d\x5d)/Us';
-		$replacement[] = '<a href="' . $configArray['Site']['path'] . '/Search/Results?lookfor=%22$2%22&amp;type=Keyword">$3</a>';
+		$replacement[] = '<a href="' . '/Search/Results?lookfor=%22$2%22&amp;type=Keyword">$3</a>';
 
 		// Fix pronunciation guides
 		$pattern[] = '/({{)pron-en\|([^}]*)(}})/Us';

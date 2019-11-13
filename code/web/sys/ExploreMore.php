@@ -419,7 +419,7 @@ class ExploreMore {
 									'label' => $archiveObject->label,
 									'description' => $archiveObject->label,
 									'image' => $fedoraUtils->getObjectImageUrl($archiveObject, 'medium'),
-									'link' => $configArray['Site']['path'] . "/Archive/{$archiveObject->id}/Exhibit",
+									'link' => "/Archive/{$archiveObject->id}/Exhibit",
 									'usageCount' => $collectionInfo[1]
 								);
 							}
@@ -544,113 +544,113 @@ class ExploreMore {
 		return $exploreMoreOptions;
 	}
 
-	protected function loadListOptions($activeSection, $exploreMoreOptions, $searchTerm){
-        global $configArray;
-        if ($activeSection != 'lists') {
-            if (strlen($searchTerm) > 0) {
-                /** @var SearchObject_ListsSearcher $searchObject */
-                $searchObjectSolr = SearchObjectFactory::initSearchObject('Lists');
-                $searchObjectSolr->init();
-                $searchObjectSolr->disableSpelling();
-                $searchObjectSolr->setSearchTerms(array(
-                    'lookfor' => $searchTerm,
-                    'index' => 'ListsKeyword'
-                ));
-                $searchObjectSolr->setPage(1);
-                $searchObjectSolr->setLimit(5);
-                $results = $searchObjectSolr->processSearch(true, false);
+	protected function loadListOptions($activeSection, $exploreMoreOptions, $searchTerm)
+	{
+		if ($activeSection != 'lists') {
+			if (strlen($searchTerm) > 0) {
+				/** @var SearchObject_ListsSearcher $searchObject */
+				$searchObjectSolr = SearchObjectFactory::initSearchObject('Lists');
+				$searchObjectSolr->init();
+				$searchObjectSolr->disableSpelling();
+				$searchObjectSolr->setSearchTerms(array(
+					'lookfor' => $searchTerm,
+					'index' => 'ListsKeyword'
+				));
+				$searchObjectSolr->setPage(1);
+				$searchObjectSolr->setLimit(5);
+				$results = $searchObjectSolr->processSearch(true, false);
 
-                if ($results && isset($results['response'])) {
-                    $numCatalogResultsAdded = 0;
-                    foreach ($results['response']['docs'] as $doc) {
-                        /** @var ListsRecordDriver $driver */
-                        $driver = $searchObjectSolr->getRecordDriverForResult($doc);
-                        $numCatalogResults = $results['response']['numFound'];
-                        if ($numCatalogResultsAdded == 4 && $numCatalogResults > 5) {
-                            //Add a link to remaining results
-                            $exploreMoreOptions[] = array(
-                                'label' => "Lists ($numCatalogResults)",
-                                'description' => "Lists ($numCatalogResults)",
-                                //TODO: provide a better icon
-                                'image' => $configArray['Site']['path'] . '/interface/themes/responsive/images/library_symbol.png',
-                                'link' => $searchObjectSolr->renderSearchUrl(),
-                                'usageCount' => 1
-                            );
-                        } else {
-                            //Add a link to the actual title
-                            $exploreMoreOptions[] = array(
-                                'label' => $driver->getTitle(),
-                                'description' => $driver->getTitle(),
-                                'image' => $driver->getBookcoverUrl('medium'),
-                                'link' => $driver->getLinkUrl(),
-                                'usageCount' => 1
-                            );
-                        }
+				if ($results && isset($results['response'])) {
+					$numCatalogResultsAdded = 0;
+					foreach ($results['response']['docs'] as $doc) {
+						/** @var ListsRecordDriver $driver */
+						$driver = $searchObjectSolr->getRecordDriverForResult($doc);
+						$numCatalogResults = $results['response']['numFound'];
+						if ($numCatalogResultsAdded == 4 && $numCatalogResults > 5) {
+							//Add a link to remaining results
+							$exploreMoreOptions[] = array(
+								'label' => "Lists ($numCatalogResults)",
+								'description' => "Lists ($numCatalogResults)",
+								//TODO: provide a better icon
+								'image' => '/interface/themes/responsive/images/library_symbol.png',
+								'link' => $searchObjectSolr->renderSearchUrl(),
+								'usageCount' => 1
+							);
+						} else {
+							//Add a link to the actual title
+							$exploreMoreOptions[] = array(
+								'label' => $driver->getTitle(),
+								'description' => $driver->getTitle(),
+								'image' => $driver->getBookcoverUrl('medium'),
+								'link' => $driver->getLinkUrl(),
+								'usageCount' => 1
+							);
+						}
 
-                        $numCatalogResultsAdded++;
-                    }
-                }
-            }
-        }
-        return $exploreMoreOptions;
-    }
+						$numCatalogResultsAdded++;
+					}
+				}
+			}
+		}
+		return $exploreMoreOptions;
+	}
 
-    /**
-     * @param $activeSection
-     * @param $exploreMoreOptions
-     * @param $searchTerm
-     * @return array
-     */
-    protected function loadOpenArchiveOptions($activeSection, $exploreMoreOptions, $searchTerm) {
-        global $configArray;
-        if ($activeSection != 'open_archives') {
-            if (strlen($searchTerm) > 0) {
-                /** @var SearchObject_OpenArchivesSearcher $searchObjectSolr */
-                $searchObjectSolr = SearchObjectFactory::initSearchObject('OpenArchives');
-                $searchObjectSolr->init();
-                $searchObjectSolr->disableSpelling();
-                $searchObjectSolr->setSearchTerms(array(
-                    'lookfor' => $searchTerm,
-                    'index' => 'OpenArchivesKeyword'
-                ));
-                $searchObjectSolr->setPage(1);
-                $searchObjectSolr->setLimit(5);
-                $results = $searchObjectSolr->processSearch(true, false);
+	/**
+	 * @param $activeSection
+	 * @param $exploreMoreOptions
+	 * @param $searchTerm
+	 * @return array
+	 */
+	protected function loadOpenArchiveOptions($activeSection, $exploreMoreOptions, $searchTerm)
+	{
+		if ($activeSection != 'open_archives') {
+			if (strlen($searchTerm) > 0) {
+				/** @var SearchObject_OpenArchivesSearcher $searchObjectSolr */
+				$searchObjectSolr = SearchObjectFactory::initSearchObject('OpenArchives');
+				$searchObjectSolr->init();
+				$searchObjectSolr->disableSpelling();
+				$searchObjectSolr->setSearchTerms(array(
+					'lookfor' => $searchTerm,
+					'index' => 'OpenArchivesKeyword'
+				));
+				$searchObjectSolr->setPage(1);
+				$searchObjectSolr->setLimit(5);
+				$results = $searchObjectSolr->processSearch(true, false);
 
-                if ($results && isset($results['response'])) {
-                    $numCatalogResultsAdded = 0;
-                    foreach ($results['response']['docs'] as $doc) {
-                        /** @var OpenArchivesRecordDriver $driver */
-                        $driver = $searchObjectSolr->getRecordDriverForResult($doc);
-                        $numCatalogResults = $results['response']['numFound'];
-                        if ($numCatalogResultsAdded == 4 && $numCatalogResults > 5) {
-                            //Add a link to remaining results
-                            $exploreMoreOptions[] = array(
-                                'label' => "Archive Results ($numCatalogResults)",
-                                'description' => "Archive Results ($numCatalogResults)",
-                                //TODO: Provide a better title
-                                'image' => $configArray['Site']['path'] . '/interface/themes/responsive/images/library_symbol.png',
-                                'link' => $searchObjectSolr->renderSearchUrl(),
-                                'usageCount' => 1
-                            );
-                        } else {
-                            //Add a link to the actual title
-                            $exploreMoreOptions[] = array(
-                                'label' => $driver->getTitle(),
-                                'description' => $driver->getTitle(),
-                                'image' => $driver->getBookcoverUrl('medium'),
-                                'link' => $driver->getLinkUrl(),
-                                'usageCount' => 1
-                            );
-                        }
+				if ($results && isset($results['response'])) {
+					$numCatalogResultsAdded = 0;
+					foreach ($results['response']['docs'] as $doc) {
+						/** @var OpenArchivesRecordDriver $driver */
+						$driver = $searchObjectSolr->getRecordDriverForResult($doc);
+						$numCatalogResults = $results['response']['numFound'];
+						if ($numCatalogResultsAdded == 4 && $numCatalogResults > 5) {
+							//Add a link to remaining results
+							$exploreMoreOptions[] = array(
+								'label' => "Archive Results ($numCatalogResults)",
+								'description' => "Archive Results ($numCatalogResults)",
+								//TODO: Provide a better title
+								'image' => '/interface/themes/responsive/images/library_symbol.png',
+								'link' => $searchObjectSolr->renderSearchUrl(),
+								'usageCount' => 1
+							);
+						} else {
+							//Add a link to the actual title
+							$exploreMoreOptions[] = array(
+								'label' => $driver->getTitle(),
+								'description' => $driver->getTitle(),
+								'image' => $driver->getBookcoverUrl('medium'),
+								'link' => $driver->getLinkUrl(),
+								'usageCount' => 1
+							);
+						}
 
-                        $numCatalogResultsAdded++;
-                    }
-                }
-            }
-        }
-        return $exploreMoreOptions;
-    }
+						$numCatalogResultsAdded++;
+					}
+				}
+			}
+		}
+		return $exploreMoreOptions;
+	}
 
 	/**
 	 * @param $activeSection
@@ -659,7 +659,6 @@ class ExploreMore {
 	 * @return array
 	 */
 	protected function loadCatalogOptions($activeSection, $exploreMoreOptions, $searchTerm) {
-		global $configArray;
 		if ($activeSection != 'catalog') {
 			if (strlen($searchTerm) > 0) {
 				/** @var SearchObject_GroupedWorkSearcher $searchObjectSolr */
@@ -712,7 +711,7 @@ class ExploreMore {
 							$exploreMoreOptions[] = array(
 									'label' => "Catalog Results ($numCatalogResults)",
 									'description' => "Catalog Results ($numCatalogResults)",
-									'image' => $configArray['Site']['path'] . '/interface/themes/responsive/images/library_symbol.png',
+									'image' => '/interface/themes/responsive/images/library_symbol.png',
 									'link' => $searchObjectSolr->renderSearchUrl(),
 									'usageCount' => 1
 							);
@@ -743,7 +742,6 @@ class ExploreMore {
 	 */
 	public function loadEbscoOptions($activeSection, $exploreMoreOptions, $searchTerm) {
 		global $library;
-		global $configArray;
 		//TODO: Reenable once we do full EDS integration
 		if (false && $library->edsApiProfile && $activeSection != 'ebsco') {
 			//Load EDS options
@@ -766,7 +764,7 @@ class ExploreMore {
 										$exploreMoreOptions[] = array(
 												'label' => "$facetValueStr ({$numFacetMatches})",
 												'description' => "{$facetValueStr} in EBSCO related to {$searchTerm}",
-												'image' => $configArray['Site']['path'] . "/interface/themes/responsive/images/{$iconName}.png",
+												'image' => "/interface/themes/responsive/images/{$iconName}.png",
 												'link' => '/EBSCO/Results?lookfor=' . urlencode($searchTerm) . '&filter[]=' . $facetInfo->Id . ':' . $facetValueStr,
 										);
 									}
@@ -778,7 +776,7 @@ class ExploreMore {
 						$exploreMoreOptions[] = array(
 								'label' => "All EBSCO Results ({$numMatches})",
 								'description' => "All Results in EBSCO related to {$searchTerm}",
-								'image' => $configArray['Site']['path'] . '/interface/themes/responsive/images/ebsco_eds.png',
+								'image' => '/interface/themes/responsive/images/ebsco_eds.png',
 								'link' => '/EBSCO/Results?lookfor=' . urlencode($searchTerm)
 						);
 					}

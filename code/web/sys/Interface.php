@@ -116,15 +116,11 @@ class UInterface extends Smarty
 		$this->register_function('char', 'char');
 
 		$this->assign('site', $configArray['Site']);
-		$this->assign('path', $configArray['Site']['path']);
 		$url = $_SERVER['SERVER_NAME'];
 		if (isset($_SERVER['HTTPS'])){
 			$url = "https://" . $url;
 		}else{
 			$url = "http://" . $url;
-		}
-		if (strlen($configArray['Site']['path']) > 0){
-			$url .= '/' . $configArray['Site']['path'];
 		}
 		$this->url = $url;
 		$this->assign('template_dir',$this->template_dir);
@@ -405,7 +401,7 @@ class UInterface extends Smarty
 		}
 
 		$location = $locationSingleton->getActiveLocation();
-		$this->assign('logoLink', $configArray['Site']['path']);
+		$this->assign('logoLink', '');
 		$this->assign('logoAlt', 'Return to Catalog Home');
 		if ($library->useHomeLinkForLogo){
 			if (isset($location) && strlen($location->homeLink) > 0 && $location->homeLink != 'default'){

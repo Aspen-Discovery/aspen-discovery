@@ -1,6 +1,6 @@
 {strip}
 	<div>
-		<form method="post" name="translateTermForm" id="translateTermForm" action="{$path}/AJAX/JSON" class="form">
+		<form method="post" name="translateTermForm" id="translateTermForm" action="/AJAX/JSON" class="form">
 			<div>
 				<input type="hidden" name="termId" value="{$translationTerm->id}" id="termId">
 				<input type="hidden" name="translationId" value="{$translation->id}" id="translationId">

@@ -408,8 +408,6 @@ class ListAPI extends Action {
 	}
 
 	function getCacheInfoForListId($listId) {
-		global $configArray;
-
 		if (isset($_REQUEST['username']) && isset($_REQUEST['password'])){
 			$username = $_REQUEST['username'];
 			$password = $_REQUEST['password'];
@@ -424,7 +422,7 @@ class ListAPI extends Action {
 			}
 			return array(
 				'cacheType' => 'general',
-				'fullListLink' => $configArray['Site']['path'] . '/MyAccount/MyList/' . $listId,
+				'fullListLink' => '/MyAccount/MyList/' . $listId,
 			);
 
 		}elseif (preg_match('/review:(.*)/', $listId, $reviewInfo)){
@@ -457,7 +455,7 @@ class ListAPI extends Action {
 				$searchId = $searchInfo[1];
 				return array(
 					'cacheType' => 'general',
-					'fullListLink' => $configArray['Site']['path'] . '/Search/Results?saved=' . $searchId,
+					'fullListLink' => '/Search/Results?saved=' . $searchId,
 				);
 			}else{
 				return array(
@@ -513,9 +511,6 @@ class ListAPI extends Action {
 	}
 
 	function getSavedSearchTitles($searchId, $numTitlesToShow){
-		/** @var Memcache $memCache */
-		global $memCache;
-		$cacheId = 'saved_search_titles_' . $searchId;
 		//return a random selection of 30 titles from the list.
 		/** @var SearchObject_GroupedWorkSearcher|SearchObject_BaseSearcher $searchObj */
 		$searchObj = SearchObjectFactory::initSearchObject();

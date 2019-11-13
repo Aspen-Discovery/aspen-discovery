@@ -7,13 +7,13 @@
 					<p class="alert alert-danger">{$resetPinResult.error}</p>
 					{if $resetToken && $userID}
 						<div>
-							<a class="btn btn-primary" role="button" href="{$path}/MyAccount/ResetPin?resetToken={$resetToken}&uid={$userID}">Try Again</a>
+							<a class="btn btn-primary" role="button" href="/MyAccount/ResetPin?resetToken={$resetToken}&uid={$userID}">Try Again</a>
 						</div>
 					{/if}
 				{else}
 					<p class="alert alert-success">Your PIN number has been reset.</p>
 					<p>
-						<a class="btn btn-primary" role="button" href="{$path}/MyAccount/Login">{translate text='Login'}</a>
+						<a class="btn btn-primary" role="button" href="/MyAccount/Login">{translate text='Login'}</a>
 					</p>
 				{/if}
 			</div>

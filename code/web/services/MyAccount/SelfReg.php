@@ -48,7 +48,7 @@ class SelfReg extends Action {
 			}
 		}
 
-		$interface->assign('submitUrl', $configArray['Site']['path'] . '/MyAccount/SelfReg');
+		$interface->assign('submitUrl', '/MyAccount/SelfReg');
 		$interface->assign('structure', $selfRegFields);
 		$interface->assign('saveButtonText', 'Register');
 

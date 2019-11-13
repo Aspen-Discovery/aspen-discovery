@@ -6,7 +6,7 @@
 			{translate text="Please enter a new 4 digit PIN number."}
 		</div>
 
-		<form id="resetPin" method="POST" action="{$path}/MyAccount/ResetPin" class="form-horizontal">
+		<form id="resetPin" method="POST" action="/MyAccount/ResetPin" class="form-horizontal">
 			{if $resetToken}
 				<input type="hidden" name="resetToken" value="{$resetToken}">
 			{/if}

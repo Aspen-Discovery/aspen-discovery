@@ -30,10 +30,10 @@
 					<a class="btn btn-default" href="/Archive/{$pid}/DownloadPDF">Download PDF</a>
 				{/if}
 				{if $allowRequestsForArchiveMaterials}
-					<a class="btn btn-default" href="{$path}/Archive/RequestCopy?pid={$pid}">Request Copy</a>
+					<a class="btn btn-default" href="/Archive/RequestCopy?pid={$pid}">Request Copy</a>
 				{/if}
 				{if $showClaimAuthorship}
-					<a class="btn btn-default" href="{$path}/Archive/ClaimAuthorship?pid={$pid}">Claim Authorship</a>
+					<a class="btn btn-default" href="/Archive/ClaimAuthorship?pid={$pid}">Claim Authorship</a>
 				{/if}
 				{if $showFavorites == 1}
 					<a onclick="return AspenDiscovery.Archive.showSaveToListForm(this, '{$pid|escape}');" class="btn btn-default ">{translate text='Add to favorites'}</a>

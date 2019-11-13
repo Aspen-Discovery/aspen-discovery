@@ -6,7 +6,6 @@ class MyAccount_OverDriveOptions extends MyAccount
 {
 	function launch()
 	{
-		global $configArray;
 		global $interface;
 		$user = UserAccount::getLoggedInUser();
 
@@ -31,7 +30,7 @@ class MyAccount_OverDriveOptions extends MyAccount
 				$patron->updateOverDriveOptions();
 
 				session_write_close();
-				$actionUrl = $configArray['Site']['path'] . '/MyAccount/OverDriveOptions' . ( $patronId == $user->id ? '' : '?patronId='.$patronId ); // redirect after form submit completion
+				$actionUrl = '/MyAccount/OverDriveOptions' . ( $patronId == $user->id ? '' : '?patronId='.$patronId ); // redirect after form submit completion
 				header("Location: " . $actionUrl);
 				exit();
 			} elseif (!$offlineMode) {

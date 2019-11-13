@@ -25,7 +25,7 @@ class BookCoverProcessor{
 	private $reload;
 	/** @var  Logger $logger */
 	private $logger;
-	private $doCoverLogging;
+	private $doCoverLogging = false;
 	private $configArray;
 	/** @var  Timer $timer */
 	private $timer;
@@ -37,7 +37,6 @@ class BookCoverProcessor{
         $this->doTimings = $this->configArray['System']['coverTimings'];
         $this->timer->enableTimings($this->doTimings);
         $this->logger = $logger;
-        $this->doCoverLogging = $this->configArray['Logging']['coverLogging'];
 
         $this->log("Starting to load cover", Logger::LOG_NOTICE);
         $this->bookCoverPath = $configArray['Site']['coverPath'];

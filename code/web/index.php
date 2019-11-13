@@ -307,7 +307,7 @@ if ($isLoggedIn) {
 			}
 
 			echo("Redirecting to followup location");
-			$followupUrl = $configArray['Site']['path'] . "/". strip_tags($_REQUEST['followupModule']);
+			$followupUrl = "/". strip_tags($_REQUEST['followupModule']);
 			if (!empty($_REQUEST['recordId'])) {
 				$followupUrl .= "/" . strip_tags($_REQUEST['recordId']);
 			}
@@ -717,7 +717,7 @@ function processFollowup(){
 
 	switch($_REQUEST['followup']) {
 		case 'SaveSearch':
-			header("Location: {$configArray['Site']['path']}/".$_REQUEST['followupModule']."/".$_REQUEST['followupAction']."?".$_REQUEST['recordId']);
+			header("Location: /".$_REQUEST['followupModule']."/".$_REQUEST['followupAction']."?".$_REQUEST['recordId']);
 			die();
 			break;
 	}

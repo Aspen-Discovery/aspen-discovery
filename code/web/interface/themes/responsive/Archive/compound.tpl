@@ -88,10 +88,10 @@
 				<a class="btn btn-default" onclick="return AspenDiscovery.Account.followLinkIfLoggedIn(this)" href="/Archive/{$pid}/DownloadPDF">{translate text="Login to Download PDF"}</a>
 			{/if}
 			{if $allowRequestsForArchiveMaterials}
-				<a class="btn btn-default" href="{$path}/Archive/RequestCopy?pid={$pid}">{translate text="Request Copy"}</a>
+				<a class="btn btn-default" href="/Archive/RequestCopy?pid={$pid}">{translate text="Request Copy"}</a>
 			{/if}
 			{if $showClaimAuthorship}
-				<a class="btn btn-default" href="{$path}/Archive/ClaimAuthorship?pid={$pid}">{translate text="Claim Authorship"}</a>
+				<a class="btn btn-default" href="/Archive/ClaimAuthorship?pid={$pid}">{translate text="Claim Authorship"}</a>
 			{/if}
 			{if $showFavorites == 1}
 				<a onclick="return AspenDiscovery.Archive.showSaveToListForm(this, '{$pid|escape}');" class="btn btn-default ">{translate text='Add to favorites'}</a>
@@ -143,8 +143,8 @@
 		{include file="Archive/metadata.tpl"}
 	</div>
 {/strip}
-<script src="{$path}/js/openseadragon/openseadragon.js" ></script>
-<script src="{$path}/js/openseadragon/djtilesource.js" ></script>
+<script src="/js/openseadragon/openseadragon.js" ></script>
+<script src="/js/openseadragon/djtilesource.js" ></script>
 {if $canView}
 <script type="text/javascript">
 	{if !($anonymousMasterDownload || ($loggedIn && $verifiedMasterDownload))}

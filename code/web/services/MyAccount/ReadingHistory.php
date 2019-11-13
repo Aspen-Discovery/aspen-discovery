@@ -7,7 +7,6 @@ class ReadingHistory extends MyAccount
 {
 	function launch()
 	{
-		global $configArray;
 		global $interface;
 		global $library;
 		$interface->assign('showRatings', $library->showRatings);
@@ -50,7 +49,7 @@ class ReadingHistory extends MyAccount
 					$patron->doReadingHistoryAction($readingHistoryAction, $selectedTitles);
 
 					//redirect back to the current location without the action.
-					$newLocation = "{$configArray['Site']['path']}/MyAccount/ReadingHistory";
+					$newLocation = "/MyAccount/ReadingHistory";
 					if (isset($_REQUEST['page']) && $readingHistoryAction != 'deleteAll' && $readingHistoryAction != 'optOut'){
 						$params[] = 'page=' . $_REQUEST['page'];
 					}

@@ -83,7 +83,7 @@
 						</td>
 						<td>
 							<a href="#" onclick='deleteLink({$link->id});'>
-								<img src="{$path}/images/silk/delete.png" alt="Delete Link" title="Delete Link"/>
+								<img src="/images/silk/delete.png" alt="Delete Link" title="Delete Link"/>
 							</a>
 						</td>
 					</tr>

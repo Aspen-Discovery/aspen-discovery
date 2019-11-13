@@ -20,7 +20,7 @@
 					<label for='{$propName}'{if $property.description} title="{$property.description}"{/if}>{$property.label|translate}</label>
 				</div>
 				<div class="col-xs-1">
-					<a href="{$property.helpLink}" target="_blank"><img src="{$path}/interface/themes/responsive/images/help.png" alt="Help"></a>
+					<a href="{$property.helpLink}" target="_blank"><img src="/interface/themes/responsive/images/help.png" alt="Help"></a>
 				</div>
 			</div>
 		{elseif $property.type != 'section' && $property.type != 'checkbox' && $property.type != 'hidden'}
@@ -49,7 +49,7 @@
 							</h4>
 							{if $property.helpLink}
 								<div class="col-xs-1">
-									<a href="{$property.helpLink}" target="_blank"><img src="{$path}/interface/themes/responsive/images/help.png" alt="Help"></a>
+									<a href="{$property.helpLink}" target="_blank"><img src="/interface/themes/responsive/images/help.png" alt="Help"></a>
 								</div>
 							{/if}
 						</div>
@@ -166,10 +166,10 @@
 			{if $propValue}
 				{if $property.type == 'image'}
 					{if $property.thumbWidth}
-						<img src='{$path}/files/thumbnail/{$propValue}' style="display: block" alt="Selected Image for {$property.label}">
+						<img src='/files/thumbnail/{$propValue}' style="display: block" alt="Selected Image for {$property.label}">
 						{$propValue} &nbsp;
 					{else}
-						<img src='{$path}/files/original/{$propValue}' style="display: block" alt="Selected Image for {$property.label}">
+						<img src='/files/original/{$propValue}' style="display: block" alt="Selected Image for {$property.label}">
 						{$propValue} &nbsp;
 					{/if}
 					<input type='checkbox' name='remove{$propName}' id='remove{$propName}'> <label for="remove{$propName}">Remove image</label>

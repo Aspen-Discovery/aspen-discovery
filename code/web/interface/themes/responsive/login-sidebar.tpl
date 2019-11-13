@@ -3,7 +3,7 @@
 		{if $masqueradeMode}
 			<div class="sidebar-masquerade-section">
 				<div class="logoutOptions hidden-phone" >
-					<a id="masqueradedMyAccountNameLink" href="{$path}/MyAccount/Home">{translate text="Masquerading As %1%" 1=$userDisplayName}</a>
+					<a id="masqueradedMyAccountNameLink" href="/MyAccount/Home">{translate text="Masquerading As %1%" 1=$userDisplayName}</a>
 					<div class="bottom-border-line"></div> {* divs added to aid anythink styling. plb 11-19-2014 *}
 				</div>
 				<div class="logoutOptions">

@@ -8,8 +8,7 @@ class PlaceRecordDriver extends IslandoraRecordDriver {
 	}
 
 	protected function getPlaceholderImage() {
-		global $configArray;
-		return $configArray['Site']['path'] . '/interface/themes/responsive/images/places.png';
+		return '/interface/themes/responsive/images/places.png';
 	}
 
 	public function isEntity(){

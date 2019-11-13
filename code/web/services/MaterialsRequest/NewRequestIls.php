@@ -8,12 +8,11 @@ class MaterialsRequest_NewRequestIls extends Action
 
 	function launch()
 	{
-		global $configArray;
 		global $interface;
 		global $library;
 
 		if (!UserAccount::isLoggedIn()) {
-			header('Location: ' . $configArray['Site']['path'] . '/MyAccount/Home?followupModule=MaterialsRequest&followupAction=NewRequestIls');
+			header('Location: /MyAccount/Home?followupModule=MaterialsRequest&followupAction=NewRequestIls');
 			exit;
 		} else {
 			$user = UserAccount::getActiveUserObj();
@@ -27,7 +26,7 @@ class MaterialsRequest_NewRequestIls extends Action
 			if (isset($_REQUEST['submit'])){
 				$result = $catalogConnection->processMaterialsRequestForm($patron);
 				if ($result['success']){
-					header('Location: ' . $configArray['Site']['path'] . '/MaterialsRequest/IlsRequests?patronId=' . $patronId);
+					header('Location: /MaterialsRequest/IlsRequests?patronId=' . $patronId);
 					exit;
 				}else{
 					global $interface;

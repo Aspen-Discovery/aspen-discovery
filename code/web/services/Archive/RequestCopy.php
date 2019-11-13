@@ -105,7 +105,7 @@ class Archive_RequestCopy extends Action{
 
 		unset($archiveRequestFields['dateRequested']);
 
-		$interface->assign('submitUrl', $configArray['Site']['path'] . '/Archive/RequestCopy');
+		$interface->assign('submitUrl', '/Archive/RequestCopy');
 		$interface->assign('structure', $archiveRequestFields);
 		$interface->assign('saveButtonText', 'Submit Request');
 		$interface->assign('archiveRequestMaterialsHeader', $owningLibrary->archiveRequestMaterialsHeader);
@@ -126,7 +126,7 @@ class Archive_RequestCopy extends Action{
 	function insertObject($structure){
 		require_once ROOT_DIR . '/sys/DataObjectUtil.php';
 
-		/** @var DB_DataObject $newObject */
+		/** @var DataObject $newObject */
 		$newObject = new ArchiveRequest();
 		//Check to see if we are getting default values from the
 		DataObjectUtil::updateFromUI($newObject, $structure);
@@ -135,8 +135,8 @@ class Archive_RequestCopy extends Action{
 			$ret = $newObject->insert();
 			if (!$ret) {
 				global $logger;
-				if ($newObject->_lastError) {
-					$errorDescription = $newObject->_lastError->getUserInfo();
+				if ($newObject->getLastError()) {
+					$errorDescription = $newObject->getLastError()->getUserInfo();
 				} else {
 					$errorDescription = 'Unknown error';
 				}

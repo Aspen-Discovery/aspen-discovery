@@ -47,7 +47,7 @@ class Redwood_ContributeContent extends Action{
 
 		unset($objectFields['dateRequested']);
 
-		$interface->assign('submitUrl', $configArray['Site']['path'] . '/Redwood/ContributeContent');
+		$interface->assign('submitUrl', '/Redwood/ContributeContent');
 		$interface->assign('structure', $objectFields);
 		$interface->assign('saveButtonText', 'Submit Content');
 

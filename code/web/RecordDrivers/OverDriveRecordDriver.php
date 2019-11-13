@@ -578,7 +578,7 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 		if ($absolutePath){
 			$bookCoverUrl = $configArray['Site']['url'];
 		}else{
-			$bookCoverUrl = $configArray['Site']['path'];
+			$bookCoverUrl = '';
 		}
 		$bookCoverUrl .= '/bookcover.php?size=' . $size;
 		$bookCoverUrl .= '&id=' . $this->id;

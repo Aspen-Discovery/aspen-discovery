@@ -94,7 +94,7 @@ class MyAccount_ContactInformation extends MyAccount
 				}
 
 				session_write_close();
-				$actionUrl = $configArray['Site']['path'] . '/MyAccount/ContactInformation' . ( $patronId == $user->id ? '' : '?patronId='.$patronId ); // redirect after form submit completion
+				$actionUrl = '/MyAccount/ContactInformation' . ( $patronId == $user->id ? '' : '?patronId='.$patronId ); // redirect after form submit completion
 				header("Location: " . $actionUrl);
 				exit();
 			} elseif (!$offlineMode) {

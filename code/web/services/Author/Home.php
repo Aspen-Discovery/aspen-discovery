@@ -13,7 +13,6 @@ class Author_Home extends Action
 
 	function launch()
 	{
-		global $configArray;
 		global $interface;
 		global $library;
 
@@ -71,7 +70,7 @@ class Author_Home extends Action
 					$queryParamStrings[] = "&filter[]=$dateFilter:[$yearFrom+TO+$yearTo]";
 				}
 				$queryParamString = join('&', $queryParamStrings);
-				header("Location: {$configArray['Site']['path']}/Author/Home?$queryParamString");
+				header("Location: /Author/Home?$queryParamString");
 				exit;
 			}
 		}
@@ -110,7 +109,7 @@ class Author_Home extends Action
 					$queryParamStrings[] = "&filter[]=$filter:[$from+TO+$to]";
 				}
 				$queryParamString = join('&', $queryParamStrings);
-				header("Location: {$configArray['Site']['path']}/Author/Home?$queryParamString");
+				header("Location: /Author/Home?$queryParamString");
 				exit;
 			}
 		}

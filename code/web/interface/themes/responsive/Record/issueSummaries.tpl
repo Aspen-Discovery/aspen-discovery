@@ -58,7 +58,7 @@
 					<span id='showCheckInGrid-{$smarty.foreach.summaryLoop.iteration}' class='btn btn-xs btn-info'>Show Check-in Grid</span>
 					<script	type="text/javascript">
 						$('#showCheckInGrid-{$smarty.foreach.summaryLoop.iteration}').click(function(){literal} { {/literal}
-							AspenDiscovery.Account.ajaxLightbox('{$path}/{$activeRecordProfileModule}/{$id}/CheckInGrid?lookfor={$issueSummary.checkInGridId}', false);
+							AspenDiscovery.Account.ajaxLightbox('/{$activeRecordProfileModule}/{$id}/CheckInGrid?lookfor={$issueSummary.checkInGridId}', false);
 							{literal} }); {/literal}
 					</script>
 				{/if}

@@ -24,7 +24,7 @@
 				</p>
 			</div>
 		{else}
-			<form method="post" action="{$path}/MyAccount/Home" id="loginForm" class="form-horizontal">
+			<form method="post" action="/MyAccount/Home" id="loginForm" class="form-horizontal">
 				<div id="missingLoginPrompt" style="display: none">Please enter both {$usernameLabel} and {$passwordLabel}.</div>
 				<div id="loginFormFields">
 					<div id="loginUsernameRow" class="form-group">
@@ -41,16 +41,16 @@
 								<p class="text-muted help-block">
 									<strong>Forgot {$passwordLabel}?</strong>&nbsp;
 									{if $forgotPasswordType == 'emailResetLink'}
-										<a href="{$path}/MyAccount/EmailResetPin">Reset My {$passwordLabel}</a>
+										<a href="/MyAccount/EmailResetPin">Reset My {$passwordLabel}</a>
 									{else}
-										<a href="{$path}/MyAccount/EmailPin">Email my {$passwordLabel}</a>
+										<a href="/MyAccount/EmailPin">Email my {$passwordLabel}</a>
 									{/if}
 								</p>
 							{/if}
 
 							{if $enableSelfRegistration == 1}
 								<p class="help-block">
-									Don't have a library card?  <a href="{$path}/MyAccount/SelfReg">Register for a new Library Card</a>.
+									Don't have a library card?  <a href="/MyAccount/SelfReg">Register for a new Library Card</a>.
 								</p>
 							{/if}
 						</div>

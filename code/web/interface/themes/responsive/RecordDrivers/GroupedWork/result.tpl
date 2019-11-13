@@ -44,10 +44,10 @@
 						<div class="result-value col-tn-8 notranslate">
 							{if is_array($summAuthor)}
 								{foreach from=$summAuthor item=author}
-									<a href='{$path}/Author/Home?author="{$author|escape:"url"}"'>{$author|highlight}</a>
+									<a href='/Author/Home?author="{$author|escape:"url"}"'>{$author|highlight}</a>
 								{/foreach}
 							{else}
-								<a href='{$path}/Author/Home?author="{$summAuthor|escape:"url"}"'>{$summAuthor|highlight}</a>
+								<a href='/Author/Home?author="{$summAuthor|escape:"url"}"'>{$summAuthor|highlight}</a>
 							{/if}
 						</div>
 					</div>
@@ -61,9 +61,9 @@
 							<div class="result-value col-tn-8">
 								{if $summSeries}
 									{if $summSeries.fromNovelist}
-										<a href="{$path}/GroupedWork/{$summId}/Series">{$summSeries.seriesTitle}</a>{if $summSeries.volume} {translate text=volume} {$summSeries.volume}{/if}<br>
+										<a href="/GroupedWork/{$summId}/Series">{$summSeries.seriesTitle}</a>{if $summSeries.volume} {translate text=volume} {$summSeries.volume}{/if}<br>
 									{else}
-										<a href="{$path}/Search/Results?searchIndex=Series&lookfor={$summSeries.seriesTitle}">{$summSeries.seriesTitle}</a>{if $summSeries.volume} {translate text=volume} {$summSeries.volume}{/if}
+										<a href="/Search/Results?searchIndex=Series&lookfor={$summSeries.seriesTitle}">{$summSeries.seriesTitle}</a>{if $summSeries.volume} {translate text=volume} {$summSeries.volume}{/if}
 									{/if}
 								{/if}
 								{if $indexedSeries}
@@ -73,7 +73,7 @@
 									{/if}
 									{foreach from=$indexedSeries item=seriesItem name=loop}
 										{if !isset($summSeries.seriesTitle) || ((strpos(strtolower($seriesItem.seriesTitle), strtolower($summSeries.seriesTitle)) === false) && (strpos(strtolower($summSeries.seriesTitle), strtolower($seriesItem.seriesTitle)) === false))}
-											<a href="{$path}/Search/Results?searchIndex=Series&lookfor=%22{$seriesItem.seriesTitle|escape:"url"}%22">{$seriesItem.seriesTitle|escape}</a>{if $seriesItem.volume} {translate text=volume} {$seriesItem.volume}{/if}<br>
+											<a href="/Search/Results?searchIndex=Series&lookfor=%22{$seriesItem.seriesTitle|escape:"url"}%22">{$seriesItem.seriesTitle|escape}</a>{if $seriesItem.volume} {translate text=volume} {$seriesItem.volume}{/if}<br>
 											{if $showMoreSeries && $smarty.foreach.loop.iteration == 3}
 												<a onclick="$('#moreSeries_{$summId}').show();$('#moreSeriesLink_{$summId}').hide();" id="moreSeriesLink_{$summId}">{translate text='More Series...'}</a>
 												<div id="moreSeries_{$summId}" style="display:none">

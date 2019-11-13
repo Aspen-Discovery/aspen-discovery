@@ -1,5 +1,5 @@
 {strip}
-	<form action="{$path}/MyAccount/MyList/{$favList->id}" id="myListFormHead">
+	<form action="/MyAccount/MyList/{$favList->id}" id="myListFormHead">
 		<div>
 			<input type="hidden" name="myListActionHead" id="myListActionHead" class="form">
 			<h3 id="listTitle">{$favList->title|escape:"html"}</h3>

@@ -689,12 +689,12 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 	{
 		// Base URL is different for author searches:
 		if ($this->searchType == 'author') {
-			if ($this->searchSubType == 'home')   return $this->serverUrl."/Author/Home?";
-			if ($this->searchSubType == 'search') return $this->serverUrl."/Author/Search?";
+			if ($this->searchSubType == 'home')   return "/Author/Home?";
+			if ($this->searchSubType == 'search') return "/Author/Search?";
 		} else if ($this->searchType == 'favorites') {
-			return $this->serverUrl . '/MyAccount/Home?';
+			return '/MyAccount/Home?';
 		} else if ($this->searchType == 'list') {
-			return $this->serverUrl . '/MyAccount/MyList/' .
+			return '/MyAccount/MyList/' .
 			urlencode($_GET['id']) . '?';
 		}
 

@@ -27,7 +27,7 @@ class CronLog extends Admin_Admin
 		$interface->assign('logEntries', $logEntries);
 
 		$options = array('totalItems' => $total,
-		                 'fileName'   => $configArray['Site']['path'].'/Admin/CronLog?page=%d',
+		                 'fileName'   => '/Admin/CronLog?page=%d',
 		                 'perPage'    => 30,
 		);
 		$pager = new Pager($options);

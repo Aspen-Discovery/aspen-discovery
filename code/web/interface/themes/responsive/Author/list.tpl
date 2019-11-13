@@ -16,7 +16,7 @@
 	{/if}
 
 		<div class="col-md-10">
-			<a href='{$path}/Author/Home?author="{$record.0|escape:"url"}"'>{$record.0|escape:"html"}</a>
+			<a href='/Author/Home?author="{$record.0|escape:"url"}"'>{$record.0|escape:"html"}</a>
 		</div>
 		<div class="col-md-2">
 			{$record.1} title{if $record.1 > 1}s{/if}

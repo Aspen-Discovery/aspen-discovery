@@ -4,7 +4,7 @@
 		Each title or ISBN should be on its own line.
 		We will search the catalog for each title and add the first matching title for each line to your list.
 	</div>
-	<form method="post" name="bulkAddToList" id="bulkAddToList" action="{$path}/MyAccount/MyList/{$listId}" class="form">
+	<form method="post" name="bulkAddToList" id="bulkAddToList" action="/MyAccount/MyList/{$listId}" class="form">
 		<div>
 			<input type="hidden" name="myListActionHead" value="bulkAddTitles"/>
 			<textarea rows="5" cols="40" name="titlesToAdd" class="form-control"></textarea>

@@ -24,7 +24,6 @@ class MyAccount_Edit extends Action
 	function launch($msg = null)
 	{
 		global $interface;
-		global $configArray;
 
 		if (!UserAccount::isLoggedIn()) {
 			require_once ROOT_DIR . '/services/MyAccount/Login.php';
@@ -52,7 +51,7 @@ class MyAccount_Edit extends Action
 				} else {
 					$nextAction = 'Home';
 				}
-				header('Location: ' . $configArray['Site']['path'] . '/MyAccount/' . $nextAction);
+				header('Location: /MyAccount/' . $nextAction);
 				exit();
 			}
 

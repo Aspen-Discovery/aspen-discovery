@@ -6,7 +6,6 @@ class MyAccount_MyPreferences extends MyAccount
 {
 	function launch()
 	{
-		global $configArray;
 		global $interface;
 		$user = UserAccount::getLoggedInUser();
 
@@ -46,7 +45,7 @@ class MyAccount_MyPreferences extends MyAccount
 				$patron->updateUserPreferences();
 
 				session_write_close();
-				$actionUrl = $configArray['Site']['path'] . '/MyAccount/MyPreferences' . ( $patronId == $user->id ? '' : '?patronId='.$patronId ); // redirect after form submit completion
+				$actionUrl = '/MyAccount/MyPreferences' . ( $patronId == $user->id ? '' : '?patronId='.$patronId ); // redirect after form submit completion
 				header("Location: " . $actionUrl);
 				exit();
 			} elseif (!$offlineMode) {
