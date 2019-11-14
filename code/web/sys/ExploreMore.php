@@ -583,6 +583,7 @@ class ExploreMore {
 								'description' => $driver->getTitle(),
 								'image' => $driver->getBookcoverUrl('medium'),
 								'link' => $driver->getLinkUrl(),
+								'onclick' => 'AspenDiscovery.Websites.trackUsage(' .  $driver->getId() .')',
 								'usageCount' => 1
 							);
 						}
@@ -691,6 +692,7 @@ class ExploreMore {
 								'description' => $driver->getTitle(),
 								'image' => $driver->getBookcoverUrl('medium'),
 								'link' => $driver->getLinkUrl(),
+								'onclick' => "AspenDiscovery.OpenArchives.trackUsage('{$driver->getId()}')",
 								'usageCount' => 1
 							);
 						}

@@ -2,6 +2,7 @@
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/sys/SystemLogging/AspenUsage.php';
 
+/** @noinspection PhpUnused */
 class Admin_UsageDashboard extends Admin_Admin
 {
 	function launch()
@@ -65,6 +66,7 @@ class Admin_UsageDashboard extends Admin_Admin
 		$usage->selectAdd('SUM(islandoraSearches) as totalIslandoraSearches');
 		$usage->selectAdd('SUM(openArchivesSearches) as totalOpenArchivesSearches');
 		$usage->selectAdd('SUM(userListSearches) as totalUserListSearches');
+		$usage->selectAdd('SUM(websiteSearches) as totalWebsiteSearches');
 
 		$usage->find(true);
 
@@ -79,6 +81,7 @@ class Admin_UsageDashboard extends Admin_Admin
 			'totalIslandoraSearches' => $usage->totalIslandoraSearches,
 			'totalOpenArchivesSearches' => $usage->totalOpenArchivesSearches,
 			'totalUserListSearches' => $usage->totalUserListSearches,
+			'totalWebsiteSearches' => $usage->totalWebsiteSearches,
 		];
 
 		return $stats;

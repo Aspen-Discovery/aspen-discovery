@@ -18,7 +18,7 @@
 					{foreach from=$exploreMoreOptions item=exploreMoreCategory}
 						{if !empty($exploreMoreCategory.placeholder)}
 							<li class="">
-								<a href='{$exploreMoreCategory.link}'>
+								<a href='{$exploreMoreCategory.link}'}>
 									<img src="{$exploreMoreCategory.image}" alt="{$exploreMoreCategory.label|escape}">
 								</a>
 							</li>
@@ -26,7 +26,7 @@
 							<li class="explore-more-option">
 								<figure class="thumbnail" title="{$exploreMoreCategory.label|escape}">
 									<div class="explore-more-image">
-										<a href='{$exploreMoreCategory.link}'>
+										<a href='{$exploreMoreCategory.link}' {if $exploreMoreCategory.onclick}onclick="{$exploreMoreCategory.onclick}"{/if}>
 											<img src="{$exploreMoreCategory.image}" alt="{$exploreMoreCategory.label|escape}">
 										</a>
 									</div>

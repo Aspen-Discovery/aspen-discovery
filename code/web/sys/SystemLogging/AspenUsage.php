@@ -20,6 +20,7 @@ class AspenUsage extends DataObject
 	public $islandoraSearches;
 	public $openArchivesSearches;
 	public $userListSearches;
+	public $websiteSearches;
 
 	public function getNumericColumnNames()
 	{
@@ -36,7 +37,8 @@ class AspenUsage extends DataObject
 			'groupedWorkSearches',
 			'islandoraSearches',
 			'openArchivesSearches',
-			'userListSearches'
+			'userListSearches',
+			'websiteSearches'
 		];
 	}
 }

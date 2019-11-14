@@ -1812,23 +1812,32 @@ class DBMaintenance extends Admin_Admin {
 					'sql' => array(
 						'CREATE TABLE IF NOT EXISTS aspen_usage(
 						    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-		                    year INT(4) NOT NULL,
-		                    month INT(2) NOT NULL,
-		                    pageViews INT(11) DEFAULT 0,
-		                    pageViewsByBots INT(11) DEFAULT 0,
-		                    pageViewsByAuthenticatedUsers INT(11) DEFAULT 0,
-		                    pagesWithErrors INT(11) DEFAULT 0,
-		                    slowPages INT(11) DEFAULT 0,
-		                    ajaxRequests INT(11) DEFAULT 0,
-		                    slowAjaxRequests INT(11) DEFAULT 0,
-		                    coverViews INT(11) DEFAULT 0,
-		                    genealogySearches INT(11) DEFAULT 0,
-		                    groupedWorkSearches INT(11) DEFAULT 0,
-		                    islandoraSearches INT(11) DEFAULT 0,
-		                    openArchivesSearches INT(11) DEFAULT 0,
-		                    userListSearches INT(11) DEFAULT 0
+						    year INT(4) NOT NULL,
+						    month INT(2) NOT NULL,
+						    pageViews INT(11) DEFAULT 0,
+						    pageViewsByBots INT(11) DEFAULT 0,
+						    pageViewsByAuthenticatedUsers INT(11) DEFAULT 0,
+						    pagesWithErrors INT(11) DEFAULT 0,
+						    slowPages INT(11) DEFAULT 0,
+						    ajaxRequests INT(11) DEFAULT 0,
+						    slowAjaxRequests INT(11) DEFAULT 0,
+						    coverViews INT(11) DEFAULT 0,
+						    genealogySearches INT(11) DEFAULT 0,
+						    groupedWorkSearches INT(11) DEFAULT 0,
+						    islandoraSearches INT(11) DEFAULT 0,
+						    openArchivesSearches INT(11) DEFAULT 0,
+						    userListSearches INT(11) DEFAULT 0
 						) ENGINE = InnoDB;',
 						"ALTER TABLE aspen_usage ADD INDEX (year, month)",
+					)
+				],
+
+				'aspen_usage_websites' => [
+					'title' => 'Aspen Usage for Website Searches',
+					'description' => 'Add a column to track usage of website searches within Aspen',
+					'continueOnError' => false,
+					'sql' => array(
+						'ALTER TABLE aspen_usage ADD COLUMN websiteSearches INT(11) DEFAULT 0',
 					)
 				],
 

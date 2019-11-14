@@ -1,6 +1,7 @@
 <?php
 
-function getWebsiteIndexingUpdates() {
+function getWebsiteIndexingUpdates()
+{
 	return array(
 		'website_indexing_tables' => array(
 			'title' => 'Website Indexing tables',
