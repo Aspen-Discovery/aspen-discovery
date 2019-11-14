@@ -8,7 +8,7 @@ class SearchObject_WebsitesSearcher extends SearchObject_SolrSearcher
         global $configArray;
         global $timer;
 
-        $this->resultsModule = 'Website';
+        $this->resultsModule = 'Websites';
 
         $this->searchType = 'websites';
         $this->basicSearchType = 'websites';

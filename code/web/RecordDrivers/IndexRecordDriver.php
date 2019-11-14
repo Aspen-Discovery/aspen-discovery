@@ -252,7 +252,11 @@ abstract class IndexRecordDriver extends RecordInterface
      */
     public function getTitle()
     {
-        return isset($this->fields['title']) ? $this->fields['title'] : (isset($this->fields['title_display']) ? $this->fields['title_display'] : '');
+        $title = isset($this->fields['title']) ? $this->fields['title'] : (isset($this->fields['title_display']) ? $this->fields['title_display'] : '');
+        if (strpos($title, '|') > 0){
+        	$title = substr($title, 0, strpos($title, '|'));
+        }
+        return trim($title);
     }
 
 	/**

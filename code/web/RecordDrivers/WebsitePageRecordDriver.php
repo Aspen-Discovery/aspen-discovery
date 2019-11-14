@@ -1,7 +1,7 @@
 <?php
 
 require_once 'IndexRecordDriver.php';
-class WebsitePAgeRecordDriver extends IndexRecordDriver
+class WebsitePageRecordDriver extends IndexRecordDriver
 {
 	private $valid;
 

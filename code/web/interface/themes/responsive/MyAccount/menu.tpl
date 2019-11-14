@@ -431,7 +431,7 @@
 					</div>
 				{/if}
 
-				{if (array_key_exists('libraryAdmin', $userRoles) || array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles))}
+				{if array_key_exists('OverDrive', $enabledModules) && (array_key_exists('libraryAdmin', $userRoles) || array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles))}
 					{if $module == 'OverDrive' && in_array($action, array('APIData', 'ExtractLog', 'Settings', 'Dashboard'))}
 						{assign var="curSection" value=true}
 					{else}
@@ -456,7 +456,7 @@
 					</div>
 				{/if}
 
-				{if (array_key_exists('libraryAdmin', $userRoles) || array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles))}
+				{if array_key_exists('Hoopla', $enabledModules) && (array_key_exists('libraryAdmin', $userRoles) || array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles))}
 					{if $module == 'Hoopla' && in_array($action, array('IndexingLog', 'Settings', 'Scopes', 'Dashboard'))}
 						{assign var="curSection" value=true}
 					{else}
@@ -481,7 +481,7 @@
 					</div>
 				{/if}
 
-				{if (array_key_exists('libraryAdmin', $userRoles) || array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles))}
+				{if array_key_exists('RBdigital', $enabledModules) && (array_key_exists('libraryAdmin', $userRoles) || array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles))}
 					{if $module == 'RBdigital' && in_array($action, array('Settings', 'IndexingLog', 'Scopes', 'Dashboard'))}
 						{assign var="curSection" value=true}
 					{else}
@@ -506,7 +506,7 @@
 					</div>
 				{/if}
 
-                {if (array_key_exists('libraryAdmin', $userRoles) || array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles))}
+                {if array_key_exists('Cloud Library', $enabledModules) && (array_key_exists('libraryAdmin', $userRoles) || array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles))}
                     {if $module == 'CloudLibrary' && in_array($action, array('Settings', 'IndexingLog', 'Scopes', 'Dashboard'))}
                         {assign var="curSection" value=true}
                     {else}
@@ -531,7 +531,7 @@
 					</div>
                 {/if}
 
-                {if (array_key_exists('libraryAdmin', $userRoles) || array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles))}
+                {if array_key_exists('Side Loads', $enabledModules) && (array_key_exists('libraryAdmin', $userRoles) || array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles))}
                     {if $module == 'SideLoads' && in_array($action, array('IndexingLog', 'Scopes', 'SideLoads', 'Dashboard'))}
                         {assign var="curSection" value=true}
                     {else}
@@ -585,7 +585,7 @@
 					</div>
 				{/if}
 
-				{if (array_key_exists('archives', $userRoles) || array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles))}
+				{if array_key_exists('Open Archives', $enabledModules) && (array_key_exists('archives', $userRoles) || array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles))}
 					{if $module == 'OpenArchives' && in_array($action, array('Collections', 'Dashboard', 'IndexingLog'))}
 						{assign var="curSection" value=true}
 					{else}
@@ -609,17 +609,17 @@
 					</div>
 				{/if}
 
-                {if (array_key_exists('archives', $userRoles) || array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles))}
-                    {if $module == 'Websites' && in_array($action, array('Settings', 'Dashboard', 'IndexingLog'))}
-                        {assign var="curSection" value=true}
-                    {else}
-                        {assign var="curSection" value=false}
-                    {/if}
+				{if array_key_exists('Web Indexer', $enabledModules) && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles))}
+					{if $module == 'Websites' && in_array($action, array('Settings', 'Dashboard', 'IndexingLog'))}
+						{assign var="curSection" value=true}
+					{else}
+						{assign var="curSection" value=false}
+					{/if}
 					<div class="panel{if $curSection} active{/if}">
 						<a href="#websitesMenu" data-toggle="collapse" data-parent="#adminMenuAccordion">
 							<div class="panel-heading">
 								<div class="panel-title">
-                                    {translate text="Website Indexing"}
+									{translate text="Website Indexing"}
 								</div>
 							</div>
 						</a>
@@ -631,7 +631,7 @@
 							</div>
 						</div>
 					</div>
-                {/if}
+				{/if}
 
 				{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('circulationReports', $userRoles))}
 					{if $module == 'Circa'}

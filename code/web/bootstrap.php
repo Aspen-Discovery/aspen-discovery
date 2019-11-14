@@ -4,6 +4,7 @@ define ('ROOT_DIR', __DIR__);
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
 require_once ROOT_DIR . '/sys/Interface.php';
 require_once ROOT_DIR . '/sys/AspenError.php';
+require_once ROOT_DIR . '/sys/Module.php';
 require_once ROOT_DIR . '/sys/SystemLogging/AspenUsage.php';
 global $aspenUsage;
 $aspenUsage = new AspenUsage();
@@ -51,6 +52,15 @@ try{
 $timer->logTime("Initialized Database");
 requireSystemLibraries();
 initLocale();
+
+global $enabledModules;
+$enabledModules = [];
+$module = new Module();
+$module->enabled = true;
+$module->find();
+while($module->fetch()){
+	$enabledModules[$module->name] = clone $module;
+}
 
 $timer->logTime("Basic Initialization");
 loadLibraryAndLocation();

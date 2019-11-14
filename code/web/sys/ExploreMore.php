@@ -317,6 +317,7 @@ class ExploreMore {
 		global $configArray;
 		/** @var Library $library */
 		global $library;
+		global $enabledModules;
 		$exploreMoreOptions = array();
 
 		$islandoraActive = false;
@@ -336,13 +337,19 @@ class ExploreMore {
 
 		$exploreMoreOptions = $this->loadCatalogOptions($activeSection, $exploreMoreOptions, $searchTerm);
 
-        $exploreMoreOptions = $this->loadListOptions($activeSection, $exploreMoreOptions, $searchTerm);
+		if (array_key_exists('Web Indexer', $enabledModules)) {
+			$exploreMoreOptions = $this->loadWebIndexerOptions($activeSection, $exploreMoreOptions, $searchTerm);
+		}
 
-		if ($library->enableOpenArchives) {
+		$exploreMoreOptions = $this->loadListOptions($activeSection, $exploreMoreOptions, $searchTerm);
+
+		if (array_key_exists('Open Archives', $enabledModules) && $library->enableOpenArchives) {
 			$exploreMoreOptions = $this->loadOpenArchiveOptions($activeSection, $exploreMoreOptions, $searchTerm);
 		}
 
-		$exploreMoreOptions = $this->loadEbscoOptions($activeSection, $exploreMoreOptions, $searchTerm);
+		if (array_key_exists('EBSCO EDS', $enabledModules)) {
+			$exploreMoreOptions = $this->loadEbscoOptions($activeSection, $exploreMoreOptions, $searchTerm);
+		}
 
 		if ($islandoraActive){
 			if (isset($configArray['Islandora']) && isset($configArray['Islandora']['solrUrl']) && !empty($searchTerm)) {
@@ -482,9 +489,6 @@ class ExploreMore {
 					}
 				}
 			}
-//		} else {
-//			global $logger;
-//			$logger->log('Islandora is not active.', Logger::LOG_WARNING);
 		}
 
 		$interface->assign('exploreMoreOptions', $exploreMoreOptions);
@@ -537,6 +541,57 @@ class ExploreMore {
 			}
 		}
 
+		return $exploreMoreOptions;
+	}
+
+	protected function loadWebIndexerOptions($activeSection, $exploreMoreOptions, $searchTerm)
+	{
+		if ($activeSection != 'websites') {
+			if (strlen($searchTerm) > 0) {
+				/** @var SearchObject_ListsSearcher $searchObject */
+				$searchObjectSolr = SearchObjectFactory::initSearchObject('Websites');
+				$searchObjectSolr->init();
+				$searchObjectSolr->disableSpelling();
+				$searchObjectSolr->setSearchTerms(array(
+					'lookfor' => $searchTerm,
+					'index' => 'WebsiteKeyword'
+				));
+				$searchObjectSolr->setPage(1);
+				$searchObjectSolr->setLimit(5);
+				$results = $searchObjectSolr->processSearch(true, false);
+
+				if ($results && isset($results['response'])) {
+					$numCatalogResultsAdded = 0;
+					foreach ($results['response']['docs'] as $doc) {
+						/** @var ListsRecordDriver $driver */
+						$driver = $searchObjectSolr->getRecordDriverForResult($doc);
+						$numCatalogResults = $results['response']['numFound'];
+						if ($numCatalogResultsAdded == 4 && $numCatalogResults > 5) {
+							//Add a link to remaining results
+							$exploreMoreOptions[] = array(
+								'label' => "Web pages ($numCatalogResults)",
+								'description' => "Web pages ($numCatalogResults)",
+								//TODO: provide a better icon
+								'image' => '/images/webpage.png',
+								'link' => $searchObjectSolr->renderSearchUrl(),
+								'usageCount' => 1
+							);
+						} else {
+							//Add a link to the actual title
+							$exploreMoreOptions[] = array(
+								'label' => $driver->getTitle(),
+								'description' => $driver->getTitle(),
+								'image' => $driver->getBookcoverUrl('medium'),
+								'link' => $driver->getLinkUrl(),
+								'usageCount' => 1
+							);
+						}
+
+						$numCatalogResultsAdded++;
+					}
+				}
+			}
+		}
 		return $exploreMoreOptions;
 	}
 

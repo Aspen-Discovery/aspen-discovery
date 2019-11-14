@@ -17,14 +17,14 @@ function getWebsiteIndexingUpdates() {
 				) ENGINE = InnoDB",
 				"ALTER TABLE website_indexing_settings ADD INDEX(lastIndexed)",
 				"CREATE TABLE website_pages (
-			        id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-			        websiteId INT NOT NULL,
-			        url VARCHAR(255),
-			        checksum BIGINT,
-			        deleted TINYINT(1),
-			        firstDetected INT(11),
-			        UNIQUE (url)
-			    ) ENGINE = InnoDB",
+				    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+				    websiteId INT NOT NULL,
+				    url VARCHAR(255),
+				    checksum BIGINT,
+				    deleted TINYINT(1),
+				    firstDetected INT(11),
+				    UNIQUE (url)
+				) ENGINE = InnoDB",
 				"ALTER TABLE website_pages ADD INDEX(websiteId)",
 				"CREATE TABLE IF NOT EXISTS website_index_log(
 				    `id` INT NOT NULL AUTO_INCREMENT COMMENT 'The id of log',
@@ -49,13 +49,13 @@ function getWebsiteIndexingUpdates() {
 			'description' => 'Add a table to track how often a particular user uses indexed websites.',
 			'sql' => array(
 				"CREATE TABLE user_website_usage (
-                    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-                    userId INT(11) NOT NULL,
-                    websiteId INT(11) NOT NULL,
-                    month INT(2) NOT NULL,
-                    year INT(4) NOT NULL,
-                    usageCount INT(11)
-                ) ENGINE = InnoDB",
+				    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+				    userId INT(11) NOT NULL,
+				    websiteId INT(11) NOT NULL,
+				    month INT(2) NOT NULL,
+				    year INT(4) NOT NULL,
+				    usageCount INT(11)
+				) ENGINE = InnoDB",
 				"ALTER TABLE user_website_usage ADD INDEX (websiteId, year, month, userId)",
 			),
 		),
@@ -66,15 +66,24 @@ function getWebsiteIndexingUpdates() {
 			'continueOnError' => true,
 			'sql' => array(
 				"CREATE TABLE website_page_usage (
-                    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-                    webPageId INT(11),
-                    month INT(2) NOT NULL,
-                    year INT(4) NOT NULL,
-                    timesViewedInSearch INT(11) NOT NULL,
-                    timesUsed INT(11) NOT NULL
-                ) ENGINE = InnoDB",
+				    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+				    webPageId INT(11),
+				    month INT(2) NOT NULL,
+				    year INT(4) NOT NULL,
+				    timesViewedInSearch INT(11) NOT NULL,
+				    timesUsed INT(11) NOT NULL
+				) ENGINE = InnoDB",
 				"ALTER TABLE website_page_usage ADD INDEX (webPageId, year, month)",
 			),
 		),
+
+		'create_web_indexer_module' => [
+			'title' => 'Create Web Indexer Module',
+			'description' => 'Setup Web Indexer module',
+			'sql' => [
+				//oai indexer runs daily so we don't check the background process
+				"INSERT INTO modules (name, indexName, backgroundProcess) VALUES ('Web Indexer', 'website_pages', 'web_indexer')"
+			]
+		],
 	);
 }

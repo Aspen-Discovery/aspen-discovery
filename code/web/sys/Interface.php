@@ -126,10 +126,12 @@ class UInterface extends Smarty
 		$this->assign('template_dir',$this->template_dir);
 		$this->assign('url', $url);
 
+		global $enabledModules;
+		$this->assign('enabledModules', $enabledModules);
+
 		if (isset($configArray['Islandora']['repositoryUrl'])) {
 			$this->assign('repositoryUrl', $configArray['Islandora']['repositoryUrl']);
 			$this->assign('encodedRepositoryUrl', str_replace('/', '\/', $configArray['Islandora']['repositoryUrl']));
-
 		}
 
 		$this->assign('fullPath', str_replace('&', '&amp;', $_SERVER['REQUEST_URI']));

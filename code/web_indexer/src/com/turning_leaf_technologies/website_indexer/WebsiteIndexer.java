@@ -148,6 +148,8 @@ class WebsiteIndexer {
                     String mimeType = contentType.getMimeType();
                     if (!mimeType.equals("text/html")) {
                         logEntry.addNote("Non HTML page " + pageToProcess + " " + mimeType);
+                    //TODO: Index PDFs
+
                     }else{
                         // do something useful with the response body
                         // and ensure it is fully consumed

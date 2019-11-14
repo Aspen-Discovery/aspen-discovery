@@ -17,9 +17,6 @@ class Module extends DataObject
 			'enabled' => array('property' => 'enabled', 'type' => 'checkbox', 'label' => 'Enabled?', 'description'=>'Whether or not the module is enabled', 'default'=>'0'),
 			'indexName' => array('property'=>'indexName', 'type'=>'text', 'label'=>'Index Name', 'description'=>'The name of the associated solr index if any'),
 			'backgroundProcess' => array('property'=>'backgroundProcess', 'type'=>'text', 'label'=>'Background Process', 'description'=>'The name of the background process being run if any'),
-
 		];
 	}
-
-
 }
