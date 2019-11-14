@@ -1,6 +1,7 @@
 <?php
 
-class SearchObjectFactory {
+class SearchObjectFactory
+{
 
 	/**
 	 * initSearchObject
@@ -8,7 +9,7 @@ class SearchObjectFactory {
 	 * This constructs a search object for the specified engine.
 	 *
 	 * @access  public
-	 * @param   string  $engine                   The type of SearchObject to build.
+	 * @param string $engine The type of SearchObject to build.
 	 * @return  SearchObject_BaseSearcher|false   The search object on success, false otherwise
 	 */
 	static function initSearchObject($engine = 'GroupedWork')
@@ -30,50 +31,50 @@ class SearchObjectFactory {
 		return false;
 	}
 
-    /**
-     * initSearchObject
-     *
-     * This constructs a search object for the specified engine.
-     *
-     * @access  public
-     * @param   string $searchSource
-     * @return  mixed               The search object on success, false otherwise
-     */
-    static function initSearchObjectBySearchSource($searchSource = 'local')
-    {
-        // Figure out the engine type for the object we're about to construct:
-        switch($searchSource) {
-            case 'islandora' :
-                $engine = 'Islandora';
-                break;
-            case 'open_archives' :
-                $engine = 'OpenArchives';
-                break;
-            case 'lists' :
-                $engine = 'Lists';
-                break;
-            case 'genealogy' :
-                $engine = 'Genealogy';
-                break;
-            default:
-                $engine = 'GroupedWork';
-                break;
-        }
+	/**
+	 * initSearchObject
+	 *
+	 * This constructs a search object for the specified engine.
+	 *
+	 * @access  public
+	 * @param string $searchSource
+	 * @return  mixed               The search object on success, false otherwise
+	 */
+	static function initSearchObjectBySearchSource($searchSource = 'local')
+	{
+		// Figure out the engine type for the object we're about to construct:
+		switch ($searchSource) {
+			case 'islandora' :
+				$engine = 'Islandora';
+				break;
+			case 'open_archives' :
+				$engine = 'OpenArchives';
+				break;
+			case 'lists' :
+				$engine = 'Lists';
+				break;
+			case 'genealogy' :
+				$engine = 'Genealogy';
+				break;
+			default:
+				$engine = 'GroupedWork';
+				break;
+		}
 
-        $path = ROOT_DIR . "/sys/SearchObject/{$engine}Searcher.php";
-        if (is_readable($path)) {
-	        /** @noinspection PhpIncludeInspection */
-	        require_once $path;
-            $class = 'SearchObject_' . $engine . 'Searcher';
-            if (class_exists($class)) {
-                /** @var SearchObject_BaseSearcher $searchObject */
-                $searchObject = new $class();
-                return $searchObject;
-            }
-        }
+		$path = ROOT_DIR . "/sys/SearchObject/{$engine}Searcher.php";
+		if (is_readable($path)) {
+			/** @noinspection PhpIncludeInspection */
+			require_once $path;
+			$class = 'SearchObject_' . $engine . 'Searcher';
+			if (class_exists($class)) {
+				/** @var SearchObject_BaseSearcher $searchObject */
+				$searchObject = new $class();
+				return $searchObject;
+			}
+		}
 
-        return false;
-    }
+		return false;
+	}
 
 	/**
 	 * deminify
@@ -81,7 +82,7 @@ class SearchObjectFactory {
 	 * Construct an appropriate Search Object from a MinSO object.
 	 *
 	 * @access  public
-	 * @param   object  $minSO      The MinSO object to use as the base.
+	 * @param object $minSO The MinSO object to use as the base.
 	 * @return  mixed               The search object on success, false otherwise
 	 */
 	static function deminify($minSO)
@@ -92,17 +93,17 @@ class SearchObjectFactory {
 		static $objectCache = array();
 
 		// Figure out the engine type for the object we're about to construct:
-		switch($minSO->ty) {
+		switch ($minSO->ty) {
 			case 'islandora' :
 				$type = 'Islandora';
 				break;
-            case 'open_archives' :
-                $type = 'OpenArchives';
-                break;
-            case 'lists' :
-                $type = 'Lists';
-                break;
-            case 'genealogy' :
+			case 'open_archives' :
+				$type = 'OpenArchives';
+				break;
+			case 'lists' :
+				$type = 'Lists';
+				break;
+			case 'genealogy' :
 				$type = 'Genealogy';
 				break;
 			default:
