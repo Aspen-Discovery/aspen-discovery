@@ -10,7 +10,7 @@
 				<div class="result-label col-xs-3">{translate text='LC Subjects'}</div>
 				<div class="col-xs-9 result-value">
 					{foreach from=$lcSubjects item=subject name=loop}
-						<a href="{$path}/Search/Results?lookfor=%22{$subject|escape:"url"}%22&amp;searchIndex=Subject">{$subject|escape}</a>
+						<a href="/Search/Results?lookfor=%22{$subject|escape:"url"}%22&amp;searchIndex=Subject">{$subject|escape}</a>
 						<br>
 					{/foreach}
 				</div>
@@ -22,7 +22,7 @@
 				<div class="result-label col-xs-3">{translate text='Bisac Subjects'}</div>
 				<div class="col-xs-9 result-value">
 					{foreach from=$bisacSubjects item=subject name=loop}
-						<a href="{$path}/Search/Results?lookfor=%22{$subject|escape:"url"}%22&amp;searchIndex=Subject">{$subject|escape}</a>
+						<a href="/Search/Results?lookfor=%22{$subject|escape:"url"}%22&amp;searchIndex=Subject">{$subject|escape}</a>
 						<br>
 					{/foreach}
 				</div>
@@ -34,7 +34,7 @@
 				<div class="result-label col-xs-3">{translate text='OCLC Fast Subjects'}</div>
 				<div class="col-xs-9 result-value">
 					{foreach from=$oclcFastSubjects item=subject name=loop}
-						<a href="{$path}/Search/Results?lookfor=%22{$subject|escape:"url"}%22&amp;searchIndex=Subject">{$subject|escape}</a>
+						<a href="/Search/Results?lookfor=%22{$subject|escape:"url"}%22&amp;searchIndex=Subject">{$subject|escape}</a>
 						<br>
 					{/foreach}
 				</div>
@@ -46,7 +46,7 @@
 				<div class="result-label col-xs-3">{translate text='Local Subjects'}</div>
 				<div class="col-xs-9 result-value">
 					{foreach from=$localSubjects item=subject name=loop}
-						<a href="{$path}/Search/Results?lookfor=%22{$subject|escape:"url"}%22&amp;searchIndex=Subject">{$subject|escape}</a>
+						<a href="/Search/Results?lookfor=%22{$subject|escape:"url"}%22&amp;searchIndex=Subject">{$subject|escape}</a>
 						<br>
 					{/foreach}
 				</div>
@@ -58,7 +58,7 @@
 				<div class="result-label col-xs-3">{translate text='Other Subjects'}</div>
 				<div class="col-xs-9 result-value">
 					{foreach from=$otherSubjects item=subject name=loop}
-						<a href="{$path}/Search/Results?lookfor=%22{$subject|escape:"url"}%22&amp;searchIndex=Subject">{$subject|escape}</a>
+						<a href="/Search/Results?lookfor=%22{$subject|escape:"url"}%22&amp;searchIndex=Subject">{$subject|escape}</a>
 						<br>
 					{/foreach}
 				</div>
@@ -72,7 +72,7 @@
 				<div class="result-label col-xs-3">{translate text='Subjects'}</div>
 				<div class="col-xs-9 result-value">
 					{foreach from=$subjects item=subject name=loop}
-						<a href="{$path}/Search/Results?lookfor=%22{$subject|escape:"url"}%22&amp;searchIndex=Subject">{$subject|escape}</a>
+						<a href="/Search/Results?lookfor=%22{$subject|escape:"url"}%22&amp;searchIndex=Subject">{$subject|escape}</a>
 						<br>
 					{/foreach}
 				</div>

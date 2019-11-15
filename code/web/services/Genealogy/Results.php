@@ -9,7 +9,6 @@ class Genealogy_Results extends Action {
 	function launch()
 	{
 		global $interface;
-		global $configArray;
 		global $timer;
 		global $aspenUsage;
 		$aspenUsage->genealogySearches++;
@@ -67,7 +66,7 @@ class Genealogy_Results extends Action {
 					$queryParamStrings[] = "&filter[]=$dateFilter:[$yearFrom+TO+$yearTo]";
 				}
 				$queryParamString = join('&', $queryParamStrings);
-				header("Location: {$configArray['Site']['path']}/Genealogy/Results?$queryParamString");
+				header("Location: /Genealogy/Results?$queryParamString");
 				exit;
 			}
 		}

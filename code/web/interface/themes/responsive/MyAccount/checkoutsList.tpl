@@ -1,5 +1,5 @@
 {if $transList}
-	<form id="renewForm" action="{$path}/MyAccount/CheckedOut">
+	<form id="renewForm" action="/MyAccount/CheckedOut">
 		<div id="pager" class="navbar form-inline">
 			<label for="accountSort_{$source}" class="control-label">{translate text='Sort by'}&nbsp;</label>
 			<select name="accountSort" id="accountSort_{$source}" class="form-control" onchange="AspenDiscovery.Account.loadCheckouts('{$source}', $('#accountSort_{$source} option:selected').val(), !$('#hideCovers_{$source}').is(':checked'));">

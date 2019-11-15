@@ -7,7 +7,7 @@
 			<div class="applied-filters"{if $displaySidebarMenu} style="display: none"{/if}>
 			{foreach from=$filterList item=filters key=field }
 				{foreach from=$filters item=filter}
-					<div class="facetValue">{translate text=$field}: {$filter.display} <a href="{$filter.removalUrl|escape}"><img src="{$path}/images/silk/delete.png" alt="Delete"/></a></div>
+					<div class="facetValue">{translate text=$field}: {$filter.display} <a href="{$filter.removalUrl|escape}"><img src="/images/silk/delete.png" alt="Delete"/></a></div>
 				{/foreach}
 			{/foreach}
 			</div>

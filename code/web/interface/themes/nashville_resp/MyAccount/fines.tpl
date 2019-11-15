@@ -99,13 +99,13 @@
 				{/if}
 			{/foreach}
 
-			{if $showFinePayments}
+			{if $finePaymentType == 1}
 				{* We are doing an actual payment of fines online *}
 				{include file="MyAccount/finePayments.tpl"}
 			{else}
 				{* Pay Fines Button *}
-				{if $showECommerceLink && $profile->_finesVal > $minimumFineAmount}
-					<a href="{$eCommerceLink}" target="_blank"{if $showRefreshAccountButton} onclick="AspenDiscovery.Account.ajaxLightbox('{$path}/AJAX/JSON?method=getPayFinesAfterAction')"{/if}>
+				{if $finePaymentType && $profile->_finesVal > $minimumFineAmount}
+					<a href="{$eCommerceLink}" {if $finePaymentType == 1}target="_blank"{/if}{if $showRefreshAccountButton} onclick="AspenDiscovery.Account.ajaxLightbox('{$path}/AJAX/JSON?method=getPayFinesAfterAction')"{/if}>
 						<div class="btn btn-sm btn-primary">{if $payFinesLinkText}{$payFinesLinkText}{else}{translate text="Click to Pay Fines Online"}{/if}</div>
 					</a>
 				{/if}

@@ -72,14 +72,23 @@
 							<div class="result-value col-tn-8 col-lg-9">
 								{if is_array($record.author)}
 									{foreach from=$record.author item=author}
-										<a href='{$path}/Author/Home?author="{$author|escape:"url"}"'>{$author|highlight}</a>
+										<a href='/Author/Home?author="{$author|escape:"url"}"'>{$author|highlight}</a>
 									{/foreach}
 								{else}
-									<a href='{$path}/Author/Home?author="{$record.author|escape:"url"}"'>{$record.author|highlight}</a>
+									<a href='/Author/Home?author="{$record.author|escape:"url"}"'>{$record.author|highlight}</a>
 								{/if}
 							</div>
 						</div>
 					{/if}
+
+                    {if $record.callNumber}
+						<div class="row">
+							<div class="result-label col-tn-4 col-lg-3">{translate text='Call Number'}</div>
+							<div class="col-tn-8 col-lg-9 result-value">
+                                {$record.callNumber}
+							</div>
+						</div>
+                    {/if}
 
 					{if !empty($record.publicationDate)}
 						<div class="row">

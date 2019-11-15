@@ -18,7 +18,7 @@
 							{$combinedResultSection->displayName}
 						</h3>
 						<div class="combined-results-section-results" id="combined-results-section-results-{$combinedResultSection->id}">
-							<img src="{$path}/images/loading.gif" alt="loading">
+							<img src="/images/loading.gif" alt="loading">
 						</div>
 					</div>
 				{/if}

@@ -30,8 +30,8 @@ abstract class SearchObject_BaseSearcher
 
 	// Filters
 	protected $filterList = array();
-    // Facets information
-    protected $allFacetSettings = array();
+	// Facets information
+	protected $allFacetSettings = array();
 	// Page number
 	protected $page = 1;
 	// Result limit
@@ -44,8 +44,6 @@ abstract class SearchObject_BaseSearcher
 	protected $resultsTotal = 0;
 
 	// OTHER VARIABLES
-	// Server URL
-	protected $serverUrl = "";
 	// Module and Action for building search results URLs
 	protected $resultsModule = 'Search';
 	protected $resultsAction = 'Results';
@@ -57,9 +55,9 @@ abstract class SearchObject_BaseSearcher
 	// Available sort options
 	protected $sortOptions = array();
 	// An ID number for saving/retrieving search
-	protected $searchId    = null;
+	protected $searchId = null;
 	protected $savedSearch = false;
-	protected $searchType  = 'basic';
+	protected $searchType = 'basic';
 	// Possible values of $searchType:
 	protected $isAdvanced = false;
 	protected $basicSearchType = 'basic';
@@ -73,8 +71,8 @@ abstract class SearchObject_BaseSearcher
 	protected $searchIndexes = array();
 
 	// Recommendation modules associated with the search:
-	/** @var bool|array $recommend  */
-	protected $recommend     = false;
+	/** @var bool|array $recommend */
+	protected $recommend = false;
 
 	// STATS
 	protected $initTime = null;
@@ -92,16 +90,13 @@ abstract class SearchObject_BaseSearcher
 	 */
 	public function __construct()
 	{
-		global $configArray;
 		global $timer;
-
-		// Get the start of the server URL and store
-		$this->serverUrl = $configArray['Site']['path'];
 
 		$timer->logTime('Setup Base Search Object');
 	}
 
-	function ping(){
+	function ping()
+	{
 		return true;
 	}
 
@@ -113,7 +108,7 @@ abstract class SearchObject_BaseSearcher
 	 */
 	protected function parseFilter($filter)
 	{
-		if ((strpos($filter, ' AND ') !== FALSE) || (strpos($filter, ' OR ') !== FALSE)){
+		if ((strpos($filter, ' AND ') !== FALSE) || (strpos($filter, ' OR ') !== FALSE)) {
 			//This is a complex filter that does not need parsing
 			return array('', $filter);
 		}
@@ -125,7 +120,7 @@ abstract class SearchObject_BaseSearcher
 		$value = join(":", $temp);
 
 		// Remove quotes from the value if there are any
-		if (substr($value, 0, 1)  == '"') $value = substr($value, 1);
+		if (substr($value, 0, 1) == '"') $value = substr($value, 1);
 		if (substr($value, -1, 1) == '"') $value = substr($value, 0, -1);
 		// One last little clean on whitespace
 		$value = trim($value);
@@ -154,8 +149,8 @@ abstract class SearchObject_BaseSearcher
 	 * Does the object already contain the specified filter?
 	 *
 	 * @access  public
-	 * @param   string  $filterName     The name of the filter
-	 * @param   string  $value          The value of the filter
+	 * @param string $filterName The name of the filter
+	 * @param string $value The value of the filter
 	 * @return  bool
 	 */
 	public function hasFilter($filterName, $value)
@@ -166,7 +161,8 @@ abstract class SearchObject_BaseSearcher
 		return false;
 	}
 
-	public function clearFilters(){
+	public function clearFilters()
+	{
 		$this->filterList = array();
 	}
 
@@ -176,22 +172,22 @@ abstract class SearchObject_BaseSearcher
 	 *   array checking for duplicates.
 	 *
 	 * @access  public
-	 * @param   string|array  $newFilter   A filter string from url : "field:value"
+	 * @param string|array $newFilter A filter string from url : "field:value"
 	 */
 	public function addFilter($newFilter)
 	{
-		if (is_array($newFilter)){
+		if (is_array($newFilter)) {
 			$field = $newFilter[0];
 			$value = $newFilter[1];
-		}else{
-			if (strlen($newFilter) == 0){
+		} else {
+			if (strlen($newFilter) == 0) {
 				return;
 			}
 			// Extract field and value from URL string:
 			list($field, $value) = $this->parseFilter($newFilter);
 		}
 
-		if ($field == ''){
+		if ($field == '') {
 			$field = count($this->filterList) + 1;
 		}
 
@@ -199,43 +195,43 @@ abstract class SearchObject_BaseSearcher
 
 		// Check for duplicates -- if it's not in the array, we can add it
 		if (!$this->hasFilter($field, $value)) {
-			if (!is_numeric($field)){
-				if ($field === 'literary-form'){
+			if (!is_numeric($field)) {
+				if ($field === 'literary-form') {
 					$field = 'literary_form';
-				}else if ($field === 'literary-form-full'){
+				} else if ($field === 'literary-form-full') {
 					$field = 'literary_form_full';
-				}else if ($field === 'target-audience'){
+				} else if ($field === 'target-audience') {
 					$field = 'target_audience';
-				}else if ($field === 'target-audience-full'){
+				} else if ($field === 'target-audience-full') {
 					$field = 'target_audience_full';
 				}
 
-				if ($solrScope){
-					if ($field === 'availability_toggle'){
+				if ($solrScope) {
+					if ($field === 'availability_toggle') {
 						$field = 'availability_toggle_' . $solrScope;
-					}elseif ($field === 'format'){
+					} elseif ($field === 'format') {
 						$field = 'format_' . $solrScope;
-					}elseif ($field === 'format_category'){
+					} elseif ($field === 'format_category') {
 						$field = 'format_category_' . $solrScope;
-					}elseif ($field === 'econtent_source'){
+					} elseif ($field === 'econtent_source') {
 						$field = 'econtent_source_' . $solrScope;
-					}elseif ($field === 'econtent_protection_type'){
+					} elseif ($field === 'econtent_protection_type') {
 						$field = 'econtent_protection_type_' . $solrScope;
-					}elseif (($field === 'collection') || ($field === 'collection_group')){
+					} elseif (($field === 'collection') || ($field === 'collection_group')) {
 						$field = 'collection_' . $solrScope;
-					}elseif ($field === 'detailed_location'){
+					} elseif ($field === 'detailed_location') {
 						$field = 'detailed_location_' . $solrScope;
-					}elseif ($field === 'owning_location'){
+					} elseif ($field === 'owning_location') {
 						$field = 'owning_location_' . $solrScope;
-					}elseif ($field === 'owning_system'){
+					} elseif ($field === 'owning_system') {
 						$field = 'owning_system_' . $solrScope;
-					}elseif ($field === 'available_at'){
+					} elseif ($field === 'available_at') {
 						$field = 'available_at_' . $solrScope;
-					}elseif ($field === 'time_since_added'){
+					} elseif ($field === 'time_since_added') {
 						$field = 'local_time_since_added_' . $solrScope;
-					}elseif ($field === 'itype'){
+					} elseif ($field === 'itype') {
 						$field = 'itype_' . $solrScope;
-					}elseif ($field === 'detailed_location'){
+					} elseif ($field === 'detailed_location') {
 						$field = 'detailed_location_' . $solrScope;
 					}
 				}
@@ -249,7 +245,7 @@ abstract class SearchObject_BaseSearcher
 	 * Remove a filter from the list.
 	 *
 	 * @access  public
-	 * @param   string  $oldFilter   A filter string from url : "field:value"
+	 * @param string $oldFilter A filter string from url : "field:value"
 	 */
 	public function removeFilter($oldFilter)
 	{
@@ -269,7 +265,8 @@ abstract class SearchObject_BaseSearcher
 		}
 	}
 
-	public function clearHiddenFilters() {
+	public function clearHiddenFilters()
+	{
 		$this->hiddenFilters = array();
 	}
 
@@ -282,7 +279,7 @@ abstract class SearchObject_BaseSearcher
 	 * Get a user-friendly string to describe the provided facet field.
 	 *
 	 * @access  protected
-	 * @param   string  $field                  Facet field name.
+	 * @param string $field Facet field name.
 	 * @return  string                          Human-readable description of field.
 	 */
 	protected function getFacetLabel($field)
@@ -297,26 +294,28 @@ abstract class SearchObject_BaseSearcher
 			} else {
 				return $facetConfig;
 			}
-		}elseif (isset($facetConfig[$shortField])){
+		} elseif (isset($facetConfig[$shortField])) {
 			$facetConfig = $facetConfig[$shortField];
-			if ($facetConfig instanceof FacetSetting){
+			if ($facetConfig instanceof FacetSetting) {
 				return $facetConfig->displayName;
-			}else{
+			} else {
 				return $facetConfig;
 			}
-		}else{
-			return ucwords(str_replace("_"," ",translate($shortField)));
+		} else {
+			return ucwords(str_replace("_", " ", translate($shortField)));
 		}
 	}
 
 	/**
 	 * Clear all facets which will speed up searching if we won't be using the facets.
 	 */
-	public function clearFacets(){
+	public function clearFacets()
+	{
 		$this->facetConfig = array();
 	}
 
-	public function hasAppliedFacets(){
+	public function hasAppliedFacets()
+	{
 		return count($this->filterList) > 0;
 	}
 
@@ -340,56 +339,56 @@ abstract class SearchObject_BaseSearcher
 				if ($field == 'available_at' && $value == '*') {
 					$anyLocationLabel = $this->getFacetSetting("Availability", "anyLocationLabel");
 					$display = $anyLocationLabel == '' ? "Any Marmot Location" : $anyLocationLabel;
-				}elseif ($field == 'available_at' && $value == '*') {
+				} elseif ($field == 'available_at' && $value == '*') {
 					$anyLocationLabel = $this->getFacetSetting("Availability", "anyLocationLabel");
 					$display = $anyLocationLabel == '' ? "Any Marmot Location" : $anyLocationLabel;
-				}else{
+				} else {
 					$display = $translate ? translate($value) : $value;
 				}
 
 				$list[$facetLabel][] = array(
-                    'value'      => $value,     // raw value for use with Solr
-                    'display'    => $display,   // version to display to user
-                    'field'      => $field,
-                    'removalUrl' => $this->renderLinkWithoutFilter("$field:$value")
+					'value' => $value,     // raw value for use with Solr
+					'display' => $display,   // version to display to user
+					'field' => $field,
+					'removalUrl' => $this->renderLinkWithoutFilter("$field:$value")
 				);
 			}
 		}
 		return $list;
 	}
 
-    /**
-     * Return the specified setting from the configuration file.
-     *
-     * @access  public
-     * @param   string $section   The section of the configuration file to look at.
-     * @param   string $setting   The setting within the specified file to return.
-     * @return  string    The value of the setting (blank if none).
-     */
-    public function getFacetSetting($section, $setting)
-    {
-        return isset($this->allFacetSettings[$section][$setting]) ?
-            $this->allFacetSettings[$section][$setting] : '';
-    }
+	/**
+	 * Return the specified setting from the configuration file.
+	 *
+	 * @access  public
+	 * @param string $section The section of the configuration file to look at.
+	 * @param string $setting The setting within the specified file to return.
+	 * @return  string    The value of the setting (blank if none).
+	 */
+	public function getFacetSetting($section, $setting)
+	{
+		return isset($this->allFacetSettings[$section][$setting]) ?
+			$this->allFacetSettings[$section][$setting] : '';
+	}
 
 
 	/**
 	 * Return a url for the current search with an additional filter
 	 *
 	 * @access  public
-	 * @param   string   $field  The name of the field to filter on
-	 * @param   string   $filterValue The value to filter on
+	 * @param string $field The name of the field to filter on
+	 * @param string $filterValue The value to filter on
 	 * @return  string   URL of a new search
 	 */
 	public function renderLinkWithFilter($field, $filterValue)
 	{
 		// Stash our old data for a minute
 		$oldFilterList = $this->filterList;
-		$oldPage       = $this->page;
+		$oldPage = $this->page;
 		// Availability facet can have only one item selected at a time
-		if (strpos($field, 'availability_toggle') === 0){
-			foreach ($this->filterList as $name => $value){
-				if (strpos($name, 'availability_toggle') === 0){
+		if (strpos($field, 'availability_toggle') === 0) {
+			foreach ($this->filterList as $name => $value) {
+				if (strpos($name, 'availability_toggle') === 0) {
 					unset ($this->filterList[$name]);
 				}
 			}
@@ -402,7 +401,7 @@ abstract class SearchObject_BaseSearcher
 		$url = $this->renderSearchUrl();
 		// Restore the old data
 		$this->filterList = $oldFilterList;
-		$this->page       = $oldPage;
+		$this->page = $oldPage;
 		// Return the URL
 		return $url;
 	}
@@ -411,7 +410,7 @@ abstract class SearchObject_BaseSearcher
 	 * Return a url for the current search without one of the current filters
 	 *
 	 * @access  public
-	 * @param   string   $oldFilter   A filter to remove from the search url
+	 * @param string $oldFilter A filter to remove from the search url
 	 * @return  string   URL of a new search
 	 */
 	public function renderLinkWithoutFilter($oldFilter)
@@ -423,16 +422,16 @@ abstract class SearchObject_BaseSearcher
 	 * Return a url for the current search without several of the current filters
 	 *
 	 * @access  public
-	 * @param   array    $filters      The filters to remove from the search url
+	 * @param array $filters The filters to remove from the search url
 	 * @return  string   URL of a new search
 	 */
 	public function renderLinkWithoutFilters($filters)
 	{
 		// Stash our old data for a minute
 		$oldFilterList = $this->filterList;
-		$oldPage       = $this->page;
+		$oldPage = $this->page;
 		// Remove the old filter
-		foreach($filters as $oldFilter) {
+		foreach ($filters as $oldFilter) {
 			$this->removeFilter($oldFilter);
 		}
 		// Remove page number
@@ -441,7 +440,7 @@ abstract class SearchObject_BaseSearcher
 		$url = $this->renderSearchUrl();
 		// Restore the old data
 		$this->filterList = $oldFilterList;
-		$this->page       = $oldPage;
+		$this->page = $oldPage;
 		// Return the URL
 		return $url;
 	}
@@ -454,7 +453,7 @@ abstract class SearchObject_BaseSearcher
 	 */
 	protected function getBaseUrl()
 	{
-		return $this->serverUrl."/{$this->resultsModule}/{$this->resultsAction}?";
+		return "/{$this->resultsModule}/{$this->resultsAction}?";
 	}
 
 	/**
@@ -482,44 +481,44 @@ abstract class SearchObject_BaseSearcher
 		switch ($this->searchType) {
 			// Advanced search
 			case $this->advancedSearchType:
-				if (false){
+				if (false) {
 					// Advanced Search Pop-up (probably)
 					// structure lookfor[]
 					$paramIndex = 0;
 					for ($i = 0; $i < count($this->searchTerms); $i++) {
 						for ($j = 0; $j < count($this->searchTerms[$i]['group']); $j++) {
 							$paramIndex++;
-							$params[] = "lookfor[$paramIndex]="    . urlencode($this->searchTerms[$i]['group'][$j]['lookfor']);
+							$params[] = "lookfor[$paramIndex]=" . urlencode($this->searchTerms[$i]['group'][$j]['lookfor']);
 							$params[] = "searchType[$paramIndex]=" . urlencode($this->searchTerms[$i]['group'][$j]['field']);
-							$params[] = "join[$paramIndex]="       . urlencode($this->searchTerms[$i]['group'][$j]['bool']);
+							$params[] = "join[$paramIndex]=" . urlencode($this->searchTerms[$i]['group'][$j]['bool']);
 						}
-						if ($i > 0){
+						if ($i > 0) {
 							$params[] = "groupEnd[$paramIndex]=1";
 						}
 					}
-				}else{
+				} else {
 					// Advanced Search Page
 					//structure lookfor0[], lookfor1[],
 					$params[] = "join=" . urlencode($this->searchTerms[0]['join']);
 					for ($i = 0; $i < count($this->searchTerms); $i++) {
-						$params[]   = "bool".$i."[]=" . urlencode($this->searchTerms[$i]['group'][0]['bool']);
+						$params[] = "bool" . $i . "[]=" . urlencode($this->searchTerms[$i]['group'][0]['bool']);
 						for ($j = 0; $j < count($this->searchTerms[$i]['group']); $j++) {
-							$params[] = "lookfor".$i."[]=" . urlencode($this->searchTerms[$i]['group'][$j]['lookfor']);
-							$params[] = "type"   .$i."[]=" . urlencode($this->searchTerms[$i]['group'][$j]['field']);
+							$params[] = "lookfor" . $i . "[]=" . urlencode($this->searchTerms[$i]['group'][$j]['lookfor']);
+							$params[] = "type" . $i . "[]=" . urlencode($this->searchTerms[$i]['group'][$j]['field']);
 						}
 					}
 				}
 				break;
-				// Basic search
+			// Basic search
 			default:
 				if (isset($this->searchTerms[0]['lookfor'])) {
 					$params[] = "lookfor=" . urlencode($this->searchTerms[0]['lookfor']);
 				}
 				if (isset($this->searchTerms[0]['index'])) {
-					if ($this->searchType == 'basic'){
-						$params[] = "searchIndex="    . urlencode($this->searchTerms[0]['index']);
-					}else{
-						$params[] = "type="         . urlencode($this->searchTerms[0]['index']);
+					if ($this->searchType == 'basic') {
+						$params[] = "searchIndex=" . urlencode($this->searchTerms[0]['index']);
+					} else {
+						$params[] = "type=" . urlencode($this->searchTerms[0]['index']);
 					}
 
 				}
@@ -538,12 +537,12 @@ abstract class SearchObject_BaseSearcher
 	 */
 	public function initBasicSearch($searchTerm = null)
 	{
-		if ($searchTerm == null){
+		if ($searchTerm == null) {
 			// If no lookfor parameter was found, we have no search terms to
 			// add to our array!
 			if (!isset($_REQUEST['lookfor'])) {
 				return false;
-			}else{
+			} else {
 				$searchTerm = $_REQUEST['lookfor'];
 			}
 		}
@@ -555,7 +554,7 @@ abstract class SearchObject_BaseSearcher
 			// Flatten type arrays for backward compatibility:
 			if (is_array($type)) {
 				$type = strip_tags($type[0]);
-			}else{
+			} else {
 				$type = strip_tags($type);
 			}
 
@@ -565,27 +564,29 @@ abstract class SearchObject_BaseSearcher
 			$type = $this->defaultIndex;
 		}
 
-		if (strpos($searchTerm, ':') > 0){
+		if (strpos($searchTerm, ':') > 0) {
 			$tempSearchInfo = explode(':', $searchTerm, 2);
-			if (in_array($tempSearchInfo[0], $this->searchIndexes)){
+			if (in_array($tempSearchInfo[0], $this->searchIndexes)) {
 				$type = $tempSearchInfo[0];
 				$searchTerm = $tempSearchInfo[1];
 			}
 		}
 
 		$this->searchTerms[] = array(
-            'index'   => $type,
-            'lookfor' => $searchTerm
+			'index' => $type,
+			'lookfor' => $searchTerm
 		);
 		return true;
 	}
 
-	public function setSearchTerms($searchTerms){
+	public function setSearchTerms($searchTerms)
+	{
 		$this->searchTerms = array();
 		$this->searchTerms[] = $searchTerms;
 	}
 
-	public function isAdvanced(){
+	public function isAdvanced()
+	{
 		return $this->isAdvanced;
 	}
 
@@ -600,38 +601,38 @@ abstract class SearchObject_BaseSearcher
 	protected function initAdvancedSearch()
 	{
 		$this->isAdvanced = true;
-		if (isset($_REQUEST['lookfor'])){
-			if (is_array($_REQUEST['lookfor'])){
+		if (isset($_REQUEST['lookfor'])) {
+			if (is_array($_REQUEST['lookfor'])) {
 				//Advanced search from popup form
 				$this->searchType = $this->advancedSearchType;
 				$group = array();
-				foreach ($_REQUEST['lookfor'] as $index => $lookfor){
+				foreach ($_REQUEST['lookfor'] as $index => $lookfor) {
 					$group[] = array(
-						'field'   => $_REQUEST['searchType'][$index],
+						'field' => $_REQUEST['searchType'][$index],
 						'lookfor' => $lookfor,
-						'bool'    => $_REQUEST['join'][$index]
+						'bool' => $_REQUEST['join'][$index]
 					);
 
-					if (isset($_REQUEST['groupEnd'])){
-						if (isset($_REQUEST['groupEnd'][$index]) && $_REQUEST['groupEnd'][$index] == 1){
+					if (isset($_REQUEST['groupEnd'])) {
+						if (isset($_REQUEST['groupEnd'][$index]) && $_REQUEST['groupEnd'][$index] == 1) {
 							// Add the completed group to the list
 							$this->searchTerms[] = array(
 								'group' => $group,
-								'join'  => $_REQUEST['join'][$index]
+								'join' => $_REQUEST['join'][$index]
 							);
 							$group = array();
 						}
 					}
 				}
-				if (count($group) > 0 && !empty($index)){
+				if (count($group) > 0 && !empty($index)) {
 					// Add the completed group to the list
 					$this->searchTerms[] = array(
 						'group' => $group,
-						'join'  => $_REQUEST['join'][$index]
+						'join' => $_REQUEST['join'][$index]
 					);
 				}
 			}
-		}else{
+		} else {
 			//********************
 			// Advanced Search logic
 			//  'lookfor0[]' 'type0[]'
@@ -639,28 +640,28 @@ abstract class SearchObject_BaseSearcher
 			$this->searchType = $this->advancedSearchType;
 			$groupCount = 0;
 			// Loop through each search group
-			while (isset($_REQUEST['lookfor'.$groupCount])) {
+			while (isset($_REQUEST['lookfor' . $groupCount])) {
 				$group = array();
 				// Loop through each term inside the group
-				for ($i = 0, $l = count($_REQUEST['lookfor'.$groupCount]); $i < $l; $i++) {
+				for ($i = 0, $l = count($_REQUEST['lookfor' . $groupCount]); $i < $l; $i++) {
 					// Ignore advanced search fields with no lookup
-					if ($_REQUEST['lookfor'.$groupCount][$i] != '') {
+					if ($_REQUEST['lookfor' . $groupCount][$i] != '') {
 						// Use default fields if not set
-						if (!empty($_REQUEST['type'.$groupCount][$i])) {
-							$type = strip_tags($_REQUEST['type'.$groupCount][$i]);
+						if (!empty($_REQUEST['type' . $groupCount][$i])) {
+							$type = strip_tags($_REQUEST['type' . $groupCount][$i]);
 						} else {
 							$type = $this->defaultIndex;
 						}
 
 						//Marmot - search both ISBN-10 and ISBN-13
 						//Check to see if the search term looks like an ISBN10 or ISBN13
-						$lookfor = strip_tags($_REQUEST['lookfor'.$groupCount][$i]);
+						$lookfor = strip_tags($_REQUEST['lookfor' . $groupCount][$i]);
 
 						// Add term to this group
 						$group[] = array(
-	                        'field'   => $type,
-	                        'lookfor' => $lookfor,
-	                        'bool'    => isset($_REQUEST['bool'.$groupCount]) ? strip_tags($_REQUEST['bool'.$groupCount][0]) : 'AND'
+							'field' => $type,
+							'lookfor' => $lookfor,
+							'bool' => isset($_REQUEST['bool' . $groupCount]) ? strip_tags($_REQUEST['bool' . $groupCount][0]) : 'AND'
 						);
 					}
 				}
@@ -669,8 +670,8 @@ abstract class SearchObject_BaseSearcher
 				if (count($group) > 0) {
 					// Add the completed group to the list
 					$this->searchTerms[] = array(
-	                    'group' => $group,
-	                    'join'  => isset($_REQUEST['join']) ? (is_array($_REQUEST['join']) ? strip_tags(reset($_REQUEST['join'])) : strip_tags($_REQUEST['join'])) : 'AND'
+						'group' => $group,
+						'join' => isset($_REQUEST['join']) ? (is_array($_REQUEST['join']) ? strip_tags(reset($_REQUEST['join'])) : strip_tags($_REQUEST['join'])) : 'AND'
 					);
 				}
 
@@ -683,9 +684,9 @@ abstract class SearchObject_BaseSearcher
 				// Treat it as an empty basic search
 				$this->searchType = $this->basicSearchType;
 				$this->searchTerms[] = array(
-	                'index'   => $this->defaultIndex,
-	                'lookfor' => ''
-	                );
+					'index' => $this->defaultIndex,
+					'lookfor' => ''
+				);
 			}
 		}
 	}
@@ -697,7 +698,7 @@ abstract class SearchObject_BaseSearcher
 	 */
 	protected function initView()
 	{
-		if (!empty($this->view)){ //return view if it has already been set.
+		if (!empty($this->view)) { //return view if it has already been set.
 			return;
 		}
 		// Check for a view parameter in the url.
@@ -705,7 +706,7 @@ abstract class SearchObject_BaseSearcher
 			if ($_REQUEST['view'] == 'rss') {
 				// we don't want to store rss in the Session variable
 				$this->view = 'rss';
-			}elseif ($_REQUEST['view'] == 'excel') {
+			} elseif ($_REQUEST['view'] == 'excel') {
 				// we don't want to store excel in the Session variable
 				$this->view = 'excel';
 			} else {
@@ -738,7 +739,7 @@ abstract class SearchObject_BaseSearcher
 	{
 		if (isset($_REQUEST['page'])) {
 			$page = $_REQUEST['page'];
-			if (is_array($page)){
+			if (is_array($page)) {
 				$page = array_pop($page);
 			}
 			$this->page = strip_tags($page);
@@ -766,13 +767,13 @@ abstract class SearchObject_BaseSearcher
 	{
 		$defaultSort = '';
 		if (isset($_REQUEST['sort'])) {
-			if (is_array($_REQUEST['sort'])){
+			if (is_array($_REQUEST['sort'])) {
 				$sort = array_pop($_REQUEST['sort']);
-			}else{
+			} else {
 				$sort = $_REQUEST['sort'];
 			}
 			$this->sort = $sort;
-		}else if ($defaultSort != ''){
+		} else if ($defaultSort != '') {
 			$this->sort = $defaultSort;
 		} else {
 			// Is there a search-specific sort type set?
@@ -785,12 +786,13 @@ abstract class SearchObject_BaseSearcher
 			}
 		}
 		//Validate the sort to make sure it is correct.
-		if (!array_key_exists($this->sort, $this->sortOptions)){
+		if (!array_key_exists($this->sort, $this->sortOptions)) {
 			$this->sort = $this->defaultSort;
 		}
 	}
 
-	public function setSort($sort){
+	public function setSort($sort)
+	{
 		$this->sort = $sort;
 	}
 
@@ -803,7 +805,7 @@ abstract class SearchObject_BaseSearcher
 	{
 		if (isset($_REQUEST['filter'])) {
 			if (is_array($_REQUEST['filter'])) {
-				foreach($_REQUEST['filter'] as $filter) {
+				foreach ($_REQUEST['filter'] as $filter) {
 					if (!is_array($filter)) {
 						$this->addFilter(strip_tags($filter));
 					}
@@ -813,16 +815,16 @@ abstract class SearchObject_BaseSearcher
 			}
 		} else {
 			//Check for locked filters
-			if (UserAccount::isLoggedIn()){
+			if (UserAccount::isLoggedIn()) {
 				$user = UserAccount::getActiveUserObj();
 				$lockedFacets = !empty($user->lockedFacets) ? json_decode($user->lockedFacets, true) : [];
-			}else{
+			} else {
 				$lockedFacets = isset($_SESSION['lockedFilters']) ? $_SESSION['lockedFilters'] : [];
 			}
-			if (!empty($lockedFacets) && !empty($lockedFacets[$this->getSearchName()])){
+			if (!empty($lockedFacets) && !empty($lockedFacets[$this->getSearchName()])) {
 				$lockedFilters = $lockedFacets[$this->getSearchName()];
-				foreach ($lockedFilters as $fieldName => $values){
-					foreach ($values as $value){
+				foreach ($lockedFilters as $fieldName => $values) {
+					foreach ($values as $value) {
 						$this->addFilter($fieldName . ':' . $value);
 					}
 				}
@@ -848,12 +850,12 @@ abstract class SearchObject_BaseSearcher
 				foreach ($filter as $value) {
 					if (preg_match('/\\[.*?\\sTO\\s.*?\\]/', $value)) {
 						$params[] = "filter[]=$field:$value";
-					}elseif (preg_match('/^\\(.*?\\)$/', $value)){
+					} elseif (preg_match('/^\\(.*?\\)$/', $value)) {
 						$params[] = "filter[]=$field:$value";
-					}else{
+					} else {
 						if (is_numeric($field)) {
 							$params[] = "filter[]=" . urlencode($value);
-						}else{
+						} else {
 							$params[] = "filter[]=" . urlencode("$field:\"$value\"");
 						}
 					}
@@ -862,7 +864,7 @@ abstract class SearchObject_BaseSearcher
 		}
 
 		// Sorting
-		if ($this->sort != null ) {
+		if ($this->sort != null) {
 			$params[] = "sort=" . urlencode($this->sort);
 		}
 
@@ -880,15 +882,15 @@ abstract class SearchObject_BaseSearcher
 		// View
 		if ($this->view != null) {
 			$params[] = "view=" . urlencode($this->view);
-		}else if (isset($_REQUEST['view'])){
+		} else if (isset($_REQUEST['view'])) {
 			$view = $_REQUEST['view'];
-			if (is_array($view)){
+			if (is_array($view)) {
 				$view = array_pop($view);
 			}
 			$params[] = "view=" . urlencode($view);
 		}
 
-		if ($this->searchSource){
+		if ($this->searchSource) {
 			$params[] = "searchSource=" . $this->searchSource;
 		}
 
@@ -921,7 +923,7 @@ abstract class SearchObject_BaseSearcher
 	 * Return a url for the current search with a new sort
 	 *
 	 * @access  public
-	 * @param   string   $newSort   A field to sort by
+	 * @param string $newSort A field to sort by
 	 * @return  string   URL of a new search
 	 */
 	public function renderLinkWithSort($newSort)
@@ -952,9 +954,9 @@ abstract class SearchObject_BaseSearcher
 		$list = array();
 		foreach ($valid as $sort => $desc) {
 			$list[$sort] = array(
-                'sortUrl' => $this->renderLinkWithSort($sort),
-                'desc' => $desc,
-                'selected' => ($sort == $this->sort)
+				'sortUrl' => $this->renderLinkWithSort($sort),
+				'desc' => $desc,
+				'selected' => ($sort == $this->sort)
 			);
 		}
 		return $list;
@@ -996,14 +998,15 @@ abstract class SearchObject_BaseSearcher
 		$list = array();
 		foreach ($valid as $view => $desc) {
 			$list[$view] = array(
-                'viewType' => $view,
-                'viewUrl'  => $this->renderLinkWithView($view),
-                'desc' => $desc,
-                'selected' => ($view == $this->view)
+				'viewType' => $view,
+				'viewUrl' => $this->renderLinkWithView($view),
+				'desc' => $desc,
+				'selected' => ($view == $this->view)
 			);
 		}
 		return $list;
 	}
+
 	/**
 	 * Return a url for the current search with a new limit
 	 *
@@ -1042,12 +1045,12 @@ abstract class SearchObject_BaseSearcher
 		// Loop through all the current limits
 		$valid = $this->getLimitOptions();
 		$list = array();
-		if (is_array($valid) && count($valid) > 0){
+		if (is_array($valid) && count($valid) > 0) {
 			foreach ($valid as $limit) {
 				$list[$limit] = array(
-	                'limitUrl' => $this->renderLinkWithLimit($limit),
-	                'desc' => $limit,
-	                'selected' => ($limit == $this->limit)
+					'limitUrl' => $this->renderLinkWithLimit($limit),
+					'desc' => $limit,
+					'selected' => ($limit == $this->limit)
 				);
 			}
 		}
@@ -1060,29 +1063,91 @@ abstract class SearchObject_BaseSearcher
 	 * @access  public
 	 * @return  mixed    various internal variables
 	 */
-	public function getAdvancedTypes()  {return $this->advancedTypes;}
+	public function getAdvancedTypes()
+	{
+		return $this->advancedTypes;
+	}
+
 	public abstract function getSearchIndexes();
-	public function getFilters()        {return $this->filterList;}
-	public function getPage()           {return $this->page;}
-	public function getLimit()          {return $this->limit;}
-	public function getQuerySpeed()     {return $this->queryTime;}
-	public function getResultTotal()    {return $this->resultsTotal;}
-	public function getSearchId()       {return $this->searchId;}
-	public function getQuery()          {return $this->query;}
-	public function getSearchTerms()    {return $this->searchTerms;}
-	public function getSearchType()     {return $this->searchType;}
-	public function getSort()           {return $this->sort;}
-	public function getFullSearchType() {
-		if ($this->isAdvanced){
+
+	public function getFilters()
+	{
+		return $this->filterList;
+	}
+
+	public function getPage()
+	{
+		return $this->page;
+	}
+
+	public function getLimit()
+	{
+		return $this->limit;
+	}
+
+	public function getQuerySpeed()
+	{
+		return $this->queryTime;
+	}
+
+	public function getResultTotal()
+	{
+		return $this->resultsTotal;
+	}
+
+	public function getSearchId()
+	{
+		return $this->searchId;
+	}
+
+	public function getQuery()
+	{
+		return $this->query;
+	}
+
+	public function getSearchTerms()
+	{
+		return $this->searchTerms;
+	}
+
+	public function getSearchType()
+	{
+		return $this->searchType;
+	}
+
+	public function getSort()
+	{
+		return $this->sort;
+	}
+
+	public function getFullSearchType()
+	{
+		if ($this->isAdvanced) {
 			return $this->searchType;
-		}else{
+		} else {
 			return $this->searchType . ' - ' . $this->getSearchIndex();
 		}
 	}
-	public function getStartTime()      {return $this->initTime;}
-	public function getTotalSpeed()     {return $this->totalTime;}
-	public function getView()           {return $this->view;}
-	public function isSavedSearch()     {return $this->savedSearch;}
+
+	public function getStartTime()
+	{
+		return $this->initTime;
+	}
+
+	public function getTotalSpeed()
+	{
+		return $this->totalTime;
+	}
+
+	public function getView()
+	{
+		return $this->view;
+	}
+
+	public function isSavedSearch()
+	{
+		return $this->savedSearch;
+	}
 
 	/**
 	 * Protected 'getters' for values not intended for use outside the class.
@@ -1090,7 +1155,10 @@ abstract class SearchObject_BaseSearcher
 	 * @access  protected
 	 * @return  mixed    various internal variables
 	 */
-	protected function getSortOptions() { return $this->sortOptions; }
+	protected function getSortOptions()
+	{
+		return $this->sortOptions;
+	}
 
 	/**
 	 * Get an array of view options; protected since this should not be used
@@ -1101,9 +1169,9 @@ abstract class SearchObject_BaseSearcher
 	 */
 	protected function getViewOptions()
 	{
-		if (isset($this->viewOptions) && is_array($this->viewOptions)){
+		if (isset($this->viewOptions) && is_array($this->viewOptions)) {
 			return $this->viewOptions;
-		}else{
+		} else {
 			return array();
 		}
 	}
@@ -1124,8 +1192,8 @@ abstract class SearchObject_BaseSearcher
 	 * Reset a simple query against the default index.
 	 *
 	 * @access  public
-	 * @param   string  $query   Query string
-	 * @param   string  $index   Index to search (exclude to use default)
+	 * @param string $query Query string
+	 * @param string $index Index to search (exclude to use default)
 	 */
 	public function setBasicQuery($query, $index = null)
 	{
@@ -1134,8 +1202,8 @@ abstract class SearchObject_BaseSearcher
 		}
 		$this->searchTerms = array();
 		$this->searchTerms[] = array(
-            'index'   => $index,
-            'lookfor' => $query
+			'index' => $index,
+			'lookfor' => $query
 		);
 	}
 
@@ -1143,14 +1211,15 @@ abstract class SearchObject_BaseSearcher
 	 * Set the number of search results returned per page.
 	 *
 	 * @access  public
-	 * @param   int     $limit      New page limit value
+	 * @param int $limit New page limit value
 	 */
 	public function setLimit($limit)
 	{
 		$this->limit = $limit;
 	}
 
-	public function setSearchSource($searchSource){
+	public function setSearchSource($searchSource)
+	{
 		$this->searchSource = $searchSource;
 	}
 
@@ -1158,8 +1227,8 @@ abstract class SearchObject_BaseSearcher
 	 * Add a field to facet on.
 	 *
 	 * @access  public
-	 * @param   string  $newField   Field name
-	 * @param   string|FacetSetting  $newAlias   Optional on-screen display label
+	 * @param string $newField Field name
+	 * @param string|FacetSetting $newAlias Optional on-screen display label
 	 */
 	public function addFacet($newField, $newAlias = null)
 	{
@@ -1169,7 +1238,8 @@ abstract class SearchObject_BaseSearcher
 		$this->facetConfig[$newField] = $newAlias;
 	}
 
-	public function addFacetOptions($options){
+	public function addFacetOptions($options)
+	{
 		$this->facetOptions = $options;
 	}
 
@@ -1183,8 +1253,8 @@ abstract class SearchObject_BaseSearcher
 	{
 		$summary = array();
 
-		$summary['page']        = $this->page;
-		$summary['perPage']     = $this->limit;
+		$summary['page'] = $this->page;
+		$summary['perPage'] = $this->limit;
 		$summary['resultTotal'] = $this->resultsTotal;
 		// 1st record is easy, work out the start of this page
 		$summary['startRecord'] = (($this->page - 1) * $this->limit) + 1;
@@ -1203,16 +1273,16 @@ abstract class SearchObject_BaseSearcher
 		return $summary;
 	}
 
-    /**
+	/**
 	 * Returns the stored list of facets for the last search
 	 *
 	 * @access  public
-	 * @param   array   $filter         Array of field => on-screen description
+	 * @param array $filter Array of field => on-screen description
 	 *                                  listing all of the desired facet fields;
 	 *                                  set to null to get all configured values.
 	 * @return  array   Facets data arrays
 	 */
-    public function getFacetList(/** @noinspection PhpUnusedParameterInspection */$filter = null)
+	public function getFacetList(/** @noinspection PhpUnusedParameterInspection */ $filter = null)
 	{
 		// Assume no facets by default -- child classes can override this to extract
 		// the necessary details from the results saved by processSearch().
@@ -1225,7 +1295,8 @@ abstract class SearchObject_BaseSearcher
 	 *
 	 * @access  public
 	 */
-	public function disableLogging() {
+	public function disableLogging()
+	{
 		$this->disableLogging = true;
 	}
 
@@ -1237,15 +1308,15 @@ abstract class SearchObject_BaseSearcher
 	 */
 	protected function purge()
 	{
-		$this->searchType   = $this->basicSearchType;
-		$this->searchId     = null;
+		$this->searchType = $this->basicSearchType;
+		$this->searchId = null;
 		$this->resultsTotal = null;
-		$this->filterList   = null;
-		$this->initTime     = null;
-		$this->queryTime    = null;
+		$this->filterList = null;
+		$this->initTime = null;
+		$this->queryTime = null;
 		// An array so we don't have to initialise
 		//   the empty array during population.
-		$this->searchTerms  = array();
+		$this->searchTerms = array();
 	}
 
 	/**
@@ -1267,7 +1338,7 @@ abstract class SearchObject_BaseSearcher
 	 *  Needs to be kept up-to-date with the minSO object at the end of this file.
 	 *
 	 * @access  public
-	 * @param   object  $minified     A minSO object
+	 * @param object $minified A minSO object
 	 */
 	public function deminify($minified)
 	{
@@ -1275,17 +1346,17 @@ abstract class SearchObject_BaseSearcher
 		$this->purge();
 
 		// Most values will transfer without changes
-		if (isset($minified->q)){
-			$this->query        = $minified->q;
+		if (isset($minified->q)) {
+			$this->query = $minified->q;
 		}
-		$this->searchId     = $minified->id;
-		$this->initTime     = $minified->i;
-		$this->queryTime    = $minified->s;
+		$this->searchId = $minified->id;
+		$this->initTime = $minified->i;
+		$this->queryTime = $minified->s;
 		$this->resultsTotal = $minified->r;
-		$this->filterList   = $minified->f;
-		$this->searchType   = $minified->ty;
-		$this->searchSource   = $minified->ss;
-		$this->sort         = $minified->sr;
+		$this->filterList = $minified->f;
+		$this->searchType = $minified->ty;
+		$this->searchSource = $minified->ss;
+		$this->sort = $minified->sr;
 
 		// Search terms, we need to expand keys
 		$tempTerms = $minified->t;
@@ -1293,18 +1364,30 @@ abstract class SearchObject_BaseSearcher
 			$newTerm = array();
 			foreach ($term as $k => $v) {
 				switch ($k) {
-					case 'j' :  $newTerm['join']    = $v; break;
-					case 'i' :  $newTerm['index']   = $v; break;
-					case 'l' :  $newTerm['lookfor'] = $v; break;
+					case 'j' :
+						$newTerm['join'] = $v;
+						break;
+					case 'i' :
+						$newTerm['index'] = $v;
+						break;
+					case 'l' :
+						$newTerm['lookfor'] = $v;
+						break;
 					case 'g' :
 						$newTerm['group'] = array();
 						foreach ($v as $line) {
 							$search = array();
 							foreach ($line as $k2 => $v2) {
 								switch ($k2) {
-									case 'b' :  $search['bool']    = $v2; break;
-									case 'f' :  $search['field']   = $v2; break;
-									case 'l' :  $search['lookfor'] = $v2; break;
+									case 'b' :
+										$search['bool'] = $v2;
+										break;
+									case 'f' :
+										$search['field'] = $v2;
+										break;
+									case 'l' :
+										$search['lookfor'] = $v2;
+										break;
 								}
 							}
 							$newTerm['group'][] = $search;
@@ -1323,81 +1406,82 @@ abstract class SearchObject_BaseSearcher
 	 */
 	protected function addToHistory()
 	{
-        $thisSearchUrl = $this->renderSearchUrl();
-        $s = new SearchEntry();
-	    //Get the active search within the history, looking at the URL for speed instead of deminifying everything
-        $previouslySavedSearch = $s->getSavedSearchByUrl($thisSearchUrl, session_id(), UserAccount::isLoggedIn() ? UserAccount::getActiveUserId() : null);
-        if ($previouslySavedSearch != null) {
-            $this->searchId    = $previouslySavedSearch->id;
-            if ($previouslySavedSearch->saved){
-                $this->savedSearch = true;
-            }else{
-                //Update creation date if needed
-                if ($previouslySavedSearch->created != date('Y-m-d')){
-                    $previouslySavedSearch->created = date('Y-m-d');
-                    $previouslySavedSearch->update();
-                }
-            }
-        }else{
-            // Get the list of all old searches for this session and/or user
-            /** @var SearchEntry[] $searchHistory */
-            $searchHistory = $s->getSearchesWithNullUrl($this->searchSource, session_id(), UserAccount::isLoggedIn() ? UserAccount::getActiveUserId() : null);
+		$thisSearchUrl = $this->renderSearchUrl();
+		$s = new SearchEntry();
+		//Get the active search within the history, looking at the URL for speed instead of deminifying everything
+		$previouslySavedSearch = $s->getSavedSearchByUrl($thisSearchUrl, session_id(), UserAccount::isLoggedIn() ? UserAccount::getActiveUserId() : null);
+		if ($previouslySavedSearch != null) {
+			$this->searchId = $previouslySavedSearch->id;
+			if ($previouslySavedSearch->saved) {
+				$this->savedSearch = true;
+			} else {
+				//Update creation date if needed
+				if ($previouslySavedSearch->created != date('Y-m-d')) {
+					$previouslySavedSearch->created = date('Y-m-d');
+					$previouslySavedSearch->update();
+				}
+			}
+		} else {
+			// Get the list of all old searches for this session and/or user
+			/** @var SearchEntry[] $searchHistory */
+			$searchHistory = $s->getSearchesWithNullUrl($this->searchSource, session_id(), UserAccount::isLoggedIn() ? UserAccount::getActiveUserId() : null);
 
-            // Duplicate elimination
-            $dupSaved  = false;
-            foreach ($searchHistory as $oldSearch) {
-                // Deminify the old search
-                $minSO = unserialize($oldSearch->search_object);
-                $dupSearch = SearchObjectFactory::deminify($minSO);
-                // See if the classes and urls match
-                if ($oldSearch->searchUrl == null) {
-                    $oldSearch->searchUrl = $dupSearch->renderSearchUrl();
-                    $oldSearch->update();
-                }
-                if ((get_class($dupSearch) == get_class($this)) && ($oldSearch->searchUrl == $thisSearchUrl)) {
-                    // Is the older search saved?
-                    if ($oldSearch->saved) {
-                        // Flag for later
-                        $dupSaved = true;
-                        // Record the details
-                        $this->searchId    = $oldSearch->id;
-                        $this->savedSearch = true;
-                    } else {
-                        // Delete the old search
-                        $oldSearch->delete();
-                    }
-                }
-            }
+			// Duplicate elimination
+			$dupSaved = false;
+			foreach ($searchHistory as $oldSearch) {
+				// Deminify the old search
+				$minSO = unserialize($oldSearch->search_object);
+				$dupSearch = SearchObjectFactory::deminify($minSO);
+				// See if the classes and urls match
+				if ($oldSearch->searchUrl == null) {
+					$oldSearch->searchUrl = $dupSearch->renderSearchUrl();
+					$oldSearch->update();
+				}
+				if ((get_class($dupSearch) == get_class($this)) && ($oldSearch->searchUrl == $thisSearchUrl)) {
+					// Is the older search saved?
+					if ($oldSearch->saved) {
+						// Flag for later
+						$dupSaved = true;
+						// Record the details
+						$this->searchId = $oldSearch->id;
+						$this->savedSearch = true;
+					} else {
+						// Delete the old search
+						$oldSearch->delete();
+					}
+				}
+			}
 
-            // Save this search unless we found a 'saved' duplicate
-            if (!$dupSaved) {
-                $search = new SearchEntry();
-                $search->session_id = session_id();
-                $search->created = date('Y-m-d');
-                $search->searchSource = $this->searchSource;
-                $search->search_object = serialize($this->minify());
-                $search->searchUrl = $this->renderSearchUrl();
+			// Save this search unless we found a 'saved' duplicate
+			if (!$dupSaved) {
+				$search = new SearchEntry();
+				$search->session_id = session_id();
+				$search->created = date('Y-m-d');
+				$search->searchSource = $this->searchSource;
+				$search->search_object = serialize($this->minify());
+				$search->searchUrl = $this->renderSearchUrl();
 
-                //MDN 10/10/2019 had cases where user was passing in invalid sources which
-	            //caused an error on insert.  Just ignore for now, but should eventually do more validation.
-                if (strlen($search->searchSource) <= 30){
-	                $search->insert();
-	                // Record the details
-	                $this->searchId    = $search->id;
-	                $this->savedSearch = false;
+				//MDN 10/10/2019 had cases where user was passing in invalid sources which
+				//caused an error on insert.  Just ignore for now, but should eventually do more validation.
+				if (strlen($search->searchSource) <= 30) {
+					$search->insert();
+					// Record the details
+					$this->searchId = $search->id;
+					$this->savedSearch = false;
 
-	                // Chicken and egg... We didn't know the id before insert
-	                $search->search_object = serialize($this->minify());
-	                $search->update();
-                }
-            }
-        }
+					// Chicken and egg... We didn't know the id before insert
+					$search->search_object = serialize($this->minify());
+					$search->update();
+				}
+			}
+		}
 	}
 
-	public function loadLastSearch(){
-		if (isset($_SESSION['lastSearchId']) && is_numeric($_SESSION['lastSearchId'])){
+	public function loadLastSearch()
+	{
+		if (isset($_SESSION['lastSearchId']) && is_numeric($_SESSION['lastSearchId'])) {
 			$lastSearchId = $_SESSION['lastSearchId'];
-		}else{
+		} else {
 			//No search to load, get out
 			return null;
 		}
@@ -1427,12 +1511,12 @@ abstract class SearchObject_BaseSearcher
 	 * unable to load a requested saved search, return a AspenError object.
 	 *
 	 * @access  protected
-	 * @var     string    $searchId
-	 * @var     boolean   $redirect
-	 * @var     boolean   $forceReload
 	 * @return  mixed               Does not return on successful load, returns
 	 *                              false if no search to restore, returns
 	 *                              AspenError object in case of trouble.
+	 * @var     boolean $redirect
+	 * @var     boolean $forceReload
+	 * @var     string $searchId
 	 */
 	public function restoreSavedSearch($searchId = null, $redirect = true, $forceReload = false)
 	{
@@ -1455,7 +1539,7 @@ abstract class SearchObject_BaseSearcher
 					// landing on a "?saved=xxxx" URL, which may not persist beyond
 					// the current session.  (We want all searches to be
 					// persistent and able to be bookmarked).
-					if ($redirect){
+					if ($redirect) {
 						header('Location: ' . $savedSearch->renderSearchUrl());
 						die();
 					} else {
@@ -1481,8 +1565,8 @@ abstract class SearchObject_BaseSearcher
 	 *  search parameters in $_REQUEST.
 	 *
 	 * @access  public
-	 * @var string $searchSource
 	 * @return  boolean
+	 * @var string $searchSource
 	 */
 	public function init($searchSource = null)
 	{
@@ -1543,7 +1627,7 @@ abstract class SearchObject_BaseSearcher
 			// Basic search
 		} else {
 			$output = "TERMS : " . $this->searchTerms[0]['lookfor'] . "<br/>\n";
-			$output .= "INDEX : " . $this->searchTerms[0]['index']   . "<br/>\n";
+			$output .= "INDEX : " . $this->searchTerms[0]['index'] . "<br/>\n";
 		}
 
 		return $output;
@@ -1565,12 +1649,12 @@ abstract class SearchObject_BaseSearcher
 				$output .= "FILTER : $field => $value<br/>\n";
 			}
 		}
-		$output .= "PAGE : "   . $this->page         . "<br/>\n";
-		$output .= "SORT : "   . $this->sort         . "<br/>\n";
-		$output .= "TIMING : START : "   . $this->initTime       . "<br/>\n";
+		$output .= "PAGE : " . $this->page . "<br/>\n";
+		$output .= "SORT : " . $this->sort . "<br/>\n";
+		$output .= "TIMING : START : " . $this->initTime . "<br/>\n";
 		$output .= "TIMING : QUERY.S : " . $this->queryStartTime . "<br/>\n";
-		$output .= "TIMING : QUERY.E : " . $this->queryEndTime   . "<br/>\n";
-		$output .= "TIMING : FINISH : "  . $this->endTime        . "<br/>\n";
+		$output .= "TIMING : QUERY.E : " . $this->queryEndTime . "<br/>\n";
+		$output .= "TIMING : FINISH : " . $this->endTime . "<br/>\n";
 
 		return $output;
 	}
@@ -1612,9 +1696,9 @@ abstract class SearchObject_BaseSearcher
 		// Single search index does not apply to advanced search:
 		if ($this->searchType == $this->advancedSearchType) {
 			return null;
-		}elseif (isset($this->searchTerms[0]['index'])){
+		} elseif (isset($this->searchTerms[0]['index'])) {
 			return $this->searchTerms[0]['index'];
-		}else{
+		} else {
 			return 'Keyword';
 		}
 	}
@@ -1623,10 +1707,11 @@ abstract class SearchObject_BaseSearcher
 	 * Find a word amongst the current search terms
 	 *
 	 * @access  protected
-	 * @param   string   $needle  Search term to find
+	 * @param string $needle Search term to find
 	 * @return  bool     True/False if the word was found
 	 */
-	protected function findSearchTerm($needle) {
+	protected function findSearchTerm($needle)
+	{
 		// Advanced search
 		if (isset($this->searchTerms[0]['group'])) {
 			foreach ($this->searchTerms as $group) {
@@ -1652,10 +1737,11 @@ abstract class SearchObject_BaseSearcher
 	 * Replace a search term in the query
 	 *
 	 * @access  protected
-	 * @param   string   $from  Search term to find
-	 * @param   string   $to    Search term to insert
+	 * @param string $from Search term to find
+	 * @param string $to Search term to insert
 	 */
-	protected function replaceSearchTerm($from, $to) {
+	protected function replaceSearchTerm($from, $to)
+	{
 		// Escape $from so it is regular expression safe (just in case it
 		// includes any weird punctuation -- unlikely but possible):
 		$from = addcslashes($from, '\^$.[]|()?*+{}/');
@@ -1664,7 +1750,7 @@ abstract class SearchObject_BaseSearcher
 		// we can't use word boundaries
 		if (strpos($from, '"') === false) {
 			$pattern = "/\b$from\b/i";
-		} else  {
+		} else {
 			$pattern = "/$from/i";
 		}
 
@@ -1673,8 +1759,8 @@ abstract class SearchObject_BaseSearcher
 			for ($i = 0; $i < count($this->searchTerms); $i++) {
 				for ($j = 0; $j < count($this->searchTerms[$i]['group']); $j++) {
 					$this->searchTerms[$i]['group'][$j]['lookfor'] =
-					preg_replace($pattern, $to,
-					$this->searchTerms[$i]['group'][$j]['lookfor']);
+						preg_replace($pattern, $to,
+							$this->searchTerms[$i]['group'][$j]['lookfor']);
 				}
 			}
 			// Basic search
@@ -1682,7 +1768,7 @@ abstract class SearchObject_BaseSearcher
 			for ($i = 0; $i < count($this->searchTerms); $i++) {
 				// Perform the replacement:
 				$this->searchTerms[$i]['lookfor'] = preg_replace($pattern,
-				$to, $this->searchTerms[$i]['lookfor']);
+					$to, $this->searchTerms[$i]['lookfor']);
 			}
 		}
 	}
@@ -1692,8 +1778,8 @@ abstract class SearchObject_BaseSearcher
 	 *   a search term replaced
 	 *
 	 * @access  public
-	 * @param   string   $oldTerm   The old term to replace
-	 * @param   string   $newTerm   The new term to search
+	 * @param string $oldTerm The old term to replace
+	 * @param string $newTerm The new term to search
 	 * @return  string   query string
 	 */
 	public function getDisplayQueryWithReplacedTerm($oldTerm, $newTerm)
@@ -1704,7 +1790,7 @@ abstract class SearchObject_BaseSearcher
 		$this->replaceSearchTerm($oldTerm, $newTerm);
 
 		// Get the new query string
-        $query = $this->displayQuery(true);
+		$query = $this->displayQuery(true);
 		// Restore the old data
 		$this->searchTerms = $oldTerms;
 		// Return the query string
@@ -1732,14 +1818,20 @@ abstract class SearchObject_BaseSearcher
 		// PHP doc examples & benighted at gmail dot com
 		// http://php.net/manual/en/function.strtok.php
 		$tokens = array();
-		$token = strtok($input,' ');
+		$token = strtok($input, ' ');
 		while ($token) {
 			// find bracketed tokens
-			if ($token{0}=='(') {$token .= ' '.strtok(')').')';}
+			if ($token{0} == '(') {
+				$token .= ' ' . strtok(')') . ')';
+			}
 			// find double quoted tokens
-			if ($token{0}=='"') {$token .= ' '.strtok('"').'"';}
+			if ($token{0} == '"') {
+				$token .= ' ' . strtok('"') . '"';
+			}
 			// find single quoted tokens
-			if ($token{0}=="'") {$token .= ' '.strtok("'")."'";}
+			if ($token{0} == "'") {
+				$token .= ' ' . strtok("'") . "'";
+			}
 			$tokens[] = $token;
 			$token = strtok(' ');
 		}
@@ -1761,8 +1853,8 @@ abstract class SearchObject_BaseSearcher
 	 * Return a url for the current search with a search term replaced
 	 *
 	 * @access  public
-	 * @param   string|array   $oldTerm   The old term to replace
-	 * @param   string|array   $newTerm   The new term to search
+	 * @param string|array $oldTerm The old term to replace
+	 * @param string|array $newTerm The new term to search
 	 * @return  string   URL of a new search
 	 */
 	public function renderLinkWithReplacedTerm($oldTerm, $newTerm)
@@ -1774,13 +1866,13 @@ abstract class SearchObject_BaseSearcher
 		// when changing the contents of the search
 		$this->page = 1;
 		// Replace the term(s)
-        if (is_array($oldTerm)){
-            for ($i = 0; $i < count($oldTerm); $i++){
-                $this->replaceSearchTerm($oldTerm[$i], $newTerm[$i]);
-            }
-        }else{
-            $this->replaceSearchTerm($oldTerm, $newTerm);
-        }
+		if (is_array($oldTerm)) {
+			for ($i = 0; $i < count($oldTerm); $i++) {
+				$this->replaceSearchTerm($oldTerm[$i], $newTerm[$i]);
+			}
+		} else {
+			$this->replaceSearchTerm($oldTerm, $newTerm);
+		}
 
 		// Get the new url
 		$url = $this->renderSearchUrl();
@@ -1795,24 +1887,25 @@ abstract class SearchObject_BaseSearcher
 	 * Get the templates used to display recommendations for the current search.
 	 *
 	 * @access  public
-	 * @param   string      $location           'top' or 'side'
+	 * @param string $location 'top' or 'side'
 	 * @return  array       Array of templates to display at the specified location.
 	 */
 	public function getRecommendationsTemplates($location = 'top')
 	{
 		$returnValue = array();
 		if (isset($this->recommend[$location]) && !empty($this->recommend[$location])) {
-			foreach($this->recommend[$location] as $current) {
+			foreach ($this->recommend[$location] as $current) {
 				$returnValue[] = $current->getTemplate();
 			}
 		}
 		return $returnValue;
 	}
 
-    /**
-     * @return string
-     */
+	/**
+	 * @return string
+	 */
 	abstract function getSearchesFile();
+
 	/**
 	 * Load all recommendation settings from the relevant ini file.  Returns an
 	 * associative array where the key is the location of the recommendations (top
@@ -1841,7 +1934,7 @@ abstract class SearchObject_BaseSearcher
 		// otherwise:
 		$recommend = array();
 		if ($searchType &&
-		isset($searchSettings['TopRecommendations'][$searchType])) {
+			isset($searchSettings['TopRecommendations'][$searchType])) {
 			$recommend['top'] = $searchSettings['TopRecommendations'][$searchType];
 		} else {
 			$recommend['top'] = isset($searchSettings['General']['default_top_recommend']) ? $searchSettings['General']['default_top_recommend'] : false;
@@ -1871,7 +1964,7 @@ abstract class SearchObject_BaseSearcher
 
 		// Process recommendations for each location:
 		$this->recommend = array('top' => array(), 'side' => array());
-		foreach($settings as $location => $currentSet) {
+		foreach ($settings as $location => $currentSet) {
 			// If the current location is disabled, skip processing!
 			if (empty($currentSet)) {
 				continue;
@@ -1882,7 +1975,7 @@ abstract class SearchObject_BaseSearcher
 				$currentSet = array($currentSet);
 			}
 			// Now loop through all recommendation settings for the location.
-			foreach($currentSet as $current) {
+			foreach ($currentSet as $current) {
 				// Break apart the setting into module name and extra parameters:
 				$current = explode(':', $current);
 				$module = array_shift($current);
@@ -1906,7 +1999,7 @@ abstract class SearchObject_BaseSearcher
 	 * with it.
 	 *
 	 * @access  public
-	 * @param   false|string      $preferredSection       Section to favor when loading
+	 * @param false|string $preferredSection Section to favor when loading
 	 *                                              settings; if multiple sections
 	 *                                              contain the same facet, this
 	 *                                              section's description will be
@@ -1927,7 +2020,7 @@ abstract class SearchObject_BaseSearcher
 	 * human-readable format:
 	 *
 	 * @access  protected
-	 * @param   string      $field          Field name to display.
+	 * @param string $field Field name to display.
 	 * @return  string                      Human-readable version of field name.
 	 */
 	protected function getHumanReadableFieldName($field)
@@ -1952,7 +2045,7 @@ abstract class SearchObject_BaseSearcher
 	protected function buildAdvancedDisplayQuery()
 	{
 		// Groups and exclusions. This mirrors some logic in Solr.php
-		$groups   = array();
+		$groups = array();
 		$excludes = array();
 
 		foreach ($this->searchTerms as $search) {
@@ -1961,13 +2054,13 @@ abstract class SearchObject_BaseSearcher
 			foreach ($search['group'] as $group) {
 				// Build this group individually as a basic search
 				$thisGroup[] = $group['field'] .
-                    ":{$group['lookfor']}";
+					":{$group['lookfor']}";
 			}
 			// Is this an exclusion (NOT) group or a normal group?
 			if ($search['group'][0]['bool'] == 'NOT') {
 				$excludes[] = join(" OR ", $thisGroup);
 			} else {
-				$groups[] = join(" ".$search['group'][0]['bool']." ", $thisGroup);
+				$groups[] = join(" " . $search['group'][0]['bool'] . " ", $thisGroup);
 			}
 		}
 
@@ -1981,15 +2074,15 @@ abstract class SearchObject_BaseSearcher
 		return $output;
 	}
 
-    /**
-     * Build a string for onscreen display showing the
-     *   query used in the search (not the filters).
-     *
-     * @access  public
-     * @param   bool $forceRebuild
-     * @return  string   user friendly version of 'query'
-     */
-	public function displayQuery(/** @noinspection PhpUnusedParameterInspection */$forceRebuild = false)
+	/**
+	 * Build a string for onscreen display showing the
+	 *   query used in the search (not the filters).
+	 *
+	 * @access  public
+	 * @param bool $forceRebuild
+	 * @return  string   user friendly version of 'query'
+	 */
+	public function displayQuery(/** @noinspection PhpUnusedParameterInspection */ $forceRebuild = false)
 	{
 		// Advanced search?
 		if ($this->searchType == $this->advancedSearchType) {
@@ -1999,21 +2092,21 @@ abstract class SearchObject_BaseSearcher
 		return $this->searchTerms[0]['lookfor'];
 	}
 
-    /**
-     * Actually process and submit the search; in addition to returning results,
-     * this method is responsible for populating various class properties that
-     * are returned by other get methods (i.e. getFacetList).
-     *
-     * @access  public
-     * @param bool $returnIndexErrors Should we die inside the index code if
-     *                                     we encounter an error (false) or return
-     *                                     it for access via the getIndexError()
-     *                                     method (true)?
-     * @param bool $recommendations Should we process recommendations along
-     *                                     with the search itself?
-     * @param bool $preventQueryModification  Should we make sure the query doesn't change
-     * @return  object   Search results (format may vary from class to class).
-     */
+	/**
+	 * Actually process and submit the search; in addition to returning results,
+	 * this method is responsible for populating various class properties that
+	 * are returned by other get methods (i.e. getFacetList).
+	 *
+	 * @access  public
+	 * @param bool $returnIndexErrors Should we die inside the index code if
+	 *                                     we encounter an error (false) or return
+	 *                                     it for access via the getIndexError()
+	 *                                     method (true)?
+	 * @param bool $recommendations Should we process recommendations along
+	 *                                     with the search itself?
+	 * @param bool $preventQueryModification Should we make sure the query doesn't change
+	 * @return  object   Search results (format may vary from class to class).
+	 */
 	abstract public function processSearch($returnIndexErrors = false, $recommendations = false, $preventQueryModification = false);
 
 	/**
@@ -2025,11 +2118,12 @@ abstract class SearchObject_BaseSearcher
 	 */
 	abstract public function getIndexError();
 
-    public function getNextPrevLinks(){
+	public function getNextPrevLinks()
+	{
 		global $interface;
 		global $timer;
 		//Setup next and previous links based on the search results.
-		if (isset($_REQUEST['searchId']) && isset($_REQUEST['recordIndex']) && ctype_digit($_REQUEST['searchId']) && ctype_digit($_REQUEST['recordIndex'])){
+		if (isset($_REQUEST['searchId']) && isset($_REQUEST['recordIndex']) && ctype_digit($_REQUEST['searchId']) && ctype_digit($_REQUEST['recordIndex'])) {
 			//rerun the search
 			$s = new SearchEntry();
 			$s->id = $_REQUEST['searchId'];
@@ -2038,7 +2132,7 @@ abstract class SearchObject_BaseSearcher
 			$interface->assign('page', $currentPage);
 
 			$s->find();
-			if ($s->N > 0){
+			if ($s->N > 0) {
 				$s->fetch();
 				$minSO = unserialize($s->search_object);
 				/** @var SearchObject_BaseSearcher $searchObject */
@@ -2050,16 +2144,16 @@ abstract class SearchObject_BaseSearcher
 				//Check to see if we need to run a search for the next or previous page
 				$currentResultIndex = $_REQUEST['recordIndex'] - 1;
 				$recordsPerPage = $searchObject->getLimit();
-				$adjustedResultIndex = $currentResultIndex - ($recordsPerPage * ($currentPage -1));
+				$adjustedResultIndex = $currentResultIndex - ($recordsPerPage * ($currentPage - 1));
 
-				if (($currentResultIndex) % $recordsPerPage == 0 && $currentResultIndex > 0){
+				if (($currentResultIndex) % $recordsPerPage == 0 && $currentResultIndex > 0) {
 					//Need to run a search for the previous page
 					$interface->assign('previousPage', $currentPage - 1);
 					$previousSearchObject = clone $searchObject;
 					$previousSearchObject->setPage($currentPage - 1);
 					$previousSearchObject->processSearch(true, false, false);
 					$previousResults = $previousSearchObject->getResultRecordSet();
-				}else if (($currentResultIndex + 1) % $recordsPerPage == 0 && ($currentResultIndex + 1) < $searchObject->getResultTotal()){
+				} else if (($currentResultIndex + 1) % $recordsPerPage == 0 && ($currentResultIndex + 1) < $searchObject->getResultTotal()) {
 					//Need to run a search for the next page
 					$nextSearchObject = clone $searchObject;
 					$interface->assign('nextPage', $currentPage + 1);
@@ -2070,18 +2164,18 @@ abstract class SearchObject_BaseSearcher
 
 				if ($result instanceof AspenError) {
 					//If we get an error executing the search, just eat it for now.
-				}else{
+				} else {
 					if ($searchObject->getResultTotal() < 1) {
 						//No results found
-					}else{
+					} else {
 						$recordSet = $searchObject->getResultRecordSet();
 						//Record set is 0 based, but we are passed a 1 based index
-						if ($currentResultIndex > 0){
-							if (isset($previousResults)){
-								$previousRecord = $previousResults[count($previousResults) -1];
-							}else{
+						if ($currentResultIndex > 0) {
+							if (isset($previousResults)) {
+								$previousRecord = $previousResults[count($previousResults) - 1];
+							} else {
 								$previousId = $adjustedResultIndex - 1;
-								if (isset($recordSet[$previousId])){
+								if (isset($recordSet[$previousId])) {
 									$previousRecord = $recordSet[$previousId];
 								}
 							}
@@ -2090,7 +2184,7 @@ abstract class SearchObject_BaseSearcher
 							if (isset($previousRecord)) {
 								$interface->assign('previousIndex', $currentResultIndex - 1 + 1);
 								$interface->assign('previousTitle', $previousRecord['title_display']);
-								if ($previousRecord['recordtype'] == 'grouped_work'){
+								if ($previousRecord['recordtype'] == 'grouped_work') {
 									require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 									$groupedWork = New GroupedWorkDriver($previousRecord);
 									$relatedRecords = $groupedWork->getRelatedRecords(true);
@@ -2105,30 +2199,30 @@ abstract class SearchObject_BaseSearcher
 										$interface->assign('previousType', 'GroupedWork');
 										$interface->assign('previousId', $previousRecord['id']);
 									}
-								} elseif (strpos($previousRecord['id'], 'list') === 0){
+								} elseif (strpos($previousRecord['id'], 'list') === 0) {
 									$interface->assign('previousType', 'MyAccount/MyList');
 									$interface->assign('previousId', str_replace('list', '', $previousRecord['id']));
-								}else{
+								} else {
 									$interface->assign('previousType', 'Record');
 									$interface->assign('previousId', $previousRecord['id']);
 								}
 							}
 						}
-						if ($currentResultIndex + 1 < $searchObject->getResultTotal()){
+						if ($currentResultIndex + 1 < $searchObject->getResultTotal()) {
 
-							if (isset($nextResults)){
+							if (isset($nextResults)) {
 								$nextRecord = $nextResults[0];
-							}else{
+							} else {
 								$nextRecordIndex = $adjustedResultIndex + 1;
-								if (isset($recordSet[$nextRecordIndex])){
+								if (isset($recordSet[$nextRecordIndex])) {
 									$nextRecord = $recordSet[$nextRecordIndex];
 								}
 							}
 							//Convert back to 1 based index
 							$interface->assign('nextIndex', $currentResultIndex + 1 + 1);
-							if (isset($nextRecord)){
+							if (isset($nextRecord)) {
 								$interface->assign('nextTitle', $nextRecord['title_display']);
-								if ($nextRecord['recordtype'] == 'grouped_work'){
+								if ($nextRecord['recordtype'] == 'grouped_work') {
 									require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 									$groupedWork = New GroupedWorkDriver($nextRecord);
 									$relatedRecords = $groupedWork->getRelatedRecords(true);
@@ -2143,10 +2237,10 @@ abstract class SearchObject_BaseSearcher
 										$interface->assign('nextType', 'GroupedWork');
 										$interface->assign('nextId', $nextRecord['id']);
 									}
-								} elseif (strpos($nextRecord['id'], 'list') === 0){
+								} elseif (strpos($nextRecord['id'], 'list') === 0) {
 									$interface->assign('nextType', 'MyAccount/MyList');
 									$interface->assign('nextId', str_replace('list', '', $nextRecord['id']));
-								}else{
+								} else {
 									$interface->assign('nextType', 'Record');
 									$interface->assign('nextId', $nextRecord['id']);
 								}
@@ -2164,119 +2258,123 @@ abstract class SearchObject_BaseSearcher
 	 * Set whether or not this is a primary search.  If it is, we will show links to it in search result debugging
 	 * @param boolean $flag
 	 */
-	public function setPrimarySearch($flag){
+	public function setPrimarySearch($flag)
+	{
 		$this->isPrimarySearch = $flag;
 	}
 
-	public function convertBasicToAdvancedSearch(){
+	public function convertBasicToAdvancedSearch()
+	{
 
 		$searchTerms = $this->searchTerms;
 		$searchString = $searchTerms[0]['lookfor'];
 		$searchIndex = $searchTerms[0]['index'];
 
 		$this->searchTerms = array(
-				array(
-					'group' => array(
-							0 => array(
-								'field' => $searchIndex,
-								'lookfor' => $searchString,
-								'bool' => 'AND'
-							)
-					),
-					'join' => 'AND'
-				)
+			array(
+				'group' => array(
+					0 => array(
+						'field' => $searchIndex,
+						'lookfor' => $searchString,
+						'bool' => 'AND'
+					)
+				),
+				'join' => 'AND'
+			)
 		);
 
 		$this->searchType = 'advanced';
 	}
 
-    /**
-     * Return a url of the current search as an RSS feed.
-     *
-     * @access  public
-     * @return  string    URL
-     */
-    public function getRSSUrl()
-    {
-        // Stash our old data for a minute
-        $oldView = $this->view;
-        $oldPage = $this->page;
-        // Add the new view
-        $this->view = 'rss';
-        // Remove page number
-        $this->page = 1;
-        // Get the new url
-        $url = $this->renderSearchUrl();
-        // Restore the old data
-        $this->view = $oldView;
-        $this->page = $oldPage;
-        // Return the URL
-        return $url;
-    }
+	/**
+	 * Return a url of the current search as an RSS feed.
+	 *
+	 * @access  public
+	 * @return  string    URL
+	 */
+	public function getRSSUrl()
+	{
+		// Stash our old data for a minute
+		$oldView = $this->view;
+		$oldPage = $this->page;
+		// Add the new view
+		$this->view = 'rss';
+		// Remove page number
+		$this->page = 1;
+		// Get the new url
+		$url = $this->renderSearchUrl();
+		// Restore the old data
+		$this->view = $oldView;
+		$this->page = $oldPage;
+		// Return the URL
+		return $url;
+	}
 
-    /**
-     * Turn our results into an RSS feed
-     *
-     * @access  public
-     * @param  array|null      $result      Existing result set (null to do new search)
-     * @return  string                  XML document
-     */
-    public abstract function buildRSS($result = null);
+	/**
+	 * Turn our results into an RSS feed
+	 *
+	 * @access  public
+	 * @param array|null $result Existing result set (null to do new search)
+	 * @return  string                  XML document
+	 */
+	public abstract function buildRSS($result = null);
 
-    /**
-     * Return a url of the current search as an Excel Spreadsheet.
-     *
-     * @access  public
-     * @return  string    URL
-     */
-    public function getExcelUrl()
-    {
-        // Stash our old data for a minute
-        $oldView = $this->view;
-        $oldPage = $this->page;
-        // Add the new view
-        $this->view = 'excel';
-        // Remove page number
-        $this->page = 1;
-        // Get the new url
-        $url = $this->renderSearchUrl();
-        // Restore the old data
-        $this->view = $oldView;
-        $this->page = $oldPage;
-        // Return the URL
-        return $url;
-    }
+	/**
+	 * Return a url of the current search as an Excel Spreadsheet.
+	 *
+	 * @access  public
+	 * @return  string    URL
+	 */
+	public function getExcelUrl()
+	{
+		// Stash our old data for a minute
+		$oldView = $this->view;
+		$oldPage = $this->page;
+		// Add the new view
+		$this->view = 'excel';
+		// Remove page number
+		$this->page = 1;
+		// Get the new url
+		$url = $this->renderSearchUrl();
+		// Restore the old data
+		$this->view = $oldView;
+		$this->page = $oldPage;
+		// Return the URL
+		return $url;
+	}
 
-    /**
-     * Turn our results into an Excel document
-     * @param array|null $result
-     */
-    public abstract function buildExcel($result = null);
+	/**
+	 * Turn our results into an Excel document
+	 * @param array|null $result
+	 */
+	public abstract function buildExcel($result = null);
 
-    public abstract function getResultRecordSet();
+	public abstract function getResultRecordSet();
 
-    /**
-     * @return bool
-     */
-    public function supportsSuggestions(){
-        return false;
-    }
+	/**
+	 * @return bool
+	 */
+	public function supportsSuggestions()
+	{
+		return false;
+	}
 
-    /**
-     * @param string $searchTerm
-     * @param string $searchIndex
-     * @return array
-     */
-    public function getSearchSuggestions(/** @noinspection PhpUnusedParameterInspection */$searchTerm, $searchIndex){
-        return [];
-    }
+	/**
+	 * @param string $searchTerm
+	 * @param string $searchIndex
+	 * @return array
+	 */
+	public function getSearchSuggestions(/** @noinspection PhpUnusedParameterInspection */ $searchTerm, $searchIndex)
+	{
+		return [];
+	}
 
 	/**
 	 * @return array
 	 */
 	public function getFacetConfig()
 	{
-		if ($this->facetConfig == null){
+		if ($this->facetConfig == null) {
 			$this->facetConfig = [];
 		}
 		return $this->facetConfig;
@@ -2326,13 +2424,13 @@ class minSO
 	{
 		// Most values will transfer without changes
 		$this->id = $searchObject->getSearchId();
-		$this->i  = $searchObject->getStartTime();
-		$this->s  = $searchObject->getQuerySpeed();
+		$this->i = $searchObject->getStartTime();
+		$this->s = $searchObject->getQuerySpeed();
 		$this->ss = $searchObject->getSearchSource();
-		$this->r  = $searchObject->getResultTotal();
+		$this->r = $searchObject->getResultTotal();
 		$this->ty = $searchObject->getSearchType();
 		$this->sr = $searchObject->getSort();
-		$this->q  = $searchObject->getQuery();
+		$this->q = $searchObject->getQuery();
 
 		// Search terms, we'll shorten keys
 		$tempTerms = $searchObject->getSearchTerms();
@@ -2340,18 +2438,30 @@ class minSO
 			$newTerm = array();
 			foreach ($term as $k => $v) {
 				switch ($k) {
-					case 'join'    :  $newTerm['j'] = $v; break;
-					case 'index'   :  $newTerm['i'] = $v; break;
-					case 'lookfor' :  $newTerm['l'] = $v; break;
+					case 'join'    :
+						$newTerm['j'] = $v;
+						break;
+					case 'index'   :
+						$newTerm['i'] = $v;
+						break;
+					case 'lookfor' :
+						$newTerm['l'] = $v;
+						break;
 					case 'group' :
 						$newTerm['g'] = array();
 						foreach ($v as $line) {
 							$search = array();
 							foreach ($line as $k2 => $v2) {
 								switch ($k2) {
-									case 'bool'    :  $search['b'] = $v2; break;
-									case 'field'   :  $search['f'] = $v2; break;
-									case 'lookfor' :  $search['l'] = $v2; break;
+									case 'bool'    :
+										$search['b'] = $v2;
+										break;
+									case 'field'   :
+										$search['f'] = $v2;
+										break;
+									case 'lookfor' :
+										$search['l'] = $v2;
+										break;
 								}
 							}
 							$newTerm['g'][] = $search;

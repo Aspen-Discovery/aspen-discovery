@@ -6,7 +6,7 @@
 			<div class="result-label col-sm-4">Uniform Title: </div>
 			<div class="col-sm-8 result-value">
 				{foreach from=$recordDriver->getUniformTitle() item=uniformTitle}
-					<a href="{$path}/Search/Results?lookfor={$uniformTitle|escape:"url"}">{$uniformTitle|highlight}</a><br/>
+					<a href="/Search/Results?lookfor={$uniformTitle|escape:"url"}">{$uniformTitle|highlight}</a><br/>
 				{/foreach}
 			</div>
 		</div>
@@ -16,7 +16,7 @@
 		<div class="row">
 			<div class="result-label col-sm-4">Author: </div>
 			<div class="col-sm-8 result-value">
-				<a href='{$path}/Author/Home?author="{$recordDriver->getAuthor()|escape:"url"}"'>{$recordDriver->getAuthor()|highlight}</a><br/>
+				<a href='/Author/Home?author="{$recordDriver->getAuthor()|escape:"url"}"'>{$recordDriver->getAuthor()|highlight}</a><br/>
 			</div>
 		</div>
 	{/if}
@@ -33,12 +33,12 @@
 						{*create hidden div*}
 						<div id="additionalContributors" style="display:none">
 					{/if}
-					<a href='{$path}/Author/Home?author="{$contributor.name|trim|escape:"url"}"'>{$contributor.name|escape}</a>
+					<a href='/Author/Home?author="{$contributor.name|trim|escape:"url"}"'>{$contributor.name|escape}</a>
 					{if $contributor.role}
 						&nbsp;{$contributor.role}
 					{/if}
 					{if $contributor.title}
-						&nbsp;<a href="{$path}/Search/Results?lookfor={$contributor.title}&amp;searchIndex=Title">{$contributor.title}</a>
+						&nbsp;<a href="/Search/Results?lookfor={$contributor.title}&amp;searchIndex=Title">{$contributor.title}</a>
 					{/if}
 				<br/>
 				{/foreach}
@@ -57,7 +57,7 @@
 			<div class="result-label col-sm-4">Series: </div>
 			<div class="col-sm-8 result-value">
 				{assign var=summSeries value=$recordDriver->getSeries()}
-				<a href="{$path}/GroupedWork/{$recordDriver->getPermanentId()}/Series">{$summSeries.seriesTitle}</a>{if !empty($seriesItem.volume)} volume {$summSeries.volume}{/if}
+				<a href="/GroupedWork/{$recordDriver->getPermanentId()}/Series">{$summSeries.seriesTitle}</a>{if !empty($seriesItem.volume)} volume {$summSeries.volume}{/if}
 			</div>
 		</div>
 	{/if}

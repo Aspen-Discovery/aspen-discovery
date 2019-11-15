@@ -243,16 +243,16 @@ abstract class ObjectEditor extends Admin_Admin
 		}
 		global $configArray;
 		if (isset($_REQUEST['submitStay']) || $errorOccurred){
-			header("Location: {$configArray['Site']['path']}/{$this->getModule()}/{$this->getToolName()}?objectAction=edit&id=$id");
+			header("Location: /{$this->getModule()}/{$this->getToolName()}?objectAction=edit&id=$id");
 		}elseif (isset($_REQUEST['submitAddAnother'])){
-			header("Location: {$configArray['Site']['path']}/{$this->getModule()}/{$this->getToolName()}?objectAction=addNew");
+			header("Location: /{$this->getModule()}/{$this->getToolName()}?objectAction=addNew");
 		}else{
 			$redirectLocation = $this->getRedirectLocation($objectAction, $curObject);
 			if (is_null($redirectLocation)){
 				if (isset($_SESSION['redirect_location']) && $objectAction != 'delete'){
 					header("Location: " . $_SESSION['redirect_location']);
 				}else{
-					header("Location: {$configArray['Site']['path']}/{$this->getModule()}/{$this->getToolName()}");
+					header("Location: /{$this->getModule()}/{$this->getToolName()}");
 				}
 			}else{
 				header("Location: {$redirectLocation}");

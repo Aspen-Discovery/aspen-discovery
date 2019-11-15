@@ -1,6 +1,6 @@
 {strip}
 <div id="horizontal-search-box" class="row">
-	<form method="get" action="{$path}/Union/Search" id="searchForm" class="form-inline">
+	<form method="get" action="/Union/Search" id="searchForm" class="form-inline">
 
 		{* Hidden Inputs *}
 		<input type="hidden" name="view" id="view" value="{$displayMode}">
@@ -61,6 +61,9 @@
 						{foreach from=$listSearchIndexes item=searchDesc key=searchVal}
 							<option data-search_source="lists" value="{$searchVal}"{if !empty($searchIndex) && $searchIndex == $searchVal} selected="selected"{/if}>{translate text="by"} {translate text=$searchDesc}</option>
 						{/foreach}
+                        {foreach from=$websiteSearchIndexes item=searchDesc key=searchVal}
+							<option data-search_source="websites" value="{$searchVal}"{if !empty($searchIndex) && $searchIndex == $searchVal} selected="selected"{/if}>{translate text="by"} {translate text=$searchDesc}</option>
+                        {/foreach}
 					</select>
 				</div>
 
@@ -95,13 +98,13 @@
 					{* Return to Advanced Search Link *}
 					{if !empty($searchType) && $searchType == 'advanced'}
 						<div>
-							&nbsp;<a id="advancedSearchLink" href="{$path}/Search/Advanced">{translate text='Edit This Advanced Search'}</a>
+							&nbsp;<a id="advancedSearchLink" href="/Search/Advanced">{translate text='Edit This Advanced Search'}</a>
 						</div>
 
 					{* Show Advanced Search Link *}
 					{elseif $showAdvancedSearchbox}
 						<div>
-							&nbsp;<a id="advancedSearchLink" href="{$path}/Search/Advanced">{translate text='Advanced Search'}</a>
+							&nbsp;<a id="advancedSearchLink" href="/Search/Advanced">{translate text='Advanced Search'}</a>
 						</div>
 					{/if}
 				</div>

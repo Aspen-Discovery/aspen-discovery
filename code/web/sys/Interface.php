@@ -20,12 +20,12 @@ class UInterface extends Smarty
 
 	function __construct()
 	{
-        parent::__construct();
+		parent::__construct();
 
-        global $configArray;
+		global $configArray;
 		global $timer;
 
-        $this->caching = false;
+		$this->caching = false;
 
 		$local = $configArray['Site']['local'];
 
@@ -83,24 +83,24 @@ class UInterface extends Smarty
 		// writable directory name (since some config.ini settings may include
 		// problem characters like commas or whitespace).
 		$this->compile_dir = $configArray['System']['interfaceCompileDir'];
-        if (file_exists($this->compile_dir)) {
-            if (!is_writable($this->compile_dir)) {
-                echo("Compile directory {$this->compile_dir} exists, but is not writable");
-                die();
-            }
-        }else {
-            if (!is_dir($this->compile_dir)) {
-                if (!mkdir($this->compile_dir, 0755, true)){
-                	if (empty($this->compile_dir)){
-		                echo("compile directory was empty, specify in System - interface compile dir");
-	                }else{
-		                echo("Could not create compile directory {$this->compile_dir}");
-	                }
+		if (file_exists($this->compile_dir)) {
+			if (!is_writable($this->compile_dir)) {
+				echo("Compile directory {$this->compile_dir} exists, but is not writable");
+				die();
+			}
+		} else {
+			if (!is_dir($this->compile_dir)) {
+				if (!mkdir($this->compile_dir, 0755, true)) {
+					if (empty($this->compile_dir)) {
+						echo("compile directory was empty, specify in System - interface compile dir");
+					} else {
+						echo("Could not create compile directory {$this->compile_dir}");
+					}
 
-                    die();
-                }
-            }
-        }
+					die();
+				}
+			}
+		}
 
 
 		$this->plugins_dir   = array('plugins', "$local/interface/plugins");
@@ -111,30 +111,27 @@ class UInterface extends Smarty
 		unset($local);
 
 		$this->register_block('display_if_inconsistent', 'display_if_inconsistent');
-        $this->register_block('display_if_field_inconsistent', 'display_if_field_inconsistent');
-		$this->register_block('display_if_set', 'display_if_set');
+		$this->register_block('display_if_field_inconsistent', 'display_if_field_inconsistent');
 		$this->register_function('translate', 'translate');
 		$this->register_function('char', 'char');
 
 		$this->assign('site', $configArray['Site']);
-		$this->assign('path', $configArray['Site']['path']);
 		$url = $_SERVER['SERVER_NAME'];
 		if (isset($_SERVER['HTTPS'])){
 			$url = "https://" . $url;
 		}else{
 			$url = "http://" . $url;
 		}
-		if (strlen($configArray['Site']['path']) > 0){
-			$url .= '/' . $configArray['Site']['path'];
-		}
 		$this->url = $url;
 		$this->assign('template_dir',$this->template_dir);
 		$this->assign('url', $url);
 
+		global $enabledModules;
+		$this->assign('enabledModules', $enabledModules);
+
 		if (isset($configArray['Islandora']['repositoryUrl'])) {
 			$this->assign('repositoryUrl', $configArray['Islandora']['repositoryUrl']);
 			$this->assign('encodedRepositoryUrl', str_replace('/', '\/', $configArray['Islandora']['repositoryUrl']));
-
 		}
 
 		$this->assign('fullPath', str_replace('&', '&amp;', $_SERVER['REQUEST_URI']));
@@ -227,11 +224,11 @@ class UInterface extends Smarty
 			$user = UserAccount::getActiveUserObj();
 			//Figure out if we should show a link to pay fines.
 			$homeLibrary = Library::getLibraryForLocation($user->homeLocationId);
-			$showECommerceLink     = isset($homeLibrary) && $homeLibrary->showEcommerceLink == 1;
+			$finePaymentType     = isset($homeLibrary) ? $homeLibrary->finePaymentType : 0;
 
-			if ($showECommerceLink) {
-				$this->assign('minimumFineAmount', $homeLibrary->minimumFineAmount);
-				$this->assign('payFinesLinkText', $homeLibrary->payFinesLinkText);
+			$this->assign('minimumFineAmount', $homeLibrary->minimumFineAmount);
+			$this->assign('payFinesLinkText', $homeLibrary->payFinesLinkText);
+			if ($finePaymentType == 1) {
 				$this->assign('showRefreshAccountButton', $homeLibrary->showRefreshAccountButton);
 
 				// Determine E-commerce Link
@@ -242,16 +239,18 @@ class UInterface extends Smarty
 					if (!empty($defaultECommerceLink)) {
 						$eCommerceLink = $defaultECommerceLink;
 					} else {
-						$showECommerceLink = false;
+						$finePaymentType = 0;
 					}
 				} elseif (!empty($homeLibrary->payFinesLink)) {
 						$eCommerceLink = $homeLibrary->payFinesLink;
 				} else {
-					$showECommerceLink = false;
+					$finePaymentType = 0;
 				}
 				$this->assign('eCommerceLink', $eCommerceLink);
+			}elseif ($finePaymentType == 2){
+				$this->assign('eCommerceLink', '/MyAccount/Fines');
 			}
-			$this->assign('showECommerceLink', $showECommerceLink);
+			$this->assign('finePaymentType', $finePaymentType);
 		}
 	}
 
@@ -312,6 +311,7 @@ class UInterface extends Smarty
 		$this->lang = $lang->code;
 		$this->assign('userLang', $lang);
 	}
+
 	/**
 	 * executes & returns or displays the template results
 	 *
@@ -347,7 +347,7 @@ class UInterface extends Smarty
 	}
 
 	function loadDisplayOptions(){
-	    /** @var Library $library */
+		/** @var Library $library */
 		global $library;
 		global $locationSingleton;
 		global $configArray;
@@ -392,7 +392,6 @@ class UInterface extends Smarty
 				$this->assign('favicon', '/files/original/' . $favicon);
 			}
 
-
 			if ($primaryTheme != null) {
 				$themeCss = $primaryTheme->generatedCss;
 				$this->assign('themeCss', $themeCss);
@@ -404,7 +403,7 @@ class UInterface extends Smarty
 		}
 
 		$location = $locationSingleton->getActiveLocation();
-		$this->assign('logoLink', $configArray['Site']['path']);
+		$this->assign('logoLink', '');
 		$this->assign('logoAlt', 'Return to Catalog Home');
 		if ($library->useHomeLinkForLogo){
 			if (isset($location) && strlen($location->homeLink) > 0 && $location->homeLink != 'default'){
@@ -534,7 +533,6 @@ class UInterface extends Smarty
 			$this->assign('enableAspenMaterialsRequest', false);
 		}
 
-
 		//Load library links
 		/** @noinspection PhpUndefinedFieldInspection */
 		$links = $library->libraryLinks;
@@ -568,10 +566,10 @@ class UInterface extends Smarty
 		$this->assign('topLinks', $topLinks);
 	}
 
-    /**
-     * @param $variableName
-     * @return string|array|null
-     */
+	/**
+	 * @param $variableName
+	 * @return string|array|null
+	 */
 	public function getVariable($variableName) {
 		return $this->get_template_vars($variableName);
 	}
@@ -644,7 +642,8 @@ function translate($params) {
 }
 
 
-function display_if_inconsistent($params, $content, /** @noinspection PhpUnusedParameterInspection */  &$smarty, /** @noinspection PhpUnusedParameterInspection */ &$repeat){
+/** @noinspection PhpUnused */
+function display_if_inconsistent($params, $content, /** @noinspection PhpUnusedParameterInspection */ &$smarty, /** @noinspection PhpUnusedParameterInspection */ &$repeat){
 	//This function is called twice, once for the opening tag and once for the
 	//closing tag.  Content is only set if
 	if (isset($content)) {
@@ -678,66 +677,46 @@ function display_if_inconsistent($params, $content, /** @noinspection PhpUnusedP
 	return null;
 }
 
-function display_if_field_inconsistent($params, $content, /** @noinspection PhpUnusedParameterInspection */  &$smarty, /** @noinspection PhpUnusedParameterInspection */ &$repeat){
+/** @noinspection PhpUnused */
+function display_if_field_inconsistent($params, $content, /** @noinspection PhpUnusedParameterInspection */ &$smarty, /** @noinspection PhpUnusedParameterInspection */ &$repeat)
+{
 	if (isset($content)) {
 		global $interface;
-        $array = $params['array'];
-        $key = $params['key'];
-        $var = $params['var'];
-
-        if (count($array) === 1) {
-            // If we have only one row of items, display that row
-            if (empty($array[0]->$key)){
-	            $interface->assign($var, false);
-	            $returnValue = '';
-            } else {
-	            $interface->assign($var, true);
-	            $returnValue = $content;
-            }
-
-            return $returnValue;
-        }
-        $consistent = true;
-        $firstValue = null;
-        $iterationNumber = 0;
-        foreach ($array as $arrayValue){
-            if ($iterationNumber == 0){
-                $firstValue = $arrayValue->$key;
-            }else{
-                if ($firstValue != $arrayValue->$key){
-                    $consistent = false;
-                    break;
-                }
-            }
-            $iterationNumber++;
-        }
-        if ($consistent == false){
-	        $interface->assign($var, true);
-            return $content;
-        }else{
-	        $interface->assign($var, false);
-            return "";
-        }
-    }
-	return null;
-}
-
-function display_if_set($params, $content, /** @noinspection PhpUnusedParameterInspection */ &$smarty, /** @noinspection PhpUnusedParameterInspection */ &$repeat){
-	//This function is called twice, once for the opening tag and once for the
-	//closing tag.  Content is only set if
-	if (isset($content)) {
-		$hasData = false;
-		$firstValue = null;
 		$array = $params['array'];
 		$key = $params['key'];
-		foreach ($array as $arrayValue){
-			if (isset($arrayValue[$key]) && !empty($arrayValue[$key])){
-				$hasData = true;
+		$var = $params['var'];
+
+		if (count($array) === 1) {
+			// If we have only one row of items, display that row
+			if (empty($array[0]->$key)) {
+				$interface->assign($var, false);
+				$returnValue = '';
+			} else {
+				$interface->assign($var, true);
+				$returnValue = $content;
 			}
+
+			return $returnValue;
 		}
-		if ($hasData){
+		$consistent = true;
+		$firstValue = null;
+		$iterationNumber = 0;
+		foreach ($array as $arrayValue) {
+			if ($iterationNumber == 0) {
+				$firstValue = $arrayValue->$key;
+			} else {
+				if ($firstValue != $arrayValue->$key) {
+					$consistent = false;
+					break;
+				}
+			}
+			$iterationNumber++;
+		}
+		if ($consistent == false) {
+			$interface->assign($var, true);
 			return $content;
-		}else{
+		} else {
+			$interface->assign($var, false);
 			return "";
 		}
 	}

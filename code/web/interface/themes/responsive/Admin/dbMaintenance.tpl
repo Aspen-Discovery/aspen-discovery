@@ -1,7 +1,7 @@
 {strip}
 	<h1>Database Maintenance</h1>
 	<div id="maintenanceOptions"></div>
-	<form id="dbMaintenance" action="{$path}/Admin/{$action}" method="post">
+	<form id="dbMaintenance" action="/Admin/{$action}" method="post">
 		<div>
 			<table class="table">
 				<thead>

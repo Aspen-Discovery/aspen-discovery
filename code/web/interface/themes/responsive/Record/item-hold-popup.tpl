@@ -1,6 +1,6 @@
 {strip}
 <div class="content">
-	<form action="{$path}/MyAccount/HoldItems" method="POST" class="form">
+	<form action="/MyAccount/HoldItems" method="POST" class="form">
 		<input type="hidden" name="id" id="id" value="{$id}">
 		<input type="hidden" name="patronId" id="patronId" value="{$patronId}">
 		<input type="hidden" name="pickupBranch" id="pickupBranch" value="{$pickupBranch}">

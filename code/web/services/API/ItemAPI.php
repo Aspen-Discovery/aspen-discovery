@@ -65,9 +65,6 @@ class ItemAPI extends Action {
 		$url = $configArray['Index']['url'];
 		$this->db = new GroupedWorksSolrConnector($url);
 
-		//Setup the results to return from the API method
-		$results = array();
-
 		//Search the database by title and author
 		if ($title && $author){
 			$searchResults = $this->db->search("$title $author");
@@ -305,7 +302,7 @@ class ItemAPI extends Action {
 		$itemData['format'] = isset($record['format']) ? $record['format'][0] : '';
 		$itemData['formatCategory'] = $record['format_category'][0];
 		$itemData['language'] = $record['language'];
-		$itemData['cover'] = $configArray['Site']['path'] . "/bookcover.php?id={$itemData['id']}&issn={$itemData['issn']}&isbn={$itemData['isbn']}&upc={$itemData['upc']}&category={$itemData['formatCategory']}&format={$itemData['format'][0]}";
+		$itemData['cover'] = "/bookcover.php?id={$itemData['id']}&issn={$itemData['issn']}&isbn={$itemData['isbn']}&upc={$itemData['upc']}&category={$itemData['formatCategory']}&format={$itemData['format'][0]}";
 
 		//Retrieve description from MARC file
 		$description = '';

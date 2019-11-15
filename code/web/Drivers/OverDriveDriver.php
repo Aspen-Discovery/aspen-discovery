@@ -36,22 +36,23 @@ class OverDriveDriver extends AbstractEContentDriver{
 	);
 	private $lastHttpCode;
 
-	private function getSettings(){
-	    if ($this->settings == null){
-	    	try{
-			    //There should only be one setting row
-			    require_once ROOT_DIR . '/sys/OverDrive/OverDriveSetting.php';
-			    $this->settings = new OverDriveSetting();
-			    if (!$this->settings->find(true)){
-			    	$this->settings = false;
-			    }
-		    }catch (Exception $e){
-			    $this->settings = false;
-		    }
+	private function getSettings()
+	{
+		if ($this->settings == null) {
+			try {
+				//There should only be one setting row
+				require_once ROOT_DIR . '/sys/OverDrive/OverDriveSetting.php';
+				$this->settings = new OverDriveSetting();
+				if (!$this->settings->find(true)) {
+					$this->settings = false;
+				}
+			} catch (Exception $e) {
+				$this->settings = false;
+			}
 
-        }
-	    return $this->settings;
-    }
+		}
+		return $this->settings;
+	}
 
 	private function _connectToAPI($forceNewConnection = false){
 		/** @var Memcache $memCache */
@@ -400,7 +401,6 @@ class OverDriveDriver extends AbstractEContentDriver{
 		if (isset($this->checkouts[$patron->id])){
 			return $this->checkouts[$patron->id];
 		}
-		global $configArray;
 		global $logger;
 		if (!$this->isUserValidForOverDrive($patron)){
 			return array();
@@ -482,7 +482,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 						$bookshelfItem['format']     = reset($formats);
 						$bookshelfItem['coverUrl'] = $overDriveRecord->getCoverUrl('medium');
 						$bookshelfItem['ratingData'] = $overDriveRecord->getRatingData();
-						$bookshelfItem['recordUrl']  = $configArray['Site']['path'] . '/OverDrive/' . $overDriveRecord->getUniqueID() . '/Home';
+						$bookshelfItem['recordUrl']  = '/OverDrive/' . $overDriveRecord->getUniqueID() . '/Home';
 						$bookshelfItem['title']      = $overDriveRecord->getTitle();
 						$bookshelfItem['author']     = $overDriveRecord->getAuthor();
 						$bookshelfItem['linkUrl']    = $overDriveRecord->getLinkUrl(false);
@@ -504,16 +504,15 @@ class OverDriveDriver extends AbstractEContentDriver{
 	private $holds = array();
 
 	/**
-     * @param User $user
-     * @param bool $forSummary
-     * @return array
-     */
+	 * @param User $user
+	 * @param bool $forSummary
+	 * @return array
+	 */
 	public function getHolds($user, $forSummary = false){
 		//Cache holds for the user just for this call.
 		if (isset($this->holds[$user->id])){
 			return $this->holds[$user->id];
 		}
-		global $configArray;
 		$holds = array(
 			'available' => array(),
 			'unavailable' => array()
@@ -562,7 +561,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 					$hold['recordId'] = $overDriveRecord->getUniqueID();
 					$hold['coverUrl'] = $overDriveRecord->getCoverUrl('medium');
 					/** @noinspection DuplicatedCode */
-					$hold['recordUrl'] = $configArray['Site']['path'] . '/OverDrive/' . $overDriveRecord->getUniqueID() . '/Home';
+					$hold['recordUrl'] = '/OverDrive/' . $overDriveRecord->getUniqueID() . '/Home';
 					$hold['title'] = $overDriveRecord->getTitle();
 					$hold['sortTitle'] = $overDriveRecord->getTitle();
 					$hold['author'] = $overDriveRecord->getAuthor();
@@ -662,10 +661,10 @@ class OverDriveDriver extends AbstractEContentDriver{
 		$holdResult['message'] = '';
 
 		if (isset($response->holdListPosition)){
-            $this->trackUserUsageOfOverDrive($user);
-            $this->trackRecordHold($overDriveId);
+			$this->trackUserUsageOfOverDrive($user);
+			$this->trackRecordHold($overDriveId);
 
-            $holdResult['success'] = true;
+			$holdResult['success'] = true;
 			$holdResult['message'] = translate(['text'=>'overdrive_hold_success', 'defaultText' => 'Your hold was placed successfully.  You are number %1% on the wait list.', 1=>$response->holdListPosition]);
 		}else{
 			$holdResult['message'] = translate('Sorry, but we could not place a hold for you on this title.');
@@ -769,10 +768,11 @@ class OverDriveDriver extends AbstractEContentDriver{
 
 		return $holdResult;
 	}
+
 	/**
-     * @param User    $user
-     * @param string  $overDriveId
-     * @return array
+	 * @param User $user
+	 * @param string $overDriveId
+	 * @return array
 	 */
 	public function cancelHold($user, $overDriveId){
 		/** @var Memcache $memCache */
@@ -965,100 +965,100 @@ class OverDriveDriver extends AbstractEContentDriver{
 	}
 
 	public function hasNativeReadingHistory()
-    {
-        return false;
-    }
+	{
+		return false;
+	}
 
-    public function hasFastRenewAll()
-    {
-        return false;
-    }
+	public function hasFastRenewAll()
+	{
+		return false;
+	}
 
-    /**
-     * Renew all titles currently checked out to the user.
-     * This is not currently implemented
-     *
-     * @param $patron  User
-     * @return mixed
-     */
-    public function renewAll($patron)
-    {
-        return false;
-    }
+	/**
+	 * Renew all titles currently checked out to the user.
+	 * This is not currently implemented
+	 *
+	 * @param $patron  User
+	 * @return mixed
+	 */
+	public function renewAll($patron)
+	{
+		return false;
+	}
 
-    /**
-     * Renew a single title currently checked out to the user
-     * This is not currently implemented
-     *
-     * @param $patron     User
-     * @param $recordId   string
-     * @return mixed
-     */
-    public function renewCheckout($patron, $recordId)
-    {
-        return $this->checkOutTitle($patron, $recordId);
-    }
+	/**
+	 * Renew a single title currently checked out to the user
+	 * This is not currently implemented
+	 *
+	 * @param $patron     User
+	 * @param $recordId   string
+	 * @return mixed
+	 */
+	public function renewCheckout($patron, $recordId)
+	{
+		return $this->checkOutTitle($patron, $recordId);
+	}
 
-    /**
-     * @param $user
-     */
-    public function trackUserUsageOfOverDrive($user): void
-    {
-        require_once ROOT_DIR . '/sys/OverDrive/UserOverDriveUsage.php';
-        $userUsage = new UserOverDriveUsage();
-	    /** @noinspection DuplicatedCode */
-	    $userUsage->userId = $user->id;
-        $userUsage->year = date('Y');
-        $userUsage->month = date('n');
+	/**
+	 * @param $user
+	 */
+	public function trackUserUsageOfOverDrive($user): void
+	{
+		require_once ROOT_DIR . '/sys/OverDrive/UserOverDriveUsage.php';
+		$userUsage = new UserOverDriveUsage();
+		/** @noinspection DuplicatedCode */
+		$userUsage->userId = $user->id;
+		$userUsage->year = date('Y');
+		$userUsage->month = date('n');
 
-        if ($userUsage->find(true)) {
-            $userUsage->usageCount++;
-            $userUsage->update();
-        } else {
-            $userUsage->usageCount = 1;
-            $userUsage->insert();
-        }
-    }
+		if ($userUsage->find(true)) {
+			$userUsage->usageCount++;
+			$userUsage->update();
+		} else {
+			$userUsage->usageCount = 1;
+			$userUsage->insert();
+		}
+	}
 
-    /**
-     * @param $overDriveId
-     */
-    function trackRecordCheckout($overDriveId): void
-    {
-        require_once ROOT_DIR . '/sys/OverDrive/OverDriveRecordUsage.php';
-        $recordUsage = new OverDriveRecordUsage();
-        $recordUsage->overdriveId = $overDriveId;
-        $recordUsage->year = date('Y');
-        $recordUsage->month = date('n');
-        if ($recordUsage->find(true)) {
-            $recordUsage->timesCheckedOut++;
-            $recordUsage->update();
-        } else {
-            $recordUsage->timesCheckedOut = 1;
-            $recordUsage->timesHeld = 0;
-            $recordUsage->insert();
-        }
-    }
+	/**
+	 * @param $overDriveId
+	 */
+	function trackRecordCheckout($overDriveId): void
+	{
+		require_once ROOT_DIR . '/sys/OverDrive/OverDriveRecordUsage.php';
+		$recordUsage = new OverDriveRecordUsage();
+		$recordUsage->overdriveId = $overDriveId;
+		$recordUsage->year = date('Y');
+		$recordUsage->month = date('n');
+		if ($recordUsage->find(true)) {
+			$recordUsage->timesCheckedOut++;
+			$recordUsage->update();
+		} else {
+			$recordUsage->timesCheckedOut = 1;
+			$recordUsage->timesHeld = 0;
+			$recordUsage->insert();
+		}
+	}
 
-    /**
-     * @param $overDriveId
-     */
-    function trackRecordHold($overDriveId): void
-    {
-        require_once ROOT_DIR . '/sys/OverDrive/OverDriveRecordUsage.php';
-        $recordUsage = new OverDriveRecordUsage();
-        $recordUsage->overdriveId = $overDriveId;
-        $recordUsage->year = date('Y');
-        $recordUsage->month = date('n');
-        if ($recordUsage->find(true)) {
-            $recordUsage->timesHeld++;
-            $recordUsage->update();
-        } else {
-            $recordUsage->timesCheckedOut = 0;
-            $recordUsage->timesHeld = 1;
-            $recordUsage->insert();
-        }
-    }
+	/**
+	 * @param $overDriveId
+	 */
+	function trackRecordHold($overDriveId): void
+	{
+		require_once ROOT_DIR . '/sys/OverDrive/OverDriveRecordUsage.php';
+		$recordUsage = new OverDriveRecordUsage();
+		$recordUsage->overdriveId = $overDriveId;
+		$recordUsage->year = date('Y');
+		$recordUsage->month = date('n');
+		if ($recordUsage->find(true)) {
+			$recordUsage->timesHeld++;
+			$recordUsage->update();
+		} else {
+			$recordUsage->timesCheckedOut = 0;
+			$recordUsage->timesHeld = 1;
+			$recordUsage->insert();
+		}
+	}
 
 	function getOptions(User $patron)
 	{

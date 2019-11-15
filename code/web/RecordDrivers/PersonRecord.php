@@ -86,12 +86,11 @@ class PersonRecord extends IndexRecordDriver
 	}
 
 	function getBookcoverUrl($size = 'small'){
-		global $configArray;
 		$person = $this->getPerson();
 		if ($person->picture){
-			return $configArray['Site']['path'] . '/files/thumbnail/' . $this->person->picture;
+			return '/files/thumbnail/' . $this->person->picture;
 		}else{
-			return $configArray['Site']['path'] . '/interface/themes/responsive/images/person.png';
+			return '/interface/themes/responsive/images/person.png';
 		}
 	}
 

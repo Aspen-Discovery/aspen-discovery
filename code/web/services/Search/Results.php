@@ -99,7 +99,7 @@ class Search_Results extends Action {
 					$queryParamStrings[] = "&filter[]=$dateFilter:[$yearFrom+TO+$yearTo]";
 				}
 				$queryParamString = join('&', $queryParamStrings);
-				header("Location: {$configArray['Site']['path']}/Search/Results?$queryParamString");
+				header("Location: /Search/Results?$queryParamString");
 				exit;
 			}
 		}
@@ -138,7 +138,7 @@ class Search_Results extends Action {
 					$queryParamStrings[] = "&filter[]=$filter:[$from+TO+$to]";
 				}
 				$queryParamString = join('&', $queryParamStrings);
-				header("Location: {$configArray['Site']['path']}/Search/Results?$queryParamString");
+				header("Location: /Search/Results?$queryParamString");
 				exit;
 			}
 		}
@@ -253,7 +253,15 @@ class Search_Results extends Action {
 
         //Look for suggestions for the search (but not if facets are applied)
 		$facetSet = $searchObject->getFacetList();
-		if ((!isset($facetSet) || count($facetSet) == 0) && $searchObject->getResultTotal() <= 5) {
+		$hasAppliedFacets = false;
+		if (isset($facetSet)){
+			foreach ($facetSet as $facet){
+				if ($facet['hasApplied']){
+					$hasAppliedFacets = true;
+				}
+			}
+		}
+		if (!$hasAppliedFacets && $searchObject->getResultTotal() <= 5) {
 			require_once ROOT_DIR . '/services/Search/lib/SearchSuggestions.php';
 			$searchSuggestions = new SearchSuggestions();
 			$allSuggestions = $searchSuggestions->getAllSuggestions($searchObject->displayQuery(), $searchObject->getSearchIndex(), 'grouped_works');
@@ -264,32 +272,33 @@ class Search_Results extends Action {
 		if ($searchObject->getResultTotal() == 0) {
 			//Check to see if we can automatically replace the search with a spelling result
 			$disallowReplacements = isset($_REQUEST['disallowReplacements']) || isset($_REQUEST['replacementTerm']);
-			if (!$disallowReplacements && (!isset($facetSet) || count($facetSet) == 0)){
+
+			if (!$disallowReplacements && !$hasAppliedFacets){
 				//We can try to find a suggestion, but only if we are not doing a phrase search.
 				if (strpos($searchObject->displayQuery(), '"') === false){
 					//If the search is not spelled properly, we can switch to the first spelling result
-                    if ($spellingSuggestions['correctlySpelled'] == false && $library->allowAutomaticSearchReplacements && count($spellingSuggestions['suggestions']) > 0) {
-                        $firstSuggestion = reset($spellingSuggestions['suggestions']);
-                        //first check to see if we will get results
-	                    /** @var SearchObject_GroupedWorkSearcher $replacementSearchObject */
-	                    $replacementSearchObject = SearchObjectFactory::initSearchObject();
-	                    $replacementSearchObject->init($searchSource, $firstSuggestion['phrase']);
-	                    $replacementSearchObject->setPrimarySearch(false);
-	                    $replacementSearchObject->processSearch(true, false);
-                        if ($replacementSearchObject->getResultTotal() > 0){
-	                        //Get search results for the new search
-	                        // The above assignments probably do nothing when there is a redirect below
-	                        $thisUrl = $_SERVER['REQUEST_URI'] . "&replacementTerm=" . urlencode($firstSuggestion['phrase']);
-	                        header("Location: " . $thisUrl);
-	                        exit();
-                        }
-                    }
-                    if ($library->allowAutomaticSearchReplacements && !empty($allSuggestions)){
-	                    $firstSuggestion = reset($allSuggestions);
-	                    $thisUrl = $_SERVER['REQUEST_URI'] . "&replacementTerm=" . urlencode($firstSuggestion['nonHighlightedTerm']);
-	                    header("Location: " . $thisUrl);
-	                    exit();
-                    }
+					if ($spellingSuggestions['correctlySpelled'] == false && $library->allowAutomaticSearchReplacements && count($spellingSuggestions['suggestions']) > 0) {
+						$firstSuggestion = reset($spellingSuggestions['suggestions']);
+						//first check to see if we will get results
+						/** @var SearchObject_GroupedWorkSearcher $replacementSearchObject */
+						$replacementSearchObject = SearchObjectFactory::initSearchObject();
+						$replacementSearchObject->init($searchSource, $firstSuggestion['phrase']);
+						$replacementSearchObject->setPrimarySearch(false);
+						$replacementSearchObject->processSearch(true, false);
+						if ($replacementSearchObject->getResultTotal() > 0) {
+							//Get search results for the new search
+							// The above assignments probably do nothing when there is a redirect below
+							$thisUrl = $_SERVER['REQUEST_URI'] . "&replacementTerm=" . urlencode($firstSuggestion['phrase']);
+							header("Location: " . $thisUrl);
+							exit();
+						}
+					}
+					if ($library->allowAutomaticSearchReplacements && !empty($allSuggestions)) {
+						$firstSuggestion = reset($allSuggestions);
+						$thisUrl = $_SERVER['REQUEST_URI'] . "&replacementTerm=" . urlencode($firstSuggestion['nonHighlightedTerm']);
+						header("Location: " . $thisUrl);
+						exit();
+					}
 				}
 			}
 
@@ -338,10 +347,10 @@ class Search_Results extends Action {
 			$_SESSION['searchId'] = $searchObject->getSearchId();
 			if ($record['recordtype'] == 'list'){
 				$listId = substr($record['id'], 4);
-				header("Location: " . $configArray['Site']['path'] . "/MyAccount/MyList/{$listId}");
+				header("Location: " . "/MyAccount/MyList/{$listId}");
 				exit();
 			}else{
-				header("Location: " . $configArray['Site']['path'] . "/Record/{$record['id']}/Home");
+				header("Location: " . "/Record/{$record['id']}/Home");
 				exit();
 			}
 

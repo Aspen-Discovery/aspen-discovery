@@ -3,7 +3,7 @@
 	<h1>{translate text='Forgot Your PIN?'}</h1>
 	<div class="alert alert-info">Enter your card number. We will send a PIN reset link to the email address we have on file.</div>
 
-	<form id="emailPin" method="POST" action="{$path}/MyAccount/RequestPinReset" class="form-horizontal">
+	<form id="emailPin" method="POST" action="/MyAccount/RequestPinReset" class="form-horizontal">
 		<div class="form-group">
 			<label for="barcode" class='control-label col-xs-12 col-sm-4'>Card Number<span class="required">*</span></label>
 			<div class='col-xs-12 col-sm-8'>

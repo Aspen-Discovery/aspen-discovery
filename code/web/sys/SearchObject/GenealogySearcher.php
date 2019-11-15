@@ -25,8 +25,8 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 		$this->searchType = 'genealogy';
 		$this->basicSearchType = 'genealogy';
 		// Initialise the index
-        require_once ROOT_DIR . "/sys/SolrConnector/GenealogySolrConnector.php";
-        $this->indexEngine = new GenealogySolrConnector($configArray['Index']['url']);
+		require_once ROOT_DIR . "/sys/SolrConnector/GenealogySolrConnector.php";
+		$this->indexEngine = new GenealogySolrConnector($configArray['Index']['url']);
 		$timer->logTime('Created Index Engine for Genealogy');
 
 		$this->allFacetSettings = getExtraConfigArray('genealogyFacets');
@@ -42,7 +42,7 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 			$this->defaultSort = $searchSettings['General']['default_sort'];
 		}
 		if (isset($searchSettings['DefaultSortingByType']) &&
-		is_array($searchSettings['DefaultSortingByType'])) {
+			is_array($searchSettings['DefaultSortingByType'])) {
 			$this->defaultSortByType = $searchSettings['DefaultSortingByType'];
 		}
 		if (isset($searchSettings['Basic_Searches'])) {
@@ -57,8 +57,8 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 			$this->sortOptions = $searchSettings['Sorting'];
 		} else {
 			$this->sortOptions = array('relevance' => 'sort_relevance',
-                'year' => 'sort_year', 'year asc' => 'sort_year asc',
-                'title' => 'sort_title');
+				'year' => 'sort_year', 'year asc' => 'sort_year asc',
+				'title' => 'sort_title');
 		}
 
 		// Debugging
@@ -68,20 +68,21 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 		$timer->logTime('Setup Genealogy Search Object');
 	}
 
-    public function setDebugging($enableDebug, $enableSolrQueryDebugging){
-        $this->debug = $enableDebug;
-        $this->debugSolrQuery = $enableDebug && $enableSolrQueryDebugging;
-        $this->getIndexEngine()->setDebugging($enableDebug, $enableSolrQueryDebugging);
-    }
+	public function setDebugging($enableDebug, $enableSolrQueryDebugging)
+	{
+		$this->debug = $enableDebug;
+		$this->debugSolrQuery = $enableDebug && $enableSolrQueryDebugging;
+		$this->getIndexEngine()->setDebugging($enableDebug, $enableSolrQueryDebugging);
+	}
 
-    /**
-     * Initialise the object from the global
-     *  search parameters in $_REQUEST.
-     *
-     * @access  public
-     * @param string $searchSource
-     * @return  boolean
-     */
+	/**
+	 * Initialise the object from the global
+	 *  search parameters in $_REQUEST.
+	 *
+	 * @access  public
+	 * @param string $searchSource
+	 * @return  boolean
+	 */
 	public function init($searchSource = 'genealogy')
 	{
 		// Call the standard initialization routine in the parent:
@@ -146,11 +147,11 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 		//********************
 		// Basic Search logic
 		$this->searchTerms[] = array(
-            'index'   => $this->defaultIndex,
-            'lookfor' => ""
-            );
+			'index' => $this->defaultIndex,
+			'lookfor' => ""
+		);
 
-            return true;
+		return true;
 	}
 
 	/**
@@ -174,10 +175,10 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 	 * results suitable for use on a user's "favorites" page.
 	 *
 	 * @access  public
-	 * @param   object  $user       User object owning tag/note metadata.
-	 * @param   int     $listId     ID of list containing desired tags/notes (or
+	 * @param object $user User object owning tag/note metadata.
+	 * @param int $listId ID of list containing desired tags/notes (or
 	 *                              null to show tags/notes from all user's lists).
-	 * @param   bool    $allowEdit  Should we display edit controls?
+	 * @param bool $allowEdit Should we display edit controls?
 	 * @return  array   Array of HTML chunks for individual records.
 	 */
 	public function getResultListHTML($user, $listId = null, $allowEdit = true)
@@ -186,7 +187,7 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 
 		$html = array();
 		for ($x = 0; $x < count($this->indexResult['response']['docs']); $x++) {
-			$current = & $this->indexResult['response']['docs'][$x];
+			$current = &$this->indexResult['response']['docs'][$x];
 			/** @var PersonRecord $record */
 			$record = RecordDriverFactory::initRecordDriver($current);
 			$html[] = $interface->fetch($record->getListEntry($user, $listId, $allowEdit));
@@ -204,7 +205,7 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 	{
 		//Marmot add shortIds without dot for use in display.
 		$recordSet = $this->indexResult['response']['docs'];
-		foreach ($recordSet as $key => $record){
+		foreach ($recordSet as $key => $record) {
 			$recordSet[$key] = $record;
 		}
 		return $recordSet;
@@ -214,7 +215,7 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 	 * Set an overriding array of record IDs.
 	 *
 	 * @access  public
-	 * @param   array   $ids        Record IDs to load
+	 * @param array $ids Record IDs to load
 	 */
 	public function setQueryIDs($ids)
 	{
@@ -225,7 +226,7 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 	 * Set an overriding string.
 	 *
 	 * @access  public
-	 * @param   string  $newQuery   Query string
+	 * @param string $newQuery Query string
 	 */
 	public function setQueryString($newQuery)
 	{
@@ -236,7 +237,7 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 	 * Set an overriding facet sort order.
 	 *
 	 * @access  public
-	 * @param   string  $newSort   Sort string
+	 * @param string $newSort Sort string
 	 */
 	public function setFacetSortOrder($newSort)
 	{
@@ -317,15 +318,15 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 	protected function getBaseUrl()
 	{
 		// Base URL is different for author searches:
-//		return $this->serverUrl . '/Genealogy/Results?';
-		return $this->serverUrl . '/Union/Search?';
+//		return '/Genealogy/Results?';
+		return '/Union/Search?';
 	}
 
 	/**
 	 * Process facets from the results object
 	 *
 	 * @access  public
-	 * @param   array   $filter         Array of field => on-screen description
+	 * @param array $filter Array of field => on-screen description
 	 *                                  listing all of the desired facet fields;
 	 *                                  set to null to get all configured values.
 	 * @return  array   Facets data arrays
@@ -341,20 +342,20 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 		$list = array();
 
 		// If we have no facets to process, give up now
-		if (!isset($this->indexResult['facet_counts'])){
+		if (!isset($this->indexResult['facet_counts'])) {
 			return $list;
-		}elseif (empty($this->indexResult['facet_counts']['facet_fields']) && empty($this->indexResult['facet_counts']['facet_dates'])) {
+		} elseif (empty($this->indexResult['facet_counts']['facet_fields']) && empty($this->indexResult['facet_counts']['facet_dates'])) {
 			return $list;
 		}
 
 		// Loop through every field returned by the result set
 		$validFields = array_keys($filter);
 
-        if (isset($this->indexResult['facet_counts']['facet_dates'])){
-            $allFacets = array_merge($this->indexResult['facet_counts']['facet_fields'], $this->indexResult['facet_counts']['facet_dates']);
-        }else{
-            $allFacets = $this->indexResult['facet_counts']['facet_fields'];
-        }
+		if (isset($this->indexResult['facet_counts']['facet_dates'])) {
+			$allFacets = array_merge($this->indexResult['facet_counts']['facet_fields'], $this->indexResult['facet_counts']['facet_dates']);
+		} else {
+			$allFacets = $this->indexResult['facet_counts']['facet_fields'];
+		}
 
 		$facetConfig = $this->getFacetConfig();
 		foreach ($allFacets as $field => $data) {
@@ -368,7 +369,7 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 			// Add the on-screen label
 			$list[$field]['label'] = $filter[$field];
 			// Build our array of values for this field
-			$list[$field]['list']  = array();
+			$list[$field]['list'] = array();
 
 			// Should we translate values for the current facet?
 			$translate = $facetConfig[$field]->translate;
@@ -390,7 +391,7 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 					// and is this value a selected filter?
 					if (in_array($facet[0], $this->filterList[$field])) {
 						$currentSettings['isApplied'] = true;
-						$currentSettings['removalUrl'] =  $this->renderLinkWithoutFilter("$field:{$facet[0]}");
+						$currentSettings['removalUrl'] = $this->renderLinkWithoutFilter("$field:{$facet[0]}");
 					}
 				}
 
@@ -407,107 +408,107 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 			//Sort the facet alphabetically?
 			//Sort the system and location alphabetically unless we are in the global scope
 			$list[$field]['showAlphabetically'] = false;
-			if ($list[$field]['showAlphabetically']){
+			if ($list[$field]['showAlphabetically']) {
 				ksort($list[$field]['list']);
 			}
 		}
 		return $list;
 	}
 
-    /**
-     * Turn our results into an Excel document
-     * @param null|array $result
-     */
+	/**
+	 * Turn our results into an Excel document
+	 * @param null|array $result
+	 */
 	public function buildExcel($result = null)
 	{
-        try {
-            // First, get the search results if none were provided
-            // (we'll go for 50 at a time)
-            if (is_null($result)) {
-                $this->limit = 2000;
-                $result = $this->processSearch(false, false);
-            }
+		try {
+			// First, get the search results if none were provided
+			// (we'll go for 50 at a time)
+			if (is_null($result)) {
+				$this->limit = 2000;
+				$result = $this->processSearch(false, false);
+			}
 
-            // Prepare the spreadsheet
-            ini_set('include_path', ini_get('include_path'.';/PHPExcel/Classes'));
-            include 'PHPExcel.php';
-            include 'PHPExcel/Writer/Excel2007.php';
-            $objPHPExcel = new PHPExcel();
-            $objPHPExcel->getProperties()->setTitle("Search Results");
+			// Prepare the spreadsheet
+			ini_set('include_path', ini_get('include_path' . ';/PHPExcel/Classes'));
+			include 'PHPExcel.php';
+			include 'PHPExcel/Writer/Excel2007.php';
+			$objPHPExcel = new PHPExcel();
+			$objPHPExcel->getProperties()->setTitle("Search Results");
 
-            $objPHPExcel->setActiveSheetIndex(0);
-            $objPHPExcel->getActiveSheet()->setTitle('Results');
+			$objPHPExcel->setActiveSheetIndex(0);
+			$objPHPExcel->getActiveSheet()->setTitle('Results');
 
-            //Add headers to the table
-            $sheet = $objPHPExcel->getActiveSheet();
-            $curRow = 1;
-            $curCol = 0;
-            $sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'First Name');
-            $sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Last Name');
-            $sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Birth Date');
-            $sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Death Date');
-            $sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Veteran Of');
-            $sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Cemetery');
-            $sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Addition');
-            $sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Block');
-            $sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Lot');
-            $sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Grave');
-            $maxColumn = $curCol -1;
+			//Add headers to the table
+			$sheet = $objPHPExcel->getActiveSheet();
+			$curRow = 1;
+			$curCol = 0;
+			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'First Name');
+			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Last Name');
+			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Birth Date');
+			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Death Date');
+			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Veteran Of');
+			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Cemetery');
+			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Addition');
+			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Block');
+			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Lot');
+			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Grave');
+			$maxColumn = $curCol - 1;
 
-            for ($i = 0; $i < count($result['response']['docs']); $i++) {
-                $curDoc = $result['response']['docs'][$i];
-                $curRow++;
-                $curCol = 0;
-                //Get supplemental information from the database
-                require_once ROOT_DIR . '/sys/Genealogy/Person.php';
-                $person = new Person();
-                $id = str_replace('person', '', $curDoc['id']);
-                $person->personId = $id;
-                if ($person->find(true)){
-                    //Output the row to excel
-                    $sheet->setCellValueByColumnAndRow($curCol++, $curRow, isset($curDoc['firstName']) ? $curDoc['firstName'] : '');
-                    $sheet->setCellValueByColumnAndRow($curCol++, $curRow, isset($curDoc['lastName']) ? $curDoc['lastName'] : '');
-                    $sheet->setCellValueByColumnAndRow($curCol++, $curRow, $person->formatPartialDate($person->birthDateDay, $person->birthDateMonth, $person->birthDateYear));
-                    $sheet->setCellValueByColumnAndRow($curCol++, $curRow, $person->formatPartialDate($person->deathDateDay, $person->deathDateMonth, $person->deathDateYear));
-                    $sheet->setCellValueByColumnAndRow($curCol++, $curRow, isset($curDoc['veteranOf']) ? implode(', ', $curDoc['veteranOf']) : '');
-                    $sheet->setCellValueByColumnAndRow($curCol++, $curRow, isset($curDoc['cemeteryName']) ? $curDoc['cemeteryName'] : '');
-                    $sheet->setCellValueByColumnAndRow($curCol++, $curRow, $person->addition) ;
-                    $sheet->setCellValueByColumnAndRow($curCol++, $curRow, $person->block);
-                    $sheet->setCellValueByColumnAndRow($curCol++, $curRow, $person->lot);
-                    /** @noinspection PhpUnusedLocalVariableInspection */
-                    $sheet->setCellValueByColumnAndRow($curCol++, $curRow, $person->grave);
-                }
-            }
+			for ($i = 0; $i < count($result['response']['docs']); $i++) {
+				$curDoc = $result['response']['docs'][$i];
+				$curRow++;
+				$curCol = 0;
+				//Get supplemental information from the database
+				require_once ROOT_DIR . '/sys/Genealogy/Person.php';
+				$person = new Person();
+				$id = str_replace('person', '', $curDoc['id']);
+				$person->personId = $id;
+				if ($person->find(true)) {
+					//Output the row to excel
+					$sheet->setCellValueByColumnAndRow($curCol++, $curRow, isset($curDoc['firstName']) ? $curDoc['firstName'] : '');
+					$sheet->setCellValueByColumnAndRow($curCol++, $curRow, isset($curDoc['lastName']) ? $curDoc['lastName'] : '');
+					$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $person->formatPartialDate($person->birthDateDay, $person->birthDateMonth, $person->birthDateYear));
+					$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $person->formatPartialDate($person->deathDateDay, $person->deathDateMonth, $person->deathDateYear));
+					$sheet->setCellValueByColumnAndRow($curCol++, $curRow, isset($curDoc['veteranOf']) ? implode(', ', $curDoc['veteranOf']) : '');
+					$sheet->setCellValueByColumnAndRow($curCol++, $curRow, isset($curDoc['cemeteryName']) ? $curDoc['cemeteryName'] : '');
+					$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $person->addition);
+					$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $person->block);
+					$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $person->lot);
+					/** @noinspection PhpUnusedLocalVariableInspection */
+					$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $person->grave);
+				}
+			}
 
-            for ($i = 0; $i < $maxColumn; $i++){
-                $sheet->getColumnDimensionByColumn($i)->setAutoSize(true);
-            }
+			for ($i = 0; $i < $maxColumn; $i++) {
+				$sheet->getColumnDimensionByColumn($i)->setAutoSize(true);
+			}
 
-            //Output to the browser
-            header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
-            header("Cache-Control: no-store, no-cache, must-revalidate");
-            header("Cache-Control: post-check=0, pre-check=0", false);
-            header("Pragma: no-cache");
-            header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-            header('Content-Disposition: attachment;filename="Results.xlsx"');
+			//Output to the browser
+			header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
+			header("Cache-Control: no-store, no-cache, must-revalidate");
+			header("Cache-Control: post-check=0, pre-check=0", false);
+			header("Pragma: no-cache");
+			header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+			header('Content-Disposition: attachment;filename="Results.xlsx"');
 
-            $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
-            $objWriter->save('php://output'); //THIS DOES NOT WORK WHY?
-            $objPHPExcel->disconnectWorksheets();
-            unset($objPHPExcel);
-        } catch (Exception $e) {
-            global $logger;
-            $logger->log("Unable to create Excel File " . $e, Logger::LOG_ERROR);
-        }
+			$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
+			$objWriter->save('php://output'); //THIS DOES NOT WORK WHY?
+			$objPHPExcel->disconnectWorksheets();
+			unset($objPHPExcel);
+		} catch (Exception $e) {
+			global $logger;
+			$logger->log("Unable to create Excel File " . $e, Logger::LOG_ERROR);
+		}
 	}
 
 	/**
 	 * Retrieves a document specified by the ID.
 	 *
-	 * @param   string  $id         The document to retrieve from Solr
+	 * @param string $id The document to retrieve from Solr
 	 * @access  public
-	 * @throws  object              PEAR Error
 	 * @return  array               The requested resource
+	 * @throws  object              PEAR Error
 	 */
 	function getRecord($id)
 	{
@@ -526,59 +527,63 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher
 		$params = parent::getSearchParams();
 
 		$params[] = 'searchIndex=' . $_REQUEST['searchIndex'];
-		$params[] = 'searchSource='  . $_REQUEST['searchSource'];
+		$params[] = 'searchSource=' . $_REQUEST['searchSource'];
 
 		return $params;
 	}
 
-	public function setPrimarySearch($flag){
+	public function setPrimarySearch($flag)
+	{
 		parent::setPrimarySearch($flag);
 		$this->indexEngine->isPrimarySearch = $flag;
 	}
 
-    public function getSearchIndexes()
-    {
-        return [
-            "GenealogyKeyword" => "Keyword",
-            "GenealogyName" => "Name"
-        ];
-    }
+	public function getSearchIndexes()
+	{
+		return [
+			"GenealogyKeyword" => "Keyword",
+			"GenealogyName" => "Name"
+		];
+	}
 
-    public function getRecordDriverForResult($current)
-    {
-        require_once ROOT_DIR . '/RecordDrivers/PersonRecord.php';
-        return new PersonRecord($current);
-    }
+	public function getRecordDriverForResult($current)
+	{
+		require_once ROOT_DIR . '/RecordDrivers/PersonRecord.php';
+		return new PersonRecord($current);
+	}
 
-    public function getSearchesFile()
-    {
-        return 'genealogySearches';
-    }
+	public function getSearchesFile()
+	{
+		return 'genealogySearches';
+	}
 
-    public function supportsSuggestions()
-    {
-        return true;
-    }
+	public function supportsSuggestions()
+	{
+		return true;
+	}
 
-    /**
-     * @param string $searchTerm
-     * @param string $searchIndex
-     * @return array
-     */
-    public function getSearchSuggestions($searchTerm, $searchIndex){
-        $suggestionHandler = 'suggest';
-        if ($searchIndex == 'GenealogyName') {
-            $suggestionHandler = 'name_suggest';
-        }
-        return $this->processSearchSuggestions($searchTerm, $suggestionHandler);
-    }
+	/**
+	 * @param string $searchTerm
+	 * @param string $searchIndex
+	 * @return array
+	 */
+	public function getSearchSuggestions($searchTerm, $searchIndex)
+	{
+		$suggestionHandler = 'suggest';
+		if ($searchIndex == 'GenealogyName') {
+			$suggestionHandler = 'name_suggest';
+		}
+		return $this->processSearchSuggestions($searchTerm, $suggestionHandler);
+	}
 
-	protected function getFieldsToReturn() {
-        return 'id,recordtype,title,comments,firstName,lastName,middleName,maidenName,otherName,nickName,fullName,veteranOf,birthDate,birthYear,deathYear,ageAtDeath,cemeteryName,mortuaryName,sex,race,causeOfDeath,obituaryDate,obituarySource,obituaryText,spouseName,marriageDate,marriageComments';
-    }
+	protected function getFieldsToReturn()
+	{
+		return 'id,recordtype,title,comments,firstName,lastName,middleName,maidenName,otherName,nickName,fullName,veteranOf,birthDate,birthYear,deathYear,ageAtDeath,cemeteryName,mortuaryName,sex,race,causeOfDeath,obituaryDate,obituarySource,obituaryText,spouseName,marriageDate,marriageComments';
+	}
 
 	//TODO: Convert this to use definitions
-	public function getFacetConfig(){
+	public function getFacetConfig()
+	{
 		if ($this->facetConfig == null) {
 			$facetConfig = [];
 			$birthYear = new LibraryFacetSetting();

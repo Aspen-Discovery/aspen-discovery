@@ -10,6 +10,7 @@ class SearchSources{
 		//Check to see if marmot catalog is a valid option
 		global $library;
 		global $configArray;
+		global $enabledModules;
 		$searchEbsco = false;
 
 		/** @var $locationSingleton Location */
@@ -38,7 +39,7 @@ class SearchSources{
 		$searchArchive = $library->enableArchive == 1;
 		//TODO: Re-enable once we do full EDS integration
 		//$searchEbsco = $library->edsApiProfile != '';
-        $searchOpenArchives = $library->enableOpenArchives == 1;
+        $searchOpenArchives = array_key_exists('Open Archives', $enabledModules) && $library->enableOpenArchives == 1;
 
 		list($enableCombinedResults, $showCombinedResultsFirst, $combinedResultsName) = self::getCombinedSearchSetupParameters($location, $library);
 
@@ -145,6 +146,24 @@ class SearchSources{
             'description' => 'User Lists',
             'catalogType' => 'lists'
         );
+
+		//TODO: This should have a module switch
+		if (array_key_exists('Web Indexer', $enabledModules)){
+			require_once ROOT_DIR . '/sys/WebsiteIndexing/WebsiteIndexSetting.php';
+			$websiteSetting = new WebsiteIndexSetting();
+			$websiteSetting->selectAdd(null);
+			$websiteSetting->selectAdd('searchCategory');
+			$websiteSetting->groupBy('searchCategory');
+			$websiteSetting->find();
+			//TODO: Need to deal with searching different collections
+			while ($websiteSetting->fetch()) {
+				$searchOptions['websites'] = array(
+					'name' => $websiteSetting->searchCategory,
+					'description' => $websiteSetting->searchCategory,
+					'catalogType' => 'websites'
+				);
+			}
+		}
 
 		if ($searchEbsco){
 			$searchOptions['ebsco'] = array(

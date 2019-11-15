@@ -36,7 +36,7 @@
 					<div class="row">
 						<div class="result-label col-tn-3">{translate text=Author} </div>
 						<div class="col-tn-9 result-value notranslate">
-							<a href='{$path}/Author/Home?author="{$recordDriver->getPrimaryAuthor()|escape:"url"}"'>{$recordDriver->getPrimaryAuthor()|highlight}</a>
+							<a href='/Author/Home?author="{$recordDriver->getPrimaryAuthor()|escape:"url"}"'>{$recordDriver->getPrimaryAuthor()|highlight}</a>
 						</div>
 					</div>
 				{/if}

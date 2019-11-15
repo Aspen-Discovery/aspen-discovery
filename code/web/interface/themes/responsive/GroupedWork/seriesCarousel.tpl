@@ -4,7 +4,7 @@
 			<ul>
 				{foreach from=$titles item=title}
 					<li class="carousel-title">
-						<a href="{$path}/GroupedWork/{$title.id}">
+						<a href="/GroupedWork/{$title.id}">
 							<img src="{$title.image}" class="scrollerTitleCover" alt="{$title.title}" title="{$title.title}"/>
 						</a>
 					</li>

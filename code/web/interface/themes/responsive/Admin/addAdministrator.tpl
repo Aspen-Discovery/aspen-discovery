@@ -38,7 +38,7 @@
 			</div>
 			<div class="form-group">
 				<div class="controls">
-					<input type="submit" name="submit" value="Update User" class="btn btn-primary">  <a href='{$path}/Admin/{$toolName}?objectAction=list' class="btn btn-default">Return to List</a>
+					<input type="submit" name="submit" value="Update User" class="btn btn-primary">  <a href='/Admin/{$toolName}?objectAction=list' class="btn btn-default">Return to List</a>
 				</div>
 			</div>
 		</fieldset>

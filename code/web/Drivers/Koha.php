@@ -214,7 +214,7 @@ class Koha extends AbstractIlsDriver {
 		}
 
         /** @noinspection SqlResolve */
-        $sql = "SELECT issues.*, items.biblionumber, items.itype, title, author, auto_renew, auto_renew_error from issues left join items on items.itemnumber = issues.itemnumber left join biblio ON items.biblionumber = biblio.biblionumber where borrowernumber = {$patron->username}";
+        $sql = "SELECT issues.*, items.biblionumber, items.itype, items.itemcallnumber, items.enumchron, title, author, auto_renew, auto_renew_error from issues left join items on items.itemnumber = issues.itemnumber left join biblio ON items.biblionumber = biblio.biblionumber where borrowernumber = {$patron->username}";
 		$results = mysqli_query($this->dbConnection, $sql);
 		while ($curRow = $results->fetch_assoc()){
 			$checkout = array();
@@ -224,6 +224,12 @@ class Koha extends AbstractIlsDriver {
 			$checkout['recordId'] = $curRow['biblionumber'];
 			$checkout['shortId'] = $curRow['biblionumber'];
 			$checkout['title'] = $curRow['title'];
+			if (isset($curRow['itemcallnumber'])){
+				$checkout['callNumber'] = $curRow['itemcallnumber'];
+			}
+			if (isset($curRow['enumchron'])){
+				$checkout['volume'] = $curRow['enumchron'];
+			}
 			$checkout['author'] = $curRow['author'];
 
 			$dateDue = DateTime::createFromFormat('Y-m-d H:i:s', $curRow['date_due']);
@@ -242,7 +248,7 @@ class Koha extends AbstractIlsDriver {
 			$autoRenewError = $curRow['auto_renew_error'];
 			if ($autoRenewError){
 				if ($autoRenewError == 'on_reserve'){
-					$autoRenewError = translate(['text' => 'koha_auto_renew_on_reserve', 'defaultText' => 'Cannot auto renew, on hold for another player']);
+					$autoRenewError = translate(['text' => 'koha_auto_renew_on_reserve', 'defaultText' => 'Cannot auto renew, on hold for another user']);
 				}elseif ($autoRenewError == 'too_many'){
 					$autoRenewError = translate(['text' => 'koha_auto_renew_too_many', 'defaultText' => 'Cannot auto renew, too many renewals']);
 				}elseif ($autoRenewError == 'auto_account_expired'){
@@ -719,8 +725,7 @@ class Koha extends AbstractIlsDriver {
 
 		//Get the items the user can place a hold on
 		if ($itemLevelHoldAllowed){
-		    //TODO: Handle item level holds
-			//Need to prompt for an item level hold
+		    //Need to prompt for an item level hold
 			$items = array();
 			if (!$itemLevelHoldOnly){
 				//Add a first title returned
@@ -873,7 +878,7 @@ class Koha extends AbstractIlsDriver {
 		$this->initDatabaseConnection();
 
         /** @noinspection SqlResolve */
-		$sql = "SELECT reserves.*, biblio.title, biblio.author, items.itemcallnumber FROM reserves inner join biblio on biblio.biblionumber = reserves.biblionumber left join items on items.itemnumber = reserves.itemnumber where borrowernumber = {$patron->username}";
+		$sql = "SELECT reserves.*, biblio.title, biblio.author, items.itemcallnumber, items.enumchron FROM reserves inner join biblio on biblio.biblionumber = reserves.biblionumber left join items on items.itemnumber = reserves.itemnumber where borrowernumber = {$patron->username}";
 		$results = mysqli_query($this->dbConnection, $sql);
 		while ($curRow = $results->fetch_assoc()){
 			//Each row in the table represents a hold
@@ -886,6 +891,9 @@ class Koha extends AbstractIlsDriver {
 			$curHold['title'] = $curRow['title'];
 			if (isset($curRow['itemcallnumber'])){
 				$curHold['callNumber'] = $curRow['itemcallnumber'];
+			}
+			if (isset($curRow['enumchron'])){
+				$curHold['volume'] = $curRow['enumchron'];
 			}
 			$curHold['create'] = date_parse_from_format('Y-m-d H:i:s', $curRow['reservedate']);
 			if (!empty($curRow['expirationdate'])){
@@ -1070,7 +1078,7 @@ class Koha extends AbstractIlsDriver {
 	 * @param bool $includeMessages
 	 * @return array
 	 */
-	public function getMyFines($patron, $includeMessages = false)
+	public function getFines($patron, $includeMessages = false)
     {
         require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
 
@@ -1086,9 +1094,12 @@ class Koha extends AbstractIlsDriver {
         if ($allFeesRS->num_rows > 0) {
             while ($allFeesRow = $allFeesRS->fetch_assoc()) {
                 $curFine = [
+                	'fineId' => $allFeesRow['accountlines_id'],
                     'date' => $allFeesRow['date'],
                     'reason' => $allFeesRow['accounttype'],
                     'message' => $allFeesRow['description'],
+	                'amountVal' => $allFeesRow['amount'],
+	                'amountOutstandingVal' => $allFeesRow['amountoutstanding'],
                     'amount' => StringUtils::formatMoney('%.2n', $allFeesRow['amount']),
                     'amountOutstanding' => StringUtils::formatMoney('%.2n', $allFeesRow['amountoutstanding']),
                 ];
@@ -2307,5 +2318,56 @@ class Koha extends AbstractIlsDriver {
 		global $memCache;
 		$memCache->delete('koha_summary_' . $patron->id);
 		return $hold_result;
+	}
+
+	public function completeFinePayment(User $patron, UserPayment $payment)
+	{
+		$result = [
+			'success' => false,
+			'message' => 'Unknown error completing fine payment'
+		];
+		$accountLinesPaid = explode(',', $payment->finesPaid);
+		$oauthToken = $this->getOAuthToken();
+		if ($oauthToken == false){
+			$result['message'] = 'Unable to authenticate with the ILS.  Please try again later or contact the library.';
+		}else{
+			$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/{$patron->username}/account/credits";
+			$postVariables = [
+				'account_lines_ids' => $accountLinesPaid,
+				'amount' => $payment->totalPaid,
+				'credit_type' => 'payment',
+				'payment_type' => $payment->paymentType,
+				'description' => 'Paid Online via Aspen Discovery'
+			];
+
+			$this->apiCurlWrapper->addCustomHeaders([
+				'Authorization: Bearer ' . $oauthToken,
+				'User-Agent: Aspen Discovery',
+				'Accept: */*',
+				'Cache-Control: no-cache',
+				'Content-Type: application/json;charset=UTF-8',
+				'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
+			], true);
+			$response = $this->apiCurlWrapper->curlPostBodyData($apiUrl, $postVariables);
+			if($this->apiCurlWrapper->getResponseCode() != 200) {
+				if (strlen($response) > 0){
+					$jsonResponse = json_decode($response);
+					if ($jsonResponse){
+						$result['message'] = $jsonResponse->errors[0]['message'];
+					}else {
+						$result['message'] = $response;
+					}
+				}else{
+					$result['message'] = "Error {$this->apiCurlWrapper->getResponseCode()} updating your payment, please visit the library with your receipt.";
+				}
+
+			}else{
+				$result = [
+					'success' => true,
+					'message' => 'Your fines have been paid successfully, thank you.'
+				];
+			}
+		}
+		return $result;
 	}
 }

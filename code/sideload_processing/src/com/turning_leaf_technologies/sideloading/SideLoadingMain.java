@@ -94,6 +94,7 @@ public class SideLoadingMain {
 
             //Pause 30 minutes before running the next export
             try {
+                System.gc();
                 Thread.sleep(1000 * 60 * 30);
             } catch (InterruptedException e) {
                 logger.info("Thread was interrupted");

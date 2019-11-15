@@ -74,6 +74,10 @@ class UserListIndexer {
 		}
 		updateServer.close();
 		updateServer = null;
+		scopes = null;
+		librariesByHomeLocation = null;
+		locationCodesByHomeLocation = null;
+		listPublisherUsers = null;
 	}
 
 	Long processPublicUserLists(boolean fullReindex, long lastReindexTime) {

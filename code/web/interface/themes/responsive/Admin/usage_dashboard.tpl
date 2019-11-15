@@ -139,6 +139,32 @@
 			<div class="dashboardCategory col-sm-6">
 				<div class="row">
 					<div class="col-sm-10 col-sm-offset-1">
+						<h3 class="dashboardCategoryLabel">{translate text="User List Searches"}</h3>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-tn-6">
+						<div class="dashboardLabel">{translate text="This Month"}</div>
+						<div class="dashboardValue">{$usageThisMonth.totalUserListSearches|number_format}</div>
+					</div>
+					<div class="col-tn-6">
+						<div class="dashboardLabel">{translate text="Last Month"}</div>
+						<div class="dashboardValue">{$usageLastMonth.totalUserListSearches|number_format}</div>
+					</div>
+					<div class="col-tn-6">
+						<div class="dashboardLabel">{translate text="This Year"}</div>
+						<div class="dashboardValue">{$usageThisYear.totalUserListSearches|number_format}</div>
+					</div>
+					<div class="col-tn-6">
+						<div class="dashboardLabel">{translate text="All Time"}</div>
+						<div class="dashboardValue">{$usageAllTime.totalUserListSearches|number_format}</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="dashboardCategory col-sm-6">
+				<div class="row">
+					<div class="col-sm-10 col-sm-offset-1">
 						<h3 class="dashboardCategoryLabel">{translate text="Open Archives Searches"}</h3>
 					</div>
 				</div>
@@ -165,29 +191,28 @@
 			<div class="dashboardCategory col-sm-6">
 				<div class="row">
 					<div class="col-sm-10 col-sm-offset-1">
-						<h3 class="dashboardCategoryLabel">{translate text="User List Searches"}</h3>
+						<h3 class="dashboardCategoryLabel">{translate text="Website Searches"}</h3>
 					</div>
 				</div>
 				<div class="row">
 					<div class="col-tn-6">
 						<div class="dashboardLabel">{translate text="This Month"}</div>
-						<div class="dashboardValue">{$usageThisMonth.totalUserListSearches|number_format}</div>
+						<div class="dashboardValue">{$usageThisMonth.totalWebsiteSearches|number_format}</div>
 					</div>
 					<div class="col-tn-6">
 						<div class="dashboardLabel">{translate text="Last Month"}</div>
-						<div class="dashboardValue">{$usageLastMonth.totalUserListSearches|number_format}</div>
+						<div class="dashboardValue">{$usageLastMonth.totalWebsiteSearches|number_format}</div>
 					</div>
 					<div class="col-tn-6">
 						<div class="dashboardLabel">{translate text="This Year"}</div>
-						<div class="dashboardValue">{$usageThisYear.totalUserListSearches|number_format}</div>
+						<div class="dashboardValue">{$usageThisYear.totalWebsiteSearches|number_format}</div>
 					</div>
 					<div class="col-tn-6">
 						<div class="dashboardLabel">{translate text="All Time"}</div>
-						<div class="dashboardValue">{$usageAllTime.totalUserListSearches|number_format}</div>
+						<div class="dashboardValue">{$usageAllTime.totalWebsiteSearches|number_format}</div>
 					</div>
 				</div>
 			</div>
-
 
 		</div>
 	</div>

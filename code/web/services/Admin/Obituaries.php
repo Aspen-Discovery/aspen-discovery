@@ -38,8 +38,7 @@ class Obituaries extends ObjectEditor
 		return array('genealogyContributor');
 	}
 	function getRedirectLocation($objectAction, $curObject){
-		global $configArray;
-		return $configArray['Site']['path'] . '/Person/' . $curObject->personId;
+		return '/Person/' . $curObject->personId;
 	}
 	function showReturnToList(){
 		return false;

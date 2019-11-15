@@ -19,7 +19,7 @@ class MaterialsRequest_Submit extends Action
 
 		$maxActiveRequests = $library->maxOpenRequests;
 		$maxRequestsPerYear = $library->maxRequestsPerYear;
-		$accountPageLink = $configArray['Site']['path'] . '/MaterialsRequest/MyRequests';
+		$accountPageLink = '/MaterialsRequest/MyRequests';
 		$interface->assign('accountPageLink', $accountPageLink);
 		$interface->assign('maxActiveRequests', $maxActiveRequests);
 		$interface->assign('maxRequestsPerYear', $maxRequestsPerYear);

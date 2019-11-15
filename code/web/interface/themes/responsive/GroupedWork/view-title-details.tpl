@@ -11,12 +11,12 @@
 				{*create hidden div*}
 				<div id="additionalContributors" style="display:none">
 					{/if}
-					<a href='{$path}/Author/Home?author="{$contributor.name|trim|escape:"url"}"'>{$contributor.name|escape}</a>
+					<a href='/Author/Home?author="{$contributor.name|trim|escape:"url"}"'>{$contributor.name|escape}</a>
 					{if $contributor.role}
 						&nbsp;{$contributor.role}
 					{/if}
 					{if $contributor.title}
-						&nbsp;<a href="{$path}/Search/Results?lookfor={$contributor.title}&amp;searchIndex=Title">{$contributor.title}</a>
+						&nbsp;<a href="/Search/Results?lookfor={$contributor.title}&amp;searchIndex=Title">{$contributor.title}</a>
 					{/if}
 					<br/>
 					{/foreach}

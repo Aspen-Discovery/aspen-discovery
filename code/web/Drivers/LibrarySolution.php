@@ -694,7 +694,7 @@ class LibrarySolution extends AbstractIlsDriver {
 	 * @param User $patron patron to get fines for
 	 * @return array  Array of messages
 	 */
-	function getMyFines($patron, $includeMessages = false) {
+	function getFines($patron, $includeMessages = false) {
 		$fines = array();
 
 		if ($this->loginPatronToLSS($patron->cat_username, $patron->cat_password)) {

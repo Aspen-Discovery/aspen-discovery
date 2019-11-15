@@ -82,6 +82,7 @@ public class UserListIndexerMain {
 
             //Pause before running the next export (longer if we didn't get any actual changes)
             if (runContinuously) {
+                System.gc();
                 try {
                     if (numListsProcessed == 0) {
                         Thread.sleep(1000 * 60 * 5);

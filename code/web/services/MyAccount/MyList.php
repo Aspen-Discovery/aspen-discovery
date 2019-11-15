@@ -10,7 +10,6 @@ class MyAccount_MyList extends MyAccount {
 		parent::__construct();
 	}
 	function launch() {
-		global $configArray;
 		global $interface;
 
 		// Fetch List object
@@ -77,7 +76,7 @@ class MyAccount_MyList extends MyAccount {
 				}elseif ($actionToPerform == 'deleteList'){
 					$list->delete();
 
-					header("Location: {$configArray['Site']['path']}/MyAccount/Home");
+					header("Location: /MyAccount/Home");
 					die();
 				}elseif ($actionToPerform == 'bulkAddTitles'){
 					$notes = $this->bulkAddTitles($list);
@@ -104,7 +103,7 @@ class MyAccount_MyList extends MyAccount {
 			}
 
 			//Redirect back to avoid having the parameters stay in the URL.
-			header("Location: {$configArray['Site']['path']}/MyAccount/MyList/{$list->id}");
+			header("Location: /MyAccount/MyList/{$list->id}");
 			die();
 
 		}

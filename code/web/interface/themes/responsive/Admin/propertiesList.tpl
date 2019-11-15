@@ -35,7 +35,7 @@
 							<td>
 							{if $property.type == 'label'}
 								{if $dataItem->class != 'objectDeleted'}
-									<a href='{$path}/{$module}/{$toolName}?objectAction=edit&amp;id={$id}'>&nbsp;</span>{$propValue}</a>
+									<a href='/{$module}/{$toolName}?objectAction=edit&amp;id={$id}'>&nbsp;</span>{$propValue}</a>
 								{/if}
 							{elseif $property.type == 'text' || $property.type == 'hidden' || $property.type == 'file' || $property.type == 'integer' || $property.type == 'email' || $property.type == 'url'}
 								{$propValue}
@@ -82,7 +82,7 @@
 					{/foreach}
 					{if $dataItem->class != 'objectDeleted'}
 						<td>
-							<a href='{$path}/{$module}/{$toolName}?objectAction=edit&amp;id={$id}'>Edit</a>
+							<a href='/{$module}/{$toolName}?objectAction=edit&amp;id={$id}'>Edit</a>
 							{if $additionalActions}
 								{foreach from=$additionalActions item=action}
 									<a href='{$action.path}&amp;id={$id}'>{$action.name}</a>

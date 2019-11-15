@@ -5,7 +5,7 @@
 			Please enter a name for the browse category to be created.
 		</p>
 	</div>
-	<form method="post" name="createBrowseCategory" id="createBrowseCategory" action="{$path}/Browse/AJAX" class="form">
+	<form method="post" name="createBrowseCategory" id="createBrowseCategory" action="/Browse/AJAX" class="form">
 		<div>
 			{if $searchId}
 				<input type="hidden" name="searchId" value="{$searchId}" id="searchId">

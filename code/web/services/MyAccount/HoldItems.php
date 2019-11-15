@@ -35,7 +35,6 @@ class HoldItems extends Action
 	{
 		$selectedTitles = $_REQUEST['title'];
 		global $interface;
-		global $configArray;
 		$user = UserAccount::getLoggedInUser();
 		global $logger;
 
@@ -72,6 +71,6 @@ class HoldItems extends Action
 		$_SESSION['hold_message'] = $hold_message_data;
 
         $logger->log('No referrer set, but there is a message to show, go to the main holds page', Logger::LOG_NOTICE);
-        header("Location: " . $configArray['Site']['path'] . '/MyAccount/Holds');
+        header('Location: /MyAccount/Holds');
 	}
 }

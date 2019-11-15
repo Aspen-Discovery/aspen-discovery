@@ -10,7 +10,6 @@ class MaterialsRequest_IlsRequests extends MyAccount
 
 	function launch()
 	{
-		global $configArray;
 		global $interface;
 
 		//Get a list of all materials requests for the user
@@ -37,7 +36,7 @@ class MaterialsRequest_IlsRequests extends MyAccount
 			$title = 'My Materials Requests';
 			$this->display($requestTemplate, $title);
 		}else{
-			header('Location: ' . $configArray['Site']['path'] . '/MyAccount/Home?followupModule=MaterialsRequest&followupAction=MyRequests');
+			header('Location: /MyAccount/Home?followupModule=MaterialsRequest&followupAction=MyRequests');
 			exit;
 		}
 	}

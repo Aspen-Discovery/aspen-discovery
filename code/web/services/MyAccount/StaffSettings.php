@@ -6,7 +6,6 @@ class MyAccount_StaffSettings extends MyAccount
 {
 	function launch()
 	{
-		global $configArray;
 		global $interface;
 		$user = UserAccount::getLoggedInUser();
 
@@ -31,7 +30,7 @@ class MyAccount_StaffSettings extends MyAccount
 				$patron->updateStaffSettings();
 
 				session_write_close();
-				$actionUrl = $configArray['Site']['path'] . '/MyAccount/StaffSettings' . ( $patronId == $user->id ? '' : '?patronId='.$patronId ); // redirect after form submit completion
+				$actionUrl = '/MyAccount/StaffSettings' . ( $patronId == $user->id ? '' : '?patronId='.$patronId ); // redirect after form submit completion
 				header("Location: " . $actionUrl);
 				exit();
 			} elseif (!$offlineMode) {

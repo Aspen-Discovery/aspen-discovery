@@ -9,7 +9,6 @@ class ILS_SierraExportLog extends Admin_Admin
 	function launch()
 	{
 		global $interface;
-		global $configArray;
 
 		$logEntries = array();
 		$logEntry = new SierraExportLogEntry();
@@ -28,7 +27,7 @@ class ILS_SierraExportLog extends Admin_Admin
 		$interface->assign('logEntries', $logEntries);
 
 		$options = array('totalItems' => $total,
-		                 'fileName'   => $configArray['Site']['path'].'/ILS/SierraExportLog?page=%d'. (empty($_REQUEST['pageSize']) ? '' : '&pageSize=' . $_REQUEST['pageSize']),
+		                 'fileName'   => '/ILS/SierraExportLog?page=%d'. (empty($_REQUEST['pageSize']) ? '' : '&pageSize=' . $_REQUEST['pageSize']),
 		                 'perPage'    => $pageSize,
 		);
 		$pager = new Pager($options);

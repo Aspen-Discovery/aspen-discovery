@@ -113,10 +113,10 @@ public class RecordGrouperMain {
 				format = args[4];
 				subtitle = args[5];
 			} else {
-				title = getInputFromCommandLine("Enter the title");
-				subtitle = getInputFromCommandLine("Enter the subtitle");
-				author = getInputFromCommandLine("Enter the author");
-				format = getInputFromCommandLine("Enter the format");
+				title = StringUtils.getInputFromCommandLine("Enter the title");
+				subtitle = StringUtils.getInputFromCommandLine("Enter the subtitle");
+				author = StringUtils.getInputFromCommandLine("Enter the author");
+				format = StringUtils.getInputFromCommandLine("Enter the format");
 			}
 			RecordGroupingProcessor processor = new RecordGroupingProcessor(dbConn, serverName, logger);
 			GroupedWorkBase work = GroupedWorkFactory.getInstance(-1, processor);
@@ -135,25 +135,6 @@ public class RecordGrouperMain {
 		} else {
 			doStandardRecordGrouping(args, dbConn);
 		}
-	}
-
-	private static String getInputFromCommandLine(String prompt) {
-		//Prompt for the work to process
-		System.out.print(prompt + ": ");
-
-		//  open up standard input
-		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-
-		//  read the work from the command-line; need to use try/catch with the
-		//  readLine() method
-		String value = null;
-		try {
-			value = br.readLine().trim();
-		} catch (IOException ioe) {
-			System.out.println("IO error trying to read " + prompt);
-			System.exit(1);
-		}
-		return value;
 	}
 
 	private static void doStandardRecordGrouping(String[] args, Connection dbConn) {

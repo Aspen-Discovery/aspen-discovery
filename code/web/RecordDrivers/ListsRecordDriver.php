@@ -14,7 +14,7 @@ class ListsRecordDriver extends IndexRecordDriver
         if ($absolutePath){
             $bookCoverUrl = $configArray['Site']['url'];
         }else{
-            $bookCoverUrl = $configArray['Site']['path'];
+            $bookCoverUrl = '';
         }
         $id = $this->getId();
         $bookCoverUrl = $bookCoverUrl . "/bookcover.php?type=list&amp;id={$id}&amp;size={$size}";

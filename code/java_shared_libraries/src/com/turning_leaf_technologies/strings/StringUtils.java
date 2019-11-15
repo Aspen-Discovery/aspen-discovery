@@ -230,20 +230,40 @@ public class StringUtils {
     }
 
     public static boolean isNumeric(String stringToTest) {
-        if (stringToTest == null){
+        if (stringToTest == null) {
             return false;
         }
-        if (stringToTest.length() == 0){
+        if (stringToTest.length() == 0) {
             return false;
         }
         int numDecimals = 0;
-        for (char curChar : stringToTest.toCharArray()){
-            if (!Character.isDigit(curChar) && curChar != '.'){
+        for (char curChar : stringToTest.toCharArray()) {
+            if (!Character.isDigit(curChar) && curChar != '.') {
                 return false;
-            }if (curChar == '.'){
+            }
+            if (curChar == '.') {
                 numDecimals++;
             }
         }
         return numDecimals <= 1;
+    }
+
+    public static String getInputFromCommandLine(String prompt) {
+        //Prompt for the work to process
+        System.out.print(prompt + ": ");
+
+        //  open up standard input
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+
+        //  read the work from the command-line; need to use try/catch with the
+        //  readLine() method
+        String value = null;
+        try {
+            value = br.readLine().trim();
+        } catch (IOException ioe) {
+            System.out.println("IO error trying to read " + prompt);
+            System.exit(1);
+        }
+        return value;
     }
 }

@@ -128,6 +128,15 @@ class Record_AJAX extends Action
 
 			$holdDisclaimers = array();
 			$patronLibrary = $user->getHomeLibrary();
+			if ($patronLibrary == null){
+				$results = array(
+					'holdFormBypassed' => false,
+					'title' => 'Unable to place hold',
+					'modalBody' => '<p>This account is not associated with a library, please contact your library.</p>',
+					'modalButtons' => ""
+				);
+				return $results;
+			}
 			if (strlen($patronLibrary->holdDisclaimer) > 0) {
 				$holdDisclaimers[$patronLibrary->displayName] = $patronLibrary->holdDisclaimer;
 			}

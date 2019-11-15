@@ -8,8 +8,7 @@ class PersonRecordDriver extends IslandoraRecordDriver {
 	}
 
 	protected function getPlaceholderImage() {
-		global $configArray;
-		return $configArray['Site']['path'] . '/interface/themes/responsive/images/people.png';
+		return '/interface/themes/responsive/images/people.png';
 	}
 
 	public function isEntity(){

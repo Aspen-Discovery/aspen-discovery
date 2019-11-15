@@ -264,9 +264,9 @@ class CatalogConnection
 	 * otherwise.
 	 * @access public
 	 */
-	public function getMyFines($patron, $includeMessages = false)
+	public function getFines($patron, $includeMessages = false)
 	{
-		return $this->driver->getMyFines($patron, $includeMessages);
+		return $this->driver->getFines($patron, $includeMessages);
 	}
 
 	/**
@@ -911,5 +911,10 @@ class CatalogConnection
 	public function processMessagingSettingsForm(User $user)
 	{
 		return $this->driver->processMessagingSettingsForm($user);
+	}
+
+	public function completeFinePayment(User $patron, UserPayment $payment)
+	{
+		return $this->driver->completeFinePayment($patron, $payment);
 	}
 }

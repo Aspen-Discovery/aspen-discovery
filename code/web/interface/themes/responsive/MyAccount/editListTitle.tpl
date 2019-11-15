@@ -8,7 +8,7 @@
 
 					<h3 id="resourceTitle">{$recordDriver->getTitle()|escape:"html"}</h3>
 
-					<form method="post" id="listEntryEditForm" action="{$path}/MyAccount/Edit" class="form-horizontal">
+					<form method="post" id="listEntryEditForm" action="/MyAccount/Edit" class="form-horizontal">
 						<input type="hidden" name="listEntry" value="{$listEntry->id}">
 						<input type="hidden" name="list_id" value="{$list->id}">
 						<div>

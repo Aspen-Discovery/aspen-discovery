@@ -73,6 +73,7 @@ public class ExtractOverDriveInfoMain {
 
 			//Based on number of changes, pause for a little while and then continue on so we are running continuously
 			try {
+				System.gc();
 				if (numChanges == 0) {
 					Thread.sleep(1000 * 60 * 5);
 				}else {

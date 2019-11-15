@@ -18,7 +18,7 @@ class MaterialsRequest_NewRequest extends Action
 		$locationSingleton;
 
 		if (!UserAccount::isLoggedIn()) {
-			header('Location: ' . $configArray['Site']['path'] . '/MyAccount/Home?followupModule=MaterialsRequest&followupAction=NewRequest');
+			header('Location: /MyAccount/Home?followupModule=MaterialsRequest&followupAction=NewRequest');
 			exit;
 		} else {
 			// Hold Pick-up Locations

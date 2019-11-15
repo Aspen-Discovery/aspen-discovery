@@ -33,7 +33,7 @@ class SolrUtils
 	 * Capitalize boolean operators in a query string to allow case-insensitivity.
 	 *
 	 * @access  public
-	 * @param   string  $query          The query to capitalize.
+	 * @param string $query The query to capitalize.
 	 * @return  string                  The capitalized query.
 	 */
 	public static function capitalizeBooleans($query)
@@ -43,8 +43,12 @@ class SolrUtils
 		// inside quotes, since that can cause problems in case-sensitive
 		// fields when the reserved words are actually used as search terms.
 		$lookAhead = '(?=(?:[^\"]*+\"[^\"]*+\")*+[^\"]*+$)';
-		$regs = array("/\\s+AND\\s+{$lookAhead}/i", "/\\s+OR\\s+{$lookAhead}/i",
-		        "/(\\s+NOT\\s+|^NOT\\s+){$lookAhead}/i", "/\\(NOT\\s+{$lookAhead}/i");
+		$regs = array(
+			"/\\s+AND\\s+{$lookAhead}/i",
+			"/\\s+OR\\s+{$lookAhead}/i",
+			"/(\\s+NOT\\s+|^NOT\\s+){$lookAhead}/i",
+			"/\\(NOT\\s+{$lookAhead}/i"
+		);
 		$replace = array(' AND ', ' OR ', ' NOT ', '(NOT ');
 		return trim(preg_replace($regs, $replace, $query));
 	}

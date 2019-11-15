@@ -18,9 +18,9 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 
 	// Display Modes //
 	public $viewOptions = array('list', 'covers');
-    protected $pidFacets = array();
+	protected $pidFacets = array();
 
-    /**
+	/**
 	 * Constructor. Initialise some details about the server
 	 *
 	 * @access  public
@@ -59,7 +59,7 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 			$this->defaultSort = $searchSettings['General']['default_sort'];
 		}
 		if (isset($searchSettings['DefaultSortingByType']) &&
-		is_array($searchSettings['DefaultSortingByType'])) {
+			is_array($searchSettings['DefaultSortingByType'])) {
 			$this->defaultSortByType = $searchSettings['DefaultSortingByType'];
 		}
 		if (isset($searchSettings['Basic_Searches'])) {
@@ -74,8 +74,8 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 			$this->sortOptions = $searchSettings['Sorting'];
 		} else {
 			$this->sortOptions = array('relevance' => 'sort_relevance',
-                'year' => 'sort_year', 'year asc' => 'sort_year asc',
-                'title' => 'sort_title');
+				'year' => 'sort_year', 'year asc' => 'sort_year asc',
+				'title' => 'sort_title');
 		}
 
 		// Debugging
@@ -92,14 +92,14 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 		$timer->logTime('Setup Solr Search Object');
 	}
 
-    /**
-     * Initialise the object from the global
-     *  search parameters in $_REQUEST.
-     *
-     * @access  public
-     * @param string $searchSource
-     * @return  boolean
-     */
+	/**
+	 * Initialise the object from the global
+	 *  search parameters in $_REQUEST.
+	 *
+	 * @access  public
+	 * @param string $searchSource
+	 * @return  boolean
+	 */
 	public function init($searchSource = 'islandora')
 	{
 		// Call the standard initialization routine in the parent:
@@ -148,11 +148,12 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 		return true;
 	} // End init()
 
-    public function setDebugging($enableDebug, $enableSolrQueryDebugging){
-        $this->debug = $enableDebug;
-        $this->debugSolrQuery = $enableDebug && $enableSolrQueryDebugging;
-        $this->getIndexEngine()->setDebugging($enableDebug, $enableSolrQueryDebugging);
-    }
+	public function setDebugging($enableDebug, $enableSolrQueryDebugging)
+	{
+		$this->debug = $enableDebug;
+		$this->debugSolrQuery = $enableDebug && $enableSolrQueryDebugging;
+		$this->getIndexEngine()->setDebugging($enableDebug, $enableSolrQueryDebugging);
+	}
 
 	/**
 	 * Initialise the object for retrieving advanced
@@ -179,14 +180,15 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 		//********************
 		// Basic Search logic
 		$this->searchTerms[] = [
-            'index'   => $this->defaultIndex,
-            'lookfor' => ""
-        ];
+			'index' => $this->defaultIndex,
+			'lookfor' => ""
+		];
 
-        return true;
+		return true;
 	}
 
-	public function getFullSearchUrl() {
+	public function getFullSearchUrl()
+	{
 		return isset($this->indexEngine->fullSearchUrl) ? $this->indexEngine->fullSearchUrl : 'Unknown';
 	}
 
@@ -211,12 +213,12 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 	 * results suitable for use on a user's "favorites" page.
 	 *
 	 * @access  public
-	 * @param   object $user User object owning tag/note metadata.
-	 * @param   int $listId ID of list containing desired tags/notes (or
+	 * @param object $user User object owning tag/note metadata.
+	 * @param int $listId ID of list containing desired tags/notes (or
 	 *                              null to show tags/notes from all user's lists).
-	 * @param   bool $allowEdit Should we display edit controls?
-	 * @param   array   $IDList     optional list of IDs to re-order the archive Objects by (ie User List sorts)
-	 * @param   bool $isMixedUserList Used to correctly number items in a list of mixed content (eg catalog & archive content)
+	 * @param bool $allowEdit Should we display edit controls?
+	 * @param array $IDList optional list of IDs to re-order the archive Objects by (ie User List sorts)
+	 * @param bool $isMixedUserList Used to correctly number items in a list of mixed content (eg catalog & archive content)
 	 * @return array Array of HTML chunks for individual records.
 	 */
 	public function getResultListHTML($user, $listId = null, $allowEdit = true, $IDList = null, $isMixedUserList = false)
@@ -224,22 +226,22 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 		global $interface;
 		$html = array();
 
-		if ($IDList){
+		if ($IDList) {
 			//Reorder the documents based on the list of id's
 			//TODO: taken from Solr.php (May need to adjust for Islandora
 			$x = 0;
-			foreach ($IDList as $listPosition => $currentId){
+			foreach ($IDList as $listPosition => $currentId) {
 				// use $IDList as the order guide for the html
 				$current = null; // empty out in case we don't find the matching record
 				foreach ($this->indexResult['response']['docs'] as $docIndex => $doc) {
 					if ($doc['PID'] == $currentId) {
-						$current = & $this->indexResult['response']['docs'][$docIndex];
+						$current = &$this->indexResult['response']['docs'][$docIndex];
 						break;
 					}
 				}
 				if (empty($current)) {
 					continue; // In the case the record wasn't found, move on to the next record
-				}else {
+				} else {
 					if ($isMixedUserList) {
 						$interface->assign('recordIndex', $listPosition + 1);
 						$interface->assign('resultIndex', $listPosition + 1 + (($this->page - 1) * $this->limit));
@@ -247,7 +249,7 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 						$interface->assign('recordIndex', $x + 1);
 						$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
 					}
-					if (!$this->debug){
+					if (!$this->debug) {
 						unset($current['explain']);
 						unset($current['score']);
 					}
@@ -261,16 +263,16 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 					}
 				}
 			}
-		}else{
-		for ($x = 0; $x < count($this->indexResult['response']['docs']); $x++) {
-			$interface->assign('recordIndex', $x + 1);
-			$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
-			$current = &$this->indexResult['response']['docs'][$x];
-			/** @var IslandoraRecordDriver $record */
-			$record  = RecordDriverFactory::initRecordDriver($current);
-			$html[]  = $interface->fetch($record->getListEntry($user, $listId, $allowEdit));
+		} else {
+			for ($x = 0; $x < count($this->indexResult['response']['docs']); $x++) {
+				$interface->assign('recordIndex', $x + 1);
+				$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
+				$current = &$this->indexResult['response']['docs'][$x];
+				/** @var IslandoraRecordDriver $record */
+				$record = RecordDriverFactory::initRecordDriver($current);
+				$html[] = $interface->fetch($record->getListEntry($user, $listId, $allowEdit));
+			}
 		}
-	}
 		return $html;
 	}
 
@@ -283,11 +285,11 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 	public function getResultRecordSet()
 	{
 		$recordSet = $this->indexResult['response']['docs'];
-		foreach ($recordSet as $key => $record){
+		foreach ($recordSet as $key => $record) {
 			// Additional Information for Emailing a list of Archive Objects
-            /** @var IslandoraRecordDriver $recordDriver */
+			/** @var IslandoraRecordDriver $recordDriver */
 			$recordDriver = RecordDriverFactory::initRecordDriver($record);
-			$record['url']    = $recordDriver->getLinkUrl();
+			$record['url'] = $recordDriver->getLinkUrl();
 			$record['format'] = $recordDriver->getFormat();
 
 			$recordSet[$key] = $record;
@@ -296,16 +298,17 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 	}
 
 	/**
-	 * @param array $orderedListOfIDs  Use the index of the matched ID as the index of the resulting array of ListWidget data (for later merging)
+	 * @param array $orderedListOfIDs Use the index of the matched ID as the index of the resulting array of ListWidget data (for later merging)
 	 * @return array
 	 */
-	public function getListWidgetTitles($orderedListOfIDs = array()){
+	public function getListWidgetTitles($orderedListOfIDs = array())
+	{
 		$widgetTitles = array();
 		for ($x = 0; $x < count($this->indexResult['response']['docs']); $x++) {
-			$current = & $this->indexResult['response']['docs'][$x];
+			$current = &$this->indexResult['response']['docs'][$x];
 			$record = RecordDriverFactory::initRecordDriver($current);
-			if (!($record instanceof AspenError)){
-				if (method_exists($record, 'getListWidgetTitle')){
+			if (!($record instanceof AspenError)) {
+				if (method_exists($record, 'getListWidgetTitle')) {
 					if (!empty($orderedListOfIDs)) {
 						$position = array_search($current['PID'], $orderedListOfIDs);
 						if ($position !== false) {
@@ -314,10 +317,10 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 					} else {
 						$widgetTitles[] = $record->getListWidgetTitle();
 					}
-				}else{
+				} else {
 					$widgetTitles[] = 'List Widget Item not available';
 				}
-			}else{
+			} else {
 				$widgetTitles[] = "Unable to find record";
 			}
 		}
@@ -338,7 +341,7 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 
 		$html = array();
 		for ($x = 0; $x < count($this->indexResult['response']['docs']); $x++) {
-			$current = & $this->indexResult['response']['docs'][$x];
+			$current = &$this->indexResult['response']['docs'][$x];
 
 			$interface->assign('recordIndex', $x + 1);
 			$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
@@ -358,7 +361,7 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 	 * Set an overriding array of archive PIDs.
 	 *
 	 * @access  public
-	 * @param   array   $ids        archive PIDs to load
+	 * @param array $ids archive PIDs to load
 	 */
 	public function setQueryIDs($ids)
 	{
@@ -373,7 +376,7 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 	 * Set an overriding string.
 	 *
 	 * @access  public
-	 * @param   string  $newQuery   Query string
+	 * @param string $newQuery Query string
 	 */
 	public function setQueryString($newQuery)
 	{
@@ -384,7 +387,7 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 	 * Set an overriding facet sort order.
 	 *
 	 * @access  public
-	 * @param   string  $newSort   Sort string
+	 * @param string $newSort Sort string
 	 */
 	public function setFacetSortOrder($newSort)
 	{
@@ -399,7 +402,7 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 	 * Set an overriding number of facet values to return
 	 *
 	 * @access  public
-	 * @param   int $newLimit   Number of facet values to return
+	 * @param int $newLimit Number of facet values to return
 	 */
 	public function setFacetLimit($newLimit)
 	{
@@ -410,7 +413,7 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 	 * Set an overriding number of facet values to return
 	 *
 	 * @access  public
-	 * @param   int $newOffset  Offset to return
+	 * @param int $newOffset Offset to return
 	 */
 	public function setFacetOffset($newOffset)
 	{
@@ -487,24 +490,24 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 	protected function getBaseUrl()
 	{
 		if ($this->searchType == 'list') {
-			return $this->serverUrl . '/MyAccount/MyList/' .
-			urlencode($_GET['id']) . '?';
+			return '/MyAccount/MyList/' .
+				urlencode($_GET['id']) . '?';
 		}
 		// Base URL is different for author searches:
-		return $this->serverUrl . '/Archive/Results?';
+		return '/Archive/Results?';
 	}
 
 	/**
 	 * Actually process and submit the search
 	 *
 	 * @access  public
-	 * @param   bool   $returnIndexErrors  Should we die inside the index code if
+	 * @param bool $returnIndexErrors Should we die inside the index code if
 	 *                                     we encounter an error (false) or return
 	 *                                     it for access via the getIndexError()
 	 *                                     method (true)?
-	 * @param   bool   $recommendations    Should we process recommendations along
+	 * @param bool $recommendations Should we process recommendations along
 	 *                                     with the search itself?
-	 * @param   bool   $preventQueryModification   Should we allow the search engine
+	 * @param bool $preventQueryModification Should we allow the search engine
 	 *                                             to modify the query or is it already
 	 *                                             a well formatted query
 	 * @return  array solr result structure (for now)
@@ -520,9 +523,9 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 		}
 
 		// Build Query
-		if ($preventQueryModification){
+		if ($preventQueryModification) {
 			$query = $search[0]['lookfor'];
-		}else{
+		} else {
 			$query = $this->indexEngine->buildQuery($search, false);
 		}
 
@@ -538,30 +541,30 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 		// Define Filter Query
 		$filterQuery = $this->hiddenFilters;
 
-		if ($this->applyStandardFilters){
+		if ($this->applyStandardFilters) {
 			$filterQuery = array_merge($filterQuery, $this->getStandardFilters());
 		}
 
 		//Remove any empty filters if we get them
 		//(typically happens when a subdomain has a function disabled that is enabled in the main scope)
 		foreach ($this->filterList as $field => $filter) {
-			if (empty ($field)){
+			if (empty ($field)) {
 				unset($this->filterList[$field]);
 			}
 		}
 		foreach ($this->filterList as $field => $filter) {
-			if (is_numeric($field)){
+			if (is_numeric($field)) {
 				//This is a complex filter with ANDs and/or ORs
 				$filterQuery[] = $filter[0];
-			}else{
+			} else {
 				foreach ($filter as $value) {
 					// Special case -- allow trailing wildcards:
 					if (substr($value, -1) == '*') {
 						$filterQuery[] = "$field:$value";
-					} elseif (preg_match('/\\A\\[.*?\\sTO\\s.*?]\\z/', $value)){
+					} elseif (preg_match('/\\A\\[.*?\\sTO\\s.*?]\\z/', $value)) {
 						$filterQuery[] = "$field:$value";
 					} else {
-						if (!empty($value)){
+						if (!empty($value)) {
 							$filterQuery[] = "$field:\"$value\"";
 						}
 					}
@@ -594,7 +597,7 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 			}
 		}
 
-		if (!empty($this->facetOptions)){
+		if (!empty($this->facetOptions)) {
 			$facetSet['additionalOptions'] = $this->facetOptions;
 		}
 
@@ -622,39 +625,39 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 		//  (page - 1) * limit = start
 		$recordStart = ($this->page - 1) * $this->limit;
 		$pingResult = $this->indexEngine->pingServer(false);
-		if ($pingResult == "false" || $pingResult == false){
+		if ($pingResult == "false" || $pingResult == false) {
 			AspenError::raiseError('The archive server is currently unavailable.  Please try your search again in a few minutes.');
 		}
 		$this->indexResult = $this->indexEngine->search(
-		$this->query,      // Query string
-		$this->index,      // DisMax Handler
-		$filterQuery,      // Filter query
-		$recordStart,      // Starting record
-		$this->limit,      // Records per page
-		$facetSet,         // Fields to facet on
-		$spellcheck,       // Spellcheck query
-		$this->dictionary, // Spellcheck dictionary
-		$finalSort,        // Field to sort on
-		$this->fields,     // Fields to return
-		$this->method,     // HTTP Request method
-		$returnIndexErrors // Include errors in response?
+			$this->query,      // Query string
+			$this->index,      // DisMax Handler
+			$filterQuery,      // Filter query
+			$recordStart,      // Starting record
+			$this->limit,      // Records per page
+			$facetSet,         // Fields to facet on
+			$spellcheck,       // Spellcheck query
+			$this->dictionary, // Spellcheck dictionary
+			$finalSort,        // Field to sort on
+			$this->fields,     // Fields to return
+			$this->method,     // HTTP Request method
+			$returnIndexErrors // Include errors in response?
 		);
 
 		// Get time after the query
 		$this->stopQueryTimer();
 
 		// How many results were there?
-		if (isset($this->indexResult['response']['numFound'])){
+		if (isset($this->indexResult['response']['numFound'])) {
 			$this->resultsTotal = $this->indexResult['response']['numFound'];
-		}else{
+		} else {
 			$this->resultsTotal = 0;
 		}
 
 		// If extra processing is needed for recommendations, do it now:
 		if ($recommendations && is_array($this->recommend)) {
-		    foreach($this->recommend as $currentSet) {
-                /** @var RecommendationInterface $current */
-				foreach($currentSet as $current) {
+			foreach ($this->recommend as $currentSet) {
+				/** @var RecommendationInterface $current */
+				foreach ($currentSet as $current) {
 					$current->process();
 				}
 			}
@@ -687,38 +690,38 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 				// Add to the list unless it's in the list of fields to skip:
 				if (!in_array($field, $skipList)) {
 					$facetLabel = $this->getFacetLabel($field);
-					if ($namespaceLookup){
+					if ($namespaceLookup) {
 						$tmpLibrary = new Library();
 						$tmpLibrary->archiveNamespace = $value;
-						if ($tmpLibrary->find(true)){
+						if ($tmpLibrary->find(true)) {
 							$display = $tmpLibrary->displayName;
 						}
-					}elseif ($lookupPid) {
+					} elseif ($lookupPid) {
 						$pid = str_replace('info:fedora/', '', $value);
-						if ($field == 'RELS_EXT_isMemberOfCollection_uri_ms'){
+						if ($field == 'RELS_EXT_isMemberOfCollection_uri_ms') {
 							$okToShow = $this->showCollectionAsFacet($pid);
-						}else{
+						} else {
 							$okToShow = true;
 						}
-						if ($okToShow){
+						if ($okToShow) {
 							$display = $fedoraUtils->getObjectLabel($pid);
-							if ($display == 'Invalid Object'){
+							if ($display == 'Invalid Object') {
 								continue;
 							}
-						}else{
+						} else {
 							continue;
 						}
-					}elseif ($translate){
+					} elseif ($translate) {
 						$display = translate($value);
-					}else{
+					} else {
 						$display = $value;
 					}
 
 					$list[$facetLabel][] = array(
-							'value'      => $value,     // raw value for use with Solr
-							'display'    => $display,   // version to display to user
-							'field'      => $field,
-							'removalUrl' => $this->renderLinkWithoutFilter("$field:$value")
+						'value' => $value,     // raw value for use with Solr
+						'display' => $display,   // version to display to user
+						'field' => $field,
+						'removalUrl' => $this->renderLinkWithoutFilter("$field:$value")
 					);
 				}
 			}
@@ -730,7 +733,7 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 	 * Process facets from the results object
 	 *
 	 * @access  public
-	 * @param   array   $filter         Array of field => on-screen description
+	 * @param array $filter Array of field => on-screen description
 	 *                                  listing all of the desired facet fields;
 	 *                                  set to null to get all configured values.
 	 * @return  array   Facets data arrays
@@ -767,7 +770,7 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 			// Add the on-screen label
 			$list[$field]['label'] = $filter[$field];
 			// Build our array of values for this field
-			$list[$field]['list']  = array();
+			$list[$field]['list'] = array();
 
 			// Should we translate values for the current facet?
 			$translate = in_array($field, $this->translatedFacets);
@@ -779,17 +782,17 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 				// Initialize the array of data about the current facet:
 				$currentSettings = array();
 				$currentSettings['value'] = $facet[0];
-				if ($namespaceLookup){
+				if ($namespaceLookup) {
 					$tmpLibrary = new Library();
 					$tmpLibrary->archiveNamespace = $facet[0];
-					if ($tmpLibrary->find(true)){
+					if ($tmpLibrary->find(true)) {
 						$currentSettings['display'] = $tmpLibrary->displayName;
 					}
-				}elseif ($lookupPid) {
+				} elseif ($lookupPid) {
 					$pid = str_replace('info:fedora/', '', $facet[0]);
-					if ($field == 'RELS_EXT_isMemberOfCollection_uri_ms'){
+					if ($field == 'RELS_EXT_isMemberOfCollection_uri_ms') {
 						$okToShow = $this->showCollectionAsFacet($pid);
-					}else{
+					} else {
 						$okToShow = true;
 					}
 
@@ -798,13 +801,13 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 						if ($currentSettings['display'] == 'Invalid Object') {
 							continue;
 						}
-					}else{
+					} else {
 						continue;
 					}
 
-				}elseif ($translate){
+				} elseif ($translate) {
 					$currentSettings['display'] = translate($facet[0]);
-				}else{
+				} else {
 					$currentSettings['display'] = $facet[0];
 				}
 				$currentSettings['count'] = $facet[1];
@@ -816,7 +819,7 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 					// and is this value a selected filter?
 					if (in_array($facet[0], $this->filterList[$field])) {
 						$currentSettings['isApplied'] = true;
-						$currentSettings['removalUrl'] =  $this->renderLinkWithoutFilter("$field:{$facet[0]}");
+						$currentSettings['removalUrl'] = $this->renderLinkWithoutFilter("$field:{$facet[0]}");
 					}
 				}
 
@@ -833,13 +836,12 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 			//Sort the facet alphabetically?
 			//Sort the system and location alphabetically unless we are in the global scope
 			$list[$field]['showAlphabetically'] = false;
-			if ($list[$field]['showAlphabetically']){
+			if ($list[$field]['showAlphabetically']) {
 				ksort($list[$field]['list']);
 			}
 		}
 		return $list;
 	}
-
 
 
 	/**
@@ -853,10 +855,10 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 	/**
 	 * Retrieves a document specified by the ID.
 	 *
-	 * @param   string  $id         The document to retrieve from Solr
+	 * @param string $id The document to retrieve from Solr
 	 * @access  public
-	 * @throws  object              PEAR Error
 	 * @return  array               The requested resource
+	 * @throws  object              PEAR Error
 	 */
 	function getRecord($id)
 	{
@@ -864,6 +866,7 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 	}
 
 	protected $params;
+
 	/**
 	 * Get an array of strings to attach to a base URL in order to reproduce the
 	 * current search.
@@ -873,13 +876,13 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 	 */
 	protected function getSearchParams()
 	{
-        $params = parent::getSearchParams();
-        if (isset($_REQUEST['islandoraType'])) {
-            $params[] = 'islandoraType=' . $_REQUEST['islandoraType'];
-        } else {
-            $params[] = 'islandoraType=' . $this->defaultIndex;
-        }
-        return $params;
+		$params = parent::getSearchParams();
+		if (isset($_REQUEST['islandoraType'])) {
+			$params[] = 'islandoraType=' . $_REQUEST['islandoraType'];
+		} else {
+			$params[] = 'islandoraType=' . $this->defaultIndex;
+		}
+		return $params;
 	}
 
 	/**
@@ -887,12 +890,13 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 	 *
 	 * @return array
 	 */
-	private function getStandardFilters() {
+	private function getStandardFilters()
+	{
 		$filters = array();
 		global $library;
 		//Make sure we have MODS data
 		$filters[] = "fedora_datastreams_ms:MODS";
-		if ($library->hideAllCollectionsFromOtherLibraries && $library->archiveNamespace){
+		if ($library->hideAllCollectionsFromOtherLibraries && $library->archiveNamespace) {
 			$filters[] = "RELS_EXT_isMemberOfCollection_uri_ms:info\\:fedora/{$library->archiveNamespace}\\:*
 			  OR RELS_EXT_isMemberOf_uri_ms:info\\:fedora/{$library->archiveNamespace}\\:*
 			  OR RELS_EXT_isMemberOfCollection_uri_ms:info\\:fedora/marmot\\:events
@@ -901,11 +905,11 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 			  OR RELS_EXT_isMemberOfCollection_uri_ms:info\\:fedora/marmot\\:places
 			  OR RELS_EXT_isMemberOfCollection_uri_ms:info\\:fedora/marmot\\:families";
 		}
-		if ($library->collectionsToHide){
+		if ($library->collectionsToHide) {
 			$collectionsToHide = explode("\r\n", $library->collectionsToHide);
 			$filter = '';
-			foreach ($collectionsToHide as $collection){
-				if (strlen($filter) > 0){
+			foreach ($collectionsToHide as $collection) {
+				if (strlen($filter) > 0) {
 					$filter .= ' AND ';
 				}
 				$filter .= "!ancestors_ms:\"{$collection}\"";
@@ -914,14 +918,14 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 		}
 		require_once ROOT_DIR . '/sys/ArchivePrivateCollection.php';
 		$privateCollectionsObj = new ArchivePrivateCollection();
-		if ($privateCollectionsObj->find(true)){
+		if ($privateCollectionsObj->find(true)) {
 			$filter = '';
 			$privateCollections = explode("\r\n", $privateCollectionsObj->privateCollections);
-			foreach ($privateCollections as $privateCollection){
+			foreach ($privateCollections as $privateCollection) {
 				$privateCollection = trim($privateCollection);
-				if (strlen($privateCollection) > 0){
-					if (strlen($library->archiveNamespace) == 0 || strpos($privateCollection, $library->archiveNamespace) !== 0){
-						if (strlen($filter) > 0){
+				if (strlen($privateCollection) > 0) {
+					if (strlen($library->archiveNamespace) == 0 || strpos($privateCollection, $library->archiveNamespace) !== 0) {
+						if (strlen($filter) > 0) {
 							$filter .= ' AND ';
 						}
 						$filter .= "!ancestors_ms:\"{$privateCollection}\"";
@@ -929,23 +933,23 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 				}
 
 			}
-			if (strlen($filter) > 0){
+			if (strlen($filter) > 0) {
 				$filters[] = $filter;
 			}
 		}
 
-		if ($library->objectsToHide){
+		if ($library->objectsToHide) {
 			$objectsToHide = explode("\r\n", $library->objectsToHide);
 			$filter = '';
-			foreach ($objectsToHide as $objectPID){
-				if (strlen($filter) > 0){
+			foreach ($objectsToHide as $objectPID) {
+				if (strlen($filter) > 0) {
 					$filter .= ' AND ';
 				}
 				$filter .= "!PID:\"$objectPID\"";
 			}
 			$filters[] = $filter;
 		}
-		if ($library->archiveNamespace != 'islandora'){
+		if ($library->archiveNamespace != 'islandora') {
 			$filters[] = "!PID:islandora\\:*";
 		}
 		$filters[] = "!PID:demo\\:*";
@@ -961,27 +965,31 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 		global $configArray;
 		if ($configArray['Site']['isProduction']) {
 			$filters[] = "!mods_extension_marmotLocal_pikaOptions_includeInPika_ms:(no OR testOnly)";
-		}else{
+		} else {
 			$filters[] = "!mods_extension_marmotLocal_pikaOptions_includeInPika_ms:no";
 		}
 		return $filters;
 	}
 
-	public function setPrimarySearch($flag){
+	public function setPrimarySearch($flag)
+	{
 		parent::setPrimarySearch($flag);
 		$this->indexEngine->isPrimarySearch = $flag;
 	}
 
-	public function addFieldsToReturn($fields){
+	public function addFieldsToReturn($fields)
+	{
 		$this->fields .= ',' . implode(',', $fields);
 	}
 
-	public function setApplyStandardFilters($flag){
+	public function setApplyStandardFilters($flag)
+	{
 		$this->applyStandardFilters = $flag;
 	}
 
 	// Second Attempt to handle Exhibit Navigation
-	public function getNextPrevLinks($searchId=null, $recordIndex=null, $page=null, $preventQueryModification = false){
+	public function getNextPrevLinks($searchId = null, $recordIndex = null, $page = null, $preventQueryModification = false)
+	{
 		global $interface;
 		global $timer;
 		//Setup next and previous links based on the search results.
@@ -997,17 +1005,17 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 				$recordIndex = 0; // TODO: what is a good default value
 			}
 		}
-			if ($searchId) {
+		if ($searchId) {
 			//rerun the search
-			$interface->assign('searchId',$searchId);
+			$interface->assign('searchId', $searchId);
 			if (is_null($page)) {
 				$page = isset($_REQUEST['page']) && ctype_digit($_REQUEST['page']) ? $_REQUEST['page'] : 1;
 			}
 			$interface->assign('page', $page);
 
 			$s = new SearchEntry();
-			if ($s->get($searchId)){
-				$minSO        = unserialize($s->search_object);
+			if ($s->get($searchId)) {
+				$minSO = unserialize($s->search_object);
 				/** @var SearchObject_IslandoraSearcher $searchObject */
 				$searchObject = SearchObjectFactory::deminify($minSO);
 				$searchObject->setPage($page);
@@ -1018,16 +1026,16 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 				//Check to see if we need to run a search for the next or previous page
 				$currentResultIndex = $recordIndex - 1;
 				$recordsPerPage = $searchObject->getLimit();
-				$adjustedResultIndex = $currentResultIndex - ($recordsPerPage * ($page -1));
+				$adjustedResultIndex = $currentResultIndex - ($recordsPerPage * ($page - 1));
 
-				if (($currentResultIndex) % $recordsPerPage == 0 && $currentResultIndex > 0){
+				if (($currentResultIndex) % $recordsPerPage == 0 && $currentResultIndex > 0) {
 					//Need to run a search for the previous page
 					$interface->assign('previousPage', $page - 1);
 					$previousSearchObject = clone $searchObject;
 					$previousSearchObject->setPage($page - 1);
 					$previousSearchObject->processSearch(true, false, $preventQueryModification);
 					$previousResults = $previousSearchObject->getResultRecordSet();
-				}else if (($currentResultIndex + 1) % $recordsPerPage == 0 && ($currentResultIndex + 1) < $searchObject->getResultTotal()){
+				} else if (($currentResultIndex + 1) % $recordsPerPage == 0 && ($currentResultIndex + 1) < $searchObject->getResultTotal()) {
 					//Need to run a search for the next page
 					$nextSearchObject = clone $searchObject;
 					$interface->assign('nextPage', $page + 1);
@@ -1038,18 +1046,18 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 
 				if ($result instanceof AspenError) {
 					//If we get an error excuting the search, just eat it for now.
-				}else{
+				} else {
 					if ($searchObject->getResultTotal() < 1) {
 						//No results found
-					}else{
+					} else {
 						$recordSet = $searchObject->getResultRecordSet();
 						//Record set is 0 based, but we are passed a 1 based index
-						if ($currentResultIndex > 0){
-							if (isset($previousResults)){
-								$previousRecord = $previousResults[count($previousResults) -1];
-							}else{
+						if ($currentResultIndex > 0) {
+							if (isset($previousResults)) {
+								$previousRecord = $previousResults[count($previousResults) - 1];
+							} else {
 								$previousId = $adjustedResultIndex - 1;
-								if (isset($recordSet[$previousId])){
+								if (isset($recordSet[$previousId])) {
 									$previousRecord = $recordSet[$previousId];
 								}
 							}
@@ -1064,13 +1072,13 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 								}
 							}
 						}
-						if ($currentResultIndex + 1 < $searchObject->getResultTotal()){
+						if ($currentResultIndex + 1 < $searchObject->getResultTotal()) {
 
-							if (isset($nextResults)){
+							if (isset($nextResults)) {
 								$nextRecord = $nextResults[0];
-							}else{
+							} else {
 								$nextRecordIndex = $adjustedResultIndex + 1;
-								if (isset($recordSet[$nextRecordIndex])){
+								if (isset($recordSet[$nextRecordIndex])) {
 									$nextRecord = $recordSet[$nextRecordIndex];
 								}
 							}
@@ -1099,15 +1107,15 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 		$this->purge();
 
 		// Most values will transfer without changes
-		$this->searchId     = $minified->id;
-		$this->initTime     = $minified->i;
-		$this->queryTime    = $minified->s;
+		$this->searchId = $minified->id;
+		$this->initTime = $minified->i;
+		$this->queryTime = $minified->s;
 		$this->resultsTotal = $minified->r;
-		$this->filterList   = $minified->f;
-		$this->searchType   = $minified->ty;
-		$this->sort         = $minified->sr;
-		$this->hiddenFilters= $minified->hf;
-		$this->facetConfig  = $minified->fc;
+		$this->filterList = $minified->f;
+		$this->searchType = $minified->ty;
+		$this->sort = $minified->sr;
+		$this->hiddenFilters = $minified->hf;
+		$this->facetConfig = $minified->fc;
 
 		// Search terms, we need to expand keys
 		$tempTerms = $minified->t;
@@ -1115,18 +1123,30 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 			$newTerm = array();
 			foreach ($term as $k => $v) {
 				switch ($k) {
-					case 'j' :  $newTerm['join']    = $v; break;
-					case 'i' :  $newTerm['index']   = $v; break;
-					case 'l' :  $newTerm['lookfor'] = $v; break;
+					case 'j' :
+						$newTerm['join'] = $v;
+						break;
+					case 'i' :
+						$newTerm['index'] = $v;
+						break;
+					case 'l' :
+						$newTerm['lookfor'] = $v;
+						break;
 					case 'g' :
 						$newTerm['group'] = array();
 						foreach ($v as $line) {
 							$search = array();
 							foreach ($line as $k2 => $v2) {
 								switch ($k2) {
-									case 'b' :  $search['bool']    = $v2; break;
-									case 'f' :  $search['field']   = $v2; break;
-									case 'l' :  $search['lookfor'] = $v2; break;
+									case 'b' :
+										$search['bool'] = $v2;
+										break;
+									case 'f' :
+										$search['field'] = $v2;
+										break;
+									case 'l' :
+										$search['lookfor'] = $v2;
+										break;
 								}
 							}
 							$newTerm['group'][] = $search;
@@ -1138,51 +1158,53 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 		}
 	}
 
-	private function showCollectionAsFacet($pid){
+	private function showCollectionAsFacet($pid)
+	{
 		global $library;
 		global $fedoraUtils;
 		$namespace = substr($pid, 0, strpos($pid, ':'));
-		if ($namespace == 'marmot'){
+		if ($namespace == 'marmot') {
 			$okToShow = true;
 			return $okToShow;
-		}elseif ($library->hideAllCollectionsFromOtherLibraries && $library->archiveNamespace) {
+		} elseif ($library->hideAllCollectionsFromOtherLibraries && $library->archiveNamespace) {
 			$okToShow = ($namespace == $library->archiveNamespace);
-		}elseif (strlen($library->collectionsToHide) > 0){
+		} elseif (strlen($library->collectionsToHide) > 0) {
 			$okToShow = strpos($library->collectionsToHide, $pid) === false;
-		}else{
+		} else {
 			$okToShow = true;
 		}
-		if ($okToShow){
+		if ($okToShow) {
 			$fedoraUtils = FedoraUtils::getInstance();
 			$archiveObject = $fedoraUtils->getObject($pid);
-			if ($archiveObject == null){
+			if ($archiveObject == null) {
 				$okToShow = true; //These are things like People, Places, Events, Large Image Collection, etc
-			}else if (!$fedoraUtils->isObjectValidForPika($archiveObject)){
+			} else if (!$fedoraUtils->isObjectValidForPika($archiveObject)) {
 				$okToShow = false;
 			}
 		}
 		return $okToShow;
 	}
 
-	public function pingServer($failOnError = true){
+	public function pingServer($failOnError = true)
+	{
 		return $this->indexEngine->pingServer($failOnError);
 	}
 
-    public function getSearchIndexes()
-    {
-        return [
-            'IslandoraKeyword' => 'Keyword',
-            'IslandoraTitle' => 'Title'
-        ];
-    }
+	public function getSearchIndexes()
+	{
+		return [
+			'IslandoraKeyword' => 'Keyword',
+			'IslandoraTitle' => 'Title'
+		];
+	}
 
-    public function getRecordDriverForResult($record)
-    {
-        return RecordDriverFactory::initRecordDriver($record);
-    }
+	public function getRecordDriverForResult($record)
+	{
+		return RecordDriverFactory::initRecordDriver($record);
+	}
 
-    public function getSearchesFile()
-    {
-        return 'islandoraSearches';
-    }
+	public function getSearchesFile()
+	{
+		return 'islandoraSearches';
+	}
 }

@@ -25,126 +25,130 @@ class BookCoverProcessor{
 	private $reload;
 	/** @var  Logger $logger */
 	private $logger;
-	private $doCoverLogging;
+	private $doCoverLogging = false;
 	private $configArray;
 	/** @var  Timer $timer */
 	private $timer;
 	private $doTimings;
+
 	public function loadCover($configArray, $timer, $logger)
-    {
-        $this->configArray = $configArray;
-        $this->timer = $timer;
-        $this->doTimings = $this->configArray['System']['coverTimings'];
-        $this->timer->enableTimings($this->doTimings);
-        $this->logger = $logger;
-        $this->doCoverLogging = $this->configArray['Logging']['coverLogging'];
+	{
+		$this->configArray = $configArray;
+		$this->timer = $timer;
+		$this->doTimings = $this->configArray['System']['coverTimings'];
+		$this->timer->enableTimings($this->doTimings);
+		$this->logger = $logger;
 
-        $this->log("Starting to load cover", Logger::LOG_NOTICE);
-        $this->bookCoverPath = $configArray['Site']['coverPath'];
-        if (!$this->loadParameters()) {
-            return;
-        }
+		$this->log("Starting to load cover", Logger::LOG_NOTICE);
+		$this->bookCoverPath = $configArray['Site']['coverPath'];
+		if (!$this->loadParameters()) {
+			return;
+		}
 
-        if (!$this->reload) {
-            $this->log("Looking for Cached cover", Logger::LOG_NOTICE);
-            if ($this->getCachedCover()) {
-                return;
-            }
-        }
-        if ($this->type == 'open_archives') {
-            if ($this->getOpenArchivesCover($this->id)) {
-                return;
-            }
-        }elseif ($this->type == 'list') {
-            if ($this->getListCover($this->id)) {
-                return;
-            }
-        }else{
-            if ($this->type == 'overdrive') {
-                //Will exit if we find a cover
-                if ($this->getOverDriveCover()) {
-                    return;
-                }
-            } else if ($this->type == 'hoopla') {
-                //Will exit if we find a cover
-                if ($this->getHooplaCover($this->id)) {
-                    return;
-                }
-            } else if ($this->type == 'rbdigital') {
-	            //Will exit if we find a cover
-	            if ($this->getRBdigitalCover($this->id)) {
-		            return;
-	            }
-            } else if ($this->type == 'rbdigital_magazine') {
-	            //Will exit if we find a cover
-	            if ($this->getRBdigitalMagazineCover($this->id)) {
-		            return;
-	            }
-            } else if ($this->type == 'cloud_library') {
-	            //Will exit if we find a cover
-	            if ($this->getCloudLibraryCover($this->id, true)) {
-		            return;
-	            }
-            } elseif ($this->type == 'Colorado State Government Documents') {
-                if ($this->getColoradoGovDocCover()) {
-                    return;
-                }
-            } elseif ($this->type == 'Classroom Video on Demand') {
-                if ($this->getClassroomVideoOnDemandCover($this->id)) {
-                    return;
-                }
-            } elseif (stripos($this->type, 'films on demand') !== false) {
-                if ($this->getFilmsOnDemandCover($this->id)) {
-                    return;
-                }
-            } elseif (stripos($this->type, 'proquest') !== false || stripos($this->type, 'ebrary') !== false) {
-                if ($this->getEbraryCover($this->id)) {
-                    return;
-                }
-                // Any Side-loaded Collection that has a cover in the 856 tag (and additional conditionals)
-            } elseif (stripos($this->type, 'kanopy') !== false) {
-                if ($this->getSideLoadedCover($this->type . ':' . $this->id)) {
-                    return;
-                }
-            } elseif (stripos($this->type, 'bookflix') !== false) {
-                if ($this->getSideLoadedCover($this->type . ':' . $this->id)) {
-                    return;
-                }
-            } elseif (stripos($this->type, 'boombox') !== false) {
-                if ($this->getSideLoadedCover($this->type . ':' . $this->id)) {
-                    return;
-                }
-            } elseif (stripos($this->type, 'biblioboard') !== false) {
-                if ($this->getSideLoadedCover($this->type . ':' . $this->id)) {
-                    return;
-                }
-            } elseif (stripos($this->type, 'lynda') !== false) {
-                if ($this->getSideLoadedCover($this->type . ':' . $this->id)) {
-                    return;
-                }
-            } elseif (stripos($this->type, 'odilo') !== false) {
-                if ($this->getSideLoadedCover($this->type . ':' . $this->id)) {
-                    return;
-                }
-                // Cloud Library
-            } elseif (stripos($this->type, 'zinio') !== false) {
-                if ($this->getZinioCover($this->type . ':' . $this->id)) {
-                    return;
-                }
-            }
-            $this->log("Looking for cover from providers", Logger::LOG_NOTICE);
-            if ($this->getCoverFromProvider()) {
-                return;
-            }
+		if (!$this->reload) {
+			$this->log("Looking for Cached cover", Logger::LOG_NOTICE);
+			if ($this->getCachedCover()) {
+				return;
+			}
+		}
+		if ($this->type == 'open_archives') {
+			if ($this->getOpenArchivesCover($this->id)) {
+				return;
+			}
+		} elseif ($this->type == 'list') {
+			if ($this->getListCover($this->id)) {
+				return;
+			}
+		} elseif ($this->type == 'webpage') {
+			if ($this->getWebPageCover($this->id)) {
+				return;
+			}
+		} else {
+			if ($this->type == 'overdrive') {
+				//Will exit if we find a cover
+				if ($this->getOverDriveCover()) {
+					return;
+				}
+			} else if ($this->type == 'hoopla') {
+				//Will exit if we find a cover
+				if ($this->getHooplaCover($this->id)) {
+					return;
+				}
+			} else if ($this->type == 'rbdigital') {
+				//Will exit if we find a cover
+				if ($this->getRBdigitalCover($this->id)) {
+					return;
+				}
+			} else if ($this->type == 'rbdigital_magazine') {
+				//Will exit if we find a cover
+				if ($this->getRBdigitalMagazineCover($this->id)) {
+					return;
+				}
+			} else if ($this->type == 'cloud_library') {
+				//Will exit if we find a cover
+				if ($this->getCloudLibraryCover($this->id, true)) {
+					return;
+				}
+			} elseif ($this->type == 'Colorado State Government Documents') {
+				if ($this->getColoradoGovDocCover()) {
+					return;
+				}
+			} elseif ($this->type == 'Classroom Video on Demand') {
+				if ($this->getClassroomVideoOnDemandCover($this->id)) {
+					return;
+				}
+			} elseif (stripos($this->type, 'films on demand') !== false) {
+				if ($this->getFilmsOnDemandCover($this->id)) {
+					return;
+				}
+			} elseif (stripos($this->type, 'proquest') !== false || stripos($this->type, 'ebrary') !== false) {
+				if ($this->getEbraryCover($this->id)) {
+					return;
+				}
+				// Any Side-loaded Collection that has a cover in the 856 tag (and additional conditionals)
+			} elseif (stripos($this->type, 'kanopy') !== false) {
+				if ($this->getSideLoadedCover($this->type . ':' . $this->id)) {
+					return;
+				}
+			} elseif (stripos($this->type, 'bookflix') !== false) {
+				if ($this->getSideLoadedCover($this->type . ':' . $this->id)) {
+					return;
+				}
+			} elseif (stripos($this->type, 'boombox') !== false) {
+				if ($this->getSideLoadedCover($this->type . ':' . $this->id)) {
+					return;
+				}
+			} elseif (stripos($this->type, 'biblioboard') !== false) {
+				if ($this->getSideLoadedCover($this->type . ':' . $this->id)) {
+					return;
+				}
+			} elseif (stripos($this->type, 'lynda') !== false) {
+				if ($this->getSideLoadedCover($this->type . ':' . $this->id)) {
+					return;
+				}
+			} elseif (stripos($this->type, 'odilo') !== false) {
+				if ($this->getSideLoadedCover($this->type . ':' . $this->id)) {
+					return;
+				}
+				// Cloud Library
+			} elseif (stripos($this->type, 'zinio') !== false) {
+				if ($this->getZinioCover($this->type . ':' . $this->id)) {
+					return;
+				}
+			}
+			$this->log("Looking for cover from providers", Logger::LOG_NOTICE);
+			if ($this->getCoverFromProvider()) {
+				return;
+			}
 
-            if ($this->type != 'grouped_work' && $this->getCoverFromMarc()) {
-                return;
-            }
+			if ($this->type != 'grouped_work' && $this->getCoverFromMarc()) {
+				return;
+			}
 
-            if ($this->getGroupedWorkCover()){
-                return;
-            }
-        }
+			if ($this->getGroupedWorkCover()) {
+				return;
+			}
+		}
 
 		$this->log("No image found, using default image", Logger::LOG_NOTICE);
 		$this->getDefaultCover();
@@ -175,11 +179,11 @@ class BookCoverProcessor{
 				/** @var File_MARC_Data_Field[] $linkFields */
 				$linkFields = $driver->getMarcRecord()->getFields('856');
 				foreach ($linkFields as $linkField) {
-                    if ($linkField->getIndicator(1) == 4 && $linkField->getIndicator(2) == 2) {
-                        $coverUrl = $linkField->getSubfield('u')->getData();
-                        return $this->processImageURL('sideload', $coverUrl, true);
-                    }
-                }
+					if ($linkField->getIndicator(1) == 4 && $linkField->getIndicator(2) == 2) {
+						$coverUrl = $linkField->getSubfield('u')->getData();
+						return $this->processImageURL('sideload', $coverUrl, true);
+					}
+				}
 			}
 		}
 		return false;
@@ -268,42 +272,44 @@ class BookCoverProcessor{
 				/** @var File_MARC_Data_Field[] $linkFields */
 				$linkFields = $driver->getMarcRecord()->getFields('856');
 				foreach ($linkFields as $linkField) {
-                    if ($linkField->getIndicator(1) == 4 && $linkField->getSubfield('3') != NULL && $linkField->getSubfield('3')->getData() == 'Image') {
-                        $coverUrl = $linkField->getSubfield('u')->getData();
-                        $coverUrl = str_replace('size=200', 'size=lg', $coverUrl);
-                        return $this->processImageURL('zinio', $coverUrl, true);
-                    }
-                }
+					if ($linkField->getIndicator(1) == 4 && $linkField->getSubfield('3') != NULL && $linkField->getSubfield('3')->getData() == 'Image') {
+						$coverUrl = $linkField->getSubfield('u')->getData();
+						$coverUrl = str_replace('size=200', 'size=lg', $coverUrl);
+						return $this->processImageURL('zinio', $coverUrl, true);
+					}
+				}
 			}
 		}
 		return false;
 	}
 
-	private function getRBdigitalCover($id){
-        if (strpos($id, ':') !== false){
-            list(, $id) = explode(":", $id);
-        }
-        require_once ROOT_DIR . '/RecordDrivers/RBdigitalRecordDriver.php';
-        $driver = new RBdigitalRecordDriver($id);
-        if ($driver) {
-            $coverUrl = $driver->getRBdigitalBookcoverUrl('large');
-            return $this->processImageURL('rbdigital', $coverUrl, true);
-        }
-        return false;
-    }
+	private function getRBdigitalCover($id)
+	{
+		if (strpos($id, ':') !== false) {
+			list(, $id) = explode(":", $id);
+		}
+		require_once ROOT_DIR . '/RecordDrivers/RBdigitalRecordDriver.php';
+		$driver = new RBdigitalRecordDriver($id);
+		if ($driver) {
+			$coverUrl = $driver->getRBdigitalBookcoverUrl('large');
+			return $this->processImageURL('rbdigital', $coverUrl, true);
+		}
+		return false;
+	}
 
-    private function getRBdigitalMagazineCover($id){
-	    if (strpos($id, ':') !== false){
-		    list(, $id) = explode(":", $id);
-	    }
-	    require_once ROOT_DIR . '/RecordDrivers/RBdigitalMagazineDriver.php';
-	    $driver = new RBdigitalMagazineDriver($id);
-	    if ($driver) {
-		    $coverUrl = $driver->getRBdigitalBookcoverUrl();
-		    return $this->processImageURL('rbdigital_magazine', $coverUrl, true);
-	    }
-	    return false;
-    }
+	private function getRBdigitalMagazineCover($id)
+	{
+		if (strpos($id, ':') !== false) {
+			list(, $id) = explode(":", $id);
+		}
+		require_once ROOT_DIR . '/RecordDrivers/RBdigitalMagazineDriver.php';
+		$driver = new RBdigitalMagazineDriver($id);
+		if ($driver) {
+			$coverUrl = $driver->getRBdigitalBookcoverUrl();
+			return $this->processImageURL('rbdigital_magazine', $coverUrl, true);
+		}
+		return false;
+	}
 
 	private function getCloudLibraryCover($id, $createDefaultIfNotFound = false){
 		if (strpos($id, ':') !== false){
@@ -384,10 +390,10 @@ class BookCoverProcessor{
 		if (strpos($this->id, ':') > 0){
 			list($this->type, $this->id) = explode(':', $this->id);
 		}
-        $this->bookCoverInfo = new BookCoverInfo();
-        $this->bookCoverInfo->recordId = $this->id;
-        $this->bookCoverInfo->recordType = $this->type;
-        $this->bookCoverInfo->find(true);
+		$this->bookCoverInfo = new BookCoverInfo();
+		$this->bookCoverInfo->recordId = $this->id;
+		$this->bookCoverInfo->recordType = $this->type;
+		$this->bookCoverInfo->find(true);
 
 		$this->category = !empty($_GET['category']) ? strtolower($_GET['category']) : null;
 		$this->format   = !empty($_GET['format']) ? strtolower($_GET['format']) : null;
@@ -582,41 +588,42 @@ class BookCoverProcessor{
 		return false;
 	}
 
-	private function getCachedCover(){
-	    $hasCachedImage = false;
-	    if ($this->bookCoverInfo->N == 1){
-	        if ($this->size == 'small' && $this->bookCoverInfo->thumbnailLoaded == 1) {
-                $hasCachedImage = true;
-            }else if ($this->size == 'medium' && $this->bookCoverInfo->mediumLoaded == 1) {
-                $hasCachedImage = true;
-            }else if ($this->size == 'large' && $this->bookCoverInfo->largeLoaded == 1) {
-                $hasCachedImage = true;
-            }
-        }
+	private function getCachedCover()
+	{
+		$hasCachedImage = false;
+		if ($this->bookCoverInfo->N == 1) {
+			if ($this->size == 'small' && $this->bookCoverInfo->thumbnailLoaded == 1) {
+				$hasCachedImage = true;
+			} else if ($this->size == 'medium' && $this->bookCoverInfo->mediumLoaded == 1) {
+				$hasCachedImage = true;
+			} else if ($this->size == 'large' && $this->bookCoverInfo->largeLoaded == 1) {
+				$hasCachedImage = true;
+			}
+		}
 
-		if ($hasCachedImage){
-            $this->bookCoverInfo->lastUsed = time();
-            $this->bookCoverInfo->update();
+		if ($hasCachedImage) {
+			$this->bookCoverInfo->lastUsed = time();
+			$this->bookCoverInfo->update();
 
 
-            if ($this->bookCoverInfo->imageSource == 'default'){
-            	/** @var Library */
-            	global $library;
-	            $fileName = $this->bookCoverPath . '/' . $this->size . '/' . $library->subdomain . '_' . $this->cacheName . '.png';
-            }else{
-	            $fileName = "{$this->bookCoverPath}/{$this->size}/{$this->cacheName}.png";
-            }
+			if ($this->bookCoverInfo->imageSource == 'default') {
+				/** @var Library */
+				global $library;
+				$fileName = $this->bookCoverPath . '/' . $this->size . '/' . $library->subdomain . '_' . $this->cacheName . '.png';
+			} else {
+				$fileName = "{$this->bookCoverPath}/{$this->size}/{$this->cacheName}.png";
+			}
 
-            if (file_exists($fileName)){
-	            $this->log("Checking $fileName", Logger::LOG_NOTICE);
-	            // Load local cache if available
-	            $this->logTime("Found cached cover");
-	            $this->log("$fileName exists, returning", Logger::LOG_NOTICE);
-	            $this->returnImage($fileName);
-            }else{
-	            $hasCachedImage = false;
-            }
-        }
+			if (file_exists($fileName)) {
+				$this->log("Checking $fileName", Logger::LOG_NOTICE);
+				// Load local cache if available
+				$this->logTime("Found cached cover");
+				$this->log("$fileName exists, returning", Logger::LOG_NOTICE);
+				$this->returnImage($fileName);
+			} else {
+				$hasCachedImage = false;
+			}
+		}
 
 		$this->logTime("Finished checking for cached cover.");
 		return $hasCachedImage;
@@ -654,11 +661,11 @@ class BookCoverProcessor{
 
 		require_once ROOT_DIR . '/sys/Covers/DefaultCoverImageBuilder.php';
 		$coverBuilder = new DefaultCoverImageBuilder();
-		if (strlen($title) ===0){
-            $title = 'Unknown Title';
+		if (strlen($title) === 0) {
+			$title = 'Unknown Title';
 		}
-        $coverBuilder->getCover($title, $author, $this->defaultCoverCacheFile);
-        return $this->processImageURL('default', $this->defaultCoverCacheFile, false);
+		$coverBuilder->getCover($title, $author, $this->defaultCoverCacheFile);
+		return $this->processImageURL('default', $this->defaultCoverCacheFile, false);
 	}
 
 	function processImageURL($source, $url, $attemptRefetch = true) {
@@ -803,7 +810,7 @@ class BookCoverProcessor{
 
 			$this->logTime("Finished processing image url");
 
-            $this->setBookCoverInfo($source, $width, $height);
+			$this->setBookCoverInfo($source, $width, $height);
 			return true;
 		} else {
 			$this->log("Could not load the file as an image $url", Logger::LOG_NOTICE);
@@ -880,8 +887,7 @@ class BookCoverProcessor{
 			$id = $configArray['Contentcafe']['id']; // alternate way to pass the content cafe id to this method.
 		}
 		$pw = $configArray['Contentcafe']['pw'];
-		$url = isset($configArray['Contentcafe']['url']) ?
-							$configArray['Contentcafe']['url'] : 'http://contentcafe2.btol.com';
+		$url = isset($configArray['Contentcafe']['url']) ? $configArray['Contentcafe']['url'] : 'http://contentcafe2.btol.com';
 
 	$lookupCode = $this->isn;
 	if (!$lookupCode) {
@@ -1086,77 +1092,95 @@ class BookCoverProcessor{
 		return $this->groupedWork;
 	}
 
-    private function setBookCoverInfo($source, $width, $height)
-    {
-        $this->bookCoverInfo->imageSource = $source;
-        if ($this->bookCoverInfo->sourceWidth == null || $width > $this->bookCoverInfo->sourceWidth){
-            $this->bookCoverInfo->sourceWidth = $width;
-        }
-        if ($this->bookCoverInfo->sourceHeight == null || $width > $this->bookCoverInfo->sourceHeight){
-            $this->bookCoverInfo->sourceHeight = $height;
-        }
-        $this->bookCoverInfo->lastUsed = time();
-        if ($this->size == 'small') {
-            $this->bookCoverInfo->thumbnailLoaded = true;
-        }elseif ($this->size == 'medium') {
-            $this->bookCoverInfo->mediumLoaded = true;
-        }elseif ($this->size == 'largeLoaded') {
-            $this->bookCoverInfo->largeLoaded = true;
-        }
-        $this->bookCoverInfo->uploadedImage = false;
-        if ($this->bookCoverInfo->N == 0) {
-            $this->bookCoverInfo->firstLoaded = time();
-            $this->bookCoverInfo->insert();
-        }else{
-            $this->bookCoverInfo->update();
-        }
-    }
+	private function setBookCoverInfo($source, $width, $height)
+	{
+		$this->bookCoverInfo->imageSource = $source;
+		if ($this->bookCoverInfo->sourceWidth == null || $width > $this->bookCoverInfo->sourceWidth) {
+			$this->bookCoverInfo->sourceWidth = $width;
+		}
+		if ($this->bookCoverInfo->sourceHeight == null || $width > $this->bookCoverInfo->sourceHeight) {
+			$this->bookCoverInfo->sourceHeight = $height;
+		}
+		$this->bookCoverInfo->lastUsed = time();
+		if ($this->size == 'small') {
+			$this->bookCoverInfo->thumbnailLoaded = true;
+		} elseif ($this->size == 'medium') {
+			$this->bookCoverInfo->mediumLoaded = true;
+		} elseif ($this->size == 'largeLoaded') {
+			$this->bookCoverInfo->largeLoaded = true;
+		}
+		$this->bookCoverInfo->uploadedImage = false;
+		if ($this->bookCoverInfo->N == 0) {
+			$this->bookCoverInfo->firstLoaded = time();
+			$this->bookCoverInfo->insert();
+		} else {
+			$this->bookCoverInfo->update();
+		}
+	}
 
-    private function getOpenArchivesCover($id)
-    {
-        //The thumbnail is not saved in the metadata.  To get the URL we need to fetch the page
-        //and then get the thumbnail from the og:image element
-        require_once ROOT_DIR . '/sys/OpenArchives/OpenArchivesRecord.php';
-        $openArchivesRecord = new OpenArchivesRecord();
-        $openArchivesRecord->id = $id;
-        if ($openArchivesRecord->find(true)){
-            $url = $openArchivesRecord->permanentUrl;
-            //Need the full curl wrapper to handle redirects
-            require_once ROOT_DIR . '/sys/CurlWrapper.php';
-            $curlWrapper = new CurlWrapper();
-            $pageContents = $curlWrapper->curlGetPage($url);
-            $curlWrapper->close_curl();
-            $matches = [];
-            if (preg_match('~<meta property="og:image" content="(.*?)" />~', $pageContents, $matches)){
-                $bookcoverUrl = $matches[1];
-                return $this->processImageURL('open_archives', $bookcoverUrl, true);
-            } /** @noinspection HtmlDeprecatedAttribute */
-            elseif (preg_match('~<img src="(.*?)" border="0" alt="Thumbnail image">~', $pageContents, $matches)){
-                $bookcoverUrl = $matches[1];
-                if (strpos($bookcoverUrl, 'http') !== 0){
-                    $urlComponents = parse_url($url);
-                    $bookcoverUrl = $urlComponents['scheme'] . '://' . $urlComponents['host'] . $bookcoverUrl;
-                }
-                return $this->processImageURL('open_archives', $bookcoverUrl, true);
-            }
-        }
-        return false;
-    }
+	private function getOpenArchivesCover($id)
+	{
+		//The thumbnail is not saved in the metadata.  To get the URL we need to fetch the page
+		//and then get the thumbnail from the og:image element
+		require_once ROOT_DIR . '/sys/OpenArchives/OpenArchivesRecord.php';
+		$openArchivesRecord = new OpenArchivesRecord();
+		$openArchivesRecord->id = $id;
+		if ($openArchivesRecord->find(true)) {
+			$url = $openArchivesRecord->permanentUrl;
+			//Need the full curl wrapper to handle redirects
+			require_once ROOT_DIR . '/sys/CurlWrapper.php';
+			$curlWrapper = new CurlWrapper();
+			$pageContents = $curlWrapper->curlGetPage($url);
+			$curlWrapper->close_curl();
+			$matches = [];
+			if (preg_match('~<meta property="og:image" content="(.*?)" />~', $pageContents, $matches)) {
+				$bookcoverUrl = $matches[1];
+				return $this->processImageURL('open_archives', $bookcoverUrl, true);
+			} /** @noinspection HtmlDeprecatedAttribute */
+			elseif (preg_match('~<img src="(.*?)" border="0" alt="Thumbnail image">~', $pageContents, $matches)) {
+				$bookcoverUrl = $matches[1];
+				if (strpos($bookcoverUrl, 'http') !== 0) {
+					$urlComponents = parse_url($url);
+					$bookcoverUrl = $urlComponents['scheme'] . '://' . $urlComponents['host'] . $bookcoverUrl;
+				}
+				return $this->processImageURL('open_archives', $bookcoverUrl, true);
+			}
+		}
+		return false;
+	}
 
-    private function getListCover($id){
-	    //Build a cover based on the titles within list
-        require_once ROOT_DIR . '/sys/Covers/ListCoverBuilder.php';
-        $coverBuilder = new ListCoverBuilder();
-        require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
-        $userList = new UserList();
-        $userList->id = $id;
-        if ($userList->find(true)){
-            $title = $userList->title;
-            $listTitles = $userList->getListTitles();
-            $coverBuilder->getCover($title, $listTitles, $this->cacheFile);
-            return $this->processImageURL('default', $this->cacheFile, false);
-        }else{
-            return false;
-        }
-    }
+	private function getListCover($id)
+	{
+		//Build a cover based on the titles within list
+		require_once ROOT_DIR . '/sys/Covers/ListCoverBuilder.php';
+		$coverBuilder = new ListCoverBuilder();
+		require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+		$userList = new UserList();
+		$userList->id = $id;
+		if ($userList->find(true)) {
+			$title = $userList->title;
+			$listTitles = $userList->getListTitles();
+			$coverBuilder->getCover($title, $listTitles, $this->cacheFile);
+			return $this->processImageURL('default', $this->cacheFile, false);
+		} else {
+			return false;
+		}
+	}
+
+	private function getWebPageCover($id)
+	{
+		//Build a cover based on the title of the page
+		require_once ROOT_DIR . '/sys/Covers/WebPageCoverBuilder.php';
+		$coverBuilder = new WebPageCoverBuilder();
+		require_once ROOT_DIR . '/RecordDrivers/WebsitePageRecordDriver.php';
+
+		$webPageDriver = new WebsitePageRecordDriver($id);
+		if ($webPageDriver->isValid()) {
+			$title = $webPageDriver->getTitle();
+			$coverBuilder->getCover($title, $this->cacheFile);
+			return $this->processImageURL('default', $this->cacheFile, false);
+		} else {
+			return false;
+		}
+	}
 }

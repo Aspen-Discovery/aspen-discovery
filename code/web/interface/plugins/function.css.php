@@ -18,7 +18,6 @@ function smarty_function_css($params, &$smarty)
 	// Extract details from the config file and parameters so we can find CSS files:
 	global $configArray;
 	global $interface;
-	$path = $configArray['Site']['path'];
 	$local = $configArray['Site']['local'];
 	$themes = $interface->getThemes();
 	$filename = $params['filename'];
@@ -31,7 +30,7 @@ function smarty_function_css($params, &$smarty)
 		// If the file exists on the local file system, set $css to the relative
 		// path needed to link to it from the web interface.
 		if (file_exists("{$local}/interface/themes/{$theme}/css/{$filename}")) {
-			$css = "{$path}/interface/themes/{$theme}/css/{$filename}";
+			$css = "/interface/themes/{$theme}/css/{$filename}";
 			break;
 		}
 	}

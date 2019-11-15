@@ -34,7 +34,7 @@
 						{/foreach}{/foreach}</td>
 						<td>{$info.source}</td>
 						<td>{$info.hits}</td>
-						<td><a class="btn btn-xs btn-warning" role="button" href="{$path}/MyAccount/SaveSearch?delete={$info.searchId|escape:"url"}&amp;mode=history">{translate text="history_delete_link"}</a></td>
+						<td><a class="btn btn-xs btn-warning" role="button" href="/MyAccount/SaveSearch?delete={$info.searchId|escape:"url"}&amp;mode=history">{translate text="history_delete_link"}</a></td>
 					</tr>
 					{/foreach}
 				</table>
@@ -64,11 +64,11 @@
 							{/foreach}</td>
 							<td>{$info.source}</td>
 							<td>{$info.hits}</td>
-							<td><a class="btn btn-xs btn-info" role="button" href="{$path}/MyAccount/SaveSearch?save={$info.searchId|escape:"url"}&amp;mode=history">{translate text="history_save_link"}</a></td>
+							<td><a class="btn btn-xs btn-info" role="button" href="/MyAccount/SaveSearch?save={$info.searchId|escape:"url"}&amp;mode=history">{translate text="history_save_link"}</a></td>
 						</tr>
 					{/foreach}
 				</table>
-				<br><a class="btn btn-warning" role="button" href="{$path}/Search/History?purge=true"><span class="silk delete">&nbsp;</span>{translate text="history_purge"}</a>
+				<br><a class="btn btn-warning" role="button" href="/Search/History?purge=true"><span class="silk delete">&nbsp;</span>{translate text="history_purge"}</a>
 			{/if}
 
 		{else}

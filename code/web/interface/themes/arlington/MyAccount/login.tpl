@@ -21,7 +21,7 @@
 				</p>
 			</div>
 		{else}
-			<form method="post" action="{$path}/MyAccount/Home" id="loginForm" class="form-horizontal">
+			<form method="post" action="/MyAccount/Home" id="loginForm" class="form-horizontal">
 				<div id="missingLoginPrompt" style="display: none">Please enter both {$usernameLabel} and {$passwordLabel}.</div>
 				<div id="loginFormFields">
 					<div id="loginUsernameRow" class="form-group">
@@ -39,7 +39,7 @@
 	        <div id="loginHelpRow" class="form-group">
 						<div class="col-xs-12 col-sm-offset-4 col-sm-8">
 							<p class="help-block">
-								<a href="{$path}/MyAccount/RequestPinReset">Forgot your PIN or need a PIN?</a><br>
+								<a href="/MyAccount/RequestPinReset">Forgot your PIN or need a PIN?</a><br>
 								<a href="http://library.arlingtonva.us/services/accounts-and-borrowing/get-a-free-library-card/">Get a Card</a>
 							</p>
 

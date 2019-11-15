@@ -12,7 +12,6 @@ class PageRecordDriver extends IslandoraRecordDriver {
 	}
 
 	function getRecordUrl(){
-		global $configArray;
 		$recordId = $this->getUniqueID();
 		//For Pages we do things a little differently since we want to link to the page within the book so we get context.
 		$parentObject = $this->getParentObject();
@@ -20,7 +19,7 @@ class PageRecordDriver extends IslandoraRecordDriver {
 		if ($parentDriver != null && $parentDriver instanceof BookDriver){
 			return $parentDriver->getRecordUrl() . '?pagePid=' . urlencode($recordId);
 		}else{
-            return $configArray['Site']['path'] . '/Archive/' . urlencode($recordId) . '/' . $this->getViewAction();
+            return '/Archive/' . urlencode($recordId) . '/' . $this->getViewAction();
 		}
 	}
 

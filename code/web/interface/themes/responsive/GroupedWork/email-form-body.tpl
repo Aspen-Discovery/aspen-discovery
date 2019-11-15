@@ -1,5 +1,5 @@
 {strip}
-<form method="post" action="{$path}" name="popupForm" class="form-horizontal" id="emailForm">
+<form method="post" action="" name="popupForm" class="form-horizontal" id="emailForm">
 	<div class="alert alert-info">
 		<p>
 			Sharing via email message will send the title (with a link back to the title) to you so you can easily find it in

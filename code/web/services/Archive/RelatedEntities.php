@@ -3,7 +3,6 @@
 class Archive_RelatedEntities extends Action {
 	function launch(){
 		global $interface;
-		global $configArray;
 		global $timer;
 
 		// Include Search Engine Class
@@ -71,7 +70,7 @@ class Archive_RelatedEntities extends Action {
 						'title' => $archiveObject->label,
 						'description' => $archiveObject->label,
 						'image' => $fedoraUtils->getObjectImageUrl($archiveObject, 'small', $entityType),
-						'link' => $configArray['Site']['path'] . "/Archive/{$archiveObject->id}/$urlAction",
+						'link' => "/Archive/{$archiveObject->id}/$urlAction",
 					);
 				}
 

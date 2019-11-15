@@ -2,9 +2,9 @@
 	<div id="main-content" class="col-md-12">
 		<h3>User Suggestions</h3>
 		{if $showHidden == false}
-			<a href='{$path}/Admin/UserSuggestions'>Hide Hidden Suggestions</a>
+			<a href='/Admin/UserSuggestions'>Hide Hidden Suggestions</a>
 		{else}
-			<a href='{$path}/Admin/UserSuggestions?showHidden'>Show Hidden Suggestions</a>
+			<a href='/Admin/UserSuggestions?showHidden'>Show Hidden Suggestions</a>
 		{/if}
 		<br />
 		<form id='suggestionsForm' method="post" action="/Admin/UserSugestions">

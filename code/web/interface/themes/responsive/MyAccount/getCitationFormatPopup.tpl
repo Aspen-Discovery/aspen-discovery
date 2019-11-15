@@ -1,7 +1,7 @@
 <div align="left">
 	{if $message}<div class="error">{$message|translate}</div>{/if}
 
-	<form action="{$path}/MyAccount/CiteList" method="get" class="form" id="citeListForm">
+	<form action="/MyAccount/CiteList" method="get" class="form" id="citeListForm">
 		<input type="hidden" name="listId" value="{$listId|escape}">
 		<div class="form-group">
 			<label for="citationFormat">{translate text='Citation Format'}:</label>

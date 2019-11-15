@@ -338,12 +338,11 @@ class AJAX_JSON extends Action {
 	}
 
 	function getPayFinesAfterAction(){
-		global $interface,
-		       $configArray;
+		global $interface;
 		$result = array(
 				'title'        => 'Pay Fines',
 				'modalBody'    => $interface->fetch('AJAX/refreshFinesAccountInfo.tpl'),
-				'modalButtons' => '<a class="btn btn-primary" href="' .$configArray['Site']['path']. '/MyAccount/Fines?reload">Refresh My Fines Information</a>'
+				'modalButtons' => '<a class="btn btn-primary" href="/MyAccount/Fines?reload">Refresh My Fines Information</a>'
 		);
 		return $result;
 	}

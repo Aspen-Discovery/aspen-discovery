@@ -9,13 +9,13 @@
 	{*TODO a smaller suite of javascript for List Widgets*}
 
 	{if $resizeIframe}
-	<script type="text/javascript" src="{$path}/js/iframeResizer/iframeResizer.contentWindow.min.js"></script>
+	<script type="text/javascript" src="/js/iframeResizer/iframeResizer.contentWindow.min.js"></script>
 	{/if}
 
   {if $widget->customCss}
   	<link rel="stylesheet" type="text/css" href="{$widget->customCss}" />
   {/if}
-  <base href="{$path}" target="_parent" />
+  <base href="" target="_parent" />
 </head>
 
 <body class="embeddedListWidgetBody">

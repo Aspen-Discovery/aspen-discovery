@@ -291,7 +291,7 @@
 															<br><br>
 															To sign up for SMS/Text messages, you must opt-in above and enter your Mobile (cell phone) number below.
 															<br><br>
-															<a href="{$path}/Help/Home?topic=smsTerms" data-title="SMS Notice Terms" class="modalDialogTrigger">{translate text="View Terms and Conditions"}</a>
+															<a href="/Help/Home?topic=smsTerms" data-title="SMS Notice Terms" class="modalDialogTrigger">{translate text="View Terms and Conditions"}</a>
 														</p>
 													{else}
 
@@ -676,7 +676,7 @@
 			{/if}
 		{else}
 			<div class="page">
-				You must login to view this information. Click <a href="{$path}/MyAccount/Login">here</a> to login.
+				You must login to view this information. Click <a href="/MyAccount/Login">here</a> to login.
 			</div>
 		{/if}
 	</div>

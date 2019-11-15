@@ -9,7 +9,7 @@
 			{/if}
 		</p>
 	</div>
-	<form method="post" name="bulkAddToList" id="bulkAddToList" action="{$path}/Admin/CreateListWidget" class="form-horizontal">
+	<form method="post" name="bulkAddToList" id="bulkAddToList" action="/Admin/CreateListWidget" class="form-horizontal">
 			<input type="hidden" name="source" value="{$source}">
 			<input type="hidden" name="id" value="{$id}">
 			{if count($existingWidgets) > 0}

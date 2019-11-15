@@ -341,26 +341,30 @@ class User extends DataObject
 				$userLink = new UserLink();
 				$userLink->primaryAccountId = $this->id;
 				$userLink->linkingDisabled = "0";
-				$userLink->find();
-				while ($userLink->fetch()){
-					if (!$this->isBlockedAccount($userLink->linkedAccountId)) {
-						$linkedUser = new User();
-						$linkedUser->id = $userLink->linkedAccountId;
-						if ($linkedUser->find(true)){
-							/** @var User $userData */
-							$userData = $memCache->get("user_{$serverName}_{$linkedUser->id}");
-							if ($userData === false || isset($_REQUEST['reload'])){
-								//Load full information from the catalog
-                                $linkedUser = UserAccount::validateAccount($linkedUser->cat_username, $linkedUser->cat_password, $linkedUser->source, $this);
-                            }else{
-								$logger->log("Found cached linked user {$userData->id}", Logger::LOG_DEBUG);
-								$linkedUser = $userData;
-							}
-							if ($linkedUser && !($linkedUser instanceof AspenError)) {
-								$this->linkedUsers[] = clone($linkedUser);
+				try {
+					$userLink->find();
+					while ($userLink->fetch()) {
+						if (!$this->isBlockedAccount($userLink->linkedAccountId)) {
+							$linkedUser = new User();
+							$linkedUser->id = $userLink->linkedAccountId;
+							if ($linkedUser->find(true)) {
+								/** @var User $userData */
+								$userData = $memCache->get("user_{$serverName}_{$linkedUser->id}");
+								if ($userData === false || isset($_REQUEST['reload'])) {
+									//Load full information from the catalog
+									$linkedUser = UserAccount::validateAccount($linkedUser->cat_username, $linkedUser->cat_password, $linkedUser->source, $this);
+								} else {
+									$logger->log("Found cached linked user {$userData->id}", Logger::LOG_DEBUG);
+									$linkedUser = $userData;
+								}
+								if ($linkedUser && !($linkedUser instanceof AspenError)) {
+									$this->linkedUsers[] = clone($linkedUser);
+								}
 							}
 						}
 					}
+				}catch (PDOException $e){
+					//Disabling of linking has not been enabled yet. 
 				}
 			}
 		}
@@ -1147,10 +1151,10 @@ class User extends DataObject
 	}
 
 	private $ilsFinesForUser;
-	public function getMyFines($includeLinkedUsers = true){
+	public function getFines($includeLinkedUsers = true){
 
 		if (!isset($this->ilsFinesForUser)){
-			$this->ilsFinesForUser = $this->getCatalogDriver()->getMyFines($this);
+			$this->ilsFinesForUser = $this->getCatalogDriver()->getFines($this);
 			if ($this->ilsFinesForUser instanceof AspenError) {
 				$this->ilsFinesForUser = array();
 			}
@@ -1161,7 +1165,7 @@ class User extends DataObject
 			if ($this->getLinkedUsers() != null) {
 				/** @var User $user */
 				foreach ($this->getLinkedUsers() as $user) {
-					$ilsFines += $user->getMyFines(false); // keep keys as userId
+					$ilsFines += $user->getFines(false); // keep keys as userId
 				}
 			}
 		}
@@ -1733,6 +1737,15 @@ class User extends DataObject
 		require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
 		$overDriveDriver = new OverDriveDriver();
 		return $overDriveDriver->getOptions($this);
+	}
+
+	function completeFinePayment(UserPayment $payment){
+		$result = $this->getCatalogDriver()->completeFinePayment($this, $payment);
+		if ($result['success']){
+			$payment->completed = 1;
+			$payment->update();
+		}
+		return $result;
 	}
 }
 

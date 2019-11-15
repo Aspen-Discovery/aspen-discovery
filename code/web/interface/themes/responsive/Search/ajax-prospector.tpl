@@ -2,7 +2,7 @@
 	<![CDATA[
 	<div id='prospectorSearchResults'>
 		<div id='prospectorSearchResultsHeader'>
-			<img id='prospectorMan' src='{$path}/interface/themes/responsive/images/prospector_man.png'/>
+			<img id='prospectorMan' src='/interface/themes/responsive/images/prospector_man.png'/>
 
 			<div id='prospectorSearchResultsTitle'>In Prospector</div>
 			<div id='prospectorSearchResultsNote'>Request items from other Prospector libraries to be delivered to your local library for pickup.</div>

@@ -10,7 +10,6 @@ class MaterialsRequest_MyRequests extends MyAccount
 
 	function launch()
 	{
-		global $configArray;
 		global $interface;
 
 		$showOpen = true;
@@ -19,7 +18,6 @@ class MaterialsRequest_MyRequests extends MyAccount
 		}
 		$interface->assign('showOpen', $showOpen);
 
-//		global $library;
 		$homeLibrary = Library::getPatronHomeLibrary();
 
 		$maxActiveRequests  = isset($homeLibrary) ? $homeLibrary->maxOpenRequests : 5;
@@ -82,7 +80,7 @@ class MaterialsRequest_MyRequests extends MyAccount
 				$allRequests[] = clone $materialsRequests;
 			}
 		}else{
-			header('Location: ' . $configArray['Site']['path'] . '/MyAccount/Home?followupModule=MaterialsRequest&followupAction=MyRequests');
+			header('Location: /MyAccount/Home?followupModule=MaterialsRequest&followupAction=MyRequests');
 			exit;
 		}
 		$interface->assign('allRequests', $allRequests);

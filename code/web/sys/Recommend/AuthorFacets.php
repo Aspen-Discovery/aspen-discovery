@@ -49,9 +49,7 @@ class AuthorFacets implements RecommendationInterface
     private function processAuthors()
     {
         // Grab some necessary values from the SearchObject and config array:
-        global $configArray;
         $indexEngine = $this->searchObject->getIndexEngine();
-        $serverUrl = $configArray['Site']['path'];
         $search = $this->searchObject->getSearchTerms();
         $lookfor = isset($search[0]['lookfor']) ? $search[0]['lookfor'] : '';
 
@@ -89,7 +87,7 @@ class AuthorFacets implements RecommendationInterface
         // Make sure there's some data
         if (isset($data) && count($data) > 0) {
             // A link to start their own author search like this
-            $list['lookfor'] = $serverUrl."/Author/Search?lookfor=".urlencode($lookfor);
+            $list['lookfor'] = "/Author/Search?lookfor=".urlencode($lookfor);
             // Total authors (currently there is no way to calculate this without
             // risking out-of-memory errors or slow results, so we set this to
             // false; if we are able to find this information out in the future,
@@ -103,7 +101,7 @@ class AuthorFacets implements RecommendationInterface
                     $list['list'][] = array(
                         'value' => $facet[0],
                         'count' => $facet[1],
-                        'url'   => $serverUrl.'/Author/Home?author="'.urlencode($facet[0]) . '"'
+                        'url'   => '/Author/Home?author="'.urlencode($facet[0]) . '"'
                     );
                 }
             }

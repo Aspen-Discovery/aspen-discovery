@@ -244,5 +244,22 @@ function getUserUpdates(){
 			]
 		],
 
+		'user_payments' => [
+			'title' => 'User Payments',
+			'description' => 'Add a table to store information about payments that have been submitted through Aspen Discovery',
+			'sql' => [
+				'CREATE TABLE user_payments (
+    				id INT(11) AUTO_INCREMENT PRIMARY KEY,
+    				userId INT(11),
+    				paymentType VARCHAR(20),
+    				orderId VARCHAR(50),
+    				completed TINYINT(1),
+    				finesPaid VARCHAR(255),
+    				totalPaid FLOAT,
+    				INDEX (userId, paymentType, completed),
+    				INDEX (paymentType, orderId)
+				)'
+			]
+		]
 	);
 }
