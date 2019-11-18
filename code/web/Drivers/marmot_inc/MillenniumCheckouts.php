@@ -221,10 +221,6 @@ class MillenniumCheckouts {
 		//Login to the patron's account
 		$driver->_curl_login($patron);
 
-		//Pause briefly between logging in and posting the actual renewal
-//		usleep(150000);
-		// moved to millenium driver _curl_login()
-
 		//Go to the items page
 		$scope = $driver->getDefaultScope();
 		$curl_url = $this->driver->getVendorOpacUrl() . "/patroninfo~S{$scope}/" . $patronDump['RECORD_#'] ."/items";
@@ -320,10 +316,6 @@ class MillenniumCheckouts {
 		$driver = &$this->driver;
 
 		$driver->_curl_login($patron);
-
-		//Pause briefly between logging in and posting the actual renewal
-//		usleep(150000);
-		// moved to millenium driver _curl_login()
 
 		//Go to the items page
 		$scope = $driver->getDefaultScope();

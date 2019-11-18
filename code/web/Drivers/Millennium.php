@@ -75,7 +75,7 @@ class Millennium extends AbstractIlsDriver
 		}else if (isset($searchLibrary) && $searchLibrary->useScope && $searchLibrary->restrictSearchByLibrary) {
 			return $searchLibrary->scope;
 		}else{
-      return $this->getDefaultScope();
+			return $this->getDefaultScope();
 		}
 	}
 

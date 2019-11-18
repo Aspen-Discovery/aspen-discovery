@@ -1,0 +1,59 @@
+; Password configuration, do not include this in git (except for default version)
+[System]
+debugJs         = true
+timings         = true
+minTimeToLog    = 0.05
+debugSolr       = true
+debugSolrQuery  = true
+
+[Site]
+;email =
+
+[Google]
+googleMapsKey =
+
+[Translation]
+;google_translate_key =
+
+[Analytics]
+;googleAnalyticsId =
+
+[Catalog]
+
+
+[Database]
+;Since we have multiple databases, need to specify each
+database_dsn          = "mysql:dbname={aspen_db_name};host=127.0.0.1"
+database_user         = {aspen_db_user}
+database_password     = {aspen_db_pwd}
+database_aspen_jdbc   = "jdbc:mysql://localhost/{aspen_db_name}?user={aspen_db_user}&password={aspen_db_pwd}&useUnicode=yes&characterEncoding=UTF-8&serverTimezone={aspen_db_timezone}"
+database_aspen_dbname = basin_libraries
+
+[Content]
+coverimages     =
+reviews         =
+excerpts        =
+
+[Syndetics]
+key = marmot
+
+[Novelist]
+profile  =
+pwd      =
+
+[WorldCat]
+;id              =
+;apiKey          =
+
+
+[ReCaptcha]
+;  https://www.google.com/recaptcha/admin/create
+publicKey =
+privateKey =
+
+[NYT_API]
+books_API_key =
+
+[DPLA]
+enabled = false
+apiKey =

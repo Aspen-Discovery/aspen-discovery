@@ -55,11 +55,15 @@ initLocale();
 
 global $enabledModules;
 $enabledModules = [];
-$module = new Module();
-$module->enabled = true;
-$module->find();
-while($module->fetch()){
-	$enabledModules[$module->name] = clone $module;
+try {
+	$module = new Module();
+	$module->enabled = true;
+	$module->find();
+	while ($module->fetch()) {
+		$enabledModules[$module->name] = clone $module;
+	}
+}catch (Exception $e){
+	//Modules are not installed yet
 }
 
 $timer->logTime("Basic Initialization");

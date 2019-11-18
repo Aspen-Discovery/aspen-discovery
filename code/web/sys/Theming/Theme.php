@@ -63,6 +63,8 @@ class Theme extends DataObject
 	    $validHeadingFonts = [
 		    'Arial',
 		    'Catamaran',
+		    'Gothic A1',
+		    'Gothic A1-Black',
 		    'Helvetica',
 		    'Helvetica Neue',
 		    'Josefin Sans',
@@ -79,6 +81,8 @@ class Theme extends DataObject
 	    $validBodyFonts = [
 		    'Arial',
 		    'Droid Serif',
+		    'Gothic A1',
+		    'Gothic A1-Black',
 		    'Helvetica',
 	        'Helvetica Neue',
 		    'Josefin Sans',

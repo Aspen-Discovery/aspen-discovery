@@ -994,12 +994,13 @@ class DBMaintenance extends Admin_Admin {
 				),
 
 				'remove_spelling_words' => array(
-                    'title' => 'Remove Spelling Words',
-                    'description' => 'Optimizations to spelling to ensure indexes are used',
-                    'sql' => array(
-                        'DROP TABLE `spelling_words`',
-                    ),
-                ),
+					'title' => 'Remove Spelling Words',
+					'description' => 'Optimizations to spelling to ensure indexes are used',
+					'continueOnError' => true,
+					'sql' => array(
+						'DROP TABLE `spelling_words`',
+					),
+				),
 
 				'remove_library_and location_boost' => array(
 					'title' => 'Remove Lib and Loc Boosting',

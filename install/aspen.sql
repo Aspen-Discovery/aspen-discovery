@@ -45,7 +45,7 @@ CREATE TABLE `account_profiles` (
 --
 
 INSERT INTO `account_profiles` (`id`, `name`, `driver`, `loginConfiguration`, `authenticationMethod`, `vendorOpacUrl`, `patronApiUrl`, `recordSource`, `weight`) VALUES
-(1, 'ils', 'Library', 'name_barcode', 'db', 'defaultURL', 'defaultURL', 'ils', 1);
+(1, 'admin', 'Library', 'name_barcode', 'db', 'defaultURL', 'defaultURL', '', 1);
 
 -- --------------------------------------------------------
 
