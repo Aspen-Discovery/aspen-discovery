@@ -20,6 +20,9 @@ class Search_Results extends Action {
 		/** @var string $searchSource */
 		$searchSource = isset($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : 'local';
 
+		//Load Placards (do this first so we can test both the original and the replacement term)
+		$this->loadPlacards();
+
 		if (isset($_REQUEST['replacementTerm'])){
 			$replacementTerm = $_REQUEST['replacementTerm'];
 			$interface->assign('replacementTerm', $replacementTerm);
@@ -430,6 +433,38 @@ class Search_Results extends Action {
 					$interface->assign('keywordResultsCount', $keywordSearchObject->getResultTotal());
 				}
 			}
+		}
+	}
+
+	private function loadPlacards()
+	{
+		try {
+			$placardToDisplay = null;
+			require_once ROOT_DIR . '/sys/LocalEnrichment/Placard.php';
+			require_once ROOT_DIR . '/sys/LocalEnrichment/PlacardTrigger.php';
+			$trigger = new PlacardTrigger();
+			$trigger->triggerWord = $_REQUEST['lookfor'];
+			if ($trigger->find(true)) {
+				$placardToDisplay = new Placard();
+				$placardToDisplay->id = $trigger->placardId;
+				$placardToDisplay->find(true);
+			}
+			if ($placardToDisplay == null && !empty($_REQUEST['replacementTerm'])) {
+				$trigger->triggerWord = $_REQUEST['replacementTerm'];
+				if ($trigger->find(true)) {
+					$placardToDisplay = new Placard();
+					$placardToDisplay->id = $trigger->placardId;
+					$placardToDisplay->find(true);
+				}
+			}
+			//TODO: Additional fuzzy matches of the search terms
+
+			if ($placardToDisplay != null) {
+				global $interface;
+				$interface->assign('placard', $placardToDisplay);
+			}
+		}catch (Exception $e){
+			//Placards are not defined yet
 		}
 	}
 

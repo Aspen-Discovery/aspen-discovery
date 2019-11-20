@@ -45,6 +45,10 @@
 			</div>
 		{/if}
 
+		{if $placard}
+			{include file="Search/placard.tpl"}
+		{/if}
+
 		{include file="Search/searchSuggestions.tpl"}
 
 		{include file="Search/spellingSuggestions.tpl"}

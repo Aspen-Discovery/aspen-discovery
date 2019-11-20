@@ -4,18 +4,16 @@ require_once ROOT_DIR . '/sys/DB/DataObject.php';
 
 class SubBrowseCategories extends DataObject {
 	public $__table = 'browse_category_subcategories';
-	public
-		$id,
-		$weight,
-		$browseCategoryId, // ID of the Main or Parent browse category
-		$subCategoryId;    // ID of the browse Category which is the Sub-Category or Child browse category
+	public $id;
+	public $weight;
+	public $browseCategoryId; // ID of the Main or Parent browse category
+	public $subCategoryId;    // ID of the browse Category which is the Sub-Category or Child browse category
 
 	static function getObjectStructure(){
 		$browseCategoryList = self::listBrowseCategories();
 		$structure = array(
 			'id' => array('property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id of the sub-category row within the database'),
 			'browseCategoryId' => array('property'=>'browseCategoryId', 'type'=>'label', 'label'=>'Browse Category', 'description'=>'The parent browse category'),
-//			'browseCategoryId' => array('property'=>'browseCategoryId', 'type'=>'enum', 'values'=>$browseCategoryList, 'label'=>'Browse Category', 'description'=>'The parent browse category'),
 			'subCategoryId'    => array('property'=>'subCategoryId', 'type'=>'enum', 'values'=>$browseCategoryList, 'label'=>'Sub-Category', 'description'=>'The sub-category of the parent browse category'),
 			'weight' => array('property' => 'weight', 'type' => 'numeric', 'label' => 'Weight', 'weight' => 'Defines the order of the sub-categories .  Lower weights are displayed to the left of the screen.', 'required'=> true),
 
