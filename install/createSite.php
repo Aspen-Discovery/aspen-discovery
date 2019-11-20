@@ -129,9 +129,9 @@ while (empty($variables['aspenDBPwd'])) {
 	$variables['aspenDBPwd'] = readline("Enter the password for {$variables['aspenDBUser']} in the aspen database > ");
 }
 
-$variables['timezone'] =  readline("Enter the timezone of the library (America/Denver) > ");
+$variables['timezone'] =  readline("Enter the timezone of the library (America/Los_Angeles) > ");
 if (empty($variables['timezone'])){
-	$variables['timezone'] = "America/Denver";
+	$variables['timezone'] = "America/Los_Angeles";
 }
 
 $variables['aspenAdminPwd'] = '';
@@ -173,19 +173,31 @@ if (!$siteOnWindows){
 }
 
 //Import the database
-exec("mysql -u{$variables['aspenDBUser']} -p\"{$variables['aspenDBPwd']}\" -e\"DROP DATABASE IF EXISTS {$variables['aspenDBName']}\"");
+if ($clearExisting) {
+	echo("Removing existing database\r\n");
+	exec("mysql -u{$variables['aspenDBUser']} -p\"{$variables['aspenDBPwd']}\" -e\"DROP DATABASE IF EXISTS {$variables['aspenDBName']}\"");
+}
+echo("Creating database\r\n");
 exec("mysql -u{$variables['aspenDBUser']} -p\"{$variables['aspenDBPwd']}\" -e\"CREATE DATABASE {$variables['aspenDBName']}\"");
+echo("Loading default database\r\n");
 exec("mysql -u{$variables['aspenDBUser']} -p\"{$variables['aspenDBPwd']}\" {$variables['aspenDBName']} < $installDir/install/aspen.sql");
-exec("mysql -u{$variables['aspenDBUser']} -p\"{$variables['aspenDBPwd']}\" {$variables['aspenDBName']} -e\"UPDATE user set cat_password=" . mysqli_escape_string($variables['aspenAdminPwd']) . ", password=" . mysqli_escape_string($variables['aspenAdminPwd']) . " where cat_username = 'aspen_admin'\"");
 
-//TODO: If the server is using Koha create an indexing profile for it
+//Connect to the database
+$aspen_db = new PDO("mysql:dbname={$variables['aspenDBName']};host=127.0.0.1",$variables['aspenDBUser'],$variables['aspenDBPwd']);
+$updateUserStmt = $aspen_db->prepare("UPDATE user set cat_password=" . $aspen_db->quote($variables['aspenAdminPwd']) . ", password=" . $aspen_db->quote($variables['aspenAdminPwd']) . " where cat_username = 'aspen_admin'");
+$updateUserStmt->execute();
+
 if ($variables['ils'] == 'Koha'){
+	echo("Loading Koha information to database\r\n");
 	copy("$installDir/install/koha_connection.sql", "/tmp/koha_connection_$sitename.sql");
 	replaceVariables("/tmp/koha_connection_$sitename.sql", $variables);
 	exec("mysql -u{$variables['aspenDBUser']} -p\"{$variables['aspenDBPwd']}\" {$variables['aspenDBName']} < /tmp/koha_connection_{$sitename}.sql");
 }
 
+$aspen_db = null;
+
 //Make data directories
+echo("Setting up data and log directories\r\n");
 $dataDir = '/data/aspen-discovery/' . $sitename;
 if (!file_exists($dataDir)){
 	mkdir($dataDir, 0770, true);
@@ -208,7 +220,8 @@ if (!$siteOnWindows){
 
 if ($siteOnWindows){
 	//Start solr
-	execInBackground( $siteDir . "/{$sitename}.bat");
+	chdir($siteDir);
+	execInBackground( "{$sitename}.bat");
 }else{
 	exec("apache ctl restart");
 	//Start solr
@@ -217,10 +230,9 @@ if ($siteOnWindows){
 
 echo("\r\n");
 echo("\r\n");
-echo("-------------------------------------------------------------------------");
+echo("-------------------------------------------------------------------------\r\n");
 echo("Next Steps\r\n");
 $step = 1;
-echo("\r\n");
 if ($siteOnWindows) {
 	echo($step++ . ") Add Include \"$siteDir/httpd-{$sitename}.conf\" to the httpd.conf file\r\n");
 	$servername = preg_replace('~https?://~', '', $variables['url']);
@@ -278,10 +290,11 @@ function replaceVariables($filename, $variables){
 }
 
 function execInBackground($cmd) {
+	echo ("Running $cmd\r\n");
 	if (substr(php_uname(), 0, 7) == "Windows"){
+		$cmd = str_replace('/', '\\', $cmd);
 		pclose(popen("start /B ". $cmd, "r"));
-	}
-	else {
+	} else {
 		exec($cmd . " > /dev/null &");
 	}
 }
