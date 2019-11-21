@@ -1,38 +1,42 @@
 <?php
 
-class CurlWrapper {
+class CurlWrapper
+{
 
 	private $cookieJar;
 	private $headers = [];
 	public $curl_connection; // need access in order to check for curl errors.
 	public $timeout = 5;
 
-    public function __construct() {
-        global $interface;
-        if ($interface != null){
-            $gitBranch = $interface->getVariable('gitBranch');
-            if (substr($gitBranch, -1) == "\n"){
-                $gitBranch = substr($gitBranch, 0, -1);
-            }
-        }else{
-            $gitBranch = 'Master';
-        }
+	public function __construct()
+	{
+		global $interface;
+		if ($interface != null) {
+			$gitBranch = $interface->getVariable('gitBranch');
+			if (substr($gitBranch, -1) == "\n") {
+				$gitBranch = substr($gitBranch, 0, -1);
+			}
+		} else {
+			$gitBranch = 'Master';
+		}
 
-        $header = array();
-        $header[0] = "Accept: text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5";
-        $header[] = "Cache-Control: max-age=0";
-        $header[] = "Connection: keep-alive";
-        $header[] = "Accept-Charset: ISO-8859-1,utf-8;q=0.7,*;q=0.7";
-        $header[] = "Accept-Language: en-us,en;q=0.5";
-        $header[] = "User-Agent: Aspen Discovery " . $gitBranch;
-        $this->headers = $header;
-    }
+		$header = array();
+		$header[0] = "Accept: text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5";
+		$header[] = "Cache-Control: max-age=0";
+		$header[] = "Connection: keep-alive";
+		$header[] = "Accept-Charset: ISO-8859-1,utf-8;q=0.7,*;q=0.7";
+		$header[] = "Accept-Language: en-us,en;q=0.5";
+		$header[] = "User-Agent: Aspen Discovery " . $gitBranch;
+		$this->headers = $header;
+	}
 
-    public function __destruct(){
+	public function __destruct()
+	{
 		$this->close_curl();
 	}
 
-	public function setCookieJar($prefix = "CURLCOOKIE"){
+	public function setCookieJar($prefix = "CURLCOOKIE")
+	{
 		$cookieJar = tempnam("/tmp", $prefix);
 		$this->cookieJar = $cookieJar;
 	}
@@ -40,8 +44,9 @@ class CurlWrapper {
 	/**
 	 * @return mixed CookieJar name
 	 */
-	public function getCookieJar() {
-		if (is_null($this->cookieJar)){
+	public function getCookieJar()
+	{
+		if (is_null($this->cookieJar)) {
 			$this->setCookieJar();
 		}
 		return $this->cookieJar;
@@ -55,9 +60,10 @@ class CurlWrapper {
 	 *                    Keys is the curl option constant, Values is the value to set the option to.
 	 * @return resource
 	 */
-	public function curl_connect($curlUrl = null, $curl_options = null){
+	public function curl_connect($curlUrl = null, $curl_options = null)
+	{
 		//Make sure we only connect once
-		if (!$this->curl_connection){
+		if (!$this->curl_connection) {
 			$cookie = $this->getCookieJar();
 
 			$this->curl_connection = curl_init($curlUrl);
@@ -75,14 +81,14 @@ class CurlWrapper {
 				CURLOPT_HEADER => false,
 				CURLOPT_AUTOREFERER => true,
 				//  CURLOPT_HEADER => true, // debugging only
-				  CURLOPT_VERBOSE => true, // debugging only
+				CURLOPT_VERBOSE => true, // debugging only
 			);
 
 			if ($curl_options) {
 				$default_curl_options = array_merge($default_curl_options, $curl_options);
 			}
 			curl_setopt_array($this->curl_connection, $default_curl_options);
-		}else{
+		} else {
 			//Reset to HTTP GET and set the active URL
 			curl_setopt($this->curl_connection, CURLOPT_HTTPGET, true);
 			curl_setopt($this->curl_connection, CURLOPT_URL, $curlUrl);
@@ -95,7 +101,8 @@ class CurlWrapper {
 	 *  Cleans up after curl operations.
 	 *  Is ran automatically as the class is being shutdown.
 	 */
-	public function close_curl() {
+	public function close_curl()
+	{
 		if ($this->curl_connection) curl_close($this->curl_connection);
 		if ($this->cookieJar && file_exists($this->cookieJar)) unlink($this->cookieJar);
 	}
@@ -103,17 +110,18 @@ class CurlWrapper {
 	/**
 	 * Uses the GET method to retrieve content from a page
 	 *
-	 * @param string    $url          The url to post to
+	 * @param string $url The url to post to
 	 *
 	 * @return string   The response from the web page if any
 	 */
-	public function curlGetPage($url){
+	public function curlGetPage($url)
+	{
 		$this->curl_connect($url);
-        curl_setopt($this->curl_connection, CURLOPT_HTTPGET, true);
+		curl_setopt($this->curl_connection, CURLOPT_HTTPGET, true);
 		$return = curl_exec($this->curl_connection);
 		if (!$return) { // log curl error
 			global $logger;
-			$logger->log('curl get error : '.curl_error($this->curl_connection), Logger::LOG_ERROR);
+			$logger->log('curl get error : ' . curl_error($this->curl_connection), Logger::LOG_ERROR);
 		}
 		return $return;
 	}
@@ -121,17 +129,18 @@ class CurlWrapper {
 	/**
 	 * Uses the POST Method to retrieve content from a page
 	 *
-	 * @param string    $url          The url to post to
-	 * @param string|string[]  $postParams   Additional Post Params to use
+	 * @param string $url The url to post to
+	 * @param string|string[] $postParams Additional Post Params to use
 	 *
 	 * @return string   The response from the web page if any
 	 */
-	public function curlPostPage($url, $postParams){
-	    if (is_string($postParams)){
-            $post_string = $postParams;
-        }else {
-            $post_string = http_build_query($postParams);
-        }
+	public function curlPostPage($url, $postParams)
+	{
+		if (is_string($postParams)) {
+			$post_string = $postParams;
+		} else {
+			$post_string = http_build_query($postParams);
+		}
 		$this->curl_connect($url);
 		curl_setopt_array($this->curl_connection, array(
 			CURLOPT_POST => true,
@@ -140,7 +149,7 @@ class CurlWrapper {
 		$return = curl_exec($this->curl_connection);
 		if (!$return) { // log curl error
 			global $logger;
-			$logger->log('curl post error : '.curl_error($this->curl_connection), Logger::LOG_ERROR);
+			$logger->log('curl post error : ' . curl_error($this->curl_connection), Logger::LOG_ERROR);
 		}
 		return $return;
 	}
@@ -148,17 +157,18 @@ class CurlWrapper {
 	/**
 	 * Uses the POST Method to retrieve content from a page
 	 *
-	 * @param string            $url          The url to post to
-	 * @param string[]|string  $postParams   Additional Post Params to use
-	 * @param boolean   $jsonEncode
+	 * @param string $url The url to post to
+	 * @param string[]|string $postParams Additional Post Params to use
+	 * @param boolean $jsonEncode
 	 *
 	 * @return string   The response from the web page if any
 	 */
-	public function curlPostBodyData($url, $postParams, $jsonEncode = true){
-		if ($jsonEncode){
+	public function curlPostBodyData($url, $postParams, $jsonEncode = true)
+	{
+		if ($jsonEncode) {
 			$post_string = json_encode($postParams);
-		}else{
-			$post_string  = $postParams;
+		} else {
+			$post_string = $postParams;
 		}
 
 		$this->curl_connect($url);
@@ -170,46 +180,48 @@ class CurlWrapper {
 		return curl_exec($this->curl_connection);
 	}
 
-    public function curlSendPage(string $url, string $httpMethod, $body = null)
-    {
-        $this->curl_connect($url);
-        if ($httpMethod == 'GET'){
-            curl_setopt($this->curl_connection, CURLOPT_HTTPGET, true);
-        }elseif ($httpMethod == 'POST') {
-            curl_setopt($this->curl_connection, CURLOPT_POST, true);
-        }elseif ($httpMethod == 'PUT') {
-            //curl_setopt($this->curl_connection, CURLOPT_PUT, true);
-	        curl_setopt($this->curl_connection, CURLOPT_CUSTOMREQUEST, "PUT");
-        }else {
-            curl_setopt($this->curl_connection, CURLOPT_CUSTOMREQUEST, $httpMethod);
-        }
-        if ($body != null){
-	        curl_setopt($this->curl_connection, CURLOPT_POSTFIELDS, $body);
-        }
-        $return = curl_exec($this->curl_connection);
-        if (!$return) { // log curl error
-        	global $configArray;
-	        if (!$configArray['Site']['isProduction']){
-		        $curl_err = curl_error($this->curl_connection);
-		        $curl_info = curl_getinfo($this->curl_connection);
-	        }
-            global $logger;
-            $logger->log('curl get error : '.curl_error($this->curl_connection), Logger::LOG_ERROR);
-        }
-        return $return;
-    }
+	public function curlSendPage(string $url, string $httpMethod, $body = null)
+	{
+		$this->curl_connect($url);
+		if ($httpMethod == 'GET') {
+			curl_setopt($this->curl_connection, CURLOPT_HTTPGET, true);
+		} elseif ($httpMethod == 'POST') {
+			curl_setopt($this->curl_connection, CURLOPT_POST, true);
+		} elseif ($httpMethod == 'PUT') {
+			//curl_setopt($this->curl_connection, CURLOPT_PUT, true);
+			curl_setopt($this->curl_connection, CURLOPT_CUSTOMREQUEST, "PUT");
+		} else {
+			curl_setopt($this->curl_connection, CURLOPT_CUSTOMREQUEST, $httpMethod);
+		}
+		if ($body != null) {
+			curl_setopt($this->curl_connection, CURLOPT_POSTFIELDS, $body);
+		}
+		$return = curl_exec($this->curl_connection);
+		if (!$return) { // log curl error
+			global $configArray;
+			if (!$configArray['Site']['isProduction']) {
+				$curl_err = curl_error($this->curl_connection);
+				$curl_info = curl_getinfo($this->curl_connection);
+			}
+			global $logger;
+			$logger->log('curl get error : ' . curl_error($this->curl_connection), Logger::LOG_ERROR);
+		}
+		return $return;
+	}
 
-    function getResponseCode(){
-	    $curl_info = curl_getinfo($this->curl_connection);
-	    return $curl_info['http_code'];
-    }
+	function getResponseCode()
+	{
+		$curl_info = curl_getinfo($this->curl_connection);
+		return $curl_info['http_code'];
+	}
 
-    function getHeaders()
-    {
-        return $this->headers;
-    }
+	function getHeaders()
+	{
+		return $this->headers;
+	}
 
-    public function setupDebugging(){
+	public function setupDebugging()
+	{
 		$result1 = curl_setopt($this->curl_connection, CURLOPT_HEADER, true);
 		$result2 = curl_setopt($this->curl_connection, CURLOPT_VERBOSE, true);
 		return $result1 && $result2;
@@ -219,11 +231,12 @@ class CurlWrapper {
 	 * @param string[] $customHeaders
 	 * @param bool $overrideExisting
 	 */
-	function addCustomHeaders($customHeaders, $overrideExisting) {
-	    if ($overrideExisting) {
-            $this->headers = $customHeaders;
-        } else {
-            $this->headers = array_merge($this->headers , $customHeaders);
-        }
+	function addCustomHeaders($customHeaders, $overrideExisting)
+	{
+		if ($overrideExisting) {
+			$this->headers = $customHeaders;
+		} else {
+			$this->headers = array_merge($this->headers, $customHeaders);
+		}
 	}
 }
