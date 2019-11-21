@@ -1,10 +1,10 @@
 <?php
 require_once ROOT_DIR . '/sys/Covers/BookCoverInfo.php';
 class BookCoverProcessor{
-    /**
-     * @var BookCoverInfo
-     */
-    private $bookCoverInfo;
+	/**
+	 * @var BookCoverInfo
+	 */
+	private $bookCoverInfo;
 	private $bookCoverPath;
 	private $localFile;
 	private $category;
@@ -902,45 +902,36 @@ class BookCoverProcessor{
 	return $this->processImageURL('contentCafe', $url, true);
 }
 
-	function google()
+	function google($key = null)
 	{
 		if (is_null($this->isn)){
 			return false;
 		}
-		if (is_callable('json_decode')) {
-			$url = 'http://books.google.com/books?jscmd=viewapi&bibkeys=ISBN:' . $this->isn . '&callback=addTheCover';
-			require_once ROOT_DIR . '/sys/HTTP/HTTP_Request.php';
-			$client = new HTTP_Request();
-			$client->setMethod('GET');
-			$client->setURL($url);
-
-			$result = $client->sendRequest();
-			if (!($result instanceof AspenError)) {
-				$json = $client->getResponseBody();
-
-				// strip off addthecover( -- note that we need to account for length of ISBN (10 or 13)
-				$json = substr($json, 21 + strlen($this->isn));
-				// strip off );
-				$json = substr($json, 0, -3);
-				// convert \x26 to &
-				$json = str_replace("\\x26", "&", $json);
-				if ($json = json_decode($json, true)) {
-					//The google API always returns small images by default, but we can manipulate the URL to get larger images
-					$size = $this->size;
-					if (isset($json['thumbnail_url'])){
-						$imageUrl = $json['thumbnail_url'];
-						if ($size == 'small'){
-
-						}else if ($size == 'medium'){
-							$imageUrl = preg_replace('/zoom=\d/', 'zoom=1', $imageUrl);
-						}else{ //large
-							$imageUrl = preg_replace('/zoom=\d/', 'zoom=0', $imageUrl);
+		$url = 'https://www.googleapis.com/books/v1/volumes?q=isbn:' . $this->isn;
+		if (!empty($key)){
+			$url .= '&key=' . $key;
+		}
+		require_once ROOT_DIR . '/sys/CurlWrapper.php';
+		$client = new CurlWrapper();
+		$result = $client->curlGetPage($url);
+		if ($result !== false) {
+			if ($json = json_decode($result, true)) {
+				if (count($json['items']) > 0){
+					foreach ($json['items'] as $item){
+						if (!empty($item['volumeInfo']['imageLinks']['thumbnail'])){
+							if ($this->processImageURL('google', $item['volumeInfo']['imageLinks']['thumbnail'], true)){
+								return true;
+							}
+						}elseif (!empty($item['volumeInfo']['imageLinks']['smallThumbnail'])){
+							if ($this->processImageURL('google', $item['volumeInfo']['imageLinks']['thumbnail'], true)){
+								return true;
+							}
 						}
-						return $this->processImageURL('google', $imageUrl, true);
 					}
 				}
 			}
 		}
+
 		return false;
 	}
 
