@@ -1,6 +1,6 @@
 <?php
 
-require_once ROOT_DIR . '/sys/HTTP/HTTP_Request.php';
+require_once ROOT_DIR . '/sys/CurlWrapper.php';
 require_once ROOT_DIR . '/sys/ConfigArray.php';
 require_once ROOT_DIR . '/sys/SolrUtils.php';
 require_once ROOT_DIR . '/sys/AspenError.php';
@@ -28,8 +28,8 @@ abstract class Solr
 	public $raw = false;
 
 	/**
-	 * The HTTP_Request object used for REST transactions
-	 * @var HTTP_Request $client
+	 * The CurlWrapper object used for REST transactions
+	 * @var CurlWrapper $client
 	 */
 	public $client;
 
@@ -133,7 +133,7 @@ abstract class Solr
 		$this->host = $host . '/' . $index;
 
 		// If we're still processing then solr is online
-		$this->client = new HTTP_Request();
+		$this->client = new CurlWrapper();
 
 		// Read in preferred boolean behavior:
 		$searchSettings = getExtraConfigArray($this->getSearchesFile());
@@ -162,7 +162,7 @@ abstract class Solr
 
 	public function __destruct()
 	{
-		$this->client->disconnect();
+		$this->client->close_curl();
 		$this->client = null;
 	}
 
@@ -200,10 +200,9 @@ abstract class Solr
 			//$logger->log("Pinging solr server {$this->host} $hostEscaped", Logger::LOG_DEBUG);
 			// Test to see solr is online
 			$test_url = $this->host . "/admin/ping";
-			$test_client = new HTTP_Request($test_url);
-			$test_client->setMethod('GET');
-			$result = $test_client->sendRequest();
-			if (!($result instanceof AspenError)) {
+			$test_client = new CurlWrapper();
+			$result = $test_client->curlGetPage($test_url);
+			if ($result !== false) {
 				// Even if we get a response, make sure it's a 'good' one.
 				if ($test_client->getResponseCode() != 200) {
 					$pingResult = 'false';
@@ -221,7 +220,7 @@ abstract class Solr
 				$pingResult = 'false';
 				Solr::$serversPinged[$this->host] = false;
 				if ($failOnError) {
-					AspenError::raiseError($result);
+					AspenError::raiseError('The Solr Server is offline, please try your request again in a few minutes.');
 				} else {
 					$logger->log("Ping of {$this->host} failed", Logger::LOG_DEBUG);
 					return false;
@@ -351,21 +350,13 @@ abstract class Solr
 		// Query String Parameters
 		$options = array('q' => "id:$id");
 		$options['fl'] = $fieldsToReturn;
-		$this->client->setMethod('GET');
-		$this->client->setURL($this->host . "/select");
-		$this->client->addRawQueryString(http_build_query($options));
 
 		global $timer;
 		$timer->logTime("Prepare to send get (ids) request to solr returning fields $fieldsToReturn");
-		$result = $this->client->sendRequest();
-		//$this->client->clearPostData();
+		$result = $this->client->curlGetPage($this->host . "/select?" . http_build_query($options));
 		$timer->logTime("Send data to solr during getRecord $id $fieldsToReturn");
 
-		if ($result instanceof AspenError) {
-			AspenError::raiseError($result);
-		} else {
-			$result = $this->_process($this->client->getResponseBody());
-		}
+		$result = $this->_process($result);
 
 		if (isset($result['response']['docs'][0])) {
 			$record = $result['response']['docs'][0];
@@ -415,22 +406,13 @@ abstract class Solr
 			$options['fl'] = $fieldsToReturn;
 			$options['rows'] = count($tmpIds);
 
-			$this->client->setMethod('GET');
-			$this->client->setURL($this->host . "/select");
-			$this->client->addRawQueryString(http_build_query($options));
-
 			// Send Request
 			global $timer;
 			$timer->logTime("Prepare to send get (ids)  request to solr");
-			$result = $this->client->sendRequest();
-			//$this->client->clearPostData();
+			$result = $this->client->curlGetPage($this->host . "/select?" . http_build_query($options));
 			$timer->logTime("Send data to solr for getRecords");
 
-			if ($result instanceof AspenError) {
-				AspenError::raiseError($result);
-			} else {
-				$result = $this->_process($this->client->getResponseBody());
-			}
+			$result = $this->_process($result);
 			foreach ($result['response']['docs'] as $record) {
 				$records[$record['id']] = $record;
 			}
@@ -1642,9 +1624,6 @@ abstract class Solr
 
 		$this->pingServer();
 
-		$this->client->setMethod($method);
-		$this->client->setURL($this->host . "/$queryHandler/");
-
 		$params['wt'] = 'json';
 		$params['json.nl'] = 'arrarr';
 
@@ -1694,26 +1673,20 @@ abstract class Solr
 			}
 		}
 
-		$this->client->setMethod($method);
-		if ($method == 'GET') {
-			$this->client->addRawQueryString($queryString);
-		} elseif ($method == 'POST') {
-			$this->client->setBody($queryString);
-		}
-
 		// Send Request
 		$timer->logTime("Prepare to send request to solr");
 		$memoryWatcher->logMemory('Prepare to send request to solr');
-		$result = $this->client->sendRequest();
-		//$this->client->clearPostData();
+		$result = false;
+		if ($method == 'GET') {
+			$result = $this->client->curlGetPage($this->host . "/$queryHandler/?$queryString");
+		} elseif ($method == 'POST') {
+			$result = $this->client->curlPostPage($this->host . "/$queryHandler/", $queryString);
+		}
+
 		$timer->logTime("Send data to solr for select $queryString");
 		$memoryWatcher->logMemory("Send data to solr for select $queryString");
 
-		if (!($result instanceof AspenError)) {
-			return $this->_process($this->client->getResponseBody(), $returnSolrError, $queryString);
-		} else {
-			return $result;
-		}
+		return $this->_process($result, $returnSolrError, $queryString);
 	}
 
 	/**
@@ -1730,9 +1703,6 @@ abstract class Solr
 
 		$this->pingServer();
 
-		$this->client->setMethod('POST');
-		$this->client->setURL($this->host . "/update/");
-
 		if ($this->debugSolrQuery) {
 			echo "<pre>POST: ";
 			print_r($this->host . "/update/");
@@ -1742,37 +1712,29 @@ abstract class Solr
 		}
 
 		// Set up XML
-		$this->client->addHeader('Content-Type', 'text/xml; charset=utf-8');
-		$this->client->setBody($xml);
+		$this->client->addCustomHeaders(['Content-Type: text/xml; charset=utf-8'], false);
 
 		// Send Request
-		$result = $this->client->sendRequest();
+		$result = $this->client->curlPostBodyData($this->host . "/update/", $xml, false);
 		$responseCode = $this->client->getResponseCode();
-		//$this->client->clearPostData();
 
 		if ($responseCode == 500 || $responseCode == 400) {
-			$detail = $this->client->getResponseBody();
 			$timer->logTime("Send the update request");
 
 			// Attempt to extract the most useful error message from the response:
-			if (preg_match("/<title>(.*)<\/title>/msi", $detail, $matches)) {
+			if (preg_match("/<title>(.*)<\/title>/msi", $result, $matches)) {
 				$errorMsg = $matches[1];
 			} else {
-				$errorMsg = $detail;
+				$errorMsg = $result;
 			}
 			global $logger;
 			$logger->log("Error updating document\r\n$xml", Logger::LOG_DEBUG);
 			return new AspenError("Unexpected response -- " . $errorMsg);
 		} elseif ($configArray['System']['debugSolr'] == true) {
-			$this->client->getResponseBody();
 			$timer->logTime("Get response body");
 		}
 
-		if (!($result instanceof AspenError)) {
-			return true;
-		} else {
-			return $result;
-		}
+		return true;
 	}
 
 	/**

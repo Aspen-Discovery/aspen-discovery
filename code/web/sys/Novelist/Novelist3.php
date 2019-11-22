@@ -1,7 +1,7 @@
 <?php
 require_once(ROOT_DIR . '/Drivers/marmot_inc/ISBNConverter.php');
 require_once ROOT_DIR . '/sys/Novelist/NovelistData.php';
-require_once ROOT_DIR . '/sys/HTTP/HTTP_Request.php';
+require_once ROOT_DIR . '/sys/CurlWrapper.php';
 class Novelist3{
 
 	function doesGroupedWorkHaveCachedSeries($groupedRecordId){
@@ -170,16 +170,9 @@ class Novelist3{
 					try{
 						//Get the JSON from the service
 						disableErrorHandler();
-						$req = new HTTP_Request($requestUrl);
-						//$result = file_get_contents($req);
-						if ($req->sendRequest() instanceof AspenError) {
-							enableErrorHandler();
-							//No enrichment for this isbn, go to the next one
-							continue;
-						}
-						enableErrorHandler();
+						$req = new CurlWrapper();
 
-						$response = $req->getResponseBody();
+						$response = $req->curlGetPage($requestUrl);
 						$timer->logTime("Made call to Novelist for enrichment information $isbn");
 
 

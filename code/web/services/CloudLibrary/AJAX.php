@@ -1,6 +1,5 @@
 <?php
 require_once ROOT_DIR . '/Action.php';
-require_once ROOT_DIR . '/sys/HTTP/HTTP_Request.php';
 
 /** @noinspection PhpUnused */
 class CloudLibrary_AJAX extends Action {

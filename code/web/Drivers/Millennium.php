@@ -1,5 +1,4 @@
 <?php
-require_once ROOT_DIR . '/sys/HTTP/HTTP_Request.php';
 require_once ROOT_DIR . '/Drivers/marmot_inc/LoanRule.php';
 require_once ROOT_DIR . '/Drivers/marmot_inc/LoanRuleDeterminer.php';
 require_once ROOT_DIR . '/sys/CurlWrapper.php';
