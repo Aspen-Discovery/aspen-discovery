@@ -66,6 +66,8 @@ class DefaultCoverImageBuilder
 			$this->titleFont = ROOT_DIR . '/fonts/JosefinSans-Bold.ttf';
 			$this->authorFont = ROOT_DIR . '/fonts/JosefinSans-BoldItalic.ttf';
 		}
+		$this->titleFont = realpath($this->titleFont);
+		$this->authorFont = realpath($this->authorFont);
 	}
 
 	private function setForegroundAndBackgroundColors($title, $author)

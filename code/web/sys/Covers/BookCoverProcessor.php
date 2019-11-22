@@ -482,26 +482,34 @@ class BookCoverProcessor{
 		}
 	}
 
+	private static $providers = null;
 	private function getCoverFromProvider(){
 		// Update to allow retrieval of covers based on upc
 		if (!is_null($this->isn) || !is_null($this->upc) || !is_null($this->issn)) {
 			$this->log("Looking for picture based on isbn and upc.", Logger::LOG_NOTICE);
 
-			// Fetch from provider
-			if (isset($this->configArray['Content']['coverimages'])) {
-				$providers = explode(',', $this->configArray['Content']['coverimages']);
-				foreach ($providers as $provider) {
-					$provider = explode(':', $provider);
-					$this->log("Checking provider ".$provider[0], Logger::LOG_NOTICE);
-					$func = $provider[0];
-					$key = isset($provider[1]) ? $provider[1] : '';
-					if (method_exists($this, $func) && $this->$func($key)) {
-						$this->log("Found image from $provider[0]", Logger::LOG_NOTICE);
-						$this->logTime("Checked $func");
-						return true;
-					}else{
-						$this->logTime("Checked $func");
+			if (BookCoverProcessor::$providers == null){
+				BookCoverProcessor::$providers = [];
+				// Fetch from provider
+				if (isset($this->configArray['Content']['coverimages'])) {
+					$providers = explode(',', $this->configArray['Content']['coverimages']);
+					foreach ($providers as $provider) {
+						$provider = explode(':', $provider);
+						$key = isset($provider[1]) ? $provider[1] : '';
+						BookCoverProcessor::$providers[$provider[0]] = $key;
 					}
+				}
+			}
+
+			foreach (BookCoverProcessor::$providers as $provider => $key){
+				$this->log("Checking provider ".$provider[0], Logger::LOG_NOTICE);
+
+				if (method_exists($this, $provider) && $this->$provider($key)) {
+					$this->log("Found image from $provider", Logger::LOG_NOTICE);
+					$this->logTime("Checked $provider");
+					return true;
+				}else{
+					$this->logTime("Checked $provider");
 				}
 			}
 		}
@@ -902,12 +910,24 @@ class BookCoverProcessor{
 	return $this->processImageURL('contentCafe', $url, true);
 }
 
-	function google($key = null)
+	function google($key = null,$title = null, $author = null)
 	{
-		if (is_null($this->isn)){
+		if (is_null($this->isn) && is_null($title) && is_null($author)){
 			return false;
 		}
-		$url = 'https://www.googleapis.com/books/v1/volumes?q=isbn:' . $this->isn;
+		if (is_null($title) && is_null($author)){
+			$source = 'google_isbn';
+			$url = 'https://www.googleapis.com/books/v1/volumes?q=isbn:' . $this->isn;
+		}else{
+			$source = 'google_title_author';
+			$url = 'https://www.googleapis.com/books/v1/volumes?q=intitle:"' . urlencode($title) . '"';
+			if (!is_null($author)){
+				$url .= "+inauthor:" . urlencode($author);
+			}else{
+				return false;
+			}
+		}
+
 		if (!empty($key)){
 			$url .= '&key=' . $key;
 		}
@@ -916,14 +936,14 @@ class BookCoverProcessor{
 		$result = $client->curlGetPage($url);
 		if ($result !== false) {
 			if ($json = json_decode($result, true)) {
-				if (count($json['items']) > 0){
+				if ($json['totalItems'] > 0 && count($json['items']) > 0){
 					foreach ($json['items'] as $item){
 						if (!empty($item['volumeInfo']['imageLinks']['thumbnail'])){
-							if ($this->processImageURL('google', $item['volumeInfo']['imageLinks']['thumbnail'], true)){
+							if ($this->processImageURL($source, $item['volumeInfo']['imageLinks']['thumbnail'], true)){
 								return true;
 							}
 						}elseif (!empty($item['volumeInfo']['imageLinks']['smallThumbnail'])){
-							if ($this->processImageURL('google', $item['volumeInfo']['imageLinks']['thumbnail'], true)){
+							if ($this->processImageURL($source, $item['volumeInfo']['imageLinks']['thumbnail'], true)){
 								return true;
 							}
 						}
@@ -1051,6 +1071,12 @@ class BookCoverProcessor{
 							}
 						}
 					}
+				}
+			}
+			if (($this->groupedWork->getFormatCategory() == 'Books' || $this->groupedWork->getFormatCategory() == 'Audio Books') && array_key_exists('google',BookCoverProcessor::$providers)){
+				//Try loading by title and author
+				if ($this->google(BookCoverProcessor::$providers['google'], $driver->getTitle(), $driver->getPrimaryAuthor())){
+					return true;
 				}
 			}
 		}
