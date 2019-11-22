@@ -133,18 +133,7 @@ class AJAX_JSON extends Action {
 		];
 		if (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('translator')){
 			if ($translation->find(true)){
-				$translation->translation = $newTranslation;
-				$translation->translated = 1;
-				$translation->update();
-
-				$term = new TranslationTerm();
-				$term->id = $translation->termId;
-				$term->find(true);
-				/** @var Memcache $memCache */
-				global $memCache;
-				global $activeLanguage;
-				$memCache->delete('translation_' . $activeLanguage->id . '_0_' . $term->term);
-				$memCache->delete('translation_' . $activeLanguage->id . '_1_' . $term->term);
+				$translation->setTranslation($newTranslation);
 				$result = [
 					'success' => true,
 					'message' => 'Successfully updated the translation'

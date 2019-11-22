@@ -2,6 +2,7 @@
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 
+/** @noinspection PhpUnused */
 class Translation_Translations extends Admin_Admin
 {
 
@@ -26,18 +27,7 @@ class Translation_Translations extends Admin_Admin
 					$translation->termId = $index;
 					$translation->languageId = $activeLanguage->id;
 					$translation->find(true);
-					$translation->translation = $newTranslation;
-					$translation->translated = 1;
-					$translation->update();
-
-					$term = new TranslationTerm();
-					$term->id = $index;
-					$term->find(true);
-					/** @var Memcache $memCache */
-					global $memCache;
-					global $activeLanguage;
-					$memCache->delete('translation_' . $activeLanguage->id . '_0_' . $term->term);
-					$memCache->delete('translation_' . $activeLanguage->id . '_1_' . $term->term);
+					$translation->setTranslation($newTranslation);
 				}
 			}
 		}
@@ -45,7 +35,27 @@ class Translation_Translations extends Admin_Admin
 		$translation = new Translation();
 		if (!isset($_REQUEST['showAllTranslations'])) {
 			$translation->translated = "0";
+			$interface->assign('showAllTranslations', false);
+		}else{
+			$interface->assign('showAllTranslations', true);
 		}
+
+		if (!empty($_REQUEST['filterTerm'])){
+			$filterTerm = $_REQUEST['filterTerm'];
+			$translation->whereAdd("term.term LIKE " . $translation->escape('%' . $filterTerm . '%'));
+			$interface->assign('filterTerm', $filterTerm);
+		}else{
+			$interface->assign('filterTerm', '');
+		}
+
+		if (!empty($_REQUEST['filterTranslation'])){
+			$filterTranslation = $_REQUEST['filterTranslation'];
+			$translation->whereAdd("translation LIKE " . $translation->escape('%' . $filterTranslation . '%'));
+			$interface->assign('filterTranslation', $filterTranslation);
+		}else{
+			$interface->assign('filterTranslation', '');
+		}
+
 		$translation->languageId = $activeLanguage->id;
 		$translation->joinAdd(new TranslationTerm(), 'INNER', 'term', 'termId', 'id');
 		$translation->orderBy('term.term');

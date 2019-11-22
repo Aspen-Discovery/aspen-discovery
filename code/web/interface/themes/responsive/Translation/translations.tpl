@@ -1,8 +1,8 @@
 {strip}
 <div id="main-content" class="col-md-12">
 	<h3>{translate text="Translations"}</h3>
-	<form class="form-inline row">
-		<div class="form-group col-xs-12">
+	<form class="form" id="translationSettings">
+		<div class="form-group">
 			{if $translationModeActive}
 				<button class="btn btn-primary" type="submit" name="stopTranslationMode">{translate text="Exit Translation Mode"}</button>
 			{else}
@@ -12,7 +12,24 @@
 			<button class="btn btn-primary" type="submit" name="exportAllTranslations">{translate text="Export All Translations"}</button>
 			<a class="btn btn-primary" name="importTranslations" href="/Translation/ImportTranslations">{translate text="Import Translations"}</a>
 		</div>
+		<div class="form-group">
+			<input type="checkbox" name="showAllTranslations" id="showAllTranslations" {if $showAllTranslations}checked{/if}>
+			<label or="showAllTranslations">{translate text="Show All Translations"}</label>
+		</div>
+		<div class="form-group">
+			<label class="control-label" for="filterTerm">{translate text="Show Terms containing"}</label>
+			<input class="form-control" type="text" name="filterTerm" id="filterTerm" value="{$filterTerm}">
+		</div>
+		<div class="form-group">
+			<label class="control-label" for="filterTranslation">{translate text="Show Translations containing"}</label>
+			<input class="form-control" type="text" name="filterTranslation" id="filterTranslation" value="{$filterTranslation}">
+		</div>
+		<div class="form-group">
+			<button class="btn btn-primary" type="submit">{translate text="Update Filters"}</button>
+		</div>
 	</form>
+
+	<br>
 
 	<form method="post">
 		{foreach from=$allTerms item=term}

@@ -14,4 +14,20 @@ class Translation extends DataObject
 	{
 		return ['termId', 'languageId'];
 	}
+
+	public function setTranslation($translation)
+	{
+		$this->translation = $translation;
+		$this->translated = 1;
+		$this->update();
+
+		$term = new TranslationTerm();
+		$term->id = $this->termId;
+		$term->find(true);
+		/** @var Memcache $memCache */
+		global $memCache;
+		global $activeLanguage;
+		$memCache->delete('translation_' . $activeLanguage->id . '_0_' . $term->term);
+		$memCache->delete('translation_' . $activeLanguage->id . '_1_' . $term->term);
+	}
 }
