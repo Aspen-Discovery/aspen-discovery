@@ -7,8 +7,10 @@ require_once ROOT_DIR . '/services/Admin/Admin.php';
  * Provides a method of running SQL updates to the database.
  * Shows a list of updates that are available with a description of the
  */
-class DBMaintenance extends Admin_Admin {
-	function launch() {
+class DBMaintenance extends Admin_Admin
+{
+	function launch()
+	{
 		global $interface;
 
 		//Create updates table if one doesn't exist already
@@ -29,7 +31,7 @@ class DBMaintenance extends Admin_Admin {
 
 						if (method_exists($this, $sql)) {
 							$this->$sql($update);
-						}elseif (function_exists($sql)){
+						} elseif (function_exists($sql)) {
 							$sql($update);
 						} else {
 							if (!$this->runSQLStatement($update, $sql)) {
@@ -54,7 +56,8 @@ class DBMaintenance extends Admin_Admin {
 
 	}
 
-	private function getSQLUpdates() {
+	private function getSQLUpdates()
+	{
 		global $configArray;
 
 		require_once ROOT_DIR . '/sys/DBMaintenance/library_location_updates.php';
@@ -71,33 +74,33 @@ class DBMaintenance extends Admin_Admin {
 		$islandora_updates = getIslandoraUpdates();
 		require_once ROOT_DIR . '/sys/DBMaintenance/hoopla_updates.php';
 		$hoopla_updates = getHooplaUpdates();
-        require_once ROOT_DIR . '/sys/DBMaintenance/rbdigital_updates.php';
-        $rbdigital_updates = getRBdigitalUpdates();
-        require_once ROOT_DIR . '/sys/DBMaintenance/sierra_api_updates.php';
+		require_once ROOT_DIR . '/sys/DBMaintenance/rbdigital_updates.php';
+		$rbdigital_updates = getRBdigitalUpdates();
+		require_once ROOT_DIR . '/sys/DBMaintenance/sierra_api_updates.php';
 		$sierra_api_updates = getSierraAPIUpdates();
 		require_once ROOT_DIR . '/sys/DBMaintenance/overdrive_updates.php';
 		$overdrive_updates = getOverDriveUpdates();
-        require_once ROOT_DIR . '/sys/DBMaintenance/theming_updates.php';
-        $theming_updates = getThemingUpdates();
+		require_once ROOT_DIR . '/sys/DBMaintenance/theming_updates.php';
+		$theming_updates = getThemingUpdates();
 		require_once ROOT_DIR . '/sys/DBMaintenance/translation_updates.php';
 		$translation_updates = getTranslationUpdates();
-        require_once ROOT_DIR . '/sys/DBMaintenance/open_archives_updates.php';
-        $open_archives_updates = getOpenArchivesUpdates();
-        require_once ROOT_DIR . '/sys/DBMaintenance/redwood_archive_updates.php';
-        $redwood_updates = getRedwoodArchiveUpdates();
+		require_once ROOT_DIR . '/sys/DBMaintenance/open_archives_updates.php';
+		$open_archives_updates = getOpenArchivesUpdates();
+		require_once ROOT_DIR . '/sys/DBMaintenance/redwood_archive_updates.php';
+		$redwood_updates = getRedwoodArchiveUpdates();
 		require_once ROOT_DIR . '/sys/DBMaintenance/cloud_library_updates.php';
 		$cloudLibraryUpdates = getCloudLibraryUpdates();
 		require_once ROOT_DIR . '/sys/DBMaintenance/website_indexing_updates.php';
 		$websiteIndexingUpdates = getWebsiteIndexingUpdates();
 
 		/** @noinspection SqlResolve */
-        /** @noinspection SqlWithoutWhere */
-        return array_merge(
-        	[
-        	    'modules' => [
-        	    	'title' => 'Create modules table',
-		            'description' => 'Create modules table to store information about modules',
-		            'sql' => [
+		/** @noinspection SqlWithoutWhere */
+		return array_merge(
+			[
+				'modules' => [
+					'title' => 'Create modules table',
+					'description' => 'Create modules table to store information about modules',
+					'sql' => [
 						'CREATE TABLE modules (
     						id int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
     						name VARCHAR(50) NOT NULL UNIQUE, 
@@ -105,26 +108,26 @@ class DBMaintenance extends Admin_Admin {
     						indexName VARCHAR(50) DEFAULT "",
     						backgroundProcess VARCHAR(50) DEFAULT ""
 						) ENGINE=InnoDB DEFAULT CHARSET=utf8',
-			            'ALTER TABLE modules add INDEX (enabled)',
+						'ALTER TABLE modules add INDEX (enabled)',
 					]
-	            ],
-	        ],
+				],
+			],
 			$library_location_updates,
 			$user_updates,
 			$grouped_work_updates,
 			$list_widget_updates,
 			$indexing_updates,
 			$islandora_updates,
-            $overdrive_updates,
+			$overdrive_updates,
 			$hoopla_updates,
-            $rbdigital_updates,
+			$rbdigital_updates,
 			$sierra_api_updates,
-            $theming_updates,
-	        $translation_updates,
-            $open_archives_updates,
-            $redwood_updates,
-	        $cloudLibraryUpdates,
-	        $websiteIndexingUpdates,
+			$theming_updates,
+			$translation_updates,
+			$open_archives_updates,
+			$redwood_updates,
+			$cloudLibraryUpdates,
+			$websiteIndexingUpdates,
 			array(
 				'index_search_stats' => array(
 					'title' => 'Index search stats table',
@@ -521,7 +524,7 @@ class DBMaintenance extends Admin_Admin {
 						"INSERT INTO materials_request_status (description, sendEmailToPatron, emailTemplate, isOpen, isPatronCancel) VALUES ('Cancelled by Patron', 0, '', 0, 1)",
 						"INSERT INTO materials_request_status (description, sendEmailToPatron, emailTemplate, isOpen) VALUES ('Cancelled - Duplicate Request', 0, '', 0)",
 
-                        "UPDATE materials_request SET status = (SELECT id FROM materials_request_status WHERE isDefault =1)",
+						"UPDATE materials_request SET status = (SELECT id FROM materials_request_status WHERE isDefault =1)",
 
 						"ALTER TABLE materials_request CHANGE `status` `status` INT(11)",
 					),
@@ -532,15 +535,15 @@ class DBMaintenance extends Admin_Admin {
 					'description' => 'New table to manage columns displayed in lists of materials requests on the manage page.',
 					'sql' => array(
 						"CREATE TABLE `materials_request_fields_to_display` ("
-						."  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,"
-						."  `libraryId` int(11) NOT NULL,"
-						."  `columnNameToDisplay` varchar(30) NOT NULL,"
-						."  `labelForColumnToDisplay` varchar(45) NOT NULL,"
-						."  `weight` smallint(2) unsigned NOT NULL DEFAULT '0',"
-						."  PRIMARY KEY (`id`),"
-						."  UNIQUE KEY `columnNameToDisplay` (`columnNameToDisplay`,`libraryId`),"
-						."  KEY `libraryId` (`libraryId`)"
-						.") ENGINE=InnoDB DEFAULT CHARSET=utf8;"
+						. "  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,"
+						. "  `libraryId` int(11) NOT NULL,"
+						. "  `columnNameToDisplay` varchar(30) NOT NULL,"
+						. "  `labelForColumnToDisplay` varchar(45) NOT NULL,"
+						. "  `weight` smallint(2) unsigned NOT NULL DEFAULT '0',"
+						. "  PRIMARY KEY (`id`),"
+						. "  UNIQUE KEY `columnNameToDisplay` (`columnNameToDisplay`,`libraryId`),"
+						. "  KEY `libraryId` (`libraryId`)"
+						. ") ENGINE=InnoDB DEFAULT CHARSET=utf8;"
 					),
 				),
 
@@ -549,15 +552,15 @@ class DBMaintenance extends Admin_Admin {
 					'description' => 'New table to manage materials formats that can be requested.',
 					'sql' => array(
 						'CREATE TABLE `materials_request_formats` ('
-						.'`id` INT UNSIGNED NOT NULL AUTO_INCREMENT,'
-						.'`libraryId` INT UNSIGNED NOT NULL,'
-						.' `format` VARCHAR(30) NOT NULL,'
-						.'`formatLabel` VARCHAR(60) NOT NULL,'
-						.'`authorLabel` VARCHAR(45) NOT NULL,'
-						.'`weight` SMALLINT(2) UNSIGNED NOT NULL DEFAULT 0,'
-						."`specialFields` SET('Abridged/Unabridged', 'Article Field', 'Eaudio format', 'Ebook format', 'Season') NULL,"
-						.'PRIMARY KEY (`id`),'
-						.'INDEX `libraryId` (`libraryId` ASC));'
+						. '`id` INT UNSIGNED NOT NULL AUTO_INCREMENT,'
+						. '`libraryId` INT UNSIGNED NOT NULL,'
+						. ' `format` VARCHAR(30) NOT NULL,'
+						. '`formatLabel` VARCHAR(60) NOT NULL,'
+						. '`authorLabel` VARCHAR(45) NOT NULL,'
+						. '`weight` SMALLINT(2) UNSIGNED NOT NULL DEFAULT 0,'
+						. "`specialFields` SET('Abridged/Unabridged', 'Article Field', 'Eaudio format', 'Ebook format', 'Season') NULL,"
+						. 'PRIMARY KEY (`id`),'
+						. 'INDEX `libraryId` (`libraryId` ASC));'
 					),
 				),
 
@@ -566,15 +569,15 @@ class DBMaintenance extends Admin_Admin {
 					'description' => 'New table to manage materials request form fields.',
 					'sql' => array(
 						'CREATE TABLE `materials_request_form_fields` ('
-						.'`id` INT UNSIGNED NOT NULL AUTO_INCREMENT,'
-						.'`libraryId` INT UNSIGNED NOT NULL,'
-						.'`formCategory` VARCHAR(55) NOT NULL,'
-						.'`fieldLabel` VARCHAR(255) NOT NULL,'
-						.'`fieldType` VARCHAR(30) NULL,'
-						.'`weight` SMALLINT(2) UNSIGNED NOT NULL,'
-						.'PRIMARY KEY (`id`),'
-						.'UNIQUE INDEX `id_UNIQUE` (`id` ASC),'
-						.'INDEX `libraryId` (`libraryId` ASC));'
+						. '`id` INT UNSIGNED NOT NULL AUTO_INCREMENT,'
+						. '`libraryId` INT UNSIGNED NOT NULL,'
+						. '`formCategory` VARCHAR(55) NOT NULL,'
+						. '`fieldLabel` VARCHAR(255) NOT NULL,'
+						. '`fieldType` VARCHAR(30) NULL,'
+						. '`weight` SMALLINT(2) UNSIGNED NOT NULL,'
+						. 'PRIMARY KEY (`id`),'
+						. 'UNIQUE INDEX `id_UNIQUE` (`id` ASC),'
+						. 'INDEX `libraryId` (`libraryId` ASC));'
 					),
 				),
 
@@ -583,13 +586,13 @@ class DBMaintenance extends Admin_Admin {
 					'description' => 'New table to contain user settings for staff users.',
 					'sql' => array(
 						'CREATE TABLE `user_staff_settings` ('
-						.'`id` INT UNSIGNED NOT NULL AUTO_INCREMENT,'
-						.'`userId` INT UNSIGNED NOT NULL,'
-						.'`materialsRequestReplyToAddress` VARCHAR(70) NULL,'
-						.'`materialsRequestEmailSignature` TINYTEXT NULL,'
-						.'PRIMARY KEY (`id`),'
-						.'UNIQUE INDEX `userId_UNIQUE` (`userId` ASC),'
-						.'INDEX `userId` (`userId` ASC));'
+						. '`id` INT UNSIGNED NOT NULL AUTO_INCREMENT,'
+						. '`userId` INT UNSIGNED NOT NULL,'
+						. '`materialsRequestReplyToAddress` VARCHAR(70) NULL,'
+						. '`materialsRequestEmailSignature` TINYTEXT NULL,'
+						. 'PRIMARY KEY (`id`),'
+						. 'UNIQUE INDEX `userId_UNIQUE` (`userId` ASC),'
+						. 'INDEX `userId` (`userId` ASC));'
 					),
 				),
 
@@ -598,21 +601,21 @@ class DBMaintenance extends Admin_Admin {
 					'description' => 'Add LibraryId column to Materials Request table and populate column for existing requests.',
 					'sql' => array(
 						'ALTER TABLE `materials_request` '
-						.'ADD COLUMN `libraryId` INT UNSIGNED NULL AFTER `id`, '
-						.'ADD COLUMN `formatId` INT UNSIGNED NULL AFTER `format`; ',
+						. 'ADD COLUMN `libraryId` INT UNSIGNED NULL AFTER `id`, '
+						. 'ADD COLUMN `formatId` INT UNSIGNED NULL AFTER `format`; ',
 
 						'UPDATE  `materials_request`'
-						 .'LEFT JOIN `user` ON (user.id=materials_request.createdBy) '
-						 .'LEFT JOIN `location` ON (location.locationId=user.homeLocationId) '
-						 .'SET materials_request.libraryId = location.libraryId '
-						 .'WHERE materials_request.libraryId IS null '
-						 .'and user.id IS NOT null '
-						 .'and location.libraryId IS not null;',
+						. 'LEFT JOIN `user` ON (user.id=materials_request.createdBy) '
+						. 'LEFT JOIN `location` ON (location.locationId=user.homeLocationId) '
+						. 'SET materials_request.libraryId = location.libraryId '
+						. 'WHERE materials_request.libraryId IS null '
+						. 'and user.id IS NOT null '
+						. 'and location.libraryId IS not null;',
 
 						'UPDATE `materials_request` '
-						.'LEFT JOIN `location` ON (location.locationId=materials_request.holdPickupLocation) '
-						.'SET materials_request.libraryId = location.libraryId '
-						.' WHERE materials_request.libraryId IS null and location.libraryId IS not null;'
+						. 'LEFT JOIN `location` ON (location.locationId=materials_request.holdPickupLocation) '
+						. 'SET materials_request.libraryId = location.libraryId '
+						. ' WHERE materials_request.libraryId IS null and location.libraryId IS not null;'
 					),
 				),
 
@@ -650,13 +653,13 @@ class DBMaintenance extends Admin_Admin {
 				),
 
 				'newRolesJan2016' => array(
-						'title' => 'Create new roles',
-						'description' => 'Create library manager, location manager, and circulation reports roles.',
-						'sql' => array(
-								"INSERT INTO `roles` (`name`, `description`) VALUES ('libraryManager', 'Allows user to do basic configuration for their library.')",
-								"INSERT INTO `roles` (`name`, `description`) VALUES ('locationManager', 'Allows user to do basic configuration for their location.')",
-								"INSERT INTO `roles` (`name`, `description`) VALUES ('circulationReports', 'Allows user to view offline circulation reports.')",
-						),
+					'title' => 'Create new roles',
+					'description' => 'Create library manager, location manager, and circulation reports roles.',
+					'sql' => array(
+						"INSERT INTO `roles` (`name`, `description`) VALUES ('libraryManager', 'Allows user to do basic configuration for their library.')",
+						"INSERT INTO `roles` (`name`, `description`) VALUES ('locationManager', 'Allows user to do basic configuration for their location.')",
+						"INSERT INTO `roles` (`name`, `description`) VALUES ('circulationReports', 'Allows user to view offline circulation reports.')",
+					),
 				),
 
 				'libraryAdmin' => array(
@@ -675,23 +678,23 @@ class DBMaintenance extends Admin_Admin {
 					),
 				),
 
-					'listPublisherRole' => array(
-							'title' => 'Create library publisher role',
-							'description' => 'Create library publisher role to include lists from specific users within search results.',
-							'sql' => array(
-									"INSERT INTO `roles` (`name`, `description`) VALUES ('listPublisher', 'Optionally only include lists from people with this role in search results.')",
-							),
+				'listPublisherRole' => array(
+					'title' => 'Create library publisher role',
+					'description' => 'Create library publisher role to include lists from specific users within search results.',
+					'sql' => array(
+						"INSERT INTO `roles` (`name`, `description`) VALUES ('listPublisher', 'Optionally only include lists from people with this role in search results.')",
 					),
+				),
 
-					'archivesRole' => array(
-							'title' => 'Create archives role',
-							'description' => 'Create archives role to allow control over archives integration.',
-							'sql' => array(
-									"INSERT INTO `roles` (`name`, `description`) VALUES ('archives', 'Control overall archives integration.')",
-							),
+				'archivesRole' => array(
+					'title' => 'Create archives role',
+					'description' => 'Create archives role to allow control over archives integration.',
+					'sql' => array(
+						"INSERT INTO `roles` (`name`, `description`) VALUES ('archives', 'Control overall archives integration.')",
 					),
+				),
 
-					'ip_lookup_1' => array(
+				'ip_lookup_1' => array(
 					'title' => 'IP Lookup Update 1',
 					'description' => 'Add start and end ranges for IP Lookup table to improve performance.',
 					'continueOnError' => true,
@@ -740,31 +743,31 @@ class DBMaintenance extends Admin_Admin {
 				),
 
 				'nongrouped_records' => array(
-						'title' => 'Non-grouped Records Table',
-						'description' => 'Create non-grouped Records table to store records that should not be grouped',
-						'sql' => array(
-								"CREATE TABLE `nongrouped_records` (
+					'title' => 'Non-grouped Records Table',
+					'description' => 'Create non-grouped Records table to store records that should not be grouped',
+					'sql' => array(
+						"CREATE TABLE `nongrouped_records` (
 									id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 									`source` VARCHAR( 50 ) NOT NULL,
 									`recordId` VARCHAR( 36 ) NOT NULL,
 									`notes` VARCHAR( 255 ) NOT NULL,
 									UNIQUE INDEX (source, recordId)
 								)",
-						),
+					),
 				),
 
 				'author_enrichment' => array(
-						'title' => 'Author Enrichment',
-						'description' => 'Create a table to store enrichment for authors',
-						'sql' => array(
-								"CREATE TABLE `author_enrichment` (
+					'title' => 'Author Enrichment',
+					'description' => 'Create a table to store enrichment for authors',
+					'sql' => array(
+						"CREATE TABLE `author_enrichment` (
 									id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 									`authorName` VARCHAR( 255 ) NOT NULL,
 									`hideWikipedia` TINYINT( 1 ),
 									`wikipediaUrl` VARCHAR( 255 ),
 									INDEX(authorName)
 								)",
-						),
+					),
 				),
 
 				'variables_table' => array(
@@ -790,29 +793,29 @@ class DBMaintenance extends Admin_Admin {
 				),
 
 				'variables_validateChecksumsFromDisk' => array(
-						'title' => 'Variables Validate Checksums from Disk variable',
-						'description' => 'Add a variable to control whether or not we should validate checksums on the disk.',
-						'sql' => array(
-								"INSERT INTO variables (name, value) VALUES ('validateChecksumsFromDisk', 'false')",
-						),
+					'title' => 'Variables Validate Checksums from Disk variable',
+					'description' => 'Add a variable to control whether or not we should validate checksums on the disk.',
+					'sql' => array(
+						"INSERT INTO variables (name, value) VALUES ('validateChecksumsFromDisk', 'false')",
+					),
 				),
 
 				'variables_offline_mode_when_offline_login_allowed' => array(
-						'title' => 'Variables Offline Mode When Offline Login is Allowed',
-						'description' => 'Add a variable to allow setting offline mode from the admin interface, as long as offline logins are allowed.',
-						'sql' => array(
-								"INSERT INTO variables (name, value) VALUES ('offline_mode_when_offline_login_allowed', 'false')",
-						),
+					'title' => 'Variables Offline Mode When Offline Login is Allowed',
+					'description' => 'Add a variable to allow setting offline mode from the admin interface, as long as offline logins are allowed.',
+					'sql' => array(
+						"INSERT INTO variables (name, value) VALUES ('offline_mode_when_offline_login_allowed', 'false')",
+					),
 				),
 
-					'variables_full_index_warnings' => array(
-							'title' => 'Variables for how long of an interval to allow between full indexes',
-							'description' => 'Add a variable to allow setting offline mode from the admin interface, as long as offline logins are allowed.',
-							'sql' => array(
-									"INSERT INTO variables (name, value) VALUES ('fullReindexIntervalWarning', '86400')",
-									"INSERT INTO variables (name, value) VALUES ('fullReindexIntervalCritical', '129600')",
-							),
+				'variables_full_index_warnings' => array(
+					'title' => 'Variables for how long of an interval to allow between full indexes',
+					'description' => 'Add a variable to allow setting offline mode from the admin interface, as long as offline logins are allowed.',
+					'sql' => array(
+						"INSERT INTO variables (name, value) VALUES ('fullReindexIntervalWarning', '86400')",
+						"INSERT INTO variables (name, value) VALUES ('fullReindexIntervalCritical', '129600')",
 					),
+				),
 
 				'utf8_update' => array(
 					'title' => 'Update to UTF-8',
@@ -994,12 +997,13 @@ class DBMaintenance extends Admin_Admin {
 				),
 
 				'remove_spelling_words' => array(
-                    'title' => 'Remove Spelling Words',
-                    'description' => 'Optimizations to spelling to ensure indexes are used',
-                    'sql' => array(
-                        'DROP TABLE `spelling_words`',
-                    ),
-                ),
+					'title' => 'Remove Spelling Words',
+					'description' => 'Optimizations to spelling to ensure indexes are used',
+					'continueOnError' => true,
+					'sql' => array(
+						'DROP TABLE `spelling_words`',
+					),
+				),
 
 				'remove_library_and location_boost' => array(
 					'title' => 'Remove Lib and Loc Boosting',
@@ -1025,7 +1029,7 @@ class DBMaintenance extends Admin_Admin {
 					'title' => 'Widget Lists',
 					'description' => 'Add a new table: list_widget_lists_links',
 					'sql' => array(
-					    "CREATE TABLE IF NOT EXISTS `list_widget_lists_links`(
+						"CREATE TABLE IF NOT EXISTS `list_widget_lists_links`(
                             `id` int(11) NOT NULL AUTO_INCREMENT, 
                             `listWidgetListsId` int(11) NOT NULL, 
                             `name` varchar(50) NOT NULL, 
@@ -1033,7 +1037,7 @@ class DBMaintenance extends Admin_Admin {
                             `weight` int(3) NOT NULL DEFAULT '0',
                             PRIMARY KEY (`id`) 
                         ) ENGINE=InnoDB DEFAULT CHARSET=utf8;"
-                    ),
+					),
 				),
 
 
@@ -1103,13 +1107,13 @@ class DBMaintenance extends Admin_Admin {
 					),
 				),
 
-					'loan_rule_determiners_increase_ptype_length' => array(
-							'title' => 'Increase PType field length for Loan Rule Determiners',
-							'description' => 'Increase PType field length for Loan Rule Determiners',
-							'sql' => array(
-								"ALTER TABLE loan_rule_determiners CHANGE COLUMN patronType `patronType` VARCHAR(255) NOT NULL COMMENT 'The patron types that this rule applies to'",
-							),
+				'loan_rule_determiners_increase_ptype_length' => array(
+					'title' => 'Increase PType field length for Loan Rule Determiners',
+					'description' => 'Increase PType field length for Loan Rule Determiners',
+					'sql' => array(
+						"ALTER TABLE loan_rule_determiners CHANGE COLUMN patronType `patronType` VARCHAR(255) NOT NULL COMMENT 'The patron types that this rule applies to'",
 					),
+				),
 
 				'location_hours' => array(
 					'title' => 'Location Hours',
@@ -1224,13 +1228,13 @@ class DBMaintenance extends Admin_Admin {
 					)
 				),
 
-					'offline_holds_update_2' => array(
-							'title' => 'Offline Holds Update 2',
-							'description' => 'Add the ability to store a name for patrons that have not logged in before.  Also used for conversions',
-							'sql' => array(
-									"ALTER TABLE `offline_hold` ADD COLUMN `itemId` VARCHAR( 20 ) NULL",
-							)
-					),
+				'offline_holds_update_2' => array(
+					'title' => 'Offline Holds Update 2',
+					'description' => 'Add the ability to store a name for patrons that have not logged in before.  Also used for conversions',
+					'sql' => array(
+						"ALTER TABLE `offline_hold` ADD COLUMN `itemId` VARCHAR( 20 ) NULL",
+					)
+				),
 
 				'offline_circulation' => array(
 					'title' => 'Offline Circulation',
@@ -1476,7 +1480,7 @@ class DBMaintenance extends Admin_Admin {
 					'title' => 'Enable Browse Sub-Categories',
 					'description' => 'Add a the ability to define a browse category from a list',
 					'sql' => array(
-							"CREATE TABLE `browse_category_subcategories` (
+						"CREATE TABLE `browse_category_subcategories` (
 							  `id` int UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
 							  `browseCategoryId` int(11) NOT NULL,
 							  `subCategoryId` int(11) NOT NULL,
@@ -1575,47 +1579,47 @@ class DBMaintenance extends Admin_Admin {
 					)
 				),
 
-                'account_profiles_2' => array(
-                    'title' => 'Update Account Profiles 2',
-                    'description' => 'Update Account Profiles with additional data to reduce information stored in config',
-                    'continueOnError' => true,
-                    'sql' => array(
-                        "ALTER TABLE `account_profiles` ADD `databaseHost` varchar(100)",
-                        "ALTER TABLE `account_profiles` ADD `databaseName` varchar(50)",
-                        "ALTER TABLE `account_profiles` ADD `databaseUser` varchar(50)",
-                        "ALTER TABLE `account_profiles` ADD `databasePassword` varchar(50)",
-                        "ALTER TABLE `account_profiles` ADD `sipHost` varchar(100)",
-                        "ALTER TABLE `account_profiles` ADD `sipPort` varchar(50)",
-                    )
-                ),
+				'account_profiles_2' => array(
+					'title' => 'Update Account Profiles 2',
+					'description' => 'Update Account Profiles with additional data to reduce information stored in config',
+					'continueOnError' => true,
+					'sql' => array(
+						"ALTER TABLE `account_profiles` ADD `databaseHost` varchar(100)",
+						"ALTER TABLE `account_profiles` ADD `databaseName` varchar(50)",
+						"ALTER TABLE `account_profiles` ADD `databaseUser` varchar(50)",
+						"ALTER TABLE `account_profiles` ADD `databasePassword` varchar(50)",
+						"ALTER TABLE `account_profiles` ADD `sipHost` varchar(100)",
+						"ALTER TABLE `account_profiles` ADD `sipPort` varchar(50)",
+					)
+				),
 
-                'account_profiles_3' => array(
-                    'title' => 'Update Account Profiles 3',
-                    'description' => 'Update Account Profiles with additional information about SIP',
-                    'continueOnError' => true,
-                    'sql' => array(
-                        "ALTER TABLE `account_profiles` ADD `sipUser` varchar(50)",
-                        "ALTER TABLE `account_profiles` ADD `sipPassword` varchar(50)",
-                    )
-                ),
+				'account_profiles_3' => array(
+					'title' => 'Update Account Profiles 3',
+					'description' => 'Update Account Profiles with additional information about SIP',
+					'continueOnError' => true,
+					'sql' => array(
+						"ALTER TABLE `account_profiles` ADD `sipUser` varchar(50)",
+						"ALTER TABLE `account_profiles` ADD `sipPassword` varchar(50)",
+					)
+				),
 
-                'account_profiles_4' => array(
-                    'title' => 'Update Account Profiles 4',
-                    'description' => 'Add database port to connection information',
-                    'continueOnError' => true,
-                    'sql' => array(
-                        "ALTER TABLE `account_profiles` ADD `databasePort` varchar(5)",
-                    )
-                ),
+				'account_profiles_4' => array(
+					'title' => 'Update Account Profiles 4',
+					'description' => 'Add database port to connection information',
+					'continueOnError' => true,
+					'sql' => array(
+						"ALTER TABLE `account_profiles` ADD `databasePort` varchar(5)",
+					)
+				),
 
-                'account_profiles_5' => array(
-                    'title' => 'Update Account Profiles 5',
-                    'description' => 'Add database timezone to connection information',
-                    'continueOnError' => true,
-                    'sql' => array(
-                        "ALTER TABLE `account_profiles` ADD `databaseTimezone` varchar(50)",
-                    )
-                ),
+				'account_profiles_5' => array(
+					'title' => 'Update Account Profiles 5',
+					'description' => 'Add database timezone to connection information',
+					'continueOnError' => true,
+					'sql' => array(
+						"ALTER TABLE `account_profiles` ADD `databaseTimezone` varchar(50)",
+					)
+				),
 
 				'account_profiles_oauth' => array(
 					'title' => 'Account Profiles - OAuth',
@@ -1628,40 +1632,39 @@ class DBMaintenance extends Admin_Admin {
 				),
 
 
-
-					'archive_private_collections' => array(
-							'title' => 'Archive Private Collections',
-							'description' => 'Create a table to store information about collections that should be private to the owning library',
-							'continueOnError' => true,
-							'sql' => array(
-									"CREATE TABLE IF NOT EXISTS archive_private_collections (
+				'archive_private_collections' => array(
+					'title' => 'Archive Private Collections',
+					'description' => 'Create a table to store information about collections that should be private to the owning library',
+					'continueOnError' => true,
+					'sql' => array(
+						"CREATE TABLE IF NOT EXISTS archive_private_collections (
 									  `id` int(11) NOT NULL AUTO_INCREMENT,
 									  privateCollections MEDIUMTEXT,
 									  PRIMARY KEY (`id`)
 									) ENGINE=InnoDB  DEFAULT CHARSET=utf8",
-							)
-					),
+					)
+				),
 
-					'archive_subjects' => array(
-							'title' => 'Archive Subjects',
-							'description' => 'Create a table to store information about what subjects should be ignored and restricted',
-							'continueOnError' => true,
-							'sql' => array(
-									"CREATE TABLE IF NOT EXISTS archive_subjects (
+				'archive_subjects' => array(
+					'title' => 'Archive Subjects',
+					'description' => 'Create a table to store information about what subjects should be ignored and restricted',
+					'continueOnError' => true,
+					'sql' => array(
+						"CREATE TABLE IF NOT EXISTS archive_subjects (
 									  `id` int(11) NOT NULL AUTO_INCREMENT,
 									  subjectsToIgnore MEDIUMTEXT,
 									  subjectsToRestrict MEDIUMTEXT,
 									  PRIMARY KEY (`id`)
 									) ENGINE=InnoDB  DEFAULT CHARSET=utf8",
-							)
-					),
+					)
+				),
 
-					'archive_requests' => array(
-							'title' => 'Archive Requests',
-							'description' => 'Create a table to store information about the requests for copies of archive information',
-							'continueOnError' => true,
-							'sql' => array(
-									"CREATE TABLE IF NOT EXISTS archive_requests (
+				'archive_requests' => array(
+					'title' => 'Archive Requests',
+					'description' => 'Create a table to store information about the requests for copies of archive information',
+					'continueOnError' => true,
+					'sql' => array(
+						"CREATE TABLE IF NOT EXISTS archive_requests (
 									  `id` int(11) NOT NULL AUTO_INCREMENT,
 									  name VARCHAR(100) NOT NULL,
 									  address VARCHAR(200),
@@ -1681,15 +1684,15 @@ class DBMaintenance extends Admin_Admin {
 									  INDEX(`pid`),
 									  INDEX(`name`)
 									) ENGINE=InnoDB  DEFAULT CHARSET=utf8",
-							)
-					),
+					)
+				),
 
-					'claim_authorship_requests' => array(
-							'title' => 'Claim Authorship Requests',
-							'description' => 'Create a table to store information about the people who are claiming authorship of archive information',
-							'continueOnError' => true,
-							'sql' => array(
-									"CREATE TABLE IF NOT EXISTS claim_authorship_requests (
+				'claim_authorship_requests' => array(
+					'title' => 'Claim Authorship Requests',
+					'description' => 'Create a table to store information about the people who are claiming authorship of archive information',
+					'continueOnError' => true,
+					'sql' => array(
+						"CREATE TABLE IF NOT EXISTS claim_authorship_requests (
 									  `id` int(11) NOT NULL AUTO_INCREMENT,
 									  name VARCHAR(100) NOT NULL,
 									  phone VARCHAR(20),
@@ -1701,52 +1704,52 @@ class DBMaintenance extends Admin_Admin {
 									  INDEX(`pid`),
 									  INDEX(`name`)
 									) ENGINE=InnoDB  DEFAULT CHARSET=utf8",
-							)
-					),
+					)
+				),
 
-					'add_search_source_to_saved_searches' => array(
-							'title' => 'Store the Search Source with saved searches',
-							'description' => 'Add column to store the source for a search in the search table',
-							'continueOnError' => true,
-							'sql' => array(
-									"ALTER TABLE `search` ADD COLUMN `searchSource` VARCHAR(30) NOT NULL DEFAULT 'local' AFTER `search_object`;",
-							)
-					),
+				'add_search_source_to_saved_searches' => array(
+					'title' => 'Store the Search Source with saved searches',
+					'description' => 'Add column to store the source for a search in the search table',
+					'continueOnError' => true,
+					'sql' => array(
+						"ALTER TABLE `search` ADD COLUMN `searchSource` VARCHAR(30) NOT NULL DEFAULT 'local' AFTER `search_object`;",
+					)
+				),
 
 
-					'saved_searches_created_default' => array(
-						'title' => 'Change default creation date for saved searches',
-						'description' => 'Change default creation date for saved searches since it gives errors in newer MySQL versions',
-						'continueOnError' => true,
-						'sql' => array(
-							"ALTER TABLE `search` CHANGE COLUMN `created` `created` DATE NOT NULL;",
-						)
-					),
+				'saved_searches_created_default' => array(
+					'title' => 'Change default creation date for saved searches',
+					'description' => 'Change default creation date for saved searches since it gives errors in newer MySQL versions',
+					'continueOnError' => true,
+					'sql' => array(
+						"ALTER TABLE `search` CHANGE COLUMN `created` `created` DATE NOT NULL;",
+					)
+				),
 
-                    'add_search_url_to_saved_searches' => array(
-                        'title' => 'Store the Search Url with saved searches',
-                        'description' => 'Add column to store the url for a search in the search table to optimize finding old versions',
-                        'continueOnError' => true,
-                        'sql' => array(
-                            "ALTER TABLE `search` ADD COLUMN `searchUrl` VARCHAR(255) DEFAULT NULL;",
-                        )
-                    ),
+				'add_search_url_to_saved_searches' => array(
+					'title' => 'Store the Search Url with saved searches',
+					'description' => 'Add column to store the url for a search in the search table to optimize finding old versions',
+					'continueOnError' => true,
+					'sql' => array(
+						"ALTER TABLE `search` ADD COLUMN `searchUrl` VARCHAR(255) DEFAULT NULL;",
+					)
+				),
 
-                    'increase_search_url_size' => array(
-                        'title' => 'Increase allowable length of search url',
-                        'description' => 'Increase allowable length of search url',
-                        'continueOnError' => true,
-                        'sql' => array(
-                            "ALTER TABLE `search` CHANGE COLUMN `searchUrl` `searchUrl` VARCHAR(1000) DEFAULT NULL;",
-                        )
-                    ),
+				'increase_search_url_size' => array(
+					'title' => 'Increase allowable length of search url',
+					'description' => 'Increase allowable length of search url',
+					'continueOnError' => true,
+					'sql' => array(
+						"ALTER TABLE `search` CHANGE COLUMN `searchUrl` `searchUrl` VARCHAR(1000) DEFAULT NULL;",
+					)
+				),
 
-					'record_grouping_log' => array(
-							'title' => 'Record Grouping Log',
-							'description' => 'Create Log for record grouping',
-							'continueOnError' => false,
-							'sql' => array(
-									"CREATE TABLE IF NOT EXISTS record_grouping_log(
+				'record_grouping_log' => array(
+					'title' => 'Record Grouping Log',
+					'description' => 'Create Log for record grouping',
+					'continueOnError' => false,
+					'sql' => array(
+						"CREATE TABLE IF NOT EXISTS record_grouping_log(
 									`id` INT NOT NULL AUTO_INCREMENT COMMENT 'The id of log', 
 									`startTime` INT(11) NOT NULL COMMENT 'The timestamp when the run started', 
 									`endTime` INT(11) NULL COMMENT 'The timestamp when the run ended', 
@@ -1754,24 +1757,24 @@ class DBMaintenance extends Admin_Admin {
 									`notes` TEXT COMMENT 'Additional information about the run includes stats per source', 
 									PRIMARY KEY ( `id` )
 									) ENGINE = InnoDB;",
-							)
-					),
+					)
+				),
 
-                'change_to_innodb' => array(
-                    'title' => 'Change to INNODB',
-                    'description' => 'Change all tables to use INNODB rather than MyISAM',
-                    'continueOnError' => false,
-                    'sql' => array(
-                        'convertTablesToInnoDB'
-                    )
-                ),
+				'change_to_innodb' => array(
+					'title' => 'Change to INNODB',
+					'description' => 'Change all tables to use INNODB rather than MyISAM',
+					'continueOnError' => false,
+					'sql' => array(
+						'convertTablesToInnoDB'
+					)
+				),
 
-                'bookcover_info' => array(
-                    'title' => 'Bookcover info',
-                    'description' => 'Crate a table to store information about bookcover generation process',
-                    'continueOnError' => false,
-                    'sql' => [
-                        "CREATE TABLE IF NOT EXISTS bookcover_info(
+				'bookcover_info' => array(
+					'title' => 'Bookcover info',
+					'description' => 'Crate a table to store information about bookcover generation process',
+					'continueOnError' => false,
+					'sql' => [
+						"CREATE TABLE IF NOT EXISTS bookcover_info(
 									id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 									recordType VARCHAR(20),
 									recordId VARCHAR(50),
@@ -1785,11 +1788,11 @@ class DBMaintenance extends Admin_Admin {
 									largeLoaded TINYINT(1) DEFAULT 0,
 									uploadedImage TINYINT(1) DEFAULT 0
 									) ENGINE = InnoDB;",
-                        "ALTER TABLE bookcover_info ADD INDEX lastUsed (lastUsed)",
-                        "ALTER TABLE bookcover_info ADD UNIQUE INDEX record_info (recordType, recordId)",
-                        "ALTER TABLE bookcover_info ADD INDEX imageSource (imageSource)",
-                    ]
-                ),
+						"ALTER TABLE bookcover_info ADD INDEX lastUsed (lastUsed)",
+						"ALTER TABLE bookcover_info ADD UNIQUE INDEX record_info (recordType, recordId)",
+						"ALTER TABLE bookcover_info ADD INDEX imageSource (imageSource)",
+					]
+				),
 
 				'sendgrid_settings' => array(
 					'title' => 'SendGrid Settings',
@@ -1916,13 +1919,13 @@ class DBMaintenance extends Admin_Admin {
 					'description' => 'Table to store error information',
 					'sql' => [
 						'CREATE TABLE IF NOT EXISTS errors(
-    						id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-		                    module VARCHAR(50) NOT NULL,
-		                    action VARCHAR(50) NOT NULL,
-		                    url TEXT,
-		                    message TEXT,
-		                    backtrace TEXT,
-		                    timestamp INT(11)
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							module VARCHAR(50) NOT NULL,
+							action VARCHAR(50) NOT NULL,
+							url TEXT,
+							message TEXT,
+							backtrace TEXT,
+							timestamp INT(11)
     						) ENGINE = INNODB;',
 					],
 				],
@@ -1934,31 +1937,54 @@ class DBMaintenance extends Admin_Admin {
 						'ALTER TABLE errors ADD COLUMN userAgent TEXT',
 					],
 				],
+
+				'placards' => [
+					'title' => 'Placard setup',
+					'description' => 'Add the ability to add placards to the site',
+					'sql' => [
+						'CREATE TABLE IF NOT EXISTS placards(
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							title VARCHAR(255) NOT NULL,
+							body TEXT,
+							css TEXT,
+							image VARCHAR(100)
+						) ENGINE = INNODB;',
+						'ALTER TABLE placards ADD INDEX title (title)',
+						'CREATE TABLE IF NOT EXISTS placard_trigger(
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							placardId INT(11) NOT NULL,
+							triggerWord VARCHAR(100) NOT NULL
+						) ENGINE = INNODB;',
+						'ALTER TABLE placard_trigger ADD INDEX triggerWord (triggerWord)'
+					],
+				]
 			)
 		);
 	}
 
-	public function convertTablesToInnoDB(/** @noinspection PhpUnusedParameterInspection */ &$update){
-	    global $configArray;
-        /** @noinspection SqlResolve */
-        $sql = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = '{$configArray['Database']['database_aspen_dbname']}' AND ENGINE = 'MyISAM'";
+	public function convertTablesToInnoDB(/** @noinspection PhpUnusedParameterInspection */ &$update)
+	{
+		global $configArray;
+		/** @noinspection SqlResolve */
+		$sql = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = '{$configArray['Database']['database_aspen_dbname']}' AND ENGINE = 'MyISAM'";
 
-        /** @var PDO $aspen_db  */
-        global $aspen_db;
-        $results = $aspen_db->query($sql, PDO::FETCH_ASSOC);
-        $row = $results->fetchObject();
-        while ($row != null) {
-            /** @noinspection SqlResolve */
-            $sql = "ALTER TABLE `{$row->TABLE_NAME}` ENGINE=INNODB";
-            $aspen_db->query($sql);
-            $row = $results->fetchObject();
-        }
-    }
+		/** @var PDO $aspen_db */
+		global $aspen_db;
+		$results = $aspen_db->query($sql, PDO::FETCH_ASSOC);
+		$row = $results->fetchObject();
+		while ($row != null) {
+			/** @noinspection SqlResolve */
+			$sql = "ALTER TABLE `{$row->TABLE_NAME}` ENGINE=INNODB";
+			$aspen_db->query($sql);
+			$row = $results->fetchObject();
+		}
+	}
 
 
-	private function checkWhichUpdatesHaveRun($availableUpdates) {
-        /** @var PDO $aspen_db  */
-        global $aspen_db;
+	private function checkWhichUpdatesHaveRun($availableUpdates)
+	{
+		/** @var PDO $aspen_db */
+		global $aspen_db;
 		foreach ($availableUpdates as $key => $update) {
 			$update['alreadyRun'] = false;
 			$result = $aspen_db->query("SELECT * from db_update where update_key = " . $aspen_db->quote($key));
@@ -1970,25 +1996,28 @@ class DBMaintenance extends Admin_Admin {
 		return $availableUpdates;
 	}
 
-	private function markUpdateAsRun($update_key) {
-        /** @var PDO $aspen_db  */
-        global $aspen_db;
+	private function markUpdateAsRun($update_key)
+	{
+		/** @var PDO $aspen_db */
+		global $aspen_db;
 		$result = $aspen_db->query("SELECT * from db_update where update_key = " . $aspen_db->quote($update_key));
 		if ($result->rowCount() != false) {
 			//Update the existing value
-            $aspen_db->query("UPDATE db_update SET date_run = CURRENT_TIMESTAMP WHERE update_key = " . $aspen_db->quote($update_key));
+			$aspen_db->query("UPDATE db_update SET date_run = CURRENT_TIMESTAMP WHERE update_key = " . $aspen_db->quote($update_key));
 		} else {
-            $aspen_db->query("INSERT INTO db_update (update_key) VALUES (" . $aspen_db->quote($update_key) . ")");
+			$aspen_db->query("INSERT INTO db_update (update_key) VALUES (" . $aspen_db->quote($update_key) . ")");
 		}
 	}
 
-	function getAllowableRoles() {
+	function getAllowableRoles()
+	{
 		return array('userAdmin', 'opacAdmin');
 	}
 
-	private function createUpdatesTable() {
-        /** @var PDO $aspen_db  */
-        global $aspen_db;
+	private function createUpdatesTable()
+	{
+		/** @var PDO $aspen_db */
+		global $aspen_db;
 		//Check to see if the updates table exists
 		$result = $aspen_db->query("SHOW TABLES");
 		$tableFound = false;
@@ -2002,39 +2031,41 @@ class DBMaintenance extends Admin_Admin {
 		}
 		if (!$tableFound) {
 			//Create the table to mark which updates have been run.
-            $aspen_db->query("CREATE TABLE db_update (" .
+			$aspen_db->query("CREATE TABLE db_update (" .
 				"update_key VARCHAR( 100 ) NOT NULL PRIMARY KEY ," .
 				"date_run TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP" .
 				") ENGINE = InnoDB");
 		}
 	}
 
-	function runSQLStatement(&$update, $sql) {
-        /** @var PDO $aspen_db  */
-        global $aspen_db;
+	function runSQLStatement(&$update, $sql)
+	{
+		/** @var PDO $aspen_db */
+		global $aspen_db;
 		set_time_limit(500);
-        $updateOk = true;
-		try{
-            $aspen_db->query($sql);
-            if (!isset($update['status'])) {
-                $update['status'] = 'Update succeeded';
-            }
-        }catch (PDOException $e) {
-            if (isset($update['continueOnError']) && $update['continueOnError']) {
-                if (!isset($update['status'])) {
-                    $update['status'] = '';
-                }
-                $update['status'] .= 'Warning: ' . $e;
-            } else {
-                $update['status'] = 'Update failed ' . $e;
-                $updateOk = false;
-            }
-        }
+		$updateOk = true;
+		try {
+			$aspen_db->query($sql);
+			if (!isset($update['status'])) {
+				$update['status'] = 'Update succeeded';
+			}
+		} catch (PDOException $e) {
+			if (isset($update['continueOnError']) && $update['continueOnError']) {
+				if (!isset($update['status'])) {
+					$update['status'] = '';
+				}
+				$update['status'] .= 'Warning: ' . $e;
+			} else {
+				$update['status'] = 'Update failed ' . $e;
+				$updateOk = false;
+			}
+		}
 
 		return $updateOk;
 	}
 
-	function createDefaultIpRanges() {
+	function createDefaultIpRanges()
+	{
 		require_once ROOT_DIR . 'sys/IP/IPAddress.php';
 		require_once ROOT_DIR . 'sys/IP/ipcalc.php';
 		$subnet = new IPAddress();
@@ -2048,8 +2079,9 @@ class DBMaintenance extends Admin_Admin {
 	 * @param $resource
 	 * @return null|string
 	 */
-	public function getGroupedWorkForResource($resource) {
-        //Get the identifier for the resource
+	public function getGroupedWorkForResource($resource)
+	{
+		//Get the identifier for the resource
 		if ($resource->source == 'VuFind') {
 			$primaryIdentifier = $resource->record_id;
 			return $primaryIdentifier;
@@ -2057,30 +2089,32 @@ class DBMaintenance extends Admin_Admin {
 		return null;
 	}
 
-	function updateDueDateFormat(){
+	function updateDueDateFormat()
+	{
 		global $configArray;
-		if (isset($configArray['Reindex']['dueDateFormat'])){
+		if (isset($configArray['Reindex']['dueDateFormat'])) {
 			$ilsIndexingProfile = new IndexingProfile();
 			$ilsIndexingProfile->name = 'ils';
-			if ($ilsIndexingProfile->find(true)){
+			if ($ilsIndexingProfile->find(true)) {
 				$ilsIndexingProfile->dueDateFormat = $configArray['Reindex']['dueDateFormat'];
 				$ilsIndexingProfile->update();
 			}
 
 			$ilsIndexingProfile = new IndexingProfile();
 			$ilsIndexingProfile->name = 'millennium';
-			if ($ilsIndexingProfile->find(true)){
+			if ($ilsIndexingProfile->find(true)) {
 				$ilsIndexingProfile->dueDateFormat = $configArray['Reindex']['dueDateFormat'];
 				$ilsIndexingProfile->update();
 			}
 		}
 	}
 
-	function updateShowSeriesInMainDetails(){
+	function updateShowSeriesInMainDetails()
+	{
 		$library = new Library();
 		$library->find();
-		while ($library->fetch()){
-			if (!count($library->showInMainDetails) == 0){
+		while ($library->fetch()) {
+			if (!count($library->showInMainDetails) == 0) {
 				$library->showInMainDetails[] = 'showSeries';
 				$library->update();
 			}

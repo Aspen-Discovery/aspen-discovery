@@ -1,1 +1,0 @@
-#Directory for store Mysql dump backups

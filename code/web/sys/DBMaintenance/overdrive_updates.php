@@ -167,6 +167,7 @@ function getOverDriveUpdates() {
         'remove_overdrive_api_data_needsUpdate' => array(
             'title' => 'Remove needsUpdate from OverDrive Product API',
             'description' => 'Update overdrive_api_product table to remove needsUpdate to determine if the record should be reloaded from the API',
+            'continueOnError' => true,
             'sql' => array(
                 "ALTER TABLE overdrive_api_products DROP COLUMN needsUpdate",
             ),
@@ -191,6 +192,7 @@ function getOverDriveUpdates() {
         'overdrive_api_remove_old_tables' => array(
             'title' => 'Remove old OverDrive tables',
             'description' => 'Remove OverDrive tables that are no longer used',
+            'continueOnError' => true,
             'sql' => array(
                 "DROP TABLE overdrive_api_product_creators",
                 "DROP TABLE overdrive_api_product_languages",

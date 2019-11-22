@@ -1,7 +1,6 @@
 <?php
 
 require_once ROOT_DIR . '/Action.php';
-require_once ROOT_DIR . '/sys/HTTP/HTTP_Request.php';
 
 global $configArray;
 

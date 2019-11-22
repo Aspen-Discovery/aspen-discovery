@@ -3,7 +3,7 @@
  * Handles integration with Prospector
  */
 
-require_once ROOT_DIR . '/sys/HTTP/HTTP_Request.php';
+require_once ROOT_DIR . '/sys/CurlWrapper.php';
 class Prospector{
 	/**
 	 * Load search results from Prospector using the encore interface.
@@ -13,11 +13,8 @@ class Prospector{
 	function getTopSearchResults($searchTerms, $maxResults){
 		$prospectorUrl = $this->getSearchLink($searchTerms);
 		//Load the HTML from Prospector
-		$req = new HTTP_Request($prospectorUrl);
-		if ($req->sendRequest() instanceof AspenError) {
-			return null;
-		}
-		$prospectorInfo = $req->getResponseBody();
+		$req = new CurlWrapper();
+		$prospectorInfo = $req->curlGetPage($prospectorUrl);
 
 		//Get the total number of results
 		if (preg_match('/<span class="noResultsHideMessage">.*?(\d+) - (\d+) of (\d+).*?<\/span>/s', $prospectorInfo, $summaryInfo)){

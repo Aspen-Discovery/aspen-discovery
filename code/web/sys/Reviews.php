@@ -1,6 +1,6 @@
 <?php
 
-require_once ROOT_DIR . '/sys/HTTP/HTTP_Request.php';
+require_once ROOT_DIR . '/sys/CurlWrapper.php';
 
 /**
  * ExternalReviews Class
@@ -89,8 +89,7 @@ class ExternalReviews
 	 * syndetics reviewers add another entry.
 	 *
 	 * @param   string  $id Client access key
-	 * @return  array       Returns array with review data, otherwise a
-	 *                      AspenError.
+	 * @return  array|AspenError  Returns array with review data, otherwise a AspenError.
 	 * @access  private
 	 * @author  Joel Timothy Norman <joel.t.norman@wmich.edu>
 	 * @author  Andrew Nagy <andrew.nagy@villanova.edu>
@@ -147,20 +146,10 @@ class ExternalReviews
                'index.xml&client=' . $id . '&type=rw12,hw7';
 
 		//find out if there are any reviews
-		$client = new HTTP_Request();
-		$client->setMethod('GET');
-		$client->setURL($url);
-        $http = $client->sendRequest();
-		if ($http instanceof AspenError) {
-			// @codeCoverageIgnoreStart
-			$logger->log("Error connecting to $url", Logger::LOG_ERROR);
-			$logger->log("$http", Logger::LOG_ERROR);
-			return $http;
-			// @codeCoverageIgnoreEnd
-		}
-
+		$client = new CurlWrapper();
+		$http = $client->curlGetPage($url);
 		// Test XML Response
-		if (!($xmldoc = @DOMDocument::loadXML($client->getResponseBody()))) {
+		if (!($xmldoc = @DOMDocument::loadXML($http))) {
 			// @codeCoverageIgnoreStart
 			$logger->log("Did not receive XML from $url", Logger::LOG_ERROR);
 			return new AspenError('Invalid XML');
@@ -175,19 +164,9 @@ class ExternalReviews
 				// Load reviews
 				$url = $baseUrl . '/index.aspx?isbn=' . $this->isbn . '/' .
 				$sourceInfo['file'] . '&client=' . $id . '&type=rw12,hw7';
-				$client->setURL($url);
-                $http = $client->sendRequest();
-				if ($http instanceof AspenError) {
-					// @codeCoverageIgnoreStart
-					$logger->log("Error connecting to $url", Logger::LOG_ERROR);
-					$logger->log("$http", Logger::LOG_ERROR);
-					continue;
-					// @codeCoverageIgnoreEnd
-				}
+				$http = $client->curlGetPage($url);
 
-				// Test XML Response
-				$responseBody = $client->getResponseBody();
-				if (!($xmldoc2 = @DOMDocument::loadXML($responseBody))) {
+				if (!($xmldoc2 = @DOMDocument::loadXML($http))) {
 					// @codeCoverageIgnoreStart
 					return new AspenError('Invalid XML');
 					// @codeCoverageIgnoreEnd

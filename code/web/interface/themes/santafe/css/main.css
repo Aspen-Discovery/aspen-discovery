@@ -8729,6 +8729,18 @@ ul.account-submenu {
 .btn-wrap {
   white-space: normal !important;
 }
+.placard {
+  border: 1px solid black;
+  background-color: lightyellow;
+  padding: 10px;
+}
+.placard-image {
+  float: left;
+  padding-right: 10px;
+}
+.placard-body {
+  font-weight: bold;
+}
 #home-page-search {
   background-color: #FFFAF0;
   padding: 20px 0 10px;

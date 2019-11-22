@@ -835,8 +835,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 
 	function getFormatCategory()
 	{
-		//TODO: Find a way of loading this (from record details?)
-		return array();
+		return $this->getGroupedWorkDriver()->getFormatCategory();
 	}
 
     function getRecordUrl()

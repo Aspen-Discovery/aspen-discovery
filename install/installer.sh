@@ -38,6 +38,17 @@ chmod -R 755 tmp
 setenforce 0
 cp install/selinux.config /etc/selinux/config
 
+#Increase entropy
+yum -y -q install rng-tools
+cp install/limits.conf /etc/security/limits.conf
+cp install/rngd.service /etc/systemd/system/multi-user.target.wants/rngd.service
+
+systemctl daemon-reload
+systemctl start rngd
+
+yum -y install epel-release
+yum -y install certbot python2-certbot-apache
+
 echo "Generate new root password for mariadb at: https://passwordsgenerator.net/ and store in passbolt"
 mysql_secure_installation
 #echo "Setting timezone to Mountain Time, update as necessary with timedatectl set-timezone timezone"

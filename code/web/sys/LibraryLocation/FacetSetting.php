@@ -18,12 +18,13 @@ abstract class FacetSetting extends DataObject {
 	public $translate;
 
 	public function getNumericColumnNames()
-    {
-        return ['weight', 'showAsDropDown', 'multiSelect', 'canLock', 'showAboveResults', 'showInResults', 'showInAdvancedSearch', 'translate'];
-    }
+	{
+		return ['weight', 'showAsDropDown', 'multiSelect', 'canLock', 'showAboveResults', 'showInResults', 'showInAdvancedSearch', 'translate'];
+	}
 
 
-    public static function getAvailableFacets(){
+	public static function getAvailableFacets()
+	{
 		$availableFacets = array(
 			"owning_library" => "Library System",
 			"owning_location" => "Branch",

@@ -841,6 +841,9 @@ class CatalogConnection
 	 */
 	function getForgotPasswordType()
 	{
+		if ($this->driver == null){
+			return null;
+		}
 		return $this->driver->getForgotPasswordType();
 	}
 
@@ -900,6 +903,9 @@ class CatalogConnection
 
 	public function showMessagingSettings()
 	{
+		if ($this->driver == null){
+			return false;
+		}
 		return $this->driver->showMessagingSettings();
 	}
 

@@ -43,6 +43,10 @@
 	</div>
 	{* End Listing Options *}
 
+	{if $placard}
+		{include file="Search/placard.tpl"}
+	{/if}
+
 	{if $subpage}
 		{include file=$subpage}
 	{else}

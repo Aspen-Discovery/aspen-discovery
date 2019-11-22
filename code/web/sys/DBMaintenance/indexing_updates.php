@@ -183,6 +183,7 @@ function getIndexingUpdates() {
 		'indexing_profile_specified_formats' => array(
 			'title' => 'Indexing Profiles - specified format',
 			'description' => 'Allow specified formats for use with side loaded eContent',
+			'continueOnError' => true,
 			'sql' => array(
 				"ALTER TABLE indexing_profiles CHANGE formatSource `formatSource` enum('bib','item', 'specified') NOT NULL DEFAULT 'bib'",
 				"ALTER TABLE indexing_profiles ADD COLUMN `specifiedFormat` varchar(50) DEFAULT NULL",
