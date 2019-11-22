@@ -1073,10 +1073,14 @@ class BookCoverProcessor{
 					}
 				}
 			}
-			if (($this->groupedWork->getFormatCategory() == 'Books' || $this->groupedWork->getFormatCategory() == 'Audio Books') && array_key_exists('google',BookCoverProcessor::$providers)){
-				//Try loading by title and author
-				if ($this->google(BookCoverProcessor::$providers['google'], $driver->getTitle(), $driver->getPrimaryAuthor())){
-					return true;
+			$groupedWork = new GroupedWork();
+			$groupedWork->permanent_id = $this->groupedWork->getPermanentId();
+			if ($groupedWork->find(true)) {
+				if ($groupedWork->grouping_category == 'book' && array_key_exists('google', BookCoverProcessor::$providers)) {
+					//Try loading by title and author
+					if ($this->google(BookCoverProcessor::$providers['google'], $driver->getTitle(), $driver->getPrimaryAuthor())) {
+						return true;
+					}
 				}
 			}
 		}
