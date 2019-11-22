@@ -55,6 +55,7 @@ $variables['url'] = '';
 while (empty($variables['url'])) {
 	$variables['url'] = readline("Enter the url where the site will be accessed i.e. https://aspen.turningleaftechnologies.com > ");
 }
+$variables['servername'] = preg_replace('~https?://~', '', $variables['url']);
 
 $siteOnWindows = readline("Will the site run on windows (y/N)? ");
 if (empty($siteOnWindows) || ($siteOnWindows != 'Y' && $siteOnWindows != 'y')){
@@ -200,7 +201,7 @@ $aspen_db = null;
 echo("Setting up data and log directories\r\n");
 $dataDir = '/data/aspen-discovery/' . $sitename;
 if (!file_exists($dataDir)){
-	mkdir($dataDir, 0770, true);
+	mkdir($dataDir, 0775, true);
 	if (!$runningOnWindows){
 		exec('chown -R apache:apache ' . $dataDir);
 	}
@@ -236,8 +237,8 @@ if (!$siteOnWindows){
 //Setup solr
 if (!$siteOnWindows){
 	exec("adduser solr");
-	exec('chown -R apache:apache ' . $installDir . '/sites/default/solr-7.6.0');
-	exec('chown -R apache:apache ' . $dataDir . '/solr7');
+	exec('chown -R solr:solr ' . $installDir . '/sites/default/solr-7.6.0');
+	exec('chown -R solr:solr ' . $dataDir . '/solr7');
 }
 
 if ($siteOnWindows){
@@ -257,8 +258,7 @@ echo("Next Steps\r\n");
 $step = 1;
 if ($siteOnWindows) {
 	echo($step++ . ") Add Include \"$siteDir/httpd-{$sitename}.conf\" to the httpd.conf file\r\n");
-	$servername = preg_replace('~https?://~', '', $variables['url']);
-	echo($step++ . ") Add $servername to the hosts file\r\n");
+	echo($step++ . ") Add {$variables['servername']} to the hosts file\r\n");
 	echo($step++ . ") Restart apache\r\n");
 }
 echo($step++ . ") Login to the server as aspen_admin and run database updates\r\n");

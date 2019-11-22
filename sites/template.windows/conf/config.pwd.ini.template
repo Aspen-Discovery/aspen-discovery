@@ -30,7 +30,7 @@ database_aspen_jdbc   = "jdbc:mysql://localhost/{aspenDBName}?user={aspenDBUser}
 database_aspen_dbname = {aspenDBName}
 
 [Content]
-coverimages     =
+;coverimages     =
 reviews         =
 excerpts        =
 

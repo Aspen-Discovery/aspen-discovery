@@ -23,14 +23,14 @@ googleMapsKey =
 
 [Database]
 ;Since we have multiple databases, need to specify each
-database_dsn          = "mysql:dbname={aspen_db_name};host=127.0.0.1"
-database_user         = {aspen_db_user}
-database_password     = {aspen_db_pwd}
-database_aspen_jdbc   = "jdbc:mysql://localhost/{aspen_db_name}?user={aspen_db_user}&password={aspen_db_pwd}&useUnicode=yes&characterEncoding=UTF-8&serverTimezone={aspen_db_timezone}"
-database_aspen_dbname = basin_libraries
+database_dsn          = "mysql:dbname={aspenDBName};host=127.0.0.1"
+database_user         = {aspenDBUser}
+database_password     = {aspenDBPwd}
+database_aspen_jdbc   = "jdbc:mysql://localhost/{aspenDBName}?user={aspenDBUser}&password={aspenDBPwd}&useUnicode=yes&characterEncoding=UTF-8&serverTimezone={timezone}"
+database_aspen_dbname = {aspenDBName}
 
 [Content]
-coverimages     =
+;coverimages     =
 reviews         =
 excerpts        =
 
