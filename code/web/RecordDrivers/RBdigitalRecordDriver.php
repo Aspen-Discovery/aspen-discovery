@@ -354,25 +354,30 @@ class RBdigitalRecordDriver extends GroupedWorkSubDriver
 	{
 		// Schema.org
 		// Get information about the record
-		require_once ROOT_DIR . '/RecordDrivers/LDRecordOffer.php';
-		$linkedDataRecord = new LDRecordOffer($this->getRelatedRecord());
-		$semanticData [] = array(
-			'@context' => 'http://schema.org',
-			'@type' => $linkedDataRecord->getWorkType(),
-			'name' => $this->getTitle(),
-			'creator' => $this->getPrimaryAuthor(),
-			'bookEdition' => $this->getEditions(),
-			'isAccessibleForFree' => true,
-			'image' => $this->getBookcoverUrl('medium'),
-			"offers" => $linkedDataRecord->getOffers()
-		);
+		$relatedRecord = $this->getRelatedRecord();
+		if ($relatedRecord != null) {
+			require_once ROOT_DIR . '/RecordDrivers/LDRecordOffer.php';
+			$linkedDataRecord = new LDRecordOffer($relatedRecord);
+			$semanticData [] = array(
+				'@context' => 'http://schema.org',
+				'@type' => $linkedDataRecord->getWorkType(),
+				'name' => $this->getTitle(),
+				'creator' => $this->getPrimaryAuthor(),
+				'bookEdition' => $this->getEditions(),
+				'isAccessibleForFree' => true,
+				'image' => $this->getBookcoverUrl('medium'),
+				"offers" => $linkedDataRecord->getOffers()
+			);
 
-		global $interface;
-		$interface->assign('og_title', $this->getTitle());
-		$interface->assign('og_type', $this->getGroupedWorkDriver()->getOGType());
-		$interface->assign('og_image', $this->getBookcoverUrl('medium'));
-		$interface->assign('og_url', $this->getAbsoluteUrl());
-		return $semanticData;
+			global $interface;
+			$interface->assign('og_title', $this->getTitle());
+			$interface->assign('og_type', $this->getGroupedWorkDriver()->getOGType());
+			$interface->assign('og_image', $this->getBookcoverUrl('medium'));
+			$interface->assign('og_url', $this->getAbsoluteUrl());
+			return $semanticData;
+		}else{
+			return null;
+		}
 	}
 
 	/**
@@ -430,18 +435,26 @@ class RBdigitalRecordDriver extends GroupedWorkSubDriver
 	{
 		$relatedRecord = $this->getRelatedRecord();
 		$statusSummary = array();
-		if ($relatedRecord->getAvailableCopies() > 0) {
-			$statusSummary['status'] = "Available from RBdigital";
-			$statusSummary['available'] = true;
-			$statusSummary['class'] = 'available';
-			$statusSummary['showPlaceHold'] = false;
-			$statusSummary['showCheckout'] = true;
-		} else {
-			$statusSummary['status'] = 'Checked Out';
-			$statusSummary['class'] = 'checkedOut';
+		if ($relatedRecord == null){
+			$statusSummary['status'] = "Unavailable";
 			$statusSummary['available'] = false;
-			$statusSummary['showPlaceHold'] = true;
+			$statusSummary['class'] = 'unavailable';
+			$statusSummary['showPlaceHold'] = false;
 			$statusSummary['showCheckout'] = false;
+		}else{
+			if ($relatedRecord->getAvailableCopies() > 0) {
+				$statusSummary['status'] = "Available from RBdigital";
+				$statusSummary['available'] = true;
+				$statusSummary['class'] = 'available';
+				$statusSummary['showPlaceHold'] = false;
+				$statusSummary['showCheckout'] = true;
+			} else {
+				$statusSummary['status'] = 'Checked Out';
+				$statusSummary['class'] = 'checkedOut';
+				$statusSummary['available'] = false;
+				$statusSummary['showPlaceHold'] = true;
+				$statusSummary['showCheckout'] = false;
+			}
 		}
 		return $statusSummary;
 	}

@@ -805,7 +805,7 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 		require_once ROOT_DIR . '/RecordDrivers/LDRecordOffer.php';
 		$relatedRecord = $this->getRelatedRecord();
 		if ($relatedRecord != null) {
-			$linkedDataRecord = new LDRecordOffer($this->getRelatedRecord());
+			$linkedDataRecord = new LDRecordOffer($relatedRecord);
 			$semanticData [] = array(
 					'@context' => 'http://schema.org',
 					'@type' => $linkedDataRecord->getWorkType(),
