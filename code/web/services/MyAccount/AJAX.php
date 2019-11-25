@@ -1732,19 +1732,21 @@ class MyAccount_AJAX
 				'format' => 'Format',
 			);
 			$user = UserAccount::getActiveUserObj();
-			if (count($user->getLinkedUsers()) > 0) {
-				$sortOptions['libraryAccount'] = 'Library Account';
-			}
-			if ($showWaitList) {
-				$sortOptions['holdQueueLength'] = 'Wait List';
-			}
-			if ($showRenewed) {
-				$sortOptions['renewed'] = 'Times Renewed';
-			}
+			if (UserAccount::isLoggedIn() == false || empty($user)){
+				$result['message'] = translate(['text' => 'login_expired', 'defaultText' => "Your login has timed out. Please login again."]);
+			}else{
+				if (count($user->getLinkedUsers()) > 0) {
+					$sortOptions['libraryAccount'] = 'Library Account';
+				}
+				if ($showWaitList) {
+					$sortOptions['holdQueueLength'] = 'Wait List';
+				}
+				if ($showRenewed) {
+					$sortOptions['renewed'] = 'Times Renewed';
+				}
 
-			$interface->assign('sortOptions', $sortOptions);
+				$interface->assign('sortOptions', $sortOptions);
 
-			if ($user) {
 				$interface->assign('showNotInterested', false);
 
 				// Get My Transactions
@@ -1758,10 +1760,11 @@ class MyAccount_AJAX
 				$allCheckedOut = $this->sortCheckouts($selectedSortOption, $allCheckedOut);
 
 				$interface->assign('transList', $allCheckedOut);
+
+				$result['success'] = true;
+				$result['message'] = "";
+				$result['checkouts'] = $interface->fetch('MyAccount/checkoutsList.tpl');
 			}
-			$result['success'] = true;
-			$result['message'] = "";
-			$result['checkouts'] = $interface->fetch('MyAccount/checkoutsList.tpl');
 		} else {
 			$result['message'] = translate('The catalog is offline');
 		}
@@ -1790,101 +1793,105 @@ class MyAccount_AJAX
 			$selectedUnavailableSortOption = $this->setSort('unavailableHoldSort', 'unavailableHold');
 
 			$user = UserAccount::getActiveUserObj();
+			if (UserAccount::isLoggedIn() == false || empty($user)){
+				$result['message'] = translate(['text' => 'login_expired', 'defaultText' => "Your login has timed out. Please login again."]);
+			}else {
 
-			$interface->assign('allowFreezeHolds', true);
+				$interface->assign('allowFreezeHolds', true);
 
-			$ils = $configArray['Catalog']['ils'];
-			$showPosition = ($ils == 'Horizon' || $ils == 'Koha' || $ils == 'Symphony' || $ils == 'CarlX');
-			$suspendRequiresReactivationDate = ($ils == 'Horizon' || $ils == 'CarlX' || $ils == 'Symphony' || $ils == 'Koha');
-			$interface->assign('suspendRequiresReactivationDate', $suspendRequiresReactivationDate);
-			$canChangePickupLocation = ($ils != 'Koha');
-			$interface->assign('canChangePickupLocation', $canChangePickupLocation);
-			$showPlacedColumn = ($ils == 'Symphony');
-			$interface->assign('showPlacedColumn', $showPlacedColumn);
+				$ils = $configArray['Catalog']['ils'];
+				$showPosition = ($ils == 'Horizon' || $ils == 'Koha' || $ils == 'Symphony' || $ils == 'CarlX');
+				$suspendRequiresReactivationDate = ($ils == 'Horizon' || $ils == 'CarlX' || $ils == 'Symphony' || $ils == 'Koha');
+				$interface->assign('suspendRequiresReactivationDate', $suspendRequiresReactivationDate);
+				$canChangePickupLocation = ($ils != 'Koha');
+				$interface->assign('canChangePickupLocation', $canChangePickupLocation);
+				$showPlacedColumn = ($ils == 'Symphony');
+				$interface->assign('showPlacedColumn', $showPlacedColumn);
 
-			// Define sorting options
-			$unavailableHoldSortOptions = array(
-				'title' => 'Title',
-				'author' => 'Author',
-				'format' => 'Format',
-			);
-			if ($source != 'rbdigital') {
-				$unavailableHoldSortOptions['status'] = 'Status';
-			}
-			if ($source == 'all' || $source == 'ils') {
-				$unavailableHoldSortOptions['location'] = 'Pickup Location';
-			}
-			if ($showPosition && $source != 'rbdigital') {
-				$unavailableHoldSortOptions['position'] = 'Position';
-			}
-			if ($showPlacedColumn) {
-				$unavailableHoldSortOptions['placed'] = 'Date Placed';
-			}
+				// Define sorting options
+				$unavailableHoldSortOptions = array(
+					'title' => 'Title',
+					'author' => 'Author',
+					'format' => 'Format',
+				);
+				if ($source != 'rbdigital') {
+					$unavailableHoldSortOptions['status'] = 'Status';
+				}
+				if ($source == 'all' || $source == 'ils') {
+					$unavailableHoldSortOptions['location'] = 'Pickup Location';
+				}
+				if ($showPosition && $source != 'rbdigital') {
+					$unavailableHoldSortOptions['position'] = 'Position';
+				}
+				if ($showPlacedColumn) {
+					$unavailableHoldSortOptions['placed'] = 'Date Placed';
+				}
 
-			$availableHoldSortOptions = array(
-				'title' => 'Title',
-				'author' => 'Author',
-				'format' => 'Format',
-				'expire' => 'Expiration Date',
-			);
-			if ($source == 'all' || $source == 'ils') {
-				$availableHoldSortOptions['location'] = 'Pickup Location';
-			}
+				$availableHoldSortOptions = array(
+					'title' => 'Title',
+					'author' => 'Author',
+					'format' => 'Format',
+					'expire' => 'Expiration Date',
+				);
+				if ($source == 'all' || $source == 'ils') {
+					$availableHoldSortOptions['location'] = 'Pickup Location';
+				}
 
-			if (count($user->getLinkedUsers()) > 0) {
-				$unavailableHoldSortOptions['libraryAccount'] = 'Library Account';
-				$availableHoldSortOptions['libraryAccount'] = 'Library Account';
-			}
+				if (count($user->getLinkedUsers()) > 0) {
+					$unavailableHoldSortOptions['libraryAccount'] = 'Library Account';
+					$availableHoldSortOptions['libraryAccount'] = 'Library Account';
+				}
 
-			$interface->assign('sortOptions', array(
-				'available' => $availableHoldSortOptions,
-				'unavailable' => $unavailableHoldSortOptions
-			));
+				$interface->assign('sortOptions', array(
+					'available' => $availableHoldSortOptions,
+					'unavailable' => $unavailableHoldSortOptions
+				));
 
-			if ($selectedAvailableSortOption == null || !array_key_exists($selectedAvailableSortOption, $availableHoldSortOptions)) {
-				$selectedAvailableSortOption = 'expire';
-			}
-			if ($selectedUnavailableSortOption == null || !array_key_exists($selectedUnavailableSortOption, $unavailableHoldSortOptions)) {
-				$selectedUnavailableSortOption = ($showPosition ? 'position' : 'title');
-			}
-			$interface->assign('defaultSortOption', array(
-				'available' => $selectedAvailableSortOption,
-				'unavailable' => $selectedUnavailableSortOption
-			));
+				if ($selectedAvailableSortOption == null || !array_key_exists($selectedAvailableSortOption, $availableHoldSortOptions)) {
+					$selectedAvailableSortOption = 'expire';
+				}
+				if ($selectedUnavailableSortOption == null || !array_key_exists($selectedUnavailableSortOption, $unavailableHoldSortOptions)) {
+					$selectedUnavailableSortOption = ($showPosition ? 'position' : 'title');
+				}
+				$interface->assign('defaultSortOption', array(
+					'available' => $selectedAvailableSortOption,
+					'unavailable' => $selectedUnavailableSortOption
+				));
 
-			$allowChangeLocation = ($ils == 'Millennium' || $ils == 'Sierra');
-			$interface->assign('allowChangeLocation', $allowChangeLocation);
-			$showDateWhenSuspending = ($ils == 'Horizon' || $ils == 'CarlX' || $ils == 'Symphony' || $ils == 'Koha');
-			$interface->assign('showDateWhenSuspending', $showDateWhenSuspending);
+				$allowChangeLocation = ($ils == 'Millennium' || $ils == 'Sierra');
+				$interface->assign('allowChangeLocation', $allowChangeLocation);
+				$showDateWhenSuspending = ($ils == 'Horizon' || $ils == 'CarlX' || $ils == 'Symphony' || $ils == 'Koha');
+				$interface->assign('showDateWhenSuspending', $showDateWhenSuspending);
 
-			$interface->assign('showPosition', $showPosition);
-			$interface->assign('showNotInterested', false);
+				$interface->assign('showPosition', $showPosition);
+				$interface->assign('showNotInterested', false);
 
-			global $offlineMode;
-			if (!$offlineMode) {
-				if ($user) {
-					$allHolds = $user->getHolds(true, $selectedUnavailableSortOption, $selectedAvailableSortOption, $source);
-					if ($source == 'rbdigital') {
-						//RBdigital automatically checks out records so don't show the available section
-						unset($allHolds['available']);
+				global $offlineMode;
+				if (!$offlineMode) {
+					if ($user) {
+						$allHolds = $user->getHolds(true, $selectedUnavailableSortOption, $selectedAvailableSortOption, $source);
+						if ($source == 'rbdigital') {
+							//RBdigital automatically checks out records so don't show the available section
+							unset($allHolds['available']);
+						}
+						$interface->assign('recordList', $allHolds);
 					}
-					$interface->assign('recordList', $allHolds);
 				}
-			}
 
-			if (!$library->showDetailedHoldNoticeInformation) {
-				$notification_method = '';
-			} else {
-				$notification_method = ($user->_noticePreferenceLabel != 'Unknown') ? $user->_noticePreferenceLabel : '';
-				if ($notification_method == 'Mail' && $library->treatPrintNoticesAsPhoneNotices) {
-					$notification_method = 'Telephone';
+				if (!$library->showDetailedHoldNoticeInformation) {
+					$notification_method = '';
+				} else {
+					$notification_method = ($user->_noticePreferenceLabel != 'Unknown') ? $user->_noticePreferenceLabel : '';
+					if ($notification_method == 'Mail' && $library->treatPrintNoticesAsPhoneNotices) {
+						$notification_method = 'Telephone';
+					}
 				}
-			}
-			$interface->assign('notification_method', strtolower($notification_method));
+				$interface->assign('notification_method', strtolower($notification_method));
 
-			$result['success'] = true;
-			$result['message'] = "";
-			$result['holds'] = $interface->fetch('MyAccount/holdsList.tpl');
+				$result['success'] = true;
+				$result['message'] = "";
+				$result['holds'] = $interface->fetch('MyAccount/holdsList.tpl');
+			}
 		} else {
 			$result['message'] = translate('The catalog is offline');
 		}

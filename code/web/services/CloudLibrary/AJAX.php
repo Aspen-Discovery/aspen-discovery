@@ -73,7 +73,7 @@ class CloudLibrary_AJAX extends Action
 	{
 		$user = UserAccount::getLoggedInUser();
 		if (empty($user)){
-			$loggedOutMessage = translate(['text' => 'cloud_library_logged_out', 'defaultText' => "Your login has timed out. Please login again."]);
+			$loggedOutMessage = translate(['text' => 'login_expired', 'defaultText' => "Your login has timed out. Please login again."]);
 			return json_encode(
 				array(
 					'promptTitle' => translate('Invalid Account'),
@@ -125,7 +125,7 @@ class CloudLibrary_AJAX extends Action
 	{
 		$user = UserAccount::getLoggedInUser();
 		if (empty($user)){
-			$loggedOutMessage = translate(['text' => 'cloud_library_logged_out', 'defaultText' => "Your login has timed out. Please login again."]);
+			$loggedOutMessage = translate(['text' => 'login_expired', 'defaultText' => "Your login has timed out. Please login again."]);
 			return json_encode(
 				array(
 					'promptTitle' => translate('Invalid Account'),
