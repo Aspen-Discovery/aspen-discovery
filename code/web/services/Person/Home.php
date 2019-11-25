@@ -20,7 +20,7 @@ class Person_Home extends Action
 			$interface->assign('userIsAdmin', false);
 		}
 
-		$searchSource = isset($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : 'local';
+		$searchSource = !empty($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : 'local';
 
 		//Load basic information needed in subclasses
 		if ($record_id == null || !isset($record_id)){

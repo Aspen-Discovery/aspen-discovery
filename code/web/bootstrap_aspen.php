@@ -23,7 +23,7 @@ function loadSearchInformation(){
 	$module = preg_replace('/[^\w]/', '', $module);
 
 	$searchSource = 'global';
-	if (isset($_GET['searchSource'])){
+	if (!empty($_GET['searchSource'])){
 		if (is_array($_GET['searchSource'])){
 			$_GET['searchSource'] = reset($_GET['searchSource']);
 		}
@@ -31,7 +31,7 @@ function loadSearchInformation(){
 		$_REQUEST['searchSource'] = $searchSource; //Update request since other check for it here
 		$_SESSION['searchSource'] = $searchSource; //Update the session so we can remember what the user was doing last.
 	}else{
-		if ( isset($_SESSION['searchSource'])){ //Didn't get a source, use what the user was doing last
+		if ( !empty($_SESSION['searchSource'])){ //Didn't get a source, use what the user was doing last
 			$searchSource = $_SESSION['searchSource'];
 			$_REQUEST['searchSource'] = $searchSource;
 		}else{

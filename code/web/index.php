@@ -220,10 +220,9 @@ if (isset($_REQUEST['lookfor'])) {
 	// Advanced Search with only the default search group (multiple search groups are named lookfor0, lookfor1, ... )
 	if (is_array($_REQUEST['lookfor'])) {
 		foreach ($_REQUEST['lookfor'] as $i => $searchTerm) {
-			if (preg_match('/http:|mailto:|https:/i', $searchTerm)) {
-				AspenError::raiseError("Sorry it looks like you are searching for a website, please rephrase your query.");
-				$_REQUEST['lookfor'][$i] = '';
-				$_GET['lookfor'][$i]     = '';
+			if (preg_match('~(https|mailto|http):/{0,2}~i', $searchTerm)) {
+				$_REQUEST['lookfor'][$i] = preg_replace('~(https|mailto|http):/{0,2}~i', '', $searchTerm);
+				$_GET['lookfor'][$i]     = preg_replace('~(https|mailto|http):/{0,2}~i', '', $searchTerm);
 			}
 			if (strlen($searchTerm) >= 256) {
 				AspenError::raiseError("Sorry your query is too long, please rephrase your query.");
@@ -235,10 +234,9 @@ if (isset($_REQUEST['lookfor'])) {
 	// Basic Search
 	else {
 		$searchTerm = $_REQUEST['lookfor'];
-		if (preg_match('/http:|mailto:|https:/i', $searchTerm)) {
-			AspenError::raiseError("Sorry it looks like you are searching for a website, please rephrase your query.");
-			$_REQUEST['lookfor'] = '';
-			$_GET['lookfor']     = '';
+		if (preg_match('~(https|mailto|http):/{0,2}~i', $searchTerm)) {
+			$_REQUEST['lookfor'] = preg_replace('~(https|mailto|http):/{0,2}~i', '', $searchTerm);
+			$_GET['lookfor']     = preg_replace('~(https|mailto|http):/{0,2}~i', '', $searchTerm);
 		}
 		if (strlen($searchTerm) >= 256) {
 			AspenError::raiseError("Sorry your query is too long, please rephrase your query.");
@@ -410,7 +408,7 @@ if (isset($_REQUEST['filter'])){
 	}
 }
 
-$searchSource = isset($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : 'local';
+$searchSource = !empty($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : 'local';
 
 $interface->assign('searchSource', $searchSource);
 
@@ -497,7 +495,7 @@ if ($action == "AJAX" || $action == "JSON" || $module == 'API'){
 			$interface->assign('searchIndex', $activeSearch->getSearchIndex());
 			$interface->assign('filterList', $activeSearch->getFilterList());
 			$interface->assign('savedSearch', $activeSearch->isSavedSearch());
-			if (!isset($_GET['searchSource'])){
+			if (!empty($_GET['searchSource'])){
 				$interface->assign('searchSource', $activeSearch->getSearchSource());
 			}
 		}

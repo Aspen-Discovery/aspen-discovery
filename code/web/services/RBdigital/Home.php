@@ -45,7 +45,7 @@ class RBdigital_Home extends Action{
 			$_SESSION['lastSearchURL'] : false);
 
 			//Get Next/Previous Links
-			$searchSource = isset($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : 'local';
+			$searchSource = !empty($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : 'local';
 			$searchObject = SearchObjectFactory::initSearchObject();
 			$searchObject->init($searchSource);
 			$searchObject->getNextPrevLinks();

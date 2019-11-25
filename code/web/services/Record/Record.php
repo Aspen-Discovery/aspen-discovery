@@ -259,7 +259,7 @@ abstract class Record_Record extends Action
 		$this->cacheId = 'Record|' . $_GET['id'] . '|' . get_class($this);
 
 		//Get Next/Previous Links
-		$searchSource = isset($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : 'local';
+		$searchSource = !empty($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : 'local';
 		$searchObject = SearchObjectFactory::initSearchObject();
 		$searchObject->init($searchSource);
 		$searchObject->getNextPrevLinks();
