@@ -438,6 +438,9 @@ class Search_Results extends Action {
 
 	private function loadPlacards()
 	{
+		if (empty($_REQUEST['lookfor'])){
+			return;
+		}
 		try {
 			$placardToDisplay = null;
 			require_once ROOT_DIR . '/sys/LocalEnrichment/Placard.php';
