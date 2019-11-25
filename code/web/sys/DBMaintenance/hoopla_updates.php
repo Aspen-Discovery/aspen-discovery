@@ -170,6 +170,14 @@ function getHooplaUpdates()
 			'sql' => [
 				"INSERT INTO modules (name, indexName, backgroundProcess) VALUES ('Hoopla', 'grouped_works', 'hoopla_export')"
 			]
+		],
+
+		'disable_hoopla_module_auto_restart' => [
+			'title' => 'Disable Hoopla Auto Restart',
+			'description' => 'Disable Hoopla Auto Restart',
+			'sql' => [
+				"UPDATE modules SET backgroundProcess = '' WHERE name = 'Hoopla'",
+			]
 		]
 	);
 }

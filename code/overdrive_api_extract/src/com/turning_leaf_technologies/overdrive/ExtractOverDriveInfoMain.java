@@ -7,6 +7,7 @@ import java.util.Date;
 
 import com.turning_leaf_technologies.config.ConfigUtil;
 import com.turning_leaf_technologies.logging.LoggingUtil;
+import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
 
@@ -14,12 +15,16 @@ public class ExtractOverDriveInfoMain {
 	private static Connection dbConn;
 
 	public static void main(String[] args) {
-		if (args.length == 0){
-			System.out.println("The name of the server to extract OverDrive data for must be provided as the first parameter.");
-			System.exit(1);
+		String serverName;
+		if (args.length == 0) {
+			serverName = StringUtils.getInputFromCommandLine("Please enter the server name");
+			if (serverName.length() == 0) {
+				System.out.println("You must provide the server name as the first argument.");
+				System.exit(1);
+			}
+		} else {
+			serverName = args[0];
 		}
-
-		String serverName = args[0];
 		Logger logger = LoggingUtil.setupLogging(serverName, "overdrive_extract");
 
 		//Start an infinite loop to do continual indexing.  We will just kill the process as needed to restart, but

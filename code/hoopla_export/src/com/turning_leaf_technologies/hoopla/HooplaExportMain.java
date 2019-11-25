@@ -46,66 +46,72 @@ public class HooplaExportMain {
 	private static CRC32 checksumCalculator = new CRC32();
 
 	public static void main(String[] args){
+		String serverName;
 		if (args.length == 0) {
-			System.out.println("You must provide the server name as the first argument.");
-			System.exit(1);
+			serverName = StringUtils.getInputFromCommandLine("Please enter the server name");
+			if (serverName.length() == 0) {
+				System.out.println("You must provide the server name as the first argument.");
+				System.exit(1);
+			}
+		} else {
+			serverName = args[0];
 		}
-		serverName = args[0];
 
 		logger = LoggingUtil.setupLogging(serverName, "hoopla_export");
 
 		//noinspection InfiniteLoopStatement
-		while (true) {
-			Date startTime = new Date();
-			startTimeForLogging = startTime.getTime() / 1000;
-			logger.info(startTime.toString() + ": Starting Hoopla Export");
+		//Hoopla only needs to run once a day so just run it in cron
+		//while (true) {
+		Date startTime = new Date();
+		startTimeForLogging = startTime.getTime() / 1000;
+		logger.info(startTime.toString() + ": Starting Hoopla Export");
 
-			// Read the base INI file to get information about the server (current directory/cron/config.ini)
-			configIni = ConfigUtil.loadConfigFile("config.ini", serverName, logger);
+		// Read the base INI file to get information about the server (current directory/cron/config.ini)
+		configIni = ConfigUtil.loadConfigFile("config.ini", serverName, logger);
 
-			//Connect to the Aspen database
-			aspenConn = connectToDatabase();
+		//Connect to the Aspen database
+		aspenConn = connectToDatabase();
 
-			//Start a log entry
-			createDbLogEntry(startTime, aspenConn);
-			logEntry.addNote("Starting extract");
-			logEntry.saveResults();
+		//Start a log entry
+		createDbLogEntry(startTime, aspenConn);
+		logEntry.addNote("Starting extract");
+		logEntry.saveResults();
 
-			//Get a list of all existing records in the database
-			loadExistingTitles();
+		//Get a list of all existing records in the database
+		loadExistingTitles();
 
-			//Do work here
-			exportHooplaData();
+		//Do work here
+		exportHooplaData();
 
-			if (groupedWorkIndexer != null) {
-				groupedWorkIndexer.finishIndexingFromExtract();
-				recordGroupingProcessorSingleton = null;
-				groupedWorkIndexer = null;
-				existingRecords = null;
-			}
+		if (groupedWorkIndexer != null) {
+			groupedWorkIndexer.finishIndexingFromExtract();
+			recordGroupingProcessorSingleton = null;
+			groupedWorkIndexer = null;
+			existingRecords = null;
+		}
 
-			if (logEntry.hasErrors()) {
-				logger.error("There were errors during the export!");
-			}
+		if (logEntry.hasErrors()) {
+			logger.error("There were errors during the export!");
+		}
 
-			logger.info("Finished exporting data " + new Date().toString());
-			long endTime = new Date().getTime();
-			long elapsedTime = endTime - startTime.getTime();
-			logger.info("Elapsed Minutes " + (elapsedTime / 60000));
+		logger.info("Finished exporting data " + new Date().toString());
+		long endTime = new Date().getTime();
+		long elapsedTime = endTime - startTime.getTime();
+		logger.info("Elapsed Minutes " + (elapsedTime / 60000));
 
-			//Mark that indexing has finished
-			logEntry.setFinished();
+		//Mark that indexing has finished
+		logEntry.setFinished();
 
-			disconnectDatabase(aspenConn);
+		disconnectDatabase(aspenConn);
 
 			//Pause 24 hours before running the next export.
-			try {
-				System.gc();
-				Thread.sleep(1000 * 60 * 60 * 24);
-			} catch (InterruptedException e) {
-				logger.info("Thread was interrupted");
-			}
-		}
+//			try {
+//				System.gc();
+//				Thread.sleep(1000 * 60 * 60 * 24);
+//			} catch (InterruptedException e) {
+//				logger.info("Thread was interrupted");
+//			}
+//		}
 	}
 
 	private static void deleteItems() {
