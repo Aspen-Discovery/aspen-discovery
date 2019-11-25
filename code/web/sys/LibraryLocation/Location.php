@@ -1279,10 +1279,10 @@ class Location extends DataObject
 					}
 				}
 			}else{
-				$libraryHoursMessage = null;
+				$libraryHoursMessage = '';
 			}
 		}else{
-			$libraryHoursMessage = null;
+			$libraryHoursMessage = '';
 		}
 		return $libraryHoursMessage;
 	}
