@@ -99,12 +99,24 @@ class SearchObject_ListsSearcher extends SearchObject_SolrSearcher
 
 		//Validate we got good search terms
 		foreach ($this->searchTerms as &$searchTerm) {
-			if ($searchTerm['index'] == 'Keyword') {
-				$searchTerm['index'] = 'ListsKeyword';
-			} elseif ($searchTerm['index'] == 'Title') {
-				$searchTerm['index'] = 'ListsTitle';
-			} elseif ($searchTerm['index'] == 'Author') {
-				$searchTerm['index'] = 'ListsAuthor';
+			if (isset($searchTerm['index'])){
+				if ($searchTerm['index'] == 'Keyword') {
+					$searchTerm['index'] = 'ListsKeyword';
+				} elseif ($searchTerm['index'] == 'Title') {
+					$searchTerm['index'] = 'ListsTitle';
+				} elseif ($searchTerm['index'] == 'Author') {
+					$searchTerm['index'] = 'ListsAuthor';
+				}
+			}else{
+				foreach ($searchTerm['group'] as &$group){
+					if ($group['field'] == 'Keyword') {
+						$group['field'] = 'ListsKeyword';
+					} elseif ($group['field'] == 'Title') {
+						$group['field'] = 'ListsTitle';
+					} elseif ($group['field'] == 'Author') {
+						$group['field'] = 'ListsAuthor';
+					}
+				}
 			}
 		}
 
