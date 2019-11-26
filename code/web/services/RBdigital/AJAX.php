@@ -2,7 +2,6 @@
 require_once ROOT_DIR . '/Action.php';
 
 /** @noinspection PhpUnused */
-
 class RBdigital_AJAX extends Action
 {
 
