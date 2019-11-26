@@ -2037,6 +2037,11 @@ abstract class Solr
 		$this->searchSource = $searchSource;
 	}
 
+	public function getSearchSource()
+	{
+		return $this->searchSource;
+	}
+
 	function loadDynamicFields()
 	{
 		/** @var Memcache $memCache */
