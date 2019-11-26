@@ -15,7 +15,7 @@
 			  {assign var=isn value=$suggestion.oclcNumber}
 			{/if}
 			<tr>
-		    <td>{if $isn}<img src="{$path}/bookcover.php?isn={$isn}&size=small" alt="book cover"/>{else}&nbsp;{/if}</td>
+		    <td>{if $isn}<img src="/bookcover.php?isn={$isn}&size=small" alt="book cover"/>{else}&nbsp;{/if}</td>
 				<td>
 					<div class="worldCatTitle"><a href="{$suggestion.link}">{$suggestion.title}</a></div>
 					<div>by {$suggestion.author|truncate:60}</div>

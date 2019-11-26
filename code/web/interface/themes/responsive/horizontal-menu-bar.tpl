@@ -1,13 +1,13 @@
 {strip}
 	{if $loggedIn}{* Logged In *}
-		<a href="{$path}/MyAccount/Logout" id="logoutLink" class="menu-icon" title="{translate text="Log Out"}">
+		<a href="/MyAccount/Logout" id="logoutLink" class="menu-icon" title="{translate text="Log Out"}">
 			<img src="{img filename='/interface/themes/responsive/images/Logout.png'}" alt="{translate text="Log Out"}">
 		</a>
 		<a href="#{*home-page-login*}" id="mobile-menu-account-icon" onclick="AspenDiscovery.Menu.Mobile.showAccount(this)" class="menu-icon" title="Account">
 			<img src="{img filename='/interface/themes/responsive/images/Account.png'}" alt="Account">
 		</a>
 	{else} {* Not Logged In *}
-		<a href="{$path}/MyAccount/Home" id="loginLink" onclick="{if $isLoginPage}$('#username').focus();return false{else}return AspenDiscovery.Account.followLinkIfLoggedIn(this){/if}" data-login="true" class="menu-icon" title="{translate text='Login'}">
+		<a href="/MyAccount/Home" id="loginLink" onclick="{if $isLoginPage}$('#username').focus();return false{else}return AspenDiscovery.Account.followLinkIfLoggedIn(this){/if}" data-login="true" class="menu-icon" title="{translate text='Login'}">
 			{*<img src="{img filename='/interface/themes/responsive/images/Account.png'}" alt="{translate text='Login'}">*}
 			<img src="{img filename='/interface/themes/responsive/images/Login.png'}" alt="{translate text='Login'}">
 		</a>

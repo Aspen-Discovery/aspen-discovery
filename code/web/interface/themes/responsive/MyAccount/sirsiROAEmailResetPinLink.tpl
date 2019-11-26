@@ -4,7 +4,7 @@
 		<h2>{translate text='Reset My PIN'}</h2>
 		<div class="alert alert-info">Please enter your complete card number.  A email will be sent to the email address on file for your account containing a link to reset your {$passwordLabel}.</div>
 
-		<form id="emailResetPin" method="POST" action="{$path}/MyAccount/EmailResetPin" class="form-horizontal">
+		<form id="emailResetPin" method="POST" action="/MyAccount/EmailResetPin" class="form-horizontal">
 			<div class="form-group">
 				<label for="barcode" class="control-label col-xs-12 col-sm-4">{$usernameLabel}</label>
 				<div class="col-xs-12 col-sm-8">

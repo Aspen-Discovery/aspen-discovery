@@ -6,12 +6,12 @@
 				{if !$emailResult.success && $emailResult.error}
 					<div class="alert alert-danger">{$emailResult.error}</div>
 					<div>
-						<a class="btn btn-primary" role="button" href="{$path}/MyAccount/EmailResetPin">Try Again</a>
+						<a class="btn btn-primary" role="button" href="/MyAccount/EmailResetPin">Try Again</a>
 					</div>
 				{elseif $emailResult.message}
 					<div class="alert alert-success">{$emailResult.message}</div>
 					<p>
-						<a class="btn btn-primary" role="button" href="{$path}/MyAccount/Login">{translate text='Login'}</a>
+						<a class="btn btn-primary" role="button" href="/MyAccount/Login">{translate text='Login'}</a>
 					</p>
 				{else}
 					<p class="alert alert-success">
@@ -21,7 +21,7 @@
 						If you do not receive an email within a few minutes, please check any spam folder your email service may have.   If you do not receive any email, please contact your library to have them reset your pin.
 					</p>
 					<p>
-						<a class="btn btn-primary" role="button" href="{$path}/MyAccount/Login">{translate text='Login'}</a>
+						<a class="btn btn-primary" role="button" href="/MyAccount/Login">{translate text='Login'}</a>
 					</p>
 				{/if}
 			</div>

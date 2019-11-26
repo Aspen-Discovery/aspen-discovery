@@ -107,7 +107,7 @@
 			<div class="col-md-9 result-value">
 				{assign var="subjects" value=$recordDriver->getSubjects()}
 				{foreach from=$subjects item=subject name=loop}
-					<a href="{$path}/Search/Results?lookfor=%22{$subject->value|escape:"url"}%22&amp;searchIndex=Subject">{$subject->value|escape}</a>
+					<a href="/Search/Results?lookfor=%22{$subject->value|escape:"url"}%22&amp;searchIndex=Subject">{$subject->value|escape}</a>
 					<br/>
 				{/foreach}
 			</div>

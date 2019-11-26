@@ -17,8 +17,8 @@
 
 						You currently have:
 						<ul>
-							<li><strong><span class="checkouts-placeholder"><img src="{$path}/images/loading.gif" alt="loading"></span></strong> titles <a href="{$path}/MyAccount/CheckedOut">checked out</a></li>
-							<li><strong><span class="holds-placeholder"><img src="{$path}/images/loading.gif" alt="loading"></span></strong> titles on <a href="{$path}/MyAccount/Holds">hold</a></li>
+							<li><strong><span class="checkouts-placeholder"><img src="/images/loading.gif" alt="loading"></span></strong> titles <a href="/MyAccount/CheckedOut">checked out</a></li>
+							<li><strong><span class="holds-placeholder"><img src="/images/loading.gif" alt="loading"></span></strong> titles on <a href="/MyAccount/Holds">hold</a></li>
 						</ul>
 						{* TODO: Show an alert if any titles are expired or are going to expire *}
 						{* TODO: Show an alert if any titles ready for pickup *}
@@ -37,7 +37,7 @@
 						Library staff does not have access to your suggestions.
 					</p>
 				{else}
-					<p>Based on the titles you have <a href="{$path}/MyAccount/MyRatings">rated</a>, we have <a href="{$path}/MyAccount/SuggestedTitles">suggestions for you</a>.  To improve your suggestions keep rating more titles.</p>
+					<p>Based on the titles you have <a href="/MyAccount/MyRatings">rated</a>, we have <a href="/MyAccount/SuggestedTitles">suggestions for you</a>.  To improve your suggestions keep rating more titles.</p>
 					{foreach from=$suggestions item=suggestion name=recordLoop}
 						<div class="result {if ($smarty.foreach.recordLoop.iteration % 2) == 0}alt{/if} record{$smarty.foreach.recordLoop.iteration}">
 							{$suggestion}
@@ -46,7 +46,7 @@
 				{/if}
 			{/if}
 		{else}
-			You must login to view this information. Click <a href="{$path}/MyAccount/Login">here</a> to login.
+			You must login to view this information. Click <a href="/MyAccount/Login">here</a> to login.
 		{/if}
 	</div>
 {/strip}

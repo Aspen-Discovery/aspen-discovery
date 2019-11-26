@@ -35,7 +35,7 @@
 		{/if}
 		<link type="image/x-icon" href="{$favicon}" rel="shortcut icon">
 		<link rel="search" type="application/opensearchdescription+xml" title="{$site.title} Catalog Search"
-		      href="{$path}/Search/OpenSearch?method=describe">
+		      href="/Search/OpenSearch?method=describe">
 		{include file="cssAndJsIncludes.tpl"}
 	{/strip}
 </head>

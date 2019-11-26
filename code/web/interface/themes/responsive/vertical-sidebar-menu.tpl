@@ -19,7 +19,7 @@
 					</div>
 				{else} {* Not Logged In *}
 					<div class="menu-bar-option">
-						<a href="{$path}/MyAccount/Home" id="loginLink" onclick="{if $isLoginPage}$('#username').focus();return false{else}return AspenDiscovery.Account.followLinkIfLoggedIn(this){/if}" data-login="true" class="menu-icon" title="{translate text='Login'}">
+						<a href="/MyAccount/Home" id="loginLink" onclick="{if $isLoginPage}$('#username').focus();return false{else}return AspenDiscovery.Account.followLinkIfLoggedIn(this){/if}" data-login="true" class="menu-icon" title="{translate text='Login'}">
 							<img src="{img filename='/interface/themes/responsive/images/Login.png'}" alt="{translate text='Login'}">
 							<div class="menu-bar-label rotated-text"><span class="rotated-text-inner">{translate text="Login"}</span></div>
 						</a>

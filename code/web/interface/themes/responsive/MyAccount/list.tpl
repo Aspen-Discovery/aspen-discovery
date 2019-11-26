@@ -145,7 +145,7 @@
 													newOrder = originalOrder+change;
 									if (change != 0) updates.push({'id':id, 'newOrder':newOrder});
 								});
-								$.getJSON(Globals.path + '/MyAccount/AJAX',
+								$.getJSON('/MyAccount/AJAX',
 												{
 													method:'setListEntryPositions'
 													,updates:updates

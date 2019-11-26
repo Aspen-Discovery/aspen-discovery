@@ -6,11 +6,11 @@
 
 			{if $requestPinResetResult.error}
 				<div>
-					<a href="{$path}/MyAccount/RequestPinReset">Try Again</a>
+					<a href="/MyAccount/RequestPinReset">Try Again</a>
 				</div>
 			{else}
 				<div>
-					<a href="{$path}/MyAccount/Login">Login here</a>
+					<a href="/MyAccount/Login">Login here</a>
 				</div>
 			{/if}
 		</div>

@@ -2,11 +2,11 @@
 <div id="main-content" class="col-md-12">
 		<h1>List Widget</h1>
 		<div class="btn-group">
-			<a class="btn btn-sm btn-default" href="{$path}/Admin/ListWidgets">All Widgets</a>
-			<a class="btn btn-sm btn-default" href="{$path}/Admin/ListWidgets?objectAction=edit&amp;id={$object->id}">Edit</a>
-			<a class="btn btn-sm btn-default" href="{$path}/API/SearchAPI?method=getListWidget&amp;id={$object->id}">Preview</a>
+			<a class="btn btn-sm btn-default" href="/Admin/ListWidgets">All Widgets</a>
+			<a class="btn btn-sm btn-default" href="/Admin/ListWidgets?objectAction=edit&amp;id={$object->id}">Edit</a>
+			<a class="btn btn-sm btn-default" href="/API/SearchAPI?method=getListWidget&amp;id={$object->id}">Preview</a>
 			{if $canDelete}
-				<a class="btn btn-sm btn-danger" href="{$path}/Admin/ListWidgets?objectAction=delete&amp;id={$object->id}" onclick="return confirm('Are you sure you want to delete {$object->name}?');">Delete</a>
+				<a class="btn btn-sm btn-danger" href="/Admin/ListWidgets?objectAction=delete&amp;id={$object->id}" onclick="return confirm('Are you sure you want to delete {$object->name}?');">Delete</a>
 			{/if}
 		</div>
 		{* Show details for the selected widget *}
@@ -141,7 +141,7 @@
 	</iframe>
 
 	{* Iframe dynamic Height Re-sizing script *}
-	<script type="text/javascript" src="{$path}/js/iframeResizer/iframeResizer.min.js"></script>
+	<script type="text/javascript" src="/js/iframeResizer/iframeResizer.min.js"></script>
 	{/strip}
 
 	{* Width Resizing Code *}

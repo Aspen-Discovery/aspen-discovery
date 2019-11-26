@@ -10,6 +10,6 @@
 			The request for {$materialsRequest->title} by {$materialsRequest->author} was updated successfully.
 			</div>
 		{/if}
-		<a role="button" class="btn btn-primary" href='{$path}/MaterialsRequest/ManageRequests'>Return to Manage Requests</a>.
+		<a role="button" class="btn btn-primary" href='/MaterialsRequest/ManageRequests'>Return to Manage Requests</a>.
 	</div>
 </div>

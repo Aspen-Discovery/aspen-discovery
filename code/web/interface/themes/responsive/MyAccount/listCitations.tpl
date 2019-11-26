@@ -1,11 +1,11 @@
-<h3 id='listTitle'><a href="{$path}/MyAccount/MyList/{$favList->id}"><span class="silk list">&nbsp;</span>{$favList->title|escape:"html"}</a></h3>
+<h3 id='listTitle'><a href="/MyAccount/MyList/{$favList->id}"><span class="silk list">&nbsp;</span>{$favList->title|escape:"html"}</a></h3>
 
 {if $favList->description}
 	<div class="listDescription alignleft" id="listDescription">{$favList->description|escape}</div>
 {/if}
 <div id="listTopButtons" class="btn-toolbar">
 	<div class="btn-group">
-		<a value="viewList" id="FavEdit" class="btn btn-sm btn-info" href="{$path}/MyAccount/MyList/{$favList->id}">Return to List</a>
+		<a value="viewList" id="FavEdit" class="btn btn-sm btn-info" href="/MyAccount/MyList/{$favList->id}">Return to List</a>
 	</div>
 </div>
 <div class="alert alert-info">Citations in {$citationFormat} format.</div>
