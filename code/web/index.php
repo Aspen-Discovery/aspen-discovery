@@ -495,7 +495,7 @@ if ($action == "AJAX" || $action == "JSON" || $module == 'API'){
 			$interface->assign('searchIndex', $activeSearch->getSearchIndex());
 			$interface->assign('filterList', $activeSearch->getFilterList());
 			$interface->assign('savedSearch', $activeSearch->isSavedSearch());
-			if (!empty($_GET['searchSource'])){
+			if (empty($_GET['searchSource'])){
 				$interface->assign('searchSource', $activeSearch->getSearchSource());
 			}
 		}
