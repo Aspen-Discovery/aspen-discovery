@@ -28,6 +28,15 @@ function loadSearchInformation(){
 			$_GET['searchSource'] = reset($_GET['searchSource']);
 		}
 		$searchSource = $_GET['searchSource'];
+
+		require_once(ROOT_DIR . '/Drivers/marmot_inc/SearchSources.php');
+		$searchSources = new SearchSources();
+		$validSearchSources = $searchSources->getSearchSources();
+		//Validate that we got a good search source
+		if (!array_key_exists($searchSource, $validSearchSources)){
+			$searchSource = 'local';
+		}
+
 		$_REQUEST['searchSource'] = $searchSource; //Update request since other check for it here
 		$_SESSION['searchSource'] = $searchSource; //Update the session so we can remember what the user was doing last.
 	}else{

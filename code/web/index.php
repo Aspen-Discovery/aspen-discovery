@@ -410,6 +410,10 @@ if (isset($_REQUEST['filter'])){
 
 $searchSource = !empty($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : 'local';
 
+//Load repeat search options
+$validSearchSources = $searchSources->getSearchSources();
+$interface->assign('searchSources', $validSearchSources);
+
 $interface->assign('searchSource', $searchSource);
 
 //Determine if the top search box and breadcrumbs should be shown.  Not showing these
@@ -448,9 +452,6 @@ if ($action == "AJAX" || $action == "JSON" || $module == 'API'){
 	// Set search results display mode in search-box //
 	if ($searchObject->getView()) $interface->assign('displayMode', $searchObject->getView());
 
-	//Load repeat search options
-	$interface->assign('searchSources', $searchSources->getSearchSources());
-
 	/** @var SearchObject_ListsSearcher $listSearchIndexes */
     $listSearchIndexes = SearchObjectFactory::initSearchObject('Lists');
     $interface->assign('listSearchIndexes', is_object($listSearchIndexes) ? $listSearchIndexes->getSearchIndexes() : array());
@@ -458,7 +459,6 @@ if ($action == "AJAX" || $action == "JSON" || $module == 'API'){
 	/** @var SearchObject_ListsSearcher $listSearchIndexes */
 	$websiteSearchIndexes = SearchObjectFactory::initSearchObject('Websites');
 	$interface->assign('websiteSearchIndexes', is_object($websiteSearchIndexes) ? $websiteSearchIndexes->getSearchIndexes() : array());
-
 
 	if ($library->enableGenealogy){
 		$genealogySearchObject = SearchObjectFactory::initSearchObject('Genealogy');

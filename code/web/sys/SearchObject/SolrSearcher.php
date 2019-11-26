@@ -736,4 +736,14 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 		parent::setPrimarySearch($flag);
 		$this->indexEngine->isPrimarySearch = $flag;
 	}
+
+	public function loadValidFields()
+	{
+		return $this->indexEngine->loadValidFields();
+	}
+
+	public function loadDynamicFields()
+	{
+		return $this->indexEngine->loadDynamicFields();
+	}
 }

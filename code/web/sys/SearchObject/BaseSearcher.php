@@ -560,15 +560,33 @@ abstract class SearchObject_BaseSearcher
 
 			//The type should never have punctuation in it (quotes, colons, etc)
 			$type = preg_replace('/[:"\']/', '', $type);
+
+			if (!array_key_exists($type, $this->searchIndexes) && !array_key_exists($type, $this->advancedTypes)){
+				$type = $this->defaultIndex;
+			}
 		} else {
 			$type = $this->defaultIndex;
 		}
 
 		if (strpos($searchTerm, ':') > 0) {
-			$tempSearchInfo = explode(':', $searchTerm, 2);
-			if (in_array($tempSearchInfo[0], $this->searchIndexes)) {
-				$type = $tempSearchInfo[0];
-				$searchTerm = $tempSearchInfo[1];
+			$tempSearchInfo = explode(':', $searchTerm);
+			if (count($tempSearchInfo) == 2){
+				//Check for leading and trailing parentheses
+				if ($tempSearchInfo[0][0] == '('){
+					$tempSearchInfo[0] = substr($tempSearchInfo[0], 1);
+				}
+				if ($tempSearchInfo[1][-1] == ')'){
+					$tempSearchInfo[1] = substr($tempSearchInfo[1], 0, -1);
+				}
+				if (array_key_exists($tempSearchInfo[0], $this->searchIndexes)) {
+					$type = $tempSearchInfo[0];
+					$searchTerm = $tempSearchInfo[1];
+				}else{
+					return false;
+				}
+			}else{
+				//This is an advanced search
+				return false;
 			}
 		}
 
@@ -601,6 +619,7 @@ abstract class SearchObject_BaseSearcher
 	protected function initAdvancedSearch()
 	{
 		$this->isAdvanced = true;
+		$this->searchType = $this->advancedSearchType;
 		if (isset($_REQUEST['lookfor'])) {
 			if (is_array($_REQUEST['lookfor'])) {
 				//Advanced search from popup form
@@ -631,7 +650,54 @@ abstract class SearchObject_BaseSearcher
 						'join' => $_REQUEST['join'][$index]
 					);
 				}
+			}else{
+				if (strpos($_REQUEST['lookfor'], ':') > 0) {
+					$tempSearchInfo = explode(':', $_REQUEST['lookfor']);
+					if (count($tempSearchInfo) == 2){
+						//Check for leading and trailing parentheses
+						if ($tempSearchInfo[0][0] == '('){
+							$tempSearchInfo[0] = substr($tempSearchInfo[0], 1);
+						}
+						if ($tempSearchInfo[1][-1] == ')'){
+							$tempSearchInfo[1] = substr($tempSearchInfo[1], 0, -1);
+						}
+						$validFields = $this->loadValidFields();
+						$dynamicFields = $this->loadDynamicFields();
+						if (in_array($tempSearchInfo[0], $validFields) || in_array($tempSearchInfo[0], $dynamicFields) || array_key_exists($tempSearchInfo[0], $this->advancedTypes)) {
+							$group[] = array(
+								'field' => $tempSearchInfo[0],
+								'lookfor' => $tempSearchInfo[1],
+								'bool' => 'AND'
+							);
+						}else {
+							$group[] = array(
+								'field' => $this->defaultIndex,
+								'lookfor' => $_REQUEST['lookfor'],
+								'bool' => 'AND'
+							);
+						}
+						$this->searchTerms[] = array(
+							'group' => $group,
+							'join' => 'AND'
+						);
+					}else{
+						//TODO: This needs to create multiple groups for the search.
+						preg_match_all('~((\w+?):("?.+?"?)(AND|OR|\)|$))~', $_REQUEST['lookfor'], $matches, PREG_SET_ORDER);
+						foreach ($matches as $match){
+							$group[] = array(
+								'field' => $match[2],
+								'lookfor' => str_replace(':', ' ', $match[3]),
+								'bool' => ($match[4] == ')') ? 'AND' : $match[4]
+							);
+						}
+						$this->searchTerms[] = array(
+							'group' => $group,
+							'join' => 'AND'
+						);
+					}
+				}
 			}
+
 		} else {
 			//********************
 			// Advanced Search logic
@@ -2267,8 +2333,9 @@ abstract class SearchObject_BaseSearcher
 	{
 
 		$searchTerms = $this->searchTerms;
-		$searchString = $searchTerms[0]['lookfor'];
-		$searchIndex = $searchTerms[0]['index'];
+
+		$searchString = isset($searchTerms[0]['lookfor']) ? $searchTerms[0]['lookfor'] : '';
+		$searchIndex =  isset($searchTerms[0]['index']) ? $searchTerms[0]['index'] : $this->defaultIndex;
 
 		$this->searchTerms = array(
 			array(
@@ -2381,6 +2448,9 @@ abstract class SearchObject_BaseSearcher
 	}
 
 	abstract function getSearchName();
+
+	abstract function loadValidFields();
+	abstract function loadDynamicFields();
 }//End of SearchObject_Base
 
 /**
