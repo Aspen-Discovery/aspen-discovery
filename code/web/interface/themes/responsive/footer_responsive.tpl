@@ -3,7 +3,7 @@
 	<div class="navbar-inner">
 		<div class="row">
 			<div class="col-tn-12 col-sm-7 text-left" id="install-info">
-				<small>{translate text='powered_by_aspen' defaultText='Powered By Aspen Discovery from Turning Leaf Technologies'}</small><br>
+				<small>{translate text='powered_by_aspen' defaultText='Powered By Aspen Discovery supported by ByWater Solutions'}</small><br>
 				{if !$productionServer}
 					<small class='location_info'>{$physicalLocation}{if $debug} ({$activeIp}){/if} - {$deviceName}</small>
 				{/if}
