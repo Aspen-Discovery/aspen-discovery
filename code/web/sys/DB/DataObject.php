@@ -268,7 +268,9 @@ abstract class DataObject
 			return false;
 		}
 		$query = 'SELECT COUNT(*) from ' . $this->__table;
-
+		foreach ($this->__joins as $join) {
+			$query .= $this->getJoinQuery($join);
+		}
 		$query .= $this->getWhereClause($aspen_db);
 		$query .= $this->__groupBy;
 		$this->__lastQuery = $query;
