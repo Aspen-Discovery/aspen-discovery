@@ -81,7 +81,7 @@ while ($module->fetch()){
 }
 
 foreach ($runningProcesses as $process){
-	if ($process['name'] != 'cron' && $process['name'] != 'oai_indexer' && $process['name'] != 'reindexer'){
+	if ($process['name'] != 'cron' && $process['name'] != 'oai_indexer' && $process['name'] != 'reindexer' && $process['name'] != 'hoopla_export'){
 		$results .= "Found process '{$process['name']}' that does not have a module for it\r\n";
 	}
 }
