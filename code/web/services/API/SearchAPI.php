@@ -3,26 +3,27 @@
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/sys/Pager.php';
 
-class SearchAPI extends Action {
+class SearchAPI extends Action
+{
 
 	function launch()
 	{
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
-        $output = '';
+		$output = '';
 		if (!empty($method) && method_exists($this, $method)) {
-			if (in_array($method , array('getListWidget'))){
+			if (in_array($method, array('getListWidget'))) {
 				$output = $this->$method();
-			}else{
-				$jsonOutput = json_encode(array('result'=>$this->$method()));
+			} else {
+				$jsonOutput = json_encode(array('result' => $this->$method()));
 			}
 		} else {
-			$jsonOutput = json_encode(array('error'=>'invalid_method'));
+			$jsonOutput = json_encode(array('error' => 'invalid_method'));
 		}
 
 		// Set Headers
 		if (isset($jsonOutput)) {
 			header('Content-type: application/json');
-		} else{
+		} else {
 			header('Content-type: text/html');
 		}
 		header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
@@ -33,33 +34,21 @@ class SearchAPI extends Action {
 
 	// The time intervals in seconds beyond which we consider the status as not current
 	const
-		FULL_INDEX_INTERVAL_WARN            = 86400,  // 24 Hours (in seconds)
-		FULL_INDEX_INTERVAL_CRITICAL        = 129600, // 36 Hours (in seconds)
-		PARTIAL_INDEX_INTERVAL_WARN         = 1500,   // 25 Minutes (in seconds)
-		PARTIAL_INDEX_INTERVAL_CRITICAL     = 3600,   // 1 Hour (in seconds)
-		OVERDRIVE_EXTRACT_INTERVAL_WARN     = 14400,  // 4 Hours (in seconds)
-		OVERDRIVE_EXTRACT_INTERVAL_CRITICAL = 18000,  // 5 Hours (in seconds)
-		SOLR_RESTART_INTERVAL_WARN          = 86400,  // 24 Hours (in seconds)
-		SOLR_RESTART_INTERVAL_CRITICAL      = 129600, // 36 Hours (in seconds)
-		OVERDRIVE_DELETED_ITEMS_WARN        = 250,
-		OVERDRIVE_DELETED_ITEMS_CRITICAL    = 1000,
-		SIERRA_MAX_REMAINING_ITEMS_WARN     = 5000,
-		SIERRA_MAX_REMAINING_ITEMS_CRITICAL = 20000,
-
-		STATUS_OK       = 'okay',
-		STATUS_WARN     = 'warning',
+		STATUS_OK = 'okay',
+		STATUS_WARN = 'warning',
 		STATUS_CRITICAL = 'critical';
 
 
-	function getIndexStatus(){
+	function getIndexStatus()
+	{
 		$notes = array();
 		$status = array();
 
 		//Check if solr is running by pinging it
 		$solrSearcher = SearchObjectFactory::initSearchObject();
-		if (!$solrSearcher->ping()){
-			$status[] =  self::STATUS_CRITICAL;
-			$notes[]  = "Solr is not responding";
+		if (!$solrSearcher->ping()) {
+			$status[] = self::STATUS_CRITICAL;
+			$notes[] = "Solr is not responding";
 		}
 
 		//Check background processes running (Overdrive, rbdigital, open archives, list indexing, ils extract)
@@ -70,17 +59,17 @@ class SearchAPI extends Action {
 		$offlineHolds = $offlineHoldEntry->count();
 		if (!empty($offlineHolds)) {
 			$status[] = self::STATUS_CRITICAL;
-			$notes[]  = "There are $offlineHolds un-processed offline holds";
+			$notes[] = "There are $offlineHolds un-processed offline holds";
 		}
 
-		if (count($notes) > 0){
+		if (count($notes) > 0) {
 			$result = array(
-				'status'  => in_array(self::STATUS_CRITICAL, $status) ? self::STATUS_CRITICAL : self::STATUS_WARN, // Critical warnings trump Warnings;
-				'message' => implode('; ',$notes)
+				'status' => in_array(self::STATUS_CRITICAL, $status) ? self::STATUS_CRITICAL : self::STATUS_WARN, // Critical warnings trump Warnings;
+				'message' => implode('; ', $notes)
 			);
-		}else{
+		} else {
 			$result = array(
-				'status'  => self::STATUS_OK,
+				'status' => self::STATUS_OK,
 				'message' => "Everything is current"
 			);
 		}
@@ -89,8 +78,8 @@ class SearchAPI extends Action {
 			// Reformat $result to the structure expected by PRTG
 
 			$prtgStatusValues = array(
-				self::STATUS_OK       => 0,
-				self::STATUS_WARN     => 1,
+				self::STATUS_OK => 0,
+				self::STATUS_WARN => 1,
 				self::STATUS_CRITICAL => 2
 			);
 
@@ -98,11 +87,11 @@ class SearchAPI extends Action {
 				'prtg' => array(
 					'result' => array(
 						0 => array(
-						'channel'         => 'Aspen Status',
-						'value'           => $prtgStatusValues[ $result['status'] ],
-						'limitmode'=> 1,
-						'limitmaxwarning' => $prtgStatusValues[self::STATUS_OK],
-						'limitmaxerror'   => $prtgStatusValues[self::STATUS_WARN]
+							'channel' => 'Aspen Status',
+							'value' => $prtgStatusValues[$result['status']],
+							'limitmode' => 1,
+							'limitmaxwarning' => $prtgStatusValues[self::STATUS_OK],
+							'limitmaxerror' => $prtgStatusValues[self::STATUS_WARN]
 						)
 					),
 					'text' => $result['message']
@@ -140,8 +129,8 @@ class SearchAPI extends Action {
 
 		// Set Interface Variables
 		//   Those we can construct BEFORE the search is executed
-		$interface->assign('sortList',   $searchObject->getSortList());
-		$interface->assign('rssLink',    $searchObject->getRSSUrl());
+		$interface->assign('sortList', $searchObject->getSortList());
+		$interface->assign('rssLink', $searchObject->getRSSUrl());
 
 		$timer->logTime('Setup Search');
 
@@ -166,13 +155,13 @@ class SearchAPI extends Action {
 				// If it's a parse error or the user specified an invalid field, we
 				// should display an appropriate message:
 				if (stristr($error, 'org.apache.lucene.queryParser.ParseException') ||
-				preg_match('/^undefined field/', $error)) {
+					preg_match('/^undefined field/', $error)) {
 					$jsonResults['parseError'] = true;
 
 					// Unexpected error -- let's treat this as a fatal condition.
 				} else {
 					AspenError::raiseError(new AspenError('Unable to process query<br />' .
-                        'Solr Returned: ' . $error));
+						'Solr Returned: ' . $error));
 				}
 			}
 
@@ -185,12 +174,12 @@ class SearchAPI extends Action {
 			$summary = $searchObject->getResultSummary();
 			$jsonResults['recordCount'] = $summary['resultTotal'];
 			$jsonResults['recordStart'] = $summary['startRecord'];
-			$jsonResults['recordEnd'] =   $summary['endRecord'];
+			$jsonResults['recordEnd'] = $summary['endRecord'];
 
 			// Big one - our results
 			$recordSet = $searchObject->getResultRecordSet();
 			//Remove fields as needed to improve the display.
-			foreach($recordSet as $recordKey => $record){
+			foreach ($recordSet as $recordKey => $record) {
 				unset($record['auth_author']);
 				unset($record['auth_authorStr']);
 				unset($record['callnumber-first-code']);
@@ -207,15 +196,15 @@ class SearchAPI extends Action {
 			$timer->logTime('load result records');
 
 			$facetSet = $searchObject->getFacetList();
-			$jsonResults['facetSet'] =       $facetSet;
+			$jsonResults['facetSet'] = $facetSet;
 
 			//Check to see if a format category is already set
 			$categorySelected = false;
-			if (isset($facetSet['top'])){
-				foreach ($facetSet['top'] as $title=>$cluster){
-					if ($cluster['label'] == 'Category'){
-						foreach ($cluster['list'] as $thisFacet){
-							if ($thisFacet['isApplied']){
+			if (isset($facetSet['top'])) {
+				foreach ($facetSet['top'] as $title => $cluster) {
+					if ($cluster['label'] == 'Category') {
+						foreach ($cluster['list'] as $thisFacet) {
+							if ($thisFacet['isApplied']) {
 								$categorySelected = true;
 							}
 						}
@@ -228,28 +217,28 @@ class SearchAPI extends Action {
 			// Process Paging
 			$link = $searchObject->renderLinkPageTemplate();
 			$options = array('totalItems' => $summary['resultTotal'],
-                             'fileName'   => $link,
-                             'perPage'    => $summary['perPage']);
+				'fileName' => $link,
+				'perPage' => $summary['perPage']);
 			$pager = new Pager($options);
 			$jsonResults['paging'] = array(
-            	'currentPage' => $pager->getCurrentPage(),
-            	'totalPages' => $pager->getTotalPages(),
-            	'totalItems' => $pager->getTotalItems(),
-            	'itemsPerPage' => $pager->getItemsPerPage(),
+				'currentPage' => $pager->getCurrentPage(),
+				'totalPages' => $pager->getTotalPages(),
+				'totalItems' => $pager->getTotalItems(),
+				'itemsPerPage' => $pager->getItemsPerPage(),
 			);
 			$interface->assign('pageLinks', $pager->getLinks());
 			$timer->logTime('finish hits processing');
 		}
 
 		// Report additional information after the results
-		$jsonResults['query_time'] = 		  round($searchObject->getQuerySpeed(), 2);
-		$jsonResults['lookfor'] =             $searchObject->displayQuery();
-		$jsonResults['searchType'] =          $searchObject->getSearchType();
+		$jsonResults['query_time'] = round($searchObject->getQuerySpeed(), 2);
+		$jsonResults['lookfor'] = $searchObject->displayQuery();
+		$jsonResults['searchType'] = $searchObject->getSearchType();
 		// Will assign null for an advanced search
-		$jsonResults['searchIndex'] =         $searchObject->getSearchIndex();
+		$jsonResults['searchIndex'] = $searchObject->getSearchIndex();
 		$jsonResults['time'] = round($searchObject->getTotalSpeed(), 2);
 		$jsonResults['savedSearch'] = $searchObject->isSavedSearch();
-		$jsonResults['searchId'] =    $searchObject->getSearchId();
+		$jsonResults['searchId'] = $searchObject->getSearchId();
 		$currentPage = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
 		$jsonResults['page'] = $currentPage;
 
@@ -264,16 +253,17 @@ class SearchAPI extends Action {
 		return $jsonResults;
 	}
 
-	function getListWidget(){
+	function getListWidget()
+	{
 		global $interface;
-		if (isset($_REQUEST['username']) && isset($_REQUEST['password'])){
+		if (isset($_REQUEST['username']) && isset($_REQUEST['password'])) {
 			$username = $_REQUEST['username'];
 			$password = $_REQUEST['password'];
 			$user = UserAccount::validateAccount($username, $password);
 			$interface->assign('user', $user);
-		}else{
+		} else {
 			$user = UserAccount::getLoggedInUser();
-            $interface->assign('user', $user);
+			$interface->assign('user', $user);
 		}
 		//Load the widget configuration
 		require_once ROOT_DIR . '/sys/ListWidget.php';
@@ -282,15 +272,15 @@ class SearchAPI extends Action {
 		$widget = new ListWidget();
 		$id = $_REQUEST['id'];
 
-		if (isset($_REQUEST['reload'])){
+		if (isset($_REQUEST['reload'])) {
 			$interface->assign('reload', true);
-		}else{
+		} else {
 			$interface->assign('reload', false);
 		}
 
 
 		$widget->id = $id;
-		if ($widget->find(true)){
+		if ($widget->find(true)) {
 			$interface->assign('widget', $widget);
 
 			if (!empty($_REQUEST['resizeIframe'])) {
@@ -298,12 +288,14 @@ class SearchAPI extends Action {
 			}
 			//return the widget
 			return $interface->fetch('ListWidget/listWidget.tpl');
-		}else{
-		    return '';
-        }
+		} else {
+			return '';
+		}
 	}
 
-	function getRecordIdForTitle(){
+	/** @noinspection PhpUnused */
+	function getRecordIdForTitle()
+	{
 		$title = strip_tags($_REQUEST['title']);
 		$_REQUEST['lookfor'] = $title;
 		$_REQUEST['searchIndex'] = 'Keyword';
@@ -322,8 +314,8 @@ class SearchAPI extends Action {
 
 		// Set Interface Variables
 		//   Those we can construct BEFORE the search is executed
-		$interface->assign('sortList',   $searchObject->getSortList());
-		$interface->assign('rssLink',    $searchObject->getRSSUrl());
+		$interface->assign('sortList', $searchObject->getSortList());
+		$interface->assign('rssLink', $searchObject->getRSSUrl());
 
 		$timer->logTime('Setup Search');
 
@@ -333,9 +325,9 @@ class SearchAPI extends Action {
 			AspenError::raiseError($result->getMessage());
 		}
 
-		if ($searchObject->getResultTotal() < 1){
+		if ($searchObject->getResultTotal() < 1) {
 			return "";
-		}else{
+		} else {
 			//Return the first result
 			$recordSet = $searchObject->getResultRecordSet();
 			$firstRecord = reset($recordSet);
@@ -343,7 +335,9 @@ class SearchAPI extends Action {
 		}
 	}
 
-	function getRecordIdForItemBarcode(){
+	/** @noinspection PhpUnused */
+	function getRecordIdForItemBarcode()
+	{
 		$barcode = strip_tags($_REQUEST['barcode']);
 		$_REQUEST['lookfor'] = $barcode;
 		$_REQUEST['searchIndex'] = 'barcode';
@@ -362,8 +356,8 @@ class SearchAPI extends Action {
 
 		// Set Interface Variables
 		//   Those we can construct BEFORE the search is executed
-		$interface->assign('sortList',   $searchObject->getSortList());
-		$interface->assign('rssLink',    $searchObject->getRSSUrl());
+		$interface->assign('sortList', $searchObject->getSortList());
+		$interface->assign('rssLink', $searchObject->getRSSUrl());
 
 		$timer->logTime('Setup Search');
 
@@ -373,17 +367,19 @@ class SearchAPI extends Action {
 			AspenError::raiseError($result->getMessage());
 		}
 
-		if ($searchObject->getResultTotal() >= 1){
+		if ($searchObject->getResultTotal() >= 1) {
 			//Return the first result
 			$recordSet = $searchObject->getResultRecordSet();
-			foreach($recordSet as $recordKey => $record){
+			foreach ($recordSet as $recordKey => $record) {
 				return $record['id'];
 			}
 		}
 		return "";
 	}
 
-	function getTitleInfoForISBN(){
+	/** @noinspection PhpUnused */
+	function getTitleInfoForISBN()
+	{
 		$isbn = str_replace('-', '', strip_tags($_REQUEST['isbn']));
 		$_REQUEST['lookfor'] = $isbn;
 		$_REQUEST['searchIndex'] = 'ISN';
@@ -404,8 +400,8 @@ class SearchAPI extends Action {
 
 		// Set Interface Variables
 		//   Those we can construct BEFORE the search is executed
-		$interface->assign('sortList',   $searchObject->getSortList());
-		$interface->assign('rssLink',    $searchObject->getRSSUrl());
+		$interface->assign('sortList', $searchObject->getSortList());
+		$interface->assign('rssLink', $searchObject->getRSSUrl());
 
 		$timer->logTime('Setup Search');
 
@@ -415,15 +411,15 @@ class SearchAPI extends Action {
 			AspenError::raiseError($result->getMessage());
 		}
 
-		if ($searchObject->getResultTotal() >= 1){
+		if ($searchObject->getResultTotal() >= 1) {
 			//Return the first result
 			$recordSet = $searchObject->getResultRecordSet();
-			foreach($recordSet as $recordKey => $record){
+			foreach ($recordSet as $recordKey => $record) {
 				$jsonResults[] = array(
-					'id'              => $record['id'],
-					'title'           => isset($record['title']) ? $record['title'] : null,
-					'author'          => isset($record['author']) ? $record['author'] : (isset($record['author2']) ? $record['author2'] : ''),
-					'format'          => isset($record['format']) ? $record['format'] : '',
+					'id' => $record['id'],
+					'title' => isset($record['title']) ? $record['title'] : null,
+					'author' => isset($record['author']) ? $record['author'] : (isset($record['author2']) ? $record['author2'] : ''),
+					'format' => isset($record['format']) ? $record['format'] : '',
 					'format_category' => isset($record['format_category']) ? $record['format_category'] : '',
 				);
 			}
