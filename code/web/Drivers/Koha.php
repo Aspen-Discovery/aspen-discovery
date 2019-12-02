@@ -1114,6 +1114,7 @@ class Koha extends AbstractIlsDriver
 				$curFine = [
 					'fineId' => $allFeesRow['accountlines_id'],
 					'date' => $allFeesRow['date'],
+					'type' => $allFeesRow['accounttype'],
 					'reason' => $allFeesRow['accounttype'],
 					'message' => $allFeesRow['description'],
 					'amountVal' => $allFeesRow['amount'],
@@ -2362,20 +2363,25 @@ class Koha extends AbstractIlsDriver
 			'success' => false,
 			'message' => 'Unknown error completing fine payment'
 		];
-		$accountLinesPaid = explode(',', $payment->finesPaid);
 		$oauthToken = $this->getOAuthToken();
 		if ($oauthToken == false) {
 			$result['message'] = 'Unable to authenticate with the ILS.  Please try again later or contact the library.';
 		} else {
-			$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/{$patron->username}/account/credits";
-			$postVariables = [
-				'account_lines_ids' => $accountLinesPaid,
-				'amount' => $payment->totalPaid,
-				'credit_type' => 'payment',
-				'payment_type' => $payment->paymentType,
-				'description' => 'Paid Online via Aspen Discovery'
-			];
+			$accountLinesPaid = explode(',', $payment->finesPaid);
+			$partialPayments = [];
+			$fullyPaidTotal = $payment->totalPaid;
+			foreach ($accountLinesPaid as $index => $accountLinePaid){
+				if (strpos($accountLinePaid, '|')){
+					//Partial Payments are in the form of fineId|paymentAmount
+					$accountLineInfo = explode('|', $accountLinePaid);
+					$partialPayments[] = $accountLineInfo;
+					$fullyPaidTotal -= $accountLineInfo[1];
+					unset($accountLinesPaid[$index]);
+				}
+			}
 
+			//Process everything that has been fully paid
+			$allPaymentsSucceed = true;
 			$this->apiCurlWrapper->addCustomHeaders([
 				'Authorization: Bearer ' . $oauthToken,
 				'User-Agent: Aspen Discovery',
@@ -2384,20 +2390,59 @@ class Koha extends AbstractIlsDriver
 				'Content-Type: application/json;charset=UTF-8',
 				'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
 			], true);
-			$response = $this->apiCurlWrapper->curlPostBodyData($apiUrl, $postVariables);
-			if ($this->apiCurlWrapper->getResponseCode() != 200) {
-				if (strlen($response) > 0) {
-					$jsonResponse = json_decode($response);
-					if ($jsonResponse) {
-						$result['message'] = $jsonResponse->errors[0]['message'];
-					} else {
-						$result['message'] = $response;
-					}
-				} else {
-					$result['message'] = "Error {$this->apiCurlWrapper->getResponseCode()} updating your payment, please visit the library with your receipt.";
-				}
+			$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/{$patron->username}/account/credits";
+			if (count($accountLinesPaid) > 0) {
+				$postVariables = [
+					'account_lines_ids' => $accountLinesPaid,
+					'amount' => $fullyPaidTotal,
+					'credit_type' => 'payment',
+					'payment_type' => $payment->paymentType,
+					'description' => 'Paid Online via Aspen Discovery'
+				];
 
-			} else {
+				$response = $this->apiCurlWrapper->curlPostBodyData($apiUrl, $postVariables);
+				if ($this->apiCurlWrapper->getResponseCode() != 200) {
+					if (strlen($response) > 0) {
+						$jsonResponse = json_decode($response);
+						if ($jsonResponse) {
+							$result['message'] = $jsonResponse->errors[0]['message'];
+						} else {
+							$result['message'] = $response;
+						}
+					} else {
+						$result['message'] = "Error {$this->apiCurlWrapper->getResponseCode()} updating your payment, please visit the library with your receipt.";
+					}
+					$allPaymentsSucceed = false;
+				}
+			}
+			if (count($partialPayments) > 0){
+				foreach ($partialPayments as $paymentInfo){
+					$postVariables = [
+						'account_lines_ids' => [$paymentInfo[0]],
+						'amount' => $paymentInfo[1],
+						'credit_type' => 'payment',
+						'payment_type' => $payment->paymentType,
+						'description' => 'Paid Online via Aspen Discovery'
+					];
+
+					$response = $this->apiCurlWrapper->curlPostBodyData($apiUrl, $postVariables);
+					if ($this->apiCurlWrapper->getResponseCode() != 200) {
+						if (!isset($result['message'])) {$result['message'] = '';}
+						if (strlen($response) > 0) {
+							$jsonResponse = json_decode($response);
+							if ($jsonResponse) {
+								$result['message'] .= $jsonResponse->errors[0]['message'];
+							} else {
+								$result['message'] .= $response;
+							}
+						} else {
+							$result['message'] .= "Error {$this->apiCurlWrapper->getResponseCode()} updating your payment, please visit the library with your receipt.";
+						}
+						$allPaymentsSucceed = false;
+					}
+				}
+			}
+			if ($allPaymentsSucceed){
 				$result = [
 					'success' => true,
 					'message' => 'Your fines have been paid successfully, thank you.'

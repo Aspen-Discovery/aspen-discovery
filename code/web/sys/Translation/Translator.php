@@ -94,7 +94,6 @@ class Translator
 							return $phrase;
 						}
 					}
-
 				}
 
 				//Search for the translation

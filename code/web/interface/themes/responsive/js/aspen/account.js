@@ -970,6 +970,11 @@ AspenDiscovery.Account = (function(){
 				function() {
 					let name = $(this).attr('name');
 					params[name] = $(this).val();
+
+					let fineAmount = $(finesFormId + " #amountToPay" + $(this).data("fine_id"));
+					if (fineAmount){
+						params[fineAmount.attr('name')] = fineAmount.val();
+					}
 				}
 			);
 			let orderInfo = false;
@@ -1008,13 +1013,20 @@ AspenDiscovery.Account = (function(){
 				}
 			}).fail(AspenDiscovery.ajaxFail);
 		},
-		updateFineTotal(finesFormId, userId) {
+		updateFineTotal(finesFormId, userId, paymentType) {
 			let totalFineAmt = 0;
 			let totalOutstandingAmt = 0;
 			$(finesFormId + " .selectedFine:checked").each(
 				function() {
-					totalFineAmt += $(this).data('fine_amt') * 1;
-					totalOutstandingAmt += $(this).data('outstanding_amt') * 1;
+					if (paymentType === 1){
+						totalFineAmt += $(this).data('fine_amt') * 1;
+						totalOutstandingAmt += $(this).data('outstanding_amt') * 1;
+					}else{
+						let fineId = $(this).data('fine_id');
+						let fineAmountInput = $("#amountToPay" + fineId);
+						totalFineAmt += fineAmountInput.val() * 1;
+						totalOutstandingAmt += fineAmountInput.val() * 1;
+					}
 				}
 			);
 			$('#formattedTotal' + userId).text("$" + totalFineAmt.toFixed(2));

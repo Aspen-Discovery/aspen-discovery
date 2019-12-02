@@ -2237,14 +2237,37 @@ class MyAccount_AJAX
 			$purchaseUnits['items'] = [];
 			require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
 			$totalFines = 0;
-			foreach ($selectedFines as $fineId => $status) {
-				foreach ($fines[$patronId] as $fine) {
+
+			//List how fines have been paid by type
+			//0 = no payments applied
+			//1 = partial payment applied
+			//2 = fully paid
+			$finesPaidByType = [];
+
+			foreach ($fines[$patronId] as $fine) {
+				$finePayment = 0;
+				foreach ($selectedFines as $fineId => $status) {
 					if ($fine['fineId'] == $fineId) {
+						$finePayment = 2;
 						if (!empty($finesPaid)) {
 							$finesPaid .= ',';
 						}
 						$finesPaid .= $fineId;
-						$fineAmount = $useOutstanding ? $fine['amountOutstandingVal'] : $fine['amountVal'];
+						if (isset($_REQUEST['amountToPay'][$fineId])){
+							$fineAmount = $_REQUEST['amountToPay'][$fineId];
+							$maxFineAmount = $useOutstanding ? $fine['amountOutstandingVal'] : $fine['amountVal'];
+							if (!is_numeric($fineAmount) || $fineAmount <= 0 || $fineAmount > $maxFineAmount){
+								return ['success' => false, 'message' => translate(['text' => 'Invalid amount entered for fine. Please enter an amount over 0 and less than the total amount owed.'])];
+							}
+							if ($fineAmount != $maxFineAmount) {
+								//Record this is a partially paid fine
+								$finesPaid .= '|' . $fineAmount;
+								$finePayment = 1;
+							}
+						}else{
+							$fineAmount = $useOutstanding ? $fine['amountOutstandingVal'] : $fine['amountVal'];
+						}
+
 						$purchaseUnits['items'][] = [
 							'custom_id' => $fineId,
 							'name' => StringUtils::trimStringToLengthAtWordBoundary($fine['reason'], 127, true),
@@ -2258,7 +2281,62 @@ class MyAccount_AJAX
 						$totalFines += $fineAmount;
 					}
 				}
+
+				if (!array_key_exists(strtolower($fine['type']), $finesPaidByType)){
+					$finesPaidByType[strtolower($fine['type'])] = $finePayment;
+				}else{
+					if ($finePayment == 0) {
+						if ($finesPaidByType[strtolower($fine['type'])] >= 1){
+							$finesPaidByType[strtolower($fine['type'])] = 1;
+						}
+					}elseif ($finePayment == 1){
+						$finesPaidByType[strtolower($fine['type'])] = 1;
+					}elseif ($finePayment == 2){
+						if ($finesPaidByType[strtolower($fine['type'])] != 2){
+							$finesPaidByType[strtolower($fine['type'])] = 1;
+						}
+					}
+				}
 			}
+
+			//Determine if fines have been paid in the proper order
+			$paymentOrder = explode('|', strtolower($userLibrary->finePaymentOrder));
+			if (count($paymentOrder) > 0){
+				//Add another category for everything else.
+				$paymentOrder[] = '!!other!!';
+				//Find the actual status for each category
+				$paymentOrder = array_flip($paymentOrder);
+				foreach ($paymentOrder as $paymentOrderKey => $value){
+					$paymentOrder[$paymentOrderKey] = 0;
+				}
+
+				foreach ($finesPaidByType as $type => $finePayment){
+					if (array_key_exists($type, $paymentOrder)){
+						$paymentOrder[$type] = $finePayment;
+					}else{
+						if ($finePayment > $paymentOrder['!!other!!']){
+							$paymentOrder['!!other!!'] = $finePayment;
+						}
+					}
+				}
+
+				//This is the order everything should be paid in.
+				//We want to check to be sure nothing is partially or fully paid if the previous status is not fully paid
+				$paymentKeys = array_keys($paymentOrder);
+				for ($i = 0; $i < count($paymentKeys) -1; $i++){
+					$lastPaymentType = $paymentKeys[$i];
+					$lastPaymentStatus = $paymentOrder[$lastPaymentType];
+					for ($j = $i + 1; $j < count($paymentKeys); $j++){
+						$nextPaymentType = $paymentKeys[$j];
+						$nextPaymentStatus = $paymentOrder[$nextPaymentType];
+						//We have a problem if a lower priority fine is partially or fully paid and the higher priority is not fully paid
+						if ($lastPaymentStatus != 2 && $nextPaymentStatus >= 1){
+							return ['success' => false, 'message' => translate(['text' => 'bad_payment_order', 'defaultText' => 'You must pay all fines of type <strong>%1%</strong> before paying other types.', 1 => $lastPaymentType])];
+						}
+					}
+				}
+			}
+
 			$purchaseUnits['amount'] = [
 				'currency_code' => 'USD',
 				'value' => $totalFines,

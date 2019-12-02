@@ -27,8 +27,8 @@
 						<table id="finesTable{$smarty.foreach.fineTable.index}" class="fines-table table table-striped">
 							<thead>
 							<tr>
-								{if $finePaymentType == 2 && $finesToPay == 1 && $fineTotalsVal.$userId > $minimumFineAmount}
-									<th><input type="checkbox" checked name="selectAllFines{$userId}" id="selectAllFines{$userId}" aria-label="Select all fines" onclick="$('#fines{$userId} .selectedFine').prop('checked', $('#selectAllFines{$userId}', '{$userId}').prop('checked'));AspenDiscovery.Account.updateFineTotal('#fines{$userId}');"></th>
+								{if $finePaymentType == 2 && $finesToPay >= 1 && $fineTotalsVal.$userId > $minimumFineAmount}
+									<th><input type="checkbox" checked name="selectAllFines{$userId}" id="selectAllFines{$userId}" aria-label="Select all fines" onclick="$('#fines{$userId} .selectedFine').prop('checked', $('#selectAllFines{$userId}').prop('checked'));AspenDiscovery.Account.updateFineTotal('#fines{$userId}', '{$userId}', '{$finesToPay}');"></th>
 								{/if}
 								{if $showDate}
 									<th>{translate text="Date"}</th>
@@ -41,14 +41,17 @@
 								{if $showOutstanding}
 									<th>{translate text="Amount Outstanding"}</th>
 								{/if}
+								{if $finesToPay == 2 && $fineTotalsVal.$userId > $minimumFineAmount}
+									<th>{translate text="Amount To Pay"}</th>
+								{/if}
 							</tr>
 							</thead>
 							<tbody>
 								{foreach from=$fines item=fine}
 									<tr>
-									    {if $finePaymentType == 2 && $finesToPay == 1 && $fineTotalsVal.$userId > $minimumFineAmount}
+										{if $finePaymentType == 2 && $finesToPay >= 1 && $fineTotalsVal.$userId > $minimumFineAmount}
 											<td>
-												<input type="checkbox" checked class="selectedFine" name="selectedFine[{$fine.fineId}]" aria-label="Pay Fine {$fine.reason|escapeCSS}" onchange="AspenDiscovery.Account.updateFineTotal('#fines{$userId}', '{$userId}')" data-fine_amt="{$fine.amountVal}" data-outstanding_amt="{if $showOutstanding}{$fine.amountOutstandingVal}{else}0{/if}">
+												<input type="checkbox" checked class="selectedFine" name="selectedFine[{$fine.fineId}]" aria-label="Pay Fine {$fine.reason|escapeCSS}" onchange="AspenDiscovery.Account.updateFineTotal('#fines{$userId}', '{$userId}', '{$finesToPay}')" data-fine_id="{$fine.fineId}" data-fine_amt="{$fine.amountVal}" data-outstanding_amt="{if $showOutstanding}{$fine.amountOutstandingVal}{else}0{/if}">
 											</td>
 									    {/if}
 										{if $showDate}
@@ -74,14 +77,21 @@
 										{if $showOutstanding}
 											<td>{$fine.amountOutstanding}</td>
 										{/if}
+										{if $finesToPay == 2 && $fineTotalsVal.$userId > $minimumFineAmount}
+											{if $showOutstanding}
+												<td><input aria-label="Amount to Pay for fine {$detail.label}" type="text" max="{$fine.amountOutstandingVal}" name="amountToPay[{$fine.fineId}]" id="amountToPay{$fine.fineId}" value="{$fine.amountOutstandingVal|string_format:'%.2f'}" onchange="AspenDiscovery.Account.updateFineTotal('#fines{$userId}', '{$userId}', '{$finesToPay}');"> </td>
+											{else}
+												<td><input aria-label="Amount to Pay for fine {$detail.label}" type="text" max="{$fine.amountVal}" name="amountToPay[{$fine.fineId}]" id="amountToPay{$fine.fineId}" value="{$fine.amountVal|string_format:'%.2f'}" onchange="AspenDiscovery.Account.updateFineTotal('#fines{$userId}', '{$userId}', '{$finesToPay}');"> </td>
+											{/if}
+										{/if}
 									</tr>
 								{/foreach}
 							</tbody>
 							<tfoot>
 								<tr class="info">
-								    {if $finePaymentType == 2 && $finesToPay == 1 && $fineTotalsVal.$userId > $minimumFineAmount}
-								        <td></td>
-								    {/if}
+									{if $finePaymentType == 2 && $finesToPay >= 1 && $fineTotalsVal.$userId > $minimumFineAmount}
+										<td></td>
+									{/if}
 									<th>{translate text="Total"}</th>
 									{if $showDate}
 										<td></td>
@@ -97,15 +107,15 @@
 							</tfoot>
 						</table>
 						{if $finePaymentType == 1}
-						    {* Pay Fines Button *}
-						    {if $finePaymentType && $fineTotalsVal.$userId > $minimumFineAmount}
+							{* Pay Fines Button *}
+							{if $finePaymentType && $fineTotalsVal.$userId > $minimumFineAmount}
 								<a href="{$eCommerceLink}" {if $finePaymentType == 1}target="_blank"{/if}{if $showRefreshAccountButton} onclick="AspenDiscovery.Account.ajaxLightbox('/AJAX/JSON?method=getPayFinesAfterAction')"{/if}>
 									<div class="btn btn-sm btn-primary">{if $payFinesLinkText}{$payFinesLinkText}{else}{translate text="Click to Pay Fines Online"}{/if}</div>
 								</a>
-						    {/if}
+							{/if}
 						{elseif $finePaymentType == 2 && $fineTotalsVal.$userId > $minimumFineAmount}
-						    {* We are doing an actual payment of fines online *}
-						    {include file="MyAccount/paypalPayments.tpl"}
+							{* We are doing an actual payment of fines online *}
+							{include file="MyAccount/paypalPayments.tpl"}
 						{/if}
 					{else}
 						<p class="alert alert-success">{translate text="no_fines_for_account_message" defaultText="This account does not have any fines within the system."}</p>
