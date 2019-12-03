@@ -914,7 +914,9 @@ abstract class SearchObject_BaseSearcher
 		if (count($this->filterList) > 0) {
 			foreach ($this->filterList as $field => $filter) {
 				foreach ($filter as $value) {
-					if (preg_match('/\\[.*?\\sTO\\s.*?\\]/', $value)) {
+					if (empty($value) || $value == '""'){
+						$params[] = "filter[]=$field:(\"\")";
+					} else if (preg_match('/\\[.*?\\sTO\\s.*?\\]/', $value)) {
 						$params[] = "filter[]=$field:$value";
 					} elseif (preg_match('/^\\(.*?\\)$/', $value)) {
 						$params[] = "filter[]=$field:$value";

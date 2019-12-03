@@ -230,18 +230,20 @@ if (isset($_REQUEST['lookfor'])) {
 				$_GET['lookfor'][$i]     = '';
 			}
 		}
-	}
-	// Basic Search
-	else {
-		$searchTerm = $_REQUEST['lookfor'];
+	} else {
+		// Basic Search
+		$searchTerm = trim($_REQUEST['lookfor']);
 		if (preg_match('~(https|mailto|http):/{0,2}~i', $searchTerm)) {
-			$_REQUEST['lookfor'] = preg_replace('~(https|mailto|http):/{0,2}~i', '', $searchTerm);
-			$_GET['lookfor']     = preg_replace('~(https|mailto|http):/{0,2}~i', '', $searchTerm);
+			$searchTerm = preg_replace('~(https|mailto|http):/{0,2}~i', '', $searchTerm);
+			$searchTerm     = preg_replace('~(https|mailto|http):/{0,2}~i', '', $searchTerm);
 		}
 		if (strlen($searchTerm) >= 256) {
 			AspenError::raiseError("Sorry your query is too long, please rephrase your query.");
-			$_REQUEST['lookfor'] = '';
-			$_GET['lookfor']     = '';
+			$searchTerm = '';
+		}
+		if ($searchTerm != $_REQUEST['lookfor']){
+			$_REQUEST['lookfor'] = $searchTerm;
+			$_GET['lookfor']     = $searchTerm;
 		}
 	}
 }
