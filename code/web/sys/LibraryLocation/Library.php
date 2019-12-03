@@ -1878,12 +1878,15 @@ class Library extends DataObject
 		$facet->setupSideFacet('format', 'Format', true);
 		$facet->libraryId = $libraryId;
 		$facet->weight = count($defaultFacets) + 1;
+		$facet->multiSelect = true;
+		$facet->canLock = true;
 		$defaultFacets[] = $facet;
 
 		$facet = new LibraryFacetSetting();
 		$facet->setupSideFacet('literary_form', 'Literary Form', true);
 		$facet->libraryId = $libraryId;
 		$facet->weight = count($defaultFacets) + 1;
+		$facet->multiSelect = true;
 		$defaultFacets[] = $facet;
 
 		$facet = new LibraryFacetSetting();
@@ -1891,12 +1894,15 @@ class Library extends DataObject
 		$facet->libraryId = $libraryId;
 		$facet->weight = count($defaultFacets) + 1;
 		$facet->numEntriesToShowByDefault = 8;
+		$facet->multiSelect = true;
+		$facet->canLock = true;
 		$defaultFacets[] = $facet;
 
 		$facet = new LibraryFacetSetting();
 		$facet->setupSideFacet('topic_facet', 'Subject', true);
 		$facet->libraryId = $libraryId;
 		$facet->weight = count($defaultFacets) + 1;
+		$facet->multiSelect = true;
 		$defaultFacets[] = $facet;
 
 		$facet = new LibraryFacetSetting();
@@ -1933,6 +1939,7 @@ class Library extends DataObject
 		$facet->setupSideFacet('itype', 'Item Type', true);
 		$facet->libraryId = $libraryId;
 		$facet->weight = count($defaultFacets) + 1;
+		$facet->multiSelect = true;
 		$defaultFacets[] = $facet;
 
 		$facet = new LibraryFacetSetting();
@@ -1957,25 +1964,27 @@ class Library extends DataObject
 		$facet->setupAdvancedFacet('mpaa_rating', 'Movie Rating');
 		$facet->libraryId = $libraryId;
 		$facet->weight = count($defaultFacets) + 1;
+		$facet->multiSelect = true;
 		$defaultFacets[] = $facet;
 
 		$facet = new LibraryFacetSetting();
-		$facet->setupSideFacet('owning_library', 'Owning System', true);
+		$facet->setupAdvancedFacet('owning_library', 'Owning System';
 		$facet->libraryId = $libraryId;
 		$facet->weight = count($defaultFacets) + 1;
 		$defaultFacets[] = $facet;
 
 		$facet = new LibraryFacetSetting();
-		$facet->setupSideFacet('owning_location', 'Owning Branch', true);
+		$facet->setupAdvancedFacet('owning_location', 'Owning Branch');
 		$facet->libraryId = $libraryId;
 		$facet->weight = count($defaultFacets) + 1;
 		$defaultFacets[] = $facet;
 
-        $facet = new LibraryFacetSetting();
-        $facet->setupSideFacet('econtent_source', 'eContent Collection', true);
-        $facet->libraryId = $libraryId;
-        $facet->weight = count($defaultFacets) + 1;
-        $defaultFacets[] = $facet;
+		$facet = new LibraryFacetSetting();
+		$facet->setupSideFacet('econtent_source', 'eContent Collection', true);
+		$facet->libraryId = $libraryId;
+		$facet->weight = count($defaultFacets) + 1;
+		$facet->multiSelect = true;
+		$defaultFacets[] = $facet;
 
 		$facet = new LibraryFacetSetting();
 		$facet->setupSideFacet('publishDate', 'Publication Date', true);
