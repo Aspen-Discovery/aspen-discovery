@@ -53,6 +53,7 @@ public class WebsiteIndexerMain {
 					String siteUrl = sitesToIndexRS.getString("siteUrl");
 					String searchCategory = sitesToIndexRS.getString("searchCategory");
 					String fetchFrequency = sitesToIndexRS.getString("indexFrequency");
+					String pathsToExclude = sitesToIndexRS.getString("pathsToExclude");
 					long lastFetched = sitesToIndexRS.getLong("lastIndexed");
 					boolean fullReload = false;
 					boolean needsIndexing = false;
@@ -80,7 +81,7 @@ public class WebsiteIndexerMain {
 					}
 					if (needsIndexing) {
 						WebsiteIndexLogEntry logEntry = createDbLogEntry(websiteName, startTime, aspenConn);
-						WebsiteIndexer indexer = new WebsiteIndexer(websiteId, websiteName, searchCategory, siteUrl, fullReload, logEntry, aspenConn, solrUpdateServer);
+						WebsiteIndexer indexer = new WebsiteIndexer(websiteId, websiteName, searchCategory, siteUrl, pathsToExclude, fullReload, logEntry, aspenConn, solrUpdateServer);
 						indexer.spiderWebsite();
 
 						//TODO: Update the lastIndex time
