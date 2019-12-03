@@ -142,7 +142,7 @@ class Translator
 				}
 
 				global $configArray;
-				$memCache->set('translation_' . $activeLanguage->id . '_' . $translationMode . '_' . $phrase, $fullTranslation, $configArray['Caching']['translation']);
+				$memCache->set('translation_' . $activeLanguage->id . '_' . ($translationMode ? 1 : 0) . '_' . $phrase, $fullTranslation, $configArray['Caching']['translation']);
 				$returnString = $fullTranslation;
 			}else{
 				$returnString = $existingTranslation;
