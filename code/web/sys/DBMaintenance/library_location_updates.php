@@ -1836,6 +1836,41 @@ function getLibraryLocationUpdates(){
 			'sql' => [
 				"ALTER TABLE library ADD COLUMN finePaymentOrder VARCHAR(80) DEFAULT ''",
 			],
+		],
+
+		'library_location_defaults' => [
+			'title' => 'Library and Location Defaults',
+			'description' => 'Set defaults for libraries and locations to make inserts easier',
+			'continueOnError' => false,
+			'sql' => [
+				"ALTER TABLE library CHANGE COLUMN scope scope SMALLINT DEFAULT 0",
+				"ALTER TABLE library CHANGE COLUMN useScope useScope TINYINT DEFAULT 0",
+				"ALTER TABLE library CHANGE COLUMN hideCommentsWithBadWords hideCommentsWithBadWords TINYINT DEFAULT 0",
+				"ALTER TABLE library CHANGE COLUMN showStandardReviews showStandardReviews TINYINT DEFAULT 1",
+				"ALTER TABLE library CHANGE COLUMN showHoldButton showHoldButton TINYINT DEFAULT 1",
+				"ALTER TABLE library CHANGE COLUMN showLoginButton showLoginButton TINYINT DEFAULT 1",
+				"ALTER TABLE library CHANGE COLUMN showEmailThis showEmailThis TINYINT DEFAULT 1",
+				"ALTER TABLE library CHANGE COLUMN showComments showComments TINYINT DEFAULT 1",
+				"ALTER TABLE library CHANGE COLUMN showFavorites showFavorites TINYINT DEFAULT 1",
+				"ALTER TABLE library CHANGE COLUMN inSystemPickupsOnly inSystemPickupsOnly TINYINT DEFAULT 0",
+				"ALTER TABLE library CHANGE COLUMN defaultPType defaultPType INT(11) DEFAULT -1",
+				"ALTER TABLE library CHANGE COLUMN facetLabel facetLabel VARCHAR(50) DEFAULT ''",
+				"ALTER TABLE library CHANGE COLUMN repeatInProspector repeatInProspector TINYINT DEFAULT 0",
+				"ALTER TABLE library CHANGE COLUMN repeatInWorldCat repeatInWorldCat TINYINT DEFAULT 0",
+				"ALTER TABLE library CHANGE COLUMN systemsToRepeatIn systemsToRepeatIn VARCHAR(255) DEFAULT ''",
+				"ALTER TABLE library CHANGE COLUMN validPickupSystems validPickupSystems VARCHAR(255) DEFAULT ''",
+				"ALTER TABLE library CHANGE COLUMN themeName themeName VARCHAR(60) DEFAULT 'responsive'",
+				"ALTER TABLE location CHANGE COLUMN holdingBranchLabel holdingBranchLabel VARCHAR(40) DEFAULT ''",
+				"ALTER TABLE location CHANGE COLUMN scope scope SMALLINT DEFAULT 0",
+				"ALTER TABLE location CHANGE COLUMN useScope useScope TINYINT DEFAULT 0",
+				"ALTER TABLE location CHANGE COLUMN showHoldButton showHoldButton TINYINT DEFAULT 1",
+				"ALTER TABLE location CHANGE COLUMN showStandardReviews showStandardReviews TINYINT DEFAULT 1",
+				"ALTER TABLE location CHANGE COLUMN facetLabel facetLabel VARCHAR(50) DEFAULT ''",
+				"ALTER TABLE location CHANGE COLUMN repeatInProspector repeatInProspector TINYINT DEFAULT 0",
+				"ALTER TABLE location CHANGE COLUMN repeatInWorldCat repeatInWorldCat TINYINT DEFAULT 0",
+				"ALTER TABLE location CHANGE COLUMN systemsToRepeatIn systemsToRepeatIn VARCHAR(255) DEFAULT ''",
+				"ALTER TABLE location CHANGE COLUMN phone phone VARCHAR(25) DEFAULT ''",
+			],
 		]
 	);
 }
