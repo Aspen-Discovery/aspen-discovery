@@ -32,7 +32,6 @@ public class UserListIndexerMain {
 	public static void main(String[] args) {
 		startTime = new Date().getTime();
 		boolean runContinuously = true;
-		String serverName;
 		if (args.length == 0) {
 			serverName = StringUtils.getInputFromCommandLine("Please enter the server name");
 			if (serverName.length() == 0) {
