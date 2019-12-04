@@ -1,0 +1,57 @@
+##################
+## Crontab setting from a 'configuration' file
+##
+## to save current crontab to file: crontab -l > crontab_settings.txt
+##
+## to set the current crontab from a file : crontab < crontab_settings.txt
+##
+##################
+
+# !! Please make all changes to the crontab within the git repository system and apply through the above method.
+#
+# ie :
+# git pull origin {current branch}
+# sudo /usr/local/aspen-discovery/code/cron/check_crontab.sh {sitename}
+# sudo crontab < /usr/local/aspen-discovery/sites/{sitename}/conf/crontab_settings.txt
+
+###################
+# * * * * *  command to execute
+# │ │ │ │ │
+# │ │ │ │ └───── day of week (0 - 6)
+# │ │ │ │        (0 to 6 are Sunday to Saturday, or use names (Sun,Mon,Tue,Wed,Thu,Fri,Sat); 7 is Sunday, the same as 0)
+# │ │ │ └────────── month (1 - 12)
+# │ │ └─────────────── day of month (1 - 31)
+# │ └──────────────────── hour (0 - 23)
+# └───────────────────────── min (0 - 59)
+## taken from https://en.wikipedia.org/wiki/Cron
+##############
+
+#############
+# Indexing Tasks #
+#############
+@reboot sleep 60 /usr/local/aspen-discovery/sites/{sitename}/; ./start_background_processes.sh
+5 2 * * * php /usr/local/aspen-discovery/code/web/cron/updateSuggesters.php {sitename}
+*/5 * * * * php /usr/local/aspen-discovery/code/web/cron/checkBackgroundProcesses.php {sitename}
+
+########################################################
+# Regular extracts that don't need to run continuously #
+########################################################
+0 2 * * 0 cd /usr/local/aspen-discovery/code/oai_indexer; java -jar oai_indexer.jar {sitename}
+
+#############################################
+# New York Times Best seller Lists Updating #
+#############################################
+15 7 * * 0-1 php /usr/local/aspen-discovery/code/web/cron/updateNYTLists.php {sitename}
+# update on Sundays and Mondays at 7:15
+
+################
+# Pika Cleanup #
+################
+
+# Temp files
+26 0 * * * cd /tmp; rm -rf CURLCOOKIE*
+
+# CRON for Aspen (book cover cache cleanup etc.)
+00 20 * * * cd /usr/local/aspen-discovery/code/cron; java -jar cron.jar {sitename}
+
+00 01 * * * certbot renew
