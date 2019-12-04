@@ -9,8 +9,10 @@ $sitename = '';
 while (empty($sitename)) {
 	$sitename = readline("Enter the sitename to be setup (i.e. demo.localhost, demo.production) > ");
 }
+$cleanSitename = preg_replace('/\W/', '_', $sitename);
 $variables = [
 	'sitename' => $sitename,
+	'cleanSitename' => $cleanSitename,
 ];
 
 $operatingSystem = php_uname('s');
@@ -93,9 +95,9 @@ if ($variables['ils'] = 'Koha'){
 	while (empty($variables['ilsDBPwd'])) {
 		$variables['ilsDBPwd'] = readline("Database Password for the Koha Database  > ");
 	}
-	$variables['ilisDBPort'] = '';
-	while (empty($variables['ilisDBPort'])) {
-		$variables['ilisDBPort'] = readline("Database Port for the Koha Database  > ");
+	$variables['ilsDBPort'] = '';
+	while (empty($variables['ilsDBPort'])) {
+		$variables['ilsDBPort'] = readline("Database Port for the Koha Database  > ");
 	}
 	$variables['ilsDBTimezone'] = readline("Database timezone for the Koha Database (US/Pacific) > ");
 	if (empty($variables['ilsDBTimezone'])){
@@ -171,6 +173,7 @@ replaceVariables($siteDir . "/conf/config.ini", $variables);
 replaceVariables($siteDir . "/conf/config.pwd.ini", $variables);
 
 if (!$siteOnWindows){
+	replaceVariables($siteDir . "/conf/crontab_settings.txt", $variables);
 	exec('sudo timedatectl set-timezone "'. $variables['timezone'] . '"');
 }
 
@@ -252,6 +255,8 @@ if ($siteOnWindows){
 	//Start solr
 	exec('chmod +x ' . $siteDir . "/{$sitename}.sh");
 	execInBackground($siteDir . "/{$sitename}.sh");
+	//Link cron to /etc/cron.d folder
+	exec('ln -s ' . $siteDir . "/usr/local/aspen-discovery/sites/{$sitename}/conf/crontab_settings.txt /etc/cron.d/{$cleanSitename}");
 }
 
 echo("\r\n");
@@ -304,14 +309,14 @@ function recursive_rmdir($dir) {
 
 function replaceVariables($filename, $variables){
 	$contents = file ($filename);
-	$fhnd = fopen($filename, 'w');
+	$fHnd = fopen($filename, 'w');
 	foreach ($contents as $line){
 		foreach ($variables as $name => $value){
 			$line = str_replace('{' . $name . '}', $value, $line);
 		}
-		fwrite($fhnd, $line);
+		fwrite($fHnd, $line);
 	}
-	fclose($fhnd);
+	fclose($fHnd);
 }
 
 function execInBackground($cmd) {
