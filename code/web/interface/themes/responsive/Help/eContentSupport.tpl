@@ -2,7 +2,7 @@
 	<div class="alert alert-info">
 		Need help downloading a title or using the title on your device?  Please fill out this support form.
 	</div>
-	<form id="eContentSupport" action="{$path}/Help/eContentSupport" method="post">
+	<form id="eContentSupport" action="/Help/eContentSupport" method="post">
 		<input type="hidden" name="submit" value="submitted"/>
 		{if !$loggedIn}
 			<div class='form-group'>

@@ -17,7 +17,7 @@
 			<div id="filterPanel" class="panel-collapse collapse">
 				<div class="panel-body">
 
-					<form action="{$path}/MaterialsRequest/ManageRequests" method="get">
+					<form action="/MaterialsRequest/ManageRequests" method="get">
 						<fieldset class="fieldset-collapsible">
 							<legend>Statuses to Show:</legend>
 							<div class="form-group checkbox">
@@ -98,7 +98,7 @@
 			</div>
 		</div>
 		{if count($allRequests) > 0}
-			<form id="updateRequests" method="post" action="{$path}/MaterialsRequest/ManageRequests" class="form form-horizontal">
+			<form id="updateRequests" method="post" action="/MaterialsRequest/ManageRequests" class="form form-horizontal">
 				<table id="requestedMaterials" class="table tablesorter table-striped table-hover">
 					<thead>
 						<tr>

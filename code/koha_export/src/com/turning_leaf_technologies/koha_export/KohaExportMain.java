@@ -89,12 +89,12 @@ public class KohaExportMain {
 				//Connect to the Koha database
 				Connection kohaConn;
 				KohaInstanceInformation kohaInstanceInformation = initializeKohaConnection(dbConn);
-				if (kohaInstanceInformation == null){
+				if (kohaInstanceInformation == null) {
 					logEntry.incErrors();
 					logEntry.addNote("Could not connect to the Koha database");
 					logEntry.setFinished();
 					continue;
-				}else{
+				} else {
 					kohaConn = kohaInstanceInformation.kohaConnection;
 					profileToLoad = kohaInstanceInformation.indexingProfileName;
 				}
@@ -144,7 +144,7 @@ public class KohaExportMain {
 				System.gc();
 				if (numChanges == 0) {
 					Thread.sleep(1000 * 60 * 5);
-				}else {
+				} else {
 					Thread.sleep(1000 * 60);
 				}
 			} catch (InterruptedException e) {
@@ -153,7 +153,7 @@ public class KohaExportMain {
 		} //Infinite loop
 	}
 
-	private static KohaInstanceInformation initializeKohaConnection(Connection dbConn) throws SQLException{
+	private static KohaInstanceInformation initializeKohaConnection(Connection dbConn) throws SQLException {
 		//Get information about the account profile for koha
 		PreparedStatement accountProfileStmt = dbConn.prepareStatement("SELECT * from account_profiles WHERE driver = 'Koha'");
 		ResultSet accountProfileRS = accountProfileStmt.executeQuery();
@@ -181,7 +181,7 @@ public class KohaExportMain {
 				}
 
 				Connection kohaConn = connectToKohaDatabase();
-				if (kohaConn != null){
+				if (kohaConn != null) {
 					kohaInstanceInformation = new KohaInstanceInformation();
 					kohaInstanceInformation.kohaConnection = kohaConn;
 					kohaInstanceInformation.indexingProfileName = accountProfileRS.getString("recordSource");
@@ -198,15 +198,15 @@ public class KohaExportMain {
 
 	private static Connection connectToKohaDatabase() {
 		int tries = 0;
-		while (tries < 3){
-			try{
+		while (tries < 3) {
+			try {
 				Connection kohaConn = DriverManager.getConnection(kohaConnectionJDBC);
 
 				getBaseMarcRecordStmt = kohaConn.prepareStatement("SELECT * from biblio_metadata where biblionumber = ?");
 				getBibItemsStmt = kohaConn.prepareStatement("SELECT * from items where biblionumber = ?");
 
 				return kohaConn;
-			}catch (Exception e){
+			} catch (Exception e) {
 				tries++;
 				logger.error("Could not connect to the koha database, try " + tries);
 				try {
@@ -232,7 +232,7 @@ public class KohaExportMain {
 			//Load branches into location
 			PreparedStatement kohaBranchesStmt = kohaConn.prepareStatement("SELECT branchcode, branchname from branches");
 			Long translationMapId = getTranslationMapId(createTranslationMapStmt, getTranslationMapStmt, "location");
-			HashMap <String, String> existingValues = getExistingTranslationMapValues(getExistingValuesForMapStmt, translationMapId);
+			HashMap<String, String> existingValues = getExistingTranslationMapValues(getExistingValuesForMapStmt, translationMapId);
 			updateTranslationMap(kohaBranchesStmt, "branchcode", "branchname", insertTranslationStmt, translationMapId, existingValues);
 
 			//Load LOC into sub location
@@ -257,7 +257,7 @@ public class KohaExportMain {
 			existingValues = getExistingTranslationMapValues(getExistingValuesForMapStmt, translationMapId);
 			updateTranslationMap(kohaItemTypesStmt, "itemtype", "description", insertTranslationStmt, translationMapId, existingValues);
 
-		}catch (SQLException e) {
+		} catch (SQLException e) {
 			logger.error("Error updating translation maps", e);
 		}
 	}
@@ -267,12 +267,12 @@ public class KohaExportMain {
 		while (kohaValuesRS.next()) {
 			String value = kohaValuesRS.getString("itemtype");
 			String translation = kohaValuesRS.getString("description");
-			if (existingValues.containsKey(value)){
-				if (!existingValues.get(value).equals(translation)){
+			if (existingValues.containsKey(value)) {
+				if (!existingValues.get(value).equals(translation)) {
 					logger.warn("Translation for " + value + " has changed from " + existingValues.get(value) + " to " + translation);
 				}
 			} else {
-				if (translation == null){
+				if (translation == null) {
 					translation = value;
 				}
 				if (value.length() > 0) {
@@ -290,12 +290,12 @@ public class KohaExportMain {
 		while (kohaValuesRS.next()) {
 			String value = kohaValuesRS.getString(valueColumn);
 			String translation = kohaValuesRS.getString(translationColumn);
-			if (existingValues.containsKey(value)){
-				if (!existingValues.get(value).equals(translation)){
+			if (existingValues.containsKey(value)) {
+				if (!existingValues.get(value).equals(translation)) {
 					logger.warn("Translation for " + value + " has changed from " + existingValues.get(value) + " to " + translation);
 				}
 			} else {
-				if (translation == null){
+				if (translation == null) {
 					translation = value;
 				}
 				if (value.length() > 0) {
@@ -333,7 +333,7 @@ public class KohaExportMain {
 		getTranslationMapStmt.setString(1, mapName);
 		getTranslationMapStmt.setLong(2, indexingProfile.getId());
 		ResultSet getTranslationMapRS = getTranslationMapStmt.executeQuery();
-		if (getTranslationMapRS.next()){
+		if (getTranslationMapRS.next()) {
 			translationMapId = getTranslationMapRS.getLong("id");
 		} else {
 			//Map does not exist, create it
@@ -355,56 +355,56 @@ public class KohaExportMain {
 			PreparedStatement addAspenPatronTypeStmt = dbConn.prepareStatement("INSERT INTO ptype (pType) VALUES (?)");
 
 			ResultSet kohaPTypes = kohaPatronTypeStmt.executeQuery();
-			while (kohaPTypes.next()){
+			while (kohaPTypes.next()) {
 				existingAspenPatronTypesStmt.setString(1, kohaPTypes.getString("categorycode"));
 				ResultSet existingAspenPatronTypesRS = existingAspenPatronTypesStmt.executeQuery();
-				if (!existingAspenPatronTypesRS.next()){
+				if (!existingAspenPatronTypesRS.next()) {
 					addAspenPatronTypeStmt.setString(1, kohaPTypes.getString("categorycode"));
 					addAspenPatronTypeStmt.executeUpdate();
 				}
 				existingAspenPatronTypesRS.close();
 			}
 			kohaPTypes.close();
-		}catch (Exception e) {
+		} catch (Exception e) {
 			logger.error("Error updating patron type information from Koha", e);
 		}
 	}
 
 	private static void updateBranchInfo(Connection dbConn, Connection kohaConn) {
-        try {
-            PreparedStatement kohaBranchesStmt = kohaConn.prepareStatement("SELECT * from branches");
-            PreparedStatement existingAspenLocationStmt = dbConn.prepareStatement("SELECT libraryId, locationId, isMainBranch from location where code = ?");
-            PreparedStatement updateAspenLocationStmt = dbConn.prepareStatement("UPDATE location SET displayName = ?, address = ?, phone = ? where locationId = ?");
-            PreparedStatement kohaRepeatableHolidaysStmt = kohaConn.prepareStatement("SELECT * FROM repeatable_holidays where branchcode = ?");
-            PreparedStatement kohaSpecialHolidaysStmt = kohaConn.prepareStatement("SELECT * FROM special_holidays where (year = ? or year = ?) AND branchcode = ? order by  year, month, day");
+		try {
+			PreparedStatement kohaBranchesStmt = kohaConn.prepareStatement("SELECT * from branches");
+			PreparedStatement existingAspenLocationStmt = dbConn.prepareStatement("SELECT libraryId, locationId, isMainBranch from location where code = ?");
+			PreparedStatement updateAspenLocationStmt = dbConn.prepareStatement("UPDATE location SET displayName = ?, address = ?, phone = ? where locationId = ?");
+			PreparedStatement kohaRepeatableHolidaysStmt = kohaConn.prepareStatement("SELECT * FROM repeatable_holidays where branchcode = ?");
+			PreparedStatement kohaSpecialHolidaysStmt = kohaConn.prepareStatement("SELECT * FROM special_holidays where (year = ? or year = ?) AND branchcode = ? order by  year, month, day");
 			PreparedStatement existingHoursStmt = dbConn.prepareStatement("SELECT count(*) FROM location_hours where locationId = ?");
 			PreparedStatement addHoursStmt = dbConn.prepareStatement("INSERT INTO location_hours (locationId, day, closed, open, close) VALUES (?, ?, 0, '00:30', '00:30') ");
 			PreparedStatement existingHolidaysStmt = dbConn.prepareStatement("SELECT * FROM holiday where libraryId = ? and date >= ?");
-            PreparedStatement addHolidayStmt = dbConn.prepareStatement("INSERT INTO holiday (libraryId, date, name) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE name = VALUES(name)");
-            PreparedStatement removeHolidayStmt = dbConn.prepareStatement("DELETE FROM holiday WHERE id = ?");
+			PreparedStatement addHolidayStmt = dbConn.prepareStatement("INSERT INTO holiday (libraryId, date, name) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE name = VALUES(name)");
+			PreparedStatement removeHolidayStmt = dbConn.prepareStatement("DELETE FROM holiday WHERE id = ?");
 			PreparedStatement markLibraryClosed = dbConn.prepareStatement("UPDATE location_hours set closed = 1 where locationId = ? and day = ?");
-            ResultSet kohaBranches = kohaBranchesStmt.executeQuery();
-            String currentYear = new SimpleDateFormat("yyyy").format(new Date());
-            GregorianCalendar nextYearCal = new GregorianCalendar();
-            nextYearCal.roll(GregorianCalendar.YEAR, 1);
-            String nextYear = new SimpleDateFormat("yyyy").format(nextYearCal.getTime());
-            while (kohaBranches.next()){
-                String ilsCode = kohaBranches.getString("branchcode");
-                existingAspenLocationStmt.setString(1, ilsCode);
-                ResultSet existingAspenLocationRS = existingAspenLocationStmt.executeQuery();
-                if (existingAspenLocationRS.next()){
-                    long existingLocationId = existingAspenLocationRS.getLong("locationId");
-                    updateAspenLocationStmt.setString(1, kohaBranches.getString("branchname"));
-                    String address = kohaBranches.getString("branchaddress1");
-                    String address2 = kohaBranches.getString("branchaddress2");
-                    if (address2 != null && address2.length() > 0){
-                        address += "\r\n" + address2;
-                    }
-                    address += "\r\n" + kohaBranches.getString("branchcity") + "," + kohaBranches.getString("branchstate") + " " + kohaBranches.getString("branchzip");
-                    updateAspenLocationStmt.setString(2, address);
-                    updateAspenLocationStmt.setString(3, kohaBranches.getString("branchphone"));
-                    updateAspenLocationStmt.setLong(4, existingLocationId);
-                    updateAspenLocationStmt.executeUpdate();
+			ResultSet kohaBranches = kohaBranchesStmt.executeQuery();
+			String currentYear = new SimpleDateFormat("yyyy").format(new Date());
+			GregorianCalendar nextYearCal = new GregorianCalendar();
+			nextYearCal.roll(GregorianCalendar.YEAR, 1);
+			String nextYear = new SimpleDateFormat("yyyy").format(nextYearCal.getTime());
+			while (kohaBranches.next()) {
+				String ilsCode = kohaBranches.getString("branchcode");
+				existingAspenLocationStmt.setString(1, ilsCode);
+				ResultSet existingAspenLocationRS = existingAspenLocationStmt.executeQuery();
+				if (existingAspenLocationRS.next()) {
+					long existingLocationId = existingAspenLocationRS.getLong("locationId");
+					updateAspenLocationStmt.setString(1, kohaBranches.getString("branchname"));
+					String address = kohaBranches.getString("branchaddress1");
+					String address2 = kohaBranches.getString("branchaddress2");
+					if (address2 != null && address2.length() > 0) {
+						address += "\r\n" + address2;
+					}
+					address += "\r\n" + kohaBranches.getString("branchcity") + "," + kohaBranches.getString("branchstate") + " " + kohaBranches.getString("branchzip");
+					updateAspenLocationStmt.setString(2, address);
+					updateAspenLocationStmt.setString(3, kohaBranches.getString("branchphone"));
+					updateAspenLocationStmt.setLong(4, existingLocationId);
+					updateAspenLocationStmt.executeUpdate();
 
 					HashMap<java.sql.Date, Long> existingHolidayDates = new HashMap<>();
 					long libraryId = existingAspenLocationRS.getLong("libraryId");
@@ -422,9 +422,9 @@ public class KohaExportMain {
 					//update hours for the branch.  We can only get closed times.
 					existingHoursStmt.setLong(1, existingLocationId);
 					ResultSet existingHoursRS = existingHoursStmt.executeQuery();
-					if (existingHoursRS.next()){
+					if (existingHoursRS.next()) {
 						long numHours = existingHoursRS.getLong(1);
-						if (numHours == 0){
+						if (numHours == 0) {
 							//Create default hours
 							for (int i = 0; i < 7; i++) {
 								addHoursStmt.setLong(1, existingLocationId);
@@ -436,9 +436,9 @@ public class KohaExportMain {
 
 					kohaRepeatableHolidaysStmt.setString(1, ilsCode);
 					ResultSet kohaRepeatableHolidaysRS = kohaRepeatableHolidaysStmt.executeQuery();
-					while (kohaRepeatableHolidaysRS.next()){
+					while (kohaRepeatableHolidaysRS.next()) {
 						int weekday = kohaRepeatableHolidaysRS.getInt("weekday");
-						if (!kohaRepeatableHolidaysRS.wasNull()){
+						if (!kohaRepeatableHolidaysRS.wasNull()) {
 							//The library is closed on this date
 							markLibraryClosed.setLong(1, existingLocationId);
 							markLibraryClosed.setInt(2, weekday);
@@ -465,40 +465,40 @@ public class KohaExportMain {
 						}
 					}
 
-                    //update holidays for the library
-                    //Koha stores holidays per branch rather than per library system for now, we will just assign based on the main branch
-                    if (existingAspenLocationRS.getBoolean("isMainBranch")){
-                        kohaSpecialHolidaysStmt.setInt(1, Integer.parseInt(currentYear));
-                        kohaSpecialHolidaysStmt.setInt(2, Integer.parseInt(nextYear));
-                        kohaSpecialHolidaysStmt.setString(3, ilsCode);
-                        ResultSet kohaSpecialHolidaysRS = kohaSpecialHolidaysStmt.executeQuery();
-                        while (kohaSpecialHolidaysRS.next()) {
-                            String holidayDate = kohaSpecialHolidaysRS.getString("year") + "-" + kohaSpecialHolidaysRS.getString("month") + "-" + kohaSpecialHolidaysRS.getString("day");
-                            java.sql.Date holidayDateAsDate = java.sql.Date.valueOf(holidayDate);
-                            String title = kohaSpecialHolidaysRS.getString("title");
-                            addHolidayStmt.setLong(1, libraryId);
-                            addHolidayStmt.setDate(2, holidayDateAsDate);
-                            addHolidayStmt.setString(3, title);
-                            addHolidayStmt.executeUpdate();
-                            existingHolidayDates.remove(holidayDateAsDate);
-                        }
-                    }
+					//update holidays for the library
+					//Koha stores holidays per branch rather than per library system for now, we will just assign based on the main branch
+					if (existingAspenLocationRS.getBoolean("isMainBranch")) {
+						kohaSpecialHolidaysStmt.setInt(1, Integer.parseInt(currentYear));
+						kohaSpecialHolidaysStmt.setInt(2, Integer.parseInt(nextYear));
+						kohaSpecialHolidaysStmt.setString(3, ilsCode);
+						ResultSet kohaSpecialHolidaysRS = kohaSpecialHolidaysStmt.executeQuery();
+						while (kohaSpecialHolidaysRS.next()) {
+							String holidayDate = kohaSpecialHolidaysRS.getString("year") + "-" + kohaSpecialHolidaysRS.getString("month") + "-" + kohaSpecialHolidaysRS.getString("day");
+							java.sql.Date holidayDateAsDate = java.sql.Date.valueOf(holidayDate);
+							String title = kohaSpecialHolidaysRS.getString("title");
+							addHolidayStmt.setLong(1, libraryId);
+							addHolidayStmt.setDate(2, holidayDateAsDate);
+							addHolidayStmt.setString(3, title);
+							addHolidayStmt.executeUpdate();
+							existingHolidayDates.remove(holidayDateAsDate);
+						}
+					}
 
-                    //Remove anything leftover
+					//Remove anything leftover
 					for (Long holidayToBeDeleted : existingHolidayDates.values()) {
 						removeHolidayStmt.setLong(1, holidayToBeDeleted);
 						removeHolidayStmt.executeUpdate();
 					}
-                } else {
-                    logger.error("Aspen does not currently have a location defined for code " + ilsCode + " please create the location in Aspen first so the library information is properly defined.");
-                }
-            }
-        }catch (Exception e) {
-            logger.error("Error updating branch information from Koha", e);
-        }
-    }
+				} else {
+					logger.error("Aspen does not currently have a location defined for code " + ilsCode + " please create the location in Aspen first so the library information is properly defined.");
+				}
+			}
+		} catch (Exception e) {
+			logger.error("Error updating branch information from Koha", e);
+		}
+	}
 
-    private static void exportHolds(Connection dbConn, Connection kohaConn) {
+	private static void exportHolds(Connection dbConn, Connection kohaConn) {
 		Savepoint startOfHolds = null;
 		try {
 			logger.info("Starting export of holds");
@@ -514,14 +514,14 @@ public class KohaExportMain {
 			//Export bib level holds
 			PreparedStatement bibHoldsStmt = kohaConn.prepareStatement("select count(*) as numHolds, biblionumber from reserves group by biblionumber", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			ResultSet bibHoldsRS = bibHoldsStmt.executeQuery();
-			while (bibHoldsRS.next()){
+			while (bibHoldsRS.next()) {
 				String bibId = bibHoldsRS.getString("biblionumber");
 				Long numHolds = bibHoldsRS.getLong("numHolds");
 				numHoldsByBib.put(bibId, numHolds);
 			}
 			bibHoldsRS.close();
 
-			for (String bibId : numHoldsByBib.keySet()){
+			for (String bibId : numHoldsByBib.keySet()) {
 				addIlsHoldSummary.setString(1, bibId);
 				addIlsHoldSummary.setLong(2, numHoldsByBib.get(bibId));
 				addIlsHoldSummary.executeUpdate();
@@ -530,7 +530,7 @@ public class KohaExportMain {
 			try {
 				dbConn.commit();
 				dbConn.setAutoCommit(true);
-			}catch (Exception e){
+			} catch (Exception e) {
 				logger.warn("error committing hold updates rolling back", e);
 				dbConn.rollback(startOfHolds);
 			}
@@ -540,7 +540,7 @@ public class KohaExportMain {
 			if (startOfHolds != null) {
 				try {
 					dbConn.rollback(startOfHolds);
-				}catch (Exception e1){
+				} catch (Exception e1) {
 					logger.error("Unable to rollback due to exception", e1);
 				}
 			}
@@ -551,11 +551,11 @@ public class KohaExportMain {
 	private static int updateRecords(Connection dbConn, Connection kohaConn) {
 		int totalChanges = 0;
 
-		try{
+		try {
 			//Get the time the last extract was done
 			logger.info("Starting to load changed records from Koha using the Database connection");
 			long lastKohaExtractTime = indexingProfile.getLastUpdateOfChangedRecords();
-			if (lastKohaExtractTime == 0){
+			if (lastKohaExtractTime == 0) {
 				lastKohaExtractTime = new Date().getTime() / 1000 - 24 * 60 * 60;
 			}
 			Timestamp lastExtractTimestamp = new Timestamp(lastKohaExtractTime * 1000);
@@ -564,10 +564,10 @@ public class KohaExportMain {
 
 			//Get a list of bibs that have changed
 			PreparedStatement getChangedBibsFromKohaStmt;
-			if (indexingProfile.isRunFullUpdate()){
+			if (indexingProfile.isRunFullUpdate()) {
 				getChangedBibsFromKohaStmt = kohaConn.prepareStatement("select biblionumber from biblio");
 				logEntry.addNote("Getting all records from Koha");
-			}else{
+			} else {
 				getChangedBibsFromKohaStmt = kohaConn.prepareStatement("select biblionumber from biblio where timestamp >= ?");
 				logEntry.addNote("Getting changes to records since " + lastExtractTimestamp.toString());
 
@@ -579,7 +579,7 @@ public class KohaExportMain {
 				changedBibIds.add(getChangedBibsFromKohaRS.getString("biblionumber"));
 			}
 
-			if (!indexingProfile.isRunFullUpdate()){
+			if (!indexingProfile.isRunFullUpdate()) {
 				//Get a list of items that have changed
 				PreparedStatement getChangedItemsFromKohaStmt = kohaConn.prepareStatement("select DISTINCT biblionumber from items where timestamp >= ?");
 				getChangedItemsFromKohaStmt.setTimestamp(1, lastExtractTimestamp);
@@ -603,12 +603,12 @@ public class KohaExportMain {
 			logEntry.setNumProducts(changedBibIds.size());
 			logEntry.saveResults();
 			int numProcessed = 0;
-			for (String curBibId : changedBibIds){
+			for (String curBibId : changedBibIds) {
 				//Update the marc record
 				updateBibRecord(curBibId);
 
 				numProcessed++;
-				if (numProcessed % 250 == 0){
+				if (numProcessed % 250 == 0) {
 					logEntry.saveResults();
 				}
 			}
@@ -617,7 +617,7 @@ public class KohaExportMain {
 			PreparedStatement getDeletedBibsFromKohaStmt;
 			if (indexingProfile.isRunFullUpdate()) {
 				getDeletedBibsFromKohaStmt = kohaConn.prepareStatement("select DISTINCT biblionumber from deletedbiblio");
-			}else{
+			} else {
 				getDeletedBibsFromKohaStmt = kohaConn.prepareStatement("select DISTINCT biblionumber from deletedbiblio where timestamp >= ?");
 				getDeletedBibsFromKohaStmt.setTimestamp(1, lastExtractTimestamp);
 			}
@@ -627,9 +627,9 @@ public class KohaExportMain {
 			while (bibDeletedRS.next()) {
 				String bibId = bibDeletedRS.getString("biblionumber");
 				RemoveRecordFromWorkResult result = getRecordGroupingProcessor().removeRecordFromGroupedWork(indexingProfile.getName(), bibId);
-				if (result.reindexWork){
+				if (result.reindexWork) {
 					getGroupedWorkIndexer().processGroupedWork(result.permanentId);
-				}else if (result.deleteWork){
+				} else if (result.deleteWork) {
 					//Delete the work from solr and the database
 					getGroupedWorkIndexer().deleteRecord(result.permanentId, result.groupedWorkId);
 				}
@@ -665,7 +665,7 @@ public class KohaExportMain {
 					updateVariableStmt.close();
 				}
 			}
-		} catch (Exception e){
+		} catch (Exception e) {
 			logger.error("Error loading changed records from Koha database", e);
 			logEntry.incErrors();
 			//Don't quit since that keeps the exporter from running continuously
@@ -679,7 +679,7 @@ public class KohaExportMain {
 		//Load the existing marc record from file
 		try {
 			File marcFile = indexingProfile.getFileForIlsRecord(curBibId);
-			if (!marcFile.getParentFile().exists()){
+			if (!marcFile.getParentFile().exists()) {
 				//noinspection ResultOfMethodCallIgnored
 				marcFile.getParentFile().mkdirs();
 			}
@@ -735,13 +735,13 @@ public class KohaExportMain {
 					addSubfield(itemField, 'j', bibItemsRS.getString("stack"));
 					addSubfield(itemField, 'i', bibItemsRS.getString("stocknumber"));
 					addSubfield(itemField, 'u', bibItemsRS.getString("uri"));
-					addSubfield(itemField,'0', bibItemsRS.getString("withdrawn"));
+					addSubfield(itemField, '0', bibItemsRS.getString("withdrawn"));
 					marcRecord.addVariableField(itemField);
 				}
 
-				if (marcFile.exists()){
+				if (marcFile.exists()) {
 					logEntry.incUpdated();
-				}else{
+				} else {
 					logEntry.incAdded();
 				}
 				MarcWriter writer = new MarcStreamWriter(new FileOutputStream(marcFile), "UTF-8", true);
@@ -756,14 +756,14 @@ public class KohaExportMain {
 				}
 			}
 
-		}catch (Exception e) {
+		} catch (Exception e) {
 			if (e instanceof com.mysql.cj.jdbc.exceptions.CommunicationsException) {
 				throw e;
-			}else if (e instanceof com.mysql.cj.exceptions.StatementIsClosedException){
+			} else if (e instanceof com.mysql.cj.exceptions.StatementIsClosedException) {
 				throw e;
-			}else if (e instanceof SQLException && ((SQLException) e).getSQLState().equals("S1009")) {
+			} else if (e instanceof SQLException && ((SQLException) e).getSQLState().equals("S1009")) {
 				throw e;
-			}else {
+			} else {
 				logger.error("Error updating marc record for bib " + curBibId, e);
 				logEntry.incErrors();
 			}
@@ -780,7 +780,7 @@ public class KohaExportMain {
 		return getRecordGroupingProcessor().processMarcRecord(marcRecord, true);
 	}
 
-	private static MarcRecordGrouper getRecordGroupingProcessor(){
+	private static MarcRecordGrouper getRecordGroupingProcessor() {
 		if (recordGroupingProcessorSingleton == null) {
 			recordGroupingProcessorSingleton = new MarcRecordGrouper(serverName, dbConn, indexingProfile, logger, false);
 		}

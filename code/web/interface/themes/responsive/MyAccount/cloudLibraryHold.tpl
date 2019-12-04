@@ -44,7 +44,7 @@
 						<div class="row">
 							<div class="result-label col-tn-4">{translate text='Author'}</div>
 							<div class="col-tn-8 result-value">
-								<a href='{$path}/Author/Home?author="{$record.author|escape:"url"}"'>{$record.author|highlight}</a>
+								<a href='/Author/Home?author="{$record.author|escape:"url"}"'>{$record.author|highlight}</a>
 							</div>
 						</div>
 					{/if}

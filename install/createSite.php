@@ -26,6 +26,7 @@ if ($runningOnWindows){
 }
 $siteDir = $installDir . '/sites/' . $sitename;
 
+$clearExisting = false;
 if (file_exists($siteDir)){
 	$clearExisting = readline ("The site directory already exists, do you want to remove the existing configuration (y/N)? ");
 	if (empty($clearExisting) || ($clearExisting != 'Y' && $clearExisting != 'y')){
@@ -232,6 +233,8 @@ if (!file_exists($logDir)){
 //Link the httpd conf file
 if (!$siteOnWindows){
 	symlink($siteDir . "/httpd-{$sitename}.conf", "/etc/httpd/conf.d/httpd-{$sitename}.conf");
+	//Restart apache
+	exec("systemctl restart httpd");
 }
 
 //Setup solr
@@ -246,8 +249,8 @@ if ($siteOnWindows){
 	chdir($siteDir);
 	execInBackground( "{$sitename}.bat");
 }else{
-	exec("apache ctl restart");
 	//Start solr
+	exec('chmod +x ' . $siteDir . "/{$sitename}.sh");
 	execInBackground($siteDir . "/{$sitename}.sh");
 }
 

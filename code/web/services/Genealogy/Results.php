@@ -20,7 +20,7 @@ class Genealogy_Results extends Action {
 			$interface->assign('userIsAdmin', false);
 		}
 
-		$searchSource = isset($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : 'local';
+		$searchSource = !empty($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : 'local';
 
 		//Check to see if the year has been set and if so, convert to a filter and resend.
 		$dateFilters = array('birthYear', 'deathYear');

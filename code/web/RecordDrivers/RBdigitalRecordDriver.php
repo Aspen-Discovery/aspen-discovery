@@ -3,436 +3,458 @@
 require_once ROOT_DIR . '/RecordDrivers/RecordInterface.php';
 require_once ROOT_DIR . '/RecordDrivers/GroupedWorkSubDriver.php';
 require_once ROOT_DIR . '/sys/RBdigital/RBdigitalProduct.php';
-class RBdigitalRecordDriver extends GroupedWorkSubDriver {
-    private $id;
-    /** @var RBdigitalProduct */
-    private $rbdigitalProduct;
-    private $rbdigitalRawMetadata;
-    private $valid;
 
-    /** @noinspection PhpMissingParentConstructorInspection */
-    public function __construct($recordId, $groupedWork = null) {
-        $this->id = $recordId;
+class RBdigitalRecordDriver extends GroupedWorkSubDriver
+{
+	private $id;
+	/** @var RBdigitalProduct */
+	private $rbdigitalProduct;
+	private $rbdigitalRawMetadata;
+	private $valid;
 
-        $this->rbdigitalProduct = new RBdigitalProduct();
-        $this->rbdigitalProduct->rbdigitalId = $recordId;
-        if ($this->rbdigitalProduct->find(true)) {
-            $this->valid = true;
-            $this->rbdigitalRawMetadata = json_decode($this->rbdigitalProduct->rawResponse);
-        } else {
-            $this->valid = false;
-            $this->rbdigitalProduct = null;
-        }
-        if ($this->valid){
-            parent::__construct($groupedWork);
-        }
-    }
+	/** @noinspection PhpMissingParentConstructorInspection */
+	public function __construct($recordId, $groupedWork = null)
+	{
+		$this->id = $recordId;
 
-    public function getIdWithSource(){
-        return 'rbdigital:' . $this->id;
-    }
+		$this->rbdigitalProduct = new RBdigitalProduct();
+		$this->rbdigitalProduct->rbdigitalId = $recordId;
+		if ($this->rbdigitalProduct->find(true)) {
+			$this->valid = true;
+			$this->rbdigitalRawMetadata = json_decode($this->rbdigitalProduct->rawResponse);
+		} else {
+			$this->valid = false;
+			$this->rbdigitalProduct = null;
+		}
+		if ($this->valid) {
+			parent::__construct($groupedWork);
+		}
+	}
 
-    /**
-     * Load the grouped work that this record is connected to.
-     */
-    public function loadGroupedWork() {
-    	if ($this->groupedWork == null){
-		    require_once ROOT_DIR . '/sys/Grouping/GroupedWorkPrimaryIdentifier.php';
-		    require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
-		    $groupedWork = new GroupedWork();
-		    $query = "SELECT grouped_work.* FROM grouped_work INNER JOIN grouped_work_primary_identifiers ON grouped_work.id = grouped_work_id WHERE type='rbdigital' AND identifier = '" . $this->getUniqueID() . "'";
-		    $groupedWork->query($query);
+	public function getIdWithSource()
+	{
+		return 'rbdigital:' . $this->id;
+	}
 
-		    if ($groupedWork->N == 1){
-			    $groupedWork->fetch();
-			    $this->groupedWork = clone $groupedWork;
-		    }
-	    }
-    }
+	/**
+	 * Load the grouped work that this record is connected to.
+	 */
+	public function loadGroupedWork()
+	{
+		if ($this->groupedWork == null) {
+			require_once ROOT_DIR . '/sys/Grouping/GroupedWorkPrimaryIdentifier.php';
+			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+			$groupedWork = new GroupedWork();
+			$query = "SELECT grouped_work.* FROM grouped_work INNER JOIN grouped_work_primary_identifiers ON grouped_work.id = grouped_work_id WHERE type='rbdigital' AND identifier = '" . $this->getUniqueID() . "'";
+			$groupedWork->query($query);
 
-    public function getRBdigitalBookcoverUrl($size = 'small')
-    {
-        $images = $this->rbdigitalRawMetadata->images;
-        foreach ($images as $image) {
-            if ($image->name == 'medium' && $size == 'small') {
-                return $image->url;
-            }
-            if ($image->name == 'large' && $size == 'medium') {
-                return $image->url;
-            }
-            if ($image->name == 'xx-large' && $size == 'large') {
-                return $image->url;
-            }
-        }
-        return null;
-    }
+			if ($groupedWork->N == 1) {
+				$groupedWork->fetch();
+				$this->groupedWork = clone $groupedWork;
+			}
+		}
+	}
 
-    public function getModule()
-    {
-        return 'RBdigital';
-    }
+	public function getRBdigitalBookcoverUrl($size = 'small')
+	{
+		$images = $this->rbdigitalRawMetadata->images;
+		foreach ($images as $image) {
+			if ($image->name == 'medium' && $size == 'small') {
+				return $image->url;
+			}
+			if ($image->name == 'large' && $size == 'medium') {
+				return $image->url;
+			}
+			if ($image->name == 'xx-large' && $size == 'large') {
+				return $image->url;
+			}
+		}
+		return null;
+	}
 
-    /**
-     * Assign necessary Smarty variables and return a template name to
-     * load in order to display the full record information on the Staff
-     * View tab of the record view page.
-     *
-     * @access  public
-     * @return  string              Name of Smarty template file to display.
-     */
-    public function getStaffView()
-    {
-        global $interface;
-        $groupedWorkDetails = $this->getGroupedWorkDriver()->getGroupedWorkDetails();
-        $interface->assign('groupedWorkDetails', $groupedWorkDetails);
+	public function getModule()
+	{
+		return 'RBdigital';
+	}
 
-        $interface->assign('rbdigitalExtract', $this->rbdigitalRawMetadata);
-        return 'RecordDrivers/RBdigital/staff-view.tpl';
-    }
+	/**
+	 * Assign necessary Smarty variables and return a template name to
+	 * load in order to display the full record information on the Staff
+	 * View tab of the record view page.
+	 *
+	 * @access  public
+	 * @return  string              Name of Smarty template file to display.
+	 */
+	public function getStaffView()
+	{
+		global $interface;
+		$groupedWorkDetails = $this->getGroupedWorkDriver()->getGroupedWorkDetails();
+		$interface->assign('groupedWorkDetails', $groupedWorkDetails);
 
-    /**
-     * Get the full title of the record.
-     *
-     * @return  string
-     */
-    public function getTitle()
-    {
-        $title = $this->rbdigitalProduct->title;
-        $subtitle = $this->getSubtitle();
-        if (strlen($subtitle) > 0) {
-            $title .= ': ' . $subtitle;
-        }
-        return $title;
-    }
+		$interface->assign('rbdigitalExtract', $this->rbdigitalRawMetadata);
+		return 'RecordDrivers/RBdigital/staff-view.tpl';
+	}
 
-    /**
-     * The Table of Contents extracted from the record.
-     * Returns null if no Table of Contents is available.
-     *
-     * @access  public
-     * @return  array              Array of elements in the table of contents
-     */
-    public function getTableOfContents()
-    {
-        // TODO: Implement getTableOfContents() method.
-        return array();
-    }
+	/**
+	 * Get the full title of the record.
+	 *
+	 * @return  string
+	 */
+	public function getTitle()
+	{
+		$title = $this->rbdigitalProduct->title;
+		$subtitle = $this->getSubtitle();
+		if (strlen($subtitle) > 0) {
+			$title .= ': ' . $subtitle;
+		}
+		return $title;
+	}
 
-    /**
-     * Return the unique identifier of this record within the Solr index;
-     * useful for retrieving additional information (like tags and user
-     * comments) from the external MySQL database.
-     *
-     * @access  public
-     * @return  string              Unique identifier.
-     */
-    public function getUniqueID()
-    {
-        return $this->id;
-    }
+	/**
+	 * The Table of Contents extracted from the record.
+	 * Returns null if no Table of Contents is available.
+	 *
+	 * @access  public
+	 * @return  array              Array of elements in the table of contents
+	 */
+	public function getTableOfContents()
+	{
+		// TODO: Implement getTableOfContents() method.
+		return array();
+	}
 
-    public function getDescription()
-    {
-        return $this->rbdigitalRawMetadata->shortDescription;
-    }
+	/**
+	 * Return the unique identifier of this record within the Solr index;
+	 * useful for retrieving additional information (like tags and user
+	 * comments) from the external MySQL database.
+	 *
+	 * @access  public
+	 * @return  string              Unique identifier.
+	 */
+	public function getUniqueID()
+	{
+		return $this->id;
+	}
 
-    public function getMoreDetailsOptions()
-    {
-        global $interface;
+	public function getDescription()
+	{
+		return $this->rbdigitalRawMetadata->shortDescription;
+	}
 
-        $isbn = $this->getCleanISBN();
+	public function getMoreDetailsOptions()
+	{
+		global $interface;
 
-        //Load table of contents
-        $tableOfContents = $this->getTableOfContents();
-        $interface->assign('tableOfContents', $tableOfContents);
+		$isbn = $this->getCleanISBN();
 
-        //Load more details options
-        $moreDetailsOptions = $this->getBaseMoreDetailsOptions($isbn);
+		//Load table of contents
+		$tableOfContents = $this->getTableOfContents();
+		$interface->assign('tableOfContents', $tableOfContents);
 
-        //Other editions if applicable (only if we aren't the only record!)
-        $groupedWorkDriver = $this->getGroupedWorkDriver();
-        if ($groupedWorkDriver != null){
-            $relatedRecords = $groupedWorkDriver->getRelatedRecords();
-            if (count($relatedRecords) > 1) {
-                $interface->assign('relatedManifestations', $groupedWorkDriver->getRelatedManifestations());
-	            $interface->assign('workId',$groupedWorkDriver->getPermanentId());
-                $moreDetailsOptions['otherEditions'] = array(
-                    'label' => 'Other Editions and Formats',
-                    'body' => $interface->fetch('GroupedWork/relatedManifestations.tpl'),
-                    'hideByDefault' => false
-                );
-            }
-        }
+		//Load more details options
+		$moreDetailsOptions = $this->getBaseMoreDetailsOptions($isbn);
 
-        $moreDetailsOptions['moreDetails'] = array(
-            'label' => 'More Details',
-            'body' => $interface->fetch('RBdigital/view-more-details.tpl'),
-        );
-        $this->loadSubjects();
-        $moreDetailsOptions['subjects'] = array(
-            'label' => 'Subjects',
-            'body' => $interface->fetch('RecordDrivers/RBdigital/view-subjects.tpl'),
-        );
-        $moreDetailsOptions['citations'] = array(
-            'label' => 'Citations',
-            'body' => $interface->fetch('Record/cite.tpl'),
-        );
+		//Other editions if applicable (only if we aren't the only record!)
+		$groupedWorkDriver = $this->getGroupedWorkDriver();
+		if ($groupedWorkDriver != null) {
+			$relatedRecords = $groupedWorkDriver->getRelatedRecords();
+			if (count($relatedRecords) > 1) {
+				$interface->assign('relatedManifestations', $groupedWorkDriver->getRelatedManifestations());
+				$interface->assign('workId', $groupedWorkDriver->getPermanentId());
+				$moreDetailsOptions['otherEditions'] = array(
+					'label' => 'Other Editions and Formats',
+					'body' => $interface->fetch('GroupedWork/relatedManifestations.tpl'),
+					'hideByDefault' => false
+				);
+			}
+		}
 
-        if ($interface->getVariable('showStaffView')) {
-            $moreDetailsOptions['staff'] = array(
-                'label' => 'Staff View',
-                'body' => $interface->fetch($this->getStaffView()),
-            );
-        }
+		$moreDetailsOptions['moreDetails'] = array(
+			'label' => 'More Details',
+			'body' => $interface->fetch('RBdigital/view-more-details.tpl'),
+		);
+		$this->loadSubjects();
+		$moreDetailsOptions['subjects'] = array(
+			'label' => 'Subjects',
+			'body' => $interface->fetch('RecordDrivers/RBdigital/view-subjects.tpl'),
+		);
+		$moreDetailsOptions['citations'] = array(
+			'label' => 'Citations',
+			'body' => $interface->fetch('Record/cite.tpl'),
+		);
 
-        return $this->filterAndSortMoreDetailsOptions($moreDetailsOptions);
-    }
+		if ($interface->getVariable('showStaffView')) {
+			$moreDetailsOptions['staff'] = array(
+				'label' => 'Staff View',
+				'body' => $interface->fetch($this->getStaffView()),
+			);
+		}
 
-    public function getItemActions($itemInfo)
-    {
-        return [];
-    }
+		return $this->filterAndSortMoreDetailsOptions($moreDetailsOptions);
+	}
 
-    public function getISBNs()
-    {
-        $isbns = [];
-        $isbns[] = $this->rbdigitalRawMetadata->isbn;
-        return $isbns;
-    }
+	public function getItemActions($itemInfo)
+	{
+		return [];
+	}
 
-    public function getISSNs()
-    {
-        return array();
-    }
+	public function getISBNs()
+	{
+		$isbns = [];
+		$isbns[] = $this->rbdigitalRawMetadata->isbn;
+		return $isbns;
+	}
 
-    public function getRecordActions($isAvailable, $isHoldable, $isBookable, $relatedUrls = null)
-    {
-        $actions = array();
-        if ($isAvailable){
-            $actions[] = array(
-                'title' => 'Check Out RBdigital',
-                'onclick' => "return AspenDiscovery.RBdigital.checkOutTitle('{$this->id}');",
-                'requireLogin' => false,
-            );
-        }else{
-            $actions[] = array(
-                'title' => 'Place Hold RBdigital',
-                'onclick' => "return AspenDiscovery.RBdigital.placeHold('{$this->id}');",
-                'requireLogin' => false,
-            );
-        }
-        return $actions;
-    }
+	public function getISSNs()
+	{
+		return array();
+	}
 
-    /**
-     * Returns an array of contributors to the title, ideally with the role appended after a pipe symbol
-     * @return array
-     */
-    function getContributors()
-    {
-        // TODO: Implement getContributors() method.
-        $contributors = array();
-        if (isset($this->rbdigitalRawMetadata->authors)){
-            $authors = $this->rbdigitalRawMetadata->authors;
-            foreach ($authors as $author) {
-                //TODO: Reverse name?
-                $contributors[] = $author->text;
-            }
-        }
-        if (isset($this->rbdigitalRawMetadata->narrators)){
-            $authors = $this->rbdigitalRawMetadata->narrators;
-            foreach ($authors as $author) {
-                //TODO: Reverse name?
-                $contributors[] = $author->text . '|Narrator';
-            }
-        }
-        return $contributors;
-    }
+	public function getRecordActions($isAvailable, $isHoldable, $isBookable, $relatedUrls = null)
+	{
+		$actions = array();
+		if ($isAvailable) {
+			$actions[] = array(
+				'title' => 'Check Out RBdigital',
+				'onclick' => "return AspenDiscovery.RBdigital.checkOutTitle('{$this->id}');",
+				'requireLogin' => false,
+			);
+		} else {
+			$actions[] = array(
+				'title' => 'Place Hold RBdigital',
+				'onclick' => "return AspenDiscovery.RBdigital.placeHold('{$this->id}');",
+				'requireLogin' => false,
+			);
+		}
+		return $actions;
+	}
 
-    /**
-     * Get the edition of the current record.
-     *
-     * @access  protected
-     * @return  array
-     */
-    function getEditions()
-    {
-        // No specific information provided by RBdigital
-        return array();
-    }
+	/**
+	 * Returns an array of contributors to the title, ideally with the role appended after a pipe symbol
+	 * @return array
+	 */
+	function getContributors()
+	{
+		// TODO: Implement getContributors() method.
+		$contributors = array();
+		if (isset($this->rbdigitalRawMetadata->authors)) {
+			$authors = $this->rbdigitalRawMetadata->authors;
+			foreach ($authors as $author) {
+				//TODO: Reverse name?
+				$contributors[] = $author->text;
+			}
+		}
+		if (isset($this->rbdigitalRawMetadata->narrators)) {
+			$authors = $this->rbdigitalRawMetadata->narrators;
+			foreach ($authors as $author) {
+				//TODO: Reverse name?
+				$contributors[] = $author->text . '|Narrator';
+			}
+		}
+		return $contributors;
+	}
 
-    /**
-     * @return array
-     */
-    function getFormats()
-    {
-        if ($this->rbdigitalProduct->mediaType == "eAudio") {
-            return ['eAudiobook'];
-        } elseif ($this->rbdigitalProduct->mediaType == "eMagazine"){
-            return ['eMagazine'];
-        } else {
-            return ['eBook'];
-        }
-    }
+	/**
+	 * Get the edition of the current record.
+	 *
+	 * @access  protected
+	 * @return  array
+	 */
+	function getEditions()
+	{
+		// No specific information provided by RBdigital
+		return array();
+	}
 
-    /**
-     * Get an array of all the format categories associated with the record.
-     *
-     * @return  array
-     */
-    function getFormatCategory()
-    {
-        if ($this->rbdigitalProduct->mediaType == "eAudio"){
-            return ['eBook', 'Audio Books'];
-        } else {
-            return ['eBook'];
-        }
-    }
+	/**
+	 * @return array
+	 */
+	function getFormats()
+	{
+		if ($this->rbdigitalProduct->mediaType == "eAudio") {
+			return ['eAudiobook'];
+		} elseif ($this->rbdigitalProduct->mediaType == "eMagazine") {
+			return ['eMagazine'];
+		} else {
+			return ['eBook'];
+		}
+	}
 
-    public function getLanguage()
-    {
-        return $this->rbdigitalProduct->language;
-    }
+	/**
+	 * Get an array of all the format categories associated with the record.
+	 *
+	 * @return  array
+	 */
+	function getFormatCategory()
+	{
+		if ($this->rbdigitalProduct->mediaType == "eAudio") {
+			return ['eBook', 'Audio Books'];
+		} else {
+			return ['eBook'];
+		}
+	}
 
-    public function getNumHolds(){
-        //TODO:  Check to see if we can determine number of holds on a title
-        return 0;
-    }
+	public function getLanguage()
+	{
+		return $this->rbdigitalProduct->language;
+	}
 
-    /**
-     * @return array
-     */
-    function getPlacesOfPublication()
-    {
-        //Not provided within the metadata
-        return array();
-    }
+	public function getNumHolds()
+	{
+		//TODO:  Check to see if we can determine number of holds on a title
+		return 0;
+	}
 
-    /**
-     * Returns the primary author of the work
-     * @return String
-     */
-    function getPrimaryAuthor()
-    {
-        return $this->rbdigitalProduct->primaryAuthor;
-    }
+	/**
+	 * @return array
+	 */
+	function getPlacesOfPublication()
+	{
+		//Not provided within the metadata
+		return array();
+	}
 
-    /**
-     * @return array
-     */
-    function getPublishers()
-    {
-        return [$this->rbdigitalRawMetadata->publisher->text];
-    }
+	/**
+	 * Returns the primary author of the work
+	 * @return String
+	 */
+	function getPrimaryAuthor()
+	{
+		return $this->rbdigitalProduct->primaryAuthor;
+	}
 
-    /**
-     * @return array
-     */
-    function getPublicationDates()
-    {
-        return [$this->rbdigitalRawMetadata->releasedDate];
-    }
+	/**
+	 * @return array
+	 */
+	function getPublishers()
+	{
+		return [$this->rbdigitalRawMetadata->publisher->text];
+	}
+
+	/**
+	 * @return array
+	 */
+	function getPublicationDates()
+	{
+		return [$this->rbdigitalRawMetadata->releasedDate];
+	}
 
 	public function getRecordType()
-    {
-        return 'rbdigital';
-    }
+	{
+		return 'rbdigital';
+	}
 
-    function getRelatedRecord() {
-        $id = 'rbdigital:' . $this->id;
-        return $this->getGroupedWorkDriver()->getRelatedRecord($id);
-    }
+	function getRelatedRecord()
+	{
+		$id = 'rbdigital:' . $this->id;
+		return $this->getGroupedWorkDriver()->getRelatedRecord($id);
+	}
 
-    public function getSemanticData() {
-        // Schema.org
-        // Get information about the record
-        require_once ROOT_DIR . '/RecordDrivers/LDRecordOffer.php';
-        $linkedDataRecord = new LDRecordOffer($this->getRelatedRecord());
-        $semanticData [] = array(
-            '@context' => 'http://schema.org',
-            '@type' => $linkedDataRecord->getWorkType(),
-            'name' => $this->getTitle(),
-            'creator' => $this->getPrimaryAuthor(),
-            'bookEdition' => $this->getEditions(),
-            'isAccessibleForFree' => true,
-            'image' => $this->getBookcoverUrl('medium'),
-            "offers" => $linkedDataRecord->getOffers()
-        );
+	public function getSemanticData()
+	{
+		// Schema.org
+		// Get information about the record
+		$relatedRecord = $this->getRelatedRecord();
+		if ($relatedRecord != null) {
+			require_once ROOT_DIR . '/RecordDrivers/LDRecordOffer.php';
+			$linkedDataRecord = new LDRecordOffer($relatedRecord);
+			$semanticData [] = array(
+				'@context' => 'http://schema.org',
+				'@type' => $linkedDataRecord->getWorkType(),
+				'name' => $this->getTitle(),
+				'creator' => $this->getPrimaryAuthor(),
+				'bookEdition' => $this->getEditions(),
+				'isAccessibleForFree' => true,
+				'image' => $this->getBookcoverUrl('medium'),
+				"offers" => $linkedDataRecord->getOffers()
+			);
 
-        global $interface;
-        $interface->assign('og_title', $this->getTitle());
-        $interface->assign('og_type', $this->getGroupedWorkDriver()->getOGType());
-        $interface->assign('og_image', $this->getBookcoverUrl('medium'));
-        $interface->assign('og_url', $this->getAbsoluteUrl());
-        return $semanticData;
-    }
+			global $interface;
+			$interface->assign('og_title', $this->getTitle());
+			$interface->assign('og_type', $this->getGroupedWorkDriver()->getOGType());
+			$interface->assign('og_image', $this->getBookcoverUrl('medium'));
+			$interface->assign('og_url', $this->getAbsoluteUrl());
+			return $semanticData;
+		}else{
+			return null;
+		}
+	}
 
-    /**
-     * Returns title without subtitle
-     *
-     * @return string
-     */
-    function getShortTitle()
-    {
-        return $this->rbdigitalProduct->title;
-    }
+	/**
+	 * Returns title without subtitle
+	 *
+	 * @return string
+	 */
+	function getShortTitle()
+	{
+		return $this->rbdigitalProduct->title;
+	}
 
-    /**
-     * Returns subtitle
-     *
-     * @return string
-     */
-    function getSubtitle()
-    {
-        if ($this->rbdigitalRawMetadata->hasSubtitle) {
-            return $this->rbdigitalRawMetadata->subtitle;
-        } else {
-            return "";
-        }
-    }
+	/**
+	 * Returns subtitle
+	 *
+	 * @return string
+	 */
+	function getSubtitle()
+	{
+		if ($this->rbdigitalRawMetadata->hasSubtitle) {
+			return $this->rbdigitalRawMetadata->subtitle;
+		} else {
+			return "";
+		}
+	}
 
-    function isValid(){
-        return $this->valid;
-    }
+	function isValid()
+	{
+		return $this->valid;
+	}
 
-    function loadSubjects()
-    {
-        $subjects = [];
-        if ($this->rbdigitalRawMetadata->genres) {
-            foreach ($this->rbdigitalRawMetadata->genres as $genre){
-                $subjects[] = $genre->text;
-            }
-        }
-        global $interface;
-        $interface->assign('subjects', $subjects);
-    }
+	function loadSubjects()
+	{
+		$subjects = [];
+		if ($this->rbdigitalRawMetadata->genres) {
+			foreach ($this->rbdigitalRawMetadata->genres as $genre) {
+				$subjects[] = $genre->text;
+			}
+		}
+		global $interface;
+		$interface->assign('subjects', $subjects);
+	}
 
-    /**
-     * @param User $patron
-     * @return string mixed
-     */
-    public function getAccessOnlineLinkUrl($patron)
-    {
-        global $configArray;
-        return $configArray['Site']['url'] . '/RBdigital/' . $this->id . '/AccessOnline?patronId=' . $patron->id;
-    }
+	/**
+	 * @param User $patron
+	 * @return string mixed
+	 */
+	public function getAccessOnlineLinkUrl($patron)
+	{
+		global $configArray;
+		return $configArray['Site']['url'] . '/RBdigital/' . $this->id . '/AccessOnline?patronId=' . $patron->id;
+	}
 
 	function getStatusSummary()
 	{
 		$relatedRecord = $this->getRelatedRecord();
 		$statusSummary = array();
-		if ($relatedRecord->getAvailableCopies() > 0){
-			$statusSummary['status'] = "Available from RBdigital";
-			$statusSummary['available'] = true;
-			$statusSummary['class'] = 'available';
-			$statusSummary['showPlaceHold'] = false;
-			$statusSummary['showCheckout'] = true;
-		}else{
-			$statusSummary['status'] = 'Checked Out';
-			$statusSummary['class'] = 'checkedOut';
+		if ($relatedRecord == null){
+			$statusSummary['status'] = "Unavailable";
 			$statusSummary['available'] = false;
-			$statusSummary['showPlaceHold'] = true;
+			$statusSummary['class'] = 'unavailable';
+			$statusSummary['showPlaceHold'] = false;
 			$statusSummary['showCheckout'] = false;
+		}else{
+			if ($relatedRecord->getAvailableCopies() > 0) {
+				$statusSummary['status'] = "Available from RBdigital";
+				$statusSummary['available'] = true;
+				$statusSummary['class'] = 'available';
+				$statusSummary['showPlaceHold'] = false;
+				$statusSummary['showCheckout'] = true;
+			} else {
+				$statusSummary['status'] = 'Checked Out';
+				$statusSummary['class'] = 'checkedOut';
+				$statusSummary['available'] = false;
+				$statusSummary['showPlaceHold'] = true;
+				$statusSummary['showCheckout'] = false;
+			}
 		}
 		return $statusSummary;
 	}

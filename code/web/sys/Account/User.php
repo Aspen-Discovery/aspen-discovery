@@ -945,9 +945,13 @@ class User extends DataObject
 		global $timer;
 		//Get checked out titles from the ILS
 		if ($source == 'all' || $source == 'ils'){
-			$ilsCheckouts = $this->getCatalogDriver()->getCheckouts($this);
-			$allCheckedOut = $ilsCheckouts;
-			$timer->logTime("Loaded transactions from catalog. {$this->id}");
+			if ($this->getCatalogDriver() != null){
+				$ilsCheckouts = $this->getCatalogDriver()->getCheckouts($this);
+				$allCheckedOut = $ilsCheckouts;
+				$timer->logTime("Loaded transactions from catalog. {$this->id}");
+			}else{
+				$allCheckedOut = [];
+			}
 		}else{
 			$allCheckedOut = [];
 		}
@@ -1009,11 +1013,15 @@ class User extends DataObject
 
 	public function getHolds($includeLinkedUsers = true, $unavailableSort = 'sortTitle', $availableSort = 'expire', $source='all'){
 		if ($source == 'all' || $source == 'ils') {
-			$ilsHolds = $this->getCatalogDriver()->getHolds($this);
-			if ($ilsHolds instanceof AspenError) {
-				$ilsHolds = array();
+			if ($this->getCatalogDriver() != null){
+				$ilsHolds = $this->getCatalogDriver()->getHolds($this);
+				if ($ilsHolds instanceof AspenError) {
+					$ilsHolds = array();
+				}
+				$allHolds = $ilsHolds;
+			}else{
+				$allHolds = [];
 			}
-			$allHolds = $ilsHolds;
 		}else{
 			$allHolds = [];
 		}

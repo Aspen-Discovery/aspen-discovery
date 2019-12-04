@@ -9,7 +9,6 @@ abstract class Admin_IndexingLog extends Admin_Admin
 	function launch()
 	{
 		global $interface;
-		global $configArray;
 
 		$logEntries = array();
 		$logEntry = $this->getIndexLogEntryObject();

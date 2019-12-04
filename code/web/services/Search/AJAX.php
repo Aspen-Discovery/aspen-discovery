@@ -75,7 +75,7 @@ class AJAX extends Action {
 		global $memCache;
 		$searchTerm = isset($_REQUEST['searchTerm']) ? $_REQUEST['searchTerm'] : $_REQUEST['q'];
         $searchIndex = isset($_REQUEST['searchIndex']) ? $_REQUEST['searchIndex'] : '';
-        $searchSource = isset($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : '';
+        $searchSource = !empty($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : '';
 		$cacheKey = 'auto_suggest_list_' . urlencode($searchSource) . '_' . urlencode($searchIndex
             ) . '_' . urlencode($searchTerm);
 		$searchSuggestions = $memCache->get($cacheKey);
@@ -238,7 +238,7 @@ class AJAX extends Action {
 		if (isset($_REQUEST['view'])) $_REQUEST['view'] = $displayMode; // overwrite any display setting for now
 
 		/** @var string $searchSource */
-		$searchSource = isset($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : 'local';
+		$searchSource = !empty($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : 'local';
 
 		// Initialise from the current search globals
 		/** @var SearchObject_GroupedWorkSearcher $searchObject */

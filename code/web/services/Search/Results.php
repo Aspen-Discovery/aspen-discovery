@@ -18,7 +18,7 @@ class Search_Results extends Action {
 		$aspenUsage->groupedWorkSearches++;
 
 		/** @var string $searchSource */
-		$searchSource = isset($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : 'local';
+		$searchSource = !empty($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : 'local';
 
 		//Load Placards (do this first so we can test both the original and the replacement term)
 		$this->loadPlacards();
@@ -438,6 +438,9 @@ class Search_Results extends Action {
 
 	private function loadPlacards()
 	{
+		if (empty($_REQUEST['lookfor'])){
+			return;
+		}
 		try {
 			$placardToDisplay = null;
 			require_once ROOT_DIR . '/sys/LocalEnrichment/Placard.php';

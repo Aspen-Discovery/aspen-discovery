@@ -1,7 +1,7 @@
 {strip}
 	<div id="home-page-library-section" class="row"{if $displaySidebarMenu} style="display: none"{/if}>
 		{if $showLibraryHoursAndLocationsLink}
-			<a href="{$path}/AJAX/JSON?method=getHoursAndLocations" data-title="{translate text="Library Hours and Locations" inAttribute=true}" class="modalDialogTrigger">
+			<a href="/AJAX/JSON?method=getHoursAndLocations" data-title="{translate text="Library Hours and Locations" inAttribute=true}" class="modalDialogTrigger">
 				<div id="home-page-hours-locations" class="sidebar-button">
 					{if $numLocations == 1}
 						{if !isset($hasValidHours) || $hasValidHours}

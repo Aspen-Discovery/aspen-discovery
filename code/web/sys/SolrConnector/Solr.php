@@ -343,7 +343,7 @@ abstract class Solr
 	{
 		$record = null;
 		if (!$fieldsToReturn) {
-			$validFields = $this->_loadValidFields();
+			$validFields = $this->loadValidFields();
 			$fieldsToReturn = implode(',', $validFields);
 		}
 		$this->pingServer();
@@ -641,6 +641,8 @@ abstract class Solr
 	{
 		if ($basic) {
 			$cleanedQuery = str_replace(':', ' ', $lookfor);
+			$cleanedQuery = str_replace('“', '"', $cleanedQuery);
+			$cleanedQuery = str_replace('”', '"', $cleanedQuery);
 			require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
 			$noTrailingPunctuation = StringUtils::removeTrailingPunctuation($cleanedQuery);
 
@@ -699,17 +701,19 @@ abstract class Solr
 			// unmodified (it's probably an advanced search that won't benefit from
 			// tokenization).	We'll just set all possible values to the same thing,
 			// except that we'll try to do the "one phrase" in quotes if possible.
-			$onephrase = strstr($lookfor, '"') ? $lookfor : '"' . $lookfor . '"';
+			$cleanedQuery = str_replace('“', '"', $lookfor);
+			$cleanedQuery = str_replace('”', '"', $cleanedQuery);
+			$onephrase = strstr($lookfor, '"') ? $cleanedQuery : '"' . $cleanedQuery . '"';
 			$values = array(
 				'exact' => $onephrase,
 				'onephrase' => $onephrase,
-				'and' => $lookfor,
-				'or' => $lookfor,
-				'proximal' => $lookfor,
+				'and' => $cleanedQuery,
+				'or' => $cleanedQuery,
+				'proximal' => $cleanedQuery,
 				'single_word_removal' => $onephrase,
-				'exact_quoted' => '"' . $lookfor . '"',
-				'localized_callnumber' => str_replace(array('"', ':', '/'), ' ', $lookfor),
-				'text_left' => str_replace(array('"', ':', '/'), ' ', $lookfor) . '*',
+				'exact_quoted' => $onephrase,
+				'localized_callnumber' => str_replace(array('"', ':', '/'), ' ', $cleanedQuery),
+				'text_left' => str_replace(array('"', ':', '/'), ' ', $cleanedQuery) . '*',
 			);
 		}
 
@@ -766,11 +770,11 @@ abstract class Solr
 		// If we received a field spec that wasn't defined in the YAML file,
 		// let's try simply passing it along to Solr.
 		if ($ss === false) {
-			$allFields = $this->_loadValidFields();
+			$allFields = $this->loadValidFields();
 			if (in_array($field, $allFields)) {
 				return $field . ':(' . $lookfor . ')';
 			}
-			$dynamicFields = $this->_loadDynamicFields();
+			$dynamicFields = $this->loadDynamicFields();
 			global $solrScope;
 			foreach ($dynamicFields as $dynamicField) {
 				if ($dynamicField . $solrScope == $field) {
@@ -1185,8 +1189,8 @@ abstract class Solr
 				$filter = array($filter);
 			}
 			//Check the filters to make sure they are for the correct scope
-			$validFields = $this->_loadValidFields();
-			$dynamicFields = $this->_loadDynamicFields();
+			$validFields = $this->loadValidFields();
+			$dynamicFields = $this->loadDynamicFields();
 			global $solrScope;
 			$validFilters = array();
 			foreach ($filter as $id => $filterTerm) {
@@ -1971,7 +1975,7 @@ abstract class Solr
 		if (preg_match("/([^\(\s\:]+)\s?\:[^\s]/", $query, $matches)) {
 			//Make sure the field is actually one of our fields
 			$fieldName = $matches[1];
-			$fields = $this->_loadValidFields();
+			$fields = $this->loadValidFields();
 			if (in_array($fieldName, $fields)) {
 				return true;
 			}
@@ -2033,7 +2037,12 @@ abstract class Solr
 		$this->searchSource = $searchSource;
 	}
 
-	private function _loadDynamicFields()
+	public function getSearchSource()
+	{
+		return $this->searchSource;
+	}
+
+	function loadDynamicFields()
 	{
 		/** @var Memcache $memCache */
 		global $memCache;
@@ -2054,7 +2063,7 @@ abstract class Solr
 		return $fields;
 	}
 
-	private function _loadValidFields()
+	function loadValidFields()
 	{
 		/** @var Memcache $memCache */
 		global $memCache;

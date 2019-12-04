@@ -1,6 +1,7 @@
 <?php
 
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
+
 class MyAccount_Fines extends MyAccount
 {
 	private $currency_symbol = '$';
@@ -26,7 +27,7 @@ class MyAccount_Fines extends MyAccount
 				$useOutstanding = $user->getCatalogDriver()->showOutstandingFines();
 				$interface->assign('showOutstanding', $useOutstanding);
 
-				if ($userLibrary->finePaymentType == 2){
+				if ($userLibrary->finePaymentType == 2) {
 					$clientId = $userLibrary->payPalClientId;
 					$interface->assign('payPalClientId', $clientId);
 				}
@@ -38,12 +39,12 @@ class MyAccount_Fines extends MyAccount
 				$userAccountLabel = [];
 				$fineTotalsFormatted = [];
 				$fineTotalsVal = [];
-                $outstandingTotal = [];
+				$outstandingTotal = [];
 				$outstandingTotalVal = [];
 				// Get Account Labels, Add Up Totals
 				foreach ($fines as $userId => $finesDetails) {
 					$userAccountLabel[$userId] = $user->getUserReferredTo($userId)->getNameAndLibraryLabel();
-					$total                     = $totalOutstanding = 0;
+					$total = $totalOutstanding = 0;
 					foreach ($finesDetails as $fine) {
 						if (!empty($fine['amount']) && $fine['amount'][0] == '-') {
 							$amount = -ltrim($fine['amount'], '-' . $this->currency_symbol);

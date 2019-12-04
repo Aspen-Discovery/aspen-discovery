@@ -6,7 +6,7 @@
 		<div id="materialsRequestFilters">
 			<legend>Filters</legend>
 
-			<form action="{$path}/MaterialsRequest/UserReport" method="get">
+			<form action="/MaterialsRequest/UserReport" method="get">
 				<fieldset class="fieldset-collapsible">
 					<legend>Statuses to Show:</legend>
 					<div class="form-group checkbox">

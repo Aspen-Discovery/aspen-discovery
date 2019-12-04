@@ -23,15 +23,24 @@ function loadSearchInformation(){
 	$module = preg_replace('/[^\w]/', '', $module);
 
 	$searchSource = 'global';
-	if (isset($_GET['searchSource'])){
+	if (!empty($_GET['searchSource'])){
 		if (is_array($_GET['searchSource'])){
 			$_GET['searchSource'] = reset($_GET['searchSource']);
 		}
 		$searchSource = $_GET['searchSource'];
+
+		require_once(ROOT_DIR . '/Drivers/marmot_inc/SearchSources.php');
+		$searchSources = new SearchSources();
+		$validSearchSources = $searchSources->getSearchSources();
+		//Validate that we got a good search source
+		if (!array_key_exists($searchSource, $validSearchSources)){
+			$searchSource = 'local';
+		}
+
 		$_REQUEST['searchSource'] = $searchSource; //Update request since other check for it here
 		$_SESSION['searchSource'] = $searchSource; //Update the session so we can remember what the user was doing last.
 	}else{
-		if ( isset($_SESSION['searchSource'])){ //Didn't get a source, use what the user was doing last
+		if ( !empty($_SESSION['searchSource'])){ //Didn't get a source, use what the user was doing last
 			$searchSource = $_SESSION['searchSource'];
 			$_REQUEST['searchSource'] = $searchSource;
 		}else{

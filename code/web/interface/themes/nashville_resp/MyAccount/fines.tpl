@@ -105,7 +105,7 @@
 			{else}
 				{* Pay Fines Button *}
 				{if $finePaymentType && $profile->_finesVal > $minimumFineAmount}
-					<a href="{$eCommerceLink}" {if $finePaymentType == 1}target="_blank"{/if}{if $showRefreshAccountButton} onclick="AspenDiscovery.Account.ajaxLightbox('{$path}/AJAX/JSON?method=getPayFinesAfterAction')"{/if}>
+					<a href="{$eCommerceLink}" {if $finePaymentType == 1}target="_blank"{/if}{if $showRefreshAccountButton} onclick="AspenDiscovery.Account.ajaxLightbox('/AJAX/JSON?method=getPayFinesAfterAction')"{/if}>
 						<div class="btn btn-sm btn-primary">{if $payFinesLinkText}{$payFinesLinkText}{else}{translate text="Click to Pay Fines Online"}{/if}</div>
 					</a>
 				{/if}
@@ -116,5 +116,5 @@
 		{/if}
 	{/if}
 {else}
-	You must login to view this information. Click <a href="{$path}/MyAccount/Login">here</a> to login.
+	You must login to view this information. Click <a href="/MyAccount/Login">here</a> to login.
 {/if}

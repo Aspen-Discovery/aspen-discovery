@@ -75,6 +75,7 @@ class Library extends DataObject
 	public $showAvailableAtAnyLocation;
 	public $finePaymentType;
 	public $finesToPay;
+	public $finePaymentOrder;
 	public $payFinesLink;
 	public $payFinesLinkText;
 	public $minimumFineAmount;
@@ -551,7 +552,8 @@ class Library extends DataObject
 			'ecommerceSection' => array('property'=>'ecommerceSection', 'type' => 'section', 'label' =>'Fines/e-commerce', 'hideInLists' => true,
 					'helpLink'=>'https://docs.google.com/document/d/1PNoYpn01Yn0Bnqnk9R1CkAMM3RiqBLrk-U4azb2xrZg', 'properties' => array(
 				'finePaymentType'          => array('property'=>'finePaymentType', 'type'=>'enum', 'label'=>'Show E-Commerce Link', 'values' => array(0 => 'No Payment', 1 => 'Link to ILS', 2 => 'PayPal'), 'description'=>'Whether or not users should be allowed to pay fines', 'hideInLists' => true,),
-				'finesToPay'               => array('property'=>'finesToPay', 'type'=>'enum', 'label'=>'Which fines should be paid', 'values' => array(0 => 'All Fines', 1 => 'Selected Fines'), 'description'=>'The fines that should be paid', 'hideInLists' => true,),
+				'finesToPay'               => array('property'=>'finesToPay', 'type'=>'enum', 'label'=>'Which fines should be paid', 'values' => array(0 => 'All Fines', 1 => 'Selected Fines', 2 => 'Partial payment of selected fines'), 'description'=>'The fines that should be paid', 'hideInLists' => true,),
+				'finePaymentOrder'         => array('property'=>'finePaymentOrder', 'type'=>'text', 'label'=>'Fine Payment Order by type (separated with pipes)', 'description'=>'The order fines should be paid in separated by pipes', 'hideInLists' => true, 'default' => 'default', 'size' => 80),
 				'payFinesLink'             => array('property'=>'payFinesLink', 'type'=>'text', 'label'=>'Pay Fines Link', 'description'=>'The link to pay fines.  Leave as default to link to classic (should have eCommerce link enabled)', 'hideInLists' => true, 'default' => 'default', 'size' => 80),
 				'payFinesLinkText'         => array('property'=>'payFinesLinkText', 'type'=>'text', 'label'=>'Pay Fines Link Text', 'description'=>'The text when linking to pay fines.', 'hideInLists' => true, 'default' => 'Click to Pay Fines Online', 'size' => 80),
 				'minimumFineAmount'        => array('property'=>'minimumFineAmount', 'type'=>'currency', 'displayFormat'=>'%0.2f', 'label'=>'Minimum Fine Amount', 'description'=>'The minimum fine amount to display the e-commerce link', 'hideInLists' => true,),
@@ -1876,12 +1878,15 @@ class Library extends DataObject
 		$facet->setupSideFacet('format', 'Format', true);
 		$facet->libraryId = $libraryId;
 		$facet->weight = count($defaultFacets) + 1;
+		$facet->multiSelect = true;
+		$facet->canLock = true;
 		$defaultFacets[] = $facet;
 
 		$facet = new LibraryFacetSetting();
 		$facet->setupSideFacet('literary_form', 'Literary Form', true);
 		$facet->libraryId = $libraryId;
 		$facet->weight = count($defaultFacets) + 1;
+		$facet->multiSelect = true;
 		$defaultFacets[] = $facet;
 
 		$facet = new LibraryFacetSetting();
@@ -1889,12 +1894,15 @@ class Library extends DataObject
 		$facet->libraryId = $libraryId;
 		$facet->weight = count($defaultFacets) + 1;
 		$facet->numEntriesToShowByDefault = 8;
+		$facet->multiSelect = true;
+		$facet->canLock = true;
 		$defaultFacets[] = $facet;
 
 		$facet = new LibraryFacetSetting();
 		$facet->setupSideFacet('topic_facet', 'Subject', true);
 		$facet->libraryId = $libraryId;
 		$facet->weight = count($defaultFacets) + 1;
+		$facet->multiSelect = true;
 		$defaultFacets[] = $facet;
 
 		$facet = new LibraryFacetSetting();
@@ -1931,6 +1939,7 @@ class Library extends DataObject
 		$facet->setupSideFacet('itype', 'Item Type', true);
 		$facet->libraryId = $libraryId;
 		$facet->weight = count($defaultFacets) + 1;
+		$facet->multiSelect = true;
 		$defaultFacets[] = $facet;
 
 		$facet = new LibraryFacetSetting();
@@ -1955,25 +1964,27 @@ class Library extends DataObject
 		$facet->setupAdvancedFacet('mpaa_rating', 'Movie Rating');
 		$facet->libraryId = $libraryId;
 		$facet->weight = count($defaultFacets) + 1;
+		$facet->multiSelect = true;
 		$defaultFacets[] = $facet;
 
 		$facet = new LibraryFacetSetting();
-		$facet->setupSideFacet('owning_library', 'Owning System', true);
+		$facet->setupAdvancedFacet('owning_library', 'Owning System');
 		$facet->libraryId = $libraryId;
 		$facet->weight = count($defaultFacets) + 1;
 		$defaultFacets[] = $facet;
 
 		$facet = new LibraryFacetSetting();
-		$facet->setupSideFacet('owning_location', 'Owning Branch', true);
+		$facet->setupAdvancedFacet('owning_location', 'Owning Branch');
 		$facet->libraryId = $libraryId;
 		$facet->weight = count($defaultFacets) + 1;
 		$defaultFacets[] = $facet;
 
-        $facet = new LibraryFacetSetting();
-        $facet->setupSideFacet('econtent_source', 'eContent Collection', true);
-        $facet->libraryId = $libraryId;
-        $facet->weight = count($defaultFacets) + 1;
-        $defaultFacets[] = $facet;
+		$facet = new LibraryFacetSetting();
+		$facet->setupSideFacet('econtent_source', 'eContent Collection', true);
+		$facet->libraryId = $libraryId;
+		$facet->weight = count($defaultFacets) + 1;
+		$facet->multiSelect = true;
+		$defaultFacets[] = $facet;
 
 		$facet = new LibraryFacetSetting();
 		$facet->setupSideFacet('publishDate', 'Publication Date', true);

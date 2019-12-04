@@ -16,6 +16,7 @@ import org.apache.solr.common.SolrInputDocument;
 
 import java.sql.*;
 import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -34,13 +35,14 @@ class WebsiteIndexer {
 	private HashMap<String, Boolean> allLinks = new HashMap<>();
 	private Pattern titlePattern = Pattern.compile("<title>(.*?)</title>", Pattern.DOTALL);
 	private Pattern linkPattern = Pattern.compile("<a\\s.*?href=['\"](.*?)['\"].*?>(.*?)</a>", Pattern.DOTALL);
+	private ArrayList<Pattern> pathsToExcludePatterns = new ArrayList<>();
 	private static CRC32 checksumCalculator = new CRC32();
 	private PreparedStatement addPageToStmt;
 	private PreparedStatement deletePageStmt;
 
 	private ConcurrentUpdateSolrClient solrUpdateServer;
 
-	WebsiteIndexer(Long websiteId, String websiteName, String searchCategory, String siteUrl, boolean fullReload, WebsiteIndexLogEntry logEntry, Connection aspenConn, ConcurrentUpdateSolrClient solrUpdateServer) {
+	WebsiteIndexer(Long websiteId, String websiteName, String searchCategory, String siteUrl, String pathsToExclude, boolean fullReload, WebsiteIndexLogEntry logEntry, Connection aspenConn, ConcurrentUpdateSolrClient solrUpdateServer) {
 		this.websiteId = websiteId;
 		this.websiteName = websiteName;
 		this.siteUrl = siteUrl;
@@ -49,6 +51,23 @@ class WebsiteIndexer {
 		this.aspenConn = aspenConn;
 		this.fullReload = fullReload;
 		this.solrUpdateServer = solrUpdateServer;
+
+		if (pathsToExclude.length() > 0){
+			String[] paths = pathsToExclude.split("\r\n|\r|\n");
+			for (String path : paths){
+				if (path.contains(siteUrl)){
+					pathsToExcludePatterns.add(Pattern.compile(path));
+				}else if (path.startsWith("/")){
+					pathsToExcludePatterns.add(Pattern.compile(siteUrl + path));
+				}else{
+					if (path.contains("*") || path.contains("?")) {
+						pathsToExcludePatterns.add(Pattern.compile(path));
+					}else{
+						pathsToExcludePatterns.add(Pattern.compile(siteUrl + "/" + path));
+					}
+				}
+			}
+		}
 
 		try {
 			addPageToStmt = aspenConn.prepareStatement("INSERT INTO website_pages SET websiteId = ?, url = ?, checksum = ?, deleted = 0, firstDetected = ? ON DUPLICATE KEY UPDATE checksum = VALUES(checksum)", Statement.RETURN_GENERATED_KEYS);
@@ -142,7 +161,15 @@ class WebsiteIndexer {
 				StatusLine status = response1.getStatusLine();
 				if (status.getStatusCode() == 200) {
 					Header lastModifiedHeader = response1.getFirstHeader("Last-Modified");
-					//TODO: check last modified date
+					String lastModified = lastModifiedHeader.getValue();
+					WebPage page;
+					if (existingPages.containsKey(pageToProcess)) {
+						page = existingPages.get(pageToProcess);
+					} else {
+						page = new WebPage(pageToProcess);
+					}
+					//TODO: check last modified date?  If we do this, need to figure out how to keep track of deleted pages
+
 					HttpEntity entity1 = response1.getEntity();
 					ContentType contentType = ContentType.getOrDefault(entity1);
 					String mimeType = contentType.getMimeType();
@@ -154,12 +181,6 @@ class WebsiteIndexer {
 						// do something useful with the response body
 						// and ensure it is fully consumed
 						String response = EntityUtils.toString(entity1);
-						WebPage page;
-						if (existingPages.containsKey(pageToProcess)) {
-							page = existingPages.get(pageToProcess);
-						} else {
-							page = new WebPage(pageToProcess);
-						}
 						page.setPageContents(response);
 
 						//Extract the title
@@ -213,7 +234,14 @@ class WebsiteIndexer {
 										}
 										linkUrl = siteUrl + linkUrl;
 									}
-									if (!allLinks.containsKey(linkUrl)) {
+									//Make sure that we shouldn't be ignoring the path.
+									boolean includePath = true;
+									for (Pattern curPattern : pathsToExcludePatterns){
+										if (curPattern.matcher(linkUrl).matches()){
+											includePath = false;
+										}
+									}
+									if (includePath && !allLinks.containsKey(linkUrl)) {
 										page.getLinks().add(linkUrl);
 										allLinks.put(linkUrl, false);
 										logEntry.incNumPages();
@@ -258,7 +286,7 @@ class WebsiteIndexer {
 							solrDocument.addField("title_display", page.getTitle());
 							solrDocument.addField("title_sort", StringUtils.makeValueSortable(page.getTitle()));
 							//TODO: Make table of contents from header tags
-							//TODO: Strip tags from body to get the text of the page
+							//Strip tags from body to get the text of the page, this is done using Solr to remove tags.
 							solrDocument.addField("keywords", response);
 							//TODO: Add popularity
 							solrUpdateServer.add(solrDocument);

@@ -86,5 +86,13 @@ function getWebsiteIndexingUpdates()
 				"INSERT INTO modules (name, indexName, backgroundProcess) VALUES ('Web Indexer', 'website_pages', 'web_indexer')"
 			]
 		],
+
+		'web_indexer_add_paths_to_exclude' => [
+			'title' => 'Web Indexer Add Paths To Exclude',
+			'description' => 'Allow specific paths to not be indexed using the web indexer',
+			'sql' => [
+				"ALTER TABLE website_indexing_settings ADD COLUMN pathsToExclude MEDIUMTEXT",
+			]
+		],
 	);
 }

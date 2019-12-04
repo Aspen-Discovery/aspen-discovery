@@ -39,7 +39,7 @@
 
 {if strcasecmp($source, 'OverDrive') == 0}
 	<div id='overdriveMediaConsoleInfo'>
-		<img src="{$path}/images/overdrive.png" width="125" height="42" alt="Powered by Overdrive" class="alignleft"/>
+		<img src="/images/overdrive.png" width="125" height="42" alt="Powered by Overdrive" class="alignleft"/>
 		<p>This title requires the <a href="http://www.overdrive.com/software/omc/">OverDrive&reg; Media Console&trade;</a> to use the title.
 		If you do not already have the OverDrive Media Console, you may download it <a href="http://www.overdrive.com/software/omc/">here</a>.</p>
 		<div class="clearer">&nbsp;</div>

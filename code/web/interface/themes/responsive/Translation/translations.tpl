@@ -14,7 +14,7 @@
 		</div>
 		<div class="form-group">
 			<input type="checkbox" name="showAllTranslations" id="showAllTranslations" {if $showAllTranslations}checked{/if}>
-			<label or="showAllTranslations">{translate text="Show All Translations"}</label>
+			<label for="showAllTranslations">{translate text="Show All Translations"}</label>
 		</div>
 		<div class="form-group">
 			<label class="control-label" for="filterTerm">{translate text="Show Terms containing"}</label>
@@ -55,5 +55,7 @@
 			<button type="submit" name="submit" class="btn btn-primary">{translate text="Save Translations"}</button>
 		</div>
 	</form>
+
+	{if $pageLinks.all}<div class="text-center">{$pageLinks.all}</div>{/if}
 </div>
 {/strip}

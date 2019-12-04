@@ -4,7 +4,7 @@
 		<h1>{translate text='Reset My PIN'}</h1>
 		<div class="alert alert-info">To reset your PIN, enter your login or your email address.  You must have an email associated with your account to reset your PIN.  If you do not, please contact the library.</div>
 
-		<form id="emailResetPin" method="POST" action="{$path}/MyAccount/EmailResetPin" class="form-horizontal">
+		<form id="emailResetPin" method="POST" action="/MyAccount/EmailResetPin" class="form-horizontal">
 			<div class="form-group">
 				<label for="username" class="control-label col-xs-12 col-sm-4">{$usernameLabel}</label>
 				<div class="col-xs-12 col-sm-8">

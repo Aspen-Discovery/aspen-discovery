@@ -131,7 +131,7 @@ AspenDiscovery.Record = (function(){
 		},
 
 		reloadCover: function(module, id){
-			let url = Globals.path + '/' +module + '/' + id + '/AJAX?method=reloadCover';
+			let url = Globals.path + '/' + module + '/' + id + '/AJAX?method=reloadCover';
 			$.getJSON(url, function (data){
 						AspenDiscovery.showMessage("Success", data.message, true, true);
 						setTimeout("AspenDiscovery.closeLightbox();", 3000);

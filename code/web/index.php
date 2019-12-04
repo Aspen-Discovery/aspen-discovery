@@ -220,10 +220,9 @@ if (isset($_REQUEST['lookfor'])) {
 	// Advanced Search with only the default search group (multiple search groups are named lookfor0, lookfor1, ... )
 	if (is_array($_REQUEST['lookfor'])) {
 		foreach ($_REQUEST['lookfor'] as $i => $searchTerm) {
-			if (preg_match('/http:|mailto:|https:/i', $searchTerm)) {
-				AspenError::raiseError("Sorry it looks like you are searching for a website, please rephrase your query.");
-				$_REQUEST['lookfor'][$i] = '';
-				$_GET['lookfor'][$i]     = '';
+			if (preg_match('~(https|mailto|http):/{0,2}~i', $searchTerm)) {
+				$_REQUEST['lookfor'][$i] = preg_replace('~(https|mailto|http):/{0,2}~i', '', $searchTerm);
+				$_GET['lookfor'][$i]     = preg_replace('~(https|mailto|http):/{0,2}~i', '', $searchTerm);
 			}
 			if (strlen($searchTerm) >= 256) {
 				AspenError::raiseError("Sorry your query is too long, please rephrase your query.");
@@ -231,19 +230,20 @@ if (isset($_REQUEST['lookfor'])) {
 				$_GET['lookfor'][$i]     = '';
 			}
 		}
-	}
-	// Basic Search
-	else {
-		$searchTerm = $_REQUEST['lookfor'];
-		if (preg_match('/http:|mailto:|https:/i', $searchTerm)) {
-			AspenError::raiseError("Sorry it looks like you are searching for a website, please rephrase your query.");
-			$_REQUEST['lookfor'] = '';
-			$_GET['lookfor']     = '';
+	} else {
+		// Basic Search
+		$searchTerm = trim($_REQUEST['lookfor']);
+		if (preg_match('~(https|mailto|http):/{0,2}~i', $searchTerm)) {
+			$searchTerm = preg_replace('~(https|mailto|http):/{0,2}~i', '', $searchTerm);
+			$searchTerm     = preg_replace('~(https|mailto|http):/{0,2}~i', '', $searchTerm);
 		}
 		if (strlen($searchTerm) >= 256) {
 			AspenError::raiseError("Sorry your query is too long, please rephrase your query.");
-			$_REQUEST['lookfor'] = '';
-			$_GET['lookfor']     = '';
+			$searchTerm = '';
+		}
+		if ($searchTerm != $_REQUEST['lookfor']){
+			$_REQUEST['lookfor'] = $searchTerm;
+			$_GET['lookfor']     = $searchTerm;
 		}
 	}
 }
@@ -410,7 +410,11 @@ if (isset($_REQUEST['filter'])){
 	}
 }
 
-$searchSource = isset($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : 'local';
+$searchSource = !empty($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : 'local';
+
+//Load repeat search options
+$validSearchSources = $searchSources->getSearchSources();
+$interface->assign('searchSources', $validSearchSources);
 
 $interface->assign('searchSource', $searchSource);
 
@@ -450,9 +454,6 @@ if ($action == "AJAX" || $action == "JSON" || $module == 'API'){
 	// Set search results display mode in search-box //
 	if ($searchObject->getView()) $interface->assign('displayMode', $searchObject->getView());
 
-	//Load repeat search options
-	$interface->assign('searchSources', $searchSources->getSearchSources());
-
 	/** @var SearchObject_ListsSearcher $listSearchIndexes */
     $listSearchIndexes = SearchObjectFactory::initSearchObject('Lists');
     $interface->assign('listSearchIndexes', is_object($listSearchIndexes) ? $listSearchIndexes->getSearchIndexes() : array());
@@ -460,7 +461,6 @@ if ($action == "AJAX" || $action == "JSON" || $module == 'API'){
 	/** @var SearchObject_ListsSearcher $listSearchIndexes */
 	$websiteSearchIndexes = SearchObjectFactory::initSearchObject('Websites');
 	$interface->assign('websiteSearchIndexes', is_object($websiteSearchIndexes) ? $websiteSearchIndexes->getSearchIndexes() : array());
-
 
 	if ($library->enableGenealogy){
 		$genealogySearchObject = SearchObjectFactory::initSearchObject('Genealogy');
@@ -497,7 +497,7 @@ if ($action == "AJAX" || $action == "JSON" || $module == 'API'){
 			$interface->assign('searchIndex', $activeSearch->getSearchIndex());
 			$interface->assign('filterList', $activeSearch->getFilterList());
 			$interface->assign('savedSearch', $activeSearch->isSavedSearch());
-			if (!isset($_GET['searchSource'])){
+			if (empty($_GET['searchSource'])){
 				$interface->assign('searchSource', $activeSearch->getSearchSource());
 			}
 		}

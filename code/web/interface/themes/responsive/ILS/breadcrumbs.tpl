@@ -1,5 +1,5 @@
 
-<a href="{$path}/MyAccount/Home">{translate text='Your Account'}</a> <span class="divider">&raquo;</span>
+<a href="/MyAccount/Home">{translate text='Your Account'}</a> <span class="divider">&raquo;</span>
 {if $pageTitleShort}
 	<em>{$pageTitleShort}</em> <span class="divider">&raquo;</span>
 {/if}

@@ -43,7 +43,7 @@ abstract class GroupedWorkSubDriver extends RecordInterface
         return $this->getGroupedWorkDriver()->getAcceleratedReaderDisplayString();
     }
 
-    function getBookcoverUrl($size = 'small'){
+    function getBookcoverUrl($size = 'small', $absolutePath = false){
         $id = $this->getIdWithSource();
         $formatCategory = $this->getFormatCategory();
         if (is_array($formatCategory)){
@@ -62,6 +62,10 @@ abstract class GroupedWorkSubDriver extends RecordInterface
         $issn = $this->getCleanISSN();
         if ($issn){
             $bookCoverUrl .= "&amp;issn={$issn}";
+        }
+        if ($absolutePath){
+        	global $configArray;
+        	$bookCoverUrl = $configArray['Site']['url'] . $bookCoverUrl;
         }
         return $bookCoverUrl;
     }

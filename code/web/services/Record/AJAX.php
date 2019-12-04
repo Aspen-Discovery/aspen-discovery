@@ -522,15 +522,15 @@ class Record_AJAX extends Action
 		$recordDriver = new MarcRecordDriver($id);
 
 		//Reload small cover
-		$smallCoverUrl = str_replace('&amp;', '&', $recordDriver->getBookcoverUrl('small')) . '&reload';
+		$smallCoverUrl = str_replace('&amp;', '&', $recordDriver->getBookcoverUrl('small', true)) . '&reload';
 		file_get_contents($smallCoverUrl);
 
 		//Reload medium cover
-		$mediumCoverUrl = str_replace('&amp;', '&', $recordDriver->getBookcoverUrl('medium')) . '&reload';
+		$mediumCoverUrl = str_replace('&amp;', '&', $recordDriver->getBookcoverUrl('medium', true)) . '&reload';
 		file_get_contents($mediumCoverUrl);
 
 		//Reload large cover
-		$largeCoverUrl = str_replace('&amp;', '&', $recordDriver->getBookcoverUrl('large')) . '&reload';
+		$largeCoverUrl = str_replace('&amp;', '&', $recordDriver->getBookcoverUrl('large', true)) . '&reload';
 		file_get_contents($largeCoverUrl);
 
 		//Also reload covers for the grouped work

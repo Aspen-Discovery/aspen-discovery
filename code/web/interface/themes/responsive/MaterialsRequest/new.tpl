@@ -11,7 +11,7 @@
 					{$newMaterialsRequestSummary}
 				{/if}
 			</div>
-			<form id="materialsRequestForm" action="{$path}/MaterialsRequest/Submit" method="post" class="form form-horizontal" role="form">
+			<form id="materialsRequestForm" action="/MaterialsRequest/Submit" method="post" class="form form-horizontal" role="form">
 				{include file="MaterialsRequest/request-form-fields.tpl"}
 
 				<div class="materialsRequestLoggedInFields" {if !$loggedIn}style="display:none"{/if}>

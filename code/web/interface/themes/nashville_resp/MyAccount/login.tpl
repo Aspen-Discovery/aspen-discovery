@@ -21,7 +21,7 @@
 				</p>
 			</div>
 		{else}
-			<form method="post" action="{$path}/MyAccount/Home" id="loginForm" class="form-horizontal">
+			<form method="post" action="/MyAccount/Home" id="loginForm" class="form-horizontal">
 				<div id="missingLoginPrompt" style="display: none">Please enter both {$usernameLabel} and {$passwordLabel}.</div>
 				<div id="loginFormFields">
 					<div id="loginUsernameRow" class="form-group">
@@ -45,7 +45,7 @@
 					</div>
 					<div id="loginHelpRow" class="form-group">
 						<div class="col-xs-12 col-sm-offset-4 col-sm-8">
-							{*<p class="help-block"><a href="{$path}/MyAccount/RequestPinReset">Forgot your PIN?</a></p>*}
+							{*<p class="help-block"><a href="/MyAccount/RequestPinReset">Forgot your PIN?</a></p>*}
 							{*<p class="help-block"><a href="#" onclick="document.getElementById('loginPasswordConfirmRow').style.display='block';">Create new PIN</p>*}
 							{*<p class="help-block"><a href="#" onclick="$('#loginPasswordConfirmRow').show();">Create new PIN</p>*}
 							{if $enableSelfRegistration == 1}

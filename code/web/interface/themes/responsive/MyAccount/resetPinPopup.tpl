@@ -1,5 +1,5 @@
 <div>
-	<form method="post" name="modifyPinNumber" action="{$path}/MyAccount/Home" onsubmit="return resetPinReset();">
+	<form method="post" name="modifyPinNumber" action="/MyAccount/Home" onsubmit="return resetPinReset();">
 		<div>
 			<input type="hidden" name="resetPin" value="true"/>
 			<div>

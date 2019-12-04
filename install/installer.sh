@@ -22,7 +22,7 @@ cp php.ini /etc/php.ini
 cp mariadb.repo /etc/yum.repos.d/mariadb.repo
 yum -y install MariaDB-server
 mv /etc/my.cnf /etc/my.cnf.old
-mv my.cnf /etc/my.cnf
+cp my.cnf /etc/my.cnf
 systemctl start mariadb
 systemctl enable mariadb
 yum -y install java-1.8.0-openjdk

@@ -4,7 +4,7 @@
 		<div class="row">
 			<div class="result-label col-md-3">{translate text="Author"} </div>
 			<div class="col-md-9 result-value">
-				<a href='{$path}/Author/Home?author="{$recordDriver->getAuthor()|escape:"url"}"'>{$recordDriver->getAuthor()|highlight}</a>
+				<a href='/Author/Home?author="{$recordDriver->getAuthor()|escape:"url"}"'>{$recordDriver->getAuthor()|highlight}</a>
 			</div>
 		</div>
 	{/if}

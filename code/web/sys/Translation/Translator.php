@@ -77,7 +77,7 @@ class Translator
 			/** @var Memcache $memCache */
 			global $memCache;
 
-			$existingTranslation = $memCache->get('translation_' . $activeLanguage->id . '_' . $translationMode . '_' . $phrase);
+			$existingTranslation = $memCache->get('translation_' . $activeLanguage->id . '_' . ($translationMode ? 1 : 0) . '_' . $phrase);
 			if ($existingTranslation == false || isset($_REQUEST['reload'])){
 				//Search for the term
 				$translationTerm = new TranslationTerm();
@@ -94,7 +94,6 @@ class Translator
 							return $phrase;
 						}
 					}
-
 				}
 
 				//Search for the translation
@@ -143,7 +142,7 @@ class Translator
 				}
 
 				global $configArray;
-				$memCache->set('translation_' . $activeLanguage->id . '_' . $translationMode . '_' . $phrase, $fullTranslation, $configArray['Caching']['translation']);
+				$memCache->set('translation_' . $activeLanguage->id . '_' . ($translationMode ? 1 : 0) . '_' . $phrase, $fullTranslation, $configArray['Caching']['translation']);
 				$returnString = $fullTranslation;
 			}else{
 				$returnString = $existingTranslation;

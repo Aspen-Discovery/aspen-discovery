@@ -64,7 +64,7 @@
 					{* link to delete *}
 					<a href="#" onclick="if (confirm('Are you sure you want to delete this?')){literal}{{/literal}$('#{$propName}Deleted_{$subObject->id}').val('true');$('#{$propName}{$subObject->id}').hide().find('.required').removeClass('required'){literal}}{/literal};return false;">
 						{* On delete action, also remove class 'required' to turn off form validation of the deleted input; so that the form can be submitted by the user  *}
-						<img src="{$path}/images/silk/delete.png" alt="delete">
+						<img src="/images/silk/delete.png" alt="delete">
 					</a>
 					{if $property.editLink neq ''}
 						&nbsp;

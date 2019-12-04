@@ -60,12 +60,27 @@ class Translation_Translations extends Admin_Admin
 		$translation->joinAdd(new TranslationTerm(), 'INNER', 'term', 'termId', 'id');
 		$translation->orderBy('term.term');
 
+		$total = $translation->count();
+
+		$page = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
+		$pageSize = isset($_REQUEST['pageSize']) ? $_REQUEST['pageSize'] : 50; // to adjust number of items listed on a page
+		$interface->assign('recordsPerPage', $pageSize);
+		$interface->assign('page', $page);
+		$translation->limit(($page - 1) * $pageSize, $pageSize);
+
 		$allTerms = [];
 		$translation->find();
 		while ($translation->fetch()){
 			$allTerms[] = clone $translation;
 		}
 		$interface->assign('allTerms', $allTerms);
+
+		$options = array('totalItems' => $total,
+			'fileName'   => "/Translation/Translations?page=%d". (empty($_REQUEST['pageSize']) ? '' : '&pageSize=' . $_REQUEST['pageSize']),
+			'perPage'    => $pageSize,
+		);
+		$pager = new Pager($options);
+		$interface->assign('pageLinks', $pager->getLinks());
 
 		$this->display('translations.tpl', 'Translations');
 	}

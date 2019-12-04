@@ -16,7 +16,7 @@
 		</div>
 		<div id="materialsRequestFilters">
 			<legend>{translate text="Filters"}</legend>
-			<form action="{$path}/MaterialsRequest/MyRequests" method="get" class="form-inline">
+			<form action="/MaterialsRequest/MyRequests" method="get" class="form-inline">
 				<div>
 					<div class="form-group">
 						<label class="control-label">{translate text="Show"}</label>
@@ -67,7 +67,7 @@
 		{else}
 			<div class="alert alert-warning">{translate text='There are no materials requests that meet your criteria.'}</div>
 		{/if}
-		<div id="createNewMaterialsRequest"><a href="{$path}/MaterialsRequest/NewRequest" class="btn btn-primary btn-sm">{translate text='Submit a New Materials Request'}</a></div>
+		<div id="createNewMaterialsRequest"><a href="/MaterialsRequest/NewRequest" class="btn btn-primary btn-sm">{translate text='Submit a New Materials Request'}</a></div>
 	{/if}
 </div>
 <script type="text/javascript">

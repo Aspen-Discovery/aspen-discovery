@@ -17,7 +17,7 @@
 					{foreach from=$cluster.sortedList item=thisFacet name="narrowLoop"}
 						<div class="col-sm-6">
 							<label>
-								<input type="checkbox" {if $thisFacet.isApplied}checked{/if} name="filter[]" value='{$cluster.field_name}:"{$thisFacet.value}"'>
+								<input type="checkbox" {if $thisFacet.isApplied}checked{/if} name="filter[]" value='{$cluster.field_name}:{if empty($thisFacet.value)}(""){else}"{$thisFacet.value}"{/if}'>
 								{$thisFacet.display}{if $thisFacet.count != ''}&nbsp;({$thisFacet.count|number_format}){/if}
 							</label>
 						</div>

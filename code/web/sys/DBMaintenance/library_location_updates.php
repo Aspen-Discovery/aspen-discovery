@@ -1827,6 +1827,15 @@ function getLibraryLocationUpdates(){
 				"ALTER TABLE library ADD COLUMN payPalClientId VARCHAR(80)",
 				"ALTER TABLE library ADD COLUMN payPalClientSecret VARCHAR(80)",
 			],
+		],
+
+		'library_fine_payment_order' => [
+			'title' => 'Library Fine Payment Order',
+			'description' => 'Updates to library settings to allow libraries to identify the order fines should be paid in.',
+			'continueOnError' => false,
+			'sql' => [
+				"ALTER TABLE library ADD COLUMN finePaymentOrder VARCHAR(80) DEFAULT ''",
+			],
 		]
 	);
 }
