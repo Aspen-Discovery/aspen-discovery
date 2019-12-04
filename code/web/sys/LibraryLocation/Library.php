@@ -560,7 +560,7 @@ class Library extends DataObject
 				'showRefreshAccountButton' => array('property'=>'showRefreshAccountButton', 'type'=>'checkbox', 'label'=>'Show Refresh Account Button', 'description'=>'Whether or not a Show Refresh Account button is displayed in a pop-up when a user clicks the E-Commerce Link', 'hideInLists' => true, 'default' => true),
 				'payPalSandboxMode'        => array('property'=>'payPalSandboxMode', 'type'=>'checkbox', 'label'=>'Use PayPal Sandbox', 'description'=>'Whether or not users to use PayPal in Sandbox mode', 'hideInLists' => true,),
 				'payPalClientId'           => array('property'=>'payPalClientId', 'type'=>'text', 'label'=>'PayPal ClientID', 'description'=>'The Client ID to use when paying fines.', 'hideInLists' => true, 'default' => '', 'size' => 80),
-				'payPalClientSecret'       => array('property'=>'payPalClientSecret', 'type'=>'text', 'label'=>'PayPal Client Secret', 'description'=>'The Client Secret to use when paying fines.', 'hideInLists' => true, 'default' => '', 'size' => 80),
+				'payPalClientSecret'       => array('property'=>'payPalClientSecret', 'type'=>'storedPassword', 'label'=>'PayPal Client Secret', 'description'=>'The Client Secret to use when paying fines.', 'hideInLists' => true, 'default' => '', 'size' => 80),
 			)),
 
 			// Searching //
