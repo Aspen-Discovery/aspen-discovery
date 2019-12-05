@@ -16,6 +16,20 @@ class Koha extends AbstractIlsDriver
 	/** @var CurlWrapper */
 	private $opacCurlWrapper;
 
+	static $fineTypeTranslations = [
+		'A' => 'Account management fee',
+		'C' => 'Credit',
+		'F' => 'Overdue fine',
+		'FOR' => 'Forgiven',
+		'FU' => 'Overdue, still accruing',
+		'L' => 'Lost',
+		'LR' => 'Lost item returned/refunded',
+		'M' => 'Sundry',
+		'N' => 'New card',
+		'PAY' => 'Payment',
+		'W' => 'Writeoff'
+	];
+
 	/**
 	 * @param User $patron The User Object to make updates to
 	 * @param boolean $canUpdateContactInfo Permission check that updating is allowed
@@ -1114,8 +1128,8 @@ class Koha extends AbstractIlsDriver
 				$curFine = [
 					'fineId' => $allFeesRow['accountlines_id'],
 					'date' => $allFeesRow['date'],
-					'type' => $allFeesRow['accounttype'],
-					'reason' => $allFeesRow['accounttype'],
+					'type' => array_key_exists($allFeesRow['accounttype'], Koha::$fineTypeTranslations) ? Koha::$fineTypeTranslations[$allFeesRow['accounttype']] : $allFeesRow['accounttype'],
+					'reason' => array_key_exists($allFeesRow['accounttype'], Koha::$fineTypeTranslations) ? Koha::$fineTypeTranslations[$allFeesRow['accounttype']] : $allFeesRow['accounttype'],
 					'message' => $allFeesRow['description'],
 					'amountVal' => $allFeesRow['amount'],
 					'amountOutstandingVal' => $allFeesRow['amountoutstanding'],

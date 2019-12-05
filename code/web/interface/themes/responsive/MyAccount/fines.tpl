@@ -34,10 +34,7 @@
 									<th>{translate text="Date"}</th>
 								{/if}
 								{if $showReason}
-									<th>{translate text="Message"}</th>
-								{/if}
-								{if $showType}
-									<th>{translate text="Type"}</th>
+									<th>{translate text="Reason"}</th>
 								{/if}
 								<th>{translate text="Title"}</th>
 								<th>{translate text="Fine/Fee Amount"}</th>
@@ -63,11 +60,6 @@
 										{if $showReason}
 											<td>
 												{$fine.reason}
-											</td>
-										{/if}
-										{if $showType}
-											<td>
-												{$fine.type}
 											</td>
 										{/if}
 										<td>
@@ -105,9 +97,6 @@
 										<td></td>
 									{/if}
 									{if $showReason}
-										<td></td>
-									{/if}
-									{if $showType}
 										<td></td>
 									{/if}
 									<th id="formattedTotal{$userId}">{$fineTotalsFormatted.$userId}</th>

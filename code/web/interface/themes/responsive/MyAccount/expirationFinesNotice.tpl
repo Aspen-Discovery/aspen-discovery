@@ -5,7 +5,7 @@
 			{if $ilsSummary.totalFines > 0 && $showFines}
 				{if $finePaymentType && $ilsSummary.totalFines > $minimumFineAmount}
 					<div class="myAccountLink">
-						<a href="{$eCommerceLink}" target="_blank"{if $showRefreshAccountButton} onclick="AspenDiscovery.Account.ajaxLightbox('/AJAX/JSON?method=getPayFinesAfterAction')"{/if}  style="color:red; font-weight:bold;">
+						<a href="{$eCommerceLink}" {if $finePaymentType == 1}target="_blank"{/if}{if $showRefreshAccountButton} onclick="AspenDiscovery.Account.ajaxLightbox('/AJAX/JSON?method=getPayFinesAfterAction')"{/if}  style="color:red; font-weight:bold;">
 							{if count($user->getLinkedUsers())>0}
 								{translate text="Your accounts have %1% in fines." 1=$ilsSummary.totalFines|number_format:2}
 							{else}
