@@ -206,16 +206,13 @@ echo("Setting up data and log directories\r\n");
 $dataDir = '/data/aspen-discovery/' . $sitename;
 if (!file_exists($dataDir)){
 	mkdir($dataDir, 0775, true);
-	if (!$runningOnWindows){
-		exec('chown -R apache:apache ' . $dataDir);
-	}
 }
 if (!file_exists('/data/aspen-discovery/accelerated_reader')){
 	mkdir('/data/aspen-discovery/accelerated_reader', 0770, true);
 }
 recursive_copy($installDir . '/data_dir_setup', $dataDir);
 if (!$runningOnWindows){
-	exec('chown -R apache:apache ' . $dataDir . '/ils');
+	exec('chown -R apache:apache ' . $dataDir);
 }
 
 //Make files directory writeable
