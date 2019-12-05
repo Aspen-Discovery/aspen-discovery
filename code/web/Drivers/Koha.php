@@ -2449,6 +2449,9 @@ class Koha extends AbstractIlsDriver
 				];
 			}
 		}
+		/** @var $memCache Memcache */
+		global $memCache;
+		$memCache->delete('koha_summary_' . $patron->id);
 		return $result;
 	}
 }
