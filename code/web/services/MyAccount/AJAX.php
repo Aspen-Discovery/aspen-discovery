@@ -2225,10 +2225,12 @@ class MyAccount_AJAX
 			}
 			$userLibrary = $patron->getHomeLibrary();
 
-			if (empty($_REQUEST['selectedFine'])) {
+			if (empty($_REQUEST['selectedFine']) && $userLibrary->finesToPay != 0) {
 				return ['success' => false, 'message' => 'Select at least one fine to pay.'];
 			}
-			$selectedFines = $_REQUEST['selectedFine'];
+			if (isset($_REQUEST['selectedFine'])) {
+				$selectedFines = $_REQUEST['selectedFine'];
+			}
 			$fines = $patron->getFines(false);
 			$useOutstanding = $patron->getCatalogDriver()->showOutstandingFines();
 
@@ -2246,40 +2248,49 @@ class MyAccount_AJAX
 
 			foreach ($fines[$patronId] as $fine) {
 				$finePayment = 0;
-				foreach ($selectedFines as $fineId => $status) {
-					if ($fine['fineId'] == $fineId) {
-						$finePayment = 2;
-						if (!empty($finesPaid)) {
-							$finesPaid .= ',';
+				$addToOrder = false;
+				if ($userLibrary->finesToPay == 0){
+					$addToOrder = true;
+				}else{
+					foreach ($selectedFines as $fineId => $status) {
+						if ($fine['fineId'] == $fineId) {
+							$addToOrder = true;
 						}
-						$finesPaid .= $fineId;
-						if (isset($_REQUEST['amountToPay'][$fineId])){
-							$fineAmount = $_REQUEST['amountToPay'][$fineId];
-							$maxFineAmount = $useOutstanding ? $fine['amountOutstandingVal'] : $fine['amountVal'];
-							if (!is_numeric($fineAmount) || $fineAmount <= 0 || $fineAmount > $maxFineAmount){
-								return ['success' => false, 'message' => translate(['text' => 'Invalid amount entered for fine. Please enter an amount over 0 and less than the total amount owed.'])];
-							}
-							if ($fineAmount != $maxFineAmount) {
-								//Record this is a partially paid fine
-								$finesPaid .= '|' . $fineAmount;
-								$finePayment = 1;
-							}
-						}else{
-							$fineAmount = $useOutstanding ? $fine['amountOutstandingVal'] : $fine['amountVal'];
-						}
-
-						$purchaseUnits['items'][] = [
-							'custom_id' => $fineId,
-							'name' => StringUtils::trimStringToLengthAtWordBoundary($fine['reason'], 127, true),
-							'description' => StringUtils::trimStringToLengthAtWordBoundary($fine['message'], 127, true),
-							'unit_amount' => [
-								'currency_code' => 'USD',
-								'value' => round($fineAmount, 2),
-							],
-							'quantity' => 1
-						];
-						$totalFines += $fineAmount;
 					}
+				}
+				if ($addToOrder){
+					$finePayment = 2;
+					if (!empty($finesPaid)) {
+						$finesPaid .= ',';
+					}
+					$fineId = $fine['fineId'];
+					$finesPaid .= $fineId;
+					if (isset($_REQUEST['amountToPay'][$fineId])){
+						$fineAmount = $_REQUEST['amountToPay'][$fineId];
+						$maxFineAmount = $useOutstanding ? $fine['amountOutstandingVal'] : $fine['amountVal'];
+						if (!is_numeric($fineAmount) || $fineAmount <= 0 || $fineAmount > $maxFineAmount){
+							return ['success' => false, 'message' => translate(['text' => 'Invalid amount entered for fine. Please enter an amount over 0 and less than the total amount owed.'])];
+						}
+						if ($fineAmount != $maxFineAmount) {
+							//Record this is a partially paid fine
+							$finesPaid .= '|' . $fineAmount;
+							$finePayment = 1;
+						}
+					}else{
+						$fineAmount = $useOutstanding ? $fine['amountOutstandingVal'] : $fine['amountVal'];
+					}
+
+					$purchaseUnits['items'][] = [
+						'custom_id' => $fineId,
+						'name' => StringUtils::trimStringToLengthAtWordBoundary($fine['reason'], 127, true),
+						'description' => StringUtils::trimStringToLengthAtWordBoundary($fine['message'], 127, true),
+						'unit_amount' => [
+							'currency_code' => 'USD',
+							'value' => round($fineAmount, 2),
+						],
+						'quantity' => 1
+					];
+					$totalFines += $fineAmount;
 				}
 
 				if (!array_key_exists(strtolower($fine['type']), $finesPaidByType)){
@@ -2300,14 +2311,16 @@ class MyAccount_AJAX
 			}
 
 			//Determine if fines have been paid in the proper order
-			$paymentOrder = explode('|', strtolower($userLibrary->finePaymentOrder));
-			if (count($paymentOrder) > 0){
+			if (!empty($userLibrary->finePaymentOrder)){
+				$paymentOrder = explode('|', strtolower($userLibrary->finePaymentOrder));
+
 				//Add another category for everything else.
 				$paymentOrder[] = '!!other!!';
 				//Find the actual status for each category
 				$paymentOrder = array_flip($paymentOrder);
 				foreach ($paymentOrder as $paymentOrderKey => $value){
-					$paymentOrder[$paymentOrderKey] = 0;
+					//-1 indicates there are no fines for this type
+					$paymentOrder[$paymentOrderKey] = -1;
 				}
 
 				foreach ($finesPaidByType as $type => $finePayment){
@@ -2330,7 +2343,7 @@ class MyAccount_AJAX
 						$nextPaymentType = $paymentKeys[$j];
 						$nextPaymentStatus = $paymentOrder[$nextPaymentType];
 						//We have a problem if a lower priority fine is partially or fully paid and the higher priority is not fully paid
-						if ($lastPaymentStatus != 2 && $nextPaymentStatus >= 1){
+						if ($lastPaymentStatus != -1 && $lastPaymentStatus != 2 && $nextPaymentStatus >= 1){
 							return ['success' => false, 'message' => translate(['text' => 'bad_payment_order', 'defaultText' => 'You must pay all fines of type <strong>%1%</strong> before paying other types.', 1 => $lastPaymentType])];
 						}
 					}

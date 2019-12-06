@@ -13,7 +13,7 @@ class MyAccount_Fines extends MyAccount
 
 		$ils = $configArray['Catalog']['ils'];
 		$interface->assign('showDate', $ils == 'Koha' || $ils == 'Horizon' || $ils == 'CarlX' || $ils == 'Symphony');
-		$interface->assign('showReason', $ils != 'Koha');
+		$interface->assign('showReason', true);
 
 		$interface->setFinesRelatedTemplateVariables();
 

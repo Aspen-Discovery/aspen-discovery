@@ -34,7 +34,7 @@
 									<th>{translate text="Date"}</th>
 								{/if}
 								{if $showReason}
-									<th>{translate text="Message"}</th>
+									<th>{translate text="Reason"}</th>
 								{/if}
 								<th>{translate text="Title"}</th>
 								<th>{translate text="Fine/Fee Amount"}</th>

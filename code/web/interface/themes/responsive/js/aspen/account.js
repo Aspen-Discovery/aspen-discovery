@@ -1018,7 +1018,7 @@ AspenDiscovery.Account = (function(){
 			let totalOutstandingAmt = 0;
 			$(finesFormId + " .selectedFine:checked").each(
 				function() {
-					if (paymentType === 1){
+					if (paymentType === "1"){
 						totalFineAmt += $(this).data('fine_amt') * 1;
 						totalOutstandingAmt += $(this).data('outstanding_amt') * 1;
 					}else{
