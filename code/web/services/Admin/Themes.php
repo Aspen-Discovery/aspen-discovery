@@ -17,7 +17,6 @@ class Admin_Themes extends ObjectEditor
 		return 'Themes';
 	}
 	function canDelete(){
-		$user = UserAccount::getLoggedInUser();
 		return UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryAdmin');
 	}
 	function getAllObjects(){
