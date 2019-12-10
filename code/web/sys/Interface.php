@@ -405,7 +405,7 @@ class UInterface extends Smarty
 		$location = $locationSingleton->getActiveLocation();
 		$this->assign('logoLink', '');
 		$this->assign('logoAlt', 'Return to Catalog Home');
-		if ($library->useHomeLinkForLogo){
+		if ($library->getLayoutSettings()->useHomeLinkForLogo){
 			if (isset($location) && strlen($location->homeLink) > 0 && $location->homeLink != 'default'){
 				$this->assign('logoAlt', 'Library Home Page');
 				$this->assign('logoLink', $location->homeLink);
@@ -432,9 +432,9 @@ class UInterface extends Smarty
 		$this->assign('enableProspectorIntegration', $library->enableProspectorIntegration);
 		$this->assign('showRatings', $library->showRatings);
 		$this->assign('show856LinksAsTab', $library->show856LinksAsTab);
-		$this->assign('showSearchTools', $library->showSearchTools);
-		$this->assign('showQuickCopy', $library->showQuickCopy);
-		$this->assign('alwaysShowSearchResultsMainDetails', $library->alwaysShowSearchResultsMainDetails);
+		$this->assign('showSearchTools', $library->getGroupedWorkDisplaySettings()->showSearchTools);
+		$this->assign('showQuickCopy', $library->getGroupedWorkDisplaySettings()->showQuickCopy);
+		$this->assign('alwaysShowSearchResultsMainDetails', $library->getGroupedWorkDisplaySettings()->alwaysShowSearchResultsMainDetails);
 		$this->assign('showExpirationWarnings', $library->showExpirationWarnings);
 		$this->assign('expiredMessage', $library->expiredMessage);
 		$this->assign('expirationNearMessage', $library->expirationNearMessage);
@@ -449,10 +449,10 @@ class UInterface extends Smarty
 		$this->assign('interLibraryLoanName', $library->interLibraryLoanName);
 		$this->assign('interLibraryLoanUrl', $library->interLibraryLoanUrl);
 
-		if ($this->getVariable('displaySidebarMenu') && !$library->showSidebarMenu){
+		if ($this->getVariable('displaySidebarMenu') && !$library->getLayoutSettings()->showSidebarMenu){
 			$this->assign('displaySidebarMenu', false);
 		}
-		$this->assign('sidebarMenuButtonText', $library->sidebarMenuButtonText);
+		$this->assign('sidebarMenuButtonText', $library->getLayoutSettings()->sidebarMenuButtonText);
 		$this->assign('showGroupedHoldCopiesCount', $library->showGroupedHoldCopiesCount);
 		$this->assign('showOnOrderCounts', $library->showOnOrderCounts);
 
@@ -504,7 +504,7 @@ class UInterface extends Smarty
 		$this->assign('allowPinReset', $library->allowPinReset);
 		$this->assign('allowAccountLinking', ($library->allowLinkedAccounts == 1));
 		$this->assign('librarySystemName', $library->displayName);
-		$this->assign('showLibraryHoursAndLocationsLink', $library->showLibraryHoursAndLocationsLink);
+		$this->assign('showLibraryHoursAndLocationsLink', $library->getLayoutSettings()->showLibraryHoursAndLocationsLink);
 		//Check to see if we should just call it library location
 		$numLocations = $library->getNumLocationsForLibrary();
 		$this->assign('numLocations', $numLocations);

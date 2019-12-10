@@ -1509,7 +1509,6 @@ CREATE TABLE `library` (
   `worldCatUrl` varchar(100) DEFAULT '',
   `worldCatQt` varchar(40) DEFAULT '',
   `preferSyndeticsSummary` tinyint(4) DEFAULT '1',
-  `abbreviatedDisplayName` varchar(30) DEFAULT '',
   `showGoDeeper` tinyint(4) DEFAULT '1',
   `showProspectorResultsAtEndOfSearch` tinyint(4) DEFAULT '1',
   `overdriveAdvantageName` varchar(128) DEFAULT '',

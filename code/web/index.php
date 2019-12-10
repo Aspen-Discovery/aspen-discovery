@@ -48,6 +48,7 @@ if ($googleAnalyticsId) {
 	// check for a config setting, use that if found, otherwise grab domain name  but remove the first subdomain
 	$interface->assign('googleAnalyticsDomainName', $googleAnalyticsDomainName);
 }
+/** @var Library $library */
 global $library;
 global $offlineMode;
 
@@ -510,12 +511,12 @@ if ($action == "AJAX" || $action == "JSON" || $module == 'API'){
 	}else{
 		$interface->assign('showTopSearchBox', 1);
 		$interface->assign('showBreadcrumbs', 1);
-		if ($library->useHomeLinkInBreadcrumbs){
+		if ($library->getLayoutSettings()->useHomeLinkInBreadcrumbs){
 			$interface->assign('homeBreadcrumbLink', $library->homeLink);
 		}else{
 			$interface->assign('homeBreadcrumbLink', '/');
 		}
-		$interface->assign('homeLinkText', $library->homeLinkText);
+		$interface->assign('homeLinkText', $library->getLayoutSettings()->homeLinkText);
 	}
 
 }
@@ -718,8 +719,6 @@ try{
 }
 
 function processFollowup(){
-	global $configArray;
-
 	switch($_REQUEST['followup']) {
 		case 'SaveSearch':
 			header("Location: /".$_REQUEST['followupModule']."/".$_REQUEST['followupAction']."?".$_REQUEST['recordId']);

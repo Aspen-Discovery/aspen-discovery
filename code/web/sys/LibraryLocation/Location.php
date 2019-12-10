@@ -44,14 +44,15 @@ class Location extends DataObject
 	public $scope;
 	public $useScope;
 	public $facetLabel;
+	public $groupedWorkDisplaySettingId;
 	public $restrictSearchByLocation;
 	public $enableOverdriveCollection;
-	public $includeOverDriveAdult;
-	public $includeOverDriveTeen;
-	public $includeOverDriveKids;
-	public $hooplaScopeId;
-	public $rbdigitalScopeId;
-	public $cloudLibraryScopeId;
+	public /** @noinspection PhpUnused */ $includeOverDriveAdult;
+	public /** @noinspection PhpUnused */ $includeOverDriveTeen;
+	public /** @noinspection PhpUnused */ $includeOverDriveKids;
+	public /** @noinspection PhpUnused */ $hooplaScopeId;
+	public /** @noinspection PhpUnused */ $rbdigitalScopeId;
+	public /** @noinspection PhpUnused */ $cloudLibraryScopeId;
 	public $showHoldButton;
 	public $showStandardReviews;
 	public $repeatSearchOption;
@@ -63,7 +64,7 @@ class Location extends DataObject
 	public $homeLink;
 	public $defaultPType;
 	public $ptypesToAllowRenewals;
-	public $publicListsToInclude;
+	public /** @noinspection PhpUnused */ $publicListsToInclude;
 	public $automaticTimeoutLength;
 	public $automaticTimeoutLengthLoggedOut;
 	public $additionalCss;
@@ -73,25 +74,25 @@ class Location extends DataObject
 	public $showComments;
 	public $showStaffView;
 	public $showGoodReadsReviews;
-	public $econtentLocationsToInclude;
-	public $availabilityToggleLabelSuperScope;
-	public $availabilityToggleLabelLocal;
-	public $availabilityToggleLabelAvailable;
-	public $availabilityToggleLabelAvailableOnline;
-	public $baseAvailabilityToggleOnLocalHoldingsOnly;
-	public $includeOnlineMaterialsInAvailableToggle;
+	public /** @noinspection PhpUnused */ $econtentLocationsToInclude;
+//	public $availabilityToggleLabelSuperScope;
+//	public $availabilityToggleLabelLocal;
+//	public $availabilityToggleLabelAvailable;
+//	public $availabilityToggleLabelAvailableOnline;
+//	public /** @noinspection PhpUnused */ $baseAvailabilityToggleOnLocalHoldingsOnly;
+//	public $includeOnlineMaterialsInAvailableToggle;
 	public $defaultBrowseMode;
 	public $browseCategoryRatingsMode;
-	public $includeAllLibraryBranchesInFacets;
-	public $additionalLocationsToShowAvailabilityFor;
-	public $includeAllRecordsInShelvingFacets;
-	public $includeAllRecordsInDateAddedFacets;
-	public $includeLibraryRecordsToInclude;
+	public /** @noinspection PhpUnused */ $includeAllLibraryBranchesInFacets;
+	public /** @noinspection PhpUnused */ $additionalLocationsToShowAvailabilityFor;
+//	public /** @noinspection PhpUnused */ $includeAllRecordsInShelvingFacets;
+//	public /** @noinspection PhpUnused */ $includeAllRecordsInDateAddedFacets;
+	public /** @noinspection PhpUnused */ $includeLibraryRecordsToInclude;
 
 	//Combined Results (Bento Box)
-	public $enableCombinedResults;
+	public /** @noinspection PhpUnused */ $enableCombinedResults;
 	public $combinedResultsLabel;
-	public $defaultToCombinedResults;
+	public /** @noinspection PhpUnused */ $defaultToCombinedResults;
 	public $useLibraryCombinedResultsSettings;
 
 	/** @var  array $_data */
@@ -181,6 +182,16 @@ class Location extends DataObject
 			$availableThemes[$theme->id] = $theme->themeName;
 		}
 
+		require_once ROOT_DIR . '/sys/Grouping/GroupedWorkDisplaySetting.php';
+		$groupedWorkDisplaySetting = new GroupedWorkDisplaySetting();
+		$groupedWorkDisplaySetting->orderBy('name');
+		$groupedWorkDisplaySettings = [];
+		$groupedWorkDisplaySettings[-1] = 'Use Library Settings';
+		$groupedWorkDisplaySetting->find();
+		while ($groupedWorkDisplaySetting->fetch()){
+			$groupedWorkDisplaySettings[$groupedWorkDisplaySetting->id] = $groupedWorkDisplaySetting->name;
+		}
+
 		require_once ROOT_DIR . '/sys/Hoopla/HooplaScope.php';
 		$hooplaScope = new HooplaScope();
 		$hooplaScope->orderBy('name');
@@ -249,6 +260,9 @@ class Location extends DataObject
 				array('property' => 'ptypesToAllowRenewals', 'type' => 'text', 'label' => 'PTypes that can renew', 'description' => 'A list of P-Types that can renew items or * to allow all P-Types to renew items.', 'hideInLists' => true, 'default' => '*'),
 			)),
 
+			//Grouped Work Display
+			'groupedWorkDisplaySettingId' => array('property' => 'groupedWorkDisplaySettingId', 'type' => 'enum', 'values'=>$groupedWorkDisplaySettings, 'label' => 'Grouped Work Display Settings', 'hideInLists' => true),
+
 			'searchingSection' => array('property' => 'searchingSection', 'type' => 'section', 'label' => 'Searching', 'hideInLists' => true, 'properties' => array(
 				array('property' => 'restrictSearchByLocation', 'type' => 'checkbox', 'label' => 'Restrict Search By Location', 'description' => 'Whether or not search results should only include titles from this location', 'hideInLists' => true, 'default' => false),
 				array('property' => 'publicListsToInclude', 'type' => 'enum', 'values' => array(0 => 'No Lists', '1' => 'Lists from this library', '4' => 'Lists from library list publishers Only', '2' => 'Lists from this location', '5' => 'Lists from list publishers at this location Only', '6' => 'Lists from all list publishers', '3' => 'All Lists'), 'label' => 'Public Lists To Include', 'description' => 'Which lists should be included in this scope', 'default' => '4'),
@@ -261,17 +275,9 @@ class Location extends DataObject
 					array('property' => 'repeatInOverdrive', 'type' => 'checkbox', 'label' => 'Repeat In Overdrive', 'description' => 'Turn on to allow repeat search in Overdrive functionality.', 'hideInLists' => true, 'default' => false),
 				)),
 				array('property' => 'searchFacetsSection', 'type' => 'section', 'label' => 'Search Facets', 'hideInLists' => true, 'properties' => array(
-					array('property' => 'availabilityToggleLabelSuperScope', 'type' => 'text', 'label' => 'SuperScope Toggle Label', 'description' => 'The label to show when viewing super scope i.e. Consortium Name / Entire Collection / Everything.  Does not show if superscope is not enabled.', 'default' => 'Entire Collection'),
-					array('property' => 'availabilityToggleLabelLocal', 'type' => 'text', 'label' => 'Local Collection Toggle Label', 'description' => 'The label to show when viewing the local collection i.e. Library Name / Local Collection.  Leave blank to hide the button.', 'default' => '{display name}'),
-					array('property' => 'availabilityToggleLabelAvailable', 'type' => 'text', 'label' => 'Available Toggle Label', 'description' => 'The label to show when viewing available items i.e. Available Now / Available Locally / Available Here.', 'default' => 'Available Now'),
-					array('property' => 'availabilityToggleLabelAvailableOnline', 'type' => 'text', 'label' => 'Available Online Toggle Label', 'description' => 'The label to show when viewing available items i.e. Available Online.', 'default' => 'Available Online'),
-					array('property' => 'baseAvailabilityToggleOnLocalHoldingsOnly', 'type' => 'checkbox', 'label' => 'Base Availability Toggle on Local Holdings Only', 'description' => 'Turn on to use local materials only in availability toggle.', 'hideInLists' => true, 'default' => false),
-					array('property' => 'includeOnlineMaterialsInAvailableToggle', 'type' => 'checkbox', 'label' => 'Include Online Materials in Available Toggle', 'description' => 'Turn on to include online materials in both the Available Now and Available Online Toggles.', 'hideInLists' => true, 'default' => false),
 					array('property' => 'facetLabel', 'type' => 'text', 'label' => 'Facet Label', 'description' => 'The label of the facet that identifies this location.', 'hideInLists' => true, 'size' => '40'),
 					array('property' => 'includeAllLibraryBranchesInFacets', 'type' => 'checkbox', 'label' => 'Include All Library Branches In Facets', 'description' => 'Turn on to include all branches of the library within facets (ownership and availability).', 'hideInLists' => true, 'default' => true),
 					array('property' => 'additionalLocationsToShowAvailabilityFor', 'type' => 'text', 'label' => 'Additional Locations to Include in Available At Facet', 'description' => 'A list of library codes that you would like included in the available at facet separated by pipes |.', 'size' => '20', 'hideInLists' => true,),
-					array('property' => 'includeAllRecordsInShelvingFacets', 'type' => 'checkbox', 'label' => 'Include All Records In Shelving Facets', 'description' => 'Turn on to include all records (owned and included) in shelving related facets (detailed location, collection).', 'hideInLists' => true, 'default' => false),
-					array('property' => 'includeAllRecordsInDateAddedFacets', 'type' => 'checkbox', 'label' => 'Include All Records In Date Added Facets', 'description' => 'Turn on to include all records (owned and included) in date added facets.', 'hideInLists' => true, 'default' => false),
 					'facets' => array(
 						'property' => 'facets',
 						'type' => 'oneToMany',
@@ -1636,4 +1642,18 @@ class Location extends DataObject
 		return $this->_selected;
 	}
 
+	private $__groupedWorkDisplaySettings = null;
+	/** @return GroupedWorkDisplaySetting */
+	public function getGroupedWorkDisplaySettings()
+	{
+		if ($this->__groupedWorkDisplaySettings == null){
+			if ($this->groupedWorkDisplaySettingId == -1){
+				$library = Library::getLibraryForLocation($this->libraryId);
+			}
+			$this->__groupedWorkDisplaySettings = new GroupedWorkDisplaySetting();
+			$this->__groupedWorkDisplaySettings->id = $this->groupedWorkDisplaySettingId;
+			$this->__groupedWorkDisplaySettings->find(true);
+		}
+		return $this->__groupedWorkDisplaySettings;
+	}
 }

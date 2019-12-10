@@ -133,20 +133,20 @@ class TopFacets implements RecommendationInterface
 				$searchLocation = Location::getSearchLocation(null);
 
 				if ($searchLocation){
-					$superScopeLabel = $searchLocation->availabilityToggleLabelSuperScope;
-					$localLabel = $searchLocation->availabilityToggleLabelLocal;
+					$superScopeLabel = $searchLocation->getGroupedWorkDisplaySettings()->availabilityToggleLabelSuperScope;
+					$localLabel = $searchLocation->getGroupedWorkDisplaySettings()->availabilityToggleLabelLocal;
 					$localLabel = str_ireplace('{display name}', $searchLocation->displayName, $localLabel);
-					$availableLabel = $searchLocation->availabilityToggleLabelAvailable;
+					$availableLabel = $searchLocation->getGroupedWorkDisplaySettings()->availabilityToggleLabelAvailable;
 					$availableLabel = str_ireplace('{display name}', $searchLocation->displayName, $availableLabel);
-					$availableOnlineLabel = $searchLocation->availabilityToggleLabelAvailableOnline;
+					$availableOnlineLabel = $searchLocation->getGroupedWorkDisplaySettings()->availabilityToggleLabelAvailableOnline;
 					$availableOnlineLabel = str_ireplace('{display name}', $searchLocation->displayName, $availableOnlineLabel);
 				}else{
-					$superScopeLabel = $searchLibrary->availabilityToggleLabelSuperScope;
-					$localLabel = $searchLibrary->availabilityToggleLabelLocal;
+					$superScopeLabel = $searchLibrary->getGroupedWorkDisplaySettings()->availabilityToggleLabelSuperScope;
+					$localLabel = $searchLibrary->getGroupedWorkDisplaySettings()->availabilityToggleLabelLocal;
 					$localLabel = str_ireplace('{display name}', $searchLibrary->displayName, $localLabel);
-					$availableLabel = $searchLibrary->availabilityToggleLabelAvailable;
+					$availableLabel = $searchLibrary->getGroupedWorkDisplaySettings()->availabilityToggleLabelAvailable;
 					$availableLabel = str_ireplace('{display name}', $searchLibrary->displayName, $availableLabel);
-					$availableOnlineLabel = $searchLibrary->availabilityToggleLabelAvailableOnline;
+					$availableOnlineLabel = $searchLibrary->getGroupedWorkDisplaySettings()->availabilityToggleLabelAvailableOnline;
 					$availableOnlineLabel = str_ireplace('{display name}', $searchLibrary->displayName, $availableOnlineLabel);
 				}
 

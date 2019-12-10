@@ -942,7 +942,7 @@ class GroupedWork_AJAX {
 		];
 		if (!empty($indexedSeries) || !empty($series)){
 			global $library;
-			foreach ($library->showInSearchResultsMainDetails as $detailOption) {
+			foreach ($library->getGroupedWorkDisplaySettings()->showInSearchResultsMainDetails as $detailOption) {
 				$interface->assign($detailOption, true);
 			}
 			$interface->assign('indexedSeries', $indexedSeries);

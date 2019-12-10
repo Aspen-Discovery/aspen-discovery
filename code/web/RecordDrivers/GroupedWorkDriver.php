@@ -703,7 +703,7 @@ class GroupedWorkDriver extends IndexRecordDriver{
         $summLanguage     = null;
         $isFirst = true;
         global $library;
-        $alwaysShowMainDetails = $library ? $library->alwaysShowSearchResultsMainDetails : false;
+        $alwaysShowMainDetails = $library->getGroupedWorkDisplaySettings()->alwaysShowSearchResultsMainDetails;
         foreach ($relatedRecords as $relatedRecord){
             if ($isFirst){
                 $summPublisher    = $relatedRecord->publisher;
@@ -1399,9 +1399,9 @@ class GroupedWorkDriver extends IndexRecordDriver{
 
 	    $addOnlineMaterialsToAvailableNow = true;
 	    if ($searchLocation != null) {
-		    $addOnlineMaterialsToAvailableNow = $searchLocation->includeOnlineMaterialsInAvailableToggle;
+		    $addOnlineMaterialsToAvailableNow = $searchLocation->getGroupedWorkDisplaySettings()->includeOnlineMaterialsInAvailableToggle;
 	    } elseif ($searchLibrary != null) {
-		    $addOnlineMaterialsToAvailableNow = $searchLibrary->includeOnlineMaterialsInAvailableToggle;
+		    $addOnlineMaterialsToAvailableNow = $searchLibrary->getGroupedWorkDisplaySettings()->includeOnlineMaterialsInAvailableToggle;
 	    }
 
 	    global $searchSource;

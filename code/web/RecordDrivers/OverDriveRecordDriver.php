@@ -380,17 +380,17 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 
 		//Load the holding label for the branch where the user is physically.
 		if (!is_null($homeLibrary)){
-			return $homeLibrary->includeOutOfSystemExternalLinks ? -1 : $homeLibrary->libraryId;
+			return $homeLibrary->getGroupedWorkDisplaySettings()->includeOutOfSystemExternalLinks ? -1 : $homeLibrary->libraryId;
 		}else if (!is_null($activeLocation)){
 			$activeLibrary = Library::getLibraryForLocation($activeLocation->locationId);
-			return $activeLibrary->includeOutOfSystemExternalLinks ? -1 : $activeLibrary->libraryId;
+			return $activeLibrary->getGroupedWorkDisplaySettings()->includeOutOfSystemExternalLinks ? -1 : $activeLibrary->libraryId;
 		}else if (isset($activeLibrary)) {
-			return $activeLibrary->includeOutOfSystemExternalLinks ? -1 : $activeLibrary->libraryId;
+			return $activeLibrary->getGroupedWorkDisplaySettings()->includeOutOfSystemExternalLinks ? -1 : $activeLibrary->libraryId;
 		}else if (!is_null($searchLocation)){
 			$searchLibrary = Library::getLibraryForLocation($searchLibrary->locationId);
-			return $searchLibrary->includeOutOfSystemExternalLinks ? -1 : $searchLocation->libraryId;
+			return $searchLibrary->getGroupedWorkDisplaySettings()->includeOutOfSystemExternalLinks ? -1 : $searchLocation->libraryId;
 		}else if (isset($searchLibrary)) {
-			return $searchLibrary->includeOutOfSystemExternalLinks ? -1 : $searchLibrary->libraryId;
+			return $searchLibrary->getGroupedWorkDisplaySettings()->includeOutOfSystemExternalLinks ? -1 : $searchLibrary->libraryId;
 		}else{
 			return -1;
 		}
