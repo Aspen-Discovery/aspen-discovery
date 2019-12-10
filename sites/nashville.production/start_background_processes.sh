@@ -14,9 +14,6 @@ sleep 5
 echo "Starting rbdigital export"
 cd /usr/local/aspen-discovery/code/rbdigital_export; java -jar rbdigital_export.jar nashville.production &
 sleep 5
-echo "Starting Hoopla export"
-cd /usr/local/aspen-discovery/code/hoopla_export; java -jar hoopla_export.jar nashville.production &
-sleep 5
 echo "Starting User List Indexing"
 cd /usr/local/aspen-discovery/code/user_list_indexer; java -jar user_list_indexer.jar nashville.production &
 sleep 5
