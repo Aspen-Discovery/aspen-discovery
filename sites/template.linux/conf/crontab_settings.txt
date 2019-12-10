@@ -36,7 +36,7 @@
 ########################################################
 # Regular extracts that don't need to run continuously #
 ########################################################
-0 2 * * 0     root    cd /usr/local/aspen-discovery/code/oai_indexer; java -jar oai_indexer.jar {sitename}
+0 2 * * *     root    cd /usr/local/aspen-discovery/code/oai_indexer; java -jar oai_indexer.jar {sitename}
 
 #############################################
 # New York Times Best seller Lists Updating #
