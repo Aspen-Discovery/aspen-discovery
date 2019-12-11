@@ -560,7 +560,7 @@ class Library extends DataObject
 				'showRefreshAccountButton' => array('property'=>'showRefreshAccountButton', 'type'=>'checkbox', 'label'=>'Show Refresh Account Button', 'description'=>'Whether or not a Show Refresh Account button is displayed in a pop-up when a user clicks the E-Commerce Link', 'hideInLists' => true, 'default' => true),
 				'payPalSandboxMode'        => array('property'=>'payPalSandboxMode', 'type'=>'checkbox', 'label'=>'Use PayPal Sandbox', 'description'=>'Whether or not users to use PayPal in Sandbox mode', 'hideInLists' => true,),
 				'payPalClientId'           => array('property'=>'payPalClientId', 'type'=>'text', 'label'=>'PayPal ClientID', 'description'=>'The Client ID to use when paying fines.', 'hideInLists' => true, 'default' => '', 'size' => 80),
-				'payPalClientSecret'       => array('property'=>'payPalClientSecret', 'type'=>'text', 'label'=>'PayPal Client Secret', 'description'=>'The Client Secret to use when paying fines.', 'hideInLists' => true, 'default' => '', 'size' => 80),
+				'payPalClientSecret'       => array('property'=>'payPalClientSecret', 'type'=>'storedPassword', 'label'=>'PayPal Client Secret', 'description'=>'The Client Secret to use when paying fines.', 'hideInLists' => true, 'default' => '', 'size' => 80),
 			)),
 
 			// Searching //
@@ -647,8 +647,6 @@ class Library extends DataObject
 								)
 						),
 				)),
-
-
 			)),
 
 			// Catalog Enrichment //
@@ -1656,49 +1654,49 @@ class Library extends DataObject
 
 	public function saveBrowseCategories(){
 		if (isset ($this->browseCategories) && is_array($this->browseCategories)){
-			$this->saveOneToManyOptions($this->browseCategories);
+			$this->saveOneToManyOptions($this->browseCategories, 'libraryId');
 			unset($this->browseCategories);
 		}
 	}
 
 	public function saveLibraryLinks(){
 		if (isset ($this->libraryLinks) && is_array($this->libraryLinks)){
-			$this->saveOneToManyOptions($this->libraryLinks);
+			$this->saveOneToManyOptions($this->libraryLinks, 'libraryId');
 			unset($this->libraryLinks);
 		}
 	}
 
 	public function saveLibraryTopLinks(){
 		if (isset ($this->libraryTopLinks) && is_array($this->libraryTopLinks)){
-			$this->saveOneToManyOptions($this->libraryTopLinks);
+			$this->saveOneToManyOptions($this->libraryTopLinks, 'libraryId');
 			unset($this->libraryTopLinks);
 		}
 	}
 
 	public function saveRecordsOwned(){
 		if (isset ($this->recordsOwned) && is_array($this->recordsOwned)){
-			$this->saveOneToManyOptions($this->recordsOwned);
+			$this->saveOneToManyOptions($this->recordsOwned, 'libraryId');
 			unset($this->recordsOwned);
 		}
 	}
 
 	public function saveRecordsToInclude(){
 		if (isset ($this->recordsToInclude) && is_array($this->recordsToInclude)){
-			$this->saveOneToManyOptions($this->recordsToInclude);
+			$this->saveOneToManyOptions($this->recordsToInclude, 'libraryId');
 			unset($this->recordsToInclude);
 		}
 	}
 
 	public function saveSideLoadScopes(){
 		if (isset ($this->sideLoadScopes) && is_array($this->sideLoadScopes)){
-			$this->saveOneToManyOptions($this->sideLoadScopes);
+			$this->saveOneToManyOptions($this->sideLoadScopes, 'libraryId');
 			unset($this->sideLoadScopes);
 		}
 	}
 
 	public function saveMaterialsRequestFieldsToDisplay(){
 		if (isset ($this->materialsRequestFieldsToDisplay) && is_array($this->materialsRequestFieldsToDisplay)){
-			$this->saveOneToManyOptions($this->materialsRequestFieldsToDisplay);
+			$this->saveOneToManyOptions($this->materialsRequestFieldsToDisplay, 'libraryId');
 			unset($this->materialsRequestFieldsToDisplay);
 		}
 	}
@@ -1730,11 +1728,12 @@ class Library extends DataObject
 
 	public function saveMaterialsRequestFormFields(){
 		if (isset ($this->materialsRequestFormFields) && is_array($this->materialsRequestFormFields)){
-			$this->saveOneToManyOptions($this->materialsRequestFormFields);
+			$this->saveOneToManyOptions($this->materialsRequestFormFields, 'libraryId');
 			unset($this->materialsRequestFormFields);
 		}
 	}
 
+<<<<<<< Updated upstream
 	private function saveOneToManyOptions($oneToManySettings) {
 	    /** @var DataObject $oneToManyDBObject */
         foreach ($oneToManySettings as $oneToManyDBObject){
@@ -1760,93 +1759,95 @@ class Library extends DataObject
 
 	}
 
+=======
+>>>>>>> Stashed changes
 	private function saveExploreMoreBar() {
 		if (isset ($this->exploreMoreBar) && is_array($this->exploreMoreBar)){
-			$this->saveOneToManyOptions($this->exploreMoreBar);
+			$this->saveOneToManyOptions($this->exploreMoreBar, 'libraryId');
 			unset($this->exploreMoreBar);
 		}
 	}
 
 	public function clearExploreMoreBar(){
-		$this->clearOneToManyOptions('ArchiveExploreMoreBar');
+		$this->clearOneToManyOptions('ArchiveExploreMoreBar', 'libraryId');
 		/** @noinspection PhpUndefinedFieldInspection */
 		$this->exploreMoreBar = array();
 	}
 
 	public function saveMoreDetailsOptions(){
 		if (isset ($this->moreDetailsOptions) && is_array($this->moreDetailsOptions)){
-			$this->saveOneToManyOptions($this->moreDetailsOptions);
+			$this->saveOneToManyOptions($this->moreDetailsOptions, 'libraryId');
 			unset($this->moreDetailsOptions);
 		}
 	}
 
 	public function saveArchiveMoreDetailsOptions(){
 		if (isset ($this->archiveMoreDetailsOptions) && is_array($this->archiveMoreDetailsOptions)){
-			$this->saveOneToManyOptions($this->archiveMoreDetailsOptions);
+			$this->saveOneToManyOptions($this->archiveMoreDetailsOptions, 'libraryId');
 			unset($this->archiveMoreDetailsOptions);
 		}
 	}
 
 	public function clearMoreDetailsOptions(){
-		$this->clearOneToManyOptions('LibraryMoreDetails');
+		$this->clearOneToManyOptions('LibraryMoreDetails', 'libraryId');
 		/** @noinspection PhpUndefinedFieldInspection */
 		$this->moreDetailsOptions = array();
 	}
 
 	public function clearArchiveMoreDetailsOptions(){
-		$this->clearOneToManyOptions('LibraryArchiveMoreDetails');
+		$this->clearOneToManyOptions('LibraryArchiveMoreDetails', 'libraryId');
 		/** @noinspection PhpUndefinedFieldInspection */
 		$this->archiveMoreDetailsOptions = array();
 	}
 
 	public function clearMaterialsRequestFormFields(){
-		$this->clearOneToManyOptions('MaterialsRequestFormFields');
+		$this->clearOneToManyOptions('MaterialsRequestFormFields', 'libraryId');
 		/** @noinspection PhpUndefinedFieldInspection */
 		$this->materialsRequestFormFields = array();
 	}
 
 	public function clearMaterialsRequestFormats(){
-		$this->clearOneToManyOptions('MaterialsRequestFormats');
+		$this->clearOneToManyOptions('MaterialsRequestFormats', 'libraryId');
 		/** @noinspection PhpUndefinedFieldInspection */
 		$this->materialsRequestFormats = array();
 	}
 
 	public function saveFacets(){
 		if (isset ($this->facets) && is_array($this->facets)){
-			$this->saveOneToManyOptions($this->facets);
+			$this->saveOneToManyOptions($this->facets, 'libraryId');
 			unset($this->facets);
 		}
 	}
 
 	public function saveArchiveSearchFacets(){
 		if (isset ($this->archiveSearchFacets) && is_array($this->archiveSearchFacets)){
-			$this->saveOneToManyOptions($this->archiveSearchFacets);
+			$this->saveOneToManyOptions($this->archiveSearchFacets, 'libraryId');
 			unset($this->archiveSearchFacets);
 		}
 	}
 
 	public function clearFacets(){
-		$this->clearOneToManyOptions('LibraryFacetSetting');
+		$this->clearOneToManyOptions('LibraryFacetSetting', 'libraryId');
 		/** @noinspection PhpUndefinedFieldInspection */
 		$this->facets = array();
 	}
 
 	public function clearArchiveSearchFacets(){
-		$this->clearOneToManyOptions('LibraryArchiveSearchFacetSetting');
+		$this->clearOneToManyOptions('LibraryArchiveSearchFacetSetting', 'libraryId');
 		/** @noinspection PhpUndefinedFieldInspection */
 		$this->archiveSearchfacets = array();
 	}
 
 	public function saveCombinedResultSections(){
 		if (isset ($this->combinedResultSections) && is_array($this->combinedResultSections)){
-			$this->saveOneToManyOptions($this->combinedResultSections);
+			$this->saveOneToManyOptions($this->combinedResultSections, 'libraryId');
 			unset($this->combinedResultSections);
 		}
 	}
 
 	public function saveHolidays(){
 		if (isset ($this->holidays) && is_array($this->holidays)){
-			$this->saveOneToManyOptions($this->holidays);
+			$this->saveOneToManyOptions($this->holidays, 'libraryId');
 			unset($this->holidays);
 		}
 	}
@@ -2054,4 +2055,46 @@ class Library extends DataObject
 		return $defaultForm;
 	}
 
+<<<<<<< Updated upstream
+=======
+	private $__groupedWorkDisplaySettings = null;
+	/** @return GroupedWorkDisplaySetting */
+	public function getGroupedWorkDisplaySettings()
+	{
+		if ($this->__groupedWorkDisplaySettings == null){
+			try {
+				require_once ROOT_DIR . '/sys/Grouping/GroupedWorkDisplaySetting.php';
+				$this->__groupedWorkDisplaySettings = new GroupedWorkDisplaySetting();
+				$this->__groupedWorkDisplaySettings->id = $this->groupedWorkDisplaySettingId;
+				$this->__groupedWorkDisplaySettings->find(true);
+			}catch(Exception $e){
+				global $logger;
+				$logger->log('Error loading grouped work display settings ' . $e, Logger::LOG_ERROR);
+			}
+		}
+		return $this->__groupedWorkDisplaySettings;
+	}
+
+	private $__layoutSettings = null;
+	/** @return LayoutSetting */
+	public function getLayoutSettings()
+	{
+		if ($this->__layoutSettings == null){
+			try {
+				require_once ROOT_DIR . '/sys/Theming/LayoutSetting.php';
+				$this->__layoutSettings = new LayoutSetting();
+				$this->__layoutSettings->id = $this->layoutSettingId;
+				$this->__layoutSettings->find(true);
+			}catch(Exception $e){
+				global $logger;
+				$logger->log('Error loading grouped work display settings ' . $e, Logger::LOG_ERROR);
+			}
+		}
+		return $this->__layoutSettings;
+	}
+
+	function getEditLink(){
+		return '/Admin/Libraries?objectAction=edit&id=' . $this->libraryId;
+	}
+>>>>>>> Stashed changes
 }

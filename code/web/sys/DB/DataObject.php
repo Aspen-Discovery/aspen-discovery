@@ -56,6 +56,11 @@ abstract class DataObject
 		return $return;
 	}
 
+	public function fetchAssoc(){
+		$return = $this->__queryStmt->fetch(PDO::FETCH_ASSOC);
+		return $return;
+	}
+
 	/**
 	 * Retrieves all objects for the current query if name and value are null
 	 * Retrieves a list of all field values if only fieldName is provided
@@ -469,5 +474,30 @@ abstract class DataObject
 			}
 		}
 		return $propertiesToSerialize;
+	}
+
+	protected function saveOneToManyOptions($oneToManySettings, $keyOther)
+	{
+		/** @var DataObject $oneToManyDBObject */
+		foreach ($oneToManySettings as $oneToManyDBObject) {
+			if (isset($oneToManyDBObject->deleteOnSave) && $oneToManyDBObject->deleteOnSave == true){
+				$oneToManyDBObject->delete();
+			}else{
+				if (isset($oneToManyDBObject->{$oneToManyDBObject->__primaryKey}) && is_numeric($oneToManyDBObject->{$oneToManyDBObject->__primaryKey})){ // (negative ids need processed with insert)
+					$oneToManyDBObject->update();
+				}else{
+					$oneToManyDBObject->$keyOther = $this->{$this->__primaryKey};
+					$oneToManyDBObject->insert();
+				}
+			}
+		}
+	}
+
+	protected function clearOneToManyOptions($oneToManyDBObjectClassName, $keyOther) {
+		/** @var DataObject $oneToManyDBObject */
+		$oneToManyDBObject = new $oneToManyDBObjectClassName();
+		/** @noinspection PhpUndefinedFieldInspection */
+		$oneToManyDBObject->$keyOther = $this->{$this->__primaryKey};
+		$oneToManyDBObject->delete(true);
 	}
 }

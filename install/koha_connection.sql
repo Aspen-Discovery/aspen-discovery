@@ -21,7 +21,7 @@
 
 LOCK TABLES `account_profiles` WRITE;
 /*!40000 ALTER TABLE `account_profiles` DISABLE KEYS */;
-INSERT INTO `account_profiles` VALUES (2,'ils','Koha','barcode_pin','ils','{ilsUrl}','{ilsUrl}','ils',0,'{ilsDBHost}','{ilsDBName}','{ilsDBUser}','{ilsDBPwd}','','','','','{ilisDBPort}','{ilsDBTimezone}','{ilsClientId}','{ilsClientSecret}');
+INSERT INTO `account_profiles` VALUES (2,'ils','Koha','barcode_pin','ils','{ilsUrl}','{ilsUrl}','ils',0,'{ilsDBHost}','{ilsDBName}','{ilsDBUser}','{ilsDBPwd}','','','','','{ilsDBPort}','{ilsDBTimezone}','{ilsClientId}','{ilsClientSecret}');
 /*!40000 ALTER TABLE `account_profiles` ENABLE KEYS */;
 UNLOCK TABLES;
 

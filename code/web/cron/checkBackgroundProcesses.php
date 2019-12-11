@@ -12,7 +12,7 @@ if ($configArray['System']['operatingSystem'] == 'windows'){
 	$solrRegex = "/{$serverName}\\\\solr7/ix";
 }else{
 	exec("ps -ef | grep java", $processes);
-	$processRegEx = '/(\d+)\s+.*?\d{2}:\d{2}:\d{2}\sjava\s-jar\s(.*?)\.jar.*/ix';
+	$processRegEx = '/(\d+)\s+.*?\d{2}:\d{2}:\d{2}\sjava\s-jar\s(.*?)\.jar\s' . $serverName . '/ix';
 	$processIdIndex = 1;
 	$processNameIndex = 2;
 	$solrRegex = "/{$serverName}\/solr7/ix";

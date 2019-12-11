@@ -45,10 +45,14 @@ public class KohaExportMain {
 
 	public static void main(String[] args) {
 		if (args.length == 0) {
-			System.out.println("You must provide the server name as the first argument.");
-			System.exit(1);
+			serverName = StringUtils.getInputFromCommandLine("Please enter the server name");
+			if (serverName.length() == 0) {
+				System.out.println("You must provide the server name as the first argument.");
+				System.exit(1);
+			}
+		} else {
+			serverName = args[0];
 		}
-		serverName = args[0];
 		String profileToLoad = "koha";
 
 		logger = LoggingUtil.setupLogging(serverName, "koha_export");

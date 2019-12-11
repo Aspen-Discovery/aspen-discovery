@@ -28,22 +28,23 @@ class DataObjectUtil
 		return  $interface->fetch('DataObjectUtil/objectEditForm.tpl');
 	}
 
-    /**
-     * Save the object to the database (and optionally solr) based on the structure of the object
-     * Takes care of determining whether or not the object is new or not.
-     *
-     * @param array $structure The structure of the data object
-     * @param string $dataType The class of the data object
-     * @return array
-     */
-	static function saveObject($structure, $dataType){
+	/**
+	 * Save the object to the database (and optionally solr) based on the structure of the object
+	 * Takes care of determining whether or not the object is new or not.
+	 *
+	 * @param array $structure The structure of the data object
+	 * @param string $dataType The class of the data object
+	 * @return array
+	 */
+	static function saveObject($structure, $dataType)
+	{
 		global $logger;
 		//Check to see if we have a new object or an exiting object to update
-        /** @var DataObject $object */
+		/** @var DataObject $object */
 		$object = new $dataType();
 		DataObjectUtil::updateFromUI($object, $structure);
 		$primaryKey = $object->__primaryKey;
-        $primaryKeySet = !empty($object->$primaryKey);
+		$primaryKeySet = !empty($object->$primaryKey);
 
 		$validationResults = DataObjectUtil::validateObject($structure, $object);
 		$validationResults['object'] = $object;
@@ -86,8 +87,8 @@ class DataObjectUtil
 	 *
 	 * @param $dataObject
 	 * @param $object - The object to validate
-     *
-     * @return array Results of validation
+	 *
+	 * @return array Results of validation
 	 */
 	static function validateObject($structure, $object){
 		//Setup validation return array
@@ -105,11 +106,11 @@ class DataObjectUtil
 				}
 			}
 			//Check to see if there is a custom validation routine
-			if (isset($property['serverValidation'])){
-			    $validationRoutine = $property['serverValidation'];
+			if (isset($property['serverValidation'])) {
+				$validationRoutine = $property['serverValidation'];
 				$propValidation = $object->$validationRoutine();
-				if ($propValidation['validatedOk'] == false){
-					$validationResults['errors'] =  array_merge($validationResults['errors'], $propValidation['errors']);
+				if ($propValidation['validatedOk'] == false) {
+					$validationResults['errors'] = array_merge($validationResults['errors'], $propValidation['errors']);
 				}
 			}
 		}
@@ -138,8 +139,8 @@ class DataObjectUtil
 			if (isset($_REQUEST[$propertyName])){
 				$object->$propertyName = strip_tags(trim($_REQUEST[$propertyName]));
 			} else {
-                $object->$propertyName = "";
-            }
+				$object->$propertyName = "";
+			}
 
 		}else if (in_array( $property['type'], array('textarea', 'html', 'folder', 'crSeparated'))){
 			if (strlen(trim($_REQUEST[$propertyName])) == 0){
@@ -160,14 +161,14 @@ class DataObjectUtil
 			}else{
 				$object->$propertyName =  0;
 			}
-        }else if ($property['type'] == 'color' || $property['type'] == 'font'){
-		    $defaultProperty = $propertyName . 'Default';
-            if (isset($_REQUEST[$propertyName . '-default']) && ($_REQUEST[$propertyName . '-default'] == 'on')){
-                $object->$defaultProperty = 1;
-            }else{
-                $object->$defaultProperty = 0;
-            }
-            $object->$propertyName = $_REQUEST[$propertyName];
+		} else if ($property['type'] == 'color' || $property['type'] == 'font') {
+			$defaultProperty = $propertyName . 'Default';
+			if (isset($_REQUEST[$propertyName . '-default']) && ($_REQUEST[$propertyName . '-default'] == 'on')) {
+				$object->$defaultProperty = 1;
+			} else {
+				$object->$defaultProperty = 0;
+			}
+			$object->$propertyName = $_REQUEST[$propertyName];
 		}else if ($property['type'] == 'currency'){
 			if (preg_match('/\\$?\\d*\\.?\\d*/', $_REQUEST[$propertyName])){
 				if (substr($_REQUEST[$propertyName], 0, 1) == '$'){
@@ -243,82 +244,82 @@ class DataObjectUtil
 							$width = imagesx( $img );
 							$height = imagesy( $img );
 
-							if (isset($property['thumbWidth'])){
-                                //Create a thumbnail if needed
-                                $thumbWidth = $property['thumbWidth'];
-                                if ($width > $thumbWidth) {
-                                    $new_width = $thumbWidth;
-                                    $new_height = floor( $height * ( $thumbWidth / $width ) );
+							if (isset($property['thumbWidth'])) {
+								//Create a thumbnail if needed
+								$thumbWidth = $property['thumbWidth'];
+								if ($width > $thumbWidth) {
+									$new_width = $thumbWidth;
+									$new_height = floor($height * ($thumbWidth / $width));
 
-                                    // create a new temporary image
-                                    $tmp_img = imagecreatetruecolor( $new_width, $new_height );
-                                    imagealphablending($tmp_img, false);
-                                    imagesavealpha($tmp_img,true);
-                                    $transparent = imagecolorallocatealpha($tmp_img, 255, 255, 255, 127);
-                                    imagefilledrectangle($tmp_img, 0, 0, $width, $height, $transparent);
+									// create a new temporary image
+									$tmp_img = imagecreatetruecolor($new_width, $new_height);
+									imagealphablending($tmp_img, false);
+									imagesavealpha($tmp_img, true);
+									$transparent = imagecolorallocatealpha($tmp_img, 255, 255, 255, 127);
+									imagefilledrectangle($tmp_img, 0, 0, $width, $height, $transparent);
 
-                                    // copy and resize old image into new image
-                                    imagecopyresized( $tmp_img, $img, 0, 0, 0, 0, $new_width, $new_height, $width, $height );
+									// copy and resize old image into new image
+									imagecopyresized($tmp_img, $img, 0, 0, 0, 0, $new_width, $new_height, $width, $height);
 
-                                    // save thumbnail into a file
-                                    imagepng( $tmp_img, "{$pathToThumbs}/{$destFileName}" );
-                                } else {
-                                    copy($destFullPath, "{$pathToThumbs}/{$destFileName}");
-                                }
+									// save thumbnail into a file
+									imagepng($tmp_img, "{$pathToThumbs}/{$destFileName}");
+								} else {
+									copy($destFullPath, "{$pathToThumbs}/{$destFileName}");
+								}
 
 							}
-							if (isset($property['mediumWidth'])){
-                                //Create a thumbnail if needed
-                                $thumbWidth = $property['mediumWidth'];
-                                if ($width > $thumbWidth){
-                                    $new_width = $thumbWidth;
-                                    $new_height = floor( $height * ( $thumbWidth / $width ) );
+							if (isset($property['mediumWidth'])) {
+								//Create a thumbnail if needed
+								$thumbWidth = $property['mediumWidth'];
+								if ($width > $thumbWidth) {
+									$new_width = $thumbWidth;
+									$new_height = floor($height * ($thumbWidth / $width));
 
-                                    // create a new temporary image
-                                    $tmp_img = imagecreatetruecolor( $new_width, $new_height );
-                                    imagealphablending($tmp_img, false);
-                                    imagesavealpha($tmp_img,true);
-                                    $transparent = imagecolorallocatealpha($tmp_img, 255, 255, 255, 127);
-                                    imagefilledrectangle($tmp_img, 0, 0, $width, $height, $transparent);
+									// create a new temporary image
+									$tmp_img = imagecreatetruecolor($new_width, $new_height);
+									imagealphablending($tmp_img, false);
+									imagesavealpha($tmp_img, true);
+									$transparent = imagecolorallocatealpha($tmp_img, 255, 255, 255, 127);
+									imagefilledrectangle($tmp_img, 0, 0, $width, $height, $transparent);
 
-                                    // copy and resize old image into new image
-                                    imagecopyresized( $tmp_img, $img, 0, 0, 0, 0, $new_width, $new_height, $width, $height );
+									// copy and resize old image into new image
+									imagecopyresized($tmp_img, $img, 0, 0, 0, 0, $new_width, $new_height, $width, $height);
 
-                                    // save thumbnail into a file
-                                    imagepng( $tmp_img, "{$pathToMedium}/{$destFileName}" );
-                                } else {
-                                    copy($destFullPath, "{$pathToMedium}/{$destFileName}");
-                                }
+									// save thumbnail into a file
+									imagepng($tmp_img, "{$pathToMedium}/{$destFileName}");
+								} else {
+									copy($destFullPath, "{$pathToMedium}/{$destFileName}");
+								}
 							}
-                            if (isset($property['maxWidth'])){
-                                //Create a thumbnail if needed
-                                $thumbWidth = $property['maxWidth'];
-                                if ($width > $thumbWidth){
-                                    $new_width = $thumbWidth;
-                                    $new_height = floor( $height * ( $thumbWidth / $width ) );
+							if (isset($property['maxWidth'])) {
+								//Create a thumbnail if needed
+								$thumbWidth = $property['maxWidth'];
+								if ($width > $thumbWidth) {
+									$new_width = $thumbWidth;
+									$new_height = floor($height * ($thumbWidth / $width));
 
-                                    if (isset($property['maxHeight'])) {
-                                        $thumbHeight = $property['maxHeight'];
-                                        if ($new_height > $thumbHeight){
-                                            $new_height = $thumbHeight;
-                                            $new_width = floor( $new_width * ( $thumbHeight / $height ) );
-                                        }
-                                    }
+									if (isset($property['maxHeight'])) {
+										$thumbHeight = $property['maxHeight'];
+										if ($new_height > $thumbHeight) {
+											$new_height = $thumbHeight;
+											$new_width = floor($new_width * ($thumbHeight / $height));
+										}
+									}
 
-                                    // create a new temporary image
-                                    $tmp_img = imagecreatetruecolor( $new_width, $new_height );
-                                    imagealphablending($tmp_img, false);
-                                    imagesavealpha($tmp_img,true);
-                                    $transparent = imagecolorallocatealpha($tmp_img, 255, 255, 255, 127);
-                                    imagefilledrectangle($tmp_img, 0, 0, $width, $height, $transparent);
+									// create a new temporary image
+									$tmp_img = imagecreatetruecolor($new_width, $new_height);
+									imagealphablending($tmp_img, false);
+									imagesavealpha($tmp_img, true);
+									$transparent = imagecolorallocatealpha($tmp_img, 255, 255, 255, 127);
+									imagefilledrectangle($tmp_img, 0, 0, $width, $height, $transparent);
 
-                                    // copy and resize old image into new image
-                                    imagecopyresized( $tmp_img, $img, 0, 0, 0, 0, $new_width, $new_height, $width, $height );
+									// copy and resize old image into new image
+									imagecopyresized($tmp_img, $img, 0, 0, 0, 0, $new_width, $new_height, $width, $height);
 
-                                    // save thumbnail into a file
-                                    imagepng( $tmp_img, "{$destFolder}/{$destFileName}" );
-                                }
-                            }
+									// save thumbnail into a file
+									imagepng($tmp_img, "{$destFolder}/{$destFileName}");
+								}
+							}
 						}
 					}
 					//store the actual filename
@@ -385,15 +386,15 @@ class DataObjectUtil
 					if ($id < 0 || $id == ""){
 						$subObject = new $subObjectType();
 						$id = $key;
-					}else{
-                        if (!isset($existingValues[$id])){
-                            if (!isset($deletions[$id]) || ($deletions[$id] == 'false')) {
-                                $logger->log("$subObjectType $id has been deleted from the database, but is still present in the interface", Logger::LOG_ERROR);
-                            }
-                            continue;
-                        } else {
-                            $subObject = $existingValues[$id];
-                        }
+					} else {
+						if (!isset($existingValues[$id])) {
+							if (!isset($deletions[$id]) || ($deletions[$id] == 'false')) {
+								$logger->log("$subObjectType $id has been deleted from the database, but is still present in the interface", Logger::LOG_ERROR);
+							}
+							continue;
+						} else {
+							$subObject = $existingValues[$id];
+						}
 
 					}
 

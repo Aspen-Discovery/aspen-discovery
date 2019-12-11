@@ -11,7 +11,6 @@ class LibrarySideLoadScope extends DataObject
 	static function getObjectStructure(){
 		$library = new Library();
 		$library->orderBy('displayName');
-		$user = UserAccount::getLoggedInUser();
 		if (UserAccount::userHasRole('libraryAdmin')){
 			$homeLibrary = Library::getPatronHomeLibrary();
 			$library->libraryId = $homeLibrary->libraryId;
@@ -24,10 +23,16 @@ class LibrarySideLoadScope extends DataObject
 		$sideLoadScopes = array();
 		require_once ROOT_DIR . '/sys/Indexing/SideLoadScope.php';
 		$sideLoadScope = new SideLoadScope();
-		$sideLoadScope->orderBy('name');
+		$sideLoadScope->joinAdd(new SideLoad(), 'INNER', 'scope', 'sideLoadId', 'id');
+		$sideLoadScope->selectAdd();
+		$sideLoadScope->selectAdd('sideload_scopes.*');
+		$sideLoadScope->selectAdd('scope.name AS scope_name');
+		$sideLoadScope->orderBy('scope.name, sideload_scopes.name');
 		$sideLoadScope->find();
-		while ($sideLoadScope->fetch()){
-			$sideLoadScopes[$sideLoadScope->id] = $sideLoadScope->name;
+		$sideLoadScopeData = $sideLoadScope->fetchAssoc();
+		while ($sideLoadScopeData){
+			$sideLoadScopes[$sideLoadScopeData['id']] = $sideLoadScopeData['scope_name'] . ' - ' . $sideLoadScopeData['name'];
+			$sideLoadScopeData = $sideLoadScope->fetchAssoc();
 		}
 		$structure = array(
 			'id' => array('property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id'),

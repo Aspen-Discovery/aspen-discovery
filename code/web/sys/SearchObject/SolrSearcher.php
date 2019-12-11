@@ -179,7 +179,8 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 			$facetInfo = $facetConfig[$field];
 			$fieldPrefix = "";
 			if ($facetInfo->multiSelect) {
-				$fieldPrefix = "{!tag={$facetInfo->id}}";
+				$facetKey = empty($facetInfo->id) ? $facetInfo->facetName : $facetInfo->id;
+				$fieldPrefix = "{!tag={$facetKey}}";
 			}
 			$fieldValue = "";
 			$okToAdd = false;

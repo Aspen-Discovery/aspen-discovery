@@ -29,19 +29,19 @@
 #############
 # Indexing Tasks #
 #############
-@reboot sleep 60 /usr/local/aspen-discovery/sites/{sitename}/; ./start_background_processes.sh
-5 2 * * * php /usr/local/aspen-discovery/code/web/cron/updateSuggesters.php {sitename}
-*/5 * * * * php /usr/local/aspen-discovery/code/web/cron/checkBackgroundProcesses.php {sitename}
+@reboot       root    sleep 60 /usr/local/aspen-discovery/sites/{sitename}/; ./start_background_processes.sh
+5 2 * * *     root    php /usr/local/aspen-discovery/code/web/cron/updateSuggesters.php {sitename}
+*/5 * * * *   root    php /usr/local/aspen-discovery/code/web/cron/checkBackgroundProcesses.php {sitename}
 
 ########################################################
 # Regular extracts that don't need to run continuously #
 ########################################################
-0 2 * * 0 cd /usr/local/aspen-discovery/code/oai_indexer; java -jar oai_indexer.jar {sitename}
+0 2 * * *     root    cd /usr/local/aspen-discovery/code/oai_indexer; java -jar oai_indexer.jar {sitename}
 
 #############################################
 # New York Times Best seller Lists Updating #
 #############################################
-15 7 * * 0-1 php /usr/local/aspen-discovery/code/web/cron/updateNYTLists.php {sitename}
+15 7 * * 0-1  root    php /usr/local/aspen-discovery/code/web/cron/updateNYTLists.php {sitename}
 # update on Sundays and Mondays at 7:15
 
 ################
@@ -49,9 +49,9 @@
 ################
 
 # Temp files
-26 0 * * * cd /tmp; rm -rf CURLCOOKIE*
+26 0 * * *    root    cd /tmp; rm -rf CURLCOOKIE*
 
 # CRON for Aspen (book cover cache cleanup etc.)
-00 20 * * * cd /usr/local/aspen-discovery/code/cron; java -jar cron.jar {sitename}
+00 20 * * *    root    cd /usr/local/aspen-discovery/code/cron; java -jar cron.jar {sitename}
 
-00 01 * * * certbot renew
+00 01 * * *    root    certbot renew

@@ -1273,7 +1273,8 @@ abstract class Solr
 					if ($facetInfo instanceof FacetSetting) {
 						$facetName = $facetInfo->facetName;
 						if ($facetInfo->multiSelect) {
-							$options['facet.field'][] = "{!ex={$facetInfo->id}}" . $key;
+							$facetKey = empty($facetInfo->id) ? $facetInfo->facetName : $facetInfo->id;
+							$options['facet.field'][] = "{!ex={$facetKey}}" . $key;
 						} elseif (strpos($facetName, 'availability_toggle') === 0 || strpos($facetName, 'availability_by_format') === 0) {
 							$options['facet.field'][] = '{!ex=avail}' . $key;
 							$options["f.{$key}.facet.missing"] = 'true';
@@ -1327,7 +1328,8 @@ abstract class Solr
 					$facetSetting = $facet['field'][$key];
 					if ($facetSetting instanceof FacetSetting) {
 						if ($facetSetting->multiSelect) {
-							$filters[$key] = "{!tag={$facetSetting->id}}" . $value;
+							$facetKey = empty($facetSetting->id) ? $facetSetting->facetName : $facetSetting->id;
+							$filters[$key] = "{!tag={$facetKey}}" . $value;
 						}
 					}
 				}

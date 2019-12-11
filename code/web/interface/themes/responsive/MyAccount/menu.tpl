@@ -249,17 +249,15 @@
 									<div class="adminMenuLink"><a href="/Admin/Libraries">{translate text="Library Systems"}</a></div>
 								{/if}
 								{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('libraryManager', $userRoles) || array_key_exists('locationManager', $userRoles))}
-									<div class="adminMenuLink"><a href="/Admin/Locations">{translate text="Locations"}</a></div>
+									<div class="adminMenuLink">&nbsp;&raquo;&nbsp;<a href="/Admin/Locations">{translate text="Locations"}</a></div>
+								{/if}
+								{* OPAC Admin Actions*}
+								{if array_key_exists('opacAdmin', $userRoles)}
+									<div class="adminMenuLink">&nbsp;&raquo;&nbsp;<a href="/Admin/IPAddresses">{translate text="IP Addresses"}</a></div>
 								{/if}
 								{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('libraryManager', $userRoles) || array_key_exists('locationManager', $userRoles))}
 									<div class="adminMenuLink"><a href="/Admin/BlockPatronAccountLinks">{translate text="Block Patron Account Linking"}</a></div>
 								{/if}
-
-								{* OPAC Admin Actions*}
-								{if array_key_exists('opacAdmin', $userRoles)}
-									<div class="adminMenuLink"><a href="/Admin/IPAddresses">{translate text="IP Addresses"}</a></div>
-								{/if}
-
 								{* Content Editor Actions *}
 								{if array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('contentEditor', $userRoles) || array_key_exists('libraryManager', $userRoles) || array_key_exists('locationManager', $userRoles)}
 									<div class="adminMenuLink"><a href="/Admin/ListWidgets">{translate text="List Widgets"}</a></div>
@@ -532,28 +530,28 @@
 							</div>
 						</div>
 					</div>
-                {/if}
+				{/if}
 
-                {if array_key_exists('Side Loads', $enabledModules) && (array_key_exists('libraryAdmin', $userRoles) || array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles))}
-                    {if $module == 'SideLoads' && in_array($action, array('IndexingLog', 'Scopes', 'SideLoads', 'Dashboard'))}
-                        {assign var="curSection" value=true}
-                    {else}
-                        {assign var="curSection" value=false}
-                    {/if}
+				{if array_key_exists('Side Loads', $enabledModules) && (array_key_exists('libraryAdmin', $userRoles) || array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles))}
+					{if $module == 'SideLoads' && in_array($action, array('IndexingLog', 'Scopes', 'SideLoads', 'Dashboard'))}
+						{assign var="curSection" value=true}
+					{else}
+						{assign var="curSection" value=false}
+					{/if}
 					<div class="panel{if $curSection} active{/if}">
 						<a href="#sideLoadMenu" data-toggle="collapse" data-parent="#adminMenuAccordion">
 							<div class="panel-heading">
 								<div class="panel-title">
-                                    {translate text="Side Loaded eContent"}
+									{translate text="Side Loaded eContent"}
 								</div>
 							</div>
 						</a>
 						<div id="sideLoadMenu" class="panel-collapse collapse {if $curSection}in{/if}">
 							<div class="panel-body">
 								<div class="adminMenuLink"><a href="/SideLoads/SideLoads">{translate text="Side Load Configurations"}</a></div>
-								<div class="adminMenuLink"><a href="/SideLoads/Scopes">{translate text="Scopes"}</a></div>
+								<div class="adminMenuLink"><a href="/SideLoads/Scopes">&nbsp;&raquo;&nbsp;{translate text="Scopes"}</a></div>
 								<div class="adminMenuLink"><a href="/SideLoads/IndexingLog">{translate text="Indexing Log"}</a></div>
-                                <div class="adminMenuLink"><a href="/SideLoads/Dashboard">{translate text="Dashboard"}</a></div>
+								<div class="adminMenuLink"><a href="/SideLoads/Dashboard">{translate text="Dashboard"}</a></div>
 							</div>
 						</div>
 					</div>
