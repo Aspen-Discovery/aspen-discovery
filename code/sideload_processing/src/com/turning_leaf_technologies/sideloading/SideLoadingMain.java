@@ -11,6 +11,7 @@ import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
 import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
+import org.marc4j.MarcException;
 import org.marc4j.MarcPermissiveStreamReader;
 import org.marc4j.MarcReader;
 import org.marc4j.marc.Record;
@@ -18,6 +19,7 @@ import org.marc4j.marc.Record;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Date;
@@ -153,48 +155,58 @@ public class SideLoadingMain {
 			SideLoadedRecordGrouper recordGrouper = getRecordGroupingProcessor(settings);
 			MarcReader marcReader = new MarcPermissiveStreamReader(new FileInputStream(fileToProcess), true, true, settings.getMarcEncoding());
 			while (marcReader.hasNext()) {
-				Record marcRecord = marcReader.next();
-				RecordIdentifier recordIdentifier = recordGrouper.getPrimaryIdentifierFromMarcRecord(marcRecord, settings.getName());
-				if (recordIdentifier != null) {
-					logEntry.incNumProducts(1);
-					boolean deleteRecord = false;
-					String recordNumber = recordIdentifier.getIdentifier();
-					BaseMarcRecordGrouper.MarcStatus marcStatus = recordGrouper.writeIndividualMarc(settings, marcRecord, recordNumber, logger);
-					if (marcStatus != BaseMarcRecordGrouper.MarcStatus.UNCHANGED || settings.isRunFullUpdate()) {
-						String permanentId = recordGrouper.processMarcRecord(marcRecord, marcStatus != BaseMarcRecordGrouper.MarcStatus.UNCHANGED);
-						if (permanentId == null) {
-							//Delete the record since it is suppressed
-							deleteRecord = true;
-						} else {
-							if (marcStatus == BaseMarcRecordGrouper.MarcStatus.NEW) {
-								logEntry.incAdded();
+				try {
+					Record marcRecord = marcReader.next();
+					RecordIdentifier recordIdentifier = recordGrouper.getPrimaryIdentifierFromMarcRecord(marcRecord, settings.getName());
+					if (recordIdentifier != null) {
+						logEntry.incNumProducts(1);
+						boolean deleteRecord = false;
+						String recordNumber = recordIdentifier.getIdentifier();
+						BaseMarcRecordGrouper.MarcStatus marcStatus = recordGrouper.writeIndividualMarc(settings, marcRecord, recordNumber, logger);
+						if (marcStatus != BaseMarcRecordGrouper.MarcStatus.UNCHANGED || settings.isRunFullUpdate()) {
+							String permanentId = recordGrouper.processMarcRecord(marcRecord, marcStatus != BaseMarcRecordGrouper.MarcStatus.UNCHANGED);
+							if (permanentId == null) {
+								//Delete the record since it is suppressed
+								deleteRecord = true;
 							} else {
-								logEntry.incUpdated();
+								if (marcStatus == BaseMarcRecordGrouper.MarcStatus.NEW) {
+									logEntry.incAdded();
+								} else {
+									logEntry.incUpdated();
+								}
+								getGroupedWorkIndexer().processGroupedWork(permanentId);
 							}
-							getGroupedWorkIndexer().processGroupedWork(permanentId);
+						} else {
+							logEntry.incSkipped();
 						}
-					} else {
-						logEntry.incSkipped();
-					}
-					if (deleteRecord) {
-						RemoveRecordFromWorkResult result = recordGrouper.removeRecordFromGroupedWork(settings.getName(), recordIdentifier.getIdentifier());
-						if (result.reindexWork) {
-							getGroupedWorkIndexer().processGroupedWork(result.permanentId);
-						} else if (result.deleteWork) {
-							//Delete the work from solr and the database
-							getGroupedWorkIndexer().deleteRecord(result.permanentId, result.groupedWorkId);
+						if (deleteRecord) {
+							RemoveRecordFromWorkResult result = recordGrouper.removeRecordFromGroupedWork(settings.getName(), recordIdentifier.getIdentifier());
+							if (result.reindexWork) {
+								getGroupedWorkIndexer().processGroupedWork(result.permanentId);
+							} else if (result.deleteWork) {
+								//Delete the work from solr and the database
+								getGroupedWorkIndexer().deleteRecord(result.permanentId, result.groupedWorkId);
+							}
+							logEntry.incDeleted();
 						}
-						logEntry.incDeleted();
+						if (logEntry.getNumProducts() % 250 == 0) {
+							logEntry.saveResults();
+						}
 					}
-					if (logEntry.getNumProducts() % 250 == 0) {
-						logEntry.saveResults();
-					}
+				}catch (MarcException e){
+					logger.error("Error reading MARC file " + fileToProcess, e);
+					logEntry.incErrors();
+					logEntry.addNote("Error reading MARC file " + fileToProcess + " " + e.toString());
 				}
 			}
 			logEntry.saveResults();
 		} catch (FileNotFoundException e) {
 			logEntry.incErrors();
 			logEntry.addNote("Could not find file " + fileToProcess.getAbsolutePath());
+		} catch (Exception e){
+			logger.error("Error reading MARC file " + fileToProcess, e);
+			logEntry.incErrors();
+			logEntry.addNote("Error reading MARC file " + fileToProcess + " " + e.toString());
 		}
 	}
 
