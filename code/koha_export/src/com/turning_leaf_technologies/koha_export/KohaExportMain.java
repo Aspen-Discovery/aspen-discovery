@@ -44,7 +44,6 @@ public class KohaExportMain {
 	private static IlsExtractLogEntry logEntry;
 
 	public static void main(String[] args) {
-		String serverName;
 		if (args.length == 0) {
 			serverName = StringUtils.getInputFromCommandLine("Please enter the server name");
 			if (serverName.length() == 0) {
