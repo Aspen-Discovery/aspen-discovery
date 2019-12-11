@@ -74,19 +74,6 @@ abstract class ObjectEditor extends Admin_Admin
 	 */
 	abstract function getIdKeyColumn();
 
-	function getExistingObjectByPrimaryKey($objectType, $value){
-		$primaryKeyColumn = $this->getPrimaryKeyColumn();
-		/** @var DataObject $curLibrary */
-		$curLibrary = new $objectType();
-		$curLibrary->$primaryKeyColumn = $value;
-		$curLibrary->find();
-		if ($curLibrary->N == 1){
-			$curLibrary->fetch();
-			return $curLibrary;
-		}else{
-			return null;
-		}
-	}
 	function getExistingObjectById($id){
 		$objectType = $this->getObjectType();
 		$idColumn = $this->getIdKeyColumn();
@@ -241,7 +228,6 @@ abstract class ObjectEditor extends Admin_Admin
 				$errorOccurred = true;
 			}
 		}
-		global $configArray;
 		if (isset($_REQUEST['submitStay']) || $errorOccurred){
 			header("Location: /{$this->getModule()}/{$this->getToolName()}?objectAction=edit&id=$id");
 		}elseif (isset($_REQUEST['submitAddAnother'])){
@@ -273,23 +259,8 @@ abstract class ObjectEditor extends Admin_Admin
 		return true;
 	}
 
-	function getFilters(){
-		return array();
-	}
 	function getModule(){
 		return 'Admin';
-	}
-
-	function getFilterValues(){
-		$filters = $this->getFilters();
-		foreach ($filters as $filter){
-			if ($_REQUEST[$filter['filter']]){
-				$filter['value'] = $_REQUEST[$filter['filter']];
-			}else{
-				$filter['value'] = '';
-			}
-		}
-		return $filters;
 	}
 
 	public function canAddNew(){

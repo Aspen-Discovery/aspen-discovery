@@ -59,28 +59,26 @@
 					{/if}
 				{/foreach}
 				<td>
-					{* link to delete*}
-					<input type="hidden" id="{$propName}Deleted_{$subObject->id}" name="{$propName}Deleted[{$subObject->id}]" value="false">
-					{* link to delete *}
-					<a href="#" onclick="if (confirm('Are you sure you want to delete this?')){literal}{{/literal}$('#{$propName}Deleted_{$subObject->id}').val('true');$('#{$propName}{$subObject->id}').hide().find('.required').removeClass('required'){literal}}{/literal};return false;">
-						{* On delete action, also remove class 'required' to turn off form validation of the deleted input; so that the form can be submitted by the user  *}
-						<img src="/images/silk/delete.png" alt="delete">
-					</a>
 					{if $property.editLink neq ''}
-						&nbsp;
-						<a href='{$property.editLink}?objectAction=edit&widgetListId={$subObject->id}&widgetId={$widgetid}' alt='Edit SubLinks' title='Edit SubLinks'>
-							<span class="glyphicon glyphicon-link" title="edit links">&nbsp;</span>
+						<a href='{$property.editLink}?objectAction=edit&widgetListId={$subObject->id}&widgetId={$widgetid}' class="btn btn-sm btn-default" title="edit">
+							{translate text="Edit"}
 						</a>
 					{elseif $property.canEdit}
 						{if method_exists($subObject, 'getEditLink')}
-							&nbsp;
-							<a href='{$subObject->getEditLink()}' title='Edit'>
-								<span class="glyphicon glyphicon-edit" title="edit">&nbsp;</span>
+							<a href='{$subObject->getEditLink()}' title='Edit' class="btn btn-sm btn-default">
+								{translate text="Edit"}
 							</a>
 						{else}
 							Please add a getEditLink method to this object
 						{/if}
 					{/if}
+					{* link to delete*}
+					<input type="hidden" id="{$propName}Deleted_{$subObject->id}" name="{$propName}Deleted[{$subObject->id}]" value="false">
+					{* link to delete *}
+					<a href="#" class="btn btn-sm btn-warning" onclick="if (confirm('Are you sure you want to delete this?')){literal}{{/literal}$('#{$propName}Deleted_{$subObject->id}').val('true');$('#{$propName}{$subObject->id}').hide().find('.required').removeClass('required'){literal}}{/literal};return false;">
+						{* On delete action, also remove class 'required' to turn off form validation of the deleted input; so that the form can be submitted by the user  *}
+						{translate text="Delete"}
+					</a>
 				</td>
 			</tr>
 			{foreachelse}

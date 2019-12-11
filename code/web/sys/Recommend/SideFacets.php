@@ -30,7 +30,6 @@ class SideFacets implements RecommendationInterface
 		// Parse the additional settings:
 		$params = explode(':', $params);
 		$mainSection = empty($params[0]) ? 'Results' : $params[0];
-		$iniName = isset($params[2]) ? $params[2] : 'facets';
 
 		if ($searchObject->getSearchType() == 'islandora'){
 			$searchLibrary = Library::getActiveLibrary();

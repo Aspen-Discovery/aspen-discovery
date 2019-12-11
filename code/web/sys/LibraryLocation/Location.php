@@ -890,17 +890,7 @@ class Location extends DataObject
 		return $this->ipLocation;
 	}
 
-	/**
-	 * Must be called after the call to getIPLocation
-	 * Enter description here ...
-	 */
-	function getIPid()
-	{
-		return $this->ipId;
-	}
-
 	private static $activeIp = null;
-
 	static function getActiveIp()
 	{
 		if (!is_null(Location::$activeIp)) return Location::$activeIp;
@@ -1151,63 +1141,62 @@ class Location extends DataObject
 	public function saveBrowseCategories()
 	{
 		if (isset ($this->browseCategories) && is_array($this->browseCategories)) {
-			$this->saveOneToManyOptions($this->browseCategories);
+			$this->saveOneToManyOptions($this->browseCategories, 'locationId');
 			unset($this->browseCategories);
 		}
 	}
 
-	public function clearBrowseCategories()
-	{
-		$this->clearOneToManyOptions('LocationBrowseCategory');
+	public function clearBrowseCategories(){
+		$this->clearOneToManyOptions('LocationBrowseCategory', 'locationId');
 		$this->browseCategories = array();
 	}
 
 	public function saveMoreDetailsOptions()
 	{
 		if (isset ($this->moreDetailsOptions) && is_array($this->moreDetailsOptions)) {
-			$this->saveOneToManyOptions($this->moreDetailsOptions);
+			$this->saveOneToManyOptions($this->moreDetailsOptions, 'locationId');
 			unset($this->moreDetailsOptions);
 		}
 	}
 
 	public function clearMoreDetailsOptions()
 	{
-		$this->clearOneToManyOptions('LocationMoreDetails');
+		$this->clearOneToManyOptions('LocationMoreDetails', 'locationId');
 		$this->moreDetailsOptions = array();
 	}
 
 	public function saveCombinedResultSections()
 	{
 		if (isset ($this->combinedResultSections) && is_array($this->combinedResultSections)) {
-			$this->saveOneToManyOptions($this->combinedResultSections);
+			$this->saveOneToManyOptions($this->combinedResultSections, 'locationId');
 			unset($this->combinedResultSections);
 		}
 	}
 
 	public function clearCombinedResultSections()
 	{
-		$this->clearOneToManyOptions('LibraryCombinedResultSection');
+		$this->clearOneToManyOptions('LibraryCombinedResultSection', 'locationId');
 		$this->combinedResultSections = array();
 	}
 
 	public function saveFacets()
 	{
 		if (isset ($this->facets) && is_array($this->facets)) {
-			$this->saveOneToManyOptions($this->facets);
+			$this->saveOneToManyOptions($this->facets, 'locationId');
 			unset($this->facets);
 		}
 	}
 
 	public function clearFacets()
 	{
-		$this->clearOneToManyOptions('LocationFacetSetting');
+		$this->clearOneToManyOptions('LocationFacetSetting', 'locationId');
 		$this->facets = array();
 	}
 
 	public function saveHours()
 	{
 		if (isset ($this->hours) && is_array($this->hours)) {
-			$this->saveOneToManyOptions($this->hours);
+			$this->saveOneToManyOptions($this->hours, 'locationId');
 			unset($this->hours);
 		}
 	}
@@ -1390,7 +1379,7 @@ class Location extends DataObject
 	public function saveSideLoadScopes()
 	{
 		if (isset ($this->sideLoadScopes) && is_array($this->sideLoadScopes)) {
-			$this->saveOneToManyOptions($this->sideLoadScopes);
+			$this->saveOneToManyOptions($this->sideLoadScopes, 'locationId');
 			unset($this->sideLoadScopes);
 		}
 	}
@@ -1605,31 +1594,6 @@ class Location extends DataObject
 		$this->opacStatus = $opacStatus;
 	}
 
-	private function saveOneToManyOptions($oneToManySettings)
-	{
-		/** @var DataObject $oneToManyDBObject */
-		foreach ($oneToManySettings as $oneToManyDBObject) {
-			if (isset($oneToManyDBObject->deleteOnSave) && $oneToManyDBObject->deleteOnSave == true) {
-				$oneToManyDBObject->delete();
-			} else {
-				if (isset($oneToManyDBObject->id) && is_numeric($oneToManyDBObject->id)) { // (negative ids need processed with insert)
-					$oneToManyDBObject->update();
-				} else {
-					$oneToManyDBObject->locationId = $this->locationId;
-					$oneToManyDBObject->insert();
-				}
-			}
-		}
-	}
-
-	private function clearOneToManyOptions($oneToManyDBObjectClassName)
-	{
-		/** @var DataObject $oneToManyDBObject */
-		$oneToManyDBObject = new $oneToManyDBObjectClassName();
-		$oneToManyDBObject->locationId = $this->locationId;
-		$oneToManyDBObject->delete(true);
-	}
-
 	private $_selected;
 
 	private function setSelected(string $selected)
@@ -1649,11 +1613,16 @@ class Location extends DataObject
 		if ($this->__groupedWorkDisplaySettings == null){
 			if ($this->groupedWorkDisplaySettingId == -1){
 				$library = Library::getLibraryForLocation($this->libraryId);
+				$this->groupedWorkDisplaySettingId = $library->groupedWorkDisplaySettingId;
 			}
 			$this->__groupedWorkDisplaySettings = new GroupedWorkDisplaySetting();
 			$this->__groupedWorkDisplaySettings->id = $this->groupedWorkDisplaySettingId;
 			$this->__groupedWorkDisplaySettings->find(true);
 		}
 		return $this->__groupedWorkDisplaySettings;
+	}
+
+	function getEditLink(){
+		return '/Admin/Locations?objectAction=edit&id=' . $this->libraryId;
 	}
 }

@@ -5,7 +5,6 @@ require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 
 class Admin_Libraries extends ObjectEditor
 {
-
 	function getObjectType(){
 		return 'Library';
 	}
@@ -35,7 +34,6 @@ class Admin_Libraries extends ObjectEditor
 	}
 	function getObjectStructure(){
 		$objectStructure = Library::getObjectStructure();
-		$user = UserAccount::getLoggedInUser();
 		if (!UserAccount::userHasRole('opacAdmin')){
 			unset($objectStructure['isDefault']);
 		}
@@ -60,6 +58,7 @@ class Admin_Libraries extends ObjectEditor
 		return [];
 	}
 
+	/** @noinspection PhpUnused */
 	function copyFacetsFromLibrary(){
 		$libraryId = $_REQUEST['id'];
 		if (isset($_REQUEST['submit'])){
@@ -103,6 +102,7 @@ class Admin_Libraries extends ObjectEditor
 		}
 	}
 
+	/** @noinspection PhpUnused */
 	function copyArchiveSearchFacetsFromLibrary(){
 		$libraryId = $_REQUEST['id'];
 		if (isset($_REQUEST['submit'])){

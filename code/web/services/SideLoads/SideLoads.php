@@ -6,7 +6,9 @@ require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/Indexing/SideLoad.php';
 
 /** @noinspection PhpUnused */
-class SideLoads_SideLoads extends ObjectEditor {
+
+class SideLoads_SideLoads extends ObjectEditor
+{
 	function launch()
 	{
 		global $interface;
@@ -37,59 +39,79 @@ class SideLoads_SideLoads extends ObjectEditor {
 		}
 	}
 
-
-	function getObjectType(){
+	function getObjectType()
+	{
 		return 'SideLoad';
 	}
-	function getModule()
-    {
-        return "SideLoads";
-    }
 
-    function getToolName(){
+	function getModule()
+	{
+		return "SideLoads";
+	}
+
+	function getToolName()
+	{
 		return 'SideLoads';
 	}
-	function getPageTitle(){
+
+	function getPageTitle()
+	{
 		return 'Side Loaded eContent Collections';
 	}
-	function getAllObjects(){
+
+	function getAllObjects()
+	{
 		$list = array();
 
 		$object = new SideLoad();
 		$object->orderBy('name');
 		$object->find();
-		while ($object->fetch()){
+		while ($object->fetch()) {
 			$list[$object->id] = clone $object;
 		}
 
 		return $list;
 	}
-	function getObjectStructure(){
+
+	function getObjectStructure()
+	{
 		return SideLoad::getObjectStructure();
 	}
-	function getAllowableRoles(){
+
+	function getAllowableRoles()
+	{
 		return array('opacAdmin');
 	}
-	function getPrimaryKeyColumn(){
+
+	function getPrimaryKeyColumn()
+	{
 		return 'id';
 	}
-	function getIdKeyColumn(){
+
+	function getIdKeyColumn()
+	{
 		return 'id';
 	}
-	function canAddNew(){
-		return UserAccount::userHasRole('opacAdmin');
-	}
-	function canDelete(){
+
+	function canAddNew()
+	{
 		return UserAccount::userHasRole('opacAdmin');
 	}
 
-	function getInstructions(){
+	function canDelete()
+	{
+		return UserAccount::userHasRole('opacAdmin');
+	}
+
+	function getInstructions()
+	{
 		return null;
 	}
 
-	function getAdditionalObjectActions($existingObject){
+	function getAdditionalObjectActions($existingObject)
+	{
 		$actions = array();
-		if ($existingObject && $existingObject->id != ''){
+		if ($existingObject && $existingObject->id != '') {
 			$actions[] = array(
 				'text' => 'View MARC files',
 				'url' => '/SideLoads/SideLoads?objectAction=viewMarcFiles&id=' . $existingObject->id,
