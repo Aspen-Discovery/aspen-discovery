@@ -452,8 +452,8 @@ class Location extends DataObject
 				'structure' => $locationSideLoadScopeStructure,
 				'sortable' => false,
 				'storeDb' => true,
-				'allowEdit' => false,
-				'canEdit' => false,
+				'allowEdit' => true,
+				'canEdit' => true,
 			),
 		);
 
@@ -890,6 +890,7 @@ class Location extends DataObject
 		return $this->ipLocation;
 	}
 
+
 	private static $activeIp = null;
 	static function getActiveIp()
 	{
@@ -1146,7 +1147,8 @@ class Location extends DataObject
 		}
 	}
 
-	public function clearBrowseCategories(){
+	public function clearBrowseCategories()
+	{
 		$this->clearOneToManyOptions('LocationBrowseCategory', 'locationId');
 		$this->browseCategories = array();
 	}
@@ -1607,11 +1609,12 @@ class Location extends DataObject
 	}
 
 	private $__groupedWorkDisplaySettings = null;
+
 	/** @return GroupedWorkDisplaySetting */
 	public function getGroupedWorkDisplaySettings()
 	{
-		if ($this->__groupedWorkDisplaySettings == null){
-			if ($this->groupedWorkDisplaySettingId == -1){
+		if ($this->__groupedWorkDisplaySettings == null) {
+			if ($this->groupedWorkDisplaySettingId == -1) {
 				$library = Library::getLibraryForLocation($this->libraryId);
 				$this->groupedWorkDisplaySettingId = $library->groupedWorkDisplaySettingId;
 			}
@@ -1622,7 +1625,8 @@ class Location extends DataObject
 		return $this->__groupedWorkDisplaySettings;
 	}
 
-	function getEditLink(){
+	function getEditLink()
+	{
 		return '/Admin/Locations?objectAction=edit&id=' . $this->libraryId;
 	}
 }

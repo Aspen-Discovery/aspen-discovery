@@ -1009,8 +1009,8 @@ class Library extends DataObject
 				'structure' => $librarySideLoadScopeStructure,
 				'sortable' => false,
 				'storeDb' => true,
-				'allowEdit' => false,
-				'canEdit' => false,
+				'allowEdit' => true,
+				'canEdit' => true,
 			),
 		);
 

@@ -67,21 +67,21 @@ class SideLoadedEContentProcessor extends MarcRecordProcessor{
 
 			groupedWork.addHoldings(1);
 
-			scopeItems(recordInfo);
+			scopeItems(recordInfo, record);
 		}catch (Exception e){
 			logger.error("Error updating grouped work for side loaded eContent MARC record with identifier " + identifier, e);
 		}
 	}
 
-	private void scopeItems(RecordInfo recordInfo){
+	private void scopeItems(RecordInfo recordInfo, Record record){
 		for (ItemInfo itemInfo : recordInfo.getRelatedItems()){
-			loadScopeInfoForEContentItem(itemInfo);
+			loadScopeInfoForEContentItem(itemInfo, record);
 		}
 	}
 
-	private void loadScopeInfoForEContentItem(ItemInfo itemInfo) {
+	private void loadScopeInfoForEContentItem(ItemInfo itemInfo, Record record) {
 		String itemLocation = itemInfo.getLocationCode();
-//		String originalUrl = itemInfo.geteContentUrl();
+		String originalUrl = itemInfo.geteContentUrl();
 		for (Scope curScope : indexer.getScopes()){
 //			String format = itemInfo.getFormat();
 //			if (format == null){
@@ -89,24 +89,28 @@ class SideLoadedEContentProcessor extends MarcRecordProcessor{
 //			}
 			SideLoadScope sideLoadScope = curScope.getSideLoadScope(sideLoadId);
 			if (sideLoadScope != null) {
-				ScopingInfo scopingInfo = itemInfo.addScope(curScope);
-				scopingInfo.setAvailable(true);
-				scopingInfo.setStatus("Available Online");
-				scopingInfo.setGroupedStatus("Available Online");
-				scopingInfo.setHoldable(false);
-				if (curScope.isLocationScope()) {
-					scopingInfo.setLocallyOwned(curScope.isItemOwnedByScope(profileType, itemLocation, ""));
-					if (curScope.getLibraryScope() != null) {
-						scopingInfo.setLibraryOwned(curScope.getLibraryScope().isItemOwnedByScope(profileType, itemLocation, ""));
+				boolean itemPartOfScope = sideLoadScope.isItemPartOfScope(record);
+				if (itemPartOfScope) {
+					ScopingInfo scopingInfo = itemInfo.addScope(curScope);
+					scopingInfo.setAvailable(true);
+					scopingInfo.setStatus("Available Online");
+					scopingInfo.setGroupedStatus("Available Online");
+					scopingInfo.setHoldable(false);
+					if (curScope.isLocationScope()) {
+						scopingInfo.setLocallyOwned(curScope.isItemOwnedByScope(profileType, itemLocation, ""));
+						if (curScope.getLibraryScope() != null) {
+							scopingInfo.setLibraryOwned(curScope.getLibraryScope().isItemOwnedByScope(profileType, itemLocation, ""));
+						}
+					}
+					if (curScope.isLibraryScope()) {
+						scopingInfo.setLibraryOwned(curScope.isItemOwnedByScope(profileType, itemLocation, ""));
+					}
+					//Check to see if we need to do url rewriting
+					if (originalUrl != null) {
+						String newUrl = sideLoadScope.getLocalUrl(originalUrl);
+						scopingInfo.setLocalUrl(newUrl);
 					}
 				}
-				if (curScope.isLibraryScope()) {
-					scopingInfo.setLibraryOwned(curScope.isItemOwnedByScope(profileType, itemLocation, ""));
-				}
-				//Check to see if we need to do url rewriting
-//				if (originalUrl != null && !originalUrl.equals(result.localUrl)){
-//					scopingInfo.setLocalUrl(result.localUrl);
-//				}
 			}
 		}
 	}

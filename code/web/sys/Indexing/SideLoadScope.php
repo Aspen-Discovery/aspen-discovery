@@ -8,6 +8,15 @@ class SideLoadScope extends DataObject
 	public $name;
 	public $sideLoadId;
 	public $restrictToChildrensMaterial;
+
+	//The next 3 fields allow inclusion or exclusion of records based on a marc tag
+	public $marcTagToMatch;
+	public $marcValueToMatch;
+	public $includeOnlyMatches;
+	//The next 2 fields determine how urls are constructed
+	public $urlToMatch;
+	public $urlReplacement;
+
 	private $__libraries;
 	private $__locations;
 
@@ -32,7 +41,12 @@ class SideLoadScope extends DataObject
 			'sideLoadId' => array('property' => 'sideLoadId', 'type' => 'enum', 'values'=>$validSideLoads, 'label' => 'Side Load', 'description' =>'The Side Load to apply the scope to'),
 			'name' => array('property'=>'name', 'type'=>'text', 'label'=>'Name', 'description'=>'The Name of the scope', 'maxLength' => 50),
 			'restrictToChildrensMaterial' => array('property'=>'restrictToChildrensMaterial', 'type'=>'checkbox', 'label'=>'Include Children\'s Materials Only', 'description'=>'If checked only includes titles identified as children by RBdigital', 'default'=>0),
-
+			'marcTagToMatch' => array('property'=>'marcTagToMatch', 'type'=>'text', 'label'=>'Tag To Match', 'description'=>'MARC tag(s) to match', 'maxLength' => '100', 'required' => false),
+			'marcValueToMatch' => array('property'=>'marcValueToMatch', 'type'=>'text', 'label'=>'Value To Match', 'description'=>'The value to match within the MARC tag(s) if multiple tags are specified, a match against any tag will count as a match of everything', 'maxLength' => '100', 'required' => false),
+			'includeExcludeMatches' => array('property'=>'includeExcludeMatches', 'type'=>'enum', 'values' => array('1'=>'Include Matches','0'=>'Exclude Matches'), 'label'=>'Include Matches?', 'description'=>'Whether or not matches are included or excluded', 'default'=>1),
+			'urlToMatch' => array('property'=>'urlToMatch', 'type'=>'text', 'label'=>'URL To Match', 'description'=>'URL to match when rewriting urls', 'maxLength' => '100', 'required' => false),
+			'urlReplacement' => array('property'=>'urlReplacement', 'type'=>'text', 'label'=>'URL Replacement', 'description'=>'The replacement pattern for url rewriting', 'maxLength' => '100', 'required' => false),
+			
 			'libraries' => array(
 				'property' => 'libraries',
 				'type' => 'oneToMany',

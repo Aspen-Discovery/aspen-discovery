@@ -652,6 +652,18 @@ function getIndexingUpdates()
 			]
 		],
 
+		'sideload_scope_match_and_rewrite' => [
+			'title' => 'Side Load Scopes Match Tags and URL Rewrites',
+			'description' => 'Update scopes to allow limitation by MARC tag and perform URL rewriting',
+			'sql' => [
+				"ALTER TABLE sideload_scopes ADD COLUMN marcTagToMatch VARCHAR(100)",
+				"ALTER TABLE sideload_scopes ADD COLUMN marcValueToMatch VARCHAR(100)",
+				"ALTER TABLE sideload_scopes ADD COLUMN includeExcludeMatches TINYINT default 1",
+				"ALTER TABLE sideload_scopes ADD COLUMN urlToMatch VARCHAR(100)",
+				"ALTER TABLE sideload_scopes ADD COLUMN urlReplacement VARCHAR(100)"
+			]
+		],
+
 		'library_location_side_load_scoping' => [
 			'title' => 'Library and Location Scoping of Side Loads',
 			'description' => 'Add tables to determine how side loads are scoped',
