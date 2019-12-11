@@ -1114,13 +1114,21 @@ class Location extends DataObject
 		return $ret;
 	}
 
+<<<<<<< Updated upstream
 	public function saveBrowseCategories(){
 		if (isset ($this->browseCategories) && is_array($this->browseCategories)){
 			$this->saveOneToManyOptions($this->browseCategories);
+=======
+	public function saveBrowseCategories()
+	{
+		if (isset ($this->browseCategories) && is_array($this->browseCategories)) {
+			$this->saveOneToManyOptions($this->browseCategories, 'locationId');
+>>>>>>> Stashed changes
 			unset($this->browseCategories);
 		}
 	}
 
+<<<<<<< Updated upstream
 	public function clearBrowseCategories(){
 		$this->clearOneToManyOptions('LocationBrowseCategory');
 		$this->browseCategories = array();
@@ -1129,10 +1137,23 @@ class Location extends DataObject
 	public function saveMoreDetailsOptions(){
 		if (isset ($this->moreDetailsOptions) && is_array($this->moreDetailsOptions)){
 			$this->saveOneToManyOptions($this->moreDetailsOptions);
+=======
+	public function clearBrowseCategories()
+	{
+		$this->clearOneToManyOptions('LocationBrowseCategory', 'locationId');
+		$this->browseCategories = array();
+	}
+
+	public function saveMoreDetailsOptions()
+	{
+		if (isset ($this->moreDetailsOptions) && is_array($this->moreDetailsOptions)) {
+			$this->saveOneToManyOptions($this->moreDetailsOptions, 'locationId');
+>>>>>>> Stashed changes
 			unset($this->moreDetailsOptions);
 		}
 	}
 
+<<<<<<< Updated upstream
 	public function clearMoreDetailsOptions(){
 		$this->clearOneToManyOptions('LocationMoreDetails');
 		$this->moreDetailsOptions = array();
@@ -1141,10 +1162,23 @@ class Location extends DataObject
 	public function saveCombinedResultSections(){
 		if (isset ($this->combinedResultSections) && is_array($this->combinedResultSections)){
 			$this->saveOneToManyOptions($this->combinedResultSections);
+=======
+	public function clearMoreDetailsOptions()
+	{
+		$this->clearOneToManyOptions('LocationMoreDetails', 'locationId');
+		$this->moreDetailsOptions = array();
+	}
+
+	public function saveCombinedResultSections()
+	{
+		if (isset ($this->combinedResultSections) && is_array($this->combinedResultSections)) {
+			$this->saveOneToManyOptions($this->combinedResultSections, 'locationId');
+>>>>>>> Stashed changes
 			unset($this->combinedResultSections);
 		}
 	}
 
+<<<<<<< Updated upstream
 	public function clearCombinedResultSections(){
 		$this->clearOneToManyOptions('LibraryCombinedResultSection');
 		$this->combinedResultSections = array();
@@ -1153,10 +1187,23 @@ class Location extends DataObject
 	public function saveFacets(){
 		if (isset ($this->facets) && is_array($this->facets)){
 			$this->saveOneToManyOptions($this->facets);
+=======
+	public function clearCombinedResultSections()
+	{
+		$this->clearOneToManyOptions('LibraryCombinedResultSection', 'locationId');
+		$this->combinedResultSections = array();
+	}
+
+	public function saveFacets()
+	{
+		if (isset ($this->facets) && is_array($this->facets)) {
+			$this->saveOneToManyOptions($this->facets, 'locationId');
+>>>>>>> Stashed changes
 			unset($this->facets);
 		}
 	}
 
+<<<<<<< Updated upstream
 	public function clearFacets(){
 		$this->clearOneToManyOptions('LocationFacetSetting');
 		$this->facets = array();
@@ -1165,6 +1212,18 @@ class Location extends DataObject
 	public function saveHours(){
 		if (isset ($this->hours) && is_array($this->hours)){
 			$this->saveOneToManyOptions($this->hours);
+=======
+	public function clearFacets()
+	{
+		$this->clearOneToManyOptions('LocationFacetSetting', 'locationId');
+		$this->facets = array();
+	}
+
+	public function saveHours()
+	{
+		if (isset ($this->hours) && is_array($this->hours)) {
+			$this->saveOneToManyOptions($this->hours, 'locationId');
+>>>>>>> Stashed changes
 			unset($this->hours);
 		}
 	}
@@ -1339,9 +1398,16 @@ class Location extends DataObject
 		}
 	}
 
+<<<<<<< Updated upstream
 	public function saveSideLoadScopes(){
 		if (isset ($this->sideLoadScopes) && is_array($this->sideLoadScopes)){
 			$this->saveOneToManyOptions($this->sideLoadScopes);
+=======
+	public function saveSideLoadScopes()
+	{
+		if (isset ($this->sideLoadScopes) && is_array($this->sideLoadScopes)) {
+			$this->saveOneToManyOptions($this->sideLoadScopes, 'locationId');
+>>>>>>> Stashed changes
 			unset($this->sideLoadScopes);
 		}
 	}
@@ -1553,6 +1619,7 @@ class Location extends DataObject
 		$this->opacStatus = $opacStatus;
 	}
 
+<<<<<<< Updated upstream
 	private function saveOneToManyOptions($oneToManySettings) {
 	    /** @var DataObject $oneToManyDBObject */
         foreach ($oneToManySettings as $oneToManyDBObject){
@@ -1576,6 +1643,8 @@ class Location extends DataObject
 		$oneToManyDBObject->delete(true);
 	}
 
+=======
+>>>>>>> Stashed changes
 	private $_selected;
     private function setSelected(string $selected)
     {
@@ -1586,4 +1655,26 @@ class Location extends DataObject
         return $this->_selected;
     }
 
+<<<<<<< Updated upstream
+=======
+	private $__groupedWorkDisplaySettings = null;
+	/** @return GroupedWorkDisplaySetting */
+	public function getGroupedWorkDisplaySettings()
+	{
+		if ($this->__groupedWorkDisplaySettings == null){
+			if ($this->groupedWorkDisplaySettingId == -1){
+				$library = Library::getLibraryForLocation($this->libraryId);
+				$this->groupedWorkDisplaySettingId = $library->groupedWorkDisplaySettingId;
+			}
+			$this->__groupedWorkDisplaySettings = new GroupedWorkDisplaySetting();
+			$this->__groupedWorkDisplaySettings->id = $this->groupedWorkDisplaySettingId;
+			$this->__groupedWorkDisplaySettings->find(true);
+		}
+		return $this->__groupedWorkDisplaySettings;
+	}
+
+	function getEditLink(){
+		return '/Admin/Locations?objectAction=edit&id=' . $this->libraryId;
+	}
+>>>>>>> Stashed changes
 }
