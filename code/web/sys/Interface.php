@@ -180,10 +180,6 @@ class UInterface extends Smarty
 
 		$timer->logTime('Basic configuration');
 
-		$this->assign('displaySidebarMenu', true);
-
-		$this->assign('currentTab', 'Search');
-
 		if ($configArray['System']['debug']){
 			$this->assign('debug', true);
 		}
@@ -449,9 +445,8 @@ class UInterface extends Smarty
 		$this->assign('interLibraryLoanName', $library->interLibraryLoanName);
 		$this->assign('interLibraryLoanUrl', $library->interLibraryLoanUrl);
 
-		if ($this->getVariable('displaySidebarMenu') && !$library->getLayoutSettings()->showSidebarMenu){
-			$this->assign('displaySidebarMenu', false);
-		}
+		$this->assign('displaySidebarMenu', $library->getLayoutSettings()->showSidebarMenu);
+
 		$this->assign('sidebarMenuButtonText', $library->getLayoutSettings()->sidebarMenuButtonText);
 		$this->assign('showGroupedHoldCopiesCount', $library->showGroupedHoldCopiesCount);
 		$this->assign('showOnOrderCounts', $library->showOnOrderCounts);
