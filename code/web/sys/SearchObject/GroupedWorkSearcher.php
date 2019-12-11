@@ -845,7 +845,8 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 				/** @var FacetSetting $facetInfo */
 				$facetInfo = $facetConfig[$field];
 				if ($facetInfo->multiSelect) {
-					$fieldPrefix = "{!tag={$facetInfo->id}}";
+					$facetKey = empty($facetInfo->id) ? $facetInfo->facetName : $facetInfo->id;
+					$fieldPrefix = "{!tag={$facetKey}}";
 					$multiSelect = true;
 				}
 			}
