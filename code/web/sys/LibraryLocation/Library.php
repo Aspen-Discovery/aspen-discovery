@@ -1733,34 +1733,6 @@ class Library extends DataObject
 		}
 	}
 
-<<<<<<< Updated upstream
-	private function saveOneToManyOptions($oneToManySettings) {
-	    /** @var DataObject $oneToManyDBObject */
-        foreach ($oneToManySettings as $oneToManyDBObject){
-			if (isset($oneToManyDBObject->deleteOnSave) && $oneToManyDBObject->deleteOnSave == true){
-				$oneToManyDBObject->delete();
-			}else{
-				if (isset($oneToManyDBObject->id) && is_numeric($oneToManyDBObject->id)){ // (negative ids need processed with insert)
-					$oneToManyDBObject->update();
-				}else{
-					$oneToManyDBObject->libraryId = $this->libraryId;
-					$oneToManyDBObject->insert();
-				}
-			}
-		}
-	}
-
-	private function clearOneToManyOptions($oneToManyDBObjectClassName) {
-		/** @var DataObject $oneToManyDBObject */
-		$oneToManyDBObject = new $oneToManyDBObjectClassName();
-		/** @noinspection PhpUndefinedFieldInspection */
-		$oneToManyDBObject->libraryId = $this->libraryId;
-		$oneToManyDBObject->delete(true);
-
-	}
-
-=======
->>>>>>> Stashed changes
 	private function saveExploreMoreBar() {
 		if (isset ($this->exploreMoreBar) && is_array($this->exploreMoreBar)){
 			$this->saveOneToManyOptions($this->exploreMoreBar, 'libraryId');
@@ -2055,8 +2027,6 @@ class Library extends DataObject
 		return $defaultForm;
 	}
 
-<<<<<<< Updated upstream
-=======
 	private $__groupedWorkDisplaySettings = null;
 	/** @return GroupedWorkDisplaySetting */
 	public function getGroupedWorkDisplaySettings()
@@ -2096,5 +2066,4 @@ class Library extends DataObject
 	function getEditLink(){
 		return '/Admin/Libraries?objectAction=edit&id=' . $this->libraryId;
 	}
->>>>>>> Stashed changes
 }
