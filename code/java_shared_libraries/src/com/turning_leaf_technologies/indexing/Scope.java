@@ -46,7 +46,7 @@ public class Scope implements Comparable<Scope>{
 	private RbdigitalScope rbdigitalScope;
 	private CloudLibraryScope cloudLibraryScope;
 
-	private HashMap<Long, SideLoadScope> sideLoadScopes = new HashMap<Long, SideLoadScope>();
+	private HashMap<Long, SideLoadScope> sideLoadScopes = new HashMap<>();
 
 	public String getScopeName() {
 		return scopeName;
@@ -338,7 +338,7 @@ public class Scope implements Comparable<Scope>{
 		return cloudLibraryScope;
 	}
 
-	public void addSideLoadScope(SideLoadScope scope){
+	void addSideLoadScope(SideLoadScope scope){
 		sideLoadScopes.put(scope.getSideLoadId(), scope);
 	}
 
