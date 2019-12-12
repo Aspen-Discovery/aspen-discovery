@@ -260,6 +260,14 @@ function getUserUpdates(){
     				INDEX (paymentType, orderId)
 				)'
 			]
-		]
+		],
+
+		'user_display_name_length' => array(
+			'title' => 'User display name length',
+			'description' => 'Increase displayName field in the SUer table',
+			'sql' => array(
+				"ALTER TABLE user CHANGE displayName displayName VARCHAR( 60 ) NOT NULL DEFAULT ''",
+			),
+		),
 	);
 }
