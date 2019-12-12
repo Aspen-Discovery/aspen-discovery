@@ -104,9 +104,6 @@ class Library extends DataObject
 	public /** @noinspection PhpUnused */ $systemsToRepeatIn;
 	public $additionalLocationsToShowAvailabilityFor;
 	public $homeLink;
-//	public /** @noinspection PhpUnused */ $homeLinkText;
-//	public /** @noinspection PhpUnused */ $useHomeLinkInBreadcrumbs;
-//	public $useHomeLinkForLogo;
 	public $showAdvancedSearchbox;
 	public $enableProspectorIntegration;
 	public /** @noinspection PhpUnused */ $showProspectorResultsAtEndOfSearch;
@@ -155,7 +152,6 @@ class Library extends DataObject
 
 	public $allowPinReset;
 	public /** @noinspection PhpUnused */ $preventExpiredCardLogin;
-//	public $showLibraryHoursAndLocationsLink;
 	public /** @noinspection PhpUnused */ $showLibraryHoursNoticeOnAccountPages;
 //	public $showSearchTools;
 //	public $showQuickCopy;
@@ -187,8 +183,6 @@ class Library extends DataObject
 	public /** @noinspection PhpUnused */ $browseCategoryRatingsMode;
 	public $enableMaterialsBooking;
 	public $allowLinkedAccounts;
-//	public $showSidebarMenu;
-//	public $sidebarMenuButtonText;
 	public $enableArchive;
 	public $archiveNamespace;
 	public $archivePid;
@@ -434,7 +428,6 @@ class Library extends DataObject
 				'homeLink' => array('property'=>'homeLink', 'type'=>'text', 'label'=>'Home Link', 'description'=>'The location to send the user when they click on the home button or logo.  Use default or blank to go back to the Pika home location.', 'size'=>'40', 'hideInLists' => true,),
 				'additionalCss' => array('property'=>'additionalCss', 'type'=>'textarea', 'label'=>'Additional CSS', 'description'=>'Extra CSS to apply to the site.  Will apply to all pages.', 'hideInLists' => true),
 				'headerText' => array('property'=>'headerText', 'type'=>'html', 'label'=>'Header Text', 'description'=>'Optional Text to display in the header, between the logo and the log in/out buttons.  Will apply to all pages.', 'allowableTags' => '<a><b><em><div><span><p><strong><sub><sup><h1><h2><h3><h4><h5><h6><img>', 'hideInLists' => true),
-				'enableCourseReserves' => array('property'=>'enableCourseReserves', 'type'=>'checkbox', 'label'=>'Enable Repeat Search in Course Reserves', 'description'=>'Whether or not patrons can repeat searches within course reserves.', 'hideInLists' => true,),
 			)),
 
 			// Contact Links //
@@ -462,6 +455,7 @@ class Library extends DataObject
 				'enableMaterialsBooking'               => array('property'=>'enableMaterialsBooking', 'type'=>'checkbox', 'label'=>'Enable Materials Booking', 'description'=>'Check to enable integration of Sierra\'s Materials Booking module.', 'hideInLists' => true, 'default' => 0),
 				'allowLinkedAccounts'                  => array('property'=>'allowLinkedAccounts', 'type'=>'checkbox', 'label'=>'Allow Linked Accounts', 'description' => 'Whether or not users can link multiple library cards under a single Pika account.', 'hideInLists' => true, 'default' => 1),
 				'showLibraryHoursNoticeOnAccountPages' => array('property'=>'showLibraryHoursNoticeOnAccountPages', 'type'=>'checkbox', 'label'=>'Show Library Hours Notice on Account Pages', 'description'=>'Whether or not the Library Hours notice should be shown at the top of My Account\'s Checked Out, Holds and Bookings pages.', 'hideInLists' => true, 'default'=>true),
+				'enableCourseReserves'                 => array('property'=>'enableCourseReserves', 'type'=>'checkbox', 'label'=>'Enable Repeat Search in Course Reserves', 'description'=>'Whether or not patrons can repeat searches within course reserves.', 'hideInLists' => true,),
 				'pTypesSection'                        => array('property' => 'pTypesSectionSection', 'type' => 'section', 'label' => 'P-Types', 'hideInLists' => true,
 						'helpLink'=>'https://docs.google.com/document/d/1SmCcWYIV8bnUEaGu4HYvyiF8iqOKt06ooBbJukkJdO8','properties' => array(
 					'pTypes'       => array('property'=>'pTypes', 'type'=>'text', 'label'=>'P-Types', 'description'=>'A list of pTypes that are valid for the library.  Separate multiple pTypes with commas.'),

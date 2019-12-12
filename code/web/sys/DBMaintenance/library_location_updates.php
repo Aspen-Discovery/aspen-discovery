@@ -61,7 +61,6 @@ function getLibraryLocationUpdates(){
 				"ALTER TABLE `library` ADD `enableCourseReserves` TINYINT(1) NOT NULL DEFAULT '0';",
 				"ALTER TABLE `library` ADD `exportOptions` VARCHAR(100) NOT NULL DEFAULT 'RefWorks|EndNote';",
 				"ALTER TABLE `library` ADD `enableSelfRegistration` TINYINT NOT NULL DEFAULT '0';",
-				"ALTER TABLE `library` ADD `useHomeLinkInBreadcrumbs` TINYINT(4) NOT NULL DEFAULT '0';",
 			),
 		),
 
@@ -193,15 +192,6 @@ function getLibraryLocationUpdates(){
 			'continueOnError' => true,
 			'sql' => array(
 				"ALTER TABLE `library` ADD `showMarmotResultsAtEndOfSearch` INT(11) DEFAULT 1;",
-			),
-		),
-
-		'library_21' => array(
-			'title' => 'Library 21',
-			'description' => 'Add the home link text so the breadcrumbs can be customized. ',
-			'continueOnError' => true,
-			'sql' => array(
-				"ALTER TABLE `library` ADD `homeLinkText` VARCHAR(50) DEFAULT 'Home';",
 			),
 		),
 
@@ -1079,14 +1069,6 @@ function getLibraryLocationUpdates(){
 				"ALTER TABLE `location` ADD COLUMN `browseCategoryRatingsMode` VARCHAR(25);",
 			),
 		),
-		'logo_linking' => array(
-			'title' => 'Logo Linking',
-			'description' => 'Allow Linking of Logo to the library home page.',
-			'continueOnError' => true,
-			'sql' => array(
-				"ALTER TABLE `library` ADD COLUMN `useHomeLinkForLogo` TINYINT(1) NULL DEFAULT '0';",
-			),
-		),
 
 		'add_sms_indicator_to_phone' => array(
 			'title' => 'Add SMS Indicator to Phone flag',
@@ -1372,22 +1354,6 @@ function getLibraryLocationUpdates(){
 							'ALTER TABLE `library` ADD COLUMN `casHost` VARCHAR(50)',
 							'ALTER TABLE `library` ADD COLUMN `casPort` SMALLINT',
 							'ALTER TABLE `library` ADD COLUMN `casContext` VARCHAR(50)',
-					),
-			),
-
-			'library_sidebar_menu' => array(
-					'title' => 'Library Sidebar Menu',
-					'description' => 'Allow individual libraries to determine if the sidebar menu should show',
-					'sql' => array(
-							'ALTER TABLE `library` ADD COLUMN `showSidebarMenu` TINYINT DEFAULT 1',
-					),
-			),
-
-			'library_sidebar_menu_button_text' => array(
-					'title' => 'Library Sidebar Menu Button Text',
-					'description' => 'Allow individual libraries to customize the text of the help/menu button in the sidebar',
-					'sql' => array(
-							"ALTER TABLE `library` ADD COLUMN `sidebarMenuButtonText` VARCHAR(40) DEFAULT 'Help'",
 					),
 			),
 
