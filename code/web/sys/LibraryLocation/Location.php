@@ -25,6 +25,7 @@ class Location extends DataObject
 	public $__table = 'location';   // table name
 	public $__primaryKey = 'locationId';
 	public $locationId;                //int(11)
+	public $libraryId;                //int(11)
 	public $subdomain;
 	public $code;                    //varchar(5)
 	public $subLocation;
@@ -32,7 +33,6 @@ class Location extends DataObject
 	public $theme;
 	public $showDisplayNameInHeader;
 	public $headerText;
-	public $libraryId;                //int(11)
 	public $address;
 	public $phone;
 	public $isMainBranch; // tinyint(1)
@@ -46,20 +46,15 @@ class Location extends DataObject
 	public $facetLabel;
 	public $groupedWorkDisplaySettingId;
 	public $restrictSearchByLocation;
-	public $enableOverdriveCollection;
-	public /** @noinspection PhpUnused */ $includeOverDriveAdult;
-	public /** @noinspection PhpUnused */ $includeOverDriveTeen;
-	public /** @noinspection PhpUnused */ $includeOverDriveKids;
+	public /** @noinspection PhpUnused */ $overDriveScopeId;
 	public /** @noinspection PhpUnused */ $hooplaScopeId;
 	public /** @noinspection PhpUnused */ $rbdigitalScopeId;
 	public /** @noinspection PhpUnused */ $cloudLibraryScopeId;
 	public $showHoldButton;
-	public $showStandardReviews;
 	public $repeatSearchOption;
 	public $repeatInOnlineCollection;
 	public $repeatInProspector;
 	public $repeatInWorldCat;
-	public $repeatInOverdrive;
 	public $systemsToRepeatIn;
 	public $homeLink;
 	public $defaultPType;
@@ -71,16 +66,7 @@ class Location extends DataObject
 	public $showEmailThis;
 	public $showShareOnExternalSites;
 	public $showFavorites;
-	public $showComments;
-	public $showStaffView;
-	public $showGoodReadsReviews;
 	public /** @noinspection PhpUnused */ $econtentLocationsToInclude;
-//	public $availabilityToggleLabelSuperScope;
-//	public $availabilityToggleLabelLocal;
-//	public $availabilityToggleLabelAvailable;
-//	public $availabilityToggleLabelAvailableOnline;
-//	public /** @noinspection PhpUnused */ $baseAvailabilityToggleOnLocalHoldingsOnly;
-//	public $includeOnlineMaterialsInAvailableToggle;
 	public $defaultBrowseMode;
 	public $browseCategoryRatingsMode;
 	public /** @noinspection PhpUnused */ $includeAllLibraryBranchesInFacets;
@@ -203,6 +189,17 @@ class Location extends DataObject
 			$hooplaScopes[$hooplaScope->id] = $hooplaScope->name;
 		}
 
+		require_once ROOT_DIR . '/sys/OverDrive/OverDriveScope.php';
+		$overDriveScope = new OverDriveScope();
+		$overDriveScope->orderBy('name');
+		$overDriveScopes = [];
+		$overDriveScope->find();
+		$overDriveScopes[-2] = 'None';
+		$overDriveScopes[-1] = 'Use Library Setting';
+		while ($overDriveScope->fetch()){
+			$overDriveScopes[$overDriveScope->id] = $overDriveScope->name;
+		}
+
 		require_once ROOT_DIR . '/sys/RBdigital/RBdigitalScope.php';
 		$rbdigitalScope = new RBdigitalScope();
 		$rbdigitalScope->orderBy('name');
@@ -272,26 +269,11 @@ class Location extends DataObject
 					array('property' => 'repeatInOnlineCollection', 'type' => 'checkbox', 'label' => 'Repeat In Online Collection', 'description' => 'Turn on to allow repeat search in the Online Collection.', 'hideInLists' => true, 'default' => false),
 					array('property' => 'repeatInProspector', 'type' => 'checkbox', 'label' => 'Repeat In Prospector', 'description' => 'Turn on to allow repeat search in Prospector functionality.', 'hideInLists' => true, 'default' => false),
 					array('property' => 'repeatInWorldCat', 'type' => 'checkbox', 'label' => 'Repeat In WorldCat', 'description' => 'Turn on to allow repeat search in WorldCat functionality.', 'hideInLists' => true, 'default' => false),
-					array('property' => 'repeatInOverdrive', 'type' => 'checkbox', 'label' => 'Repeat In Overdrive', 'description' => 'Turn on to allow repeat search in Overdrive functionality.', 'hideInLists' => true, 'default' => false),
 				)),
 				array('property' => 'searchFacetsSection', 'type' => 'section', 'label' => 'Search Facets', 'hideInLists' => true, 'properties' => array(
 					array('property' => 'facetLabel', 'type' => 'text', 'label' => 'Facet Label', 'description' => 'The label of the facet that identifies this location.', 'hideInLists' => true, 'size' => '40'),
 					array('property' => 'includeAllLibraryBranchesInFacets', 'type' => 'checkbox', 'label' => 'Include All Library Branches In Facets', 'description' => 'Turn on to include all branches of the library within facets (ownership and availability).', 'hideInLists' => true, 'default' => true),
 					array('property' => 'additionalLocationsToShowAvailabilityFor', 'type' => 'text', 'label' => 'Additional Locations to Include in Available At Facet', 'description' => 'A list of library codes that you would like included in the available at facet separated by pipes |.', 'size' => '20', 'hideInLists' => true,),
-					'facets' => array(
-						'property' => 'facets',
-						'type' => 'oneToMany',
-						'label' => 'Facets',
-						'description' => 'A list of facets to display in search results',
-						'keyThis' => 'locationId',
-						'keyOther' => 'locationId',
-						'subObjectType' => 'LocationFacetSetting',
-						'structure' => $facetSettingStructure,
-						'sortable' => true,
-						'storeDb' => true,
-						'allowEdit' => true,
-						'canEdit' => true,
-					),
 				)),
 				'combinedResultsSection' => array('property' => 'combinedResultsSection', 'type' => 'section', 'label' => 'Combined Results', 'hideInLists' => true, 'helpLink' => 'https://docs.google.com/document/d/1dcG12grGAzYlWAl6LWUnr9t-wdqcmMTJVwjLuItRNwk', 'properties' => array(
 					'useLibraryCombinedResultsSettings' => array('property' => 'useLibraryCombinedResultsSettings', 'type' => 'checkbox', 'label' => 'Use Library Settings', 'description' => 'Whether or not settings from the library should be used rather than settings from here', 'hideInLists' => true, 'default' => true),
@@ -315,13 +297,6 @@ class Location extends DataObject
 						'additionalOneToManyActions' => []
 					),
 				)),
-			)),
-
-			// Catalog Enrichment //
-			'enrichmentSection' => array('property' => 'enrichmentSection', 'type' => 'section', 'label' => 'Catalog Enrichment', 'hideInLists' => true, 'properties' => array(
-				array('property' => 'showStandardReviews', 'type' => 'checkbox', 'label' => 'Show Standard Reviews', 'description' => 'Whether or not reviews from Content Cafe/Syndetics are displayed on the full record page.', 'hideInLists' => true, 'default' => true),
-				array('property' => 'showGoodReadsReviews', 'type' => 'checkbox', 'label' => 'Show GoodReads Reviews', 'description' => 'Whether or not reviews from GoodReads are displayed on the full record page.', 'hideInLists' => true, 'default' => true),
-				'showFavorites' => array('property' => 'showFavorites', 'type' => 'checkbox', 'label' => 'Enable User Lists', 'description' => 'Whether or not users can maintain favorites lists', 'hideInLists' => true, 'default' => 1),
 			)),
 
 			// Full Record Display //
@@ -377,12 +352,8 @@ class Location extends DataObject
 				),
 			)),
 
-
 			'overdriveSection' => array('property' => 'overdriveSection', 'type' => 'section', 'label' => 'OverDrive', 'hideInLists' => true, 'properties' => array(
-				'enableOverdriveCollection' => array('property' => 'enableOverdriveCollection', 'type' => 'checkbox', 'label' => 'Enable Overdrive Collection', 'description' => 'Whether or not titles from the Overdrive collection should be included in searches', 'hideInLists' => true, 'default' => true),
-				'includeOverDriveAdult' => array('property' => 'includeOverDriveAdult', 'type' => 'checkbox', 'label' => 'Include Adult Titles', 'description' => 'Whether or not adult titles from the Overdrive collection should be included in searches', 'hideInLists' => true, 'default' => true),
-				'includeOverDriveTeen' => array('property' => 'includeOverDriveTeen', 'type' => 'checkbox', 'label' => 'Include Teen Titles', 'description' => 'Whether or not teen titles from the Overdrive collection should be included in searches', 'hideInLists' => true, 'default' => true),
-				'includeOverDriveKids' => array('property' => 'includeOverDriveKids', 'type' => 'checkbox', 'label' => 'Include Kids Titles', 'description' => 'Whether or not kids titles from the Overdrive collection should be included in searches', 'hideInLists' => true, 'default' => true),
+				'overDriveScopeId'               => array('property' => 'overDriveScopeId', 'type' => 'enum', 'values' => $overDriveScopes, 'label' => 'OverDrive Scope', 'description' => 'The OverDrive scope to use', 'hideInLists' => true, 'default' => -1),
 			)),
 
 			'hooplaSection' => array('property' => 'hooplaSection', 'type' => 'section', 'label' => 'Hoopla', 'hideInLists' => true, 'properties' => array(
@@ -987,20 +958,6 @@ class Location extends DataObject
 				}
 			}
 			return $this->moreDetailsOptions;
-		} elseif ($name == "facets") {
-			if (!isset($this->facets)) {
-				$this->facets = array();
-				if ($this->locationId) {
-					$facet = new LocationFacetSetting();
-					$facet->locationId = $this->locationId;
-					$facet->orderBy('weight');
-					$facet->find();
-					while ($facet->fetch()) {
-						$this->facets[$facet->id] = clone($facet);
-					}
-				}
-			}
-			return $this->facets;
 		} elseif ($name == 'recordsOwned') {
 			if (!isset($this->recordsOwned) && $this->locationId) {
 				$this->recordsOwned = array();
@@ -1074,9 +1031,6 @@ class Location extends DataObject
 		} elseif ($name == "moreDetailsOptions") {
 			/** @noinspection PhpUndefinedFieldInspection */
 			$this->moreDetailsOptions = $value;
-		} elseif ($name == "facets") {
-			/** @noinspection PhpUndefinedFieldInspection */
-			$this->facets = $value;
 		} elseif ($name == 'browseCategories') {
 			/** @noinspection PhpUndefinedFieldInspection */
 			$this->browseCategories = $value;
@@ -1107,7 +1061,6 @@ class Location extends DataObject
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->saveHours();
-			$this->saveFacets();
 			$this->saveBrowseCategories();
 			$this->saveMoreDetailsOptions();
 			$this->saveRecordsOwned();
@@ -1128,7 +1081,6 @@ class Location extends DataObject
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
 			$this->saveHours();
-			$this->saveFacets();
 			$this->saveBrowseCategories();
 			$this->saveMoreDetailsOptions();
 			$this->saveRecordsOwned();
@@ -1179,20 +1131,6 @@ class Location extends DataObject
 	{
 		$this->clearOneToManyOptions('LibraryCombinedResultSection', 'locationId');
 		$this->combinedResultSections = array();
-	}
-
-	public function saveFacets()
-	{
-		if (isset ($this->facets) && is_array($this->facets)) {
-			$this->saveOneToManyOptions($this->facets, 'locationId');
-			unset($this->facets);
-		}
-	}
-
-	public function clearFacets()
-	{
-		$this->clearOneToManyOptions('LocationFacetSetting', 'locationId');
-		$this->facets = array();
 	}
 
 	public function saveHours()

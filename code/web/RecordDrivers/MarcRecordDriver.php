@@ -634,7 +634,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 		$isbn = $this->getCleanISBN();
 		$upc = $this->getCleanUPC();
 		if ($isbn || $upc) {
-			if (!$library || ($library && $library->preferSyndeticsSummary == 1)) {
+			if ($library->getGroupedWorkDisplaySettings()->preferSyndeticsSummary == 1) {
 				require_once ROOT_DIR . '/Drivers/marmot_inc/GoDeeperData.php';
 				$summaryInfo = GoDeeperData::getSummary($this->getPermanentId(), $isbn, $upc);
 				if (isset($summaryInfo['summary'])) {
@@ -664,7 +664,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 				}
 				$interface->assign('summary', $summary);
 				$interface->assign('summaryTeaser', strip_tags($summary));
-			} elseif ($library && $library->preferSyndeticsSummary == 0) {
+			} elseif ($library->getGroupedWorkDisplaySettings()->preferSyndeticsSummary == 0) {
 				require_once ROOT_DIR . '/Drivers/marmot_inc/GoDeeperData.php';
 				$summaryInfo = GoDeeperData::getSummary($this->getPermanentId(), $isbn, $upc);
 				if (isset($summaryInfo['summary'])) {
@@ -1129,15 +1129,15 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 		}
 		if ($isPeriodical) {
 			global $library;
-			$interface->assign('showCheckInGrid', $library->showCheckInGrid);
+			$interface->assign('showCheckInGrid', $library->getGroupedWorkDisplaySettings()->showCheckInGrid);
 			$issues = $this->loadPeriodicalInformation();
 			$interface->assign('periodicalIssues', $issues);
 		}
 		$links = $this->getLinks();
 		$interface->assign('links', $links);
-		$interface->assign('show856LinksAsTab', $library->show856LinksAsTab);
+		$interface->assign('show856LinksAsTab', $library->getGroupedWorkDisplaySettings()->show856LinksAsTab);
 
-		if ($library->show856LinksAsTab && count($links) > 0) {
+		if ($library->getGroupedWorkDisplaySettings()->show856LinksAsTab && count($links) > 0) {
 			$moreDetailsOptions['links'] = array(
 					'label' => 'Links',
 					'body' => $interface->fetch('Record/view-links.tpl'),
@@ -1283,19 +1283,19 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 
 			usort($subjects, $subjectTitleCompareFunction);
 			$interface->assign('subjects', $subjects);
-			if ($library->showLCSubjects) {
+			if ($library->getGroupedWorkDisplaySettings()->showLCSubjects) {
 				usort($lcSubjects, $subjectTitleCompareFunction);
 				$interface->assign('lcSubjects', $lcSubjects);
 			}
-			if ($library->showOtherSubjects) {
+			if ($library->getGroupedWorkDisplaySettings()->showOtherSubjects) {
 				usort($otherSubjects, $subjectTitleCompareFunction);
 				$interface->assign('otherSubjects', $otherSubjects);
 			}
-			if ($library->showBisacSubjects) {
+			if ($library->getGroupedWorkDisplaySettings()->showBisacSubjects) {
 				usort($bisacSubjects, $subjectTitleCompareFunction);
 				$interface->assign('bisacSubjects', $bisacSubjects);
 			}
-			if ($library->showFastAddSubjects) {
+			if ($library->getGroupedWorkDisplaySettings()->showFastAddSubjects) {
 				usort($oclcFastSubjects, $subjectTitleCompareFunction);
 				$interface->assign('oclcFastSubjects', $oclcFastSubjects);
 			}

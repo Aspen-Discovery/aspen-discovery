@@ -1896,22 +1896,64 @@ function getLibraryLocationUpdates(){
 					includeOnlineMaterialsInAvailableToggle TINYINT(1) DEFAULT '1',
 					includeAllRecordsInShelvingFacets TINYINT DEFAULT 0,
 					includeAllRecordsInDateAddedFacets TINYINT DEFAULT 0,
-					includeOutOfSystemExternalLinks TINYINT DEFAULT 0
+					includeOutOfSystemExternalLinks TINYINT DEFAULT 0,
+					facetGroupId INT(11),
+					showStandardReviews TINYINT DEFAULT 1,
+					showGoodReadsReviews TINYINT DEFAULT 1, 
+					preferSyndeticsSummary TINYINT DEFAULT 1,
+					showSimilarTitles TINYINT DEFAULT 1,
+					showSimilarAuthors TINYINT DEFAULT 1,
+					showRatings TINYINT DEFAULT 1,
+					showComments TINYINT DEFAULT 1,
+					hideCommentsWithBadWords TINYINT DEFAULT 0,
+					show856LinksAsTab TINYINT DEFAULT 1, 
+					showCheckInGrid TINYINT DEFAULT 1,
+					showStaffView TINYINT DEFAULT 1,
+					showLCSubjects TINYINT DEFAULT 1, 
+					showBisacSubjects TINYINT DEFAULT 1, 
+					showFastAddSubjects TINYINT DEFAULT 1,
+					showOtherSubjects TINYINT DEFAULT 1,
+					showInMainDetails VARCHAR(255) DEFAULT 'a:4:{i:0;s:10:\"showSeries\";i:1;s:22:\"showPublicationDetails\";i:2;s:12:\"showEditions\";i:3;s:24:\"showPhysicalDescriptions\";}'
 				)",
+				"CREATE TABLE grouped_work_facet_groups (
+					id INT(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					name VARCHAR(255) NOT NULL UNIQUE
+				)",
+				"CREATE TABLE grouped_work_facet (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+					facetGroupId INT NOT NULL, 
+					displayName VARCHAR(50) NOT NULL, 
+					facetName VARCHAR(50) NOT NULL,
+					weight INT NOT NULL DEFAULT '0',
+					numEntriesToShowByDefault INT NOT NULL DEFAULT '5',
+					showAsDropDown TINYINT NOT NULL DEFAULT '0',
+					sortMode ENUM ('alphabetically', 'num_results') NOT NULL DEFAULT 'num_results',
+					showAboveResults TINYINT NOT NULL DEFAULT '0',
+					showInResults TINYINT NOT NULL DEFAULT '1',
+					showInAdvancedSearch TINYINT NOT NULL DEFAULT '1',
+					collapseByDefault TINYINT DEFAULT '1',
+					useMoreFacetPopup TINYINT DEFAULT 1,
+					translate TINYINT DEFAULT 0,
+					multiSelect TINYINT DEFAULT 0,
+					canLock TINYINT DEFAULT 0
+				) ENGINE = InnoDB",
+				"ALTER TABLE grouped_work_facet ADD UNIQUE groupFacet (facetGroupId, facetName)",
+				'moveLibraryAndLocationGroupedWorkFacetsToTable',
+//				"DROP TABLE library_facet_setting",
 				//Add default settings
-				"INSERT INTO grouped_work_display_settings(id, name) VALUES 
-					(1, 'public')",
-				"INSERT INTO grouped_work_display_settings(id, name, applyNumberOfHoldingsBoost, showSearchTools, showInSearchResultsMainDetails, alwaysShowSearchResultsMainDetails) VALUES 
-					(2, 'academic', 0, 0, 'a:4:{i:0;s:10:\"showSeries\";i:1;s:13:\"showPublisher\";i:2;s:19:\"showPublicationDate\";i:3;s:13:\"showLanguages\";}', 1)",
-				"INSERT INTO grouped_work_display_settings(id, name, showSearchTools) VALUES 
-					(3, 'school_elem', 0)",
-				"INSERT INTO grouped_work_display_settings(id, name, showSearchTools) VALUES 
-					(4, 'school_upper', 0)",
-				"INSERT INTO grouped_work_display_settings(id, name, baseAvailabilityToggleOnLocalHoldingsOnly, includeAllRecordsInShelvingFacets, includeAllRecordsInDateAddedFacets, includeOutOfSystemExternalLinks) VALUES 
-					(5, 'consortium', 0, 1, 1, 1)",
+				"INSERT INTO grouped_work_display_settings(id, name, facetGroupId) VALUES 
+					(1, 'public', 1)",
+				"INSERT INTO grouped_work_display_settings(id, name, facetGroupId, applyNumberOfHoldingsBoost, showSearchTools, showInSearchResultsMainDetails, alwaysShowSearchResultsMainDetails) VALUES 
+					(2, 'academic', 2, 0, 0, 'a:4:{i:0;s:10:\"showSeries\";i:1;s:13:\"showPublisher\";i:2;s:19:\"showPublicationDate\";i:3;s:13:\"showLanguages\";}', 1)",
+				"INSERT INTO grouped_work_display_settings(id, name, facetGroupId, showSearchTools) VALUES 
+					(3, 'school_elem', 3, 0)",
+				"INSERT INTO grouped_work_display_settings(id, name, facetGroupId, showSearchTools) VALUES 
+					(4, 'school_upper', 3, 0)",
+				"INSERT INTO grouped_work_display_settings(id, name, facetGroupId, baseAvailabilityToggleOnLocalHoldingsOnly, includeAllRecordsInShelvingFacets, includeAllRecordsInDateAddedFacets, includeOutOfSystemExternalLinks) VALUES 
+					(5, 'consortium', 4, 0, 1, 1, 1)",
 				"ALTER TABLE library ADD COLUMN groupedWorkDisplaySettingId INT(11) DEFAULT 0",
 				"ALTER TABLE location ADD COLUMN groupedWorkDisplaySettingId INT(11) DEFAULT -1",
-				'moveSearchSettingsToTable',
+				'moveGroupedWorkSettingsToTable',
 //				"ALTER TABLE library DROP COLUMN applyNumberOfHoldingsBoost",
 //				"ALTER TABLE library DROP COLUMN showSearchTools",
 //				"ALTER TABLE library DROP COLUMN showQuickCopy",
@@ -1922,20 +1964,67 @@ function getLibraryLocationUpdates(){
 //				"ALTER TABLE library DROP COLUMN availabilityToggleLabelAvailable",
 //				"ALTER TABLE library DROP COLUMN availabilityToggleLabelAvailableOnline",
 //				"ALTER TABLE library DROP COLUMN includeOnlineMaterialsInAvailableToggle",
+				"ALTER TABLE library DROP COLUMN includeAllRecordsInShelvingFacets",
+				"ALTER TABLE library DROP COLUMN includeAllRecordsInDateAddedFacets",
 //				"ALTER TABLE library DROP COLUMN includeOutOfSystemExternalLinks",
+				"ALTER TABLE library DROP COLUMN showStandardReviews",
+				"ALTER TABLE library DROP COLUMN showGoodReadsReviews",
+				"ALTER TABLE library DROP COLUMN preferSyndeticsSummary",
+				"ALTER TABLE library DROP COLUMN showRatings",
+				"ALTER TABLE library DROP COLUMN hideCommentsWithBadWords",
+				"ALTER TABLE library DROP COLUMN show856LinksAsTab",
+				"ALTER TABLE library DROP COLUMN showCheckInGrid",
+				"ALTER TABLE library DROP COLUMN showStaffView",
+				"ALTER TABLE library DROP COLUMN showLCSubjects",
+				"ALTER TABLE library DROP COLUMN showBisacSubjects",
+				"ALTER TABLE library DROP COLUMN showFastAddSubjects",
+				"ALTER TABLE library DROP COLUMN showInMainDetails",
+
+
 //				"ALTER TABLE location DROP COLUMN baseAvailabilityToggleOnLocalHoldingsOnly",
 //				"ALTER TABLE location DROP COLUMN availabilityToggleLabelSuperScope",
 //				"ALTER TABLE location DROP COLUMN availabilityToggleLabelLocal",
 //				"ALTER TABLE location DROP COLUMN availabilityToggleLabelAvailable",
 //				"ALTER TABLE location DROP COLUMN availabilityToggleLabelAvailableOnline",
 //				"ALTER TABLE location DROP COLUMN includeOnlineMaterialsInAvailableToggle",
+				"ALTER TABLE location DROP COLUMN includeAllRecordsInShelvingFacets",
+				"ALTER TABLE location DROP COLUMN includeAllRecordsInDateAddedFacets",
+				"ALTER TABLE location DROP COLUMN showStandardReviews",
+				"ALTER TABLE location DROP COLUMN showGoodReadsReviews",
+				"ALTER TABLE location DROP COLUMN showComments",
+				"ALTER TABLE location DROP COLUMN showStaffView",
 			],
 		],
 	);
 }
 
+function moveLibraryAndLocationGroupedWorkFacetsToTable(/** @noinspection PhpUnusedParameterInspection */ &$update){
+	//Create default groups of facets
+	$publicFacetGroup = new GroupedWorkFacetGroup();
+	$publicFacetGroup->name = 'public';
+	$publicFacetGroup->insert();
+	$publicFacetGroup->setupDefaultFacets('public');
+
+	$academicFacetGroup = new GroupedWorkFacetGroup();
+	$academicFacetGroup->name = 'academic';
+	$academicFacetGroup->insert();
+	$academicFacetGroup->setupDefaultFacets('academic');
+
+	$schoolFacetGroup = new GroupedWorkFacetGroup();
+	$schoolFacetGroup->name = 'schools';
+	$schoolFacetGroup->insert();
+	$schoolFacetGroup->setupDefaultFacets('schools');
+
+	$consortiaFacetGroup = new GroupedWorkFacetGroup();
+	$consortiaFacetGroup->name = 'consortia';
+	$consortiaFacetGroup->insert();
+	$consortiaFacetGroup->setupDefaultFacets('consortia');
+
+	//TODO: Now go through the existing facets to see if we need to create new groups
+}
+
 /** @noinspection PhpUnused */
-function moveSearchSettingsToTable(/** @noinspection PhpUnusedParameterInspection */ &$update){
+function moveGroupedWorkSettingsToTable(/** @noinspection PhpUnusedParameterInspection */ &$update){
 	/** @var PDO $aspen_db */
 	global $aspen_db;
 

@@ -1809,24 +1809,24 @@ class GroupedWorkDriver extends IndexRecordDriver{
 
         natcasesort($subjects);
         $interface->assign('subjects', $subjects);
-        $interface->assign('showLCSubjects', $library->showLCSubjects);
-        $interface->assign('showBisacSubjects', $library->showBisacSubjects);
-        $interface->assign('showFastAddSubjects', $library->showFastAddSubjects);
-        $interface->assign('showOtherSubjects', $library->showOtherSubjects);
+        $interface->assign('showLCSubjects', $library->getGroupedWorkDisplaySettings()->showLCSubjects);
+        $interface->assign('showBisacSubjects', $library->getGroupedWorkDisplaySettings()->showBisacSubjects);
+        $interface->assign('showFastAddSubjects', $library->getGroupedWorkDisplaySettings()->showFastAddSubjects);
+        $interface->assign('showOtherSubjects', $library->getGroupedWorkDisplaySettings()->showOtherSubjects);
 
-        if ($library->showLCSubjects) {
+        if ($library->getGroupedWorkDisplaySettings()->showLCSubjects) {
             natcasesort($lcSubjects);
             $interface->assign('lcSubjects', $lcSubjects);
         }
-        if ($library->showBisacSubjects) {
+        if ($library->getGroupedWorkDisplaySettings()->showBisacSubjects) {
             natcasesort($bisacSubjects);
             $interface->assign('bisacSubjects', $bisacSubjects);
         }
-        if ($library->showFastAddSubjects) {
+        if ($library->getGroupedWorkDisplaySettings()->showFastAddSubjects) {
             natcasesort($oclcFastSubjects);
             $interface->assign('oclcFastSubjects', $oclcFastSubjects);
         }
-        if ($library->showOtherSubjects) {
+        if ($library->getGroupedWorkDisplaySettings()->showOtherSubjects) {
             natcasesort($otherSubjects);
             $interface->assign('otherSubjects', $otherSubjects);
         }
@@ -1987,7 +1987,7 @@ class GroupedWorkDriver extends IndexRecordDriver{
 
         // Determine if we should censor bad words or hide the comment completely.
         global $library;
-        $censorWords = !$library->hideCommentsWithBadWords; // censor if not hiding
+        $censorWords = !$library->getGroupedWorkDisplaySettings()->hideCommentsWithBadWords; // censor if not hiding
         require_once(ROOT_DIR . '/Drivers/marmot_inc/BadWord.php');
         $badWords = new BadWord();
 

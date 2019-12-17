@@ -14,9 +14,10 @@ abstract class DataObject
 	private $__where;
 	private $__limitStart;
 	private $__limitCount;
-	private $__lastQuery;
+	protected $__lastQuery;
 	private $__lastError;
 	private $__joins = [];
+	protected $__fetchingFromDB = false;
 
 	protected $__data = [];
 
@@ -51,13 +52,17 @@ abstract class DataObject
 	}
 
 	public function fetch(){
+		$this->__fetchingFromDB = true;
 		$return = $this->__queryStmt->fetch(PDO::FETCH_INTO);
 		$this->__data = [];
+		$this->__fetchingFromDB = false;
 		return $return;
 	}
 
 	public function fetchAssoc(){
+		$this->__fetchingFromDB = true;
 		$return = $this->__queryStmt->fetch(PDO::FETCH_ASSOC);
+		$this->__fetchingFromDB = false;
 		return $return;
 	}
 
@@ -70,6 +75,7 @@ abstract class DataObject
 	 * @return array
 	 */
 	public function fetchAll($fieldName = null, $fieldValue = null){
+		$this->__fetchingFromDB = true;
 		$results = array();
 		if ($this->find() > 0) {
 			$result = $this->fetch();
@@ -84,7 +90,7 @@ abstract class DataObject
 				$result = $this->fetch();
 			}
 		}
-
+		$this->__fetchingFromDB = false;
 		return $results;
 	}
 

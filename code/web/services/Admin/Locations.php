@@ -94,17 +94,6 @@ class Locations extends ObjectEditor
 			$locationToCopyFrom->locationId = $locationToCopyFromId;
 			$location->find(true);
 
-			if (isset($_REQUEST['copyFacets'])){
-				$location->clearFacets();
-
-				$facetsToCopy = $locationToCopyFrom->facets;
-				foreach ($facetsToCopy as $facetKey => $facet){
-					$facet->locationId = $locationId;
-					$facet->id = null;
-					$facetsToCopy[$facetKey] = $facet;
-				}
-				$location->facets = $facetsToCopy;
-			}
 			if (isset($_REQUEST['copyBrowseCategories'])){
 				$location->clearBrowseCategories();
 
@@ -133,24 +122,6 @@ class Locations extends ObjectEditor
 			$interface->assign('id', $locationId);
 			$interface->setTemplate('../Admin/copyLocationFacets.tpl');
 		}
-	}
-
-	function resetFacetsToDefault(){
-		$location = new Location();
-		$locationId = $_REQUEST['id'];
-		$location->locationId = $locationId;
-		if ($location->find(true)){
-			$location->clearFacets();
-
-			$defaultFacets = Location::getDefaultFacets($locationId);
-
-			$location->facets = $defaultFacets;
-			$location->update();
-
-			$_REQUEST['objectAction'] = 'edit';
-		}
-		$structure = $this->getObjectStructure();
-		header("Location: /Admin/Locations?objectAction=edit&id=" . $locationId);
 	}
 
 	function resetMoreDetailsToDefault(){

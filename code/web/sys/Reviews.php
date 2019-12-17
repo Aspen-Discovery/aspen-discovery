@@ -105,10 +105,10 @@ class ExternalReviews
 		$review = array();
 		$location = $locationSingleton->getActiveLocation();
 		if ($location != null){
-			if ($library->showStandardReviews == 0 || $location->showStandardReviews == 0){
+			if ($location->getGroupedWorkDisplaySettings()->showStandardReviews == 0){
 				return $review;
 			}
-		}else if ($library->showStandardReviews == 0){
+		}else if ($library->getGroupedWorkDisplaySettings()->showStandardReviews == 0){
 			//return an empty review
 			return $review;
 		}
@@ -229,10 +229,10 @@ class ExternalReviews
 
 		$location = $locationSingleton->getActiveLocation();
 		if ($location != null){
-			if ($library->showStandardReviews == 0 || $location->showStandardReviews == 0){
+			if ($location->getGroupedWorkDisplaySettings()->showStandardReviews == 0){
 				return null;
 			}
-		}elseif ($library->showStandardReviews == 0){
+		}elseif ($library->getGroupedWorkDisplaySettings()->showStandardReviews == 0){
 			return null;
 		}
 

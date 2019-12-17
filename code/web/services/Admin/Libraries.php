@@ -144,23 +144,6 @@ class Admin_Libraries extends ObjectEditor
 		}
 	}
 
-	function resetFacetsToDefault(){
-		$library = new Library();
-		$libraryId = $_REQUEST['id'];
-		$library->libraryId = $libraryId;
-		if ($library->find(true)){
-			$library->clearFacets();
-
-			$defaultFacets = Library::getDefaultFacets($libraryId);
-
-			$library->facets = $defaultFacets;
-			$library->update();
-
-			$_REQUEST['objectAction'] = 'edit';
-		}
-		header("Location: /Admin/Libraries?objectAction=edit&id=" . $libraryId);
-	}
-
 	function resetArchiveSearchFacetsToDefault(){
 		$library = new Library();
 		$libraryId = $_REQUEST['id'];
@@ -171,34 +154,6 @@ class Admin_Libraries extends ObjectEditor
 			$defaultFacets = Library::getDefaultArchiveSearchFacets($libraryId);
 
 			$library->archiveSearchFacets = $defaultFacets;
-			$library->update();
-
-			$_REQUEST['objectAction'] = 'edit';
-		}
-		header("Location: /Admin/Libraries?objectAction=edit&id=" . $libraryId);
-	}
-
-	function resetMoreDetailsToDefault(){
-		$library = new Library();
-		$libraryId = $_REQUEST['id'];
-		$library->libraryId = $libraryId;
-		if ($library->find(true)){
-			$library->clearMoreDetailsOptions();
-
-			$defaultOptions = array();
-			require_once ROOT_DIR . '/RecordDrivers/RecordInterface.php';
-			$defaultMoreDetailsOptions = RecordInterface::getDefaultMoreDetailsOptions();
-			$i = 0;
-			foreach ($defaultMoreDetailsOptions as $source => $defaultState){
-				$optionObj = new LibraryMoreDetails();
-				$optionObj->libraryId = $libraryId;
-				$optionObj->collapseByDefault = $defaultState == 'closed';
-				$optionObj->source = $source;
-				$optionObj->weight = $i++;
-				$defaultOptions[] = $optionObj;
-			}
-
-			$library->moreDetailsOptions = $defaultOptions;
 			$library->update();
 
 			$_REQUEST['objectAction'] = 'edit';

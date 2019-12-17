@@ -210,8 +210,8 @@ abstract class RecordInterface {
 		$useDefault = true;
 		if ($library && count($library->moreDetailsOptions) > 0){
 			$useDefault = false;
-			/** @var LibraryMoreDetails $option */
-			foreach ($library->moreDetailsOptions as $option){
+			/** @var GroupedWorkMoreDetails $option */
+			foreach ($library->getGroupedWorkDisplaySettings()->getMoreDetailsOptions() as $option){
 				$moreDetailsFilters[$option->source] = $option->collapseByDefault ? 'closed' : 'open';
 			}
 		}
