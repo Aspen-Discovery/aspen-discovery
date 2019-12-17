@@ -6,7 +6,6 @@ import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import sun.nio.ch.SelectorImpl;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -238,13 +237,13 @@ class OverDriveProcessor {
 									if (scope.isIncludeOverDriveCollection()) {
 										//Check based on the audience as well
 										boolean okToInclude = false;
-										if (isAdult && scope.isIncludeOverDriveAdultCollection()) {
+										if (isAdult && scope.getOverDriveScope().isIncludeAdult()) {
 											okToInclude = true;
 										}
-										if (isTeen && scope.isIncludeOverDriveTeenCollection()) {
+										if (isTeen && scope.getOverDriveScope().isIncludeTeen()) {
 											okToInclude = true;
 										}
-										if (isKids && scope.isIncludeOverDriveKidsCollection()) {
+										if (isKids && scope.getOverDriveScope().isIncludeKids()) {
 											okToInclude = true;
 										}
 										if (okToInclude) {
@@ -272,13 +271,13 @@ class OverDriveProcessor {
 									}
 									if (curScope.isIncludeOverDriveCollection() && curScope.getLibraryId().equals(libraryId)) {
 										boolean okToInclude = false;
-										if (isAdult && curScope.isIncludeOverDriveAdultCollection()) {
+										if (isAdult && curScope.getOverDriveScope().isIncludeAdult()) {
 											okToInclude = true;
 										}
-										if (isTeen && curScope.isIncludeOverDriveTeenCollection()) {
+										if (isTeen && curScope.getOverDriveScope().isIncludeTeen()) {
 											okToInclude = true;
 										}
-										if (isKids && curScope.isIncludeOverDriveKidsCollection()) {
+										if (isKids && curScope.getOverDriveScope().isIncludeKids()) {
 											okToInclude = true;
 										}
 										if (okToInclude) {

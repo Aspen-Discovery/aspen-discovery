@@ -5,23 +5,23 @@ class HooplaScope extends DataObject
 	public $__table = 'hoopla_scopes';
 	public $id;
 	public $name;
-	public $includeEBooks;
-	public $maxCostPerCheckoutEBooks;
-	public $includeEComics;
-	public $maxCostPerCheckoutEComics;
-	public $includeEAudiobook;
-	public $maxCostPerCheckoutEAudiobook;
-	public $includeMovies;
-	public $maxCostPerCheckoutMovies;
-	public $includeMusic;
-	public $maxCostPerCheckoutMusic;
-	public $includeTelevision;
-	public $maxCostPerCheckoutTelevision;
-	public $restrictToChildrensMaterial;
-	public $ratingsToExclude;
-	public $excludeAbridged;
-	public $excludeParentalAdvisory;
-	public $excludeProfanity;
+	public /** @noinspection PhpUnused */ $includeEBooks;
+	public /** @noinspection PhpUnused */ $maxCostPerCheckoutEBooks;
+	public /** @noinspection PhpUnused */ $includeEComics;
+	public /** @noinspection PhpUnused */ $maxCostPerCheckoutEComics;
+	public /** @noinspection PhpUnused */ $includeEAudiobook;
+	public /** @noinspection PhpUnused */ $maxCostPerCheckoutEAudiobook;
+	public /** @noinspection PhpUnused */ $includeMovies;
+	public /** @noinspection PhpUnused */ $maxCostPerCheckoutMovies;
+	public /** @noinspection PhpUnused */ $includeMusic;
+	public /** @noinspection PhpUnused */ $maxCostPerCheckoutMusic;
+	public /** @noinspection PhpUnused */ $includeTelevision;
+	public /** @noinspection PhpUnused */ $maxCostPerCheckoutTelevision;
+	public /** @noinspection PhpUnused */ $restrictToChildrensMaterial;
+	public /** @noinspection PhpUnused */ $ratingsToExclude;
+	public /** @noinspection PhpUnused */ $excludeAbridged;
+	public /** @noinspection PhpUnused */ $excludeParentalAdvisory;
+	public /** @noinspection PhpUnused */ $excludeProfanity;
 
 	public static function getObjectStructure()
 	{

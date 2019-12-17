@@ -186,26 +186,26 @@ class SideLoadScope extends DataObject
 	public function getLibraries()
 	{
 		/** @noinspection PhpUndefinedFieldInspection */
-		return $this->libraries;
+		return $this->__libraries;
 	}
 
 	/** @return LocationSideLoadScope[] */
 	public function getLocations()
 	{
 		/** @noinspection PhpUndefinedFieldInspection */
-		return $this->locations;
+		return $this->__locations;
 	}
 
 	public function setLibraries($val)
 	{
 		/** @noinspection PhpUndefinedFieldInspection */
-		$this->libraries = $val;
+		$this->__libraries = $val;
 	}
 
 	public function setLocations($val)
 	{
 		/** @noinspection PhpUndefinedFieldInspection */
-		$this->locations = $val;
+		$this->__locations = $val;
 	}
 
 	public function clearLibraries(){

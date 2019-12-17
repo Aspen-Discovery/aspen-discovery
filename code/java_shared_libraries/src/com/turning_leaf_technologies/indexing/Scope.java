@@ -30,9 +30,7 @@ public class Scope implements Comparable<Scope>{
 	//Inclusion rules indicate records owned by someone else that should be shown within the scope
 	private HashSet<InclusionRule> inclusionRules = new HashSet<>();
 	private String ilsCode;
-	private boolean includeOverDriveAdultCollection;
-	private boolean includeOverDriveTeenCollection;
-	private boolean includeOverDriveKidsCollection;
+
 	private int publicListsToInclude;
 	private String additionalLocationsToShowAvailabilityFor;
 	private Pattern additionalLocationsToShowAvailabilityForPattern;
@@ -42,6 +40,7 @@ public class Scope implements Comparable<Scope>{
 	private boolean baseAvailabilityToggleOnLocalHoldingsOnly = false;
 	private boolean includeOnlineMaterialsInAvailableToggle  = true;
 
+	private OverDriveScope overDriveScope;
 	private HooplaScope hooplaScope;
 	private RbdigitalScope rbdigitalScope;
 	private CloudLibraryScope cloudLibraryScope;
@@ -136,11 +135,7 @@ public class Scope implements Comparable<Scope>{
 
 
 	public boolean isIncludeOverDriveCollection() {
-		return includeOverDriveCollection;
-	}
-
-	void setIncludeOverDriveCollection(boolean includeOverDriveCollection) {
-		this.includeOverDriveCollection = includeOverDriveCollection;
+		return overDriveScope != null;
 	}
 
 	void setLibraryId(Long libraryId) {
@@ -218,30 +213,6 @@ public class Scope implements Comparable<Scope>{
 		this.ilsCode = ilsCode;
 	}
 
-	void setIncludeOverDriveAdultCollection(boolean includeOverDriveAdultCollection) {
-		this.includeOverDriveAdultCollection = includeOverDriveAdultCollection;
-	}
-
-	public boolean isIncludeOverDriveAdultCollection() {
-		return includeOverDriveAdultCollection;
-	}
-
-	void setIncludeOverDriveTeenCollection(boolean includeOverDriveTeenCollection) {
-		this.includeOverDriveTeenCollection = includeOverDriveTeenCollection;
-	}
-
-	public boolean isIncludeOverDriveTeenCollection() {
-		return includeOverDriveTeenCollection;
-	}
-
-	void setIncludeOverDriveKidsCollection(boolean includeOverDriveKidsCollection) {
-		this.includeOverDriveKidsCollection = includeOverDriveKidsCollection;
-	}
-
-	public boolean isIncludeOverDriveKidsCollection() {
-		return includeOverDriveKidsCollection;
-	}
-
 	void setPublicListsToInclude(int publicListsToInclude) {
 		this.publicListsToInclude = publicListsToInclude;
 	}
@@ -314,6 +285,13 @@ public class Scope implements Comparable<Scope>{
 		return isUnscoped;
 	}
 
+	public OverDriveScope getOverDriveScope() {
+		return overDriveScope;
+	}
+
+	void setOverDriveScope(OverDriveScope overDriveScope) {
+		this.overDriveScope = overDriveScope;
+	}
 	public HooplaScope getHooplaScope() {
 		return hooplaScope;
 	}
