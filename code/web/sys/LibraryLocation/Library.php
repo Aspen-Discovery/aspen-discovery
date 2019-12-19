@@ -1029,7 +1029,7 @@ class Library extends DataObject
 				$library = new Library();
 				$library->isDefault = true;
 				$library->find();
-				if ($library->N > 0){
+				if ($library->getNumResults() > 0){
 					$library->fetch();
 					Library::$searchLibrary[$searchSource] = clone($library);
 				}else{
@@ -1042,7 +1042,7 @@ class Library extends DataObject
 					$library = new Library();
 					$library->subdomain = $scopingSetting;
 					$library->find();
-					if ($library->N > 0){
+					if ($library->getNumResults() > 0){
 						$library->fetch();
 						Library::$searchLibrary[$searchSource] = clone($library);
 						return clone($library);
@@ -1066,10 +1066,10 @@ class Library extends DataObject
 		//If there is only one library, that library is active by default.
 		$activeLibrary = new Library();
 		$activeLibrary->find();
-		if ($activeLibrary->N == 1){
+		if ($activeLibrary->getNumResults() == 1){
 			$activeLibrary->fetch();
 			return $activeLibrary;
-		} else if ($activeLibrary->N == 0) {
+		} else if ($activeLibrary->getNumResults() == 0) {
 			echo("No libraries are configured for the system.  Please configure at least one library before proceeding.");
 			die();
 		}
@@ -1085,10 +1085,10 @@ class Library extends DataObject
 		//Return the active library
 		$activeLibrary->isDefault = 1;
 		$activeLibrary->find(true);
-		if ($activeLibrary->N == 0) {
+		if ($activeLibrary->getNumResults() == 0) {
 			echo("There is not a default library configured in the system.  Please configure one default library before proceeding.");
 			die();
-		} else if ($activeLibrary->N > 1) {
+		} else if ($activeLibrary->getNumResults() > 1) {
 			echo("There are multiple default libraries configured in the system.  Please set only one library to be the default before proceeding.");
 			die();
 		}
@@ -1117,7 +1117,7 @@ class Library extends DataObject
 			$libLookup = new Library();
 			$libLookup->whereAdd('libraryId = (SELECT libraryId FROM location WHERE locationId = ' . $libLookup->escape($locationId) . ')');
 			$libLookup->find();
-			if ($libLookup->N > 0){
+			if ($libLookup->getNumResults() > 0){
 				$libLookup->fetch();
 				return clone $libLookup;
 			}
@@ -1125,7 +1125,6 @@ class Library extends DataObject
 		return null;
 	}
 
-	private $data = array();
 	public function __get($name){
 		if ($name == "holidays") {
 			if (!isset($this->holidays) && $this->libraryId){
@@ -1301,7 +1300,7 @@ class Library extends DataObject
 		} elseif ($name == 'patronNameDisplayStyle') {
 			return $this->patronNameDisplayStyle;
 		} else {
-			return $this->data[$name];
+			return $this->_data[$name];
 		}
 		return null;
 	}
@@ -1357,7 +1356,7 @@ class Library extends DataObject
 				}
 			}
 		}else{
-			$this->data[$name] = $value;
+			$this->_data[$name] = $value;
 		}
 	}
 
@@ -1643,40 +1642,44 @@ class Library extends DataObject
 		return $defaultForm;
 	}
 
-	private $__groupedWorkDisplaySettings = null;
+	protected $_groupedWorkDisplaySettings = null;
 	/** @return GroupedWorkDisplaySetting */
 	public function getGroupedWorkDisplaySettings()
 	{
-		if ($this->__groupedWorkDisplaySettings == null){
+		if ($this->_groupedWorkDisplaySettings == null){
 			try {
 				require_once ROOT_DIR . '/sys/Grouping/GroupedWorkDisplaySetting.php';
-				$this->__groupedWorkDisplaySettings = new GroupedWorkDisplaySetting();
-				$this->__groupedWorkDisplaySettings->id = $this->groupedWorkDisplaySettingId;
-				$this->__groupedWorkDisplaySettings->find(true);
+				$groupedWorkDisplaySettings = new GroupedWorkDisplaySetting();
+				$groupedWorkDisplaySettings->id = $this->groupedWorkDisplaySettingId;
+				$groupedWorkDisplaySettings->find(true);
+				$this->_groupedWorkDisplaySettings = $groupedWorkDisplaySettings;
 			}catch(Exception $e){
 				global $logger;
 				$logger->log('Error loading grouped work display settings ' . $e, Logger::LOG_ERROR);
 			}
 		}
-		return $this->__groupedWorkDisplaySettings;
+		if ($this->groupedWorkDisplaySettingId != $this->_groupedWorkDisplaySettings->id){
+			echo "Something went horribly wrong";
+		}
+		return $this->_groupedWorkDisplaySettings;
 	}
 
-	private $__layoutSettings = null;
+	protected $_layoutSettings = null;
 	/** @return LayoutSetting */
 	public function getLayoutSettings()
 	{
-		if ($this->__layoutSettings == null){
+		if ($this->_layoutSettings == null){
 			try {
 				require_once ROOT_DIR . '/sys/Theming/LayoutSetting.php';
-				$this->__layoutSettings = new LayoutSetting();
-				$this->__layoutSettings->id = $this->layoutSettingId;
-				$this->__layoutSettings->find(true);
+				$this->_layoutSettings = new LayoutSetting();
+				$this->_layoutSettings->id = $this->layoutSettingId;
+				$this->_layoutSettings->find(true);
 			}catch(Exception $e){
 				global $logger;
 				$logger->log('Error loading grouped work display settings ' . $e, Logger::LOG_ERROR);
 			}
 		}
-		return $this->__layoutSettings;
+		return $this->_layoutSettings;
 	}
 
 	function getEditLink(){

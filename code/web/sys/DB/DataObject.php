@@ -547,4 +547,17 @@ abstract class DataObject
 	{
 		return $this->__N;
 	}
+
+	public function copy(array $propertiesToChange, $saveCopy)
+	{
+		$newObject = clone $this;
+		$newObject->__primaryKey = null;
+		foreach ($propertiesToChange as $name => $value){
+			$propertiesToChange->$name = $value;
+		}
+		if ($saveCopy){
+			$newObject->insert();
+		}
+		return $newObject;
+	}
 }

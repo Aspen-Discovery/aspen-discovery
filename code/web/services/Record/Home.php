@@ -25,7 +25,7 @@ class Record_Home extends Record_Record{
 		// Set Show in Main Details Section options for templates
 		// (needs to be set before moreDetailsOptions)
 		global $library;
-		foreach ($library->showInMainDetails as $detailOption) {
+		foreach ($library->getGroupedWorkDisplaySettings()->showInMainDetails as $detailOption) {
 			$interface->assign($detailOption, true);
 		}
 

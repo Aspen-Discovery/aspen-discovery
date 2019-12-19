@@ -7,10 +7,10 @@ class GroupedWorkFacetGroup extends DataObject
 	public $id;
 	public $name;
 
-	public $__facets;
+	public $_facets;
 
 	static function getObjectStructure(){
-		$facetSettingStructure = GroupedWOrkFacet::getObjectStructure();
+		$facetSettingStructure = GroupedWorkFacet::getObjectStructure();
 		unset($facetSettingStructure['weight']);
 		unset($facetSettingStructure['facetGroupId']);
 		unset($facetSettingStructure['numEntriesToShowByDefault']);
@@ -64,20 +64,6 @@ class GroupedWorkFacetGroup extends DataObject
 		$facet->weight = count($defaultFacets) + 1;
 		$defaultFacets[] = $facet;
 
-		$facet = new GroupedWorkFacet();
-		$facet->setupSideFacet('available_at', 'Available Now At', true);
-		$facet->facetGroupId = $this->id;
-		$facet->weight = count($defaultFacets) + 1;
-		$defaultFacets[] = $facet;
-
-		$facet = new GroupedWorkFacet();
-		$facet->setupSideFacet('format', 'Format', true);
-		$facet->facetGroupId = $this->id;
-		$facet->weight = count($defaultFacets) + 1;
-		$facet->multiSelect = true;
-		$facet->canLock = true;
-		$defaultFacets[] = $facet;
-
 		if ($type == 'academic'){
 			$facet = new GroupedWorkFacet();
 			$facet->setupSideFacet('literary_form', 'Literary Form', true);
@@ -105,16 +91,24 @@ class GroupedWorkFacetGroup extends DataObject
 		$defaultFacets[] = $facet;
 
 		$facet = new GroupedWorkFacet();
-		$facet->setupSideFacet('topic_facet', 'Subject', true);
+		$facet->setupSideFacet('available_at', 'Available Now At', true);
+		$facet->facetGroupId = $this->id;
+		$facet->weight = count($defaultFacets) + 1;
+		$defaultFacets[] = $facet;
+
+		$facet = new GroupedWorkFacet();
+		$facet->setupSideFacet('econtent_source', 'eContent Collection', true);
 		$facet->facetGroupId = $this->id;
 		$facet->weight = count($defaultFacets) + 1;
 		$facet->multiSelect = true;
 		$defaultFacets[] = $facet;
 
 		$facet = new GroupedWorkFacet();
-		$facet->setupSideFacet('time_since_added', 'Added in the Last', true);
+		$facet->setupSideFacet('format', 'Format', true);
 		$facet->facetGroupId = $this->id;
 		$facet->weight = count($defaultFacets) + 1;
+		$facet->multiSelect = true;
+		$facet->canLock = true;
 		$defaultFacets[] = $facet;
 
 		$facet = new GroupedWorkFacet();
@@ -126,6 +120,68 @@ class GroupedWorkFacetGroup extends DataObject
 		$facet = new GroupedWorkFacet();
 		$facet->setupSideFacet('series_facet', 'Series', true);
 		$facet->facetGroupId = $this->id;
+		$facet->multiSelect = true;
+		$facet->weight = count($defaultFacets) + 1;
+		$defaultFacets[] = $facet;
+
+		if ($type != 'academic'){
+			$facet = new GroupedWorkFacet();
+			$facet->setupSideFacet('accelerated_reader_interest_level', 'AR Interest Level', true);
+			$facet->facetGroupId = $this->id;
+			$facet->weight = count($defaultFacets) + 1;
+			$defaultFacets[] = $facet;
+
+			$facet = new GroupedWorkFacet();
+			$facet->setupSideFacet('accelerated_reader_reading_level', 'AR Reading Level', true);
+			$facet->facetGroupId = $this->id;
+			$facet->weight = count($defaultFacets) + 1;
+			$defaultFacets[] = $facet;
+
+			$facet = new GroupedWorkFacet();
+			$facet->setupSideFacet('accelerated_reader_point_value', 'AR Point Value', true);
+			$facet->facetGroupId = $this->id;
+			$facet->weight = count($defaultFacets) + 1;
+			$defaultFacets[] = $facet;
+		}
+
+		if ($type == 'academic') {
+			$facet = new GroupedWorkFacet();
+			$facet->setupSideFacet('topic_facet', 'Subject', true);
+			$facet->facetGroupId = $this->id;
+			$facet->weight = count($defaultFacets) + 1;
+			$facet->multiSelect = true;
+			$defaultFacets[] = $facet;
+
+			$facet = new GroupedWorkFacet();
+			$facet->setupAdvancedFacet('geographic_facet', 'Region');
+			$facet->facetGroupId = $this->id;
+			$facet->weight = count($defaultFacets) + 1;
+			$defaultFacets[] = $facet;
+
+			$facet = new GroupedWorkFacet();
+			$facet->setupAdvancedFacet('era', 'Era');
+			$facet->facetGroupId = $this->id;
+			$facet->weight = count($defaultFacets) + 1;
+			$defaultFacets[] = $facet;
+
+			$facet = new GroupedWorkFacet();
+			$facet->setupSideFacet('genre_facet', 'Genre', true);
+			$facet->facetGroupId = $this->id;
+			$facet->multiSelect = true;
+			$facet->weight = count($defaultFacets) + 1;
+			$defaultFacets[] = $facet;
+		}else{
+			$facet = new GroupedWorkFacet();
+			$facet->setupSideFacet('subject_facet', 'Subject', true);
+			$facet->facetGroupId = $this->id;
+			$facet->multiSelect = true;
+			$facet->weight = count($defaultFacets) + 1;
+			$defaultFacets[] = $facet;
+		}
+
+		$facet = new GroupedWorkFacet();
+		$facet->setupSideFacet('time_since_added', 'Added in the Last', true);
+		$facet->facetGroupId = $this->id;
 		$facet->weight = count($defaultFacets) + 1;
 		$defaultFacets[] = $facet;
 
@@ -136,27 +192,16 @@ class GroupedWorkFacetGroup extends DataObject
 		$defaultFacets[] = $facet;
 
 		$facet = new GroupedWorkFacet();
-		$facet->setupAdvancedFacet('era', 'Era');
+		$facet->setupAdvancedFacet('itype', 'Item Type');
 		$facet->facetGroupId = $this->id;
 		$facet->weight = count($defaultFacets) + 1;
-		$defaultFacets[] = $facet;
-
-		$facet = new GroupedWorkFacet();
-		$facet->setupSideFacet('genre_facet', 'Genre', true);
-		$facet->facetGroupId = $this->id;
-		$facet->weight = count($defaultFacets) + 1;
-		$defaultFacets[] = $facet;
-
-		$facet = new GroupedWorkFacet();
-		$facet->setupSideFacet('itype', 'Item Type', true);
-		$facet->facetGroupId = $this->id;
-		$facet->weight = count($defaultFacets) + 1;
-		$facet->multiSelect = true;
 		$defaultFacets[] = $facet;
 
 		$facet = new GroupedWorkFacet();
 		$facet->setupSideFacet('language', 'Language', true);
 		$facet->facetGroupId = $this->id;
+		$facet->multiSelect = true;
+		$facet->canLock = true;
 		$facet->weight = count($defaultFacets) + 1;
 		$defaultFacets[] = $facet;
 
@@ -182,20 +227,7 @@ class GroupedWorkFacetGroup extends DataObject
 		}
 
 		$facet = new GroupedWorkFacet();
-		$facet->setupSideFacet('econtent_source', 'eContent Collection', true);
-		$facet->facetGroupId = $this->id;
-		$facet->weight = count($defaultFacets) + 1;
-		$facet->multiSelect = true;
-		$defaultFacets[] = $facet;
-
-		$facet = new GroupedWorkFacet();
 		$facet->setupSideFacet('publishDate', 'Publication Date', true);
-		$facet->facetGroupId = $this->id;
-		$facet->weight = count($defaultFacets) + 1;
-		$defaultFacets[] = $facet;
-
-		$facet = new GroupedWorkFacet();
-		$facet->setupAdvancedFacet('geographic_facet', 'Region');
 		$facet->facetGroupId = $this->id;
 		$facet->weight = count($defaultFacets) + 1;
 		$defaultFacets[] = $facet;
@@ -206,27 +238,7 @@ class GroupedWorkFacetGroup extends DataObject
 		$facet->weight = count($defaultFacets) + 1;
 		$defaultFacets[] = $facet;
 
-		if ($type != 'academic'){
-			$facet = new GroupedWorkFacet();
-			$facet->setupSideFacet('accelerated_reader_interest_level', 'AR Interest Level', true);
-			$facet->facetGroupId = $this->id;
-			$facet->weight = count($defaultFacets) + 1;
-			$defaultFacets[] = $facet;
-
-			$facet = new GroupedWorkFacet();
-			$facet->setupSideFacet('accelerated_reader_reading_level', 'AR Reading Level', true);
-			$facet->facetGroupId = $this->id;
-			$facet->weight = count($defaultFacets) + 1;
-			$defaultFacets[] = $facet;
-
-			$facet = new GroupedWorkFacet();
-			$facet->setupSideFacet('accelerated_reader_point_value', 'AR Point Value', true);
-			$facet->facetGroupId = $this->id;
-			$facet->weight = count($defaultFacets) + 1;
-			$defaultFacets[] = $facet;
-		}
-
-		$this->__facets = $defaultFacets;
+		$this->_facets = $defaultFacets;
 		$this->update();
 	}
 
@@ -247,8 +259,8 @@ class GroupedWorkFacetGroup extends DataObject
 	}
 
 	public function saveFacets(){
-		if (isset ($this->__facets) && is_array($this->__facets)){
-			$this->saveOneToManyOptions($this->__facets, 'facetGroupId');
+		if (isset ($this->_facets) && is_array($this->_facets)){
+			$this->saveOneToManyOptions($this->_facets, 'facetGroupId');
 			unset($this->facets);
 		}
 	}
@@ -271,22 +283,36 @@ class GroupedWorkFacetGroup extends DataObject
 		}
 	}
 
+	/** @return GroupedWorkFacet[] */
 	public function getFacets(){
-		if (!isset($this->__facets) && $this->id){
-			$this->__facets = array();
+		if (!isset($this->_facets) && $this->id){
+			$this->_facets = array();
 			$facet = new GroupedWorkFacet();
 			$facet->facetGroupId = $this->id;
 			$facet->orderBy('weight');
 			$facet->find();
 			while($facet->fetch()){
-				$this->__facets[$facet->id] = clone($facet);
+				$this->_facets[$facet->id] = clone($facet);
 			}
 		}
-		return $this->__facets;
+		return $this->_facets;
+	}
+
+	public function getFacetByIndex($index){
+		$facets = $this->getFacets();
+
+		$i=0;
+		foreach ($facets as $value) {
+			if($i==$index) {
+				return $value;
+			}
+			$i++;
+		}
+		return NULL;
 	}
 
 	public function setFacets($value){
-		$this->__facets = $value;
+		$this->_facets = $value;
 	}
 
 	public function clearFacets(){

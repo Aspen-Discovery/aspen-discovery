@@ -58,7 +58,7 @@ class GroupedWorkDisplaySetting extends DataObject
 	public $showOtherSubjects;
 	public $showInMainDetails;
 
-	private $__moreDetailsOptions;
+	private $_moreDetailsOptions;
 
 	// Use this to set which details will be shown in the the Main Details section of the record in the search results.
 	// You should be able to add options here without needing to change the database.
@@ -107,18 +107,18 @@ class GroupedWorkDisplaySetting extends DataObject
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id within the database'),
 			'name' => array('property' => 'name', 'type' => 'text', 'label' => 'Display Name', 'description' => 'The name of the settings', 'size' => '40', 'maxLength'=>255),
 
-			'searchingSection' => ['property'=>'searchingSection', 'type' => 'section', 'label' =>'Searching', 'hideInLists' => true,
+			'searchingSection' => ['property'=>'searchingSection', 'type' => 'section', 'label' =>'Searching', 'renderAsHeading' => true, 'hideInLists' => true,
 				'helpLink'=>'https://docs.google.com/document/d/1QQ7bNfGx75ImTguxEOmf7eCtdrVN9vi8FpWtWY_O3OU',
 				'properties' => [
 					'applyNumberOfHoldingsBoost'               => array('property' => 'applyNumberOfHoldingsBoost', 'type'=>'checkbox', 'label'=>'Apply Number Of Holdings Boost', 'description'=>'Whether or not the relevance will use boosting by number of holdings in the catalog.', 'hideInLists' => true, 'default' => 1),
-					'includeOutOfSystemExternalLinks'          => array('property' => 'includeOutOfSystemExternalLinks', 'type'=>'checkbox', 'label'=>'Include Out Of System External Links', 'description'=>'Whether or not to include external links from other library systems.  Should only be enabled for global scope.', 'hideInLists' => true, 'default'=>0),
+					'includeOutOfSystemExternalLinks'          => array('property' => 'includeOutOfSystemExternalLinks', 'type'=>'checkbox', 'label'=>'Include Out Of System External Links', 'description'=>'Whether or not to include external links from other library systems.  Should only be enabled for global scope.', 'hideInLists' => true, 'expandByDefault' => true, 'default'=>0),
 					'searchResultsSection' => array('property' => 'searchResultsSection', 'type' => 'section', 'label' => 'Search Results', 'hideInLists' => true, 'properties' => array(
 						'showSearchTools'                        => array('property' => 'showSearchTools',                    'type' => 'checkbox',    'label' => 'Show Search Tools',                                          'description' => 'Turn on to activate search tools (save search, export to excel, rss feed, etc).', 'hideInLists' => true),
 						'showQuickCopy'                          => array('property' => 'showQuickCopy',                      'type' => 'checkbox',    'label' => 'Show Quick Copy',                                            'description' => 'Turn on to to show Quick Copy Link in search results.', 'hideInLists' => true),
 						'showInSearchResultsMainDetails'         => array('property' => 'showInSearchResultsMainDetails',     'type' => 'multiSelect', 'label' => 'Optional details to show for a record in search results : ', 'description' => 'Selected details will be shown in the main details section of a record on a search results page.', 'listStyle' => 'checkboxSimple', 'values' => self::$searchResultsMainDetailsOptions),
 						'alwaysShowSearchResultsMainDetails'     => array('property' => 'alwaysShowSearchResultsMainDetails', 'type' => 'checkbox',    'label' => 'Always Show Selected Search Results Main Details',           'description' => 'Turn on to always show the selected details even when there is no info supplied for a detail, or the detail varies due to multiple formats and/or editions). Does not apply to Series & Language', 'hideInLists' => true),
 					)),
-					'searchFacetsSection' => array('property' => 'searchFacetsSection', 'type' => 'section', 'label' => 'Search Facets', 'hideInLists' => true, 'properties' => array(
+					'searchFacetsSection' => array('property' => 'searchFacetsSection', 'type' => 'section', 'label' => 'Search Facets', 'hideInLists' => true, 'expandByDefault' => true, 'properties' => array(
 						'availabilityToggleLabelSuperScope'        => array('property' => 'availabilityToggleLabelSuperScope',        'type' => 'text',     'label' => 'SuperScope Toggle Label',                                  'description' => 'The label to show when viewing super scope i.e. Consortium Name / Entire Collection / Everything.  Does not show if super scope is not enabled.', 'default' => 'Entire Collection'),
 						'availabilityToggleLabelLocal'             => array('property' => 'availabilityToggleLabelLocal',             'type' => 'text',     'label' => 'Local Collection Toggle Label',                            'description' => 'The label to show when viewing the local collection i.e. Library Name / Local Collection.  Leave blank to hide the button.', 'default' => ''),
 						'availabilityToggleLabelAvailable'         => array('property' => 'availabilityToggleLabelAvailable',         'type' => 'text',     'label' => 'Available Toggle Label',                                   'description' => 'The label to show when viewing available items i.e. Available Now / Available Locally / Available Here.', 'default' => 'Available Now'),
@@ -132,7 +132,7 @@ class GroupedWorkDisplaySetting extends DataObject
 			],
 
 			// Catalog Enrichment //
-			'enrichmentSection' => ['property'=>'enrichmentSection', 'type' => 'section', 'label' =>'Catalog Enrichment', 'hideInLists' => true,
+			'enrichmentSection' => ['property'=>'enrichmentSection', 'type' => 'section', 'label' =>'Catalog Enrichment', 'renderAsHeading' => true, 'hideInLists' => true,
 				'helpLink' => 'https://docs.google.com/document/d/1fJ2Sc62fTieJlPvaFz4XUoSr8blou_3MfxDGh1luI84', 'properties' => [
 					'showStandardReviews'      => array('property'=>'showStandardReviews', 'type'=>'checkbox', 'label'=>'Show Standard Reviews', 'description'=>'Whether or not reviews from Content Cafe/Syndetics are displayed on the full record page.', 'hideInLists' => true, 'default' => 1),
 					'showGoodReadsReviews'     => array('property'=>'showGoodReadsReviews', 'type'=>'checkbox', 'label'=>'Show GoodReads Reviews', 'description'=>'Whether or not reviews from GoodReads are displayed on the full record page.', 'hideInLists' => true, 'default'=>true),
@@ -147,7 +147,7 @@ class GroupedWorkDisplaySetting extends DataObject
 			],
 
 			// Full Record Display //
-			'fullRecordSection' => array('property'=>'fullRecordSection', 'type' => 'section', 'label' =>'Full Record Display', 'hideInLists' => true,
+			'fullRecordSection' => array('property'=>'fullRecordSection', 'type' => 'section', 'label' =>'Full Record Display', 'renderAsHeading' => true, 'hideInLists' => true,
 				'helpLink'=>'https://docs.google.com/document/d/1ZZsoKW2NOfGMad36BkWeF5ROqH5Wyg5up3eIhki5Lec', 'properties' => array(
 					'show856LinksAsTab'        => array('property'=>'show856LinksAsTab',        'type'=>'checkbox', 'label'=>'Show 856 Links in their own section',             'description'=>'Whether or not 856 links will be shown in their own tab or on the same tab as holdings.', 'hideInLists' => true, 'default' => 1),
 					'showCheckInGrid'          => array('property'=>'showCheckInGrid',          'type'=>'checkbox', 'label'=>'Show Check-in Grid',                'description'=>'Whether or not the check-in grid is shown for periodicals.', 'default' => 1, 'hideInLists' => true,),
@@ -277,19 +277,19 @@ class GroupedWorkDisplaySetting extends DataObject
 		return $ret;
 	}
 
-	private $__facetGroup;
+	private $_facetGroup;
 	/** @return GroupedWorkFacet[] */
 	public function getFacets()
 	{
 		try {
-			if ($this->__facetGroup == null) {
-				$this->__facetGroup = new GroupedWorkFacetGroup();
-				$this->__facetGroup->id = $this->facetGroupId;
-				if (!$this->__facetGroup->find(true)) {
-					$this->__facetGroup = null;
+			if ($this->_facetGroup == null) {
+				$this->_facetGroup = new GroupedWorkFacetGroup();
+				$this->_facetGroup->id = $this->facetGroupId;
+				if (!$this->_facetGroup->find(true)) {
+					$this->_facetGroup = null;
 				}
 			}
-			return $this->__facetGroup->getFacets();
+			return $this->_facetGroup->getFacets();
 		}catch (Exception $e){
 			return [];
 		}
@@ -299,7 +299,7 @@ class GroupedWorkDisplaySetting extends DataObject
 		if ($name == 'moreDetailsOptions'){
 			return $this->getMoreDetailsOptions();
 		}else{
-			return $this->__data[$name];
+			return $this->_data[$name];
 		}
 	}
 
@@ -307,38 +307,37 @@ class GroupedWorkDisplaySetting extends DataObject
 		if ($name == 'moreDetailsOptions'){
 			$this->setMoreDetailsOptions($value);
 		}else{
-			$this->__data[$name] = $value;
+			$this->_data[$name] = $value;
 		}
 	}
 	public function getMoreDetailsOptions(){
-		if (!isset($this->__moreDetailsOptions) && $this->libraryId){
-			$this->__moreDetailsOptions = array();
+		if (!isset($this->_moreDetailsOptions) && $this->id){
+			$this->_moreDetailsOptions = array();
 			$moreDetailsOptions = new GroupedWorkMoreDetails();
 			$moreDetailsOptions->groupedWorkSettingsId = $this->id;
 			$moreDetailsOptions->orderBy('weight');
 			$moreDetailsOptions->find();
 			while($moreDetailsOptions->fetch()){
-				$this->__moreDetailsOptions[$moreDetailsOptions->id] = clone($moreDetailsOptions);
+				$this->_moreDetailsOptions[$moreDetailsOptions->id] = clone($moreDetailsOptions);
 			}
 		}
-		return $this->__moreDetailsOptions;
+		return $this->_moreDetailsOptions;
 	}
 	public function setMoreDetailsOptions($value){
-		$this->__moreDetailsOptions = $value;
+		$this->_moreDetailsOptions = $value;
 	}
 
 	public function saveMoreDetailsOptions(){
-		if (isset ($this->__moreDetailsOptions) && is_array($this->__moreDetailsOptions)){
-			$this->saveOneToManyOptions($this->__moreDetailsOptions, 'groupedWorkSettingsId');
-			unset($this->__moreDetailsOptions);
+		if (isset ($this->_moreDetailsOptions) && is_array($this->_moreDetailsOptions)){
+			$this->saveOneToManyOptions($this->_moreDetailsOptions, 'groupedWorkSettingsId');
+			unset($this->_moreDetailsOptions);
 		}
 	}
 
 	public function clearMoreDetailsOptions(){
 		$this->clearOneToManyOptions('GroupedWorkMoreDetails', 'groupedWorkSettingsId');
 		/** @noinspection PhpUndefinedFieldInspection */
-		$this->__moreDetailsOptions = array();
+		$this->_moreDetailsOptions = array();
 	}
-
 
 }

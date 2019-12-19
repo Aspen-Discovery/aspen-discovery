@@ -73,7 +73,7 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 		$query = "SELECT grouped_work.* FROM grouped_work INNER JOIN grouped_work_primary_identifiers ON grouped_work.id = grouped_work_id WHERE type='overdrive' AND identifier = '" . $this->getUniqueID() . "'";
 		$groupedWork->query($query);
 
-		if ($groupedWork->N == 1){
+		if ($groupedWork->getNumResults() == 1){
 			$groupedWork->fetch();
 			$this->groupedWork = clone $groupedWork;
 		}
@@ -337,9 +337,9 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 			$searchLocation = Location::getSearchLocation();
 			$includeSharedTitles = true;
 			if($searchLocation != null){
-				$includeSharedTitles = $searchLocation->enableOverdriveCollection != 0;
+				$includeSharedTitles = $searchLocation->overDriveScopeId != 0;
 			}elseif ($searchLibrary != null){
-				$includeSharedTitles = $searchLibrary->enableOverdriveCollection != 0;
+				$includeSharedTitles = $searchLibrary->overDriveScopeId != 0;
 			}
 			$libraryScopingId = $this->getLibraryScopingId();
 			if ($includeSharedTitles){

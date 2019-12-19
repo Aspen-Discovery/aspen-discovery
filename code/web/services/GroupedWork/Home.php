@@ -26,7 +26,7 @@ class GroupedWork_Home extends Action{
 		// Set Show in Search Results Main Details Section options for template
 		// (needs to be set before moreDetailsOptions)
 		global $library;
-		foreach ($library->showInMainDetails as $detailOption) {
+		foreach ($library->getGroupedWorkDisplaySettings()->showInMainDetails as $detailOption) {
 			$interface->assign($detailOption, true);
 		}
 

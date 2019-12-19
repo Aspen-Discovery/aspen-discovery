@@ -452,9 +452,8 @@ class UInterface extends Smarty
 			$this->assign('showFavorites', $location->showFavorites && $library->showFavorites);
 			$this->assign('showComments', $location->getGroupedWorkDisplaySettings()->showComments);
 			$this->assign('showEmailThis', $location->showEmailThis && $library->showEmailThis);
-			$this->assign('showStaffView', $location->showStaffView && $library->showStaffView);
+			$this->assign('showStaffView', $location->getGroupedWorkDisplaySettings()->showStaffView);
 			$this->assign('showShareOnExternalSites', $location->showShareOnExternalSites && $library->showShareOnExternalSites);
-			$this->assign('showStaffView', $location->showStaffView && $library->showStaffView);
 			$this->assign('showGoodReadsReviews', $location->getGroupedWorkDisplaySettings()->showGoodReadsReviews);
 			$showHoldButton = (($location->showHoldButton == 1) && ($library->showHoldButton == 1)) ? 1 : 0;
 			$showHoldButtonInSearchResults = (($location->showHoldButton == 1) && ($library->showHoldButtonInSearchResults == 1)) ? 1 : 0;
@@ -468,7 +467,7 @@ class UInterface extends Smarty
 			$this->assign('showComments', $library->getGroupedWorkDisplaySettings()->showComments);
 			$this->assign('showEmailThis', $library->showEmailThis);
 			$this->assign('showShareOnExternalSites', $library->showShareOnExternalSites);
-			$this->assign('showStaffView', $library->showStaffView);
+			$this->assign('showStaffView', $library->getGroupedWorkDisplaySettings()->showStaffView);
 			$this->assign('showSimilarTitles', $library->getGroupedWorkDisplaySettings()->showSimilarTitles);
 			$this->assign('showSimilarAuthors', $library->getGroupedWorkDisplaySettings()->showSimilarAuthors);
 			$this->assign('showGoodReadsReviews', $library->getGroupedWorkDisplaySettings()->showGoodReadsReviews);
@@ -493,7 +492,7 @@ class UInterface extends Smarty
 		$this->assign('showHoldButtonInSearchResults', $showHoldButtonInSearchResults);
 		$this->assign('showNotInterested', true);
 
-		$this->assign('showRatings', $library->showRatings);
+		$this->assign('showRatings', $library->getGroupedWorkDisplaySettings()->showRatings);
 		$this->assign('allowPinReset', $library->allowPinReset);
 		$this->assign('allowAccountLinking', ($library->allowLinkedAccounts == 1));
 		$this->assign('librarySystemName', $library->displayName);

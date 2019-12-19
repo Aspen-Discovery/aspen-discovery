@@ -97,8 +97,6 @@ class User extends DataObject
 	private $_numMaterialsRequests = 0;
 	private $_readingHistorySize = 0;
 
-	private $data = array();
-
 	// CarlX Option
 	public $_emailReceiptFlag;
 	public $_availableHoldNotice;
@@ -184,7 +182,7 @@ class User extends DataObject
 			}
 			return $this->materialsRequestEmailSignature;
 		}else{
-			return $this->data[$name];
+			return $this->_data[$name];
 		}
 	}
 
@@ -194,7 +192,7 @@ class User extends DataObject
 			//Update the database, first remove existing values
 			$this->saveRoles();
 		}else{
-			$this->data[$name] = $value;
+			$this->_data[$name] = $value;
 		}
 	}
 
@@ -459,35 +457,43 @@ class User extends DataObject
 		return $users;
 	}
 
-	function isValidForEContentSource($source){
-		if ($this->parentUser == null || ($this->getBarcode() != $this->parentUser->getBarcode())){
+	function isValidForEContentSource($source)
+	{
+		global $enabledModules;
+		if ($this->parentUser == null || ($this->getBarcode() != $this->parentUser->getBarcode())) {
 			$userHomeLibrary = Library::getPatronHomeLibrary($this);
-			if ($userHomeLibrary){
-			    if ($source == 'overdrive'){
-				    require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
-				    $overDriveDriver = new OverDriveDriver();
-			        return $userHomeLibrary->enableOverdriveCollection && $overDriveDriver->isUserValidForOverDrive($this);
-                }elseif ($source == 'hoopla'){
-			        return $userHomeLibrary->hooplaLibraryID > 0;
-                }elseif ($source == 'rbdigital'){
-				    require_once ROOT_DIR . '/sys/RBdigital/RBdigitalSetting.php';
-				    try{
-					    $rbdigitalSettings = new RBdigitalSetting();
-					    $rbdigitalSettings->find();
-					    return $rbdigitalSettings->N > 0;
-				    }catch (Exception $e){
-				    	return false;
-				    }
-                }elseif ($source == 'cloud_library'){
-				    require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibrarySetting.php';
-				    try{
-					    $cloudLibrarySettings = new CloudLibrarySetting();
-					    $cloudLibrarySettings->find();
-					    return $cloudLibrarySettings->N > 0;
-				    }catch (Exception $e){
-					    return false;
-				    }
-			    }
+			if ($userHomeLibrary) {
+				if ($source == 'overdrive') {
+					require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+					$overDriveDriver = new OverDriveDriver();
+					return array_key_exists('OverDrive', $enabledModules) && $overDriveDriver->isUserValidForOverDrive($this);
+				} elseif ($source == 'hoopla') {
+					return array_key_exists('Hoopla', $enabledModules) && $userHomeLibrary->hooplaLibraryID > 0;
+				} elseif ($source == 'rbdigital') {
+					if (array_key_exists('RBdigital', $enabledModules)){
+						require_once ROOT_DIR . '/sys/RBdigital/RBdigitalSetting.php';
+						try {
+							$rbdigitalSettings = new RBdigitalSetting();
+							$rbdigitalSettings->find();
+							return $rbdigitalSettings->getNumResults() > 0;
+						} catch (Exception $e) {
+							return false;
+						}
+					}
+					return false;
+				} elseif ($source == 'cloud_library') {
+					if (array_key_exists('Cloud Library', $enabledModules)){
+						require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibrarySetting.php';
+						try {
+							$cloudLibrarySettings = new CloudLibrarySetting();
+							$cloudLibrarySettings->find();
+							return $cloudLibrarySettings->getNumResults() > 0;
+						} catch (Exception $e) {
+							return false;
+						}
+					}
+					return false;
+				}
 			}
 		}
 		return false;
@@ -658,7 +664,7 @@ class User extends DataObject
 		$rating->whereAdd("userId = {$this->id}");
 		$rating->whereAdd('rating > 0'); // Some entries are just reviews (and therefore have a default rating of -1)
 		$rating->find();
-		if ($rating->N > 0){
+		if ($rating->getNumResults() > 0){
 			return true;
 		}else{
 			return false;
@@ -771,7 +777,7 @@ class User extends DataObject
 			}else{
 				$location = new Location();
 				$location->get('locationId', $_POST['myLocation1'] );
-				if ($location->N != 1) {
+				if ($location->getNumResults() != 1) {
 					AspenError::raiseError('The 1st location could not be found in the database.');
 				} else {
 					$this->myLocation1Id = $_POST['myLocation1'];
@@ -784,7 +790,7 @@ class User extends DataObject
 			}else{
 				$location = new Location();
 				$location->get('locationId', $_POST['myLocation2'] );
-				if ($location->N != 1) {
+				if ($location->getNumResults() != 1) {
 					AspenError::raiseError('The 2nd location could not be found in the database.');
 				} else {
 					$this->myLocation2Id = $_POST['myLocation2'];
@@ -1572,7 +1578,7 @@ class User extends DataObject
 			require_once ROOT_DIR . '/Drivers/marmot_inc/PType.php';
 			$pType = new pType();
 			$pType->get('pType', $this->patronType);
-			if ($pType->N > 0) {
+			if ($pType->getNumResults() > 0) {
 				$this->masqueradeLevel = $pType->masquerade;
 			}
 		}

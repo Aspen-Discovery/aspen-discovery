@@ -494,7 +494,7 @@ class Location extends DataObject
 					$pickupLocation = new Library();
 					$pickupLocation->subdomain = $pickupSystem;
 					$pickupLocation->find();
-					if ($pickupLocation->N == 1) {
+					if ($pickupLocation->getNumResults() == 1) {
 						$pickupLocation->fetch();
 						$pickupIds[] = $pickupLocation->libraryId;
 					}
@@ -787,7 +787,7 @@ class Location extends DataObject
 				$location = new Location();
 				$location->code = $scopingSetting;
 				$location->find();
-				if ($location->N > 0) {
+				if ($location->getNumResults() > 0) {
 					$location->fetch();
 					Location::$searchLocation[$searchSource] = clone($location);
 				} else {
@@ -921,7 +921,7 @@ class Location extends DataObject
 		$location->libraryId = $libraryId;
 		$location->find();
 		$facets = array();
-		if ($location->N > 0) {
+		if ($location->getNumResults() > 0) {
 			while ($location->fetch()) {
 				$facets[] = $location->facetLabel;
 			}
@@ -1546,25 +1546,49 @@ class Location extends DataObject
 		return $this->_selected;
 	}
 
-	private $__groupedWorkDisplaySettings = null;
+	protected $_groupedWorkDisplaySettings = null;
 
 	/** @return GroupedWorkDisplaySetting */
 	public function getGroupedWorkDisplaySettings()
 	{
-		if ($this->__groupedWorkDisplaySettings == null) {
-			if ($this->groupedWorkDisplaySettingId == -1) {
-				$library = Library::getLibraryForLocation($this->libraryId);
-				$this->groupedWorkDisplaySettingId = $library->groupedWorkDisplaySettingId;
+		if ($this->_groupedWorkDisplaySettings == null) {
+			try {
+				if ($this->groupedWorkDisplaySettingId == -1) {
+					$library = Library::getLibraryForLocation($this->libraryId);
+					$this->groupedWorkDisplaySettingId = $library->groupedWorkDisplaySettingId;
+				}
+				$groupedWorkDisplaySettings = new GroupedWorkDisplaySetting();
+				$groupedWorkDisplaySettings->id = $this->groupedWorkDisplaySettingId;
+				$groupedWorkDisplaySettings->find(true);
+				$this->_groupedWorkDisplaySettings = clone $groupedWorkDisplaySettings;
+			}catch(Exception $e){
+				global $logger;
+				$logger->log('Error loading grouped work display settings ' . $e, Logger::LOG_ERROR);
 			}
-			$this->__groupedWorkDisplaySettings = new GroupedWorkDisplaySetting();
-			$this->__groupedWorkDisplaySettings->id = $this->groupedWorkDisplaySettingId;
-			$this->__groupedWorkDisplaySettings->find(true);
 		}
-		return $this->__groupedWorkDisplaySettings;
+		return $this->_groupedWorkDisplaySettings;
 	}
 
 	function getEditLink()
 	{
 		return '/Admin/Locations?objectAction=edit&id=' . $this->libraryId;
+	}
+
+	protected $_parentLibrary = null;
+	/** @return Library */
+	public function getParentLibrary()
+	{
+		if ($this->_parentLibrary == null){
+			$this->_parentLibrary = new Library();
+			$this->_parentLibrary->libraryId = $this->libraryId;
+			$this->_parentLibrary->find(true);
+		}
+		return $this->_parentLibrary;
+	}
+
+	public function setGroupedWorkDisplaySettings(GroupedWorkDisplaySetting $newGroupedWorkDisplaySettings)
+	{
+		$this->_groupedWorkDisplaySettings = $newGroupedWorkDisplaySettings;
+		$this->groupedWorkDisplaySettingId = $newGroupedWorkDisplaySettings->id;
 	}
 }

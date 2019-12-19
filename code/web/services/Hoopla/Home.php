@@ -50,7 +50,7 @@ class Hoopla_Home extends Action{
 			// Set Show in Main Details Section options for templates
 			// (needs to be set before moreDetailsOptions)
 			global $library;
-			foreach ($library->showInMainDetails as $detailoption) {
+			foreach ($library->getGroupedWorkDisplaySettings()->showInMainDetails as $detailoption) {
 				$interface->assign($detailoption, true);
 			}
 

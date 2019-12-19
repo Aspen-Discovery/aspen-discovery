@@ -208,7 +208,7 @@ abstract class RecordInterface {
 
 		$moreDetailsFilters = [];
 		$useDefault = true;
-		if ($library && count($library->moreDetailsOptions) > 0){
+		if ($library && count($library->getGroupedWorkDisplaySettings()->getMoreDetailsOptions()) > 0){
 			$useDefault = false;
 			/** @var GroupedWorkMoreDetails $option */
 			foreach ($library->getGroupedWorkDisplaySettings()->getMoreDetailsOptions() as $option){
@@ -216,11 +216,11 @@ abstract class RecordInterface {
 			}
 		}
 		/** @noinspection PhpUndefinedFieldInspection */
-		if ($activeLocation && count($activeLocation->moreDetailsOptions) > 0){
+		if ($activeLocation && count($activeLocation->getGroupedWorkDisplaySettings()->getMoreDetailsOptions()) > 0){
 			$useDefault = false;
 			/** @noinspection PhpUndefinedFieldInspection */
 			/** @var LocationMoreDetails $option */
-			foreach ($activeLocation->moreDetailsOptions as $option){
+			foreach ($activeLocation->getGroupedWorkDisplaySettings()->getMoreDetailsOptions() as $option){
 				$moreDetailsFilters[$option->source] = $option->collapseByDefault ? 'closed' : 'open';
 			}
 		}
