@@ -1651,11 +1651,16 @@ class Library extends DataObject
 				require_once ROOT_DIR . '/sys/Grouping/GroupedWorkDisplaySetting.php';
 				$groupedWorkDisplaySettings = new GroupedWorkDisplaySetting();
 				$groupedWorkDisplaySettings->id = $this->groupedWorkDisplaySettingId;
-				$groupedWorkDisplaySettings->find(true);
-				$this->_groupedWorkDisplaySettings = $groupedWorkDisplaySettings;
+				if ($groupedWorkDisplaySettings->find(true)){
+					$this->_groupedWorkDisplaySettings = $groupedWorkDisplaySettings;
+				}else{
+					$this->_groupedWorkDisplaySettings = GroupedWorkDisplaySetting::getDefaultDisplaySettings();
+				}
+
 			}catch(Exception $e){
 				global $logger;
 				$logger->log('Error loading grouped work display settings ' . $e, Logger::LOG_ERROR);
+				$this->_groupedWorkDisplaySettings = GroupedWorkDisplaySetting::getDefaultDisplaySettings();
 			}
 		}
 		if ($this->groupedWorkDisplaySettingId != $this->_groupedWorkDisplaySettings->id){

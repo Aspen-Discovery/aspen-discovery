@@ -340,4 +340,18 @@ class GroupedWorkDisplaySetting extends DataObject
 		$this->_moreDetailsOptions = array();
 	}
 
+	public static function getDefaultDisplaySettings(){
+		$defaultDiplaySettings = new GroupedWorkDisplaySetting();
+		$defaultDiplaySettings->name = 'default';
+		$defaultDiplaySettings->applyNumberOfHoldingsBoost = true;
+		$defaultDiplaySettings->includeOutOfSystemExternalLinks = false;
+		$defaultDiplaySettings->showSearchTools = true;
+		$defaultDiplaySettings->showQuickCopy = true;
+		$defaultDiplaySettings->alwaysShowSearchResultsMainDetails = false;
+		$defaultDiplaySettings->availabilityToggleLabelSuperScope = 'Entire Collection';
+		$defaultDiplaySettings->availabilityToggleLabelLocal = '';
+		$defaultDiplaySettings->availabilityToggleLabelAvailable = 'Available Now';
+		$defaultDiplaySettings->availabilityToggleLabelAvailableOnline = 'Available Online';
+		return $defaultDiplaySettings;
+	}
 }
