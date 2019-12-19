@@ -33,6 +33,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 		'audiobook-overdrive' => 'OverDrive Listen',
 		'video-streaming' => 'OverDrive Video',
 		'ebook-mediado' => 'MediaDo Reader',
+		'overdrive-magazine' => 'OverDrive Magazine'
 	);
 	private $lastHttpCode;
 
