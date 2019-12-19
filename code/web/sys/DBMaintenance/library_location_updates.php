@@ -1867,12 +1867,12 @@ function getLibraryLocationUpdates(){
 					(1, 'default')",
 				"ALTER TABLE library ADD COLUMN layoutSettingId INT(11) DEFAULT 0",
 				'moveLayoutSettingsToTable',
-//				"ALTER TABLE library DROP COLUMN showSidebarMenu",
-//				"ALTER TABLE library DROP COLUMN sidebarMenuButtonText",
-//				"ALTER TABLE library DROP COLUMN useHomeLinkInBreadcrumbs",
-//				"ALTER TABLE library DROP COLUMN useHomeLinkForLogo",
-//				"ALTER TABLE library DROP COLUMN homeLinkText",
-//				"ALTER TABLE library DROP COLUMN showLibraryHoursAndLocationsLink",
+				"ALTER TABLE library DROP COLUMN showSidebarMenu",
+				"ALTER TABLE library DROP COLUMN sidebarMenuButtonText",
+				"ALTER TABLE library DROP COLUMN useHomeLinkInBreadcrumbs",
+				"ALTER TABLE library DROP COLUMN useHomeLinkForLogo",
+				"ALTER TABLE library DROP COLUMN homeLinkText",
+				"ALTER TABLE library DROP COLUMN showLibraryHoursAndLocationsLink",
 			],
 		],
 
@@ -1897,7 +1897,7 @@ function getLibraryLocationUpdates(){
 					includeAllRecordsInShelvingFacets TINYINT DEFAULT 0,
 					includeAllRecordsInDateAddedFacets TINYINT DEFAULT 0,
 					includeOutOfSystemExternalLinks TINYINT DEFAULT 0,
-					facetGroupId INT(11),
+					facetGroupId INT(11) DEFAULT 0,
 					showStandardReviews TINYINT DEFAULT 1,
 					showGoodReadsReviews TINYINT DEFAULT 1, 
 					preferSyndeticsSummary TINYINT DEFAULT 1,
@@ -1954,19 +1954,20 @@ function getLibraryLocationUpdates(){
 				"ALTER TABLE library ADD COLUMN groupedWorkDisplaySettingId INT(11) DEFAULT 0",
 				"ALTER TABLE location ADD COLUMN groupedWorkDisplaySettingId INT(11) DEFAULT -1",
 				'moveGroupedWorkSettingsToTable',
-//				"ALTER TABLE library DROP COLUMN applyNumberOfHoldingsBoost",
-//				"ALTER TABLE library DROP COLUMN showSearchTools",
-//				"ALTER TABLE library DROP COLUMN showQuickCopy",
-//				"ALTER TABLE library DROP COLUMN showInSearchResultsMainDetails",
-//				"ALTER TABLE library DROP COLUMN alwaysShowSearchResultsMainDetails",
-//				"ALTER TABLE library DROP COLUMN availabilityToggleLabelSuperScope",
-//				"ALTER TABLE library DROP COLUMN availabilityToggleLabelLocal",
-//				"ALTER TABLE library DROP COLUMN availabilityToggleLabelAvailable",
-//				"ALTER TABLE library DROP COLUMN availabilityToggleLabelAvailableOnline",
-//				"ALTER TABLE library DROP COLUMN includeOnlineMaterialsInAvailableToggle",
+				'createFacetGroupsForLibrariesAndLocations',
+				"ALTER TABLE library DROP COLUMN applyNumberOfHoldingsBoost",
+				"ALTER TABLE library DROP COLUMN showSearchTools",
+				"ALTER TABLE library DROP COLUMN showQuickCopy",
+				"ALTER TABLE library DROP COLUMN showInSearchResultsMainDetails",
+				"ALTER TABLE library DROP COLUMN alwaysShowSearchResultsMainDetails",
+				"ALTER TABLE library DROP COLUMN availabilityToggleLabelSuperScope",
+				"ALTER TABLE library DROP COLUMN availabilityToggleLabelLocal",
+				"ALTER TABLE library DROP COLUMN availabilityToggleLabelAvailable",
+				"ALTER TABLE library DROP COLUMN availabilityToggleLabelAvailableOnline",
+				"ALTER TABLE library DROP COLUMN includeOnlineMaterialsInAvailableToggle",
 				"ALTER TABLE library DROP COLUMN includeAllRecordsInShelvingFacets",
 				"ALTER TABLE library DROP COLUMN includeAllRecordsInDateAddedFacets",
-//				"ALTER TABLE library DROP COLUMN includeOutOfSystemExternalLinks",
+				"ALTER TABLE library DROP COLUMN includeOutOfSystemExternalLinks",
 				"ALTER TABLE library DROP COLUMN showStandardReviews",
 				"ALTER TABLE library DROP COLUMN showGoodReadsReviews",
 				"ALTER TABLE library DROP COLUMN preferSyndeticsSummary",
@@ -1980,25 +1981,39 @@ function getLibraryLocationUpdates(){
 				"ALTER TABLE library DROP COLUMN showFastAddSubjects",
 				"ALTER TABLE library DROP COLUMN showInMainDetails",
 
-
-//				"ALTER TABLE location DROP COLUMN baseAvailabilityToggleOnLocalHoldingsOnly",
-//				"ALTER TABLE location DROP COLUMN availabilityToggleLabelSuperScope",
-//				"ALTER TABLE location DROP COLUMN availabilityToggleLabelLocal",
-//				"ALTER TABLE location DROP COLUMN availabilityToggleLabelAvailable",
-//				"ALTER TABLE location DROP COLUMN availabilityToggleLabelAvailableOnline",
-//				"ALTER TABLE location DROP COLUMN includeOnlineMaterialsInAvailableToggle",
+				"ALTER TABLE location DROP COLUMN baseAvailabilityToggleOnLocalHoldingsOnly",
+				"ALTER TABLE location DROP COLUMN availabilityToggleLabelSuperScope",
+				"ALTER TABLE location DROP COLUMN availabilityToggleLabelLocal",
+				"ALTER TABLE location DROP COLUMN availabilityToggleLabelAvailable",
+				"ALTER TABLE location DROP COLUMN availabilityToggleLabelAvailableOnline",
+				"ALTER TABLE location DROP COLUMN includeOnlineMaterialsInAvailableToggle",
 				"ALTER TABLE location DROP COLUMN includeAllRecordsInShelvingFacets",
 				"ALTER TABLE location DROP COLUMN includeAllRecordsInDateAddedFacets",
 				"ALTER TABLE location DROP COLUMN showStandardReviews",
 				"ALTER TABLE location DROP COLUMN showGoodReadsReviews",
 				"ALTER TABLE location DROP COLUMN showComments",
 				"ALTER TABLE location DROP COLUMN showStaffView",
+				"DROP TABLE library_facet_setting",
+				"DROP TABLE location_facet_setting",
 			],
 		],
+
+		'update_grouped_work_more_details' => [
+			'title' => 'Update Grouped Work More Details',
+			'description' => 'MOve More Details for Grouped Works from Libraries to Grouped Work Display Settings',
+			'sql' => [
+				"RENAME TABLE library_more_details TO grouped_work_more_details",
+				"ALTER TABLE grouped_work_more_details Add COLUMN groupedWorkSettingsId INT(11) NOT NULL DEFAULT -1",
+				"convertLibraryMoreDetailsToGroupedWork",
+				"ALTER TABLE grouped_work_more_details DROP COLUMN libraryId",
+			]
+		]
 	);
 }
 
-function moveLibraryAndLocationGroupedWorkFacetsToTable(/** @noinspection PhpUnusedParameterInspection */ &$update){
+/** @noinspection PhpUnused */
+function moveLibraryAndLocationGroupedWorkFacetsToTable(/** @noinspection PhpUnusedParameterInspection */ &$update)
+{
 	//Create default groups of facets
 	$publicFacetGroup = new GroupedWorkFacetGroup();
 	$publicFacetGroup->name = 'public';
@@ -2019,8 +2034,269 @@ function moveLibraryAndLocationGroupedWorkFacetsToTable(/** @noinspection PhpUnu
 	$consortiaFacetGroup->name = 'consortia';
 	$consortiaFacetGroup->insert();
 	$consortiaFacetGroup->setupDefaultFacets('consortia');
+}
 
-	//TODO: Now go through the existing facets to see if we need to create new groups
+/** @noinspection PhpUnused */
+function createFacetGroupsForLibrariesAndLocations(){
+	//Get all of the active Facet Groups
+	$facetGroups = [];
+	$facetGroup = new GroupedWorkFacetGroup();
+	$facetGroup->find();
+	while ($facetGroup->fetch()){
+		$facetGroups[$facetGroup->id] = clone $facetGroup;
+	}
+	//Now go through the existing facets to see if we need to create new groups
+	/** @var PDO $aspen_db */
+	global $aspen_db;
+	$library = new Library();
+	$library->find();
+	while ($library->fetch()){
+		//Get Facets for this library
+		$libraryFacetsSQL = "SELECT * from library_facet_setting WHERE libraryId = " . $library->libraryId . " ORDER BY weight";
+		$libraryFacetsRS = $aspen_db->query($libraryFacetsSQL, PDO::FETCH_ASSOC);
+		$numLibraryFacets = $libraryFacetsRS->rowCount();
+
+		if ($numLibraryFacets == 0){
+			//No facets have been assigned to the library, assign a default set
+			if ($library->getGroupedWorkDisplaySettings()->facetGroupId == 0){
+				$library->getGroupedWorkDisplaySettings()->facetGroupId = 1;
+				$library->getGroupedWorkDisplaySettings()->update();
+			}
+		}else{
+			//Look for a group that matches this set of facets.
+			/** @var GroupedWorkFacetGroup[] $matchingGroups */
+			$matchingGroups = [];
+			//Eliminate groups based on number of facets that have been activated
+			foreach ($facetGroups as $id => $facetGroup){
+				if (count($facetGroup->getFacets()) == $numLibraryFacets){
+					$matchingGroups[$id] = $facetGroup;
+				}
+			}
+
+			if (count($matchingGroups) > 0){
+				$curFacet = 0;
+				$libraryFacetRow = $libraryFacetsRS->fetch();
+				$numFacetsForLibrary = 0;
+				while ($libraryFacetRow != null){
+					$numFacetsForLibrary++;
+					$libraryFacetRow = $libraryFacetsRS->fetch();
+					foreach ($matchingGroups as $id => $group){
+						$facetInGroup = $group->getFacetByIndex($curFacet);
+						if ($facetInGroup->facetName != $libraryFacetRow['facetName']){
+							unset($matchingGroups[$id]);
+							continue;
+						}elseif ($facetInGroup->displayName != $libraryFacetRow['displayName']){
+							unset($matchingGroups[$id]);
+							continue;
+						}elseif ($facetInGroup->numEntriesToShowByDefault != $libraryFacetRow['numEntriesToShowByDefault']){
+							unset($matchingGroups[$id]);
+							continue;
+						}elseif ($facetInGroup->showAsDropDown != $libraryFacetRow['showAsDropDown']){
+							unset($matchingGroups[$id]);
+							continue;
+						}elseif ($facetInGroup->multiSelect != $libraryFacetRow['multiSelect']){
+							unset($matchingGroups[$id]);
+							continue;
+						}elseif ($facetInGroup->canLock != $libraryFacetRow['canLock']){
+							unset($matchingGroups[$id]);
+							continue;
+						}elseif ($facetInGroup->sortMode != $libraryFacetRow['sortMode']){
+							unset($matchingGroups[$id]);
+							continue;
+						}elseif ($facetInGroup->showAboveResults != $libraryFacetRow['showAboveResults']){
+							unset($matchingGroups[$id]);
+							continue;
+						}elseif ($facetInGroup->showInResults != $libraryFacetRow['showInResults']){
+							unset($matchingGroups[$id]);
+							continue;
+						}elseif ($facetInGroup->showInAdvancedSearch != $libraryFacetRow['showInAdvancedSearch']){
+							unset($matchingGroups[$id]);
+							continue;
+						}elseif ($facetInGroup->collapseByDefault != $libraryFacetRow['collapseByDefault']){
+							unset($matchingGroups[$id]);
+							continue;
+						}elseif ($facetInGroup->useMoreFacetPopup != $libraryFacetRow['useMoreFacetPopup']){
+							unset($matchingGroups[$id]);
+							continue;
+						}elseif ($facetInGroup->translate != $libraryFacetRow['translate']){
+							unset($matchingGroups[$id]);
+							continue;
+						}
+					}
+				}
+			}
+
+			if (count($matchingGroups) == 0){
+				//We need to create a new group
+				$newFacetGroup = new GroupedWorkFacetGroup();
+				$newFacetGroup->name = 'Library ' . $library->displayName;
+				$newFacetGroup->insert();
+				$libraryFacetsRS = $aspen_db->query($libraryFacetsSQL, PDO::FETCH_ASSOC);
+				$libraryFacetRow = $libraryFacetsRS->fetch();
+				$weight = 0;
+				while ($libraryFacetRow != null){
+					$newFacet = new GroupedWorkFacet();
+					$newFacet->weight = $weight++;
+					$newFacet->facetName = $libraryFacetRow['facetName'];
+					$newFacet->displayName = $libraryFacetRow['displayName'];
+					$newFacet->numEntriesToShowByDefault = $libraryFacetRow['numEntriesToShowByDefault'];
+					$newFacet->showAsDropDown = $libraryFacetRow['showAsDropDown'];
+					$newFacet->multiSelect = $libraryFacetRow['multiSelect'];
+					$newFacet->canLock = $libraryFacetRow['canLock'];
+					$newFacet->sortMode = $libraryFacetRow['sortMode'];
+					$newFacet->showAboveResults = $libraryFacetRow['showAboveResults'];
+					$newFacet->showInResults = $libraryFacetRow['showInResults'];
+					$newFacet->showInAdvancedSearch = $libraryFacetRow['showInAdvancedSearch'];
+					$newFacet->collapseByDefault = $libraryFacetRow['collapseByDefault'];
+					$newFacet->useMoreFacetPopup = $libraryFacetRow['useMoreFacetPopup'];
+					$newFacet->translate = $libraryFacetRow['translate'];
+					$newFacet->facetGroupId = $newFacetGroup->id;
+					$newFacet->insert();
+					$libraryFacetRow = $libraryFacetsRS->fetch();
+				}
+				$library->getGroupedWorkDisplaySettings()->facetGroupId = $newFacetGroup->id;
+				$library->getGroupedWorkDisplaySettings()->update();
+			}else{
+				//Assign the group to the library
+				$library->getGroupedWorkDisplaySettings()->facetGroupId = array_keys($matchingGroups)[0];
+				$library->getGroupedWorkDisplaySettings()->update();
+			}
+		}
+	}
+
+	//Now check the locations
+	$location = new Location();
+	$location->find();
+	while ($location->fetch()){
+		//Get Facets for this library
+		$locationFacetsSQL = "SELECT * from location_facet_setting WHERE locationId = " . $location->locationId . " ORDER BY weight";
+		$locationFacetsRS = $aspen_db->query($locationFacetsSQL, PDO::FETCH_ASSOC);
+		$numLocationFacets = $locationFacetsRS->rowCount();
+
+		if ($numLocationFacets == 0){
+			//No facets have been assigned to the library, assign a default set
+			if ($location->groupedWorkDisplaySettingId != -1 && $location->getGroupedWorkDisplaySettings()->facetGroupId == 0){
+				$parentLibrary = $location->getParentLibrary();
+				$location->getGroupedWorkDisplaySettings()->facetGroupId = $parentLibrary->getGroupedWorkDisplaySettings()->facetGroupId;
+				$location->getGroupedWorkDisplaySettings()->update();
+			}
+		}else{
+			//Look for a group that matches this set of facets.
+			/** @var GroupedWorkFacetGroup[] $matchingGroups */
+			$matchingGroups = [];
+			//Eliminate groups based on number of facets that have been activated
+			foreach ($facetGroups as $id => $facetGroup){
+				if (count($facetGroup->getFacets()) == $numLocationFacets){
+					$matchingGroups[$id] = $facetGroup;
+				}
+			}
+
+			if (count($matchingGroups) > 0){
+				$curFacet = 0;
+				$locationFacetRow = $locationFacetsRS->fetch();
+				$numFacetsForLocation = 0;
+				while ($locationFacetRow != null){
+					$numFacetsForLocation++;
+					$locationFacetRow = $locationFacetsRS->fetch();
+					foreach ($matchingGroups as $id => $group){
+						$facetInGroup = $group->getFacetByIndex($curFacet);
+						if ($facetInGroup->facetName != $locationFacetRow['facetName']){
+							unset($matchingGroups[$id]);
+							continue;
+						}elseif ($facetInGroup->displayName != $locationFacetRow['displayName']){
+							unset($matchingGroups[$id]);
+							continue;
+						}elseif ($facetInGroup->numEntriesToShowByDefault != $locationFacetRow['numEntriesToShowByDefault']){
+							unset($matchingGroups[$id]);
+							continue;
+						}elseif ($facetInGroup->showAsDropDown != $locationFacetRow['showAsDropDown']){
+							unset($matchingGroups[$id]);
+							continue;
+						}elseif ($facetInGroup->multiSelect != $locationFacetRow['multiSelect']){
+							unset($matchingGroups[$id]);
+							continue;
+						}elseif ($facetInGroup->canLock != $locationFacetRow['canLock']){
+							unset($matchingGroups[$id]);
+							continue;
+						}elseif ($facetInGroup->sortMode != $locationFacetRow['sortMode']){
+							unset($matchingGroups[$id]);
+							continue;
+						}elseif ($facetInGroup->showAboveResults != $locationFacetRow['showAboveResults']){
+							unset($matchingGroups[$id]);
+							continue;
+						}elseif ($facetInGroup->showInResults != $locationFacetRow['showInResults']){
+							unset($matchingGroups[$id]);
+							continue;
+						}elseif ($facetInGroup->showInAdvancedSearch != $locationFacetRow['showInAdvancedSearch']){
+							unset($matchingGroups[$id]);
+							continue;
+						}elseif ($facetInGroup->collapseByDefault != $locationFacetRow['collapseByDefault']){
+							unset($matchingGroups[$id]);
+							continue;
+						}elseif ($facetInGroup->useMoreFacetPopup != $locationFacetRow['useMoreFacetPopup']){
+							unset($matchingGroups[$id]);
+							continue;
+						}elseif ($facetInGroup->translate != $locationFacetRow['translate']){
+							unset($matchingGroups[$id]);
+							continue;
+						}
+					}
+				}
+			}
+
+			if (count($matchingGroups) == 0){
+				//We need to create a new group
+				$newFacetGroup = new GroupedWorkFacetGroup();
+				$newFacetGroup->name = 'Location ' . $location->displayName;
+				$newFacetGroup->insert();
+				$locationFacetsRS = $aspen_db->query($locationFacetsSQL, PDO::FETCH_ASSOC);
+				$locationFacetRow = $locationFacetsRS->fetch();
+				$weight = 0;
+				while ($locationFacetRow != null){
+					$newFacet = new GroupedWorkFacet();
+					$newFacet->weight = $weight++;
+					$newFacet->facetName = $locationFacetRow['facetName'];
+					$newFacet->displayName = $locationFacetRow['displayName'];
+					$newFacet->numEntriesToShowByDefault = $locationFacetRow['numEntriesToShowByDefault'];
+					$newFacet->showAsDropDown = $locationFacetRow['showAsDropDown'];
+					$newFacet->multiSelect = $locationFacetRow['multiSelect'];
+					$newFacet->canLock = $locationFacetRow['canLock'];
+					$newFacet->sortMode = $locationFacetRow['sortMode'];
+					$newFacet->showAboveResults = $locationFacetRow['showAboveResults'];
+					$newFacet->showInResults = $locationFacetRow['showInResults'];
+					$newFacet->showInAdvancedSearch = $locationFacetRow['showInAdvancedSearch'];
+					$newFacet->collapseByDefault = $locationFacetRow['collapseByDefault'];
+					$newFacet->useMoreFacetPopup = $locationFacetRow['useMoreFacetPopup'];
+					$newFacet->translate = $locationFacetRow['translate'];
+					$newFacet->facetGroupId = $newFacetGroup->id;
+					$newFacet->insert();
+					$locationFacetRow = $locationFacetsRS->fetch();
+				}
+				if ($location->getGroupedWorkDisplaySettings()->facetGroupId != $newFacetGroup->id){
+					if ($location->getGroupedWorkDisplaySettings()->facetGroupId != 0) {
+						//We need to create a new set of display settings for the new facet group
+						$newGroupedWorkDisplaySettings = $location->getGroupedWorkDisplaySettings()->copy(['name' => 'Location: ' . $location->displayName], true);
+						$location->setGroupedWorkDisplaySettings($newGroupedWorkDisplaySettings);
+						$location->update();
+					}
+					$location->getGroupedWorkDisplaySettings()->facetGroupId = $newFacetGroup->id;
+					$location->getGroupedWorkDisplaySettings()->update();
+				}
+			}else{
+				//Assign the group to the location
+				if ($location->getGroupedWorkDisplaySettings()->facetGroupId != array_keys($matchingGroups)[0]) {
+					if ($location->getGroupedWorkDisplaySettings()->facetGroupId != 0) {
+						//We need to create a new set of display settings for the new facet group
+						$newGroupedWorkDisplaySettings = $location->getGroupedWorkDisplaySettings()->copy(['name' => 'Location: ' . $location->displayName], true);
+						$location->setGroupedWorkDisplaySettings($newGroupedWorkDisplaySettings);
+						$location->update();
+					}
+					$location->getGroupedWorkDisplaySettings()->facetGroupId = array_keys($matchingGroups)[0];
+					$location->getGroupedWorkDisplaySettings()->update();
+				}
+			}
+		}
+	}
 }
 
 /** @noinspection PhpUnused */
@@ -2085,7 +2361,7 @@ function moveGroupedWorkSettingsToTable(/** @noinspection PhpUnusedParameterInsp
 }
 
 /** @noinspection PhpUnused */
-function moveLayoutSettingsToTable(){
+function moveLayoutSettingsToTable(/** @noinspection PhpUnusedParameterInspection */ &$update){
 	/** @var PDO $aspen_db */
 	global $aspen_db;
 
@@ -2124,5 +2400,44 @@ function moveLayoutSettingsToTable(){
 		}
 
 		$uniqueLayoutSettingsRow = $uniqueLayoutSettingsRS->fetch();
+	}
+}
+
+function convertLibraryMoreDetailsToGroupedWork(&$update){
+	//This should only be called once or it will do weird things
+	/** @var PDO $aspen_db */
+	global $aspen_db;
+
+	//Get all of the records from the more details
+	$moreDetailsByLibrarySQL = "SELECT * FROM grouped_work_more_details";
+	$moreDetailsByLibraryRS = $aspen_db->query($moreDetailsByLibrarySQL);
+	$moreDetailsByLibraryRow = $moreDetailsByLibraryRS->fetch(PDO::FETCH_ASSOC);
+	while ($moreDetailsByLibraryRow != null){
+		$moreDetailsId = $moreDetailsByLibraryRow['id'];
+		$libraryId = $moreDetailsByLibraryRow['libraryId'];
+
+		$library = new Library();
+		$library->libraryId = $libraryId;
+		$library->find(true);
+
+		$groupedWorkMoreDetails = new GroupedWorkMoreDetails();
+		$groupedWorkMoreDetails->id = $moreDetailsId;
+		$groupedWorkMoreDetails->find(true);
+
+		if ($groupedWorkMoreDetails->groupedWorkSettingsId == -1){
+			$groupedWorkMoreDetails->groupedWorkSettingsId = $library->groupedWorkDisplaySettingId;
+			$groupedWorkMoreDetails->update();
+		}elseif ($groupedWorkMoreDetails->groupedWorkSettingsId != $library->groupedWorkDisplaySettingId){
+			$update['status'] .= 'Warning: GroupedWorkMoreDetails ' . $groupedWorkMoreDetails->id . ' should be linked to multiple Grouped Work Settings';
+		}
+
+		$moreDetailsByLibraryRow = $moreDetailsByLibraryRS->fetch(PDO::FETCH_ASSOC);
+	}
+
+	$groupedWorkMoreDetails = new GroupedWorkMoreDetails();
+	$groupedWorkMoreDetails->groupedWorkSettingsId = -1;
+	$groupedWorkMoreDetails->find();
+	while ($groupedWorkMoreDetails->fetch()){
+		$update['status'] .= 'Warning: GroupedWorkMoreDetails ' . $groupedWorkMoreDetails->id . ' was not assigned to a Grouped Work Settings';
 	}
 }
