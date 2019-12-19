@@ -18,7 +18,7 @@
 				<tbody>
 					{foreach from=$sqlUpdates item=update key=updateKey}
 					<tr class="{if $update.alreadyRun}updateRun{else}updateNotRun{/if}
-					{if $update.status == 'Update succeeded'} success{elseif strpos($update.status, 'Warning') !== false} warning{elseif strpos($update.status, 'fail') !== false || strpos($update.status, 'error') !== false} danger{/if}"
+					{if array_key_exists('status',$update)}{if $update.status == 'Update succeeded'} success{elseif strpos($update.status, 'Warning') !== false} warning{elseif strpos($update.status, 'fail') !== false || strpos($update.status, 'error') !== false} danger{/if}{/if}"
 					{if $update.alreadyRun && !$update.status} style="display:none"{/if}>
 						<td><input type="checkbox" name="selected[{$updateKey}]"{if !$update.alreadyRun} checked="checked"{/if} class="selectedUpdate" id="{$updateKey}"></td>
 						<td><label for="{$updateKey}">{$update.title}</label></td>
