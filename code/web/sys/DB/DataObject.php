@@ -1,10 +1,20 @@
 <?php
 
+/**
+ * Class DataObject
+ *
+ * Represents a class of data that can be loaded and saved to the database.
+ *
+ * All properties must be public or protected to handle __get and __set properly
+ * Each property that starts with __ is used to store and load data from the database (query information etc).
+ * Each property that starts with _ is runtime data that is reset for each object
+ * Each property that starts with [a-zA-Z] is a property that is saved to the database
+ */
 abstract class DataObject
 {
 	public $__table;
 	public $__primaryKey = 'id';
-	public $N;
+	protected $__N;
 	/** @var PDOStatement */
 	private $__queryStmt;
 	private $__selectAllColumns = true;
@@ -19,7 +29,7 @@ abstract class DataObject
 	private $__joins = [];
 	protected $__fetchingFromDB = false;
 
-	protected $__data = [];
+	protected $_data = [];
 
 	function getNumericColumnNames(){
 		return [];
@@ -31,7 +41,7 @@ abstract class DataObject
 			die();
 		}
 
-		$this->N = 0;
+		$this->__N = 0;
 		$this->__queryStmt = null;
 		/** @var PDO $aspen_db  */
 		global $aspen_db;
@@ -40,21 +50,21 @@ abstract class DataObject
 		$this->__queryStmt = $aspen_db->prepare($query);
 		$this->__queryStmt->setFetchMode(PDO::FETCH_INTO, $this);
 		if ($this->__queryStmt->execute()){
-			$this->N = $this->__queryStmt->rowCount();
-			if ($this->N != 0 && $fetchFirst) {
+			$this->__N = $this->__queryStmt->rowCount();
+			if ($this->__N != 0 && $fetchFirst) {
 				$this->fetch();
 			}
 		} else {
 			echo("Failed to execute " . $query);
 		}
 
-		return $this->N > 0;
+		return $this->__N > 0;
 	}
 
 	public function fetch(){
 		$this->__fetchingFromDB = true;
 		$return = $this->__queryStmt->fetch(PDO::FETCH_INTO);
-		$this->__data = [];
+		$this->clearRuntimeDataVariables();
 		$this->__fetchingFromDB = false;
 		return $return;
 	}
@@ -318,13 +328,13 @@ abstract class DataObject
 		$this->__queryStmt = $aspen_db->prepare($query);
 		$this->__queryStmt->setFetchMode(PDO::FETCH_INTO, $this);
 		if ($this->__queryStmt->execute()){
-			$this->N = $this->__queryStmt->rowCount();
+			$this->__N = $this->__queryStmt->rowCount();
 		} else {
 			echo("Failed to execute " . $query);
 			$this->__lastError = $this->__queryStmt->errorInfo();
 		}
 
-		return $this->N > 0;
+		return $this->__N > 0;
 	}
 
 	public function escape($variable){
@@ -505,5 +515,36 @@ abstract class DataObject
 		/** @noinspection PhpUndefinedFieldInspection */
 		$oneToManyDBObject->$keyOther = $this->{$this->__primaryKey};
 		$oneToManyDBObject->delete(true);
+	}
+
+	public function __clone()
+	{
+		$className = get_class($this);
+		/** @var DataObject $clone */
+		$clone = new $className;
+		$properties = get_object_vars($this);
+		foreach ($properties as $name => $value){
+			$clone->$name = $value;
+		}
+		$clone->clearRuntimeDataVariables();
+		return $clone;
+	}
+
+	protected function clearRuntimeDataVariables(){
+		$properties = get_object_vars($this);
+		foreach ($properties as $name => $value) {
+			if ($name[0] == '_' && strlen($name) > 1 && $name[1] != '_') {
+				if ($name == '_data'){
+					$this->_data = [];
+				}else {
+					$this->$name = null;
+				}
+			}
+		}
+	}
+
+	public function getNumResults()
+	{
+		return $this->__N;
 	}
 }

@@ -42,7 +42,7 @@ class SideLoad extends DataObject
 	public $lastUpdateOfChangedRecords;
 	public $lastUpdateOfAllRecords;
 
-	private $__scopes;
+	private $_scopes;
 
 	static function getObjectStructure()
 	{
@@ -151,12 +151,12 @@ class SideLoad extends DataObject
 				mkdir($this->individualMarcPath, 0770, true);
 			}
 
-			if (empty($this->__scopes)){
-				$this->__scopes = [];
+			if (empty($this->_scopes)){
+				$this->_scopes = [];
 				$allScope = new SideLoadScope();
 				$allScope->sideLoadId = $this->id;
 				$allScope->name = "All Records";
-				$this->__scopes[] = $allScope;
+				$this->_scopes[] = $allScope;
 			}
 			$this->saveScopes();
 		}
@@ -164,35 +164,35 @@ class SideLoad extends DataObject
 	}
 
 	public function saveScopes(){
-		if (isset ($this->__scopes) && is_array($this->__scopes)){
-			$this->saveOneToManyOptions($this->__scopes, 'sideLoadId');
-			unset($this->__scopes);
+		if (isset ($this->_scopes) && is_array($this->_scopes)){
+			$this->saveOneToManyOptions($this->_scopes, 'sideLoadId');
+			unset($this->_scopes);
 		}
 	}
 
 	public function __get($name){
 		if ($name == "scopes") {
-			if (!isset($this->__scopes) && $this->id){
-				$this->__scopes = [];
+			if (!isset($this->_scopes) && $this->id){
+				$this->_scopes = [];
 				$scope = new SideLoadScope();
 				$scope->sideLoadId = $this->id;
 				$scope->find();
 				while($scope->fetch()){
-					$this->__scopes[$scope->id] = clone($scope);
+					$this->_scopes[$scope->id] = clone($scope);
 				}
 			}
-			return $this->__scopes;
+			return $this->_scopes;
 		} else {
-			return $this->__data[$name];
+			return $this->_data[$name];
 		}
 	}
 
 	public function __set($name, $value){
 		if ($name == "scopes") {
 			/** @noinspection PhpUndefinedFieldInspection */
-			$this->__scopes = $value;
+			$this->_scopes = $value;
 		}else {
-			$this->__data[$name] = $value;
+			$this->_data[$name] = $value;
 		}
 	}
 

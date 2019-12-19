@@ -243,7 +243,7 @@ class AJAX_JSON extends Action {
 		$tmpLocation->orderBy('isMainBranch DESC, displayName'); // List Main Branches first, then sort by name
 		$libraryLocations = array();
 		$tmpLocation->find();
-		if ($tmpLocation->N == 0){
+		if ($tmpLocation->getNumResults() == 0){
 			//Get all locations
 			$tmpLocation = new Location();
 			$tmpLocation->showInLocationsAndHoursList = 1;

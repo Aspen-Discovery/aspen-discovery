@@ -66,7 +66,7 @@ class MaterialsRequest_Submit extends Action
 				$materialsRequest->find();
 				$interface->assign('openRequests', $openRequests);
 
-				if ($materialsRequest->N >= $maxActiveRequests){
+				if ($materialsRequest->getNumResults() >= $maxActiveRequests){
 					$interface->assign('success', false);
 					$materialsRequestString = translate('materials_request_short');
 					$interface->assign('error', "You've already reached your maximum limit of $maxActiveRequests '. translate('materials request') .'s open at one time. Once we've processed your existing {$materialsRequestString}s, you'll be able to submit again. To check the status of your current {$materialsRequestString}s, visit your <a href='{$accountPageLink}'>account</a>.");

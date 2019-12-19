@@ -599,7 +599,7 @@ class BookCoverProcessor{
 	private function getCachedCover()
 	{
 		$hasCachedImage = false;
-		if ($this->bookCoverInfo->N == 1) {
+		if ($this->bookCoverInfo->getNumResults() == 1) {
 			if ($this->size == 'small' && $this->bookCoverInfo->thumbnailLoaded == 1) {
 				$hasCachedImage = true;
 			} else if ($this->size == 'medium' && $this->bookCoverInfo->mediumLoaded == 1) {
@@ -1131,7 +1131,7 @@ class BookCoverProcessor{
 			$this->bookCoverInfo->largeLoaded = true;
 		}
 		$this->bookCoverInfo->uploadedImage = false;
-		if ($this->bookCoverInfo->N == 0) {
+		if ($this->bookCoverInfo->getNumResults() == 0) {
 			$this->bookCoverInfo->firstLoaded = time();
 			$this->bookCoverInfo->insert();
 		} else {

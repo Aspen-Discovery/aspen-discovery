@@ -4,7 +4,6 @@ require_once ROOT_DIR . '/sys/DB/DataObject.php';
 class Theme extends DataObject
 {
 	public $__table = 'themes';
-	public $__primaryKey = 'id';
 	public $id;
 	public $themeName;
 	public $extendsTheme;

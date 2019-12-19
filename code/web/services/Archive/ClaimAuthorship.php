@@ -26,7 +26,7 @@ class Archive_ClaimAuthorship extends Action{
 		list($namespace) = explode(':', $pid);
 
 		$owningLibrary->archiveNamespace = $namespace;
-		if (!$owningLibrary->find(true) || $owningLibrary->N != 1){
+		if (!$owningLibrary->find(true) || $owningLibrary->getNumResults() != 1){
 			AspenError::raiseError('Could not determine which library owns this object, cannot claim authorship.');
 		}
 
@@ -67,7 +67,7 @@ class Archive_ClaimAuthorship extends Action{
 					list($namespace) = explode(':', $newObject->pid);
 
 					$owningLibrary->archiveNamespace = $namespace;
-					if ($owningLibrary->find(true) && $owningLibrary->N == 1){
+					if ($owningLibrary->find(true) && $owningLibrary->getNumResults() == 1){
 						//Send a copy of the request to the proper administrator
 						if (strpos($body, 'http') === false && strpos($body, 'mailto') === false && $body == strip_tags($body)){
 							$body .= $configArray['Site']['url'] . $requestedObject->getRecordUrl();

@@ -346,5 +346,4 @@ class UserList extends DataObject
 			}
 		}
 	}
-
 }

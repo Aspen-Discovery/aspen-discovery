@@ -129,7 +129,7 @@ class Search_Home extends Action {
 				$subCategoryInfo = new SubBrowseCategories();
 				$subCategoryInfo->subCategoryId = $browseCategory->id;
 				$subCategoryInfo->find();
-				if ($subCategoryInfo->N > 0){
+				if ($subCategoryInfo->getNumResults() > 0){
 					continue;
 				}
 

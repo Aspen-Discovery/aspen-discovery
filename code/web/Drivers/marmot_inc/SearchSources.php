@@ -83,7 +83,7 @@ class SearchSources{
 					$repeatInLibrary = new Library();
 					$repeatInLibrary->subdomain = $system;
 					$repeatInLibrary->find();
-					if ($repeatInLibrary->N == 1){
+					if ($repeatInLibrary->getNumResults() == 1){
 						$repeatInLibrary->fetch();
 
 						$searchOptions[$repeatInLibrary->subdomain] = array(
@@ -96,7 +96,7 @@ class SearchSources{
 						$repeatInLocation = new Location();
 						$repeatInLocation->code = $system;
 						$repeatInLocation->find();
-						if ($repeatInLocation->N == 1){
+						if ($repeatInLocation->getNumResults() == 1){
 							$repeatInLocation->fetch();
 
 							$searchOptions[$repeatInLocation->code] = array(

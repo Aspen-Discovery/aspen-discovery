@@ -1243,7 +1243,7 @@ class MyAccount_AJAX
 				$tmpList->whereAdd('deleted = 0');
 				$tmpList->orderBy("title ASC");
 				$tmpList->find();
-				if ($tmpList->N > 0) {
+				if ($tmpList->getNumResults() > 0) {
 					while ($tmpList->fetch()) {
 						$lists[$tmpList->id] = array(
 							'name' => $tmpList->title,

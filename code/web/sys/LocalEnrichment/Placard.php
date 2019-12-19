@@ -54,14 +54,13 @@ class Placard extends DataObject
 		return $this->subBrowseCategories;
 	}
 
-	private $data = array();
 	public function __get($name){
 		if ($name == 'triggers') {
 			$this->getTriggers();
 			/** @noinspection PhpUndefinedFieldInspection */
 			return $this->triggers;
 		}else{
-			return $this->data[$name];
+			return $this->_data[$name];
 		}
 	}
 
@@ -70,7 +69,7 @@ class Placard extends DataObject
 			/** @noinspection PhpUndefinedFieldInspection */
 			$this->triggers = $value;
 		}else{
-			$this->data[$name] = $value;
+			$this->_data[$name] = $value;
 		}
 	}
 

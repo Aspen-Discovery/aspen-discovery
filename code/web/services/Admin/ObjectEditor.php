@@ -81,7 +81,7 @@ abstract class ObjectEditor extends Admin_Admin
 		$curLibrary = new $objectType;
 		$curLibrary->$idColumn = $id;
 		$curLibrary->find();
-		if ($curLibrary->N == 1){
+		if ($curLibrary->getNumResults() == 1){
 			$curLibrary->fetch();
 			return $curLibrary;
 		}else{

@@ -233,7 +233,7 @@ abstract class Horizon extends AbstractIlsDriver{
 					$userValidation = new User();
                     /** @noinspection SqlResolve */
                     $userValidation->query("SELECT * from {$userValidation->__table} WHERE id <> {$user->id} and displayName = '{$_REQUEST['displayName']}'");
-					if ($userValidation->N > 0) {
+					if ($userValidation->getNumResults() > 0) {
 						$updateErrors[] = 'Sorry, that name is in use or is invalid.';
 						return $updateErrors;
 					}

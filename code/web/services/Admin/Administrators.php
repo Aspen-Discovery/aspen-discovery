@@ -73,7 +73,7 @@ class Admin_Administrators extends ObjectEditor
 
 		$newAdmin->$barcodeProperty = $login;
 		$newAdmin->find();
-		if ($newAdmin->N == 1){
+		if ($newAdmin->getNumResults() == 1){
 			global $logger;
 			//$logger->log(print_r($_REQUEST['roles'], TRUE));
 			if (isset($_REQUEST['roles'])){
@@ -89,10 +89,10 @@ class Admin_Administrators extends ObjectEditor
 			header("Location: /{$this->getModule()}/{$this->getToolName()}");
 			die();
 		}else{
-			if ($newAdmin->N == 0){
+			if ($newAdmin->getNumResults() == 0){
 				$interface->assign('error', 'Could not find a user with that barcode. (The user needs to have logged in at least once.)');
 			}else{
-				$interface->assign('error', "Found multiple users with that barcode {$newAdmin->N}. (The database needs to be cleaned up.)");
+				$interface->assign('error', "Found multiple users with that barcode {$newAdmin->getNumResults()}. (The database needs to be cleaned up.)");
 			}
 
 			$interface->setTemplate('addAdministrator.tpl');

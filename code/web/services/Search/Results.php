@@ -235,14 +235,12 @@ class Search_Results extends Action {
 		$interface->assign('page_body_style', 'sidebar_left');
 
 		$enableProspectorIntegration = ($library->enableProspectorIntegration == 1);
-		$showRatings = $library->showRatings;
 		if ($enableProspectorIntegration){
 			$interface->assign('showProspectorLink', true);
 			$interface->assign('prospectorSavedSearchId', $searchObject->getSearchId());
 		}else{
 			$interface->assign('showProspectorLink', false);
 		}
-		$interface->assign('showRatings', $showRatings);
 
 		// Save the ID of this search to the session so we can return to it easily:
 		$_SESSION['lastSearchId'] = $searchObject->getSearchId();

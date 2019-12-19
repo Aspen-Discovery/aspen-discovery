@@ -14,8 +14,8 @@ class OverDriveScope extends DataObject
 	public /** @noinspection PhpUnused */ $overdriveAdvantageName;
 	public /** @noinspection PhpUnused */ $overdriveAdvantageProductsKey;
 
-	private $__libraries;
-	private $__locations;
+	private $_libraries;
+	private $_locations;
 
 	public static function getObjectStructure()
 	{
@@ -94,41 +94,41 @@ class OverDriveScope extends DataObject
 
 	public function __get($name){
 		if ($name == "libraries") {
-			if (!isset($this->__libraries) && $this->id){
-				$this->__libraries = [];
+			if (!isset($this->_libraries) && $this->id){
+				$this->_libraries = [];
 				$obj = new Library();
 				$obj->overDriveScopeId = $this->id;
 				$obj->find();
 				while($obj->fetch()){
-					$this->__libraries[$obj->libraryId] = $obj->libraryId;
+					$this->_libraries[$obj->libraryId] = $obj->libraryId;
 				}
 			}
-			return $this->__libraries;
+			return $this->_libraries;
 		} elseif ($name == "locations") {
-			if (!isset($this->__locations) && $this->id){
-				$this->__locations = [];
+			if (!isset($this->_locations) && $this->id){
+				$this->_locations = [];
 				$obj = new Location();
 				$obj->overDriveScopeId = $this->id;
 				$obj->find();
 				while($obj->fetch()){
-					$this->__locations[$obj->locationId] = $obj->locationId;
+					$this->_locations[$obj->locationId] = $obj->locationId;
 				}
 			}
-			return $this->__locations;
+			return $this->_locations;
 		} else {
-			return $this->__data[$name];
+			return $this->_data[$name];
 		}
 	}
 
 	public function __set($name, $value){
 		if ($name == "libraries") {
 			/** @noinspection PhpUndefinedFieldInspection */
-			$this->__libraries = $value;
+			$this->_libraries = $value;
 		}elseif ($name == "locations") {
 			/** @noinspection PhpUndefinedFieldInspection */
-			$this->__locations = $value;
+			$this->_locations = $value;
 		}else {
-			$this->__data[$name] = $value;
+			$this->_data[$name] = $value;
 		}
 	}
 
@@ -153,13 +153,13 @@ class OverDriveScope extends DataObject
 	}
 
 	public function saveLibraries(){
-		if (isset ($this->__libraries) && is_array($this->__libraries)){
+		if (isset ($this->_libraries) && is_array($this->_libraries)){
 			$libraryList = self::getLibraryList();
 			foreach ($libraryList as $libraryId => $displayName){
 				$library = new Library();
 				$library->libraryId = $libraryId;
 				$library->find(true);
-				if (in_array($libraryId, $this->__libraries)){
+				if (in_array($libraryId, $this->_libraries)){
 					//We want to apply the scope to this library
 					if ($library->overDriveScopeId != $this->id){
 						$library->overDriveScopeId = $this->id;
@@ -173,12 +173,12 @@ class OverDriveScope extends DataObject
 					}
 				}
 			}
-			unset($this->__libraries);
+			unset($this->_libraries);
 		}
 	}
 
 	public function saveLocations(){
-		if (isset ($this->__locations) && is_array($this->__locations)){
+		if (isset ($this->_locations) && is_array($this->_locations)){
 			$locationList = self::getLocationList();
 			/**
 			 * @var int $locationId
@@ -188,7 +188,7 @@ class OverDriveScope extends DataObject
 				$location = new Location();
 				$location->locationId = $locationId;
 				$location->find(true);
-				if (in_array($locationId, $this->__locations)){
+				if (in_array($locationId, $this->_locations)){
 					//We want to apply the scope to this library
 					if ($location->overDriveScopeId != $this->id){
 						$location->overDriveScopeId = $this->id;
@@ -209,7 +209,7 @@ class OverDriveScope extends DataObject
 					}
 				}
 			}
-			unset($this->__locations);
+			unset($this->_locations);
 		}
 	}
 
@@ -217,35 +217,35 @@ class OverDriveScope extends DataObject
 	public function getLibraries()
 	{
 		/** @noinspection PhpUndefinedFieldInspection */
-		return $this->__libraries;
+		return $this->_libraries;
 	}
 
 	/** @return Location[] */
 	public function getLocations()
 	{
 		/** @noinspection PhpUndefinedFieldInspection */
-		return $this->__locations;
+		return $this->_locations;
 	}
 
 	public function setLibraries($val)
 	{
 		/** @noinspection PhpUndefinedFieldInspection */
-		$this->__libraries = $val;
+		$this->_libraries = $val;
 	}
 
 	public function setLocations($val)
 	{
 		/** @noinspection PhpUndefinedFieldInspection */
-		$this->__libraries = $val;
+		$this->_libraries = $val;
 	}
 
 	public function clearLibraries(){
 		$this->clearOneToManyOptions('Library', 'overDriveScopeId');
-		unset($this->__libraries);
+		unset($this->_libraries);
 	}
 
 	public function clearLocations(){
 		$this->clearOneToManyOptions('Location', 'overDriveScopeId');
-		unset($this->__locations);
+		unset($this->_locations);
 	}
 }

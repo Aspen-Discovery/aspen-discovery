@@ -287,7 +287,7 @@ function updateConfigForScoping($configArray)
 		$Library = new Library();
 		$Library->subdomain = $_SERVER['active_library'];
 		$Library->find($_SERVER['active_library']);
-		if ($Library->N == 1) {
+		if ($Library->getNumResults() == 1) {
 			$Library->fetch();
 			$library = $Library;
 			$timer->logTime("found the library based on active_library server variable");
@@ -298,7 +298,7 @@ function updateConfigForScoping($configArray)
 			$Library = new Library();
 			$Library->isDefault = 1;
 			$Library->find();
-			if ($Library->N == 1) {
+			if ($Library->getNumResults() == 1) {
 				$Library->fetch();
 				$library = $Library;
 			}
@@ -313,7 +313,7 @@ function updateConfigForScoping($configArray)
 				$Library->find();
 				$timer->logTime("searched for library by subdomain $subdomain");
 
-				if ($Library->N == 1) {
+				if ($Library->getNumResults() == 1) {
 					$Library->fetch();
 					//Make the library information global so we can work with it later.
 					$library = $Library;
@@ -325,7 +325,7 @@ function updateConfigForScoping($configArray)
 					$Location->whereAdd("code = '$subdomain'");
 					$Location->whereAdd("subdomain = '$subdomain'", 'OR');
 					$Location->find();
-					if ($Location->N == 1) {
+					if ($Location->getNumResults() == 1) {
 						$Location->fetch();
 						//We found a location for the subdomain, get the library.
 						/** @var Library $librarySingleton */
@@ -338,7 +338,7 @@ function updateConfigForScoping($configArray)
 						//Check to see if there is only one library in the system
 						$Library = new Library();
 						$Library->find();
-						if ($Library->N == 1) {
+						if ($Library->getNumResults() == 1) {
 							$Library->fetch();
 							$library = $Library;
 							$timer->logTime("there is only one library for this install");
@@ -350,7 +350,7 @@ function updateConfigForScoping($configArray)
 								$Library = new Library();
 								$Library->isDefault = 1;
 								$Library->find();
-								if ($Library->N == 1) {
+								if ($Library->getNumResults() == 1) {
 									$Library->fetch();
 									$library = $Library;
 									$timer->logTime("found the library based on the default");

@@ -58,7 +58,7 @@ class MyAccount_Masquerade extends MyAccount
 							$accountProfile->selectAdd('loginConfiguration');
 							$accountProfile->groupBy('loginConfiguration');
 							$numConfigurations = $accountProfile->find();
-							if ($accountProfile->N > 1) {
+							if ($accountProfile->getNumResults() > 1) {
 								// Now that we know there is more than loginConfiguration type, check the opposite column
 								$masqueradedUser = new User();
 								if ($user->getAccountProfile()->loginConfiguration == 'barcode_pin') {
@@ -69,7 +69,7 @@ class MyAccount_Masquerade extends MyAccount
 								$masqueradedUser->find(true);
 							}
 
-							if ($masqueradedUser->N == 0) {
+							if ($masqueradedUser->getNumResults() == 0) {
 								// Test for a user that hasn't logged into Pika before
 								$masqueradedUser = UserAccount::findNewUser($libraryCard);
 								if (!$masqueradedUser) {

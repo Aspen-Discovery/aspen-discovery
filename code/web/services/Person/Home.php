@@ -102,7 +102,7 @@ class Person_Home extends Action
 			$interface->assign('page', $currentPage);
 
 			$s->find();
-			if ($s->N > 0){
+			if ($s->getNumResults() > 0){
 				$s->fetch();
 				$minSO = unserialize($s->search_object);
 				$searchObject = SearchObjectFactory::deminify($minSO);

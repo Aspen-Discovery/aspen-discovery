@@ -20,7 +20,7 @@ class PersonRecord extends IndexRecordDriver
 			$person = new Person();
 			$person->personId = $this->id;
 			$person->find();
-			if ($person->N > 0){
+			if ($person->getNumResults() > 0){
 				$person->fetch();
 				$this->person = $person;
 			}

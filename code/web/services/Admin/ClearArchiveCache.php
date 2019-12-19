@@ -15,7 +15,7 @@ class Admin_ClearArchiveCache extends Admin_Admin{
 
 		$cache = new IslandoraObjectCache();
 		$cache->find();
-		$numCachedObjects = $cache->N;
+		$numCachedObjects = $cache->getNumResults();
 		$interface->assign('numCachedObjects', $numCachedObjects);
 		$this->display('clearArchiveCache.tpl', 'Clear Archive Cache');
 	}

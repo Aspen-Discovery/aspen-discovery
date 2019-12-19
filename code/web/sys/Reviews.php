@@ -260,7 +260,6 @@ class ExternalReviews
 
 		try{
 			$response = $soapClient->Single($params);
-//			$request = $soapClient->__getLastRequest(); // for debugging
 
 			$review = array();
 			if ($response) {
