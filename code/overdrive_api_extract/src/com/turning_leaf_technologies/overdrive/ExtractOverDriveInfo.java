@@ -795,11 +795,13 @@ class ExtractOverDriveInfo {
 						if (numericFormat == null){
 							logger.warn("Could not find numeric format for format " + textFormat);
 							results.addNote("Could not find numeric format for format " + textFormat);
-							results.incErrors();
-							System.out.println("Warning: new format for OverDrive found " + textFormat);
-							continue;
+//							results.incErrors();
+//							System.out.println("Warning: new format for OverDrive found " + textFormat);
+//							continue;
+							addFormatStmt.setLong(3, 0L);
+						}else {
+							addFormatStmt.setLong(3, numericFormat);
 						}
-						addFormatStmt.setLong(3, numericFormat);
 						addFormatStmt.setString(4, format.getString("name"));
 						addFormatStmt.setString(5, format.has("filename") ? format.getString("fileName") : "");
 						addFormatStmt.setLong(6, format.has("fileSize") ? format.getLong("fileSize") : 0L);

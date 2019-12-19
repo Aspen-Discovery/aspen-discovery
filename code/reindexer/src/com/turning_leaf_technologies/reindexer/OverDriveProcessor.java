@@ -13,10 +13,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 class OverDriveProcessor {
 	private GroupedWorkIndexer indexer;
@@ -28,6 +27,7 @@ class OverDriveProcessor {
 	private PreparedStatement getProductFormatsStmt;
 	private SimpleDateFormat publishDateFormatter = new SimpleDateFormat("MM/dd/yyyy");
 	private SimpleDateFormat publishDateFormatter2 = new SimpleDateFormat("MM/yyyy");
+	private Pattern publishDatePattern = Pattern.compile("([a-zA-Z]{3})\\s([\\s\\d]\\d)\\s(\\d{4}).*");
 
 	OverDriveProcessor(GroupedWorkIndexer groupedWorkIndexer, Connection dbConn, Logger logger) {
 		this.indexer = groupedWorkIndexer;
@@ -112,6 +112,9 @@ class OverDriveProcessor {
 								GregorianCalendar publishCal = new GregorianCalendar();
 								publishCal.set(Integer.parseInt(publishDateText), 1, 1);
 								publishDate = publishCal.getTime();
+								if (publishDate.after(new Date())) {
+									isOnOrder = true;
+								}
 							}else {
 								try {
 									publishDate = publishDateFormatter.parse(publishDateText);
@@ -125,7 +128,47 @@ class OverDriveProcessor {
 											isOnOrder = true;
 										}
 									}catch (ParseException e2){
-										logger.error("Error parsing publication date " + publishDateText);
+										Matcher publishDateMatcher = publishDatePattern.matcher(publishDateText);
+										if (publishDateMatcher.matches()){
+											String month = publishDateMatcher.group(1).toLowerCase();
+											String day = publishDateMatcher.group(2).trim();
+											String year = publishDateMatcher.group(3);
+											GregorianCalendar publishCal = new GregorianCalendar();
+											int monthInt = 1;
+											switch (month){
+												case "jan":
+													monthInt = Calendar.JANUARY; break;
+												case "feb":
+													monthInt = Calendar.FEBRUARY; break;
+												case "mar":
+													monthInt = Calendar.MARCH; break;
+												case "apr":
+													monthInt = Calendar.APRIL; break;
+												case "may":
+													monthInt = Calendar.MAY; break;
+												case "jun":
+													monthInt = Calendar.JUNE; break;
+												case "jul":
+													monthInt = Calendar.JULY; break;
+												case "aug":
+													monthInt = Calendar.AUGUST; break;
+												case "sep":
+													monthInt = Calendar.SEPTEMBER; break;
+												case "oct":
+													monthInt = Calendar.OCTOBER; break;
+												case "nov":
+													monthInt = Calendar.NOVEMBER; break;
+												case "dec":
+													monthInt = Calendar.DECEMBER; break;
+											}
+											publishCal.set(Integer.parseInt(year), monthInt, (Integer.parseInt(day)));
+											publishDate = publishCal.getTime();
+											if (publishDate.after(new Date())) {
+												isOnOrder = true;
+											}
+										}else {
+											logger.error("Error parsing publication date " + publishDateText);
+										}
 									}
 								}
 							}
