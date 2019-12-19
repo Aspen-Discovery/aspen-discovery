@@ -1842,9 +1842,9 @@ function getLibraryLocationUpdates(){
 		'library_cleanup' => [
 			'title' => 'Cleanup of library settings',
 			'description' => 'Cleanup unused settings',
+			'continueOnError' => 'true',
 			'sql' => [
 				"ALTER TABLE library DROP COLUMN abbreviatedDisplayName",
-
 			],
 		],
 
