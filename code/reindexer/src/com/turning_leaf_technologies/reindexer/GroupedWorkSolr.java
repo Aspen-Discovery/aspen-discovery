@@ -499,11 +499,11 @@ public class GroupedWorkSolr implements Cloneable {
 					setupAvailabilityToggleAndOwnershipForItemWithinScope(doc, curRecord, curItem, curScopeName, curScope);
 
 					Scope curScopeDetails = curScope.getScope();
-					if (curScope.isLocallyOwned() || curScope.isLibraryOwned() || curScopeDetails.isIncludeAllRecordsInShelvingFacets()) {
+					if (curScope.isLocallyOwned() || curScope.isLibraryOwned() || curScopeDetails.getGroupedWorkDisplaySettings().isIncludeAllRecordsInShelvingFacets()) {
 						addUniqueFieldValue(doc, "collection_" + curScopeName, curItem.getCollection());
 						addUniqueFieldValue(doc, "detailed_location_" + curScopeName, curItem.getShelfLocation());
 					}
-					if (curItem.isEContent() || curScope.isLocallyOwned() || curScope.isLibraryOwned() || curScopeDetails.isIncludeAllRecordsInDateAddedFacets()) {
+					if (curItem.isEContent() || curScope.isLocallyOwned() || curScope.isLibraryOwned() || curScopeDetails.getGroupedWorkDisplaySettings().isIncludeAllRecordsInDateAddedFacets()) {
 						Long daysSinceAdded;
 						if (curItem.isOrderItem() || (curItem.getStatusCode() != null && curItem.getStatusCode().equals("On Order"))){
 							daysSinceAdded = -1L;
@@ -576,7 +576,7 @@ public class GroupedWorkSolr implements Cloneable {
 		}
 		if (curScope.isLibraryOwned()){
 			if (curScopeDetails.isLocationScope()){
-				if (!curScopeDetails.isBaseAvailabilityToggleOnLocalHoldingsOnly()){
+				if (!curScopeDetails.getGroupedWorkDisplaySettings().isBaseAvailabilityToggleOnLocalHoldingsOnly()){
 					addLibraryOwnership = true;
 					availabilityToggleValues.add("Entire Collection");
 				}
@@ -594,7 +594,7 @@ public class GroupedWorkSolr implements Cloneable {
 			availabilityToggleValues.add("Available Now");
 		}
 		if (curItem.isEContent() && curScope.isAvailable()){
-			if (curScopeDetails.isIncludeOnlineMaterialsInAvailableToggle()) {
+			if (curScopeDetails.getGroupedWorkDisplaySettings().isIncludeOnlineMaterialsInAvailableToggle()) {
 				availabilityToggleValues.add("Available Now");
 			}
 			availabilityToggleValues.add("Available Online");
@@ -643,7 +643,7 @@ public class GroupedWorkSolr implements Cloneable {
 							if (!otherScope.equals(curScope)) {
 								Scope otherScopeDetails = otherScope.getScope();
 								if (otherScopeDetails.isLocationScope() && otherScopeDetails.getLibraryScope() != null && curScopeDetails.getLibraryScope().equals(otherScopeDetails.getLibraryScope())) {
-									if (!otherScopeDetails.isBaseAvailabilityToggleOnLocalHoldingsOnly()) {
+									if (!otherScopeDetails.getGroupedWorkDisplaySettings().isBaseAvailabilityToggleOnLocalHoldingsOnly()) {
 										addAvailabilityToggleValues(doc, curRecord, otherScopeName, availabilityToggleValues);
 									}
 									addUniqueFieldValue(doc, "owning_location_" + otherScopeName, owningLocationValue);
@@ -679,7 +679,7 @@ public class GroupedWorkSolr implements Cloneable {
 			for (String scopeToShowAllName : curScopingInfo.keySet()){
 				ScopingInfo scopeToShowAll = curScopingInfo.get(scopeToShowAllName);
 				if (!scopeToShowAll.getScope().isRestrictOwningLibraryAndLocationFacets()){
-					if (!scopeToShowAll.getScope().isBaseAvailabilityToggleOnLocalHoldingsOnly()) {
+					if (!scopeToShowAll.getScope().getGroupedWorkDisplaySettings().isBaseAvailabilityToggleOnLocalHoldingsOnly()) {
 						addAvailabilityToggleValues(doc, curRecord, scopeToShowAll.getScope().getScopeName(), availabilityToggleValues);
 					}
 					addUniqueFieldValue(doc, "owning_location_" + scopeToShowAll.getScope().getScopeName(), owningLocationValue);

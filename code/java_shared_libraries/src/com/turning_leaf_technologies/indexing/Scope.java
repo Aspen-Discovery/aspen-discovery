@@ -35,11 +35,8 @@ public class Scope implements Comparable<Scope>{
 	private String additionalLocationsToShowAvailabilityFor;
 	private Pattern additionalLocationsToShowAvailabilityForPattern;
 	private boolean includeAllLibraryBranchesInFacets; //Only applies to location scopes
-	private boolean includeAllRecordsInShelvingFacets;
-	private boolean includeAllRecordsInDateAddedFacets;
-	private boolean baseAvailabilityToggleOnLocalHoldingsOnly = false;
-	private boolean includeOnlineMaterialsInAvailableToggle  = true;
 
+	private GroupedWorkDisplaySettings groupedWorkDisplaySettings;
 	private OverDriveScope overDriveScope;
 	private HooplaScope hooplaScope;
 	private RbdigitalScope rbdigitalScope;
@@ -244,39 +241,6 @@ public class Scope implements Comparable<Scope>{
 		return additionalLocationsToShowAvailabilityForPattern;
 	}
 
-	public boolean isIncludeAllRecordsInShelvingFacets() {
-		return includeAllRecordsInShelvingFacets;
-	}
-
-	void setIncludeAllRecordsInShelvingFacets(boolean includeAllRecordsInShelvingFacets) {
-		this.includeAllRecordsInShelvingFacets = includeAllRecordsInShelvingFacets;
-	}
-
-	public boolean isIncludeAllRecordsInDateAddedFacets() {
-		return includeAllRecordsInDateAddedFacets;
-	}
-
-	void setIncludeAllRecordsInDateAddedFacets(boolean includeAllRecordsInDateAddedFacets) {
-		this.includeAllRecordsInDateAddedFacets = includeAllRecordsInDateAddedFacets;
-	}
-
-	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
-	public boolean isBaseAvailabilityToggleOnLocalHoldingsOnly() {
-		return baseAvailabilityToggleOnLocalHoldingsOnly;
-	}
-
-	void setBaseAvailabilityToggleOnLocalHoldingsOnly(boolean baseAvailabilityToggleOnLocalHoldingsOnly) {
-		this.baseAvailabilityToggleOnLocalHoldingsOnly = baseAvailabilityToggleOnLocalHoldingsOnly;
-	}
-
-	public boolean isIncludeOnlineMaterialsInAvailableToggle() {
-		return includeOnlineMaterialsInAvailableToggle;
-	}
-
-	void setIncludeOnlineMaterialsInAvailableToggle(boolean includeOnlineMaterialsInAvailableToggle) {
-		this.includeOnlineMaterialsInAvailableToggle = includeOnlineMaterialsInAvailableToggle;
-	}
-
 	private Boolean isUnscoped = null;
 	public boolean isUnscoped() {
 		if (isUnscoped == null){
@@ -322,6 +286,14 @@ public class Scope implements Comparable<Scope>{
 
 	public SideLoadScope getSideLoadScope(long sideLoadId){
 		return sideLoadScopes.get(sideLoadId);
+	}
+
+	public GroupedWorkDisplaySettings getGroupedWorkDisplaySettings() {
+		return groupedWorkDisplaySettings;
+	}
+
+	public void setGroupedWorkDisplaySettings(GroupedWorkDisplaySettings groupedWorkDisplaySettings) {
+		this.groupedWorkDisplaySettings = groupedWorkDisplaySettings;
 	}
 
 	public class InclusionResult{

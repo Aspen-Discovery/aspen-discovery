@@ -21,15 +21,38 @@ public class IndexingUtils {
 			HashMap<Long, RbdigitalScope> rbdigitalScopes = loadRbdigitalScopes(dbConn, logger);
 			HashMap<Long, CloudLibraryScope> cloudLibraryScopes = loadCloudLibraryScopes(dbConn, logger);
 			HashMap<Long, SideLoadScope> sideLoadScopes = loadSideLoadScopes(dbConn, logger);
+			HashMap<Long, GroupedWorkDisplaySettings> groupedWorkDisplaySettings = loadGroupedWorkDisplaySettings(dbConn, logger);
 
-			loadLibraryScopes(scopes, overDriveScopes, hooplaScopes, rbdigitalScopes, cloudLibraryScopes, sideLoadScopes, dbConn);
+			loadLibraryScopes(scopes, groupedWorkDisplaySettings, overDriveScopes, hooplaScopes, rbdigitalScopes, cloudLibraryScopes, sideLoadScopes, dbConn);
 
-			loadLocationScopes(scopes, overDriveScopes, hooplaScopes, rbdigitalScopes, cloudLibraryScopes, sideLoadScopes, dbConn);
+			loadLocationScopes(scopes, groupedWorkDisplaySettings, overDriveScopes, hooplaScopes, rbdigitalScopes, cloudLibraryScopes, sideLoadScopes, dbConn);
 		} catch (SQLException e) {
 			logger.error("Error setting up scopes", e);
 		}
 
 		return scopes;
+	}
+
+	private static HashMap<Long, GroupedWorkDisplaySettings> loadGroupedWorkDisplaySettings(Connection dbConn, Logger logger) {
+		HashMap<Long, GroupedWorkDisplaySettings> groupedWorkSettings = new HashMap<>();
+		try{
+			PreparedStatement groupedWorkDisplaySettingsStmt = dbConn.prepareStatement("SELECT * from grouped_work_display_settings", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			ResultSet groupedWorkDisplaySettingsRS = groupedWorkDisplaySettingsStmt.executeQuery();
+			while (groupedWorkDisplaySettingsRS.next()){
+				GroupedWorkDisplaySettings setting = new GroupedWorkDisplaySettings();
+				setting.setId(groupedWorkDisplaySettingsRS.getLong("id"));
+				setting.setName(groupedWorkDisplaySettingsRS.getString("name"));
+				setting.setIncludeOnlineMaterialsInAvailableToggle(groupedWorkDisplaySettingsRS.getBoolean("includeOnlineMaterialsInAvailableToggle"));
+				setting.setIncludeAllRecordsInShelvingFacets(groupedWorkDisplaySettingsRS.getBoolean("includeAllRecordsInShelvingFacets"));
+				setting.setIncludeAllRecordsInDateAddedFacets(groupedWorkDisplaySettingsRS.getBoolean("includeAllRecordsInDateAddedFacets"));
+				setting.setBaseAvailabilityToggleOnLocalHoldingsOnly(groupedWorkDisplaySettingsRS.getBoolean("baseAvailabilityToggleOnLocalHoldingsOnly"));
+
+				groupedWorkSettings.put(setting.getId(), setting);
+			}
+		} catch (SQLException e) {
+			logger.error("Error loading grouped work settings", e);
+		}
+		return groupedWorkSettings;
 	}
 
 	private static HashMap<Long, HooplaScope> loadHooplaScopes(Connection dbConn, Logger logger) {
@@ -165,12 +188,12 @@ public class IndexingUtils {
 		return sideLoadScopes;
 	}
 
-	private static void loadLocationScopes(TreeSet<Scope> scopes, HashMap<Long, OverDriveScope> overDriveScopes, HashMap<Long, HooplaScope> hooplaScopes, HashMap<Long, RbdigitalScope> rbdigitalScopes, HashMap<Long, CloudLibraryScope> cloudLibraryScopes, HashMap<Long, SideLoadScope> sideLoadScopes, Connection dbConn) throws SQLException {
+	private static void loadLocationScopes(TreeSet<Scope> scopes, HashMap<Long, GroupedWorkDisplaySettings> groupedWorkDisplaySettings, HashMap<Long, OverDriveScope> overDriveScopes, HashMap<Long, HooplaScope> hooplaScopes, HashMap<Long, RbdigitalScope> rbdigitalScopes, HashMap<Long, CloudLibraryScope> cloudLibraryScopes, HashMap<Long, SideLoadScope> sideLoadScopes, Connection dbConn) throws SQLException {
 		PreparedStatement locationInformationStmt = dbConn.prepareStatement("SELECT library.libraryId, locationId, code, subLocation, ilsCode, " +
 						"library.subdomain, location.facetLabel, location.displayName, library.pTypes, library.restrictOwningBranchesAndSystems, location.publicListsToInclude, " +
 						"location.additionalLocationsToShowAvailabilityFor, includeAllLibraryBranchesInFacets, " +
-						"location.includeAllRecordsInShelvingFacets, location.includeAllRecordsInDateAddedFacets, location.baseAvailabilityToggleOnLocalHoldingsOnly, " +
-						"location.includeOnlineMaterialsInAvailableToggle, location.includeLibraryRecordsToInclude, " +
+						"location.groupedWorkDisplaySettingId as groupedWorkDisplaySettingIdLocation, library.groupedWorkDisplaySettingId as groupedWorkDisplaySettingIdLibrary, " +
+						"location.includeLibraryRecordsToInclude, " +
 						"library.overDriveScopeId as overDriveScopeIdLibrary, location.overDriveScopeId as overDriveScopeIdLocation, " +
 						"library.hooplaScopeId as hooplaScopeLibrary, location.hooplaScopeId as hooplaScopeLocation, " +
 						"library.rbdigitalScopeId as rbdigitalScopeLibrary, location.rbdigitalScopeId as rbdigitalScopeLocation, " +
@@ -216,10 +239,11 @@ public class IndexingUtils {
 			locationScopeInfo.setPublicListsToInclude(locationInformationRS.getInt("publicListsToInclude"));
 			locationScopeInfo.setAdditionalLocationsToShowAvailabilityFor(locationInformationRS.getString("additionalLocationsToShowAvailabilityFor"));
 			locationScopeInfo.setIncludeAllLibraryBranchesInFacets(locationInformationRS.getBoolean("includeAllLibraryBranchesInFacets"));
-			locationScopeInfo.setIncludeAllRecordsInShelvingFacets(locationInformationRS.getBoolean("includeAllRecordsInShelvingFacets"));
-			locationScopeInfo.setIncludeAllRecordsInDateAddedFacets(locationInformationRS.getBoolean("includeAllRecordsInDateAddedFacets"));
-			locationScopeInfo.setBaseAvailabilityToggleOnLocalHoldingsOnly(locationInformationRS.getBoolean("baseAvailabilityToggleOnLocalHoldingsOnly"));
-			locationScopeInfo.setIncludeOnlineMaterialsInAvailableToggle(locationInformationRS.getBoolean("includeOnlineMaterialsInAvailableToggle"));
+			long groupedWorkDisplaySettingId = locationInformationRS.getLong("groupedWorkDisplaySettingIdLocation");
+			if (groupedWorkDisplaySettingId == -1){
+				groupedWorkDisplaySettingId = locationInformationRS.getLong("groupedWorkDisplaySettingIdLibrary");
+			}
+			locationScopeInfo.setGroupedWorkDisplaySettings(groupedWorkDisplaySettings.get(groupedWorkDisplaySettingId));
 
 			long overDriveScopeIdLocation = locationInformationRS.getLong("overDriveScopeIdLocation");
 			long overDriveScopeIdLibrary = locationInformationRS.getLong("overDriveScopeIdLibrary");
@@ -348,12 +372,11 @@ public class IndexingUtils {
 
 	private static PreparedStatement libraryRecordInclusionRulesStmt;
 
-	private static void loadLibraryScopes(TreeSet<Scope> scopes, HashMap<Long, OverDriveScope> overDriveScopes, HashMap<Long, HooplaScope> hooplaScopes, HashMap<Long, RbdigitalScope> rbdigitalScopes, HashMap<Long, CloudLibraryScope> cloudLibraryScopes, HashMap<Long, SideLoadScope> sideLoadScopes, Connection dbConn) throws SQLException {
+	private static void loadLibraryScopes(TreeSet<Scope> scopes, HashMap<Long, GroupedWorkDisplaySettings> groupedWorkDisplaySettings, HashMap<Long, OverDriveScope> overDriveScopes, HashMap<Long, HooplaScope> hooplaScopes, HashMap<Long, RbdigitalScope> rbdigitalScopes, HashMap<Long, CloudLibraryScope> cloudLibraryScopes, HashMap<Long, SideLoadScope> sideLoadScopes, Connection dbConn) throws SQLException {
 		PreparedStatement libraryInformationStmt = dbConn.prepareStatement("SELECT libraryId, ilsCode, subdomain, " +
 						"displayName, facetLabel, pTypes, restrictOwningBranchesAndSystems, publicListsToInclude, " +
 						"additionalLocationsToShowAvailabilityFor, overDriveScopeId, " +
-						"includeAllRecordsInShelvingFacets, includeAllRecordsInDateAddedFacets, includeOnlineMaterialsInAvailableToggle, " +
-						"hooplaScopeId, rbdigitalScopeId, cloudLibraryScopeId " +
+						"groupedWorkDisplaySettingId, hooplaScopeId, rbdigitalScopeId, cloudLibraryScopeId " +
 						"FROM library ORDER BY ilsCode ASC",
 				ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		PreparedStatement libraryOwnedRecordRulesStmt = dbConn.prepareStatement("SELECT library_records_owned.*, indexing_profiles.name from library_records_owned INNER JOIN indexing_profiles ON indexingProfileId = indexing_profiles.id WHERE libraryId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
@@ -387,10 +410,7 @@ public class IndexingUtils {
 			newScope.setRelatedPTypes(pTypes.split(","));
 			newScope.setPublicListsToInclude(libraryInformationRS.getInt("publicListsToInclude"));
 			newScope.setAdditionalLocationsToShowAvailabilityFor(libraryInformationRS.getString("additionalLocationsToShowAvailabilityFor"));
-			newScope.setIncludeAllRecordsInShelvingFacets(libraryInformationRS.getBoolean("includeAllRecordsInShelvingFacets"));
-			newScope.setIncludeAllRecordsInDateAddedFacets(libraryInformationRS.getBoolean("includeAllRecordsInDateAddedFacets"));
-
-			newScope.setIncludeOnlineMaterialsInAvailableToggle(libraryInformationRS.getBoolean("includeOnlineMaterialsInAvailableToggle"));
+			newScope.setGroupedWorkDisplaySettings(groupedWorkDisplaySettings.get(libraryInformationRS.getLong("groupedWorkDisplaySettingId")));
 
 			long overDriveScopeLibrary = libraryInformationRS.getLong("overDriveScopeId");
 			if (overDriveScopeLibrary != -1) {
