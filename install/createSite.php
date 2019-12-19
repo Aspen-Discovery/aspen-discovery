@@ -77,7 +77,7 @@ if (empty($variables['ils'])){
 	$variables['ils'] = "Koha";
 }
 
-if ($variables['ils'] = 'Koha'){
+if ($variables['ils'] == 'Koha'){
 	$variables['ilsDriver'] = 'Koha';
 	$variables['ilsDBHost'] = '';
 	while (empty($variables['ilsDBHost'])) {
