@@ -21,7 +21,7 @@ class BadWord extends DataObject
 		if ($badWordsList === false){
 			$badWordsList = array();
 			$this->find();
-			if ($this->N){
+			if ($this->getNumResults()){
 				while ($this->fetch()){
 					$quotedWord = preg_quote(trim($this->word));
 					//$badWordExpression = '/^(?:.*\W)?(' . preg_quote(trim($badWord->word)) . ')(?:\W.*)?$/';

@@ -376,8 +376,17 @@ public class KohaExportMain {
 
 	private static void updateBranchInfo(Connection dbConn, Connection kohaConn) {
 		try {
+			PreparedStatement kohaLibraryGroupStmt = kohaConn.prepareStatement("SELECT * from library_groups where id = ?");
+			PreparedStatement kohaLibraryGroupForBranchCodeStmt = kohaConn.prepareStatement("SELECT parent_id from library_groups where branchcode = ?");
 			PreparedStatement kohaBranchesStmt = kohaConn.prepareStatement("SELECT * from branches");
 			PreparedStatement existingAspenLocationStmt = dbConn.prepareStatement("SELECT libraryId, locationId, isMainBranch from location where code = ?");
+			PreparedStatement existingAspenLibraryStmt = dbConn.prepareStatement("SELECT libraryId from library where subdomain = ?");
+			PreparedStatement addAspenLibraryStmt = dbConn.prepareStatement("INSERT INTO library (subdomain, displayName) VALUES (?, ?)", Statement.RETURN_GENERATED_KEYS);
+			PreparedStatement addAspenLocationStmt = dbConn.prepareStatement("INSERT INTO location (libraryId, displayName, code) VALUES (?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+			PreparedStatement addAspenLocationRecordsOwnedStmt = dbConn.prepareStatement("INSERT INTO location_records_owned (locationId, indexingProfileId, location, subLocation) VALUES (?, ?, ?, '')");
+			PreparedStatement addAspenLocationRecordsToIncludeStmt = dbConn.prepareStatement("INSERT INTO location_records_to_include (locationId, indexingProfileId, location, subLocation, weight) VALUES (?, ?, '.*', '', 1)");
+			PreparedStatement addAspenLibraryRecordsOwnedStmt = dbConn.prepareStatement("INSERT INTO library_records_owned (libraryId, indexingProfileId, location, subLocation) VALUES (?, ?, ?, '') ON DUPLICATE KEY UPDATE location = CONCAT(location, '|', VALUES(location))");
+			PreparedStatement addAspenLibraryRecordsToIncludeStmt = dbConn.prepareStatement("INSERT INTO library_records_to_include (libraryId, indexingProfileId, location, subLocation, weight) VALUES (?, ?, '.*', '', 1)");
 			PreparedStatement updateAspenLocationStmt = dbConn.prepareStatement("UPDATE location SET displayName = ?, address = ?, phone = ? where locationId = ?");
 			PreparedStatement kohaRepeatableHolidaysStmt = kohaConn.prepareStatement("SELECT * FROM repeatable_holidays where branchcode = ?");
 			PreparedStatement kohaSpecialHolidaysStmt = kohaConn.prepareStatement("SELECT * FROM special_holidays where (year = ? or year = ?) AND branchcode = ? order by  year, month, day");
@@ -396,8 +405,90 @@ public class KohaExportMain {
 				String ilsCode = kohaBranches.getString("branchcode");
 				existingAspenLocationStmt.setString(1, ilsCode);
 				ResultSet existingAspenLocationRS = existingAspenLocationStmt.executeQuery();
-				if (existingAspenLocationRS.next()) {
-					long existingLocationId = existingAspenLocationRS.getLong("locationId");
+
+				long existingLocationId = 0;
+				if (!existingAspenLocationRS.next()) {
+					//The branch does not exist yet, create it
+
+					//Check to see if there is a library for the branch
+					kohaLibraryGroupForBranchCodeStmt.setString(1, ilsCode);
+					ResultSet kohaLibraryGroupForBranchCodeRS = kohaLibraryGroupForBranchCodeStmt.executeQuery();
+					String libraryCode = ilsCode;
+					String branchDisplayName = kohaBranches.getString("branchname");
+					String libraryDisplayName = branchDisplayName;
+					if (kohaLibraryGroupForBranchCodeRS.next()){
+						//The library is nested in a search group, get information about the group
+						long groupId = kohaLibraryGroupForBranchCodeRS.getLong("parent_id");
+						kohaLibraryGroupStmt.setLong(1, groupId);
+						ResultSet kohaLibraryGroupRS = kohaLibraryGroupStmt.executeQuery();
+						if (kohaLibraryGroupRS.next()){
+							libraryDisplayName = kohaLibraryGroupRS.getString("title");
+							libraryCode = libraryDisplayName.replaceAll("\\W", "");
+
+						}
+						kohaLibraryGroupRS.close();
+					}
+					kohaLibraryGroupForBranchCodeRS.close();
+
+					libraryCode = libraryCode.toLowerCase();
+					libraryCode = StringUtils.trimTo(25, libraryCode);
+					libraryDisplayName = StringUtils.trimTo(50, libraryDisplayName);
+
+					existingAspenLibraryStmt.setString(1, libraryCode);
+					ResultSet existingLibraryRS = existingAspenLibraryStmt.executeQuery();
+					long libraryId = 0;
+					if (existingLibraryRS.next()){
+						libraryId = existingLibraryRS.getLong("libraryId");
+					}else{
+						addAspenLibraryStmt.setString(1, libraryCode);
+						addAspenLibraryStmt.setString(2, libraryDisplayName);
+						addAspenLibraryStmt.executeUpdate();
+						ResultSet addAspenLibraryRS = addAspenLibraryStmt.getGeneratedKeys();
+						if (addAspenLibraryRS.next()){
+							libraryId = addAspenLibraryRS.getLong(1);
+						}
+					}
+
+					if (libraryId != 0){
+						addAspenLocationStmt.setLong(1, libraryId);
+						addAspenLocationStmt.setString(2, StringUtils.trimTo(60, branchDisplayName));
+						addAspenLocationStmt.setString(3, ilsCode);
+						addAspenLocationStmt.executeUpdate();
+						ResultSet addAspenLocationRS = addAspenLocationStmt.getGeneratedKeys();
+						if (addAspenLocationRS.next()){
+							long locationId = addAspenLocationRS.getLong(1);
+							//Add records owned for the location
+							addAspenLocationRecordsOwnedStmt.setLong(1, locationId);
+							addAspenLocationRecordsOwnedStmt.setLong(2, indexingProfile.getId());
+							addAspenLocationRecordsOwnedStmt.setString(3, ilsCode);
+							addAspenLocationRecordsOwnedStmt.executeUpdate();
+
+							//Add records to include for the location
+							addAspenLocationRecordsToIncludeStmt.setLong(1, locationId);
+							addAspenLocationRecordsToIncludeStmt.setLong(2, indexingProfile.getId());
+							addAspenLocationRecordsToIncludeStmt.executeUpdate();
+						}
+
+						//Add records owned for the library
+						addAspenLibraryRecordsOwnedStmt.setLong(1, libraryId);
+						addAspenLibraryRecordsOwnedStmt.setLong(2, indexingProfile.getId());
+						addAspenLibraryRecordsOwnedStmt.setString(3, ilsCode);
+						addAspenLibraryRecordsOwnedStmt.executeUpdate();
+
+						//Add records to include for the library
+						addAspenLibraryRecordsToIncludeStmt.setLong(1, libraryId);
+						addAspenLibraryRecordsToIncludeStmt.setLong(2, indexingProfile.getId());
+						addAspenLibraryRecordsToIncludeStmt.executeUpdate();
+					}
+
+					existingAspenLocationRS = existingAspenLocationStmt.executeQuery();
+					if (existingAspenLocationRS.next()){
+						existingLocationId = existingAspenLocationRS.getLong("libraryId");
+					}
+				}else{
+					existingLocationId = existingAspenLocationRS.getLong("locationId");
+				}
+				if (existingLocationId != 0) {
 					updateAspenLocationStmt.setString(1, kohaBranches.getString("branchname"));
 					String address = kohaBranches.getString("branchaddress1");
 					String address2 = kohaBranches.getString("branchaddress2");

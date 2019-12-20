@@ -27,4 +27,10 @@ class LocationFacetSetting extends FacetSetting {
 	function getEditLink(){
 		return '/Admin/LocationFacetSettings?objectAction=edit&id=' . $this->id;
 	}
+
+	/** @return string[] */
+	public static function getAvailableFacets()
+	{
+		return [];
+	}
 }

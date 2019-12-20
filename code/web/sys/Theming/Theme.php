@@ -4,7 +4,6 @@ require_once ROOT_DIR . '/sys/DB/DataObject.php';
 class Theme extends DataObject
 {
 	public $__table = 'themes';
-	public $__primaryKey = 'id';
 	public $id;
 	public $themeName;
 	public $extendsTheme;
@@ -101,10 +100,18 @@ class Theme extends DataObject
 			'Source Sans Pro',
 		];
 
+		$themesToExtend = [];
+		$themesToExtend[''] = 'None';
+		$theme = new Theme();
+		$theme->find();
+		while ($theme->fetch()){
+			$themesToExtend[$theme->themeName] = $theme->themeName;
+		}
+
 		$structure = array(
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id'),
 			'themeName' => array('property' => 'themeName', 'type' => 'text', 'label' => 'Theme Name', 'description' => 'The Name of the Theme', 'maxLength' => 50, 'required' => true),
-			'extendsTheme' => array('property' => 'extendsTheme', 'type' => 'text', 'label' => 'Extends Theme', 'description' => 'A theme that this overrides (leave blank if none is overridden)', 'maxLength' => 50, 'required' => false),
+			'extendsTheme' => array('property' => 'extendsTheme', 'type' => 'enum', 'values' => $themesToExtend, 'label' => 'Extends Theme', 'description' => 'A theme that this overrides (leave blank if none is overridden)', 'maxLength' => 50, 'required' => false),
 			'logoName' => array('property' => 'logoName', 'type' => 'image', 'label' => 'Logo (500px x 100px max)', 'description' => 'The logo for use in the header', 'required' => false, 'maxWidth' => 500, 'maxHeight' => 100, 'hideInLists' => true),
 			'favicon' => array('property' => 'favicon', 'type' => 'image', 'label' => 'favicon (32px x 32px max)', 'description' => 'The icon for use in the tab', 'required' => false, 'maxWidth' => 32, 'maxHeight' => 32, 'hideInLists' => true),
 			//Overall page colors

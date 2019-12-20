@@ -84,7 +84,7 @@ class GroupedWork_AJAX {
 					}
 				}
 			}
-			return json_encode(array('success' => true, 'message' => 'Marked ' . $groupedWorkPrimaryIdentifier->N . ' titles  for regrouping.'));
+			return json_encode(array('success' => true, 'message' => 'Marked ' . $groupedWorkPrimaryIdentifier->getNumResults() . ' titles  for regrouping.'));
 		}else{
 			return json_encode(array('success' => false, 'message' => 'Unable to mark the title for regrouping. Could not find the title.'));
 		}
@@ -220,7 +220,7 @@ class GroupedWork_AJAX {
 		$series = $recordDriver->getSeries();
 		if (!empty($indexedSeries) || !empty($series)){
 			global $library;
-			foreach ($library->showInMainDetails as $detailOption) {
+			foreach ($library->getGroupedWorkDisplaySettings()->showInMainDetails as $detailOption) {
 				$interface->assign($detailOption, true);
 			}
 			$interface->assign('indexedSeries', $indexedSeries);
@@ -942,7 +942,7 @@ class GroupedWork_AJAX {
 		];
 		if (!empty($indexedSeries) || !empty($series)){
 			global $library;
-			foreach ($library->showInSearchResultsMainDetails as $detailOption) {
+			foreach ($library->getGroupedWorkDisplaySettings()->showInSearchResultsMainDetails as $detailOption) {
 				$interface->assign($detailOption, true);
 			}
 			$interface->assign('indexedSeries', $indexedSeries);

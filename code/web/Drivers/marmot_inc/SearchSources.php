@@ -20,7 +20,6 @@ class SearchSources{
 			$repeatSearchSetting = $location->repeatSearchOption;
 			$repeatInWorldCat = $location->repeatInWorldCat == 1;
 			$repeatInProspector = $location->repeatInProspector == 1;
-			$repeatInOverdrive = $location->repeatInOverdrive == 1;
 			if (strlen($location->systemsToRepeatIn) > 0){
 				$systemsToRepeatIn = explode('|', $location->systemsToRepeatIn);
 			}else{
@@ -30,7 +29,6 @@ class SearchSources{
 			$repeatSearchSetting = $library->repeatSearchOption;
 			$repeatInWorldCat = $library->repeatInWorldCat == 1;
 			$repeatInProspector = $library->repeatInProspector == 1;
-			$repeatInOverdrive = $library->repeatInOverdrive == 1;
 			$systemsToRepeatIn = explode('|', $library->systemsToRepeatIn);
 		}
 
@@ -85,7 +83,7 @@ class SearchSources{
 					$repeatInLibrary = new Library();
 					$repeatInLibrary->subdomain = $system;
 					$repeatInLibrary->find();
-					if ($repeatInLibrary->N == 1){
+					if ($repeatInLibrary->getNumResults() == 1){
 						$repeatInLibrary->fetch();
 
 						$searchOptions[$repeatInLibrary->subdomain] = array(
@@ -98,7 +96,7 @@ class SearchSources{
 						$repeatInLocation = new Location();
 						$repeatInLocation->code = $system;
 						$repeatInLocation->find();
-						if ($repeatInLocation->N == 1){
+						if ($repeatInLocation->getNumResults() == 1){
 							$repeatInLocation->fetch();
 
 							$searchOptions[$repeatInLocation->code] = array(
@@ -203,16 +201,6 @@ class SearchSources{
                 'name' => $combinedResultsName,
                 'description' => "Combined results from multiple sources.",
                 'catalogType' => 'combined'
-			);
-		}
-
-		//Overdrive
-		if ($repeatInOverdrive){
-			$searchOptions['overdrive'] = array(
-                'name' => 'OverDrive Digital Catalog',
-                'description' => 'Downloadable Books, Videos, Music, and eBooks with free use for library card holders.',
-                'external' => true,
-				'catalogType' => 'catalog'
 			);
 		}
 

@@ -846,7 +846,7 @@ class Koha extends AbstractIlsDriver
 			$locationLookup = new Location();
 			$locationLookup->locationId = $pickupBranch;
 			$locationLookup->find();
-			if ($locationLookup->N > 0) {
+			if ($locationLookup->getNumResults() > 0) {
 				$locationLookup->fetch();
 				$pickupBranch = $locationLookup->code;
 			}

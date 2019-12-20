@@ -33,7 +33,7 @@ class SearchEntry extends DataObject
 
         $s = new SearchEntry();
         $s->query($sql);
-        if ($s->N) {
+        if ($s->getNumResults()) {
             while ($s->fetch()) {
                 return clone($s);
             }
@@ -62,7 +62,7 @@ class SearchEntry extends DataObject
 
 			$s = new SearchEntry();
 			$s->query($sql);
-			if ($s->N) {
+			if ($s->getNumResults()) {
 					while ($s->fetch()) {
 							$searches[] = clone($s);
 					}
@@ -92,7 +92,7 @@ class SearchEntry extends DataObject
 
         $s = new SearchEntry();
         $s->query($sql);
-        if ($s->N) {
+        if ($s->getNumResults()) {
             while ($s->fetch()) {
                 $searches[] = clone($s);
             }
@@ -118,7 +118,7 @@ class SearchEntry extends DataObject
 		$s = new SearchEntry();
 		$s->query($sql);
 		$searches = array();
-		if ($s->N) {
+		if ($s->getNumResults()) {
 				while ($s->fetch()) {
 						$searches[] = clone($s);
 				}

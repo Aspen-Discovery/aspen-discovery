@@ -39,14 +39,13 @@ class BrowseCategory extends DataObject{
 		return $this->subBrowseCategories;
 	}
 
-	private $data = array();
 	public function __get($name){
 		if ($name == 'subBrowseCategories') {
 			$this->getSubCategories();
             /** @noinspection PhpUndefinedFieldInspection */
             return $this->subBrowseCategories;
 		}else{
-			return $this->data[$name];
+			return $this->_data[$name];
 		}
 	}
 
@@ -55,7 +54,7 @@ class BrowseCategory extends DataObject{
             /** @noinspection PhpUndefinedFieldInspection */
 			$this->subBrowseCategories = $value;
 		}else{
-			$this->data[$name] = $value;
+			$this->_data[$name] = $value;
 		}
 	}
 

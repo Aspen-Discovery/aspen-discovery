@@ -1646,8 +1646,13 @@ abstract class Solr
 					}
 					if (is_array($value)) {
 						foreach ($value as $additional) {
-							$additional = urlencode($additional);
-							$query[] = "$function=$additional";
+							if ($additional instanceof FacetSetting){
+								$additional = urlencode($additional->facetName);
+								$query[] = "$function=$additional";
+							}elseif (is_string($additional)){
+								$additional = urlencode($additional);
+								$query[] = "$function=$additional";
+							}
 						}
 					} else {
 						$value = urlencode($value);

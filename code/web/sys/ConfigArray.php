@@ -4,7 +4,7 @@
  * Support function -- get the file path to one of the ini files specified in the
  * [Extra_Config] section of config.ini.
  *
- * @param   string $name        The ini file's name from the [Extra_Config] section of config.ini
+ * @param string $name The ini file's name from the [Extra_Config] section of config.ini
  * @return  string      The file path
  */
 function getExtraConfigArrayFile($name)
@@ -17,13 +17,13 @@ function getExtraConfigArrayFile($name)
 
 	//Check to see if there is a domain name based sub-folder for he configuration
 	global $serverName;
-	if (file_exists(ROOT_DIR . "/../../sites/$serverName/conf/$filename")){
+	if (file_exists(ROOT_DIR . "/../../sites/$serverName/conf/$filename")) {
 		// Return the file path (note that all ini files are in the conf/ directory)
 		return ROOT_DIR . "/../../sites/$serverName/conf/$filename";
-	}elseif (file_exists(ROOT_DIR . "/../../sites/default/conf/$filename")){
+	} elseif (file_exists(ROOT_DIR . "/../../sites/default/conf/$filename")) {
 		// Return the file path (note that all ini files are in the conf/ directory)
 		return ROOT_DIR . "/../../sites/default/conf/$filename";
-	} else{
+	} else {
 		// Return the file path (note that all ini files are in the conf/ directory)
 		return ROOT_DIR . '/../../sites/' . $filename;
 	}
@@ -33,7 +33,7 @@ function getExtraConfigArrayFile($name)
 /**
  * Load a translation map from the translation_maps directory
  *
- * @param   string $name        The name of the translation map should not include _map.properties
+ * @param string $name The name of the translation map should not include _map.properties
  * @return  string[]      The file path
  */
 function getTranslationMap($name)
@@ -42,20 +42,20 @@ function getTranslationMap($name)
 	global $serverName;
 	/** @var Memcache $memCache */
 	global $memCache;
-	$mapValues = $memCache->get('translation_map_'. $serverName.'_'. $name);
-	if ($mapValues != false && $mapValues != null && !isset($_REQUEST['reload'])){
+	$mapValues = $memCache->get('translation_map_' . $serverName . '_' . $name);
+	if ($mapValues != false && $mapValues != null && !isset($_REQUEST['reload'])) {
 		return $mapValues;
 	}
 
 	// If the requested settings aren't loaded yet, pull them in:
 	$mapNameFull = $name . '_map.properties';
-	if (file_exists("../../sites/$serverName/translation_maps/$mapNameFull")){
+	if (file_exists("../../sites/$serverName/translation_maps/$mapNameFull")) {
 		// Return the file path (note that all ini files are in the conf/ directory)
 		$mapFilename = "../../sites/$serverName/translation_maps/$mapNameFull";
-	}elseif (file_exists("../../sites/default/translation_maps/$mapNameFull")){
+	} elseif (file_exists("../../sites/default/translation_maps/$mapNameFull")) {
 		// Return the file path (note that all ini files are in the conf/ directory)
 		$mapFilename = "../../sites/default/translation_maps/$mapNameFull";
-	} else{
+	} else {
 		// Return the file path (note that all ini files are in the conf/ directory)
 		$mapFilename = '../../sites/' . $mapNameFull;
 	}
@@ -65,12 +65,12 @@ function getTranslationMap($name)
 	// exist, so we can treat it as an empty array.
 	$mapValues = array();
 	$fHnd = fopen($mapFilename, 'r');
-	while (($line = fgets($fHnd)) !== false){
-		if (substr($line, 0, 1) == '#'){
+	while (($line = fgets($fHnd)) !== false) {
+		if (substr($line, 0, 1) == '#') {
 			//skip the line, it's a comment
-		}else{
+		} else {
 			$lineData = explode('=', $line, 2);
-			if (count($lineData) == 2){
+			if (count($lineData) == 2) {
 				$mapValues[strtolower(trim($lineData[0]))] = trim($lineData[1]);
 			}
 		}
@@ -78,28 +78,29 @@ function getTranslationMap($name)
 	fclose($fHnd);
 
 	global $configArray;
-	$memCache->set('translation_map_'. $serverName.'_' . $name, $mapValues, $configArray['Caching']['translation']);
+	$memCache->set('translation_map_' . $serverName . '_' . $name, $mapValues, $configArray['Caching']['translation']);
 	return $mapValues;
 }
 
-function mapValue($mapName, $value){
+function mapValue($mapName, $value)
+{
 	$map = getTranslationMap($mapName);
-	if ($map == null || $map == false){
+	if ($map == null || $map == false) {
 		return $value;
 	}
 	$value = str_replace(' ', '_', $value);
 	$lowerCaseValue = strtolower($value);
-	if (isset($map[$value])){
+	if (isset($map[$value])) {
 		return $map[$value];
-	}elseif (isset($map[$lowerCaseValue])){
+	} elseif (isset($map[$lowerCaseValue])) {
 		return $map[$lowerCaseValue];
-	}elseif(isset($map['*'])){
-		if ($map['*'] == 'nomap'){
+	} elseif (isset($map['*'])) {
+		if ($map['*'] == 'nomap') {
 			return $value;
-		}else{
+		} else {
 			return $map['*'];
 		}
-	}else{
+	} else {
 		return '';
 	}
 }
@@ -108,7 +109,7 @@ function mapValue($mapName, $value){
  * Support function -- get the contents of one of the ini files specified in the
  * [Extra_Config] section of config.ini.
  *
- * @param   string $name        The ini file's name from the [Extra_Config] section of config.ini
+ * @param string $name The ini file's name from the [Extra_Config] section of config.ini
  * @return  array       The retrieved configuration settings.
  */
 function getExtraConfigArray($name)
@@ -131,8 +132,8 @@ function getExtraConfigArray($name)
 /**
  * Support function -- merge the contents of two arrays parsed from ini files.
  *
- * @param   array $config_ini  The base config array.
- * @param   array $custom_ini  Overrides to apply on top of the base array.
+ * @param array $config_ini The base config array.
+ * @param array $custom_ini Overrides to apply on top of the base array.
  * @return  array       The merged results.
  */
 function ini_merge($config_ini, $custom_ini)
@@ -155,42 +156,42 @@ function ini_merge($config_ini, $custom_ini)
  */
 function readConfig()
 {
-    //Read default configuration file
-    $configFile = ROOT_DIR . '/../../sites/default/conf/config.ini';
-    $mainArray = parse_ini_file($configFile, true);
+	//Read default configuration file
+	$configFile = ROOT_DIR . '/../../sites/default/conf/config.ini';
+	$mainArray = parse_ini_file($configFile, true);
 
-    global $fullServerName, $serverName, $instanceName;
+	global $fullServerName, $serverName, $instanceName;
 
-    if (isset($_SERVER['aspen_server'])) {
-        //Override withing the config file
-        $fullServerName = $_SERVER['aspen_server'];
-        //echo("Server name is set as server var $fullServerName\r\n");
-    } else {
+	if (isset($_SERVER['aspen_server'])) {
+		//Override withing the config file
+		$fullServerName = $_SERVER['aspen_server'];
+		//echo("Server name is set as server var $fullServerName\r\n");
+	} else {
 
-        if (isset($_SERVER['SERVER_NAME'])) {
-            //Run from browser
-            $fullServerName = $_SERVER['SERVER_NAME'];
-        }elseif (count($_SERVER['argv']) > 1) {
-            $fullServerName = $_SERVER['argv'][1];
-        }else{
-            die('No server name could be found to load configuration');
-        }
+		if (isset($_SERVER['SERVER_NAME'])) {
+			//Run from browser
+			$fullServerName = $_SERVER['SERVER_NAME'];
+		} elseif (count($_SERVER['argv']) > 1) {
+			$fullServerName = $_SERVER['argv'][1];
+		} else {
+			die('No server name could be found to load configuration');
+		}
 
-    }
+	}
 
 	$server = $fullServerName;
 	$serverParts = explode('.', $server);
 	$serverName = 'default';
-	while (count($serverParts) > 0){
+	while (count($serverParts) > 0) {
 		$tmpServername = join('.', $serverParts);
 		$configFile = ROOT_DIR . "/../../sites/$tmpServername/conf/config.ini";
-		if (file_exists($configFile)){
+		if (file_exists($configFile)) {
 			$serverArray = parse_ini_file($configFile, true);
 			$mainArray = ini_merge($mainArray, $serverArray);
 			$serverName = $tmpServername;
 
 			$passwordFile = ROOT_DIR . "/../../sites/$tmpServername/conf/config.pwd.ini";
-			if (file_exists($passwordFile)){
+			if (file_exists($passwordFile)) {
 				$serverArray = parse_ini_file($passwordFile, true);
 				$mainArray = ini_merge($mainArray, $serverArray);
 			}
@@ -201,16 +202,16 @@ function readConfig()
 
 	// Sanity checking to make sure we loaded a good file
 	// @codeCoverageIgnoreStart
-	if ($serverName == 'default'){
+	if ($serverName == 'default') {
 		global $logger;
-		if ($logger){
+		if ($logger) {
 			$logger->log('Did not find servername for server ' . $fullServerName, Logger::LOG_ERROR);
 		}
 		require_once ROOT_DIR . '/sys/AspenError.php';
 		AspenError::raiseError("Invalid configuration, could not find site for " . $fullServerName);
 	}
 
-	if ($mainArray == false){
+	if ($mainArray == false) {
 		echo("Unable to parse configuration file $configFile, please check syntax");
 	}
 	// @codeCoverageIgnoreEnd
@@ -220,13 +221,13 @@ function readConfig()
 	$instanceName = parse_url($mainArray['Site']['url'], PHP_URL_HOST);
 	// Have to set the instanceName before the transformation of $mainArray['Site']['url'] below.
 
-	if (isset($_SERVER['SERVER_NAME'])){
-        if (isset($_SERVER['HTTPS'])){
-            $mainArray['Site']['url'] = "https://" . $_SERVER['SERVER_NAME'];
-        }else{
-            $mainArray['Site']['url'] = "http://" . $_SERVER['SERVER_NAME'];
-        }
-    }
+	if (isset($_SERVER['SERVER_NAME'])) {
+		if (isset($_SERVER['HTTPS'])) {
+			$mainArray['Site']['url'] = "https://" . $_SERVER['SERVER_NAME'];
+		} else {
+			$mainArray['Site']['url'] = "http://" . $_SERVER['SERVER_NAME'];
+		}
+	}
 
 	return $mainArray;
 }
@@ -239,21 +240,22 @@ function readConfig()
  *
  * @return array the configuration options adjusted based on the scoping rules.
  */
-function updateConfigForScoping($configArray) {
+function updateConfigForScoping($configArray)
+{
 	global $timer;
-    global $fullServerName;
+	global $fullServerName;
 
-    //Get the subdomain for the request
+	//Get the subdomain for the request
 	if (isset($_REQUEST['test_servername'])) {
-        $fullServerName = $_GET['test_servername'];
-        if (empty($fullServerName)) {
-            setcookie('test_servername', $_COOKIE['test_servername'], time() - 1000, '/');
-        } else if (!isset($_COOKIE['test_servername']) || ($_COOKIE['test_servername'] != $fullServerName)){
-            setcookie('test_servername', $fullServerName, 0, '/');
-        }
-    }else if(isset($_COOKIE['test_servername'])) {
-        $fullServerName = $_COOKIE['test_servername'];
-    }
+		$fullServerName = $_GET['test_servername'];
+		if (empty($fullServerName)) {
+			setcookie('test_servername', $_COOKIE['test_servername'], time() - 1000, '/');
+		} else if (!isset($_COOKIE['test_servername']) || ($_COOKIE['test_servername'] != $fullServerName)) {
+			setcookie('test_servername', $fullServerName, 0, '/');
+		}
+	} else if (isset($_COOKIE['test_servername'])) {
+		$fullServerName = $_COOKIE['test_servername'];
+	}
 
 	//split the servername based on
 	global $subdomain;
@@ -261,12 +263,12 @@ function updateConfigForScoping($configArray) {
 	$timer->logTime('starting updateConfigForScoping');
 
 	$subdomainsToTest = array();
-	if(strpos($fullServerName, '.')){
+	if (strpos($fullServerName, '.')) {
 		$subdomainsToTest = getSubdomainsToTestFromServerName($fullServerName, $subdomainsToTest);
 	}
 
 	//Also check the actual server name
-	if(strpos($_SERVER['SERVER_NAME'], '.')){
+	if (strpos($_SERVER['SERVER_NAME'], '.')) {
 		$subdomainsToTest = getSubdomainsToTestFromServerName($_SERVER['SERVER_NAME'], $subdomainsToTest);
 	}
 
@@ -276,98 +278,98 @@ function updateConfigForScoping($configArray) {
 	global $library;
 	global $locationSingleton;
 	if (isset($_SESSION['library']) && isset($_SESSION['location']) && !isset($_REQUEST['reload'])) {
-        $library = $_SESSION['library'];
-        $locationSingleton = $_SESSION['library'];
-        $timer->logTime('got library and location from session');
-    }
-	if ($library == null && isset($_SERVER['active_library'])){
-	    //echo("Getting active library from server variable " . $_SERVER['active_library']);
-        $Library = new Library();
-        $Library->subdomain = $_SERVER['active_library'];
-        $Library->find($_SERVER['active_library']);
-        if ($Library->N == 1) {
-            $Library->fetch();
-            $library = $Library;
-            $timer->logTime("found the library based on active_library server variable");
-        }
-    }
-	if ($library == null){
-        if (count($subdomainsToTest) == 0) {
-            $Library = new Library();
-            $Library->isDefault = 1;
-            $Library->find();
-            if ($Library->N == 1) {
-                $Library->fetch();
-                $library = $Library;
-            }
-            //Next check for an active_library server environment variable
-        }else {
-            for ($i = 0; $i < count($subdomainsToTest); $i++){
-                $subdomain = $subdomainsToTest[$i];
-                $timer->logTime("testing subdomain $i $subdomain");
-                $Library = new Library();
-                $timer->logTime("created new library object");
-                $Library->subdomain = $subdomain;
-                $Library->find();
-                $timer->logTime("searched for library by subdomain $subdomain");
+		$library = $_SESSION['library'];
+		$locationSingleton = $_SESSION['library'];
+		$timer->logTime('got library and location from session');
+	}
+	if ($library == null && isset($_SERVER['active_library'])) {
+		//echo("Getting active library from server variable " . $_SERVER['active_library']);
+		$Library = new Library();
+		$Library->subdomain = $_SERVER['active_library'];
+		$Library->find($_SERVER['active_library']);
+		if ($Library->getNumResults() == 1) {
+			$Library->fetch();
+			$library = $Library;
+			$timer->logTime("found the library based on active_library server variable");
+		}
+	}
+	if ($library == null) {
+		if (count($subdomainsToTest) == 0) {
+			$Library = new Library();
+			$Library->isDefault = 1;
+			$Library->find();
+			if ($Library->getNumResults() == 1) {
+				$Library->fetch();
+				$library = $Library;
+			}
+			//Next check for an active_library server environment variable
+		} else {
+			for ($i = 0; $i < count($subdomainsToTest); $i++) {
+				$subdomain = $subdomainsToTest[$i];
+				$timer->logTime("testing subdomain $i $subdomain");
+				$Library = new Library();
+				$timer->logTime("created new library object");
+				$Library->subdomain = $subdomain;
+				$Library->find();
+				$timer->logTime("searched for library by subdomain $subdomain");
 
-                if ($Library->N == 1) {
-                    $Library->fetch();
-                    //Make the library information global so we can work with it later.
-                    $library = $Library;
-                    $timer->logTime("found the library based on subdomain");
-                    break;
-                } else {
-                    //The subdomain can also indicate a location.
-                    $Location = new Location();
-                    $Location->whereAdd("code = '$subdomain'");
-                    $Location->whereAdd("subdomain = '$subdomain'", 'OR');
-                    $Location->find();
-                    if ($Location->N == 1) {
-                        $Location->fetch();
-                        //We found a location for the subdomain, get the library.
-                        /** @var Library $librarySingleton */
-                        global $librarySingleton;
-                        $library = $librarySingleton->getLibraryForLocation($Location->locationId);
-                        $locationSingleton->setActiveLocation(clone $Location);
-                        $timer->logTime("found the location and library based on subdomain");
-                        break;
-                    } else {
-                        //Check to see if there is only one library in the system
-                        $Library = new Library();
-                        $Library->find();
-                        if ($Library->N == 1) {
-                            $Library->fetch();
-                            $library = $Library;
-                            $timer->logTime("there is only one library for this install");
-                            break;
-                        } else {
-                            //If we are on the last subdomain to test, grab the default.
-                            if ($i == count($subdomainsToTest) - 1){
-                                //Get the default library
-                                $Library = new Library();
-                                $Library->isDefault = 1;
-                                $Library->find();
-                                if ($Library->N == 1) {
-                                    $Library->fetch();
-                                    $library = $Library;
-                                    $timer->logTime("found the library based on the default");
-                                } else {
-                                    echo("Could not determine the correct library to use for this install");
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
+				if ($Library->getNumResults() == 1) {
+					$Library->fetch();
+					//Make the library information global so we can work with it later.
+					$library = $Library;
+					$timer->logTime("found the library based on subdomain");
+					break;
+				} else {
+					//The subdomain can also indicate a location.
+					$Location = new Location();
+					$Location->whereAdd("code = '$subdomain'");
+					$Location->whereAdd("subdomain = '$subdomain'", 'OR');
+					$Location->find();
+					if ($Location->getNumResults() == 1) {
+						$Location->fetch();
+						//We found a location for the subdomain, get the library.
+						/** @var Library $librarySingleton */
+						global $librarySingleton;
+						$library = $librarySingleton->getLibraryForLocation($Location->locationId);
+						$locationSingleton->setActiveLocation(clone $Location);
+						$timer->logTime("found the location and library based on subdomain");
+						break;
+					} else {
+						//Check to see if there is only one library in the system
+						$Library = new Library();
+						$Library->find();
+						if ($Library->getNumResults() == 1) {
+							$Library->fetch();
+							$library = $Library;
+							$timer->logTime("there is only one library for this install");
+							break;
+						} else {
+							//If we are on the last subdomain to test, grab the default.
+							if ($i == count($subdomainsToTest) - 1) {
+								//Get the default library
+								$Library = new Library();
+								$Library->isDefault = 1;
+								$Library->find();
+								if ($Library->getNumResults() == 1) {
+									$Library->fetch();
+									$library = $Library;
+									$timer->logTime("found the library based on the default");
+								} else {
+									echo("Could not determine the correct library to use for this install");
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
 
 	$timer->logTime('found library and location');
 	if ($library == null) {
-	    echo("Could not find the active library, please review configuration settings");
-	    die();
-    } else {
+		echo("Could not find the active library, please review configuration settings");
+		die();
+	} else {
 		//Update the title
 		$configArray['Site']['theme'] = $library->themeName . ',responsive';
 		$configArray['Site']['title'] = $library->displayName;

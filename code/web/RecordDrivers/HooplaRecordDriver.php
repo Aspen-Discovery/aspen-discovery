@@ -49,7 +49,7 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 			$query = "SELECT grouped_work.* FROM grouped_work INNER JOIN grouped_work_primary_identifiers ON grouped_work.id = grouped_work_id WHERE type='hoopla' AND identifier = '" . $this->getUniqueID() . "'";
 			$groupedWork->query($query);
 
-			if ($groupedWork->N == 1){
+			if ($groupedWork->getNumResults() == 1){
 				$groupedWork->fetch();
 				$this->groupedWork = clone $groupedWork;
 			}

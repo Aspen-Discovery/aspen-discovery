@@ -15,7 +15,7 @@
 # this version emails script output as a round finishes
 EMAIL=James.Staub@nashville.gov,Mark.Noble@nashville.gov,Pascal.Brammeier@nashville.gov
 PIKASERVER=nashville.production
-OUTPUT_FILE="/var/log/pika/${PIKASERVER}/continuous_partial_reindex_output.log"
+OUTPUT_FILE="/var/log/aspen_discovery/${PIKASERVER}/continuous_partial_reindex_output.log"
 
 # Check for conflicting processes currently running
 function checkConflictingProcesses() {

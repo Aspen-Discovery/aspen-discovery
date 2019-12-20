@@ -30,14 +30,10 @@ class TopFacets implements RecommendationInterface
             $searchLibrary = Library::getActiveLibrary();
             global $locationSingleton;
             $searchLocation = $locationSingleton->getActiveLocation();
-            $hasSearchLibraryFacets = ($searchLibrary != null && (count($searchLibrary->facets) > 0));
-            $hasSearchLocationFacets = ($searchLocation != null && (count($searchLocation->facets) > 0));
-            if ($hasSearchLocationFacets) {
-                $facets = $searchLocation->facets;
-            } elseif ($hasSearchLibraryFacets) {
-                $facets = $searchLibrary->facets;
+            if ($searchLocation != null) {
+                $facets = $searchLocation->getGroupedWorkDisplaySettings()->getFacets();
             } else {
-                $facets = Library::getDefaultFacets();
+                $facets = $searchLibrary->getGroupedWorkDisplaySettings()->getFacets();
             }
             global $solrScope;
             foreach ($facets as $facet) {
@@ -133,20 +129,20 @@ class TopFacets implements RecommendationInterface
 				$searchLocation = Location::getSearchLocation(null);
 
 				if ($searchLocation){
-					$superScopeLabel = $searchLocation->availabilityToggleLabelSuperScope;
-					$localLabel = $searchLocation->availabilityToggleLabelLocal;
+					$superScopeLabel = $searchLocation->getGroupedWorkDisplaySettings()->availabilityToggleLabelSuperScope;
+					$localLabel = $searchLocation->getGroupedWorkDisplaySettings()->availabilityToggleLabelLocal;
 					$localLabel = str_ireplace('{display name}', $searchLocation->displayName, $localLabel);
-					$availableLabel = $searchLocation->availabilityToggleLabelAvailable;
+					$availableLabel = $searchLocation->getGroupedWorkDisplaySettings()->availabilityToggleLabelAvailable;
 					$availableLabel = str_ireplace('{display name}', $searchLocation->displayName, $availableLabel);
-					$availableOnlineLabel = $searchLocation->availabilityToggleLabelAvailableOnline;
+					$availableOnlineLabel = $searchLocation->getGroupedWorkDisplaySettings()->availabilityToggleLabelAvailableOnline;
 					$availableOnlineLabel = str_ireplace('{display name}', $searchLocation->displayName, $availableOnlineLabel);
 				}else{
-					$superScopeLabel = $searchLibrary->availabilityToggleLabelSuperScope;
-					$localLabel = $searchLibrary->availabilityToggleLabelLocal;
+					$superScopeLabel = $searchLibrary->getGroupedWorkDisplaySettings()->availabilityToggleLabelSuperScope;
+					$localLabel = $searchLibrary->getGroupedWorkDisplaySettings()->availabilityToggleLabelLocal;
 					$localLabel = str_ireplace('{display name}', $searchLibrary->displayName, $localLabel);
-					$availableLabel = $searchLibrary->availabilityToggleLabelAvailable;
+					$availableLabel = $searchLibrary->getGroupedWorkDisplaySettings()->availabilityToggleLabelAvailable;
 					$availableLabel = str_ireplace('{display name}', $searchLibrary->displayName, $availableLabel);
-					$availableOnlineLabel = $searchLibrary->availabilityToggleLabelAvailableOnline;
+					$availableOnlineLabel = $searchLibrary->getGroupedWorkDisplaySettings()->availabilityToggleLabelAvailableOnline;
 					$availableOnlineLabel = str_ireplace('{display name}', $searchLibrary->displayName, $availableOnlineLabel);
 				}
 

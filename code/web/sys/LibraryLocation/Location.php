@@ -23,100 +23,89 @@ class Location extends DataObject
 	const DEFAULT_AUTOLOGOUT_TIME_LOGGED_OUT = 450;
 
 	public $__table = 'location';   // table name
-    public $__primaryKey = 'locationId';
-	public $locationId;				//int(11)
+	public $__primaryKey = 'locationId';
+	public $locationId;                //int(11)
+	public $libraryId;                //int(11)
 	public $subdomain;
-	public $code;					//varchar(5)
+	public $code;                    //varchar(5)
 	public $subLocation;
-	public $displayName;			//varchar(40)
-    public $theme;
+	public $displayName;            //varchar(40)
+	public $theme;
 	public $showDisplayNameInHeader;
 	public $headerText;
-	public $libraryId;				//int(11)
 	public $address;
 	public $phone;
 	public $isMainBranch; // tinyint(1)
 	public $showInLocationsAndHoursList;
-	public $validHoldPickupBranch;	//tinyint(4)
-	public $nearbyLocation1;		//int(11)
-	public $nearbyLocation2;		//int(11)
+	public $validHoldPickupBranch;    //tinyint(4)
+	public $nearbyLocation1;        //int(11)
+	public $nearbyLocation2;        //int(11)
 	public $holdingBranchLabel;     //varchar(40)
 	public $scope;
 	public $useScope;
 	public $facetLabel;
+	public $groupedWorkDisplaySettingId;
 	public $restrictSearchByLocation;
-	public $enableOverdriveCollection;
-	public $includeOverDriveAdult;
-	public $includeOverDriveTeen;
-	public $includeOverDriveKids;
-	public $hooplaScopeId;
-	public $rbdigitalScopeId;
-	public $cloudLibraryScopeId;
+	public /** @noinspection PhpUnused */ $overDriveScopeId;
+	public /** @noinspection PhpUnused */ $hooplaScopeId;
+	public /** @noinspection PhpUnused */ $rbdigitalScopeId;
+	public /** @noinspection PhpUnused */ $cloudLibraryScopeId;
 	public $showHoldButton;
-	public $showStandardReviews;
 	public $repeatSearchOption;
 	public $repeatInOnlineCollection;
 	public $repeatInProspector;
 	public $repeatInWorldCat;
-	public $repeatInOverdrive;
 	public $systemsToRepeatIn;
 	public $homeLink;
 	public $defaultPType;
 	public $ptypesToAllowRenewals;
-	public $publicListsToInclude;
+	public /** @noinspection PhpUnused */ $publicListsToInclude;
 	public $automaticTimeoutLength;
 	public $automaticTimeoutLengthLoggedOut;
 	public $additionalCss;
 	public $showEmailThis;
 	public $showShareOnExternalSites;
 	public $showFavorites;
-	public $showComments;
-	public $showStaffView;
-	public $showGoodReadsReviews;
-	public $econtentLocationsToInclude;
-	public $availabilityToggleLabelSuperScope;
-	public $availabilityToggleLabelLocal;
-	public $availabilityToggleLabelAvailable;
-	public $availabilityToggleLabelAvailableOnline;
-	public $baseAvailabilityToggleOnLocalHoldingsOnly;
-	public $includeOnlineMaterialsInAvailableToggle;
+	public /** @noinspection PhpUnused */ $econtentLocationsToInclude;
 	public $defaultBrowseMode;
 	public $browseCategoryRatingsMode;
-	public $includeAllLibraryBranchesInFacets;
-	public $additionalLocationsToShowAvailabilityFor;
-	public $includeAllRecordsInShelvingFacets;
-	public $includeAllRecordsInDateAddedFacets;
-	public $includeLibraryRecordsToInclude;
+	public /** @noinspection PhpUnused */ $includeAllLibraryBranchesInFacets;
+	public /** @noinspection PhpUnused */ $additionalLocationsToShowAvailabilityFor;
+//	public /** @noinspection PhpUnused */ $includeAllRecordsInShelvingFacets;
+//	public /** @noinspection PhpUnused */ $includeAllRecordsInDateAddedFacets;
+	public /** @noinspection PhpUnused */ $includeLibraryRecordsToInclude;
 
 	//Combined Results (Bento Box)
-	public $enableCombinedResults;
+	public /** @noinspection PhpUnused */ $enableCombinedResults;
 	public $combinedResultsLabel;
-	public $defaultToCombinedResults;
+	public /** @noinspection PhpUnused */ $defaultToCombinedResults;
 	public $useLibraryCombinedResultsSettings;
 
 	/** @var  array $_data */
 	protected $_data;
 
-	function keys() {
+	function keys()
+	{
 		return array('locationId', 'code');
 	}
 
 	function getNumericColumnNames()
-    {
-        return ['scope'];
-    }
+	{
+		return ['scope'];
+	}
 
-    static function getObjectStructure(){
+	static function getObjectStructure()
+	{
 		//Load Libraries for lookup values
 		$library = new Library();
 		$library->orderBy('displayName');
-		if (UserAccount::userHasRole('libraryAdmin') && !UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryManager') || UserAccount::userHasRole('locationManager')){
+		if (UserAccount::userHasRole('libraryAdmin') && !UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryManager') || UserAccount::userHasRole('locationManager')) {
 			$homeLibrary = Library::getPatronHomeLibrary();
 			$library->libraryId = $homeLibrary->libraryId;
 		}
 		$library->find();
 		$libraryList = array();
-		while ($library->fetch()){
+		while ($library->fetch()) {
 			$libraryList[$library->libraryId] = $library->displayName;
 		}
 
@@ -127,7 +116,7 @@ class Location extends DataObject
 		$locationList = array();
 		$locationLookupList = array();
 		$locationLookupList[-1] = '<No Nearby Location>';
-		while ($location->fetch()){
+		while ($location->fetch()) {
 			$locationLookupList[$location->locationId] = $location->displayName;
 			$locationList[$location->locationId] = clone $location;
 		}
@@ -161,8 +150,8 @@ class Location extends DataObject
 		unset($locationRecordToIncludeStructure['locationId']);
 		unset($locationRecordToIncludeStructure['weight']);
 
-	    $locationSideLoadScopeStructure = LocationSideLoadScope::getObjectStructure();
-	    unset($locationSideLoadScopeStructure['locationId']);
+		$locationSideLoadScopeStructure = LocationSideLoadScope::getObjectStructure();
+		unset($locationSideLoadScopeStructure['locationId']);
 
 		$combinedResultsStructure = LocationCombinedResultSection::getObjectStructure();
 		unset($combinedResultsStructure['locationId']);
@@ -170,125 +159,127 @@ class Location extends DataObject
 
 		$browseCategoryInstructions = 'For more information on how to setup browse categories, see the <a href="https://docs.google.com/document/d/11biGMw6UDKx9UBiDCCj_GBmatx93UlJBLMESNf_RtDU">online documentation</a>.';
 
-        require_once ROOT_DIR . '/sys/Theming/Theme.php';
-        $theme = new Theme();
-        $availableThemes = array();
-        $theme->orderBy('themeName');
-        $theme->find();
-        while ($theme->fetch()){
-            $availableThemes[$theme->id] = $theme->themeName;
-        }
+		require_once ROOT_DIR . '/sys/Theming/Theme.php';
+		$theme = new Theme();
+		$availableThemes = array();
+		$theme->orderBy('themeName');
+		$theme->find();
+		while ($theme->fetch()) {
+			$availableThemes[$theme->id] = $theme->themeName;
+		}
 
-        require_once ROOT_DIR . '/sys/Hoopla/HooplaScope.php';
-        $hooplaScope = new HooplaScope();
-        $hooplaScope->orderBy('name');
-	    $hooplaScopes = [];
-	    $hooplaScope->find();
-	    $hooplaScopes[-2] = 'None';
-	    $hooplaScopes[-1] = 'Use Library Setting';
-	    while ($hooplaScope->fetch()){
-		    $hooplaScopes[$hooplaScope->id] = $hooplaScope->name;
-	    }
+		require_once ROOT_DIR . '/sys/Grouping/GroupedWorkDisplaySetting.php';
+		$groupedWorkDisplaySetting = new GroupedWorkDisplaySetting();
+		$groupedWorkDisplaySetting->orderBy('name');
+		$groupedWorkDisplaySettings = [];
+		$groupedWorkDisplaySettings[-1] = 'Use Library Settings';
+		$groupedWorkDisplaySetting->find();
+		while ($groupedWorkDisplaySetting->fetch()){
+			$groupedWorkDisplaySettings[$groupedWorkDisplaySetting->id] = $groupedWorkDisplaySetting->name;
+		}
 
-	    require_once ROOT_DIR . '/sys/RBdigital/RBdigitalScope.php';
-	    $rbdigitalScope = new RBdigitalScope();
-	    $rbdigitalScope->orderBy('name');
-	    $rbdigitalScopes = [];
-	    $rbdigitalScope->find();
-	    $rbdigitalScopes[-2] = 'None';
-	    $rbdigitalScopes[-1] = 'Use Library Setting';
-	    while ($rbdigitalScope->fetch()){
-		    $rbdigitalScopes[$rbdigitalScope->id] = $rbdigitalScope->name;
-	    }
+		require_once ROOT_DIR . '/sys/Hoopla/HooplaScope.php';
+		$hooplaScope = new HooplaScope();
+		$hooplaScope->orderBy('name');
+		$hooplaScopes = [];
+		$hooplaScope->find();
+		$hooplaScopes[-2] = 'None';
+		$hooplaScopes[-1] = 'Use Library Setting';
+		while ($hooplaScope->fetch()) {
+			$hooplaScopes[$hooplaScope->id] = $hooplaScope->name;
+		}
 
-	    require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibraryScope.php';
-	    $cloudLibraryScope = new CloudLibraryScope();
-	    $cloudLibraryScope->orderBy('name');
-	    $cloudLibraryScopes = [];
-	    $cloudLibraryScope->find();
-	    $cloudLibraryScopes[-2] = 'None';
-	    $cloudLibraryScopes[-1] = 'Use Library Setting';
-	    while ($cloudLibraryScope->fetch()){
-		    $cloudLibraryScopes[$cloudLibraryScope->id] = $cloudLibraryScope->name;
-	    }
+		require_once ROOT_DIR . '/sys/OverDrive/OverDriveScope.php';
+		$overDriveScope = new OverDriveScope();
+		$overDriveScope->orderBy('name');
+		$overDriveScopes = [];
+		$overDriveScope->find();
+		$overDriveScopes[-2] = 'None';
+		$overDriveScopes[-1] = 'Use Library Setting';
+		while ($overDriveScope->fetch()){
+			$overDriveScopes[$overDriveScope->id] = $overDriveScope->name;
+		}
 
-	    $structure = array(
-			'locationId' => array('property'=>'locationId', 'type'=>'label', 'label'=>'Location Id', 'description'=>'The unique id of the location within the database'),
-			'subdomain' => array('property'=>'subdomain', 'type'=>'text', 'label'=>'Subdomain', 'description'=>'The subdomain to use while identifying this branch.  Can be left if it matches the code.', 'required'=>false),
-			'code' => array('property'=>'code', 'type'=>'text', 'label'=>'Code', 'description'=>'The code for use when communicating with the ILS', 'required'=>true),
-			'subLocation' => array('property'=>'subLocation', 'type'=>'text', 'label'=>'Sub Location Code', 'description'=>'The sub location or collection used to identify this '),
-			'displayName' => array('property'=>'displayName', 'type'=>'text', 'label'=>'Display Name', 'description'=>'The full name of the location for display to the user', 'size'=>'40'),
-            'theme' => array('property'=>'theme', 'type'=>'enum', 'label'=>'Theme', 'values' => $availableThemes, 'description'=>'The theme which should be used for the library', 'hideInLists' => true, 'default' => 'default'),
-            'showDisplayNameInHeader' => array('property'=>'showDisplayNameInHeader', 'type'=>'checkbox', 'label'=>'Show Display Name in Header', 'description'=>'Whether or not the display name should be shown in the header next to the logo', 'hideInLists' => true, 'default'=>false),
-			'libraryId' => array('property'=>'libraryId', 'type'=>'enum', 'values'=>$libraryList, 'label'=>'Library', 'description'=>'A link to the library which the location belongs to'),
-			'isMainBranch' => array('property'=>'isMainBranch', 'type'=>'checkbox', 'label'=>'Is Main Branch', 'description'=>'Is this location the main branch for it\'s library', /*'hideInLists' => false,*/ 'default'=>false),
-			'showInLocationsAndHoursList' => array('property'=>'showInLocationsAndHoursList', 'type'=>'checkbox', 'label'=>'Show In Locations And Hours List', 'description'=>'Whether or not this location should be shown in the list of library hours and locations', 'hideInLists' => true, 'default'=>true),
-			'address' => array('property'=>'address', 'type'=>'textarea', 'label'=>'Address', 'description'=>'The address of the branch.', 'hideInLists' => true),
-			'phone' => array('property'=>'phone', 'type'=>'text', 'label'=> 'Phone Number', 'description'=>'The main phone number for the site .', 'size' => '40', 'hideInLists' => true),
-			'nearbyLocation1' => array('property'=>'nearbyLocation1', 'type'=>'enum', 'values'=>$locationLookupList, 'label'=>'Nearby Location 1', 'description'=>'A secondary location which is nearby and could be used for pickup of materials.', 'hideInLists' => true),
-			'nearbyLocation2' => array('property'=>'nearbyLocation2', 'type'=>'enum', 'values'=>$locationLookupList, 'label'=>'Nearby Location 2', 'description'=>'A tertiary location which is nearby and could be used for pickup of materials.', 'hideInLists' => true),
-			'automaticTimeoutLength' => array('property'=>'automaticTimeoutLength', 'type'=>'integer', 'label'=>'Automatic Timeout Length (logged in)', 'description'=>'The length of time before the user is automatically logged out in seconds.', 'size'=>'8', 'hideInLists' => true, 'default'=>self::DEFAULT_AUTOLOGOUT_TIME),
-			'automaticTimeoutLengthLoggedOut' => array('property'=>'automaticTimeoutLengthLoggedOut', 'type'=>'integer', 'label'=>'Automatic Timeout Length (logged out)', 'description'=>'The length of time before the catalog resets to the home page set to 0 to disable.', 'size'=>'8', 'hideInLists' => true,'default'=>self::DEFAULT_AUTOLOGOUT_TIME_LOGGED_OUT),
+		require_once ROOT_DIR . '/sys/RBdigital/RBdigitalScope.php';
+		$rbdigitalScope = new RBdigitalScope();
+		$rbdigitalScope->orderBy('name');
+		$rbdigitalScopes = [];
+		$rbdigitalScope->find();
+		$rbdigitalScopes[-2] = 'None';
+		$rbdigitalScopes[-1] = 'Use Library Setting';
+		while ($rbdigitalScope->fetch()) {
+			$rbdigitalScopes[$rbdigitalScope->id] = $rbdigitalScope->name;
+		}
 
-			'displaySection'=> array('property'=>'displaySection', 'type' => 'section', 'label' =>'Basic Display', 'hideInLists' => true, 'properties' => array(
-				array('property'=>'homeLink', 'type'=>'text', 'label'=>'Home Link', 'description'=>'The location to send the user when they click on the home button or logo.  Use default or blank to go back to the aspen home location.', 'hideInLists' => true, 'size'=>'40'),
-				array('property'=>'additionalCss', 'type'=>'textarea', 'label'=>'Additional CSS', 'description'=>'Extra CSS to apply to the site.  Will apply to all pages.', 'hideInLists' => true),
-				array('property'=>'headerText', 'type'=>'html', 'label'=>'Header Text', 'description'=>'Optional Text to display in the header, between the logo and the log in/out buttons.  Will apply to all pages.', 'allowableTags' => '<a><b><em><div><span><p><strong><sub><sup><h1><h2><h3><h4><h5><h6><img>', 'hideInLists' => true),
+		require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibraryScope.php';
+		$cloudLibraryScope = new CloudLibraryScope();
+		$cloudLibraryScope->orderBy('name');
+		$cloudLibraryScopes = [];
+		$cloudLibraryScope->find();
+		$cloudLibraryScopes[-2] = 'None';
+		$cloudLibraryScopes[-1] = 'Use Library Setting';
+		while ($cloudLibraryScope->fetch()) {
+			$cloudLibraryScopes[$cloudLibraryScope->id] = $cloudLibraryScope->name;
+		}
+
+		$structure = array(
+			'locationId' => array('property' => 'locationId', 'type' => 'label', 'label' => 'Location Id', 'description' => 'The unique id of the location within the database'),
+			'subdomain' => array('property' => 'subdomain', 'type' => 'text', 'label' => 'Subdomain', 'description' => 'The subdomain to use while identifying this branch.  Can be left if it matches the code.', 'required' => false),
+			'code' => array('property' => 'code', 'type' => 'text', 'label' => 'Code', 'description' => 'The code for use when communicating with the ILS', 'required' => true),
+			'subLocation' => array('property' => 'subLocation', 'type' => 'text', 'label' => 'Sub Location Code', 'description' => 'The sub location or collection used to identify this '),
+			'displayName' => array('property' => 'displayName', 'type' => 'text', 'label' => 'Display Name', 'description' => 'The full name of the location for display to the user', 'size' => '40'),
+			'theme' => array('property' => 'theme', 'type' => 'enum', 'label' => 'Theme', 'values' => $availableThemes, 'description' => 'The theme which should be used for the library', 'hideInLists' => true, 'default' => 'default'),
+			'showDisplayNameInHeader' => array('property' => 'showDisplayNameInHeader', 'type' => 'checkbox', 'label' => 'Show Display Name in Header', 'description' => 'Whether or not the display name should be shown in the header next to the logo', 'hideInLists' => true, 'default' => false),
+			'libraryId' => array('property' => 'libraryId', 'type' => 'enum', 'values' => $libraryList, 'label' => 'Library', 'description' => 'A link to the library which the location belongs to'),
+			'isMainBranch' => array('property' => 'isMainBranch', 'type' => 'checkbox', 'label' => 'Is Main Branch', 'description' => 'Is this location the main branch for it\'s library', /*'hideInLists' => false,*/
+				'default' => false),
+			'showInLocationsAndHoursList' => array('property' => 'showInLocationsAndHoursList', 'type' => 'checkbox', 'label' => 'Show In Locations And Hours List', 'description' => 'Whether or not this location should be shown in the list of library hours and locations', 'hideInLists' => true, 'default' => true),
+			'address' => array('property' => 'address', 'type' => 'textarea', 'label' => 'Address', 'description' => 'The address of the branch.', 'hideInLists' => true),
+			'phone' => array('property' => 'phone', 'type' => 'text', 'label' => 'Phone Number', 'description' => 'The main phone number for the site .', 'size' => '40', 'hideInLists' => true),
+			'nearbyLocation1' => array('property' => 'nearbyLocation1', 'type' => 'enum', 'values' => $locationLookupList, 'label' => 'Nearby Location 1', 'description' => 'A secondary location which is nearby and could be used for pickup of materials.', 'hideInLists' => true),
+			'nearbyLocation2' => array('property' => 'nearbyLocation2', 'type' => 'enum', 'values' => $locationLookupList, 'label' => 'Nearby Location 2', 'description' => 'A tertiary location which is nearby and could be used for pickup of materials.', 'hideInLists' => true),
+			'automaticTimeoutLength' => array('property' => 'automaticTimeoutLength', 'type' => 'integer', 'label' => 'Automatic Timeout Length (logged in)', 'description' => 'The length of time before the user is automatically logged out in seconds.', 'size' => '8', 'hideInLists' => true, 'default' => self::DEFAULT_AUTOLOGOUT_TIME),
+			'automaticTimeoutLengthLoggedOut' => array('property' => 'automaticTimeoutLengthLoggedOut', 'type' => 'integer', 'label' => 'Automatic Timeout Length (logged out)', 'description' => 'The length of time before the catalog resets to the home page set to 0 to disable.', 'size' => '8', 'hideInLists' => true, 'default' => self::DEFAULT_AUTOLOGOUT_TIME_LOGGED_OUT),
+
+			'displaySection' => array('property' => 'displaySection', 'type' => 'section', 'label' => 'Basic Display', 'hideInLists' => true, 'properties' => array(
+				array('property' => 'homeLink', 'type' => 'text', 'label' => 'Home Link', 'description' => 'The location to send the user when they click on the home button or logo.  Use default or blank to go back to the aspen home location.', 'hideInLists' => true, 'size' => '40'),
+				array('property' => 'additionalCss', 'type' => 'textarea', 'label' => 'Additional CSS', 'description' => 'Extra CSS to apply to the site.  Will apply to all pages.', 'hideInLists' => true),
+				array('property' => 'headerText', 'type' => 'html', 'label' => 'Header Text', 'description' => 'Optional Text to display in the header, between the logo and the log in/out buttons.  Will apply to all pages.', 'allowableTags' => '<a><b><em><div><span><p><strong><sub><sup><h1><h2><h3><h4><h5><h6><img>', 'hideInLists' => true),
 			)),
 
-			'ilsSection' => array('property'=>'ilsSection', 'type' => 'section', 'label' =>'ILS/Account Integration', 'hideInLists' => true, 'properties' => array(
-				array('property'=>'holdingBranchLabel', 'type'=>'text', 'label'=>'Holding Branch Label', 'description'=>'The label used within the holdings table in Millennium'),
-				array('property'=>'scope', 'type'=>'text', 'label'=>'Scope', 'description'=>'The scope for the system in Millennium to refine holdings to the branch.  If there is no scope defined for the branch, this can be set to 0.', 'default'=>0),
-				array('property'=>'useScope', 'type'=>'checkbox', 'label'=>'Use Scope?', 'description'=>'Whether or not the scope should be used when displaying holdings.', 'hideInLists' => true),
-				array('property'=>'defaultPType', 'type'=>'text', 'label'=>'Default P-Type', 'description'=>'The P-Type to use when accessing a subdomain if the patron is not logged in.  Use -1 to use the library default PType.', 'default'=>-1),
-				array('property'=>'validHoldPickupBranch', 'type'=>'enum', 'values' => array('1' => 'Valid for all patrons', '0' => 'Valid for patrons of this branch only', '2' => 'Not Valid' ), 'label'=>'Valid Hold Pickup Branch?', 'description'=>'Determines if the location can be used as a pickup location if it is not the patrons home location or the location they are in.', 'hideInLists' => true, 'default' => 1),
-				array('property'=>'showHoldButton', 'type'=>'checkbox', 'label'=>'Show Hold Button', 'description'=>'Whether or not the hold button is displayed so patrons can place holds on items', 'hideInLists' => true, 'default'=>true),
-				array('property'=>'ptypesToAllowRenewals', 'type'=>'text', 'label'=>'PTypes that can renew', 'description'=>'A list of P-Types that can renew items or * to allow all P-Types to renew items.', 'hideInLists' => true, 'default' => '*'),
+			'ilsSection' => array('property' => 'ilsSection', 'type' => 'section', 'label' => 'ILS/Account Integration', 'hideInLists' => true, 'properties' => array(
+				array('property' => 'holdingBranchLabel', 'type' => 'text', 'label' => 'Holding Branch Label', 'description' => 'The label used within the holdings table in Millennium'),
+				array('property' => 'scope', 'type' => 'text', 'label' => 'Scope', 'description' => 'The scope for the system in Millennium to refine holdings to the branch.  If there is no scope defined for the branch, this can be set to 0.', 'default' => 0),
+				array('property' => 'useScope', 'type' => 'checkbox', 'label' => 'Use Scope?', 'description' => 'Whether or not the scope should be used when displaying holdings.', 'hideInLists' => true),
+				array('property' => 'defaultPType', 'type' => 'text', 'label' => 'Default P-Type', 'description' => 'The P-Type to use when accessing a subdomain if the patron is not logged in.  Use -1 to use the library default PType.', 'default' => -1),
+				array('property' => 'validHoldPickupBranch', 'type' => 'enum', 'values' => array('1' => 'Valid for all patrons', '0' => 'Valid for patrons of this branch only', '2' => 'Not Valid'), 'label' => 'Valid Hold Pickup Branch?', 'description' => 'Determines if the location can be used as a pickup location if it is not the patrons home location or the location they are in.', 'hideInLists' => true, 'default' => 1),
+				array('property' => 'showHoldButton', 'type' => 'checkbox', 'label' => 'Show Hold Button', 'description' => 'Whether or not the hold button is displayed so patrons can place holds on items', 'hideInLists' => true, 'default' => true),
+				array('property' => 'ptypesToAllowRenewals', 'type' => 'text', 'label' => 'PTypes that can renew', 'description' => 'A list of P-Types that can renew items or * to allow all P-Types to renew items.', 'hideInLists' => true, 'default' => '*'),
 			)),
 
-			'searchingSection' => array('property'=>'searchingSection', 'type' => 'section', 'label' =>'Searching', 'hideInLists' => true, 'properties' => array(
-				array('property'=>'restrictSearchByLocation', 'type'=>'checkbox', 'label'=>'Restrict Search By Location', 'description'=>'Whether or not search results should only include titles from this location', 'hideInLists' => true, 'default'=>false),
-				array('property' => 'publicListsToInclude', 'type'=>'enum', 'values' => array(0 => 'No Lists', '1' => 'Lists from this library', '4'=>'Lists from library list publishers Only', '2'=>'Lists from this location', '5'=>'Lists from list publishers at this location Only', '6'=>'Lists from all list publishers', '3' => 'All Lists'), 'label'=>'Public Lists To Include', 'description'=>'Which lists should be included in this scope', 'default' => '4'),
+			//Grouped Work Display
+			'groupedWorkDisplaySettingId' => array('property' => 'groupedWorkDisplaySettingId', 'type' => 'enum', 'values'=>$groupedWorkDisplaySettings, 'label' => 'Grouped Work Display Settings', 'hideInLists' => true),
+
+			'searchingSection' => array('property' => 'searchingSection', 'type' => 'section', 'label' => 'Searching', 'hideInLists' => true, 'properties' => array(
+				array('property' => 'restrictSearchByLocation', 'type' => 'checkbox', 'label' => 'Restrict Search By Location', 'description' => 'Whether or not search results should only include titles from this location', 'hideInLists' => true, 'default' => false),
+				array('property' => 'publicListsToInclude', 'type' => 'enum', 'values' => array(0 => 'No Lists', '1' => 'Lists from this library', '4' => 'Lists from library list publishers Only', '2' => 'Lists from this location', '5' => 'Lists from list publishers at this location Only', '6' => 'Lists from all list publishers', '3' => 'All Lists'), 'label' => 'Public Lists To Include', 'description' => 'Which lists should be included in this scope', 'default' => '4'),
 				array('property' => 'searchBoxSection', 'type' => 'section', 'label' => 'Search Box', 'hideInLists' => true, 'properties' => array(
-					array('property'=>'systemsToRepeatIn', 'type'=>'text', 'label'=>'Systems To Repeat In', 'description'=>'A list of library codes that you would like to repeat search in separated by pipes |.', 'hideInLists' => true),
-					array('property'=>'repeatSearchOption', 'type'=>'enum', 'values'=>array('none'=>'None', 'librarySystem'=>'Library System','marmot'=>'Entire Consortium'), 'label'=>'Repeat Search Options (requires Restrict Search By Location to be ON)', 'description'=>'Where to allow repeating search. Valid options are: none, librarySystem, marmot, all', 'default'=>'marmot'),
-					array('property'=>'repeatInOnlineCollection', 'type'=>'checkbox', 'label'=>'Repeat In Online Collection', 'description'=>'Turn on to allow repeat search in the Online Collection.', 'hideInLists' => true, 'default'=>false),
-					array('property'=>'repeatInProspector', 'type'=>'checkbox', 'label'=>'Repeat In Prospector', 'description'=>'Turn on to allow repeat search in Prospector functionality.', 'hideInLists' => true, 'default'=>false),
-					array('property'=>'repeatInWorldCat', 'type'=>'checkbox', 'label'=>'Repeat In WorldCat', 'description'=>'Turn on to allow repeat search in WorldCat functionality.', 'hideInLists' => true, 'default'=>false),
-					array('property'=>'repeatInOverdrive', 'type'=>'checkbox', 'label'=>'Repeat In Overdrive', 'description'=>'Turn on to allow repeat search in Overdrive functionality.', 'hideInLists' => true, 'default'=>false),
+					array('property' => 'systemsToRepeatIn', 'type' => 'text', 'label' => 'Systems To Repeat In', 'description' => 'A list of library codes that you would like to repeat search in separated by pipes |.', 'hideInLists' => true),
+					array('property' => 'repeatSearchOption', 'type' => 'enum', 'values' => array('none' => 'None', 'librarySystem' => 'Library System', 'marmot' => 'Entire Consortium'), 'label' => 'Repeat Search Options (requires Restrict Search By Location to be ON)', 'description' => 'Where to allow repeating search. Valid options are: none, librarySystem, marmot, all', 'default' => 'marmot'),
+					array('property' => 'repeatInOnlineCollection', 'type' => 'checkbox', 'label' => 'Repeat In Online Collection', 'description' => 'Turn on to allow repeat search in the Online Collection.', 'hideInLists' => true, 'default' => false),
+					array('property' => 'repeatInProspector', 'type' => 'checkbox', 'label' => 'Repeat In Prospector', 'description' => 'Turn on to allow repeat search in Prospector functionality.', 'hideInLists' => true, 'default' => false),
+					array('property' => 'repeatInWorldCat', 'type' => 'checkbox', 'label' => 'Repeat In WorldCat', 'description' => 'Turn on to allow repeat search in WorldCat functionality.', 'hideInLists' => true, 'default' => false),
 				)),
 				array('property' => 'searchFacetsSection', 'type' => 'section', 'label' => 'Search Facets', 'hideInLists' => true, 'properties' => array(
-					array('property'=>'availabilityToggleLabelSuperScope', 'type' => 'text', 'label' => 'SuperScope Toggle Label', 'description' => 'The label to show when viewing super scope i.e. Consortium Name / Entire Collection / Everything.  Does not show if superscope is not enabled.', 'default' => 'Entire Collection'),
-					array('property'=>'availabilityToggleLabelLocal', 'type' => 'text', 'label' => 'Local Collection Toggle Label', 'description' => 'The label to show when viewing the local collection i.e. Library Name / Local Collection.  Leave blank to hide the button.', 'default' => '{display name}'),
-					array('property'=>'availabilityToggleLabelAvailable', 'type' => 'text', 'label' => 'Available Toggle Label', 'description' => 'The label to show when viewing available items i.e. Available Now / Available Locally / Available Here.', 'default' => 'Available Now'),
-					array('property'=>'availabilityToggleLabelAvailableOnline', 'type' => 'text', 'label' => 'Available Online Toggle Label', 'description' => 'The label to show when viewing available items i.e. Available Online.', 'default' => 'Available Online'),
-					array('property'=>'baseAvailabilityToggleOnLocalHoldingsOnly', 'type'=>'checkbox', 'label'=>'Base Availability Toggle on Local Holdings Only', 'description'=>'Turn on to use local materials only in availability toggle.', 'hideInLists' => true, 'default'=>false),
-					array('property'=>'includeOnlineMaterialsInAvailableToggle', 'type'=>'checkbox', 'label'=>'Include Online Materials in Available Toggle', 'description'=>'Turn on to include online materials in both the Available Now and Available Online Toggles.', 'hideInLists' => true, 'default'=>false),
-					array('property'=>'facetLabel', 'type'=>'text', 'label'=>'Facet Label', 'description'=>'The label of the facet that identifies this location.', 'hideInLists' => true, 'size'=>'40'),
-					array('property'=>'includeAllLibraryBranchesInFacets', 'type'=>'checkbox', 'label'=>'Include All Library Branches In Facets', 'description'=>'Turn on to include all branches of the library within facets (ownership and availability).', 'hideInLists' => true, 'default'=>true),
-					array('property'=>'additionalLocationsToShowAvailabilityFor', 'type'=>'text', 'label'=>'Additional Locations to Include in Available At Facet', 'description'=>'A list of library codes that you would like included in the available at facet separated by pipes |.', 'size'=>'20', 'hideInLists' => true,),
-					array('property'=>'includeAllRecordsInShelvingFacets', 'type'=>'checkbox', 'label'=>'Include All Records In Shelving Facets', 'description'=>'Turn on to include all records (owned and included) in shelving related facets (detailed location, collection).', 'hideInLists' => true, 'default'=>false),
-					array('property'=>'includeAllRecordsInDateAddedFacets', 'type'=>'checkbox', 'label'=>'Include All Records In Date Added Facets', 'description'=>'Turn on to include all records (owned and included) in date added facets.', 'hideInLists' => true, 'default'=>false),
-					'facets' => array(
-						'property'=>'facets',
-						'type'=>'oneToMany',
-						'label'=>'Facets',
-						'description'=>'A list of facets to display in search results',
-						'keyThis' => 'locationId',
-						'keyOther' => 'locationId',
-						'subObjectType' => 'LocationFacetSetting',
-						'structure' => $facetSettingStructure,
-						'sortable' => true,
-						'storeDb' => true,
-						'allowEdit' => true,
-						'canEdit' => true,
-					),
+					array('property' => 'facetLabel', 'type' => 'text', 'label' => 'Facet Label', 'description' => 'The label of the facet that identifies this location.', 'hideInLists' => true, 'size' => '40'),
+					array('property' => 'includeAllLibraryBranchesInFacets', 'type' => 'checkbox', 'label' => 'Include All Library Branches In Facets', 'description' => 'Turn on to include all branches of the library within facets (ownership and availability).', 'hideInLists' => true, 'default' => true),
+					array('property' => 'additionalLocationsToShowAvailabilityFor', 'type' => 'text', 'label' => 'Additional Locations to Include in Available At Facet', 'description' => 'A list of library codes that you would like included in the available at facet separated by pipes |.', 'size' => '20', 'hideInLists' => true,),
 				)),
 				'combinedResultsSection' => array('property' => 'combinedResultsSection', 'type' => 'section', 'label' => 'Combined Results', 'hideInLists' => true, 'helpLink' => 'https://docs.google.com/document/d/1dcG12grGAzYlWAl6LWUnr9t-wdqcmMTJVwjLuItRNwk', 'properties' => array(
-					'useLibraryCombinedResultsSettings' => array('property' => 'useLibraryCombinedResultsSettings', 'type'=>'checkbox', 'label'=>'Use Library Settings', 'description'=>'Whether or not settings from the library should be used rather than settings from here', 'hideInLists' => true, 'default' => true),
-					'enableCombinedResults' => array('property' => 'enableCombinedResults', 'type'=>'checkbox', 'label'=>'Enable Combined Results', 'description'=>'Whether or not combined results should be shown ', 'hideInLists' => true, 'default' => false),
-					'combinedResultsLabel' => array('property' => 'combinedResultsLabel', 'type' => 'text', 'label' => 'Combined Results Label', 'description' => 'The label to use in the search source box when combined results is active.', 'size'=>'20', 'hideInLists' => true, 'default' => 'Combined Results'),
-					'defaultToCombinedResults' => array('property' => 'defaultToCombinedResults', 'type'=>'checkbox', 'label'=>'Default To Combined Results', 'description'=>'Whether or not combined results should be the default search source when active ', 'hideInLists' => true, 'default' => true),
+					'useLibraryCombinedResultsSettings' => array('property' => 'useLibraryCombinedResultsSettings', 'type' => 'checkbox', 'label' => 'Use Library Settings', 'description' => 'Whether or not settings from the library should be used rather than settings from here', 'hideInLists' => true, 'default' => true),
+					'enableCombinedResults' => array('property' => 'enableCombinedResults', 'type' => 'checkbox', 'label' => 'Enable Combined Results', 'description' => 'Whether or not combined results should be shown ', 'hideInLists' => true, 'default' => false),
+					'combinedResultsLabel' => array('property' => 'combinedResultsLabel', 'type' => 'text', 'label' => 'Combined Results Label', 'description' => 'The label to use in the search source box when combined results is active.', 'size' => '20', 'hideInLists' => true, 'default' => 'Combined Results'),
+					'defaultToCombinedResults' => array('property' => 'defaultToCombinedResults', 'type' => 'checkbox', 'label' => 'Default To Combined Results', 'description' => 'Whether or not combined results should be the default search source when active ', 'hideInLists' => true, 'default' => true),
 					'combinedResultSections' => array(
 						'property' => 'combinedResultSections',
 						'type' => 'oneToMany',
@@ -308,24 +299,17 @@ class Location extends DataObject
 				)),
 			)),
 
-			// Catalog Enrichment //
-			'enrichmentSection' => array('property'=>'enrichmentSection', 'type' => 'section', 'label' =>'Catalog Enrichment', 'hideInLists' => true, 'properties' => array(
-				array('property'=>'showStandardReviews', 'type'=>'checkbox', 'label'=>'Show Standard Reviews', 'description'=>'Whether or not reviews from Content Cafe/Syndetics are displayed on the full record page.', 'hideInLists' => true, 'default'=>true),
-				array('property'=>'showGoodReadsReviews', 'type'=>'checkbox', 'label'=>'Show GoodReads Reviews', 'description'=>'Whether or not reviews from GoodReads are displayed on the full record page.', 'hideInLists' => true, 'default'=>true),
-				'showFavorites'  => array('property'=>'showFavorites', 'type'=>'checkbox', 'label'=>'Enable User Lists', 'description'=>'Whether or not users can maintain favorites lists', 'hideInLists' => true, 'default' => 1),
-			)),
-
 			// Full Record Display //
-			'fullRecordSection' => array('property'=>'fullRecordSection', 'type' => 'section', 'label' =>'Full Record Display', 'hideInLists' => true, 'properties' => array(
-				'showEmailThis'  => array('property'=>'showEmailThis', 'type'=>'checkbox', 'label'=>'Show Email This', 'description'=>'Whether or not the Email This link is shown', 'hideInLists' => true, 'default' => 1),
-				'showShareOnExternalSites'  => array('property'=>'showShareOnExternalSites', 'type'=>'checkbox', 'label'=>'Show Sharing To External Sites', 'description'=>'Whether or not sharing on external sites (Twitter, Facebook, Pinterest, etc. is shown)', 'hideInLists' => true, 'default' => 1),
-				'showComments'  => array('property'=>'showComments', 'type'=>'checkbox', 'label'=>'Enable User Reviews', 'description'=>'Whether or not user reviews are shown (also disables adding user reviews)', 'hideInLists' => true, 'default' => 1),
-				'showStaffView' => array('property'=>'showStaffView', 'type'=>'checkbox', 'label'=>'Show Staff View', 'description'=>'Whether or not the staff view is displayed in full record view.', 'hideInLists' => true, 'default'=>true),
+			'fullRecordSection' => array('property' => 'fullRecordSection', 'type' => 'section', 'label' => 'Full Record Display', 'hideInLists' => true, 'properties' => array(
+				'showEmailThis' => array('property' => 'showEmailThis', 'type' => 'checkbox', 'label' => 'Show Email This', 'description' => 'Whether or not the Email This link is shown', 'hideInLists' => true, 'default' => 1),
+				'showShareOnExternalSites' => array('property' => 'showShareOnExternalSites', 'type' => 'checkbox', 'label' => 'Show Sharing To External Sites', 'description' => 'Whether or not sharing on external sites (Twitter, Facebook, Pinterest, etc. is shown)', 'hideInLists' => true, 'default' => 1),
+				'showComments' => array('property' => 'showComments', 'type' => 'checkbox', 'label' => 'Enable User Reviews', 'description' => 'Whether or not user reviews are shown (also disables adding user reviews)', 'hideInLists' => true, 'default' => 1),
+				'showStaffView' => array('property' => 'showStaffView', 'type' => 'checkbox', 'label' => 'Show Staff View', 'description' => 'Whether or not the staff view is displayed in full record view.', 'hideInLists' => true, 'default' => true),
 				'moreDetailsOptions' => array(
-					'property'=>'moreDetailsOptions',
-					'type'=>'oneToMany',
-					'label'=>'Full Record Options',
-					'description'=>'Record Options for the display of full record',
+					'property' => 'moreDetailsOptions',
+					'type' => 'oneToMany',
+					'label' => 'Full Record Options',
+					'description' => 'Record Options for the display of full record',
 					'keyThis' => 'locationId',
 					'keyOther' => 'locationId',
 					'subObjectType' => 'LocationMoreDetails',
@@ -339,24 +323,24 @@ class Location extends DataObject
 
 			// Browse Category Section //
 			array('property' => 'browseCategorySection', 'type' => 'section', 'label' => 'Browse Categories', 'hideInLists' => true, 'instructions' => $browseCategoryInstructions, 'properties' => array(
-				'defaultBrowseMode' => array('property' => 'defaultBrowseMode', 'type' => 'enum', 'label'=>'Default Viewing Mode for Browse Categories', 'description' => 'Sets how browse categories will be displayed when users haven\'t chosen themselves.', 'hideInLists' => true,
-				                           'values'=> array('' => null, // empty value option is needed so that if no option is specifically chosen for location, the library setting will be used instead.
-				                                            'covers' => 'Show Covers Only',
-				                                            'grid' => 'Show as Grid'),
+				'defaultBrowseMode' => array('property' => 'defaultBrowseMode', 'type' => 'enum', 'label' => 'Default Viewing Mode for Browse Categories', 'description' => 'Sets how browse categories will be displayed when users haven\'t chosen themselves.', 'hideInLists' => true,
+					'values' => array('' => null, // empty value option is needed so that if no option is specifically chosen for location, the library setting will be used instead.
+						'covers' => 'Show Covers Only',
+						'grid' => 'Show as Grid'),
 				),
 				'browseCategoryRatingsMode' => array('property' => 'browseCategoryRatingsMode', 'type' => 'enum', 'label' => 'Ratings Mode for Browse Categories ("covers" browse mode only)', 'description' => 'Sets how ratings will be displayed and how user ratings will be enabled when a user is viewing a browse category in the "covers" browse mode. (This only applies when User Ratings have been enabled.)',
-				                                   'values' => array('' => null, // empty value option is needed so that if no option is specifically chosen for location, the library setting will be used instead.
-				                                                     'popup' => 'Show rating stars and enable user rating via pop-up form.',
-				                                                     'stars' => 'Show rating stars and enable user ratings by clicking the stars.',
-				                                                     'none' => 'Do not show rating stars.'
-				                                   ),
+					'values' => array('' => null, // empty value option is needed so that if no option is specifically chosen for location, the library setting will be used instead.
+						'popup' => 'Show rating stars and enable user rating via pop-up form.',
+						'stars' => 'Show rating stars and enable user ratings by clicking the stars.',
+						'none' => 'Do not show rating stars.'
+					),
 				),
 
 				'browseCategories' => array(
-					'property'=>'browseCategories',
-					'type'=>'oneToMany',
-					'label'=>'Browse Categories',
-					'description'=>'Browse Categories To Show on the Home Screen',
+					'property' => 'browseCategories',
+					'type' => 'oneToMany',
+					'label' => 'Browse Categories',
+					'description' => 'Browse Categories To Show on the Home Screen',
 					'keyThis' => 'locationId',
 					'keyOther' => 'locationId',
 					'subObjectType' => 'LocationBrowseCategory',
@@ -368,29 +352,25 @@ class Location extends DataObject
 				),
 			)),
 
-
-			'overdriveSection' => array('property'=>'overdriveSection', 'type' => 'section', 'label' =>'OverDrive', 'hideInLists' => true, 'properties' => array(
-				'enableOverdriveCollection' => array('property'=>'enableOverdriveCollection', 'type'=>'checkbox', 'label'=>'Enable Overdrive Collection', 'description'=>'Whether or not titles from the Overdrive collection should be included in searches', 'hideInLists' => true, 'default'=>true),
-				'includeOverDriveAdult' => array('property'=>'includeOverDriveAdult', 'type'=>'checkbox', 'label'=>'Include Adult Titles', 'description'=>'Whether or not adult titles from the Overdrive collection should be included in searches', 'hideInLists' => true, 'default' => true),
-				'includeOverDriveTeen' => array('property'=>'includeOverDriveTeen', 'type'=>'checkbox', 'label'=>'Include Teen Titles', 'description'=>'Whether or not teen titles from the Overdrive collection should be included in searches', 'hideInLists' => true, 'default' => true),
-				'includeOverDriveKids' => array('property'=>'includeOverDriveKids', 'type'=>'checkbox', 'label'=>'Include Kids Titles', 'description'=>'Whether or not kids titles from the Overdrive collection should be included in searches', 'hideInLists' => true, 'default' => true),
+			'overdriveSection' => array('property' => 'overdriveSection', 'type' => 'section', 'label' => 'OverDrive', 'hideInLists' => true, 'properties' => array(
+				'overDriveScopeId'               => array('property' => 'overDriveScopeId', 'type' => 'enum', 'values' => $overDriveScopes, 'label' => 'OverDrive Scope', 'description' => 'The OverDrive scope to use', 'hideInLists' => true, 'default' => -1),
 			)),
 
-		    'hooplaSection' => array('property'=>'hooplaSection', 'type' => 'section', 'label' =>'Hoopla', 'hideInLists' => true, 'properties' => array(
-			    'hooplaScopeId' => array('property'=>'hooplaScopeId', 'type'=>'enum','values'=>$hooplaScopes, 'label'=>'Hoopla Scope', 'description'=>'The hoopla scope to use', 'hideInLists' => true, 'default'=>-1),
-	        )),
+			'hooplaSection' => array('property' => 'hooplaSection', 'type' => 'section', 'label' => 'Hoopla', 'hideInLists' => true, 'properties' => array(
+				'hooplaScopeId' => array('property' => 'hooplaScopeId', 'type' => 'enum', 'values' => $hooplaScopes, 'label' => 'Hoopla Scope', 'description' => 'The hoopla scope to use', 'hideInLists' => true, 'default' => -1),
+			)),
 
-		    'rbdigitalSection' => array('property'=>'rbdigitalSection', 'type' => 'section', 'label' =>'RBdigital', 'hideInLists' => true, 'properties' => array(
-			    'rbdigitalScopeId'        => array('property'=>'rbdigitalScopeId', 'type'=>'enum','values'=>$rbdigitalScopes,  'label'=>'RBdigital Scope', 'description'=>'The RBdigital scope to use', 'hideInLists' => true, 'default'=>-1),
-		    )),
+			'rbdigitalSection' => array('property' => 'rbdigitalSection', 'type' => 'section', 'label' => 'RBdigital', 'hideInLists' => true, 'properties' => array(
+				'rbdigitalScopeId' => array('property' => 'rbdigitalScopeId', 'type' => 'enum', 'values' => $rbdigitalScopes, 'label' => 'RBdigital Scope', 'description' => 'The RBdigital scope to use', 'hideInLists' => true, 'default' => -1),
+			)),
 
-		    'cloudLibrarySection' => array('property'=>'cloudLibrarySection', 'type' => 'section', 'label' =>'Cloud Library', 'hideInLists' => true, 'properties' => array(
-			    'cloudLibraryScopeId'        => array('property'=>'cloudLibraryScopeId', 'type'=>'enum','values'=>$cloudLibraryScopes,  'label'=>'Cloud Library Scope', 'description'=>'The Cloud Library scope to use', 'hideInLists' => true, 'default'=>-1),
-		    )),
+			'cloudLibrarySection' => array('property' => 'cloudLibrarySection', 'type' => 'section', 'label' => 'Cloud Library', 'hideInLists' => true, 'properties' => array(
+				'cloudLibraryScopeId' => array('property' => 'cloudLibraryScopeId', 'type' => 'enum', 'values' => $cloudLibraryScopes, 'label' => 'Cloud Library Scope', 'description' => 'The Cloud Library scope to use', 'hideInLists' => true, 'default' => -1),
+			)),
 
 			array(
 				'property' => 'hours',
-				'type'=> 'oneToMany',
+				'type' => 'oneToMany',
 				'keyThis' => 'locationId',
 				'keyOther' => 'locationId',
 				'subObjectType' => 'LocationHours',
@@ -402,10 +382,10 @@ class Location extends DataObject
 			),
 
 			'recordsOwned' => array(
-				'property'=>'recordsOwned',
-				'type'=>'oneToMany',
-				'label'=>'Records Owned',
-				'description'=>'Information about what records are owned by the location',
+				'property' => 'recordsOwned',
+				'type' => 'oneToMany',
+				'label' => 'Records Owned',
+				'description' => 'Information about what records are owned by the location',
 				'keyThis' => 'locationId',
 				'keyOther' => 'locationId',
 				'subObjectType' => 'LocationRecordOwned',
@@ -417,10 +397,10 @@ class Location extends DataObject
 			),
 
 			'recordsToInclude' => array(
-				'property'=>'recordsToInclude',
-				'type'=>'oneToMany',
-				'label'=>'Records To Include',
-				'description'=>'Information about what records to include in this scope',
+				'property' => 'recordsToInclude',
+				'type' => 'oneToMany',
+				'label' => 'Records To Include',
+				'description' => 'Information about what records to include in this scope',
 				'keyThis' => 'locationId',
 				'keyOther' => 'locationId',
 				'subObjectType' => 'LocationRecordToInclude',
@@ -430,25 +410,25 @@ class Location extends DataObject
 				'allowEdit' => false,
 				'canEdit' => false,
 			),
-			'includeLibraryRecordsToInclude' => array('property'=>'includeLibraryRecordsToInclude', 'type'=>'checkbox', 'label'=>'Include Library Records To Include', 'description'=>'Whether or not the records to include from the parent library should be included for this location', 'hideInLists' => true, 'default' => true),
+			'includeLibraryRecordsToInclude' => array('property' => 'includeLibraryRecordsToInclude', 'type' => 'checkbox', 'label' => 'Include Library Records To Include', 'description' => 'Whether or not the records to include from the parent library should be included for this location', 'hideInLists' => true, 'default' => true),
 
-		    'sideLoadScopes' => array(
-			    'property' => 'sideLoadScopes',
-			    'type' => 'oneToMany',
-			    'label' => 'Side Loaded eContent Scopes',
-			    'description' => 'Information about what Side Loads to include in this scope',
-			    'keyThis' => 'libraryId',
-			    'keyOther' => 'libraryId',
-			    'subObjectType' => 'LocationSideLoadScope',
-			    'structure' => $locationSideLoadScopeStructure,
-			    'sortable' => false,
-			    'storeDb' => true,
-			    'allowEdit' => false,
-			    'canEdit' => false,
-		    ),
+			'sideLoadScopes' => array(
+				'property' => 'sideLoadScopes',
+				'type' => 'oneToMany',
+				'label' => 'Side Loaded eContent Scopes',
+				'description' => 'Information about what Side Loads to include in this scope',
+				'keyThis' => 'libraryId',
+				'keyOther' => 'libraryId',
+				'subObjectType' => 'LocationSideLoadScope',
+				'structure' => $locationSideLoadScopeStructure,
+				'sortable' => false,
+				'storeDb' => true,
+				'allowEdit' => true,
+				'canEdit' => true,
+			),
 		);
 
-		if (UserAccount::userHasRole('locationManager') || UserAccount::userHasRole('libraryManager')){
+		if (UserAccount::userHasRole('locationManager') || UserAccount::userHasRole('libraryManager')) {
 			unset($structure['code']);
 			unset($structure['subLocation']);
 			$structure['displayName']['type'] = 'label';
@@ -465,7 +445,7 @@ class Location extends DataObject
 			unset($structure['sideLoadScopes']);
 		}
 
-		if (UserAccount::userHasRole('locationManager')){
+		if (UserAccount::userHasRole('locationManager')) {
 			unset($structure['nearbyLocation1']);
 			unset($structure['nearbyLocation2']);
 			unset($structure['showInLocationsAndHoursList']);
@@ -474,7 +454,7 @@ class Location extends DataObject
 			unset($structure['automaticTimeoutLength']);
 			unset($structure['automaticTimeoutLengthLoggedOut']);
 		}
-		if (!UserAccount::userHasRole('opacAdmin') && !UserAccount::userHasRole('libraryAdmin')){
+		if (!UserAccount::userHasRole('opacAdmin') && !UserAccount::userHasRole('libraryAdmin')) {
 			unset($structure['isMainBranch']);
 		}
 		return $structure;
@@ -489,7 +469,8 @@ class Location extends DataObject
 	 * @param bool $isLinkedUser
 	 * @return Location[]
 	 */
-	function getPickupBranches($patronProfile, $selectedBranchId = null, $isLinkedUser = false) {
+	function getPickupBranches($patronProfile, $selectedBranchId = null, $isLinkedUser = false)
+	{
 		// Note: Some calls to this function will set $patronProfile to false. (No Patron is logged in)
 		// For Example: MaterialsRequest_NewRequest
 		$homeLibaryInList = false;
@@ -498,22 +479,22 @@ class Location extends DataObject
 		//Get the library for the patron's home branch.
 		/** @var Library $librarySingleton */
 		global $librarySingleton;
-		if ($patronProfile){
+		if ($patronProfile) {
 			$homeLibrary = $librarySingleton->getLibraryForLocation($patronProfile->homeLocationId);
 		}
 
-		if (isset($homeLibrary) && $homeLibrary->inSystemPickupsOnly == 1){
+		if (isset($homeLibrary) && $homeLibrary->inSystemPickupsOnly == 1) {
 			/** The user can only pickup within their home system */
-			if (strlen($homeLibrary->validPickupSystems) > 0){
+			if (strlen($homeLibrary->validPickupSystems) > 0) {
 				/** The system has additional related systems that you can pickup within */
 				$pickupIds = array();
 				$pickupIds[] = $homeLibrary->libraryId;
 				$validPickupSystems = explode('|', $homeLibrary->validPickupSystems);
-				foreach ($validPickupSystems as $pickupSystem){
+				foreach ($validPickupSystems as $pickupSystem) {
 					$pickupLocation = new Library();
 					$pickupLocation->subdomain = $pickupSystem;
 					$pickupLocation->find();
-					if ($pickupLocation->N == 1){
+					if ($pickupLocation->getNumResults() == 1) {
 						$pickupLocation->fetch();
 						$pickupIds[] = $pickupLocation->libraryId;
 					}
@@ -521,13 +502,13 @@ class Location extends DataObject
 				$this->whereAdd("libraryId IN (" . implode(',', $pickupIds) . ")", 'AND');
 				//Deal with Steamboat Springs Juvenile which is a special case.
 				$this->whereAdd("code <> 'ssjuv'", 'AND');
-			}else{
+			} else {
 				/** Only this system is valid */
 				$this->whereAdd("libraryId = {$homeLibrary->libraryId}", 'AND');
 				$this->whereAdd("validHoldPickupBranch = 1", 'AND');
 				//$this->whereAdd("locationId = {$patronProfile['homeLocationId']}", 'OR');
 			}
-		}else{
+		} else {
 			$this->whereAdd("validHoldPickupBranch = 1");
 		}
 
@@ -537,15 +518,15 @@ class Location extends DataObject
 
 
 		// Add the user id to each pickup location to track multiple linked accounts having the same pick-up location.
- 		if ($patronProfile) {
- 			$this->pickupUsers[] = $patronProfile->id;
-	  }
+		if ($patronProfile) {
+			$this->pickupUsers[] = $patronProfile->id;
+		}
 
 		//Load the locations and sort them based on the user profile information as well as their physical location.
 		$physicalLocation = $this->getPhysicalLocation();
 		$locationList = array();
 		while ($this->fetch()) {
-			if (($this->validHoldPickupBranch == 1) || ($this->validHoldPickupBranch == 0 && !empty($patronProfile) && $patronProfile->homeLocationId == $this->locationId)){
+			if (($this->validHoldPickupBranch == 1) || ($this->validHoldPickupBranch == 0 && !empty($patronProfile) && $patronProfile->homeLocationId == $this->locationId)) {
 				if (!empty($selectedBranchId) && $this->locationId == $selectedBranchId) {
 					$selected = 'selected';
 				} else {
@@ -581,12 +562,12 @@ class Location extends DataObject
 		//MDN 8/14/2015 always add the home location #PK-81
 		// unless the option to pickup at the home location is specifically disabled #PK-1250
 		//if (count($locationList) == 0 && (isset($homeLibrary) && $homeLibrary->inSystemPickupsOnly == 1)){
-		if (!empty($patronProfile) && $patronProfile->homeLocationId != 0){
+		if (!empty($patronProfile) && $patronProfile->homeLocationId != 0) {
 			/** @var Location $homeLocation */
 			$homeLocation = new Location();
 			$homeLocation->locationId = $patronProfile->homeLocationId;
-			if ($homeLocation->find(true)){
-				if ($homeLocation->validHoldPickupBranch != 2){
+			if ($homeLocation->find(true)) {
+				if ($homeLocation->validHoldPickupBranch != 2) {
 					//We didn't find any locations.  This for schools where we want holds available, but don't want the branch to be a
 					//pickup location anywhere else.
 					$homeLocation->pickupUsers[] = $patronProfile->id; // Add the user id to each pickup location to track multiple linked accounts having the same pick-up location.
@@ -594,7 +575,9 @@ class Location extends DataObject
 					foreach ($locationList as $location) {
 						if ($location->libraryId == $homeLocation->libraryId && $location->locationId == $homeLocation->locationId) {
 							$existingLocation = true;
-							if (!$isLinkedUser) {$location->setSelected('selected');}
+							if (!$isLinkedUser) {
+								$location->setSelected('selected');
+							}
 							//TODO: update sorting key as well?
 							break;
 						}
@@ -612,7 +595,7 @@ class Location extends DataObject
 			}
 		}
 
-		if (!$homeLibaryInList && !$alternateLibraryInList && !$isLinkedUser){
+		if (!$homeLibaryInList && !$alternateLibraryInList && !$isLinkedUser) {
 			$locationList['0default'] = "Please Select a Location";
 		}
 
@@ -620,13 +603,15 @@ class Location extends DataObject
 	}
 
 	private static $activeLocation = 'unset';
+
 	/**
 	 * Returns the active location to use when doing search scoping, etc.
 	 * This does not include the IP address
 	 *
 	 * @return Location|string
 	 */
-	function getActiveLocation(){
+	function getActiveLocation()
+	{
 		if (Location::$activeLocation != 'unset') {
 			return Location::$activeLocation;
 		}
@@ -636,58 +621,58 @@ class Location extends DataObject
 
 		//load information about the library we are in.
 		global $library;
-		if (is_null($library)){
+		if (is_null($library)) {
 			//If we are not in a library, then do not allow branch scoping, etc.
 			Location::$activeLocation = null;
-		}else{
+		} else {
 
 			//Check to see if a branch location has been specified.
 			$locationCode = $this->getBranchLocationCode();
-			if (!empty($locationCode) && $locationCode != 'all'){
+			if (!empty($locationCode) && $locationCode != 'all') {
 				$activeLocation = new Location();
 				$activeLocation->subLocation = $locationCode;
-				if ($activeLocation->find(true)){
+				if ($activeLocation->find(true)) {
 					//Only use the location if we are in the subdomain for the parent library
-					if ($library->libraryId == $activeLocation->libraryId){
+					if ($library->libraryId == $activeLocation->libraryId) {
 						Location::$activeLocation = clone $activeLocation;
-					}else{
+					} else {
 						// If the active location doesn't belong to the library we are browsing at, turn off the active location
 						Location::$activeLocation = null;
 					}
-				}else{
+				} else {
 					//Check to see if we can get the active location based off the sublocation
 					$activeLocation = new Location();
 					$activeLocation->code = $locationCode;
-					if ($activeLocation->find(true)){
+					if ($activeLocation->find(true)) {
 						//Only use the location if we are in the subdomain for the parent library
-						if ($library->libraryId == $activeLocation->libraryId){
+						if ($library->libraryId == $activeLocation->libraryId) {
 							Location::$activeLocation = clone $activeLocation;
-						}else{
+						} else {
 							// If the active location doesn't belong to the library we are browsing at, turn off the active location
 							Location::$activeLocation = null;
 						}
-					}else{
+					} else {
 						//Check to see if we can get the active location based off the sublocation
 						$activeLocation = new Location();
 						$activeLocation->subdomain = $locationCode;
-						if ($activeLocation->find(true)){
+						if ($activeLocation->find(true)) {
 							//Only use the location if we are in the subdomain for the parent library
-							if ($library->libraryId == $activeLocation->libraryId){
+							if ($library->libraryId == $activeLocation->libraryId) {
 								Location::$activeLocation = clone $activeLocation;
-							}else{
+							} else {
 								// If the active location doesn't belong to the library we are browsing at, turn off the active location
 								Location::$activeLocation = null;
 							}
 						}
 					}
 				}
-			}else{
+			} else {
 				// Check if we know physical location by the ip table
 				$physicalLocation = $this->getPhysicalLocation();
-				if ($physicalLocation != null){
-					if ($library->libraryId == $physicalLocation->libraryId){
+				if ($physicalLocation != null) {
+					if ($library->libraryId == $physicalLocation->libraryId) {
 						Location::$activeLocation = $physicalLocation;
-					}else{
+					} else {
 						// If the physical location doesn't belong to the library we are browsing at, turn off the active location
 						Location::$activeLocation = null;
 					}
@@ -699,7 +684,9 @@ class Location extends DataObject
 
 		return Location::$activeLocation;
 	}
-	function setActiveLocation($location){
+
+	function setActiveLocation($location)
+	{
 		Location::$activeLocation = $location;
 	}
 
@@ -713,7 +700,8 @@ class Location extends DataObject
 	 *
 	 * @return Location
 	 */
-	static function getUserHomeLocation(){
+	static function getUserHomeLocation()
+	{
 		if (isset(Location::$userHomeLocation) && Location::$userHomeLocation != 'unset') {
 			return Location::$userHomeLocation;
 		}
@@ -721,10 +709,10 @@ class Location extends DataObject
 		// default value
 		Location::$userHomeLocation = null;
 
-		if (UserAccount::isLoggedIn()){
+		if (UserAccount::isLoggedIn()) {
 			$homeLocation = new Location();
 			$homeLocation->locationId = UserAccount::getUserHomeLocationId();
-			if ($homeLocation->find(true)){
+			if ($homeLocation->find(true)) {
 				Location::$userHomeLocation = clone($homeLocation);
 			}
 		}
@@ -734,16 +722,18 @@ class Location extends DataObject
 
 
 	private $branchLocationCode = 'unset';
-	function getBranchLocationCode(){
+
+	function getBranchLocationCode()
+	{
 		if (isset($this->branchLocationCode) && $this->branchLocationCode != 'unset') return $this->branchLocationCode;
-		if (isset($_GET['branch'])){
+		if (isset($_GET['branch'])) {
 			$this->branchLocationCode = $_GET['branch'];
-		}elseif (isset($_COOKIE['branch'])){
+		} elseif (isset($_COOKIE['branch'])) {
 			$this->branchLocationCode = $_COOKIE['branch'];
-		}else{
+		} else {
 			$this->branchLocationCode = '';
 		}
-		if ($this->branchLocationCode == 'all'){
+		if ($this->branchLocationCode == 'all') {
 			$this->branchLocationCode = '';
 		}
 		return $this->branchLocationCode;
@@ -755,49 +745,52 @@ class Location extends DataObject
 	 *
 	 */
 	private $physicalLocation = 'unset';
-	function getPhysicalLocation(){
-		if ($this->physicalLocation != 'unset'){
-				return $this->physicalLocation;
+
+	function getPhysicalLocation()
+	{
+		if ($this->physicalLocation != 'unset') {
+			return $this->physicalLocation;
 		}
 
-		if ($this->getBranchLocationCode() != ''){
+		if ($this->getBranchLocationCode() != '') {
 			$this->physicalLocation = $this->getActiveLocation();
-		}else{
+		} else {
 			$this->physicalLocation = $this->getIPLocation();
 		}
 		return $this->physicalLocation;
 	}
 
-	static $searchLocation  = array();
+	static $searchLocation = array();
 
 	/**
 	 * @param null $searchSource
 	 * @return Location|null
 	 */
-	static function getSearchLocation($searchSource = null){
-		if ($searchSource == null){
+	static function getSearchLocation($searchSource = null)
+	{
+		if ($searchSource == null) {
 			global $searchSource;
 		}
-		if ($searchSource == 'combinedResults'){
+		if ($searchSource == 'combinedResults') {
 			$searchSource = 'local';
 		}
-		if (!array_key_exists($searchSource, Location::$searchLocation)){
+		if (!array_key_exists($searchSource, Location::$searchLocation)) {
 			$scopingSetting = $searchSource;
-			if ($searchSource == null){
+			if ($searchSource == null) {
 				Location::$searchLocation[$searchSource] = null;
-			}else  if ($scopingSetting == 'local' || $scopingSetting == 'econtent' || $scopingSetting == 'location'){
+			} else if ($scopingSetting == 'local' || $scopingSetting == 'econtent' || $scopingSetting == 'location') {
 				global $locationSingleton;
 				Location::$searchLocation[$searchSource] = $locationSingleton->getActiveLocation();
-			}else if ($scopingSetting == 'marmot' || $scopingSetting == 'unscoped'){
+			} else if ($scopingSetting == 'marmot' || $scopingSetting == 'unscoped') {
 				Location::$searchLocation[$searchSource] = null;
-			}else{
+			} else {
 				$location = new Location();
 				$location->code = $scopingSetting;
 				$location->find();
-				if ($location->N > 0){
+				if ($location->getNumResults() > 0) {
 					$location->fetch();
 					Location::$searchLocation[$searchSource] = clone($location);
-				}else{
+				} else {
 					Location::$searchLocation[$searchSource] = null;
 				}
 			}
@@ -811,8 +804,10 @@ class Location extends DataObject
 	 */
 	private $ipLocation = 'unset';
 	private $ipId = 'unset';
-	function getIPLocation(){
-		if ($this->ipLocation != 'unset'){
+
+	function getIPLocation()
+	{
+		if ($this->ipLocation != 'unset') {
 			return $this->ipLocation;
 		}
 		global $timer;
@@ -824,11 +819,11 @@ class Location extends DataObject
 		$activeIp = $this->getActiveIp();
 		$this->ipLocation = $memCache->get('location_for_ip_' . $activeIp);
 		$this->ipId = $memCache->get('ipId_for_ip_' . $activeIp);
-		if ($this->ipId == -1){
+		if ($this->ipId == -1) {
 			$this->ipLocation = false;
 		}
 
-		if ($this->ipLocation == false || $this->ipId == false){
+		if ($this->ipLocation == false || $this->ipId == false) {
 			$timer->logTime('Starting getIPLocation');
 			//echo("Active IP is $activeIp");
 			require_once ROOT_DIR . '/sys/IP/IPAddress.php';
@@ -837,21 +832,21 @@ class Location extends DataObject
 
 			$this->ipLocation = null;
 			$this->ipId = -1;
-			if (is_numeric($ipVal)){
+			if (is_numeric($ipVal)) {
 				disableErrorHandler();
 				$subnet->whereAdd('startIpVal <= ' . $ipVal);
 				$subnet->whereAdd('endIpVal >= ' . $ipVal);
 				$subnet->orderBy('(endIpVal - startIpVal)');
-				if ($subnet->find(true)){
+				if ($subnet->find(true)) {
 					$matchedLocation = new Location();
 					$matchedLocation->locationId = $subnet->locationid;
-					if ($matchedLocation->find(true)){
+					if ($matchedLocation->find(true)) {
 						//Only use the physical location regardless of where we are
 						$this->ipLocation = clone($matchedLocation);
-						$this->ipLocation->setOpacStatus( (boolean) $subnet->isOpac);
+						$this->ipLocation->setOpacStatus((boolean)$subnet->isOpac);
 
 						$this->ipId = $subnet->id;
-					}else{
+					} else {
 						$logger->log("Did not find location for ip location id {$subnet->locationid}", Logger::LOG_WARNING);
 					}
 				}
@@ -866,42 +861,36 @@ class Location extends DataObject
 		return $this->ipLocation;
 	}
 
-	/**
-	 * Must be called after the call to getIPLocation
-	 * Enter description here ...
-	 */
-	function getIPid(){
-		return $this->ipId;
-	}
 
 	private static $activeIp = null;
-	static function getActiveIp(){
+	static function getActiveIp()
+	{
 		if (!is_null(Location::$activeIp)) return Location::$activeIp;
 		global $timer;
 		//Make sure gets and cookies are processed in the correct order.
-		if (isset($_GET['test_ip'])){
+		if (isset($_GET['test_ip'])) {
 			$ip = $_GET['test_ip'];
 			//Set a cookie so we don't have to transfer the ip from page to page.
 			setcookie('test_ip', $ip, 0, '/');
 //		}elseif (isset($_COOKIE['test_ip']) && $_COOKIE['test_ip'] != '127.0.0.1' && strlen($_COOKIE['test_ip']) > 0){
-		}elseif (!empty($_COOKIE['test_ip']) && $_COOKIE['test_ip'] != '127.0.0.1'){
+		} elseif (!empty($_COOKIE['test_ip']) && $_COOKIE['test_ip'] != '127.0.0.1') {
 			$ip = $_COOKIE['test_ip'];
-		}else{
-			if (isset($_SERVER["HTTP_CLIENT_IP"])){
+		} else {
+			if (isset($_SERVER["HTTP_CLIENT_IP"])) {
 				$ip = $_SERVER["HTTP_CLIENT_IP"];
-			}elseif (isset($_SERVER["HTTP_X_FORWARDED_FOR"])){
+			} elseif (isset($_SERVER["HTTP_X_FORWARDED_FOR"])) {
 				$ip = $_SERVER["HTTP_X_FORWARDED_FOR"];
-			}elseif (isset($_SERVER["HTTP_X_FORWARDED"])){
+			} elseif (isset($_SERVER["HTTP_X_FORWARDED"])) {
 				$ip = $_SERVER["HTTP_X_FORWARDED"];
-			}elseif (isset($_SERVER["HTTP_FORWARDED_FOR"])){
+			} elseif (isset($_SERVER["HTTP_FORWARDED_FOR"])) {
 				$ip = $_SERVER["HTTP_FORWARDED_FOR"];
-			}elseif (isset($_SERVER["HTTP_FORWARDED"])){
+			} elseif (isset($_SERVER["HTTP_FORWARDED"])) {
 				$ip = $_SERVER["HTTP_FORWARDED"];
-			}elseif (isset($_SERVER['REMOTE_HOST']) && strlen($_SERVER['REMOTE_HOST']) > 0){
+			} elseif (isset($_SERVER['REMOTE_HOST']) && strlen($_SERVER['REMOTE_HOST']) > 0) {
 				$ip = $_SERVER['REMOTE_HOST'];
-			}elseif (isset($_SERVER['REMOTE_ADDR']) && strlen($_SERVER['REMOTE_ADDR']) > 0){
+			} elseif (isset($_SERVER['REMOTE_ADDR']) && strlen($_SERVER['REMOTE_ADDR']) > 0) {
 				$ip = $_SERVER['REMOTE_ADDR'];
-			}else{
+			} else {
 				$ip = '';
 			}
 		}
@@ -911,7 +900,9 @@ class Location extends DataObject
 	}
 
 	private $sublocationCode = 'unset';
-	function getSublocationCode(){
+
+	function getSublocationCode()
+	{
 		if ($this->sublocationCode == 'unset') {
 			if (isset($_GET['sublocation'])) {
 				$this->sublocationCode = $_GET['sublocation'];
@@ -924,13 +915,14 @@ class Location extends DataObject
 		return $this->sublocationCode;
 	}
 
-	function getLocationsFacetsForLibrary($libraryId){
+	function getLocationsFacetsForLibrary($libraryId)
+	{
 		$location = new Location();
 		$location->libraryId = $libraryId;
 		$location->find();
 		$facets = array();
-		if ($location->N > 0){
-			while ($location->fetch()){
+		if ($location->getNumResults() > 0) {
+			while ($location->fetch()) {
 				$facets[] = $location->facetLabel;
 			}
 		}
@@ -938,95 +930,82 @@ class Location extends DataObject
 	}
 
 
-	public function __get($name){
+	public function __get($name)
+	{
 		if ($name == "hours") {
-			if (!isset($this->hours)){
+			if (!isset($this->hours)) {
 				$this->hours = array();
-				if ($this->locationId){
+				if ($this->locationId) {
 					$hours = new LocationHours();
 					$hours->locationId = $this->locationId;
 					$hours->orderBy('day');
 					$hours->find();
-					while($hours->fetch()){
+					while ($hours->fetch()) {
 						$this->hours[$hours->id] = clone($hours);
 					}
 				}
 			}
 			return $this->hours;
-		}elseif ($name == "moreDetailsOptions") {
-			if (!isset($this->moreDetailsOptions) && $this->libraryId){
+		} elseif ($name == "moreDetailsOptions") {
+			if (!isset($this->moreDetailsOptions) && $this->libraryId) {
 				$this->moreDetailsOptions = array();
 				$moreDetailsOptions = new LocationMoreDetails();
 				$moreDetailsOptions->locationId = $this->locationId;
 				$moreDetailsOptions->orderBy('weight');
 				$moreDetailsOptions->find();
-				while($moreDetailsOptions->fetch()){
+				while ($moreDetailsOptions->fetch()) {
 					$this->moreDetailsOptions[$moreDetailsOptions->id] = clone($moreDetailsOptions);
 				}
 			}
 			return $this->moreDetailsOptions;
-		}elseif ($name == "facets") {
-			if (!isset($this->facets)){
-				$this->facets = array();
-				if ($this->locationId){
-					$facet = new LocationFacetSetting();
-					$facet->locationId = $this->locationId;
-					$facet->orderBy('weight');
-					$facet->find();
-					while($facet->fetch()){
-						$this->facets[$facet->id] = clone($facet);
-					}
-				}
-			}
-			return $this->facets;
-		}elseif ($name == 'recordsOwned'){
-			if (!isset($this->recordsOwned) && $this->locationId){
+		} elseif ($name == 'recordsOwned') {
+			if (!isset($this->recordsOwned) && $this->locationId) {
 				$this->recordsOwned = array();
 				$object = new LocationRecordOwned();
 				$object->locationId = $this->locationId;
 				$object->find();
-				while($object->fetch()){
+				while ($object->fetch()) {
 					$this->recordsOwned[$object->id] = clone($object);
 				}
 			}
 			return $this->recordsOwned;
-		}elseif ($name == 'recordsToInclude'){
-			if (!isset($this->recordsToInclude) && $this->locationId){
+		} elseif ($name == 'recordsToInclude') {
+			if (!isset($this->recordsToInclude) && $this->locationId) {
 				$this->recordsToInclude = array();
 				$object = new LocationRecordToInclude();
 				$object->locationId = $this->locationId;
 				$object->orderBy('weight');
 				$object->find();
-				while($object->fetch()){
+				while ($object->fetch()) {
 					$this->recordsToInclude[$object->id] = clone($object);
 				}
 			}
 			return $this->recordsToInclude;
-		}elseif ($name == 'sideLoadScopes'){
-			if (!isset($this->sideLoadScopes) && $this->locationId){
+		} elseif ($name == 'sideLoadScopes') {
+			if (!isset($this->sideLoadScopes) && $this->locationId) {
 				$this->sideLoadScopes = array();
 				$object = new LocationSideLoadScope();
 				$object->locationId = $this->locationId;
 				$object->find();
-				while($object->fetch()){
+				while ($object->fetch()) {
 					$this->sideLoadScopes[$object->id] = clone($object);
 				}
 			}
 			return $this->sideLoadScopes;
-		}elseif  ($name == 'browseCategories'){
-			if (!isset($this->browseCategories) && $this->locationId){
+		} elseif ($name == 'browseCategories') {
+			if (!isset($this->browseCategories) && $this->locationId) {
 				$this->browseCategories = array();
 				$browseCategory = new LocationBrowseCategory();
 				$browseCategory->locationId = $this->locationId;
 				$browseCategory->orderBy('weight');
 				$browseCategory->find();
-				while($browseCategory->fetch()){
+				while ($browseCategory->fetch()) {
 					$this->browseCategories[$browseCategory->id] = clone($browseCategory);
 				}
 			}
 			return $this->browseCategories;
-		}elseif ($name == 'combinedResultSections') {
-			if (!isset($this->combinedResultSections) && $this->locationId){
+		} elseif ($name == 'combinedResultSections') {
+			if (!isset($this->combinedResultSections) && $this->locationId) {
 				$this->combinedResultSections = array();
 				$combinedResultSection = new LocationCombinedResultSection();
 				$combinedResultSection->locationId = $this->locationId;
@@ -1038,38 +1017,36 @@ class Location extends DataObject
 				}
 				return $this->combinedResultSections;
 			}
-		}else{
+		} else {
 			return $this->_data[$name];
 		}
 		return null;
 	}
 
-	public function __set($name, $value){
+	public function __set($name, $value)
+	{
 		if ($name == "hours") {
 			/** @noinspection PhpUndefinedFieldInspection */
 			$this->hours = $value;
-		}elseif ($name == "moreDetailsOptions") {
+		} elseif ($name == "moreDetailsOptions") {
 			/** @noinspection PhpUndefinedFieldInspection */
 			$this->moreDetailsOptions = $value;
-		}elseif ($name == "facets") {
-			/** @noinspection PhpUndefinedFieldInspection */
-			$this->facets = $value;
-		}elseif ($name == 'browseCategories'){
+		} elseif ($name == 'browseCategories') {
 			/** @noinspection PhpUndefinedFieldInspection */
 			$this->browseCategories = $value;
-		}elseif ($name == 'recordsOwned'){
+		} elseif ($name == 'recordsOwned') {
 			/** @noinspection PhpUndefinedFieldInspection */
 			$this->recordsOwned = $value;
-		}elseif ($name == 'recordsToInclude'){
+		} elseif ($name == 'recordsToInclude') {
 			/** @noinspection PhpUndefinedFieldInspection */
 			$this->recordsToInclude = $value;
-		}elseif ($name == 'sideLoadScopes'){
+		} elseif ($name == 'sideLoadScopes') {
 			/** @noinspection PhpUndefinedFieldInspection */
 			$this->sideLoadScopes = $value;
-		}elseif ($name == 'combinedResultSections') {
+		} elseif ($name == 'combinedResultSections') {
 			/** @noinspection PhpUndefinedFieldInspection */
 			$this->combinedResultSections = $value;
-		}else{
+		} else {
 			$this->_data[$name] = $value;
 		}
 	}
@@ -1079,11 +1056,11 @@ class Location extends DataObject
 	 *
 	 * @see DB/DB_DataObject::update()
 	 */
-	public function update(){
+	public function update()
+	{
 		$ret = parent::update();
-		if ($ret !== FALSE ){
+		if ($ret !== FALSE) {
 			$this->saveHours();
-			$this->saveFacets();
 			$this->saveBrowseCategories();
 			$this->saveMoreDetailsOptions();
 			$this->saveRecordsOwned();
@@ -1099,11 +1076,11 @@ class Location extends DataObject
 	 *
 	 * @see DB/DB_DataObject::insert()
 	 */
-	public function insert(){
+	public function insert()
+	{
 		$ret = parent::insert();
-		if ($ret !== FALSE ){
+		if ($ret !== FALSE) {
 			$this->saveHours();
-			$this->saveFacets();
 			$this->saveBrowseCategories();
 			$this->saveMoreDetailsOptions();
 			$this->saveRecordsOwned();
@@ -1156,20 +1133,6 @@ class Location extends DataObject
 		$this->combinedResultSections = array();
 	}
 
-	public function saveFacets()
-	{
-		if (isset ($this->facets) && is_array($this->facets)) {
-			$this->saveOneToManyOptions($this->facets, 'locationId');
-			unset($this->facets);
-		}
-	}
-
-	public function clearFacets()
-	{
-		$this->clearOneToManyOptions('LocationFacetSetting', 'locationId');
-		$this->facets = array();
-	}
-
 	public function saveHours()
 	{
 		if (isset ($this->hours) && is_array($this->hours)) {
@@ -1178,10 +1141,11 @@ class Location extends DataObject
 		}
 	}
 
-	public static function getLibraryHours($locationId, $timeToCheck){
+	public static function getLibraryHours($locationId, $timeToCheck)
+	{
 		$location = new Location();
 		$location->locationId = $locationId;
-		if ($locationId > 0 && $location->find(true)){
+		if ($locationId > 0 && $location->find(true)) {
 			// format $timeToCheck according to MySQL default date format
 			$todayFormatted = date('Y-m-d', $timeToCheck);
 
@@ -1190,7 +1154,7 @@ class Location extends DataObject
 			$holiday = new Holiday();
 			$holiday->date = $todayFormatted;
 			$holiday->libraryId = $location->libraryId;
-			if ($holiday->find(true)){
+			if ($holiday->find(true)) {
 				return [
 					'closed' => true,
 					'closureReason' => $holiday->name
@@ -1198,17 +1162,17 @@ class Location extends DataObject
 			}
 
 			// get the day of the week (0=Sunday to 6=Saturday)
-			$dayOfWeekToday = strftime ('%w', $timeToCheck);
+			$dayOfWeekToday = strftime('%w', $timeToCheck);
 
 			// find library hours for the above day of the week
 			$hours = new LocationHours();
 			$hours->locationId = $locationId;
 			$hours->day = $dayOfWeekToday;
 			$hours->orderBy('open asc');
-			if ($hours->find()){
+			if ($hours->find()) {
 				$openHours = [];
 				$ctr = 0;
-				while ($hours->fetch()){
+				while ($hours->fetch()) {
 					$openHours[$ctr++] = array(
 						'open' => ltrim($hours->open, '0'),
 						'close' => ltrim($hours->close, '0'),
@@ -1225,101 +1189,104 @@ class Location extends DataObject
 		return null;
 	}
 
-	public static function getLibraryHoursMessage(int $locationId) : string{
+	public static function getLibraryHoursMessage(int $locationId): string
+	{
 		$today = time();
 		$location = new Location();
 		$location->locationId = $locationId;
-		if ($location->find(true)){
+		if ($location->find(true)) {
 			$todaysLibraryHours = Location::getLibraryHours($locationId, $today);
-			if (isset($todaysLibraryHours) && is_array($todaysLibraryHours)){
-				if (isset($todaysLibraryHours['closed']) && ($todaysLibraryHours['closed'] == true || $todaysLibraryHours['closed'] == 1)){
-					if (isset($todaysLibraryHours['closureReason'])){
+			if (isset($todaysLibraryHours) && is_array($todaysLibraryHours)) {
+				if (isset($todaysLibraryHours['closed']) && ($todaysLibraryHours['closed'] == true || $todaysLibraryHours['closed'] == 1)) {
+					if (isset($todaysLibraryHours['closureReason'])) {
 						$closureReason = $todaysLibraryHours['closureReason'];
 					}
 					//Library is closed now
 					$nextDay = time() + (24 * 60 * 60);
-					$nextDayHours = Location::getLibraryHours($locationId,  $nextDay);
+					$nextDayHours = Location::getLibraryHours($locationId, $nextDay);
 					$daysChecked = 0;
-					while (isset($nextDayHours['closed']) && $nextDayHours['closed'] == true && $daysChecked < 7){
+					while (isset($nextDayHours['closed']) && $nextDayHours['closed'] == true && $daysChecked < 7) {
 						$nextDay += (24 * 60 * 60);
-						$nextDayHours = Location::getLibraryHours($locationId,  $nextDay);
+						$nextDayHours = Location::getLibraryHours($locationId, $nextDay);
 						$daysChecked++;
 					}
 
-					$nextDayOfWeek = strftime ('%a', $nextDay);
-					if (isset($nextDayHours['closed']) && $nextDayHours['closed'] == true){
-						if (isset($closureReason)){
-							$libraryHoursMessage = translate(['text'=>"%1% is closed today for %2%.", 1=>$location->displayName, 2=>$closureReason]);
-						}else{
-							$libraryHoursMessage = translate(['text'=>"%1% is closed today.", 1=>$location->displayName]);
+					$nextDayOfWeek = strftime('%a', $nextDay);
+					if (isset($nextDayHours['closed']) && $nextDayHours['closed'] == true) {
+						if (isset($closureReason)) {
+							$libraryHoursMessage = translate(['text' => "%1% is closed today for %2%.", 1 => $location->displayName, 2 => $closureReason]);
+						} else {
+							$libraryHoursMessage = translate(['text' => "%1% is closed today.", 1 => $location->displayName]);
 						}
-					}else{
+					} else {
 						$openMessage = Location::getOpenHoursMessage($nextDayHours);
-						if (isset($closureReason)){
-							$libraryHoursMessage = translate(['text'=>"%1% is closed today for %2%. It will reopen on %3% from %4%",  1=>$location->displayName, 2=>$closureReason, 3=>$nextDayOfWeek, 4=>Location::getOpenHoursMessage($nextDayHours)]);
-						}else{
-							$libraryHoursMessage = translate(['text'=>"%1% is closed today. It will reopen on %2% from %3%", 1=>$location->displayName, 2=>$nextDayOfWeek, 3=>Location::getOpenHoursMessage($nextDayHours)]);
+						if (isset($closureReason)) {
+							$libraryHoursMessage = translate(['text' => "%1% is closed today for %2%. It will reopen on %3% from %4%", 1 => $location->displayName, 2 => $closureReason, 3 => $nextDayOfWeek, 4 => $openMessage]);
+						} else {
+							$libraryHoursMessage = translate(['text' => "%1% is closed today. It will reopen on %2% from %3%", 1 => $location->displayName, 2 => $nextDayOfWeek, 3 => $openMessage]);
 						}
 					}
-				}else{
+				} else {
 					//Library is open
-					$currentHour = strftime ('%H', $today);
-					$openHour = strftime ('%H', strtotime($todaysLibraryHours[0]['open']));
-					$closeHour = strftime ('%H', strtotime($todaysLibraryHours[sizeof($todaysLibraryHours) -1]['close']));
-					if ($closeHour == 0 && $closeHour < $openHour){
+					$currentHour = strftime('%H', $today);
+					$openHour = strftime('%H', strtotime($todaysLibraryHours[0]['open']));
+					$closeHour = strftime('%H', strtotime($todaysLibraryHours[sizeof($todaysLibraryHours) - 1]['close']));
+					if ($closeHour == 0 && $closeHour < $openHour) {
 						$closeHour = 24;
 					}
-					if ($currentHour < $openHour){
-						$libraryHoursMessage = translate(['text'=>"%1% will be open today from %2%", 1=>$location->displayName, 2=>Location::getOpenHoursMessage($todaysLibraryHours)]);
-					}else if ($currentHour > $closeHour){
-						$tomorrowsLibraryHours = Location::getLibraryHours($locationId,  time() + (24 * 60 * 60));
-						if (isset($tomorrowsLibraryHours['closed'])  && ($tomorrowsLibraryHours['closed'] == true || $tomorrowsLibraryHours['closed'] == 1)){
-							if (isset($tomorrowsLibraryHours['closureReason'])){
-								$libraryHoursMessage = translate(['text'=>"%1% will be closed tomorrow for %2", 1=>$location->displayName, 2=>$tomorrowsLibraryHours['closureReason']]);
-							}else{
-								$libraryHoursMessage = translate(['text'=>"%1% will be closed tomorrow", 1=>$location->displayName]);
+					if ($currentHour < $openHour) {
+						$libraryHoursMessage = translate(['text' => "%1% will be open today from %2%", 1 => $location->displayName, 2 => Location::getOpenHoursMessage($todaysLibraryHours)]);
+					} else if ($currentHour > $closeHour) {
+						$tomorrowsLibraryHours = Location::getLibraryHours($locationId, time() + (24 * 60 * 60));
+						if (isset($tomorrowsLibraryHours['closed']) && ($tomorrowsLibraryHours['closed'] == true || $tomorrowsLibraryHours['closed'] == 1)) {
+							if (isset($tomorrowsLibraryHours['closureReason'])) {
+								$libraryHoursMessage = translate(['text' => "%1% will be closed tomorrow for %2", 1 => $location->displayName, 2 => $tomorrowsLibraryHours['closureReason']]);
+							} else {
+								$libraryHoursMessage = translate(['text' => "%1% will be closed tomorrow", 1 => $location->displayName]);
 							}
 
-						}else{
-							$libraryHoursMessage = translate(['text'=>"%1% will be open tomorrow from %2%", 1=>$location->displayName, 2=>Location::getOpenHoursMessage($tomorrowsLibraryHours)]);
+						} else {
+							$libraryHoursMessage = translate(['text' => "%1% will be open tomorrow from %2%", 1 => $location->displayName, 2 => Location::getOpenHoursMessage($tomorrowsLibraryHours)]);
 						}
-					}else{
-						$libraryHoursMessage = translate(['text'=>"%1% is open today from %2%", 1=>$location->displayName, 2=>Location::getOpenHoursMessage($todaysLibraryHours)]);
+					} else {
+						$libraryHoursMessage = translate(['text' => "%1% is open today from %2%", 1 => $location->displayName, 2 => Location::getOpenHoursMessage($todaysLibraryHours)]);
 					}
 				}
-			}else{
+			} else {
 				$libraryHoursMessage = '';
 			}
-		}else{
+		} else {
 			$libraryHoursMessage = '';
 		}
 		return $libraryHoursMessage;
 	}
 
-	public static function getOpenHoursMessage($hours){
+	public static function getOpenHoursMessage($hours)
+	{
 		$formattedMessage = '';
-		for ($i = 0; $i < sizeof($hours); $i++){
-			if (strlen($formattedMessage) != 0 && (sizeof($hours) > 2)){
+		for ($i = 0; $i < sizeof($hours); $i++) {
+			if (strlen($formattedMessage) != 0 && (sizeof($hours) > 2)) {
 				$formattedMessage .= ', ';
 			}
-			if (($i == (sizeof($hours) -1))){
+			if (($i == (sizeof($hours) - 1))) {
 				$formattedMessage .= translate(' and ');
 			}
-			$formattedMessage .= translate(['text' => '%1% to %2%', 1=> $hours[$i]['openFormatted'], 2 => $hours[$i]['closeFormatted']]);
+			$formattedMessage .= translate(['text' => '%1% to %2%', 1 => $hours[$i]['openFormatted'], 2 => $hours[$i]['closeFormatted']]);
 		}
 		return $formattedMessage;
 	}
 
-	public function saveRecordsOwned(){
-		if (isset ($this->recordsOwned) && is_array($this->recordsOwned)){
+	public function saveRecordsOwned()
+	{
+		if (isset ($this->recordsOwned) && is_array($this->recordsOwned)) {
 			/** @var LibraryRecordOwned $object */
-			foreach ($this->recordsOwned as $object){
-				if (isset($object->deleteOnSave) && $object->deleteOnSave == true){
+			foreach ($this->recordsOwned as $object) {
+				if (isset($object->deleteOnSave) && $object->deleteOnSave == true) {
 					$object->delete();
-				}else{
-					if (isset($object->id) && is_numeric($object->id)){
+				} else {
+					if (isset($object->id) && is_numeric($object->id)) {
 						$object->update();
-					}else{
+					} else {
 						$object->locationId = $this->locationId;
 						$object->insert();
 					}
@@ -1329,16 +1296,17 @@ class Location extends DataObject
 		}
 	}
 
-	public function saveRecordsToInclude(){
-		if (isset ($this->recordsToInclude) && is_array($this->recordsToInclude)){
+	public function saveRecordsToInclude()
+	{
+		if (isset ($this->recordsToInclude) && is_array($this->recordsToInclude)) {
 			/** @var LibraryRecordOwned $object */
-			foreach ($this->recordsToInclude as $object){
-				if (isset($object->deleteOnSave) && $object->deleteOnSave == true){
+			foreach ($this->recordsToInclude as $object) {
+				if (isset($object->deleteOnSave) && $object->deleteOnSave == true) {
 					$object->delete();
-				}else{
-					if (isset($object->id) && is_numeric($object->id)){
+				} else {
+					if (isset($object->id) && is_numeric($object->id)) {
 						$object->update();
-					}else{
+					} else {
 						$object->locationId = $this->locationId;
 						$object->insert();
 					}
@@ -1356,8 +1324,8 @@ class Location extends DataObject
 		}
 	}
 
-	static function getDefaultFacets($locationId = -1){
-		global $configArray;
+	static function getDefaultFacets($locationId = -1)
+	{
 		$defaultFacets = array();
 
 		$facet = new LocationFacetSetting();
@@ -1503,21 +1471,23 @@ class Location extends DataObject
 	}
 
 	/** @return LocationHours[] */
-	function getHours(){
+	function getHours()
+	{
 		return $this->hours;
 	}
 
-	public function hasValidHours() {
+	public function hasValidHours()
+	{
 		$hours = new LocationHours();
 		$hours->locationId = $this->locationId;
-        $hours->find();
-        $hasValidHours = false;
-		while ($hours->fetch()){
-		    if ($hours->open != '00:30' || $hours->close != '00:30'){
-                $hasValidHours = true;
+		$hours->find();
+		$hasValidHours = false;
+		while ($hours->fetch()) {
+			if ($hours->open != '00:30' || $hours->close != '00:30') {
+				$hasValidHours = true;
 
-            }
-        }
+			}
+		}
 		return $hasValidHours;
 	}
 
@@ -1530,22 +1500,23 @@ class Location extends DataObject
 	 * - Finally check to see if we have an active location based on the IP address.  If we do, use that to determine if this is an opac station
 	 * @return bool
 	 */
-	public function getOpacStatus(){
+	public function getOpacStatus()
+	{
 		if (is_null($this->opacStatus)) {
 			if (isset($_GET['opac'])) {
 				$this->opacStatus = $_GET['opac'] == 1 || strtolower($_GET['opac']) == 'true' || strtolower($_GET['opac']) == 'on';
 				if ($_GET['opac'] == '') {
 					//Clear any existing cookie
 					setcookie('opac', $this->opacStatus, time() - 1000, '/');
-				}elseif (!isset($_COOKIE['opac']) || $this->opacStatus != $_COOKIE['opac']){
+				} elseif (!isset($_COOKIE['opac']) || $this->opacStatus != $_COOKIE['opac']) {
 					setcookie('opac', $this->opacStatus ? '1' : '0', 0, '/');
 				}
 			} elseif (isset($_COOKIE['opac'])) {
-				$this->opacStatus = (boolean) $_COOKIE['opac'];
+				$this->opacStatus = (boolean)$_COOKIE['opac'];
 			} else {
-				if ($this->getIPLocation()){
+				if ($this->getIPLocation()) {
 					$this->opacStatus = $this->getIPLocation()->opacStatus;
-				}else{
+				} else {
 					$this->opacStatus = false;
 				}
 			}
@@ -1564,32 +1535,60 @@ class Location extends DataObject
 	}
 
 	private $_selected;
-    private function setSelected(string $selected)
-    {
-        $this->_selected = $selected;
-    }
 
-    public function getSelected(){
-        return $this->_selected;
-    }
+	private function setSelected(string $selected)
+	{
+		$this->_selected = $selected;
+	}
 
-	private $__groupedWorkDisplaySettings = null;
+	public function getSelected()
+	{
+		return $this->_selected;
+	}
+
+	protected $_groupedWorkDisplaySettings = null;
+
 	/** @return GroupedWorkDisplaySetting */
 	public function getGroupedWorkDisplaySettings()
 	{
-		if ($this->__groupedWorkDisplaySettings == null){
-			if ($this->groupedWorkDisplaySettingId == -1){
-				$library = Library::getLibraryForLocation($this->libraryId);
-				$this->groupedWorkDisplaySettingId = $library->groupedWorkDisplaySettingId;
+		if ($this->_groupedWorkDisplaySettings == null) {
+			try {
+				if ($this->groupedWorkDisplaySettingId == -1) {
+					$library = Library::getLibraryForLocation($this->libraryId);
+					$this->groupedWorkDisplaySettingId = $library->groupedWorkDisplaySettingId;
+				}
+				$groupedWorkDisplaySettings = new GroupedWorkDisplaySetting();
+				$groupedWorkDisplaySettings->id = $this->groupedWorkDisplaySettingId;
+				$groupedWorkDisplaySettings->find(true);
+				$this->_groupedWorkDisplaySettings = clone $groupedWorkDisplaySettings;
+			}catch(Exception $e){
+				global $logger;
+				$logger->log('Error loading grouped work display settings ' . $e, Logger::LOG_ERROR);
 			}
-			$this->__groupedWorkDisplaySettings = new GroupedWorkDisplaySetting();
-			$this->__groupedWorkDisplaySettings->id = $this->groupedWorkDisplaySettingId;
-			$this->__groupedWorkDisplaySettings->find(true);
 		}
-		return $this->__groupedWorkDisplaySettings;
+		return $this->_groupedWorkDisplaySettings;
 	}
 
-	function getEditLink(){
+	function getEditLink()
+	{
 		return '/Admin/Locations?objectAction=edit&id=' . $this->libraryId;
+	}
+
+	protected $_parentLibrary = null;
+	/** @return Library */
+	public function getParentLibrary()
+	{
+		if ($this->_parentLibrary == null){
+			$this->_parentLibrary = new Library();
+			$this->_parentLibrary->libraryId = $this->libraryId;
+			$this->_parentLibrary->find(true);
+		}
+		return $this->_parentLibrary;
+	}
+
+	public function setGroupedWorkDisplaySettings(GroupedWorkDisplaySetting $newGroupedWorkDisplaySettings)
+	{
+		$this->_groupedWorkDisplaySettings = $newGroupedWorkDisplaySettings;
+		$this->groupedWorkDisplaySettingId = $newGroupedWorkDisplaySettings->id;
 	}
 }

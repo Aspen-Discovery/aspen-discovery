@@ -61,7 +61,6 @@ function getLibraryLocationUpdates(){
 				"ALTER TABLE `library` ADD `enableCourseReserves` TINYINT(1) NOT NULL DEFAULT '0';",
 				"ALTER TABLE `library` ADD `exportOptions` VARCHAR(100) NOT NULL DEFAULT 'RefWorks|EndNote';",
 				"ALTER TABLE `library` ADD `enableSelfRegistration` TINYINT NOT NULL DEFAULT '0';",
-				"ALTER TABLE `library` ADD `useHomeLinkInBreadcrumbs` TINYINT(4) NOT NULL DEFAULT '0';",
 			),
 		),
 
@@ -193,15 +192,6 @@ function getLibraryLocationUpdates(){
 			'continueOnError' => true,
 			'sql' => array(
 				"ALTER TABLE `library` ADD `showMarmotResultsAtEndOfSearch` INT(11) DEFAULT 1;",
-			),
-		),
-
-		'library_21' => array(
-			'title' => 'Library 21',
-			'description' => 'Add the home link text so the breadcrumbs can be customized. ',
-			'continueOnError' => true,
-			'sql' => array(
-				"ALTER TABLE `library` ADD `homeLinkText` VARCHAR(50) DEFAULT 'Home';",
 			),
 		),
 
@@ -1079,14 +1069,6 @@ function getLibraryLocationUpdates(){
 				"ALTER TABLE `location` ADD COLUMN `browseCategoryRatingsMode` VARCHAR(25);",
 			),
 		),
-		'logo_linking' => array(
-			'title' => 'Logo Linking',
-			'description' => 'Allow Linking of Logo to the library home page.',
-			'continueOnError' => true,
-			'sql' => array(
-				"ALTER TABLE `library` ADD COLUMN `useHomeLinkForLogo` TINYINT(1) NULL DEFAULT '0';",
-			),
-		),
 
 		'add_sms_indicator_to_phone' => array(
 			'title' => 'Add SMS Indicator to Phone flag',
@@ -1375,22 +1357,6 @@ function getLibraryLocationUpdates(){
 					),
 			),
 
-			'library_sidebar_menu' => array(
-					'title' => 'Library Sidebar Menu',
-					'description' => 'Allow individual libraries to determine if the sidebar menu should show',
-					'sql' => array(
-							'ALTER TABLE `library` ADD COLUMN `showSidebarMenu` TINYINT DEFAULT 1',
-					),
-			),
-
-			'library_sidebar_menu_button_text' => array(
-					'title' => 'Library Sidebar Menu Button Text',
-					'description' => 'Allow individual libraries to customize the text of the help/menu button in the sidebar',
-					'sql' => array(
-							"ALTER TABLE `library` ADD COLUMN `sidebarMenuButtonText` VARCHAR(40) DEFAULT 'Help'",
-					),
-			),
-
 			'library_archive_material_requests' => array(
 					'title' => 'Library Request Copies of Archive Materials',
 					'description' => 'Updates to allow patrons to request copies of materials in the archive',
@@ -1401,67 +1367,67 @@ function getLibraryLocationUpdates(){
 			),
 
 			'library_archive_material_request_form_configurations' => array(
-					'title' => 'Configure Display of Archive Copy Request Form',
-					'description' => 'Updates to allow library admins the set which fields are display and which are required.',
-					'sql' => array(
-							'ALTER TABLE `library` '
-								.'ADD COLUMN `archiveRequestFieldName` TINYINT(1) NULL,'
-								.'ADD COLUMN `archiveRequestFieldAddress` TINYINT(1) NULL AFTER `archiveRequestFieldName`,'
-								.'ADD COLUMN `archiveRequestFieldAddress2` TINYINT(1) NULL AFTER `archiveRequestFieldAddress`,'
-								.'ADD COLUMN `archiveRequestFieldCity` TINYINT(1) NULL AFTER `archiveRequestFieldAddress2`,'
-								.'ADD COLUMN `archiveRequestFieldState` TINYINT(1) NULL AFTER `archiveRequestFieldCity`,'
-								.'ADD COLUMN `archiveRequestFieldZip` TINYINT(1) NULL AFTER `archiveRequestFieldState`,'
-								.'ADD COLUMN `archiveRequestFieldCountry` TINYINT(1) NULL AFTER `archiveRequestFieldZip`,'
-								.'ADD COLUMN `archiveRequestFieldPhone` TINYINT(1) NULL AFTER `archiveRequestFieldCountry`,'
-								.'ADD COLUMN `archiveRequestFieldAlternatePhone` TINYINT(1) NULL AFTER `archiveRequestFieldPhone`,'
-								.'ADD COLUMN `archiveRequestFieldFormat` TINYINT(1) NULL AFTER `archiveRequestFieldAlternatePhone`,'
-								.'ADD COLUMN `archiveRequestFieldPurpose` TINYINT(1) NULL AFTER `archiveRequestFieldFormat`;',
-					)
+				'title' => 'Configure Display of Archive Copy Request Form',
+				'description' => 'Updates to allow library admins the set which fields are display and which are required.',
+				'sql' => array(
+					'ALTER TABLE `library` '
+						.'ADD COLUMN `archiveRequestFieldName` TINYINT(1) NULL,'
+						.'ADD COLUMN `archiveRequestFieldAddress` TINYINT(1) NULL AFTER `archiveRequestFieldName`,'
+						.'ADD COLUMN `archiveRequestFieldAddress2` TINYINT(1) NULL AFTER `archiveRequestFieldAddress`,'
+						.'ADD COLUMN `archiveRequestFieldCity` TINYINT(1) NULL AFTER `archiveRequestFieldAddress2`,'
+						.'ADD COLUMN `archiveRequestFieldState` TINYINT(1) NULL AFTER `archiveRequestFieldCity`,'
+						.'ADD COLUMN `archiveRequestFieldZip` TINYINT(1) NULL AFTER `archiveRequestFieldState`,'
+						.'ADD COLUMN `archiveRequestFieldCountry` TINYINT(1) NULL AFTER `archiveRequestFieldZip`,'
+						.'ADD COLUMN `archiveRequestFieldPhone` TINYINT(1) NULL AFTER `archiveRequestFieldCountry`,'
+						.'ADD COLUMN `archiveRequestFieldAlternatePhone` TINYINT(1) NULL AFTER `archiveRequestFieldPhone`,'
+						.'ADD COLUMN `archiveRequestFieldFormat` TINYINT(1) NULL AFTER `archiveRequestFieldAlternatePhone`,'
+						.'ADD COLUMN `archiveRequestFieldPurpose` TINYINT(1) NULL AFTER `archiveRequestFieldFormat`;',
+				)
 			),
 
 			'library_archive_pid' => array(
-					'title' => 'Library Archive PID',
-					'description' => 'Setup a link from Pika to the archive',
-					'sql' => array(
-							'ALTER TABLE library ADD COLUMN archivePid VARCHAR(50)',
-					)
+				'title' => 'Library Archive PID',
+				'description' => 'Setup a link from Pika to the archive',
+				'sql' => array(
+					'ALTER TABLE library ADD COLUMN archivePid VARCHAR(50)',
+				)
 			),
 
 			'library_archive_related_objects_display_mode' => array(
-					'title' => 'Archive More Details Related Objects Display Mode',
-					'description' => 'Add Library Configuration option for the display of Related Objects & Entities in the More Details Accordion.',
-					'sql' => array(
-							'ALTER TABLE `library` ADD COLUMN `archiveMoreDetailsRelatedObjectsOrEntitiesDisplayMode` VARCHAR(15) NULL;',
-					)
+				'title' => 'Archive More Details Related Objects Display Mode',
+				'description' => 'Add Library Configuration option for the display of Related Objects & Entities in the More Details Accordion.',
+				'sql' => array(
+					'ALTER TABLE `library` ADD COLUMN `archiveMoreDetailsRelatedObjectsOrEntitiesDisplayMode` VARCHAR(15) NULL;',
+				)
 			),
 
 			'library_location_availability_toggle_updates' => array(
-					'title' => 'Library and Location Availability Updates',
-					'description' => 'Add the ability to show available online and control what goes into the toggles',
-					'continueOnError' => true,
-					'sql' => array(
-							"ALTER TABLE library ADD COLUMN availabilityToggleLabelAvailableOnline VARCHAR(50) DEFAULT ''",
-							"ALTER TABLE library ADD COLUMN includeOnlineMaterialsInAvailableToggle TINYINT(1) DEFAULT '1'",
-							"ALTER TABLE location ADD COLUMN availabilityToggleLabelAvailableOnline VARCHAR(50) DEFAULT ''",
-							"ALTER TABLE location ADD COLUMN baseAvailabilityToggleOnLocalHoldingsOnly TINYINT(1) DEFAULT '0'",
-							"ALTER TABLE location ADD COLUMN includeOnlineMaterialsInAvailableToggle TINYINT(1) DEFAULT '1'",
-					)
+				'title' => 'Library and Location Availability Updates',
+				'description' => 'Add the ability to show available online and control what goes into the toggles',
+				'continueOnError' => true,
+				'sql' => array(
+					"ALTER TABLE library ADD COLUMN availabilityToggleLabelAvailableOnline VARCHAR(50) DEFAULT ''",
+					"ALTER TABLE library ADD COLUMN includeOnlineMaterialsInAvailableToggle TINYINT(1) DEFAULT '1'",
+					"ALTER TABLE location ADD COLUMN availabilityToggleLabelAvailableOnline VARCHAR(50) DEFAULT ''",
+					"ALTER TABLE location ADD COLUMN baseAvailabilityToggleOnLocalHoldingsOnly TINYINT(1) DEFAULT '0'",
+					"ALTER TABLE location ADD COLUMN includeOnlineMaterialsInAvailableToggle TINYINT(1) DEFAULT '1'",
+				)
 			),
 
 			'library_archive_request_customization' => array(
-					'title' => 'Library Archive Request Customization',
-					'description' => 'Allow libraries to customize the text shown above the request materials page',
-					'sql' => array(
-							"ALTER TABLE library ADD COLUMN archiveRequestMaterialsHeader MEDIUMTEXT",
-					)
+				'title' => 'Library Archive Request Customization',
+				'description' => 'Allow libraries to customize the text shown above the request materials page',
+				'sql' => array(
+					"ALTER TABLE library ADD COLUMN archiveRequestMaterialsHeader MEDIUMTEXT",
+				)
 			),
 
 			'library_claim_authorship_customization' => array(
-					'title' => 'Library Claim Authorship Customization',
-					'description' => 'Allow libraries to customize the text shown above the claim authorship page',
-					'sql' => array(
-							"ALTER TABLE library ADD COLUMN claimAuthorshipHeader MEDIUMTEXT",
-					)
+				'title' => 'Library Claim Authorship Customization',
+				'description' => 'Allow libraries to customize the text shown above the claim authorship page',
+				'sql' => array(
+					"ALTER TABLE library ADD COLUMN claimAuthorshipHeader MEDIUMTEXT",
+				)
 			),
 
 			'masquerade_automatic_timeout_length' => array(
@@ -1652,66 +1618,66 @@ function getLibraryLocationUpdates(){
 					),
 			),
 
-        'library_use_theme' => array(
-            'title' => 'Use Themes for libraries and locations',
-            'description' => 'Update Libraries and locations to use themes rather than coding everything into the library',
-            'continueOnError' => false,
-            'sql' => array(
-                'ALTER TABLE `library` ADD COLUMN `theme` INT(11) DEFAULT 1;',
-                'ALTER TABLE `location` ADD COLUMN `theme` INT(11) DEFAULT 1;',
-            )
-        ),
+		'library_use_theme' => array(
+			'title' => 'Use Themes for libraries and locations',
+			'description' => 'Update Libraries and locations to use themes rather than coding everything into the library',
+			'continueOnError' => false,
+			'sql' => array(
+				'ALTER TABLE `library` ADD COLUMN `theme` INT(11) DEFAULT 1;',
+				'ALTER TABLE `location` ADD COLUMN `theme` INT(11) DEFAULT 1;',
+			)
+		),
 
-        'library_remove_unusedColumns' => array(
-            'title' => 'Remove unused columns',
-            'description' => 'Remove showTextThis and and allow columns',
-            'continueOnError' => true,
-            'sql' => array(
-                'ALTER TABLE `library` DROP COLUMN `boopsieLink`;',
-                'ALTER TABLE `library` DROP COLUMN `allow`;',
-                'ALTER TABLE `library` DROP COLUMN `showTextThis`;',
-                'ALTER TABLE `location` DROP COLUMN `showTextThis`;',
-            )
-        ),
+		'library_remove_unusedColumns' => array(
+			'title' => 'Remove unused columns',
+			'description' => 'Remove showTextThis and and allow columns',
+			'continueOnError' => true,
+			'sql' => array(
+				'ALTER TABLE `library` DROP COLUMN `boopsieLink`;',
+				'ALTER TABLE `library` DROP COLUMN `allow`;',
+				'ALTER TABLE `library` DROP COLUMN `showTextThis`;',
+				'ALTER TABLE `location` DROP COLUMN `showTextThis`;',
+			)
+		),
 
-        'library_remove_unusedDisplayOptions_3_18' => array(
-            'title' => 'Remove unused display options',
-            'description' => 'Remove pika logo display and sidebar on right option',
-            'continueOnError' => true,
-            'sql' => array(
-                'ALTER TABLE `library` DROP COLUMN `sideBarOnRight`;',
-                'ALTER TABLE `library` DROP COLUMN `showPikaLogo`;',
-                'ALTER TABLE library DROP COLUMN horizontalSearchBar',
-            )
-        ),
+		'library_remove_unusedDisplayOptions_3_18' => array(
+			'title' => 'Remove unused display options',
+			'description' => 'Remove pika logo display and sidebar on right option',
+			'continueOnError' => true,
+			'sql' => array(
+				'ALTER TABLE `library` DROP COLUMN `sideBarOnRight`;',
+				'ALTER TABLE `library` DROP COLUMN `showPikaLogo`;',
+				'ALTER TABLE library DROP COLUMN horizontalSearchBar',
+			)
+		),
 
-        'library_remove_unused_recordsToBlackList' => array(
-            'title' => 'Remove recordsToBlackList',
-            'description' => 'Remove recordsToBlackList',
-            'continueOnError' => false,
-            'sql' => array(
-                'ALTER TABLE location DROP COLUMN recordsToBlackList;',
-                'ALTER TABLE library DROP COLUMN recordsToBlackList',
-            )
-        ),
+		'library_remove_unused_recordsToBlackList' => array(
+			'title' => 'Remove recordsToBlackList',
+			'description' => 'Remove recordsToBlackList',
+			'continueOnError' => false,
+			'sql' => array(
+				'ALTER TABLE location DROP COLUMN recordsToBlackList;',
+				'ALTER TABLE library DROP COLUMN recordsToBlackList',
+			)
+		),
 
-        'library_add_oai_searching' => array(
-            'title' => 'Add Open Archives Searching',
-            'description' => 'Add the ability to search Open Archives',
-            'continueOnError' => false,
-            'sql' => array(
-                'ALTER TABLE library ADD COLUMN enableOpenArchives TINYINT(1) DEFAULT 0',
-            )
-        ),
+		'library_add_oai_searching' => array(
+			'title' => 'Add Open Archives Searching',
+			'description' => 'Add the ability to search Open Archives',
+			'continueOnError' => false,
+			'sql' => array(
+				'ALTER TABLE library ADD COLUMN enableOpenArchives TINYINT(1) DEFAULT 0',
+			)
+		),
 
-        'library_remove_gold_rush' => array(
-            'title' => 'Remove Gold Rush Searching',
-            'description' => 'Remove the ability to search Gold Rush',
-            'continueOnError' => false,
-            'sql' => array(
-                'ALTER TABLE library DROP COLUMN goldRushCode',
-            )
-        ),
+		'library_remove_gold_rush' => array(
+			'title' => 'Remove Gold Rush Searching',
+			'description' => 'Remove the ability to search Gold Rush',
+			'continueOnError' => false,
+			'sql' => array(
+				'ALTER TABLE library DROP COLUMN goldRushCode',
+			)
+		),
 
 		'library_indexes' => [
 			'title' => 'Library Indexes',
@@ -1836,6 +1802,642 @@ function getLibraryLocationUpdates(){
 			'sql' => [
 				"ALTER TABLE library ADD COLUMN finePaymentOrder VARCHAR(80) DEFAULT ''",
 			],
+		],
+
+		'library_location_defaults' => [
+			'title' => 'Library and Location Defaults',
+			'description' => 'Set defaults for libraries and locations to make inserts easier',
+			'continueOnError' => false,
+			'sql' => [
+				"ALTER TABLE library CHANGE COLUMN scope scope SMALLINT DEFAULT 0",
+				"ALTER TABLE library CHANGE COLUMN useScope useScope TINYINT DEFAULT 0",
+				"ALTER TABLE library CHANGE COLUMN hideCommentsWithBadWords hideCommentsWithBadWords TINYINT DEFAULT 0",
+				"ALTER TABLE library CHANGE COLUMN showStandardReviews showStandardReviews TINYINT DEFAULT 1",
+				"ALTER TABLE library CHANGE COLUMN showHoldButton showHoldButton TINYINT DEFAULT 1",
+				"ALTER TABLE library CHANGE COLUMN showLoginButton showLoginButton TINYINT DEFAULT 1",
+				"ALTER TABLE library CHANGE COLUMN showEmailThis showEmailThis TINYINT DEFAULT 1",
+				"ALTER TABLE library CHANGE COLUMN showComments showComments TINYINT DEFAULT 1",
+				"ALTER TABLE library CHANGE COLUMN showFavorites showFavorites TINYINT DEFAULT 1",
+				"ALTER TABLE library CHANGE COLUMN inSystemPickupsOnly inSystemPickupsOnly TINYINT DEFAULT 0",
+				"ALTER TABLE library CHANGE COLUMN defaultPType defaultPType INT(11) DEFAULT -1",
+				"ALTER TABLE library CHANGE COLUMN facetLabel facetLabel VARCHAR(50) DEFAULT ''",
+				"ALTER TABLE library CHANGE COLUMN repeatInProspector repeatInProspector TINYINT DEFAULT 0",
+				"ALTER TABLE library CHANGE COLUMN repeatInWorldCat repeatInWorldCat TINYINT DEFAULT 0",
+				"ALTER TABLE library CHANGE COLUMN systemsToRepeatIn systemsToRepeatIn VARCHAR(255) DEFAULT ''",
+				"ALTER TABLE library CHANGE COLUMN validPickupSystems validPickupSystems VARCHAR(255) DEFAULT ''",
+				"ALTER TABLE library CHANGE COLUMN themeName themeName VARCHAR(60) DEFAULT 'responsive'",
+				"ALTER TABLE location CHANGE COLUMN holdingBranchLabel holdingBranchLabel VARCHAR(40) DEFAULT ''",
+				"ALTER TABLE location CHANGE COLUMN scope scope SMALLINT DEFAULT 0",
+				"ALTER TABLE location CHANGE COLUMN useScope useScope TINYINT DEFAULT 0",
+				"ALTER TABLE location CHANGE COLUMN showHoldButton showHoldButton TINYINT DEFAULT 1",
+				"ALTER TABLE location CHANGE COLUMN showStandardReviews showStandardReviews TINYINT DEFAULT 1",
+				"ALTER TABLE location CHANGE COLUMN facetLabel facetLabel VARCHAR(50) DEFAULT ''",
+				"ALTER TABLE location CHANGE COLUMN repeatInProspector repeatInProspector TINYINT DEFAULT 0",
+				"ALTER TABLE location CHANGE COLUMN repeatInWorldCat repeatInWorldCat TINYINT DEFAULT 0",
+				"ALTER TABLE location CHANGE COLUMN systemsToRepeatIn systemsToRepeatIn VARCHAR(255) DEFAULT ''",
+				"ALTER TABLE location CHANGE COLUMN phone phone VARCHAR(25) DEFAULT ''",
+			],
+		],
+
+		'library_cleanup' => [
+			'title' => 'Cleanup of library settings',
+			'description' => 'Cleanup unused settings',
+			'continueOnError' => 'true',
+			'sql' => [
+				"ALTER TABLE library DROP COLUMN abbreviatedDisplayName",
+			],
+		],
+
+		'layout_settings' => [
+			'title' => 'Create Layout Settings',
+			'description' => 'Create tables to store layout settings in a separate table to make administration easier',
+			'sql' => [
+				"CREATE TABLE layout_settings (
+					id INT(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					name VARCHAR(255) NOT NULL UNIQUE,
+					showSidebarMenu TINYINT DEFAULT '1',
+					sidebarMenuButtonText VARCHAR(40) DEFAULT 'Help',
+					useHomeLinkInBreadcrumbs TINYINT(1) NOT NULL DEFAULT '0',
+					useHomeLinkForLogo TINYINT(1) NULL DEFAULT '0',
+					homeLinkText VARCHAR(50) DEFAULT 'Home',
+					showLibraryHoursAndLocationsLink INT(11) DEFAULT 1
+				)",
+				//Add default settings
+				"INSERT INTO layout_settings(id, name) VALUES 
+					(1, 'default')",
+				"ALTER TABLE library ADD COLUMN layoutSettingId INT(11) DEFAULT 0",
+				'moveLayoutSettingsToTable',
+				"ALTER TABLE library DROP COLUMN showSidebarMenu",
+				"ALTER TABLE library DROP COLUMN sidebarMenuButtonText",
+				"ALTER TABLE library DROP COLUMN useHomeLinkInBreadcrumbs",
+				"ALTER TABLE library DROP COLUMN useHomeLinkForLogo",
+				"ALTER TABLE library DROP COLUMN homeLinkText",
+				"ALTER TABLE library DROP COLUMN showLibraryHoursAndLocationsLink",
+			],
+		],
+
+		'grouped_work_display_settings' => [
+			'title' => 'Create Grouped Work Display Settings',
+			'description' => 'Create tables to store display settings in a separate table to make administration easier',
+			'sql' => [
+				"CREATE TABLE grouped_work_display_settings (
+					id INT(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					name VARCHAR(255) NOT NULL UNIQUE,
+					applyNumberOfHoldingsBoost TINYINT DEFAULT '1',
+					showSearchTools TINYINT DEFAULT 1,
+					showQuickCopy TINYINT DEFAULT 1,
+					showInSearchResultsMainDetails VARCHAR(255) NULL DEFAULT 'a:5:{i:0;s:10:\"showSeries\";i:1;s:13:\"showPublisher\";i:2;s:19:\"showPublicationDate\";i:3;s:13:\"showLanguages\";i:4;s:10:\"showArInfo\";}',
+					alwaysShowSearchResultsMainDetails TINYINT DEFAULT 0,
+					availabilityToggleLabelSuperScope VARCHAR(50) DEFAULT 'Entire Collection',
+					availabilityToggleLabelLocal VARCHAR(50) DEFAULT '{display name}',
+					availabilityToggleLabelAvailable VARCHAR(50) DEFAULT 'Available Now',
+					availabilityToggleLabelAvailableOnline VARCHAR(50) DEFAULT 'Available Online',
+					baseAvailabilityToggleOnLocalHoldingsOnly TINYINT(1) DEFAULT '1',
+					includeOnlineMaterialsInAvailableToggle TINYINT(1) DEFAULT '1',
+					includeAllRecordsInShelvingFacets TINYINT DEFAULT 0,
+					includeAllRecordsInDateAddedFacets TINYINT DEFAULT 0,
+					includeOutOfSystemExternalLinks TINYINT DEFAULT 0,
+					facetGroupId INT(11) DEFAULT 0,
+					showStandardReviews TINYINT DEFAULT 1,
+					showGoodReadsReviews TINYINT DEFAULT 1, 
+					preferSyndeticsSummary TINYINT DEFAULT 1,
+					showSimilarTitles TINYINT DEFAULT 1,
+					showSimilarAuthors TINYINT DEFAULT 1,
+					showRatings TINYINT DEFAULT 1,
+					showComments TINYINT DEFAULT 1,
+					hideCommentsWithBadWords TINYINT DEFAULT 0,
+					show856LinksAsTab TINYINT DEFAULT 1, 
+					showCheckInGrid TINYINT DEFAULT 1,
+					showStaffView TINYINT DEFAULT 1,
+					showLCSubjects TINYINT DEFAULT 1, 
+					showBisacSubjects TINYINT DEFAULT 1, 
+					showFastAddSubjects TINYINT DEFAULT 1,
+					showOtherSubjects TINYINT DEFAULT 1,
+					showInMainDetails VARCHAR(255) DEFAULT 'a:4:{i:0;s:10:\"showSeries\";i:1;s:22:\"showPublicationDetails\";i:2;s:12:\"showEditions\";i:3;s:24:\"showPhysicalDescriptions\";}'
+				)",
+				"CREATE TABLE grouped_work_facet_groups (
+					id INT(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					name VARCHAR(255) NOT NULL UNIQUE
+				)",
+				"CREATE TABLE grouped_work_facet (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+					facetGroupId INT NOT NULL, 
+					displayName VARCHAR(50) NOT NULL, 
+					facetName VARCHAR(50) NOT NULL,
+					weight INT NOT NULL DEFAULT '0',
+					numEntriesToShowByDefault INT NOT NULL DEFAULT '5',
+					showAsDropDown TINYINT NOT NULL DEFAULT '0',
+					sortMode ENUM ('alphabetically', 'num_results') NOT NULL DEFAULT 'num_results',
+					showAboveResults TINYINT NOT NULL DEFAULT '0',
+					showInResults TINYINT NOT NULL DEFAULT '1',
+					showInAdvancedSearch TINYINT NOT NULL DEFAULT '1',
+					collapseByDefault TINYINT DEFAULT '1',
+					useMoreFacetPopup TINYINT DEFAULT 1,
+					translate TINYINT DEFAULT 0,
+					multiSelect TINYINT DEFAULT 0,
+					canLock TINYINT DEFAULT 0
+				) ENGINE = InnoDB",
+				"ALTER TABLE grouped_work_facet ADD UNIQUE groupFacet (facetGroupId, facetName)",
+				'moveLibraryAndLocationGroupedWorkFacetsToTable',
+//				"DROP TABLE library_facet_setting",
+				//Add default settings
+				"INSERT INTO grouped_work_display_settings(id, name, facetGroupId) VALUES 
+					(1, 'public', 1)",
+				"INSERT INTO grouped_work_display_settings(id, name, facetGroupId, applyNumberOfHoldingsBoost, showSearchTools, showInSearchResultsMainDetails, alwaysShowSearchResultsMainDetails) VALUES 
+					(2, 'academic', 2, 0, 0, 'a:4:{i:0;s:10:\"showSeries\";i:1;s:13:\"showPublisher\";i:2;s:19:\"showPublicationDate\";i:3;s:13:\"showLanguages\";}', 1)",
+				"INSERT INTO grouped_work_display_settings(id, name, facetGroupId, showSearchTools) VALUES 
+					(3, 'school_elem', 3, 0)",
+				"INSERT INTO grouped_work_display_settings(id, name, facetGroupId, showSearchTools) VALUES 
+					(4, 'school_upper', 3, 0)",
+				"INSERT INTO grouped_work_display_settings(id, name, facetGroupId, baseAvailabilityToggleOnLocalHoldingsOnly, includeAllRecordsInShelvingFacets, includeAllRecordsInDateAddedFacets, includeOutOfSystemExternalLinks) VALUES 
+					(5, 'consortium', 4, 0, 1, 1, 1)",
+				"ALTER TABLE library ADD COLUMN groupedWorkDisplaySettingId INT(11) DEFAULT 0",
+				"ALTER TABLE location ADD COLUMN groupedWorkDisplaySettingId INT(11) DEFAULT -1",
+				'moveGroupedWorkSettingsToTable',
+				'createFacetGroupsForLibrariesAndLocations',
+				"ALTER TABLE library DROP COLUMN applyNumberOfHoldingsBoost",
+				"ALTER TABLE library DROP COLUMN showSearchTools",
+				"ALTER TABLE library DROP COLUMN showQuickCopy",
+				"ALTER TABLE library DROP COLUMN showInSearchResultsMainDetails",
+				"ALTER TABLE library DROP COLUMN alwaysShowSearchResultsMainDetails",
+				"ALTER TABLE library DROP COLUMN availabilityToggleLabelSuperScope",
+				"ALTER TABLE library DROP COLUMN availabilityToggleLabelLocal",
+				"ALTER TABLE library DROP COLUMN availabilityToggleLabelAvailable",
+				"ALTER TABLE library DROP COLUMN availabilityToggleLabelAvailableOnline",
+				"ALTER TABLE library DROP COLUMN includeOnlineMaterialsInAvailableToggle",
+				"ALTER TABLE library DROP COLUMN includeAllRecordsInShelvingFacets",
+				"ALTER TABLE library DROP COLUMN includeAllRecordsInDateAddedFacets",
+				"ALTER TABLE library DROP COLUMN includeOutOfSystemExternalLinks",
+				"ALTER TABLE library DROP COLUMN showStandardReviews",
+				"ALTER TABLE library DROP COLUMN showGoodReadsReviews",
+				"ALTER TABLE library DROP COLUMN preferSyndeticsSummary",
+				"ALTER TABLE library DROP COLUMN showRatings",
+				"ALTER TABLE library DROP COLUMN hideCommentsWithBadWords",
+				"ALTER TABLE library DROP COLUMN show856LinksAsTab",
+				"ALTER TABLE library DROP COLUMN showCheckInGrid",
+				"ALTER TABLE library DROP COLUMN showStaffView",
+				"ALTER TABLE library DROP COLUMN showLCSubjects",
+				"ALTER TABLE library DROP COLUMN showBisacSubjects",
+				"ALTER TABLE library DROP COLUMN showFastAddSubjects",
+				"ALTER TABLE library DROP COLUMN showInMainDetails",
+
+				"ALTER TABLE location DROP COLUMN baseAvailabilityToggleOnLocalHoldingsOnly",
+				"ALTER TABLE location DROP COLUMN availabilityToggleLabelSuperScope",
+				"ALTER TABLE location DROP COLUMN availabilityToggleLabelLocal",
+				"ALTER TABLE location DROP COLUMN availabilityToggleLabelAvailable",
+				"ALTER TABLE location DROP COLUMN availabilityToggleLabelAvailableOnline",
+				"ALTER TABLE location DROP COLUMN includeOnlineMaterialsInAvailableToggle",
+				"ALTER TABLE location DROP COLUMN includeAllRecordsInShelvingFacets",
+				"ALTER TABLE location DROP COLUMN includeAllRecordsInDateAddedFacets",
+				"ALTER TABLE location DROP COLUMN showStandardReviews",
+				"ALTER TABLE location DROP COLUMN showGoodReadsReviews",
+				"ALTER TABLE location DROP COLUMN showComments",
+				"ALTER TABLE location DROP COLUMN showStaffView",
+				"DROP TABLE library_facet_setting",
+				"DROP TABLE location_facet_setting",
+			],
+		],
+
+		'update_grouped_work_more_details' => [
+			'title' => 'Update Grouped Work More Details',
+			'description' => 'MOve More Details for Grouped Works from Libraries to Grouped Work Display Settings',
+			'sql' => [
+				"RENAME TABLE library_more_details TO grouped_work_more_details",
+				"ALTER TABLE grouped_work_more_details Add COLUMN groupedWorkSettingsId INT(11) NOT NULL DEFAULT -1",
+				"convertLibraryMoreDetailsToGroupedWork",
+				"ALTER TABLE grouped_work_more_details DROP COLUMN libraryId",
+			]
 		]
 	);
+}
+
+/** @noinspection PhpUnused */
+function moveLibraryAndLocationGroupedWorkFacetsToTable(/** @noinspection PhpUnusedParameterInspection */ &$update)
+{
+	//Create default groups of facets
+	$publicFacetGroup = new GroupedWorkFacetGroup();
+	$publicFacetGroup->name = 'public';
+	$publicFacetGroup->insert();
+	$publicFacetGroup->setupDefaultFacets('public');
+
+	$academicFacetGroup = new GroupedWorkFacetGroup();
+	$academicFacetGroup->name = 'academic';
+	$academicFacetGroup->insert();
+	$academicFacetGroup->setupDefaultFacets('academic');
+
+	$schoolFacetGroup = new GroupedWorkFacetGroup();
+	$schoolFacetGroup->name = 'schools';
+	$schoolFacetGroup->insert();
+	$schoolFacetGroup->setupDefaultFacets('schools');
+
+	$consortiaFacetGroup = new GroupedWorkFacetGroup();
+	$consortiaFacetGroup->name = 'consortia';
+	$consortiaFacetGroup->insert();
+	$consortiaFacetGroup->setupDefaultFacets('consortia');
+}
+
+/** @noinspection PhpUnused */
+function createFacetGroupsForLibrariesAndLocations(){
+	//Get all of the active Facet Groups
+	$facetGroups = [];
+	$facetGroup = new GroupedWorkFacetGroup();
+	$facetGroup->find();
+	while ($facetGroup->fetch()){
+		$facetGroups[$facetGroup->id] = clone $facetGroup;
+	}
+	//Now go through the existing facets to see if we need to create new groups
+	/** @var PDO $aspen_db */
+	global $aspen_db;
+	$library = new Library();
+	$library->find();
+	while ($library->fetch()){
+		//Get Facets for this library
+		$libraryFacetsSQL = "SELECT * from library_facet_setting WHERE libraryId = " . $library->libraryId . " ORDER BY weight";
+		$libraryFacetsRS = $aspen_db->query($libraryFacetsSQL, PDO::FETCH_ASSOC);
+		$numLibraryFacets = $libraryFacetsRS->rowCount();
+
+		if ($numLibraryFacets == 0){
+			//No facets have been assigned to the library, assign a default set
+			if ($library->getGroupedWorkDisplaySettings()->facetGroupId == 0){
+				$library->getGroupedWorkDisplaySettings()->facetGroupId = 1;
+				$library->getGroupedWorkDisplaySettings()->update();
+			}
+		}else{
+			//Look for a group that matches this set of facets.
+			/** @var GroupedWorkFacetGroup[] $matchingGroups */
+			$matchingGroups = [];
+			//Eliminate groups based on number of facets that have been activated
+			foreach ($facetGroups as $id => $facetGroup){
+				if (count($facetGroup->getFacets()) == $numLibraryFacets){
+					$matchingGroups[$id] = $facetGroup;
+				}
+			}
+
+			if (count($matchingGroups) > 0){
+				$curFacet = 0;
+				$libraryFacetRow = $libraryFacetsRS->fetch();
+				$numFacetsForLibrary = 0;
+				while ($libraryFacetRow != null){
+					$numFacetsForLibrary++;
+					$libraryFacetRow = $libraryFacetsRS->fetch();
+					foreach ($matchingGroups as $id => $group){
+						$facetInGroup = $group->getFacetByIndex($curFacet);
+						if ($facetInGroup->facetName != $libraryFacetRow['facetName']){
+							unset($matchingGroups[$id]);
+							continue;
+						}elseif ($facetInGroup->displayName != $libraryFacetRow['displayName']){
+							unset($matchingGroups[$id]);
+							continue;
+						}elseif ($facetInGroup->numEntriesToShowByDefault != $libraryFacetRow['numEntriesToShowByDefault']){
+							unset($matchingGroups[$id]);
+							continue;
+						}elseif ($facetInGroup->showAsDropDown != $libraryFacetRow['showAsDropDown']){
+							unset($matchingGroups[$id]);
+							continue;
+						}elseif ($facetInGroup->multiSelect != $libraryFacetRow['multiSelect']){
+							unset($matchingGroups[$id]);
+							continue;
+						}elseif ($facetInGroup->canLock != $libraryFacetRow['canLock']){
+							unset($matchingGroups[$id]);
+							continue;
+						}elseif ($facetInGroup->sortMode != $libraryFacetRow['sortMode']){
+							unset($matchingGroups[$id]);
+							continue;
+						}elseif ($facetInGroup->showAboveResults != $libraryFacetRow['showAboveResults']){
+							unset($matchingGroups[$id]);
+							continue;
+						}elseif ($facetInGroup->showInResults != $libraryFacetRow['showInResults']){
+							unset($matchingGroups[$id]);
+							continue;
+						}elseif ($facetInGroup->showInAdvancedSearch != $libraryFacetRow['showInAdvancedSearch']){
+							unset($matchingGroups[$id]);
+							continue;
+						}elseif ($facetInGroup->collapseByDefault != $libraryFacetRow['collapseByDefault']){
+							unset($matchingGroups[$id]);
+							continue;
+						}elseif ($facetInGroup->useMoreFacetPopup != $libraryFacetRow['useMoreFacetPopup']){
+							unset($matchingGroups[$id]);
+							continue;
+						}elseif ($facetInGroup->translate != $libraryFacetRow['translate']){
+							unset($matchingGroups[$id]);
+							continue;
+						}
+					}
+				}
+			}
+
+			if (count($matchingGroups) == 0){
+				//We need to create a new group
+				$newFacetGroup = new GroupedWorkFacetGroup();
+				$newFacetGroup->name = 'Library ' . $library->displayName;
+				$newFacetGroup->insert();
+				$libraryFacetsRS = $aspen_db->query($libraryFacetsSQL, PDO::FETCH_ASSOC);
+				$libraryFacetRow = $libraryFacetsRS->fetch();
+				$weight = 0;
+				while ($libraryFacetRow != null){
+					$newFacet = new GroupedWorkFacet();
+					$newFacet->weight = $weight++;
+					$newFacet->facetName = $libraryFacetRow['facetName'];
+					$newFacet->displayName = $libraryFacetRow['displayName'];
+					$newFacet->numEntriesToShowByDefault = $libraryFacetRow['numEntriesToShowByDefault'];
+					$newFacet->showAsDropDown = $libraryFacetRow['showAsDropDown'];
+					$newFacet->multiSelect = $libraryFacetRow['multiSelect'];
+					$newFacet->canLock = $libraryFacetRow['canLock'];
+					$newFacet->sortMode = $libraryFacetRow['sortMode'];
+					$newFacet->showAboveResults = $libraryFacetRow['showAboveResults'];
+					$newFacet->showInResults = $libraryFacetRow['showInResults'];
+					$newFacet->showInAdvancedSearch = $libraryFacetRow['showInAdvancedSearch'];
+					$newFacet->collapseByDefault = $libraryFacetRow['collapseByDefault'];
+					$newFacet->useMoreFacetPopup = $libraryFacetRow['useMoreFacetPopup'];
+					$newFacet->translate = $libraryFacetRow['translate'];
+					$newFacet->facetGroupId = $newFacetGroup->id;
+					$newFacet->insert();
+					$libraryFacetRow = $libraryFacetsRS->fetch();
+				}
+				$library->getGroupedWorkDisplaySettings()->facetGroupId = $newFacetGroup->id;
+				$library->getGroupedWorkDisplaySettings()->update();
+			}else{
+				//Assign the group to the library
+				$library->getGroupedWorkDisplaySettings()->facetGroupId = array_keys($matchingGroups)[0];
+				$library->getGroupedWorkDisplaySettings()->update();
+			}
+		}
+	}
+
+	//Now check the locations
+	$location = new Location();
+	$location->find();
+	while ($location->fetch()){
+		//Get Facets for this library
+		$locationFacetsSQL = "SELECT * from location_facet_setting WHERE locationId = " . $location->locationId . " ORDER BY weight";
+		$locationFacetsRS = $aspen_db->query($locationFacetsSQL, PDO::FETCH_ASSOC);
+		$numLocationFacets = $locationFacetsRS->rowCount();
+
+		if ($numLocationFacets == 0){
+			//No facets have been assigned to the library, assign a default set
+			if ($location->groupedWorkDisplaySettingId != -1 && $location->getGroupedWorkDisplaySettings()->facetGroupId == 0){
+				$parentLibrary = $location->getParentLibrary();
+				$location->getGroupedWorkDisplaySettings()->facetGroupId = $parentLibrary->getGroupedWorkDisplaySettings()->facetGroupId;
+				$location->getGroupedWorkDisplaySettings()->update();
+			}
+		}else{
+			//Look for a group that matches this set of facets.
+			/** @var GroupedWorkFacetGroup[] $matchingGroups */
+			$matchingGroups = [];
+			//Eliminate groups based on number of facets that have been activated
+			foreach ($facetGroups as $id => $facetGroup){
+				if (count($facetGroup->getFacets()) == $numLocationFacets){
+					$matchingGroups[$id] = $facetGroup;
+				}
+			}
+
+			if (count($matchingGroups) > 0){
+				$curFacet = 0;
+				$locationFacetRow = $locationFacetsRS->fetch();
+				$numFacetsForLocation = 0;
+				while ($locationFacetRow != null){
+					$numFacetsForLocation++;
+					$locationFacetRow = $locationFacetsRS->fetch();
+					foreach ($matchingGroups as $id => $group){
+						$facetInGroup = $group->getFacetByIndex($curFacet);
+						if ($facetInGroup->facetName != $locationFacetRow['facetName']){
+							unset($matchingGroups[$id]);
+							continue;
+						}elseif ($facetInGroup->displayName != $locationFacetRow['displayName']){
+							unset($matchingGroups[$id]);
+							continue;
+						}elseif ($facetInGroup->numEntriesToShowByDefault != $locationFacetRow['numEntriesToShowByDefault']){
+							unset($matchingGroups[$id]);
+							continue;
+						}elseif ($facetInGroup->showAsDropDown != $locationFacetRow['showAsDropDown']){
+							unset($matchingGroups[$id]);
+							continue;
+						}elseif ($facetInGroup->multiSelect != $locationFacetRow['multiSelect']){
+							unset($matchingGroups[$id]);
+							continue;
+						}elseif ($facetInGroup->canLock != $locationFacetRow['canLock']){
+							unset($matchingGroups[$id]);
+							continue;
+						}elseif ($facetInGroup->sortMode != $locationFacetRow['sortMode']){
+							unset($matchingGroups[$id]);
+							continue;
+						}elseif ($facetInGroup->showAboveResults != $locationFacetRow['showAboveResults']){
+							unset($matchingGroups[$id]);
+							continue;
+						}elseif ($facetInGroup->showInResults != $locationFacetRow['showInResults']){
+							unset($matchingGroups[$id]);
+							continue;
+						}elseif ($facetInGroup->showInAdvancedSearch != $locationFacetRow['showInAdvancedSearch']){
+							unset($matchingGroups[$id]);
+							continue;
+						}elseif ($facetInGroup->collapseByDefault != $locationFacetRow['collapseByDefault']){
+							unset($matchingGroups[$id]);
+							continue;
+						}elseif ($facetInGroup->useMoreFacetPopup != $locationFacetRow['useMoreFacetPopup']){
+							unset($matchingGroups[$id]);
+							continue;
+						}elseif ($facetInGroup->translate != $locationFacetRow['translate']){
+							unset($matchingGroups[$id]);
+							continue;
+						}
+					}
+				}
+			}
+
+			if (count($matchingGroups) == 0){
+				//We need to create a new group
+				$newFacetGroup = new GroupedWorkFacetGroup();
+				$newFacetGroup->name = 'Location ' . $location->displayName;
+				$newFacetGroup->insert();
+				$locationFacetsRS = $aspen_db->query($locationFacetsSQL, PDO::FETCH_ASSOC);
+				$locationFacetRow = $locationFacetsRS->fetch();
+				$weight = 0;
+				while ($locationFacetRow != null){
+					$newFacet = new GroupedWorkFacet();
+					$newFacet->weight = $weight++;
+					$newFacet->facetName = $locationFacetRow['facetName'];
+					$newFacet->displayName = $locationFacetRow['displayName'];
+					$newFacet->numEntriesToShowByDefault = $locationFacetRow['numEntriesToShowByDefault'];
+					$newFacet->showAsDropDown = $locationFacetRow['showAsDropDown'];
+					$newFacet->multiSelect = $locationFacetRow['multiSelect'];
+					$newFacet->canLock = $locationFacetRow['canLock'];
+					$newFacet->sortMode = $locationFacetRow['sortMode'];
+					$newFacet->showAboveResults = $locationFacetRow['showAboveResults'];
+					$newFacet->showInResults = $locationFacetRow['showInResults'];
+					$newFacet->showInAdvancedSearch = $locationFacetRow['showInAdvancedSearch'];
+					$newFacet->collapseByDefault = $locationFacetRow['collapseByDefault'];
+					$newFacet->useMoreFacetPopup = $locationFacetRow['useMoreFacetPopup'];
+					$newFacet->translate = $locationFacetRow['translate'];
+					$newFacet->facetGroupId = $newFacetGroup->id;
+					$newFacet->insert();
+					$locationFacetRow = $locationFacetsRS->fetch();
+				}
+				if ($location->getGroupedWorkDisplaySettings()->facetGroupId != $newFacetGroup->id){
+					if ($location->getGroupedWorkDisplaySettings()->facetGroupId != 0) {
+						//We need to create a new set of display settings for the new facet group
+						$newGroupedWorkDisplaySettings = $location->getGroupedWorkDisplaySettings()->copy(['name' => 'Location: ' . $location->displayName], true);
+						$location->setGroupedWorkDisplaySettings($newGroupedWorkDisplaySettings);
+						$location->update();
+					}
+					$location->getGroupedWorkDisplaySettings()->facetGroupId = $newFacetGroup->id;
+					$location->getGroupedWorkDisplaySettings()->update();
+				}
+			}else{
+				//Assign the group to the location
+				if ($location->getGroupedWorkDisplaySettings()->facetGroupId != array_keys($matchingGroups)[0]) {
+					if ($location->getGroupedWorkDisplaySettings()->facetGroupId != 0) {
+						//We need to create a new set of display settings for the new facet group
+						$newGroupedWorkDisplaySettings = $location->getGroupedWorkDisplaySettings()->copy(['name' => 'Location: ' . $location->displayName], true);
+						$location->setGroupedWorkDisplaySettings($newGroupedWorkDisplaySettings);
+						$location->update();
+					}
+					$location->getGroupedWorkDisplaySettings()->facetGroupId = array_keys($matchingGroups)[0];
+					$location->getGroupedWorkDisplaySettings()->update();
+				}
+			}
+		}
+	}
+}
+
+/** @noinspection PhpUnused */
+function moveGroupedWorkSettingsToTable(/** @noinspection PhpUnusedParameterInspection */ &$update){
+	/** @var PDO $aspen_db */
+	global $aspen_db;
+
+	$uniqueSearchSettingsSQL = "(SELECT libraryId as id, 'library' as tableType, displayName, true as isMainBranch, applyNumberOfHoldingsBoost, showSearchTools, showQuickCopy, showInSearchResultsMainDetails, alwaysShowSearchResultsMainDetails, availabilityToggleLabelSuperScope, IF (availabilityToggleLabelLocal = '', '{display name}', availabilityToggleLabelLocal) as availabilityToggleLabelLocal, availabilityToggleLabelAvailable, availabilityToggleLabelAvailableOnline, 0 as baseAvailabilityToggleOnLocalHoldingsOnly, includeOnlineMaterialsInAvailableToggle, includeAllRecordsInShelvingFacets, includeAllRecordsInDateAddedFacets From library)
+		UNION (SELECT locationId as id, 'location' as tableType, location.displayName, isMainBranch, library.applyNumberOfHoldingsBoost, library.showSearchTools, library.showQuickCopy, library.showInSearchResultsMainDetails, library.alwaysShowSearchResultsMainDetails, location.availabilityToggleLabelSuperScope, location.availabilityToggleLabelLocal, location.availabilityToggleLabelAvailable, location.availabilityToggleLabelAvailableOnline, baseAvailabilityToggleOnLocalHoldingsOnly, location.includeOnlineMaterialsInAvailableToggle, location.includeAllRecordsInShelvingFacets, location.includeAllRecordsInDateAddedFacets From location inner join library on location.libraryId = library.libraryId)
+		ORDER BY tableType ASC, isMainBranch DESC;";
+
+	$uniqueSearchSettingsRS = $aspen_db->query($uniqueSearchSettingsSQL, PDO::FETCH_ASSOC);
+	$uniqueSearchSettingsRow = $uniqueSearchSettingsRS->fetch();
+	require_once ROOT_DIR . '/sys/Grouping/GroupedWorkDisplaySetting.php';
+	while ($uniqueSearchSettingsRow != null){
+		//Check to see if we already have a settings group with this information
+		$groupedWorkDisplaySetting = new GroupedWorkDisplaySetting();
+		$groupedWorkDisplaySetting->applyNumberOfHoldingsBoost = $uniqueSearchSettingsRow['applyNumberOfHoldingsBoost'];
+		$groupedWorkDisplaySetting->showSearchTools = $uniqueSearchSettingsRow['showSearchTools'];
+		$groupedWorkDisplaySetting->showQuickCopy = $uniqueSearchSettingsRow['showQuickCopy'];
+		$groupedWorkDisplaySetting->showInSearchResultsMainDetails = $uniqueSearchSettingsRow['showInSearchResultsMainDetails'];
+		$groupedWorkDisplaySetting->alwaysShowSearchResultsMainDetails = $uniqueSearchSettingsRow['alwaysShowSearchResultsMainDetails'];
+		$groupedWorkDisplaySetting->availabilityToggleLabelSuperScope = $uniqueSearchSettingsRow['availabilityToggleLabelSuperScope'];
+		$groupedWorkDisplaySetting->availabilityToggleLabelLocal = $uniqueSearchSettingsRow['availabilityToggleLabelLocal'];
+		$groupedWorkDisplaySetting->availabilityToggleLabelAvailable = $uniqueSearchSettingsRow['availabilityToggleLabelAvailable'];
+		$groupedWorkDisplaySetting->availabilityToggleLabelAvailableOnline = $uniqueSearchSettingsRow['availabilityToggleLabelAvailableOnline'];
+		$groupedWorkDisplaySetting->baseAvailabilityToggleOnLocalHoldingsOnly = $uniqueSearchSettingsRow['baseAvailabilityToggleOnLocalHoldingsOnly'];
+		$groupedWorkDisplaySetting->includeOnlineMaterialsInAvailableToggle = $uniqueSearchSettingsRow['includeOnlineMaterialsInAvailableToggle'];
+		$groupedWorkDisplaySetting->includeAllRecordsInShelvingFacets = $uniqueSearchSettingsRow['includeAllRecordsInShelvingFacets'];
+		$groupedWorkDisplaySetting->includeAllRecordsInDateAddedFacets = $uniqueSearchSettingsRow['includeAllRecordsInDateAddedFacets'];
+		if ($groupedWorkDisplaySetting->find(true)){
+			$searchId = $groupedWorkDisplaySetting->id;
+		}else{
+			//Create a new id
+			$groupedWorkDisplaySetting->name = $uniqueSearchSettingsRow['tableType'] . ' ' . $uniqueSearchSettingsRow['displayName'];
+			if ($groupedWorkDisplaySetting->insert()){
+				$searchId = $groupedWorkDisplaySetting->id;
+			}
+		}
+		//Save the new search id to the appropriate table
+		if ($searchId){
+			$id = $uniqueSearchSettingsRow['id'];
+			if ($uniqueSearchSettingsRow['tableType'] == 'library'){
+				$library = new Library();
+				$library->libraryId = $id;
+				if ($library->find(true)){
+					$library->groupedWorkDisplaySettingId = $searchId;
+					$library->update();
+				}
+			}else{
+				$location = new Location();
+				$location->locationId = $id;
+				if ($location->find(true)){
+					$location->groupedWorkDisplaySettingId = $searchId;
+					$location->update();
+				}
+			}
+		}
+
+		$uniqueSearchSettingsRow = $uniqueSearchSettingsRS->fetch();
+	}
+}
+
+/** @noinspection PhpUnused */
+function moveLayoutSettingsToTable(/** @noinspection PhpUnusedParameterInspection */ &$update){
+	/** @var PDO $aspen_db */
+	global $aspen_db;
+
+	$uniqueLayoutSettingsSQL = "SELECT libraryId as id, displayName, showSidebarMenu, sidebarMenuButtonText, useHomeLinkInBreadcrumbs, useHomeLinkForLogo, homeLinkText, showLibraryHoursAndLocationsLink From library";
+
+	$uniqueLayoutSettingsRS = $aspen_db->query($uniqueLayoutSettingsSQL, PDO::FETCH_ASSOC);
+	$uniqueLayoutSettingsRow = $uniqueLayoutSettingsRS->fetch();
+	require_once ROOT_DIR . '/sys/Theming/LayoutSetting.php';
+	while ($uniqueLayoutSettingsRow != null){
+		//Check to see if we already have a settings group with this information
+		$layoutSetting = new LayoutSetting();
+		$layoutSetting->showSidebarMenu = $uniqueLayoutSettingsRow['showSidebarMenu'];
+		$layoutSetting->sidebarMenuButtonText = $uniqueLayoutSettingsRow['sidebarMenuButtonText'];
+		$layoutSetting->useHomeLinkInBreadcrumbs = $uniqueLayoutSettingsRow['useHomeLinkInBreadcrumbs'];
+		$layoutSetting->useHomeLinkForLogo = $uniqueLayoutSettingsRow['useHomeLinkForLogo'];
+		$layoutSetting->homeLinkText = $uniqueLayoutSettingsRow['homeLinkText'];
+		$layoutSetting->showLibraryHoursAndLocationsLink = $uniqueLayoutSettingsRow['showLibraryHoursAndLocationsLink'];
+		if ($layoutSetting->find(true)){
+			$settingId = $layoutSetting->id;
+		}else{
+			//Create a new id
+			$layoutSetting->name = $uniqueLayoutSettingsRow['displayName'];
+			if ($layoutSetting->insert()){
+				$settingId = $layoutSetting->id;
+			}
+		}
+		//Save the new search id to the appropriate table
+		if ($settingId){
+			$id = $uniqueLayoutSettingsRow['id'];
+			$library = new Library();
+			$library->libraryId = $id;
+			if ($library->find(true)){
+				$library->layoutSettingId = $settingId;
+				$library->update();
+			}
+		}
+
+		$uniqueLayoutSettingsRow = $uniqueLayoutSettingsRS->fetch();
+	}
+}
+
+function convertLibraryMoreDetailsToGroupedWork(&$update){
+	//This should only be called once or it will do weird things
+	/** @var PDO $aspen_db */
+	global $aspen_db;
+
+	//Get all of the records from the more details
+	$moreDetailsByLibrarySQL = "SELECT * FROM grouped_work_more_details";
+	$moreDetailsByLibraryRS = $aspen_db->query($moreDetailsByLibrarySQL);
+	$moreDetailsByLibraryRow = $moreDetailsByLibraryRS->fetch(PDO::FETCH_ASSOC);
+	while ($moreDetailsByLibraryRow != null){
+		$moreDetailsId = $moreDetailsByLibraryRow['id'];
+		$libraryId = $moreDetailsByLibraryRow['libraryId'];
+
+		$library = new Library();
+		$library->libraryId = $libraryId;
+		$library->find(true);
+
+		$groupedWorkMoreDetails = new GroupedWorkMoreDetails();
+		$groupedWorkMoreDetails->id = $moreDetailsId;
+		$groupedWorkMoreDetails->find(true);
+
+		if ($groupedWorkMoreDetails->groupedWorkSettingsId == -1){
+			$groupedWorkMoreDetails->groupedWorkSettingsId = $library->groupedWorkDisplaySettingId;
+			$groupedWorkMoreDetails->update();
+		}elseif ($groupedWorkMoreDetails->groupedWorkSettingsId != $library->groupedWorkDisplaySettingId){
+			$update['status'] .= 'Warning: GroupedWorkMoreDetails ' . $groupedWorkMoreDetails->id . ' should be linked to multiple Grouped Work Settings';
+		}
+
+		$moreDetailsByLibraryRow = $moreDetailsByLibraryRS->fetch(PDO::FETCH_ASSOC);
+	}
+
+	$groupedWorkMoreDetails = new GroupedWorkMoreDetails();
+	$groupedWorkMoreDetails->groupedWorkSettingsId = -1;
+	$groupedWorkMoreDetails->find();
+	while ($groupedWorkMoreDetails->fetch()){
+		$update['status'] .= 'Warning: GroupedWorkMoreDetails ' . $groupedWorkMoreDetails->id . ' was not assigned to a Grouped Work Settings';
+	}
 }

@@ -1,6 +1,7 @@
 <?php
 
-function getIndexingUpdates() {
+function getIndexingUpdates()
+{
 	return array(
 		'ils_hold_summary' => array(
 			'title' => 'ILS Hold Summary',
@@ -196,73 +197,73 @@ function getIndexingUpdates() {
 			'title' => 'Indexing Profiles - filenames to include',
 			'description' => 'Allow additional control over which files are included in an indexing profile',
 			'sql' => array(
-                "ALTER TABLE indexing_profiles ADD COLUMN `filenamesToInclude` varchar(250) DEFAULT '.*\\\\.ma?rc'",
+				"ALTER TABLE indexing_profiles ADD COLUMN `filenamesToInclude` varchar(250) DEFAULT '.*\\\\.ma?rc'",
 			)
 		),
 
 		'indexing_profile_collectionsToSuppress' => array(
-            'title' => 'Indexing Profiles - collections to suppress',
-            'description' => 'Allow specific collection codes to be suppressed',
-            'sql' => array(
-                "ALTER TABLE indexing_profiles ADD COLUMN `collectionsToSuppress` varchar(100) DEFAULT ''",
-            )
+			'title' => 'Indexing Profiles - collections to suppress',
+			'description' => 'Allow specific collection codes to be suppressed',
+			'sql' => array(
+				"ALTER TABLE indexing_profiles ADD COLUMN `collectionsToSuppress` varchar(100) DEFAULT ''",
+			)
 		),
 
 		'indexing_profile_folderCreation' => array(
-            'title' => 'Indexing Profiles - Individual Folder Creation',
-            'description' => 'Determine how marc record folders should be created',
-            'sql' => array(
-                "ALTER TABLE indexing_profiles ADD COLUMN `numCharsToCreateFolderFrom` int(11) DEFAULT 4",
-                "ALTER TABLE indexing_profiles ADD COLUMN `createFolderFromLeadingCharacters` tinyint(1) DEFAULT 1",
-                "UPDATE indexing_profiles SET `numCharsToCreateFolderFrom` = 7 WHERE name = 'hoopla'",
-            )
+			'title' => 'Indexing Profiles - Individual Folder Creation',
+			'description' => 'Determine how marc record folders should be created',
+			'sql' => array(
+				"ALTER TABLE indexing_profiles ADD COLUMN `numCharsToCreateFolderFrom` int(11) DEFAULT 4",
+				"ALTER TABLE indexing_profiles ADD COLUMN `createFolderFromLeadingCharacters` tinyint(1) DEFAULT 1",
+				"UPDATE indexing_profiles SET `numCharsToCreateFolderFrom` = 7 WHERE name = 'hoopla'",
+			)
 		),
 
 		'indexing_profile_dueDateFormat' => array(
-            'title' => 'Indexing Profiles - Due Date Format',
-            'description' => 'Set the Due Date Format for an indexing profile',
-            'continueOnError' => true,
-            'sql' => array(
-                "ALTER TABLE indexing_profiles ADD COLUMN `dueDateFormat` varchar(20) DEFAULT 'yyMMdd'",
-                "updateDueDateFormat",
-            )
+			'title' => 'Indexing Profiles - Due Date Format',
+			'description' => 'Set the Due Date Format for an indexing profile',
+			'continueOnError' => true,
+			'sql' => array(
+				"ALTER TABLE indexing_profiles ADD COLUMN `dueDateFormat` varchar(20) DEFAULT 'yyMMdd'",
+				"updateDueDateFormat",
+			)
 		),
 
 		'indexing_profile_extendLocationsToSuppress' => array(
-            'title' => 'Indexing Profiles - Extend Locations To Suppress Size',
-            'description' => 'Extend Locations To Suppress Size for an indexing profile',
-            'continueOnError' => true,
-            'sql' => array(
-                "ALTER TABLE indexing_profiles CHANGE `locationsToSuppress` `locationsToSuppress` varchar(255)",
-            )
+			'title' => 'Indexing Profiles - Extend Locations To Suppress Size',
+			'description' => 'Extend Locations To Suppress Size for an indexing profile',
+			'continueOnError' => true,
+			'sql' => array(
+				"ALTER TABLE indexing_profiles CHANGE `locationsToSuppress` `locationsToSuppress` varchar(255)",
+			)
 		),
 
 		'indexing_profile_doAutomaticEcontentSuppression' => array(
-            'title' => 'Indexing Profiles - Do Automatic EContent Suppression',
-            'description' => 'Allow logic for whether or not automatic econtent suppression is enabled or disabled in an indexing profile',
-            'continueOnError' => true,
-            'sql' => array(
-                "ALTER TABLE indexing_profiles ADD COLUMN `doAutomaticEcontentSuppression` tinyint(1) DEFAULT 1",
-            )
+			'title' => 'Indexing Profiles - Do Automatic EContent Suppression',
+			'description' => 'Allow logic for whether or not automatic econtent suppression is enabled or disabled in an indexing profile',
+			'continueOnError' => true,
+			'sql' => array(
+				"ALTER TABLE indexing_profiles ADD COLUMN `doAutomaticEcontentSuppression` tinyint(1) DEFAULT 1",
+			)
 		),
 
 		'indexing_profile_groupUnchangedFiles' => array(
-            'title' => 'Indexing Profiles - Group Unchanged Files',
-            'description' => 'Allow logic for whether or not files that haven\'t changed since the last grouping are regrouped',
-            'continueOnError' => true,
-            'sql' => array(
-                "ALTER TABLE indexing_profiles ADD COLUMN `groupUnchangedFiles` tinyint(1) DEFAULT 0",
-            )
-        ),
+			'title' => 'Indexing Profiles - Group Unchanged Files',
+			'description' => 'Allow logic for whether or not files that haven\'t changed since the last grouping are regrouped',
+			'continueOnError' => true,
+			'sql' => array(
+				"ALTER TABLE indexing_profiles ADD COLUMN `groupUnchangedFiles` tinyint(1) DEFAULT 0",
+			)
+		),
 
-        'indexing_profile_marc_record_subfield' => array(
-            'title' => 'Indexing Profiles - Marc Record Subfield',
-            'description' => 'Define the subfield for the marc record',
-            'continueOnError' => true,
-            'sql' => array(
-                "ALTER TABLE indexing_profiles ADD COLUMN `recordNumberSubfield` char(1) DEFAULT 'a'",
-            )
-        ),
+		'indexing_profile_marc_record_subfield' => array(
+			'title' => 'Indexing Profiles - Marc Record Subfield',
+			'description' => 'Define the subfield for the marc record',
+			'continueOnError' => true,
+			'sql' => array(
+				"ALTER TABLE indexing_profiles ADD COLUMN `recordNumberSubfield` char(1) DEFAULT 'a'",
+			)
+		),
 
 		'translation_map_regex' => array(
 			'title' => 'Translation Maps Regex',
@@ -290,10 +291,10 @@ function getIndexingUpdates() {
 		),
 
 		'last_check_in_status_adjustments' => array(
-            'title' => 'Last Check In Time Status Adjustments',
-            'description' => 'Add additional fields to adjust status based on last check-in time.',
-            'sql' => array(
-                "CREATE TABLE IF NOT EXISTS `time_to_reshelve` (
+			'title' => 'Last Check In Time Status Adjustments',
+			'description' => 'Add additional fields to adjust status based on last check-in time.',
+			'sql' => array(
+				"CREATE TABLE IF NOT EXISTS `time_to_reshelve` (
                   `id` int(11) NOT NULL AUTO_INCREMENT,
                   `indexingProfileId` int(11) NOT NULL,
                   `locations` varchar(100) NOT NULL,
@@ -304,47 +305,47 @@ function getIndexingUpdates() {
                   PRIMARY KEY (`id`),
                   KEY (indexingProfileId)
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8",
-            )
+			)
 		),
 
-        'records_to_include_2017-06' => array(
-            'title' => 'Records To Include Updates 2017.06',
-            'description' => 'Additional control over what is included, URL rewriting.',
-            'sql' => array(
-                "ALTER TABLE library_records_to_include ADD COLUMN iType VARCHAR(100)",
-                "ALTER TABLE library_records_to_include ADD COLUMN audience VARCHAR(100)",
-                "ALTER TABLE library_records_to_include ADD COLUMN format VARCHAR(100)",
-                "ALTER TABLE library_records_to_include ADD COLUMN marcTagToMatch VARCHAR(100)",
-                "ALTER TABLE library_records_to_include ADD COLUMN marcValueToMatch VARCHAR(100)",
-                "ALTER TABLE library_records_to_include ADD COLUMN includeExcludeMatches TINYINT default 1",
-                "ALTER TABLE library_records_to_include ADD COLUMN urlToMatch VARCHAR(100)",
-                "ALTER TABLE library_records_to_include ADD COLUMN urlReplacement VARCHAR(100)",
+		'records_to_include_2017-06' => array(
+			'title' => 'Records To Include Updates 2017.06',
+			'description' => 'Additional control over what is included, URL rewriting.',
+			'sql' => array(
+				"ALTER TABLE library_records_to_include ADD COLUMN iType VARCHAR(100)",
+				"ALTER TABLE library_records_to_include ADD COLUMN audience VARCHAR(100)",
+				"ALTER TABLE library_records_to_include ADD COLUMN format VARCHAR(100)",
+				"ALTER TABLE library_records_to_include ADD COLUMN marcTagToMatch VARCHAR(100)",
+				"ALTER TABLE library_records_to_include ADD COLUMN marcValueToMatch VARCHAR(100)",
+				"ALTER TABLE library_records_to_include ADD COLUMN includeExcludeMatches TINYINT default 1",
+				"ALTER TABLE library_records_to_include ADD COLUMN urlToMatch VARCHAR(100)",
+				"ALTER TABLE library_records_to_include ADD COLUMN urlReplacement VARCHAR(100)",
 
-                "ALTER TABLE location_records_to_include ADD COLUMN iType VARCHAR(100)",
-                "ALTER TABLE location_records_to_include ADD COLUMN audience VARCHAR(100)",
-                "ALTER TABLE location_records_to_include ADD COLUMN format VARCHAR(100)",
-                "ALTER TABLE location_records_to_include ADD COLUMN marcTagToMatch VARCHAR(100)",
-                "ALTER TABLE location_records_to_include ADD COLUMN marcValueToMatch VARCHAR(100)",
-                "ALTER TABLE location_records_to_include ADD COLUMN includeExcludeMatches TINYINT default 1",
-                "ALTER TABLE location_records_to_include ADD COLUMN urlToMatch VARCHAR(100)",
-                "ALTER TABLE location_records_to_include ADD COLUMN urlReplacement VARCHAR(100)",
-            )
-        ),
+				"ALTER TABLE location_records_to_include ADD COLUMN iType VARCHAR(100)",
+				"ALTER TABLE location_records_to_include ADD COLUMN audience VARCHAR(100)",
+				"ALTER TABLE location_records_to_include ADD COLUMN format VARCHAR(100)",
+				"ALTER TABLE location_records_to_include ADD COLUMN marcTagToMatch VARCHAR(100)",
+				"ALTER TABLE location_records_to_include ADD COLUMN marcValueToMatch VARCHAR(100)",
+				"ALTER TABLE location_records_to_include ADD COLUMN includeExcludeMatches TINYINT default 1",
+				"ALTER TABLE location_records_to_include ADD COLUMN urlToMatch VARCHAR(100)",
+				"ALTER TABLE location_records_to_include ADD COLUMN urlReplacement VARCHAR(100)",
+			)
+		),
 
-        'records_to_include_2018-03' => array(
-            'title' => 'Increase Records To Include URL Replacement Column',
-            'description' => 'Increase Records To Include URL Replacement Column to 255 characters.',
-            'sql' => array(
-                "ALTER TABLE `library_records_to_include` CHANGE COLUMN `urlReplacement` `urlReplacement` VARCHAR(255) NULL DEFAULT NULL",
-                "ALTER TABLE `location_records_to_include` CHANGE COLUMN `urlReplacement` `urlReplacement` VARCHAR(255) NULL DEFAULT NULL",
-            )
-        ),
+		'records_to_include_2018-03' => array(
+			'title' => 'Increase Records To Include URL Replacement Column',
+			'description' => 'Increase Records To Include URL Replacement Column to 255 characters.',
+			'sql' => array(
+				"ALTER TABLE `library_records_to_include` CHANGE COLUMN `urlReplacement` `urlReplacement` VARCHAR(255) NULL DEFAULT NULL",
+				"ALTER TABLE `location_records_to_include` CHANGE COLUMN `urlReplacement` `urlReplacement` VARCHAR(255) NULL DEFAULT NULL",
+			)
+		),
 
-        'ils_exportLog' => array(
-            'title' => 'ILS export log',
-            'description' => 'Create log for ils export via api.',
-            'sql' => array(
-                "CREATE TABLE IF NOT EXISTS ils_extract_log(
+		'ils_exportLog' => array(
+			'title' => 'ILS export log',
+			'description' => 'Create log for ils export via api.',
+			'sql' => array(
+				"CREATE TABLE IF NOT EXISTS ils_extract_log(
                     id INT NOT NULL AUTO_INCREMENT COMMENT 'The id of log', 
                     indexingProfile VARCHAR(50) NOT NULL,
                     startTime INT(11) NOT NULL COMMENT 'The timestamp when the run started', 
@@ -358,8 +359,8 @@ function getIndexingUpdates() {
                     `notes` TEXT COMMENT 'Additional information about the run', 
                     PRIMARY KEY ( `id` )
                 ) ENGINE = InnoDB;",
-            )
-        ),
+			)
+		),
 
 		'ils_exportLog_skips' => array(
 			'title' => 'ILS export log add skips',
@@ -370,10 +371,10 @@ function getIndexingUpdates() {
 		),
 
 		'track_ils_user_usage' => array(
-            'title' => 'ILS Usage by user',
-            'description' => 'Add a table to track how often a particular user uses the ils and side loads.',
-            'sql' => array(
-                "CREATE TABLE user_ils_usage (
+			'title' => 'ILS Usage by user',
+			'description' => 'Add a table to track how often a particular user uses the ils and side loads.',
+			'sql' => array(
+				"CREATE TABLE user_ils_usage (
                     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     userId INT(11) NOT NULL,
                     indexingProfileId INT(11) NOT NULL,
@@ -381,17 +382,17 @@ function getIndexingUpdates() {
                     month INT(2) NOT NULL,
                     usageCount INT(11) DEFAULT 0
                 ) ENGINE = InnoDB",
-                "ALTER TABLE user_ils_usage ADD INDEX (userId, indexingProfileId, year, month)",
-                "ALTER TABLE user_ils_usage ADD INDEX (year, month)",
-            ),
-        ),
+				"ALTER TABLE user_ils_usage ADD INDEX (userId, indexingProfileId, year, month)",
+				"ALTER TABLE user_ils_usage ADD INDEX (year, month)",
+			),
+		),
 
-        'track_ils_record_usage' => array(
-            'title' => 'ILS/Side Load Record Usage',
-            'description' => 'Add a table to track how records within the ils and side loads are used.',
-            'continueOnError' => true,
-            'sql' => array(
-                "CREATE TABLE ils_record_usage (
+		'track_ils_record_usage' => array(
+			'title' => 'ILS/Side Load Record Usage',
+			'description' => 'Add a table to track how records within the ils and side loads are used.',
+			'continueOnError' => true,
+			'sql' => array(
+				"CREATE TABLE ils_record_usage (
                     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     indexingProfileId INT(11) NOT NULL,
                     recordId VARCHAR(36),
@@ -399,12 +400,12 @@ function getIndexingUpdates() {
                     month INT(2) NOT NULL,
                     timesUsed INT(11) NOT NULL
                 ) ENGINE = InnoDB",
-                "ALTER TABLE ils_record_usage ADD INDEX (recordId, year, month)",
-                "ALTER TABLE ils_record_usage ADD INDEX (year, month)",
-            ),
-        ),
+				"ALTER TABLE ils_record_usage ADD INDEX (recordId, year, month)",
+				"ALTER TABLE ils_record_usage ADD INDEX (year, month)",
+			),
+		),
 
-        'indexing_profile_add_continuous_update_fields' => [
+		'indexing_profile_add_continuous_update_fields' => [
 			'title' => 'Indexing Profile Add Continuous Update Fields',
 			'description' => 'Add fields to track when last updates were done and to trigger full updates',
 			'sql' => [
@@ -422,32 +423,32 @@ function getIndexingUpdates() {
 			]
 		],
 
-        'authorities' => [
-            'title' => 'Authority Tables',
-            'description' => 'Setup authorities in the database to reduce memory usage during indexing',
-            'sql' => [
-                "CREATE TABLE author_authorities (
+		'authorities' => [
+			'title' => 'Authority Tables',
+			'description' => 'Setup authorities in the database to reduce memory usage during indexing',
+			'sql' => [
+				"CREATE TABLE author_authorities (
                     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     originalName VARCHAR(255) NOT NULL,
                     authoritativeName VARCHAR(255) NOT NULL
                 ) ENGINE = InnoDB",
-                "ALTER TABLE author_authorities ADD UNIQUE INDEX (originalName)",
-                "ALTER TABLE author_authorities ADD INDEX (authoritativeName)",
-                "CREATE TABLE title_authorities (
+				"ALTER TABLE author_authorities ADD UNIQUE INDEX (originalName)",
+				"ALTER TABLE author_authorities ADD INDEX (authoritativeName)",
+				"CREATE TABLE title_authorities (
                     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     originalName VARCHAR(255) NOT NULL,
                     authoritativeName VARCHAR(255) NOT NULL
                 ) ENGINE = InnoDB",
-                "ALTER TABLE title_authorities ADD UNIQUE INDEX (originalName)",
-                "ALTER TABLE title_authorities ADD INDEX (authoritativeName)",
-            ]
-        ],
+				"ALTER TABLE title_authorities ADD UNIQUE INDEX (originalName)",
+				"ALTER TABLE title_authorities ADD INDEX (authoritativeName)",
+			]
+		],
 
-        'accelerated_reader' => [
-            'title' => 'Accelerated Reader',
-            'description' => 'Setup Accelerated Reader in the database to reduce memory usage during indexing',
-            'sql' => [
-                "CREATE TABLE accelerated_reading_titles (
+		'accelerated_reader' => [
+			'title' => 'Accelerated Reader',
+			'description' => 'Setup Accelerated Reader in the database to reduce memory usage during indexing',
+			'sql' => [
+				"CREATE TABLE accelerated_reading_titles (
                     arBookId INT NOT NULL PRIMARY KEY,
                     language VARCHAR(2) NOT NULL,
                     title VARCHAR(255) NOT NULL,
@@ -457,26 +458,26 @@ function getIndexingUpdates() {
                     isFiction TINYINT(1),
                     interestLevel VARCHAR(5)                                                            
                 ) ENGINE = InnoDB",
-                "CREATE TABLE accelerated_reading_isbn (
+				"CREATE TABLE accelerated_reading_isbn (
                     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     arBookId INT NOT NULL,
                     isbn VARCHAR(13) NOT NULL
                 ) ENGINE = InnoDB",
-                "ALTER TABLE accelerated_reading_isbn ADD INDEX (arBookId)",
-                "ALTER TABLE accelerated_reading_isbn ADD UNIQUE INDEX (isbn)",
-                "CREATE TABLE accelerated_reading_subject (
+				"ALTER TABLE accelerated_reading_isbn ADD INDEX (arBookId)",
+				"ALTER TABLE accelerated_reading_isbn ADD UNIQUE INDEX (isbn)",
+				"CREATE TABLE accelerated_reading_subject (
                     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     topic VARCHAR(255) NOT NULL,
                     subTopic VARCHAR(255) NOT NULL
                 ) ENGINE = InnoDB",
-                "ALTER TABLE accelerated_reading_subject ADD INDEX (topic, subTopic)",
-                "CREATE TABLE accelerated_reading_subject_to_title (
+				"ALTER TABLE accelerated_reading_subject ADD INDEX (topic, subTopic)",
+				"CREATE TABLE accelerated_reading_subject_to_title (
                     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     arBookId INT NOT NULL,
                     arSubjectId INT NOT NULL
                 ) ENGINE = InnoDB",
-                "ALTER TABLE accelerated_reading_subject_to_title ADD UNIQUE INDEX (arBookId, arSubjectId)",
-                "CREATE TABLE accelerated_reading_settings (
+				"ALTER TABLE accelerated_reading_subject_to_title ADD UNIQUE INDEX (arBookId, arSubjectId)",
+				"CREATE TABLE accelerated_reading_settings (
                     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     indexSeries TINYINT(1) DEFAULT 1,
                     indexSubjects TINYINT(1) DEFAULT 1,
@@ -486,8 +487,8 @@ function getIndexingUpdates() {
                     ftpPassword VARCHAR(255) NOT NULL,
                     lastFetched INT NOT NULL default 0
                 ) ENGINE = InnoDB",
-            ]
-        ],
+			]
+		],
 
 		'format_status_maps' => [
 			'title' => 'Format and Status Maps',
@@ -700,7 +701,8 @@ function getIndexingUpdates() {
 	);
 }
 
-function createFormatAndStatusMapsFromTranslationMaps(&$update){
+function createFormatAndStatusMapsFromTranslationMaps(&$update)
+{
 	require_once ROOT_DIR . '/sys/Indexing/IndexingProfile.php';
 	require_once ROOT_DIR . '/sys/Indexing/TranslationMap.php';
 	require_once ROOT_DIR . '/sys/Indexing/TranslationMapValue.php';
@@ -709,7 +711,7 @@ function createFormatAndStatusMapsFromTranslationMaps(&$update){
 
 	$indexingProfile = new IndexingProfile();
 	$indexingProfile->find();
-	while ($indexingProfile->fetch()){
+	while ($indexingProfile->fetch()) {
 		$translationMaps = $indexingProfile->translationMaps;
 		$statusMap = null;
 		$groupedStatusMap = null;
@@ -717,16 +719,16 @@ function createFormatAndStatusMapsFromTranslationMaps(&$update){
 		$formatBoostMap = null;
 		$formatCategoryMap = null;
 		/** @var TranslationMap $translationMap */
-		foreach ($translationMaps as $translationMap){
-			if ($translationMap->name == 'item_status'){
+		foreach ($translationMaps as $translationMap) {
+			if ($translationMap->name == 'item_status') {
 				$statusMap = $translationMap;
-			}elseif ($translationMap->name == 'item_grouped_status'){
+			} elseif ($translationMap->name == 'item_grouped_status') {
 				$groupedStatusMap = $translationMap;
-			}elseif ($translationMap->name == 'format'){
+			} elseif ($translationMap->name == 'format') {
 				$formatMap = $translationMap;
-			}elseif ($translationMap->name == 'format_boost'){
+			} elseif ($translationMap->name == 'format_boost') {
 				$formatBoostMap = $translationMap;
-			}elseif ($translationMap->name == 'format_category'){
+			} elseif ($translationMap->name == 'format_category') {
 				$formatCategoryMap = $translationMap;
 			}
 		}
@@ -749,9 +751,9 @@ function createFormatAndStatusMapsFromTranslationMaps(&$update){
 			$groupedStatusMap->delete();
 		}
 
-		if ($formatMap != null){
+		if ($formatMap != null) {
 			/** @var TranslationMapValue $value */
-			foreach ($formatMap->translationMapValues as $value){
+			foreach ($formatMap->translationMapValues as $value) {
 				$indexingProfile->setFormatMapValue($value->value, $value->translation, null, null);
 				$value->delete();
 			}

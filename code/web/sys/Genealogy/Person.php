@@ -63,8 +63,6 @@ class Person extends SolrDataObject
 	private $_obituaries = null;
 	private $_marriages = null;
 
-	private $data;
-
 	function keys() {
 		return array('personId');
 	}
@@ -287,7 +285,7 @@ class Person extends SolrDataObject
 				return $this->_obituaries;
 			}
 		}else{
-			return $this->data[$name];
+			return $this->_data[$name];
 		}
 	}
 
@@ -301,7 +299,7 @@ class Person extends SolrDataObject
 			//Update the database, first remove existing values
 			$this->saveObituaries();
 		}else{
-			$this->data[$name] = $value;
+			$this->_data[$name] = $value;
 		}
 	}
 

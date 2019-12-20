@@ -122,7 +122,7 @@ class MillenniumHolds{
 		if (isset($locationId) && is_numeric($locationId)) {
 			$location->whereAdd("locationId = '$locationId'");
 			$location->find();
-			if ($location->N == 1) {
+			if ($location->getNumResults() == 1) {
 				$location->fetch();
 				$paddedLocation = str_pad(trim($location->code), 5, " ");
 			}
@@ -474,7 +474,7 @@ class MillenniumHolds{
 							$curPickupBranch = new Location();
 							$curPickupBranch->whereAdd("code = '{$matches[3]}'");
 							$curPickupBranch->find(1);
-							if ($curPickupBranch->N > 0) {
+							if ($curPickupBranch->getNumResults() > 0) {
 								$curPickupBranch->fetch();
 								$curHold['currentPickupId'] = $curPickupBranch->locationId;
 								$curHold['currentPickupName'] = $curPickupBranch->displayName;

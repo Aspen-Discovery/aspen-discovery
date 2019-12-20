@@ -219,9 +219,42 @@
 					</div>
 				</div>
 
+				{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles))}
+					{if in_array($action, array('Themes', 'GroupedWorkDisplay'))}
+						{assign var="curSection" value=true}
+					{else}
+						{assign var="curSection" value=false}
+					{/if}
+					<div class="panel{if $curSection} active{/if}">
+						<a href="#configurationTemplatesMenuGroup" data-toggle="collapse" data-parent="#adminMenuAccordion">
+							<div class="panel-heading">
+								<div class="panel-title">
+									{translate text="Configuration Templates"}
+								</div>
+							</div>
+						</a>
+						<div id="configurationTemplatesMenuGroup" class="panel-collapse collapse {if $curSection}in{/if}">
+							<div class="panel-body">
+								{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles))}
+									<div class="adminMenuLink"><a href="/Admin/Themes">{translate text="Themes"}</a></div>
+								{/if}
+								{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles))}
+									<div class="adminMenuLink"><a href="/Admin/LayoutSettings">{translate text="Layout Settings"}</a></div>
+								{/if}
+								{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles))}
+									<div class="adminMenuLink"><a href="/Admin/GroupedWorkDisplay">{translate text="Grouped Work Display Settings"}</a></div>
+								{/if}
+								{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles))}
+									<div class="adminMenuLink">&nbsp;&raquo;&nbsp;<a href="/Admin/GroupedWorkFacets">{translate text="Grouped Work Facets"}</a></div>
+								{/if}
+							</div>
+						</div>
+					</div>
+				{/if}
+
 				{* Admin Functionality if Available *}
 				{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('contentEditor', $userRoles) || array_key_exists('libraryManager', $userRoles) || array_key_exists('locationManager', $userRoles) || array_key_exists('translator', $userRoles))}
-					{if in_array($action, array('Themes', 'Libraries', 'Locations', 'IPAddresses', 'ListWidgets', 'BrowseCategories', 'Placards', 'PTypes', 'LoanRules', 'LoanRuleDeterminers', 'AccountProfiles', 'NYTLists', 'BlockPatronAccountLinks', 'Languages'))}
+					{if in_array($action, array('Libraries', 'Locations', 'IPAddresses', 'ListWidgets', 'BrowseCategories', 'Placards', 'PTypes', 'LoanRules', 'LoanRuleDeterminers', 'AccountProfiles', 'NYTLists', 'BlockPatronAccountLinks', 'Languages'))}
 						{assign var="curSection" value=true}
 					{else}
 						{assign var="curSection" value=false}
@@ -236,14 +269,11 @@
 						</a>
 						<div id="primaryAdminMenuGroup" class="panel-collapse collapse {if $curSection}in{/if}">
 							<div class="panel-body">
-								{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles))}
-									<div class="adminMenuLink"><a href="/Admin/Themes">{translate text="Themes"}</a></div>
-								{/if}
 								{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('translator', $userRoles))}
 									<div class="adminMenuLink"><a href="/Translation/Languages">{translate text="Languages"}</a></div>
 								{/if}
 								{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('translator', $userRoles))}
-									<div class="adminMenuLink"><a href="/Translation/Translations">{translate text="Translations"}</a></div>
+									<div class="adminMenuLink">&nbsp;&raquo;&nbsp;<a href="/Translation/Translations">{translate text="Translations"}</a></div>
 								{/if}
 								{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('libraryManager', $userRoles))}
 									<div class="adminMenuLink"><a href="/Admin/Libraries">{translate text="Library Systems"}</a></div>
@@ -433,7 +463,7 @@
 				{/if}
 
 				{if array_key_exists('OverDrive', $enabledModules) && (array_key_exists('libraryAdmin', $userRoles) || array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles))}
-					{if $module == 'OverDrive' && in_array($action, array('APIData', 'ExtractLog', 'Settings', 'Dashboard'))}
+					{if $module == 'OverDrive' && in_array($action, array('APIData', 'ExtractLog', 'Settings', 'Scopes', 'Dashboard'))}
 						{assign var="curSection" value=true}
 					{else}
 						{assign var="curSection" value=false}
@@ -449,6 +479,7 @@
 						<div id="overdriveMenu" class="panel-collapse collapse {if $curSection}in{/if}">
 							<div class="panel-body">
 								<div class="adminMenuLink"><a href="/OverDrive/Settings">{translate text="Settings"}</a></div>
+								<div class="adminMenuLink">&nbsp;&raquo;&nbsp;<a href="/OverDrive/Scopes">{translate text="Scopes"}</a></div>
 								<div class="adminMenuLink"><a href="/OverDrive/IndexingLog">{translate text="Indexing Log"}</a></div>
 								<div class="adminMenuLink"><a href="/OverDrive/Dashboard">{translate text="Dashboard"}</a></div>
 								<div class="adminMenuLink"><a href="/OverDrive/APIData">{translate text="API Information"}</a></div>
@@ -474,7 +505,7 @@
 						<div id="hooplaMenu" class="panel-collapse collapse {if $curSection}in{/if}">
 							<div class="panel-body">
 								<div class="adminMenuLink"><a href="/Hoopla/Settings">{translate text="Settings"}</a></div>
-								<div class="adminMenuLink"><a href="/Hoopla/Scopes">{translate text="Scopes"}</a></div>
+								<div class="adminMenuLink">&nbsp;&raquo;&nbsp;<a href="/Hoopla/Scopes">{translate text="Scopes"}</a></div>
 								<div class="adminMenuLink"><a href="/Hoopla/IndexingLog">{translate text="Indexing Log"}</a></div>
 								<div class="adminMenuLink"><a href="/Hoopla/Dashboard">{translate text="Dashboard"}</a></div>
 							</div>
@@ -499,7 +530,7 @@
 						<div id="rbdigitalMenu" class="panel-collapse collapse {if $curSection}in{/if}">
 							<div class="panel-body">
 								<div class="adminMenuLink"><a href="/RBdigital/Settings">{translate text="Settings"}</a></div>
-								<div class="adminMenuLink"><a href="/RBdigital/Scopes">{translate text="Scopes"}</a></div>
+								<div class="adminMenuLink">&nbsp;&raquo;&nbsp;<a href="/RBdigital/Scopes">{translate text="Scopes"}</a></div>
 								<div class="adminMenuLink"><a href="/RBdigital/IndexingLog">{translate text="Indexing Log"}</a></div>
 								<div class="adminMenuLink"><a href="/RBdigital/Dashboard">{translate text="Dashboard"}</a></div>
 							</div>
@@ -524,7 +555,7 @@
 						<div id="cloudLibraryMenu" class="panel-collapse collapse {if $curSection}in{/if}">
 							<div class="panel-body">
 								<div class="adminMenuLink"><a href="/CloudLibrary/Settings">{translate text="Settings"}</a></div>
-								<div class="adminMenuLink"><a href="/CloudLibrary/Scopes">{translate text="Scopes"}</a></div>
+								<div class="adminMenuLink">&nbsp;&raquo;&nbsp;<a href="/CloudLibrary/Scopes">{translate text="Scopes"}</a></div>
 								<div class="adminMenuLink"><a href="/CloudLibrary/IndexingLog">{translate text="Indexing Log"}</a></div>
 								<div class="adminMenuLink"><a href="/CloudLibrary/Dashboard">{translate text="Dashboard"}</a></div>
 							</div>

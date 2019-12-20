@@ -274,7 +274,7 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 		$materialsRequestFieldsToDisplay = new MaterialsRequestFieldsToDisplay();
 		$materialsRequestFieldsToDisplay->libraryId = $homeLibrary->libraryId;
 		$materialsRequestFieldsToDisplay->orderBy('weight');
-		if ($materialsRequestFieldsToDisplay->find() && $materialsRequestFieldsToDisplay->N > 0) {
+		if ($materialsRequestFieldsToDisplay->find() && $materialsRequestFieldsToDisplay->getNumResults() > 0) {
 			$columnsToDisplay = $materialsRequestFieldsToDisplay->fetchAll('columnNameToDisplay', 'labelForColumnToDisplay');
 		} else {
 			$columnsToDisplay = $this->defaultColumnsToShow();

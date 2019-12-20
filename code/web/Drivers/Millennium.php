@@ -733,7 +733,7 @@ class Millennium extends AbstractIlsDriver
 		return $millenniumHolds->updateHoldDetailed($patron, $type, $xNum, $cancelId, $locationId, $freezeValue);
 	}
 
-	public function cancelHold($patron, $recordId, $cancelId){
+	public function cancelHold($patron, $recordId, $cancelId = null){
 		require_once ROOT_DIR . '/Drivers/marmot_inc/MillenniumHolds.php';
 		$millenniumHolds = new MillenniumHolds($this);
 		return $millenniumHolds->updateHoldDetailed($patron, 'cancel', null, $cancelId, '', '');

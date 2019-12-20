@@ -73,7 +73,7 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 		$query = "SELECT grouped_work.* FROM grouped_work INNER JOIN grouped_work_primary_identifiers ON grouped_work.id = grouped_work_id WHERE type='overdrive' AND identifier = '" . $this->getUniqueID() . "'";
 		$groupedWork->query($query);
 
-		if ($groupedWork->N == 1){
+		if ($groupedWork->getNumResults() == 1){
 			$groupedWork->fetch();
 			$this->groupedWork = clone $groupedWork;
 		}
@@ -337,9 +337,9 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 			$searchLocation = Location::getSearchLocation();
 			$includeSharedTitles = true;
 			if($searchLocation != null){
-				$includeSharedTitles = $searchLocation->enableOverdriveCollection != 0;
+				$includeSharedTitles = $searchLocation->overDriveScopeId != 0;
 			}elseif ($searchLibrary != null){
-				$includeSharedTitles = $searchLibrary->enableOverdriveCollection != 0;
+				$includeSharedTitles = $searchLibrary->overDriveScopeId != 0;
 			}
 			$libraryScopingId = $this->getLibraryScopingId();
 			if ($includeSharedTitles){
@@ -380,17 +380,17 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 
 		//Load the holding label for the branch where the user is physically.
 		if (!is_null($homeLibrary)){
-			return $homeLibrary->includeOutOfSystemExternalLinks ? -1 : $homeLibrary->libraryId;
+			return $homeLibrary->getGroupedWorkDisplaySettings()->includeOutOfSystemExternalLinks ? -1 : $homeLibrary->libraryId;
 		}else if (!is_null($activeLocation)){
 			$activeLibrary = Library::getLibraryForLocation($activeLocation->locationId);
-			return $activeLibrary->includeOutOfSystemExternalLinks ? -1 : $activeLibrary->libraryId;
+			return $activeLibrary->getGroupedWorkDisplaySettings()->includeOutOfSystemExternalLinks ? -1 : $activeLibrary->libraryId;
 		}else if (isset($activeLibrary)) {
-			return $activeLibrary->includeOutOfSystemExternalLinks ? -1 : $activeLibrary->libraryId;
+			return $activeLibrary->getGroupedWorkDisplaySettings()->includeOutOfSystemExternalLinks ? -1 : $activeLibrary->libraryId;
 		}else if (!is_null($searchLocation)){
 			$searchLibrary = Library::getLibraryForLocation($searchLibrary->locationId);
-			return $searchLibrary->includeOutOfSystemExternalLinks ? -1 : $searchLocation->libraryId;
+			return $searchLibrary->getGroupedWorkDisplaySettings()->includeOutOfSystemExternalLinks ? -1 : $searchLocation->libraryId;
 		}else if (isset($searchLibrary)) {
-			return $searchLibrary->includeOutOfSystemExternalLinks ? -1 : $searchLibrary->libraryId;
+			return $searchLibrary->getGroupedWorkDisplaySettings()->includeOutOfSystemExternalLinks ? -1 : $searchLibrary->libraryId;
 		}else{
 			return -1;
 		}

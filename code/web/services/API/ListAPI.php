@@ -61,7 +61,7 @@ class ListAPI extends Action {
 		$list->public = 1;
 		$list->find();
 		$results = array();
-		if ($list->N > 0){
+		if ($list->getNumResults() > 0){
 			while ($list->fetch()){
 			    $query = "SELECT count(groupedWorkPermanentId) as numTitles FROM user_list_entry where listId = " . $list->id;
 				$stmt = $aspen_db->prepare($query);
@@ -107,7 +107,7 @@ class ListAPI extends Action {
 		$list->user_id = $userId;
 		$list->find();
 		$results = array();
-		if ($list->N > 0){
+		if ($list->getNumResults() > 0){
 			while ($list->fetch()){
 				$results[] = array(
 					'id' => $list->id,

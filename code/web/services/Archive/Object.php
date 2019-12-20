@@ -145,7 +145,7 @@ abstract class Archive_Object extends Action {
 		//Find the owning library
 		$owningLibrary = new Library();
 		$owningLibrary->archiveNamespace = $namespace;
-		if ($owningLibrary->find(true) && $owningLibrary->N == 1) {
+		if ($owningLibrary->find(true) && $owningLibrary->getNumResults() == 1) {
 			$interface->assign('allowRequestsForArchiveMaterials', $owningLibrary->allowRequestsForArchiveMaterials);
 		} else {
 			$interface->assign('allowRequestsForArchiveMaterials', false);

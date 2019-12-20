@@ -9,7 +9,7 @@ class ReadingHistory extends MyAccount
 	{
 		global $interface;
 		global $library;
-		$interface->assign('showRatings', $library->showRatings);
+		$interface->assign('showRatings', $library->getGroupedWorkDisplaySettings()->showRatings);
 
 		global $offlineMode;
 		if (!$offlineMode) {

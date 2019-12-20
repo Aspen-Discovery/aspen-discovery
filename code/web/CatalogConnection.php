@@ -182,7 +182,7 @@ class CatalogConnection
 				$statusQuery->libraryId = $homeLibrary->libraryId;
 				$materialsRequest->joinAdd($statusQuery, 'INNER', 'status', 'status', 'id');
 				$materialsRequest->find();
-				$user->setNumMaterialsRequests($materialsRequest->N);
+				$user->setNumMaterialsRequests($materialsRequest->getNumResults());
 				$timer->logTime("Updated number of active materials requests");
 			}elseif($homeLibrary->enableMaterialsRequest == 2){
 				$user->setNumMaterialsRequests($this->getNumMaterialsRequests($user));
@@ -402,7 +402,7 @@ class CatalogConnection
                 $readingHistoryDB->userId = $patron->id;
                 $readingHistoryDB->groupedWorkPermanentId = strtolower($id);
                 $readingHistoryDB->find();
-                if ($id && $readingHistoryDB->N > 0){
+                if ($id && $readingHistoryDB->getNumResults() > 0){
                     while ($readingHistoryDB->fetch()){
                         $readingHistoryDB->deleted = 1;
                         $readingHistoryDB->update();

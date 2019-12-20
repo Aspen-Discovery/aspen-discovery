@@ -197,6 +197,7 @@ class UserAPI extends Action {
 
 		$result = UserAccount::validateAccount($username, $password);
 		if ($result != null){
+			//TODO This needs to be updated to just export public information
 			//get rid of data object fields before returning the result
 			unset($result->__table);
 			unset($result->created);
@@ -210,7 +211,6 @@ class UserAPI extends Action {
 			unset($result->_link_loaded);
 			unset($result->_join);
 			unset($result->_lastError);
-			unset($result->N);
 
 			return array('success'=>$result);
 		}else{
@@ -317,7 +317,6 @@ class UserAPI extends Action {
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !($user instanceof AspenError)){
 			//Remove a bunch of junk from the user data
-			unset($user->N);
 			unset($user->query);
 			foreach ($user as $key => $value) {
 				if (substr($key, 0, 1) == '_'){

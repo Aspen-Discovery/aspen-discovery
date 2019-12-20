@@ -276,7 +276,7 @@ class ListWidget extends DataObject
 		}
 		$widget->libraryId = $this->libraryId;
 		$widget->find();
-		if ($widget->N > 0){
+		if ($widget->getNumResults() > 0){
 			//The title is not unique
 			$validationResults['errors'][] = "This widget has already been created.  Please select another name.";
 		}

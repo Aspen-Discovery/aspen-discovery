@@ -1,10 +1,7 @@
 ; Password configuration, do not include this in git (except for default version)
 [System]
 debugJs         = true
-timings         = true
 minTimeToLog    = 0.05
-debugSolr       = true
-debugSolrQuery  = true
 
 [Site]
 ;email =
@@ -35,7 +32,7 @@ reviews         =
 excerpts        =
 
 [Syndetics]
-key = marmot
+key =
 
 [Novelist]
 profile  =

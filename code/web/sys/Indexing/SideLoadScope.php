@@ -17,8 +17,8 @@ class SideLoadScope extends DataObject
 	public $urlToMatch;
 	public $urlReplacement;
 
-	private $__libraries;
-	private $__locations;
+	private $_libraries;
+	private $_locations;
 
 	public static function getObjectStructure()
 	{
@@ -110,41 +110,41 @@ class SideLoadScope extends DataObject
 
 	public function __get($name){
 		if ($name == "libraries") {
-			if (!isset($this->__libraries) && $this->id){
-				$this->__libraries = [];
+			if (!isset($this->_libraries) && $this->id){
+				$this->_libraries = [];
 				$obj = new LibrarySideLoadScope();
 				$obj->sideLoadScopeId = $this->id;
 				$obj->find();
 				while($obj->fetch()){
-					$this->__libraries[$obj->id] = clone($obj);
+					$this->_libraries[$obj->id] = clone($obj);
 				}
 			}
-			return $this->__libraries;
+			return $this->_libraries;
 		} elseif ($name == "locations") {
-			if (!isset($this->__locations) && $this->id){
-				$this->__locations = [];
+			if (!isset($this->_locations) && $this->id){
+				$this->_locations = [];
 				$obj = new LocationSideLoadScope();
 				$obj->sideLoadScopeId = $this->id;
 				$obj->find();
 				while($obj->fetch()){
-					$this->__locations[$obj->id] = clone($obj);
+					$this->_locations[$obj->id] = clone($obj);
 				}
 			}
-			return $this->__locations;
+			return $this->_locations;
 		} else {
-			return $this->__data[$name];
+			return $this->_data[$name];
 		}
 	}
 
 	public function __set($name, $value){
 		if ($name == "libraries") {
 			/** @noinspection PhpUndefinedFieldInspection */
-			$this->__libraries = $value;
+			$this->_libraries = $value;
 		}elseif ($name == "locations") {
 			/** @noinspection PhpUndefinedFieldInspection */
-			$this->__locations = $value;
+			$this->_locations = $value;
 		}else {
-			$this->__data[$name] = $value;
+			$this->_data[$name] = $value;
 		}
 	}
 
@@ -169,16 +169,16 @@ class SideLoadScope extends DataObject
 	}
 
 	public function saveLibraries(){
-		if (isset ($this->__libraries) && is_array($this->__libraries)){
-			$this->saveOneToManyOptions($this->__libraries, 'sideLoadScopeId');
-			unset($this->__libraries);
+		if (isset ($this->_libraries) && is_array($this->_libraries)){
+			$this->saveOneToManyOptions($this->_libraries, 'sideLoadScopeId');
+			unset($this->_libraries);
 		}
 	}
 
 	public function saveLocations(){
-		if (isset ($this->__locations) && is_array($this->__locations)){
-			$this->saveOneToManyOptions($this->__locations, 'sideLoadScopeId');
-			unset($this->__locations);
+		if (isset ($this->_locations) && is_array($this->_locations)){
+			$this->saveOneToManyOptions($this->_locations, 'sideLoadScopeId');
+			unset($this->_locations);
 		}
 	}
 
@@ -186,35 +186,35 @@ class SideLoadScope extends DataObject
 	public function getLibraries()
 	{
 		/** @noinspection PhpUndefinedFieldInspection */
-		return $this->libraries;
+		return $this->_libraries;
 	}
 
 	/** @return LocationSideLoadScope[] */
 	public function getLocations()
 	{
 		/** @noinspection PhpUndefinedFieldInspection */
-		return $this->locations;
+		return $this->_locations;
 	}
 
 	public function setLibraries($val)
 	{
 		/** @noinspection PhpUndefinedFieldInspection */
-		$this->libraries = $val;
+		$this->_libraries = $val;
 	}
 
 	public function setLocations($val)
 	{
 		/** @noinspection PhpUndefinedFieldInspection */
-		$this->locations = $val;
+		$this->_locations = $val;
 	}
 
 	public function clearLibraries(){
 		$this->clearOneToManyOptions('LibrarySideLoadScope', 'sideLoadScopeId');
-		unset($this->__libraries);
+		unset($this->_libraries);
 	}
 
 	public function clearLocations(){
 		$this->clearOneToManyOptions('LocationSideLoadScope', 'sideLoadScopeId');
-		unset($this->__locations);
+		unset($this->_locations);
 	}
 }

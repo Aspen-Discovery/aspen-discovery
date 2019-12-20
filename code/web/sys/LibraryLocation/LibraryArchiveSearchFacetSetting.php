@@ -1,4 +1,5 @@
 <?php
+require_once ROOT_DIR . '/sys/LibraryLocation/FacetSetting.php';
 
 class LibraryArchiveSearchFacetSetting extends FacetSetting {
 	public $__table = 'library_archive_search_facet_setting';    // table name

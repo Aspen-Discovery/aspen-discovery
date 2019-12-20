@@ -238,16 +238,10 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 		$searchLibrary = Library::getActiveLibrary();
 
 		$searchLocation = $locationSingleton->getActiveLocation();
-		$hasSearchLibraryFacets = ($searchLibrary != null && (count($searchLibrary->facets) > 0));
-		/** @noinspection PhpUndefinedFieldInspection */
-		$hasSearchLocationFacets = ($searchLocation != null && (count($searchLocation->facets) > 0));
-		if ($hasSearchLocationFacets) {
-			/** @noinspection PhpUndefinedFieldInspection */
-			$facets = $searchLocation->facets;
-		} elseif ($hasSearchLibraryFacets) {
-			$facets = $searchLibrary->facets;
+		if ($searchLocation != null) {
+			$facets = $searchLocation->getGroupedWorkDisplaySettings()->getFacets();
 		} else {
-			$facets = Library::getDefaultFacets();
+			$facets = $searchLibrary->getGroupedWorkDisplaySettings()->getFacets();
 		}
 
 		global $solrScope;
@@ -1634,14 +1628,10 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 			$searchLibrary = Library::getActiveLibrary();
 			global $locationSingleton;
 			$searchLocation = $locationSingleton->getActiveLocation();
-			$hasSearchLibraryFacets = ($searchLibrary != null && (count($searchLibrary->facets) > 0));
-			$hasSearchLocationFacets = ($searchLocation != null && (count($searchLocation->facets) > 0));
-			if ($hasSearchLocationFacets) {
-				$facets = $searchLocation->facets;
-			} elseif ($hasSearchLibraryFacets) {
-				$facets = $searchLibrary->facets;
+			if ($searchLocation != null) {
+				$facets = $searchLocation->getGroupedWorkDisplaySettings()->getFacets();
 			} else {
-				$facets = Library::getDefaultFacets();
+				$facets = $searchLibrary->getGroupedWorkDisplaySettings()->getFacets();
 			}
 			global $solrScope;
 			foreach ($facets as $facet) {

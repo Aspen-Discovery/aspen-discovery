@@ -22,61 +22,10 @@ abstract class FacetSetting extends DataObject {
 		return ['weight', 'showAsDropDown', 'multiSelect', 'canLock', 'showAboveResults', 'showInResults', 'showInAdvancedSearch', 'translate'];
 	}
 
-
-	public static function getAvailableFacets()
-	{
-		$availableFacets = array(
-			"owning_library" => "Library System",
-			"owning_location" => "Branch",
-			"available_at" => "Available At",
-			"availability_toggle" => "Available?",
-			"collection" => "Collection",
-			"rating_facet" => "Rating",
-			"publishDate" => "Publication Year",
-			"format" => "Format",
-			"format_category" => "Format Category",
-			"econtent_source" => "E-Content Collection",
-			"subject_facet" => "Subjects",
-			"topic_facet" => "Topics",
-			"target_audience" => "Audience",
-			"mpaa_rating" => "Movie Rating",
-			"literary_form" => "Form",
-			"authorStr" => "Author",
-			"language" => "Language",
-			"translation" => "Translations",
-			"genre_facet" => "Genre",
-			"era" => "Era",
-			"geographic_facet" => "Region",
-			"target_audience_full" => "Reading Level",
-			"literary_form_full" => "Literary Form",
-			"lexile_code" => "Lexile code",
-			"lexile_score" => "Lexile measure",
-			"itype" => "Item Type",
-			"time_since_added" => "Added In The Last",
-			"callnumber-first" => "LC Call Number",
-			"awards_facet" => "Awards",
-			"detailed_location" => "Detailed Location",
-			"lc_subject" => "LC Subject",
-			"bisac_subject" => "Bisac Subject",
-			"accelerated_reader_interest_level" => "AR Interest Level",
-			"accelerated_reader_reading_level" => "AR Reading Level",
-			"accelerated_reader_point_value" => "AR Point Value",
-			"fountas_pinnell" => "Fountas &amp; Pinnell",
-			"series_facet" => "Series",
-		);
-
-		//Add additional facets by library
-		global $configArray;
-		if ($configArray['Catalog']['driver'] == 'WCPL'){
-			$availableFacets["system_list"] = "System List";
-		}
-
-		asort($availableFacets);
-		return $availableFacets;
-	}
+	/** @return string[] */
+	public abstract static function getAvailableFacets();
 
 	static function getObjectStructure($availableFacets = null){
-
 		$structure = array(
 			'id' => array('property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id'),
 			'weight' => array('property'=>'weight', 'type'=>'integer', 'label'=>'Weight', 'description'=>'The sort order', 'default' => 0),

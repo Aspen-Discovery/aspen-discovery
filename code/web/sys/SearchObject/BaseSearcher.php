@@ -2200,7 +2200,7 @@ abstract class SearchObject_BaseSearcher
 			$interface->assign('page', $currentPage);
 
 			$s->find();
-			if ($s->N > 0) {
+			if ($s->getNumResults() > 0) {
 				$s->fetch();
 				$minSO = unserialize($s->search_object);
 				/** @var SearchObject_BaseSearcher $searchObject */

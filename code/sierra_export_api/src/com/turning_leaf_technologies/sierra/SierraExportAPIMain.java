@@ -110,7 +110,7 @@ public class SierraExportAPIMain {
 		sierraExportFieldMapping = SierraExportFieldMapping.loadSierraFieldMappings(dbConn, indexingProfile.getId(), logger);
 
 		//Setup other systems we will use
-		recordGroupingProcessor = new MarcRecordGrouper(dbConn, indexingProfile, logger, false);
+		recordGroupingProcessor = new MarcRecordGrouper(serverName, dbConn, indexingProfile, logger, false);
 		groupedWorkIndexer = new GroupedWorkIndexer(serverName, dbConn, ini, false, false, false, logger);
 
 		//Start an export log entry

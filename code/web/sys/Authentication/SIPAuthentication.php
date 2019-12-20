@@ -235,7 +235,7 @@ class SIPAuthentication implements Authentication {
 			}
 
 			$location->find();
-			if ($location->N > 0){
+			if ($location->getNumResults() > 0){
 				$location->fetch();
 				$user->homeLocationId = $location->locationId;
 			}
