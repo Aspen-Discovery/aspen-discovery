@@ -17,7 +17,8 @@ class TopFacets implements RecommendationInterface
 	 * @param   SearchObject_BaseSearcher  $searchObject   The SearchObject requesting recommendations.
 	 * @param   string  $params         Additional settings from the searches.ini.
 	 */
-	public function __construct(SearchObject_BaseSearcher $searchObject, $params) {
+	public function __construct(SearchObject_BaseSearcher $searchObject, $params)
+	{
 		// Save the basic parameters:
 		/** @var SearchObject_SolrSearcher searchObject */
 		$this->searchObject = $searchObject;
@@ -27,34 +28,34 @@ class TopFacets implements RecommendationInterface
 
 		// Load the desired facet information:
 		if ($this->searchObject instanceof SearchObject_GroupedWorkSearcher) {
-            $searchLibrary = Library::getActiveLibrary();
-            global $locationSingleton;
-            $searchLocation = $locationSingleton->getActiveLocation();
-            if ($searchLocation != null) {
-                $facets = $searchLocation->getGroupedWorkDisplaySettings()->getFacets();
-            } else {
-                $facets = $searchLibrary->getGroupedWorkDisplaySettings()->getFacets();
-            }
-            global $solrScope;
-            foreach ($facets as $facet) {
-                if ($facet->showAboveResults == 1) {
-                    $facetName = $facet->facetName;
-                    if ($solrScope) {
-                        if ($facet->facetName == 'availability_toggle') {
-                            $facetName = 'availability_toggle_' . $solrScope;
-                        } else if ($facet->facetName == 'format_category') {
-                            $facetName = 'format_category_' . $solrScope;
-                        } else if ($facet->facetName == 'format') {
-                            $facetName = 'format_' . $solrScope;
-                        }
-                    }
-                    $this->facets[$facetName] = $facet->displayName;
-                    $this->facetSettings[$facetName] = $facet;
-                }
-            }
-        }else{
-            $this->facets = array();
-        }
+			$searchLibrary = Library::getActiveLibrary();
+			global $locationSingleton;
+			$searchLocation = $locationSingleton->getActiveLocation();
+			if ($searchLocation != null) {
+				$facets = $searchLocation->getGroupedWorkDisplaySettings()->getFacets();
+			} else {
+				$facets = $searchLibrary->getGroupedWorkDisplaySettings()->getFacets();
+			}
+			global $solrScope;
+			foreach ($facets as $facet) {
+				if ($facet->showAboveResults == 1) {
+					$facetName = $facet->facetName;
+					if ($solrScope) {
+						if ($facet->facetName == 'availability_toggle') {
+							$facetName = 'availability_toggle_' . $solrScope;
+						} else if ($facet->facetName == 'format_category') {
+							$facetName = 'format_category_' . $solrScope;
+						} else if ($facet->facetName == 'format') {
+							$facetName = 'format_' . $solrScope;
+						}
+					}
+					$this->facets[$facetName] = $facet->displayName;
+					$this->facetSettings[$facetName] = $facet;
+				}
+			}
+		} else {
+			$this->facets = array();
+		}
 	}
 
 	/* init
