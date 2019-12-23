@@ -34,6 +34,7 @@ import org.marc4j.marc.Record;
 public class SierraExportAPIMain {
 	private static Logger logger;
 
+	private static String serverName;
 	@SuppressWarnings("FieldCanBeLocal")
 	private static String processName = "sierra_export";
 
@@ -62,7 +63,15 @@ public class SierraExportAPIMain {
 	private static PreparedStatement addNoteToExportLogStmt;
 
 	public static void main(String[] args){
-		String serverName = args[0];
+		if (args.length == 0) {
+			serverName = StringUtils.getInputFromCommandLine("Please enter the server name");
+			if (serverName.length() == 0) {
+				System.out.println("You must provide the server name as the first argument.");
+				System.exit(1);
+			}
+		} else {
+			serverName = args[0];
+		}
 
 		Date startTime = new Date();
 		logger = LoggingUtil.setupLogging(serverName, processName);
@@ -95,7 +104,7 @@ public class SierraExportAPIMain {
 		//Connect to the aspen database
 		Connection dbConn = null;
 		try{
-			String databaseConnectionInfo = ConfigUtil.cleanIniValue(ini.get("Database", "database_vufind_jdbc"));
+			String databaseConnectionInfo = ConfigUtil.cleanIniValue(ini.get("Database", "database_aspen_jdbc"));
 			dbConn = DriverManager.getConnection(databaseConnectionInfo);
 		}catch (Exception e){
 			System.out.println("Error connecting to aspen database " + e.toString());
@@ -317,6 +326,7 @@ public class SierraExportAPIMain {
 
 		String apiVersion = ConfigUtil.cleanIniValue(ini.get("Catalog", "api_version"));
 		if (apiVersion == null || apiVersion.length() == 0){
+			logger.error("No API Version was provided");
 			return;
 		}
 		apiBaseUrl = ini.get("Catalog", "url") + "/iii/sierra-api/v" + apiVersion;
