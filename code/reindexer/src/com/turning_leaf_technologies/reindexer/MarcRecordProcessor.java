@@ -54,7 +54,6 @@ abstract class MarcRecordProcessor {
 		}
 	}
 
-	//TODO: This should use indexing profile / side load settings
 	private Record loadMarcRecordFromDisk(String identifier) {
 		Record record = null;
 		String individualFilename = getFileForIlsRecord(identifier);
@@ -80,18 +79,18 @@ abstract class MarcRecordProcessor {
 
 	private String getFileForIlsRecord(String recordNumber) {
 		StringBuilder shortId = new StringBuilder(recordNumber.replace(".", ""));
-		while (shortId.length() < 9){
+		while (shortId.length() < 9) {
 			shortId.insert(0, "0");
 		}
 
 		String subFolderName;
-		if (createFolderFromLeadingCharacters){
-			subFolderName        = shortId.substring(0, numCharsToCreateFolderFrom);
-		}else{
-			subFolderName        = shortId.substring(0, shortId.length() - numCharsToCreateFolderFrom);
+		if (createFolderFromLeadingCharacters) {
+			subFolderName = shortId.substring(0, numCharsToCreateFolderFrom);
+		} else {
+			subFolderName = shortId.substring(0, shortId.length() - numCharsToCreateFolderFrom);
 		}
 
-		String basePath           = individualMarcPath + "/" + subFolderName;
+		String basePath = individualMarcPath + "/" + subFolderName;
 		return basePath + "/" + shortId + ".mrc";
 	}
 

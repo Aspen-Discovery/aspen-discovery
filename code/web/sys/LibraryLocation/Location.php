@@ -2,7 +2,6 @@
 
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
 require_once ROOT_DIR . '/sys/LibraryLocation/LocationHours.php';
-require_once ROOT_DIR . '/sys/LibraryLocation/LocationFacetSetting.php';
 require_once ROOT_DIR . '/sys/LibraryLocation/LocationCombinedResultSection.php';
 if (file_exists(ROOT_DIR . '/sys/Browse/LocationBrowseCategory.php')) {
 	require_once ROOT_DIR . '/sys/Browse/LocationBrowseCategory.php';
@@ -127,13 +126,6 @@ class Location extends DataObject
 		// we don't want to make the locationId property editable
 		// because it is associated with this location only
 		unset($hoursStructure['locationId']);
-
-		$facetSettingStructure = LocationFacetSetting::getObjectStructure();
-		unset($facetSettingStructure['weight']);
-		unset($facetSettingStructure['locationId']);
-		unset($facetSettingStructure['numEntriesToShowByDefault']);
-		unset($facetSettingStructure['showAsDropDown']);
-		//unset($facetSettingStructure['sortMode']);
 
 		$locationBrowseCategoryStructure = LocationBrowseCategory::getObjectStructure();
 		unset($locationBrowseCategoryStructure['weight']);
@@ -1322,152 +1314,6 @@ class Location extends DataObject
 			$this->saveOneToManyOptions($this->sideLoadScopes, 'locationId');
 			unset($this->sideLoadScopes);
 		}
-	}
-
-	static function getDefaultFacets($locationId = -1)
-	{
-		$defaultFacets = array();
-
-		$facet = new LocationFacetSetting();
-		$facet->setupTopFacet('format_category', 'Format Category');
-		$facet->locationId = $locationId;
-		$facet->weight = count($defaultFacets) + 1;
-		$defaultFacets[] = $facet;
-
-		$facet = new LocationFacetSetting();
-		$facet->setupTopFacet('availability_toggle', 'Available?');
-		$facet->locationId = $locationId;
-		$facet->weight = count($defaultFacets) + 1;
-		$defaultFacets[] = $facet;
-
-		$facet = new LocationFacetSetting();
-		$facet->setupSideFacet('available_at', 'Available Now At', true);
-		$facet->locationId = $locationId;
-		$facet->weight = count($defaultFacets) + 1;
-		$defaultFacets[] = $facet;
-
-		$facet = new LocationFacetSetting();
-		$facet->setupSideFacet('format', 'Format', true);
-		$facet->locationId = $locationId;
-		$facet->weight = count($defaultFacets) + 1;
-		$defaultFacets[] = $facet;
-
-		$facet = new LocationFacetSetting();
-		$facet->setupSideFacet('literary_form', 'Literary Form', true);
-		$facet->locationId = $locationId;
-		$facet->weight = count($defaultFacets) + 1;
-		$defaultFacets[] = $facet;
-
-		$facet = new LocationFacetSetting();
-		$facet->setupSideFacet('target_audience', 'Reading Level', true);
-		$facet->locationId = $locationId;
-		$facet->weight = count($defaultFacets) + 1;
-		$facet->numEntriesToShowByDefault = 8;
-		$defaultFacets[] = $facet;
-
-		$facet = new LocationFacetSetting();
-		$facet->setupSideFacet('topic_facet', 'Subject', true);
-		$facet->locationId = $locationId;
-		$facet->weight = count($defaultFacets) + 1;
-		$defaultFacets[] = $facet;
-
-		$facet = new LocationFacetSetting();
-		$facet->setupSideFacet('time_since_added', 'Added in the Last', true);
-		$facet->locationId = $locationId;
-		$facet->weight = count($defaultFacets) + 1;
-		$defaultFacets[] = $facet;
-
-		$facet = new LocationFacetSetting();
-		$facet->setupSideFacet('authorStr', 'Author', true);
-		$facet->locationId = $locationId;
-		$facet->weight = count($defaultFacets) + 1;
-		$defaultFacets[] = $facet;
-
-		$facet = new LocationFacetSetting();
-		$facet->setupAdvancedFacet('awards_facet', 'Awards');
-		$facet->locationId = $locationId;
-		$facet->weight = count($defaultFacets) + 1;
-		$defaultFacets[] = $facet;
-
-		$facet = new LocationFacetSetting();
-		$facet->setupAdvancedFacet('econtent_source', 'eContent Collection');
-		$facet->locationId = $locationId;
-		$facet->weight = count($defaultFacets) + 1;
-		$defaultFacets[] = $facet;
-
-		$facet = new LocationFacetSetting();
-		$facet->setupAdvancedFacet('era', 'Era');
-		$facet->locationId = $locationId;
-		$facet->weight = count($defaultFacets) + 1;
-		$defaultFacets[] = $facet;
-
-		$facet = new LocationFacetSetting();
-		$facet->setupSideFacet('genre_facet', 'Genre', true);
-		$facet->locationId = $locationId;
-		$facet->weight = count($defaultFacets) + 1;
-		$defaultFacets[] = $facet;
-
-		$facet = new LocationFacetSetting();
-		$facet->setupSideFacet('itype', 'Item Type', true);
-		$facet->locationId = $locationId;
-		$facet->weight = count($defaultFacets) + 1;
-		$defaultFacets[] = $facet;
-
-		$facet = new LocationFacetSetting();
-		$facet->setupSideFacet('language', 'Language', true);
-		$facet->locationId = $locationId;
-		$facet->weight = count($defaultFacets) + 1;
-		$defaultFacets[] = $facet;
-
-		$facet = new LocationFacetSetting();
-		$facet->setupAdvancedFacet('lexile_code', 'Lexile code');
-		$facet->locationId = $locationId;
-		$facet->weight = count($defaultFacets) + 1;
-		$defaultFacets[] = $facet;
-
-		$facet = new LocationFacetSetting();
-		$facet->setupAdvancedFacet('lexile_score', 'Lexile measure');
-		$facet->locationId = $locationId;
-		$facet->weight = count($defaultFacets) + 1;
-		$defaultFacets[] = $facet;
-
-		$facet = new LocationFacetSetting();
-		$facet->setupAdvancedFacet('mpaa_rating', 'Movie Rating');
-		$facet->locationId = $locationId;
-		$facet->weight = count($defaultFacets) + 1;
-		$defaultFacets[] = $facet;
-
-		$facet = new LocationFacetSetting();
-		$facet->setupSideFacet('owning_library', 'Owning System', true);
-		$facet->locationId = $locationId;
-		$facet->weight = count($defaultFacets) + 1;
-		$defaultFacets[] = $facet;
-
-		$facet = new LocationFacetSetting();
-		$facet->setupSideFacet('owning_location', 'Owning Branch', true);
-		$facet->locationId = $locationId;
-		$facet->weight = count($defaultFacets) + 1;
-		$defaultFacets[] = $facet;
-
-		$facet = new LocationFacetSetting();
-		$facet->setupSideFacet('publishDate', 'Publication Date', true);
-		$facet->locationId = $locationId;
-		$facet->weight = count($defaultFacets) + 1;
-		$defaultFacets[] = $facet;
-
-		$facet = new LocationFacetSetting();
-		$facet->setupAdvancedFacet('geographic_facet', 'Region');
-		$facet->locationId = $locationId;
-		$facet->weight = count($defaultFacets) + 1;
-		$defaultFacets[] = $facet;
-
-		$facet = new LocationFacetSetting();
-		$facet->setupSideFacet('rating_facet', 'User Rating', true);
-		$facet->locationId = $locationId;
-		$facet->weight = count($defaultFacets) + 1;
-		$defaultFacets[] = $facet;
-
-		return $defaultFacets;
 	}
 
 	/** @return LocationHours[] */
