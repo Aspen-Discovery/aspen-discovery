@@ -333,9 +333,12 @@ public class SierraExportAPIMain {
 
 		//Last Update in UTC
 		//Add a small buffer to be safe, this was 2 minutes.  Reducing to 15 seconds, should be 0
+		Date now = new Date();
+		if (lastSierraExtractTime == null){
+			lastSierraExtractTime = now.getTime() - 24 * 60 * 60 * 1000;
+		}
 		Date lastExtractDate = new Date((lastSierraExtractTime - 15) * 1000);
 
-		Date now = new Date();
 		Date yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
 		if (lastExtractDate.before(yesterday)){
