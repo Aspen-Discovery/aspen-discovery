@@ -8,7 +8,7 @@ class LoanRuleDeterminers extends ObjectEditor {
 	function launch(){
 		$objectAction = isset($_REQUEST['objectAction']) ? $_REQUEST['objectAction'] : null;
 		if ($objectAction == 'reloadFromCsv'){
-			$this->display('../Admin/importLoanRuleDeterminerData.tpl', "Reload Loan Rule Determiners");
+			$this->display('../ILS/importLoanRuleDeterminerData.tpl', "Reload Loan Rule Determiners");
 			exit();
 		}elseif($objectAction == 'doLoanRuleDeterminerReload'){
 			$loanRuleDeterminerData = $_REQUEST['loanRuleDeterminerData'];

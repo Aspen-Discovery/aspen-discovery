@@ -10,7 +10,7 @@
 		<li>Select the Reload Data button.</li>
 		</ol> 
 		</p></div>
-		<form name="importLoanRules" action="/Admin/LoanRules" method="post">
+		<form name="importLoanRules" action="/ILS/LoanRules" method="post">
 			<div>
 				<input type="hidden" name="objectAction" value="doLoanRuleReload" />
 				<textarea rows="20" cols="80" name="loanRuleData"></textarea>

@@ -10,7 +10,7 @@ class LoanRules extends ObjectEditor
 		$objectAction = isset($_REQUEST['objectAction']) ? $_REQUEST['objectAction'] : null;
 		if ($objectAction == 'reloadFromCsv'){
 			global $interface;
-			$this->display('../Admin/importLoanRuleData.tpl', "Reload Loan Rules");
+			$this->display('../ILS/importLoanRuleData.tpl', "Reload Loan Rules");
 			exit();
 		}elseif($objectAction == 'doLoanRuleReload'){
 			$loanRuleData = $_REQUEST['loanRuleData'];
