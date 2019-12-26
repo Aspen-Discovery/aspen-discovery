@@ -1,6 +1,6 @@
 	<div id="main-content">
 		<h1>{$pageTitleShort}</h1>
-		<a class="btn btn-sm btn-default" href='/Admin/LoanRules?objectAction=list'>Return to List</a>
+		<a class="btn btn-sm btn-default" href='/ILS/LoanRules?objectAction=list'>Return to List</a>
 		<div class="helpTextUnsized"><p>To reload loan rules:
 		<ol>
 		<li>Open Millennium</li>
