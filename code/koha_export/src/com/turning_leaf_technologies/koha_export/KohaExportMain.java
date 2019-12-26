@@ -760,6 +760,7 @@ public class KohaExportMain {
 			}
 		} catch (Exception e) {
 			logger.error("Error loading changed records from Koha database", e);
+			logEntry.addNote("Error loading changed records from Koha database: " + e.toString());
 			logEntry.incErrors();
 			//Don't quit since that keeps the exporter from running continuously
 		}
@@ -858,6 +859,7 @@ public class KohaExportMain {
 				throw e;
 			} else {
 				logger.error("Error updating marc record for bib " + curBibId, e);
+				logEntry.addNote("Error updating marc record for bib " + curBibId + ": " + e.toString());
 				logEntry.incErrors();
 			}
 		}
