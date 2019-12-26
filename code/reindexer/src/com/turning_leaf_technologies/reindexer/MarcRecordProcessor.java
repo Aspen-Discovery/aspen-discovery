@@ -61,7 +61,7 @@ abstract class MarcRecordProcessor {
 			//Don't need to use a permissive reader here since we've written good individual MARCs as part of record grouping
 			//Actually we do need to since we can still get MARC records over the max length.
 			FileInputStream inputStream = new FileInputStream(individualFilename);
-			MarcReader marcReader = new MarcPermissiveStreamReader(inputStream, true, true, "UTF-8");
+			MarcReader marcReader = new MarcPermissiveStreamReader(inputStream, true, true, "UTF8");
 			if (marcReader.hasNext()) {
 				record = marcReader.next();
 			}

@@ -45,8 +45,8 @@ public class SierraExportAPIMain {
 	private static String serverName;
 
 	private static boolean exportItemHolds = true;
-	private static boolean suppressOrderRecordsThatAreReceivedAndCatalogged = false;
-	private static boolean suppressOrderRecordsThatAreCatalogged = false;
+	private static boolean suppressOrderRecordsThatAreReceivedAndCataloged = false;
+	private static boolean suppressOrderRecordsThatAreCataloged = false;
 	private static boolean suppressOrderRecordsThatAreReceived = false;
 	private static String orderStatusesToExport;
 
@@ -124,8 +124,6 @@ public class SierraExportAPIMain {
 						orderStatusesToExport = "o|1";
 					}
 					exportActiveOrders(indexingProfile.getMarcPath(), sierraConn);
-					exportDueDates(indexingProfile.getMarcPath(), sierraConn);
-
 					exportHolds(sierraConn, dbConn);
 				}
 
@@ -133,13 +131,13 @@ public class SierraExportAPIMain {
 				if (exportItemHoldsStr != null){
 					exportItemHolds = exportItemHoldsStr.equalsIgnoreCase("true");
 				}
-				String suppressOrderRecordsThatAreReceivedAndCataloggedStr = configIni.get("Catalog", "suppressOrderRecordsThatAreReceivedAndCatalogged");
-				if (suppressOrderRecordsThatAreReceivedAndCataloggedStr != null){
-					suppressOrderRecordsThatAreReceivedAndCatalogged = suppressOrderRecordsThatAreReceivedAndCataloggedStr.equalsIgnoreCase("true");
+				String suppressOrderRecordsThatAreReceivedAndCatalogedStr = configIni.get("Catalog", "suppressOrderRecordsThatAreReceivedAndCataloged");
+				if (suppressOrderRecordsThatAreReceivedAndCatalogedStr != null){
+					suppressOrderRecordsThatAreReceivedAndCataloged = suppressOrderRecordsThatAreReceivedAndCatalogedStr.equalsIgnoreCase("true");
 				}
-				String suppressOrderRecordsThatAreCataloggedStr = configIni.get("Catalog", "suppressOrderRecordsThatAreCatalogged");
-				if (suppressOrderRecordsThatAreCataloggedStr != null){
-					suppressOrderRecordsThatAreCatalogged = suppressOrderRecordsThatAreCataloggedStr.equalsIgnoreCase("true");
+				String suppressOrderRecordsThatAreCatalogedStr = configIni.get("Catalog", "suppressOrderRecordsThatAreCataloged");
+				if (suppressOrderRecordsThatAreCatalogedStr != null){
+					suppressOrderRecordsThatAreCataloged = suppressOrderRecordsThatAreCatalogedStr.equalsIgnoreCase("true");
 				}
 				String suppressOrderRecordsThatAreReceivedStr = configIni.get("Catalog", "suppressOrderRecordsThatAreReceived");
 				if (suppressOrderRecordsThatAreReceivedStr != null){
@@ -149,9 +147,10 @@ public class SierraExportAPIMain {
 				sierraExportFieldMapping = SierraExportFieldMapping.loadSierraFieldMappings(dbConn, indexingProfile.getId(), logger);
 
 				//Process MARC record changes
-				getBibsAndItemUpdatesFromSierra(configIni, dbConn);
+				getBibsAndItemUpdatesFromSierra(configIni, dbConn, sierraConn);
 
 				logEntry.setNumProducts(allBibsToUpdate.size());
+				logEntry.saveResults();
 
 				numChanges = updateBibs(configIni);
 
@@ -213,7 +212,7 @@ public class SierraExportAPIMain {
 		}
 	}
 
-	private static void getBibsAndItemUpdatesFromSierra(Ini ini, Connection dbConn) {
+	private static void getBibsAndItemUpdatesFromSierra(Ini ini, Connection dbConn, Connection sierraConn) {
 		long lastSierraExtractTime = indexingProfile.getLastUpdateOfChangedRecords();
 
 		try {
@@ -228,6 +227,7 @@ public class SierraExportAPIMain {
 			logger.error("Unable to load allow_sierra_fast_export from variables", e);
 			return;
 		}
+		//allowFastExportMethod = false;
 
 		//TODO: This should be part of the configuration
 		String apiVersion = ConfigUtil.cleanIniValue(ini.get("Catalog", "api_version"));
@@ -238,28 +238,40 @@ public class SierraExportAPIMain {
 		apiBaseUrl = ini.get("Catalog", "url") + "/iii/sierra-api/v" + apiVersion;
 
 		//Last Update in UTC
-		//Add a small buffer to be safe, this was 2 minutes.  Reducing to 15 seconds, should be 0
-		Date now = new Date();
 		if (lastSierraExtractTime == 0 || indexingProfile.isRunFullUpdate()){
-			lastSierraExtractTime = 1262307600;
+			//Export all records
+			logEntry.addNote("Loading all records");
+			//Make a call to the database to get a list of all bibs that are not suppressed
+			try {
+				PreparedStatement getAllBibsStmt = sierraConn.prepareStatement("SELECT record_type_code, record_num FROM sierra_view.bib_record LEFT JOIN sierra_view.record_metadata ON sierra_view.bib_record.record_id = sierra_view.record_metadata.id WHERE record_type_code = 'b' AND is_suppressed = FALSE;", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+				ResultSet getAllBibsRS = getAllBibsStmt.executeQuery();
+				while (getAllBibsRS.next()){
+					allBibsToUpdate.add(getAllBibsRS.getString("record_num"));
+				}
+				getAllBibsRS.close();
+				getAllBibsStmt.close();
+			}catch (SQLException e){
+				logEntry.addNote("Error loading all records: " + e.toString());
+				logEntry.incErrors();
+			}
+		}else{
+			//Add a 5 second buffer to the extract
+			Date lastExtractDate = new Date((lastSierraExtractTime - 5) * 1000);
+			SimpleDateFormat dateTimeFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+			dateTimeFormatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+			String lastExtractDateTimeFormatted = dateTimeFormatter.format(lastExtractDate);
+			SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
+			dateFormatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+			String lastExtractDateFormatted = dateFormatter.format(lastExtractDate);
+			logger.info("Loading records changed since " + lastExtractDateTimeFormatted);
+
+			processDeletedBibs(ini, lastExtractDateFormatted);
+			getNewRecordsFromAPI(ini, lastExtractDateTimeFormatted);
+			getChangedRecordsFromAPI(ini, lastExtractDateTimeFormatted);
+			getNewItemsFromAPI(ini, lastExtractDateTimeFormatted);
+			getChangedItemsFromAPI(ini, lastExtractDateTimeFormatted);
+			getDeletedItemsFromAPI(ini, lastExtractDateFormatted);
 		}
-		Date lastExtractDate = new Date((lastSierraExtractTime - 5) * 1000);
-
-		SimpleDateFormat dateTimeFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-		dateTimeFormatter.setTimeZone(TimeZone.getTimeZone("UTC"));
-		String lastExtractDateTimeFormatted = dateTimeFormatter.format(lastExtractDate);
-		SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
-		dateFormatter.setTimeZone(TimeZone.getTimeZone("UTC"));
-		String lastExtractDateFormatted = dateFormatter.format(lastExtractDate);
-		logger.info("Loading records changed since " + lastExtractDateTimeFormatted);
-
-		processDeletedBibs(ini, lastExtractDateFormatted);
-		getNewRecordsFromAPI(ini, lastExtractDateTimeFormatted);
-		getChangedRecordsFromAPI(ini, lastExtractDateTimeFormatted);
-		getNewItemsFromAPI(ini, lastExtractDateTimeFormatted);
-		getChangedItemsFromAPI(ini, lastExtractDateTimeFormatted);
-		getDeletedItemsFromAPI(ini, lastExtractDateFormatted);
-
 	}
 
 	private static int updateBibs(Ini ini) {
@@ -290,7 +302,7 @@ public class SierraExportAPIMain {
 
 			numProcessed += maxIndex;
 			if (numProcessed % 250 == 0 || allBibsToUpdate.size() == 0){
-				logEntry.addNote("Processed " + numProcessed);
+				logEntry.saveResults();
 			}
 			if (allBibsToUpdate.size() > 0) {
 				hasMoreIdsToProcess = true;
@@ -419,7 +431,6 @@ public class SierraExportAPIMain {
 		int bufferSize = 250;
 		boolean hasMoreRecords = true;
 		long offset = 0;
-		int numDeletions = 0;
 		while (hasMoreRecords){
 			hasMoreRecords = false;
 			String url = apiBaseUrl + "/bibs/?deletedDate=[" + lastExtractDateFormatted + ",]&fields=id&deleted=true&limit=" + bufferSize;
@@ -434,7 +445,10 @@ public class SierraExportAPIMain {
 					for (int i = 0; i < entries.length(); i++) {
 						JSONObject curBib = entries.getJSONObject(i);
 						String id = curBib.getString("id");
-						allDeletedIds.add(id);
+						id = ".b" + id + getCheckDigit(id);
+						if (allDeletedIds.add(id)){
+							removeRecordFromGroupedWork(indexingProfile.getName(), id);
+						}
 					}
 					//If nothing has been deleted, iii provides entries, but not a total
 					if (deletedRecords.has("total") && deletedRecords.getLong("total") >= bufferSize){
@@ -445,16 +459,11 @@ public class SierraExportAPIMain {
 					logger.error("Error processing deleted bibs", e);
 				}
 			}
+			logEntry.saveResults();
 		}
 
-
 		if (allDeletedIds.size() > 0){
-			for (String id : allDeletedIds) {
-				id = ".b" + id + getCheckDigit(id);
-				removeRecordFromGroupedWork(indexingProfile.getName(), id);
-				numDeletions++;
-			}
-			logEntry.addNote("Finished processing deleted records, deleted " + numDeletions);
+			logEntry.addNote("Finished processing deleted records, deleted " + logEntry.getNumDeleted());
 		}else{
 			logEntry.addNote("No deleted records found");
 		}
@@ -702,10 +711,10 @@ public class SierraExportAPIMain {
 			if (offset > 0){
 				url += "&offset=" + offset;
 			}
-			JSONObject createdRecords = callSierraApiURL(ini, apiBaseUrl, url, false);
-			if (createdRecords != null){
+			JSONObject deletedRecords = callSierraApiURL(ini, apiBaseUrl, url, false);
+			if (deletedRecords != null){
 				try {
-					JSONArray entries = createdRecords.getJSONArray("entries");
+					JSONArray entries = deletedRecords.getJSONArray("entries");
 					for (int i = 0; i < entries.length(); i++) {
 						JSONObject curBib = entries.getJSONObject(i);
 						JSONArray bibIds = curBib.getJSONArray("bibIds");
@@ -716,8 +725,8 @@ public class SierraExportAPIMain {
 							}
 						}
 					}
-					if (createdRecords.getLong("total") >= bufferSize){
-						offset += createdRecords.getLong("total");
+					if (deletedRecords.getLong("total") >= bufferSize){
+						offset += deletedRecords.getLong("total");
 						hasMoreRecords = true;
 					}
 					//Get the grouped work id for the new bib
@@ -779,13 +788,35 @@ public class SierraExportAPIMain {
 				//Add the identifier
 				marcRecord.addVariableField(marcFactory.newDataField(indexingProfile.getRecordNumberTag(), ' ', ' ',  "a", ".b" + id + getCheckDigit(id)));
 
-				//Load BCode3
+				//Load Fixed Fields
 				JSONObject fixedFieldResults = getMarcJSONFromSierraApiURL(ini, apiBaseUrl, apiBaseUrl + "/bibs/" + id + "?fields=fixedFields");
 				if (fixedFieldResults != null) {
-					String bCode3 = fixedFieldResults.getJSONObject("fixedFields").getJSONObject("31").getString("value");
-					DataField bCode3Field = marcFactory.newDataField(sierraExportFieldMapping.getBcode3DestinationField(), ' ', ' ');
-					bCode3Field.addSubfield(marcFactory.newSubfield(sierraExportFieldMapping.getBcode3DestinationSubfield(), bCode3));
-					marcRecord.addVariableField(bCode3Field);
+					if (sierraExportFieldMapping.getFixedFieldDestinationField().length() > 0) {
+						DataField fixedDataField = marcFactory.newDataField(sierraExportFieldMapping.getFixedFieldDestinationField(), ' ', ' ');
+						if (sierraExportFieldMapping.getBcode3DestinationSubfield() != ' ') {
+							String bCode3 = fixedFieldResults.getJSONObject("fixedFields").getJSONObject("31").getString("value");
+							fixedDataField.addSubfield(marcFactory.newSubfield(sierraExportFieldMapping.getBcode3DestinationSubfield(), bCode3));
+						}
+						if (sierraExportFieldMapping.getMaterialTypeSubfield() != ' ') {
+							String matType = fixedFieldResults.getJSONObject("fixedFields").getJSONObject("30").getString("value");
+							fixedDataField.addSubfield(marcFactory.newSubfield(sierraExportFieldMapping.getMaterialTypeSubfield(), matType));
+						}
+						if (sierraExportFieldMapping.getBibLevelLocationsSubfield() != ' ') {
+							if (fixedFieldResults.has("26")) {
+								String location = fixedFieldResults.getJSONObject("26").getString("value");
+								if (location.equalsIgnoreCase("multi")) {
+									JSONArray locationsJSON = fixedFieldResults.getJSONArray("locations");
+									for (int k = 0; k < locationsJSON.length(); k++) {
+										location = locationsJSON.getJSONObject(k).getString("code");
+										fixedDataField.addSubfield(marcFactory.newSubfield(sierraExportFieldMapping.getBibLevelLocationsSubfield(), location));
+									}
+								} else {
+									fixedDataField.addSubfield(marcFactory.newSubfield(sierraExportFieldMapping.getBibLevelLocationsSubfield(), location));
+								}
+							}
+						}
+						marcRecord.addVariableField(fixedDataField);
+					}
 				}
 
 				//Get Items for the bib record
@@ -798,7 +829,7 @@ public class SierraExportAPIMain {
 						logger.error("Could not create directories for " + marcFile.getAbsolutePath());
 					}
 				}
-				MarcWriter marcWriter = new MarcStreamWriter(new FileOutputStream(marcFile), "UTF-8", true);
+				MarcWriter marcWriter = new MarcStreamWriter(new FileOutputStream(marcFile, false), "UTF-8", true);
 				marcWriter.write(marcRecord);
 				marcWriter.close();
 				logger.debug("Wrote marc record for " + identifier.getIdentifier());
@@ -901,7 +932,8 @@ public class SierraExportAPIMain {
 						}
 						//last check in date
 						if (fixedFields.has("68") && indexingProfile.getLastCheckinDateSubfield() != ' '){
-							Date lastCheckin = sierraAPIDateFormatter.parse(fixedFields.getString("68"));
+							String lastCheckInDate = fixedFields.getJSONObject("68").getString("value");
+							Date lastCheckin = sierraAPIDateFormatter.parse(lastCheckInDate);
 							itemField.addSubfield(marcFactory.newSubfield(indexingProfile.getLastCheckinDateSubfield(), indexingProfile.getLastCheckinFormatter().format(lastCheckin)));
 						}
 						//icode2
@@ -983,8 +1015,9 @@ public class SierraExportAPIMain {
 				String marcData = getMarcFromSierraApiURL(ini, apiBaseUrl, dataFileUrl, false);
 				if (marcData != null) {
 					logger.debug("Got marc record file");
-					MarcReader marcReader = new MarcPermissiveStreamReader(new ByteArrayInputStream(marcData.getBytes(StandardCharsets.UTF_8)), true, true);
-
+					//REad the MARC records from the Sierra API, should be UTF8, but not 100% sure
+					MarcReader marcReader = new MarcPermissiveStreamReader(new ByteArrayInputStream(marcData.getBytes(StandardCharsets.UTF_8)), true, true, "BESTGUESS");
+					int numRecordsInFile = 0;
 					while (marcReader.hasNext()) {
 						try {
 							Record marcRecord = marcReader.next();
@@ -995,7 +1028,7 @@ public class SierraExportAPIMain {
 									logger.error("Could not create directories for " + marcFile.getAbsolutePath());
 								}
 							}
-							MarcWriter marcWriter = new MarcStreamWriter(new FileOutputStream(marcFile), "UTF-8", true);
+							MarcWriter marcWriter = new MarcStreamWriter(new FileOutputStream(marcFile, false), "UTF-8", true);
 							marcWriter.write(marcRecord);
 							marcWriter.close();
 							logger.debug("Wrote marc record for " + identifier.getIdentifier());
@@ -1010,7 +1043,9 @@ public class SierraExportAPIMain {
 							}
 							String shortId = identifier.getIdentifier().substring(2, identifier.getIdentifier().length() - 1);
 							processedIds.add(shortId);
+							logEntry.incUpdated();
 							logger.debug("Processed " + identifier.getIdentifier());
+							numRecordsInFile++;
 						} catch (MarcException mre) {
 							logger.info("Error loading marc record from file, will load manually");
 						}
@@ -1019,6 +1054,7 @@ public class SierraExportAPIMain {
 						if (!processedIds.contains(id)){
 							if (updateMarcAndRegroupRecordId(ini, id)) {
 								logger.debug("Processed " + id);
+								logEntry.incUpdated();
 							}else{
 								//Don't fail the entire process.  We will just reprocess next time the export runs
 								logEntry.addNote("Processing " + id + " failed");
@@ -1042,6 +1078,8 @@ public class SierraExportAPIMain {
 						logEntry.addNote("Processing " + id + " failed");
 						logEntry.incErrors();
 						//allPass = false;
+					}else{
+						logEntry.incUpdated();
 					}
 				}
 				logger.debug("finished processing " + idArray.size() + " records with the slow method");
@@ -1051,41 +1089,41 @@ public class SierraExportAPIMain {
 		}
 	}
 
-	private static void exportDueDates(String exportPath, Connection conn) throws SQLException, IOException {
-		logEntry.addNote("Starting export of due dates");
-		String dueDatesSQL = "select record_num, due_gmt from sierra_view.checkout inner join sierra_view.item_view on item_record_id = item_view.id where due_gmt is not null";
-		PreparedStatement getDueDatesStmt = conn.prepareStatement(dueDatesSQL, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-		ResultSet dueDatesRS = null;
-		boolean loadError = false;
-		try{
-			dueDatesRS = getDueDatesStmt.executeQuery();
-		} catch (SQLException e1){
-			logger.error("Error loading active orders", e1);
-			loadError = true;
-		}
-		if (!loadError){
-			File dueDateFile = new File(exportPath + "/due_dates.csv");
-			CSVWriter dueDateWriter = new CSVWriter(new FileWriter(dueDateFile));
-			while (dueDatesRS.next()){
-				try {
-					String recordNum = dueDatesRS.getString("record_num");
-					if (recordNum != null){
-						String dueDateRaw = dueDatesRS.getString("due_gmt");
-						String itemId = ".i" + recordNum + getCheckDigit(recordNum);
-						Date dueDate = dueDatesRS.getDate("due_gmt");
-						dueDateWriter.writeNext(new String[]{itemId, Long.toString(dueDate.getTime()), dueDateRaw});
-					}else{
-						logger.warn("No record number found while exporting due dates");
-					}
-				}catch (Exception e){
-					logger.error("Error writing due dates", e);
-				}
-			}
-			dueDateWriter.close();
-			dueDatesRS.close();
-		}
-		logEntry.addNote("Finished exporting due dates");
-	}
+//	private static void exportDueDates(String exportPath, Connection conn) throws SQLException, IOException {
+//		logEntry.addNote("Starting export of due dates");
+//		String dueDatesSQL = "select record_num, due_gmt from sierra_view.checkout inner join sierra_view.item_view on item_record_id = item_view.id where due_gmt is not null";
+//		PreparedStatement getDueDatesStmt = conn.prepareStatement(dueDatesSQL, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+//		ResultSet dueDatesRS = null;
+//		boolean loadError = false;
+//		try{
+//			dueDatesRS = getDueDatesStmt.executeQuery();
+//		} catch (SQLException e1){
+//			logger.error("Error loading active orders", e1);
+//			loadError = true;
+//		}
+//		if (!loadError){
+//			File dueDateFile = new File(exportPath + "/due_dates.csv");
+//			CSVWriter dueDateWriter = new CSVWriter(new FileWriter(dueDateFile));
+//			while (dueDatesRS.next()){
+//				try {
+//					String recordNum = dueDatesRS.getString("record_num");
+//					if (recordNum != null){
+//						String dueDateRaw = dueDatesRS.getString("due_gmt");
+//						String itemId = ".i" + recordNum + getCheckDigit(recordNum);
+//						Date dueDate = dueDatesRS.getDate("due_gmt");
+//						dueDateWriter.writeNext(new String[]{itemId, Long.toString(dueDate.getTime()), dueDateRaw});
+//					}else{
+//						logger.warn("No record number found while exporting due dates");
+//					}
+//				}catch (Exception e){
+//					logger.error("Error writing due dates", e);
+//				}
+//			}
+//			dueDateWriter.close();
+//			dueDatesRS.close();
+//		}
+//		logEntry.addNote("Finished exporting due dates");
+//	}
 
 	private static void exportActiveOrders(String exportPath, Connection conn) throws SQLException, IOException {
 		logEntry.addNote("Starting export of active orders");
@@ -1094,9 +1132,9 @@ public class SierraExportAPIMain {
 		HashMap<String, Integer> existingBibsWithOrders = new HashMap<>();
 		readOrdersFile(orderRecordFile, existingBibsWithOrders);
 
-		String[] orderStatusesToExportVals = orderStatusesToExport.split("\\|");
+		String[] orderStatusesToExportValues = orderStatusesToExport.split("\\|");
 		StringBuilder orderStatusCodesSQL = new StringBuilder();
-		for (String orderStatusesToExportVal : orderStatusesToExportVals){
+		for (String orderStatusesToExportVal : orderStatusesToExportValues){
 			if (orderStatusCodesSQL.length() > 0){
 				orderStatusCodesSQL.append(" or ");
 			}
@@ -1108,9 +1146,9 @@ public class SierraExportAPIMain {
 				"inner join sierra_view.bib_view on sierra_view.bib_view.id = bib_record_order_record_link.bib_record_id " +
 				"inner join sierra_view.order_record_cmf on order_record_cmf.order_record_id = order_view.id " +
 				"where (" + orderStatusCodesSQL + ") and order_view.is_suppressed = 'f' and location_code != 'multi' and ocode4 != 'n'";
-		if (suppressOrderRecordsThatAreReceivedAndCatalogged){
+		if (suppressOrderRecordsThatAreReceivedAndCataloged){
 			activeOrderSQL += " and (catalog_date_gmt IS NULL or received_date_gmt IS NULL) ";
-		}else if (suppressOrderRecordsThatAreCatalogged){
+		}else if (suppressOrderRecordsThatAreCataloged){
 			activeOrderSQL += " and (catalog_date_gmt IS NULL) ";
 		}else if (suppressOrderRecordsThatAreReceived){
 			activeOrderSQL += " and (received_date_gmt IS NULL) ";
@@ -1498,10 +1536,7 @@ public class SierraExportAPIMain {
 		int tries = 0;
 		while (tries < 3) {
 			try {
-				Connection sierraConn = DriverManager.getConnection(sierraConnectionJDBC);
-
-				//TODO: Setup prepared statements for the connection
-				return sierraConn;
+				return DriverManager.getConnection(sierraConnectionJDBC);
 			} catch (Exception e) {
 				tries++;
 				logger.error("Could not connect to the sierra database, try " + tries);
