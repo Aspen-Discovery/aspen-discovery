@@ -38,8 +38,6 @@ public class KohaExportMain {
 	private static Connection dbConn;
 	private static String serverName;
 
-	private static String kohaConnectionJDBC;
-
 	private static Long startTimeForLogging;
 	private static IlsExtractLogEntry logEntry;
 
@@ -159,7 +157,7 @@ public class KohaExportMain {
 
 	private static KohaInstanceInformation initializeKohaConnection(Connection dbConn) throws SQLException {
 		//Get information about the account profile for koha
-		PreparedStatement accountProfileStmt = dbConn.prepareStatement("SELECT * from account_profiles WHERE driver = 'Koha'");
+		PreparedStatement accountProfileStmt = dbConn.prepareStatement("SELECT * from account_profiles WHERE ils = 'koha'");
 		ResultSet accountProfileRS = accountProfileStmt.executeQuery();
 		KohaInstanceInformation kohaInstanceInformation = null;
 		if (accountProfileRS.next()) {
@@ -174,7 +172,7 @@ public class KohaExportMain {
 				String password = accountProfileRS.getString("databasePassword");
 				String timezone = accountProfileRS.getString("databaseTimezone");
 
-				kohaConnectionJDBC = "jdbc:mysql://" +
+				String kohaConnectionJDBC = "jdbc:mysql://" +
 						host + ":" + port +
 						"/" + databaseName +
 						"?user=" + user +
@@ -184,7 +182,7 @@ public class KohaExportMain {
 					kohaConnectionJDBC += "&serverTimezone=" + URLEncoder.encode(timezone, "UTF8");
 				}
 
-				Connection kohaConn = connectToKohaDatabase();
+				Connection kohaConn = connectToKohaDatabase(kohaConnectionJDBC);
 				if (kohaConn != null) {
 					kohaInstanceInformation = new KohaInstanceInformation();
 					kohaInstanceInformation.kohaConnection = kohaConn;
@@ -200,7 +198,7 @@ public class KohaExportMain {
 		return kohaInstanceInformation;
 	}
 
-	private static Connection connectToKohaDatabase() {
+	private static Connection connectToKohaDatabase(String kohaConnectionJDBC) {
 		int tries = 0;
 		while (tries < 3) {
 			try {
@@ -762,6 +760,7 @@ public class KohaExportMain {
 			}
 		} catch (Exception e) {
 			logger.error("Error loading changed records from Koha database", e);
+			logEntry.addNote("Error loading changed records from Koha database: " + e.toString());
 			logEntry.incErrors();
 			//Don't quit since that keeps the exporter from running continuously
 		}
@@ -860,6 +859,7 @@ public class KohaExportMain {
 				throw e;
 			} else {
 				logger.error("Error updating marc record for bib " + curBibId, e);
+				logEntry.addNote("Error updating marc record for bib " + curBibId + ": " + e.toString());
 				logEntry.incErrors();
 			}
 		}

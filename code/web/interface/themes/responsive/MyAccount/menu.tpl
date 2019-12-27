@@ -254,7 +254,7 @@
 
 				{* Admin Functionality if Available *}
 				{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('contentEditor', $userRoles) || array_key_exists('libraryManager', $userRoles) || array_key_exists('locationManager', $userRoles) || array_key_exists('translator', $userRoles))}
-					{if in_array($action, array('Libraries', 'Locations', 'IPAddresses', 'ListWidgets', 'BrowseCategories', 'Placards', 'PTypes', 'LoanRules', 'LoanRuleDeterminers', 'AccountProfiles', 'NYTLists', 'BlockPatronAccountLinks', 'Languages'))}
+					{if in_array($action, array('Libraries', 'Locations', 'IPAddresses', 'ListWidgets', 'BrowseCategories', 'Placards', 'PTypes', 'AccountProfiles', 'NYTLists', 'BlockPatronAccountLinks', 'Languages'))}
 						{assign var="curSection" value=true}
 					{else}
 						{assign var="curSection" value=false}
@@ -305,11 +305,6 @@
 								{* OPAC Admin Actions*}
 								{if array_key_exists('opacAdmin', $userRoles)}
 									<div class="adminMenuLink"><a href="/Admin/PTypes">{translate text="Patron Types"}</a></div>
-                                    {* Sierra/Millennium OPAC Admin Actions*}
-                                    {if ($ils == 'Millennium' || $ils == 'Sierra')}
-										<div class="adminMenuLink"><a href="/Admin/LoanRules">{translate text="Loan Rules"}</a></div>
-										<div class="adminMenuLink"><a href="/Admin/LoanRuleDeterminers">{translate text="Loan Rule Determiners"}</a></div>
-									{/if}
 									{* OPAC Admin Actions*}
 									<div class="adminMenuLink"><a href="/Admin/AccountProfiles">{translate text="Account Profiles"}</a></div>
 								{/if}
@@ -435,7 +430,7 @@
 				{/if}
 
 				{if (array_key_exists('libraryAdmin', $userRoles) || array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles))}
-					{if $module == 'ILS' && in_array($action, array('IndexingLog', 'TranslationMaps', 'IndexingProfiles', 'Dashboard'))}
+					{if $module == 'ILS' && in_array($action, array('IndexingLog', 'TranslationMaps', 'IndexingProfiles', 'Dashboard', 'LoanRules', 'LoanRuleDeterminers'))}
 						{assign var="curSection" value=true}
 					{else}
 						{assign var="curSection" value=false}
@@ -451,7 +446,12 @@
 						<div id="ilsMenu" class="panel-collapse collapse {if $curSection}in{/if}">
 							<div class="panel-body">
 								<div class="adminMenuLink"><a href="/ILS/IndexingProfiles">{translate text="Indexing Profiles"}</a></div>
-								<div class="adminMenuLink"><a href="/ILS/TranslationMaps">{translate text="Translation Maps"}</a></div>
+								<div class="adminMenuLink"><a href="/ILS/TranslationMaps">&nbsp;&raquo;&nbsp;{translate text="Translation Maps"}</a></div>
+								{* Sierra/Millennium OPAC Admin Actions*}
+								{if ($ils == 'Millennium' || $ils == 'Sierra')}
+									<div class="adminMenuLink"><a href="/ILS/LoanRules">&nbsp;&raquo;&nbsp;{translate text="Loan Rules"}</a></div>
+									<div class="adminMenuLink"><a href="/ILS/LoanRuleDeterminers">&nbsp;&raquo;&nbsp;{translate text="Loan Rule Determiners"}</a></div>
+								{/if}
 								<div class="adminMenuLink"><a href="/ILS/IndexingLog">{translate text="Indexing Log"}</a></div>
 								{if ($ils == 'Millennium' || $ils == 'Sierra')}
 									<div class="adminMenuLink"><a href="/Admin/SierraExportLog">{translate text="Sierra Export Log"}</a></div>

@@ -1,6 +1,6 @@
 	<div id="main-content">
 		<h1>{$pageTitleShort}</h1>
-		<a class="btn btn-sm btn-default" href='/Admin/LoanRuleDeterminers?objectAction=list'>Return to List</a>
+		<a class="btn btn-sm btn-default" href='/ILS/LoanRuleDeterminers?objectAction=list'>Return to List</a>
 		<div class="helpTextUnsized"><p>To reload loan rule determiners:
 		<ol>
 		<li>Open Millennium</li>
@@ -10,7 +10,7 @@
 		<li>Select the Reload Data button.</li>
 		</ol>
 		</p></div>
-		<form name="importLoanRules" action="/Admin/LoanRuleDeterminers" method="post">
+		<form name="importLoanRules" action="/ILS/LoanRuleDeterminers" method="post">
 			<div>
 				<input type="hidden" name="objectAction" value="doLoanRuleDeterminerReload" />
 				<textarea rows="20" cols="80" name="loanRuleDeterminerData"></textarea>

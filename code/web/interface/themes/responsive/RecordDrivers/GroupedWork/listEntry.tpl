@@ -3,10 +3,14 @@
 		<a name="record{$summId|escape:"url"}"></a>
 		<div class="row">
 		{if $showCovers}
-		<div class="col-xs-3 col-sm-3 col-md-3 col-lg-2 text-center">
-			<img src="{$bookCoverUrlMedium}" class="listResultImage img-thumbnail{* img-responsive*}" alt="{translate text='Cover Image' inAttribute=true}">
-			{include file="GroupedWork/title-rating.tpl" ratingClass="" id=$summId ratingData=$summRating showNotInterested=false}
-		</div>
+			<div class="col-xs-3 col-sm-3 col-md-3 col-lg-2 text-center">
+				<a href="{$summUrl}">
+					<img src="{$bookCoverUrlMedium}" class="listResultImage img-thumbnail{* img-responsive*}" alt="{translate text='Cover Image' inAttribute=true}">
+				</a>
+				{if $showRatings}
+					{include file="GroupedWork/title-rating.tpl" ratingClass="" id=$summId ratingData=$summRating showNotInterested=false}
+				{/if}
+			</div>
 		{/if}
 		<div class="{if !$showCovers}col-xs-10 col-sm-10 col-md-10 col-lg-11{else}col-xs-7 col-sm-7 col-md-7 col-lg-9{/if}">
 			<div class="row">

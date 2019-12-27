@@ -497,7 +497,7 @@ public class CarlXExportMain {
 
 	private static CarlXInstanceInformation initializeCarlXConnection() throws SQLException {
 		//Get information about the account profile for Carl.X
-		PreparedStatement accountProfileStmt = dbConn.prepareStatement("SELECT * from account_profiles WHERE driver = 'CarlX'");
+		PreparedStatement accountProfileStmt = dbConn.prepareStatement("SELECT * from account_profiles WHERE ils = 'carlx'");
 		ResultSet accountProfileRS = accountProfileStmt.executeQuery();
 		CarlXInstanceInformation carlXInstanceInformation = null;
 		if (accountProfileRS.next()) {
@@ -1224,7 +1224,7 @@ public class CarlXExportMain {
 			File marcFile = indexingProfile.getFileForIlsRecord(getFileIdForRecordNumber(curBibId));
 			if (marcFile.exists()) {
 				FileInputStream inputStream = new FileInputStream(marcFile);
-				MarcPermissiveStreamReader marcReader = new MarcPermissiveStreamReader(inputStream, true, true, "UTF-8");
+				MarcPermissiveStreamReader marcReader = new MarcPermissiveStreamReader(inputStream, true, true, "UTF8");
 				if (marcReader.hasNext()) {
 					Record marcRecord = marcReader.next();
 					inputStream.close();

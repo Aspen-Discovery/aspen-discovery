@@ -17,7 +17,7 @@ import java.util.*;
 
 abstract class IIIRecordProcessor extends IlsRecordProcessor{
 	private HashMap<String, ArrayList<OrderInfo>> orderInfoFromExport = new HashMap<>();
-	private HashMap<String, DueDateInfo> dueDateInfoFromExport = new HashMap<>();
+	//private HashMap<String, DueDateInfo> dueDateInfoFromExport = new HashMap<>();
 	private boolean loanRuleDataLoaded = false;
 	private HashMap<Long, LoanRule> loanRules = new HashMap<>();
 	private ArrayList<LoanRuleDeterminer> loanRuleDeterminers = new ArrayList<>();
@@ -33,7 +33,7 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 			logger.error("Unable to load marc path from indexing profile");
 		}
 		loadLoanRuleInformation(dbConn, logger);
-		loadDueDateInformation();
+		//loadDueDateInformation();
 		validCheckedOutStatusCodes.add("-");
 	}
 
@@ -108,7 +108,7 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 							LoanRule loanRule = loanRules.get(curDeterminer.getLoanRuleId());
 							relevantLoanRules.put(new RelevantLoanRule(loanRule, curDeterminer.getPatronTypes()), curDeterminer);
 
-							//Stop once we have accounted for all ptypes
+							//Stop once we have accounted for all pTypes
 							if (curDeterminer.getPatronType().equals("999")) {
 								//999 accounts for all pTypes
 								break;
@@ -228,8 +228,8 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 			String statusCode = itemInfo.getStatusCode();
 			if (validCheckedOutStatusCodes.contains(statusCode)) {
 				//We need to override based on due date
-				DueDateInfo dueDate = dueDateInfoFromExport.get(itemInfo.getItemIdentifier());
-				if (dueDate == null) {
+				String dueDate = itemInfo.getDueDate();
+				if (dueDate == null || dueDate.length() == 0 || dueDate.equals("-  -")) {
 					return translateValue("item_grouped_status", statusCode, identifier);
 				} else {
 					return "Checked Out";
@@ -248,8 +248,8 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 			String statusCode = itemInfo.getStatusCode();
 			if (validCheckedOutStatusCodes.contains(statusCode)) {
 				//We need to override based on due date
-				DueDateInfo dueDate = dueDateInfoFromExport.get(itemInfo.getItemIdentifier());
-				if (dueDate == null) {
+				String dueDate = itemInfo.getDueDate();
+				if (dueDate == null || dueDate.length() == 0 || dueDate.equals("-  -")) {
 					return translateValue("item_status", statusCode, identifier);
 				} else {
 					return "Checked Out";
@@ -269,8 +269,8 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 			itemInfo.setDetailedStatus(overriddenStatus);
 		}else {
 			if (validCheckedOutStatusCodes.contains(itemStatus)) {
-				DueDateInfo dueDate = dueDateInfoFromExport.get(itemInfo.getItemIdentifier());
-				if (dueDate == null) {
+				String dueDate = itemInfo.getDueDate();
+				if (dueDate == null || dueDate.length() == 0 || dueDate.equals("-  -")) {
 					itemInfo.setDetailedStatus(translateValue("item_status", itemStatus, identifier));
 				}else{
 					itemInfo.setDetailedStatus("Due " + getDisplayDueDate(dueDate, itemInfo.getItemIdentifier()));
@@ -282,23 +282,24 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 	}
 
 	private SimpleDateFormat displayDateFormatter = new SimpleDateFormat("MMM d, yyyy");
-	private String getDisplayDueDate(DueDateInfo dueDate, String identifier){
+	private String getDisplayDueDate(String dueDateStr, String identifier){
 		try {
-			return displayDateFormatter.format(dueDate.getDueDate());
+			Date dueDate = dueDateFormatter.parse(dueDateStr);
+			return displayDateFormatter.format(dueDate);
 		}catch (Exception e){
-			logger.warn("Could not load display due date for dueDate " + dueDate.getDueDate() + " for identifier " + identifier, e);
+			logger.warn("Could not load display due date for dueDate " + dueDateStr + " for identifier " + identifier, e);
 		}
 		return "Unknown";
 	}
 
-	protected void getDueDate(DataField itemField, ItemInfo itemInfo) {
-		DueDateInfo dueDate = dueDateInfoFromExport.get(itemInfo.getItemIdentifier());
-		if (dueDate == null) {
-			itemInfo.setDueDate("");
-		}else{
-			itemInfo.setDueDate(dueDateFormatter.format(dueDate.getDueDate()));
-		}
-	}
+//	protected void getDueDate(DataField itemField, ItemInfo itemInfo) {
+//		DueDateInfo dueDate = dueDateInfoFromExport.get(itemInfo.getItemIdentifier());
+//		if (dueDate == null) {
+//			itemInfo.setDueDate("");
+//		}else{
+//			itemInfo.setDueDate(dueDateFormatter.format(dueDate.getDueDate()));
+//		}
+//	}
 
 	/**
 	 * Calculates a check digit for a III identifier
@@ -319,24 +320,24 @@ abstract class IIIRecordProcessor extends IlsRecordProcessor{
 		}
 	}
 
-	private void loadDueDateInformation() {
-		File dueDatesFile = new File(this.exportPath + "/due_dates.csv");
-		if (dueDatesFile.exists()){
-			try{
-				CSVReader reader = new CSVReader(new FileReader(dueDatesFile));
-				String[] dueDateData;
-				while ((dueDateData = reader.readNext()) != null){
-					DueDateInfo dueDateInfo = new DueDateInfo();
-					dueDateInfo.setItemId(dueDateData[0]);
-					long dueDate = Long.parseLong(dueDateData[1]);
-					dueDateInfo.setDueDate(new Date(dueDate));
-					dueDateInfoFromExport.put(dueDateInfo.getItemId(), dueDateInfo);
-				}
-			}catch(Exception e){
-				logger.error("Error loading order records from active orders", e);
-			}
-		}
-	}
+//	private void loadDueDateInformation() {
+//		File dueDatesFile = new File(this.exportPath + "/due_dates.csv");
+//		if (dueDatesFile.exists()){
+//			try{
+//				CSVReader reader = new CSVReader(new FileReader(dueDatesFile));
+//				String[] dueDateData;
+//				while ((dueDateData = reader.readNext()) != null){
+//					DueDateInfo dueDateInfo = new DueDateInfo();
+//					dueDateInfo.setItemId(dueDateData[0]);
+//					long dueDate = Long.parseLong(dueDateData[1]);
+//					dueDateInfo.setDueDate(new Date(dueDate));
+//					dueDateInfoFromExport.put(dueDateInfo.getItemId(), dueDateInfo);
+//				}
+//			}catch(Exception e){
+//				logger.error("Error loading order records from active orders", e);
+//			}
+//		}
+//	}
 
 	void loadOrderInformationFromExport() {
 		File activeOrders = new File(this.exportPath + "/active_orders.csv");

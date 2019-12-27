@@ -1631,6 +1631,15 @@ class DBMaintenance extends Admin_Admin
 					)
 				),
 
+				'account_profiles_ils' => array(
+					'title' => 'Account Profiles - ILS Type',
+					'description' => 'Add information for the type of ILS being used',
+					'continueOnError' => false,
+					'sql' => array(
+						"ALTER TABLE `account_profiles` ADD `ils` varchar(20) DEFAULT 'koha'",
+						"UPDATE account_profiles set ils = lcase(driver)",
+					)
+				),
 
 				'archive_private_collections' => array(
 					'title' => 'Archive Private Collections',

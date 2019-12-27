@@ -21,7 +21,7 @@ public class GroupedWorkSolr implements Cloneable {
 	private String acceleratedReaderPointValue;
 	private HashSet<String> alternateIds = new HashSet<>();
 	private String authAuthor;
-	private HashMap<String,Long> primaryAuthors = new HashMap<>();
+	private HashMap<String, Long> primaryAuthors = new HashMap<>();
 	private HashSet<String> authorAdditional = new HashSet<>();
 	private String authorDisplay;
 	private HashSet<String> author2 = new HashSet<>();
@@ -99,15 +99,15 @@ public class GroupedWorkSolr implements Cloneable {
 		this.groupedWorkIndexer = groupedWorkIndexer;
 	}
 
-	protected GroupedWorkSolr clone() throws CloneNotSupportedException{
-		GroupedWorkSolr clonedWork = (GroupedWorkSolr)super.clone();
+	protected GroupedWorkSolr clone() throws CloneNotSupportedException {
+		GroupedWorkSolr clonedWork = (GroupedWorkSolr) super.clone();
 		//Clone collections as well
 		// noinspection unchecked
 		clonedWork.relatedRecords = (HashMap<String, RecordInfo>) relatedRecords.clone();
 		// noinspection unchecked
 		clonedWork.alternateIds = (HashSet<String>) alternateIds.clone();
 		// noinspection unchecked
-		clonedWork.primaryAuthors = (HashMap<String,Long>) primaryAuthors.clone();
+		clonedWork.primaryAuthors = (HashMap<String, Long>) primaryAuthors.clone();
 		// noinspection unchecked
 		clonedWork.authorAdditional = (HashSet<String>) authorAdditional.clone();
 		// noinspection unchecked
@@ -141,7 +141,7 @@ public class GroupedWorkSolr implements Cloneable {
 		// noinspection unchecked
 		clonedWork.geographicFacets = (HashSet<String>) geographicFacets.clone();
 		// noinspection unchecked
-		clonedWork.isbns = (HashMap<String,Long>) isbns.clone();
+		clonedWork.isbns = (HashMap<String, Long>) isbns.clone();
 		// noinspection unchecked
 		clonedWork.issns = (HashSet<String>) issns.clone();
 		// noinspection unchecked
@@ -155,9 +155,9 @@ public class GroupedWorkSolr implements Cloneable {
 		// noinspection unchecked
 		clonedWork.lcSubjects = (HashSet<String>) lcSubjects.clone();
 		// noinspection unchecked
-		clonedWork.literaryFormFull = (HashMap<String,Integer>) literaryFormFull.clone();
+		clonedWork.literaryFormFull = (HashMap<String, Integer>) literaryFormFull.clone();
 		// noinspection unchecked
-		clonedWork.literaryForm = (HashMap<String,Integer>) literaryForm.clone();
+		clonedWork.literaryForm = (HashMap<String, Integer>) literaryForm.clone();
 		// noinspection unchecked
 		clonedWork.mpaaRatings = (HashSet<String>) mpaaRatings.clone();
 		// noinspection unchecked
@@ -169,7 +169,7 @@ public class GroupedWorkSolr implements Cloneable {
 		// noinspection unchecked
 		clonedWork.publicationDates = (HashSet<String>) publicationDates.clone();
 		// noinspection unchecked
-		clonedWork.series = (HashMap<String,String>) series.clone();
+		clonedWork.series = (HashMap<String, String>) series.clone();
 		// noinspection unchecked
 		clonedWork.series2 = (HashMap<String, String>) series2.clone();
 		// noinspection unchecked
@@ -191,7 +191,7 @@ public class GroupedWorkSolr implements Cloneable {
 		// noinspection unchecked
 		clonedWork.subjects = (HashSet<String>) subjects.clone();
 		// noinspection unchecked
-		clonedWork.upcs = (HashMap<String,Long>) upcs.clone();
+		clonedWork.upcs = (HashMap<String, Long>) upcs.clone();
 		// noinspection unchecked
 		clonedWork.systemLists = (HashSet<String>) systemLists.clone();
 
@@ -208,7 +208,7 @@ public class GroupedWorkSolr implements Cloneable {
 
 		//Title and variations
 		String fullTitle = title;
-		if (subTitle != null){
+		if (subTitle != null) {
 			fullTitle += " " + subTitle;
 		}
 		doc.addField("title", fullTitle);
@@ -239,7 +239,7 @@ public class GroupedWorkSolr implements Cloneable {
 
 		//language related fields
 		//Check to see if we have Unknown plus a valid value
-		if (languages.size() > 1){
+		if (languages.size() > 1) {
 			languages.remove("Unknown");
 		}
 		doc.addField("language", languages);
@@ -293,44 +293,44 @@ public class GroupedWorkSolr implements Cloneable {
 		boolean allItemsOnOrder = true;
 		int numItems = 0;
 		for (RecordInfo record : relatedRecords.values()) {
-            for (ItemInfo item : record.getRelatedItems()) {
-                numItems++;
-                if (!(item.isOrderItem() || (item.getStatusCode() != null && item.getStatusCode().equals("On Order")))) {
-                    allItemsOnOrder = false;
-                }
-            }
-            if (record.getFormatCategories().size() > 0) {
+			for (ItemInfo item : record.getRelatedItems()) {
+				numItems++;
+				if (!(item.isOrderItem() || (item.getStatusCode() != null && item.getStatusCode().equals("On Order")))) {
+					allItemsOnOrder = false;
+				}
+			}
+			if (record.getFormatCategories().size() > 0) {
 				fullTitles.add(fullTitle + " " + record.getFormatCategories().toString());
 			}
-        }
+		}
 		doc.addField("title_full", fullTitles);
 
-        if (numItems == 0){
-		    allItemsOnOrder = false;
-        }
-		if (allItemsOnOrder){
+		if (numItems == 0) {
+			allItemsOnOrder = false;
+		}
+		if (allItemsOnOrder) {
 			addKeywords("On Order");
 			addKeywords("Coming Soon");
 			doc.addField("days_since_added", -1);
 			doc.addField("time_since_added", "On Order");
-		}else{
+		} else {
 			//Check to see if all items are either on order or
-			if (dateAdded == null){
+			if (dateAdded == null) {
 				//Determine date added based on publication date
-				if (earliestPublicationDate != null){
+				if (earliestPublicationDate != null) {
 					//Return number of days since the given year
 					Calendar publicationDate = GregorianCalendar.getInstance();
 					publicationDate.set(earliestPublicationDate.intValue(), Calendar.JANUARY, 1);
 
 					long indexTime = new Date().getTime();
 					long publicationTime = publicationDate.getTime().getTime();
-					long bibDaysSinceAdded = (indexTime - publicationTime) / (long)(1000 * 60 * 60 * 24);
+					long bibDaysSinceAdded = (indexTime - publicationTime) / (long) (1000 * 60 * 60 * 24);
 					doc.addField("days_since_added", Long.toString(bibDaysSinceAdded));
 					doc.addField("time_since_added", DateUtils.getTimeSinceAddedForDate(publicationDate.getTime()));
-				}else{
+				} else {
 					doc.addField("days_since_added", Long.toString(Integer.MAX_VALUE));
 				}
-			}else{
+			} else {
 				doc.addField("days_since_added", DateUtils.getDaysSinceAddedForDate(dateAdded));
 				doc.addField("time_since_added", DateUtils.getTimeSinceAddedForDate(dateAdded));
 			}
@@ -340,15 +340,15 @@ public class GroupedWorkSolr implements Cloneable {
 		//Awards and ratings
 		doc.addField("mpaa_rating", mpaaRatings);
 		doc.addField("awards_facet", awards);
-		if (lexileScore.length() == 0){
+		if (lexileScore.length() == 0) {
 			doc.addField("lexile_score", -1);
-		}else{
+		} else {
 			doc.addField("lexile_score", lexileScore);
 		}
 		if (lexileCode.length() > 0) {
 			doc.addField("lexile_code", StringUtils.trimTrailingPunctuation(lexileCode));
 		}
-		if (fountasPinnell.length() > 0){
+		if (fountasPinnell.length() > 0) {
 			doc.addField("fountas_pinnell", fountasPinnell);
 		}
 		doc.addField("accelerated_reader_interest_level", StringUtils.trimTrailingPunctuation(acceleratedReaderInterestLevel));
@@ -383,12 +383,12 @@ public class GroupedWorkSolr implements Cloneable {
 		doc.addField("issn", issns);
 		doc.addField("primary_upc", getPrimaryUpc());
 		doc.addField("upc", upcs.keySet());
-		
+
 		//call numbers
 		doc.addField("callnumber-first", callNumberFirst);
 		doc.addField("callnumber-subject", callNumberSubject);
 		//relevance determiners
-		doc.addField("popularity", Long.toString((long)popularity));
+		doc.addField("popularity", Long.toString((long) popularity));
 		doc.addField("num_holdings", numHoldings);
 		//aspen-discovery enrichment
 		doc.addField("rating", rating == -1f ? 2.5 : rating);
@@ -406,9 +406,9 @@ public class GroupedWorkSolr implements Cloneable {
 	private String getPrimaryUpc() {
 		String primaryUpc = null;
 		long maxUsage = 0;
-		for (String upc : upcs.keySet()){
+		for (String upc : upcs.keySet()) {
 			long usage = upcs.get(upc);
-			if (primaryUpc == null || usage > maxUsage){
+			if (primaryUpc == null || usage > maxUsage) {
 				primaryUpc = upc;
 				maxUsage = usage;
 			}
@@ -418,10 +418,10 @@ public class GroupedWorkSolr implements Cloneable {
 
 	private Long getTotalFormatBoost() {
 		long formatBoost = 0;
-		for (RecordInfo curRecord : relatedRecords.values()){
+		for (RecordInfo curRecord : relatedRecords.values()) {
 			formatBoost += curRecord.getFormatBoost();
 		}
-		if (formatBoost == 0){
+		if (formatBoost == 0) {
 			formatBoost = 1;
 		}
 		return formatBoost;
@@ -429,15 +429,15 @@ public class GroupedWorkSolr implements Cloneable {
 
 	private HashSet<String> getAllEContentSources() {
 		HashSet<String> values = new HashSet<>();
-		for (RecordInfo curRecord : relatedRecords.values()){
+		for (RecordInfo curRecord : relatedRecords.values()) {
 			values.addAll(curRecord.getAllEContentSources());
 		}
 		return values;
 	}
 
-	private HashSet<String> getAllCallNumbers(){
+	private HashSet<String> getAllCallNumbers() {
 		HashSet<String> values = new HashSet<>();
-		for (RecordInfo curRecord : relatedRecords.values()){
+		for (RecordInfo curRecord : relatedRecords.values()) {
 			values.addAll(curRecord.getAllCallNumbers());
 		}
 		return values;
@@ -460,13 +460,13 @@ public class GroupedWorkSolr implements Cloneable {
 	private void addScopedFieldsToDocument(SolrInputDocument doc) {
 		//Load information based on scopes.  This has some pretty severe performance implications since we potentially
 		//have a lot of scopes and a lot of items & records.
-		for (RecordInfo curRecord : relatedRecords.values()){
+		for (RecordInfo curRecord : relatedRecords.values()) {
 			doc.addField("record_details", curRecord.getDetails());
-			for (ItemInfo curItem : curRecord.getRelatedItems()){
+			for (ItemInfo curItem : curRecord.getRelatedItems()) {
 				doc.addField("item_details", curItem.getDetails());
 				HashMap<String, ScopingInfo> curScopingInfo = curItem.getScopingInfo();
 				Set<String> scopingNames = curScopingInfo.keySet();
-				for (String curScopeName : scopingNames){
+				for (String curScopeName : scopingNames) {
 					ScopingInfo curScope = curScopingInfo.get(curScopeName);
 					doc.addField("scoping_details_" + curScopeName, curScope.getScopingDetails());
 					//if we do that, we don't need to filter within PHP
@@ -474,7 +474,7 @@ public class GroupedWorkSolr implements Cloneable {
 					HashSet<String> formats = new HashSet<>();
 					if (curItem.getFormat() != null) {
 						formats.add(curItem.getFormat());
-					}else {
+					} else {
 						formats = curRecord.getFormats();
 					}
 					addUniqueFieldValues(doc, "format_" + curScopeName, formats);
@@ -482,14 +482,14 @@ public class GroupedWorkSolr implements Cloneable {
 					if (curItem.getFormatCategory() != null) {
 						formatCategories.add(curItem.getFormatCategory());
 
-					}else {
+					} else {
 						formatCategories = curRecord.getFormatCategories();
 					}
 					//eAudiobooks are considered both Audiobooks and eBooks by some people
-					if (formats.contains("eAudiobook")){
+					if (formats.contains("eAudiobook")) {
 						formatCategories.add("eBook");
 					}
-					if (formats.contains("VOX Books")){
+					if (formats.contains("VOX Books")) {
 						formatCategories.add("Books");
 						formatCategories.add("Audio Books");
 					}
@@ -505,9 +505,9 @@ public class GroupedWorkSolr implements Cloneable {
 					}
 					if (curItem.isEContent() || curScope.isLocallyOwned() || curScope.isLibraryOwned() || curScopeDetails.getGroupedWorkDisplaySettings().isIncludeAllRecordsInDateAddedFacets()) {
 						Long daysSinceAdded;
-						if (curItem.isOrderItem() || (curItem.getStatusCode() != null && curItem.getStatusCode().equals("On Order"))){
+						if (curItem.isOrderItem() || (curItem.getStatusCode() != null && curItem.getStatusCode().equals("On Order"))) {
 							daysSinceAdded = -1L;
-						}else {
+						} else {
 							//Date Added To Catalog needs to be the earliest date added for the catalog.
 							Date dateAdded = curItem.getDateAdded();
 							//See if we need to override based on publication date if not provided.
@@ -534,10 +534,10 @@ public class GroupedWorkSolr implements Cloneable {
 					if (curScope.isLocallyOwned() || curScope.isLibraryOwned()) {
 						if (curScope.isAvailable()) {
 							updateMaxValueField(doc, "lib_boost_" + curScopeName, GroupedWorkIndexer.availableAtBoostValue);
-						}else {
+						} else {
 							updateMaxValueField(doc, "lib_boost_" + curScopeName, GroupedWorkIndexer.ownedByBoostValue);
 						}
-					}else{
+					} else {
 						//Make sure we have a minimum value so we don't multiply relevance by 0
 						updateMaxValueField(doc, "lib_boost_" + curScopeName, 1);
 					}
@@ -555,10 +555,10 @@ public class GroupedWorkSolr implements Cloneable {
 		}
 
 		//Now that we know the latest number of days added for each scope, we can set the time since added facet
-		for (Scope scope : groupedWorkIndexer.getScopes()){
+		for (Scope scope : groupedWorkIndexer.getScopes()) {
 			SolrInputField field = doc.getField("local_days_since_added_" + scope.getScopeName());
-			if (field != null){
-				Long daysSinceAdded = (Long)field.getFirstValue();
+			if (field != null) {
+				Long daysSinceAdded = (Long) field.getFirstValue();
 				doc.addField("local_time_since_added_" + scope.getScopeName(), DateUtils.getTimeSinceAdded(daysSinceAdded));
 			}
 		}
@@ -569,23 +569,23 @@ public class GroupedWorkSolr implements Cloneable {
 		boolean addLibraryOwnership = false;
 		HashSet<String> availabilityToggleValues = new HashSet<>();
 		Scope curScopeDetails = curScope.getScope();
-		if (curScope.isLocallyOwned() && curScopeDetails.isLocationScope()){
+		if (curScope.isLocallyOwned() && curScopeDetails.isLocationScope()) {
 			addLocationOwnership = true;
 			addLibraryOwnership = true;
 			availabilityToggleValues.add("Entire Collection");
 		}
-		if (curScope.isLibraryOwned()){
-			if (curScopeDetails.isLocationScope()){
-				if (!curScopeDetails.getGroupedWorkDisplaySettings().isBaseAvailabilityToggleOnLocalHoldingsOnly()){
+		if (curScope.isLibraryOwned()) {
+			if (curScopeDetails.isLocationScope()) {
+				if (!curScopeDetails.getGroupedWorkDisplaySettings().isBaseAvailabilityToggleOnLocalHoldingsOnly()) {
 					addLibraryOwnership = true;
 					availabilityToggleValues.add("Entire Collection");
 				}
-			} else{
+			} else {
 				addLibraryOwnership = true;
 				availabilityToggleValues.add("Entire Collection");
 			}
 		}
-		if (curItem.isEContent()){
+		if (curItem.isEContent()) {
 			//If the item is eContent, we will count it as part of the collection since it will be available.
 			availabilityToggleValues.add("Entire Collection");
 		}
@@ -593,7 +593,7 @@ public class GroupedWorkSolr implements Cloneable {
 		if (!curItem.isEContent() && curScope.isLocallyOwned() && curScope.isAvailable()) {
 			availabilityToggleValues.add("Available Now");
 		}
-		if (curItem.isEContent() && curScope.isAvailable()){
+		if (curItem.isEContent() && curScope.isAvailable()) {
 			if (curScopeDetails.getGroupedWorkDisplaySettings().isIncludeOnlineMaterialsInAvailableToggle()) {
 				availabilityToggleValues.add("Available Now");
 			}
@@ -608,13 +608,13 @@ public class GroupedWorkSolr implements Cloneable {
 			//We do different ownership display depending on if this is eContent or not
 			String owningLocationValue = curScopeDetails.getFacetLabel();
 			//if (curItem.getSubLocation() != null && curItem.getSubLocation().length() > 0){
-				//owningLocationValue += " - " + curItem.getSubLocation();
-				//owningLocationValue = curItem.getSubLocation();
+			//owningLocationValue += " - " + curItem.getSubLocation();
+			//owningLocationValue = curItem.getSubLocation();
 			//}
-			if (curItem.isEContent()){
+			if (curItem.isEContent()) {
 				owningLocationValue = curItem.getShelfLocation();
-			//}else if (curItem.isOrderItem()){
-			//	owningLocationValue = curScopeDetails.getFacetLabel() + " On Order";
+				//}else if (curItem.isOrderItem()){
+				//	owningLocationValue = curScopeDetails.getFacetLabel() + " On Order";
 			}
 
 			//Save values for this scope
@@ -637,8 +637,8 @@ public class GroupedWorkSolr implements Cloneable {
 				//Add to other locations within the library if desired
 				if (curScopeDetails.isIncludeAllLibraryBranchesInFacets()) {
 					//Add to other locations in this library
-					if (curScopeDetails.getLibraryScope() != null){
-						for (String otherScopeName : curScopingInfo.keySet()){
+					if (curScopeDetails.getLibraryScope() != null) {
+						for (String otherScopeName : curScopingInfo.keySet()) {
 							ScopingInfo otherScope = curScopingInfo.get(otherScopeName);
 							if (!otherScope.equals(curScope)) {
 								Scope otherScopeDetails = otherScope.getScope();
@@ -657,12 +657,12 @@ public class GroupedWorkSolr implements Cloneable {
 				}
 
 				//Add to other locations as desired
-				for (String otherScopeName : curScopingInfo.keySet()){
+				for (String otherScopeName : curScopingInfo.keySet()) {
 					ScopingInfo otherScope = curScopingInfo.get(otherScopeName);
 					if (!otherScope.equals(curScope)) {
 						Scope otherScopeDetails = otherScope.getScope();
-						if (otherScopeDetails.getAdditionalLocationsToShowAvailabilityFor().length() > 0){
-							if (otherScopeDetails.getAdditionalLocationsToShowAvailabilityForPattern().matcher(curScopeName).matches()){
+						if (otherScopeDetails.getAdditionalLocationsToShowAvailabilityFor().length() > 0) {
+							if (otherScopeDetails.getAdditionalLocationsToShowAvailabilityForPattern().matcher(curScopeName).matches()) {
 								addAvailabilityToggleValues(doc, curRecord, otherScopeName, availabilityToggleValues);
 								addUniqueFieldValue(doc, "owning_location_" + otherScopeName, owningLocationValue);
 								if (curScope.isAvailable()) {
@@ -676,9 +676,9 @@ public class GroupedWorkSolr implements Cloneable {
 			}
 
 			//finally add to any scopes where we show all owning locations
-			for (String scopeToShowAllName : curScopingInfo.keySet()){
+			for (String scopeToShowAllName : curScopingInfo.keySet()) {
 				ScopingInfo scopeToShowAll = curScopingInfo.get(scopeToShowAllName);
-				if (!scopeToShowAll.getScope().isRestrictOwningLibraryAndLocationFacets()){
+				if (!scopeToShowAll.getScope().isRestrictOwningLibraryAndLocationFacets()) {
 					if (!scopeToShowAll.getScope().getGroupedWorkDisplaySettings().isBaseAvailabilityToggleOnLocalHoldingsOnly()) {
 						addAvailabilityToggleValues(doc, curRecord, scopeToShowAll.getScope().getScopeName(), availabilityToggleValues);
 					}
@@ -689,12 +689,12 @@ public class GroupedWorkSolr implements Cloneable {
 				}
 			}
 		}
-		if (addLibraryOwnership){
+		if (addLibraryOwnership) {
 			//We do different ownership display depending on if this is eContent or not
 			String owningLibraryValue;
-			if (curScope.getScope().isLibraryScope()){
+			if (curScope.getScope().isLibraryScope()) {
 				owningLibraryValue = curScopeDetails.getFacetLabel();
-			}else{
+			} else {
 				owningLibraryValue = curScopeDetails.getLibraryScope().getFacetLabel();
 			}
 
@@ -704,13 +704,13 @@ public class GroupedWorkSolr implements Cloneable {
 //				owningLibraryValue = curScopeDetails.getFacetLabel() + " On Order";
 //			}
 			addUniqueFieldValue(doc, "owning_library_" + curScopeName, owningLibraryValue);
-			for (Scope locationScope : curScopeDetails.getLocationScopes() ){
+			for (Scope locationScope : curScopeDetails.getLocationScopes()) {
 				addUniqueFieldValue(doc, "owning_library_" + locationScope.getScopeName(), owningLibraryValue);
 			}
 			//finally add to any scopes where we show all owning libraries
-			for (String scopeToShowAllName : curScopingInfo.keySet()){
+			for (String scopeToShowAllName : curScopingInfo.keySet()) {
 				ScopingInfo scopeToShowAll = curScopingInfo.get(scopeToShowAllName);
-				if (!scopeToShowAll.getScope().isRestrictOwningLibraryAndLocationFacets()){
+				if (!scopeToShowAll.getScope().isRestrictOwningLibraryAndLocationFacets()) {
 					addUniqueFieldValue(doc, "owning_library_" + scopeToShowAll.getScope().getScopeName(), owningLibraryValue);
 				}
 			}
@@ -719,7 +719,7 @@ public class GroupedWorkSolr implements Cloneable {
 		addAvailabilityToggleValues(doc, curRecord, curScopeName, availabilityToggleValues);
 	}
 
-	private void addAvailableAtValues(SolrInputDocument doc, RecordInfo curRecord, String curScopeName, String owningLocationValue){
+	private void addAvailableAtValues(SolrInputDocument doc, RecordInfo curRecord, String curScopeName, String owningLocationValue) {
 		addUniqueFieldValue(doc, "available_at_" + curScopeName, owningLocationValue);
 		for (String format : curRecord.getAllSolrFieldEscapedFormats()) {
 			addUniqueFieldValue(doc, "available_at_by_format_" + curScopeName + "_" + format, owningLocationValue);
@@ -742,23 +742,23 @@ public class GroupedWorkSolr implements Cloneable {
 	/**
 	 * Update a field that can only contain a single value.  Ignores any subsequent after the first.
 	 *
-	 * @param doc         The document to be updated
-	 * @param fieldName   The field name to update
-	 * @param value       The value to set if no value already exists
+	 * @param doc       The document to be updated
+	 * @param fieldName The field name to update
+	 * @param value     The value to set if no value already exists
 	 */
 	private void setSingleValuedFieldValue(SolrInputDocument doc, String fieldName, String value) {
 		Object curValue = doc.getFieldValue(fieldName);
-		if (curValue == null){
+		if (curValue == null) {
 			doc.addField(fieldName, value);
 		}
 	}
 
 	private void updateMaxValueField(SolrInputDocument doc, String fieldName, long value) {
 		Object curValue = doc.getFieldValue(fieldName);
-		if (curValue == null){
+		if (curValue == null) {
 			doc.addField(fieldName, value);
-		}else{
-			if ((Long)curValue < value){
+		} else {
+			if ((Long) curValue < value) {
 				doc.setField(fieldName, value);
 			}
 		}
@@ -766,36 +766,36 @@ public class GroupedWorkSolr implements Cloneable {
 
 	private void updateMaxValueField(SolrInputDocument doc, String fieldName, int value) {
 		Object curValue = doc.getFieldValue(fieldName);
-		if (curValue == null){
+		if (curValue == null) {
 			doc.addField(fieldName, value);
-		}else{
-			if ((Integer)curValue < value){
+		} else {
+			if ((Integer) curValue < value) {
 				doc.setField(fieldName, value);
 			}
 		}
 	}
 
-	private void addUniqueFieldValue(SolrInputDocument doc, String fieldName, String value){
+	private void addUniqueFieldValue(SolrInputDocument doc, String fieldName, String value) {
 		if (value == null) return;
 		Collection<Object> fieldValues = doc.getFieldValues(fieldName);
-		if (fieldValues == null){
+		if (fieldValues == null) {
 			doc.addField(fieldName, value);
-		}else if (!fieldValues.contains(value)){
+		} else if (!fieldValues.contains(value)) {
 			fieldValues.add(value);
 			doc.setField(fieldName, fieldValues);
 		}
 	}
 
-	private void addUniqueFieldValues(SolrInputDocument doc, String fieldName, Collection<String> values){
+	private void addUniqueFieldValues(SolrInputDocument doc, String fieldName, Collection<String> values) {
 		if (values.size() == 0) return;
-		for (String value : values){
+		for (String value : values) {
 			addUniqueFieldValue(doc, fieldName, value);
 		}
 	}
 
 	private boolean isLocallyOwned(HashSet<ItemInfo> scopedItems, Scope scope) {
-		for (ItemInfo curItem : scopedItems){
-			if (curItem.isLocallyOwned(scope)){
+		for (ItemInfo curItem : scopedItems) {
+			if (curItem.isLocallyOwned(scope)) {
 				return true;
 			}
 		}
@@ -803,8 +803,8 @@ public class GroupedWorkSolr implements Cloneable {
 	}
 
 	private boolean isLibraryOwned(HashSet<ItemInfo> scopedItems, Scope scope) {
-		for (ItemInfo curItem : scopedItems){
-			if (curItem.isLibraryOwned(scope)){
+		for (ItemInfo curItem : scopedItems) {
+			if (curItem.isLibraryOwned(scope)) {
 				return true;
 			}
 		}
@@ -812,10 +812,10 @@ public class GroupedWorkSolr implements Cloneable {
 	}
 
 	private void loadRelatedRecordsAndItemsForScope(Scope curScope, HashSet<RecordInfo> scopedRecords, HashSet<ItemInfo> scopedItems) {
-		for (RecordInfo curRecord : relatedRecords.values()){
+		for (RecordInfo curRecord : relatedRecords.values()) {
 			boolean recordIsValid = false;
-			for (ItemInfo curItem : curRecord.getRelatedItems()){
-				if (curItem.isValidForScope(curScope)){
+			for (ItemInfo curItem : curRecord.getRelatedItems()) {
+				if (curItem.isValidForScope(curScope)) {
 					scopedItems.add(curItem);
 					recordIsValid = true;
 				}
@@ -827,28 +827,28 @@ public class GroupedWorkSolr implements Cloneable {
 	}
 
 	private void checkInconsistentLiteraryForms() {
-		if (literaryForm.size() > 1){
+		if (literaryForm.size() > 1) {
 			//We got unknown and something else, remove the unknown
 			literaryForm.remove("Unknown");
-			if (literaryForm.size() >= 2){
+			if (literaryForm.size() >= 2) {
 				//Hmm, we got both fiction and non-fiction
 				Integer numFictionIndicators = literaryForm.get("Fiction");
-				if (numFictionIndicators == null){
+				if (numFictionIndicators == null) {
 					numFictionIndicators = 0;
 				}
 				Integer numNonFictionIndicators = literaryForm.get("Non Fiction");
-				if (numNonFictionIndicators == null){
+				if (numNonFictionIndicators == null) {
 					numNonFictionIndicators = 0;
 				}
-				if (numFictionIndicators.equals(numNonFictionIndicators)){
+				if (numFictionIndicators.equals(numNonFictionIndicators)) {
 					//Houston we have a problem.
 					//logger.warn("Found inconsistent literary forms for grouped work " + id + " both fiction and non fiction had the same amount of usage.  Defaulting to neither.");
 					literaryForm.clear();
 					literaryForm.put("Unknown", 1);
-				}else if (numFictionIndicators.compareTo(numNonFictionIndicators) > 0){
+				} else if (numFictionIndicators.compareTo(numNonFictionIndicators) > 0) {
 					logger.debug("Popularity dictates that Fiction is the correct literary form for grouped work " + id);
 					literaryForm.remove("Non Fiction");
-				}else if (numFictionIndicators.compareTo(numNonFictionIndicators) < 0){
+				} else if (numFictionIndicators.compareTo(numNonFictionIndicators) < 0) {
 					logger.debug("Popularity dictates that Non Fiction is the correct literary form for grouped work " + id);
 					literaryForm.remove("Fiction");
 				}
@@ -857,32 +857,32 @@ public class GroupedWorkSolr implements Cloneable {
 	}
 
 	private void checkInconsistentLiteraryFormsFull() {
-		if (literaryFormFull.size() > 1){
+		if (literaryFormFull.size() > 1) {
 			//We got unknown and something else, remove the unknown
 			literaryFormFull.remove("Unknown");
-			if (literaryFormFull.size() >= 2){
+			if (literaryFormFull.size() >= 2) {
 				//Hmm, we got multiple forms.  Check to see if there are inconsistent forms
 				// i.e. Fiction and Non-Fiction are incompatible, but Novels and Fiction could be mixed
 				int maxUsage = 0;
 				HashSet<String> highestUsageLiteraryForms = new HashSet<>();
-				for (String literaryForm : literaryFormFull.keySet()){
+				for (String literaryForm : literaryFormFull.keySet()) {
 					int curUsage = literaryFormFull.get(literaryForm);
-					if (curUsage > maxUsage){
+					if (curUsage > maxUsage) {
 						highestUsageLiteraryForms.clear();
 						highestUsageLiteraryForms.add(literaryForm);
 						maxUsage = curUsage;
-					}else if (curUsage == maxUsage){
+					} else if (curUsage == maxUsage) {
 						highestUsageLiteraryForms.add(literaryForm);
 					}
 				}
-				if (highestUsageLiteraryForms.size() > 1){
+				if (highestUsageLiteraryForms.size() > 1) {
 					//Check to see if the highest usage literary forms are inconsistent
-					if (hasInconsistentLiteraryForms(highestUsageLiteraryForms)){
+					if (hasInconsistentLiteraryForms(highestUsageLiteraryForms)) {
 						//Ugh, we have inconsistent literary forms and can't make an educated guess as to which is correct.
 						literaryFormFull.clear();
 						literaryFormFull.put("Unknown", 1);
 					}
-				}else{
+				} else {
 					removeInconsistentFullLiteraryForms(literaryFormFull, highestUsageLiteraryForms);
 				}
 			}
@@ -892,10 +892,10 @@ public class GroupedWorkSolr implements Cloneable {
 	private void removeInconsistentFullLiteraryForms(HashMap<String, Integer> literaryFormFull, HashSet<String> highestUsageLiteraryForms) {
 		boolean firstLiteraryFormIsNonFiction = nonFictionFullLiteraryForms.contains(highestUsageLiteraryForms.iterator().next());
 		boolean changeMade = true;
-		while (changeMade){
+		while (changeMade) {
 			changeMade = false;
-			for (String curLiteraryForm : literaryFormFull.keySet()){
-				if (firstLiteraryFormIsNonFiction != nonFictionFullLiteraryForms.contains(curLiteraryForm)){
+			for (String curLiteraryForm : literaryFormFull.keySet()) {
+				if (firstLiteraryFormIsNonFiction != nonFictionFullLiteraryForms.contains(curLiteraryForm)) {
 					logger.debug(curLiteraryForm + " got voted off the island for grouped work " + id + " because it was inconsistent with other full literary forms.");
 					literaryFormFull.remove(curLiteraryForm);
 					changeMade = true;
@@ -906,19 +906,21 @@ public class GroupedWorkSolr implements Cloneable {
 	}
 
 	private static ArrayList<String> nonFictionFullLiteraryForms = new ArrayList<>();
-	static{
+
+	static {
 		nonFictionFullLiteraryForms.add("Non Fiction");
 		nonFictionFullLiteraryForms.add("Essays");
 		nonFictionFullLiteraryForms.add("Letters");
 		nonFictionFullLiteraryForms.add("Speeches");
 	}
+
 	private boolean hasInconsistentLiteraryForms(HashSet<String> highestUsageLiteraryForms) {
 		boolean firstLiteraryFormIsNonFiction = false;
 		int numFormsChecked = 0;
-		for (String curLiteraryForm : highestUsageLiteraryForms){
-			if (numFormsChecked == 0){
+		for (String curLiteraryForm : highestUsageLiteraryForms) {
+			if (numFormsChecked == 0) {
 				firstLiteraryFormIsNonFiction = nonFictionFullLiteraryForms.contains(curLiteraryForm);
-			}else{
+			} else {
 				if (firstLiteraryFormIsNonFiction != nonFictionFullLiteraryForms.contains(curLiteraryForm)) {
 					return true;
 				}
@@ -930,18 +932,18 @@ public class GroupedWorkSolr implements Cloneable {
 
 	private void checkDefaultValue(Set<String> valuesCollection, String defaultValue) {
 		//Remove the default value if we get something more specific
-		if (valuesCollection.contains(defaultValue) && valuesCollection.size() > 1){
+		if (valuesCollection.contains(defaultValue) && valuesCollection.size() > 1) {
 			valuesCollection.remove(defaultValue);
-		}else if (valuesCollection.size() == 0){
+		} else if (valuesCollection.size() == 0) {
 			valuesCollection.add(defaultValue);
 		}
 	}
 
 	private void checkDefaultValue(Map<String, Integer> valuesCollection, String defaultValue) {
 		//Remove the default value if we get something more specific
-		if (valuesCollection.containsKey(defaultValue) && valuesCollection.size() > 1){
+		if (valuesCollection.containsKey(defaultValue) && valuesCollection.size() > 1) {
 			valuesCollection.remove(defaultValue);
-		}else if (valuesCollection.size() == 0){
+		} else if (valuesCollection.size() == 0) {
 			valuesCollection.put(defaultValue, 1);
 		}
 	}
@@ -957,36 +959,37 @@ public class GroupedWorkSolr implements Cloneable {
 	private static Pattern removeBracketsPattern = Pattern.compile("\\[.*?]");
 	private static Pattern commonSubtitlePattern = Pattern.compile("(?i)((?:[(])?(?:a )?graphic novel|audio cd|book club kit|large print(?:[)])?)$");
 	private static Pattern punctuationPattern = Pattern.compile("[.\\\\/()\\[\\]:;]");
+
 	void setTitle(String shortTitle, String displayTitle, String sortableTitle, String recordFormat) {
-		if (shortTitle != null){
+		if (shortTitle != null) {
 			shortTitle = StringUtils.trimTrailingPunctuation(shortTitle);
 
 			//Figure out if we want to use this title or if the one we have is better.
 			boolean updateTitle = false;
-			if (this.title == null){
+			if (this.title == null) {
 				updateTitle = true;
 			} else {
 				//Only overwrite if we get a better format
-				if (recordFormat.equals("Book")){
+				if (recordFormat.equals("Book")) {
 					//We have a book, update if we didn't have a book before
-					if (!recordFormat.equals(titleFormat)){
+					if (!recordFormat.equals(titleFormat)) {
 						updateTitle = true;
 						//Or update if we had a book before and this title is longer
-					}else if (shortTitle.length() > this.title.length()){
+					} else if (shortTitle.length() > this.title.length()) {
 						updateTitle = true;
 					}
-				} else if (recordFormat.equals("eBook")){
+				} else if (recordFormat.equals("eBook")) {
 					//Update if the format we had before is not a book
-					if (!titleFormat.equals("Book")){
+					if (!titleFormat.equals("Book")) {
 						//And the new format was not an eBook or the new title is longer than what we had before
-						if (!recordFormat.equals(titleFormat)){
+						if (!recordFormat.equals(titleFormat)) {
 							updateTitle = true;
 							//or update if we had a book before and this title is longer
-						}else if (shortTitle.length() > this.title.length()){
+						} else if (shortTitle.length() > this.title.length()) {
 							updateTitle = true;
 						}
 					}
-				} else if (!titleFormat.equals("Book") && !titleFormat.equals("eBook")){
+				} else if (!titleFormat.equals("Book") && !titleFormat.equals("eBook")) {
 					//If we don't have a Book or an eBook then we can update the title if we get a longer title
 					if (shortTitle.length() > this.title.length()) {
 						updateTitle = true;
@@ -994,27 +997,27 @@ public class GroupedWorkSolr implements Cloneable {
 				}
 			}
 
-			if (updateTitle){
+			if (updateTitle) {
 				//Strip out anything in brackets unless that would cause us to show nothing
 				String tmpTitle = removeBracketsPattern.matcher(shortTitle).replaceAll("").trim();
-				if (shortTitle.length() > 0){
+				if (shortTitle.length() > 0) {
 					shortTitle = tmpTitle;
 				}
 				//Remove common formats
 				tmpTitle = commonSubtitlePattern.matcher(shortTitle).replaceAll("").trim();
-				if (tmpTitle.length() > 0){
+				if (tmpTitle.length() > 0) {
 					shortTitle = tmpTitle;
 				}
 				this.title = shortTitle;
 				this.titleFormat = recordFormat;
 				//Strip out anything in brackets unless that would cause us to show nothing
 				tmpTitle = removeBracketsPattern.matcher(sortableTitle).replaceAll("").trim();
-				if (tmpTitle.length() > 0){
+				if (tmpTitle.length() > 0) {
 					sortableTitle = tmpTitle;
 				}
 				//Remove common formats
 				tmpTitle = commonSubtitlePattern.matcher(sortableTitle).replaceAll("").trim();
-				if (tmpTitle.length() > 0){
+				if (tmpTitle.length() > 0) {
 					sortableTitle = tmpTitle;
 				}
 				//remove punctuation from the sortable title
@@ -1023,12 +1026,12 @@ public class GroupedWorkSolr implements Cloneable {
 				displayTitle = StringUtils.trimTrailingPunctuation(displayTitle);
 				//Strip out anything in brackets unless that would cause us to show nothing
 				tmpTitle = removeBracketsPattern.matcher(displayTitle).replaceAll("").trim();
-				if (tmpTitle.length() > 0){
+				if (tmpTitle.length() > 0) {
 					displayTitle = tmpTitle;
 				}
 				//Remove common formats
 				tmpTitle = commonSubtitlePattern.matcher(displayTitle).replaceAll("").trim();
-				if (tmpTitle.length() > 0){
+				if (tmpTitle.length() > 0) {
 					displayTitle = tmpTitle;
 				}
 				this.displayTitle = displayTitle.trim();
@@ -1036,7 +1039,7 @@ public class GroupedWorkSolr implements Cloneable {
 
 			//Create an alternate title for searching by replacing ampersands with the word and.
 			String tmpTitle = shortTitle.replace("&", " and ").replace("  ", " ");
-			if (!tmpTitle.equals(shortTitle)){
+			if (!tmpTitle.equals(shortTitle)) {
 				this.titleAlt.add(shortTitle);
 				// alt title has multiple values
 			}
@@ -1046,17 +1049,17 @@ public class GroupedWorkSolr implements Cloneable {
 
 
 	void setSubTitle(String subTitle) {
-		if (subTitle != null){
+		if (subTitle != null) {
 			subTitle = StringUtils.trimTrailingPunctuation(subTitle);
 			//TODO: determine if the subtitle should be changed?
 			//Strip out anything in brackets unless that would cause us to show nothing
 			String tmpTitle = removeBracketsPattern.matcher(subTitle).replaceAll("").trim();
-			if (tmpTitle.length() > 0){
+			if (tmpTitle.length() > 0) {
 				subTitle = tmpTitle;
 			}
 			//Remove common formats
 			tmpTitle = commonSubtitlePattern.matcher(subTitle).replaceAll("").trim();
-			if (tmpTitle.length() > 0){
+			if (tmpTitle.length() > 0) {
 				subTitle = tmpTitle;
 			}
 			this.subTitle = subTitle;
@@ -1064,7 +1067,7 @@ public class GroupedWorkSolr implements Cloneable {
 		}
 	}
 
-	void addFullTitles(Set<String> fullTitles){
+	void addFullTitles(Set<String> fullTitles) {
 		this.fullTitles.addAll(fullTitles);
 	}
 
@@ -1072,7 +1075,7 @@ public class GroupedWorkSolr implements Cloneable {
 		this.fullTitles.add(title);
 	}
 
-	void addAlternateTitles(Set<String> altTitles){
+	void addAlternateTitles(Set<String> altTitles) {
 		this.titleAlt.addAll(altTitles);
 	}
 
@@ -1080,26 +1083,26 @@ public class GroupedWorkSolr implements Cloneable {
 		this.titleOld.addAll(oldTitles);
 	}
 
-	void addNewTitles(Set<String> newTitles){
+	void addNewTitles(Set<String> newTitles) {
 		this.titleNew.addAll(newTitles);
 	}
 
 	void setAuthor(String author) {
-		if (author != null){
+		if (author != null) {
 			author = StringUtils.trimTrailingPunctuation(author);
-			if (primaryAuthors.containsKey(author)){
+			if (primaryAuthors.containsKey(author)) {
 				primaryAuthors.put(author, primaryAuthors.get(author) + 1);
-			}else{
+			} else {
 				primaryAuthors.put(author, 1L);
 			}
 		}
 	}
 
-	private String getPrimaryAuthor(){
+	private String getPrimaryAuthor() {
 		String mostUsedAuthor = null;
 		long numUses = -1;
-		for (String curAuthor : primaryAuthors.keySet()){
-			if (primaryAuthors.get(curAuthor) > numUses){
+		for (String curAuthor : primaryAuthors.keySet()) {
+			if (primaryAuthors.get(curAuthor) > numUses) {
 				mostUsedAuthor = curAuthor;
 			}
 		}
@@ -1119,19 +1122,20 @@ public class GroupedWorkSolr implements Cloneable {
 		this.oclcs.addAll(oclcs);
 	}
 
-	void addIsbns(Set<String>isbns, String format){
-		for (String isbn:isbns){
+	void addIsbns(Set<String> isbns, String format) {
+		for (String isbn : isbns) {
 			addIsbn(isbn, format);
 		}
 	}
+
 	void addIsbn(String isbn, String format) {
 		isbn = isbn.replaceAll("\\D", "");
-		if (isbn.length() == 10){
+		if (isbn.length() == 10) {
 			isbn = Util.convertISBN10to13(isbn);
 		}
-		if (isbns.containsKey(isbn)){
+		if (isbns.containsKey(isbn)) {
 			isbns.put(isbn, isbns.get(isbn) + 1);
-		}else{
+		} else {
 			isbns.put(isbn, 1L);
 		}
 		//Determine if we should set the primary isbn
@@ -1139,33 +1143,36 @@ public class GroupedWorkSolr implements Cloneable {
 		boolean newIsbnIsBook = format.equalsIgnoreCase("book");
 		if (primaryIsbn == null) {
 			updatePrimaryIsbn = true;
-		} else if (!primaryIsbn.equals(isbn)){
-			if (!primaryIsbnIsBook && newIsbnIsBook){
+		} else if (!primaryIsbn.equals(isbn)) {
+			if (!primaryIsbnIsBook && newIsbnIsBook) {
 				updatePrimaryIsbn = true;
-			} else if (primaryIsbnIsBook == newIsbnIsBook){
+			} else if (primaryIsbnIsBook == newIsbnIsBook) {
 				//Both are books or both are not books
-				if (isbns.get(isbn) > primaryIsbnUsageCount){
+				if (isbns.get(isbn) > primaryIsbnUsageCount) {
 					updatePrimaryIsbn = true;
 				}
 			}
 		}
 
-		if (updatePrimaryIsbn){
+		if (updatePrimaryIsbn) {
 			primaryIsbn = isbn;
 			primaryIsbnIsBook = format.equalsIgnoreCase("book");
 			primaryIsbnUsageCount = isbns.get(isbn);
 		}
 	}
-	Set<String> getIsbns(){
+
+	Set<String> getIsbns() {
 		return isbns.keySet();
 	}
+
 	void addIssns(Set<String> issns) {
 		this.issns.addAll(issns);
 	}
+
 	void addUpc(String upc) {
-		if (upcs.containsKey(upc)){
+		if (upcs.containsKey(upc)) {
 			upcs.put(upc, upcs.get(upc) + 1);
-		}else{
+		} else {
 			upcs.put(upc, 1L);
 		}
 	}
@@ -1195,7 +1202,7 @@ public class GroupedWorkSolr implements Cloneable {
 	}
 
 	void addHoldings(int recordHoldings) {
-		if (recordHoldings > 1000){
+		if (recordHoldings > 1000) {
 			//This is an unlimited access title, just count it as 1
 			recordHoldings = 1;
 		}
@@ -1206,9 +1213,9 @@ public class GroupedWorkSolr implements Cloneable {
 		this.popularity += itemPopularity;
 	}
 
-	double getPopularity(){
-        return  popularity;
-    }
+	double getPopularity() {
+		return popularity;
+	}
 
 	void addTopic(Set<String> fieldList) {
 		this.topics.addAll(StringUtils.normalizeSubjects(fieldList));
@@ -1221,6 +1228,7 @@ public class GroupedWorkSolr implements Cloneable {
 	void addTopicFacet(Set<String> fieldList) {
 		this.topicFacets.addAll(StringUtils.normalizeSubjects(fieldList));
 	}
+
 	void addTopicFacet(String fieldValue) {
 		this.topicFacets.add(StringUtils.normalizeSubject(fieldValue));
 	}
@@ -1230,7 +1238,7 @@ public class GroupedWorkSolr implements Cloneable {
 	}
 
 	void addSeries(Set<String> fieldList) {
-		for(String curField : fieldList){
+		for (String curField : fieldList) {
 			this.addSeries(curField);
 		}
 	}
@@ -1244,10 +1252,10 @@ public class GroupedWorkSolr implements Cloneable {
 		addSeriesInfoToField(series, this.series);
 	}
 
-	void addSeriesWithVolume(String seriesName, String volume){
+	void addSeriesWithVolume(String seriesName, String volume) {
 		if (series != null) {
 			String seriesInfo = getNormalizedSeries(seriesName);
-			if (volume.length() > 0){
+			if (volume.length() > 0) {
 				volume = getNormalizedSeriesVolume(volume);
 			}
 			String seriesInfoLower = seriesInfo.toLowerCase();
@@ -1261,33 +1269,33 @@ public class GroupedWorkSolr implements Cloneable {
 					String[] existingSeriesInfo = existingSeries2.split("\\|", 2);
 					String existingSeriesName = existingSeriesInfo[0];
 					String existingVolume = "";
-					if (existingSeriesInfo.length > 1){
+					if (existingSeriesInfo.length > 1) {
 						existingVolume = existingSeriesInfo[1];
 					}
 					//Get the longer series name
 					if (existingSeriesName.contains(seriesInfoLower)) {
 						//Use the old one unless it doesn't have a volume
-						if (existingVolume.length() == 0){
+						if (existingVolume.length() == 0) {
 							this.seriesWithVolume.remove(existingSeries2);
 							break;
-						}else{
+						} else {
 							if (volumeLower.equals(existingVolume)) {
 								okToAdd = false;
 								break;
-							}else if (volumeLower.length() == 0){
+							} else if (volumeLower.length() == 0) {
 								okToAdd = false;
 								break;
 							}
 						}
 					} else if (seriesInfoLower.contains(existingSeriesName)) {
 						//Before removing the old series, make sure the new one has a volume
-						if (existingVolume.length() > 0 && existingVolume.equals(volumeLower)){
+						if (existingVolume.length() > 0 && existingVolume.equals(volumeLower)) {
 							this.seriesWithVolume.remove(existingSeries2);
 							break;
-						}else if (volume.length() == 0 && existingVolume.length() > 0){
+						} else if (volume.length() == 0 && existingVolume.length() > 0) {
 							okToAdd = false;
 							break;
-						}else if (volume.length() == 0){
+						} else if (volume.length() == 0) {
 							this.seriesWithVolume.remove(existingSeries2);
 							break;
 						}
@@ -1301,12 +1309,12 @@ public class GroupedWorkSolr implements Cloneable {
 	}
 
 	void addSeries2(Set<String> fieldList) {
-		for(String curField : fieldList){
+		for (String curField : fieldList) {
 			this.addSeries2(curField);
 		}
 	}
 
-	private void addSeries2(String series2){
+	private void addSeries2(String series2) {
 		if (series != null) {
 			addSeriesInfoToField(series2, this.series2);
 		}
@@ -1334,7 +1342,7 @@ public class GroupedWorkSolr implements Cloneable {
 		}
 	}
 
-	private String getNormalizedSeriesVolume(String volume){
+	private String getNormalizedSeriesVolume(String volume) {
 		volume = StringUtils.trimTrailingPunctuation(volume);
 		volume = volume.replaceAll("(bk\\.?|book)", "");
 		volume = volume.replaceAll("(volume|vol\\.|v\\.)", "");
@@ -1353,7 +1361,7 @@ public class GroupedWorkSolr implements Cloneable {
 		return volume;
 	}
 
-	private String getNormalizedSeries(String series){
+	private String getNormalizedSeries(String series) {
 		series = StringUtils.trimTrailingPunctuation(series);
 		series = series.replaceAll("[#|]\\s*\\d+$", "");
 
@@ -1419,13 +1427,13 @@ public class GroupedWorkSolr implements Cloneable {
 	}
 
 	void setLanguageBoost(Long languageBoost) {
-		if (languageBoost > this.languageBoost){
+		if (languageBoost > this.languageBoost) {
 			this.languageBoost = languageBoost;
 		}
 	}
 
 	void setLanguageBoostSpanish(Long languageBoostSpanish) {
-		if (languageBoostSpanish > this.languageBoostSpanish){
+		if (languageBoostSpanish > this.languageBoostSpanish) {
 			this.languageBoostSpanish = languageBoostSpanish;
 		}
 	}
@@ -1434,7 +1442,7 @@ public class GroupedWorkSolr implements Cloneable {
 		this.languages.addAll(languages);
 	}
 
-	void setTranslations(HashSet<String> translations){
+	void setTranslations(HashSet<String> translations) {
 		this.translations.addAll(translations);
 	}
 
@@ -1442,46 +1450,46 @@ public class GroupedWorkSolr implements Cloneable {
 		this.publishers.addAll(publishers);
 	}
 
-	void addPublisher(String publisher){
+	void addPublisher(String publisher) {
 		this.publishers.add(publisher);
 	}
 
 	void addPublicationDates(Set<String> publicationDate) {
-		for (String pubDate : publicationDate){
+		for (String pubDate : publicationDate) {
 			addPublicationDate(pubDate);
 		}
 	}
 
-	void addPublicationDate(String publicationDate){
+	void addPublicationDate(String publicationDate) {
 		String cleanDate = DateUtils.cleanDate(publicationDate);
-		if (cleanDate != null){
+		if (cleanDate != null) {
 			this.publicationDates.add(cleanDate);
 			//Convert the date to a long and see if it is before the current date
 			Long pubDateLong = Long.parseLong(cleanDate);
-			if (earliestPublicationDate == null || pubDateLong < earliestPublicationDate){
+			if (earliestPublicationDate == null || pubDateLong < earliestPublicationDate) {
 				earliestPublicationDate = pubDateLong;
 			}
 		}
 	}
 
 	void addLiteraryForms(HashSet<String> literaryForms) {
-		for (String curLiteraryForm : literaryForms){
+		for (String curLiteraryForm : literaryForms) {
 			this.addLiteraryForm(curLiteraryForm);
 		}
 	}
 
 	void addLiteraryForms(HashMap<String, Integer> literaryForms) {
-		for (String curLiteraryForm : literaryForms.keySet()){
+		for (String curLiteraryForm : literaryForms.keySet()) {
 			this.addLiteraryForm(curLiteraryForm, literaryForms.get(curLiteraryForm));
 		}
 	}
 
 	private void addLiteraryForm(String literaryForm, int count) {
 		literaryForm = literaryForm.trim();
-		if (this.literaryForm.containsKey(literaryForm)){
+		if (this.literaryForm.containsKey(literaryForm)) {
 			Integer numMatches = this.literaryForm.get(literaryForm);
 			this.literaryForm.put(literaryForm, numMatches + count);
-		}else{
+		} else {
 			this.literaryForm.put(literaryForm, count);
 		}
 	}
@@ -1491,23 +1499,23 @@ public class GroupedWorkSolr implements Cloneable {
 	}
 
 	void addLiteraryFormsFull(HashMap<String, Integer> literaryFormsFull) {
-		for (String curLiteraryForm : literaryFormsFull.keySet()){
+		for (String curLiteraryForm : literaryFormsFull.keySet()) {
 			this.addLiteraryFormFull(curLiteraryForm, literaryFormsFull.get(curLiteraryForm));
 		}
 	}
 
 	void addLiteraryFormsFull(HashSet<String> literaryFormsFull) {
-		for (String curLiteraryForm : literaryFormsFull){
+		for (String curLiteraryForm : literaryFormsFull) {
 			this.addLiteraryFormFull(curLiteraryForm);
 		}
 	}
 
 	private void addLiteraryFormFull(String literaryForm, int count) {
 		literaryForm = literaryForm.trim();
-		if (this.literaryFormFull.containsKey(literaryForm)){
+		if (this.literaryFormFull.containsKey(literaryForm)) {
 			Integer numMatches = this.literaryFormFull.get(literaryForm);
 			this.literaryFormFull.put(literaryForm, numMatches + count);
-		}else{
+		} else {
 			this.literaryFormFull.put(literaryForm, count);
 		}
 	}
@@ -1536,15 +1544,15 @@ public class GroupedWorkSolr implements Cloneable {
 		Set<String> ratingFacet = new HashSet<>();
 		if (rating >= 4.9) {
 			ratingFacet.add("fiveStar");
-		}else if (rating >= 4) {
+		} else if (rating >= 4) {
 			ratingFacet.add("fourStar");
-		}else if (rating >= 3) {
+		} else if (rating >= 3) {
 			ratingFacet.add("threeStar");
-		}else if (rating >= 2) {
+		} else if (rating >= 2) {
 			ratingFacet.add("twoStar");
-		}else if (rating >= 0.0001) {
+		} else if (rating >= 0.0001) {
 			ratingFacet.add("oneStar");
-		}else{
+		} else {
 			ratingFacet.add("Unrated");
 		}
 		return ratingFacet;
@@ -1570,7 +1578,7 @@ public class GroupedWorkSolr implements Cloneable {
 		this.lexileCode = lexileCode;
 	}
 
-	void setFountasPinnell(String fountasPinnell){
+	void setFountasPinnell(String fountasPinnell) {
 		if (this.fountasPinnell.length() == 0) {
 			this.fountasPinnell = fountasPinnell;
 		}
@@ -1581,52 +1589,54 @@ public class GroupedWorkSolr implements Cloneable {
 	}
 
 	void setAcceleratedReaderInterestLevel(String acceleratedReaderInterestLevel) {
-		if (acceleratedReaderInterestLevel != null){
+		if (acceleratedReaderInterestLevel != null) {
 			this.acceleratedReaderInterestLevel = acceleratedReaderInterestLevel;
 		}
 	}
 
 	void setAcceleratedReaderReadingLevel(String acceleratedReaderReadingLevel) {
-		if (acceleratedReaderReadingLevel != null){
+		if (acceleratedReaderReadingLevel != null) {
 			this.acceleratedReaderReadingLevel = acceleratedReaderReadingLevel;
 		}
 	}
 
 	void setAcceleratedReaderPointValue(String acceleratedReaderPointValue) {
-		if (acceleratedReaderPointValue != null){
+		if (acceleratedReaderPointValue != null) {
 			this.acceleratedReaderPointValue = acceleratedReaderPointValue;
 		}
 	}
 
 	void setCallNumberA(String callNumber) {
-		if (callNumber != null && callNumberA == null){
+		if (callNumber != null && callNumberA == null) {
 			this.callNumberA = callNumber;
 		}
 	}
+
 	void setCallNumberFirst(String callNumber) {
-		if (callNumber != null && callNumberFirst == null){
+		if (callNumber != null && callNumberFirst == null) {
 			this.callNumberFirst = callNumber;
 		}
 	}
+
 	void setCallNumberSubject(String callNumber) {
-		if (callNumber != null && callNumberSubject == null){
+		if (callNumber != null && callNumberSubject == null) {
 			this.callNumberSubject = callNumber;
 		}
 	}
 
-	void addKeywords(String keywords){
+	void addKeywords(String keywords) {
 		this.keywords.add(keywords);
 	}
 
-	void addDescription(String description, @NotNull String recordFormat){
-		if (description == null || description.length() == 0){
+	void addDescription(String description, @NotNull String recordFormat) {
+		if (description == null || description.length() == 0) {
 			return;
 		}
 		this.description.add(description);
 		boolean updateDescription = false;
-		if (this.displayDescription == null){
+		if (this.displayDescription == null) {
 			updateDescription = true;
-		}else {
+		} else {
 			//Only overwrite if we get a better format
 			if (recordFormat.equals("Book")) {
 				//We have a book, update if we didn't have a book before
@@ -1654,17 +1664,17 @@ public class GroupedWorkSolr implements Cloneable {
 				}
 			}
 		}
-		if (updateDescription){
+		if (updateDescription) {
 			this.displayDescription = description;
 			this.displayDescriptionFormat = recordFormat;
 		}
 	}
 
-	RecordInfo addRelatedRecord(String source, String recordIdentifier){
+	RecordInfo addRelatedRecord(String source, String recordIdentifier) {
 		String recordIdentifierWithType = source + ":" + recordIdentifier;
-		if (relatedRecords.containsKey(recordIdentifierWithType)){
+		if (relatedRecords.containsKey(recordIdentifierWithType)) {
 			return relatedRecords.get(recordIdentifierWithType);
-		}else {
+		} else {
 			RecordInfo newRecord = new RecordInfo(source, recordIdentifier);
 			relatedRecords.put(recordIdentifierWithType, newRecord);
 			return newRecord;
@@ -1689,29 +1699,29 @@ public class GroupedWorkSolr implements Cloneable {
 
 	void updateIndexingStats(TreeMap<String, ScopedIndexingStats> indexingStats) {
 		//Update total works
-		for (Scope scope: groupedWorkIndexer.getScopes()){
+		for (Scope scope : groupedWorkIndexer.getScopes()) {
 			HashSet<RecordInfo> relatedRecordsForScope = new HashSet<>();
 			HashSet<ItemInfo> relatedItems = new HashSet<>();
 			loadRelatedRecordsAndItemsForScope(scope, relatedRecordsForScope, relatedItems);
-			if (relatedRecordsForScope.size() > 0){
+			if (relatedRecordsForScope.size() > 0) {
 				ScopedIndexingStats stats = indexingStats.get(scope.getScopeName());
 				stats.numTotalWorks++;
-				if (isLocallyOwned(relatedItems, scope) || isLibraryOwned(relatedItems, scope)){
+				if (isLocallyOwned(relatedItems, scope) || isLibraryOwned(relatedItems, scope)) {
 					stats.numLocalWorks++;
 				}
 			}
 		}
 		//Update stats based on individual record processor
-		for (RecordInfo curRecord : relatedRecords.values()){
+		for (RecordInfo curRecord : relatedRecords.values()) {
 			curRecord.updateIndexingStats(indexingStats);
 		}
 	}
 
-	boolean getIsLibraryOwned(Scope scope){
+	boolean getIsLibraryOwned(Scope scope) {
 		HashSet<RecordInfo> relatedRecordsForScope = new HashSet<>();
 		HashSet<ItemInfo> relatedItems = new HashSet<>();
 		loadRelatedRecordsAndItemsForScope(scope, relatedRecordsForScope, relatedItems);
-		if (relatedRecordsForScope.size() > 0){
+		if (relatedRecordsForScope.size() > 0) {
 			return isLibraryOwned(relatedItems, scope);
 		}
 		return false;
@@ -1739,7 +1749,7 @@ public class GroupedWorkSolr implements Cloneable {
 			for (RecordInfo relatedRecord : relatedRecords.values()) {
 				if (relatedRecord.getSource().equals("hoopla")) {
 					hooplaRecordsAsArray.add(relatedRecord);
-				}else if(relatedRecord.getSource().equals("overdrive") || relatedRecord.getSource().equals("rbdigital") || relatedRecord.getSource().equals("cloud_library")){
+				} else if (relatedRecord.getSource().equals("overdrive") || relatedRecord.getSource().equals("rbdigital") || relatedRecord.getSource().equals("cloud_library")) {
 					otherRecordsAsArray.add(relatedRecord);
 				}
 			}

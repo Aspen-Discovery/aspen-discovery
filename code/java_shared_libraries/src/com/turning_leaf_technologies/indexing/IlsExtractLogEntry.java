@@ -3,10 +3,7 @@ package com.turning_leaf_technologies.indexing;
 import com.turning_leaf_technologies.logging.BaseLogEntry;
 import org.apache.logging.log4j.Logger;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -79,7 +76,7 @@ public class IlsExtractLogEntry implements BaseLogEntry {
 				int curCol = 0;
 				updateLogEntry.setLong(++curCol, new Date().getTime() / 1000);
 				if (endTime == null){
-					updateLogEntry.setNull(++curCol, java.sql.Types.INTEGER);
+					updateLogEntry.setNull(++curCol, Types.INTEGER);
 				}else{
 					updateLogEntry.setLong(++curCol, endTime.getTime() / 1000);
 				}
@@ -129,5 +126,13 @@ public class IlsExtractLogEntry implements BaseLogEntry {
 	}
 	public boolean hasErrors() {
 		return numErrors > 0;
+	}
+
+	public int getNumDeleted() {
+		return numDeleted;
+	}
+
+	public void setNumDeleted(int numDeleted) {
+		this.numDeleted = numDeleted;
 	}
 }
