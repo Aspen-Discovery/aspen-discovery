@@ -12,7 +12,7 @@ class SideLoadScope extends DataObject
 	//The next 3 fields allow inclusion or exclusion of records based on a marc tag
 	public $marcTagToMatch;
 	public $marcValueToMatch;
-	public $includeOnlyMatches;
+	public $includeExcludeMatches;
 	//The next 2 fields determine how urls are constructed
 	public $urlToMatch;
 	public $urlReplacement;
