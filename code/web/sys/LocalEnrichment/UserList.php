@@ -21,7 +21,7 @@ class UserList extends DataObject
 	}
 
 	// Used by FavoriteHandler as well//
-	protected $_userListSortOptions = array(
+	protected $__userListSortOptions = array(
 		// URL_value => SQL code for Order BY clause
 		'dateAdded' => 'dateAdded ASC',
 		'recentlyAdded' => 'dateAdded DESC',
@@ -270,7 +270,7 @@ class UserList extends DataObject
 	public function getBrowseRecords($start, $numItems) {
 		global $interface;
 		$browseRecords = array();
-		$sort               = in_array($this->defaultSort, array_keys($this->_userListSortOptions)) ? $this->_userListSortOptions[$this->defaultSort] : null;
+		$sort               = in_array($this->defaultSort, array_keys($this->__userListSortOptions)) ? $this->__userListSortOptions[$this->defaultSort] : null;
 		list($listEntries)  = $this->getListEntries($sort);
 		$listEntries        = array_slice($listEntries, $start, $numItems);
 		$groupedWorkIds = array();
@@ -333,7 +333,7 @@ class UserList extends DataObject
 	 */
 	public function getUserListSortOptions()
 	{
-		return $this->_userListSortOptions;
+		return $this->__userListSortOptions;
 	}
 	private function flushUserListBrowseCategory(){
 		// Check if the list is a part of a browse category and clear the cache.

@@ -46,8 +46,8 @@ class FavoriteHandler
 	private $isMixedUserList = false; // Flag for user lists that have both catalog & archive items (and eventually other type of items)
 
 	protected $userListSortOptions = array();
-	protected $solrSortOptions = array('title', 'author'), // user list sorting options handled by Solr engine.
-						$islandoraSortOptions = array('fgs_label_s'); // user list sorting options handled by the Islandora Solr engine.
+	protected $solrSortOptions = array('title', 'author'); // user list sorting options handled by Solr engine.
+	protected $islandoraSortOptions = array('fgs_label_s'); // user list sorting options handled by the Islandora Solr engine.
 
 	/**
 	 * Constructor.
