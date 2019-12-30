@@ -1437,4 +1437,23 @@ class Location extends DataObject
 		$this->_groupedWorkDisplaySettings = $newGroupedWorkDisplaySettings;
 		$this->groupedWorkDisplaySettingId = $newGroupedWorkDisplaySettings->id;
 	}
+
+	/**
+	 * @return array
+	 */
+	static function getLocationList(): array
+	{
+		$location = new Location();
+		$location->orderBy('displayName');
+		if (UserAccount::userHasRole('libraryAdmin')) {
+			$homeLibrary = Library::getPatronHomeLibrary();
+			$location->libraryId = $homeLibrary->libraryId;
+		}
+		$location->find();
+		$locationList = [];
+		while ($location->fetch()) {
+			$locationList[$location->locationId] = $location->displayName;
+		}
+		return $locationList;
+	}
 }

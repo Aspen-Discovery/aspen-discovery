@@ -19,8 +19,8 @@ class OverDriveScope extends DataObject
 
 	public static function getObjectStructure()
 	{
-		$libraryList = self::getLibraryList();
-		$locationList = self::getLocationList();
+		$libraryList = Library::getLibraryList();
+		$locationList = Location::getLocationList();
 
 		$structure = [
 			'id' => array('property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id'),
@@ -52,44 +52,6 @@ class OverDriveScope extends DataObject
 			),
 		];
 		return $structure;
-	}
-
-	/**
-	 * @return array
-	 */
-	private static function getLibraryList(): array
-	{
-		$library = new Library();
-		$library->orderBy('displayName');
-		if (UserAccount::userHasRole('libraryAdmin')) {
-			$homeLibrary = Library::getPatronHomeLibrary();
-			$library->libraryId = $homeLibrary->libraryId;
-		}
-		$library->find();
-		$libraryList = [];
-		while ($library->fetch()) {
-			$libraryList[$library->libraryId] = $library->displayName;
-		}
-		return $libraryList;
-	}
-
-	/**
-	 * @return array
-	 */
-	private static function getLocationList(): array
-	{
-		$location = new Location();
-		$location->orderBy('displayName');
-		if (UserAccount::userHasRole('libraryAdmin')) {
-			$homeLibrary = Library::getPatronHomeLibrary();
-			$location->libraryId = $homeLibrary->libraryId;
-		}
-		$location->find();
-		$locationList = [];
-		while ($location->fetch()) {
-			$locationList[$location->locationId] = $location->displayName;
-		}
-		return $locationList;
 	}
 
 	public function __get($name){
@@ -154,7 +116,7 @@ class OverDriveScope extends DataObject
 
 	public function saveLibraries(){
 		if (isset ($this->_libraries) && is_array($this->_libraries)){
-			$libraryList = self::getLibraryList();
+			$libraryList = Library::getLibraryList();
 			foreach ($libraryList as $libraryId => $displayName){
 				$library = new Library();
 				$library->libraryId = $libraryId;
@@ -179,7 +141,7 @@ class OverDriveScope extends DataObject
 
 	public function saveLocations(){
 		if (isset ($this->_locations) && is_array($this->_locations)){
-			$locationList = self::getLocationList();
+			$locationList = Location::getLocationList();
 			/**
 			 * @var int $locationId
 			 * @var Location $location

@@ -1690,4 +1690,23 @@ class Library extends DataObject
 	function getEditLink(){
 		return '/Admin/Libraries?objectAction=edit&id=' . $this->libraryId;
 	}
+
+	/**
+	 * @return array
+	 */
+	static function getLibraryList(): array
+	{
+		$library = new Library();
+		$library->orderBy('displayName');
+		if (UserAccount::userHasRole('libraryAdmin')) {
+			$homeLibrary = Library::getPatronHomeLibrary();
+			$library->libraryId = $homeLibrary->libraryId;
+		}
+		$library->find();
+		$libraryList = [];
+		while ($library->fetch()) {
+			$libraryList[$library->libraryId] = $library->displayName;
+		}
+		return $libraryList;
+	}
 }
