@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/../carlx_export/carlx_export.iml" filepath="$PROJECT_DIR$/../carlx_export/carlx_export.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../cloudlibrary_export/cloudlibrary_export.iml" filepath="$PROJECT_DIR$/../cloudlibrary_export/cloudlibrary_export.iml" />
+      <module fileurl="file://$PROJECT_DIR$/cron.iml" filepath="$PROJECT_DIR$/cron.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../../data_dir_setup/data_dir_setup.iml" filepath="$PROJECT_DIR$/../../data_dir_setup/data_dir_setup.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../hoopla_export/hoopla_export.iml" filepath="$PROJECT_DIR$/../hoopla_export/hoopla_export.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../horizon_export/horizon_export.iml" filepath="$PROJECT_DIR$/../horizon_export/horizon_export.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../../install/install.iml" filepath="$PROJECT_DIR$/../../install/install.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../java_shared_libraries/java_shared_libraries.iml" filepath="$PROJECT_DIR$/../java_shared_libraries/java_shared_libraries.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../koha_export/koha_export.iml" filepath="$PROJECT_DIR$/../koha_export/koha_export.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../marc4j/marc4j.iml" filepath="$PROJECT_DIR$/../marc4j/marc4j.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../oai_indexer/oai_indexer.iml" filepath="$PROJECT_DIR$/../oai_indexer/oai_indexer.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../overdrive_api_extract/overdrive_api_extract.iml" filepath="$PROJECT_DIR$/../overdrive_api_extract/overdrive_api_extract.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../rbdigital_export/rbdigital_export.iml" filepath="$PROJECT_DIR$/../rbdigital_export/rbdigital_export.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../record_grouping/record_grouping.iml" filepath="$PROJECT_DIR$/../record_grouping/record_grouping.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../reindexer/reindexer.iml" filepath="$PROJECT_DIR$/../reindexer/reindexer.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../sideload_processing/sideload_processing.iml" filepath="$PROJECT_DIR$/../sideload_processing/sideload_processing.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../sierra_export_api/sierra_export_api.iml" filepath="$PROJECT_DIR$/../sierra_export_api/sierra_export_api.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../../sites/sites.iml" filepath="$PROJECT_DIR$/../../sites/sites.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../../sites/default/solr-7.6.0/solr-7.6.0.iml" filepath="$PROJECT_DIR$/../../sites/default/solr-7.6.0/solr-7.6.0.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../symphony_export/symphony_export.iml" filepath="$PROJECT_DIR$/../symphony_export/symphony_export.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../user_list_indexer/user_list_indexer.iml" filepath="$PROJECT_DIR$/../user_list_indexer/user_list_indexer.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../web_indexer/web_indexer.iml" filepath="$PROJECT_DIR$/../web_indexer/web_indexer.iml" />
+    </modules>
+  </component>
+</project>

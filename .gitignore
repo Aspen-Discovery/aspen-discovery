@@ -95,7 +95,6 @@ sites/default/solr/jetty/logs
 org.eclipse.*.prefs
 *.iml
 *.css.map
-.idea/
 .settings/
 out/
 
