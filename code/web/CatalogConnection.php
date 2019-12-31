@@ -36,8 +36,8 @@ class CatalogConnection
 	{
 		$path = ROOT_DIR . "/Drivers/{$driver}.php";
 		if (is_readable($path) && $driver != 'AbstractIlsDriver') {
-            /** @noinspection PhpIncludeInspection */
-            require_once $path;
+			/** @noinspection PhpIncludeInspection */
+			require_once $path;
 
 			try {
 				$this->driver = new $driver($accountProfile);

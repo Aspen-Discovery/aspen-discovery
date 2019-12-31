@@ -125,24 +125,39 @@ class User extends DataObject
 		return $lists;
 	}
 
-	private $catalogDriver;
+	private $catalogDriver = null;
+
 	/**
 	 * Get a connection to the catalog for the user
 	 *
 	 * @return CatalogConnection
 	 */
-	function getCatalogDriver(){
-		if ($this->catalogDriver == null){
+	function getCatalogDriver()
+	{
+		if ($this->catalogDriver == null) {
 			//Based off the source of the user, get the AccountProfile
 			$accountProfile = $this->getAccountProfile();
-			if ($accountProfile){
+			if ($accountProfile) {
 				$catalogDriver = trim($accountProfile->driver);
-				if (!empty($catalogDriver)){
-                    $this->catalogDriver = CatalogFactory::getCatalogConnectionInstance($catalogDriver, $accountProfile);
-                }
+				if (!empty($catalogDriver)) {
+					$this->catalogDriver = CatalogFactory::getCatalogConnectionInstance($catalogDriver, $accountProfile);
+				}
 			}
 		}
 		return $this->catalogDriver;
+	}
+
+	function hasIlsConnection()
+	{
+		$driver = $this->getCatalogDriver();
+		if ($driver == null){
+			return false;
+		}else{
+			if ($driver->driver == null){
+				return false;
+			}
+		}
+		return true;
 	}
 
 	/** @var AccountProfile */
@@ -951,7 +966,7 @@ class User extends DataObject
 		global $timer;
 		//Get checked out titles from the ILS
 		if ($source == 'all' || $source == 'ils'){
-			if ($this->getCatalogDriver() != null){
+			if ($this->hasIlsConnection()){
 				$ilsCheckouts = $this->getCatalogDriver()->getCheckouts($this);
 				$allCheckedOut = $ilsCheckouts;
 				$timer->logTime("Loaded transactions from catalog. {$this->id}");
@@ -1019,7 +1034,7 @@ class User extends DataObject
 
 	public function getHolds($includeLinkedUsers = true, $unavailableSort = 'sortTitle', $availableSort = 'expire', $source='all'){
 		if ($source == 'all' || $source == 'ils') {
-			if ($this->getCatalogDriver() != null){
+			if ($this->hasIlsConnection()){
 				$ilsHolds = $this->getCatalogDriver()->getHolds($this);
 				if ($ilsHolds instanceof AspenError) {
 					$ilsHolds = array();
@@ -1555,7 +1570,7 @@ class User extends DataObject
 	}
 
 	public function getShowUsernameField() {
-	    if ($this->getCatalogDriver() != null){
+	    if ($this->hasIlsConnection()){
             return $this->getCatalogDriver()->getShowUsernameField();
         }else{
 	        return false;
@@ -1688,7 +1703,7 @@ class User extends DataObject
 
 	function getPatronUpdateForm()
 	{
-		if ($this->getCatalogDriver() != null){
+		if ($this->hasIlsConnection()){
 			return $this->getCatalogDriver()->getPatronUpdateForm($this);
 		}else{
 			return null;
@@ -1696,7 +1711,7 @@ class User extends DataObject
 	}
 
 	function showMessagingSettings(){
-		if ($this->getCatalogDriver() != null){
+		if ($this->hasIlsConnection()){
 			return $this->getCatalogDriver()->showMessagingSettings();
 		}else{
 			return false;

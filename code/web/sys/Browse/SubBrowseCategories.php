@@ -31,7 +31,7 @@ class SubBrowseCategories extends DataObject {
 		while ($browseCategories->fetch()){
 			$browseCategoryList[$browseCategories->id] = $browseCategories->label . ' (' . $browseCategories->textId . ')';
 		}
-		
+
 		return $browseCategoryList;
 	}
 

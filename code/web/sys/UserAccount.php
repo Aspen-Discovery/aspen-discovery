@@ -188,18 +188,14 @@ class UserAccount {
 		return '';
 	}
 
-    public static function getUserHasCatalogConnection(){
-        UserAccount::loadUserObjectFromDatabase();
-        if (UserAccount::$primaryUserObjectFromDB != false){
-            $accountProfiles = UserAccount::getAccountProfiles();
-            /** @var array $userAccountProfile */
-            $userAccountProfile = $accountProfiles[UserAccount::$primaryUserObjectFromDB->source];
-            /** @var AccountProfile $selectedAccountProfile */
-            $selectedAccountProfile = $userAccountProfile['accountProfile'];
-            return !empty(trim($selectedAccountProfile->driver));
-        }
-        return false;
-    }
+	public static function getUserHasCatalogConnection()
+	{
+		UserAccount::loadUserObjectFromDatabase();
+		if (UserAccount::$primaryUserObjectFromDB != false) {
+			return UserAccount::getActiveUserObj()->hasIlsConnection();
+		}
+		return false;
+	}
 
 	public static function getUserPType(){
 		UserAccount::loadUserObjectFromDatabase();

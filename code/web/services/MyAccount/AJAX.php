@@ -997,7 +997,7 @@ class MyAccount_AJAX
 		];
 		if (UserAccount::isLoggedIn()) {
 			$user = UserAccount::getActiveUserObj();
-			if ($user->getCatalogDriver() != null) {
+			if ($user->hasIlsConnection()) {
 				$ilsSummary = $user->getCatalogDriver()->getAccountSummary($user);
 				$ilsSummary['materialsRequests'] = $user->getNumMaterialsRequests();
 				if ($user->getLinkedUsers() != null) {
