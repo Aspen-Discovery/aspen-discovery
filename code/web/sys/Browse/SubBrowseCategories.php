@@ -27,10 +27,11 @@ class SubBrowseCategories extends DataObject {
 
 		$browseCategories = new BrowseCategory();
 		$browseCategories->orderBy('label');
-		$browseCategories->selectAdd();
-		$browseCategories->selectAdd('id, CONCAT(`label`, " (", `textID`, ")") AS `option`');
-		$browseCategoryList = $browseCategories->fetchAll('id', 'option');
-
+		$browseCategories->find();
+		while ($browseCategories->fetch()){
+			$browseCategoryList[$browseCategories->id] = $browseCategories->label . ' (' . $browseCategories->textId . ')';
+		}
+		
 		return $browseCategoryList;
 	}
 
