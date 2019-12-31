@@ -39,7 +39,6 @@ class Location extends DataObject
 	public $validHoldPickupBranch;    //tinyint(4)
 	public $nearbyLocation1;        //int(11)
 	public $nearbyLocation2;        //int(11)
-	public $holdingBranchLabel;     //varchar(40)
 	public $scope;
 	public $useScope;
 	public $facetLabel;
@@ -240,7 +239,6 @@ class Location extends DataObject
 			)),
 
 			'ilsSection' => array('property' => 'ilsSection', 'type' => 'section', 'label' => 'ILS/Account Integration', 'hideInLists' => true, 'properties' => array(
-				array('property' => 'holdingBranchLabel', 'type' => 'text', 'label' => 'Holding Branch Label', 'description' => 'The label used within the holdings table in Millennium'),
 				array('property' => 'scope', 'type' => 'text', 'label' => 'Scope', 'description' => 'The scope for the system in Millennium to refine holdings to the branch.  If there is no scope defined for the branch, this can be set to 0.', 'default' => 0),
 				array('property' => 'useScope', 'type' => 'checkbox', 'label' => 'Use Scope?', 'description' => 'Whether or not the scope should be used when displaying holdings.', 'hideInLists' => true),
 				array('property' => 'defaultPType', 'type' => 'text', 'label' => 'Default P-Type', 'description' => 'The P-Type to use when accessing a subdomain if the patron is not logged in.  Use -1 to use the library default PType.', 'default' => -1),
