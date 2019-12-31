@@ -29,19 +29,19 @@
 #############
 # Indexing Tasks #
 #############
-@reboot     root    sleep 60 /usr/local/aspen-discovery/sites/aspencat.production/; ./start_background_processes.sh
-5 2 * * *   root    php /usr/local/aspen-discovery/code/web/cron/updateSuggesters.php aspencat.production
-*/5 * * * * root    php /usr/local/aspen-discovery/code/web/cron/checkBackgroundProcesses.php aspencat.production
+@reboot       root    sleep 60 /usr/local/aspen-discovery/sites/aspencat.production/; ./start_background_processes.sh
+5 2 * * *     root    php /usr/local/aspen-discovery/code/web/cron/updateSuggesters.php aspencat.production
+*/5 * * * *   root    php /usr/local/aspen-discovery/code/web/cron/checkBackgroundProcesses.php aspencat.production
 
 ########################################################
 # Regular extracts that don't need to run continuously #
 ########################################################
-0 2 * * *   root    cd /usr/local/aspen-discovery/code/oai_indexer; java -jar oai_indexer.jar aspencat.production
+# 0 2 * * *   root    cd /usr/local/aspen-discovery/code/oai_indexer; java -jar oai_indexer.jar aspencat.production
 
 #############################################
 # New York Times Best seller Lists Updating #
 #############################################
-15 7 * * 0-1 root    php /usr/local/aspen-discovery/code/web/cron/updateNYTLists.php aspencat.production
+15 7 * * 0-1  root    php /usr/local/aspen-discovery/code/web/cron/updateNYTLists.php aspencat.production
 # update on Sundays and Mondays at 7:15
 
 ################
@@ -49,9 +49,9 @@
 ################
 
 # Temp files
-26 0 * * *   root    cd /tmp; rm -rf CURLCOOKIE*
+26 0 * * *    root    cd /tmp; rm -rf CURLCOOKIE*
 
 # CRON for Aspen (book cover cache cleanup etc.)
-00 20 * * *  root    cd /usr/local/aspen-discovery/code/cron; java -jar cron.jar aspencat.production
+00 20 * * *   root    cd /usr/local/aspen-discovery/code/cron; java -jar cron.jar aspencat.production
 
-00 01 * * *  root    certbot renew
+00 01 * * *   root    certbot renew
