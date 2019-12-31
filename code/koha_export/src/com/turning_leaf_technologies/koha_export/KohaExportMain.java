@@ -385,7 +385,7 @@ public class KohaExportMain {
 			PreparedStatement addAspenLocationRecordsToIncludeStmt = dbConn.prepareStatement("INSERT INTO location_records_to_include (locationId, indexingProfileId, location, subLocation, weight) VALUES (?, ?, '.*', '', 1)");
 			PreparedStatement addAspenLibraryRecordsOwnedStmt = dbConn.prepareStatement("INSERT INTO library_records_owned (libraryId, indexingProfileId, location, subLocation) VALUES (?, ?, ?, '') ON DUPLICATE KEY UPDATE location = CONCAT(location, '|', VALUES(location))");
 			PreparedStatement addAspenLibraryRecordsToIncludeStmt = dbConn.prepareStatement("INSERT INTO library_records_to_include (libraryId, indexingProfileId, location, subLocation, weight) VALUES (?, ?, '.*', '', 1)");
-			PreparedStatement updateAspenLocationStmt = dbConn.prepareStatement("UPDATE location SET displayName = ?, address = ?, phone = ? where locationId = ?");
+			PreparedStatement updateAspenLocationStmt = dbConn.prepareStatement("UPDATE location SET address = ?, phone = ? where locationId = ?");
 			PreparedStatement kohaRepeatableHolidaysStmt = kohaConn.prepareStatement("SELECT * FROM repeatable_holidays where branchcode = ?");
 			PreparedStatement kohaSpecialHolidaysStmt = kohaConn.prepareStatement("SELECT * FROM special_holidays where (year = ? or year = ?) AND branchcode = ? order by  year, month, day");
 			PreparedStatement existingHoursStmt = dbConn.prepareStatement("SELECT count(*) FROM location_hours where locationId = ?");
@@ -487,16 +487,17 @@ public class KohaExportMain {
 					existingLocationId = existingAspenLocationRS.getLong("locationId");
 				}
 				if (existingLocationId != 0) {
-					updateAspenLocationStmt.setString(1, kohaBranches.getString("branchname"));
+					//Do not change display name so it can be different between Aspen and Koha (needed to remove courier codes for CLiC)
+					//updateAspenLocationStmt.setString(1, kohaBranches.getString("branchname"));
 					String address = kohaBranches.getString("branchaddress1");
 					String address2 = kohaBranches.getString("branchaddress2");
 					if (address2 != null && address2.length() > 0) {
 						address += "\r\n" + address2;
 					}
 					address += "\r\n" + kohaBranches.getString("branchcity") + "," + kohaBranches.getString("branchstate") + " " + kohaBranches.getString("branchzip");
-					updateAspenLocationStmt.setString(2, address);
-					updateAspenLocationStmt.setString(3, kohaBranches.getString("branchphone"));
-					updateAspenLocationStmt.setLong(4, existingLocationId);
+					updateAspenLocationStmt.setString(1, address);
+					updateAspenLocationStmt.setString(2, kohaBranches.getString("branchphone"));
+					updateAspenLocationStmt.setLong(3, existingLocationId);
 					updateAspenLocationStmt.executeUpdate();
 
 					HashMap<java.sql.Date, Long> existingHolidayDates = new HashMap<>();
