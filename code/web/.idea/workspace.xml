@@ -2,11 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="64b30edf-4a70-42c6-b752-8518712fb864" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/../cron/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../cron/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sys/DBMaintenance/library_location_updates.php" beforeDir="false" afterPath="$PROJECT_DIR$/sys/DBMaintenance/library_location_updates.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sys/LibraryLocation/Location.php" beforeDir="false" afterPath="$PROJECT_DIR$/sys/LibraryLocation/Location.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sys/MaterialsRequest.php" beforeDir="false" afterPath="$PROJECT_DIR$/sys/MaterialsRequest.php" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -161,9 +157,9 @@
       <method v="2" />
     </configuration>
     <list>
+      <item itemvalue="PHP Script.checkBackgroundProcesses" />
       <item itemvalue="PHP Script.createSite" />
       <item itemvalue="PHP Script.updateNYTLists" />
-      <item itemvalue="PHP Script.checkBackgroundProcesses" />
       <item itemvalue="PHP Script.updateSuggesters" />
     </list>
   </component>
@@ -236,7 +232,7 @@
       <workItem from="1574457053082" duration="1817000" />
       <workItem from="1574650741738" duration="89277000" />
       <workItem from="1575551072665" duration="112184000" />
-      <workItem from="1576501617057" duration="115216000" />
+      <workItem from="1576501617057" duration="117873000" />
     </task>
     <servers />
   </component>
