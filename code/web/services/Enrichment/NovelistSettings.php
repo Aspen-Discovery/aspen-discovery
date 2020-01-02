@@ -2,7 +2,7 @@
 
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
-require_once ROOT_DIR . '/sys/Novelist/NovelistSetting.php';
+require_once ROOT_DIR . '/sys/Enrichment/NovelistSetting.php';
 
 class Enrichment_NovelistSettings extends ObjectEditor
 {

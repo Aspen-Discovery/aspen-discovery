@@ -2146,7 +2146,7 @@ class Admin_DBMaintenance extends Admin_Admin
 	function populateNovelistSettings(){
 		global $configArray;
 		if (!empty($configArray['Novelist']['profile'])){
-			require_once ROOT_DIR . '/sys/Novelist/NovelistSetting.php';
+			require_once ROOT_DIR . '/sys/Enrichment/NovelistSetting.php';
 			$novelistSetting = new NovelistSetting();
 			$novelistSetting->profile = $configArray['Novelist']['profile'];
 			$novelistSetting->pwd = $configArray['Novelist']['pwd'];

@@ -609,7 +609,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 		require_once ROOT_DIR . '/sys/ISBN.php';
 
 		//Check to see if we already have NovelistData loaded with a primary ISBN
-		require_once ROOT_DIR . '/sys/Novelist/NovelistData.php';
+		require_once ROOT_DIR . '/sys/Enrichment/NovelistData.php';
 		$novelistData = new NovelistData();
 		$novelistData->groupedRecordPermanentId = $this->getPermanentId();
 		if (!isset($_REQUEST['reload']) && $this->getPermanentId() != null && $this->getPermanentId() != '' && $novelistData->find(true) && $novelistData->primaryISBN != null) {

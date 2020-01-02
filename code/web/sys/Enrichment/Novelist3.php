@@ -1,6 +1,6 @@
 <?php
 require_once(ROOT_DIR . '/Drivers/marmot_inc/ISBNConverter.php');
-require_once ROOT_DIR . '/sys/Novelist/NovelistData.php';
+require_once ROOT_DIR . '/sys/Enrichment/NovelistData.php';
 require_once ROOT_DIR . '/sys/CurlWrapper.php';
 class Novelist3{
 
@@ -398,7 +398,7 @@ class Novelist3{
 			//check novelist cache by series
 			if ($titleList[$index] == null && !empty($seriesName) && !empty($item->volume)){
 				//Check to see if we can get a grouped work id based on the volume and series name
-				require_once ROOT_DIR . '/sys/Novelist/NovelistData.php';
+				require_once ROOT_DIR . '/sys/Enrichment/NovelistData.php';
 				$novelistData = new NovelistData();
 				$novelistData->seriesTitle = $seriesName;
 				if (isset($item->volume)){
@@ -607,7 +607,7 @@ class Novelist3{
 	 */
 	private function getNovelistSettings()
 	{
-		require_once ROOT_DIR . '/sys/Novelist/NovelistSetting.php';
+		require_once ROOT_DIR . '/sys/Enrichment/NovelistSetting.php';
 		$novelistSettings = new NovelistSetting();
 		$novelistSettings->find(true);
 		if ($novelistSettings->getNumResults() == 0){
