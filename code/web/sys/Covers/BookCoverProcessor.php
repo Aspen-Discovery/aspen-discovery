@@ -1165,6 +1165,13 @@ class BookCoverProcessor{
 					$bookcoverUrl = $urlComponents['scheme'] . '://' . $urlComponents['host'] . $bookcoverUrl;
 				}
 				return $this->processImageURL('open_archives', $bookcoverUrl, true);
+			}elseif (preg_match('~<div id="item-images">.*<img src="(.*?)".*>~', $pageContents, $matches)) {
+				$bookcoverUrl = $matches[1];
+				if (strpos($bookcoverUrl, 'http') !== 0) {
+					$urlComponents = parse_url($url);
+					$bookcoverUrl = $urlComponents['scheme'] . '://' . $urlComponents['host'] . $bookcoverUrl;
+				}
+				return $this->processImageURL('open_archives', $bookcoverUrl, true);
 			}
 		}
 		return false;
