@@ -7,7 +7,7 @@ require_once ROOT_DIR . '/services/Admin/Admin.php';
  * Provides a method of running SQL updates to the database.
  * Shows a list of updates that are available with a description of the
  */
-class DBMaintenance extends Admin_Admin
+class Admin_DBMaintenance extends Admin_Admin
 {
 	function launch()
 	{
@@ -1966,7 +1966,20 @@ class DBMaintenance extends Admin_Admin
 						) ENGINE = INNODB;',
 						'ALTER TABLE placard_trigger ADD INDEX triggerWord (triggerWord)'
 					],
-				]
+				],
+
+				'novelist_settings' => [
+					'title' => 'Novelist settings',
+					'description' => 'Add the ability to store Novelist settings in the DB rather than config file',
+					'sql' => [
+						'CREATE TABLE IF NOT EXISTS novelist_settings(
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							profile VARCHAR(50) NOT NULL,
+							pwd VARCHAR(50) NOT NULL
+						) ENGINE = INNODB;',
+						'populateNovelistSettings'
+					],
+				],
 			)
 		);
 	}
@@ -2127,6 +2140,17 @@ class DBMaintenance extends Admin_Admin
 				$library->showInMainDetails[] = 'showSeries';
 				$library->update();
 			}
+		}
+	}
+
+	function populateNovelistSettings(){
+		global $configArray;
+		if (!empty($configArray['Novelist']['profile'])){
+			require_once ROOT_DIR . '/sys/Novelist/NovelistSetting.php';
+			$novelistSetting = new NovelistSetting();
+			$novelistSetting->profile = $configArray['Novelist']['profile'];
+			$novelistSetting->pwd = $configArray['Novelist']['pwd'];
+			$novelistSetting->insert();
 		}
 	}
 }

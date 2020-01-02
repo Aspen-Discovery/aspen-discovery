@@ -116,13 +116,10 @@ class Novelist3{
 	 */
 	function getRawNovelistData($groupedRecordId, $isbns, $allowReload = true){
 		global $timer;
-		global $configArray;
+		$novelistSettings = $this->getNovelistSettings();
 
 		//First make sure that Novelist is enabled
-		if (isset($configArray['Novelist']) && isset($configArray['Novelist']['profile']) && strlen($configArray['Novelist']['profile']) > 0){
-			$profile = $configArray['Novelist']['profile'];
-			$pwd = $configArray['Novelist']['pwd'];
-		}else{
+		if ($novelistSettings == null){
 			return null;
 		}
 
@@ -165,7 +162,7 @@ class Novelist3{
 				$bestRawJson = '';
 				//Check each ISBN for enrichment data
 				foreach ($isbns as $isbn){
-					$requestUrl = "http://novselect.ebscohost.com/Data/ContentByQuery?profile=$profile&password=$pwd&ClientIdentifier={$isbn}&isbn={$isbn}&version=2.1&tmpstmp=" . time();
+					$requestUrl = "http://novselect.ebscohost.com/Data/ContentByQuery?profile={$novelistSettings->profile}&password={$novelistSettings->pwd}&ClientIdentifier={$isbn}&isbn={$isbn}&version=2.1&tmpstmp=" . time();
 					//echo($requestUrl);
 					try{
 						//Get the JSON from the service
@@ -603,5 +600,20 @@ class Novelist3{
 			'mediumCover' => $recordDriver->getBookcoverUrl('medium'),
 		);
 		return $curTitle;
+	}
+
+	/**
+	 * @return NovelistSetting | null
+	 */
+	private function getNovelistSettings()
+	{
+		require_once ROOT_DIR . '/sys/Novelist/NovelistSetting.php';
+		$novelistSettings = new NovelistSetting();
+		$novelistSettings->find(true);
+		if ($novelistSettings->getNumResults() == 0){
+			return null;
+		}else{
+			return $novelistSettings;
+		}
 	}
 }
