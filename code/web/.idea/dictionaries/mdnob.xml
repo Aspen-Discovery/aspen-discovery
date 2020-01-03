@@ -38,8 +38,10 @@
       <w>biblionumber</w>
       <w>birthdate</w>
       <w>bisac</w>
+      <w>blreview</w>
       <w>bookcover</w>
       <w>bookflix</w>
+      <w>booklist</w>
       <w>bools</w>
       <w>boombox</w>
       <w>borrowernumber</w>
@@ -50,6 +52,7 @@
       <w>checkedout</w>
       <w>checksums</w>
       <w>childrens</w>
+      <w>chreview</w>
       <w>circ</w>
       <w>circs</w>
       <w>cltreq</w>
@@ -58,6 +61,8 @@
       <w>contentcafe</w>
       <w>copyrightdate</w>
       <w>coverimages</w>
+      <w>criti</w>
+      <w>criticasereview</w>
       <w>crontab</w>
       <w>csrf</w>
       <w>curdate</w>
@@ -110,6 +115,7 @@
       <w>grantor</w>
       <w>graymap</w>
       <w>haussmann</w>
+      <w>hbreview</w>
       <w>hilite</w>
       <w>hocr</w>
       <w>hoopladigital</w>
@@ -142,6 +148,8 @@
       <w>josefin</w>
       <w>kanopy</w>
       <w>kinect</w>
+      <w>kireview</w>
+      <w>kirkus</w>
       <w>koha</w>
       <w>lastinitial</w>
       <w>lastname</w>
@@ -154,6 +162,7 @@
       <w>limitmaxerror</w>
       <w>limitmaxwarning</w>
       <w>limitmode</w>
+      <w>ljreview</w>
       <w>logins</w>
       <w>lookfor</w>
       <w>lplaced</w>
@@ -215,6 +224,7 @@
       <w>ptype</w>
       <w>ptypes</w>
       <w>publishercode</w>
+      <w>pwreview</w>
       <w>qwertyuiopasdfghjkl</w>
       <w>rbdigital</w>
       <w>rbrack</w>
@@ -240,6 +250,7 @@
       <w>sideloads</w>
       <w>sirsi</w>
       <w>sitename</w>
+      <w>sljreview</w>
       <w>smsalertnumber</w>
       <w>soundex</w>
       <w>spammy</w>

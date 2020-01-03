@@ -1980,6 +1980,43 @@ class Admin_DBMaintenance extends Admin_Admin
 						'populateNovelistSettings'
 					],
 				],
+
+				'contentcafe_settings' => [
+					'title' => 'ContentCafe settings',
+					'description' => 'Add the ability to store ContentCafe settings in the DB rather than config file',
+					'sql' => [
+						'CREATE TABLE IF NOT EXISTS contentcafe_settings(
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							contentCafeId VARCHAR(50) NOT NULL,
+							pwd VARCHAR(50) NOT NULL,
+							hasSummary TINYINT(1) DEFAULT 1,
+							hasToc TINYINT(1) DEFAULT 0,
+							hasExcerpt TINYINT(1) DEFAULT 0,
+							hasAuthorNotes  TINYINT(1) DEFAULT 0
+						) ENGINE = INNODB;',
+						'populateContentCafeSettings'
+					],
+				],
+
+				'syndetics_settings' => [
+					'title' => 'Syndetics settings',
+					'description' => 'Add the ability to store Syndetics settings in the DB rather than config file',
+					'sql' => [
+						'CREATE TABLE IF NOT EXISTS syndetics_settings(
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							syndeticsKey VARCHAR(50) NOT NULL,
+							hasSummary TINYINT(1) DEFAULT 1,
+							hasAvSummary TINYINT(1) DEFAULT 0,
+							hasAvProfile TINYINT(1) DEFAULT 0,
+							hasToc TINYINT(1) DEFAULT 1,
+							hasExcerpt TINYINT(1) DEFAULT 1,
+							hasVideoClip TINYINT(1) DEFAULT 0,
+							hasFictionProfile TINYINT(1) DEFAULT 0,
+							hasAuthorNotes  TINYINT(1) DEFAULT 0
+						) ENGINE = INNODB;',
+						'populateSyndeticsSettings'
+					],
+				],
 			)
 		);
 	}
@@ -2151,6 +2188,39 @@ class Admin_DBMaintenance extends Admin_Admin
 			$novelistSetting->profile = $configArray['Novelist']['profile'];
 			$novelistSetting->pwd = $configArray['Novelist']['pwd'];
 			$novelistSetting->insert();
+		}
+	}
+
+	function populateContentCafeSettings(){
+		global $configArray;
+		if (!empty($configArray['ContentCafe']['id'])){
+			require_once ROOT_DIR . '/sys/Enrichment/ContentCafeSetting.php';
+			$setting = new ContentCafeSetting();
+			$setting->contentCafeId = $configArray['ContentCafe']['id'];
+			$setting->pwd = $configArray['ContentCafe']['pw'];
+			$setting->hasSummary = ($configArray['ContentCafe']['showSummary'] == true);
+			$setting->hasToc = ($configArray['ContentCafe']['showToc'] == true);
+			$setting->hasExcerpt = ($configArray['ContentCafe']['showExcerpt'] == true);
+			$setting->hasAuthorNotes = ($configArray['ContentCafe']['showEAuthorNotes'] == true);
+			$setting->insert();
+		}
+	}
+
+	function populateSyndeticsSettings(){
+		global $configArray;
+		if (!empty($configArray['Syndetics']['key'])){
+			require_once ROOT_DIR . '/sys/Enrichment/SyndeticsSetting.php';
+			$setting = new SyndeticsSetting();
+			$setting->syndeticsKey = $configArray['Syndetics']['key'];
+			$setting->hasSummary = ($configArray['Syndetics']['showSummary'] == true);
+			$setting->hasAvSummary = ($configArray['Syndetics']['showAvSummary'] == true);
+			$setting->hasAvProfile = ($configArray['Syndetics']['showAvProfile'] == true);
+			$setting->hasToc = ($configArray['Syndetics']['showToc'] == true);
+			$setting->hasExcerpt = ($configArray['Syndetics']['showExcerpt'] == true);
+			$setting->hasFictionProfile = ($configArray['Syndetics']['showFictionProfile'] == true);
+			$setting->hasAuthorNotes = ($configArray['Syndetics']['showEAuthorNotes'] == true);
+			$setting->hasVideoClip = ($configArray['Syndetics']['showVideoClip'] == true);
+			$setting->insert();
 		}
 	}
 }
