@@ -60,6 +60,9 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 				if (subfieldA != null && (recordNumberPrefix.length() == 0 || subfieldA.getData().length() > recordNumberPrefix.length())) {
 					if (subfieldA.getData().substring(0, recordNumberPrefix.length()).equals(recordNumberPrefix)) {
 						String recordNumber = subfieldA.getData().trim();
+						if (recordNumber.indexOf(' ') > 0){
+							recordNumber = recordNumber.substring(0, recordNumber.indexOf(' '));
+						}
 						identifier = new RecordIdentifier(recordType, recordNumber);
 					}
 				}

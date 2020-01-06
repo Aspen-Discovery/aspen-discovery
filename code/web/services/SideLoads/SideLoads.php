@@ -25,7 +25,11 @@ class SideLoads_SideLoads extends ObjectEditor
 				if ($handle = opendir($marcPath)) {
 					while (false !== ($entry = readdir($handle))) {
 						if ($entry != "." && $entry != "..") {
-							$files[$entry] = filectime($marcPath . DIR_SEP . $entry);
+							$fullName = $marcPath . DIR_SEP . $entry;
+							$files[$entry] = [
+								'date' => filectime($fullName),
+								'size' => filesize($fullName)
+							];
 						}
 					}
 					closedir($handle);
