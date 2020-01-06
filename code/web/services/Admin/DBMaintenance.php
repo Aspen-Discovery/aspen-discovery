@@ -2017,6 +2017,17 @@ class Admin_DBMaintenance extends Admin_Admin
 						'populateSyndeticsSettings'
 					],
 				],
+
+				'google_api_settings' => [
+					'title' => 'Google API settings',
+					'description' => 'Add the ability to store google api settings in the DB rather than config file',
+					'sql' => [
+						'CREATE TABLE IF NOT EXISTS google_api_settings(
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							googleBooksKey VARCHAR(50) NOT NULL
+						) ENGINE = INNODB;',
+					],
+				],
 			)
 		);
 	}

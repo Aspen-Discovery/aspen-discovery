@@ -505,7 +505,14 @@ class BookCoverProcessor{
 				}
 			}
 
-			//TODO: Add back google and other providers as needed
+			require_once ROOT_DIR . '/sys/Enrichment/GoogleApiSetting.php';
+			$googleApiSettings = new GoogleApiSetting();
+			if ($googleApiSettings->find(true)){
+				if ($this->google($googleApiSettings)){
+					return true;
+				}
+			}
+
 		}
 		return false;
 	}
@@ -898,7 +905,7 @@ class BookCoverProcessor{
 		return $this->processImageURL('contentCafe', $url, true);
 	}
 
-	function google($key = null,$title = null, $author = null)
+	function google(GoogleApiSetting $googleApiSettings,$title = null, $author = null)
 	{
 		if (is_null($this->isn) && is_null($title) && is_null($author)){
 			return false;
@@ -916,8 +923,8 @@ class BookCoverProcessor{
 			}
 		}
 
-		if (!empty($key)){
-			$url .= '&key=' . $key;
+		if (!empty($googleApiSettings->googleBooksKey)){
+			$url .= '&key=' . $googleApiSettings->googleBooksKey;
 		}
 		require_once ROOT_DIR . '/sys/CurlWrapper.php';
 		$client = new CurlWrapper();
@@ -1064,10 +1071,13 @@ class BookCoverProcessor{
 			$groupedWork = new GroupedWork();
 			$groupedWork->permanent_id = $this->groupedWork->getPermanentId();
 			if ($groupedWork->find(true)) {
-				if ($groupedWork->grouping_category == 'book' && array_key_exists('google', BookCoverProcessor::$providers)) {
-					//Try loading by title and author
-					if ($this->google(BookCoverProcessor::$providers['google'], $driver->getTitle(), $driver->getPrimaryAuthor())) {
-						return true;
+				if ($groupedWork->grouping_category == 'book') {
+					require_once ROOT_DIR . '/sys/Enrichment/GoogleApiSetting.php';
+					$googleApiSettings = new GoogleApiSetting();
+					if ($googleApiSettings->find(true)){
+						if ($this->google($googleApiSettings, $driver->getTitle(), $driver->getPrimaryAuthor())){
+							return true;
+						}
 					}
 				}
 			}

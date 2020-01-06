@@ -362,7 +362,7 @@
 				{/if}
 
 				{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('contentEditor', $userRoles) || array_key_exists('libraryManager', $userRoles) || array_key_exists('locationManager', $userRoles))}
-					{if in_array($action, array('Placards', 'NYTLists', 'ListWidgets', 'BrowseCategories', 'NovelistSettings', 'ContentCafeSettings', 'SyndeticsSettings'))}
+					{if in_array($action, array('Placards', 'NYTLists', 'ListWidgets', 'BrowseCategories', 'NovelistSettings', 'ContentCafeSettings', 'GoogleApiSettings', 'SyndeticsSettings'))}
 						{assign var="curSection" value=true}
 					{else}
 						{assign var="curSection" value=false}
@@ -393,6 +393,9 @@
 								{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles))}
 									<div class="adminMenuLink"><a href="/Enrichment/ContentCafeSettings">{translate text="ContentCafe Settings"}</a></div>
 								{/if}
+                                {if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles))}
+									<div class="adminMenuLink"><a href="/Enrichment/GoogleApiSettings">{translate text="Google Api Settings"}</a></div>
+                                {/if}
 								{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles))}
 									<div class="adminMenuLink"><a href="/Enrichment/NovelistSettings">{translate text="Novelist Settings"}</a></div>
 								{/if}
