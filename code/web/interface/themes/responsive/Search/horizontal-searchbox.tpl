@@ -24,26 +24,21 @@
 				<div class="{if $hiddenSearchSource}col-lg-9 col-md-9{else}col-lg-6 col-md-6{/if} col-sm-10 col-xs-12">
 					{* Main Search Term Box *}
 					<textarea class="form-control"{/strip}
-				          id="lookfor"
-				          name="lookfor"
-				          title="Enter one or more terms to search for.	Surrounding a term with quotes will limit result to only those that exactly match the term."
-				          onkeyup="return AspenDiscovery.Searches.resetSearchType()"
-				          onfocus="$(this).select()"
-				          autocomplete="off"
-				          rows="1"
-				          aria-label="Search Terms"
+						id="lookfor"
+						name="lookfor"
+						title="Enter one or more terms to search for.	Surrounding a term with quotes will limit result to only those that exactly match the term."
+						onkeyup="return AspenDiscovery.Searches.resetSearchType()"
+						onfocus="$(this).select()"
+						autocomplete="off"
+						rows="1"
+						aria-label="Search Terms"
 						{strip}>
 						{if !empty($lookfor)}{$lookfor|escape:"html"}{/if}
 					</textarea>
 				</div>
 
 				{* Search Type *}
-				<div class="col-lg-2 col-lg-offset-0 col-md-2 col-md-offset-0
-				{if $hiddenSearchSource}
-					col-sm-10 col-sm-offset-2 col-xs-12 col-xs-offset-0
-				{else}
-					col-sm-3 col-sm-offset-4 col-xs-5 col-xs-offset-0
-				{/if}">
+				<div class="col-lg-2 col-lg-offset-0 col-md-2 col-md-offset-0 {if $hiddenSearchSource} col-sm-10 col-sm-offset-2 col-xs-12 col-xs-offset-0 {else} col-sm-5 col-sm-offset-2 col-xs-5 col-xs-offset-0{/if}">
 					<select name="searchIndex" class="searchTypeHorizontal form-control catalogType" id="searchIndex" title="The method of searching." aria-label="Search Index">
 						{foreach from=$catalogSearchIndexes item=searchDesc key=searchVal}
 							<option data-search_source="catalog" value="{$searchVal}"{if !empty($searchIndex) && $searchIndex == $searchVal} selected="selected"{/if}>{translate text="by"} {translate text=$searchDesc}</option>
@@ -61,9 +56,9 @@
 						{foreach from=$listSearchIndexes item=searchDesc key=searchVal}
 							<option data-search_source="lists" value="{$searchVal}"{if !empty($searchIndex) && $searchIndex == $searchVal} selected="selected"{/if}>{translate text="by"} {translate text=$searchDesc}</option>
 						{/foreach}
-                        {foreach from=$websiteSearchIndexes item=searchDesc key=searchVal}
+						{foreach from=$websiteSearchIndexes item=searchDesc key=searchVal}
 							<option data-search_source="websites" value="{$searchVal}"{if !empty($searchIndex) && $searchIndex == $searchVal} selected="selected"{/if}>{translate text="by"} {translate text=$searchDesc}</option>
-                        {/foreach}
+						{/foreach}
 					</select>
 				</div>
 
@@ -111,7 +106,7 @@
 
 				{* Show/Hide Search Facets & Sort Options *}
 				{if !empty($recordCount) || !empty($sideRecommendations)}
-					<div class="col-tn-3 col-xs-3 visible-xs">
+					<div class="col-tn-3 col-xs-3 visible-xs text-right">
 						<a class="btn btn-default" id="refineSearchButton" role="button" onclick="AspenDiscovery.Menu.Mobile.showSearchFacets()">{translate text="Refine Search"}</a>
 					</div>
 				{/if}
