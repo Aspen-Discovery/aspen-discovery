@@ -85,7 +85,7 @@ class ILS_IndexingProfiles extends ObjectEditor {
 	}
 
 	function getInstructions(){
-		return 'For more information about indexing profiles, see the <a href="https://docs.google.com/document/d/1OA_HKMmgf4nm2l3ckojHiTHnlbo4dKMNnec3wCtGsLk">online documentation</a>.';
+		return '';
 	}
 
 	function getAdditionalObjectActions($existingObject){
