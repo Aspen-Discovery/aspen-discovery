@@ -774,6 +774,9 @@ class GoDeeperData{
 	static function getAVSummary($settings, $isbn, $upc){
 		global $configArray;
 		/** @var Memcache $memCache */
+		if (!$settings->hasAvSummary){
+			return [];
+		}
 		global $memCache;
 		$avSummaryData = $memCache->get("syndetics_av_summary_{$isbn}_{$upc}");
 
