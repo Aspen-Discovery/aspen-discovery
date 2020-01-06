@@ -452,19 +452,20 @@ class User extends DataObject
 		}
 	}
 
-    /**
-     * @param string $source
-     * @return User[]
-     */
-	function getRelatedEcontentUsers($source){
+	/**
+	 * @param string $source
+	 * @return User[]
+	 */
+	function getRelatedEcontentUsers($source)
+	{
 		$users = array();
-		if ($this->isValidForEContentSource($source)){
-            $users[$this->cat_username . ':' . $this->cat_password] = $this;
+		if ($this->isValidForEContentSource($source)) {
+			$users[$this->cat_username . ':' . $this->cat_password] = $this;
 		}
-		foreach ($this->getLinkedUsers() as $linkedUser){
-			if ($linkedUser->isValidForEContentSource($source)){
-				if (!array_key_exists($linkedUser->cat_username . ':' . $linkedUser->cat_password, $users)){
-                    $users[$linkedUser->cat_username . ':' . $linkedUser->cat_password] = $linkedUser;
+		foreach ($this->getLinkedUsers() as $linkedUser) {
+			if ($linkedUser->isValidForEContentSource($source)) {
+				if (!array_key_exists($linkedUser->cat_username . ':' . $linkedUser->cat_password, $users)) {
+					$users[$linkedUser->cat_username . ':' . $linkedUser->cat_password] = $linkedUser;
 				}
 			}
 		}
