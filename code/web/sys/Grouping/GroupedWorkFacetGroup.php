@@ -27,7 +27,7 @@ class GroupedWorkFacetGroup extends DataObject
 				'helpLink' => '',
 				'keyThis' => 'libraryId',
 				'keyOther' => 'libraryId',
-				'subObjectType' => 'LibraryFacetSetting',
+				'subObjectType' => 'GroupedWorkFacet',
 				'structure' => $facetSettingStructure,
 				'sortable' => true,
 				'storeDb' => true,
