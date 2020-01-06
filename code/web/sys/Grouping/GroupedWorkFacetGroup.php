@@ -24,7 +24,7 @@ class GroupedWorkFacetGroup extends DataObject
 				'type' => 'oneToMany',
 				'label' => 'Facets',
 				'description' => 'A list of facets to display in search results',
-				'helpLink' => 'https://docs.google.com/document/d/1DIOZ-HCqnrBAMFwAomqwI4xv41bALk0Z1Z2fMrhQ3wY',
+				'helpLink' => '',
 				'keyThis' => 'libraryId',
 				'keyOther' => 'libraryId',
 				'subObjectType' => 'LibraryFacetSetting',
