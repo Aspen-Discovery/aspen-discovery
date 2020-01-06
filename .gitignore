@@ -93,7 +93,6 @@ sites/default/solr/jetty/logs
 .project
 .classpath
 org.eclipse.*.prefs
-*.iml
 *.css.map
 .settings/
 out/
