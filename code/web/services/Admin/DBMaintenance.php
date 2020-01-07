@@ -2212,7 +2212,7 @@ class Admin_DBMaintenance extends Admin_Admin
 			$setting->hasSummary = ($configArray['ContentCafe']['showSummary'] == true);
 			$setting->hasToc = ($configArray['ContentCafe']['showToc'] == true);
 			$setting->hasExcerpt = ($configArray['ContentCafe']['showExcerpt'] == true);
-			$setting->hasAuthorNotes = ($configArray['ContentCafe']['showEAuthorNotes'] == true);
+			$setting->hasAuthorNotes = ($configArray['ContentCafe']['showAuthorNotes'] == true);
 			$setting->insert();
 		}
 	}
@@ -2229,7 +2229,7 @@ class Admin_DBMaintenance extends Admin_Admin
 			$setting->hasToc = ($configArray['Syndetics']['showToc'] == true);
 			$setting->hasExcerpt = ($configArray['Syndetics']['showExcerpt'] == true);
 			$setting->hasFictionProfile = ($configArray['Syndetics']['showFictionProfile'] == true);
-			$setting->hasAuthorNotes = ($configArray['Syndetics']['showEAuthorNotes'] == true);
+			$setting->hasAuthorNotes = ($configArray['Syndetics']['showAuthorNotes'] == true);
 			$setting->hasVideoClip = ($configArray['Syndetics']['showVideoClip'] == true);
 			$setting->insert();
 		}

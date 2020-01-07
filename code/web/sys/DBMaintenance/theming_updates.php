@@ -109,5 +109,14 @@ function getThemingUpdates()
 				"ALTER TABLE `themes` ADD COLUMN `bodyFontDefault` tinyint(1) DEFAULT 1",
 			],
 		],
+
+		'themes_additional_css' => [
+			'title' => 'Theme Additional CSS',
+			'description' => 'Add addtional CSS to customize the display',
+			'sql' => [
+				'ALTER TABLE themes add COLUMN additionalCss TEXT',
+				'ALTER TABLE themes add COLUMN additionalCssType TINYINT(1) DEFAULT 0',
+			]
+		],
 	];
 }

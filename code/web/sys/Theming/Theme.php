@@ -55,6 +55,9 @@ class Theme extends DataObject
 	public $bodyFont;
 	public $bodyFontDefault;
 
+	public $additionalCssType;
+	public $additionalCss;
+
 	public $generatedCss;
 
 	static function getObjectStructure()
@@ -144,6 +147,9 @@ class Theme extends DataObject
 			'headingFont' => array('property' => 'headingFont', 'type' => 'font', 'label' => 'Heading Font', 'description' => 'Heading Font', 'validFonts' => $validHeadingFonts, 'previewFontSize' => '20px', 'required' => false, 'hideInLists' => true, 'default' => 'Ubuntu'),
 			'bodyFont' => array('property' => 'bodyFont', 'type' => 'font', 'label' => 'Body Font', 'description' => 'Body Font', 'validFonts' => $validBodyFonts, 'previewFontSize' => '14px', 'required' => false, 'hideInLists' => true, 'default' => 'Lato'),
 
+			//Additional CSS
+			'additionalCss' => array('property' => 'additionalCss', 'type' => 'textarea', 'label' => 'Additional CSS', 'description' => 'Additional CSS to apply to the interface', 'required' => false, 'hideInLists' => true),
+			'additionalCssType' => array('property' => 'additionalCssType', 'type' => 'enum', 'values' => ['0' => 'Append to parent css', '1' => 'Override parent css'], 'label' => 'Additional CSS Application', 'description' => 'How to apply css to the theme', 'required' => false, 'default' => 0),
 		);
 		return $structure;
 	}
@@ -161,6 +167,14 @@ class Theme extends DataObject
 		$this->generatedCss = $this->generateCss($this->getAllAppliedThemes());
 		$this->clearDefaultCovers();
 		$ret = parent::update();
+
+		//Check to see what has been derived from this theme and regenerate CSS for those themes as well
+		$childTheme = new Theme();
+		$childTheme->extendsTheme = $this->themeName;
+		$childTheme->find();
+		while ($childTheme->fetch()){
+			$childTheme->update();
+		}
 		return $ret;
 	}
 
@@ -173,6 +187,8 @@ class Theme extends DataObject
 	{
 		global $interface;
 		require_once ROOT_DIR . '/sys/Utils/ColorUtils.php';
+		$additionalCSS = '';
+		$appendCSS = true;
 		foreach ($allAppliedThemes as $theme) {
 			if ($interface->getVariable('headerBackgroundColor') == null && !$theme->headerBackgroundColorDefault) {
 				$interface->assign('headerBackgroundColor', $theme->headerBackgroundColor);
@@ -234,7 +250,23 @@ class Theme extends DataObject
 			if ($interface->getVariable('bodyFont') == null && !$theme->bodyFontDefault) {
 				$interface->assign('bodyFont', $theme->bodyFont);
 			}
+			if ($appendCSS) {
+				if ($theme - $this->additionalCssType == 1) {
+					$additionalCSS = $theme->additionalCss;
+					$appendCSS = false;
+				} else {
+					if (!empty($theme->additionalCss)) {
+						if (empty($additionalCSS)) {
+							$additionalCSS = $theme->additionalCss;
+						} else {
+							$additionalCSS = $theme->additionalCss . "\n" . $additionalCSS;
+						}
+					}
+				}
+			}
 		}
+
+		$interface->assign('additionalCSS', $additionalCSS);
 
 		return $interface->fetch('theme.css.tpl');
 	}
