@@ -158,7 +158,7 @@ class UInterface extends Smarty
 		// Determine Offline Mode
 		global $offlineMode;
 		$offlineMode = false;
-		if ($configArray['Catalog']['offline']){
+		if (!empty($configArray['Catalog']['offline']) && $configArray['Catalog']['offline'] == true){
 			$offlineMode = true;
 			if (isset($configArray['Catalog']['enableLoginWhileOffline'])){
 				$this->assign('enableLoginWhileOffline', $configArray['Catalog']['enableLoginWhileOffline']);

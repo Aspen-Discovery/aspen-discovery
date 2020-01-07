@@ -34,7 +34,7 @@ class Translation_Translations extends Admin_Admin
 
 		$translation = new Translation();
 		if (!isset($_REQUEST['showAllTranslations'])) {
-			$translation->translated = "0";
+			$translation->whereAdd('(translated = 0 OR needsReview = 1)');
 			$interface->assign('showAllTranslations', false);
 		}else{
 			$interface->assign('showAllTranslations', true);

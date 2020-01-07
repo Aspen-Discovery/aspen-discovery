@@ -67,5 +67,14 @@ function getTranslationUpdates()
 				"INSERT INTO roles (name, description) VALUES ('translator', 'Allows the user to translate the system.')",
 			]
 		],
+
+		'translation_term_default_text' => [
+			'title' => 'Translation Term Default Text',
+			'description' => 'Add default text to translation term so we can determine when to reload translations',
+			'sql' => [
+				'ALTER TABLE translation_terms ADD COLUMN defaultText TEXT',
+				'ALTER TABLE translations ADD COLUMN needsReview TINYINT(1) DEFAULT 0'
+			]
+		],
 	];
 }

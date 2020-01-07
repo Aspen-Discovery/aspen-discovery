@@ -11,7 +11,7 @@ class TranslationTerm extends DataObject
 	public $__table = 'translation_terms';
 	public $id;
 	public $term;
+	public $defaultText;
 	public $parameterNotes;
 	public $samplePageUrl;
-	public $translationProvided;
 }

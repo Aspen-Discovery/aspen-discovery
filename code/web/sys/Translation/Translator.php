@@ -69,7 +69,7 @@ class Translator
 		if ($phrase == ''){
 			return $phrase;
 		}
-		//TODO: Determine if there is a performance improvement to preloading all of this, or if caching within Memcache is good enough
+
 		/** @var Language */
 		global $activeLanguage;
 		$translationMode = $this->translationModeActive() && !$inAttribute && (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('translator'));
@@ -82,7 +82,9 @@ class Translator
 				//Search for the term
 				$translationTerm = new TranslationTerm();
 				$translationTerm->term = $phrase;
+				$defaultTextChanged = false;
 				if (!$translationTerm->find(true)){
+					$translationTerm->defaultText = $defaultText;
 					//Insert the translation term
 					$translationTerm->samplePageUrl = $_SERVER['REQUEST_URI'];
 					try{
@@ -94,6 +96,10 @@ class Translator
 							return $phrase;
 						}
 					}
+				}elseif ($defaultText != $translationTerm->defaultText) {
+					$defaultTextChanged = true;
+					$translationTerm->defaultText = $defaultText;
+					$translationTerm->update();
 				}
 
 				//Search for the translation
@@ -127,6 +133,9 @@ class Translator
 						global $logger;
 						$logger->log("Could not update translation", Logger::LOG_ERROR);
 					}
+				}else if ($defaultTextChanged){
+					$translation->needsReview = 1;
+					$translation->update();
 				}
 
 				if ($translationMode){
