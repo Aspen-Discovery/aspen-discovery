@@ -400,7 +400,7 @@
 									<div class="adminMenuLink"><a href="/Enrichment/NovelistSettings">{translate text="Novelist Settings"}</a></div>
 								{/if}
 								{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles))}
-									<div class="adminMenuLink"><a href="/Enrichment/SyndeticsSettings">{translate text="Syndetcis Settings"}</a></div>
+									<div class="adminMenuLink"><a href="/Enrichment/SyndeticsSettings">{translate text="Syndetics Settings"}</a></div>
 								{/if}
 							</div>
 						</div>
