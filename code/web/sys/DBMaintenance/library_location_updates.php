@@ -2000,14 +2000,22 @@ function getLibraryLocationUpdates(){
 
 		'update_grouped_work_more_details' => [
 			'title' => 'Update Grouped Work More Details',
-			'description' => 'MOve More Details for Grouped Works from Libraries to Grouped Work Display Settings',
+			'description' => 'Move More Details for Grouped Works from Libraries to Grouped Work Display Settings',
 			'sql' => [
 				"RENAME TABLE library_more_details TO grouped_work_more_details",
 				"ALTER TABLE grouped_work_more_details Add COLUMN groupedWorkSettingsId INT(11) NOT NULL DEFAULT -1",
 				"convertLibraryMoreDetailsToGroupedWork",
 				"ALTER TABLE grouped_work_more_details DROP COLUMN libraryId",
 			]
-		]
+		],
+
+		'remove_holding_branch_label' => [
+			'title' => 'Remove Holding Branch Label',
+			'description' => 'Remove Holding Branch Label since it is no longer used',
+			'sql' => [
+				"ALTER TABLE location DROP COLUMN holdingBranchLabel",
+			]
+		],
 	);
 }
 

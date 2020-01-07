@@ -154,7 +154,7 @@ class MaterialsRequest extends DataObject
 	function getHoldLocationName($locationId) {
 		$holdLocation = new Location();
 		if ($holdLocation->get($locationId)) {
-			return empty($holdLocation->holdingBranchLabel) ? $holdLocation->displayName : $holdLocation->holdingBranchLabel;
+			return $holdLocation->displayName;
 		}
 		return false;
 	}

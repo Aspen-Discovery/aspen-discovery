@@ -31,13 +31,6 @@ database_aspen_dbname = {aspenDBName}
 reviews         =
 excerpts        =
 
-[Syndetics]
-key =
-
-[Novelist]
-profile  =
-pwd      =
-
 [WorldCat]
 ;id              =
 ;apiKey          =

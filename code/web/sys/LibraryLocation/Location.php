@@ -39,7 +39,6 @@ class Location extends DataObject
 	public $validHoldPickupBranch;    //tinyint(4)
 	public $nearbyLocation1;        //int(11)
 	public $nearbyLocation2;        //int(11)
-	public $holdingBranchLabel;     //varchar(40)
 	public $scope;
 	public $useScope;
 	public $facetLabel;
@@ -240,7 +239,6 @@ class Location extends DataObject
 			)),
 
 			'ilsSection' => array('property' => 'ilsSection', 'type' => 'section', 'label' => 'ILS/Account Integration', 'hideInLists' => true, 'properties' => array(
-				array('property' => 'holdingBranchLabel', 'type' => 'text', 'label' => 'Holding Branch Label', 'description' => 'The label used within the holdings table in Millennium'),
 				array('property' => 'scope', 'type' => 'text', 'label' => 'Scope', 'description' => 'The scope for the system in Millennium to refine holdings to the branch.  If there is no scope defined for the branch, this can be set to 0.', 'default' => 0),
 				array('property' => 'useScope', 'type' => 'checkbox', 'label' => 'Use Scope?', 'description' => 'Whether or not the scope should be used when displaying holdings.', 'hideInLists' => true),
 				array('property' => 'defaultPType', 'type' => 'text', 'label' => 'Default P-Type', 'description' => 'The P-Type to use when accessing a subdomain if the patron is not logged in.  Use -1 to use the library default PType.', 'default' => -1),
@@ -250,7 +248,7 @@ class Location extends DataObject
 			)),
 
 			//Grouped Work Display
-			'groupedWorkDisplaySettingId' => array('property' => 'groupedWorkDisplaySettingId', 'type' => 'enum', 'values'=>$groupedWorkDisplaySettings, 'label' => 'Grouped Work Display Settings', 'hideInLists' => true),
+			'groupedWorkDisplaySettingId' => array('property' => 'groupedWorkDisplaySettingId', 'type' => 'enum', 'values'=>$groupedWorkDisplaySettings, 'label' => 'Grouped Work Display Settings', 'hideInLists' => false),
 
 			'searchingSection' => array('property' => 'searchingSection', 'type' => 'section', 'label' => 'Searching', 'hideInLists' => true, 'properties' => array(
 				array('property' => 'restrictSearchByLocation', 'type' => 'checkbox', 'label' => 'Restrict Search By Location', 'description' => 'Whether or not search results should only include titles from this location', 'hideInLists' => true, 'default' => false),
@@ -1436,5 +1434,24 @@ class Location extends DataObject
 	{
 		$this->_groupedWorkDisplaySettings = $newGroupedWorkDisplaySettings;
 		$this->groupedWorkDisplaySettingId = $newGroupedWorkDisplaySettings->id;
+	}
+
+	/**
+	 * @return array
+	 */
+	static function getLocationList(): array
+	{
+		$location = new Location();
+		$location->orderBy('displayName');
+		if (UserAccount::userHasRole('libraryAdmin')) {
+			$homeLibrary = Library::getPatronHomeLibrary();
+			$location->libraryId = $homeLibrary->libraryId;
+		}
+		$location->find();
+		$locationList = [];
+		while ($location->fetch()) {
+			$locationList[$location->locationId] = $location->displayName;
+		}
+		return $locationList;
 	}
 }

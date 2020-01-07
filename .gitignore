@@ -93,11 +93,11 @@ sites/default/solr/jetty/logs
 .project
 .classpath
 org.eclipse.*.prefs
-*.iml
 *.css.map
-.idea/
 .settings/
 out/
+code/cron/.idea/workspace.xml
+code/web/.idea/workspace.xml
 
 # OS generated files #
 ######################
@@ -158,3 +158,4 @@ sites/marmot.localhost/sql_backup/marmot_econtent.sql
 sites/marmot.localhost/sql_backup/marmot_vufind.sql
 sites/arlington.localhost/sql_backup/arlington_econtent.sql
 main.tmpcss
+

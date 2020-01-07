@@ -14,11 +14,13 @@
 			<tr>
 				<th>File Name</th>
 				<th>Date</th>
+				<th>Size (bytes)</th>
 			</tr>
-			{foreach from=$files key=file item=fileDate}
+			{foreach from=$files key=file item=fileData}
 				<tr>
 					<td>{$file}</td>
-					<td>{$fileDate|date_format:"%D %T"}</td>
+					<td>{$fileData.date|date_format:"%D %T"}</td>
+					<td>{$fileData.size|number_format}</td>
 				</tr>
 			{foreachelse}
 				<tr>

@@ -10,7 +10,7 @@
 			{/if}
 
 			<button class="btn btn-primary" type="submit" name="exportAllTranslations">{translate text="Export All Translations"}</button>
-			<a class="btn btn-primary" name="importTranslations" href="/Translation/ImportTranslations">{translate text="Import Translations"}</a>
+			<a class="btn btn-primary" id="importTranslations" href="/Translation/ImportTranslations">{translate text="Import Translations"}</a>
 		</div>
 		<div class="form-group">
 			<input type="checkbox" name="showAllTranslations" id="showAllTranslations" {if $showAllTranslations}checked{/if}>
@@ -38,7 +38,11 @@
 				<div class="col-sm-3"><label for="translation_{$term->id}">{$term->term}</label></div>
 				<div class="col-sm-4">
 					<input type="hidden" name="translation_changed[{$term->id}]" id="translation_changed_{$term->id}" value="0">
-					<textarea class="form-control" rows="1" cols="40" name="translation[{$term->id}]" id="translation_{$term->id}" onchange="$('#translation_changed_{$term->id}').val(1)">{$term->translation}</textarea>
+					<textarea class="form-control" rows="1" cols="40" name="translation[{$term->id}]" id="translation_{$term->id}" onchange="$('#translation_changed_{$term->id}').val(1)">
+						{if $term->translated}
+							{$term->translation}
+						{/if}
+					</textarea>
 				</div>
 				<div class="col-sm-3">
 					<a href="{$term->samplePageUrl}">{$term->samplePageUrl}</a>
@@ -50,6 +54,8 @@
 					</a>
 				</div>
 			</div>
+		{foreachelse}
+			<div class="alert alert-success">{translate text="all_translations_done" defaultText="Congratulations, you have successfully translated everything!"}</div>
 		{/foreach}
 		<div class="form-group">
 			<button type="submit" name="submit" class="btn btn-primary">{translate text="Save Translations"}</button>

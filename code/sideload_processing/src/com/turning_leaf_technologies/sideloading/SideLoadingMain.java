@@ -24,6 +24,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 
 public class SideLoadingMain {
 	private static Logger logger;
@@ -115,6 +116,23 @@ public class SideLoadingMain {
 			logEntry.addNote("Marc Directory " + settings.getMarcPath() + " did not exist");
 			logEntry.incErrors();
 		} else {
+			HashSet<String> existingRecords = new HashSet<>();
+			if (settings.isRunFullUpdate()){
+				//Get a list of existing IDs for the side load
+				try {
+					PreparedStatement existingRecordsStmt = aspenConn.prepareStatement("select ilsId from ils_marc_checksums where source = ?");
+					existingRecordsStmt.setString(1, settings.getName());
+					ResultSet existingRecordsRS = existingRecordsStmt.executeQuery();
+					while (existingRecordsRS.next()){
+						existingRecords.add(existingRecordsRS.getString("ilsId"));
+					}
+					existingRecordsStmt.close();
+				}catch (Exception e){
+					logEntry.incErrors();
+					logEntry.addNote("Error loading existing records for " + settings.getName());
+				}
+			}
+
 			long startTime = Math.max(settings.getLastUpdateOfAllRecords(), settings.getLastUpdateOfChangedRecords()) * 1000;
 			File[] marcFiles = marcDirectory.listFiles((dir, name) -> name.matches(settings.getFilenamesToInclude()));
 			if (marcFiles != null) {
@@ -127,8 +145,35 @@ public class SideLoadingMain {
 				if (filesToProcess.size() > 0) {
 					logEntry.addUpdatedSideLoad(settings.getName());
 					for (File fileToProcess : filesToProcess) {
-						processSideLoadFile(fileToProcess, settings);
+						processSideLoadFile(fileToProcess, existingRecords, settings);
 					}
+				}
+			}
+
+			//Remove any records that no longer exist
+			if (settings.isRunFullUpdate()) {
+				try {
+					PreparedStatement deleteFromIlsMarcChecksums = aspenConn.prepareStatement("DELETE FROM ils_marc_checksums where source = ? and ilsId = ?");
+					for (String existingIdentifier : existingRecords) {
+						//Delete from ils_marc_checksums
+						SideLoadedRecordGrouper recordGrouper = getRecordGroupingProcessor(settings);
+						RemoveRecordFromWorkResult result = recordGrouper.removeRecordFromGroupedWork(settings.getName(), existingIdentifier);
+						if (result.reindexWork) {
+							getGroupedWorkIndexer().processGroupedWork(result.permanentId);
+						} else if (result.deleteWork) {
+							//Delete the work from solr and the database
+							getGroupedWorkIndexer().deleteRecord(result.permanentId, result.groupedWorkId);
+						}
+
+						deleteFromIlsMarcChecksums.setString(1, settings.getName());
+						deleteFromIlsMarcChecksums.setString(2, existingIdentifier);
+						deleteFromIlsMarcChecksums.executeUpdate();
+						logEntry.incDeleted();
+					}
+					deleteFromIlsMarcChecksums.close();
+				} catch (Exception e) {
+					logEntry.incErrors();
+					logEntry.addNote("Error deleting records from " + settings.getName());
 				}
 			}
 
@@ -150,7 +195,7 @@ public class SideLoadingMain {
 		}
 	}
 
-	private static void processSideLoadFile(File fileToProcess, SideLoadSettings settings) {
+	private static void processSideLoadFile(File fileToProcess, HashSet<String> existingRecords, SideLoadSettings settings) {
 		try {
 			SideLoadedRecordGrouper recordGrouper = getRecordGroupingProcessor(settings);
 			MarcReader marcReader = new MarcPermissiveStreamReader(new FileInputStream(fileToProcess), true, true, settings.getMarcEncoding());
@@ -159,6 +204,7 @@ public class SideLoadingMain {
 					Record marcRecord = marcReader.next();
 					RecordIdentifier recordIdentifier = recordGrouper.getPrimaryIdentifierFromMarcRecord(marcRecord, settings.getName());
 					if (recordIdentifier != null) {
+						existingRecords.remove(recordIdentifier.getIdentifier());
 						logEntry.incNumProducts(1);
 						boolean deleteRecord = false;
 						String recordNumber = recordIdentifier.getIdentifier();

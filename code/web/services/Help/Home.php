@@ -38,7 +38,8 @@ class Help_Home extends Action
 
 			// Error -- help isn't available at all!
 		} else {
-			AspenError::raiseError(new AspenError('Unknown Help Page'));
+			$interface->setTemplate('Help/en/unknown.tpl');
+			$interface->assign('warning', true);
 		}
 
 		$interface->display('Help/help.tpl');

@@ -488,30 +488,31 @@ class BookCoverProcessor{
 		if (!is_null($this->isn) || !is_null($this->upc) || !is_null($this->issn)) {
 			$this->log("Looking for picture based on isbn and upc.", Logger::LOG_NOTICE);
 
-			if (BookCoverProcessor::$providers == null){
-				BookCoverProcessor::$providers = [];
-				// Fetch from provider
-				if (isset($this->configArray['Content']['coverimages'])) {
-					$providers = explode(',', $this->configArray['Content']['coverimages']);
-					foreach ($providers as $provider) {
-						$provider = explode(':', $provider);
-						$key = isset($provider[1]) ? $provider[1] : '';
-						BookCoverProcessor::$providers[$provider[0]] = $key;
-					}
-				}
-			}
-
-			foreach (BookCoverProcessor::$providers as $provider => $key){
-				$this->log("Checking provider ".$provider[0], Logger::LOG_NOTICE);
-
-				if (method_exists($this, $provider) && $this->$provider($key)) {
-					$this->log("Found image from $provider", Logger::LOG_NOTICE);
-					$this->logTime("Checked $provider");
+			//TODO: Allow these to be sorted
+			require_once ROOT_DIR . '/sys/Enrichment/SyndeticsSetting.php';
+			$syndeticsSettings = new SyndeticsSetting();
+			if ($syndeticsSettings->find(true)){
+				if ($this->syndetics($syndeticsSettings->syndeticsKey)){
 					return true;
-				}else{
-					$this->logTime("Checked $provider");
 				}
 			}
+
+			require_once ROOT_DIR . '/sys/Enrichment/ContentCafeSetting.php';
+			$contentCafeSettings = new ContentCafeSetting();
+			if ($contentCafeSettings->find(true)){
+				if ($this->contentCafe($contentCafeSettings)){
+					return true;
+				}
+			}
+
+			require_once ROOT_DIR . '/sys/Enrichment/GoogleApiSetting.php';
+			$googleApiSettings = new GoogleApiSetting();
+			if ($googleApiSettings->find(true)){
+				if ($this->google($googleApiSettings)){
+					return true;
+				}
+			}
+
 		}
 		return false;
 	}
@@ -845,7 +846,7 @@ class BookCoverProcessor{
 				$size = 'SC.GIF';
 		}
 
-		$url = isset($this->configArray['Syndetics']['url']) ? $this->configArray['Syndetics']['url'] : 'http://syndetics.com';
+		$url = 'https://syndetics.com';
 		$url .= "/index.aspx?type=xw12&pagename={$size}&client={$key}";
 		if ($this->isn){
 			$url .= "&isbn=" . (!is_null($this->isn) ? $this->isn : '');
@@ -872,13 +873,11 @@ class BookCoverProcessor{
 	/**
 	 * Retrieve a Content Cafe cover.
 	 *
-	 * @param string $id Content Cafe client ID.
+	 * @param ContentCafeSetting $id
 	 *
 	 * @return bool      True if image displayed, false otherwise.
 	 */
-	function contentCafe($id = null) {
-		global $configArray;
-
+	function contentCafe(ContentCafeSetting $settings) {
 		switch ($this->size) {
 			case 'medium':
 				$size = 'M';
@@ -891,26 +890,22 @@ class BookCoverProcessor{
 				$size = 'S';
 				break;
 		}
-		if (!$id) {
-			$id = $configArray['Contentcafe']['id']; // alternate way to pass the content cafe id to this method.
-		}
-		$pw = $configArray['Contentcafe']['pw'];
-		$url = isset($configArray['Contentcafe']['url']) ? $configArray['Contentcafe']['url'] : 'http://contentcafe2.btol.com';
+		$url = 'https://contentcafe2.btol.com';
 
-	$lookupCode = $this->isn;
-	if (!$lookupCode) {
-		$lookupCode = $this->issn;
-		if (!$lookupCode & $this->upc) {
-			$lookupCode = $this->upc;
+		$lookupCode = $this->isn;
+		if (!$lookupCode) {
+			$lookupCode = $this->issn;
+			if (!$lookupCode & $this->upc) {
+				$lookupCode = $this->upc;
+			}
 		}
+
+		$url .= "/ContentCafe/Jacket.aspx?UserID={$settings->contentCafeId}&Password={$settings->pwd}&Return=1&Type={$size}&Value={$lookupCode}&erroroverride=1";
+
+		return $this->processImageURL('contentCafe', $url, true);
 	}
 
-		$url .= "/ContentCafe/Jacket.aspx?UserID={$id}&Password={$pw}&Return=1&Type={$size}&Value={$lookupCode}&erroroverride=1";
-
-	return $this->processImageURL('contentCafe', $url, true);
-}
-
-	function google($key = null,$title = null, $author = null)
+	function google(GoogleApiSetting $googleApiSettings,$title = null, $author = null)
 	{
 		if (is_null($this->isn) && is_null($title) && is_null($author)){
 			return false;
@@ -928,8 +923,8 @@ class BookCoverProcessor{
 			}
 		}
 
-		if (!empty($key)){
-			$url .= '&key=' . $key;
+		if (!empty($googleApiSettings->googleBooksKey)){
+			$url .= '&key=' . $googleApiSettings->googleBooksKey;
 		}
 		require_once ROOT_DIR . '/sys/CurlWrapper.php';
 		$client = new CurlWrapper();
@@ -1076,10 +1071,13 @@ class BookCoverProcessor{
 			$groupedWork = new GroupedWork();
 			$groupedWork->permanent_id = $this->groupedWork->getPermanentId();
 			if ($groupedWork->find(true)) {
-				if ($groupedWork->grouping_category == 'book' && array_key_exists('google', BookCoverProcessor::$providers)) {
-					//Try loading by title and author
-					if ($this->google(BookCoverProcessor::$providers['google'], $driver->getTitle(), $driver->getPrimaryAuthor())) {
-						return true;
+				if ($groupedWork->grouping_category == 'book') {
+					require_once ROOT_DIR . '/sys/Enrichment/GoogleApiSetting.php';
+					$googleApiSettings = new GoogleApiSetting();
+					if ($googleApiSettings->find(true)){
+						if ($this->google($googleApiSettings, $driver->getTitle(), $driver->getPrimaryAuthor())){
+							return true;
+						}
 					}
 				}
 			}
@@ -1159,6 +1157,13 @@ class BookCoverProcessor{
 				return $this->processImageURL('open_archives', $bookcoverUrl, true);
 			} /** @noinspection HtmlDeprecatedAttribute */
 			elseif (preg_match('~<img src="(.*?)" border="0" alt="Thumbnail image">~', $pageContents, $matches)) {
+				$bookcoverUrl = $matches[1];
+				if (strpos($bookcoverUrl, 'http') !== 0) {
+					$urlComponents = parse_url($url);
+					$bookcoverUrl = $urlComponents['scheme'] . '://' . $urlComponents['host'] . $bookcoverUrl;
+				}
+				return $this->processImageURL('open_archives', $bookcoverUrl, true);
+			}elseif (preg_match('~<div id="item-images">.*<img src="(.*?)".*>~', $pageContents, $matches)) {
 				$bookcoverUrl = $matches[1];
 				if (strpos($bookcoverUrl, 'http') !== 0) {
 					$urlComponents = parse_url($url);

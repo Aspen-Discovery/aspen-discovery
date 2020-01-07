@@ -35,13 +35,15 @@ class CatalogFactory {
 					$accountProfile = null;
 				}
 			}
-
-
 		}
 		if (isset(CatalogFactory::$catalogConnections[$driver])){
 			return CatalogFactory::$catalogConnections[$driver];
 		}else{
-			CatalogFactory::$catalogConnections[$driver] = new CatalogConnection($driver, $accountProfile);
+			$tmpDriver = new CatalogConnection($driver, $accountProfile);
+			if ($tmpDriver->driver == null){
+				$tmpDriver = null;
+			}
+			CatalogFactory::$catalogConnections[$driver] = $tmpDriver;
 			return CatalogFactory::$catalogConnections[$driver];
 		}
 	}

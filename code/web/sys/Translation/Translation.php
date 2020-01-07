@@ -9,6 +9,7 @@ class Translation extends DataObject
 	public $languageId;
 	public $translation;
 	public $translated;
+	public $needsReview;
 
 	public function getNumericColumnNames()
 	{
@@ -19,6 +20,7 @@ class Translation extends DataObject
 	{
 		$this->translation = $translation;
 		$this->translated = 1;
+		$this->needsReview = 0;
 		$this->update();
 
 		$term = new TranslationTerm();

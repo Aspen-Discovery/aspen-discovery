@@ -26,8 +26,6 @@ class ExternalReviews
 	 */
 	public function __construct($isbn)
 	{
-		global $configArray;
-
 		$this->isbn = $isbn;
 		$this->results = array();
 
@@ -37,26 +35,26 @@ class ExternalReviews
 		}
 
 		// Fetch from provider
-		if (isset($configArray['Content']['reviews'])) {
-			$providers = explode(',', $configArray['Content']['reviews']);
-			foreach ($providers as $provider) {
-				$provider = explode(':', trim($provider));
-				$func = strtolower($provider[0]);
-				$key = $provider[1];
-				$this->results[$func] = method_exists($this, $func) ? $this->$func($key) : false;
+		require_once ROOT_DIR . '/sys/Enrichment/SyndeticsSetting.php';
+		$syndeticsSettings = new SyndeticsSetting();
+		if ($syndeticsSettings->find(true)){
+			$result = $this->syndetics($syndeticsSettings);
+			if ($result != null){
+				$this->results['syndetics'] = $result;
+			}
+		}
+		require_once ROOT_DIR . '/sys/Enrichment/ContentCafeSetting.php';
+		$contentCafeSettings = new ContentCafeSetting();
+		if ($contentCafeSettings->find(true)){
+			$result = $this->contentCafe($contentCafeSettings);
+			if ($result != null){
+				$this->results['contentCafe'] = $result;
+			}
+		}
 
-				// If the current provider had no valid reviews, store nothing:
-				if (empty($this->results[$func]) || $this->results[$func] instanceof AspenError) {
-					unset($this->results[$func]);
-				}else{
-					if (is_array($this->results[$func])){
-						foreach ($this->results[$func] as $key => $reviewData){
-							$this->results[$func][$key] = self::cleanupReview($this->results[$func][$key]);
-						}
-					}else{
-						$this->results[$func] = self::cleanupReview($this->results[$func]);
-					}
-				}
+		foreach ($this->results as $source => $reviews){
+			foreach ($this->results[$source] as $key => $reviewData){
+				$this->results[$source][$key] = $this->cleanupReview($reviewData);
 			}
 		}
 	}
@@ -88,17 +86,16 @@ class ExternalReviews
 	 * If your library does not like a reviewer, remove it.  If there are more
 	 * syndetics reviewers add another entry.
 	 *
-	 * @param   string  $id Client access key
-	 * @return  array|AspenError  Returns array with review data, otherwise a AspenError.
+	 * @param   $settings  $id Client access key
+	 * @return  array|null  Returns array with review data, otherwise null.
 	 * @access  private
 	 * @author  Joel Timothy Norman <joel.t.norman@wmich.edu>
 	 * @author  Andrew Nagy <andrew.nagy@villanova.edu>
 	 */
-	private function syndetics($id)
+	private function syndetics(SyndeticsSetting $settings)
 	{
 		global $library;
 		global $locationSingleton;
-		global $configArray;
 		global $timer;
 		global $logger;
 
@@ -113,81 +110,72 @@ class ExternalReviews
 			return $review;
 		}
 
-		//list of syndetic reviews
-		if (isset($configArray['SyndeticsReviews']['SyndeticsReviewsSources'])){
-			$sourceList = array();
-			foreach ($configArray['SyndeticsReviews']['SyndeticsReviewsSources'] as $key => $label){
-				$sourceList[$key] = array('title' => $label, 'file' => "$key.XML");
-			}
-		}else{
-			$sourceList = array(/*'CHREVIEW' => array('title' => 'Choice Review',
-			'file' => 'CHREVIEW.XML'),*/
-	                            'BLREVIEW' => array('title' => 'Booklist Review',
-	                                                'file' => 'BLREVIEW.XML'),
-	                            'PWREVIEW' => array('title' => "Publisher's Weekly Review",
-	                                                'file' => 'PWREVIEW.XML'),
-			/*'SLJREVIEW' => array('title' => 'School Library Journal Review',
-			 'file' => 'SLJREVIEW.XML'),*/
-	                            'LJREVIEW' => array('title' => 'Library Journal Review',
-	                                                'file' => 'LJREVIEW.XML'),
-			/*'HBREVIEW' => array('title' => 'Horn Book Review',
-			 'file' => 'HBREVIEW.XML'),
-			 'KIREVIEW' => array('title' => 'Kirkus Book Review',
-			 'file' => 'KIREVIEW.XML'),
-			 'CRITICASEREVIEW' => array('title' => 'Criti Case Review',
-			 'file' => 'CRITICASEREVIEW.XML')*/);
-		}
-		$timer->logTime("Got list of syndetic reviews to show");
+		//list of syndetics reviews
+		//TODO: Review this list to see if we can show all
+		$sourceList = [
+			'CHREVIEW' => ['title' => 'Choice Review', 'file' => 'CHREVIEW.XML'],
+			'BLREVIEW' => ['title' => 'Booklist Review', 'file' => 'BLREVIEW.XML'],
+			'PWREVIEW' => ['title' => "Publisher's Weekly Review", 'file' => 'PWREVIEW.XML'],
+			'SLJREVIEW' => ['title' => 'School Library Journal Review', 'file' => 'SLJREVIEW.XML'],
+			'LJREVIEW' => ['title' => 'Library Journal Review', 'file' => 'LJREVIEW.XML'],
+			'HBREVIEW' => ['title' => 'Horn Book Review', 'file' => 'HBREVIEW.XML'],
+			'KIREVIEW' => ['title' => 'Kirkus Book Review', 'file' => 'KIREVIEW.XML'],
+			'CRITICASEREVIEW' => ['title' => 'Criti Case Review', 'file' => 'CRITICASEREVIEW.XML']
+		];
+
+		$timer->logTime("Got list of syndetics reviews to show");
 
 		//first request url
-		$baseUrl = isset($configArray['Syndetics']['url']) ?
-		$configArray['Syndetics']['url'] : 'http://syndetics.com';
-		$url = $baseUrl . '/index.aspx?isbn=' . $this->isbn . '/' .
-               'index.xml&client=' . $id . '&type=rw12,hw7';
+		$baseUrl = 'https://syndetics.com';
+		$url = $baseUrl . '/index.aspx?isbn=' . $this->isbn . '/' . 'index.xml&client=' . $settings->syndeticsKey . '&type=rw12,hw7';
 
 		//find out if there are any reviews
 		$client = new CurlWrapper();
 		$http = $client->curlGetPage($url);
+		$xmlDoc = new DomDocument();
+		$xmlDoc->preserveWhiteSpace = FALSE;
 		// Test XML Response
-		if (!($xmldoc = @DOMDocument::loadXML($http))) {
+		if (!$xmlDoc->loadXml($http)) {
 			// @codeCoverageIgnoreStart
 			$logger->log("Did not receive XML from $url", Logger::LOG_ERROR);
-			return new AspenError('Invalid XML');
+			return null;
 			// @codeCoverageIgnoreEnd
 		}
 
 		$review = array();
 		$i = 0;
 		foreach ($sourceList as $source => $sourceInfo) {
-			$nodes = $xmldoc->getElementsByTagName($source);
+			$nodes = $xmlDoc->getElementsByTagName($source);
 			if ($nodes->length) {
 				// Load reviews
 				$url = $baseUrl . '/index.aspx?isbn=' . $this->isbn . '/' .
-				$sourceInfo['file'] . '&client=' . $id . '&type=rw12,hw7';
+				$sourceInfo['file'] . '&client=' . $settings->syndeticsKey . '&type=rw12,hw7';
 				$http = $client->curlGetPage($url);
 
-				if (!($xmldoc2 = @DOMDocument::loadXML($http))) {
+				$xmlDoc2 = new DomDocument();
+				$xmlDoc2->preserveWhiteSpace = FALSE;
+				if (!$xmlDoc2->loadXML($http)) {
 					// @codeCoverageIgnoreStart
-					return new AspenError('Invalid XML');
+					return null;
 					// @codeCoverageIgnoreEnd
 				}
 
 				// Get the marc field for reviews (520)
-				$nodes = $xmldoc2->GetElementsbyTagName("Fld520");
+				$nodes = $xmlDoc2->GetElementsbyTagName("Fld520");
 				if (!$nodes->length) {
 					// @codeCoverageIgnoreStart
 					// Skip reviews with missing text
 					continue;
 					// @codeCoverageIgnoreEnd
 				}
-				$review[$i]['Content'] = html_entity_decode($xmldoc2->saveXML($nodes->item(0)));
+				$review[$i]['Content'] = html_entity_decode($xmlDoc2->saveXML($nodes->item(0)));
 				$review[$i]['Content'] = str_replace("<a>","<p>",$review[$i]['Content']);
 				$review[$i]['Content'] = str_replace("</a>","</p>",$review[$i]['Content']);
 
 				// Get the marc field for copyright (997)
-				$nodes = $xmldoc2->GetElementsbyTagName("Fld997");
+				$nodes = $xmlDoc2->GetElementsbyTagName("Fld997");
 				if ($nodes->length) {
-					$review[$i]['Copyright'] = html_entity_decode($xmldoc2->saveXML($nodes->item(0)));
+					$review[$i]['Copyright'] = html_entity_decode($xmlDoc2->saveXML($nodes->item(0)));
 				} else {
 					// @codeCoverageIgnoreStart
 					$review[$i]['Copyright'] = null;
@@ -207,7 +195,6 @@ class ExternalReviews
 
 				$review[$i]['Source'] = $sourceInfo['title'];  //changes the xml to actual title
 				$review[$i]['ISBN'] = $this->isbn; //show more link
-				$review[$i]['username'] = isset($configArray['BookReviews']) ? $configArray['BookReviews']['id'] : '';
 
 				$i++;
 			}
@@ -219,13 +206,12 @@ class ExternalReviews
 	/**
 	 * Load review information from Content Cafe based on the ISBN
 	 *
-	 * @param $key     Content Cafe Key
-	 * @return array
+	 * @param ContentCafeSetting $settings Content Cafe Key
+	 * @return array|null
 	 */
-	private function contentCafe($key){
+	private function contentCafe($settings){
 		global $library;
 		global $locationSingleton;
-		global $configArray;
 
 		$location = $locationSingleton->getActiveLocation();
 		if ($location != null){
@@ -236,67 +222,69 @@ class ExternalReviews
 			return null;
 		}
 
-		$pw = $configArray['Contentcafe']['pw'];
-		if (!$key) {
-			$key = $configArray['Contentcafe']['id'];
-		}
+		$pw = $settings->pwd;
+		$key = $settings->contentCafeId;
 
-		$url = isset($configArray['Contentcafe']['url']) ? $configArray['Contentcafe']['url'] : 'http://contentcafe2.btol.com';
-		$url .= '/ContentCafe/ContentCafe.asmx?WSDL';
+		$url = 'https://contentcafe2.btol.com/ContentCafe/ContentCafe.asmx?WSDL';
 
 		$SOAP_options = array(
 //				'trace' => 1, // turns on debugging features
 				'features' => SOAP_SINGLE_ELEMENT_ARRAYS, // sets how the soap responses will be handled
 				'soap_version' => SOAP_1_2
 		);
-		$soapClient   = new SoapClient($url, $SOAP_options);
+		try {
+			$soapClient = new SoapClient($url, $SOAP_options);
 
-		$params = array(
-				'userID'   => $key,
-				'password' => $pw,
-				'key'      => $this->isbn,
-				'content'  => 'ReviewDetail',
-		);
+			$params = array(
+					'userID'   => $key,
+					'password' => $pw,
+					'key'      => $this->isbn,
+					'content'  => 'ReviewDetail',
+			);
 
-		try{
-			$response = $soapClient->Single($params);
+			try{
+				/** @noinspection PhpUndefinedMethodInspection */
+				$response = $soapClient->Single($params);
 
-			$review = array();
-			if ($response) {
-				if (!isset($response->ContentCafe->Error)) {
-					$i = 0;
-					if (isset($response->ContentCafe->RequestItems->RequestItem)) {
-						foreach ($response->ContentCafe->RequestItems->RequestItem as $requestItem) {
-							if (isset($requestItem->ReviewItems->ReviewItem)) { // if there are reviews available.
-								foreach ($requestItem->ReviewItems->ReviewItem as $reviewItem) {
-									$review[$i]['Content'] = $reviewItem->Review;
-									$review[$i]['Source']  = $reviewItem->Publication->_;
+				$review = array();
+				if ($response) {
+					if (!isset($response->ContentCafe->Error)) {
+						$i = 0;
+						if (isset($response->ContentCafe->RequestItems->RequestItem)) {
+							foreach ($response->ContentCafe->RequestItems->RequestItem as $requestItem) {
+								if (isset($requestItem->ReviewItems->ReviewItem)) { // if there are reviews available.
+									foreach ($requestItem->ReviewItems->ReviewItem as $reviewItem) {
+										$review[$i]['Content'] = $reviewItem->Review;
+										$review[$i]['Source']  = $reviewItem->Publication->_;
 
-									$copyright               = stristr($reviewItem->Review, 'copyright');
-									$review[$i]['Copyright'] = $copyright ? strip_tags($copyright) : '';
+										$copyright               = stristr($reviewItem->Review, 'copyright');
+										$review[$i]['Copyright'] = $copyright ? strip_tags($copyright) : '';
 
-									$review[$i]['ISBN'] = $this->isbn; // show more link
-									//						$review[$i]['username']  = isset($configArray['BookReviews']) ? $configArray['BookReviews']['id'] : '';
-									// this data doesn't look to be used in published reviews
-									$i++;
+										$review[$i]['ISBN'] = $this->isbn; // show more link
+										$i++;
+									}
 								}
 							}
+						} else {
+							global $logger;
+							$logger->log('Unexpected Content Cafe Response retrieving Reviews', Logger::LOG_ERROR);
+
 						}
 					} else {
 						global $logger;
-						$logger->log('Unexpected Content Cafe Response retrieving Reviews', Logger::LOG_ERROR);
-
+						$logger->log('Content Cafe Error Response'. $response->ContentCafe->Error, Logger::LOG_ERROR);
 					}
-				} else {
-					global $logger;
-					$logger->log('Content Cafe Error Response'. $response->ContentCafe->Error, Logger::LOG_ERROR);
 				}
-			}
 
-		} catch (Exception $e) {
+			} catch (Exception $e) {
+				global $logger;
+				$logger->log('Failed ContentCafe SOAP Request', Logger::LOG_ERROR);
+				return null;
+			}
+		} catch (SoapFault $e) {
 			global $logger;
-			$logger->log('Failed ContentCafe SOAP Request', Logger::LOG_ERROR);
-			return new AspenError('Failed ContentCafe SOAP Request');
+			$logger->log('SoapFault making ContentCafe SOAP Request ' . $e, Logger::LOG_ERROR);
+			return null;
 		}
 		return $review;
 	}

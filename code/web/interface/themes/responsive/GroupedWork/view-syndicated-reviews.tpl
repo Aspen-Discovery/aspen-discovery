@@ -12,7 +12,7 @@
 
 				{if $provider == "syndetics"}
 					<div class='reviewProvider'><small>{translate text="Powered by Syndetics"}</small></div>
-				{elseif $provider == "contentcafe"}
+				{elseif $provider == "contentCafe"}
 					<div class='reviewProvider'><small>{translate text="Powered by Content Cafe"}</small></div>
 				{/if}
 			</div>
