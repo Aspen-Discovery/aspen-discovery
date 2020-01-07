@@ -484,9 +484,6 @@
 									<div class="adminMenuLink"><a href="/ILS/LoanRuleDeterminers">&nbsp;&raquo;&nbsp;{translate text="Loan Rule Determiners"}</a></div>
 								{/if}
 								<div class="adminMenuLink"><a href="/ILS/IndexingLog">{translate text="Indexing Log"}</a></div>
-								{if ($ils == 'Millennium' || $ils == 'Sierra')}
-									<div class="adminMenuLink"><a href="/Admin/SierraExportLog">{translate text="Sierra Export Log"}</a></div>
-								{/if}
 								<div class="adminMenuLink"><a href="/ILS/Dashboard">{translate text="Dashboard"}</a></div>
 							</div>
 						</div>
