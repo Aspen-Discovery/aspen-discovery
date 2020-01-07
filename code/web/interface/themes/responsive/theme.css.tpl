@@ -114,5 +114,6 @@ body .container{ldelim}
 {rdelim}
 {/if}
 
+{$additionalCSS}
 </style>
 {/strip}
