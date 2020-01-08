@@ -2016,6 +2016,15 @@ function getLibraryLocationUpdates(){
 				"ALTER TABLE location DROP COLUMN holdingBranchLabel",
 			]
 		],
+
+		'facetLabel_length' => [
+			'title' => 'Facet Label Length',
+			'description' => 'Increase the length of facet labels',
+			'sql' => [
+				"ALTER TABLE library CHANGE COLUMN facetLabel facetLabel VARCHAR(75) DEFAULT ''",
+				"ALTER TABLE location CHANGE COLUMN facetLabel facetLabel VARCHAR(75) DEFAULT ''",
+			],
+		],
 	);
 }
 
