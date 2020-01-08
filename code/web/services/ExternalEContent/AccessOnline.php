@@ -1,6 +1,5 @@
 <?php
 
-/** @noinspection PhpUnused */
 class ExternalEContent_AccessOnline extends Action
 {
 	function launch(){

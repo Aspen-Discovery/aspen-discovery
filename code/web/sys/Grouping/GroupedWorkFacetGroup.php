@@ -33,17 +33,6 @@ class GroupedWorkFacetGroup extends DataObject
 				'storeDb' => true,
 				'allowEdit' => true,
 				'canEdit' => false,
-				'additionalOneToManyActions' => array(
-					array(
-						'text' => 'Copy Library Facets',
-						'url' => '/Admin/Libraries?id=$id&amp;objectAction=copyFacetsFromLibrary',
-					),
-					array(
-						'text' => 'Reset Facets To Default',
-						'url' => '/Admin/Libraries?id=$id&amp;objectAction=resetFacetsToDefault',
-						'class' => 'btn-warning',
-					),
-				)
 			),
 		];
 		return $structure;

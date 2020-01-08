@@ -3,8 +3,8 @@
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
 require_once ROOT_DIR . '/sys/LibraryLocation/LocationHours.php';
 require_once ROOT_DIR . '/sys/LibraryLocation/LocationCombinedResultSection.php';
-if (file_exists(ROOT_DIR . '/sys/Browse/LocationBrowseCategory.php')) {
-	require_once ROOT_DIR . '/sys/Browse/LocationBrowseCategory.php';
+if (file_exists(ROOT_DIR . '/sys/Browse/BrowseCategoryGroup.php')) {
+	require_once ROOT_DIR . '/sys/Browse/BrowseCategoryGroup.php';
 }
 if (file_exists(ROOT_DIR . '/sys/Indexing/LocationRecordOwned.php')) {
 	require_once ROOT_DIR . '/sys/Indexing/LocationRecordOwned.php';
@@ -43,6 +43,7 @@ class Location extends DataObject
 	public $useScope;
 	public $facetLabel;
 	public $groupedWorkDisplaySettingId;
+	public $browseCategoryGroupId;
 	public $restrictSearchByLocation;
 	public /** @noinspection PhpUnused */ $overDriveScopeId;
 	public /** @noinspection PhpUnused */ $hooplaScopeId;
@@ -65,8 +66,6 @@ class Location extends DataObject
 	public $showShareOnExternalSites;
 	public $showFavorites;
 	public /** @noinspection PhpUnused */ $econtentLocationsToInclude;
-	public $defaultBrowseMode;
-	public $browseCategoryRatingsMode;
 	public /** @noinspection PhpUnused */ $includeAllLibraryBranchesInFacets;
 	public /** @noinspection PhpUnused */ $additionalLocationsToShowAvailabilityFor;
 //	public /** @noinspection PhpUnused */ $includeAllRecordsInShelvingFacets;
@@ -126,9 +125,15 @@ class Location extends DataObject
 		// because it is associated with this location only
 		unset($hoursStructure['locationId']);
 
-		$locationBrowseCategoryStructure = LocationBrowseCategory::getObjectStructure();
-		unset($locationBrowseCategoryStructure['weight']);
-		unset($locationBrowseCategoryStructure['locationId']);
+		require_once ROOT_DIR . '/sys/Browse/BrowseCategoryGroup.php';
+		$browseCategoryGroup = new BrowseCategoryGroup();
+		$browseCategoryGroups = [];
+		$browseCategoryGroups[-1] = 'Use Library Setting';
+		$browseCategoryGroup->orderBy('name');
+		$browseCategoryGroup->find();
+		while ($browseCategoryGroup->fetch()){
+			$browseCategoryGroups[$browseCategoryGroup->id] = $browseCategoryGroup->name;
+		}
 
 		$locationMoreDetailsStructure = LocationMoreDetails::getObjectStructure();
 		unset($locationMoreDetailsStructure['weight']);
@@ -147,8 +152,6 @@ class Location extends DataObject
 		$combinedResultsStructure = LocationCombinedResultSection::getObjectStructure();
 		unset($combinedResultsStructure['locationId']);
 		unset($combinedResultsStructure['weight']);
-
-		$browseCategoryInstructions = 'For more information on how to setup browse categories, see the <a href="https://docs.google.com/document/d/11biGMw6UDKx9UBiDCCj_GBmatx93UlJBLMESNf_RtDU">online documentation</a>.';
 
 		require_once ROOT_DIR . '/sys/Theming/Theme.php';
 		$theme = new Theme();
@@ -265,7 +268,7 @@ class Location extends DataObject
 					array('property' => 'includeAllLibraryBranchesInFacets', 'type' => 'checkbox', 'label' => 'Include All Library Branches In Facets', 'description' => 'Turn on to include all branches of the library within facets (ownership and availability).', 'hideInLists' => true, 'default' => true),
 					array('property' => 'additionalLocationsToShowAvailabilityFor', 'type' => 'text', 'label' => 'Additional Locations to Include in Available At Facet', 'description' => 'A list of library codes that you would like included in the available at facet separated by pipes |.', 'size' => '20', 'hideInLists' => true,),
 				)),
-				'combinedResultsSection' => array('property' => 'combinedResultsSection', 'type' => 'section', 'label' => 'Combined Results', 'hideInLists' => true, 'helpLink' => 'https://docs.google.com/document/d/1dcG12grGAzYlWAl6LWUnr9t-wdqcmMTJVwjLuItRNwk', 'properties' => array(
+				'combinedResultsSection' => array('property' => 'combinedResultsSection', 'type' => 'section', 'label' => 'Combined Results', 'hideInLists' => true, 'helpLink' => '', 'properties' => array(
 					'useLibraryCombinedResultsSettings' => array('property' => 'useLibraryCombinedResultsSettings', 'type' => 'checkbox', 'label' => 'Use Library Settings', 'description' => 'Whether or not settings from the library should be used rather than settings from here', 'hideInLists' => true, 'default' => true),
 					'enableCombinedResults' => array('property' => 'enableCombinedResults', 'type' => 'checkbox', 'label' => 'Enable Combined Results', 'description' => 'Whether or not combined results should be shown ', 'hideInLists' => true, 'default' => false),
 					'combinedResultsLabel' => array('property' => 'combinedResultsLabel', 'type' => 'text', 'label' => 'Combined Results Label', 'description' => 'The label to use in the search source box when combined results is active.', 'size' => '20', 'hideInLists' => true, 'default' => 'Combined Results'),
@@ -311,36 +314,7 @@ class Location extends DataObject
 				),
 			)),
 
-			// Browse Category Section //
-			array('property' => 'browseCategorySection', 'type' => 'section', 'label' => 'Browse Categories', 'hideInLists' => true, 'instructions' => $browseCategoryInstructions, 'properties' => array(
-				'defaultBrowseMode' => array('property' => 'defaultBrowseMode', 'type' => 'enum', 'label' => 'Default Viewing Mode for Browse Categories', 'description' => 'Sets how browse categories will be displayed when users haven\'t chosen themselves.', 'hideInLists' => true,
-					'values' => array('' => null, // empty value option is needed so that if no option is specifically chosen for location, the library setting will be used instead.
-						'covers' => 'Show Covers Only',
-						'grid' => 'Show as Grid'),
-				),
-				'browseCategoryRatingsMode' => array('property' => 'browseCategoryRatingsMode', 'type' => 'enum', 'label' => 'Ratings Mode for Browse Categories ("covers" browse mode only)', 'description' => 'Sets how ratings will be displayed and how user ratings will be enabled when a user is viewing a browse category in the "covers" browse mode. (This only applies when User Ratings have been enabled.)',
-					'values' => array('' => null, // empty value option is needed so that if no option is specifically chosen for location, the library setting will be used instead.
-						'popup' => 'Show rating stars and enable user rating via pop-up form.',
-						'stars' => 'Show rating stars and enable user ratings by clicking the stars.',
-						'none' => 'Do not show rating stars.'
-					),
-				),
-
-				'browseCategories' => array(
-					'property' => 'browseCategories',
-					'type' => 'oneToMany',
-					'label' => 'Browse Categories',
-					'description' => 'Browse Categories To Show on the Home Screen',
-					'keyThis' => 'locationId',
-					'keyOther' => 'locationId',
-					'subObjectType' => 'LocationBrowseCategory',
-					'structure' => $locationBrowseCategoryStructure,
-					'sortable' => true,
-					'storeDb' => true,
-					'allowEdit' => false,
-					'canEdit' => false,
-				),
-			)),
+			'browseCategoryId' => array('property' => 'browseCategoryId', 'type' => 'enum', 'values' => $browseCategoryGroups, 'label' => 'Browse Category Group', 'description' => 'The group of browse categories to show for this library', 'hideInLists' => true),
 
 			'overdriveSection' => array('property' => 'overdriveSection', 'type' => 'section', 'label' => 'OverDrive', 'hideInLists' => true, 'properties' => array(
 				'overDriveScopeId'               => array('property' => 'overDriveScopeId', 'type' => 'enum', 'values' => $overDriveScopes, 'label' => 'OverDrive Scope', 'description' => 'The OverDrive scope to use', 'hideInLists' => true, 'default' => -1),
@@ -982,18 +956,6 @@ class Location extends DataObject
 				}
 			}
 			return $this->sideLoadScopes;
-		} elseif ($name == 'browseCategories') {
-			if (!isset($this->browseCategories) && $this->locationId) {
-				$this->browseCategories = array();
-				$browseCategory = new LocationBrowseCategory();
-				$browseCategory->locationId = $this->locationId;
-				$browseCategory->orderBy('weight');
-				$browseCategory->find();
-				while ($browseCategory->fetch()) {
-					$this->browseCategories[$browseCategory->id] = clone($browseCategory);
-				}
-			}
-			return $this->browseCategories;
 		} elseif ($name == 'combinedResultSections') {
 			if (!isset($this->combinedResultSections) && $this->locationId) {
 				$this->combinedResultSections = array();
@@ -1021,9 +983,6 @@ class Location extends DataObject
 		} elseif ($name == "moreDetailsOptions") {
 			/** @noinspection PhpUndefinedFieldInspection */
 			$this->moreDetailsOptions = $value;
-		} elseif ($name == 'browseCategories') {
-			/** @noinspection PhpUndefinedFieldInspection */
-			$this->browseCategories = $value;
 		} elseif ($name == 'recordsOwned') {
 			/** @noinspection PhpUndefinedFieldInspection */
 			$this->recordsOwned = $value;
@@ -1051,7 +1010,6 @@ class Location extends DataObject
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->saveHours();
-			$this->saveBrowseCategories();
 			$this->saveMoreDetailsOptions();
 			$this->saveRecordsOwned();
 			$this->saveRecordsToInclude();
@@ -1071,7 +1029,6 @@ class Location extends DataObject
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
 			$this->saveHours();
-			$this->saveBrowseCategories();
 			$this->saveMoreDetailsOptions();
 			$this->saveRecordsOwned();
 			$this->saveRecordsToInclude();
@@ -1079,20 +1036,6 @@ class Location extends DataObject
 			$this->saveCombinedResultSections();
 		}
 		return $ret;
-	}
-
-	public function saveBrowseCategories()
-	{
-		if (isset ($this->browseCategories) && is_array($this->browseCategories)) {
-			$this->saveOneToManyOptions($this->browseCategories, 'locationId');
-			unset($this->browseCategories);
-		}
-	}
-
-	public function clearBrowseCategories()
-	{
-		$this->clearOneToManyOptions('LocationBrowseCategory', 'locationId');
-		$this->browseCategories = array();
 	}
 
 	public function saveMoreDetailsOptions()
@@ -1453,5 +1396,26 @@ class Location extends DataObject
 			$locationList[$location->locationId] = $location->displayName;
 		}
 		return $locationList;
+	}
+
+	protected $_browseCategoryGroup = null;
+
+	/**
+	 * @return BrowseCategoryGroup|null
+	 */
+	public function getBrowseCategoryGroup(){
+		if ($this->_browseCategoryGroup == null){
+			if ($this->browseCategoryGroupId == -1){
+				$this->_browseCategoryGroup = $this->getParentLibrary()->getBrowseCategoryGroup();
+			}else{
+				require_once ROOT_DIR . '/sys/Browse/BrowseCategoryGroup.php';
+				$browseCategoryGroup = new BrowseCategoryGroup();
+				$browseCategoryGroup->id = $this->browseCategoryGroupId;
+				if ($browseCategoryGroup->find(true)){
+					$this->_browseCategoryGroup = $browseCategoryGroup;
+				}
+			}
+		}
+		return $this->_browseCategoryGroup;
 	}
 }

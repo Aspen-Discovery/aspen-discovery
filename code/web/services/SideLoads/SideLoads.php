@@ -5,8 +5,6 @@ require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/Indexing/SideLoad.php';
 
-/** @noinspection PhpUnused */
-
 class SideLoads_SideLoads extends ObjectEditor
 {
 	function launch()

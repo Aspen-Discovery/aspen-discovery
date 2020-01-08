@@ -3,8 +3,6 @@
 require_once ROOT_DIR . '/sys/CurlWrapper.php';
 require_once ROOT_DIR . '/Drivers/AbstractIlsDriver.php';
 
-/** @noinspection PhpUnused */
-
 class Koha extends AbstractIlsDriver
 {
 	private $dbConnection = null;

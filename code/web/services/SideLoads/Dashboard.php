@@ -5,7 +5,6 @@ require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/sys/Indexing/UserSideLoadUsage.php';
 require_once ROOT_DIR . '/sys/Indexing/SideLoadedRecordUsage.php';
 
-/** @noinspection PhpUnused */
 class SideLoads_Dashboard extends Admin_Admin
 {
     function launch()

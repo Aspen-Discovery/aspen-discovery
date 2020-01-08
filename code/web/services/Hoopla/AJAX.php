@@ -1,6 +1,5 @@
 <?php
 
-/** @noinspection PhpUnused */
 class Hoopla_AJAX extends Action
 {
 	function launch() {

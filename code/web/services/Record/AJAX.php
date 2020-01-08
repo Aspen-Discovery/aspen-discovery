@@ -4,7 +4,6 @@ require_once ROOT_DIR . '/Action.php';
 
 global $configArray;
 
-/** @noinspection PhpUnused */
 class Record_AJAX extends Action
 {
 

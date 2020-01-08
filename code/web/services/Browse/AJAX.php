@@ -54,6 +54,7 @@ class Browse_AJAX extends Action {
 		return $results;
 	}
 
+	/** @noinspection PhpUnused */
 	function createBrowseCategory(){
 		global $library;
 		global $locationSingleton;
@@ -112,7 +113,6 @@ class Browse_AJAX extends Action {
 			$browseCategory->sharing = 'everyone';
 			$browseCategory->description = '';
 
-
 			//setup and add the category
 			if (!$browseCategory->insert()){
 				return array(
@@ -133,12 +133,18 @@ class Browse_AJAX extends Action {
 
 			}
 
+			if ($searchLocation != null){
+				$activeBrowseCategoryGroup = $searchLocation->getBrowseCategoryGroup();
+			}else{
+				$activeBrowseCategoryGroup = $library->getBrowseCategoryGroup();
+			}
+
 			//Now add to the library/location
 			if ($library && !$addAsSubCategoryOf){ // Only add main browse categories to the library carousel
-				require_once ROOT_DIR . '/sys/Browse/LibraryBrowseCategory.php';
-				$libraryBrowseCategory = new LibraryBrowseCategory();
-				$libraryBrowseCategory->libraryId = $library->libraryId;
-				$libraryBrowseCategory->browseCategoryTextId = $textId;
+				require_once ROOT_DIR . '/sys/Browse/BrowseCategoryGroupEntry.php';
+				$libraryBrowseCategory = new BrowseCategoryGroupEntry();
+				$libraryBrowseCategory->browseCategoryGroupId = $activeBrowseCategoryGroup->id;
+				$libraryBrowseCategory->browseCategoryId = $browseCategory->id;
 				$libraryBrowseCategory->insert();
 			}
 
@@ -283,17 +289,20 @@ class Browse_AJAX extends Action {
 					$records = $this->searchObject->getBrowseRecordHTML();
 
 					// Do we need to initialize the ajax ratings?
-					if ($this->browseMode == 'covers') {
+					if ($this->browseMode == 0) {
 						// Rating Settings
 						global $library;
 						global $locationSingleton;
-						$location                  = $locationSingleton->getActiveLocation();
-						$browseCategoryRatingsMode = null;
-						if ($location) $browseCategoryRatingsMode = $location->browseCategoryRatingsMode; // Try Location Setting
-						if (!$browseCategoryRatingsMode) $browseCategoryRatingsMode = $library->browseCategoryRatingsMode;  // Try Library Setting
+						$location = $locationSingleton->getActiveLocation();
+						if ($location != null){
+							$browseCategoryGroup = $location->getBrowseCategoryGroup();
+						}else{
+							$browseCategoryGroup = $library->getBrowseCategoryGroup();
+						}
+						$browseCategoryRatingsMode = $browseCategoryGroup->browseCategoryRatingsMode; // Try Location Setting
 
 						// when the Ajax rating is turned on, they have to be initialized with each load of the category.
-						if ($browseCategoryRatingsMode == 'stars') $records[] = '<script type="text/javascript">AspenDiscovery.Ratings.initializeRaters()</script>';
+						if ($browseCategoryRatingsMode == 2) $records[] = '<script type="text/javascript">AspenDiscovery.Ratings.initializeRaters()</script>';
 					}
 
 					$result['searchUrl'] = $this->searchObject->renderSearchUrl();
@@ -325,25 +334,29 @@ class Browse_AJAX extends Action {
 		array(
 			'covers', // default Mode
 			'grid'
-		),
-	$browseMode; // Selected Browse Mode
+		);
+	private $browseMode; // Selected Browse Mode
 
 	function setBrowseMode() {
 		// Set Browse Mode //
 		if (isset($_REQUEST['browseMode']) && in_array($_REQUEST['browseMode'], $this->browseModes)) { // user is setting mode (will be in most calls)
 			$browseMode = $_REQUEST['browseMode'];
+			if ($browseMode == 'covers'){
+				$browseMode = 0;
+			}else{
+				$browseMode = 1;
+			}
 		} elseif (!empty($this->browseMode)) { // mode is already set
 			$browseMode = $this->browseMode;
 		} else { // check library & location settings
 			global $location;
-			if (!empty($location->defaultBrowseMode)) { // check location setting
-				$browseMode = $location->defaultBrowseMode;
-			} else {
-				global $library;
-				if (!empty($library->defaultBrowseMode)) { // check location setting
-					$browseMode = $library->defaultBrowseMode;
-				} else $browseMode = $this->browseModes[0]; // default setting
+			global $library;
+			if ($location != null){
+				$browseCategoryGroup = $location->getBrowseCategoryGroup();
+			}else{
+				$browseCategoryGroup = $library->getBrowseCategoryGroup();
 			}
+			$browseMode = $browseCategoryGroup->defaultBrowseMode;
 		}
 
 		$this->browseMode = $browseMode;
@@ -528,14 +541,14 @@ class Browse_AJAX extends Action {
 		$activeLocation = $locationSingleton->getActiveLocation();
 
 		//Get a list of browse categories for that library / location
-		/** @var LibraryBrowseCategory[]|LocationBrowseCategory[] $browseCategories */
+		/** @var BrowseCategoryGroupEntry[] $browseCategories */
 		if ($activeLocation == null){
 			//We don't have an active location, look at the library
-			$browseCategories = $library->browseCategories;
+			$browseCategories = $library->getBrowseCategoryGroup()->getBrowseCategories();
 		}else{
 			//We have a location get data for that
 			/** @noinspection PhpUndefinedFieldInspection */
-			$browseCategories = $activeLocation->browseCategories;
+			$browseCategories = $activeLocation->getBrowseCategoryGroup()->getBrowseCategories();
 		}
 
 		require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
@@ -546,13 +559,13 @@ class Browse_AJAX extends Action {
 		$formattedCategories = array();
 		foreach ($browseCategories as $curCategory){
 			$categoryInformation = new BrowseCategory();
-			$categoryInformation->textId = $curCategory->browseCategoryTextId;
+			$categoryInformation->id = $curCategory->browseCategoryId;
 
 			if ($categoryInformation->find(true)){
 				$formattedCategories[] = array(
-						'text_id' => $curCategory->browseCategoryTextId,
+						'text_id' => $categoryInformation->textId,
 						'display_label' => $categoryInformation->label,
-						'link' => $configArray['Site']['url'] . '?browseCategory=' . $curCategory->browseCategoryTextId
+						'link' => $configArray['Site']['url'] . '?browseCategory=' . $categoryInformation->textId
 				);
 			}
 		}

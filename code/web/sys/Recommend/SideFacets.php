@@ -7,7 +7,6 @@ require_once ROOT_DIR . '/sys/Recommend/Interface.php';
  *
  * This class provides recommendations displaying facets beside search results
  */
-/** @noinspection PhpUnused */
 class SideFacets implements RecommendationInterface
 {
 	/** @var  SearchObject_SolrSearcher $searchObject */

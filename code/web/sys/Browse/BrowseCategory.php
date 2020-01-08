@@ -114,12 +114,12 @@ class BrowseCategory extends DataObject
 			//Remove from any libraries that use it.
 			require_once ROOT_DIR . '/sys/Browse/LibraryBrowseCategory.php';
 			$libraryBrowseCategory = new LibraryBrowseCategory();
-			$libraryBrowseCategory->browseCategoryTextId = $this->textId;
+			$libraryBrowseCategory->browseCategoryId = $this->textId;
 			$libraryBrowseCategory->delete(true);
 
 			require_once ROOT_DIR . '/sys/Browse/LocationBrowseCategory.php';
 			$locationBrowseCategory = new LocationBrowseCategory();
-			$locationBrowseCategory->browseCategoryTextId = $this->textId;
+			$locationBrowseCategory->browseCategoryId = $this->textId;
 			$locationBrowseCategory->delete(true);
 
 			//Delete from parent sub categories as needed

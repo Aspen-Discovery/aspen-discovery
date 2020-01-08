@@ -1,6 +1,5 @@
 <?php
 
-/** @noinspection PhpUnused */
 class Author_AJAX {
 	function launch() {
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';

@@ -282,7 +282,7 @@
 				{/if}
 
 				{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles))}
-					{if in_array($action, array('Themes', 'GroupedWorkDisplay'))}
+					{if in_array($action, array('Themes', 'GroupedWorkDisplay', 'LayoutSettings', 'GroupedWorkFacets', 'BrowseCategoryGroups', 'BrowseCategories'))}
 						{assign var="curSection" value=true}
 					{else}
 						{assign var="curSection" value=false}
@@ -308,6 +308,12 @@
 								{/if}
 								{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles))}
 									<div class="adminMenuLink">&nbsp;&raquo;&nbsp;<a href="/Admin/GroupedWorkFacets">{translate text="Grouped Work Facets"}</a></div>
+								{/if}
+								{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles))}
+									<div class="adminMenuLink"><a href="/Admin/BrowseCategoryGroups">{translate text="Browse Category Groups"}</a></div>
+								{/if}
+								{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles))}
+									<div class="adminMenuLink">&nbsp;&raquo;&nbsp;<a href="/Admin/BrowseCategories">{translate text="Browse Categories"}</a></div>
 								{/if}
 							</div>
 						</div>

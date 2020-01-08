@@ -1,7 +1,6 @@
 <?php
 require_once ROOT_DIR . '/Action.php';
 
-/** @noinspection PhpUnused */
 class RBdigital_AccessOnline extends Action
 {
     function launch(){

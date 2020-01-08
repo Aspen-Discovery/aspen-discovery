@@ -59,50 +59,6 @@ class Admin_Libraries extends ObjectEditor
 	}
 
 	/** @noinspection PhpUnused */
-	function copyFacetsFromLibrary(){
-		$libraryId = $_REQUEST['id'];
-		if (isset($_REQUEST['submit'])){
-			$library = new Library();
-			$library->libraryId = $libraryId;
-			$library->find(true);
-			$library->clearFacets();
-
-			$libraryToCopyFromId = $_REQUEST['libraryToCopyFrom'];
-			$libraryToCopyFrom = new Library();
-			$libraryToCopyFrom->libraryId = $libraryToCopyFromId;
-			$library->find(true);
-
-			/** @noinspection PhpUndefinedFieldInspection */
-			$facetsToCopy = $libraryToCopyFrom->facets;
-			foreach ($facetsToCopy as $facetKey => $facet){
-				$facet->libraryId = $libraryId;
-				$facet->id = null;
-				$facetsToCopy[$facetKey] = $facet;
-			}
-			/** @noinspection PhpUndefinedFieldInspection */
-			$library->facets = $facetsToCopy;
-			$library->update();
-			header("Location: /Admin/Libraries?objectAction=edit&id=" . $libraryId);
-		}else{
-			//Prompt user for the library to copy from
-			$allLibraries = $this->getAllObjects();
-
-			unset($allLibraries[$libraryId]);
-			foreach ($allLibraries as $key => $library){
-				if (count($library->facets) == 0){
-					unset($allLibraries[$key]);
-				}
-			}
-			global $interface;
-			$interface->assign('allLibraries', $allLibraries);
-			$interface->assign('id', $libraryId);
-			$interface->assign('facetType', 'search');
-			$interface->assign('objectAction', 'copyFacetsFromLibrary');
-			$interface->setTemplate('../Admin/copyLibraryFacets.tpl');
-		}
-	}
-
-	/** @noinspection PhpUnused */
 	function copyArchiveSearchFacetsFromLibrary(){
 		$libraryId = $_REQUEST['id'];
 		if (isset($_REQUEST['submit'])){

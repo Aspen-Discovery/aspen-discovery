@@ -2,8 +2,6 @@
 
 require_once ROOT_DIR . '/JSON_Action.php';
 
-/** @noinspection PhpUnused */
-
 class Websites_JSON extends JSON_Action
 {
 	/** @noinspection PhpUnused */

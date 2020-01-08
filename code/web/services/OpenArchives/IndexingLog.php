@@ -3,7 +3,6 @@
 require_once ROOT_DIR . '/services/Admin/IndexingLog.php';
 require_once ROOT_DIR . '/sys/OpenArchives/OpenArchivesExportLogEntry.php';
 
-/** @noinspection PhpUnused */
 class OpenArchives_IndexingLog extends Admin_IndexingLog
 {
 	function getIndexLogEntryObject(): DataObject

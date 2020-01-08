@@ -1,5 +1,5 @@
 {strip}
-	{if $browseMode == 'grid'}
+	{if $browseMode == '1'}
 	<div class="{*browse-title *}browse-list">
 		<a {*onclick="return alert('{$summId}'" *} href="{$summUrl}">
 			{*<div>*}

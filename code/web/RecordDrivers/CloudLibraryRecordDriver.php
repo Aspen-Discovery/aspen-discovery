@@ -5,7 +5,6 @@ require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 require_once ROOT_DIR . '/RecordDrivers/GroupedWorkSubDriver.php';
 require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibraryProduct.php';
 
-/** @noinspection PhpUnused */
 class CloudLibraryRecordDriver extends MarcRecordDriver {
 	/** @var CloudLibraryProduct */
 	private $cloudLibraryProduct;

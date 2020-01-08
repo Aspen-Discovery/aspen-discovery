@@ -1,7 +1,5 @@
 <?php
 
-/** @noinspection PhpUnused */
-
 class MyAccount_AJAX
 {
 	const SORT_LAST_ALPHA = 'zzzzz';

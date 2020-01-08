@@ -3,7 +3,6 @@
 require_once ROOT_DIR . "/Action.php";
 require_once ROOT_DIR . '/CatalogConnection.php';
 
-/** @noinspection PhpUnused */
 class MyAccount_EmailResetPin extends Action{
 	function launch($msg = null)
 	{

@@ -2,7 +2,6 @@
 
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
 
-/** @noinspection PhpUnused */
 class MyAccount_HooplaOptions extends MyAccount
 {
 	function launch()
