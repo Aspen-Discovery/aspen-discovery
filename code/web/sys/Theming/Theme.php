@@ -49,6 +49,28 @@ class Theme extends DataObject
 	public $tertiaryForegroundColor;
 	public $tertiaryForegroundColorDefault;
 
+	public $buttonRadius;
+	public $buttonRadiusDefault;
+	public $smallButtonRadius;
+	public $smallButtonRadiusDefault;
+	//TODO: Colors for buttons
+
+	//Browse Category Colors
+	public $browseCategoryPanelColor;
+	public $browseCategoryPanelColorDefault;
+	public $selectedBrowseCategoryBackgroundColor;
+	public $selectedBrowseCategoryBackgroundColorDefault;
+	public $selectedBrowseCategoryForegroundColor;
+	public $selectedBrowseCategoryForegroundColorDefault;
+	public $selectedBrowseCategoryBorderColor;
+	public $selectedBrowseCategoryBorderColorDefault;
+	public $deselectedBrowseCategoryBackgroundColor;
+	public $deselectedBrowseCategoryBackgroundColorDefault;
+	public $deselectedBrowseCategoryForegroundColor;
+	public $deselectedBrowseCategoryForegroundColorDefault;
+	public $deselectedBrowseCategoryBorderColor;
+	public $deselectedBrowseCategoryBorderColorDefault;
+
 	//Fonts
 	public $headingFont;
 	public $headingFontDefault;
@@ -150,6 +172,20 @@ class Theme extends DataObject
 			//Additional CSS
 			'additionalCss' => array('property' => 'additionalCss', 'type' => 'textarea', 'label' => 'Additional CSS', 'description' => 'Additional CSS to apply to the interface', 'required' => false, 'hideInLists' => true),
 			'additionalCssType' => array('property' => 'additionalCssType', 'type' => 'enum', 'values' => ['0' => 'Append to parent css', '1' => 'Override parent css'], 'label' => 'Additional CSS Application', 'description' => 'How to apply css to the theme', 'required' => false, 'default' => 0),
+
+			//Browse category theming
+			'browseCategorySection' =>['property'=>'browseCategorySection', 'type' => 'section', 'label' =>'Browse Categories', 'hideInLists' => true, 'properties' => [
+				'browseCategoryPanelColor' => array('property' => 'browseCategoryPanelColor', 'type' => 'color', 'label' => 'Browse Category Panel Color', 'description' => 'Background Color of the Browse Category Panel', 'required' => false, 'hideInLists' => true, 'default' => '#0087AB'),
+
+				'selectedBrowseCategoryBackgroundColor' => array('property' => 'selectedBrowseCategoryBackgroundColor', 'type' => 'color', 'label' => 'Selected Browse Category Background Color', 'description' => 'Selected Browse Category Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#0087AB'),
+				'selectedBrowseCategoryForegroundColor' => array('property' => 'selectedBrowseCategoryForegroundColor', 'type' => 'color', 'label' => 'Selected Browse Category Foreground Color', 'description' => 'Selected Browse Category Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff'),
+				'selectedBrowseCategoryBorderColor' => array('property' => 'selectedBrowseCategoryBorderColor', 'type' => 'color', 'label' => 'Selected Browse Category Border Color', 'description' => 'Selected Browse Category Border Color', 'required' => false, 'hideInLists' => true, 'default' => '#0087AB'),
+
+				'deselectedBrowseCategoryBackgroundColor' => array('property' => 'deselectedBrowseCategoryBackgroundColor', 'type' => 'color', 'label' => 'Deselected Browse Category Background Color', 'description' => 'Deselected Browse Category Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#0087AB'),
+				'deselectedBrowseCategoryForegroundColor' => array('property' => 'deselectedBrowseCategoryForegroundColor', 'type' => 'color', 'label' => 'Deselected Browse Category Foreground Color', 'description' => 'Deselected Browse Category Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff'),
+				'deselectedBrowseCategoryBorderColor' => array('property' => 'deselectedBrowseCategoryBorderColor', 'type' => 'color', 'label' => 'Deselected Browse Category Border Color', 'description' => 'Deselected Browse Category Border Color', 'required' => false, 'hideInLists' => true, 'default' => '#0087AB'),
+			]],
+
 		);
 		return $structure;
 	}
@@ -250,8 +286,29 @@ class Theme extends DataObject
 			if ($interface->getVariable('bodyFont') == null && !$theme->bodyFontDefault) {
 				$interface->assign('bodyFont', $theme->bodyFont);
 			}
+			if ($interface->getVariable('browseCategoryPanelColor') == null && !$theme->browseCategoryPanelColorDefault) {
+				$interface->assign('browseCategoryPanelColor', $theme->browseCategoryPanelColor);
+			}
+			if ($interface->getVariable('selectedBrowseCategoryBackgroundColor') == null && !$theme->selectedBrowseCategoryBackgroundColorDefault) {
+				$interface->assign('selectedBrowseCategoryBackgroundColor', $theme->selectedBrowseCategoryBackgroundColor);
+			}
+			if ($interface->getVariable('selectedBrowseCategoryForegroundColor') == null && !$theme->selectedBrowseCategoryForegroundColorDefault) {
+				$interface->assign('selectedBrowseCategoryForegroundColor', $theme->selectedBrowseCategoryForegroundColor);
+			}
+			if ($interface->getVariable('selectedBrowseCategoryBorderColor') == null && !$theme->selectedBrowseCategoryBorderColorDefault) {
+				$interface->assign('selectedBrowseCategoryBorderColor', $theme->selectedBrowseCategoryBorderColor);
+			}
+			if ($interface->getVariable('deselectedBrowseCategoryBackgroundColor') == null && !$theme->deselectedBrowseCategoryBackgroundColorDefault) {
+				$interface->assign('deselectedBrowseCategoryBackgroundColor', $theme->deselectedBrowseCategoryBackgroundColor);
+			}
+			if ($interface->getVariable('deselectedBrowseCategoryForegroundColor') == null && !$theme->deselectedBrowseCategoryForegroundColorDefault) {
+				$interface->assign('deselectedBrowseCategoryForegroundColor', $theme->deselectedBrowseCategoryForegroundColor);
+			}
+			if ($interface->getVariable('deselectedBrowseCategoryBorderColor') == null && !$theme->deselectedBrowseCategoryBorderColorDefault) {
+				$interface->assign('deselectedBrowseCategoryBorderColor', $theme->deselectedBrowseCategoryBorderColor);
+			}
 			if ($appendCSS) {
-				if ($theme - $this->additionalCssType == 1) {
+				if ($this->additionalCssType == 1) {
 					$additionalCSS = $theme->additionalCss;
 					$appendCSS = false;
 				} else {

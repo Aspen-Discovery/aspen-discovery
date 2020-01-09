@@ -114,6 +114,41 @@ body .container{ldelim}
 {rdelim}
 {/if}
 
+{* Browse Categories *}
+{if $browseCategoryPanelColor}
+#home-page-browse-header{ldelim}
+    background-color: {$browseCategoryPanelColor};
+{rdelim}
+{/if}
+
+{if $deselectedBrowseCategoryBackgroundColor || $deselectedBrowseCategoryForegroundColor || $deselectedBrowseCategoryBorderColor}
+.browse-category,#browse-sub-category-menu button{ldelim}
+    {if $deselectedBrowseCategoryBackgroundColor}
+        background-color: {$deselectedBrowseCategoryBackgroundColor} !important;
+    {/if}
+    {if $deselectedBrowseCategoryBorderColor}
+        border-color: {$deselectedBrowseCategoryBorderColor} !important;
+    {/if}
+    {if $deselectedBrowseCategoryForegroundColor}
+        color: {$deselectedBrowseCategoryForegroundColor} !important;
+    {/if}
+{rdelim}
+{/if}
+
+{if $selectedBrowseCategoryBackgroundColor || $selectedBrowseCategoryForegroundColor || $selectedBrowseCategoryBorderColor}
+.browse-category.selected,.browse-category.selected:hover,#browse-sub-category-menu button.selected,#browse-sub-category-menu button.selected:hover{ldelim}
+    {if $selectedBrowseCategoryBorderColor}
+        border-color: {$selectedBrowseCategoryBorderColor} !important;
+    {/if}
+    {if $selectedBrowseCategoryBackgroundColor}
+        background-color: {$selectedBrowseCategoryBackgroundColor} !important;
+    {/if}
+    {if $selectedBrowseCategoryForegroundColor}
+        color: {$selectedBrowseCategoryForegroundColor} !important;
+    {/if}
+{rdelim}
+{/if}
+
 {$additionalCSS}
 </style>
 {/strip}
