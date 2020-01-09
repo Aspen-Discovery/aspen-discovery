@@ -34,4 +34,8 @@ class BrowseCategoryGroupEntry extends DataObject
 		);
 		return $structure;
 	}
+
+	function getEditLink(){
+		return '/Admin/BrowseCategories?objectAction=edit&id=' . $this->browseCategoryId;
+	}
 }

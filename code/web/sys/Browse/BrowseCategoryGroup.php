@@ -45,8 +45,8 @@ class BrowseCategoryGroup extends DataObject
 				'structure' => $browseCategoryStructure,
 				'sortable' => true,
 				'storeDb' => true,
-				'allowEdit' => false,
-				'canEdit' => false,
+				'allowEdit' => true,
+				'canEdit' => true,
 			),
 		];
 
