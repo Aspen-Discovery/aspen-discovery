@@ -231,8 +231,8 @@ class BrowseCategory extends DataObject
 				'structure' => $browseSubCategoryStructure,
 				'sortable' => true,
 				'storeDb' => true,
-				'allowEdit' => false,
-				'canEdit' => false,
+				'allowEdit' => true,
+				'canEdit' => true,
 			),
 
 			// Disabled setting this option since it is not an implemented feature.
@@ -245,6 +245,10 @@ class BrowseCategory extends DataObject
 		);
 
 		return $structure;
+	}
+
+	function getEditLink(){
+		return '/Admin/BrowseCategories?objectAction=edit&id=' . $this->id;
 	}
 
 	/** @noinspection PhpUnused */
