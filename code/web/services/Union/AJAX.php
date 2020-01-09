@@ -85,7 +85,6 @@ class Union_AJAX extends Action {
 		}
 		$results .= "<div><a href='" . $fullResultsLink . "' target='_blank'>Full Results from {$sectionObject->displayName}</a></div>";
 
-
 		return array(
 				'success' => true,
 				'results' => $results

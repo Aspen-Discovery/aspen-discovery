@@ -2052,11 +2052,33 @@ class Admin_DBMaintenance extends Admin_Admin
 
 				'google_api_settings' => [
 					'title' => 'Google API settings',
-					'description' => 'Add the ability to store google api settings in the DB rather than config file',
+					'description' => 'Add the ability to store Google API settings in the DB rather than config file',
 					'sql' => [
 						'CREATE TABLE IF NOT EXISTS google_api_settings(
 							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 							googleBooksKey VARCHAR(50) NOT NULL
+						) ENGINE = INNODB;',
+					],
+				],
+
+				'nyt_api_settings' => [
+					'title' => 'New York Times API settings',
+					'description' => 'Add the ability to store New York Times api settings in the DB rather than config file',
+					'sql' => [
+						'CREATE TABLE IF NOT EXISTS nyt_api_settings(
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							booksApiKey VARCHAR(32) NOT NULL
+						) ENGINE = INNODB;',
+					],
+				],
+
+				'dpla_api_settings' => [
+					'title' => 'DP.LA API settings',
+					'description' => 'Add the ability to store DP.LA api settings in the DB rather than config file',
+					'sql' => [
+						'CREATE TABLE IF NOT EXISTS dpla_api_settings(
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							apiKey VARCHAR(32) NOT NULL
 						) ENGINE = INNODB;',
 					],
 				],

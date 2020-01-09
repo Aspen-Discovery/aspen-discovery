@@ -19,7 +19,9 @@ abstract class CombinedResultSection extends DataObject{
 		if (!empty($configArray['Islandora']['repositoryUrl'])){
 			$validResultSources['archive'] = 'Digital Archive';
 		}
-		if ($configArray['DPLA']['enabled']){
+		require_once ROOT_DIR . '/sys/Enrichment/DPLASetting.php';
+		$dplaSetting = new DPLASetting();
+		if ($dplaSetting->find(true)){
 			$validResultSources['dpla'] = 'DPLA';
 		}
 		$validResultSources['eds'] = 'EBSCO EDS';
