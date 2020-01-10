@@ -154,8 +154,7 @@
   }
   .panel-heading {
     padding: 5px 15px;
-    background-color: @accordion-header-bg-color;
-    background: linear-gradient(to bottom, @accordion-header-top-gradient-color, @accordion-header-bottom-gradient-color);
+    background: @accordion-header-bg-color;
     border-bottom: 1px solid #a1a1a1;
   }
   .panel {
@@ -180,8 +179,7 @@
   }
   .active {
     .panel-heading {
-      background-color: @accordion-active-header-backgroundcolor;
-      background: linear-gradient(to bottom, @accordion-active-header-backgroundcolor, darken(@accordion-active-header-backgroundcolor, 10%));
+      background: @accordion-active-header-backgroundcolor;
     }
     .panel-title {
 
@@ -190,7 +188,10 @@
   .panel-body {
     font-size: 13px;
     color: @gray-dark;
-    background-color: #eeeeee;
+    background-color: #fcfcfc;
+    border-color: #c5c5c5;
+    border-width: 0 1px 1px 1px;
+    border-style: solid;
     a {
       &, &:visited, &:hover {
         &:not(.btn) { // Let buttons in the sidebar have their normal font color.

@@ -8886,8 +8886,7 @@ ul.account-submenu {
 }
 .sidebar-links .panel-heading {
   padding: 5px 15px;
-  background-color: #e7e7e7;
-  background: linear-gradient(to bottom, #fff, #d7d7d7);
+  background: #e7e7e7;
   border-bottom: 1px solid #a1a1a1;
 }
 .sidebar-links .panel > a,
@@ -8903,13 +8902,15 @@ ul.account-submenu {
   outline: none;
 }
 .sidebar-links .active .panel-heading {
-  background-color: #007290;
-  background: linear-gradient(to bottom, #007290, #004a5d);
+  background: #007290;
 }
 .sidebar-links .panel-body {
   font-size: 13px;
   color: #333333;
-  background-color: #eeeeee;
+  background-color: #fcfcfc;
+  border-color: #c5c5c5;
+  border-width: 0 1px 1px 1px;
+  border-style: solid;
 }
 .sidebar-links .panel-body a:not(.btn),
 .sidebar-links .panel-body a:visited:not(.btn),
@@ -9439,11 +9440,11 @@ a.browse-thumbnail-sorted.active {
 }
 #account-settings-accordion .panel-heading {
   padding: 5px 15px;
-  background: linear-gradient(to bottom, #e7e7e7, #d7d7d7);
+  background: #e7e7e7;
   border-bottom: 1px solid #a1a1a1;
 }
 #account-settings-accordion .active .panel-heading {
-  background: linear-gradient(to bottom, #4dacde, #0f8fd2);
+  background: #4dacde;
 }
 #account-settings-accordion .panel-title {
   font-size: 13px;
@@ -9455,7 +9456,10 @@ a.browse-thumbnail-sorted.active {
 #account-settings-accordion .panel-body {
   font-size: 12px;
   color: #333333;
-  background-color: #eeeeee;
+  background-color: #fcfcfc;
+  border-color: #c5c5c5;
+  border-width: 0 1px 1px 1px;
+  border-style: solid;
 }
 .overdueLabel {
   color: red;
@@ -10209,7 +10213,7 @@ a.browse-thumbnail-sorted.active {
 }
 #more-details-accordion .panel-heading {
   padding: 5px 15px;
-  background: linear-gradient(to bottom, #e7e7e7, #d7d7d7);
+  background: #e7e7e7;
   border-bottom: 1px solid #a1a1a1;
 }
 #more-details-accordion .panel-title {
@@ -10218,7 +10222,6 @@ a.browse-thumbnail-sorted.active {
 }
 #more-details-accordion .active .panel-heading {
   background-color: #007290;
-  background: linear-gradient(to bottom, #007290, #004a5d);
 }
 #more-details-accordion .active .panel-title {
   color: #fff;
@@ -10226,7 +10229,10 @@ a.browse-thumbnail-sorted.active {
 #more-details-accordion .panel-body {
   font-size: 12px;
   color: #333333;
-  background-color: #eeeeee;
+  background-color: #fcfcfc;
+  border-color: #c5c5c5;
+  border-width: 0 1px 1px 1px;
+  border-style: solid;
 }
 .novelist-similar-item {
   padding: 6px;
@@ -10952,7 +10958,7 @@ fieldset[disabled] .btn-masquerade.active {
   background-color: #009ac3;
 }
 #more-details-accordion .panel-heading {
-  background: linear-gradient(to bottom, #007290, #004a5d);
+  background-color: #007290;
 }
 #more-details-accordion .panel-title {
   color: #fff;
