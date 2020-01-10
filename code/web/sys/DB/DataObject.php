@@ -549,7 +549,7 @@ abstract class DataObject
 		$clone = new $className;
 		$properties = get_object_vars($this);
 		foreach ($properties as $name => $value){
-			if ($name != '__queryStmt'){
+			if (!is_null($value) && $name[0] == '_' && $name != '__queryStmt'){
 				$clone->$name = $value;
 			}
 		}

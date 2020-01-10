@@ -6,7 +6,7 @@ require_once __DIR__ . '/../bootstrap.php';
  */
 global $serverName;
 
-ini_set('memory_limit','512M');
+ini_set('memory_limit','1G');
 $dataPath = '/data/aspen-discovery/' . $serverName;
 $exportPath = $dataPath . '/pika_export/';
 
@@ -103,6 +103,7 @@ function importLists($exportPath){
 		if ($numImports % 250 == 0){
 			gc_collect_cycles();
 			ob_flush();
+			usleep(10);
 		}
 	}
 	fclose($patronsListHnd);
@@ -111,6 +112,8 @@ function importLists($exportPath){
 	set_time_limit(600);
 	$patronListEntriesHnd = fopen($exportPath . "patronListEntries.csv", 'r');
 	$numImports = 0;
+	$validGroupedWorks = [];
+	$invalidGroupedWorks = [];
 	while ($patronListEntryRow = fgetcsv($patronListEntriesHnd)){
 		$numImports++;
 		$listId = $patronListEntryRow[1];
@@ -128,13 +131,22 @@ function importLists($exportPath){
 		}
 
 		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
-		$groupedWork = new GroupedWork();
-		$groupedWork->permanent_id = $groupedWorkId;
-		if (!$groupedWork->find(true)){
-			echo("Grouped Work $groupedWorkId - $title by $author on list $listId does not exist\r\n");
+		if (array_key_exists($groupedWorkId, $invalidGroupedWorks)){
 			continue;
-		}elseif ($groupedWork->full_title != $title || $groupedWork->author != $author){
-			echo("Warning grouped Work $groupedWorkId - $title by $author on list $listId may have matched incorrectly {$groupedWork->full_title} {$groupedWork->author}");
+		}elseif (array_key_exists($groupedWorkId, $validGroupedWorks)) {
+			usleep(1);
+		}else{
+			//Try to validate the grouped work
+			$groupedWork = new GroupedWork();
+			$groupedWork->permanent_id = $groupedWorkId;
+			if (!$groupedWork->find(true)){
+				echo("Grouped Work $groupedWorkId - $title by $author on list $listId does not exist\r\n");
+				continue;
+			}elseif ($groupedWork->full_title != $title || $groupedWork->author != $author){
+				echo("Warning grouped Work $groupedWorkId - $title by $author on list $listId may have matched incorrectly {$groupedWork->full_title} {$groupedWork->author}");
+			}
+			$groupedWork->__destruct();
+			$groupedWork = null;
 		}
 
 		require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
@@ -152,8 +164,6 @@ function importLists($exportPath){
 		}else{
 			$listEntry->insert(false);
 		}
-		$groupedWork->__destruct();
-		$groupedWork = null;
 		$listEntry->__destruct();
 		$listEntry = null;
 		if ($numImports % 250 == 0){
