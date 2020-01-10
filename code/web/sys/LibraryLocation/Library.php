@@ -234,6 +234,16 @@ class Library extends DataObject
 		'list'  => 'List',
 	);
 
+	static $subdomains = null;
+	public static function getAllSubdomains()
+	{
+		if (Library::$subdomains == null){
+			$libraries = new Library();
+			Library::$subdomains = $libraries->fetchAll('subdomain');
+		}
+		return Library::$subdomains;
+	}
+
 	function keys() {
 		return array('libraryId', 'subdomain');
 	}

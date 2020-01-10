@@ -42,7 +42,11 @@ abstract class DataObject
 		}
 
 		$this->__N = 0;
-		$this->__queryStmt = null;
+		if ($this->__queryStmt != null){
+			$this->__queryStmt->closeCursor();
+			$this->__queryStmt = null;
+		}
+
 		/** @var PDO $aspen_db  */
 		global $aspen_db;
 		$query = $this->getSelectQuery($aspen_db);
@@ -53,6 +57,9 @@ abstract class DataObject
 			$this->__N = $this->__queryStmt->rowCount();
 			if ($this->__N != 0 && $fetchFirst) {
 				$this->fetch();
+				//If we are fetching the first record, we can cleanup since it won't be used again.
+				$this->__queryStmt->closeCursor();
+				$this->__queryStmt = null;
 			}
 		} else {
 			echo("Failed to execute " . $query);
@@ -100,6 +107,8 @@ abstract class DataObject
 				$result = $this->fetch();
 			}
 		}
+		$this->__queryStmt->closeCursor();
+		$this->__queryStmt = null;
 		$this->__fetchingFromDB = false;
 		return $results;
 	}
@@ -492,6 +501,22 @@ abstract class DataObject
 		return $propertiesToSerialize;
 	}
 
+	public function __destruct()
+	{
+		if ($this->__queryStmt){
+			$this->__queryStmt->closeCursor();
+			$this->__queryStmt = null;
+		}
+		$properties = get_object_vars($this);
+		foreach ($properties as $name => $value) {
+			if ($value instanceof DataObject) {
+				$value->__destruct();
+				unset($this->$name);
+			}
+		}
+		$this->_data = null;
+	}
+
 	protected function saveOneToManyOptions($oneToManySettings, $keyOther)
 	{
 		/** @var DataObject $oneToManyDBObject */
@@ -524,7 +549,9 @@ abstract class DataObject
 		$clone = new $className;
 		$properties = get_object_vars($this);
 		foreach ($properties as $name => $value){
-			$clone->$name = $value;
+			if ($name != '__queryStmt'){
+				$clone->$name = $value;
+			}
 		}
 		$clone->clearRuntimeDataVariables();
 		return $clone;

@@ -75,9 +75,9 @@ class UserList extends DataObject
 		// (This prevents list strangeness when our searches don't find the ID in the search indexes)
 		$listEntry->whereAdd(
 			'(
-			     (user_list_entry.groupedWorkPermanentId NOT LIKE "%:%" AND user_list_entry.groupedWorkPermanentId IN (SELECT permanent_id FROM grouped_work) )
-			    OR
-			    (user_list_entry.groupedWorkPermanentId LIKE "%:%" AND user_list_entry.groupedWorkPermanentId IN (SELECT pid FROM islandora_object_cache) )
+			(user_list_entry.groupedWorkPermanentId NOT LIKE "%:%" AND user_list_entry.groupedWorkPermanentId IN (SELECT permanent_id FROM grouped_work) )
+			OR
+			(user_list_entry.groupedWorkPermanentId LIKE "%:%" AND user_list_entry.groupedWorkPermanentId IN (SELECT pid FROM islandora_object_cache) )
 			)'
 		);
 
@@ -140,10 +140,10 @@ class UserList extends DataObject
 		// (This prevents list strangeness when our searches don't find the ID in the search indexes)
 		$listEntry->whereAdd(
 			'(
-     (user_list_entry.groupedWorkPermanentId NOT LIKE "%:%" AND user_list_entry.groupedWorkPermanentId IN (SELECT permanent_id FROM grouped_work) )
-    OR
-    (user_list_entry.groupedWorkPermanentId LIKE "%:%" AND user_list_entry.groupedWorkPermanentId IN (SELECT pid FROM islandora_object_cache) )
-)'
+			(user_list_entry.groupedWorkPermanentId NOT LIKE "%:%" AND user_list_entry.groupedWorkPermanentId IN (SELECT permanent_id FROM grouped_work) )
+			OR
+			(user_list_entry.groupedWorkPermanentId LIKE "%:%" AND user_list_entry.groupedWorkPermanentId IN (SELECT pid FROM islandora_object_cache) )
+			)'
 		);
 
 		$listEntries = $archiveIDs = $catalogIDs = array();
@@ -156,6 +156,8 @@ class UserList extends DataObject
 			}
 			$listEntries[] = $listEntry->groupedWorkPermanentId;
 		}
+		$listEntry->__destruct();
+		$listEntry = null;
 
 		return array($listEntries, $catalogIDs, $archiveIDs);
 	}
@@ -181,6 +183,8 @@ class UserList extends DataObject
 				$listTitles[] = $cleanedEntry;
 			}
 		}
+		$listEntry->__destruct();
+		$listEntry = null;
 
 		$this->listTitles[$this->id] = $listTitles;
 		return $this->listTitles[$this->id];
@@ -232,11 +236,11 @@ class UserList extends DataObject
 	/**
 	 * @param String $workToRemove
 	 */
-	function removeListEntry($workToRemove)
+	function removeListEntry($workToRemove, $updateBrowseCategories = true)
 	{
 		// Remove the Saved List Entry
 		if ($workToRemove instanceof UserListEntry){
-			$workToRemove->delete();
+			$workToRemove->delete(false, $updateBrowseCategories);
 		}else{
 			require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
 			$listEntry = new UserListEntry();
@@ -255,10 +259,10 @@ class UserList extends DataObject
 	/**
 		* remove all resources within this list
 		*/
-	function removeAllListEntries(){
+	function removeAllListEntries($updateBrowseCategories = true){
 		$allListEntries = $this->getListTitles();
 		foreach ($allListEntries as $listEntry){
-			$this->removeListEntry($listEntry);
+			$this->removeListEntry($listEntry, $updateBrowseCategories);
 		}
 	}
 
@@ -345,5 +349,7 @@ class UserList extends DataObject
 				$userListBrowseCategory->deleteCachedBrowseCategoryResults();
 			}
 		}
+		$userListBrowseCategory->__destruct();
+		$userListBrowseCategory = null;
 	}
 }

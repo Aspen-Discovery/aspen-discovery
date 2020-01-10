@@ -141,11 +141,9 @@ class BrowseCategory extends DataObject
 	{
 		// key structure
 		// $key = 'browse_category_' . $this->textId . '_' . $solrScope . '_' . $browseMode;
+		$librarySubDomains = Library::getAllSubdomains();
+		$locationCodes = Location::getAllCodes();
 
-		$libraries = new Library();
-		$librarySubDomains = $libraries->fetchAll('subdomain');
-		$locations = new Location();
-		$locationCodes = $locations->fetchAll('code');
 		$solrScopes = array_merge($librarySubDomains, $locationCodes);
 
 		if (!empty($solrScopes)) { // don't bother if we didn't get any solr scopes

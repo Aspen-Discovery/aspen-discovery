@@ -81,6 +81,16 @@ class Location extends DataObject
 	/** @var  array $_data */
 	protected $_data;
 
+	static $codes = null;
+	public static function getAllCodes()
+	{
+		if (Location::$codes == null) {
+			$locations = new Location();
+			Location::$codes = $locations->fetchAll('code');
+		}
+		return Location::$codes;
+	}
+
 	function keys()
 	{
 		return array('locationId', 'code');

@@ -11,12 +11,13 @@ class UserListEntry extends DataObject{
 	public $weight;                          //Where to position the entry in the overall list
 
 	/**
+	 * @param bool $updateBrowseCategories
 	 * @return bool
 	 */
-	function insert()
+	function insert($updateBrowseCategories = true)
 	{
 		$result = parent::insert();
-		if ($result) {
+		if ($result && $updateBrowseCategories) {
 			$this->flushUserListBrowseCategory();
 			/** @var Memcache $memCache */
 			global $memCache;
@@ -26,13 +27,13 @@ class UserListEntry extends DataObject{
 	}
 
 	/**
-	 * @param bool $dataObject
+	 * @param bool $updateBrowseCategories
 	 * @return bool|int|mixed
 	 */
-	function update()
+	function update($updateBrowseCategories = true)
 	{
 		$result = parent::update();
-		if ($result) {
+		if ($result && $updateBrowseCategories) {
 			$this->flushUserListBrowseCategory();
 			/** @var Memcache $memCache */
 			global $memCache;
@@ -43,12 +44,13 @@ class UserListEntry extends DataObject{
 
 	/**
 	 * @param bool $useWhere
+	 * @param bool $updateBrowseCategories
 	 * @return bool|int|mixed
 	 */
-	function delete($useWhere = false)
+	function delete($useWhere = false, $updateBrowseCategories = true)
 	{
 		$result = parent::delete($useWhere);
-		if ($result) {
+		if ($result && $updateBrowseCategories) {
 			$this->flushUserListBrowseCategory();
 			/** @var Memcache $memCache */
 			global $memCache;
@@ -67,5 +69,7 @@ class UserListEntry extends DataObject{
 				$userListBrowseCategory->deleteCachedBrowseCategoryResults();
 			}
 		}
+		$userListBrowseCategory->__destruct();
+		$userListBrowseCategory = null;
 	}
 }

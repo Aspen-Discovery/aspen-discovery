@@ -603,8 +603,6 @@ class UserAccount {
 	 * @return AccountProfile[]
 	 */
 	static function getAccountProfiles() {
-		UserAccount::$_accountProfiles = null;
-
 		if (UserAccount::$_accountProfiles == null){
 			UserAccount::$_accountProfiles = array();
 
@@ -642,8 +640,9 @@ class UserAccount {
 	public static function findNewUser($patronBarcode){
 		$driversToTest = self::getAccountProfiles();
 		foreach ($driversToTest as $driverName => $driverData){
+			require_once ROOT_DIR . '/CatalogFactory.php';
 			$catalogConnectionInstance = CatalogFactory::getCatalogConnectionInstance($driverData['driver'], $driverData['accountProfile']);
-			if (method_exists($catalogConnectionInstance->driver, 'findNewUser')) {
+			if ($catalogConnectionInstance != null && !is_null($catalogConnectionInstance->driver) && method_exists($catalogConnectionInstance->driver, 'findNewUser')) {
 				$tmpUser = $catalogConnectionInstance->driver->findNewUser($patronBarcode);
 				if (!empty($tmpUser) && !($tmpUser instanceof AspenError)) {
 					return $tmpUser;
