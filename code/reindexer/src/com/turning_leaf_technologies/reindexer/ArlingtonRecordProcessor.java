@@ -324,7 +324,7 @@ class ArlingtonRecordProcessor extends IIIRecordProcessor {
 		return false;
 	}
 
-	private static Pattern suppressedICode2Pattern = Pattern.compile("^([dehnpy456])$");
+	private static Pattern suppressedICode2Pattern = Pattern.compile("^([chnpy46v])$");
 	protected boolean isItemSuppressed(DataField curItem) {
 		Subfield icode2Subfield = curItem.getSubfield(iCode2Subfield);
 		if (icode2Subfield != null && useICode2Suppression) {
