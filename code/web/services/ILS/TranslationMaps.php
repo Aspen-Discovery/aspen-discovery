@@ -69,7 +69,6 @@ class ILS_TranslationMaps extends ObjectEditor {
 				$interface->assign('error', "Sorry we could not find a translation map with that id");
 			}
 
-
 			//Show the results
 			$_REQUEST['objectAction'] = 'edit';
 		}else if ($objectAction == 'viewAsINI'){
@@ -82,6 +81,34 @@ class ILS_TranslationMaps extends ObjectEditor {
 				/** @noinspection PhpUndefinedFieldInspection */
 				$interface->assign('translationMapValues', $translationMap->translationMapValues);
 				$this->display('../ILS/viewTranslationMapAsIni.tpl', 'View Translation Map Data');
+				exit();
+			}else{
+				$interface->assign('error', "Sorry we could not find a translation map with that id");
+			}
+		}else if ($objectAction == 'downloadAsINI'){
+			$id = $_REQUEST['id'];
+			$translationMap = new TranslationMap();
+			$translationMap->id = $id;
+			if ($translationMap->find(true)){
+				$interface->assign('id', $id);
+
+				$translationMapAsCsv = '';
+				/** @var TranslationMapValue $mapValue */
+				foreach ($translationMap->translationMapValues as $mapValue){
+					$translationMapAsCsv .= $mapValue->value . ' = ' . $mapValue->translation . "\r\n";
+				}
+				header('Content-Description: File Transfer');
+				header('Content-Type: application/octet-stream');
+				header("Content-Disposition: attachment; filename={$translationMap->name}.ini");
+				header('Content-Transfer-Encoding: utf-8');
+				header('Expires: 0');
+				header('Cache-Control: must-revalidate');
+				header('Pragma: public');
+
+				header('Content-Length: ' . strlen($translationMapAsCsv));
+				ob_clean();
+				flush();
+				echo $translationMapAsCsv;
 				exit();
 			}else{
 				$interface->assign('error', "Sorry we could not find a translation map with that id");
@@ -147,6 +174,10 @@ class ILS_TranslationMaps extends ObjectEditor {
 			$actions[] = array(
 				'text' => 'View as INI',
 				'url'  => '/ILS/TranslationMaps?objectAction=viewAsINI&id=' . $existingObject->id,
+			);
+			$actions[] = array(
+				'text' => 'Download as INI',
+				'url'  => '/ILS/TranslationMaps?objectAction=downloadAsINI&id=' . $existingObject->id,
 			);
 		}
 
