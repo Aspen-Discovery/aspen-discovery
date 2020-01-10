@@ -6,6 +6,10 @@ class DPLA {
 		$this->setShowCovers();
 
 		$results = array();
+
+		if (empty($searchTerm)){
+			return $results;
+		}
 		require_once ROOT_DIR . '/sys/Enrichment/DPLASetting.php';
 		$dplaSetting = new DPLASetting();
 		if ($dplaSetting->find(true)){
