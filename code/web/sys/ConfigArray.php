@@ -268,7 +268,7 @@ function updateConfigForScoping($configArray)
 	}
 
 	//Also check the actual server name
-	if (strpos($_SERVER['SERVER_NAME'], '.')) {
+	if (!empty($_SERVER['SERVER_NAME']) && strpos($_SERVER['SERVER_NAME'], '.')) {
 		$subdomainsToTest = getSubdomainsToTestFromServerName($_SERVER['SERVER_NAME'], $subdomainsToTest);
 	}
 
