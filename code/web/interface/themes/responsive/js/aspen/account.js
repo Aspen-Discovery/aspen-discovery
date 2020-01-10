@@ -931,7 +931,7 @@ AspenDiscovery.Account = (function(){
 			return false;
 		},
 
-		dismissMessage(messageId) {
+		dismissMessage: function(messageId) {
 			let url = Globals.path + "/MyAccount/AJAX";
 			let params = {
 				method: "dismissMessage",
@@ -941,7 +941,7 @@ AspenDiscovery.Account = (function(){
 			return false;
 		},
 
-		enableAccountLinking(){
+		enableAccountLinking: function(){
 			let url = Globals.path + "/MyAccount/AJAX";
 			let params = {
 				method: "enableAccountLinking",
@@ -950,7 +950,7 @@ AspenDiscovery.Account = (function(){
 			return false;
 		},
 
-		stopAccountLinking(){
+		stopAccountLinking: function(){
 			let url = Globals.path + "/MyAccount/AJAX";
 			let params = {
 				method: "stopAccountLinking",
@@ -959,7 +959,7 @@ AspenDiscovery.Account = (function(){
 			return false;
 		},
 
-		createPayPalOrder(finesFormId) {
+		createPayPalOrder: function(finesFormId) {
 			let url = Globals.path + "/MyAccount/AJAX";
 			let params = {
 				method: "createPayPalOrder",
