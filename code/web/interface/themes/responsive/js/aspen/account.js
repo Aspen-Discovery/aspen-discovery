@@ -998,7 +998,7 @@ AspenDiscovery.Account = (function(){
 			return orderInfo;
 		},
 
-		completePayPalOrder(orderId, patronId) {
+		completePayPalOrder: function(orderId, patronId) {
 			let url = Globals.path + "/MyAccount/AJAX";
 			let params = {
 				method: "completePayPalOrder",
@@ -1013,7 +1013,7 @@ AspenDiscovery.Account = (function(){
 				}
 			}).fail(AspenDiscovery.ajaxFail);
 		},
-		updateFineTotal(finesFormId, userId, paymentType) {
+		updateFineTotal: function(finesFormId, userId, paymentType) {
 			let totalFineAmt = 0;
 			let totalOutstandingAmt = 0;
 			$(finesFormId + " .selectedFine:checked").each(
