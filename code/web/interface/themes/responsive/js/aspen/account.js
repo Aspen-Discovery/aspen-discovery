@@ -841,11 +841,11 @@ AspenDiscovery.Account = (function(){
 			return false;
 		},
 
-		showCreateListForm: function(id = null){
+		showCreateListForm: function(id){
 			if (Globals.loggedIn){
 				let url = Globals.path + "/MyAccount/AJAX";
 				let params = {method:"getCreateListForm"};
-				if (id != null){
+				if (id !== undefined){
 					params.recordId= id;
 				}
 				$.getJSON(url, params, function(data){
