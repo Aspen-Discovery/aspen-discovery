@@ -138,6 +138,8 @@ class FavoriteHandler
 	{
 		global $interface;
 
+		$this->list->description = strip_tags($this->list->description, '<p><b><em><strong><i><br>');
+
 		$recordsPerPage = isset($_REQUEST['pageSize']) && (is_numeric($_REQUEST['pageSize'])) ? $_REQUEST['pageSize'] : 20;
 		$page = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
 		$startRecord = ($page - 1) * $recordsPerPage + 1;

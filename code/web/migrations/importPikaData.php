@@ -35,6 +35,8 @@ if (!file_exists($exportPath)){
 }
 
 function importLists($exportPath){
+	global $memoryWatcher;
+	$memoryWatcher->logMemory("Start of list import");
 	$existingUsers = [];
 	$missingUsers = [];
 	$existingLists = [];
@@ -104,6 +106,7 @@ function importLists($exportPath){
 			gc_collect_cycles();
 			ob_flush();
 			usleep(10);
+			$memoryWatcher->logMemory("Imported $numImports Lists");
 		}
 	}
 	fclose($patronsListHnd);
