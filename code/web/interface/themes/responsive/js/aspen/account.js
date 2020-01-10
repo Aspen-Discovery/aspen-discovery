@@ -138,7 +138,7 @@ AspenDiscovery.Account = (function(){
 				page: 'Checkouts',
 				source: source,
 				sort: sort,
-				showCovers
+				showCovers: showCovers
 			};
 			let newUrl = AspenDiscovery.buildUrl(document.location.origin + document.location.pathname, 'source', source);
 			if (document.location.href ){

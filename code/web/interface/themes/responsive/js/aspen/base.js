@@ -466,7 +466,7 @@ var AspenDiscovery = (function(){
 				}
 			).fail(AspenDiscovery.ajaxFail);
 		},
-		deleteTranslationTerm(termId) {
+		deleteTranslationTerm: function(termId) {
 			let url = Globals.path + "/AJAX/JSON";
 			let params =  {
 				method : 'deleteTranslationTerm',
