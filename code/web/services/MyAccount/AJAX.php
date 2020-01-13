@@ -18,7 +18,22 @@ class MyAccount_AJAX
 				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 				header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
 				$result = $this->$method();
-				echo json_encode($result);
+				if (empty($result)){
+					$result = array(
+						'result' => false,
+						'message' => 'Method did not return results'
+					);
+				}
+				$encodedData = json_encode($result);
+				if ($encodedData == false){
+					$result = array(
+						'result' => false,
+						'message' => 'JSON Encoding failed'
+					);
+					echo json_encode($result);
+				}else{
+					echo($encodedData);
+				}
 			}
 		} else {
 			echo json_encode(array('error' => 'invalid_method'));
@@ -1888,16 +1903,13 @@ class MyAccount_AJAX
 
 				$result['success'] = true;
 				$result['message'] = "";
-				if ($configArray['System']['debug']){
-					echo("Fetching holds list");
-				}
 				$result['holds'] = $interface->fetch('MyAccount/holdsList.tpl');
-				
 			}
 		} else {
 			$result['message'] = translate('The catalog is offline');
 		}
 
+		print_r($result);
 		return $result;
 	}
 
