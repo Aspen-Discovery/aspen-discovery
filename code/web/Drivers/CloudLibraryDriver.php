@@ -151,6 +151,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 			/** @var Memcache $memCache */
 			global $memCache;
 			$memCache->delete('cloud_library_summary_' . $patron->id);
+			$memCache->delete('cloud_library_circulation_info_' . $patron->id);
 		}else if ($responseCode == '400'){
 			$result['message'] = translate("Bad Request.");
 		}else if ($responseCode == '403'){
@@ -246,6 +247,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 			/** @var Memcache $memCache */
 			global $memCache;
 			$memCache->delete('cloud_library_summary_' . $patron->id);
+			$memCache->delete('cloud_library_circulation_info_' . $patron->id);
 		}else if ($responseCode == '405'){
 			$result['message'] = translate("Bad Request.");
 		}else if ($responseCode == '403'){
@@ -285,6 +287,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 			/** @var Memcache $memCache */
 			global $memCache;
 			$memCache->delete('cloud_library_summary_' . $patron->id);
+			$memCache->delete('cloud_library_circulation_info_' . $patron->id);
 		}else if ($responseCode == '400'){
 			$result['message'] = translate("Bad Request.");
 		}else if ($responseCode == '403'){
@@ -369,31 +372,38 @@ class CloudLibraryDriver extends AbstractEContentDriver
 				/** @var Memcache $memCache */
 				global $memCache;
 				$memCache->delete('cloud_library_summary_' . $user->id);
+				$memCache->delete('cloud_library_circulation_info_' . $user->id);
 			}
 		}
 
 		return $result;
 	}
 
-	private $circulationInfo = [];
 	private function getPatronCirculation(User $user)
 	{
-		if (!isset($this->circulationInfo[$user->id])){
+		/** @var Memcache $memCache */
+		global $memCache;
+		$circulationInfo = $memCache->get('cloud_library_circulation_info_' . $user->id);
+		if ($circulationInfo == false || isset($_REQUEST['reload'])){
 			$settings = $this->getSettings();
 			$patronId = $user->getBarcode();
 			$password = $user->getPasswordOrPin();
 			$apiPath = "/cirrus/library/{$settings->libraryId}/circulation/patron/$patronId?password=$password";
 			$circulationInfo = $this->callCloudLibraryUrl($settings, $apiPath);
-			$this->circulationInfo[$user->id] = simplexml_load_string($circulationInfo);
+			global $configArray;
+			$memCache->set('cloud_library_circulation_info_' . $user->id, $circulationInfo, $configArray['Caching']['account_summary']);
 		}
-		return $this->circulationInfo[$user->id];
+		return simplexml_load_string($circulationInfo);
 	}
 
 	private function getSettings(){
 		require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibrarySetting.php';
 		$settings = new CloudLibrarySetting();
-		$settings->find(true);
-		return $settings;
+		if ($settings->find(true)) {
+			return $settings;
+		}else{
+			return false;
+		}
 	}
 
 	private function callCloudLibraryUrl(CloudLibrarySetting $settings, string $apiPath, $method = 'GET', $requestBody = null)

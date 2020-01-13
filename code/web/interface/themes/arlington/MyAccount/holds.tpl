@@ -1,3 +1,4 @@
+{assign var="hideCoversFormDisplayed" value=false}
 {strip}
 	{if $loggedIn}
 		{if !empty($profile->_web_note)}

@@ -299,25 +299,23 @@ class User extends DataObject
 		}
 	}
 
-	function getBarcode(){
-		global $configArray;
-		//TODO: Check the login configuration for the driver
-		if ($configArray['Catalog']['barcodeProperty'] == 'cat_username'){
+	function getBarcode()
+	{
+		if ($this->accountProfile->loginConfiguration == 'barcode_pin') {
 			return trim($this->cat_username);
-		}else{
+		} else {
 			return trim($this->cat_password);
 		}
 	}
 
-	function getPasswordOrPin(){
-        global $configArray;
-        //TODO: Check the login configuration for the driver
-        if ($configArray['Catalog']['barcodeProperty'] == 'cat_username'){
-            return trim($this->cat_password);
-        }else{
-            return trim($this->cat_username);
-        }
-    }
+	function getPasswordOrPin()
+	{
+		if ($this->accountProfile->loginConfiguration == 'barcode_pin') {
+			return trim($this->cat_password);
+		} else {
+			return trim($this->cat_username);
+		}
+	}
 
 	function saveRoles(){
 		if (isset($this->id) && isset($this->roles) && is_array($this->roles)){
@@ -520,6 +518,7 @@ class User extends DataObject
 	 *
 	 * @return User[]
 	 */
+	/** @noinspection PhpUnused */
 	function getViewers(){
 		if (is_null($this->viewers)){
 			$this->viewers = array();
@@ -688,29 +687,14 @@ class User extends DataObject
 	}
 
 	private $_runtimeInfoUpdated = false;
-	private $_hasCatalogConnection = null;
 	function updateRuntimeInformation(){
 		if (!$this->_runtimeInfoUpdated) {
 			if ($this->getCatalogDriver()) {
 				$this->getCatalogDriver()->updateUserWithAdditionalRuntimeInformation($this);
-				$this->_hasCatalogConnection = true;
-			} else {
-                $this->_hasCatalogConnection = false;
 			}
 			$this->_runtimeInfoUpdated = true;
 		}
 	}
-
-	function hasCatalogConnection(){
-	    if ($this->_hasCatalogConnection == null) {
-            if ($this->getCatalogDriver()) {
-                $this->_hasCatalogConnection = true;
-            } else {
-                $this->_hasCatalogConnection = false;
-            }
-        }
-        return $this->_hasCatalogConnection;
-    }
 
 	function updateOverDriveOptions(){
 		if (isset($_REQUEST['promptForOverdriveEmail']) && ($_REQUEST['promptForOverdriveEmail'] == 'yes' || $_REQUEST['promptForOverdriveEmail'] == 'on')){
