@@ -28,7 +28,7 @@ class MyAccount_AJAX
 				if ($encodedData == false){
 					$result = array(
 						'result' => false,
-						'message' => 'JSON Encoding failed ' . json_last_error()
+						'message' => 'JSON Encoding failed ' . json_last_error() . ' - ' . json_last_error_msg()
 					);
 					echo json_encode($result);
 				}else{
