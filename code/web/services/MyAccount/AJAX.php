@@ -1909,7 +1909,6 @@ class MyAccount_AJAX
 			$result['message'] = translate('The catalog is offline');
 		}
 
-		print_r($result);
 		return $result;
 	}
 

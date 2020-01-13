@@ -158,24 +158,24 @@ class User extends DataObject
 	}
 
 	/** @var AccountProfile */
-	private $accountProfile;
+	private $_accountProfile;
 
 	/**
 	 * @return AccountProfile
 	 */
 	function getAccountProfile(){
-		if ($this->accountProfile != null){
-			return $this->accountProfile;
+		if ($this->_accountProfile != null){
+			return $this->_accountProfile;
 		}
 		require_once ROOT_DIR . '/sys/Account/AccountProfile.php';
 		$accountProfile = new AccountProfile();
 		$accountProfile->name = $this->source;
 		if ($accountProfile->find(true)){
-			$this->accountProfile = $accountProfile;
+			$this->_accountProfile = $accountProfile;
 		}else{
-			$this->accountProfile = null;
+			$this->_accountProfile = null;
 		}
-		return $this->accountProfile;
+		return $this->_accountProfile;
 	}
 
 	function __get($name){
@@ -284,7 +284,7 @@ class User extends DataObject
 
 	function getBarcode()
 	{
-		if ($this->accountProfile->loginConfiguration == 'barcode_pin') {
+		if ($this->getAccountProfile()->loginConfiguration == 'barcode_pin') {
 			return trim($this->cat_username);
 		} else {
 			return trim($this->cat_password);
@@ -293,7 +293,7 @@ class User extends DataObject
 
 	function getPasswordOrPin()
 	{
-		if ($this->accountProfile->loginConfiguration == 'barcode_pin') {
+		if ($this->getAccountProfile()->loginConfiguration == 'barcode_pin') {
 			return trim($this->cat_password);
 		} else {
 			return trim($this->cat_username);
