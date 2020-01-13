@@ -2,7 +2,7 @@
 	{* This template gets loaded into tableofContentsPlaceHolder via AJAX *}
 	<div class="tableOfContents">
 		{foreach from=$tocData item=entry}
-			{if $entry.label}
+			{if $entry.label || $entry.title || $entry.page}
 				<div class="tocEntry">
 					<span class="tocLabel">{$entry.label} </span>
 					<span class="tocTitle">{$entry.title} </span>

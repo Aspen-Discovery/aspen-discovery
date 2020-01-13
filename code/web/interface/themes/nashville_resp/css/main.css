@@ -10251,6 +10251,15 @@ a.browse-thumbnail-sorted.active {
   font-style: italic;
   margin-left: 6px;
 }
+.tocEntry {
+  margin-bottom: 2px;
+}
+.tocLabel {
+  font-weight: bold;
+}
+.trackNumber {
+  font-weight: bold;
+}
 #prospectorSearchResultsHeader {
   padding-top: 15px;
 }
