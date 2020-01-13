@@ -972,7 +972,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 		// Build a list of facets we want from the index
 		$facetSet = array();
 		$facetConfig = $this->getFacetConfig();
-		if (!empty($facetConfig)) {
+		if ($recommendations && !empty($facetConfig)) {
 			$facetSet['limit'] = $this->facetLimit;
 			foreach ($facetConfig as $facetField => $facetInfo) {
 				if (strpos($facetField, 'availability_toggle') === 0) {

@@ -335,22 +335,28 @@ function validateGroupedWork(&$groupedWorkId, $title, $author, &$validGroupedWor
 				$searchTerm = trim($searchTerm);
 				$searchObject->setBasicQuery($searchTerm);
 				$result = $searchObject->processSearch(true, false);
-				$recordSet = $searchObject->getResultRecordSet();
-				if ($searchObject->getResultTotal() == 1) {
-					//We found it by searching
-					$movedGroupedWorks[$groupedWorkId] = $recordSet[0]['id'];
-					$groupedWorkId = $recordSet[0]['id'];
-					$groupedWorkValid = true;
-				}elseif ($searchObject->getResultTotal() > 1) {
-					//We probably found it by searching
-					echo("WARNING: More than one work found when searching for $title by $author\r\n");
-					$movedGroupedWorks[$groupedWorkId] = $recordSet[0]['id'];
-					$groupedWorkId = $recordSet[0]['id'];
-					$groupedWorkValid = true;
-				}else{
-					echo("Grouped Work $groupedWorkId - $title by $author could not be found by searching\r\n");
+				if ($result instanceof AspenError) {
+					echo("Unable to query solr for grouped work {$result->getMessage()}\r\n");
 					$groupedWorkValid = false;
 					$invalidGroupedWorks[$groupedWorkId] = $groupedWorkId;
+				}else{
+					$recordSet = $searchObject->getResultRecordSet();
+					if ($searchObject->getResultTotal() == 1) {
+						//We found it by searching
+						$movedGroupedWorks[$groupedWorkId] = $recordSet[0]['id'];
+						$groupedWorkId = $recordSet[0]['id'];
+						$groupedWorkValid = true;
+					}elseif ($searchObject->getResultTotal() > 1) {
+						//We probably found it by searching
+						echo("WARNING: More than one work found when searching for $title by $author\r\n");
+						$movedGroupedWorks[$groupedWorkId] = $recordSet[0]['id'];
+						$groupedWorkId = $recordSet[0]['id'];
+						$groupedWorkValid = true;
+					}else{
+						echo("Grouped Work $groupedWorkId - $title by $author could not be found by searching\r\n");
+						$groupedWorkValid = false;
+						$invalidGroupedWorks[$groupedWorkId] = $groupedWorkId;
+					}
 				}
 			}else{
 				echo("Grouped Work $groupedWorkId - $title by $author does not exist\r\n");
