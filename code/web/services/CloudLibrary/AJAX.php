@@ -261,7 +261,7 @@ class CloudLibrary_AJAX extends Action
 			}
 		} elseif ($itemStatus == 'CAN_HOLD') {
 			$result = $driver->placeHold($patron, $id);
-		} elseif ($itemStatus == 'ON_HOLD') {
+		} elseif ($itemStatus == 'HOLD' || $itemStatus == 'ON_HOLD') {
 			$result = [
 				'result' => true,
 				'message' => translate(['text' => 'already_on_hold', 'defaultText' => 'This title is already on hold for you.'])
