@@ -6,7 +6,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 	/** @var CurlWrapper */
 	private $curlWrapper;
 
-	public function __construct()
+	public function initCurlWrapper()
 	{
 		$this->curlWrapper = new CurlWrapper();
 	}
@@ -230,12 +230,13 @@ class CloudLibraryDriver extends AbstractEContentDriver
 	 *                                title - the title of the record the user is placing a hold on
 	 * @access  public
 	 */
-	public function placeHold($patron, $recordId, $fromCheckout = false)
+	public function placeHold($patron, $recordId)
 	{
 		$result = ['success' => false, 'message' => 'Unknown error'];
 		$settings = $this->getSettings();
 		$patronId = $patron->getBarcode();
 		$password = $patron->getPasswordOrPin();
+
 		$apiPath = "/cirrus/library/{$settings->libraryId}/placehold?password=$password";
 		$requestBody =
 			"<PlaceHoldRequest>
@@ -267,13 +268,6 @@ class CloudLibraryDriver extends AbstractEContentDriver
 			$result['message'] = translate("Item was not found.");
 		}else if ($responseCode == '404'){
 			$result['message'] = translate(['text'=>'cloud_library_already_checked_out', 'defaultText'=>'Could not place hold.  Already on hold or the item can be checked out']);
-		}
-		if ($result['success'] == false && !$fromCheckout){
-			//Try checking the title out just in case Cloud Library hasn't given us the correct status
-			$tmpResult = $this->checkOutTitle($patron, $recordId, false, true);
-			if ($tmpResult['success']){
-				$result = $tmpResult;
-			}
 		}
 		return $result;
 	}
@@ -360,10 +354,9 @@ class CloudLibraryDriver extends AbstractEContentDriver
 	 * @param string $titleId
 	 *
 	 * @param bool $fromRenew
-	 * @param bool $fromPlaceHold
 	 * @return array
 	 */
-	public function checkOutTitle($user, $titleId, $fromRenew = false, $fromPlaceHold = false)
+	public function checkOutTitle($user, $titleId, $fromRenew = false)
 	{
 		$result = ['success' => false, 'message' => 'Unknown error'];
 
@@ -396,13 +389,6 @@ class CloudLibraryDriver extends AbstractEContentDriver
 				global $memCache;
 				$memCache->delete('cloud_library_summary_' . $user->id);
 				$memCache->delete('cloud_library_circulation_info_' . $user->id);
-			}
-		}
-		//Try to place a hold just in case we have the wrong status
-		if ($result['success'] == false && !$fromPlaceHold){
-			$tmpResult = $this->placeHold($user, $titleId, true);
-			if ($tmpResult['success']){
-				$result = $tmpResult;
 			}
 		}
 		return $result;
@@ -449,6 +435,8 @@ class CloudLibraryDriver extends AbstractEContentDriver
 			'Accept: application/xml'
 		];
 
+		//Can't reuse the curl wrapper so make sure it is initialized on each call
+		$this->initCurlWrapper();
 		$this->curlWrapper->addCustomHeaders($headers, true);
 		$response = $this->curlWrapper->curlSendPage($settings->apiUrl . $apiPath, $method, $requestBody);
 
@@ -575,5 +563,26 @@ class CloudLibraryDriver extends AbstractEContentDriver
 		$hold['user'] = $user->getNameAndLibraryLabel();
 		$hold['userId'] = $user->id;
 		return $hold;
+	}
+
+	/**
+	 * @param string $itemId
+	 * @param User $patron
+	 *
+	 * @return null|string
+	 */
+	public function getItemStatus($itemId, $patron){
+		$settings = $this->getSettings();
+		$patronId = $patron->getBarcode();
+		$apiPath = "/cirrus/library/{$settings->libraryId}/item/status/$patronId/$itemId";
+		$itemStatusInfo = $this->callCloudLibraryUrl($settings, $apiPath);
+		if ($this->curlWrapper->getResponseCode() == 200){
+			/** @var SimpleXMLElement $itemStatus */
+			$itemStatus = simplexml_load_string($itemStatusInfo);
+			$this->curlWrapper = new CurlWrapper();
+			return (string)$itemStatus->DocumentStatus->status;
+		}else{
+			return false;
+		}
 	}
 }
