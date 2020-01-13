@@ -153,7 +153,11 @@ class CloudLibraryDriver extends AbstractEContentDriver
 			$memCache->delete('cloud_library_summary_' . $patron->id);
 			$memCache->delete('cloud_library_circulation_info_' . $patron->id);
 		}else if ($responseCode == '400'){
-			$result['message'] = translate("Bad Request.");
+			$result['message'] = translate("Bad Request returning checkout.");
+			global $configArray;
+			if ($configArray['System']['debug']){
+				$result['message'] .= "\r\n" . $requestBody;
+			}
 		}else if ($responseCode == '403'){
 			$result['message'] = translate("Unable to authenticate.");
 		}else if ($responseCode == '404'){
@@ -252,7 +256,11 @@ class CloudLibraryDriver extends AbstractEContentDriver
 			$memCache->delete('cloud_library_summary_' . $patron->id);
 			$memCache->delete('cloud_library_circulation_info_' . $patron->id);
 		}else if ($responseCode == '405'){
-			$result['message'] = translate("Bad Request.");
+			$result['message'] = translate("Bad Request placing hold.");
+			global $configArray;
+			if ($configArray['System']['debug']){
+				$result['message'] .= "\r\n" . $requestBody;
+			}
 		}else if ($responseCode == '403'){
 			$result['message'] = translate("Unable to authenticate.");
 		}else if ($responseCode == '404'){
@@ -292,7 +300,11 @@ class CloudLibraryDriver extends AbstractEContentDriver
 			$memCache->delete('cloud_library_summary_' . $patron->id);
 			$memCache->delete('cloud_library_circulation_info_' . $patron->id);
 		}else if ($responseCode == '400'){
-			$result['message'] = translate("Bad Request.");
+			$result['message'] = translate("Bad Request cancelling hold.");
+			global $configArray;
+			if ($configArray['System']['debug']){
+				$result['message'] .= "\r\n" . $requestBody;
+			}
 		}else if ($responseCode == '403'){
 			$result['message'] = translate("Unable to authenticate.");
 		}else if ($responseCode == '404'){
