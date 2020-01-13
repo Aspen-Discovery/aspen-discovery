@@ -22,7 +22,7 @@ class CloudLibraryExtractLogEntry implements BaseLogEntry {
 	private int numMetadataChanges = 0;
 	private Logger logger;
 
-    CloudLibraryExtractLogEntry(Connection dbConn, Logger logger){
+	CloudLibraryExtractLogEntry(Connection dbConn, Logger logger) {
 		this.logger = logger;
 		this.startTime = new Date();
 		try {
@@ -35,6 +35,7 @@ class CloudLibraryExtractLogEntry implements BaseLogEntry {
 	}
 
 	private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
 	public void addNote(String note) {
 		Date date = new Date();
 		this.notes.add(dateFormat.format(date) + " - " + note);
@@ -43,7 +44,7 @@ class CloudLibraryExtractLogEntry implements BaseLogEntry {
 
 	private String getNotesHtml() {
 		StringBuilder notesText = new StringBuilder("<ol class='cronNotes'>");
-		for (String curNote : notes){
+		for (String curNote : notes) {
 			String cleanedNote = curNote;
 			cleanedNote = cleanedNote.replaceAll("<pre>", "<code>");
 			cleanedNote = cleanedNote.replaceAll("</pre>", "</code>");
@@ -55,7 +56,7 @@ class CloudLibraryExtractLogEntry implements BaseLogEntry {
 		}
 		notesText.append("</ol>");
 		String returnText = notesText.toString();
-		if (returnText.length() > 25000){
+		if (returnText.length() > 25000) {
 			returnText = returnText.substring(0, 25000) + " more data was truncated";
 		}
 		return returnText;
@@ -63,21 +64,22 @@ class CloudLibraryExtractLogEntry implements BaseLogEntry {
 
 	private static PreparedStatement insertLogEntry;
 	private static PreparedStatement updateLogEntry;
+
 	public boolean saveResults() {
 		try {
-			if (logEntryId == null){
+			if (logEntryId == null) {
 				insertLogEntry.setLong(1, startTime.getTime() / 1000);
 				insertLogEntry.executeUpdate();
 				ResultSet generatedKeys = insertLogEntry.getGeneratedKeys();
-				if (generatedKeys.next()){
+				if (generatedKeys.next()) {
 					logEntryId = generatedKeys.getLong(1);
 				}
-			}else{
+			} else {
 				int curCol = 0;
 				updateLogEntry.setLong(++curCol, new Date().getTime() / 1000);
-				if (endTime == null){
+				if (endTime == null) {
 					updateLogEntry.setNull(++curCol, Types.INTEGER);
-				}else{
+				} else {
 					updateLogEntry.setLong(++curCol, endTime.getTime() / 1000);
 				}
 				updateLogEntry.setString(++curCol, getNotesHtml());
@@ -97,29 +99,37 @@ class CloudLibraryExtractLogEntry implements BaseLogEntry {
 			return false;
 		}
 	}
+
 	public void setFinished() {
 		this.endTime = new Date();
 		this.addNote("Finished Cloud Library extraction");
 		this.saveResults();
 	}
-	void incErrors(){
+
+	void incErrors() {
 		numErrors++;
 	}
-	void incAdded(){
+
+	void incAdded() {
 		numAdded++;
 	}
-	void incDeleted(){
+
+	void incDeleted() {
 		numDeleted++;
 	}
-	void incUpdated(){
+
+	void incUpdated() {
 		numUpdated++;
 	}
-	void incAvailabilityChanges(){
+
+	void incAvailabilityChanges() {
 		numAvailabilityChanges++;
 	}
-	void incMetadataChanges(){
+
+	void incMetadataChanges() {
 		numMetadataChanges++;
 	}
+
 	void setNumProducts(int size) {
 		numProducts = size;
 	}
