@@ -1892,9 +1892,7 @@ class MyAccount_AJAX
 					echo("Fetching holds list");
 				}
 				$result['holds'] = $interface->fetch('MyAccount/holdsList.tpl');
-				if ($configArray['System']['debug']){
-					echo("Fetched holds list" . print_r($result['holds'], true));
-				}
+				
 			}
 		} else {
 			$result['message'] = translate('The catalog is offline');
