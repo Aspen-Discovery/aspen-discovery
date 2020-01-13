@@ -31,67 +31,109 @@ if (!file_exists($exportPath)){
 		die();
 	}
 
-	//importLists($exportPath);
-	importRatingsAndReviews($exportPath);
+	$existingUsers = [];
+	$missingUsers = [];
+	$validGroupedWorks = [];
+	$invalidGroupedWorks = [];
+	$movedGroupedWorks = [];
+
+	importReadingHistory($exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
+	importRatingsAndReviews($exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
+	importLists($exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
 }
 
-function importRatingsAndReviews($exportPath){
+function importReadingHistory($exportPath, $existingUsers, $missingUsers, &$validGroupedWorks, &$invalidGroupedWorks, &$movedGroupedWorks){
+	set_time_limit(600);
+	require_once ROOT_DIR . '/sys/ReadingHistoryEntry.php';
+
+	//Clear all existing reading history data
+	$readingHistoryEntry = new ReadingHistoryEntry();
+	$readingHistoryEntry->whereAdd();
+	$readingHistoryEntry->whereAdd("userId > 0");
+	$readingHistoryEntry->delete(true);
+	$numImports = 0;
+	$readingHistoryHnd = fopen($exportPath . "patronReadingHistory.csv", 'r');
+	while ($patronsReadingHistoryRow = fgetcsv($readingHistoryHnd)){
+		$numImports++;
+
+		//Figure out the appropriate user for reading history
+		$userBarcode = $patronsReadingHistoryRow[0];
+		$userId = getUserIdForBarcode($userBarcode, $existingUsers, $missingUsers);
+		if ($userId == -1){
+			continue;
+		}else{
+			$user = new User();
+			$user->id = $userId;
+			if ($user->find(true)){
+				if ($user->initialReadingHistoryLoaded == false || $user->trackReadingHistory == false){
+					$user->initialReadingHistoryLoaded = 1;
+					$user->trackReadingHistory = 1;
+					$user->update();
+				}
+			}
+		}
+
+		//Get the grouped work
+		$source = $patronsReadingHistoryRow[1];
+		$sourceId = $patronsReadingHistoryRow[2];
+		$title = cleancsv($patronsReadingHistoryRow[3]);
+		$author = cleancsv($patronsReadingHistoryRow[4]);
+		$format = cleancsv($patronsReadingHistoryRow[5]);
+		$checkoutDate = $patronsReadingHistoryRow[6];
+		$groupedWorkTitle = cleancsv($patronsReadingHistoryRow[7]);
+		$groupedWorkAuthor = cleancsv($patronsReadingHistoryRow[8]);
+		$groupedWorkId = $patronsReadingHistoryRow[9];
+		$groupedWorkResources = $patronsReadingHistoryRow[10];
+
+		if (!validateGroupedWork($groupedWorkId, $groupedWorkTitle, $groupedWorkAuthor, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks)){
+			continue;
+		}
+
+		$readingHistoryEntry = new ReadingHistoryEntry();
+		$readingHistoryEntry->userId = $userId;
+		$readingHistoryEntry->source = $source;
+		$readingHistoryEntry->sourceId = $sourceId;
+		$readingHistoryEntry->title = $title;
+		$readingHistoryEntry->author = $author;
+		$readingHistoryEntry->format = $format;
+		$readingHistoryEntry->checkInDate = $checkoutDate;
+		$readingHistoryEntry->checkOutDate = $checkoutDate;
+		$readingHistoryEntry->groupedWorkPermanentId = $groupedWorkId;
+
+		$readingHistoryEntry->insert();
+
+		if ($numImports % 250 == 0){
+			gc_collect_cycles();
+			ob_flush();
+		}
+	}
+	fclose($readingHistoryHnd);
+}
+
+function importRatingsAndReviews($exportPath, $existingUsers, $missingUsers, &$validGroupedWorks, &$invalidGroupedWorks, &$movedGroupedWorks){
 	set_time_limit(600);
 	require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
 	$patronsRatingsAndReviewsHnd = fopen($exportPath . "patronRatingsAndReviews.csv", 'r');
 	$numImports = 0;
 
-	$existingUsers = [];
-	$missingUsers = [];
-	$validGroupedWorks = [];
-	$invalidGroupedWorks = [];
-	while ($patronsRatingsAndReviewsHndRow = fgetcsv($patronsRatingsAndReviewsHnd)){
+	while ($patronsRatingsAndReviewsRow = fgetcsv($patronsRatingsAndReviewsHnd)){
 		$numImports++;
-		//Figure out the user for the list
-		$userBarcode = $patronsRatingsAndReviewsHndRow[0];
-		if (array_key_exists($userBarcode, $missingUsers)) {
+		//Figure out the user for the review
+		$userBarcode = $patronsRatingsAndReviewsRow[0];
+		$userId = getUserIdForBarcode($userBarcode, $existingUsers, $missingUsers);
+		if ($userId == -1){
 			continue;
-		}elseif (array_key_exists($userBarcode, $existingUsers)){
-			$userId = $existingUsers[$userBarcode];
-		}else{
-			$user = new User();
-			$user->cat_username = $userBarcode;
-			if (!$user->find(true)){
-				$user = UserAccount::findNewUser($userBarcode);
-				if ($user == false){
-					$missingUsers[$userBarcode] = $userBarcode;
-					echo("Could not find user for $userBarcode\r\n");
-					continue;
-				}
-			}
-			$existingUsers[$userBarcode] = $user->id;
-			$userId = $user->id;
 		}
 
-		$rating = $patronsRatingsAndReviewsHndRow[1];
-		$review = cleancsv($patronsRatingsAndReviewsHndRow[2]);
-		$dateRated = $patronsRatingsAndReviewsHndRow[3];
-		$title = cleancsv($patronsRatingsAndReviewsHndRow[4]);
-		$author = cleancsv($patronsRatingsAndReviewsHndRow[5]);
-		$groupedWorkId = $patronsRatingsAndReviewsHndRow[6];
+		$rating = $patronsRatingsAndReviewsRow[1];
+		$review = cleancsv($patronsRatingsAndReviewsRow[2]);
+		$dateRated = $patronsRatingsAndReviewsRow[3];
+		$title = cleancsv($patronsRatingsAndReviewsRow[4]);
+		$author = cleancsv($patronsRatingsAndReviewsRow[5]);
+		$groupedWorkId = $patronsRatingsAndReviewsRow[6];
 
-		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
-		if (array_key_exists($groupedWorkId, $invalidGroupedWorks)){
+		if (!validateGroupedWork($groupedWorkId, $title, $author, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks)){
 			continue;
-		}elseif (array_key_exists($groupedWorkId, $validGroupedWorks)) {
-			usleep(1);
-		}else{
-			//Try to validate the grouped work
-			$groupedWork = new GroupedWork();
-			$groupedWork->permanent_id = $groupedWorkId;
-			if (!$groupedWork->find(true)){
-				echo("Grouped Work $groupedWorkId - $title by $author does not exist\r\n");
-				continue;
-			}elseif ($groupedWork->full_title != $title || $groupedWork->author != $author){
-				echo("Warning grouped Work $groupedWorkId - $title by $author may have matched incorrectly {$groupedWork->full_title} {$groupedWork->author}");
-			}
-			$groupedWork->__destruct();
-			$groupedWork = null;
 		}
 
 		require_once ROOT_DIR . '/sys/LocalEnrichment/UserWorkReview.php';
@@ -115,15 +157,12 @@ function importRatingsAndReviews($exportPath){
 			ob_flush();
 		}
 	}
+	fclose($patronsRatingsAndReviewsHnd);
 }
 
-function importLists($exportPath){
+function importLists($exportPath, &$existingUsers, &$missingUsers, &$validGroupedWorks, &$invalidGroupedWorks, &$movedGroupedWorks){
 	global $memoryWatcher;
 	$memoryWatcher->logMemory("Start of list import");
-	$existingUsers = [];
-	$missingUsers = [];
-	$existingLists = [];
-	$removedLists = [];
 
 	set_time_limit(600);
 	require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
@@ -134,25 +173,11 @@ function importLists($exportPath){
 		//Figure out the user for the list
 		$userBarcode = $patronListRow[0];
 		$listId = $patronListRow[1];
-		if (array_key_exists($userBarcode, $missingUsers)) {
+
+		$userId = getUserIdForBarcode($userBarcode, $existingUsers, $missingUsers);
+		if ($userId == -1){
 			$removedLists[$listId] = $listId;
 			continue;
-		}elseif (array_key_exists($userBarcode, $existingUsers)){
-			$userId = $existingUsers[$userBarcode];
-		}else{
-			$user = new User();
-			$user->cat_username = $userBarcode;
-			if (!$user->find(true)){
-				$user = UserAccount::findNewUser($userBarcode);
-				if ($user == false){
-					$missingUsers[$userBarcode] = $userBarcode;
-					echo("Could not find user for $userBarcode\r\n");
-					$removedLists[$listId] = $listId;
-					continue;
-				}
-			}
-			$existingUsers[$userBarcode] = $user->id;
-			$userId = $user->id;
 		}
 
 		$existingLists[$listId] = $listId;
@@ -216,23 +241,8 @@ function importLists($exportPath){
 			echo("List $listId has not been imported yet\r\n");
 		}
 
-		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
-		if (array_key_exists($groupedWorkId, $invalidGroupedWorks)){
+		if (!validateGroupedWork($groupedWorkId, $title, $author, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks)){
 			continue;
-		}elseif (array_key_exists($groupedWorkId, $validGroupedWorks)) {
-			usleep(1);
-		}else{
-			//Try to validate the grouped work
-			$groupedWork = new GroupedWork();
-			$groupedWork->permanent_id = $groupedWorkId;
-			if (!$groupedWork->find(true)){
-				echo("Grouped Work $groupedWorkId - $title by $author on list $listId does not exist\r\n");
-				continue;
-			}elseif ($groupedWork->full_title != $title || $groupedWork->author != $author){
-				echo("Warning grouped Work $groupedWorkId - $title by $author on list $listId may have matched incorrectly {$groupedWork->full_title} {$groupedWork->author}");
-			}
-			$groupedWork->__destruct();
-			$groupedWork = null;
 		}
 
 		require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
@@ -270,4 +280,91 @@ function cleancsv($field){
 	$field = str_replace("\r\\\n", '<br/>', $field);
 	$field = str_replace("\\\n", '<br/>', $field);
 	return $field;
+}
+
+function getUserIdForBarcode($userBarcode, &$existingUsers, &$missingUsers){
+	if (array_key_exists($userBarcode, $missingUsers)) {
+		$userId = -1;
+	}elseif (array_key_exists($userBarcode, $existingUsers)){
+		$userId = $existingUsers[$userBarcode];
+	}else{
+		$user = new User();
+		$user->cat_username = $userBarcode;
+		if (!$user->find(true)){
+			$user = UserAccount::findNewUser($userBarcode);
+			if ($user == false){
+				$missingUsers[$userBarcode] = $userBarcode;
+				echo("Could not find user for $userBarcode\r\n");
+				return -1;
+			}
+		}
+		$existingUsers[$userBarcode] = $user->id;
+		$userId = $user->id;
+	}
+	return $userId;
+}
+
+function validateGroupedWork(&$groupedWorkId, $title, $author, &$validGroupedWorks, &$invalidGroupedWorks, &$movedGroupedWorks){
+	require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+
+	if (array_key_exists($groupedWorkId, $invalidGroupedWorks)){
+		$groupedWorkValid = false;
+	}elseif (array_key_exists($groupedWorkId, $validGroupedWorks)) {
+		$groupedWorkValid = true;
+	}elseif (array_key_exists($groupedWorkId, $movedGroupedWorks)) {
+		$groupedWorkValid = true;
+		$groupedWorkId = $movedGroupedWorks[$groupedWorkId];
+	}else{
+		//Try to validate the grouped work
+		$groupedWork = new GroupedWork();
+		$groupedWork->permanent_id = $groupedWorkId;
+		$groupedWorkValid = true;
+		if (!$groupedWork->find(true)){
+			if ($title != null || $author != null){
+				require_once ROOT_DIR . '/sys/SearchObject/SearchObjectFactory.php';
+				//Search for the record by title and author
+				$searchObject = SearchObjectFactory::initSearchObject();
+				$searchObject->init();
+				$searchTerm = '';
+				if ($title != null){
+					$searchTerm = $title;
+				}
+				if ($author != null) {
+					$searchTerm .= ' ' . $author;
+				}
+				$searchTerm = trim($searchTerm);
+				$searchObject->setBasicQuery($searchTerm);
+				$result = $searchObject->processSearch(true, false);
+				$recordSet = $searchObject->getResultRecordSet();
+				if ($searchObject->getResultTotal() == 1) {
+					//We found it by searching
+					$movedGroupedWorks[$groupedWorkId] = $recordSet[0]['id'];
+					$groupedWorkId = $recordSet[0]['id'];
+					$groupedWorkValid = true;
+				}elseif ($searchObject->getResultTotal() > 1) {
+					//We probably found it by searching
+					echo("WARNING: More than one work found when searching for $title by $author\r\n");
+					$movedGroupedWorks[$groupedWorkId] = $recordSet[0]['id'];
+					$groupedWorkId = $recordSet[0]['id'];
+					$groupedWorkValid = true;
+				}else{
+					echo("Grouped Work $groupedWorkId - $title by $author could not be found by searching\r\n");
+					$groupedWorkValid = false;
+					$invalidGroupedWorks[$groupedWorkId] = $groupedWorkId;
+				}
+			}else{
+				echo("Grouped Work $groupedWorkId - $title by $author does not exist\r\n");
+				$groupedWorkValid = false;
+				$invalidGroupedWorks[$groupedWorkId] = $groupedWorkId;
+			}
+		}elseif ($groupedWork->full_title != $title || $groupedWork->author != $author){
+			echo("WARNING grouped Work $groupedWorkId - $title by $author may have matched incorrectly {$groupedWork->full_title} {$groupedWork->author}");
+		}
+		if ($groupedWorkValid){
+			$validGroupedWorks[$groupedWorkId] = $groupedWorkId;
+		}
+		$groupedWork->__destruct();
+		$groupedWork = null;
+	}
+	return $groupedWorkValid;
 }
