@@ -58,7 +58,11 @@ class MemoryWatcher{
 			if ($logger){
 				$curMemoryUsage = memory_get_usage();
 				$totalMemoryUsage = number_format($curMemoryUsage - $this->firstMemory);
-				$timingInfo = "\r\nMemory usage for: " . $_SERVER['REQUEST_URI'] . "\r\n";
+				if (isset($_SERVER['REQUEST_URI'])) {
+					$timingInfo = "\r\nMemory usage for: " . $_SERVER['REQUEST_URI'] . "\r\n";
+				}else{
+
+				}
 				if (count($this->memoryMessages) > 0){
 					$timingInfo .= implode("\r\n", $this->memoryMessages);
 				}

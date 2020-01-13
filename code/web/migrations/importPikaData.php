@@ -31,7 +31,90 @@ if (!file_exists($exportPath)){
 		die();
 	}
 
-	importLists($exportPath);
+	//importLists($exportPath);
+	importRatingsAndReviews($exportPath);
+}
+
+function importRatingsAndReviews($exportPath){
+	set_time_limit(600);
+	require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+	$patronsRatingsAndReviewsHnd = fopen($exportPath . "patronRatingsAndReviews.csv", 'r');
+	$numImports = 0;
+
+	$existingUsers = [];
+	$missingUsers = [];
+	$validGroupedWorks = [];
+	$invalidGroupedWorks = [];
+	while ($patronsRatingsAndReviewsHndRow = fgetcsv($patronsRatingsAndReviewsHnd)){
+		$numImports++;
+		//Figure out the user for the list
+		$userBarcode = $patronsRatingsAndReviewsHndRow[0];
+		if (array_key_exists($userBarcode, $missingUsers)) {
+			continue;
+		}elseif (array_key_exists($userBarcode, $existingUsers)){
+			$userId = $existingUsers[$userBarcode];
+		}else{
+			$user = new User();
+			$user->cat_username = $userBarcode;
+			if (!$user->find(true)){
+				$user = UserAccount::findNewUser($userBarcode);
+				if ($user == false){
+					$missingUsers[$userBarcode] = $userBarcode;
+					echo("Could not find user for $userBarcode\r\n");
+					continue;
+				}
+			}
+			$existingUsers[$userBarcode] = $user->id;
+			$userId = $user->id;
+		}
+
+		$rating = $patronsRatingsAndReviewsHndRow[1];
+		$review = cleancsv($patronsRatingsAndReviewsHndRow[2]);
+		$dateRated = $patronsRatingsAndReviewsHndRow[3];
+		$title = cleancsv($patronsRatingsAndReviewsHndRow[4]);
+		$author = cleancsv($patronsRatingsAndReviewsHndRow[5]);
+		$groupedWorkId = $patronsRatingsAndReviewsHndRow[6];
+
+		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+		if (array_key_exists($groupedWorkId, $invalidGroupedWorks)){
+			continue;
+		}elseif (array_key_exists($groupedWorkId, $validGroupedWorks)) {
+			usleep(1);
+		}else{
+			//Try to validate the grouped work
+			$groupedWork = new GroupedWork();
+			$groupedWork->permanent_id = $groupedWorkId;
+			if (!$groupedWork->find(true)){
+				echo("Grouped Work $groupedWorkId - $title by $author does not exist\r\n");
+				continue;
+			}elseif ($groupedWork->full_title != $title || $groupedWork->author != $author){
+				echo("Warning grouped Work $groupedWorkId - $title by $author may have matched incorrectly {$groupedWork->full_title} {$groupedWork->author}");
+			}
+			$groupedWork->__destruct();
+			$groupedWork = null;
+		}
+
+		require_once ROOT_DIR . '/sys/LocalEnrichment/UserWorkReview.php';
+		$userWorkReview = new UserWorkReview();
+		$userWorkReview->groupedRecordPermanentId = $groupedWorkId;
+		$userWorkReview->userId = $userId;
+		$reviewExists = false;
+		if ($userWorkReview->find(true)){
+			$reviewExists = true;
+		}
+		$userWorkReview->rating = $rating;
+		$userWorkReview->review = $review;
+		$userWorkReview->dateRated = $dateRated;
+		if ($reviewExists){
+			$userWorkReview->update();
+		}else{
+			$userWorkReview->insert();
+		}
+		if ($numImports % 250 == 0){
+			gc_collect_cycles();
+			ob_flush();
+		}
+	}
 }
 
 function importLists($exportPath){

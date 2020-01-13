@@ -61,6 +61,8 @@ class Timer{
 			$totalElapsedTime =round(microtime(true) - $this->firstTime, 4);
 			if (isset($_SERVER['REQUEST_URI'])) {
 				$timingInfo = "\r\nTiming for: " . $_SERVER['REQUEST_URI'] . "\r\n";
+			}else{
+				$timingInfo = "\r\nTiming info\r\n";
 			}
 			$timingInfo .= implode("\r\n", $this->timingMessages);
 			$timingInfo .= "\r\nTotal Elapsed time was: $totalElapsedTime seconds.\r\n";
