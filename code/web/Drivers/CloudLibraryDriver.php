@@ -192,7 +192,8 @@ class CloudLibraryDriver extends AbstractEContentDriver
 		);
 
 		if (isset($circulation->Holds->Item)) {
-			foreach ($circulation->Holds->Item as $index => $holdFromCloudLibrary) {
+			$index = 0;
+			foreach ($circulation->Holds->Item as $holdFromCloudLibrary) {
 				if ($configArray['System']['debug']){
 					echo("Loading unavailable hold $index");
 				}
@@ -201,11 +202,13 @@ class CloudLibraryDriver extends AbstractEContentDriver
 				$key = $hold['holdSource'] . $hold['id'] . $hold['user'];
 				$hold['position'] = (string)$holdFromCloudLibrary->Position;
 				$holds['unavailable'][$key] = $hold;
+				$index++;
 			}
 		}
 
 		if (isset($circulation->Reserves->Item)) {
-			foreach ($circulation->Reserves->Item as $index => $holdFromCloudLibrary) {
+			$index = 0;
+			foreach ($circulation->Reserves->Item as $holdFromCloudLibrary) {
 				if ($configArray['System']['debug']){
 					echo("Loading available hold $index");
 				}
@@ -213,9 +216,13 @@ class CloudLibraryDriver extends AbstractEContentDriver
 
 				$key = $hold['holdSource'] . $hold['id'] . $hold['user'];
 				$holds['available'][$key] = $hold;
+				$index++;
 			}
 		}
 
+		if ($configArray['System']['debug']){
+			echo("Done loading holds " . print_r($holds, true));
+		}
 		return $holds;
 	}
 
