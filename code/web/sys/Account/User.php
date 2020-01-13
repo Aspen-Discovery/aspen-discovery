@@ -58,7 +58,6 @@ class User extends DataObject
 
 	//Data that we load, but don't store in the User table
 	public $_fullname;
-	public $_dateOfBirth;
 	public $_address1;
 	public $_address2;
 	public $_city;
@@ -85,11 +84,9 @@ class User extends DataObject
 	private $_numCheckedOutOverDrive = 0;
 	private $_numHoldsOverDrive = 0;
 	private $_numHoldsAvailableOverDrive = 0;
-	private $_numHoldsRequestedOverDrive = 0;
-    private $_numCheckedOutRBdigital = 0;
+	private $_numCheckedOutRBdigital = 0;
     private $_numHoldsRBdigital = 0;
     private $_numHoldsAvailableRBdigital = 0;
-    private $_numHoldsRequestedRBdigital = 0;
 	private $_numCheckedOutHoopla = 0;
 	public $_numBookings;
 	public $_notices;
@@ -283,20 +280,6 @@ class User extends DataObject
 		$staffSettings->get('userId', $this->id);
 		$this->materialsRequestReplyToAddress = $staffSettings->materialsRequestReplyToAddress;
 		$this->materialsRequestEmailSignature = $staffSettings->materialsRequestEmailSignature;
-	}
-
-	function setStaffSettings(){
-		require_once ROOT_DIR . '/sys/Account/UserStaffSettings.php';
-		$staffSettings = new UserStaffSettings();
-		$staffSettings->userId =  $this->id;
-		$doUpdate = $staffSettings->find(true);
-		$staffSettings->materialsRequestReplyToAddress = $this->materialsRequestReplyToAddress;
-		$staffSettings->materialsRequestEmailSignature = $this->materialsRequestEmailSignature;
-		if ($doUpdate) {
-			$staffSettings->update();
-		} else {
-			$staffSettings->insert();
-		}
 	}
 
 	function getBarcode()
@@ -661,17 +644,6 @@ class User extends DataObject
 		return $structure;
 	}
 
-	function getFilters(){
-		require_once ROOT_DIR . '/sys/Administration/Role.php';
-		$roleList = Role::getLookup();
-		$roleList[-1] = 'Any Role';
-		return array(
-            array('filter'=>'role', 'type'=>'enum', 'values'=>$roleList, 'label'=>'Role'),
-            array('filter'=>'cat_password', 'type'=>'text', 'label'=>'Login'),
-            array('filter'=>'cat_username', 'type'=>'text', 'label'=>'Name'),
-		);
-	}
-
 	function hasRatings(){
 		require_once ROOT_DIR . '/sys/LocalEnrichment/UserWorkReview.php';
 
@@ -887,6 +859,7 @@ class User extends DataObject
 		return $myHolds;
 	}
 
+	/** @noinspection PhpUnused */
 	public function getNumHoldsAvailableTotal($includeLinkedUsers = true){
 		$this->updateRuntimeInformation();
 		$myHolds = $this->_numHoldsAvailableIls + $this->_numHoldsAvailableOverDrive + $this->_numHoldsAvailableRBdigital;
@@ -917,6 +890,7 @@ class User extends DataObject
 	}
 
 	private $totalFinesForLinkedUsers = -1;
+	/** @noinspection PhpUnused */
 	public function getTotalFines($includeLinkedUsers = true){
 		$totalFines = $this->_finesVal;
 		if ($includeLinkedUsers){
@@ -1017,18 +991,19 @@ class User extends DataObject
 		return $allCheckedOut;
 	}
 
-	public function getHolds($includeLinkedUsers = true, $unavailableSort = 'sortTitle', $availableSort = 'expire', $source='all'){
+	public function getHolds($includeLinkedUsers = true, $unavailableSort = 'sortTitle', $availableSort = 'expire', $source = 'all')
+	{
 		if ($source == 'all' || $source == 'ils') {
-			if ($this->hasIlsConnection()){
+			if ($this->hasIlsConnection()) {
 				$ilsHolds = $this->getCatalogDriver()->getHolds($this);
 				if ($ilsHolds instanceof AspenError) {
 					$ilsHolds = array();
 				}
 				$allHolds = $ilsHolds;
-			}else{
+			} else {
 				$allHolds = [];
 			}
-		}else{
+		} else {
 			$allHolds = [];
 		}
 
@@ -1053,7 +1028,7 @@ class User extends DataObject
 		}
 
 		if ($source == 'all' || $source == 'cloud_library') {
-			//Get holds from RBdigital
+			//Get holds from Cloud LIbrary
 			if ($this->isValidForEContentSource('cloud_library')) {
 				require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
 				$driver = new CloudLibraryDriver();
@@ -1071,7 +1046,7 @@ class User extends DataObject
 			}
 		}
 
-		$indexToSortBy='sortTitle';
+		$indexToSortBy = 'sortTitle';
 		$holdSort = function ($a, $b) use (&$indexToSortBy) {
 			$a = isset($a[$indexToSortBy]) ? $a[$indexToSortBy] : null;
 			$b = isset($b[$indexToSortBy]) ? $b[$indexToSortBy] : null;
@@ -1086,8 +1061,12 @@ class User extends DataObject
 			}
 
 			if ($indexToSortBy == 'format') {
-				$a = implode($a, ',');
-				$b = implode($b, ',');
+				if (is_array($a)){
+					$a = implode($a, ',');
+				}
+				if (is_array($b)){
+					$b = implode($b, ',');
+				}
 			}
 
 			return strnatcasecmp($a, $b);
@@ -1096,50 +1075,50 @@ class User extends DataObject
 
 		if (!empty($allHolds['available'])) {
 			switch ($availableSort) {
-            case 'author' :
-            case 'format' :
-                //This is used in the sort function
-                /** @noinspection PhpUnusedLocalVariableInspection */
-                $indexToSortBy = $availableSort;
-                break;
-            case 'title' :
-                /** @noinspection PhpUnusedLocalVariableInspection */
-                $indexToSortBy = 'sortTitle';
-                break;
-            case 'libraryAccount' :
-                /** @noinspection PhpUnusedLocalVariableInspection */
-                $indexToSortBy = 'user';
-                break;
-            case 'expire' :
-            default :
-                /** @noinspection PhpUnusedLocalVariableInspection */
-                $indexToSortBy = 'expire';
+				case 'author' :
+				case 'format' :
+					//This is used in the sort function
+					/** @noinspection PhpUnusedLocalVariableInspection */
+					$indexToSortBy = $availableSort;
+					break;
+				case 'title' :
+					/** @noinspection PhpUnusedLocalVariableInspection */
+					$indexToSortBy = 'sortTitle';
+					break;
+				case 'libraryAccount' :
+					/** @noinspection PhpUnusedLocalVariableInspection */
+					$indexToSortBy = 'user';
+					break;
+				case 'expire' :
+				default :
+					/** @noinspection PhpUnusedLocalVariableInspection */
+					$indexToSortBy = 'expire';
 			}
 			uasort($allHolds['available'], $holdSort);
 		}
 		if (!empty($allHolds['unavailable'])) {
 			switch ($unavailableSort) {
-            case 'author' :
-            case 'location' :
-            case 'position' :
-            case 'status' :
-            case 'format' :
-                //This is used in the sort function
-                /** @noinspection PhpUnusedLocalVariableInspection */
-                $indexToSortBy = $unavailableSort;
-                break;
-            case 'placed' :
-                /** @noinspection PhpUnusedLocalVariableInspection */
-                $indexToSortBy = 'create';
-                break;
-            case 'libraryAccount' :
-                /** @noinspection PhpUnusedLocalVariableInspection */
-                $indexToSortBy = 'user';
-                break;
-            case 'title' :
-            default :
-                /** @noinspection PhpUnusedLocalVariableInspection */
-                $indexToSortBy = 'sortTitle';
+				case 'author' :
+				case 'location' :
+				case 'position' :
+				case 'status' :
+				case 'format' :
+					//This is used in the sort function
+					/** @noinspection PhpUnusedLocalVariableInspection */
+					$indexToSortBy = $unavailableSort;
+					break;
+				case 'placed' :
+					/** @noinspection PhpUnusedLocalVariableInspection */
+					$indexToSortBy = 'create';
+					break;
+				case 'libraryAccount' :
+					/** @noinspection PhpUnusedLocalVariableInspection */
+					$indexToSortBy = 'user';
+					break;
+				case 'title' :
+				default :
+					/** @noinspection PhpUnusedLocalVariableInspection */
+					$indexToSortBy = 'sortTitle';
 			}
 			uasort($allHolds['unavailable'], $holdSort);
 		}
@@ -1604,38 +1583,6 @@ class User extends DataObject
 		$this->materialsRequestEmailSignature = $materialsRequestEmailSignature;
 	}
 
-	function setNumCheckedOutHoopla($val){
-		$this->_numCheckedOutHoopla = $val;
-	}
-
-	function setNumCheckedOutOverDrive($val){
-		$this->_numCheckedOutOverDrive = $val;
-	}
-
-	function setNumHoldsAvailableOverDrive($val){
-		$this->_numHoldsAvailableOverDrive = $val;
-		$this->_numHoldsOverDrive += $val;
-	}
-
-	function setNumHoldsRequestedOverDrive($val){
-		$this->_numHoldsRequestedOverDrive = $val;
-		$this->_numHoldsOverDrive += $val;
-	}
-
-    function setNumCheckedOutRBdigital($val){
-        $this->_numCheckedOutRBdigital = $val;
-    }
-
-    function setNumHoldsAvailableRBdigital($val){
-        $this->_numHoldsAvailableRBdigital = $val;
-        $this->_numHoldsRBdigital += $val;
-    }
-
-    function setNumHoldsRequestedRBdigital($val){
-        $this->_numHoldsRequestedRBdigital = $val;
-        $this->_numHoldsRBdigital += $val;
-    }
-
 	function setNumMaterialsRequests($val){
 		$this->_numMaterialsRequests = $val;
 	}
@@ -1652,19 +1599,6 @@ class User extends DataObject
 		$rating->whereAdd("userId = {$this->id}");
 		$rating->whereAdd('rating > 0'); // Some entries are just reviews (and therefore have a default rating of -1)
 		return $rating->count();
-	}
-
-	function hasRecommendations(){
-		require_once ROOT_DIR . '/sys/LocalEnrichment/UserWorkReview.php';
-
-		$rating = new UserWorkReview();
-		$rating->whereAdd("userId = {$this->id}");
-		$rating->whereAdd('rating >= 3'); // Some entries are just reviews (and therefore have a default rating of -1)
-		return $rating->count() > 0;
-	}
-
-	function setReadingHistorySize($val){
-		$this->_readingHistorySize = $val;
 	}
 
 	function getReadingHistorySize(){
@@ -1695,6 +1629,7 @@ class User extends DataObject
 		}
 	}
 
+	/** @noinspection PhpUnused */
 	function showMessagingSettings(){
 		if ($this->hasIlsConnection()){
 			return $this->getCatalogDriver()->showMessagingSettings();

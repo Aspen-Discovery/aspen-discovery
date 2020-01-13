@@ -178,11 +178,6 @@ class CloudLibraryDriver extends AbstractEContentDriver
 		if (isset($this->holds[$user->id])){
 			return $this->holds[$user->id];
 		}
-		global $configArray;
-		if ($configArray['System']['debug']){
-			echo("Loading holds from cloud library");
-		}
-
 		require_once ROOT_DIR . '/RecordDrivers/CloudLibraryRecordDriver.php';
 
 		$circulation = $this->getPatronCirculation($user);
@@ -194,9 +189,6 @@ class CloudLibraryDriver extends AbstractEContentDriver
 		if (isset($circulation->Holds->Item)) {
 			$index = 0;
 			foreach ($circulation->Holds->Item as $holdFromCloudLibrary) {
-				if ($configArray['System']['debug']){
-					echo("Loading unavailable hold $index");
-				}
 				$hold = $this->loadCloudLibraryHoldInfo($user, $holdFromCloudLibrary);
 
 				$key = $hold['holdSource'] . $hold['id'] . $hold['user'];
@@ -209,9 +201,6 @@ class CloudLibraryDriver extends AbstractEContentDriver
 		if (isset($circulation->Reserves->Item)) {
 			$index = 0;
 			foreach ($circulation->Reserves->Item as $holdFromCloudLibrary) {
-				if ($configArray['System']['debug']){
-					echo("Loading available hold $index");
-				}
 				$hold = $this->loadCloudLibraryHoldInfo($user, $holdFromCloudLibrary);
 
 				$key = $hold['holdSource'] . $hold['id'] . $hold['user'];
@@ -220,9 +209,6 @@ class CloudLibraryDriver extends AbstractEContentDriver
 			}
 		}
 
-		if ($configArray['System']['debug']){
-			echo("Done loading holds " . print_r($holds, true));
-		}
 		return $holds;
 	}
 
