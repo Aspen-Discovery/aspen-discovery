@@ -327,6 +327,7 @@ function validateGroupedWork(&$groupedWorkId, $title, $author, &$validGroupedWor
 				$searchObject->init();
 				$searchTerm = '';
 				if ($title != null){
+					$title = preg_replace('~\ss\s~', 's ', $title);
 					$searchTerm = $title;
 				}
 				if ($author != null) {
@@ -359,12 +360,16 @@ function validateGroupedWork(&$groupedWorkId, $title, $author, &$validGroupedWor
 					}
 				}
 			}else{
-				echo("Grouped Work $groupedWorkId - $title by $author does not exist\r\n");
+				//There was no title or author provided, it looks like this was deleted in Pika
+				//echo("Grouped Work $groupedWorkId - $title by $author does not exist\r\n");
 				$groupedWorkValid = false;
 				$invalidGroupedWorks[$groupedWorkId] = $groupedWorkId;
 			}
 		}elseif ($groupedWork->full_title != $title || $groupedWork->author != $author){
 			echo("WARNING grouped Work $groupedWorkId - $title by $author may have matched incorrectly {$groupedWork->full_title} {$groupedWork->author}");
+		}
+		if ($groupedWorkValid && $title == null && $author == null){
+			echo "Grouped work with title and author was valid\r\n";
 		}
 		if ($groupedWorkValid){
 			$validGroupedWorks[$groupedWorkId] = $groupedWorkId;
