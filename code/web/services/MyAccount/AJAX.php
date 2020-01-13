@@ -1867,10 +1867,16 @@ class MyAccount_AJAX
 				global $offlineMode;
 				if (!$offlineMode) {
 					if ($user) {
+						if ($configArray['System']['debug']){
+							echo("Getting Holds list");
+						}
 						$allHolds = $user->getHolds(true, $selectedUnavailableSortOption, $selectedAvailableSortOption, $source);
 						if ($source == 'rbdigital') {
 							//RBdigital automatically checks out records so don't show the available section
 							unset($allHolds['available']);
+						}
+						if ($configArray['System']['debug']){
+							echo("Loaded holds");
 						}
 						$interface->assign('recordList', $allHolds);
 					}
@@ -1888,7 +1894,13 @@ class MyAccount_AJAX
 
 				$result['success'] = true;
 				$result['message'] = "";
+				if ($configArray['System']['debug']){
+					echo("Fetching holds list");
+				}
 				$result['holds'] = $interface->fetch('MyAccount/holdsList.tpl');
+				if ($configArray['System']['debug']){
+					echo("Fetched holds list");
+				}
 			}
 		} else {
 			$result['message'] = translate('The catalog is offline');
