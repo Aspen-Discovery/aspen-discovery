@@ -230,7 +230,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 	 *                                title - the title of the record the user is placing a hold on
 	 * @access  public
 	 */
-	public function placeHold($patron, $recordId)
+	public function placeHold($patron, $recordId, $fromCheckout = false)
 	{
 		$result = ['success' => false, 'message' => 'Unknown error'];
 		$settings = $this->getSettings();
@@ -267,6 +267,13 @@ class CloudLibraryDriver extends AbstractEContentDriver
 			$result['message'] = translate("Item was not found.");
 		}else if ($responseCode == '404'){
 			$result['message'] = translate(['text'=>'cloud_library_already_checked_out', 'defaultText'=>'Could not place hold.  Already on hold or the item can be checked out']);
+		}
+		if ($result['success'] == false && !$fromCheckout){
+			//Try checking the title out just in case Cloud Library hasn't given us the correct status
+			$tmpResult = $this->checkOutTitle($patron, $recordId, false, true);
+			if ($tmpResult['success']){
+				$result = $tmpResult;
+			}
 		}
 		return $result;
 	}
@@ -353,9 +360,10 @@ class CloudLibraryDriver extends AbstractEContentDriver
 	 * @param string $titleId
 	 *
 	 * @param bool $fromRenew
+	 * @param bool $fromPlaceHold
 	 * @return array
 	 */
-	public function checkOutTitle($user, $titleId, $fromRenew = false)
+	public function checkOutTitle($user, $titleId, $fromRenew = false, $fromPlaceHold = false)
 	{
 		$result = ['success' => false, 'message' => 'Unknown error'];
 
@@ -390,7 +398,13 @@ class CloudLibraryDriver extends AbstractEContentDriver
 				$memCache->delete('cloud_library_circulation_info_' . $user->id);
 			}
 		}
-
+		//Try to place a hold just in case we have the wrong status
+		if ($result['success'] == false && !$fromPlaceHold){
+			$tmpResult = $this->placeHold($user, $titleId, true);
+			if ($tmpResult['success']){
+				$result = $tmpResult;
+			}
+		}
 		return $result;
 	}
 
