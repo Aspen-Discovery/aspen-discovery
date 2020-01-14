@@ -151,5 +151,16 @@ function getThemingUpdates()
 				"ALTER TABLE `themes` ADD COLUMN deselectedBrowseCategoryBorderColorDefault tinyint(1) DEFAULT 1",
 			],
 		],
+
+		'themes_sidebar_highlight_colors' => [
+			'title' => 'Sidebar Highlight Colors',
+			'description' => 'Initial setup of colors for the highlight in the sidebar menu',
+			'sql' => [
+				"ALTER TABLE `themes` ADD COLUMN sidebarHighlightBackgroundColor CHAR(7) DEFAULT '#16ceff'",
+				"ALTER TABLE `themes` ADD COLUMN sidebarHighlightBackgroundColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE `themes` ADD COLUMN sidebarHighlightForegroundColor CHAR(7) DEFAULT '#ffffff'",
+				"ALTER TABLE `themes` ADD COLUMN sidebarHighlightForegroundColorDefault tinyint(1) DEFAULT 1",
+			]
+		]
 	];
 }

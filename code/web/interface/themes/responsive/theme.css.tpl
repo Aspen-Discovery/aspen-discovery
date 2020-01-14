@@ -114,6 +114,17 @@ body .container{ldelim}
 {rdelim}
 {/if}
 
+{if $sidebarHighlightBackgroundColor || $sidebarHighlightForegroundColor}
+#vertical-menu-bar .menu-bar-option.menu-icon-selected,#vertical-menu-bar .menu-bar-option:hover{ldelim}
+    {if $sidebarHighlightBackgroundColor}
+        background-color: {$sidebarHighlightBackgroundColor};
+    {/if}
+    {if $sidebarHighlightForegroundColor}
+        color: {$sidebarHighlightForegroundColor};
+    {/if}
+{rdelim}
+{/if}
+
 {* Browse Categories *}
 {if $browseCategoryPanelColor}
 #home-page-browse-header{ldelim}
