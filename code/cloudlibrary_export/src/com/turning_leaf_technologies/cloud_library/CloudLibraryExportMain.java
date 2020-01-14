@@ -254,7 +254,53 @@ public class CloudLibraryExportMain {
 							break;
 						}
 					}
+				}
 
+				//Handle events to determine status changes when the bibs don't change.
+				if (!doFullReload) {
+					String eventsApiPath = "/cirrus/library/" + libraryId + "/data/cloudevents?startdate=" + startDate;
+					CloudLibraryEventHandler eventHandler = new CloudLibraryEventHandler(doFullReload, startTimeForLogging, aspenConn, getRecordGroupingProcessor(), getGroupedWorkIndexer(), logEntry, logger);
+					//noinspection ConstantConditions
+					for (int curTry = 1; curTry <= 4; curTry++) {
+						WebServiceResponse response = callCloudLibrary(eventsApiPath);
+						if (response == null) {
+							//Something really bad happened, we're done.
+							return numChanges;
+						} else if (!response.isSuccess()) {
+							if (response.getResponseCode() != 502) {
+								logEntry.incErrors();
+								logEntry.addNote(response.getMessage());
+								break;
+							} else {
+								if (curTry == 4) {
+									logEntry.incErrors();
+									logEntry.addNote(response.getMessage());
+									break;
+								} else {
+									try {
+										Thread.sleep(1000);
+									} catch (InterruptedException e) {
+										logger.error("Thread was interrupted while waiting to retry for cloud library");
+									}
+								}
+							}
+						} else {
+							try {
+								SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
+								SAXParser saxParser = saxParserFactory.newSAXParser();
+								saxParser.parse(new ByteArrayInputStream(response.getMessage().getBytes(StandardCharsets.UTF_8)), eventHandler);
+
+								if (handler.getNumDocuments() > 0) {
+									numChanges += handler.getNumDocuments();
+								}
+								logEntry.saveResults();
+							} catch (SAXException | ParserConfigurationException | IOException e) {
+								logger.error("Error parsing response", e);
+								logEntry.addNote("Error parsing response: " + e.toString());
+							}
+							break;
+						}
+					}
 				}
 
 				if (doFullReload && !logEntry.hasErrors()) {

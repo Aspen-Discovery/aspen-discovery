@@ -155,7 +155,7 @@ class DataObjectUtil
 				$allowableTags = isset($property['allowableTags']) ? $property['allowableTags'] : '<p><a><b><em><ul><ol><em><li><strong><i><br>';
 				$object->$propertyName = strip_tags($object->$propertyName, $allowableTags);
 			}
-		}else if ($property['type'] == 'integer'){
+		}else if ($property['type'] == 'integer' || $property['type'] == 'timestamp'){
 			if (preg_match('/\\d+/', $_REQUEST[$propertyName])){
 				$object->$propertyName =  $_REQUEST[$propertyName];
 			}else{
