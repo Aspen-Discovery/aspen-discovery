@@ -13,7 +13,13 @@ class BrowseCategoryGroup extends DataObject
 
 	private $_browseCategories;
 
+	private $_libraries;
+	private $_locations;
+
 	public static function getObjectStructure(){
+		$libraryList = Library::getLibraryList();
+		$locationList = Location::getLocationList();
+		
 		$browseCategoryStructure = BrowseCategoryGroupEntry::getObjectStructure();
 		unset($browseCategoryStructure['weight']);
 		unset($browseCategoryStructure['browseCategoryGroupId']);
@@ -48,6 +54,24 @@ class BrowseCategoryGroup extends DataObject
 				'allowEdit' => true,
 				'canEdit' => true,
 			),
+
+			'libraries' => array(
+				'property' => 'libraries',
+				'type' => 'multiSelect',
+				'listStyle' => 'checkboxSimple',
+				'label' => 'Libraries',
+				'description' => 'Define libraries that use this browse category group',
+				'values' => $libraryList,
+			),
+
+			'locations' => array(
+				'property' => 'locations',
+				'type' => 'multiSelect',
+				'listStyle' => 'checkboxSimple',
+				'label' => 'Locations',
+				'description' => 'Define locations that use this browse category group',
+				'values' => $locationList,
+			),
 		];
 
 		return $structure;
@@ -55,7 +79,29 @@ class BrowseCategoryGroup extends DataObject
 
 	public function __get($name)
 	{
-		if ($name == 'browseCategories') {
+		if ($name == "libraries") {
+			if (!isset($this->_libraries) && $this->id){
+				$this->_libraries = [];
+				$obj = new Library();
+				$obj->browseCategoryGroupId = $this->id;
+				$obj->find();
+				while($obj->fetch()){
+					$this->_libraries[$obj->libraryId] = $obj->libraryId;
+				}
+			}
+			return $this->_libraries;
+		} elseif ($name == "locations") {
+			if (!isset($this->_locations) && $this->id){
+				$this->_locations = [];
+				$obj = new Location();
+				$obj->browseCategoryGroupId = $this->id;
+				$obj->find();
+				while($obj->fetch()){
+					$this->_locations[$obj->locationId] = $obj->locationId;
+				}
+			}
+			return $this->_locations;
+		} elseif ($name == 'browseCategories') {
 			return $this->getBrowseCategories();
 		} else {
 			return $this->_data[$name];
@@ -79,7 +125,13 @@ class BrowseCategoryGroup extends DataObject
 
 	public function __set($name, $value)
 	{
-		if ($name == 'browseCategories') {
+		if ($name == "libraries") {
+			/** @noinspection PhpUndefinedFieldInspection */
+			$this->_libraries = $value;
+		}elseif ($name == "locations") {
+			/** @noinspection PhpUndefinedFieldInspection */
+			$this->_locations = $value;
+		}elseif ($name == 'browseCategories') {
 			$this->_browseCategories = $value;
 		}else{
 			$this->_data[$name] = $value;
@@ -95,6 +147,8 @@ class BrowseCategoryGroup extends DataObject
 		//Updates to properly update settings based on the ILS
 		$ret = parent::update();
 		if ($ret !== FALSE ){
+			$this->saveLibraries();
+			$this->saveLocations();
 			$this->saveBrowseCategories();
 		}
 
@@ -109,6 +163,8 @@ class BrowseCategoryGroup extends DataObject
 	public function insert(){
 		$ret = parent::insert();
 		if ($ret !== FALSE ){
+			$this->saveLibraries();
+			$this->saveLocations();
 			$this->saveBrowseCategories();
 		}
 		return $ret;
@@ -132,5 +188,102 @@ class BrowseCategoryGroup extends DataObject
 			$this->saveOneToManyOptions($this->_browseCategories, 'browseCategoryGroupId');
 			unset($this->_browseCategories);
 		}
+	}
+
+	public function saveLibraries(){
+		if (isset ($this->_libraries) && is_array($this->_libraries)){
+			$libraryList = Library::getLibraryList();
+			foreach ($libraryList as $libraryId => $displayName){
+				$library = new Library();
+				$library->libraryId = $libraryId;
+				$library->find(true);
+				if (in_array($libraryId, $this->_libraries)){
+					//We want to apply the scope to this library
+					if ($library->browseCategoryGroupId != $this->id){
+						$library->browseCategoryGroupId = $this->id;
+						$library->update();
+					}
+				}else{
+					//It should not be applied to this scope. Only change if it was applied to the scope
+					if ($library->browseCategoryGroupId == $this->id){
+						$library->browseCategoryGroupId = -1;
+						$library->update();
+					}
+				}
+			}
+			unset($this->_libraries);
+		}
+	}
+
+	public function saveLocations(){
+		if (isset ($this->_locations) && is_array($this->_locations)){
+			$locationList = Location::getLocationList();
+			/**
+			 * @var int $locationId
+			 * @var Location $location
+			 */
+			foreach ($locationList as $locationId => $displayName){
+				$location = new Location();
+				$location->locationId = $locationId;
+				$location->find(true);
+				if (in_array($locationId, $this->_locations)){
+					//We want to apply the scope to this library
+					if ($location->browseCategoryGroupId != $this->id){
+						$location->browseCategoryGroupId = $this->id;
+						$location->update();
+					}
+				}else{
+					//It should not be applied to this scope. Only change if it was applied to the scope
+					if ($location->browseCategoryGroupId == $this->id){
+						$library = new Library();
+						$library->libraryId = $location->libraryId;
+						$library->find(true);
+						if ($library->browseCategoryGroupId != -1){
+							$location->browseCategoryGroupId = -1;
+						}else{
+							$location->browseCategoryGroupId = -2;
+						}
+						$location->update();
+					}
+				}
+			}
+			unset($this->_locations);
+		}
+	}
+
+	/** @return Library[] */
+	public function getLibraries()
+	{
+		/** @noinspection PhpUndefinedFieldInspection */
+		return $this->_libraries;
+	}
+
+	/** @return Location[] */
+	public function getLocations()
+	{
+		/** @noinspection PhpUndefinedFieldInspection */
+		return $this->_locations;
+	}
+
+	public function setLibraries($val)
+	{
+		/** @noinspection PhpUndefinedFieldInspection */
+		$this->_libraries = $val;
+	}
+
+	public function setLocations($val)
+	{
+		/** @noinspection PhpUndefinedFieldInspection */
+		$this->_libraries = $val;
+	}
+
+	public function clearLibraries(){
+		$this->clearOneToManyOptions('Library', 'browseCategoryGroupId');
+		unset($this->_libraries);
+	}
+
+	public function clearLocations(){
+		$this->clearOneToManyOptions('Location', 'browseCategoryGroupId');
+		unset($this->_locations);
 	}
 }
