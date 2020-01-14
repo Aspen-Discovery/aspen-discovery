@@ -4,6 +4,7 @@ require_once ROOT_DIR . '/RecordDrivers/RecordInterface.php';
 require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 require_once ROOT_DIR . '/RecordDrivers/GroupedWorkSubDriver.php';
 require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibraryProduct.php';
+require_once ROOT_DIR . '/sys/Utils/EncodingUtils.php';
 
 class CloudLibraryRecordDriver extends MarcRecordDriver {
 	/** @var CloudLibraryProduct */
@@ -97,7 +98,7 @@ class CloudLibraryRecordDriver extends MarcRecordDriver {
 		if (strlen($subtitle) > 0) {
 			$title .= ': ' . $subtitle;
 		}
-		return $title;
+		return EncodingUtils::toUTF8($title);
 	}
 
 	/**
@@ -273,7 +274,7 @@ class CloudLibraryRecordDriver extends MarcRecordDriver {
 	 */
 	function getShortTitle()
 	{
-		return $this->cloudLibraryProduct->title;
+		return EncodingUtils::toUTF8($this->cloudLibraryProduct->title);
 	}
 
 	/**
@@ -283,7 +284,7 @@ class CloudLibraryRecordDriver extends MarcRecordDriver {
 	 */
 	function getSubtitle()
 	{
-		return $this->cloudLibraryProduct->subTitle;
+		return EncodingUtils::toUTF8($this->cloudLibraryProduct->subTitle);
 	}
 
 	function isValid(){
