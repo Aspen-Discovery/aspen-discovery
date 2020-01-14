@@ -27,7 +27,7 @@ class MyAccount_AJAX
 				$encodedData = json_encode($result);
 				if ($encodedData == false){
 					global $logger;
-					$logger->log("Error encoding json data\r\n" . print_r($result), Logger::LOG_ERROR);
+					$logger->log("Error encoding json data\r\n" . print_r($result, true), Logger::LOG_ERROR);
 					$result = array(
 						'result' => false,
 						'message' => 'JSON Encoding failed ' . json_last_error() . ' - ' . json_last_error_msg()
