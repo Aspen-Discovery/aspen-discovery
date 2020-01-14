@@ -5,7 +5,6 @@ require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/Indexing/IndexingProfile.php';
 
-/** @noinspection PhpUnused */
 class ILS_IndexingProfiles extends ObjectEditor {
 	function launch()
 	{

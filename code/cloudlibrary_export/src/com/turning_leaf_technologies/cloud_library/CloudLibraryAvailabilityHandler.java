@@ -4,37 +4,35 @@ import org.apache.logging.log4j.Logger;
 import org.xml.sax.helpers.DefaultHandler;
 
 class CloudLibraryAvailabilityHandler extends DefaultHandler {
-    private final CloudLibraryAvailability availability;
-    private String nodeContents = "";
+	private final CloudLibraryAvailability availability;
+	private String nodeContents = "";
 
-    CloudLibraryAvailabilityHandler(CloudLibraryAvailability availability) {
-        this.availability = availability;
-    }
+	CloudLibraryAvailabilityHandler(CloudLibraryAvailability availability) {
+		this.availability = availability;
+	}
 
-    public void characters(char[] ch, int start, int length)
-    {
-        nodeContents = new String(ch, start, length).trim();
-    }
+	public void characters(char[] ch, int start, int length) {
+		nodeContents = new String(ch, start, length).trim();
+	}
 
-    public void endElement (String uri, String localName, String qName)
-    {
-        switch (qName) {
-            case "totalCopies":
-                availability.setTotalCopies(Integer.parseInt(nodeContents));
-                break;
-            case "sharedCopies":
-                availability.setSharedCopies(Integer.parseInt(nodeContents));
-                break;
-            case "totalLoanCopies":
-                availability.setTotalLoanCopies(Integer.parseInt(nodeContents));
-                break;
-            case "totalHoldCopies":
-                availability.setTotalHoldCopies(Integer.parseInt(nodeContents));
-                break;
-            case "sharedLoanCopies":
-                availability.setSharedLoanCopies(Integer.parseInt(nodeContents));
-                break;
-        }
-        nodeContents = "";
-    }
+	public void endElement(String uri, String localName, String qName) {
+		switch (qName) {
+			case "totalCopies":
+				availability.setTotalCopies(Integer.parseInt(nodeContents));
+				break;
+			case "sharedCopies":
+				availability.setSharedCopies(Integer.parseInt(nodeContents));
+				break;
+			case "totalLoanCopies":
+				availability.setTotalLoanCopies(Integer.parseInt(nodeContents));
+				break;
+			case "totalHoldCopies":
+				availability.setTotalHoldCopies(Integer.parseInt(nodeContents));
+				break;
+			case "sharedLoanCopies":
+				availability.setSharedLoanCopies(Integer.parseInt(nodeContents));
+				break;
+		}
+		nodeContents = "";
+	}
 }

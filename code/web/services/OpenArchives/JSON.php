@@ -2,7 +2,6 @@
 
 require_once ROOT_DIR . '/JSON_Action.php';
 
-/** @noinspection PhpUnused */
 class OpenArchives_JSON extends JSON_Action
 {
 	/** @noinspection PhpUnused */

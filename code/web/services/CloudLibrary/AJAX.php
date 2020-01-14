@@ -28,10 +28,7 @@ class CloudLibrary_AJAX extends Action
 			$patronId = $_REQUEST['patronId'];
 			$patron = $user->getUserReferredTo($patronId);
 			if ($patron) {
-				require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
-				$driver = new CloudLibraryDriver();
-				$holdMessage = $driver->placeHold($patron, $id);
-				return json_encode($holdMessage);
+				return $this->processHoldOrCheckout($id, $patron);
 			} else {
 				return json_encode(array('result' => false, 'message' => translate(['text' => 'no_permissions_for_hold', 'defaultText' => 'Sorry, it looks like you don\'t have permissions to place holds for that user.'])));
 			}
@@ -48,18 +45,7 @@ class CloudLibrary_AJAX extends Action
 			$patronId = $_REQUEST['patronId'];
 			$patron = $user->getUserReferredTo($patronId);
 			if ($patron) {
-				require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
-				$driver = new CloudLibraryDriver();
-				$result = $driver->checkoutTitle($patron, $id);
-				//$logger->log("Checkout result = $result", Logger::LOG_NOTICE);
-				if ($result['success']) {
-					/** @noinspection HtmlUnknownTarget */
-					$result['title'] = translate("Title Checked Out Successfully");
-					$result['buttons'] = '<a class="btn btn-primary" href="/MyAccount/CheckedOut" role="button">' . translate('View My Check Outs') . '</a>';
-				} else {
-					$result['title'] = translate("Error Checking Out Title");
-				}
-				return json_encode($result);
+				return $this->processHoldOrCheckout($id, $patron);
 			} else {
 				return json_encode(array('result' => false, 'title' => translate("Error Checking Out Title"), 'message' => translate(['text' => 'no_permission_to_checkout', 'defaultText' => 'Sorry, it looks like you don\'t have permissions to checkout titles for that user.'])));
 			}
@@ -249,5 +235,48 @@ class CloudLibrary_AJAX extends Action
 		}
 		$interface->assign('users', $usersWithCloudLibraryAccess);
 		return $usersWithCloudLibraryAccess;
+	}
+
+	/**
+	 * @param $id
+	 * @param User $patron
+	 * @return false|string
+	 */
+	private function processHoldOrCheckout($id, User $patron)
+	{
+		require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
+		$driver = new CloudLibraryDriver();
+
+		//Before we place the hold, check the status since Cloud Library doesn't always update properly
+		$itemStatus = $driver->getItemStatus($id, $patron);
+		if ($itemStatus == 'CAN_LOAN') {
+			$result = $driver->checkoutTitle($patron, $id);
+			//$logger->log("Checkout result = $result", Logger::LOG_NOTICE);
+			if ($result['success']) {
+				/** @noinspection HtmlUnknownTarget */
+				$result['title'] = translate("Title Checked Out Successfully");
+				$result['buttons'] = '<a class="btn btn-primary" href="/MyAccount/CheckedOut" role="button">' . translate('View My Check Outs') . '</a>';
+			} else {
+				$result['title'] = translate("Error Checking Out Title");
+			}
+		} elseif ($itemStatus == 'CAN_HOLD') {
+			$result = $driver->placeHold($patron, $id);
+		} elseif ($itemStatus == 'HOLD' || $itemStatus == 'ON_HOLD') {
+			$result = [
+				'result' => true,
+				'message' => translate(['text' => 'already_on_hold', 'defaultText' => 'This title is already on hold for you.'])
+			];
+		} elseif ($itemStatus == 'LOAN') {
+			$result = [
+				'result' => true,
+				'message' => translate(['text' => 'already_checked_out', 'defaultText' => 'This title is already checked out to you.'])
+			];
+		} else {
+			$result = [
+				'result' => true,
+				'message' => translate(['text' => 'invalid_status_cloud_library', 'defaultText' => 'Cloud Library returned an invalid status.'])
+			];
+		}
+		return json_encode($result);
 	}
 }

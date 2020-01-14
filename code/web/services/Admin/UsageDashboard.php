@@ -2,7 +2,6 @@
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/sys/SystemLogging/AspenUsage.php';
 
-/** @noinspection PhpUnused */
 class Admin_UsageDashboard extends Admin_Admin
 {
 	function launch()

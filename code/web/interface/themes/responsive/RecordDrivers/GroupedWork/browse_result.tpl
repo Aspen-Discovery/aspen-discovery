@@ -1,5 +1,5 @@
 {strip}
-	{if $browseMode == 'grid'}
+	{if $browseMode == '1'}
 		<div class="{*browse-title *}browse-list">
 			<a onclick="return AspenDiscovery.GroupedWork.showGroupedWorkInfo('{$summId}', '{$browseCategoryId}')" href="{$summUrl}">
 					<img class="img-responsive" src="{$bookCoverUrl}" alt="{$summTitle} by {$summAuthor}" title="{$summTitle} by {$summAuthor}">
@@ -14,10 +14,10 @@
 					<img src="{$bookCoverUrlMedium}" alt="{$summTitle} by {$summAuthor}" title="{$summTitle} by {$summAuthor}">
 				</div>
 			</a>
-			{if $showRatings && $browseCategoryRatingsMode != 'none'}
-				<div class="browse-rating{if $browseCategoryRatingsMode == 'stars'} rater{/if}"
-				{if $browseCategoryRatingsMode == 'popup'} onclick="return AspenDiscovery.GroupedWork.showReviewForm(this, '{$summId}');" style="cursor: pointer"{/if}
-				{if $browseCategoryRatingsMode == 'stars'}
+			{if $showRatings && $browseCategoryRatingsMode != 0}
+				<div class="browse-rating{if $browseCategoryRatingsMode == 2} rater{/if}"
+				{if $browseCategoryRatingsMode == 1} onclick="return AspenDiscovery.GroupedWork.showReviewForm(this, '{$summId}');" style="cursor: pointer"{/if}
+				{if $browseCategoryRatingsMode == 2}
 					{* AJAX rater data fields *}
 					{*{if $ratingData.user}data-user_rating="{$ratingData.user}" {/if}*}{* Don't show user ratings in browse results because the results get cached so shouldn't be particular to a single user.*}
 					data-average_rating="{$ratingData.average}" data-id="{$summId}"

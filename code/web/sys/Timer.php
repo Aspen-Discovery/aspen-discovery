@@ -59,7 +59,11 @@ class Timer{
 			$this->lastTime = $curTime;
 			global $logger;
 			$totalElapsedTime =round(microtime(true) - $this->firstTime, 4);
-			$timingInfo = "\r\nTiming for: " . $_SERVER['REQUEST_URI'] . "\r\n";
+			if (isset($_SERVER['REQUEST_URI'])) {
+				$timingInfo = "\r\nTiming for: " . $_SERVER['REQUEST_URI'] . "\r\n";
+			}else{
+				$timingInfo = "\r\nTiming info\r\n";
+			}
 			$timingInfo .= implode("\r\n", $this->timingMessages);
 			$timingInfo .= "\r\nTotal Elapsed time was: $totalElapsedTime seconds.\r\n";
 			$logger->log($timingInfo, Logger::LOG_NOTICE);

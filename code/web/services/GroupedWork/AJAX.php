@@ -1,6 +1,5 @@
 <?php
 
-/** @noinspection PhpUnused */
 class GroupedWork_AJAX {
 	function launch() {
 		global $timer;

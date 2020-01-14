@@ -1,6 +1,5 @@
 <?php
 
-/** @noinspection PhpUnused */
 abstract class HorizonROA extends AbstractIlsDriver
 {
 	private static $sessionIdsForUsers = array();

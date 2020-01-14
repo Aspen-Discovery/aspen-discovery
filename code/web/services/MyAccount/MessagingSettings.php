@@ -1,7 +1,6 @@
 <?php
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
 
-/** @noinspection PhpUnused */
 class MyAccount_MessagingSettings extends MyAccount
 {
 	function launch($msg = null)

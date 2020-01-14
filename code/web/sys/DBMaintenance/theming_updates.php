@@ -112,11 +112,55 @@ function getThemingUpdates()
 
 		'themes_additional_css' => [
 			'title' => 'Theme Additional CSS',
-			'description' => 'Add addtional CSS to customize the display',
+			'description' => 'Add additional CSS to customize the display',
 			'sql' => [
 				'ALTER TABLE themes add COLUMN additionalCss TEXT',
 				'ALTER TABLE themes add COLUMN additionalCssType TINYINT(1) DEFAULT 0',
 			]
 		],
+
+		'themes_button_radius' => [
+			'title' => 'Theme Button Radius',
+			'description' => 'Allow customization of the button radius',
+			'sql' => [
+				'ALTER TABLE themes add COLUMN buttonRadius INT DEFAULT 4',
+				'ALTER TABLE themes add COLUMN buttonRadiusDefault tinyint(1) DEFAULT 1',
+				'ALTER TABLE themes add COLUMN smallButtonRadius INT DEFAULT 3',
+				'ALTER TABLE themes add COLUMN smallButtonRadiusDefault tinyint(1) DEFAULT 1',
+			]
+		],
+
+		'themes_browse_category_colors' => [
+			'title' => 'Theme Browse Category Colors',
+			'description' => 'Initial setup of browse category colors. ',
+			'continueOnError' => true,
+			'sql' => [
+				"ALTER TABLE `themes` ADD COLUMN browseCategoryPanelColor CHAR(7) DEFAULT '#d7dce3'",
+				"ALTER TABLE `themes` ADD COLUMN browseCategoryPanelColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE `themes` ADD COLUMN selectedBrowseCategoryBackgroundColor CHAR(7) DEFAULT '#0087AB'",
+				"ALTER TABLE `themes` ADD COLUMN selectedBrowseCategoryBackgroundColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE `themes` ADD COLUMN selectedBrowseCategoryForegroundColor CHAR(7) DEFAULT '#ffffff'",
+				"ALTER TABLE `themes` ADD COLUMN selectedBrowseCategoryForegroundColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE `themes` ADD COLUMN selectedBrowseCategoryBorderColor CHAR(7) DEFAULT '#0087AB'",
+				"ALTER TABLE `themes` ADD COLUMN selectedBrowseCategoryBorderColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE `themes` ADD COLUMN deselectedBrowseCategoryBackgroundColor CHAR(7) DEFAULT '#ffffff'",
+				"ALTER TABLE `themes` ADD COLUMN deselectedBrowseCategoryBackgroundColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE `themes` ADD COLUMN deselectedBrowseCategoryForegroundColor CHAR(7) DEFAULT '#6B6B6B'",
+				"ALTER TABLE `themes` ADD COLUMN deselectedBrowseCategoryForegroundColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE `themes` ADD COLUMN deselectedBrowseCategoryBorderColor CHAR(7) DEFAULT '#6B6B6B'",
+				"ALTER TABLE `themes` ADD COLUMN deselectedBrowseCategoryBorderColorDefault tinyint(1) DEFAULT 1",
+			],
+		],
+
+		'themes_sidebar_highlight_colors' => [
+			'title' => 'Sidebar Highlight Colors',
+			'description' => 'Initial setup of colors for the highlight in the sidebar menu',
+			'sql' => [
+				"ALTER TABLE `themes` ADD COLUMN sidebarHighlightBackgroundColor CHAR(7) DEFAULT '#16ceff'",
+				"ALTER TABLE `themes` ADD COLUMN sidebarHighlightBackgroundColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE `themes` ADD COLUMN sidebarHighlightForegroundColor CHAR(7) DEFAULT '#ffffff'",
+				"ALTER TABLE `themes` ADD COLUMN sidebarHighlightForegroundColorDefault tinyint(1) DEFAULT 1",
+			]
+		]
 	];
 }

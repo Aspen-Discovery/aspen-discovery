@@ -262,11 +262,14 @@ class AJAX extends Action {
 		// Rating Settings
 		global $library, $location;
 		$browseCategoryRatingsMode = null;
-		if ($location) $browseCategoryRatingsMode = $location->browseCategoryRatingsMode; // Try Location Setting
-		if (!$browseCategoryRatingsMode) $browseCategoryRatingsMode = $library->browseCategoryRatingsMode;  // Try Library Setting
+		if ($location) {
+			$browseCategoryRatingsMode = $location->getBrowseCategoryGroup()->browseCategoryRatingsMode;
+		}else{
+			$browseCategoryRatingsMode = $library->getBrowseCategoryGroup()->browseCategoryRatingsMode;
+		}
 
 		// when the Ajax rating is turned on, they have to be initialized with each load of the category.
-		if ($browseCategoryRatingsMode == 'stars') $recordSet[] = '<script type="text/javascript">AspenDiscovery.Ratings.initializeRaters()</script>';
+		if ($browseCategoryRatingsMode == 1) $recordSet[] = '<script type="text/javascript">AspenDiscovery.Ratings.initializeRaters()</script>';
 
 		global $interface;
 		$interface->assign('recordSet', $recordSet);

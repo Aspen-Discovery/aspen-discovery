@@ -138,7 +138,7 @@ AspenDiscovery.Account = (function(){
 				page: 'Checkouts',
 				source: source,
 				sort: sort,
-				showCovers
+				showCovers: showCovers
 			};
 			let newUrl = AspenDiscovery.buildUrl(document.location.origin + document.location.pathname, 'source', source);
 			if (document.location.href ){
@@ -841,11 +841,11 @@ AspenDiscovery.Account = (function(){
 			return false;
 		},
 
-		showCreateListForm: function(id = null){
+		showCreateListForm: function(id){
 			if (Globals.loggedIn){
 				let url = Globals.path + "/MyAccount/AJAX";
 				let params = {method:"getCreateListForm"};
-				if (id != null){
+				if (id !== undefined){
 					params.recordId= id;
 				}
 				$.getJSON(url, params, function(data){
@@ -931,7 +931,7 @@ AspenDiscovery.Account = (function(){
 			return false;
 		},
 
-		dismissMessage(messageId) {
+		dismissMessage: function(messageId) {
 			let url = Globals.path + "/MyAccount/AJAX";
 			let params = {
 				method: "dismissMessage",
@@ -941,7 +941,7 @@ AspenDiscovery.Account = (function(){
 			return false;
 		},
 
-		enableAccountLinking(){
+		enableAccountLinking: function(){
 			let url = Globals.path + "/MyAccount/AJAX";
 			let params = {
 				method: "enableAccountLinking",
@@ -950,7 +950,7 @@ AspenDiscovery.Account = (function(){
 			return false;
 		},
 
-		stopAccountLinking(){
+		stopAccountLinking: function(){
 			let url = Globals.path + "/MyAccount/AJAX";
 			let params = {
 				method: "stopAccountLinking",
@@ -959,7 +959,7 @@ AspenDiscovery.Account = (function(){
 			return false;
 		},
 
-		createPayPalOrder(finesFormId) {
+		createPayPalOrder: function(finesFormId) {
 			let url = Globals.path + "/MyAccount/AJAX";
 			let params = {
 				method: "createPayPalOrder",
@@ -998,7 +998,7 @@ AspenDiscovery.Account = (function(){
 			return orderInfo;
 		},
 
-		completePayPalOrder(orderId, patronId) {
+		completePayPalOrder: function(orderId, patronId) {
 			let url = Globals.path + "/MyAccount/AJAX";
 			let params = {
 				method: "completePayPalOrder",
@@ -1013,7 +1013,7 @@ AspenDiscovery.Account = (function(){
 				}
 			}).fail(AspenDiscovery.ajaxFail);
 		},
-		updateFineTotal(finesFormId, userId, paymentType) {
+		updateFineTotal: function(finesFormId, userId, paymentType) {
 			let totalFineAmt = 0;
 			let totalOutstandingAmt = 0;
 			$(finesFormId + " .selectedFine:checked").each(

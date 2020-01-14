@@ -5,7 +5,6 @@ require_once ROOT_DIR . '/sys/WebsiteIndexing/WebsiteIndexSetting.php';
 require_once ROOT_DIR . '/sys/WebsiteIndexing/WebsitePage.php';
 require_once ROOT_DIR . '/sys/WebsiteIndexing/WebPageUsage.php';
 
-/** @noinspection PhpUnused */
 class Websites_PageStats extends Admin_Admin
 {
 	function launch()

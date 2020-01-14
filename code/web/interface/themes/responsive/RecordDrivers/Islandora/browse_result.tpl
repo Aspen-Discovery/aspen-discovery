@@ -1,5 +1,5 @@
 {strip}
-	{if $browseMode == 'grid'}
+	{if $browseMode == '1'}
 		<div class="{*browse-title *}browse-list">
 			<a href="{$summUrl}">
 				<img class="img-responsive" src="{$bookCoverUrl}" alt="{$summTitle}{* by {$summAuthor}*}" title="{$summTitle} by {$summAuthor}">

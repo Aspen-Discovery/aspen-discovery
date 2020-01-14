@@ -100,7 +100,7 @@ AspenDiscovery.CloudLibrary = (function(){
             });
         },
 
-        getCheckOutPrompts(id) {
+        getCheckOutPrompts: function(id) {
             let url = Globals.path + "/CloudLibrary/" + id + "/AJAX?method=getCheckOutPrompts";
             let result = true;
             $.ajax({

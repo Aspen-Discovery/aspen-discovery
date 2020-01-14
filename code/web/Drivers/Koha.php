@@ -3,8 +3,6 @@
 require_once ROOT_DIR . '/sys/CurlWrapper.php';
 require_once ROOT_DIR . '/Drivers/AbstractIlsDriver.php';
 
-/** @noinspection PhpUnused */
-
 class Koha extends AbstractIlsDriver
 {
 	private $dbConnection = null;
@@ -479,6 +477,7 @@ class Koha extends AbstractIlsDriver
 			$location = new Location();
 			$location->code = $homeBranchCode;
 			if (!$location->find(1)) {
+				$location->__destruct();
 				unset($location);
 				$user->homeLocationId = 0;
 				// Logging for Diagnosing PK-1846
@@ -500,6 +499,7 @@ class Koha extends AbstractIlsDriver
 						// Seriously no locations even?
 						global $logger;
 						$logger->log('Failed to find any location to assign to user as home location', Logger::LOG_ERROR);
+						$location->__destruct();
 						unset($location);
 					}
 				}
@@ -514,6 +514,8 @@ class Koha extends AbstractIlsDriver
 						if ($myLocation1->find(true)) {
 							$user->_myLocation1 = $myLocation1->displayName;
 						}
+						$myLocation1->__destruct();
+						$myLocation1 = null;
 					}
 
 					if (empty($user->myLocation2Id)) {
@@ -524,6 +526,8 @@ class Koha extends AbstractIlsDriver
 						if ($myLocation2->find(true)) {
 							$user->_myLocation2 = $myLocation2->displayName;
 						}
+						$myLocation2->__destruct();
+						$myLocation2 = null;
 					}
 				}
 			}
@@ -532,6 +536,9 @@ class Koha extends AbstractIlsDriver
 				//Get display names that aren't stored
 				$user->_homeLocationCode = $location->code;
 				$user->_homeLocation = $location->displayName;
+				//Cleaanup
+				$location->__destruct();
+				$location = null;
 			}
 
 			$user->_noticePreferenceLabel = 'Unknown';

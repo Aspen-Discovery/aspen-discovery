@@ -1,6 +1,7 @@
 <?php
 require_once ROOT_DIR . '/sys/LibraryLocation/LibraryFacetSetting.php';
 require_once ROOT_DIR . '/sys/Grouping/GroupedWorkFacetGroup.php';
+require_once ROOT_DIR . '/sys/Grouping/GroupedWorkMoreDetails.php';
 
 /**
  * Class GroupedWorkDisplaySetting

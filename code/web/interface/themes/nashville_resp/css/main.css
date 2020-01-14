@@ -8888,8 +8888,7 @@ ul.account-submenu {
 }
 .sidebar-links .panel-heading {
   padding: 5px 15px;
-  background-color: #e7e7e7;
-  background: linear-gradient(to bottom, #fff, #d7d7d7);
+  background: #e7e7e7;
   border-bottom: 1px solid #a1a1a1;
 }
 .sidebar-links .panel > a,
@@ -8905,13 +8904,15 @@ ul.account-submenu {
   outline: none;
 }
 .sidebar-links .active .panel-heading {
-  background-color: #4dacde;
-  background: linear-gradient(to bottom, #4dacde, #2796d1);
+  background: #4dacde;
 }
 .sidebar-links .panel-body {
   font-size: 13px;
   color: #333333;
-  background-color: #eeeeee;
+  background-color: #fcfcfc;
+  border-color: #c5c5c5;
+  border-width: 0 1px 1px 1px;
+  border-style: solid;
 }
 .sidebar-links .panel-body a:not(.btn),
 .sidebar-links .panel-body a:visited:not(.btn),
@@ -9441,11 +9442,11 @@ a.browse-thumbnail-sorted.active {
 }
 #account-settings-accordion .panel-heading {
   padding: 5px 15px;
-  background: linear-gradient(to bottom, #e7e7e7, #d7d7d7);
+  background: #e7e7e7;
   border-bottom: 1px solid #a1a1a1;
 }
 #account-settings-accordion .active .panel-heading {
-  background: linear-gradient(to bottom, #4dacde, #0f8fd2);
+  background: #4dacde;
 }
 #account-settings-accordion .panel-title {
   font-size: 13px;
@@ -9457,7 +9458,10 @@ a.browse-thumbnail-sorted.active {
 #account-settings-accordion .panel-body {
   font-size: 12px;
   color: #333333;
-  background-color: #eeeeee;
+  background-color: #fcfcfc;
+  border-color: #c5c5c5;
+  border-width: 0 1px 1px 1px;
+  border-style: solid;
 }
 .overdueLabel {
   color: red;
@@ -10214,7 +10218,7 @@ a.browse-thumbnail-sorted.active {
 }
 #more-details-accordion .panel-heading {
   padding: 5px 15px;
-  background: linear-gradient(to bottom, #e7e7e7, #d7d7d7);
+  background: #e7e7e7;
   border-bottom: 1px solid #a1a1a1;
 }
 #more-details-accordion .panel-title {
@@ -10223,7 +10227,6 @@ a.browse-thumbnail-sorted.active {
 }
 #more-details-accordion .active .panel-heading {
   background-color: #4dacde;
-  background: linear-gradient(to bottom, #4dacde, #2796d1);
 }
 #more-details-accordion .active .panel-title {
   color: #fff;
@@ -10231,7 +10234,10 @@ a.browse-thumbnail-sorted.active {
 #more-details-accordion .panel-body {
   font-size: 12px;
   color: #333333;
-  background-color: #eeeeee;
+  background-color: #fcfcfc;
+  border-color: #c5c5c5;
+  border-width: 0 1px 1px 1px;
+  border-style: solid;
 }
 .novelist-similar-item {
   padding: 6px;
@@ -10244,6 +10250,15 @@ a.browse-thumbnail-sorted.active {
 .novelist-similar-item-reason {
   font-style: italic;
   margin-left: 6px;
+}
+.tocEntry {
+  margin-bottom: 2px;
+}
+.tocLabel {
+  font-weight: bold;
+}
+.trackNumber {
+  font-weight: bold;
 }
 #prospectorSearchResultsHeader {
   padding-top: 15px;
@@ -11029,7 +11044,6 @@ div.panel-title {
 #account-settings-accordion .panel-heading {
   color: #292929;
   font-size: 16px;
-  background-color: #e4e4e4;
   background: #e4e4e4;
   border-radius: 0px;
   box-shadow: 0 1px 0 #fefefe inset;
@@ -11040,7 +11054,6 @@ div.panel-title {
 #account-settings-accordion .active .panel-heading {
   color: #292929;
   font-size: 16px;
-  background-color: #e4e4e4;
   background: #e4e4e4;
   border-radius: 0px;
   box-shadow: 0 1px 0 #fefefe inset;
@@ -11464,7 +11477,7 @@ p.alert.alert-success {
   background: #e4e4e4;
   box-shadow: 0 1px 0 #fefefe inset;
   border: 1px solid #d7d7d7;
-  border-radius: 0px;
+  border-radius: 0;
 }
 #more-details-accordion .active .panel-title,
 #more-details-accordion .panel-title {

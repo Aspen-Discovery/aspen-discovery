@@ -2,7 +2,6 @@
 
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
 
-/** @noinspection PhpUnused */
 class MyAccount_ResetPinPage extends MyAccount
 {
 	function launch()

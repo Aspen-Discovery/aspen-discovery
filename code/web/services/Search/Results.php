@@ -36,7 +36,9 @@ class Search_Results extends Action {
 		}
 
 		$interface->assign('showDplaLink', false);
-		if ($configArray['DPLA']['enabled']){
+		require_once ROOT_DIR . '/sys/Enrichment/DPLASetting.php';
+		$dplaSetting = new DPLASetting();
+		if ($dplaSetting->find(true)){
 			if ($library->includeDplaResults){
 				$interface->assign('showDplaLink', true);
 			}

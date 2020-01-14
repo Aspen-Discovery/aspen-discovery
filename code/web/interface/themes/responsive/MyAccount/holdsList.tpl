@@ -1,3 +1,4 @@
+{assign var="hideCoversFormDisplayed" value=false}
 {foreach from=$recordList item=sectionData key=sectionKey}
 	<h2>{if $sectionKey == 'available'}{translate text="Holds Ready For Pickup"}{else}{translate text="Pending Holds"}{/if}</h2>
 	<p class="alert alert-info">

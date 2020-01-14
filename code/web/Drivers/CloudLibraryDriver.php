@@ -6,7 +6,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 	/** @var CurlWrapper */
 	private $curlWrapper;
 
-	public function __construct()
+	public function initCurlWrapper()
 	{
 		$this->curlWrapper = new CurlWrapper();
 	}
@@ -151,8 +151,13 @@ class CloudLibraryDriver extends AbstractEContentDriver
 			/** @var Memcache $memCache */
 			global $memCache;
 			$memCache->delete('cloud_library_summary_' . $patron->id);
+			$memCache->delete('cloud_library_circulation_info_' . $patron->id);
 		}else if ($responseCode == '400'){
-			$result['message'] = translate("Bad Request.");
+			$result['message'] = translate("Bad Request returning checkout.");
+			global $configArray;
+			if ($configArray['System']['debug']){
+				$result['message'] .= "\r\n" . $requestBody;
+			}
 		}else if ($responseCode == '403'){
 			$result['message'] = translate("Unable to authenticate.");
 		}else if ($responseCode == '404'){
@@ -177,7 +182,6 @@ class CloudLibraryDriver extends AbstractEContentDriver
 		if (isset($this->holds[$user->id])){
 			return $this->holds[$user->id];
 		}
-
 		require_once ROOT_DIR . '/RecordDrivers/CloudLibraryRecordDriver.php';
 
 		$circulation = $this->getPatronCirculation($user);
@@ -187,21 +191,25 @@ class CloudLibraryDriver extends AbstractEContentDriver
 		);
 
 		if (isset($circulation->Holds->Item)) {
+			$index = 0;
 			foreach ($circulation->Holds->Item as $holdFromCloudLibrary) {
 				$hold = $this->loadCloudLibraryHoldInfo($user, $holdFromCloudLibrary);
 
 				$key = $hold['holdSource'] . $hold['id'] . $hold['user'];
 				$hold['position'] = (string)$holdFromCloudLibrary->Position;
 				$holds['unavailable'][$key] = $hold;
+				$index++;
 			}
 		}
 
 		if (isset($circulation->Reserves->Item)) {
+			$index = 0;
 			foreach ($circulation->Reserves->Item as $holdFromCloudLibrary) {
 				$hold = $this->loadCloudLibraryHoldInfo($user, $holdFromCloudLibrary);
 
 				$key = $hold['holdSource'] . $hold['id'] . $hold['user'];
 				$holds['available'][$key] = $hold;
+				$index++;
 			}
 		}
 
@@ -228,6 +236,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 		$settings = $this->getSettings();
 		$patronId = $patron->getBarcode();
 		$password = $patron->getPasswordOrPin();
+
 		$apiPath = "/cirrus/library/{$settings->libraryId}/placehold?password=$password";
 		$requestBody =
 			"<PlaceHoldRequest>
@@ -246,8 +255,13 @@ class CloudLibraryDriver extends AbstractEContentDriver
 			/** @var Memcache $memCache */
 			global $memCache;
 			$memCache->delete('cloud_library_summary_' . $patron->id);
+			$memCache->delete('cloud_library_circulation_info_' . $patron->id);
 		}else if ($responseCode == '405'){
-			$result['message'] = translate("Bad Request.");
+			$result['message'] = translate("Bad Request placing hold.");
+			global $configArray;
+			if ($configArray['System']['debug']){
+				$result['message'] .= "\r\n" . $requestBody;
+			}
 		}else if ($responseCode == '403'){
 			$result['message'] = translate("Unable to authenticate.");
 		}else if ($responseCode == '404'){
@@ -285,8 +299,13 @@ class CloudLibraryDriver extends AbstractEContentDriver
 			/** @var Memcache $memCache */
 			global $memCache;
 			$memCache->delete('cloud_library_summary_' . $patron->id);
+			$memCache->delete('cloud_library_circulation_info_' . $patron->id);
 		}else if ($responseCode == '400'){
-			$result['message'] = translate("Bad Request.");
+			$result['message'] = translate("Bad Request cancelling hold.");
+			global $configArray;
+			if ($configArray['System']['debug']){
+				$result['message'] .= "\r\n" . $requestBody;
+			}
 		}else if ($responseCode == '403'){
 			$result['message'] = translate("Unable to authenticate.");
 		}else if ($responseCode == '404'){
@@ -369,31 +388,37 @@ class CloudLibraryDriver extends AbstractEContentDriver
 				/** @var Memcache $memCache */
 				global $memCache;
 				$memCache->delete('cloud_library_summary_' . $user->id);
+				$memCache->delete('cloud_library_circulation_info_' . $user->id);
 			}
 		}
-
 		return $result;
 	}
 
-	private $circulationInfo = [];
 	private function getPatronCirculation(User $user)
 	{
-		if (!isset($this->circulationInfo[$user->id])){
+		/** @var Memcache $memCache */
+		global $memCache;
+		$circulationInfo = $memCache->get('cloud_library_circulation_info_' . $user->id);
+		if ($circulationInfo == false || isset($_REQUEST['reload'])){
 			$settings = $this->getSettings();
 			$patronId = $user->getBarcode();
 			$password = $user->getPasswordOrPin();
 			$apiPath = "/cirrus/library/{$settings->libraryId}/circulation/patron/$patronId?password=$password";
 			$circulationInfo = $this->callCloudLibraryUrl($settings, $apiPath);
-			$this->circulationInfo[$user->id] = simplexml_load_string($circulationInfo);
+			global $configArray;
+			$memCache->set('cloud_library_circulation_info_' . $user->id, $circulationInfo, $configArray['Caching']['account_summary']);
 		}
-		return $this->circulationInfo[$user->id];
+		return simplexml_load_string($circulationInfo);
 	}
 
 	private function getSettings(){
 		require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibrarySetting.php';
 		$settings = new CloudLibrarySetting();
-		$settings->find(true);
-		return $settings;
+		if ($settings->find(true)) {
+			return $settings;
+		}else{
+			return false;
+		}
 	}
 
 	private function callCloudLibraryUrl(CloudLibrarySetting $settings, string $apiPath, $method = 'GET', $requestBody = null)
@@ -410,6 +435,8 @@ class CloudLibraryDriver extends AbstractEContentDriver
 			'Accept: application/xml'
 		];
 
+		//Can't reuse the curl wrapper so make sure it is initialized on each call
+		$this->initCurlWrapper();
 		$this->curlWrapper->addCustomHeaders($headers, true);
 		$response = $this->curlWrapper->curlSendPage($settings->apiUrl . $apiPath, $method, $requestBody);
 
@@ -536,5 +563,26 @@ class CloudLibraryDriver extends AbstractEContentDriver
 		$hold['user'] = $user->getNameAndLibraryLabel();
 		$hold['userId'] = $user->id;
 		return $hold;
+	}
+
+	/**
+	 * @param string $itemId
+	 * @param User $patron
+	 *
+	 * @return null|string
+	 */
+	public function getItemStatus($itemId, $patron){
+		$settings = $this->getSettings();
+		$patronId = $patron->getBarcode();
+		$apiPath = "/cirrus/library/{$settings->libraryId}/item/status/$patronId/$itemId";
+		$itemStatusInfo = $this->callCloudLibraryUrl($settings, $apiPath);
+		if ($this->curlWrapper->getResponseCode() == 200){
+			/** @var SimpleXMLElement $itemStatus */
+			$itemStatus = simplexml_load_string($itemStatusInfo);
+			$this->curlWrapper = new CurlWrapper();
+			return (string)$itemStatus->DocumentStatus->status;
+		}else{
+			return false;
+		}
 	}
 }

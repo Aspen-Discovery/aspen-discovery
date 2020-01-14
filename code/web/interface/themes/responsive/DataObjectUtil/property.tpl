@@ -71,8 +71,17 @@
 			{/if}
 		{elseif $property.type == 'text' || $property.type == 'folder'}
 			<input type='text' name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if !empty($property.size)}size='{$property.size}'{/if} class='form-control {if $property.required}required{/if}' {if !empty($property.readOnly)}readonly{/if}>
-		{elseif $property.type == 'integer' || $property.type == 'timestamp'}
+		{elseif $property.type == 'integer'}
 			<input type='number' name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if $property.max}max="{$property.max}"{/if} {if $property.min}min="{$property.min}"{/if} {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if !empty($property.size)}size='{$property.size}'{/if} class='form-control {if $property.required}required{/if}' {if !empty($property.readOnly)}readonly{/if}>
+		{elseif $property.type == 'timestamp'}
+			<div class="row">
+				<div class="col-sm-4">
+					<input type='number' name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if $property.max}max="{$property.max}"{/if} {if $property.min}min="{$property.min}"{/if} {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if !empty($property.size)}size='{$property.size}'{/if} class='form-control {if $property.required}required{/if}' {if !empty($property.readOnly)}readonly{/if}>
+				</div>
+				<div class="col-sm-8">
+					{$propValue|date_format:"%D %T"}
+				</div>
+			</div>
 		{elseif $property.type == 'url'}
 			<input type='text' name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if !empty($property.size)}size='{$property.size}'{/if} class='form-control url {if $property.required}required{/if}' {if !empty($property.readOnly)}readonly{/if}>
 		{elseif $property.type == 'email'}

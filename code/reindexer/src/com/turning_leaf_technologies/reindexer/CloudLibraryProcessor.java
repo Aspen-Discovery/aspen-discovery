@@ -17,150 +17,150 @@ import java.sql.SQLException;
 import java.util.Date;
 import java.util.HashSet;
 
-class CloudLibraryProcessor extends MarcRecordProcessor{
+class CloudLibraryProcessor extends MarcRecordProcessor {
 
-    private PreparedStatement getProductInfoStmt;
-    private PreparedStatement getAvailabilityStmt;
+	private PreparedStatement getProductInfoStmt;
+	private PreparedStatement getAvailabilityStmt;
 
-    CloudLibraryProcessor(GroupedWorkIndexer groupedWorkIndexer, Connection dbConn, Logger logger) {
-        super(groupedWorkIndexer, logger);
+	CloudLibraryProcessor(GroupedWorkIndexer groupedWorkIndexer, Connection dbConn, Logger logger) {
+		super(groupedWorkIndexer, logger);
 
-        try {
-            getProductInfoStmt = dbConn.prepareStatement("SELECT * from cloud_library_title where cloudLibraryId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-            getAvailabilityStmt = dbConn.prepareStatement("SELECT * from cloud_library_availability where cloudLibraryId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-        } catch (SQLException e) {
-            logger.error("Error setting up Cloud Library processor", e);
-        }
-    }
+		try {
+			getProductInfoStmt = dbConn.prepareStatement("SELECT * from cloud_library_title where cloudLibraryId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			getAvailabilityStmt = dbConn.prepareStatement("SELECT * from cloud_library_availability where cloudLibraryId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+		} catch (SQLException e) {
+			logger.error("Error setting up Cloud Library processor", e);
+		}
+	}
 
-    public void processRecord(GroupedWorkSolr groupedWork, String identifier) {
-        try {
-            getProductInfoStmt.setString(1, identifier);
-            ResultSet productRS = getProductInfoStmt.executeQuery();
-            if (productRS.next()) {
-                //Make sure the record isn't deleted
-                if (productRS.getBoolean("deleted")){
-                    logger.debug("Cloud Library product " + identifier + " was deleted, skipping");
-                    return;
-                }
+	public void processRecord(GroupedWorkSolr groupedWork, String identifier) {
+		try {
+			getProductInfoStmt.setString(1, identifier);
+			ResultSet productRS = getProductInfoStmt.executeQuery();
+			if (productRS.next()) {
+				//Make sure the record isn't deleted
+				if (productRS.getBoolean("deleted")) {
+					logger.debug("Cloud Library product " + identifier + " was deleted, skipping");
+					return;
+				}
 
-                RecordInfo cloudLibraryRecord = groupedWork.addRelatedRecord("cloud_library", identifier);
-                cloudLibraryRecord.setRecordIdentifier("cloud_library", identifier);
+				RecordInfo cloudLibraryRecord = groupedWork.addRelatedRecord("cloud_library", identifier);
+				cloudLibraryRecord.setRecordIdentifier("cloud_library", identifier);
 
-                String format = productRS.getString("format");
-                String formatCategory;
-                String primaryFormat;
-                switch (format) {
-                    case "MP3":
-                        formatCategory = "Audio Books";
-                        cloudLibraryRecord.addFormatCategory("eBook");
-                        primaryFormat = "eAudiobook";
-                        break;
-                    case "EPUB":
-                    case "PDF":
-                        formatCategory = "eBook";
-                        primaryFormat = "eBook";
-                        break;
-                    default:
-                        logger.warn("Unhandled cloud_library format " + format);
-                        formatCategory = format;
-                        primaryFormat = format;
-                        break;
-                }
-                cloudLibraryRecord.addFormat(primaryFormat);
-                cloudLibraryRecord.addFormatCategory(formatCategory);
+				String format = productRS.getString("format");
+				String formatCategory;
+				String primaryFormat;
+				switch (format) {
+					case "MP3":
+						formatCategory = "Audio Books";
+						cloudLibraryRecord.addFormatCategory("eBook");
+						primaryFormat = "eAudiobook";
+						break;
+					case "EPUB":
+					case "PDF":
+						formatCategory = "eBook";
+						primaryFormat = "eBook";
+						break;
+					default:
+						logger.warn("Unhandled cloud_library format " + format);
+						formatCategory = format;
+						primaryFormat = format;
+						break;
+				}
+				cloudLibraryRecord.addFormat(primaryFormat);
+				cloudLibraryRecord.addFormatCategory(formatCategory);
 
-                String rawMarc = productRS.getString("rawResponse");
-                MarcReader reader = new MarcPermissiveStreamReader(new ByteArrayInputStream(rawMarc.getBytes(StandardCharsets.UTF_8)), true, false, "UTF-8");
-                if (reader.hasNext()){
-                    Record marcRecord = reader.next();
-                    updateGroupedWorkSolrDataBasedOnStandardMarcData(groupedWork, marcRecord, new HashSet<>(), identifier, primaryFormat);
+				String rawMarc = productRS.getString("rawResponse");
+				MarcReader reader = new MarcPermissiveStreamReader(new ByteArrayInputStream(rawMarc.getBytes(StandardCharsets.UTF_8)), true, false, "UTF-8");
+				if (reader.hasNext()) {
+					Record marcRecord = reader.next();
+					updateGroupedWorkSolrDataBasedOnStandardMarcData(groupedWork, marcRecord, new HashSet<>(), identifier, primaryFormat);
 
-                    //Special processing for ILS Records
-                    String fullDescription = Util.getCRSeparatedString(MarcUtil.getFieldList(marcRecord, "520a"));
-                    groupedWork.addDescription(fullDescription, format);
-                    HashSet<RecordInfo> allRelatedRecords = new HashSet<>();
-                    allRelatedRecords.add(cloudLibraryRecord);
-                    loadEditions(groupedWork, marcRecord, allRelatedRecords);
-                    loadPhysicalDescription(groupedWork, marcRecord, allRelatedRecords);
-                    loadLanguageDetails(groupedWork, marcRecord, allRelatedRecords, identifier);
-                    loadPublicationDetails(groupedWork, marcRecord, allRelatedRecords);
+					//Special processing for ILS Records
+					String fullDescription = Util.getCRSeparatedString(MarcUtil.getFieldList(marcRecord, "520a"));
+					groupedWork.addDescription(fullDescription, format);
+					HashSet<RecordInfo> allRelatedRecords = new HashSet<>();
+					allRelatedRecords.add(cloudLibraryRecord);
+					loadEditions(groupedWork, marcRecord, allRelatedRecords);
+					loadPhysicalDescription(groupedWork, marcRecord, allRelatedRecords);
+					loadLanguageDetails(groupedWork, marcRecord, allRelatedRecords, identifier);
+					loadPublicationDetails(groupedWork, marcRecord, allRelatedRecords);
 
-                    //TODO: Cloud Library does not code target audience.  Load from subjects
-                }else{
-                    logger.error("Error getting MARC record for Cloud Library record from database");
-                }
+					//TODO: Cloud Library does not code target audience.  Load from subjects
+				} else {
+					logger.error("Error getting MARC record for Cloud Library record from database");
+				}
 
-                ItemInfo itemInfo = new ItemInfo();
-                itemInfo.seteContentSource("Cloud Library");
-                itemInfo.setIsEContent(true);
-                itemInfo.setShelfLocation("Online Cloud Library Collection");
-                itemInfo.setCallNumber("Online Cloud Library");
-                itemInfo.setSortableCallNumber("Online Cloud Library");
+				ItemInfo itemInfo = new ItemInfo();
+				itemInfo.seteContentSource("Cloud Library");
+				itemInfo.setIsEContent(true);
+				itemInfo.setShelfLocation("Online Cloud Library Collection");
+				itemInfo.setCallNumber("Online Cloud Library");
+				itemInfo.setSortableCallNumber("Online Cloud Library");
 
-                Date dateAdded = new Date(productRS.getLong("dateFirstDetected") * 1000);
-                itemInfo.setDateAdded(dateAdded);
+				Date dateAdded = new Date(productRS.getLong("dateFirstDetected") * 1000);
+				itemInfo.setDateAdded(dateAdded);
 
-                itemInfo.setDetailedStatus("Available Online");
+				itemInfo.setDetailedStatus("Available Online");
 
-                boolean isChildrens = groupedWork.getTargetAudiences().contains("Children");
+				boolean isChildrens = groupedWork.getTargetAudiences().contains("Children");
 
-                getAvailabilityStmt.setString(1, identifier);
-                ResultSet availabilityRS = getAvailabilityStmt.executeQuery();
-                if (availabilityRS.next()) {
-                    int totalCopies = availabilityRS.getInt("totalCopies");
-                    itemInfo.setNumCopies(totalCopies);
-                    int totalLoanCopies = availabilityRS.getInt("totalLoanCopies");
-                    boolean available = totalCopies > totalLoanCopies;
-                    if (available) {
-                        itemInfo.setDetailedStatus("Available Online");
-                    } else {
-                        itemInfo.setDetailedStatus("Checked Out");
-                    }
-                    for (Scope scope : indexer.getScopes()) {
-                        boolean okToAdd = false;
-                        CloudLibraryScope cloudLibraryScope = scope.getCloudLibraryScope();
-                        if (cloudLibraryScope != null) {
-                            if (cloudLibraryScope.isIncludeEBooks() && formatCategory.equals("eBook")){
-                                okToAdd = true;
-                            }else if (cloudLibraryScope.isIncludeEAudiobook() && primaryFormat.equals("eAudiobook")){
-                                okToAdd = true;
-                            }
-                            if (cloudLibraryScope.isRestrictToChildrensMaterial() && !isChildrens){
-                                okToAdd = false;
-                            }
-                        }
-                        if (okToAdd){
-                            ScopingInfo scopingInfo = itemInfo.addScope(scope);
-                            scopingInfo.setAvailable(available);
-                            if (available) {
-                                scopingInfo.setStatus("Available Online");
-                                scopingInfo.setGroupedStatus("Available Online");
-                            } else {
-                                scopingInfo.setStatus("Checked Out");
-                                scopingInfo.setGroupedStatus("Checked Out");
-                            }
-                            scopingInfo.setHoldable(true);
-                            scopingInfo.setLibraryOwned(true);
-                            scopingInfo.setLocallyOwned(true);
-                            scopingInfo.setInLibraryUseOnly(false);
-                        }
-                    }
-                }
-                cloudLibraryRecord.addItem(itemInfo);
+				getAvailabilityStmt.setString(1, identifier);
+				ResultSet availabilityRS = getAvailabilityStmt.executeQuery();
+				if (availabilityRS.next()) {
+					int totalCopies = availabilityRS.getInt("totalCopies");
+					itemInfo.setNumCopies(totalCopies);
+					int totalLoanCopies = availabilityRS.getInt("totalLoanCopies");
+					boolean available = totalCopies > totalLoanCopies;
+					if (available) {
+						itemInfo.setDetailedStatus("Available Online");
+					} else {
+						itemInfo.setDetailedStatus("Checked Out");
+					}
+					for (Scope scope : indexer.getScopes()) {
+						boolean okToAdd = false;
+						CloudLibraryScope cloudLibraryScope = scope.getCloudLibraryScope();
+						if (cloudLibraryScope != null) {
+							if (cloudLibraryScope.isIncludeEBooks() && formatCategory.equals("eBook")) {
+								okToAdd = true;
+							} else if (cloudLibraryScope.isIncludeEAudiobook() && primaryFormat.equals("eAudiobook")) {
+								okToAdd = true;
+							}
+							if (cloudLibraryScope.isRestrictToChildrensMaterial() && !isChildrens) {
+								okToAdd = false;
+							}
+						}
+						if (okToAdd) {
+							ScopingInfo scopingInfo = itemInfo.addScope(scope);
+							scopingInfo.setAvailable(available);
+							if (available) {
+								scopingInfo.setStatus("Available Online");
+								scopingInfo.setGroupedStatus("Available Online");
+							} else {
+								scopingInfo.setStatus("Checked Out");
+								scopingInfo.setGroupedStatus("Checked Out");
+							}
+							scopingInfo.setHoldable(true);
+							scopingInfo.setLibraryOwned(true);
+							scopingInfo.setLocallyOwned(true);
+							scopingInfo.setInLibraryUseOnly(false);
+						}
+					}
+				}
+				cloudLibraryRecord.addItem(itemInfo);
 
-            }
-            productRS.close();
-        }catch (NullPointerException e) {
-            logger.error("Null pointer exception processing Cloud Library record ", e);
-        } catch (SQLException e) {
-            logger.error("Error loading information from Database for Cloud Library title", e);
-        }
-    }
+			}
+			productRS.close();
+		} catch (NullPointerException e) {
+			logger.error("Null pointer exception processing Cloud Library record ", e);
+		} catch (SQLException e) {
+			logger.error("Error loading information from Database for Cloud Library title", e);
+		}
+	}
 
-    @Override
-    protected void updateGroupedWorkSolrDataBasedOnMarc(GroupedWorkSolr groupedWork, Record record, String identifier) {
-        //Unused, just calls updateGroupedWorkSolrDataBasedOnStandardMarcData
-    }
+	@Override
+	protected void updateGroupedWorkSolrDataBasedOnMarc(GroupedWorkSolr groupedWork, Record record, String identifier) {
+		//Unused, just calls updateGroupedWorkSolrDataBasedOnStandardMarcData
+	}
 
 }

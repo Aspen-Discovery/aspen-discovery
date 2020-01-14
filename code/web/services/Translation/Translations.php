@@ -2,7 +2,6 @@
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 
-/** @noinspection PhpUnused */
 class Translation_Translations extends Admin_Admin
 {
 

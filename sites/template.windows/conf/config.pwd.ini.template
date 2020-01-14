@@ -44,10 +44,3 @@ excerpts        =
 ;  https://www.google.com/recaptcha/admin/create
 publicKey =
 privateKey =
-
-[NYT_API]
-books_API_key =
-
-[DPLA]
-enabled = false
-apiKey =

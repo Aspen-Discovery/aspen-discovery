@@ -80,9 +80,12 @@ class CurlWrapper
 				CURLOPT_FORBID_REUSE => false,
 				CURLOPT_HEADER => false,
 				CURLOPT_AUTOREFERER => true,
-				//  CURLOPT_HEADER => true, // debugging only
-				CURLOPT_VERBOSE => true, // debugging only
 			);
+
+			global $configArray;
+			if ($configArray['System']['debug'] && $configArray['System']['debugCurl']){
+				$default_curl_options[CURLOPT_VERBOSE] = true;
+			}
 
 			if ($curl_options) {
 				$default_curl_options = array_merge($default_curl_options, $curl_options);

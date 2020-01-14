@@ -1,7 +1,6 @@
 <?php
 require_once 'Record.php';
 
-/** @noinspection PhpUnused */
 class Record_AccessOnline extends Record_Record
 {
 	function launch(){

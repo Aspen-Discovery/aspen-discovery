@@ -70,58 +70,10 @@ class Locations extends ObjectEditor
 				'text' => 'Reset More Details To Default',
 				'url' => '/Admin/Locations?id=' . $existingObject->locationId . '&amp;objectAction=resetMoreDetailsToDefault',
 			);
-			if (!UserAccount::userHasRole('libraryManager') && !UserAccount::userHasRole('locationManager')){
-				$objectActions[] = array(
-						'text' => 'Copy Location Data',
-						'url' => '/Admin/Locations?id=' . $existingObject->locationId . '&amp;objectAction=copyDataFromLocation',
-				);
-			}
 		}else{
 			echo("Existing object is null");
 		}
 		return $objectActions;
-	}
-
-	function copyDataFromLocation(){
-		$locationId = $_REQUEST['id'];
-		if (isset($_REQUEST['submit'])){
-			$location = new Location();
-			$location->locationId = $locationId;
-			$location->find(true);
-
-			$locationToCopyFromId = $_REQUEST['locationToCopyFrom'];
-			$locationToCopyFrom = new Location();
-			$locationToCopyFrom->locationId = $locationToCopyFromId;
-			$location->find(true);
-
-			if (isset($_REQUEST['copyBrowseCategories'])){
-				$location->clearBrowseCategories();
-
-				$browseCategoriesToCopy = $locationToCopyFrom->browseCategories;
-				foreach ($browseCategoriesToCopy as $key => $category){
-					$category->locationId = $locationId;
-					$category->id = null;
-					$browseCategoriesToCopy[$key] = $category;
-				}
-				$location->browseCategories = $browseCategoriesToCopy;
-			}
-			$location->update();
-			header("Location: /Admin/Locations?objectAction=edit&id=" . $locationId);
-		}else{
-			//Prompt user for the location to copy from
-			$allLocations = $this->getAllObjects();
-
-			unset($allLocations[$locationId]);
-			foreach ($allLocations as $key => $location){
-				if (count($location->facets) == 0 && count($location->browseCategories) == 0){
-					unset($allLocations[$key]);
-				}
-			}
-			global $interface;
-			$interface->assign('allLocations', $allLocations);
-			$interface->assign('id', $locationId);
-			$interface->setTemplate('../Admin/copyLocationFacets.tpl');
-		}
 	}
 
 	function resetMoreDetailsToDefault(){

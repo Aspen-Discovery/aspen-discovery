@@ -2,7 +2,6 @@
 
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 
-/** @noinspection PhpUnused */
 class ImportSettings extends Admin_Admin
 {
 	function launch()

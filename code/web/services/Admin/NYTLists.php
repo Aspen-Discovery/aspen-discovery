@@ -2,17 +2,22 @@
 
 include_once ROOT_DIR . '/services/Admin/Admin.php';
 include_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
-class NYTLists extends Admin_Admin {
 
-	function launch() {
+class NYTLists extends Admin_Admin
+{
+
+	function launch()
+	{
 		global $interface;
 		global $configArray;
 
-		//Display a list of available lists within the New York Times API
-		if (!isset($configArray['NYT_API']) || empty($configArray['NYT_API']['books_API_key'])){
-			$interface->assign('error', 'The New York Times API is not configured properly, create a books_API_key in the NYT_API section');
-		}else{
-			$api_key = $configArray['NYT_API']['books_API_key'];
+		require_once ROOT_DIR . '/sys/Enrichment/NewYorkTimesSetting.php';
+		global $configArray;
+		$nytSettings = new NewYorkTimesSetting();
+		if (!$nytSettings->find(true)) {
+			$interface->assign('error', 'The New York Times API is not configured properly, create settings at <a href="/Admin/NewYorkTimesSettings"></a>');
+		} else {
+			$api_key = $nytSettings->booksApiKey;
 
 			// instantiate class with api key
 			require_once ROOT_DIR . '/sys/NYTApi.php';
@@ -31,14 +36,14 @@ class NYTLists extends Admin_Admin {
 				$selectedList = $_REQUEST['selectedList'];
 				$interface->assign('selectedListName', $selectedList);
 
-				if (isset($_REQUEST['submit'])){
+				if (isset($_REQUEST['submit'])) {
 					//Find and update the correct Pika list, creating a new list as needed.
 					require_once ROOT_DIR . '/services/API/ListAPI.php';
 					$listApi = new ListAPI();
 					$results = $listApi->createUserListFromNYT($selectedList);
-					if ($results['success'] == false){
+					if ($results['success'] == false) {
 						$interface->assign('error', $results['message']);
-					}else{
+					} else {
 						$interface->assign('successMessage', $results['message']);
 					}
 				}
@@ -51,7 +56,7 @@ class NYTLists extends Admin_Admin {
 			$nyTimesUser->username = 'nyt_user';
 			if ($nyTimesUser->find(1)) {
 				// Get User Lists
-				$nyTimesUserLists          = new UserList();
+				$nyTimesUserLists = new UserList();
 				$nyTimesUserLists->user_id = $nyTimesUser->id;
 				$nyTimesUserLists->whereAdd('title like "NYT - %"');
 				$nyTimesUserLists->orderBy('title');
@@ -64,7 +69,8 @@ class NYTLists extends Admin_Admin {
 		$this->display('nytLists.tpl', 'Lists from New York Times');
 	}
 
-	function getAllowableRoles() {
+	function getAllowableRoles()
+	{
 		return array('opacAdmin', 'libraryAdmin', 'libraryManager', 'contentEditor');
 	}
 }

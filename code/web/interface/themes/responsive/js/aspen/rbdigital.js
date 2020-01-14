@@ -203,7 +203,7 @@ AspenDiscovery.RBdigital = (function(){
             });
         },
 
-        getCheckOutPrompts(id) {
+        getCheckOutPrompts: function(id) {
             let url = Globals.path + "/RBdigital/" + id + "/AJAX?method=getCheckOutPrompts";
             let result = true;
             $.ajax({
@@ -227,7 +227,7 @@ AspenDiscovery.RBdigital = (function(){
             return result;
         },
 
-        getMagazineCheckOutPrompts(id) {
+        getMagazineCheckOutPrompts: function(id) {
             let url = Globals.path + "/RBdigital/" + id + "/AJAX?method=getMagazineCheckOutPrompts";
             let result = true;
             $.ajax({

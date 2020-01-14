@@ -15,6 +15,35 @@
 				{/if}
 				<div class="{if $showCovers}col-xs-10{else}col-xs-12{/if}">
 					<div class="result-title"><a href="{$result.link}">{$result.title}</a></div>
+					{if !empty($result.publisher) || !empty($result.dataProvider)}
+						<div class="row">
+							<div class="result-label col-tn-3">
+								{translate text="Provider"}
+							</div>
+							<div class="result-value col-tn-8 notranslate">
+								{if !empty($result.publisher)}
+									{$result.publisher}
+								{/if}
+								{if !empty($result.publisher) && !empty($result.dataProvider)}
+									<br>
+								{/if}
+								{if !empty($result.dataProvider)}
+									{$result.dataProvider}
+								{/if}
+							</div>
+						</div>
+					{/if}
+					{if !empty($result.format)}
+						<div class="row">
+							<div class="result-label col-tn-3">
+								{translate text="Format"}
+							</div>
+							<div class="result-value col-tn-8 notranslate">
+								{$result.format}
+							</div>
+						</div>
+					{/if}
+
 					<p>{$result.description|truncate_html:450:"..."}</p>
 				</div>
 			</div>

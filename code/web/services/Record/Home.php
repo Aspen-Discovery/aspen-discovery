@@ -2,7 +2,6 @@
 
 require_once 'Record.php';
 
-/** @noinspection PhpUnused */
 class Record_Home extends Record_Record{
 	function launch(){
 		global $interface;

@@ -114,12 +114,12 @@ class BrowseCategory extends DataObject
 			//Remove from any libraries that use it.
 			require_once ROOT_DIR . '/sys/Browse/LibraryBrowseCategory.php';
 			$libraryBrowseCategory = new LibraryBrowseCategory();
-			$libraryBrowseCategory->browseCategoryTextId = $this->textId;
+			$libraryBrowseCategory->browseCategoryId = $this->textId;
 			$libraryBrowseCategory->delete(true);
 
 			require_once ROOT_DIR . '/sys/Browse/LocationBrowseCategory.php';
 			$locationBrowseCategory = new LocationBrowseCategory();
-			$locationBrowseCategory->browseCategoryTextId = $this->textId;
+			$locationBrowseCategory->browseCategoryId = $this->textId;
 			$locationBrowseCategory->delete(true);
 
 			//Delete from parent sub categories as needed
@@ -141,11 +141,9 @@ class BrowseCategory extends DataObject
 	{
 		// key structure
 		// $key = 'browse_category_' . $this->textId . '_' . $solrScope . '_' . $browseMode;
+		$librarySubDomains = Library::getAllSubdomains();
+		$locationCodes = Location::getAllCodes();
 
-		$libraries = new Library();
-		$librarySubDomains = $libraries->fetchAll('subdomain');
-		$locations = new Location();
-		$locationCodes = $locations->fetchAll('code');
 		$solrScopes = array_merge($librarySubDomains, $locationCodes);
 
 		if (!empty($solrScopes)) { // don't bother if we didn't get any solr scopes
@@ -231,8 +229,8 @@ class BrowseCategory extends DataObject
 				'structure' => $browseSubCategoryStructure,
 				'sortable' => true,
 				'storeDb' => true,
-				'allowEdit' => false,
-				'canEdit' => false,
+				'allowEdit' => true,
+				'canEdit' => true,
 			),
 
 			// Disabled setting this option since it is not an implemented feature.
@@ -245,6 +243,10 @@ class BrowseCategory extends DataObject
 		);
 
 		return $structure;
+	}
+
+	function getEditLink(){
+		return '/Admin/BrowseCategories?objectAction=edit&id=' . $this->id;
 	}
 
 	/** @noinspection PhpUnused */

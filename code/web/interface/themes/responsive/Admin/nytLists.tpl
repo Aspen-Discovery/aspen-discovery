@@ -12,7 +12,7 @@
 
 	<form action="" method="post" id="buildList">
 		<div class="form-group">
-		<label for="selectedList">Pick a New York Times list to build a Pika list for: </label>
+		<label for="selectedList">Pick a New York Times list to build a list for in Aspen: </label>
 		<!-- Give the user a list of all available lists from NYT -->
 		<select name="selectedList" id="selectedList" class="form-control">
 		{foreach from=$availableLists->results item="listInfo"}

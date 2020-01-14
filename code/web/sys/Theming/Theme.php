@@ -49,6 +49,34 @@ class Theme extends DataObject
 	public $tertiaryForegroundColor;
 	public $tertiaryForegroundColorDefault;
 
+	public $buttonRadius;
+	public $buttonRadiusDefault;
+	public $smallButtonRadius;
+	public $smallButtonRadiusDefault;
+	//TODO: Colors for buttons
+
+	//Sidebar Menu
+	public $sidebarHighlightBackgroundColor;
+	public $sidebarHighlightBackgroundColorDefault;
+	public $sidebarHighlightForegroundColor;
+	public $sidebarHighlightForegroundColorDefault;
+
+	//Browse Category Colors
+	public $browseCategoryPanelColor;
+	public $browseCategoryPanelColorDefault;
+	public $selectedBrowseCategoryBackgroundColor;
+	public $selectedBrowseCategoryBackgroundColorDefault;
+	public $selectedBrowseCategoryForegroundColor;
+	public $selectedBrowseCategoryForegroundColorDefault;
+	public $selectedBrowseCategoryBorderColor;
+	public $selectedBrowseCategoryBorderColorDefault;
+	public $deselectedBrowseCategoryBackgroundColor;
+	public $deselectedBrowseCategoryBackgroundColorDefault;
+	public $deselectedBrowseCategoryForegroundColor;
+	public $deselectedBrowseCategoryForegroundColorDefault;
+	public $deselectedBrowseCategoryBorderColor;
+	public $deselectedBrowseCategoryBorderColorDefault;
+
 	//Fonts
 	public $headingFont;
 	public $headingFontDefault;
@@ -124,7 +152,7 @@ class Theme extends DataObject
 
 			//Header Colors
 			'headerBackgroundColor' => array('property' => 'headerBackgroundColor', 'type' => 'color', 'label' => 'Header Background Color', 'description' => 'Header Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#f1f1f1'),
-			'headerForegroundColor' => array('property' => 'headerForegroundColor', 'type' => 'color', 'label' => 'Header Foreground Color', 'description' => 'Header Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#8b8b8b'),
+			'headerForegroundColor' => array('property' => 'headerForegroundColor', 'type' => 'color', 'label' => 'Header Text Color', 'description' => 'Header Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#8b8b8b'),
 //            'headerBottomBorderColor' => array('property'=>'headerBottomBorderColor', 'type'=>'color', 'label'=>'Header Bottom Border Color', 'description'=>'Header Bottom Border Color', 'required' => false, 'hideInLists' => true, 'default' => '#B7B7B7'),
 			'headerBottomBorderWidth' => array('property' => 'headerBottomBorderWidth', 'type' => 'text', 'label' => 'Header Bottom Border Width', 'description' => 'Header Bottom Border Width', 'required' => false, 'hideInLists' => true),
 			//Header Buttons
@@ -134,15 +162,15 @@ class Theme extends DataObject
 
 			//Primary Color
 			'primaryBackgroundColor' => array('property' => 'primaryBackgroundColor', 'type' => 'color', 'label' => 'Primary Background Color', 'description' => 'Primary Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#0a7589'),
-			'primaryForegroundColor' => array('property' => 'primaryForegroundColor', 'type' => 'color', 'label' => 'Primary Foreground Color', 'description' => 'Primary Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff'),
+			'primaryForegroundColor' => array('property' => 'primaryForegroundColor', 'type' => 'color', 'label' => 'Primary Text Color', 'description' => 'Primary Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff'),
 
 			//Secondary Color
 			'secondaryBackgroundColor' => array('property' => 'secondaryBackgroundColor', 'type' => 'color', 'label' => 'Secondary Background Color', 'description' => 'Secondary Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#de9d03'),
-			'secondaryForegroundColor' => array('property' => 'secondaryForegroundColor', 'type' => 'color', 'label' => 'Secondary Foreground Color', 'description' => 'Secondary Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff'),
+			'secondaryForegroundColor' => array('property' => 'secondaryForegroundColor', 'type' => 'color', 'label' => 'Secondary Text Color', 'description' => 'Secondary Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff'),
 
 			//Tertiary Color
 			'tertiaryBackgroundColor' => array('property' => 'tertiaryBackgroundColor', 'type' => 'color', 'label' => 'Tertiary Background Color', 'description' => 'Tertiary Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#de1f0b'),
-			'tertiaryForegroundColor' => array('property' => 'tertiaryForegroundColor', 'type' => 'color', 'label' => 'Tertiary Foreground Color', 'description' => 'Tertiary Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff'),
+			'tertiaryForegroundColor' => array('property' => 'tertiaryForegroundColor', 'type' => 'color', 'label' => 'Tertiary Text Color', 'description' => 'Tertiary Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff'),
 
 			'headingFont' => array('property' => 'headingFont', 'type' => 'font', 'label' => 'Heading Font', 'description' => 'Heading Font', 'validFonts' => $validHeadingFonts, 'previewFontSize' => '20px', 'required' => false, 'hideInLists' => true, 'default' => 'Ubuntu'),
 			'bodyFont' => array('property' => 'bodyFont', 'type' => 'font', 'label' => 'Body Font', 'description' => 'Body Font', 'validFonts' => $validBodyFonts, 'previewFontSize' => '14px', 'required' => false, 'hideInLists' => true, 'default' => 'Lato'),
@@ -150,6 +178,24 @@ class Theme extends DataObject
 			//Additional CSS
 			'additionalCss' => array('property' => 'additionalCss', 'type' => 'textarea', 'label' => 'Additional CSS', 'description' => 'Additional CSS to apply to the interface', 'required' => false, 'hideInLists' => true),
 			'additionalCssType' => array('property' => 'additionalCssType', 'type' => 'enum', 'values' => ['0' => 'Append to parent css', '1' => 'Override parent css'], 'label' => 'Additional CSS Application', 'description' => 'How to apply css to the theme', 'required' => false, 'default' => 0),
+
+			//Menu
+			'sidebarHighlightBackgroundColor' => array('property' => 'sidebarHighlightBackgroundColor', 'type' => 'color', 'label' => 'Sidebar Highlight Background Color', 'description' => 'Sidebar Highlight Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#16ceff'),
+			'sidebarHighlightForegroundColor' => array('property' => 'sidebarHighlightForegroundColor', 'type' => 'color', 'label' => 'Sidebar Highlight Text Color', 'description' => 'Sidebar Highlight Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff'),
+
+			//Browse category theming
+			'browseCategorySection' =>['property'=>'browseCategorySection', 'type' => 'section', 'label' =>'Browse Categories', 'hideInLists' => true, 'properties' => [
+				'browseCategoryPanelColor' => array('property' => 'browseCategoryPanelColor', 'type' => 'color', 'label' => 'Browse Category Panel Color', 'description' => 'Background Color of the Browse Category Panel', 'required' => false, 'hideInLists' => true, 'default' => '#0087AB'),
+
+				'selectedBrowseCategoryBackgroundColor' => array('property' => 'selectedBrowseCategoryBackgroundColor', 'type' => 'color', 'label' => 'Selected Browse Category Background Color', 'description' => 'Selected Browse Category Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#0087AB'),
+				'selectedBrowseCategoryForegroundColor' => array('property' => 'selectedBrowseCategoryForegroundColor', 'type' => 'color', 'label' => 'Selected Browse Category Text Color', 'description' => 'Selected Browse Category Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff'),
+				'selectedBrowseCategoryBorderColor' => array('property' => 'selectedBrowseCategoryBorderColor', 'type' => 'color', 'label' => 'Selected Browse Category Border Color', 'description' => 'Selected Browse Category Border Color', 'required' => false, 'hideInLists' => true, 'default' => '#0087AB'),
+
+				'deselectedBrowseCategoryBackgroundColor' => array('property' => 'deselectedBrowseCategoryBackgroundColor', 'type' => 'color', 'label' => 'Deselected Browse Category Background Color', 'description' => 'Deselected Browse Category Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#0087AB'),
+				'deselectedBrowseCategoryForegroundColor' => array('property' => 'deselectedBrowseCategoryForegroundColor', 'type' => 'color', 'label' => 'Deselected Browse Category Text Color', 'description' => 'Deselected Browse Category Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff'),
+				'deselectedBrowseCategoryBorderColor' => array('property' => 'deselectedBrowseCategoryBorderColor', 'type' => 'color', 'label' => 'Deselected Browse Category Border Color', 'description' => 'Deselected Browse Category Border Color', 'required' => false, 'hideInLists' => true, 'default' => '#0087AB'),
+			]],
+
 		);
 		return $structure;
 	}
@@ -250,8 +296,35 @@ class Theme extends DataObject
 			if ($interface->getVariable('bodyFont') == null && !$theme->bodyFontDefault) {
 				$interface->assign('bodyFont', $theme->bodyFont);
 			}
+			if ($interface->getVariable('sidebarHighlightBackgroundColor') == null && !$theme->sidebarHighlightBackgroundColorDefault) {
+				$interface->assign('sidebarHighlightBackgroundColor', $theme->sidebarHighlightBackgroundColor);
+			}
+			if ($interface->getVariable('sidebarHighlightForegroundColor') == null && !$theme->sidebarHighlightForegroundColorDefault) {
+				$interface->assign('sidebarHighlightForegroundColor', $theme->sidebarHighlightForegroundColor);
+			}
+			if ($interface->getVariable('browseCategoryPanelColor') == null && !$theme->browseCategoryPanelColorDefault) {
+				$interface->assign('browseCategoryPanelColor', $theme->browseCategoryPanelColor);
+			}
+			if ($interface->getVariable('selectedBrowseCategoryBackgroundColor') == null && !$theme->selectedBrowseCategoryBackgroundColorDefault) {
+				$interface->assign('selectedBrowseCategoryBackgroundColor', $theme->selectedBrowseCategoryBackgroundColor);
+			}
+			if ($interface->getVariable('selectedBrowseCategoryForegroundColor') == null && !$theme->selectedBrowseCategoryForegroundColorDefault) {
+				$interface->assign('selectedBrowseCategoryForegroundColor', $theme->selectedBrowseCategoryForegroundColor);
+			}
+			if ($interface->getVariable('selectedBrowseCategoryBorderColor') == null && !$theme->selectedBrowseCategoryBorderColorDefault) {
+				$interface->assign('selectedBrowseCategoryBorderColor', $theme->selectedBrowseCategoryBorderColor);
+			}
+			if ($interface->getVariable('deselectedBrowseCategoryBackgroundColor') == null && !$theme->deselectedBrowseCategoryBackgroundColorDefault) {
+				$interface->assign('deselectedBrowseCategoryBackgroundColor', $theme->deselectedBrowseCategoryBackgroundColor);
+			}
+			if ($interface->getVariable('deselectedBrowseCategoryForegroundColor') == null && !$theme->deselectedBrowseCategoryForegroundColorDefault) {
+				$interface->assign('deselectedBrowseCategoryForegroundColor', $theme->deselectedBrowseCategoryForegroundColor);
+			}
+			if ($interface->getVariable('deselectedBrowseCategoryBorderColor') == null && !$theme->deselectedBrowseCategoryBorderColorDefault) {
+				$interface->assign('deselectedBrowseCategoryBorderColor', $theme->deselectedBrowseCategoryBorderColor);
+			}
 			if ($appendCSS) {
-				if ($theme - $this->additionalCssType == 1) {
+				if ($this->additionalCssType == 1) {
 					$additionalCSS = $theme->additionalCss;
 					$appendCSS = false;
 				} else {

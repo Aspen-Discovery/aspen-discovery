@@ -14,11 +14,8 @@ if (file_exists(ROOT_DIR . '/sys/Indexing/LibraryRecordToInclude.php')) {
 if (file_exists(ROOT_DIR . '/sys/Indexing/LibrarySideLoadScope.php')) {
 	require_once ROOT_DIR . '/sys/Indexing/LibrarySideLoadScope.php';
 }
-if (file_exists(ROOT_DIR . '/sys/Browse/LibraryBrowseCategory.php')) {
-	require_once ROOT_DIR . '/sys/Browse/LibraryBrowseCategory.php';
-}
-if (file_exists(ROOT_DIR . '/sys/Grouping/GroupedWorkMoreDetails.php')) {
-	require_once ROOT_DIR . '/sys/Grouping/GroupedWorkMoreDetails.php';
+if (file_exists(ROOT_DIR . '/sys/Browse/BrowseCategoryGroup.php')) {
+	require_once ROOT_DIR . '/sys/Browse/BrowseCategoryGroup.php';
 }
 if (file_exists(ROOT_DIR . '/sys/LibraryArchiveMoreDetails.php')) {
 	require_once ROOT_DIR . '/sys/LibraryArchiveMoreDetails.php';
@@ -56,6 +53,7 @@ class Library extends DataObject
 	public $layoutSettingId;  //Link to LayoutSetting
 	public $groupedWorkDisplaySettingId; //Link to GroupedWorkDisplaySettings
 
+	public $browseCategoryGroupId;
 
 	public $restrictSearchByLibrary;
 
@@ -166,8 +164,7 @@ class Library extends DataObject
 	public /** @noinspection PhpUnused */ $selfRegistrationSuccessMessage;
 	public /** @noinspection PhpUnused */ $selfRegistrationTemplate;
 	public $addSMSIndicatorToPhone;
-	public /** @noinspection PhpUnused */ $defaultBrowseMode;
-	public /** @noinspection PhpUnused */ $browseCategoryRatingsMode;
+
 	public $enableMaterialsBooking;
 	public $allowLinkedAccounts;
 	public $enableArchive;
@@ -237,6 +234,16 @@ class Library extends DataObject
 		'list'  => 'List',
 	);
 
+	static $subdomains = null;
+	public static function getAllSubdomains()
+	{
+		if (Library::$subdomains == null){
+			$libraries = new Library();
+			Library::$subdomains = $libraries->fetchAll('subdomain');
+		}
+		return Library::$subdomains;
+	}
+
 	function keys() {
 		return array('libraryId', 'subdomain');
 	}
@@ -269,10 +276,6 @@ class Library extends DataObject
 		$libraryTopLinksStructure = LibraryTopLinks::getObjectStructure();
 		unset($libraryTopLinksStructure['weight']);
 		unset($libraryTopLinksStructure['libraryId']);
-
-		$libraryBrowseCategoryStructure = LibraryBrowseCategory::getObjectStructure();
-		unset($libraryBrowseCategoryStructure['weight']);
-		unset($libraryBrowseCategoryStructure['libraryId']);
 
 		$libraryRecordOwnedStructure = LibraryRecordOwned::getObjectStructure();
 		unset($libraryRecordOwnedStructure['libraryId']);
@@ -331,6 +334,15 @@ class Library extends DataObject
 		$groupedWorkDisplaySetting->find();
 		while ($groupedWorkDisplaySetting->fetch()){
 			$groupedWorkDisplaySettings[$groupedWorkDisplaySetting->id] = $groupedWorkDisplaySetting->name;
+		}
+
+		require_once ROOT_DIR . '/sys/Browse/BrowseCategoryGroup.php';
+		$browseCategoryGroup = new BrowseCategoryGroup();
+		$browseCategoryGroups = [];
+		$browseCategoryGroup->orderBy('name');
+		$browseCategoryGroup->find();
+		while ($browseCategoryGroup->fetch()){
+			$browseCategoryGroups[$browseCategoryGroup->id] = $browseCategoryGroup->name;
 		}
 
 		require_once ROOT_DIR . '/sys/Theming/LayoutSetting.php';
@@ -526,7 +538,7 @@ class Library extends DataObject
 				)),
 
 				'searchFacetsSection' => array('property' => 'searchFacetsSection', 'type' => 'section', 'label' => 'Search Facets', 'hideInLists' => true, 'properties' => array(
-					'facetLabel'                               => array('property' => 'facetLabel',                               'type' => 'text',     'label' => 'Library System Facet Label',                               'description'=>'The label for the library system in the Library System Facet.', 'size'=>'40', 'hideInLists' => true,),
+					'facetLabel'                               => array('property' => 'facetLabel',                               'type' => 'text',     'label' => 'Library System Facet Label',                               'description'=>'The label for the library system in the Library System Facet.', 'size'=>'40', 'hideInLists' => true, 'maxLength' => 75),
 					'showAvailableAtAnyLocation'               => array('property' => 'showAvailableAtAnyLocation',               'type' => 'checkbox', 'label' => 'Show Available At Any Location?',                          'description'=>'Whether or not to show any Marmot Location within the Available At facet', 'hideInLists' => true),
 					'additionalLocationsToShowAvailabilityFor' => array('property' => 'additionalLocationsToShowAvailabilityFor', 'type' => 'text',     'label' => 'Additional Locations to Include in Available At Facet',    'description'=>'A list of library codes that you would like included in the available at facet separated by pipes |.', 'size'=>'20', 'hideInLists' => true,),
 				)),
@@ -574,33 +586,7 @@ class Library extends DataObject
 				)
 			),
 
-			// Browse Category Section //
-			'browseCategorySection' => array('property' => 'browseCategorySection', 'type' => 'section', 'label' => 'Browse Categories', 'hideInLists' => true, 'helpLink'=> 'https://docs.google.com/document/d/11biGMw6UDKx9UBiDCCj_GBmatx93UlJBLMESNf_RtDU', 'properties' => array(
-				'defaultBrowseMode' => array('property' => 'defaultBrowseMode', 'type' => 'enum', 'label'=>'Default Viewing Mode for Browse Categories', 'description' => 'Sets how browse categories will be displayed when users haven\'t chosen themselves.', 'hideInLists' => true,
-				                             'values'=> array('covers' => 'Show Covers Only', 'grid' => 'Show as Grid'), 'default' => 'covers'),
-				'browseCategoryRatingsMode' => array('property' => 'browseCategoryRatingsMode', 'type' => 'enum', 'label' => 'Ratings Mode for Browse Categories ("covers" browse mode only)', 'description' => 'Sets how ratings will be displayed and how user ratings will be enabled when a user is viewing a browse category in the &#34;covers&#34; browse mode. These settings only apply when User Ratings have been enabled. (These settings will also apply to search results viewed in covers mode.)',
-					'values' => array('popup' => 'Show rating stars and enable user rating via pop-up form.',
-						'stars' => 'Show rating stars and enable user ratings by clicking the stars.',
-						'none' => 'Do not show rating stars.'
-					), 'default' => 'popup'
-				),
-
-				// The specific categories displayed in the carousel
-				'browseCategories' => array(
-					'property'=>'browseCategories',
-					'type'=>'oneToMany',
-					'label'=>'Browse Categories',
-					'description'=>'Browse Categories To Show on the Home Screen',
-					'keyThis' => 'libraryId',
-					'keyOther' => 'libraryId',
-					'subObjectType' => 'LibraryBrowseCategory',
-					'structure' => $libraryBrowseCategoryStructure,
-					'sortable' => true,
-					'storeDb' => true,
-					'allowEdit' => false,
-					'canEdit' => false,
-				),
-			)),
+			'browseCategoryId' => array('property' => 'browseCategoryId', 'type' => 'enum', 'values' => $browseCategoryGroups, 'label' => 'Browse Category Group', 'description' => 'The group of browse categories to show for this library', 'hideInLists' => true),
 
 			'holdingsSummarySection' => array('property'=>'holdingsSummarySection', 'type' => 'section', 'label' =>'Holdings Summary', 'hideInLists' => true,
 					'helpLink' => '', 'properties' => array(
@@ -714,7 +700,7 @@ class Library extends DataObject
 			'genealogySection' => array('property' => 'genealogySection', 'type' => 'section', 'label' => 'Genealogy', 'hideInLists' => true, 'renderAsHeading' => true, 'properties' => [
 					'enableGenealogy' => array('property' => 'enableGenealogy', 'type' => 'checkbox', 'label' => 'Enable Genealogy Functionality', 'description' => 'Whether or not patrons can search genealogy.', 'hideInLists' => true, 'default' => 1),
 			]),
-			'archiveSection' => array('property'=>'archiveSection', 'type' => 'section', 'label' =>'Local Content Archive', 'hideInLists' => true, 'helpLink'=>'https://docs.google.com/a/marmot.org/document/d/128wrNtZu_sUqm2_NypC6Sx8cOvM2cdmeOUDp0hUhQb4/edit?usp=sharing_eid&ts=57324e27', 'properties' => array(
+			'archiveSection' => array('property'=>'archiveSection', 'type' => 'section', 'label' =>'Local Content Archive', 'hideInLists' => true, 'helpLink'=>'', 'properties' => array(
 				'enableArchive' => array('property'=>'enableArchive', 'type'=>'checkbox', 'label'=>'Allow Searching the Archive', 'description'=>'Whether or not information from the archive is shown in Pika.', 'hideInLists' => true, 'default' => 0),
 				'archiveNamespace' => array('property'=>'archiveNamespace', 'type'=>'text', 'label'=>'Archive Namespace', 'description'=>'The namespace of your library in the archive', 'hideInLists' => true, 'maxLength' => 30, 'size'=>'30'),
 				'archivePid' => array('property'=>'archivePid', 'type'=>'text', 'label'=>'Organization PID for Library', 'description'=>'A link to a representation of the library in the archive', 'hideInLists' => true, 'maxLength' => 50, 'size'=>'50'),
@@ -831,13 +817,13 @@ class Library extends DataObject
 				'edsApiPassword' => array('property' => 'edsApiPassword', 'type' => 'text', 'label' => 'EDS API Password', 'description' => 'The password to use when connecting to the EBSCO API', 'hideInLists' => true),
 			)),
 
-			'casSection' => array('property'=>'casSection', 'type' => 'section', 'label' =>'CAS Single Sign On', 'hideInLists' => true, 'helpLink'=>'https://docs.google.com/document/d/1KQ_RMVvHhB2ulTyXnGF7rJXUQuzbL5RVTtnqlXdoNTk/edit?usp=sharing', 'properties' => array(
+			'casSection' => array('property'=>'casSection', 'type' => 'section', 'label' =>'CAS Single Sign On', 'hideInLists' => true, 'helpLink'=>'', 'properties' => array(
 				'casHost' => array('property'=>'casHost', 'type'=>'text', 'label'=>'CAS Host', 'description'=>'The host to use for CAS authentication', 'hideInLists' => true),
 				'casPort' => array('property'=>'casPort', 'type'=>'integer', 'label'=>'CAS Port', 'description'=>'The port to use for CAS authentication (typically 443)', 'hideInLists' => true),
 				'casContext' => array('property'=>'casContext', 'type'=>'text', 'label'=>'CAS Context', 'description'=>'The context to use for CAS', 'hideInLists' => true),
 			)),
 
-			'dplaSection' => array('property'=>'dplaSection', 'type' => 'section', 'label' =>'DPLA', 'hideInLists' => true, 'helpLink'=> 'https://docs.google.com/document/d/1I6RuNhKNwDJOMpM63a4V5Lm0URgWp23465HegEIkP_w', 'properties' => array(
+			'dplaSection' => array('property'=>'dplaSection', 'type' => 'section', 'label' =>'DPLA', 'hideInLists' => true, 'helpLink'=> '', 'properties' => array(
 				'includeDplaResults' => array('property'=>'includeDplaResults', 'type'=>'checkbox', 'label'=>'Include DPLA content in search results', 'description'=>'Whether or not DPLA data should be included for this library.', 'hideInLists' => true, 'default' => 0),
 			)),
 
@@ -1220,18 +1206,6 @@ class Library extends DataObject
 				}
 			}
 			return $this->sideLoadScopes;
-		} elseif ($name == 'browseCategories') {
-			if (!isset($this->browseCategories) && $this->libraryId) {
-				$this->browseCategories = array();
-				$browseCategory = new LibraryBrowseCategory();
-				$browseCategory->libraryId = $this->libraryId;
-				$browseCategory->orderBy('weight');
-				$browseCategory->find();
-				while ($browseCategory->fetch()) {
-					$this->browseCategories[$browseCategory->id] = clone($browseCategory);
-				}
-			}
-			return $this->browseCategories;
 		} elseif ($name == 'materialsRequestFieldsToDisplay') {
 			if (!isset($this->materialsRequestFieldsToDisplay) && $this->libraryId) {
 				$this->materialsRequestFieldsToDisplay = array();
@@ -1330,9 +1304,6 @@ class Library extends DataObject
 		}elseif ($name == 'libraryTopLinks'){
 			/** @noinspection PhpUndefinedFieldInspection */
 			$this->libraryTopLinks = $value;
-		}elseif ($name == 'browseCategories') {
-			/** @noinspection PhpUndefinedFieldInspection */
-			$this->browseCategories = $value;
 		}elseif ($name == 'materialsRequestFieldsToDisplay') {
 			/** @noinspection PhpUndefinedFieldInspection */
 			$this->materialsRequestFieldsToDisplay = $value;
@@ -1386,7 +1357,6 @@ class Library extends DataObject
 			$this->saveMaterialsRequestFormFields();
 			$this->saveLibraryLinks();
 			$this->saveLibraryTopLinks();
-			$this->saveBrowseCategories();
 			$this->saveArchiveMoreDetailsOptions();
 			$this->saveExploreMoreBar();
 			$this->saveCombinedResultSections();
@@ -1415,8 +1385,6 @@ class Library extends DataObject
 	 * @see DB/DB_DataObject::insert()
 	 */
 	public function insert(){
-
-
 		$ret = parent::insert();
 		if ($ret !== FALSE ){
 			$this->saveHolidays();
@@ -1429,31 +1397,10 @@ class Library extends DataObject
 			$this->saveMaterialsRequestFormFields();
 			$this->saveLibraryLinks();
 			$this->saveLibraryTopLinks();
-			$this->saveBrowseCategories();
 			$this->saveExploreMoreBar();
 			$this->saveCombinedResultSections();
 		}
 		return $ret;
-	}
-
-	public function saveBrowseCategories(){
-		if (isset ($this->browseCategories) && is_array($this->browseCategories)){
-			$uniqueBrowseCategories = [];
-			/**
-			 * @var int $categoryId
-			 * @var BrowseCategory $browseCategory
-			 */
-			foreach ($this->browseCategories as $categoryId => $browseCategory){
-				if (in_array($browseCategory->browseCategoryTextId, $uniqueBrowseCategories)){
-					$browseCategory->delete();
-					unset($this->browseCategories[$categoryId]);
-				}else{
-					$uniqueBrowseCategories[] = $browseCategory->browseCategoryTextId;
-				}
-			}
-			$this->saveOneToManyOptions($this->browseCategories, 'libraryId');
-			unset($this->browseCategories);
-		}
 	}
 
 	public function saveLibraryLinks(){
@@ -1642,6 +1589,19 @@ class Library extends DataObject
 		return $defaultForm;
 	}
 
+	protected $_browseCategoryGroup = null;
+	public function getBrowseCategoryGroup(){
+		if ($this->_browseCategoryGroup == null){
+			require_once ROOT_DIR . '/sys/Browse/BrowseCategoryGroup.php';
+			$browseCategoryGroup = new BrowseCategoryGroup();
+			$browseCategoryGroup->id = $this->browseCategoryGroupId;
+			if ($browseCategoryGroup->find(true)){
+				$this->_browseCategoryGroup = $browseCategoryGroup;
+			}
+		}
+		return $this->_browseCategoryGroup;
+	}
+
 	protected $_groupedWorkDisplaySettings = null;
 	/** @return GroupedWorkDisplaySetting */
 	public function getGroupedWorkDisplaySettings()
@@ -1662,9 +1622,6 @@ class Library extends DataObject
 				$logger->log('Error loading grouped work display settings ' . $e, Logger::LOG_ERROR);
 				$this->_groupedWorkDisplaySettings = GroupedWorkDisplaySetting::getDefaultDisplaySettings();
 			}
-		}
-		if ($this->groupedWorkDisplaySettingId != $this->_groupedWorkDisplaySettings->id){
-			echo "Something went horribly wrong";
 		}
 		return $this->_groupedWorkDisplaySettings;
 	}

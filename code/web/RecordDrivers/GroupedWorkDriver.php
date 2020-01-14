@@ -519,15 +519,16 @@ class GroupedWorkDriver extends IndexRecordDriver
 		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
 		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
 		// Rating Settings
-		global $library, $location;
+		/** @var Library $library */
+		global $library;
+		/** @var Location $location */
+		global $location;
 		$browseCategoryRatingsMode = null;
 		if ($location) { // Try Location Setting
-			$browseCategoryRatingsMode = $location->browseCategoryRatingsMode;
+			$browseCategoryRatingsMode = $location->getBrowseCategoryGroup()->browseCategoryRatingsMode;
+		}else{
+			$browseCategoryRatingsMode = $library->getBrowseCategoryGroup()->browseCategoryRatingsMode;
 		}
-		if (!$browseCategoryRatingsMode) { // Try Library Setting
-			$browseCategoryRatingsMode = $library->browseCategoryRatingsMode;
-		}
-		if (!$browseCategoryRatingsMode) $browseCategoryRatingsMode = 'popup'; // default
 		$interface->assign('browseCategoryRatingsMode', $browseCategoryRatingsMode);
 
 		return 'RecordDrivers/GroupedWork/browse_result.tpl';

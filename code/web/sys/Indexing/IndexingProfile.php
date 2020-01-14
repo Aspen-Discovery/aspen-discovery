@@ -1,4 +1,4 @@
-<?php /** @noinspection PhpUnused */
+<?php
 
 require_once ROOT_DIR . '/sys/Indexing/TranslationMap.php';
 require_once ROOT_DIR . '/sys/Indexing/FormatMapValue.php';
