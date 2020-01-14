@@ -2,6 +2,7 @@
 
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
 require_once ROOT_DIR . '/sys/ListWidgetList.php';
+
 class ListWidget extends DataObject
 {
 	public $__table = 'list_widgets';    // table name
@@ -9,8 +10,8 @@ class ListWidget extends DataObject
 	public $name;                    //varchar(255)
 	public $description;                    //varchar(255)
 	public $showTitleDescriptions;
-	public $showTitle;
-	public $showAuthor;
+	public /** @noinspection PhpUnused */ $showTitle;
+	public /** @noinspection PhpUnused */ $showAuthor;
 	public $onSelectCallback;
 	public $customCss;
 	public $listDisplayType;
@@ -18,15 +19,15 @@ class ListWidget extends DataObject
 	public $style; //'vertical', 'horizontal', 'single', 'single-with-next'
 	public $autoRotate;
 	public $libraryId;
-	public $showRatings;
+	public /** @noinspection PhpUnused */ $showRatings;
 	public $coverSize; //'small', 'medium'
-	public $showViewMoreLink;
+	public /** @noinspection PhpUnused */ $showViewMoreLink;
 	public $viewMoreLinkMode;
-	public $showListWidgetTitle; // whether or not the widget title bar is shown
-	public $numTitlesToShow;
+	public /** @noinspection PhpUnused */ $showListWidgetTitle; // whether or not the widget title bar is shown
+	public /** @noinspection PhpUnused */ $numTitlesToShow;
 
 	// List Widget Styles and their labels
-	private static $_styles = array('horizontal' => 'Horizontal', 'vertical'=> 'Vertical', 'single'=>'Single Title', 'single-with-next' => 'Single Title with a Next Button', 'text-list' => 'Text Only List');
+	private static $_styles = array('horizontal' => 'Horizontal', 'vertical' => 'Vertical', 'single' => 'Single Title', 'single-with-next' => 'Single Title with a Next Button', 'text-list' => 'Text Only List');
 
 	// List Widget Display Types and their labels
 	private static $_displayTypes = array(
@@ -38,90 +39,96 @@ class ListWidget extends DataObject
 	private $lists;
 
 	public function getNumericColumnNames()
-    {
-        return ['id'];
-    }
+	{
+		return ['id'];
+	}
 
-    public function getStyles(){
-	    return ListWidget::$_styles;
-    }
+	public function getStyles()
+	{
+		return ListWidget::$_styles;
+	}
 
-    public function getStyle($styleName){
-        return ListWidget::$_styles[$styleName];
-    }
+	public function getStyle($styleName)
+	{
+		return ListWidget::$_styles[$styleName];
+	}
 
-    public function getDisplayTypes(){
-	    return ListWidget::$_displayTypes;
-    }
+	public function getDisplayTypes()
+	{
+		return ListWidget::$_displayTypes;
+	}
 
-    public function getDisplayType($typeName){
-        return ListWidget::$_displayTypes[$typeName];
-    }
+	public function getDisplayType($typeName)
+	{
+		return ListWidget::$_displayTypes[$typeName];
+	}
 
-	function keys() {
+	function keys()
+	{
 		return array('id');
 	}
 
-    static function getObjectStructure(){
+	static function getObjectStructure()
+	{
 		//Load Libraries for lookup values
 		$libraryList = array();
-		if (UserAccount::userHasRole('opacAdmin')){
+		if (UserAccount::userHasRole('opacAdmin')) {
 			$library = new Library();
 			$library->orderBy('displayName');
 			$library->find();
 			$libraryList[-1] = 'All Libraries';
-			while ($library->fetch()){
+			while ($library->fetch()) {
 				$libraryList[$library->libraryId] = $library->displayName;
 			}
-		}elseif (UserAccount::userHasRole('libraryAdmin') || UserAccount::userHasRole('libraryManager') || UserAccount::userHasRole('locationManager') || UserAccount::userHasRole('contentEditor')){
+		} elseif (UserAccount::userHasRole('libraryAdmin') || UserAccount::userHasRole('libraryManager') || UserAccount::userHasRole('locationManager') || UserAccount::userHasRole('contentEditor')) {
 			$homeLibrary = Library::getPatronHomeLibrary();
 			$libraryList[$homeLibrary->libraryId] = $homeLibrary->displayName;
 		}
 
 		$structure = array(
 			'id' => array(
-				'property'=>'id',
-				'type'=>'hidden',
-				'label'=>'Id',
-				'description'=>'The unique id of the list widget file.',
+				'property' => 'id',
+				'type' => 'hidden',
+				'label' => 'Id',
+				'description' => 'The unique id of the list widget file.',
 				'storeDb' => true,
 			),
-			'libraryId' => array('property'=>'libraryId', 'type'=>'enum', 'values'=>$libraryList, 'label'=>'Library', 'description'=>'A link to the library which the location belongs to'),
+			'libraryId' => array('property' => 'libraryId', 'type' => 'enum', 'values' => $libraryList, 'label' => 'Library', 'description' => 'A link to the library which the location belongs to'),
 			'name' => array(
-				'property'=>'name',
-				'type'=>'text',
-				'label'=>'Name',
-				'description'=>'The name of the widget.',
+				'property' => 'name',
+				'type' => 'text',
+				'label' => 'Name',
+				'description' => 'The name of the widget.',
 				'maxLength' => 255,
 				'size' => 100,
 				'serverValidation' => 'validateName',
 				'storeDb' => true,
 			),
 			'description' => array(
-				'property'=>'description',
-				'type'=>'textarea',
+				'property' => 'description',
+				'type' => 'textarea',
 				'rows' => 3,
-				'cols'=> 80,
-				'label'=>'Description',
-				'description'=>'A description for the widget',
+				'cols' => 80,
+				'label' => 'Description',
+				'description' => 'A description for the widget',
 				'storeDb' => true,
 				'hideInLists' => true,
 			),
-      /*'showTitleDescriptions' => array(
-        'property' => 'showTitleDescriptions',
-        'type' => 'checkbox',
-        'label' => 'Should the description pop-up be shown when hovering over titles?',
-        'storeDb' => true,
-        'default' => true,
-        'hideInLists' => true,
-      ),*/
+			/*'showTitleDescriptions' => array(
+			  'property' => 'showTitleDescriptions',
+			  'type' => 'checkbox',
+			  'label' => 'Should the description pop-up be shown when hovering over titles?',
+			  'storeDb' => true,
+			  'default' => true,
+			  'hideInLists' => true,
+			),*/
 			'numTitlesToShow' => array(
-					'property' => 'numTitlesToShow',
-					'type' => 'integer',
-					'label' => 'The number of titles that should be shown for the widget',
-					'storeDb' => true,
-					'default' => 25,
-					'hideInLists' => true,
+				'property' => 'numTitlesToShow',
+				'type' => 'integer',
+				'label' => 'The number of titles that should be shown for the widget',
+				'storeDb' => true,
+				'default' => 25,
+				'hideInLists' => true,
 			),
 			'showTitle' => array(
 				'property' => 'showTitle',
@@ -147,14 +154,14 @@ class ListWidget extends DataObject
 				'default' => false,
 				'hideInLists' => true,
 			),
-      /*'showMultipleTitles' => array(
-        'property' => 'showMultipleTitles',
-        'type' => 'checkbox',
-        'label' => 'Should multiple titles by shown in in the widget or should only one title be shown at a time?',
-        'storeDb' => true,
-        'default' => true,
-        'hideInLists' => true,
-      ),*/
+			/*'showMultipleTitles' => array(
+			  'property' => 'showMultipleTitles',
+			  'type' => 'checkbox',
+			  'label' => 'Should multiple titles by shown in in the widget or should only one title be shown at a time?',
+			  'storeDb' => true,
+			  'default' => true,
+			  'hideInLists' => true,
+			),*/
 			'style' => array(
 				'property' => 'style',
 				'type' => 'enum',
@@ -176,40 +183,40 @@ class ListWidget extends DataObject
 				'property' => 'coverSize',
 				'type' => 'enum',
 				'label' => 'The cover size to use when showing a widget',
-				'values' => array('small' => 'Small', 'medium'=> 'Medium'),
+				'values' => array('small' => 'Small', 'medium' => 'Medium'),
 				'storeDb' => true,
 				'default' => 'small',
 				'hideInLists' => true,
 			),
-      /*'onSelectCallback' => array(
-        'property'=>'onSelectCallback',
-        'type'=>'text',
-        'label'=>'On Select Callback',
-        'description'=>'A javascript callback to invoke when a title is selected to override the default behavior.',
-        'storeDb' => true,
-        'hideInLists' => true,
-      ),*/
+			/*'onSelectCallback' => array(
+			  'property'=>'onSelectCallback',
+			  'type'=>'text',
+			  'label'=>'On Select Callback',
+			  'description'=>'A javascript callback to invoke when a title is selected to override the default behavior.',
+			  'storeDb' => true,
+			  'hideInLists' => true,
+			),*/
 			'customCss' => array(
-				'property'=>'customCss',
-				'type'=>'url',
-				'label'=>'Custom CSS File',
+				'property' => 'customCss',
+				'type' => 'url',
+				'label' => 'Custom CSS File',
 				'maxLength' => 255,
 				'size' => 100,
-				'description'=>'The URL to an external css file to be included when rendering as an iFrame.',
+				'description' => 'The URL to an external css file to be included when rendering as an iFrame.',
 				'storeDb' => true,
 				'required' => false,
 				'hideInLists' => true,
 			),
 			'listDisplayType' => array(
-				'property'=>'listDisplayType',
-				'type'=>'enum',
+				'property' => 'listDisplayType',
+				'type' => 'enum',
 				'values' => ListWidget::$_displayTypes,
 //      'values' => array(
 //          'tabs' => 'Tabbed Display',
 //          'dropdown' => 'Drop Down List'
 //        ),
-				'label'=>'Display lists as',
-				'description'=>'The method used to show the user the multiple lists associated with the widget.',
+				'label' => 'Display lists as',
+				'description' => 'The method used to show the user the multiple lists associated with the widget.',
 				'storeDb' => true,
 				'hideInLists' => true,
 			),
@@ -231,20 +238,20 @@ class ListWidget extends DataObject
 				'default' => false,
 			),
 			'viewMoreLinkMode' => array(
-				'property'=>'viewMoreLinkMode',
-				'type'=>'enum',
+				'property' => 'viewMoreLinkMode',
+				'type' => 'enum',
 				'values' => array(
 					'list' => 'List',
 					'covers' => 'Covers'
 				),
-				'label'=>'Display mode for search results link',
-				'description'=>'The mode to show full search results in when the View More link is clicked.',
+				'label' => 'Display mode for search results link',
+				'description' => 'The mode to show full search results in when the View More link is clicked.',
 				'storeDb' => true,
 				'hideInLists' => true,
 			),
 			'lists' => array(
 				'property' => 'lists',
-				'type'=> 'oneToMany',
+				'type' => 'oneToMany',
 				'keyThis' => 'id',
 				'keyOther' => 'listWidgetId',
 				'subObjectType' => 'ListWidgetList',
@@ -261,42 +268,44 @@ class ListWidget extends DataObject
 		return $structure;
 	}
 
-	function validateName(){
+	function validateName()
+	{
 		//Setup validation return array
 		$validationResults = array(
-      'validatedOk' => true,
-      'errors' => array(),
+			'validatedOk' => true,
+			'errors' => array(),
 		);
 
 		//Check to see if the name is unique
 		$widget = new ListWidget();
 		$widget->name = $this->name;
-		if ($this->id){
+		if ($this->id) {
 			$widget->whereAdd("id != " . $this->id);
 		}
 		$widget->libraryId = $this->libraryId;
 		$widget->find();
-		if ($widget->getNumResults() > 0){
+		if ($widget->getNumResults() > 0) {
 			//The title is not unique
 			$validationResults['errors'][] = "This widget has already been created.  Please select another name.";
 		}
 		//Make sure there aren't errors
-		if (count($validationResults['errors']) > 0){
+		if (count($validationResults['errors']) > 0) {
 			$validationResults['validatedOk'] = false;
 		}
 		return $validationResults;
 	}
 
-	public function __get($name){
+	public function __get($name)
+	{
 		if ($name == "lists") {
-			if (!isset($this->lists)){
+			if (!isset($this->lists)) {
 				//Get the list of lists that are being displayed for the widget
 				$this->lists = array();
 				$listWidgetList = new ListWidgetList();
 				$listWidgetList->listWidgetId = $this->id;
 				$listWidgetList->orderBy('weight ASC');
 				$listWidgetList->find();
-				while($listWidgetList->fetch()){
+				while ($listWidgetList->fetch()) {
 					$this->lists[$listWidgetList->id] = clone($listWidgetList);
 				}
 			}
@@ -305,17 +314,19 @@ class ListWidget extends DataObject
 		return null;
 	}
 
-	public function __set($name, $value){
+	public function __set($name, $value)
+	{
 		if ($name == "lists") {
 			$this->lists = $value;
 		}
 	}
 
 
-	public function getLibraryName(){
-		if ($this->libraryId == -1){
+	public function getLibraryName()
+	{
+		if ($this->libraryId == -1) {
 			return 'All libraries';
-		}else{
+		} else {
 			$library = new Library();
 			$library->libraryId = $this->libraryId;
 			$library->find(true);
@@ -328,11 +339,12 @@ class ListWidget extends DataObject
 	 *
 	 * @see DB/DB_DataObject::update()
 	 */
-	public function update(){
+	public function update()
+	{
 		$ret = parent::update();
-		if ($ret === FALSE ){
+		if ($ret === FALSE) {
 			return $ret;
-		}else{
+		} else {
 			$this->saveLists();
 		}
 		return true;
@@ -343,25 +355,27 @@ class ListWidget extends DataObject
 	 *
 	 * @see DB/DB_DataObject::insert()
 	 */
-	public function insert(){
+	public function insert()
+	{
 		$ret = parent::insert();
-		if ($ret === FALSE ){
+		if ($ret === FALSE) {
 			return $ret;
-		}else{
+		} else {
 			$this->saveLists();
 		}
 		return true;
 	}
 
-	public function saveLists(){
-		if (isset ($this->lists)){
-			foreach ($this->lists as $list){
-				if (isset($list->deleteOnSave) && $list->deleteOnSave == true){
+	public function saveLists()
+	{
+		if (isset ($this->lists)) {
+			foreach ($this->lists as $list) {
+				if (isset($list->deleteOnSave) && $list->deleteOnSave == true) {
 					$list->delete();
-				}else{
-					if (isset($list->id) && is_numeric($list->id)){
+				} else {
+					if (isset($list->id) && is_numeric($list->id)) {
 						$list->update();
-					}else{
+					} else {
 						$list->listWidgetId = $this->id;
 						$list->insert();
 					}
@@ -372,11 +386,12 @@ class ListWidget extends DataObject
 		}
 	}
 
-	public function validateLists(){
+	public function validateLists()
+	{
 		//Setup validation return array
 		$validationResults = array(
-      'validatedOk' => true,
-      'errors' => array(),
+			'validatedOk' => true,
+			'errors' => array(),
 		);
 
 		$listNames = array();
@@ -384,12 +399,12 @@ class ListWidget extends DataObject
 		$listAPI = new ListAPI();
 		$allListIds = $listAPI->getAllListIds();
 
-		foreach ($this->lists as $list){
-			if (isset($list->deleteOnSave) && $list->deleteOnSave == true){
+		foreach ($this->lists as $list) {
+			if (isset($list->deleteOnSave) && $list->deleteOnSave == true) {
 				//Don't validate
-			}else{
+			} else {
 				//Check to make sure that all list names are unique
-				if (in_array($list->name, $listNames)){
+				if (in_array($list->name, $listNames)) {
 					$validationResults['errors'][] = "This name {$list->name} was used multiple times.  Please make sure that each name is unique.";
 				}
 				$listNames[] = $list->name;
@@ -397,15 +412,15 @@ class ListWidget extends DataObject
 				//Check to make sure that each list source is valid
 				$source = $list->source;
 				//The source is valid if it is in the all lists array or if it starts with strands: or review:
-				if (preg_match('/^(strands:|review:|search:).*/', $source)){
+				if (preg_match('/^(strands:|review:|search:).*/', $source)) {
 					//source is valid
-				}elseif (in_array($source, $allListIds)){
+				} elseif (in_array($source, $allListIds)) {
 					//source is valid
-				}else{
+				} else {
 					//source is not valid
-					if (preg_match('/^(list:).*/', $source)){
+					if (preg_match('/^(list:).*/', $source)) {
 						$validationResults['errors'][] = "This source {$list->source} is not valid.  Please make sure that the list id exists and is public.";
-					}else{
+					} else {
 						$validationResults['errors'][] = "This source {$list->source} is not valid.  Please enter a valid list source.";
 					}
 				}
@@ -413,7 +428,7 @@ class ListWidget extends DataObject
 		}
 
 		//Make sure there aren't errors
-		if (count($validationResults['errors']) > 0){
+		if (count($validationResults['errors']) > 0) {
 			$validationResults['validatedOk'] = false;
 		}
 		return $validationResults;
