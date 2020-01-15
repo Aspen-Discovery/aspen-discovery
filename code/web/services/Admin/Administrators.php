@@ -15,28 +15,35 @@ class Admin_Administrators extends ObjectEditor
 		return 'Administrators';
 	}
 	function getAllObjects(){
-		/** @var User $admin */
-		$admin = new User();
-		$admin->query('SELECT * FROM user INNER JOIN user_roles on user.id = user_roles.userId ORDER BY cat_password');
+		require_once ROOT_DIR . '/sys/Administration/UserRoles.php';
+		$userRole = new UserRoles();
+		$userRole->find();
 		$adminList = array();
-		while ($admin->fetch()){
-			$homeLibrary = Library::getLibraryForLocation($admin->homeLocationId);
-			if ($homeLibrary != null){
-				$admin->_homeLibraryName = $homeLibrary->displayName;
-			}else{
-				$admin->_homeLibraryName = 'Unknown';
-			}
+		while ($userRole->fetch()){
+			$userId = $userRole->userId;
+			if (!array_key_exists($userId, $adminList)){
+				$admin = new User();
+				$admin->id = $userId;
+				if ($admin->find(true)){
+					$homeLibrary = Library::getLibraryForLocation($admin->homeLocationId);
+					if ($homeLibrary != null){
+						$admin->homeLibraryName = $homeLibrary->displayName;
+					}else{
+						$admin->homeLibraryName = 'Unknown';
+					}
 
-			$location = new Location();
-			$location->locationId = $admin->homeLocationId;
-			if ($location->find(true)) {
-				$admin->_homeLocation = $location->displayName;
-			}else{
-				$admin->_homeLocation = 'Unknown';
+					$location = new Location();
+					$location->locationId = $admin->homeLocationId;
+					if ($location->find(true)) {
+						$admin->homeLocation = $location->displayName;
+					}else{
+						$admin->homeLocation = 'Unknown';
+					}
+					$adminList[$userId] = $admin;
+				}
 			}
-
-			$adminList[$admin->id] = clone $admin;
 		}
+
 		return $adminList;
 	}
 	function getObjectStructure(){
