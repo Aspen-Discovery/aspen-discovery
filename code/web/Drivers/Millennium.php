@@ -1798,4 +1798,51 @@ class Millennium extends AbstractIlsDriver
 	public function showLinksForRecordsWithItems() {
 		return false;
 	}
+
+	public function getAccountSummary(User $user)
+	{
+		$barcode = $user->getBarcode();
+		$patronDump = $this->_getPatronDump($barcode);
+		$expired = 0;
+		$expireClose = 0;
+		$expires = '';
+		//See if expiration date is close
+		if (trim($patronDump['EXP_DATE']) != '-  -'){
+			$expires = $patronDump['EXP_DATE'];
+			list ($monthExp, $dayExp, $yearExp) = explode("-",$patronDump['EXP_DATE']);
+			$timeExpire = strtotime($monthExp . "/" . $dayExp . "/" . $yearExp);
+			$timeNow = time();
+			$timeToExpire = $timeExpire - $timeNow;
+			if ($timeToExpire <= 30 * 24 * 60 * 60){
+				if ($timeToExpire <= 0){
+					$expired = 1;
+				}
+				$expireClose = 1;
+			}
+		}
+		$numHoldsAvailable = 0;
+		$numHoldsRequested = 0;
+		global $configArray;
+		$availableStatusRegex = isset($configArray['Catalog']['patronApiAvailableHoldsRegex']) ? $configArray['Catalog']['patronApiAvailableHoldsRegex'] : "/ST=(105|98|106),/";
+		if (isset($patronDump) && isset($patronDump['HOLD']) && count($patronDump['HOLD']) > 0){
+			foreach ($patronDump['HOLD'] as $hold){
+				if (preg_match("$availableStatusRegex", $hold)){
+					$numHoldsAvailable++;
+				}else{
+					$numHoldsRequested++;
+				}
+			}
+		}
+		$finesVal = floatval(preg_replace('/[^\\d.]/', '', $patronDump['MONEY_OWED']));
+		return [
+			'numCheckedOut' => $patronDump['CUR_CHKOUT'],
+			'numOverdue' => 0,
+			'numAvailableHolds' => $numHoldsAvailable,
+			'numUnavailableHolds' => $numHoldsRequested,
+			'totalFines' => $finesVal,
+			'expires' => $expires,
+			'expired' => $expired,
+			'expireClose' => $expireClose,
+		];
+	}
 }
