@@ -886,7 +886,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 						$actions[] = array(
 								'title' => 'Hold ' . $volumeInfo->displayLabel,
 								'url' => '',
-								'onclick' => "return AspenDiscovery.Record.showPlaceHold('{$this->getModule()}', '$source', $id', '$volume');",
+								'onclick' => "return AspenDiscovery.Record.showPlaceHold('{$this->getModule()}', '$source', '$id', '$volume');",
 								'requireLogin' => false,
 						);
 					}

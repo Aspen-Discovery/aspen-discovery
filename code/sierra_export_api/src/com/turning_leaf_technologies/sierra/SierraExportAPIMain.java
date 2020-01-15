@@ -125,6 +125,7 @@ public class SierraExportAPIMain {
 					}
 					exportActiveOrders(indexingProfile.getMarcPath(), sierraConn);
 					exportHolds(sierraConn, dbConn);
+					exportVolumes(sierraConn, dbConn);
 				}
 
 				String exportItemHoldsStr = configIni.get("Catalog", "exportItemHolds");
@@ -1017,7 +1018,6 @@ public class SierraExportAPIMain {
 					logger.debug("Got marc record file");
 					//REad the MARC records from the Sierra API, should be UTF8, but not 100% sure
 					MarcReader marcReader = new MarcPermissiveStreamReader(new ByteArrayInputStream(marcData.getBytes(StandardCharsets.UTF_8)), true, true, "BESTGUESS");
-					int numRecordsInFile = 0;
 					while (marcReader.hasNext()) {
 						try {
 							Record marcRecord = marcReader.next();
@@ -1045,7 +1045,6 @@ public class SierraExportAPIMain {
 							processedIds.add(shortId);
 							logEntry.incUpdated();
 							logger.debug("Processed " + identifier.getIdentifier());
-							numRecordsInFile++;
 						} catch (MarcException mre) {
 							logger.info("Error loading marc record from file, will load manually");
 						}
@@ -1472,6 +1471,103 @@ public class SierraExportAPIMain {
 			}
 		}
 		return null;
+	}
+
+	private static void exportVolumes(Connection sierraConn, Connection aspenConn){
+		try {
+			logger.info("Starting export of volume information");
+			PreparedStatement getVolumeInfoStmt = sierraConn.prepareStatement("select volume_view.id, volume_view.record_num as volume_num, sort_order from sierra_view.volume_view " +
+					"inner join sierra_view.bib_record_volume_record_link on bib_record_volume_record_link.volume_record_id = volume_view.id " +
+					"where volume_view.is_suppressed = 'f'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement getBibForVolumeStmt = sierraConn.prepareStatement("select record_num from sierra_view.bib_record_volume_record_link " +
+					"inner join sierra_view.bib_view on bib_record_volume_record_link.bib_record_id = bib_view.id " +
+					"where volume_record_id = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement getItemsForVolumeStmt = sierraConn.prepareStatement("select record_num from sierra_view.item_view " +
+					"inner join sierra_view.volume_record_item_record_link on volume_record_item_record_link.item_record_id = item_view.id " +
+					"where volume_record_id = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement getVolumeNameStmt = sierraConn.prepareStatement("SELECT * FROM sierra_view.subfield where record_id = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+
+			PreparedStatement removeOldVolumes = aspenConn.prepareStatement("DELETE FROM ils_volume_info WHERE recordId LIKE 'ils%'");
+			PreparedStatement addVolumeStmt = aspenConn.prepareStatement("INSERT INTO ils_volume_info (recordId, volumeId, displayLabel, relatedItems) VALUES (?,?,?,?)");
+
+			ResultSet volumeInfoRS = null;
+			boolean loadError = false;
+			boolean updateError = false;
+			Savepoint transactionStart = aspenConn.setSavepoint("load_volumes");
+			try {
+				volumeInfoRS = getVolumeInfoStmt.executeQuery();
+			} catch (SQLException e1) {
+				logger.error("Error loading volume information", e1);
+				loadError = true;
+			}
+			if (!loadError) {
+				try {
+					removeOldVolumes.executeUpdate();
+				}catch (SQLException sqlException){
+					logger.error("Error removing old volume information", sqlException);
+					updateError = true;
+				}
+
+				while (volumeInfoRS.next()) {
+					long recordId = volumeInfoRS.getLong("id");
+
+					String volumeId = volumeInfoRS.getString("volume_num");
+					volumeId = ".j" + volumeId + getCheckDigit(volumeId);
+
+					getBibForVolumeStmt.setLong(1, recordId);
+					ResultSet bibForVolumeRS = getBibForVolumeStmt.executeQuery();
+					String bibId = "";
+					if (bibForVolumeRS.next()) {
+						bibId = bibForVolumeRS.getString("record_num");
+						bibId = ".b" + bibId + getCheckDigit(bibId);
+					}
+
+					getItemsForVolumeStmt.setLong(1, recordId);
+					ResultSet itemsForVolumeRS = getItemsForVolumeStmt.executeQuery();
+					StringBuilder itemsForVolume = new StringBuilder();
+					while (itemsForVolumeRS.next()) {
+						String itemId = itemsForVolumeRS.getString("record_num");
+						if (itemId != null) {
+							itemId = ".i" + itemId + getCheckDigit(itemId);
+							if (itemsForVolume.length() > 0) itemsForVolume.append("|");
+							itemsForVolume.append(itemId);
+						}
+					}
+
+					getVolumeNameStmt.setLong(1, recordId);
+					ResultSet getVolumeNameRS = getVolumeNameStmt.executeQuery();
+					String volumeName = "Unknown";
+					if (getVolumeNameRS.next()) {
+						volumeName = getVolumeNameRS.getString("content");
+					}
+
+					try {
+						addVolumeStmt.setString(1, "ils:" + bibId);
+						addVolumeStmt.setString(2, volumeId);
+						addVolumeStmt.setString(3, volumeName);
+						addVolumeStmt.setString(4, itemsForVolume.toString());
+						addVolumeStmt.executeUpdate();
+						logEntry.incUpdated();
+					}catch (SQLException sqlException){
+						logger.error("Error adding volume", sqlException);
+						logEntry.incErrors();
+						updateError = true;
+					}
+				}
+				volumeInfoRS.close();
+			}
+			if (updateError){
+				aspenConn.rollback(transactionStart);
+			}
+			aspenConn.setAutoCommit(true);
+			logger.info("Finished export of volume information");
+		}catch (Exception e){
+			logger.error("Error exporting volume information", e);
+			logEntry.incErrors();
+			logEntry.addNote("Error exporting volume information " + e.toString());
+
+		}
+		logEntry.saveResults();
 	}
 
 	/**

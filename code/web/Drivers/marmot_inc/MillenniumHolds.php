@@ -784,9 +784,13 @@ class MillenniumHolds{
 	 */
 	function placeVolumeHold($patron, $recordId, $volumeId, $pickupBranch) {
 		global $logger;
-		global $configArray;
 
-		$bib1= $recordId;
+		if (strpos($recordId, ':')){
+			$recordComponents = explode(':', $recordId);
+			$recordId = $recordComponents[1];
+		}
+
+		$bib1 = $recordId;
 		if (substr($bib1, 0, 1) != '.'){
 			$bib1 = '.' . $bib1;
 		}
@@ -869,22 +873,17 @@ class MillenniumHolds{
 				$post_data['needby_Month']= $Month;
 				$post_data['needby_Day']= $Day;
 				$post_data['needby_Year']=$Year;
+			}else{
+				$post_data['needby_Month']= 'Month';
+				$post_data['needby_Day']= 'Day';
+				$post_data['needby_Year']='Year';
 			}
 
-			$post_data['submit.x']="35";
-			$post_data['submit.y']="21";
-			$post_data['submit']="submit";
+			$post_data['pat_submit']="submit";
 			$post_data['locx00']= str_pad($pickupBranch, 5); // padded with spaces, which will get url-encoded into plus signs by httpd_build_query() in the curlPostPage() method.
 			if (!empty($itemId) && $itemId != -1){
 				$post_data['radio']=$itemId;
 			}
-			$post_data['x']="48";
-			$post_data['y']="15";
-			//MDN 8/14 lt is apparently not required for placing a hold although it is required for login.
-			/*if ($lt != null){
-				$post_data['lt'] = $lt;
-				$post_data['_eventId'] = 'submit';
-			}*/
 
 			$sResult = $this->driver->curlWrapper->curlPostPage($curl_url, $post_data);
 

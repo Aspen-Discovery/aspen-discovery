@@ -184,8 +184,11 @@ class Record_AJAX extends Action
 				if ($holdType == 'item' && isset($_REQUEST['selectedItem'])) {
 					$results = $user->placeItemHold($id, $_REQUEST['selectedItem'], $user->_homeLocationCode, null);
 				} else {
-					//TODO: Handle volume level holds
-					$results = $user->placeHold($id, $user->_homeLocationCode, null);
+					if (isset($_REQUEST['volume'])){
+						$results = $user->placeVolumeHold($id, $_REQUEST['volume'], $user->_homeLocationCode);
+					}else{
+						$results = $user->placeHold($id, $user->_homeLocationCode, null);
+					}
 				}
 				$results['holdFormBypassed'] = true;
 			}else if (count($locations) == 0) {
