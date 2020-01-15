@@ -9,6 +9,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 	public $version = 3;
 
 	protected $requirePin;
+	/** @var string */
 	protected $ILSName;
 
 	/** @var OverDriveSetting */
@@ -97,7 +98,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 			$tokenData = $this->_connectToAPI($forceNewConnection);
 			$timer->logTime("Connected to OverDrive API");
 			if ($tokenData){
-                $settings = $this->getSettings();
+				$settings = $this->getSettings();
 				global $configArray;
 				$ch = curl_init("https://oauth-patron.overdrive.com/patrontoken");
 				if (empty($settings->websiteId)){
@@ -189,15 +190,20 @@ class OverDriveDriver extends AbstractEContentDriver{
 		return null;
 	}
 
+	/**
+	 User * @param $user
+	 * @return string
+	 */
 	private function getILSName($user){
 		if (!isset($this->ILSName)) {
 			// use library setting if it has a value. if no library setting, use the configuration setting.
 			global $library;
+			/** @var Library $patronHomeLibrary */
 			$patronHomeLibrary = Library::getPatronHomeLibrary($user);
-			if (!empty($patronHomeLibrary->overdriveAuthenticationILSName)) {
-				$this->ILSName = $patronHomeLibrary->overdriveAuthenticationILSName;
-			}elseif (!empty($library->overdriveAuthenticationILSName)) {
-				$this->ILSName = $library->overdriveAuthenticationILSName;
+			if (!empty($patronHomeLibrary->getOverdriveScope()->authenticationILSName)) {
+				$this->ILSName = $patronHomeLibrary->getOverdriveScope()->authenticationILSName;
+			}elseif (!empty($library->getOverdriveScope()->authenticationILSName)) {
+				$this->ILSName = $library->getOverdriveScope()->authenticationILSName;
 			}
 		}
 		return $this->ILSName;
