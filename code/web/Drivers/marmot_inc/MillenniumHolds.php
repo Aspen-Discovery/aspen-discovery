@@ -131,8 +131,8 @@ class MillenniumHolds{
 		$holds = $this->getHolds($patron);
 		$combined_holds = array_merge($holds['unavailable'], $holds['available']);
 
-		$POSTVariables = array(
-			'updateholdssome' => 'YES',
+		$postVariables = array(
+			'updateholdssome' => 'TRUE',
 			'currentsortorder' => 'current_pickup',
 		);
 
@@ -145,7 +145,7 @@ class MillenniumHolds{
 			}
 
 			if ($type == 'cancel') {
-				$POSTVariables['cancel' . $tmpBib . 'x' . $tmpXnum] = $cancelValue;
+				$postVariables['cancel' . $tmpBib . 'x' . $tmpXnum] = $cancelValue;
 			} elseif ($type == 'update') {
 				$holdForXNum = $this->getHoldByXNum($holds, $tmpXnum);
 				$canUpdate   = false;
@@ -166,10 +166,10 @@ class MillenniumHolds{
 				}
 				if ($canUpdate) {
 					if (isset($paddedLocation)) {
-						$POSTVariables['loc' . $tmpBib . 'x' . $tmpXnum] = $paddedLocation;
+						$postVariables['loc' . $tmpBib . 'x' . $tmpXnum] = $paddedLocation;
 					}
 					if (!empty($freezeValue)) {
-						$POSTVariables['freeze' . $tmpBib . 'x' . $tmpXnum] = $freezeValue;
+						$postVariables['freeze' . $tmpBib . 'x' . $tmpXnum] = $freezeValue;
 					}
 				} else {
 					$logger->log('Call to update a hold when the update is not needed.', Logger::LOG_WARNING);
@@ -193,7 +193,7 @@ class MillenniumHolds{
 
 		//Issue a post request with the information about what to do with the holds
 		$curl_url = $this->driver->getVendorOpacUrl() . "/patroninfo~S{$scope}/" . $patron->username . "/holds";
-		$sResult = $this->driver->curlWrapper->curlPostPage($curl_url, $POSTVariables);
+		$sResult = $this->driver->curlWrapper->curlPostPage($curl_url, $postVariables);
 		$hold_original_results = $this->parseHoldsPage($sResult, $patron);
 		// Note:  Only $hold_original_results above will capture freeze hold errors
 
