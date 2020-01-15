@@ -546,6 +546,8 @@ class Millennium extends AbstractIlsDriver
 		$logger->log('Loading page ' . $curlUrl, Logger::LOG_NOTICE);
 
 		$loginResponse = $this->curlWrapper->curlPostPage($curlUrl, $post_data);
+		$curlInfo = curl_getinfo($this->curlWrapper->curl_connection);
+		$redirectUrl = $curlInfo['url'];
 
 		//When a library uses IPSSO, the initial login does a redirect and requires additional parameters.
 		if (preg_match('/<input type="hidden" name="lt" value="(.*?)" \/>/si', $loginResponse, $loginMatches)) {
@@ -555,10 +557,7 @@ class Millennium extends AbstractIlsDriver
 			$post_data['_eventId'] = 'submit';
 
 			//Don't issue a post, just call the same page (with redirects as needed)
-			$post_string = http_build_query($post_data);
-			curl_setopt($this->curlWrapper->curl_connection, CURLOPT_POSTFIELDS, $post_string);
-
-			$loginResponse = curl_exec($this->curlWrapper->curl_connection);
+			$loginResponse = $this->curlWrapper->curlPostPage($redirectUrl, $post_data);
 		}
 
 		if ($loginResponse) {

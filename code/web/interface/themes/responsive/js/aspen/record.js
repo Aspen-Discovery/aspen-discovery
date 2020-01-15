@@ -3,11 +3,13 @@ AspenDiscovery.Record = (function(){
 	return {
 		showPlaceHold: function(module, source, id, volume){
 			if (Globals.loggedIn){
+				document.body.style.cursor = "wait";
 				let url = Globals.path + "/" + module + "/" + id + "/AJAX?method=getPlaceHoldForm&recordSource=" + source;
 				if (volume !== undefined){
 					url += "&volume=" + volume;
 				}
 				$.getJSON(url, function(data){
+					document.body.style.cursor = "default";
 					if (data.holdFormBypassed){
 						if (data.success){
 							AspenDiscovery.showMessage('Hold Placed Successfully', data.message, false, false);
