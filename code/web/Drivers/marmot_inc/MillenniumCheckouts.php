@@ -32,7 +32,6 @@ class MillenniumCheckouts {
 		}
 	}
 
-
 	/**
 	 * Get Patron Transactions
 	 *
@@ -163,12 +162,11 @@ class MillenniumCheckouts {
 							} else {
 								$curTitle['canRenew'] = false;
 							}
-
 						}
-
 
 						if (stripos($sKeys[$i], "CALL NUMBER") > -1) {
 							$curTitle['request'] = "null";
+							$curTitle['callNumber'] = strip_tags($scols[$i]);
 						}
 					}
 

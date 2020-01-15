@@ -375,7 +375,7 @@ class Millennium extends AbstractIlsDriver
 			$user->_fines    = $patronDump['MONEY_OWED'];
 
 			if (isset($patronDump['USERNAME'])){
-				$user->alt_username = $patronDump['USERNAME'];
+				$user->_alt_username = $patronDump['USERNAME'];
 			}
 
 			$numHoldsAvailable = 0;
@@ -919,7 +919,7 @@ class Millennium extends AbstractIlsDriver
 			if (isset($sresult) && strpos($sresult, 'Patron information updated') !== false){
 				$user->phone = $_REQUEST['phone'];
 				$user->email = $_REQUEST['email'];
-				$user->alt_username = $_REQUEST['username'];
+				$user->_alt_username = $_REQUEST['username'];
 				$user->update();
 				/* @var Memcache $memCache */
 				global $memCache;

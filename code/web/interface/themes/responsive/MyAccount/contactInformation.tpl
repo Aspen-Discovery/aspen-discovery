@@ -44,7 +44,7 @@
 							<div class="form-group">
 								<div class="col-xs-4"><label for="username">{translate text="Username"}</label></div>
 								<div class="col-xs-8">
-									<input type="text" name="username" id="username" value="{if !is_numeric(trim($profile->alt_username))}{$profile->alt_username|escape}{/if}" size="25" maxlength="25" class="form-control">
+									<input type="text" name="username" id="username" value="{if !is_numeric(trim($profile->_alt_username))}{$profile->_alt_username|escape}{/if}" size="25" maxlength="25" class="form-control">
 									<a href="#" onclick="$('#usernameHelp').toggle()">What is this?</a>
 									<div id="usernameHelp" style="display:none">
 										A username is an optional feature. If you set one, your username will be your alias on hold slips and can also be used to log into your account in place of your card number.  A username can be set, reset or removed from the “Account Settings” section of your online account. Usernames must be between 6 and 25 characters (letters and number only, no special characters).

@@ -299,9 +299,9 @@ class File_MARC extends File_MARCBASE
         $nfields = strlen($dir) / File_MARC::DIRECTORY_ENTRY_LEN;
         for ($n=0; $n<$nfields; $n++) {
             // As pack returns to key 1, leave place 0 in list empty
-            list(, $tag) = unpack("A3", substr($dir, $n*File_MARC::DIRECTORY_ENTRY_LEN, File_MARC::DIRECTORY_ENTRY_LEN));
-            list(, $len) = unpack("A3/A4", substr($dir, $n*File_MARC::DIRECTORY_ENTRY_LEN, File_MARC::DIRECTORY_ENTRY_LEN));
-            list(, $offset) = unpack("A3/A4/A5", substr($dir, $n*File_MARC::DIRECTORY_ENTRY_LEN, File_MARC::DIRECTORY_ENTRY_LEN));
+            list(, $tag) = @unpack("A3", substr($dir, $n*File_MARC::DIRECTORY_ENTRY_LEN, File_MARC::DIRECTORY_ENTRY_LEN));
+            list(, $len) = @unpack("A3/A4", substr($dir, $n*File_MARC::DIRECTORY_ENTRY_LEN, File_MARC::DIRECTORY_ENTRY_LEN));
+            list(, $offset) = @unpack("A3/A4/A5", substr($dir, $n*File_MARC::DIRECTORY_ENTRY_LEN, File_MARC::DIRECTORY_ENTRY_LEN));
 
             // Check directory validity
             if (!preg_match("/^[0-9A-Za-z]{3}$/", $tag)) {
