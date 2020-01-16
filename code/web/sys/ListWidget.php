@@ -114,14 +114,6 @@ class ListWidget extends DataObject
 				'storeDb' => true,
 				'hideInLists' => true,
 			),
-			/*'showTitleDescriptions' => array(
-			  'property' => 'showTitleDescriptions',
-			  'type' => 'checkbox',
-			  'label' => 'Should the description pop-up be shown when hovering over titles?',
-			  'storeDb' => true,
-			  'default' => true,
-			  'hideInLists' => true,
-			),*/
 			'numTitlesToShow' => array(
 				'property' => 'numTitlesToShow',
 				'type' => 'integer',
@@ -143,7 +135,7 @@ class ListWidget extends DataObject
 				'type' => 'checkbox',
 				'label' => 'Should the author (catalog items) /format (archive items) for the currently selected item be shown?',
 				'storeDb' => true,
-				'default' => true,
+				'default' => false,
 				'hideInLists' => true,
 			),
 			'showRatings' => array(
@@ -154,19 +146,10 @@ class ListWidget extends DataObject
 				'default' => false,
 				'hideInLists' => true,
 			),
-			/*'showMultipleTitles' => array(
-			  'property' => 'showMultipleTitles',
-			  'type' => 'checkbox',
-			  'label' => 'Should multiple titles by shown in in the widget or should only one title be shown at a time?',
-			  'storeDb' => true,
-			  'default' => true,
-			  'hideInLists' => true,
-			),*/
 			'style' => array(
 				'property' => 'style',
 				'type' => 'enum',
 				'label' => 'The style to use when displaying the list widget',
-//				'values' => array('horizontal' => 'Horizontal', 'vertical'=> 'Vertical', 'single'=>'Single Title', 'single-with-next' => 'Single Title with a Next Button', 'text-list' => 'Text Only List'),
 				'values' => ListWidget::$_styles,
 				'storeDb' => true,
 				'default' => 'horizontal',
@@ -185,17 +168,9 @@ class ListWidget extends DataObject
 				'label' => 'The cover size to use when showing a widget',
 				'values' => array('small' => 'Small', 'medium' => 'Medium'),
 				'storeDb' => true,
-				'default' => 'small',
+				'default' => 'medium',
 				'hideInLists' => true,
 			),
-			/*'onSelectCallback' => array(
-			  'property'=>'onSelectCallback',
-			  'type'=>'text',
-			  'label'=>'On Select Callback',
-			  'description'=>'A javascript callback to invoke when a title is selected to override the default behavior.',
-			  'storeDb' => true,
-			  'hideInLists' => true,
-			),*/
 			'customCss' => array(
 				'property' => 'customCss',
 				'type' => 'url',
@@ -211,10 +186,6 @@ class ListWidget extends DataObject
 				'property' => 'listDisplayType',
 				'type' => 'enum',
 				'values' => ListWidget::$_displayTypes,
-//      'values' => array(
-//          'tabs' => 'Tabbed Display',
-//          'dropdown' => 'Drop Down List'
-//        ),
 				'label' => 'Display lists as',
 				'description' => 'The method used to show the user the multiple lists associated with the widget.',
 				'storeDb' => true,
