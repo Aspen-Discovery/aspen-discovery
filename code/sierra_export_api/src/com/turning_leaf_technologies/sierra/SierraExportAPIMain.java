@@ -36,6 +36,9 @@ import org.marc4j.marc.Record;
 public class SierraExportAPIMain {
 	private static Logger logger;
 
+	private static SimpleDateFormat dateTimeFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+	private static SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
+
 	private static IndexingProfile indexingProfile;
 	private static SierraExportFieldMapping sierraExportFieldMapping;
 	private static GroupedWorkIndexer groupedWorkIndexer;
@@ -267,10 +270,9 @@ public class SierraExportAPIMain {
 		}else{
 			//Add a 5 second buffer to the extract
 			Date lastExtractDate = new Date((lastSierraExtractTime - 5) * 1000);
-			SimpleDateFormat dateTimeFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+
 			dateTimeFormatter.setTimeZone(TimeZone.getTimeZone("UTC"));
 			String lastExtractDateTimeFormatted = dateTimeFormatter.format(lastExtractDate);
-			SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
 			dateFormatter.setTimeZone(TimeZone.getTimeZone("UTC"));
 			String lastExtractDateFormatted = dateFormatter.format(lastExtractDate);
 			logger.info("Loading records changed since " + lastExtractDateTimeFormatted);
@@ -1484,8 +1486,7 @@ public class SierraExportAPIMain {
 
 	private static void exportVolumes(Connection sierraConn, Connection aspenConn){
 		try {
-			logEntry.addNote("Starting export of volume information");
-			logger.info("Starting export of volume information");
+			logEntry.addNote("Starting export of volume information " + dateTimeFormatter.format(new Date()));
 			PreparedStatement getVolumeInfoStmt = sierraConn.prepareStatement("select volume_view.id, volume_view.record_num as volume_num, sort_order from sierra_view.volume_view " +
 					"inner join sierra_view.bib_record_volume_record_link on bib_record_volume_record_link.volume_record_id = volume_view.id " +
 					"where volume_view.is_suppressed = 'f'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
@@ -1570,7 +1571,7 @@ public class SierraExportAPIMain {
 				aspenConn.rollback(transactionStart);
 			}
 			aspenConn.setAutoCommit(true);
-			logEntry.addNote("Finished export of volume information");
+			logEntry.addNote("Finished export of volume information " + dateTimeFormatter.format(new Date()));
 		}catch (Exception e){
 			logger.error("Error exporting volume information", e);
 			logEntry.incErrors();
