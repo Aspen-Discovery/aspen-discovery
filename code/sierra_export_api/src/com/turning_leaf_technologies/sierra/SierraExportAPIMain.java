@@ -76,6 +76,7 @@ public class SierraExportAPIMain {
 
 		while (true) {
 			Date startTime = new Date();
+			long startTimeForLogging = startTime.getTime() / 1000;
 			logger.info(startTime.toString() + ": Starting Sierra Extract");
 
 			// Read the base INI file to get information about the server (current directory/cron/config.ini)
@@ -155,15 +156,6 @@ public class SierraExportAPIMain {
 
 				numChanges = updateBibs(configIni);
 
-				updateLastExportTime(dbConn, startTime.getTime() / 1000);
-				logEntry.addNote("Setting last export time to " + (startTime.getTime() / 1000));
-
-				logEntry.addNote("Finished exporting sierra data " + new Date().toString());
-				long endTime = new Date().getTime();
-				long elapsedTime = endTime - startTime.getTime();
-				logEntry.addNote("Elapsed Minutes " + (elapsedTime / 60000));
-				logEntry.setFinished();
-
 				if (sierraConn != null){
 					try{
 						//Close the connection
@@ -173,6 +165,32 @@ public class SierraExportAPIMain {
 						e.printStackTrace();
 					}
 				}
+
+				if (groupedWorkIndexer != null) {
+					groupedWorkIndexer.finishIndexingFromExtract();
+					recordGroupingProcessorSingleton = null;
+					groupedWorkIndexer = null;
+				}
+
+				//Update the last extract time for the indexing profile
+				if (indexingProfile.isRunFullUpdate()) {
+					PreparedStatement updateVariableStmt = dbConn.prepareStatement("UPDATE indexing_profiles set lastUpdateOfAllRecords = ?, runFullUpdate = 0 WHERE id = ?");
+					updateVariableStmt.setLong(1, startTimeForLogging);
+					updateVariableStmt.setLong(2, indexingProfile.getId());
+					updateVariableStmt.executeUpdate();
+					updateVariableStmt.close();
+				} else {
+					if (!logEntry.hasErrors()) {
+						PreparedStatement updateVariableStmt = dbConn.prepareStatement("UPDATE indexing_profiles set lastUpdateOfChangedRecords = ? WHERE id = ?");
+						updateVariableStmt.setLong(1, startTimeForLogging);
+						updateVariableStmt.setLong(2, indexingProfile.getId());
+						updateVariableStmt.executeUpdate();
+						updateVariableStmt.close();
+					}
+				}
+
+				logEntry.addNote("Finished exporting sierra data " + new Date().toString());
+				logEntry.setFinished();
 
 				try{
 					//Close the connection
@@ -201,20 +219,11 @@ public class SierraExportAPIMain {
 		} //Infinite loop
 	}
 
-	private static void updateLastExportTime(Connection dbConn, long exportStartTime) {
-		try{
-			PreparedStatement updateVariableStmt = dbConn.prepareStatement("UPDATE indexing_profiles set lastUpdateOfChangedRecords = ? WHERE id = ?");
-			updateVariableStmt.setLong(1, exportStartTime);
-			updateVariableStmt.setLong(2, indexingProfile.getId());
-			updateVariableStmt.executeUpdate();
-			updateVariableStmt.close();
-		}catch (Exception e){
-			logger.error("There was an error updating the database, not setting last extract time.", e);
-		}
-	}
-
 	private static void getBibsAndItemUpdatesFromSierra(Ini ini, Connection dbConn, Connection sierraConn) {
 		long lastSierraExtractTime = indexingProfile.getLastUpdateOfChangedRecords();
+		if (indexingProfile.getLastUpdateOfAllRecords() > lastSierraExtractTime){
+			lastSierraExtractTime = indexingProfile.getLastUpdateOfAllRecords();
+		}
 
 		try {
 			PreparedStatement allowFastExportMethodStmt = dbConn.prepareStatement("SELECT * from variables WHERE name = 'allow_sierra_fast_export'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
@@ -1475,6 +1484,7 @@ public class SierraExportAPIMain {
 
 	private static void exportVolumes(Connection sierraConn, Connection aspenConn){
 		try {
+			logEntry.addNote("Starting export of volume information");
 			logger.info("Starting export of volume information");
 			PreparedStatement getVolumeInfoStmt = sierraConn.prepareStatement("select volume_view.id, volume_view.record_num as volume_num, sort_order from sierra_view.volume_view " +
 					"inner join sierra_view.bib_record_volume_record_link on bib_record_volume_record_link.volume_record_id = volume_view.id " +
@@ -1560,7 +1570,7 @@ public class SierraExportAPIMain {
 				aspenConn.rollback(transactionStart);
 			}
 			aspenConn.setAutoCommit(true);
-			logger.info("Finished export of volume information");
+			logEntry.addNote("Finished export of volume information");
 		}catch (Exception e){
 			logger.error("Error exporting volume information", e);
 			logEntry.incErrors();
