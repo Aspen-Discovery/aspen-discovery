@@ -385,14 +385,15 @@
 							<div class="panel-body">
 								{* Content Editor Actions *}
 								{if array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('contentEditor', $userRoles) || array_key_exists('libraryManager', $userRoles) || array_key_exists('locationManager', $userRoles)}
-									<div class="adminMenuLink"><a href="/Admin/ListWidgets">{translate text="List Widgets"}</a></div>
+									<div class="adminMenuLink"><a href="/Admin/BrowseCategories">{translate text="Browse Categories"}</a></div>
 								{/if}
 								{if array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('contentEditor', $userRoles) || array_key_exists('libraryManager', $userRoles) || array_key_exists('locationManager', $userRoles)}
-									<div class="adminMenuLink"><a href="/Admin/BrowseCategories">{translate text="Browse Categories"}</a></div>
+									<div class="adminMenuLink"><a href="/Admin/ListWidgets">{translate text="List Widgets"}</a></div>
 								{/if}
 								{if array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('contentEditor', $userRoles) || array_key_exists('libraryManager', $userRoles) || array_key_exists('locationManager', $userRoles)}
 									<div class="adminMenuLink"><a href="/Admin/Placards">{translate text="Placards"}</a></div>
 								{/if}
+								<hr class="menu"/>
 								{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles))}
 									<div class="adminMenuLink"><a href="/Enrichment/ContentCafeSettings">{translate text="ContentCafe Settings"}</a></div>
 								{/if}
