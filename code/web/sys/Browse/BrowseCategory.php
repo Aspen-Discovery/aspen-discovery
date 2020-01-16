@@ -112,15 +112,10 @@ class BrowseCategory extends DataObject
 		$ret = parent::delete($useWhere);
 		if ($ret && !empty($this->textId)) {
 			//Remove from any libraries that use it.
-			require_once ROOT_DIR . '/sys/Browse/LibraryBrowseCategory.php';
-			$libraryBrowseCategory = new LibraryBrowseCategory();
-			$libraryBrowseCategory->browseCategoryId = $this->textId;
+			require_once ROOT_DIR . '/sys/Browse/BrowseCategoryGroupEntry.php';
+			$libraryBrowseCategory = new BrowseCategoryGroupEntry();
+			$libraryBrowseCategory->browseCategoryId = $this->id;
 			$libraryBrowseCategory->delete(true);
-
-			require_once ROOT_DIR . '/sys/Browse/LocationBrowseCategory.php';
-			$locationBrowseCategory = new LocationBrowseCategory();
-			$locationBrowseCategory->browseCategoryId = $this->textId;
-			$locationBrowseCategory->delete(true);
 
 			//Delete from parent sub categories as needed
 			require_once ROOT_DIR . '/sys/Browse/SubBrowseCategories.php';
@@ -233,7 +228,6 @@ class BrowseCategory extends DataObject
 				'canEdit' => true,
 			),
 
-			// Disabled setting this option since it is not an implemented feature.
 			'searchTerm' => array('property' => 'searchTerm', 'type' => 'text', 'label' => 'Search Term', 'description' => 'A default search term to apply to the category', 'default' => '', 'hideInLists' => true, 'maxLength' => 500),
 			'defaultFilter' => array('property' => 'defaultFilter', 'type' => 'textarea', 'label' => 'Default Filter(s)', 'description' => 'Filters to apply to the search by default.', 'hideInLists' => true, 'rows' => 3, 'cols' => 80),
 			'sourceListId' => array('property' => 'sourceListId', 'type' => 'enum', 'values' => $sourceLists, 'label' => 'Source List', 'description' => 'A public list to display titles from'),
