@@ -1,9 +1,6 @@
 {css filename="listWidget.css"}
 {strip}
 	<div id="main-content">
-		<div class="alert alert-info">
-			For more information on how to create List Widgets, please see the <a href="https://docs.google.com/document/d/1RySv7NbaYjaw_F9Gs7cP9pu3P894s_4J05o46m6z3bQ">online documentation</a>
-		</div>
 		<h1>Edit List Widget</h1>
 		<div class="btn-group">
 			<a class="btn btn-sm btn-default" href="/Admin/ListWidgets">All Widgets</a>

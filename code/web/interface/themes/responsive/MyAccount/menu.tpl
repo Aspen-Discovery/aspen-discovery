@@ -439,7 +439,6 @@
 								<div class="adminMenuLink"><a href="/MaterialsRequest/SummaryReport">{translate text="Summary Report"}</a></div>
 								<div class="adminMenuLink"><a href="/MaterialsRequest/UserReport">{translate text="Report By User"}</a></div>
 								<div class="adminMenuLink"><a href="/Admin/ManageStatuses">{translate text="Manage Statuses"}</a></div>
-								<div class="adminMenuLink"><a href="https://docs.google.com/document/d/1s9qOhlHLfQi66qMMt5m-dJ0kGNyHiOjSrqYUbe0hEcA">{translate text="Documentation"}</a></div>
 							</div>
 						</div>
 					</div>

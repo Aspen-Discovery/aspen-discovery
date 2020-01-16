@@ -596,11 +596,6 @@
 												{/foreach}
 											</ul>
 										</div>
-										<div class="col-tn-12">
-											<div class="alert alert-info">
-												For more information about what each role can do, see the <a href="https://docs.google.com/spreadsheets/d/1sPR8mIidkg00B2XzgiEq1MMDO3Y2ZOZNH-y_xonN-zA">online documentation</a>.
-											</div>
-										</div>
 									</div>
 
 									<form action="" method="post" class="form-horizontal" id="staffSettingsForm">

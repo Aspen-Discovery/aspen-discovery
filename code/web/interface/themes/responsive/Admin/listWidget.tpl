@@ -176,8 +176,4 @@
 </script>
 {/literal}
 
-	<br>
-		<div class="alert alert-info">
-			For more information on how to create List Widgets, please see the <a href="https://docs.google.com/document/d/1RySv7NbaYjaw_F9Gs7cP9pu3P894s_4J05o46m6z3bQ">online documentation</a>
-		</div>
-	</div>
+</div>
