@@ -308,17 +308,13 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 			$current = &$this->indexResult['response']['docs'][$x];
 			$record = RecordDriverFactory::initRecordDriver($current);
 			if (!($record instanceof AspenError)) {
-				if (method_exists($record, 'getListWidgetTitle')) {
-					if (!empty($orderedListOfIDs)) {
-						$position = array_search($current['PID'], $orderedListOfIDs);
-						if ($position !== false) {
-							$widgetTitles[$position] = $record->getListWidgetTitle();
-						}
-					} else {
-						$widgetTitles[] = $record->getListWidgetTitle();
+				if (!empty($orderedListOfIDs)) {
+					$position = array_search($current['PID'], $orderedListOfIDs);
+					if ($position !== false) {
+						$widgetTitles[$position] = $record->getListWidgetTitle();
 					}
 				} else {
-					$widgetTitles[] = 'List Widget Item not available';
+					$widgetTitles[] = $record->getListWidgetTitle();
 				}
 			} else {
 				$widgetTitles[] = "Unable to find record";

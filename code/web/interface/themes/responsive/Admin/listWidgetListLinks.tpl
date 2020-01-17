@@ -52,7 +52,7 @@
 <div id="main-content">
 	<h1>Edit Links</h1>
 	<div id="header">
-		<h2> <a href='/Admin/ListWidgets?objectAction=edit&id={$widgetId}'>{$widgetName}</a> | {$widgetListName}</h2>
+		<h2> <a href='/Admin/CollectionSpotlights?objectAction=edit&id={$widgetId}'>{$widgetName}</a> | {$widgetListName}</h2>
 	</div>
 
 	<form id='objectEditor' method="post" enctype="multipart/form-data">

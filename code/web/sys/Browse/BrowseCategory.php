@@ -185,19 +185,7 @@ class BrowseCategory extends DataObject
 	{
 		// Get All User Lists
 		require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
-		$userLists = new UserList();
-		$userLists->public = 1;
-		$userLists->orderBy('title asc');
-		$userLists->find();
-		$sourceLists = array();
-		$sourceLists[-1] = 'Generate from search term and filters';
-		while ($userLists->fetch()) {
-
-			$numItems = $userLists->numValidListItems();
-			if ($numItems > 0) {
-				$sourceLists[$userLists->id] = "($userLists->id) $userLists->title - $numItems entries";
-			}
-		}
+		$sourceLists = UserList::getSourceListsForBrowsingAndCarousels();
 
 		// Get Structure for Sub-categories
 		$browseSubCategoryStructure = SubBrowseCategories::getObjectStructure();

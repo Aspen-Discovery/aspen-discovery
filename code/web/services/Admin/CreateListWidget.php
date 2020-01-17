@@ -2,8 +2,8 @@
 
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/Admin.php';
-require_once ROOT_DIR . '/sys/ListWidget.php';
-require_once ROOT_DIR . '/sys/ListWidgetList.php';
+require_once ROOT_DIR . '/sys/LocalEnrichment/ListWidget.php';
+require_once ROOT_DIR . '/sys/LocalEnrichment/ListWidgetList.php';
 require_once ROOT_DIR . '/sys/DataObjectUtil.php';
 
 /**
@@ -68,8 +68,7 @@ class CreateListWidget extends Action {
 			$widgetList->insert();
 
 			//Redirect to the widget
-//		header("Location: $path/Admin/ListWidgets?objectAction=view&id={$widget->id}" ); // path not defined. plb 7-8-2015
-			header("Location: /Admin/ListWidgets?objectAction=view&id={$widget->id}" );
+			header("Location: /Admin/CollectionSpotlights?objectAction=view&id={$widget->id}" );
 		}
 	}
 }

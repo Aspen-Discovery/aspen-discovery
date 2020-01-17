@@ -452,19 +452,38 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 		$widgetTitles = array();
 		for ($x = 0; $x < count($this->indexResult['response']['docs']); $x++) {
 			$current = &$this->indexResult['response']['docs'][$x];
+			/** @var GroupedWorkDriver $record */
 			$record = RecordDriverFactory::initRecordDriver($current);
 			if (!($record instanceof AspenError)) {
-				if (method_exists($record, 'getListWidgetTitle')) {
-					if (!empty($orderedListOfIDs)) {
-						$position = array_search($current['id'], $orderedListOfIDs);
-						if ($position !== false) {
-							$widgetTitles[$position] = $record->getListWidgetTitle();
-						}
-					} else {
-						$widgetTitles[] = $record->getListWidgetTitle();
+				if (!empty($orderedListOfIDs)) {
+					$position = array_search($current['id'], $orderedListOfIDs);
+					if ($position !== false) {
+						$widgetTitles[$position] = $record->getListWidgetTitle();
 					}
 				} else {
-					$widgetTitles[] = 'List Widget Title not available';
+					$widgetTitles[] = $record->getListWidgetTitle();
+				}
+			} else {
+				$widgetTitles[] = "Unable to find record";
+			}
+		}
+		return $widgetTitles;
+	}
+
+	public function getSpotlightResults(ListWidget $listWidget){
+		$widgetTitles = [];
+		for ($x = 0; $x < count($this->indexResult['response']['docs']); $x++) {
+			$current = &$this->indexResult['response']['docs'][$x];
+			/** @var GroupedWorkDriver $record */
+			$record = RecordDriverFactory::initRecordDriver($current);
+			if (!($record instanceof AspenError)) {
+				if (!empty($orderedListOfIDs)) {
+					$position = array_search($current['id'], $orderedListOfIDs);
+					if ($position !== false) {
+						$widgetTitles[$position] = $record->getSpotlightResult($listWidget, $position);
+					}
+				} else {
+					$widgetTitles[] = $record->getSpotlightResult($listWidget, $x);
 				}
 			} else {
 				$widgetTitles[] = "Unable to find record";

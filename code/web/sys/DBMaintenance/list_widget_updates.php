@@ -1,6 +1,7 @@
 <?php
 
 function getListWidgetUpdates(){
+	/** @noinspection SpellCheckingInspection */
 	return array(
 		'list_widgets' => array(
 			'title' => 'Setup Configurable List Widgets',
@@ -116,13 +117,23 @@ function getListWidgetUpdates(){
 			),
 		),
 
-			'list_widget_num_results' => array(
-					'title' => 'List Widget Number of titles to show',
-					'description' => 'Add the ability to determine how many results should be shown for a list.',
-					'sql' => array(
-							"ALTER TABLE `list_widgets` ADD COLUMN `numTitlesToShow` INT NOT NULL DEFAULT '25'",
-					),
+		'list_widget_num_results' => array(
+			'title' => 'List Widget Number of titles to show',
+			'description' => 'Add the ability to determine how many results should be shown for a list.',
+			'sql' => array(
+				"ALTER TABLE `list_widgets` ADD COLUMN `numTitlesToShow` INT NOT NULL DEFAULT '25'",
 			),
+		),
 
+		'list_widget_search_terms' => [
+			'title' => 'List Widget Number of titles to show',
+			'description' => 'Add the ability to determine how many results should be shown for a list.',
+			'sql' => array(
+				"ALTER TABLE list_widget_lists ADD COLUMN defaultFilter TEXT",
+				"ALTER TABLE list_widget_lists ADD COLUMN defaultSort ENUM('relevance', 'popularity', 'newest_to_oldest', 'oldest_to_newest', 'author', 'title', 'user_rating')",
+				"ALTER TABLE list_widget_lists ADD COLUMN searchTerm VARCHAR(500) NOT NULL DEFAULT ''",
+				"ALTER TABLE list_widget_lists ADD COLUMN sourceListId MEDIUMINT NULL DEFAULT NULL",
+			),
+		]
 	);
 }

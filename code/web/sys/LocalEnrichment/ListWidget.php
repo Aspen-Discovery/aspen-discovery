@@ -1,7 +1,7 @@
 <?php
 
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
-require_once ROOT_DIR . '/sys/ListWidgetList.php';
+require_once ROOT_DIR . '/sys/LocalEnrichment/ListWidgetList.php';
 
 class ListWidget extends DataObject
 {
@@ -117,7 +117,7 @@ class ListWidget extends DataObject
 			'numTitlesToShow' => array(
 				'property' => 'numTitlesToShow',
 				'type' => 'integer',
-				'label' => 'The number of titles that should be shown for the widget',
+				'label' => 'The number of titles that should be shown',
 				'storeDb' => true,
 				'default' => 25,
 				'hideInLists' => true,
@@ -141,7 +141,7 @@ class ListWidget extends DataObject
 			'showRatings' => array(
 				'property' => 'showRatings',
 				'type' => 'checkbox',
-				'label' => 'Should ratings widgets be shown under each cover?',
+				'label' => 'Should ratings be shown under each cover?',
 				'storeDb' => true,
 				'default' => false,
 				'hideInLists' => true,
@@ -149,7 +149,7 @@ class ListWidget extends DataObject
 			'style' => array(
 				'property' => 'style',
 				'type' => 'enum',
-				'label' => 'The style to use when displaying the list widget',
+				'label' => 'The style to use when displaying the featured titles',
 				'values' => ListWidget::$_styles,
 				'storeDb' => true,
 				'default' => 'horizontal',
@@ -158,14 +158,14 @@ class ListWidget extends DataObject
 			'autoRotate' => array(
 				'property' => 'autoRotate',
 				'type' => 'checkbox',
-				'label' => 'Should the widget automatically rotate between titles?',
+				'label' => 'Should the display automatically rotate between titles?',
 				'storeDb' => true,
 				'hideInLists' => true,
 			),
 			'coverSize' => array(
 				'property' => 'coverSize',
 				'type' => 'enum',
-				'label' => 'The cover size to use when showing a widget',
+				'label' => 'The cover size to use when showing the display',
 				'values' => array('small' => 'Small', 'medium' => 'Medium'),
 				'storeDb' => true,
 				'default' => 'medium',
@@ -187,15 +187,15 @@ class ListWidget extends DataObject
 				'type' => 'enum',
 				'values' => ListWidget::$_displayTypes,
 				'label' => 'Display lists as',
-				'description' => 'The method used to show the user the multiple lists associated with the widget.',
+				'description' => 'The method used to show the user the multiple lists associated with the display.',
 				'storeDb' => true,
 				'hideInLists' => true,
 			),
 			'showListWidgetTitle' => array(
 				'property' => 'showListWidgetTitle',
 				'type' => 'checkbox',
-				'label' => 'Show the list widget\'s title bar',
-				'description' => 'Whether or not the widget\'s title bar is shown. (Enabling the Show More Link will force the title bar to be shown as well.)',
+				'label' => 'Show the display\'s title bar',
+				'description' => 'Whether or not the display\'s title bar is shown. (Enabling the Show More Link will force the title bar to be shown as well.)',
 				'storeDb' => true,
 				'hideInLists' => true,
 				'default' => true,
@@ -203,7 +203,7 @@ class ListWidget extends DataObject
 			'showViewMoreLink' => array(
 				'property' => 'showViewMoreLink',
 				'type' => 'checkbox',
-				'label' => 'Show the View More link on the title bar of the widget.',
+				'label' => 'Show the View More link on the title bar of the display.',
 				'storeDb' => true,
 				'hideInLists' => true,
 				'default' => false,
@@ -215,8 +215,8 @@ class ListWidget extends DataObject
 					'list' => 'List',
 					'covers' => 'Covers'
 				),
-				'label' => 'Display mode for search results link',
-				'description' => 'The mode to show full search results in when the View More link is clicked.',
+				'label' => 'Display mode for view more link',
+				'description' => 'The mode to show full results in when the View More link is clicked.',
 				'storeDb' => true,
 				'hideInLists' => true,
 			),
@@ -228,7 +228,7 @@ class ListWidget extends DataObject
 				'subObjectType' => 'ListWidgetList',
 				'structure' => ListWidgetList::getObjectStructure(),
 				'label' => 'Lists',
-				'description' => 'The lists to be displayed within the widget.',
+				'description' => 'The lists to be displayed.',
 				'sortable' => true,
 				'storeDb' => true,
 				'serverValidation' => 'validateLists',
@@ -382,18 +382,18 @@ class ListWidget extends DataObject
 
 				//Check to make sure that each list source is valid
 				$source = $list->source;
-				//The source is valid if it is in the all lists array or if it starts with strands: or review:
-				if (preg_match('/^(strands:|review:|search:).*/', $source)) {
+				//The source is valid if it is in the all lists array or if it is a search
+				if (preg_match('/^(search:).*/', $source)) {
 					//source is valid
 				} elseif (in_array($source, $allListIds)) {
 					//source is valid
 				} else {
 					//source is not valid
-					if (preg_match('/^(list:).*/', $source)) {
-						$validationResults['errors'][] = "This source {$list->source} is not valid.  Please make sure that the list id exists and is public.";
-					} else {
-						$validationResults['errors'][] = "This source {$list->source} is not valid.  Please enter a valid list source.";
-					}
+//					if (preg_match('/^(list:).*/', $source)) {
+//						$validationResults['errors'][] = "This source {$list->source} is not valid.  Please make sure that the list id exists and is public.";
+//					} else {
+//						$validationResults['errors'][] = "This source {$list->source} is not valid.  Please enter a valid list source.";
+//					}
 				}
 			}
 		}

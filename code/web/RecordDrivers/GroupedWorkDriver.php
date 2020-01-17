@@ -1178,6 +1178,41 @@ class GroupedWorkDriver extends IndexRecordDriver
 		return 'RecordDrivers/GroupedWork/listEntry.tpl';
 	}
 
+	public function getSpotlightResult(ListWidget $listWidget, string $index){
+		global $interface;
+		$interface->assign('showRatings', $listWidget->showRatings);
+
+		$interface->assign('key', $index);
+
+		if ($listWidget->coverSize == 'small'){
+			$imageUrl = $this->getBookcoverUrl('small');
+		}else{
+			$imageUrl = $this->getBookcoverUrl('medium');
+		}
+
+		$interface->assign('title', $this->getTitle());
+		$interface->assign('author', $this->getPrimaryAuthor());
+		$interface->assign('description', $this->getDescriptionFast());
+		$interface->assign('shortId', $this->getId());
+		$interface->assign('id', $this->getId());
+		$interface->assign('titleURL', $this->getRecordUrl());
+		$interface->assign('imageUrl', $imageUrl);
+
+		if ($listWidget->showRatings){
+			$interface->assign('ratingData', $this->getRatingData());
+			$interface->assign('showNotInterested', false);
+		}
+
+		$result = [];
+		if ($listWidget->style == 'text-list'){
+			$result['formattedTextOnlyTitle'] = $interface->fetch('ListWidget/formattedTextOnlyTitle.tpl');
+		}else{
+			$result['formattedTitle']= $interface->fetch('ListWidget/formattedTitle.tpl');
+		}
+
+		return $result;
+	}
+
 	public function getListWidgetTitle()
 	{
 		$widgetTitleInfo = array(
@@ -1194,8 +1229,10 @@ class GroupedWorkDriver extends IndexRecordDriver
 			'publisher' => '',
 			'ratingData' => $this->getRatingData(),
 		);
+
 		return $widgetTitleInfo;
 	}
+
 
 	public function getModule()
 	{

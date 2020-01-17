@@ -173,14 +173,12 @@ abstract class IslandoraRecordDriver extends IndexRecordDriver {
 			'image' =>       $this->getBookcoverUrl('medium'),
 			'small_image' => $this->getBookcoverUrl('small'),
 			'title' =>       $this->getTitle(),
-		  'titleURL' =>    $this->getLinkUrl(true), // Include site URL
-//			'author' =>      $this->getPrimaryAuthor(),
+			'titleURL' =>    $this->getLinkUrl(true), // Include site URL
 			'author' =>      $this->getFormat(), // Display the Format of Archive Object where the author would be otherwise displayed in the ListWidget
 			'description' => $this->getDescription(),
 			'length' =>      '', // TODO: do list widgets use this
 			'publisher' =>   '', // TODO: do list widgets use this
 			'ratingData' =>  null,
-//			'ratingData' =>  $this->getRatingData(),
 		);
 		return $widgetTitleInfo;
 	}

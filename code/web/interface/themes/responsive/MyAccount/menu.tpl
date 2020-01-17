@@ -388,7 +388,7 @@
 									<div class="adminMenuLink"><a href="/Admin/BrowseCategories">{translate text="Browse Categories"}</a></div>
 								{/if}
 								{if array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('contentEditor', $userRoles) || array_key_exists('libraryManager', $userRoles) || array_key_exists('locationManager', $userRoles)}
-									<div class="adminMenuLink"><a href="/Admin/ListWidgets">{translate text="List Widgets"}</a></div>
+									<div class="adminMenuLink"><a href="/Admin/Spotlights">{translate text="Collection Spotlights"}</a></div>
 								{/if}
 								{if array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('contentEditor', $userRoles) || array_key_exists('libraryManager', $userRoles) || array_key_exists('locationManager', $userRoles)}
 									<div class="adminMenuLink"><a href="/Admin/Placards">{translate text="Placards"}</a></div>

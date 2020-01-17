@@ -42,7 +42,7 @@ TitleScroller.prototype.loadTitlesFromJsonData = function(data) {
 			scrollerBody = $('#' + this.scrollerId + " .scrollerBodyContainer .scrollerBody");
 	try {
 		if (data.error) throw {description:data.error}; // throw exceptions for server error messages.
-		if (data.titles.length == 0){
+		if (data.titles.length === 0){
 			scrollerBody.html("No titles were found for this list. Please try again later.");
 			$('#' + this.scrollerId + " .scrollerBodyContainer .scrollerLoadingContainer").hide();
 			scrollerBody.show();
@@ -57,7 +57,7 @@ TitleScroller.prototype.loadTitlesFromJsonData = function(data) {
 				$("#" + scroller.container).fadeIn();
 			}
 			scroller.numScrollerTitles = data.titles.length;
-			if (this.style == 'horizontal' || this.style == 'vertical'){
+			if (this.style === 'horizontal' || this.style === 'vertical'){
 				// vertical or horizontal widgets should start in the middle of the data. plb 11-24-2014
 				scroller.currentScrollerIndex = data.currentIndex;
 			}else{
@@ -83,8 +83,8 @@ TitleScroller.prototype.updateScroller = function() {
 	try {
 		var scrollerBodyContents = "",
 				curScroller = this;
-		if (this.style == 'horizontal'){
-			for ( var i in this.scrollerTitles) {
+		if (this.style === 'horizontal'){
+			for ( let i in this.scrollerTitles) {
 				scrollerBodyContents += this.scrollerTitles[i]['formattedTitle'];
 			}
 			scrollerBody.html(scrollerBodyContents)
@@ -92,8 +92,8 @@ TitleScroller.prototype.updateScroller = function() {
 					.waitForImages(function() {
 						TitleScroller.prototype.finishLoadingScroller.call(curScroller);
 					});
-		}else if (this.style == 'vertical'){
-			for ( var j in this.scrollerTitles) {
+		}else if (this.style === 'vertical'){
+			for ( let j in this.scrollerTitles) {
 				scrollerBodyContents += this.scrollerTitles[j]['formattedTitle'];
 			}
 			scrollerBody.html(scrollerBodyContents)
@@ -102,7 +102,7 @@ TitleScroller.prototype.updateScroller = function() {
 						//console.log(scrollerBody);
 						TitleScroller.prototype.finishLoadingScroller.call(curScroller);
 					});
-		}else if (this.style == 'text-list'){
+		}else if (this.style === 'text-list'){
 			for ( var i in this.scrollerTitles) {
 				scrollerBodyContents += this.scrollerTitles[i]['formattedTextOnlyTitle'];
 			}

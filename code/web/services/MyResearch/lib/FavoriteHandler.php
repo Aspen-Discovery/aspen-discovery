@@ -65,7 +65,6 @@ class FavoriteHandler
 		$this->allowEdit           = $allowEdit;
 		$this->userListSortOptions = $list->getUserListSortOptions(); // Keep the UserList Sort options in the UserList class since it used there as well.
 
-
 		// Determine Sorting Option //
 		if (isset($list->defaultSort)){
 			$this->defaultSort = $list->defaultSort; // when list as a sort setting use that
@@ -89,22 +88,6 @@ class FavoriteHandler
 		$this->ids = $this->favorites; // TODO: Remove references to this->ids and use $this->favorites instead
 		$hasCatalogItems = !empty($this->catalogIds);
 		$hasArchiveItems = !empty($this->archiveIds);
-//		// Process the IDs found in the favorites
-//		$hasArchiveItems = $hasCatalogItems = false;
-//		foreach ($this->favorites as $favorite){
-//			$favoriteID = is_object($favorite) ? $favorite->groupedWorkPermanentId : $favorite;
-//			$this->ids[] = $favoriteID;
-//			if (strpos($favoriteID, ':') !== false) {
-//				//Is an archive Object
-//				// (This may be the point where a specified source is needed for UserList Items.)
-//				$this->archiveIds[] = $favoriteID;
-//				$hasArchiveItems = true;
-//			} else {
-//				// Assuming all other Ids are grouped work Ids.
-//				$this->catalogIds[] = $favoriteID;
-//				$hasCatalogItems = true;
-//			}
-//		}
 
 		// Determine if this UserList mixes catalog & archive Items
 		if ($hasArchiveItems && $hasCatalogItems) {
@@ -199,8 +182,6 @@ class FavoriteHandler
 				$defaultSortOptions[$option] = "sort_{$option}_userlist";
 			}
 
-
-
 			// Catalog Only Searches //
 			if (!$this->isMixedUserList) {
 				// User Sorted Catalog Only Search
@@ -242,13 +223,9 @@ class FavoriteHandler
 			}
 		}
 
-
-
-
 		// Archive Search
 		$archiveResourceList = array();
 		if (count($this->archiveIds) > 0) {
-
 			// Initialise from the current search globals
 			/** @var SearchObject_IslandoraSearcher $archiveSearchObject */
 			$archiveSearchObject = SearchObjectFactory::initSearchObject('Islandora');

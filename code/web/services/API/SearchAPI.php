@@ -11,7 +11,7 @@ class SearchAPI extends Action
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
 		$output = '';
 		if (!empty($method) && method_exists($this, $method)) {
-			if (in_array($method, array('getListWidget'))) {
+			if (in_array($method, array('getListWidget', 'getCollectionSpotlight'))) {
 				$output = $this->$method();
 			} else {
 				$jsonOutput = json_encode(array('result' => $this->$method()));
@@ -255,6 +255,11 @@ class SearchAPI extends Action
 
 	function getListWidget()
 	{
+		return $this->getCollectionSpotlight();
+	}
+
+	function getCollectionSpotlight()
+	{
 		global $interface;
 		if (isset($_REQUEST['username']) && isset($_REQUEST['password'])) {
 			$username = $_REQUEST['username'];
@@ -266,9 +271,8 @@ class SearchAPI extends Action
 			$interface->assign('user', $user);
 		}
 		//Load the widget configuration
-		require_once ROOT_DIR . '/sys/ListWidget.php';
-		require_once ROOT_DIR . '/sys/ListWidgetList.php';
-		require_once ROOT_DIR . '/sys/ListWidgetListsLinks.php';
+		require_once ROOT_DIR . '/sys/LocalEnrichment/ListWidget.php';
+		require_once ROOT_DIR . '/sys/LocalEnrichment/ListWidgetList.php';
 		$widget = new ListWidget();
 		$id = $_REQUEST['id'];
 

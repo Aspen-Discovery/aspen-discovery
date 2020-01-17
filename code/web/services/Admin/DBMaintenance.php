@@ -1040,6 +1040,13 @@ class Admin_DBMaintenance extends Admin_Admin
 					),
 				),
 
+				'remove_list_widget_list_links' => [
+					'title' => 'Remove Widget List Links',
+					'description' => 'Remove table list_widget_lists_links',
+					'sql' => [
+						"DROP TABLE list_widget_lists_links"
+					],
+				],
 
 				'millenniumTables' => array(
 					'title' => 'Millennium table setup',

@@ -3,8 +3,8 @@
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
-require_once ROOT_DIR . '/sys/ListWidget.php';
-require_once ROOT_DIR . '/sys/ListWidgetList.php';
+require_once ROOT_DIR . '/sys/LocalEnrichment/ListWidget.php';
+require_once ROOT_DIR . '/sys/LocalEnrichment/ListWidgetList.php';
 require_once ROOT_DIR . '/sys/DataObjectUtil.php';
 
 /**
@@ -14,15 +14,15 @@ require_once ROOT_DIR . '/sys/DataObjectUtil.php';
  * @author Mark Noble
  *
  */
-class Admin_ListWidgets extends ObjectEditor {
+class Admin_CollectionSpotlights extends ObjectEditor {
 	function getObjectType(){
 		return 'ListWidget';
 	}
 	function getToolName(){
-		return 'ListWidgets';
+		return 'CollectionSpotlights';
 	}
 	function getPageTitle(){
-		return 'List Widgets';
+		return 'Collection Spotlights';
 	}
 	function getAllObjects(){
 		$list = array();
@@ -63,6 +63,7 @@ class Admin_ListWidgets extends ObjectEditor {
 		global $interface;
 
 		$interface->assign('canAddNew', $this->canAddNew());
+		$interface->assign('canCopy', $this->canCopy());
 		$interface->assign('canDelete', $this->canDelete());
 		$interface->assign('showReturnToList', $this->showReturnToList());
 

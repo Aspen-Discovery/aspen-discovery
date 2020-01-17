@@ -21,6 +21,7 @@ class AJAX extends Action {
 	}
 
 	// Email Search Results
+	/** @noinspection PhpUnused */
 	function sendEmail()
 	{
 		global $interface;
@@ -133,6 +134,7 @@ class AJAX extends Action {
 	/**
 	 * @return array data representing the list information
 	 */
+	/** @noinspection PhpUnused */
 	function getListTitles(){
 		global $timer;
 
@@ -159,9 +161,7 @@ class AJAX extends Action {
 					$interface->assign('key', $key);
 					// 20131206 James Staub: bookTitle is in the list API and it removes the final frontslash, but I didn't get $rawData['bookTitle'] to load
 
-					$titleShort = preg_replace(array('/\:.*?$/', '/\s*\/$\s*/'),'', $rawData['title']);
-//						$titleShort = preg_replace('/\:.*?$/','', $rawData['title']);
-//						$titleShort = preg_replace('/\s*\/$\s*/','', $titleShort);
+					$titleShort = preg_replace(array('/:.*?$/', '/\s*\/$\s*/'),'', $rawData['title']);
 
 					$imageUrl = $rawData['small_image'];
 					if (isset($_REQUEST['coverSize']) && $_REQUEST['coverSize'] == 'medium'){
@@ -200,6 +200,77 @@ class AJAX extends Action {
 		}
 
 		return $listData;
+	}
+
+	/** @noinspection PhpUnused */
+	function getSpotlightTitles(){
+		global $interface;
+		$listName = strip_tags(isset($_GET['scrollerName']) ? $_GET['scrollerName'] : 'List' . $_GET['id']);
+		$interface->assign('listName', $listName);
+
+		require_once ROOT_DIR . '/sys/LocalEnrichment/ListWidgetList.php';
+		$listWidgetList = new ListWidgetList();
+		$listWidgetList->id = $_REQUEST['id'];
+		if ($listWidgetList->find(true)){
+			$result = [
+				'success' => true,
+				'titles' => []
+			];
+			require_once ROOT_DIR . '/sys/LocalEnrichment/ListWidget.php';
+			$listWidget = new ListWidget();
+			$listWidget->id = $listWidgetList->listWidgetId;
+			$listWidget->find(true);
+
+			$interface->assign('showViewMoreLink', $listWidget->showViewMoreLink);
+			if ($listWidgetList->sourceListId != null && $listWidgetList->sourceListId > 0){
+				require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+				$sourceList     = new UserList();
+				$sourceList->id = $listWidgetList->sourceListId;
+				if ($sourceList->find(true)) {
+					$result['listTitle'] = $sourceList->title;
+					$result['listDescription'] = $sourceList->description;
+					$result['titles'] = $sourceList->getSpotlightTitles( $listWidget);
+					$result['currentIndex'] = 0;
+				} else {
+					$records = array();
+				}
+				$result['searchUrl'] = '/MyAccount/MyList/' . $listWidgetList->sourceListId;
+			}else{
+				/** @var SearchObject_GroupedWorkSearcher $searchObject */
+				$searchObject = SearchObjectFactory::initSearchObject('GroupedWork');
+				if (!empty($listWidgetList->defaultFilter)) {
+					$defaultFilterInfo = $listWidgetList->defaultFilter;
+					$defaultFilters = preg_split('/[\r\n,;]+/', $defaultFilterInfo);
+					foreach ($defaultFilters as $filter) {
+						$searchObject->addFilter(trim($filter));
+					}
+				}
+				//Set Sorting, this is actually slightly mangled from the category to Solr
+				$searchObject->setSort($listWidgetList->getSolrSort());
+				if ($listWidgetList->searchTerm != '') {
+					$searchObject->setSearchTerm($listWidgetList->searchTerm);
+				}
+
+				//Get titles for the list
+				$searchObject->clearFacets();
+				$searchObject->disableSpelling();
+				$searchObject->disableLogging();
+				$searchObject->setLimit($listWidget->numTitlesToShow);
+				$searchObject->setPage(1);
+				$searchResult = $searchObject->processSearch();
+
+				$result['listTitle'] = $listWidgetList->name;
+				$result['listDescription'] = '';
+				$result['titles'] = $searchObject->getSpotlightResults($listWidget);
+				$result['currentIndex'] = 0;
+			}
+			return $result;
+		}else{
+			return [
+				'success' => false,
+				'message' => 'Information for the carousel list could not be found',
+			];
+		}
 	}
 
 	/** @noinspection PhpUnused */

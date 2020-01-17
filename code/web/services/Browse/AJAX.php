@@ -536,7 +536,7 @@ class Browse_AJAX extends Action {
 		/** @var Location $locationSingleton */
 		global $locationSingleton;
 		global $configArray;
-		//Check to see if we have an active location, will be null if we don't have a specific locatoin
+		//Check to see if we have an active location, will be null if we don't have a specific location
 		//based off of url, branch parameter, or IP address
 		$activeLocation = $locationSingleton->getActiveLocation();
 

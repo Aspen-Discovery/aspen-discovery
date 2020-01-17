@@ -15,6 +15,23 @@ class UserList extends DataObject
 	public $dateUpdated;
 	public $defaultSort; // string(20) null
 
+	public static function getSourceListsForBrowsingAndCarousels()
+	{
+		$userLists = new UserList();
+		$userLists->public = 1;
+		$userLists->orderBy('title asc');
+		$userLists->find();
+		$sourceLists = array();
+		$sourceLists[-1] = 'Generate from search term and filters';
+		while ($userLists->fetch()) {
+			$numItems = $userLists->numValidListItems();
+			if ($numItems > 0) {
+				$sourceLists[$userLists->id] = "($userLists->id) $userLists->title - $numItems entries";
+			}
+		}
+		return $sourceLists;
+	}
+
 	public function getNumericColumnNames()
 	{
 		return ['public', 'deleted'];
@@ -331,13 +348,34 @@ class UserList extends DataObject
 
 		return $browseRecordsSorted;
 	}
-
 	/**
 	 * @return array
 	 */
 	public function getUserListSortOptions()
 	{
 		return $this->__userListSortOptions;
+	}
+
+	public function getSpotlightTitles(ListWidget $listWidget)
+	{
+		$allEntries = $this->getListTitles();
+
+		$results = [];
+		/**
+		 * @var string $key
+		 * @var UserListEntry $entry */
+		foreach ($allEntries as $key => $entry){
+			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+			$groupedWork = new GroupedWorkDriver($entry->groupedWorkPermanentId);
+			if ($groupedWork->isValid()){
+				$results[$key] = $groupedWork->getSpotlightResult($listWidget, $key);
+			}
+			if (count($results) == $listWidget->numTitlesToShow){
+				break;
+			}
+		}
+
+		return $results;
 	}
 	private function flushUserListBrowseCategory(){
 		// Check if the list is a part of a browse category and clear the cache.
