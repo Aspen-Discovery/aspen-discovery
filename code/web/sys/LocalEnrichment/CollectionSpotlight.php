@@ -36,7 +36,7 @@ class CollectionSpotlight extends DataObject
 	);
 
 	/** @var  CollectionSpotlightList[] */
-	private $lists;
+	private $_lists;
 
 	public function getNumericColumnNames()
 	{
@@ -232,7 +232,7 @@ class CollectionSpotlight extends DataObject
 				'sortable' => true,
 				'storeDb' => true,
 				'serverValidation' => 'validateLists',
-				'hideInLists' => true,
+				'hideInLists' => false,
 			),
 		);
 		return $structure;
@@ -268,26 +268,44 @@ class CollectionSpotlight extends DataObject
 	public function __get($name)
 	{
 		if ($name == "lists") {
-			if (!isset($this->lists)) {
+			if (!isset($this->_lists)) {
 				//Get the list of lists that are being displayed for the spotlight
-				$this->lists = array();
+				$this->_lists = array();
 				$collectionSpotlightList = new CollectionSpotlightList();
 				$collectionSpotlightList->collectionSpotlightId = $this->id;
 				$collectionSpotlightList->orderBy('weight ASC');
 				$collectionSpotlightList->find();
 				while ($collectionSpotlightList->fetch()) {
-					$this->lists[$collectionSpotlightList->id] = clone($collectionSpotlightList);
+					$this->_lists[$collectionSpotlightList->id] = clone($collectionSpotlightList);
 				}
 			}
-			return $this->lists;
+			return $this->_lists;
 		}
 		return null;
+	}
+
+	public function getNumLists(){
+		$collectionSpotlightList = new CollectionSpotlightList();
+		$collectionSpotlightList->collectionSpotlightId = $this->id;
+		return $collectionSpotlightList->count();
+	}
+
+	public function getListNames(){
+		$listNames = [];
+		$collectionSpotlightList = new CollectionSpotlightList();
+		$collectionSpotlightList->collectionSpotlightId = $this->id;
+		$collectionSpotlightList->orderBy('weight ASC');
+		$collectionSpotlightList->find();
+		while ($collectionSpotlightList->fetch()) {
+			$listNames[] = $collectionSpotlightList->name;
+		}
+		return implode(", ", $listNames);
 	}
 
 	public function __set($name, $value)
 	{
 		if ($name == "lists") {
-			$this->lists = $value;
+			$this->_lists = $value;
 		}
 	}
 

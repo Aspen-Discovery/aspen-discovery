@@ -5,10 +5,10 @@
 
 		<div id="availableSpotlights">
 		<table class="table table-striped">
-		<thead><tr><th>Id</th><th>Name</th><th>Library</th><th>Description</th><th class="sorter-false filter-false ">Actions</th></tr></thead>
+		<thead><tr><th>Id</th><th>Name</th><th>Library</th><th>Description</th><th>Lists</th><th class="sorter-false filter-false ">Actions</th></tr></thead>
 		<tbody>
 			{foreach from=$availableSpotlights key=id item=collectionSpotlight}
-				<tr><td>{$collectionSpotlight->id}</td><td>{$collectionSpotlight->name}</td><td>{$collectionSpotlight->getLibraryName()}</td><td>{$collectionSpotlight->description}</td><td>
+				<tr><td>{$collectionSpotlight->id}</td><td>{$collectionSpotlight->name}</td><td>{$collectionSpotlight->getLibraryName()}</td><td>{$collectionSpotlight->description}</td><td>{$collectionSpotlight->getListNames()}</td><td>
 					<div class="btn-group-vertical btn-group-sm">
 						<a class="btn btn-sm btn-default" href="/Admin/CollectionSpotlights?objectAction=view&id={$collectionSpotlight->id}" role="button">View</a>
 						<a class="btn btn-sm btn-default" href="/Admin/CollectionSpotlights?objectAction=edit&id={$collectionSpotlight->id}" role="button">Edit</a>
