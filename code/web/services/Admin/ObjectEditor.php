@@ -15,6 +15,8 @@ abstract class ObjectEditor extends Admin_Admin
 		}
 
 		$interface->assign('canAddNew', $this->canAddNew());
+		$interface->assign('canCopy', $this->canCopy());
+		$interface->assign('canCompare', $this->canCompare());
 		$interface->assign('canDelete', $this->canDelete());
 		$interface->assign('showReturnToList', $this->showReturnToList());
 
@@ -264,6 +266,14 @@ abstract class ObjectEditor extends Admin_Admin
 	}
 
 	public function canAddNew(){
+		return true;
+	}
+
+	public function canCopy() {
+		return $this->canAddNew();
+	}
+
+	public function canCompare() {
 		return true;
 	}
 
