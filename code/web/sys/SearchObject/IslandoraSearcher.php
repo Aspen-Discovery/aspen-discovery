@@ -298,12 +298,12 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 	}
 
 	/**
-	 * @param array $orderedListOfIDs Use the index of the matched ID as the index of the resulting array of ListWidget data (for later merging)
+	 * @param array $orderedListOfIDs Use the index of the matched ID as the index of the resulting array of summary data (for later merging)
 	 * @return array
 	 */
-	public function getListWidgetTitles($orderedListOfIDs = array())
+	public function getTitleSummaryInformation($orderedListOfIDs = array())
 	{
-		$widgetTitles = array();
+		$titleSummaries = array();
 		for ($x = 0; $x < count($this->indexResult['response']['docs']); $x++) {
 			$current = &$this->indexResult['response']['docs'][$x];
 			$record = RecordDriverFactory::initRecordDriver($current);
@@ -311,16 +311,16 @@ class SearchObject_IslandoraSearcher extends SearchObject_SolrSearcher
 				if (!empty($orderedListOfIDs)) {
 					$position = array_search($current['PID'], $orderedListOfIDs);
 					if ($position !== false) {
-						$widgetTitles[$position] = $record->getListWidgetTitle();
+						$titleSummaries[$position] = $record->getSummaryInformation();
 					}
 				} else {
-					$widgetTitles[] = $record->getListWidgetTitle();
+					$titleSummaries[] = $record->getSummaryInformation();
 				}
 			} else {
-				$widgetTitles[] = "Unable to find record";
+				$titleSummaries[] = "Unable to find record";
 			}
 		}
-		return $widgetTitles;
+		return $titleSummaries;
 	}
 
 

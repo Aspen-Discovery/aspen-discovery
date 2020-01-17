@@ -63,7 +63,7 @@
 				</div>
 			{/foreach}
 		{elseif $section.format == 'scrollerWithLink'}
-			{* Related Titles Widget *}
+			{* Related Titles *}
 			<div class="jcarousel-wrapper">
 				<a href="#" class="jcarousel-control-prev"{* data-target="-=1"*}><i class="glyphicon glyphicon-chevron-left"></i></a>
 				<a href="#" class="jcarousel-control-next"{* data-target="+=1"*}><i class="glyphicon glyphicon-chevron-right"></i></a>
@@ -145,7 +145,7 @@
 {/if}
 
 
-	{* Related Articles Widget *}
+	{* Related Articles *}
 	{if !empty($relatedArticles)}
 		<div class="sectionHeader">Articles and More</div>
 		<div class="section">

@@ -2,11 +2,11 @@
 
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
 
-class ListWidgetList extends DataObject
+class CollectionSpotlightList extends DataObject
 {
-	public $__table = 'list_widget_lists';    // table name
+	public $__table = 'collection_spotlight_lists';    // table name
 	public $id;                      //int(25)
-	public $listWidgetId;                    //varchar(255)
+	public $collectionSpotlightId;                    //varchar(255)
 	public $name;
 	public $displayFor;
 	public $source;                    //varchar(255)
@@ -33,13 +33,13 @@ class ListWidgetList extends DataObject
 				'property' => 'id',
 				'type' => 'label',
 				'label' => 'Id',
-				'description' => 'The unique id of the list widget file.'
+				'description' => 'The unique id of the collection spotlight list.'
 			),
-			'listWidgetId' => array(
-				'property' => 'listWidgetId',
+			'collectionSpotlightId' => array(
+				'property' => 'collectionSpotlightId',
 				'type' => 'foreignKey',
-				'label' => 'List Widget Id',
-				'description' => 'The widget this list is associated with.'
+				'label' => 'Collection Spotlight Id',
+				'description' => 'The spotlight this list is associated with.'
 			),
 			'name' => array(
 				'property' => 'name',
@@ -84,19 +84,15 @@ class ListWidgetList extends DataObject
 		global $configArray;
 		if ($this->sourceListId != null && $this->sourceListId > 0){
 			return $configArray['Site']['url'] . '/MyAccount/MyList/' . $this->sourceListId;
-		}
-		require_once ROOT_DIR . '/services/API/ListAPI.php';
-		$listAPI = new ListAPI();
-		$cacheInfo = $listAPI->getCacheInfoForListId($this->source);
-		//Get the widget for the list
-		$widget = new ListWidget();
-		$widget->id = $this->listWidgetId;
-		if ($widget->find(true)) {
-			if ($widget->viewMoreLinkMode == 'covers') {
-				$cacheInfo['fullListLink'] .= '&view=covers';
+		}else{
+			$searchObject = $this->getSearchObject();
+			$link = $configArray['Site']['url'] . $searchObject->renderSearchUrl();
+			$spotlight = $this->getCollectionSpotlight();
+			if ($spotlight->viewMoreLinkMode == 'covers') {
+				$link .= '&view=covers';
 			}
+			return $link;
 		}
-		return $cacheInfo['fullListLink'];
 	}
 
 
@@ -139,5 +135,45 @@ class ListWidgetList extends DataObject
 		} else {
 			return 'relevance';
 		}
+	}
+
+	/**
+	 * @return SearchObject_GroupedWorkSearcher
+	 */
+	public function getSearchObject()
+	{
+		/** @var SearchObject_GroupedWorkSearcher $searchObject */
+		$searchObject = SearchObjectFactory::initSearchObject('GroupedWork');
+		if (!empty($this->defaultFilter)) {
+			$defaultFilterInfo = $this->defaultFilter;
+			$defaultFilters = preg_split('/[\r\n,;]+/', $defaultFilterInfo);
+			foreach ($defaultFilters as $filter) {
+				$searchObject->addFilter(trim($filter));
+			}
+		}
+		//Set Sorting, this is actually slightly mangled from the category to Solr
+		$searchObject->setSort($this->getSolrSort());
+		if ($this->searchTerm != '') {
+			$searchObject->setSearchTerm($this->searchTerm);
+		}
+
+		//Get titles for the list
+		$searchObject->clearFacets();
+		$searchObject->disableSpelling();
+		$searchObject->disableLogging();
+		$searchObject->setLimit($this->getCollectionSpotlight()->numTitlesToShow);
+		$searchObject->setPage(1);
+
+		return $searchObject;
+	}
+
+	private $_collectionSpotlight = null;
+	function getCollectionSpotlight(){
+		if ($this->_collectionSpotlight == null){
+			$this->_collectionSpotlight = new CollectionSpotlight();
+			$this->_collectionSpotlight->id = $this->collectionSpotlightId;
+			$this->_collectionSpotlight->find(true);
+		}
+		return $this->_collectionSpotlight;
 	}
 }

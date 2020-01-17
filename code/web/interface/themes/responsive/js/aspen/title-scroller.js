@@ -58,7 +58,7 @@ TitleScroller.prototype.loadTitlesFromJsonData = function(data) {
 			}
 			scroller.numScrollerTitles = data.titles.length;
 			if (this.style === 'horizontal' || this.style === 'vertical'){
-				// vertical or horizontal widgets should start in the middle of the data. plb 11-24-2014
+				// vertical or horizontal scrollers should start in the middle of the data. plb 11-24-2014
 				scroller.currentScrollerIndex = data.currentIndex;
 			}else{
 				scroller.currentScrollerIndex = 0;

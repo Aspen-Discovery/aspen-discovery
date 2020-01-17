@@ -253,6 +253,13 @@ class SearchAPI extends Action
 		return $jsonResults;
 	}
 
+	/**
+	 * This is old for historical compatibility purposes.
+	 *
+	 * @deprecated
+	 *
+	 * @return string
+	 */
 	function getListWidget()
 	{
 		return $this->getCollectionSpotlight();
@@ -270,10 +277,10 @@ class SearchAPI extends Action
 			$user = UserAccount::getLoggedInUser();
 			$interface->assign('user', $user);
 		}
-		//Load the widget configuration
-		require_once ROOT_DIR . '/sys/LocalEnrichment/ListWidget.php';
-		require_once ROOT_DIR . '/sys/LocalEnrichment/ListWidgetList.php';
-		$widget = new ListWidget();
+		//Load the collectionSpotlight configuration
+		require_once ROOT_DIR . '/sys/LocalEnrichment/CollectionSpotlight.php';
+		require_once ROOT_DIR . '/sys/LocalEnrichment/CollectionSpotlightList.php';
+		$collectionSpotlight = new CollectionSpotlight();
 		$id = $_REQUEST['id'];
 
 		if (isset($_REQUEST['reload'])) {
@@ -282,16 +289,15 @@ class SearchAPI extends Action
 			$interface->assign('reload', false);
 		}
 
-
-		$widget->id = $id;
-		if ($widget->find(true)) {
-			$interface->assign('widget', $widget);
+		$collectionSpotlight->id = $id;
+		if ($collectionSpotlight->find(true)) {
+			$interface->assign('collectionSpotlight', $collectionSpotlight);
 
 			if (!empty($_REQUEST['resizeIframe'])) {
 				$interface->assign('resizeIframe', true);
 			}
-			//return the widget
-			return $interface->fetch('ListWidget/listWidget.tpl');
+			//return the collectionSpotlight
+			return $interface->fetch('CollectionSpotlight/collectionSpotlight.tpl');
 		} else {
 			return '';
 		}

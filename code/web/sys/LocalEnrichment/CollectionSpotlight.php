@@ -1,11 +1,11 @@
 <?php
 
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
-require_once ROOT_DIR . '/sys/LocalEnrichment/ListWidgetList.php';
+require_once ROOT_DIR . '/sys/LocalEnrichment/CollectionSpotlightList.php';
 
-class ListWidget extends DataObject
+class CollectionSpotlight extends DataObject
 {
-	public $__table = 'list_widgets';    // table name
+	public $__table = 'collection_spotlights';    // table name
 	public $id;                      //int(25)
 	public $name;                    //varchar(255)
 	public $description;                    //varchar(255)
@@ -23,19 +23,19 @@ class ListWidget extends DataObject
 	public $coverSize; //'small', 'medium'
 	public /** @noinspection PhpUnused */ $showViewMoreLink;
 	public $viewMoreLinkMode;
-	public /** @noinspection PhpUnused */ $showListWidgetTitle; // whether or not the widget title bar is shown
+	public /** @noinspection PhpUnused */ $showSpotlightTitle; // whether or not the title bar is shown
 	public /** @noinspection PhpUnused */ $numTitlesToShow;
 
-	// List Widget Styles and their labels
+	// Spotlight Styles and their labels
 	private static $_styles = array('horizontal' => 'Horizontal', 'vertical' => 'Vertical', 'single' => 'Single Title', 'single-with-next' => 'Single Title with a Next Button', 'text-list' => 'Text Only List');
 
-	// List Widget Display Types and their labels
+	// Spotlight Display Types and their labels
 	private static $_displayTypes = array(
 		'tabs' => 'Tabbed Display',
 		'dropdown' => 'Drop Down List'
 	);
 
-	/** @var  ListWidgetList[] */
+	/** @var  CollectionSpotlightList[] */
 	private $lists;
 
 	public function getNumericColumnNames()
@@ -45,22 +45,22 @@ class ListWidget extends DataObject
 
 	public function getStyles()
 	{
-		return ListWidget::$_styles;
+		return CollectionSpotlight::$_styles;
 	}
 
 	public function getStyle($styleName)
 	{
-		return ListWidget::$_styles[$styleName];
+		return CollectionSpotlight::$_styles[$styleName];
 	}
 
 	public function getDisplayTypes()
 	{
-		return ListWidget::$_displayTypes;
+		return CollectionSpotlight::$_displayTypes;
 	}
 
 	public function getDisplayType($typeName)
 	{
-		return ListWidget::$_displayTypes[$typeName];
+		return CollectionSpotlight::$_displayTypes[$typeName];
 	}
 
 	function keys()
@@ -90,7 +90,7 @@ class ListWidget extends DataObject
 				'property' => 'id',
 				'type' => 'hidden',
 				'label' => 'Id',
-				'description' => 'The unique id of the list widget file.',
+				'description' => 'The unique id of the collection spotlight.',
 				'storeDb' => true,
 			),
 			'libraryId' => array('property' => 'libraryId', 'type' => 'enum', 'values' => $libraryList, 'label' => 'Library', 'description' => 'A link to the library which the location belongs to'),
@@ -98,7 +98,7 @@ class ListWidget extends DataObject
 				'property' => 'name',
 				'type' => 'text',
 				'label' => 'Name',
-				'description' => 'The name of the widget.',
+				'description' => 'The name of the collection spotlight.',
 				'maxLength' => 255,
 				'size' => 100,
 				'serverValidation' => 'validateName',
@@ -110,7 +110,7 @@ class ListWidget extends DataObject
 				'rows' => 3,
 				'cols' => 80,
 				'label' => 'Description',
-				'description' => 'A description for the widget',
+				'description' => 'A description for the spotlight (shown internally only)',
 				'storeDb' => true,
 				'hideInLists' => true,
 			),
@@ -150,7 +150,7 @@ class ListWidget extends DataObject
 				'property' => 'style',
 				'type' => 'enum',
 				'label' => 'The style to use when displaying the featured titles',
-				'values' => ListWidget::$_styles,
+				'values' => CollectionSpotlight::$_styles,
 				'storeDb' => true,
 				'default' => 'horizontal',
 				'hideInLists' => true,
@@ -185,14 +185,14 @@ class ListWidget extends DataObject
 			'listDisplayType' => array(
 				'property' => 'listDisplayType',
 				'type' => 'enum',
-				'values' => ListWidget::$_displayTypes,
+				'values' => CollectionSpotlight::$_displayTypes,
 				'label' => 'Display lists as',
 				'description' => 'The method used to show the user the multiple lists associated with the display.',
 				'storeDb' => true,
 				'hideInLists' => true,
 			),
-			'showListWidgetTitle' => array(
-				'property' => 'showListWidgetTitle',
+			'showSpotlightTitle' => array(
+				'property' => 'showSpotlightTitle',
 				'type' => 'checkbox',
 				'label' => 'Show the display\'s title bar',
 				'description' => 'Whether or not the display\'s title bar is shown. (Enabling the Show More Link will force the title bar to be shown as well.)',
@@ -224,15 +224,14 @@ class ListWidget extends DataObject
 				'property' => 'lists',
 				'type' => 'oneToMany',
 				'keyThis' => 'id',
-				'keyOther' => 'listWidgetId',
-				'subObjectType' => 'ListWidgetList',
-				'structure' => ListWidgetList::getObjectStructure(),
+				'keyOther' => 'collectionSpotlightId',
+				'subObjectType' => 'CollectionSpotlightList',
+				'structure' => CollectionSpotlightList::getObjectStructure(),
 				'label' => 'Lists',
 				'description' => 'The lists to be displayed.',
 				'sortable' => true,
 				'storeDb' => true,
 				'serverValidation' => 'validateLists',
-				'editLink' => 'ListWidgetsListsLinks',
 				'hideInLists' => true,
 			),
 		);
@@ -248,16 +247,16 @@ class ListWidget extends DataObject
 		);
 
 		//Check to see if the name is unique
-		$widget = new ListWidget();
-		$widget->name = $this->name;
+		$spotlight = new CollectionSpotlight();
+		$spotlight->name = $this->name;
 		if ($this->id) {
-			$widget->whereAdd("id != " . $this->id);
+			$spotlight->whereAdd("id != " . $this->id);
 		}
-		$widget->libraryId = $this->libraryId;
-		$widget->find();
-		if ($widget->getNumResults() > 0) {
+		$spotlight->libraryId = $this->libraryId;
+		$spotlight->find();
+		if ($spotlight->getNumResults() > 0) {
 			//The title is not unique
-			$validationResults['errors'][] = "This widget has already been created.  Please select another name.";
+			$validationResults['errors'][] = "This collection spotlight has already been created.  Please select another name.";
 		}
 		//Make sure there aren't errors
 		if (count($validationResults['errors']) > 0) {
@@ -270,14 +269,14 @@ class ListWidget extends DataObject
 	{
 		if ($name == "lists") {
 			if (!isset($this->lists)) {
-				//Get the list of lists that are being displayed for the widget
+				//Get the list of lists that are being displayed for the spotlight
 				$this->lists = array();
-				$listWidgetList = new ListWidgetList();
-				$listWidgetList->listWidgetId = $this->id;
-				$listWidgetList->orderBy('weight ASC');
-				$listWidgetList->find();
-				while ($listWidgetList->fetch()) {
-					$this->lists[$listWidgetList->id] = clone($listWidgetList);
+				$collectionSpotlightList = new CollectionSpotlightList();
+				$collectionSpotlightList->collectionSpotlightId = $this->id;
+				$collectionSpotlightList->orderBy('weight ASC');
+				$collectionSpotlightList->find();
+				while ($collectionSpotlightList->fetch()) {
+					$this->lists[$collectionSpotlightList->id] = clone($collectionSpotlightList);
 				}
 			}
 			return $this->lists;
@@ -347,7 +346,7 @@ class ListWidget extends DataObject
 					if (isset($list->id) && is_numeric($list->id)) {
 						$list->update();
 					} else {
-						$list->listWidgetId = $this->id;
+						$list->collectionSpotlightId = $this->id;
 						$list->insert();
 					}
 				}

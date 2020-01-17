@@ -1,7 +1,7 @@
 {strip}
-<div id="list-{$wrapperId}" {if $display == 'false'}style="display:none"{/if} class="titleScroller singleTitleWithNextWidget {if $widget->coverSize == 'medium'}mediumScroller{/if} {if $widget->showRatings}scrollerWithRatings{/if}">
-	<div id="{$wrapperId}" class="titleScrollerWrapper singleTitleWidgetWrapper">
-		{if $showListWidgetTitle || $showViewMoreLink}
+<div id="list-{$wrapperId}" {if $display == 'false'}style="display:none"{/if} class="titleScroller singleTitleSpotlight {if $spotlight->coverSize == 'medium'}mediumScroller{/if} {if $collectionSpotlight->showRatings}scrollerWithRatings{/if}">
+	<div id="{$wrapperId}" class="titleScrollerWrapper singleTitleSpotlightWrapper">
+		{if $showCollectionSpotlightTitle || $showViewMoreLink}
 			<div id="list-{$wrapperId}Header" class="titleScrollerHeader">
 				{if $scrollerTitle}
 					<span class="listTitle resultInformationLabel">{if $scrollerTitle}{$scrollerTitle|escape:"html"}{/if}</span>
@@ -12,9 +12,6 @@
 			</div>
 		{/if}
 		<div id="titleScroller{$scrollerName}" class="titleScrollerBody">
-			<div class="rightScrollerButton btn" onclick="{$scrollerVariable}.scrollToRight();">
-				<i class="glyphicon glyphicon-chevron-right"></i>
-			</div>
 			<div class="scrollerBodyContainer">
 				<div class="scrollerBody" style="display:none"></div>
 				<div class="scrollerLoadingContainer">
@@ -22,33 +19,27 @@
 				</div>
 			</div>
 			<div class="clearer"></div>
-			{if $widget->showTitle}
+			{if $collectionSpotlight->showTitle}
 				<div id="titleScrollerSelectedTitle{$scrollerName}" class="titleScrollerSelectedTitle"></div>
 			{/if}
-			{if $widget->showAuthor}
+			{if $collectionSpotlight->showAuthor}
 				<div id="titleScrollerSelectedAuthor{$scrollerName}" class="titleScrollerSelectedAuthor"></div>
 			{/if}
 		</div>
 	</div>
 </div>
 <script type="text/javascript">
-	$("#list-" + '{$wrapperId}'+" .rightScrollerButton").button(
-		{literal}
-		{icons: {primary:'ui-icon-triangle-1-e'}, text: false}
-		{/literal}
-	);
-
 	{* touch swiping controls *}
 	$(document).ready(function(){ldelim}
 		$('#titleScroller{$scrollerName} .scrollerBodyContainer')
 			.touchwipe({ldelim}
 				wipeLeft : function(dx){ldelim}
 					{$scrollerVariable}.swipeToLeft(1); {*// scroll single item*}
-					{rdelim},
+				{rdelim},
 				wipeRight: function(dx) {ldelim}
 					{$scrollerVariable}.swipeToRight(1); {*// scroll single item*}
-					{rdelim}
-				{rdelim});
-		{rdelim});
+				{rdelim}
+			{rdelim});
+	{rdelim});
 </script>
 {/strip}

@@ -10,7 +10,7 @@ class Admin_AJAX extends Action {
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
 		if (method_exists($this, $method)) {
 			$timer->logTime("Starting method $method");
-			if (in_array($method, array('getReindexNotes', 'getExtractNotes', 'getReindexProcessNotes', 'getCronNotes', 'getCronProcessNotes', 'getAddToWidgetForm', 'getRecordGroupingNotes', 'getSierraExportNotes'))) {
+			if (in_array($method, array('getReindexNotes', 'getExtractNotes', 'getReindexProcessNotes', 'getCronNotes', 'getCronProcessNotes', 'getAddToSpotlightForm', 'getRecordGroupingNotes', 'getSierraExportNotes'))) {
 				//JSON Responses
 				header('Content-type: application/json');
 				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
@@ -180,26 +180,25 @@ class Admin_AJAX extends Action {
 	    return json_encode($results);
 	}
 
-	function getAddToWidgetForm(){
+	function getAddToSpotlightForm(){
 		global $interface;
 		$user = UserAccount::getLoggedInUser();
 		// Display Page
 		$interface->assign('id', strip_tags($_REQUEST['id']));
 		$interface->assign('source', strip_tags($_REQUEST['source']));
-		$existingWidgets = array();
-		$listWidget = new ListWidget();
+		$collectionSpotlight = new CollectionSpotlight();
 		if (UserAccount::userHasRole('libraryAdmin') || UserAccount::userHasRole('contentEditor') || UserAccount::userHasRole('libraryManager') || UserAccount::userHasRole('locationManager')){
-			//Get all widgets for the library
+			//Get all spotlights for the library
 			$userLibrary = Library::getPatronHomeLibrary();
-			$listWidget->libraryId = $userLibrary->libraryId;
+			$collectionSpotlight->libraryId = $userLibrary->libraryId;
 		}
-		$listWidget->orderBy('name');
-		$existingWidgets = $listWidget->fetchAll('id', 'name');
-		$interface->assign('existingWidgets', $existingWidgets);
+		$collectionSpotlight->orderBy('name');
+		$existingCollectionSpotlights = $collectionSpotlight->fetchAll('id', 'name');
+		$interface->assign('existingCollectionSpotlights', $existingCollectionSpotlights);
 		$results = array(
-				'title' => 'Create a Widget',
-				'modalBody' => $interface->fetch('Admin/addToWidgetForm.tpl'),
-				'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#bulkAddToList\").submit();'>Create Widget</button>"
+			'title' => 'Create a Spotlight',
+			'modalBody' => $interface->fetch('Admin/addToSpotlightForm.tpl'),
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#addSpotlight\").submit();'>Create Spotlight</button>"
 		);
 		return json_encode($results);
 	}

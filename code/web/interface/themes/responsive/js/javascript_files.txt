@@ -25,7 +25,7 @@ aspen/dpla.min.js
 aspen/econtent-record.min.js
 aspen/grouped-work.min.js
 aspen/lists.min.js
-aspen/lists-widgets.min.js
+aspen/collection-spotlights.min.js
 aspen/materials-request.min.js
 aspen/menu.min.js
 aspen/hoopla.min.js

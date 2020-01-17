@@ -18,7 +18,7 @@ class ExportSettings extends Admin_Admin
 				//Export Scopes
 			//Export Side loads
 			//Export browse categories
-			//Export widgets
+			//Export collection spotlights
 			//Export sideload data
 		}
 		$this->display('exportSettings.tpl', 'Export Settings');

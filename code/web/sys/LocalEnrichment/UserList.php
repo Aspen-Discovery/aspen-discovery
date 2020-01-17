@@ -356,7 +356,7 @@ class UserList extends DataObject
 		return $this->__userListSortOptions;
 	}
 
-	public function getSpotlightTitles(ListWidget $listWidget)
+	public function getSpotlightTitles(CollectionSpotlight $collectionSpotlight)
 	{
 		$allEntries = $this->getListTitles();
 
@@ -368,9 +368,9 @@ class UserList extends DataObject
 			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 			$groupedWork = new GroupedWorkDriver($entry->groupedWorkPermanentId);
 			if ($groupedWork->isValid()){
-				$results[$key] = $groupedWork->getSpotlightResult($listWidget, $key);
+				$results[$key] = $groupedWork->getSpotlightResult($collectionSpotlight, $key);
 			}
-			if (count($results) == $listWidget->numTitlesToShow){
+			if (count($results) == $collectionSpotlight->numTitlesToShow){
 				break;
 			}
 		}

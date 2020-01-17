@@ -1178,13 +1178,13 @@ class GroupedWorkDriver extends IndexRecordDriver
 		return 'RecordDrivers/GroupedWork/listEntry.tpl';
 	}
 
-	public function getSpotlightResult(ListWidget $listWidget, string $index){
+	public function getSpotlightResult(CollectionSpotlight $collectionSpotlight, string $index){
 		global $interface;
-		$interface->assign('showRatings', $listWidget->showRatings);
+		$interface->assign('showRatings', $collectionSpotlight->showRatings);
 
 		$interface->assign('key', $index);
 
-		if ($listWidget->coverSize == 'small'){
+		if ($collectionSpotlight->coverSize == 'small'){
 			$imageUrl = $this->getBookcoverUrl('small');
 		}else{
 			$imageUrl = $this->getBookcoverUrl('medium');
@@ -1198,24 +1198,27 @@ class GroupedWorkDriver extends IndexRecordDriver
 		$interface->assign('titleURL', $this->getRecordUrl());
 		$interface->assign('imageUrl', $imageUrl);
 
-		if ($listWidget->showRatings){
+		if ($collectionSpotlight->showRatings){
 			$interface->assign('ratingData', $this->getRatingData());
 			$interface->assign('showNotInterested', false);
 		}
 
-		$result = [];
-		if ($listWidget->style == 'text-list'){
-			$result['formattedTextOnlyTitle'] = $interface->fetch('ListWidget/formattedTextOnlyTitle.tpl');
+		$result = [
+			'title' => $this->getTitle(),
+			'author' => $this->getPrimaryAuthor(),
+		];
+		if ($collectionSpotlight->style == 'text-list'){
+			$result['formattedTextOnlyTitle'] = $interface->fetch('CollectionSpotlight/formattedTextOnlyTitle.tpl');
 		}else{
-			$result['formattedTitle']= $interface->fetch('ListWidget/formattedTitle.tpl');
+			$result['formattedTitle']= $interface->fetch('CollectionSpotlight/formattedTitle.tpl');
 		}
 
 		return $result;
 	}
 
-	public function getListWidgetTitle()
+	public function getSummaryInformation()
 	{
-		$widgetTitleInfo = array(
+		$summaryInfo = array(
 			'id' => $this->getPermanentId(),
 			'shortId' => $this->getPermanentId(),
 			'recordtype' => 'grouped_work',
@@ -1230,7 +1233,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 			'ratingData' => $this->getRatingData(),
 		);
 
-		return $widgetTitleInfo;
+		return $summaryInfo;
 	}
 
 
