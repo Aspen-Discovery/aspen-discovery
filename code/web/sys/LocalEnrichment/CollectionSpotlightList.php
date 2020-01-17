@@ -176,4 +176,63 @@ class CollectionSpotlightList extends DataObject
 		}
 		return $this->_collectionSpotlight;
 	}
+
+	/**
+	 * @param SearchObject_SolrSearcher $searchObj
+	 *
+	 * @return boolean
+	 */
+	public function updateFromSearch($searchObj)
+	{
+		//Search terms
+		$searchTerms = $searchObj->getSearchTerms();
+		if (is_array($searchTerms)) {
+			if (count($searchTerms) > 1) {
+				return false;
+			} else {
+				if (!isset($searchTerms[0]['index'])) {
+					$this->searchTerm = $searchObj->displayQuery();
+				} else if ($searchTerms[0]['index'] == 'Keyword') {
+					$this->searchTerm = $searchTerms[0]['lookfor'];
+				} else {
+					$this->searchTerm = $searchTerms[0]['index'] . ':' . $searchTerms[0]['lookfor'];
+				}
+			}
+		} else {
+			$this->searchTerm = $searchTerms;
+		}
+
+		//Default Filter
+		$filters = $searchObj->getFilterList();
+		$formattedFilters = '';
+		foreach ($filters as $filter) {
+			if (strlen($formattedFilters) > 0) {
+				$formattedFilters .= "\r\n";
+			}
+			$formattedFilters .= $filter[0]['field'] . ':' . $filter[0]['value'];
+		}
+		$this->defaultFilter = $formattedFilters;
+
+		//Default sort
+		$solrSort = $searchObj->getSort();
+		if ($solrSort == 'relevance') {
+			$this->defaultSort = 'relevance';
+		} elseif ($solrSort == 'popularity desc') {
+			$this->defaultSort = 'popularity';
+		} elseif ($solrSort == 'days_since_added asc' || $solrSort == 'year desc,title asc') {
+			$this->defaultSort = 'newest_to_oldest';
+		} elseif ($solrSort == 'days_since_added desc') {
+			$this->defaultSort = 'oldest_to_newest';
+		} elseif ($solrSort == 'author,title') {
+			$this->defaultSort = 'author';
+		} elseif ($solrSort == 'title,author') {
+			$this->defaultSort = 'title';
+		} elseif ($solrSort == 'rating desc,title') {
+			$this->defaultSort = 'user_rating';
+		} else {
+			$this->defaultSort = 'relevance';
+		}
+		return true;
+
+	}
 }

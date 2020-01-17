@@ -50,19 +50,25 @@ class CreateCollectionSpotlight extends Action {
 
 			//Make sure to save the search
 			//TODO: No longer have to save the search
-			if ($source == 'search') {
-				$searchObject     = new SearchEntry();
-				$searchObject->id = $sourceId;
-				$searchObject->find(true);
-				$searchObject->saved = 1;
-				$searchObject->user_id = $user->id;
-				$searchObject->update();
-			}
+
 
 			//Add the list to the spotlight
 			$spotlightList               = new CollectionSpotlightList();
 			$spotlightList->collectionSpotlightId = $collectionSpotlight->id;
 			$spotlightList->displayFor   = 'all';
+			if ($source == 'search') {
+				/** @var SearchObject_GroupedWorkSearcher $searchObj */
+				$searchObj = SearchObjectFactory::initSearchObject();
+				$searchObj->init();
+				$searchObj = $searchObj->restoreSavedSearch($sourceId, false, true);
+				if (!$spotlightList->updateFromSearch($searchObj)){
+					return array(
+						'success' => false,
+						'message' => "Sorry, this search is too complex to create a spotlight from."
+					);
+				}
+			}
+
 			$spotlightList->source       = "$source:$sourceId";
 			$spotlightList->name         = $spotlightName;
 			$spotlightList->weight       = 0;

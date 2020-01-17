@@ -2,10 +2,12 @@
 
 require_once ROOT_DIR . '/Action.php';
 
-class Admin_AJAX extends Action {
+class Admin_AJAX extends Action
+{
 
 
-	function launch() {
+	function launch()
+	{
 		global $timer;
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
 		if (method_exists($this, $method)) {
@@ -22,172 +24,179 @@ class Admin_AJAX extends Action {
 				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 				header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
 				$xml = '<?xml version="1.0" encoding="UTF-8"?' . ">\n" .
-						"<AJAXResponse>\n";
+					"<AJAXResponse>\n";
 				$xml .= $this->$_GET['method']();
 				$xml .= '</AJAXResponse>';
 
 				echo $xml;
 			}
-		}else {
-			echo json_encode(array('error'=>'invalid_method'));
+		} else {
+			echo json_encode(array('error' => 'invalid_method'));
 		}
 	}
 
-	function getReindexNotes(){
+	function getReindexNotes()
+	{
 		$id = $_REQUEST['id'];
 		$reindexProcess = new ReindexLogEntry();
 		$reindexProcess->id = $id;
 		$results = array(
-				'title' => '',
-				'modalBody' => '',
-				'modalButtons' => ''
+			'title' => '',
+			'modalBody' => '',
+			'modalButtons' => ''
 		);
-		if ($reindexProcess->find(true)){
+		if ($reindexProcess->find(true)) {
 			$results['title'] = "Reindex Notes";
-			if (strlen(trim($reindexProcess->notes)) == 0){
+			if (strlen(trim($reindexProcess->notes)) == 0) {
 				$results['modalBody'] = "No notes have been entered yet";
-			}else{
+			} else {
 				$results['modalBody'] = "<div class='helpText'>{$reindexProcess->notes}</div>";
 			}
-		}else{
+		} else {
 			$results['title'] = "Error";
 			$results['modalBody'] = "We could not find a reindex entry with that id.  No notes available.";
 		}
 		return json_encode($results);
 	}
 
-	function getRecordGroupingNotes(){
+	function getRecordGroupingNotes()
+	{
 		$id = $_REQUEST['id'];
 		$recordGroupingProcess = new RecordGroupingLogEntry();
 		$recordGroupingProcess->id = $id;
 		$results = array(
-				'title' => '',
-				'modalBody' => '',
-				'modalButtons' => ''
+			'title' => '',
+			'modalBody' => '',
+			'modalButtons' => ''
 		);
-		if ($recordGroupingProcess->find(true)){
+		if ($recordGroupingProcess->find(true)) {
 			$results['title'] = "Record Grouping Notes";
-			if (strlen(trim($recordGroupingProcess->notes)) == 0){
+			if (strlen(trim($recordGroupingProcess->notes)) == 0) {
 				$results['modalBody'] = "No notes have been entered yet";
-			}else{
+			} else {
 				$results['modalBody'] = "<div class='helpText'>{$recordGroupingProcess->notes}</div>";
 			}
-		}else{
+		} else {
 			$results['title'] = "Error";
 			$results['modalBody'] = "We could not find a record grouping log entry with that id.  No notes available.";
 		}
 		return json_encode($results);
 	}
 
-	function getCronProcessNotes(){
+	function getCronProcessNotes()
+	{
 		$id = $_REQUEST['id'];
 		$cronProcess = new CronProcessLogEntry();
 		$cronProcess->id = $id;
 		$results = array(
-				'title' => '',
-				'modalBody' => '',
-				'modalButtons' => ""
+			'title' => '',
+			'modalBody' => '',
+			'modalButtons' => ""
 		);
-		if ($cronProcess->find(true)){
+		if ($cronProcess->find(true)) {
 			$results['title'] = "{$cronProcess->processName} Notes";
-			if (strlen($cronProcess->notes) == 0){
+			if (strlen($cronProcess->notes) == 0) {
 				$results['modalBody'] = "No notes have been entered for this process";
-			}else{
+			} else {
 				$results['modalBody'] = "<div class='helpText'>{$cronProcess->notes}</div>";
 			}
-		}else{
+		} else {
 			$results['title'] = "Error";
 			$results['modalBody'] = "We could not find a process with that id.  No notes available.";
 		}
 		return json_encode($results);
 	}
 
-	function getCronNotes()	{
+	function getCronNotes()
+	{
 		$id = $_REQUEST['id'];
 		$cronLog = new CronLogEntry();
 		$cronLog->id = $id;
 
 		$results = array(
-				'title' => '',
-				'modalBody' => '',
-				'modalButtons' => ""
+			'title' => '',
+			'modalBody' => '',
+			'modalButtons' => ""
 		);
-		if ($cronLog->find(true)){
+		if ($cronLog->find(true)) {
 			$results['title'] = "Cron Process {$cronLog->id} Notes";
-			if (strlen($cronLog->notes) == 0){
+			if (strlen($cronLog->notes) == 0) {
 				$results['modalBody'] = "No notes have been entered for this cron run";
-			}else{
+			} else {
 				$results['modalBody'] = "<div class='helpText'>{$cronLog->notes}</div>";
 			}
-		}else{
+		} else {
 			$results['title'] = "Error";
 			$results['modalBody'] = "We could not find a cron entry with that id.  No notes available.";
 		}
 		return json_encode($results);
 	}
 
-    function getExtractNotes()	{
-        $id = $_REQUEST['id'];
-        $source = $_REQUEST['source'];
-        $extractLog = null;
-        if ($source == 'overdrive'){
-            require_once ROOT_DIR . '/sys/OverDrive/OverDriveExtractLogEntry.php';
-            $extractLog = new OverDriveExtractLogEntry();
-        }elseif ($source == 'ils'){
-            require_once ROOT_DIR . '/sys/ILS/IlsExtractLogEntry.php';
-            $extractLog = new IlsExtractLogEntry();
-        }elseif ($source == 'hoopla'){
-            require_once ROOT_DIR . '/sys/Hoopla/HooplaExportLogEntry.php';
-            $extractLog = new HooplaExportLogEntry();
-        }elseif ($source == 'rbdigital'){
-            require_once ROOT_DIR . '/sys/RBdigital/RBdigitalExportLogEntry.php';
-            $extractLog = new RBdigitalExportLogEntry();
-        }elseif ($source == 'cloud_library'){
-	        require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibraryExportLogEntry.php';
-	        $extractLog = new CloudLibraryExportLogEntry();
-        }elseif ($source == 'sideload'){
-	        require_once ROOT_DIR . '/sys/Indexing/SideLoadLogEntry.php';
-	        $extractLog = new SideLoadLogEntry();
-        }elseif ($source == 'website'){
-	        require_once ROOT_DIR . '/sys/WebsiteIndexing/WebsiteIndexLogEntry.php';
-	        $extractLog = new WebsiteIndexLogEntry();
-        }
+	function getExtractNotes()
+	{
+		$id = $_REQUEST['id'];
+		$source = $_REQUEST['source'];
+		$extractLog = null;
+		if ($source == 'overdrive') {
+			require_once ROOT_DIR . '/sys/OverDrive/OverDriveExtractLogEntry.php';
+			$extractLog = new OverDriveExtractLogEntry();
+		} elseif ($source == 'ils') {
+			require_once ROOT_DIR . '/sys/ILS/IlsExtractLogEntry.php';
+			$extractLog = new IlsExtractLogEntry();
+		} elseif ($source == 'hoopla') {
+			require_once ROOT_DIR . '/sys/Hoopla/HooplaExportLogEntry.php';
+			$extractLog = new HooplaExportLogEntry();
+		} elseif ($source == 'rbdigital') {
+			require_once ROOT_DIR . '/sys/RBdigital/RBdigitalExportLogEntry.php';
+			$extractLog = new RBdigitalExportLogEntry();
+		} elseif ($source == 'cloud_library') {
+			require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibraryExportLogEntry.php';
+			$extractLog = new CloudLibraryExportLogEntry();
+		} elseif ($source == 'sideload') {
+			require_once ROOT_DIR . '/sys/Indexing/SideLoadLogEntry.php';
+			$extractLog = new SideLoadLogEntry();
+		} elseif ($source == 'website') {
+			require_once ROOT_DIR . '/sys/WebsiteIndexing/WebsiteIndexLogEntry.php';
+			$extractLog = new WebsiteIndexLogEntry();
+		}
 
-        if ($extractLog == null){
-            $results['title'] = "Error";
-            $results['modalBody'] = "Invalid source for loading notes.";
-        }else{
-            $extractLog->id = $id;
-            $results = array(
-                'title' => '',
-                'modalBody' => '',
-                'modalButtons' => ""
-            );
-            if ($extractLog->find(true)){
-                $results['title'] = "Extract {$extractLog->id} Notes";
-                if (strlen($extractLog->notes) == 0){
-                    $results['modalBody'] = "No notes have been entered for this run";
-                }else{
-                    $results['modalBody'] = "<div class='helpText'>{$extractLog->notes}</div>";
-                }
-            }else{
-                $results['title'] = "Error";
-                $results['modalBody'] = "We could not find an extract entry with that id.  No notes available.";
-            }
-        }
+		if ($extractLog == null) {
+			$results['title'] = "Error";
+			$results['modalBody'] = "Invalid source for loading notes.";
+		} else {
+			$extractLog->id = $id;
+			$results = array(
+				'title' => '',
+				'modalBody' => '',
+				'modalButtons' => ""
+			);
+			if ($extractLog->find(true)) {
+				$results['title'] = "Extract {$extractLog->id} Notes";
+				if (strlen($extractLog->notes) == 0) {
+					$results['modalBody'] = "No notes have been entered for this run";
+				} else {
+					$results['modalBody'] = "<div class='helpText'>{$extractLog->notes}</div>";
+				}
+			} else {
+				$results['title'] = "Error";
+				$results['modalBody'] = "We could not find an extract entry with that id.  No notes available.";
+			}
+		}
 
 
-	    return json_encode($results);
+		return json_encode($results);
 	}
 
-	function getAddToSpotlightForm(){
+	function getAddToSpotlightForm()
+	{
 		global $interface;
 		$user = UserAccount::getLoggedInUser();
 		// Display Page
 		$interface->assign('id', strip_tags($_REQUEST['id']));
 		$interface->assign('source', strip_tags($_REQUEST['source']));
+		require_once ROOT_DIR . '/sys/LocalEnrichment/CollectionSpotlight.php';
 		$collectionSpotlight = new CollectionSpotlight();
-		if (UserAccount::userHasRole('libraryAdmin') || UserAccount::userHasRole('contentEditor') || UserAccount::userHasRole('libraryManager') || UserAccount::userHasRole('locationManager')){
+		if (UserAccount::userHasRole('libraryAdmin') || UserAccount::userHasRole('contentEditor') || UserAccount::userHasRole('libraryManager') || UserAccount::userHasRole('locationManager')) {
 			//Get all spotlights for the library
 			$userLibrary = Library::getPatronHomeLibrary();
 			$collectionSpotlight->libraryId = $userLibrary->libraryId;
