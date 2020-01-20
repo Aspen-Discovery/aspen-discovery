@@ -368,7 +368,7 @@
 				{/if}
 
 				{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('contentEditor', $userRoles) || array_key_exists('libraryManager', $userRoles) || array_key_exists('locationManager', $userRoles))}
-					{if in_array($action, array('Placards', 'NYTLists', 'CollectionSpotlights', 'BrowseCategories', 'NovelistSettings', 'ContentCafeSettings', 'GoogleApiSettings', 'SyndeticsSettings', 'DPLASettings', 'NewYorkTimesSettings'))}
+					{if in_array($action, array('Placards', 'NYTLists', 'CollectionSpotlights', 'BrowseCategories', 'NovelistSettings', 'AuthorEnrichment', 'ARSettings', 'ContentCafeSettings', 'GoogleApiSettings', 'SyndeticsSettings', 'DPLASettings', 'NewYorkTimesSettings'))}
 						{assign var="curSection" value=true}
 					{else}
 						{assign var="curSection" value=false}
@@ -394,6 +394,10 @@
 									<div class="adminMenuLink"><a href="/Admin/Placards">{translate text="Placards"}</a></div>
 								{/if}
 								<hr class="menu"/>
+								<div class="adminMenuLink"><a href="/Admin/AuthorEnrichment">{translate text="Author Enrichment"}</a></div>
+								{if array_key_exists('opacAdmin', $userRoles)}
+									<div class="adminMenuLink"><a href="/RenaissanceLearning/ARSettings">{translate text="Accelerated Reader Settings"}</a></div>
+								{/if}
 								{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles))}
 									<div class="adminMenuLink"><a href="/Enrichment/ContentCafeSettings">{translate text="ContentCafe Settings"}</a></div>
 								{/if}
@@ -446,7 +450,7 @@
 				{/if}
 
 				{if (array_key_exists('cataloging', $userRoles) || array_key_exists('opacAdmin', $userRoles))}
-					{if in_array($action, array('MergedGroupedWorks', 'NonGroupedRecords', 'AuthorEnrichment', 'ARSettings'))}
+					{if in_array($action, array('MergedGroupedWorks', 'NonGroupedRecords'))}
 						{assign var="curSection" value=true}
 					{else}
 						{assign var="curSection" value=false}
@@ -463,10 +467,7 @@
 							<div class="panel-body">
 								<div class="adminMenuLink"><a href="/Admin/MergedGroupedWorks">{translate text="Grouped Work Merging"}</a></div>
 								<div class="adminMenuLink"><a href="/Admin/NonGroupedRecords">{translate text="Records To Not Group"}</a></div>
-								<div class="adminMenuLink"><a href="/Admin/AuthorEnrichment">{translate text="Author Enrichment"}</a></div>
-								{if array_key_exists('opacAdmin', $userRoles)}
-									<div class="adminMenuLink"><a href="/RenaissanceLearning/ARSettings">{translate text="Accelerated Reader Settings"}</a></div>
-								{/if}
+
 							</div>
 						</div>
 					</div>
