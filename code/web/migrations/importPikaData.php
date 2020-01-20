@@ -359,6 +359,8 @@ function validateGroupedWork(&$groupedWorkId, $title, $author, &$validGroupedWor
 						$invalidGroupedWorks[$groupedWorkId] = $groupedWorkId;
 					}
 				}
+				$searchObject->__destruct();
+				$searchObject = null;
 			}else{
 				//There was no title or author provided, it looks like this was deleted in Pika
 				//echo("Grouped Work $groupedWorkId - $title by $author does not exist\r\n");
