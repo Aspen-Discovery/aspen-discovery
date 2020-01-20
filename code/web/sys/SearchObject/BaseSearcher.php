@@ -402,7 +402,9 @@ abstract class SearchObject_BaseSearcher
 			}
 		}
 		// Add the new filter
-		$this->addFilter([$field, $filterValue]);
+		if ($filterValue != null) {
+			$this->addFilter([$field, $filterValue]);
+		}
 		// Remove page number
 		$this->page = 1;
 		// Get the new url
