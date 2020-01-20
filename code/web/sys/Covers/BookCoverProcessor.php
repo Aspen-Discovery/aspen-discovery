@@ -1068,15 +1068,18 @@ class BookCoverProcessor{
 					}
 				}
 			}
-			$groupedWork = new GroupedWork();
-			$groupedWork->permanent_id = $this->groupedWork->getPermanentId();
-			if ($groupedWork->find(true)) {
-				if ($groupedWork->grouping_category == 'book') {
-					require_once ROOT_DIR . '/sys/Enrichment/GoogleApiSetting.php';
-					$googleApiSettings = new GoogleApiSetting();
-					if ($googleApiSettings->find(true)){
-						if ($this->google($googleApiSettings, $driver->getTitle(), $driver->getPrimaryAuthor())){
-							return true;
+
+			if (!empty($driver)) {
+				$groupedWork = new GroupedWork();
+				$groupedWork->permanent_id = $this->groupedWork->getPermanentId();
+				if ($groupedWork->find(true)) {
+					if ($groupedWork->grouping_category == 'book') {
+						require_once ROOT_DIR . '/sys/Enrichment/GoogleApiSetting.php';
+						$googleApiSettings = new GoogleApiSetting();
+						if ($googleApiSettings->find(true)) {
+							if ($this->google($googleApiSettings, $driver->getTitle(), $driver->getPrimaryAuthor())) {
+								return true;
+							}
 						}
 					}
 				}
