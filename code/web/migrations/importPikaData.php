@@ -6,7 +6,7 @@ require_once __DIR__ . '/../bootstrap.php';
  */
 global $serverName;
 
-ini_set('memory_limit','1G');
+ini_set('memory_limit','2G');
 $dataPath = '/data/aspen-discovery/' . $serverName;
 $exportPath = $dataPath . '/pika_export/';
 
