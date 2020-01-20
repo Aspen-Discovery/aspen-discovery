@@ -37,9 +37,9 @@ if (!file_exists($exportPath)){
 	$invalidGroupedWorks = [];
 	$movedGroupedWorks = [];
 
-	importReadingHistory($exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
 	importRatingsAndReviews($exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
 	importLists($exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
+	importReadingHistory($exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
 }
 
 function importReadingHistory($exportPath, $existingUsers, $missingUsers, &$validGroupedWorks, &$invalidGroupedWorks, &$movedGroupedWorks){

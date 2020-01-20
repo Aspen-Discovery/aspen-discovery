@@ -158,7 +158,6 @@ class Millennium extends AbstractIlsDriver
 	 */
 	public function patronLogin($username, $password, $validatedViaSSO) {
 		global $timer;
-		global $configArray;
 
 		//Get the barcode property
 		if ($this->accountProfile->loginConfiguration == 'barcode_pin'){
@@ -189,7 +188,7 @@ class Millennium extends AbstractIlsDriver
 			}else{
 				if (isset($patronDump['PATRN_NAME'])){
 					$patronName = $patronDump['PATRN_NAME'];
-					list($fullName, $lastName, $firstName, $userValid) = $this->validatePatronName($username, $patronName);
+					list(, , , $userValid) = $this->validatePatronName($username, $patronName);
 				}
 			}
 		}
@@ -198,224 +197,11 @@ class Millennium extends AbstractIlsDriver
 			if (!isset($patronName) || $patronName == null) {
 				if (isset($patronDump['PATRN_NAME'])) {
 					$patronName = $patronDump['PATRN_NAME'];
-					list($fullName, $lastName, $firstName) = $this->validatePatronName($username, $patronName);
-				}
-			}
-			$userExistsInDB = false;
-			$user = new User();
-			//Get the unique user id from Millennium
-			$user->source   = $this->accountProfile->name;
-			$user->username = $patronDump['RECORD_#'];
-			if ($user->find(true)) {
-				$userExistsInDB = true;
-			}
-			$forceDisplayNameUpdate = false;
-			$firstName = isset($firstName) ? $firstName : '';
-			if ($user->firstname != $firstName) {
-				$user->firstname = $firstName;
-				$forceDisplayNameUpdate = true;
-			}
-			$lastName = isset($lastName) ? $lastName : '';
-			if ($user->lastname != $lastName){
-				$user->lastname = isset($lastName) ? $lastName : '';
-				$forceDisplayNameUpdate = true;
-			}
-			$user->_fullname = isset($fullName) ? $fullName : '';
-			if ($forceDisplayNameUpdate){
-				$user->displayName = '';
-			}
-
-			if ($this->accountProfile->loginConfiguration == 'barcode_pin'){
-				if (isset($patronDump['P_BARCODE'])){
-					$user->cat_username = $patronDump['P_BARCODE']; //Make sure to get the barcode so if we are using usernames we can still get the barcode for use with overdrive, etc.
-				}else{
-					$user->cat_username = $patronDump['CARD_#']; //Make sure to get the barcode so if we are using usernames we can still get the barcode for use with overdrive, etc.
-				}
-				$user->cat_password = $password;
-			}else{
-				$user->cat_username = $patronDump['PATRN_NAME'];
-				//When we get the patron dump, we may override the barcode so make sure that we update it here.
-				//For self registered cards, the P_BARCODE is not set so we need to use the RECORD_# field
-				if (strlen($patronDump['P_BARCODE']) > 0){
-					$user->cat_password = $patronDump['P_BARCODE'];
-				}else{
-					$user->cat_password = $patronDump['RECORD_#'];
-				}
-
-			}
-
-			$user->phone = isset($patronDump['TELEPHONE']) ? $patronDump['TELEPHONE'] : (isset($patronDump['HOME_PHONE']) ? $patronDump['HOME_PHONE'] : '');
-			$user->email = isset($patronDump['EMAIL_ADDR']) ? $patronDump['EMAIL_ADDR'] : '';
-			$user->patronType = $patronDump['P_TYPE'];
-			if (isset($configArray['OPAC']['webNoteField'])){
-				$user->_web_note = isset($patronDump[$configArray['OPAC']['webNoteField']]) ? $patronDump[$configArray['OPAC']['webNoteField']] : '';
-			}else{
-				$user->_web_note = isset($patronDump['WEB_NOTE']) ? $patronDump['WEB_NOTE'] : '';
-			}
-
-			//Setup home location
-			$location = null;
-			if (isset($patronDump['HOME_LIBR']) || isset($patronDump['HOLD_LIBR'])){
-				$homeBranchCode = isset($patronDump['HOME_LIBR']) ? $patronDump['HOME_LIBR'] : $patronDump['HOLD_LIBR'];
-				$homeBranchCode = str_replace('+', '', $homeBranchCode); //Translate home branch to plain text
-				$location = new Location();
-				$location->code = $homeBranchCode;
-				if (!$location->find(true)){
-					unset($location);
-				}
-			} else {
-				global $logger;
-				$logger->log('Millennium Driver: No Home Library Location or Hold location found in patron dump. User : '.$user->id, Logger::LOG_ERROR);
-				// The code below will attempt to find a location for the library anyway if the homeLocation is already set
-			}
-
-			if (empty($user->homeLocationId) || (isset($location) && $user->homeLocationId != $location->locationId)) { // When homeLocation isn't set or has changed
-				if (empty($user->homeLocationId) && !isset($location)) {
-						// homeBranch Code not found in location table and the user doesn't have an assigned homelocation,
-						// try to find the main branch to assign to user
-						// or the first location for the library
-						global $library;
-
-						$location            = new Location();
-						$location->libraryId = $library->libraryId;
-						$location->orderBy('isMainBranch desc'); // gets the main branch first or the first location
-						if (!$location->find(true)) {
-							// Seriously no locations even?
-							global $logger;
-							$logger->log('Failed to find any location to assign to user as home location', Logger::LOG_ERROR);
-							unset($location);
-						}
-				}
-				if (isset($location)) {
-					$user->homeLocationId = $location->locationId;
-					if (empty($user->myLocation1Id)) {
-						$user->myLocation1Id  = ($location->nearbyLocation1 > 0) ? $location->nearbyLocation1 : $location->locationId;
-						/** @var /Location $location */
-						//Get display name for preferred location 1
-						$myLocation1             = new Location();
-						$myLocation1->locationId = $user->myLocation1Id;
-						if ($myLocation1->find(true)) {
-							$user->_myLocation1 = $myLocation1->displayName;
-						}
-					}
-
-					if (empty($user->myLocation2Id)){
-						$user->myLocation2Id  = ($location->nearbyLocation2 > 0) ? $location->nearbyLocation2 : $location->locationId;
-						//Get display name for preferred location 2
-						$myLocation2             = new Location();
-						$myLocation2->locationId = $user->myLocation2Id;
-						if ($myLocation2->find(true)) {
-							$user->_myLocation2 = $myLocation2->displayName;
-						}
-					}
+					$this->validatePatronName($username, $patronName);
 				}
 			}
 
-			if (isset($location)){
-				//Get display names that aren't stored
-				$user->_homeLocationCode = $location->code;
-				$user->_homeLocation     = $location->displayName;
-			}
-
-			$user->_expired     = 0; // default setting
-			$user->_expireClose = 0;
-			//See if expiration date is close
-			if (trim($patronDump['EXP_DATE']) != '-  -'){
-				$user->_expires = $patronDump['EXP_DATE'];
-				list ($monthExp, $dayExp, $yearExp) = explode("-",$patronDump['EXP_DATE']);
-				$timeExpire = strtotime($monthExp . "/" . $dayExp . "/" . $yearExp);
-				$timeNow = time();
-				$timeToExpire = $timeExpire - $timeNow;
-				if ($timeToExpire <= 30 * 24 * 60 * 60){
-					if ($timeToExpire <= 0){
-						$user->_expired = 1;
-					}
-					$user->_expireClose = 1;
-				}
-			}
-
-			//Get additional information that doesn't necessarily get stored in the User Table
-			if (isset($patronDump['ADDRESS'])){
-				$fullAddress = $patronDump['ADDRESS'];
-				$addressParts = explode('$',$fullAddress);
-				$user->address1 = $addressParts[0];
-				$user->city     = isset($addressParts[1]) ? $addressParts[1] : '';
-				$user->state    = isset($addressParts[2]) ? $addressParts[2] : '';
-				$user->zip      = isset($addressParts[3]) ? $addressParts[3] : '';
-
-				if (preg_match('/(.*?),\\s+(.*)\\s+(\\d*(?:-\\d*)?)/', $user->city, $matches)) {
-					$user->city  = $matches[1];
-					$user->state = $matches[2];
-					$user->zip   = $matches[3];
-				}else if (preg_match('/(.*?)\\s+(\\w{2})\\s+(\\d*(?:-\\d*)?)/', $user->city, $matches)) {
-					$user->city  = $matches[1];
-					$user->state = $matches[2];
-					$user->_zip   = $matches[3];
-				}
-			}else{
-				$user->_address1 = "";
-				$user->_city     = "";
-				$user->_state    = "";
-				$user->_zip      = "";
-			}
-
-			$user->_address2  = $user->city . ', ' . $user->state;
-			$user->_workPhone = (isset($patronDump) && isset($patronDump['G/WK_PHONE'])) ? $patronDump['G/WK_PHONE'] : '';
-			if (isset($patronDump) && isset($patronDump['MOBILE_NO'])){
-				$user->_mobileNumber = $patronDump['MOBILE_NO'];
-			}else{
-				if (isset($patronDump) && isset($patronDump['MOBILE_PH'])){
-					$user->_mobileNumber = $patronDump['MOBILE_PH'];
-				}else{
-					$user->_mobileNumber = '';
-				}
-			}
-
-			$user->_finesVal = floatval(preg_replace('/[^\\d.]/', '', $patronDump['MONEY_OWED']));
-			$user->_fines    = $patronDump['MONEY_OWED'];
-
-			if (isset($patronDump['USERNAME'])){
-				$user->_alt_username = $patronDump['USERNAME'];
-			}
-
-			$numHoldsAvailable = 0;
-			$numHoldsRequested = 0;
-			$availableStatusRegex = isset($configArray['Catalog']['patronApiAvailableHoldsRegex']) ? $configArray['Catalog']['patronApiAvailableHoldsRegex'] : "/ST=(105|98|106),/";
-			if (isset($patronDump) && isset($patronDump['HOLD']) && count($patronDump['HOLD']) > 0){
-				foreach ($patronDump['HOLD'] as $hold){
-					if (preg_match("$availableStatusRegex", $hold)){
-						$numHoldsAvailable++;
-					}else{
-						$numHoldsRequested++;
-					}
-				}
-			}
-			$user->_numCheckedOutIls     = $patronDump['CUR_CHKOUT'];
-			$user->_numHoldsIls          = isset($patronDump) ? (isset($patronDump['HOLD']) ? count($patronDump['HOLD']) : 0) : '?';
-			$user->_numHoldsAvailableIls = $numHoldsAvailable;
-			$user->_numHoldsRequestedIls = $numHoldsRequested;
-			$user->_numBookings          = isset($patronDump) ? (isset($patronDump['BOOKING']) ? count($patronDump['BOOKING']) : 0) : '?';
-
-			$noticeLabels = array(
-				//'-' => 'Mail',  // officially None in Sierra, as in No Preference Selected.
-				'-' => '',  // notification will generally be based on what information is available so can't determine here. plb 12-02-2014
-				'a' => 'Mail', // officially Print in Sierra
-				'p' => 'Telephone',
-				'z' => 'Email',
-			);
-			$user->_notices = isset($patronDump) ? $patronDump['NOTICE_PREF'] : '-';
-			if (array_key_exists($user->_notices, $noticeLabels)){
-				$user->_noticePreferenceLabel = $noticeLabels[$user->_notices];
-			}else{
-				$user->_noticePreferenceLabel = 'Unknown';
-			}
-
-			if ($userExistsInDB){
-				$user->update();
-			}else{
-				$user->created = date('Y-m-d');
-				$user->insert();
-			}
+			$user = $this->createPatronFromPatronDump($patronDump, $password);
 
 			$timer->logTime("Patron logged in successfully");
 			return $user;
@@ -445,9 +231,9 @@ class Millennium extends AbstractIlsDriver
 		$patronDump = $memCache->get("patron_dump_$barcode");
 		if (!$patronDump || $forceReload){
 			$host = isset($this->accountProfile->patronApiUrl) ? $this->accountProfile->patronApiUrl : null; // avoid warning notices
-			if ($host == null){
-                echo("Patron API URL must be defined in the account profile to work with the Millennium API");
-                die();
+			if ($host == null) {
+				echo("Patron API URL must be defined in the account profile to work with the Millennium API");
+				die();
 			}
 			$barcodesToTest = array();
 			$barcodesToTest[] = $barcode;
@@ -1844,5 +1630,273 @@ class Millennium extends AbstractIlsDriver
 			'expired' => $expired,
 			'expireClose' => $expireClose,
 		];
+	}
+
+	public function findNewUser($patronBarcode){
+		$patronDump = $this->_getPatronDump($patronBarcode);
+		if ($patronDump != null){
+			if (count($patronDump) > 0){
+				$user = $this->createPatronFromPatronDump($patronDump, '');
+				return $user;
+			}else{
+				return false;
+			}
+		}else{
+			return false;
+		}
+	}
+
+	/**
+	 * @param array $patronDump
+	 * @param $password
+	 * @return User
+	 */
+	private function createPatronFromPatronDump(array $patronDump, $password): User
+	{
+		global $configArray;
+		$userExistsInDB = false;
+
+		$user = new User();
+		//Get the unique user id from Millennium
+		$user->source = $this->accountProfile->name;
+		$user->username = $patronDump['RECORD_#'];
+		if ($user->find(true)) {
+			$userExistsInDB = true;
+		}
+		if (isset($patronDump['PATRN_NAME'])) {
+			$patronName = $patronDump['PATRN_NAME'];
+			$nameParts = explode(',', $patronName);
+			$lastName = ucwords(strtolower(trim($nameParts[0])));
+
+			if (isset($nameParts[1])){
+				$firstName = ucwords(strtolower(trim($nameParts[1])));
+			}else{
+				$firstName = null;
+			}
+
+			$fullName = str_replace(",", " ", $patronName);
+			$fullName = str_replace(";", " ", $fullName);
+			$fullName = preg_replace("/\\s{2,}/", " ", $fullName);
+			$allNameComponents = preg_split('/[\s-]/', strtolower($fullName));
+			foreach ($allNameComponents as $name){
+				$newName = str_replace('-', '', $name);
+				if ($newName != $name){
+					$allNameComponents[] = $newName;
+				}
+				$newName = str_replace("'", '', $name);
+				if ($newName != $name){
+					$allNameComponents[] = $newName;
+				}
+			}
+			$fullName = ucwords(strtolower($patronName));
+		}
+		$forceDisplayNameUpdate = false;
+		$firstName = isset($firstName) ? $firstName : '';
+		if ($user->firstname != $firstName) {
+			$user->firstname = $firstName;
+			$forceDisplayNameUpdate = true;
+		}
+		$lastName = isset($lastName) ? $lastName : '';
+		if ($user->lastname != $lastName) {
+			$user->lastname = isset($lastName) ? $lastName : '';
+			$forceDisplayNameUpdate = true;
+		}
+		$user->_fullname = isset($fullName) ? $fullName : '';
+		if ($forceDisplayNameUpdate) {
+			$user->displayName = '';
+		}
+
+		if ($this->accountProfile->loginConfiguration == 'barcode_pin') {
+			if (isset($patronDump['P_BARCODE'])) {
+				$user->cat_username = $patronDump['P_BARCODE']; //Make sure to get the barcode so if we are using usernames we can still get the barcode for use with overdrive, etc.
+			} else {
+				$user->cat_username = $patronDump['CARD_#']; //Make sure to get the barcode so if we are using usernames we can still get the barcode for use with overdrive, etc.
+			}
+			$user->cat_password = $password;
+		} else {
+			$user->cat_username = $patronDump['PATRN_NAME'];
+			//When we get the patron dump, we may override the barcode so make sure that we update it here.
+			//For self registered cards, the P_BARCODE is not set so we need to use the RECORD_# field
+			if (strlen($patronDump['P_BARCODE']) > 0) {
+				$user->cat_password = $patronDump['P_BARCODE'];
+			} else {
+				$user->cat_password = $patronDump['RECORD_#'];
+			}
+
+		}
+
+		$user->phone = isset($patronDump['TELEPHONE']) ? $patronDump['TELEPHONE'] : (isset($patronDump['HOME_PHONE']) ? $patronDump['HOME_PHONE'] : '');
+		$user->email = isset($patronDump['EMAIL_ADDR']) ? $patronDump['EMAIL_ADDR'] : '';
+		$user->patronType = $patronDump['P_TYPE'];
+		if (isset($configArray['OPAC']['webNoteField'])) {
+			$user->_web_note = isset($patronDump[$configArray['OPAC']['webNoteField']]) ? $patronDump[$configArray['OPAC']['webNoteField']] : '';
+		} else {
+			$user->_web_note = isset($patronDump['WEB_NOTE']) ? $patronDump['WEB_NOTE'] : '';
+		}
+
+		//Setup home location
+		$location = null;
+		if (isset($patronDump['HOME_LIBR']) || isset($patronDump['HOLD_LIBR'])) {
+			$homeBranchCode = isset($patronDump['HOME_LIBR']) ? $patronDump['HOME_LIBR'] : $patronDump['HOLD_LIBR'];
+			$homeBranchCode = str_replace('+', '', $homeBranchCode); //Translate home branch to plain text
+			$location = new Location();
+			$location->code = $homeBranchCode;
+			if (!$location->find(true)) {
+				unset($location);
+			}
+		} else {
+			global $logger;
+			$logger->log('Millennium Driver: No Home Library Location or Hold location found in patron dump. User : ' . $user->id, Logger::LOG_ERROR);
+			// The code below will attempt to find a location for the library anyway if the homeLocation is already set
+		}
+
+		if (empty($user->homeLocationId) || (isset($location) && $user->homeLocationId != $location->locationId)) { // When homeLocation isn't set or has changed
+			if (empty($user->homeLocationId) && !isset($location)) {
+				// homeBranch Code not found in location table and the user doesn't have an assigned homelocation,
+				// try to find the main branch to assign to user
+				// or the first location for the library
+				global $library;
+
+				$location = new Location();
+				$location->libraryId = $library->libraryId;
+				$location->orderBy('isMainBranch desc'); // gets the main branch first or the first location
+				if (!$location->find(true)) {
+					// Seriously no locations even?
+					global $logger;
+					$logger->log('Failed to find any location to assign to user as home location', Logger::LOG_ERROR);
+					unset($location);
+				}
+			}
+			if (isset($location)) {
+				$user->homeLocationId = $location->locationId;
+				if (empty($user->myLocation1Id)) {
+					$user->myLocation1Id = ($location->nearbyLocation1 > 0) ? $location->nearbyLocation1 : $location->locationId;
+					/** @var /Location $location */
+					//Get display name for preferred location 1
+					$myLocation1 = new Location();
+					$myLocation1->locationId = $user->myLocation1Id;
+					if ($myLocation1->find(true)) {
+						$user->_myLocation1 = $myLocation1->displayName;
+					}
+				}
+
+				if (empty($user->myLocation2Id)) {
+					$user->myLocation2Id = ($location->nearbyLocation2 > 0) ? $location->nearbyLocation2 : $location->locationId;
+					//Get display name for preferred location 2
+					$myLocation2 = new Location();
+					$myLocation2->locationId = $user->myLocation2Id;
+					if ($myLocation2->find(true)) {
+						$user->_myLocation2 = $myLocation2->displayName;
+					}
+				}
+			}
+		}
+
+		if (isset($location)) {
+			//Get display names that aren't stored
+			$user->_homeLocationCode = $location->code;
+			$user->_homeLocation = $location->displayName;
+		}
+
+		$user->_expired = 0; // default setting
+		$user->_expireClose = 0;
+		//See if expiration date is close
+		if (trim($patronDump['EXP_DATE']) != '-  -') {
+			$user->_expires = $patronDump['EXP_DATE'];
+			list ($monthExp, $dayExp, $yearExp) = explode("-", $patronDump['EXP_DATE']);
+			$timeExpire = strtotime($monthExp . "/" . $dayExp . "/" . $yearExp);
+			$timeNow = time();
+			$timeToExpire = $timeExpire - $timeNow;
+			if ($timeToExpire <= 30 * 24 * 60 * 60) {
+				if ($timeToExpire <= 0) {
+					$user->_expired = 1;
+				}
+				$user->_expireClose = 1;
+			}
+		}
+
+		//Get additional information that doesn't necessarily get stored in the User Table
+		if (isset($patronDump['ADDRESS'])) {
+			$fullAddress = $patronDump['ADDRESS'];
+			$addressParts = explode('$', $fullAddress);
+			$user->address1 = $addressParts[0];
+			$user->city = isset($addressParts[1]) ? $addressParts[1] : '';
+			$user->state = isset($addressParts[2]) ? $addressParts[2] : '';
+			$user->zip = isset($addressParts[3]) ? $addressParts[3] : '';
+
+			if (preg_match('/(.*?),\\s+(.*)\\s+(\\d*(?:-\\d*)?)/', $user->city, $matches)) {
+				$user->city = $matches[1];
+				$user->state = $matches[2];
+				$user->zip = $matches[3];
+			} else if (preg_match('/(.*?)\\s+(\\w{2})\\s+(\\d*(?:-\\d*)?)/', $user->city, $matches)) {
+				$user->city = $matches[1];
+				$user->state = $matches[2];
+				$user->_zip = $matches[3];
+			}
+		} else {
+			$user->_address1 = "";
+			$user->_city = "";
+			$user->_state = "";
+			$user->_zip = "";
+		}
+
+		$user->_address2 = $user->city . ', ' . $user->state;
+		$user->_workPhone = (isset($patronDump) && isset($patronDump['G/WK_PHONE'])) ? $patronDump['G/WK_PHONE'] : '';
+		if (isset($patronDump) && isset($patronDump['MOBILE_NO'])) {
+			$user->_mobileNumber = $patronDump['MOBILE_NO'];
+		} else {
+			if (isset($patronDump) && isset($patronDump['MOBILE_PH'])) {
+				$user->_mobileNumber = $patronDump['MOBILE_PH'];
+			} else {
+				$user->_mobileNumber = '';
+			}
+		}
+
+		$user->_finesVal = floatval(preg_replace('/[^\\d.]/', '', $patronDump['MONEY_OWED']));
+		$user->_fines = $patronDump['MONEY_OWED'];
+
+		if (isset($patronDump['USERNAME'])) {
+			$user->_alt_username = $patronDump['USERNAME'];
+		}
+
+		$numHoldsAvailable = 0;
+		$numHoldsRequested = 0;
+		$availableStatusRegex = isset($configArray['Catalog']['patronApiAvailableHoldsRegex']) ? $configArray['Catalog']['patronApiAvailableHoldsRegex'] : "/ST=(105|98|106),/";
+		if (isset($patronDump) && isset($patronDump['HOLD']) && count($patronDump['HOLD']) > 0) {
+			foreach ($patronDump['HOLD'] as $hold) {
+				if (preg_match("$availableStatusRegex", $hold)) {
+					$numHoldsAvailable++;
+				} else {
+					$numHoldsRequested++;
+				}
+			}
+		}
+		$user->_numCheckedOutIls = $patronDump['CUR_CHKOUT'];
+		$user->_numHoldsIls = isset($patronDump) ? (isset($patronDump['HOLD']) ? count($patronDump['HOLD']) : 0) : '?';
+		$user->_numHoldsAvailableIls = $numHoldsAvailable;
+		$user->_numHoldsRequestedIls = $numHoldsRequested;
+		$user->_numBookings = isset($patronDump) ? (isset($patronDump['BOOKING']) ? count($patronDump['BOOKING']) : 0) : '?';
+
+		$noticeLabels = array(
+			//'-' => 'Mail',  // officially None in Sierra, as in No Preference Selected.
+			'-' => '',  // notification will generally be based on what information is available so can't determine here. plb 12-02-2014
+			'a' => 'Mail', // officially Print in Sierra
+			'p' => 'Telephone',
+			'z' => 'Email',
+		);
+		$user->_notices = isset($patronDump) ? $patronDump['NOTICE_PREF'] : '-';
+		if (array_key_exists($user->_notices, $noticeLabels)) {
+			$user->_noticePreferenceLabel = $noticeLabels[$user->_notices];
+		} else {
+			$user->_noticePreferenceLabel = 'Unknown';
+		}
+
+		if ($userExistsInDB) {
+			$user->update();
+		} else {
+			$user->created = date('Y-m-d');
+			$user->insert();
+		}
+		return $user;
 	}
 }
