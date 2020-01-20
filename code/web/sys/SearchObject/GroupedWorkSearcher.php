@@ -1653,42 +1653,42 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 				$facets = $searchLibrary->getGroupedWorkDisplaySettings()->getFacets();
 			}
 			global $solrScope;
-			foreach ($facets as $facet) {
+			foreach ($facets as &$facet) {
 				$facetName = $facet->facetName;
 				//Adjust facet name for local scoping
 				if ($solrScope) {
 					if ($facet->facetName == 'availability_toggle') {
-						$facetName = 'availability_toggle_' . $solrScope;
+						$facet->facetName = 'availability_toggle_' . $solrScope;
 					} elseif ($facet->facetName == 'format') {
-						$facetName = 'format_' . $solrScope;
+						$facet->facetName = 'format_' . $solrScope;
 					} elseif ($facet->facetName == 'format_category') {
-						$facetName = 'format_category_' . $solrScope;
+						$facet->facetName = 'format_category_' . $solrScope;
 					} elseif ($facet->facetName == 'econtent_source') {
-						$facetName = 'econtent_source_' . $solrScope;
+						$facet->facetName = 'econtent_source_' . $solrScope;
 					} elseif ($facet->facetName == 'econtent_protection_type') {
-						$facetName = 'econtent_protection_type_' . $solrScope;
+						$facet->facetName = 'econtent_protection_type_' . $solrScope;
 					} elseif ($facet->facetName == 'detailed_location') {
-						$facetName = 'detailed_location_' . $solrScope;
+						$facet->facetName = 'detailed_location_' . $solrScope;
 					} elseif ($facet->facetName == 'owning_location') {
-						$facetName = 'owning_location_' . $solrScope;
+						$facet->facetName = 'owning_location_' . $solrScope;
 					} elseif ($facet->facetName == 'owning_library') {
-						$facetName = 'owning_library_' . $solrScope;
+						$facet->facetName = 'owning_library_' . $solrScope;
 					} elseif ($facet->facetName == 'available_at') {
-						$facetName = 'available_at_' . $solrScope;
+						$facet->facetName = 'available_at_' . $solrScope;
 					} elseif ($facet->facetName == 'collection' || $facet->facetName == 'collection_group') {
-						$facetName = 'collection_' . $solrScope;
+						$facet->facetName = 'collection_' . $solrScope;
 					}
 				}
 				if (isset($searchLibrary)) {
 					if ($facet->facetName == 'time_since_added') {
-						$facetName = 'local_time_since_added_' . $searchLibrary->subdomain;
+						$facet->facetName = 'local_time_since_added_' . $searchLibrary->subdomain;
 					} elseif ($facet->facetName == 'itype') {
-						$facetName = 'itype_' . $searchLibrary->subdomain;
+						$facet->facetName = 'itype_' . $searchLibrary->subdomain;
 					}
 				}
 				if (isset($searchLocation)) {
 					if ($facet->facetName == 'time_since_added' && $searchLocation->restrictSearchByLocation) {
-						$facetName = 'local_time_since_added_' . $searchLocation->code;
+						$facet->facetName = 'local_time_since_added_' . $searchLocation->code;
 					}
 				}
 

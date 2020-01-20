@@ -88,7 +88,7 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 			}
 		}
 
-		if ($preferredSection && is_array($this->allFacetSettings[$preferredSection])) {
+		if ($preferredSection && array_key_exists($preferredSection, $this->allFacetSettings) && is_array($this->allFacetSettings[$preferredSection])) {
 			foreach ($this->allFacetSettings[$preferredSection] as $key => $value) {
 				$this->addFacet($key, $value);
 			}
