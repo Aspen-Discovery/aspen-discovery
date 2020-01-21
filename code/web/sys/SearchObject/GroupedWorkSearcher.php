@@ -268,16 +268,12 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 					$facet->facetName = 'available_at_' . $solrScope;
 				} elseif ($facet->facetName == 'collection' || $facet->facetName == 'collection_group') {
 					$facet->facetName = 'collection_' . $solrScope;
-				}
-			}
-			if (isset($searchLibrary)) {
-				if ($facet->facetName == 'time_since_added') {
-					$facet->facetName = 'local_time_since_added_' . $searchLibrary->subdomain;
+				} elseif ($facet->facetName == 'time_since_added') {
+					$facet->facetName = 'local_time_since_added_' . $solrScope;
 				} elseif ($facet->facetName == 'itype') {
-					$facet->facetName = 'itype_' . $searchLibrary->subdomain;
+					$facet->facetName = 'itype_' . $solrScope;
 				}
 			}
-
 			if (isset($searchLocation)) {
 				if ($facet->facetName == 'time_since_added' && $searchLocation->restrictSearchByLocation) {
 					$facet->facetName = 'local_time_since_added_' . $searchLocation->code;
@@ -804,9 +800,9 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 	public function processSearch($returnIndexErrors = false, $recommendations = false, $preventQueryModification = false)
 	{
 		global $timer;
+		global $solrScope;
 
 		if ($this->searchSource == 'econtent') {
-			global $solrScope;
 			$this->addHiddenFilter("econtent_source_{$solrScope}", '*');
 		}
 
@@ -866,15 +862,15 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 			foreach ($filter as $value) {
 				$isAvailabilityToggle = false;
 				$isAvailableAt = false;
-				if (substr($field, 0, strlen('availability_toggle')) == 'availability_toggle') {
+				if (strpos($field, 'availability_toggle') === 0) {
 					$availabilityToggleValue = $value;
 					$isAvailabilityToggle = true;
-				} elseif (substr($field, 0, strlen('available_at')) == 'available_at') {
+				} elseif (strpos($field, 'available_at') === 0) {
 					$availabilityAtValues[] = $value;
 					$isAvailableAt = true;
-				} elseif (substr($field, 0, strlen('format_category')) == 'format_category') {
+				} elseif (strpos($field, 'format_category') === 0) {
 					$formatCategoryValues[] = $value;
-				} elseif (substr($field, 0, strlen('format')) == 'format') {
+				} elseif (strpos($field, 'format') === 0) {
 					$formatValues[] = $value;
 				}
 				// Special case -- allow trailing wildcards:
@@ -910,9 +906,9 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 						$fieldValue .= $value;
 					} else {
 						if ($isAvailabilityToggle) {
-							$filterQuery['availability_toggle'] = "$fieldPrefix$field:$value";
+							$filterQuery['availability_toggle_' . $solrScope] = "$fieldPrefix$field:$value";
 						} elseif ($isAvailableAt) {
-							$filterQuery['available_at'] = "$fieldPrefix$field:$value";
+							$filterQuery['available_at_' . $solrScope] = "$fieldPrefix$field:$value";
 						} else {
 							$filterQuery[] = "$fieldPrefix$field:$value";
 						}

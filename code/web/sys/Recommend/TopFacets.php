@@ -85,7 +85,7 @@ class TopFacets implements RecommendationInterface
 		// Grab the facet set
 		$facetList = $this->searchObject->getFacetList($this->facets);
 		foreach ($facetList as $facetSetkey => $facetSet){
-			if (substr_compare($facetSetkey,'format_category', 0) != -1){
+			if (strpos($facetSetkey, 'format_category') === 0){
 				$validCategories = array(
 						'Books',
 						'eBook',
@@ -111,7 +111,7 @@ class TopFacets implements RecommendationInterface
 				$facetSet['isFormatCategory'] = true;
 				$facetSet['isAvailabilityToggle'] = false;
 				$facetList[$facetSetkey] = $facetSet;
-			}elseif (substr_compare($facetSetkey,'availability_toggle', 0) != -1){
+			}elseif (strpos($facetSetkey, 'availability_toggle') === 0){
 
 				$numSelected = 0;
 				foreach ($facetSet['list'] as $facetKey => $facet){
