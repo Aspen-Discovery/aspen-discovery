@@ -264,9 +264,17 @@ function getUserUpdates(){
 
 		'user_display_name_length' => array(
 			'title' => 'User display name length',
-			'description' => 'Increase displayName field in the SUer table',
+			'description' => 'Increase displayName field in the User table',
 			'sql' => array(
 				"ALTER TABLE user CHANGE displayName displayName VARCHAR( 60 ) NOT NULL DEFAULT ''",
+			),
+		),
+
+		'user_last_name_length' => array(
+			'title' => 'User last name length',
+			'description' => 'Increase lastName field in the User table',
+			'sql' => array(
+				"ALTER TABLE user CHANGE lastname lastname VARCHAR( 100 ) NOT NULL DEFAULT ''",
 			),
 		),
 	);
