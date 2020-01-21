@@ -7,7 +7,6 @@ class SideLoads_UploadMarc extends Admin_Admin
 	function launch()
 	{
 		global $interface;
-		global $logger;
 		$id = $_REQUEST['id'];
 		$sideload = new SideLoad();
 		$sideload->id = $id;

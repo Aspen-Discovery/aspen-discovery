@@ -105,6 +105,7 @@
       <w>fragsize</w>
       <w>fullname</w>
       <w>funder</w>
+      <w>fwrite</w>
       <w>geonames</w>
       <w>getcharges</w>
       <w>gettotalowed</w>
@@ -114,6 +115,7 @@
       <w>gottlob</w>
       <w>grantor</w>
       <w>graymap</w>
+      <w>gzread</w>
       <w>haussmann</w>
       <w>hbreview</w>
       <w>hilite</w>

@@ -3,7 +3,7 @@
 class GroupedWork_AJAX {
 	function launch() {
 		global $timer;
-		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
+		$method = (isset($_REQUEST['method']) && !is_array($_REQUEST['method'])) ? $_REQUEST['method'] : '';
 		if (method_exists($this, $method)) {
 			$timer->logTime("Starting method $method");
 
@@ -960,19 +960,111 @@ class GroupedWork_AJAX {
 		$id = $_REQUEST['id'];
 		$recordDriver = new GroupedWorkDriver($id);
 
-		//Reload small cover
-		$smallCoverUrl = $recordDriver->getBookcoverUrl('small', true) . '&reload';
-		file_get_contents($smallCoverUrl);
+		require_once ROOT_DIR . '/sys/Covers/BookCoverInfo.php';
+		$bookCoverInfo = new BookCoverInfo();
+		$bookCoverInfo->recordType = 'grouped_work';
+		$bookCoverInfo->recordId = $id;
+		if ($bookCoverInfo->find(true)){
+			$bookCoverInfo->imageSource = '';
+			$bookCoverInfo->thumbnailLoaded = 0;
+			$bookCoverInfo->mediumLoaded = 0;
+			$bookCoverInfo->largeLoaded = 0;
+			$bookCoverInfo->update();
+		}
 
-		//Reload medium cover
-		$mediumCoverUrl = $recordDriver->getBookcoverUrl('medium', true) . '&reload';
-		file_get_contents($mediumCoverUrl);
+		$relatedRecords = $recordDriver->getRelatedRecords(true);
+		foreach ($relatedRecords as $record){
+			$bookCoverInfo = new BookCoverInfo();
+			if (strpos($record->id, ':') > 0){
+				list($source, $recordId) = explode(':', $record->id);
+				$bookCoverInfo->recordType = $source;
+				$bookCoverInfo->recordId = $recordId;
+			}else{
+				$bookCoverInfo->recordType = $record->source;
+				$bookCoverInfo->recordId = $record->id;
+			}
 
-		//Reload large cover
-		$largeCoverUrl = $recordDriver->getBookcoverUrl('large', true) . '&reload';
-		file_get_contents($largeCoverUrl);
+			if ($bookCoverInfo->find(true)){
+				$bookCoverInfo->imageSource = '';
+				$bookCoverInfo->thumbnailLoaded = 0;
+				$bookCoverInfo->mediumLoaded = 0;
+				$bookCoverInfo->largeLoaded = 0;
+				$bookCoverInfo->update();
+			}
+		}
 
 		return json_encode(array('success' => true, 'message' => 'Covers have been reloaded.  You may need to refresh the page to clear your local cache.'));
+	}
+
+	/** @noinspection PhpUnused */
+	function getUploadCoverForm(){
+		global $interface;
+
+		$id = $_REQUEST['id'];
+		$interface->assign('id', $id);
+
+		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+		$recordDriver = new GroupedWorkDriver($id);
+
+		$results = array(
+			'title' => 'Upload a New Cover',
+			'modalBody' => $interface->fetch("GroupedWork/upload-cover-form.tpl"),
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#uploadCoverForm\").submit()'>Upload Cover</button>"
+		);
+		return json_encode($results);
+	}
+
+	/** @noinspection PhpUnused */
+	function uploadCover(){
+		global $interface;
+		$result = [
+			'success' => false,
+			'title' => 'Uploading custom cover',
+			'message' => 'Sorry your cover could not be uploaded'
+		];
+		if (UserAccount::isLoggedIn() && (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('cataloging'))){
+			if (isset($_FILES['coverFile'])) {
+				$uploadedFile = $_FILES['coverFile'];
+				if (isset($uploadedFile["error"]) && $uploadedFile["error"] == 4) {
+					$interface->assign('error', "No Cover file was uploaded");
+				} else if (isset($uploadedFile["error"]) && $uploadedFile["error"] > 0) {
+					$interface->assign('error', "Error in file upload for cover");
+				} else {
+					$id = $_REQUEST['id'];
+					global $configArray;
+					$destFullPath = $configArray['Site']['coverPath'] . '/original/' . $id . '.png';
+					$fileType = $uploadedFile["type"];
+					if ($fileType == 'image/png'){
+						if (copy($uploadedFile["tmp_name"], $destFullPath)){
+							$result['success'] = true;
+						}
+					}elseif ($fileType == 'image/gif'){
+						$imageResource = @imagecreatefromgif($uploadedFile["tmp_name"]);
+						if (!$imageResource){
+							$result['message'] = 'Unable to process this image, please try processing in an image editor and reloading';
+						}else if (@imagepng( $imageResource, $destFullPath, 9)){
+							$result['success'] = true;
+						}
+					}elseif ($fileType == 'image/jpg' || $fileType == 'image/jpeg'){
+						$imageResource = @imagecreatefromjpeg($uploadedFile["tmp_name"]);
+						if (!$imageResource){
+							$result['message'] = 'Unable to process this image, please try processing in an image editor and reloading';
+						}else if (@imagepng( $imageResource, $destFullPath, 9)){
+							$result['success'] = true;
+						}
+					}else{
+						$result['message'] = 'Incorrect image type.  Please upload a PNG, GIF, or JPEG';
+					}
+				}
+			} else {
+				$result['message'] = 'No cover was uploaded, please try again.';
+			}
+		}
+		if ($result['success']){
+			$this->reloadCover();
+			$result['message'] = 'Your cover has been uploaded successfully';
+		}
+		return json_encode($result);
 	}
 
 	/** @noinspection PhpUnused */

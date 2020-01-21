@@ -136,12 +136,17 @@ class BookCoverProcessor{
 					return;
 				}
 			}
-			$this->log("Looking for cover from providers", Logger::LOG_NOTICE);
-			if ($this->getCoverFromProvider()) {
+
+			if ($this->type == 'grouped_work' && $this->getUploadedGroupedWorkCover($this->id)){
 				return;
 			}
 
 			if ($this->type != 'grouped_work' && $this->getCoverFromMarc()) {
+				return;
+			}
+
+			$this->log("Looking for cover from providers", Logger::LOG_NOTICE);
+			if ($this->getCoverFromProvider()) {
 				return;
 			}
 
@@ -964,6 +969,9 @@ class BookCoverProcessor{
 
 	private function getGroupedWorkCover() {
 		if ($this->loadGroupedWork()){
+			if ($this->getUploadedGroupedWorkCover($this->groupedWork->getPermanentId())){
+				return true;
+			}
 			//Have not found a grouped work based on isbn or upc, check based on related records
 			$relatedRecords = $this->groupedWork->getRelatedRecords(true);
 			foreach ($relatedRecords as $relatedRecord){
@@ -1211,5 +1219,14 @@ class BookCoverProcessor{
 		} else {
 			return false;
 		}
+	}
+
+	private function getUploadedGroupedWorkCover($permanentId)
+	{
+		$uploadedImage = $this->bookCoverPath . '/original/' . $permanentId . '.png';
+		if (file_exists($uploadedImage)){
+			return $this->processImageURL('upload', $uploadedImage);
+		}
+		return false;
 	}
 }
