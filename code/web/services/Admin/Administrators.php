@@ -27,16 +27,20 @@ class Admin_Administrators extends ObjectEditor
 				if ($admin->find(true)){
 					$homeLibrary = Library::getLibraryForLocation($admin->homeLocationId);
 					if ($homeLibrary != null){
+						/** @noinspection PhpUndefinedFieldInspection */
 						$admin->homeLibraryName = $homeLibrary->displayName;
 					}else{
+						/** @noinspection PhpUndefinedFieldInspection */
 						$admin->homeLibraryName = 'Unknown';
 					}
 
 					$location = new Location();
 					$location->locationId = $admin->homeLocationId;
 					if ($location->find(true)) {
+						/** @noinspection PhpUndefinedFieldInspection */
 						$admin->homeLocation = $location->displayName;
 					}else{
+						/** @noinspection PhpUndefinedFieldInspection */
 						$admin->homeLocation = 'Unknown';
 					}
 					$adminList[$userId] = $admin;
@@ -61,47 +65,62 @@ class Admin_Administrators extends ObjectEditor
 	function canAddNew(){
 		return false;
 	}
+	function canCompare()
+	{
+		return false;
+	}
+	function canCopy()
+	{
+		return false;
+	}
+
 	function customListActions(){
 		return array(
 		array('label'=>'Add Administrator', 'action'=>'addAdministrator'),
 		);
 	}
+
+	/** @noinspection PhpUnused */
 	function addAdministrator(){
 		global $interface;
 		//Basic List
 		$interface->setTemplate('addAdministrator.tpl');
 	}
+
+	/** @noinspection PhpUnused */
 	function processNewAdministrator(){
 		global $interface;
 		global $configArray;
-		$login = $_REQUEST['login'];
+		$login = trim($_REQUEST['login']);
 		$newAdmin = new User();
 		$barcodeProperty = $configArray['Catalog']['barcodeProperty'];
 
 		$newAdmin->$barcodeProperty = $login;
 		$newAdmin->find();
-		if ($newAdmin->getNumResults() == 1){
-			global $logger;
-			//$logger->log(print_r($_REQUEST['roles'], TRUE));
-			if (isset($_REQUEST['roles'])){
-				$newAdmin->fetch();
-				$newAdmin->roles = $_REQUEST['roles'];
+		if ($newAdmin->getNumResults() == 0){
+			//See if we can fetch the user from the ils
+			$newAdmin = UserAccount::findNewUser($login);
+			if ($newAdmin == false){
+				$interface->assign('error', 'Could not find a user with that barcode.');
+			}
+		}elseif ($newAdmin->getNumResults() == 1){
+			$newAdmin->fetch();
+		}elseif ($newAdmin->getNumResults() > 1){
+			$newAdmin = false;
+			$interface->assign('error', "Found multiple ({$newAdmin->getNumResults()}) users with that barcode. (The database needs to be cleaned up.)");
+		}
+
+		if ($newAdmin != false) {
+			if (isset($_REQUEST['roles'])) {
+				$newAdmin->setRoles($_REQUEST['roles']);
 				$newAdmin->update();
-			}else{
-				$newAdmin->fetch();
+			} else {
 				$newAdmin->query('DELETE FROM user_roles where user_roles.userId = ' . $newAdmin->id);
 			}
 
-			global $configArray;
 			header("Location: /{$this->getModule()}/{$this->getToolName()}");
 			die();
 		}else{
-			if ($newAdmin->getNumResults() == 0){
-				$interface->assign('error', 'Could not find a user with that barcode. (The user needs to have logged in at least once.)');
-			}else{
-				$interface->assign('error', "Found multiple users with that barcode {$newAdmin->getNumResults()}. (The database needs to be cleaned up.)");
-			}
-
 			$interface->setTemplate('addAdministrator.tpl');
 		}
 	}
