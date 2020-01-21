@@ -314,10 +314,12 @@ class BrowseCategory extends DataObject
 		$filters = $searchObj->getFilterList();
 		$formattedFilters = '';
 		foreach ($filters as $filter) {
-			if (strlen($formattedFilters) > 0) {
-				$formattedFilters .= "\r\n";
+			foreach ($filter as $filterValue){
+				if (strlen($formattedFilters) > 0) {
+					$formattedFilters .= "\r\n";
+				}
+				$formattedFilters .= $filterValue['field'] . ':' . $filterValue['value'];
 			}
-			$formattedFilters .= $filter[0]['field'] . ':' . $filter[0]['value'];
 		}
 		$this->defaultFilter = $formattedFilters;
 
