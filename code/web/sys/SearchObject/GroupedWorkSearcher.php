@@ -935,7 +935,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 				$filterQuery[] = $availabilityByFormatFieldName . ':"' . $availabilityToggleValue . '"';
 				$availabilityByFormatFieldNames[] = $availabilityByFormatFieldName;
 			}
-			unset($filterQuery['availability_toggle']);
+			unset($filterQuery['availability_toggle_'. $solrScope]);
 		}
 
 		//Check to see if we have both a format and available at facet applied
