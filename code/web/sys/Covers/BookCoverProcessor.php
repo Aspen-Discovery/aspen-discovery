@@ -853,14 +853,14 @@ class BookCoverProcessor{
 
 		$url = 'https://syndetics.com';
 		$url .= "/index.aspx?type=xw12&pagename={$size}&client={$key}";
-		if ($this->isn){
-			$url .= "&isbn=" . (!is_null($this->isn) ? $this->isn : '');
+		if (!empty($this->isn)){
+			$url .= "&isbn=" . $this->isn;
 		}
-		if ($this->upc){
-			$url .= "&upc=" . (!is_null($this->upc) ? $this->upc : '');
+		if (!empty($this->upc)){
+			$url .= "&upc=" . $this->upc;
 		}
-		if ($this->issn){
-			$url .= "&issn=" . (!is_null($this->issn) ? $this->issn : '');
+		if (!empty($this->issn)){
+			$url .= "&issn=" . $this->issn;
 		}
 		$this->log("Syndetics url: $url", Logger::LOG_DEBUG);
 		return $this->processImageURL('syndetics', $url, true);
@@ -895,19 +895,26 @@ class BookCoverProcessor{
 				$size = 'S';
 				break;
 		}
-		$url = 'https://contentcafe2.btol.com';
+		$url = 'http://contentcafe2.btol.com';
+		$url .= "/ContentCafe/Jacket.aspx?UserID={$settings->contentCafeId}&Password={$settings->pwd}&Return=1&Type={$size}&erroroverride=1&Value=";
 
-		$lookupCode = $this->isn;
-		if (!$lookupCode) {
-			$lookupCode = $this->issn;
-			if (!$lookupCode & $this->upc) {
-				$lookupCode = $this->upc;
+		if (!empty($this->isn)){
+			if ($this->processImageURL('contentCafe', $url . $this->isn, true)){
+				return true;
+			}
+		}
+		if (!empty($this->upc)){
+			if ($this->processImageURL('contentCafe', $url . $this->upc, true)){
+				return true;
+			}
+		}
+		if (!empty($this->issn)){
+			if ($this->processImageURL('contentCafe', $url . $this->issn, true)){
+				return true;
 			}
 		}
 
-		$url .= "/ContentCafe/Jacket.aspx?UserID={$settings->contentCafeId}&Password={$settings->pwd}&Return=1&Type={$size}&Value={$lookupCode}&erroroverride=1";
-
-		return $this->processImageURL('contentCafe', $url, true);
+		return false;
 	}
 
 	function google(GoogleApiSetting $googleApiSettings,$title = null, $author = null)
