@@ -11,7 +11,10 @@
 	{* Heading Info Div *}
 	<div id="headingInfo" class="hidden-xs hidden-sm col-md-5 col-lg-5">
 		{if $showDisplayNameInHeader && $librarySystemName}
-			<span id="library-name-header" class="hidden-xs visible-sm">{$librarySystemName}</span>
+			<span id="library-name-header" class="hidden-xs visible-sm">
+				{if strlen($librarySystemName) < 30}<br/>{/if} {* Move the library system name down a little if it won't wrap *}
+				{$librarySystemName}
+			</span>
 		{/if}
 
 		{if !empty($headerText)}
