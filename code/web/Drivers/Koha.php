@@ -727,6 +727,10 @@ class Koha extends AbstractIlsDriver
 		//Set pickup location
 		$pickupBranch = strtoupper($pickupBranch);
 
+		if (!$this->patronEligibleForHolds($patron, $hold_result)){
+			return $hold_result;
+		}
+
 		//Get a specific item number to place a hold on even though we are placing a title level hold.
 		//because.... Koha
 		require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
@@ -835,6 +839,10 @@ class Koha extends AbstractIlsDriver
 	{
 		$hold_result = array();
 		$hold_result['success'] = false;
+
+		if (!$this->patronEligibleForHolds($patron, $hold_result)){
+			return $hold_result;
+		}
 
 		require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 		$recordDriver = new MarcRecordDriver($this->getIndexingProfile()->name . ':' . $recordId);
@@ -2047,7 +2055,7 @@ class Koha extends AbstractIlsDriver
 		return $results;
 	}
 
-	public function getAccountSummary($user)
+	public function getAccountSummary($user, $forceRefresh = false)
 	{
 		/** @var Memcache $memCache */
 		global $memCache;
@@ -2055,7 +2063,7 @@ class Koha extends AbstractIlsDriver
 		global $configArray;
 
 		$accountSummary = $memCache->get('koha_summary_' . $user->id);
-		if ($accountSummary == false || isset($_REQUEST['reload'])) {
+		if ($accountSummary == false || isset($_REQUEST['reload']) || $forceRefresh) {
 			$accountSummary = [
 				'numCheckedOut' => 0,
 				'numOverdue' => 0,
@@ -2474,5 +2482,32 @@ class Koha extends AbstractIlsDriver
 		global $memCache;
 		$memCache->delete('koha_summary_' . $patron->id);
 		return $result;
+	}
+
+	private function patronEligibleForHolds(User $patron, array &$hold_result)
+	{
+		$this->initDatabaseConnection();
+
+		/** @noinspection SqlResolve */
+		$sql = "SELECT * FROM systempreferences where variable = 'MaxOutstanding';";
+		$results = mysqli_query($this->dbConnection, $sql);
+		$maxOutstanding = 0;
+		while ($curRow = $results->fetch_assoc()) {
+			$maxOutstanding = $curRow['value'];
+		}
+
+		if ($maxOutstanding <= 0){
+			return true;
+		}else{
+			$accountSummary = $this->getAccountSummary($patron, true);
+			$totalFines = $accountSummary['totalFines'];
+			if ($totalFines > $maxOutstanding){
+				$hold_result['success'] = false;
+				$hold_result['message'] = translate(['text' => 'outstanding_fine_limit', 'defaultText' => 'Sorry, your account has too many outstanding fines to place holds.']);
+				return false;
+			}else{
+				return true;
+			}
+		}
 	}
 }
