@@ -76,5 +76,15 @@ function getTranslationUpdates()
 				'ALTER TABLE translations ADD COLUMN needsReview TINYINT(1) DEFAULT 0'
 			]
 		],
+
+		'translation_case_sensitivity' => [
+			'title' => 'Translation case sensitivity',
+			'description' => 'Make sure that translations are case sensitive so Book and BOOK can be translated differently',
+			'sql' => [
+				"ALTER TABLE translations CHANGE translation translation TEXT COLLATE utf8_bin",
+				"DELETE FROM translations WHERE languageId = 1",
+				"TRUNCATE TABLE cached_values"
+			],
+		],
 	];
 }
