@@ -170,6 +170,14 @@ function getThemingUpdates()
 				"ALTER TABLE `themes` ADD COLUMN customHeadingFont VARCHAR(100)",
 				"ALTER TABLE `themes` ADD COLUMN customBodyFont VARCHAR(100)",
 			]
-		]
+		],
+
+		'themes_capitalize_browse_categories' => [
+			'title' => 'Theme - capitalize browse categories',
+			'description' => 'Switch to capitalize browse categories',
+			'sql' => [
+				"ALTER TABLE `themes` ADD COLUMN capitalizeBrowseCategories TINYINT(1) DEFAULT -1",
+			]
+		],
 	];
 }

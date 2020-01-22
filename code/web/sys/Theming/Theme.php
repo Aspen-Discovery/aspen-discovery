@@ -76,6 +76,7 @@ class Theme extends DataObject
 	public $deselectedBrowseCategoryForegroundColorDefault;
 	public $deselectedBrowseCategoryBorderColor;
 	public $deselectedBrowseCategoryBorderColorDefault;
+	public $capitalizeBrowseCategories;
 
 	//Fonts
 	public $headingFont;
@@ -197,6 +198,8 @@ class Theme extends DataObject
 				'deselectedBrowseCategoryBackgroundColor' => array('property' => 'deselectedBrowseCategoryBackgroundColor', 'type' => 'color', 'label' => 'Deselected Browse Category Background Color', 'description' => 'Deselected Browse Category Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#0087AB'),
 				'deselectedBrowseCategoryForegroundColor' => array('property' => 'deselectedBrowseCategoryForegroundColor', 'type' => 'color', 'label' => 'Deselected Browse Category Text Color', 'description' => 'Deselected Browse Category Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff'),
 				'deselectedBrowseCategoryBorderColor' => array('property' => 'deselectedBrowseCategoryBorderColor', 'type' => 'color', 'label' => 'Deselected Browse Category Border Color', 'description' => 'Deselected Browse Category Border Color', 'required' => false, 'hideInLists' => true, 'default' => '#0087AB'),
+
+				'capitalizeBrowseCategories' => array('property' => 'capitalizeBrowseCategories', 'type' => 'enum', 'values'=> [-1 => 'Default', 0 => 'Maintain case', 1 => 'Force Uppercase'], 'label' => 'Capitalize Browse Categories', 'description' => 'How to treat capitalization of browse categories', 'required' => false, 'hideInLists' => true, 'default' => '-1'),
 			]],
 
 
@@ -342,6 +345,10 @@ class Theme extends DataObject
 			if ($interface->getVariable('deselectedBrowseCategoryBorderColor') == null && !$theme->deselectedBrowseCategoryBorderColorDefault) {
 				$interface->assign('deselectedBrowseCategoryBorderColor', $theme->deselectedBrowseCategoryBorderColor);
 			}
+			if ($interface->getVariable('capitalizeBrowseCategories') == null && $theme->capitalizeBrowseCategories != -1) {
+				$interface->assign('capitalizeBrowseCategories', $theme->capitalizeBrowseCategories);
+			}
+
 			if ($appendCSS) {
 				if ($this->additionalCssType == 1) {
 					$additionalCSS = $theme->additionalCss;

@@ -171,6 +171,12 @@ body .container{ldelim}
 {rdelim}
 {/if}
 
+{if $capitalizeBrowseCategories}
+.browse-category div{ldelim}
+    text-transform: uppercase;
+{rdelim}
+{/if}
+
 {$additionalCSS}
 </style>
 {/strip}
