@@ -8444,6 +8444,10 @@ hr.menu {
   border-bottom: 0;
   box-shadow: 2px 2px 5px #fff;
 }
+#headingInfo {
+  display: inline-block;
+  vertical-align: middle;
+}
 #library-name-header {
   font-size: 26px;
   color: #007290;
