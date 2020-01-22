@@ -32,7 +32,6 @@ class MillenniumCheckouts {
 		}
 	}
 
-
 	/**
 	 * Get Patron Transactions
 	 *
@@ -163,12 +162,11 @@ class MillenniumCheckouts {
 							} else {
 								$curTitle['canRenew'] = false;
 							}
-
 						}
-
 
 						if (stripos($sKeys[$i], "CALL NUMBER") > -1) {
 							$curTitle['request'] = "null";
+							$curTitle['callNumber'] = strip_tags($scols[$i]);
 						}
 					}
 
@@ -311,7 +309,8 @@ class MillenniumCheckouts {
 		global $logger, $timer;
 
 		//Force loading patron API since that seems to be unlocking the patron record in Millennium for Flatirons
-		$this->driver->_getPatronDump($patron->getBarcode(), true);
+		$barcode = $patron->getBarcode();
+		$this->driver->_getPatronDump($barcode, true);
 
 		$driver = &$this->driver;
 

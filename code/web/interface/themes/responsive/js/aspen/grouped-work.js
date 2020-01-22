@@ -422,5 +422,31 @@ AspenDiscovery.GroupedWork = (function(){
 			return false;
 		},
 
+		getUploadCoverForm: function (id){
+			let url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=getUploadCoverForm';
+			$.getJSON(url, function (data){
+					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+				}
+			);
+			return false;
+		},
+
+		uploadCover: function (id){
+			let url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=uploadCover';
+			let uploadCoverData = new FormData($("#uploadCoverForm")[0]);
+			$.ajax({
+				url: url,
+				type: 'POST',
+				data: uploadCoverData,
+				dataType: 'json',
+				success: function(data) {
+					AspenDiscovery.showMessage(data.title, data.message, true, data.success);
+				},
+				async: false,
+				contentType: false,
+				processData: false
+			});
+			return false;
+		},
 	};
 }(AspenDiscovery.GroupedWork || {}));

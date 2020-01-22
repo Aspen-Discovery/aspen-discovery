@@ -12,7 +12,7 @@ class ImportSettings extends Admin_Admin
 			//Import libraries
 			//Import locations
 			//Import browse categories
-			//Import widgets
+			//Import collection spotlights
 			//
 		}
 		$this->display('importSettings.tpl', 'Import Settings');

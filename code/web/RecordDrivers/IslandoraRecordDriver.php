@@ -165,24 +165,23 @@ abstract class IslandoraRecordDriver extends IndexRecordDriver {
 
 		return 'RecordDrivers/Islandora/browse_result.tpl';
 	}
-	public function getListWidgetTitle(){
-		$widgetTitleInfo = array(
+
+	public function getSummaryInformation(){
+		$summaryInfo = array(
 			'id' =>          $this->getUniqueID(),
 			'shortId' =>     $this->getUniqueID(),
 			'recordtype' => 'archive', //TODO: meh, islandora?
 			'image' =>       $this->getBookcoverUrl('medium'),
 			'small_image' => $this->getBookcoverUrl('small'),
 			'title' =>       $this->getTitle(),
-		  'titleURL' =>    $this->getLinkUrl(true), // Include site URL
-//			'author' =>      $this->getPrimaryAuthor(),
-			'author' =>      $this->getFormat(), // Display the Format of Archive Object where the author would be otherwise displayed in the ListWidget
+			'titleURL' =>    $this->getLinkUrl(true), // Include site URL
+			'author' =>      $this->getFormat(), // Display the Format of Archive Object where the author would be otherwise displayed
 			'description' => $this->getDescription(),
-			'length' =>      '', // TODO: do list widgets use this
-			'publisher' =>   '', // TODO: do list widgets use this
+			'length' =>      '',
+			'publisher' =>   '',
 			'ratingData' =>  null,
-//			'ratingData' =>  $this->getRatingData(),
 		);
-		return $widgetTitleInfo;
+		return $summaryInfo;
 	}
 
 	/**

@@ -21,6 +21,7 @@ class AJAX extends Action {
 	}
 
 	// Email Search Results
+	/** @noinspection PhpUnused */
 	function sendEmail()
 	{
 		global $interface;
@@ -133,6 +134,7 @@ class AJAX extends Action {
 	/**
 	 * @return array data representing the list information
 	 */
+	/** @noinspection PhpUnused */
 	function getListTitles(){
 		global $timer;
 
@@ -159,9 +161,7 @@ class AJAX extends Action {
 					$interface->assign('key', $key);
 					// 20131206 James Staub: bookTitle is in the list API and it removes the final frontslash, but I didn't get $rawData['bookTitle'] to load
 
-					$titleShort = preg_replace(array('/\:.*?$/', '/\s*\/$\s*/'),'', $rawData['title']);
-//						$titleShort = preg_replace('/\:.*?$/','', $rawData['title']);
-//						$titleShort = preg_replace('/\s*\/$\s*/','', $titleShort);
+					$titleShort = preg_replace(array('/:.*?$/', '/\s*\/$\s*/'),'', $rawData['title']);
 
 					$imageUrl = $rawData['small_image'];
 					if (isset($_REQUEST['coverSize']) && $_REQUEST['coverSize'] == 'medium'){
@@ -183,8 +183,8 @@ class AJAX extends Action {
 						$interface->assign('showNotInterested', false);
 					}
 
-					$rawData['formattedTitle']         = $interface->fetch('ListWidget/formattedTitle.tpl');
-					$rawData['formattedTextOnlyTitle'] = $interface->fetch('ListWidget/formattedTextOnlyTitle.tpl');
+					$rawData['formattedTitle']         = $interface->fetch('CollectionSpotlight/formattedTitle.tpl');
+					$rawData['formattedTextOnlyTitle'] = $interface->fetch('CollectionSpotlight/formattedTextOnlyTitle.tpl');
 					// TODO: Modify these for Archive Objects
 
 					$titles[$key] = $rawData;
@@ -196,10 +196,62 @@ class AJAX extends Action {
 
 		}else{
 			$listData = array('titles' => array(), 'currentIndex' => 0);
-			if ($titles['message']) $listData['error'] = $titles['message']; // send error message to widget javascript
+			if ($titles['message']) $listData['error'] = $titles['message']; // send error message to javascript
 		}
 
 		return $listData;
+	}
+
+	/** @noinspection PhpUnused */
+	function getSpotlightTitles(){
+		global $interface;
+		$listName = strip_tags(isset($_GET['scrollerName']) ? $_GET['scrollerName'] : 'List' . $_GET['id']);
+		$interface->assign('listName', $listName);
+
+		require_once ROOT_DIR . '/sys/LocalEnrichment/CollectionSpotlightList.php';
+		$collectionSpotlightList = new CollectionSpotlightList();
+		$collectionSpotlightList->id = $_REQUEST['id'];
+		if ($collectionSpotlightList->find(true)){
+			$result = [
+				'success' => true,
+				'titles' => []
+			];
+			require_once ROOT_DIR . '/sys/LocalEnrichment/CollectionSpotlight.php';
+			$collectionSpotlight = new CollectionSpotlight();
+			$collectionSpotlight->id = $collectionSpotlightList->collectionSpotlightId;
+			$collectionSpotlight->find(true);
+
+			$interface->assign('showViewMoreLink', $collectionSpotlight->showViewMoreLink);
+			if ($collectionSpotlightList->sourceListId != null && $collectionSpotlightList->sourceListId > 0){
+				require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
+				$sourceList     = new UserList();
+				$sourceList->id = $collectionSpotlightList->sourceListId;
+				if ($sourceList->find(true)) {
+					$result['listTitle'] = $sourceList->title;
+					$result['listDescription'] = $sourceList->description;
+					$result['titles'] = $sourceList->getSpotlightTitles( $collectionSpotlight);
+					$result['currentIndex'] = 0;
+				} else {
+					$records = array();
+				}
+				$result['searchUrl'] = '/MyAccount/MyList/' . $collectionSpotlightList->sourceListId;
+			}else{
+				$searchObject = $collectionSpotlightList->getSearchObject();
+
+				$searchResult = $searchObject->processSearch();
+
+				$result['listTitle'] = $collectionSpotlightList->name;
+				$result['listDescription'] = '';
+				$result['titles'] = $searchObject->getSpotlightResults($collectionSpotlight);
+				$result['currentIndex'] = 0;
+			}
+			return $result;
+		}else{
+			return [
+				'success' => false,
+				'message' => 'Information for the carousel list could not be found',
+			];
+		}
 	}
 
 	/** @noinspection PhpUnused */

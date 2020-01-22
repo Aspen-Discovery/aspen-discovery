@@ -1,24 +1,35 @@
 {strip}
-{if $headingFont}
-<link rel="stylesheet" href="https://fonts.googleapis.com/css?family={$headingFont}">
-{/if}
-{if $bodyFont}
-<link rel="stylesheet" href="https://fonts.googleapis.com/css?family={$bodyFont}">
-{/if}
-
 {if false}
 <!--suppress CssUnusedSymbol -->
 {/if}
 <style type="text/css">
+
+{if !empty($customHeadingFont) && !empty($customHeadingFontName)}
+@font-face {ldelim}
+    font-family: '{$customHeadingFontName}';
+    src: url('/fonts/{$customHeadingFont}');
+{rdelim}
+{elseif $headingFont}
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family={$headingFont}">
+{/if}
+{if !empty($customBodyFont) && !empty($customBodyFontName)}
+@font-face {ldelim}
+    font-family: '{$customBodyFontName}';
+    src: url('/fonts/{$customBodyFont}');
+{rdelim}
+{elseif $bodyFont}
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family={$bodyFont}">
+{/if}
+
 {if $headingFont}
 h1, h2, h3, h4, h5, .header-button, .menu-bar-label, .panel-title, label,.browse-category,#browse-sub-category-menu,button,
-.btn,.myAccountLink,.adminMenuLink,.selected-browse-label-search,.result-label,.result-title,.label,#remove-search-label,#narrow-search-label{ldelim}
-    font-family: {$headingFont}, "Helvetica Neue", Helvetica, Arial, sans-serif;
+.btn,.myAccountLink,.adminMenuLink,.selected-browse-label-search,.result-label,.result-title,.label,#remove-search-label,#narrow-search-label,#library-name-header{ldelim}
+    font-family: "{$headingFont}", "Helvetica Neue", Helvetica, Arial, sans-serif;
 {rdelim}
 {/if}
 {if $bodyFont}
 body{ldelim}
-    font-family: {$bodyFont}, "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-family: "{$bodyFont}", "Helvetica Neue", Helvetica, Arial, sans-serif;
 {rdelim}
 {/if}
 
@@ -34,6 +45,12 @@ body{ldelim}
         border-bottom-width: {$headerBottomBorderWidth};
     {/if}
 {rdelim}
+
+{if $headerForegroundColor}
+#library-name-header{ldelim}
+    color: {$headerForegroundColor};
+{rdelim}
+{/if}
 
 .header-button{ldelim}
     {if $headerButtonBackgroundColor}
@@ -157,6 +174,12 @@ body .container{ldelim}
     {if $selectedBrowseCategoryForegroundColor}
         color: {$selectedBrowseCategoryForegroundColor} !important;
     {/if}
+{rdelim}
+{/if}
+
+{if $capitalizeBrowseCategories}
+.browse-category div{ldelim}
+    text-transform: uppercase;
 {rdelim}
 {/if}
 

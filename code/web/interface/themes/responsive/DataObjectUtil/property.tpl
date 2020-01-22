@@ -135,6 +135,20 @@
                     {rdelim});
 				</script>
 			</div>
+		{elseif $property.type == 'uploaded_font'}
+			<div class="row">
+				<div class="col-sm-7">
+					<input type="file" name='{$propName}' id='{$propName}' size="80">
+					{if $propValue}
+						Existing font: {$propValue} <input type='checkbox' name='remove{$propName}' id='remove{$propName}'> <label for="remove{$propName}">Remove</label>
+					{/if}
+				</div>
+				<div class="col-sm-5">
+					<div id="{$propName}-sample-text" style="font-family: {$propValue},arial; font-size: {if $property.previewFontSize}{$property.previewFontSize}{else}12px{/if}">
+						English, Español, 中文(简体), עברית
+					</div>
+				</div>
+			</div>
 		{elseif $property.type == 'multiemail'}
 			<input type='text' name='{$propName}' id='{$propName}' value='{$propValue|escape}' {if $property.maxLength}maxlength='{$property.maxLength}'{/if} {if !empty($property.size)}size='{$property.size}'{/if} class='form-control multiemail {if $property.required}required{/if}' {if !empty($property.readOnly)}readonly{/if}>
 		{elseif $property.type == 'date'}

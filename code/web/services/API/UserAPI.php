@@ -24,12 +24,13 @@ class UserAPI extends Action {
 
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
 		if (method_exists($this, $method)) {
-			$result = $this->$method();
+			$result = [
+				'result' => $this->$method()
+			];
 			$output = json_encode($result);
 		} else {
 			$output = json_encode(array('error'=>'invalid_method'));
 		}
-
 		echo $output;
 	}
 
@@ -664,6 +665,23 @@ class UserAPI extends Action {
 	}
 
 	/**
+	 * Returns lending options for a patron from OverDrive.
+	 *
+	 * @return array
+	 */
+	function getOverDriveLendingOptions(){
+		list($username, $password) = $this->loadUsernameAndPassword();
+		$user = UserAccount::validateAccount($username, $password);
+		if ($user && !($user instanceof AspenError)){
+			$driver         = new OverDriveDriver();
+			$accountDetails = $driver->getOptions($user);
+			return array('success' => true, 'lendingOptions' => $accountDetails['lendingPeriods']);
+		}else{
+			return array('success' => false, 'message' => 'Login unsuccessful');
+		}
+	}
+
+	/**
 	 * Get eContent and ILS records that are checked out to a user based on username and password.
 	 *
 	 * Parameters:
@@ -766,17 +784,31 @@ class UserAPI extends Action {
 	 *
 	 * @author Mark Noble <mnoble@turningleaftech.com>
 	 */
-	function renewCheckout(){
+	function renewCheckout()
+	{
 		list($username, $password) = $this->loadUsernameAndPassword();
-        $recordId = $_REQUEST['recordId'];
+		$recordId = $_REQUEST['recordId'];
 		$itemBarcode = $_REQUEST['itemBarcode'];
-        $itemIndex = $_REQUEST['itemIndex'];
+		$itemIndex = $_REQUEST['itemIndex'];
 		$user = UserAccount::validateAccount($username, $password);
+		if ($user && !($user instanceof AspenError)) {
+			$renewalMessage = $this->getCatalogConnection()->renewCheckout($user, $recordId, $itemBarcode, $itemIndex);
+			return array('success' => true, 'renewalMessage' => $renewalMessage);
+		} else {
+			return array('success' => false, 'message' => 'Login unsuccessful');
+		}
+	}
+
+	function renewItem()
+	{
+		list($username, $password) = $this->loadUsernameAndPassword();
+		$itemBarcode = $_REQUEST['itemBarcode'];
+		$user        = UserAccount::validateAccount($username, $password);
 		if ($user && !($user instanceof AspenError)){
-			$renewalMessage = $this->getCatalogConnection()->renewCheckout($user->cat_username, $recordId, $itemBarcode, $itemIndex);
-			return array('success'=>true, 'renewalMessage'=>$renewalMessage);
+			$renewalMessage = $this->getCatalogConnection()->renewCheckout($user, $itemBarcode);
+			return array('success' => true, 'renewalMessage' => $renewalMessage);
 		}else{
-			return array('success'=>false, 'message'=>'Login unsuccessful');
+			return array('success' => false, 'message' => 'Login unsuccessful');
 		}
 	}
 

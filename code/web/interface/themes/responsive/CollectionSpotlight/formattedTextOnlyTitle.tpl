@@ -15,8 +15,6 @@
 				<span class="scrollerTextOnlyListAuthor">{$author}</span>
 			</a>
 		{/if}
-		{* show ratings check in the template *}
-		{*{include file="GroupedWork/title-rating.tpl" showNotInterested=false}*}
 	</div>
 {/strip}
 

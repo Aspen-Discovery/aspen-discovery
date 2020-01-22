@@ -6,7 +6,7 @@ require_once __DIR__ . '/../bootstrap.php';
  */
 global $serverName;
 
-ini_set('memory_limit','1G');
+ini_set('memory_limit','2G');
 $dataPath = '/data/aspen-discovery/' . $serverName;
 $exportPath = $dataPath . '/pika_export/';
 
@@ -37,9 +37,9 @@ if (!file_exists($exportPath)){
 	$invalidGroupedWorks = [];
 	$movedGroupedWorks = [];
 
-	importReadingHistory($exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
 	importRatingsAndReviews($exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
 	importLists($exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
+	importReadingHistory($exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
 }
 
 function importReadingHistory($exportPath, $existingUsers, $missingUsers, &$validGroupedWorks, &$invalidGroupedWorks, &$movedGroupedWorks){
@@ -359,6 +359,8 @@ function validateGroupedWork(&$groupedWorkId, $title, $author, &$validGroupedWor
 						$invalidGroupedWorks[$groupedWorkId] = $groupedWorkId;
 					}
 				}
+				$searchObject->__destruct();
+				$searchObject = null;
 			}else{
 				//There was no title or author provided, it looks like this was deleted in Pika
 				//echo("Grouped Work $groupedWorkId - $title by $author does not exist\r\n");

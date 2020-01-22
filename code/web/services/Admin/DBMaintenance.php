@@ -66,8 +66,8 @@ class Admin_DBMaintenance extends Admin_Admin
 		$grouped_work_updates = getGroupedWorkUpdates();
 		require_once ROOT_DIR . '/sys/DBMaintenance/user_updates.php';
 		$user_updates = getUserUpdates();
-		require_once ROOT_DIR . '/sys/DBMaintenance/list_widget_updates.php';
-		$list_widget_updates = getListWidgetUpdates();
+		require_once ROOT_DIR . '/sys/DBMaintenance/collection_spotlight_updates.php';
+		$collection_spotlight_updates = getCollectionSpotlightUpdates();
 		require_once ROOT_DIR . '/sys/DBMaintenance/indexing_updates.php';
 		$indexing_updates = getIndexingUpdates();
 		require_once ROOT_DIR . '/sys/DBMaintenance/islandora_updates.php';
@@ -115,7 +115,7 @@ class Admin_DBMaintenance extends Admin_Admin
 			$library_location_updates,
 			$user_updates,
 			$grouped_work_updates,
-			$list_widget_updates,
+			$collection_spotlight_updates,
 			$indexing_updates,
 			$islandora_updates,
 			$overdrive_updates,
@@ -1024,22 +1024,6 @@ class Admin_DBMaintenance extends Admin_Admin
 						'RENAME TABLE pTypeRestrictedLocations TO ptype_restricted_locations',
 					),
 				),
-
-				'addTableListWidgetListsLinks' => array(
-					'title' => 'Widget Lists',
-					'description' => 'Add a new table: list_widget_lists_links',
-					'sql' => array(
-						"CREATE TABLE IF NOT EXISTS `list_widget_lists_links`(
-							`id` int(11) NOT NULL AUTO_INCREMENT, 
-							`listWidgetListsId` int(11) NOT NULL, 
-							`name` varchar(50) NOT NULL, 
-							`link` text NOT NULL, 
-							`weight` int(3) NOT NULL DEFAULT '0',
-							PRIMARY KEY (`id`) 
-						) ENGINE=InnoDB DEFAULT CHARSET=utf8;"
-					),
-				),
-
 
 				'millenniumTables' => array(
 					'title' => 'Millennium table setup',

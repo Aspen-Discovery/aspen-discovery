@@ -11,7 +11,7 @@ class SearchAPI extends Action
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
 		$output = '';
 		if (!empty($method) && method_exists($this, $method)) {
-			if (in_array($method, array('getListWidget'))) {
+			if (in_array($method, array('getListWidget', 'getCollectionSpotlight'))) {
 				$output = $this->$method();
 			} else {
 				$jsonOutput = json_encode(array('result' => $this->$method()));
@@ -196,7 +196,16 @@ class SearchAPI extends Action
 			$timer->logTime('load result records');
 
 			$facetSet = $searchObject->getFacetList();
-			$jsonResults['facetSet'] = $facetSet;
+			$jsonResults['facetSet'] = [];
+			foreach ($facetSet as $name => $facetInfo){
+				$jsonResults['facetSet'][$name] = [
+					'label' => $facetInfo['label']->displayName,
+					'list' => $facetInfo['list'],
+					'hasApplied' => $facetInfo['hasApplied'],
+					'valuesToShow' => $facetInfo['valuesToShow'],
+					'showAlphabetically' => $facetInfo['showAlphabetically'],
+				];
+			}
 
 			//Check to see if a format category is already set
 			$categorySelected = false;
@@ -253,7 +262,19 @@ class SearchAPI extends Action
 		return $jsonResults;
 	}
 
+	/**
+	 * This is old for historical compatibility purposes.
+	 *
+	 * @deprecated
+	 *
+	 * @return string
+	 */
 	function getListWidget()
+	{
+		return $this->getCollectionSpotlight();
+	}
+
+	function getCollectionSpotlight()
 	{
 		global $interface;
 		if (isset($_REQUEST['username']) && isset($_REQUEST['password'])) {
@@ -265,11 +286,10 @@ class SearchAPI extends Action
 			$user = UserAccount::getLoggedInUser();
 			$interface->assign('user', $user);
 		}
-		//Load the widget configuration
-		require_once ROOT_DIR . '/sys/ListWidget.php';
-		require_once ROOT_DIR . '/sys/ListWidgetList.php';
-		require_once ROOT_DIR . '/sys/ListWidgetListsLinks.php';
-		$widget = new ListWidget();
+		//Load the collectionSpotlight configuration
+		require_once ROOT_DIR . '/sys/LocalEnrichment/CollectionSpotlight.php';
+		require_once ROOT_DIR . '/sys/LocalEnrichment/CollectionSpotlightList.php';
+		$collectionSpotlight = new CollectionSpotlight();
 		$id = $_REQUEST['id'];
 
 		if (isset($_REQUEST['reload'])) {
@@ -278,16 +298,15 @@ class SearchAPI extends Action
 			$interface->assign('reload', false);
 		}
 
-
-		$widget->id = $id;
-		if ($widget->find(true)) {
-			$interface->assign('widget', $widget);
+		$collectionSpotlight->id = $id;
+		if ($collectionSpotlight->find(true)) {
+			$interface->assign('collectionSpotlight', $collectionSpotlight);
 
 			if (!empty($_REQUEST['resizeIframe'])) {
 				$interface->assign('resizeIframe', true);
 			}
-			//return the widget
-			return $interface->fetch('ListWidget/listWidget.tpl');
+			//return the collectionSpotlight
+			return $interface->fetch('CollectionSpotlight/collectionSpotlight.tpl');
 		} else {
 			return '';
 		}

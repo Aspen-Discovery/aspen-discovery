@@ -333,7 +333,15 @@ abstract class SearchObject_BaseSearcher
 		// Loop through all the current filter fields
 		foreach ($this->filterList as $field => $values) {
 			// and each value currently used for that field
-			$translate = isset($facetConfig[$field]) && $facetConfig[$field]->translate;
+			$translate = false;
+			if (isset($facetConfig[$field])){
+				if (is_object($facetConfig[$field])){
+					$translate = $facetConfig[$field]->translate;
+				}else{
+					$translate = in_array($field, $facetConfig['translated_facets']);
+				}
+			}
+
 			foreach ($values as $value) {
 				$facetLabel = $this->getFacetLabel($field);
 				if ($field == 'available_at' && $value == '*') {
@@ -394,7 +402,9 @@ abstract class SearchObject_BaseSearcher
 			}
 		}
 		// Add the new filter
-		$this->addFilter([$field, $filterValue]);
+		if ($filterValue != null) {
+			$this->addFilter([$field, $filterValue]);
+		}
 		// Remove page number
 		$this->page = 1;
 		// Get the new url

@@ -52,7 +52,7 @@
 		<script src="/interface/themes/responsive/js/aspen/econtent-record.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/aspen/grouped-work.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/aspen/lists.js?v={$gitBranch|urlencode}"></script>
-		<script src="/interface/themes/responsive/js/aspen/lists-widgets.js?v={$gitBranch|urlencode}"></script>
+		<script src="/interface/themes/responsive/js/aspen/collection-spotlights.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/aspen/materials-request.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/aspen/menu.js?v={$gitBranch|urlencode}"></script>
 		<script src="/interface/themes/responsive/js/aspen/overdrive.js?v={$gitBranch|urlencode}"></script>

@@ -31,7 +31,7 @@ public class SymphonyExportMain {
 		// Set-up Logging //
 		Date startTime = new Date();
 		logger = LoggingUtil.setupLogging(serverName, "symphony_export");
-		logger.info(startTime.toString() + ": Starting CarlX Extract");
+		logger.info(startTime.toString() + ": Starting Symphony Extract");
 
 		// Read the base INI file to get information about the server (current directory/cron/config.ini)
 		Ini ini = ConfigUtil.loadConfigFile("config.ini", serverName, logger);
@@ -41,6 +41,7 @@ public class SymphonyExportMain {
 		try{
 			String databaseConnectionInfo = ConfigUtil.cleanIniValue(ini.get("Database", "database_vufind_jdbc"));
 			pikaConn = DriverManager.getConnection(databaseConnectionInfo);
+
 		}catch (Exception e){
 			System.out.println("Error connecting to aspen database " + e.toString());
 			System.exit(1);

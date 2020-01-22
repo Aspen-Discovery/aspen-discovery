@@ -23,9 +23,6 @@ class TopFacets implements RecommendationInterface
 		/** @var SearchObject_SolrSearcher searchObject */
 		$this->searchObject = $searchObject;
 
-		// Parse the additional parameters:
-		$params = explode(':', $params);
-
 		// Load the desired facet information:
 		if ($this->searchObject instanceof SearchObject_GroupedWorkSearcher) {
 			$searchLibrary = Library::getActiveLibrary();
@@ -37,20 +34,19 @@ class TopFacets implements RecommendationInterface
 				$facets = $searchLibrary->getGroupedWorkDisplaySettings()->getFacets();
 			}
 			global $solrScope;
-			foreach ($facets as $facet) {
+			foreach ($facets as &$facet) {
 				if ($facet->showAboveResults == 1) {
-					$facetName = $facet->facetName;
 					if ($solrScope) {
 						if ($facet->facetName == 'availability_toggle') {
-							$facetName = 'availability_toggle_' . $solrScope;
+							$facet->facetName = 'availability_toggle_' . $solrScope;
 						} else if ($facet->facetName == 'format_category') {
-							$facetName = 'format_category_' . $solrScope;
+							$facet->facetName = 'format_category_' . $solrScope;
 						} else if ($facet->facetName == 'format') {
-							$facetName = 'format_' . $solrScope;
+							$facet->facetName = 'format_' . $solrScope;
 						}
 					}
-					$this->facets[$facetName] = $facet->displayName;
-					$this->facetSettings[$facetName] = $facet;
+					$this->facetSettings[$facet->facetName] = $facet;
+					$this->facets[$facet->facetName] = $facet;
 				}
 			}
 		} else {
@@ -89,7 +85,7 @@ class TopFacets implements RecommendationInterface
 		// Grab the facet set
 		$facetList = $this->searchObject->getFacetList($this->facets);
 		foreach ($facetList as $facetSetkey => $facetSet){
-			if ($facetSet['label'] == 'Category' || $facetSet['label'] == 'Format Category'){
+			if (strpos($facetSetkey, 'format_category') === 0){
 				$validCategories = array(
 						'Books',
 						'eBook',
@@ -112,8 +108,10 @@ class TopFacets implements RecommendationInterface
 
 				uksort($facetSet['list'], "format_category_comparator");
 
+				$facetSet['isFormatCategory'] = true;
+				$facetSet['isAvailabilityToggle'] = false;
 				$facetList[$facetSetkey] = $facetSet;
-			}elseif (preg_match('/available/i', $facetSet['label'])){
+			}elseif (strpos($facetSetkey, 'availability_toggle') === 0){
 
 				$numSelected = 0;
 				foreach ($facetSet['list'] as $facetKey => $facet){
@@ -192,6 +190,8 @@ class TopFacets implements RecommendationInterface
 
 				ksort($sortedFacetList);
 				$facetSet['list'] = $sortedFacetList;
+				$facetSet['isFormatCategory'] = false;
+				$facetSet['isAvailabilityToggle'] = true;
 				$facetList[$facetSetkey] = $facetSet;
 			}
 		}

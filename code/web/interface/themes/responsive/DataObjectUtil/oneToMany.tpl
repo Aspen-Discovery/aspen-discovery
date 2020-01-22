@@ -29,9 +29,11 @@
 						<td>
 							{assign var=subPropName value=$subProperty.property}
 							{assign var=subPropValue value=$subObject->$subPropName}
-							{if $subProperty.type=='text' || $subProperty.type=='date' || $subProperty.type=='integer' || $subProperty.type=='textarea' || $subProperty.type=='html'}
+							{if $subProperty.type=='text' || $subProperty.type=='date' || $subProperty.type=='integer' || $subProperty.type=='html'}
 								<input type="text" name="{$propName}_{$subPropName}[{$subObject->id}]" value="{$subPropValue|escape}" class="form-control{if $subProperty.type=='date'} datepicker{elseif $subProperty.type=="integer"} integer{/if}{if $subProperty.required == true} required{/if}">
-							{elseif $subProperty.type=='checkbox'}
+                            {elseif $subProperty.type=='textarea'}
+								<textarea name="{$propName}_{$subPropName}[{$subObject->id}]" class="form-control">{$subPropValue|escape}</textarea>
+                            {elseif $subProperty.type=='checkbox'}
 								<input type='checkbox' name='{$propName}_{$subPropName}[{$subObject->id}]' {if $subPropValue == 1}checked='checked'{/if}/>
 							{else}
 								<select name='{$propName}_{$subPropName}[{$subObject->id}]' id='{$propName}{$subPropName}_{$subObject->id}' class='form-control {if $subProperty.required == true} required{/if}'>

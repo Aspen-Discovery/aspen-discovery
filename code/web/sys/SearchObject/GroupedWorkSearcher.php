@@ -245,43 +245,38 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 		}
 
 		global $solrScope;
-		foreach ($facets as $facet) {
-			$facetName = $facet->facetName;
+		foreach ($facets as &$facet) {
 			//Adjust facet name for local scoping
 			if ($solrScope) {
 				if ($facet->facetName == 'availability_toggle') {
-					$facetName = 'availability_toggle_' . $solrScope;
+					$facet->facetName = 'availability_toggle_' . $solrScope;
 				} elseif ($facet->facetName == 'format') {
-					$facetName = 'format_' . $solrScope;
+					$facet->facetName = 'format_' . $solrScope;
 				} elseif ($facet->facetName == 'format_category') {
-					$facetName = 'format_category_' . $solrScope;
+					$facet->facetName = 'format_category_' . $solrScope;
 				} elseif ($facet->facetName == 'econtent_source') {
-					$facetName = 'econtent_source_' . $solrScope;
+					$facet->facetName = 'econtent_source_' . $solrScope;
 				} elseif ($facet->facetName == 'econtent_protection_type') {
-					$facetName = 'econtent_protection_type_' . $solrScope;
+					$facet->facetName = 'econtent_protection_type_' . $solrScope;
 				} elseif ($facet->facetName == 'detailed_location') {
-					$facetName = 'detailed_location_' . $solrScope;
+					$facet->facetName = 'detailed_location_' . $solrScope;
 				} elseif ($facet->facetName == 'owning_location') {
-					$facetName = 'owning_location_' . $solrScope;
+					$facet->facetName = 'owning_location_' . $solrScope;
 				} elseif ($facet->facetName == 'owning_library') {
-					$facetName = 'owning_library_' . $solrScope;
+					$facet->facetName = 'owning_library_' . $solrScope;
 				} elseif ($facet->facetName == 'available_at') {
-					$facetName = 'available_at_' . $solrScope;
+					$facet->facetName = 'available_at_' . $solrScope;
 				} elseif ($facet->facetName == 'collection' || $facet->facetName == 'collection_group') {
-					$facetName = 'collection_' . $solrScope;
-				}
-			}
-			if (isset($searchLibrary)) {
-				if ($facet->facetName == 'time_since_added') {
-					$facetName = 'local_time_since_added_' . $searchLibrary->subdomain;
+					$facet->facetName = 'collection_' . $solrScope;
+				} elseif ($facet->facetName == 'time_since_added') {
+					$facet->facetName = 'local_time_since_added_' . $solrScope;
 				} elseif ($facet->facetName == 'itype') {
-					$facetName = 'itype_' . $searchLibrary->subdomain;
+					$facet->facetName = 'itype_' . $solrScope;
 				}
 			}
-
 			if (isset($searchLocation)) {
 				if ($facet->facetName == 'time_since_added' && $searchLocation->restrictSearchByLocation) {
-					$facetName = 'local_time_since_added_' . $searchLocation->code;
+					$facet->facetName = 'local_time_since_added_' . $searchLocation->code;
 				}
 			}
 		}
@@ -444,33 +439,52 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 
 
 	/**
-	 * @param array $orderedListOfIDs Use the index of the matched ID as the index of the resulting array of ListWidget data (for later merging)
+	 * @param array $orderedListOfIDs Use the index of the matched ID as the index of the resulting array of summary data (for later merging)
 	 * @return array
 	 */
-	public function getListWidgetTitles($orderedListOfIDs = array())
+	public function getTitleSummaryInformation($orderedListOfIDs = array())
 	{
-		$widgetTitles = array();
+		$titleSummaries = array();
 		for ($x = 0; $x < count($this->indexResult['response']['docs']); $x++) {
 			$current = &$this->indexResult['response']['docs'][$x];
+			/** @var GroupedWorkDriver $record */
 			$record = RecordDriverFactory::initRecordDriver($current);
 			if (!($record instanceof AspenError)) {
-				if (method_exists($record, 'getListWidgetTitle')) {
-					if (!empty($orderedListOfIDs)) {
-						$position = array_search($current['id'], $orderedListOfIDs);
-						if ($position !== false) {
-							$widgetTitles[$position] = $record->getListWidgetTitle();
-						}
-					} else {
-						$widgetTitles[] = $record->getListWidgetTitle();
+				if (!empty($orderedListOfIDs)) {
+					$position = array_search($current['id'], $orderedListOfIDs);
+					if ($position !== false) {
+						$titleSummaries[$position] = $record->getSummaryInformation();
 					}
 				} else {
-					$widgetTitles[] = 'List Widget Title not available';
+					$titleSummaries[] = $record->getSummaryInformation();
 				}
 			} else {
-				$widgetTitles[] = "Unable to find record";
+				$titleSummaries[] = "Unable to find record";
 			}
 		}
-		return $widgetTitles;
+		return $titleSummaries;
+	}
+
+	public function getSpotlightResults(CollectionSpotlight $spotlight){
+		$spotlightResults = [];
+		for ($x = 0; $x < count($this->indexResult['response']['docs']); $x++) {
+			$current = &$this->indexResult['response']['docs'][$x];
+			/** @var GroupedWorkDriver $record */
+			$record = RecordDriverFactory::initRecordDriver($current);
+			if (!($record instanceof AspenError)) {
+				if (!empty($orderedListOfIDs)) {
+					$position = array_search($current['id'], $orderedListOfIDs);
+					if ($position !== false) {
+						$spotlightResults[$position] = $record->getSpotlightResult($spotlight, $position);
+					}
+				} else {
+					$spotlightResults[] = $record->getSpotlightResult($spotlight, $x);
+				}
+			} else {
+				$spotlightResults[] = "Unable to find record";
+			}
+		}
+		return $spotlightResults;
 	}
 
 	/*
@@ -786,9 +800,9 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 	public function processSearch($returnIndexErrors = false, $recommendations = false, $preventQueryModification = false)
 	{
 		global $timer;
+		global $solrScope;
 
 		if ($this->searchSource == 'econtent') {
-			global $solrScope;
 			$this->addHiddenFilter("econtent_source_{$solrScope}", '*');
 		}
 
@@ -848,15 +862,15 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 			foreach ($filter as $value) {
 				$isAvailabilityToggle = false;
 				$isAvailableAt = false;
-				if (substr($field, 0, strlen('availability_toggle')) == 'availability_toggle') {
+				if (strpos($field, 'availability_toggle') === 0) {
 					$availabilityToggleValue = $value;
 					$isAvailabilityToggle = true;
-				} elseif (substr($field, 0, strlen('available_at')) == 'available_at') {
+				} elseif (strpos($field, 'available_at') === 0) {
 					$availabilityAtValues[] = $value;
 					$isAvailableAt = true;
-				} elseif (substr($field, 0, strlen('format_category')) == 'format_category') {
+				} elseif (strpos($field, 'format_category') === 0) {
 					$formatCategoryValues[] = $value;
-				} elseif (substr($field, 0, strlen('format')) == 'format') {
+				} elseif (strpos($field, 'format') === 0) {
 					$formatValues[] = $value;
 				}
 				// Special case -- allow trailing wildcards:
@@ -892,9 +906,9 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 						$fieldValue .= $value;
 					} else {
 						if ($isAvailabilityToggle) {
-							$filterQuery['availability_toggle'] = "$fieldPrefix$field:$value";
+							$filterQuery['availability_toggle_' . $solrScope] = "$fieldPrefix$field:$value";
 						} elseif ($isAvailableAt) {
-							$filterQuery['available_at'] = "$fieldPrefix$field:$value";
+							$filterQuery['available_at_' . $solrScope] = "$fieldPrefix$field:$value";
 						} else {
 							$filterQuery[] = "$fieldPrefix$field:$value";
 						}
@@ -921,7 +935,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 				$filterQuery[] = $availabilityByFormatFieldName . ':"' . $availabilityToggleValue . '"';
 				$availabilityByFormatFieldNames[] = $availabilityByFormatFieldName;
 			}
-			unset($filterQuery['availability_toggle']);
+			unset($filterQuery['availability_toggle_'. $solrScope]);
 		}
 
 		//Check to see if we have both a format and available at facet applied
@@ -1634,52 +1648,51 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 				$facets = $searchLibrary->getGroupedWorkDisplaySettings()->getFacets();
 			}
 			global $solrScope;
-			foreach ($facets as $facet) {
-				$facetName = $facet->facetName;
+			foreach ($facets as &$facet) {
 				//Adjust facet name for local scoping
 				if ($solrScope) {
 					if ($facet->facetName == 'availability_toggle') {
-						$facetName = 'availability_toggle_' . $solrScope;
+						$facet->facetName = 'availability_toggle_' . $solrScope;
 					} elseif ($facet->facetName == 'format') {
-						$facetName = 'format_' . $solrScope;
+						$facet->facetName = 'format_' . $solrScope;
 					} elseif ($facet->facetName == 'format_category') {
-						$facetName = 'format_category_' . $solrScope;
+						$facet->facetName = 'format_category_' . $solrScope;
 					} elseif ($facet->facetName == 'econtent_source') {
-						$facetName = 'econtent_source_' . $solrScope;
+						$facet->facetName = 'econtent_source_' . $solrScope;
 					} elseif ($facet->facetName == 'econtent_protection_type') {
-						$facetName = 'econtent_protection_type_' . $solrScope;
+						$facet->facetName = 'econtent_protection_type_' . $solrScope;
 					} elseif ($facet->facetName == 'detailed_location') {
-						$facetName = 'detailed_location_' . $solrScope;
+						$facet->facetName = 'detailed_location_' . $solrScope;
 					} elseif ($facet->facetName == 'owning_location') {
-						$facetName = 'owning_location_' . $solrScope;
+						$facet->facetName = 'owning_location_' . $solrScope;
 					} elseif ($facet->facetName == 'owning_library') {
-						$facetName = 'owning_library_' . $solrScope;
+						$facet->facetName = 'owning_library_' . $solrScope;
 					} elseif ($facet->facetName == 'available_at') {
-						$facetName = 'available_at_' . $solrScope;
+						$facet->facetName = 'available_at_' . $solrScope;
 					} elseif ($facet->facetName == 'collection' || $facet->facetName == 'collection_group') {
-						$facetName = 'collection_' . $solrScope;
+						$facet->facetName = 'collection_' . $solrScope;
 					}
 				}
 				if (isset($searchLibrary)) {
 					if ($facet->facetName == 'time_since_added') {
-						$facetName = 'local_time_since_added_' . $searchLibrary->subdomain;
+						$facet->facetName = 'local_time_since_added_' . $searchLibrary->subdomain;
 					} elseif ($facet->facetName == 'itype') {
-						$facetName = 'itype_' . $searchLibrary->subdomain;
+						$facet->facetName = 'itype_' . $searchLibrary->subdomain;
 					}
 				}
 				if (isset($searchLocation)) {
 					if ($facet->facetName == 'time_since_added' && $searchLocation->restrictSearchByLocation) {
-						$facetName = 'local_time_since_added_' . $searchLocation->code;
+						$facet->facetName = 'local_time_since_added_' . $searchLocation->code;
 					}
 				}
 
 				if ($this->isAdvanced()) {
 					if ($facet->showInAdvancedSearch == 1) {
-						$facetConfig[$facetName] = $facet;
+						$facetConfig[$facet->facetName] = $facet;
 					}
 				} else {
 					if ($facet->showInResults == 1) {
-						$facetConfig[$facetName] = $facet;
+						$facetConfig[$facet->facetName] = $facet;
 					}
 				}
 			}

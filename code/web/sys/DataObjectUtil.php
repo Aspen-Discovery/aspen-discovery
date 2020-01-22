@@ -340,9 +340,40 @@ class DataObjectUtil
 				}else if (true){ //TODO: validate the file type
 					//Copy the full image to the correct location
 					//Filename is the name of the object + the original filename
-					global $configArray;
 					$destFileName = $_FILES[$propertyName]["name"];
 					$destFolder = $property['path'];
+					$destFullPath = $destFolder . '/' . $destFileName;
+					$copyResult = copy($_FILES[$propertyName]["tmp_name"], $destFullPath);
+					if ($copyResult){
+						$logger->log("Copied file from {$_FILES[$propertyName]["tmp_name"]} to $destFullPath", Logger::LOG_NOTICE);
+					}else{
+						$logger->log("Could not copy file from {$_FILES[$propertyName]["tmp_name"]} to $destFullPath", Logger::LOG_ERROR);
+						if (!file_exists($_FILES[$propertyName]["tmp_name"])){
+							$logger->log("  Uploaded file did not exist", Logger::LOG_ERROR);
+						}
+						if (!is_writable($destFullPath)){
+							$logger->log("  Destination is not writable", Logger::LOG_ERROR);
+						}
+					}
+					//store the actual filename
+					$object->$propertyName = $destFileName;
+				}
+			}
+		}else if ($property['type'] == 'uploaded_font'){
+			//Make sure that the type is correct (jpg, png, or gif)
+			if (isset($_REQUEST["remove{$propertyName}"])){
+				$object->$propertyName = '';
+			}elseif (isset($_REQUEST["{$propertyName}_existing"]) && $_FILES[$propertyName]['error'] == 4){
+				$object->$propertyName = $_REQUEST["{$propertyName}_existing"];
+			}else if (isset($_FILES[$propertyName])){
+				if ($_FILES[$propertyName]["error"] > 0){
+					//return an error to the browser
+				}else if (true){ //TODO: validate the file type
+					//Copy the full image to the correct location
+					//Filename is the name of the object + the original filename
+					global $configArray;
+					$destFileName = $_FILES[$propertyName]["name"];
+					$destFolder = $configArray['Site']['local'] . '/fonts';
 					$destFullPath = $destFolder . '/' . $destFileName;
 					$copyResult = copy($_FILES[$propertyName]["tmp_name"], $destFullPath);
 					if ($copyResult){

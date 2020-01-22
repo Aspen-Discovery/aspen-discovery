@@ -586,7 +586,7 @@ class Library extends DataObject
 				)
 			),
 
-			'browseCategoryId' => array('property' => 'browseCategoryId', 'type' => 'enum', 'values' => $browseCategoryGroups, 'label' => 'Browse Category Group', 'description' => 'The group of browse categories to show for this library', 'hideInLists' => true),
+			'browseCategoryGroupId' => array('property' => 'browseCategoryGroupId', 'type' => 'enum', 'values' => $browseCategoryGroups, 'label' => 'Browse Category Group', 'description' => 'The group of browse categories to show for this library', 'hideInLists' => true),
 
 			'holdingsSummarySection' => array('property'=>'holdingsSummarySection', 'type' => 'section', 'label' =>'Holdings Summary', 'hideInLists' => true,
 					'helpLink' => '', 'properties' => array(
@@ -1665,5 +1665,18 @@ class Library extends DataObject
 			$libraryList[$library->libraryId] = $library->displayName;
 		}
 		return $libraryList;
+	}
+
+	/** @var OverDriveScope */
+	private $_overdriveScope = null;
+	public function getOverdriveScope()
+	{
+		if ($this->_overdriveScope == null && $this->overDriveScopeId > 0){
+			require_once ROOT_DIR . '/sys/OverDrive/OverDriveScope.php';
+			$this->_overdriveScope = new OverDriveScope();
+			$this->_overdriveScope->id = $this->overDriveScopeId;
+			$this->_overdriveScope->find(true);
+		}
+		return $this->_overdriveScope;
 	}
 }

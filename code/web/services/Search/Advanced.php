@@ -16,7 +16,7 @@ class Search_Advanced extends Search_AdvancedBase {
 		// We don't want this search in the search history
 		$searchObject->disableLogging();
 		// Go get the facets
-		$searchObject->processSearch();
+		$searchObject->processSearch(false, true);
 		$facetList = $searchObject->getFacetList();
 		// Shutdown the search object
 		$searchObject->close();

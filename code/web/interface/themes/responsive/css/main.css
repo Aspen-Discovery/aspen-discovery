@@ -8444,8 +8444,12 @@ hr.menu {
   border-bottom: 0;
   box-shadow: 2px 2px 5px #fff;
 }
+#headingInfo {
+  display: inline-block;
+  vertical-align: middle;
+}
 #library-name-header {
-  font-size: 30px;
+  font-size: 26px;
   color: #8b8b8b;
   font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;
   font-weight: bold;
@@ -9087,7 +9091,7 @@ ul.account-submenu {
 }
 .browse-category.selected {
   border: 2px solid #3497d1;
-  font-size: 23px;
+  font-size: 20px;
 }
 #selected-browse-label {
   background-color: #fff;
@@ -9615,7 +9619,7 @@ a.browse-thumbnail-sorted.active {
   max-height: 125px;
   padding: 3px;
 }
-.listWidgetSelector {
+.collectionSpotlightSelector {
   width: 100%;
   text-align: right;
 }
@@ -9657,47 +9661,47 @@ a.browse-thumbnail-sorted.active {
   margin: 5px;
   text-align: center;
 }
-.singleTitleWidget {
+.singleTitleSpotlight {
   width: 200px;
 }
-.singleTitleWidget .scrollerTitle img {
+.singleTitleSpotlight .scrollerTitle img {
   display: inline-block;
   opacity: 1;
 }
-.singleTitleWidget .scrollerTitle.selected img {
+.singleTitleSpotlight .scrollerTitle.selected img {
   display: inline-block;
 }
-.singleTitleWidget .scrollerTitle.selected {
+.singleTitleSpotlight .scrollerTitle.selected {
   border: 0 solid black;
   border-radius: 3px;
   padding: 0;
 }
-.singleTitleWidget .scrollerBodyContainer {
+.singleTitleSpotlight .scrollerBodyContainer {
   margin: 5px 0;
   text-align: center;
   width: 100%;
 }
-.singleTitleWithNextWidget {
+.singleTitleWithNextSpotlight {
   width: 200px;
 }
-.singleTitleWithNextWidget .scrollerTitle img {
+.singleTitleWithNextSpotlight .scrollerTitle img {
   display: inline-block;
   opacity: 1;
 }
-.singleTitleWithNextWidget .scrollerTitle.selected img {
+.singleTitleWithNextSpotlight .scrollerTitle.selected img {
   display: inline-block;
 }
-.singleTitleWithNextWidget .scrollerTitle.selected {
+.singleTitleWithNextSpotlight .scrollerTitle.selected {
   border: 0 solid black;
   border-radius: 3px;
   padding: 0;
 }
-.singleTitleWithNextWidget .scrollerBodyContainer {
+.singleTitleWithNextSpotlight .scrollerBodyContainer {
   margin: 5px 0;
   text-align: center;
   width: 100%;
 }
-.singleTitleWithNextWidget .rightScrollerButton {
+.singleTitleWithNextSpotlight .rightScrollerButton {
   float: none;
   position: absolute;
   right: 5px;
@@ -9713,8 +9717,8 @@ a.browse-thumbnail-sorted.active {
   max-width: none;
   display: block;
 }
-.mediumScroller.singleTitleWithNextWidget,
-.mediumScroller.singleTitleWidget {
+.mediumScroller.singleTitleWithNextSpotlight,
+.mediumScroller.singleTitleSpotlight {
   width: 275px;
 }
 .mediumScroller.verticalTitleScroller {

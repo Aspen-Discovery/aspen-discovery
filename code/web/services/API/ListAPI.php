@@ -492,7 +492,7 @@ class ListAPI extends Action
 			$searchObject->setLimit($numTitlesToShow);
 			$searchObject->setQueryIDs($ids);
 			$searchObject->processSearch();
-			$titles = $searchObject->getListWidgetTitles($orderedListOfIds);
+			$titles = $searchObject->getTitleSummaryInformation($orderedListOfIds);
 		}
 		return $titles;
 	}
@@ -510,7 +510,7 @@ class ListAPI extends Action
 			$archiveSearchObject->setLimit($numTitlesToShow);
 			$archiveSearchObject->setQueryIDs($ids);
 			$archiveSearchObject->processSearch();
-			$titles = $archiveSearchObject->getListWidgetTitles($orderedListOfIds);
+			$titles = $archiveSearchObject->getTitleSummaryInformation($orderedListOfIds);
 		}
 		return $titles;
 	}
@@ -529,7 +529,7 @@ class ListAPI extends Action
 				$searchObj->setLimit($numTitlesToShow);
 			}
 			$searchObj->processSearch(false, false);
-			$listTitles = $searchObj->getListWidgetTitles();
+			$listTitles = $searchObj->getTitleSummaryInformation();
 		}
 
 		return $listTitles;
@@ -754,7 +754,7 @@ class ListAPI extends Action
 				$searchObj->setLimit($numTitlesToShow);
 			}
 			$searchObj->processSearch(false, false);
-			$listTitles = $searchObj->getListWidgetTitles();
+			$listTitles = $searchObj->getTitleSummaryInformation();
 
 			$memCache->set('system_list_titles_' . $listName, $listTitles, $configArray['Caching']['system_list_titles']);
 		}

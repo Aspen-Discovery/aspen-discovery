@@ -3,8 +3,8 @@
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
-require_once ROOT_DIR . '/sys/ListWidget.php';
-require_once ROOT_DIR . '/sys/ListWidgetList.php';
+require_once ROOT_DIR . '/sys/LocalEnrichment/CollectionSpotlight.php';
+require_once ROOT_DIR . '/sys/LocalEnrichment/CollectionSpotlightList.php';
 require_once ROOT_DIR . '/sys/DataObjectUtil.php';
 
 /**
@@ -14,35 +14,34 @@ require_once ROOT_DIR . '/sys/DataObjectUtil.php';
  * @author Mark Noble
  *
  */
-class Admin_ListWidgets extends ObjectEditor {
+class Admin_CollectionSpotlights extends ObjectEditor {
 	function getObjectType(){
-		return 'ListWidget';
+		return 'CollectionSpotlight';
 	}
 	function getToolName(){
-		return 'ListWidgets';
+		return 'CollectionSpotlights';
 	}
 	function getPageTitle(){
-		return 'List Widgets';
+		return 'Collection Spotlights';
 	}
 	function getAllObjects(){
 		$list = array();
 
-		$user = UserAccount::getLoggedInUser();
-		$widget = new ListWidget();
+		$collectionSpotlight = new CollectionSpotlight();
 		if (UserAccount::userHasRole('libraryAdmin') || UserAccount::userHasRole('contentEditor') || UserAccount::userHasRole('libraryManager') || UserAccount::userHasRole('locationManager')){
 			$patronLibrary = Library::getPatronHomeLibrary();
-			$widget->libraryId = $patronLibrary->libraryId;
+			$collectionSpotlight->libraryId = $patronLibrary->libraryId;
 		}
-		$widget->orderBy('name');
-		$widget->find();
-		while ($widget->fetch()){
-			$list[$widget->id] = clone $widget;
+		$collectionSpotlight->orderBy('name');
+		$collectionSpotlight->find();
+		while ($collectionSpotlight->fetch()){
+			$list[$collectionSpotlight->id] = clone $collectionSpotlight;
 		}
 
 		return $list;
 	}
     function getObjectStructure(){
-		return ListWidget::getObjectStructure();
+		return CollectionSpotlight::getObjectStructure();
 	}
 	function getAllowableRoles(){
 		return array('opacAdmin', 'libraryAdmin', 'contentEditor', 'libraryManager', 'locationManager');
@@ -63,6 +62,7 @@ class Admin_ListWidgets extends ObjectEditor {
 		global $interface;
 
 		$interface->assign('canAddNew', $this->canAddNew());
+		$interface->assign('canCopy', $this->canCopy());
 		$interface->assign('canDelete', $this->canDelete());
 		$interface->assign('showReturnToList', $this->showReturnToList());
 
@@ -78,35 +78,35 @@ class Admin_ListWidgets extends ObjectEditor {
 			exit();
 		}
 
-		//Get all available widgets
-		$availableWidgets = array();
-		$listWidget = new ListWidget();
+		//Get all available spotlights
+		$availableSpotlights = array();
+		$collectionSpotlight = new CollectionSpotlight();
 		if (UserAccount::userHasRole('libraryAdmin') || UserAccount::userHasRole('contentEditor') || UserAccount::userHasRole('libraryManager') || UserAccount::userHasRole('locationManager')){
 			$homeLibrary = Library::getPatronHomeLibrary();
-			$listWidget->libraryId = $homeLibrary->libraryId;
+			$collectionSpotlight->libraryId = $homeLibrary->libraryId;
 		}
-		$listWidget->orderBy('name ASC');
-		$listWidget->find();
-		while ($listWidget->fetch()){
-			$availableWidgets[$listWidget->id] = clone($listWidget);
+		$collectionSpotlight->orderBy('name ASC');
+		$collectionSpotlight->find();
+		while ($collectionSpotlight->fetch()){
+			$availableSpotlights[$collectionSpotlight->id] = clone($collectionSpotlight);
 		}
-		$interface->assign('availableWidgets', $availableWidgets);
+		$interface->assign('availableSpotlights', $availableSpotlights);
 
-		//Get the selected widget
+		//Get the selected spotlight
 		if (isset($_REQUEST['id']) && is_numeric($_REQUEST['id'])){
-			$widget = $availableWidgets[$_REQUEST['id']];
-			$interface->assign('object', $widget);
+			$spotlight = $availableSpotlights[$_REQUEST['id']];
+			$interface->assign('object', $spotlight);
 		}
 
 		//Do actions that require pre-processing
 		if ($objectAction == 'save'){
-			if (!isset($widget)){
-				$widget = new ListWidget();
+			if (!isset($spotlight)){
+				$spotlight = new CollectionSpotlight();
 			}
-			DataObjectUtil::updateFromUI($widget, $listWidget->getObjectStructure());
-			$validationResults = DataObjectUtil::saveObject($listWidget->getObjectStructure(), "ListWidget");
+			DataObjectUtil::updateFromUI($spotlight, $collectionSpotlight->getObjectStructure());
+			$validationResults = DataObjectUtil::saveObject($collectionSpotlight->getObjectStructure(), "CollectionSpotlight");
 			if (!$validationResults['validatedOk']){
-				$interface->assign('object', $widget);
+				$interface->assign('object', $spotlight);
 				$interface->assign('errors', $validationResults['errors']);
 				$objectAction = 'edit';
 			}else{
@@ -117,26 +117,26 @@ class Admin_ListWidgets extends ObjectEditor {
 		}
 
 		if ($objectAction == 'list'){
-			$interface->setTemplate('listWidgets.tpl');
+			$interface->setTemplate('collectionSpotlights.tpl');
 		}else{
 			if ($objectAction == 'edit' || $objectAction == 'add'){
 				if (isset($_REQUEST['id'])){
-					$interface->assign('widgetid',$_REQUEST['id']);
+					$interface->assign('spotlightId',$_REQUEST['id']);
 					$interface->assign('id',$_REQUEST['id']);
 				}
-				$editForm = DataObjectUtil::getEditForm($listWidget->getObjectStructure());
+				$editForm = DataObjectUtil::getEditForm($collectionSpotlight->getObjectStructure());
 				$interface->assign('editForm', $editForm);
-				$interface->setTemplate('listWidgetEdit.tpl');
+				$interface->setTemplate('collectionSpotlightEdit.tpl');
 			}else{
 				// Set some default sizes for the iframe we embed on the view page
-				switch ($widget->style){
+				switch ($spotlight->style){
 					case 'horizontal':
 						$width = 650;
-						$height = ($widget->coverSize == 'medium') ? 325 : 275;
+						$height = ($spotlight->coverSize == 'medium') ? 325 : 275;
 						break;
 					case 'vertical' :
-						$width = ($widget->coverSize == 'medium') ? 275 : 175;
-						$height = ($widget->coverSize == 'medium') ? 700 : 400;
+						$width = ($spotlight->coverSize == 'medium') ? 275 : 175;
+						$height = ($spotlight->coverSize == 'medium') ? 700 : 400;
 						break;
 					case 'text-list' :
 						$width = 500;
@@ -144,17 +144,17 @@ class Admin_ListWidgets extends ObjectEditor {
 						break;
 					case 'single' :
 					case 'single-with-next' :
-						$width = ($widget->coverSize == 'medium') ? 300 : 225;
-						$height = ($widget->coverSize == 'medium') ? 350 : 275;
+						$width = ($spotlight->coverSize == 'medium') ? 300 : 225;
+						$height = ($spotlight->coverSize == 'medium') ? 350 : 275;
 						break;
 				}
 				$interface->assign('width', $width);
 				$interface->assign('height', $height);
-				$interface->setTemplate('listWidget.tpl');
+				$interface->setTemplate('collectionSpotlight.tpl');
 			}
 		}
 
-		$this->display($interface->getTemplate(), 'List Widgets');
+		$this->display($interface->getTemplate(), 'Collection Spotlights');
 
 	}
 }

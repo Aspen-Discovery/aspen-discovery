@@ -3,7 +3,7 @@
 <div class="topFacets">
 	<br>
 	{foreach from=$topFacetSet item=cluster key=title}
-		{if $cluster.label == 'Category' || $cluster.label == 'Format Category'}
+		{if $cluster.isFormatCategory}
 			<div class="formatCategories top-facet" id="formatCategories">
 				<div id="categoryValues" class="row">
 					{foreach from=$cluster.list item=thisFacet name="narrowLoop"}
@@ -39,7 +39,7 @@
 				</div>
 				<div class="clearfix"></div>
 			</div>
-		{elseif preg_match('/available/i', $cluster.label)}
+		{elseif $cluster.isAvailabilityToggle}
 			<div id="availabilityControlContainer" class="row text-center top-facet">
 				<div id="availabilityControl" class="btn-group" data-toggle="buttons-radio">
 					{foreach from=$cluster.list item=thisFacet name="narrowLoop"}

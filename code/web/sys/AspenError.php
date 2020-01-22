@@ -24,7 +24,9 @@ class AspenError extends DataObject
 	public function __construct($message = null, $backtrace = null)
 	{
 		if ($message != null) {
-			$this->url = $_SERVER['REQUEST_URI'];
+			if (isset($_SERVER['REQUEST_URI'])) {
+				$this->url = $_SERVER['REQUEST_URI'];
+			}
 			global $module;
 			global $action;
 			$this->module = $module;

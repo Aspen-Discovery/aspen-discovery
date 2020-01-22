@@ -1,9 +1,9 @@
 {strip}
-<div id="list-{$wrapperId}"{if !empty($display) && $display == 'false'} style="display:none"{/if} class="titleScroller tab-pane{if !empty($active)} active{/if}{if !empty($widget) && $widget->coverSize == 'medium'} mediumScroller{/if}{if !empty($widget) && $widget->showRatings} scrollerWithRatings{/if}">
+<div id="list-{$wrapperId}"{if !empty($display) && $display == 'false'} style="display:none"{/if} class="titleScroller tab-pane{if !empty($active)} active{/if}{if !empty($collectionSpotlight) && $collectionSpotlight->coverSize == 'medium'} mediumScroller{/if}{if !empty($collectionSpotlight) && $collectionSpotlight->showRatings} scrollerWithRatings{/if}">
 	<div id="{$wrapperId}" class="titleScrollerWrapper">
-		{if !empty($showListWidgetTitle) || !empty($showViewMoreLink) || !empty($Links)}
+		{if !empty($showCollectionSpotlightTitle) || !empty($showViewMoreLink) || !empty($Links)}
 			<div id="list-{$wrapperId}Header" class="titleScrollerHeader">
-				{if !empty($showListWidgetTitle)}
+				{if !empty($showCollectionSpotlightTitle)}
 					<span class="listTitle resultInformationLabel">{if $scrollerTitle}{$scrollerTitle|escape:"html"}{/if}</span>
 				{/if}
 
@@ -31,10 +31,10 @@
 				</div>
 			</div>
 			<div class="clearer"></div>
-			{if !isset($widget) || $widget->showTitle}
+			{if !empty($collectionSpotlight) && $collectionSpotlight->showTitle}
 				<div id="titleScrollerSelectedTitle{$scrollerName}" class="titleScrollerSelectedTitle notranslate"></div>
 			{/if}
-			{if !isset($widget) || $widget->showAuthor}
+			{if !empty($collectionSpotlight) && $collectionSpotlight->showAuthor}
 				<div id="titleScrollerSelectedAuthor{$scrollerName}" class="titleScrollerSelectedAuthor notranslate"></div>
 			{/if}
 		</div>

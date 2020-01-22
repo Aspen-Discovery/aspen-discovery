@@ -1178,9 +1178,47 @@ class GroupedWorkDriver extends IndexRecordDriver
 		return 'RecordDrivers/GroupedWork/listEntry.tpl';
 	}
 
-	public function getListWidgetTitle()
+	public function getSpotlightResult(CollectionSpotlight $collectionSpotlight, string $index){
+		global $interface;
+		$interface->assign('showRatings', $collectionSpotlight->showRatings);
+
+		$interface->assign('key', $index);
+
+		if ($collectionSpotlight->coverSize == 'small'){
+			$imageUrl = $this->getBookcoverUrl('small');
+		}else{
+			$imageUrl = $this->getBookcoverUrl('medium');
+		}
+
+		$interface->assign('title', $this->getTitle());
+		$interface->assign('author', $this->getPrimaryAuthor());
+		$interface->assign('description', $this->getDescriptionFast());
+		$interface->assign('shortId', $this->getId());
+		$interface->assign('id', $this->getId());
+		$interface->assign('titleURL', $this->getRecordUrl());
+		$interface->assign('imageUrl', $imageUrl);
+
+		if ($collectionSpotlight->showRatings){
+			$interface->assign('ratingData', $this->getRatingData());
+			$interface->assign('showNotInterested', false);
+		}
+
+		$result = [
+			'title' => $this->getTitle(),
+			'author' => $this->getPrimaryAuthor(),
+		];
+		if ($collectionSpotlight->style == 'text-list'){
+			$result['formattedTextOnlyTitle'] = $interface->fetch('CollectionSpotlight/formattedTextOnlyTitle.tpl');
+		}else{
+			$result['formattedTitle']= $interface->fetch('CollectionSpotlight/formattedTitle.tpl');
+		}
+
+		return $result;
+	}
+
+	public function getSummaryInformation()
 	{
-		$widgetTitleInfo = array(
+		$summaryInfo = array(
 			'id' => $this->getPermanentId(),
 			'shortId' => $this->getPermanentId(),
 			'recordtype' => 'grouped_work',
@@ -1194,8 +1232,10 @@ class GroupedWorkDriver extends IndexRecordDriver
 			'publisher' => '',
 			'ratingData' => $this->getRatingData(),
 		);
-		return $widgetTitleInfo;
+
+		return $summaryInfo;
 	}
+
 
 	public function getModule()
 	{

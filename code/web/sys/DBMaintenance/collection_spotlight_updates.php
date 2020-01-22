@@ -1,6 +1,7 @@
 <?php
 
-function getListWidgetUpdates(){
+function getCollectionSpotlightUpdates(){
+	/** @noinspection SpellCheckingInspection */
 	return array(
 		'list_widgets' => array(
 			'title' => 'Setup Configurable List Widgets',
@@ -49,6 +50,21 @@ function getListWidgetUpdates(){
 				"INSERT INTO list_widgets (name, description, showTitleDescriptions, onSelectCallback) VALUES ('home', 'Default example widget.', '1','')",
 				"INSERT INTO list_widget_lists (listWidgetId, weight, source, name, displayFor) VALUES ('1', '1', 'highestRated', 'Highest Rated', 'all')",
 				"INSERT INTO list_widget_lists (listWidgetId, weight, source, name, displayFor) VALUES ('1', '2', 'recentlyReviewed', 'Recently Reviewed', 'all')",
+			),
+		),
+
+		'addTableListWidgetListsLinks' => array(
+			'title' => 'Widget Lists',
+			'description' => 'Add a new table: list_widget_lists_links',
+			'sql' => array(
+				"CREATE TABLE IF NOT EXISTS `list_widget_lists_links`(
+					`id` int(11) NOT NULL AUTO_INCREMENT, 
+					`listWidgetListsId` int(11) NOT NULL, 
+					`name` varchar(50) NOT NULL, 
+					`link` text NOT NULL, 
+					`weight` int(3) NOT NULL DEFAULT '0',
+					PRIMARY KEY (`id`) 
+				) ENGINE=InnoDB DEFAULT CHARSET=utf8;"
 			),
 		),
 
@@ -116,13 +132,42 @@ function getListWidgetUpdates(){
 			),
 		),
 
-			'list_widget_num_results' => array(
-					'title' => 'List Widget Number of titles to show',
-					'description' => 'Add the ability to determine how many results should be shown for a list.',
-					'sql' => array(
-							"ALTER TABLE `list_widgets` ADD COLUMN `numTitlesToShow` INT NOT NULL DEFAULT '25'",
-					),
+		'list_widget_num_results' => array(
+			'title' => 'List Widget Number of titles to show',
+			'description' => 'Add the ability to determine how many results should be shown for a list.',
+			'sql' => array(
+				"ALTER TABLE `list_widgets` ADD COLUMN `numTitlesToShow` INT NOT NULL DEFAULT '25'",
 			),
+		),
 
+		'list_widget_search_terms' => [
+			'title' => 'List Widget Number of titles to show',
+			'description' => 'Add the ability to determine how many results should be shown for a list.',
+			'sql' => array(
+				"ALTER TABLE list_widget_lists ADD COLUMN defaultFilter TEXT",
+				"ALTER TABLE list_widget_lists ADD COLUMN defaultSort ENUM('relevance', 'popularity', 'newest_to_oldest', 'oldest_to_newest', 'author', 'title', 'user_rating')",
+				"ALTER TABLE list_widget_lists ADD COLUMN searchTerm VARCHAR(500) NOT NULL DEFAULT ''",
+				"ALTER TABLE list_widget_lists ADD COLUMN sourceListId MEDIUMINT NULL DEFAULT NULL",
+			),
+		],
+
+		'remove_list_widget_list_links' => [
+			'title' => 'Remove Widget List Links',
+			'description' => 'Remove table list_widget_lists_links',
+			'sql' => [
+				"DROP TABLE list_widget_lists_links"
+			],
+		],
+
+		'rename_to_collection_spotlight' => [
+			'title' => 'Rename List Widgets to Collection Spotlight',
+			'description' => 'Rename tables and columns from list widgets to collection spotlight for consistency.',
+			'sql' => [
+				"ALTER TABLE list_widgets CHANGE COLUMN showListWidgetTitle showSpotlightTitle TINYINT NOT NULL DEFAULT '1'",
+				"ALTER TABLE list_widget_lists CHANGE COLUMN listWidgetId collectionSpotlightId INT NOT NULL",
+				"RENAME TABLE list_widgets TO collection_spotlights",
+				"RENAME TABLE list_widget_lists TO collection_spotlight_lists",
+			]
+		]
 	);
 }

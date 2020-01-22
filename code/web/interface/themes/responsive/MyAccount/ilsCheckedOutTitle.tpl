@@ -81,7 +81,7 @@
 						</div>
 					{/if}
 
-                    {if $record.callNumber}
+                    {if !empty($record.callNumber)}
 						<div class="row">
 							<div class="result-label col-tn-4 col-lg-3">{translate text='Call Number'}</div>
 							<div class="col-tn-8 col-lg-9 result-value">

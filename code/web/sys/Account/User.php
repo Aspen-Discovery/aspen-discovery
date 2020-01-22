@@ -16,7 +16,7 @@ class User extends DataObject
 	public $lastname;                        // string(50)  not_null
 	public $email;                           // string(250)  not_null
 	public $phone;                           // string(30)
-	public $alt_username;                    // An alternate username used by patrons to login.
+	public $_alt_username;                    // An alternate username used by patrons to login.
 	public $cat_username;                    // string(50)
 	public $cat_password;                    // string(50)
 	public $patronType;
@@ -41,7 +41,8 @@ class User extends DataObject
 	public $rbdigitalLastAccountCheck;
 	public $lockedFacets;
 
-	private $roles;
+	/** @var Role[] */
+	private $_roles;
 	private $masqueradingRoles;
 	private $masqueradeLevel;
 
@@ -200,17 +201,21 @@ class User extends DataObject
 
 	function __set($name, $value){
 		if ($name == 'roles') {
-			$this->roles = $value;
-			//Update the database, first remove existing values
-			$this->saveRoles();
+			$this->setRoles($value);
 		}else{
 			$this->_data[$name] = $value;
 		}
 	}
 
+	function setRoles($value){
+		$this->_roles = $value;
+		//Update the database, first remove existing values
+		$this->saveRoles();
+	}
+
 	function getRoles($isGuidingUser = false){
-		if (is_null($this->roles)){
-			$this->roles = array();
+		if (is_null($this->_roles)){
+			$this->_roles = array();
 			//Load roles for the user from the user
 			require_once ROOT_DIR . '/sys/Administration/Role.php';
 			$role = new Role();
@@ -219,7 +224,7 @@ class User extends DataObject
 				$escapedId = $this->escape($this->id);
 				$role->query("SELECT roles.* FROM roles INNER JOIN user_roles ON roles.roleId = user_roles.roleId WHERE userId = " . $escapedId . " ORDER BY name");
 				while ($role->fetch()){
-					$this->roles[$role->roleId] = $role->name;
+					$this->_roles[$role->roleId] = $role->name;
 					if ($role->name == 'userAdmin'){
 						$canUseTestRoles = true;
 					}
@@ -248,7 +253,7 @@ class User extends DataObject
 					}
 					$found = $role->find(true);
 					if ($found == true){
-						$this->roles[$role->roleId] = $role->name;
+						$this->_roles[$role->roleId] = $role->name;
 					}
 				}
 			}
@@ -261,14 +266,14 @@ class User extends DataObject
 				$guidingUser = UserAccount::getGuidingUserObject();
 				$guidingUserRoles = $guidingUser->getRoles(true);
 				if (in_array('opacAdmin', $guidingUserRoles)) {
-					$this->masqueradingRoles = $this->roles;
+					$this->masqueradingRoles = $this->_roles;
 				} else {
-					$this->masqueradingRoles = array_intersect($this->roles, $guidingUserRoles);
+					$this->masqueradingRoles = array_intersect($this->_roles, $guidingUserRoles);
 				}
 			}
 			return $this->masqueradingRoles;
 		}
-		return $this->roles;
+		return $this->_roles;
 	}
 
 	private $materialsRequestReplyToAddress;
@@ -301,15 +306,15 @@ class User extends DataObject
 	}
 
 	function saveRoles(){
-		if (isset($this->id) && isset($this->roles) && is_array($this->roles)){
+		if (isset($this->id) && isset($this->_roles) && is_array($this->_roles)){
 			require_once ROOT_DIR . '/sys/Administration/Role.php';
 			$role = new Role();
 			$escapedId = $this->escape($this->id);
 			$role->query("DELETE FROM user_roles WHERE userId = " . $escapedId);
 			//Now add the new values.
-			if (count($this->roles) > 0){
+			if (count($this->_roles) > 0){
 				$values = array();
-				foreach ($this->roles as $roleId => $roleName){
+				foreach ($this->_roles as $roleId => $roleName){
 					$values[] = "({$this->id},{$roleId})";
 				}
 				$values = join(', ', $values);

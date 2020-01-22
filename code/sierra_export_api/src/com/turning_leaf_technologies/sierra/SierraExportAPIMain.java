@@ -36,6 +36,9 @@ import org.marc4j.marc.Record;
 public class SierraExportAPIMain {
 	private static Logger logger;
 
+	private static SimpleDateFormat dateTimeFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+	private static SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
+
 	private static IndexingProfile indexingProfile;
 	private static SierraExportFieldMapping sierraExportFieldMapping;
 	private static GroupedWorkIndexer groupedWorkIndexer;
@@ -76,6 +79,7 @@ public class SierraExportAPIMain {
 
 		while (true) {
 			Date startTime = new Date();
+			long startTimeForLogging = startTime.getTime() / 1000;
 			logger.info(startTime.toString() + ": Starting Sierra Extract");
 
 			// Read the base INI file to get information about the server (current directory/cron/config.ini)
@@ -125,6 +129,7 @@ public class SierraExportAPIMain {
 					}
 					exportActiveOrders(indexingProfile.getMarcPath(), sierraConn);
 					exportHolds(sierraConn, dbConn);
+					exportVolumes(sierraConn, dbConn);
 				}
 
 				String exportItemHoldsStr = configIni.get("Catalog", "exportItemHolds");
@@ -154,15 +159,6 @@ public class SierraExportAPIMain {
 
 				numChanges = updateBibs(configIni);
 
-				updateLastExportTime(dbConn, startTime.getTime() / 1000);
-				logEntry.addNote("Setting last export time to " + (startTime.getTime() / 1000));
-
-				logEntry.addNote("Finished exporting sierra data " + new Date().toString());
-				long endTime = new Date().getTime();
-				long elapsedTime = endTime - startTime.getTime();
-				logEntry.addNote("Elapsed Minutes " + (elapsedTime / 60000));
-				logEntry.setFinished();
-
 				if (sierraConn != null){
 					try{
 						//Close the connection
@@ -172,6 +168,32 @@ public class SierraExportAPIMain {
 						e.printStackTrace();
 					}
 				}
+
+				if (groupedWorkIndexer != null) {
+					groupedWorkIndexer.finishIndexingFromExtract();
+					recordGroupingProcessorSingleton = null;
+					groupedWorkIndexer = null;
+				}
+
+				//Update the last extract time for the indexing profile
+				if (indexingProfile.isRunFullUpdate()) {
+					PreparedStatement updateVariableStmt = dbConn.prepareStatement("UPDATE indexing_profiles set lastUpdateOfAllRecords = ?, runFullUpdate = 0 WHERE id = ?");
+					updateVariableStmt.setLong(1, startTimeForLogging);
+					updateVariableStmt.setLong(2, indexingProfile.getId());
+					updateVariableStmt.executeUpdate();
+					updateVariableStmt.close();
+				} else {
+					if (!logEntry.hasErrors()) {
+						PreparedStatement updateVariableStmt = dbConn.prepareStatement("UPDATE indexing_profiles set lastUpdateOfChangedRecords = ? WHERE id = ?");
+						updateVariableStmt.setLong(1, startTimeForLogging);
+						updateVariableStmt.setLong(2, indexingProfile.getId());
+						updateVariableStmt.executeUpdate();
+						updateVariableStmt.close();
+					}
+				}
+
+				logEntry.addNote("Finished exporting sierra data " + new Date().toString());
+				logEntry.setFinished();
 
 				try{
 					//Close the connection
@@ -200,20 +222,11 @@ public class SierraExportAPIMain {
 		} //Infinite loop
 	}
 
-	private static void updateLastExportTime(Connection dbConn, long exportStartTime) {
-		try{
-			PreparedStatement updateVariableStmt = dbConn.prepareStatement("UPDATE indexing_profiles set lastUpdateOfChangedRecords = ? WHERE id = ?");
-			updateVariableStmt.setLong(1, exportStartTime);
-			updateVariableStmt.setLong(2, indexingProfile.getId());
-			updateVariableStmt.executeUpdate();
-			updateVariableStmt.close();
-		}catch (Exception e){
-			logger.error("There was an error updating the database, not setting last extract time.", e);
-		}
-	}
-
 	private static void getBibsAndItemUpdatesFromSierra(Ini ini, Connection dbConn, Connection sierraConn) {
 		long lastSierraExtractTime = indexingProfile.getLastUpdateOfChangedRecords();
+		if (indexingProfile.getLastUpdateOfAllRecords() > lastSierraExtractTime){
+			lastSierraExtractTime = indexingProfile.getLastUpdateOfAllRecords();
+		}
 
 		try {
 			PreparedStatement allowFastExportMethodStmt = dbConn.prepareStatement("SELECT * from variables WHERE name = 'allow_sierra_fast_export'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
@@ -257,10 +270,9 @@ public class SierraExportAPIMain {
 		}else{
 			//Add a 5 second buffer to the extract
 			Date lastExtractDate = new Date((lastSierraExtractTime - 5) * 1000);
-			SimpleDateFormat dateTimeFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+
 			dateTimeFormatter.setTimeZone(TimeZone.getTimeZone("UTC"));
 			String lastExtractDateTimeFormatted = dateTimeFormatter.format(lastExtractDate);
-			SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
 			dateFormatter.setTimeZone(TimeZone.getTimeZone("UTC"));
 			String lastExtractDateFormatted = dateFormatter.format(lastExtractDate);
 			logger.info("Loading records changed since " + lastExtractDateTimeFormatted);
@@ -1017,7 +1029,6 @@ public class SierraExportAPIMain {
 					logger.debug("Got marc record file");
 					//REad the MARC records from the Sierra API, should be UTF8, but not 100% sure
 					MarcReader marcReader = new MarcPermissiveStreamReader(new ByteArrayInputStream(marcData.getBytes(StandardCharsets.UTF_8)), true, true, "BESTGUESS");
-					int numRecordsInFile = 0;
 					while (marcReader.hasNext()) {
 						try {
 							Record marcRecord = marcReader.next();
@@ -1045,7 +1056,6 @@ public class SierraExportAPIMain {
 							processedIds.add(shortId);
 							logEntry.incUpdated();
 							logger.debug("Processed " + identifier.getIdentifier());
-							numRecordsInFile++;
 						} catch (MarcException mre) {
 							logger.info("Error loading marc record from file, will load manually");
 						}
@@ -1472,6 +1482,103 @@ public class SierraExportAPIMain {
 			}
 		}
 		return null;
+	}
+
+	private static void exportVolumes(Connection sierraConn, Connection aspenConn){
+		try {
+			logEntry.addNote("Starting export of volume information " + dateTimeFormatter.format(new Date()));
+			PreparedStatement getVolumeInfoStmt = sierraConn.prepareStatement("select volume_view.id, volume_view.record_num as volume_num, sort_order from sierra_view.volume_view " +
+					"inner join sierra_view.bib_record_volume_record_link on bib_record_volume_record_link.volume_record_id = volume_view.id " +
+					"where volume_view.is_suppressed = 'f'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement getBibForVolumeStmt = sierraConn.prepareStatement("select record_num from sierra_view.bib_record_volume_record_link " +
+					"inner join sierra_view.bib_view on bib_record_volume_record_link.bib_record_id = bib_view.id " +
+					"where volume_record_id = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement getItemsForVolumeStmt = sierraConn.prepareStatement("select record_num from sierra_view.item_view " +
+					"inner join sierra_view.volume_record_item_record_link on volume_record_item_record_link.item_record_id = item_view.id " +
+					"where volume_record_id = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement getVolumeNameStmt = sierraConn.prepareStatement("SELECT * FROM sierra_view.subfield where record_id = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+
+			PreparedStatement removeOldVolumes = aspenConn.prepareStatement("DELETE FROM ils_volume_info WHERE recordId LIKE 'ils%'");
+			PreparedStatement addVolumeStmt = aspenConn.prepareStatement("INSERT INTO ils_volume_info (recordId, volumeId, displayLabel, relatedItems) VALUES (?,?,?,?)");
+
+			ResultSet volumeInfoRS = null;
+			boolean loadError = false;
+			boolean updateError = false;
+			Savepoint transactionStart = aspenConn.setSavepoint("load_volumes");
+			try {
+				volumeInfoRS = getVolumeInfoStmt.executeQuery();
+			} catch (SQLException e1) {
+				logger.error("Error loading volume information", e1);
+				loadError = true;
+			}
+			if (!loadError) {
+				try {
+					removeOldVolumes.executeUpdate();
+				}catch (SQLException sqlException){
+					logger.error("Error removing old volume information", sqlException);
+					updateError = true;
+				}
+
+				while (volumeInfoRS.next()) {
+					long recordId = volumeInfoRS.getLong("id");
+
+					String volumeId = volumeInfoRS.getString("volume_num");
+					volumeId = ".j" + volumeId + getCheckDigit(volumeId);
+
+					getBibForVolumeStmt.setLong(1, recordId);
+					ResultSet bibForVolumeRS = getBibForVolumeStmt.executeQuery();
+					String bibId = "";
+					if (bibForVolumeRS.next()) {
+						bibId = bibForVolumeRS.getString("record_num");
+						bibId = ".b" + bibId + getCheckDigit(bibId);
+					}
+
+					getItemsForVolumeStmt.setLong(1, recordId);
+					ResultSet itemsForVolumeRS = getItemsForVolumeStmt.executeQuery();
+					StringBuilder itemsForVolume = new StringBuilder();
+					while (itemsForVolumeRS.next()) {
+						String itemId = itemsForVolumeRS.getString("record_num");
+						if (itemId != null) {
+							itemId = ".i" + itemId + getCheckDigit(itemId);
+							if (itemsForVolume.length() > 0) itemsForVolume.append("|");
+							itemsForVolume.append(itemId);
+						}
+					}
+
+					getVolumeNameStmt.setLong(1, recordId);
+					ResultSet getVolumeNameRS = getVolumeNameStmt.executeQuery();
+					String volumeName = "Unknown";
+					if (getVolumeNameRS.next()) {
+						volumeName = getVolumeNameRS.getString("content");
+					}
+
+					try {
+						addVolumeStmt.setString(1, "ils:" + bibId);
+						addVolumeStmt.setString(2, volumeId);
+						addVolumeStmt.setString(3, volumeName);
+						addVolumeStmt.setString(4, itemsForVolume.toString());
+						addVolumeStmt.executeUpdate();
+						logEntry.incUpdated();
+					}catch (SQLException sqlException){
+						logger.error("Error adding volume", sqlException);
+						logEntry.incErrors();
+						updateError = true;
+					}
+				}
+				volumeInfoRS.close();
+			}
+			if (updateError){
+				aspenConn.rollback(transactionStart);
+			}
+			aspenConn.setAutoCommit(true);
+			logEntry.addNote("Finished export of volume information " + dateTimeFormatter.format(new Date()));
+		}catch (Exception e){
+			logger.error("Error exporting volume information", e);
+			logEntry.incErrors();
+			logEntry.addNote("Error exporting volume information " + e.toString());
+
+		}
+		logEntry.saveResults();
 	}
 
 	/**
