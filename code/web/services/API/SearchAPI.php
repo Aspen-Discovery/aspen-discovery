@@ -196,7 +196,16 @@ class SearchAPI extends Action
 			$timer->logTime('load result records');
 
 			$facetSet = $searchObject->getFacetList();
-			$jsonResults['facetSet'] = $facetSet;
+			$jsonResults['facetSet'] = [];
+			foreach ($facetSet as $name => $facetInfo){
+				$jsonResults['facetSet'][$name] = [
+					'label' => $facetInfo['label']->displayName,
+					'list' => $facetInfo['list'],
+					'hasApplied' => $facetInfo['hasApplied'],
+					'valuesToShow' => $facetInfo['valuesToShow'],
+					'showAlphabetically' => $facetInfo['showAlphabetically'],
+				];
+			}
 
 			//Check to see if a format category is already set
 			$categorySelected = false;

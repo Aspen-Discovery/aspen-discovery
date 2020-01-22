@@ -169,9 +169,9 @@
 
 		<!-- Format information -->
 		<field name="grouping_category" type="unchanged_string" indexed="true" stored="true" multiValued="false"/>
-		<dynamicField name="format_*" type="unchanged_string" indexed="true" stored="false" multiValued="true"/>
+		<dynamicField name="format_*" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
 		<field name="format_boost" type="integer" indexed="true" stored="false"/>
-		<dynamicField name="format_category_*" type="unchanged_string" indexed="true" stored="false" multiValued="true"/>
+		<dynamicField name="format_category_*" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
 
 		<!-- Fields to determine ownership and location based on location codes -->
 		<dynamicField name="owning_library_*" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
