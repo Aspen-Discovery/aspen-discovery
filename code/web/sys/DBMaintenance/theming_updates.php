@@ -161,6 +161,15 @@ function getThemingUpdates()
 				"ALTER TABLE `themes` ADD COLUMN sidebarHighlightForegroundColor CHAR(7) DEFAULT '#ffffff'",
 				"ALTER TABLE `themes` ADD COLUMN sidebarHighlightForegroundColorDefault tinyint(1) DEFAULT 1",
 			]
+		],
+
+		'themes_additional_fonts' => [
+			'title' => 'Theme - upload fonts',
+			'description' => 'Add the ability to upload fonts',
+			'sql' => [
+				"ALTER TABLE `themes` ADD COLUMN customHeadingFont VARCHAR(100)",
+				"ALTER TABLE `themes` ADD COLUMN customBodyFont VARCHAR(100)",
+			]
 		]
 	];
 }

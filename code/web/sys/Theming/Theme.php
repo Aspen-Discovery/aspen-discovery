@@ -80,8 +80,10 @@ class Theme extends DataObject
 	//Fonts
 	public $headingFont;
 	public $headingFontDefault;
+	public $customHeadingFont;
 	public $bodyFont;
 	public $bodyFontDefault;
+	public $customBodyFont;
 
 	public $additionalCssType;
 	public $additionalCss;
@@ -173,7 +175,9 @@ class Theme extends DataObject
 			'tertiaryForegroundColor' => array('property' => 'tertiaryForegroundColor', 'type' => 'color', 'label' => 'Tertiary Text Color', 'description' => 'Tertiary Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff'),
 
 			'headingFont' => array('property' => 'headingFont', 'type' => 'font', 'label' => 'Heading Font', 'description' => 'Heading Font', 'validFonts' => $validHeadingFonts, 'previewFontSize' => '20px', 'required' => false, 'hideInLists' => true, 'default' => 'Ubuntu'),
+			'customHeadingFont' => array('property' => 'customHeadingFont', 'type' => 'uploaded_font', 'label' => 'Custom Heading Font', 'description' => 'Upload a custom font to use for headings', 'required' => false, 'hideInLists' => true),
 			'bodyFont' => array('property' => 'bodyFont', 'type' => 'font', 'label' => 'Body Font', 'description' => 'Body Font', 'validFonts' => $validBodyFonts, 'previewFontSize' => '14px', 'required' => false, 'hideInLists' => true, 'default' => 'Lato'),
+			'customBodyFont' => array('property' => 'customBodyFont', 'type' => 'uploaded_font', 'label' => 'Custom Body Font', 'description' => 'Upload a custom font to use for the body', 'required' => false, 'hideInLists' => true),
 
 			//Additional CSS
 			'additionalCss' => array('property' => 'additionalCss', 'type' => 'textarea', 'label' => 'Additional CSS', 'description' => 'Additional CSS to apply to the interface', 'required' => false, 'hideInLists' => true),
@@ -195,6 +199,7 @@ class Theme extends DataObject
 				'deselectedBrowseCategoryForegroundColor' => array('property' => 'deselectedBrowseCategoryForegroundColor', 'type' => 'color', 'label' => 'Deselected Browse Category Text Color', 'description' => 'Deselected Browse Category Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff'),
 				'deselectedBrowseCategoryBorderColor' => array('property' => 'deselectedBrowseCategoryBorderColor', 'type' => 'color', 'label' => 'Deselected Browse Category Border Color', 'description' => 'Deselected Browse Category Border Color', 'required' => false, 'hideInLists' => true, 'default' => '#0087AB'),
 			]],
+
 
 		);
 		return $structure;
@@ -296,6 +301,21 @@ class Theme extends DataObject
 			if ($interface->getVariable('bodyFont') == null && !$theme->bodyFontDefault) {
 				$interface->assign('bodyFont', $theme->bodyFont);
 			}
+			if ($interface->getVariable('customHeadingFont') == null) {
+				$interface->assign('customHeadingFont', $theme->customHeadingFont);
+				//Strip off the extension to get the name of the font
+				$customHeadingFontName = substr($theme->customHeadingFont, 0, strrpos($theme->customHeadingFont, '.'));
+				$interface->assign('customHeadingFontName', $customHeadingFontName);
+
+				$interface->assign('headingFont', $customHeadingFontName);
+			}
+			if ($interface->getVariable('customBodyFont') == null) {
+				$interface->assign('customBodyFont', $theme->customBodyFont);
+				$customBodyFontName = substr($theme->customBodyFont, 0, strrpos($theme->customBodyFont, '.'));
+				$interface->assign('customBodyFontName', $customBodyFontName);
+
+				$interface->assign('bodyFont', $customBodyFontName);
+			}
 			if ($interface->getVariable('sidebarHighlightBackgroundColor') == null && !$theme->sidebarHighlightBackgroundColorDefault) {
 				$interface->assign('sidebarHighlightBackgroundColor', $theme->sidebarHighlightBackgroundColor);
 			}
@@ -341,7 +361,8 @@ class Theme extends DataObject
 
 		$interface->assign('additionalCSS', $additionalCSS);
 
-		return $interface->fetch('theme.css.tpl');
+		$formattedCSS = $interface->fetch('theme.css.tpl');
+		return $formattedCSS;
 	}
 
 	/**
