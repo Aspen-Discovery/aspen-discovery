@@ -177,9 +177,21 @@ body .container{ldelim}
 {rdelim}
 {/if}
 
-{if $capitalizeBrowseCategories}
+{if !empty($capitalizeBrowseCategories)}
 .browse-category div{ldelim}
     text-transform: uppercase;
+{rdelim}
+{/if}
+
+{if !empty($buttonRadius)}
+.btn{ldelim}
+    border-radius: {$buttonRadius};
+{rdelim}
+{/if}
+
+{if !empty($smallButtonRadius)}
+.btn-sm{ldelim}
+    border-radius: {$smallButtonRadius};
 {rdelim}
 {/if}
 

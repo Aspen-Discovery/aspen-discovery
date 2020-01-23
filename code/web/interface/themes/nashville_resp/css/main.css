@@ -9072,13 +9072,17 @@ ul.account-submenu {
   height: 100px;
   margin-left: 4px;
   margin-right: 4px;
+  display: flex;
+  align-items: center;
 }
 .browse-category:hover {
   background-color: #e4e4e4;
 }
 .browse-category div {
   cursor: pointer;
-  height: 80px;
+  height: auto;
+  margin-left: auto;
+  margin-right: auto;
 }
 .browse-category div:focus {
   outline: none;
@@ -9972,7 +9976,6 @@ a.browse-thumbnail-sorted.active {
 }
 .result-tools-horizontal .btn {
   background-color: #909090;
-  background: linear-gradient(to bottom, #909090, #686b6c);
   color: #fff;
 }
 .results-covers {
@@ -10193,7 +10196,6 @@ a.browse-thumbnail-sorted.active {
 }
 .share-tools {
   background-color: #e6e6e6;
-  background: linear-gradient(to bottom, #e7e7e7, #d7d7d7);
   color: #6e6f6f;
   border-bottom: 1px solid #adadad;
   font-weight: bold;

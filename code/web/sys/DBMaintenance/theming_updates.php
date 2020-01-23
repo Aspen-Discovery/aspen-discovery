@@ -130,6 +130,19 @@ function getThemingUpdates()
 			]
 		],
 
+		'themes_button_radius2' => [
+			'title' => 'Theme Button Radius 2',
+			'description' => 'Update customization of the button radius',
+			'sql' => [
+				'ALTER TABLE themes CHANGE COLUMN buttonRadius buttonRadius VARCHAR(6) DEFAULT null',
+				'UPDATE themes set buttonRadius = null',
+				'ALTER TABLE themes DROP COLUMN buttonRadiusDefault',
+				'ALTER TABLE themes CHANGE COLUMN smallButtonRadius smallButtonRadius VARCHAR(6) DEFAULT null',
+				'UPDATE themes set smallButtonRadius = null',
+				'ALTER TABLE themes DROP COLUMN smallButtonRadiusDefault',
+			]
+		],
+
 		'themes_browse_category_colors' => [
 			'title' => 'Theme Browse Category Colors',
 			'description' => 'Initial setup of browse category colors. ',
@@ -179,5 +192,89 @@ function getThemingUpdates()
 				"ALTER TABLE `themes` ADD COLUMN capitalizeBrowseCategories TINYINT(1) DEFAULT -1",
 			]
 		],
+
+		'themes_button_colors' => [
+			'title' => 'Theme - button colors',
+			'description' => 'Add definition for button colors',
+			'sql' => [
+				"ALTER TABLE `themes` ADD COLUMN defaultButtonBackgroundColor CHAR(7) DEFAULT '#ffffff'",
+				"ALTER TABLE `themes` ADD COLUMN defaultButtonBackgroundColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE `themes` ADD COLUMN defaultButtonForegroundColor CHAR(7) DEFAULT '#333333'",
+				"ALTER TABLE `themes` ADD COLUMN defaultButtonForegroundColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE `themes` ADD COLUMN defaultButtonBorderColor CHAR(7) DEFAULT '#cccccc'",
+				"ALTER TABLE `themes` ADD COLUMN defaultButtonBorderColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE `themes` ADD COLUMN defaultButtonHoverBackgroundColor CHAR(7) DEFAULT '#ebebeb'",
+				"ALTER TABLE `themes` ADD COLUMN defaultButtonHoverBackgroundColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE `themes` ADD COLUMN defaultButtonHoverForegroundColor CHAR(7) DEFAULT '#333333'",
+				"ALTER TABLE `themes` ADD COLUMN defaultButtonHoverForegroundColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE `themes` ADD COLUMN defaultButtonHoverBorderColor CHAR(7) DEFAULT '#adadad'",
+				"ALTER TABLE `themes` ADD COLUMN defaultButtonHoverBorderColorDefault tinyint(1) DEFAULT 1",
+
+				"ALTER TABLE `themes` ADD COLUMN primaryButtonBackgroundColor CHAR(7) DEFAULT '#428bca'",
+				"ALTER TABLE `themes` ADD COLUMN primaryButtonBackgroundColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE `themes` ADD COLUMN primaryButtonForegroundColor CHAR(7) DEFAULT '#ffffff'",
+				"ALTER TABLE `themes` ADD COLUMN primaryButtonForegroundColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE `themes` ADD COLUMN primaryButtonBorderColor CHAR(7) DEFAULT '#357ebd'",
+				"ALTER TABLE `themes` ADD COLUMN primaryButtonBorderColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE `themes` ADD COLUMN primaryButtonHoverBackgroundColor CHAR(7) DEFAULT '#3276b1'",
+				"ALTER TABLE `themes` ADD COLUMN primaryButtonHoverBackgroundColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE `themes` ADD COLUMN primaryButtonHoverForegroundColor CHAR(7) DEFAULT '#ffffff'",
+				"ALTER TABLE `themes` ADD COLUMN primaryButtonHoverForegroundColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE `themes` ADD COLUMN primaryButtonHoverBorderColor CHAR(7) DEFAULT '#285e8e'",
+				"ALTER TABLE `themes` ADD COLUMN primaryButtonHoverBorderColorDefault tinyint(1) DEFAULT 1",
+
+				"ALTER TABLE `themes` ADD COLUMN actionButtonBackgroundColor CHAR(7) DEFAULT '#428bca'",
+				"ALTER TABLE `themes` ADD COLUMN actionButtonBackgroundColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE `themes` ADD COLUMN actionButtonForegroundColor CHAR(7) DEFAULT '#ffffff'",
+				"ALTER TABLE `themes` ADD COLUMN actionButtonForegroundColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE `themes` ADD COLUMN actionButtonBorderColor CHAR(7) DEFAULT '#357ebd'",
+				"ALTER TABLE `themes` ADD COLUMN actionButtonBorderColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE `themes` ADD COLUMN actionButtonHoverBackgroundColor CHAR(7) DEFAULT '#3276b1'",
+				"ALTER TABLE `themes` ADD COLUMN actionButtonHoverBackgroundColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE `themes` ADD COLUMN actionButtonHoverForegroundColor CHAR(7) DEFAULT '#ffffff'",
+				"ALTER TABLE `themes` ADD COLUMN actionButtonHoverForegroundColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE `themes` ADD COLUMN actionButtonHoverBorderColor CHAR(7) DEFAULT '#285e8e'",
+				"ALTER TABLE `themes` ADD COLUMN actionButtonHoverBorderColorDefault tinyint(1) DEFAULT 1",
+
+				"ALTER TABLE `themes` ADD COLUMN infoButtonBackgroundColor CHAR(7) DEFAULT '#5bc0de'",
+				"ALTER TABLE `themes` ADD COLUMN infoButtonBackgroundColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE `themes` ADD COLUMN infoButtonForegroundColor CHAR(7) DEFAULT '#ffffff'",
+				"ALTER TABLE `themes` ADD COLUMN infoButtonForegroundColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE `themes` ADD COLUMN infoButtonBorderColor CHAR(7) DEFAULT '#46b8da'",
+				"ALTER TABLE `themes` ADD COLUMN infoButtonBorderColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE `themes` ADD COLUMN infoButtonHoverBackgroundColor CHAR(7) DEFAULT '#39b3d7'",
+				"ALTER TABLE `themes` ADD COLUMN infoButtonHoverBackgroundColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE `themes` ADD COLUMN infoButtonHoverForegroundColor CHAR(7) DEFAULT '#ffffff'",
+				"ALTER TABLE `themes` ADD COLUMN infoButtonHoverForegroundColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE `themes` ADD COLUMN infoButtonHoverBorderColor CHAR(7) DEFAULT '#269abc'",
+				"ALTER TABLE `themes` ADD COLUMN infoButtonHoverBorderColorDefault tinyint(1) DEFAULT 1",
+				
+				"ALTER TABLE `themes` ADD COLUMN warningButtonBackgroundColor CHAR(7) DEFAULT '#f0ad4e'",
+				"ALTER TABLE `themes` ADD COLUMN warningButtonBackgroundColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE `themes` ADD COLUMN warningButtonForegroundColor CHAR(7) DEFAULT '#ffffff'",
+				"ALTER TABLE `themes` ADD COLUMN warningButtonForegroundColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE `themes` ADD COLUMN warningButtonBorderColor CHAR(7) DEFAULT '#eea236'",
+				"ALTER TABLE `themes` ADD COLUMN warningButtonBorderColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE `themes` ADD COLUMN warningButtonHoverBackgroundColor CHAR(7) DEFAULT '#ed9c28'",
+				"ALTER TABLE `themes` ADD COLUMN warningButtonHoverBackgroundColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE `themes` ADD COLUMN warningButtonHoverForegroundColor CHAR(7) DEFAULT '#ffffff'",
+				"ALTER TABLE `themes` ADD COLUMN warningButtonHoverForegroundColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE `themes` ADD COLUMN warningButtonHoverBorderColor CHAR(7) DEFAULT '#d58512'",
+				"ALTER TABLE `themes` ADD COLUMN warningButtonHoverBorderColorDefault tinyint(1) DEFAULT 1",
+
+				"ALTER TABLE `themes` ADD COLUMN dangerButtonBackgroundColor CHAR(7) DEFAULT '#d9534f'",
+				"ALTER TABLE `themes` ADD COLUMN dangerButtonBackgroundColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE `themes` ADD COLUMN dangerButtonForegroundColor CHAR(7) DEFAULT '#ffffff'",
+				"ALTER TABLE `themes` ADD COLUMN dangerButtonForegroundColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE `themes` ADD COLUMN dangerButtonBorderColor CHAR(7) DEFAULT '#d43f3a'",
+				"ALTER TABLE `themes` ADD COLUMN dangerButtonBorderColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE `themes` ADD COLUMN dangerButtonHoverBackgroundColor CHAR(7) DEFAULT '#d2322d'",
+				"ALTER TABLE `themes` ADD COLUMN dangerButtonHoverBackgroundColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE `themes` ADD COLUMN dangerButtonHoverForegroundColor CHAR(7) DEFAULT '#ffffff'",
+				"ALTER TABLE `themes` ADD COLUMN dangerButtonHoverForegroundColorDefault tinyint(1) DEFAULT 1",
+				"ALTER TABLE `themes` ADD COLUMN dangerButtonHoverBorderColor CHAR(7) DEFAULT '#ac2925'",
+				"ALTER TABLE `themes` ADD COLUMN dangerButtonHoverBorderColorDefault tinyint(1) DEFAULT 1",
+			]
+		]
 	];
 }
