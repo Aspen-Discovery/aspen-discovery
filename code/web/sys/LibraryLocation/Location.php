@@ -168,7 +168,7 @@ class Location extends DataObject
 		$availableThemes = array();
 		$theme->orderBy('themeName');
 		$theme->find();
-		$theme[-1] = 'Use Library Setting';
+		$availableThemes[-1] = 'Use Library Setting';
 		while ($theme->fetch()) {
 			$availableThemes[$theme->id] = $theme->themeName;
 		}
