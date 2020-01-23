@@ -705,7 +705,7 @@ class Theme extends DataObject
 			if (!isset($this->_libraries) && $this->id){
 				$this->_libraries = [];
 				$obj = new Library();
-				$obj->browseCategoryGroupId = $this->id;
+				$obj->theme = $this->id;
 				$obj->find();
 				while($obj->fetch()){
 					$this->_libraries[$obj->libraryId] = $obj->libraryId;
@@ -716,7 +716,7 @@ class Theme extends DataObject
 			if (!isset($this->_locations) && $this->id){
 				$this->_locations = [];
 				$obj = new Location();
-				$obj->browseCategoryGroupId = $this->id;
+				$obj->theme = $this->id;
 				$obj->find();
 				while($obj->fetch()){
 					$this->_locations[$obj->locationId] = $obj->locationId;
