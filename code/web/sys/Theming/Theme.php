@@ -391,7 +391,9 @@ class Theme extends DataObject
 		$childTheme->extendsTheme = $this->themeName;
 		$childTheme->find();
 		while ($childTheme->fetch()){
-			$childTheme->update();
+			if ($childTheme->id != $this->id) {
+				$childTheme->update();
+			}
 		}
 		return $ret;
 	}
@@ -535,98 +537,98 @@ class Theme extends DataObject
 				$interface->assign('defaultButtonHoverBorderColor', $theme->defaultButtonHoverBorderColor);
 			}
 
-			if ($interface->getVariable('primaryButtonBackgroundColor') == null && !$theme->primaryButtonBackgroundColorprimary) {
+			if ($interface->getVariable('primaryButtonBackgroundColor') == null && !$theme->primaryButtonBackgroundColorDefault) {
 				$interface->assign('primaryButtonBackgroundColor', $theme->primaryButtonBackgroundColor);
 			}
-			if ($interface->getVariable('primaryButtonForegroundColor') == null && !$theme->primaryButtonForegroundColorprimary) {
+			if ($interface->getVariable('primaryButtonForegroundColor') == null && !$theme->primaryButtonForegroundColorDefault) {
 				$interface->assign('primaryButtonForegroundColor', $theme->primaryButtonForegroundColor);
 			}
-			if ($interface->getVariable('primaryButtonBorderColor') == null && !$theme->primaryButtonBorderColorprimary) {
+			if ($interface->getVariable('primaryButtonBorderColor') == null && !$theme->primaryButtonBorderColorDefault) {
 				$interface->assign('primaryButtonBorderColor', $theme->primaryButtonBorderColor);
 			}
-			if ($interface->getVariable('primaryButtonHoverBackgroundColor') == null && !$theme->primaryButtonHoverBackgroundColorprimary) {
+			if ($interface->getVariable('primaryButtonHoverBackgroundColor') == null && !$theme->primaryButtonHoverBackgroundColorDefault) {
 				$interface->assign('primaryButtonHoverBackgroundColor', $theme->primaryButtonHoverBackgroundColor);
 			}
-			if ($interface->getVariable('primaryButtonHoverForegroundColor') == null && !$theme->primaryButtonHoverForegroundColorprimary) {
+			if ($interface->getVariable('primaryButtonHoverForegroundColor') == null && !$theme->primaryButtonHoverForegroundColorDefault) {
 				$interface->assign('primaryButtonHoverForegroundColor', $theme->primaryButtonHoverForegroundColor);
 			}
-			if ($interface->getVariable('primaryButtonHoverBorderColor') == null && !$theme->primaryButtonHoverBorderColorprimary) {
+			if ($interface->getVariable('primaryButtonHoverBorderColor') == null && !$theme->primaryButtonHoverBorderColorDefault) {
 				$interface->assign('primaryButtonHoverBorderColor', $theme->primaryButtonHoverBorderColor);
 			}
 
-			if ($interface->getVariable('actionButtonBackgroundColor') == null && !$theme->actionButtonBackgroundColoraction) {
+			if ($interface->getVariable('actionButtonBackgroundColor') == null && !$theme->actionButtonBackgroundColorDefault) {
 				$interface->assign('actionButtonBackgroundColor', $theme->actionButtonBackgroundColor);
 			}
-			if ($interface->getVariable('actionButtonForegroundColor') == null && !$theme->actionButtonForegroundColoraction) {
+			if ($interface->getVariable('actionButtonForegroundColor') == null && !$theme->actionButtonForegroundColorDefault) {
 				$interface->assign('actionButtonForegroundColor', $theme->actionButtonForegroundColor);
 			}
-			if ($interface->getVariable('actionButtonBorderColor') == null && !$theme->actionButtonBorderColoraction) {
+			if ($interface->getVariable('actionButtonBorderColor') == null && !$theme->actionButtonBorderColorDefault) {
 				$interface->assign('actionButtonBorderColor', $theme->actionButtonBorderColor);
 			}
-			if ($interface->getVariable('actionButtonHoverBackgroundColor') == null && !$theme->actionButtonHoverBackgroundColoraction) {
+			if ($interface->getVariable('actionButtonHoverBackgroundColor') == null && !$theme->actionButtonHoverBackgroundColorDefault) {
 				$interface->assign('actionButtonHoverBackgroundColor', $theme->actionButtonHoverBackgroundColor);
 			}
-			if ($interface->getVariable('actionButtonHoverForegroundColor') == null && !$theme->actionButtonHoverForegroundColoraction) {
+			if ($interface->getVariable('actionButtonHoverForegroundColor') == null && !$theme->actionButtonHoverForegroundColorDefault) {
 				$interface->assign('actionButtonHoverForegroundColor', $theme->actionButtonHoverForegroundColor);
 			}
-			if ($interface->getVariable('actionButtonHoverBorderColor') == null && !$theme->actionButtonHoverBorderColoraction) {
+			if ($interface->getVariable('actionButtonHoverBorderColor') == null && !$theme->actionButtonHoverBorderColorDefault) {
 				$interface->assign('actionButtonHoverBorderColor', $theme->actionButtonHoverBorderColor);
 			}
 
-			if ($interface->getVariable('infoButtonBackgroundColor') == null && !$theme->infoButtonBackgroundColorinfo) {
+			if ($interface->getVariable('infoButtonBackgroundColor') == null && !$theme->infoButtonBackgroundColorDefault) {
 				$interface->assign('infoButtonBackgroundColor', $theme->infoButtonBackgroundColor);
 			}
-			if ($interface->getVariable('infoButtonForegroundColor') == null && !$theme->infoButtonForegroundColorinfo) {
+			if ($interface->getVariable('infoButtonForegroundColor') == null && !$theme->infoButtonForegroundColorDefault) {
 				$interface->assign('infoButtonForegroundColor', $theme->infoButtonForegroundColor);
 			}
-			if ($interface->getVariable('infoButtonBorderColor') == null && !$theme->infoButtonBorderColorinfo) {
+			if ($interface->getVariable('infoButtonBorderColor') == null && !$theme->infoButtonBorderColorDefault) {
 				$interface->assign('infoButtonBorderColor', $theme->infoButtonBorderColor);
 			}
-			if ($interface->getVariable('infoButtonHoverBackgroundColor') == null && !$theme->infoButtonHoverBackgroundColorinfo) {
+			if ($interface->getVariable('infoButtonHoverBackgroundColor') == null && !$theme->infoButtonHoverBackgroundColorDefault) {
 				$interface->assign('infoButtonHoverBackgroundColor', $theme->infoButtonHoverBackgroundColor);
 			}
-			if ($interface->getVariable('infoButtonHoverForegroundColor') == null && !$theme->infoButtonHoverForegroundColorinfo) {
+			if ($interface->getVariable('infoButtonHoverForegroundColor') == null && !$theme->infoButtonHoverForegroundColorDefault) {
 				$interface->assign('infoButtonHoverForegroundColor', $theme->infoButtonHoverForegroundColor);
 			}
-			if ($interface->getVariable('infoButtonHoverBorderColor') == null && !$theme->infoButtonHoverBorderColorinfo) {
+			if ($interface->getVariable('infoButtonHoverBorderColor') == null && !$theme->infoButtonHoverBorderColorDefault) {
 				$interface->assign('infoButtonHoverBorderColor', $theme->infoButtonHoverBorderColor);
 			}
 
-			if ($interface->getVariable('warningButtonBackgroundColor') == null && !$theme->warningButtonBackgroundColorwarning) {
+			if ($interface->getVariable('warningButtonBackgroundColor') == null && !$theme->warningButtonBackgroundColorDefault) {
 				$interface->assign('warningButtonBackgroundColor', $theme->warningButtonBackgroundColor);
 			}
-			if ($interface->getVariable('warningButtonForegroundColor') == null && !$theme->warningButtonForegroundColorwarning) {
+			if ($interface->getVariable('warningButtonForegroundColor') == null && !$theme->warningButtonForegroundColorDefault) {
 				$interface->assign('warningButtonForegroundColor', $theme->warningButtonForegroundColor);
 			}
-			if ($interface->getVariable('warningButtonBorderColor') == null && !$theme->warningButtonBorderColorwarning) {
+			if ($interface->getVariable('warningButtonBorderColor') == null && !$theme->warningButtonBorderColorDefault) {
 				$interface->assign('warningButtonBorderColor', $theme->warningButtonBorderColor);
 			}
-			if ($interface->getVariable('warningButtonHoverBackgroundColor') == null && !$theme->warningButtonHoverBackgroundColorwarning) {
+			if ($interface->getVariable('warningButtonHoverBackgroundColor') == null && !$theme->warningButtonHoverBackgroundColorDefault) {
 				$interface->assign('warningButtonHoverBackgroundColor', $theme->warningButtonHoverBackgroundColor);
 			}
-			if ($interface->getVariable('warningButtonHoverForegroundColor') == null && !$theme->warningButtonHoverForegroundColorwarning) {
+			if ($interface->getVariable('warningButtonHoverForegroundColor') == null && !$theme->warningButtonHoverForegroundColorDefault) {
 				$interface->assign('warningButtonHoverForegroundColor', $theme->warningButtonHoverForegroundColor);
 			}
-			if ($interface->getVariable('warningButtonHoverBorderColor') == null && !$theme->warningButtonHoverBorderColorwarning) {
+			if ($interface->getVariable('warningButtonHoverBorderColor') == null && !$theme->warningButtonHoverBorderColorDefault) {
 				$interface->assign('warningButtonHoverBorderColor', $theme->warningButtonHoverBorderColor);
 			}
 
-			if ($interface->getVariable('dangerButtonBackgroundColor') == null && !$theme->dangerButtonBackgroundColordanger) {
+			if ($interface->getVariable('dangerButtonBackgroundColor') == null && !$theme->dangerButtonBackgroundColorDefault) {
 				$interface->assign('dangerButtonBackgroundColor', $theme->dangerButtonBackgroundColor);
 			}
-			if ($interface->getVariable('dangerButtonForegroundColor') == null && !$theme->dangerButtonForegroundColordanger) {
+			if ($interface->getVariable('dangerButtonForegroundColor') == null && !$theme->dangerButtonForegroundColorDefault) {
 				$interface->assign('dangerButtonForegroundColor', $theme->dangerButtonForegroundColor);
 			}
-			if ($interface->getVariable('dangerButtonBorderColor') == null && !$theme->dangerButtonBorderColordanger) {
+			if ($interface->getVariable('dangerButtonBorderColor') == null && !$theme->dangerButtonBorderColorDefault) {
 				$interface->assign('dangerButtonBorderColor', $theme->dangerButtonBorderColor);
 			}
-			if ($interface->getVariable('dangerButtonHoverBackgroundColor') == null && !$theme->dangerButtonHoverBackgroundColordanger) {
+			if ($interface->getVariable('dangerButtonHoverBackgroundColor') == null && !$theme->dangerButtonHoverBackgroundColorDefault) {
 				$interface->assign('dangerButtonHoverBackgroundColor', $theme->dangerButtonHoverBackgroundColor);
 			}
-			if ($interface->getVariable('dangerButtonHoverForegroundColor') == null && !$theme->dangerButtonHoverForegroundColordanger) {
+			if ($interface->getVariable('dangerButtonHoverForegroundColor') == null && !$theme->dangerButtonHoverForegroundColorDefault) {
 				$interface->assign('dangerButtonHoverForegroundColor', $theme->dangerButtonHoverForegroundColor);
 			}
-			if ($interface->getVariable('dangerButtonHoverBorderColor') == null && !$theme->dangerButtonHoverBorderColordanger) {
+			if ($interface->getVariable('dangerButtonHoverBorderColor') == null && !$theme->dangerButtonHoverBorderColorDefault) {
 				$interface->assign('dangerButtonHoverBorderColor', $theme->dangerButtonHoverBorderColor);
 			}
 
@@ -672,14 +674,19 @@ class Theme extends DataObject
 	public function getAllAppliedThemes()
 	{
 		$primaryTheme = clone($this);
-		$allAppliedThemes[] = $primaryTheme;
+		$allAppliedThemes[$primaryTheme->themeName] = $primaryTheme;
 		$theme = $primaryTheme;
 		while (strlen($theme->extendsTheme) != 0) {
 			$extendsName = $theme->extendsTheme;
-			$theme = new Theme();
-			$theme->themeName = $extendsName;
-			if ($theme->find(true)) {
-				$allAppliedThemes[] = clone $theme;
+			if (!array_key_exists($extendsName, $allAppliedThemes)){
+				$theme = new Theme();
+				$theme->themeName = $extendsName;
+				if ($theme->find(true)) {
+					$allAppliedThemes[$theme->themeName] = clone $theme;
+				}
+			}else{
+				//We have a recursive situation
+				break;
 			}
 		}
 		return $allAppliedThemes;
