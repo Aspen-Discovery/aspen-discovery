@@ -219,6 +219,8 @@ if (!$runningOnWindows){
 if (!$runningOnWindows){
 	exec('chown -R apache:apache ' . $installDir . '/code/web/files');
 	exec('chmod -R 755 ' . $installDir . '/code/web/files');
+	exec('chown -R apache:apache ' . $installDir . '/code/web/fonts');
+	exec('chmod -R 755 ' . $installDir . '/code/web/fonts');
 }
 
 //Make log directories
@@ -253,7 +255,7 @@ if ($siteOnWindows){
 	exec('chmod +x ' . $siteDir . "/{$sitename}.sh");
 	execInBackground($siteDir . "/{$sitename}.sh");
 	//Link cron to /etc/cron.d folder
-	exec('ln -s ' . $siteDir . "/usr/local/aspen-discovery/sites/{$sitename}/conf/crontab_settings.txt /etc/cron.d/{$cleanSitename}");
+	exec("ln -s /usr/local/aspen-discovery/sites/{$sitename}/conf/crontab_settings.txt /etc/cron.d/{$cleanSitename}");
 }
 
 echo("\r\n");
