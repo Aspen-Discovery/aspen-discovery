@@ -60,8 +60,8 @@ class ManageStatuses extends ObjectEditor
 		return $objectActions;
 	}
 
+	/** @noinspection PhpUnused */
 	function resetToDefault(){
-		$user = UserAccount::getLoggedInUser();
 		if (UserAccount::userHasRole('library_material_requests')){
 			$homeLibrary = Library::getPatronHomeLibrary();
 			$materialRequestStatus = new MaterialsRequestStatus();

@@ -14,18 +14,19 @@ class MaterialsRequest_AJAX extends Action{
 
 	function launch(){
 		$method = $_GET['method'];
-		if (in_array($method, array('CancelRequest', 'GetWorldCatTitles', 'GetWorldCatIdentifiers', 'MaterialsRequestDetails', 'updateMaterialsRequest'))){
-			header('Content-type: text/plain');
+		if (method_exists($this, $method)) {
+			header('Content-type: application/json');
 			header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 			header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
 			$result = $this->$method();
 			echo json_encode($result);
 		}else{
-			echo "Unknown Method";
+			echo json_encode(array('error'=>'invalid_method'));
 		}
 	}
 
-	function CancelRequest(){
+	/** @noinspection PhpUnused */
+	function cancelRequest(){
 		if (!UserAccount::isLoggedIn()){
 			return array('success' => false, 'error' => 'Could not cancel the request, you must be logged in to cancel the request.');
 		}elseif (!isset($_REQUEST['id'])){
@@ -56,6 +57,7 @@ class MaterialsRequest_AJAX extends Action{
 		}
 	}
 
+	/** @noinspection PhpUnused */
 	function updateMaterialsRequest(){
 		global $interface;
 		global $configArray;
@@ -438,5 +440,159 @@ class MaterialsRequest_AJAX extends Action{
 				'error' => 'Cannot load titles from WorldCat, an API Key must be provided in the config file.'
 			);
 		}
+	}
+
+	/** @noinspection PhpUnused */
+	function getImportRequestForm(){
+		global $interface;
+
+		$results = array(
+			'title' => 'Import Materials Requests',
+			'modalBody' => $interface->fetch("MaterialsRequest/import-requests.tpl"),
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#importRequestsForm\").submit()'>Import Requests</button>"
+		);
+		return $results;
+	}
+
+	/** @noinspection PhpUnused */
+	function importRequests(){
+		$result = [
+			'success' => false,
+			'title' => 'Importing Requests',
+			'message' => 'Sorry your requests could not be imported'
+		];
+		if (UserAccount::isLoggedIn() && (UserAccount::userHasRole('library_material_requests'))){
+			if (isset($_FILES['exportFile'])) {
+				$uploadedFile = $_FILES['exportFile'];
+				if (isset($uploadedFile["error"]) && $uploadedFile["error"] == 4) {
+					$result['message'] = "No file was uploaded";
+				} else if (isset($uploadedFile["error"]) && $uploadedFile["error"] > 0) {
+					$result['message'] =  "Error in file upload " . $uploadedFile["error"];
+				} else {
+					try {
+						$inputFileType = PHPExcel_IOFactory::identify($uploadedFile['tmp_name']);
+						$objReader = PHPExcel_IOFactory::createReader($inputFileType);
+						/** @var PHPExcel $objPHPExcel */
+						$objPHPExcel = $objReader->load($uploadedFile['tmp_name']);
+
+						global $library;
+						global $configArray;
+						$libraryId = $library->libraryId;
+
+						$allStatuses = [];
+						$materialRequestStatus = new MaterialsRequestStatus();
+						$materialRequestStatus->libraryId = $libraryId;
+						$materialRequestStatus->find();
+						while ($materialRequestStatus->fetch()){
+							$allStatuses[$materialRequestStatus->id] = $materialRequestStatus->description;
+						}
+
+						/** @var  $sheet */
+						$sheet = $objPHPExcel->getSheet(0);
+						if ($sheet->getCellByColumnAndRow(0, 1)->getValue() == 'Materials Requests'){
+							//Get the request data
+							$highestRow = $sheet->getHighestRow();
+							$headers = $rowData = $sheet->rangeToArray('A3:' . $sheet->getHighestColumn() . '3',
+								NULL,
+								TRUE,
+								FALSE)[2];
+							$showEBookFormatField = in_array('Sub Format', $headers);
+							$showBookTypeField = in_array('Type', $headers);
+							$showAgeField = in_array('Age Level', $headers);
+							$showPlaceHoldField = in_array('Hold', $headers);
+							$showIllField = in_array('ILL', $headers);
+							for ($rowNum = 4; $rowNum <= $highestRow; $rowNum++){
+								$materialRequest = new MaterialsRequest();
+								$curCol = 1;
+								$materialRequest->libraryId = $libraryId;
+								$materialRequest->title = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue();
+								$materialRequest->season = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue();
+								$magazineInfo = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue();
+								$magazineTitle = $magazineInfo;
+								//TODO: Split up magazine information?
+								$materialRequest->magazineTitle = $magazineTitle; //This isn't quite right, date will append to title
+								$materialRequest->author = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue();
+								$materialRequest->format = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue();
+								if ($showEBookFormatField){
+									$materialRequest->subFormat = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue();
+								}
+								if ($showBookTypeField){
+									$materialRequest->bookType = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue();
+								}
+								if ($showAgeField){
+									$materialRequest->ageLevel = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue();
+								}
+								$materialRequest->isbn = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue();
+								$materialRequest->upc = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue();
+								$materialRequest->issn = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue();
+								$materialRequest->oclcNumber = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue();
+								$materialRequest->publisher = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue();
+								$materialRequest->publicationYear = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue();
+								$materialRequest->abridged = ($sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue() == 'Unabridged' ? 0 : ($sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue() == 'Abridged' ? 1 : 2));
+								$materialRequest->about = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue();
+								$materialRequest->comments = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue();
+								/** @noinspection PhpUnusedLocalVariableInspection */
+								$username = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue();
+								$barcode = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getFormattedValue();
+								if (is_numeric($barcode)){
+									$barcode = (int)$barcode;
+								}
+								$requestUser = new User();
+								$barcodeProperty = $configArray['Catalog']['barcodeProperty'];
+
+								$requestUser->$barcodeProperty = $barcode;
+								$requestUser->find();
+								if ($requestUser->getNumResults() == 0){
+									//See if we can fetch the user from the ils
+									$requestUser = UserAccount::findNewUser($barcode);
+									if ($requestUser == false){
+										//We didn't get a user, skip this one.
+										continue;
+									}
+								}else{
+									$requestUser->fetch();
+								}
+								$materialRequest->createdBy = $requestUser->id;
+								$materialRequest->email = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue();
+								if ($showPlaceHoldField){
+									$placeHold = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue();
+									if ($placeHold == 'No'){
+										$materialRequest->placeHoldWhenAvailable = 0;
+									}else{
+										$materialRequest->placeHoldWhenAvailable = 1;
+									}
+								}
+								if ($showIllField){
+									$materialRequest->illItem = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue() == 'Yes' ? 1 : 0;
+								}
+								$materialRequest->status = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue();
+								if (is_numeric($materialRequest->status)){
+									$materialRequest->status = (int)$materialRequest->status;
+								}
+								if (!array_key_exists($materialRequest->status, $allStatuses)){
+									continue;
+								}
+								$dateCreated = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue();
+								$dateTimeCreated = date_create_from_format('m/d/Y', $dateCreated);
+								$materialRequest->dateCreated = $dateTimeCreated->getTimestamp();
+								$materialRequest->dateUpdated = $dateTimeCreated->getTimestamp();
+								/** @noinspection PhpUnusedLocalVariableInspection */
+								$assignedTo = $sheet->getCellByColumnAndRow($curCol++, $rowNum)->getValue();
+
+								$materialRequest->insert();
+							}
+						}else{
+							$result['message'] =  "This does not look like a valid export of Material Request data";
+						}
+					} catch(Exception $e) {
+						$result['message'] =  "Error reading file : " . $e->getMessage();
+					}
+
+				}
+			}else{
+				$result['message'] = 'No file was selected, please try again.';
+			}
+		}
+		return json_encode($result);
 	}
 }

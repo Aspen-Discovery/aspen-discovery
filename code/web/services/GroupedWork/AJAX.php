@@ -1026,9 +1026,9 @@ class GroupedWork_AJAX {
 			if (isset($_FILES['coverFile'])) {
 				$uploadedFile = $_FILES['coverFile'];
 				if (isset($uploadedFile["error"]) && $uploadedFile["error"] == 4) {
-					$interface->assign('error', "No Cover file was uploaded");
+					$result['message'] = "No Cover file was uploaded";
 				} else if (isset($uploadedFile["error"]) && $uploadedFile["error"] > 0) {
-					$interface->assign('error', "Error in file upload for cover");
+					$result['message'] =  "Error in file upload for cover " . $uploadedFile["error"];
 				} else {
 					$id = $_REQUEST['id'];
 					global $configArray;

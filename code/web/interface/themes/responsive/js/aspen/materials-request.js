@@ -24,7 +24,7 @@ AspenDiscovery.MaterialsRequest = (function(){
 
 		cancelMaterialsRequest: function(id){
 			if (confirm("Are you sure you want to cancel this request?")){
-				var url = Globals.path + "/MaterialsRequest/AJAX?method=CancelRequest&id=" + id;
+				var url = Globals.path + "/MaterialsRequest/AJAX?method=cancelRequest&id=" + id;
 				$.getJSON(
 						url,
 						function(data){
@@ -51,12 +51,39 @@ AspenDiscovery.MaterialsRequest = (function(){
 		},
 
 		exportSelectedRequests: function(){
-			var selectedRequests = this.getSelectedRequests(true);
+			let selectedRequests = this.getSelectedRequests(true);
 			if (selectedRequests.length == 0){
 				return false;
 			}
 			$("#updateRequests").submit();
 			return true;
+		},
+
+		showImportRequestForm: function(){
+			let url = Globals.path + '/MaterialsRequest/AJAX?method=getImportRequestForm';
+			$.getJSON(url, function (data){
+					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+				}
+			);
+			return false;
+		},
+
+		importRequests: function(){
+			let url = Globals.path + '/MaterialsRequest/AJAX?method=importRequests';
+			let importRequestsData = new FormData($("#importRequestsForm")[0]);
+			$.ajax({
+				url: url,
+				type: 'POST',
+				data: importRequestsData,
+				dataType: 'json',
+				success: function(data) {
+					AspenDiscovery.showMessage(data.title, data.message, true, data.success);
+				},
+				async: false,
+				contentType: false,
+				processData: false
+			});
+			return false;
 		},
 
 		updateSelectedRequests: function(){

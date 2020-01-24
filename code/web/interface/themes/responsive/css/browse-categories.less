@@ -65,6 +65,8 @@
   height: 100px;
   margin-left: 4px;
   margin-right: 4px;
+  display: flex;
+  align-items: center;
 
   &:hover{
     background-color: #e4e4e4;
@@ -78,7 +80,9 @@
     &:hover {
       text-decoration: underline; // emulate link behavior
     }
-    height: 80px;
+    height: auto;
+    margin-left: auto;
+    margin-right: auto;
   }
   &.selected {
     border: 2px solid @selectedCategoryBorderColor;

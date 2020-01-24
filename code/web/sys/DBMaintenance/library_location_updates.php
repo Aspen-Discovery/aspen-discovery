@@ -2025,6 +2025,14 @@ function getLibraryLocationUpdates(){
 				"ALTER TABLE location CHANGE COLUMN facetLabel facetLabel VARCHAR(75) DEFAULT ''",
 			],
 		],
+
+		'library_showConvertListsFromClassic' =>[
+			'title' => 'Library - Show Convert Lists From Classic',
+			'description' => 'Move convert lists from classic from config ini to database',
+			'sql' => [
+				'ALTER TABLE library ADD COLUMN showConvertListsFromClassic TINYINT(1) DEFAULT 0'
+			],
+		],
 	);
 }
 
