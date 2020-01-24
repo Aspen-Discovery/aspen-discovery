@@ -213,6 +213,7 @@ class Theme extends DataObject
 			'Roboto Condensed',
 			'Roboto Slab',
 			'Source Sans Pro',
+			'Ubuntu',
 		];
 
 		$themesToExtend = [];
@@ -470,7 +471,7 @@ class Theme extends DataObject
 			if ($interface->getVariable('bodyFont') == null && !$theme->bodyFontDefault) {
 				$interface->assign('bodyFont', $theme->bodyFont);
 			}
-			if ($interface->getVariable('customHeadingFont') == null) {
+			if ($interface->getVariable('customHeadingFont') == null && ($theme->customHeadingFont != null)) {
 				$interface->assign('customHeadingFont', $theme->customHeadingFont);
 				//Strip off the extension to get the name of the font
 				$customHeadingFontName = substr($theme->customHeadingFont, 0, strrpos($theme->customHeadingFont, '.'));
@@ -478,7 +479,7 @@ class Theme extends DataObject
 
 				$interface->assign('headingFont', $customHeadingFontName);
 			}
-			if ($interface->getVariable('customBodyFont') == null) {
+			if ($interface->getVariable('customBodyFont') == null && ($theme->customBodyFont != null)) {
 				$interface->assign('customBodyFont', $theme->customBodyFont);
 				$customBodyFontName = substr($theme->customBodyFont, 0, strrpos($theme->customBodyFont, '.'));
 				$interface->assign('customBodyFontName', $customBodyFontName);
