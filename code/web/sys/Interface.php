@@ -150,7 +150,6 @@ class UInterface extends Smarty
 			$this->assign('classicCatalogUrl', $configArray['Catalog']['hipUrl']);
 		}
 		$this->assign('showLinkToClassicInMaintenanceMode', $configArray['Catalog']['showLinkToClassicInMaintenanceMode']);
-		$this->assign('showConvertListsFromClassic', $configArray['Catalog']['showConvertListsFromClassic']);
 
 		$this->assign('primaryTheme', reset($themeArray));
 		$this->assign('device', get_device_name());
@@ -447,6 +446,8 @@ class UInterface extends Smarty
 		$this->assign('sidebarMenuButtonText', $library->getLayoutSettings()->sidebarMenuButtonText);
 		$this->assign('showGroupedHoldCopiesCount', $library->showGroupedHoldCopiesCount);
 		$this->assign('showOnOrderCounts', $library->showOnOrderCounts);
+
+		$this->assign('showConvertListsFromClassic', $library->showConvertListsFromClassic);
 
 		if ($location != null){ // library and location
 			$this->assign('showFavorites', $location->showFavorites && $library->showFavorites);

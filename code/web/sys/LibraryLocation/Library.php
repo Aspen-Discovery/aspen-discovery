@@ -71,6 +71,7 @@ class Library extends DataObject
 	public $showLoginButton;
 	public $showEmailThis;
 	public $showFavorites;
+	public $showConvertListsFromClassic;
 	public $inSystemPickupsOnly;
 	public $validPickupSystems;
 	public /** @noinspection PhpUnused */ $pTypes; //This is used as part of the indexing process
@@ -572,8 +573,9 @@ class Library extends DataObject
 			// Catalog Enrichment //
 			'enrichmentSection' => ['property'=>'enrichmentSection', 'type' => 'section', 'label' =>'Catalog Enrichment', 'hideInLists' => true,
 				'helpLink' => '', 'properties' => [
-					'showFavorites'            => array('property'=>'showFavorites', 'type'=>'checkbox', 'label'=>'Enable User Lists', 'description'=>'Whether or not users can maintain favorites lists', 'hideInLists' => true, 'default' => 1),
 					//TODO database column rename for showFavorites to showLists?
+					'showFavorites'            => array('property'=>'showFavorites', 'type'=>'checkbox', 'label'=>'Enable User Lists', 'description'=>'Whether or not users can maintain favorites lists', 'hideInLists' => true, 'default' => 1),
+					'showConvertListsFromClassic' => array('property'=>'showConvertListsFromClassic', 'type'=>'checkbox', 'label'=>'Enable Importing Lists From Old Catalog', 'description'=>'Whether or not users can import lists from the ILS', 'hideInLists' => true, 'default' => 0),
 					'showWikipediaContent'     => array('property'=>'showWikipediaContent', 'type'=>'checkbox', 'label'=>'Show Wikipedia Content', 'description'=>'Whether or not Wikipedia content should be shown on author page', 'default'=>'1', 'hideInLists' => true,),
 				]
 			],
