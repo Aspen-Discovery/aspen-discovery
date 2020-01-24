@@ -259,6 +259,10 @@
 						<div class="row">
 							<div class="col-xs-12">
 								<input class="btn btn-sm btn-default" type="submit" name="exportSelected" value="Export Selected To Excel" onclick="return AspenDiscovery.MaterialsRequest.exportSelectedRequests();">
+								{if array_key_exists('opacAdmin', $userRoles)}
+									{* We don't really want to do this much / ever so make sure that someone needs both opac admin and materials request to do it*}
+									<input class="btn btn-sm btn-default" type="submit" name="importRequests" value="Import Requests" onclick="return AspenDiscovery.MaterialsRequest.showImportRequestForm();">
+								{/if}
 							</div>
 						</div>
 					</div>
@@ -266,6 +270,14 @@
 			</form>
 		{else}
 			<div class="alert alert-info">There are no materials requests that meet your criteria.</div>
+			{if array_key_exists('opacAdmin', $userRoles)}
+				{* We don't really want to do this much / ever so make sure that someone needs both opac admin and materials request to do it*}
+				<div class="row">
+					<div class="col-xs-12">
+						<input class="btn btn-sm btn-default" type="submit" name="importRequests" value="Import Requests" onclick="return AspenDiscovery.MaterialsRequest.showImportRequestForm();">
+					</div>
+				</div>
+			{/if}
 		{/if}
 	{/if}
 </div>
