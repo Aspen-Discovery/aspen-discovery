@@ -34,11 +34,16 @@
 5 2 * * * php /usr/local/aspen-discovery/code/web/cron/updateSuggesters.php nashville.production
 */5 * * * * php /usr/local/aspen-discovery/code/web/cron/checkBackgroundProcesses.php nashville.production
 
+#############################
+# ILS CarlX nightly extract #
+#############################
+0 23 * * * expect /usr/local/aspen-discovery/sites/nashville.production/copyCarlXExport.exp nashville.production
+
 ########################################################
 # Regular extracts that don't need to run continuously #
 ########################################################
-0 2 * * * cd /usr/local/aspen-discovery/code/oai_indexer; java -jar oai_indexer.jar nashville.production
-0 1 * * * cd /usr/local/aspen-discovery/code/hoopla_export; java -jar hoopla_export.jar nashville.production
+0 2 * * 0 cd /usr/local/aspen-discovery/code/oai_indexer; java -jar oai_indexer.jar nashville.production
+0 2 * * 0 cd /usr/local/aspen-discovery/code/hoopla_export; java -jar hoopla_export.jar nashville.production
 
 ######################
 # MySQL Nightly Dump #
@@ -52,9 +57,9 @@
 20 7 * * 0-1 php /usr/local/aspen-discovery/code/web/cron/updateNYTLists.php nashville.production
 # update on Sundays and Mondays at 7:20
 
-################
-# Pika Cleanup #
-################
+#################
+# Aspen Cleanup #
+#################
 
 # Temp files
 26 0 * * * cd /tmp; rm -rf CURLCOOKIE*
