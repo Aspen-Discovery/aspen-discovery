@@ -58,7 +58,7 @@ public class SideLoadingMain {
 		//noinspection InfiniteLoopStatement
 		while (true) {
 			Date startTime = new Date();
-			logger.info(startTime.toString() + ": Starting Hoopla Export");
+			logger.info(startTime.toString() + ": Starting Side Load Export");
 			startTimeForLogging = startTime.getTime() / 1000;
 
 			// Read the base INI file to get information about the server (current directory/cron/config.ini)
