@@ -1925,6 +1925,21 @@ class Koha extends AbstractIlsDriver
 		global $interface;
 		$patronUpdateFields[] = array('property' => 'updateScope', 'type' => 'hidden', 'label' => 'Update Scope', 'description' => '', 'default' => 'contact');
 		$patronUpdateFields[] = array('property' => 'patronId', 'type' => 'hidden', 'label' => 'Active Patron', 'description' => '', 'default' => $user->id);
+
+		$library = $user->getHomeLibrary();
+		if (!$library->allowProfileUpdates){
+			$interface->assign('canSave', false);
+			foreach ($patronUpdateFields as $fieldName => &$fieldValue){
+				if ($fieldValue['type'] == 'section'){
+					foreach ($fieldValue['properties'] as $fieldName2 => &$fieldValue2){
+						$fieldValue2['readOnly'] = true;
+					}
+				}else{
+					$fieldValue['readOnly'] = true;
+				}
+			}
+		}
+
 		$interface->assign('submitUrl', '/MyAccount/ContactInformation');
 		$interface->assign('structure', $patronUpdateFields);
 		$interface->assign('object', $user);
