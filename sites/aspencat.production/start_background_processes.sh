@@ -1,5 +1,5 @@
 #!/bin/sh
-/usr/local/aspen-discovery/sites/pueblo.production/aspencat.production.sh restart
+/usr/local/aspen-discovery/sites/aspencat.production/aspencat.production.sh restart
 
 #Wait for solr to restart and warm up
 sleep 10
