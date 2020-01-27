@@ -573,6 +573,14 @@ class Koha extends AbstractIlsDriver
 		}
 	}
 
+	function closeDatabaseConnection()
+	{
+		if ($this->dbConnection != null){
+			mysqli_close($this->dbConnection);
+			$this->dbConnection = null;
+		}
+	}
+
 	/**
 	 * @param AccountProfile $accountProfile
 	 */
@@ -2185,9 +2193,11 @@ class Koha extends AbstractIlsDriver
 			$patronId = $lookupUserRow['borrowernumber'];
 			$newUser = $this->loadPatronInfoFromDB($patronId, null);
 			if (!empty($newUser) && !($newUser instanceof AspenError)) {
+				$this->closeDatabaseConnection();
 				return $newUser;
 			}
 		}
+		$this->closeDatabaseConnection();
 		return false;
 	}
 
