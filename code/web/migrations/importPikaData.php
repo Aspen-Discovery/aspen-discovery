@@ -37,9 +37,9 @@ if (!file_exists($exportPath)){
 	$invalidGroupedWorks = [];
 	$movedGroupedWorks = [];
 
-	importNotInterested($exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
-	importRatingsAndReviews($exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
-	importLists($exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
+	//importNotInterested($exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
+	//importRatingsAndReviews($exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
+	//importLists($exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
 	importReadingHistory($exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
 }
 
@@ -94,8 +94,8 @@ function importReadingHistory($exportPath, $existingUsers, $missingUsers, &$vali
 		$readingHistoryEntry->userId = $userId;
 		$readingHistoryEntry->source = $source;
 		$readingHistoryEntry->sourceId = $sourceId;
-		$readingHistoryEntry->title = $title;
-		$readingHistoryEntry->author = $author;
+		$readingHistoryEntry->title = substr($title, 0, 150);
+		$readingHistoryEntry->author = substr($author, 75);
 		$readingHistoryEntry->format = $format;
 		$readingHistoryEntry->checkInDate = $checkoutDate;
 		$readingHistoryEntry->checkOutDate = $checkoutDate;
