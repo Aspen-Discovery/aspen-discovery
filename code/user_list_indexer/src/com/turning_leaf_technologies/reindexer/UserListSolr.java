@@ -73,8 +73,8 @@ class UserListSolr {
 			if (okToInclude) {
 				doc.addField("local_time_since_added_" + scope.getScopeName(), DateUtils.getTimeSinceAddedForDate(dateAdded));
 				doc.addField("local_days_since_added_" + scope.getScopeName(), DateUtils.getDaysSinceAddedForDate(dateAdded));
-				doc.addField("format_" + scope.getScopeName(), "list");
-				doc.addField("format_category_" + scope.getScopeName(), "list");
+				//doc.addField("format_" + scope.getScopeName(), "list");
+				//doc.addField("format_category_" + scope.getScopeName(), "list");
 				doc.addField("scope_has_related_records", scope.getScopeName());
 			}
 		}
