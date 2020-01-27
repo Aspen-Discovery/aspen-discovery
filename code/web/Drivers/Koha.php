@@ -2341,6 +2341,14 @@ class Koha extends AbstractIlsDriver
 			$validNoticeDays[$i] = $i;
 		}
 		$interface->assign('validNoticeDays', $validNoticeDays);
+
+		$library = $user->getHomeLibrary();
+		if ($library->allowProfileUpdates){
+			$interface->assign('canSave', true);
+		}else{
+			$interface->assign('canSave', false);
+		}
+
 		return 'kohaMessagingSettings.tpl';
 	}
 

@@ -554,6 +554,9 @@ class MyAccount_AJAX
 
 		$catalog = CatalogFactory::getCatalogConnectionInstance();
 		$interface->assign('forgotPasswordType', $catalog->getForgotPasswordType());
+		if (!$library->enableForgotPasswordLink) {
+			$interface->assign('forgotPasswordType', 'none');
+		}
 
 		if (isset($_REQUEST['multiStep'])) {
 			$interface->assign('multiStep', true);
