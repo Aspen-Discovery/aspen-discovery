@@ -37,6 +37,7 @@ if (!file_exists($exportPath)){
 	$invalidGroupedWorks = [];
 	$movedGroupedWorks = [];
 
+	importNotInterested($exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
 	importRatingsAndReviews($exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
 	importLists($exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
 	importReadingHistory($exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
@@ -108,6 +109,49 @@ function importReadingHistory($exportPath, $existingUsers, $missingUsers, &$vali
 		}
 	}
 	fclose($readingHistoryHnd);
+}
+
+function importNotInterested($exportPath, $existingUsers, $missingUsers, &$validGroupedWorks, &$invalidGroupedWorks, &$movedGroupedWorks){
+	set_time_limit(600);
+	require_once ROOT_DIR . '/sys/LocalEnrichment/NotInterested.php';
+	$patronNotInterestedHnd = fopen($exportPath . "patronNotInterested.csv", 'r');
+	$numImports = 0;
+
+	while ($patronNotInterestedRow = fgetcsv($patronNotInterestedHnd)){
+		$numImports++;
+		//Figure out the user for the review
+		$userBarcode = $patronNotInterestedRow[0];
+		$userId = getUserIdForBarcode($userBarcode, $existingUsers, $missingUsers);
+		if ($userId == -1){
+			continue;
+		}
+
+		$dateMarked = $patronNotInterestedRow[1];
+		$title = cleancsv($patronNotInterestedRow[2]);
+		$author = cleancsv($patronNotInterestedRow[3]);
+		$groupedWorkId = $patronNotInterestedRow[4];
+
+		if (!validateGroupedWork($groupedWorkId, $title, $author, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks)){
+			continue;
+		}
+
+		$notInterested = new NotInterested();
+		$notInterested->userId = $userId;
+		$notInterested->groupedRecordPermanentId = $groupedWorkId;
+		if ($notInterested->find(true)){
+			$notInterested->dateMarked = $dateMarked;
+			$notInterested->update();
+		}else{
+			$notInterested->dateMarked = $dateMarked;
+			$notInterested->insert();
+		}
+
+		if ($numImports % 250 == 0){
+			gc_collect_cycles();
+			ob_flush();
+		}
+	}
+	fclose($patronNotInterestedHnd);
 }
 
 function importRatingsAndReviews($exportPath, $existingUsers, $missingUsers, &$validGroupedWorks, &$invalidGroupedWorks, &$movedGroupedWorks){
@@ -371,7 +415,9 @@ function validateGroupedWork(&$groupedWorkId, $title, $author, &$validGroupedWor
 			echo("WARNING grouped Work $groupedWorkId - $title by $author may have matched incorrectly {$groupedWork->full_title} {$groupedWork->author}");
 		}
 		if ($groupedWorkValid && $title == null && $author == null){
-			echo "Grouped work with title and author was valid\r\n";
+			echo "Grouped work with no title and author was valid\r\n";
+			$groupedWorkValid = false;
+			$invalidGroupedWorks[$groupedWorkId] = $groupedWorkId;
 		}
 		if ($groupedWorkValid){
 			$validGroupedWorks[$groupedWorkId] = $groupedWorkId;
