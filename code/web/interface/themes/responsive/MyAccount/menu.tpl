@@ -220,7 +220,7 @@
 				</div>
 
 				{if (array_key_exists('userAdmin', $userRoles) || array_key_exists('opacAdmin', $userRoles))}
-					{if in_array($action, array('Modules', 'Administrators', 'DBMaintenance', 'PHPInfo', 'Variables', 'CronLog'))
+					{if in_array($action, array('Modules', 'Administrators', 'DBMaintenance', 'PHPInfo', 'Variables'))
 					|| ($module == 'Admin' && $action == 'Home')}
 						{assign var="curSection" value=true}
 					{else}
@@ -248,7 +248,6 @@
 									<div class="adminMenuLink"><a href="/Admin/Home">{translate text="Solr Information"}</a></div>
 									<div class="adminMenuLink"><a href="/Admin/PHPInfo">{translate text="PHP Information"}</a></div>
 									<div class="adminMenuLink"><a href="/Admin/Variables">{translate text="System Variables"}</a></div>
-									<div class="adminMenuLink"><a href="/Admin/CronLog">{translate text="Cron Log"}</a></div>
 								{/if}
 							</div>
 						</div>
@@ -256,7 +255,7 @@
 				{/if}
 
 				{if array_key_exists('opacAdmin', $userRoles)}
-					{if in_array($action, array('UsageDashboard', 'PerformanceReport', 'ErrorReport'))}
+					{if in_array($action, array('UsageDashboard', 'PerformanceReport', 'ErrorReport', 'CronLog'))}
 						{assign var="curSection" value=true}
 					{else}
 						{assign var="curSection" value=false}
@@ -273,6 +272,7 @@
 							<div class="panel-body">
 								{if array_key_exists('opacAdmin', $userRoles)}
 									<div class="adminMenuLink"><a href="/Admin/UsageDashboard">{translate text="Usage Dashboard"}</a></div>
+									<div class="adminMenuLink"><a href="/Admin/CronLog">{translate text="Cron Log"}</a></div>
 									<div class="adminMenuLink"><a href="/Admin/ErrorReport">{translate text="Error Report"}</a></div>
 									<div class="adminMenuLink"><a href="/Admin/PerformanceReport">{translate text="Performance Report"}</a></div>
 								{/if}
