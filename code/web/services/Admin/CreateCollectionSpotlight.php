@@ -39,6 +39,7 @@ class CreateCollectionSpotlight extends Action {
 				$collectionSpotlight->showRatings = 0;
 				$collectionSpotlight->style = 'horizontal';
 				$collectionSpotlight->autoRotate = 0;
+				$collectionSpotlight->coverSize = 'medium';
 				$collectionSpotlight->description           = '';
 				$collectionSpotlight->showTitleDescriptions = 1;
 				$collectionSpotlight->onSelectCallback      = '';
