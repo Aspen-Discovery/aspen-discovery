@@ -32,14 +32,14 @@
 			<h4 id="selectedSpotlightListsHeader">Lists</h4>
 			<table id="selectedSpotlightLists" class="table table-bordered">
 			<thead>
-			<tr><th>Name</th><th>Display For</th><th>Source</th></tr>
+			<tr><th>Name</th><th>Display For</th><th>Created From</th></tr>
 			</thead>
 			<tbody>
 			{foreach from=$object->lists item=list}
 				<tr class="sortable" id="{$list->id}">
 				<td>{$list->name}</td>
 				<td>{$list->displayFor}</td>
-				<td>{$list->source}</td>
+				<td>{if $list->sourceListId == -1}{$list->searchTerm}<br/>{$list->defaultFilter}{else}{$list->getSourceListName()}{/if}</td>
 				</tr>
 			{/foreach}
 			</tbody>
