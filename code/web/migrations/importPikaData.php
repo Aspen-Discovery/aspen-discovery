@@ -37,13 +37,14 @@ if (!file_exists($exportPath)){
 	$invalidGroupedWorks = [];
 	$movedGroupedWorks = [];
 
-	//importNotInterested($exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
-	//importRatingsAndReviews($exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
-	//importLists($exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
+	importNotInterested($exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
+	importRatingsAndReviews($exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
+	importLists($exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
 	importReadingHistory($exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
 }
 
 function importReadingHistory($exportPath, $existingUsers, $missingUsers, &$validGroupedWorks, &$invalidGroupedWorks, &$movedGroupedWorks){
+	echo ("Starting to import reading history");
 	set_time_limit(600);
 	require_once ROOT_DIR . '/sys/ReadingHistoryEntry.php';
 
@@ -112,6 +113,7 @@ function importReadingHistory($exportPath, $existingUsers, $missingUsers, &$vali
 }
 
 function importNotInterested($exportPath, $existingUsers, $missingUsers, &$validGroupedWorks, &$invalidGroupedWorks, &$movedGroupedWorks){
+	echo ("Starting to import not interested titles");
 	set_time_limit(600);
 	require_once ROOT_DIR . '/sys/LocalEnrichment/NotInterested.php';
 	$patronNotInterestedHnd = fopen($exportPath . "patronNotInterested.csv", 'r');
@@ -155,6 +157,7 @@ function importNotInterested($exportPath, $existingUsers, $missingUsers, &$valid
 }
 
 function importRatingsAndReviews($exportPath, $existingUsers, $missingUsers, &$validGroupedWorks, &$invalidGroupedWorks, &$movedGroupedWorks){
+	echo ("Starting to import ratings and reviews");
 	set_time_limit(600);
 	require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
 	$patronsRatingsAndReviewsHnd = fopen($exportPath . "patronRatingsAndReviews.csv", 'r');
@@ -205,6 +208,7 @@ function importRatingsAndReviews($exportPath, $existingUsers, $missingUsers, &$v
 }
 
 function importLists($exportPath, &$existingUsers, &$missingUsers, &$validGroupedWorks, &$invalidGroupedWorks, &$movedGroupedWorks){
+	echo ("Starting to import lists");
 	global $memoryWatcher;
 	$memoryWatcher->logMemory("Start of list import");
 
@@ -263,6 +267,7 @@ function importLists($exportPath, &$existingUsers, &$missingUsers, &$validGroupe
 	}
 	fclose($patronsListHnd);
 
+	echo ("Starting to import list entries");
 	//Load the list entries
 	set_time_limit(600);
 	$patronListEntriesHnd = fopen($exportPath . "patronListEntries.csv", 'r');
