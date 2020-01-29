@@ -956,6 +956,7 @@ class Koha extends AbstractIlsDriver
 				$curHold['automaticCancellation'] = date_parse_from_format('Y-m-d H:i:s', $curRow['cancellationdate']);
 			}
 
+			$curHold['currentPickupId'] = $curRow['branchcode'];
 			$curHold['location'] = $curRow['branchcode'];
 			$curHold['locationUpdateable'] = false;
 			$curHold['currentPickupName'] = $curHold['location'];

@@ -192,7 +192,7 @@
 								{/if}
 							{/if}
 							{if $record.locationUpdateable}
-								<button onclick="return AspenDiscovery.Account.changeHoldPickupLocation('{$record.userId}', '{$record.id}', '{$record.cancelId}');" class="btn btn-sm btn-default">Change Pickup Loc.</button>
+								<button onclick="return AspenDiscovery.Account.changeHoldPickupLocation('{$record.userId}', '{$record.id}', '{$record.cancelId}', '{$record.currentPickupId}');" class="btn btn-sm btn-default">Change Pickup Loc.</button>
 							{/if}
 						{/if}
 					</div>
