@@ -29,7 +29,7 @@ class MaterialsRequest_NewRequest extends Action
 				$pickupLocations[] = array(
 					'id' => $curLocation->locationId,
 					'displayName' => $curLocation->displayName,
-					'selected' => $curLocation->getSelected(),
+					'selected' => is_object($curLocation) ? $curLocation->getSelected() : '',
 				);
 			}
 			$interface->assign('pickupLocations', $pickupLocations);
