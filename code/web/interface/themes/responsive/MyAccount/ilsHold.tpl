@@ -148,12 +148,6 @@
 								{/if}
 								{$record.status}
 								{if $record.frozen && $showDateWhenSuspending && !empty($record.reactivate)} until {$record.reactivate|date_format:"%b %d, %Y"}</span>{/if}
-								{* No references to freezeMessage in php code found. plb 8-3-2016
-								{if strlen($record.freezeMessage) > 0}
-									<div class='{if $record.freezeResult == true}freezePassed{else}freezeFailed{/if}'>
-										{$record.freezeMessage|escape}
-									</div>
-								{/if}*}
 							</div>
 						</div>
 
