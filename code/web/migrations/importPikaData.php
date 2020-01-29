@@ -107,6 +107,7 @@ function importReadingHistory($exportPath, $existingUsers, $missingUsers, &$vali
 		if ($numImports % 250 == 0){
 			gc_collect_cycles();
 			ob_flush();
+			set_time_limit(600);
 		}
 	}
 	fclose($readingHistoryHnd);
