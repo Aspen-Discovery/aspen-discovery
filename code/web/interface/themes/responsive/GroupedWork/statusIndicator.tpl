@@ -65,7 +65,7 @@
 			{if $showOnOrderCounts}
 				{$statusInformation->getOnOrderCopies()} {if $statusInformation->getOnOrderCopies() == 1}copy{else}copies{/if} on order.
 			{else}
-				{if $statusInformation->getTotalCopies() > 0}
+				{if $statusInformation->getCopies() > 0}
 					{translate text="Additional copies on order"}
 				{else}
 					{translate text="Copies on order"}
