@@ -630,7 +630,7 @@
 				{/if}
 
 				{if (array_key_exists('libraryAdmin', $userRoles) || array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles))}
-					{if in_array($action, array('RecordGroupingLog', 'ReindexLog'))}
+					{if in_array($action, array('ReindexLog'))}
 						{assign var="curSection" value=true}
 					{else}
 						{assign var="curSection" value=false}
@@ -645,7 +645,6 @@
 						</a>
 						<div id="indexingMenuGroup" class="panel-collapse collapse {if $curSection}in{/if}">
 							<div class="panel-body">
-								<div class="adminMenuLink"><a href="/Admin/RecordGroupingLog">{translate text="Record Grouping Log"}</a></div>
 								<div class="adminMenuLink"><a href="/Admin/ReindexLog">{translate text="Grouped Work Index Log"}</a></div>
 							</div>
 						</div>
