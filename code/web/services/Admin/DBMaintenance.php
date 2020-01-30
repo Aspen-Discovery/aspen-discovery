@@ -1791,7 +1791,7 @@ class Admin_DBMaintenance extends Admin_Admin
 					'sql' => [
 						'DROP TABLE record_grouping_log',
 					]
-				].
+				],
 
 				'change_to_innodb' => array(
 					'title' => 'Change to INNODB',
