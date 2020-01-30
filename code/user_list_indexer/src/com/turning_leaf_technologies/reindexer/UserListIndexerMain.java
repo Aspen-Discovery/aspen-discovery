@@ -56,7 +56,7 @@ public class UserListIndexerMain {
 		while (runContinuously) {
 			runContinuously = false;
 			if (!fullReindex){
-				runContinuously = false;
+				runContinuously = true;
 			}
 			initializeIndexer();
 
