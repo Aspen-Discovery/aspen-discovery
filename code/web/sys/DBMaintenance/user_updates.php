@@ -277,5 +277,29 @@ function getUserUpdates(){
 				"ALTER TABLE user CHANGE lastname lastname VARCHAR( 100 ) NOT NULL DEFAULT ''",
 			),
 		),
+
+		'make_nyt_user_list_publisher' => [
+			'title' => 'Make NYT User a list publisher',
+			'description' => 'Make NYT User a list publisher so results show in search',
+			'sql' => array(
+				'makeNytUserListPublisher',
+			),
+		],
 	);
+}
+
+function makeNytUserListPublisher(){
+	$user = new User();
+	$user->cat_username = 'nyt_user';
+	if ($user->find(true)){
+		$role = new Role();
+		$role->name = 'listPublisher';
+		if ($role->find(true)){
+			require_once ROOT_DIR . '/sys/Administration/UserRoles.php';
+			$userRole = new UserRoles();
+			$userRole->userId = $user->id;
+			$userRole->roleId = $role->roleId;
+			$userRole->insert();
+		}
+	}
 }

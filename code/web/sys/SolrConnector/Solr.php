@@ -1145,13 +1145,13 @@ abstract class Solr
 			$options['fl'] = $options['fl'] . ',explain';
 		}
 
+		//unset($options['qt']); //Force the query to never use dismax handling
+		$searchLibrary = Library::getSearchLibrary($this->searchSource);
+		//Boost items owned at our location
+		$searchLocation = Location::getSearchLocation($this->searchSource);
+
 		//Apply automatic boosting for grouped work queries
 		if (preg_match('/.*(grouped_works).*/i', $this->host)) {
-			//unset($options['qt']); //Force the query to never use dismax handling
-			$searchLibrary = Library::getSearchLibrary($this->searchSource);
-			//Boost items owned at our location
-			$searchLocation = Location::getSearchLocation($this->searchSource);
-
 			$boostFactors = $this->getBoostFactors($searchLibrary);
 
 			if (isset($options['qt']) && $options['qt'] == 'dismax') {
@@ -1177,13 +1177,9 @@ abstract class Solr
 
 			$timer->logTime("apply boosting");
 
-			$scopingFilters = $this->getScopingFilters($searchLibrary, $searchLocation);
-
-			$timer->logTime("apply filters based on location");
-		} else {
-			//Non book search (genealogy, islandora, open archives)
-			$scopingFilters = array();
 		}
+		$scopingFilters = $this->getScopingFilters($searchLibrary, $searchLocation);
+
 		if ($filter != null && $scopingFilters != null) {
 			if (!is_array($filter)) {
 				$filter = array($filter);
