@@ -2089,6 +2089,9 @@ class GroupedWorkDriver extends IndexRecordDriver
 		}
 	}
 
+	/**
+	 * @return UserWorkReview[]
+	 */
 	public function getUserReviews()
 	{
 		$reviews = array();

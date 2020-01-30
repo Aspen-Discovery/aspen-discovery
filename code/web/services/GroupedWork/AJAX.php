@@ -480,6 +480,11 @@ class GroupedWork_AJAX {
 		$interface->assign('syndicatedReviews', $reviews);
 
 		$userReviews = $recordDriver->getUserReviews();
+		foreach ($userReviews as $key => $review){
+			if (empty($review->review)){
+				unset($userReviews[$key]);
+			}
+		}
 		$interface->assign('userReviews', $userReviews);
 
 		$results = array(
