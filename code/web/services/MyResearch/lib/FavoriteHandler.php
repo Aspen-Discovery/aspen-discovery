@@ -396,6 +396,7 @@ class FavoriteHandler
 
 		// Retrieve records from index (currently, only Solr IDs supported):
 		if (count($this->ids) > 0) {
+			$searchObject->setLimit(count($this->ids));
 			$searchObject->setQueryIDs($this->ids);
 			$searchObject->processSearch();
 			return $searchObject->getCitations($citationFormat);

@@ -7,6 +7,7 @@ import java.util.Date;
 
 import com.turning_leaf_technologies.config.ConfigUtil;
 import com.turning_leaf_technologies.logging.LoggingUtil;
+import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
 import org.ini4j.Profile.Section;
@@ -21,12 +22,17 @@ public class Cron {
 	 * @param args command line parameters passed
 	 */
 	public static void main(String[] args) {
-		if (args.length == 0){
-			System.out.println("The name of the server to run cron for must be provided as the first parameter.");
-			System.exit(1);
+		String serverName;
+		if (args.length == 0) {
+			serverName = StringUtils.getInputFromCommandLine("Please enter the server name");
+			if (serverName.length() == 0) {
+				System.out.println("You must provide the server name as the first argument.");
+				System.exit(1);
+			}
+		} else {
+			serverName = args[0];
+			args = Arrays.copyOfRange(args, 1, args.length);
 		}
-		String serverName = args[0];
-		args = Arrays.copyOfRange(args, 1, args.length);
 		
 		Date currentTime = new Date();
 		logger = LoggingUtil.setupLogging(serverName, "cron");
@@ -104,6 +110,7 @@ public class Cron {
 			if (processToRun.getProcessClass() == null){
 				logger.error("Could not run process " + processToRun.getProcessName() + " because there is not a class for the process.");
 				cronEntry.addNote("Could not run process " + processToRun.getProcessName() + " because there is not a class for the process.");
+				cronEntry.saveResults();
 				continue;
 			}
 			// Load the class for the process using reflection
@@ -115,6 +122,7 @@ public class Cron {
 					processHandlerClassObject = processHandlerClass.newInstance();
 					IProcessHandler processHandlerInstance = (IProcessHandler) processHandlerClassObject;
 					cronEntry.addNote("Starting cron process " + processToRun.getProcessName());
+					cronEntry.saveResults();
 					
 					//Mark the time the run was started rather than finished so really long running processes
 					//can go on while faster processes execute multiple times in other threads.
@@ -126,6 +134,7 @@ public class Cron {
 					float elapsedMinutes = elapsedMillis / 60000f;
 					logger.info("Finished process " + processToRun.getProcessName() + " in " + elapsedMinutes + " minutes (" + elapsedMillis + " milliseconds)");
 					cronEntry.addNote("Finished process " + processToRun.getProcessName() + " in " + elapsedMinutes + " minutes (" + elapsedMillis + " milliseconds)");
+					cronEntry.saveResults();
 
 				} catch (InstantiationException e) {
 					logger.error("Could not run process " + processToRun.getProcessName() + " because the handler class " + processToRun.getProcessClass() + " could not be be instantiated.");

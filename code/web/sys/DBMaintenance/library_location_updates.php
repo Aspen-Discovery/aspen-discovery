@@ -2033,6 +2033,14 @@ function getLibraryLocationUpdates(){
 				'ALTER TABLE library ADD COLUMN showConvertListsFromClassic TINYINT(1) DEFAULT 0'
 			],
 		],
+
+		'library_enableForgotPasswordLink' => [
+			'title' => 'Library - Enable Forgot Password Link',
+			'description' => 'Allow libraries to disable the link to reset password',
+			'sql' => [
+				'ALTER TABLE library ADD COLUMN enableForgotPasswordLink TINYINT(1) DEFAULT 1'
+			],
+		],
 	);
 }
 

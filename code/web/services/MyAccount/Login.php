@@ -82,6 +82,9 @@ class MyAccount_Login extends Action
 
 		$catalog = CatalogFactory::getCatalogConnectionInstance();
 		$interface->assign('forgotPasswordType', $catalog->getForgotPasswordType());
+		if (!$library->enableForgotPasswordLink) {
+			$interface->assign('forgotPasswordType', 'none');
+		}
 
 		$interface->assign('isLoginPage', true);
 

@@ -1785,6 +1785,14 @@ class Admin_DBMaintenance extends Admin_Admin
 					)
 				),
 
+				'remove_record_grouping_log' => [
+					'title' => 'Remove Record Grouping Log',
+					'description' => 'Remove the Record Grouping Log since we no longer use it',
+					'sql' => [
+						'DROP TABLE record_grouping_log',
+					]
+				],
+
 				'change_to_innodb' => array(
 					'title' => 'Change to INNODB',
 					'description' => 'Change all tables to use INNODB rather than MyISAM',

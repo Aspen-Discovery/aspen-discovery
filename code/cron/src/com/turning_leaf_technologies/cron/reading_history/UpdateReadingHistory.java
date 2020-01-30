@@ -51,6 +51,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 		}
 
 		// Connect to the MySQL database
+		int numSkipped = 0;
 		try {
 			// Get a list of all patrons that have reading history turned on.
 			PreparedStatement getUsersStmt = dbConn.prepareStatement("SELECT id, cat_username, cat_password, initialReadingHistoryLoaded FROM user where trackReadingHistory=1", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
@@ -66,6 +67,11 @@ public class UpdateReadingHistory implements IProcessHandler {
 				long userId = userResults.getLong("id");
 				String cat_username = userResults.getString("cat_username");
 				String cat_password = userResults.getString("cat_password");
+
+				if (cat_password == null){
+					numSkipped++;
+					continue;
+				}
 
 				boolean initialReadingHistoryLoaded = userResults.getBoolean("initialReadingHistoryLoaded");
 				boolean errorLoadingInitialReadingHistory = false;
@@ -119,6 +125,8 @@ public class UpdateReadingHistory implements IProcessHandler {
 				}
 			}
 			userResults.close();
+
+			processLog.addNote("Skipped " + numSkipped + " records because the password was null");
 		} catch (SQLException e) {
 			logger.error("Unable get a list of users that need to have their reading list updated ", e);
 			processLog.incErrors();

@@ -14,9 +14,6 @@ sleep 5
 echo "Starting Cloud Library export"
 cd /usr/local/aspen-discovery/code/cloudlibrary_export; java -jar cloud_library_export.jar pueblo.production &
 sleep 5
-echo "Starting Hoopla export"
-cd /usr/local/aspen-discovery/code/hoopla_export; java -jar hoopla_export.jar pueblo.production &
-sleep 5
 echo "Starting User List Indexing"
 cd /usr/local/aspen-discovery/code/user_list_indexer; java -jar user_list_indexer.jar pueblo.production &
 sleep 5

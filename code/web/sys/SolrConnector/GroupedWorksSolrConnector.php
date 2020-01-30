@@ -334,6 +334,7 @@ class GroupedWorksSolrConnector extends Solr
 
 		//Simplify detecting which works are relevant to our scope
 		if (!$solrScope) {
+			//MDN: This does happen when called within migration tools
 			if (isset($searchLocation)) {
 				$filter[] = "scope_has_related_records:{$searchLocation->code}";
 			} elseif (isset($searchLibrary)) {

@@ -448,7 +448,7 @@ class Location extends DataObject
 	{
 		// Note: Some calls to this function will set $patronProfile to false. (No Patron is logged in)
 		// For Example: MaterialsRequest_NewRequest
-		$homeLibaryInList = false;
+		$homeLibraryInList = false;
 		$alternateLibraryInList = false;
 
 		//Get the library for the patron's home branch.
@@ -515,7 +515,7 @@ class Location extends DataObject
 				} else if (!empty($patronProfile) && $this->locationId == $patronProfile->homeLocationId) {
 					//Next come the user's home branch if the user is logged in or has the home_branch cookie set.
 					$locationList['21' . $this->displayName] = clone $this;
-					$homeLibaryInList = true;
+					$homeLibraryInList = true;
 				} else if (isset($patronProfile->myLocation1Id) && $this->locationId == $patronProfile->myLocation1Id) {
 					//Next come nearby locations for the user
 					$locationList['3' . $this->displayName] = clone $this;
@@ -561,7 +561,7 @@ class Location extends DataObject
 						if (!$isLinkedUser) {
 							$homeLocation->setSelected('selected');
 							$locationList['1' . $homeLocation->displayName] = clone $homeLocation;
-							$homeLibaryInList = true;
+							$homeLibraryInList = true;
 						} else {
 							$locationList['22' . $homeLocation->displayName] = clone $homeLocation;
 						}
@@ -570,7 +570,7 @@ class Location extends DataObject
 			}
 		}
 
-		if (!$homeLibaryInList && !$alternateLibraryInList && !$isLinkedUser) {
+		if (!$homeLibraryInList && !$alternateLibraryInList && !$isLinkedUser) {
 			$locationList['0default'] = "Please Select a Location";
 		}
 

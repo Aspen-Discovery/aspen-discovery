@@ -573,6 +573,14 @@ class Koha extends AbstractIlsDriver
 		}
 	}
 
+	function closeDatabaseConnection()
+	{
+		if ($this->dbConnection != null){
+			mysqli_close($this->dbConnection);
+			$this->dbConnection = null;
+		}
+	}
+
 	/**
 	 * @param AccountProfile $accountProfile
 	 */
@@ -948,6 +956,7 @@ class Koha extends AbstractIlsDriver
 				$curHold['automaticCancellation'] = date_parse_from_format('Y-m-d H:i:s', $curRow['cancellationdate']);
 			}
 
+			$curHold['currentPickupId'] = $curRow['branchcode'];
 			$curHold['location'] = $curRow['branchcode'];
 			$curHold['locationUpdateable'] = false;
 			$curHold['currentPickupName'] = $curHold['location'];
@@ -1917,6 +1926,21 @@ class Koha extends AbstractIlsDriver
 		global $interface;
 		$patronUpdateFields[] = array('property' => 'updateScope', 'type' => 'hidden', 'label' => 'Update Scope', 'description' => '', 'default' => 'contact');
 		$patronUpdateFields[] = array('property' => 'patronId', 'type' => 'hidden', 'label' => 'Active Patron', 'description' => '', 'default' => $user->id);
+
+		$library = $user->getHomeLibrary();
+		if (!$library->allowProfileUpdates){
+			$interface->assign('canSave', false);
+			foreach ($patronUpdateFields as $fieldName => &$fieldValue){
+				if ($fieldValue['type'] == 'section'){
+					foreach ($fieldValue['properties'] as $fieldName2 => &$fieldValue2){
+						$fieldValue2['readOnly'] = true;
+					}
+				}else{
+					$fieldValue['readOnly'] = true;
+				}
+			}
+		}
+
 		$interface->assign('submitUrl', '/MyAccount/ContactInformation');
 		$interface->assign('structure', $patronUpdateFields);
 		$interface->assign('object', $user);
@@ -2185,9 +2209,11 @@ class Koha extends AbstractIlsDriver
 			$patronId = $lookupUserRow['borrowernumber'];
 			$newUser = $this->loadPatronInfoFromDB($patronId, null);
 			if (!empty($newUser) && !($newUser instanceof AspenError)) {
+				$this->closeDatabaseConnection();
 				return $newUser;
 			}
 		}
+		$this->closeDatabaseConnection();
 		return false;
 	}
 
@@ -2316,6 +2342,14 @@ class Koha extends AbstractIlsDriver
 			$validNoticeDays[$i] = $i;
 		}
 		$interface->assign('validNoticeDays', $validNoticeDays);
+
+		$library = $user->getHomeLibrary();
+		if ($library->allowProfileUpdates){
+			$interface->assign('canSave', true);
+		}else{
+			$interface->assign('canSave', false);
+		}
+
 		return 'kohaMessagingSettings.tpl';
 	}
 

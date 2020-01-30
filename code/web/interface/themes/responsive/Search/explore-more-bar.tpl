@@ -28,11 +28,11 @@
 									<div class="explore-more-image">
 										<a href='{$exploreMoreCategory.link}' {if $exploreMoreCategory.onclick}onclick="{$exploreMoreCategory.onclick}"{/if}>
 											<img src="{$exploreMoreCategory.image}" alt="{$exploreMoreCategory.label|escape}">
+											<figcaption class="explore-more-category-title">
+												<strong>{$exploreMoreCategory.label|truncate:30}</strong>
+											</figcaption>
 										</a>
 									</div>
-									<figcaption class="explore-more-category-title">
-										<strong>{$exploreMoreCategory.label|truncate:30}</strong>
-									</figcaption>
 								</figure>
 							</li>
 						{/if}

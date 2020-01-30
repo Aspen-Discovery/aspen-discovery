@@ -33,8 +33,13 @@ class CreateCollectionSpotlight extends Action {
 				} else {
 					$collectionSpotlight->libraryId = -1;
 				}
-				$collectionSpotlight->customCss             = '';
-				$collectionSpotlight->autoRotate            = 0;
+				$collectionSpotlight->customCss = '';
+				$collectionSpotlight->showTitle = 1;
+				$collectionSpotlight->showAuthor = 0;
+				$collectionSpotlight->showRatings = 0;
+				$collectionSpotlight->style = 'horizontal';
+				$collectionSpotlight->autoRotate = 0;
+				$collectionSpotlight->coverSize = 'medium';
 				$collectionSpotlight->description           = '';
 				$collectionSpotlight->showTitleDescriptions = 1;
 				$collectionSpotlight->onSelectCallback      = '';
@@ -47,10 +52,6 @@ class CreateCollectionSpotlight extends Action {
 				$collectionSpotlight->id = $existingSpotlightId;
 				$collectionSpotlight->find(true);
 			}
-
-			//Make sure to save the search
-			//TODO: No longer have to save the search
-
 
 			//Add the list to the spotlight
 			$spotlightList               = new CollectionSpotlightList();
@@ -69,7 +70,7 @@ class CreateCollectionSpotlight extends Action {
 				}
 			}
 
-			$spotlightList->source       = "$source:$sourceId";
+			$spotlightList->sourceListId = $sourceId;
 			$spotlightList->name         = $spotlightName;
 			$spotlightList->weight       = 0;
 			$spotlightList->insert();

@@ -38,24 +38,26 @@ public class UserListIndexerMain {
 				System.out.println("You must provide the server name as the first argument.");
 				System.exit(1);
 			}
+			String runFullIndex = StringUtils.getInputFromCommandLine("Run a full index (y/N)");
+			if (runFullIndex.equalsIgnoreCase("y")){
+				fullReindex = true;
+			}
 		} else {
 			serverName = args[0];
+			if (args.length >= 2) {
+				String firstArg = args[1].replaceAll("\\s", "");
+				if (firstArg.equalsIgnoreCase("full")) {
+					fullReindex = true;
+				}
+			}
 		}
 		System.setProperty("reindex.process.serverName", serverName);
 
 		while (runContinuously) {
 			runContinuously = false;
-			if (args.length >= 2) {
-				String firstArg = args[1].replaceAll("\\s", "");
-				if (firstArg.equalsIgnoreCase("full")) {
-					fullReindex = true;
-				} else {
-					runContinuously = true;
-				}
-			} else {
-				runContinuously = true;
+			if (!fullReindex){
+				runContinuously = false;
 			}
-
 			initializeIndexer();
 
 			//Process lists

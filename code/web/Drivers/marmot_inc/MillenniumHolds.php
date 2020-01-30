@@ -194,23 +194,7 @@ class MillenniumHolds{
 		//Issue a post request with the information about what to do with the holds
 		$curl_url = $this->driver->getVendorOpacUrl() . "/patroninfo~S{$scope}/" . $patron->username . "/holds";
 		$sResult = $this->driver->curlWrapper->curlPostPage($curl_url, $postVariables);
-		$hold_original_results = $this->parseHoldsPage($sResult, $patron);
-		// Note:  Only $hold_original_results above will capture freeze hold errors
-
-		//Go back to the hold page to check make sure our hold was cancelled
-		// Don't believe the page reload is necessary. same output as above. plb 2-3-2015
-		$sResult = $this->driver->curlWrapper->curlGetPage($curl_url);
-		$holds   = $this->parseHoldsPage($sResult, $patron);
-
-		if ($hold_original_results != $holds) { // test if they are the same
-			$logger->log('Original Hold Results are different from the second Round!', Logger::LOG_WARNING);
-
-			$holds = $hold_original_results; // sets to first page-load to get freeze error results
-			//TODO : Figure out cases where the page reload of holds is necessary. Because the original results are
-			//       necessary for extracting a freeze error/determining that freeze failed.
-
-			//    cancel holds? is it needed to verify when a hold has been canceled successfully
-		}
+		$holds = $this->parseHoldsPage($sResult, $patron);
 
 		$combined_holds = array_merge($holds['unavailable'], $holds['available']);
 		//Finally, check to see if the update was successful.
@@ -544,19 +528,14 @@ class MillenniumHolds{
 				}
 			}
 
-			//Check to see if the patron is the only one in the hold queue
-			//if so they cannot freeze the hold
+			//Check to see if the hold is pending, if so they cannot freeze the hold
+			//Update to remove check if patron is first in line since iii has corrected that issue.
 			if (isset($curHold['status'])){
 				if ($curHold['status'] == 'Pending'){
-					$freezable = true;
 					if (isset($curHold['canFreeze'])){
 						$canFreeze = $curHold['canFreeze'];
 					}
 					$curHold['canFreeze'] = $canFreeze && $this->driver->allowFreezingPendingHolds();
-				}else if (preg_match('/\d+ Of (\d+) Holds?/i', $curHold['status'], $matches)){
-					if ($matches[1] == 1){
-						$curHold['canFreeze'] = false;
-					}
 				}
 			}
 

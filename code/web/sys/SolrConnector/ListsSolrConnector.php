@@ -22,4 +22,27 @@ class ListsSolrConnector extends Solr
 	{
 		return 'listsSearches';
 	}
+
+	/**
+	 * Get filters based on scoping for the search
+	 * @param Library $searchLibrary
+	 * @param Location $searchLocation
+	 * @return array
+	 */
+	public function getScopingFilters(/** @noinspection PhpUnusedParameterInspection */ $searchLibrary, $searchLocation)
+	{
+		global $solrScope;
+		$filter = [];
+		if (!$solrScope) {
+			//MDN: This does happen when called within migration tools
+			if (isset($searchLocation)) {
+				$filter[] = "scope_has_related_records:{$searchLocation->code}";
+			} elseif (isset($searchLibrary)) {
+				$filter[] = "scope_has_related_records:{$searchLibrary->subdomain}";
+			}
+		} else {
+			$filter[] = "scope_has_related_records:$solrScope";
+		}
+		return $filter;
+	}
 }

@@ -53,6 +53,7 @@ class UserListSolr {
 		doc.addField("days_since_added", DateUtils.getDaysSinceAddedForDate(dateAdded));
 
 		//Do things based on scoping
+		int numValidScopes = 0;
 		for (Scope scope: userListIndexer.getScopes()) {
 			boolean okToInclude;
 			if (scope.isLibraryScope()) {
@@ -71,15 +72,20 @@ class UserListSolr {
 						;
 			}
 			if (okToInclude) {
+				numValidScopes++;
 				doc.addField("local_time_since_added_" + scope.getScopeName(), DateUtils.getTimeSinceAddedForDate(dateAdded));
 				doc.addField("local_days_since_added_" + scope.getScopeName(), DateUtils.getDaysSinceAddedForDate(dateAdded));
-				doc.addField("format_" + scope.getScopeName(), "list");
-				doc.addField("format_category_" + scope.getScopeName(), "list");
+				//doc.addField("format_" + scope.getScopeName(), "list");
+				//doc.addField("format_category_" + scope.getScopeName(), "list");
 				doc.addField("scope_has_related_records", scope.getScopeName());
 			}
 		}
 
-		return doc;
+		if (numValidScopes == 0){
+			return null;
+		}else{
+			return doc;
+		}
 	}
 
 	void setTitle(String title) {

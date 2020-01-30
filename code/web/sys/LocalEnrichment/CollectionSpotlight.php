@@ -36,7 +36,7 @@ class CollectionSpotlight extends DataObject
 	);
 
 	/** @var  CollectionSpotlightList[] */
-	private $_lists;
+	private $_lists = null;
 
 	public function getNumericColumnNames()
 	{
@@ -268,9 +268,9 @@ class CollectionSpotlight extends DataObject
 	public function __get($name)
 	{
 		if ($name == "lists") {
-			if (!isset($this->_lists)) {
+			if ($this->_lists == null) {
 				//Get the list of lists that are being displayed for the spotlight
-				$this->_lists = array();
+				$this->_lists = [];
 				$collectionSpotlightList = new CollectionSpotlightList();
 				$collectionSpotlightList->collectionSpotlightId = $this->id;
 				$collectionSpotlightList->orderBy('weight ASC');
@@ -356,8 +356,8 @@ class CollectionSpotlight extends DataObject
 
 	public function saveLists()
 	{
-		if (isset ($this->lists)) {
-			foreach ($this->lists as $list) {
+		if ($this->_lists != null) {
+			foreach ($this->_lists as $list) {
 				if (isset($list->deleteOnSave) && $list->deleteOnSave == true) {
 					$list->delete();
 				} else {
@@ -370,7 +370,7 @@ class CollectionSpotlight extends DataObject
 				}
 			}
 			//Clear the lists so they are reloaded the next time
-			unset($this->lists);
+			$this->_lists = null;
 		}
 	}
 
@@ -387,30 +387,32 @@ class CollectionSpotlight extends DataObject
 		$listAPI = new ListAPI();
 		$allListIds = $listAPI->getAllListIds();
 
-		foreach ($this->lists as $list) {
-			if (isset($list->deleteOnSave) && $list->deleteOnSave == true) {
-				//Don't validate
-			} else {
-				//Check to make sure that all list names are unique
-				if (in_array($list->name, $listNames)) {
-					$validationResults['errors'][] = "This name {$list->name} was used multiple times.  Please make sure that each name is unique.";
-				}
-				$listNames[] = $list->name;
-
-				//Check to make sure that each list source is valid
-				$source = $list->source;
-				//The source is valid if it is in the all lists array or if it is a search
-				if (preg_match('/^(search:).*/', $source)) {
-					//source is valid
-				} elseif (in_array($source, $allListIds)) {
-					//source is valid
+		if ($this->_lists != null){
+			foreach ($this->_lists as $list) {
+				if (isset($list->deleteOnSave) && $list->deleteOnSave == true) {
+					//Don't validate
 				} else {
-					//source is not valid
+					//Check to make sure that all list names are unique
+					if (in_array($list->name, $listNames)) {
+						$validationResults['errors'][] = "This name {$list->name} was used multiple times.  Please make sure that each name is unique.";
+					}
+					$listNames[] = $list->name;
+
+					//Check to make sure that each list source is valid
+					$source = $list->source;
+					//The source is valid if it is in the all lists array or if it is a search
+					if (preg_match('/^(search:).*/', $source)) {
+						//source is valid
+					} elseif (in_array($source, $allListIds)) {
+						//source is valid
+					} else {
+						//source is not valid
 //					if (preg_match('/^(list:).*/', $source)) {
 //						$validationResults['errors'][] = "This source {$list->source} is not valid.  Please make sure that the list id exists and is public.";
 //					} else {
 //						$validationResults['errors'][] = "This source {$list->source} is not valid.  Please enter a valid list source.";
 //					}
+					}
 				}
 			}
 		}

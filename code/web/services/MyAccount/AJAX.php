@@ -554,6 +554,9 @@ class MyAccount_AJAX
 
 		$catalog = CatalogFactory::getCatalogConnectionInstance();
 		$interface->assign('forgotPasswordType', $catalog->getForgotPasswordType());
+		if (!$library->enableForgotPasswordLink) {
+			$interface->assign('forgotPasswordType', 'none');
+		}
 
 		if (isset($_REQUEST['multiStep'])) {
 			$interface->assign('multiStep', true);
@@ -592,6 +595,7 @@ class MyAccount_AJAX
 		return $interface->fetch('popup-wrapper.tpl');
 	}
 
+	/** @noinspection PhpUnused */
 	function getChangeHoldLocationForm()
 	{
 		global $interface;
@@ -607,13 +611,21 @@ class MyAccount_AJAX
 			$id = $_REQUEST['holdId'];
 			$interface->assign('holdId', $id);
 
-			$location = new Location();
-			$pickupBranches = $location->getPickupBranches($patronOwningHold, null);
-			$locationList = array();
-			foreach ($pickupBranches as $curLocation) {
-				$locationList[$curLocation->code] = $curLocation->displayName;
+			$currentLocation = $_REQUEST['currentLocation'];
+			if (!is_numeric($currentLocation)){
+				$location = new Location();
+				$location->code = $currentLocation;
+				if ($location->find(true)){
+					$currentLocation = $location->id;
+				}else{
+					$currentLocation = null;
+				}
 			}
-			$interface->assign('pickupLocations', $locationList);
+			$interface->assign('currentLocation', $currentLocation);
+
+			$location = new Location();
+			$pickupBranches = $location->getPickupBranches($patronOwningHold, $currentLocation);
+			$interface->assign('pickupLocations', $pickupBranches);
 
 			$results = array(
 				'title' => 'Change Hold Location',

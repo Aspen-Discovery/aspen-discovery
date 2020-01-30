@@ -12,6 +12,7 @@ import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
+import org.apache.solr.common.SolrInputDocument;
 import org.ini4j.Ini;
 
 import java.io.IOException;
@@ -82,6 +83,7 @@ class UserListIndexer {
 
 	Long processPublicUserLists(boolean fullReindex, long lastReindexTime) {
 		Long numListsProcessed = 0L;
+		long numListsIndexed = 0;
 		try{
 			PreparedStatement listsStmt;
 			if (fullReindex){
@@ -113,7 +115,9 @@ class UserListIndexer {
 
 			ResultSet allPublicListsRS = listsStmt.executeQuery();
 			while (allPublicListsRS.next()){
-				updateSolrForList(updateServer, groupedWorkServer, getTitlesForListStmt, allPublicListsRS);
+				if (updateSolrForList(updateServer, groupedWorkServer, getTitlesForListStmt, allPublicListsRS)){
+					numListsIndexed++;
+				}
 				numListsProcessed++;
 			}
 			if (numListsProcessed > 0){
@@ -123,16 +127,18 @@ class UserListIndexer {
 		}catch (Exception e){
 			logger.error("Error processing public lists", e);
 		}
+		logger.debug("Indexed lists: processed " + numListsProcessed + " indexed " + numListsIndexed);
 		return numListsProcessed;
 	}
 
-	private void updateSolrForList(ConcurrentUpdateSolrClient updateServer, SolrClient solrServer, PreparedStatement getTitlesForListStmt, ResultSet allPublicListsRS) throws SQLException, SolrServerException, IOException {
+	private boolean updateSolrForList(ConcurrentUpdateSolrClient updateServer, SolrClient solrServer, PreparedStatement getTitlesForListStmt, ResultSet allPublicListsRS) throws SQLException, SolrServerException, IOException {
 		UserListSolr userListSolr = new UserListSolr(this);
 		long listId = allPublicListsRS.getLong("id");
 
 		int deleted = allPublicListsRS.getInt("deleted");
 		int isPublic = allPublicListsRS.getInt("public");
 		long userId = allPublicListsRS.getLong("user_id");
+		boolean indexed = false;
 		if (deleted == 1 || isPublic == 0){
 			updateServer.deleteByQuery("id:" + listId);
 		}else{
@@ -197,11 +203,19 @@ class UserListIndexer {
 			}
 			if (userListSolr.getNumTitles() >= 3) {
 				// Index in the solr catalog
-				updateServer.add(userListSolr.getSolrDocument());
+				SolrInputDocument document = userListSolr.getSolrDocument();
+				if (document != null){
+					updateServer.add(userListSolr.getSolrDocument());
+					indexed = true;
+				}else{
+					updateServer.deleteByQuery("id:" + listId);
+				}
 			} else {
 				updateServer.deleteByQuery("id:" + listId);
 			}
 		}
+
+		return indexed;
 	}
 
 	TreeSet<Scope> getScopes() {

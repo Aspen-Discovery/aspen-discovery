@@ -14,8 +14,8 @@ class MyRatings extends MyAccount{
 		$rating->userId = UserAccount::getActiveUserId();
 		$rating->orderBy('dateRated DESC');
 		$rating->find();
-		$ratings = array();
-		$ratedIds = array();
+		$ratings = [];
+		$ratedIds = [];
 		while($rating->fetch()){
 			$ratedIds[$rating->groupedRecordPermanentId] = clone($rating);
 			//$ratings[$rating->groupedRecordPermanentId] = [];
@@ -25,11 +25,12 @@ class MyRatings extends MyAccount{
 		/** @var SearchObject_GroupedWorkSearcher $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject();
 		$records = $searchObject->getRecords(array_keys($ratedIds));
-		foreach ($records as $record){
-			$groupedWorkDriver = new GroupedWorkDriver($record);
-			if ($groupedWorkDriver->isValid){
-				$rating = $ratedIds[$groupedWorkDriver->getPermanentId()];
-				$ratings[$rating->groupedRecordPermanentId] = array(
+		foreach ($ratedIds as $permanentId => $rating){
+			if (array_key_exists($permanentId, $records)){
+				$record = $records[$permanentId];
+				$groupedWorkDriver = new GroupedWorkDriver($record);
+				if ($groupedWorkDriver->isValid){
+					$ratings[$rating->groupedRecordPermanentId] = array(
 						'id' =>$rating->id,
 						'groupedWorkId' => $rating->groupedRecordPermanentId,
 						'title' => $groupedWorkDriver->getTitle(),
@@ -39,12 +40,13 @@ class MyRatings extends MyAccount{
 						'link' => $groupedWorkDriver->getLinkUrl(),
 						'dateRated' => $rating->dateRated,
 						'ratingData' => $groupedWorkDriver->getRatingData(),
-				);
+					);
+				}
 			}
 		}
 
 		//Load titles the user is not interested in
-		$notInterested = array();
+		$notInterested = [];
 
 		require_once ROOT_DIR . '/sys/LocalEnrichment/NotInterested.php';
 		$notInterestedObj = new NotInterested();
@@ -60,18 +62,19 @@ class MyRatings extends MyAccount{
 		/** @var SearchObject_GroupedWorkSearcher $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject();
 		$records = $searchObject->getRecords(array_keys($notInterestedIds));
-		foreach ($records as $record){
-			$groupedWorkDriver = new GroupedWorkDriver($record) ;
-			$groupedWorkId = $notInterestedObj->groupedRecordPermanentId;
-			$notInterestedObj = $notInterestedIds[$groupedWorkId];
-			if ($groupedWorkDriver->isValid){
-				$notInterested[] = array(
-					'id' => $notInterestedObj->id,
-					'title' => $groupedWorkDriver->getTitle(),
-					'author' => $groupedWorkDriver->getPrimaryAuthor(),
-					'dateMarked' => $notInterestedObj->dateMarked,
-					'link' => $groupedWorkDriver->getLinkUrl()
-				);
+		foreach ($notInterestedIds as $permanentId => $notInterestedObj){
+			if (array_key_exists($permanentId, $notInterestedIds)) {
+				$record = $records[$permanentId];
+				$groupedWorkDriver = new GroupedWorkDriver($record);
+				if ($groupedWorkDriver->isValid) {
+					$notInterested[] = array(
+						'id' => $notInterestedObj->id,
+						'title' => $groupedWorkDriver->getTitle(),
+						'author' => $groupedWorkDriver->getPrimaryAuthor(),
+						'dateMarked' => $notInterestedObj->dateMarked,
+						'link' => $groupedWorkDriver->getLinkUrl()
+					);
+				}
 			}
 		}
 		$timer->logTime("Loaded grouped works for titles user is not interested in");

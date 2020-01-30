@@ -31,7 +31,7 @@
 					<label for="password" class="control-label col-xs-12 col-sm-4">{$passwordLabel}: </label>
 					<div class="col-xs-12 col-sm-8">
 						<input type="password" name="password" id="password" size="28" onkeypress="return AspenDiscovery.submitOnEnter(event, '#loginForm');" class="form-control">
-						{if $forgotPasswordType != 'null'}
+						{if $forgotPasswordType != 'null' && $forgotPasswordType != 'none'}
 							<p class="text-muted help-block">
 								<strong>Forgot {$passwordLabel}?</strong>&nbsp;
 								{if $forgotPasswordType == 'emailResetLink'}
