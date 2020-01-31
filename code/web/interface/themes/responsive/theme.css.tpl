@@ -52,6 +52,17 @@ body{ldelim}
 {rdelim}
 {/if}
 
+{if !empty($footerBackgroundColor) || !empty($footerForegroundColor)}
+#footer-container{ldelim}
+    {if !empty($footerBackgroundColor)}
+    background-color: {$footerBackgroundColor};
+    {/if}
+    {if !empty($footerForegroundColor)}
+    color: {$footerForegroundColor};
+    {/if}
+{rdelim}
+{/if}
+
 .header-button{ldelim}
     {if $headerButtonBackgroundColor}
         background-color: {$headerButtonBackgroundColor};

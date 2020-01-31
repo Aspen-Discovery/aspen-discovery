@@ -375,6 +375,29 @@ class UInterface extends Smarty
 				}
 			}
 
+			//Get Footer Logo
+			$footerLogo = null;
+			foreach ($allAppliedThemes as $theme) {
+				if (!is_null($theme->footerLogo)) {
+					$footerLogo = $theme->footerLogo;
+					break;
+				}
+			}
+			if ($footerLogo) {
+				$this->assign('footerLogo', '/files/original/' . $footerLogo);
+			}
+
+			$footerLogoLink = null;
+			foreach ($allAppliedThemes as $theme) {
+				if (!is_null($theme->footerLogoLink)) {
+					$footerLogoLink = $theme->footerLogoLink;
+					break;
+				}
+			}
+			if ($footerLogo) {
+				$this->assign('footerLogoLink', $footerLogoLink);
+			}
+
 			//Get favicon
 			$favicon = null;
 			foreach ($allAppliedThemes as $theme) {

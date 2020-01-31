@@ -2,7 +2,7 @@
 <div class="navbar navbar-static-bottom">
 	<div class="navbar-inner">
 		<div class="row">
-			<div class="col-tn-12 col-sm-7 text-left" id="install-info">
+			<div class="col-tn-12 col-sm-5 text-left" id="install-info">
 				<small>{translate text='powered_by_aspen_bywater' defaultText='Powered By Aspen Discovery supported by ByWater Solutions'}</small><br>
 				{if !$productionServer}
 					<small class='location_info'>{$physicalLocation}{if $debug} ({$activeIp}){/if} - {$deviceName}</small>
@@ -11,6 +11,19 @@
 				{if $debug}
 					<small class='session_info'> / session. {$session}</small>
 					<small class='scope_info'> / scope {$solrScope}</small>
+				{/if}
+			</div>
+			<div class="col-tn-12 col-sm-2 text-center" id="footer-branding">
+				{if $footerLogo}
+					<div>
+					{if $footerLogoLink}
+						<a href="{$footerLogoLink}">
+					{/if}
+					<img src="{$footerLogo}" aria-hidden="true" alt="Branding Image"/>
+					{if $footerLogoLink}
+						</a>
+					{/if}
+					</div>
 				{/if}
 			</div>
 			<div class="col-tn-12 col-sm-5 text-right" id="connect-with-us-info">

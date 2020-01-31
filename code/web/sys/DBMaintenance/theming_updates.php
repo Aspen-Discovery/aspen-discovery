@@ -9,10 +9,10 @@ function getThemingUpdates()
 			'continueOnError' => false,
 			'sql' => [
 				"CREATE TABLE IF NOT EXISTS themes (" .
-				"id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, " .
-				"themeName VARCHAR(100) NOT NULL, " .
-				"extendsTheme VARCHAR(100) NULL DEFAULT NULL, " .
-				"logoName VARCHAR(100) NOT NULL " .
+					"id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, " .
+					"themeName VARCHAR(100) NOT NULL, " .
+					"extendsTheme VARCHAR(100) NULL DEFAULT NULL, " .
+					"logoName VARCHAR(100) NOT NULL " .
 				")",
 				"ALTER TABLE themes ADD INDEX `themeName` (`themeName`)",
 			],
@@ -275,6 +275,20 @@ function getThemingUpdates()
 				"ALTER TABLE `themes` ADD COLUMN dangerButtonHoverBorderColor CHAR(7) DEFAULT '#ac2925'",
 				"ALTER TABLE `themes` ADD COLUMN dangerButtonHoverBorderColorDefault tinyint(1) DEFAULT 1",
 			]
-		]
+		],
+
+		'themes_footer_design' => [
+			'title' => 'Theme Footer',
+			'description' => 'Initial setup of footer colors and optional logos. ',
+			'continueOnError' => false,
+			'sql' => [
+				"ALTER TABLE themes ADD COLUMN `footerBackgroundColor` CHAR(7) DEFAULT '#ffffff'",
+				"ALTER TABLE themes ADD COLUMN `footerBackgroundColorDefault` tinyint(1) DEFAULT 1",
+				"ALTER TABLE themes ADD COLUMN `footerForegroundColor` CHAR(7) DEFAULT '#6b6b6b'",
+				"ALTER TABLE themes ADD COLUMN `footerForegroundColorDefault` tinyint(1) DEFAULT 1",
+				"ALTER TABLE themes ADD COLUMN footerLogo VARCHAR(100) NULL",
+				"ALTER TABLE themes ADD COLUMN footerLogoLink VARCHAR(255) NULL",
+			],
+		],
 	];
 }
