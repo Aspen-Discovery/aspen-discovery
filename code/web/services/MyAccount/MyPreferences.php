@@ -67,7 +67,7 @@ class MyAccount_MyPreferences extends MyAccount
 				$interface->assign('locationList', $locationList);
 			}
 
-			$interface->assign('profile', $patron); //
+			$interface->assign('profile', $patron);
 		}
 
 		$this->display('myPreferences.tpl', 'My Preferences');

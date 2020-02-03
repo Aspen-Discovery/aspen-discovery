@@ -39,7 +39,7 @@ class MyAccount_StaffSettings extends MyAccount
 				$interface->assign('edit', false);
 			}
 
-			$interface->assign('profile', $patron); //
+			$interface->assign('profile', $patron);
 		}
 
 		$this->display('staffSettings.tpl', 'Staff Settings');

@@ -114,7 +114,7 @@ class MyAccount_ContactInformation extends MyAccount
 				unset($_SESSION['profileUpdateMessage']);
 			}
 
-			$interface->assign('profile', $patron); //
+			$interface->assign('profile', $patron);
 		}else{
 			$canUpdateContactInfo = false;
 			$canUpdateAddress = false;

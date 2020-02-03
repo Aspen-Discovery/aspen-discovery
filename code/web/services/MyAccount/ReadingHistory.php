@@ -15,7 +15,8 @@ class ReadingHistory extends MyAccount
 		if (!$offlineMode) {
 			$interface->assign('offline', false);
 
-			$user = UserAccount::getActiveUserObj();
+			$user = UserAccount::getLoggedInUser();
+			$interface->assign('profile', $user);
 
 			// Get My Transactions
 			if ($user) {

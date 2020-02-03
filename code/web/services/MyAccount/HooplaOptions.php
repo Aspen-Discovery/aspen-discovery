@@ -40,7 +40,7 @@ class MyAccount_HooplaOptions extends MyAccount
 				$interface->assign('edit', false);
 			}
 
-			$interface->assign('profile', $patron); //
+			$interface->assign('profile', $patron);
 		}
 
 		$this->display('hooplaOptions.tpl', 'Account Settings');

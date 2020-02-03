@@ -6,7 +6,7 @@ class MyAccount_Holds extends MyAccount{
 	{
 		global $interface;
 		global $library;
-		$user = UserAccount::getActiveUserObj();
+		$user = UserAccount::getLoggedInUser();
 
 		if (isset($_REQUEST['tab'])){
 			$tab = $_REQUEST['tab'];
@@ -20,7 +20,7 @@ class MyAccount_Holds extends MyAccount{
 			$interface->assign('libraryHoursMessage', $libraryHoursMessage);
 		}
 
-		// Present to the user
+		$interface->assign('profile', $user);
 		$this->display('holds.tpl', 'My Holds');
 	}
 }

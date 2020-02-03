@@ -468,7 +468,7 @@ class Record_AJAX extends Action
 						$interface->assign('canChangeNoticePreference', $canChangeNoticePreference);
 						$interface->assign('showDetailedHoldNoticeInformation', $homeLibrary->showDetailedHoldNoticeInformation);
 						$interface->assign('treatPrintNoticesAsPhoneNotices', $homeLibrary->treatPrintNoticesAsPhoneNotices);
-						$interface->assign('profile', $patron); // Use the account the hold was placed with for the success message.
+						$interface->assign('profile', $patron);
 
 						$results = array(
 							'success' => $return['success'],
