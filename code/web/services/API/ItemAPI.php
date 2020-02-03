@@ -36,8 +36,7 @@ class ItemAPI extends Action {
 			// Connect to Catalog
 			if ($method != 'getBookcoverById' && $method != 'getBookCover'){
 				$this->catalog = CatalogFactory::getCatalogConnectionInstance();;
-				//header('Content-type: application/json');
-				header('Content-type: text/html');
+				header('Content-type: application/json');
 				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 				header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
 			}
@@ -63,6 +62,7 @@ class ItemAPI extends Action {
 
 		// Setup Search Engine Connection
 		$url = $configArray['Index']['url'];
+		require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
 		$this->db = new GroupedWorksSolrConnector($url);
 
 		//Search the database by title and author
@@ -108,6 +108,7 @@ class ItemAPI extends Action {
 
 		// Setup Search Engine Connection
 		$url = $configArray['Index']['url'];
+		require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
 		$this->db = new GroupedWorksSolrConnector($url);
 
 		//Search the database by title and author
@@ -174,6 +175,7 @@ class ItemAPI extends Action {
 
 		// Setup Search Engine Connection
 		$url = $configArray['Index']['url'];
+		require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
 		$this->db = new GroupedWorksSolrConnector($url);
 
 		// Retrieve Full Marc Record
@@ -234,6 +236,7 @@ class ItemAPI extends Action {
 
 		// Setup Search Engine Connection
 		$url = $configArray['Index']['url'];
+		require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
 		$this->db = new GroupedWorksSolrConnector($url);
 
 		// Retrieve Full Marc Record
@@ -498,6 +501,7 @@ class ItemAPI extends Action {
 
 		// Setup Search Engine Connection
 		$url = $configArray['Index']['url'];
+		require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
 		$this->db = new GroupedWorksSolrConnector($url);
 
 		// Retrieve Full Marc Record
