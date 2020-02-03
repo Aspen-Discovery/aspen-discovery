@@ -48,4 +48,33 @@ class Admin_GroupedWorkDisplay extends ObjectEditor
 	function getListInstructions(){
 		return $this->getInstructions();
 	}
+
+	/** @noinspection PhpUnused */
+	function resetMoreDetailsToDefault(){
+		$groupedWorkSetting = new GroupedWorkDisplaySetting();
+		$groupedWorkSettingId = $_REQUEST['id'];
+		$groupedWorkSetting->id = $groupedWorkSettingId;
+		if ($groupedWorkSetting->find(true)){
+			$groupedWorkSetting->clearMoreDetailsOptions();
+
+			$defaultOptions = array();
+			require_once ROOT_DIR . '/RecordDrivers/RecordInterface.php';
+			$defaultMoreDetailsOptions = RecordInterface::getDefaultMoreDetailsOptions();
+			$i = 0;
+			foreach ($defaultMoreDetailsOptions as $source => $defaultState){
+				$optionObj = new GroupedWorkMoreDetails();
+				$optionObj->groupedWorkSettingsId = $groupedWorkSettingId;
+				$optionObj->collapseByDefault = $defaultState == 'closed';
+				$optionObj->source = $source;
+				$optionObj->weight = $i++;
+				$defaultOptions[] = $optionObj;
+			}
+
+			$groupedWorkSetting->moreDetailsOptions = $defaultOptions;
+			$groupedWorkSetting->update();
+
+			$_REQUEST['objectAction'] = 'edit';
+		}
+		header("Location: /Admin/GroupedWorkDisplay?objectAction=edit&id=" . $groupedWorkSettingId);
+	}
 }

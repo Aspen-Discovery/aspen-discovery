@@ -526,15 +526,15 @@ class UserAccount {
 			}
 		}
 
-		foreach ($driversToTest as $driverName => $additionalInfo){
+		foreach ($driversToTest as $driverName => $additionalInfo) {
 			if ($accountSource == null || $accountSource == $additionalInfo['accountProfile']->name) {
-                try {
-                    $authN = AuthenticationFactory::initAuthentication($additionalInfo['authenticationMethod'], $additionalInfo);
-                } catch (UnknownAuthenticationMethodException $e) {
-                    echo("Unknown validation method $e");
-                    die();
-                }
-                $validatedUser = $authN->validateAccount($username, $password, $parentAccount, $validatedViaSSO);
+				try {
+					$authN = AuthenticationFactory::initAuthentication($additionalInfo['authenticationMethod'], $additionalInfo);
+				} catch (UnknownAuthenticationMethodException $e) {
+					echo("Unknown validation method $e");
+					die();
+				}
+				$validatedUser = $authN->validateAccount($username, $password, $parentAccount, $validatedViaSSO);
 				if ($validatedUser && !($validatedUser instanceof AspenError)) {
 					/** @var Memcache $memCache */
 					global $memCache;

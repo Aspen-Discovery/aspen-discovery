@@ -271,6 +271,11 @@ class CloudLibrary_AJAX extends Action
 				'result' => true,
 				'message' => translate(['text' => 'already_checked_out', 'defaultText' => 'This title is already checked out to you.'])
 			];
+		} elseif ($itemStatus == 'CAN_WISH') {
+			$result = [
+				'result' => true,
+				'message' => translate(['text' => 'cloud_library_not_available', 'defaultText' => 'Sorry, this title is no longer available.'])
+			];
 		} else {
 			$result = [
 				'result' => true,

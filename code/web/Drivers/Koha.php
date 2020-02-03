@@ -250,8 +250,11 @@ class Koha extends AbstractIlsDriver
 
 			$dateDue = DateTime::createFromFormat('Y-m-d H:i:s', $curRow['date_due']);
 			if ($dateDue) {
+				$renewalDate = $dateDue->format('D M jS');
+				$checkout['renewalDate'] = $renewalDate;
 				$dueTime = $dateDue->getTimestamp();
 			} else {
+				$renewalDate = 'Unknown';
 				$dueTime = null;
 			}
 			$checkout['dueDate'] = $dueTime;
@@ -262,6 +265,7 @@ class Koha extends AbstractIlsDriver
 			$checkout['canRenew'] = !$curRow['auto_renew'] && $kohaPreferences['OpacRenewalAllowed'];
 			$checkout['autoRenew'] = $curRow['auto_renew'];
 			$autoRenewError = $curRow['auto_renew_error'];
+
 			if ($autoRenewError) {
 				if ($autoRenewError == 'on_reserve') {
 					$autoRenewError = translate(['text' => 'koha_auto_renew_on_reserve', 'defaultText' => 'Cannot auto renew, on hold for another user']);
@@ -270,7 +274,7 @@ class Koha extends AbstractIlsDriver
 				} elseif ($autoRenewError == 'auto_account_expired') {
 					$autoRenewError = translate(['text' => 'koha_auto_renew_auto_account_expired', 'defaultText' => 'Cannot auto renew, your account has expired']);
 				} elseif ($autoRenewError == 'auto_too_soon') {
-					$autoRenewError = translate(['text' => 'koha_auto_renew_auto_too_soon', 'defaultText' => 'Cannot auto renew, too soon to renew']);
+					$autoRenewError = translate(['text' => 'koha_auto_renew_auto', 'defaultText' => 'If eligible, this item wil renew on<br/>%1%', '1' => $renewalDate]);
 				}
 			}
 			$checkout['autoRenewError'] = $autoRenewError;

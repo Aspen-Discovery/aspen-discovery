@@ -31,6 +31,13 @@ class Theme extends DataObject
 	public $bodyTextColor;
 	public $bodyTextColorDefault;
 
+	public $footerLogo;
+	public $footerLogoLink;
+	public $footerBackgroundColor;
+	public $footerBackgroundColorDefault;
+	public $footerForegroundColor;
+	public $footerForegroundColorDefault;
+
 	//Primary color is used for the header bar and menu bar
 	public $primaryBackgroundColor;
 	public $primaryBackgroundColorDefault;
@@ -244,6 +251,11 @@ class Theme extends DataObject
 			'headerButtonColor' => array('property' => 'headerButtonColor', 'type' => 'color', 'label' => 'Header Button Color', 'description' => 'Header Button Color', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff'),
 			'headerButtonBackgroundColor' => array('property' => 'headerButtonBackgroundColor', 'type' => 'color', 'label' => 'Header Button Background Color', 'description' => 'Header Button Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#848484'),
 
+			//Footer Colors
+			'footerBackgroundColor' => array('property' => 'footerBackgroundColor', 'type' => 'color', 'label' => 'Footer Background Color', 'description' => 'Footer Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#f1f1f1'),
+			'footerForegroundColor' => array('property' => 'footerForegroundColor', 'type' => 'color', 'label' => 'Footer Text Color', 'description' => 'Footer Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#8b8b8b'),
+			'footerImage' => array('property' => 'footerLogo', 'type' => 'image', 'label' => 'Footer Image (250px x 150px max)', 'description' => 'An image to be displayed in the footer', 'required' => false, 'maxWidth' => 250, 'maxHeight' => 150, 'hideInLists' => true),
+			'footerImageLink' => array('property' => 'footerLogoLink', 'type' => 'url', 'label' => 'Footer Image Link', 'description' => 'A link to be added to the footer logo', 'required' => false, 'hideInLists' => true),
 			//Primary Color
 			'primaryBackgroundColor' => array('property' => 'primaryBackgroundColor', 'type' => 'color', 'label' => 'Primary Background Color', 'description' => 'Primary Background Color', 'required' => false, 'hideInLists' => true, 'default' => '#0a7589'),
 			'primaryForegroundColor' => array('property' => 'primaryForegroundColor', 'type' => 'color', 'label' => 'Primary Text Color', 'description' => 'Primary Foreground Color', 'required' => false, 'hideInLists' => true, 'default' => '#ffffff'),
@@ -418,10 +430,7 @@ class Theme extends DataObject
 				$interface->assign('headerForegroundColor', $theme->headerForegroundColor);
 			}
 
-//            if ($interface->getVariable('headerBottomBorderColor') == null && !$theme->headerBottomBorderColorDefault) {
-//                $interface->assign('headerBottomBorderColor', $theme->headerBottomBorderColor);
-//            }
-			if ($interface->getVariable('headerBottomBorderWidth') == null && !empty($theme->headerBottomBorderWidth)) {
+			if ($interface->getVariable('headerBottomBorderWidth') == null && $theme->headerBottomBorderWidth != null) {
 				$interface->assign('headerBottomBorderWidth', $theme->headerBottomBorderWidth);
 			}
 
@@ -437,6 +446,14 @@ class Theme extends DataObject
 			if ($interface->getVariable('pageBackgroundColor') == null && !$theme->pageBackgroundColorDefault) {
 				$interface->assign('pageBackgroundColor', $theme->pageBackgroundColor);
 			}
+
+			if ($interface->getVariable('footerBackgroundColor') == null && !$theme->footerBackgroundColorDefault) {
+				$interface->assign('footerBackgroundColor', $theme->footerBackgroundColor);
+			}
+			if ($interface->getVariable('footerForegroundColor') == null && !$theme->footerForegroundColorDefault) {
+				$interface->assign('footerForegroundColor', $theme->footerForegroundColor);
+			}
+			
 			if ($interface->getVariable('primaryBackgroundColor') == null && !$theme->primaryBackgroundColorDefault) {
 				$interface->assign('primaryBackgroundColor', $theme->primaryBackgroundColor);
 				$lightened80 = ColorUtils::lightenColor($theme->primaryBackgroundColor, 1.8);

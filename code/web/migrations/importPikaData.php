@@ -37,10 +37,10 @@ if (!file_exists($exportPath)){
 	$invalidGroupedWorks = [];
 	$movedGroupedWorks = [];
 
-	importNotInterested($exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
-	importRatingsAndReviews($exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
-	importLists($exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
 	importReadingHistory($exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
+//	importNotInterested($exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
+//	importRatingsAndReviews($exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
+//	importLists($exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
 }
 
 function importReadingHistory($exportPath, $existingUsers, $missingUsers, &$validGroupedWorks, &$invalidGroupedWorks, &$movedGroupedWorks){
@@ -49,10 +49,11 @@ function importReadingHistory($exportPath, $existingUsers, $missingUsers, &$vali
 	require_once ROOT_DIR . '/sys/ReadingHistoryEntry.php';
 
 	//Clear all existing reading history data
-	$readingHistoryEntry = new ReadingHistoryEntry();
-	$readingHistoryEntry->whereAdd();
-	$readingHistoryEntry->whereAdd("userId > 0");
-	$readingHistoryEntry->delete(true);
+	//Shouldn't need to clear everything
+//	$readingHistoryEntry = new ReadingHistoryEntry();
+//	$readingHistoryEntry->whereAdd();
+//	$readingHistoryEntry->whereAdd("userId > 0");
+//	$readingHistoryEntry->delete(true);
 	$numImports = 0;
 	$readingHistoryHnd = fopen($exportPath . "patronReadingHistory.csv", 'r');
 	while ($patronsReadingHistoryRow = fgetcsv($readingHistoryHnd)){
@@ -84,6 +85,9 @@ function importReadingHistory($exportPath, $existingUsers, $missingUsers, &$vali
 		$checkoutDate = $patronsReadingHistoryRow[6];
 		$groupedWorkTitle = cleancsv($patronsReadingHistoryRow[7]);
 		$groupedWorkAuthor = cleancsv($patronsReadingHistoryRow[8]);
+		if ($author == null && $groupedWorkAuthor != null){
+			$author = ucwords($groupedWorkAuthor);
+		}
 		$groupedWorkId = $patronsReadingHistoryRow[9];
 		$groupedWorkResources = $patronsReadingHistoryRow[10];
 
@@ -93,16 +97,23 @@ function importReadingHistory($exportPath, $existingUsers, $missingUsers, &$vali
 
 		$readingHistoryEntry = new ReadingHistoryEntry();
 		$readingHistoryEntry->userId = $userId;
-		$readingHistoryEntry->source = $source;
-		$readingHistoryEntry->sourceId = $sourceId;
-		$readingHistoryEntry->title = substr($title, 0, 150);
-		$readingHistoryEntry->author = substr($author, 75);
-		$readingHistoryEntry->format = $format;
-		$readingHistoryEntry->checkInDate = $checkoutDate;
-		$readingHistoryEntry->checkOutDate = $checkoutDate;
 		$readingHistoryEntry->groupedWorkPermanentId = $groupedWorkId;
+		if (!$readingHistoryEntry->find(true)){
+			$readingHistoryEntry->source = $source;
+			$readingHistoryEntry->sourceId = $sourceId;
+			$readingHistoryEntry->title = substr($title, 0, 150);
+			$readingHistoryEntry->author = substr($author, 0, 75);
+			$readingHistoryEntry->format = $format;
+			$readingHistoryEntry->checkInDate = $checkoutDate;
+			$readingHistoryEntry->checkOutDate = $checkoutDate;
 
-		$readingHistoryEntry->insert();
+			$readingHistoryEntry->insert();
+		}else{
+			if (empty($readingHistoryEntry->author) && !empty($author)){
+				$readingHistoryEntry->author = substr($author, 0, 75);
+				$readingHistoryEntry->update();
+			}
+		}
 
 		if ($numImports % 250 == 0){
 			gc_collect_cycles();

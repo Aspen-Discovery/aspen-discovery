@@ -91,7 +91,13 @@ class GroupedWorkDisplaySetting extends DataObject
 		'showFountasPinnell'       => 'Show Fountas &amp; Pinnell Information  (This data must be present in MARC records)',
 	);
 
+	private $_libraries;
+	private $_locations;
+
 	static function getObjectStructure(){
+		$libraryList = Library::getLibraryList();
+		$locationList = Location::getLocationList();
+
 		$facetGroups = [];
 		$facetGroup = new GroupedWorkFacetGroup();
 		$facetGroup->orderBy('name');
@@ -178,12 +184,30 @@ class GroupedWorkDisplaySetting extends DataObject
 						'additionalOneToManyActions' => array(
 							0 => array(
 								'text' => 'Reset More Details To Default',
-								'url' => '/Admin/Libraries?id=$id&amp;objectAction=resetMoreDetailsToDefault',
+								'url' => '/Admin/GroupedWorkDisplay?id=$id&amp;objectAction=resetMoreDetailsToDefault',
 								'class' => 'btn-warning',
 							)
 						)
 					),
 				)),
+
+			'libraries' => array(
+				'property' => 'libraries',
+				'type' => 'multiSelect',
+				'listStyle' => 'checkboxSimple',
+				'label' => 'Libraries',
+				'description' => 'Define libraries that use this browse category group',
+				'values' => $libraryList,
+			),
+
+			'locations' => array(
+				'property' => 'locations',
+				'type' => 'multiSelect',
+				'listStyle' => 'checkboxSimple',
+				'label' => 'Locations',
+				'description' => 'Define locations that use this browse category group',
+				'values' => $locationList,
+			),
 		];
 
 		global $configArray;
@@ -251,6 +275,8 @@ class GroupedWorkDisplaySetting extends DataObject
 
 		$ret = parent::update();
 		if ($ret !== FALSE ){
+			$this->saveLibraries();
+			$this->saveLocations();
 			$this->saveMoreDetailsOptions();
 		}
 		return $ret;
@@ -273,6 +299,8 @@ class GroupedWorkDisplaySetting extends DataObject
 
 		$ret = parent::insert();
 		if ($ret !== FALSE ){
+			$this->saveLibraries();
+			$this->saveLocations();
 			$this->saveMoreDetailsOptions();
 		}
 		return $ret;
@@ -297,7 +325,29 @@ class GroupedWorkDisplaySetting extends DataObject
 	}
 
 	public function __get($name){
-		if ($name == 'moreDetailsOptions'){
+		if ($name == "libraries") {
+			if (!isset($this->_libraries) && $this->id){
+				$this->_libraries = [];
+				$obj = new Library();
+				$obj->groupedWorkDisplaySettingId = $this->id;
+				$obj->find();
+				while($obj->fetch()){
+					$this->_libraries[$obj->libraryId] = $obj->libraryId;
+				}
+			}
+			return $this->_libraries;
+		} elseif ($name == "locations") {
+			if (!isset($this->_locations) && $this->id){
+				$this->_locations = [];
+				$obj = new Location();
+				$obj->groupedWorkDisplaySettingId = $this->id;
+				$obj->find();
+				while($obj->fetch()){
+					$this->_locations[$obj->locationId] = $obj->locationId;
+				}
+			}
+			return $this->_locations;
+		} elseif ($name == 'moreDetailsOptions'){
 			return $this->getMoreDetailsOptions();
 		}else{
 			return $this->_data[$name];
@@ -305,7 +355,11 @@ class GroupedWorkDisplaySetting extends DataObject
 	}
 
 	public function __set($name, $value){
-		if ($name == 'moreDetailsOptions'){
+		if ($name == "libraries") {
+			$this->_libraries = $value;
+		}elseif ($name == "locations") {
+			$this->_locations = $value;
+		}elseif ($name == 'moreDetailsOptions'){
 			$this->setMoreDetailsOptions($value);
 		}else{
 			$this->_data[$name] = $value;
@@ -354,5 +408,98 @@ class GroupedWorkDisplaySetting extends DataObject
 		$defaultDiplaySettings->availabilityToggleLabelAvailable = 'Available Now';
 		$defaultDiplaySettings->availabilityToggleLabelAvailableOnline = 'Available Online';
 		return $defaultDiplaySettings;
+	}
+
+	public function saveLibraries(){
+		if (isset ($this->_libraries) && is_array($this->_libraries)){
+			$libraryList = Library::getLibraryList();
+			foreach ($libraryList as $libraryId => $displayName){
+				$library = new Library();
+				$library->libraryId = $libraryId;
+				$library->find(true);
+				if (in_array($libraryId, $this->_libraries)){
+					//We want to apply the scope to this library
+					if ($library->groupedWorkDisplaySettingId != $this->id){
+						$library->groupedWorkDisplaySettingId = $this->id;
+						$library->update();
+					}
+				}else{
+					//It should not be applied to this scope. Only change if it was applied to the scope
+					if ($library->groupedWorkDisplaySettingId == $this->id){
+						$library->groupedWorkDisplaySettingId = -1;
+						$library->update();
+					}
+				}
+			}
+			unset($this->_libraries);
+		}
+	}
+
+	public function saveLocations(){
+		if (isset ($this->_locations) && is_array($this->_locations)){
+			$locationList = Location::getLocationList();
+			/**
+			 * @var int $locationId
+			 * @var Location $location
+			 */
+			foreach ($locationList as $locationId => $displayName){
+				$location = new Location();
+				$location->locationId = $locationId;
+				$location->find(true);
+				if (in_array($locationId, $this->_locations)){
+					//We want to apply the scope to this library
+					if ($location->groupedWorkDisplaySettingId != $this->id){
+						$location->groupedWorkDisplaySettingId = $this->id;
+						$location->update();
+					}
+				}else{
+					//It should not be applied to this scope. Only change if it was applied to the scope
+					if ($location->groupedWorkDisplaySettingId == $this->id){
+						$library = new Library();
+						$library->libraryId = $location->libraryId;
+						$library->find(true);
+						$location->groupedWorkDisplaySettingId = -1;
+						$location->update();
+					}
+				}
+			}
+			unset($this->_locations);
+		}
+	}
+
+	/** @return Library[] */
+	public function getLibraries()
+	{
+		/** @noinspection PhpUndefinedFieldInspection */
+		return $this->_libraries;
+	}
+
+	/** @return Location[] */
+	public function getLocations()
+	{
+		/** @noinspection PhpUndefinedFieldInspection */
+		return $this->_locations;
+	}
+
+	public function setLibraries($val)
+	{
+		/** @noinspection PhpUndefinedFieldInspection */
+		$this->_libraries = $val;
+	}
+
+	public function setLocations($val)
+	{
+		/** @noinspection PhpUndefinedFieldInspection */
+		$this->_libraries = $val;
+	}
+
+	public function clearLibraries(){
+		$this->clearOneToManyOptions('Library', 'groupedWorkDisplaySettingId');
+		unset($this->_libraries);
+	}
+
+	public function clearLocations(){
+		$this->clearOneToManyOptions('Location', 'groupedWorkDisplaySettingId');
+		unset($this->_locations);
 	}
 }

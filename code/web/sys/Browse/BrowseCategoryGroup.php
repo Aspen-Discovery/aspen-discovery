@@ -126,10 +126,8 @@ class BrowseCategoryGroup extends DataObject
 	public function __set($name, $value)
 	{
 		if ($name == "libraries") {
-			/** @noinspection PhpUndefinedFieldInspection */
 			$this->_libraries = $value;
 		}elseif ($name == "locations") {
-			/** @noinspection PhpUndefinedFieldInspection */
 			$this->_locations = $value;
 		}elseif ($name == 'browseCategories') {
 			$this->_browseCategories = $value;

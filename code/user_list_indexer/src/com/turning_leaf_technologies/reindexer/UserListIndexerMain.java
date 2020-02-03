@@ -54,10 +54,8 @@ public class UserListIndexerMain {
 		System.setProperty("reindex.process.serverName", serverName);
 
 		while (runContinuously) {
-			runContinuously = false;
-			if (!fullReindex){
-				runContinuously = false;
-			}
+			runContinuously = !fullReindex;
+
 			initializeIndexer();
 
 			//Process lists

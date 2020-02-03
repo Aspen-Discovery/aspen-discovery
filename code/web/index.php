@@ -616,7 +616,7 @@ if (isset($_SESSION['hold_message'])) {
 //       This distinction prevents the DB_Object from being mistakenly called as the Action class.
 if (!is_dir(ROOT_DIR . "/services/$module")){
 	$module = 'Error';
-	$module = 'Handle404';
+	$action = 'Handle404';
 	$interface->assign('module','Error');
 	$interface->assign('action','Handle404');
 	require_once ROOT_DIR . "/services/Error/Handle404.php";
@@ -655,7 +655,8 @@ if (!is_dir(ROOT_DIR . "/services/$module")){
 		AspenError::raiseError(new AspenError('Unknown Action'));
 	}
 } else {
-	$interface->assign('showBreadcrumbs', false);
+	//We have a bad URL, just serve a 404 page
+	/*$interface->assign('showBreadcrumbs', false);
 	$interface->assign('sidebar', 'Search/home-sidebar.tpl');
 	$requestURI = $_SERVER['REQUEST_URI'];
 	$cleanedUrl = strip_tags(urldecode($_SERVER['REQUEST_URI']));
@@ -663,7 +664,14 @@ if (!is_dir(ROOT_DIR . "/services/$module")){
 		AspenError::raiseError(new AspenError("Cannot Load Action and Module the URL provided is invalid"));
 	}else{
 		AspenError::raiseError(new AspenError("Cannot Load Action '$action' for Module '$module' request '$requestURI'"));
-	}
+	}*/
+	$module = 'Error';
+	$action = 'Handle404';
+	$interface->assign('module','Error');
+	$interface->assign('action','Handle404');
+	require_once ROOT_DIR . "/services/Error/Handle404.php";
+	$actionClass = new Error_Handle404();
+	$actionClass->launch();
 }
 $timer->logTime('Finished Index');
 $timer->writeTimings();
