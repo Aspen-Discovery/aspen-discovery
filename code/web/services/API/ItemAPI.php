@@ -149,16 +149,50 @@ class ItemAPI extends Action {
 	 * Load a marc record for a particular id from the server
 	 */
 	function getMarcRecord(){
-		global $configArray;
 		$id = $_REQUEST['id'];
 		$shortId = str_replace('.', '', $id);
-		$firstChars = substr($shortId, 0, 4);
-		header('Content-Type: application/octet-stream');
-		header("Content-Transfer-Encoding: Binary");
-		header("Content-disposition: attachment; filename=\"".$id.".mrc\"");
-		$individualName = $configArray['Reindex']['individualMarcPath'] . "/{$firstChars}/{$shortId}.mrc";
-		readfile($individualName);
-		die();
+		require_once ROOT_DIR . '/sys/Indexing/IndexingProfile.php';
+		$indexingProfile = new IndexingProfile();
+		$indexingProfile->find();
+		while ($indexingProfile->fetch()){
+			$folderName = $indexingProfile->individualMarcPath;
+			if ($indexingProfile->createFolderFromLeadingCharacters){
+				$subFolder = substr($shortId, 0, $indexingProfile->numCharsToCreateFolderFrom);
+			}else{
+				$subFolder = substr($shortId, -$indexingProfile->numCharsToCreateFolderFrom);
+			}
+			$individualName = $folderName . "/{$subFolder}/{$shortId}.mrc";
+			if (file_exists($individualName)){
+				header('Content-Type: application/octet-stream');
+				header("Content-Transfer-Encoding: Binary");
+				header("Content-disposition: attachment; filename=\"".$id.".mrc\"");
+				readfile($individualName);
+				die();
+			}
+		}
+		require_once ROOT_DIR . '/sys/Indexing/SideLoad.php';
+		$sideLoad = new SideLoad();
+		$sideLoad->find();
+		while ($sideLoad->fetch()){
+			$folderName = $sideLoad->individualMarcPath;
+			if ($sideLoad->createFolderFromLeadingCharacters){
+				$subFolder = substr($shortId, 0, $sideLoad->numCharsToCreateFolderFrom);
+			}else{
+				$subFolder = substr($shortId, -$sideLoad->numCharsToCreateFolderFrom);
+			}
+			$individualName = $folderName . "/{$subFolder}/{$shortId}.mrc";
+			if (file_exists($individualName)){
+				header('Content-Type: application/octet-stream');
+				header("Content-Transfer-Encoding: Binary");
+				header("Content-disposition: attachment; filename=\"".$id.".mrc\"");
+				readfile($individualName);
+				die();
+			}
+		}
+		return [
+			'result' => false,
+			'message' => 'Could not find a file for the specified record'
+		];
 	}
 
 	/**
