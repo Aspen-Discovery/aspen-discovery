@@ -319,13 +319,23 @@ class UserAPI extends Action {
 		if ($user && !($user instanceof AspenError)){
 			//Remove a bunch of junk from the user data
 			unset($user->query);
+			$userData = new stdClass();
 			foreach ($user as $key => $value) {
-				if (substr($key, 0, 1) == '_'){
-					unset($user->$key);
+				if ($key[0] == '_'){
+					if ($key[1] == '_') {
+						unset($user->$key);
+					}else{
+						if (!is_object($value) && !is_array($value)){
+							$shortKey = substr($key, 1);
+							$userData->$shortKey = $value;
+						}
+					}
+				}else{
+					$userData->$key = $value;
 				}
 			}
 
-			return array('success'=>true, 'profile'=>$user);
+			return array('success'=>true, 'profile'=>$userData);
 		}else{
 			return array('success'=>false, 'message'=>'Login unsuccessful');
 		}
