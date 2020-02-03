@@ -26,7 +26,7 @@ class CatalogConnection
 	 *
 	 * This is responsible for instantiating the driver that has been specified.
 	 *
-	 * @param string         $driver         The name of the driver to load.
+	 * @param string $driver The name of the driver to load.
 	 * @param AccountProfile $accountProfile
 	 * @throws PDOException error if we cannot connect to the driver.
 	 *
@@ -70,7 +70,7 @@ class CatalogConnection
 		$functionConfig = method_exists($this->driver, 'getConfig') ? $this->driver->getConfig($function) : false;
 
 		// See if we have a corresponding check method to analyze the response:
-		$checkMethod = "_checkMethod".$function;
+		$checkMethod = "_checkMethod" . $function;
 		if (!method_exists($this, $checkMethod)) {
 			//Just see if the method exists on the driver
 			return method_exists($this->driver, $function);
@@ -85,23 +85,24 @@ class CatalogConnection
 	 *
 	 * This is responsible for authenticating a patron against the catalog.
 	 *
-	 * @param string  $username        The patron username
-	 * @param string  $password        The patron password
-	 * @param User    $parentAccount   A parent account that we are linking from if any
+	 * @param string $username The patron username
+	 * @param string $password The patron password
+	 * @param User $parentAccount A parent account that we are linking from if any
 	 * @param boolean $validatedViaSSO True if the patron has already been validated via SSO.  If so we don't need to validation, just retrieve information
 	 *
 	 * @return User|null     User object or null if the user cannot be logged in
 	 * @access public
 	 */
-	public function patronLogin($username, $password, $parentAccount = null, $validatedViaSSO = false) {
+	public function patronLogin($username, $password, $parentAccount = null, $validatedViaSSO = false)
+	{
 		global $timer;
 		global $logger;
 		global $offlineMode;
 
 		//Get the barcode property
-		if ($this->accountProfile->loginConfiguration == 'barcode_pin'){
+		if ($this->accountProfile->loginConfiguration == 'barcode_pin') {
 			$barcode = $username;
-		}else{
+		} else {
 			$barcode = $password;
 		}
 
@@ -110,23 +111,23 @@ class CatalogConnection
 		//$password = preg_replace('/[a-or-zA-OR-Z\W]/', '', $password);
 		//Remove any spaces from the barcode
 		$barcode = preg_replace('/[^a-zA-Z\d\s]/', '', trim($barcode));
-		if ($offlineMode){
+		if ($offlineMode) {
 			//The catalog is offline, check the database to see if the user is valid
 			$user = new User();
 			if ($this->driver->accountProfile->loginConfiguration == 'barcode_pin') {
 				$user->cat_username = $barcode;
-			}else{
+			} else {
 				$user->cat_password = $barcode;
 			}
-			if ($user->find(true)){
+			if ($user->find(true)) {
 				if ($this->driver->accountProfile->loginConfiguration = 'barcode_pin') {
 					//We load the account based on the barcode make sure the pin matches
 					$userValid = $user->cat_password == $password;
-				}else{
+				} else {
 					//We still load based on barcode, make sure the username is similar
 					$userValid = $this->areNamesSimilar($username, $user->cat_username);
 				}
-				if ($userValid){
+				if ($userValid) {
 					//We have a good user account for additional processing
 				} else {
 					$timer->logTime("offline patron login failed due to invalid name");
@@ -138,22 +139,22 @@ class CatalogConnection
 				$logger->log("offline patron login failed because we haven't seen this user before", Logger::LOG_NOTICE);
 				return null;
 			}
-		}else {
+		} else {
 			//Catalog is online, do the login
 			$user = $this->driver->patronLogin($username, $password, $validatedViaSSO);
 		}
 
-		if ($user && !($user instanceof AspenError)){
+		if ($user && !($user instanceof AspenError)) {
 			if ($user->displayName == '') {
-				if ($user->firstname == ''){
+				if ($user->firstname == '') {
 					$user->displayName = $user->lastname;
-				}else{
+				} else {
 					// #PK-979 Make display name configurable firstname, last initial, vs first initial last name
 					$homeLibrary = $user->getHomeLibrary();
-					if ($homeLibrary == null || ($homeLibrary->__get('patronNameDisplayStyle') == 'firstinitial_lastname')){
+					if ($homeLibrary == null || ($homeLibrary->__get('patronNameDisplayStyle') == 'firstinitial_lastname')) {
 						// #PK-979 Make display name configurable firstname, last initial, vs first initial last name
 						$user->displayName = substr($user->firstname, 0, 1) . '. ' . $user->lastname;
-					}elseif ($homeLibrary->__get('patronNameDisplayStyle') == 'lastinitial_firstname'){
+					} elseif ($homeLibrary->__get('patronNameDisplayStyle') == 'lastinitial_firstname') {
 						$user->displayName = $user->firstname . ' ' . substr($user->lastname, 0, 1) . '.';
 					}
 				}
@@ -168,12 +169,13 @@ class CatalogConnection
 	/**
 	 * @param User $user
 	 */
-	public function updateUserWithAdditionalRuntimeInformation($user){
+	public function updateUserWithAdditionalRuntimeInformation($user)
+	{
 		global $timer;
 		$timer->logTime("Starting to Update Additional Runtime information for user " . $user->id);
 
 		$homeLibrary = Library::getLibraryForLocation($user->homeLocationId);
-		if ($homeLibrary){
+		if ($homeLibrary) {
 			if ($homeLibrary->enableMaterialsRequest == 1) {
 				$materialsRequest = new MaterialsRequest();
 				$materialsRequest->createdBy = $user->id;
@@ -184,7 +186,7 @@ class CatalogConnection
 				$materialsRequest->find();
 				$user->setNumMaterialsRequests($materialsRequest->getNumResults());
 				$timer->logTime("Updated number of active materials requests");
-			}elseif($homeLibrary->enableMaterialsRequest == 2){
+			} elseif ($homeLibrary->enableMaterialsRequest == 2) {
 				$user->setNumMaterialsRequests($this->getNumMaterialsRequests($user));
 			}
 		}
@@ -197,7 +199,8 @@ class CatalogConnection
 	 * @param $nameFromIls   string
 	 * @return boolean
 	 */
-	private function areNamesSimilar($nameFromUser, $nameFromIls) {
+	private function areNamesSimilar($nameFromUser, $nameFromIls)
+	{
 		$fullName = str_replace(",", " ", $nameFromIls);
 		$fullName = str_replace(";", " ", $fullName);
 		$fullName = str_replace(";", "'", $fullName);
@@ -224,7 +227,7 @@ class CatalogConnection
 	 * This is responsible for retrieving all transactions (i.e. checked out items)
 	 * by a specific patron.
 	 *
-	 * @param User $user        The user to load transactions for
+	 * @param User $user The user to load transactions for
 	 * @return mixed            Array of the patron's transactions on success,
 	 * AspenError otherwise.
 	 * @access public
@@ -232,12 +235,12 @@ class CatalogConnection
 	public function getCheckouts(User $user)
 	{
 		$transactions = $this->driver->getCheckouts($user);
-		foreach ($transactions as $key => $curTitle){
+		foreach ($transactions as $key => $curTitle) {
 			$curTitle['user'] = $user->getNameAndLibraryLabel();
 			$curTitle['userId'] = $user->id;
 			$curTitle['fullId'] = $this->accountProfile->recordSource . ':' . $curTitle['id'];
 
-			if ($curTitle['dueDate']){
+			if ($curTitle['dueDate']) {
 				// use the same time of day to calculate days until due, in order to avoid errors wiht rounding
 				$dueDate = strtotime('midnight', $curTitle['dueDate']);
 				$today = strtotime('midnight');
@@ -284,97 +287,98 @@ class CatalogConnection
 	 *                              If an error occurs, return a AspenError
 	 * @access  public
 	 */
-	function getReadingHistory($patron, $page = 1, $recordsPerPage = 20, $sortOption = "checkedOut", $filter = "", $forExport = false){
+	function getReadingHistory($patron, $page = 1, $recordsPerPage = 20, $sortOption = "checkedOut", $filter = "", $forExport = false)
+	{
 		global $timer;
 		$timer->logTime("Starting to load reading history");
 
 		//Get reading history from the database unless we specifically want to load from the driver.
-        $result = array('historyActive'=>$patron->trackReadingHistory, 'titles'=>array(), 'numTitles'=> 0);
-        if (!$patron->trackReadingHistory){
-            return $result;
-        }
-        if (!$patron->initialReadingHistoryLoaded) {
-            if ($this->driver->hasNativeReadingHistory()){
-                //Load existing reading history from the ILS
-                $result = $this->driver->getReadingHistory($patron, -1, -1, $sortOption);
-                if ($result['numTitles'] > 0){
-                    foreach ($result['titles'] as $title){
-                        if ($title['permanentId'] != null){
-                            $userReadingHistoryEntry = new ReadingHistoryEntry();
-                            $userReadingHistoryEntry->userId = $patron->id;
-                            $userReadingHistoryEntry->groupedWorkPermanentId = $title['permanentId'];
-                            $userReadingHistoryEntry->source = $this->accountProfile->recordSource;
-                            $userReadingHistoryEntry->sourceId = $title['recordId'];
-                            $userReadingHistoryEntry->title = $title['title'];
-                            $userReadingHistoryEntry->author = $title['author'];
-                            $userReadingHistoryEntry->format = $title['format'];
-                            $userReadingHistoryEntry->checkOutDate = $title['checkout'];
-                            $userReadingHistoryEntry->checkInDate = null;
-                            $userReadingHistoryEntry->deleted = 0;
-                            $userReadingHistoryEntry->insert();
-                        }
-                    }
-                }
-	            $timer->logTime("Finished loading native reading history");
-            }
-            $patron->initialReadingHistoryLoaded = true;
-            $patron->update();
-        }
-        //Do the
+		$result = array('historyActive' => $patron->trackReadingHistory, 'titles' => array(), 'numTitles' => 0);
+		if (!$patron->trackReadingHistory) {
+			return $result;
+		}
+		if (!$patron->initialReadingHistoryLoaded) {
+			if ($this->driver->hasNativeReadingHistory()) {
+				//Load existing reading history from the ILS
+				$result = $this->driver->getReadingHistory($patron, -1, -1, $sortOption);
+				if ($result['numTitles'] > 0) {
+					foreach ($result['titles'] as $title) {
+						if ($title['permanentId'] != null) {
+							$userReadingHistoryEntry = new ReadingHistoryEntry();
+							$userReadingHistoryEntry->userId = $patron->id;
+							$userReadingHistoryEntry->groupedWorkPermanentId = $title['permanentId'];
+							$userReadingHistoryEntry->source = $this->accountProfile->recordSource;
+							$userReadingHistoryEntry->sourceId = $title['recordId'];
+							$userReadingHistoryEntry->title = $title['title'];
+							$userReadingHistoryEntry->author = $title['author'];
+							$userReadingHistoryEntry->format = $title['format'];
+							$userReadingHistoryEntry->checkOutDate = $title['checkout'];
+							$userReadingHistoryEntry->checkInDate = null;
+							$userReadingHistoryEntry->deleted = 0;
+							$userReadingHistoryEntry->insert();
+						}
+					}
+				}
+				$timer->logTime("Finished loading native reading history");
+			}
+			$patron->initialReadingHistoryLoaded = true;
+			$patron->update();
+		}
+		//Do the
 		if ($page == 1 && empty($filter)) {
 			$this->updateReadingHistoryBasedOnCurrentCheckouts($patron);
 			$timer->logTime("Finished updating reading history based on current checkouts");
 		}
 
-        require_once ROOT_DIR . '/sys/ReadingHistoryEntry.php';
-        $readingHistoryDB = new ReadingHistoryEntry();
-        $readingHistoryDB->userId = $patron->id;
-        $readingHistoryDB->whereAdd('deleted =  0'); //Only show titles that have not been deleted
-		if (!empty($filter)){
+		require_once ROOT_DIR . '/sys/ReadingHistoryEntry.php';
+		$readingHistoryDB = new ReadingHistoryEntry();
+		$readingHistoryDB->userId = $patron->id;
+		$readingHistoryDB->whereAdd('deleted =  0'); //Only show titles that have not been deleted
+		if (!empty($filter)) {
 			$escapedFilter = $readingHistoryDB->escape('%' . $filter . '%');
 			$readingHistoryDB->whereAdd("title LIKE $escapedFilter OR author LIKE $escapedFilter OR format LIKE $escapedFilter");
 		}
-        $readingHistoryDB->selectAdd();
-        $readingHistoryDB->selectAdd('groupedWorkPermanentId');
-        $readingHistoryDB->selectAdd('MAX(title) as title');
-        $readingHistoryDB->selectAdd('MAX(author) as author');
+		$readingHistoryDB->selectAdd();
+		$readingHistoryDB->selectAdd('groupedWorkPermanentId');
+		$readingHistoryDB->selectAdd('MAX(title) as title');
+		$readingHistoryDB->selectAdd('MAX(author) as author');
 		$readingHistoryDB->selectAdd('MAX(checkInDate) as checkInDate');
-        $readingHistoryDB->selectAdd('MAX(checkOutDate) as checkOutDate');
+		$readingHistoryDB->selectAdd('MAX(checkOutDate) as checkOutDate');
 		$readingHistoryDB->selectAdd('SUM(CASE WHEN checkInDate IS NULL THEN 1 END) as checkedOut');
-        $readingHistoryDB->selectAdd('COUNT(id) as timesUsed');
-        $readingHistoryDB->selectAdd('GROUP_CONCAT(DISTINCT(format)) as format');
-        if ($sortOption == "checkedOut"){
-            $readingHistoryDB->orderBy('checkedOut DESC, MAX(checkOutDate) DESC, title ASC');
-        }else if ($sortOption == "returned"){
-            $readingHistoryDB->orderBy('checkInDate DESC, title ASC');
-        }else if ($sortOption == "title"){
-            $readingHistoryDB->orderBy('title ASC, MAX(checkOutDate) DESC');
-        }else if ($sortOption == "author"){
-            $readingHistoryDB->orderBy('author ASC, title ASC, MAX(checkOutDate) DESC');
-        }else if ($sortOption == "format"){
-            $readingHistoryDB->orderBy('format ASC, title ASC, MAX(checkOutDate) DESC');
-        }
-        $readingHistoryDB->groupBy(['groupedWorkPermanentId']);
+		$readingHistoryDB->selectAdd('COUNT(id) as timesUsed');
+		$readingHistoryDB->selectAdd('GROUP_CONCAT(DISTINCT(format)) as format');
+		if ($sortOption == "checkedOut") {
+			$readingHistoryDB->orderBy('checkedOut DESC, MAX(checkOutDate) DESC, title ASC');
+		} else if ($sortOption == "returned") {
+			$readingHistoryDB->orderBy('checkInDate DESC, title ASC');
+		} else if ($sortOption == "title") {
+			$readingHistoryDB->orderBy('title ASC, MAX(checkOutDate) DESC');
+		} else if ($sortOption == "author") {
+			$readingHistoryDB->orderBy('author ASC, title ASC, MAX(checkOutDate) DESC');
+		} else if ($sortOption == "format") {
+			$readingHistoryDB->orderBy('format ASC, title ASC, MAX(checkOutDate) DESC');
+		}
+		$readingHistoryDB->groupBy(['groupedWorkPermanentId']);
 
-        $numTitles = $readingHistoryDB->count();
+		$numTitles = $readingHistoryDB->count();
 
-        if ($recordsPerPage != -1){
-            $firstIndex = ($page - 1) * $recordsPerPage;
-		    $readingHistoryDB->limit($firstIndex, $recordsPerPage);
-        }else{
-	        $firstIndex = 0;
-        }
-        $readingHistoryDB->find();
-        $readingHistoryTitles = array();
+		if ($recordsPerPage != -1) {
+			$firstIndex = ($page - 1) * $recordsPerPage;
+			$readingHistoryDB->limit($firstIndex, $recordsPerPage);
+		} else {
+			$firstIndex = 0;
+		}
+		$readingHistoryDB->find();
+		$readingHistoryTitles = array();
 
-        while ($readingHistoryDB->fetch()){
-            $historyEntry = $this->getHistoryEntryForDatabaseEntry($readingHistoryDB, $forExport);
-	        $historyEntry['index'] = ++$firstIndex;
-            $readingHistoryTitles[] = $historyEntry;
-        }
+		while ($readingHistoryDB->fetch()) {
+			$historyEntry = $this->getHistoryEntryForDatabaseEntry($readingHistoryDB, $forExport);
+			$historyEntry['index'] = ++$firstIndex;
+			$readingHistoryTitles[] = $historyEntry;
+		}
 		$timer->logTime("Loaded " . count($readingHistoryTitles) . " titles from the reading history");
 
-        return array('historyActive'=>$patron->trackReadingHistory, 'titles'=>$readingHistoryTitles, 'numTitles'=> $numTitles);
+		return array('historyActive' => $patron->trackReadingHistory, 'titles' => $readingHistoryTitles, 'numTitles' => $numTitles);
 	}
 
 	/**
@@ -384,77 +388,78 @@ class CatalogConnection
 	 * exportList
 	 * optOut
 	 *
-	 * @param   User    $patron         The user to do the reading history action on
-	 * @param   string  $action         The action to perform
-	 * @param   array   $selectedTitles The titles to do the action on if applicable
+	 * @param User $patron The user to do the reading history action on
+	 * @param string $action The action to perform
+	 * @param array $selectedTitles The titles to do the action on if applicable
 	 * @return array
 	 */
-	function doReadingHistoryAction($patron, $action, $selectedTitles){
+	function doReadingHistoryAction($patron, $action, $selectedTitles)
+	{
 		$result = [
 			'success' => false,
 			'message' => translate('Unknown error')
 		];
-		if ($action == 'deleteMarked'){
-            //Remove titles from database (do not remove from ILS)
+		if ($action == 'deleteMarked') {
+			//Remove titles from database (do not remove from ILS)
 			$numDeleted = 0;
-            foreach ($selectedTitles as $id => $titleId){
-                $readingHistoryDB = new ReadingHistoryEntry();
-                $readingHistoryDB->userId = $patron->id;
-                $readingHistoryDB->groupedWorkPermanentId = strtolower($id);
-                $readingHistoryDB->find();
-                if ($id && $readingHistoryDB->getNumResults() > 0){
-                    while ($readingHistoryDB->fetch()){
-                        $readingHistoryDB->deleted = 1;
-                        $readingHistoryDB->update();
-                        $numDeleted++;
-                    }
-                }else{
-                    $readingHistoryDB = new ReadingHistoryEntry();
-                    $readingHistoryDB->userId = $patron->id;
-                    $readingHistoryDB->id = str_replace('rsh', '', $titleId);
-                    if ($readingHistoryDB->find(true)){
-                        $readingHistoryDB->deleted = 1;
-                        $readingHistoryDB->update();
-	                    $numDeleted++;
-                    }
-                }
-            }
-            $result['success'] = true;
-            $result['message'] = translate(['text' => 'Deleted %1% entries from Reading History.', 1 => $numDeleted]);
-        }elseif ($action == 'deleteAll'){
-            //Remove all titles from database (do not remove from ILS)
-            $readingHistoryDB = new ReadingHistoryEntry();
-            $readingHistoryDB->userId = $patron->id;
-            $readingHistoryDB->find();
-            while ($readingHistoryDB->fetch()){
-                $readingHistoryDB->deleted = 1;
-                $readingHistoryDB->update();
-            }
+			foreach ($selectedTitles as $id => $titleId) {
+				$readingHistoryDB = new ReadingHistoryEntry();
+				$readingHistoryDB->userId = $patron->id;
+				$readingHistoryDB->groupedWorkPermanentId = strtolower($id);
+				$readingHistoryDB->find();
+				if ($id && $readingHistoryDB->getNumResults() > 0) {
+					while ($readingHistoryDB->fetch()) {
+						$readingHistoryDB->deleted = 1;
+						$readingHistoryDB->update();
+						$numDeleted++;
+					}
+				} else {
+					$readingHistoryDB = new ReadingHistoryEntry();
+					$readingHistoryDB->userId = $patron->id;
+					$readingHistoryDB->id = str_replace('rsh', '', $titleId);
+					if ($readingHistoryDB->find(true)) {
+						$readingHistoryDB->deleted = 1;
+						$readingHistoryDB->update();
+						$numDeleted++;
+					}
+				}
+			}
+			$result['success'] = true;
+			$result['message'] = translate(['text' => 'Deleted %1% entries from Reading History.', 1 => $numDeleted]);
+		} elseif ($action == 'deleteAll') {
+			//Remove all titles from database (do not remove from ILS)
+			$readingHistoryDB = new ReadingHistoryEntry();
+			$readingHistoryDB->userId = $patron->id;
+			$readingHistoryDB->find();
+			while ($readingHistoryDB->fetch()) {
+				$readingHistoryDB->deleted = 1;
+				$readingHistoryDB->update();
+			}
 			$result['success'] = true;
 			$result['message'] = translate('Deleted all entries from Reading History.');
-        }elseif ($action == 'optOut'){
-            //Delete the reading history (permanently this time since we are opting out)
-            $readingHistoryDB = new ReadingHistoryEntry();
-            $readingHistoryDB->userId = $patron->id;
-            $readingHistoryDB->delete(true);
+		} elseif ($action == 'optOut') {
+			//Delete the reading history (permanently this time since we are opting out)
+			$readingHistoryDB = new ReadingHistoryEntry();
+			$readingHistoryDB->userId = $patron->id;
+			$readingHistoryDB->delete(true);
 
-            //Opt out within Aspen since the ILS does not seem to implement this functionality
-            $patron->trackReadingHistory = false;
-            $patron->update();
+			//Opt out within Aspen since the ILS does not seem to implement this functionality
+			$patron->trackReadingHistory = false;
+			$patron->update();
 			$result['success'] = true;
 			$result['message'] = translate('You have been opted out of tracking Reading History');
-        }elseif ($action == 'optIn'){
-            //Opt in within Aspen since the ILS does not seem to implement this functionality
-            $patron->trackReadingHistory = true;
-            $patron->update();
+		} elseif ($action == 'optIn') {
+			//Opt in within Aspen since the ILS does not seem to implement this functionality
+			$patron->trackReadingHistory = true;
+			$patron->update();
 
 			$result['success'] = true;
 			$result['message'] = translate('You have been opted out in to tracking Reading History');
-        }
-        if ($this->driver->performsReadingHistoryUpdatesOfILS()){
-            $this->driver->doReadingHistoryAction($patron, $action, $selectedTitles);
-        }
-        return $result;
+		}
+		if ($this->driver->performsReadingHistoryUpdatesOfILS()) {
+			$this->driver->doReadingHistoryAction($patron, $action, $selectedTitles);
+		}
+		return $result;
 	}
 
 
@@ -463,19 +468,20 @@ class CatalogConnection
 	 *
 	 * This is responsible for retrieving all holds for a specific patron.
 	 *
-	 * @param User $user    The user to load transactions for
+	 * @param User $user The user to load transactions for
 	 *
 	 * @return array        Array of the patron's holds
 	 * @access public
 	 */
-	public function getHolds($user) {
+	public function getHolds($user)
+	{
 		$holds = $this->driver->getHolds($user);
-		foreach ($holds as $section => $holdsForSection){
-			foreach ($holdsForSection as $key => $curTitle){
+		foreach ($holds as $section => $holdsForSection) {
+			foreach ($holdsForSection as $key => $curTitle) {
 				$curTitle['user'] = $user->getNameAndLibraryLabel();
 				$curTitle['userId'] = $user->id;
 				$curTitle['allowFreezeHolds'] = $user->getHomeLibrary()->allowFreezeHolds;
-				if (!isset($curTitle['sortTitle'])){
+				if (!isset($curTitle['sortTitle'])) {
 					$curTitle['sortTitle'] = $curTitle['title'];
 				}
 				$holds[$section][$key] = $curTitle;
@@ -551,7 +557,8 @@ class CatalogConnection
 	 *                              If an error occurs, return a AspenError
 	 * @access  public
 	 */
-	function placeItemHold($patron, $recordId, $itemId, $pickupBranch, $cancelDate = null) {
+	function placeItemHold($patron, $recordId, $itemId, $pickupBranch, $cancelDate = null)
+	{
 		return $this->driver->placeItemHold($patron, $recordId, $itemId, $pickupBranch, $cancelDate);
 	}
 
@@ -560,24 +567,28 @@ class CatalogConnection
 		return $errors = $this->driver->updatePatronInfo($user, $canUpdateContactInfo);
 	}
 
-	function bookMaterial($patron, $recordId, $startDate, $startTime = null, $endDate = null, $endTime = null){
+	function bookMaterial($patron, $recordId, $startDate, $startTime = null, $endDate = null, $endTime = null)
+	{
 		return $this->driver->bookMaterial($patron, $recordId, $startDate, $startTime, $endDate, $endTime);
 	}
 
-	function cancelBookedMaterial($patron, $cancelIds){
+	function cancelBookedMaterial($patron, $cancelIds)
+	{
 		return $this->driver->cancelBookedMaterial($patron, $cancelIds);
 	}
 
-	function cancelAllBookedMaterial($patron){
+	function cancelAllBookedMaterial($patron)
+	{
 		return $this->driver->cancelAllBookedMaterial($patron);
 	}
 
 	/**
 	 * @param User $patron
-     *
-     * @return array
+	 *
+	 * @return array
 	 */
-	function getMyBookings($patron){
+	function getMyBookings($patron)
+	{
 		$bookings = $this->driver->getMyBookings($patron);
 		foreach ($bookings as &$booking) {
 			$booking['user'] = $patron->getNameAndLibraryLabel();
@@ -586,7 +597,8 @@ class CatalogConnection
 		return $bookings;
 	}
 
-	function selfRegister(){
+	function selfRegister()
+	{
 		return $this->driver->selfRegister();
 	}
 
@@ -596,7 +608,7 @@ class CatalogConnection
 	 * the driver without constant modification to the connection class.
 	 *
 	 * @param string $methodName The name of the called method.
-	 * @param array  $params     Array of passed parameters.
+	 * @param array $params Array of passed parameters.
 	 *
 	 * @return mixed             Varies by method (false if undefined method)
 	 * @access public
@@ -610,7 +622,8 @@ class CatalogConnection
 		return false;
 	}
 
-	public function getSelfRegistrationFields() {
+	public function getSelfRegistrationFields()
+	{
 		return $this->driver->getSelfRegistrationFields();
 	}
 
@@ -619,10 +632,11 @@ class CatalogConnection
 	 * @param bool $forExport True if this is being ysed while exporting to Excel
 	 * @return mixed
 	 */
-	public function getHistoryEntryForDatabaseEntry($readingHistoryDB, $forExport = false) {
+	public function getHistoryEntryForDatabaseEntry($readingHistoryDB, $forExport = false)
+	{
 		$historyEntry = array();
 
-        $historyEntry['title'] = $readingHistoryDB->title;
+		$historyEntry['title'] = $readingHistoryDB->title;
 		$historyEntry['author'] = $readingHistoryDB->author;
 		$historyEntry['format'] = $readingHistoryDB->format;
 		$historyEntry['checkout'] = $readingHistoryDB->checkOutDate;
@@ -631,17 +645,17 @@ class CatalogConnection
 		$historyEntry['timesUsed'] = $readingHistoryDB->timesUsed;
 		/** @noinspection PhpUndefinedFieldInspection */
 		$historyEntry['checkedOut'] = $readingHistoryDB->checkedOut == null ? false : true;
-		if (!$forExport){
+		if (!$forExport) {
 			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 			$recordDriver = new GroupedWorkDriver($readingHistoryDB->groupedWorkPermanentId);
 
-			if ($recordDriver->isValid()){
+			if ($recordDriver->isValid()) {
 				$historyEntry['recordDriver'] = $recordDriver;
 				$historyEntry['permanentId'] = $readingHistoryDB->groupedWorkPermanentId;
 				$historyEntry['ratingData'] = $recordDriver->getRatingData();
 				$historyEntry['linkUrl'] = $recordDriver->getLinkUrl();
 				$historyEntry['coverUrl'] = $recordDriver->getBookcoverUrl('small');
-			}else{
+			} else {
 				$historyEntry['permanentId'] = '';
 				$historyEntry['ratingData'] = '';
 				$historyEntry['linkUrl'] = '';
@@ -655,7 +669,8 @@ class CatalogConnection
 	/**
 	 * @param User $patron
 	 */
-	private function updateReadingHistoryBasedOnCurrentCheckouts($patron) {
+	private function updateReadingHistoryBasedOnCurrentCheckouts($patron)
+	{
 		require_once ROOT_DIR . '/sys/ReadingHistoryEntry.php';
 		//Note, include deleted titles here so they are not added multiple times.
 		$readingHistoryDB = new ReadingHistoryEntry();
@@ -664,49 +679,49 @@ class CatalogConnection
 		$readingHistoryDB->find();
 
 		$activeHistoryTitles = array();
-		while ($readingHistoryDB->fetch()){
+		while ($readingHistoryDB->fetch()) {
 			$historyEntry = [];
-            $historyEntry['source'] = $readingHistoryDB->source;
-            $historyEntry['id'] = $readingHistoryDB->sourceId;
+			$historyEntry['source'] = $readingHistoryDB->source;
+			$historyEntry['id'] = $readingHistoryDB->sourceId;
 			$key = $historyEntry['source'] . ':' . $historyEntry['id'];
 			$activeHistoryTitles[$key] = $historyEntry;
 		}
 
 		//Update reading history based on current checkouts.  That way it never looks out of date
 		$checkouts = $patron->getCheckouts(false, 'all');
-		foreach ($checkouts as $checkout){
+		foreach ($checkouts as $checkout) {
 			$source = $checkout['checkoutSource'];
-			if ($source == 'OverDrive'){
+			if ($source == 'OverDrive') {
 				$sourceId = $checkout['overDriveId'];
-			}elseif ($source == 'Hoopla'){
+			} elseif ($source == 'Hoopla') {
 				$sourceId = $checkout['hooplaId'];
-			}elseif ($source == 'ILS'){
+			} elseif ($source == 'ILS') {
 				$sourceId = $checkout['recordId'];
-			}elseif ($source == 'eContent'){
+			} elseif ($source == 'eContent') {
 				$source = $checkout['recordType'];
 				$sourceId = $checkout['id'];
-			}else{
+			} else {
 				$sourceId = $checkout['recordId'];
 			}
 			$key = $source . ':' . $sourceId;
-			if (array_key_exists($key, $activeHistoryTitles)){
+			if (array_key_exists($key, $activeHistoryTitles)) {
 				unset($activeHistoryTitles[$key]);
-			}else{
+			} else {
 				$historyEntryDB = new ReadingHistoryEntry();
 				$historyEntryDB->userId = $patron->id;
-				if (isset($checkout['groupedWorkId'])){
+				if (isset($checkout['groupedWorkId'])) {
 					$historyEntryDB->groupedWorkPermanentId = $checkout['groupedWorkId'] == null ? '' : $checkout['groupedWorkId'];
-				}else{
+				} else {
 					$historyEntryDB->groupedWorkPermanentId = "";
 				}
 
-				$historyEntryDB->source       = $source;
-				$historyEntryDB->sourceId     = $sourceId;
-				$historyEntryDB->title        = substr($checkout['title'], 0, 150);
-				$historyEntryDB->author       = isset($checkout['author']) ? substr($checkout['author'], 0, 75) : "";
-				$historyEntryDB->format       = substr($checkout['format'], 0, 50);
+				$historyEntryDB->source = $source;
+				$historyEntryDB->sourceId = $sourceId;
+				$historyEntryDB->title = substr($checkout['title'], 0, 150);
+				$historyEntryDB->author = isset($checkout['author']) ? substr($checkout['author'], 0, 75) : "";
+				$historyEntryDB->format = substr($checkout['format'], 0, 50);
 				$historyEntryDB->checkOutDate = time();
-				if (!$historyEntryDB->insert()){
+				if (!$historyEntryDB->insert()) {
 					global $logger;
 					$logger->log("Could not insert new reading history entry", Logger::LOG_ERROR);
 				}
@@ -714,16 +729,16 @@ class CatalogConnection
 		}
 
 		//Anything that was still active is now checked in
-		foreach ($activeHistoryTitles as $historyEntry){
+		foreach ($activeHistoryTitles as $historyEntry) {
 			//Update even if deleted to make sure code is cleaned up correctly
 			$historyEntryDB = new ReadingHistoryEntry();
 			$historyEntryDB->source = $historyEntry['source'];
 			$historyEntryDB->sourceId = $historyEntry['id'];
 			$historyEntryDB->whereAdd('checkInDate IS NULL');
-			if ($historyEntryDB->find(true)){
+			if ($historyEntryDB->find(true)) {
 				$historyEntryDB->checkInDate = time();
 				$numUpdates = $historyEntryDB->update();
-				if ($numUpdates != 1){
+				if ($numUpdates != 1) {
 					global $logger;
 					$key = $historyEntry['source'] . ':' . $historyEntry['id'];
 					$logger->log("Could not update reading history entry $key", Logger::LOG_ERROR);
@@ -732,36 +747,43 @@ class CatalogConnection
 		}
 	}
 
-	function cancelHold($patron, $recordId, $cancelId = null) {
+	function cancelHold($patron, $recordId, $cancelId = null)
+	{
 		return $this->driver->cancelHold($patron, $recordId, $cancelId);
 	}
 
-	function freezeHold($patron, $recordId, $itemToFreezeId, $dateToReactivate) {
+	function freezeHold($patron, $recordId, $itemToFreezeId, $dateToReactivate)
+	{
 		return $this->driver->freezeHold($patron, $recordId, $itemToFreezeId, $dateToReactivate);
 	}
 
-	function thawHold($patron, $recordId, $itemToThawId) {
+	function thawHold($patron, $recordId, $itemToThawId)
+	{
 		return $this->driver->thawHold($patron, $recordId, $itemToThawId);
 	}
 
-	function changeHoldPickupLocation($patron, $recordId, $itemToUpdateId, $newPickupLocation) {
+	function changeHoldPickupLocation($patron, $recordId, $itemToUpdateId, $newPickupLocation)
+	{
 		return $this->driver->changeHoldPickupLocation($patron, $recordId, $itemToUpdateId, $newPickupLocation);
 	}
 
-	public function getBookingCalendar($recordId) {
+	public function getBookingCalendar($recordId)
+	{
 		// Graceful degradation -- return null if method not supported by driver.
 		return method_exists($this->driver, 'getBookingCalendar') ?
 			$this->driver->getBookingCalendar($recordId) : null;
 	}
 
-	public function renewCheckout($patron, $recordId, $itemId = null, $itemIndex = null){
+	public function renewCheckout($patron, $recordId, $itemId = null, $itemIndex = null)
+	{
 		return $this->driver->renewCheckout($patron, $recordId, $itemId, $itemIndex);
 	}
 
-	public function renewAll($patron){
-		if ($this->driver->hasFastRenewAll()){
+	public function renewAll($patron)
+	{
+		if ($this->driver->hasFastRenewAll()) {
 			return $this->driver->renewAll($patron);
-		}else{
+		} else {
 			//Get all list of all transactions
 			$currentTransactions = $this->driver->getCheckouts($patron);
 			$renewResult = array(
@@ -773,9 +795,9 @@ class CatalogConnection
 			$renewResult['Total'] = count($currentTransactions);
 			$numRenewals = 0;
 			$failure_messages = array();
-			foreach ($currentTransactions as $transaction){
+			foreach ($currentTransactions as $transaction) {
 				$curResult = $this->renewCheckout($patron, $transaction['recordId'], $transaction['renewIndicator'], null);
-				if ($curResult['success']){
+				if ($curResult['success']) {
 					$numRenewals++;
 				} else {
 					$failure_messages[] = $curResult['message'];
@@ -786,52 +808,57 @@ class CatalogConnection
 			if ($renewResult['NotRenewed'] > 0) {
 				$renewResult['success'] = false;
 				$renewResult['message'] = $failure_messages;
-			}else{
+			} else {
 				$renewResult['message'][] = "All items were renewed successfully.";
 			}
 			return $renewResult;
 		}
 	}
 
-	public function placeVolumeHold($patron, $recordId, $volumeId, $pickupBranch) {
+	public function placeVolumeHold($patron, $recordId, $volumeId, $pickupBranch)
+	{
 		return $this->driver->placeVolumeHold($patron, $recordId, $volumeId, $pickupBranch);
 	}
 
-	public function importListsFromIls($patron){
+	public function importListsFromIls($patron)
+	{
 		return $this->driver->importListsFromIls($patron);
 	}
 
-	public function getShowUsernameField() {
+	public function getShowUsernameField()
+	{
 		if ($this->checkFunction('hasUsernameField')) {
 			return $this->driver->hasUsernameField();
-		}else{
+		} else {
 			return false;
 		}
 	}
 
-    /**
-     * Resets the PIN/Password.  At this point, the confirmation matches the new pin so no need to reconfirm
-     * @param User $user
-     * @param string $oldPin
-     * @param string $newPin
-     * @return string[] a message to the user letting them know what happened
-     */
-    function updatePin($user, $oldPin, $newPin){
-    	$result = $this->driver->updatePin($user, $oldPin, $newPin);
-    	if ($result['success']){
-    		$user->disableLinkingDueToPasswordChange();
-	    }
-    	return $result;
-    }
+	/**
+	 * Resets the PIN/Password.  At this point, the confirmation matches the new pin so no need to reconfirm
+	 * @param User $user
+	 * @param string $oldPin
+	 * @param string $newPin
+	 * @return string[] a message to the user letting them know what happened
+	 */
+	function updatePin($user, $oldPin, $newPin)
+	{
+		$result = $this->driver->updatePin($user, $oldPin, $newPin);
+		if ($result['success']) {
+			$user->disableLinkingDueToPasswordChange();
+		}
+		return $result;
+	}
 
-    function requestPinReset($patronBarcode){
-        return $this->driver->requestPinReset($patronBarcode);
-    }
+	function requestPinReset($patronBarcode)
+	{
+		return $this->driver->requestPinReset($patronBarcode);
+	}
 
-    function showOutstandingFines()
-    {
-        return $this->driver->showOutstandingFines();
-    }
+	function showOutstandingFines()
+	{
+		return $this->driver->showOutstandingFines();
+	}
 
 	/**
 	 * Returns one of three values
@@ -842,7 +869,7 @@ class CatalogConnection
 	 */
 	function getForgotPasswordType()
 	{
-		if ($this->driver == null){
+		if ($this->driver == null) {
 			return null;
 		}
 		return $this->driver->getForgotPasswordType();
@@ -858,7 +885,8 @@ class CatalogConnection
 		return $this->driver->processEmailResetPinForm();
 	}
 
-	function hasMaterialsRequestSupport(){
+	function hasMaterialsRequestSupport()
+	{
 		return $this->driver->hasMaterialsRequestSupport();
 	}
 
@@ -872,7 +900,7 @@ class CatalogConnection
 		return $this->driver->processMaterialsRequestForm($user);
 	}
 
-	function getNumMaterialsRequests(User $user) : int
+	function getNumMaterialsRequests(User $user): int
 	{
 		return $this->driver->getNumMaterialsRequests($user);
 	}
@@ -883,7 +911,8 @@ class CatalogConnection
 		return $this->driver->getMaterialsRequests($user);
 	}
 
-	function getMaterialsRequestsPage(User $user){
+	function getMaterialsRequestsPage(User $user)
+	{
 		return $this->driver->getMaterialsRequestsPage($user);
 	}
 
@@ -904,7 +933,7 @@ class CatalogConnection
 
 	public function showMessagingSettings()
 	{
-		if ($this->driver == null){
+		if ($this->driver == null) {
 			return false;
 		}
 		return $this->driver->showMessagingSettings();
