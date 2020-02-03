@@ -399,7 +399,12 @@ class SearchAPI extends Action
 	/** @noinspection PhpUnused */
 	function getTitleInfoForISBN()
 	{
-		$isbn = str_replace('-', '', strip_tags($_REQUEST['isbn']));
+		if (isset($_REQUEST['isbn'])){
+			$isbn = str_replace('-', '', strip_tags($_REQUEST['isbn']));
+		}else{
+			$isbn = '';
+		}
+
 		$_REQUEST['lookfor'] = $isbn;
 		$_REQUEST['searchIndex'] = 'ISN';
 
@@ -430,19 +435,21 @@ class SearchAPI extends Action
 			AspenError::raiseError($result->getMessage());
 		}
 
+		global $solrScope;
 		if ($searchObject->getResultTotal() >= 1) {
 			//Return the first result
 			$recordSet = $searchObject->getResultRecordSet();
 			foreach ($recordSet as $recordKey => $record) {
 				$jsonResults[] = array(
 					'id' => $record['id'],
-					'title' => isset($record['title']) ? $record['title'] : null,
-					'author' => isset($record['author']) ? $record['author'] : (isset($record['author2']) ? $record['author2'] : ''),
-					'format' => isset($record['format']) ? $record['format'] : '',
-					'format_category' => isset($record['format_category']) ? $record['format_category'] : '',
+					'title' => isset($record['title_display']) ? $record['title_display'] : null,
+					'author' => isset($record['author_display']) ? $record['author_display'] : (isset($record['author2']) ? $record['author2'] : ''),
+					'format' => isset($record['format_' . $solrScope]) ? $record['format_' . $solrScope] : '',
+					'format_category' => isset($record['format_category_' . $solrScope]) ? $record['format_category_' . $solrScope] : '',
 				);
 			}
 		}
 		return $jsonResults;
 	}
+
 }
