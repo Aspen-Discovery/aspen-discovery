@@ -136,9 +136,7 @@ body .container{ldelim}
     border-top-color: {$tertiaryBackgroundColor};
 {rdelim}
 #header-container{ldelim}
-{if $tertiaryBackgroundColor}
     border-bottom-color: {$tertiaryBackgroundColor};
-{/if}
 {rdelim}
 {/if}
 

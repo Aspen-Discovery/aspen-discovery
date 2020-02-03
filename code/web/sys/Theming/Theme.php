@@ -430,7 +430,7 @@ class Theme extends DataObject
 				$interface->assign('headerForegroundColor', $theme->headerForegroundColor);
 			}
 
-			if ($interface->getVariable('headerBottomBorderWidth') == null && !empty($theme->headerBottomBorderWidth)) {
+			if ($interface->getVariable('headerBottomBorderWidth') == null && $theme->headerBottomBorderWidth != null) {
 				$interface->assign('headerBottomBorderWidth', $theme->headerBottomBorderWidth);
 			}
 
