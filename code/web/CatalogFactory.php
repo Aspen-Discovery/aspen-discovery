@@ -19,11 +19,10 @@ class CatalogFactory {
 				$driver = $configArray['Catalog']['driver'];
 				if ($accountProfile == null && !empty($driver)) {
 					$accountProfile = new AccountProfile();
-					$accountProfile->get('driver', $driver);
-					if ($accountProfile instanceof AspenError) {
+					$accountProfile->driver = $driver;
+					if (!$accountProfile->find(true)){
 						$accountProfile = null;
 					}
-
 				}
 			}else{
 				$driver = $activeRecordProfile->catalogDriver;
