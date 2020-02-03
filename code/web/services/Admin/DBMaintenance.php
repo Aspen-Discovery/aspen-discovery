@@ -2227,12 +2227,12 @@ class Admin_DBMaintenance extends Admin_Admin
 
 	function updateShowSeriesInMainDetails()
 	{
-		$library = new Library();
-		$library->find();
-		while ($library->fetch()) {
-			if (!count($library->showInMainDetails) == 0) {
-				$library->showInMainDetails[] = 'showSeries';
-				$library->update();
+		$groupedWorkDisplaySettings = new GroupedWorkDisplaySetting();
+		$groupedWorkDisplaySettings->find();
+		while ($groupedWorkDisplaySettings->fetch()) {
+			if (!count($groupedWorkDisplaySettings->showInMainDetails) == 0) {
+				$groupedWorkDisplaySettings->showInMainDetails[] = 'showSeries';
+				$groupedWorkDisplaySettings->update();
 			}
 		}
 	}
