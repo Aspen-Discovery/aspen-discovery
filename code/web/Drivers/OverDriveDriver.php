@@ -218,10 +218,10 @@ class OverDriveDriver extends AbstractEContentDriver{
 			// use library setting if it has a value. if no library setting, use the configuration setting.
 			global $library;
 			$patronHomeLibrary = Library::getLibraryForLocation($user->homeLocationId);
-			if (!empty($patronHomeLibrary->overdriveRequirePin)) {
-				$this->requirePin = $patronHomeLibrary->overdriveRequirePin;
-			}elseif (isset($library->overdriveRequirePin)) {
-				$this->requirePin = $library->overdriveRequirePin;
+			if (!empty($patronHomeLibrary->getOverdriveScope()->requirePin)) {
+				$this->requirePin = $patronHomeLibrary->getOverdriveScope()->requirePin;
+			}elseif (isset($library->getOverdriveScope()->requirePin)) {
+				$this->requirePin = $library->getOverdriveScope()->requirePin;
 			} else {
 				$this->requirePin = false;
 			}
