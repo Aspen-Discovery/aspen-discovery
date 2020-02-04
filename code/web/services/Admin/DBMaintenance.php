@@ -2053,6 +2053,21 @@ class Admin_DBMaintenance extends Admin_Admin
 					],
 				],
 
+				'google_more_settings' => [
+					'title' => 'Google API - Additional settings',
+					'description' => 'Add the ability to store additional keys for Google Analytics in the DB rather than config file',
+					'sql' => [
+						'ALTER TABLE google_api_settings ADD COLUMN googleAnalyticsTrackingId VARCHAR(50)',
+						'ALTER TABLE google_api_settings ADD COLUMN googleAnalyticsLinkingId VARCHAR(50)',
+						'ALTER TABLE google_api_settings ADD COLUMN googleAnalyticsLinkedProperties MEDIUMTEXT',
+						'ALTER TABLE google_api_settings ADD COLUMN googleAnalyticsDomainName VARCHAR(100)',
+						'ALTER TABLE google_api_settings CHANGE COLUMN googleBooksKey googleBooksKey VARCHAR(50)',
+						'ALTER TABLE google_api_settings ADD COLUMN googleMapsKey VARCHAR(60)',
+						'ALTER TABLE google_api_settings ADD COLUMN googleTranslateKey VARCHAR(60)',
+						"ALTER TABLE google_api_settings ADD COLUMN googleTranslateLanguages VARCHAR(100) default 'ar,da,en,es,fr,de,it,ja,pl,pt,ru,sv,th,vi,zh-CN,zh-TW'"
+					],
+				],
+
 				'nyt_api_settings' => [
 					'title' => 'New York Times API settings',
 					'description' => 'Add the ability to store New York Times api settings in the DB rather than config file',

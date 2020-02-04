@@ -9,14 +9,6 @@ debugSolrQuery  = true
 [Site]
 ;email =
 
-[Google]
-googleMapsKey =
-
-[Translation]
-;google_translate_key =
-
-[Analytics]
-;googleAnalyticsId =
 
 [Catalog]
 

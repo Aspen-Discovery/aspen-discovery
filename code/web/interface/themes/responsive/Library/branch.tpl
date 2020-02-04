@@ -21,7 +21,7 @@
 		{if $locationInfo.address}
 			<div class="col-xs-12 col-sm-9">
 				<a href="{$locationInfo.map_link}"><img src="{$locationInfo.map_image}" alt="Map"></a>
-				<br><a href="{$locationInfo.map_link}">{Directions|translate}</a>
+				<br><a href="{$locationInfo.map_link}">{translate text=Directions}</a>
 			</div>
 		{/if}
 	</div>
