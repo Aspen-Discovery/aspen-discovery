@@ -139,25 +139,10 @@ class BrowseCategory extends DataObject
 		$librarySubDomains = Library::getAllSubdomains();
 		$locationCodes = Location::getAllCodes();
 
-		$solrScopes = array_merge($librarySubDomains, $locationCodes);
-
-		if (!empty($solrScopes)) { // don't bother if we didn't get any solr scopes
-			// Valid Browse Modes (taken from class Browse_AJAX)
-			$browseModes = array('covers', 'grid');
-
-			/* @var MemCache $memCache */
-			global $memCache;
-
-			$keyFormat = 'browse_category_' . $this->textId; // delete all stored items with beginning with this key format.
-			foreach ($solrScopes as $solrScope) {
-				foreach ($browseModes as $browseMode) {
-					$key = $keyFormat . '_' . $solrScope . '_' . $browseMode;
-					if ($memCache->get($key)) {
-						$memCache->delete($key);
-					}
-				}
-			}
-		}
+		/** @var $memCache Memcache */
+		global $memCache;
+		$keyFormat = 'browse_category_' . $this->textId;
+		$memCache->deleteKeysStartingWith($keyFormat);
 	}
 
 	public function saveSubBrowseCategories()
