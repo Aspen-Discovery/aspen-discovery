@@ -401,7 +401,9 @@ public class CloudLibraryExportMain {
 			//Something really bad happened, we're done.
 			return null;
 		} else if (!response.isSuccess()) {
-			logEntry.incErrors();
+			if (response.getResponseCode() != 500) {
+				logEntry.incErrors();
+			}
 			logEntry.addNote("Error getting availability from " + apiPath + ": " + response.getResponseCode() + " " + response.getMessage());
 			return null;
 		} else {
