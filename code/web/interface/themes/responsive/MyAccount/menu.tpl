@@ -367,6 +367,29 @@
 					</div>
 				{/if}
 
+				{if array_key_exists('Web Builder', $enabledModules) && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('web_builder_admin', $userRoles) || array_key_exists('web_builder_creator', $userRoles))}
+					{if in_array($module, array('WebBuilder'))}
+						{assign var="curSection" value=true}
+					{else}
+						{assign var="curSection" value=false}
+					{/if}
+					<div class="panel{if $curSection} active{/if}">
+						<a href="#webBuilderMenuGroup" data-toggle="collapse" data-parent="#adminMenuAccordion">
+							<div class="panel-heading">
+								<div class="panel-title">
+									{translate text="Web Builder"}
+								</div>
+							</div>
+						</a>
+						<div id="webBuilderMenuGroup" class="panel-collapse collapse {if $curSection}in{/if}">
+							<div class="panel-body">
+								<div class="adminMenuLink"><a href="/WebBuilder/BasicPages">{translate text="Basic Pages"}</a></div>
+								<div class="adminMenuLink"><a href="/WebBuilder/Menus">{translate text="Menu"}</a></div>
+							</div>
+						</div>
+					</div>
+				{/if}
+
 				{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('contentEditor', $userRoles) || array_key_exists('libraryManager', $userRoles) || array_key_exists('locationManager', $userRoles))}
 					{if in_array($action, array('Placards', 'NYTLists', 'CollectionSpotlights', 'BrowseCategories', 'NovelistSettings', 'AuthorEnrichment', 'ARSettings', 'ContentCafeSettings', 'GoogleApiSettings', 'SyndeticsSettings', 'DPLASettings', 'NewYorkTimesSettings'))}
 						{assign var="curSection" value=true}

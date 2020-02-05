@@ -39,29 +39,33 @@ $timer->logTime('Loaded display options within interface');
 
 global $active_ip;
 
-require_once ROOT_DIR . '/sys/Enrichment/GoogleApiSetting.php';
-$googleSettings = new GoogleApiSetting();
-if ($googleSettings->find(true)) {
-	$googleAnalyticsId = $googleSettings->googleAnalyticsTrackingId;
-	$googleAnalyticsLinkingId = $googleSettings->googleAnalyticsTrackingId;
-	$interface->assign('googleAnalyticsId', $googleSettings->googleAnalyticsTrackingId);
-	$interface->assign('googleAnalyticsLinkingId', $googleSettings->googleAnalyticsLinkingId);
-	$linkedProperties = '';
-	if (!empty($googleSettings->googleAnalyticsLinkedProperties)){
-		$linkedPropertyArray = preg_split ('~\\r\\n|\\r|\\n~', $googleSettings->googleAnalyticsLinkedProperties);
-		foreach ($linkedPropertyArray as $linkedProperty) {
-			if (strlen($linkedProperties) > 0) {
-				$linkedProperties .= ', ';
+try {
+	require_once ROOT_DIR . '/sys/Enrichment/GoogleApiSetting.php';
+	$googleSettings = new GoogleApiSetting();
+	if ($googleSettings->find(true)) {
+		$googleAnalyticsId = $googleSettings->googleAnalyticsTrackingId;
+		$googleAnalyticsLinkingId = $googleSettings->googleAnalyticsTrackingId;
+		$interface->assign('googleAnalyticsId', $googleSettings->googleAnalyticsTrackingId);
+		$interface->assign('googleAnalyticsLinkingId', $googleSettings->googleAnalyticsLinkingId);
+		$linkedProperties = '';
+		if (!empty($googleSettings->googleAnalyticsLinkedProperties)) {
+			$linkedPropertyArray = preg_split('~\\r\\n|\\r|\\n~', $googleSettings->googleAnalyticsLinkedProperties);
+			foreach ($linkedPropertyArray as $linkedProperty) {
+				if (strlen($linkedProperties) > 0) {
+					$linkedProperties .= ', ';
+				}
+				$linkedProperties .= "'{$linkedProperty}'";
 			}
-			$linkedProperties .= "'{$linkedProperty}'";
+		}
+		$interface->assign('googleAnalyticsLinkedProperties', $linkedProperties);
+		if ($googleAnalyticsId) {
+			$googleAnalyticsDomainName = !empty($googleSettings->googleAnalyticsDomainName) ? $googleSettings->googleAnalyticsDomainName : strstr($_SERVER['SERVER_NAME'], '.');
+			// check for a config setting, use that if found, otherwise grab domain name  but remove the first subdomain
+			$interface->assign('googleAnalyticsDomainName', $googleAnalyticsDomainName);
 		}
 	}
-	$interface->assign('googleAnalyticsLinkedProperties', $linkedProperties);
-	if ($googleAnalyticsId) {
-		$googleAnalyticsDomainName = !empty($googleSettings->googleAnalyticsDomainName) ? $googleSettings->googleAnalyticsDomainName : strstr($_SERVER['SERVER_NAME'], '.');
-		// check for a config setting, use that if found, otherwise grab domain name  but remove the first subdomain
-		$interface->assign('googleAnalyticsDomainName', $googleAnalyticsDomainName);
-	}
+}catch (Exception $e){
+	//This happens when Google analytics settings aren't setup yet
 }
 
 /** @var Library $library */
@@ -627,6 +631,21 @@ if (isset($_SESSION['hold_message'])) {
 	unset($_SESSION['hold_message']);
 }*/
 
+//Load Menu if Web Builder is on
+global $enabledModules;
+if (array_key_exists('Web Builder', $enabledModules)){
+	require_once ROOT_DIR . '/sys/WebBuilder/WebBuilderMenu.php';
+	$menuStructure = [];
+	//Get the top level menu
+	$menu = new WebBuilderMenu();
+	$menu->parentMenuId = -1;
+	$menu->find();
+	while ($menu->fetch()){
+		$menuStructure[] = clone $menu;
+	}
+	$interface->assign('webMenu', $menuStructure);
+}
+
 // Call Action
 // Note: ObjectEditor classes typically have the class name of DB_Object with an 's' added to the end.
 //       This distinction prevents the DB_Object from being mistakenly called as the Action class.
@@ -640,8 +659,8 @@ if (!is_dir(ROOT_DIR . "/services/$module")){
 	$actionClass->launch();
 }else if (is_readable("services/$module/$action.php")) {
 	$actionFile = ROOT_DIR . "/services/$module/$action.php";
-    /** @noinspection PhpIncludeInspection */
-    require_once $actionFile;
+	/** @noinspection PhpIncludeInspection */
+	require_once $actionFile;
 	$moduleActionClass = "{$module}_{$action}";
 	if (class_exists($moduleActionClass, false)) {
 		/** @var Action $service */
@@ -672,15 +691,6 @@ if (!is_dir(ROOT_DIR . "/services/$module")){
 	}
 } else {
 	//We have a bad URL, just serve a 404 page
-	/*$interface->assign('showBreadcrumbs', false);
-	$interface->assign('sidebar', 'Search/home-sidebar.tpl');
-	$requestURI = $_SERVER['REQUEST_URI'];
-	$cleanedUrl = strip_tags(urldecode($_SERVER['REQUEST_URI']));
-	if ($cleanedUrl != $requestURI){
-		AspenError::raiseError(new AspenError("Cannot Load Action and Module the URL provided is invalid"));
-	}else{
-		AspenError::raiseError(new AspenError("Cannot Load Action '$action' for Module '$module' request '$requestURI'"));
-	}*/
 	$module = 'Error';
 	$action = 'Handle404';
 	$interface->assign('module','Error');
@@ -861,6 +871,7 @@ function loadModuleActionId(){
 	foreach ($sideLoadSettings as $profile){
 		$allRecordModules .= '|' . $profile->recordUrlComponent;
 	}
+	$checkWebBuilderAliases = false;
 	if (preg_match("~(MyAccount)/([^/?]+)/([^/?]+)(\?.+)?~", $requestURI, $matches)){
 		$_GET['module'] = $matches[1];
 		$_GET['id'] = $matches[3];
@@ -924,6 +935,24 @@ function loadModuleActionId(){
 		$_GET['action'] = $matches[2];
 		$_REQUEST['module'] = $matches[1];
 		$_REQUEST['action'] = $matches[2];
+		$checkWebBuilderAliases = true;
+	}else{
+		$checkWebBuilderAliases = true;
+	}
+
+	global $enabledModules;
+	if ($checkWebBuilderAliases && array_key_exists('Web Builder', $enabledModules)){
+		require_once ROOT_DIR . '/sys/WebBuilder/BasicPage.php';
+		$basicPage = new BasicPage();
+		$basicPage->urlAlias = $requestURI;
+		if ($basicPage->find(true)){
+			$_GET['module'] = 'WebBuilder';
+			$_GET['action'] = 'BasicPage';
+			$_GET['id'] = $basicPage->id;
+			$_REQUEST['module'] = 'WebBuilder';
+			$_REQUEST['action'] = 'BasicPage';
+			$_REQUEST['id'] = $basicPage->id;
+		}
 	}
 	//Correct some old actions
 	if (isset($_GET['action'])) {

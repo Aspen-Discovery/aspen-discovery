@@ -95,6 +95,18 @@
 			</div>
 		</div>
 
+		{if !empty($webMenu)}
+			<div id="webMenuNavBar" class="navbar navbar-default">
+				<div class="collapse navbar-collapse">
+					<ul class="nav navbar-nav">
+						{foreach from=$webMenu item=menu}
+							<li>{if $menu->url}<a href="{$menu->url}">{/if}{$menu->label}{if $menu->url}</a>{/if}</li>
+						{/foreach}
+					</ul>
+				</div>
+			</div>
+		{/if}
+
 		<div id="content-container">
 			<div class="row">
 				{if !empty($sidebar)} {* Main Content & Sidebars *}

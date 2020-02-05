@@ -92,6 +92,8 @@ class Admin_DBMaintenance extends Admin_Admin
 		$cloudLibraryUpdates = getCloudLibraryUpdates();
 		require_once ROOT_DIR . '/sys/DBMaintenance/website_indexing_updates.php';
 		$websiteIndexingUpdates = getWebsiteIndexingUpdates();
+		require_once ROOT_DIR . '/sys/DBMaintenance/web_builder_updates.php';
+		$webBuilderUpdates = getWebBuilderUpdates();
 
 		/** @noinspection SqlResolve */
 		/** @noinspection SqlWithoutWhere */
@@ -128,6 +130,7 @@ class Admin_DBMaintenance extends Admin_Admin
 			$redwood_updates,
 			$cloudLibraryUpdates,
 			$websiteIndexingUpdates,
+			$webBuilderUpdates,
 			array(
 				'index_search_stats' => array(
 					'title' => 'Index search stats table',
