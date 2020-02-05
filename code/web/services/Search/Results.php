@@ -36,12 +36,16 @@ class Search_Results extends Action {
 		}
 
 		$interface->assign('showDplaLink', false);
-		require_once ROOT_DIR . '/sys/Enrichment/DPLASetting.php';
-		$dplaSetting = new DPLASetting();
-		if ($dplaSetting->find(true)){
-			if ($library->includeDplaResults){
-				$interface->assign('showDplaLink', true);
+		try {
+			require_once ROOT_DIR . '/sys/Enrichment/DPLASetting.php';
+			$dplaSetting = new DPLASetting();
+			if ($dplaSetting->find(true)) {
+				if ($library->includeDplaResults) {
+					$interface->assign('showDplaLink', true);
+				}
 			}
+		}catch (Exception $e){
+			//This happens before the table is installed
 		}
 
 		// Set Show in Search Results Main Details Section options for template
