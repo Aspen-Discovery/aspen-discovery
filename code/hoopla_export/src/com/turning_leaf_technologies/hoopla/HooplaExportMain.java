@@ -84,7 +84,7 @@ public class HooplaExportMain {
 		exportHooplaData();
 
 		if (groupedWorkIndexer != null) {
-			groupedWorkIndexer.finishIndexingFromExtract();
+			groupedWorkIndexer.finishIndexingFromExtract(logEntry);
 			recordGroupingProcessorSingleton = null;
 			groupedWorkIndexer = null;
 			existingRecords = null;

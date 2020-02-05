@@ -34,22 +34,27 @@ class UInterface extends Smarty
 		$this->assign('device', get_device_name());
 
 		//Figure out google translate id
-		require_once ROOT_DIR . '/sys/Enrichment/GoogleApiSetting.php';
-		$googleSettings = new GoogleApiSetting();
-		if ($googleSettings->find(true)){
-			if (!empty($googleSettings->googleTranslateKey)) {
-				$this->assign('google_translate_key', $googleSettings->googleTranslateKey);
-				$this->assign('google_included_languages', $googleSettings->googleTranslateLanguages);
+		try {
+			require_once ROOT_DIR . '/sys/Enrichment/GoogleApiSetting.php';
+			$googleSettings = new GoogleApiSetting();
+			if ($googleSettings->find(true)) {
+				if (!empty($googleSettings->googleTranslateKey)) {
+					$this->assign('google_translate_key', $googleSettings->googleTranslateKey);
+					$this->assign('google_included_languages', $googleSettings->googleTranslateLanguages);
+				} else {
+					//setup translations within Aspen
+					$this->assign('enableLanguageSelector', true);
+				}
+
+				//Get all images related to the event
+				if (!empty($googleSettings->googleMapsKey)) {
+					$this->assign('mapsKey', $googleSettings->googleMapsKey);
+				}
 			} else {
-				//setup translations within Aspen
 				$this->assign('enableLanguageSelector', true);
 			}
-
-			//Get all images related to the event
-			if (!empty($googleSettings->googleMapsKey)){
-				$this->assign('mapsKey', $googleSettings->googleMapsKey);
-			}
-		} else{
+		}catch (Exception $e){
+			//This happens when google analytics isn't setup yet
 			$this->assign('enableLanguageSelector', true);
 		}
 

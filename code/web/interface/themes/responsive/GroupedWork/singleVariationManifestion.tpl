@@ -1,3 +1,4 @@
+{strip}
 <div class="col-sm-12">
     <div class="row">
         <div class="col-tn-3 col-xs-4{if empty($viewingCombinedResults)} col-md-3{/if} manifestation-format">
@@ -38,3 +39,4 @@
         </div>
     </div>
 </div>
+{/strip}

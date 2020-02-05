@@ -170,7 +170,7 @@ public class SierraExportAPIMain {
 				}
 
 				if (groupedWorkIndexer != null) {
-					groupedWorkIndexer.finishIndexingFromExtract();
+					groupedWorkIndexer.finishIndexingFromExtract(logEntry);
 					recordGroupingProcessorSingleton = null;
 					groupedWorkIndexer = null;
 				}

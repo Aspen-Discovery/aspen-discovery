@@ -5,21 +5,27 @@
 			{display_if_inconsistent array=$relatedRecords key="publicationDate"}
 				<th>Pub. Date</th>
 			{/display_if_inconsistent}
+
 			{if in_array(strtolower($relatedManifestation->format), array('ebook', 'eaudiobook', 'emagazine', 'evideo'))}
 				<th>Source</th>
 			{/if}
+
 			{display_if_inconsistent array=$relatedRecords key="edition"}
 				<th>Edition</th>
 			{/display_if_inconsistent}
+
 			{display_if_inconsistent array=$relatedRecords key="publisher"}
 				<th>Publisher</th>
 			{/display_if_inconsistent}
+
 			{display_if_inconsistent array=$relatedRecords key="physical"}
 				<th>Phys Desc.</th>
 			{/display_if_inconsistent}
+
 			{display_if_inconsistent array=$relatedRecords key="language"}
 				<th>Language</th>
 			{/display_if_inconsistent}
+
 			<th>Availability</th>
 			<th></th>
 		</tr>
