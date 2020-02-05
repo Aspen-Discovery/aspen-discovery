@@ -85,7 +85,7 @@ public class SideLoadingMain {
 			}
 
 			if (groupedWorkIndexer != null) {
-				groupedWorkIndexer.finishIndexingFromExtract();
+				groupedWorkIndexer.finishIndexingFromExtract(logEntry);
 				recordGroupingProcessors = new HashMap<>();
 				groupedWorkIndexer = null;
 			}

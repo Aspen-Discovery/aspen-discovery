@@ -44,16 +44,6 @@ AspenDiscovery.GroupedWork = (function(){
 			return false;
 		},
 
-		forceRegrouping: function (id){
-			let url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=forceRegrouping';
-			$.getJSON(url, function (data){
-						AspenDiscovery.showMessage("Success", data.message, true, true);
-						setTimeout("AspenDiscovery.closeLightbox();", 3000);
-					}
-			);
-			return false;
-		},
-
 		forceReindex: function (id){
 			let url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=forceReindex';
 			$.getJSON(url, function (data){

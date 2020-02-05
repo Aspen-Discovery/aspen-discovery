@@ -190,6 +190,12 @@ class ExtractOverDriveInfo {
 
 			logger.info("Processed " + numChanges);
 
+			if (groupedWorkIndexer != null) {
+				groupedWorkIndexer.finishIndexingFromExtract(logEntry);
+				recordGroupingProcessorSingleton = null;
+				groupedWorkIndexer = null;
+			}
+
 			//Mark the new last update time if we did not get errors loading products from the database
 			if (errorsWhileLoadingProducts || results.hasErrors()) {
 				logger.warn("Not setting last extract time since there were problems extracting products from the API");

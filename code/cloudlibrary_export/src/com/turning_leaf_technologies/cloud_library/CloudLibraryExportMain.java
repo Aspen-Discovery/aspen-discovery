@@ -91,7 +91,7 @@ public class CloudLibraryExportMain {
 			int numChanges = extractCloudLibraryData();
 
 			if (groupedWorkIndexer != null) {
-				groupedWorkIndexer.finishIndexingFromExtract();
+				groupedWorkIndexer.finishIndexingFromExtract(logEntry);
 				recordGroupingProcessorSingleton = null;
 				groupedWorkIndexer = null;
 				existingRecords = null;
