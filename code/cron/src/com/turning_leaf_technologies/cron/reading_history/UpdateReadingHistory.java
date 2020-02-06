@@ -68,55 +68,60 @@ public class UpdateReadingHistory implements IProcessHandler {
 				String cat_username = userResults.getString("cat_username");
 				String cat_password = userResults.getString("cat_password");
 
-				if (cat_password == null){
+				if (cat_password == null || cat_password.length() == 0){
 					numSkipped++;
 					continue;
 				}
 
-				boolean initialReadingHistoryLoaded = userResults.getBoolean("initialReadingHistoryLoaded");
-				boolean errorLoadingInitialReadingHistory = false;
-				if (!initialReadingHistoryLoaded){
-					//Get the initial reading history from the ILS
-					try {
-						if (loadInitialReadingHistoryForUser(userId, cat_username, cat_password)) {
-							updateInitialReadingHistoryLoaded.setLong(1, userId);
-							updateInitialReadingHistoryLoaded.executeUpdate();
-						}else{
-							errorLoadingInitialReadingHistory = true;
-						}
-					}catch (SQLException e){
-						logger.error("Error loading initial reading history", e);
-						errorLoadingInitialReadingHistory = true;
-					}
+				if (!updateReadingHistoryForUser(userId, cat_username, cat_password)){
+					processLog.incErrors();
+				}else{
+					processLog.incUpdated();
 				}
 
-				if (!errorLoadingInitialReadingHistory) {
-					//Get a list of titles that are currently checked out
-					getCheckedOutTitlesForUser.setLong(1, userId);
-					ResultSet checkedOutTitlesRS = getCheckedOutTitlesForUser.executeQuery();
-					ArrayList<CheckedOutTitle> checkedOutTitles = new ArrayList<>();
-					while (checkedOutTitlesRS.next()) {
-						CheckedOutTitle curCheckout = new CheckedOutTitle();
-						curCheckout.setId(checkedOutTitlesRS.getLong("id"));
-						curCheckout.setSource(checkedOutTitlesRS.getString("source"));
-						curCheckout.setSourceId(checkedOutTitlesRS.getString("sourceId"));
-						curCheckout.setTitle(checkedOutTitlesRS.getString("title"));
-						checkedOutTitles.add(curCheckout);
-					}
+//				boolean initialReadingHistoryLoaded = userResults.getBoolean("initialReadingHistoryLoaded");
+//				boolean errorLoadingInitialReadingHistory = false;
+//				if (!initialReadingHistoryLoaded){
+//					//Get the initial reading history from the ILS
+//					try {
+//						if (loadInitialReadingHistoryForUser(userId, cat_username, cat_password)) {
+//							updateInitialReadingHistoryLoaded.setLong(1, userId);
+//							updateInitialReadingHistoryLoaded.executeUpdate();
+//						}else{
+//							errorLoadingInitialReadingHistory = true;
+//						}
+//					}catch (SQLException e){
+//						logger.error("Error loading initial reading history", e);
+//						errorLoadingInitialReadingHistory = true;
+//					}
+//				}
+//
+//				if (!errorLoadingInitialReadingHistory) {
+//					//Get a list of titles that are currently checked out
+//					getCheckedOutTitlesForUser.setLong(1, userId);
+//					ResultSet checkedOutTitlesRS = getCheckedOutTitlesForUser.executeQuery();
+//					ArrayList<CheckedOutTitle> checkedOutTitles = new ArrayList<>();
+//					while (checkedOutTitlesRS.next()) {
+//						CheckedOutTitle curCheckout = new CheckedOutTitle();
+//						curCheckout.setId(checkedOutTitlesRS.getLong("id"));
+//						curCheckout.setSource(checkedOutTitlesRS.getString("source"));
+//						curCheckout.setSourceId(checkedOutTitlesRS.getString("sourceId"));
+//						curCheckout.setTitle(checkedOutTitlesRS.getString("title"));
+//						checkedOutTitles.add(curCheckout);
+//					}
+//
+//					logger.info("Loading Reading History for patron " + cat_username);
+//					processTitlesForUser(userId, cat_username, cat_password, checkedOutTitles);
+//
+//					//Any titles that are left in checkedOutTitles were checked out previously and are no longer checked out.
+//					long curTime = new Date().getTime() / 1000;
+//					for (CheckedOutTitle curTitle : checkedOutTitles) {
+//						updateReadingHistoryStmt.setLong(1, curTime);
+//						updateReadingHistoryStmt.setLong(2, curTitle.getId());
+//						updateReadingHistoryStmt.executeUpdate();
+//					}
+//				}
 
-					logger.info("Loading Reading History for patron " + cat_username);
-					processTitlesForUser(userId, cat_username, cat_password, checkedOutTitles);
-
-					//Any titles that are left in checkedOutTitles were checked out previously and are no longer checked out.
-					long curTime = new Date().getTime() / 1000;
-					for (CheckedOutTitle curTitle : checkedOutTitles) {
-						updateReadingHistoryStmt.setLong(1, curTime);
-						updateReadingHistoryStmt.setLong(2, curTitle.getId());
-						updateReadingHistoryStmt.executeUpdate();
-					}
-				}
-
-				processLog.incUpdated();
 				processLog.saveToDatabase(dbConn, logger);
 				try {
 					Thread.sleep(1000);
@@ -136,6 +141,47 @@ public class UpdateReadingHistory implements IProcessHandler {
 		processLog.setFinished();
 		processLog.saveToDatabase(dbConn, logger);
 	}
+
+	private boolean updateReadingHistoryForUser(Long userId, String cat_username, String cat_password) {
+		boolean hadError = false;
+		try {
+			// Call the patron API to get their checked out items
+			URL patronApiUrl = new URL(aspenUrl + "/API/UserAPI?method=updatePatronReadingHistory&username=" + URLEncoder.encode(cat_username, "UTF-8") + "&password=" + URLEncoder.encode(cat_password, "UTF-8"));
+			logger.debug("Loading initial reading history for " + cat_username);
+			Object responseRaw = patronApiUrl.getContent();
+			if (responseRaw instanceof InputStream) {
+				String patronDataJson = StringUtils.convertStreamToString((InputStream) responseRaw);
+				logger.debug(patronApiUrl.toString());
+				logger.debug("Json for patron reading history " + patronDataJson);
+				try {
+					JSONObject patronData = new JSONObject(patronDataJson);
+					JSONObject result = patronData.getJSONObject("result");
+					hadError = !result.getBoolean("success");
+				} catch (JSONException e) {
+					logger.error("Unable to load patron information from for " + cat_username + " exception loading response ", e);
+					logger.error(patronDataJson);
+					processLog.incErrors();
+					processLog.addNote("Unable to load patron information from for " + cat_username + " exception loading response " + e.toString());
+					hadError = true;
+				}
+			} else {
+				logger.error("Unable to load patron information from for " + cat_username + ": expected to get back an input stream, received a "
+						+ responseRaw.getClass().getName());
+				processLog.incErrors();
+				hadError = true;
+			}
+		} catch (MalformedURLException e) {
+			logger.error("Bad url for patron API " + e.toString());
+			processLog.incErrors();
+			hadError = true;
+		} catch (IOException e) {
+			logger.error("Unable to retrieve information from patron API for " + cat_username /*+ ": " + e.toString()*/);
+			processLog.incErrors();
+			hadError = true;
+		}
+		return !hadError;
+	}
+
 
 	private boolean loadInitialReadingHistoryForUser(Long userId, String cat_username, String cat_password) {
 		boolean hadError = false;
