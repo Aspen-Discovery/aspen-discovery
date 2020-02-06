@@ -28,4 +28,15 @@ class WebBuilderMenu extends DataObject
 		];
 		return $structure;
 	}
+
+	public function getChildMenuItems(){
+		$childItems = [];
+		$childItem = new WebBuilderMenu();
+		$childItem->parentMenuId = $this->id;
+		$childItem->find();
+		while ($childItem->fetch()){
+			$childItems[$childItem->id] = clone($childItem);
+		}
+		return $childItems;
+	}
 }

@@ -96,11 +96,15 @@
 		</div>
 
 		{if !empty($webMenu)}
-			<div id="webMenuNavBar" class="navbar navbar-default">
+			<div id="webMenuNavBar" class="navbar navbar-default row" style="margin-bottom: 0px;">
 				<div class="collapse navbar-collapse">
 					<ul class="nav navbar-nav">
 						{foreach from=$webMenu item=menu}
-							<li>{if $menu->url}<a href="{$menu->url}">{/if}{$menu->label}{if $menu->url}</a>{/if}</li>
+							{assign var="childItems" value=$menu->getChildMenuItems()}
+							{if count($childItems) == 0}
+								<li>{if $menu->url}<a href="{$menu->url}">{/if}{$menu->label}{if $menu->url}</a>{/if}</li>
+							{else}
+							{/if}
 						{/foreach}
 					</ul>
 				</div>
