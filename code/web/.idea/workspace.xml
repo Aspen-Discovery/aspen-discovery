@@ -81,6 +81,7 @@
       <server host="model.localhost" id="fa387cea-b866-4fcd-a70c-a02e107f1acc" name="model.localhost" />
       <server host="model2.localhost" id="2b489aa2-3c05-45db-b9a8-169885ef503e" name="model2.localhost" />
       <server host="aspencat.localhost" id="a9c40839-4345-4977-a7b3-3d329dd6572f" name="aspencat.localhost" />
+      <server host="arlington.localhost" id="35e5ed53-e313-4cab-bd28-1048a48127b7" name="arlington.localhost" />
     </servers>
   </component>
   <component name="PhpWebServerValidation" path_to_validation_script="C:\web\aspen-discovery\code\web" selected_validation_type="LOCAL" web_path_to_validation_script="http://aspen.demo" />
@@ -113,19 +114,19 @@
     <property name="settings.editor.selected.configurable" value="configurable.group.editor" />
   </component>
   <component name="RecentsManager">
-    <key name="CopyFile.RECENT_KEYS">
-      <recent name="C:\web\aspen-discovery\code\web\interface\themes\responsive\Admin" />
-      <recent name="C:\web\aspen-discovery\code\web\services\OverDrive" />
-      <recent name="C:\web\aspen-discovery\code\web\services\Admin" />
-      <recent name="C:\web\aspen-discovery\code\web\sys\Grouping" />
-      <recent name="C:\web\aspen-discovery\sites\template.linux\conf" />
-    </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\web\aspen-discovery\code\web\services\ILS" />
       <recent name="C:\web\aspen-discovery\code\web\sys\Grouping" />
       <recent name="C:\web\aspen-discovery\code\web\interface\themes\responsive\Search" />
       <recent name="C:\web\aspen-discovery\sites\basinlibraries.production" />
       <recent name="C:\web\aspen-discovery\code\web\interface\themes\responsive\ILS" />
+    </key>
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\web\aspen-discovery\code\web\interface\themes\responsive\Admin" />
+      <recent name="C:\web\aspen-discovery\code\web\services\OverDrive" />
+      <recent name="C:\web\aspen-discovery\code\web\services\Admin" />
+      <recent name="C:\web\aspen-discovery\code\web\sys\Grouping" />
+      <recent name="C:\web\aspen-discovery\sites\template.linux\conf" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -162,6 +163,21 @@
       <item itemvalue="PHP Script.updateNYTLists" />
       <item itemvalue="PHP Script.updateSuggesters" />
     </list>
+  </component>
+  <component name="ServiceViewManager">
+    <option name="allServicesViewState">
+      <serviceView>
+        <treeState>
+          <expand>
+            <path>
+              <item name="services root" type="e789fda9:ObjectUtils$Sentinel" />
+              <item name="com.intellij.execution.services.ServiceModel$ServiceGroupNode@2b277a7a" type="7427dc5b:ServiceModel$ServiceGroupNode" />
+            </path>
+          </expand>
+          <select />
+        </treeState>
+      </serviceView>
+    </option>
   </component>
   <component name="StructureViewFactory">
     <option name="ACTIVE_ACTIONS" value=",ALPHA_COMPARATOR,Show Fields" />
@@ -319,16 +335,6 @@
           <url>file://$PROJECT_DIR$/cron/updateSuggesters.php</url>
           <line>1</line>
           <option name="timeStamp" value="706" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/SearchObject/BaseSearcher.php</url>
-          <line>2273</line>
-          <option name="timeStamp" value="730" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/SearchObject/BaseSearcher.php</url>
-          <line>2270</line>
-          <option name="timeStamp" value="731" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
           <url>file://$PROJECT_DIR$/bookcover.php</url>
@@ -593,21 +599,6 @@
           <option name="timeStamp" value="2138" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/Grouping/Manifestation.php</url>
-          <line>164</line>
-          <option name="timeStamp" value="2154" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/Grouping/Manifestation.php</url>
-          <line>168</line>
-          <option name="timeStamp" value="2156" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/Grouping/Manifestation.php</url>
-          <line>174</line>
-          <option name="timeStamp" value="2158" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
           <url>file://$PROJECT_DIR$/Drivers/OverDriveDriver.php</url>
           <line>812</line>
           <option name="timeStamp" value="2201" />
@@ -671,11 +662,6 @@
           <url>file://$PROJECT_DIR$/services/MyAccount/AJAX.php</url>
           <line>2379</line>
           <option name="timeStamp" value="2461" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/SolrConnector/Solr.php</url>
-          <line>1649</line>
-          <option name="timeStamp" value="2466" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
           <url>file://$PROJECT_DIR$/sys/DBMaintenance/overdrive_updates.php</url>
@@ -769,6 +755,11 @@
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
+    <watches-manager>
+      <configuration name="index.php">
+        <watch expression="$field" />
+      </configuration>
+    </watches-manager>
   </component>
   <component name="masterDetails">
     <states>

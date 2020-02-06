@@ -65,6 +65,7 @@ public class GroupedWorkIndexer {
 	private PreparedStatement getScheduledWorksStmt;
 	private PreparedStatement markScheduledWorkProcessedStmt;
 
+
 	private static PreparedStatement deleteGroupedWorkStmt;
 
 	private boolean removeRedundantHooplaRecords = false;
@@ -518,6 +519,7 @@ public class GroupedWorkIndexer {
 			while (scheduledWorksRS.next()) {
 				long scheduleId = scheduledWorksRS.getLong("id");
 				String workToProcess = scheduledWorksRS.getString("permanent_id");
+
 				//TODO: look at each record within the grouped work to see if it needs to be regrouped.
 
 				//reindex the actual work

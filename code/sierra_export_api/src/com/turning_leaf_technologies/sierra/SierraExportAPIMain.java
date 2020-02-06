@@ -1517,6 +1517,7 @@ public class SierraExportAPIMain {
 				loadError = true;
 			}
 			if (!loadError) {
+				int numVolumesUpdated = 0;
 				while (volumeInfoRS.next()) {
 					long recordId = volumeInfoRS.getLong("id");
 
@@ -1536,7 +1537,7 @@ public class SierraExportAPIMain {
 						addVolumeStmt.setString(4, relatedItems);
 						int numUpdates = addVolumeStmt.executeUpdate();
 						if (numUpdates > 0) {
-							logEntry.incUpdated();
+							numVolumesUpdated++;
 						}
 					}catch (SQLException sqlException){
 						logger.error("Error adding volume", sqlException);
@@ -1546,11 +1547,14 @@ public class SierraExportAPIMain {
 				volumeInfoRS.close();
 
 				//Remove anything that no longer exists
+				long numVolumesDeleted = 0;
 				for (String existingVolume : existingVolumes){
 					logEntry.addNote("Deleted volume " + existingVolume);
 					deleteVolumeStmt.setString(1, existingVolume);
 					deleteVolumeStmt.executeUpdate();
+					numVolumesDeleted++;
 				}
+				logEntry.addNote("Updated " + numVolumesUpdated + " volumes and deleted " + numVolumesDeleted + " volumes");
 			}
 
 			logEntry.addNote("Finished export of volume information " + dateTimeFormatter.format(new Date()));
