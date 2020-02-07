@@ -177,6 +177,10 @@ class ExtractOverDriveInfo {
 							}
 						}
 					}
+
+					//For any records that have been marked to reload, regroup and reindex the records
+					processRecordsToReload(logEntry);
+
 				}
 			}catch (SocketTimeoutException toe){
 				logger.info("Timeout while loading information from OverDrive, aborting");
@@ -218,6 +222,35 @@ class ExtractOverDriveInfo {
 			results.saveResults();
 		}
 		return numChanges;
+	}
+
+	private void processRecordsToReload(OverDriveExtractLogEntry logEntry) {
+		try {
+			PreparedStatement getRecordsToReloadStmt = dbConn.prepareStatement("SELECT * from record_identifiers_to_reload WHERE processed = 0 and type='overdrive'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement markRecordToReloadAsProcessedStmt = dbConn.prepareStatement("UPDATE record_identifiers_to_reload SET processed = 1 where id = ?");
+
+			ResultSet getRecordsToReloadRS = getRecordsToReloadStmt.executeQuery();
+			int numRecordsToReloadProcessed = 0;
+			while (getRecordsToReloadRS.next()){
+				long recordToReloadId = getRecordsToReloadRS.getLong("id");
+				String overDriveId = getRecordsToReloadRS.getString("identifier");
+				//Regroup the record
+				String groupedWorkId = getRecordGroupingProcessor().processOverDriveRecord(overDriveId);
+				//Reindex the record
+				getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
+
+				markRecordToReloadAsProcessedStmt.setLong(1, recordToReloadId);
+				markRecordToReloadAsProcessedStmt.executeUpdate();
+				numRecordsToReloadProcessed++;
+			}
+			if (numRecordsToReloadProcessed > 0){
+				logEntry.addNote("Regrouped " + numRecordsToReloadProcessed + " records marked for reprocessing");
+			}
+			getRecordsToReloadRS.close();
+		}catch (Exception e){
+			logEntry.incErrors();
+			logEntry.addNote("Error processing records to reload " + e.toString());
+		}
 	}
 
 	private boolean initOverDriveExtract(Connection dbConn, OverDriveExtractLogEntry logEntry) throws SQLException {

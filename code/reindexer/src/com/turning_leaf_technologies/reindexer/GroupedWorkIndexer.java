@@ -520,8 +520,6 @@ public class GroupedWorkIndexer {
 				long scheduleId = scheduledWorksRS.getLong("id");
 				String workToProcess = scheduledWorksRS.getString("permanent_id");
 
-				//TODO: look at each record within the grouped work to see if it needs to be regrouped.
-
 				//reindex the actual work
 				this.processGroupedWork(workToProcess);
 

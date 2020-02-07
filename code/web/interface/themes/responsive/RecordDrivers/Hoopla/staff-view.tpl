@@ -10,6 +10,8 @@
 				<button onclick="return AspenDiscovery.GroupedWork.reloadEnrichment('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default" >Reload Enrichment</button>
 				{if $loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles))}
 					<button onclick="return AspenDiscovery.GroupedWork.forceReindex('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">Force Reindex</button>
+					<button onclick="return AspenDiscovery.GroupedWork.getGroupWithForm(this, '{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">Group With Work</button>
+					<button onclick="return AspenDiscovery.GroupedWork.ungroupRecord(this, '{$recordDriver->getIdWithSource()}')" class="btn btn-sm btn-default">Ungroup</button>
 				{/if}
 				{if $loggedIn && $enableArchive && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('archives', $userRoles))}
 					<button onclick="return AspenDiscovery.GroupedWork.reloadIslandora('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">Clear Islandora Cache</button>
@@ -18,21 +20,7 @@
 		</div>
 	{/if}
 
-	<h4>Grouping Information</h4>
-	<table class="table-striped table table-condensed notranslate">
-		<tr>
-			<th>Grouped Work ID</th>
-			<td>{$recordDriver->getPermanentId()}</td>
-		</tr>
-		{foreach from=$groupedWorkDetails key='field' item='value'}
-			<tr>
-				<th>{$field|escape}</th>
-				<td>
-					{$value}
-				</td>
-			</tr>
-		{/foreach}
-	</table>
+    {include file="RecordDrivers/GroupedWork/grouping-information.tpl"}
 
 	{if $hooplaExtract}
 		<h3>Hoopla Extract Information</h3>

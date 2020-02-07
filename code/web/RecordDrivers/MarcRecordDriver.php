@@ -177,6 +177,8 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 		$groupedWorkDetails = $this->getGroupedWorkDriver()->getGroupedWorkDetails();
 		$interface->assign('groupedWorkDetails', $groupedWorkDetails);
 
+		$interface->assign('alternateTitles', $this->getGroupedWorkDriver()->getAlternateTitles());
+
 		$interface->assign('marcRecord', $this->getMarcRecord());
 
 		$lastMarcModificationTime = MarcLoader::lastModificationTimeForIlsId("{$this->profileType}:{$this->id}");

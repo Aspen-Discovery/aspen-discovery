@@ -21,6 +21,11 @@
 						<button onclick="return AspenDiscovery.GroupedWork.showSaveToListForm(this, '{$recordDriver->getPermanentId()|escape}');" class="btn btn-sm ">{translate text='Add to favorites'}</button>
 					</div>
 				{/if}
+				{if $loggedIn && $module == 'Search' && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles))}
+					<div class="btn-group btn-group-sm">
+						<button onclick="return AspenDiscovery.GroupedWork.getGroupWithSearchForm(this, '{$recordDriver->getPermanentId()}', '{$searchId}', '{$page}')" class="btn btn-sm">{translate text='Group With'}</button>
+					</div>
+				{/if}
 			{/if}
 
 			<div class="btn-group btn-group-sm">

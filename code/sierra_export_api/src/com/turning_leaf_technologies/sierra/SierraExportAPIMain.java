@@ -159,6 +159,8 @@ public class SierraExportAPIMain {
 
 				numChanges = updateBibs(configIni);
 
+				processRecordsToReload(indexingProfile, logEntry);
+
 				if (sierraConn != null){
 					try{
 						//Close the connection
@@ -220,6 +222,48 @@ public class SierraExportAPIMain {
 				logger.info("Thread was interrupted");
 			}
 		} //Infinite loop
+	}
+
+	private static void processRecordsToReload(IndexingProfile indexingProfile, IlsExtractLogEntry logEntry) {
+		try {
+			PreparedStatement getRecordsToReloadStmt = dbConn.prepareStatement("SELECT * from record_identifiers_to_reload WHERE processed = 0 and type='" + indexingProfile.getName() + "'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement markRecordToReloadAsProcessedStmt = dbConn.prepareStatement("UPDATE record_identifiers_to_reload SET processed = 1 where id = ?");
+			ResultSet getRecordsToReloadRS = getRecordsToReloadStmt.executeQuery();
+			int numRecordsToReloadProcessed = 0;
+			while (getRecordsToReloadRS.next()) {
+				long recordToReloadId = getRecordsToReloadRS.getLong("id");
+				String recordIdentifier = getRecordsToReloadRS.getString("identifier");
+				File marcFile = indexingProfile.getFileForIlsRecord(recordIdentifier);
+				if (!marcFile.exists()) {
+					logEntry.incErrors();
+					logEntry.addNote("Could not find marc for record to reload " + recordIdentifier);
+				} else {
+					FileInputStream marcFileStream = new FileInputStream(marcFile);
+					MarcPermissiveStreamReader streamReader = new MarcPermissiveStreamReader(marcFileStream, true, true);
+					if (streamReader.hasNext()) {
+						Record marcRecord = streamReader.next();
+						//Regroup the record
+						String groupedWorkId = groupSierraRecord(marcRecord);
+						//Reindex the record
+						getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
+					} else {
+						logEntry.incErrors();
+						logEntry.addNote("Could not read file " + marcFile);
+					}
+				}
+
+				markRecordToReloadAsProcessedStmt.setLong(1, recordToReloadId);
+				markRecordToReloadAsProcessedStmt.executeUpdate();
+				numRecordsToReloadProcessed++;
+			}
+			if (numRecordsToReloadProcessed > 0) {
+				logEntry.addNote("Regrouped " + numRecordsToReloadProcessed + " records marked for reprocessing");
+			}
+			getRecordsToReloadRS.close();
+		}catch (Exception e){
+			logEntry.incErrors();
+			logEntry.addNote("Error processing records to reload " + e.toString());
+		}
 	}
 
 	private static void getBibsAndItemUpdatesFromSierra(Ini ini, Connection dbConn, Connection sierraConn) {

@@ -30,6 +30,10 @@ public class RecordGroupingProcessor {
 	private PreparedStatement getAuthorAuthorityStmt;
 	private PreparedStatement getTitleAuthorityStmt;
 
+	private PreparedStatement markWorkAsNeedingReindexStmt;
+
+	private PreparedStatement getWorkByAlternateTitleAuthorStmt;
+
 	private int numRecordsProcessed = 0;
 	private int numGroupedWorksAdded = 0;
 
@@ -143,6 +147,7 @@ public class RecordGroupingProcessor {
 
 			getGroupedWorkIdByPermanentIdStmt = dbConnection.prepareStatement("SELECT id from grouped_work WHERE permanent_id = ?");
 
+			markWorkAsNeedingReindexStmt = dbConnection.prepareStatement("INSERT into grouped_work_scheduled_index (permanent_id, indexAfter) VALUES (?, ?)");
 			PreparedStatement loadMergedWorksStmt = dbConnection.prepareStatement("SELECT * from merged_grouped_works");
 			ResultSet mergedWorksRS = loadMergedWorksStmt.executeQuery();
 			while (mergedWorksRS.next()) {
@@ -156,6 +161,9 @@ public class RecordGroupingProcessor {
 				recordsToNotGroup.add(identifier.toLowerCase());
 			}
 			nonGroupedRecordsRS.close();
+
+			getWorkByAlternateTitleAuthorStmt = dbConnection.prepareStatement("SELECT permanent_id from grouped_work_alternate_titles where alternateTitle = ? and alternateAuthor = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+
 
 		} catch (Exception e) {
 			logger.error("Error setting up prepared statements", e);
@@ -186,6 +194,18 @@ public class RecordGroupingProcessor {
 			groupedWorkPermanentId = handleMergedWork(groupedWork, groupedWorkPermanentId);
 		}
 
+		try {
+			//Check to see if we know the work based on the title and author through the merge process
+			getWorkByAlternateTitleAuthorStmt.setString(1, groupedWork.getTitle());
+			getWorkByAlternateTitleAuthorStmt.setString(2, groupedWork.getAuthor());
+			ResultSet getWorkByAlternateTitleAuthorRS = getWorkByAlternateTitleAuthorStmt.executeQuery();
+			if (getWorkByAlternateTitleAuthorRS.next()){
+				groupedWorkPermanentId = getWorkByAlternateTitleAuthorRS.getString("permanent_id");
+			}
+		} catch (SQLException e) {
+			logger.error("Error looking for grouped work by alternate title");
+		}
+
 		//Check to see if the record is already on an existing work.  If so, remove from the old work.
 		try {
 			groupedWorkForIdentifierStmt.setString(1, primaryIdentifier.getType());
@@ -197,8 +217,16 @@ public class RecordGroupingProcessor {
 				String existingGroupedWorkPermanentId = groupedWorkForIdentifierRS.getString("permanent_id");
 				long existingGroupedWorkId = groupedWorkForIdentifierRS.getLong("id");
 				if (!existingGroupedWorkPermanentId.equals(groupedWorkPermanentId)) {
-					//TODO: For realtime indexing we will want to trigger a reindex of the old record as well
-					markWorkUpdated(existingGroupedWorkId);
+					//For realtime indexing we will want to trigger a reindex of the old record as well
+					markWorkAsNeedingReindexStmt.setString(1, existingGroupedWorkPermanentId);
+					markWorkAsNeedingReindexStmt.setLong(2, new Date().getTime() / 1000);
+					markWorkAsNeedingReindexStmt.executeUpdate();
+
+					//Todo: need to move enrichment from the old id to the new if the new old no longer has any records
+
+					//markWorkUpdated(existingGroupedWorkId);
+				}else{
+					logger.debug("Permanent id matched");
 				}
 			}
 			groupedWorkForIdentifierRS.close();
@@ -269,11 +297,11 @@ public class RecordGroupingProcessor {
 				long originalGroupedWorkId = existingIdRS.getLong("id");
 
 				//Make sure we mark the original work as updated so it can be removed from the index next time around
-				markWorkUpdated(originalGroupedWorkId);
+				markWorkAsNeedingReindexStmt.setString(1, originalGroupedWorkPermanentId);
+				markWorkAsNeedingReindexStmt.setLong(2, new Date().getTime() / 1000);
+				markWorkAsNeedingReindexStmt.executeUpdate();
 
-				//Remove the identifiers for the work.
-				//TODO: If we have multiple identifiers for this work, we'll call the delete once for each work.
-				//Should we optimize to just call it once and remember that we removed it already?
+				//Todo: need to move enrichment from the old id to the new if the new old no longer has any records
 
 				removePrimaryIdentifiersForWorkStmt.setLong(1, originalGroupedWorkId);
 				removePrimaryIdentifiersForWorkStmt.executeUpdate();

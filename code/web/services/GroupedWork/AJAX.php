@@ -55,7 +55,7 @@ class GroupedWork_AJAX {
 		$groupedWork = new GroupedWork();
 		$groupedWork->permanent_id = $id;
 		if ($groupedWork->find(true)){
-			$groupedWork->forceReindex();
+			$groupedWork->forceReindex(true);
 
 			return json_encode(array('success' => true, 'message' => 'This title will be indexed again shortly.'));
 		}else{
@@ -1098,6 +1098,162 @@ class GroupedWork_AJAX {
 			'title' => translate("Copy Summary"),
 			'modalBody' => $modalBody,
 		);
+		return json_encode($results);
+	}
+
+	function getGroupWithForm(){
+		$results = [
+			'success' => false,
+			'message' => 'Unknown Error'
+		];
+
+		if (UserAccount::isLoggedIn() && (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('cataloging'))) {
+			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+			$groupedWork = new GroupedWork();
+			$id = $_REQUEST['id'];
+			$groupedWork->permanent_id = $id;
+			if ($groupedWork->find(true)) {
+				global $interface;
+				$interface->assign('id', $id);
+				$interface->assign('groupedWork', $groupedWork);
+				$results = array(
+					'success' => true,
+					'title' => translate("Group this with another work"),
+					'modalBody' => $interface->fetch("GroupedWork/groupWithForm.tpl"),
+					'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.GroupedWork.processGroupWithForm()'>Group</button>"
+				);
+			} else {
+				$results['message'] = "Could not find a work with that id";
+			}
+		}else{
+			$results['message'] = "You do not have the correct permissions for this operation";
+		}
+		return json_encode($results);
+	}
+
+	function getGroupWithInfo(){
+		$results = [
+			'success' => false,
+			'message' => 'Unknown Error'
+		];
+		if (UserAccount::isLoggedIn() && (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('cataloging'))) {
+			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+			$groupedWork = new GroupedWork();
+			$id = $_REQUEST['id'];
+			$groupedWork->permanent_id = $id;
+			if ($groupedWork->find(true)) {
+				$results['success'] = true;
+				$results['message'] = "<div class='row'><div class='col-tn-3'>Title</div><div class='col-tn-9'><strong>{$groupedWork->full_title}</strong></div></div>";
+				$results['message'] .= "<div class='row'><div class='col-tn-3'>Author</div><div class='col-tn-9'><strong>{$groupedWork->author}</strong></div></div>";
+			} else {
+				$results['message'] = "Could not find a work with that id";
+			}
+		}else{
+			$results['message'] = "You do not have the correct permissions for this operation";
+		}
+		return json_encode($results);
+	}
+	function processGroupWithForm(){
+		$results = [
+			'success' => false,
+			'message' => 'Unknown Error'
+		];
+		if (UserAccount::isLoggedIn() && (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('cataloging'))) {
+			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+
+			$id = $_REQUEST['id'];
+			$originalGroupedWork = new GroupedWork();
+			$originalGroupedWork->permanent_id = $id;
+			if (!empty($id) && $originalGroupedWork->find(true)){
+				$workToGroupWithId = $_REQUEST['groupWithId'];
+				$workToGroupWith = new GroupedWork();
+				$workToGroupWith->permanent_id = $workToGroupWithId;
+				if (!empty($workToGroupWithId) && $workToGroupWith->find(true)){
+					if ($originalGroupedWork->grouping_category != $workToGroupWith->grouping_category){
+						$results['message'] = "These are different categories of works, cannot group.";
+					}else{
+						require_once ROOT_DIR . '/sys/Grouping/GroupedWorkAlternateTitle.php';
+						$groupedWorkAlternateTitle = new GroupedWorkAlternateTitle();
+						$groupedWorkAlternateTitle->permanent_id = $workToGroupWithId;
+						$groupedWorkAlternateTitle->alternateAuthor = $originalGroupedWork->author;
+						$groupedWorkAlternateTitle->alternateTitle = $originalGroupedWork->full_title;
+						$groupedWorkAlternateTitle->addedBy = UserAccount::getActiveUserId();
+						$groupedWorkAlternateTitle->dateAdded = time();
+						$groupedWorkAlternateTitle->insert();
+						$workToGroupWith->forceReindex(true);
+						$originalGroupedWork->forceReindex(true);
+						$results['success'] = true;
+						$results['message'] = "Your works have been grouped successfully, the index will update shortly.";
+					}
+				}else{
+					$results['message'] = "Could not find work to group with";
+				}
+			}else{
+				$results['message'] = "Could not find work for original id";
+			}
+
+		}else{
+			$results['message'] = "You do not have the correct permissions for this operation";
+		}
+		return json_encode($results);
+	}
+
+	function getGroupWithSearchForm(){
+		$results = [
+			'success' => false,
+			'message' => 'Unknown Error'
+		];
+
+		if (UserAccount::isLoggedIn() && (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('cataloging'))) {
+			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+			$groupedWork = new GroupedWork();
+			$id = $_REQUEST['id'];
+			$groupedWork->permanent_id = $id;
+			if ($groupedWork->find(true)) {
+				global $interface;
+				$interface->assign('id', $id);
+				$interface->assign('groupedWork', $groupedWork);
+
+				$searchId = $_REQUEST['searchId'];
+				/** @var SearchObject_GroupedWorkSearcher $searchObject */
+				$searchObject = SearchObjectFactory::initSearchObject();
+				$searchObject->init();
+				$searchObject = $searchObject->restoreSavedSearch($searchId, false);
+
+				if (!empty($_REQUEST['page'])){
+					$searchObject->setPage($_REQUEST['page']);
+				}
+
+				$searchResults = $searchObject->processSearch(false, false);
+				$availableRecords = [];
+				$availableRecords[-1] = translate("Select the primary work");
+				$recordIndex = ($searchObject->getPage() - 1) * $searchObject->getLimit();
+				foreach ($searchResults['response']['docs'] as $doc){
+					$recordIndex++;
+					if ($doc['id'] != $id) {
+						$primaryWork = new GroupedWork();
+						$primaryWork->permanent_id = $doc['id'];
+						if ($primaryWork->find(true)){
+							if ($primaryWork->grouping_category == $groupedWork->grouping_category){
+								$availableRecords[$doc['id']] = "$recordIndex) {$primaryWork->full_title} {$primaryWork->author}";
+							}
+						}
+					}
+				}
+				$interface->assign('availableRecords', $availableRecords);
+
+				$results = array(
+					'success' => true,
+					'title' => translate("Group this with another work"),
+					'modalBody' => $interface->fetch("GroupedWork/groupWithSearchForm.tpl"),
+					'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.GroupedWork.processGroupWithForm()'>Group</button>"
+				);
+			} else {
+				$results['message'] = "Could not find a work with that id";
+			}
+		}else{
+			$results['message'] = "You do not have the correct permissions for this operation";
+		}
 		return json_encode($results);
 	}
 }

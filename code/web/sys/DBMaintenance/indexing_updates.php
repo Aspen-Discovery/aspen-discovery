@@ -713,6 +713,21 @@ function getIndexingUpdates()
 				) ENGINE=InnoDB'
 			]
 		],
+
+		'record_identifiers_to_reload' => [
+			'title' => 'Record Identifiers To Reload',
+			'description' => 'Setup record identifiers to reload to force regrouping',
+			'sql' => [
+				'CREATE TABLE IF NOT EXISTS record_identifiers_to_reload (
+					id int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					type VARCHAR(50) NOT NULL,
+					identifier VARCHAR(50) NOT NULL,
+					processed TINYINT(1) DEFAULT 0,
+					INDEX (type, identifier),
+					INDEX (processed, type)
+				)'
+			]
+		],
 	);
 }
 

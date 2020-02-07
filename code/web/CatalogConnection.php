@@ -669,7 +669,7 @@ class CatalogConnection
 	/**
 	 * @param User $patron
 	 */
-	private function updateReadingHistoryBasedOnCurrentCheckouts($patron)
+	public function updateReadingHistoryBasedOnCurrentCheckouts($patron)
 	{
 		require_once ROOT_DIR . '/sys/ReadingHistoryEntry.php';
 		//Note, include deleted titles here so they are not added multiple times.

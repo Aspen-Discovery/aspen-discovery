@@ -325,6 +325,8 @@ class CloudLibraryRecordDriver extends MarcRecordDriver {
 		$groupedWorkDetails = $this->getGroupedWorkDriver()->getGroupedWorkDetails();
 		$interface->assign('groupedWorkDetails', $groupedWorkDetails);
 
+		$interface->assign('alternateTitles', $this->getGroupedWorkDriver()->getAlternateTitles());
+
 		$interface->assign('marcRecord', $this->getMarcRecord());
 
 		if ($this->groupedWork != null) {

@@ -1857,7 +1857,25 @@ class GroupedWorkDriver extends IndexRecordDriver
 		$groupedWorkDetails = $this->getGroupedWorkDetails();
 		$interface->assign('groupedWorkDetails', $groupedWorkDetails);
 
+		$interface->assign('alternateTitles', $this->getAlternateTitles());
+
 		return 'RecordDrivers/GroupedWork/staff-view.tpl';
+	}
+
+	public function getAlternateTitles(){
+		//Load alternate titles
+		if (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('cataloging')){
+			require_once ROOT_DIR . '/sys/Grouping/GroupedWorkAlternateTitle.php';
+			$alternateTitle = new GroupedWorkAlternateTitle();
+			$alternateTitle->permanent_id = $this->getPermanentId();
+			$alternateTitle->find();
+			$alternateTitles = [];
+			while ($alternateTitle->fetch()){
+				$alternateTitles[$alternateTitle->id] = clone $alternateTitle;
+			}
+			return $alternateTitles;
+		}
+		return null;
 	}
 
 	public function getSolrField($fieldName)
