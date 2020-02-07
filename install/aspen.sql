@@ -4835,33 +4835,6 @@ CREATE TABLE `user_payments` (
 /*!40000 ALTER TABLE `user_payments` ENABLE KEYS */;
 
 --
--- Table structure for table `user_rating`
---
-
-DROP TABLE IF EXISTS `user_rating`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `user_rating` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `userid` int(11) NOT NULL,
-  `resourceid` int(11) NOT NULL,
-  `rating` int(1) NOT NULL,
-  `dateRated` int(11) DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uniqueness` (`userid`,`resourceid`),
-  KEY `Resourceid` (`resourceid`),
-  KEY `UserId` (`userid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `user_rating`
---
-
-/*!40000 ALTER TABLE `user_rating` DISABLE KEYS */;
-/*!40000 ALTER TABLE `user_rating` ENABLE KEYS */;
-
---
 -- Table structure for table `user_rbdigital_usage`
 --
 

@@ -1373,6 +1373,15 @@ class Admin_DBMaintenance extends Admin_Admin
 					),
 				),
 
+				'remove_old_user_rating_table' => [
+					'title' => 'Remove user rating',
+					'description' => 'Remove old user rating table.',
+					'sql' => array(
+						"DROP TABLE user_rating",
+					),
+				],
+
+
 				'user_list_entry' => array(
 					'title' => 'User List Entry (Grouped Work)',
 					'description' => 'Add grouped works to lists rather than resources.',
