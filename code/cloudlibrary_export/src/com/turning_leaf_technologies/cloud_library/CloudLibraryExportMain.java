@@ -146,27 +146,20 @@ public class CloudLibraryExportMain {
 				getItemDetailsForRecordStmt.setString(1, cloudLibraryId);
 				ResultSet getItemDetailsForRecordRS = getItemDetailsForRecordStmt.executeQuery();
 				if (getItemDetailsForRecordRS.next()){
-					String rawResponse = getItemDetailsForRecordRS.getString("rawResponse");
-					try {
-						JSONObject itemDetails = new JSONObject(rawResponse);
-						String title = getItemDetailsForRecordRS.getString("title");
-						String subTitle = getItemDetailsForRecordRS.getString("subTitle");
-						String author = getItemDetailsForRecordRS.getString("author");
-						String format = getItemDetailsForRecordRS.getString("format");
-						RecordIdentifier primaryIdentifier = new RecordIdentifier("cloud_library", cloudLibraryId);
+					String title = getItemDetailsForRecordRS.getString("title");
+					String subTitle = getItemDetailsForRecordRS.getString("subTitle");
+					String author = getItemDetailsForRecordRS.getString("author");
+					String format = getItemDetailsForRecordRS.getString("format");
+					RecordIdentifier primaryIdentifier = new RecordIdentifier("cloud_library", cloudLibraryId);
 
 
-						String groupedWorkId = getRecordGroupingProcessor().processRecord(primaryIdentifier, title, subTitle, author, format, true);
-						//Reindex the record
-						getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
+					String groupedWorkId = getRecordGroupingProcessor().processRecord(primaryIdentifier, title, subTitle, author, format, true);
+					//Reindex the record
+					getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
 
-						markRecordToReloadAsProcessedStmt.setLong(1, recordToReloadId);
-						markRecordToReloadAsProcessedStmt.executeUpdate();
-						numRecordsToReloadProcessed++;
-					}catch (JSONException e){
-						logEntry.incErrors();
-						logEntry.addNote("Could not parse item details for record to reload " + cloudLibraryId);
-					}
+					markRecordToReloadAsProcessedStmt.setLong(1, recordToReloadId);
+					markRecordToReloadAsProcessedStmt.executeUpdate();
+					numRecordsToReloadProcessed++;
 				}else{
 					logEntry.incErrors();
 					logEntry.addNote("Could not get details for record to reload " + cloudLibraryId);
