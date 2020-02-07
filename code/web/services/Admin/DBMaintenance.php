@@ -728,31 +728,25 @@ class Admin_DBMaintenance extends Admin_Admin
 					),
 				),
 
-				'merged_records' => array(
-					'title' => 'Merged Records Table',
-					'description' => 'Create Merged Records table to store ',
-					'sql' => array(
-						"CREATE TABLE `merged_records` (
-							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-							`original_record` VARCHAR( 20 ) NOT NULL,
-							`new_record` VARCHAR( 20 ) NOT NULL,
-							UNIQUE INDEX (original_record),
-							INDEX(new_record)
-						)",
-					),
-				),
+				'remove_merged_records' => [
+					'title' => 'Remove unused Merged Records Table',
+					'description' => 'Remove unused Merged Records Table',
+					'sql' => [
+						'DROP TABLE IF EXISTS merged_records'
+					]
+				],
 
 				'nongrouped_records' => array(
 					'title' => 'Non-grouped Records Table',
 					'description' => 'Create non-grouped Records table to store records that should not be grouped',
 					'sql' => array(
 						"CREATE TABLE `nongrouped_records` (
-									id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-									`source` VARCHAR( 50 ) NOT NULL,
-									`recordId` VARCHAR( 36 ) NOT NULL,
-									`notes` VARCHAR( 255 ) NOT NULL,
-									UNIQUE INDEX (source, recordId)
-								)",
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							`source` VARCHAR( 50 ) NOT NULL,
+							`recordId` VARCHAR( 36 ) NOT NULL,
+							`notes` VARCHAR( 255 ) NOT NULL,
+							UNIQUE INDEX (source, recordId)
+						)",
 					),
 				),
 
