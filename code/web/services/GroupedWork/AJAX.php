@@ -1196,21 +1196,17 @@ class GroupedWork_AJAX {
 	}
 
 	function getGroupWithSearchForm(){
-		global $logger;
 		$results = [
 			'success' => false,
 			'message' => 'Unknown Error'
 		];
 
-		$logger->log("Starting getGroupWithSearchForm", Logger::LOG_ERROR);
 		if (UserAccount::isLoggedIn() && (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('cataloging'))) {
-			$logger->log("User is logged in", Logger::LOG_ERROR);
 			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 			$groupedWork = new GroupedWork();
 			$id = $_REQUEST['id'];
 			$groupedWork->permanent_id = $id;
 			if ($groupedWork->find(true)) {
-				$logger->log("Found the grouped work", Logger::LOG_ERROR);
 				global $interface;
 				$interface->assign('id', $id);
 				$interface->assign('groupedWork', $groupedWork);
@@ -1220,7 +1216,6 @@ class GroupedWork_AJAX {
 				$searchObject = SearchObjectFactory::initSearchObject();
 				$searchObject->init();
 				$searchObject = $searchObject->restoreSavedSearch($searchId, false);
-				$logger->log("Restored the search", Logger::LOG_ERROR);
 
 				if (!empty($_REQUEST['page'])){
 					$searchObject->setPage($_REQUEST['page']);
@@ -1230,7 +1225,6 @@ class GroupedWork_AJAX {
 				$availableRecords = [];
 				$availableRecords[-1] = translate("Select the primary work");
 				$recordIndex = ($searchObject->getPage() - 1) * $searchObject->getLimit();
-				$logger->log("Processed the search", Logger::LOG_ERROR);
 				foreach ($searchResults['response']['docs'] as $doc){
 					$recordIndex++;
 					if ($doc['id'] != $id) {
@@ -1244,7 +1238,6 @@ class GroupedWork_AJAX {
 					}
 				}
 				$interface->assign('availableRecords', $availableRecords);
-				$logger->log("Preparing form", Logger::LOG_ERROR);
 
 				$results = array(
 					'success' => true,
@@ -1258,6 +1251,8 @@ class GroupedWork_AJAX {
 		}else{
 			$results['message'] = "You do not have the correct permissions for this operation";
 		}
+		global $logger;
+		$logger->log("Results " . print_r($results, true), Logger::LOG_ERROR);
 		return json_encode($results);
 	}
 }
