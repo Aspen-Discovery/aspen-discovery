@@ -505,6 +505,8 @@ abstract class GroupedWorkSubDriver extends RecordInterface
 
 		$interface->assign('alternateTitles', $this->getGroupedWorkDriver()->getAlternateTitles());
 
+		$interface->assign('primaryIdentifiers', $this->getGroupedWorkDriver()->getPrimaryIdentifiers());
+
 		$lastGroupedWorkModificationTime = $this->groupedWork->date_updated;
 		$interface->assign('lastGroupedWorkModificationTime', $lastGroupedWorkModificationTime);
 
