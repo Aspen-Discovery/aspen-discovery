@@ -31,6 +31,7 @@ public class RecordGroupingProcessor {
 	private PreparedStatement updateReadingHistoryStmt;
 	private PreparedStatement updateNotInterestedStmt;
 	private PreparedStatement updateUserListEntriesStmt;
+	private PreparedStatement updateNovelistStmt;
 
 	private PreparedStatement getAuthorAuthorityStmt;
 	private PreparedStatement getTitleAuthorityStmt;
@@ -156,6 +157,7 @@ public class RecordGroupingProcessor {
 			updateReadingHistoryStmt = dbConnection.prepareStatement("UPDATE user_reading_history_work SET groupedWorkPermanentId = ? where groupedWorkPermanentId = ?");
 			updateNotInterestedStmt = dbConnection.prepareStatement("UPDATE user_not_interested SET groupedRecordPermanentId = ? where groupedRecordPermanentId = ?");
 			updateUserListEntriesStmt = dbConnection.prepareStatement("UPDATE user_list_entry SET groupedWorkPermanentId = ? where groupedWorkPermanentId = ?");
+			updateNovelistStmt = dbConnection.prepareStatement("UPDATE novelist_data SET groupedRecordPermanentId = ? where groupedRecordPermanentId = ?");
 
 			markWorkAsNeedingReindexStmt = dbConnection.prepareStatement("INSERT into grouped_work_scheduled_index (permanent_id, indexAfter) VALUES (?, ?)");
 			PreparedStatement loadMergedWorksStmt = dbConnection.prepareStatement("SELECT * from merged_grouped_works");
@@ -343,7 +345,17 @@ public class RecordGroupingProcessor {
 						logger.error("Error moving not interested info");
 					}
 
-					logger.debug("Updated " + numUpdatedRatings + " ratings, " + numUpdatedListEntries + " list entries, " + numUpdatedReadingHistory + " reading history entries, " + numUpdatedNotInterested + " not interested entries");
+					//Novelist
+					int numUpdatedNovelist = 0;
+					try{
+						updateNovelistStmt.setString(1, newPermanentId);
+						updateNovelistStmt.setString(2, oldPermanentId);
+						numUpdatedNovelist = updateNovelistStmt.executeUpdate();
+					}catch (SQLException e){
+						logger.error("Error moving not interested info");
+					}
+
+					logger.debug("Updated " + numUpdatedRatings + " ratings, " + numUpdatedListEntries + " list entries, " + numUpdatedReadingHistory + " reading history entries, " + numUpdatedNotInterested + " not interested entries, " + numUpdatedNovelist + " novelist entries");
 				}
 			}else{
 				logger.error("Could not find the id of the work when merging enrichment " + oldPermanentId);
