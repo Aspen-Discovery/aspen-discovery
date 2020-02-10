@@ -243,7 +243,7 @@ class GroupedWork_AJAX extends JSON_Action
 			$formattedTitle = "<div id=\"scrollerTitle{$scrollerName}{$index}\" class=\"scrollerTitle\" onclick=\"return AspenDiscovery.showElementInPopup('$title', '#noResults{$index}')\">" .
 					"<img src=\"{$cover}\" class=\"scrollerTitleCover\" alt=\"{$title} Cover\"/>" .
 					"</div>";
-			$formattedTitle .= "<div id=\"noResults{$index}\" style=\"display:none\">
+					$formattedTitle .= "<div id=\"noResults{$index}\" style=\"display:none\">
 					<div class=\"row\">
 						<div class=\"result-label col-md-3\">Author: </div>
 						<div class=\"col-md-9 result-value notranslate\">
