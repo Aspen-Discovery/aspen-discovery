@@ -31,7 +31,7 @@ class GroupedWork_AJAX extends JSON_Action
 			}
 		}
 
-		return json_encode($result);
+		return $result;
 	}
 
 	/** @noinspection PhpUnused */
@@ -44,9 +44,9 @@ class GroupedWork_AJAX extends JSON_Action
 		if ($groupedWork->find(true)){
 			$groupedWork->forceReindex(true);
 
-			return json_encode(array('success' => true, 'message' => 'This title will be indexed again shortly.'));
+			return array('success' => true, 'message' => 'This title will be indexed again shortly.');
 		}else{
-			return json_encode(array('success' => false, 'message' => 'Unable to mark the title for indexing. Could not find the title.'));
+			return array('success' => false, 'message' => 'Unable to mark the title for indexing. Could not find the title.');
 		}
 	}
 
@@ -68,7 +68,7 @@ class GroupedWork_AJAX extends JSON_Action
 			$result['description'] = $description;
 		}
 
-		return json_encode($result);
+		return $result;
 	}
 
 	/** @noinspection PhpUnused */
@@ -166,7 +166,7 @@ class GroupedWork_AJAX extends JSON_Action
 			$enrichmentResult['seriesSummary'] = $interface->fetch('GroupedWork/series-summary.tpl');
 		}
 
-		return json_encode($enrichmentResult);
+		return $enrichmentResult;
 	}
 
 	/** @noinspection PhpUnused */
@@ -200,7 +200,7 @@ class GroupedWork_AJAX extends JSON_Action
 		}
 		$memoryWatcher->logMemory('Loaded More Like This scroller data');
 
-		return json_encode($enrichmentResult);
+		return $enrichmentResult;
 	}
 
 	function getScrollerTitle($record, $index, $scrollerName){
@@ -289,7 +289,7 @@ class GroupedWork_AJAX extends JSON_Action
 		$return = array(
 			'formattedData' => $formattedData
 		);
-		return json_encode($return);
+		return $return;
 
 	}
 
@@ -343,20 +343,20 @@ class GroupedWork_AJAX extends JSON_Action
 			'modalButtons' => "<button onclick=\"return AspenDiscovery.GroupedWork.showSaveToListForm(this, '$escapedId');\" class=\"modal-buttons btn btn-primary\" style='float: left'>$buttonLabel</button>"
 				."<a href='$url'><button class='modal-buttons btn btn-primary'>" . translate("More Info") . "</button></a>"
 		);
-		return json_encode($results);
+		return $results;
 	}
 
 	/** @noinspection PhpUnused */
 	function rateTitle(){
 		require_once(ROOT_DIR . '/sys/LocalEnrichment/UserWorkReview.php');
 		if (!UserAccount::isLoggedIn()){
-			return json_encode(array('error'=>'Please login to rate this title.'));
+			return array('error'=>'Please login to rate this title.');
 		}
 		if (empty($_REQUEST['id'])) {
-			return json_encode(array('error'=>'ID for the item to rate is required.'));
+			return array('error'=>'ID for the item to rate is required.');
 		}
 		if (empty($_REQUEST['rating']) || !ctype_digit($_REQUEST['rating'])) {
-			return json_encode(array('error'=>'Invalid value for rating.'));
+			return array('error'=>'Invalid value for rating.');
 		}
 		$rating = $_REQUEST['rating'];
 		//Save the rating
@@ -389,9 +389,9 @@ class GroupedWork_AJAX extends JSON_Action
 			// Reset any cached suggestion browse category for the user
 			$this->clearMySuggestionsBrowseCategoryCache();
 
-			return json_encode(array('rating'=>$rating));
+			return array('rating'=>$rating);
 		} else {
-			return json_encode(array('error'=>'Unable to save your rating.'));
+			return array('error'=>'Unable to save your rating.');
 		}
 	}
 
@@ -439,7 +439,7 @@ class GroupedWork_AJAX extends JSON_Action
 			'numCustomerReviews' => count($userReviews),
 			'customerReviewsHtml' => $interface->fetch('GroupedWork/view-user-reviews.tpl'),
 		);
-		return json_encode($results);
+		return $results;
 	}
 
 	/** @noinspection PhpUnused */
@@ -474,7 +474,7 @@ class GroupedWork_AJAX extends JSON_Action
 				'message' => 'You are not logged in.'
 			);
 		}
-		return json_encode($results);
+		return $results;
 	}
 
 	/** @noinspection PhpUnused */
@@ -483,9 +483,9 @@ class GroupedWork_AJAX extends JSON_Action
 		if ($user) {
 			$user->noPromptForUserReviews = 1;
 			$success = $user->update();
-			return json_encode(array('success' => $success));
+			return array('success' => $success);
 		}else{
-			return json_encode(['success' => false]);
+			return ['success' => false];
 		}
 	}
 
@@ -519,7 +519,7 @@ class GroupedWork_AJAX extends JSON_Action
 				'message' => 'Invalid ID.'
 			);
 		}
-		return json_encode($results);
+		return $results;
 	}
 
 	/** @noinspection PhpUnused */
@@ -571,7 +571,7 @@ class GroupedWork_AJAX extends JSON_Action
 			}
 		}
 
-		return json_encode($result);
+		return $result;
 	}
 
 	/** @noinspection PhpUnused */
@@ -591,10 +591,8 @@ class GroupedWork_AJAX extends JSON_Action
 				'title' => 'Share via Email',
 				'modalBody' => $interface->fetch("GroupedWork/email-form-body.tpl"),
 				'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.GroupedWork.sendEmail(\"{$id}\"); return false;'>Send Email</button>"
-//		'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#emailForm\").submit()'>Send Email</button>"
-		      // triggering submit action to trigger form validation
 		);
-		return json_encode($results);
+		return $results;
 	}
 
 	/** @noinspection PhpUnused */
@@ -667,7 +665,7 @@ class GroupedWork_AJAX extends JSON_Action
 					'message' => 'Sorry, we can&apos;t send emails with html or other data in it.'
 			);
 		}
-		return json_encode($result);
+		return $result;
 	}
 
 	/** @noinspection PhpUnused */
@@ -730,7 +728,7 @@ class GroupedWork_AJAX extends JSON_Action
 
 		}
 
-		return json_encode($result);
+		return $result;
 	}
 
 	/** @noinspection PhpUnused */
@@ -778,7 +776,7 @@ class GroupedWork_AJAX extends JSON_Action
 				'modalBody' => $interface->fetch("GroupedWork/save.tpl"),
 				'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.GroupedWork.saveToList(\"{$id}\"); return false;'>Save To List</button>"
 		);
-		return json_encode($results);
+		return $results;
 	}
 
 	/** @noinspection PhpUnused */
@@ -818,7 +816,7 @@ class GroupedWork_AJAX extends JSON_Action
 				'message' => "Please log in.",
 			);
 		}
-		return json_encode($result);
+		return $result;
 	}
 
 	/** @noinspection PhpUnused */
@@ -833,7 +831,7 @@ class GroupedWork_AJAX extends JSON_Action
 			$notInterested->delete();
 			$result = array('result' => true);
 		}
-		return json_encode($result);
+		return $result;
 	}
 
 	/** @noinspection PhpUnused */
@@ -874,7 +872,7 @@ class GroupedWork_AJAX extends JSON_Action
 			'numTitles' => count($prospectorResults),
 			'formattedData' => $interface->fetch('GroupedWork/ajax-prospector.tpl')
 		);
-		return json_encode($result);
+		return $result;
 	}
 
 	/** @noinspection PhpUnused */
@@ -902,7 +900,7 @@ class GroupedWork_AJAX extends JSON_Action
 				'seriesSummary' => $interface->fetch('GroupedWork/series-summary.tpl')
 			];
 		}
-		return json_encode($result);
+		return $result;
 	}
 
 	/** @noinspection PhpUnused */
@@ -944,7 +942,7 @@ class GroupedWork_AJAX extends JSON_Action
 			}
 		}
 
-		return json_encode(array('success' => true, 'message' => 'Covers have been reloaded.  You may need to refresh the page to clear your local cache.'));
+		return array('success' => true, 'message' => 'Covers have been reloaded.  You may need to refresh the page to clear your local cache.');
 	}
 
 	/** @noinspection PhpUnused */
@@ -959,12 +957,11 @@ class GroupedWork_AJAX extends JSON_Action
 			'modalBody' => $interface->fetch("GroupedWork/upload-cover-form.tpl"),
 			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#uploadCoverForm\").submit()'>Upload Cover</button>"
 		);
-		return json_encode($results);
+		return $results;
 	}
 
 	/** @noinspection PhpUnused */
 	function uploadCover(){
-		global $interface;
 		$result = [
 			'success' => false,
 			'title' => 'Uploading custom cover',
@@ -1012,7 +1009,7 @@ class GroupedWork_AJAX extends JSON_Action
 			$this->reloadCover();
 			$result['message'] = 'Your cover has been uploaded successfully';
 		}
-		return json_encode($result);
+		return $result;
 	}
 
 	/** @noinspection PhpUnused */
@@ -1035,10 +1032,10 @@ class GroupedWork_AJAX extends JSON_Action
 			$cacheMessage = 'Data not cached for same pika link';
 		}
 
-		return json_encode(array(
+		return array(
 				'success' => $samePikaCleared,
 				'message' => $cacheMessage
-		));
+		);
 	}
 
 	function getCopyDetails(){
@@ -1083,7 +1080,7 @@ class GroupedWork_AJAX extends JSON_Action
 			'title' => translate("Copy Summary"),
 			'modalBody' => $modalBody,
 		);
-		return json_encode($results);
+		return $results;
 	}
 
 	function getGroupWithForm(){
@@ -1113,7 +1110,7 @@ class GroupedWork_AJAX extends JSON_Action
 		}else{
 			$results['message'] = "You do not have the correct permissions for this operation";
 		}
-		return json_encode($results);
+		return $results;
 	}
 
 	function getGroupWithInfo(){
@@ -1136,7 +1133,7 @@ class GroupedWork_AJAX extends JSON_Action
 		}else{
 			$results['message'] = "You do not have the correct permissions for this operation";
 		}
-		return json_encode($results);
+		return $results;
 	}
 	function processGroupWithForm(){
 		$results = [
@@ -1180,7 +1177,7 @@ class GroupedWork_AJAX extends JSON_Action
 		}else{
 			$results['message'] = "You do not have the correct permissions for this operation";
 		}
-		return json_encode($results);
+		return $results;
 	}
 
 	function getGroupWithSearchForm(){
@@ -1243,6 +1240,6 @@ class GroupedWork_AJAX extends JSON_Action
 		$logger->log("Results " . print_r($results, true), Logger::LOG_ERROR);
 
 		$logger->log("JSON Results " . json_encode($results), Logger::LOG_ERROR);
-		return json_encode($results);
+		return $results;
 	}
 }
