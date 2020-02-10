@@ -47,9 +47,9 @@ AspenDiscovery.GroupedWork = (function(){
 		forceReindex: function (id){
 			let url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=forceReindex';
 			$.getJSON(url, function (data){
-						AspenDiscovery.showMessage("Success", data.message, true, true);
-						setTimeout("AspenDiscovery.closeLightbox();", 3000);
-					}
+					AspenDiscovery.showMessage("Success", data.message, true, false);
+					setTimeout("AspenDiscovery.closeLightbox();", 3000);
+				}
 			);
 			return false;
 		},
