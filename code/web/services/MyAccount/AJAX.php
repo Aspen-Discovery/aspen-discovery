@@ -1,6 +1,8 @@
 <?php
 
-class MyAccount_AJAX
+require_once ROOT_DIR . '/JSON_Action.php';
+
+class MyAccount_AJAX extends JSON_Action
 {
 	const SORT_LAST_ALPHA = 'zzzzz';
 
@@ -14,28 +16,7 @@ class MyAccount_AJAX
 				header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
 				echo $this->$method();
 			} else {
-				header('Content-type: application/json');
-				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
-				header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-				$result = $this->$method();
-				if (empty($result)){
-					$result = array(
-						'result' => false,
-						'message' => 'Method did not return results'
-					);
-				}
-				$encodedData = json_encode($result);
-				if ($encodedData == false){
-					global $logger;
-					$logger->log("Error encoding json data\r\n" . print_r($result, true), Logger::LOG_ERROR);
-					$result = array(
-						'result' => false,
-						'message' => 'JSON Encoding failed ' . json_last_error() . ' - ' . json_last_error_msg()
-					);
-					echo json_encode($result);
-				}else{
-					echo($encodedData);
-				}
+				parent::launch();
 			}
 		} else {
 			echo json_encode(array('error' => 'invalid_method'));

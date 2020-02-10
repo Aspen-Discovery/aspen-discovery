@@ -9,7 +9,7 @@
 	<tr>
 		<th>{$field|escape}</th>
 		<td>
-			{$value|escape}
+			{$value}
 		</td>
 	</tr>
 	{/foreach}

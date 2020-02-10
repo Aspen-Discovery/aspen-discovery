@@ -1,21 +1,8 @@
 <?php
+require_once ROOT_DIR . '/JSON_Action.php';
 
-class GroupedWork_AJAX {
-	function launch() {
-		global $timer;
-		$method = (isset($_REQUEST['method']) && !is_array($_REQUEST['method'])) ? $_REQUEST['method'] : '';
-		if (method_exists($this, $method)) {
-			$timer->logTime("Starting method $method");
-
-			header('Content-type: application/json');
-			header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
-			header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-			echo $this->$method();
-		}else{
-			echo json_encode(array('error'=>'invalid_method'));
-		}
-	}
-
+class GroupedWork_AJAX extends JSON_Action
+{
 	/**
 	 * Alias of deleteUserReview()
 	 *
