@@ -215,7 +215,7 @@ public class RecordGroupingProcessor {
 				groupedWorkPermanentId = getWorkByAlternateTitleAuthorRS.getString("permanent_id");
 			}
 		} catch (SQLException e) {
-			logger.error("Error looking for grouped work by alternate title", e);
+			logger.error("Error looking for grouped work by alternate title title = " + groupedWork.getTitle() + " author = " + groupedWork.getAuthor(), e);
 		}
 
 		//Check to see if the record is already on an existing work.  If so, remove from the old work.
