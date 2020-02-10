@@ -228,7 +228,7 @@ public class RecordGroupingProcessor {
 				if (!existingGroupedWorkPermanentId.equals(groupedWorkPermanentId)) {
 					//For realtime indexing we will want to trigger a reindex of the old record as well
 					markWorkAsNeedingReindexStmt.setString(1, existingGroupedWorkPermanentId);
-					markWorkAsNeedingReindexStmt.setLong(2, new Date().getTime() / 1000);
+					markWorkAsNeedingReindexStmt.setLong(2, (new Date().getTime() / 1000) + 120); //Give it a buffer to make sure it indexes again
 					markWorkAsNeedingReindexStmt.executeUpdate();
 
 					//move enrichment from the old id to the new if the new old no longer has any records
@@ -373,10 +373,10 @@ public class RecordGroupingProcessor {
 
 				//Make sure we mark the original work as updated so it can be removed from the index next time around
 				markWorkAsNeedingReindexStmt.setString(1, originalGroupedWorkPermanentId);
-				markWorkAsNeedingReindexStmt.setLong(2, new Date().getTime() / 1000);
+				markWorkAsNeedingReindexStmt.setLong(2, (new Date().getTime() / 1000) + 120); //Give it a buffer to make sure it indexes again
 				markWorkAsNeedingReindexStmt.executeUpdate();
 
-				//Todo: need to move enrichment from the old id to the new if the new old no longer has any records
+				//move enrichment from the old id to the new if the new old no longer has any records
 				moveGroupedWorkEnrichment(originalGroupedWorkPermanentId, groupedWorkPermanentId);
 
 				removePrimaryIdentifiersForWorkStmt.setLong(1, originalGroupedWorkId);
