@@ -17,6 +17,7 @@ import org.json.JSONObject;
 import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
 import com.turning_leaf_technologies.grouping.RecordGroupingProcessor;
 
+import javax.xml.transform.Result;
 import java.sql.*;
 import java.util.Date;
 import java.util.HashMap;
@@ -40,6 +41,10 @@ public class RbdigitalExportMain {
 	private static PreparedStatement getAllExistingRbdigitalMagazinesStmt;
 	private static PreparedStatement updateRbdigitalAvailabilityStmt;
 	private static PreparedStatement getExistingRbdigitalAvailabilityStmt;
+	private static PreparedStatement getRecordsToReloadStmt;
+	private static PreparedStatement markRecordToReloadAsProcessedStmt;
+	private static PreparedStatement getItemDetailsForRecordStmt;
+	private static PreparedStatement getItemDetailsForMagazineStmt;
 
 	//Record grouper
 	private static GroupedWorkIndexer groupedWorkIndexer;
@@ -93,12 +98,14 @@ public class RbdigitalExportMain {
 			numChanges += deleteItems();
 
 			if (groupedWorkIndexer != null) {
-				groupedWorkIndexer.finishIndexingFromExtract();
+				groupedWorkIndexer.finishIndexingFromExtract(logEntry);
 				recordGroupingProcessorSingleton = null;
 				groupedWorkIndexer = null;
 				existingRecords = null;
 				existingMagazines = null;
 			}
+
+			processRecordsToReload(logEntry);
 
 			if (logEntry.hasErrors()) {
 				logger.error("There were errors during the export!");
@@ -125,6 +132,89 @@ public class RbdigitalExportMain {
 			} catch (InterruptedException e) {
 				logger.info("Thread was interrupted");
 			}
+		}
+	}
+
+	private static void processRecordsToReload(RbdigitalExtractLogEntry logEntry) {
+		try {
+			//First process books and ebooks
+			getRecordsToReloadStmt.setString(1, "rbdigital");
+			ResultSet getRecordsToReloadRS = getRecordsToReloadStmt.executeQuery();
+			int numRecordsToReloadProcessed = 0;
+			while (getRecordsToReloadRS.next()) {
+				long recordToReloadId = getRecordsToReloadRS.getLong("id");
+				String rbdigitalId = getRecordsToReloadRS.getString("identifier");
+				//Regroup the record
+				getItemDetailsForRecordStmt.setString(1, rbdigitalId);
+				ResultSet getItemDetailsForRecordRS = getItemDetailsForRecordStmt.executeQuery();
+				if (getItemDetailsForRecordRS.next()){
+					String rawResponse = getItemDetailsForRecordRS.getString("rawResponse");
+					try {
+						JSONObject itemDetails = new JSONObject(rawResponse);
+						String primaryAuthor = getItemDetailsForRecordRS.getString("primaryAuthor");
+						String groupedWorkId = groupRbdigitalRecord(itemDetails, rbdigitalId, primaryAuthor);
+						//Reindex the record
+						getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
+
+						markRecordToReloadAsProcessedStmt.setLong(1, recordToReloadId);
+						markRecordToReloadAsProcessedStmt.executeUpdate();
+						numRecordsToReloadProcessed++;
+					}catch (JSONException e){
+						logEntry.incErrors();
+						logEntry.addNote("Could not parse item details for record to reload " + rbdigitalId);
+					}
+				}else{
+					logEntry.incErrors();
+					logEntry.addNote("Could not get details for record to reload " + rbdigitalId);
+				}
+				getItemDetailsForRecordRS.close();
+
+			}
+			if (numRecordsToReloadProcessed > 0) {
+				logEntry.addNote("Regrouped " + numRecordsToReloadProcessed + " ebooks and audiobooks marked for reprocessing");
+			}
+			getRecordsToReloadRS.close();
+
+			//First process books and ebooks
+			getRecordsToReloadStmt.setString(1, "rbdigital_magazine");
+			getRecordsToReloadRS = getRecordsToReloadStmt.executeQuery();
+			numRecordsToReloadProcessed = 0;
+			while (getRecordsToReloadRS.next()) {
+				long recordToReloadId = getRecordsToReloadRS.getLong("id");
+				String magazineId = getRecordsToReloadRS.getString("identifier");
+				//Regroup the record
+				getItemDetailsForMagazineStmt.setString(1, magazineId);
+				ResultSet getItemDetailsForRecordRS = getItemDetailsForMagazineStmt.executeQuery();
+				if (getItemDetailsForRecordRS.next()){
+					String rawResponse = getItemDetailsForRecordRS.getString("rawResponse");
+					try {
+						JSONObject itemDetails = new JSONObject(rawResponse);
+						String groupedWorkId = groupRbdigitalMagazine(itemDetails, magazineId);
+						//Reindex the record
+						getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
+
+						markRecordToReloadAsProcessedStmt.setLong(1, recordToReloadId);
+						markRecordToReloadAsProcessedStmt.executeUpdate();
+						numRecordsToReloadProcessed++;
+					}catch (JSONException e){
+						logEntry.incErrors();
+						logEntry.addNote("Could not parse item details for record to reload " + magazineId);
+					}
+				}else{
+					logEntry.incErrors();
+					logEntry.addNote("Could not get details for record to reload " + magazineId);
+				}
+
+			}
+			if (numRecordsToReloadProcessed > 0) {
+				logEntry.addNote("Regrouped " + numRecordsToReloadProcessed + " magazines marked for reprocessing");
+			}
+			getRecordsToReloadRS.close();
+
+			//Now process magazines
+		}catch (SQLException e){
+			logEntry.incErrors();
+			logEntry.addNote("Error processing records to reload");
 		}
 	}
 
@@ -572,7 +662,7 @@ public class RbdigitalExportMain {
 			String databaseConnectionInfo = ConfigUtil.cleanIniValue(configIni.get("Database", "database_aspen_jdbc"));
 			if (databaseConnectionInfo != null) {
 				aspenConn = DriverManager.getConnection(databaseConnectionInfo);
-				getAllExistingRbdigitalItemsStmt = aspenConn.prepareStatement("SELECT id, rbdigitalId, rawChecksum, deleted from rbdigital_title");
+				getAllExistingRbdigitalItemsStmt = aspenConn.prepareStatement("SELECT id, rbdigitalId, rawChecksum, deleted from rbdigital_title", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 				updateRbdigitalItemStmt = aspenConn.prepareStatement(
 						"INSERT INTO rbdigital_title " +
 								"(rbdigitalId, title, primaryAuthor, mediaType, isFiction, audience, language, rawChecksum, rawResponse, lastChange, dateFirstDetected) " +
@@ -581,19 +671,23 @@ public class RbdigitalExportMain {
 								"isFiction = VALUES(isFiction), audience = VALUES(audience), language = VALUES(language), rawChecksum = VALUES(rawChecksum), " +
 								"rawResponse = VALUES(rawResponse), lastChange = VALUES(lastChange), deleted = 0");
 				deleteRbdigitalItemStmt = aspenConn.prepareStatement("UPDATE rbdigital_title SET deleted = 1 where id = ?");
-				getExistingRbdigitalAvailabilityStmt = aspenConn.prepareStatement("SELECT id, rawChecksum from rbdigital_availability WHERE rbdigitalId = ?");
+				getExistingRbdigitalAvailabilityStmt = aspenConn.prepareStatement("SELECT id, rawChecksum from rbdigital_availability WHERE rbdigitalId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 				updateRbdigitalAvailabilityStmt = aspenConn.prepareStatement(
 						"INSERT INTO rbdigital_availability " +
 								"(rbdigitalId, isAvailable, isOwned, name, rawChecksum, rawResponse, lastChange) " +
 								"VALUES (?, ?, ?, ?, ?, ?, ?) " +
 								"ON DUPLICATE KEY UPDATE isAvailable = VALUES(isAvailable), isOwned = VALUES(isOwned), " +
 								"name = VALUES(name), rawChecksum = VALUES(rawChecksum), rawResponse = VALUES(rawResponse), lastChange = VALUES(lastChange)");
-				getAllExistingRbdigitalMagazinesStmt = aspenConn.prepareStatement("SELECT id, magazineId, rawChecksum, deleted from rbdigital_magazine");
+				getAllExistingRbdigitalMagazinesStmt = aspenConn.prepareStatement("SELECT id, magazineId, rawChecksum, deleted from rbdigital_magazine", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 				updateRbdigitalMagazineStmt = aspenConn.prepareStatement("INSERT INTO rbdigital_magazine (magazineId, issueId, title, publisher, mediaType, language, rawChecksum, rawResponse, lastChange, dateFirstDetected) " +
 						"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
 						"ON DUPLICATE KEY UPDATE magazineId = VALUES(magazineId), issueId = VALUES(issueId), title = VALUES(title), publisher = VALUES(publisher), " +
 						"mediaType = VALUES(mediaType), language = VALUES(language), rawChecksum = VALUES(rawChecksum), rawResponse = VALUES(rawResponse), lastChange = VALUES(lastChange), deleted = 0");
 				deleteRbdigitalMagazineStmt = aspenConn.prepareStatement("UPDATE rbdigital_magazine SET deleted = 1 where id = ?");
+				getRecordsToReloadStmt = aspenConn.prepareStatement("SELECT * from record_identifiers_to_reload WHERE processed = 0 and type=?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+				markRecordToReloadAsProcessedStmt = aspenConn.prepareStatement("UPDATE record_identifiers_to_reload SET processed = 1 where id = ?");
+				getItemDetailsForRecordStmt = aspenConn.prepareStatement("SELECT title, primaryAuthor, mediaType, rawResponse from rbdigital_title where rbdigitalId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+				getItemDetailsForMagazineStmt = aspenConn.prepareStatement("SELECT rawResponse from rbdigital_magazine where magazineId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			} else {
 				logger.error("Aspen database connection information was not provided");
 				System.exit(1);

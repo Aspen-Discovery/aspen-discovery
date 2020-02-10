@@ -430,4 +430,5 @@ public class IndexingProfile extends BaseIndexingSettings {
 	public long getLastUpdateFromMarcExport() {
 		return lastUpdateFromMarcExport;
 	}
+
 }

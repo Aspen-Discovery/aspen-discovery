@@ -728,31 +728,25 @@ class Admin_DBMaintenance extends Admin_Admin
 					),
 				),
 
-				'merged_records' => array(
-					'title' => 'Merged Records Table',
-					'description' => 'Create Merged Records table to store ',
-					'sql' => array(
-						"CREATE TABLE `merged_records` (
-							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-							`original_record` VARCHAR( 20 ) NOT NULL,
-							`new_record` VARCHAR( 20 ) NOT NULL,
-							UNIQUE INDEX (original_record),
-							INDEX(new_record)
-						)",
-					),
-				),
+				'remove_merged_records' => [
+					'title' => 'Remove unused Merged Records Table',
+					'description' => 'Remove unused Merged Records Table',
+					'sql' => [
+						'DROP TABLE IF EXISTS merged_records'
+					]
+				],
 
 				'nongrouped_records' => array(
 					'title' => 'Non-grouped Records Table',
 					'description' => 'Create non-grouped Records table to store records that should not be grouped',
 					'sql' => array(
 						"CREATE TABLE `nongrouped_records` (
-									id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-									`source` VARCHAR( 50 ) NOT NULL,
-									`recordId` VARCHAR( 36 ) NOT NULL,
-									`notes` VARCHAR( 255 ) NOT NULL,
-									UNIQUE INDEX (source, recordId)
-								)",
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							`source` VARCHAR( 50 ) NOT NULL,
+							`recordId` VARCHAR( 36 ) NOT NULL,
+							`notes` VARCHAR( 255 ) NOT NULL,
+							UNIQUE INDEX (source, recordId)
+						)",
 					),
 				),
 
@@ -1378,6 +1372,15 @@ class Admin_DBMaintenance extends Admin_Admin
 						) ENGINE = InnoDB",
 					),
 				),
+
+				'remove_old_user_rating_table' => [
+					'title' => 'Remove user rating',
+					'description' => 'Remove old user rating table.',
+					'sql' => array(
+						"DROP TABLE user_rating",
+					),
+				],
+
 
 				'user_list_entry' => array(
 					'title' => 'User List Entry (Grouped Work)',
@@ -2050,6 +2053,21 @@ class Admin_DBMaintenance extends Admin_Admin
 							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 							googleBooksKey VARCHAR(50) NOT NULL
 						) ENGINE = INNODB;',
+					],
+				],
+
+				'google_more_settings' => [
+					'title' => 'Google API - Additional settings',
+					'description' => 'Add the ability to store additional keys for Google Analytics in the DB rather than config file',
+					'sql' => [
+						'ALTER TABLE google_api_settings ADD COLUMN googleAnalyticsTrackingId VARCHAR(50)',
+						'ALTER TABLE google_api_settings ADD COLUMN googleAnalyticsLinkingId VARCHAR(50)',
+						'ALTER TABLE google_api_settings ADD COLUMN googleAnalyticsLinkedProperties MEDIUMTEXT',
+						'ALTER TABLE google_api_settings ADD COLUMN googleAnalyticsDomainName VARCHAR(100)',
+						'ALTER TABLE google_api_settings CHANGE COLUMN googleBooksKey googleBooksKey VARCHAR(50)',
+						'ALTER TABLE google_api_settings ADD COLUMN googleMapsKey VARCHAR(60)',
+						'ALTER TABLE google_api_settings ADD COLUMN googleTranslateKey VARCHAR(60)',
+						"ALTER TABLE google_api_settings ADD COLUMN googleTranslateLanguages VARCHAR(100) default 'ar,da,en,es,fr,de,it,ja,pl,pt,ru,sv,th,vi,zh-CN,zh-TW'"
 					],
 				],
 

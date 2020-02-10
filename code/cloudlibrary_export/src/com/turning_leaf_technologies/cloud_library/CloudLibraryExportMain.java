@@ -2,6 +2,7 @@ package com.turning_leaf_technologies.cloud_library;
 
 import com.turning_leaf_technologies.config.ConfigUtil;
 import com.turning_leaf_technologies.grouping.RemoveRecordFromWorkResult;
+import com.turning_leaf_technologies.indexing.RecordIdentifier;
 import com.turning_leaf_technologies.logging.LoggingUtil;
 import com.turning_leaf_technologies.net.NetworkUtils;
 import com.turning_leaf_technologies.net.WebServiceResponse;
@@ -12,6 +13,8 @@ import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
 import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
 import com.turning_leaf_technologies.grouping.RecordGroupingProcessor;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.*;
@@ -90,8 +93,11 @@ public class CloudLibraryExportMain {
 			//Do the actual work here
 			int numChanges = extractCloudLibraryData();
 
+			//For any records that have been marked to reload, regroup and reindex the records
+			processRecordsToReload(logEntry);
+
 			if (groupedWorkIndexer != null) {
-				groupedWorkIndexer.finishIndexingFromExtract();
+				groupedWorkIndexer.finishIndexingFromExtract(logEntry);
 				recordGroupingProcessorSingleton = null;
 				groupedWorkIndexer = null;
 				existingRecords = null;
@@ -122,6 +128,51 @@ public class CloudLibraryExportMain {
 			} catch (InterruptedException e) {
 				logger.info("Thread was interrupted");
 			}
+		}
+	}
+
+	private static void processRecordsToReload(CloudLibraryExtractLogEntry logEntry) {
+		try {
+			PreparedStatement getRecordsToReloadStmt = aspenConn.prepareStatement("SELECT * from record_identifiers_to_reload WHERE processed = 0 and type='cloud_library'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement markRecordToReloadAsProcessedStmt = aspenConn.prepareStatement("UPDATE record_identifiers_to_reload SET processed = 1 where id = ?");
+			PreparedStatement getItemDetailsForRecordStmt = aspenConn.prepareStatement("SELECT title, subTitle, author, format from cloud_library_title where cloudLibraryId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+
+			ResultSet getRecordsToReloadRS = getRecordsToReloadStmt.executeQuery();
+			int numRecordsToReloadProcessed = 0;
+			while (getRecordsToReloadRS.next()){
+				long recordToReloadId = getRecordsToReloadRS.getLong("id");
+				String cloudLibraryId = getRecordsToReloadRS.getString("identifier");
+				//Regroup the record
+				getItemDetailsForRecordStmt.setString(1, cloudLibraryId);
+				ResultSet getItemDetailsForRecordRS = getItemDetailsForRecordStmt.executeQuery();
+				if (getItemDetailsForRecordRS.next()){
+					String title = getItemDetailsForRecordRS.getString("title");
+					String subTitle = getItemDetailsForRecordRS.getString("subTitle");
+					String author = getItemDetailsForRecordRS.getString("author");
+					String format = getItemDetailsForRecordRS.getString("format");
+					RecordIdentifier primaryIdentifier = new RecordIdentifier("cloud_library", cloudLibraryId);
+
+
+					String groupedWorkId = getRecordGroupingProcessor().processRecord(primaryIdentifier, title, subTitle, author, format, true);
+					//Reindex the record
+					getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
+
+					markRecordToReloadAsProcessedStmt.setLong(1, recordToReloadId);
+					markRecordToReloadAsProcessedStmt.executeUpdate();
+					numRecordsToReloadProcessed++;
+				}else{
+					logEntry.incErrors();
+					logEntry.addNote("Could not get details for record to reload " + cloudLibraryId);
+				}
+				getItemDetailsForRecordRS.close();
+			}
+			if (numRecordsToReloadProcessed > 0){
+				logEntry.addNote("Regrouped " + numRecordsToReloadProcessed + " records marked for reprocessing");
+			}
+			getRecordsToReloadRS.close();
+		}catch (Exception e){
+			logEntry.incErrors();
+			logEntry.addNote("Error processing records to reload " + e.toString());
 		}
 	}
 
@@ -401,7 +452,9 @@ public class CloudLibraryExportMain {
 			//Something really bad happened, we're done.
 			return null;
 		} else if (!response.isSuccess()) {
-			logEntry.incErrors();
+			if (response.getResponseCode() != 500) {
+				logEntry.incErrors();
+			}
 			logEntry.addNote("Error getting availability from " + apiPath + ": " + response.getResponseCode() + " " + response.getMessage());
 			return null;
 		} else {

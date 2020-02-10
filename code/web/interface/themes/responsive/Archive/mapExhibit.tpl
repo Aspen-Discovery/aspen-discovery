@@ -36,7 +36,7 @@
 	<div id="exhibit-map-legend" class="row">
 		<div class="col-xs-12">
 			{/strip}
-			{if $mapsBrowserKey}
+			{if $mapsKey}
 				<script type="text/javascript">
 					var infowindow;
 					function initMap() {ldelim}
@@ -166,8 +166,8 @@
 		</div>
 	{/if}
 </div>
-	{if $mapsBrowserKey}
-		<script src="https://maps.googleapis.com/maps/api/js?key={$mapsBrowserKey}&callback=initMap" async defer></script>
+	{if $mapsKey}
+		<script src="https://maps.googleapis.com/maps/api/js?key={$mapsKey}&callback=initMap" async defer></script>
 	{/if}
 {/strip}
 <script type="text/javascript">

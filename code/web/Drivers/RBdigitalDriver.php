@@ -9,6 +9,7 @@ class RBdigitalDriver extends AbstractEContentDriver
 	private $userInterfaceURL;
 	private $apiToken;
 	private $libraryId;
+	private $allowPatronLookupByEmail;
 
 	/** @var CurlWrapper */
 	private $curlWrapper;
@@ -25,6 +26,7 @@ class RBdigitalDriver extends AbstractEContentDriver
 				$this->userInterfaceURL = $rbdigitalSettings->userInterfaceUrl;
 				$this->apiToken = $rbdigitalSettings->apiToken;
 				$this->libraryId = $rbdigitalSettings->libraryId;
+				$this->allowPatronLookupByEmail = $rbdigitalSettings->allowPatronLookupByEmail;
 
 				$this->curlWrapper = new CurlWrapper();
 				$headers = [
@@ -673,21 +675,21 @@ class RBdigitalDriver extends AbstractEContentDriver
 				$rawResponse = $this->curlWrapper->curlGetPage($lookupPatronUrl);
 				$response = json_decode($rawResponse);
 				if (is_null($response) || (isset($response->message) && ($response->message == 'Patron not found.'))) {
-					//Do not do lookup by email address because patron's can share email addresses
-					$rbdigitalId = -1;
-//                    if (!empty($user->email)){
-//                        $lookupPatronUrl = $this->webServiceURL . '/v1/rpc/libraries/' . $this->libraryId . '/patrons/' . urlencode($user->email);
-//
-//                        $rawResponse = $this->curlWrapper->curlGetPage($lookupPatronUrl);
-//                        $response = json_decode($rawResponse);
-//                        if (!empty($response->message) && $response->message == 'Patron not found.'){
-//                            $rbdigitalId = -1;
-//                        }else {
-//                            $rbdigitalId = $response->patronId;
-//                        }
-//                    }else{
-//                        $rbdigitalId = -1;
-//                    }
+					//Do lookup by email address if seettings allow.
+					// Can be disabled because patron's can share email addresses
+					if (!empty($user->email) && $this->allowPatronLookupByEmail) {
+						$lookupPatronUrl = $this->webServiceURL . '/v1/rpc/libraries/' . $this->libraryId . '/patrons/' . urlencode($user->email);
+
+						$rawResponse = $this->curlWrapper->curlGetPage($lookupPatronUrl);
+						$response = json_decode($rawResponse);
+						if (!empty($response->message) && $response->message == 'Patron not found.') {
+							$rbdigitalId = -1;
+						} else {
+							$rbdigitalId = $response->patronId;
+						}
+					} else {
+						$rbdigitalId = -1;
+					}
 
 				} else {
 					$rbdigitalId = $response->patronId;

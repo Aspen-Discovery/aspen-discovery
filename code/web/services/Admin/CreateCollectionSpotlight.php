@@ -68,6 +68,8 @@ class CreateCollectionSpotlight extends Action {
 						'message' => "Sorry, this search is too complex to create a spotlight from."
 					);
 				}
+			}elseif ($source == 'list') {
+				$spotlightList->sourceListId = $sourceId;
 			}
 
 			$spotlightList->sourceListId = $sourceId;

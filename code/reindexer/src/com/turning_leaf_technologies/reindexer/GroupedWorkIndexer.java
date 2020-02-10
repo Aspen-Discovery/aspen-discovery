@@ -5,6 +5,7 @@ import com.turning_leaf_technologies.config.ConfigUtil;
 import com.turning_leaf_technologies.file.UnzipUtility;
 import com.turning_leaf_technologies.indexing.IndexingUtils;
 import com.turning_leaf_technologies.indexing.Scope;
+import com.turning_leaf_technologies.logging.BaseLogEntry;
 import com.turning_leaf_technologies.net.NetworkUtils;
 import com.turning_leaf_technologies.net.WebServiceResponse;
 import org.apache.solr.client.solrj.impl.BinaryRequestWriter;
@@ -61,6 +62,9 @@ public class GroupedWorkIndexer {
 	private PreparedStatement getGroupedWorkInfoStmt;
 	private PreparedStatement getArBookIdForIsbnStmt;
 	private PreparedStatement getArBookInfoStmt;
+	private PreparedStatement getScheduledWorksStmt;
+	private PreparedStatement markScheduledWorkProcessedStmt;
+
 
 	private static PreparedStatement deleteGroupedWorkStmt;
 
@@ -107,6 +111,8 @@ public class GroupedWorkIndexer {
 			getGroupedWorkInfoStmt = dbConn.prepareStatement("SELECT id, grouping_category from grouped_work where permanent_id = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			getArBookIdForIsbnStmt = dbConn.prepareStatement("SELECT arBookId from accelerated_reading_isbn where isbn = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			getArBookInfoStmt = dbConn.prepareStatement("SELECT * from accelerated_reading_titles where arBookId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			getScheduledWorksStmt = dbConn.prepareStatement("SELECT * FROM grouped_work_scheduled_index where processed = 0 and indexAfter <= ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			markScheduledWorkProcessedStmt = dbConn.prepareStatement("UPDATE grouped_work_scheduled_index set processed = 1 where id = ?");
 		} catch (Exception e){
 			logger.error("Could not load statements to get identifiers ", e);
 		}
@@ -489,8 +495,10 @@ public class GroupedWorkIndexer {
 		}
 	}
 
-	public void finishIndexingFromExtract(){
+	public void finishIndexingFromExtract(BaseLogEntry logEntry){
 		try {
+			processScheduledWorks(logEntry);
+
 			updateServer.commit(false, false, true);
 			GroupedReindexMain.addNoteToReindexLog("Shutting down the update server");
 			updateServer.blockUntilFinished();
@@ -499,6 +507,35 @@ public class GroupedWorkIndexer {
 			logger.error("Error finishing extract ", e);
 		}
 	}
+
+	private void processScheduledWorks(BaseLogEntry logEntry) {
+		//Check to see what records still need to be indexed based on a timed index
+		logEntry.addNote("Checking for additional works that need to be indexed");
+
+		try {
+			int numWorksProcessed = 0;
+			getScheduledWorksStmt.setLong(1, new Date().getTime() / 1000);
+			ResultSet scheduledWorksRS = getScheduledWorksStmt.executeQuery();
+			while (scheduledWorksRS.next()) {
+				long scheduleId = scheduledWorksRS.getLong("id");
+				String workToProcess = scheduledWorksRS.getString("permanent_id");
+
+				//reindex the actual work
+				this.processGroupedWork(workToProcess);
+
+				markScheduledWorkProcessedStmt.setLong(1, scheduleId);
+				markScheduledWorkProcessedStmt.executeUpdate();
+				numWorksProcessed++;
+			}
+			scheduledWorksRS.close();
+			if (numWorksProcessed > 0){
+				logEntry.addNote("Processed " + numWorksProcessed + " works that were scheduled for indexing");
+			}
+		}catch (Exception e){
+			logEntry.addNote("Error updating scheduled works " + e.toString());
+		}
+	}
+
 	void finishIndexing(){
 		GroupedReindexMain.addNoteToReindexLog("Finishing indexing");
 		logger.info("Finishing indexing");

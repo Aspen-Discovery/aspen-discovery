@@ -47,7 +47,7 @@ class MyAccount_ResetPinPage extends MyAccount
 				unset($_SESSION['profileUpdateMessage']);
 			}
 
-			$interface->assign('profile', $user); //
+			$interface->assign('profile', $user);
 			$interface->assign('barcodePin', $user->getAccountProfile()->loginConfiguration == 'barcode_pin');
 		}
 

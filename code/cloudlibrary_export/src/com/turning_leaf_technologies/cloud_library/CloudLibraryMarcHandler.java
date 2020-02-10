@@ -179,7 +179,6 @@ class CloudLibraryMarcHandler extends DefaultHandler {
 		//Get availability for the title
 		CloudLibraryAvailability availability = CloudLibraryExportMain.loadAvailabilityForRecord(cloudLibraryId);
 		if (availability == null) {
-			logEntry.incErrors();
 			logEntry.addNote("Did not load availability for " + title + " by " + author + " id " + cloudLibraryId);
 			return;
 		}

@@ -489,25 +489,27 @@ abstract class GroupedWorkSubDriver extends RecordInterface
      */
     abstract function getShortTitle();
 
-    /**
-     * Assign necessary Smarty variables and return a template name to
-     * load in order to display the full record information on the Staff
-     * View tab of the record view page.
-     *
-     * @access  public
-     * @return  string              Name of Smarty template file to display.
-     */
-    public function getStaffView()
-    {
-        global $interface;
-        $groupedWorkDetails = $this->getGroupedWorkDriver()->getGroupedWorkDetails();
-        $interface->assign('groupedWorkDetails', $groupedWorkDetails);
+	/**
+	 * Assign necessary Smarty variables and return a template name to
+	 * load in order to display the full record information on the Staff
+	 * View tab of the record view page.
+	 *
+	 * @access  public
+	 * @return  string              Name of Smarty template file to display.
+	 */
+	public function getStaffView()
+	{
+		global $interface;
+		$groupedWorkDetails = $this->getGroupedWorkDriver()->getGroupedWorkDetails();
+		$interface->assign('groupedWorkDetails', $groupedWorkDetails);
 
-        $lastGroupedWorkModificationTime = $this->groupedWork->date_updated;
-        $interface->assign('lastGroupedWorkModificationTime', $lastGroupedWorkModificationTime);
+		$interface->assign('alternateTitles', $this->getGroupedWorkDriver()->getAlternateTitles());
 
-        return 'RecordDrivers/Index/staff.tpl';
-    }
+		$lastGroupedWorkModificationTime = $this->groupedWork->date_updated;
+		$interface->assign('lastGroupedWorkModificationTime', $lastGroupedWorkModificationTime);
+
+		return 'RecordDrivers/Index/staff.tpl';
+	}
 
     /**
      * Returns subtitle

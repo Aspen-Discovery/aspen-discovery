@@ -10,6 +10,7 @@ import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
 import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
+import org.marc4j.MarcPermissiveStreamReader;
 import org.marc4j.MarcStreamWriter;
 import org.marc4j.MarcWriter;
 import org.marc4j.MarcXmlReader;
@@ -379,8 +380,8 @@ public class KohaExportMain {
 			PreparedStatement kohaBranchesStmt = kohaConn.prepareStatement("SELECT * from branches");
 			PreparedStatement existingAspenLocationStmt = dbConn.prepareStatement("SELECT libraryId, locationId, isMainBranch from location where code = ?");
 			PreparedStatement existingAspenLibraryStmt = dbConn.prepareStatement("SELECT libraryId from library where subdomain = ?");
-			PreparedStatement addAspenLibraryStmt = dbConn.prepareStatement("INSERT INTO library (subdomain, displayName) VALUES (?, ?)", Statement.RETURN_GENERATED_KEYS);
-			PreparedStatement addAspenLocationStmt = dbConn.prepareStatement("INSERT INTO location (libraryId, displayName, code) VALUES (?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+			PreparedStatement addAspenLibraryStmt = dbConn.prepareStatement("INSERT INTO library (subdomain, displayName, browseCategoryGroupId) VALUES (?, ?, 1)", Statement.RETURN_GENERATED_KEYS);
+			PreparedStatement addAspenLocationStmt = dbConn.prepareStatement("INSERT INTO location (libraryId, displayName, code, browseCategoryGroupId) VALUES (?, ?, ?, 1)", Statement.RETURN_GENERATED_KEYS);
 			PreparedStatement addAspenLocationRecordsOwnedStmt = dbConn.prepareStatement("INSERT INTO location_records_owned (locationId, indexingProfileId, location, subLocation) VALUES (?, ?, ?, '')");
 			PreparedStatement addAspenLocationRecordsToIncludeStmt = dbConn.prepareStatement("INSERT INTO location_records_to_include (locationId, indexingProfileId, location, subLocation, weight) VALUES (?, ?, '.*', '', 1)");
 			PreparedStatement addAspenLibraryRecordsOwnedStmt = dbConn.prepareStatement("INSERT INTO library_records_owned (libraryId, indexingProfileId, location, subLocation) VALUES (?, ?, ?, '') ON DUPLICATE KEY UPDATE location = CONCAT(location, '|', VALUES(location))");
@@ -638,6 +639,7 @@ public class KohaExportMain {
 			if (lastKohaExtractTime == 0) {
 				lastKohaExtractTime = new Date().getTime() / 1000 - 24 * 60 * 60;
 			}
+
 			Timestamp lastExtractTimestamp = new Timestamp(lastKohaExtractTime * 1000);
 
 			HashSet<String> changedBibIds = new HashSet<>();
@@ -649,7 +651,7 @@ public class KohaExportMain {
 				logEntry.addNote("Getting all records from Koha");
 			} else {
 				getChangedBibsFromKohaStmt = kohaConn.prepareStatement("select biblionumber from biblio where timestamp >= ?");
-				logEntry.addNote("Getting changes to records since " + lastExtractTimestamp.toString());
+				logEntry.addNote("Getting changes to records since " + lastExtractTimestamp.toString() + " UTC");
 
 				getChangedBibsFromKohaStmt.setTimestamp(1, lastExtractTimestamp);
 			}
@@ -721,10 +723,12 @@ public class KohaExportMain {
 			logger.info("Updated " + changedBibIds.size() + " records");
 			logger.info("Deleted " + numRecordsDeleted + " records");
 
+			processRecordsToReload(indexingProfile, logEntry);
+
 			totalChanges = changedBibIds.size() + numRecordsDeleted;
 
 			if (groupedWorkIndexer != null) {
-				groupedWorkIndexer.finishIndexingFromExtract();
+				groupedWorkIndexer.finishIndexingFromExtract(logEntry);
 				recordGroupingProcessorSingleton = null;
 				groupedWorkIndexer = null;
 			}
@@ -754,6 +758,48 @@ public class KohaExportMain {
 		logger.info("Finished loading changed records from Koha database");
 
 		return totalChanges;
+	}
+
+	private static void processRecordsToReload(IndexingProfile indexingProfile, IlsExtractLogEntry logEntry) {
+		try {
+			PreparedStatement getRecordsToReloadStmt = dbConn.prepareStatement("SELECT * from record_identifiers_to_reload WHERE processed = 0 and type='" + indexingProfile.getName() + "'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement markRecordToReloadAsProcessedStmt = dbConn.prepareStatement("UPDATE record_identifiers_to_reload SET processed = 1 where id = ?");
+			ResultSet getRecordsToReloadRS = getRecordsToReloadStmt.executeQuery();
+			int numRecordsToReloadProcessed = 0;
+			while (getRecordsToReloadRS.next()) {
+				long recordToReloadId = getRecordsToReloadRS.getLong("id");
+				String recordIdentifier = getRecordsToReloadRS.getString("identifier");
+				File marcFile = indexingProfile.getFileForIlsRecord(recordIdentifier);
+				if (!marcFile.exists()) {
+					logEntry.incErrors();
+					logEntry.addNote("Could not find marc for record to reload " + recordIdentifier);
+				} else {
+					FileInputStream marcFileStream = new FileInputStream(marcFile);
+					MarcPermissiveStreamReader streamReader = new MarcPermissiveStreamReader(marcFileStream, true, true);
+					if (streamReader.hasNext()) {
+						Record marcRecord = streamReader.next();
+						//Regroup the record
+						String groupedWorkId = groupKohaRecord(marcRecord);
+						//Reindex the record
+						getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
+					} else {
+						logEntry.incErrors();
+						logEntry.addNote("Could not read file " + marcFile);
+					}
+				}
+
+				markRecordToReloadAsProcessedStmt.setLong(1, recordToReloadId);
+				markRecordToReloadAsProcessedStmt.executeUpdate();
+				numRecordsToReloadProcessed++;
+			}
+			if (numRecordsToReloadProcessed > 0) {
+				logEntry.addNote("Regrouped " + numRecordsToReloadProcessed + " records marked for reprocessing");
+			}
+			getRecordsToReloadRS.close();
+		}catch (Exception e){
+			logEntry.incErrors();
+			logEntry.addNote("Error processing records to reload " + e.toString());
+		}
 	}
 
 	private static void updateBibRecord(String curBibId) throws FileNotFoundException, SQLException {

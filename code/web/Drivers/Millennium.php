@@ -1728,10 +1728,15 @@ class Millennium extends AbstractIlsDriver
 		$user->phone = isset($patronDump['TELEPHONE']) ? $patronDump['TELEPHONE'] : (isset($patronDump['HOME_PHONE']) ? $patronDump['HOME_PHONE'] : '');
 		$user->email = isset($patronDump['EMAIL_ADDR']) ? $patronDump['EMAIL_ADDR'] : '';
 		$user->patronType = $patronDump['P_TYPE'];
-		if (isset($configArray['OPAC']['webNoteField'])) {
-			$user->_web_note = isset($patronDump[$configArray['OPAC']['webNoteField']]) ? $patronDump[$configArray['OPAC']['webNoteField']] : '';
-		} else {
-			$user->_web_note = isset($patronDump['WEB_NOTE']) ? $patronDump['WEB_NOTE'] : '';
+
+		if (isset($patronDump['MESSAGE'])) {
+			$user->_web_note = $patronDump['MESSAGE'];
+		}
+		if (isset($patronDump['WEB_NOTE'])){
+			if (!empty($user->_web_note)){
+				$user->_web_note .= '<br/>';
+			}
+			$user->_web_note = $patronDump['WEB_NOTE'];
 		}
 
 		//Setup home location

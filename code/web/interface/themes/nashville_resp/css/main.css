@@ -7127,10 +7127,6 @@ body > .container {
   font-size: 40px;
   opacity: 0.4;
 }
-.btn:active,
-.btn.active {
-  font-weight: bold;
-}
 @media print {
   .btn-toolbar {
     display: none;

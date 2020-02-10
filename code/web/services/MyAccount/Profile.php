@@ -159,7 +159,7 @@ class MyAccount_Profile extends MyAccount
 				$interface->assign('locationList', $locationList);
 			}
 
-			$interface->assign('profile', $patron); //
+			$interface->assign('profile', $patron);
 			$interface->assign('barcodePin', $patron->getAccountProfile()->loginConfiguration == 'barcode_pin');
 				// Switch for displaying the barcode in the account profile
 

@@ -5,14 +5,13 @@ require_once ROOT_DIR . '/Action.php';
 class Admin_AJAX extends Action
 {
 
-
 	function launch()
 	{
 		global $timer;
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
 		if (method_exists($this, $method)) {
 			$timer->logTime("Starting method $method");
-			if (in_array($method, array('getReindexNotes', 'getExtractNotes', 'getReindexProcessNotes', 'getCronNotes', 'getCronProcessNotes', 'getAddToSpotlightForm', 'getRecordGroupingNotes', 'getSierraExportNotes'))) {
+			if (in_array($method, array('getReindexNotes', 'getExtractNotes', 'getReindexProcessNotes', 'getCronNotes', 'getCronProcessNotes', 'getAddToSpotlightForm', 'getRecordGroupingNotes', 'getSierraExportNotes', 'ungroupRecord'))) {
 				//JSON Responses
 				header('Content-type: application/json');
 				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
@@ -185,6 +184,44 @@ class Admin_AJAX extends Action
 			'modalBody' => $interface->fetch('Admin/addToSpotlightForm.tpl'),
 			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#addSpotlight\").submit();'>Create Spotlight</button>"
 		);
+		return json_encode($results);
+	}
+
+	function ungroupRecord(){
+		$results = [
+			'success' => false,
+			'message' => 'Unknown Error'
+		];
+		if (UserAccount::isLoggedIn() && (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('cataloging'))) {
+			require_once ROOT_DIR . '/sys/Grouping/NonGroupedRecord.php';
+			$ungroupedRecord = new NonGroupedRecord();
+			/** @var GroupedWorkSubDriver $record */
+			$record = RecordDriverFactory::initRecordDriverById($_REQUEST['recordId']);
+			if ($record instanceof AspenError){
+				$results['message'] = "Unable to find the record for this id";
+			}else{
+				list($source, $recordId) = explode(':', $_REQUEST['recordId']);
+				$ungroupedRecord->source = $source;
+				$ungroupedRecord->recordId = $recordId;
+				if ($ungroupedRecord->find(true)) {
+					$results['success'] = true;
+					$results['message'] = 'This record has already been ungrouped';
+				} else {
+					$ungroupedRecord->notes = '';
+					$ungroupedRecord->insert();
+					$groupedWork = new GroupedWork();
+					$groupedWork->permanent_id = $record->getPermanentId();
+					if ($groupedWork->find(true)){
+						$groupedWork->forceReindex(true);
+					}
+					$results['success'] = true;
+					$results['message'] = 'This record has been ungrouped and the index will update shortly';
+				}
+			}
+
+		}else{
+			$results['message'] = "You do not have the correct permissions for this operation";
+		}
 		return json_encode($results);
 	}
 }

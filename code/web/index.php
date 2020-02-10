@@ -39,15 +39,31 @@ $timer->logTime('Loaded display options within interface');
 
 global $active_ip;
 
-$googleAnalyticsId        = isset($configArray['Analytics']['googleAnalyticsId'])        ? $configArray['Analytics']['googleAnalyticsId'] : false;
-$googleAnalyticsLinkingId = isset($configArray['Analytics']['googleAnalyticsLinkingId']) ? $configArray['Analytics']['googleAnalyticsLinkingId'] : false;
-$interface->assign('googleAnalyticsId', $googleAnalyticsId);
-$interface->assign('googleAnalyticsLinkingId', $googleAnalyticsLinkingId);
-if ($googleAnalyticsId) {
-	$googleAnalyticsDomainName = isset($configArray['Analytics']['domainName']) ? $configArray['Analytics']['domainName'] : strstr($_SERVER['SERVER_NAME'], '.');
-	// check for a config setting, use that if found, otherwise grab domain name  but remove the first subdomain
-	$interface->assign('googleAnalyticsDomainName', $googleAnalyticsDomainName);
+require_once ROOT_DIR . '/sys/Enrichment/GoogleApiSetting.php';
+$googleSettings = new GoogleApiSetting();
+if ($googleSettings->find(true)) {
+	$googleAnalyticsId = $googleSettings->googleAnalyticsTrackingId;
+	$googleAnalyticsLinkingId = $googleSettings->googleAnalyticsTrackingId;
+	$interface->assign('googleAnalyticsId', $googleSettings->googleAnalyticsTrackingId);
+	$interface->assign('googleAnalyticsLinkingId', $googleSettings->googleAnalyticsLinkingId);
+	$linkedProperties = '';
+	if (!empty($googleSettings->googleAnalyticsLinkedProperties)){
+		$linkedPropertyArray = preg_split ('~\\r\\n|\\r|\\n~', $googleSettings->googleAnalyticsLinkedProperties);
+		foreach ($linkedPropertyArray as $linkedProperty) {
+			if (strlen($linkedProperties) > 0) {
+				$linkedProperties .= ', ';
+			}
+			$linkedProperties .= "'{$linkedProperty}'";
+		}
+	}
+	$interface->assign('googleAnalyticsLinkedProperties', $linkedProperties);
+	if ($googleAnalyticsId) {
+		$googleAnalyticsDomainName = !empty($googleSettings->googleAnalyticsDomainName) ? $googleSettings->googleAnalyticsDomainName : strstr($_SERVER['SERVER_NAME'], '.');
+		// check for a config setting, use that if found, otherwise grab domain name  but remove the first subdomain
+		$interface->assign('googleAnalyticsDomainName', $googleAnalyticsDomainName);
+	}
 }
+
 /** @var Library $library */
 global $library;
 global $offlineMode;

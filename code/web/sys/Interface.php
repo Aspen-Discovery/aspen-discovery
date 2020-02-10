@@ -34,27 +34,33 @@ class UInterface extends Smarty
 		$this->assign('device', get_device_name());
 
 		//Figure out google translate id
-		if (isset($configArray['Translation']['google_translate_key']) && strlen($configArray['Translation']['google_translate_key']) > 0){
-			$this->assign('google_translate_key', $configArray['Translation']['google_translate_key']);
-			$this->assign('google_included_languages', $configArray['Translation']['includedLanguages']);
-		} else {
-			//setup translations within Aspen
+		try {
+			require_once ROOT_DIR . '/sys/Enrichment/GoogleApiSetting.php';
+			$googleSettings = new GoogleApiSetting();
+			if ($googleSettings->find(true)) {
+				if (!empty($googleSettings->googleTranslateKey)) {
+					$this->assign('google_translate_key', $googleSettings->googleTranslateKey);
+					$this->assign('google_included_languages', $googleSettings->googleTranslateLanguages);
+				} else {
+					//setup translations within Aspen
+					$this->assign('enableLanguageSelector', true);
+				}
+
+				//Get all images related to the event
+				if (!empty($googleSettings->googleMapsKey)) {
+					$this->assign('mapsKey', $googleSettings->googleMapsKey);
+				}
+			} else {
+				$this->assign('enableLanguageSelector', true);
+			}
+		}catch (Exception $e){
+			//This happens when google analytics isn't setup yet
 			$this->assign('enableLanguageSelector', true);
 		}
 
 		//Check to see if we have a google site verification key
 		if (isset($configArray['Site']['google_verification_key']) && strlen($configArray['Site']['google_verification_key']) > 0){
 			$this->assign('google_verification_key', $configArray['Site']['google_verification_key']);
-		}
-
-		//Get all images related to the event
-		if (isset($configArray['Maps']) && isset($configArray['Maps']['apiKey'])){
-			$mapsKey = $configArray['Maps']['apiKey'];
-			$this->assign('mapsKey', $mapsKey);
-		}
-		if (isset($configArray['Maps']) && isset($configArray['Maps']['browserKey'])){
-			$mapsKey = $configArray['Maps']['browserKey'];
-			$this->assign('mapsBrowserKey', $mapsKey);
 		}
 
 		if (isset($_REQUEST['print'])) {
@@ -143,13 +149,16 @@ class UInterface extends Smarty
 			$this->assign('consortiumName', $configArray['Site']['libraryName']);
 		}
 		$this->assign('libraryName', $configArray['Site']['title']);
-		$this->assign('ils', $configArray['Catalog']['ils']);
-		if (isset($configArray['Catalog']['url'])){
-			$this->assign('classicCatalogUrl', $configArray['Catalog']['url']);
-		}else if (isset($configArray['Catalog']['hipUrl'])){
-			$this->assign('classicCatalogUrl', $configArray['Catalog']['hipUrl']);
+
+		if (array_key_exists('Catalog', $configArray)) {
+			$this->assign('ils', $configArray['Catalog']['ils']);
+			if (isset($configArray['Catalog']['url'])) {
+				$this->assign('classicCatalogUrl', $configArray['Catalog']['url']);
+			} else if (isset($configArray['Catalog']['hipUrl'])) {
+				$this->assign('classicCatalogUrl', $configArray['Catalog']['hipUrl']);
+			}
+			$this->assign('showLinkToClassicInMaintenanceMode', $configArray['Catalog']['showLinkToClassicInMaintenanceMode']);
 		}
-		$this->assign('showLinkToClassicInMaintenanceMode', $configArray['Catalog']['showLinkToClassicInMaintenanceMode']);
 
 		$this->assign('primaryTheme', reset($themeArray));
 		$this->assign('device', get_device_name());

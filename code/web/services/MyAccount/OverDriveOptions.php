@@ -53,7 +53,7 @@ class MyAccount_OverDriveOptions extends MyAccount
 			$interface->assign('overdrivePreferencesNotice', $notice);
 
 
-			$interface->assign('profile', $patron); //
+			$interface->assign('profile', $patron);
 		}
 
 		$this->display('overDriveOptions.tpl', 'Account Settings');

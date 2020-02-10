@@ -142,6 +142,8 @@ public class CarlXExportMain {
 					logEntry.incErrors();
 				}
 
+				processRecordsToReload(indexingProfile, logEntry);
+
 				logEntry.setFinished();
 
 				try{
@@ -153,7 +155,7 @@ public class CarlXExportMain {
 					}
 
 					if (groupedWorkIndexer != null) {
-						groupedWorkIndexer.finishIndexingFromExtract();
+						groupedWorkIndexer.finishIndexingFromExtract(logEntry);
 						recordGroupingProcessorSingleton = null;
 						groupedWorkIndexer = null;
 					}
@@ -177,6 +179,49 @@ public class CarlXExportMain {
 			}
 		} //Infinite loop
 	}
+
+	private static void processRecordsToReload(IndexingProfile indexingProfile, IlsExtractLogEntry logEntry) {
+		try {
+			PreparedStatement getRecordsToReloadStmt = dbConn.prepareStatement("SELECT * from record_identifiers_to_reload WHERE processed = 0 and type='" + indexingProfile.getName() + "'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement markRecordToReloadAsProcessedStmt = dbConn.prepareStatement("UPDATE record_identifiers_to_reload SET processed = 1 where id = ?");
+			ResultSet getRecordsToReloadRS = getRecordsToReloadStmt.executeQuery();
+			int numRecordsToReloadProcessed = 0;
+			while (getRecordsToReloadRS.next()) {
+				long recordToReloadId = getRecordsToReloadRS.getLong("id");
+				String recordIdentifier = getRecordsToReloadRS.getString("identifier");
+				File marcFile = indexingProfile.getFileForIlsRecord(recordIdentifier);
+				if (!marcFile.exists()) {
+					logEntry.incErrors();
+					logEntry.addNote("Could not find marc for record to reload " + recordIdentifier);
+				} else {
+					FileInputStream marcFileStream = new FileInputStream(marcFile);
+					MarcPermissiveStreamReader streamReader = new MarcPermissiveStreamReader(marcFileStream, true, true);
+					if (streamReader.hasNext()) {
+						Record marcRecord = streamReader.next();
+						//Regroup the record
+						String groupedWorkId = getRecordGroupingProcessor(dbConn).processMarcRecord(marcRecord, true);
+						//Reindex the record
+						getGroupedWorkIndexer(dbConn).processGroupedWork(groupedWorkId);
+					} else {
+						logEntry.incErrors();
+						logEntry.addNote("Could not read file " + marcFile);
+					}
+				}
+
+				markRecordToReloadAsProcessedStmt.setLong(1, recordToReloadId);
+				markRecordToReloadAsProcessedStmt.executeUpdate();
+				numRecordsToReloadProcessed++;
+			}
+			if (numRecordsToReloadProcessed > 0) {
+				logEntry.addNote("Regrouped " + numRecordsToReloadProcessed + " records marked for reprocessing");
+			}
+			getRecordsToReloadRS.close();
+		}catch (Exception e){
+			logEntry.incErrors();
+			logEntry.addNote("Error processing records to reload " + e.toString());
+		}
+	}
+
 	private static int updateRecords(Connection dbConn, CarlXInstanceInformation carlXInstanceInformation){
 		//Check to see if we need to update from the MARC export
 		File marcExportPath = new File(indexingProfile.getMarcPath());

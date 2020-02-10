@@ -22,6 +22,7 @@ class MyAccount_Fines extends MyAccount
 			if (!$offlineMode) {
 				// Get My Fines
 				$user = UserAccount::getLoggedInUser();
+				$interface->assign('profile', $user);
 				$userLibrary = $user->getHomeLibrary();
 				$fines = $user->getFines();
 				$useOutstanding = $user->getCatalogDriver()->showOutstandingFines();

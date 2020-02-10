@@ -6,15 +6,6 @@ minTimeToLog    = 0.05
 [Site]
 ;email =
 
-[Google]
-googleMapsKey =
-
-[Translation]
-;google_translate_key =
-
-[Analytics]
-;googleAnalyticsId =
-
 [Catalog]
 
 

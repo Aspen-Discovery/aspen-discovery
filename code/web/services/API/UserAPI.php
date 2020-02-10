@@ -1319,6 +1319,23 @@ class UserAPI extends Action {
 		}
 	}
 
+	function updatePatronReadingHistory(){
+		global $offlineMode;
+		if ($offlineMode) {
+			return array('success'=>false, 'message'=>'Circulation system is offline');
+		} else {
+			list($username, $password) = $this->loadUsernameAndPassword();
+			$user = UserAccount::validateAccount($username, $password);
+			if ($user && !($user instanceof AspenError)) {
+				$this->getCatalogConnection()->updateReadingHistoryBasedOnCurrentCheckouts($user);
+
+				return array('success' => true);
+			} else {
+				return array('success' => false, 'message' => 'Login unsuccessful');
+			}
+		}
+	}
+
 	/**
 	 * Allows reading history to be collected for the patron.  If this option is not selected,
 	 * no reading history for the patron wil be stored.

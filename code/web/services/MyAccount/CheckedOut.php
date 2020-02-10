@@ -8,7 +8,7 @@ class MyAccount_CheckedOut extends MyAccount{
 	function launch(){
 		global $interface;
 		global $library;
-		$user = UserAccount::getActiveUserObj();
+		$user = UserAccount::getLoggedInUser();
 
 		if (isset($_REQUEST['tab'])){
 			$tab = $_REQUEST['tab'];
@@ -21,6 +21,7 @@ class MyAccount_CheckedOut extends MyAccount{
 			$interface->assign('libraryHoursMessage', $libraryHoursMessage);
 		}
 
+		$interface->assign('profile', $user);
 		$this->display('checkedout.tpl','Checked Out Titles');
 	}
 

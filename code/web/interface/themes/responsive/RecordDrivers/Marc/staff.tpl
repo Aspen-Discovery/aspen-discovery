@@ -19,10 +19,11 @@
 			{/if}
 			{if $loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles))}
 				{if $classicUrl}
-					<a href="{$classicUrl}" class="btn btn-sm btn-info">View in Classic</a>
+					<a href="{$classicUrl}" class="btn btn-sm btn-info">View in Native OPAC</a>
 				{/if}
 				<button onclick="return AspenDiscovery.GroupedWork.forceReindex('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">Force Reindex</button>
-				<button onclick="return AspenDiscovery.GroupedWork.forceRegrouping('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">Force Regrouping</button>
+				<button onclick="return AspenDiscovery.GroupedWork.getGroupWithForm(this, '{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">Group With Work</button>
+				<button onclick="return AspenDiscovery.GroupedWork.ungroupRecord(this, '{$recordDriver->getIdWithSource()}')" class="btn btn-sm btn-default">Ungroup</button>
 				<a href="/{$recordDriver->getModule()}/{$id|escape:"url"}/AJAX?method=downloadMarc" class="btn btn-sm btn-default">{translate text="Download Marc"}</a>
 			{/if}
 			{if $loggedIn && $enableArchive && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('archives', $userRoles))}
@@ -32,23 +33,10 @@
 	</div>
 {/if}
 
-<h4>Grouping Information</h4>
-<table class="table-striped table table-condensed notranslate">
-	<tr>
-		<th>Grouped Work ID</th>
-		<td>{$recordDriver->getPermanentId()}</td>
-	</tr>
-	{foreach from=$groupedWorkDetails key='field' item='value'}
-		<tr>
-			<th>{$field|escape}</th>
-			<td>
-				{$value}
-			</td>
-		</tr>
-	{/foreach}
-</table>
+{include file="RecordDrivers/GroupedWork/grouping-information.tpl"}
 
 {if $marcRecord}
+	<h4>{translate text="Marc Record"}</h4>
 	<table class="table-striped table table-condensed notranslate">
 		{if !empty($lastMarcModificationTime)}
 			<tr>

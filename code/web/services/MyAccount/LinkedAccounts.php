@@ -28,7 +28,7 @@ class LinkedAccounts extends MyAccount
 				$interface->assign('selectedUser', $patronId);
 			}
 
-			$interface->assign('profile', $patron); //
+			$interface->assign('profile', $patron);
 			$interface->assign('barcodePin', $patron->getAccountProfile()->loginConfiguration == 'barcode_pin');
 			// Switch for displaying the barcode in the account profile
 

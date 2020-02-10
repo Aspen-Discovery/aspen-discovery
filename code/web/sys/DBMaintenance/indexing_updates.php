@@ -697,7 +697,37 @@ function getIndexingUpdates()
 				"INSERT INTO modules (name, indexName, backgroundProcess) VALUES ('Side Loads', 'grouped_works', 'sideload_processing')",
 				"INSERT INTO modules (name, indexName, backgroundProcess, enabled) VALUES ('User Lists', 'lists', 'user_list_indexer', 1)"
 			]
-		]
+		],
+
+		'scheduled_work_index' => [
+			'title' => 'Scheduled Work Indexing',
+			'description' => 'Create tables to store scheduled indexing for works',
+			'sql' => [
+				'CREATE TABLE IF NOT EXISTS grouped_work_scheduled_index (
+					id int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					permanent_id CHAR(36) NOT NULL,
+					indexAfter int(11) NOT NULL,
+					processed TINYINT(1) DEFAULT 0,
+					INDEX allfields(processed, indexAfter, permanent_id),
+					INDEX permanent_id(permanent_id)
+				) ENGINE=InnoDB'
+			]
+		],
+
+		'record_identifiers_to_reload' => [
+			'title' => 'Record Identifiers To Reload',
+			'description' => 'Setup record identifiers to reload to force regrouping',
+			'sql' => [
+				'CREATE TABLE IF NOT EXISTS record_identifiers_to_reload (
+					id int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					type VARCHAR(50) NOT NULL,
+					identifier VARCHAR(50) NOT NULL,
+					processed TINYINT(1) DEFAULT 0,
+					INDEX (type, identifier),
+					INDEX (processed, type)
+				)'
+			]
+		],
 	);
 }
 

@@ -46,7 +46,6 @@ public class HooplaExportMain {
 	private static CRC32 checksumCalculator = new CRC32();
 
 	public static void main(String[] args){
-		String serverName;
 		if (args.length == 0) {
 			serverName = StringUtils.getInputFromCommandLine("Please enter the server name");
 			if (serverName.length() == 0) {
@@ -59,9 +58,7 @@ public class HooplaExportMain {
 
 		logger = LoggingUtil.setupLogging(serverName, "hoopla_export");
 
-		//noinspection InfiniteLoopStatement
 		//Hoopla only needs to run once a day so just run it in cron
-		//while (true) {
 		Date startTime = new Date();
 		startTimeForLogging = startTime.getTime() / 1000;
 		logger.info(startTime.toString() + ": Starting Hoopla Export");
@@ -83,8 +80,10 @@ public class HooplaExportMain {
 		//Do work here
 		exportHooplaData();
 
+		processRecordsToReload(logEntry);
+
 		if (groupedWorkIndexer != null) {
-			groupedWorkIndexer.finishIndexingFromExtract();
+			groupedWorkIndexer.finishIndexingFromExtract(logEntry);
 			recordGroupingProcessorSingleton = null;
 			groupedWorkIndexer = null;
 			existingRecords = null;
@@ -104,14 +103,50 @@ public class HooplaExportMain {
 
 		disconnectDatabase(aspenConn);
 
-			//Pause 24 hours before running the next export.
-//			try {
-//				System.gc();
-//				Thread.sleep(1000 * 60 * 60 * 24);
-//			} catch (InterruptedException e) {
-//				logger.info("Thread was interrupted");
-//			}
-//		}
+	}
+
+	private static void processRecordsToReload(HooplaExtractLogEntry logEntry) {
+		try {
+			PreparedStatement getRecordsToReloadStmt = aspenConn.prepareStatement("SELECT * from record_identifiers_to_reload WHERE processed = 0 and type='hoopla'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement markRecordToReloadAsProcessedStmt = aspenConn.prepareStatement("UPDATE record_identifiers_to_reload SET processed = 1 where id = ?");
+			PreparedStatement getItemDetailsForRecordStmt = aspenConn.prepareStatement("SELECT title, primaryAuthor, mediaType, rawResponse from hoopla_export where hooplaId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			ResultSet getRecordsToReloadRS = getRecordsToReloadStmt.executeQuery();
+			int numRecordsToReloadProcessed = 0;
+			while (getRecordsToReloadRS.next()){
+				long recordToReloadId = getRecordsToReloadRS.getLong("id");
+				long hooplaId = getRecordsToReloadRS.getLong("identifier");
+				//Regroup the record
+				getItemDetailsForRecordStmt.setLong(1, hooplaId);
+				ResultSet getItemDetailsForRecordRS = getItemDetailsForRecordStmt.executeQuery();
+				if (getItemDetailsForRecordRS.next()){
+					String rawResponse = getItemDetailsForRecordRS.getString("rawResponse");
+					try {
+						JSONObject itemDetails = new JSONObject(rawResponse);
+						String groupedWorkId = groupRecord(itemDetails, hooplaId);
+						//Reindex the record
+						getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
+
+						markRecordToReloadAsProcessedStmt.setLong(1, recordToReloadId);
+						markRecordToReloadAsProcessedStmt.executeUpdate();
+						numRecordsToReloadProcessed++;
+					}catch (JSONException e){
+						logEntry.incErrors();
+						logEntry.addNote("Could not parse item details for record to reload " + hooplaId);
+					}
+				}else{
+					logEntry.incErrors();
+					logEntry.addNote("Could not get details for record to reload " + hooplaId);
+				}
+				getItemDetailsForRecordRS.close();
+			}
+			if (numRecordsToReloadProcessed > 0){
+				logEntry.addNote("Regrouped " + numRecordsToReloadProcessed + " records marked for reprocessing");
+			}
+			getRecordsToReloadRS.close();
+		}catch (Exception e){
+			logEntry.incErrors();
+			logEntry.addNote("Error processing records to reload " + e.toString());
+		}
 	}
 
 	private static void deleteItems() {
@@ -407,35 +442,35 @@ public class HooplaExportMain {
 		//Perform record grouping on the record
 		String title = itemDetails.getString("title");
 		String mediaType = itemDetails.getString("kind");
-        String primaryFormat;
-        switch (mediaType) {
-            case "MOVIE":
-            case "TELEVISION":
-                primaryFormat = "eVideo";
-                break;
-            case "AUDIOBOOK":
-                primaryFormat = "eAudiobook";
-                break;
-            case "EBOOK":
-                primaryFormat = "eBook";
-                break;
-            case "COMIC":
-                primaryFormat = "eComic";
-                break;
-            case "MUSIC":
-                primaryFormat = "eMusic";
-                break;
-            default:
-                logger.error("Unhandled hoopla mediaType " + mediaType);
-                primaryFormat = mediaType;
-                break;
-        }
+		String primaryFormat;
+		switch (mediaType) {
+			case "MOVIE":
+			case "TELEVISION":
+				primaryFormat = "eVideo";
+				break;
+			case "AUDIOBOOK":
+				primaryFormat = "eAudiobook";
+				break;
+			case "EBOOK":
+				primaryFormat = "eBook";
+				break;
+			case "COMIC":
+				primaryFormat = "eComic";
+				break;
+			case "MUSIC":
+				primaryFormat = "eMusic";
+				break;
+			default:
+				logger.error("Unhandled hoopla mediaType " + mediaType);
+				primaryFormat = mediaType;
+				break;
+		}
 		String author = "";
 		if (itemDetails.has("artist")) {
-            author = itemDetails.getString("artist");
-            author = StringUtils.swapFirstLastNames(author);
-		}else if (itemDetails.has("publisher")) {
-            author = itemDetails.getString("publisher");
+			author = itemDetails.getString("artist");
+			author = StringUtils.swapFirstLastNames(author);
+		} else if (itemDetails.has("publisher")) {
+			author = itemDetails.getString("publisher");
 		}
 
 		RecordIdentifier primaryIdentifier = new RecordIdentifier("hoopla", Long.toString(hooplaId));

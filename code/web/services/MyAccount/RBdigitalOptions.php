@@ -35,7 +35,7 @@ class MyAccount_RBdigitalOptions extends MyAccount
 				$interface->assign('edit', false);
 			}
 
-			$interface->assign('profile', $patron); //
+			$interface->assign('profile', $patron);
 		}
 
 		$this->display('rbdigitalOptions.tpl', 'RBdigital Options');

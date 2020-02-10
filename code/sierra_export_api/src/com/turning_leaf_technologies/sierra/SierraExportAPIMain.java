@@ -159,6 +159,8 @@ public class SierraExportAPIMain {
 
 				numChanges = updateBibs(configIni);
 
+				processRecordsToReload(indexingProfile, logEntry);
+
 				if (sierraConn != null){
 					try{
 						//Close the connection
@@ -170,7 +172,7 @@ public class SierraExportAPIMain {
 				}
 
 				if (groupedWorkIndexer != null) {
-					groupedWorkIndexer.finishIndexingFromExtract();
+					groupedWorkIndexer.finishIndexingFromExtract(logEntry);
 					recordGroupingProcessorSingleton = null;
 					groupedWorkIndexer = null;
 				}
@@ -220,6 +222,48 @@ public class SierraExportAPIMain {
 				logger.info("Thread was interrupted");
 			}
 		} //Infinite loop
+	}
+
+	private static void processRecordsToReload(IndexingProfile indexingProfile, IlsExtractLogEntry logEntry) {
+		try {
+			PreparedStatement getRecordsToReloadStmt = dbConn.prepareStatement("SELECT * from record_identifiers_to_reload WHERE processed = 0 and type='" + indexingProfile.getName() + "'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement markRecordToReloadAsProcessedStmt = dbConn.prepareStatement("UPDATE record_identifiers_to_reload SET processed = 1 where id = ?");
+			ResultSet getRecordsToReloadRS = getRecordsToReloadStmt.executeQuery();
+			int numRecordsToReloadProcessed = 0;
+			while (getRecordsToReloadRS.next()) {
+				long recordToReloadId = getRecordsToReloadRS.getLong("id");
+				String recordIdentifier = getRecordsToReloadRS.getString("identifier");
+				File marcFile = indexingProfile.getFileForIlsRecord(recordIdentifier);
+				if (!marcFile.exists()) {
+					logEntry.incErrors();
+					logEntry.addNote("Could not find marc for record to reload " + recordIdentifier);
+				} else {
+					FileInputStream marcFileStream = new FileInputStream(marcFile);
+					MarcPermissiveStreamReader streamReader = new MarcPermissiveStreamReader(marcFileStream, true, true);
+					if (streamReader.hasNext()) {
+						Record marcRecord = streamReader.next();
+						//Regroup the record
+						String groupedWorkId = groupSierraRecord(marcRecord);
+						//Reindex the record
+						getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
+					} else {
+						logEntry.incErrors();
+						logEntry.addNote("Could not read file " + marcFile);
+					}
+				}
+
+				markRecordToReloadAsProcessedStmt.setLong(1, recordToReloadId);
+				markRecordToReloadAsProcessedStmt.executeUpdate();
+				numRecordsToReloadProcessed++;
+			}
+			if (numRecordsToReloadProcessed > 0) {
+				logEntry.addNote("Regrouped " + numRecordsToReloadProcessed + " records marked for reprocessing");
+			}
+			getRecordsToReloadRS.close();
+		}catch (Exception e){
+			logEntry.incErrors();
+			logEntry.addNote("Error processing records to reload " + e.toString());
+		}
 	}
 
 	private static void getBibsAndItemUpdatesFromSierra(Ini ini, Connection dbConn, Connection sierraConn) {
@@ -327,7 +371,7 @@ public class SierraExportAPIMain {
 	private static void exportHolds(Connection sierraConn, Connection dbConn) {
 		Savepoint startOfHolds = null;
 		try {
-			logger.info("Starting export of holds");
+			logEntry.addNote("Starting export of holds " + dateTimeFormatter.format(new Date()));
 
 			//Start a transaction so we can rebuild an entire table
 			startOfHolds = dbConn.setSavepoint();
@@ -431,7 +475,7 @@ public class SierraExportAPIMain {
 				}
 			}
 		}
-		logger.info("Finished exporting holds");
+		logEntry.addNote("Finished exporting holds " + dateTimeFormatter.format(new Date()));
 	}
 
 
@@ -1099,44 +1143,8 @@ public class SierraExportAPIMain {
 		}
 	}
 
-//	private static void exportDueDates(String exportPath, Connection conn) throws SQLException, IOException {
-//		logEntry.addNote("Starting export of due dates");
-//		String dueDatesSQL = "select record_num, due_gmt from sierra_view.checkout inner join sierra_view.item_view on item_record_id = item_view.id where due_gmt is not null";
-//		PreparedStatement getDueDatesStmt = conn.prepareStatement(dueDatesSQL, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-//		ResultSet dueDatesRS = null;
-//		boolean loadError = false;
-//		try{
-//			dueDatesRS = getDueDatesStmt.executeQuery();
-//		} catch (SQLException e1){
-//			logger.error("Error loading active orders", e1);
-//			loadError = true;
-//		}
-//		if (!loadError){
-//			File dueDateFile = new File(exportPath + "/due_dates.csv");
-//			CSVWriter dueDateWriter = new CSVWriter(new FileWriter(dueDateFile));
-//			while (dueDatesRS.next()){
-//				try {
-//					String recordNum = dueDatesRS.getString("record_num");
-//					if (recordNum != null){
-//						String dueDateRaw = dueDatesRS.getString("due_gmt");
-//						String itemId = ".i" + recordNum + getCheckDigit(recordNum);
-//						Date dueDate = dueDatesRS.getDate("due_gmt");
-//						dueDateWriter.writeNext(new String[]{itemId, Long.toString(dueDate.getTime()), dueDateRaw});
-//					}else{
-//						logger.warn("No record number found while exporting due dates");
-//					}
-//				}catch (Exception e){
-//					logger.error("Error writing due dates", e);
-//				}
-//			}
-//			dueDateWriter.close();
-//			dueDatesRS.close();
-//		}
-//		logEntry.addNote("Finished exporting due dates");
-//	}
-
 	private static void exportActiveOrders(String exportPath, Connection conn) throws SQLException, IOException {
-		logEntry.addNote("Starting export of active orders");
+		logEntry.addNote("Starting export of active orders " + dateTimeFormatter.format(new Date()));
 		//Load the orders we had last time
 		File orderRecordFile = new File(exportPath + "/active_orders.csv");
 		HashMap<String, Integer> existingBibsWithOrders = new HashMap<>();
@@ -1197,7 +1205,7 @@ public class SierraExportAPIMain {
 			//Now that all updated bibs are processed, look for any that we used to have that no longer exist
 			allBibsToUpdate.addAll(existingBibsWithOrders.keySet());
 		}
-		logEntry.addNote("Finished exporting active orders");
+		logEntry.addNote("Finished exporting active orders " + dateTimeFormatter.format(new Date()));
 	}
 
 	private static void readOrdersFile(File orderRecordFile, HashMap<String, Integer> bibsWithOrders) throws IOException {
@@ -1487,90 +1495,112 @@ public class SierraExportAPIMain {
 	private static void exportVolumes(Connection sierraConn, Connection aspenConn){
 		try {
 			logEntry.addNote("Starting export of volume information " + dateTimeFormatter.format(new Date()));
-			PreparedStatement getVolumeInfoStmt = sierraConn.prepareStatement("select volume_view.id, volume_view.record_num as volume_num, sort_order from sierra_view.volume_view " +
-					"inner join sierra_view.bib_record_volume_record_link on bib_record_volume_record_link.volume_record_id = volume_view.id " +
-					"where volume_view.is_suppressed = 'f'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			PreparedStatement getBibForVolumeStmt = sierraConn.prepareStatement("select record_num from sierra_view.bib_record_volume_record_link " +
-					"inner join sierra_view.bib_view on bib_record_volume_record_link.bib_record_id = bib_view.id " +
-					"where volume_record_id = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			PreparedStatement getItemsForVolumeStmt = sierraConn.prepareStatement("select record_num from sierra_view.item_view " +
-					"inner join sierra_view.volume_record_item_record_link on volume_record_item_record_link.item_record_id = item_view.id " +
-					"where volume_record_id = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			PreparedStatement getVolumeNameStmt = sierraConn.prepareStatement("SELECT * FROM sierra_view.subfield where record_id = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 
-			PreparedStatement removeOldVolumes = aspenConn.prepareStatement("DELETE FROM ils_volume_info WHERE recordId LIKE 'ils%'");
-			PreparedStatement addVolumeStmt = aspenConn.prepareStatement("INSERT INTO ils_volume_info (recordId, volumeId, displayLabel, relatedItems) VALUES (?,?,?,?)");
+			//Get the existing volumes
+			PreparedStatement getExistingVolumes = aspenConn.prepareStatement("SELECT volumeId from ils_volume_info", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			HashSet<String> existingVolumes = new HashSet<>();
+			ResultSet existingVolumesRS = getExistingVolumes.executeQuery();
+			while (existingVolumesRS.next()){
+				existingVolumes.add(existingVolumesRS.getString("volumeId"));
+			}
+			existingVolumesRS.close();
+
+			//This is a little inefficient since we have to convert short ids to long ids.
+			//Get a list of all the values and store them in memory so we minimize the number of times we need to call Sierra
+			PreparedStatement getVolumeInfoStmt = sierraConn.prepareStatement("select volume_view.id, volume_view.record_num as volume_num, sort_order from sierra_view.volume_view where volume_view.is_suppressed = 'f'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement getBibForVolumeStmt = sierraConn.prepareStatement("select record_num, volume_record_id from sierra_view.bib_record_volume_record_link " +
+					"inner join sierra_view.bib_view on bib_record_volume_record_link.bib_record_id = bib_view.id " +
+					"where volume_record_id IN (select id from sierra_view.volume_view where volume_view.is_suppressed = 'f')", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement getItemsForVolumeStmt = sierraConn.prepareStatement("select record_num, volume_record_id from sierra_view.item_view " +
+					"inner join sierra_view.volume_record_item_record_link on volume_record_item_record_link.item_record_id = item_view.id " +
+					"where volume_record_id IN (select id from sierra_view.volume_view where volume_view.is_suppressed = 'f')", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement getVolumeNameStmt = sierraConn.prepareStatement("SELECT content, record_id FROM sierra_view.subfield where field_type_code = 'v' and record_id in (select id from sierra_view.volume_view where sierra_view.volume_view.is_suppressed = 'f');", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+
+			PreparedStatement addVolumeStmt = aspenConn.prepareStatement("INSERT INTO ils_volume_info (recordId, volumeId, displayLabel, relatedItems) VALUES (?,?,?,?) ON DUPLICATE KEY update recordId = VALUES(recordId), displayLabel = VALUES(displayLabel), relatedItems = VALUES(relatedItems)");
+			PreparedStatement deleteVolumeStmt = aspenConn.prepareStatement("DELETE from ils_volume_info where volumeId = ?");
 
 			ResultSet volumeInfoRS = null;
 			boolean loadError = false;
-			boolean updateError = false;
-			Savepoint transactionStart = aspenConn.setSavepoint("load_volumes");
+
+			HashMap<Long, String> bibsForVolume = new HashMap<>(); //Volume ID to Bib
+			HashMap<Long, String> itemsForVolume = new HashMap<>(); //Volume Id, list of item
+			HashMap<Long, String> labelsForVolume = new HashMap<>();
+
 			try {
 				volumeInfoRS = getVolumeInfoStmt.executeQuery();
+
+				ResultSet getBibForVolumeRS = getBibForVolumeStmt.executeQuery();
+				while (getBibForVolumeRS.next()){
+					String bibRecordNum = getBibForVolumeRS.getString("record_num");
+					bibRecordNum = ".b" + bibRecordNum + getCheckDigit(bibRecordNum);
+					bibsForVolume.put(getBibForVolumeRS.getLong("volume_record_id"), bibRecordNum);
+				}
+				getBibForVolumeRS.close();
+
+				ResultSet getItemsForVolumeRS = getItemsForVolumeStmt.executeQuery();
+				while (getItemsForVolumeRS.next()){
+					String itemRecordNum = getItemsForVolumeRS.getString("record_num");
+
+					Long volumeId = getItemsForVolumeRS.getLong("volume_record_id");
+					String existingItems = itemsForVolume.get(volumeId);
+					if (existingItems == null){
+						itemsForVolume.put(volumeId, itemRecordNum);
+					}else{
+						itemsForVolume.put(volumeId, existingItems + "|" + itemRecordNum);
+					}
+				}
+				getItemsForVolumeRS.close();
+
+				ResultSet getVolumeLabelsRS = getVolumeNameStmt.executeQuery();
+				while (getVolumeLabelsRS.next()) {
+					labelsForVolume.put(getVolumeLabelsRS.getLong("record_id"), getVolumeLabelsRS.getString("content"));
+				}
+				getVolumeLabelsRS.close();
 			} catch (SQLException e1) {
 				logger.error("Error loading volume information", e1);
 				loadError = true;
 			}
 			if (!loadError) {
-				try {
-					removeOldVolumes.executeUpdate();
-				}catch (SQLException sqlException){
-					logger.error("Error removing old volume information", sqlException);
-					updateError = true;
-				}
-
+				int numVolumesUpdated = 0;
 				while (volumeInfoRS.next()) {
 					long recordId = volumeInfoRS.getLong("id");
 
 					String volumeId = volumeInfoRS.getString("volume_num");
 					volumeId = ".j" + volumeId + getCheckDigit(volumeId);
 
-					getBibForVolumeStmt.setLong(1, recordId);
-					ResultSet bibForVolumeRS = getBibForVolumeStmt.executeQuery();
-					String bibId = "";
-					if (bibForVolumeRS.next()) {
-						bibId = bibForVolumeRS.getString("record_num");
-						bibId = ".b" + bibId + getCheckDigit(bibId);
-					}
-
-					getItemsForVolumeStmt.setLong(1, recordId);
-					ResultSet itemsForVolumeRS = getItemsForVolumeStmt.executeQuery();
-					StringBuilder itemsForVolume = new StringBuilder();
-					while (itemsForVolumeRS.next()) {
-						String itemId = itemsForVolumeRS.getString("record_num");
-						if (itemId != null) {
-							itemId = ".i" + itemId + getCheckDigit(itemId);
-							if (itemsForVolume.length() > 0) itemsForVolume.append("|");
-							itemsForVolume.append(itemId);
-						}
-					}
-
-					getVolumeNameStmt.setLong(1, recordId);
-					ResultSet getVolumeNameRS = getVolumeNameStmt.executeQuery();
-					String volumeName = "Unknown";
-					if (getVolumeNameRS.next()) {
-						volumeName = getVolumeNameRS.getString("content");
-					}
+					existingVolumes.remove(volumeId);
 
 					try {
-						addVolumeStmt.setString(1, "ils:" + bibId);
+						String relatedItems = itemsForVolume.get(recordId);
+						if (relatedItems == null){
+							relatedItems = "";
+						}
+						addVolumeStmt.setString(1, "ils:" + bibsForVolume.get(recordId));
 						addVolumeStmt.setString(2, volumeId);
-						addVolumeStmt.setString(3, volumeName);
-						addVolumeStmt.setString(4, itemsForVolume.toString());
-						addVolumeStmt.executeUpdate();
-						logEntry.incUpdated();
+						addVolumeStmt.setString(3, labelsForVolume.get(recordId));
+						addVolumeStmt.setString(4, relatedItems);
+						int numUpdates = addVolumeStmt.executeUpdate();
+						if (numUpdates > 0) {
+							numVolumesUpdated++;
+						}
 					}catch (SQLException sqlException){
 						logger.error("Error adding volume", sqlException);
 						logEntry.incErrors();
-						updateError = true;
 					}
 				}
 				volumeInfoRS.close();
+
+				//Remove anything that no longer exists
+				long numVolumesDeleted = 0;
+				for (String existingVolume : existingVolumes){
+					logEntry.addNote("Deleted volume " + existingVolume);
+					deleteVolumeStmt.setString(1, existingVolume);
+					deleteVolumeStmt.executeUpdate();
+					numVolumesDeleted++;
+				}
+				logEntry.addNote("Updated " + numVolumesUpdated + " volumes and deleted " + numVolumesDeleted + " volumes");
 			}
-			if (updateError){
-				aspenConn.rollback(transactionStart);
-			}
-			aspenConn.setAutoCommit(true);
+
 			logEntry.addNote("Finished export of volume information " + dateTimeFormatter.format(new Date()));
 		}catch (Exception e){
 			logger.error("Error exporting volume information", e);

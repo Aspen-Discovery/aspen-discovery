@@ -83,6 +83,8 @@ class RBdigitalMagazineDriver extends GroupedWorkSubDriver
 		$groupedWorkDetails = $this->getGroupedWorkDriver()->getGroupedWorkDetails();
 		$interface->assign('groupedWorkDetails', $groupedWorkDetails);
 
+		$interface->assign('alternateTitles', $this->getGroupedWorkDriver()->getAlternateTitles());
+
 		$interface->assign('rbdigitalExtract', $this->rbdigitalRawMetadata);
 		return 'RecordDrivers/RBdigital/staff-view.tpl';
 	}

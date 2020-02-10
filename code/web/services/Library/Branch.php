@@ -49,13 +49,19 @@ class Branch extends Action{
 				}
 				$hours[$key] = $hourObj;
 			}
+			$googleSettings = new GoogleApiSetting();
+			if ($googleSettings->find(true)){
+				$mapsKey = $googleSettings->googleMapsKey;
+			}else{
+				$mapsKey = null;
+			}
 			$mapLink = "http://maps.google.com/maps?f=q&hl=en&geocode=&q=$mapAddress&ie=UTF8&z=15&iwloc=addr&om=1&t=m";
 			$locationInfo = array(
 				'id' => $location->locationId,
 				'name' => $location->displayName,
 				'address' => preg_replace('/\r\n|\r|\n/', '<br>', $location->address),
 				'phone' => $location->phone,
-				'map_image' => "http://maps.googleapis.com/maps/api/staticmap?center=$mapAddress&zoom=15&size=200x200&sensor=false&markers=color:red%7C$mapAddress",
+				'map_image' => "http://maps.googleapis.com/maps/api/staticmap?center=$mapAddress&zoom=15&size=200x200&sensor=false&markers=color:red%7C$mapAddress&key=$mapsKey",
 				'map_link' => $mapLink,
 				'hours' => $hours
 			);
