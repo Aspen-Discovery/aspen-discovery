@@ -26,4 +26,16 @@
 		{/foreach}
 	</table>
 {/if}
+
+{if (!empty($primaryIdentifiers))}
+	<h4>Grouped Records</h4>
+	<table class="table-striped table table-condensed notranslate">
+		<thead>
+		<tr><th>Type</th><th>Identifier</th></tr>
+		</thead>
+		{foreach from=$primaryIdentifiers item="groupedRecord"}
+			<tr><td>{$groupedRecord->type}</td><td>{$groupedRecord->identifier}</td></tr>
+		{/foreach}
+	</table>
+{/if}
 {/strip}

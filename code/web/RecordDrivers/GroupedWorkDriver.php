@@ -1859,6 +1859,8 @@ class GroupedWorkDriver extends IndexRecordDriver
 
 		$interface->assign('alternateTitles', $this->getAlternateTitles());
 
+		$interface->assign('primaryIdentifiers', $this->getPrimaryIdentifiers());
+
 		return 'RecordDrivers/GroupedWork/staff-view.tpl';
 	}
 
@@ -1876,6 +1878,25 @@ class GroupedWorkDriver extends IndexRecordDriver
 			return $alternateTitles;
 		}
 		return null;
+	}
+
+	public function getPrimaryIdentifiers(){
+		$primaryIdentifiers = [];
+		if (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('cataloging')){
+			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+			$groupedWork = new GroupedWork();
+			$groupedWork->permanent_id = $this->getUniqueID();
+			if ($groupedWork->find(true)){
+				require_once ROOT_DIR . '/sys/Grouping/GroupedWorkPrimaryIdentifier.php';
+				$primaryIdentifier = new GroupedWorkPrimaryIdentifier();
+				$primaryIdentifier->grouped_work_id = $groupedWork->id;
+				$primaryIdentifier->find();
+				while ($primaryIdentifier->fetch()){
+					$primaryIdentifiers[] = clone($primaryIdentifier);
+				}
+			}
+		}
+		return $primaryIdentifiers;
 	}
 
 	public function getSolrField($fieldName)
