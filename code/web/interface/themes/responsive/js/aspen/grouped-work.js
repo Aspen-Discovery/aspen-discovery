@@ -491,7 +491,7 @@ AspenDiscovery.GroupedWork = (function(){
 			let id = $('#id').val();
 			let groupWithId = $('#workToGroupWithId').val().trim();
 			let url = Globals.path + "/GroupedWork/" + id + "/AJAX?method=processGroupWithForm&groupWithId=" + groupWithId;
-			AspenDiscovery.closeLightbox();
+			//AspenDiscovery.closeLightbox();
 			$.getJSON(url, function(data){
 				if (data.success){
 					AspenDiscovery.showMessage("Success", data.message, true, false);
