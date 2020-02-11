@@ -986,17 +986,22 @@ class UserAPI extends Action {
 	 */
 	function placeOverDriveHold(){
 		list($username, $password) = $this->loadUsernameAndPassword();
-		$overDriveId = $_REQUEST['overDriveId'];
+		if (isset($_REQUEST['overDriveId'])){
+			$overDriveId = $_REQUEST['overDriveId'];
 
-		$user = UserAccount::validateAccount($username, $password);
-		if ($user && !($user instanceof AspenError)){
-            require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
-            $driver = new OverDriveDriver();
-			$holdMessage = $driver->placeHold($user, $overDriveId);
-			return array('success'=> $holdMessage['success'], 'message'=>$holdMessage['message']);
+			$user = UserAccount::validateAccount($username, $password);
+			if ($user && !($user instanceof AspenError)){
+				require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+				$driver = new OverDriveDriver();
+				$holdMessage = $driver->placeHold($user, $overDriveId);
+				return array('success'=> $holdMessage['success'], 'message'=>$holdMessage['message']);
+			}else{
+				return array('success'=>false, 'message'=>'Login unsuccessful');
+			}
 		}else{
-			return array('success'=>false, 'message'=>'Login unsuccessful');
+			return array('success'=>false, 'message'=>'Please provide the overDriveId to be place the hold on');
 		}
+
 	}
 
 	/**
