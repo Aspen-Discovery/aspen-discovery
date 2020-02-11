@@ -231,8 +231,8 @@ class ItemAPI extends Action {
 		if (isset($record['issn'])){
 			$itemData['issn'] = $record['issn'][0];
 		}
-		$itemData['title'] = $record['title'];
-		$itemData['author'] = $record['author'];
+		$itemData['title'] = $record['title_display'];
+		$itemData['author'] = $record['author_display'];
 		$itemData['publisher'] = $record['publisher'];
 		$itemData['allIsbn'] = $record['isbn'];
 		$itemData['allUpc'] = isset($record['upc']) ? $record['upc'] : null;
