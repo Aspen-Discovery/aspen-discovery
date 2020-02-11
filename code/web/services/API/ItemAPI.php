@@ -159,7 +159,7 @@ class ItemAPI extends Action {
 			if ($indexingProfile->createFolderFromLeadingCharacters){
 				$subFolder = substr($shortId, 0, $indexingProfile->numCharsToCreateFolderFrom);
 			}else{
-				$subFolder = substr($shortId, -$indexingProfile->numCharsToCreateFolderFrom);
+				$subFolder = substr($shortId, 0, -$indexingProfile->numCharsToCreateFolderFrom);
 			}
 			$individualName = $folderName . "/{$subFolder}/{$shortId}.mrc";
 			if (file_exists($individualName)){
