@@ -9,7 +9,9 @@
 	{else}
 		<div class="alert alert-danger">{$renew_message_data.message}</div>
 	{/if}
-	<p>
-	Please take note of the new due date/s and return any items that could not be renewed. Items on Hold for another patron cannot be renewed.
-	</p>
+	{if !empty($renewResults.Total)}
+		<p>
+		Please take note of the new due date/s and return any items that could not be renewed. Items on Hold for another patron cannot be renewed.
+		</p>
+	{/if}
 </div>

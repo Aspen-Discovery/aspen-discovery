@@ -6,9 +6,14 @@ class MyAccount_AJAX extends JSON_Action
 {
 	const SORT_LAST_ALPHA = 'zzzzz';
 
-	function launch()
+	function launch($method = null)
 	{
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
+		switch ($method){
+			case 'renewItem':
+				$method = 'renewCheckout';
+				break;
+		}
 		if (method_exists($this, $method)) {
 			if (in_array($method, array('getLoginForm', 'getPinUpdateForm'))) {
 				header('Content-type: text/html');
@@ -16,7 +21,7 @@ class MyAccount_AJAX extends JSON_Action
 				header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
 				echo $this->$method();
 			} else {
-				parent::launch();
+				parent::launch($method);
 			}
 		} else {
 			echo json_encode(array('error' => 'invalid_method'));
@@ -924,11 +929,12 @@ class MyAccount_AJAX extends JSON_Action
 		}
 		global $interface;
 		$interface->assign('renew_message_data', $renewResults);
+
 		$result = array(
 			'title' => translate('Renew') . ' Selected Items',
 			'modalBody' => $interface->fetch('Record/renew-results.tpl'),
 			'success' => $renewResults['success'],
-			'renewed' => $renewResults['Renewed']
+			'renewed' => isset($renewResults['Renewed']) ? $renewResults['Renewed'] : []
 		);
 		return $result;
 	}

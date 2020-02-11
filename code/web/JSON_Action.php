@@ -4,10 +4,12 @@ require_once 'Action.php';
 
 class JSON_Action extends Action
 {
-	function launch()
+	function launch($method = null)
 	{
 		global $timer;
-		$method = (isset($_REQUEST['method']) && !is_array($_REQUEST['method'])) ? $_REQUEST['method'] : '';
+		if ($method == null) {
+			$method = (isset($_REQUEST['method']) && !is_array($_REQUEST['method'])) ? $_REQUEST['method'] : '';
+		}
 		if (method_exists($this, $method)) {
 			$timer->logTime("Starting method $method");
 

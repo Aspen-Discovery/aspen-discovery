@@ -1,12 +1,13 @@
 <?php
 require_once ROOT_DIR . '/Action.php';
+require_once ROOT_DIR . '/JSON_Action.php';
 
 global $configArray;
 
-class OverDrive_AJAX extends Action
+class OverDrive_AJAX extends JSON_Action
 {
 
-	function launch()
+	function launch($method = null)
 	{
 		$method = $_GET['method'];
 		//Backwards compatibility with old Pika calls
@@ -24,14 +25,7 @@ class OverDrive_AJAX extends Action
 				$method = 'returnCheckout';
 				break;
 		}
-		if (method_exists($this, $method)) {
-			header('Content-type: application/json');
-			header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
-			header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-			echo $this->$method();
-		} else {
-			echo json_encode(array('error' => 'invalid_method'));
-		}
+		parent::launch($method);
 	}
 
 	function placeHold()
@@ -69,12 +63,12 @@ class OverDrive_AJAX extends Action
 				require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
 				$driver = new OverDriveDriver();
 				$holdMessage = $driver->placeHold($patron, $overDriveId);
-				return json_encode($holdMessage);
+				return $holdMessage;
 			} else {
-				return json_encode(array('result' => false, 'message' => translate(['text' => 'no_permissions_for_hold', 'defaultText' => 'Sorry, it looks like you don\'t have permissions to place holds for that user.'])));
+				return array('result' => false, 'message' => translate(['text' => 'no_permissions_for_hold', 'defaultText' => 'Sorry, it looks like you don\'t have permissions to place holds for that user.']));
 			}
 		} else {
-			return json_encode(array('result' => false, 'message' => 'You must be logged in to place a hold.'));
+			return array('result' => false, 'message' => 'You must be logged in to place a hold.');
 		}
 	}
 
@@ -89,12 +83,12 @@ class OverDrive_AJAX extends Action
 				require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
 				$driver = new OverDriveDriver();
 				$result = $driver->renewCheckout($patron, $overDriveId);
-				return json_encode($result);
+				return $result;
 			} else {
-				return json_encode(array('result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to modify checkouts for that user.'));
+				return array('result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to modify checkouts for that user.');
 			}
 		} else {
-			return json_encode(array('result' => false, 'message' => 'You must be logged in to renew titles.'));
+			return array('result' => false, 'message' => 'You must be logged in to renew titles.');
 		}
 	}
 
@@ -113,12 +107,12 @@ class OverDrive_AJAX extends Action
 				if ($result['success']) {
 					$result['buttons'] = '<a class="btn btn-primary" href="/MyAccount/CheckedOut" role="button">' . translate('View My Check Outs') . '</a>';
 				}
-				return json_encode($result);
+				return $result;
 			} else {
-				return json_encode(array('result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to checkout titles for that user.'));
+				return array('result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to checkout titles for that user.');
 			}
 		} else {
-			return json_encode(array('result' => false, 'message' => 'You must be logged in to checkout an item.'));
+			return array('result' => false, 'message' => 'You must be logged in to checkout an item.');
 		}
 	}
 
@@ -134,12 +128,12 @@ class OverDrive_AJAX extends Action
 				$driver = new OverDriveDriver();
 				$result = $driver->returnCheckout($patron, $overDriveId);
 				//$logger->log("Checkout result = $result", Logger::LOG_NOTICE);
-				return json_encode($result);
+				return $result;
 			} else {
-				return json_encode(array('result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to return titles for that user.'));
+				return array('result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to return titles for that user.');
 			}
 		} else {
-			return json_encode(array('result' => false, 'message' => 'You must be logged in to return an item.'));
+			return array('result' => false, 'message' => 'You must be logged in to return an item.');
 		}
 	}
 
@@ -156,12 +150,12 @@ class OverDrive_AJAX extends Action
 				$driver = new OverDriveDriver();
 				$result = $driver->selectOverDriveDownloadFormat($overDriveId, $formatId, $patron);
 				//$logger->log("Checkout result = $result", Logger::LOG_NOTICE);
-				return json_encode($result);
+				return $result;
 			} else {
-				return json_encode(array('result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to download titles for that user.'));
+				return array('result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to download titles for that user.');
 			}
 		} else {
-			return json_encode(array('result' => false, 'message' => 'You must be logged in to download a title.'));
+			return array('result' => false, 'message' => 'You must be logged in to download a title.');
 		}
 	}
 
@@ -178,24 +172,22 @@ class OverDrive_AJAX extends Action
 				$driver = new OverDriveDriver();
 				$result = $driver->getDownloadLink($overDriveId, $formatId, $patron);
 				//$logger->log("Checkout result = $result", Logger::LOG_NOTICE);
-				return json_encode($result);
+				return $result;
 			} else {
-				return json_encode(array('result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to download titles for that user.'));
+				return array('result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to download titles for that user.');
 			}
 		} else {
-			return json_encode(array('result' => false, 'message' => 'You must be logged in to download a title.'));
+			return array('result' => false, 'message' => 'You must be logged in to download a title.');
 		}
 	}
 
 	function getHoldPrompts()
 	{
 		if (!UserAccount::isLoggedIn()) {
-			return json_encode(
-				array(
-					'success' => false,
-					'message' => 'You must be logged in to place holds, please login again.'
-				)
-			);
+			return [
+				'success' => false,
+				'message' => 'You must be logged in to place holds, please login again.'
+			];
 		}
 		$user = UserAccount::getLoggedInUser();
 		global $interface;
@@ -219,33 +211,27 @@ class OverDrive_AJAX extends Action
 		$interface->assign('overdriveAutoCheckout', $user->overdriveAutoCheckout);
 		$interface->assign('promptForEmail', $promptForEmail);
 		if (count($overDriveUsers) == 0) {
-			return json_encode(
-				array(
-					'success' => false,
-					'message' => 'Could not find a valid user to place a hold for, please check with your library to validate your account'
-				)
-			);
+			return [
+				'success' => false,
+				'message' => 'Could not find a valid user to place a hold for, please check with your library to validate your account'
+			];
 		} else if ($promptForEmail || count($overDriveUsers) > 1) {
 			$promptTitle = 'OverDrive Hold Options';
-			return json_encode(
-				array(
-					'success' => true,
-					'promptNeeded' => true,
-					'promptTitle' => translate($promptTitle),
-					'prompts' => $interface->fetch('OverDrive/ajax-hold-prompt.tpl'),
-					'buttons' => '<button class="btn btn-primary" type="submit" name="submit" onclick="return AspenDiscovery.OverDrive.processOverDriveHoldPrompts();">' . translate('Place Hold') . '</button>'
-				)
-			);
+			return [
+				'success' => true,
+				'promptNeeded' => true,
+				'promptTitle' => translate($promptTitle),
+				'prompts' => $interface->fetch('OverDrive/ajax-hold-prompt.tpl'),
+				'buttons' => '<button class="btn btn-primary" type="submit" name="submit" onclick="return AspenDiscovery.OverDrive.processOverDriveHoldPrompts();">' . translate('Place Hold') . '</button>'
+			];
 		} else {
-			return json_encode(
-				array(
-					'success' => true,
-					'patronId' => reset($overDriveUsers)->id,
-					'promptNeeded' => false,
-					'overdriveEmail' => $user->overdriveEmail,
-					'promptForOverdriveEmail' => $promptForEmail,
-				)
-			);
+			return [
+				'success' => true,
+				'patronId' => reset($overDriveUsers)->id,
+				'promptNeeded' => false,
+				'overdriveEmail' => $user->overdriveEmail,
+				'promptForOverdriveEmail' => $promptForEmail,
+			];
 		}
 	}
 
@@ -261,33 +247,27 @@ class OverDrive_AJAX extends Action
 
 		if (count($overDriveUsers) > 1) {
 			$promptTitle = 'OverDrive Checkout Options';
-			return json_encode(
-				array(
-					'promptNeeded' => true,
-					'promptTitle' => $promptTitle,
-					'prompts' => $interface->fetch('OverDrive/ajax-checkout-prompt.tpl'),
-					'buttons' => '<input class="btn btn-primary" type="submit" name="submit" value="Checkout Title" onclick="return AspenDiscovery.OverDrive.processOverDriveCheckoutPrompts();">'
-				)
-			);
+			return [
+				'promptNeeded' => true,
+				'promptTitle' => $promptTitle,
+				'prompts' => $interface->fetch('OverDrive/ajax-checkout-prompt.tpl'),
+				'buttons' => '<input class="btn btn-primary" type="submit" name="submit" value="Checkout Title" onclick="return AspenDiscovery.OverDrive.processOverDriveCheckoutPrompts();">'
+			];
 		} elseif (count($overDriveUsers) == 1) {
-			return json_encode(
-				array(
-					'patronId' => reset($overDriveUsers)->id,
-					'promptNeeded' => false,
-				)
-			);
+			return [
+				'patronId' => reset($overDriveUsers)->id,
+				'promptNeeded' => false,
+			];
 		} else {
 			// No Overdrive Account Found, give the user an error message
 			global $logger;
 			$logger->log('No valid Overdrive account was found to check out an Overdrive title.', Logger::LOG_ERROR);
-			return json_encode(
-				array(
-					'promptNeeded' => true,
-					'promptTitle' => 'Error',
-					'prompts' => 'No valid Overdrive account was found to check this title out with.',
-					'buttons' => ''
-				)
-			);
+			return [
+				'promptNeeded' => true,
+				'promptTitle' => 'Error',
+				'prompts' => 'No valid Overdrive account was found to check this title out with.',
+				'buttons' => ''
+			];
 		}
 
 	}
@@ -303,12 +283,12 @@ class OverDrive_AJAX extends Action
 				require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
 				$driver = new OverDriveDriver();
 				$result = $driver->cancelHold($patron, $overDriveId);
-				return json_encode($result);
+				return $result;
 			} else {
-				return json_encode(array('result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to download cancel holds for that user.'));
+				return array('result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to download cancel holds for that user.');
 			}
 		} else {
-			return json_encode(array('result' => false, 'message' => 'You must be logged in to cancel holds.'));
+			return array('result' => false, 'message' => 'You must be logged in to cancel holds.');
 		}
 	}
 
@@ -330,7 +310,6 @@ class OverDrive_AJAX extends Action
 			} else {
 				if (empty($_REQUEST['overDriveId'])) {
 					// We aren't getting all the expected data, so make a log entry & tell user.
-					global $logger;
 					$result['message'] = 'Information about the hold to be ' . translate('frozen') . ' was not provided.';
 				} else {
 					$overDriveId = $_REQUEST['overDriveId'];
@@ -361,7 +340,7 @@ class OverDrive_AJAX extends Action
 			$result['message'] = 'No Patron was specified.';
 		}
 
-		return json_encode($result);
+		return $result;
 	}
 
 	// called by js function Account.freezeHold
@@ -378,7 +357,7 @@ class OverDrive_AJAX extends Action
 			'modalBody' => $interface->fetch("OverDrive/reactivationDate.tpl"),
 			'modalButtons' => "<button class='tool btn btn-primary' id='doFreezeHoldWithReactivationDate' onclick='$(\".form\").submit(); return false;'>$title</button>"
 		);
-		return json_encode($results);
+		return $results;
 	}
 
 	function thawHold()
@@ -412,7 +391,7 @@ class OverDrive_AJAX extends Action
 			$result['message'] = 'No Patron was specified.';
 		}
 
-		return json_encode($result);
+		return $result;
 	}
 
 	function setAutoCheckoutForHold()
@@ -447,6 +426,6 @@ class OverDrive_AJAX extends Action
 			$result['message'] = 'No Patron was specified.';
 		}
 
-		return json_encode($result);
+		return $result;
 	}
 }
