@@ -1368,7 +1368,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 			$groupedWorkDriver = new GroupedWorkDriver($result['response']['docs'][$i]);
 			if ($groupedWorkDriver->isValid) {
-				$image = $groupedWorkDriver->getBookcoverUrl('medium');
+				$image = $groupedWorkDriver->getBookcoverUrl('medium', true);
 				$description = "<img alt='Cover Image' src='$image'/> " . $groupedWorkDriver->getDescriptionFast();
 				$result['response']['docs'][$i]['rss_description'] = $description;
 			}

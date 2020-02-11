@@ -180,7 +180,7 @@ class MillenniumCheckouts {
 						require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 						$recordDriver = new MarcRecordDriver($this->driver->accountProfile->recordSource . ":" . $curTitle['recordId']);
 						if ($recordDriver->isValid()) {
-							$curTitle['coverUrl'] = $recordDriver->getBookcoverUrl('medium');
+							$curTitle['coverUrl'] = $recordDriver->getBookcoverUrl('medium', true);
 							$curTitle['ratingData']    = $recordDriver->getRatingData();
 							$curTitle['groupedWorkId'] = $recordDriver->getGroupedWorkId();
 							$curTitle['format']        = $recordDriver->getPrimaryFormat();
@@ -188,7 +188,7 @@ class MillenniumCheckouts {
 							//Always use title from the index since classic will show 240 rather than 245
 							$curTitle['title']         = $recordDriver->getTitle();
 							$curTitle['title_sort']    = $recordDriver->getSortableTitle();
-							$curTitle['link']          = $recordDriver->getLinkUrl();
+							$curTitle['link']          = $recordDriver->getAbsoluteUrl();
 						} else {
 							$curTitle['coverUrl']      = "";
 							$curTitle['groupedWorkId'] = "";

@@ -307,7 +307,7 @@ abstract class HorizonAPI extends Horizon{
 					$curHold['isbn']            = $recordDriver->getCleanISBN();
 					$curHold['upc']             = $recordDriver->getCleanUPC();
 					$curHold['format_category'] = $recordDriver->getFormatCategory();
-					$curHold['coverUrl']        = $recordDriver->getBookcoverUrl('medium');
+					$curHold['coverUrl']        = $recordDriver->getBookcoverUrl('medium', true);
 					$curHold['link']            = $recordDriver->getRecordUrl();
 
 					//Load rating information
@@ -710,7 +710,7 @@ abstract class HorizonAPI extends Horizon{
 					require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 					$recordDriver = new MarcRecordDriver($curTitle['id']);
 					if ($recordDriver->isValid()){
-						$curTitle['coverUrl']      = $recordDriver->getBookcoverUrl('medium');
+						$curTitle['coverUrl']      = $recordDriver->getBookcoverUrl('medium', true);
 						$curTitle['groupedWorkId'] = $recordDriver->getGroupedWorkId();
 						$curTitle['ratingData']    = $recordDriver->getRatingData();
 						$curTitle['format']        = $recordDriver->getPrimaryFormat();

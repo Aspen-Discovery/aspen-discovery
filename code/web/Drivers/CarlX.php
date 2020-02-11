@@ -417,7 +417,7 @@ class CarlX extends SIP2Driver{
 						$curHold['isbn']            = $recordDriver->getCleanISBN();
 						$curHold['upc']             = $recordDriver->getCleanUPC();
 						$curHold['format_category'] = $recordDriver->getFormatCategory();
-						$curHold['coverUrl']        = $recordDriver->getBookcoverUrl('medium');
+						$curHold['coverUrl']        = $recordDriver->getBookcoverUrl('medium', true);
 						$curHold['link']            = $recordDriver->getRecordUrl();
 						$curHold['ratingData']      = $recordDriver->getRatingData(); //Load rating information
 
@@ -477,7 +477,7 @@ class CarlX extends SIP2Driver{
 						$curHold['isbn']            = $recordDriver->getCleanISBN();
 						$curHold['upc']             = $recordDriver->getCleanUPC();
 						$curHold['format_category'] = $recordDriver->getFormatCategory();
-						$curHold['coverUrl']        = $recordDriver->getBookcoverUrl();
+						$curHold['coverUrl']        = $recordDriver->getBookcoverUrl('medium', true);
 						$curHold['link']            = $recordDriver->getRecordUrl();
 						$curHold['ratingData']      = $recordDriver->getRatingData(); //Load rating information
 
@@ -640,7 +640,7 @@ class CarlX extends SIP2Driver{
 					require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 					$recordDriver = new MarcRecordDriver($carlID); // This needs the $carlID
 					if ($recordDriver->isValid()){
-						$curTitle['coverUrl'] = $recordDriver->getBookcoverUrl('medium');
+						$curTitle['coverUrl'] = $recordDriver->getBookcoverUrl('medium', true);
 						$curTitle['ratingData']    = $recordDriver->getRatingData();
 						$curTitle['groupedWorkId'] = $recordDriver->getGroupedWorkId();
 						$curTitle['format']        = $recordDriver->getPrimaryFormat();
@@ -1150,7 +1150,7 @@ class CarlX extends SIP2Driver{
 								$historyEntry['ratingData']  = $recordDriver->getRatingData();
 								$historyEntry['permanentId'] = $recordDriver->getPermanentId();
 								$historyEntry['linkUrl']     = $recordDriver->getGroupedWorkDriver()->getLinkUrl();
-								$historyEntry['coverUrl']    = $recordDriver->getBookcoverUrl('medium');
+								$historyEntry['coverUrl']    = $recordDriver->getBookcoverUrl('medium', true);
 								$historyEntry['format']      = $recordDriver->getFormats();
 								$historyEntry['author']      = $recordDriver->getPrimaryAuthor();
 								if (empty($curTitle['title'])){

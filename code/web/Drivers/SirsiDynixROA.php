@@ -897,7 +897,7 @@ abstract class SirsiDynixROA extends HorizonAPI
 					$curTitle['format'] = 'Unknown';
 					$recordDriver       = new MarcRecordDriver('a' . $bibId);
 					if ($recordDriver->isValid()) {
-						$curTitle['coverUrl']      = $recordDriver->getBookcoverUrl('medium');
+						$curTitle['coverUrl']      = $recordDriver->getBookcoverUrl('medium', true);
 						$curTitle['groupedWorkId'] = $recordDriver->getGroupedWorkId();
 						$curTitle['format']        = $recordDriver->getPrimaryFormat();
 						$curTitle['title']         = $recordDriver->getTitle();
@@ -1036,7 +1036,7 @@ abstract class SirsiDynixROA extends HorizonAPI
 					$curHold['isbn']            = $recordDriver->getCleanISBN();
 					$curHold['upc']             = $recordDriver->getCleanUPC();
 					$curHold['format_category'] = $recordDriver->getFormatCategory();
-					$curHold['coverUrl']        = $recordDriver->getBookcoverUrl('medium');
+					$curHold['coverUrl']        = $recordDriver->getBookcoverUrl('medium', true);
 					$curHold['link']            = $recordDriver->getRecordUrl();
 
 					//Load rating information
