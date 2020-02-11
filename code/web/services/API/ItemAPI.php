@@ -201,6 +201,7 @@ class ItemAPI extends Action {
 	function getItem(){
 		global $timer;
 		global $configArray;
+		global $solrScope;
 		$itemData = array();
 
 		//Load basic information
@@ -245,8 +246,8 @@ class ItemAPI extends Action {
 		$itemData['lccn'] = isset($record['lccn']) ? $record['lccn'] : null;
 		$itemData['contents'] = isset($record['contents']) ? $record['contents'] : null;
 
-		$itemData['format'] = isset($record['format']) ? $record['format'] : null;
-		$itemData['formatCategory'] = isset($record['format_category']) ? $record['format_category'][0] : null;
+		$itemData['format'] = isset($record['format_' . $solrScope]) ? $record['format_' . $solrScope] : null;
+		$itemData['formatCategory'] = isset($record['format_category_' . $solrScope]) ? $record['format_category_' . $solrScope][0] : null;
 		$itemData['language'] = $record['language'];
 
 		//Retrieve description from MARC file
