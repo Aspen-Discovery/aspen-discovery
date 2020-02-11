@@ -10,16 +10,17 @@ require_once ROOT_DIR . '/Drivers/AbstractDriver.php';
 
 abstract class AbstractIlsDriver extends AbstractDriver
 {
-    /** @var  AccountProfile $accountProfile */
-    public $accountProfile;
-    protected $webServiceURL;
+	/** @var  AccountProfile $accountProfile */
+	public $accountProfile;
+	protected $webServiceURL;
 
-    /**
-     * @param AccountProfile $accountProfile
-     */
-    public function __construct($accountProfile){
-        $this->accountProfile = $accountProfile;
-    }
+	/**
+	 * @param AccountProfile $accountProfile
+	 */
+	public function __construct($accountProfile)
+	{
+		$this->accountProfile = $accountProfile;
+	}
 
 	public abstract function patronLogin($username, $password, $validatedViaSSO);
 
@@ -29,108 +30,111 @@ abstract class AbstractIlsDriver extends AbstractDriver
 	 * This is responsible for both placing holds as well as placing recalls.
 	 *
 	 * @param User $patron The User to place a hold for
-	 * @param string $recordId          The id of the bib record
-	 * @param string $pickupBranch      The branch where the user wants to pickup the item when available
-	 * @param string $cancelDate        When the hold should be automatically cancelled
+	 * @param string $recordId The id of the bib record
+	 * @param string $pickupBranch The branch where the user wants to pickup the item when available
+	 * @param string $cancelDate When the hold should be automatically cancelled
 	 * @return  mixed                 True if successful, false if unsuccessful
 	 *                                If an error occurs, return a AspenError
 	 * @access  public
 	 */
-    abstract function placeHold($patron, $recordId, $pickupBranch = null, $cancelDate = null);
+	abstract function placeHold($patron, $recordId, $pickupBranch = null, $cancelDate = null);
 
-    /**
-     * Cancels a hold for a patron
-     *
-     * @param   User    $patron     The User to cancel the hold for
-     * @param   string  $recordId   The id of the bib record
-     * @param   string  $cancelId   Information about the hold to be cancelled
-     * @return  array
-     */
-    abstract function cancelHold($patron, $recordId, $cancelId = null);
+	/**
+	 * Cancels a hold for a patron
+	 *
+	 * @param User $patron The User to cancel the hold for
+	 * @param string $recordId The id of the bib record
+	 * @param string $cancelId Information about the hold to be cancelled
+	 * @return  array
+	 */
+	abstract function cancelHold($patron, $recordId, $cancelId = null);
 
-    /**
-     * Place Item Hold
-     *
-     * This is responsible for both placing item level holds.
-     *
-     * @param   User    $patron     The User to place a hold for
-     * @param   string  $recordId   The id of the bib record
-     * @param   string  $itemId     The id of the item to hold
-     * @param   string  $pickupBranch The branch where the user wants to pickup the item when available
-     * @param null|string $cancelDate The date to automatically cancel the hold if not filled
-     * @return  mixed               True if successful, false if unsuccessful
-     *                              If an error occurs, return a AspenError
-     * @access  public
-     */
-    abstract function placeItemHold($patron, $recordId, $itemId, $pickupBranch, $cancelDate = null);
+	/**
+	 * Place Item Hold
+	 *
+	 * This is responsible for both placing item level holds.
+	 *
+	 * @param User $patron The User to place a hold for
+	 * @param string $recordId The id of the bib record
+	 * @param string $itemId The id of the item to hold
+	 * @param string $pickupBranch The branch where the user wants to pickup the item when available
+	 * @param null|string $cancelDate The date to automatically cancel the hold if not filled
+	 * @return  mixed               True if successful, false if unsuccessful
+	 *                              If an error occurs, return a AspenError
+	 * @access  public
+	 */
+	abstract function placeItemHold($patron, $recordId, $itemId, $pickupBranch, $cancelDate = null);
 
-    abstract function freezeHold($patron, $recordId, $itemToFreezeId, $dateToReactivate);
+	abstract function freezeHold($patron, $recordId, $itemToFreezeId, $dateToReactivate);
 
-    abstract function thawHold($patron, $recordId, $itemToThawId);
+	abstract function thawHold($patron, $recordId, $itemToThawId);
 
-    abstract function changeHoldPickupLocation($patron, $recordId, $itemToUpdateId, $newPickupLocation);
+	abstract function changeHoldPickupLocation($patron, $recordId, $itemToUpdateId, $newPickupLocation);
 
-    abstract function updatePatronInfo($patron, $canUpdateContactInfo);
+	abstract function updatePatronInfo($patron, $canUpdateContactInfo);
 
-    public abstract function getFines($patron, $includeMessages = false);
+	public abstract function getFines($patron, $includeMessages = false);
 
-    /**
-     * @return IndexingProfile|null
-     */
-    public function getIndexingProfile(){
-        global $indexingProfiles;
-        if (array_key_exists($this->accountProfile->recordSource, $indexingProfiles)) {
-            /** @var IndexingProfile $indexingProfile */
-            return $indexingProfiles[$this->accountProfile->recordSource];
-        } else {
-            return null;
-        }
-    }
+	/**
+	 * @return IndexingProfile|null
+	 */
+	public function getIndexingProfile()
+	{
+		global $indexingProfiles;
+		if (array_key_exists($this->accountProfile->recordSource, $indexingProfiles)) {
+			/** @var IndexingProfile $indexingProfile */
+			return $indexingProfiles[$this->accountProfile->recordSource];
+		} else {
+			return null;
+		}
+	}
 
-    public function getWebServiceURL(){
-        if (empty($this->webServiceURL)){
-            $webServiceURL = null;
-            if (!empty($this->accountProfile->patronApiUrl)){
-                $webServiceURL = trim($this->accountProfile->patronApiUrl);
-            }else{
-                global $logger;
-                $logger->log('No Web Service URL defined in account profile', Logger::LOG_ALERT);
-            }
-            $this->webServiceURL = rtrim($webServiceURL, '/'); // remove any trailing slash because other functions will add it.
-        }
-        return $this->webServiceURL;
-    }
+	public function getWebServiceURL()
+	{
+		if (empty($this->webServiceURL)) {
+			$webServiceURL = null;
+			if (!empty($this->accountProfile->patronApiUrl)) {
+				$webServiceURL = trim($this->accountProfile->patronApiUrl);
+			} else {
+				global $logger;
+				$logger->log('No Web Service URL defined in account profile', Logger::LOG_ALERT);
+			}
+			$this->webServiceURL = rtrim($webServiceURL, '/'); // remove any trailing slash because other functions will add it.
+		}
+		return $this->webServiceURL;
+	}
 
-    public function getVendorOpacUrl(){
-        global $configArray;
+	public function getVendorOpacUrl()
+	{
+		global $configArray;
 
-        if ($this->accountProfile && $this->accountProfile->vendorOpacUrl ){
-            $host = $this->accountProfile->vendorOpacUrl;
-        }else{
-            $host = $configArray['Catalog']['url'];
-        }
+		if ($this->accountProfile && $this->accountProfile->vendorOpacUrl) {
+			$host = $this->accountProfile->vendorOpacUrl;
+		} else {
+			$host = $configArray['Catalog']['url'];
+		}
 
-        if (substr($host, -1) == '/') {
-            $host = substr($host, 0, -1);
-        }
-        return $host;
-    }
+		if (substr($host, -1) == '/') {
+			$host = substr($host, 0, -1);
+		}
+		return $host;
+	}
 
-    /**
-     * Renew a single title currently checked out to the user
-     *
-     * @param $patron     User
-     * @param $recordId   string
-     * @param $itemId     string
-     * @param $itemIndex  string
-     * @return mixed
-     */
-    abstract function renewCheckout($patron, $recordId, $itemId = null, $itemIndex = null);
+	/**
+	 * Renew a single title currently checked out to the user
+	 *
+	 * @param $patron     User
+	 * @param $recordId   string
+	 * @param $itemId     string
+	 * @param $itemIndex  string
+	 * @return mixed
+	 */
+	abstract function renewCheckout($patron, $recordId, $itemId = null, $itemIndex = null);
 
-    function showOutstandingFines()
-    {
-        return false;
-    }
+	function showOutstandingFines()
+	{
+		return false;
+	}
 
 	/**
 	 * Returns one of three values
@@ -139,7 +143,7 @@ abstract class AbstractIlsDriver extends AbstractDriver
 	 * - emailPin - The pin itself is emailed to the user
 	 * @return string
 	 */
-    function getForgotPasswordType()
+	function getForgotPasswordType()
 	{
 		return 'none';
 	}
@@ -174,14 +178,16 @@ abstract class AbstractIlsDriver extends AbstractDriver
 		return false;
 	}
 
-	function updatePin(/** @noinspection PhpUnusedParameterInspection */User $user, string $oldPin, string $newPin)
+	function updatePin(/** @noinspection PhpUnusedParameterInspection */ User $user, string $oldPin, string $newPin)
 	{
 		return ['success' => false, 'errors' => 'Can not update PINs, this ILS does not support updating PINs'];
 	}
 
-	function hasMaterialsRequestSupport(){
-    	return false;
+	function hasMaterialsRequestSupport()
+	{
+		return false;
 	}
+
 	function getNewMaterialsRequestForm(User $user)
 	{
 		return 'not supported';
@@ -191,22 +197,22 @@ abstract class AbstractIlsDriver extends AbstractDriver
 	 * @param User $user
 	 * @return string[]
 	 */
-	function processMaterialsRequestForm(/** @noinspection PhpUnusedParameterInspection */$user)
+	function processMaterialsRequestForm(/** @noinspection PhpUnusedParameterInspection */ $user)
 	{
 		return ['success' => false, 'message' => 'Not Implemented'];
 	}
 
-	function getMaterialsRequests(/** @noinspection PhpUnusedParameterInspection */User $user)
+	function getMaterialsRequests(/** @noinspection PhpUnusedParameterInspection */ User $user)
 	{
 		return [];
 	}
 
-	function getMaterialsRequestsPage(/** @noinspection PhpUnusedParameterInspection */User $user)
+	function getMaterialsRequestsPage(/** @noinspection PhpUnusedParameterInspection */ User $user)
 	{
 		return 'not supported';
 	}
 
-	function deleteMaterialsRequests(/** @noinspection PhpUnusedParameterInspection */User $user)
+	function deleteMaterialsRequests(/** @noinspection PhpUnusedParameterInspection */ User $user)
 	{
 		return ['success' => false, 'message' => 'Not Implemented'];
 	}
@@ -217,7 +223,7 @@ abstract class AbstractIlsDriver extends AbstractDriver
 	 * @param User $user
 	 * @return string|null
 	 */
-	function getPatronUpdateForm(/** @noinspection PhpUnusedParameterInspection */User $user)
+	function getPatronUpdateForm(/** @noinspection PhpUnusedParameterInspection */ User $user)
 	{
 		return null;
 	}
