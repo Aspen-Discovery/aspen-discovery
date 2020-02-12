@@ -86,7 +86,7 @@ do
   chmod 400 $DUMPFOLDER/$DB.$DATE.sql
   $LOG "~> exit code $?"
   $LOG "~> compressing dump file"
-  gzip $DUMPFOLDER/$DB.$DATE.sql
+  gzip -f $DUMPFOLDER/$DB.$DATE.sql
   $LOG "~> exit code $?"
 done
 
