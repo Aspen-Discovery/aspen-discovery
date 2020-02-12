@@ -1824,18 +1824,18 @@ class Millennium extends AbstractIlsDriver
 		if (isset($patronDump['ADDRESS'])) {
 			$fullAddress = $patronDump['ADDRESS'];
 			$addressParts = explode('$', $fullAddress);
-			$user->address1 = $addressParts[0];
-			$user->city = isset($addressParts[1]) ? $addressParts[1] : '';
-			$user->state = isset($addressParts[2]) ? $addressParts[2] : '';
-			$user->zip = isset($addressParts[3]) ? $addressParts[3] : '';
+			$user->_address1 = $addressParts[0];
+			$user->_city = isset($addressParts[1]) ? $addressParts[1] : '';
+			$user->_state = isset($addressParts[2]) ? $addressParts[2] : '';
+			$user->_zip = isset($addressParts[3]) ? $addressParts[3] : '';
 
-			if (preg_match('/(.*?),\\s+(.*)\\s+(\\d*(?:-\\d*)?)/', $user->city, $matches)) {
-				$user->city = $matches[1];
-				$user->state = $matches[2];
-				$user->zip = $matches[3];
-			} else if (preg_match('/(.*?)\\s+(\\w{2})\\s+(\\d*(?:-\\d*)?)/', $user->city, $matches)) {
-				$user->city = $matches[1];
-				$user->state = $matches[2];
+			if (preg_match('/(.*?),\\s+(.*)\\s+(\\d*(?:-\\d*)?)/', $user->_city, $matches)) {
+				$user->_city = $matches[1];
+				$user->_state = $matches[2];
+				$user->_zip = $matches[3];
+			} else if (preg_match('/(.*?)\\s+(\\w{2})\\s+(\\d*(?:-\\d*)?)/', $user->_city, $matches)) {
+				$user->_city = $matches[1];
+				$user->_state = $matches[2];
 				$user->_zip = $matches[3];
 			}
 		} else {
@@ -1845,7 +1845,7 @@ class Millennium extends AbstractIlsDriver
 			$user->_zip = "";
 		}
 
-		$user->_address2 = $user->city . ', ' . $user->state;
+		$user->_address2 = $user->_city . ', ' . $user->_state;
 		$user->_workPhone = (isset($patronDump) && isset($patronDump['G/WK_PHONE'])) ? $patronDump['G/WK_PHONE'] : '';
 		if (isset($patronDump) && isset($patronDump['MOBILE_NO'])) {
 			$user->_mobileNumber = $patronDump['MOBILE_NO'];

@@ -1797,7 +1797,7 @@ abstract class SirsiDynixROA extends HorizonAPI
 						$setField('PHONE', $user->phone);
 					}
 
-					if (!empty($user->_city) && !empty($user->city)) {
+					if (!empty($user->_city) && !empty($user->_state)) {
 						$setField('CITY/STATE', $user->_city .' '. $user->_state);
 					}
 
