@@ -74,7 +74,7 @@ class MillenniumReadingHistory {
 					$historyEntry['ratingData']  = $recordDriver->getRatingData();
 					$historyEntry['permanentId'] = $recordDriver->getPermanentId();
 					$historyEntry['linkUrl']     = $recordDriver->getGroupedWorkDriver()->getLinkUrl();
-					$historyEntry['coverUrl']    = $recordDriver->getBookcoverUrl('medium');
+					$historyEntry['coverUrl']    = $recordDriver->getBookcoverUrl('medium', true);
 					$historyEntry['format']      = $recordDriver->getFormats();
 				}
 				$recordDriver = null;

@@ -336,11 +336,11 @@ abstract class HorizonROA extends AbstractIlsDriver
 				if (isset($lookupMyAccountInfoResponse->fields->circRecordList)) {
 					$numCheckedOut = count($lookupMyAccountInfoResponse->fields->circRecordList);
 				}
-				$user->address1              = $Address1;
-				$user->address2              = $City . ', ' . $State; //TODO: Is there a reason to do this?
-				$user->city                  = $City;
-				$user->state                 = $State;
-				$user->zip                   = $Zip;
+				$user->_address1              = $Address1;
+				$user->_address2              = $City . ', ' . $State; //TODO: Is there a reason to do this?
+				$user->_city                  = $City;
+				$user->_state                 = $State;
+				$user->_zip                   = $Zip;
 				$user->fines                 = sprintf('$%01.2f', $finesVal);
 				$user->finesVal              = $finesVal;
 				$user->numCheckedOutIls      = $numCheckedOut;

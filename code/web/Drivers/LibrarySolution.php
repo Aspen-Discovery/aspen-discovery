@@ -224,7 +224,7 @@ class LibrarySolution extends AbstractIlsDriver {
 					$recordDriver = new MarcRecordDriver( $this->accountProfile->recordSource . ":" . $curTitle['recordId']);
 					if ($recordDriver->isValid()){
 						$historyEntry['permanentId'] = $recordDriver->getPermanentId();
-						$curTitle['coverUrl']        = $recordDriver->getBookcoverUrl('medium');
+						$curTitle['coverUrl']        = $recordDriver->getBookcoverUrl('medium', true);
 						$curTitle['groupedWorkId']   = $recordDriver->getGroupedWorkId();
 						$curTitle['ratingData']      = $recordDriver->getRatingData();
 						$curTitle['linkUrl']         = $recordDriver->getGroupedWorkDriver()->getLinkUrl();
@@ -320,7 +320,7 @@ class LibrarySolution extends AbstractIlsDriver {
 					require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 					$recordDriver = new MarcRecordDriver( $this->accountProfile->recordSource . ":" . $curTitle['recordId']);
 					if ($recordDriver->isValid()){
-						$curTitle['coverUrl'] = $recordDriver->getBookcoverUrl('medium');
+						$curTitle['coverUrl'] = $recordDriver->getBookcoverUrl('medium', true);
 						$curTitle['ratingData'] = $recordDriver->getRatingData();
 						$curTitle['groupedWorkId'] = $recordDriver->getGroupedWorkId();
 						$formats = $recordDriver->getFormats();
@@ -505,7 +505,7 @@ class LibrarySolution extends AbstractIlsDriver {
 					$curHold['isbn'] = $recordDriver->getCleanISBN();
 					$curHold['upc'] = $recordDriver->getCleanUPC();
 					$curHold['format_category'] = $recordDriver->getFormatCategory();
-					$curHold['coverUrl'] = $recordDriver->getBookcoverUrl('medium');
+					$curHold['coverUrl'] = $recordDriver->getBookcoverUrl('medium', true);
 
 					//Load rating information
 					$curHold['ratingData'] = $recordDriver->getRatingData();

@@ -77,6 +77,8 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 
 		$interface->assign('alternateTitles', $this->getGroupedWorkDriver()->getAlternateTitles());
 
+		$interface->assign('primaryIdentifiers', $this->getGroupedWorkDriver()->getPrimaryIdentifiers());
+
 		$interface->assign('hooplaExtract', $this->hooplaRawMetadata);
 		return 'RecordDrivers/Hoopla/staff-view.tpl';
 	}
@@ -374,14 +376,14 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 				'creator' => $this->getPrimaryAuthor(),
 				'bookEdition' => $this->getEditions(),
 				'isAccessibleForFree' => true,
-				'image' => $this->getBookcoverUrl('medium'),
+				'image' => $this->getBookcoverUrl('medium', true),
 				"offers" => $linkedDataRecord->getOffers()
 			);
 
 			global $interface;
 			$interface->assign('og_title', $this->getTitle());
 			$interface->assign('og_type', $this->getGroupedWorkDriver()->getOGType());
-			$interface->assign('og_image', $this->getBookcoverUrl('medium'));
+			$interface->assign('og_image', $this->getBookcoverUrl('medium', true));
 			$interface->assign('og_url', $this->getAbsoluteUrl());
 			return $semanticData;
 		}else{

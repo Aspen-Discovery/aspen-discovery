@@ -986,17 +986,22 @@ class UserAPI extends Action {
 	 */
 	function placeOverDriveHold(){
 		list($username, $password) = $this->loadUsernameAndPassword();
-		$overDriveId = $_REQUEST['overDriveId'];
+		if (isset($_REQUEST['overDriveId'])){
+			$overDriveId = $_REQUEST['overDriveId'];
 
-		$user = UserAccount::validateAccount($username, $password);
-		if ($user && !($user instanceof AspenError)){
-            require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
-            $driver = new OverDriveDriver();
-			$holdMessage = $driver->placeHold($user, $overDriveId);
-			return array('success'=> $holdMessage['success'], 'message'=>$holdMessage['message']);
+			$user = UserAccount::validateAccount($username, $password);
+			if ($user && !($user instanceof AspenError)){
+				require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+				$driver = new OverDriveDriver();
+				$holdMessage = $driver->placeHold($user, $overDriveId);
+				return array('success'=> $holdMessage['success'], 'message'=>$holdMessage['message']);
+			}else{
+				return array('success'=>false, 'message'=>'Login unsuccessful');
+			}
 		}else{
-			return array('success'=>false, 'message'=>'Login unsuccessful');
+			return array('success'=>false, 'message'=>'Please provide the overDriveId to be place the hold on');
 		}
+
 	}
 
 	/**
@@ -1164,14 +1169,15 @@ class UserAPI extends Action {
 	 * <ul>
 	 * <li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li>
 	 * <li>password - The pin number for the user. </li>
-	 * <li>cancelId[] - an array of holds that should be frozen. Each item should be specified as <bibId>:0.</li>
+	 * <li>recordId - </li>
+	 * <li>holdId - </li>
 	 * <li>suspendDate - The date that the hold should be automatically reactivated.</li>
 	 * </ul>
 	 *
 	 * Returns:
 	 * <ul>
-	 * <li>success � true if the account is valid and the hold could be frozen, false if the username or password were incorrect or the hold could not be frozen.</li>
-	 * <li>holdMessage � a reason why the method failed if success is false</li>
+	 * <li>success - true if the account is valid and the hold could be frozen, false if the username or password were incorrect or the hold could not be frozen.</li>
+	 * <li>holdMessage - a reason why the method failed if success is false</li>
 	 * </ul>
 	 *
 	 * Sample Call:
@@ -1183,7 +1189,7 @@ class UserAPI extends Action {
 	 * <code>
 	 * {"result":{
 	 *   "success":true,
-	 *   "holdMessage":"Your hold was updated successfully."
+	 *   "message":"Your hold was updated successfully."
 	 * }}
 	 * </code>
 	 *
@@ -1193,8 +1199,15 @@ class UserAPI extends Action {
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !($user instanceof AspenError)){
-			$holdMessage = $this->getCatalogConnection()->updateHoldDetailed('', $user->cat_username, 'update', '', null, null, 'on');
-			return array('success'=> $holdMessage['success'], 'holdMessage'=>$holdMessage['message']);
+			if (empty($_REQUEST['recordId']) || empty($_REQUEST['holdId'])) {
+				return array('success'=>false, 'message'=>'recordId and holdId must be provided');
+			}else {
+				$recordId = $_REQUEST['recordId'];
+				$holdId = $_REQUEST['holdId'];
+				$reactivationDate = isset($_REQUEST['reactivationDate']) ? $_REQUEST['reactivationDate'] : null;
+				$result = $user->freezeHold($recordId, $holdId, $reactivationDate);
+				return $result;
+			}
 		}else{
 			return array('success'=>false, 'message'=>'Login unsuccessful');
 		}
@@ -1209,7 +1222,8 @@ class UserAPI extends Action {
 	 * <ul>
 	 * <li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li>
 	 * <li>password - The pin number for the user. </li>
-	 * <li>cancelId[] - an array of holds that are not ready for pickup that should be frozen. Each item should be specified as <bibId>:0.</li>
+	 * <li>recordId - </li>
+	 * <li>holdId - </li>
 	 * </ul>
 	 *
 	 * Returns:
@@ -1227,7 +1241,7 @@ class UserAPI extends Action {
 	 * <code>
 	 * {"result":{
 	 *   "success":true,
-	 *   "holdMessage":"Your hold was updated successfully."
+	 *   "message":"Your hold was updated successfully."
 	 * }}
 	 * </code>
 	 *
@@ -1237,8 +1251,14 @@ class UserAPI extends Action {
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user && !($user instanceof AspenError)){
-			$holdMessage = $this->getCatalogConnection()->updateHoldDetailed('', $user->cat_username, 'update', '', null, null, 'off');
-			return array('success'=> $holdMessage['success'], 'holdMessage'=>$holdMessage['message']);
+			if (empty($_REQUEST['recordId']) || empty($_REQUEST['holdId'])) {
+				return array('success'=>false, 'message'=>'recordId and holdId must be provided');
+			}else {
+				$recordId = $_REQUEST['recordId'];
+				$holdId = $_REQUEST['holdId'];
+				$result = $user->thawHold($recordId, $holdId);
+				return $result;
+			}
 		}else{
 			return array('success'=>false, 'message'=>'Login unsuccessful');
 		}

@@ -294,7 +294,7 @@ class Koha extends AbstractIlsDriver
 				require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 				$recordDriver = new MarcRecordDriver($checkout['recordId']);
 				if ($recordDriver->isValid()) {
-					$checkout['coverUrl'] = $recordDriver->getBookcoverUrl('medium');
+					$checkout['coverUrl'] = $recordDriver->getBookcoverUrl('medium', true);
 					$checkout['ratingData'] = $recordDriver->getRatingData();
 					$checkout['groupedWorkId'] = $recordDriver->getGroupedWorkId();
 					$checkout['format'] = $recordDriver->getPrimaryFormat();
@@ -704,7 +704,7 @@ class Koha extends AbstractIlsDriver
 						$historyEntry['ratingData'] = $recordDriver->getRatingData();
 						$historyEntry['permanentId'] = $recordDriver->getPermanentId();
 						$historyEntry['linkUrl'] = $recordDriver->getGroupedWorkDriver()->getLinkUrl();
-						$historyEntry['coverUrl'] = $recordDriver->getBookcoverUrl('medium');
+						$historyEntry['coverUrl'] = $recordDriver->getBookcoverUrl('medium', true);
 						$historyEntry['format'] = $recordDriver->getFormats();
 						$historyEntry['author'] = $recordDriver->getPrimaryAuthor();
 					}
@@ -993,7 +993,7 @@ class Koha extends AbstractIlsDriver
 					$curHold['isbn'] = $recordDriver->getCleanISBN();
 					$curHold['upc'] = $recordDriver->getCleanUPC();
 					$curHold['format_category'] = $recordDriver->getFormatCategory();
-					$curHold['coverUrl'] = $recordDriver->getBookcoverUrl('medium');
+					$curHold['coverUrl'] = $recordDriver->getBookcoverUrl('medium', true);
 					$curHold['link'] = $recordDriver->getRecordUrl();
 
 					//Load rating information

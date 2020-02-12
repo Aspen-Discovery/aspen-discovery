@@ -578,7 +578,7 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher
 			if (!($record instanceof AspenError)) {
 				$result['response']['docs'][$i]['recordUrl'] = $record->getAbsoluteUrl();
 				$result['response']['docs'][$i]['title_display'] = $record->getTitle();
-				$image = $record->getBookcoverUrl('medium');
+				$image = $record->getBookcoverUrl('medium', true);
 				$description = "<img src='$image' alt='cover image'/> ";
 				$result['response']['docs'][$i]['rss_description'] = $description;
 			} else {

@@ -487,9 +487,9 @@ class OverDriveDriver extends AbstractEContentDriver{
 						}
 						$formats = $overDriveRecord->getFormats();
 						$bookshelfItem['format']     = reset($formats);
-						$bookshelfItem['coverUrl'] = $overDriveRecord->getCoverUrl('medium');
+						$bookshelfItem['coverUrl'] = $overDriveRecord->getBookcoverUrl('medium', true);
 						$bookshelfItem['ratingData'] = $overDriveRecord->getRatingData();
-						$bookshelfItem['recordUrl']  = '/OverDrive/' . $overDriveRecord->getUniqueID() . '/Home';
+						$bookshelfItem['recordUrl']  = $overDriveRecord->getLinkUrl(true);
 						$bookshelfItem['title']      = $overDriveRecord->getTitle();
 						$bookshelfItem['author']     = $overDriveRecord->getAuthor();
 						$bookshelfItem['linkUrl']    = $overDriveRecord->getLinkUrl(false);
@@ -566,13 +566,13 @@ class OverDriveDriver extends AbstractEContentDriver{
 				if (!$forSummary){
 					$overDriveRecord = new OverDriveRecordDriver($hold['overDriveId']);
 					$hold['recordId'] = $overDriveRecord->getUniqueID();
-					$hold['coverUrl'] = $overDriveRecord->getCoverUrl('medium');
+					$hold['coverUrl'] = $overDriveRecord->getBookcoverUrl('medium', true);
 					/** @noinspection DuplicatedCode */
-					$hold['recordUrl'] = '/OverDrive/' . $overDriveRecord->getUniqueID() . '/Home';
+					$hold['recordUrl'] = $overDriveRecord->getAbsoluteUrl();
 					$hold['title'] = $overDriveRecord->getTitle();
 					$hold['sortTitle'] = $overDriveRecord->getTitle();
 					$hold['author'] = $overDriveRecord->getAuthor();
-					$hold['linkUrl'] = $overDriveRecord->getLinkUrl(false);
+					$hold['linkUrl'] = $overDriveRecord->getLinkUrl(true);
 					$hold['format'] = $overDriveRecord->getFormats();
 					$hold['ratingData'] = $overDriveRecord->getRatingData();
 				}
