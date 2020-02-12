@@ -563,9 +563,13 @@ class UserAccount {
 		//global $logger;
 		//$logger->log("Logging user out", Logger::LOG_DEBUG);
 		UserAccount::softLogout();
-		unset($_SESSION['language']);
-		setcookie('searchPreferenceLanguage', $_COOKIE['searchPreferenceLanguage'], time() - 1000, '/');
-		unset($_COOKIE['searchPreferenceLanguage]']);
+		if (isset($_SESSION['language'])){
+			unset($_SESSION['language']);
+		}
+		if (isset($_COOKIE['searchPreferenceLanguage'])){
+			setcookie('searchPreferenceLanguage', $_COOKIE['searchPreferenceLanguage'], time() - 1000, '/');
+			unset($_COOKIE['searchPreferenceLanguage]']);
+		}
 		session_regenerate_id(true);
 		//$logger->log("New session id is $newId", Logger::LOG_DEBUG);
 	}
