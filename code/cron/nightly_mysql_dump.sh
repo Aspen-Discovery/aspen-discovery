@@ -53,7 +53,7 @@ LOG="logger -t $0 -p local5.notice "
 DUMPFOLDER="/data/aspen-discovery/${ASPENSERVER}/sql_backup"
 if [ ! -e "$DUMPFOLDER" ]
 then
-	DUMPFOLDER="/data/aspen-discovery/${ASPENSERVER}/sql_backup"
+  mkdir $DUMPFOLDER
 fi
 echo "Dumping to $DUMPFOLDER"
 
