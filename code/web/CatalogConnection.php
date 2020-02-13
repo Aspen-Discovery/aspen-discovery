@@ -484,6 +484,10 @@ class CatalogConnection
 				if (!isset($curTitle['sortTitle'])) {
 					$curTitle['sortTitle'] = $curTitle['title'];
 				}
+				if (isset($curTitle['canFreeze'])) {
+					//This is used in the Arlington App
+					$curTitle['freezeable'] = $curTitle['canFreeze'];
+				}
 				$holds[$section][$key] = $curTitle;
 			}
 		}
