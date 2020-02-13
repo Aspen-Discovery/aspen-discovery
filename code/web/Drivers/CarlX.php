@@ -1746,7 +1746,7 @@ class CarlX extends SIP2Driver{
 		$patronSummaryRequest->SearchID  = $user->cat_username;
 		$patronSummaryRequest->Modifiers = '';
 
-		$patronSummaryResponse = $this->doSoapRequest('getPatronSummaryOverview', $patronSummaryRequest, $this->patronWsdl);
+		$patronSummaryResponse = $this->doSoapRequest('getPatronTransactions', $patronSummaryRequest, $this->patronWsdl);
 
 		if (!empty($patronSummaryResponse) && is_object($patronSummaryResponse)) {
 			$accountSummary['numCheckedOut'] += $patronSummaryResponse->ChargedItemsCount;
