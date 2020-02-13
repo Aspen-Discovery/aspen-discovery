@@ -87,9 +87,11 @@ class MySQLSession extends SessionInterface
 					&& !isset($_REQUEST['sort'])
 					&& !isset($_REQUEST['availableHoldSort'])
 					&& !isset($_REQUEST['unavailableHoldSort'])) {
+					$logger->log("Not updating session $sess_id $module $action $method", Logger::LOG_ERROR);
 					return true;
 				}
 			} else {
+				$logger->log("Not updating session $sess_id, no method provided", Logger::LOG_ERROR);
 				return true;
 			}
 
@@ -105,6 +107,8 @@ class MySQLSession extends SessionInterface
 			$s->data = $data;
 			$s->last_used = MySQLSession::$sessionStartTime;
 			$logger->log("Session data changed $sess_id {$s->last_used} " . print_r($data, true), Logger::LOG_ERROR);
+		}else{
+			$logger->log("Not updating session $sess_id, the session data has not changed", Logger::LOG_ERROR);
 		}
 		if (isset($_SESSION['rememberMe']) && ($_SESSION['rememberMe'] == true || $_SESSION['rememberMe'] === "true")) {
 			$s->remember_me = 1;

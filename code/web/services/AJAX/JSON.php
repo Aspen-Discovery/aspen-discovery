@@ -157,8 +157,7 @@ class AJAX_JSON extends Action {
 		$lists = $user->getLists();
 		$userLists = array();
 		foreach($lists as $current) {
-			$userLists[] = array('id' => $current->id,
-                    'title' => $current->title);
+			$userLists[] = array('id' => $current->id, 'title' => $current->title);
 		}
 		return $userLists;
 	}
