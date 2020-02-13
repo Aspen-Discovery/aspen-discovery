@@ -140,6 +140,7 @@ function importUsers($exportPath, &$existingUsers, &$missingUsers){
 		if ($numImports % 250 == 0){
 			gc_collect_cycles();
 			$elapsedTime = time() - $batchStartTime;
+			$batchStartTime = time();
 			$totalElapsedTime = ceil((time() - $startTime) / 60);
 			echo("Processed $numImports Users in $elapsedTime seconds ($totalElapsedTime minutes total).\n");
 			ob_flush();
