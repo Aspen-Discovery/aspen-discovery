@@ -78,12 +78,13 @@ class MySQLSession extends SessionInterface
 		}else{
 			$method = '';
 		}
-		/*if ($module == 'AJAX' || $action == 'AJAX' || $action == 'JSON') {
+		if ($module == 'AJAX' || $action == 'AJAX' || $action == 'JSON') {
 			//Don't update sessions on AJAX and JSON calls
 			////TODO: Make sure this doesn't break anything
 			if (isset($_REQUEST['method'])) {
 				$method = $_REQUEST['method'];
 				if ($method != 'loginUser'
+					&& $method != 'login'
 					&& $method != 'initiateMasquerade'
 					&& $method != 'endMasquerade'
 					&& $method != 'lockFacet'
@@ -100,7 +101,7 @@ class MySQLSession extends SessionInterface
 				return true;
 			}
 
-		}*/
+		}
 		if (MySQLSession::$active_session->session_id != $sess_id) {
 			echo("Session id changed since load time");
 			die();
@@ -111,9 +112,9 @@ class MySQLSession extends SessionInterface
 		if ($s->data != $data) {
 			$s->data = $data;
 			$s->last_used = MySQLSession::$sessionStartTime;
-			$logger->log("Session data changed $sess_id {$s->last_used} $module $action $method" . print_r($data, true), Logger::LOG_ERROR);
-		}else{
-			$logger->log("Not updating session $sess_id, the session data has not changed", Logger::LOG_ERROR);
+			$logger->log("Session data changed $sess_id {$s->last_used} $module $action $method: " . print_r($data, true), Logger::LOG_ERROR);
+		//}else{
+		//	$logger->log("Not updating session $sess_id, the session data has not changed", Logger::LOG_ERROR);
 		}
 		if (isset($_SESSION['rememberMe']) && ($_SESSION['rememberMe'] == true || $_SESSION['rememberMe'] === "true")) {
 			$s->remember_me = 1;
