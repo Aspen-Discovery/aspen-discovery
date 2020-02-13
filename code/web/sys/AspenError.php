@@ -31,7 +31,12 @@ class AspenError extends DataObject
 			global $action;
 			$this->module = $module;
 			$this->action = $action;
-			$this->userAgent = $_SERVER['HTTP_USER_AGENT'];
+			if (isset($_SERVER['HTTP_USER_AGENT'])){
+				$this->userAgent = $_SERVER['HTTP_USER_AGENT'];
+			}else{
+				$this->userAgent = 'None, command line';
+			}
+
 			$this->timestamp = time();
 
 			$this->message = $message;

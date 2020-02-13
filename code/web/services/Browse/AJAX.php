@@ -172,10 +172,10 @@ class Browse_AJAX extends Action {
 		return $this->browseCategory;
 	}
 
-	private function getSuggestionsBrowseCategoryResults(){
+	private function getSuggestionsBrowseCategoryResults($pageToLoad = 1){
 		// Only Fetches one page of results
 		$browseMode = $this->setBrowseMode();
-		if (!isset($_REQUEST['reload'])) {
+		if ($pageToLoad == 1 && !isset($_REQUEST['reload'])) {
 			/** @var Memcache $memCache */
 			global $memCache, $solrScope;
 			$activeUserId = UserAccount::getActiveUserId();
@@ -194,7 +194,7 @@ class Browse_AJAX extends Action {
 		$result['searchUrl'] = '/MyAccount/SuggestedTitles';
 
 		require_once ROOT_DIR . '/services/MyResearch/lib/Suggestions.php';
-		$suggestions = Suggestions::getSuggestions(-1, 1,self::ITEMS_PER_PAGE);
+		$suggestions = Suggestions::getSuggestions(-1, $pageToLoad,self::ITEMS_PER_PAGE);
 		$records = array();
 		foreach ($suggestions as $suggestedItemId => $suggestionData) {
 			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
@@ -218,17 +218,19 @@ class Browse_AJAX extends Action {
 		$result['records']    = implode('',$records);
 		$result['numRecords'] = count($records);
 
-		global $memCache, $configArray, $solrScope;
-		$activeUserId = UserAccount::getActiveUserId();
-		$key = 'browse_category_' . $this->textId . '_' . $activeUserId . '_' . $solrScope . '_' . $browseMode;
-		$memCache->set($key, $result, $configArray['Caching']['browse_category_info']);
+		if ($pageToLoad == 1){
+			global $memCache, $configArray, $solrScope;
+			$activeUserId = UserAccount::getActiveUserId();
+			$key = 'browse_category_' . $this->textId . '_' . $activeUserId . '_' . $solrScope . '_' . $browseMode;
+			$memCache->set($key, $result, $configArray['Caching']['browse_category_info']);
+		}
 
 		return $result;
 	}
 
 	private function getBrowseCategoryResults($pageToLoad = 1){
 		if ($this->textId == 'system_recommended_for_you') {
-			return $this->getSuggestionsBrowseCategoryResults();
+			return $this->getSuggestionsBrowseCategoryResults($pageToLoad);
 		} else {
 			$browseMode = $this->setBrowseMode();
 			if ($pageToLoad == 1 && !isset($_REQUEST['reload'])) {

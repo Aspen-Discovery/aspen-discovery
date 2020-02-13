@@ -483,21 +483,22 @@ class UserAccount {
 
 	private static $validatedAccounts = array();
 
-    /**
-     * Validate the account information (username and password are correct).
-     * Returns the account, but does not set the global user variable.
-     *
-     * @param $username       string
-     * @param $password       string
-     * @param $accountSource  string The source of the user account if known or null to test all sources
-     * @param $parentAccount  User   The parent user if any
-     *
-     * @return User|false
-     */
+	/**
+	 * Validate the account information (username and password are correct).
+	 * Returns the account, but does not set the global user variable.
+	 *
+	 * @param $username       string
+	 * @param $password       string
+	 * @param $accountSource  string The source of the user account if known or null to test all sources
+	 * @param $parentAccount  User   The parent user if any
+	 *
+	 * @return User|false
+	 */
 	public static function validateAccount($username, $password, $accountSource = null, $parentAccount = null){
 		if (array_key_exists($username . $password, UserAccount::$validatedAccounts)){
 			return UserAccount::$validatedAccounts[$username . $password];
 		}
+		require_once ROOT_DIR . '/CatalogFactory.php';
 		// Perform authentication:
 		//Test all valid authentication methods and see which (if any) result in a valid login.
 		$driversToTest = self::getAccountProfiles();
@@ -642,9 +643,9 @@ class UserAccount {
      * @return false|User
 	 */
 	public static function findNewUser($patronBarcode){
+		require_once ROOT_DIR . '/CatalogFactory.php';
 		$driversToTest = self::getAccountProfiles();
 		foreach ($driversToTest as $driverName => $driverData){
-			require_once ROOT_DIR . '/CatalogFactory.php';
 			$catalogConnectionInstance = CatalogFactory::getCatalogConnectionInstance($driverData['driver'], $driverData['accountProfile']);
 			if ($catalogConnectionInstance != null && !is_null($catalogConnectionInstance->driver) && method_exists($catalogConnectionInstance->driver, 'findNewUser')) {
 				$tmpUser = $catalogConnectionInstance->driver->findNewUser($patronBarcode);

@@ -42,7 +42,7 @@
 						</div>
 						{if $showUsernameField}
 							<div class="form-group">
-								<div class="col-xs-4"><label for="username">{translate text="Username"}</label></div>
+								<div class="col-xs-4"><label for="username">{translate text="alternat_username_label" defaultText="Username"}</label></div>
 								<div class="col-xs-8">
 									<input type="text" name="username" id="username" value="{if !is_numeric(trim($profile->_alt_username))}{$profile->_alt_username|escape}{/if}" size="25" maxlength="25" class="form-control">
 									<a href="#" onclick="$('#usernameHelp').toggle()">What is this?</a>
@@ -210,7 +210,6 @@
 								</div>
 							</div>
 
-
 							<div class="form-group">
 								<div class="col-xs-4"><label for="emailReceiptFlag" class="control-label">{translate text='Email receipts for checkouts and renewals'}:</label></div>
 								<div class="col-xs-8">
@@ -272,7 +271,7 @@
 								<div class="col-xs-4"><label for="smsNotices">{translate text='Receive SMS/Text Messages'}</label></div>
 								<div class="col-xs-8">
 									{if $edit == true && $canUpdateContactInfo == true}
-										<input type="checkbox" name="smsNotices" id="smsNotices" {if $profile->mobileNumber}checked='checked'{/if} data-switch="">
+										<input type="checkbox" name="smsNotices" id="smsNotices" {if $profile->_mobileNumber}checked='checked'{/if} data-switch="">
 										<p class="help-block alert alert-warning">
 											SMS/Text Messages are sent <strong>in addition</strong> to postal mail/email/phone alerts. <strong>Message and data rates may apply.</strong>
 											<br><br>

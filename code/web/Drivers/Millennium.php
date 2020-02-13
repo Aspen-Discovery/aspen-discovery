@@ -701,7 +701,7 @@ class Millennium extends AbstractIlsDriver
 			$curl_url = $this->getVendorOpacUrl() . "/patroninfo~S{$scope}/" . $patronDump['RECORD_#'] ."/modpinfo";
 			$sresult = $this->curlWrapper->curlPostPage($curl_url, $extraPostInfo);
 
-		    // Update Patron Information on success
+			// Update Patron Information on success
 			if (isset($sresult) && strpos($sresult, 'Patron information updated') !== false){
 				$user->phone = $_REQUEST['phone'];
 				$user->email = $_REQUEST['email'];
