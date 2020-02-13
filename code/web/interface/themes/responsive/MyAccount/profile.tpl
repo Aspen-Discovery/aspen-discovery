@@ -55,7 +55,7 @@
 										</div>
 										{if $showUsernameField}
 											<div class="form-group">
-												<div class="col-xs-4"><label for="username">{translate text="Username"}</label></div>
+												<div class="col-xs-4"><label for="username">{translate text="alternat_username_label" defaultText="Username"}</label></div>
 												<div class="col-xs-8">
 													<input type="text" name="username" id="username" value="{if !is_numeric(trim($profile->_alt_username))}{$profile->_alt_username|escape}{/if}" size="25" maxlength="25" class="form-control">
 													<a href="#" onclick="$('#usernameHelp').toggle()">What is this?</a>
