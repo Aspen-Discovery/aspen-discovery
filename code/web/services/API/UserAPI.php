@@ -71,7 +71,7 @@ class UserAPI extends Action
 	function isLoggedIn()
 	{
 		global $logger;
-		$logger->log("UserAPI/isLoggedIn session: " . session_id(), Logger::LOG_ERROR);
+		$logger->log("UserAPI/isLoggedIn session: " . session_id(), Logger::LOG_DEBUG);
 		return UserAccount::isLoggedIn();
 	}
 
@@ -101,25 +101,25 @@ class UserAPI extends Action
 	function login()
 	{
 		global $logger;
-		$logger->log("Starting UserAPI/login session: " . session_id(), Logger::LOG_ERROR);
+		$logger->log("Starting UserAPI/login session: " . session_id(), Logger::LOG_DEBUG);
 		//Login the user.  Must be called via Post parameters.
 		if (isset($_POST['username']) && isset($_POST['password'])) {
 			$user = UserAccount::getLoggedInUser();
 			if ($user && !($user instanceof AspenError)) {
-				$logger->log("User is already logged in",Logger::LOG_ERROR);
+				$logger->log("User is already logged in",Logger::LOG_DEBUG);
 				return array('success' => true, 'name' => ucwords($user->firstname . ' ' . $user->lastname));
 			} else {
 				try {
 					$user = UserAccount::login();
 					if ($user && !($user instanceof AspenError)) {
-						$logger->log("User was logged in successfully session: " . session_id(),Logger::LOG_ERROR);
+						$logger->log("User was logged in successfully session: " . session_id(),Logger::LOG_DEBUG);
 						return array('success' => true, 'name' => ucwords($user->firstname . ' ' . $user->lastname));
 					} else {
-						$logger->log("Incorrect login parameters",Logger::LOG_ERROR);
+						$logger->log("Incorrect login parameters",Logger::LOG_DEBUG);
 						return array('success' => false);
 					}
 				} catch (UnknownAuthenticationMethodException $e) {
-					$logger->log("Error logging user in $e",Logger::LOG_ERROR);
+					$logger->log("Error logging user in $e",Logger::LOG_DEBUG);
 					return array('success' => false);
 				}
 			}
@@ -149,7 +149,7 @@ class UserAPI extends Action
 	function logout()
 	{
 		global $logger;
-		$logger->log("UserAPI/logout session: " . session_id(), Logger::LOG_ERROR);
+		$logger->log("UserAPI/logout session: " . session_id(), Logger::LOG_DEBUG);
 		UserAccount::logout();
 		return true;
 	}

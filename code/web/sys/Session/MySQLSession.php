@@ -112,7 +112,7 @@ class MySQLSession extends SessionInterface
 		if ($s->data != $data) {
 			$s->data = $data;
 			$s->last_used = MySQLSession::$sessionStartTime;
-			$logger->log("Session data changed $sess_id {$s->last_used} $module $action $method: " . print_r($data, true), Logger::LOG_ERROR);
+			$logger->log("Session data changed $sess_id {$s->last_used} $module $action $method: " . print_r($data, true), Logger::LOG_DEBUG);
 		//}else{
 		//	$logger->log("Not updating session $sess_id, the session data has not changed", Logger::LOG_ERROR);
 		}
