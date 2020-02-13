@@ -695,7 +695,7 @@ abstract class Solr
 				$noWildCardLookFor = str_replace('*', '', $noTrailingPunctuation);
 			}
 			$values['localized_callnumber'] = str_replace(array('"', ':', '/'), ' ', $noWildCardLookFor);
-			$values['text_left'] = str_replace(array('"', ':', '/'), ' ', $noWildCardLookFor) . '*';
+			$values['text_left'] = str_replace(array('"', ':', '/'), ' ', $noWildCardLookFor);
 		} else {
 			// If we're skipping tokenization, we just want to pass $lookfor through
 			// unmodified (it's probably an advanced search that won't benefit from
@@ -713,7 +713,7 @@ abstract class Solr
 				'single_word_removal' => $onephrase,
 				'exact_quoted' => $onephrase,
 				'localized_callnumber' => str_replace(array('"', ':', '/'), ' ', $cleanedQuery),
-				'text_left' => str_replace(array('"', ':', '/'), ' ', $cleanedQuery) . '*',
+				'text_left' => str_replace(array('"', ':', '/'), ' ', $cleanedQuery),
 			);
 		}
 

@@ -205,14 +205,13 @@ class CarlX extends SIP2Driver{
 	 * @return mixed
 	 */
 	public function renewAll($patron) {
-		global $configArray;
 		global $logger;
 
 		//renew the item via SIP 2
 		require_once ROOT_DIR . '/sys/SIP2.php';
 		$mysip = new sip2();
-		$mysip->hostname = $configArray['SIP2']['host'];
-		$mysip->port = $configArray['SIP2']['port'];
+		$mysip->hostname = $this->accountProfile->sipHost;
+		$mysip->port = $this->accountProfile->sipPort;
 
 		$renew_result = array(
 				'success' => false,
@@ -418,7 +417,7 @@ class CarlX extends SIP2Driver{
 						$curHold['upc']             = $recordDriver->getCleanUPC();
 						$curHold['format_category'] = $recordDriver->getFormatCategory();
 						$curHold['coverUrl']        = $recordDriver->getBookcoverUrl('medium', true);
-						$curHold['link']            = $recordDriver->getRecordUrl();
+						$curHold['link']            = $recordDriver->getLinkUrl();
 						$curHold['ratingData']      = $recordDriver->getRatingData(); //Load rating information
 
 						if (empty($curHold['title'])){
@@ -478,7 +477,7 @@ class CarlX extends SIP2Driver{
 						$curHold['upc']             = $recordDriver->getCleanUPC();
 						$curHold['format_category'] = $recordDriver->getFormatCategory();
 						$curHold['coverUrl']        = $recordDriver->getBookcoverUrl('medium', true);
-						$curHold['link']            = $recordDriver->getRecordUrl();
+						$curHold['link']            = $recordDriver->getLinkUrl();
 						$curHold['ratingData']      = $recordDriver->getRatingData(); //Load rating information
 
 						if (empty($curHold['title'])){
@@ -1453,8 +1452,8 @@ class CarlX extends SIP2Driver{
 		//Place the hold via SIP 2
 		require_once ROOT_DIR . '/sys/SIP2.php';
 		$mySip = new sip2();
-		$mySip->hostname = $configArray['SIP2']['host'];
-		$mySip->port     = $configArray['SIP2']['port'];
+		$mySip->hostname = $this->accountProfile->sipHost;
+		$mySip->port = $this->accountProfile->sipPort;
 
 		$success = false;
 		$title = '';
@@ -1545,8 +1544,8 @@ class CarlX extends SIP2Driver{
 		//Place the hold via SIP 2
 		require_once ROOT_DIR . '/sys/SIP2.php';
 		$mySip = new sip2();
-		$mySip->hostname = $configArray['SIP2']['host'];
-		$mySip->port     = $configArray['SIP2']['port'];
+		$mySip->hostname = $this->accountProfile->sipHost;
+		$mySip->port = $this->accountProfile->sipPort;
 
 		$success = false;
 		$title = '';
@@ -1641,17 +1640,11 @@ class CarlX extends SIP2Driver{
 
 
 	public function renewCheckoutViaSIP($patron, $itemId, $useAlternateSIP = false){
-		global $configArray;
-
 		//renew the item via SIP 2
 		require_once ROOT_DIR . '/sys/SIP2.php';
 		$mysip = new sip2();
-		$mysip->hostname = $configArray['SIP2']['host'];
-		if ($useAlternateSIP){
-			$mysip->port = $configArray['SIP2']['alternate_port'];
-		}else{
-			$mysip->port = $configArray['SIP2']['port'];
-		}
+		$mysip->hostname = $this->accountProfile->sipHost;
+		$mysip->port = $this->accountProfile->sipPort;
 
 		$success = false;
 		$message = 'Failed to connect to complete requested action.';

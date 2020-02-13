@@ -38,6 +38,12 @@
 ########################################################
 0 2 * * *     root    cd /usr/local/aspen-discovery/code/oai_indexer; java -jar oai_indexer.jar arlington.production
 
+######################
+# MySQL Nightly Dump #
+######################
+# backup important bits at 12:10am daily
+10 0 * * *    root    /usr/local/aspen-discovery/code/cron/nightly_mysql_dump.sh arlington.production aspen 2>&1 >/dev/null
+
 #############################################
 # New York Times Best seller Lists Updating #
 #############################################

@@ -308,7 +308,7 @@ abstract class HorizonAPI extends Horizon{
 					$curHold['upc']             = $recordDriver->getCleanUPC();
 					$curHold['format_category'] = $recordDriver->getFormatCategory();
 					$curHold['coverUrl']        = $recordDriver->getBookcoverUrl('medium', true);
-					$curHold['link']            = $recordDriver->getRecordUrl();
+					$curHold['link']            = $recordDriver->getLinkUrl();
 
 					//Load rating information
 					$curHold['ratingData']      = $recordDriver->getRatingData();
