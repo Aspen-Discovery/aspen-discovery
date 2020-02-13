@@ -73,7 +73,7 @@ class MySQLSession extends SessionInterface
 		global $logger;
 		global $module;
 		global $action;
-		if ($module == 'AJAX' || $action == 'AJAX' || $action == 'JSON') {
+		/*if ($module == 'AJAX' || $action == 'AJAX' || $action == 'JSON') {
 			//Don't update sessions on AJAX and JSON calls
 			////TODO: Make sure this doesn't break anything
 			if (isset($_REQUEST['method'])) {
@@ -95,7 +95,7 @@ class MySQLSession extends SessionInterface
 				return true;
 			}
 
-		}
+		}*/
 		if (MySQLSession::$active_session->session_id != $sess_id) {
 			echo("Session id changed since load time");
 			die();
