@@ -209,8 +209,7 @@
 									{/if}
 								</div>
 							</div>
-
-
+							
 							<div class="form-group">
 								<div class="col-xs-4"><label for="emailReceiptFlag" class="control-label">{translate text='Email receipts for checkouts and renewals'}:</label></div>
 								<div class="col-xs-8">
