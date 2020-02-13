@@ -2,7 +2,7 @@
 require_once __DIR__ . '/../bootstrap.php';
 
 /**
- * This will load user data from Pika based on exports performed by Marmot
+ * This will load user data from a Pika system
  */
 global $serverName;
 
@@ -13,23 +13,18 @@ $exportPath = $dataPath . '/pika_export/';
 if (!file_exists($exportPath)){
 	echo("Could not find export path " . $exportPath);
 }else{
+
 	//Make sure we have all the right files
-	if (!file_exists($exportPath . "patronLists.csv")){
-		echo("Could not find patronLists.csv in export path " . $exportPath);
-		die();
-	}
-	if (!file_exists($exportPath . "patronListEntries.csv")){
-		echo("Could not find patronListEntries.csv in export path " . $exportPath);
-		die();
-	}
-	if (!file_exists($exportPath . "patronRatingsAndReviews.csv")){
-		echo("Could not find patronRatingsAndReviews.csv in export path " . $exportPath);
-		die();
-	}
-	if (!file_exists($exportPath . "patronReadingHistory.csv")){
-		echo("Could not find patronReadingHistory.csv in export path " . $exportPath);
-		die();
-	}
+	validateFileExists($exportPath, "users.csv");
+	validateFileExists($exportPath, "userRoles.csv");
+	validateFileExists($exportPath, "staffSettings.csv");
+	validateFileExists($exportPath, "savedSearches.csv");
+	validateFileExists($exportPath, "materials_request.csv");
+	validateFileExists($exportPath, "patronLists.csv");
+	validateFileExists($exportPath, "patronListEntries.csv");
+	validateFileExists($exportPath, "patronRatingsAndReviews.csv");
+	validateFileExists($exportPath, "patronNotInterested.csv");
+	validateFileExists($exportPath, "patronReadingHistory.csv");
 
 	$existingUsers = [];
 	$missingUsers = [];
@@ -37,13 +32,193 @@ if (!file_exists($exportPath)){
 	$invalidGroupedWorks = [];
 	$movedGroupedWorks = [];
 
+	importUsers($exportPath, $existingUsers, $missingUsers);
+	importLists($exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
 	importReadingHistory($exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
-//	importNotInterested($exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
-//	importRatingsAndReviews($exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
-//	importLists($exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
+	importNotInterested($exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
+	importRatingsAndReviews($exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
 }
 
-function importReadingHistory($exportPath, $existingUsers, $missingUsers, &$validGroupedWorks, &$invalidGroupedWorks, &$movedGroupedWorks){
+function importUsers($exportPath, &$existingUsers, &$missingUsers){
+	/** @var PDO $aspen_db */
+	global $aspen_db;
+
+	echo ("Starting to import users");
+	set_time_limit(600);
+
+	$preValidatedIds = []; //Key is barcode, value is the unique id
+	if (file_exists($exportPath . '/patron_ids.csv')){
+		$patronIdsHnd = fopen($exportPath . "patron_ids.csv", 'r');
+		while ($patronIdRow = fgetcsv($patronIdsHnd)) {
+			$preValidatedIds[$patronIdRow[1]] = $patronIdRow[0];
+		}
+		fclose($patronIdsHnd);
+	}
+
+	//Load users, make sure to validate that each still exists in the ILS as we load them
+	$numImports = 0;
+	$userHnd = fopen($exportPath . "users.csv", 'r');
+	while ($userRow = fgetcsv($userHnd)) {
+		$numImports++;
+		$userFromCSV = loadUserInfoFromCSV($userRow);
+		echo("Processing User {$userFromCSV->id}\tBarcode {$userFromCSV->cat_username}\tUsername {$userFromCSV->username}\n");
+		if (count($preValidatedIds) > 0){
+			if (array_key_exists($userFromCSV->cat_username, $preValidatedIds)){
+				$username = $preValidatedIds[$userFromCSV->cat_username];
+				if ($username != $userFromCSV->username){
+					$existingUser = false;
+				}else{
+					$existingUser = new User();
+					$existingUser->username = $username;
+					$existingUser->cat_username = $userFromCSV->cat_username;
+					if (!$existingUser->find(true)){
+						//Didn't find the combination of username and cat_username (barcode) see if it exists with just the username
+						$existingUser = new User();
+						$existingUser->username = $username;
+						if (!$existingUser->find(true)) {
+							//The user does not exist in the database.  We can create it by first inserting it and then cloning it so the rest of the process works
+							$userFromCSV->insert();
+							$existingUser = clone $userFromCSV;
+						}
+					}
+				}
+			}else{
+				$existingUser = false;
+			}
+		}else{
+			$existingUser = UserAccount::validateAccount($userFromCSV->cat_username, $userFromCSV->cat_password);
+		}
+		if ($existingUser != false && !($existingUser instanceof AspenError)){
+			$existingUserId = $existingUser->id;
+			if ($existingUserId != $userFromCSV->id){
+				//Have to delete the old user before inserting the new to avoid errors with primary keys
+				$existingUser->delete();
+				$userFromCSV->insert();
+
+				if ($existingUserId < 0){
+					//Move all existing user data from the old id to the new id
+					$aspen_db->query("UPDATE grouped_work_alternate_titles set addedBy = $userFromCSV->id WHERE addedBy = $existingUserId" );
+					$aspen_db->query("UPDATE materials_request set createdBy = $userFromCSV->id WHERE createdBy = $existingUserId" );
+					$aspen_db->query("UPDATE materials_request set assignedTo = $userFromCSV->id WHERE assignedTo = $existingUserId" );
+					$aspen_db->query("UPDATE search set user_id = $userFromCSV->id WHERE user_id = $existingUserId" );
+					$aspen_db->query("UPDATE user_cloud_library_usage set userId = $userFromCSV->id WHERE userId = $existingUserId" );
+					$aspen_db->query("UPDATE user_hoopla_usage set userId = $userFromCSV->id WHERE userId = $existingUserId" );
+					$aspen_db->query("UPDATE user_ils_usage set userId = $userFromCSV->id WHERE userId = $existingUserId" );
+					$aspen_db->query("UPDATE user_list set user_id = $userFromCSV->id WHERE user_id = $existingUserId" );
+					$aspen_db->query("UPDATE user_not_interested set userId = $userFromCSV->id WHERE userId = $existingUserId" );
+					$aspen_db->query("UPDATE user_open_archives_usage set userId = $userFromCSV->id WHERE userId = $existingUserId" );
+					$aspen_db->query("UPDATE user_overdrive_usage set userId = $userFromCSV->id WHERE userId = $existingUserId" );
+					$aspen_db->query("UPDATE user_payments set userId = $userFromCSV->id WHERE userId = $existingUserId" );
+					$aspen_db->query("UPDATE user_rbdigital_usage set userId = $userFromCSV->id WHERE userId = $existingUserId" );
+					$aspen_db->query("UPDATE user_sideload_usage set userId = $userFromCSV->id WHERE userId = $existingUserId" );
+					$aspen_db->query("UPDATE user_staff_settings set userId = $userFromCSV->id WHERE userId = $existingUserId" );
+					$aspen_db->query("UPDATE user_work_review set userId = $userFromCSV->id WHERE userId = $existingUserId" );
+				}else{
+					//User already exists and had a different id.  There should be no enrichment to copy.  This happens when we insert since the new id is auto generated
+					//echo("User {$userFromCSV->cat_username} exists, but has a different id in the database {$existingUserId} than the csv {$userFromCSV->id} changing the id");
+					$aspen_db->query("UPDATE user set id = $userFromCSV->id WHERE id = $existingUserId" );
+				}
+			}else{
+				//User already exists and has the same id.  Just update with the info in the database.
+				if (!$existingUser->isEqualTo($userFromCSV)) {
+					loadUserInfoFromCSV($userRow, $existingUser);
+					$existingUser->update();
+				}
+			}
+			$existingUsers[$userFromCSV->cat_username] = $userFromCSV->id;
+		}else{
+			//User no longer exists in the ILS
+			$missingUsers[$userFromCSV->cat_username] = $userFromCSV->cat_username;
+		}
+
+		if ($numImports % 250 == 0){
+			gc_collect_cycles();
+			echo("Processed $numImports Users");
+			ob_flush();
+			set_time_limit(600);
+		}
+	}
+	fclose($userHnd);
+	//TODO: Delete any users that still have an id of -1 (other than aspen_admin)
+
+	//Import roles
+	//Import material requests
+
+}
+
+/**
+ * @param array|null $userRow
+ * @return User
+ */
+function loadUserInfoFromCSV(?array $userRow, User $existingUser = null): User
+{
+	$curCol = 0;
+	if ($existingUser == null){
+		$userFromCSV = new User();
+	}else{
+		$userFromCSV = $existingUser;
+	}
+
+	$userFromCSV->id = $userRow[$curCol++];
+	$userFromCSV->username = cleancsv($userRow[$curCol++]);
+	$userFromCSV->password = cleancsv($userRow[$curCol++]);
+	$userFromCSV->firstname = cleancsv($userRow[$curCol++]);
+	$userFromCSV->lastname = cleancsv($userRow[$curCol++]);
+	$userFromCSV->email = cleancsv($userRow[$curCol++]);
+	$userFromCSV->cat_username = cleancsv($userRow[$curCol++]);
+	$userFromCSV->cat_password = cleancsv($userRow[$curCol++]);
+	$userFromCSV->college = cleancsv($userRow[$curCol++]);
+	$userFromCSV->major = cleancsv($userRow[$curCol++]);
+	$userFromCSV->created = cleancsv($userRow[$curCol++]);
+	$userFromCSV->homeLocationId = $userRow[$curCol++];
+	$userFromCSV->myLocation1Id = $userRow[$curCol++];
+	$userFromCSV->myLocation2Id = $userRow[$curCol++];
+	$userFromCSV->trackReadingHistory = $userRow[$curCol++];
+	$userFromCSV->bypassAutoLogout = $userRow[$curCol++];
+	$userFromCSV->displayName = cleancsv($userRow[$curCol++]);
+	$userFromCSV->disableCoverArt = $userRow[$curCol++];
+	$userFromCSV->disableRecommendations = $userRow[$curCol++];
+	$userFromCSV->phone = cleancsv($userRow[$curCol++]);
+	$userFromCSV->patronType = cleancsv($userRow[$curCol++]);
+	$userFromCSV->overdriveEmail = cleancsv($userRow[$curCol++]);
+	$userFromCSV->promptForOverdriveEmail = $userRow[$curCol++];
+	$userFromCSV->preferredLibraryInterface = cleancsv($userRow[$curCol++]);
+	$userFromCSV->initialReadingHistoryLoaded = $userRow[$curCol++];
+	$userFromCSV->noPromptForUserReviews = $userRow[$curCol++];
+	$userFromCSV->source = cleancsv($userRow[$curCol++]);
+	$userFromCSV->hooplaCheckOutConfirmation = $userRow[$curCol];
+
+	//Set defaults
+	$userFromCSV->rbdigitalId = -1;
+	$userFromCSV->interfaceLanguage = 'en';
+	$userFromCSV->searchPreferenceLanguage = -1;
+	$userFromCSV->rememberHoldPickupLocation = 0;
+	return $userFromCSV;
+}
+
+function getUserIdForBarcode($userBarcode, &$existingUsers, &$missingUsers){
+	if (array_key_exists($userBarcode, $missingUsers)) {
+		$userId = -1;
+	}elseif (array_key_exists($userBarcode, $existingUsers)){
+		$userId = $existingUsers[$userBarcode];
+	}else{
+		$user = new User();
+		$user->cat_username = $userBarcode;
+		if (!$user->find(true)){
+			$user = UserAccount::findNewUser($userBarcode);
+			if ($user == false){
+				$missingUsers[$userBarcode] = $userBarcode;
+				echo("Could not find user for $userBarcode\r\n");
+				return -1;
+			}
+		}
+		$existingUsers[$userBarcode] = $user->id;
+		$userId = $user->id;
+	}
+	return $userId;
+}
+
+function importReadingHistory($exportPath, &$existingUsers, &$missingUsers, &$validGroupedWorks, &$invalidGroupedWorks, &$movedGroupedWorks){
 	echo ("Starting to import reading history");
 	set_time_limit(600);
 	require_once ROOT_DIR . '/sys/ReadingHistoryEntry.php';
@@ -124,7 +299,7 @@ function importReadingHistory($exportPath, $existingUsers, $missingUsers, &$vali
 	fclose($readingHistoryHnd);
 }
 
-function importNotInterested($exportPath, $existingUsers, $missingUsers, &$validGroupedWorks, &$invalidGroupedWorks, &$movedGroupedWorks){
+function importNotInterested($exportPath, &$existingUsers, &$missingUsers, &$validGroupedWorks, &$invalidGroupedWorks, &$movedGroupedWorks){
 	echo ("Starting to import not interested titles");
 	set_time_limit(600);
 	require_once ROOT_DIR . '/sys/LocalEnrichment/NotInterested.php';
@@ -168,7 +343,7 @@ function importNotInterested($exportPath, $existingUsers, $missingUsers, &$valid
 	fclose($patronNotInterestedHnd);
 }
 
-function importRatingsAndReviews($exportPath, $existingUsers, $missingUsers, &$validGroupedWorks, &$invalidGroupedWorks, &$movedGroupedWorks){
+function importRatingsAndReviews($exportPath, &$existingUsers, &$missingUsers, &$validGroupedWorks, &$invalidGroupedWorks, &$movedGroupedWorks){
 	echo ("Starting to import ratings and reviews");
 	set_time_limit(600);
 	require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
@@ -343,28 +518,6 @@ function cleancsv($field){
 	return $field;
 }
 
-function getUserIdForBarcode($userBarcode, &$existingUsers, &$missingUsers){
-	if (array_key_exists($userBarcode, $missingUsers)) {
-		$userId = -1;
-	}elseif (array_key_exists($userBarcode, $existingUsers)){
-		$userId = $existingUsers[$userBarcode];
-	}else{
-		$user = new User();
-		$user->cat_username = $userBarcode;
-		if (!$user->find(true)){
-			$user = UserAccount::findNewUser($userBarcode);
-			if ($user == false){
-				$missingUsers[$userBarcode] = $userBarcode;
-				echo("Could not find user for $userBarcode\r\n");
-				return -1;
-			}
-		}
-		$existingUsers[$userBarcode] = $user->id;
-		$userId = $user->id;
-	}
-	return $userId;
-}
-
 function validateGroupedWork(&$groupedWorkId, $title, $author, &$validGroupedWorks, &$invalidGroupedWorks, &$movedGroupedWorks){
 	require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 
@@ -443,4 +596,16 @@ function validateGroupedWork(&$groupedWorkId, $title, $author, &$validGroupedWor
 		$groupedWork = null;
 	}
 	return $groupedWorkValid;
+}
+
+/**
+ * @param string $exportPath
+ * @param string $file
+ */
+function validateFileExists(string $exportPath, string $file): void
+{
+	if (!file_exists($exportPath . $file)) {
+		echo("Could not find $file in export path " . $exportPath);
+		die();
+	}
 }
