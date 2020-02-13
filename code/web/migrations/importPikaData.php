@@ -110,6 +110,8 @@ function importUsers($exportPath, &$existingUsers, &$missingUsers){
 					$aspen_db->query("UPDATE user_overdrive_usage set userId = $userFromCSV->id WHERE userId = $existingUserId" );
 					$aspen_db->query("UPDATE user_payments set userId = $userFromCSV->id WHERE userId = $existingUserId" );
 					$aspen_db->query("UPDATE user_rbdigital_usage set userId = $userFromCSV->id WHERE userId = $existingUserId" );
+					$aspen_db->query("UPDATE user_reading_history_work set userId = $userFromCSV->id WHERE userId = $existingUserId" );
+					$aspen_db->query("UPDATE user_roles set userId = $userFromCSV->id WHERE userId = $existingUserId" );
 					$aspen_db->query("UPDATE user_sideload_usage set userId = $userFromCSV->id WHERE userId = $existingUserId" );
 					$aspen_db->query("UPDATE user_staff_settings set userId = $userFromCSV->id WHERE userId = $existingUserId" );
 					$aspen_db->query("UPDATE user_work_review set userId = $userFromCSV->id WHERE userId = $existingUserId" );
