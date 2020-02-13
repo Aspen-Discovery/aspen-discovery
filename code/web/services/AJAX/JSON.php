@@ -166,6 +166,8 @@ class AJAX_JSON extends Action {
 	function loginUser(){
 		//Login the user.  Must be called via Post parameters.
 		global $interface;
+		global $logger;
+		$logger->log("Starting JSON/loginUser session: " . session_id(), Logger::LOG_ERROR);
 		$isLoggedIn = UserAccount::isLoggedIn();
 		if (!$isLoggedIn){
 			try{
@@ -190,14 +192,18 @@ class AJAX_JSON extends Action {
 						'success' => false,
 						'message' => $message
 					);
+				}else{
+					$logger->log("User was logged in successfully session: " . session_id(),Logger::LOG_ERROR);
 				}
 			} catch (UnknownAuthenticationMethodException $e) {
+				$logger->log("Error logging user in $e",Logger::LOG_ERROR);
 				return array(
 					'success' => false,
 					'message' => $e->getMessage()
 				);
 			}
 		}else{
+			$logger->log("User is already logged in",Logger::LOG_ERROR);
 			$user = UserAccount::getLoggedInUser();
 		}
 

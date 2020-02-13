@@ -119,6 +119,7 @@ class UserAPI extends Action
 						return array('success' => false);
 					}
 				} catch (UnknownAuthenticationMethodException $e) {
+					$logger->log("Error logging user in $e",Logger::LOG_ERROR);
 					return array('success' => false);
 				}
 			}
