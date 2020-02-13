@@ -70,6 +70,8 @@ class UserAPI extends Action
 	 */
 	function isLoggedIn()
 	{
+		global $logger;
+		$logger->log("UserAPI/isLoggedIn session: " . session_id(), Logger::LOG_ERROR);
 		return UserAccount::isLoggedIn();
 	}
 
@@ -145,6 +147,8 @@ class UserAPI extends Action
 	 */
 	function logout()
 	{
+		global $logger;
+		$logger->log("UserAPI/logout session: " . session_id(), Logger::LOG_ERROR);
 		UserAccount::logout();
 		return true;
 	}
