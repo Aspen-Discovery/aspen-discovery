@@ -418,7 +418,7 @@ class CarlX extends SIP2Driver{
 						$curHold['upc']             = $recordDriver->getCleanUPC();
 						$curHold['format_category'] = $recordDriver->getFormatCategory();
 						$curHold['coverUrl']        = $recordDriver->getBookcoverUrl('medium', true);
-						$curHold['link']            = $recordDriver->getRecordUrl();
+						$curHold['link']            = $recordDriver->getLinkUrl();
 						$curHold['ratingData']      = $recordDriver->getRatingData(); //Load rating information
 
 						if (empty($curHold['title'])){
@@ -478,7 +478,7 @@ class CarlX extends SIP2Driver{
 						$curHold['upc']             = $recordDriver->getCleanUPC();
 						$curHold['format_category'] = $recordDriver->getFormatCategory();
 						$curHold['coverUrl']        = $recordDriver->getBookcoverUrl('medium', true);
-						$curHold['link']            = $recordDriver->getRecordUrl();
+						$curHold['link']            = $recordDriver->getLinkUrl();
 						$curHold['ratingData']      = $recordDriver->getRatingData(); //Load rating information
 
 						if (empty($curHold['title'])){

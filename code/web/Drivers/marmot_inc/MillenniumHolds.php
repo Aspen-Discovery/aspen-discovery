@@ -593,7 +593,7 @@ class MillenniumHolds{
 
 					//Load rating information
 					$hold['ratingData'] = $recordDriver->getRatingData();
-					$hold['link'] = $recordDriver->getAbsoluteUrl();
+					$hold['link'] = $recordDriver->getLinkUrl();
 					$hold['coverUrl'] = $recordDriver->getBookcoverUrl('medium', true);
 				}
 				$holds[$section][$key] = $hold;

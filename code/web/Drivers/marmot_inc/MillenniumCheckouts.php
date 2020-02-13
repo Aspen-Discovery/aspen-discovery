@@ -188,7 +188,7 @@ class MillenniumCheckouts {
 							//Always use title from the index since classic will show 240 rather than 245
 							$curTitle['title']         = $recordDriver->getTitle();
 							$curTitle['title_sort']    = $recordDriver->getSortableTitle();
-							$curTitle['link']          = $recordDriver->getAbsoluteUrl();
+							$curTitle['link']          = $recordDriver->getLinkUrl();
 						} else {
 							$curTitle['coverUrl']      = "";
 							$curTitle['groupedWorkId'] = "";
