@@ -6,7 +6,7 @@ require_once __DIR__ . '/../bootstrap.php';
  */
 global $serverName;
 
-ini_set('memory_limit','2G');
+ini_set('memory_limit','4G');
 $dataPath = '/data/aspen-discovery/' . $serverName;
 $exportPath = $dataPath . '/pika_export/';
 
@@ -43,7 +43,7 @@ function importUsers($exportPath, &$existingUsers, &$missingUsers){
 	/** @var PDO $aspen_db */
 	global $aspen_db;
 
-	echo ("Starting to import users");
+	echo ("Starting to import users\n");
 	set_time_limit(600);
 
 	$preValidatedIds = []; //Key is barcode, value is the unique id
@@ -58,10 +58,12 @@ function importUsers($exportPath, &$existingUsers, &$missingUsers){
 	//Load users, make sure to validate that each still exists in the ILS as we load them
 	$numImports = 0;
 	$userHnd = fopen($exportPath . "users.csv", 'r');
+	$startTime = time();
+	$batchStartTime = time();
 	while ($userRow = fgetcsv($userHnd)) {
 		$numImports++;
 		$userFromCSV = loadUserInfoFromCSV($userRow);
-		echo("Processing User {$userFromCSV->id}\tBarcode {$userFromCSV->cat_username}\tUsername {$userFromCSV->username}\n");
+		//echo("Processing User {$userFromCSV->id}\tBarcode {$userFromCSV->cat_username}\tUsername {$userFromCSV->username}\n");
 		if (count($preValidatedIds) > 0){
 			if (array_key_exists($userFromCSV->cat_username, $preValidatedIds)){
 				$username = $preValidatedIds[$userFromCSV->cat_username];
@@ -132,10 +134,14 @@ function importUsers($exportPath, &$existingUsers, &$missingUsers){
 			//User no longer exists in the ILS
 			$missingUsers[$userFromCSV->cat_username] = $userFromCSV->cat_username;
 		}
+		$existingUser = null;
+		$userFromCSV = null;
 
 		if ($numImports % 250 == 0){
 			gc_collect_cycles();
-			echo("Processed $numImports Users");
+			$elapsedTime = time() - $batchStartTime;
+			$totalElapsedTime = ceil((time() - $startTime) / 60);
+			echo("Processed $numImports Users in $elapsedTime seconds ($totalElapsedTime minutes total).\n");
 			ob_flush();
 			set_time_limit(600);
 		}
