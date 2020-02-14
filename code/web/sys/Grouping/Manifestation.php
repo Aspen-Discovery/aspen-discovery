@@ -162,9 +162,9 @@ class Grouping_Manifestation
 				$this->_hideByDefault = true;
 			}
 		} else {
-			if (!$this->isEContent() && in_array('Available Online', $selectedAvailability)){
+			if (!$this->isEContent() && in_array('Available Online', $selectedAvailability)) {
 				$this->_hideByDefault = true;
-			}else {
+			} else {
 				if (in_array('Available Now', $selectedAvailability)) {
 					if ($this->isEContent()) {
 						if (!$this->getStatusInformation()->isAvailableOnline()) {
