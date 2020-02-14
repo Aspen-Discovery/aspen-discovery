@@ -1715,6 +1715,9 @@ class CarlX extends SIP2Driver{
 	}
 
 	private function BIDfromFullCarlID($CarlID) {
+		if (strpos($CarlID, ':') > 0){
+			list(,$CarlID) = explode(':', $CarlID);
+		}
 		$temp = str_replace('CARL', '', $CarlID);  // Remove CARL prefix
 		$temp = ltrim($temp, '0'); // Remove preceding zeros
 		return $temp;
