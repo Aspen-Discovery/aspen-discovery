@@ -15,14 +15,14 @@
 				<th>File Name</th>
 				<th>Date</th>
 				<th>Size (bytes)</th>
-{*				<th></th>*}
+				<th></th>
 			</tr>
 			{foreach from=$files key=file item=fileData}
-				<tr>
+				<tr id="file{$fileData.index}">
 					<td><a href="/SideLoads/DownloadMarc?id={$id}&file={$file|urlencode}">{$file}</a></td>
 					<td>{$fileData.date|date_format:"%D %T"}</td>
 					<td>{$fileData.size|number_format}</td>
-{*					<td><a class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this file?');" href="/SideLoads/DeleteMarc?id={$id}&file={$file|urlencode}">Delete</a> </td>*}
+					<td><a class="btn btn-sm btn-danger" onclick="return AspenDiscovery.SideLoads.deleteMarc('{$id}', '{$file}', {$fileData.index});">Delete</a> </td>
 				</tr>
 			{foreachelse}
 				<tr>
