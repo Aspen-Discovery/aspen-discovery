@@ -569,6 +569,7 @@ public class GroupedWorkSolr implements Cloneable {
 		boolean addLibraryOwnership = false;
 		HashSet<String> availabilityToggleValues = new HashSet<>();
 		Scope curScopeDetails = curScope.getScope();
+		//availabilityToggleValues.add("Entire Catalog");
 		if (curScope.isLocallyOwned() && curScopeDetails.isLocationScope()) {
 			addLocationOwnership = true;
 			addLibraryOwnership = true;
@@ -607,14 +608,8 @@ public class GroupedWorkSolr implements Cloneable {
 
 			//We do different ownership display depending on if this is eContent or not
 			String owningLocationValue = curScopeDetails.getFacetLabel();
-			//if (curItem.getSubLocation() != null && curItem.getSubLocation().length() > 0){
-			//owningLocationValue += " - " + curItem.getSubLocation();
-			//owningLocationValue = curItem.getSubLocation();
-			//}
 			if (curItem.isEContent()) {
 				owningLocationValue = curItem.getShelfLocation();
-				//}else if (curItem.isOrderItem()){
-				//	owningLocationValue = curScopeDetails.getFacetLabel() + " On Order";
 			}
 
 			//Save values for this scope
@@ -698,11 +693,9 @@ public class GroupedWorkSolr implements Cloneable {
 				owningLibraryValue = curScopeDetails.getLibraryScope().getFacetLabel();
 			}
 
-//			if (curItem.isEContent()){
-//				owningLibraryValue = curScopeDetails.getFacetLabel() + " Online";
-//			}else if (curItem.isOrderItem()) {
-//				owningLibraryValue = curScopeDetails.getFacetLabel() + " On Order";
-//			}
+			if (curItem.isEContent()){
+				owningLibraryValue = curItem.getShelfLocation();
+			}
 			addUniqueFieldValue(doc, "owning_library_" + curScopeName, owningLibraryValue);
 			for (Scope locationScope : curScopeDetails.getLocationScopes()) {
 				addUniqueFieldValue(doc, "owning_library_" + locationScope.getScopeName(), owningLibraryValue);

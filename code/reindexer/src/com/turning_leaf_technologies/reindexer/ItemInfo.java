@@ -195,7 +195,11 @@ public class ItemInfo {
 	}
 
 	String getIType() {
-		return IType;
+		if (this.IType != null){
+			return IType;
+		}else {
+			return format;
+		}
 	}
 
 	void setIType(String IType) {
