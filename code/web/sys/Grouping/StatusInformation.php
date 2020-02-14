@@ -48,7 +48,7 @@ class Grouping_StatusInformation
 		} else {
 			$this->_allLibraryUseOnly = false;
 		}
-		if (!$this->_hasLocalItem && $statusInformation->hasLocalItem()) {
+		if ($statusInformation->hasLocalItem()) {
 			$this->_hasLocalItem = true;
 		}
 		if ($statusInformation->getNumHolds()) {
@@ -84,9 +84,10 @@ class Grouping_StatusInformation
 
 		$this->_copies += $statusInformation->getCopies();
 		$this->_availableCopies += $statusInformation->getAvailableCopies();
-		if ($statusInformation->hasLocalItem()) {
+		if ($statusInformation->getLocalCopies() > 0) {
 			$this->_localCopies += $statusInformation->getLocalCopies();
 			$this->_localAvailableCopies += $statusInformation->getLocalAvailableCopies();
+			$this->_hasLocalItem = true;
 		}
 	}
 
