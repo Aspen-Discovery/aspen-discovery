@@ -127,6 +127,7 @@ public class SierraExportAPIMain {
 					if (orderStatusesToExport == null){
 						orderStatusesToExport = "o|1";
 					}
+					//exportValidPatronIds(indexingProfile.getMarcPath(), sierraConn);
 					exportActiveOrders(indexingProfile.getMarcPath(), sierraConn);
 					exportHolds(sierraConn, dbConn);
 					exportVolumes(sierraConn, dbConn);
@@ -367,6 +368,24 @@ public class SierraExportAPIMain {
 
 		return numProcessed;
 	}
+
+	/*
+	//This was used for mapping user ids from Pika to Aspen, no longer needed, but preserving in case it is useful later
+	private static void exportValidPatronIds(String exportPath, Connection sierraConn) {
+		try{
+			logEntry.addNote("Starting export of valid patron ids");
+			File patronIdFile = new File(exportPath + "/patron_ids.csv");
+			PreparedStatement getExistingPatronIdsStmt = sierraConn.prepareStatement("select record_num, barcode from sierra_view.patron_view", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			ResultSet getExistingPatronIdsRS = getExistingPatronIdsStmt.executeQuery();
+			CSVWriter patronIdWriter = new CSVWriter(new FileWriter(patronIdFile));
+			patronIdWriter.writeAll(getExistingPatronIdsRS, true);
+			patronIdWriter.close();
+			getExistingPatronIdsRS.close();
+		} catch (Exception e) {
+			logger.error("Unable to export valid patron ids", e);
+		}
+		logEntry.addNote("Finished valid patron ids " + dateTimeFormatter.format(new Date()));
+	}*/
 
 	private static void exportHolds(Connection sierraConn, Connection dbConn) {
 		Savepoint startOfHolds = null;
