@@ -244,6 +244,7 @@ public class IndexingUtils {
 				groupedWorkDisplaySettingId = locationInformationRS.getLong("groupedWorkDisplaySettingIdLibrary");
 			}
 			locationScopeInfo.setGroupedWorkDisplaySettings(groupedWorkDisplaySettings.get(groupedWorkDisplaySettingId));
+			boolean includeLibraryRecordsToInclude = locationInformationRS.getBoolean("includeLibraryRecordsToInclude");
 
 			long overDriveScopeIdLocation = locationInformationRS.getLong("overDriveScopeIdLocation");
 			long overDriveScopeIdLibrary = locationInformationRS.getLong("overDriveScopeIdLibrary");
@@ -303,6 +304,13 @@ public class IndexingUtils {
 					locationScopeInfo.addSideLoadScope(sideLoadScopes.get(scopeId));
 				}
 			}
+			if (includeLibraryRecordsToInclude){
+				librarySideLoadScopesStmt.setLong(1, libraryId);
+				ResultSet librarySideLoadScopesRS = librarySideLoadScopesStmt.executeQuery();
+				while (librarySideLoadScopesRS.next()) {
+					locationScopeInfo.addSideLoadScope(sideLoadScopes.get(librarySideLoadScopesRS.getLong("sideLoadScopeId")));
+				}
+			}
 
 			//Load information about what should be included in the scope
 			locationOwnedRecordRulesStmt.setLong(1, locationId);
@@ -331,7 +339,6 @@ public class IndexingUtils {
 				));
 			}
 
-			boolean includeLibraryRecordsToInclude = locationInformationRS.getBoolean("includeLibraryRecordsToInclude");
 			if (includeLibraryRecordsToInclude) {
 				libraryRecordInclusionRulesStmt.setLong(1, libraryId);
 				ResultSet libraryRecordInclusionRulesRS = libraryRecordInclusionRulesStmt.executeQuery();

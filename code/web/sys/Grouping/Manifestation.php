@@ -153,19 +153,19 @@ class Grouping_Manifestation
 		}
 		if (($this->getStatusInformation()->isAvailableOnline())) {
 			$hide = !empty($selectedAvailability);
-			if (in_array('Available Online', $selectedAvailability) || (in_array('Available Now', $selectedAvailability) && $addOnlineMaterialsToAvailableNow)) {
+			if (in_array('available_online', $selectedAvailability) || (in_array('available', $selectedAvailability) && $addOnlineMaterialsToAvailableNow)) {
 				$hide = false;
-			} else if (in_array('Entire Collection', $selectedAvailability)) {
+			} else if (in_array('global', $selectedAvailability) || in_array('local', $selectedAvailability)) {
 				$hide = false;
 			}
 			if ($hide) {
 				$this->_hideByDefault = true;
 			}
 		} else {
-			if (!$this->isEContent() && in_array('Available Online', $selectedAvailability)) {
+			if (!$this->isEContent() && in_array('available_online', $selectedAvailability)) {
 				$this->_hideByDefault = true;
 			} else {
-				if (in_array('Available Now', $selectedAvailability)) {
+				if (in_array('available', $selectedAvailability)) {
 					if ($this->isEContent()) {
 						if (!$this->getStatusInformation()->isAvailableOnline()) {
 							$this->_hideByDefault = true;
@@ -179,7 +179,7 @@ class Grouping_Manifestation
 					} else if (!$this->getStatusInformation()->isAvailableLocally()) {
 						$this->_hideByDefault = true;
 					}
-				} elseif (in_array('Entire Collection', $selectedAvailability) && !$isSuperScope && (!$this->getStatusInformation()->hasLocalItem() && !$this->isEContent())) {
+				} elseif (in_array('local', $selectedAvailability) && !$isSuperScope && (!$this->getStatusInformation()->hasLocalItem() && !$this->isEContent())) {
 					$this->_hideByDefault = true;
 				}
 			}
@@ -232,14 +232,14 @@ class Grouping_Manifestation
 			foreach ($this->getVariations() as $variation) {
 				if (($variation->getStatusInformation()->isAvailableOnline())) {
 					$hide = true;
-					if (in_array('Available Online', $selectedAvailability) || (in_array('Available Now', $selectedAvailability) && $addOnlineMaterialsToAvailableNow)) {
+					if (in_array('available_online', $selectedAvailability) || (in_array('available', $selectedAvailability) && $addOnlineMaterialsToAvailableNow)) {
 						$hide = false;
-					} else if (in_array('Entire Collection', $selectedAvailability)) {
+					} else if (in_array('local', $selectedAvailability)) {
 						$hide = false;
 					}
 					$variation->setHideByDefault($hide);
 				} else {
-					if (in_array('Available Now', $selectedAvailability)) {
+					if (in_array('available', $selectedAvailability)) {
 						if ($variation->isEContent()) {
 							if (!$variation->getStatusInformation()->isAvailableOnline()) {
 								$variation->setHideByDefault(true);
@@ -253,7 +253,7 @@ class Grouping_Manifestation
 						} else if (!$variation->getStatusInformation()->isAvailableLocally()) {
 							$variation->setHideByDefault(true);
 						}
-					} elseif (in_array('Entire Collection', $selectedAvailability) && !$isSuperScope && (!$variation->getStatusInformation()->hasLocalItem() && !$variation->isEContent())) {
+					} elseif (in_array('local', $selectedAvailability) && !$isSuperScope && (!$variation->getStatusInformation()->hasLocalItem() && !$variation->isEContent())) {
 						$variation->setHideByDefault(true);
 					}
 				}

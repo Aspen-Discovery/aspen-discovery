@@ -148,7 +148,6 @@ class Library extends DataObject
 	public $enableForgotPasswordLink;
 	public /** @noinspection PhpUnused */ $preventExpiredCardLogin;
 	public /** @noinspection PhpUnused */ $showLibraryHoursNoticeOnAccountPages;
-//	public $showSearchTools;
 	public $showShareOnExternalSites;
 	public /** @noinspection PhpUnused */ $barcodePrefix;
 	public /** @noinspection PhpUnused */ $minBarcodeLength;
@@ -161,7 +160,6 @@ class Library extends DataObject
 	public $treatPrintNoticesAsPhoneNotices;
 	public /** @noinspection PhpUnused */ $includeDplaResults;
 
-//	public $showInSearchResultsMainDetails;
 	public /** @noinspection PhpUnused */ $selfRegistrationFormMessage;
 	public /** @noinspection PhpUnused */ $selfRegistrationSuccessMessage;
 	public /** @noinspection PhpUnused */ $selfRegistrationTemplate;
