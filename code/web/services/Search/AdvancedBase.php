@@ -58,6 +58,7 @@ abstract class Search_AdvancedBase extends Action{
 	protected function processFacets($facetList, $searchObject = false)
 	{
 		// Process the facets, assuming they came back
+		$hasSelectedFacet = false;
 		$facets = array();
 		foreach ($facetList as $facet => $list) {
 			if ($list['label'] instanceof FacetSetting){
@@ -83,10 +84,16 @@ abstract class Search_AdvancedBase extends Action{
 					// filter select list!
 					$searchObject->removeFilter($fullFilter);
 					$valueSelected = true;
+					$hasSelectedFacet = true;
 				} else {
 					$selected = false;
 				}
-				$currentList[$value['value']] = array('filter' => $fullFilter, 'selected' => $selected);
+				$currentList[$value['value']] = array(
+					'filter' => $fullFilter,
+					'selected' => $selected,
+					'display' => $value['display'],
+					'value' => $value['value']
+				);
 			}
 
 			$keys = array_keys($currentList);
@@ -96,27 +103,66 @@ abstract class Search_AdvancedBase extends Action{
 				// Perform a natural case sort on the array of facet values:
 				natcasesort($keys);
 				if ($list['label'] instanceof FacetSetting){
-					$facets[$facetLabel]['values']['Any ' . $list['label']->displayName] = array('filter' => '','selected' => !$valueSelected );
+					$facets[$facetLabel]['values']['Any ' . $list['label']->displayName] = array('filter' => '','selected' => !$valueSelected, 'display' => ''/*'Any ' . $list['label']->displayName*/ );
 				}else{
-					$facets[$facetLabel]['values']['Any ' . $list['label']] = array('filter' => '','selected' => !$valueSelected );
+					$facets[$facetLabel]['values']['Any ' . $list['label']] = array('filter' => '','selected' => !$valueSelected, 'display' => ''/*'Any ' . $list['label']*/ );
 				}
 
 			}else{
-				//Don't sort Available Now facet and make sure the Entire Collection is selected if no value is selected
-				if (!$valueSelected){
-					foreach ($currentList as $key => $value){
-						if ($key == 'Entire Collection'){
-							$currentList[$key]['selected'] = true;
+				//Don't sort Available Now facet and make sure the global (Entire Collection) facet is selected if no value is selected
+				global $library;
+				$location = Location::getSearchLocation(null);
+				if ($location){
+					$superScopeLabel = $location->getGroupedWorkDisplaySettings()->availabilityToggleLabelSuperScope;
+					$localLabel = $location->getGroupedWorkDisplaySettings()->availabilityToggleLabelLocal;
+					$localLabel = str_ireplace('{display name}', $location->displayName, $localLabel);
+					$availableLabel = $location->getGroupedWorkDisplaySettings()->availabilityToggleLabelAvailable;
+					$availableLabel = str_ireplace('{display name}', $location->displayName, $availableLabel);
+					$availableOnlineLabel = $location->getGroupedWorkDisplaySettings()->availabilityToggleLabelAvailableOnline;
+					$availableOnlineLabel = str_ireplace('{display name}', $location->displayName, $availableOnlineLabel);
+					$availabilityToggleValue = $location->getGroupedWorkDisplaySettings()->defaultAvailabilityToggle;
+				}else{
+					$superScopeLabel = $library->getGroupedWorkDisplaySettings()->availabilityToggleLabelSuperScope;
+					$localLabel = $library->getGroupedWorkDisplaySettings()->availabilityToggleLabelLocal;
+					$localLabel = str_ireplace('{display name}', $library->displayName, $localLabel);
+					$availableLabel = $library->getGroupedWorkDisplaySettings()->availabilityToggleLabelAvailable;
+					$availableLabel = str_ireplace('{display name}', $library->displayName, $availableLabel);
+					$availableOnlineLabel = $library->getGroupedWorkDisplaySettings()->availabilityToggleLabelAvailableOnline;
+					$availableOnlineLabel = str_ireplace('{display name}', $library->displayName, $availableOnlineLabel);
+					$availabilityToggleValue = $library->getGroupedWorkDisplaySettings()->defaultAvailabilityToggle;
+				}
+				foreach ($currentList as $facetKey => &$facet){
+					if ($facetKey == 'local' || $facetKey == 'Entire Collection'){
+						$facet['display'] = $localLabel;
+						if (trim($localLabel) == ''){
+							unset($currentList[$facetKey]);
+						}
+					}elseif ($facetKey == 'global' || $facetKey == ''){
+						$facet['display'] = $superScopeLabel;
+					}elseif ($facetKey == 'available' || $facet['value'] == 'Available Now'){
+						$facet['display'] = $availableLabel;
+					}elseif ($facet['value'] == 'available_online' || $facet['value'] == 'Available Online'){
+						if (strlen($availableOnlineLabel) > 0){
+							$facet['display'] = $availableOnlineLabel;
+						}else{
+							unset($currentList[$facetKey]);
 						}
 					}
+				}
+				if (!$valueSelected){
+					$currentList[$availabilityToggleValue]['selected'] = true;
 				}
 			}
 
 			$facets[$facetLabel]['facetName'] = $facet;
 			foreach($keys as $key) {
-				$facets[$facetLabel]['values'][$key] = $currentList[$key];
+				if (isset($currentList[$key])) {
+					$facets[$facetLabel]['values'][$key] = $currentList[$key];
+				}
 			}
 		}
+		global $interface;
+		$interface->assign('hasSelectedFacet', $hasSelectedFacet);
 		return $facets;
 	}
 }

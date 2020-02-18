@@ -260,25 +260,30 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 	 * @access  public
 	 * @return  string              Name of Smarty template file to display.
 	 */
-	public function getStaffView() {
+	public function getStaffView()
+	{
 		global $interface;
 
-        $groupedWorkDetails = $this->getGroupedWorkDriver()->getGroupedWorkDetails();
-        $interface->assign('groupedWorkDetails', $groupedWorkDetails);
+		$groupedWorkDetails = $this->getGroupedWorkDriver()->getGroupedWorkDetails();
+		$interface->assign('groupedWorkDetails', $groupedWorkDetails);
+
+		$interface->assign('alternateTitles', $this->getGroupedWorkDriver()->getAlternateTitles());
+
+		$interface->assign('primaryIdentifiers', $this->getGroupedWorkDriver()->getPrimaryIdentifiers());
 
 		$overDriveAPIProduct = new OverDriveAPIProduct();
 		$overDriveAPIProduct->overdriveId = strtolower($this->id);
-		if ($overDriveAPIProduct->find(true)){
+		if ($overDriveAPIProduct->find(true)) {
 			$interface->assign('overDriveProduct', $overDriveAPIProduct);
 			$overDriveAPIProductMetaData = new OverDriveAPIProductMetaData();
-            $overDriveAPIProductMetaData->productId = $overDriveAPIProduct->id;
-            if ($overDriveAPIProductMetaData->find(true)) {
-                $overDriveMetadata = $overDriveAPIProductMetaData->rawData;
-                //Replace http links to content reserve with https so we don't get mixed content warnings
-                $overDriveMetadata = str_replace('http://images.contentreserve.com', 'https://images.contentreserve.com', $overDriveMetadata);
-                $overDriveMetadata = json_decode($overDriveMetadata);
-                $interface->assign('overDriveMetaDataRaw', $overDriveMetadata);
-            }
+			$overDriveAPIProductMetaData->productId = $overDriveAPIProduct->id;
+			if ($overDriveAPIProductMetaData->find(true)) {
+				$overDriveMetadata = $overDriveAPIProductMetaData->rawData;
+				//Replace http links to content reserve with https so we don't get mixed content warnings
+				$overDriveMetadata = str_replace('http://images.contentreserve.com', 'https://images.contentreserve.com', $overDriveMetadata);
+				$overDriveMetadata = json_decode($overDriveMetadata);
+				$interface->assign('overDriveMetaDataRaw', $overDriveMetadata);
+			}
 		}
 
 		$lastGroupedWorkModificationTime = $this->groupedWork->date_updated;

@@ -897,7 +897,7 @@ abstract class SirsiDynixROA extends HorizonAPI
 					$curTitle['format'] = 'Unknown';
 					$recordDriver       = new MarcRecordDriver('a' . $bibId);
 					if ($recordDriver->isValid()) {
-						$curTitle['coverUrl']      = $recordDriver->getBookcoverUrl('medium');
+						$curTitle['coverUrl']      = $recordDriver->getBookcoverUrl('medium', true);
 						$curTitle['groupedWorkId'] = $recordDriver->getGroupedWorkId();
 						$curTitle['format']        = $recordDriver->getPrimaryFormat();
 						$curTitle['title']         = $recordDriver->getTitle();
@@ -1036,8 +1036,8 @@ abstract class SirsiDynixROA extends HorizonAPI
 					$curHold['isbn']            = $recordDriver->getCleanISBN();
 					$curHold['upc']             = $recordDriver->getCleanUPC();
 					$curHold['format_category'] = $recordDriver->getFormatCategory();
-					$curHold['coverUrl']        = $recordDriver->getBookcoverUrl('medium');
-					$curHold['link']            = $recordDriver->getRecordUrl();
+					$curHold['coverUrl']        = $recordDriver->getBookcoverUrl('medium', true);
+					$curHold['link']            = $recordDriver->getLinkUrl();
 
 					//Load rating information
 					$curHold['ratingData'] = $recordDriver->getRatingData();
@@ -1797,7 +1797,7 @@ abstract class SirsiDynixROA extends HorizonAPI
 						$setField('PHONE', $user->phone);
 					}
 
-					if (!empty($user->_city) && !empty($user->city)) {
+					if (!empty($user->_city) && !empty($user->_state)) {
 						$setField('CITY/STATE', $user->_city .' '. $user->_state);
 					}
 

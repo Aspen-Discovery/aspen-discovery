@@ -1,4 +1,4 @@
-<strip>
+{strip}
 <button onclick="return AspenDiscovery.GroupedWork.reloadCover('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">Reload Cover</button>
 {if $loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles))}
 	<button onclick="return AspenDiscovery.GroupedWork.getUploadCoverForm('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">Upload Cover</button>
@@ -6,26 +6,13 @@
 <button onclick="return AspenDiscovery.GroupedWork.reloadEnrichment('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">Reload Enrichment</button>
 {if $loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('cataloging', $userRoles))}
 	<button onclick="return AspenDiscovery.GroupedWork.forceReindex('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">Force Reindex</button>
+	<button onclick="return AspenDiscovery.GroupedWork.getGroupWithForm(this, '{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">Group With Work</button>
 {/if}
 {if $loggedIn && !empty($enableArchive) && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('archives', $userRoles))}
 	<button onclick="return AspenDiscovery.GroupedWork.reloadIslandora('{$recordDriver->getUniqueID()}')" class="btn btn-sm btn-default">Clear Islandora Cache</button>
 {/if}
 
-<h4>Grouping Information</h4>
-<table class="table-striped table table-condensed notranslate">
-	<tr>
-		<th>Grouped Work ID</th>
-		<td>{$recordDriver->getPermanentId()}</td>
-	</tr>
-	{foreach from=$groupedWorkDetails key='field' item='value'}
-	<tr>
-		<th>{$field|escape}</th>
-		<td>
-			{$value|escape}
-		</td>
-	</tr>
-	{/foreach}
-</table>
+{include file="RecordDrivers/GroupedWork/grouping-information.tpl"}
 
 <h4>Solr Details</h4>
 <table class="table-striped table table-condensed notranslate" style="display:block; overflow: auto;">
@@ -132,4 +119,4 @@
 		</tr>
 	{/foreach}
 </table>
-</strip>
+{/strip}

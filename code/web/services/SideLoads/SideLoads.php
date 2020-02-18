@@ -21,12 +21,14 @@ class SideLoads_SideLoads extends ObjectEditor
 				$interface->assign('sideload', $sideLoadConfiguration);
 				$marcPath = $sideLoadConfiguration->marcPath;
 				if ($handle = opendir($marcPath)) {
+					$index = 0;
 					while (false !== ($entry = readdir($handle))) {
 						if ($entry != "." && $entry != "..") {
 							$fullName = $marcPath . DIR_SEP . $entry;
 							$files[$entry] = [
 								'date' => filectime($fullName),
-								'size' => filesize($fullName)
+								'size' => filesize($fullName),
+								'index' => $index++,
 							];
 						}
 					}

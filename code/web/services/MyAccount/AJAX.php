@@ -1,12 +1,19 @@
 <?php
 
-class MyAccount_AJAX
+require_once ROOT_DIR . '/JSON_Action.php';
+
+class MyAccount_AJAX extends JSON_Action
 {
 	const SORT_LAST_ALPHA = 'zzzzz';
 
-	function launch()
+	function launch($method = null)
 	{
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
+		switch ($method){
+			case 'renewItem':
+				$method = 'renewCheckout';
+				break;
+		}
 		if (method_exists($this, $method)) {
 			if (in_array($method, array('getLoginForm', 'getPinUpdateForm'))) {
 				header('Content-type: text/html');
@@ -14,28 +21,7 @@ class MyAccount_AJAX
 				header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
 				echo $this->$method();
 			} else {
-				header('Content-type: application/json');
-				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
-				header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-				$result = $this->$method();
-				if (empty($result)){
-					$result = array(
-						'result' => false,
-						'message' => 'Method did not return results'
-					);
-				}
-				$encodedData = json_encode($result);
-				if ($encodedData == false){
-					global $logger;
-					$logger->log("Error encoding json data\r\n" . print_r($result, true), Logger::LOG_ERROR);
-					$result = array(
-						'result' => false,
-						'message' => 'JSON Encoding failed ' . json_last_error() . ' - ' . json_last_error_msg()
-					);
-					echo json_encode($result);
-				}else{
-					echo($encodedData);
-				}
+				parent::launch($method);
 			}
 		} else {
 			echo json_encode(array('error' => 'invalid_method'));
@@ -899,22 +885,31 @@ class MyAccount_AJAX
 				if (method_exists($user, 'renewCheckout')) {
 					$failure_messages = array();
 					$renewResults = array();
-					foreach ($_REQUEST['selected'] as $selected => $ignore) {
-						//Suppress errors because sometimes we don't get an item index
-						@list($patronId, $recordId, $itemId, $itemIndex) = explode('|', $selected);
-						$patron = $user->getUserReferredTo($patronId);
-						if ($patron) {
-							$tmpResult = $patron->renewCheckout($recordId, $itemId, $itemIndex);
-						} else {
-							$tmpResult = array(
-								'success' => false,
-								'message' => 'Sorry, it looks like you don\'t have access to that patron.'
-							);
-						}
+					if (isset($_REQUEST['selected']) && is_array($_REQUEST['selected'])) {
+						foreach ($_REQUEST['selected'] as $selected => $ignore) {
+							//Suppress errors because sometimes we don't get an item index
+							@list($patronId, $recordId, $itemId, $itemIndex) = explode('|', $selected);
+							$patron = $user->getUserReferredTo($patronId);
+							if ($patron) {
+								$tmpResult = $patron->renewCheckout($recordId, $itemId, $itemIndex);
+							} else {
+								$tmpResult = array(
+									'success' => false,
+									'message' => 'Sorry, it looks like you don\'t have access to that patron.'
+								);
+							}
 
-						if (!$tmpResult['success']) {
-							$failure_messages[] = $tmpResult['message'];
+							if (!$tmpResult['success']) {
+								$failure_messages[] = $tmpResult['message'];
+							}
 						}
+						$renewResults['Total'] = count($_REQUEST['selected']);
+						$renewResults['NotRenewed'] = count($failure_messages);
+						$renewResults['Renewed'] = $renewResults['Total'] - $renewResults['NotRenewed'];
+					}else{
+						$failure_messages[] = 'No items were selected to renew';
+						$renewResults['Total'] = 0;
+						$renewResults['NotRenewed'] = 0;
 					}
 					if ($failure_messages) {
 						$renewResults['success'] = false;
@@ -923,9 +918,6 @@ class MyAccount_AJAX
 						$renewResults['success'] = true;
 						$renewResults['message'] = "All items were renewed successfully.";
 					}
-					$renewResults['Total'] = count($_REQUEST['selected']);
-					$renewResults['NotRenewed'] = count($failure_messages);
-					$renewResults['Renewed'] = $renewResults['Total'] - $renewResults['NotRenewed'];
 				} else {
 					AspenError::raiseError(new AspenError('Cannot Renew Item - ILS Not Supported'));
 					$renewResults = array(
@@ -943,11 +935,12 @@ class MyAccount_AJAX
 		}
 		global $interface;
 		$interface->assign('renew_message_data', $renewResults);
+
 		$result = array(
 			'title' => translate('Renew') . ' Selected Items',
 			'modalBody' => $interface->fetch('Record/renew-results.tpl'),
 			'success' => $renewResults['success'],
-			'renewed' => $renewResults['Renewed']
+			'renewed' => isset($renewResults['Renewed']) ? $renewResults['Renewed'] : []
 		);
 		return $result;
 	}

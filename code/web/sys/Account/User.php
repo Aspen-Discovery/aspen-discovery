@@ -594,9 +594,9 @@ class User extends DataObject
 
 
 	function update(){
-        if (empty($this->created)){
-            $this->created = date('Y-m-d');
-        }
+		if (empty($this->created)) {
+			$this->created = date('Y-m-d');
+		}
 		$result = parent::update();
 		$this->saveRoles();
 		$this->clearCache(); // Every update to object requires clearing the Memcached version of the object

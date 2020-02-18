@@ -2,16 +2,18 @@
 
 require_once ROOT_DIR . '/sys/Authentication/AuthenticationFactory.php';
 
-class UserAccount {
+class UserAccount
+{
 	private static $isLoggedIn = null;
 	private static $primaryUserData = null;
-	/** @var User|false  */
+	/** @var User|false */
 	private static $primaryUserObjectFromDB = null;
 	/** @var User|false $guidingUserObjectFromDB */
 	private static $guidingUserObjectFromDB = null;
 	private static $userRoles = null;
+
 	/**
-     * 
+	 *
 	 * Checks whether the user is logged in.
 	 *
 	 * When logged in we store information the id of the active user within the session.
@@ -19,7 +21,8 @@ class UserAccount {
 	 *
 	 * @return bool|User
 	 */
-	public static function isLoggedIn() {
+	public static function isLoggedIn()
+	{
 		if (UserAccount::$isLoggedIn == null) {
 			if (isset($_SESSION['activeUserId'])) {
 				UserAccount::$isLoggedIn = true;
@@ -31,9 +34,9 @@ class UserAccount {
 				if ($library && strlen($library->casHost) > 0) {
 					$checkCAS = false;
 					$curTime = time();
-					if (!isset($_SESSION['lastCASCheck'])){
+					if (!isset($_SESSION['lastCASCheck'])) {
 						$checkCAS = true;
-					}elseif ($curTime - $_SESSION['lastCASCheck'] > 10){
+					} elseif ($curTime - $_SESSION['lastCASCheck'] > 10) {
 						$checkCAS = true;
 					}
 					global $action;
@@ -59,7 +62,7 @@ class UserAccount {
 							$user = new User();
 							//TODO this may need to change if anyone but Fort Lewis ever does CAS authentication
 							$user->cat_password = $casUsername;
-							if ($user->find(true)){
+							if ($user->find(true)) {
 								$_SESSION['activeUserId'] = $user->id;
 								UserAccount::$primaryUserObjectFromDB = $user;
 							}
@@ -71,25 +74,28 @@ class UserAccount {
 		return UserAccount::$isLoggedIn;
 	}
 
-    /**
-     * @return bool|integer
-     */
-	public static function getActiveUserId() {
+	/**
+	 * @return bool|integer
+	 */
+	public static function getActiveUserId()
+	{
 		if (isset($_SESSION['activeUserId'])) {
 			return $_SESSION['activeUserId'];
-		}else{
+		} else {
 			return false;
 		}
 	}
 
-	public static function userHasRole($roleName) {
+	public static function userHasRole($roleName)
+	{
 		$userRoles = UserAccount::getActiveRoles();
 		return array_key_exists($roleName, $userRoles);
 	}
 
-	public static function getActiveRoles(){
-		if (UserAccount::$userRoles == null){
-			if (UserAccount::isLoggedIn()){
+	public static function getActiveRoles()
+	{
+		if (UserAccount::$userRoles == null) {
+			if (UserAccount::isLoggedIn()) {
 				UserAccount::$userRoles = array();
 
 				//Roles for the user
@@ -97,37 +103,37 @@ class UserAccount {
 				$role = new Role();
 				$canUseTestRoles = false;
 				$role->query("SELECT * FROM roles INNER JOIN user_roles ON roles.roleId = user_roles.roleId WHERE userId = " . UserAccount::getActiveUserId() . " ORDER BY name");
-				while ($role->fetch()){
+				while ($role->fetch()) {
 					UserAccount::$userRoles[$role->name] = $role->name;
-					if ($role->name == 'userAdmin'){
+					if ($role->name == 'userAdmin') {
 						$canUseTestRoles = true;
 					}
 				}
 
 				//Test roles if we are doing overrides
 				$testRole = '';
-				if (isset($_REQUEST['test_role'])){
+				if (isset($_REQUEST['test_role'])) {
 					$testRole = $_REQUEST['test_role'];
-				}elseif (isset($_COOKIE['test_role'])){
+				} elseif (isset($_COOKIE['test_role'])) {
 					$testRole = $_COOKIE['test_role'];
 				}
-				if ($canUseTestRoles && $testRole != ''){
-					if (is_array($testRole)){
+				if ($canUseTestRoles && $testRole != '') {
+					if (is_array($testRole)) {
 						$testRoles = $testRole;
-					}else{
+					} else {
 						$testRoles = array($testRole);
 					}
 					//Ignore the standard roles for the user
 					UserAccount::$userRoles = array();
-					foreach ($testRoles as $tmpRole){
+					foreach ($testRoles as $tmpRole) {
 						$role = new Role();
-						if (is_numeric($tmpRole)){
+						if (is_numeric($tmpRole)) {
 							$role->roleId = $tmpRole;
-						}else{
+						} else {
 							$role->name = $tmpRole;
 						}
 						$found = $role->find(true);
-						if ($found == true){
+						if ($found == true) {
 							UserAccount::$userRoles[$role->name] = $role->name;
 						}
 					}
@@ -135,25 +141,26 @@ class UserAccount {
 
 				//TODO: Figure out roles for masquerade mode see User.php line 251
 
-			}else{
+			} else {
 				UserAccount::$userRoles = array();
 			}
 		}
 		return UserAccount::$userRoles;
 	}
 
-	private static function loadUserObjectFromDatabase(){
-		if (UserAccount::$primaryUserObjectFromDB == null){
+	private static function loadUserObjectFromDatabase()
+	{
+		if (UserAccount::$primaryUserObjectFromDB == null) {
 			$activeUserId = UserAccount::getActiveUserId();
-			if ($activeUserId){
+			if ($activeUserId) {
 				$user = new User();
 				$user->id = $activeUserId;
-				if ($user->find(true)){
+				if ($user->find(true)) {
 					UserAccount::$primaryUserObjectFromDB = $user;
-				}else{
+				} else {
 					UserAccount::$primaryUserObjectFromDB = false;
 				}
-			}else{
+			} else {
 				UserAccount::$primaryUserObjectFromDB = false;
 			}
 		}
@@ -162,17 +169,19 @@ class UserAccount {
 	/**
 	 * @return User|bool
 	 */
-	public static function getActiveUserObj(){
+	public static function getActiveUserObj()
+	{
 		UserAccount::loadUserObjectFromDatabase();
 		return UserAccount::$primaryUserObjectFromDB;
 	}
 
-	public static function getUserDisplayName(){
+	public static function getUserDisplayName()
+	{
 		UserAccount::loadUserObjectFromDatabase();
-		if (UserAccount::$primaryUserObjectFromDB != false){
-			if (strlen(UserAccount::$primaryUserObjectFromDB->displayName)){
+		if (UserAccount::$primaryUserObjectFromDB != false) {
+			if (strlen(UserAccount::$primaryUserObjectFromDB->displayName)) {
 				return UserAccount::$primaryUserObjectFromDB->displayName;
-			}else{
+			} else {
 				return UserAccount::$primaryUserObjectFromDB->firstname . ' ' . UserAccount::$primaryUserObjectFromDB->lastname;
 			}
 
@@ -180,9 +189,10 @@ class UserAccount {
 		return '';
 	}
 
-	public static function getUserInterfaceLanguage(){
+	public static function getUserInterfaceLanguage()
+	{
 		UserAccount::loadUserObjectFromDatabase();
-		if (UserAccount::$primaryUserObjectFromDB != false){
+		if (UserAccount::$primaryUserObjectFromDB != false) {
 			return UserAccount::$primaryUserObjectFromDB->interfaceLanguage;
 		}
 		return '';
@@ -197,74 +207,81 @@ class UserAccount {
 		return false;
 	}
 
-	public static function getUserPType(){
+	public static function getUserPType()
+	{
 		UserAccount::loadUserObjectFromDatabase();
-		if (UserAccount::$primaryUserObjectFromDB != false){
+		if (UserAccount::$primaryUserObjectFromDB != false) {
 			return UserAccount::$primaryUserObjectFromDB->patronType;
 		}
 		return 'logged out';
 	}
 
-	public static function getDisableCoverArt(){
+	public static function getDisableCoverArt()
+	{
 		UserAccount::loadUserObjectFromDatabase();
-		if (UserAccount::$primaryUserObjectFromDB != false){
+		if (UserAccount::$primaryUserObjectFromDB != false) {
 			return UserAccount::$primaryUserObjectFromDB->disableCoverArt;
 		}
 		return 'logged out';
 	}
 
-	public static function hasLinkedUsers(){
+	public static function hasLinkedUsers()
+	{
 		UserAccount::loadUserObjectFromDatabase();
-		if (UserAccount::$primaryUserObjectFromDB != false){
+		if (UserAccount::$primaryUserObjectFromDB != false) {
 			return count(UserAccount::$primaryUserObjectFromDB->getLinkedUserObjects()) > 0;
 		}
 		return 'false';
 	}
 
-	public static function getUserHomeLocationId(){
+	public static function getUserHomeLocationId()
+	{
 		UserAccount::loadUserObjectFromDatabase();
-		if (UserAccount::$primaryUserObjectFromDB != false){
+		if (UserAccount::$primaryUserObjectFromDB != false) {
 			return UserAccount::$primaryUserObjectFromDB->homeLocationId;
 		}
 		return -1;
 	}
 
-	public static function isUserMasquerading(){
+	public static function isUserMasquerading()
+	{
 		return !empty($_SESSION['guidingUserId']);
 	}
 
-	public static function getGuidingUserObject(){
-		if (UserAccount::$guidingUserObjectFromDB == null){
-			if (UserAccount::isUserMasquerading()){
+	public static function getGuidingUserObject()
+	{
+		if (UserAccount::$guidingUserObjectFromDB == null) {
+			if (UserAccount::isUserMasquerading()) {
 				$activeUserId = $_SESSION['guidingUserId'];
-				if ($activeUserId){
+				if ($activeUserId) {
 					$user = new User();
 					$user->id = $activeUserId;
-					if ($user->find(true)){
+					if ($user->find(true)) {
 						UserAccount::$guidingUserObjectFromDB = $user;
-					}else{
+					} else {
 						UserAccount::$guidingUserObjectFromDB = false;
 					}
-				}else{
+				} else {
 					UserAccount::$guidingUserObjectFromDB = false;
 				}
-			}else{
+			} else {
 				UserAccount::$guidingUserObjectFromDB = false;
 			}
 		}
 		return UserAccount::$guidingUserObjectFromDB;
 	}
 
-    /**
-     * @return User|false
-     */
-	public static function getLoggedInUser(){
-		if (UserAccount::$isLoggedIn != null){
-			if (UserAccount::$isLoggedIn){
+	/**
+	 * @return User|false
+	 */
+	public static function getLoggedInUser()
+	{
+		if (UserAccount::$isLoggedIn != null) {
+			if (UserAccount::$isLoggedIn) {
 				if (!is_null(UserAccount::$primaryUserData)) {
 					return UserAccount::$primaryUserData;
 				}
-			}else{
+			} else {
 				return false;
 			}
 		}
@@ -281,23 +298,23 @@ class UserAccount {
 
 			/** @var User $userData */
 			$userData = $memCache->get("user_{$serverName}_{$activeUserId}");
-			if ($userData === false || isset($_REQUEST['reload'])){
+			if ($userData === false || isset($_REQUEST['reload'])) {
 
 				//Load the user from the database
 				$userData = new User();
 
 				$userData->id = $activeUserId;
-				if ($userData->find(true)){
+				if ($userData->find(true)) {
 					$logger->log("Loading user {$userData->cat_username}, {$userData->cat_password} because we didn't have data in memcache", Logger::LOG_DEBUG);
-                    $userData = UserAccount::validateAccount($userData->cat_username, $userData->cat_password, $userData->source);
+					$userData = UserAccount::validateAccount($userData->cat_username, $userData->cat_password, $userData->source);
 
-                    if ($userData == false) {
-					    echo("Could not validate your account.  The underlying ILS may be inaccessible");
-					    die();
-                    }
+					if ($userData == false) {
+						echo("Could not validate your account.  The underlying ILS may be inaccessible");
+						die();
+					}
 					self::updateSession($userData);
 				}
-			}else{
+			} else {
 				$logger->log("Found cached user {$userData->id}", Logger::LOG_DEBUG);
 			}
 			UserAccount::$isLoggedIn = true;
@@ -306,49 +323,49 @@ class UserAccount {
 			if ($masqueradeMode) {
 				global $guidingUser;
 				$guidingUser = $memCache->get("user_{$serverName}_{$_SESSION['guidingUserId']}"); //TODO: check if this ever works
-				if ($guidingUser === false || isset($_REQUEST['reload'])){
+				if ($guidingUser === false || isset($_REQUEST['reload'])) {
 					$guidingUser = new User();
 					$guidingUser->get($_SESSION['guidingUserId']);
 					if (!$guidingUser) {
 						global $logger;
-						$logger->log('Invalid Guiding User ID in session variable: '. $_SESSION['guidingUserId'], Logger::LOG_ERROR);
+						$logger->log('Invalid Guiding User ID in session variable: ' . $_SESSION['guidingUserId'], Logger::LOG_ERROR);
 						unset($_SESSION['guidingUserId']); // session_start(); session_commit(); probably needed for this to take effect, but might have other side effects
 					}
 				}
 			}
 
 			//Check to see if the patron is already logged in within CAS as long as we aren't on a page that is likely to be a login page
-		}elseif ($action != 'AJAX' && $action != 'DjatokaResolver' && $action != 'Logout' && $module != 'MyAccount' && $module != 'API' && !isset($_REQUEST['username'])){
+		} elseif ($action != 'AJAX' && $action != 'DjatokaResolver' && $action != 'Logout' && $module != 'MyAccount' && $module != 'API' && !isset($_REQUEST['username'])) {
 			//If the library uses CAS/SSO we may already be logged in even though they never logged in within Aspen
 			global $library;
-			if (strlen($library->casHost) > 0){
+			if (strlen($library->casHost) > 0) {
 				//Check CAS first
 				require_once ROOT_DIR . '/sys/Authentication/CASAuthentication.php';
 				$casAuthentication = new CASAuthentication(null);
 				global $logger;
 				$logger->log("Checking CAS Authentication from UserAccount::getLoggedInUser", Logger::LOG_DEBUG);
 				$casUsername = $casAuthentication->validateAccount(null, null, null, false);
-				if ($casUsername == false || $casUsername instanceof AspenError){
+				if ($casUsername == false || $casUsername instanceof AspenError) {
 					//The user could not be authenticated in CAS
 					UserAccount::$isLoggedIn = false;
 					return false;
-				}else{
+				} else {
 					//We have a valid user via CAS, need to do a login to Aspen
 					$_REQUEST['casLogin'] = true;
-                    try {
-                        $userData = UserAccount::login();
-                    } catch (UnknownAuthenticationMethodException $e) {
-                        echo("Unknown validation method $e");
-                        die();
-                    }
-                    UserAccount::$isLoggedIn = true;
+					try {
+						$userData = UserAccount::login();
+					} catch (UnknownAuthenticationMethodException $e) {
+						echo("Unknown validation method $e");
+						die();
+					}
+					UserAccount::$isLoggedIn = true;
 				}
 			}
 		}
-		if (UserAccount::$isLoggedIn){
+		if (UserAccount::$isLoggedIn) {
 			UserAccount::$primaryUserData = $userData;
 			global $interface;
-			if ($interface){
+			if ($interface) {
 				$interface->assign('user', $userData);
 			}
 		}
@@ -360,16 +377,17 @@ class UserAccount {
 	 *
 	 * @param User $user
 	 */
-	public static function updateSession($user) {
-	    if ($user != false) {
-            $_SESSION['activeUserId'] = $user->id;
-	    } else {
-	        unset($_SESSION['activeUserId']);
-        }
+	public static function updateSession($user)
+	{
+		if ($user != false) {
+			$_SESSION['activeUserId'] = $user->id;
+		} else {
+			unset($_SESSION['activeUserId']);
+		}
 
-		if (isset($_REQUEST['rememberMe']) && ($_REQUEST['rememberMe'] === "true" || $_REQUEST['rememberMe'] === "on")){
+		if (isset($_REQUEST['rememberMe']) && ($_REQUEST['rememberMe'] === "true" || $_REQUEST['rememberMe'] === "on")) {
 			$_SESSION['rememberMe'] = true;
-		}else{
+		} else {
 			$_SESSION['rememberMe'] = false;
 		}
 
@@ -390,23 +408,24 @@ class UserAccount {
 	 * @return AspenError|User
 	 * @throws UnknownAuthenticationMethodException
 	 */
-	public static function login() {
+	public static function login()
+	{
 		global $logger;
 
 		$validUsers = array();
 
 		$validatedViaSSO = false;
-		if (isset($_REQUEST['casLogin'])){
+		if (isset($_REQUEST['casLogin'])) {
 			$logger->log("Logging the user in via CAS", Logger::LOG_NOTICE);
 			//Check CAS first
 			require_once ROOT_DIR . '/sys/Authentication/CASAuthentication.php';
 			$casAuthentication = new CASAuthentication(null);
 			$casUsername = $casAuthentication->authenticate(false);
-			if ($casUsername == false || $casUsername instanceof AspenError){
+			if ($casUsername == false || $casUsername instanceof AspenError) {
 				//The user could not be authenticated in CAS
 				$logger->log("The user could not be logged in", Logger::LOG_NOTICE);
 				return new AspenError('Could not authenticate in sign on service');
-			}else{
+			} else {
 				$logger->log("User logged in OK CAS Username $casUsername", Logger::LOG_NOTICE);
 				//Set both username and password since authentication methods could use either.
 				//Each authentication method will need to deal with the possibility that it gets a barcode for both user and password
@@ -423,7 +442,7 @@ class UserAccount {
 
 		//Test each driver in turn.  We do test all of them in case an account is valid in
 		//more than one system
-		foreach ($driversToTest as $driverName => $driverData){
+		foreach ($driversToTest as $driverName => $driverData) {
 			// Perform authentication:
 			$authN = AuthenticationFactory::initAuthentication($driverData['authenticationMethod'], $driverData);
 			// We get back 1 of 3 states from the authenticate call:
@@ -434,7 +453,7 @@ class UserAccount {
 
 			// If we authenticated, store the user in the session:
 			if (!($tempUser instanceof AspenError) && $tempUser != null) {
-				if ($validatedViaSSO){
+				if ($validatedViaSSO) {
 					$_SESSION['loggedInViaCAS'] = true;
 				}
 				global $library;
@@ -452,14 +471,14 @@ class UserAccount {
 				$logger->log("Cached user {$tempUser->id}", Logger::LOG_DEBUG);
 
 				$validUsers[] = $tempUser;
-				if ($primaryUser == null){
+				if ($primaryUser == null) {
 					$primaryUser = $tempUser;
 					self::updateSession($primaryUser);
-				}else{
+				} else {
 					//We have more than one account with these credentials, automatically link them
 					$primaryUser->addLinkedUser($tempUser);
 				}
-			}else if ($tempUser != null){
+			} else if ($tempUser != null) {
 				$username = isset($_REQUEST['username']) ? $_REQUEST['username'] : 'No username provided';
 				$logger->log("Error authenticating patron $username for driver {$driverName}\r\n", Logger::LOG_ERROR);
 				$lastError = $tempUser;
@@ -468,36 +487,38 @@ class UserAccount {
 		}
 
 		// Send back the user object (which may be a PEAR error):
-		if ($primaryUser){
+		if ($primaryUser) {
 			UserAccount::$isLoggedIn = true;
 			UserAccount::$primaryUserData = $primaryUser;
-			if (isset($_COOKIE['searchPreferenceLanguage']) && $primaryUser->searchPreferenceLanguage == -1){
+			if (isset($_COOKIE['searchPreferenceLanguage']) && $primaryUser->searchPreferenceLanguage == -1) {
 				$primaryUser->searchPreferenceLanguage = $_COOKIE['searchPreferenceLanguage'];
 				$primaryUser->update();
 			}
 			return $primaryUser;
-		}else{
+		} else {
 			return $lastError;
 		}
 	}
 
 	private static $validatedAccounts = array();
 
-    /**
-     * Validate the account information (username and password are correct).
-     * Returns the account, but does not set the global user variable.
-     *
-     * @param $username       string
-     * @param $password       string
-     * @param $accountSource  string The source of the user account if known or null to test all sources
-     * @param $parentAccount  User   The parent user if any
-     *
-     * @return User|false
-     */
-	public static function validateAccount($username, $password, $accountSource = null, $parentAccount = null){
-		if (array_key_exists($username . $password, UserAccount::$validatedAccounts)){
+	/**
+	 * Validate the account information (username and password are correct).
+	 * Returns the account, but does not set the global user variable.
+	 *
+	 * @param $username       string
+	 * @param $password       string
+	 * @param $accountSource  string The source of the user account if known or null to test all sources
+	 * @param $parentAccount  User   The parent user if any
+	 *
+	 * @return User|false
+	 */
+	public static function validateAccount($username, $password, $accountSource = null, $parentAccount = null)
+	{
+		if (array_key_exists($username . $password, UserAccount::$validatedAccounts)) {
 			return UserAccount::$validatedAccounts[$username . $password];
 		}
+		require_once ROOT_DIR . '/CatalogFactory.php';
 		// Perform authentication:
 		//Test all valid authentication methods and see which (if any) result in a valid login.
 		$driversToTest = self::getAccountProfiles();
@@ -505,18 +526,18 @@ class UserAccount {
 		global $library;
 		global $logger;
 		$validatedViaSSO = false;
-		if (strlen($library->casHost) > 0 && $username == null && $password == null){
+		if (strlen($library->casHost) > 0 && $username == null && $password == null) {
 			//Check CAS first
 			require_once ROOT_DIR . '/sys/Authentication/CASAuthentication.php';
 			$casAuthentication = new CASAuthentication(null);
 			$logger->log("Checking CAS Authentication from UserAccount::validateAccount", Logger::LOG_DEBUG);
 			$casUsername = $casAuthentication->validateAccount(null, null, $parentAccount, false);
-			if ($casUsername == false || $casUsername instanceof AspenError){
+			if ($casUsername == false || $casUsername instanceof AspenError) {
 				//The user could not be authenticated in CAS
 				$logger->log("User could not be authenticated in CAS", Logger::LOG_DEBUG);
 				UserAccount::$validatedAccounts[$username . $password] = false;
 				return false;
-			}else{
+			} else {
 				$logger->log("User was authenticated in CAS", Logger::LOG_DEBUG);
 				//Set both username and password since authentication methods could use either.
 				//Each authentication method will need to deal with the possibility that it gets a barcode for both user and password
@@ -542,7 +563,7 @@ class UserAccount {
 					global $configArray;
 					$memCache->set("user_{$serverName}_{$validatedUser->id}", $validatedUser, $configArray['Caching']['user']);
 					$logger->log("Cached user {$validatedUser->id}", Logger::LOG_DEBUG);
-					if ($validatedViaSSO){
+					if ($validatedViaSSO) {
 						$_SESSION['loggedInViaCAS'] = true;
 					}
 					UserAccount::$validatedAccounts[$username . $password] = $validatedUser;
@@ -563,9 +584,13 @@ class UserAccount {
 		//global $logger;
 		//$logger->log("Logging user out", Logger::LOG_DEBUG);
 		UserAccount::softLogout();
-		unset($_SESSION['language']);
-		setcookie('searchPreferenceLanguage', $_COOKIE['searchPreferenceLanguage'], time() - 1000, '/');
-		unset($_COOKIE['searchPreferenceLanguage]']);
+		if (isset($_SESSION['language'])) {
+			unset($_SESSION['language']);
+		}
+		if (isset($_COOKIE['searchPreferenceLanguage'])) {
+			setcookie('searchPreferenceLanguage', $_COOKIE['searchPreferenceLanguage'], time() - 1000, '/');
+			unset($_COOKIE['searchPreferenceLanguage]']);
+		}
 		session_regenerate_id(true);
 		//$logger->log("New session id is $newId", Logger::LOG_DEBUG);
 	}
@@ -574,21 +599,22 @@ class UserAccount {
 	 * Remove user info from the session so the user is not logged in, but
 	 * preserve hold message and search information
 	 */
-	public static function softLogout(){
-		if (isset($_SESSION['activeUserId'])){
+	public static function softLogout()
+	{
+		if (isset($_SESSION['activeUserId'])) {
 			//global $logger;
 			//$logger->log("Logging user {$_SESSION['activeUserId']} out", Logger::LOG_DEBUG);
-			if (isset($_SESSION['guidingUserId'])){
+			if (isset($_SESSION['guidingUserId'])) {
 				// Shouldn't end up here while in Masquerade Mode, but if does happen end masquerading as well
 				unset($_SESSION['guidingUserId']);
 			}
-			if (isset($_SESSION['loggedInViaCAS']) && $_SESSION['loggedInViaCAS']){
+			if (isset($_SESSION['loggedInViaCAS']) && $_SESSION['loggedInViaCAS']) {
 				require_once ROOT_DIR . '/sys/Authentication/CASAuthentication.php';
 				$casAuthentication = new CASAuthentication(null);
 				$casAuthentication->logout();
 			}
 			unset($_SESSION['activeUserId']);
-			if (isset($_SESSION['lastCASCheck'])){
+			if (isset($_SESSION['lastCASCheck'])) {
 				unset($_SESSION['lastCASCheck']);
 			}
 			UserAccount::$isLoggedIn = false;
@@ -599,11 +625,13 @@ class UserAccount {
 	}
 
 	private static $_accountProfiles = null;
+
 	/**
 	 * @return AccountProfile[]
 	 */
-	static function getAccountProfiles() {
-		if (UserAccount::$_accountProfiles == null){
+	static function getAccountProfiles()
+	{
+		if (UserAccount::$_accountProfiles == null) {
 			UserAccount::$_accountProfiles = array();
 
 			//Load a list of authentication methods to test and see which (if any) result in a valid login.
@@ -634,13 +662,14 @@ class UserAccount {
 	 * Look up in ILS for a user that has never logged into Aspen before, based on the patron's barcode.
 	 *
 	 * @param $patronBarcode
-     *
-     * @return false|User
+	 *
+	 * @return false|User
 	 */
-	public static function findNewUser($patronBarcode){
+	public static function findNewUser($patronBarcode)
+	{
+		require_once ROOT_DIR . '/CatalogFactory.php';
 		$driversToTest = self::getAccountProfiles();
-		foreach ($driversToTest as $driverName => $driverData){
-			require_once ROOT_DIR . '/CatalogFactory.php';
+		foreach ($driversToTest as $driverName => $driverData) {
 			$catalogConnectionInstance = CatalogFactory::getCatalogConnectionInstance($driverData['driver'], $driverData['accountProfile']);
 			if ($catalogConnectionInstance != null && !is_null($catalogConnectionInstance->driver) && method_exists($catalogConnectionInstance->driver, 'findNewUser')) {
 				$tmpUser = $catalogConnectionInstance->driver->findNewUser($patronBarcode);

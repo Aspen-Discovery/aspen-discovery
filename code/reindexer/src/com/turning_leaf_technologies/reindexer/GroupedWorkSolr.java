@@ -568,36 +568,48 @@ public class GroupedWorkSolr implements Cloneable {
 		boolean addLocationOwnership = false;
 		boolean addLibraryOwnership = false;
 		HashSet<String> availabilityToggleValues = new HashSet<>();
-		Scope curScopeDetails = curScope.getScope();
-		if (curScope.isLocallyOwned() && curScopeDetails.isLocationScope()) {
-			addLocationOwnership = true;
-			addLibraryOwnership = true;
-			availabilityToggleValues.add("Entire Collection");
-		}
-		if (curScope.isLibraryOwned()) {
-			if (curScopeDetails.isLocationScope()) {
-				if (!curScopeDetails.getGroupedWorkDisplaySettings().isBaseAvailabilityToggleOnLocalHoldingsOnly()) {
-					addLibraryOwnership = true;
-					availabilityToggleValues.add("Entire Collection");
-				}
-			} else {
-				addLibraryOwnership = true;
-				availabilityToggleValues.add("Entire Collection");
-			}
-		}
-		if (curItem.isEContent()) {
-			//If the item is eContent, we will count it as part of the collection since it will be available.
-			availabilityToggleValues.add("Entire Collection");
-		}
+		Scope curScopeDetails = curScope.getScope();availabilityToggleValues.add("global");
 
-		if (!curItem.isEContent() && curScope.isLocallyOwned() && curScope.isAvailable()) {
-			availabilityToggleValues.add("Available Now");
-		}
-		if (curItem.isEContent() && curScope.isAvailable()) {
-			if (curScopeDetails.getGroupedWorkDisplaySettings().isIncludeOnlineMaterialsInAvailableToggle()) {
-				availabilityToggleValues.add("Available Now");
+		if (curItem.isEContent()){
+			//If the item is eContent, we will count it as part of the collection since it will be available.
+			availabilityToggleValues.add("local");
+			if (curScope.isAvailable()){
+				if (curScopeDetails.getGroupedWorkDisplaySettings().isIncludeOnlineMaterialsInAvailableToggle()) {
+					availabilityToggleValues.add("available");
+				}
+				availabilityToggleValues.add("available_online");
 			}
-			availabilityToggleValues.add("Available Online");
+			addLibraryOwnership = true;
+			if (curScope.isLocallyOwned()) {
+				addLocationOwnership = true;
+			}
+		}else{
+			//Physical materials
+			if (curScope.isLocallyOwned() && curScopeDetails.isLocationScope()) {
+				addLocationOwnership = true;
+				addLibraryOwnership = true;
+				availabilityToggleValues.add("local");
+				if (curScope.isAvailable()){
+					availabilityToggleValues.add("available");
+				}
+			}
+			if (curScope.isLibraryOwned()) {
+				if (curScopeDetails.isLocationScope()) {
+					if (!curScopeDetails.getGroupedWorkDisplaySettings().isBaseAvailabilityToggleOnLocalHoldingsOnly()) {
+						addLibraryOwnership = true;
+						availabilityToggleValues.add("local");
+						if (curScope.isLocallyOwned() && curScope.isAvailable()) {
+							availabilityToggleValues.add("available");
+						}
+					}
+				} else {
+					addLibraryOwnership = true;
+					availabilityToggleValues.add("local");
+					if (curScope.isLibraryOwned() && curScope.isAvailable()) {
+						availabilityToggleValues.add("available");
+					}
+				}
+			}
 		}
 
 		HashMap<String, ScopingInfo> curScopingInfo = curItem.getScopingInfo();
@@ -607,14 +619,8 @@ public class GroupedWorkSolr implements Cloneable {
 
 			//We do different ownership display depending on if this is eContent or not
 			String owningLocationValue = curScopeDetails.getFacetLabel();
-			//if (curItem.getSubLocation() != null && curItem.getSubLocation().length() > 0){
-			//owningLocationValue += " - " + curItem.getSubLocation();
-			//owningLocationValue = curItem.getSubLocation();
-			//}
 			if (curItem.isEContent()) {
 				owningLocationValue = curItem.getShelfLocation();
-				//}else if (curItem.isOrderItem()){
-				//	owningLocationValue = curScopeDetails.getFacetLabel() + " On Order";
 			}
 
 			//Save values for this scope
@@ -692,17 +698,15 @@ public class GroupedWorkSolr implements Cloneable {
 		if (addLibraryOwnership) {
 			//We do different ownership display depending on if this is eContent or not
 			String owningLibraryValue;
-			if (curScope.getScope().isLibraryScope()) {
-				owningLibraryValue = curScopeDetails.getFacetLabel();
-			} else {
-				owningLibraryValue = curScopeDetails.getLibraryScope().getFacetLabel();
+			if (curItem.isEContent()) {
+				owningLibraryValue = curItem.getShelfLocation();
+			}else{
+				if (curScope.getScope().isLibraryScope()) {
+					owningLibraryValue = curScopeDetails.getFacetLabel();
+				} else {
+					owningLibraryValue = curScopeDetails.getLibraryScope().getFacetLabel();
+				}
 			}
-
-//			if (curItem.isEContent()){
-//				owningLibraryValue = curScopeDetails.getFacetLabel() + " Online";
-//			}else if (curItem.isOrderItem()) {
-//				owningLibraryValue = curScopeDetails.getFacetLabel() + " On Order";
-//			}
 			addUniqueFieldValue(doc, "owning_library_" + curScopeName, owningLibraryValue);
 			for (Scope locationScope : curScopeDetails.getLocationScopes()) {
 				addUniqueFieldValue(doc, "owning_library_" + locationScope.getScopeName(), owningLibraryValue);
@@ -1374,7 +1378,7 @@ public class GroupedWorkSolr implements Cloneable {
 		//Remove the word series at the end since this gets cataloged inconsistently
 		series = series.replaceAll("(?i)\\s+series$", "");
 
-		return StringUtils.trimTrailingPunctuation(series);
+		return StringUtils.trimTrailingPunctuation(series).trim();
 	}
 
 

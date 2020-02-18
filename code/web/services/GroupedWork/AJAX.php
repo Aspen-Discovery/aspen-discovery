@@ -1,21 +1,8 @@
 <?php
+require_once ROOT_DIR . '/JSON_Action.php';
 
-class GroupedWork_AJAX {
-	function launch() {
-		global $timer;
-		$method = (isset($_REQUEST['method']) && !is_array($_REQUEST['method'])) ? $_REQUEST['method'] : '';
-		if (method_exists($this, $method)) {
-			$timer->logTime("Starting method $method");
-
-			header('Content-type: application/json');
-			header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
-			header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-			echo $this->$method();
-		}else{
-			echo json_encode(array('error'=>'invalid_method'));
-		}
-	}
-
+class GroupedWork_AJAX extends JSON_Action
+{
 	/**
 	 * Alias of deleteUserReview()
 	 *
@@ -44,7 +31,7 @@ class GroupedWork_AJAX {
 			}
 		}
 
-		return json_encode($result);
+		return $result;
 	}
 
 	/** @noinspection PhpUnused */
@@ -55,11 +42,11 @@ class GroupedWork_AJAX {
 		$groupedWork = new GroupedWork();
 		$groupedWork->permanent_id = $id;
 		if ($groupedWork->find(true)){
-			$groupedWork->forceReindex();
+			$groupedWork->forceReindex(true);
 
-			return json_encode(array('success' => true, 'message' => 'This title will be indexed again shortly.'));
+			return array('success' => true, 'message' => 'This title will be indexed again shortly.');
 		}else{
-			return json_encode(array('success' => false, 'message' => 'Unable to mark the title for indexing. Could not find the title.'));
+			return array('success' => false, 'message' => 'Unable to mark the title for indexing. Could not find the title.');
 		}
 	}
 
@@ -81,11 +68,12 @@ class GroupedWork_AJAX {
 			$result['description'] = $description;
 		}
 
-		return json_encode($result);
+		return $result;
 	}
 
 	/** @noinspection PhpUnused */
-	function getEnrichmentInfo(){
+	function getEnrichmentInfo()
+	{
 		global $configArray;
 		global $interface;
 		global $memoryWatcher;
@@ -102,51 +90,51 @@ class GroupedWork_AJAX {
 		//Process series data
 		$titles = array();
 		/** @var NovelistData $novelistData */
-		if (isset( $enrichmentData['novelist'])){
-            $novelistData = $enrichmentData['novelist'];
-            if ($novelistData->getSeriesCount() == 0){
-                $enrichmentResult['seriesInfo'] = array('titles'=>$titles, 'currentIndex'=>0);
-            }else{
-                foreach ($novelistData->getSeriesTitles() as $key => $record){
-                    $titles[] = $this->getScrollerTitle($record, $key, 'Series');
-                }
+		if (isset($enrichmentData['novelist'])) {
+			$novelistData = $enrichmentData['novelist'];
+			if ($novelistData->getSeriesCount() == 0) {
+				$enrichmentResult['seriesInfo'] = array('titles' => $titles, 'currentIndex' => 0);
+			} else {
+				foreach ($novelistData->getSeriesTitles() as $key => $record) {
+					$titles[] = $this->getScrollerTitle($record, $key, 'Series');
+				}
 
-                $seriesInfo = array('titles' => $titles, 'currentIndex' => $novelistData->getSeriesDefaultIndex());
-                $enrichmentResult['seriesInfo'] = $seriesInfo;
-            }
-            $memoryWatcher->logMemory('Loaded Series information');
+				$seriesInfo = array('titles' => $titles, 'currentIndex' => $novelistData->getSeriesDefaultIndex());
+				$enrichmentResult['seriesInfo'] = $seriesInfo;
+			}
+			$memoryWatcher->logMemory('Loaded Series information');
 
-            //Process other data from novelist
-            if ($novelistData->getSimilarTitleCount() > 0){
-                $interface->assign('similarTitles', $novelistData->getSimilarTitles());
-                if ($configArray['Catalog']['showExploreMoreForFullRecords']) {
-                    $enrichmentResult['similarTitlesNovelist'] = $interface->fetch('GroupedWork/similarTitlesNovelistSidebar.tpl');
-                }else{
-                    $enrichmentResult['similarTitlesNovelist'] = $interface->fetch('GroupedWork/similarTitlesNovelist.tpl');
-                }
-            }
-            $memoryWatcher->logMemory('Loaded Similar titles from Novelist');
+			//Process other data from novelist
+			if ($novelistData->getSimilarTitleCount() > 0) {
+				$interface->assign('similarTitles', $novelistData->getSimilarTitles());
+				if ($configArray['Catalog']['showExploreMoreForFullRecords']) {
+					$enrichmentResult['similarTitlesNovelist'] = $interface->fetch('GroupedWork/similarTitlesNovelistSidebar.tpl');
+				} else {
+					$enrichmentResult['similarTitlesNovelist'] = $interface->fetch('GroupedWork/similarTitlesNovelist.tpl');
+				}
+			}
+			$memoryWatcher->logMemory('Loaded Similar titles from Novelist');
 
-            if ($novelistData->getAuthorCount()){
-                $interface->assign('similarAuthors', $novelistData->getAuthors());
-                if ($configArray['Catalog']['showExploreMoreForFullRecords']) {
-                    $enrichmentResult['similarAuthorsNovelist'] = $interface->fetch('GroupedWork/similarAuthorsNovelistSidebar.tpl');
-                }else {
-                    $enrichmentResult['similarAuthorsNovelist'] = $interface->fetch('GroupedWork/similarAuthorsNovelist.tpl');
-                }
-            }
-            $memoryWatcher->logMemory('Loaded Similar authors from Novelist');
+			if ($novelistData->getAuthorCount()) {
+				$interface->assign('similarAuthors', $novelistData->getAuthors());
+				if ($configArray['Catalog']['showExploreMoreForFullRecords']) {
+					$enrichmentResult['similarAuthorsNovelist'] = $interface->fetch('GroupedWork/similarAuthorsNovelistSidebar.tpl');
+				} else {
+					$enrichmentResult['similarAuthorsNovelist'] = $interface->fetch('GroupedWork/similarAuthorsNovelist.tpl');
+				}
+			}
+			$memoryWatcher->logMemory('Loaded Similar authors from Novelist');
 
-            if ($novelistData->getSimilarSeriesCount()){
-                $interface->assign('similarSeries', $novelistData->getSimilarSeries());
-                if ($configArray['Catalog']['showExploreMoreForFullRecords']) {
-                    $enrichmentResult['similarSeriesNovelist'] = $interface->fetch('GroupedWork/similarSeriesNovelistSidebar.tpl');
-                }else{
-                    $enrichmentResult['similarSeriesNovelist'] = $interface->fetch('GroupedWork/similarSeriesNovelist.tpl');
-                }
-            }
-            $memoryWatcher->logMemory('Loaded Similar series from Novelist');
-        }
+			if ($novelistData->getSimilarSeriesCount()) {
+				$interface->assign('similarSeries', $novelistData->getSimilarSeries());
+				if ($configArray['Catalog']['showExploreMoreForFullRecords']) {
+					$enrichmentResult['similarSeriesNovelist'] = $interface->fetch('GroupedWork/similarSeriesNovelistSidebar.tpl');
+				} else {
+					$enrichmentResult['similarSeriesNovelist'] = $interface->fetch('GroupedWork/similarSeriesNovelist.tpl');
+				}
+			}
+			$memoryWatcher->logMemory('Loaded Similar series from Novelist');
+		}
 
 		//Load go deeper options
 		//TODO: Additional go deeper options
@@ -178,7 +166,7 @@ class GroupedWork_AJAX {
 			$enrichmentResult['seriesSummary'] = $interface->fetch('GroupedWork/series-summary.tpl');
 		}
 
-		return json_encode($enrichmentResult);
+		return $enrichmentResult;
 	}
 
 	/** @noinspection PhpUnused */
@@ -212,7 +200,7 @@ class GroupedWork_AJAX {
 		}
 		$memoryWatcher->logMemory('Loaded More Like This scroller data');
 
-		return json_encode($enrichmentResult);
+		return $enrichmentResult;
 	}
 
 	function getScrollerTitle($record, $index, $scrollerName){
@@ -255,7 +243,7 @@ class GroupedWork_AJAX {
 			$formattedTitle = "<div id=\"scrollerTitle{$scrollerName}{$index}\" class=\"scrollerTitle\" onclick=\"return AspenDiscovery.showElementInPopup('$title', '#noResults{$index}')\">" .
 					"<img src=\"{$cover}\" class=\"scrollerTitleCover\" alt=\"{$title} Cover\"/>" .
 					"</div>";
-			$formattedTitle .= "<div id=\"noResults{$index}\" style=\"display:none\">
+					$formattedTitle .= "<div id=\"noResults{$index}\" style=\"display:none\">
 					<div class=\"row\">
 						<div class=\"result-label col-md-3\">Author: </div>
 						<div class=\"col-md-9 result-value notranslate\">
@@ -301,7 +289,7 @@ class GroupedWork_AJAX {
 		$return = array(
 			'formattedData' => $formattedData
 		);
-		return json_encode($return);
+		return $return;
 
 	}
 
@@ -355,20 +343,20 @@ class GroupedWork_AJAX {
 			'modalButtons' => "<button onclick=\"return AspenDiscovery.GroupedWork.showSaveToListForm(this, '$escapedId');\" class=\"modal-buttons btn btn-primary\" style='float: left'>$buttonLabel</button>"
 				."<a href='$url'><button class='modal-buttons btn btn-primary'>" . translate("More Info") . "</button></a>"
 		);
-		return json_encode($results);
+		return $results;
 	}
 
 	/** @noinspection PhpUnused */
 	function rateTitle(){
 		require_once(ROOT_DIR . '/sys/LocalEnrichment/UserWorkReview.php');
 		if (!UserAccount::isLoggedIn()){
-			return json_encode(array('error'=>'Please login to rate this title.'));
+			return array('error'=>'Please login to rate this title.');
 		}
 		if (empty($_REQUEST['id'])) {
-			return json_encode(array('error'=>'ID for the item to rate is required.'));
+			return array('error'=>'ID for the item to rate is required.');
 		}
 		if (empty($_REQUEST['rating']) || !ctype_digit($_REQUEST['rating'])) {
-			return json_encode(array('error'=>'Invalid value for rating.'));
+			return array('error'=>'Invalid value for rating.');
 		}
 		$rating = $_REQUEST['rating'];
 		//Save the rating
@@ -401,9 +389,9 @@ class GroupedWork_AJAX {
 			// Reset any cached suggestion browse category for the user
 			$this->clearMySuggestionsBrowseCategoryCache();
 
-			return json_encode(array('rating'=>$rating));
+			return array('rating'=>$rating);
 		} else {
-			return json_encode(array('error'=>'Unable to save your rating.'));
+			return array('error'=>'Unable to save your rating.');
 		}
 	}
 
@@ -451,7 +439,7 @@ class GroupedWork_AJAX {
 			'numCustomerReviews' => count($userReviews),
 			'customerReviewsHtml' => $interface->fetch('GroupedWork/view-user-reviews.tpl'),
 		);
-		return json_encode($results);
+		return $results;
 	}
 
 	/** @noinspection PhpUnused */
@@ -486,7 +474,7 @@ class GroupedWork_AJAX {
 				'message' => 'You are not logged in.'
 			);
 		}
-		return json_encode($results);
+		return $results;
 	}
 
 	/** @noinspection PhpUnused */
@@ -495,9 +483,9 @@ class GroupedWork_AJAX {
 		if ($user) {
 			$user->noPromptForUserReviews = 1;
 			$success = $user->update();
-			return json_encode(array('success' => $success));
+			return array('success' => $success);
 		}else{
-			return json_encode(['success' => false]);
+			return ['success' => false];
 		}
 	}
 
@@ -531,7 +519,7 @@ class GroupedWork_AJAX {
 				'message' => 'Invalid ID.'
 			);
 		}
-		return json_encode($results);
+		return $results;
 	}
 
 	/** @noinspection PhpUnused */
@@ -583,7 +571,7 @@ class GroupedWork_AJAX {
 			}
 		}
 
-		return json_encode($result);
+		return $result;
 	}
 
 	/** @noinspection PhpUnused */
@@ -603,10 +591,8 @@ class GroupedWork_AJAX {
 				'title' => 'Share via Email',
 				'modalBody' => $interface->fetch("GroupedWork/email-form-body.tpl"),
 				'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.GroupedWork.sendEmail(\"{$id}\"); return false;'>Send Email</button>"
-//		'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#emailForm\").submit()'>Send Email</button>"
-		      // triggering submit action to trigger form validation
 		);
-		return json_encode($results);
+		return $results;
 	}
 
 	/** @noinspection PhpUnused */
@@ -679,7 +665,7 @@ class GroupedWork_AJAX {
 					'message' => 'Sorry, we can&apos;t send emails with html or other data in it.'
 			);
 		}
-		return json_encode($result);
+		return $result;
 	}
 
 	/** @noinspection PhpUnused */
@@ -742,7 +728,7 @@ class GroupedWork_AJAX {
 
 		}
 
-		return json_encode($result);
+		return $result;
 	}
 
 	/** @noinspection PhpUnused */
@@ -790,7 +776,7 @@ class GroupedWork_AJAX {
 				'modalBody' => $interface->fetch("GroupedWork/save.tpl"),
 				'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.GroupedWork.saveToList(\"{$id}\"); return false;'>Save To List</button>"
 		);
-		return json_encode($results);
+		return $results;
 	}
 
 	/** @noinspection PhpUnused */
@@ -830,7 +816,7 @@ class GroupedWork_AJAX {
 				'message' => "Please log in.",
 			);
 		}
-		return json_encode($result);
+		return $result;
 	}
 
 	/** @noinspection PhpUnused */
@@ -845,7 +831,7 @@ class GroupedWork_AJAX {
 			$notInterested->delete();
 			$result = array('result' => true);
 		}
-		return json_encode($result);
+		return $result;
 	}
 
 	/** @noinspection PhpUnused */
@@ -886,7 +872,7 @@ class GroupedWork_AJAX {
 			'numTitles' => count($prospectorResults),
 			'formattedData' => $interface->fetch('GroupedWork/ajax-prospector.tpl')
 		);
-		return json_encode($result);
+		return $result;
 	}
 
 	/** @noinspection PhpUnused */
@@ -914,7 +900,7 @@ class GroupedWork_AJAX {
 				'seriesSummary' => $interface->fetch('GroupedWork/series-summary.tpl')
 			];
 		}
-		return json_encode($result);
+		return $result;
 	}
 
 	/** @noinspection PhpUnused */
@@ -956,7 +942,7 @@ class GroupedWork_AJAX {
 			}
 		}
 
-		return json_encode(array('success' => true, 'message' => 'Covers have been reloaded.  You may need to refresh the page to clear your local cache.'));
+		return array('success' => true, 'message' => 'Covers have been reloaded.  You may need to refresh the page to clear your local cache.');
 	}
 
 	/** @noinspection PhpUnused */
@@ -966,20 +952,16 @@ class GroupedWork_AJAX {
 		$id = $_REQUEST['id'];
 		$interface->assign('id', $id);
 
-		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-		$recordDriver = new GroupedWorkDriver($id);
-
 		$results = array(
 			'title' => 'Upload a New Cover',
 			'modalBody' => $interface->fetch("GroupedWork/upload-cover-form.tpl"),
 			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#uploadCoverForm\").submit()'>Upload Cover</button>"
 		);
-		return json_encode($results);
+		return $results;
 	}
 
 	/** @noinspection PhpUnused */
 	function uploadCover(){
-		global $interface;
 		$result = [
 			'success' => false,
 			'title' => 'Uploading custom cover',
@@ -1027,7 +1009,7 @@ class GroupedWork_AJAX {
 			$this->reloadCover();
 			$result['message'] = 'Your cover has been uploaded successfully';
 		}
-		return json_encode($result);
+		return $result;
 	}
 
 	/** @noinspection PhpUnused */
@@ -1050,10 +1032,10 @@ class GroupedWork_AJAX {
 			$cacheMessage = 'Data not cached for same pika link';
 		}
 
-		return json_encode(array(
+		return array(
 				'success' => $samePikaCleared,
 				'message' => $cacheMessage
-		));
+		);
 	}
 
 	function getCopyDetails(){
@@ -1098,6 +1080,166 @@ class GroupedWork_AJAX {
 			'title' => translate("Copy Summary"),
 			'modalBody' => $modalBody,
 		);
-		return json_encode($results);
+		return $results;
+	}
+
+	function getGroupWithForm(){
+		$results = [
+			'success' => false,
+			'message' => 'Unknown Error'
+		];
+
+		if (UserAccount::isLoggedIn() && (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('cataloging'))) {
+			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+			$groupedWork = new GroupedWork();
+			$id = $_REQUEST['id'];
+			$groupedWork->permanent_id = $id;
+			if ($groupedWork->find(true)) {
+				global $interface;
+				$interface->assign('id', $id);
+				$interface->assign('groupedWork', $groupedWork);
+				$results = array(
+					'success' => true,
+					'title' => translate("Group this with another work"),
+					'modalBody' => $interface->fetch("GroupedWork/groupWithForm.tpl"),
+					'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.GroupedWork.processGroupWithForm()'>Group</button>"
+				);
+			} else {
+				$results['message'] = "Could not find a work with that id";
+			}
+		}else{
+			$results['message'] = "You do not have the correct permissions for this operation";
+		}
+		return $results;
+	}
+
+	function getGroupWithInfo(){
+		$results = [
+			'success' => false,
+			'message' => 'Unknown Error'
+		];
+		if (UserAccount::isLoggedIn() && (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('cataloging'))) {
+			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+			$groupedWork = new GroupedWork();
+			$id = $_REQUEST['id'];
+			$groupedWork->permanent_id = $id;
+			if ($groupedWork->find(true)) {
+				$results['success'] = true;
+				$results['message'] = "<div class='row'><div class='col-tn-3'>Title</div><div class='col-tn-9'><strong>{$groupedWork->full_title}</strong></div></div>";
+				$results['message'] .= "<div class='row'><div class='col-tn-3'>Author</div><div class='col-tn-9'><strong>{$groupedWork->author}</strong></div></div>";
+			} else {
+				$results['message'] = "Could not find a work with that id";
+			}
+		}else{
+			$results['message'] = "You do not have the correct permissions for this operation";
+		}
+		return $results;
+	}
+	function processGroupWithForm(){
+		$results = [
+			'success' => false,
+			'message' => 'Unknown Error'
+		];
+		if (UserAccount::isLoggedIn() && (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('cataloging'))) {
+			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+
+			$id = $_REQUEST['id'];
+			$originalGroupedWork = new GroupedWork();
+			$originalGroupedWork->permanent_id = $id;
+			if (!empty($id) && $originalGroupedWork->find(true)){
+				$workToGroupWithId = $_REQUEST['groupWithId'];
+				$workToGroupWith = new GroupedWork();
+				$workToGroupWith->permanent_id = $workToGroupWithId;
+				if (!empty($workToGroupWithId) && $workToGroupWith->find(true)){
+					if ($originalGroupedWork->grouping_category != $workToGroupWith->grouping_category){
+						$results['message'] = "These are different categories of works, cannot group.";
+					}else{
+						require_once ROOT_DIR . '/sys/Grouping/GroupedWorkAlternateTitle.php';
+						$groupedWorkAlternateTitle = new GroupedWorkAlternateTitle();
+						$groupedWorkAlternateTitle->permanent_id = $workToGroupWithId;
+						$groupedWorkAlternateTitle->alternateAuthor = $originalGroupedWork->author;
+						$groupedWorkAlternateTitle->alternateTitle = $originalGroupedWork->full_title;
+						$groupedWorkAlternateTitle->addedBy = UserAccount::getActiveUserId();
+						$groupedWorkAlternateTitle->dateAdded = time();
+						$groupedWorkAlternateTitle->insert();
+						$workToGroupWith->forceReindex(true);
+						$originalGroupedWork->forceReindex(true);
+						$results['success'] = true;
+						$results['message'] = "Your works have been grouped successfully, the index will update shortly.";
+					}
+				}else{
+					$results['message'] = "Could not find work to group with";
+				}
+			}else{
+				$results['message'] = "Could not find work for original id";
+			}
+
+		}else{
+			$results['message'] = "You do not have the correct permissions for this operation";
+		}
+		return $results;
+	}
+
+	function getGroupWithSearchForm(){
+		$results = [
+			'success' => false,
+			'message' => 'Unknown Error'
+		];
+
+		if (UserAccount::isLoggedIn() && (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('cataloging'))) {
+			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+			$groupedWork = new GroupedWork();
+			$id = $_REQUEST['id'];
+			$groupedWork->permanent_id = $id;
+			if ($groupedWork->find(true)) {
+				global $interface;
+				$interface->assign('id', $id);
+				$interface->assign('groupedWork', $groupedWork);
+
+				$searchId = $_REQUEST['searchId'];
+				/** @var SearchObject_GroupedWorkSearcher $searchObject */
+				$searchObject = SearchObjectFactory::initSearchObject();
+				$searchObject->init();
+				$searchObject = $searchObject->restoreSavedSearch($searchId, false);
+
+				if (!empty($_REQUEST['page'])){
+					$searchObject->setPage($_REQUEST['page']);
+				}
+
+				$searchResults = $searchObject->processSearch(false, false);
+				$availableRecords = [];
+				$availableRecords[-1] = translate("Select the primary work");
+				$recordIndex = ($searchObject->getPage() - 1) * $searchObject->getLimit();
+				foreach ($searchResults['response']['docs'] as $doc){
+					$recordIndex++;
+					if ($doc['id'] != $id) {
+						$primaryWork = new GroupedWork();
+						$primaryWork->permanent_id = $doc['id'];
+						if ($primaryWork->find(true)){
+							if ($primaryWork->grouping_category == $groupedWork->grouping_category){
+								$availableRecords[$doc['id']] = "$recordIndex) {$primaryWork->full_title} {$primaryWork->author}";
+							}
+						}
+					}
+				}
+				$interface->assign('availableRecords', $availableRecords);
+
+				$results = array(
+					'success' => true,
+					'title' => translate("Group this with another work"),
+					'modalBody' => $interface->fetch("GroupedWork/groupWithSearchForm.tpl"),
+					'modalButtons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.GroupedWork.processGroupWithForm()'>Group</button>"
+				);
+			} else {
+				$results['message'] = "Could not find a work with that id";
+			}
+		}else{
+			$results['message'] = "You do not have the correct permissions for this operation";
+		}
+		global $logger;
+		$logger->log("Results " . print_r($results, true), Logger::LOG_ERROR);
+
+		$logger->log("JSON Results " . json_encode($results), Logger::LOG_ERROR);
+		return $results;
 	}
 }

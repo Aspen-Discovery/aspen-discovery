@@ -139,5 +139,22 @@ function getGroupedWorkUpdates(){
 				"ALTER TABLE `ils_marc_checksums` CHANGE COLUMN `ilsId` `ilsId` VARCHAR(50) NOT NULL ;",
 			),
 		),
+
+		'grouped_work_alternate_titles' => [
+			'title' => 'Grouped Work alternate titles',
+			'description' => 'Setup alternate titles and authors for grouped works',
+			'sql' => [
+				'CREATE TABLE IF NOT EXISTS grouped_work_alternate_titles (
+    				id int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					permanent_id CHAR(36) NOT NULL,
+					alternateTitle VARCHAR( 276 ),
+					alternateAuthor VARCHAR(50),
+					addedBy INT(11),
+					dateAdded INT(11),
+					INDEX (permanent_id),
+					INDEX (alternateTitle, alternateAuthor)
+				) ENGINE INNODB'
+			],
+		],
 	);
 }

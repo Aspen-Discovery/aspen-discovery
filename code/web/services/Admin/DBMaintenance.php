@@ -731,31 +731,25 @@ class Admin_DBMaintenance extends Admin_Admin
 					),
 				),
 
-				'merged_records' => array(
-					'title' => 'Merged Records Table',
-					'description' => 'Create Merged Records table to store ',
-					'sql' => array(
-						"CREATE TABLE `merged_records` (
-							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-							`original_record` VARCHAR( 20 ) NOT NULL,
-							`new_record` VARCHAR( 20 ) NOT NULL,
-							UNIQUE INDEX (original_record),
-							INDEX(new_record)
-						)",
-					),
-				),
+				'remove_merged_records' => [
+					'title' => 'Remove unused Merged Records Table',
+					'description' => 'Remove unused Merged Records Table',
+					'sql' => [
+						'DROP TABLE IF EXISTS merged_records'
+					]
+				],
 
 				'nongrouped_records' => array(
 					'title' => 'Non-grouped Records Table',
 					'description' => 'Create non-grouped Records table to store records that should not be grouped',
 					'sql' => array(
 						"CREATE TABLE `nongrouped_records` (
-									id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-									`source` VARCHAR( 50 ) NOT NULL,
-									`recordId` VARCHAR( 36 ) NOT NULL,
-									`notes` VARCHAR( 255 ) NOT NULL,
-									UNIQUE INDEX (source, recordId)
-								)",
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							`source` VARCHAR( 50 ) NOT NULL,
+							`recordId` VARCHAR( 36 ) NOT NULL,
+							`notes` VARCHAR( 255 ) NOT NULL,
+							UNIQUE INDEX (source, recordId)
+						)",
 					),
 				),
 
@@ -1382,6 +1376,15 @@ class Admin_DBMaintenance extends Admin_Admin
 					),
 				),
 
+				'remove_old_user_rating_table' => [
+					'title' => 'Remove user rating',
+					'description' => 'Remove old user rating table.',
+					'sql' => array(
+						"DROP TABLE user_rating",
+					),
+				],
+
+
 				'user_list_entry' => array(
 					'title' => 'User List Entry (Grouped Work)',
 					'description' => 'Add grouped works to lists rather than resources.',
@@ -1947,6 +1950,15 @@ class Admin_DBMaintenance extends Admin_Admin
 					'description' => 'Add Index for memory table',
 					'sql' => [
 						'ALTER TABLE cached_values ADD UNIQUE INDEX cacheKey(`cacheKey`)',
+					],
+				],
+
+				'cached_value_case_sensitive' => [
+					'title' => 'Memory cache case sensitive keys',
+					'description' => 'Make Memory cache keys case sensitive',
+					'sql' => [
+						'ALTER TABLE cached_values CHANGE COLUMN cacheKey cacheKey VARCHAR(200) COLLATE utf8_bin',
+						'TRUNCATE TABLE cached_values',
 					],
 				],
 

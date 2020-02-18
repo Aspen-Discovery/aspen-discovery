@@ -180,7 +180,7 @@ class MillenniumCheckouts {
 						require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 						$recordDriver = new MarcRecordDriver($this->driver->accountProfile->recordSource . ":" . $curTitle['recordId']);
 						if ($recordDriver->isValid()) {
-							$curTitle['coverUrl'] = $recordDriver->getBookcoverUrl('medium');
+							$curTitle['coverUrl'] = $recordDriver->getBookcoverUrl('medium', true);
 							$curTitle['ratingData']    = $recordDriver->getRatingData();
 							$curTitle['groupedWorkId'] = $recordDriver->getGroupedWorkId();
 							$curTitle['format']        = $recordDriver->getPrimaryFormat();

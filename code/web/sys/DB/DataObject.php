@@ -587,4 +587,18 @@ abstract class DataObject
 		}
 		return $newObject;
 	}
+
+	public function isEqualTo(DataObject $other){
+		$properties = get_object_vars($this);
+		$equal = true;
+		foreach ($properties as $name => $value){
+			if ($name[0] != '_'){
+				if ($other->$name != $value){
+					$equal = false;
+					break;
+				}
+			}
+		}
+		return $equal;
+	}
 }

@@ -26,6 +26,7 @@ public class DatabaseCleanup implements IProcessHandler {
 		removeOldMaterialsRequests(dbConn, logger, processLog);
 		removeUserDataForDeletedUsers(dbConn, logger, processLog);
 		removeOldCachedObjects(dbConn, logger, processLog);
+		removeOldIndexingData(dbConn, logger, processLog);
 
 		cleanupReadingHistory(dbConn, logger, processLog);
 
@@ -72,6 +73,32 @@ public class DatabaseCleanup implements IProcessHandler {
 			processLog.incErrors();
 			processLog.addNote("Unable to cleanup reading history. " + e.toString());
 			logger.error("Error cleaning up reading history", e);
+			processLog.saveToDatabase(dbConn, logger);
+		}
+	}
+
+	private void removeOldIndexingData(Connection dbConn, Logger logger, CronProcessLogEntry processLog) {
+		//Remove long searches
+		try {
+			PreparedStatement removeRecordsToReloadStmt = dbConn.prepareStatement("DELETE from record_identifiers_to_reload where processed = 1");
+
+			int rowsRemoved = removeRecordsToReloadStmt.executeUpdate();
+
+			processLog.addNote("Removed " + rowsRemoved + " records to reload that have already been processed");
+			processLog.incUpdated();
+
+			PreparedStatement removeWorksScheduledForIndexingStmt = dbConn.prepareStatement("DELETE from grouped_work_scheduled_index where processed = 1");
+
+			rowsRemoved = removeWorksScheduledForIndexingStmt.executeUpdate();
+
+			processLog.addNote("Removed " + rowsRemoved + " works that were scheduled for reindexing that have already been processed");
+			processLog.incUpdated();
+
+			processLog.saveToDatabase(dbConn, logger);
+		} catch (SQLException e) {
+			processLog.incErrors();
+			processLog.addNote("Unable to delete old cached objects. " + e.toString());
+			logger.error("Error deleting old cached objects", e);
 			processLog.saveToDatabase(dbConn, logger);
 		}
 	}

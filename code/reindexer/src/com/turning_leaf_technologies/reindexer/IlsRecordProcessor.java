@@ -74,6 +74,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	private ArrayList<TimeToReshelve> timesToReshelve = new ArrayList<>();
 	private HashSet<String> formatsToSuppress = new HashSet<>();
 	private HashSet<String> statusesToSuppress = new HashSet<>();
+	private HashSet<String> inLibraryUseOnlyFormats = new HashSet<>();
+	private HashSet<String> inLibraryUseOnlyStatuses = new HashSet<>();
 
 	IlsRecordProcessor(GroupedWorkIndexer indexer, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, logger);
@@ -242,6 +244,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			if (formatMapRS.getBoolean("suppress")){
 				formatsToSuppress.add(format);
 			}
+			if (formatMapRS.getBoolean("inLibraryUseOnly")){
+				inLibraryUseOnlyFormats.add(format);
+			}
 			formatMap.addValue(format, formatMapRS.getString("format"));
 			formatCategoryMap.addValue(format, formatMapRS.getString("formatCategory"));
 			formatBoostMap.addValue(format, formatMapRS.getString("formatBoost"));
@@ -259,6 +264,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			String status = statusMapRS.getString("value");
 			if (statusMapRS.getBoolean("suppress")){
 				statusesToSuppress.add(status);
+			}
+			if (statusMapRS.getBoolean("inLibraryUseOnly")){
+				inLibraryUseOnlyStatuses.add(status);
 			}
 			itemStatusMap.addValue(status, statusMapRS.getString("status"));
 			itemGroupedStatusMap.addValue(status, statusMapRS.getString("groupedStatus"));
@@ -354,7 +362,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			int numPrintItems = recordInfo.getNumPrintCopies();
 
 			numPrintItems = checkForNonSuppressedItemlessBib(numPrintItems);
-			groupedWork.addHoldings(numPrintItems + recordInfo.getNumCopiesOnOrder());
+			groupedWork.addHoldings(numPrintItems + recordInfo.getNumCopiesOnOrder() + recordInfo.getNumEContentCopies());
 
 			for (ItemInfo curItem : recordInfo.getRelatedItems()){
 				String itemIdentifier = curItem.getItemIdentifier();
@@ -910,6 +918,12 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	}
 
 	protected boolean determineLibraryUseOnly(ItemInfo itemInfo, Scope curScope) {
+		if (inLibraryUseOnlyStatuses.contains(itemInfo.getStatusCode())){
+			return true;
+		}
+		if (inLibraryUseOnlyFormats.contains(itemInfo.getFormat())){
+			return true;
+		}
 		return false;
 	}
 

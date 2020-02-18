@@ -57,30 +57,30 @@ public class RecordGrouperMain {
 		// Get the configuration filename
 		if (args.length == 0) {
 			System.out.println("Welcome to the Record Grouping Application developed by Marmot Library Network.  \n" +
-					"This application will group works by title, author, and format to create a \n" +
-					"unique work id.  \n" +
-					"\n" +
-					"Additional information about the grouping process can be found at: \n" +
-					"TBD\n" +
-					"\n" +
-					"This application can be used in several distinct ways based on the command line parameters\n" +
-					"1) Generate a work id for an individual title/author/format\n" +
-					"   record_grouping.jar generateWorkId <title> <author> <format> <subtitle (optional)>\n" +
-					"   \n" +
-					"   format should be one of: \n" +
-					"   - book\n" +
-					"   - music\n" +
-					"   - movie\n" +
-					"   \n" +
-					"2) Generate work ids for a Pika site based on the exports for the site\n" +
-					"   record_grouping.jar <pika_site_name>\n" +
-					"   \n" +
-					"3) Only run record grouping cleanup\n" +
-					"   record_grouping.jar <pika_site_name> runPostGroupingCleanup\n" +
-					"4) Only explode records into individual records (no grouping)\n" +
-					"   record_grouping.jar <pika_site_name> explodeMarcs\n" +
-					"5) Record Group a specific indexing profile\n" +
-					"   record_grouping.jar <pika_site_name> \"<profile name>\"");
+				"This application will group works by title, author, and format to create a \n" +
+				"unique work id.  \n" +
+				"\n" +
+				"Additional information about the grouping process can be found at: \n" +
+				"TBD\n" +
+				"\n" +
+				"This application can be used in several distinct ways based on the command line parameters\n" +
+				"1) Generate a work id for an individual title/author/format\n" +
+				"   record_grouping.jar generateWorkId <title> <author> <format> <subtitle (optional)>\n" +
+				"   \n" +
+				"   format should be one of: \n" +
+				"   - book\n" +
+				"   - music\n" +
+				"   - movie\n" +
+				"   \n" +
+				"2) Generate work ids for a site based on the exports for the site\n" +
+				"   record_grouping.jar <site_name>\n" +
+				"   \n" +
+				"3) Only run record grouping cleanup\n" +
+				"   record_grouping.jar <site_name> runPostGroupingCleanup\n" +
+				"4) Only explode records into individual records (no grouping)\n" +
+				"   record_grouping.jar <site_name> explodeMarcs\n" +
+				"5) Record Group a specific indexing profile\n" +
+				"   record_grouping.jar <site_name> \"<profile name>\"");
 			System.exit(1);
 		}
 

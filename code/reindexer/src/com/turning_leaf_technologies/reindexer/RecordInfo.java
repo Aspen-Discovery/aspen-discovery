@@ -240,6 +240,16 @@ public class RecordInfo {
 		return numPrintCopies;
 	}
 
+	int getNumEContentCopies() {
+		int numEContentCopies = 0;
+		for (ItemInfo curItem : relatedItems){
+			if (curItem.isEContent()){
+				numEContentCopies += curItem.getNumCopies();
+			}
+		}
+		return numEContentCopies;
+	}
+
 	HashSet<String> getAllEContentSources() {
 		HashSet<String> values = new HashSet<>();
 		for (ItemInfo curItem : relatedItems){

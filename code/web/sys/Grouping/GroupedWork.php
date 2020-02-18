@@ -9,7 +9,10 @@ class GroupedWork extends DataObject {
 	public $grouping_category;
 	public $date_updated;
 
-	public function forceReindex()
+	/**
+	 * @param bool $updatePrimaryIdentifiers Updating primrary identifiers will force regrouping and is a bit slower
+	 */
+	public function forceReindex($updatePrimaryIdentifiers = false)
 	{
 		require_once ROOT_DIR . '/sys/Indexing/GroupedWorkScheduledWorkIndex.php';
 		$scheduledWork = new GroupedWorkScheduledWorkIndex();
@@ -17,5 +20,19 @@ class GroupedWork extends DataObject {
 		$scheduledWork->indexAfter = time();
 		$scheduledWork->processed = 0;
 		$scheduledWork->insert();
+
+		if ($updatePrimaryIdentifiers) {
+			require_once ROOT_DIR . '/sys/Grouping/GroupedWorkPrimaryIdentifier.php';
+			$groupedWorkPrimaryIdentifier = new GroupedWorkPrimaryIdentifier();
+			$groupedWorkPrimaryIdentifier->grouped_work_id = $this->id;
+			$groupedWorkPrimaryIdentifier->find();
+			while ($groupedWorkPrimaryIdentifier->fetch()) {
+				require_once ROOT_DIR . '/sys/Indexing/RecordIdentifiersToReload.php';
+				$recordIdentifierToReload = new RecordIdentifiersToReload();
+				$recordIdentifierToReload->type = $groupedWorkPrimaryIdentifier->type;
+				$recordIdentifierToReload->identifier = $groupedWorkPrimaryIdentifier->identifier;
+				$recordIdentifierToReload->insert();
+			}
+		}
 	}
 } 

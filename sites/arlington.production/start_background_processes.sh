@@ -5,8 +5,8 @@
 sleep 10
 
 #TODO: Check for which processes are included on the server, kill the old version, start the new version.
-echo "Starting koha export"
-cd /usr/local/aspen-discovery/code/sierra_api_export; java -jar sierra_api_export.jar arlington.production &
+echo "Starting sierra export"
+cd /usr/local/aspen-discovery/code/sierra_export_api; java -jar sierra_export_api.jar arlington.production &
 sleep 5
 echo "Starting Overdrive export"
 cd /usr/local/aspen-discovery/code/overdrive_api_extract; java -jar overdrive_extract.jar arlington.production &

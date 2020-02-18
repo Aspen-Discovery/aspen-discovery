@@ -2,7 +2,8 @@
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/CatalogConnection.php';
 
-class UserAPI extends Action {
+class UserAPI extends Action
+{
 
 	/** @var CatalogConnection */
 	private $catalog;
@@ -29,13 +30,14 @@ class UserAPI extends Action {
 			];
 			$output = json_encode($result);
 		} else {
-			$output = json_encode(array('error'=>'invalid_method'));
+			$output = json_encode(array('error' => 'invalid_method'));
 		}
 		echo $output;
 	}
 
-	function getCatalogConnection(){
-		if ($this->catalog == null){
+	function getCatalogConnection()
+	{
+		if ($this->catalog == null) {
 			// Connect to Catalog
 			$this->catalog = CatalogFactory::getCatalogConnectionInstance();
 		}
@@ -66,7 +68,10 @@ class UserAPI extends Action {
 	 * @access private
 	 * @author Mark Noble <mnoble@turningleaftech.com>
 	 */
-	function isLoggedIn(){
+	function isLoggedIn()
+	{
+		global $logger;
+		$logger->log("UserAPI/isLoggedIn session: " . session_id(), Logger::LOG_DEBUG);
 		return UserAccount::isLoggedIn();
 	}
 
@@ -93,26 +98,33 @@ class UserAPI extends Action {
 	 * @access private
 	 * @author Mark Noble <mnoble@turningleaftech.com>
 	 */
-	function login(){
+	function login()
+	{
+		global $logger;
+		$logger->log("Starting UserAPI/login session: " . session_id(), Logger::LOG_DEBUG);
 		//Login the user.  Must be called via Post parameters.
-		if (isset($_POST['username']) && isset($_POST['password'])){
+		if (isset($_POST['username']) && isset($_POST['password'])) {
 			$user = UserAccount::getLoggedInUser();
-			if ($user && !($user instanceof AspenError)){
-				return array('success'=>true,'name'=>ucwords($user->firstname . ' ' . $user->lastname));
-			}else{
-                try {
-                    $user = UserAccount::login();
-                    if ($user && !($user instanceof AspenError)){
-                        return array('success'=>true,'name'=>ucwords($user->firstname . ' ' . $user->lastname));
-                    }else{
-                        return array('success'=>false);
-                    }
-                } catch (UnknownAuthenticationMethodException $e) {
-                    return array('success'=>false);
-                }
+			if ($user && !($user instanceof AspenError)) {
+				$logger->log("User is already logged in",Logger::LOG_DEBUG);
+				return array('success' => true, 'name' => ucwords($user->firstname . ' ' . $user->lastname));
+			} else {
+				try {
+					$user = UserAccount::login();
+					if ($user && !($user instanceof AspenError)) {
+						$logger->log("User was logged in successfully session: " . session_id(),Logger::LOG_DEBUG);
+						return array('success' => true, 'name' => ucwords($user->firstname . ' ' . $user->lastname));
+					} else {
+						$logger->log("Incorrect login parameters",Logger::LOG_DEBUG);
+						return array('success' => false);
+					}
+				} catch (UnknownAuthenticationMethodException $e) {
+					$logger->log("Error logging user in $e",Logger::LOG_DEBUG);
+					return array('success' => false);
+				}
 			}
-		}else{
-			return array('success'=>false,'message'=>'This method must be called via POST.');
+		} else {
+			return array('success' => false, 'message' => 'This method must be called via POST.');
 		}
 	}
 
@@ -134,7 +146,10 @@ class UserAPI extends Action {
 	 * @access private
 	 * @author Mark Noble <mnoble@turningleaftech.com>
 	 */
-	function logout(){
+	function logout()
+	{
+		global $logger;
+		$logger->log("UserAPI/logout session: " . session_id(), Logger::LOG_DEBUG);
 		UserAccount::logout();
 		return true;
 	}
@@ -193,11 +208,12 @@ class UserAPI extends Action {
 	 *
 	 * @author Mark Noble <mnoble@turningleaftech.com>
 	 */
-	function validateAccount(){
+	function validateAccount()
+	{
 		list($username, $password) = $this->loadUsernameAndPassword();
 
 		$result = UserAccount::validateAccount($username, $password);
-		if ($result != null){
+		if ($result != null) {
 			//TODO This needs to be updated to just export public information
 			//get rid of data object fields before returning the result
 			unset($result->__table);
@@ -213,9 +229,9 @@ class UserAPI extends Action {
 			unset($result->_join);
 			unset($result->_lastError);
 
-			return array('success'=>$result);
-		}else{
-			return array('success'=>false);
+			return array('success' => $result);
+		} else {
+			return array('success' => false);
 		}
 	}
 
@@ -312,32 +328,43 @@ class UserAPI extends Action {
 	 *
 	 * @author Mark Noble <mnoble@turningleaftech.com>
 	 */
-	function getPatronProfile(){
+	function getPatronProfile()
+	{
 		list($username, $password) = $this->loadUsernameAndPassword();
 
 		$user = UserAccount::validateAccount($username, $password);
-		if ($user && !($user instanceof AspenError)){
+		if ($user && !($user instanceof AspenError)) {
 			//Remove a bunch of junk from the user data
 			unset($user->query);
 			$userData = new stdClass();
 			foreach ($user as $key => $value) {
-				if ($key[0] == '_'){
+				if ($key[0] == '_') {
 					if ($key[1] == '_') {
 						unset($user->$key);
-					}else{
-						if (!is_object($value) && !is_array($value)){
+					} else {
+						if (!is_object($value) && !is_array($value)) {
 							$shortKey = substr($key, 1);
 							$userData->$shortKey = $value;
 						}
 					}
-				}else{
+				} else {
 					$userData->$key = $value;
 				}
 			}
 
-			return array('success'=>true, 'profile'=>$userData);
-		}else{
-			return array('success'=>false, 'message'=>'Login unsuccessful');
+			//Add overdrive data
+			if ($user->isValidForEContentSource('overdrive')) {
+				require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+				$driver = new OverDriveDriver();
+				$overDriveSummary = $driver->getAccountSummary($user);
+				$userData->numCheckedOutOverDrive = $overDriveSummary['numCheckedOut'];
+				$userData->numHoldsOverDrive = $overDriveSummary['numAvailableHolds'] + $overDriveSummary['numUnavailableHolds'];
+				$userData->numHoldsAvailableOverDrive = $overDriveSummary['numAvailableHolds'];
+			}
+
+			return array('success' => true, 'profile' => $userData);
+		} else {
+			return array('success' => false, 'message' => 'Login unsuccessful');
 		}
 	}
 
@@ -440,15 +467,16 @@ class UserAPI extends Action {
 	 *
 	 * @author Mark Noble <mnoble@turningleaftech.com>
 	 */
-	function getPatronHolds(){
+	function getPatronHolds()
+	{
 		list($username, $password) = $this->loadUsernameAndPassword();
 
 		$user = UserAccount::validateAccount($username, $password);
-		if ($user && !($user instanceof AspenError)){
+		if ($user && !($user instanceof AspenError)) {
 			$allHolds = $user->getHolds();
-			return array('success'=>true, 'holds'=>$allHolds);
-		}else{
-			return array('success'=>false, 'message'=>'Login unsuccessful');
+			return array('success' => true, 'holds' => $allHolds);
+		} else {
+			return array('success' => false, 'message' => 'Login unsuccessful');
 		}
 	}
 
@@ -515,16 +543,17 @@ class UserAPI extends Action {
 	 *
 	 * @author Mark Noble <mnoble@turningleaftech.com>
 	 */
-	function getPatronHoldsOverDrive(){
+	function getPatronHoldsOverDrive()
+	{
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$user = UserAccount::validateAccount($username, $password);
-		if ($user && !($user instanceof AspenError)){
-            require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
-            $driver = new OverDriveDriver();
+		if ($user && !($user instanceof AspenError)) {
+			require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+			$driver = new OverDriveDriver();
 			$eContentHolds = $driver->getHolds($user);
-			return array('success'=>true, 'holds'=>$eContentHolds);
-		}else{
-			return array('success'=>false, 'message'=>'Login unsuccessful');
+			return array('success' => true, 'holds' => $eContentHolds);
+		} else {
+			return array('success' => false, 'message' => 'Login unsuccessful');
 		}
 	}
 
@@ -566,16 +595,17 @@ class UserAPI extends Action {
 	 *
 	 * @author Mark Noble <mnoble@turningleaftech.com>
 	 */
-	function getPatronCheckedOutItemsOverDrive(){
+	function getPatronCheckedOutItemsOverDrive()
+	{
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$user = UserAccount::validateAccount($username, $password);
-		if ($user && !($user instanceof AspenError)){
-            require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
-            $driver = new OverDriveDriver();
+		if ($user && !($user instanceof AspenError)) {
+			require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+			$driver = new OverDriveDriver();
 			$eContentCheckedOutItems = $driver->getCheckouts($user, false);
-			return array('success'=>true, 'items'=>$eContentCheckedOutItems['items']);
-		}else{
-			return array('success'=>false, 'message'=>'Login unsuccessful');
+			return array('success' => true, 'items' => $eContentCheckedOutItems['items']);
+		} else {
+			return array('success' => false, 'message' => 'Login unsuccessful');
 		}
 	}
 
@@ -613,16 +643,17 @@ class UserAPI extends Action {
 	 *
 	 * @author Mark Noble <mnoble@turningleaftech.com>
 	 */
-	function getPatronOverDriveSummary(){
+	function getPatronOverDriveSummary()
+	{
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$user = UserAccount::validateAccount($username, $password);
-		if ($user && !($user instanceof AspenError)){
-            require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
-            $driver = new OverDriveDriver();
+		if ($user && !($user instanceof AspenError)) {
+			require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+			$driver = new OverDriveDriver();
 			$overDriveSummary = $driver->getAccountSummary($user);
-			return array('success'=>true, 'summary'=>$overDriveSummary);
-		}else{
-			return array('success'=>false, 'message'=>'Login unsuccessful');
+			return array('success' => true, 'summary' => $overDriveSummary);
+		} else {
+			return array('success' => false, 'message' => 'Login unsuccessful');
 		}
 	}
 
@@ -662,15 +693,16 @@ class UserAPI extends Action {
 	 *
 	 * @author Mark Noble <mnoble@turningleaftech.com>
 	 */
-	function getPatronFines(){
+	function getPatronFines()
+	{
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$includeMessages = isset($_REQUEST['includeMessages']) ? $_REQUEST['includeMessages'] : false;
 		$user = UserAccount::validateAccount($username, $password);
-		if ($user && !($user instanceof AspenError)){
+		if ($user && !($user instanceof AspenError)) {
 			$fines = $this->getCatalogConnection()->getFines($user, $includeMessages);
-			return array('success'=>true, 'fines'=>$fines);
-		}else{
-			return array('success'=>false, 'message'=>'Login unsuccessful');
+			return array('success' => true, 'fines' => $fines);
+		} else {
+			return array('success' => false, 'message' => 'Login unsuccessful');
 		}
 	}
 
@@ -679,14 +711,15 @@ class UserAPI extends Action {
 	 *
 	 * @return array
 	 */
-	function getOverDriveLendingOptions(){
+	function getOverDriveLendingOptions()
+	{
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$user = UserAccount::validateAccount($username, $password);
-		if ($user && !($user instanceof AspenError)){
-			$driver         = new OverDriveDriver();
+		if ($user && !($user instanceof AspenError)) {
+			$driver = new OverDriveDriver();
 			$accountDetails = $driver->getOptions($user);
 			return array('success' => true, 'lendingOptions' => $accountDetails['lendingPeriods']);
-		}else{
+		} else {
 			return array('success' => false, 'message' => 'Login unsuccessful');
 		}
 	}
@@ -736,15 +769,24 @@ class UserAPI extends Action {
 	 *
 	 * @author Mark Noble <mnoble@turningleaftech.com>
 	 */
-	function getPatronCheckedOutItems(){
+	function getPatronCheckedOutItems()
+	{
 		global $offlineMode;
 		if ($offlineMode) {
-			return array('success'=>false, 'message'=>'Circulation system is offline');
+			return array('success' => false, 'message' => 'Circulation system is offline');
 		} else {
 			list($username, $password) = $this->loadUsernameAndPassword();
 			$user = UserAccount::validateAccount($username, $password);
 			if ($user && !($user instanceof AspenError)) {
 				$allCheckedOut = $user->getCheckouts(false, true);
+				foreach ($allCheckedOut as $key => $checkout){
+					/** @noinspection SpellCheckingInspection */
+					$checkout['canrenew'] = $checkout['canRenew'];
+					/** @noinspection SpellCheckingInspection */
+					$checkout['itemid'] = $checkout['itemId'];
+					$checkout['renewMessage'] = '';
+					$allCheckedOut[$key] = $checkout;
+				}
 
 				return array('success' => true, 'checkedOutItems' => $allCheckedOut);
 			} else {
@@ -813,11 +855,11 @@ class UserAPI extends Action {
 	{
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$itemBarcode = $_REQUEST['itemBarcode'];
-		$user        = UserAccount::validateAccount($username, $password);
-		if ($user && !($user instanceof AspenError)){
+		$user = UserAccount::validateAccount($username, $password);
+		if ($user && !($user instanceof AspenError)) {
 			$renewalMessage = $this->getCatalogConnection()->renewCheckout($user, $itemBarcode);
 			return array('success' => true, 'renewalMessage' => $renewalMessage);
-		}else{
+		} else {
 			return array('success' => false, 'message' => 'Login unsuccessful');
 		}
 	}
@@ -847,14 +889,15 @@ class UserAPI extends Action {
 	 *
 	 * @author Mark Noble <mnoble@turningleaftech.com>
 	 */
-	function renewAll(){
+	function renewAll()
+	{
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$user = UserAccount::validateAccount($username, $password);
-		if ($user && !($user instanceof AspenError)){
+		if ($user && !($user instanceof AspenError)) {
 			$renewalMessage = $user->renewAll(false);
-			return array('success'=> $renewalMessage['success'], 'renewalMessage'=>$renewalMessage['message']);
-		}else{
-			return array('success'=>false, 'message'=>'Login unsuccessful');
+			return array('success' => $renewalMessage['success'], 'renewalMessage' => $renewalMessage['message']);
+		} else {
+			return array('success' => false, 'message' => 'Login unsuccessful');
 		}
 	}
 
@@ -899,53 +942,56 @@ class UserAPI extends Action {
 	 *
 	 * @author Mark Noble <mnoble@turningleaftech.com>
 	 */
-	function placeHold(){
+	function placeHold()
+	{
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$bibId = $_REQUEST['bibId'];
 
 		$patron = UserAccount::validateAccount($username, $password);
-		if ($patron && !($patron instanceof AspenError)){
-			if (isset($_REQUEST['pickupBranch'])){
-				$pickupBranch=trim($_REQUEST['pickupBranch']);
-			}else{
+		if ($patron && !($patron instanceof AspenError)) {
+			if (isset($_REQUEST['pickupBranch'])) {
+				$pickupBranch = trim($_REQUEST['pickupBranch']);
+			} else {
 				$pickupBranch = $patron->_homeLocationCode;
 			}
 			$holdMessage = $patron->placeHold($bibId, $pickupBranch);
 			return $holdMessage;
-		}else{
-			return array('success'=>false, 'message'=>'Login unsuccessful');
+		} else {
+			return array('success' => false, 'message' => 'Login unsuccessful');
 		}
 	}
 
-	function placeItemHold(){
+	function placeItemHold()
+	{
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$bibId = $_REQUEST['bibId'];
 		$itemId = $_REQUEST['itemId'];
 
 		$patron = UserAccount::validateAccount($username, $password);
-		if ($patron && !($patron instanceof AspenError)){
-			if (isset($_REQUEST['pickupBranch'])){
-				$pickupBranch=trim($_REQUEST['pickupBranch']);
-			}else{
+		if ($patron && !($patron instanceof AspenError)) {
+			if (isset($_REQUEST['pickupBranch'])) {
+				$pickupBranch = trim($_REQUEST['pickupBranch']);
+			} else {
 				$pickupBranch = $patron->_homeLocationCode;
 			}
-			$holdMessage = $patron->placeItemHold($bibId, $itemId,$pickupBranch);
+			$holdMessage = $patron->placeItemHold($bibId, $itemId, $pickupBranch);
 			return $holdMessage;
-		}else{
-			return array('success'=>false, 'message'=>'Login unsuccessful');
+		} else {
+			return array('success' => false, 'message' => 'Login unsuccessful');
 		}
 	}
 
-	function changeHoldPickUpLocation(){
+	function changeHoldPickUpLocation()
+	{
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$holdId = $_REQUEST['holdId'];
 		$newLocation = $_REQUEST['location'];
 		$patron = UserAccount::validateAccount($username, $password);
-		if ($patron && !($patron instanceof AspenError)){
+		if ($patron && !($patron instanceof AspenError)) {
 			$holdMessage = $patron->changeHoldPickUpLocation($holdId, $newLocation);
-			return array('success'=> $holdMessage['success'], 'holdMessage'=>$holdMessage['message']);
-		}else{
-			return array('success'=>false, 'message'=>'Login unsuccessful');
+			return array('success' => $holdMessage['success'], 'holdMessage' => $holdMessage['message']);
+		} else {
+			return array('success' => false, 'message' => 'Login unsuccessful');
 		}
 	}
 
@@ -984,19 +1030,25 @@ class UserAPI extends Action {
 	 *
 	 * @author Mark Noble <mnoble@turningleaftech.com>
 	 */
-	function placeOverDriveHold(){
+	function placeOverDriveHold()
+	{
 		list($username, $password) = $this->loadUsernameAndPassword();
-		$overDriveId = $_REQUEST['overDriveId'];
+		if (isset($_REQUEST['overDriveId'])) {
+			$overDriveId = $_REQUEST['overDriveId'];
 
-		$user = UserAccount::validateAccount($username, $password);
-		if ($user && !($user instanceof AspenError)){
-            require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
-            $driver = new OverDriveDriver();
-			$holdMessage = $driver->placeHold($user, $overDriveId);
-			return array('success'=> $holdMessage['success'], 'message'=>$holdMessage['message']);
-		}else{
-			return array('success'=>false, 'message'=>'Login unsuccessful');
+			$user = UserAccount::validateAccount($username, $password);
+			if ($user && !($user instanceof AspenError)) {
+				require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+				$driver = new OverDriveDriver();
+				$holdMessage = $driver->placeHold($user, $overDriveId);
+				return array('success' => $holdMessage['success'], 'message' => $holdMessage['message']);
+			} else {
+				return array('success' => false, 'message' => 'Login unsuccessful');
+			}
+		} else {
+			return array('success' => false, 'message' => 'Please provide the overDriveId to be place the hold on');
 		}
+
 	}
 
 	/**
@@ -1030,18 +1082,19 @@ class UserAPI extends Action {
 	 *
 	 * @author Mark Noble <mnoble@turningleaftech.com>
 	 */
-	function cancelOverDriveHold(){
+	function cancelOverDriveHold()
+	{
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$overDriveId = $_REQUEST['overDriveId'];
 
 		$user = UserAccount::validateAccount($username, $password);
-		if ($user && !($user instanceof AspenError)){
-            require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
-            $driver = new OverDriveDriver();
+		if ($user && !($user instanceof AspenError)) {
+			require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+			$driver = new OverDriveDriver();
 			$result = $driver->cancelHold($user, $overDriveId);
-			return array('success'=> $result['success'], 'message'=>$result['message']);
-		}else{
-			return array('success'=>false, 'message'=>'Login unsuccessful');
+			return array('success' => $result['success'], 'message' => $result['message']);
+		} else {
+			return array('success' => false, 'message' => 'Login unsuccessful');
 		}
 	}
 
@@ -1076,18 +1129,19 @@ class UserAPI extends Action {
 	 *
 	 * @author Mark Noble <mnoble@turningleaftech.com>
 	 */
-	function checkoutOverDriveItem(){
+	function checkoutOverDriveItem()
+	{
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$overDriveId = $_REQUEST['overDriveId'];
 
 		$user = UserAccount::validateAccount($username, $password);
-		if ($user && !($user instanceof AspenError)){
-            require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
-            $driver = new OverDriveDriver();
+		if ($user && !($user instanceof AspenError)) {
+			require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+			$driver = new OverDriveDriver();
 			$holdMessage = $driver->checkOutTitle($user, $overDriveId);
-			return array('success'=> $holdMessage['success'], 'message'=>$holdMessage['message']);
-		}else{
-			return array('success'=>false, 'message'=>'Login unsuccessful');
+			return array('success' => $holdMessage['success'], 'message' => $holdMessage['message']);
+		} else {
+			return array('success' => false, 'message' => 'Login unsuccessful');
 		}
 	}
 
@@ -1134,7 +1188,8 @@ class UserAPI extends Action {
 	 *
 	 * @author Mark Noble <mnoble@turningleaftech.com>
 	 */
-	function cancelHold(){
+	function cancelHold()
+	{
 		list($username, $password) = $this->loadUsernameAndPassword();
 
 		// Cancel Hold requires one of these, which one depends on the ILS
@@ -1147,11 +1202,11 @@ class UserAPI extends Action {
 		}
 
 		$user = UserAccount::validateAccount($username, $password);
-		if ($user && !($user instanceof AspenError)){
+		if ($user && !($user instanceof AspenError)) {
 			$holdMessage = $user->cancelHold($recordId, $cancelId);
-			return array('success'=> $holdMessage['success'], 'holdMessage'=>$holdMessage['message']);
-		}else{
-			return array('success'=>false, 'message'=>'Login unsuccessful');
+			return array('success' => $holdMessage['success'], 'holdMessage' => $holdMessage['message']);
+		} else {
+			return array('success' => false, 'message' => 'Login unsuccessful');
 		}
 	}
 
@@ -1164,14 +1219,15 @@ class UserAPI extends Action {
 	 * <ul>
 	 * <li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li>
 	 * <li>password - The pin number for the user. </li>
-	 * <li>cancelId[] - an array of holds that should be frozen. Each item should be specified as <bibId>:0.</li>
+	 * <li>recordId - </li>
+	 * <li>holdId - </li>
 	 * <li>suspendDate - The date that the hold should be automatically reactivated.</li>
 	 * </ul>
 	 *
 	 * Returns:
 	 * <ul>
-	 * <li>success � true if the account is valid and the hold could be frozen, false if the username or password were incorrect or the hold could not be frozen.</li>
-	 * <li>holdMessage � a reason why the method failed if success is false</li>
+	 * <li>success - true if the account is valid and the hold could be frozen, false if the username or password were incorrect or the hold could not be frozen.</li>
+	 * <li>holdMessage - a reason why the method failed if success is false</li>
 	 * </ul>
 	 *
 	 * Sample Call:
@@ -1183,20 +1239,28 @@ class UserAPI extends Action {
 	 * <code>
 	 * {"result":{
 	 *   "success":true,
-	 *   "holdMessage":"Your hold was updated successfully."
+	 *   "message":"Your hold was updated successfully."
 	 * }}
 	 * </code>
 	 *
 	 * @author Mark Noble <mnoble@turningleaftech.com>
 	 */
-	function freezeHold(){
+	function freezeHold()
+	{
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$user = UserAccount::validateAccount($username, $password);
-		if ($user && !($user instanceof AspenError)){
-			$holdMessage = $this->getCatalogConnection()->updateHoldDetailed('', $user->cat_username, 'update', '', null, null, 'on');
-			return array('success'=> $holdMessage['success'], 'holdMessage'=>$holdMessage['message']);
-		}else{
-			return array('success'=>false, 'message'=>'Login unsuccessful');
+		if ($user && !($user instanceof AspenError)) {
+			if (empty($_REQUEST['recordId']) || empty($_REQUEST['holdId'])) {
+				return array('success' => false, 'message' => 'recordId and holdId must be provided');
+			} else {
+				$recordId = $_REQUEST['recordId'];
+				$holdId = $_REQUEST['holdId'];
+				$reactivationDate = isset($_REQUEST['reactivationDate']) ? $_REQUEST['reactivationDate'] : null;
+				$result = $user->freezeHold($recordId, $holdId, $reactivationDate);
+				return $result;
+			}
+		} else {
+			return array('success' => false, 'message' => 'Login unsuccessful');
 		}
 	}
 
@@ -1209,7 +1273,8 @@ class UserAPI extends Action {
 	 * <ul>
 	 * <li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li>
 	 * <li>password - The pin number for the user. </li>
-	 * <li>cancelId[] - an array of holds that are not ready for pickup that should be frozen. Each item should be specified as <bibId>:0.</li>
+	 * <li>recordId - </li>
+	 * <li>holdId - </li>
 	 * </ul>
 	 *
 	 * Returns:
@@ -1227,20 +1292,27 @@ class UserAPI extends Action {
 	 * <code>
 	 * {"result":{
 	 *   "success":true,
-	 *   "holdMessage":"Your hold was updated successfully."
+	 *   "message":"Your hold was updated successfully."
 	 * }}
 	 * </code>
 	 *
 	 * @author Mark Noble <mnoble@turningleaftech.com>
 	 */
-	function activateHold(){
+	function activateHold()
+	{
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$user = UserAccount::validateAccount($username, $password);
-		if ($user && !($user instanceof AspenError)){
-			$holdMessage = $this->getCatalogConnection()->updateHoldDetailed('', $user->cat_username, 'update', '', null, null, 'off');
-			return array('success'=> $holdMessage['success'], 'holdMessage'=>$holdMessage['message']);
-		}else{
-			return array('success'=>false, 'message'=>'Login unsuccessful');
+		if ($user && !($user instanceof AspenError)) {
+			if (empty($_REQUEST['recordId']) || empty($_REQUEST['holdId'])) {
+				return array('success' => false, 'message' => 'recordId and holdId must be provided');
+			} else {
+				$recordId = $_REQUEST['recordId'];
+				$holdId = $_REQUEST['holdId'];
+				$result = $user->thawHold($recordId, $holdId);
+				return $result;
+			}
+		} else {
+			return array('success' => false, 'message' => 'Login unsuccessful');
 		}
 	}
 
@@ -1302,10 +1374,11 @@ class UserAPI extends Action {
 	 *
 	 * @author Mark Noble <mnoble@turningleaftech.com>
 	 */
-	function getPatronReadingHistory(){
+	function getPatronReadingHistory()
+	{
 		global $offlineMode;
 		if ($offlineMode) {
-			return array('success'=>false, 'message'=>'Circulation system is offline');
+			return array('success' => false, 'message' => 'Circulation system is offline');
 		} else {
 			list($username, $password) = $this->loadUsernameAndPassword();
 			$user = UserAccount::validateAccount($username, $password);
@@ -1313,6 +1386,24 @@ class UserAPI extends Action {
 				$readingHistory = $this->getCatalogConnection()->getReadingHistory($user);
 
 				return array('success' => true, 'readingHistory' => $readingHistory['titles']);
+			} else {
+				return array('success' => false, 'message' => 'Login unsuccessful');
+			}
+		}
+	}
+
+	function updatePatronReadingHistory()
+	{
+		global $offlineMode;
+		if ($offlineMode) {
+			return array('success' => false, 'message' => 'Circulation system is offline');
+		} else {
+			list($username, $password) = $this->loadUsernameAndPassword();
+			$user = UserAccount::validateAccount($username, $password);
+			if ($user && !($user instanceof AspenError)) {
+				$this->getCatalogConnection()->updateReadingHistoryBasedOnCurrentCheckouts($user);
+
+				return array('success' => true);
 			} else {
 				return array('success' => false, 'message' => 'Login unsuccessful');
 			}
@@ -1346,14 +1437,15 @@ class UserAPI extends Action {
 	 *
 	 * @author Mark Noble <mnoble@turningleaftech.com>
 	 */
-	function optIntoReadingHistory(){
+	function optIntoReadingHistory()
+	{
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$user = UserAccount::validateAccount($username, $password);
-		if ($user && !($user instanceof AspenError)){
+		if ($user && !($user instanceof AspenError)) {
 			$this->getCatalogConnection()->doReadingHistoryAction($user, 'optIn', array());
-			return array('success'=>true);
-		}else{
-			return array('success'=>false, 'message'=>'Login unsuccessful');
+			return array('success' => true);
+		} else {
+			return array('success' => false, 'message' => 'Login unsuccessful');
 		}
 	}
 
@@ -1383,14 +1475,15 @@ class UserAPI extends Action {
 	 *
 	 * @author Mark Noble <mnoble@turningleaftech.com>
 	 */
-	function optOutOfReadingHistory(){
+	function optOutOfReadingHistory()
+	{
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$user = UserAccount::validateAccount($username, $password);
-		if ($user && !($user instanceof AspenError)){
-			$this->getCatalogConnection()->doReadingHistoryAction($user,'optOut', array());
-			return array('success'=>true);
-		}else{
-			return array('success'=>false, 'message'=>'Login unsuccessful');
+		if ($user && !($user instanceof AspenError)) {
+			$this->getCatalogConnection()->doReadingHistoryAction($user, 'optOut', array());
+			return array('success' => true);
+		} else {
+			return array('success' => false, 'message' => 'Login unsuccessful');
 		}
 	}
 
@@ -1420,14 +1513,15 @@ class UserAPI extends Action {
 	 *
 	 * @author Mark Noble <mnoble@turningleaftech.com>
 	 */
-	function deleteAllFromReadingHistory(){
+	function deleteAllFromReadingHistory()
+	{
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$user = UserAccount::validateAccount($username, $password);
-		if ($user && !($user instanceof AspenError)){
-			$this->getCatalogConnection()->doReadingHistoryAction($user,'deleteAll', array());
-			return array('success'=>true);
-		}else{
-			return array('success'=>false, 'message'=>'Login unsuccessful');
+		if ($user && !($user instanceof AspenError)) {
+			$this->getCatalogConnection()->doReadingHistoryAction($user, 'deleteAll', array());
+			return array('success' => true);
+		} else {
+			return array('success' => false, 'message' => 'Login unsuccessful');
 		}
 	}
 
@@ -1458,15 +1552,16 @@ class UserAPI extends Action {
 	 *
 	 * @author Mark Noble <mnoble@turningleaftech.com>
 	 */
-	function deleteSelectedFromReadingHistory(){
+	function deleteSelectedFromReadingHistory()
+	{
 		list($username, $password) = $this->loadUsernameAndPassword();
 		$selectedTitles = $_REQUEST['selected'];
 		$user = UserAccount::validateAccount($username, $password);
-		if ($user && !($user instanceof AspenError)){
-			$this->getCatalogConnection()->doReadingHistoryAction($user,'deleteMarked', $selectedTitles);
-			return array('success'=>true);
-		}else{
-			return array('success'=>false, 'message'=>'Login unsuccessful');
+		if ($user && !($user instanceof AspenError)) {
+			$this->getCatalogConnection()->doReadingHistoryAction($user, 'deleteMarked', $selectedTitles);
+			return array('success' => true);
+		} else {
+			return array('success' => false, 'message' => 'Login unsuccessful');
 		}
 	}
 
@@ -1475,14 +1570,14 @@ class UserAPI extends Action {
 	 */
 	private function loadUsernameAndPassword()
 	{
-		if (isset($_REQUEST['username'])){
+		if (isset($_REQUEST['username'])) {
 			$username = $_REQUEST['username'];
-		}else{
+		} else {
 			$username = '';
 		}
 		if (isset($_REQUEST['password'])) {
 			$password = $_REQUEST['password'];
-		}else{
+		} else {
 			$password = '';
 		}
 		if (is_array($username)) {

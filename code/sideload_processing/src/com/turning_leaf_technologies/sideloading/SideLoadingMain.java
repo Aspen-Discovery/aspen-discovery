@@ -19,7 +19,6 @@ import org.marc4j.marc.Record;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Date;
@@ -177,6 +176,8 @@ public class SideLoadingMain {
 				}
 			}
 
+			processRecordsToReload(settings, logEntry);
+
 			try {
 				PreparedStatement updateSideloadStmt;
 				if (settings.isRunFullUpdate()) {
@@ -192,6 +193,49 @@ public class SideLoadingMain {
 				logger.error("Error updating lastUpdateFromMarcExport", e);
 				logEntry.addNote("Error updating lastUpdateFromMarcExport");
 			}
+		}
+	}
+
+	private static void processRecordsToReload(SideLoadSettings settings, SideLoadLogEntry logEntry) {
+		try {
+			PreparedStatement getRecordsToReloadStmt = aspenConn.prepareStatement("SELECT * from record_identifiers_to_reload WHERE processed = 0 and type='" + settings.getName() + "'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement markRecordToReloadAsProcessedStmt = aspenConn.prepareStatement("UPDATE record_identifiers_to_reload SET processed = 1 where id = ?");
+			ResultSet getRecordsToReloadRS = getRecordsToReloadStmt.executeQuery();
+			int numRecordsToReloadProcessed = 0;
+			SideLoadedRecordGrouper recordGrouper = getRecordGroupingProcessor(settings);
+			while (getRecordsToReloadRS.next()) {
+				long recordToReloadId = getRecordsToReloadRS.getLong("id");
+				String recordIdentifier = getRecordsToReloadRS.getString("identifier");
+				File marcFile = settings.getFileForIlsRecord(recordIdentifier);
+				if (!marcFile.exists()) {
+					logEntry.incErrors();
+					logEntry.addNote("Could not find marc for record to reload " + recordIdentifier);
+				} else {
+					FileInputStream marcFileStream = new FileInputStream(marcFile);
+					MarcPermissiveStreamReader streamReader = new MarcPermissiveStreamReader(marcFileStream, true, true);
+					if (streamReader.hasNext()) {
+						Record marcRecord = streamReader.next();
+						//Regroup the record
+						String groupedWorkId = recordGrouper.processMarcRecord(marcRecord, true);
+						//Reindex the record
+						getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
+					} else {
+						logEntry.incErrors();
+						logEntry.addNote("Could not read file " + marcFile);
+					}
+				}
+
+				markRecordToReloadAsProcessedStmt.setLong(1, recordToReloadId);
+				markRecordToReloadAsProcessedStmt.executeUpdate();
+				numRecordsToReloadProcessed++;
+			}
+			if (numRecordsToReloadProcessed > 0) {
+				logEntry.addNote("Regrouped " + numRecordsToReloadProcessed + " records marked for reprocessing");
+			}
+			getRecordsToReloadRS.close();
+		}catch (Exception e){
+			logEntry.incErrors();
+			logEntry.addNote("Error processing records to reload " + e.toString());
 		}
 	}
 

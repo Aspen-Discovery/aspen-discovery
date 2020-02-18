@@ -695,7 +695,7 @@ abstract class Solr
 				$noWildCardLookFor = str_replace('*', '', $noTrailingPunctuation);
 			}
 			$values['localized_callnumber'] = str_replace(array('"', ':', '/'), ' ', $noWildCardLookFor);
-			$values['text_left'] = str_replace(array('"', ':', '/'), ' ', $noWildCardLookFor) . '*';
+			$values['text_left'] = str_replace(array('"', ':', '/'), ' ', $noWildCardLookFor);
 		} else {
 			// If we're skipping tokenization, we just want to pass $lookfor through
 			// unmodified (it's probably an advanced search that won't benefit from
@@ -713,7 +713,7 @@ abstract class Solr
 				'single_word_removal' => $onephrase,
 				'exact_quoted' => $onephrase,
 				'localized_callnumber' => str_replace(array('"', ':', '/'), ' ', $cleanedQuery),
-				'text_left' => str_replace(array('"', ':', '/'), ' ', $cleanedQuery) . '*',
+				'text_left' => str_replace(array('"', ':', '/'), ' ', $cleanedQuery),
 			);
 		}
 
@@ -1273,7 +1273,8 @@ abstract class Solr
 							$options['facet.field'][] = "{!ex={$facetKey}}" . $key;
 						} elseif (strpos($facetName, 'availability_toggle') === 0 || strpos($facetName, 'availability_by_format') === 0) {
 							$options['facet.field'][] = '{!ex=avail}' . $key;
-							$options["f.{$key}.facet.missing"] = 'true';
+							//No longer need missing since we provide a value for the entire scope
+							//$options["f.{$key}.facet.missing"] = 'true';
 						} else {
 							$options['facet.field'][] = $key;
 						}

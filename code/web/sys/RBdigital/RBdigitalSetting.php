@@ -2,28 +2,30 @@
 
 class RBdigitalSetting extends DataObject
 {
-    public $__table = 'rbdigital_settings';    // table name
-    public $id;
-    public $apiUrl;
-    public $userInterfaceUrl;
-    public $apiToken;
-    public $libraryId;
-    public $runFullUpdate;
-    public $lastUpdateOfChangedRecords;
-    public $lastUpdateOfAllRecords;
+	public $__table = 'rbdigital_settings';    // table name
+	public $id;
+	public $apiUrl;
+	public $userInterfaceUrl;
+	public $apiToken;
+	public $libraryId;
+	public $allowPatronLookupByEmail;
+	public $runFullUpdate;
+	public $lastUpdateOfChangedRecords;
+	public $lastUpdateOfAllRecords;
 
-    public static function getObjectStructure()
-    {
-        $structure = array(
-            'id' => array('property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id'),
-            'apiUrl' => array('property'=>'apiUrl', 'type'=>'url', 'label'=>'url', 'description'=>'The URL to the API'),
-            'userInterfaceUrl' => array('property'=>'userInterfaceUrl', 'type'=>'url', 'label'=>'User Interface URL', 'description'=>'The URL where the Patron can access the catalog'),
-            'apiToken' => array('property'=>'apiToken', 'type'=>'text', 'label'=>'API Token', 'description'=>'The API Token provided by RBdigital when registering'),
-            'libraryId' => array('property' => 'libraryId', 'type' => 'integer', 'label' => 'Library Id', 'description'=>'The library id provided by RBdigital'),
-            'runFullUpdate' => array('property' => 'runFullUpdate', 'type' => 'checkbox', 'label' => 'Run Full Update', 'description'=>'Whether or not a full update of all records should be done on the next pass of indexing', 'default'=>0),
-            'lastUpdateOfChangedRecords' => array('property' => 'lastUpdateOfChangedRecords', 'type' => 'integer', 'label' => 'Last Update of Changed Records', 'description'=>'The timestamp when just changes were loaded', 'default'=>0),
-            'lastUpdateOfAllRecords' => array('property' => 'lastUpdateOfAllRecords', 'type' => 'integer', 'label' => 'Last Update of All Records', 'description'=>'The timestamp when just changes were loaded', 'default'=>0),
-        );
-        return $structure;
-    }
+	public static function getObjectStructure()
+	{
+		$structure = array(
+			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id'),
+			'apiUrl' => array('property' => 'apiUrl', 'type' => 'url', 'label' => 'url', 'description' => 'The URL to the API'),
+			'userInterfaceUrl' => array('property' => 'userInterfaceUrl', 'type' => 'url', 'label' => 'User Interface URL', 'description' => 'The URL where the Patron can access the catalog'),
+			'apiToken' => array('property' => 'apiToken', 'type' => 'text', 'label' => 'API Token', 'description' => 'The API Token provided by RBdigital when registering'),
+			'libraryId' => array('property' => 'libraryId', 'type' => 'integer', 'label' => 'Library Id', 'description' => 'The library id provided by RBdigital'),
+			'allowPatronLookupByEmail' => array('property' => 'allowPatronLookupByEmail', 'type' => 'checkbox', 'label' => 'Allow Patron Lookup by Email', 'description' => 'Whether or not patrons can be looked up in RBdigital based on their email', 'default' => 1),
+			'runFullUpdate' => array('property' => 'runFullUpdate', 'type' => 'checkbox', 'label' => 'Run Full Update', 'description' => 'Whether or not a full update of all records should be done on the next pass of indexing', 'default' => 0),
+			'lastUpdateOfChangedRecords' => array('property' => 'lastUpdateOfChangedRecords', 'type' => 'integer', 'label' => 'Last Update of Changed Records', 'description' => 'The timestamp when just changes were loaded', 'default' => 0),
+			'lastUpdateOfAllRecords' => array('property' => 'lastUpdateOfAllRecords', 'type' => 'integer', 'label' => 'Last Update of All Records', 'description' => 'The timestamp when just changes were loaded', 'default' => 0),
+		);
+		return $structure;
+	}
 }

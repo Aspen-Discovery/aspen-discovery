@@ -274,11 +274,6 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 					$facet->facetName = 'itype_' . $solrScope;
 				}
 			}
-			if (isset($searchLocation)) {
-				if ($facet->facetName == 'time_since_added' && $searchLocation->restrictSearchByLocation) {
-					$facet->facetName = 'local_time_since_added_' . $searchLocation->code;
-				}
-			}
 		}
 
 		//********************
@@ -920,6 +915,20 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 			}
 		}
 
+		//Check to see if we should apply a default filter
+		if ($availabilityToggleValue == null){
+			global $library;
+			$location = Location::getSearchLocation(null);
+			if ($location != null){
+				$groupedWorkDisplaySettings = $location->getGroupedWorkDisplaySettings();
+			}else{
+				$groupedWorkDisplaySettings = $library->getGroupedWorkDisplaySettings();
+			}
+			$availabilityToggleValue = $groupedWorkDisplaySettings->defaultAvailabilityToggle;
+
+			$filterQuery['availability_toggle_'. $solrScope] = "availability_toggle_{$solrScope}:\"{$availabilityToggleValue}\"";
+		}
+
 		//Check to see if we have both a format and availability facet applied.
 		$availabilityByFormatFieldNames = [];
 		if ($availabilityToggleValue != null && (!empty($formatCategoryValues) || !empty($formatValues))) {
@@ -1368,7 +1377,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 			$groupedWorkDriver = new GroupedWorkDriver($result['response']['docs'][$i]);
 			if ($groupedWorkDriver->isValid) {
-				$image = $groupedWorkDriver->getBookcoverUrl('medium');
+				$image = $groupedWorkDriver->getBookcoverUrl('medium', true);
 				$description = "<img alt='Cover Image' src='$image'/> " . $groupedWorkDriver->getDescriptionFast();
 				$result['response']['docs'][$i]['rss_description'] = $description;
 			}
@@ -1671,18 +1680,10 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 						$facet->facetName = 'available_at_' . $solrScope;
 					} elseif ($facet->facetName == 'collection' || $facet->facetName == 'collection_group') {
 						$facet->facetName = 'collection_' . $solrScope;
-					}
-				}
-				if (isset($searchLibrary)) {
-					if ($facet->facetName == 'time_since_added') {
-						$facet->facetName = 'local_time_since_added_' . $searchLibrary->subdomain;
+					} elseif ($facet->facetName == 'time_since_added') {
+						$facet->facetName = 'local_time_since_added_' . $solrScope;
 					} elseif ($facet->facetName == 'itype') {
-						$facet->facetName = 'itype_' . $searchLibrary->subdomain;
-					}
-				}
-				if (isset($searchLocation)) {
-					if ($facet->facetName == 'time_since_added' && $searchLocation->restrictSearchByLocation) {
-						$facet->facetName = 'local_time_since_added_' . $searchLocation->code;
+						$facet->facetName = 'itype_' . $solrScope;
 					}
 				}
 

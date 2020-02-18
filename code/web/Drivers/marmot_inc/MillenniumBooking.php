@@ -317,7 +317,7 @@ class MillenniumBooking {
 					$booking['upc'] = $recordDriver->getCleanUPC();   //TODO these may not be used anywhere now that the links are built here, have to check
 					$booking['format_category'] = $recordDriver->getFormatCategory();
 					$booking['linkUrl'] = $recordDriver->getRecordUrl();
-					$booking['coverUrl'] = $recordDriver->getBookcoverUrl('medium');
+					$booking['coverUrl'] = $recordDriver->getBookcoverUrl('medium', true);
 
 					//Load rating information
 //					$booking['ratingData'] = $recordDriver->getRatingData(); // not displaying ratings at this time

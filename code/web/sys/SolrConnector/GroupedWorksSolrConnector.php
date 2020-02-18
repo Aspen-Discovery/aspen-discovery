@@ -191,7 +191,7 @@ class GroupedWorksSolrConnector extends Solr
 			$idString .= "id:{$ratingInfo['workId']}^$ratingBoost";
 		}
 		//$idString = implode(' OR ', $ids);
-		$options = array('q' => $idString, 'mlt.interestingTerms' => 'details', 'mlt.boost' => 'true', 'offset' => $page, 'rows' => $limit, 'fl' => $fieldsToReturn);
+		$options = array('q' => $idString, 'mlt.interestingTerms' => 'details', 'mlt.boost' => 'true', 'start' => ($page - 1) * $limit, 'rows' => $limit, 'fl' => $fieldsToReturn);
 
 		$searchLibrary = Library::getSearchLibrary();
 		$searchLocation = Location::getSearchLocation();

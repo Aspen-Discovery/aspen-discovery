@@ -51,6 +51,30 @@ class SearchAPI extends Action
 			$notes[] = "Solr is not responding";
 		}
 
+		//Check for a current backup
+		global $serverName;
+		$backupDir = "/data/aspen-discovery/{$serverName}/sql_backup/";
+		if (!file_exists($backupDir)){
+			$status[] = self::STATUS_CRITICAL;
+			$notes[] = "Backup directory $backupDir does not exist";
+		}else{
+			$backupFiles = scandir($backupDir);
+			$backupFileFound = false;
+			foreach ($backupFiles as $backupFile){
+				if (preg_match('/.*\.sql\.gz/', $backupFile)){
+					$fileCreationTime = filectime($backupDir . $backupFile);
+					if ((time() - $fileCreationTime) < (24.5 * 60 * 60)){
+						//We have a backup file created in the last 24.5 hours (30 min buffer to give time for the backup to be created)
+						$backupFileFound = true;
+					}
+				}
+			}
+			if (!$backupFileFound){
+				$status[] = self::STATUS_CRITICAL;
+				$notes[] = "A current backup of Aspen was not found in $backupDir.  Check my.cnf to be sure mysqldump credentials exist.";
+			}
+		}
+
 		//Check background processes running (Overdrive, rbdigital, open archives, list indexing, ils extract)
 
 		// Unprocessed Offline Holds //

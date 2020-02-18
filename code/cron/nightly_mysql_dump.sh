@@ -4,7 +4,7 @@
 #
 #  create a tar ball on the backup server
 #
-#  Author: Steve Lindemann
+#  Author: Steve Lindemann, Mark Noble
 #    Date: 18 May 2006
 #
 #-------------------------------------------------------------------------
@@ -24,13 +24,14 @@
 # 11 Dec 13 - v2.4.6 - sml - rewrote to use logger command
 # 13 Feb 14 - v2.4.7 - sml - updated mysql backup to better handle innodb
 # 24 Nov 14 - v2.5.0 - sml - changed to backup pretty much everything
+# 02 Feb 20 - v3.0 - mdn - change to work for Aspen, change file name for easier imports
 #-------------------------------------------------------------------------
 
 if [[ $# -eq 0 ]]; then
 	echo "Please specify the Aspen Discovery instance"
-	echo "eg: $0 nashville.production"
+	echo "eg: $0 model.production"
 	echo "If the main Aspen Discovery database is not named 'aspen', please specify the schema name as well"
-		echo "eg: $0 nashville.production aspen"
+	echo "eg: $0 model.production aspen"
 else
 ASPENSERVER=$1
 
@@ -52,7 +53,7 @@ LOG="logger -t $0 -p local5.notice "
 DUMPFOLDER="/data/aspen-discovery/${ASPENSERVER}/sql_backup"
 if [ ! -e "$DUMPFOLDER" ]
 then
-	DUMPFOLDER="/data/aspen-discovery/${ASPENSERVER}/sql_backup"
+  mkdir $DUMPFOLDER
 fi
 echo "Dumping to $DUMPFOLDER"
 
@@ -70,34 +71,34 @@ $LOG ">> Backup starting <<"
 #--- backup mysql --------------------------------------------
 #-------------------------------------------------------------
 $LOG "~> dumping mysql database"
-mysqldump $DUMPOPT1 mysql > $DUMPFOLDER/mysql.$DATE.mysql.dump
+mysqldump $DUMPOPT1 mysql > $DUMPFOLDER/mysql.$DATE.sql
 $LOG "~> exit code $?"
 $LOG "~> change permissions on dump file"
-chmod 400 $DUMPFOLDER/mysql.$DATE.mysql.dump
+chmod 400 $DUMPFOLDER/mysql.$DATE.sql
 $LOG "~> exit code $?"
 #---
 for DB in $DATABASES
 do
   $LOG "~> dumping $DB database"
-  mysqldump $DUMPOPT2 $DB > $DUMPFOLDER/$DB.$DATE.mysql.dump
+  mysqldump $DUMPOPT2 $DB > $DUMPFOLDER/$DB.$DATE.sql
   $LOG "~> exit code $?"
   $LOG "~> change permissions on dump file"
-  chmod 400 $DUMPFOLDER/$DB.$DATE.mysql.dump
+  chmod 400 $DUMPFOLDER/$DB.$DATE.sql
   $LOG "~> exit code $?"
   $LOG "~> compressing dump file"
-  gzip $DUMPFOLDER/$DB.$DATE.mysql.dump
+  gzip -f $DUMPFOLDER/$DB.$DATE.sql
   $LOG "~> exit code $?"
 done
 
 # Delete dump files older than 3 days
-# $DUMPFOLDER/$DB.$DATE.mysql.dump
+# $DUMPFOLDER/$DB.$DATE.sql
 #uncompressed files
   $LOG "~> deleting dump files older than three days"
 
-find $DUMPFOLDER/ -mindepth 1 -maxdepth 1 -name *.mysql.dump -type f -mtime +3 -delete
+find $DUMPFOLDER/ -mindepth 1 -maxdepth 1 -name *.sql -type f -mtime +3 -delete
   $LOG "~> exit code $?"
 #compressed files
-find $DUMPFOLDER/ -mindepth 1 -maxdepth 1 -name *.mysql.dump.gz -type f -mtime +3 -delete
+find $DUMPFOLDER/ -mindepth 1 -maxdepth 1 -name *.sql.gz -type f -mtime +3 -delete
   $LOG "~> exit code $?"
 
 

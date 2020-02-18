@@ -66,6 +66,10 @@ class ExternalEContent_Home extends Action{
 
 			//Get Related Records to make sure we initialize items
 			$recordInfo = $recordDriver->getGroupedWorkDriver()->getRelatedRecord($recordDriver->getIdWithSource());
+			if ($recordInfo == null){
+				$this->display('../Record/invalidRecord.tpl', 'Invalid Record');
+				die();
+			}
 			$interface->assign('actions', $recordInfo->getActions());
 
 			// Set Show in Main Details Section options for templates

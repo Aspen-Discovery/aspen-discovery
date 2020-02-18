@@ -29,7 +29,6 @@ abstract class Record_Record extends Action
 	public $db;
 
 	public $description;
-	protected $mergedRecords = array();
 
 	function __construct($subAction = false, $record_id = null)
 	{

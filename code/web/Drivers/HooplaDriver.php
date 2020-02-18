@@ -242,7 +242,7 @@ class HooplaDriver extends AbstractEContentDriver{
 						$hooplaRecordDriver = new HooplaRecordDriver($hooplaRecordID);
 						if ($hooplaRecordDriver->isValid()) {
 							// Get Record For other details
-							$currentTitle['coverUrl']      = $hooplaRecordDriver->getBookcoverUrl('medium');
+							$currentTitle['coverUrl']      = $hooplaRecordDriver->getBookcoverUrl('medium', true);
 							$currentTitle['linkUrl']       = $hooplaRecordDriver->getLinkUrl();
 							$currentTitle['groupedWorkId'] = $hooplaRecordDriver->getGroupedWorkId();
 							$currentTitle['ratingData']    = $hooplaRecordDriver->getRatingData();

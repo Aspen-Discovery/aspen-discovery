@@ -541,6 +541,15 @@ function getIndexingUpdates()
 			],
 		],
 
+		'format_status_in_library_use_only' => [
+			'title' => 'Format and status in library use only',
+			'description' => 'Add in library use only to format and status suppression maps',
+			'sql' => [
+				"ALTER TABLE format_map_values ADD COLUMN inLibraryUseOnly TINYINT(1) DEFAULT 0",
+				"ALTER TABLE status_map_values ADD COLUMN inLibraryUseOnly TINYINT(1) DEFAULT 0",
+			],
+		],
+
 		'sideloads' => [
 			'title' => 'Sideload setup',
 			'description' => 'Setup sideloads table to store information about how to index eContent from MARC record uploads',
@@ -711,6 +720,21 @@ function getIndexingUpdates()
 					INDEX allfields(processed, indexAfter, permanent_id),
 					INDEX permanent_id(permanent_id)
 				) ENGINE=InnoDB'
+			]
+		],
+
+		'record_identifiers_to_reload' => [
+			'title' => 'Record Identifiers To Reload',
+			'description' => 'Setup record identifiers to reload to force regrouping',
+			'sql' => [
+				'CREATE TABLE IF NOT EXISTS record_identifiers_to_reload (
+					id int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					type VARCHAR(50) NOT NULL,
+					identifier VARCHAR(50) NOT NULL,
+					processed TINYINT(1) DEFAULT 0,
+					INDEX (type, identifier),
+					INDEX (processed, type)
+				)'
 			]
 		],
 	);
