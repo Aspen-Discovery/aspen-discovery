@@ -541,6 +541,15 @@ function getIndexingUpdates()
 			],
 		],
 
+		'format_status_in_library_use_only' => [
+			'title' => 'Format and status in library use only',
+			'description' => 'Add in library use only to format and status suppression maps',
+			'sql' => [
+				"ALTER TABLE format_map_values ADD COLUMN inLibraryUseOnly TINYINT(1) DEFAULT 0",
+				"ALTER TABLE status_map_values ADD COLUMN inLibraryUseOnly TINYINT(1) DEFAULT 0",
+			],
+		],
+
 		'sideloads' => [
 			'title' => 'Sideload setup',
 			'description' => 'Setup sideloads table to store information about how to index eContent from MARC record uploads',
