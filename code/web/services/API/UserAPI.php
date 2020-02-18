@@ -779,6 +779,14 @@ class UserAPI extends Action
 			$user = UserAccount::validateAccount($username, $password);
 			if ($user && !($user instanceof AspenError)) {
 				$allCheckedOut = $user->getCheckouts(false, true);
+				foreach ($allCheckedOut as $key => $checkout){
+					/** @noinspection SpellCheckingInspection */
+					$checkout['canrenew'] = $checkout['canRenew'];
+					/** @noinspection SpellCheckingInspection */
+					$checkout['itemid'] = $checkout['itemId'];
+					$checkout['renewMessage'] = '';
+					$allCheckedOut[$key] = $checkout;
+				}
 
 				return array('success' => true, 'checkedOutItems' => $allCheckedOut);
 			} else {
