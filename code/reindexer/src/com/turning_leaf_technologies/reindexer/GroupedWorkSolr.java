@@ -1378,7 +1378,7 @@ public class GroupedWorkSolr implements Cloneable {
 		//Remove the word series at the end since this gets cataloged inconsistently
 		series = series.replaceAll("(?i)\\s+series$", "");
 
-		return StringUtils.trimTrailingPunctuation(series);
+		return StringUtils.trimTrailingPunctuation(series).trim();
 	}
 
 
