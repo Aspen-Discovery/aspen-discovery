@@ -3,11 +3,17 @@
 		<div class="alert alert-success">All items were renewed successfully.</div>
 	{elseif $renew_message_data.NotRenewed > 0}
 		<div class="alert alert-warning"><strong>{$renew_message_data.Renewed} of {$renew_message_data.Total}</strong> items were renewed successfully.</div>
-			{foreach from=$renew_message_data.message item=msg}
-				<div class="alert alert-danger">{$msg}</div>
-			{/foreach}
+		{foreach from=$renew_message_data.message item=msg}
+			<div class="alert alert-danger">{$msg}</div>
+		{/foreach}
 	{else}
-		<div class="alert alert-danger">{$renew_message_data.message}</div>
+		{if is_array($renew_message_data.message)}
+            {foreach from=$renew_message_data.message item=msg}
+				<div class="alert alert-danger">{$msg}</div>
+            {/foreach}
+		{else}
+			<div class="alert alert-danger">{$renew_message_data.message}</div>
+		{/if}
 	{/if}
 	{if !empty($renewResults.Total)}
 		<p>
