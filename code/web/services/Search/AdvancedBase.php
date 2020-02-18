@@ -156,7 +156,9 @@ abstract class Search_AdvancedBase extends Action{
 
 			$facets[$facetLabel]['facetName'] = $facet;
 			foreach($keys as $key) {
-				$facets[$facetLabel]['values'][$key] = $currentList[$key];
+				if (isset($currentList[$key])) {
+					$facets[$facetLabel]['values'][$key] = $currentList[$key];
+				}
 			}
 		}
 		global $interface;
