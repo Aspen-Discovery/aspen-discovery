@@ -352,6 +352,16 @@ class UserAPI extends Action
 				}
 			}
 
+			//Add overdrive data
+			if ($user->isValidForEContentSource('overdrive')) {
+				require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+				$driver = new OverDriveDriver();
+				$overDriveSummary = $driver->getAccountSummary($user);
+				$userData->numCheckedOutOverDrive = $overDriveSummary['numCheckedOut'];
+				$userData->numHoldsOverDrive = $overDriveSummary['numAvailableHolds'] + $overDriveSummary['numUnavailableHolds'];
+				$userData->numHoldsAvailableOverDrive = $overDriveSummary['numAvailableHolds'];
+			}
+
 			return array('success' => true, 'profile' => $userData);
 		} else {
 			return array('success' => false, 'message' => 'Login unsuccessful');
