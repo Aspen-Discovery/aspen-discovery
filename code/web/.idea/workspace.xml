@@ -4,24 +4,7 @@
     <list default="true" id="64b30edf-4a70-42c6-b752-8518712fb864" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/../cron/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../cron/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/interface/themes/arlington/GroupedWork/copySummary.tpl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/interface/themes/arlington/GroupedWork/relatedRecords.tpl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/interface/themes/arlington/Record/copiesTableRow.tpl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/interface/themes/arlington/Record/hold-popup.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/interface/themes/arlington/Record/hold-popup.tpl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/interface/themes/arlington/Record/view-holdings.tpl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/interface/themes/arlington/Record/view-title-details.tpl" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/interface/themes/arlington/css/main.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/interface/themes/arlington/css/main.less" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/interface/themes/arlington/css/variables.less" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/interface/themes/nashville_resp/css/main.css" beforeDir="false" afterPath="$PROJECT_DIR$/interface/themes/nashville_resp/css/main.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/GroupedWork/copySummary.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/interface/themes/responsive/GroupedWork/copySummary.tpl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/GroupedWork/multipleVariationManifestion.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/interface/themes/responsive/GroupedWork/multipleVariationManifestion.tpl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/GroupedWork/singleVariationManifestion.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/interface/themes/responsive/GroupedWork/singleVariationManifestion.tpl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/Record/copiesTableRow.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/interface/themes/responsive/Record/copiesTableRow.tpl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/Record/view-holdings.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/interface/themes/responsive/Record/view-holdings.tpl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/Record/view-title-details.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/interface/themes/responsive/Record/view-title-details.tpl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/css/main.css" beforeDir="false" afterPath="$PROJECT_DIR$/interface/themes/responsive/css/main.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sys/Grouping/GroupedWorkDisplaySetting.php" beforeDir="false" afterPath="$PROJECT_DIR$/sys/Grouping/GroupedWorkDisplaySetting.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/API/UserAPI.php" beforeDir="false" afterPath="$PROJECT_DIR$/services/API/UserAPI.php" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -402,7 +385,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
           <url>file://$PROJECT_DIR$/RecordDrivers/HooplaRecordDriver.php</url>
-          <line>227</line>
+          <line>229</line>
           <option name="timeStamp" value="1357" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
@@ -472,7 +455,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
           <url>file://$PROJECT_DIR$/RecordDrivers/MarcRecordDriver.php</url>
-          <line>632</line>
+          <line>634</line>
           <option name="timeStamp" value="1661" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
@@ -777,11 +760,6 @@
           <url>file://$PROJECT_DIR$/Drivers/CarlX.php</url>
           <line>1607</line>
           <option name="timeStamp" value="3177" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/services/API/UserAPI.php</url>
-          <line>780</line>
-          <option name="timeStamp" value="3182" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/interface/themes/responsive/js/aspen/searches.js</url>
