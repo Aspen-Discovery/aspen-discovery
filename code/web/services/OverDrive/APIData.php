@@ -6,44 +6,44 @@ class OverDrive_APIData extends Admin_Admin
 {
 	function launch()
 	{
-        require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
-        $driver = new OverDriveDriver();
+		require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+		$driver = new OverDriveDriver();
 
 		$libraryInfo = $driver->getLibraryAccountInformation();
-		$contents =  "<h1>Main - {$libraryInfo->name}</h1>";
+		$contents = "<h1>Main - {$libraryInfo->name}</h1>";
 		$contents .= $this->easy_printr('Library Account Information', 'libraryAccountInfo', $libraryInfo);
 
 		$advantageAccounts = null;
 		try {
 			$advantageAccounts = $driver->getAdvantageAccountInformation();
-			if ($advantageAccounts) {
-				$contents .=  "<h1>Advantage Accounts</h1>";
-                $contents .= $this->easy_printr('Advantage Account Information', 'advantageAccountInfo', $advantageAccounts);
-                $contents .= "<br/>";
+			if ($advantageAccounts && !empty($advantageAccounts->advantageAccounts)) {
+				$contents .= "<h1>Advantage Accounts</h1>";
+				$contents .= $this->easy_printr('Advantage Account Information', 'advantageAccountInfo', $advantageAccounts);
+				$contents .= "<br/>";
 				foreach ($advantageAccounts->advantageAccounts as $accountInfo) {
-					$contents .=  $accountInfo->name . ' - ' . $accountInfo->collectionToken . '<br/>';
+					$contents .= $accountInfo->name . ' - ' . $accountInfo->collectionToken . '<br/>';
 				}
-			}else{
-				$contents .=  "<div>No advantage accounts for this collection</div>";
+			} else {
+				$contents .= "<div>No advantage accounts for this collection</div>";
 			}
 		} catch (Exception $e) {
-			$contents .=  'Error retrieving Advantage Info';
+			$contents .= 'Error retrieving Advantage Info';
 		}
 
 		$productKey = $libraryInfo->collectionToken;
 
 		if (!empty($_REQUEST['id'])) {
 			$overDriveId = $_REQUEST['id'];
-			$contents .=  "<h2>Metadata</h2>";
-			$contents .=  "<h3>Metadata for $overDriveId</h3>";
+			$contents .= "<h2>Metadata</h2>";
+			$contents .= "<h3>Metadata for $overDriveId</h3>";
 			$metadata = $driver->getProductMetadata($overDriveId, $productKey);
-			if ($metadata){
+			if ($metadata) {
 				$contents .= $this->easy_printr("Metadata for $overDriveId in shared collection", "metadata_{$overDriveId}_{$productKey}", $metadata);
-			}else{
+			} else {
 				$contents .= ("No metadata<br/>");
 			}
 
-			$contents .=  "<h2>Availability</h2>";
+			$contents .= "<h2>Availability</h2>";
 			$contents .= ("<h3>Availability - Main collection: {$libraryInfo->name}</h3>");
 			$availability = $driver->getProductAvailability($overDriveId, $productKey);
 			if ($availability && !isset($availability->errorCode)) {
@@ -85,13 +85,14 @@ class OverDrive_APIData extends Admin_Admin
 	function easy_printr($title, $section, &$var)
 	{
 		$contents = "<a onclick='$(\"#{$section}\").toggle();return false;' href='#'>{$title}</a>";
-		$contents .=  "<pre style='display:none' id='{$section}'>";
+		$contents .= "<pre style='display:none' id='{$section}'>";
 		$contents .= print_r($var, true);
 		$contents .= '</pre>';
 		return $contents;
 	}
 
-	function getAllowableRoles(){
+	function getAllowableRoles()
+	{
 		return array('opacAdmin', 'cataloging');
 	}
 }
