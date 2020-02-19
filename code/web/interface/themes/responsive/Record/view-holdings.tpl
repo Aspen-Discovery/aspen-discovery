@@ -22,16 +22,23 @@
 				</div>
 		{/if}
 
-		<div id="holdings-section-{$section.name|replace:' ':'_'}" class="accordion-body {if count($sections) > 1}collapse {if $section.sectionId <=5}in{/if}{/if}">
-			<div class="accordion-inner">
-				<div class="striped">
-				{include file="Record/copiesTableHeader.tpl"}
-				{foreach from=$section.holdings item=holding}
-					{include file="Record/copiesTableRow.tpl"}
-				{/foreach}
+				<div id="holdings-section-{$section.name|replace:' ':'_'}" class="accordion-body {if count($sections) > 1}collapse {if $section.sectionId <=5}in{/if}{/if}">
+					<div class="accordion-inner">
+						<div class="striped">
+						{include file="Record/copiesTableHeader.tpl"}
+						{foreach from=$section.holdings item=holding name=tableLoop}
+							{if $smarty.foreach.tableLoop.iteration > 5}
+								{assign var=hiddenCopy value=true}
+							{/if}
+
+							{include file="Record/copiesTableRow.tpl"}
+							{if $smarty.foreach.tableLoop.iteration == 5 && count($section.holdings) > 5}
+								<a onclick="$(this).remove();$('.hiddenCopy').show()" role="button" style="cursor: pointer;">Show All Copies</a>
+							{/if}
+						{/foreach}
+						</div>
+					</div>
 				</div>
-			</div>
-		</div>
 
 		{if strlen($section.name) > 0 && count($sections) > 1}
 			{* Close the group *}
@@ -39,7 +46,7 @@
 		{/if}
 	{/foreach}
 {else}
-	No Copies Found
+	{translate text="No Copies Found"}
 {/if}
 
 {if !$show856LinksAsTab && count($links)}

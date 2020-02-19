@@ -3,9 +3,25 @@
   <component name="ChangeListManager">
     <list default="true" id="64b30edf-4a70-42c6-b752-8518712fb864" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/../cron/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../cron/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../cron/cron.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../cron/cron.jar" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/API/UserAPI.php" beforeDir="false" afterPath="$PROJECT_DIR$/services/API/UserAPI.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/interface/themes/arlington/GroupedWork/copySummary.tpl" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/interface/themes/arlington/GroupedWork/relatedRecords.tpl" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/interface/themes/arlington/Record/copiesTableRow.tpl" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/interface/themes/arlington/Record/hold-popup.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/interface/themes/arlington/Record/hold-popup.tpl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/interface/themes/arlington/Record/view-holdings.tpl" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/interface/themes/arlington/Record/view-title-details.tpl" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/interface/themes/arlington/css/main.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/interface/themes/arlington/css/main.less" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/interface/themes/arlington/css/variables.less" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/interface/themes/nashville_resp/css/main.css" beforeDir="false" afterPath="$PROJECT_DIR$/interface/themes/nashville_resp/css/main.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/GroupedWork/copySummary.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/interface/themes/responsive/GroupedWork/copySummary.tpl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/GroupedWork/multipleVariationManifestion.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/interface/themes/responsive/GroupedWork/multipleVariationManifestion.tpl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/GroupedWork/singleVariationManifestion.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/interface/themes/responsive/GroupedWork/singleVariationManifestion.tpl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/Record/copiesTableRow.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/interface/themes/responsive/Record/copiesTableRow.tpl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/Record/view-holdings.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/interface/themes/responsive/Record/view-holdings.tpl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/Record/view-title-details.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/interface/themes/responsive/Record/view-title-details.tpl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/css/main.css" beforeDir="false" afterPath="$PROJECT_DIR$/interface/themes/responsive/css/main.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sys/Grouping/GroupedWorkDisplaySetting.php" beforeDir="false" afterPath="$PROJECT_DIR$/sys/Grouping/GroupedWorkDisplaySetting.php" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />

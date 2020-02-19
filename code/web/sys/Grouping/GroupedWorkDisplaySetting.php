@@ -86,7 +86,7 @@ class GroupedWorkDisplaySetting extends DataObject
 		'showFormats'              => 'Formats',
 		'showEditions'             => 'Editions',
 		'showPhysicalDescriptions' => 'Physical Descriptions',
-		'showISBNs'                => 'ISBNs',
+		'showISBNs'                => 'ISBNs / ISSNs',
 		'showArInfo'               => 'Show Accelerated Reader Information',
 		'showLexileInfo'           => 'Show Lexile Information',
 		'showFountasPinnell'       => 'Show Fountas &amp; Pinnell Information  (This data must be present in MARC records)',

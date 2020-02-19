@@ -5,7 +5,7 @@
  xs-3 : 25%       (1/4)
  xs-2 : 16.6667% (1/6)
  *}
-	<div class="row">
+	<div class="row{if $hiddenCopy} hiddenCopy{/if}"{if $hiddenCopy} style="display: none"{/if}>
 		{if $showVolume}
 			<div class="col-tn-2">
 				{if $holding.volume}

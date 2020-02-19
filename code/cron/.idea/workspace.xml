@@ -3,8 +3,18 @@
   <component name="ChangeListManager">
     <list default="true" id="55ca2c23-0e7e-4349-ac3a-9f29a6a68364" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cron.jar" beforeDir="false" afterPath="$PROJECT_DIR$/cron.jar" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../web/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../web/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/interface/themes/arlington/GroupedWork/copySummary.tpl" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/interface/themes/arlington/GroupedWork/relatedRecords.tpl" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/interface/themes/arlington/Record/view-title-details.tpl" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/interface/themes/arlington/css/main.css" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/arlington/css/main.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/interface/themes/nashville_resp/css/main.css" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/nashville_resp/css/main.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/GroupedWork/copySummary.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/GroupedWork/copySummary.tpl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/GroupedWork/multipleVariationManifestion.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/GroupedWork/multipleVariationManifestion.tpl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/GroupedWork/singleVariationManifestion.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/GroupedWork/singleVariationManifestion.tpl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/Record/view-title-details.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/Record/view-title-details.tpl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/css/main.css" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/css/main.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/sys/Grouping/GroupedWorkDisplaySetting.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/sys/Grouping/GroupedWorkDisplaySetting.php" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -27,99 +37,7 @@
     <favorites_list name="cron" />
   </component>
   <component name="FileEditorManager">
-    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/GroupedWorkSolr.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="128">
-              <caret line="1328" selection-start-line="1328" selection-end-line="1328" />
-              <folding>
-                <element signature="e#46098#46099#0" expanded="true" />
-                <element signature="e#46129#46130#0" expanded="true" />
-                <element signature="e#47434#47435#0" expanded="true" />
-                <element signature="e#47498#47499#0" expanded="true" />
-                <element signature="e#48083#48084#0" expanded="true" />
-                <element signature="e#48131#48132#0" expanded="true" />
-                <element signature="e#53109#53110#0" expanded="true" />
-                <element signature="e#53173#53174#0" expanded="true" />
-                <element signature="e#54360#54361#0" expanded="true" />
-                <element signature="e#54397#54398#0" expanded="true" />
-                <element signature="e#57790#57791#0" expanded="true" />
-                <element signature="e#57827#57828#0" expanded="true" />
-                <element signature="e#63098#63099#0" expanded="true" />
-                <element signature="e#63126#63127#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/IlsRecordProcessor.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="149">
-              <caret line="921" selection-start-line="921" selection-end-line="921" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/indexing/TranslationMap.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="60">
-              <caret line="8" column="13" selection-start-line="8" selection-start-column="13" selection-end-line="8" selection-end-column="13" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/indexing/IndexingProfile.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="315">
-              <caret line="149" column="48" selection-start-line="149" selection-start-column="48" selection-end-line="149" selection-end-column="48" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/../sierra_export_api/src/com/turning_leaf_technologies/sierra/SierraExportAPIMain.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="254">
-              <caret line="924" column="64" selection-start-line="924" selection-start-column="64" selection-end-line="924" selection-end-column="64" />
-              <folding>
-                <element signature="imports" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/strings/StringUtils.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="128">
-              <caret line="144" column="25" selection-start-line="144" selection-start-column="25" selection-end-line="144" selection-end-column="25" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/RbdigitalProcessor.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="61">
-              <caret line="94" column="42" selection-start-line="94" selection-start-column="42" selection-end-line="94" selection-end-column="42" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/RbdigitalMagazineProcessor.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="315">
-              <caret line="32" column="61" selection-start-line="32" selection-start-column="61" selection-end-line="32" selection-end-column="61" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-    </leaf>
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300" />
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
@@ -155,11 +73,11 @@
       <find>get</find>
       <find>Library Use Only</find>
       <find>setInLibraryUseOnly</find>
-      <find>getItemsForB</find>
       <find>determineLibraryUseOnly</find>
       <find>suppress</find>
       <find>status_map_values</find>
       <find>formatsToSuppress</find>
+      <find>getItemsForB</find>
       <find>libraryUse</find>
     </findStrings>
     <replaceStrings>
@@ -559,7 +477,6 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-7" y="-7" width="1550" height="838" extended-state="6" />
-    <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" sideWeight="0.4969325" visible="true" weight="0.21677852" />
       <window_info id="Image Layers" order="1" />
@@ -1213,12 +1130,6 @@
           <option name="timeStamp" value="1331" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/GroupedWorkSolr.java</url>
-          <line>598</line>
-          <properties />
-          <option name="timeStamp" value="1345" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/indexing/IndexingUtils.java</url>
           <line>297</line>
           <properties />
@@ -1273,12 +1184,6 @@
           <line>924</line>
           <properties />
           <option name="timeStamp" value="1399" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/IlsRecordProcessor.java</url>
-          <line>926</line>
-          <properties />
-          <option name="timeStamp" value="1400" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
@@ -1791,29 +1696,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/GroupedWorkSolr.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="128">
-          <caret line="1328" selection-start-line="1328" selection-end-line="1328" />
-          <folding>
-            <element signature="e#46098#46099#0" expanded="true" />
-            <element signature="e#46129#46130#0" expanded="true" />
-            <element signature="e#47434#47435#0" expanded="true" />
-            <element signature="e#47498#47499#0" expanded="true" />
-            <element signature="e#48083#48084#0" expanded="true" />
-            <element signature="e#48131#48132#0" expanded="true" />
-            <element signature="e#53109#53110#0" expanded="true" />
-            <element signature="e#53173#53174#0" expanded="true" />
-            <element signature="e#54360#54361#0" expanded="true" />
-            <element signature="e#54397#54398#0" expanded="true" />
-            <element signature="e#57790#57791#0" expanded="true" />
-            <element signature="e#57827#57828#0" expanded="true" />
-            <element signature="e#63098#63099#0" expanded="true" />
-            <element signature="e#63126#63127#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/../sierra_export_api/src/com/turning_leaf_technologies/sierra/SierraExportAPIMain.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="254">
@@ -1840,8 +1722,31 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/IlsRecordProcessor.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="149">
-          <caret line="921" selection-start-line="921" selection-end-line="921" />
+        <state relative-caret-position="224">
+          <caret line="926" selection-start-line="926" selection-end-line="926" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/GroupedWorkSolr.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="128">
+          <caret line="598" selection-start-line="598" selection-end-line="598" />
+          <folding>
+            <element signature="e#46098#46099#0" expanded="true" />
+            <element signature="e#46129#46130#0" expanded="true" />
+            <element signature="e#47434#47435#0" expanded="true" />
+            <element signature="e#47498#47499#0" expanded="true" />
+            <element signature="e#48083#48084#0" expanded="true" />
+            <element signature="e#48131#48132#0" expanded="true" />
+            <element signature="e#53109#53110#0" expanded="true" />
+            <element signature="e#53173#53174#0" expanded="true" />
+            <element signature="e#54360#54361#0" expanded="true" />
+            <element signature="e#54397#54398#0" expanded="true" />
+            <element signature="e#57790#57791#0" expanded="true" />
+            <element signature="e#57827#57828#0" expanded="true" />
+            <element signature="e#63098#63099#0" expanded="true" />
+            <element signature="e#63126#63127#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
