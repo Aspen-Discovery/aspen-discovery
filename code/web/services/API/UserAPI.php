@@ -780,11 +780,15 @@ class UserAPI extends Action
 			if ($user && !($user instanceof AspenError)) {
 				$allCheckedOut = $user->getCheckouts(false, true);
 				foreach ($allCheckedOut as $key => $checkout){
-					/** @noinspection SpellCheckingInspection */
-					$checkout['canrenew'] = $checkout['canRenew'];
-					/** @noinspection SpellCheckingInspection */
-					$checkout['itemid'] = $checkout['itemId'];
-					$checkout['renewMessage'] = '';
+					if (isset($checkout['canRenew'])){
+						/** @noinspection SpellCheckingInspection */
+						$checkout['canrenew'] = $checkout['canRenew'];
+					}
+					if (isset($checkout['itemId'])) {
+						/** @noinspection SpellCheckingInspection */
+						$checkout['itemid'] = $checkout['itemId'];
+						$checkout['renewMessage'] = '';
+					}
 					$allCheckedOut[$key] = $checkout;
 				}
 
