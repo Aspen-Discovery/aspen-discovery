@@ -271,6 +271,8 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 
 		$interface->assign('primaryIdentifiers', $this->getGroupedWorkDriver()->getPrimaryIdentifiers());
 
+		$interface->assign('bookcoverInfo', $this->getBookcoverInfo());
+
 		$overDriveAPIProduct = new OverDriveAPIProduct();
 		$overDriveAPIProduct->overdriveId = strtolower($this->id);
 		if ($overDriveAPIProduct->find(true)) {

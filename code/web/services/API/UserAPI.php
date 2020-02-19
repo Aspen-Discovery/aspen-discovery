@@ -780,11 +780,15 @@ class UserAPI extends Action
 			if ($user && !($user instanceof AspenError)) {
 				$allCheckedOut = $user->getCheckouts(false, true);
 				foreach ($allCheckedOut as $key => $checkout){
-					/** @noinspection SpellCheckingInspection */
-					$checkout['canrenew'] = $checkout['canRenew'];
-					/** @noinspection SpellCheckingInspection */
-					$checkout['itemid'] = $checkout['itemId'];
-					$checkout['renewMessage'] = '';
+					if (isset($checkout['canRenew'])){
+						/** @noinspection SpellCheckingInspection */
+						$checkout['canrenew'] = $checkout['canRenew'];
+					}
+					if (isset($checkout['itemId'])) {
+						/** @noinspection SpellCheckingInspection */
+						$checkout['itemid'] = $checkout['itemId'];
+						$checkout['renewMessage'] = '';
+					}
 					$allCheckedOut[$key] = $checkout;
 				}
 
@@ -951,6 +955,10 @@ class UserAPI extends Action
 		if ($patron && !($patron instanceof AspenError)) {
 			if (isset($_REQUEST['pickupBranch'])) {
 				$pickupBranch = trim($_REQUEST['pickupBranch']);
+				$locationValid = $this->validatePickupBranch($pickupBranch, $patron);
+				if (!$locationValid){
+					return array('success' => false, 'message' => translate(['text' => 'pickup_location_unavailable', 'defaultText'=>'This location is no longer available, please select a different pickup location']));
+				}
 			} else {
 				$pickupBranch = $patron->_homeLocationCode;
 			}
@@ -971,6 +979,11 @@ class UserAPI extends Action
 		if ($patron && !($patron instanceof AspenError)) {
 			if (isset($_REQUEST['pickupBranch'])) {
 				$pickupBranch = trim($_REQUEST['pickupBranch']);
+				$pickupBranch = trim($_REQUEST['pickupBranch']);
+				$locationValid = $this->validatePickupBranch($pickupBranch, $patron);
+				if (!$locationValid){
+					return array('success' => false, 'message' => translate(['text' => 'pickup_location_unavailable', 'defaultText'=>'This location is no longer available, please select a different pickup location']));
+				}
 			} else {
 				$pickupBranch = $patron->_homeLocationCode;
 			}
@@ -1587,5 +1600,33 @@ class UserAPI extends Action
 			$password = reset($password);
 		}
 		return array($username, $password);
+	}
+
+	/**
+	 * @param string $pickupBranch
+	 * @param User $patron
+	 * @return bool
+	 */
+	protected function validatePickupBranch(string $pickupBranch, User $patron): bool
+	{
+//Validate the selected pickup branch
+		$location = new Location();
+		$location->code = $pickupBranch;
+		$location->find();
+		$locationValid = true;
+		if ($location->N == 1) {
+			$location->fetch();
+			if ($location->validHoldPickupBranch == 2) {
+				//Valid for no one
+				$locationValid = false;
+			} elseif ($location->validHoldPickupBranch == 0) {
+				//Valid for patrons of the branch only
+				$locationValid = $location->code == $patron->_homeLocationCode;
+			}
+		} else {
+			//Location is deleted
+			$locationValid = false;
+		}
+		return $locationValid;
 	}
 }

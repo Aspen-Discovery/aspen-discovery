@@ -181,6 +181,8 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 
 		$interface->assign('primaryIdentifiers', $this->getGroupedWorkDriver()->getPrimaryIdentifiers());
 
+		$interface->assign('bookcoverInfo', $this->getBookcoverInfo());
+
 		$interface->assign('marcRecord', $this->getMarcRecord());
 
 		$lastMarcModificationTime = MarcLoader::lastModificationTimeForIlsId("{$this->profileType}:{$this->id}");
@@ -947,7 +949,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 				return null;
 			}
 		}
-		return MarcRecordDriver::$catalogDriver;
+		return MarcRecordDriver::$catalogDriver->driver;
 	}
 
 	/**

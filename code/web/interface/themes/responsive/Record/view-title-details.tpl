@@ -92,6 +92,15 @@
 		</div>
 	{/if}
 
+	{if $showISBNs && count($recordDriver->getISSNs()) > 0}
+		{if $recordDriver->getISSNs()}
+			<div class="row">
+				<div class="result-label col-md-3">{translate text='ISSN'}:</div>
+				<div class="col-md-9 result-value">{implode subject=$recordDriver->getISSNs()}</div>
+			</div>
+		{/if}
+	{/if}
+
 	{if $showPhysicalDescriptions && $physicalDescriptions}
 		<div class="row">
 			<div class="result-label col-tn-3">{translate text='Physical Desc'}</div>
@@ -142,7 +151,7 @@
 			{if $statusSummary}
 				{assign var=workId value=$recordDriver->getPermanentId()}
 				{include file='GroupedWork/statusIndicator.tpl' statusInformation=$statusSummary->getStatusInformation() viewingIndividualRecord=1}
-				{include file='GroupedWork/copySummary.tpl' summary=$statusSummary->getItemSummary() totalCopies=$statusSummary->getCopies() itemSummaryId=$statusSummary->id}
+				{include file='GroupedWork/copySummary.tpl' summary=$statusSummary->getItemSummary() totalCopies=$statusSummary->getCopies() itemSummaryId=$statusSummary->id format=$recordDriver->getPrimaryFormat()}
 			{else}
 				Unavailable/Withdrawn
 			{/if}

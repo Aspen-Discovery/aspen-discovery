@@ -10015,6 +10015,12 @@ a.browse-thumbnail-sorted.active {
   font-size: 13px;
   font-weight: bold;
 }
+.manifestation-format .btn {
+  width: 100%;
+}
+.manifestation-format .btn-variation {
+  width: 90%;
+}
 .related-manifestation-shelf-status {
   font-size: 13px;
   font-weight: bold;

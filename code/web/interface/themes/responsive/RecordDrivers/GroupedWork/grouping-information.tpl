@@ -38,4 +38,13 @@
 		{/foreach}
 	</table>
 {/if}
+
+{if !empty($bookcoverInfo)}
+	<h4>Book Cover Information</h4>
+	<table class="table-striped table table-condensed notranslate">
+		<tr><th>Image Source</th><td>{$bookcoverInfo->imageSource}</td></tr>
+		<tr><th>First Loaded</th><td>{$bookcoverInfo->firstLoaded|date_format}</td></tr>
+		<tr><th>Last Used</th><td>{$bookcoverInfo->lastUsed|date_format}</td></tr>
+	</table>
+{/if}
 {/strip}

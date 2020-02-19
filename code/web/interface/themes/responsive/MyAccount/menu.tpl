@@ -513,11 +513,13 @@
 						<div id="ilsMenu" class="panel-collapse collapse {if $curSection}in{/if}">
 							<div class="panel-body">
 								<div class="adminMenuLink"><a href="/ILS/IndexingProfiles">{translate text="Indexing Profiles"}</a></div>
-								<div class="adminMenuLink"><a href="/ILS/TranslationMaps">&nbsp;&raquo;&nbsp;{translate text="Translation Maps"}</a></div>
-								{* Sierra/Millennium OPAC Admin Actions*}
-								{if ($ils == 'Millennium' || $ils == 'Sierra')}
-									<div class="adminMenuLink"><a href="/ILS/LoanRules">&nbsp;&raquo;&nbsp;{translate text="Loan Rules"}</a></div>
-									<div class="adminMenuLink"><a href="/ILS/LoanRuleDeterminers">&nbsp;&raquo;&nbsp;{translate text="Loan Rule Determiners"}</a></div>
+								{if array_key_exists('opacAdmin', $userRoles)}
+									<div class="adminMenuLink"><a href="/ILS/TranslationMaps">&nbsp;&raquo;&nbsp;{translate text="Translation Maps"}</a></div>
+									{* Sierra/Millennium OPAC Admin Actions*}
+									{if ($ils == 'Millennium' || $ils == 'Sierra')}
+										<div class="adminMenuLink"><a href="/ILS/LoanRules">&nbsp;&raquo;&nbsp;{translate text="Loan Rules"}</a></div>
+										<div class="adminMenuLink"><a href="/ILS/LoanRuleDeterminers">&nbsp;&raquo;&nbsp;{translate text="Loan Rule Determiners"}</a></div>
+									{/if}
 								{/if}
 								<div class="adminMenuLink"><a href="/ILS/IndexingLog">{translate text="Indexing Log"}</a></div>
 								<div class="adminMenuLink"><a href="/ILS/Dashboard">{translate text="Dashboard"}</a></div>

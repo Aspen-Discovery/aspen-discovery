@@ -460,6 +460,7 @@ public class GroupedWorkSolr implements Cloneable {
 	private void addScopedFieldsToDocument(SolrInputDocument doc) {
 		//Load information based on scopes.  This has some pretty severe performance implications since we potentially
 		//have a lot of scopes and a lot of items & records.
+		int numScopesForWork = 0;
 		for (RecordInfo curRecord : relatedRecords.values()) {
 			doc.addField("record_details", curRecord.getDetails());
 			for (ItemInfo curItem : curRecord.getRelatedItems()) {
@@ -467,6 +468,7 @@ public class GroupedWorkSolr implements Cloneable {
 				HashMap<String, ScopingInfo> curScopingInfo = curItem.getScopingInfo();
 				Set<String> scopingNames = curScopingInfo.keySet();
 				for (String curScopeName : scopingNames) {
+					numScopesForWork++;
 					ScopingInfo curScope = curScopingInfo.get(curScopeName);
 					doc.addField("scoping_details_" + curScopeName, curScope.getScopingDetails());
 					//if we do that, we don't need to filter within PHP
@@ -481,7 +483,6 @@ public class GroupedWorkSolr implements Cloneable {
 					HashSet<String> formatCategories = new HashSet<>();
 					if (curItem.getFormatCategory() != null) {
 						formatCategories.add(curItem.getFormatCategory());
-
 					} else {
 						formatCategories = curRecord.getFormatCategories();
 					}
@@ -553,6 +554,7 @@ public class GroupedWorkSolr implements Cloneable {
 				}
 			}
 		}
+		logger.info("Work " + id + " processed " + numScopesForWork + " scopes");
 
 		//Now that we know the latest number of days added for each scope, we can set the time since added facet
 		for (Scope scope : groupedWorkIndexer.getScopes()) {

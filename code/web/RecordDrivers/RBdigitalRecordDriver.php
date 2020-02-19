@@ -95,6 +95,8 @@ class RBdigitalRecordDriver extends GroupedWorkSubDriver
 
 		$interface->assign('primaryIdentifiers', $this->getGroupedWorkDriver()->getPrimaryIdentifiers());
 
+		$interface->assign('bookcoverInfo', $this->getBookcoverInfo());
+
 		$interface->assign('rbdigitalExtract', $this->rbdigitalRawMetadata);
 		return 'RecordDrivers/RBdigital/staff-view.tpl';
 	}

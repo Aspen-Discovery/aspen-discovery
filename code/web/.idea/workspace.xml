@@ -398,7 +398,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
           <url>file://$PROJECT_DIR$/RecordDrivers/HooplaRecordDriver.php</url>
-          <line>227</line>
+          <line>229</line>
           <option name="timeStamp" value="1357" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
@@ -468,7 +468,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
           <url>file://$PROJECT_DIR$/RecordDrivers/MarcRecordDriver.php</url>
-          <line>632</line>
+          <line>634</line>
           <option name="timeStamp" value="1661" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
@@ -773,11 +773,6 @@
           <url>file://$PROJECT_DIR$/Drivers/CarlX.php</url>
           <line>1607</line>
           <option name="timeStamp" value="3177" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/services/API/UserAPI.php</url>
-          <line>780</line>
-          <option name="timeStamp" value="3182" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/interface/themes/responsive/js/aspen/searches.js</url>
