@@ -14,6 +14,7 @@ class Theme extends DataObject
 	public $headerBackgroundColorDefault;
 	public $headerForegroundColor;
 	public $headerForegroundColorDefault;
+	public $headerBottomBorderWidth;
 	//TODO: Delete header bottom border color from settings?
 //    public $headerBottomBorderColor;
 //    public $headerBottomBorderColorDefault;

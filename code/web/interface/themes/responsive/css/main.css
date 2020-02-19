@@ -8736,6 +8736,20 @@ ul.account-submenu {
 .placard-body {
   font-weight: bold;
 }
+#webMenuNavBar {
+  background-color: #00a4e3;
+  color: #FFF;
+  border: 0;
+  border-top: solid #FFF 2px;
+  border-radius: 0;
+  min-height: auto;
+}
+#webMenuNavBar .navbar-nav > li > a,
+#webMenuNavBar .navbar-nav > li > a:visited {
+  color: #FFF;
+  padding-top: 7px;
+  padding-bottom: 7px;
+}
 #home-page-search {
   background-color: #00a4e3;
   padding: 20px 0 10px;

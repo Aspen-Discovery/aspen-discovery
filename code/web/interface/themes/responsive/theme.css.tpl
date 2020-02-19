@@ -372,6 +372,22 @@ body .container{ldelim}
 {rdelim}
 {/if}
 
+{* Webbuilder*}
+#webMenuNavBar{ldelim}
+    {if !empty($primaryBackgroundColor)}
+    background-color: {$primaryBackgroundColor};
+    {/if}
+    {if $tertiaryBackgroundColor}
+        border-top: solid {$tertiaryBackgroundColor} 2px;
+    {/if}
+    {if !empty($primaryForegroundColor)}
+    color: {$primaryForegroundColor};
+    .navbar-nav > li > a, .navbar-nav > li > a:visited {ldelim}
+        color: {$primaryForegroundColor};
+    {rdelim}
+    {/if}
+{rdelim}
+
 {$additionalCSS}
 </style>
 {/strip}

@@ -634,16 +634,21 @@ if (isset($_SESSION['hold_message'])) {
 //Load Menu if Web Builder is on
 global $enabledModules;
 if (array_key_exists('Web Builder', $enabledModules)){
-	require_once ROOT_DIR . '/sys/WebBuilder/WebBuilderMenu.php';
-	$menuStructure = [];
-	//Get the top level menu
-	$menu = new WebBuilderMenu();
-	$menu->parentMenuId = -1;
-	$menu->find();
-	while ($menu->fetch()){
-		$menuStructure[] = clone $menu;
+	try {
+		require_once ROOT_DIR . '/sys/WebBuilder/WebBuilderMenu.php';
+		$menuStructure = [];
+		//Get the top level menu
+		$menu = new WebBuilderMenu();
+		$menu->parentMenuId = -1;
+		$menu->orderBy('weight ASC, label');
+		$menu->find();
+		while ($menu->fetch()) {
+			$menuStructure[] = clone $menu;
+		}
+		$interface->assign('webMenu', $menuStructure);
+	}catch (Exception $e){
+		//General error trapping if setup is not right
 	}
-	$interface->assign('webMenu', $menuStructure);
 }
 
 // Call Action

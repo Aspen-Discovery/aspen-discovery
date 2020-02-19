@@ -37,7 +37,13 @@ function getWebBuilderUpdates(){
 			]
 		],
 
-		//TODO: Add sorting for menu
+		'web_builder_menu_sorting' => [
+			'title' => 'Web Builder Menu Sorting',
+			'description' => 'Add a weight to the Web Builder',
+			'sql' => [
+				"ALTER TABLE web_builder_menu ADD COLUMN weight INT DEFAULT 0",
+			]
+		],
 
 		//TODO: Add roles
 	];
