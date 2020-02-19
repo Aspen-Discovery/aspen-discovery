@@ -79,6 +79,8 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 
 		$interface->assign('primaryIdentifiers', $this->getGroupedWorkDriver()->getPrimaryIdentifiers());
 
+		$interface->assign('bookcoverInfo', $this->getBookcoverInfo());
+
 		$interface->assign('hooplaExtract', $this->hooplaRawMetadata);
 		return 'RecordDrivers/Hoopla/staff-view.tpl';
 	}
