@@ -2549,7 +2549,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 
 			$volume = null;
 			$volumeId = null;
-			if (count($volumeData)) {
+			if (count($volumeData) > 0) {
 				/** @var IlsVolumeInfo $volumeDataPoint */
 				foreach ($volumeData as $volumeDataPoint) {
 					if ((strlen($volumeDataPoint->relatedItems) == 0) || (strpos($volumeDataPoint->relatedItems, $curItem[1]) !== false)) {

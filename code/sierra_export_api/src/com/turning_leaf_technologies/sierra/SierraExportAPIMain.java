@@ -1582,9 +1582,9 @@ public class SierraExportAPIMain {
 					String existingItems = itemsForVolume.get(volumeId);
 					//noinspection Java8MapApi
 					if (existingItems == null){
-						itemsForVolume.put(volumeId, itemRecordNum);
+						itemsForVolume.put(volumeId, ".i" + itemRecordNum + getCheckDigit(itemRecordNum));
 					}else{
-						itemsForVolume.put(volumeId, existingItems + "|" + itemRecordNum);
+						itemsForVolume.put(volumeId, existingItems + "|" + itemRecordNum + getCheckDigit(itemRecordNum));
 					}
 				}
 				getItemsForVolumeRS.close();
