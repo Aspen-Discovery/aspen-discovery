@@ -7,9 +7,9 @@
 	</div>
 	{foreach from=$relatedManifestation->getVariations() item=variation}
 		<div class="row {if $variation->isHideByDefault()}hiddenManifestation_{$summId}{/if}" {if $variation->isHideByDefault()}style="display: none"{/if}>
-			<div class="col-tn-3 col-xs-4{if !$viewingCombinedResults} col-md-3{/if} manifestation-format">
+			<div class="col-tn-4 col-xs-4{if !$viewingCombinedResults} col-md-3{/if} manifestation-format">
 				&nbsp;&nbsp;&nbsp;
-				<a href="{$variation->getUrl()}" onclick="return AspenDiscovery.ResultsList.toggleRelatedManifestations('{$workId|escapeCSS}_{$relatedManifestation->format|escapeCSS}_{$variation->id|escapeCSS}');">
+				<a class="btn btn-xs btn-primary btn-variation btn-wrap" href="{$variation->getUrl()}" onclick="return AspenDiscovery.ResultsList.toggleRelatedManifestations('{$workId|escapeCSS}_{$relatedManifestation->format|escapeCSS}_{$variation->id|escapeCSS}');">
 					{$variation->label}
 				</a>
 				<br>&nbsp;&nbsp;&nbsp;
@@ -17,7 +17,7 @@
 					<span class="manifestation-toggle-text label {if $variation->getNumRelatedRecords() == 1}label-default{else}label-info{/if}" id='manifestation-toggle-text-{$workId|escapeCSS}_{$variation->format|escapeCSS}'>{if $variation->getNumRelatedRecords() == 1}{translate text='Show&nbsp;Edition'}{else}{translate text='Show&nbsp;Editions'}{/if}</span>
 				</a>
 			</div>
-			<div class="col-tn-9 col-xs-8{if !$viewingCombinedResults} col-md-5 col-lg-6{/if}">
+			<div class="col-tn-5 col-xs-8{if !$viewingCombinedResults} col-md-5 col-lg-6{/if}">
 				{include file='GroupedWork/statusIndicator.tpl' statusInformation=$variation->getStatusInformation() viewingIndividualRecord=0}
 
 				{if $variation->getNumRelatedRecords() == 1}
@@ -26,7 +26,7 @@
 					{include file='GroupedWork/copySummary.tpl' summary=$variation->getItemSummary() totalCopies=$variation->getCopies() itemSummaryId="`$workId`_`$variation->label`" format=$relatedManifestation->format}
 				{/if}
 			</div>
-			<div class="col-tn-9 col-tn-offset-3 col-xs-8 col-xs-offset-4{if !$viewingCombinedResults} col-md-4 col-md-offset-0 col-lg-3{/if} manifestation-actions">
+			<div class="col-tn-8 col-tn-offset-4 col-xs-8 col-xs-offset-4{if !$viewingCombinedResults} col-md-4 col-md-offset-0 col-lg-3{/if} manifestation-actions">
 				<div class="btn-toolbar">
 					<div class="btn-group btn-group-vertical btn-block">
 						{foreach from=$variation->getActions() item=curAction}
