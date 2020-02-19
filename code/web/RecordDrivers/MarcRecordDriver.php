@@ -947,7 +947,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 				return null;
 			}
 		}
-		return MarcRecordDriver::$catalogDriver;
+		return MarcRecordDriver::$catalogDriver->driver;
 	}
 
 	/**

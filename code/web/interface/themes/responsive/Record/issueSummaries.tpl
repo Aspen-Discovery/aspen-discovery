@@ -37,7 +37,7 @@
 						</div>
 				{/if}
 
-				{if count($issueSummary.holdings) > 0}
+				{if !empty($issueSummary.holdings)}
 					<span id='showHoldings-{$smarty.foreach.summaryLoop.iteration}' class='btn btn-xs btn-info'>Show Individual Issues</span>
 					<script	type="text/javascript">
 						$('#showHoldings-{$smarty.foreach.summaryLoop.iteration}').click(function(){literal} { {/literal}
@@ -64,7 +64,7 @@
 				{/if}
 			</div>
 
-			{if count($issueSummary.holdings) > 0}
+			{if !empty($issueSummary.holdings)}
 				<div id='issue-summary-holdings-{$smarty.foreach.summaryLoop.iteration}' class='issue-summary-holdings striped' style='display:none;'>
 					{include file="Record/copiesTableHeader.tpl"}
 					{foreach from=$issueSummary.holdings item=holding}
