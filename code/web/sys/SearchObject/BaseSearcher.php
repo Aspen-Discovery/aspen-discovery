@@ -588,11 +588,18 @@ abstract class SearchObject_BaseSearcher
 				if ($tempSearchInfo[1][-1] == ')'){
 					$tempSearchInfo[1] = substr($tempSearchInfo[1], 0, -1);
 				}
+
 				if (array_key_exists($tempSearchInfo[0], $this->searchIndexes)) {
 					$type = $tempSearchInfo[0];
 					$searchTerm = $tempSearchInfo[1];
 				}else{
-					return false;
+					$validFields = $this->loadValidFields();
+					$dynamicFields = $this->loadDynamicFields();
+					if (!in_array($tempSearchInfo[0], $validFields) && !in_array($tempSearchInfo[0], $dynamicFields) || array_key_exists($tempSearchInfo[0], $this->advancedTypes)) {
+						$searchTerm = str_replace(':', ' ', $searchTerm);
+					}else{
+						return false;
+					}
 				}
 			}else{
 				//This is an advanced search
@@ -682,7 +689,7 @@ abstract class SearchObject_BaseSearcher
 						}else {
 							$group[] = array(
 								'field' => $this->defaultIndex,
-								'lookfor' => $_REQUEST['lookfor'],
+								'lookfor' => str_replace(':', ' ', $_REQUEST['lookfor']),
 								'bool' => 'AND'
 							);
 						}
