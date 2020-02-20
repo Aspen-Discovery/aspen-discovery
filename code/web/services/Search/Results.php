@@ -200,7 +200,31 @@ class Search_Results extends Action {
 
 			//Don't record an error, but send it to issues just to be sure everything looks good
 			global $serverName;
-			if ($configArray['Site']['isProduction']) {
+			$logSearchError = true;
+			//Don't send error message for spammy searches
+			foreach ($searchObject->getSearchTerms() as $term){
+				if (strpos($term['lookfor'],'DBMS_PIPE.RECEIVE_MESSAGE') !== false){
+					$logSearchError = false;
+					break;
+				}elseif (strpos($term['lookfor'],'PG_SLEEP') !== false){
+					$logSearchError = false;
+					break;
+				}elseif (strpos($term['lookfor'],'SELECT') !== false){
+					$logSearchError = false;
+					break;
+				}elseif (strpos($term['lookfor'],'SLEEP') !== false){
+					$logSearchError = false;
+					break;
+				}elseif (strpos($term['lookfor'],'ORDER BY') !== false){
+					$logSearchError = false;
+					break;
+				}elseif (strpos($term['lookfor'],'WAITFOR') !== false){
+					$logSearchError = false;
+					break;
+				}
+			}
+
+			if ($configArray['Site']['isProduction'] && $logSearchError) {
 				require_once ROOT_DIR . '/sys/Email/Mailer.php';
 				$mailer = new Mailer();
 				$emailErrorDetails = $_SERVER['REQUEST_URI'] . "\n" . $result['error']['message'];
