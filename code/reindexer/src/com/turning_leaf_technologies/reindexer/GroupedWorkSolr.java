@@ -600,7 +600,7 @@ public class GroupedWorkSolr implements Cloneable {
 					if (!curScopeDetails.getGroupedWorkDisplaySettings().isBaseAvailabilityToggleOnLocalHoldingsOnly()) {
 						addLibraryOwnership = true;
 						availabilityToggleValues.add("local");
-						if (curScope.isLocallyOwned() && curScope.isAvailable()) {
+						if (curScope.isAvailable()) {
 							availabilityToggleValues.add("available");
 						}
 					}
