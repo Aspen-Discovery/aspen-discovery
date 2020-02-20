@@ -203,24 +203,26 @@ class Search_Results extends Action {
 			$logSearchError = true;
 			//Don't send error message for spammy searches
 			foreach ($searchObject->getSearchTerms() as $term){
-				if (strpos($term['lookfor'],'DBMS_PIPE.RECEIVE_MESSAGE') !== false){
-					$logSearchError = false;
-					break;
-				}elseif (strpos($term['lookfor'],'PG_SLEEP') !== false){
-					$logSearchError = false;
-					break;
-				}elseif (strpos($term['lookfor'],'SELECT') !== false){
-					$logSearchError = false;
-					break;
-				}elseif (strpos($term['lookfor'],'SLEEP') !== false){
-					$logSearchError = false;
-					break;
-				}elseif (strpos($term['lookfor'],'ORDER BY') !== false){
-					$logSearchError = false;
-					break;
-				}elseif (strpos($term['lookfor'],'WAITFOR') !== false){
-					$logSearchError = false;
-					break;
+				if (isset($term['lookfor'])) {
+					if (strpos($term['lookfor'], 'DBMS_PIPE.RECEIVE_MESSAGE') !== false) {
+						$logSearchError = false;
+						break;
+					} elseif (strpos($term['lookfor'], 'PG_SLEEP') !== false) {
+						$logSearchError = false;
+						break;
+					} elseif (strpos($term['lookfor'], 'SELECT') !== false) {
+						$logSearchError = false;
+						break;
+					} elseif (strpos($term['lookfor'], 'SLEEP') !== false) {
+						$logSearchError = false;
+						break;
+					} elseif (strpos($term['lookfor'], 'ORDER BY') !== false) {
+						$logSearchError = false;
+						break;
+					} elseif (strpos($term['lookfor'], 'WAITFOR') !== false) {
+						$logSearchError = false;
+						break;
+					}
 				}
 			}
 
