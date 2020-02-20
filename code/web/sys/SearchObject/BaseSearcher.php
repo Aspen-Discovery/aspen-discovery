@@ -547,14 +547,17 @@ abstract class SearchObject_BaseSearcher
 	 */
 	public function initBasicSearch($searchTerm = null)
 	{
+		require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
 		if ($searchTerm == null) {
 			// If no lookfor parameter was found, we have no search terms to
 			// add to our array!
 			if (!isset($_REQUEST['lookfor'])) {
 				return false;
 			} else {
-				$searchTerm = $_REQUEST['lookfor'];
+				$searchTerm = StringUtils::removeTrailingPunctuation($_REQUEST['lookfor']);
 			}
+		}else{
+			$searchTerm = StringUtils::removeTrailingPunctuation($searchTerm);
 		}
 
 		// If no type defined use default
@@ -582,10 +585,10 @@ abstract class SearchObject_BaseSearcher
 			$tempSearchInfo = explode(':', $searchTerm);
 			if (count($tempSearchInfo) == 2){
 				//Check for leading and trailing parentheses
-				if ($tempSearchInfo[0][0] == '('){
+				if (strlen($tempSearchInfo[0]) > 0 && $tempSearchInfo[0][0] == '('){
 					$tempSearchInfo[0] = substr($tempSearchInfo[0], 1);
 				}
-				if ($tempSearchInfo[1][-1] == ')'){
+				if (strlen($tempSearchInfo[1]) > 0 && $tempSearchInfo[1][-1] == ')'){
 					$tempSearchInfo[1] = substr($tempSearchInfo[1], 0, -1);
 				}
 
