@@ -40,19 +40,7 @@ class LibraryArchiveMoreDetails extends DataObject{
 );
 
 	static function getObjectStructure(){
-		//Load Libraries for lookup values
-		$library = new Library();
-		$library->orderBy('displayName');
-		$user = UserAccount::getLoggedInUser();
-		if (UserAccount::userHasRole('libraryAdmin')){
-			$homeLibrary = Library::getPatronHomeLibrary();
-			$library->libraryId = $homeLibrary->libraryId;
-		}
-		$library->find();
-		$libraryList = array();
-		while ($library->fetch()){
-			$libraryList[$library->libraryId] = $library->displayName;
-		}
+		$libraryList = Library::getLibraryList();
 
 		$structure = array(
 			'id'                => array('property'=>'id',                'type'=>'label', 'label'=>'Id', 'description'=>'The unique id of the hours within the database'),

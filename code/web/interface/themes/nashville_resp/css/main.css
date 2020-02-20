@@ -8752,6 +8752,10 @@ ul.account-submenu {
   padding-top: 7px;
   padding-bottom: 7px;
 }
+#webMenuNavBar .navbar-nav > li.open > a,
+#webMenuNavBar .navbar-nav > li.open > a:visited {
+  color: #555555;
+}
 #home-page-search {
   background-color: #00a4e3;
   padding: 20px 0 10px;
@@ -10882,6 +10886,13 @@ fieldset[disabled] .btn-masquerade.active {
   font-size: 38px;
   font-weight: bolder;
   text-align: center;
+}
+.staff-member {
+  padding-bottom: 5px;
+}
+.staff-name {
+  font-size: 16px;
+  font-weight: bold;
 }
 /* ---------------- Base Changes ---------------- */
 body {

@@ -15,7 +15,12 @@ class WebBuilder_BasicPage extends Action{
 			$this->display('../Record/invalidPage.tpl', 'Invalid Page');
 			die();
 		}
-		$interface->assign('contents', $basicPage->contents);
+
+		//Add in widgets and links to titles
+		$contents = $basicPage->contents;
+
+
+		$interface->assign('contents', $contents);
 		$interface->assign('title', $basicPage->title);
 
 		$sidebar = null;

@@ -45,6 +45,25 @@ function getWebBuilderUpdates(){
 			]
 		],
 
+		'staff_members' => [
+			'title' => 'Staff Members',
+			'description' => 'Add staff members so we can automatically display a directory',
+			'sql' => [
+				"CREATE TABLE staff_members (
+					id INT(11) AUTO_INCREMENT PRIMARY KEY,
+					name VARCHAR(100),
+					role VARCHAR(100),
+					email VARCHAR(255),
+					phone VARCHAR(13),
+					libraryId INT(11),
+					photo VARCHAR(255),
+					description MEDIUMTEXT
+				) ENGINE INNODB"
+			],
+		],
 		//TODO: Add roles
+		//TODO: Add library to pages
+		//TODO: Upload of files
+
 	];
 }

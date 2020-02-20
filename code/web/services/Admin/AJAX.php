@@ -165,7 +165,6 @@ class Admin_AJAX extends Action
 	function getAddToSpotlightForm()
 	{
 		global $interface;
-		$user = UserAccount::getLoggedInUser();
 		// Display Page
 		$interface->assign('id', strip_tags($_REQUEST['id']));
 		$interface->assign('source', strip_tags($_REQUEST['source']));
