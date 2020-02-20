@@ -285,7 +285,33 @@ abstract class SearchObject_BaseSearcher
 	protected function getFacetLabel($field)
 	{
 		global $solrScope;
-		$shortField = str_replace("_$solrScope", '', $field);
+
+		$shortField = $field;
+		if (strpos($shortField, 'availability_toggle_') === 0) {
+			$shortField = 'availability_toggle';
+		} elseif (strpos($shortField, 'format') === 0) {
+			$shortField = 'format';
+		} elseif (strpos($shortField, 'format_category') === 0) {
+			$shortField = 'format_category';
+		} elseif (strpos($shortField, 'econtent_source') === 0) {
+			$shortField = 'econtent_source';
+		} elseif (strpos($shortField, 'econtent_protection_type') === 0) {
+			$shortField = 'econtent_protection_type';
+		} elseif (strpos($shortField, 'detailed_location') === 0) {
+			$shortField = 'detailed_location';
+		} elseif (strpos($shortField, 'owning_location') === 0) {
+			$shortField = 'owning_location';
+		} elseif (strpos($shortField, 'owning_library') === 0) {
+			$shortField = 'owning_library';
+		} elseif (strpos($shortField, 'available_at') === 0) {
+			$shortField = 'available_at';
+		} elseif (strpos($shortField, 'collection') === 0 || strpos($shortField, 'collection_group') === 0) {
+			$shortField = 'collection';
+		} elseif (strpos($shortField, 'local_time_since_added') === 0) {
+			$shortField = 'local_time_since_added';
+		} elseif (strpos($shortField, 'itype') === 0) {
+			$shortField = 'itype';
+		}
 		$facetConfig = $this->getFacetConfig();
 		if (isset($facetConfig[$field])) {
 			$facetConfig = $facetConfig[$field];
