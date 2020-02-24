@@ -23,9 +23,9 @@ public class IndexingUtils {
 			HashMap<Long, SideLoadScope> sideLoadScopes = loadSideLoadScopes(dbConn, logger);
 			HashMap<Long, GroupedWorkDisplaySettings> groupedWorkDisplaySettings = loadGroupedWorkDisplaySettings(dbConn, logger);
 
-			loadLibraryScopes(scopes, groupedWorkDisplaySettings, overDriveScopes, hooplaScopes, rbdigitalScopes, cloudLibraryScopes, sideLoadScopes, dbConn);
+			loadLibraryScopes(scopes, groupedWorkDisplaySettings, overDriveScopes, hooplaScopes, rbdigitalScopes, cloudLibraryScopes, sideLoadScopes, dbConn, logger);
 
-			loadLocationScopes(scopes, groupedWorkDisplaySettings, overDriveScopes, hooplaScopes, rbdigitalScopes, cloudLibraryScopes, sideLoadScopes, dbConn);
+			loadLocationScopes(scopes, groupedWorkDisplaySettings, overDriveScopes, hooplaScopes, rbdigitalScopes, cloudLibraryScopes, sideLoadScopes, dbConn, logger);
 		} catch (SQLException e) {
 			logger.error("Error setting up scopes", e);
 		}
@@ -188,7 +188,7 @@ public class IndexingUtils {
 		return sideLoadScopes;
 	}
 
-	private static void loadLocationScopes(TreeSet<Scope> scopes, HashMap<Long, GroupedWorkDisplaySettings> groupedWorkDisplaySettings, HashMap<Long, OverDriveScope> overDriveScopes, HashMap<Long, HooplaScope> hooplaScopes, HashMap<Long, RbdigitalScope> rbdigitalScopes, HashMap<Long, CloudLibraryScope> cloudLibraryScopes, HashMap<Long, SideLoadScope> sideLoadScopes, Connection dbConn) throws SQLException {
+	private static void loadLocationScopes(TreeSet<Scope> scopes, HashMap<Long, GroupedWorkDisplaySettings> groupedWorkDisplaySettings, HashMap<Long, OverDriveScope> overDriveScopes, HashMap<Long, HooplaScope> hooplaScopes, HashMap<Long, RbdigitalScope> rbdigitalScopes, HashMap<Long, CloudLibraryScope> cloudLibraryScopes, HashMap<Long, SideLoadScope> sideLoadScopes, Connection dbConn, Logger logger) throws SQLException {
 		PreparedStatement locationInformationStmt = dbConn.prepareStatement("SELECT library.libraryId, locationId, code, subLocation, ilsCode, " +
 						"library.subdomain, location.facetLabel, location.displayName, library.pTypes, library.restrictOwningBranchesAndSystems, location.publicListsToInclude, " +
 						"location.additionalLocationsToShowAvailabilityFor, includeAllLibraryBranchesInFacets, " +
@@ -242,6 +242,12 @@ public class IndexingUtils {
 			long groupedWorkDisplaySettingId = locationInformationRS.getLong("groupedWorkDisplaySettingIdLocation");
 			if (groupedWorkDisplaySettingId == -1){
 				groupedWorkDisplaySettingId = locationInformationRS.getLong("groupedWorkDisplaySettingIdLibrary");
+			}
+			if (groupedWorkDisplaySettings.containsKey(groupedWorkDisplaySettingId)) {
+				locationScopeInfo.setGroupedWorkDisplaySettings(groupedWorkDisplaySettings.get(groupedWorkDisplaySettingId));
+			}else{
+				logger.error("Invalid groupedWorkDisplaySettingId provided, got " + groupedWorkDisplaySettingId + " not loading location scope " + scopeName);
+				continue;
 			}
 			locationScopeInfo.setGroupedWorkDisplaySettings(groupedWorkDisplaySettings.get(groupedWorkDisplaySettingId));
 			boolean includeLibraryRecordsToInclude = locationInformationRS.getBoolean("includeLibraryRecordsToInclude");
@@ -379,7 +385,7 @@ public class IndexingUtils {
 
 	private static PreparedStatement libraryRecordInclusionRulesStmt;
 
-	private static void loadLibraryScopes(TreeSet<Scope> scopes, HashMap<Long, GroupedWorkDisplaySettings> groupedWorkDisplaySettings, HashMap<Long, OverDriveScope> overDriveScopes, HashMap<Long, HooplaScope> hooplaScopes, HashMap<Long, RbdigitalScope> rbdigitalScopes, HashMap<Long, CloudLibraryScope> cloudLibraryScopes, HashMap<Long, SideLoadScope> sideLoadScopes, Connection dbConn) throws SQLException {
+	private static void loadLibraryScopes(TreeSet<Scope> scopes, HashMap<Long, GroupedWorkDisplaySettings> groupedWorkDisplaySettings, HashMap<Long, OverDriveScope> overDriveScopes, HashMap<Long, HooplaScope> hooplaScopes, HashMap<Long, RbdigitalScope> rbdigitalScopes, HashMap<Long, CloudLibraryScope> cloudLibraryScopes, HashMap<Long, SideLoadScope> sideLoadScopes, Connection dbConn, Logger logger) throws SQLException {
 		PreparedStatement libraryInformationStmt = dbConn.prepareStatement("SELECT libraryId, ilsCode, subdomain, " +
 						"displayName, facetLabel, pTypes, restrictOwningBranchesAndSystems, publicListsToInclude, " +
 						"additionalLocationsToShowAvailabilityFor, overDriveScopeId, " +
@@ -417,7 +423,13 @@ public class IndexingUtils {
 			newScope.setRelatedPTypes(pTypes.split(","));
 			newScope.setPublicListsToInclude(libraryInformationRS.getInt("publicListsToInclude"));
 			newScope.setAdditionalLocationsToShowAvailabilityFor(libraryInformationRS.getString("additionalLocationsToShowAvailabilityFor"));
-			newScope.setGroupedWorkDisplaySettings(groupedWorkDisplaySettings.get(libraryInformationRS.getLong("groupedWorkDisplaySettingId")));
+			long groupedWorkDisplaySettingId = libraryInformationRS.getLong("groupedWorkDisplaySettingId");
+			if (groupedWorkDisplaySettings.containsKey(groupedWorkDisplaySettingId)) {
+				newScope.setGroupedWorkDisplaySettings(groupedWorkDisplaySettings.get(groupedWorkDisplaySettingId));
+			}else{
+				logger.error("Invalid groupedWorkDisplaySettingId provided, got " + groupedWorkDisplaySettingId + " not loading library scope " + subdomain);
+				continue;
+			}
 
 			long overDriveScopeLibrary = libraryInformationRS.getLong("overDriveScopeId");
 			if (overDriveScopeLibrary != -1) {

@@ -292,7 +292,7 @@ public class Scope implements Comparable<Scope>{
 		return groupedWorkDisplaySettings;
 	}
 
-	public void setGroupedWorkDisplaySettings(GroupedWorkDisplaySettings groupedWorkDisplaySettings) {
+	void setGroupedWorkDisplaySettings(GroupedWorkDisplaySettings groupedWorkDisplaySettings) {
 		this.groupedWorkDisplaySettings = groupedWorkDisplaySettings;
 	}
 
