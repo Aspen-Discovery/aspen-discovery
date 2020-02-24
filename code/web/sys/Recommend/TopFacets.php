@@ -155,7 +155,7 @@ class TopFacets implements RecommendationInterface
 
 				$numButtons = 4;
 				foreach ($facetSet['list'] as $facetKey => $facet){
-					if ($facetKey == 'local' || $facetKey == 'Entire Collection'){
+					if ($facetKey == 'local'){
 						$includeButton = true;
 						$facet['display'] = $localLabel;
 						if (trim($localLabel) == ''){
@@ -168,17 +168,17 @@ class TopFacets implements RecommendationInterface
 					}elseif ($facetKey == 'global' || $facetKey == ''){
 						$facet['display'] = $superScopeLabel;
 						$sortedFacetList[0] = $facet;
-					}elseif ($facetKey == 'available' || $facet['value'] == 'Available Now'){
+					}elseif ($facetKey == 'available'){
 						$facet['display'] = $availableLabel;
 						$sortedFacetList[2] = $facet;
-					}elseif ($facet['value'] == 'available_online' || $facet['value'] == 'Available Online'){
+					}elseif ($facet['value'] == 'available_online'){
 						if (strlen($availableOnlineLabel) > 0){
 							$facet['display'] = $availableOnlineLabel;
 							$sortedFacetList[3] = $facet;
 						}
-					}else{
+					}/*else{
 						$sortedFacetList[$numButtons++] = $facet;
-					}
+					}*/
 				}
 
 				ksort($sortedFacetList);
