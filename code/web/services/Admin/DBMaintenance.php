@@ -1950,6 +1950,15 @@ class Admin_DBMaintenance extends Admin_Admin
 					],
 				],
 
+				'cached_value_case_sensitive' => [
+					'title' => 'Memory cache case sensitive keys',
+					'description' => 'Make Memory cache keys case sensitive',
+					'sql' => [
+						'ALTER TABLE cached_values CHANGE COLUMN cacheKey cacheKey VARCHAR(200) COLLATE utf8_bin',
+						'TRUNCATE TABLE cached_values',
+					],
+				],
+
 				'error_table' => [
 					'title' => 'Error Logging',
 					'description' => 'Table to store error information',

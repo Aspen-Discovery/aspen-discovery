@@ -39,29 +39,33 @@ $timer->logTime('Loaded display options within interface');
 
 global $active_ip;
 
-require_once ROOT_DIR . '/sys/Enrichment/GoogleApiSetting.php';
-$googleSettings = new GoogleApiSetting();
-if ($googleSettings->find(true)) {
-	$googleAnalyticsId = $googleSettings->googleAnalyticsTrackingId;
-	$googleAnalyticsLinkingId = $googleSettings->googleAnalyticsTrackingId;
-	$interface->assign('googleAnalyticsId', $googleSettings->googleAnalyticsTrackingId);
-	$interface->assign('googleAnalyticsLinkingId', $googleSettings->googleAnalyticsLinkingId);
-	$linkedProperties = '';
-	if (!empty($googleSettings->googleAnalyticsLinkedProperties)){
-		$linkedPropertyArray = preg_split ('~\\r\\n|\\r|\\n~', $googleSettings->googleAnalyticsLinkedProperties);
-		foreach ($linkedPropertyArray as $linkedProperty) {
-			if (strlen($linkedProperties) > 0) {
-				$linkedProperties .= ', ';
+try {
+	require_once ROOT_DIR . '/sys/Enrichment/GoogleApiSetting.php';
+	$googleSettings = new GoogleApiSetting();
+	if ($googleSettings->find(true)) {
+		$googleAnalyticsId = $googleSettings->googleAnalyticsTrackingId;
+		$googleAnalyticsLinkingId = $googleSettings->googleAnalyticsTrackingId;
+		$interface->assign('googleAnalyticsId', $googleSettings->googleAnalyticsTrackingId);
+		$interface->assign('googleAnalyticsLinkingId', $googleSettings->googleAnalyticsLinkingId);
+		$linkedProperties = '';
+		if (!empty($googleSettings->googleAnalyticsLinkedProperties)) {
+			$linkedPropertyArray = preg_split('~\\r\\n|\\r|\\n~', $googleSettings->googleAnalyticsLinkedProperties);
+			foreach ($linkedPropertyArray as $linkedProperty) {
+				if (strlen($linkedProperties) > 0) {
+					$linkedProperties .= ', ';
+				}
+				$linkedProperties .= "'{$linkedProperty}'";
 			}
-			$linkedProperties .= "'{$linkedProperty}'";
+		}
+		$interface->assign('googleAnalyticsLinkedProperties', $linkedProperties);
+		if ($googleAnalyticsId) {
+			$googleAnalyticsDomainName = !empty($googleSettings->googleAnalyticsDomainName) ? $googleSettings->googleAnalyticsDomainName : strstr($_SERVER['SERVER_NAME'], '.');
+			// check for a config setting, use that if found, otherwise grab domain name  but remove the first subdomain
+			$interface->assign('googleAnalyticsDomainName', $googleAnalyticsDomainName);
 		}
 	}
-	$interface->assign('googleAnalyticsLinkedProperties', $linkedProperties);
-	if ($googleAnalyticsId) {
-		$googleAnalyticsDomainName = !empty($googleSettings->googleAnalyticsDomainName) ? $googleSettings->googleAnalyticsDomainName : strstr($_SERVER['SERVER_NAME'], '.');
-		// check for a config setting, use that if found, otherwise grab domain name  but remove the first subdomain
-		$interface->assign('googleAnalyticsDomainName', $googleAnalyticsDomainName);
-	}
+}catch (Exception $e){
+	//Google Analytics not installed yet
 }
 
 /** @var Library $library */
@@ -242,9 +246,11 @@ if (isset($_REQUEST['lookfor'])) {
 				$_GET['lookfor'][$i]     = preg_replace('~(https|mailto|http):/{0,2}~i', '', $searchTerm);
 			}
 			if (strlen($searchTerm) >= 256) {
-				AspenError::raiseError("Sorry your query is too long, please rephrase your query.");
-				$_REQUEST['lookfor'][$i] = '';
-				$_GET['lookfor'][$i]     = '';
+				//This is normally someone trying to inject junk into the database, give them an error page and don't log it
+				$interface->setTemplate('../queryTooLong.tpl');
+				$interface->setPageTitle('An Error has occurred');
+				$interface->display('layout.tpl');
+				exit();
 			}
 		}
 	} else {
@@ -255,8 +261,10 @@ if (isset($_REQUEST['lookfor'])) {
 			$searchTerm     = preg_replace('~(https|mailto|http):/{0,2}~i', '', $searchTerm);
 		}
 		if (strlen($searchTerm) >= 256) {
-			AspenError::raiseError("Sorry your query is too long, please rephrase your query.");
-			$searchTerm = '';
+			$interface->setTemplate('../queryTooLong.tpl');
+			$interface->setPageTitle('An Error has occurred');
+			$interface->display('layout.tpl');
+			exit();
 		}
 		if ($searchTerm != $_REQUEST['lookfor']){
 			$_REQUEST['lookfor'] = $searchTerm;

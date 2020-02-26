@@ -274,11 +274,6 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 					$facet->facetName = 'itype_' . $solrScope;
 				}
 			}
-			if (isset($searchLocation)) {
-				if ($facet->facetName == 'time_since_added' && $searchLocation->restrictSearchByLocation) {
-					$facet->facetName = 'local_time_since_added_' . $searchLocation->code;
-				}
-			}
 		}
 
 		//********************
@@ -918,6 +913,20 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 			if ($multiSelect) {
 				$filterQuery[] = "$fieldPrefix$field:($fieldValue)";
 			}
+		}
+
+		//Check to see if we should apply a default filter
+		if ($availabilityToggleValue == null){
+			global $library;
+			$location = Location::getSearchLocation(null);
+			if ($location != null){
+				$groupedWorkDisplaySettings = $location->getGroupedWorkDisplaySettings();
+			}else{
+				$groupedWorkDisplaySettings = $library->getGroupedWorkDisplaySettings();
+			}
+			$availabilityToggleValue = $groupedWorkDisplaySettings->defaultAvailabilityToggle;
+
+			$filterQuery['availability_toggle_'. $solrScope] = "availability_toggle_{$solrScope}:\"{$availabilityToggleValue}\"";
 		}
 
 		//Check to see if we have both a format and availability facet applied.
@@ -1671,18 +1680,10 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 						$facet->facetName = 'available_at_' . $solrScope;
 					} elseif ($facet->facetName == 'collection' || $facet->facetName == 'collection_group') {
 						$facet->facetName = 'collection_' . $solrScope;
-					}
-				}
-				if (isset($searchLibrary)) {
-					if ($facet->facetName == 'time_since_added') {
-						$facet->facetName = 'local_time_since_added_' . $searchLibrary->subdomain;
+					} elseif ($facet->facetName == 'time_since_added') {
+						$facet->facetName = 'local_time_since_added_' . $solrScope;
 					} elseif ($facet->facetName == 'itype') {
-						$facet->facetName = 'itype_' . $searchLibrary->subdomain;
-					}
-				}
-				if (isset($searchLocation)) {
-					if ($facet->facetName == 'time_since_added' && $searchLocation->restrictSearchByLocation) {
-						$facet->facetName = 'local_time_since_added_' . $searchLocation->code;
+						$facet->facetName = 'itype_' . $solrScope;
 					}
 				}
 

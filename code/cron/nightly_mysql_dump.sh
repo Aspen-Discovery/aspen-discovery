@@ -29,9 +29,9 @@
 
 if [[ $# -eq 0 ]]; then
 	echo "Please specify the Aspen Discovery instance"
-	echo "eg: $0 nashville.production"
+	echo "eg: $0 model.production"
 	echo "If the main Aspen Discovery database is not named 'aspen', please specify the schema name as well"
-		echo "eg: $0 nashville.production aspen"
+	echo "eg: $0 model.production aspen"
 else
 ASPENSERVER=$1
 

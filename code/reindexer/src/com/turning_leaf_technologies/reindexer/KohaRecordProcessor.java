@@ -20,9 +20,9 @@ import java.util.List;
 class KohaRecordProcessor extends IlsRecordProcessor {
 	private HashSet<String> inTransitItems = new HashSet<>();
 	private HashSet<String> onHoldShelfItems = new HashSet<>();
-	private HashMap<Long, String> lostStatuses = new HashMap<>();
-	private HashMap<Long, String> damagedStatuses = new HashMap<>();
-	private HashMap<Long, String> notForLoanStatuses = new HashMap<>();
+	private HashMap<String, String> lostStatuses = new HashMap<>();
+	private HashMap<String, String> damagedStatuses = new HashMap<>();
+	private HashMap<String, String> notForLoanStatuses = new HashMap<>();
 
 	KohaRecordProcessor(GroupedWorkIndexer indexer, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		this (indexer, dbConn, indexingProfileRS, logger, fullReindex, null);
@@ -92,14 +92,14 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 					PreparedStatement lostStatusStmt = kohaConnection.prepareStatement("SELECT * FROM authorised_values where category = 'LOST'");
 					ResultSet lostStatusRS = lostStatusStmt.executeQuery();
 					while (lostStatusRS.next()) {
-						lostStatuses.put(lostStatusRS.getLong("authorised_value"), lostStatusRS.getString("lib"));
+						lostStatuses.put(lostStatusRS.getString("authorised_value"), lostStatusRS.getString("lib"));
 					}
 					lostStatusRS.close();
 
 					PreparedStatement damagedStatusStmt = kohaConnection.prepareStatement("SELECT * FROM authorised_values where category = 'DAMAGED'");
 					ResultSet damagedStatusRS = damagedStatusStmt.executeQuery();
 					while (damagedStatusRS.next()) {
-						damagedStatuses.put(damagedStatusRS.getLong("authorised_value"), damagedStatusRS.getString("lib"));
+						damagedStatuses.put(damagedStatusRS.getString("authorised_value"), damagedStatusRS.getString("lib"));
 					}
 					damagedStatusRS.close();
 
@@ -107,7 +107,7 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 					PreparedStatement notForLoanStatusStmt = kohaConnection.prepareStatement("SELECT * FROM authorised_values where category = 'NOT_LOAN'");
 					ResultSet notForLoanStatusesRS = notForLoanStatusStmt.executeQuery();
 					while (notForLoanStatusesRS.next()) {
-						notForLoanStatuses.put(notForLoanStatusesRS.getLong("authorised_value"), notForLoanStatusesRS.getString("lib"));
+						notForLoanStatuses.put(notForLoanStatusesRS.getString("authorised_value"), notForLoanStatusesRS.getString("lib"));
 					}
 					notForLoanStatusesRS.close();
 
@@ -282,8 +282,7 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 						}
 					}else if (subfield == '1'){
 						try {
-							Long subfieldDataNumeric = Long.parseLong(fieldData);
-							return lostStatuses.get(subfieldDataNumeric);
+							return lostStatuses.get(fieldData);
 						}catch (NumberFormatException nfe) {
 							switch (fieldData) {
 								case "lost":
@@ -299,8 +298,7 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 
 					}else if (subfield == '4'){
 						try {
-							Long subfieldDataNumeric = Long.parseLong(fieldData);
-							return damagedStatuses.get(subfieldDataNumeric);
+							return damagedStatuses.get(fieldData);
 						}catch (NumberFormatException nfe) {
 							//Didn't get a valid status
 							return null;
@@ -311,8 +309,7 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 							return "On Order";
 						}
 						try {
-							Long subfieldDataNumeric = Long.parseLong(fieldData);
-							return notForLoanStatuses.get(subfieldDataNumeric);
+							return notForLoanStatuses.get(fieldData);
 						}catch (NumberFormatException nfe) {
 							//Didn't get a valid status
 							return null;

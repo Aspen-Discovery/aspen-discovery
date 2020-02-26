@@ -460,6 +460,7 @@ public class GroupedWorkSolr implements Cloneable {
 	private void addScopedFieldsToDocument(SolrInputDocument doc) {
 		//Load information based on scopes.  This has some pretty severe performance implications since we potentially
 		//have a lot of scopes and a lot of items & records.
+		int numScopesForWork = 0;
 		for (RecordInfo curRecord : relatedRecords.values()) {
 			doc.addField("record_details", curRecord.getDetails());
 			for (ItemInfo curItem : curRecord.getRelatedItems()) {
@@ -467,6 +468,7 @@ public class GroupedWorkSolr implements Cloneable {
 				HashMap<String, ScopingInfo> curScopingInfo = curItem.getScopingInfo();
 				Set<String> scopingNames = curScopingInfo.keySet();
 				for (String curScopeName : scopingNames) {
+					numScopesForWork++;
 					ScopingInfo curScope = curScopingInfo.get(curScopeName);
 					doc.addField("scoping_details_" + curScopeName, curScope.getScopingDetails());
 					//if we do that, we don't need to filter within PHP
@@ -481,7 +483,6 @@ public class GroupedWorkSolr implements Cloneable {
 					HashSet<String> formatCategories = new HashSet<>();
 					if (curItem.getFormatCategory() != null) {
 						formatCategories.add(curItem.getFormatCategory());
-
 					} else {
 						formatCategories = curRecord.getFormatCategories();
 					}
@@ -553,6 +554,7 @@ public class GroupedWorkSolr implements Cloneable {
 				}
 			}
 		}
+		logger.info("Work " + id + " processed " + numScopesForWork + " scopes");
 
 		//Now that we know the latest number of days added for each scope, we can set the time since added facet
 		for (Scope scope : groupedWorkIndexer.getScopes()) {
@@ -568,36 +570,48 @@ public class GroupedWorkSolr implements Cloneable {
 		boolean addLocationOwnership = false;
 		boolean addLibraryOwnership = false;
 		HashSet<String> availabilityToggleValues = new HashSet<>();
-		Scope curScopeDetails = curScope.getScope();
-		if (curScope.isLocallyOwned() && curScopeDetails.isLocationScope()) {
-			addLocationOwnership = true;
-			addLibraryOwnership = true;
-			availabilityToggleValues.add("Entire Collection");
-		}
-		if (curScope.isLibraryOwned()) {
-			if (curScopeDetails.isLocationScope()) {
-				if (!curScopeDetails.getGroupedWorkDisplaySettings().isBaseAvailabilityToggleOnLocalHoldingsOnly()) {
-					addLibraryOwnership = true;
-					availabilityToggleValues.add("Entire Collection");
-				}
-			} else {
-				addLibraryOwnership = true;
-				availabilityToggleValues.add("Entire Collection");
-			}
-		}
-		if (curItem.isEContent()) {
-			//If the item is eContent, we will count it as part of the collection since it will be available.
-			availabilityToggleValues.add("Entire Collection");
-		}
+		Scope curScopeDetails = curScope.getScope();availabilityToggleValues.add("global");
 
-		if (!curItem.isEContent() && curScope.isLocallyOwned() && curScope.isAvailable()) {
-			availabilityToggleValues.add("Available Now");
-		}
-		if (curItem.isEContent() && curScope.isAvailable()) {
-			if (curScopeDetails.getGroupedWorkDisplaySettings().isIncludeOnlineMaterialsInAvailableToggle()) {
-				availabilityToggleValues.add("Available Now");
+		if (curItem.isEContent()){
+			//If the item is eContent, we will count it as part of the collection since it will be available.
+			availabilityToggleValues.add("local");
+			if (curScope.isAvailable()){
+				if (curScopeDetails.getGroupedWorkDisplaySettings().isIncludeOnlineMaterialsInAvailableToggle()) {
+					availabilityToggleValues.add("available");
+				}
+				availabilityToggleValues.add("available_online");
 			}
-			availabilityToggleValues.add("Available Online");
+			addLibraryOwnership = true;
+			if (curScope.isLocallyOwned()) {
+				addLocationOwnership = true;
+			}
+		}else{
+			//Physical materials
+			if (curScope.isLocallyOwned() && curScopeDetails.isLocationScope()) {
+				addLocationOwnership = true;
+				addLibraryOwnership = true;
+				availabilityToggleValues.add("local");
+				if (curScope.isAvailable()){
+					availabilityToggleValues.add("available");
+				}
+			}
+			if (curScope.isLibraryOwned()) {
+				if (curScopeDetails.isLocationScope()) {
+					if (!curScopeDetails.getGroupedWorkDisplaySettings().isBaseAvailabilityToggleOnLocalHoldingsOnly()) {
+						addLibraryOwnership = true;
+						availabilityToggleValues.add("local");
+						if (curScope.isAvailable()) {
+							availabilityToggleValues.add("available");
+						}
+					}
+				} else {
+					addLibraryOwnership = true;
+					availabilityToggleValues.add("local");
+					if (curScope.isLibraryOwned() && curScope.isAvailable()) {
+						availabilityToggleValues.add("available");
+					}
+				}
+			}
 		}
 
 		HashMap<String, ScopingInfo> curScopingInfo = curItem.getScopingInfo();
@@ -607,14 +621,8 @@ public class GroupedWorkSolr implements Cloneable {
 
 			//We do different ownership display depending on if this is eContent or not
 			String owningLocationValue = curScopeDetails.getFacetLabel();
-			//if (curItem.getSubLocation() != null && curItem.getSubLocation().length() > 0){
-			//owningLocationValue += " - " + curItem.getSubLocation();
-			//owningLocationValue = curItem.getSubLocation();
-			//}
 			if (curItem.isEContent()) {
 				owningLocationValue = curItem.getShelfLocation();
-				//}else if (curItem.isOrderItem()){
-				//	owningLocationValue = curScopeDetails.getFacetLabel() + " On Order";
 			}
 
 			//Save values for this scope
@@ -692,17 +700,15 @@ public class GroupedWorkSolr implements Cloneable {
 		if (addLibraryOwnership) {
 			//We do different ownership display depending on if this is eContent or not
 			String owningLibraryValue;
-			if (curScope.getScope().isLibraryScope()) {
-				owningLibraryValue = curScopeDetails.getFacetLabel();
-			} else {
-				owningLibraryValue = curScopeDetails.getLibraryScope().getFacetLabel();
+			if (curItem.isEContent()) {
+				owningLibraryValue = curItem.getShelfLocation();
+			}else{
+				if (curScope.getScope().isLibraryScope()) {
+					owningLibraryValue = curScopeDetails.getFacetLabel();
+				} else {
+					owningLibraryValue = curScopeDetails.getLibraryScope().getFacetLabel();
+				}
 			}
-
-//			if (curItem.isEContent()){
-//				owningLibraryValue = curScopeDetails.getFacetLabel() + " Online";
-//			}else if (curItem.isOrderItem()) {
-//				owningLibraryValue = curScopeDetails.getFacetLabel() + " On Order";
-//			}
 			addUniqueFieldValue(doc, "owning_library_" + curScopeName, owningLibraryValue);
 			for (Scope locationScope : curScopeDetails.getLocationScopes()) {
 				addUniqueFieldValue(doc, "owning_library_" + locationScope.getScopeName(), owningLibraryValue);
@@ -1374,7 +1380,7 @@ public class GroupedWorkSolr implements Cloneable {
 		//Remove the word series at the end since this gets cataloged inconsistently
 		series = series.replaceAll("(?i)\\s+series$", "");
 
-		return StringUtils.trimTrailingPunctuation(series);
+		return StringUtils.trimTrailingPunctuation(series).trim();
 	}
 
 
@@ -1753,13 +1759,39 @@ public class GroupedWorkSolr implements Cloneable {
 					otherRecordsAsArray.add(relatedRecord);
 				}
 			}
+			if (otherRecordsAsArray.size() == 0 || hooplaRecordsAsArray.size() == 0){
+				return;
+			}
 			for (RecordInfo record1 : hooplaRecordsAsArray) {
 				//This is a candidate for removal
 				for (RecordInfo record2 : otherRecordsAsArray) {
+					//Make sure we have the same format
 					if (record1.getPrimaryFormat().equals(record2.getPrimaryFormat()) && record1.getPrimaryLanguage().equals(record2.getPrimaryLanguage())) {
-						//Suppress the hoopla record
-						relatedRecords.remove(record1.getFullIdentifier());
-						break;
+						//Remove the hoopla record from any scope where there is an available replacement
+						for (ItemInfo curItem2 : record2.getRelatedItems()){
+							for (String curScopeName2 : curItem2.getScopingInfo().keySet()){
+								ScopingInfo curScope2 = curItem2.getScopingInfo().get(curScopeName2);
+								if (curScope2.isAvailable()){
+									for (ItemInfo curItem1 : record1.getRelatedItems()){
+										curItem1.getScopingInfo().remove(curScope2.getScope().getScopeName());
+									}
+									boolean changeMade = true;
+									while (changeMade){
+										changeMade = false;
+										for (ItemInfo curItem1 : record1.getRelatedItems()){
+											if (curItem1.getScopingInfo().size() == 0){
+												record1.getRelatedItems().remove(curItem1);
+												changeMade = true;
+												break;
+											}
+										}
+									}
+									if (record1.getRelatedItems().size() == 0){
+										relatedRecords.remove(record1.getFullIdentifier());
+									}
+								}
+							}
+						}
 					}
 				}
 			}

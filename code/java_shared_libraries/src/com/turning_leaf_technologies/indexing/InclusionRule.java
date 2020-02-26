@@ -10,6 +10,7 @@ import java.util.regex.Pattern;
 
 class InclusionRule {
 	private String recordType;
+	private boolean matchAllLocations;
 	private Pattern locationCodePattern;
 	private Pattern subLocationCodePattern;
 	private Pattern iTypePattern;
@@ -34,6 +35,7 @@ class InclusionRule {
 		if (locationCode.length() == 0){
 			locationCode = ".*";
 		}
+		matchAllLocations = locationCode.equals(".*");
 		this.locationCodePattern = Pattern.compile(locationCode, Pattern.CASE_INSENSITIVE);
 
 		if (subLocationCode.length() == 0){
@@ -90,12 +92,20 @@ class InclusionRule {
 
 		//Determine if we have already determined this already
 		boolean hasCachedValue = true;
+		if (locationCode == null){
+			if (matchAllLocations){
+				locationCode = "null";
+			}else {
+				return false;
+			}
+		}
 		HashMap<String, HashMap<String, HashMap<String, HashMap<String, Boolean>>>> subLocationCodeIncludeCache = locationCodeCache.get(locationCode);
-		if (subLocationCodeIncludeCache == null){
+		if (subLocationCodeIncludeCache == null) {
 			hasCachedValue = false;
 			subLocationCodeIncludeCache = new HashMap<>();
 			locationCodeCache.put(locationCode, subLocationCodeIncludeCache);
 		}
+
 		HashMap<String, HashMap<String, HashMap<String, Boolean>>> iTypeCache = subLocationCodeIncludeCache.get(subLocationCode);
 		if (iTypeCache == null){
 			hasCachedValue = false;

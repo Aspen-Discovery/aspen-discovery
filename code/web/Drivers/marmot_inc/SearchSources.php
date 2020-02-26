@@ -53,14 +53,14 @@ class SearchSources{
 		//Local search
 		if (!empty($location) && $location->useScope && $location->restrictSearchByLocation){
 			$searchOptions['local'] = array(
-              'name' => $location->displayName,
-              'description' => "The {$location->displayName} catalog.",
-							'catalogType' => 'catalog'
+				'name' => $location->displayName,
+				'description' => "The {$location->displayName} catalog.",
+				'catalogType' => 'catalog'
 			);
 		}else{
 			$searchOptions['local'] = array(
-				'name' => 'Entire Library Catalog',
-                'description' => "The {$library->displayName} catalog.",
+				'name' => 'Library Catalog',
+				'description' => "The {$library->displayName} catalog.",
 				'catalogType' => 'catalog'
 			);
 		}
@@ -126,26 +126,12 @@ class SearchSources{
 			);
 		}
 
-		//Marmot Global search
-		if (($repeatSearchSetting == 'marmot') &&
-			$library->restrictSearchByLibrary
-			&& $marmotAdded == false
-		){
-			$consortiumName = $configArray['Site']['libraryName'];
-			$searchOptions['marmot'] = array(
-				'name' => "$consortiumName Catalog",
-                'description' => 'A consortium of libraries who share resources with your library.',
-				'catalogType' => 'catalog'
-			);
-		}
+		$searchOptions['lists'] = array(
+			'name' => 'Lists',
+			'description' => 'User Lists',
+			'catalogType' => 'lists'
+		);
 
-        $searchOptions['lists'] = array(
-            'name' => 'Lists',
-            'description' => 'User Lists',
-            'catalogType' => 'lists'
-        );
-
-		//TODO: This should have a module switch
 		if (array_key_exists('Web Indexer', $enabledModules)){
 			require_once ROOT_DIR . '/sys/WebsiteIndexing/WebsiteIndexSetting.php';
 			$websiteSetting = new WebsiteIndexSetting();

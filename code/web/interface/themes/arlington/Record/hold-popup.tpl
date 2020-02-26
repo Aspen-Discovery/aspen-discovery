@@ -1,6 +1,6 @@
 {strip}
 <div id="page-content" class="content">
-	<form name="placeHoldForm" id="placeHoldForm" method="post" class="form">
+<form name="placeHoldForm" id="placeHoldForm" method="post" class="form">
 		<input type="hidden" name="id" id="id" value="{$id}">
 		<input type="hidden" name="recordSource" id="recordSource" value="{$recordSource}">
 		<input type="hidden" name="module" id="module" value="{$activeRecordProfileModule}">

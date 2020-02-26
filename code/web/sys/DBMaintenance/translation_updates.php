@@ -86,5 +86,14 @@ function getTranslationUpdates()
 				"TRUNCATE TABLE cached_values"
 			],
 		],
+
+		'translation_term_case_sensitivity' => [
+			'title' => 'Translation case sensitivity',
+			'description' => 'Make sure that translations are case sensitive so Book and BOOK can be translated differently',
+			'sql' => [
+				"ALTER TABLE translation_terms CHANGE term term VARCHAR(50) COLLATE utf8_bin",
+				"TRUNCATE TABLE cached_values"
+			],
+		],
 	];
 }

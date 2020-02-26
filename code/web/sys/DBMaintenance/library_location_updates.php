@@ -228,7 +228,7 @@ function getLibraryLocationUpdates(){
 			'description' => 'Add a support email address for eContent problems.',
 			'continueOnError' => true,
 			'sql' => array(
-				"ALTER TABLE `library` ADD `eContentSupportAddress` VARCHAR(256) DEFAULT 'askmarmot@marmot.org';",
+				"ALTER TABLE `library` ADD `eContentSupportAddress` VARCHAR(256) DEFAULT '';",
 			),
 		),
 
@@ -2041,6 +2041,16 @@ function getLibraryLocationUpdates(){
 				'ALTER TABLE library ADD COLUMN enableForgotPasswordLink TINYINT(1) DEFAULT 1'
 			],
 		],
+
+		'defaultAvailabilityToggle' => [
+			'title' => 'Default Availability Toggle',
+			'description' => 'Add the ability to change which availability toggle is set by default',
+			'sql' => [
+				"ALTER TABLE grouped_work_display_settings add column defaultAvailabilityToggle VARCHAR(20) DEFAULT 'global'",
+				"UPDATE grouped_work_display_settings set defaultAvailabilityToggle = 'available' where name = 'school_elem'",
+				"UPDATE grouped_work_display_settings set defaultAvailabilityToggle = 'local' where name = 'academic' OR name = 'school_upper'",
+			],
+		]
 	);
 }
 

@@ -63,6 +63,7 @@ public class SierraExportAPIMain {
 	private static IlsExtractLogEntry logEntry;
 
 	public static void main(String[] args){
+		boolean extractSingleRecord = false;
 		if (args.length == 0) {
 			serverName = StringUtils.getInputFromCommandLine("Please enter the server name");
 			if (serverName.length() == 0) {
@@ -71,6 +72,13 @@ public class SierraExportAPIMain {
 			}
 		} else {
 			serverName = args[0];
+			if (args.length > 1){
+				if (args[1].equals("singleRecord")){
+					extractSingleRecord = true;
+				}
+				String recordToExtract = StringUtils.getInputFromCommandLine("Enter the id of the record to extract, do not include the .b or the check digit");
+				allBibsToUpdate.add(recordToExtract);
+			}
 		}
 
 		String profileToLoad = "ils";
@@ -123,13 +131,16 @@ public class SierraExportAPIMain {
 				}else{
 					//Open the connection to the database
 					sierraConn = DriverManager.getConnection(url);
-					orderStatusesToExport = ConfigUtil.cleanIniValue(configIni.get("Reindex", "orderStatusesToExport"));
-					if (orderStatusesToExport == null){
-						orderStatusesToExport = "o|1";
+					if (!extractSingleRecord) {
+						orderStatusesToExport = ConfigUtil.cleanIniValue(configIni.get("Reindex", "orderStatusesToExport"));
+						if (orderStatusesToExport == null) {
+							orderStatusesToExport = "o|1";
+						}
+						//exportValidPatronIds(indexingProfile.getMarcPath(), sierraConn);
+						exportActiveOrders(indexingProfile.getMarcPath(), sierraConn);
+						exportHolds(sierraConn, dbConn);
+						exportVolumes(sierraConn, dbConn);
 					}
-					exportActiveOrders(indexingProfile.getMarcPath(), sierraConn);
-					exportHolds(sierraConn, dbConn);
-					exportVolumes(sierraConn, dbConn);
 				}
 
 				String exportItemHoldsStr = configIni.get("Catalog", "exportItemHolds");
@@ -151,8 +162,18 @@ public class SierraExportAPIMain {
 
 				sierraExportFieldMapping = SierraExportFieldMapping.loadSierraFieldMappings(dbConn, indexingProfile.getId(), logger);
 
+				//TODO: This should be part of the configuration
+				String apiVersion = ConfigUtil.cleanIniValue(configIni.get("Catalog", "api_version"));
+				if (apiVersion == null || apiVersion.length() == 0){
+					logger.error("No API Version was provided");
+					return;
+				}
+				apiBaseUrl = configIni.get("Catalog", "url") + "/iii/sierra-api/v" + apiVersion;
+
 				//Process MARC record changes
-				getBibsAndItemUpdatesFromSierra(configIni, dbConn, sierraConn);
+				if (!extractSingleRecord) {
+					getBibsAndItemUpdatesFromSierra(configIni, dbConn, sierraConn);
+				}
 
 				logEntry.setNumProducts(allBibsToUpdate.size());
 				logEntry.saveResults();
@@ -178,19 +199,21 @@ public class SierraExportAPIMain {
 				}
 
 				//Update the last extract time for the indexing profile
-				if (indexingProfile.isRunFullUpdate()) {
-					PreparedStatement updateVariableStmt = dbConn.prepareStatement("UPDATE indexing_profiles set lastUpdateOfAllRecords = ?, runFullUpdate = 0 WHERE id = ?");
-					updateVariableStmt.setLong(1, startTimeForLogging);
-					updateVariableStmt.setLong(2, indexingProfile.getId());
-					updateVariableStmt.executeUpdate();
-					updateVariableStmt.close();
-				} else {
-					if (!logEntry.hasErrors()) {
-						PreparedStatement updateVariableStmt = dbConn.prepareStatement("UPDATE indexing_profiles set lastUpdateOfChangedRecords = ? WHERE id = ?");
+				if (!extractSingleRecord) {
+					if (indexingProfile.isRunFullUpdate()) {
+						PreparedStatement updateVariableStmt = dbConn.prepareStatement("UPDATE indexing_profiles set lastUpdateOfAllRecords = ?, runFullUpdate = 0 WHERE id = ?");
 						updateVariableStmt.setLong(1, startTimeForLogging);
 						updateVariableStmt.setLong(2, indexingProfile.getId());
 						updateVariableStmt.executeUpdate();
 						updateVariableStmt.close();
+					} else {
+						if (!logEntry.hasErrors()) {
+							PreparedStatement updateVariableStmt = dbConn.prepareStatement("UPDATE indexing_profiles set lastUpdateOfChangedRecords = ? WHERE id = ?");
+							updateVariableStmt.setLong(1, startTimeForLogging);
+							updateVariableStmt.setLong(2, indexingProfile.getId());
+							updateVariableStmt.executeUpdate();
+							updateVariableStmt.close();
+						}
 					}
 				}
 
@@ -209,6 +232,10 @@ public class SierraExportAPIMain {
 			}catch (Exception e){
 				System.out.println("Error connecting to aspen database " + e.toString());
 				System.exit(1);
+			}
+
+			if (extractSingleRecord){
+				break;
 			}
 			//Pause before running the next export (longer if we didn't get any actual changes)
 			try {
@@ -286,14 +313,6 @@ public class SierraExportAPIMain {
 		}
 		//allowFastExportMethod = false;
 
-		//TODO: This should be part of the configuration
-		String apiVersion = ConfigUtil.cleanIniValue(ini.get("Catalog", "api_version"));
-		if (apiVersion == null || apiVersion.length() == 0){
-			logger.error("No API Version was provided");
-			return;
-		}
-		apiBaseUrl = ini.get("Catalog", "url") + "/iii/sierra-api/v" + apiVersion;
-
 		//Last Update in UTC
 		if (lastSierraExtractTime == 0 || indexingProfile.isRunFullUpdate()){
 			//Export all records
@@ -367,6 +386,24 @@ public class SierraExportAPIMain {
 
 		return numProcessed;
 	}
+
+	/*
+	//This was used for mapping user ids from Pika to Aspen, no longer needed, but preserving in case it is useful later
+	private static void exportValidPatronIds(String exportPath, Connection sierraConn) {
+		try{
+			logEntry.addNote("Starting export of valid patron ids");
+			File patronIdFile = new File(exportPath + "/patron_ids.csv");
+			PreparedStatement getExistingPatronIdsStmt = sierraConn.prepareStatement("select record_num, barcode from sierra_view.patron_view", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			ResultSet getExistingPatronIdsRS = getExistingPatronIdsStmt.executeQuery();
+			CSVWriter patronIdWriter = new CSVWriter(new FileWriter(patronIdFile));
+			patronIdWriter.writeAll(getExistingPatronIdsRS, true);
+			patronIdWriter.close();
+			getExistingPatronIdsRS.close();
+		} catch (Exception e) {
+			logger.error("Unable to export valid patron ids", e);
+		}
+		logEntry.addNote("Finished valid patron ids " + dateTimeFormatter.format(new Date()));
+	}*/
 
 	private static void exportHolds(Connection sierraConn, Connection dbConn) {
 		Savepoint startOfHolds = null;
@@ -1543,10 +1580,11 @@ public class SierraExportAPIMain {
 
 					Long volumeId = getItemsForVolumeRS.getLong("volume_record_id");
 					String existingItems = itemsForVolume.get(volumeId);
+					//noinspection Java8MapApi
 					if (existingItems == null){
-						itemsForVolume.put(volumeId, itemRecordNum);
+						itemsForVolume.put(volumeId, ".i" + itemRecordNum + getCheckDigit(itemRecordNum));
 					}else{
-						itemsForVolume.put(volumeId, existingItems + "|" + itemRecordNum);
+						itemsForVolume.put(volumeId, existingItems + "|" + itemRecordNum + getCheckDigit(itemRecordNum));
 					}
 				}
 				getItemsForVolumeRS.close();

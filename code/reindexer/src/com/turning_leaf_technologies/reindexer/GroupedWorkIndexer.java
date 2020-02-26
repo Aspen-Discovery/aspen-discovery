@@ -11,6 +11,7 @@ import com.turning_leaf_technologies.net.WebServiceResponse;
 import org.apache.solr.client.solrj.impl.BinaryRequestWriter;
 import org.apache.solr.client.solrj.impl.ConcurrentUpdateSolrClient;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
+import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.common.SolrInputDocument;
 import org.ini4j.Ini;
 
@@ -735,7 +736,10 @@ public class GroupedWorkIndexer {
 			//Write the record to Solr.
 			try {
 				SolrInputDocument inputDocument = groupedWork.getSolrDocument();
-				updateServer.add(inputDocument);
+				UpdateResponse response = updateServer.add(inputDocument);
+				if (response.getException() != null){
+					logger.error("Error adding Solr record for " + groupedWork.getId() + " response: " + response);
+				}
 				//logger.debug("Updated solr \r\n" + inputDocument.toString());
 
 			} catch (Exception e) {

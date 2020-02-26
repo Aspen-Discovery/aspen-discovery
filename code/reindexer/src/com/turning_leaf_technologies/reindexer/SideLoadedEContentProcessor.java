@@ -80,13 +80,8 @@ class SideLoadedEContentProcessor extends MarcRecordProcessor{
 	}
 
 	private void loadScopeInfoForEContentItem(ItemInfo itemInfo, Record record) {
-		String itemLocation = itemInfo.getLocationCode();
 		String originalUrl = itemInfo.geteContentUrl();
 		for (Scope curScope : indexer.getScopes()){
-//			String format = itemInfo.getFormat();
-//			if (format == null){
-//				format = itemInfo.getRecordInfo().getPrimaryFormat();
-//			}
 			SideLoadScope sideLoadScope = curScope.getSideLoadScope(sideLoadId);
 			if (sideLoadScope != null) {
 				boolean itemPartOfScope = sideLoadScope.isItemPartOfScope(record);
@@ -96,15 +91,10 @@ class SideLoadedEContentProcessor extends MarcRecordProcessor{
 					scopingInfo.setStatus("Available Online");
 					scopingInfo.setGroupedStatus("Available Online");
 					scopingInfo.setHoldable(false);
-					if (curScope.isLocationScope()) {
-						scopingInfo.setLocallyOwned(curScope.isItemOwnedByScope(profileType, itemLocation, ""));
-						if (curScope.getLibraryScope() != null) {
-							scopingInfo.setLibraryOwned(curScope.getLibraryScope().isItemOwnedByScope(profileType, itemLocation, ""));
-						}
-					}
-					if (curScope.isLibraryScope()) {
-						scopingInfo.setLibraryOwned(curScope.isItemOwnedByScope(profileType, itemLocation, ""));
-					}
+					scopingInfo.setLibraryOwned(true);
+					scopingInfo.setLocallyOwned(true);
+					scopingInfo.setInLibraryUseOnly(false);
+
 					//Check to see if we need to do url rewriting
 					if (originalUrl != null) {
 						String newUrl = sideLoadScope.getLocalUrl(originalUrl);

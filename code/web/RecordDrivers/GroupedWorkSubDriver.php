@@ -507,6 +507,8 @@ abstract class GroupedWorkSubDriver extends RecordInterface
 
 		$interface->assign('primaryIdentifiers', $this->getGroupedWorkDriver()->getPrimaryIdentifiers());
 
+		$interface->assign('bookcoverInfo', $this->getBookcoverInfo());
+
 		$lastGroupedWorkModificationTime = $this->groupedWork->date_updated;
 		$interface->assign('lastGroupedWorkModificationTime', $lastGroupedWorkModificationTime);
 
@@ -582,4 +584,17 @@ abstract class GroupedWorkSubDriver extends RecordInterface
             $timer->logTime("Loaded Grouped Work for record");
         }
     }
+
+	public function getBookcoverInfo()
+	{
+		require_once ROOT_DIR . '/sys/Covers/BookCoverInfo.php';
+		$bookcoverInfo = new BookCoverInfo();
+		$bookcoverInfo->recordId = $this->getUniqueID();
+		$bookcoverInfo->recordType = $this->getRecordType();
+		if ($bookcoverInfo->find(true)) {
+			return $bookcoverInfo;
+		} else {
+			return $this->getGroupedWorkDriver()->getBookcoverInfo();
+		}
+	}
 }

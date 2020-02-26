@@ -295,6 +295,7 @@ class ArlingtonRecordProcessor extends IIIRecordProcessor {
 
 				itemInfo.setDetailedStatus("Available Online");
 
+				logger.debug("Found eContent record from " + econtentSource);
 				unsuppressedEcontentRecords.add(relatedRecord);
 			}
 		}

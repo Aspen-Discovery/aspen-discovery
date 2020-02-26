@@ -1857,6 +1857,8 @@ class GroupedWorkDriver extends IndexRecordDriver
 		$groupedWorkDetails = $this->getGroupedWorkDetails();
 		$interface->assign('groupedWorkDetails', $groupedWorkDetails);
 
+		$interface->assign('bookcoverInfo', $this->getBookcoverInfo());
+
 		$interface->assign('alternateTitles', $this->getAlternateTitles());
 
 		$interface->assign('primaryIdentifiers', $this->getPrimaryIdentifiers());
@@ -2549,7 +2551,7 @@ class GroupedWorkDriver extends IndexRecordDriver
 
 			$volume = null;
 			$volumeId = null;
-			if (count($volumeData)) {
+			if (count($volumeData) > 0) {
 				/** @var IlsVolumeInfo $volumeDataPoint */
 				foreach ($volumeData as $volumeDataPoint) {
 					if ((strlen($volumeDataPoint->relatedItems) == 0) || (strpos($volumeDataPoint->relatedItems, $curItem[1]) !== false)) {
@@ -2704,5 +2706,18 @@ class GroupedWorkDriver extends IndexRecordDriver
 			$groupedWorkDetails['Deleted?'] = 'This work has been deleted from the database and should be re-indexed';
 		}
 		return $groupedWorkDetails;
+	}
+
+	public function getBookcoverInfo()
+	{
+		require_once ROOT_DIR . '/sys/Covers/BookCoverInfo.php';
+		$bookCoverInfo = new BookCoverInfo();
+		$bookCoverInfo->recordId = $this->getPermanentId();
+		$bookCoverInfo->recordType = 'grouped_work';
+		if ($bookCoverInfo->find(true)){
+			return $bookCoverInfo;
+		}else{
+			return null;
+		}
 	}
 }

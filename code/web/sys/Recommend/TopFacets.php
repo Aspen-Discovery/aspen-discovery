@@ -122,8 +122,6 @@ class TopFacets implements RecommendationInterface
 
 				//If nothing is selected, select entire collection by default
 				$sortedFacetList = array();
-				$numTitlesWithNoValue = 0;
-				$numTitlesWithEntireCollection = 0;
 				$searchLibrary = Library::getSearchLibrary(null);
 				$searchLocation = Location::getSearchLocation(null);
 
@@ -135,6 +133,7 @@ class TopFacets implements RecommendationInterface
 					$availableLabel = str_ireplace('{display name}', $searchLocation->displayName, $availableLabel);
 					$availableOnlineLabel = $searchLocation->getGroupedWorkDisplaySettings()->availabilityToggleLabelAvailableOnline;
 					$availableOnlineLabel = str_ireplace('{display name}', $searchLocation->displayName, $availableOnlineLabel);
+					$availabilityToggleValue = $searchLocation->getGroupedWorkDisplaySettings()->defaultAvailabilityToggle;
 				}else{
 					$superScopeLabel = $searchLibrary->getGroupedWorkDisplaySettings()->availabilityToggleLabelSuperScope;
 					$localLabel = $searchLibrary->getGroupedWorkDisplaySettings()->availabilityToggleLabelLocal;
@@ -143,49 +142,43 @@ class TopFacets implements RecommendationInterface
 					$availableLabel = str_ireplace('{display name}', $searchLibrary->displayName, $availableLabel);
 					$availableOnlineLabel = $searchLibrary->getGroupedWorkDisplaySettings()->availabilityToggleLabelAvailableOnline;
 					$availableOnlineLabel = str_ireplace('{display name}', $searchLibrary->displayName, $availableOnlineLabel);
+					$availabilityToggleValue = $searchLibrary->getGroupedWorkDisplaySettings()->defaultAvailabilityToggle;
+				}
+
+				if ($numSelected == 0){
+					foreach ($facetSet['list'] as $facetKey => $facet){
+						if ($availabilityToggleValue == $facetKey){
+							$facetSet['list'][$facetKey]['isApplied'] = true;
+						}
+					}
 				}
 
 				$numButtons = 4;
-				foreach ($facetSet['list'] as $facet){
-					if ($facet['value'] == 'Entire Collection'){
-
+				foreach ($facetSet['list'] as $facetKey => $facet){
+					if ($facetKey == 'local'){
 						$includeButton = true;
-						$facet['value'] = $localLabel;
+						$facet['display'] = $localLabel;
 						if (trim($localLabel) == ''){
 							$includeButton = false;
-						}else{
-							if ($searchLocation){
-								$includeButton = !$searchLocation->restrictSearchByLocation;
-							}elseif ($searchLibrary){
-								$includeButton = !$searchLibrary->restrictSearchByLibrary;
-							}
 						}
-
-						$numTitlesWithEntireCollection = $facet['count'];
 
 						if ($includeButton){
 							$sortedFacetList[1] = $facet;
 						}
-					}elseif ($facet['value'] == ''){
-						$facet['isApplied'] = $facet['isApplied'] || ($numSelected == 0);
-						$facet['value'] = $superScopeLabel;
+					}elseif ($facetKey == 'global' || $facetKey == ''){
+						$facet['display'] = $superScopeLabel;
 						$sortedFacetList[0] = $facet;
-						$numTitlesWithNoValue = $facet['count'];
-					}elseif ($facet['value'] == 'Available Now'){
-						$facet['value'] = $availableLabel;
+					}elseif ($facetKey == 'available'){
+						$facet['display'] = $availableLabel;
 						$sortedFacetList[2] = $facet;
-					}elseif ($facet['value'] == 'Available Online'){
+					}elseif ($facet['value'] == 'available_online'){
 						if (strlen($availableOnlineLabel) > 0){
-							$facet['value'] = $availableOnlineLabel;
+							$facet['display'] = $availableOnlineLabel;
 							$sortedFacetList[3] = $facet;
 						}
-					}else{
-						//$facet['value'] = $availableLabel;
+					}/*else{
 						$sortedFacetList[$numButtons++] = $facet;
-					}
-				}
-				if (isset($sortedFacetList[0])){
-					$sortedFacetList[0]['count'] = $numTitlesWithEntireCollection + $numTitlesWithNoValue;
+					}*/
 				}
 
 				ksort($sortedFacetList);

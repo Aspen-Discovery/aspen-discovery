@@ -82,10 +82,10 @@ public class Scope implements Comparable<Scope>{
 	 * @return                  Whether or not the item is included within the scope
 	 */
 	public InclusionResult isItemPartOfScope(@NotNull String recordType, @NotNull String locationCode, @NotNull String subLocationCode, String iType, TreeSet<String> audiences, String format, boolean isHoldable, boolean isOnOrder, boolean isEContent, Record marcRecord, String econtentUrl){
-		if (locationCode == null){
-			//No location code, skip this item
-			return new InclusionResult(false, econtentUrl);
-		}
+//		if (locationCode == null){
+//			//No location code, skip this item
+//			return new InclusionResult(false, econtentUrl);
+//		}
 
 		for(OwnershipRule curRule: ownershipRules){
 			if (curRule.isItemOwned(recordType, locationCode, subLocationCode)){
@@ -292,7 +292,7 @@ public class Scope implements Comparable<Scope>{
 		return groupedWorkDisplaySettings;
 	}
 
-	public void setGroupedWorkDisplaySettings(GroupedWorkDisplaySettings groupedWorkDisplaySettings) {
+	void setGroupedWorkDisplaySettings(GroupedWorkDisplaySettings groupedWorkDisplaySettings) {
 		this.groupedWorkDisplaySettings = groupedWorkDisplaySettings;
 	}
 

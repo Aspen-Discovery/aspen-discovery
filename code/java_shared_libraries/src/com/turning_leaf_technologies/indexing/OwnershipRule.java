@@ -8,6 +8,7 @@ import java.util.regex.Pattern;
 class OwnershipRule {
 	private String recordType;
 
+	private boolean matchAllLocations;
 	private Pattern locationCodePattern;
 	private Pattern subLocationCodePattern;
 
@@ -17,6 +18,7 @@ class OwnershipRule {
 		if (locationCode.length() == 0){
 			locationCode = ".*";
 		}
+		this.matchAllLocations = locationCode.equals(".*");
 		this.locationCodePattern = Pattern.compile(locationCode, Pattern.CASE_INSENSITIVE);
 		if (subLocationCode.length() == 0){
 			subLocationCode = ".*";
@@ -33,7 +35,15 @@ class OwnershipRule {
 				return ownershipResults.get(key);
 			}
 
-			isOwned = locationCodePattern.matcher(locationCode).lookingAt() && (subLocationCode == null || subLocationCodePattern.matcher(subLocationCode).lookingAt());
+			if (locationCode == null ){
+				if (matchAllLocations) {
+					isOwned = (subLocationCode == null || subLocationCodePattern.matcher(subLocationCode).lookingAt());
+				}else{
+					isOwned = false;
+				}
+			}else{
+				isOwned = locationCodePattern.matcher(locationCode).lookingAt() && (subLocationCode == null || subLocationCodePattern.matcher(subLocationCode).lookingAt());
+			}
 			ownershipResults.put(key, isOwned);
 		}
 		return  isOwned;

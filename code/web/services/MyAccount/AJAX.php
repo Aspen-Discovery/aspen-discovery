@@ -885,22 +885,31 @@ class MyAccount_AJAX extends JSON_Action
 				if (method_exists($user, 'renewCheckout')) {
 					$failure_messages = array();
 					$renewResults = array();
-					foreach ($_REQUEST['selected'] as $selected => $ignore) {
-						//Suppress errors because sometimes we don't get an item index
-						@list($patronId, $recordId, $itemId, $itemIndex) = explode('|', $selected);
-						$patron = $user->getUserReferredTo($patronId);
-						if ($patron) {
-							$tmpResult = $patron->renewCheckout($recordId, $itemId, $itemIndex);
-						} else {
-							$tmpResult = array(
-								'success' => false,
-								'message' => 'Sorry, it looks like you don\'t have access to that patron.'
-							);
-						}
+					if (isset($_REQUEST['selected']) && is_array($_REQUEST['selected'])) {
+						foreach ($_REQUEST['selected'] as $selected => $ignore) {
+							//Suppress errors because sometimes we don't get an item index
+							@list($patronId, $recordId, $itemId, $itemIndex) = explode('|', $selected);
+							$patron = $user->getUserReferredTo($patronId);
+							if ($patron) {
+								$tmpResult = $patron->renewCheckout($recordId, $itemId, $itemIndex);
+							} else {
+								$tmpResult = array(
+									'success' => false,
+									'message' => 'Sorry, it looks like you don\'t have access to that patron.'
+								);
+							}
 
-						if (!$tmpResult['success']) {
-							$failure_messages[] = $tmpResult['message'];
+							if (!$tmpResult['success']) {
+								$failure_messages[] = $tmpResult['message'];
+							}
 						}
+						$renewResults['Total'] = count($_REQUEST['selected']);
+						$renewResults['NotRenewed'] = count($failure_messages);
+						$renewResults['Renewed'] = $renewResults['Total'] - $renewResults['NotRenewed'];
+					}else{
+						$failure_messages[] = 'No items were selected to renew';
+						$renewResults['Total'] = 0;
+						$renewResults['NotRenewed'] = 0;
 					}
 					if ($failure_messages) {
 						$renewResults['success'] = false;
@@ -909,9 +918,6 @@ class MyAccount_AJAX extends JSON_Action
 						$renewResults['success'] = true;
 						$renewResults['message'] = "All items were renewed successfully.";
 					}
-					$renewResults['Total'] = count($_REQUEST['selected']);
-					$renewResults['NotRenewed'] = count($failure_messages);
-					$renewResults['Renewed'] = $renewResults['Total'] - $renewResults['NotRenewed'];
 				} else {
 					AspenError::raiseError(new AspenError('Cannot Renew Item - ILS Not Supported'));
 					$renewResults = array(

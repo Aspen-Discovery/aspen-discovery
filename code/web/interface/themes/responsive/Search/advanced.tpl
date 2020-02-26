@@ -106,17 +106,17 @@
 					{if $facetList || $showPublicationDate}
 						<div class="accordion">
 							<div {*id="facet-accordion"*} class="panel panel-default">
-									<div class="panel-heading">
-										<div class="panel-title {if 1}collapsed{else}expanded{/if}">
-											<a href="#facetPanel" data-toggle="collapse" role="button">
-											{translate text='Optional Filters'}
-											</a>
-										</div>
+								<div class="panel-heading">
+									<div class="panel-title {if !$hasSelectedFacet}collapsed{else}expanded{/if}">
+										<a href="#facetPanel" data-toggle="collapse" role="button">
+										{translate text='Optional Filters'}
+										</a>
 									</div>
-								<div id="facetPanel" class="panel-collapse collapse">
+								</div>
+								<div id="facetPanel" class="panel-collapse {if !$hasSelectedFacet}collapse{/if}">
 									<div class="panel-body">
 
-									<div class="alert alert-info">
+										<div class="alert alert-info">
 											The filters below are optional. Only set the filters needed to narrow your search.
 										</div>
 
@@ -208,7 +208,7 @@
 																<select name="filter[]" class="form-control">
 																	{foreach from=$facetInfo.values item="value" key="display"}
 																		{if strlen($display) > 0}
-																			<option value="{$value.filter|escape}"{if $value.selected} selected="selected"{/if}>{$display|escape|truncate:80}</option>
+																			<option value="{$value.filter|escape}"{if $value.selected} selected="selected"{/if}>{$value.display|escape|truncate:80}</option>
 																		{/if}
 																	{/foreach}
 																</select>

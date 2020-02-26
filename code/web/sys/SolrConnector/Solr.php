@@ -1273,7 +1273,8 @@ abstract class Solr
 							$options['facet.field'][] = "{!ex={$facetKey}}" . $key;
 						} elseif (strpos($facetName, 'availability_toggle') === 0 || strpos($facetName, 'availability_by_format') === 0) {
 							$options['facet.field'][] = '{!ex=avail}' . $key;
-							$options["f.{$key}.facet.missing"] = 'true';
+							//No longer need missing since we provide a value for the entire scope
+							//$options["f.{$key}.facet.missing"] = 'true';
 						} else {
 							$options['facet.field'][] = $key;
 						}

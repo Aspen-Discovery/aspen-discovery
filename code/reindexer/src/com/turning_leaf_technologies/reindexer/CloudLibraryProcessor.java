@@ -92,6 +92,8 @@ class CloudLibraryProcessor extends MarcRecordProcessor {
 				}
 
 				ItemInfo itemInfo = new ItemInfo();
+				itemInfo.setFormat(primaryFormat);
+				itemInfo.setFormatCategory(formatCategory);
 				itemInfo.seteContentSource("Cloud Library");
 				itemInfo.setIsEContent(true);
 				itemInfo.setShelfLocation("Online Cloud Library Collection");
