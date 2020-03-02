@@ -1797,4 +1797,12 @@ public class GroupedWorkSolr implements Cloneable {
 			}
 		}
 	}
+
+	HashSet<Long> getAutoReindexTimes() {
+		HashSet<Long> autoReindexTimes = new HashSet<>();
+		for (RecordInfo relatedRecord : relatedRecords.values()) {
+			relatedRecord.getAutoReindexTimes(autoReindexTimes);
+		}
+		return autoReindexTimes;
+	}
 }

@@ -64,7 +64,9 @@ public class GroupedWorkIndexer {
 	private PreparedStatement getArBookIdForIsbnStmt;
 	private PreparedStatement getArBookInfoStmt;
 	private PreparedStatement getScheduledWorksStmt;
+	private PreparedStatement getScheduledWorkStmt;
 	private PreparedStatement markScheduledWorkProcessedStmt;
+	private PreparedStatement addScheduledWorkStmt;
 
 
 	private static PreparedStatement deleteGroupedWorkStmt;
@@ -113,7 +115,9 @@ public class GroupedWorkIndexer {
 			getArBookIdForIsbnStmt = dbConn.prepareStatement("SELECT arBookId from accelerated_reading_isbn where isbn = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			getArBookInfoStmt = dbConn.prepareStatement("SELECT * from accelerated_reading_titles where arBookId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			getScheduledWorksStmt = dbConn.prepareStatement("SELECT * FROM grouped_work_scheduled_index where processed = 0 and indexAfter <= ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			getScheduledWorkStmt = dbConn.prepareStatement("SELECT * FROM grouped_work_scheduled_index where processed = 0 and permanent_id = ? and indexAfter = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			markScheduledWorkProcessedStmt = dbConn.prepareStatement("UPDATE grouped_work_scheduled_index set processed = 1 where id = ?");
+			addScheduledWorkStmt = dbConn.prepareStatement("INSERT INTO grouped_work_scheduled_index (permanent_id, indexAfter) VALUES (?, ?)");
 		} catch (Exception e){
 			logger.error("Could not load statements to get identifiers ", e);
 		}
@@ -741,6 +745,25 @@ public class GroupedWorkIndexer {
 					logger.error("Error adding Solr record for " + groupedWork.getId() + " response: " + response);
 				}
 				//logger.debug("Updated solr \r\n" + inputDocument.toString());
+				//Check to see if we need to automatically reindex this record in the future.
+				HashSet<Long> autoReindexTimes = groupedWork.getAutoReindexTimes();
+				if (autoReindexTimes.size() > 0){
+					for (Long autoReindexTime : autoReindexTimes) {
+						getScheduledWorkStmt.setString(1, groupedWork.getId());
+						getScheduledWorkStmt.setLong(2, autoReindexTime);
+						ResultSet getScheduledWorkRS = getScheduledWorkStmt.executeQuery();
+						if (!getScheduledWorkRS.next()) {
+							try {
+								addScheduledWorkStmt.setString(1, groupedWork.getId());
+								addScheduledWorkStmt.setLong(2, autoReindexTime);
+								addScheduledWorkStmt.executeUpdate();
+							} catch (SQLException sqe) {
+								logger.error("Error adding scheduled reindex time", sqe);
+							}
+						}
+						getScheduledWorkRS.close();
+					}
+				}
 
 			} catch (Exception e) {
 				logger.error("Error adding grouped work to solr " + groupedWork.getId(), e);
