@@ -83,4 +83,8 @@ class LoanRules extends ObjectEditor
 	public function canAddNew(){
 		return false;
 	}
+	public function canCompare()
+	{
+		return false;
+	}
 }

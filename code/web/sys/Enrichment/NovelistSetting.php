@@ -13,7 +13,7 @@ class NovelistSetting extends DataObject
 		$structure = array(
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id'),
 			'profile' => array('property' => 'profile', 'type' => 'text', 'label' => 'Profile', 'description' => 'The Profile Name for Novelist'),
-			'pwd' => array('property' => 'pwd', 'type' => 'storedPassword', 'label' => 'Profile Password', 'description' => 'The password for the Profile'),
+			'pwd' => array('property' => 'pwd', 'type' => 'storedPassword', 'label' => 'Profile Password', 'description' => 'The password for the Profile', 'hideInLists' => true),
 		);
 		return $structure;
 	}

@@ -248,11 +248,11 @@ class MaterialsRequest_SummaryReport extends Admin_Admin {
 		/* Add a border to the picture */
 		$myPicture->drawRectangle(0,0,699,289,array("R"=>0,"G"=>0,"B"=>0));
 
-		$myPicture->setFontProperties(array("FontName"=> "sys/pChart/Fonts/verdana.ttf","FontSize"=>9));
+		$myPicture->setFontProperties(array("FontName"=> ROOT_DIR . "/sys/pChart/fonts/verdana.ttf","FontSize"=>9));
 		$myPicture->setGraphArea(50,30,670,190);
 		//$myPicture->drawFilledRectangle(30,30,670,150,array("R"=>255,"G"=>255,"B"=>255,"Surrounding"=>-200,"Alpha"=>10));
 		$myPicture->drawScale(array("DrawSubTicks"=>TRUE, "LabelRotation"=>90));
-		$myPicture->setFontProperties(array("FontName"=> "sys/pChart/Fonts/verdana.ttf","FontSize"=>9));
+		$myPicture->setFontProperties(array("FontName"=> ROOT_DIR . "/sys/pChart/fonts/verdana.ttf","FontSize"=>9));
 		$myPicture->drawLineChart(array("DisplayValues"=>TRUE,"DisplayColor"=>DISPLAY_AUTO));
 
 		/* Write the chart legend */

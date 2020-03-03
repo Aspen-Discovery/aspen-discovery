@@ -3,7 +3,7 @@
 require_once ROOT_DIR . '/sys/Indexing/TranslationMapValue.php';
 class TranslationMap extends DataObject{
 	public $__table = 'translation_maps';    // table name
-
+	public $__displayNameColumn = 'name';
 	public $id;
 	public $indexingProfileId;
 	public $name;

@@ -9,6 +9,7 @@ require_once ROOT_DIR . '/sys/Indexing/SierraExportFieldMapping.php';
 class IndexingProfile extends DataObject
 {
 	public $__table = 'indexing_profiles';    // table name
+	public $__displayNameColumn = 'name';
 
 	public $id;
 	public $name;
