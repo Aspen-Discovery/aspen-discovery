@@ -148,4 +148,24 @@ class Sierra extends Millennium{
 		return null;
 	}
 
+	/**
+	 * Returns one of three values
+	 * - none - No forgot password functionality exists
+	 * - emailResetLink - A link to reset the pin is emailed to the user
+	 * - emailPin - The pin itself is emailed to the user
+	 * @return string
+	 */
+	function getForgotPasswordType()
+	{
+		if ($this->accountProfile->loginConfiguration == 'barcode_pin') {
+			return 'emailResetLink';
+		} else {
+			return 'none';
+		}
+	}
+
+	function getEmailResetPinTemplate()
+	{
+		return 'requestPinReset.tpl';
+	}
 }

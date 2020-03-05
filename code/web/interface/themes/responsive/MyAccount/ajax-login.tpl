@@ -33,11 +33,11 @@
 						<input type="password" name="password" id="password" size="28" onkeypress="return AspenDiscovery.submitOnEnter(event, '#loginForm');" class="form-control">
 						{if $forgotPasswordType != 'null' && $forgotPasswordType != 'none'}
 							<p class="text-muted help-block">
-								<strong>Forgot {$passwordLabel}?</strong>&nbsp;
+								<strong>{translate text="forgot_pin" defaultText="Forgot %1%?" 1=$passwordLabel}</strong>&nbsp;
 								{if $forgotPasswordType == 'emailResetLink'}
-									<a href="/MyAccount/EmailResetPin">Reset My {$passwordLabel}</a>
+									<a href="/MyAccount/EmailResetPin">{translate text="reset_pin" defaultText="Reset My %1%" 1=$passwordLabel}</a>
 								{else}
-									<a href="/MyAccount/EmailPin">Email my {$passwordLabel}</a>
+									<a href="/MyAccount/EmailPin">{translate text="email_pin" defaultText="Email my %1%" 1=$passwordLabel}</a>
 								{/if}
 							</p>
 						{/if}
