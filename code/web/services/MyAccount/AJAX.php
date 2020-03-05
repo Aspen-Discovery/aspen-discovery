@@ -521,6 +521,27 @@ class MyAccount_AJAX extends JSON_Action
 			$id = '';
 		}
 
+		//Check to see if we will index the list if it is public
+		$location = Location::getSearchLocation();
+		$ownerHasListPublisherRole = UserAccount::userHasRole('listPublisher');
+		if ($location != null){
+			$publicListWillBeIndexed = ($location->publicListsToInclude == 3) || //All public lists
+				($location->publicListsToInclude == 1) || //All lists for the current library
+				(($location->publicListsToInclude== 2) && $location->locationId == UserAccount::getUserHomeLocationId()) || //All lists for the current location
+				(($location->publicListsToInclude == 4) && $ownerHasListPublisherRole) || //All lists for list publishers at the current library
+				(($location->publicListsToInclude == 5) && $ownerHasListPublisherRole) || //All lists for list publishers the current location
+				(($location->publicListsToInclude == 6) && $ownerHasListPublisherRole) //All lists for list publishers
+			;
+		}else{
+			global $library;
+			$publicListWillBeIndexed = ($library->publicListsToInclude == 2) || //All public lists
+				(($library->publicListsToInclude == 1)) || //All lists for the current library
+				(($library->publicListsToInclude == 3) && $ownerHasListPublisherRole) || //All lists for list publishers at the current library
+				(($library->publicListsToInclude == 4) && $ownerHasListPublisherRole) //All lists for list publishers
+			;
+		}
+		$interface->assign('publicListWillBeIndexed', $publicListWillBeIndexed);
+
 		$results = array(
 			'title' => 'Create new List',
 			'modalBody' => $interface->fetch("MyAccount/createListForm.tpl"),

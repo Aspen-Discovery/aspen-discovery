@@ -21,17 +21,19 @@ class LoanRules extends ObjectEditor
 			//Parse the new data
 			$data = preg_split('/\\r\\n|\\r|\\n/', $loanRuleData);
 			foreach ($data as $dataRow){
-				$dataFields = preg_split('/\\t/', $dataRow);
-				$loanRuleNew = new LoanRule();
-				$loanRuleNew->loanRuleId = $dataFields[0];
-				$loanRuleNew->name = trim($dataFields[1]);
-				$loanRuleNew->code = trim($dataFields[2]);
-				$loanRuleNew->normalLoanPeriod = trim($dataFields[3]);
-				$loanRuleNew->holdable = strcasecmp(trim($dataFields[4]), 'y') == 0;
-				$loanRuleNew->bookable = strcasecmp(trim($dataFields[5]), 'y') == 0;
-				$loanRuleNew->homePickup = strcasecmp(trim($dataFields[6]), 'y') == 0;
-				$loanRuleNew->shippable = strcasecmp(trim($dataFields[7]), 'y') == 0 ;
-				$loanRuleNew->insert();
+				if (strpos($dataRow, "\t") > 0){
+					$dataFields = preg_split('/\\t/', $dataRow);
+					$loanRuleNew = new LoanRule();
+					$loanRuleNew->loanRuleId = $dataFields[0];
+					$loanRuleNew->name = trim($dataFields[1]);
+					$loanRuleNew->code = trim($dataFields[2]);
+					$loanRuleNew->normalLoanPeriod = trim($dataFields[3]);
+					$loanRuleNew->holdable = strcasecmp(trim($dataFields[4]), 'y') === 0;
+					$loanRuleNew->bookable = strcasecmp(trim($dataFields[5]), 'y') === 0;
+					$loanRuleNew->homePickup = strcasecmp(trim($dataFields[6]), 'y') === 0;
+					$loanRuleNew->shippable = strcasecmp(trim($dataFields[7]), 'y') === 0 ;
+					$loanRuleNew->insert();
+				}
 			}
 
 			//Show the results
@@ -79,6 +81,10 @@ class LoanRules extends ObjectEditor
 		return $actions;
 	}
 	public function canAddNew(){
+		return false;
+	}
+	public function canCompare()
+	{
 		return false;
 	}
 }

@@ -33,8 +33,10 @@ abstract class ObjectEditor extends Admin_Admin
 		if (is_null($objectAction) || $objectAction == 'list'){
 			$interface->assign('instructions', $this->getListInstructions());
 			$this->viewExistingObjects();
-		}elseif (($objectAction == 'save' || $objectAction == 'delete')){
+		}elseif (($objectAction == 'save' || $objectAction == 'delete')) {
 			$this->editObject($objectAction, $structure);
+		}elseif ($objectAction == 'compare') {
+			$this->compareObjects($structure);
 		}else{
 			//check to see if a custom action is being called.
 			if (method_exists($this, $objectAction)){
@@ -142,7 +144,11 @@ abstract class ObjectEditor extends Admin_Admin
 	function viewExistingObjects(){
 		global $interface;
 		//Basic List
-		$interface->assign('dataList', $this->getAllObjects());
+		$allObjects = $this->getAllObjects();
+		$interface->assign('dataList', $allObjects);
+		if (count($allObjects) < 2){
+			$interface->assign('canCompare', false);
+		}
 		$interface->setTemplate('../Admin/propertiesList.tpl');
 	}
 	function viewIndividualObject($structure){
@@ -301,5 +307,77 @@ abstract class ObjectEditor extends Admin_Admin
 	}
 	function getInitializationJs(){
 		return '';
+	}
+
+	function compareObjects($structure)
+	{
+		global $interface;
+		$object1 = null;
+		$object2 = null;
+		if (count($_REQUEST['selectedObject']) == 2){
+			$index = 1;
+			foreach ($_REQUEST['selectedObject'] as $id => $value){
+				if ($index == 1){
+					$object1 = $this->getExistingObjectById($id);
+					$object1EditUrl = "/{$this->getModule()}/{$this->getToolName()}?objectAction=edit&id=$id";
+					$interface->assign('object1EditUrl', $object1EditUrl);
+					$index = 2;
+				}else{
+					$object2 = $this->getExistingObjectById($id);
+					$object2EditUrl = "/{$this->getModule()}/{$this->getToolName()}?objectAction=edit&id=$id";
+					$interface->assign('object2EditUrl', $object2EditUrl);
+				}
+			}
+			if ($object1 == null || $object2 == null){
+				$interface->assign('error', 'Could not load object from the database');
+			}else{
+				$properties = [];
+				$properties = $this->compareObjectProperties($structure, $object1, $object2, $properties);
+				$interface->assign('properties', $properties);
+			}
+		}else{
+			$interface->assign('error', 'Please select two objects to compare');
+		}
+
+		$interface->setTemplate('../Admin/compareObjects.tpl');
+	}
+
+	/**
+	 * @param $structure
+	 * @param DataObject|null $object1
+	 * @param DataObject|null $object2
+	 * @param array $properties
+	 * @return array
+	 */
+	protected function compareObjectProperties($structure, ?DataObject $object1, ?DataObject $object2, array $properties): array
+	{
+		foreach ($structure as $property) {
+			if ($property['type'] == 'section') {
+				$properties = $this->compareObjectProperties($property['properties'], $object1, $object2, $properties);
+			} else {
+				$propertyName = $property['property'];
+				$uniqueProperty = isset($property['uniqueProperty']) ? $property['uniqueProperty'] : ($propertyName == $this->getPrimaryKeyColumn());
+				$propertyValue1 = $this->getPropertyValue($property, $object1->$propertyName, $property['type']);
+				$propertyValue2 = $this->getPropertyValue($property, $object2->$propertyName, $property['type']);
+				$properties[] = [
+					'name' => $property['label'],
+					'value1' => $propertyValue1,
+					'value2' => $propertyValue2,
+					'uniqueProperty' => $uniqueProperty,
+				];
+			}
+		}
+		return $properties;
+	}
+
+	function getPropertyValue($property, $propertyValue, $propertyType)
+	{
+		if ($propertyType == 'oneToMany' || $propertyType == 'multiSelect') {
+			return implode('<br/>', $propertyValue);
+		}elseif ($propertyType == 'enum') {
+			return $property['values'][$propertyValue];
+		} else {
+			return is_array($propertyValue) ? implode(', ', $propertyValue) : (is_object($propertyValue) ? (string)$propertyValue : $propertyValue);
+		}
 	}
 }

@@ -7,6 +7,7 @@
  */
 
 abstract class CombinedResultSection extends DataObject{
+	public $__displayNameColumn = 'displayName';
 	public $id;
 	public $displayName;
 	public $weight;

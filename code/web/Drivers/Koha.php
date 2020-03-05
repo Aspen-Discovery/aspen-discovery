@@ -2464,7 +2464,8 @@ class Koha extends AbstractIlsDriver
 					'amount' => $fullyPaidTotal,
 					'credit_type' => 'payment',
 					'payment_type' => $payment->paymentType,
-					'description' => 'Paid Online via Aspen Discovery'
+					'description' => 'Paid Online via Aspen Discovery',
+					'note' => $payment->paymentType,
 				];
 
 				$response = $this->apiCurlWrapper->curlPostBodyData($apiUrl, $postVariables);
@@ -2489,7 +2490,8 @@ class Koha extends AbstractIlsDriver
 						'amount' => $paymentInfo[1],
 						'credit_type' => 'payment',
 						'payment_type' => $payment->paymentType,
-						'description' => 'Paid Online via Aspen Discovery'
+						'description' => 'Paid Online via Aspen Discovery',
+						'note' => $payment->paymentType,
 					];
 
 					$response = $this->apiCurlWrapper->curlPostBodyData($apiUrl, $postVariables);

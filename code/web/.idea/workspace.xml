@@ -2,21 +2,11 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="64b30edf-4a70-42c6-b752-8518712fb864" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/interface/themes/responsive/WebBuilder/staffDirectory.tpl" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/interface/themes/responsive/css/web-builder.less" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/services/WebBuilder/StaffDirectory.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/services/WebBuilder/StaffMembers.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/sys/WebBuilder/StaffMember.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/interface/themes/responsive/queryTooLong.tpl" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/index.php" beforeDir="false" afterPath="$PROJECT_DIR$/index.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/interface/themes/nashville_resp/css/main.css" beforeDir="false" afterPath="$PROJECT_DIR$/interface/themes/nashville_resp/css/main.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/MyAccount/menu.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/interface/themes/responsive/MyAccount/menu.tpl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/css/layout.less" beforeDir="false" afterPath="$PROJECT_DIR$/interface/themes/responsive/css/layout.less" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/interface/themes/responsive/css/main.css" beforeDir="false" afterPath="$PROJECT_DIR$/interface/themes/responsive/css/main.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/css/responsive_base.less" beforeDir="false" afterPath="$PROJECT_DIR$/interface/themes/responsive/css/responsive_base.less" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/Admin/AJAX.php" beforeDir="false" afterPath="$PROJECT_DIR$/services/Admin/AJAX.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/WebBuilder/BasicPage.php" beforeDir="false" afterPath="$PROJECT_DIR$/services/WebBuilder/BasicPage.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sys/DBMaintenance/web_builder_updates.php" beforeDir="false" afterPath="$PROJECT_DIR$/sys/DBMaintenance/web_builder_updates.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sys/LibraryArchiveMoreDetails.php" beforeDir="false" afterPath="$PROJECT_DIR$/sys/LibraryArchiveMoreDetails.php" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -119,7 +109,7 @@
     <property name="DefaultHtmlFileTemplate" value="HTML File" />
     <property name="NewWatcherDialog.advanced.open" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/services/WebBuilder" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/interface/themes/responsive" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.detected.package.jscs" value="true" />
     <property name="node.js.detected.package.standard" value="true" />

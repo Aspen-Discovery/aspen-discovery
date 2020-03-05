@@ -949,6 +949,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 						} else{
 							overriddenStatus = timeToReshelve.getStatus();
 						}
+						itemInfo.setAutoReindexTime((itemInfo.getLastCheckinDate().getTime() / 1000) + (timeToReshelve.getNumHoursToOverride() * 60 * 60) + 1);
 						break;
 					}
 				}

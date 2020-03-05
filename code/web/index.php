@@ -246,9 +246,11 @@ if (isset($_REQUEST['lookfor'])) {
 				$_GET['lookfor'][$i]     = preg_replace('~(https|mailto|http):/{0,2}~i', '', $searchTerm);
 			}
 			if (strlen($searchTerm) >= 256) {
-				AspenError::raiseError("Sorry your query is too long, please rephrase your query.");
-				$_REQUEST['lookfor'][$i] = '';
-				$_GET['lookfor'][$i]     = '';
+				//This is normally someone trying to inject junk into the database, give them an error page and don't log it
+				$interface->setTemplate('../queryTooLong.tpl');
+				$interface->setPageTitle('An Error has occurred');
+				$interface->display('layout.tpl');
+				exit();
 			}
 		}
 	} else {
@@ -259,8 +261,10 @@ if (isset($_REQUEST['lookfor'])) {
 			$searchTerm     = preg_replace('~(https|mailto|http):/{0,2}~i', '', $searchTerm);
 		}
 		if (strlen($searchTerm) >= 256) {
-			AspenError::raiseError("Sorry your query is too long, please rephrase your query.");
-			$searchTerm = '';
+			$interface->setTemplate('../queryTooLong.tpl');
+			$interface->setPageTitle('An Error has occurred');
+			$interface->display('layout.tpl');
+			exit();
 		}
 		if ($searchTerm != $_REQUEST['lookfor']){
 			$_REQUEST['lookfor'] = $searchTerm;

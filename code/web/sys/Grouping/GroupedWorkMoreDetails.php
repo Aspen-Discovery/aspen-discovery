@@ -3,6 +3,7 @@
 class GroupedWorkMoreDetails extends DataObject
 {
 	public $__table = 'grouped_work_more_details';
+	public $__displayNameColumn = 'source';
 	public $id;
 	public $groupedWorkSettingsId;
 	public $source;

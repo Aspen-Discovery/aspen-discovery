@@ -30,7 +30,7 @@
 
 			<hr>
 
-			{if $transList}
+			{if $transList || !empty($readingHistoryFilter)}
 				{* Results Page Options *}
 				<div id="pager" class="col-xs-12">
 					<div class="row">
@@ -47,6 +47,9 @@
 									<input aria-label="{translate text="Filter Reading History" inAttribute=true}" type="text" class="form-control" name="readingHistoryFilter" id="readingHistoryFilter" value="{$readingHistoryFilter}"/>
 									<span class="input-group-btn">
 										<button type="submit" class="btn btn-default" onclick="return AspenDiscovery.Account.loadReadingHistory($('#patronId').val(),$('#sortMethod option:selected').val(), 1,undefined, $('#readingHistoryFilter').val())">Filter</button>
+										{if !empty($readingHistoryFilter)}
+											<button type="submit" class="btn btn-default" onclick="return AspenDiscovery.Account.loadReadingHistory($('#patronId').val(),$('#sortMethod option:selected').val(), 1,undefined, '')">Clear</button>
+										{/if}
 									</span>
 								</div>
 							</form>
@@ -59,29 +62,39 @@
 				</div>
 
 				<a id="topOfList"></a>
-				{* Reading History Entries *}
-				<div class="striped">
-					{foreach from=$transList item=record name="recordLoop" key=recordKey}
-						{include file="MyAccount/readingHistoryEntry.tpl" record=$record}
-					{/foreach}
-				</div>
-				<hr>
-				<div class="row">
-					<div class="col-xs-12">
-						<div id="readingListActionsBottom" class="btn-group btn-group-sm">
-							{if $historyActive == true}
-								<button class="btn btn-sm btn-info" onclick="return AspenDiscovery.Account.ReadingHistory.exportListAction()">{translate text="Export To Excel"}</button>
-							{else}
-								<button class="btn btn-sm btn-primary" onclick="return AspenDiscovery.Account.ReadingHistory.optInAction()">{translate text="Start Recording My Reading History"}</button>
-							{/if}
+				{if $transList}
+					{* Reading History Entries *}
+					<div class="striped">
+						{foreach from=$transList item=record name="recordLoop" key=recordKey}
+							{include file="MyAccount/readingHistoryEntry.tpl" record=$record}
+						{/foreach}
+					</div>
+					<hr>
+					<div class="row">
+						<div class="col-xs-12">
+							<div id="readingListActionsBottom" class="btn-group btn-group-sm">
+								{if $historyActive == true}
+									<button class="btn btn-sm btn-info" onclick="return AspenDiscovery.Account.ReadingHistory.exportListAction()">{translate text="Export To Excel"}</button>
+								{else}
+									<button class="btn btn-sm btn-primary" onclick="return AspenDiscovery.Account.ReadingHistory.optInAction()">{translate text="Start Recording My Reading History"}</button>
+								{/if}
+							</div>
 						</div>
 					</div>
-				</div>
-				{if $pageLinks.all}
-					<div class="text-center">{$pageLinks.all}</div>{/if}
+					{if $pageLinks.all}
+						<div class="text-center">{$pageLinks.all}</div>
+					{/if}
+				{else}
+					<div class="row">
+						<div class="col-xs-12">
+							{* No Items in the history because everything was filtered out *}
+							<div class="alert alert-warning">{translate text="reading_history_empty_filter" defaultText="No items in your reading history match the specified filter, please search again."}</div>
+						</div>
+					</div>
+				{/if}
 			{elseif $historyActive == true}
 				{* No Items in the history, but the history is active *}
-				{translate text="empty_reading_history" defaultText="You do not have any items in your reading list.    It may take up to 3 hours for your reading history to be updated after you start recording your history."}
+				{translate text="empty_reading_history" defaultText="You do not have any items in your reading list. It may take up to 3 hours for your reading history to be updated after you start recording your history."}
 			{/if}
 		</div>
 	{/if}

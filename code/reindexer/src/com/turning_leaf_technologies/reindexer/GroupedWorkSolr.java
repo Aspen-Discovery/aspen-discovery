@@ -600,7 +600,7 @@ public class GroupedWorkSolr implements Cloneable {
 					if (!curScopeDetails.getGroupedWorkDisplaySettings().isBaseAvailabilityToggleOnLocalHoldingsOnly()) {
 						addLibraryOwnership = true;
 						availabilityToggleValues.add("local");
-						if (curScope.isLocallyOwned() && curScope.isAvailable()) {
+						if (curScope.isAvailable()) {
 							availabilityToggleValues.add("available");
 						}
 					}
@@ -1759,16 +1759,50 @@ public class GroupedWorkSolr implements Cloneable {
 					otherRecordsAsArray.add(relatedRecord);
 				}
 			}
+			if (otherRecordsAsArray.size() == 0 || hooplaRecordsAsArray.size() == 0){
+				return;
+			}
 			for (RecordInfo record1 : hooplaRecordsAsArray) {
 				//This is a candidate for removal
 				for (RecordInfo record2 : otherRecordsAsArray) {
+					//Make sure we have the same format
 					if (record1.getPrimaryFormat().equals(record2.getPrimaryFormat()) && record1.getPrimaryLanguage().equals(record2.getPrimaryLanguage())) {
-						//Suppress the hoopla record
-						relatedRecords.remove(record1.getFullIdentifier());
-						break;
+						//Remove the hoopla record from any scope where there is an available replacement
+						for (ItemInfo curItem2 : record2.getRelatedItems()){
+							for (String curScopeName2 : curItem2.getScopingInfo().keySet()){
+								ScopingInfo curScope2 = curItem2.getScopingInfo().get(curScopeName2);
+								if (curScope2.isAvailable()){
+									for (ItemInfo curItem1 : record1.getRelatedItems()){
+										curItem1.getScopingInfo().remove(curScope2.getScope().getScopeName());
+									}
+									boolean changeMade = true;
+									while (changeMade){
+										changeMade = false;
+										for (ItemInfo curItem1 : record1.getRelatedItems()){
+											if (curItem1.getScopingInfo().size() == 0){
+												record1.getRelatedItems().remove(curItem1);
+												changeMade = true;
+												break;
+											}
+										}
+									}
+									if (record1.getRelatedItems().size() == 0){
+										relatedRecords.remove(record1.getFullIdentifier());
+									}
+								}
+							}
+						}
 					}
 				}
 			}
 		}
+	}
+
+	HashSet<Long> getAutoReindexTimes() {
+		HashSet<Long> autoReindexTimes = new HashSet<>();
+		for (RecordInfo relatedRecord : relatedRecords.values()) {
+			relatedRecord.getAutoReindexTimes(autoReindexTimes);
+		}
+		return autoReindexTimes;
 	}
 }

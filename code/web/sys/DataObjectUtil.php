@@ -38,7 +38,6 @@ class DataObjectUtil
 	 */
 	static function saveObject($structure, $dataType)
 	{
-		global $logger;
 		//Check to see if we have a new object or an exiting object to update
 		/** @var DataObject $object */
 		$object = new $dataType();

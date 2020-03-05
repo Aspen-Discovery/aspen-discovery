@@ -285,7 +285,33 @@ abstract class SearchObject_BaseSearcher
 	protected function getFacetLabel($field)
 	{
 		global $solrScope;
-		$shortField = str_replace("_$solrScope", '', $field);
+
+		$shortField = $field;
+		if (strpos($shortField, 'availability_toggle_') === 0) {
+			$shortField = 'availability_toggle';
+		} elseif (strpos($shortField, 'format') === 0) {
+			$shortField = 'format';
+		} elseif (strpos($shortField, 'format_category') === 0) {
+			$shortField = 'format_category';
+		} elseif (strpos($shortField, 'econtent_source') === 0) {
+			$shortField = 'econtent_source';
+		} elseif (strpos($shortField, 'econtent_protection_type') === 0) {
+			$shortField = 'econtent_protection_type';
+		} elseif (strpos($shortField, 'detailed_location') === 0) {
+			$shortField = 'detailed_location';
+		} elseif (strpos($shortField, 'owning_location') === 0) {
+			$shortField = 'owning_location';
+		} elseif (strpos($shortField, 'owning_library') === 0) {
+			$shortField = 'owning_library';
+		} elseif (strpos($shortField, 'available_at') === 0) {
+			$shortField = 'available_at';
+		} elseif (strpos($shortField, 'collection') === 0 || strpos($shortField, 'collection_group') === 0) {
+			$shortField = 'collection';
+		} elseif (strpos($shortField, 'local_time_since_added') === 0) {
+			$shortField = 'local_time_since_added';
+		} elseif (strpos($shortField, 'itype') === 0) {
+			$shortField = 'itype';
+		}
 		$facetConfig = $this->getFacetConfig();
 		if (isset($facetConfig[$field])) {
 			$facetConfig = $facetConfig[$field];
@@ -547,14 +573,17 @@ abstract class SearchObject_BaseSearcher
 	 */
 	public function initBasicSearch($searchTerm = null)
 	{
+		require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
 		if ($searchTerm == null) {
 			// If no lookfor parameter was found, we have no search terms to
 			// add to our array!
 			if (!isset($_REQUEST['lookfor'])) {
 				return false;
 			} else {
-				$searchTerm = $_REQUEST['lookfor'];
+				$searchTerm = StringUtils::removeTrailingPunctuation($_REQUEST['lookfor']);
 			}
+		}else{
+			$searchTerm = StringUtils::removeTrailingPunctuation($searchTerm);
 		}
 
 		// If no type defined use default
@@ -582,17 +611,24 @@ abstract class SearchObject_BaseSearcher
 			$tempSearchInfo = explode(':', $searchTerm);
 			if (count($tempSearchInfo) == 2){
 				//Check for leading and trailing parentheses
-				if ($tempSearchInfo[0][0] == '('){
+				if (strlen($tempSearchInfo[0]) > 0 && $tempSearchInfo[0][0] == '('){
 					$tempSearchInfo[0] = substr($tempSearchInfo[0], 1);
 				}
-				if ($tempSearchInfo[1][-1] == ')'){
+				if (strlen($tempSearchInfo[1]) > 0 && $tempSearchInfo[1][-1] == ')'){
 					$tempSearchInfo[1] = substr($tempSearchInfo[1], 0, -1);
 				}
+
 				if (array_key_exists($tempSearchInfo[0], $this->searchIndexes)) {
 					$type = $tempSearchInfo[0];
 					$searchTerm = $tempSearchInfo[1];
 				}else{
-					return false;
+					$validFields = $this->loadValidFields();
+					$dynamicFields = $this->loadDynamicFields();
+					if (!in_array($tempSearchInfo[0], $validFields) && !in_array($tempSearchInfo[0], $dynamicFields) || array_key_exists($tempSearchInfo[0], $this->advancedTypes)) {
+						$searchTerm = str_replace(':', ' ', $searchTerm);
+					}else{
+						return false;
+					}
 				}
 			}else{
 				//This is an advanced search
@@ -682,7 +718,7 @@ abstract class SearchObject_BaseSearcher
 						}else {
 							$group[] = array(
 								'field' => $this->defaultIndex,
-								'lookfor' => $_REQUEST['lookfor'],
+								'lookfor' => str_replace(':', ' ', $_REQUEST['lookfor']),
 								'bool' => 'AND'
 							);
 						}

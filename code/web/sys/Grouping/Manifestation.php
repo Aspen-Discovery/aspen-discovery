@@ -234,7 +234,7 @@ class Grouping_Manifestation
 					$hide = true;
 					if (in_array('available_online', $selectedAvailability) || (in_array('available', $selectedAvailability) && $addOnlineMaterialsToAvailableNow)) {
 						$hide = false;
-					} else if (in_array('local', $selectedAvailability)) {
+					} else if (in_array('local', $selectedAvailability) || in_array('global', $selectedAvailability)) {
 						$hide = false;
 					}
 					$variation->setHideByDefault($hide);

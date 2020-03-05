@@ -11,7 +11,7 @@ class NewYorkTimesSetting extends DataObject
 	{
 		$structure = array(
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id'),
-			'booksApiKey' => array('property' => 'booksApiKey', 'type' => 'storedPassword', 'label' => 'Books API Key', 'description' => 'The Key for the Books API', 'maxLength' => '32'),
+			'booksApiKey' => array('property' => 'booksApiKey', 'type' => 'storedPassword', 'label' => 'Books API Key', 'description' => 'The Key for the Books API', 'maxLength' => '32', 'hideInLists' => true),
 		);
 		return $structure;
 	}

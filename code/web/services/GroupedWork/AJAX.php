@@ -399,7 +399,7 @@ class GroupedWork_AJAX extends JSON_Action
 		// Reset any cached suggestion browse category for the user
 		/** @var Memcache $memCache */
 		global $memCache, $solrScope;
-		foreach (array('covers', 'grid') as $browseMode) { // (Browse modes are set in class Browse_AJAX)
+		foreach (array('0', '1') as $browseMode) { // (Browse modes are set in class Browse_AJAX)
 			$key = 'browse_category_system_recommended_for_you_' . UserAccount::getActiveUserId() . '_' . $solrScope . '_' . $browseMode;
 			$memCache->delete($key);
 		}

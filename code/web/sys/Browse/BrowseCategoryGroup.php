@@ -5,6 +5,7 @@ require_once ROOT_DIR . '/sys/Browse/BrowseCategoryGroupEntry.php';
 class BrowseCategoryGroup extends DataObject
 {
 	public $__table = 'browse_category_group';
+	public $__displayNameColumn = 'name';
 	public $id;
 	public $name;
 

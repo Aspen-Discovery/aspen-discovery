@@ -394,11 +394,11 @@ function getSubdomainsToTestFromServerName($fullServerName, array $subdomainsToT
 	$serverComponents = explode('.', $fullServerName);
 	$tempSubdomain = '';
 	if (count($serverComponents) >= 3) {
-		//URL is probably of the form subdomain.marmot.org or subdomain.opac.marmot.org
+		//URL is probably of the form subdomain.librarysite.org or subdomain.opac.librarysite.org
 		$subdomainsToTest[] = $serverComponents[0];
 		$tempSubdomain = $serverComponents[0];
 	} else if (count($serverComponents) == 2) {
-		//URL could be either subdomain.localhost or marmot.org. Only use the subdomain
+		//URL could be either subdomain.localhost or librarysite.org. Only use the subdomain
 		//If the second component is localhost.
 		if (strcasecmp($serverComponents[1], 'localhost') == 0) {
 			$subdomainsToTest[] = $serverComponents[0];
