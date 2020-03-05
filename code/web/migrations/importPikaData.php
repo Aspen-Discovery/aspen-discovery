@@ -32,14 +32,15 @@ if (!file_exists($exportPath)){
 	$invalidGroupedWorks = [];
 	$movedGroupedWorks = [];
 
-	importUsers($exportPath, $existingUsers, $missingUsers);
-	importLists($exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
-	importNotInterested($exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
-	importRatingsAndReviews($exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
-	importReadingHistory($exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
+	$startTime = time();
+	importUsers($startTime, $exportPath, $existingUsers, $missingUsers);
+	importLists($startTime, $exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
+	importNotInterested($startTime, $exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
+	importRatingsAndReviews($startTime, $exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
+	importReadingHistory($startTime, $exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
 }
 
-function importUsers($exportPath, &$existingUsers, &$missingUsers){
+function importUsers($startTime, $exportPath, &$existingUsers, &$missingUsers){
 	/** @var PDO $aspen_db */
 	global $aspen_db;
 
@@ -58,8 +59,8 @@ function importUsers($exportPath, &$existingUsers, &$missingUsers){
 	//Load users, make sure to validate that each still exists in the ILS as we load them
 	$numImports = 0;
 	$userHnd = fopen($exportPath . "users.csv", 'r');
-	$startTime = time();
 	$batchStartTime = time();
+	$numSkipped = 0;
 	while ($userRow = fgetcsv($userHnd)) {
 		$numImports++;
 		$userFromCSV = loadUserInfoFromCSV($userRow);
@@ -139,7 +140,7 @@ function importUsers($exportPath, &$existingUsers, &$missingUsers){
 		$existingUser = null;
 		$userFromCSV = null;
 
-		if ($numImports % 250 == 0){
+		if ($numImports % 2500 == 0){
 			gc_collect_cycles();
 			$elapsedTime = time() - $batchStartTime;
 			$batchStartTime = time();
@@ -150,6 +151,10 @@ function importUsers($exportPath, &$existingUsers, &$missingUsers){
 		}
 	}
 	fclose($userHnd);
+	echo("Processed $numImports Users in $elapsedTime seconds ($totalElapsedTime minutes total).\n");
+	echo (count($missingUsers) . " users were part of the export, but no longer exist in the ILS\n");
+	ob_flush();
+
 	//TODO: Delete any users that still have an id of -1 (other than aspen_admin)
 
 	//Import roles
@@ -229,8 +234,8 @@ function getUserIdForBarcode($userBarcode, &$existingUsers, &$missingUsers){
 	return $userId;
 }
 
-function importReadingHistory($exportPath, &$existingUsers, &$missingUsers, &$validGroupedWorks, &$invalidGroupedWorks, &$movedGroupedWorks){
-	echo ("Starting to import reading history");
+function importReadingHistory($startTime, $exportPath, &$existingUsers, &$missingUsers, &$validGroupedWorks, &$invalidGroupedWorks, &$movedGroupedWorks){
+	echo ("Starting to import reading history\n");
 	set_time_limit(600);
 	require_once ROOT_DIR . '/sys/ReadingHistoryEntry.php';
 
@@ -242,6 +247,8 @@ function importReadingHistory($exportPath, &$existingUsers, &$missingUsers, &$va
 //	$readingHistoryEntry->delete(true);
 	$numImports = 0;
 	$readingHistoryHnd = fopen($exportPath . "patronReadingHistory.csv", 'r');
+	$batchStartTime = time();
+	$numSkipped = 0;
 	while ($patronsReadingHistoryRow = fgetcsv($readingHistoryHnd)){
 		$numImports++;
 
@@ -277,13 +284,14 @@ function importReadingHistory($exportPath, &$existingUsers, &$missingUsers, &$va
 		$groupedWorkId = $patronsReadingHistoryRow[9];
 		$groupedWorkResources = $patronsReadingHistoryRow[10];
 
-		if (!validateGroupedWork($groupedWorkId, $groupedWorkTitle, $groupedWorkAuthor, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks)){
+		if (!validateGroupedWork($groupedWorkId, $groupedWorkTitle, $groupedWorkAuthor, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks, $groupedWorkResources)){
+			$numSkipped ++;
 			continue;
 		}
 
 		$readingHistoryEntry = new ReadingHistoryEntry();
 		$readingHistoryEntry->userId = $userId;
-		$readingHistoryEntry->groupedWorkPermanentId = $groupedWorkId;
+		$readingHistoryEntry->groupedWorkPermanentId = getGroupedWorkId($groupedWorkId, $validGroupedWorks, $movedGroupedWorks);
 		if (!$readingHistoryEntry->find(true)){
 			$readingHistoryEntry->source = $source;
 			$readingHistoryEntry->sourceId = $sourceId;
@@ -293,30 +301,49 @@ function importReadingHistory($exportPath, &$existingUsers, &$missingUsers, &$va
 			$readingHistoryEntry->checkInDate = $checkoutDate;
 			$readingHistoryEntry->checkOutDate = $checkoutDate;
 
-			$readingHistoryEntry->insert();
+			try {
+				$readingHistoryEntry->insert();
+			}catch (Exception $e){
+				echo ("Error importing Reading History Entry $e \n");
+				print_r($readingHistoryEntry);
+			}
 		}else{
 			if (empty($readingHistoryEntry->author) && !empty($author)){
 				$readingHistoryEntry->author = substr($author, 0, 75);
-				$readingHistoryEntry->update();
+				try {
+					$readingHistoryEntry->update();
+				}catch (Exception $e){
+					echo ("Error updating Reading History Entry $e \n");
+					print_r($readingHistoryEntry);
+				}
 			}
 		}
 
-		if ($numImports % 250 == 0){
+		if ($numImports % 2500 == 0){
+			$elapsedTime = time() - $batchStartTime;
+			$batchStartTime = time();
+			$totalElapsedTime = ceil((time() - $startTime) / 60);
+			echo("Processed $numImports Reading History Entries in $elapsedTime seconds ($totalElapsedTime minutes total).\n");
 			gc_collect_cycles();
 			ob_flush();
 			set_time_limit(600);
 		}
 	}
+	echo("Processed $numImports Reading History Entries in $elapsedTime seconds ($totalElapsedTime minutes total).\n");
+	echo("Skipped $numSkipped reading history entries because the title is no longer in the catalog\n");
 	fclose($readingHistoryHnd);
+	ob_flush();
 }
 
-function importNotInterested($exportPath, &$existingUsers, &$missingUsers, &$validGroupedWorks, &$invalidGroupedWorks, &$movedGroupedWorks){
-	echo ("Starting to import not interested titles");
+function importNotInterested($startTime, $exportPath, &$existingUsers, &$missingUsers, &$validGroupedWorks, &$invalidGroupedWorks, &$movedGroupedWorks){
+	echo ("Starting to import not interested titles\n");
 	set_time_limit(600);
 	require_once ROOT_DIR . '/sys/LocalEnrichment/NotInterested.php';
 	$patronNotInterestedHnd = fopen($exportPath . "patronNotInterested.csv", 'r');
 	$numImports = 0;
 
+	$batchStartTime = time();
+	$numSkipped = 0;
 	while ($patronNotInterestedRow = fgetcsv($patronNotInterestedHnd)){
 		$numImports++;
 		//Figure out the user for the review
@@ -330,14 +357,16 @@ function importNotInterested($exportPath, &$existingUsers, &$missingUsers, &$val
 		$title = cleancsv($patronNotInterestedRow[2]);
 		$author = cleancsv($patronNotInterestedRow[3]);
 		$groupedWorkId = $patronNotInterestedRow[4];
+		$groupedWorkResources = $patronNotInterestedRow[5];
 
-		if (!validateGroupedWork($groupedWorkId, $title, $author, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks)){
+		if (!validateGroupedWork($groupedWorkId, $title, $author, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks, $groupedWorkResources)){
+			$numSkipped++;
 			continue;
 		}
 
 		$notInterested = new NotInterested();
 		$notInterested->userId = $userId;
-		$notInterested->groupedRecordPermanentId = $groupedWorkId;
+		$notInterested->groupedRecordPermanentId = getGroupedWorkId($groupedWorkId, $validGroupedWorks, $movedGroupedWorks);
 		if ($notInterested->find(true)){
 			$notInterested->dateMarked = $dateMarked;
 			$notInterested->update();
@@ -346,21 +375,30 @@ function importNotInterested($exportPath, &$existingUsers, &$missingUsers, &$val
 			$notInterested->insert();
 		}
 
-		if ($numImports % 250 == 0){
+		if ($numImports % 2500 == 0){
+			$elapsedTime = time() - $batchStartTime;
+			$batchStartTime = time();
+			$totalElapsedTime = ceil((time() - $startTime) / 60);
+			echo("Processed $numImports Not Interested in $elapsedTime seconds ($totalElapsedTime minutes total).\n");
 			gc_collect_cycles();
 			ob_flush();
 		}
 	}
+	echo("Processed $numImports Not Interested in $elapsedTime seconds ($totalElapsedTime minutes total).\n");
+	echo("Skipped $numSkipped not interested because the title is no longer in the catalog");
+
 	fclose($patronNotInterestedHnd);
 }
 
-function importRatingsAndReviews($exportPath, &$existingUsers, &$missingUsers, &$validGroupedWorks, &$invalidGroupedWorks, &$movedGroupedWorks){
-	echo ("Starting to import ratings and reviews");
+function importRatingsAndReviews($startTime, $exportPath, &$existingUsers, &$missingUsers, &$validGroupedWorks, &$invalidGroupedWorks, &$movedGroupedWorks){
+	echo ("Starting to import ratings and reviews\n");
 	set_time_limit(600);
 	require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
 	$patronsRatingsAndReviewsHnd = fopen($exportPath . "patronRatingsAndReviews.csv", 'r');
 	$numImports = 0;
 
+	$batchStartTime = time();
+	$numSkipped = 0;
 	while ($patronsRatingsAndReviewsRow = fgetcsv($patronsRatingsAndReviewsHnd)){
 		$numImports++;
 		//Figure out the user for the review
@@ -376,14 +414,16 @@ function importRatingsAndReviews($exportPath, &$existingUsers, &$missingUsers, &
 		$title = cleancsv($patronsRatingsAndReviewsRow[4]);
 		$author = cleancsv($patronsRatingsAndReviewsRow[5]);
 		$groupedWorkId = $patronsRatingsAndReviewsRow[6];
+		$groupedWorkResources = $patronsRatingsAndReviewsRow[7];
 
-		if (!validateGroupedWork($groupedWorkId, $title, $author, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks)){
+		if (!validateGroupedWork($groupedWorkId, $title, $author, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks, $groupedWorkResources)){
+			$numSkipped++;
 			continue;
 		}
 
 		require_once ROOT_DIR . '/sys/LocalEnrichment/UserWorkReview.php';
 		$userWorkReview = new UserWorkReview();
-		$userWorkReview->groupedRecordPermanentId = $groupedWorkId;
+		$userWorkReview->groupedRecordPermanentId = getGroupedWorkId($groupedWorkId, $validGroupedWorks, $movedGroupedWorks);
 		$userWorkReview->userId = $userId;
 		$reviewExists = false;
 		if ($userWorkReview->find(true)){
@@ -397,16 +437,22 @@ function importRatingsAndReviews($exportPath, &$existingUsers, &$missingUsers, &
 		}else{
 			$userWorkReview->insert();
 		}
-		if ($numImports % 250 == 0){
+		if ($numImports % 2500 == 0){
+			$elapsedTime = time() - $batchStartTime;
+			$batchStartTime = time();
+			$totalElapsedTime = ceil((time() - $startTime) / 60);
+			echo("Processed $numImports Ratings and Reviews in $elapsedTime seconds ($totalElapsedTime minutes total).\n");
 			gc_collect_cycles();
 			ob_flush();
 		}
 	}
 	fclose($patronsRatingsAndReviewsHnd);
+	echo("Processed $numImports Ratings and Reviews in $elapsedTime seconds ($totalElapsedTime minutes total).\n");
+	echo("Skipped $numSkipped ratings and reviews because the title is no longer in the catalog\n");
 }
 
-function importLists($exportPath, &$existingUsers, &$missingUsers, &$validGroupedWorks, &$invalidGroupedWorks, &$movedGroupedWorks){
-	echo ("Starting to import lists");
+function importLists($startTime, $exportPath, &$existingUsers, &$missingUsers, &$validGroupedWorks, &$invalidGroupedWorks, &$movedGroupedWorks){
+	echo ("Starting to import lists\n");
 	global $memoryWatcher;
 	$memoryWatcher->logMemory("Start of list import");
 
@@ -414,6 +460,7 @@ function importLists($exportPath, &$existingUsers, &$missingUsers, &$validGroupe
 	require_once ROOT_DIR . '/sys/LocalEnrichment/UserList.php';
 	$patronsListHnd = fopen($exportPath . "patronLists.csv", 'r');
 	$numImports = 0;
+	$batchStartTime = time();
 	while ($patronListRow = fgetcsv($patronsListHnd)){
 		$numImports++;
 		//Figure out the user for the list
@@ -445,9 +492,10 @@ function importLists($exportPath, &$existingUsers, &$missingUsers, &$validGroupe
 		$userList->public = $public;
 		$userList->defaultSort = $sort;
 		if ($listExists){
-			if (count($userList->getListTitles()) > 0){
+			//MDN 3/4 Do not delete all the titles on the list since we should be synchronized
+			/*if (count($userList->getListTitles()) > 0){
 				$userList->removeAllListEntries(false);
-			}
+			}*/
 			$userList->update();
 		}else{
 			$userList->insert();
@@ -456,22 +504,30 @@ function importLists($exportPath, &$existingUsers, &$missingUsers, &$validGroupe
 		$userList->__destruct();
 		$userList = null;
 
-		if ($numImports % 250 == 0){
+		if ($numImports % 2500 == 0){
 			gc_collect_cycles();
 			ob_flush();
 			usleep(10);
 			$memoryWatcher->logMemory("Imported $numImports Lists");
+			$elapsedTime = time() - $batchStartTime;
+			$batchStartTime = time();
+			$totalElapsedTime = ceil((time() - $startTime) / 60);
+			echo("Processed $numImports Lists in $elapsedTime seconds ($totalElapsedTime minutes total).\n");
 		}
 	}
 	fclose($patronsListHnd);
+	echo("Processed $numImports Lists in $elapsedTime seconds ($totalElapsedTime minutes total).\n");
+	echo("Removed " . count($removedLists) . " lists because the user is not valid\n");
 
-	echo ("Starting to import list entries");
+	echo ("Starting to import list entries\n");
 	//Load the list entries
 	set_time_limit(600);
 	$patronListEntriesHnd = fopen($exportPath . "patronListEntries.csv", 'r');
 	$numImports = 0;
 	$validGroupedWorks = [];
 	$invalidGroupedWorks = [];
+	$batchStartTime = time();
+	$numSkipped = 0;
 	while ($patronListEntryRow = fgetcsv($patronListEntriesHnd)){
 		$numImports++;
 		$listId = $patronListEntryRow[1];
@@ -480,6 +536,7 @@ function importLists($exportPath, &$existingUsers, &$missingUsers, &$validGroupe
 		$title = cleancsv($patronListEntryRow[4]);
 		$author = cleancsv($patronListEntryRow[5]);
 		$groupedWorkId = $patronListEntryRow[6];
+		$groupedWorkResources = $patronListEntryRow[7];
 
 		if (array_key_exists($listId, $removedLists)){
 			//Skip this list entry since the list wasn't imported (because the user no longer exists)
@@ -488,14 +545,15 @@ function importLists($exportPath, &$existingUsers, &$missingUsers, &$validGroupe
 			echo("List $listId has not been imported yet\r\n");
 		}
 
-		if (!validateGroupedWork($groupedWorkId, $title, $author, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks)){
+		if (!validateGroupedWork($groupedWorkId, $title, $author, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks, $groupedWorkResources)){
+			$numSkipped++;
 			continue;
 		}
 
 		require_once ROOT_DIR . '/sys/LocalEnrichment/UserListEntry.php';
 		$listEntry = new UserListEntry();
 		$listEntry->listId = $listId;
-		$listEntry->groupedWorkPermanentId = $groupedWorkId;
+		$listEntry->groupedWorkPermanentId = getGroupedWorkId($groupedWorkId, $validGroupedWorks, $movedGroupedWorks);
 		$entryExists = false;
 		if ($listEntry->find(true)){
 			$entryExists = true;
@@ -509,12 +567,19 @@ function importLists($exportPath, &$existingUsers, &$missingUsers, &$validGroupe
 		}
 		$listEntry->__destruct();
 		$listEntry = null;
-		if ($numImports % 250 == 0){
+		if ($numImports % 2500 == 0){
 			gc_collect_cycles();
+			$elapsedTime = time() - $batchStartTime;
+			$batchStartTime = time();
+			$totalElapsedTime = ceil((time() - $startTime) / 60);
+			echo("Processed $numImports List Entries in $elapsedTime seconds ($totalElapsedTime minutes total).\n");
 			ob_flush();
+			set_time_limit(600);
 		}
 	}
 	fclose($patronListEntriesHnd);
+	echo("Processed $numImports List Entries in $elapsedTime seconds ($totalElapsedTime minutes total).\n");
+	echo("Skipped $numSkipped list entries because the title is no longer in the catalog\n");
 
 	ob_flush();
 }
@@ -529,8 +594,9 @@ function cleancsv($field){
 	return $field;
 }
 
-function validateGroupedWork(&$groupedWorkId, $title, $author, &$validGroupedWorks, &$invalidGroupedWorks, &$movedGroupedWorks){
+function validateGroupedWork($groupedWorkId, $title, $author, &$validGroupedWorks, &$invalidGroupedWorks, &$movedGroupedWorks, $groupedWorkResources){
 	require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+	require_once ROOT_DIR . '/sys/Grouping/GroupedWorkPrimaryIdentifier.php';
 
 	if (array_key_exists($groupedWorkId, $invalidGroupedWorks)){
 		$groupedWorkValid = false;
@@ -538,73 +604,117 @@ function validateGroupedWork(&$groupedWorkId, $title, $author, &$validGroupedWor
 		$groupedWorkValid = true;
 	}elseif (array_key_exists($groupedWorkId, $movedGroupedWorks)) {
 		$groupedWorkValid = true;
-		$groupedWorkId = $movedGroupedWorks[$groupedWorkId];
 	}else{
-		//Try to validate the grouped work
-		$groupedWork = new GroupedWork();
-		$groupedWork->permanent_id = $groupedWorkId;
-		$groupedWorkValid = true;
-		if (!$groupedWork->find(true)){
-			if ($title != null || $author != null){
-				require_once ROOT_DIR . '/sys/SearchObject/SearchObjectFactory.php';
-				//Search for the record by title and author
-				$searchObject = SearchObjectFactory::initSearchObject();
-				$searchObject->init();
-				$searchTerm = '';
-				if ($title != null){
-					$title = preg_replace('~\ss\s~', 's ', $title);
-					$searchTerm = $title;
-				}
-				if ($author != null) {
-					$searchTerm .= ' ' . $author;
-				}
-				$searchTerm = trim($searchTerm);
-				$searchObject->setBasicQuery($searchTerm);
-				$result = $searchObject->processSearch(true, false);
-				if ($result instanceof AspenError) {
-					echo("Unable to query solr for grouped work {$result->getMessage()}\r\n");
-					$groupedWorkValid = false;
-					$invalidGroupedWorks[$groupedWorkId] = $groupedWorkId;
-				}else{
-					$recordSet = $searchObject->getResultRecordSet();
-					if ($searchObject->getResultTotal() == 1) {
-						//We found it by searching
-						$movedGroupedWorks[$groupedWorkId] = $recordSet[0]['id'];
-						$groupedWorkId = $recordSet[0]['id'];
-						$groupedWorkValid = true;
-					}elseif ($searchObject->getResultTotal() > 1) {
-						//We probably found it by searching
-						echo("WARNING: More than one work found when searching for $title by $author\r\n");
-						$movedGroupedWorks[$groupedWorkId] = $recordSet[0]['id'];
-						$groupedWorkId = $recordSet[0]['id'];
-						$groupedWorkValid = true;
+		//We haven't loaded this grouped work before, get it from the database
+		//We can use two approaches, look at the resources tied to it or look at it by permanent id and title/author
+		//First try looking by resource.  Do this first because the grouping has been tweaked and because this better
+		//Handles works that have merged or unmerged
+		$groupedWorkResourceArray = explode(",", $groupedWorkResources);
+		$groupedWorkValid = false;
+		foreach ($groupedWorkResourceArray as $identifier){
+			list($source, $id) = explode(':', $identifier);
+			$groupedWorkPrimaryIdentifier = new GroupedWorkPrimaryIdentifier();
+			$groupedWorkPrimaryIdentifier->type = $source;
+			$groupedWorkPrimaryIdentifier->identifier = $id;
+			if ($groupedWorkPrimaryIdentifier->find(true)){
+				$groupedWork = new GroupedWork();
+				$groupedWork->id = $groupedWorkPrimaryIdentifier->grouped_work_id;
+				if ($groupedWork->find(true)){
+					$groupedWorkValid = true;
+					if ($groupedWorkId == $groupedWork->permanent_id){
+						$validGroupedWorks[$groupedWorkId] = $groupedWorkId;
 					}else{
-						echo("Grouped Work $groupedWorkId - $title by $author could not be found by searching\r\n");
-						$groupedWorkValid = false;
-						$invalidGroupedWorks[$groupedWorkId] = $groupedWorkId;
+						$movedGroupedWorks[$groupedWorkId] = $groupedWork->permanent_id;
 					}
 				}
-				$searchObject->__destruct();
-				$searchObject = null;
-			}else{
-				//There was no title or author provided, it looks like this was deleted in Pika
-				//echo("Grouped Work $groupedWorkId - $title by $author does not exist\r\n");
-				$groupedWorkValid = false;
-				$invalidGroupedWorks[$groupedWorkId] = $groupedWorkId;
+				$groupedWork->__destruct();
+				$groupedWork = null;
 			}
-		}elseif ($groupedWork->full_title != $title || $groupedWork->author != $author){
-			echo("WARNING grouped Work $groupedWorkId - $title by $author may have matched incorrectly {$groupedWork->full_title} {$groupedWork->author}");
+			$groupedWorkPrimaryIdentifier->__destruct();
+			$groupedWorkPrimaryIdentifier = null;
+			if ($groupedWorkValid){
+				break;
+			}
 		}
-		if ($groupedWorkValid && $title == null && $author == null){
-			echo "Grouped work with no title and author was valid\r\n";
+
+		if (!$groupedWorkValid){
+			//There is little point searching for this record by title/author since we didn't find it by id.
+			//There is some potential that the record was merged with another, but it wouldn't have shown in Pika
+			//So we don't need to show it here.
 			$groupedWorkValid = false;
 			$invalidGroupedWorks[$groupedWorkId] = $groupedWorkId;
 		}
-		if ($groupedWorkValid){
-			$validGroupedWorks[$groupedWorkId] = $groupedWorkId;
-		}
-		$groupedWork->__destruct();
-		$groupedWork = null;
+
+		/*
+		//If that didn't work, go based on the permanent id
+		if (!$groupedWorkValid) {
+			$groupedWork = new GroupedWork();
+			$groupedWork->permanent_id = $groupedWorkId;
+			$groupedWorkValid = true;
+			if (!$groupedWork->find(true)) {
+				if ($title != null || $author != null) {
+					require_once ROOT_DIR . '/sys/SearchObject/SearchObjectFactory.php';
+					//Search for the record by title and author
+					$searchObject = SearchObjectFactory::initSearchObject();
+					$searchObject->init();
+					$searchTerm = '';
+					if ($title != null) {
+						$title = preg_replace('~\ss\s~', 's ', $title);
+						$searchTerm = $title;
+					}
+					if ($author != null) {
+						$searchTerm .= ' ' . $author;
+					}
+					$searchTerm = trim($searchTerm);
+					$searchObject->setBasicQuery($searchTerm);
+					$result = $searchObject->processSearch(true, false);
+					if ($result instanceof AspenError) {
+						echo("Unable to query solr for grouped work {$result->getMessage()}\r\n");
+						$groupedWorkValid = false;
+						$invalidGroupedWorks[$groupedWorkId] = $groupedWorkId;
+					} else {
+						$recordSet = $searchObject->getResultRecordSet();
+						if ($searchObject->getResultTotal() == 1) {
+							//We found it by searching
+							$movedGroupedWorks[$groupedWorkId] = $recordSet[0]['id'];
+							$groupedWorkId = $recordSet[0]['id'];
+							$groupedWorkValid = true;
+						} elseif ($searchObject->getResultTotal() > 1) {
+							//We probably found it by searching
+							echo("WARNING: More than one work found when searching for $title by $author\r\n");
+							$movedGroupedWorks[$groupedWorkId] = $recordSet[0]['id'];
+							$groupedWorkId = $recordSet[0]['id'];
+							$groupedWorkValid = true;
+						} else {
+							echo("Grouped Work $groupedWorkId - $title by $author could not be found by searching\r\n");
+							$groupedWorkValid = false;
+							$invalidGroupedWorks[$groupedWorkId] = $groupedWorkId;
+						}
+					}
+					$searchObject->__destruct();
+					$searchObject = null;
+				} else {
+					//There was no title or author provided, it looks like this was deleted in Pika
+					//echo("Grouped Work $groupedWorkId - $title by $author does not exist\r\n");
+					$groupedWorkValid = false;
+					$invalidGroupedWorks[$groupedWorkId] = $groupedWorkId;
+				}
+				$groupedWorkValid = false;
+				$invalidGroupedWorks[$groupedWorkId] = $groupedWorkId;
+			} elseif ($groupedWork->full_title != $title || $groupedWork->author != $author) {
+				echo("WARNING grouped Work $groupedWorkId - $title by $author may have matched incorrectly {$groupedWork->full_title} {$groupedWork->author}");
+			}
+			if ($groupedWorkValid && $title == null && $author == null) {
+				echo "Grouped work with no title and author was valid\r\n";
+				$groupedWorkValid = false;
+				$invalidGroupedWorks[$groupedWorkId] = $groupedWorkId;
+			}
+			if ($groupedWorkValid) {
+				$validGroupedWorks[$groupedWorkId] = $groupedWorkId;
+			}
+			$groupedWork->__destruct();
+			$groupedWork = null;
+		}*/
 	}
 	return $groupedWorkValid;
 }
@@ -618,5 +728,13 @@ function validateFileExists(string $exportPath, string $file): void
 	if (!file_exists($exportPath . $file)) {
 		echo("Could not find $file in export path " . $exportPath);
 		die();
+	}
+}
+
+function getGroupedWorkId($groupedWorkId, $validGroupedWorks, $movedGroupedWorks){
+	if (array_key_exists($groupedWorkId, $validGroupedWorks)){
+		return $validGroupedWorks[$groupedWorkId];
+	}else{
+		return $movedGroupedWorks[$groupedWorkId];
 	}
 }
