@@ -1453,11 +1453,19 @@ public class GroupedWorkSolr implements Cloneable {
 	}
 
 	void addPublishers(Set<String> publishers) {
-		this.publishers.addAll(publishers);
+		for(String publisher : publishers) {
+			addPublisher(publisher);
+		}
 	}
 
 	void addPublisher(String publisher) {
-		this.publishers.add(publisher);
+		publisher = publisher.trim();
+		if (publisher.endsWith(",") || publisher.endsWith(";")){
+			publisher = publisher.substring(0, publisher.length() - 1).trim();
+		}
+		if (publisher.length() > 0){
+			this.publishers.add(publisher);
+		}
 	}
 
 	void addPublicationDates(Set<String> publicationDate) {

@@ -808,7 +808,7 @@ abstract class MarcRecordProcessor {
 				if (curField.getIndicator2() == '1'){
 					Subfield subFieldB = curField.getSubfield('b');
 					if (subFieldB != null){
-						publisher.add(subFieldB.getData());
+						publisher.add(StringUtils.trimTrailingPunctuation(subFieldB.getData()));
 					}
 				}
 			}
