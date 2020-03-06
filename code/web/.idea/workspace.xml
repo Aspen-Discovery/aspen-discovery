@@ -2,11 +2,13 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="64b30edf-4a70-42c6-b752-8518712fb864" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/interface/themes/responsive/queryTooLong.tpl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../cron/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../cron/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/MarcRecordProcessor.java" beforeDir="false" afterPath="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/MarcRecordProcessor.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/SideLoadedEContentProcessor.java" beforeDir="false" afterPath="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/SideLoadedEContentProcessor.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/index.php" beforeDir="false" afterPath="$PROJECT_DIR$/index.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/interface/themes/nashville_resp/css/main.css" beforeDir="false" afterPath="$PROJECT_DIR$/interface/themes/nashville_resp/css/main.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/css/main.css" beforeDir="false" afterPath="$PROJECT_DIR$/interface/themes/responsive/css/main.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sys/DBMaintenance/indexing_updates.php" beforeDir="false" afterPath="$PROJECT_DIR$/sys/DBMaintenance/indexing_updates.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sys/Indexing/IndexingProfile.php" beforeDir="false" afterPath="$PROJECT_DIR$/sys/Indexing/IndexingProfile.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sys/Indexing/SideLoad.php" beforeDir="false" afterPath="$PROJECT_DIR$/sys/Indexing/SideLoad.php" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -269,7 +271,8 @@
       <workItem from="1581783694636" duration="20185000" />
       <workItem from="1582037799927" duration="5746000" />
       <workItem from="1582148209122" duration="4991000" />
-    </task>
+      <workItem from="1583416173444" duration="11242000" />
+   </task>
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -303,7 +306,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
           <url>file://$PROJECT_DIR$/sys/DataObjectUtil.php</url>
-          <line>391</line>
+          <line>390</line>
           <option name="timeStamp" value="159" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
@@ -313,7 +316,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
           <url>file://$PROJECT_DIR$/sys/DataObjectUtil.php</url>
-          <line>303</line>
+          <line>302</line>
           <option name="timeStamp" value="223" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
@@ -362,7 +365,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
           <url>file://$PROJECT_DIR$/sys/Account/User.php</url>
-          <line>1484</line>
+          <line>1486</line>
           <option name="timeStamp" value="1080" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
@@ -433,7 +436,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
           <url>file://$PROJECT_DIR$/services/MyAccount/AJAX.php</url>
-          <line>986</line>
+          <line>1007</line>
           <option name="timeStamp" value="1555" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
@@ -443,17 +446,17 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
           <url>file://$PROJECT_DIR$/sys/DBMaintenance/indexing_updates.php</url>
-          <line>767</line>
+          <line>778</line>
           <option name="timeStamp" value="1621" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
           <url>file://$PROJECT_DIR$/sys/DBMaintenance/indexing_updates.php</url>
-          <line>788</line>
+          <line>799</line>
           <option name="timeStamp" value="1622" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
           <url>file://$PROJECT_DIR$/sys/DBMaintenance/indexing_updates.php</url>
-          <line>797</line>
+          <line>808</line>
           <option name="timeStamp" value="1623" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
@@ -498,12 +501,12 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
           <url>file://$PROJECT_DIR$/services/MyAccount/AJAX.php</url>
-          <line>1313</line>
+          <line>1334</line>
           <option name="timeStamp" value="1815" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
           <url>file://$PROJECT_DIR$/services/MyAccount/AJAX.php</url>
-          <line>1475</line>
+          <line>1496</line>
           <option name="timeStamp" value="1816" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
@@ -558,7 +561,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
           <url>file://$PROJECT_DIR$/services/Search/Results.php</url>
-          <line>345</line>
+          <line>374</line>
           <option name="timeStamp" value="1942" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
@@ -583,7 +586,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
           <url>file://$PROJECT_DIR$/sys/SearchObject/BaseSearcher.php</url>
-          <line>297</line>
+          <line>323</line>
           <option name="timeStamp" value="2006" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
@@ -594,7 +597,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
           <url>file://$PROJECT_DIR$/sys/SearchObject/BaseSearcher.php</url>
-          <line>1310</line>
+          <line>1346</line>
           <option name="timeStamp" value="2037" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
@@ -640,17 +643,17 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
           <url>file://$PROJECT_DIR$/sys/SearchObject/BaseSearcher.php</url>
-          <line>625</line>
+          <line>661</line>
           <option name="timeStamp" value="2337" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
           <url>file://$PROJECT_DIR$/sys/SearchObject/BaseSearcher.php</url>
-          <line>2156</line>
+          <line>2192</line>
           <option name="timeStamp" value="2366" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
           <url>file://$PROJECT_DIR$/sys/SearchObject/BaseSearcher.php</url>
-          <line>2159</line>
+          <line>2195</line>
           <option name="timeStamp" value="2367" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
@@ -665,7 +668,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
           <url>file://$PROJECT_DIR$/services/MyAccount/AJAX.php</url>
-          <line>2372</line>
+          <line>2393</line>
           <option name="timeStamp" value="2461" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
@@ -675,7 +678,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
           <url>file://$PROJECT_DIR$/sys/LibraryLocation/Library.php</url>
-          <line>1392</line>
+          <line>1393</line>
           <option name="timeStamp" value="2498" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
@@ -740,7 +743,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
           <url>file://$PROJECT_DIR$/migrations/importPikaData.php</url>
-          <line>215</line>
+          <line>220</line>
           <option name="timeStamp" value="3110" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
@@ -756,7 +759,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
           <url>file://$PROJECT_DIR$/migrations/importPikaData.php</url>
-          <line>124</line>
+          <line>125</line>
           <option name="timeStamp" value="3145" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
@@ -768,6 +771,11 @@
           <url>file://$PROJECT_DIR$/Drivers/CarlX.php</url>
           <line>1607</line>
           <option name="timeStamp" value="3177" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="php">
+          <url>file://$PROJECT_DIR$/CatalogConnection.php</url>
+          <line>160</line>
+          <option name="timeStamp" value="3179" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/interface/themes/responsive/js/aspen/searches.js</url>

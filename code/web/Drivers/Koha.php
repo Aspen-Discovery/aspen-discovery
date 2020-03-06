@@ -540,7 +540,7 @@ class Koha extends AbstractIlsDriver
 				//Get display names that aren't stored
 				$user->_homeLocationCode = $location->code;
 				$user->_homeLocation = $location->displayName;
-				//Cleaanup
+				//Cleanup
 				$location->__destruct();
 				$location = null;
 			}

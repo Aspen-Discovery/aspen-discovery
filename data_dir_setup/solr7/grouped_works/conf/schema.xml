@@ -193,7 +193,7 @@
 		<field name="language_boost_es" type="integer" indexed="true" stored="false" multiValued="false" omitNorms="true" default="1"/>
 
 		<!-- Publication information -->
-		<field name="publisher" type="textProper" indexed="true" stored="true" multiValued="true"/>
+		<field name="publisher" type="searchable_text" indexed="true" stored="true" multiValued="true"/>
 		<field name="publisherStr" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
 		<field name="publishDate" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true"/>
 		<field name="publishDateSort" type="unchanged_string" indexed="true" stored="true"/>

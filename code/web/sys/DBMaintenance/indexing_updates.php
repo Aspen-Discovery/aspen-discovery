@@ -737,6 +737,17 @@ function getIndexingUpdates()
 				)'
 			]
 		],
+
+		'unknown_language_handling' => [
+			'title' => 'Unknown Language Handling',
+			'description' => 'Add options to handle unknown and undetermined languages',
+			'sql' => [
+				"ALTER TABLE indexing_profiles ADD COLUMN treatUnknownLanguageAs VARCHAR(50) DEFAULT 'English'",
+				"ALTER TABLE indexing_profiles ADD COLUMN treatUndeterminedLanguageAs VARCHAR(50) DEFAULT 'English'",
+				"ALTER TABLE sideloads ADD COLUMN treatUnknownLanguageAs VARCHAR(50) DEFAULT 'English'",
+				"ALTER TABLE sideloads ADD COLUMN treatUndeterminedLanguageAs VARCHAR(50) DEFAULT 'English'",
+			]
+		]
 	);
 }
 

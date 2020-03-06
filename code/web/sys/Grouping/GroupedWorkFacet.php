@@ -52,6 +52,7 @@ class GroupedWorkFacet extends FacetSetting {
 			"accelerated_reader_point_value" => "AR Point Value",
 			"fountas_pinnell" => "Fountas &amp; Pinnell",
 			"series_facet" => "Series",
+			"publisherStr" => "Publisher"
 		);
 
 		asort($availableFacets);
