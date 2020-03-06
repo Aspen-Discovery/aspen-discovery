@@ -8746,11 +8746,10 @@ ul.account-submenu {
   border-radius: 0;
   min-height: auto;
 }
-#webMenuNavBar .navbar-nav > li > a,
-#webMenuNavBar .navbar-nav > li > a:visited {
+#webMenuNavBar .nav > li > a,
+#webMenuNavBar .nav > li > a:visited {
   color: #FFF;
-  padding-top: 7px;
-  padding-bottom: 7px;
+  padding: 7px 10px;
 }
 #webMenuNavBar .navbar-nav > li.open > a,
 #webMenuNavBar .navbar-nav > li.open > a:visited {

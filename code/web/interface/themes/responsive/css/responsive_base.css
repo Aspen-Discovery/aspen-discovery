@@ -2537,8 +2537,8 @@ input[type="button"].btn-block {
 }
 @font-face {
   font-family: 'Glyphicons Halflings';
-  src: url('/fonts/glyphicons-halflings-regular.eot');
-  src: url('/fonts/glyphicons-halflings-regular.eot?#iefix') format('embedded-opentype'), url('/fonts/glyphicons-halflings-regular.woff') format('woff'), url('/fonts/glyphicons-halflings-regular.ttf') format('truetype'), url('/fonts/glyphicons-halflings-regular.svg#glyphicons-halflingsregular') format('svg');
+  src: url('../../../../fonts/glyphicons-halflings-regular.eot');
+  src: url('../../../../fonts/glyphicons-halflings-regular.eot?#iefix') format('embedded-opentype'), url('../../../../fonts/glyphicons-halflings-regular.woff') format('woff'), url('../../../../fonts/glyphicons-halflings-regular.ttf') format('truetype'), url('../../../../fonts/glyphicons-halflings-regular.svg#glyphicons-halflingsregular') format('svg');
 }
 .glyphicon {
   position: relative;
@@ -8744,10 +8744,11 @@ ul.account-submenu {
   border-radius: 0;
   min-height: auto;
 }
-#webMenuNavBar .nav > li > a,
-#webMenuNavBar .nav > li > a:visited {
+#webMenuNavBar .navbar-nav > li > a,
+#webMenuNavBar .navbar-nav > li > a:visited {
   color: #FFF;
-  padding: 7px 10px;
+  padding-top: 7px;
+  padding-bottom: 7px;
 }
 #webMenuNavBar .navbar-nav > li.open > a,
 #webMenuNavBar .navbar-nav > li.open > a:visited {
@@ -10892,4 +10893,4 @@ fieldset[disabled] .btn-masquerade.active {
   font-size: 16px;
   font-weight: bold;
 }
-/*# sourceMappingURL=main.css.map */
+/*# sourceMappingURL=responsive_base.css.map */

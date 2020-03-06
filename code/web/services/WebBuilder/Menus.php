@@ -27,10 +27,20 @@ class WebBuilder_Menus extends ObjectEditor
 	function getAllObjects()
 	{
 		$object = new WebBuilderMenu();
+		$object->parentMenuId = -1;
+		$object->orderBy('weight asc');
 		$object->find();
 		$objectList = array();
 		while ($object->fetch()) {
 			$objectList[$object->id] = clone $object;
+			$subMenu = new WebBuilderMenu();
+			$subMenu->parentMenuId = $object->id;
+			$subMenu->orderBy('weight asc');
+			$subMenu->find();
+			while ($subMenu->fetch()) {
+				$subMenu->label = "--- " . $subMenu->label;
+				$objectList[$subMenu->id] = clone $subMenu;
+			}
 		}
 		return $objectList;
 	}

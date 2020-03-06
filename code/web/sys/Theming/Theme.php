@@ -24,7 +24,6 @@ class Theme extends DataObject
 	public $headerButtonColorDefault;
 	public $headerButtonBackgroundColor;
 	public $headerButtonBackgroundColorDefault;
-	public $headerBottomBorderWidth;
 
 	public $pageBackgroundColor;
 	public $pageBackgroundColorDefault;

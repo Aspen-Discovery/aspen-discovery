@@ -9,6 +9,11 @@ class WebBuilderMenu extends DataObject
 	public $parentMenuId;
 	public $url;
 
+	public function getNumericColumnNames()
+	{
+		return ['parentMenuId'];
+	}
+
 	public static function getObjectStructure(){
 		$parentMenuItems = [];
 		$parentMenuItems[-1] = 'None';

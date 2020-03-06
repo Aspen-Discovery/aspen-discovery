@@ -377,14 +377,21 @@ body .container{ldelim}
     {if !empty($primaryBackgroundColor)}
     background-color: {$primaryBackgroundColor};
     {/if}
-    {if $tertiaryBackgroundColor}
-        border-top: solid {$tertiaryBackgroundColor} 2px;
-    {/if}
+    margin-bottom: 2px;
     {if !empty($primaryForegroundColor)}
     color: {$primaryForegroundColor};
     .navbar-nav > li > a, .navbar-nav > li > a:visited {ldelim}
         color: {$primaryForegroundColor};
     {rdelim}
+    {/if}
+{rdelim}
+
+.dropdown-menu{ldelim}
+    background-color: white;
+    {if !empty($bodyTextColor)}
+    color: {$bodyTextColor};
+    {else}
+    color: black;
     {/if}
 {rdelim}
 

@@ -96,37 +96,7 @@
 		</div>
 
 		{if !empty($webMenu)}
-			<div id="webMenuNavBar" class="navbar navbar-default navbar-static-top row">
-				<div class="container">
-					<div class="navbar-header">
-						<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#webmenu-navbar-collapse-1" aria-expanded="false">
-							<span class="sr-only">Menu</span>
-							<span class="icon-bar"></span>
-							<span class="icon-bar"></span>
-							<span class="icon-bar"></span>
-						</button>
-					</div>
-					<div class="collapse navbar-collapse" id="webmenu-navbar-collapse-1">
-						<ul class="nav navbar-nav">
-							{foreach from=$webMenu item=menu}
-								{assign var="childItems" value=$menu->getChildMenuItems()}
-								{if count($childItems) == 0}
-									<li>{if $menu->url}<a href="{$menu->url}">{/if}{$menu->label}{if $menu->url}</a>{/if}</li>
-								{else}
-									<li class="dropdown">
-										<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{$menu->label} <span class="caret"></span></a>
-										<ul class="dropdown-menu">
-											{foreach from=$childItems item=childItem}
-												<li>{if $childItem->url}<a href="{$childItem->url}">{/if}{$childItem->label}{if $childItem->url}</a>{/if}</li>
-											{/foreach}
-										</ul>
-									</li>
-								{/if}
-							{/foreach}
-						</ul>
-					</div>
-				</div>
-			</div>
+			{include file="webmenu.tpl"}
 		{/if}
 
 		<div id="content-container">
