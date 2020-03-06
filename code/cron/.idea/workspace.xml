@@ -4,12 +4,10 @@
     <list default="true" id="55ca2c23-0e7e-4349-ac3a-9f29a6a68364" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../reindexer/reindexer.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../reindexer/reindexer.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/GroupedWorkSolr.java" beforeDir="false" afterPath="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/GroupedWorkSolr.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/IlsRecordProcessor.java" beforeDir="false" afterPath="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/IlsRecordProcessor.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/MarcRecordProcessor.java" beforeDir="false" afterPath="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/MarcRecordProcessor.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/SideLoadedEContentProcessor.java" beforeDir="false" afterPath="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/SideLoadedEContentProcessor.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../web/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../web/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/services/Search/Results.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/services/Search/Results.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/sys/Grouping/GroupedWorkFacet.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/sys/Grouping/GroupedWorkFacet.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../data_dir_setup/solr7/grouped_works/conf/schema.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../../data_dir_setup/solr7/grouped_works/conf/schema.xml" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -36,17 +34,14 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/GroupedWorkSolr.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="158">
-              <caret line="1465" selection-start-line="1465" selection-end-line="1465" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/OverDriveProcessor.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="128">
-              <caret line="94" selection-start-line="94" selection-end-line="94" />
+            <state relative-caret-position="53">
+              <caret line="1448" selection-start-line="1448" selection-end-line="1448" />
+              <folding>
+                <element signature="e#54199#54200#0" expanded="true" />
+                <element signature="e#63487#63526#1" expanded="true" />
+                <element signature="e#63544#63545#0" expanded="true" />
+                <element signature="e#63579#63580#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -54,8 +49,17 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/GroupedWorkIndexer.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="203">
-              <caret line="899" column="20" selection-start-line="899" selection-start-column="20" selection-end-line="899" selection-end-column="20" />
+            <state relative-caret-position="-435">
+              <caret line="27" column="13" selection-start-line="27" selection-start-column="13" selection-end-line="27" selection-end-column="13" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/MarcRecordProcessor.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="119">
+              <caret line="829" selection-start-line="829" selection-end-line="829" />
             </state>
           </provider>
         </entry>
@@ -63,65 +67,35 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/IlsRecordProcessor.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="119">
-              <caret line="1306" column="8" selection-start-line="1306" selection-start-column="8" selection-end-line="1306" selection-end-column="8" />
+            <state relative-caret-position="270">
+              <caret line="188" selection-start-line="188" selection-end-line="188" />
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/MarcRecordProcessor.java">
+        <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/SideLoadedEContentProcessor.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="254">
-              <caret line="813" column="13" lean-forward="true" selection-start-line="813" selection-start-column="13" selection-end-line="813" selection-end-column="13" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/../../sites/arlington.localhost/conf/config.pwd.ini">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="105">
-              <caret line="7" column="22" lean-forward="true" selection-start-line="7" selection-start-column="22" selection-end-line="7" selection-end-column="22" />
+            <state relative-caret-position="210">
+              <caret line="35" column="37" lean-forward="true" selection-start-line="35" selection-start-column="37" selection-end-line="35" selection-end-column="37" />
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/strings/StringUtils.java">
+        <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/CloudLibraryProcessor.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="173">
-              <caret line="171" selection-start-line="171" selection-end-line="171" />
+            <state relative-caret-position="11">
+              <caret line="19" column="28" selection-start-line="19" selection-start-column="28" selection-end-line="19" selection-end-column="28" />
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/../sierra_export_api/src/com/turning_leaf_technologies/sierra/SierraExportAPIMain.java">
+        <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/OverDriveProcessor.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="128">
-              <caret line="1368" selection-start-line="1368" selection-end-line="1368" />
-              <folding>
-                <element signature="imports" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="jar://C:/Program Files/Java/jdk1.8.0_201/src.zip!/java/net/SocketInputStream.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="136">
-              <caret line="93" column="23" selection-start-line="93" selection-start-column="23" selection-end-line="93" selection-end-column="23" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/../../data_dir_setup/solr7/grouped_works/conf/schema.xml">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="224">
-              <caret line="196" column="33" selection-start-line="196" selection-start-column="21" selection-end-line="196" selection-end-column="33" />
+            <state relative-caret-position="181">
+              <caret line="492" column="39" selection-start-line="492" selection-start-column="24" selection-end-line="492" selection-end-column="39" />
             </state>
           </provider>
         </entry>
@@ -138,14 +112,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>owning_location</find>
-      <find>itype_</find>
-      <find>SideLoadScope</find>
-      <find>sideLoadScopeId</find>
-      <find>setupAvailabilityToggleAndOwnershipForItemWithinScope</find>
-      <find>includeLibraryRecordsToInclude</find>
-      <find>did not contri</find>
-      <find>external_</find>
       <find>apiBaseUrl</find>
       <find>apiBaseUrl =</find>
       <find>allowFastExportMethod</find>
@@ -168,6 +134,14 @@
       <find>itemsForVolume</find>
       <find>getSolr</find>
       <find>publisher</find>
+      <find>addLan</find>
+      <find>addLanguage</find>
+      <find>this.languages</find>
+      <find>displayName</find>
+      <find>treatUnknownLanguageAs</find>
+      <find>MarcRecordProcessor</find>
+      <find>extends MarcRecordProcessor</find>
+      <find>treate</find>
     </findStrings>
     <replaceStrings>
       <replace>Rbdigital</replace>
@@ -208,7 +182,6 @@
         <option value="$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/indexing/CloudLibraryScope.java" />
         <option value="$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/indexing/OverDriveScope.java" />
         <option value="$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/indexing/GroupedWorkDisplaySettings.java" />
-        <option value="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/OverDriveProcessor.java" />
         <option value="$PROJECT_DIR$/../record_grouping/src/com/turning_leaf_technologies/grouping/RecordGroupingProcessor.java" />
         <option value="$PROJECT_DIR$/../overdrive_api_extract/src/com/turning_leaf_technologies/overdrive/ExtractOverDriveInfo.java" />
         <option value="$PROJECT_DIR$/../koha_export/src/com/turning_leaf_technologies/koha_export/KohaInstanceInformation.java" />
@@ -238,7 +211,6 @@
         <option value="$PROJECT_DIR$/../../sites/model2.production/model2.production.sh" />
         <option value="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/KohaRecordProcessor.java" />
         <option value="$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/indexing/IndexingUtils.java" />
-        <option value="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/SideLoadedEContentProcessor.java" />
         <option value="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/ArlingtonRecordProcessor.java" />
         <option value="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/RecordInfo.java" />
         <option value="$PROJECT_DIR$/../../sites/arlington.localhost/conf/config.ini" />
@@ -249,13 +221,15 @@
         <option value="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/RbdigitalProcessor.java" />
         <option value="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/RbdigitalMagazineProcessor.java" />
         <option value="$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/strings/StringUtils.java" />
-        <option value="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/IlsRecordProcessor.java" />
         <option value="$PROJECT_DIR$/../sierra_export_api/src/com/turning_leaf_technologies/sierra/SierraExportAPIMain.java" />
         <option value="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/GroupedWorkIndexer.java" />
         <option value="$PROJECT_DIR$/../../sites/template.linux/conf/config.ini" />
         <option value="$PROJECT_DIR$/../../data_dir_setup/solr7/grouped_works/conf/schema.xml" />
         <option value="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/GroupedWorkSolr.java" />
+        <option value="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/OverDriveProcessor.java" />
+        <option value="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/SideLoadedEContentProcessor.java" />
         <option value="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/MarcRecordProcessor.java" />
+        <option value="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/IlsRecordProcessor.java" />
       </list>
     </option>
   </component>
@@ -276,35 +250,7 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="ProjectPane">
-        <subPane>
-          <expand>
-            <path>
-              <item name="cron" type="b2602c69:ProjectViewProjectNode" />
-              <item name="java_shared_libraries" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="cron" type="b2602c69:ProjectViewProjectNode" />
-              <item name="java_shared_libraries" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="cron" type="b2602c69:ProjectViewProjectNode" />
-              <item name="java_shared_libraries" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-              <item name="turning_leaf_technologies" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="cron" type="b2602c69:ProjectViewProjectNode" />
-              <item name="java_shared_libraries" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-              <item name="turning_leaf_technologies" type="462c0819:PsiDirectoryNode" />
-              <item name="indexing" type="462c0819:PsiDirectoryNode" />
-            </path>
-          </expand>
-          <select />
-        </subPane>
-      </pane>
+      <pane id="ProjectPane" />
       <pane id="Scope" />
       <pane id="PackagesPane" />
     </panes>
@@ -374,7 +320,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Application.Reindexer Full">
+  <component name="RunManager" selected="Application.Reindexer Single Work">
     <configuration name="CARLX Export" type="Application" factoryName="Application">
       <option name="MAIN_CLASS_NAME" value="com.turning_leaf_technologies.carlx.CarlXExportMain" />
       <module name="carlx_export" />
@@ -470,7 +416,7 @@
     <configuration name="Reindexer Full" type="Application" factoryName="Application">
       <option name="MAIN_CLASS_NAME" value="com.turning_leaf_technologies.reindexer.GroupedReindexMain" />
       <module name="reindexer" />
-      <option name="PROGRAM_PARAMETERS" value="arlington.localhost fullNoClear" />
+      <option name="PROGRAM_PARAMETERS" value="aspencat.localhost fullNoClear" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../reindexer" />
       <method v="2">
         <option name="Make" enabled="true" />
@@ -479,7 +425,7 @@
     <configuration name="Reindexer Single Work" type="Application" factoryName="Application">
       <option name="MAIN_CLASS_NAME" value="com.turning_leaf_technologies.reindexer.GroupedReindexMain" />
       <module name="reindexer" />
-      <option name="PROGRAM_PARAMETERS" value="arlington.localhost singleWork" />
+      <option name="PROGRAM_PARAMETERS" value="aspencat.localhost singleWork" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../reindexer" />
       <method v="2">
         <option name="Make" enabled="true" />
@@ -566,7 +512,6 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-7" y="-7" width="1550" height="838" extended-state="6" />
-    <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" sideWeight="0.4969325" visible="true" weight="0.21946308" />
       <window_info id="Image Layers" order="1" />
@@ -575,7 +520,7 @@
       <window_info id="Capture Tool" order="4" />
       <window_info id="Favorites" order="5" sideWeight="0.5030675" side_tool="true" weight="0.16174497" />
       <window_info anchor="bottom" id="Message" order="0" />
-      <window_info anchor="bottom" id="Find" order="1" sideWeight="0.49261746" weight="0.398017" />
+      <window_info anchor="bottom" id="Find" order="1" sideWeight="0.49261746" weight="0.27620396" />
       <window_info anchor="bottom" id="Run" order="2" sideWeight="0.4966443" weight="0.3186969" />
       <window_info active="true" anchor="bottom" id="Debug" order="3" sideWeight="0.8416107" visible="true" weight="0.38243628" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
@@ -919,13 +864,13 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/IlsRecordProcessor.java</url>
-          <line>782</line>
+          <line>785</line>
           <properties />
           <option name="timeStamp" value="829" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/IlsRecordProcessor.java</url>
-          <line>780</line>
+          <line>783</line>
           <properties />
           <option name="timeStamp" value="830" />
         </line-breakpoint>
@@ -997,7 +942,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/IlsRecordProcessor.java</url>
-          <line>474</line>
+          <line>477</line>
           <properties />
           <option name="timeStamp" value="972" />
         </line-breakpoint>
@@ -1015,7 +960,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/SideLoadedEContentProcessor.java</url>
-          <line>197</line>
+          <line>200</line>
           <properties />
           <option name="timeStamp" value="1010" />
         </line-breakpoint>
@@ -1027,13 +972,13 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/OverDriveProcessor.java</url>
-          <line>360</line>
+          <line>372</line>
           <properties />
           <option name="timeStamp" value="1098" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/OverDriveProcessor.java</url>
-          <line>362</line>
+          <line>374</line>
           <properties />
           <option name="timeStamp" value="1099" />
         </line-breakpoint>
@@ -1203,7 +1148,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/IlsRecordProcessor.java</url>
-          <line>1242</line>
+          <line>1245</line>
           <properties />
           <option name="timeStamp" value="1331" />
         </line-breakpoint>
@@ -1253,7 +1198,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/IlsRecordProcessor.java</url>
-          <line>924</line>
+          <line>927</line>
           <properties />
           <option name="timeStamp" value="1399" />
         </line-breakpoint>
@@ -1265,9 +1210,15 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/GroupedWorkSolr.java</url>
-          <line>1463</line>
+          <line>1752</line>
           <properties />
-          <option name="timeStamp" value="1410" />
+          <option name="timeStamp" value="1419" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/MarcRecordProcessor.java</url>
+          <line>831</line>
+          <properties />
+          <option name="timeStamp" value="1421" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
@@ -1463,13 +1414,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/CloudLibraryProcessor.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1980">
-          <caret line="147" column="67" selection-start-line="145" selection-start-column="28" selection-end-line="147" selection-end-column="67" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/ItemInfo.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="141">
@@ -1555,13 +1499,6 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/../record_grouping/src/com/turning_leaf_technologies/grouping/SideLoadedRecordGrouper.java">
       <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/SideLoadedEContentProcessor.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="255">
-          <caret line="100" column="56" selection-start-line="100" selection-start-column="56" selection-end-line="100" selection-end-column="56" />
-        </state>
-      </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/indexing/IndexingUtils.java">
       <provider selected="true" editor-type-id="text-editor">
@@ -1692,13 +1629,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/indexing/IndexingProfile.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="315">
-          <caret line="149" column="48" selection-start-line="149" selection-start-column="48" selection-end-line="149" selection-end-column="48" />
-        </state>
-      </provider>
-    </entry>
     <entry file="jar://$PROJECT_DIR$/../../sites/default/solr-7.6.0/dist/solr-solrj-7.6.0.jar!/org/apache/solr/client/solrj/SolrClient.class">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="181">
@@ -1748,27 +1678,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/OverDriveProcessor.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="128">
-          <caret line="94" selection-start-line="94" selection-end-line="94" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/GroupedWorkIndexer.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="203">
-          <caret line="899" column="20" selection-start-line="899" selection-start-column="20" selection-end-line="899" selection-end-column="20" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/IlsRecordProcessor.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="119">
-          <caret line="1306" column="8" selection-start-line="1306" selection-start-column="8" selection-end-line="1306" selection-end-column="8" />
-        </state>
-      </provider>
-    </entry>
     <entry file="jar://C:/Program Files/Java/jdk1.8.0_201/src.zip!/java/net/SocketInputStream.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="136">
@@ -1793,24 +1702,72 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/GroupedWorkSolr.java">
+    <entry file="file://$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/indexing/IndexingProfile.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="158">
-          <caret line="1465" selection-start-line="1465" selection-end-line="1465" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/MarcRecordProcessor.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="254">
-          <caret line="813" column="13" lean-forward="true" selection-start-line="813" selection-start-column="13" selection-end-line="813" selection-end-column="13" />
+        <state relative-caret-position="270">
+          <caret line="146" column="13" lean-forward="true" selection-start-line="146" selection-start-column="13" selection-end-line="146" selection-end-column="13" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/../../sites/arlington.localhost/conf/config.pwd.ini">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="105">
-          <caret line="7" column="22" lean-forward="true" selection-start-line="7" selection-start-column="22" selection-end-line="7" selection-end-column="22" />
+        <state>
+          <caret column="81" lean-forward="true" selection-start-column="81" selection-end-column="81" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/OverDriveProcessor.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="181">
+          <caret line="492" column="39" selection-start-line="492" selection-start-column="24" selection-end-line="492" selection-end-column="39" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/CloudLibraryProcessor.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="11">
+          <caret line="19" column="28" selection-start-line="19" selection-start-column="28" selection-end-line="19" selection-end-column="28" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/GroupedWorkSolr.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="53">
+          <caret line="1448" selection-start-line="1448" selection-end-line="1448" />
+          <folding>
+            <element signature="e#54199#54200#0" expanded="true" />
+            <element signature="e#63487#63526#1" expanded="true" />
+            <element signature="e#63544#63545#0" expanded="true" />
+            <element signature="e#63579#63580#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/GroupedWorkIndexer.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-435">
+          <caret line="27" column="13" selection-start-line="27" selection-start-column="13" selection-end-line="27" selection-end-column="13" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/SideLoadedEContentProcessor.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="210">
+          <caret line="35" column="37" lean-forward="true" selection-start-line="35" selection-start-column="37" selection-end-line="35" selection-end-column="37" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/IlsRecordProcessor.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="270">
+          <caret line="188" selection-start-line="188" selection-end-line="188" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/MarcRecordProcessor.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="119">
+          <caret line="829" selection-start-line="829" selection-end-line="829" />
         </state>
       </provider>
     </entry>

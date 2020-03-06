@@ -3,13 +3,12 @@
   <component name="ChangeListManager">
     <list default="true" id="64b30edf-4a70-42c6-b752-8518712fb864" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/../cron/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../cron/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../reindexer/reindexer.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../reindexer/reindexer.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/GroupedWorkSolr.java" beforeDir="false" afterPath="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/GroupedWorkSolr.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/MarcRecordProcessor.java" beforeDir="false" afterPath="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/MarcRecordProcessor.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/SideLoadedEContentProcessor.java" beforeDir="false" afterPath="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/SideLoadedEContentProcessor.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/Search/Results.php" beforeDir="false" afterPath="$PROJECT_DIR$/services/Search/Results.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sys/Grouping/GroupedWorkFacet.php" beforeDir="false" afterPath="$PROJECT_DIR$/sys/Grouping/GroupedWorkFacet.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../data_dir_setup/solr7/grouped_works/conf/schema.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../../data_dir_setup/solr7/grouped_works/conf/schema.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sys/DBMaintenance/indexing_updates.php" beforeDir="false" afterPath="$PROJECT_DIR$/sys/DBMaintenance/indexing_updates.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sys/Indexing/IndexingProfile.php" beforeDir="false" afterPath="$PROJECT_DIR$/sys/Indexing/IndexingProfile.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sys/Indexing/SideLoad.php" beforeDir="false" afterPath="$PROJECT_DIR$/sys/Indexing/SideLoad.php" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -272,7 +271,7 @@
       <workItem from="1581783694636" duration="20185000" />
       <workItem from="1582037799927" duration="5746000" />
       <workItem from="1582148209122" duration="4991000" />
-      <workItem from="1583416173444" duration="7012000" />
+      <workItem from="1583416173444" duration="11242000" />
     </task>
     <servers />
   </component>
@@ -366,7 +365,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
           <url>file://$PROJECT_DIR$/sys/Account/User.php</url>
-          <line>1484</line>
+          <line>1486</line>
           <option name="timeStamp" value="1080" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
@@ -447,17 +446,17 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
           <url>file://$PROJECT_DIR$/sys/DBMaintenance/indexing_updates.php</url>
-          <line>767</line>
+          <line>778</line>
           <option name="timeStamp" value="1621" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
           <url>file://$PROJECT_DIR$/sys/DBMaintenance/indexing_updates.php</url>
-          <line>788</line>
+          <line>799</line>
           <option name="timeStamp" value="1622" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
           <url>file://$PROJECT_DIR$/sys/DBMaintenance/indexing_updates.php</url>
-          <line>797</line>
+          <line>808</line>
           <option name="timeStamp" value="1623" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
@@ -772,6 +771,11 @@
           <url>file://$PROJECT_DIR$/Drivers/CarlX.php</url>
           <line>1607</line>
           <option name="timeStamp" value="3177" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="php">
+          <url>file://$PROJECT_DIR$/CatalogConnection.php</url>
+          <line>160</line>
+          <option name="timeStamp" value="3179" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/interface/themes/responsive/js/aspen/searches.js</url>
