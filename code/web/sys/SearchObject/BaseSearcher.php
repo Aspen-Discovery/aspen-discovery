@@ -580,10 +580,10 @@ abstract class SearchObject_BaseSearcher
 			if (!isset($_REQUEST['lookfor'])) {
 				return false;
 			} else {
-				$searchTerm = StringUtils::removeTrailingPunctuation($_REQUEST['lookfor']);
+				$searchTerm = StringUtils::removeTrailingPunctuation(trim($_REQUEST['lookfor']));
 			}
 		}else{
-			$searchTerm = StringUtils::removeTrailingPunctuation($searchTerm);
+			$searchTerm = StringUtils::removeTrailingPunctuation(trim($searchTerm));
 		}
 
 		// If no type defined use default

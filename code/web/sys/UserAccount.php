@@ -309,10 +309,11 @@ class UserAccount
 					$userData = UserAccount::validateAccount($userData->cat_username, $userData->cat_password, $userData->source);
 
 					if ($userData == false) {
-						echo("Could not validate your account.  The underlying ILS may be inaccessible");
-						die();
+						AspenError::raiseError("Error validating saved session for user $activeUserId, the credentials were invalid.");
 					}
 					self::updateSession($userData);
+				}else{
+					AspenError::raiseError("Error validating saved session for user $activeUserId, the user was not found in the database.");
 				}
 			} else {
 				$logger->log("Found cached user {$userData->id}", Logger::LOG_DEBUG);
