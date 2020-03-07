@@ -204,7 +204,7 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 
 		// If a query override has been specified, log it here
 		if (isset($_REQUEST['q'])) {
-			$this->query = strip_tags($_REQUEST['q']);
+			$this->query = trim(strip_tags($_REQUEST['q']));
 		}
 
 		return true;
