@@ -117,21 +117,6 @@
 								</div>
 							{/if}
 						</div>
-						<div class="row">
-							<div class="result-label col-tn-4"><label for="autoCheckout_{$record.overDriveId}">{translate text='Automatically Checkout'}</label></div>
-                            <div class="col-tn-8 result-value">
-	                            <input type="checkbox" class="autoCheckout_{$record.overDriveId}" name="autoCheckout_{$record.overDriveId}" {if $record.autoCheckout}checked="checked"{/if} data-switch="" data-size="small">
-	                            <script type="text/javascript">
-		                            $(function(){ldelim}
-			                            $('.autoCheckout_{$record.overDriveId}').bootstrapSwitch()
-				                            .on('switchChange', function(e, data){ldelim}
-                                                AspenDiscovery.OverDrive.setAutoCheckoutForHold('{$record.userId}', '{$record.overDriveId}', data.value);
-			                                {rdelim}
-		                                );
-		                            {rdelim});
-	                            </script>
-							</div>
-						</div>
 					{/if}
 				</div>
 

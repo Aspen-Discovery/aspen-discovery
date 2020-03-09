@@ -4494,7 +4494,6 @@ CREATE TABLE `user` (
   `searchPreferenceLanguage` tinyint(1) DEFAULT '-1',
   `rememberHoldPickupLocation` tinyint(1) DEFAULT '0',
   `alwaysHoldNextAvailable` tinyint(1) DEFAULT '0',
-  `overdriveAutoCheckout` tinyint(1) DEFAULT NULL,
   `lockedFacets` text,
   `hooplaCheckOutConfirmation` tinyint(1) unsigned NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`),
