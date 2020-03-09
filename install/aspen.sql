@@ -4506,7 +4506,7 @@ CREATE TABLE `user` (
 --
 
 /*!40000 ALTER TABLE `user` DISABLE KEYS */;
-INSERT INTO `user` VALUES (0,'nyt_user','nyt_password','New York Times','The New York Times','','nyt_user','nyt_password','','','2019-11-19 01:57:54',1,1,1,0,0,'',0,0,'','','',1,NULL,0,0,'admin',-1,NULL,NULL,NULL,'en',-1,0,0,NULL,NULL,1),(1,'aspen_admin','password','Aspen','Administrator','','aspen_admin','password','','','2019-01-01 00:00:00',0,0,0,0,0,'',0,0,'','','',1,NULL,0,0,'admin',-1,NULL,NULL,NULL,'en',-1,0,0,NULL,1);
+INSERT INTO `user` VALUES (0,'nyt_user','nyt_password','New York Times','The New York Times','','nyt_user','nyt_password','','','2019-11-19 01:57:54',1,1,1,0,0,'',0,0,'','','',1,NULL,0,0,'admin',-1,NULL,NULL,NULL,'en',-1,0,0,NULL,1),(1,'aspen_admin','password','Aspen','Administrator','','aspen_admin','password','','','2019-01-01 00:00:00',0,0,0,0,0,'',0,0,'','','',1,NULL,0,0,'admin',-1,NULL,NULL,NULL,'en',-1,0,0,NULL,1);
 /*!40000 ALTER TABLE `user` ENABLE KEYS */;
 
 --
