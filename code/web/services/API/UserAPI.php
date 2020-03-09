@@ -1613,12 +1613,12 @@ class UserAPI extends Action
 	 */
 	protected function validatePickupBranch(string $pickupBranch, User $patron): bool
 	{
-//Validate the selected pickup branch
+		//Validate the selected pickup branch
 		$location = new Location();
 		$location->code = $pickupBranch;
 		$location->find();
 		$locationValid = true;
-		if ($location->N == 1) {
+		if ($location->getNumResults() == 1) {
 			$location->fetch();
 			if ($location->validHoldPickupBranch == 2) {
 				//Valid for no one
