@@ -1618,7 +1618,7 @@ class UserAPI extends Action
 		$location->code = $pickupBranch;
 		$location->find();
 		$locationValid = true;
-		if ($location->N == 1) {
+		if ($location->getNumResults() == 1) {
 			$location->fetch();
 			if ($location->validHoldPickupBranch == 2) {
 				//Valid for no one
