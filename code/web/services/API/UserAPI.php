@@ -953,8 +953,12 @@ class UserAPI extends Action
 
 		$patron = UserAccount::validateAccount($username, $password);
 		if ($patron && !($patron instanceof AspenError)) {
-			if (isset($_REQUEST['pickupBranch'])) {
-				$pickupBranch = trim($_REQUEST['pickupBranch']);
+			if (isset($_REQUEST['pickupBranch']) || isset($_REQUEST['campus'])) {
+				if (isset($_REQUEST['pickupBranch'])) {
+					$pickupBranch = trim($_REQUEST['pickupBranch']);
+				} else {
+					$pickupBranch = trim($_REQUEST['campus']);
+				}
 				$locationValid = $this->validatePickupBranch($pickupBranch, $patron);
 				if (!$locationValid){
 					return array('success' => false, 'message' => translate(['text' => 'pickup_location_unavailable', 'defaultText'=>'This location is no longer available, please select a different pickup location']));
@@ -1609,7 +1613,7 @@ class UserAPI extends Action
 	 */
 	protected function validatePickupBranch(string $pickupBranch, User $patron): bool
 	{
-//Validate the selected pickup branch
+		//Validate the selected pickup branch
 		$location = new Location();
 		$location->code = $pickupBranch;
 		$location->find();
