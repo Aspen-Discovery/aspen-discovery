@@ -309,7 +309,8 @@ class UserAccount
 					$userData = UserAccount::validateAccount($userData->cat_username, $userData->cat_password, $userData->source);
 
 					if ($userData == false) {
-						AspenError::raiseError("Error validating saved session for user $activeUserId, the credentials were invalid.");
+						AspenError::raiseError("We could not validate your account, please logout and login again. If this error persists, please contact the library. Error ($activeUserId)");
+						UserAccount::softLogout();
 					}
 					self::updateSession($userData);
 				}else{
