@@ -288,9 +288,14 @@ function updateConfigForScoping($configArray)
 		$Library->subdomain = $_SERVER['active_library'];
 		$Library->find($_SERVER['active_library']);
 		if ($Library->getNumResults() == 1) {
-			$Library->fetch();
-			$library = $Library;
-			$timer->logTime("found the library based on active_library server variable");
+			try {
+				$Library->fetch();
+				$library = $Library;
+				$timer->logTime("found the library based on active_library server variable");
+			}catch (Exception $e){
+				global $logger;
+				$logger->log("Error loading library $e", Logger::LOG_ALERT);
+			}
 		}
 	}
 	if ($library == null) {
