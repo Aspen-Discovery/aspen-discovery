@@ -83,11 +83,8 @@ abstract class DataObject
 
 	public function fetch(){
 		$this->__fetchingFromDB = true;
-		if ($this->__queryStmt == null){
-			echo("Failed to load query $this->__lastError");
-		}else{
-			$return = $this->__queryStmt->fetch(PDO::FETCH_INTO);
-		}
+		$return = $this->__queryStmt->fetch(PDO::FETCH_INTO);
+		
 		$this->clearRuntimeDataVariables();
 		$this->__fetchingFromDB = false;
 		return $return;
