@@ -229,10 +229,10 @@ function getUserUpdates(){
 		],
 
 		'user_overdrive_auto_checkout' => [
-			'title' => 'OverDrive Automatic Checkout',
-			'description' => 'Let users automatically checkout overdrive titles',
+			'title' => 'Remove OverDrive Automatic Checkout',
+			'description' => 'Remove OverDrive auto checkout now that it has been deprecated',
 			'sql' => [
-				'ALTER TABLE user ADD COLUMN overdriveAutoCheckout TINYINT(1)',
+				'ALTER TABLE user DROP COLUMN overdriveAutoCheckout',
 			]
 		],
 

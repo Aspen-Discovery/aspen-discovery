@@ -58,8 +58,8 @@ fi
 echo "Dumping to $DUMPFOLDER"
 
 DATABASES="$DBNAME"
-DUMPOPT1="-u root --events"
-DUMPOPT2="-u root --events --single-transaction"
+DUMPOPT1="--defaults-file=/etc/my.cnf --events"
+DUMPOPT2="--defaults-file=/etc/my.cnf --events --single-transaction"
 
 #-------------------------------------------------------------------------
 # main loop

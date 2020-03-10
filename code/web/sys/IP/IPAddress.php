@@ -44,4 +44,29 @@ class IPAddress extends DataObject
 		$this->startIpVal = $startIp;
 		$this->endIpVal = $endIp;
 	}
+
+	/**
+	 * @param $activeIP
+	 * @return bool|IPAddress
+	 */
+	static function getIPAddressForIP($activeIP){
+		$ipVal = ip2long($activeIP);
+
+		if (is_numeric($ipVal)) {
+			disableErrorHandler();
+			$subnet = new IPAddress();
+			$subnet->whereAdd('startIpVal <= ' . $ipVal);
+			$subnet->whereAdd('endIpVal >= ' . $ipVal);
+			$subnet->orderBy('(endIpVal - startIpVal)');
+			if ($subnet->find(true)) {
+				enableErrorHandler();
+				return $subnet;
+			}else{
+				enableErrorHandler();
+				return false;
+			}
+		}else{
+			return false;
+		}
+	}
 }

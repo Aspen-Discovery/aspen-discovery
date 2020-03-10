@@ -3,12 +3,8 @@
   <component name="ChangeListManager">
     <list default="true" id="64b30edf-4a70-42c6-b752-8518712fb864" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/../cron/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../cron/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/MarcRecordProcessor.java" beforeDir="false" afterPath="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/MarcRecordProcessor.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/SideLoadedEContentProcessor.java" beforeDir="false" afterPath="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/SideLoadedEContentProcessor.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sys/DBMaintenance/indexing_updates.php" beforeDir="false" afterPath="$PROJECT_DIR$/sys/DBMaintenance/indexing_updates.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sys/Indexing/IndexingProfile.php" beforeDir="false" afterPath="$PROJECT_DIR$/sys/Indexing/IndexingProfile.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sys/Indexing/SideLoad.php" beforeDir="false" afterPath="$PROJECT_DIR$/sys/Indexing/SideLoad.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sys/DBMaintenance/translation_updates.php" beforeDir="false" afterPath="$PROJECT_DIR$/sys/DBMaintenance/translation_updates.php" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -272,7 +268,8 @@
       <workItem from="1582037799927" duration="5746000" />
       <workItem from="1582148209122" duration="4991000" />
       <workItem from="1583416173444" duration="11242000" />
-   </task>
+      <workItem from="1583778154632" duration="11856000" />
+    </task>
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -365,13 +362,13 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
           <url>file://$PROJECT_DIR$/sys/Account/User.php</url>
-          <line>1486</line>
+          <line>1476</line>
           <option name="timeStamp" value="1080" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
           <condition expression="$name == 'borrower_altcontactaddress'" language="PHP" />
           <url>file://$PROJECT_DIR$/sys/Account/User.php</url>
-          <line>181</line>
+          <line>180</line>
           <option name="timeStamp" value="1103" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
@@ -446,17 +443,17 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
           <url>file://$PROJECT_DIR$/sys/DBMaintenance/indexing_updates.php</url>
-          <line>778</line>
+          <line>789</line>
           <option name="timeStamp" value="1621" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
           <url>file://$PROJECT_DIR$/sys/DBMaintenance/indexing_updates.php</url>
-          <line>799</line>
+          <line>810</line>
           <option name="timeStamp" value="1622" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
           <url>file://$PROJECT_DIR$/sys/DBMaintenance/indexing_updates.php</url>
-          <line>808</line>
+          <line>819</line>
           <option name="timeStamp" value="1623" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
@@ -561,13 +558,8 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
           <url>file://$PROJECT_DIR$/services/Search/Results.php</url>
-          <line>374</line>
+          <line>377</line>
           <option name="timeStamp" value="1942" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/Browse/BrowseCategory.php</url>
-          <line>102</line>
-          <option name="timeStamp" value="1962" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
           <url>file://$PROJECT_DIR$/sys/SearchObject/IslandoraSearcher.php</url>
@@ -608,7 +600,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
           <url>file://$PROJECT_DIR$/Drivers/OverDriveDriver.php</url>
-          <line>812</line>
+          <line>781</line>
           <option name="timeStamp" value="2201" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
@@ -658,7 +650,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
           <url>file://$PROJECT_DIR$/sys/ConfigArray.php</url>
-          <line>328</line>
+          <line>333</line>
           <option name="timeStamp" value="2433" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
@@ -688,38 +680,18 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
           <url>file://$PROJECT_DIR$/sys/DBMaintenance/library_location_updates.php</url>
-          <line>2178</line>
-          <option name="timeStamp" value="2513" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/DBMaintenance/library_location_updates.php</url>
-          <line>2212</line>
-          <option name="timeStamp" value="2518" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/DBMaintenance/library_location_updates.php</url>
-          <line>2094</line>
-          <option name="timeStamp" value="2521" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/DBMaintenance/library_location_updates.php</url>
-          <line>2266</line>
+          <line>2274</line>
           <option name="timeStamp" value="2546" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
           <url>file://$PROJECT_DIR$/sys/DBMaintenance/library_location_updates.php</url>
-          <line>2295</line>
+          <line>2303</line>
           <option name="timeStamp" value="2549" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
           <url>file://$PROJECT_DIR$/sys/DBMaintenance/library_location_updates.php</url>
-          <line>2307</line>
+          <line>2315</line>
           <option name="timeStamp" value="2550" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="php">
-          <url>file://$PROJECT_DIR$/sys/DBMaintenance/library_location_updates.php</url>
-          <line>2079</line>
-          <option name="timeStamp" value="2551" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
           <url>file://$PROJECT_DIR$/sys/CloudLibrary/CloudLibraryScope.php</url>
@@ -776,6 +748,11 @@
           <url>file://$PROJECT_DIR$/CatalogConnection.php</url>
           <line>160</line>
           <option name="timeStamp" value="3179" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="php">
+          <url>file://$PROJECT_DIR$/services/Admin/DBMaintenance.php</url>
+          <line>2337</line>
+          <option name="timeStamp" value="3180" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/interface/themes/responsive/js/aspen/searches.js</url>
