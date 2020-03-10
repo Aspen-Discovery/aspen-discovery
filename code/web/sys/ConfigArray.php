@@ -286,7 +286,7 @@ function updateConfigForScoping($configArray)
 		//echo("Getting active library from server variable " . $_SERVER['active_library']);
 		$Library = new Library();
 		$Library->subdomain = $_SERVER['active_library'];
-		$Library->find($_SERVER['active_library']);
+		$Library->find();
 		if ($Library->getNumResults() == 1) {
 			try {
 				$Library->fetch();
