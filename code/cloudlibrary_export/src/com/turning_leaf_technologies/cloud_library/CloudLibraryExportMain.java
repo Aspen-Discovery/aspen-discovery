@@ -13,8 +13,6 @@ import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
 import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
 import com.turning_leaf_technologies.grouping.RecordGroupingProcessor;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.*;
@@ -58,7 +56,6 @@ public class CloudLibraryExportMain {
 	private static String libraryId;
 
 	public static void main(String[] args) {
-		String serverName;
 		if (args.length == 0) {
 			serverName = StringUtils.getInputFromCommandLine("Please enter the server name");
 			if (serverName.length() == 0) {

@@ -2050,7 +2050,7 @@ function getLibraryLocationUpdates(){
 				"UPDATE grouped_work_display_settings set defaultAvailabilityToggle = 'available' where name = 'school_elem'",
 				"UPDATE grouped_work_display_settings set defaultAvailabilityToggle = 'local' where name = 'academic' OR name = 'school_upper'",
 			],
-		]
+		],
 	);
 }
 
