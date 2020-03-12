@@ -83,7 +83,11 @@ abstract class DataObject
 
 	public function fetch(){
 		$this->__fetchingFromDB = true;
-		$return = $this->__queryStmt->fetch(PDO::FETCH_INTO);
+		if ($this->__queryStmt == null){
+			return null;
+		}else{
+			$return = $this->__queryStmt->fetch(PDO::FETCH_INTO);
+		}
 		$this->clearRuntimeDataVariables();
 		$this->__fetchingFromDB = false;
 		return $return;

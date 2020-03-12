@@ -26,8 +26,11 @@ class Search_Results extends Action {
 		if (isset($_REQUEST['replacementTerm'])){
 			$replacementTerm = $_REQUEST['replacementTerm'];
 			$interface->assign('replacementTerm', $replacementTerm);
-			$oldTerm = $_REQUEST['lookfor'];
-			$interface->assign('oldTerm', $oldTerm);
+			if (isset($_REQUEST['lookfor'])){
+				$oldTerm = $_REQUEST['lookfor'];
+				$interface->assign('oldTerm', $oldTerm);
+			}
+
 			$_REQUEST['lookfor'] = $replacementTerm;
 			$_GET['lookfor'] = $replacementTerm;
 			$oldSearchUrl = $_SERVER['REQUEST_URI'];

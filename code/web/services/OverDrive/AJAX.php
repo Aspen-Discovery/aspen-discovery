@@ -46,14 +46,6 @@ class OverDrive_AJAX extends JSON_Action
 						$patron->update();
 					}
 				}
-				if (isset($_REQUEST['overdriveAutoCheckout'])) {
-					if ($_REQUEST['overdriveAutoCheckout'] == '1' || $_REQUEST['overdriveAutoCheckout'] == 'yes' || $_REQUEST['overdriveAutoCheckout'] == 'on') {
-						$patron->overdriveAutoCheckout = 1;
-					} else {
-						$patron->overdriveAutoCheckout = 0;
-					}
-					$patron->update();
-				}
 				if (isset($_REQUEST['promptForOverdriveEmail'])) {
 					if ($_REQUEST['promptForOverdriveEmail'] == 1 || $_REQUEST['promptForOverdriveEmail'] == 'yes' || $_REQUEST['promptForOverdriveEmail'] == 'on') {
 						$patron->promptForOverdriveEmail = 1;
@@ -213,7 +205,6 @@ class OverDrive_AJAX extends JSON_Action
 		}
 
 		$interface->assign('overdriveEmail', $user->overdriveEmail);
-		$interface->assign('overdriveAutoCheckout', $user->overdriveAutoCheckout);
 		$interface->assign('promptForEmail', $promptForEmail);
 		if (count($overDriveUsers) == 0) {
 			return [
@@ -387,41 +378,6 @@ class OverDrive_AJAX extends JSON_Action
 				} else {
 					$overDriveId = $_REQUEST['overDriveId'];
 					$result = $patronOwningHold->thawOverDriveHold($overDriveId);
-				}
-			}
-		} else {
-			// We aren't getting all the expected data, so make a log entry & tell user.
-			global $logger;
-			$logger->log('Thaw Hold, no patron Id was passed in AJAX call.', Logger::LOG_ERROR);
-			$result['message'] = 'No Patron was specified.';
-		}
-
-		return $result;
-	}
-
-	function setAutoCheckoutForHold()
-	{
-		$user = UserAccount::getLoggedInUser();
-		$result = array( // set default response
-			'success' => false,
-			'message' => 'Error thawing hold.'
-		);
-
-		if (!$user) {
-			$result['message'] = 'You must be logged in to set auto checkout for a hold.  Please close this dialog and login again.';
-		} elseif (!empty($_REQUEST['patronId'])) {
-			$patronId = $_REQUEST['patronId'];
-			$patronOwningHold = $user->getUserReferredTo($patronId);
-
-			if ($patronOwningHold == false) {
-				$result['message'] = 'Sorry, you do not have access to update holds for the supplied user.';
-			} else {
-				if (empty($_REQUEST['overDriveId'])) {
-					$result['message'] = 'Information about the hold to be updated was not provided.';
-				} else {
-					$overDriveId = $_REQUEST['overDriveId'];
-					$autoCheckout = $_REQUEST['autoCheckout'];
-					$result = $patronOwningHold->setAutoCheckoutForOverDriveHold($overDriveId, $autoCheckout);
 				}
 			}
 		} else {

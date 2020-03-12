@@ -186,6 +186,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			orderStatusSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "orderStatus");
 			orderCode3Subfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "orderCode3");
 
+			treatUnknownLanguageAs = indexingProfileRS.getString("treatUnknownLanguageAs");
+			treatUndeterminedLanguageAs = indexingProfileRS.getString("treatUndeterminedLanguageAs");
+
 			//loadAvailableItemBarcodes(marcRecordPath, logger);
 			loadHoldsByIdentifier(dbConn, logger);
 

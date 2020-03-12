@@ -19,7 +19,7 @@
 										{$link->htmlContents}
 									{else}
 										<div>
-											<a href="{$link->url}">{$linkName}</a>
+											<a href="{$link->url}" {if $link->openInNewTab}target="_blank"{/if}>{$linkName}</a>
 										</div>
 									{/if}
 								{/foreach}
@@ -32,7 +32,7 @@
 						{if $link->htmlContents}
 							{$link->htmlContents}
 						{else}
-							<a href="{$link->url}">
+							<a href="{$link->url}" {if $link->openInNewTab}target="_blank"{/if}>
 								<div class="sidebar-button custom-sidebar-button" id="{$linkName|escapeCSS|lower}-button">
 									{$linkName}
 								</div>
