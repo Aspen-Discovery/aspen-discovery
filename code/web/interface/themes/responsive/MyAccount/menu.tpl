@@ -706,6 +706,30 @@
 					</div>
 				{/if}
 
+				{if array_key_exists('Events', $enabledModules) && (array_key_exists('archives', $userRoles) || array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles))}
+					{if $module == 'Events' && in_array($action, array('LMLibraryCalendarSettings', 'Dashboard', 'IndexingLog'))}
+						{assign var="curSection" value=true}
+					{else}
+						{assign var="curSection" value=false}
+					{/if}
+					<div class="panel{if $curSection} active{/if}">
+						<a href="#eventsMenu" data-toggle="collapse" data-parent="#adminMenuAccordion">
+							<div class="panel-heading">
+								<div class="panel-title">
+									{translate text="Events"}
+								</div>
+							</div>
+						</a>
+						<div id="eventsMenu" class="panel-collapse collapse {if $curSection}in{/if}">
+							<div class="panel-body">
+								<div class="adminMenuLink"><a href="/Events/LMLibraryCalendarSettings">{translate text="Library Market - Calendar Settings"}</a></div>
+								<div class="adminMenuLink"><a href="/Events/IndexingLog">{translate text="Indexing Log"}</a></div>
+								<div class="adminMenuLink"><a href="/Events/Dashboard">{translate text="Dashboard"}</a></div>
+							</div>
+						</div>
+					</div>
+				{/if}
+
 				{if array_key_exists('Web Indexer', $enabledModules) && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles))}
 					{if $module == 'Websites' && in_array($action, array('Settings', 'Dashboard', 'IndexingLog'))}
 						{assign var="curSection" value=true}

@@ -1113,7 +1113,7 @@
       <str name="lookupImpl">AnalyzingInfixLookupFactory</str>
       <str name="indexPath">infix_keyword_suggestions</str>
       <str name="dictionaryImpl">DocumentDictionaryFactory</str>
-      <str name="field">subject_suggestions</str>
+      <str name="field">keyword_suggestions</str>
       <str name="weightField">popularity</str>
       <str name="suggestAnalyzerFieldType">textSuggest</str>
       <str name="buildOnStartup">false</str>

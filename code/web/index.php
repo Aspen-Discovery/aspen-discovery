@@ -499,11 +499,17 @@ if ($action == "AJAX" || $action == "JSON" || $module == 'API'){
 		$interface->assign('enableArchive', true);
 	}
 
-    if ($library->enableOpenArchives){
-        $openArchivesSearchObject = SearchObjectFactory::initSearchObject('OpenArchives');
-        $interface->assign('openArchivesSearchIndexes', is_object($openArchivesSearchObject) ? $openArchivesSearchObject->getSearchIndexes() : array());
-        $interface->assign('enableOpenArchives', true);
-    }
+	if ($library->enableOpenArchives) {
+		$openArchivesSearchObject = SearchObjectFactory::initSearchObject('OpenArchives');
+		$interface->assign('openArchivesSearchIndexes', is_object($openArchivesSearchObject) ? $openArchivesSearchObject->getSearchIndexes() : array());
+		$interface->assign('enableOpenArchives', true);
+	}
+
+	if ($library->enableEvents) {
+		$eventsSearchObject = SearchObjectFactory::initSearchObject($library->eventsSource);
+		$interface->assign('eventsSearchIndexes', is_object($eventsSearchObject) ? $eventsSearchObject->getSearchIndexes() : array());
+		$interface->assign('enableEvents', true);
+	}
 
 	//TODO: Re-enable once we do full EDS integration
 	/*if ($library->edsApiProfile){
