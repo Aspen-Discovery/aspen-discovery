@@ -1,71 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="55ca2c23-0e7e-4349-ac3a-9f29a6a68364" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/../web/RecordDrivers/LibraryCalendarEventRecordDriver.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/Events/list-list.tpl" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/Events/list-none.tpl" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/Events/list.tpl" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/RecordDrivers/Events/library_calendar_result.tpl" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../web/services/Events/Results.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../web/sys/Events/EventsUsage.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../web/sys/Events/UserEventsUsage.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../web/sys/SearchObject/EventsSearcher.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../web/sys/SolrConnector/EventsSolrConnector.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../sites/default/conf/eventsFacets.ini" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../sites/default/conf/eventsSearchSpecs.yaml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../sites/default/conf/eventsSearches.ini" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../carlx_export/carlx_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../carlx_export/carlx_export.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../cloudlibrary_export/cloud_library_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../cloudlibrary_export/cloud_library_export.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dictionaries/mdnob.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dictionaries/mdnob.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cron.jar" beforeDir="false" afterPath="$PROJECT_DIR$/cron.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/EventsIndexerLogEntry.java" beforeDir="false" afterPath="$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/EventsIndexerLogEntry.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/LibraryCalendarIndexer.java" beforeDir="false" afterPath="$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/LibraryCalendarIndexer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../hoopla_export/hoopla_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../hoopla_export/hoopla_export.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../horizon_export/horizon_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../horizon_export/horizon_export.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/CDL.java" beforeDir="false" afterPath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/CDL.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/Cookie.java" beforeDir="false" afterPath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/Cookie.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/CookieList.java" beforeDir="false" afterPath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/CookieList.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/HTTP.java" beforeDir="false" afterPath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/HTTP.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/HTTPTokener.java" beforeDir="false" afterPath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/HTTPTokener.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/JSONArray.java" beforeDir="false" afterPath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/JSONArray.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/JSONException.java" beforeDir="false" afterPath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/JSONException.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/JSONML.java" beforeDir="false" afterPath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/JSONML.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/JSONObject.java" beforeDir="false" afterPath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/JSONObject.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/JSONString.java" beforeDir="false" afterPath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/JSONString.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/JSONStringer.java" beforeDir="false" afterPath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/JSONStringer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/JSONTokener.java" beforeDir="false" afterPath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/JSONTokener.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/JSONWriter.java" beforeDir="false" afterPath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/JSONWriter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/README" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/XML.java" beforeDir="false" afterPath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/XML.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/XMLTokener.java" beforeDir="false" afterPath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/XMLTokener.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../koha_export/koha_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../koha_export/koha_export.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../oai_indexer/oai_indexer.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../oai_indexer/oai_indexer.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../overdrive_api_extract/overdrive_extract.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../overdrive_api_extract/overdrive_extract.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../rbdigital_export/rbdigital_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../rbdigital_export/rbdigital_export.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../record_grouping/record_grouping.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../record_grouping/record_grouping.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../reindexer/reindexer.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../reindexer/reindexer.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../sideload_processing/sideload_processing.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../sideload_processing/sideload_processing.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../sierra_export_api/sierra_export_api.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../sierra_export_api/sierra_export_api.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../user_list_indexer/user_list_indexer.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../user_list_indexer/user_list_indexer.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../web/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/Drivers/marmot_inc/SearchSources.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/Drivers/marmot_inc/SearchSources.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/index.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/index.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/Admin/usage_dashboard.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/Admin/usage_dashboard.tpl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/RecordDrivers/WebPage/result.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/RecordDrivers/WebPage/result.tpl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/Search/horizontal-searchbox.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/Search/horizontal-searchbox.tpl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/Websites/list-list.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/Websites/list-list.tpl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/Websites/list-none.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/Websites/list-none.tpl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/services/Admin/UsageDashboard.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/services/Admin/UsageDashboard.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/services/Union/Search.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/services/Union/Search.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/sys/DBMaintenance/events_integration_updates.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/sys/DBMaintenance/events_integration_updates.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/sys/SearchObject/SearchObjectFactory.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/sys/SearchObject/SearchObjectFactory.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/sys/SystemLogging/AspenUsage.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/sys/SystemLogging/AspenUsage.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/sys/WebsiteIndexing/WebPageUsage.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/sys/WebsiteIndexing/WebPageUsage.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web_indexer/web_indexer.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../web_indexer/web_indexer.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/schema.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/schema.xml" afterDir="false" />
-    </list>
+    <list default="true" id="55ca2c23-0e7e-4349-ac3a-9f29a6a68364" name="Default Changelist" comment="" />
     <ignored path="$PROJECT_DIR$/out/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -115,7 +51,7 @@
             <entry file="file://$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/LibraryCalendarIndexer.java">
               <provider selected="true" editor-type-id="text-editor">
                 <state relative-caret-position="269">
-                  <caret line="257" column="9" lean-forward="true" selection-start-line="257" selection-start-column="9" selection-end-line="257" selection-end-column="9" />
+                  <caret line="257" column="9" selection-start-line="257" selection-start-column="9" selection-end-line="257" selection-end-column="9" />
                   <folding>
                     <element signature="imports" expanded="true" />
                   </folding>
@@ -207,8 +143,8 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/schema.xml">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="311">
-                  <caret line="86" lean-forward="true" selection-start-line="86" selection-end-line="86" />
+                <state relative-caret-position="176">
+                  <caret line="77" column="27" selection-start-line="77" selection-start-column="27" selection-end-line="77" selection-end-column="27" />
                 </state>
               </provider>
             </entry>
@@ -782,7 +718,6 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-7" y="-7" width="1550" height="838" extended-state="6" />
-    <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" sideWeight="0.4969325" visible="true" weight="0.13154362" />
       <window_info id="Image Layers" order="1" />
@@ -793,7 +728,7 @@
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" sideWeight="0.49261746" weight="0.27620396" />
       <window_info anchor="bottom" id="Run" order="2" sideWeight="0.4966443" weight="0.3186969" />
-      <window_info active="true" anchor="bottom" id="Debug" order="3" sideWeight="0.8416107" visible="true" weight="0.38243628" />
+      <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.8416107" weight="0.38243628" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" weight="0.3286119" />
@@ -2054,8 +1989,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/schema.xml">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="311">
-          <caret line="86" lean-forward="true" selection-start-line="86" selection-end-line="86" />
+        <state relative-caret-position="176">
+          <caret line="77" column="27" selection-start-line="77" selection-start-column="27" selection-end-line="77" selection-end-column="27" />
         </state>
       </provider>
     </entry>
