@@ -9,7 +9,6 @@ class SearchSources{
 		$searchOptions = array();
 		//Check to see if marmot catalog is a valid option
 		global $library;
-		global $configArray;
 		global $enabledModules;
 		$searchEbsco = false;
 
@@ -124,6 +123,19 @@ class SearchSources{
 					'description' => 'Digital Media available for use online and with portable devices',
 					'catalogType' => 'catalog'
 			);
+		}
+
+		if (array_key_exists('Events', $enabledModules)){
+			require_once ROOT_DIR . '/sys/Events/LibraryEventsSetting.php';
+			$libraryEventsSetting = new LibraryEventsSetting();
+			$libraryEventsSetting->libraryId = $library->libraryId;
+			if ($libraryEventsSetting->find(true)){
+				$searchOptions['events'] = array(
+					'name' => 'Events',
+					'description' => 'Search events at the library',
+					'catalogType' => 'events'
+				);
+			}
 		}
 
 		$searchOptions['lists'] = array(

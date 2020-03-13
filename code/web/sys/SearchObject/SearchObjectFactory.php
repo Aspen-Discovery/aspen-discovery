@@ -56,6 +56,12 @@ class SearchObjectFactory
 			case 'genealogy' :
 				$engine = 'Genealogy';
 				break;
+			case 'websites' :
+				$engine = 'Websites';
+				break;
+			case 'events' :
+				$engine = 'Events';
+				break;
 			default:
 				$engine = 'GroupedWork';
 				break;
@@ -105,6 +111,12 @@ class SearchObjectFactory
 				break;
 			case 'genealogy' :
 				$type = 'Genealogy';
+				break;
+			case 'websites' :
+				$type = 'Websites';
+				break;
+			case 'events' :
+				$type = 'Events';
 				break;
 			default:
 				$type = 'GroupedWork';

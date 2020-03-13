@@ -37,7 +37,7 @@ function getEventsIntegrationUpdates(){
 
 		'lm_library_calendar_events_data' => [
 			'title' => 'Library Calendar Events Data' ,
-			'description' => 'Setup tables to store events data',
+			'description' => 'Setup tables to store events data for Library Calendar',
 			'sql' => [
 				'CREATE TABLE lm_library_calendar_events (
 					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -71,6 +71,52 @@ function getEventsIntegrationUpdates(){
 					PRIMARY KEY ( `id` )
 				) ENGINE = InnoDB;",
 			)
-		]
+		],
+
+		'aspen_usage_events' => [
+			'title' => 'Aspen Usage for Event Searches',
+			'description' => 'Add a column to track usage of event searches within Aspen',
+			'continueOnError' => false,
+			'sql' => array(
+				'ALTER TABLE aspen_usage ADD COLUMN eventsSearches INT(11) DEFAULT 0',
+			)
+		],
+
+		'track_event_user_usage' => [
+			'title' => 'Event Usage by user',
+			'description' => 'Add a table to track how often a particular user uses indexed events.',
+			'sql' => [
+				"CREATE TABLE user_events_usage (
+				    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+				    userId INT(11) NOT NULL,
+				    type VARCHAR(25) NOT NULL,
+				    source INT(11) NOT NULL,
+				    month INT(2) NOT NULL,
+				    year INT(4) NOT NULL,
+				    usageCount INT(11)
+				) ENGINE = InnoDB",
+				"ALTER TABLE user_events_usage ADD INDEX (type, source, year, month, userId)",
+			],
+		],
+
+		'event_record_usage' => [
+			'title' => 'Event Usage',
+			'description' => 'Add a table to track how events are used.',
+			'continueOnError' => true,
+			'sql' => [
+				"CREATE TABLE events_usage (
+				    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+				    type VARCHAR(25) NOT NULL,
+				    source INT(11) NOT NULL,
+				    identifier VARCHAR(36) NOT NULL,
+				    month INT(2) NOT NULL,
+				    year INT(4) NOT NULL,
+				    timesViewedInSearch INT(11) NOT NULL,
+				    timesUsed INT(11) NOT NULL
+				) ENGINE = InnoDB",
+				"ALTER TABLE events_usage ADD INDEX (type, source, identifier, year, month)",
+			],
+		],
+
 	];
 }

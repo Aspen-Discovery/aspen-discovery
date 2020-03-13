@@ -2,9 +2,69 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="64b30edf-4a70-42c6-b752-8518712fb864" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/RecordDrivers/LibraryCalendarEventRecordDriver.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/interface/themes/responsive/Events/list-list.tpl" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/interface/themes/responsive/Events/list-none.tpl" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/interface/themes/responsive/Events/list.tpl" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/interface/themes/responsive/RecordDrivers/Events/library_calendar_result.tpl" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/services/Events/Results.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/sys/Events/EventsUsage.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/sys/Events/UserEventsUsage.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/sys/SearchObject/EventsSearcher.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/sys/SolrConnector/EventsSolrConnector.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../sites/default/conf/eventsFacets.ini" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../sites/default/conf/eventsSearchSpecs.yaml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../sites/default/conf/eventsSearches.ini" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../carlx_export/carlx_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../carlx_export/carlx_export.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../cloudlibrary_export/cloud_library_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../cloudlibrary_export/cloud_library_export.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../cron/.idea/dictionaries/mdnob.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../cron/.idea/dictionaries/mdnob.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../cron/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../cron/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../cron/cron.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../cron/cron.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/EventsIndexerLogEntry.java" beforeDir="false" afterPath="$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/EventsIndexerLogEntry.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/LibraryCalendarIndexer.java" beforeDir="false" afterPath="$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/LibraryCalendarIndexer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../hoopla_export/hoopla_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../hoopla_export/hoopla_export.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../horizon_export/horizon_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../horizon_export/horizon_export.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/CDL.java" beforeDir="false" afterPath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/CDL.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/Cookie.java" beforeDir="false" afterPath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/Cookie.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/CookieList.java" beforeDir="false" afterPath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/CookieList.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/HTTP.java" beforeDir="false" afterPath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/HTTP.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/HTTPTokener.java" beforeDir="false" afterPath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/HTTPTokener.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/JSONArray.java" beforeDir="false" afterPath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/JSONArray.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/JSONException.java" beforeDir="false" afterPath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/JSONException.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/JSONML.java" beforeDir="false" afterPath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/JSONML.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/JSONObject.java" beforeDir="false" afterPath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/JSONObject.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/JSONString.java" beforeDir="false" afterPath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/JSONString.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/JSONStringer.java" beforeDir="false" afterPath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/JSONStringer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/JSONTokener.java" beforeDir="false" afterPath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/JSONTokener.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/JSONWriter.java" beforeDir="false" afterPath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/JSONWriter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/README" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/XML.java" beforeDir="false" afterPath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/XML.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/XMLTokener.java" beforeDir="false" afterPath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/XMLTokener.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../koha_export/koha_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../koha_export/koha_export.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../oai_indexer/oai_indexer.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../oai_indexer/oai_indexer.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../overdrive_api_extract/overdrive_extract.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../overdrive_api_extract/overdrive_extract.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../rbdigital_export/rbdigital_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../rbdigital_export/rbdigital_export.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../record_grouping/record_grouping.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../record_grouping/record_grouping.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../reindexer/reindexer.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../reindexer/reindexer.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../sideload_processing/sideload_processing.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../sideload_processing/sideload_processing.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../sierra_export_api/sierra_export_api.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../sierra_export_api/sierra_export_api.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../user_list_indexer/user_list_indexer.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../user_list_indexer/user_list_indexer.jar" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sys/DBMaintenance/translation_updates.php" beforeDir="false" afterPath="$PROJECT_DIR$/sys/DBMaintenance/translation_updates.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Drivers/marmot_inc/SearchSources.php" beforeDir="false" afterPath="$PROJECT_DIR$/Drivers/marmot_inc/SearchSources.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/index.php" beforeDir="false" afterPath="$PROJECT_DIR$/index.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/Admin/usage_dashboard.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/interface/themes/responsive/Admin/usage_dashboard.tpl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/RecordDrivers/WebPage/result.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/interface/themes/responsive/RecordDrivers/WebPage/result.tpl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/Search/horizontal-searchbox.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/interface/themes/responsive/Search/horizontal-searchbox.tpl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/Websites/list-list.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/interface/themes/responsive/Websites/list-list.tpl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/Websites/list-none.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/interface/themes/responsive/Websites/list-none.tpl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/Admin/UsageDashboard.php" beforeDir="false" afterPath="$PROJECT_DIR$/services/Admin/UsageDashboard.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/Union/Search.php" beforeDir="false" afterPath="$PROJECT_DIR$/services/Union/Search.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sys/DBMaintenance/events_integration_updates.php" beforeDir="false" afterPath="$PROJECT_DIR$/sys/DBMaintenance/events_integration_updates.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sys/SearchObject/SearchObjectFactory.php" beforeDir="false" afterPath="$PROJECT_DIR$/sys/SearchObject/SearchObjectFactory.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sys/SystemLogging/AspenUsage.php" beforeDir="false" afterPath="$PROJECT_DIR$/sys/SystemLogging/AspenUsage.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sys/WebsiteIndexing/WebPageUsage.php" beforeDir="false" afterPath="$PROJECT_DIR$/sys/WebsiteIndexing/WebPageUsage.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web_indexer/web_indexer.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../web_indexer/web_indexer.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/schema.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/schema.xml" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -107,7 +167,7 @@
     <property name="DefaultHtmlFileTemplate" value="HTML File" />
     <property name="NewWatcherDialog.advanced.open" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/interface/themes/responsive/Events" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/interface/themes/responsive/RecordDrivers/Events" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.detected.package.jscs" value="true" />
     <property name="node.js.detected.package.standard" value="true" />
@@ -124,16 +184,19 @@
     <property name="settings.editor.selected.configurable" value="configurable.group.editor" />
   </component>
   <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\web\aspen-discovery\code\web\interface\themes\responsive\RecordDrivers\Events" />
+      <recent name="C:\web\aspen-discovery\code\web\interface\themes\responsive\Events" />
+      <recent name="C:\web\aspen-discovery\code\web\services\Events" />
+      <recent name="C:\web\aspen-discovery\code\web\RecordDrivers" />
+      <recent name="C:\web\aspen-discovery\sites\default\conf" />
+    </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\web\aspen-discovery\code\web\services\ILS" />
       <recent name="C:\web\aspen-discovery\code\web\sys\Grouping" />
       <recent name="C:\web\aspen-discovery\code\web\interface\themes\responsive\Search" />
       <recent name="C:\web\aspen-discovery\sites\basinlibraries.production" />
       <recent name="C:\web\aspen-discovery\code\web\interface\themes\responsive\ILS" />
-    </key>
-    <key name="CopyFile.RECENT_KEYS">
-      <recent name="C:\web\aspen-discovery\code\web\services\WebBuilder" />
-      <recent name="C:\web\aspen-discovery\code\web\services\SideLoads" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -266,6 +329,7 @@
       <workItem from="1582148209122" duration="4991000" />
       <workItem from="1583416173444" duration="11242000" />
       <workItem from="1583778154632" duration="11856000" />
+      <workItem from="1584018068925" duration="16064000" />
     </task>
     <servers />
   </component>
@@ -359,13 +423,13 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
           <url>file://$PROJECT_DIR$/sys/Account/User.php</url>
-          <line>1476</line>
+          <line>1466</line>
           <option name="timeStamp" value="1080" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
           <condition expression="$name == 'borrower_altcontactaddress'" language="PHP" />
           <url>file://$PROJECT_DIR$/sys/Account/User.php</url>
-          <line>180</line>
+          <line>179</line>
           <option name="timeStamp" value="1103" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
@@ -440,17 +504,17 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
           <url>file://$PROJECT_DIR$/sys/DBMaintenance/indexing_updates.php</url>
-          <line>789</line>
+          <line>800</line>
           <option name="timeStamp" value="1621" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
           <url>file://$PROJECT_DIR$/sys/DBMaintenance/indexing_updates.php</url>
-          <line>810</line>
+          <line>821</line>
           <option name="timeStamp" value="1622" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
           <url>file://$PROJECT_DIR$/sys/DBMaintenance/indexing_updates.php</url>
-          <line>819</line>
+          <line>830</line>
           <option name="timeStamp" value="1623" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
@@ -555,7 +619,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
           <url>file://$PROJECT_DIR$/services/Search/Results.php</url>
-          <line>377</line>
+          <line>380</line>
           <option name="timeStamp" value="1942" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
@@ -597,7 +661,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
           <url>file://$PROJECT_DIR$/Drivers/OverDriveDriver.php</url>
-          <line>781</line>
+          <line>750</line>
           <option name="timeStamp" value="2201" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
@@ -647,7 +711,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
           <url>file://$PROJECT_DIR$/sys/ConfigArray.php</url>
-          <line>333</line>
+          <line>338</line>
           <option name="timeStamp" value="2433" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
@@ -667,7 +731,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
           <url>file://$PROJECT_DIR$/sys/LibraryLocation/Library.php</url>
-          <line>1393</line>
+          <line>1390</line>
           <option name="timeStamp" value="2498" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
@@ -677,17 +741,17 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
           <url>file://$PROJECT_DIR$/sys/DBMaintenance/library_location_updates.php</url>
-          <line>2274</line>
+          <line>2282</line>
           <option name="timeStamp" value="2546" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
           <url>file://$PROJECT_DIR$/sys/DBMaintenance/library_location_updates.php</url>
-          <line>2303</line>
+          <line>2311</line>
           <option name="timeStamp" value="2549" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
           <url>file://$PROJECT_DIR$/sys/DBMaintenance/library_location_updates.php</url>
-          <line>2315</line>
+          <line>2323</line>
           <option name="timeStamp" value="2550" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
@@ -750,6 +814,11 @@
           <url>file://$PROJECT_DIR$/services/Admin/DBMaintenance.php</url>
           <line>2337</line>
           <option name="timeStamp" value="3180" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="php">
+          <url>file://$PROJECT_DIR$/RecordDrivers/LibraryCalendarEventRecordDriver.php</url>
+          <line>49</line>
+          <option name="timeStamp" value="3185" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/interface/themes/responsive/js/aspen/searches.js</url>

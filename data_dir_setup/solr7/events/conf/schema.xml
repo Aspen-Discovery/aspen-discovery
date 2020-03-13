@@ -74,10 +74,12 @@
 	<fields>
 		<!-- The id of the record in the database -->
 		<field name="id" type="unchanged_string" indexed="true" stored="true" multiValued="false" required="true"/>
-		<!-- The url to the record in the events system -->
+		<!-- Type i.e. library_calendar -->
+		<field name="type" type="unchanged_string" indexed="true" stored="true" multiValued="false" required="true"/>
+		<!-- Source the id of the settings entry -->
+		<field name="source" type="unchanged_string" indexed="false" stored="true" multiValued="false" required="true"/>
+		<!-- The identifier of the setting in the events system -->
 		<field name="identifier" type="unchanged_string" indexed="true" stored="true" multiValued="false" required="true"/>
-		<field name="source" type="unchanged_string" indexed="false" stored="true" multiValued="true"/>
-		<field name="type" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
 		<field name="_version_" type="long" indexed="true" stored="true"/>
 
 		<!-- Used for diagnostic information in staff view -->
@@ -106,10 +108,8 @@
 		<field name="teaser" type="searchable_text" indexed="true" stored="true"/>
 		<field name="description" type="searchable_text" indexed="true" stored="true"/>
 
-		<field name="image_url" type="unchanged_string" indexed="true" stored="true" multiValued="false"/>
-
-		<field name="keywords" type="searchable_text" indexed="true" stored="false"/>
-		<field name="keywords_proper" type="textProper" indexed="true" stored="false"/>
+		<field name="url" type="unchanged_string" indexed="false" stored="true" multiValued="false"/>
+		<field name="image_url" type="unchanged_string" indexed="false" stored="true" multiValued="false"/>
 
 		<field name="library_scopes" type="unchanged_string" indexed="true" stored="false" multiValued="true"/>
 
@@ -129,15 +129,11 @@
 	<copyField source="title" dest="title_sort"/>
 	<copyField source="title" dest="title_suggestions"/>
 
-	<copyField source="title" dest="keywords"/>
-	<copyField source="teaser" dest="keywords"/>
-	<copyField source="description" dest="keywords"/>
-	<copyField source="age_group" dest="keywords"/>
-	<copyField source="program_type" dest="keywords"/>
-	<copyField source="branch" dest="keywords"/>
-	<copyField source="room" dest="keywords"/>
-
-	<copyField source="keywords" dest="keyword_suggestions"/>
-	<copyField source="keywords" dest="keywords_proper"/>
-
+	<copyField source="title" dest="keyword_suggestions"/>
+	<copyField source="teaser" dest="keyword_suggestions"/>
+	<copyField source="description" dest="keyword_suggestions"/>
+	<copyField source="age_group" dest="keyword_suggestions"/>
+	<copyField source="program_type" dest="keyword_suggestions"/>
+	<copyField source="branch" dest="keyword_suggestions"/>
+	<copyField source="room" dest="keyword_suggestions"/>
 </schema>

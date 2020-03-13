@@ -1,0 +1,20 @@
+EventsKeyword:
+  QueryFields:
+    - title:
+      - [exact, 1000]
+      - [and, 250]
+    - description:
+      - [exact, 500]
+      - [and, 125]
+    - branch:
+      - [exact, 250]
+    - program_type:
+      - [exact, 250]
+    - room:
+      - [exact, 250]
+
+EventsTitle:
+  QueryFields:
+    - title:
+      - [exact, 1000]
+      - [and, 250]

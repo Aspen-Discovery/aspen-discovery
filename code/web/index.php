@@ -480,10 +480,14 @@ if ($action == "AJAX" || $action == "JSON" || $module == 'API'){
 	if ($searchObject->getView()) $interface->assign('displayMode', $searchObject->getView());
 
 	/** @var SearchObject_ListsSearcher $listSearchIndexes */
-    $listSearchIndexes = SearchObjectFactory::initSearchObject('Lists');
-    $interface->assign('listSearchIndexes', is_object($listSearchIndexes) ? $listSearchIndexes->getSearchIndexes() : array());
+	$listSearchIndexes = SearchObjectFactory::initSearchObject('Lists');
+	$interface->assign('listSearchIndexes', is_object($listSearchIndexes) ? $listSearchIndexes->getSearchIndexes() : array());
 
-	/** @var SearchObject_ListsSearcher $listSearchIndexes */
+	/** @var SearchObject_EventsSearcher $eventsSearchIndexes */
+	$eventsSearchIndexes = SearchObjectFactory::initSearchObject('Events');
+	$interface->assign('eventsSearchIndexes', is_object($eventsSearchIndexes) ? $eventsSearchIndexes->getSearchIndexes() : array());
+
+	/** @var SearchObject_WebsitesSearcher $websiteSearchIndexes */
 	$websiteSearchIndexes = SearchObjectFactory::initSearchObject('Websites');
 	$interface->assign('websiteSearchIndexes', is_object($websiteSearchIndexes) ? $websiteSearchIndexes->getSearchIndexes() : array());
 
@@ -503,12 +507,6 @@ if ($action == "AJAX" || $action == "JSON" || $module == 'API'){
 		$openArchivesSearchObject = SearchObjectFactory::initSearchObject('OpenArchives');
 		$interface->assign('openArchivesSearchIndexes', is_object($openArchivesSearchObject) ? $openArchivesSearchObject->getSearchIndexes() : array());
 		$interface->assign('enableOpenArchives', true);
-	}
-
-	if ($library->enableEvents) {
-		$eventsSearchObject = SearchObjectFactory::initSearchObject($library->eventsSource);
-		$interface->assign('eventsSearchIndexes', is_object($eventsSearchObject) ? $eventsSearchObject->getSearchIndexes() : array());
-		$interface->assign('enableEvents', true);
 	}
 
 	//TODO: Re-enable once we do full EDS integration

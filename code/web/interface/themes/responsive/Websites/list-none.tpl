@@ -74,12 +74,4 @@
 	{/if}
 
 </div>
-
-<script type="text/javascript">
-	$(function(){ldelim}
-		{if $showDplaLink}
-		AspenDiscovery.DPLA.getDPLAResults('{$lookfor}');
-		{/if}
-		{rdelim});
-</script>
 {/strip}
