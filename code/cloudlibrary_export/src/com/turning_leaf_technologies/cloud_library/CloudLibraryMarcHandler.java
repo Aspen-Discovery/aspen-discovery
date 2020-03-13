@@ -24,6 +24,8 @@ import org.marc4j.marc.DataField;
 import org.marc4j.marc.MarcFactory;
 import org.marc4j.marc.Record;
 import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.DefaultHandler;
 
 class CloudLibraryMarcHandler extends DefaultHandler {
@@ -300,5 +302,43 @@ class CloudLibraryMarcHandler extends DefaultHandler {
 
 	public void startDocument() {
 		numDocuments = 0;
+	}
+
+	public void unparsedEntityDecl (String name, String publicId,
+	                                String systemId, String notationName)
+			throws SAXException
+	{
+		logger.debug("Un-parsed entity " + name);
+	}
+
+	public void ignorableWhitespace (char ch[], int start, int length)
+			throws SAXException
+	{
+		logger.debug("Ignoring whitespace");
+	}
+
+	public void skippedEntity (String name)
+			throws SAXException
+	{
+		logger.debug("Skipping entity " + name);
+	}
+
+	public void warning (SAXParseException e)
+			throws SAXException
+	{
+		logger.warn(e.toString());
+	}
+
+	public void error (SAXParseException e)
+			throws SAXException
+	{
+		logger.error(e.toString());
+	}
+
+	public void fatalError (SAXParseException e)
+			throws SAXException
+	{
+		logger.error(e.toString());
+		throw e;
 	}
 }
