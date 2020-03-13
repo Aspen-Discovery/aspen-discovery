@@ -30,8 +30,8 @@ public class EventsIndexerLogEntry implements BaseLogEntry {
 		this.logger = logger;
 		this.startTime = new Date();
 		try {
-			insertLogEntry = dbConn.prepareStatement("INSERT into event_indexing_log (name, startTime) VALUES (?, ?)", PreparedStatement.RETURN_GENERATED_KEYS);
-			updateLogEntry = dbConn.prepareStatement("UPDATE event_indexing_log SET lastUpdate = ?, endTime = ?, notes = ?, numEvents = ?, numErrors = ?, numAdded = ?, numUpdated = ?, numDeleted = ? WHERE id = ?", PreparedStatement.RETURN_GENERATED_KEYS);
+			insertLogEntry = dbConn.prepareStatement("INSERT into events_indexing_log (name, startTime) VALUES (?, ?)", PreparedStatement.RETURN_GENERATED_KEYS);
+			updateLogEntry = dbConn.prepareStatement("UPDATE events_indexing_log SET lastUpdate = ?, endTime = ?, notes = ?, numEvents = ?, numErrors = ?, numAdded = ?, numUpdated = ?, numDeleted = ? WHERE id = ?", PreparedStatement.RETURN_GENERATED_KEYS);
 		} catch (SQLException e) {
 			logger.error("Error creating prepared statements to update log", e);
 		}

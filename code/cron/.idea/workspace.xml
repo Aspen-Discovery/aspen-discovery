@@ -2,86 +2,69 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="55ca2c23-0e7e-4349-ac3a-9f29a6a68364" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/../events_indexer/events_indexer.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/EventsIndexerLogEntry.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/EventsIndexerMain.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/LibraryCalendarEvent.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/LibraryCalendarIndexer.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/Events/breadcrumbs.tpl" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/Events/eventsIndexLog.tpl" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../web/services/Events/IndexingLog.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../web/services/Events/LMLibraryCalendarSettings.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../web/sys/DBMaintenance/events_integration_updates.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../web/sys/Events/EventsIndexingLogEntry.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../web/sys/Events/LMLibraryCalendarEvent.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../web/sys/Events/LMLibraryCalendarSetting.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../web/sys/Events/LibraryEventsSetting.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/lang/contractions_ca.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/lang/contractions_fr.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/lang/contractions_ga.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/lang/contractions_it.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/lang/hyphenations_ga.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/lang/stemdict_nl.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/lang/stoptags_ja.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/lang/stopwords_ar.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/lang/stopwords_bg.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/lang/stopwords_ca.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/lang/stopwords_cz.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/lang/stopwords_da.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/lang/stopwords_de.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/lang/stopwords_el.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/lang/stopwords_en.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/lang/stopwords_es.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/lang/stopwords_eu.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/lang/stopwords_fa.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/lang/stopwords_fi.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/lang/stopwords_fr.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/lang/stopwords_ga.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/lang/stopwords_gl.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/lang/stopwords_hi.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/lang/stopwords_hu.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/lang/stopwords_hy.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/lang/stopwords_id.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/lang/stopwords_it.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/lang/stopwords_ja.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/lang/stopwords_lv.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/lang/stopwords_nl.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/lang/stopwords_no.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/lang/stopwords_pt.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/lang/stopwords_ro.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/lang/stopwords_ru.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/lang/stopwords_sv.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/lang/stopwords_th.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/lang/stopwords_tr.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/lang/userdict_ja.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/params.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/protwords.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/schema.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/solrconfig.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/stopwords.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/synonyms.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../data_dir_setup/solr7/events/core.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../cloudlibrary_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryExportMain.java" beforeDir="false" afterPath="$PROJECT_DIR$/../cloudlibrary_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryExportMain.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../web/RecordDrivers/LibraryCalendarEventRecordDriver.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/Events/list-list.tpl" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/Events/list-none.tpl" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/Events/list.tpl" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/RecordDrivers/Events/library_calendar_result.tpl" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../web/services/Events/Results.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../web/sys/Events/EventsUsage.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../web/sys/Events/UserEventsUsage.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../web/sys/SearchObject/EventsSearcher.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../web/sys/SolrConnector/EventsSolrConnector.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../sites/default/conf/eventsFacets.ini" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../sites/default/conf/eventsSearchSpecs.yaml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../sites/default/conf/eventsSearches.ini" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../carlx_export/carlx_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../carlx_export/carlx_export.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../cloudlibrary_export/cloud_library_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../cloudlibrary_export/cloud_library_export.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dictionaries/mdnob.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dictionaries/mdnob.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cron.jar" beforeDir="false" afterPath="$PROJECT_DIR$/cron.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/EventsIndexerLogEntry.java" beforeDir="false" afterPath="$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/EventsIndexerLogEntry.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/LibraryCalendarIndexer.java" beforeDir="false" afterPath="$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/LibraryCalendarIndexer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../hoopla_export/hoopla_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../hoopla_export/hoopla_export.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../horizon_export/horizon_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../horizon_export/horizon_export.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/CDL.java" beforeDir="false" afterPath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/CDL.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/Cookie.java" beforeDir="false" afterPath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/Cookie.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/CookieList.java" beforeDir="false" afterPath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/CookieList.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/HTTP.java" beforeDir="false" afterPath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/HTTP.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/HTTPTokener.java" beforeDir="false" afterPath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/HTTPTokener.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/JSONArray.java" beforeDir="false" afterPath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/JSONArray.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/JSONException.java" beforeDir="false" afterPath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/JSONException.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/JSONML.java" beforeDir="false" afterPath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/JSONML.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/JSONObject.java" beforeDir="false" afterPath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/JSONObject.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/JSONString.java" beforeDir="false" afterPath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/JSONString.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/JSONStringer.java" beforeDir="false" afterPath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/JSONStringer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/JSONTokener.java" beforeDir="false" afterPath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/JSONTokener.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/JSONWriter.java" beforeDir="false" afterPath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/JSONWriter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/README" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/XML.java" beforeDir="false" afterPath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/XML.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/XMLTokener.java" beforeDir="false" afterPath="$PROJECT_DIR$/../java_shared_libraries/src/org/json/XMLTokener.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../koha_export/koha_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../koha_export/koha_export.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../oai_indexer/oai_indexer.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../oai_indexer/oai_indexer.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../overdrive_api_extract/overdrive_extract.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../overdrive_api_extract/overdrive_extract.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../rbdigital_export/rbdigital_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../rbdigital_export/rbdigital_export.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../record_grouping/record_grouping.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../record_grouping/record_grouping.jar" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../reindexer/reindexer.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../reindexer/reindexer.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../sideload_processing/sideload_processing.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../sideload_processing/sideload_processing.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../sierra_export_api/sierra_export_api.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../sierra_export_api/sierra_export_api.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../user_list_indexer/user_list_indexer.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../user_list_indexer/user_list_indexer.jar" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../web/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../web/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/Drivers/marmot_inc/SearchSources.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/Drivers/marmot_inc/SearchSources.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../web/index.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/index.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/interface/themes/nashville_resp/css/main.css" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/nashville_resp/css/main.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/MyAccount/menu.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/MyAccount/menu.tpl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/css/main.css" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/css/main.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/services/Admin/DBMaintenance.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/services/Admin/DBMaintenance.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/services/Hoopla/Settings.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/services/Hoopla/Settings.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/services/Websites/IndexingLog.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/services/Websites/IndexingLog.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/sys/DBMaintenance/library_location_updates.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/sys/DBMaintenance/library_location_updates.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/sys/Grouping/GroupedWorkDisplaySetting.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/sys/Grouping/GroupedWorkDisplaySetting.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/sys/Hoopla/HooplaSetting.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/sys/Hoopla/HooplaSetting.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/sys/LibraryLocation/Library.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/sys/LibraryLocation/Library.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/sys/WebsiteIndexing/WebsiteIndexLogEntry.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/sys/WebsiteIndexing/WebsiteIndexLogEntry.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../data_dir_setup/solr7/lists/conf/solrconfig.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../../data_dir_setup/solr7/lists/conf/solrconfig.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../data_dir_setup/solr7/open_archives/conf/schema.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../../data_dir_setup/solr7/open_archives/conf/schema.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../data_dir_setup/solr7/open_archives/conf/solrconfig.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../../data_dir_setup/solr7/open_archives/conf/solrconfig.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../data_dir_setup/solr7/website_pages/conf/solrconfig.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../../data_dir_setup/solr7/website_pages/conf/solrconfig.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/Admin/usage_dashboard.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/Admin/usage_dashboard.tpl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/RecordDrivers/WebPage/result.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/RecordDrivers/WebPage/result.tpl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/Search/horizontal-searchbox.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/Search/horizontal-searchbox.tpl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/Websites/list-list.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/Websites/list-list.tpl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/Websites/list-none.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/Websites/list-none.tpl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/services/Admin/UsageDashboard.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/services/Admin/UsageDashboard.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/services/Union/Search.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/services/Union/Search.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/sys/DBMaintenance/events_integration_updates.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/sys/DBMaintenance/events_integration_updates.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/sys/SearchObject/SearchObjectFactory.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/sys/SearchObject/SearchObjectFactory.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/sys/SystemLogging/AspenUsage.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/sys/SystemLogging/AspenUsage.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/sys/WebsiteIndexing/WebPageUsage.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/sys/WebsiteIndexing/WebPageUsage.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web_indexer/web_indexer.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../web_indexer/web_indexer.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/schema.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/schema.xml" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -104,23 +87,14 @@
     <favorites_list name="cron" />
   </component>
   <component name="FileEditorManager">
-    <splitter split-orientation="horizontal" split-proportion="0.57114094">
+    <splitter split-orientation="horizontal" split-proportion="0.4080371">
       <split-first>
-        <leaf>
+        <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/schema.xml">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="629">
+                <state relative-caret-position="1815">
                   <caret line="125" column="13" selection-start-line="125" selection-start-column="13" selection-end-line="125" selection-end-column="13" />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/../../data_dir_setup/solr7/events/core.properties">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="60">
-                  <caret line="4" selection-start-line="4" selection-end-line="4" />
                 </state>
               </provider>
             </entry>
@@ -128,20 +102,8 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/EventsIndexerMain.java">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="218">
-                  <caret line="49" column="221" selection-start-line="49" selection-start-column="221" selection-end-line="49" selection-end-column="221" />
-                  <folding>
-                    <element signature="imports" expanded="true" />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/LibraryCalendarIndexer.java">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="251">
-                  <caret line="84" selection-start-line="84" selection-end-line="84" />
+                <state relative-caret-position="308">
+                  <caret line="63" selection-start-line="63" selection-end-line="63" />
                   <folding>
                     <element signature="imports" expanded="true" />
                   </folding>
@@ -150,10 +112,31 @@
             </entry>
           </file>
           <file pinned="false" current-in-tab="true">
-            <entry file="file://$PROJECT_DIR$/src/com/turning_leaf_technologies/cron/BookcoverCleanup.java">
+            <entry file="file://$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/LibraryCalendarIndexer.java">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="315">
-                  <caret line="27" lean-forward="true" selection-start-line="27" selection-end-line="27" />
+                <state relative-caret-position="269">
+                  <caret line="257" column="9" lean-forward="true" selection-start-line="257" selection-start-column="9" selection-end-line="257" selection-end-column="9" />
+                  <folding>
+                    <element signature="imports" expanded="true" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/../java_shared_libraries/src/org/json/JSONObject.java">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="151">
+                  <caret line="782" selection-start-line="782" selection-end-line="782" />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/src/com/turning_leaf_technologies/cron/BookCoverCleanup.java">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="128">
+                  <caret line="44" column="47" selection-start-line="44" selection-start-column="47" selection-end-line="44" selection-end-column="47" />
                 </state>
               </provider>
             </entry>
@@ -179,7 +162,7 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/../../data_dir_setup/solr7/lists/conf/schema.xml">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="299">
+                <state relative-caret-position="2055">
                   <caret line="137" column="101" selection-start-line="137" selection-start-column="8" selection-end-line="137" selection-end-column="101" />
                 </state>
               </provider>
@@ -188,7 +171,7 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/solrconfig.xml">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="350">
+                <state relative-caret-position="16860">
                   <caret line="1124" column="10" selection-start-line="1124" selection-start-column="10" selection-end-line="1124" selection-end-column="10" />
                 </state>
               </provider>
@@ -197,21 +180,12 @@
         </leaf>
       </split-first>
       <split-second>
-        <leaf>
+        <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/../web_indexer/src/com/turning_leaf_technologies/website_indexer/WebsiteIndexer.java">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="400">
-                  <caret line="287" column="48" selection-start-line="287" selection-start-column="48" selection-end-line="287" selection-end-column="48" />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file pinned="false" current-in-tab="true">
-            <entry file="file://$PROJECT_DIR$/../rbdigital_export/src/com/turning_leaf_technologies/rbdigital/RbdigitalExportMain.java">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="239">
-                  <caret line="154" column="4" lean-forward="true" selection-start-line="154" selection-start-column="4" selection-end-line="154" selection-end-column="4" />
+                <state relative-caret-position="179">
+                  <caret line="53" selection-start-line="53" selection-end-line="54" selection-end-column="41" />
                 </state>
               </provider>
             </entry>
@@ -219,20 +193,40 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/LibraryCalendarEvent.java">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="390">
-                  <caret line="30" column="13" selection-start-line="30" selection-start-column="13" selection-end-line="30" selection-end-column="13" />
+                <state relative-caret-position="330">
+                  <caret line="22" column="9" selection-start-line="22" selection-start-column="9" selection-end-line="22" selection-end-column="9" />
                   <folding>
                     <element signature="imports" expanded="true" />
+                    <element signature="e#709#710#0" expanded="true" />
+                    <element signature="e#725#726#0" expanded="true" />
                   </folding>
                 </state>
               </provider>
             </entry>
           </file>
-          <file pinned="false" current-in-tab="false">
+          <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/schema.xml">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="239">
-                  <caret line="78" column="8" selection-start-line="78" selection-start-column="8" selection-end-line="78" selection-end-column="8" />
+                <state relative-caret-position="311">
+                  <caret line="86" lean-forward="true" selection-start-line="86" selection-end-line="86" />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/../oai_indexer/src/com/turning_leaf_technologies/oai/OAISolrRecord.java">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="226">
+                  <caret line="82" column="42" selection-start-line="82" selection-start-column="42" selection-end-line="82" selection-end-column="42" />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/LibraryCalendarIndexer.java">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="-30">
+                  <caret line="20" column="18" selection-start-line="20" selection-start-column="18" selection-end-line="20" selection-end-column="18" />
                 </state>
               </provider>
             </entry>
@@ -251,10 +245,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>allowFastExportMethod</find>
-      <find>allow</find>
-      <find>getMarcJSONFromSierraApiURL</find>
-      <find>updateMarc</find>
       <find>/marc</find>
       <find>isEContent</find>
       <find>addseries</find>
@@ -278,6 +268,13 @@
       <find>textProper</find>
       <find>creator</find>
       <find>BookCoverCleanup</find>
+      <find>event_indexing_log</find>
+      <find>checksumCalculator</find>
+      <find>last_indexed</find>
+      <find>existingEvents</find>
+      <find>solrUpdateServer =</find>
+      <find>field name=&quot;keywords&quot;</find>
+      <find>solrUpdateServer</find>
     </findStrings>
     <replaceStrings>
       <replace>Rbdigital</replace>
@@ -315,16 +312,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/indexing/CloudLibraryScope.java" />
-        <option value="$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/indexing/OverDriveScope.java" />
-        <option value="$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/indexing/GroupedWorkDisplaySettings.java" />
-        <option value="$PROJECT_DIR$/../record_grouping/src/com/turning_leaf_technologies/grouping/RecordGroupingProcessor.java" />
-        <option value="$PROJECT_DIR$/../overdrive_api_extract/src/com/turning_leaf_technologies/overdrive/ExtractOverDriveInfo.java" />
-        <option value="$PROJECT_DIR$/../koha_export/src/com/turning_leaf_technologies/koha_export/KohaInstanceInformation.java" />
-        <option value="$PROJECT_DIR$/../sierra_export_api/src/com/turning_leaf_technologies/sierra/SierraInstanceInformation.java" />
-        <option value="$PROJECT_DIR$/../../sites/arlington.localhost/conf/config.pwd.ini" />
-        <option value="$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/indexing/BaseIndexingSettings.java" />
-        <option value="$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/logging/BaseLogEntry.java" />
         <option value="$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/indexing/IlsExtractLogEntry.java" />
         <option value="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/IIIRecordProcessor.java" />
         <option value="$PROJECT_DIR$/../carlx_export/src/com/turning_leaf_technologies/carlx/CarlXExportMain.java" />
@@ -365,17 +352,17 @@
         <option value="$PROJECT_DIR$/../../data_dir_setup/solr7/website_pages/conf/solrconfig.xml" />
         <option value="$PROJECT_DIR$/../../data_dir_setup/solr7/open_archives/conf/schema.xml" />
         <option value="$PROJECT_DIR$/../../data_dir_setup/solr7/events/core.properties" />
-        <option value="$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/schema.xml" />
         <option value="$PROJECT_DIR$/../event_export/src/com/turning_leaf_technologies/events/EventExportLogEntry.java" />
         <option value="$PROJECT_DIR$/../cloudlibrary_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryExportMain.java" />
         <option value="$PROJECT_DIR$/../event_export/src/com/turning_leaf_technologies/events/EventExportMain.java" />
         <option value="$PROJECT_DIR$/../event_indexer/src/com/turning_leaf_technologies/events/EventIndexerLogEntry.java" />
         <option value="$PROJECT_DIR$/../event_indexer/src/com/turning_leaf_technologies/events/EventIndexerMain.java" />
-        <option value="$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/EventsIndexerLogEntry.java" />
-        <option value="$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/EventsIndexerMain.java" />
         <option value="$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/LibraryCalendarEvent.java" />
         <option value="$PROJECT_DIR$/../web_indexer/src/com/turning_leaf_technologies/website_indexer/WebsiteIndexer.java" />
+        <option value="$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/EventsIndexerLogEntry.java" />
+        <option value="$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/EventsIndexerMain.java" />
         <option value="$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/LibraryCalendarIndexer.java" />
+        <option value="$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/schema.xml" />
       </list>
     </option>
   </component>
@@ -396,7 +383,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -429,13 +415,6 @@
               <item name="cron" type="462c0819:PsiDirectoryNode" />
               <item name="src" type="462c0819:PsiDirectoryNode" />
               <item name="cron" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="cron" type="b2602c69:ProjectViewProjectNode" />
-              <item name="cron" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-              <item name="cron" type="462c0819:PsiDirectoryNode" />
-              <item name="BookcoverCleanup.java" type="529ef68f:ClassesTreeStructureProvider$PsiClassOwnerTreeNode" />
             </path>
             <path>
               <item name="cron" type="b2602c69:ProjectViewProjectNode" />
@@ -476,6 +455,21 @@
             </path>
             <path>
               <item name="cron" type="b2602c69:ProjectViewProjectNode" />
+              <item name="java_shared_libraries" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="cron" type="b2602c69:ProjectViewProjectNode" />
+              <item name="java_shared_libraries" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="cron" type="b2602c69:ProjectViewProjectNode" />
+              <item name="java_shared_libraries" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="json" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="cron" type="b2602c69:ProjectViewProjectNode" />
               <item name="rbdigital_export" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
@@ -508,6 +502,7 @@
           <select />
         </subPane>
       </pane>
+      <pane id="Scope" />
       <pane id="PackagesPane" />
     </panes>
   </component>
@@ -613,6 +608,7 @@
     <configuration name="Events Indexing" type="Application" factoryName="Application">
       <option name="MAIN_CLASS_NAME" value="com.turning_leaf_technologies.events.EventsIndexerMain" />
       <module name="events_indexer" />
+      <option name="PROGRAM_PARAMETERS" value="basinlibraries.localhost" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../events_indexer" />
       <method v="2">
         <option name="Make" enabled="true" />
@@ -740,9 +736,9 @@
     <list>
       <item itemvalue="Application.CARLX Export" />
       <item itemvalue="Application.Cloud Library Export" />
-      <item itemvalue="Application.Cron BookCoverCleanup" />
       <item itemvalue="Application.Cron" />
       <item itemvalue="Application.Events Indexing" />
+      <item itemvalue="Application.Cron BookCoverCleanup" />
       <item itemvalue="Application.Genealogy Cleanup/Reindex" />
       <item itemvalue="Application.Hoopla Export" />
       <item itemvalue="Application.Koha Export" />
@@ -751,8 +747,8 @@
       <item itemvalue="Application.Rbdigital Export" />
       <item itemvalue="Application.Record Grouping Test" />
       <item itemvalue="Application.Record Grouping" />
-      <item itemvalue="Application.Reindexer Full" />
       <item itemvalue="Application.Reindexer Single Work" />
+      <item itemvalue="Application.Reindexer Full" />
       <item itemvalue="Application.Side Load Processing" />
       <item itemvalue="Application.SierraExport" />
       <item itemvalue="Application.User List Indexer" />
@@ -786,8 +782,9 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-7" y="-7" width="1550" height="838" extended-state="6" />
+    <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.4969325" visible="true" weight="0.2261745" />
+      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.4969325" visible="true" weight="0.13154362" />
       <window_info id="Image Layers" order="1" />
       <window_info id="Designer" order="2" />
       <window_info id="UI Designer" order="3" />
@@ -796,14 +793,14 @@
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" sideWeight="0.49261746" weight="0.27620396" />
       <window_info anchor="bottom" id="Run" order="2" sideWeight="0.4966443" weight="0.3186969" />
-      <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.8416107" weight="0.38243628" />
+      <window_info active="true" anchor="bottom" id="Debug" order="3" sideWeight="0.8416107" visible="true" weight="0.38243628" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" weight="0.3286119" />
       <window_info anchor="bottom" id="Terminal" order="7" weight="0.3286119" />
       <window_info anchor="bottom" id="Event Log" order="8" sideWeight="0.5060403" side_tool="true" weight="0.32577905" />
       <window_info anchor="bottom" id="Version Control" order="9" weight="0.3286119" />
-      <window_info anchor="bottom" id="Messages" order="10" sideWeight="0.49395972" visible="true" weight="0.32577905" />
+      <window_info anchor="bottom" id="Messages" order="10" sideWeight="0.49395972" weight="0.32577905" />
       <window_info anchor="right" id="Coverage" order="0" sideWeight="0.4927235" weight="0.3295302" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="1" type="SLIDING" weight="0.4" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" sideWeight="0.49858356" weight="0.24966443" />
@@ -816,16 +813,16 @@
       <window_info anchor="right" id="Structure" order="9" sideWeight="0.50727654" side_tool="true" weight="0.17583893" />
     </layout>
     <layout-to-restore>
-      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.4969325" visible="true" weight="0.2261745" />
+      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.4969325" weight="0.13154362" />
       <window_info id="Image Layers" order="1" />
       <window_info id="Designer" order="2" />
       <window_info id="UI Designer" order="3" />
       <window_info id="Capture Tool" order="4" />
       <window_info id="Favorites" order="5" sideWeight="0.5030675" side_tool="true" weight="0.16174497" />
       <window_info anchor="bottom" id="Message" order="0" />
-      <window_info anchor="bottom" id="Find" order="1" sideWeight="0.49261746" weight="0.1898017" />
+      <window_info anchor="bottom" id="Find" order="1" sideWeight="0.49261746" weight="0.27620396" />
       <window_info anchor="bottom" id="Run" order="2" sideWeight="0.4966443" weight="0.3186969" />
-      <window_info active="true" anchor="bottom" id="Debug" order="3" sideWeight="0.8416107" visible="true" weight="0.38243628" />
+      <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.8416107" visible="true" weight="0.38243628" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" weight="0.3286119" />
@@ -1483,12 +1480,6 @@
           <option name="timeStamp" value="1406" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/LibraryCalendarIndexer.java</url>
-          <line>71</line>
-          <properties />
-          <option name="timeStamp" value="1407" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/GroupedWorkSolr.java</url>
           <line>1752</line>
           <properties />
@@ -1499,6 +1490,73 @@
           <line>831</line>
           <properties />
           <option name="timeStamp" value="1421" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/LibraryCalendarIndexer.java</url>
+          <line>256</line>
+          <properties />
+          <option name="timeStamp" value="1427" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/LibraryCalendarIndexer.java</url>
+          <line>271</line>
+          <properties />
+          <option name="timeStamp" value="1435" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/LibraryCalendarIndexer.java</url>
+          <line>152</line>
+          <properties />
+          <option name="timeStamp" value="1438" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/LibraryCalendarIndexer.java</url>
+          <line>166</line>
+          <properties />
+          <option name="timeStamp" value="1440" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/LibraryCalendarIndexer.java</url>
+          <line>179</line>
+          <properties />
+          <option name="timeStamp" value="1441" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/LibraryCalendarIndexer.java</url>
+          <line>212</line>
+          <properties />
+          <option name="timeStamp" value="1445" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/LibraryCalendarIndexer.java</url>
+          <line>217</line>
+          <properties />
+          <option name="timeStamp" value="1448" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/LibraryCalendarIndexer.java</url>
+          <line>189</line>
+          <properties />
+          <option name="timeStamp" value="1449" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/LibraryCalendarIndexer.java</url>
+          <line>204</line>
+          <properties />
+          <option name="timeStamp" value="1452" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/LibraryCalendarIndexer.java</url>
+          <line>249</line>
+          <properties />
+          <option name="timeStamp" value="1457" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <condition expression="keyObj.keySet().size() &gt; 1" language="JAVA" />
+          <url>file://$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/LibraryCalendarIndexer.java</url>
+          <line>246</line>
+          <properties />
+          <option name="timeStamp" value="1459" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
@@ -1514,6 +1572,26 @@
   </component>
   <component name="debuggerHistoryManager">
     <expressions id="breakpointCondition">
+      <expression>
+        <expression-string>keyObj.keySet().size() &gt; 1</expression-string>
+        <language-id>JAVA</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>!(curEvent.get(&quot;program_description&quot;) instanceof JSONArray)</expression-string>
+        <language-id>JAVA</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>!(curEvent.get(&quot;description&quot;) instanceof JSONString)</expression-string>
+        <language-id>JAVA</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>!(curEvent.get(&quot;registration_start&quot;) instanceof JSONString)</expression-string>
+        <language-id>JAVA</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
       <expression>
         <expression-string>seriesInfo.startsWith(&quot; &quot;)</expression-string>
         <language-id>JAVA</language-id>
@@ -1544,26 +1622,6 @@
         <language-id>JAVA</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
-      <expression>
-        <expression-string>!curItem.getShelfLocation().equals(&quot;Online Cloud Library Collection&quot;) &amp;&amp; !curItem.getShelfLocation().equals(&quot;Online Hoopla Collection&quot;)</expression-string>
-        <language-id>JAVA</language-id>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>!curItem.getShelfLocation().equals(&quot;Online Cloud Library Collection&quot;)</expression-string>
-        <language-id>JAVA</language-id>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>curItem</expression-string>
-        <language-id>JAVA</language-id>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>curItem.isEContent() == true</expression-string>
-        <language-id>JAVA</language-id>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
     </expressions>
     <expressions id="watch">
       <expression>
@@ -1590,6 +1648,21 @@
       </expression>
     </expressions>
     <expressions id="evaluateExpression">
+      <expression>
+        <expression-string>curEvent.get(keyName)</expression-string>
+        <language-id>JAVA</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>curEvent.isNull(keyName)</expression-string>
+        <language-id>JAVA</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>keyObj.getString(keyValue)</expression-string>
+        <language-id>JAVA</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
       <expression>
         <expression-string>conn.getResponseCode()</expression-string>
         <language-id>JAVA</language-id>
@@ -1625,47 +1698,9 @@
         <language-id>JAVA</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
-      <expression>
-        <expression-string>Runtime.getRuntime().freeMemory()</expression-string>
-        <language-id>JAVA</language-id>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()</expression-string>
-        <language-id>JAVA</language-id>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
     </expressions>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/HooplaProcessor.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-134">
-          <caret line="1221" column="13" selection-start-line="1221" selection-start-column="13" selection-end-line="1221" selection-end-column="13" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../../sites/arlington.localhost/conf/config.ini">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="345">
-          <caret line="44" column="24" selection-start-line="44" selection-start-column="24" selection-end-line="44" selection-end-column="24" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../../sites/arlington.production/conf/config.ini">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="345">
-          <caret line="35" column="24" selection-start-line="35" selection-start-column="24" selection-end-line="35" selection-end-column="24" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$PROJECT_DIR$/../java_shared_libraries/log4j-api-2.11.2.jar!/org/apache/logging/log4j/spi/AbstractLogger.class">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="136">
-          <caret line="201" selection-start-line="201" selection-end-line="201" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/indexing/Scope.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="218">
@@ -1701,34 +1736,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/strings/StringUtils.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="128">
-          <caret line="144" column="25" selection-start-line="144" selection-start-column="25" selection-end-line="144" selection-end-column="25" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/indexing/TranslationMap.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="60">
-          <caret line="8" column="13" selection-start-line="8" selection-start-column="13" selection-end-line="8" selection-end-column="13" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/indexing/IndexingProfile.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="315">
-          <caret line="149" column="48" selection-start-line="149" selection-start-column="48" selection-end-line="149" selection-end-column="48" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/IlsRecordProcessor.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="224">
-          <caret line="926" selection-start-line="926" selection-end-line="926" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/../record_grouping/src/com/turning_leaf_technologies/grouping/SideLoadedRecordGrouper.java">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
@@ -1739,27 +1746,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="jar://$PROJECT_DIR$/../../sites/default/solr-7.6.0/dist/solr-solrj-7.6.0.jar!/org/apache/solr/client/solrj/response/SolrResponseBase.class">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-31">
-          <caret line="13" column="13" selection-start-line="13" selection-start-column="13" selection-end-line="13" selection-end-column="13" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$PROJECT_DIR$/../../sites/default/solr-7.6.0/dist/solr-solrj-7.6.0.jar!/org/apache/solr/client/solrj/response/UpdateResponse.class">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="60">
-          <caret line="7" column="43" selection-start-line="7" selection-start-column="43" selection-end-line="7" selection-end-column="43" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/GroupedWorkSolr.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2865">
-          <caret line="200" column="30" selection-start-line="200" selection-start-column="30" selection-end-line="200" selection-end-column="30" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/GroupedWorkIndexer.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="10650">
@@ -1767,36 +1753,8 @@
         </state>
       </provider>
     </entry>
-    <entry file="jar://$PROJECT_DIR$/../../sites/default/solr-7.6.0/dist/solr-solrj-7.6.0.jar!/org/apache/solr/client/solrj/SolrResponse.class">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="270">
-          <caret line="28" column="21" selection-start-line="28" selection-start-column="21" selection-end-line="28" selection-end-column="21" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$PROJECT_DIR$/../../sites/default/solr-7.6.0/dist/solr-solrj-7.6.0.jar!/org/apache/solr/client/solrj/impl/ConcurrentUpdateSolrClient.class">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3600">
-          <caret line="286" column="16" selection-start-line="286" selection-start-column="16" selection-end-line="286" selection-end-column="16" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../../sites/template.linux/conf/config.ini">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="528">
-          <caret line="44" column="33" selection-start-line="44" selection-start-column="33" selection-end-line="44" selection-end-column="33" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/lang/stemdict_nl.txt">
       <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/solrconfig.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="350">
-          <caret line="1124" column="10" selection-start-line="1124" selection-start-column="10" selection-end-line="1124" selection-end-column="10" />
-        </state>
-      </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/../../data_dir_setup/solr7/open_archives/conf/solrconfig.xml">
       <provider selected="true" editor-type-id="text-editor">
@@ -1819,38 +1777,11 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/../../data_dir_setup/solr7/lists/conf/schema.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="299">
-          <caret line="137" column="101" selection-start-line="137" selection-start-column="8" selection-end-line="137" selection-end-column="101" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../../sites/default/conf/openArchivesSearchSpecs.yaml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="195">
-          <caret line="13" column="18" selection-start-line="13" selection-start-column="18" selection-end-line="13" selection-end-column="18" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../event_export/src/com/turning_leaf_technologies/events.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="30">
-          <caret line="2" column="19" selection-start-line="2" selection-start-column="19" selection-end-line="2" selection-end-column="19" />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$PROJECT_DIR$/../event_export/src/com/turning_leaf_technologies/events.java" />
     <entry file="file://$PROJECT_DIR$/../../data_dir_setup/solr7/open_archives/conf/schema.xml">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="345">
           <caret line="23" column="20" selection-start-line="23" selection-start-column="20" selection-end-line="23" selection-end-column="20" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../../data_dir_setup/solr7/events/core.properties">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="60">
-          <caret line="4" selection-start-line="4" selection-end-line="4" />
         </state>
       </provider>
     </entry>
@@ -1969,13 +1900,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/LibraryCalendarIndexer.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="10650">
-          <caret line="735" column="27" selection-start-line="735" selection-start-column="27" selection-end-line="735" selection-end-column="27" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/SideLoadedEContentProcessor.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="210">
@@ -1997,17 +1921,141 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/turning_leaf_technologies/cron/BookCoverCleanup.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="240">
-          <caret line="22" column="45" selection-start-line="22" selection-start-column="45" selection-end-line="22" selection-end-column="45" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/nightly_mysql_dump.sh">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="183">
           <caret line="61" column="37" selection-start-line="61" selection-start-column="37" selection-end-line="61" selection-end-column="37" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../../data_dir_setup/solr7/events/core.properties">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="60">
+          <caret line="4" selection-start-line="4" selection-end-line="4" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/logging/BaseLogEntry.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="30">
+          <caret line="2" column="17" selection-start-line="2" selection-start-column="17" selection-end-line="2" selection-end-column="17" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../../sites/default/conf/openArchivesSearchSpecs.yaml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="195">
+          <caret line="13" column="18" selection-start-line="13" selection-start-column="18" selection-end-line="13" selection-end-column="18" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../../data_dir_setup/solr7/lists/conf/schema.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2055">
+          <caret line="137" column="101" selection-start-line="137" selection-start-column="8" selection-end-line="137" selection-end-column="101" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/solrconfig.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="16860">
+          <caret line="1124" column="10" selection-start-line="1124" selection-start-column="10" selection-end-line="1124" selection-end-column="10" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../rbdigital_export/src/com/turning_leaf_technologies/rbdigital/RbdigitalExportMain.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="239">
+          <caret line="154" column="4" selection-start-line="154" selection-start-column="4" selection-end-line="154" selection-end-column="4" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/turning_leaf_technologies/cron/BookCoverCleanup.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="128">
+          <caret line="44" column="47" selection-start-line="44" selection-start-column="47" selection-end-line="44" selection-end-column="47" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../java_shared_libraries/src/org/json/JSONArray.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="136">
+          <caret line="286" column="22" selection-start-line="286" selection-start-column="22" selection-end-line="286" selection-end-column="22" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://C:/Program Files/Java/jdk1.8.0_201/src.zip!/java/util/Date.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="226">
+          <caret line="163" column="11" selection-start-line="163" selection-start-column="11" selection-end-line="163" selection-end-column="11" />
+          <folding>
+            <element signature="e#6390#6391#0" expanded="true" />
+            <element signature="e#6438#6439#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../oai_indexer/src/com/turning_leaf_technologies/oai/OAISolrRecord.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="226">
+          <caret line="82" column="42" selection-start-line="82" selection-start-column="42" selection-end-line="82" selection-end-column="42" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../java_shared_libraries/src/org/json/JSONObject.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="151">
+          <caret line="782" selection-start-line="782" selection-end-line="782" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$PROJECT_DIR$/../../sites/default/solr-7.6.0/dist/solr-solrj-7.6.0.jar!/org/apache/solr/common/SolrInputDocument.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="59">
+          <caret line="44" selection-start-line="44" selection-end-line="44" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../web_indexer/src/com/turning_leaf_technologies/website_indexer/WebsiteIndexer.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="179">
+          <caret line="53" selection-start-line="53" selection-end-line="54" selection-end-column="41" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/LibraryCalendarEvent.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="330">
+          <caret line="22" column="9" selection-start-line="22" selection-start-column="9" selection-end-line="22" selection-end-column="9" />
+          <folding>
+            <element signature="imports" expanded="true" />
+            <element signature="e#709#710#0" expanded="true" />
+            <element signature="e#725#726#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/EventsIndexerMain.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="308">
+          <caret line="63" selection-start-line="63" selection-end-line="63" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/LibraryCalendarIndexer.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-30">
+          <caret line="20" column="18" selection-start-line="20" selection-start-column="18" selection-end-line="20" selection-end-column="18" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/schema.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="311">
+          <caret line="86" lean-forward="true" selection-start-line="86" selection-end-line="86" />
         </state>
       </provider>
     </entry>
