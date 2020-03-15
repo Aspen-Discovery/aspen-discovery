@@ -65,7 +65,6 @@
   <component name="PhpDebugGeneral" listening_started="true" />
   <component name="PhpServers">
     <servers>
-      <server host="aspen.demo" id="ee91db44-1a35-4b87-986d-da53797cd41b" name="aspen.demo" />
       <server host="basinlibraries.localhost" id="aea1563c-25bb-4c37-8e5e-b1ec20a28931" name="basinlibraries.localhost" />
       <server host="uintah.basinlibraries.localhost" id="92185654-48bf-4aad-9995-a95e5b551f71" name="uintah.basinlibraries.localhost" />
       <server host="duchesne.basinlibraries.localhost" id="ebc6cf94-867c-4f36-a999-0510a7b96e97" name="duchesne.basinlibraries.localhost" />
@@ -90,7 +89,6 @@
       </server>
     </servers>
   </component>
-  <component name="PhpWebServerValidation" path_to_validation_script="C:\web\aspen-discovery\code\web" selected_validation_type="LOCAL" web_path_to_validation_script="http://aspen.demo" />
   <component name="PhpWorkspaceProjectConfiguration" interpreter_name="PHP 7.1">
     <include_path>
       <path value="C:/Bitnami/wampstack-7.3.3-1/php" />
@@ -266,6 +264,7 @@
       <workItem from="1583416173444" duration="11242000" />
       <workItem from="1583778154632" duration="11856000" />
       <workItem from="1584137589336" duration="2421000" />
+      <workItem from="1584316633701" duration="59000" />
     </task>
     <servers />
   </component>
