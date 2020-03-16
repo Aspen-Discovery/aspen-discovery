@@ -37,23 +37,12 @@
 			{/foreach}
 		{/if}
 
-		{if !empty($website_name)}
-			<div class="row">
-				<div class="result-label col-tn-3">{translate text="Site name"} </div>
-				<div class="result-value col-tn-8 notranslate">
-					{implode subject=$website_name glue="<br/>"}
-				</div>
+		<div class="row">
+			<div class="result-label col-tn-3">{translate text="Date"} </div>
+			<div class="result-value col-tn-8 notranslate">
+				{$start_date|date_format:"%a %b %e, %Y from %l:%M%p"} to {$end_date|date_format:"%l:%M%p"}
 			</div>
-		{/if}
-
-		{if !empty($date)}
-			<div class="row">
-				<div class="result-label col-tn-3">{translate text="Date"} </div>
-				<div class="result-value col-tn-8 notranslate">
-					{implode subject=$date}
-				</div>
-			</div>
-		{/if}
+		</div>
 
 		{* Description Section *}
 		{if $description}

@@ -43,6 +43,8 @@ class LibraryCalendarEventRecordDriver extends IndexRecordDriver
 		} else {
 			$interface->assign('description', '');
 		}
+		$interface->assign('start_date', $this->fields['start_date']);
+		$interface->assign('end_date', $this->fields['end_date']);
 		$interface->assign('source', isset($this->fields['source']) ? $this->fields['source'] : '');
 
 		require_once ROOT_DIR . '/sys/Events/EventsUsage.php';
@@ -130,6 +132,5 @@ class LibraryCalendarEventRecordDriver extends IndexRecordDriver
 	{
 		return $this->fields['source'];
 	}
-
 
 }
