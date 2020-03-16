@@ -1102,17 +1102,30 @@ class Location extends DataObject
 			$hours->locationId = $locationId;
 			$hours->day = $dayOfWeekToday;
 			$hours->orderBy('open asc');
+			$allClosed = true;
 			if ($hours->find()) {
 				$openHours = [];
 				$ctr = 0;
 				while ($hours->fetch()) {
-					$openHours[$ctr++] = array(
+					$openHours[$ctr] = array(
 						'open' => ltrim($hours->open, '0'),
 						'close' => ltrim($hours->close, '0'),
 						'closed' => $hours->closed ? true : false,
 						'openFormatted' => ($hours->open == '12:00' ? 'Noon' : date("g:i A", strtotime($hours->open))),
 						'closeFormatted' => ($hours->close == '12:00' ? 'Noon' : date("g:i A", strtotime($hours->close)))
 					);
+					if (($openHours[$ctr]['open'] == $openHours[$ctr]['close'])){
+						$openHours[$ctr]['closed'] = true;
+					}
+					if ($openHours[$ctr]['closed'] == false){
+						$allClosed = false;
+					}
+					$ctr++;
+				}
+				if ($allClosed){
+					return [
+						'closed' => true
+					];
 				}
 				return $openHours;
 			}
@@ -1154,9 +1167,9 @@ class Location extends DataObject
 					} else {
 						$openMessage = Location::getOpenHoursMessage($nextDayHours);
 						if (isset($closureReason)) {
-							$libraryHoursMessage = translate(['text' => "%1% is closed today for %2%. It will reopen on %3% from %4%", 1 => $location->displayName, 2 => $closureReason, 3 => $nextDayOfWeek, 4 => $openMessage]);
+							$libraryHoursMessage = translate(['text' => 'closed_reopen_reason', 'defaultText' => "%1% is closed today for %2%. It will reopen on %3% from %4%", 1 => $location->displayName, 2 => $closureReason, 3 => $nextDayOfWeek, 4 => $openMessage]);
 						} else {
-							$libraryHoursMessage = translate(['text' => "%1% is closed today. It will reopen on %2% from %3%", 1 => $location->displayName, 2 => $nextDayOfWeek, 3 => $openMessage]);
+							$libraryHoursMessage = translate(['text' => 'closed_reopen_no_reason', 'defaultText' => "%1% is closed today. It will reopen on %2% from %3%", 1 => $location->displayName, 2 => $nextDayOfWeek, 3 => $openMessage]);
 						}
 					}
 				} else {
@@ -1173,13 +1186,13 @@ class Location extends DataObject
 						$tomorrowsLibraryHours = Location::getLibraryHours($locationId, time() + (24 * 60 * 60));
 						if (isset($tomorrowsLibraryHours['closed']) && ($tomorrowsLibraryHours['closed'] == true || $tomorrowsLibraryHours['closed'] == 1)) {
 							if (isset($tomorrowsLibraryHours['closureReason'])) {
-								$libraryHoursMessage = translate(['text' => "%1% will be closed tomorrow for %2", 1 => $location->displayName, 2 => $tomorrowsLibraryHours['closureReason']]);
+								$libraryHoursMessage = translate(['text' => 'closed_tomorrow_reason', 'defaultText' => "%1% will be closed tomorrow for %2%", 1 => $location->displayName, 2 => $tomorrowsLibraryHours['closureReason']]);
 							} else {
 								$libraryHoursMessage = translate(['text' => "%1% will be closed tomorrow", 1 => $location->displayName]);
 							}
 
 						} else {
-							$libraryHoursMessage = translate(['text' => "%1% will be open tomorrow from %2%", 1 => $location->displayName, 2 => Location::getOpenHoursMessage($tomorrowsLibraryHours)]);
+							$libraryHoursMessage = translate(['text' => 'open_tomorrow', 'defaultText' => "%1% will be open tomorrow from %2%", 1 => $location->displayName, 2 => Location::getOpenHoursMessage($tomorrowsLibraryHours)]);
 						}
 					} else {
 						$libraryHoursMessage = translate(['text' => "%1% is open today from %2%", 1 => $location->displayName, 2 => Location::getOpenHoursMessage($todaysLibraryHours)]);

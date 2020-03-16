@@ -67,7 +67,6 @@
   <component name="PhpDebugGeneral" listening_started="true" />
   <component name="PhpServers">
     <servers>
-      <server host="aspen.demo" id="ee91db44-1a35-4b87-986d-da53797cd41b" name="aspen.demo" />
       <server host="basinlibraries.localhost" id="aea1563c-25bb-4c37-8e5e-b1ec20a28931" name="basinlibraries.localhost" />
       <server host="uintah.basinlibraries.localhost" id="92185654-48bf-4aad-9995-a95e5b551f71" name="uintah.basinlibraries.localhost" />
       <server host="duchesne.basinlibraries.localhost" id="ebc6cf94-867c-4f36-a999-0510a7b96e97" name="duchesne.basinlibraries.localhost" />
@@ -92,7 +91,6 @@
       </server>
     </servers>
   </component>
-  <component name="PhpWebServerValidation" path_to_validation_script="C:\web\aspen-discovery\code\web" selected_validation_type="LOCAL" web_path_to_validation_script="http://aspen.demo" />
   <component name="PhpWorkspaceProjectConfiguration" interpreter_name="PHP 7.1">
     <include_path>
       <path value="C:/Bitnami/wampstack-7.3.3-1/php" />
@@ -198,76 +196,12 @@
     <configuration />
   </component>
   <component name="TaskManager">
-    <task active="true" id="Default" summary="Default task">
+    <task active="false" id="Default" summary="Default task">
       <changelist id="64b30edf-4a70-42c6-b752-8518712fb864" name="Default Changelist" comment="" />
       <created>1547769580133</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1547769580133</updated>
-      <workItem from="1547769582682" duration="1122000" />
-      <workItem from="1547843317644" duration="8850000" />
-      <workItem from="1548256258326" duration="55527000" />
-      <workItem from="1550333588484" duration="3079000" />
-      <workItem from="1550521171479" duration="36000" />
-      <workItem from="1550522749781" duration="36596000" />
-      <workItem from="1551736550406" duration="1860000" />
-      <workItem from="1551760873497" duration="105456000" />
-      <workItem from="1552434510365" duration="30613000" />
-      <workItem from="1552853538384" duration="17957000" />
-      <workItem from="1552923349913" duration="24067000" />
-      <workItem from="1552968273467" duration="35285000" />
-      <workItem from="1553139995071" duration="164318000" />
-      <workItem from="1553876772046" duration="8234000" />
-      <workItem from="1554209908222" duration="27808000" />
-      <workItem from="1554469942897" duration="28017000" />
-      <workItem from="1554829125457" duration="43575000" />
-      <workItem from="1554940325735" duration="34977000" />
-      <workItem from="1555332992227" duration="46832000" />
-      <workItem from="1555443253379" duration="104805000" />
-      <workItem from="1556209018321" duration="34751000" />
-      <workItem from="1556674597766" duration="140309000" />
-      <workItem from="1558007221797" duration="50350000" />
-      <workItem from="1558195065290" duration="66000" />
-      <workItem from="1558195362463" duration="27831000" />
-      <workItem from="1558466222680" duration="78552000" />
-      <workItem from="1559142568493" duration="216258000" />
-      <workItem from="1560174705168" duration="41741000" />
-      <workItem from="1560342337599" duration="198530000" />
-      <workItem from="1561377984489" duration="173712000" />
-      <workItem from="1562801945055" duration="174844000" />
-      <workItem from="1563803858236" duration="34880000" />
-      <workItem from="1564078728125" duration="5065000" />
-      <workItem from="1564173088696" duration="39084000" />
-      <workItem from="1565050081723" duration="36899000" />
-      <workItem from="1565272499951" duration="64627000" />
-      <workItem from="1565834749207" duration="50548000" />
-      <workItem from="1566134130854" duration="149972000" />
-      <workItem from="1567188395973" duration="59371000" />
-      <workItem from="1568079789633" duration="17785000" />
-      <workItem from="1568248313782" duration="31141000" />
-      <workItem from="1568748246354" duration="32356000" />
-      <workItem from="1569327059428" duration="120342000" />
-      <workItem from="1570714047783" duration="6696000" />
-      <workItem from="1570800733109" duration="23498000" />
-      <workItem from="1570901205286" duration="72616000" />
-      <workItem from="1571426989275" duration="52868000" />
-      <workItem from="1572014772654" duration="2093000" />
-      <workItem from="1572039459878" duration="34132000" />
-      <workItem from="1572610832980" duration="65933000" />
-      <workItem from="1573218362294" duration="85001000" />
-      <workItem from="1573823274236" duration="17408000" />
-      <workItem from="1574009622710" duration="75141000" />
-      <workItem from="1574457053082" duration="1817000" />
-      <workItem from="1574650741738" duration="89277000" />
-      <workItem from="1575551072665" duration="112184000" />
-      <workItem from="1576501617057" duration="117873000" />
-      <workItem from="1581549131747" duration="55119000" />
-      <workItem from="1581783694636" duration="20185000" />
-      <workItem from="1582037799927" duration="5746000" />
-      <workItem from="1582148209122" duration="4991000" />
-      <workItem from="1583416173444" duration="11242000" />
-      <workItem from="1583778154632" duration="11856000" />
-      <workItem from="1584018068925" duration="16863000" />
     </task>
     <servers />
   </component>
@@ -752,6 +686,11 @@
           <url>file://$PROJECT_DIR$/services/Admin/DBMaintenance.php</url>
           <line>2337</line>
           <option name="timeStamp" value="3180" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="php">
+          <url>file://$PROJECT_DIR$/sys/LibraryLocation/Location.php</url>
+          <line>1188</line>
+          <option name="timeStamp" value="3190" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/interface/themes/responsive/js/aspen/searches.js</url>
