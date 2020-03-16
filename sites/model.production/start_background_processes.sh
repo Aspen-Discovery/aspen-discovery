@@ -9,10 +9,10 @@ echo "Starting koha export"
 cd /usr/local/aspen-discovery/code/koha_export; java -jar koha_export.jar model.production &
 sleep 5
 echo "Starting Overdrive export"
-cd /usr/local/aspen-discovery/code/overdrive_api_extract; java -jar overdrive_extract.jar model.production &
+cd /usr/local/aspen-discovery/code/overdrive_extract; java -jar overdrive_extract.jar model.production &
 sleep 5
 echo "Starting Cloud Library export"
-cd /usr/local/aspen-discovery/code/cloudlibrary_export; java -jar cloud_library_export.jar model.production &
+cd /usr/local/aspen-discovery/code/cloud_library_export; java -jar cloud_library_export.jar model.production &
 sleep 5
 echo "Starting User List Indexing"
 cd /usr/local/aspen-discovery/code/user_list_indexer; java -jar user_list_indexer.jar model.production &

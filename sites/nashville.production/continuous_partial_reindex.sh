@@ -59,7 +59,7 @@ do
 
 	#export from overdrive
 	#echo "Starting OverDrive Extract - `date`" >> ${OUTPUT_FILE}
-	cd /usr/local/aspen-discovery/vufind/overdrive_api_extract/
+	cd /usr/local/aspen-discovery/vufind/overdrive_extract/
 	nice -n -10 java -server -XX:+UseG1GC -jar overdrive_extract.jar ${PIKASERVER} >> ${OUTPUT_FILE}
 
 	#process the export from CARL.X to give Pika what it needs

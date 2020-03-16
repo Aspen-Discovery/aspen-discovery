@@ -1,6 +1,7 @@
 package com.turning_leaf_technologies.sideloading;
 
 import com.turning_leaf_technologies.config.ConfigUtil;
+import com.turning_leaf_technologies.file.JarUtil;
 import com.turning_leaf_technologies.grouping.BaseMarcRecordGrouper;
 import com.turning_leaf_technologies.grouping.RemoveRecordFromWorkResult;
 import com.turning_leaf_technologies.grouping.SideLoadedRecordGrouper;
@@ -52,9 +53,14 @@ public class SideLoadingMain {
 			serverName = args[0];
 		}
 
-		logger = LoggingUtil.setupLogging(serverName, "side_loading");
+		String processName = "side_loading";
+		logger = LoggingUtil.setupLogging(serverName, processName);
 
-		//noinspection InfiniteLoopStatement
+		//Get the checksum of the JAR when it was started so we can stop if it has changed.
+		long myChecksumAtStart = JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar");
+		long reindexerChecksumAtStart = JarUtil.getChecksumForJar(logger, "reindexer", "../reindexer/reindexer.jar");
+		long recordGroupingChecksumAtStart = JarUtil.getChecksumForJar(logger, "record_grouping", "../record_grouping/record_grouping.jar");
+
 		while (true) {
 			Date startTime = new Date();
 			logger.info(startTime.toString() + ": Starting Side Load Export");
@@ -99,6 +105,16 @@ public class SideLoadingMain {
 
 			disconnectDatabase(aspenConn);
 
+			//Check to see if the jar has changes, and if so quit
+			if (myChecksumAtStart != JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar")){
+				break;
+			}
+			if (reindexerChecksumAtStart != JarUtil.getChecksumForJar(logger, "reindexer", "../reindexer/reindexer.jar")){
+				break;
+			}
+			if (recordGroupingChecksumAtStart != JarUtil.getChecksumForJar(logger, "record_grouping", "../record_grouping/record_grouping.jar")){
+				break;
+			}
 			//Pause 30 minutes before running the next export
 			try {
 				System.gc();

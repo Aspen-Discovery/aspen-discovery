@@ -11,6 +11,7 @@ import java.util.Date;
 
 import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
+import com.turning_leaf_technologies.file.JarUtil;
 import com.turning_leaf_technologies.grouping.RemoveRecordFromWorkResult;
 import com.turning_leaf_technologies.indexing.IlsExtractLogEntry;
 import com.turning_leaf_technologies.indexing.IndexingProfile;
@@ -82,8 +83,13 @@ public class SierraExportAPIMain {
 		}
 
 		String profileToLoad = "ils";
-		String processName = "sierra_export";
+		String processName = "sierra_export_api";
 		logger = LoggingUtil.setupLogging(serverName, processName);
+
+		//Get the checksum of the JAR when it was started so we can stop if it has changed.
+		long myChecksumAtStart = JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar");
+		long reindexerChecksumAtStart = JarUtil.getChecksumForJar(logger, "reindexer", "../reindexer/reindexer.jar");
+		long recordGroupingChecksumAtStart = JarUtil.getChecksumForJar(logger, "record_grouping", "../record_grouping/record_grouping.jar");
 
 		while (true) {
 			Date startTime = new Date();
@@ -235,6 +241,16 @@ public class SierraExportAPIMain {
 			}
 
 			if (extractSingleRecord){
+				break;
+			}
+			//Check to see if the jar has changes, and if so quit
+			if (myChecksumAtStart != JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar")){
+				break;
+			}
+			if (reindexerChecksumAtStart != JarUtil.getChecksumForJar(logger, "reindexer", "../reindexer/reindexer.jar")){
+				break;
+			}
+			if (recordGroupingChecksumAtStart != JarUtil.getChecksumForJar(logger, "record_grouping", "../record_grouping/record_grouping.jar")){
 				break;
 			}
 			//Pause before running the next export (longer if we didn't get any actual changes)
