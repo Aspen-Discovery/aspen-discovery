@@ -71,15 +71,22 @@ public class SierraExportAPIMain {
 				System.out.println("You must provide the server name as the first argument.");
 				System.exit(1);
 			}
+			String extractSingleWorkResponse = StringUtils.getInputFromCommandLine("Process a single work? (y/N)");
+			if (extractSingleWorkResponse.equalsIgnoreCase("y")) {
+				extractSingleRecord = true;
+			}
 		} else {
 			serverName = args[0];
 			if (args.length > 1){
-				if (args[1].equals("singleRecord")){
+				if (args[1].equalsIgnoreCase("singleWork") || args[1].equals("singleRecord")){
 					extractSingleRecord = true;
 				}
-				String recordToExtract = StringUtils.getInputFromCommandLine("Enter the id of the record to extract, do not include the .b or the check digit");
-				allBibsToUpdate.add(recordToExtract);
 			}
+		}
+
+		if (extractSingleRecord){
+			String recordToExtract = StringUtils.getInputFromCommandLine("Enter the id of the record to extract, do not include the .b or the check digit for Sierra/Millennium systems");
+			allBibsToUpdate.add(recordToExtract);
 		}
 
 		String profileToLoad = "ils";
@@ -1596,7 +1603,6 @@ public class SierraExportAPIMain {
 
 					Long volumeId = getItemsForVolumeRS.getLong("volume_record_id");
 					String existingItems = itemsForVolume.get(volumeId);
-					//noinspection Java8MapApi
 					if (existingItems == null){
 						itemsForVolume.put(volumeId, ".i" + itemRecordNum + getCheckDigit(itemRecordNum));
 					}else{

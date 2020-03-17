@@ -202,14 +202,18 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 			}
 		}
 
-		if (checkRecordForLargePrint && (itemTypeToFormat.size() == 1) && itemTypeToFormat.values().iterator().next().equalsIgnoreCase("Book")){
-			LinkedHashSet<String> printFormats = getFormatsFromBib(record, recordInfo);
-			if (printFormats.size() == 1 && printFormats.iterator().next().equalsIgnoreCase("LargePrint")){
-				String translatedFormat = translateValue("format", "LargePrint", recordInfo.getRecordIdentifier());
-				for (String itemType : itemTypeToFormat.keySet()){
-					itemTypeToFormat.put(itemType, translatedFormat);
+		try {
+			if (checkRecordForLargePrint && (itemTypeToFormat.size() == 1) && itemTypeToFormat.values().iterator().next().equalsIgnoreCase("Book")) {
+				LinkedHashSet<String> printFormats = getFormatsFromBib(record, recordInfo);
+				if (printFormats.size() == 1 && printFormats.iterator().next().equalsIgnoreCase("LargePrint")) {
+					String translatedFormat = translateValue("format", "LargePrint", recordInfo.getRecordIdentifier());
+					for (String itemType : itemTypeToFormat.keySet()) {
+						itemTypeToFormat.put(itemType, translatedFormat);
+					}
 				}
 			}
+		}catch (Exception e){
+			logger.error("Error checking record for large print");
 		}
 
 		if (itemTypeToFormat.size() == 0 || itemTypeToFormat.get(mostPopularIType) == null || itemTypeToFormat.get(mostPopularIType).length() == 0){

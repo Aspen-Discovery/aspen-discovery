@@ -32,7 +32,7 @@ public class ExtractOverDriveInfoMain {
 		} else {
 			serverName = args[0];
 			if (args.length > 1){
-				if (args[1].equalsIgnoreCase("singleWork")){
+				if (args[1].equalsIgnoreCase("singleWork") || args[1].equalsIgnoreCase("singleRecord")){
 					extractSingleWork = true;
 				}
 			}
