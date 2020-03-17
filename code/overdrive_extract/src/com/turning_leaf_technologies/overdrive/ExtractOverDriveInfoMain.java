@@ -16,6 +16,8 @@ public class ExtractOverDriveInfoMain {
 	private static Connection dbConn;
 
 	public static void main(String[] args) {
+		boolean extractSingleWork = false;
+		String singleWorkId = null;
 		String serverName;
 		if (args.length == 0) {
 			serverName = StringUtils.getInputFromCommandLine("Please enter the server name");
@@ -23,8 +25,20 @@ public class ExtractOverDriveInfoMain {
 				System.out.println("You must provide the server name as the first argument.");
 				System.exit(1);
 			}
+			String extractSingleWorkResponse = StringUtils.getInputFromCommandLine("Process a single work? (y/N)");
+			if (extractSingleWorkResponse.equalsIgnoreCase("y")) {
+				extractSingleWork = true;
+			}
 		} else {
 			serverName = args[0];
+			if (args.length > 1){
+				if (args[1].equalsIgnoreCase("singleWork")){
+					extractSingleWork = true;
+				}
+			}
+		}
+		if (extractSingleWork) {
+			singleWorkId = StringUtils.getInputFromCommandLine("Enter the id of the title to extract");
 		}
 		String processName = "overdrive_extract";
 		Logger logger = LoggingUtil.setupLogging(serverName, processName);
@@ -72,7 +86,12 @@ public class ExtractOverDriveInfoMain {
 			}
 
 			ExtractOverDriveInfo extractor = new ExtractOverDriveInfo();
-			int numChanges = extractor.extractOverDriveInfo(configIni, serverName, dbConn, logEntry);
+			int numChanges = 0;
+			if (extractSingleWork) {
+				numChanges = extractor.processSingleWork(singleWorkId, configIni, serverName, dbConn, logEntry);
+			}else {
+				numChanges = extractor.extractOverDriveInfo(configIni, serverName, dbConn, logEntry);
+			}
 
 			logEntry.setFinished();
 			logger.info("Finished OverDrive extraction");
@@ -91,6 +110,9 @@ public class ExtractOverDriveInfoMain {
 				break;
 			}
 			if (recordGroupingChecksumAtStart != JarUtil.getChecksumForJar(logger, "record_grouping", "../record_grouping/record_grouping.jar")){
+				break;
+			}
+			if (extractSingleWork) {
 				break;
 			}
 			//Based on number of changes, pause for a little while and then continue on so we are running continuously

@@ -224,6 +224,91 @@ class ExtractOverDriveInfo {
 		return numChanges;
 	}
 
+	int processSingleWork(String singleWorkId, Ini configIni, String serverName, Connection dbConn, OverDriveExtractLogEntry logEntry) {
+		int numChanges = 0;
+
+		this.configIni = configIni;
+		this.serverName = serverName;
+		this.dbConn = dbConn;
+		this.results = logEntry;
+
+		long extractStartTime = new Date().getTime();
+		try {
+			initOverDriveExtract(dbConn, logEntry);
+
+			try {
+				if (clientSecret == null || clientKey == null || accountId == null || clientSecret.length() == 0 || clientKey.length() == 0 || accountId.length() == 0) {
+					logEntry.addNote("Did not find correct configuration in config.ini, not loading overdrive titles");
+				} else {
+					//Load products from database this lets us know what is new, what has been deleted, and what has been updated
+					if (!loadProductsFromDatabase()) {
+						return 0;
+					}
+
+					singleWorkId = singleWorkId.toLowerCase();
+					OverDriveRecordInfo recordInfo = new OverDriveRecordInfo();
+					recordInfo.setId(singleWorkId);
+
+					OverDriveDBInfo dbInfo = existingProductsInAspen.get(singleWorkId);
+					if (dbInfo != null) {
+						recordInfo.setDatabaseId(dbInfo.getDbId());
+
+						if (dbInfo.isDeleted()){
+							logger.error("Record " + singleWorkId + " has been marked as deleted in the database");
+						}
+					}
+
+					//Get a list of all the advantage collections for the accouint
+					if (loadAccountInformationFromAPI()) {
+
+						//Call API for the product to figure out what collections the record belongs to
+						for (AdvantageCollectionInfo collectionInfo: allAdvantageCollections) {
+							//TODO: Do we need to validate this before updating metadata and availability?
+							recordInfo.addCollection(collectionInfo);
+						}
+
+						//Update the product in the database
+						updateOverDriveMetaData(recordInfo);
+						updateOverDriveAvailability(recordInfo, recordInfo.getDatabaseId());
+
+						//Reindex
+						String groupedWorkId = getRecordGroupingProcessor().processOverDriveRecord(recordInfo.getId());
+						getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
+
+						numChanges++;
+					}else {
+						logger.error("Unable to load account information");
+					}
+				}
+
+				logger.info("Processed " + numChanges);
+			}catch (SocketTimeoutException toe){
+				logger.info("Timeout while loading information from OverDrive, aborting");
+				logEntry.addNote("Timeout while loading information from OverDrive, aborting");
+				errorsWhileLoadingProducts = true;
+			}catch (Exception e){
+				logger.error("Error while loading information from OverDrive, aborting");
+				logEntry.addNote("Error while loading information from OverDrive, aborting");
+				errorsWhileLoadingProducts = true;
+			}
+
+			logger.info("Processed " + numChanges);
+
+			if (groupedWorkIndexer != null) {
+				groupedWorkIndexer.finishIndexingFromExtract(logEntry);
+				recordGroupingProcessorSingleton = null;
+				groupedWorkIndexer = null;
+			}
+		} catch (SQLException e) {
+			// handle any errors
+			logger.error("Error initializing overdrive extraction", e);
+			results.addNote("Error initializing overdrive extraction " + e.toString());
+			results.incErrors();
+			results.saveResults();
+		}
+		return numChanges;
+	}
+
 	private void processRecordsToReload(OverDriveExtractLogEntry logEntry) {
 		try {
 			PreparedStatement getRecordsToReloadStmt = dbConn.prepareStatement("SELECT * from record_identifiers_to_reload WHERE processed = 0 and type='overdrive'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
@@ -590,7 +675,81 @@ class ExtractOverDriveInfo {
 			logger.info("Error loading overdrive titles " + libraryInfoResponse.getMessage());
 			return false;
 		}
+	}
 
+	/**
+	 * Get all of the products that are currently in OverDrive so we can determine what needs to be deleted.
+	 * We just get minimal information to start, the id and the list of collections that the product is valid for.
+	 *
+	 * @return boolean whether or not errors occurred
+	 * @throws SocketTimeoutException Error if we timeout getting data
+	 */
+	private boolean loadAccountInformationFromAPI() throws SocketTimeoutException {
+		WebServiceResponse libraryInfoResponse = callOverDriveURL("https://api.overdrive.com/v1/libraries/" + accountId);
+		if (libraryInfoResponse.getResponseCode() == 200 && libraryInfoResponse.getMessage() != null){
+			JSONObject libraryInfo = libraryInfoResponse.getJSONResponse();
+			try {
+				AdvantageCollectionInfo mainCollectionInfo = null;
+
+				mainCollectionInfo = new AdvantageCollectionInfo();
+				mainCollectionInfo.setAdvantageId(-1);
+				mainCollectionInfo.setName("Shared OverDrive Collection");
+				mainCollectionInfo.setCollectionToken(libraryInfo.getString("collectionToken"));
+				mainCollectionInfo.setAspenLibraryId(-1);
+				allAdvantageCollections.add(mainCollectionInfo);
+
+				//Get a list of advantage collections
+				if (libraryInfo.getJSONObject("links").has("advantageAccounts")) {
+					WebServiceResponse webServiceResponse = callOverDriveURL(libraryInfo.getJSONObject("links").getJSONObject("advantageAccounts").getString("href"));
+					if (webServiceResponse.getResponseCode() == 200) {
+						JSONObject advantageInfo = webServiceResponse.getJSONResponse();
+						if (advantageInfo.has("advantageAccounts")) {
+							JSONArray advantageAccounts = advantageInfo.getJSONArray("advantageAccounts");
+							for (int i = 0; i < advantageAccounts.length(); i++) {
+								JSONObject curAdvantageAccount = advantageAccounts.getJSONObject(i);
+
+								AdvantageCollectionInfo collectionInfo = null;
+								collectionInfo = new AdvantageCollectionInfo();
+								collectionInfo.setAdvantageId(curAdvantageAccount.getInt("id"));
+								collectionInfo.setName(curAdvantageAccount.getString("name"));
+								collectionInfo.setCollectionToken(curAdvantageAccount.getString("collectionToken"));
+								for (Long curLibraryId : libToOverDriveAPIKeyMap.keySet()) {
+									String collectionToken = libToOverDriveAPIKeyMap.get(curLibraryId);
+									if (collectionToken.equals(collectionInfo.getCollectionToken())) {
+										collectionInfo.setAspenLibraryId(curLibraryId);
+										break;
+									}
+								}
+								allAdvantageCollections.add(collectionInfo);
+							}
+						}
+					} else {
+						results.addNote("The API indicate that the library has advantage accounts, but none were returned from " + libraryInfo.getJSONObject("links").getJSONObject("advantageAccounts").getString("href"));
+						if (webServiceResponse.getMessage() != null) {
+							results.addNote(webServiceResponse.getMessage());
+						}
+						results.incErrors();
+					}
+				}
+				results.setNumProducts(allProductsInOverDrive.size());
+				return true;
+			} catch (SocketTimeoutException toe){
+				throw toe;
+			} catch (Exception e) {
+				results.addNote("error loading information from OverDrive API " + e.toString());
+				results.incErrors();
+				logger.info("Error loading overdrive accoungs", e);
+				return false;
+			}
+		}else{
+			results.addNote("Unable to load library information for library " + accountId);
+			if (libraryInfoResponse.getMessage() != null){
+				results.addNote(libraryInfoResponse.getMessage());
+			}
+			results.incErrors();
+			logger.info("Error loading overdrive accounts " + libraryInfoResponse.getMessage());
+			return false;
+		}
 	}
 
 	private void loadProductsFromUrl(AdvantageCollectionInfo collectionInfo, String mainProductUrl, int loadType) throws JSONException, SocketTimeoutException {
