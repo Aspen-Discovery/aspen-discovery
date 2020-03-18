@@ -14,6 +14,7 @@ abstract class DataObject
 {
 	public $__table;
 	public $__primaryKey = 'id';
+	public $__displayNameColumn = null;
 	protected $__N;
 	/** @var PDOStatement */
 	private $__queryStmt;
@@ -33,6 +34,18 @@ abstract class DataObject
 
 	function getNumericColumnNames(){
 		return [];
+	}
+
+	function __toString(){
+		$stringProperty = $this->__primaryKey;
+		if ($this->__displayNameColumn != null){
+			$stringProperty = $this->__displayNameColumn;
+		}
+		if ($this->$stringProperty == null){
+			return 'new ' . get_class($this);
+		}else{
+			return $this->$stringProperty;
+		}
 	}
 
 	public function find($fetchFirst = false){
@@ -70,7 +83,11 @@ abstract class DataObject
 
 	public function fetch(){
 		$this->__fetchingFromDB = true;
-		$return = $this->__queryStmt->fetch(PDO::FETCH_INTO);
+		if ($this->__queryStmt == null){
+			return null;
+		}else{
+			$return = $this->__queryStmt->fetch(PDO::FETCH_INTO);
+		}
 		$this->clearRuntimeDataVariables();
 		$this->__fetchingFromDB = false;
 		return $return;

@@ -737,6 +737,25 @@ function getIndexingUpdates()
 				)'
 			]
 		],
+
+		'unknown_language_handling' => [
+			'title' => 'Unknown Language Handling',
+			'description' => 'Add options to handle unknown and undetermined languages',
+			'sql' => [
+				"ALTER TABLE indexing_profiles ADD COLUMN treatUnknownLanguageAs VARCHAR(50) DEFAULT 'English'",
+				"ALTER TABLE indexing_profiles ADD COLUMN treatUndeterminedLanguageAs VARCHAR(50) DEFAULT 'English'",
+				"ALTER TABLE sideloads ADD COLUMN treatUnknownLanguageAs VARCHAR(50) DEFAULT 'English'",
+				"ALTER TABLE sideloads ADD COLUMN treatUndeterminedLanguageAs VARCHAR(50) DEFAULT 'English'",
+			]
+		],
+
+		'large_print_indexing' => [
+			'title' => 'Large Print Indexing',
+			'description' => 'Add an option for whether or not the record should be checked for large print subjects',
+			'sql' => [
+				'ALTER TABLE indexing_profiles ADD COLUMN checkRecordForLargePrint TINYINT(1) DEFAULT 0'
+			]
+		],
 	);
 }
 

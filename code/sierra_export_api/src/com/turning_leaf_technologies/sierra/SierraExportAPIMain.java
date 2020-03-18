@@ -11,6 +11,7 @@ import java.util.Date;
 
 import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
+import com.turning_leaf_technologies.file.JarUtil;
 import com.turning_leaf_technologies.grouping.RemoveRecordFromWorkResult;
 import com.turning_leaf_technologies.indexing.IlsExtractLogEntry;
 import com.turning_leaf_technologies.indexing.IndexingProfile;
@@ -70,20 +71,32 @@ public class SierraExportAPIMain {
 				System.out.println("You must provide the server name as the first argument.");
 				System.exit(1);
 			}
+			String extractSingleWorkResponse = StringUtils.getInputFromCommandLine("Process a single work? (y/N)");
+			if (extractSingleWorkResponse.equalsIgnoreCase("y")) {
+				extractSingleRecord = true;
+			}
 		} else {
 			serverName = args[0];
 			if (args.length > 1){
-				if (args[1].equals("singleRecord")){
+				if (args[1].equalsIgnoreCase("singleWork") || args[1].equals("singleRecord")){
 					extractSingleRecord = true;
 				}
-				String recordToExtract = StringUtils.getInputFromCommandLine("Enter the id of the record to extract, do not include the .b or the check digit");
-				allBibsToUpdate.add(recordToExtract);
 			}
 		}
 
+		if (extractSingleRecord){
+			String recordToExtract = StringUtils.getInputFromCommandLine("Enter the id of the record to extract, do not include the .b or the check digit for Sierra/Millennium systems");
+			allBibsToUpdate.add(recordToExtract);
+		}
+
 		String profileToLoad = "ils";
-		String processName = "sierra_export";
+		String processName = "sierra_export_api";
 		logger = LoggingUtil.setupLogging(serverName, processName);
+
+		//Get the checksum of the JAR when it was started so we can stop if it has changed.
+		long myChecksumAtStart = JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar");
+		long reindexerChecksumAtStart = JarUtil.getChecksumForJar(logger, "reindexer", "../reindexer/reindexer.jar");
+		long recordGroupingChecksumAtStart = JarUtil.getChecksumForJar(logger, "record_grouping", "../record_grouping/record_grouping.jar");
 
 		while (true) {
 			Date startTime = new Date();
@@ -235,6 +248,16 @@ public class SierraExportAPIMain {
 			}
 
 			if (extractSingleRecord){
+				break;
+			}
+			//Check to see if the jar has changes, and if so quit
+			if (myChecksumAtStart != JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar")){
+				break;
+			}
+			if (reindexerChecksumAtStart != JarUtil.getChecksumForJar(logger, "reindexer", "../reindexer/reindexer.jar")){
+				break;
+			}
+			if (recordGroupingChecksumAtStart != JarUtil.getChecksumForJar(logger, "record_grouping", "../record_grouping/record_grouping.jar")){
 				break;
 			}
 			//Pause before running the next export (longer if we didn't get any actual changes)
@@ -1580,7 +1603,6 @@ public class SierraExportAPIMain {
 
 					Long volumeId = getItemsForVolumeRS.getLong("volume_record_id");
 					String existingItems = itemsForVolume.get(volumeId);
-					//noinspection Java8MapApi
 					if (existingItems == null){
 						itemsForVolume.put(volumeId, ".i" + itemRecordNum + getCheckDigit(itemRecordNum));
 					}else{

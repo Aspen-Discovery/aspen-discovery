@@ -7,7 +7,12 @@ class TranslationMapValue extends DataObject{
 	public $value;
 	public $translation;
 
-    static function getObjectStructure(){
+	public function __toString()
+	{
+		return "$this->value => $this->translation";
+	}
+
+	static function getObjectStructure(){
 		$structure = array(
 			'id' => array('property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id within the database'),
 			'translationMapId' => array('property' => 'translationMapId', 'type' => 'foreignKey', 'label' => 'Translation Map Id', 'description' => 'The Translation Map this is associated with'),

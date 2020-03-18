@@ -64,6 +64,15 @@ AspenDiscovery.Admin = (function(){
 				$("#propertyRowmaterialsRequestFormFields").hide()
 			}
 			return false;
-		}
+		},
+		validateCompare: function() {
+			let selectedObjects = $('.selectedObject:checked');
+			if (selectedObjects.length === 2){
+				return true;
+			}else{
+				AspenDiscovery.showMessage("Error", "Please select only two objects to compare");
+				return false;
+			}
+		},
 	};
 }(AspenDiscovery.Admin || {}));

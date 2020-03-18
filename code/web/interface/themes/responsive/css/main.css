@@ -10864,4 +10864,8 @@ fieldset[disabled] .btn-masquerade.active {
   font-weight: bolder;
   text-align: center;
 }
+.compareChanged {
+  background-color: #ffc9c9;
+  color: #111111;
+}
 /*# sourceMappingURL=main.css.map */

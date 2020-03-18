@@ -9,7 +9,7 @@ echo "Starting koha export"
 cd /usr/local/aspen-discovery/code/koha_export; java -jar koha_export.jar basinlibraries.production &
 sleep 5
 echo "Starting Overdrive export"
-cd /usr/local/aspen-discovery/code/overdrive_api_extract; java -jar overdrive_extract.jar basinlibraries.production &
+cd /usr/local/aspen-discovery/code/overdrive_extract; java -jar overdrive_extract.jar basinlibraries.production &
 sleep 5
 echo "Starting rbdigital export"
 cd /usr/local/aspen-discovery/code/rbdigital_export; java -jar rbdigital_export.jar basinlibraries.production &

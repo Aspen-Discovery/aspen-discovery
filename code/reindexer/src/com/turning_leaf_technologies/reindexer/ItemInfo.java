@@ -35,6 +35,7 @@ public class ItemInfo {
 
 	private HashMap<String, ScopingInfo> scopingInfo = new HashMap<>();
 	private String shelfLocationCode;
+	private Long autoReindexTime = null;
 
 	public void setRecordInfo(RecordInfo recordInfo) {
 		this.recordInfo = recordInfo;
@@ -332,5 +333,13 @@ public class ItemInfo {
 
 	void setLastCheckinDate(Date lastCheckinDate) {
 		this.lastCheckinDate = lastCheckinDate;
+	}
+
+	void setAutoReindexTime(Long reindexTime) {
+		this.autoReindexTime = reindexTime;
+	}
+
+	Long getAutoReindexTime(){
+		return autoReindexTime;
 	}
 }

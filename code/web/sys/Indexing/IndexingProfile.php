@@ -9,6 +9,7 @@ require_once ROOT_DIR . '/sys/Indexing/SierraExportFieldMapping.php';
 class IndexingProfile extends DataObject
 {
 	public $__table = 'indexing_profiles';    // table name
+	public $__displayNameColumn = 'name';
 
 	public $id;
 	public $name;
@@ -23,10 +24,13 @@ class IndexingProfile extends DataObject
 	public $recordDriver;
 	public $catalogDriver;
 	public $recordUrlComponent;
+	public $treatUnknownLanguageAs;
+	public $treatUndeterminedLanguageAs;
 	public $formatSource;
 	public $specifiedFormat;
 	public $specifiedFormatCategory;
 	public $specifiedFormatBoost;
+	public $checkRecordForLargePrint;
 	public $recordNumberTag;
 	public $recordNumberSubfield;
 	public $recordNumberPrefix;
@@ -116,6 +120,9 @@ class IndexingProfile extends DataObject
 			'recordNumberSubfield' => array('property' => 'recordNumberSubfield', 'type' => 'text', 'label' => 'Record Number Subfield', 'maxLength' => 1, 'description' => 'The subfield where the record number is stored', 'required' => true, 'default' => 'a'),
 			'recordNumberPrefix' => array('property' => 'recordNumberPrefix', 'type' => 'text', 'label' => 'Record Number Prefix', 'maxLength' => 10, 'description' => 'A prefix to identify the bib record number if multiple MARC tags exist'),
 
+			'treatUnknownLanguageAs' => ['property' => 'treatUnknownLanguageAs', 'type'=>'text', 'label' => 'Treat Unknown Language As', 'maxLength' => 50, 'description' => 'Records with an Unknown Language will use this language instead.  Leave blank for Unknown', 'default' => 'English'],
+			'treatUndeterminedLanguageAs' => ['property' => 'treatUndeterminedLanguageAs', 'type'=>'text', 'label' => 'Treat Undetermined Language As', 'maxLength' => 50, 'description' => 'Records with an Undetermined Language will use this language instead.  Leave blank for Unknown', 'default' => 'English'],
+
 			'itemSection' => ['property' => 'itemSection', 'type' => 'section', 'label' => 'Item Information', 'hideInLists' => true, 'properties' => [
 				'suppressItemlessBibs' => array('property' => 'suppressItemlessBibs', 'type' => 'checkbox', 'label' => 'Suppress Itemless Bibs', 'description' => 'Whether or not Itemless Bibs can be suppressed'),
 				'itemTag' => array('property' => 'itemTag', 'type' => 'text', 'label' => 'Item Tag', 'maxLength' => 3, 'description' => 'The MARC tag where items can be found'),
@@ -162,6 +169,7 @@ class IndexingProfile extends DataObject
 				'specifiedFormat' => array('property' => 'specifiedFormat', 'type' => 'text', 'label' => 'Specified Format', 'maxLength' => 50, 'description' => 'The format to set when using a defined format', 'required' => false, 'default' => ''),
 				'specifiedFormatCategory' => array('property' => 'specifiedFormatCategory', 'type' => 'enum', 'values' => array('', 'Books' => 'Books', 'eBook' => 'eBook', 'Audio Books' => 'Audio Books', 'Movies' => 'Movies', 'Music' => 'Music', 'Other' => 'Other'), 'label' => 'Specified Format Category', 'maxLength' => 50, 'description' => 'The format category to set when using a defined format', 'required' => false, 'default' => ''),
 				'specifiedFormatBoost' => array('property' => 'specifiedFormatBoost', 'type' => 'integer', 'label' => 'Specified Format Boost', 'maxLength' => 50, 'description' => 'The format boost to set when using a defined format', 'required' => false, 'default' => '8'),
+				'checkRecordForLargePrint' => array('property' => 'checkRecordForLargePrint', 'type' => 'checkbox', 'label' => 'Check Record for Large Print', 'default' => false, 'description' => 'Check metadata within the record to see if a book is large print'),
 				'formatMap' => array(
 					'property' => 'formatMap',
 					'type' => 'oneToMany',

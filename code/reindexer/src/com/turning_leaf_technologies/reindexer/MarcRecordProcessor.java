@@ -28,12 +28,13 @@ abstract class MarcRecordProcessor {
 	String specifiedFormat;
 	String specifiedFormatCategory;
 	int specifiedFormatBoost;
+	String treatUnknownLanguageAs = null;
+	String treatUndeterminedLanguageAs = null;
 
 	MarcRecordProcessor(GroupedWorkIndexer indexer, Logger logger) {
 		this.indexer = indexer;
 		this.logger = logger;
 	}
-
 
 	/**
 	 * Load MARC record from disk based on identifier
@@ -808,7 +809,7 @@ abstract class MarcRecordProcessor {
 				if (curField.getIndicator2() == '1'){
 					Subfield subFieldB = curField.getSubfield('b');
 					if (subFieldB != null){
-						publisher.add(subFieldB.getData());
+						publisher.add(StringUtils.trimTrailingPunctuation(subFieldB.getData()));
 					}
 				}
 			}
@@ -825,6 +826,11 @@ abstract class MarcRecordProcessor {
 		boolean isFirstLanguage = true;
 		for (String language : languages){
 			String translatedLanguage = indexer.translateSystemValue("language", language, identifier);
+			if (treatUnknownLanguageAs != null && treatUnknownLanguageAs.length() > 0 && translatedLanguage.equals("Unknown")){
+				translatedLanguage = treatUnknownLanguageAs;
+			}else if (treatUndeterminedLanguageAs != null && treatUndeterminedLanguageAs.length() > 0 && translatedLanguage.equals("Undetermined")){
+				translatedLanguage = treatUndeterminedLanguageAs;
+			}
 			translatedLanguages.add(translatedLanguage);
 			if (isFirstLanguage){
 				for (RecordInfo ilsRecord : ilsRecords){

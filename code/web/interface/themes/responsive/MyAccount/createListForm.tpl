@@ -18,6 +18,18 @@
 			<div class="col-sm-9">
 				<input type='checkbox' name='public' id='public' data-on-text="Public" data-off-text="Private"/>
 			</div>
+
+		</div>
+		<div class="form-group">
+			<div class="col-sm-9 col-sm-offset-3">
+				<div class="alert alert-info">
+					{if !$publicListWillBeIndexed}
+						{translate text="nonindexed_public_list_description" defaultText="Public lists can be shared with other people by copying the URL of the list or using the Email List button when viewing the list."}
+					{else}
+						{translate text="indexed_public_list_description" defaultText="This list will be shown within search results if it has at least 3 titles on it. Public lists can also be shared with other people by copying the URL of the list or using the Email List button when viewing the list."}
+					{/if}
+				</div>
+			</div>
 		</div>
 	  <input type="hidden" name="recordId" value="{$recordId}">
 	</form>

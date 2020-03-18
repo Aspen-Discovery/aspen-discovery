@@ -11,6 +11,7 @@ require_once ROOT_DIR . '/sys/Grouping/GroupedWorkMoreDetails.php';
 class GroupedWorkDisplaySetting extends DataObject
 {
 	public $__table = 'grouped_work_display_settings';
+	public $__displayNameColumn = 'name';
 	public $id;
 	public $name;
 
@@ -112,8 +113,8 @@ class GroupedWorkDisplaySetting extends DataObject
 		unset($moreDetailsStructure['groupedWorkSettingsId']);
 
 		$structure = [
-			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id within the database'),
-			'name' => array('property' => 'name', 'type' => 'text', 'label' => 'Display Name', 'description' => 'The name of the settings', 'size' => '40', 'maxLength'=>255),
+			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id within the database', 'uniqueProperty' => true),
+			'name' => array('property' => 'name', 'type' => 'text', 'label' => 'Display Name', 'description' => 'The name of the settings', 'size' => '40', 'maxLength'=>255, 'uniqueProperty' => true),
 
 			'searchingSection' => ['property'=>'searchingSection', 'type' => 'section', 'label' =>'Searching', 'renderAsHeading' => true, 'hideInLists' => true,
 				'helpLink'=>'',
@@ -149,7 +150,7 @@ class GroupedWorkDisplaySetting extends DataObject
 					'preferSyndeticsSummary'   => array('property'=>'preferSyndeticsSummary', 'type'=>'checkbox', 'label'=>'Prefer Syndetics/Content Cafe Description', 'description'=>'Whether or not the Description loaded from an enrichment service should be preferred over the Description in the Marc Record.', 'hideInLists' => true, 'default' => 1),
 					'showSimilarAuthors'       => array('property'=>'showSimilarAuthors', 'type'=>'checkbox', 'label'=>'Show Similar Authors', 'description'=>'Whether or not Similar Authors from Novelist is shown.', 'default' => 1, 'hideInLists' => true,),
 					'showSimilarTitles'        => array('property'=>'showSimilarTitles', 'type'=>'checkbox', 'label'=>'Show Similar Titles', 'description'=>'Whether or not Similar Titles from Novelist is shown.', 'default' => 1, 'hideInLists' => true,),
-					'showGoDeeper'             => array('property'=>'showGoDeeper', 'type'=>'checkbox', 'label'=>'Show Content Enrichment (TOC, Excerpts, etc)', 'description'=>'Whether or not additional content enrichment like Table of Contents, Excerpts, etc are shown to the user', 'default' => 1, 'hideInLists' => true,),
+					//'showGoDeeper'             => array('property'=>'showGoDeeper', 'type'=>'checkbox', 'label'=>'Show Content Enrichment (TOC, Excerpts, etc)', 'description'=>'Whether or not additional content enrichment like Table of Contents, Excerpts, etc are shown to the user', 'default' => 1, 'hideInLists' => true,),
 					'showRatings'              => array('property'=>'showRatings', 'type'=>'checkbox', 'label'=>'Enable User Ratings', 'description'=>'Whether or not ratings are shown', 'hideInLists' => true, 'default' => 1),
 					'showComments'             => array('property'=>'showComments', 'type'=>'checkbox', 'label'=>'Enable User Reviews', 'description'=>'Whether or not user reviews are shown (also disables adding user reviews)', 'hideInLists' => true, 'default' => 1),
 					'hideCommentsWithBadWords' => array('property'=>'hideCommentsWithBadWords', 'type'=>'checkbox', 'label'=>'Hide Comments with Bad Words', 'description'=>'If checked, any User Lists or User Reviews with bad words are completely removed from the user interface for everyone except the original poster.', 'hideInLists' => true,),

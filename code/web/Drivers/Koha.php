@@ -540,7 +540,7 @@ class Koha extends AbstractIlsDriver
 				//Get display names that aren't stored
 				$user->_homeLocationCode = $location->code;
 				$user->_homeLocation = $location->displayName;
-				//Cleaanup
+				//Cleanup
 				$location->__destruct();
 				$location = null;
 			}
@@ -975,6 +975,7 @@ class Koha extends AbstractIlsDriver
 					$curHold['status'] .= ' until ' . date("m/d/Y", strtotime($curRow['suspend_until']));
 				}
 			} elseif ($curRow['found'] == 'W') {
+				$curHold['cancelable'] = false;
 				$curHold['status'] = "Ready to Pickup";
 			} elseif ($curRow['found'] == 'T') {
 				$curHold['status'] = "In Transit";

@@ -737,10 +737,19 @@ public class GroupedWorkSolr implements Cloneable {
 
 	private void addAvailabilityToggleValues(SolrInputDocument doc, RecordInfo curRecord, String curScopeName, HashSet<String> availabilityToggleValues) {
 		addUniqueFieldValues(doc, "availability_toggle_" + curScopeName, availabilityToggleValues);
-		for (String format : curRecord.getAllSolrFieldEscapedFormats()) {
+		HashSet<String> allFormats = curRecord.getAllSolrFieldEscapedFormats();
+		for (String format : allFormats) {
 			addUniqueFieldValues(doc, "availability_by_format_" + curScopeName + "_" + format, availabilityToggleValues);
 		}
-		for (String formatCategory : curRecord.getAllSolrFieldEscapedFormatCategories()) {
+		HashSet<String> allFormatCategories = curRecord.getAllSolrFieldEscapedFormatCategories();
+		if (allFormats.contains("eaudiobook")) {
+			allFormatCategories.add("ebook");
+		}
+		if (allFormats.contains("vox_books")) {
+			allFormatCategories.add("books");
+			allFormatCategories.add("audio_books");
+		}
+		for (String formatCategory : allFormatCategories) {
 			addUniqueFieldValues(doc, "availability_by_format_" + curScopeName + "_" + formatCategory, availabilityToggleValues);
 		}
 	}
@@ -1453,11 +1462,19 @@ public class GroupedWorkSolr implements Cloneable {
 	}
 
 	void addPublishers(Set<String> publishers) {
-		this.publishers.addAll(publishers);
+		for(String publisher : publishers) {
+			addPublisher(publisher);
+		}
 	}
 
 	void addPublisher(String publisher) {
-		this.publishers.add(publisher);
+		publisher = publisher.trim();
+		if (publisher.endsWith(",") || publisher.endsWith(";")){
+			publisher = publisher.substring(0, publisher.length() - 1).trim();
+		}
+		if (publisher.length() > 0){
+			this.publishers.add(publisher);
+		}
 	}
 
 	void addPublicationDates(Set<String> publicationDate) {
@@ -1796,5 +1813,13 @@ public class GroupedWorkSolr implements Cloneable {
 				}
 			}
 		}
+	}
+
+	HashSet<Long> getAutoReindexTimes() {
+		HashSet<Long> autoReindexTimes = new HashSet<>();
+		for (RecordInfo relatedRecord : relatedRecords.values()) {
+			relatedRecord.getAutoReindexTimes(autoReindexTimes);
+		}
+		return autoReindexTimes;
 	}
 }

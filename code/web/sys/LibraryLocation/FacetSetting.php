@@ -1,6 +1,7 @@
 <?php
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
 abstract class FacetSetting extends DataObject {
+	public $__displayNameColumn = 'displayName';
 	public $id;                      //int(25)
 	public $displayName;                    //varchar(255)
 	public $facetName;

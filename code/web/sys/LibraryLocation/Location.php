@@ -719,20 +719,20 @@ class Location extends DataObject
 	 * IP address and branch parameter, and only for It's Here messages
 	 *
 	 */
-	private $physicalLocation = 'unset';
+	private $_physicalLocation = 'unset';
 
 	function getPhysicalLocation()
 	{
-		if ($this->physicalLocation != 'unset') {
-			return $this->physicalLocation;
+		if ($this->_physicalLocation != 'unset') {
+			return $this->_physicalLocation;
 		}
 
 		if ($this->getBranchLocationCode() != '') {
-			$this->physicalLocation = $this->getActiveLocation();
+			$this->_physicalLocation = $this->getActiveLocation();
 		} else {
-			$this->physicalLocation = $this->getIPLocation();
+			$this->_physicalLocation = $this->getIPLocation();
 		}
-		return $this->physicalLocation;
+		return $this->_physicalLocation;
 	}
 
 	static $searchLocation = array();
@@ -775,15 +775,15 @@ class Location extends DataObject
 
 	/**
 	 * The location we are in based solely on IP address.
-	 * @var string
+	 * @var Location|string
 	 */
-	private $ipLocation = 'unset';
-	private $ipId = 'unset';
+	private $_ipLocation = 'unset';
+	private $_ipId = 'unset';
 
 	function getIPLocation()
 	{
-		if ($this->ipLocation != 'unset') {
-			return $this->ipLocation;
+		if ($this->_ipLocation != 'unset') {
+			return $this->_ipLocation;
 		}
 		global $timer;
 		/** @var Memcache $memCache */
@@ -792,48 +792,37 @@ class Location extends DataObject
 		global $logger;
 		//Check the current IP address to see if we are in a branch
 		$activeIp = $this->getActiveIp();
-		$this->ipLocation = $memCache->get('location_for_ip_' . $activeIp);
-		$this->ipId = $memCache->get('ipId_for_ip_' . $activeIp);
-		if ($this->ipId == -1) {
-			$this->ipLocation = false;
+		$this->_ipLocation = $memCache->get('location_for_ip_' . $activeIp);
+		$this->_ipId = $memCache->get('ipId_for_ip_' . $activeIp);
+		if ($this->_ipId == -1) {
+			$this->_ipLocation = false;
 		}
 
-		if ($this->ipLocation == false || $this->ipId == false) {
+		if ($this->_ipLocation == false || $this->_ipId == false) {
 			$timer->logTime('Starting getIPLocation');
 			//echo("Active IP is $activeIp");
 			require_once ROOT_DIR . '/sys/IP/IPAddress.php';
-			$subnet = new IPAddress();
-			$ipVal = ip2long($activeIp);
-
-			$this->ipLocation = null;
-			$this->ipId = -1;
-			if (is_numeric($ipVal)) {
-				disableErrorHandler();
-				$subnet->whereAdd('startIpVal <= ' . $ipVal);
-				$subnet->whereAdd('endIpVal >= ' . $ipVal);
-				$subnet->orderBy('(endIpVal - startIpVal)');
-				if ($subnet->find(true)) {
-					$matchedLocation = new Location();
-					$matchedLocation->locationId = $subnet->locationid;
-					if ($matchedLocation->find(true)) {
-						//Only use the physical location regardless of where we are
-						$this->ipLocation = clone($matchedLocation);
-						$this->ipLocation->setOpacStatus((boolean)$subnet->isOpac);
-
-						$this->ipId = $subnet->id;
-					} else {
-						$logger->log("Did not find location for ip location id {$subnet->locationid}", Logger::LOG_WARNING);
-					}
+			$this->_ipLocation = null;
+			$this->_ipId = -1;
+			$subnet = IPAddress::getIPAddressForIP($activeIp);
+			if ($subnet != false){
+				$matchedLocation = new Location();
+				$matchedLocation->locationId = $subnet->locationid;
+				if ($matchedLocation->find(true)) {
+					//Only use the physical location regardless of where we are
+					$this->_ipLocation = clone($matchedLocation);
+					$this->_ipId = $subnet->id;
+				} else {
+					$logger->log("Did not find location for ip location id {$subnet->locationid}", Logger::LOG_WARNING);
 				}
-				enableErrorHandler();
 			}
 
-			$memCache->set('ipId_for_ip_' . $activeIp, $this->ipId, $configArray['Caching']['ipId_for_ip']);
-			$memCache->set('location_for_ip_' . $activeIp, $this->ipLocation, $configArray['Caching']['location_for_ip']);
+			$memCache->set('ipId_for_ip_' . $activeIp, $this->_ipId, $configArray['Caching']['ipId_for_ip']);
+			$memCache->set('location_for_ip_' . $activeIp, $this->_ipLocation, $configArray['Caching']['location_for_ip']);
 			$timer->logTime('Finished getIPLocation');
 		}
 
-		return $this->ipLocation;
+		return $this->_ipLocation;
 	}
 
 
@@ -1113,17 +1102,30 @@ class Location extends DataObject
 			$hours->locationId = $locationId;
 			$hours->day = $dayOfWeekToday;
 			$hours->orderBy('open asc');
+			$allClosed = true;
 			if ($hours->find()) {
 				$openHours = [];
 				$ctr = 0;
 				while ($hours->fetch()) {
-					$openHours[$ctr++] = array(
+					$openHours[$ctr] = array(
 						'open' => ltrim($hours->open, '0'),
 						'close' => ltrim($hours->close, '0'),
 						'closed' => $hours->closed ? true : false,
 						'openFormatted' => ($hours->open == '12:00' ? 'Noon' : date("g:i A", strtotime($hours->open))),
 						'closeFormatted' => ($hours->close == '12:00' ? 'Noon' : date("g:i A", strtotime($hours->close)))
 					);
+					if (($openHours[$ctr]['open'] == $openHours[$ctr]['close'])){
+						$openHours[$ctr]['closed'] = true;
+					}
+					if ($openHours[$ctr]['closed'] == false){
+						$allClosed = false;
+					}
+					$ctr++;
+				}
+				if ($allClosed){
+					return [
+						'closed' => true
+					];
 				}
 				return $openHours;
 			}
@@ -1165,9 +1167,9 @@ class Location extends DataObject
 					} else {
 						$openMessage = Location::getOpenHoursMessage($nextDayHours);
 						if (isset($closureReason)) {
-							$libraryHoursMessage = translate(['text' => "%1% is closed today for %2%. It will reopen on %3% from %4%", 1 => $location->displayName, 2 => $closureReason, 3 => $nextDayOfWeek, 4 => $openMessage]);
+							$libraryHoursMessage = translate(['text' => 'closed_reopen_reason', 'defaultText' => "%1% is closed today for %2%. It will reopen on %3% from %4%", 1 => $location->displayName, 2 => $closureReason, 3 => $nextDayOfWeek, 4 => $openMessage]);
 						} else {
-							$libraryHoursMessage = translate(['text' => "%1% is closed today. It will reopen on %2% from %3%", 1 => $location->displayName, 2 => $nextDayOfWeek, 3 => $openMessage]);
+							$libraryHoursMessage = translate(['text' => 'closed_reopen_no_reason', 'defaultText' => "%1% is closed today. It will reopen on %2% from %3%", 1 => $location->displayName, 2 => $nextDayOfWeek, 3 => $openMessage]);
 						}
 					}
 				} else {
@@ -1184,13 +1186,13 @@ class Location extends DataObject
 						$tomorrowsLibraryHours = Location::getLibraryHours($locationId, time() + (24 * 60 * 60));
 						if (isset($tomorrowsLibraryHours['closed']) && ($tomorrowsLibraryHours['closed'] == true || $tomorrowsLibraryHours['closed'] == 1)) {
 							if (isset($tomorrowsLibraryHours['closureReason'])) {
-								$libraryHoursMessage = translate(['text' => "%1% will be closed tomorrow for %2", 1 => $location->displayName, 2 => $tomorrowsLibraryHours['closureReason']]);
+								$libraryHoursMessage = translate(['text' => 'closed_tomorrow_reason', 'defaultText' => "%1% will be closed tomorrow for %2%", 1 => $location->displayName, 2 => $tomorrowsLibraryHours['closureReason']]);
 							} else {
 								$libraryHoursMessage = translate(['text' => "%1% will be closed tomorrow", 1 => $location->displayName]);
 							}
 
 						} else {
-							$libraryHoursMessage = translate(['text' => "%1% will be open tomorrow from %2%", 1 => $location->displayName, 2 => Location::getOpenHoursMessage($tomorrowsLibraryHours)]);
+							$libraryHoursMessage = translate(['text' => 'open_tomorrow', 'defaultText' => "%1% will be open tomorrow from %2%", 1 => $location->displayName, 2 => Location::getOpenHoursMessage($tomorrowsLibraryHours)]);
 						}
 					} else {
 						$libraryHoursMessage = translate(['text' => "%1% is open today from %2%", 1 => $location->displayName, 2 => Location::getOpenHoursMessage($todaysLibraryHours)]);
@@ -1289,47 +1291,40 @@ class Location extends DataObject
 		return $hasValidHours;
 	}
 
-	private $opacStatus = null;
+	private $_opacStatus = null;
 
 	/**
 	 * Check whether or not the system is an opac station.
-	 * - First check to see if an opac paramter has been passed.  If so, use that information and set a cookie for future pages.
+	 * - First check to see if an opac parameter has been passed.  If so, use that information and set a cookie for future pages.
 	 * - Next check the cookie to see if we have overridden the value
 	 * - Finally check to see if we have an active location based on the IP address.  If we do, use that to determine if this is an opac station
 	 * @return bool
 	 */
 	public function getOpacStatus()
 	{
-		if (is_null($this->opacStatus)) {
+		if (is_null($this->_opacStatus)) {
 			if (isset($_GET['opac'])) {
-				$this->opacStatus = $_GET['opac'] == 1 || strtolower($_GET['opac']) == 'true' || strtolower($_GET['opac']) == 'on';
+				$this->_opacStatus = $_GET['opac'] == 1 || strtolower($_GET['opac']) == 'true' || strtolower($_GET['opac']) == 'on';
 				if ($_GET['opac'] == '') {
 					//Clear any existing cookie
-					setcookie('opac', $this->opacStatus, time() - 1000, '/');
+					setcookie('opac', $this->_opacStatus, time() - 1000, '/');
 				} elseif (!isset($_COOKIE['opac']) || $this->opacStatus != $_COOKIE['opac']) {
-					setcookie('opac', $this->opacStatus ? '1' : '0', 0, '/');
+					setcookie('opac', $this->_opacStatus ? '1' : '0', 0, '/');
 				}
 			} elseif (isset($_COOKIE['opac'])) {
-				$this->opacStatus = (boolean)$_COOKIE['opac'];
+				$this->_opacStatus = (boolean)$_COOKIE['opac'];
 			} else {
-				if ($this->getIPLocation()) {
-					$this->opacStatus = $this->getIPLocation()->opacStatus;
+				$activeIP = $this->getActiveIp();
+				require_once ROOT_DIR . '/sys/IP/IPAddress.php';
+				$subnet = IPAddress::getIPAddressForIP($activeIP);
+				if ($subnet != false) {
+					$this->_opacStatus = $subnet->isOpac;
 				} else {
-					$this->opacStatus = false;
+					$this->_opacStatus = false;
 				}
 			}
 		}
-		return $this->opacStatus;
-	}
-
-	/**
-	 * Primarily Intended to set the opac status for the ipLocation object
-	 * when the iptable indicates that the ip is to be treated as a public opac
-	 * @param null $opacStatus
-	 */
-	public function setOpacStatus($opacStatus = null)
-	{
-		$this->opacStatus = $opacStatus;
+		return $this->_opacStatus;
 	}
 
 	private $_selected;

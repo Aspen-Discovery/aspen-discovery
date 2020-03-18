@@ -30,7 +30,6 @@ class User extends DataObject
 	public $disableRecommendations;     //tinyint
 	public $disableCoverArt;     //tinyint
 	public $overdriveEmail;
-	public $overdriveAutoCheckout;
 	public $promptForOverdriveEmail; //Semantics of this have changed to not prompting for hold settings
 	public $hooplaCheckOutConfirmation;
 	public $preferredLibraryInterface;
@@ -597,6 +596,7 @@ class User extends DataObject
 		if (empty($this->created)) {
 			$this->created = date('Y-m-d');
 		}
+		$this->fixFieldLengths();
 		$result = parent::update();
 		$this->saveRoles();
 		$this->clearCache(); // Every update to object requires clearing the Memcached version of the object
@@ -615,8 +615,9 @@ class User extends DataObject
 		if (!isset($this->bypassAutoLogout)) $this->bypassAutoLogout = 0;
 
 		if (empty($this->created)){
-            $this->created = date('Y-m-d');
-        }
+			$this->created = date('Y-m-d');
+		}
+		$this->fixFieldLengths();
 		parent::insert();
 		$this->saveRoles();
 		$this->clearCache();
@@ -679,11 +680,6 @@ class User extends DataObject
 			$this->promptForOverdriveEmail = 1;
 		}else{
 			$this->promptForOverdriveEmail = 0;
-		}
-		if (isset($_REQUEST['overdriveAutoCheckout']) && ($_REQUEST['overdriveAutoCheckout'] == 'yes' || $_REQUEST['overdriveAutoCheckout'] == 'on')){
-			$this->overdriveAutoCheckout = 1;
-		}else{
-			$this->overdriveAutoCheckout = 0;
 		}
 		if (isset($_REQUEST['overdriveEmail'])){
 			$this->overdriveEmail = strip_tags($_REQUEST['overdriveEmail']);
@@ -1408,12 +1404,6 @@ class User extends DataObject
 		return $overDriveDriver->thawHold($this, $overDriveId);
 	}
 
-	function setAutoCheckoutForOverDriveHold($overDriveId, $autoCheckout){
-		require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
-		$overDriveDriver = new OverDriveDriver();
-		return $overDriveDriver->setAutoCheckoutForOverDriveHold($this, $overDriveId, $autoCheckout);
-	}
-
 	function renewCheckout($recordId, $itemId = null, $itemIndex = null){
 		$result = $this->getCatalogDriver()->renewCheckout($this, $recordId, $itemId, $itemIndex);
 		$this->clearCache();
@@ -1700,6 +1690,19 @@ class User extends DataObject
 			$payment->update();
 		}
 		return $result;
+	}
+
+	private function fixFieldLengths()
+	{
+		if (strlen($this->lastname) > 100){
+			$this->lastname = substr($this->lastname, 0, 100);
+		}
+		if (strlen($this->firstname) > 50){
+			$this->firstname = substr($this->firstname, 0, 50);
+		}
+		if (strlen($this->displayName) > 60){
+			$this->displayName = substr($this->displayName, 0, 60);
+		}
 	}
 }
 

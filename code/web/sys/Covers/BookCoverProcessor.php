@@ -407,7 +407,11 @@ class BookCoverProcessor{
 			if ($this->isEContent){
 				$this->cacheName = 'econtent' . $this->id;
 			}else{
-				$this->cacheName = $this->id;
+				if ($this->type == 'grouped_work'){
+					$this->cacheName = $this->id;
+				}else{
+					$this->cacheName = $this->type . '_' . $this->id;
+				}
 			}
 		}else if (!is_null($this->isn)){
 			$this->cacheName = $this->isn;

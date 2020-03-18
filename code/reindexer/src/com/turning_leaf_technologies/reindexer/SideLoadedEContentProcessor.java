@@ -32,6 +32,9 @@ class SideLoadedEContentProcessor extends MarcRecordProcessor{
 			specifiedFormatCategory = sideLoadSettingsRS.getString("specifiedFormatCategory");
 			specifiedFormatBoost = sideLoadSettingsRS.getInt("specifiedFormatBoost");
 
+			treatUnknownLanguageAs = sideLoadSettingsRS.getString("treatUnknownLanguageAs");
+			treatUndeterminedLanguageAs = sideLoadSettingsRS.getString("treatUndeterminedLanguageAs");
+
 			getDateAddedStmt = dbConn.prepareStatement("SELECT dateFirstDetected FROM ils_marc_checksums WHERE ilsId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		}catch (Exception e){
 			logger.error("Error setting up side load processor");

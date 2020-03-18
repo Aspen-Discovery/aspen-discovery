@@ -333,4 +333,11 @@ public class RecordInfo {
 		return false;
 	}
 
+	void getAutoReindexTimes(HashSet<Long> autoReindexTimes) {
+		for (ItemInfo curItem : relatedItems){
+			if (curItem.getAutoReindexTime() != null){
+				autoReindexTimes.add(curItem.getAutoReindexTime());
+			}
+		}
+	}
 }

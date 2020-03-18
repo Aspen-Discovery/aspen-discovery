@@ -9,7 +9,7 @@ echo "Starting sierra export"
 cd /usr/local/aspen-discovery/code/sierra_export_api; java -jar sierra_export_api.jar arlington.production &
 sleep 5
 echo "Starting Overdrive export"
-cd /usr/local/aspen-discovery/code/overdrive_api_extract; java -jar overdrive_extract.jar arlington.production &
+cd /usr/local/aspen-discovery/code/overdrive_extract; java -jar overdrive_extract.jar arlington.production &
 sleep 5
 #echo "Starting RBdigital export"
 #cd /usr/local/aspen-discovery/code/rbdigital_export; java -jar rbdigital_export.jar arlington.production &

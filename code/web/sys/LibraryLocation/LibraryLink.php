@@ -12,12 +12,12 @@ class LibraryLink extends DataObject{
 	public $showInAccount;
 	public $showInHelp;
 	public $showExpanded;
+	public $openInNewTab;
 
 	static function getObjectStructure(){
 		//Load Libraries for lookup values
 		$library = new Library();
 		$library->orderBy('displayName');
-		$user = UserAccount::getLoggedInUser();
 		if (UserAccount::userHasRole('libraryAdmin')){
 			$homeLibrary = Library::getPatronHomeLibrary();
 			$library->libraryId = $homeLibrary->libraryId;
@@ -37,6 +37,7 @@ class LibraryLink extends DataObject{
 			'showInAccount' => array('property'=>'showInAccount', 'type'=>'checkbox', 'label'=>'Show in Account', 'description'=>'Show the link within the Account Menu.',),
 			'showInHelp' => array('property'=>'showInHelp', 'type'=>'checkbox', 'label'=>'Show In Help', 'description'=>'Show the link within the Help Menu','default'=>'1'),
 			'showExpanded' => array('property'=>'showExpanded', 'type'=>'checkbox', 'label'=>'Show Expanded', 'description'=>'Expand the category by default',),
+			'openInNewTab' => ['property' => 'openInNewTab', 'type'=>'checkbox', 'label'=>'Open In New Tab', 'description'=>'Determine whether or not the link should be opened in a new tab', 'default'=>1],
 			'weight' => array('property' => 'weight', 'type' => 'numeric', 'label' => 'Weight', 'weight' => 'Defines how items are sorted.  Lower weights are displayed higher.', 'required'=> true),
 
 		);

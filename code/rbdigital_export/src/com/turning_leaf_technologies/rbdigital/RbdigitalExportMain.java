@@ -1,6 +1,7 @@
 package com.turning_leaf_technologies.rbdigital;
 
 import com.turning_leaf_technologies.config.ConfigUtil;
+import com.turning_leaf_technologies.file.JarUtil;
 import com.turning_leaf_technologies.grouping.RemoveRecordFromWorkResult;
 import com.turning_leaf_technologies.indexing.RecordIdentifier;
 import com.turning_leaf_technologies.logging.LoggingUtil;
@@ -17,7 +18,6 @@ import org.json.JSONObject;
 import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
 import com.turning_leaf_technologies.grouping.RecordGroupingProcessor;
 
-import javax.xml.transform.Result;
 import java.sql.*;
 import java.util.Date;
 import java.util.HashMap;
@@ -72,7 +72,11 @@ public class RbdigitalExportMain {
 		String processName = "rbdigital_export";
 		logger = LoggingUtil.setupLogging(serverName, processName);
 
-		//noinspection InfiniteLoopStatement
+		//Get the checksum of the JAR when it was started so we can stop if it has changed.
+		long myChecksumAtStart = JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar");
+		long reindexerChecksumAtStart = JarUtil.getChecksumForJar(logger, "reindexer", "../reindexer/reindexer.jar");
+		long recordGroupingChecksumAtStart = JarUtil.getChecksumForJar(logger, "record_grouping", "../record_grouping/record_grouping.jar");
+
 		while (true) {
 
 			Date startTime = new Date();
@@ -121,6 +125,16 @@ public class RbdigitalExportMain {
 			//Disconnect from the database
 			disconnectDatabase(aspenConn);
 
+			//Check to see if the jar has changes, and if so quit
+			if (myChecksumAtStart != JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar")){
+				break;
+			}
+			if (reindexerChecksumAtStart != JarUtil.getChecksumForJar(logger, "reindexer", "../reindexer/reindexer.jar")){
+				break;
+			}
+			if (recordGroupingChecksumAtStart != JarUtil.getChecksumForJar(logger, "record_grouping", "../record_grouping/record_grouping.jar")){
+				break;
+			}
 			//Pause before running the next export (longer if we didn't get any actual changes)
 			try {
 				System.gc();
@@ -137,7 +151,7 @@ public class RbdigitalExportMain {
 
 	private static void processRecordsToReload(RbdigitalExtractLogEntry logEntry) {
 		try {
-			//First process books and ebooks
+			//First process books and eBooks
 			getRecordsToReloadStmt.setString(1, "rbdigital");
 			ResultSet getRecordsToReloadRS = getRecordsToReloadStmt.executeQuery();
 			int numRecordsToReloadProcessed = 0;
@@ -171,11 +185,11 @@ public class RbdigitalExportMain {
 
 			}
 			if (numRecordsToReloadProcessed > 0) {
-				logEntry.addNote("Regrouped " + numRecordsToReloadProcessed + " ebooks and audiobooks marked for reprocessing");
+				logEntry.addNote("Regrouped " + numRecordsToReloadProcessed + " eBooks and audiobooks marked for reprocessing");
 			}
 			getRecordsToReloadRS.close();
 
-			//First process books and ebooks
+			//First process books and eBooks
 			getRecordsToReloadStmt.setString(1, "rbdigital_magazine");
 			getRecordsToReloadRS = getRecordsToReloadStmt.executeQuery();
 			numRecordsToReloadProcessed = 0;
@@ -475,6 +489,7 @@ public class RbdigitalExportMain {
 				//Load issue information
 				String issuesUrl = baseUrl + "/v1/libraries/" + libraryId + "/magazines/" + magazineId + "/issues?pageIndex=0&pageSize=100";
 				WebServiceResponse response = NetworkUtils.getURL(issuesUrl, logger, headers);
+				@SuppressWarnings("unused")
 				JSONObject issuesObject = new JSONObject(response.getMessage());
 
 				if (metadataChanged || doFullReload) {

@@ -44,5 +44,8 @@ class Admin_Modules extends ObjectEditor {
 	function canDelete(){
 		return false;
 	}
-
+	function canCompare()
+	{
+		return false;
+	}
 }

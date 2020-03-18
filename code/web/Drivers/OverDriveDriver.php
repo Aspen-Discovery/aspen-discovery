@@ -547,7 +547,6 @@ class OverDriveDriver extends AbstractEContentDriver{
 				if ($hold['available']){
 					$hold['expire'] = strtotime($curTitle->holdExpires);
 				}else{
-					$hold['autoCheckout'] = $curTitle->autoCheckout;
 					$hold['allowFreezeHolds'] = true;
 					$hold['canFreeze'] = true;
 					if (isset($curTitle->holdSuspension)){
@@ -658,9 +657,6 @@ class OverDriveDriver extends AbstractEContentDriver{
 			'reserveId' => $overDriveId,
 			'emailAddress' => trim($user->overdriveEmail)
 		);
-		if ($user->overdriveAutoCheckout){
-			$params['autoCheckout'] = true;
-		}
 		$response = $this->_callPatronUrl($user, $url, $params);
 
 		$holdResult = array();
@@ -741,33 +737,6 @@ class OverDriveDriver extends AbstractEContentDriver{
 			$holdResult['message'] = translate(['text'=>'overdrive_thaw_hold_success', 'defaultText' => 'Your hold was thawed successfully.']);
 		}else{
 			$holdResult['message'] = translate('Sorry, but we could not thaw the hold on this title.');
-			if (isset($response->message)) $holdResult['message'] .= "  {$response->message}";
-		}
-		$user->clearCache();
-		$memCache->delete('overdrive_summary_' . $user->id);
-
-		return $holdResult;
-	}
-
-	function setAutoCheckoutForOverDriveHold(User $user, $overDriveId, $autoCheckout) {
-		/** @var Memcache $memCache */
-		global $memCache;
-
-		$url = $this->getSettings()->patronApiUrl . '/v1/patrons/me/holds/' . $overDriveId;
-		$params = array(
-			'autoCheckout' => $autoCheckout
-		);
-		$response = $this->_callPatronUrl($user, $url, $params, 'PUT');
-
-		$holdResult = array();
-		$holdResult['success'] = false;
-		$holdResult['message'] = '';
-
-		if ($this->lastHttpCode == 204){
-			$holdResult['success'] = true;
-			$holdResult['message'] = translate(['text'=>'overdrive_auto_checkout_success', 'defaultText' => 'Auto checkout was changed successfully.']);
-		}else{
-			$holdResult['message'] = translate('Sorry, but we could change auto checkout for this title.');
 			if (isset($response->message)) $holdResult['message'] .= "  {$response->message}";
 		}
 		$user->clearCache();

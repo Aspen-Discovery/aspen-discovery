@@ -1,6 +1,7 @@
 package com.turning_leaf_technologies.website_indexer;
 
 import com.turning_leaf_technologies.config.ConfigUtil;
+import com.turning_leaf_technologies.file.JarUtil;
 import com.turning_leaf_technologies.logging.LoggingUtil;
 import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -26,10 +27,12 @@ public class WebsiteIndexerMain {
 			serverName = args[0];
 		}
 
-		String processName = "website_indexer";
+		String processName = "web_indexer";
 		logger = LoggingUtil.setupLogging(serverName, processName);
 
-		//noinspection InfiniteLoopStatement
+		//Get the checksum of the JAR when it was started so we can stop if it has changed.
+		long myChecksumAtStart = JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar");
+
 		while (true) {
 			Date startTime = new Date();
 			Long startTimeForLogging = startTime.getTime() / 1000;
@@ -94,6 +97,10 @@ public class WebsiteIndexerMain {
 				logger.error("Error processing websites to index", e);
 			}
 
+			//Check to see if the jar has changes, and if so quit
+			if (myChecksumAtStart != JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar")){
+				break;
+			}
 			//Pause 15 minutes before running the next export
 			try {
 				Thread.sleep(1000 * 60 * 15);
