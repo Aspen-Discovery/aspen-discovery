@@ -21,8 +21,6 @@ public class UserListIndexerMain {
 
 	private static UserListIndexer listProcessor;
 
-	//General configuration
-	private static String serverName;
 	private static Connection dbConn;
 
 	/**
@@ -33,6 +31,8 @@ public class UserListIndexerMain {
 	public static void main(String[] args) {
 		startTime = new Date().getTime();
 		boolean runContinuously = true;
+		//General configuration
+		String serverName;
 		if (args.length == 0) {
 			serverName = StringUtils.getInputFromCommandLine("Please enter the server name");
 			if (serverName.length() == 0) {
@@ -145,7 +145,7 @@ public class UserListIndexerMain {
 		logger.info("Setting up database connections");
 		String databaseConnectionInfo = ConfigUtil.cleanIniValue(configIni.get("Database", "database_aspen_jdbc"));
 		if (databaseConnectionInfo == null || databaseConnectionInfo.length() == 0) {
-			logger.error("Database connection information not found in Database Section.  Please specify connection information in database_vufind_jdbc.");
+			logger.error("Database connection information not found in Database Section.  Please specify connection information in database_aspen_jdbc.");
 			System.exit(1);
 		}
 		try {

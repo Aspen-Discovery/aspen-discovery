@@ -90,10 +90,10 @@ class UserListIndexer {
 				//Delete all lists from the index
 				updateServer.deleteByQuery("recordtype:list");
 				//Get a list of all public lists
-				listsStmt = dbConn.prepareStatement("SELECT user_list.id as id, deleted, public, title, description, user_list.created, dateUpdated, firstname, lastname, displayName, homeLocationId, user_id from user_list INNER JOIN user on user_id = user.id WHERE public = 1 AND deleted = 0");
+				listsStmt = dbConn.prepareStatement("SELECT user_list.id as id, deleted, public, title, description, user_list.created, dateUpdated, username, firstname, lastname, displayName, homeLocationId, user_id from user_list INNER JOIN user on user_id = user.id WHERE public = 1 AND deleted = 0");
 			}else{
 				//Get a list of all lists that are were changed since the last update
-				listsStmt = dbConn.prepareStatement("SELECT user_list.id as id, deleted, public, title, description, user_list.created, dateUpdated, firstname, lastname, displayName, homeLocationId, user_id from user_list INNER JOIN user on user_id = user.id WHERE dateUpdated > ?");
+				listsStmt = dbConn.prepareStatement("SELECT user_list.id as id, deleted, public, title, description, user_list.created, dateUpdated, username, firstname, lastname, displayName, homeLocationId, user_id from user_list INNER JOIN user on user_id = user.id WHERE dateUpdated > ?");
 				listsStmt.setLong(1, lastReindexTime);
 			}
 
@@ -147,11 +147,17 @@ class UserListIndexer {
 			userListSolr.setTitle(allPublicListsRS.getString("title"));
 			userListSolr.setDescription(allPublicListsRS.getString("description"));
 			userListSolr.setCreated(allPublicListsRS.getLong("created"));
-			userListSolr.setOwnerHasListPublisherRole(listPublisherUsers.contains(userId));
 
 			String displayName = allPublicListsRS.getString("displayName");
 			String firstName = allPublicListsRS.getString("firstname");
 			String lastName = allPublicListsRS.getString("lastname");
+			String userName = allPublicListsRS.getString("username");
+
+			if (userName.equalsIgnoreCase("nyt_user")) {
+				userListSolr.setOwnerHasListPublisherRole(true);
+			}else{
+				userListSolr.setOwnerHasListPublisherRole(listPublisherUsers.contains(userId));
+			}
 			if (displayName != null && displayName.length() > 0){
 				userListSolr.setAuthor(displayName);
 			}else{
