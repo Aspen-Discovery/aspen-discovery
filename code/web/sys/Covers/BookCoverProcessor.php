@@ -923,6 +923,10 @@ class BookCoverProcessor{
 
 	function google(GoogleApiSetting $googleApiSettings,$title = null, $author = null)
 	{
+		//Only load from google if we are looking at a grouped work to be sure uploaded covers have a chance to load
+		if ($this->type != 'grouped_work'){
+			return false;
+		}
 		if (is_null($this->isn) && is_null($title) && is_null($author)){
 			return false;
 		}

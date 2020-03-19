@@ -132,16 +132,6 @@ AspenDiscovery.Record = (function(){
 			}).fail(AspenDiscovery.ajaxFail);
 		},
 
-		reloadCover: function(module, id){
-			let url = Globals.path + '/' + module + '/' + id + '/AJAX?method=reloadCover';
-			$.getJSON(url, function (data){
-						AspenDiscovery.showMessage("Success", data.message, true, true);
-						setTimeout("AspenDiscovery.closeLightbox();", 3000);
-					}
-			).fail(AspenDiscovery.ajaxFail);
-			return false;
-		},
-
 		moreContributors: function(){
 			document.getElementById('showAdditionalContributorsLink').style.display="none";
 			document.getElementById('additionalContributors').style.display="block";
