@@ -53,7 +53,7 @@ public class SideLoadingMain {
 			serverName = args[0];
 		}
 
-		String processName = "side_loading";
+		String processName = "sideload_processing";
 		logger = LoggingUtil.setupLogging(serverName, processName);
 
 		//Get the checksum of the JAR when it was started so we can stop if it has changed.

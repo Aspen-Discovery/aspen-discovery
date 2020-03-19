@@ -63,7 +63,7 @@ public class UserListIndexerMain {
 		while (runContinuously) {
 			runContinuously = !fullReindex;
 
-			initializeIndexer(processName);
+			initializeIndexer(serverName);
 
 			//Process lists
 			long numListsProcessed = 0;
