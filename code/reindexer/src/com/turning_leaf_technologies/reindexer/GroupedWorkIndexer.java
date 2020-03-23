@@ -513,6 +513,14 @@ public class GroupedWorkIndexer {
 		}
 	}
 
+	public void commitChanges(){
+		try {
+			updateServer.commit(false, false, true);
+		}catch (Exception e) {
+			logger.error("Error finishing extract ", e);
+		}
+	}
+
 	private void processScheduledWorks(BaseLogEntry logEntry) {
 		//Check to see what records still need to be indexed based on a timed index
 		logEntry.addNote("Checking for additional works that need to be indexed");

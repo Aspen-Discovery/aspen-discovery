@@ -102,6 +102,7 @@ public class IndexingUtils {
 				RbdigitalScope rbdigitalScope = new RbdigitalScope();
 				rbdigitalScope.setId(rbdigitalScopesRS.getLong("id"));
 				rbdigitalScope.setName(rbdigitalScopesRS.getString("name"));
+				rbdigitalScope.setSettingId(rbdigitalScopesRS.getLong("settingId"));
 				rbdigitalScope.setIncludeEBooks(rbdigitalScopesRS.getBoolean("includeEBooks"));
 				rbdigitalScope.setIncludeEMagazines(rbdigitalScopesRS.getBoolean("includeEMagazines"));
 				rbdigitalScope.setIncludeEAudiobook(rbdigitalScopesRS.getBoolean("includeEAudiobook"));

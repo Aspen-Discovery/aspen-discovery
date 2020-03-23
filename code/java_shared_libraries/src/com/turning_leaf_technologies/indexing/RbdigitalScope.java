@@ -3,6 +3,7 @@ package com.turning_leaf_technologies.indexing;
 public class RbdigitalScope {
 	private long id;
 	private String name;
+	private long settingId;
 	private boolean includeEBooks;
 	private boolean includeEAudiobook;
 	private boolean includeEMagazines;
@@ -56,4 +57,11 @@ public class RbdigitalScope {
 		this.restrictToChildrensMaterial = restrictToChildrensMaterial;
 	}
 
+	public long getSettingId() {
+		return settingId;
+	}
+
+	public void setSettingId(long settingId) {
+		this.settingId = settingId;
+	}
 }

@@ -316,7 +316,8 @@ class RBdigital_AJAX extends Action
 			if ($patron) {
 				require_once ROOT_DIR . '/Drivers/RBdigitalDriver.php';
 				$driver = new RBdigitalDriver();
-				$result = $driver->returnMagazine($patron, $id);
+				list($magzineId, $issueId) = explode('_', $id);
+				$result = $driver->returnMagazine($patron, $magzineId, $issueId);
 				return json_encode($result);
 			} else {
 				return json_encode(array('result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to modify checkouts for that user.'));
