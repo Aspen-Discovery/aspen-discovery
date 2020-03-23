@@ -126,7 +126,15 @@ class GroupedWorkDriver extends IndexRecordDriver
 	static function compareEditionsForRecords($literaryForm, $a, $b)
 	{
 		//We only want to compare editions if the work is non-fiction
-		if ($literaryForm == 'Non Fiction') {
+		if ($a->format == 'eMagazine' && $b->format == 'eMagazine') {
+			if ($a->getShelfLocation() == $b->getShelfLocation()){
+				return 0;
+			} else if ($a->getShelfLocation() > $b->getShelfLocation()) {
+				return -1;
+			} else {
+				return 1;
+			}
+		}elseif ($literaryForm == 'Non Fiction') {
 			$editionA = GroupedWorkDriver::normalizeEdition($a->edition);
 			$editionB = GroupedWorkDriver::normalizeEdition($b->edition);
 			if ($editionA == $editionB) {

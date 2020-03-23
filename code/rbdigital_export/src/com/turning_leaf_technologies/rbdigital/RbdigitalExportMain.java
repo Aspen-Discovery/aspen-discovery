@@ -373,15 +373,15 @@ public class RbdigitalExportMain {
 			headers.put("Authorization", "basic " + setting.getApiToken());
 			headers.put("Content-Type", "application/json");
 
+			numChanges = extractMagazines(setting, numChanges, headers);
+			numChanges = extractBooks(setting, numChanges, headers);
+
 			if (setting.doFullReload()) {
 				//Un mark that a full update needs to be done
 				PreparedStatement updateSettingsStmt = aspenConn.prepareStatement("UPDATE rbdigital_settings set runFullUpdate = 0 where id = ?");
 				updateSettingsStmt.setLong(1, setting.getId());
 				updateSettingsStmt.executeUpdate();
 			}
-
-			numChanges = extractMagazines(setting, numChanges, headers);
-			numChanges = extractBooks(setting, numChanges, headers);
 
 			if (!logEntry.hasErrors()) {
 				//Update the last time we ran the update in settings

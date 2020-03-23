@@ -208,7 +208,7 @@ class RbdigitalProcessor {
 
 				getAvailabilityStmt.setString(1, identifier);
 				ResultSet availabilityRS = getAvailabilityStmt.executeQuery();
-				if (availabilityRS.next()) {
+				while (availabilityRS.next()) {
 					boolean available = availabilityRS.getBoolean("isAvailable");
 					long settingId = availabilityRS.getLong("settingId");
 					if (available) {
