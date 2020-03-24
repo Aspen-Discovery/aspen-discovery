@@ -20,6 +20,9 @@ public class NetworkUtils {
 	}
 
 	public static WebServiceResponse getURL(String url, Logger logger, HashMap<String, String> headers) {
+		return NetworkUtils.getURL(url, logger, headers, 300000);
+	}
+	public static WebServiceResponse getURL(String url, Logger logger, HashMap<String, String> headers, int readTimeout) {
 		WebServiceResponse retVal;
 		try {
 			URL urlToCall = new URL(url);

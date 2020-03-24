@@ -455,7 +455,12 @@ class Koha extends AbstractIlsDriver
 				$user->displayName = '';
 			}
 			$user->_fullname = $userFromDb['firstname'] . ' ' . $userFromDb['surname'];
-			$user->cat_username = $userFromDb['cardnumber'];
+			if ($userFromDb['cardnumber'] != null) {
+				$user->cat_username = $userFromDb['cardnumber'];
+			}else{
+				$user->cat_username = $userFromDb['userid'];
+			}
+
 			if ($userExistsInDB) {
 				$passwordChanged = ($user->cat_password != $password);
 				if ($passwordChanged) {

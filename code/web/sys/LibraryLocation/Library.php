@@ -380,13 +380,17 @@ class Library extends DataObject
 		}
 
 		require_once ROOT_DIR . '/sys/RBdigital/RBdigitalScope.php';
+		require_once ROOT_DIR . '/sys/RBdigital/RBdigitalSetting.php';
 		$rbdigitalScope = new RBdigitalScope();
 		$rbdigitalScope->orderBy('name');
 		$rbdigitalScopes = [];
 		$rbdigitalScope->find();
 		$rbdigitalScopes[-1] = 'none';
 		while ($rbdigitalScope->fetch()){
-			$rbdigitalScopes[$rbdigitalScope->id] = $rbdigitalScope->name;
+			$rbdigitalSetting = new RBdigitalSetting();
+			$rbdigitalSetting->id = $rbdigitalScope->settingId;
+			$rbdigitalSetting->find(true);
+			$rbdigitalScopes[$rbdigitalScope->id] = $rbdigitalScope->name . ' ' . $rbdigitalSetting->userInterfaceUrl;
 		}
 
 		require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibraryScope.php';

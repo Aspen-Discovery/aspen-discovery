@@ -83,7 +83,7 @@ class Admin_CollectionSpotlights extends ObjectEditor {
 		$collectionSpotlight = new CollectionSpotlight();
 		if (UserAccount::userHasRole('libraryAdmin') || UserAccount::userHasRole('contentEditor') || UserAccount::userHasRole('libraryManager') || UserAccount::userHasRole('locationManager')){
 			$homeLibrary = Library::getPatronHomeLibrary();
-			$collectionSpotlight->libraryId = $homeLibrary->libraryId;
+			$collectionSpotlight->whereAdd('libraryId = ' . $homeLibrary->libraryId . ' OR libraryId = -1');
 		}
 		$collectionSpotlight->orderBy('name ASC');
 		$collectionSpotlight->find();

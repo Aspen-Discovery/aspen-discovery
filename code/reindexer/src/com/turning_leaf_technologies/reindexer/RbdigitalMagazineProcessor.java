@@ -10,6 +10,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashSet;
 
@@ -18,6 +20,11 @@ class RbdigitalMagazineProcessor {
 	private Logger logger;
 
 	private PreparedStatement getProductInfoStmt;
+	private PreparedStatement getMagazineIssuesStmt;
+	private PreparedStatement getIssueAvailabilityStmt;
+
+	private static SimpleDateFormat dateFormatter = new SimpleDateFormat("M/d/yyyy");
+	private static SimpleDateFormat sortableDateFormatter = new SimpleDateFormat("yyyy/MM/dd");
 
 	RbdigitalMagazineProcessor(GroupedWorkIndexer groupedWorkIndexer, Connection dbConn, Logger logger) {
 		this.indexer = groupedWorkIndexer;
@@ -25,6 +32,8 @@ class RbdigitalMagazineProcessor {
 
 		try {
 			getProductInfoStmt = dbConn.prepareStatement("SELECT * from rbdigital_magazine where magazineId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			getMagazineIssuesStmt = dbConn.prepareStatement("SELECT * from rbdigital_magazine_issue where magazineId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			getIssueAvailabilityStmt = dbConn.prepareStatement("SELECT * FROM rbdigital_magazine_issue_availability where issueId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		} catch (SQLException e) {
 			logger.error("Error setting up rbdigital magazine processor", e);
 		}
@@ -41,18 +50,12 @@ class RbdigitalMagazineProcessor {
 					return;
 				}
 
-				RecordInfo rbdigitalRecord = groupedWork.addRelatedRecord("rbdigital_magazine", identifier);
-				rbdigitalRecord.setRecordIdentifier("rbdigital_magazine", identifier);
+				//Setup basics of the grouped work
+				JSONObject rawResponse = new JSONObject(productRS.getString("rawResponse"));
 
 				String title = productRS.getString("title");
 				String formatCategory = "eBook";
 				String primaryFormat = "eMagazine";
-
-				rbdigitalRecord.addFormat(primaryFormat);
-				rbdigitalRecord.addFormatCategory(formatCategory);
-
-				JSONObject rawResponse = new JSONObject(productRS.getString("rawResponse"));
-
 				groupedWork.setTitle(title, title, title, primaryFormat);
 
 				String targetAudience = rawResponse.getString("audience");
@@ -70,15 +73,12 @@ class RbdigitalMagazineProcessor {
 					groupedWork.addTargetAudience("Adult");
 					groupedWork.addTargetAudienceFull("Adult");
 				}
-
-				rbdigitalRecord.setPrimaryLanguage(productRS.getString("language"));
 				long formatBoost = 1;
 				try {
 					formatBoost = Long.parseLong(indexer.translateSystemValue("format_boost_rbdigital", primaryFormat, identifier));
 				} catch (Exception e) {
 					logger.warn("Could not translate format boost for " + primaryFormat + " create translation map format_boost_rbdigital");
 				}
-				rbdigitalRecord.setFormatBoost(formatBoost);
 
 				String genre = rawResponse.getString("genre");
 				HashSet<String> genresToAdd = new HashSet<>();
@@ -97,65 +97,107 @@ class RbdigitalMagazineProcessor {
 
 				String publisher = rawResponse.getString("publisher");
 				groupedWork.addPublisher(publisher);
-				//publication date
-				String releaseDate = rawResponse.getString("coverDate");
-				String releaseYear = releaseDate.substring(releaseDate.lastIndexOf("/") + 1);
-				groupedWork.addPublicationDate(releaseYear);
+
 				//physical description?
 				String description = rawResponse.getString("description");
 				groupedWork.addDescription(description, primaryFormat);
 
-				ItemInfo itemInfo = new ItemInfo();
-				itemInfo.seteContentSource("Rbdigital");
-				itemInfo.setIsEContent(true);
-				itemInfo.setShelfLocation("Online Rbdigital Collection");
-				itemInfo.setCallNumber("Online Rbdigital");
-				itemInfo.setSortableCallNumber("Online Rbdigital");
+				//Get issues for the magazine and add one record per issue
+				getMagazineIssuesStmt.setString(1, identifier);
+				ResultSet getMagazineIssuesRS = getMagazineIssuesStmt.executeQuery();
+				while (getMagazineIssuesRS.next()) {
+					String issueIdentifier = getMagazineIssuesRS.getString("issueId");
 
-				itemInfo.setFormat(primaryFormat);
-				itemInfo.setFormatCategory(formatCategory);
-				//We don't currently have a way to determine how many copies are owned
-				itemInfo.setNumCopies(1);
+					RecordInfo rbdigitalRecord = groupedWork.addRelatedRecord("rbdigital_magazine", identifier + "_" + issueIdentifier);
+					rbdigitalRecord.setRecordIdentifier("rbdigital_magazine", identifier + "_" + issueIdentifier);
 
-				Date dateAdded = new Date(productRS.getLong("dateFirstDetected") * 1000);
-				itemInfo.setDateAdded(dateAdded);
+					rbdigitalRecord.addFormat(primaryFormat);
+					rbdigitalRecord.addFormatCategory(formatCategory);
 
+					rbdigitalRecord.setPrimaryLanguage(productRS.getString("language"));
 
-				boolean available = !rawResponse.getBoolean("isCheckedOut");
-				if (available) {
-					itemInfo.setDetailedStatus("Available Online");
-				} else {
-					itemInfo.setDetailedStatus("Checked Out");
-				}
-				for (Scope scope : indexer.getScopes()) {
-					boolean okToAdd = false;
-					RbdigitalScope rbdigitalScope = scope.getRbdigitalScope();
-					if (rbdigitalScope != null) {
-						if (rbdigitalScope.isIncludeEMagazines()) {
-							okToAdd = true;
-						}
-						if (rbdigitalScope.isRestrictToChildrensMaterial() && !isChildrens) {
-							okToAdd = false;
+					rbdigitalRecord.setFormatBoost(formatBoost);
+
+					ItemInfo itemInfo = new ItemInfo();
+					itemInfo.setItemIdentifier(getMagazineIssuesRS.getString("issueId"));
+					itemInfo.seteContentSource("RBdigital");
+					itemInfo.setIsEContent(true);
+					String coverDate = getMagazineIssuesRS.getString("coverDate");
+					try {
+						Date coverDateAsDate = dateFormatter.parse(coverDate);
+						itemInfo.setCallNumber(coverDate);
+						String sortableDate = sortableDateFormatter.format(coverDateAsDate);
+						itemInfo.setShelfLocation(sortableDate + " RBdigital");
+						itemInfo.setSortableCallNumber(sortableDate);
+
+						rbdigitalRecord.setEdition(coverDate);
+
+						//publication date
+						String releaseYear = coverDate.substring(coverDate.lastIndexOf("/") + 1);
+						groupedWork.addPublicationDate(releaseYear);
+					} catch (ParseException e) {
+						logger.error("Unable to parse cover date", e);
+					}
+
+					itemInfo.setFormat(primaryFormat);
+					itemInfo.setFormatCategory(formatCategory);
+					//We don't currently have a way to determine how many copies are owned
+					itemInfo.setNumCopies(1);
+
+					Date dateAdded = null;
+					try {
+						dateAdded = dateFormatter.parse(getMagazineIssuesRS.getString("publishedOn"));
+					} catch (ParseException e) {
+						logger.error("Error parsing publication date for RBdigital magazine ", e);
+					}
+					itemInfo.setDateAdded(dateAdded);
+
+					//Get Issues
+					long issueId = getMagazineIssuesRS.getLong("id");
+					getIssueAvailabilityStmt.setLong(1, issueId);
+					ResultSet getIssueAvailabilityRS = getIssueAvailabilityStmt.executeQuery();
+					while (getIssueAvailabilityRS.next()){
+						long settingId = getIssueAvailabilityRS.getLong("settingId");
+						for (Scope scope : indexer.getScopes()) {
+							boolean okToAdd = false;
+							RbdigitalScope rbdigitalScope = scope.getRbdigitalScope();
+							if (rbdigitalScope != null) {
+								if (settingId == rbdigitalScope.getSettingId()){
+									if (rbdigitalScope.isIncludeEMagazines()) {
+										okToAdd = true;
+									}
+									if (rbdigitalScope.isRestrictToChildrensMaterial() && !isChildrens) {
+										okToAdd = false;
+									}
+								}
+							}
+							if (okToAdd) {
+								ScopingInfo scopingInfo = itemInfo.addScope(scope);
+								boolean available = getIssueAvailabilityRS.getBoolean("isAvailable");
+								if (available) {
+									itemInfo.setDetailedStatus("Available Online");
+								} else {
+									itemInfo.setDetailedStatus("Checked Out");
+								}
+								scopingInfo.setAvailable(available);
+								if (available) {
+									scopingInfo.setStatus("Available Online");
+									scopingInfo.setGroupedStatus("Available Online");
+								} else {
+									scopingInfo.setStatus("Checked Out");
+									scopingInfo.setGroupedStatus("Checked Out");
+								}
+								scopingInfo.setHoldable(true);
+								boolean owned = getIssueAvailabilityRS.getBoolean("isOwned");
+								scopingInfo.setLibraryOwned(owned);
+								scopingInfo.setLocallyOwned(owned);
+								scopingInfo.setInLibraryUseOnly(false);
+							}
 						}
 					}
-					if (okToAdd) {
-						ScopingInfo scopingInfo = itemInfo.addScope(scope);
-						scopingInfo.setAvailable(available);
-						if (available) {
-							scopingInfo.setStatus("Available Online");
-							scopingInfo.setGroupedStatus("Available Online");
-						} else {
-							scopingInfo.setStatus("Checked Out");
-							scopingInfo.setGroupedStatus("Checked Out");
-						}
-						scopingInfo.setHoldable(true);
-						scopingInfo.setLibraryOwned(true);
-						scopingInfo.setLocallyOwned(true);
-						scopingInfo.setInLibraryUseOnly(false);
-					}
+					rbdigitalRecord.addItem(itemInfo);
 				}
-
-				rbdigitalRecord.addItem(itemInfo);
+				getMagazineIssuesRS.close();
 			}
 			productRS.close();
 		} catch (NullPointerException e) {

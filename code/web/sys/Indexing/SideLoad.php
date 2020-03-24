@@ -195,7 +195,6 @@ class SideLoad extends DataObject
 
 	public function __set($name, $value){
 		if ($name == "scopes") {
-			/** @noinspection PhpUndefinedFieldInspection */
 			$this->_scopes = $value;
 		}else {
 			$this->_data[$name] = $value;

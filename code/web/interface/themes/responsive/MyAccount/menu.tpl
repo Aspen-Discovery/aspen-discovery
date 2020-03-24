@@ -321,7 +321,7 @@
 				{/if}
 
 				{* Admin Functionality if Available *}
-				{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('contentEditor', $userRoles) || array_key_exists('libraryManager', $userRoles) || array_key_exists('locationManager', $userRoles) || array_key_exists('translator', $userRoles))}
+				{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('libraryManager', $userRoles) || array_key_exists('locationManager', $userRoles) || array_key_exists('translator', $userRoles))}
 					{if in_array($action, array('Libraries', 'Locations', 'IPAddresses', 'PTypes', 'AccountProfiles', 'BlockPatronAccountLinks', 'Languages'))}
 						{assign var="curSection" value=true}
 					{else}
@@ -411,7 +411,7 @@
 									<div class="adminMenuLink"><a href="/Enrichment/NewYorkTimesSettings">{translate text="NY Times Settings"}</a></div>
 								{/if}
 								{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('libraryManager', $userRoles) || array_key_exists('contentEditor', $userRoles))}
-									<div class="adminMenuLink">&nbsp;&raquo;&nbsp;<a href="/Admin/NYTLists">{translate text="NY Times Lists"}</a></div>
+									<div class="adminMenuLink">{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles))}&nbsp;&raquo;&nbsp;{/if}<a href="/Admin/NYTLists">{translate text="NY Times Lists"}</a></div>
 								{/if}
 								{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles))}
 									<div class="adminMenuLink"><a href="/Enrichment/NovelistSettings">{translate text="Novelist Settings"}</a></div>

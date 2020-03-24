@@ -6,6 +6,7 @@ class RBdigitalExportLogEntry extends DataObject
 	public $__table = 'rbdigital_export_log';   // table name
 	public $id;
 	public $startTime;
+	public $settingId;
 	public $lastUpdate;
 	public $endTime;
 	public $notes;
