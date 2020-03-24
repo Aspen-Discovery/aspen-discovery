@@ -888,6 +888,7 @@ class RBdigitalDriver extends AbstractEContentDriver
 				}
 			}
 		}elseif (!empty($patron->email)){
+			$this->curlWrapper->timeout = 10;
 			$patronUrl = $this->webServiceURL . '/v1/rpc/libraries/' . $this->libraryId . '/patrons/' . urlencode($patron->email);
 			$rawResponse = $this->curlWrapper->curlGetPage($patronUrl);
 			$response = json_decode($rawResponse);
