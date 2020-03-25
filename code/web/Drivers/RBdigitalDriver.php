@@ -17,24 +17,31 @@ class RBdigitalDriver extends AbstractEContentDriver
 	public function __construct()
 	{
 		require_once ROOT_DIR . '/sys/RBdigital/RBdigitalSetting.php';
+		require_once ROOT_DIR . '/sys/RBdigital/RBdigitalScope.php';
 		try {
-			$rbdigitalSettings = new RBdigitalSetting();
-			if ($rbdigitalSettings->find(true)) {
-				$this->valid = true;
+			global $library;
+			$rbdigitalScope = new RBdigitalScope();
+			$rbdigitalScope->id = $library->rbdigitalScopeId;
+			if ($rbdigitalScope->find(true)){
+				$rbdigitalSettings = new RBdigitalSetting();
+				$rbdigitalSettings->id = $rbdigitalScope->settingId;
+				if ($rbdigitalSettings->find(true)) {
+					$this->valid = true;
 
-				$this->webServiceURL = $rbdigitalSettings->apiUrl;
-				$this->userInterfaceURL = $rbdigitalSettings->userInterfaceUrl;
-				$this->apiToken = $rbdigitalSettings->apiToken;
-				$this->libraryId = $rbdigitalSettings->libraryId;
-				$this->allowPatronLookupByEmail = $rbdigitalSettings->allowPatronLookupByEmail;
+					$this->webServiceURL = $rbdigitalSettings->apiUrl;
+					$this->userInterfaceURL = $rbdigitalSettings->userInterfaceUrl;
+					$this->apiToken = $rbdigitalSettings->apiToken;
+					$this->libraryId = $rbdigitalSettings->libraryId;
+					$this->allowPatronLookupByEmail = $rbdigitalSettings->allowPatronLookupByEmail;
 
-				$this->curlWrapper = new CurlWrapper();
-				$headers = [
-					'Accept: application/json',
-					'Authorization: basic ' . strtolower($this->apiToken),
-					'Content-Type: application/json'
-				];
-				$this->curlWrapper->addCustomHeaders($headers, true);
+					$this->curlWrapper = new CurlWrapper();
+					$headers = [
+						'Accept: application/json',
+						'Authorization: basic ' . strtolower($this->apiToken),
+						'Content-Type: application/json'
+					];
+					$this->curlWrapper->addCustomHeaders($headers, true);
+				}
 			}
 		} catch (Exception $e) {
 			global $logger;
@@ -152,8 +159,9 @@ class RBdigitalDriver extends AbstractEContentDriver
 					$checkout['checkoutSource'] = 'RBdigitalMagazine';
 
 					$checkout['id'] = $patronMagazineDetails->issueId;
-					$checkout['recordId'] = $patronMagazineDetails->magazineId;
+					$checkout['recordId'] = $patronMagazineDetails->magazineId . '_' . $patronMagazineDetails->issueId;
 					$checkout['title'] = $patronMagazineDetails->title;
+					$checkout['volume'] = $patronMagazineDetails->coverDate;
 					$checkout['publisher'] = $patronMagazineDetails->publisher;
 					$checkout['canRenew'] = false;
 					$checkout['accessOnlineUrl'] = '';
@@ -248,22 +256,23 @@ class RBdigitalDriver extends AbstractEContentDriver
 			$result['message'] = 'Sorry, you are not registered with RBdigital.  You will need to create an account there before continuing.';
 		} else {
 			//Get the current issue for the magazine
+			list($magazineId, $issueId) = explode("_", $recordId);
 			require_once ROOT_DIR . '/sys/RBdigital/RBdigitalMagazine.php';
 			$product = new RBdigitalMagazine();
-			$product->magazineId = $recordId;
+			$product->magazineId = $magazineId;
 			if ($product->find(true)) {
 				require_once ROOT_DIR . '/RecordDrivers/RBdigitalRecordDriver.php';
-				$actionUrl = $this->webServiceURL . '/v1/libraries/' . $this->libraryId . '/patrons/' . $rbdigitalId . '/patron-magazines/' . $product->issueId;
+				$actionUrl = $this->webServiceURL . '/v1/libraries/' . $this->libraryId . '/patrons/' . $rbdigitalId . '/patron-magazines/' . $issueId;
 				// /v{version}/libraries/{libraryId}/patrons/{patronId}/patron-magazines/{issueId}
 
 				//RBdigital does not return a status so we assume that it checked out ok
 				$this->curlWrapper->curlPostPage($actionUrl, '');
 
 				$this->trackUserUsageOfRBdigital($patron);
-				$this->trackMagazineCheckout($recordId);
+				$this->trackMagazineCheckout($magazineId, $issueId);
 
 				$result['success'] = true;
-				$result['message'] = 'The magazine was checked out successfully. You can read the magazine from the rbdigital app.';
+				$result['message'] = 'The magazine was checked out successfully. You can read the magazine from the RBdigital app.';
 
 				/** @var Memcache $memCache */
 				global $memCache;
@@ -423,7 +432,7 @@ class RBdigitalDriver extends AbstractEContentDriver
 	 * @param $magazineId   string
 	 * @return array
 	 */
-	public function returnMagazine($patron, $magazineId)
+	public function returnMagazine($patron, $magazineId, $issueId)
 	{
 		$result = ['success' => false, 'message' => 'Unknown error'];
 
@@ -435,7 +444,7 @@ class RBdigitalDriver extends AbstractEContentDriver
 			$product = new RBdigitalMagazine();
 			$product->magazineId = $magazineId;
 			if ($product->find(true)) {
-				$actionUrl = $this->webServiceURL . '/v1/libraries/' . $this->libraryId . '/patrons/' . $rbdigitalId . '/patron-magazines/' . $product->issueId;
+				$actionUrl = $this->webServiceURL . '/v1/libraries/' . $this->libraryId . '/patrons/' . $rbdigitalId . '/patron-magazines/' . $issueId;
 
 				$rawResponse = $this->curlWrapper->curlSendPage($actionUrl, 'DELETE');
 				$response = json_decode($rawResponse);
@@ -710,15 +719,23 @@ class RBdigitalDriver extends AbstractEContentDriver
 
 	public function redirectToRBdigitalMagazine(/** @noinspection PhpUnusedParameterInspection */ User $patron, RBdigitalMagazineDriver $recordDriver)
 	{
-		$this->addBearerTokenHeader($patron);
-		header('Location:' . $recordDriver->getRBdigitalLinkUrl());
+		$token = $this->addBearerTokenHeader($patron);
+		$redirectUrl = $recordDriver->getRBdigitalLinkUrl();
+		if (!empty($token)) {
+			$redirectUrl .= '?bearer=' . $token;
+		}
+		header('Location:' . $redirectUrl);
 		die();
 	}
 
 	public function redirectToRBdigital(User $patron, RBdigitalRecordDriver $recordDriver)
 	{
-		$this->addBearerTokenHeader($patron);
-		header('Location:' . $this->userInterfaceURL . '/book/' . $recordDriver->getUniqueID());
+		$token = $this->addBearerTokenHeader($patron);
+		$redirectUrl = $this->userInterfaceURL . '/book/' . $recordDriver->getUniqueID();
+		if (!empty($token)) {
+			$redirectUrl .= '?bearer=' . $token;
+		}
+		header('Location:' . $redirectUrl);
 		die();
 //        $result = ['success' => false, 'message' => 'Unknown error'];
 //        $rbdigitalId = $this->getRBdigitalId($patron);
@@ -792,14 +809,15 @@ class RBdigitalDriver extends AbstractEContentDriver
 	/**
 	 * @param int $rbdigitalId
 	 */
-	function trackMagazineCheckout($rbdigitalId): void
+	function trackMagazineCheckout($magazineId, $issueId): void
 	{
 		require_once ROOT_DIR . '/sys/RBdigital/RBdigitalMagazineUsage.php';
 		$recordUsage = new RBdigitalMagazineUsage();
 		$product = new RBdigitalMagazine();
-		$product->magazineId = $rbdigitalId;
+		$product->magazineId = $magazineId;
 		if ($product->find(true)) {
 			$recordUsage->magazineId = $product->id;
+			$recordUsage->issueId = $issueId;
 			$recordUsage->year = date('Y');
 			$recordUsage->month = date('n');
 			if ($recordUsage->find(true)) {
@@ -840,7 +858,7 @@ class RBdigitalDriver extends AbstractEContentDriver
 
 	/**
 	 * @param User $patron
-	 * @return void
+	 * @return string|null
 	 */
 	private function addBearerTokenHeader(User $patron)
 	{
@@ -866,8 +884,39 @@ class RBdigitalDriver extends AbstractEContentDriver
 				if ($response->result == true) {
 					$bearerToken = $response->bearer;
 					header('Authorization: bearer ' . $bearerToken);
+					return $bearerToken;
+				}
+			}
+		}elseif (!empty($patron->email)){
+			$this->curlWrapper->timeout = 10;
+			$patronUrl = $this->webServiceURL . '/v1/rpc/libraries/' . $this->libraryId . '/patrons/' . urlencode($patron->email);
+			$rawResponse = $this->curlWrapper->curlGetPage($patronUrl);
+			$response = json_decode($rawResponse);
+			if ($response != false) {
+				$tokenUrl = $this->webServiceURL . '/v1/libraries/' . $this->libraryId . '/tokens';
+				$userData = [
+					'userId' => $response->userId,
+				];
+				$rawTokenResponse = $this->curlWrapper->curlPostBodyData($tokenUrl, $userData);
+				$tokenResponse = json_decode($rawTokenResponse);
+				if ($tokenResponse != false) {
+					if (!empty($tokenResponse->message)){
+						return false;
+					}
+					return $tokenResponse->bearer;
 				}
 			}
 		}
+		return null;
+
+//...with that userId GUID value, you can generate a bearer token via...
+//POST https://api.rbdigital.com/v1/libraries/[libraryId]/tokens
+//{
+//	"userId":"[GUID]"
+//}
+//
+//...which will return a bearer token.
+//	Assuming you know the ISBN for the title of interest, you can use the bearer token as per...
+//https://[subdomain].rbdigital.com/book/[ISBN]?bearer=[bearer token]
 	}
 }

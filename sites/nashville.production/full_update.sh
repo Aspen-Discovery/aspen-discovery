@@ -120,7 +120,7 @@ cd /data/pika/accelerated_reader; curl --remote-name --remote-time --silent --sh
 #get caught in the regular extract
 if [ "${DAYOFWEEK}" -eq 6 ];
 then
-	cd /usr/local/aspen-discovery/vufind/overdrive_api_extract/
+	cd /usr/local/aspen-discovery/vufind/overdrive_extract/
 	nice -n -10 java -jar overdrive_extract.jar ${PIKASERVER} fullReload >> ${OUTPUT_FILE}
 fi
 

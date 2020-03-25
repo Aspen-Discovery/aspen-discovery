@@ -321,7 +321,7 @@
 				{/if}
 
 				{* Admin Functionality if Available *}
-				{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('contentEditor', $userRoles) || array_key_exists('libraryManager', $userRoles) || array_key_exists('locationManager', $userRoles) || array_key_exists('translator', $userRoles))}
+				{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('libraryManager', $userRoles) || array_key_exists('locationManager', $userRoles) || array_key_exists('translator', $userRoles))}
 					{if in_array($action, array('Libraries', 'Locations', 'IPAddresses', 'PTypes', 'AccountProfiles', 'BlockPatronAccountLinks', 'Languages'))}
 						{assign var="curSection" value=true}
 					{else}
@@ -411,7 +411,7 @@
 									<div class="adminMenuLink"><a href="/Enrichment/NewYorkTimesSettings">{translate text="NY Times Settings"}</a></div>
 								{/if}
 								{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('libraryManager', $userRoles) || array_key_exists('contentEditor', $userRoles))}
-									<div class="adminMenuLink">&nbsp;&raquo;&nbsp;<a href="/Admin/NYTLists">{translate text="NY Times Lists"}</a></div>
+									<div class="adminMenuLink">{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles))}&nbsp;&raquo;&nbsp;{/if}<a href="/Admin/NYTLists">{translate text="NY Times Lists"}</a></div>
 								{/if}
 								{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles))}
 									<div class="adminMenuLink"><a href="/Enrichment/NovelistSettings">{translate text="Novelist Settings"}</a></div>
@@ -776,6 +776,28 @@
 					</div>
 				{/if}
 
+				{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles))}
+					{if $module == 'Admin' && in_array($action, array('ReleaseNotes', 'SubmitTicket'))}
+						{assign var="curSection" value=true}
+					{else}
+						{assign var="curSection" value=false}
+					{/if}
+					<div class="panel{if $curSection} active{/if}">
+						<a href="#websitesMenu" data-toggle="collapse" data-parent="#adminMenuAccordion">
+							<div class="panel-heading">
+								<div class="panel-title">
+									{translate text="Aspen Discovery Help"}
+								</div>
+							</div>
+						</a>
+						<div id="websitesMenu" class="panel-collapse collapse {if $curSection}in{/if}">
+							<div class="panel-body">
+								<div class="adminMenuLink"><a href="/Admin/ReleaseNotes">{translate text="Release Notes"}</a></div>
+								{*<div class="adminMenuLink"><a href="/Admin/SubmitTicket">{translate text="Submit Ticket"}</a></div>*}
+							</div>
+						</div>
+					</div>
+				{/if}
 			</div>
 
 			{include file="library-links.tpl" libraryLinks=$libraryAccountLinks linksId='home-library-account-links' section='Account'}

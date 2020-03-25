@@ -1,7 +1,147 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="55ca2c23-0e7e-4349-ac3a-9f29a6a68364" name="Default Changelist" comment="" />
+    <list default="true" id="55ca2c23-0e7e-4349-ac3a-9f29a6a68364" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/file/JarUtil.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../rbdigital_export/src/com/turning_leaf_technologies/rbdigital/RBdigitalSetting.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/Admin/releaseNotes.tpl" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../web/release_notes/20.01.00.MD" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../web/release_notes/20.02.00.MD" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../web/release_notes/20.03.00.MD" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../web/release_notes/20.04.00.MD" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../web/services/Admin/ReleaseNotes.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../web/sys/Parsedown/Parsedown.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../web/sys/RBdigital/RBdigitalIssue.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../carlx_export/carlx_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../carlx_export/carlx_export.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../carlx_export/src/com/turning_leaf_technologies/carlx/CarlXExportMain.java" beforeDir="false" afterPath="$PROJECT_DIR$/../carlx_export/src/com/turning_leaf_technologies/carlx/CarlXExportMain.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../cloudlibrary_export/META-INF/MANIFEST.MF" beforeDir="false" afterPath="$PROJECT_DIR$/../cloud_library_export/META-INF/MANIFEST.MF" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../cloudlibrary_export/cloud_library_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../cloud_library_export/cloud_library_export.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../cloudlibrary_export/cloudlibrary_export.iml" beforeDir="false" afterPath="$PROJECT_DIR$/../cloud_library_export/cloud_library_export.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../cloudlibrary_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryAvailability.java" beforeDir="false" afterPath="$PROJECT_DIR$/../cloud_library_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryAvailability.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../cloudlibrary_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryAvailabilityHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/../cloud_library_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryAvailabilityHandler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../cloudlibrary_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryEventHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/../cloud_library_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryEventHandler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../cloudlibrary_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryExportMain.java" beforeDir="false" afterPath="$PROJECT_DIR$/../cloud_library_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryExportMain.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../cloudlibrary_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryExtractLogEntry.java" beforeDir="false" afterPath="$PROJECT_DIR$/../cloud_library_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryExtractLogEntry.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../cloudlibrary_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryMarcHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/../cloud_library_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryMarcHandler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../cloudlibrary_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryTitle.java" beforeDir="false" afterPath="$PROJECT_DIR$/../cloud_library_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryTitle.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/artifacts/cloud_library_export.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/artifacts/cloud_library_export.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/artifacts/overdrive_extract.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/artifacts/overdrive_extract.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dictionaries/mdnob.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dictionaries/mdnob.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cron.jar" beforeDir="false" afterPath="$PROJECT_DIR$/cron.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../hoopla_export/hoopla_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../hoopla_export/hoopla_export.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../horizon_export/horizon_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../horizon_export/horizon_export.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/indexing/IndexingProfile.java" beforeDir="false" afterPath="$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/indexing/IndexingProfile.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/indexing/IndexingUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/indexing/IndexingUtils.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/indexing/RbdigitalScope.java" beforeDir="false" afterPath="$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/indexing/RbdigitalScope.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/net/NetworkUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/net/NetworkUtils.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../koha_export/koha_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../koha_export/koha_export.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../koha_export/src/com/turning_leaf_technologies/koha_export/KohaExportMain.java" beforeDir="false" afterPath="$PROJECT_DIR$/../koha_export/src/com/turning_leaf_technologies/koha_export/KohaExportMain.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../oai_indexer/oai_indexer.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../oai_indexer/oai_indexer.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../overdrive_api_extract/META-INF/MANIFEST.MF" beforeDir="false" afterPath="$PROJECT_DIR$/../overdrive_extract/META-INF/MANIFEST.MF" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../overdrive_api_extract/overdrive_api_extract.iml" beforeDir="false" afterPath="$PROJECT_DIR$/../overdrive_extract/overdrive_extract.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../overdrive_api_extract/overdrive_extract.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../overdrive_extract/overdrive_extract.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../overdrive_api_extract/overdrive_extract.jardesc" beforeDir="false" afterPath="$PROJECT_DIR$/../overdrive_extract/overdrive_extract.jardesc" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../overdrive_api_extract/src/com/turning_leaf_technologies/overdrive/AdvantageCollectionInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/../overdrive_extract/src/com/turning_leaf_technologies/overdrive/AdvantageCollectionInfo.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../overdrive_api_extract/src/com/turning_leaf_technologies/overdrive/ExtractOverDriveInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/../overdrive_extract/src/com/turning_leaf_technologies/overdrive/ExtractOverDriveInfo.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../overdrive_api_extract/src/com/turning_leaf_technologies/overdrive/ExtractOverDriveInfoMain.java" beforeDir="false" afterPath="$PROJECT_DIR$/../overdrive_extract/src/com/turning_leaf_technologies/overdrive/ExtractOverDriveInfoMain.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../overdrive_api_extract/src/com/turning_leaf_technologies/overdrive/OverDriveAvailabilityInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/../overdrive_extract/src/com/turning_leaf_technologies/overdrive/OverDriveAvailabilityInfo.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../overdrive_api_extract/src/com/turning_leaf_technologies/overdrive/OverDriveDBInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/../overdrive_extract/src/com/turning_leaf_technologies/overdrive/OverDriveDBInfo.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../overdrive_api_extract/src/com/turning_leaf_technologies/overdrive/OverDriveExtractLogEntry.java" beforeDir="false" afterPath="$PROJECT_DIR$/../overdrive_extract/src/com/turning_leaf_technologies/overdrive/OverDriveExtractLogEntry.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../overdrive_api_extract/src/com/turning_leaf_technologies/overdrive/OverDriveRecordInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/../overdrive_extract/src/com/turning_leaf_technologies/overdrive/OverDriveRecordInfo.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../rbdigital_export/rbdigital_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../rbdigital_export/rbdigital_export.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../rbdigital_export/src/com/turning_leaf_technologies/rbdigital/RbdigitalExportMain.java" beforeDir="false" afterPath="$PROJECT_DIR$/../rbdigital_export/src/com/turning_leaf_technologies/rbdigital/RbdigitalExportMain.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../rbdigital_export/src/com/turning_leaf_technologies/rbdigital/RbdigitalExtractLogEntry.java" beforeDir="false" afterPath="$PROJECT_DIR$/../rbdigital_export/src/com/turning_leaf_technologies/rbdigital/RbdigitalExtractLogEntry.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../rbdigital_export/src/com/turning_leaf_technologies/rbdigital/RbdigitalTitle.java" beforeDir="false" afterPath="$PROJECT_DIR$/../rbdigital_export/src/com/turning_leaf_technologies/rbdigital/RbdigitalTitle.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../record_grouping/record_grouping.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../record_grouping/record_grouping.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../record_grouping/src/com/turning_leaf_technologies/grouping/OverDriveRecordGrouper.java" beforeDir="false" afterPath="$PROJECT_DIR$/../record_grouping/src/com/turning_leaf_technologies/grouping/OverDriveRecordGrouper.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../reindexer/reindexer.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../reindexer/reindexer.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/GroupedWorkIndexer.java" beforeDir="false" afterPath="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/GroupedWorkIndexer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/GroupedWorkSolr.java" beforeDir="false" afterPath="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/GroupedWorkSolr.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/IlsRecordProcessor.java" beforeDir="false" afterPath="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/IlsRecordProcessor.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/KohaRecordProcessor.java" beforeDir="false" afterPath="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/KohaRecordProcessor.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/RbdigitalMagazineProcessor.java" beforeDir="false" afterPath="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/RbdigitalMagazineProcessor.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/RbdigitalProcessor.java" beforeDir="false" afterPath="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/RbdigitalProcessor.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../sideload_processing/sideload_processing.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../sideload_processing/sideload_processing.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../sideload_processing/src/com/turning_leaf_technologies/sideloading/SideLoadingMain.java" beforeDir="false" afterPath="$PROJECT_DIR$/../sideload_processing/src/com/turning_leaf_technologies/sideloading/SideLoadingMain.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../sierra_export_api/sierra_export_api.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../sierra_export_api/sierra_export_api.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../sierra_export_api/src/com/turning_leaf_technologies/sierra/SierraExportAPIMain.java" beforeDir="false" afterPath="$PROJECT_DIR$/../sierra_export_api/src/com/turning_leaf_technologies/sierra/SierraExportAPIMain.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../user_list_indexer/src/com/turning_leaf_technologies/reindexer/UserListIndexer.java" beforeDir="false" afterPath="$PROJECT_DIR$/../user_list_indexer/src/com/turning_leaf_technologies/reindexer/UserListIndexer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../user_list_indexer/src/com/turning_leaf_technologies/reindexer/UserListIndexerMain.java" beforeDir="false" afterPath="$PROJECT_DIR$/../user_list_indexer/src/com/turning_leaf_technologies/reindexer/UserListIndexerMain.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../user_list_indexer/src/com/turning_leaf_technologies/reindexer/UserListSolr.java" beforeDir="false" afterPath="$PROJECT_DIR$/../user_list_indexer/src/com/turning_leaf_technologies/reindexer/UserListSolr.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../user_list_indexer/user_list_indexer.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../user_list_indexer/user_list_indexer.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../web/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/Drivers/Koha.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/Drivers/Koha.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/Drivers/OverDriveDriver.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/Drivers/OverDriveDriver.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/Drivers/RBdigitalDriver.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/Drivers/RBdigitalDriver.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/RecordDrivers/GroupedWorkDriver.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/RecordDrivers/GroupedWorkDriver.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/RecordDrivers/RBdigitalMagazineDriver.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/RecordDrivers/RBdigitalMagazineDriver.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/interface/themes/nashville_resp/Search/list.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/nashville_resp/Search/list.tpl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/Admin/exportLogFilters.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/Admin/exportLogFilters.tpl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/DataObjectUtil/oneToMany.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/DataObjectUtil/oneToMany.tpl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/Lists/list-none.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/Lists/list-none.tpl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/Lists/list.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/Lists/list.tpl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/MyAccount/list.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/MyAccount/list.tpl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/MyAccount/menu.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/MyAccount/menu.tpl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/MyAccount/rbdigitalCheckedOutMagazine.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/MyAccount/rbdigitalCheckedOutMagazine.tpl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/MyAccount/rbdigitalHold.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/MyAccount/rbdigitalHold.tpl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/OpenArchives/list-none.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/OpenArchives/list-none.tpl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/OpenArchives/list.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/OpenArchives/list.tpl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/RBdigital/rbdigitalExportLog.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/RBdigital/rbdigitalExportLog.tpl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/RecordDrivers/GroupedWork/staff-view.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/RecordDrivers/GroupedWork/staff-view.tpl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/RecordDrivers/Hoopla/staff-view.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/RecordDrivers/Hoopla/staff-view.tpl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/RecordDrivers/Marc/staff.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/RecordDrivers/Marc/staff.tpl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/RecordDrivers/OverDrive/staff.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/RecordDrivers/OverDrive/staff.tpl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/RecordDrivers/RBdigital/staff-view.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/RecordDrivers/RBdigital/staff-view.tpl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/Search/list-none.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/Search/list-none.tpl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/Search/list.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/Search/list.tpl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/Websites/list-none.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/Websites/list-none.tpl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/Websites/list.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/Websites/list.tpl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/js/aspen/admin.js" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/js/aspen/admin.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/js/aspen/base.js" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/js/aspen/base.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/js/aspen/rbdigital.js" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/js/aspen/rbdigital.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/js/aspen/record.js" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/js/aspen/record.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/release_notes/2019_06A.yaml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/release_notes/2019_06B.yaml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/release_notes/2019_07A.yaml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/release_notes/2019_07B.yaml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/release_notes/template.yaml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/services/Admin/AJAX.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/services/Admin/AJAX.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/services/Admin/CollectionSpotlights.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/services/Admin/CollectionSpotlights.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/services/Admin/IndexingLog.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/services/Admin/IndexingLog.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/services/Admin/ReindexLog.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/services/Admin/ReindexLog.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/services/GroupedWork/AJAX.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/services/GroupedWork/AJAX.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/services/Hoopla/AJAX.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/services/Hoopla/AJAX.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/services/RBdigital/AJAX.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/services/RBdigital/AJAX.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/services/RBdigitalMagazine/AJAX.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/services/RBdigitalMagazine/AJAX.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/services/RBdigitalMagazine/AccessOnline.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/services/RBdigitalMagazine/AccessOnline.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/services/Record/AJAX.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/services/Record/AJAX.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/sys/Account/User.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/sys/Account/User.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/sys/Covers/BookCoverProcessor.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/sys/Covers/BookCoverProcessor.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/sys/Covers/ListCoverBuilder.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/sys/Covers/ListCoverBuilder.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/sys/DBMaintenance/indexing_updates.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/sys/DBMaintenance/indexing_updates.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/sys/DBMaintenance/rbdigital_updates.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/sys/DBMaintenance/rbdigital_updates.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/sys/DBMaintenance/user_updates.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/sys/DBMaintenance/user_updates.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/sys/Indexing/IndexingProfile.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/sys/Indexing/IndexingProfile.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/sys/Indexing/SideLoad.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/sys/Indexing/SideLoad.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/sys/LibraryLocation/Library.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/sys/LibraryLocation/Library.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/sys/LocalEnrichment/Placard.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/sys/LocalEnrichment/Placard.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/sys/RBdigital/RBdigitalExportLogEntry.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/sys/RBdigital/RBdigitalExportLogEntry.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/sys/RBdigital/RBdigitalScope.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/sys/RBdigital/RBdigitalScope.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/sys/RBdigital/RBdigitalSetting.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/sys/RBdigital/RBdigitalSetting.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web_indexer/src/com/turning_leaf_technologies/website_indexer/WebsiteIndexerMain.java" beforeDir="false" afterPath="$PROJECT_DIR$/../web_indexer/src/com/turning_leaf_technologies/website_indexer/WebsiteIndexerMain.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web_indexer/web_indexer.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../web_indexer/web_indexer.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../sites/arlington.production/start_background_processes.sh" beforeDir="false" afterPath="$PROJECT_DIR$/../../sites/arlington.production/start_background_processes.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../sites/aspencat.production/start_background_processes.sh" beforeDir="false" afterPath="$PROJECT_DIR$/../../sites/aspencat.production/start_background_processes.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../sites/basinlibraries.production/start_background_processes.sh" beforeDir="false" afterPath="$PROJECT_DIR$/../../sites/basinlibraries.production/start_background_processes.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../sites/model.production/start_background_processes.sh" beforeDir="false" afterPath="$PROJECT_DIR$/../../sites/model.production/start_background_processes.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../sites/nashville.production/continuous_partial_reindex.sh" beforeDir="false" afterPath="$PROJECT_DIR$/../../sites/nashville.production/continuous_partial_reindex.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../sites/nashville.production/full_update.sh" beforeDir="false" afterPath="$PROJECT_DIR$/../../sites/nashville.production/full_update.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../sites/nashville.production/start_background_processes.sh" beforeDir="false" afterPath="$PROJECT_DIR$/../../sites/nashville.production/start_background_processes.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../sites/pueblo.production/start_background_processes.sh" beforeDir="false" afterPath="$PROJECT_DIR$/../../sites/pueblo.production/start_background_processes.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../sites/template.linux/start_background_processes.sh" beforeDir="false" afterPath="$PROJECT_DIR$/../../sites/template.linux/start_background_processes.sh" afterDir="false" />
+    </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -23,29 +163,7 @@
     <favorites_list name="cron" />
   </component>
   <component name="FileEditorManager">
-    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/../cloudlibrary_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryExportMain.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="231">
-              <caret line="298" column="74" lean-forward="true" selection-start-line="298" selection-start-column="74" selection-end-line="298" selection-end-column="74" />
-              <folding>
-                <element signature="imports" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/../cloudlibrary_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryMarcHandler.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1260">
-              <caret line="110" selection-start-line="110" selection-end-line="110" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-    </leaf>
+    <leaf />
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
@@ -57,38 +175,36 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>getMarcJSONFromSierraApiURL</find>
-      <find>updateMarc</find>
-      <find>/marc</find>
-      <find>isEContent</find>
-      <find>addseries</find>
-      <find>seriesField.put</find>
-      <find>get</find>
-      <find>Library Use Only</find>
-      <find>setInLibraryUseOnly</find>
-      <find>determineLibraryUseOnly</find>
-      <find>suppress</find>
-      <find>status_map_values</find>
-      <find>formatsToSuppress</find>
-      <find>getItemsForB</find>
-      <find>libraryUse</find>
-      <find>itemsForVolume</find>
-      <find>getSolr</find>
-      <find>infix_keyword_suggestions</find>
-      <find>scope</find>
-      <find>&lt;field name=&quot;scope_has_related_records&quot; type=&quot;unchanged_string&quot; indexed=&quot;true&quot; stored=&quot;false&quot; multiValued=&quot;true&quot;/&gt;</find>
-      <find>keyword</find>
-      <find>html</find>
-      <find>textProper</find>
-      <find>creator</find>
-      <find>BookCoverCleanup</find>
-      <find>event_indexing_log</find>
-      <find>checksumCalculator</find>
-      <find>last_indexed</find>
-      <find>existingEvents</find>
-      <find>solrUpdateServer =</find>
-      <find>field name=&quot;keywords&quot;</find>
-      <find>solrUpdateServer</find>
+      <find>finish</find>
+      <find>system.ex</find>
+      <find>Error loading</find>
+      <find>getAllExistingRbdigitalItemsStmt</find>
+      <find>logEntry.incErrors</find>
+      <find>logEntry.incErrors(</find>
+      <find>getExistingRbdigitalAvailabilityStmt</find>
+      <find>getURL</find>
+      <find>updateRbdigitalAvailabilityStmt</find>
+      <find>.executeUpdate()</find>
+      <find>updateRbdigitalMagazineStmt</find>
+      <find>imageUrl</find>
+      <find>GENERATED_KEYS</find>
+      <find>createTranslationMapStmt</find>
+      <find>processRbdigitalTitles</find>
+      <find>updateRBdigitalIssueStmt</find>
+      <find>updateRBdigitalIssueAvailabilityStmt</find>
+      <find>settingId</find>
+      <find>getProductInfoStmt</find>
+      <find>getRBdigitalIssueStmt</find>
+      <find>Rbdigital</find>
+      <find>getAllExistingRbdigitalMagazinesStmt</find>
+      <find>Grouped</find>
+      <find>publicationDate</find>
+      <find>publicationD</find>
+      <find>updateServer</find>
+      <find>groupedWork</find>
+      <find>RBdigitalScope</find>
+      <find>runFull</find>
+      <find>solr</find>
     </findStrings>
     <replaceStrings>
       <replace>Rbdigital</replace>
@@ -126,65 +242,57 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/indexing/GroupedWorkDisplaySettings.java" />
-        <option value="$PROJECT_DIR$/../record_grouping/src/com/turning_leaf_technologies/grouping/RecordGroupingProcessor.java" />
-        <option value="$PROJECT_DIR$/../overdrive_api_extract/src/com/turning_leaf_technologies/overdrive/ExtractOverDriveInfo.java" />
-        <option value="$PROJECT_DIR$/../koha_export/src/com/turning_leaf_technologies/koha_export/KohaInstanceInformation.java" />
-        <option value="$PROJECT_DIR$/../sierra_export_api/src/com/turning_leaf_technologies/sierra/SierraInstanceInformation.java" />
-        <option value="$PROJECT_DIR$/../../sites/arlington.localhost/conf/config.pwd.ini" />
-        <option value="$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/indexing/BaseIndexingSettings.java" />
-        <option value="$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/logging/BaseLogEntry.java" />
-        <option value="$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/indexing/IlsExtractLogEntry.java" />
-        <option value="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/IIIRecordProcessor.java" />
-        <option value="$PROJECT_DIR$/../carlx_export/src/com/turning_leaf_technologies/carlx/CarlXExportMain.java" />
-        <option value="$PROJECT_DIR$/../marc4j/src/org/marc4j/MarcPermissiveStreamReader.java" />
-        <option value="$PROJECT_DIR$/../sierra_export_api/src/com/turning_leaf_technologies/sierra/SierraExportFieldMapping.java" />
-        <option value="$PROJECT_DIR$/../koha_export/src/com/turning_leaf_technologies/koha_export/KohaExportMain.java" />
-        <option value="$PROJECT_DIR$/../../sites/nashville.production/conf/crontab_settings.txt" />
-        <option value="$PROJECT_DIR$/../../sites/arlington.production/conf/crontab_settings.txt" />
-        <option value="$PROJECT_DIR$/../../sites/aspencat.production/conf/crontab_settings.txt" />
-        <option value="$PROJECT_DIR$/../../sites/basinlibraries.production/conf/crontab_settings.txt" />
-        <option value="$PROJECT_DIR$/../../sites/model.production/conf/crontab_settings.txt" />
-        <option value="$PROJECT_DIR$/../../sites/model2.production/conf/crontab_settings.txt" />
-        <option value="$PROJECT_DIR$/../../sites/pueblo.production/conf/crontab_settings.txt" />
-        <option value="$PROJECT_DIR$/../../sites/template.linux/conf/crontab_settings.txt" />
-        <option value="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/ItemInfo.java" />
-        <option value="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/CloudLibraryProcessor.java" />
-        <option value="$PROJECT_DIR$/../../sites/template.linux/start_background_processes.sh" />
-        <option value="$PROJECT_DIR$/../../sites/model.production/model.production.sh" />
-        <option value="$PROJECT_DIR$/../../sites/model2.production/model2.production.sh" />
-        <option value="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/KohaRecordProcessor.java" />
-        <option value="$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/indexing/IndexingUtils.java" />
-        <option value="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/ArlingtonRecordProcessor.java" />
-        <option value="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/RecordInfo.java" />
         <option value="$PROJECT_DIR$/../../sites/arlington.localhost/conf/config.ini" />
         <option value="$PROJECT_DIR$/../../sites/arlington.production/conf/config.ini" />
         <option value="$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/indexing/Scope.java" />
         <option value="$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/indexing/OwnershipRule.java" />
         <option value="$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/indexing/InclusionRule.java" />
-        <option value="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/RbdigitalProcessor.java" />
-        <option value="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/RbdigitalMagazineProcessor.java" />
         <option value="$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/strings/StringUtils.java" />
-        <option value="$PROJECT_DIR$/../sierra_export_api/src/com/turning_leaf_technologies/sierra/SierraExportAPIMain.java" />
-        <option value="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/GroupedWorkIndexer.java" />
         <option value="$PROJECT_DIR$/../../sites/template.linux/conf/config.ini" />
-        <option value="$PROJECT_DIR$/../../data_dir_setup/solr7/open_archives/conf/solrconfig.xml" />
-        <option value="$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/solrconfig.xml" />
-        <option value="$PROJECT_DIR$/../../data_dir_setup/solr7/lists/conf/solrconfig.xml" />
-        <option value="$PROJECT_DIR$/../../data_dir_setup/solr7/website_pages/conf/solrconfig.xml" />
-        <option value="$PROJECT_DIR$/../../data_dir_setup/solr7/open_archives/conf/schema.xml" />
-        <option value="$PROJECT_DIR$/../../data_dir_setup/solr7/events/core.properties" />
-        <option value="$PROJECT_DIR$/../event_export/src/com/turning_leaf_technologies/events/EventExportLogEntry.java" />
+        <option value="$PROJECT_DIR$/../../data_dir_setup/solr7/grouped_works/conf/schema.xml" />
+        <option value="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/OverDriveProcessor.java" />
+        <option value="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/SideLoadedEContentProcessor.java" />
+        <option value="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/MarcRecordProcessor.java" />
+        <option value="$PROJECT_DIR$/nightly_mysql_dump.sh" />
+        <option value="$PROJECT_DIR$/../cloudlibrary_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryMarcHandler.java" />
         <option value="$PROJECT_DIR$/../cloudlibrary_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryExportMain.java" />
-        <option value="$PROJECT_DIR$/../event_export/src/com/turning_leaf_technologies/events/EventExportMain.java" />
-        <option value="$PROJECT_DIR$/../event_indexer/src/com/turning_leaf_technologies/events/EventIndexerLogEntry.java" />
-        <option value="$PROJECT_DIR$/../event_indexer/src/com/turning_leaf_technologies/events/EventIndexerMain.java" />
-        <option value="$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/LibraryCalendarEvent.java" />
-        <option value="$PROJECT_DIR$/../web_indexer/src/com/turning_leaf_technologies/website_indexer/WebsiteIndexer.java" />
-        <option value="$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/EventsIndexerLogEntry.java" />
-        <option value="$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/EventsIndexerMain.java" />
-        <option value="$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/LibraryCalendarIndexer.java" />
-        <option value="$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/schema.xml" />
+        <option value="$PROJECT_DIR$/../record_grouping/src/com/turning_leaf_technologies/grouping/OverDriveRecordGrouper.java" />
+        <option value="$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/file/JarUtil.java" />
+        <option value="$PROJECT_DIR$/../carlx_export/src/com/turning_leaf_technologies/carlx/CarlXExportMain.java" />
+        <option value="$PROJECT_DIR$/../cloud_library_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryExportMain.java" />
+        <option value="$PROJECT_DIR$/../koha_export/src/com/turning_leaf_technologies/koha_export/KohaExportMain.java" />
+        <option value="$PROJECT_DIR$/../web_indexer/src/com/turning_leaf_technologies/website_indexer/WebsiteIndexerMain.java" />
+        <option value="$PROJECT_DIR$/../../sites/basinlibraries.production/start_background_processes.sh" />
+        <option value="$PROJECT_DIR$/../../sites/nashville.production/start_background_processes.sh" />
+        <option value="$PROJECT_DIR$/../../sites/nashville.production/full_update.sh" />
+        <option value="$PROJECT_DIR$/../../sites/nashville.production/continuous_partial_reindex.sh" />
+        <option value="$PROJECT_DIR$/../../sites/arlington.production/start_background_processes.sh" />
+        <option value="$PROJECT_DIR$/../../sites/template.linux/start_background_processes.sh" />
+        <option value="$PROJECT_DIR$/../../sites/aspencat.production/start_background_processes.sh" />
+        <option value="$PROJECT_DIR$/../../sites/model.production/start_background_processes.sh" />
+        <option value="$PROJECT_DIR$/../../sites/pueblo.production/start_background_processes.sh" />
+        <option value="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/GroupedWorkSolr.java" />
+        <option value="$PROJECT_DIR$/../overdrive_extract/src/com/turning_leaf_technologies/overdrive/ExtractOverDriveInfo.java" />
+        <option value="$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/indexing/IndexingProfile.java" />
+        <option value="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/IlsRecordProcessor.java" />
+        <option value="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/KohaRecordProcessor.java" />
+        <option value="$PROJECT_DIR$/../overdrive_extract/src/com/turning_leaf_technologies/overdrive/ExtractOverDriveInfoMain.java" />
+        <option value="$PROJECT_DIR$/../sierra_export_api/src/com/turning_leaf_technologies/sierra/SierraExportAPIMain.java" />
+        <option value="$PROJECT_DIR$/../sideload_processing/src/com/turning_leaf_technologies/sideloading/SideLoadingMain.java" />
+        <option value="$PROJECT_DIR$/../user_list_indexer/src/com/turning_leaf_technologies/reindexer/UserListIndexerMain.java" />
+        <option value="$PROJECT_DIR$/../user_list_indexer/src/com/turning_leaf_technologies/reindexer/UserListSolr.java" />
+        <option value="$PROJECT_DIR$/../user_list_indexer/src/com/turning_leaf_technologies/reindexer/UserListIndexer.java" />
+        <option value="$PROJECT_DIR$/../rbdigital_export/src/com/turning_leaf_technologies/rbdigital/RBdigitalSetting.java" />
+        <option value="$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/indexing/RbdigitalScope.java" />
+        <option value="$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/indexing/IndexingUtils.java" />
+        <option value="$PROJECT_DIR$/../rbdigital_export/src/com/turning_leaf_technologies/rbdigital/RbdigitalTitle.java" />
+        <option value="$PROJECT_DIR$/../rbdigital_export/src/com/turning_leaf_technologies/rbdigital/RbdigitalExtractLogEntry.java" />
+        <option value="$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/net/NetworkUtils.java" />
+        <option value="$PROJECT_DIR$/../rbdigital_export/src/com/turning_leaf_technologies/rbdigital/RBdigitalMagazineIssue.java" />
+        <option value="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/GroupedWorkIndexer.java" />
+        <option value="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/RbdigitalMagazineProcessor.java" />
+        <option value="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/RbdigitalProcessor.java" />
+        <option value="$PROJECT_DIR$/../rbdigital_export/src/com/turning_leaf_technologies/rbdigital/RbdigitalExportMain.java" />
       </list>
     </option>
   </component>
@@ -195,7 +303,7 @@
     </treeState>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="575" />
+    <option name="x" value="-10" />
     <option name="width" value="980" />
     <option name="height" value="1040" />
   </component>
@@ -204,99 +312,7 @@
     <navigator proportions="" version="1">
       <foldersAlwaysOnTop value="true" />
     </navigator>
-    <panes>
-      <pane id="ProjectPane">
-        <subPane>
-          <expand>
-            <path>
-              <item name="cron" type="b2602c69:ProjectViewProjectNode" />
-              <item name="cloudlibrary_export" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="cron" type="b2602c69:ProjectViewProjectNode" />
-              <item name="cloudlibrary_export" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="cron" type="b2602c69:ProjectViewProjectNode" />
-              <item name="cloudlibrary_export" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-              <item name="cloud_library" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="cron" type="b2602c69:ProjectViewProjectNode" />
-              <item name="cron" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="cron" type="b2602c69:ProjectViewProjectNode" />
-              <item name="cron" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="cron" type="b2602c69:ProjectViewProjectNode" />
-              <item name="cron" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-              <item name="cron" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="cron" type="b2602c69:ProjectViewProjectNode" />
-              <item name="data_dir_setup" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="cron" type="b2602c69:ProjectViewProjectNode" />
-              <item name="data_dir_setup" type="462c0819:PsiDirectoryNode" />
-              <item name="solr7" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="cron" type="b2602c69:ProjectViewProjectNode" />
-              <item name="data_dir_setup" type="462c0819:PsiDirectoryNode" />
-              <item name="solr7" type="462c0819:PsiDirectoryNode" />
-              <item name="events" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="cron" type="b2602c69:ProjectViewProjectNode" />
-              <item name="data_dir_setup" type="462c0819:PsiDirectoryNode" />
-              <item name="solr7" type="462c0819:PsiDirectoryNode" />
-              <item name="events" type="462c0819:PsiDirectoryNode" />
-              <item name="conf" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="cron" type="b2602c69:ProjectViewProjectNode" />
-              <item name="events_indexer" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="cron" type="b2602c69:ProjectViewProjectNode" />
-              <item name="events_indexer" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="cron" type="b2602c69:ProjectViewProjectNode" />
-              <item name="events_indexer" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-              <item name="events" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="cron" type="b2602c69:ProjectViewProjectNode" />
-              <item name="java_shared_libraries" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="cron" type="b2602c69:ProjectViewProjectNode" />
-              <item name="cloudlibrary_export" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="cron" type="b2602c69:ProjectViewProjectNode" />
-              <item name="cloudlibrary_export" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-              <item name="cloud_library" type="462c0819:PsiDirectoryNode" />
-            </path>
-          </expand>
-          <select />
-        </subPane>
-      </pane>
-      <pane id="Scope" />
-      <pane id="PackagesPane" />
-    </panes>
+    <panes />
   </component>
   <component name="PropertiesComponent">
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
@@ -307,7 +323,7 @@
     <property name="project.structure.last.edited" value="Modules" />
     <property name="project.structure.proportion" value="0.15" />
     <property name="project.structure.side.proportion" value="0.2" />
-    <property name="settings.editor.selected.configurable" value="editor.preferences.appearance" />
+    <property name="settings.editor.selected.configurable" value="project.propVCSSupport.Confirmation" />
   </component>
   <component name="RecentsManager">
     <key name="ExtractSuperBase.RECENT_KEYS">
@@ -375,8 +391,8 @@
     </configuration>
     <configuration name="Cloud Library Export" type="Application" factoryName="Application">
       <option name="MAIN_CLASS_NAME" value="com.turning_leaf_technologies.cloud_library.CloudLibraryExportMain" />
-      <module name="cloudlibrary_export" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../cloudlibrary_export" />
+      <module name="cloud_library_export" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../cloud_library_export" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
@@ -441,8 +457,8 @@
     </configuration>
     <configuration name="OverDrive Export" type="Application" factoryName="Application">
       <option name="MAIN_CLASS_NAME" value="com.turning_leaf_technologies.overdrive.ExtractOverDriveInfoMain" />
-      <module name="overdrive_api_extract" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../overdrive_api_extract" />
+      <module name="overdrive_extract" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../overdrive_extract" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
@@ -485,7 +501,7 @@
     <configuration name="Reindexer Single Work" type="Application" factoryName="Application">
       <option name="MAIN_CLASS_NAME" value="com.turning_leaf_technologies.reindexer.GroupedReindexMain" />
       <module name="reindexer" />
-      <option name="PROGRAM_PARAMETERS" value="aspencat.localhost singleWork" />
+      <option name="PROGRAM_PARAMETERS" value="basinlibraries.localhost singleWork" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../reindexer" />
       <method v="2">
         <option name="Make" enabled="true" />
@@ -502,7 +518,6 @@
     <configuration name="SierraExport" type="Application" factoryName="Application">
       <option name="MAIN_CLASS_NAME" value="com.turning_leaf_technologies.sierra.SierraExportAPIMain" />
       <module name="sierra_export_api" />
-      <option name="PROGRAM_PARAMETERS" value="arlington.localhost" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../sierra_export_api" />
       <method v="2">
         <option name="Make" enabled="true" />
@@ -511,7 +526,6 @@
     <configuration name="User List Indexer" type="Application" factoryName="Application">
       <option name="MAIN_CLASS_NAME" value="com.turning_leaf_technologies.reindexer.UserListIndexerMain" />
       <module name="user_list_indexer" />
-      <option name="PROGRAM_PARAMETERS" value="basinlibraries.localhost" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../user_list_indexer" />
       <method v="2">
         <option name="Make" enabled="true" />
@@ -575,7 +589,7 @@
   <component name="ToolWindowManager">
     <frame x="-7" y="-7" width="1550" height="838" extended-state="6" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.4969325" visible="true" weight="0.13154362" />
+      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.4969325" weight="0.19127516" />
       <window_info id="Image Layers" order="1" />
       <window_info id="Designer" order="2" />
       <window_info id="UI Designer" order="3" />
@@ -584,27 +598,27 @@
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" sideWeight="0.49261746" weight="0.27620396" />
       <window_info anchor="bottom" id="Run" order="2" sideWeight="0.4966443" weight="0.3186969" />
-      <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.8416107" weight="0.38243628" />
+      <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.8416107" weight="0.34135976" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" weight="0.3286119" />
       <window_info anchor="bottom" id="Terminal" order="7" weight="0.3286119" />
       <window_info anchor="bottom" id="Event Log" order="8" sideWeight="0.5060403" side_tool="true" weight="0.32577905" />
       <window_info anchor="bottom" id="Version Control" order="9" weight="0.3286119" />
-      <window_info anchor="bottom" id="Messages" order="10" sideWeight="0.49395972" weight="0.32577905" />
+      <window_info anchor="bottom" id="Messages" order="10" sideWeight="0.49395972" weight="0.3555241" />
       <window_info anchor="right" id="Coverage" order="0" sideWeight="0.4927235" weight="0.3295302" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="1" type="SLIDING" weight="0.4" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" sideWeight="0.49858356" weight="0.24966443" />
       <window_info anchor="right" id="Palette" order="3" />
       <window_info anchor="right" id="Ant Build" order="4" weight="0.24966443" />
-      <window_info anchor="right" id="Maven" order="5" weight="0.3295302" />
-      <window_info anchor="right" id="Theme Preview" order="6" />
-      <window_info anchor="right" id="Capture Analysis" order="7" />
-      <window_info anchor="right" id="Palette&#9;" order="8" />
-      <window_info anchor="right" id="Structure" order="9" sideWeight="0.50727654" side_tool="true" weight="0.17583893" />
+      <window_info anchor="right" id="Theme Preview" order="5" />
+      <window_info anchor="right" id="Capture Analysis" order="6" />
+      <window_info anchor="right" id="Palette&#9;" order="7" />
+      <window_info anchor="right" id="Structure" order="8" sideWeight="0.50727654" side_tool="true" visible="true" weight="0.17583893" />
+      <window_info anchor="right" id="Maven" order="9" weight="0.3295302" />
     </layout>
     <layout-to-restore>
-      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.4969325" weight="0.13154362" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.4969325" visible="true" weight="0.19127516" />
       <window_info id="Image Layers" order="1" />
       <window_info id="Designer" order="2" />
       <window_info id="UI Designer" order="3" />
@@ -613,7 +627,7 @@
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" sideWeight="0.49261746" weight="0.27620396" />
       <window_info anchor="bottom" id="Run" order="2" sideWeight="0.4966443" weight="0.3186969" />
-      <window_info active="true" anchor="bottom" id="Debug" order="3" sideWeight="0.8416107" visible="true" weight="0.51983005" />
+      <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.8416107" visible="true" weight="0.33994335" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" weight="0.3286119" />
@@ -626,37 +640,37 @@
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" sideWeight="0.49858356" weight="0.24966443" />
       <window_info anchor="right" id="Palette" order="3" />
       <window_info anchor="right" id="Ant Build" order="4" weight="0.24966443" />
-      <window_info anchor="right" id="Maven" order="5" weight="0.3295302" />
-      <window_info anchor="right" id="Theme Preview" order="6" />
-      <window_info anchor="right" id="Capture Analysis" order="7" />
-      <window_info anchor="right" id="Palette&#9;" order="8" />
-      <window_info anchor="right" id="Structure" order="9" sideWeight="0.50727654" side_tool="true" weight="0.17583893" />
+      <window_info anchor="right" id="Theme Preview" order="5" />
+      <window_info anchor="right" id="Capture Analysis" order="6" />
+      <window_info anchor="right" id="Palette&#9;" order="7" />
+      <window_info anchor="right" id="Structure" order="8" sideWeight="0.50727654" side_tool="true" weight="0.17583893" />
+      <window_info anchor="right" id="Maven" order="9" weight="0.3295302" />
     </layout-to-restore>
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/../overdrive_api_extract/src/com/turning_leaf_technologies/overdrive/ExtractOverDriveInfo.java</url>
+          <url>file://$PROJECT_DIR$/../overdrive_extract/src/com/turning_leaf_technologies/overdrive/ExtractOverDriveInfo.java</url>
           <line>209</line>
           <properties />
           <option name="timeStamp" value="225" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/KohaRecordProcessor.java</url>
-          <line>317</line>
+          <line>339</line>
           <properties />
           <option name="timeStamp" value="238" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/KohaRecordProcessor.java</url>
-          <line>334</line>
+          <line>356</line>
           <properties />
           <option name="timeStamp" value="241" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/KohaRecordProcessor.java</url>
-          <line>303</line>
+          <line>325</line>
           <properties />
           <option name="timeStamp" value="242" />
         </line-breakpoint>
@@ -673,37 +687,19 @@
           <option name="timeStamp" value="275" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/../overdrive_api_extract/src/com/turning_leaf_technologies/overdrive/ExtractOverDriveInfo.java</url>
-          <line>496</line>
-          <properties />
-          <option name="timeStamp" value="358" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/../overdrive_api_extract/src/com/turning_leaf_technologies/overdrive/ExtractOverDriveInfo.java</url>
-          <line>919</line>
+          <url>file://$PROJECT_DIR$/../overdrive_extract/src/com/turning_leaf_technologies/overdrive/ExtractOverDriveInfo.java</url>
+          <line>1078</line>
           <properties />
           <option name="timeStamp" value="360" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/../overdrive_api_extract/src/com/turning_leaf_technologies/overdrive/ExtractOverDriveInfo.java</url>
-          <line>1039</line>
+          <url>file://$PROJECT_DIR$/../overdrive_extract/src/com/turning_leaf_technologies/overdrive/ExtractOverDriveInfo.java</url>
+          <line>1198</line>
           <properties />
           <option name="timeStamp" value="392" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/../overdrive_api_extract/src/com/turning_leaf_technologies/overdrive/ExtractOverDriveInfo.java</url>
-          <line>196</line>
-          <properties />
-          <option name="timeStamp" value="398" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/../overdrive_api_extract/src/com/turning_leaf_technologies/overdrive/ExtractOverDriveInfo.java</url>
-          <line>183</line>
-          <properties />
-          <option name="timeStamp" value="399" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/../overdrive_api_extract/src/com/turning_leaf_technologies/overdrive/ExtractOverDriveInfo.java</url>
+          <url>file://$PROJECT_DIR$/../overdrive_extract/src/com/turning_leaf_technologies/overdrive/ExtractOverDriveInfo.java</url>
           <line>187</line>
           <properties />
           <option name="timeStamp" value="400" />
@@ -716,7 +712,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/KohaRecordProcessor.java</url>
-          <line>474</line>
+          <line>496</line>
           <properties />
           <option name="timeStamp" value="519" />
         </line-breakpoint>
@@ -725,12 +721,6 @@
           <line>41</line>
           <properties />
           <option name="timeStamp" value="540" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/../record_grouping/src/com/turning_leaf_technologies/grouping/RecordGroupingProcessor.java</url>
-          <line>346</line>
-          <properties />
-          <option name="timeStamp" value="553" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../hoopla_export/src/com/turning_leaf_technologies/hoopla/HooplaExportMain.java</url>
@@ -764,19 +754,19 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/RbdigitalMagazineProcessor.java</url>
-          <line>161</line>
+          <line>203</line>
           <properties />
           <option name="timeStamp" value="652" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/RbdigitalMagazineProcessor.java</url>
-          <line>163</line>
+          <line>205</line>
           <properties />
           <option name="timeStamp" value="653" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/RbdigitalMagazineProcessor.java</url>
-          <line>165</line>
+          <line>207</line>
           <properties />
           <option name="timeStamp" value="654" />
         </line-breakpoint>
@@ -787,134 +777,128 @@
           <option name="timeStamp" value="662" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/RbdigitalMagazineProcessor.java</url>
-          <line>137</line>
-          <properties />
-          <option name="timeStamp" value="680" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/net/NetworkUtils.java</url>
-          <line>160</line>
+          <line>166</line>
           <properties />
           <option name="timeStamp" value="706" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/net/NetworkUtils.java</url>
-          <line>157</line>
+          <line>163</line>
           <properties />
           <option name="timeStamp" value="708" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../carlx_export/src/com/turning_leaf_technologies/carlx/CarlXExportMain.java</url>
-          <line>254</line>
+          <line>290</line>
           <properties />
           <option name="timeStamp" value="717" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../carlx_export/src/com/turning_leaf_technologies/carlx/CarlXExportMain.java</url>
-          <line>272</line>
+          <line>308</line>
           <properties />
           <option name="timeStamp" value="718" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../carlx_export/src/com/turning_leaf_technologies/carlx/CarlXExportMain.java</url>
-          <line>275</line>
+          <line>311</line>
           <properties />
           <option name="timeStamp" value="719" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../carlx_export/src/com/turning_leaf_technologies/carlx/CarlXExportMain.java</url>
-          <line>286</line>
+          <line>322</line>
           <properties />
           <option name="timeStamp" value="720" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../carlx_export/src/com/turning_leaf_technologies/carlx/CarlXExportMain.java</url>
-          <line>316</line>
+          <line>352</line>
           <properties />
           <option name="timeStamp" value="721" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../carlx_export/src/com/turning_leaf_technologies/carlx/CarlXExportMain.java</url>
-          <line>120</line>
+          <line>134</line>
           <properties />
           <option name="timeStamp" value="735" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../carlx_export/src/com/turning_leaf_technologies/carlx/CarlXExportMain.java</url>
-          <line>824</line>
+          <line>860</line>
           <properties />
           <option name="timeStamp" value="743" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../carlx_export/src/com/turning_leaf_technologies/carlx/CarlXExportMain.java</url>
-          <line>443</line>
+          <line>479</line>
           <properties />
           <option name="timeStamp" value="751" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../carlx_export/src/com/turning_leaf_technologies/carlx/CarlXExportMain.java</url>
-          <line>453</line>
+          <line>489</line>
           <properties />
           <option name="timeStamp" value="753" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../carlx_export/src/com/turning_leaf_technologies/carlx/CarlXExportMain.java</url>
-          <line>682</line>
+          <line>718</line>
           <properties />
           <option name="timeStamp" value="768" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../carlx_export/src/com/turning_leaf_technologies/carlx/CarlXExportMain.java</url>
-          <line>451</line>
+          <line>487</line>
           <properties />
           <option name="timeStamp" value="773" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../carlx_export/src/com/turning_leaf_technologies/carlx/CarlXExportMain.java</url>
-          <line>359</line>
+          <line>395</line>
           <properties />
           <option name="timeStamp" value="777" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../carlx_export/src/com/turning_leaf_technologies/carlx/CarlXExportMain.java</url>
-          <line>718</line>
+          <line>754</line>
           <properties />
           <option name="timeStamp" value="781" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../carlx_export/src/com/turning_leaf_technologies/carlx/CarlXExportMain.java</url>
-          <line>759</line>
+          <line>795</line>
           <properties />
           <option name="timeStamp" value="782" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../carlx_export/src/com/turning_leaf_technologies/carlx/CarlXExportMain.java</url>
-          <line>1098</line>
+          <line>1134</line>
           <properties />
           <option name="timeStamp" value="793" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../carlx_export/src/com/turning_leaf_technologies/carlx/CarlXExportMain.java</url>
-          <line>1103</line>
+          <line>1139</line>
           <properties />
           <option name="timeStamp" value="794" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../carlx_export/src/com/turning_leaf_technologies/carlx/CarlXExportMain.java</url>
-          <line>1108</line>
+          <line>1144</line>
           <properties />
           <option name="timeStamp" value="795" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../carlx_export/src/com/turning_leaf_technologies/carlx/CarlXExportMain.java</url>
-          <line>468</line>
+          <line>504</line>
           <properties />
           <option name="timeStamp" value="796" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../carlx_export/src/com/turning_leaf_technologies/carlx/CarlXExportMain.java</url>
-          <line>144</line>
+          <line>158</line>
           <properties />
           <option name="timeStamp" value="797" />
         </line-breakpoint>
@@ -926,13 +910,13 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/IlsRecordProcessor.java</url>
-          <line>779</line>
+          <line>789</line>
           <properties />
           <option name="timeStamp" value="829" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/IlsRecordProcessor.java</url>
-          <line>777</line>
+          <line>787</line>
           <properties />
           <option name="timeStamp" value="830" />
         </line-breakpoint>
@@ -944,13 +928,13 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../koha_export/src/com/turning_leaf_technologies/koha_export/KohaExportMain.java</url>
-          <line>762</line>
+          <line>796</line>
           <properties />
           <option name="timeStamp" value="848" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../carlx_export/src/com/turning_leaf_technologies/carlx/CarlXExportMain.java</url>
-          <line>503</line>
+          <line>539</line>
           <properties />
           <option name="timeStamp" value="870" />
         </line-breakpoint>
@@ -968,7 +952,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../koha_export/src/com/turning_leaf_technologies/koha_export/KohaExportMain.java</url>
-          <line>139</line>
+          <line>163</line>
           <properties />
           <option name="timeStamp" value="914" />
         </line-breakpoint>
@@ -992,7 +976,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/IlsRecordProcessor.java</url>
-          <line>471</line>
+          <line>481</line>
           <properties />
           <option name="timeStamp" value="972" />
         </line-breakpoint>
@@ -1039,26 +1023,20 @@
           <option name="timeStamp" value="1109" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/../cloudlibrary_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryExportMain.java</url>
-          <line>263</line>
+          <url>file://$PROJECT_DIR$/../cloud_library_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryExportMain.java</url>
+          <line>266</line>
           <properties />
           <option name="timeStamp" value="1127" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/../cloudlibrary_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryExportMain.java</url>
-          <line>215</line>
+          <url>file://$PROJECT_DIR$/../cloud_library_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryExportMain.java</url>
+          <line>218</line>
           <properties />
           <option name="timeStamp" value="1129" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/../cloudlibrary_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryExportMain.java</url>
-          <line>223</line>
-          <properties />
-          <option name="timeStamp" value="1134" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/../cloudlibrary_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryExportMain.java</url>
-          <line>218</line>
+          <url>file://$PROJECT_DIR$/../cloud_library_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryExportMain.java</url>
+          <line>221</line>
           <properties />
           <option name="timeStamp" value="1135" />
         </line-breakpoint>
@@ -1106,13 +1084,13 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../koha_export/src/com/turning_leaf_technologies/koha_export/KohaExportMain.java</url>
-          <line>145</line>
+          <line>179</line>
           <properties />
           <option name="timeStamp" value="1164" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../user_list_indexer/src/com/turning_leaf_technologies/reindexer/UserListIndexerMain.java</url>
-          <line>88</line>
+          <line>110</line>
           <properties />
           <option name="timeStamp" value="1166" />
         </line-breakpoint>
@@ -1137,19 +1115,19 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../koha_export/src/com/turning_leaf_technologies/koha_export/KohaExportMain.java</url>
-          <line>590</line>
+          <line>624</line>
           <properties />
           <option name="timeStamp" value="1194" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../koha_export/src/com/turning_leaf_technologies/koha_export/KohaExportMain.java</url>
-          <line>586</line>
+          <line>620</line>
           <properties />
           <option name="timeStamp" value="1202" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../sideload_processing/src/com/turning_leaf_technologies/sideloading/SideLoadingMain.java</url>
-          <line>103</line>
+          <line>135</line>
           <properties />
           <option name="timeStamp" value="1215" />
         </line-breakpoint>
@@ -1186,53 +1164,40 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../sierra_export_api/src/com/turning_leaf_technologies/sierra/SierraExportAPIMain.java</url>
-          <line>390</line>
+          <line>436</line>
           <properties />
           <option name="timeStamp" value="1327" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/IlsRecordProcessor.java</url>
-          <line>1239</line>
+          <line>1249</line>
           <properties />
           <option name="timeStamp" value="1331" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/indexing/IndexingUtils.java</url>
-          <line>297</line>
+          <line>299</line>
           <properties />
           <option name="timeStamp" value="1357" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
-          <condition expression="subtitle.length() &gt; 0 &amp;&amp; !subtitle.toLowerCase().contains(series.toLowerCase()) &amp;&amp; !subtitle.toLowerCase().equals(&quot;a novel&quot;)" language="JAVA" />
-          <url>file://$PROJECT_DIR$/../record_grouping/src/com/turning_leaf_technologies/grouping/OverDriveRecordGrouper.java</url>
-          <line>32</line>
-          <properties />
-          <option name="timeStamp" value="1363" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../sierra_export_api/src/com/turning_leaf_technologies/sierra/SierraExportAPIMain.java</url>
-          <line>341</line>
+          <line>387</line>
           <properties />
           <option name="timeStamp" value="1369" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <condition expression="seriesInfo.startsWith(&quot; &quot;)" language="JAVA" />
           <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/GroupedWorkSolr.java</url>
-          <line>1330</line>
+          <line>1348</line>
           <properties />
           <option name="timeStamp" value="1393" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../sierra_export_api/src/com/turning_leaf_technologies/sierra/SierraExportAPIMain.java</url>
-          <line>1157</line>
+          <line>1203</line>
           <properties />
           <option name="timeStamp" value="1394" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/../sierra_export_api/src/com/turning_leaf_technologies/sierra/SierraExportAPIMain.java</url>
-          <line>957</line>
-          <properties />
-          <option name="timeStamp" value="1395" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/ArlingtonRecordProcessor.java</url>
@@ -1242,94 +1207,223 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/IlsRecordProcessor.java</url>
-          <line>921</line>
+          <line>931</line>
           <properties />
           <option name="timeStamp" value="1399" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/GroupedWorkIndexer.java</url>
-          <line>740</line>
-          <properties />
-          <option name="timeStamp" value="1406" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
+          <condition expression="!language.equals(&quot;English&quot;)" language="JAVA" />
           <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/GroupedWorkSolr.java</url>
-          <line>1752</line>
+          <line>1770</line>
           <properties />
           <option name="timeStamp" value="1419" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/MarcRecordProcessor.java</url>
-          <line>831</line>
-          <properties />
-          <option name="timeStamp" value="1421" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/LibraryCalendarIndexer.java</url>
-          <line>256</line>
+          <url>file://$PROJECT_DIR$/../cloud_library_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryMarcHandler.java</url>
+          <line>310</line>
           <properties />
           <option name="timeStamp" value="1427" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/LibraryCalendarIndexer.java</url>
-          <line>271</line>
+          <url>file://$PROJECT_DIR$/../cloud_library_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryMarcHandler.java</url>
+          <line>316</line>
           <properties />
           <option name="timeStamp" value="1435" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/LibraryCalendarIndexer.java</url>
-          <line>152</line>
+          <url>file://$PROJECT_DIR$/../cloud_library_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryMarcHandler.java</url>
+          <line>322</line>
           <properties />
           <option name="timeStamp" value="1438" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/LibraryCalendarIndexer.java</url>
-          <line>166</line>
+          <url>file://$PROJECT_DIR$/../cloud_library_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryMarcHandler.java</url>
+          <line>328</line>
           <properties />
           <option name="timeStamp" value="1440" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/LibraryCalendarIndexer.java</url>
-          <line>179</line>
+          <url>file://$PROJECT_DIR$/../cloud_library_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryMarcHandler.java</url>
+          <line>334</line>
           <properties />
           <option name="timeStamp" value="1441" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/LibraryCalendarIndexer.java</url>
-          <line>212</line>
+          <url>file://$PROJECT_DIR$/../cloud_library_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryMarcHandler.java</url>
+          <line>340</line>
           <properties />
           <option name="timeStamp" value="1445" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/LibraryCalendarIndexer.java</url>
-          <line>217</line>
+          <url>file://$PROJECT_DIR$/../cloud_library_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryExportMain.java</url>
+          <line>289</line>
+          <properties />
+          <option name="timeStamp" value="1459" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../overdrive_extract/src/com/turning_leaf_technologies/overdrive/ExtractOverDriveInfoMain.java</url>
+          <line>106</line>
+          <properties />
+          <option name="timeStamp" value="1443" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../overdrive_extract/src/com/turning_leaf_technologies/overdrive/ExtractOverDriveInfoMain.java</url>
+          <line>109</line>
+          <properties />
+          <option name="timeStamp" value="1444" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../overdrive_extract/src/com/turning_leaf_technologies/overdrive/ExtractOverDriveInfoMain.java</url>
+          <line>112</line>
+          <properties />
+          <option name="timeStamp" value="1445" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../carlx_export/src/com/turning_leaf_technologies/carlx/CarlXExportMain.java</url>
+          <line>196</line>
+          <properties />
+          <option name="timeStamp" value="1446" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../carlx_export/src/com/turning_leaf_technologies/carlx/CarlXExportMain.java</url>
+          <line>202</line>
           <properties />
           <option name="timeStamp" value="1448" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/LibraryCalendarIndexer.java</url>
-          <line>189</line>
+          <url>file://$PROJECT_DIR$/../carlx_export/src/com/turning_leaf_technologies/carlx/CarlXExportMain.java</url>
+          <line>199</line>
           <properties />
           <option name="timeStamp" value="1449" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/LibraryCalendarIndexer.java</url>
-          <line>204</line>
+          <url>file://$PROJECT_DIR$/../sierra_export_api/src/com/turning_leaf_technologies/sierra/SierraExportAPIMain.java</url>
+          <line>1004</line>
           <properties />
-          <option name="timeStamp" value="1452" />
+          <option name="timeStamp" value="1450" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/LibraryCalendarIndexer.java</url>
-          <line>249</line>
+          <url>file://$PROJECT_DIR$/../sierra_export_api/src/com/turning_leaf_technologies/sierra/SierraExportAPIMain.java</url>
+          <line>1005</line>
           <properties />
-          <option name="timeStamp" value="1457" />
+          <option name="timeStamp" value="1451" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
-          <condition expression="keyObj.keySet().size() &gt; 1" language="JAVA" />
-          <url>file://$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/LibraryCalendarIndexer.java</url>
-          <line>246</line>
+          <url>file://$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/file/JarUtil.java</url>
+          <line>21</line>
           <properties />
-          <option name="timeStamp" value="1459" />
+          <option name="timeStamp" value="1476" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../rbdigital_export/src/com/turning_leaf_technologies/rbdigital/RbdigitalExportMain.java</url>
+          <line>295</line>
+          <properties />
+          <option name="timeStamp" value="1489" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../rbdigital_export/src/com/turning_leaf_technologies/rbdigital/RbdigitalExportMain.java</url>
+          <line>359</line>
+          <properties />
+          <option name="timeStamp" value="1494" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../rbdigital_export/src/com/turning_leaf_technologies/rbdigital/RbdigitalExportMain.java</url>
+          <line>424</line>
+          <properties />
+          <option name="timeStamp" value="1499" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../rbdigital_export/src/com/turning_leaf_technologies/rbdigital/RbdigitalExportMain.java</url>
+          <line>210</line>
+          <properties />
+          <option name="timeStamp" value="1500" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../rbdigital_export/src/com/turning_leaf_technologies/rbdigital/RbdigitalExportMain.java</url>
+          <line>213</line>
+          <properties />
+          <option name="timeStamp" value="1502" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../rbdigital_export/src/com/turning_leaf_technologies/rbdigital/RbdigitalExportMain.java</url>
+          <line>242</line>
+          <properties />
+          <option name="timeStamp" value="1503" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../rbdigital_export/src/com/turning_leaf_technologies/rbdigital/RbdigitalExportMain.java</url>
+          <line>245</line>
+          <properties />
+          <option name="timeStamp" value="1505" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../rbdigital_export/src/com/turning_leaf_technologies/rbdigital/RbdigitalExportMain.java</url>
+          <line>268</line>
+          <properties />
+          <option name="timeStamp" value="1506" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../rbdigital_export/src/com/turning_leaf_technologies/rbdigital/RbdigitalExportMain.java</url>
+          <line>384</line>
+          <properties />
+          <option name="timeStamp" value="1507" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../rbdigital_export/src/com/turning_leaf_technologies/rbdigital/RbdigitalExportMain.java</url>
+          <line>750</line>
+          <properties />
+          <option name="timeStamp" value="1518" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../rbdigital_export/src/com/turning_leaf_technologies/rbdigital/RbdigitalExportMain.java</url>
+          <line>438</line>
+          <properties />
+          <option name="timeStamp" value="1527" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../rbdigital_export/src/com/turning_leaf_technologies/rbdigital/RbdigitalExportMain.java</url>
+          <line>484</line>
+          <properties />
+          <option name="timeStamp" value="1530" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../rbdigital_export/src/com/turning_leaf_technologies/rbdigital/RbdigitalExportMain.java</url>
+          <line>741</line>
+          <properties />
+          <option name="timeStamp" value="1535" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../rbdigital_export/src/com/turning_leaf_technologies/rbdigital/RbdigitalExportMain.java</url>
+          <line>686</line>
+          <properties />
+          <option name="timeStamp" value="1536" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <condition expression="setting.getId() != 1" language="JAVA" />
+          <url>file://$PROJECT_DIR$/../rbdigital_export/src/com/turning_leaf_technologies/rbdigital/RbdigitalExportMain.java</url>
+          <line>112</line>
+          <properties />
+          <option name="timeStamp" value="1550" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <condition expression="setting.getId() != 1" language="JAVA" />
+          <url>file://$PROJECT_DIR$/../rbdigital_export/src/com/turning_leaf_technologies/rbdigital/RbdigitalExportMain.java</url>
+          <line>510</line>
+          <properties />
+          <option name="timeStamp" value="1552" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../rbdigital_export/src/com/turning_leaf_technologies/rbdigital/RbdigitalExportMain.java</url>
+          <line>530</line>
+          <properties />
+          <option name="timeStamp" value="1554" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <condition expression="curFormat == null" language="JAVA" />
+          <url>file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/RecordInfo.java</url>
+          <line>167</line>
+          <properties />
+          <option name="timeStamp" value="1560" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
@@ -1351,22 +1445,37 @@
   <component name="debuggerHistoryManager">
     <expressions id="breakpointCondition">
       <expression>
-        <expression-string>keyObj.keySet().size() &gt; 1</expression-string>
+        <expression-string>curFormat == null</expression-string>
         <language-id>JAVA</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>!(curEvent.get(&quot;program_description&quot;) instanceof JSONArray)</expression-string>
+        <expression-string>settingId != 1</expression-string>
         <language-id>JAVA</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>!(curEvent.get(&quot;description&quot;) instanceof JSONString)</expression-string>
+        <expression-string>setting.getId() != 1</expression-string>
         <language-id>JAVA</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>!(curEvent.get(&quot;registration_start&quot;) instanceof JSONString)</expression-string>
+        <expression-string>!language.equals(&quot;English&quot;)</expression-string>
+        <language-id>JAVA</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>subtitle.length() &gt; 0 &amp;&amp; !subtitle.toLowerCase().contains(series.toLowerCase()) &amp;&amp; !subtitle.toLowerCase().equals(&quot;a novel&quot;)</expression-string>
+        <language-id>JAVA</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>series.length() == 0 &amp;&amp; subtitle.length() &gt; 0</expression-string>
+        <language-id>JAVA</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>series.length() == 0</expression-string>
         <language-id>JAVA</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
@@ -1381,22 +1490,7 @@
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>subtitle.length() &gt; 0 &amp;&amp; !subtitle.toLowerCase().contains(series.toLowerCase()) &amp;&amp; !subtitle.toLowerCase().equals(&quot;a novel&quot;)</expression-string>
-        <language-id>JAVA</language-id>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-      <expression>
         <expression-string>subtitle.length() &gt; 0 &amp;&amp; !subtitle.toLowerCase().contains(series.toLowerCase())</expression-string>
-        <language-id>JAVA</language-id>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>subtitle.length() &gt; 0 &amp;&amp; !subtitle.contains(series)</expression-string>
-        <language-id>JAVA</language-id>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>subtitle.length() &gt; 0</expression-string>
         <language-id>JAVA</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
@@ -1409,6 +1503,11 @@
       </expression>
     </expressions>
     <expressions id="setValue">
+      <expression>
+        <expression-string>tue</expression-string>
+        <language-id>JAVA</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
       <expression>
         <expression-string>&quot;Online Cloud Library Collection&quot;</expression-string>
         <language-id>JAVA</language-id>
@@ -1427,47 +1526,48 @@
     </expressions>
     <expressions id="evaluateExpression">
       <expression>
-        <expression-string>curEvent.get(keyName)</expression-string>
+        <expression-string>this.doFullReload = true</expression-string>
+        <language-id>JAVA</language-id>
+        <custom-info>com.turning_leaf_technologies.rbdigital.RBdigitalSetting</custom-info>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>setting.doFullReload = true</expression-string>
         <language-id>JAVA</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>curEvent.isNull(keyName)</expression-string>
+        <expression-string>itemTypeToFormat.values().iterator().next().equalsIgnoreCase(&quot;Book&quot;)</expression-string>
         <language-id>JAVA</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>keyObj.getString(keyValue)</expression-string>
+        <expression-string>itemTypeToFormat.size() == 1</expression-string>
+        <language-id>JAVA</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>checkRecordForLargePrint</expression-string>
+        <language-id>JAVA</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>response.getMessage()</expression-string>
+        <language-id>JAVA</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>response.getMessage().toString();</expression-string>
+        <language-id>JAVA</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>response.getMessage().toString()</expression-string>
         <language-id>JAVA</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
         <expression-string>conn.getResponseCode()</expression-string>
-        <language-id>JAVA</language-id>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>inputrec.read()</expression-string>
-        <language-id>JAVA</language-id>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>kohaBranches.getString(&quot;branchphone&quot;)</expression-string>
-        <language-id>JAVA</language-id>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>siteUrl.replaceAll(&quot;http[s]?://&quot;, &quot;&quot;)</expression-string>
-        <language-id>JAVA</language-id>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>siteUrl.replaceAll(&quot;http[s]?:\\\\&quot;, &quot;&quot;)</expression-string>
-        <language-id>JAVA</language-id>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / (1024 * 1024)</expression-string>
         <language-id>JAVA</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
@@ -1479,399 +1579,418 @@
     </expressions>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/KohaRecordProcessor.java">
+    <entry file="file://$PROJECT_DIR$/../symphony_export/src/com/turning_leaf_technologies/symphony/SymphonyExportMain.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1440">
-          <caret line="111" column="35" selection-start-line="111" selection-start-column="35" selection-end-line="111" selection-end-column="35" />
+        <state relative-caret-position="-885">
+          <caret line="18" column="13" selection-start-line="18" selection-start-column="13" selection-end-line="18" selection-end-column="13" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/../../sites/template.linux/start_background_processes.sh">
+    <entry file="file://$PROJECT_DIR$/../web_indexer/src/com/turning_leaf_technologies/website_indexer/WebsiteIndexerMain.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="218">
-          <caret line="96" selection-start-line="96" selection-end-line="96" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/indexing/OwnershipRule.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="205">
-          <caret line="41" selection-start-line="41" selection-end-line="41" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/indexing/InclusionRule.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="241">
-          <caret line="100" column="9" lean-forward="true" selection-start-line="100" selection-start-column="9" selection-end-line="100" selection-end-column="9" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/RbdigitalMagazineProcessor.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="315">
-          <caret line="32" column="61" selection-start-line="32" selection-start-column="61" selection-end-line="32" selection-end-column="61" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/RbdigitalProcessor.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="61">
-          <caret line="94" column="42" selection-start-line="94" selection-start-column="42" selection-end-line="94" selection-end-column="42" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../record_grouping/src/com/turning_leaf_technologies/grouping/SideLoadedRecordGrouper.java">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/indexing/IndexingUtils.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="181">
-          <caret line="63" column="26" selection-start-line="63" selection-start-column="26" selection-end-line="63" selection-end-column="26" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/GroupedWorkIndexer.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="10650">
-          <caret line="735" column="27" selection-start-line="735" selection-start-column="27" selection-end-line="735" selection-end-column="27" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/lang/stemdict_nl.txt">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../../data_dir_setup/solr7/open_archives/conf/solrconfig.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="385">
-          <caret line="1130" column="27" lean-forward="true" selection-start-line="1130" selection-start-column="27" selection-end-line="1130" selection-end-column="27" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../../sites/pueblo.production/conf/crontab_settings.txt">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="465">
-          <caret line="37" column="28" selection-start-line="37" selection-start-column="28" selection-end-line="37" selection-end-column="28" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../../sites/basinlibraries.production/conf/crontab_settings.txt">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="285">
-          <caret line="19" column="27" selection-start-line="19" selection-start-column="27" selection-end-line="19" selection-end-column="27" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../event_export/src/com/turning_leaf_technologies/events.java" />
-    <entry file="file://$PROJECT_DIR$/../../data_dir_setup/solr7/open_archives/conf/schema.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="345">
-          <caret line="23" column="20" selection-start-line="23" selection-start-column="20" selection-end-line="23" selection-end-column="20" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/indexing/TranslationMap.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="60">
-          <caret line="8" column="13" selection-start-line="8" selection-start-column="13" selection-end-line="8" selection-end-column="13" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$PROJECT_DIR$/../../sites/default/solr-7.6.0/dist/solr-solrj-7.6.0.jar!/org/apache/solr/client/solrj/SolrClient.class">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="181">
-          <caret line="63" column="26" selection-start-line="63" selection-start-column="26" selection-end-line="63" selection-end-column="26" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$PROJECT_DIR$/../../sites/default/solr-7.6.0/dist/solr-solrj-7.6.0.jar!/org/apache/solr/client/solrj/response/SolrResponseBase.class">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-31">
-          <caret line="13" column="13" selection-start-line="13" selection-start-column="13" selection-end-line="13" selection-end-column="13" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$PROJECT_DIR$/../../sites/default/solr-7.6.0/dist/solr-solrj-7.6.0.jar!/org/apache/solr/client/solrj/response/UpdateResponse.class">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="60">
-          <caret line="7" column="43" selection-start-line="7" selection-start-column="43" selection-end-line="7" selection-end-column="43" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../../data_dir_setup/solr7/grouped_works/conf/schema.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="224">
-          <caret line="196" column="33" selection-start-line="196" selection-start-column="21" selection-end-line="196" selection-end-column="33" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://C:/Program Files/Java/jdk1.8.0_201/src.zip!/java/net/SocketInputStream.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="136">
-          <caret line="93" column="23" selection-start-line="93" selection-start-column="23" selection-end-line="93" selection-end-column="23" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/EventsIndexerLogEntry.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="128">
-          <caret line="1368" selection-start-line="1368" selection-end-line="1368" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/strings/StringUtils.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="173">
-          <caret line="171" selection-start-line="171" selection-end-line="171" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/indexing/IndexingProfile.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="270">
-          <caret line="146" column="13" lean-forward="true" selection-start-line="146" selection-start-column="13" selection-end-line="146" selection-end-column="13" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../../sites/arlington.localhost/conf/config.pwd.ini">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <caret column="81" lean-forward="true" selection-start-column="81" selection-end-column="81" />
+        <state relative-caret-position="300">
+          <caret line="30" column="63" selection-start-line="30" selection-start-column="63" selection-end-line="30" selection-end-column="63" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/OverDriveProcessor.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="181">
-          <caret line="492" column="39" selection-start-line="492" selection-start-column="24" selection-end-line="492" selection-end-column="39" />
+        <state relative-caret-position="132">
+          <caret line="269" selection-start-line="269" selection-end-line="269" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/CloudLibraryProcessor.java">
+    <entry file="file://$PROJECT_DIR$/../overdrive_extract/src/com/turning_leaf_technologies/overdrive/OverDriveRecordInfo.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="11">
-          <caret line="19" column="28" selection-start-line="19" selection-start-column="28" selection-end-line="19" selection-end-column="28" />
+        <state relative-caret-position="390">
+          <caret line="32" selection-start-line="32" selection-end-line="32" />
+          <folding>
+            <element signature="e#453#454#0" expanded="true" />
+            <element signature="e#486#487#0" expanded="true" />
+            <element signature="e#719#720#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/SideLoadedEContentProcessor.java">
+    <entry file="jar://C:/Program Files/Java/jdk1.8.0_201/src.zip!/java/net/URI.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="210">
-          <caret line="35" column="37" lean-forward="true" selection-start-line="35" selection-start-column="37" selection-end-line="35" selection-end-column="37" />
+        <state relative-caret-position="151">
+          <caret line="588" selection-start-line="588" selection-end-line="588" />
+          <folding>
+            <element signature="e#110426#110427#0" expanded="true" />
+            <element signature="e#110472#110473#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$PROJECT_DIR$/../../sites/default/solr-7.6.0/dist/solrj-lib/httpclient-4.5.3.jar!/org/apache/http/client/utils/URIBuilder.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="159">
+          <caret line="61" selection-start-line="61" selection-end-line="61" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$PROJECT_DIR$/../../sites/default/solr-7.6.0/dist/solrj-lib/httpclient-4.5.3.jar!/org/apache/http/client/utils/URIUtils.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="142">
+          <caret line="123" selection-start-line="123" selection-end-line="123" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$PROJECT_DIR$/../../sites/default/solr-7.6.0/dist/solrj-lib/httpclient-4.5.3.jar!/org/apache/http/impl/execchain/ProtocolExec.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="142">
+          <caret line="82" selection-start-line="82" selection-end-line="82" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/indexing/IndexingProfile.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="424">
+          <caret line="437" column="64" selection-start-line="437" selection-start-column="13" selection-end-line="437" selection-end-column="64" />
+          <folding>
+            <element signature="e#14659#14660#0" expanded="true" />
+            <element signature="e#14697#14698#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/IlsRecordProcessor.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="270">
-          <caret line="188" selection-start-line="188" selection-end-line="188" />
+        <state relative-caret-position="-128">
+          <caret line="1330" column="9" selection-start-line="1330" selection-start-column="9" selection-end-line="1330" selection-end-column="9" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../sierra_export_api/src/com/turning_leaf_technologies/sierra/SierraExportAPIMain.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="23124">
+          <caret line="1608" column="29" selection-start-line="1608" selection-start-column="29" selection-end-line="1608" selection-end-column="29" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/KohaRecordProcessor.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="331">
+          <caret line="216" selection-start-line="216" selection-end-line="216" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/MarcRecordProcessor.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="119">
-          <caret line="829" selection-start-line="829" selection-end-line="829" />
+        <state relative-caret-position="286">
+          <caret line="840" column="67" selection-start-line="840" selection-start-column="67" selection-end-line="840" selection-end-column="67" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../overdrive_extract/src/com/turning_leaf_technologies/overdrive/ExtractOverDriveInfoMain.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="345">
+          <caret line="41" column="9" selection-start-line="41" selection-start-column="9" selection-end-line="41" selection-end-column="9" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/file/JarUtil.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="297">
+          <caret line="21" selection-start-line="21" selection-end-line="21" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../sideload_processing/src/com/turning_leaf_technologies/sideloading/SideLoadingMain.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="99">
+          <caret line="55" column="49" selection-start-line="55" selection-start-column="49" selection-end-line="55" selection-end-column="49" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../../sites/arlington.production/start_background_processes.sh">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="285">
+          <caret line="19" selection-start-line="19" selection-end-line="19" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../overdrive_extract/src/com/turning_leaf_technologies/overdrive/ExtractOverDriveInfo.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="151">
+          <caret line="248" selection-start-line="248" selection-end-line="248" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/ArlingtonRecordProcessor.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="159">
+          <caret line="53" selection-start-line="53" selection-end-line="53" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../user_list_indexer/src/com/turning_leaf_technologies/reindexer/UserListIndexerMain.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="316">
+          <caret line="170" column="37" lean-forward="true" selection-start-line="170" selection-start-column="37" selection-end-line="170" selection-end-column="37" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../user_list_indexer/src/com/turning_leaf_technologies/reindexer/UserListIndexer.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="144">
+          <caret line="152" column="57" selection-start-line="152" selection-start-column="57" selection-end-line="152" selection-end-column="57" />
+          <folding>
+            <element signature="e#9521#9522#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../user_list_indexer/src/com/turning_leaf_technologies/reindexer/UserListSolr.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="765">
+          <caret line="59" column="25" selection-start-line="59" selection-start-column="25" selection-end-line="59" selection-end-column="25" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/indexing/RbdigitalScope.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="30">
+          <caret line="2" column="27" selection-start-line="2" selection-start-column="13" selection-end-line="2" selection-end-column="27" />
+          <folding>
+            <element signature="e#1267#1268#0" expanded="true" />
+            <element signature="e#1290#1291#0" expanded="true" />
+            <element signature="e#1335#1336#0" expanded="true" />
+            <element signature="e#1368#1369#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../rbdigital_export/src/com/turning_leaf_technologies/rbdigital/RbdigitalTitle.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="360">
+          <caret line="44" column="42" selection-start-line="44" selection-start-column="42" selection-end-line="44" selection-end-column="42" />
+          <folding>
+            <element signature="e#702#703#0" expanded="true" />
+            <element signature="e#727#728#0" expanded="true" />
+            <element signature="e#775#776#0" expanded="true" />
+            <element signature="e#785#786#0" expanded="true" />
+            <element signature="e#837#838#0" expanded="true" />
+            <element signature="e#849#850#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../rbdigital_export/src/com/turning_leaf_technologies/rbdigital/RbdigitalExtractLogEntry.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="303">
+          <caret line="111" column="16" selection-start-line="111" selection-start-column="16" selection-end-line="111" selection-end-column="16" />
+          <folding>
+            <element signature="e#3859#3860#0" expanded="true" />
+            <element signature="e#3877#3878#0" expanded="true" />
+            <element signature="e#4047#4048#0" expanded="true" />
+            <element signature="e#4064#4065#0" expanded="true" />
+            <element signature="e#4084#4085#0" expanded="true" />
+            <element signature="e#4103#4104#0" expanded="true" />
+            <element signature="e#4123#4124#0" expanded="true" />
+            <element signature="e#4142#4143#0" expanded="true" />
+            <element signature="e#4174#4175#0" expanded="true" />
+            <element signature="e#4205#4206#0" expanded="true" />
+            <element signature="e#4233#4234#0" expanded="true" />
+            <element signature="e#4260#4261#0" expanded="true" />
+            <element signature="e#4385#4386#0" expanded="true" />
+            <element signature="e#4436#4437#0" expanded="true" />
+            <element signature="e#4513#4514#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://C:/Program Files/Java/jdk1.8.0_201/jre/lib/jsse.jar!/sun/security/ssl/SSLSocketImpl.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="146">
+          <caret line="372" column="17" selection-start-line="372" selection-start-column="17" selection-end-line="372" selection-end-column="17" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://C:/Program Files/Java/jdk1.8.0_201/jre/lib/jsse.jar!/sun/security/ssl/AppInputStream.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="146">
+          <caret line="51" selection-start-line="51" selection-end-line="51" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://C:/Program Files/Java/jdk1.8.0_201/jre/lib/rt.jar!/sun/net/www/protocol/http/HttpURLConnection.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="146">
+          <caret line="2669" selection-start-line="2669" selection-end-line="2669" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://C:/Program Files/Java/jdk1.8.0_201/jre/lib/rt.jar!/sun/nio/cs/StreamDecoder.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="129">
+          <caret line="103" column="15" selection-start-line="103" selection-start-column="15" selection-end-line="103" selection-end-column="15" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://C:/Program Files/Java/jdk1.8.0_201/src.zip!/java/io/BufferedReader.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="146">
+          <caret line="371" selection-start-line="371" selection-end-line="371" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../koha_export/src/com/turning_leaf_technologies/koha_export/KohaExportMain.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="84">
+          <caret line="350" column="24" selection-start-line="350" selection-start-column="24" selection-end-line="350" selection-end-column="24" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../rbdigital_export/src/com/turning_leaf_technologies/rbdigital/RBdigitalMagazineIssueAvailability.java" />
+    <entry file="file://$PROJECT_DIR$/../rbdigital_export/src/com/turning_leaf_technologies/rbdigital/RBdigitalMagazineIssue.java" />
+    <entry file="jar://C:/Program Files/Java/jdk1.8.0_201/src.zip!/java/sql/Statement.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="281">
+          <caret line="715" column="14" selection-start-line="715" selection-start-column="14" selection-end-line="715" selection-end-column="14" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/indexing/Scope.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="26">
+          <caret line="41" column="12" selection-start-line="41" selection-start-column="12" selection-end-line="41" selection-end-column="12" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://C:/Program Files/Java/jdk1.8.0_201/src.zip!/java/text/DateFormat.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="142">
+          <caret line="342" column="24" selection-start-line="342" selection-start-column="24" selection-end-line="342" selection-end-column="24" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$PROJECT_DIR$/../java_shared_libraries/mysql-connector-java-8.0.15.jar!/com/mysql/cj/jdbc/ClientPreparedStatement.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="129">
+          <caret line="785" selection-start-line="785" selection-end-line="785" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/indexing/IndexingUtils.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1290">
+          <caret line="94" column="49" selection-start-line="94" selection-start-column="49" selection-end-line="94" selection-end-column="49" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/GroupedWorkIndexer.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="13110">
+          <caret line="899" selection-start-line="899" selection-end-line="899" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://C:/Program Files/Java/jdk1.8.0_201/src.zip!/java/net/SocketInputStream.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="945">
+          <caret line="93" column="23" selection-start-line="93" selection-start-column="23" selection-end-line="93" selection-end-column="23" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/GroupedWorkSolr.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2865">
-          <caret line="200" column="30" selection-start-line="200" selection-start-column="30" selection-end-line="200" selection-end-column="30" />
+        <state relative-caret-position="23775">
+          <caret line="1696" selection-start-line="1696" selection-end-line="1696" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/SideLoadedEContentProcessor.java">
+    <entry file="file://$PROJECT_DIR$/../rbdigital_export/src/com/turning_leaf_technologies/rbdigital/RBdigitalSetting.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="660">
-          <caret line="44" column="33" selection-start-line="44" selection-start-column="33" selection-end-line="44" selection-end-column="33" />
+        <state relative-caret-position="390">
+          <caret line="33" selection-start-line="33" selection-end-line="33" />
+          <folding>
+            <element signature="imports" expanded="true" />
+            <element signature="e#748#749#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/turning_leaf_technologies/cron/BookCoverCleanup.java">
+    <entry file="file://$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/net/NetworkUtils.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="240">
-          <caret line="22" column="45" selection-start-line="22" selection-start-column="45" selection-end-line="22" selection-end-column="45" />
+        <state relative-caret-position="570">
+          <caret line="51" selection-start-line="51" selection-end-line="51" />
         </state>
       </provider>
     </entry>
-    <entry file="jar://$PROJECT_DIR$/../../sites/default/solr-7.6.0/dist/solr-solrj-7.6.0.jar!/org/apache/solr/client/solrj/SolrResponse.class">
+    <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/ItemInfo.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="270">
-          <caret line="28" column="21" selection-start-line="28" selection-start-column="21" selection-end-line="28" selection-end-column="21" />
+        <state relative-caret-position="375">
+          <caret line="29" column="34" selection-start-line="29" selection-start-column="34" selection-end-line="29" selection-end-column="34" />
+          <folding>
+            <element signature="e#5221#5222#0" expanded="true" />
+            <element signature="e#5264#5265#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/nightly_mysql_dump.sh">
+    <entry file="file://$PROJECT_DIR$/../rbdigital_export/src/com/turning_leaf_technologies/rbdigital/RbdigitalMagazine.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="183">
-          <caret line="61" column="37" selection-start-line="61" selection-start-column="37" selection-end-line="61" selection-end-column="37" />
+        <state relative-caret-position="150">
+          <caret line="10" column="28" selection-start-line="10" selection-start-column="28" selection-end-line="10" selection-end-column="28" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/../../data_dir_setup/solr7/events/core.properties">
+    <entry file="jar://C:/Program Files/Java/jdk1.8.0_201/jre/lib/ext/sunjce_provider.jar!/com/sun/crypto/provider/GHASH.class">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="60">
-          <caret line="4" selection-start-line="4" selection-end-line="4" />
+        <state relative-caret-position="145">
+          <caret line="78" selection-start-line="78" selection-end-line="78" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/logging/BaseLogEntry.java">
+    <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/RbdigitalMagazineProcessor.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="30">
-          <caret line="2" column="17" selection-start-line="2" selection-start-column="17" selection-end-line="2" selection-end-column="17" />
+        <state relative-caret-position="15">
+          <caret line="54" selection-start-line="54" selection-end-line="54" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/../../sites/default/conf/openArchivesSearchSpecs.yaml">
+    <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/RbdigitalProcessor.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="195">
-          <caret line="13" column="18" selection-start-line="13" selection-start-column="18" selection-end-line="13" selection-end-column="18" />
+        <state relative-caret-position="48">
+          <caret line="212" column="73" selection-start-line="212" selection-start-column="73" selection-end-line="212" selection-end-column="73" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/../../data_dir_setup/solr7/lists/conf/schema.xml">
+    <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/ScopingInfo.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2055">
-          <caret line="137" column="101" selection-start-line="137" selection-start-column="8" selection-end-line="137" selection-end-column="101" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/solrconfig.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="16860">
-          <caret line="1124" column="10" selection-start-line="1124" selection-start-column="10" selection-end-line="1124" selection-end-column="10" />
+        <state relative-caret-position="180">
+          <caret line="12" column="29" selection-start-line="12" selection-start-column="29" selection-end-line="12" selection-end-column="29" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/../rbdigital_export/src/com/turning_leaf_technologies/rbdigital/RbdigitalExportMain.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="239">
-          <caret line="154" column="4" selection-start-line="154" selection-start-column="4" selection-end-line="154" selection-end-column="4" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/turning_leaf_technologies/cron/BookCoverCleanup.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="128">
-          <caret line="44" column="47" selection-start-line="44" selection-start-column="47" selection-end-line="44" selection-end-column="47" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../java_shared_libraries/src/org/json/JSONArray.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="136">
-          <caret line="286" column="22" selection-start-line="286" selection-start-column="22" selection-end-line="286" selection-end-column="22" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://C:/Program Files/Java/jdk1.8.0_201/src.zip!/java/util/Date.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="226">
-          <caret line="163" column="11" selection-start-line="163" selection-start-column="11" selection-end-line="163" selection-end-column="11" />
-          <folding>
-            <element signature="e#6390#6391#0" expanded="true" />
-            <element signature="e#6438#6439#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../oai_indexer/src/com/turning_leaf_technologies/oai/OAISolrRecord.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="226">
-          <caret line="82" column="42" selection-start-line="82" selection-start-column="42" selection-end-line="82" selection-end-column="42" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../java_shared_libraries/src/org/json/JSONObject.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="151">
-          <caret line="782" selection-start-line="782" selection-end-line="782" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$PROJECT_DIR$/../../sites/default/solr-7.6.0/dist/solr-solrj-7.6.0.jar!/org/apache/solr/common/SolrInputDocument.class">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="59">
-          <caret line="44" selection-start-line="44" selection-end-line="44" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../web_indexer/src/com/turning_leaf_technologies/website_indexer/WebsiteIndexer.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="179">
-          <caret line="53" selection-start-line="53" selection-end-line="54" selection-end-column="41" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/LibraryCalendarEvent.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="330">
-          <caret line="22" column="9" selection-start-line="22" selection-start-column="9" selection-end-line="22" selection-end-column="9" />
-          <folding>
-            <element signature="imports" expanded="true" />
-            <element signature="e#709#710#0" expanded="true" />
-            <element signature="e#725#726#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/EventsIndexerMain.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="308">
-          <caret line="63" selection-start-line="63" selection-end-line="63" />
+        <state relative-caret-position="204">
+          <caret line="451" column="84" selection-start-line="451" selection-start-column="84" selection-end-line="451" selection-end-column="84" />
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/LibraryCalendarIndexer.java">
+    <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/RecordInfo.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-30">
-          <caret line="20" column="18" selection-start-line="20" selection-start-column="18" selection-end-line="20" selection-end-column="18" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/schema.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="176">
-          <caret line="77" column="27" selection-start-line="77" selection-start-column="27" selection-end-line="77" selection-end-column="27" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://C:/Program Files/Java/jdk1.8.0_201/src.zip!/javax/xml/parsers/SAXParser.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="103">
-          <caret line="194" selection-start-line="194" selection-end-line="194" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../cloudlibrary_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryMarcHandler.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1260">
-          <caret line="110" selection-start-line="110" selection-end-line="110" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://C:/Program Files/Java/jdk1.8.0_201/src.zip!/org/xml/sax/helpers/DefaultHandler.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="625">
-          <caret line="418" column="40" selection-start-line="418" selection-start-column="40" selection-end-line="418" selection-end-column="40" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../cloudlibrary_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryExportMain.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="231">
-          <caret line="298" column="74" lean-forward="true" selection-start-line="298" selection-start-column="74" selection-end-line="298" selection-end-column="74" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
+        <state relative-caret-position="228">
+          <caret line="173" column="13" lean-forward="true" selection-start-line="173" selection-start-column="13" selection-end-line="173" selection-end-column="13" />
         </state>
       </provider>
     </entry>
@@ -1881,7 +2000,7 @@
       <state key="ArtifactsStructureConfigurable.UI">
         <settings>
           <artifact-editor />
-          <last-edited>sierra_export_api</last-edited>
+          <last-edited>cloud_library_export</last-edited>
           <splitter-proportions>
             <option name="proportions">
               <list>
@@ -1928,7 +2047,7 @@
       </state>
       <state key="ModuleStructureConfigurable.UI">
         <settings>
-          <last-edited>events_indexer</last-edited>
+          <last-edited>cloud_library_export</last-edited>
           <splitter-proportions>
             <option name="proportions">
               <list>

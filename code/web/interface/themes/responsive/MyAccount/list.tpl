@@ -58,7 +58,7 @@
 									&nbsp;&nbsp;<a href="#" class="button btn btn-sm btn-default" id="FavCreateSpotlight" onclick="return AspenDiscovery.CollectionSpotlights.createSpotlightFromList('{$favList->id}')">{translate text='Create Spotlight'}</a>
 								{/if}
 								{if $loggedIn && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('contentEditor', $userRoles) || array_key_exists('libraryManager', $userRoles) || array_key_exists('locationManager', $userRoles))}
-									<a href="#" id="FavHome" class="btn btn-sm btn-default" onclick="return AspenDiscovery.Lists.addToHomePage('{$favList->id}')">{translate text='Add To Home Page'}</a>
+									<a href="#" id="FavHome" class="btn btn-sm btn-default" onclick="return AspenDiscovery.Lists.addToHomePage('{$favList->id}')">{translate text='Add To Browse'}</a>
 								{/if}
 							{/if}
 						</div>

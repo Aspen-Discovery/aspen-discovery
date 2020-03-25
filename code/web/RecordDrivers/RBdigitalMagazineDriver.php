@@ -3,12 +3,15 @@
 require_once ROOT_DIR . '/RecordDrivers/RecordInterface.php';
 require_once ROOT_DIR . '/RecordDrivers/GroupedWorkSubDriver.php';
 require_once ROOT_DIR . '/sys/RBdigital/RBdigitalMagazine.php';
+require_once ROOT_DIR . '/sys/RBdigital/RBdigitalIssue.php';
 
 class RBdigitalMagazineDriver extends GroupedWorkSubDriver
 {
 	private $id;
 	/** @var RBdigitalMagazine */
 	private $rbdigitalProduct;
+	/** @var RBdigitalIssue */
+	private $rbdigitalIssue;
 	private $rbdigitalRawMetadata;
 	private $valid;
 
@@ -17,11 +20,22 @@ class RBdigitalMagazineDriver extends GroupedWorkSubDriver
 	{
 		$this->id = $recordId;
 
+		list($magazineId, $issueId) = explode('_', $recordId);
+
 		$this->rbdigitalProduct = new RBdigitalMagazine();
-		$this->rbdigitalProduct->magazineId = $recordId;
+		$this->rbdigitalProduct->magazineId = $magazineId;
 		if ($this->rbdigitalProduct->find(true)) {
-			$this->valid = true;
 			$this->rbdigitalRawMetadata = json_decode($this->rbdigitalProduct->rawResponse);
+			$this->rbdigitalIssue = new RBdigitalIssue();
+			$this->rbdigitalIssue->magazineId = $magazineId;
+			$this->rbdigitalIssue->issueId = $issueId;
+			if ($this->rbdigitalIssue->find(true)){
+				$this->valid = true;
+			}else{
+				$this->valid = false;
+				$this->rbdigitalProduct = null;
+				$this->rbdigitalIssue = null;
+			}
 		} else {
 			$this->valid = false;
 			$this->rbdigitalProduct = null;
@@ -45,7 +59,7 @@ class RBdigitalMagazineDriver extends GroupedWorkSubDriver
 			require_once ROOT_DIR . '/sys/Grouping/GroupedWorkPrimaryIdentifier.php';
 			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 			$groupedWork = new GroupedWork();
-			$query = "SELECT grouped_work.* FROM grouped_work INNER JOIN grouped_work_primary_identifiers ON grouped_work.id = grouped_work_id WHERE type='rbdigital_magazine' AND identifier = '" . $this->getUniqueID() . "'";
+			$query = "SELECT grouped_work.* FROM grouped_work INNER JOIN grouped_work_primary_identifiers ON grouped_work.id = grouped_work_id WHERE type='rbdigital_magazine' AND identifier = '" . $this->rbdigitalProduct->magazineId . "'";
 			$groupedWork->query($query);
 
 			if ($groupedWork->getNumResults() == 1) {
@@ -57,11 +71,7 @@ class RBdigitalMagazineDriver extends GroupedWorkSubDriver
 
 	public function getRBdigitalBookcoverUrl()
 	{
-		$images = $this->rbdigitalRawMetadata->images;
-		foreach ($images as $image) {
-			return $image->url;
-		}
-		return null;
+		return $this->rbdigitalIssue->imageUrl;
 	}
 
 	public function getModule()
@@ -409,6 +419,6 @@ class RBdigitalMagazineDriver extends GroupedWorkSubDriver
 	{
 		require_once ROOT_DIR . '/Drivers/RBdigitalDriver.php';
 		$rbdigitalDriver = new RBdigitalDriver();
-		return $rbdigitalDriver->getUserInterfaceURL() . '/magazine/' . $this->rbdigitalProduct->magazineId . '/' . $this->rbdigitalProduct->issueId;
+		return $rbdigitalDriver->getUserInterfaceURL() . '/magazine/' . $this->rbdigitalProduct->magazineId . '/' . $this->rbdigitalIssue->issueId;
 	}
 }

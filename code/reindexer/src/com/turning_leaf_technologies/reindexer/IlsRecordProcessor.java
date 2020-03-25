@@ -24,6 +24,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	private String recordNumberTag;
 	String itemTag;
 	char formatSubfield;
+	boolean checkRecordForLargePrint;
 	char barcodeSubfield;
 	char statusSubfieldIndicator;
 	Pattern statusesToSuppressPattern = null;
@@ -127,6 +128,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			specifiedFormatCategory = indexingProfileRS.getString("specifiedFormatCategory");
 			specifiedFormatBoost = indexingProfileRS.getInt("specifiedFormatBoost");
 			formatSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "format");
+			checkRecordForLargePrint = indexingProfileRS.getBoolean("checkRecordForLargePrint");
 			barcodeSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "barcode");
 			statusSubfieldIndicator = getSubfieldIndicatorFromConfig(indexingProfileRS, "status");
 			String statusesToSuppress = indexingProfileRS.getString("statusesToSuppress");

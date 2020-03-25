@@ -12,6 +12,8 @@ class Placard extends DataObject
 
 	//TODO: Which scopes should the Placard apply to
 	//TODO: add additional triggers
+	//TODO: Add a url to placards
+	//TODO: Make placards dismissable so patrons can ignore specific ones
 
 	static function getObjectStructure($availableFacets = null){
 		$placardTriggerStructure = PlacardTrigger::getObjectStructure();

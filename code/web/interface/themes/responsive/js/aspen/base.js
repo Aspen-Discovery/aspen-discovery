@@ -482,9 +482,9 @@ var AspenDiscovery = (function(){
 					}
 				}
 			).fail(AspenDiscovery.ajaxFail);
-            return false;
-        }
-    }
+			return false;
+		}
+	}
 
 }(AspenDiscovery || {}));
 

@@ -43,7 +43,7 @@ public class OverDriveRecordGrouper extends RecordGroupingProcessor {
 	String processOverDriveRecord(String overdriveId, String title, String subtitle, String series, String author, String mediaType, boolean primaryDataChanged) {
 		RecordIdentifier primaryIdentifier = new RecordIdentifier("overdrive", overdriveId);
 		//Overdrive typically makes the subtitle the series and volume which we don't want for grouping
-		if (subtitle != null && series != null && subtitle.toLowerCase().contains(series.toLowerCase())) {
+		if (subtitle != null && series != null && series.length() > 0 && subtitle.toLowerCase().contains(series.toLowerCase())) {
 			subtitle = "";
 		}
 		//Overdrive typically makes the subtitle the series and volume which we don't want for grouping

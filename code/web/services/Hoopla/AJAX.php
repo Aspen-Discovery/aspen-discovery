@@ -19,43 +19,6 @@ class Hoopla_AJAX extends Action
 	}
 
 	/** @noinspection PhpUnused */
-	function reloadCover(){
-		require_once ROOT_DIR . '/RecordDrivers/HooplaRecordDriver.php';
-		$id = $_REQUEST['id'];
-		$recordDriver = new HooplaRecordDriver($id);
-
-		//Reload small cover
-		$smallCoverUrl = str_replace('&amp;', '&', $recordDriver->getBookcoverUrl('small', true)) . '&reload';
-		file_get_contents($smallCoverUrl);
-
-		//Reload medium cover
-		$mediumCoverUrl = str_replace('&amp;', '&', $recordDriver->getBookcoverUrl('medium', true)) . '&reload';
-		file_get_contents($mediumCoverUrl);
-
-		//Reload large cover
-		$largeCoverUrl = str_replace('&amp;', '&', $recordDriver->getBookcoverUrl('large', true)) . '&reload';
-		file_get_contents($largeCoverUrl);
-
-		//Also reload covers for the grouped work
-		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-		$groupedWorkDriver = new GroupedWorkDriver($recordDriver->getGroupedWorkId());
-		//Reload small cover
-		$smallCoverUrl = str_replace('&amp;', '&', $groupedWorkDriver->getBookcoverUrl('small', true)) . '&reload';
-		file_get_contents($smallCoverUrl);
-
-		//Reload medium cover
-		$mediumCoverUrl = str_replace('&amp;', '&', $groupedWorkDriver->getBookcoverUrl('medium', true)) . '&reload';
-		file_get_contents($mediumCoverUrl);
-
-		//Reload large cover
-		$largeCoverUrl = str_replace('&amp;', '&', $groupedWorkDriver->getBookcoverUrl('large', true)) . '&reload';
-		file_get_contents($largeCoverUrl);
-
-		return array('success' => true, 'message' => 'Covers have been reloaded.  You may need to refresh the page to clear your local cache.');
-	}
-
-
-	/** @noinspection PhpUnused */
 	function getCheckOutPrompts(){
 		$user = UserAccount::getLoggedInUser();
 		$id = $_REQUEST['id'];
