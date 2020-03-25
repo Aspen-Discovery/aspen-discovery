@@ -56,6 +56,9 @@ function addWrappedTextToImage($imageHandle, $font, $lines, $fontSize, $lineSpac
 
 function addCenteredWrappedTextToImage($imageHandle, $font, $lines, $fontSize, $lineSpacing, $startX, $startY, $width, $color)
 {
+	if (!is_array($lines)){
+		$lines = [$lines];
+	}
 	foreach ($lines as $line) {
 		//Get the width of this line
 		$lineBox = imageftbbox($fontSize, 0, $font, $line);

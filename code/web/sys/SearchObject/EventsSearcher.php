@@ -105,6 +105,30 @@ class SearchObject_EventsSearcher extends SearchObject_SolrSearcher
 			$this->query = $_REQUEST['q'];
 		}
 
+		//Validate we got good search terms
+		foreach ($this->searchTerms as &$searchTerm) {
+			if (isset($searchTerm['index'])){
+				if ($searchTerm['index'] == 'Keyword') {
+					$searchTerm['index'] = 'EventsKeyword';
+				} elseif ($searchTerm['index'] == 'Title') {
+					$searchTerm['index'] = 'EventsTitle';
+				}
+			}else{
+				foreach ($searchTerm['group'] as &$group){
+					if ($group['field'] == 'Keyword') {
+						$group['field'] = 'EventsKeyword';
+					} elseif ($group['field'] == 'Title') {
+						$group['field'] = 'EventsTitle';
+					}
+				}
+			}
+		}
+
+		// If a query override has been specified, log it here
+		if (isset($_REQUEST['q'])) {
+			$this->query = $_REQUEST['q'];
+		}
+
 		return true;
 	} // End init()
 
@@ -158,5 +182,59 @@ class SearchObject_EventsSearcher extends SearchObject_SolrSearcher
 			$suggestionHandler = 'title_suggest';
 		}
 		return $this->processSearchSuggestions($searchTerm, $suggestionHandler);
+	}
+
+	//TODO: Convert this to use definitions so they can be customized in admin
+	public function getFacetConfig()
+	{
+		if ($this->facetConfig == null) {
+			$facetConfig = [];
+			$ageGroup = new LibraryFacetSetting();
+			$ageGroup->id = count($facetConfig) +1;
+			$ageGroup->multiSelect = true;
+			$ageGroup->facetName = "age_group_facet";
+			$ageGroup->displayName = "Age Group";
+			$ageGroup->numEntriesToShowByDefault = 5;
+			$ageGroup->translate = true;
+			$ageGroup->collapseByDefault = true;
+			$ageGroup->useMoreFacetPopup = true;
+			$facetConfig["age_group_facet"] = $ageGroup;
+
+			$programType = new LibraryFacetSetting();
+			$programType->id = count($facetConfig) +1;
+			$programType->multiSelect = true;
+			$programType->facetName = "program_type_facet";
+			$programType->displayName = "Program Type";
+			$programType->numEntriesToShowByDefault = 5;
+			$programType->translate = true;
+			$programType->collapseByDefault = true;
+			$programType->useMoreFacetPopup = true;
+			$facetConfig["program_type_facet"] = $programType;
+
+			$branch = new LibraryFacetSetting();
+			$branch->id = count($facetConfig) +1;
+			$branch->multiSelect = true;
+			$branch->facetName = "branch";
+			$branch->displayName = "Branch";
+			$branch->numEntriesToShowByDefault = 5;
+			$branch->translate = false;
+			$branch->collapseByDefault = true;
+			$branch->useMoreFacetPopup = true;
+			$facetConfig["branch"] = $branch;
+
+			$room = new LibraryFacetSetting();
+			$room->id = count($facetConfig) +1;
+			$room->multiSelect = true;
+			$room->facetName = "room";
+			$room->displayName = "Room";
+			$room->numEntriesToShowByDefault = 5;
+			$room->translate = false;
+			$room->collapseByDefault = true;
+			$room->useMoreFacetPopup = true;
+			$facetConfig["room"] = $room;
+
+			$this->facetConfig = $facetConfig;
+		}
+		return $this->facetConfig;
 	}
 }

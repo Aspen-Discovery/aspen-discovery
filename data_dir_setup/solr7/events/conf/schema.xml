@@ -87,6 +87,7 @@
 
 		<field name="last_change" type="date" indexed="false" stored="true"/>
 		<field name="start_date" type="date" indexed="false" stored="true"/>
+		<field name="start_date_sort" type="integer" indexed="true" stored="true"/>
 		<field name="end_date" type="date" indexed="false" stored="true"/>
 
 		<field name="title" type="searchable_text" indexed="true" stored="true"/>
@@ -97,8 +98,10 @@
 		<field name="offsite_address" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
 		<field name="online_address" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
 
-		<field name="age_group" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
-		<field name="program_type" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
+		<field name="age_group_facet" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
+		<field name="age_group" type="searchable_text" indexed="true" stored="true" multiValued="true"/>
+		<field name="program_type_facet" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
+		<field name="program_type" type="searchable_text" indexed="true" stored="true" multiValued="true"/>
 		<field name="internal_category" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
 
 		<field name="registration_required" type="unchanged_string" indexed="true" stored="true" multiValued="false"/>
@@ -128,6 +131,8 @@
 	<uniqueKey>identifier</uniqueKey>
 	<copyField source="title" dest="title_sort"/>
 	<copyField source="title" dest="title_suggestions"/>
+	<copyField source="age_group" dest="age_group_facet"/>
+	<copyField source="program_type" dest="program_type_facet"/>
 
 	<copyField source="title" dest="keyword_suggestions"/>
 	<copyField source="teaser" dest="keyword_suggestions"/>

@@ -2,145 +2,37 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="55ca2c23-0e7e-4349-ac3a-9f29a6a68364" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/file/JarUtil.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../rbdigital_export/src/com/turning_leaf_technologies/rbdigital/RBdigitalSetting.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/Admin/releaseNotes.tpl" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../web/release_notes/20.01.00.MD" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../web/release_notes/20.02.00.MD" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../web/release_notes/20.03.00.MD" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../web/release_notes/20.04.00.MD" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../web/services/Admin/ReleaseNotes.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../web/sys/Parsedown/Parsedown.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../web/sys/RBdigital/RBdigitalIssue.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../web/sys/Covers/EventCoverBuilder.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../carlx_export/carlx_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../carlx_export/carlx_export.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../carlx_export/src/com/turning_leaf_technologies/carlx/CarlXExportMain.java" beforeDir="false" afterPath="$PROJECT_DIR$/../carlx_export/src/com/turning_leaf_technologies/carlx/CarlXExportMain.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../cloudlibrary_export/META-INF/MANIFEST.MF" beforeDir="false" afterPath="$PROJECT_DIR$/../cloud_library_export/META-INF/MANIFEST.MF" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../cloudlibrary_export/cloud_library_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../cloud_library_export/cloud_library_export.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../cloudlibrary_export/cloudlibrary_export.iml" beforeDir="false" afterPath="$PROJECT_DIR$/../cloud_library_export/cloud_library_export.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../cloudlibrary_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryAvailability.java" beforeDir="false" afterPath="$PROJECT_DIR$/../cloud_library_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryAvailability.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../cloudlibrary_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryAvailabilityHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/../cloud_library_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryAvailabilityHandler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../cloudlibrary_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryEventHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/../cloud_library_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryEventHandler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../cloudlibrary_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryExportMain.java" beforeDir="false" afterPath="$PROJECT_DIR$/../cloud_library_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryExportMain.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../cloudlibrary_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryExtractLogEntry.java" beforeDir="false" afterPath="$PROJECT_DIR$/../cloud_library_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryExtractLogEntry.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../cloudlibrary_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryMarcHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/../cloud_library_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryMarcHandler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../cloudlibrary_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryTitle.java" beforeDir="false" afterPath="$PROJECT_DIR$/../cloud_library_export/src/com/turning_leaf_technologies/cloud_library/CloudLibraryTitle.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/artifacts/cloud_library_export.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/artifacts/cloud_library_export.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/artifacts/overdrive_extract.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/artifacts/overdrive_extract.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dictionaries/mdnob.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dictionaries/mdnob.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../cloud_library_export/cloud_library_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../cloud_library_export/cloud_library_export.jar" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cron.jar" beforeDir="false" afterPath="$PROJECT_DIR$/cron.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/LibraryCalendarIndexer.java" beforeDir="false" afterPath="$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/LibraryCalendarIndexer.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../hoopla_export/hoopla_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../hoopla_export/hoopla_export.jar" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../horizon_export/horizon_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../horizon_export/horizon_export.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/indexing/IndexingProfile.java" beforeDir="false" afterPath="$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/indexing/IndexingProfile.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/indexing/IndexingUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/indexing/IndexingUtils.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/indexing/RbdigitalScope.java" beforeDir="false" afterPath="$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/indexing/RbdigitalScope.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/net/NetworkUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/net/NetworkUtils.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../koha_export/koha_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../koha_export/koha_export.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../koha_export/src/com/turning_leaf_technologies/koha_export/KohaExportMain.java" beforeDir="false" afterPath="$PROJECT_DIR$/../koha_export/src/com/turning_leaf_technologies/koha_export/KohaExportMain.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../oai_indexer/oai_indexer.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../oai_indexer/oai_indexer.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../overdrive_api_extract/META-INF/MANIFEST.MF" beforeDir="false" afterPath="$PROJECT_DIR$/../overdrive_extract/META-INF/MANIFEST.MF" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../overdrive_api_extract/overdrive_api_extract.iml" beforeDir="false" afterPath="$PROJECT_DIR$/../overdrive_extract/overdrive_extract.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../overdrive_api_extract/overdrive_extract.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../overdrive_extract/overdrive_extract.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../overdrive_api_extract/overdrive_extract.jardesc" beforeDir="false" afterPath="$PROJECT_DIR$/../overdrive_extract/overdrive_extract.jardesc" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../overdrive_api_extract/src/com/turning_leaf_technologies/overdrive/AdvantageCollectionInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/../overdrive_extract/src/com/turning_leaf_technologies/overdrive/AdvantageCollectionInfo.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../overdrive_api_extract/src/com/turning_leaf_technologies/overdrive/ExtractOverDriveInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/../overdrive_extract/src/com/turning_leaf_technologies/overdrive/ExtractOverDriveInfo.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../overdrive_api_extract/src/com/turning_leaf_technologies/overdrive/ExtractOverDriveInfoMain.java" beforeDir="false" afterPath="$PROJECT_DIR$/../overdrive_extract/src/com/turning_leaf_technologies/overdrive/ExtractOverDriveInfoMain.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../overdrive_api_extract/src/com/turning_leaf_technologies/overdrive/OverDriveAvailabilityInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/../overdrive_extract/src/com/turning_leaf_technologies/overdrive/OverDriveAvailabilityInfo.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../overdrive_api_extract/src/com/turning_leaf_technologies/overdrive/OverDriveDBInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/../overdrive_extract/src/com/turning_leaf_technologies/overdrive/OverDriveDBInfo.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../overdrive_api_extract/src/com/turning_leaf_technologies/overdrive/OverDriveExtractLogEntry.java" beforeDir="false" afterPath="$PROJECT_DIR$/../overdrive_extract/src/com/turning_leaf_technologies/overdrive/OverDriveExtractLogEntry.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../overdrive_api_extract/src/com/turning_leaf_technologies/overdrive/OverDriveRecordInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/../overdrive_extract/src/com/turning_leaf_technologies/overdrive/OverDriveRecordInfo.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../overdrive_extract/overdrive_extract.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../overdrive_extract/overdrive_extract.jar" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../rbdigital_export/rbdigital_export.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../rbdigital_export/rbdigital_export.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../rbdigital_export/src/com/turning_leaf_technologies/rbdigital/RbdigitalExportMain.java" beforeDir="false" afterPath="$PROJECT_DIR$/../rbdigital_export/src/com/turning_leaf_technologies/rbdigital/RbdigitalExportMain.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../rbdigital_export/src/com/turning_leaf_technologies/rbdigital/RbdigitalExtractLogEntry.java" beforeDir="false" afterPath="$PROJECT_DIR$/../rbdigital_export/src/com/turning_leaf_technologies/rbdigital/RbdigitalExtractLogEntry.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../rbdigital_export/src/com/turning_leaf_technologies/rbdigital/RbdigitalTitle.java" beforeDir="false" afterPath="$PROJECT_DIR$/../rbdigital_export/src/com/turning_leaf_technologies/rbdigital/RbdigitalTitle.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../record_grouping/record_grouping.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../record_grouping/record_grouping.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../record_grouping/src/com/turning_leaf_technologies/grouping/OverDriveRecordGrouper.java" beforeDir="false" afterPath="$PROJECT_DIR$/../record_grouping/src/com/turning_leaf_technologies/grouping/OverDriveRecordGrouper.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../reindexer/reindexer.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../reindexer/reindexer.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/GroupedWorkIndexer.java" beforeDir="false" afterPath="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/GroupedWorkIndexer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/GroupedWorkSolr.java" beforeDir="false" afterPath="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/GroupedWorkSolr.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/IlsRecordProcessor.java" beforeDir="false" afterPath="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/IlsRecordProcessor.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/KohaRecordProcessor.java" beforeDir="false" afterPath="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/KohaRecordProcessor.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/RbdigitalMagazineProcessor.java" beforeDir="false" afterPath="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/RbdigitalMagazineProcessor.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/RbdigitalProcessor.java" beforeDir="false" afterPath="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/RbdigitalProcessor.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../sideload_processing/sideload_processing.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../sideload_processing/sideload_processing.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../sideload_processing/src/com/turning_leaf_technologies/sideloading/SideLoadingMain.java" beforeDir="false" afterPath="$PROJECT_DIR$/../sideload_processing/src/com/turning_leaf_technologies/sideloading/SideLoadingMain.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../sierra_export_api/sierra_export_api.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../sierra_export_api/sierra_export_api.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../sierra_export_api/src/com/turning_leaf_technologies/sierra/SierraExportAPIMain.java" beforeDir="false" afterPath="$PROJECT_DIR$/../sierra_export_api/src/com/turning_leaf_technologies/sierra/SierraExportAPIMain.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../user_list_indexer/src/com/turning_leaf_technologies/reindexer/UserListIndexer.java" beforeDir="false" afterPath="$PROJECT_DIR$/../user_list_indexer/src/com/turning_leaf_technologies/reindexer/UserListIndexer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../user_list_indexer/src/com/turning_leaf_technologies/reindexer/UserListIndexerMain.java" beforeDir="false" afterPath="$PROJECT_DIR$/../user_list_indexer/src/com/turning_leaf_technologies/reindexer/UserListIndexerMain.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../user_list_indexer/src/com/turning_leaf_technologies/reindexer/UserListSolr.java" beforeDir="false" afterPath="$PROJECT_DIR$/../user_list_indexer/src/com/turning_leaf_technologies/reindexer/UserListSolr.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../user_list_indexer/user_list_indexer.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../user_list_indexer/user_list_indexer.jar" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../web/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../web/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/Drivers/Koha.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/Drivers/Koha.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/Drivers/OverDriveDriver.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/Drivers/OverDriveDriver.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/Drivers/RBdigitalDriver.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/Drivers/RBdigitalDriver.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/RecordDrivers/GroupedWorkDriver.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/RecordDrivers/GroupedWorkDriver.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/RecordDrivers/RBdigitalMagazineDriver.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/RecordDrivers/RBdigitalMagazineDriver.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/interface/themes/nashville_resp/Search/list.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/nashville_resp/Search/list.tpl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/Admin/exportLogFilters.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/Admin/exportLogFilters.tpl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/DataObjectUtil/oneToMany.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/DataObjectUtil/oneToMany.tpl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/Lists/list-none.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/Lists/list-none.tpl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/Lists/list.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/Lists/list.tpl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/MyAccount/list.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/MyAccount/list.tpl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/MyAccount/menu.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/MyAccount/menu.tpl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/MyAccount/rbdigitalCheckedOutMagazine.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/MyAccount/rbdigitalCheckedOutMagazine.tpl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/MyAccount/rbdigitalHold.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/MyAccount/rbdigitalHold.tpl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/OpenArchives/list-none.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/OpenArchives/list-none.tpl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/OpenArchives/list.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/OpenArchives/list.tpl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/RBdigital/rbdigitalExportLog.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/RBdigital/rbdigitalExportLog.tpl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/RecordDrivers/GroupedWork/staff-view.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/RecordDrivers/GroupedWork/staff-view.tpl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/RecordDrivers/Hoopla/staff-view.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/RecordDrivers/Hoopla/staff-view.tpl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/RecordDrivers/Marc/staff.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/RecordDrivers/Marc/staff.tpl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/RecordDrivers/OverDrive/staff.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/RecordDrivers/OverDrive/staff.tpl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/RecordDrivers/RBdigital/staff-view.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/RecordDrivers/RBdigital/staff-view.tpl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/Search/list-none.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/Search/list-none.tpl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/Search/list.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/Search/list.tpl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/Websites/list-none.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/Websites/list-none.tpl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/Websites/list.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/Websites/list.tpl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/js/aspen/admin.js" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/js/aspen/admin.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/js/aspen/base.js" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/js/aspen/base.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/js/aspen/rbdigital.js" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/js/aspen/rbdigital.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/js/aspen/record.js" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/js/aspen/record.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/release_notes/2019_06A.yaml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/release_notes/2019_06B.yaml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/release_notes/2019_07A.yaml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/release_notes/2019_07B.yaml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/release_notes/template.yaml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/services/Admin/AJAX.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/services/Admin/AJAX.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/services/Admin/CollectionSpotlights.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/services/Admin/CollectionSpotlights.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/services/Admin/IndexingLog.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/services/Admin/IndexingLog.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/services/Admin/ReindexLog.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/services/Admin/ReindexLog.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/services/GroupedWork/AJAX.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/services/GroupedWork/AJAX.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/services/Hoopla/AJAX.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/services/Hoopla/AJAX.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/services/RBdigital/AJAX.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/services/RBdigital/AJAX.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/services/RBdigitalMagazine/AJAX.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/services/RBdigitalMagazine/AJAX.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/services/RBdigitalMagazine/AccessOnline.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/services/RBdigitalMagazine/AccessOnline.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/services/Record/AJAX.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/services/Record/AJAX.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/sys/Account/User.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/sys/Account/User.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/RecordDrivers/LibraryCalendarEventRecordDriver.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/RecordDrivers/LibraryCalendarEventRecordDriver.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../web/sys/Covers/BookCoverProcessor.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/sys/Covers/BookCoverProcessor.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/sys/Covers/ListCoverBuilder.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/sys/Covers/ListCoverBuilder.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/sys/DBMaintenance/indexing_updates.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/sys/DBMaintenance/indexing_updates.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/sys/DBMaintenance/rbdigital_updates.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/sys/DBMaintenance/rbdigital_updates.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/sys/DBMaintenance/user_updates.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/sys/DBMaintenance/user_updates.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/sys/Indexing/IndexingProfile.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/sys/Indexing/IndexingProfile.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/sys/Indexing/SideLoad.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/sys/Indexing/SideLoad.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/sys/LibraryLocation/Library.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/sys/LibraryLocation/Library.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/sys/LocalEnrichment/Placard.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/sys/LocalEnrichment/Placard.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/sys/RBdigital/RBdigitalExportLogEntry.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/sys/RBdigital/RBdigitalExportLogEntry.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/sys/RBdigital/RBdigitalScope.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/sys/RBdigital/RBdigitalScope.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/sys/RBdigital/RBdigitalSetting.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/sys/RBdigital/RBdigitalSetting.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web_indexer/src/com/turning_leaf_technologies/website_indexer/WebsiteIndexerMain.java" beforeDir="false" afterPath="$PROJECT_DIR$/../web_indexer/src/com/turning_leaf_technologies/website_indexer/WebsiteIndexerMain.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/sys/Covers/WebPageCoverBuilder.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/sys/Covers/WebPageCoverBuilder.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/sys/Events/LMLibraryCalendarEvent.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/sys/Events/LMLibraryCalendarEvent.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../web_indexer/web_indexer.jar" beforeDir="false" afterPath="$PROJECT_DIR$/../web_indexer/web_indexer.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../sites/arlington.production/start_background_processes.sh" beforeDir="false" afterPath="$PROJECT_DIR$/../../sites/arlington.production/start_background_processes.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../sites/aspencat.production/start_background_processes.sh" beforeDir="false" afterPath="$PROJECT_DIR$/../../sites/aspencat.production/start_background_processes.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../sites/basinlibraries.production/start_background_processes.sh" beforeDir="false" afterPath="$PROJECT_DIR$/../../sites/basinlibraries.production/start_background_processes.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../sites/model.production/start_background_processes.sh" beforeDir="false" afterPath="$PROJECT_DIR$/../../sites/model.production/start_background_processes.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../sites/nashville.production/continuous_partial_reindex.sh" beforeDir="false" afterPath="$PROJECT_DIR$/../../sites/nashville.production/continuous_partial_reindex.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../sites/nashville.production/full_update.sh" beforeDir="false" afterPath="$PROJECT_DIR$/../../sites/nashville.production/full_update.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../sites/nashville.production/start_background_processes.sh" beforeDir="false" afterPath="$PROJECT_DIR$/../../sites/nashville.production/start_background_processes.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../sites/pueblo.production/start_background_processes.sh" beforeDir="false" afterPath="$PROJECT_DIR$/../../sites/pueblo.production/start_background_processes.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../sites/template.linux/start_background_processes.sh" beforeDir="false" afterPath="$PROJECT_DIR$/../../sites/template.linux/start_background_processes.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/schema.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/schema.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../sites/default/conf/eventsFacets.ini" beforeDir="false" afterPath="$PROJECT_DIR$/../../sites/default/conf/eventsFacets.ini" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../sites/default/conf/eventsSearchSpecs.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/../../sites/default/conf/eventsSearchSpecs.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../sites/default/conf/eventsSearches.ini" beforeDir="false" afterPath="$PROJECT_DIR$/../../sites/default/conf/eventsSearches.ini" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../sites/default/conf/islandoraFacets.ini" beforeDir="false" afterPath="$PROJECT_DIR$/../../sites/default/conf/islandoraFacets.ini" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../sites/default/conf/listsFacets.ini" beforeDir="false" afterPath="$PROJECT_DIR$/../../sites/default/conf/listsFacets.ini" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../sites/default/conf/openArchivesFacets.ini" beforeDir="false" afterPath="$PROJECT_DIR$/../../sites/default/conf/openArchivesFacets.ini" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../sites/default/conf/websiteFacets.ini" beforeDir="false" afterPath="$PROJECT_DIR$/../../sites/default/conf/websiteFacets.ini" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../sites/default/conf/websiteSearches.ini" beforeDir="false" afterPath="$PROJECT_DIR$/../../sites/default/conf/websiteSearches.ini" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -163,7 +55,35 @@
     <favorites_list name="cron" />
   </component>
   <component name="FileEditorManager">
-    <leaf />
+    <leaf>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/EventsIndexerMain.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="180">
+              <caret line="21" column="31" selection-start-line="21" selection-start-column="31" selection-end-line="21" selection-end-column="31" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/schema.xml">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="210">
+              <caret line="134" column="61" selection-start-line="134" selection-start-column="61" selection-end-line="134" selection-end-column="61" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/LibraryCalendarIndexer.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="129">
+              <caret line="164" column="65" selection-start-line="164" selection-start-column="51" selection-end-line="164" selection-end-column="65" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
@@ -175,7 +95,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>finish</find>
       <find>system.ex</find>
       <find>Error loading</find>
       <find>getAllExistingRbdigitalItemsStmt</find>
@@ -205,6 +124,7 @@
       <find>RBdigitalScope</find>
       <find>runFull</find>
       <find>solr</find>
+      <find>library_scopes</find>
     </findStrings>
     <replaceStrings>
       <replace>Rbdigital</replace>
@@ -242,8 +162,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/../../sites/arlington.localhost/conf/config.ini" />
-        <option value="$PROJECT_DIR$/../../sites/arlington.production/conf/config.ini" />
         <option value="$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/indexing/Scope.java" />
         <option value="$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/indexing/OwnershipRule.java" />
         <option value="$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies/indexing/InclusionRule.java" />
@@ -293,6 +211,8 @@
         <option value="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/RbdigitalMagazineProcessor.java" />
         <option value="$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/RbdigitalProcessor.java" />
         <option value="$PROJECT_DIR$/../rbdigital_export/src/com/turning_leaf_technologies/rbdigital/RbdigitalExportMain.java" />
+        <option value="$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/LibraryCalendarIndexer.java" />
+        <option value="$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/schema.xml" />
       </list>
     </option>
   </component>
@@ -588,6 +508,7 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-7" y="-7" width="1550" height="838" extended-state="6" />
+    <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" sideWeight="0.4969325" weight="0.19127516" />
       <window_info id="Image Layers" order="1" />
@@ -598,7 +519,7 @@
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" sideWeight="0.49261746" weight="0.27620396" />
       <window_info anchor="bottom" id="Run" order="2" sideWeight="0.4966443" weight="0.3186969" />
-      <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.8416107" weight="0.34135976" />
+      <window_info active="true" anchor="bottom" id="Debug" order="3" sideWeight="0.8416107" visible="true" weight="0.34135976" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" weight="0.3286119" />
@@ -1425,6 +1346,18 @@
           <properties />
           <option name="timeStamp" value="1560" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/EventsIndexerMain.java</url>
+          <line>60</line>
+          <properties />
+          <option name="timeStamp" value="1561" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/LibraryCalendarIndexer.java</url>
+          <line>214</line>
+          <properties />
+          <option name="timeStamp" value="1563" />
+        </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
     <watches-manager>
@@ -1579,27 +1512,6 @@
     </expressions>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/../symphony_export/src/com/turning_leaf_technologies/symphony/SymphonyExportMain.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-885">
-          <caret line="18" column="13" selection-start-line="18" selection-start-column="13" selection-end-line="18" selection-end-column="13" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../web_indexer/src/com/turning_leaf_technologies/website_indexer/WebsiteIndexerMain.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="300">
-          <caret line="30" column="63" selection-start-line="30" selection-start-column="63" selection-end-line="30" selection-end-column="63" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../reindexer/src/com/turning_leaf_technologies/reindexer/OverDriveProcessor.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="132">
-          <caret line="269" selection-start-line="269" selection-end-line="269" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/../overdrive_extract/src/com/turning_leaf_technologies/overdrive/OverDriveRecordInfo.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="390">
@@ -1991,6 +1903,27 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="228">
           <caret line="173" column="13" lean-forward="true" selection-start-line="173" selection-start-column="13" selection-end-line="173" selection-end-column="13" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/EventsIndexerMain.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="180">
+          <caret line="21" column="31" selection-start-line="21" selection-start-column="31" selection-end-line="21" selection-end-column="31" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/LibraryCalendarIndexer.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="129">
+          <caret line="164" column="65" selection-start-line="164" selection-start-column="51" selection-end-line="164" selection-end-column="65" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/schema.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="210">
+          <caret line="134" column="61" selection-start-line="134" selection-start-column="61" selection-end-line="134" selection-end-column="61" />
         </state>
       </provider>
     </entry>

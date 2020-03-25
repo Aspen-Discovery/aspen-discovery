@@ -22,4 +22,25 @@ class EventsSolrConnector extends Solr
 	{
 		return 'eventsSearches';
 	}
+
+	/**
+	 * Get filters based on scoping for the search
+	 * @param Library $searchLibrary
+	 * @param Location $searchLocation
+	 * @return array
+	 */
+	public function getScopingFilters(/** @noinspection PhpUnusedParameterInspection */ $searchLibrary, $searchLocation)
+	{
+		global $library;
+		$filter = [];
+		if (!$library) {
+			//MDN: This does happen when called within migration tools
+			if (isset($searchLibrary)) {
+				$filter[] = "library_scopes:{$searchLibrary->subdomain}";
+			}
+		} else {
+			$filter[] = "library_scopes:$library->subdomain";
+		}
+		return $filter;
+	}
 }

@@ -1,10 +1,13 @@
 <?php
 
 require_once 'IndexRecordDriver.php';
+require_once ROOT_DIR . '/sys/Events/LMLibraryCalendarEvent.php';
 
 class LibraryCalendarEventRecordDriver extends IndexRecordDriver
 {
 	private $valid;
+	/** @var LMLibraryCalendarEvent */
+	private $eventObject;
 
 	public function __construct($recordData)
 	{
@@ -51,7 +54,7 @@ class LibraryCalendarEventRecordDriver extends IndexRecordDriver
 		$eventsUsage = new EventsUsage();
 		$eventsUsage->type = $this->getType();
 		$eventsUsage->source = $this->getSource();
-		$eventsUsage->identifier = $this->getUniqueID();
+		$eventsUsage->identifier = $this->getIdentifier();
 		$eventsUsage->year = date('Y');
 		$eventsUsage->month = date('n');
 		if ($eventsUsage->find(true)) {
@@ -115,7 +118,7 @@ class LibraryCalendarEventRecordDriver extends IndexRecordDriver
 	 */
 	public function getUniqueID()
 	{
-		return $this->fields['identifier'];
+		return $this->fields['id'];
 	}
 
 	public function getLinkUrl($absolutePath = false)
@@ -133,4 +136,37 @@ class LibraryCalendarEventRecordDriver extends IndexRecordDriver
 		return $this->fields['source'];
 	}
 
+	function getEventCoverUrl()
+	{
+		$decodedData = $this->getEventObject()->getDecodedData();
+		if (!empty($decodedData->image)){
+			return $decodedData->image;
+		}
+		return null;
+	}
+
+	function getEventObject(){
+		if ($this->eventObject == null){
+			$this->eventObject = new LMLibraryCalendarEvent();
+			$this->eventObject->externalId = $this->getIdentifier();
+			if (!$this->eventObject->find(true)){
+				$this->eventObject = false;
+			}
+		}
+		return $this->eventObject;
+	}
+
+	private function getIdentifier()
+	{
+		return $this->fields['identifier'];
+	}
+
+	public function getStartDate()
+	{
+		try {
+			return new DateTime($this->fields['start_date']);
+		} catch (Exception $e) {
+			return null;
+		}
+	}
 }

@@ -10,6 +10,9 @@ EventsKeyword:
       - [exact, 250]
     - program_type:
       - [exact, 250]
+      - [and, 50]
+    - age_group:
+      - [and, 50]
     - room:
       - [exact, 250]
 

@@ -133,7 +133,9 @@ class LibraryCalendarIndexer {
 							solrDocument.addField("url", getStringForKey(curEvent, "url"));
 							solrDocument.addField("last_indexed", new Date());
 							solrDocument.addField("last_change", getDateForKey(curEvent,"changed"));
-							solrDocument.addField("start_date", getDateForKey(curEvent,"start_date"));
+							Date startDate = getDateForKey(curEvent,"start_date");
+							solrDocument.addField("start_date", startDate);
+							solrDocument.addField("start_date_sort", startDate.getTime() / 1000);
 							solrDocument.addField("end_date", getDateForKey(curEvent,"end_date"));
 							solrDocument.addField("title", curEvent.getString("title"));
 							solrDocument.addField("branch", getStringsForKey(curEvent, "branch"));
@@ -218,7 +220,7 @@ class LibraryCalendarIndexer {
 		logEntry.setFinished();
 	}
 
-	private Object getDateForKey(JSONObject curEvent, String keyName) {
+	private Date getDateForKey(JSONObject curEvent, String keyName) {
 		if (curEvent.isNull(keyName)) {
 			return null;
 		} else {
@@ -233,7 +235,7 @@ class LibraryCalendarIndexer {
 		}
 	}
 
-	private Object getStringForKey(JSONObject curEvent, String keyName) {
+	private String getStringForKey(JSONObject curEvent, String keyName) {
 		if (curEvent.has(keyName)){
 			if (curEvent.isNull(keyName)){
 				return null;
@@ -250,7 +252,7 @@ class LibraryCalendarIndexer {
 						return null;
 					}
 				}else{
-					return curEvent.get(keyName);
+					return curEvent.get(keyName).toString();
 				}
 			}
 		}else{

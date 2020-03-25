@@ -59,6 +59,10 @@ class BookCoverProcessor{
 			if ($this->getListCover($this->id)) {
 				return;
 			}
+		} elseif ($this->type == 'library_calendar_event') {
+			if ($this->getLibraryCalendarCover($this->id)) {
+				return;
+			}
 		} elseif ($this->type == 'webpage') {
 			if ($this->getWebPageCover($this->id)) {
 				return;
@@ -1217,6 +1221,26 @@ class BookCoverProcessor{
 		} else {
 			return false;
 		}
+	}
+
+	private function getLibraryCalendarCover($id) {
+		if (strpos($id, ':') !== false) {
+			list(, $id) = explode(":", $id);
+		}
+		require_once ROOT_DIR . '/RecordDrivers/LibraryCalendarEventRecordDriver.php';
+		$driver = new LibraryCalendarEventRecordDriver($id);
+		if ($driver) {
+			$coverUrl = $driver->getEventCoverUrl();
+			if ($coverUrl == null) {
+				require_once ROOT_DIR . '/sys/Covers/EventCoverBuilder.php';
+				$coverBuilder = new EventCoverBuilder();
+				$coverBuilder->getCover($driver->getTitle(), $driver->getStartDate(), $this->cacheFile);
+				return $this->processImageURL('default', $this->cacheFile, false);
+			}else{
+				return $this->processImageURL('library_calendar_event', $coverUrl, true);
+			}
+		}
+		return false;
 	}
 
 	private function getWebPageCover($id)
