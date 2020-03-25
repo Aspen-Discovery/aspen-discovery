@@ -11,11 +11,19 @@
 				</select>
 			</div>
 		</div>
-		<div class="col-sm-5 col-md-4">
+		<div class="col-sm-3 col-md-3 col-lg-2">
 			<div class="form-group">
 				<label for="processedLimit">{translate text='Min Processed'}</label>
 				<div class="input-group-sm input-group">
 					<input id="processedLimit" name="processedLimit" type="number" min="0" class="form-control input-sm" {if !empty($processedLimit)} value="{$processedLimit}"{/if}>
+				</div>
+			</div>
+		</div>
+		<div class="col-sm-4 col-md-4 col-lg-3">
+			<div class="form-group">
+				<label for="showErrorsOnly">{translate text='Show Errors Only'}</label>
+				<div class="input-group-sm input-group">
+					<input type='checkbox' name='showErrorsOnly' id='showErrorsOnly' data-on-text="&nbsp;Errors Only&nbsp;" data-off-text="&nbsp;All Records&nbsp;" data-switch="" {if $showErrorsOnly}checked{/if}/>
 				</div>
 			</div>
 		</div>
@@ -29,3 +37,8 @@
 		</div>
 	</div>
 </form>
+<script type="text/javascript">
+	{literal}
+	$(function(){ $('input[type="checkbox"][data-switch]').bootstrapSwitch()});
+	{/literal}
+</script>
