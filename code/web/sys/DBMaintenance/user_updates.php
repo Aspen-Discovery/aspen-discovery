@@ -290,7 +290,7 @@ function getUserUpdates(){
 
 function makeNytUserListPublisher(){
 	$user = new User();
-	$user->cat_username = 'nyt_user';
+	$user->username = 'nyt_user';
 	if ($user->find(true)){
 		$role = new Role();
 		$role->name = 'listPublisher';
