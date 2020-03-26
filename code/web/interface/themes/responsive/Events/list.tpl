@@ -38,7 +38,7 @@
 		{/if}
 
 		{* User's viewing mode toggle switch *}
-		{include file="Search/results-displayMode-toggle.tpl"}
+		{include file="Events/results-displayMode-toggle.tpl"}
 
 		<div class="clearer"></div>
 	</div>

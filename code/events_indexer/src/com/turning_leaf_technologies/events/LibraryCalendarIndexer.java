@@ -87,6 +87,9 @@ class LibraryCalendarIndexer {
 	}
 
 	private SimpleDateFormat dateParser = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	private SimpleDateFormat eventDayFormatter = new SimpleDateFormat("yyyy-MM-dd");
+	private SimpleDateFormat eventMonthFormatter = new SimpleDateFormat("yyyy-MM");
+	private SimpleDateFormat eventYearFormatter = new SimpleDateFormat("yyyy");
 	void indexEvents() {
 		//Load the RSS feed
 		JSONArray rssFeed = getRSSFeed();
@@ -136,7 +139,22 @@ class LibraryCalendarIndexer {
 							Date startDate = getDateForKey(curEvent,"start_date");
 							solrDocument.addField("start_date", startDate);
 							solrDocument.addField("start_date_sort", startDate.getTime() / 1000);
-							solrDocument.addField("end_date", getDateForKey(curEvent,"end_date"));
+							Date endDate = getDateForKey(curEvent,"end_date");
+							solrDocument.addField("end_date", endDate);
+							HashSet<String> eventDays = new HashSet<>();
+							HashSet<String> eventMonths = new HashSet<>();
+							HashSet<String> eventYears = new HashSet<>();
+							Date tmpDate = (Date)startDate.clone();
+
+							while (tmpDate.before(endDate)){
+								eventDays.add(eventDayFormatter.format(tmpDate));
+								eventMonths.add(eventMonthFormatter.format(tmpDate));
+								eventYears.add(eventYearFormatter.format(tmpDate));
+								tmpDate.setTime(tmpDate.getTime() + 24 * 60 * 60 * 1000);
+							}
+							solrDocument.addField("event_day", eventDays);
+							solrDocument.addField("event_month", eventMonths);
+							solrDocument.addField("event_year", eventYears);
 							solrDocument.addField("title", curEvent.getString("title"));
 							solrDocument.addField("branch", getStringsForKey(curEvent, "branch"));
 							solrDocument.addField("room", getStringsForKey(curEvent, "room"));

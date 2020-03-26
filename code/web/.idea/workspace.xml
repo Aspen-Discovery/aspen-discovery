@@ -2,24 +2,12 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="64b30edf-4a70-42c6-b752-8518712fb864" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/sys/Covers/EventCoverBuilder.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/interface/themes/responsive/Events/results-displayMode-toggle.tpl" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/services/Events/Calendar.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../cron/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../cron/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/RecordDrivers/LibraryCalendarEventRecordDriver.php" beforeDir="false" afterPath="$PROJECT_DIR$/RecordDrivers/LibraryCalendarEventRecordDriver.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sys/Covers/BookCoverProcessor.php" beforeDir="false" afterPath="$PROJECT_DIR$/sys/Covers/BookCoverProcessor.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sys/Covers/CoverImageUtils.php" beforeDir="false" afterPath="$PROJECT_DIR$/sys/Covers/CoverImageUtils.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sys/Covers/WebPageCoverBuilder.php" beforeDir="false" afterPath="$PROJECT_DIR$/sys/Covers/WebPageCoverBuilder.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sys/Events/LMLibraryCalendarEvent.php" beforeDir="false" afterPath="$PROJECT_DIR$/sys/Events/LMLibraryCalendarEvent.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sys/SearchObject/EventsSearcher.php" beforeDir="false" afterPath="$PROJECT_DIR$/sys/SearchObject/EventsSearcher.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sys/SearchObject/ListsSearcher.php" beforeDir="false" afterPath="$PROJECT_DIR$/sys/SearchObject/ListsSearcher.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sys/SolrConnector/EventsSolrConnector.php" beforeDir="false" afterPath="$PROJECT_DIR$/sys/SolrConnector/EventsSolrConnector.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../sites/default/conf/eventsFacets.ini" beforeDir="false" afterPath="$PROJECT_DIR$/../../sites/default/conf/eventsFacets.ini" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../sites/default/conf/eventsSearchSpecs.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/../../sites/default/conf/eventsSearchSpecs.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../sites/default/conf/eventsSearches.ini" beforeDir="false" afterPath="$PROJECT_DIR$/../../sites/default/conf/eventsSearches.ini" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../sites/default/conf/islandoraFacets.ini" beforeDir="false" afterPath="$PROJECT_DIR$/../../sites/default/conf/islandoraFacets.ini" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../sites/default/conf/listsFacets.ini" beforeDir="false" afterPath="$PROJECT_DIR$/../../sites/default/conf/listsFacets.ini" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../sites/default/conf/openArchivesFacets.ini" beforeDir="false" afterPath="$PROJECT_DIR$/../../sites/default/conf/openArchivesFacets.ini" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../sites/default/conf/websiteFacets.ini" beforeDir="false" afterPath="$PROJECT_DIR$/../../sites/default/conf/websiteFacets.ini" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../sites/default/conf/websiteSearches.ini" beforeDir="false" afterPath="$PROJECT_DIR$/../../sites/default/conf/websiteSearches.ini" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/interface/themes/responsive/Events/list.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/interface/themes/responsive/Events/list.tpl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/Events/Results.php" beforeDir="false" afterPath="$PROJECT_DIR$/services/Events/Results.php" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -121,7 +109,7 @@
     <property name="DefaultHtmlFileTemplate" value="HTML File" />
     <property name="NewWatcherDialog.advanced.open" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/sys/Covers" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/interface/themes/responsive/Events" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.detected.package.jscs" value="true" />
     <property name="node.js.detected.package.standard" value="true" />
@@ -146,11 +134,11 @@
       <recent name="C:\web\aspen-discovery\code\web\interface\themes\responsive\ILS" />
     </key>
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\web\aspen-discovery\code\web\interface\themes\responsive\Events" />
       <recent name="C:\web\aspen-discovery\code\web\sys\Covers" />
       <recent name="C:\web\aspen-discovery\code\web\interface\themes\responsive\Admin" />
       <recent name="C:\web\aspen-discovery\code\web\services\WebBuilder" />
       <recent name="C:\web\aspen-discovery\code\web\services\SideLoads" />
-      <recent name="C:\web\aspen-discovery\code\web\interface\themes\responsive\GroupedWork" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -220,7 +208,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1547769580133</updated>
-      <workItem from="1585151082702" duration="13136000" />
+      <workItem from="1585151082702" duration="25886000" />
     </task>
     <servers />
   </component>
