@@ -1230,15 +1230,15 @@ class BookCoverProcessor{
 		require_once ROOT_DIR . '/RecordDrivers/LibraryCalendarEventRecordDriver.php';
 		$driver = new LibraryCalendarEventRecordDriver($id);
 		if ($driver) {
-			$coverUrl = $driver->getEventCoverUrl();
-			if ($coverUrl == null) {
+//			$coverUrl = $driver->getEventCoverUrl();
+//			if ($coverUrl == null) {
 				require_once ROOT_DIR . '/sys/Covers/EventCoverBuilder.php';
 				$coverBuilder = new EventCoverBuilder();
 				$coverBuilder->getCover($driver->getTitle(), $driver->getStartDate(), $this->cacheFile);
 				return $this->processImageURL('default', $this->cacheFile, false);
-			}else{
-				return $this->processImageURL('library_calendar_event', $coverUrl, true);
-			}
+//			}else{
+//				return $this->processImageURL('library_calendar_event', $coverUrl, true);
+//			}
 		}
 		return false;
 	}

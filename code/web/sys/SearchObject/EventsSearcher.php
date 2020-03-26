@@ -233,6 +233,29 @@ class SearchObject_EventsSearcher extends SearchObject_SolrSearcher
 			$room->useMoreFacetPopup = true;
 			$facetConfig["room"] = $room;
 
+
+			$internalCategory = new LibraryFacetSetting();
+			$internalCategory->id = count($facetConfig) +1;
+			$internalCategory->multiSelect = true;
+			$internalCategory->facetName = "internal_category";
+			$internalCategory->displayName = "Internal Category";
+			$internalCategory->numEntriesToShowByDefault = 5;
+			$internalCategory->translate = false;
+			$internalCategory->collapseByDefault = true;
+			$internalCategory->useMoreFacetPopup = true;
+			$facetConfig["internal_category"] = $internalCategory;
+
+			$eventState = new LibraryFacetSetting();
+			$eventState->id = count($facetConfig) +1;
+			$eventState->multiSelect = true;
+			$eventState->facetName = "event_state";
+			$eventState->displayName = "State";
+			$eventState->numEntriesToShowByDefault = 5;
+			$eventState->translate = false;
+			$eventState->collapseByDefault = true;
+			$eventState->useMoreFacetPopup = true;
+			$facetConfig["event_state"] = $eventState;
+
 			$this->facetConfig = $facetConfig;
 		}
 		return $this->facetConfig;

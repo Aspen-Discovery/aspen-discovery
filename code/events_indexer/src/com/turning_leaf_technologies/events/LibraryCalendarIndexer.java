@@ -144,7 +144,8 @@ class LibraryCalendarIndexer {
 							solrDocument.addField("online_address", getStringForKey(curEvent, "online_address"));
 							solrDocument.addField("age_group", getStringsForKey(curEvent, "age_group"));
 							solrDocument.addField("program_type", getStringsForKey(curEvent, "program_type"));
-							solrDocument.addField("internal_category", getStringsForKey(curEvent, "internal_category"));
+							solrDocument.addField("internal_category", getStringsForKey(curEvent, "internal_categories"));
+							solrDocument.addField("event_state", getStringsForKey(curEvent, "event_state"));
 							solrDocument.addField("registration_required", curEvent.getBoolean("registration_enabled"));
 							solrDocument.addField("registration_start_date", getDateForKey(curEvent, "registration_start"));
 							solrDocument.addField("registration_end_date",getDateForKey(curEvent,"registration_end"));
