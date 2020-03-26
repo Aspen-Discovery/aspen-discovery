@@ -8731,6 +8731,9 @@ ul.account-submenu {
   background-color: lightyellow;
   padding: 10px;
 }
+a.placard-link {
+  text-decoration: none;
+}
 .placard-image {
   float: left;
   padding-right: 10px;

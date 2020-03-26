@@ -8,11 +8,11 @@ class Placard extends DataObject
 	public $title;
 	public $body;
 	public $image;
+	public $link;
 	public $css;
 
 	//TODO: Which scopes should the Placard apply to
 	//TODO: add additional triggers
-	//TODO: Add a url to placards
 	//TODO: Make placards dismissable so patrons can ignore specific ones
 
 	static function getObjectStructure($availableFacets = null){
@@ -25,6 +25,7 @@ class Placard extends DataObject
 			'body' => array('property'=>'body', 'type'=>'html', 'label'=>'Body', 'description'=>'The body of the placard', 'allowableTags' => '<a><b><em><div><script><span><p><strong><sub><sup>', 'hideInLists' => true),
 			'css' => array('property'=>'css', 'type'=>'textarea', 'label'=>'CSS', 'description'=>'Additional styling to apply to the placard', 'hideInLists' => true),
 			'image' => array('property' => 'image', 'type' => 'image', 'label' => 'Image (800px x 150px max)', 'description' => 'The logo for use in the header', 'required' => false, 'maxWidth' => 800, 'maxHeight' => 150, 'hideInLists' => true),
+			'link' => array('property' => 'link', 'type' => 'url', 'label' => 'Link', 'description' => 'An optional link when clicking on the placard (or link in the placard)', 'hideInLists' => true),
 			'triggers' => array(
 				'property'=>'triggers',
 				'type'=>'oneToMany',
@@ -42,19 +43,6 @@ class Placard extends DataObject
 		];
 	}
 
-	public function getSubCategories(){
-		if (!isset($this->subBrowseCategories) && $this->id) {
-			$this->subBrowseCategories     = array();
-			$subCategory                   = new SubBrowseCategories();
-			$subCategory->browseCategoryId = $this->id;
-			$subCategory->orderBy('weight');
-			$subCategory->find();
-			while ($subCategory->fetch()) {
-				$this->subBrowseCategories[$subCategory->id] = clone($subCategory);
-			}
-		}
-		return $this->subBrowseCategories;
-	}
 
 	public function __get($name){
 		if ($name == 'triggers') {
