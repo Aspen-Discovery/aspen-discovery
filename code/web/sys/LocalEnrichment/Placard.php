@@ -1,6 +1,8 @@
 <?php
 
 require_once ROOT_DIR . '/sys/LocalEnrichment/PlacardTrigger.php';
+require_once ROOT_DIR . '/sys/LocalEnrichment/PlacardLibrary.php';
+require_once ROOT_DIR . '/sys/LocalEnrichment/PlacardLocation.php';
 class Placard extends DataObject
 {
 	public $__table = 'placards';
@@ -12,13 +14,17 @@ class Placard extends DataObject
 	public $css;
 	public $dismissable;
 
+	private $_libraries;
+	private $_locations;
 	//TODO: Which scopes should the Placard apply to
 	//TODO: add additional triggers
-	//TODO: Make placards dismissable so patrons can ignore specific ones
 
 	static function getObjectStructure($availableFacets = null){
 		$placardTriggerStructure = PlacardTrigger::getObjectStructure();
 		unset($placardTriggerStructure['browseCategoryId']);
+
+		$libraryList = Library::getLibraryList();
+		$locationList = Location::getLocationList();
 
 		return [
 			'id' => array('property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id'),
@@ -42,12 +48,52 @@ class Placard extends DataObject
 				'allowEdit' => false,
 				'canEdit' => false,
 			),
+			'libraries' => array(
+				'property' => 'libraries',
+				'type' => 'multiSelect',
+				'listStyle' => 'checkboxSimple',
+				'label' => 'Libraries',
+				'description' => 'Define libraries that see this placard',
+				'values' => $libraryList,
+				'hideInLists' => true,
+			),
+			'locations' => array(
+				'property' => 'locations',
+				'type' => 'multiSelect',
+				'listStyle' => 'checkboxSimple',
+				'label' => 'Locations',
+				'description' => 'Define locations that use this scope',
+				'values' => $locationList,
+				'hideInLists' => true,
+			),
 		];
 	}
 
 
 	public function __get($name){
-		if ($name == 'triggers') {
+		if ($name == "libraries") {
+			if (!isset($this->_libraries) && $this->id){
+				$this->_libraries = [];
+				$obj = new PlacardLibrary();
+				$obj->placardId = $this->id;
+				$obj->find();
+				while($obj->fetch()){
+					$this->_libraries[$obj->libraryId] = $obj->libraryId;
+				}
+			}
+			return $this->_libraries;
+		} elseif ($name == "locations") {
+			if (!isset($this->_locations) && $this->id){
+				$this->_locations = [];
+				$obj = new PlacardLocation();
+				$obj->placardId = $this->id;
+				$obj->find();
+				while($obj->fetch()){
+					$this->_locations[$obj->locationId] = $obj->locationId;
+				}
+			}
+			return $this->_locations;
+		} elseif ($name == 'triggers') {
 			$this->getTriggers();
 			/** @noinspection PhpUndefinedFieldInspection */
 			return $this->triggers;
@@ -57,7 +103,13 @@ class Placard extends DataObject
 	}
 
 	public function __set($name, $value){
-		if ($name == 'triggers') {
+		if ($name == "libraries") {
+			/** @noinspection PhpUndefinedFieldInspection */
+			$this->_libraries = $value;
+		}elseif ($name == "locations") {
+			/** @noinspection PhpUndefinedFieldInspection */
+			$this->_locations = $value;
+		}elseif ($name == 'triggers') {
 			/** @noinspection PhpUndefinedFieldInspection */
 			$this->triggers = $value;
 		}else{
@@ -73,6 +125,19 @@ class Placard extends DataObject
 	public function update(){
 		$ret = parent::update();
 		if ($ret !== FALSE ){
+			$this->saveLibraries();
+			$this->saveLocations();
+			$this->saveTriggers();
+		}
+		return $ret;
+	}
+
+	public function insert()
+	{
+		$ret = parent::insert();
+		if ($ret !== FALSE) {
+			$this->saveLibraries();
+			$this->saveLocations();
 			$this->saveTriggers();
 		}
 		return $ret;
@@ -85,6 +150,14 @@ class Placard extends DataObject
 			$triggers = new PlacardTrigger();
 			$triggers->placardId = $this->id;
 			$triggers->delete(true);
+
+			$placardLibrary = new PlacardLibrary();
+			$placardLibrary->placardId = $this->id;
+			$placardLibrary->delete(true);
+
+			$placardLocation = new PlacardLocation();
+			$placardLocation->placardId = $this->id;
+			$placardLocation->delete(true);
 		}
 	}
 
@@ -121,6 +194,46 @@ class Placard extends DataObject
 		return $this->triggers;
 	}
 
+	public function saveLibraries(){
+		if (isset ($this->_libraries) && is_array($this->_libraries)){
+			$libraryList = Library::getLibraryList();
+			foreach ($libraryList as $libraryId => $displayName){
+				$obj = new PlacardLibrary();
+				$obj->placardId = $this->id;
+				$obj->libraryId = $libraryId;
+				if (in_array($libraryId, $this->_libraries)){
+					if (!$obj->find(true)){
+						$obj->insert();
+					}
+				}else{
+					if ($obj->find(true)){
+						$obj->delete();
+					}
+				}
+			}
+		}
+	}
+
+	public function saveLocations(){
+		if (isset ($this->_locations) && is_array($this->_locations)){
+			$locationList = Location::getLocationList();;
+			foreach ($locationList as $locationId => $displayName) {
+				$obj = new PlacardLocation();
+				$obj->placardId = $this->id;
+				$obj->locationId = $locationId;
+				if (in_array($locationId, $this->_locations)) {
+					if (!$obj->find(true)) {
+						$obj->insert();
+					}
+				} else {
+					if ($obj->find(true)) {
+						$obj->delete();
+					}
+				}
+			}
+		}
+	}
+
 	public function isDismissed(){
 		require_once ROOT_DIR . '/sys/LocalEnrichment/PlacardDismissal.php';
 		//Make sure the user has not dismissed the placard
@@ -134,5 +247,30 @@ class Placard extends DataObject
 			}
 		}
 		return false;
+	}
+
+	public function isValidForScope(){
+		global $library;
+		global $locationSingleton;
+		$location = $locationSingleton->getActiveLocation();
+
+		if ($location != null) {
+			$placardLocation = new PlacardLocation();
+			$placardLocation->placardId = $this->id;
+			$placardLocation->find();
+			//If no locations are selected, allow at any location
+			if ($placardLocation->getNumResults() > 0) {
+				$placardLocation->locationId = $location->locationId;
+				if ($placardLocation->find(true)){
+					return true;
+				}else{
+					return false;
+				}
+			}
+		}
+		$placardLibrary = new PlacardLibrary();
+		$placardLibrary->placardId = $this->id;
+		$placardLibrary->libraryId = $library->libraryId;
+		return $placardLibrary->find(true);
 	}
 }

@@ -2027,6 +2027,20 @@ class Admin_DBMaintenance extends Admin_Admin
 					]
 				],
 
+				'placard_location_scope' => [
+					'title' => 'Placard location scope',
+					'description' => 'Add location scoping for placards',
+					'sql' => [
+						'CREATE TABLE placard_location (
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							placardId INT,
+							locationId INT,
+							UNIQUE INDEX placardLocation(placardId, locationId)
+						) ENGINE = INNODB;',
+						'INSERT INTO placard_location (locationId, placardId) SELECT locationId, placards.id from location, placards;'
+					]
+				],
+
 				'novelist_settings' => [
 					'title' => 'Novelist settings',
 					'description' => 'Add the ability to store Novelist settings in the DB rather than config file',
