@@ -2138,6 +2138,17 @@ class Admin_DBMaintenance extends Admin_Admin
 						) ENGINE = INNODB;',
 					],
 				],
+
+				'omdb_settings' => [
+					'title' => 'OMDB API settings',
+					'description' => 'Add the ability to store OMDB API settings in the DB',
+					'sql' => [
+						'CREATE TABLE omdb_settings(
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							apiKey VARCHAR(10) NOT NULL
+						) ENGINE = INNODB;'
+					]
+				],
 			)
 		);
 	}

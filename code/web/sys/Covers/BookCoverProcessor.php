@@ -513,15 +513,6 @@ class BookCoverProcessor{
 					return true;
 				}
 			}
-
-			require_once ROOT_DIR . '/sys/Enrichment/GoogleApiSetting.php';
-			$googleApiSettings = new GoogleApiSetting();
-			if ($googleApiSettings->find(true)){
-				if ($this->google($googleApiSettings)){
-					return true;
-				}
-			}
-
 		}
 		return false;
 	}
@@ -970,6 +961,78 @@ class BookCoverProcessor{
 		return false;
 	}
 
+	function omdb(OMDBSetting $omdbSettings, $title = null, $year = ''){
+		//Only load from google if we are looking at a grouped work to be sure uploaded covers have a chance to load
+		if ($this->type != 'grouped_work'){
+			return false;
+		}
+
+		$source = 'omdb_title_year';
+		$title = str_replace('&', 'and', $title);
+		$title = str_replace('.', '', $title);
+		$encodedTitle = urlencode($title);
+		if (!is_array($year)){
+			$year = [$year];
+		}
+		foreach ($year as $curYear){
+			if (strpos($curYear, ',')){
+				$years = explode(',', $curYear);
+				$year = array_merge($year, $years);
+			}
+		}
+		foreach ($year as $curYear){
+			$url = "http://www.omdbapi.com/?t=$encodedTitle&y=$curYear&apikey={$omdbSettings->apiKey}";
+			require_once ROOT_DIR . '/sys/CurlWrapper.php';
+			$client = new CurlWrapper();
+			$result = $client->curlGetPage($url);
+			if ($result !== false) {
+				if ($json = json_decode($result, true)) {
+					if (array_key_exists('Poster', $json)){
+						if ($this->processImageURL($source, $json['Poster'], true)){
+							return true;
+						}
+					}
+				}
+			}
+		}
+
+		//Try one last time without a year
+		$url = "http://www.omdbapi.com/?t=$encodedTitle&apikey={$omdbSettings->apiKey}";
+		require_once ROOT_DIR . '/sys/CurlWrapper.php';
+		$client = new CurlWrapper();
+		$result = $client->curlGetPage($url);
+		if ($result !== false) {
+			if ($json = json_decode($result, true)) {
+				if (array_key_exists('Poster', $json)){
+					if ($this->processImageURL($source, $json['Poster'], true)){
+						return true;
+					}
+				}
+			}
+		}
+
+		//Try to load as a tv show
+		$title = preg_replace('/the complete.*season$/i', '', $title);
+		$title = preg_replace('/season .*$/i', '', $title);
+		$title = preg_replace('/the complete collection$/i', '', $title);
+		$encodedTitle = urlencode($title);
+		$url = "http://www.omdbapi.com/?t=$encodedTitle&type=series&apikey={$omdbSettings->apiKey}";
+		require_once ROOT_DIR . '/sys/CurlWrapper.php';
+		$client = new CurlWrapper();
+		$result = $client->curlGetPage($url);
+		if ($result !== false) {
+			if ($json = json_decode($result, true)) {
+				if (array_key_exists('Poster', $json)){
+					if ($this->processImageURL($source, $json['Poster'], true)){
+						return true;
+					}
+				}
+			}
+		}
+
+		return false;
+	}
+
 	function log($message, $level = Logger::LOG_DEBUG){
 		if ($this->doCoverLogging){
 			$this->logger->log($message, $level);
@@ -1101,6 +1164,14 @@ class BookCoverProcessor{
 						$googleApiSettings = new GoogleApiSetting();
 						if ($googleApiSettings->find(true)) {
 							if ($this->google($googleApiSettings, $driver->getTitle(), $driver->getPrimaryAuthor())) {
+								return true;
+							}
+						}
+					}elseif ($groupedWork->grouping_category == 'movie') {
+						require_once ROOT_DIR . '/sys/Enrichment/OMDBSetting.php';
+						$omdbSettings = new OMDBSetting();
+						if ($omdbSettings->find(true)) {
+							if ($this->omdb($omdbSettings, $driver->getTitle(), $driver->getPublicationDates())) {
 								return true;
 							}
 						}
