@@ -10,6 +10,7 @@ class Placard extends DataObject
 	public $image;
 	public $link;
 	public $css;
+	public $dismissable;
 
 	//TODO: Which scopes should the Placard apply to
 	//TODO: add additional triggers
@@ -22,6 +23,7 @@ class Placard extends DataObject
 		return [
 			'id' => array('property'=>'id', 'type'=>'label', 'label'=>'Id', 'description'=>'The unique id'),
 			'title' => array('property'=>'title', 'type'=>'text', 'label'=>'Title', 'description'=>'The title of the placard'),
+			'dismissable' => array('property' => 'dismissable', 'type' => 'checkbox', 'label' => 'Dismissable', 'description' => 'Whether or not a user can dismiss the placard'),
 			'body' => array('property'=>'body', 'type'=>'html', 'label'=>'Body', 'description'=>'The body of the placard', 'allowableTags' => '<a><b><em><div><script><span><p><strong><sub><sup>', 'hideInLists' => true),
 			'css' => array('property'=>'css', 'type'=>'textarea', 'label'=>'CSS', 'description'=>'Additional styling to apply to the placard', 'hideInLists' => true),
 			'image' => array('property' => 'image', 'type' => 'image', 'label' => 'Image (800px x 150px max)', 'description' => 'The logo for use in the header', 'required' => false, 'maxWidth' => 800, 'maxHeight' => 150, 'hideInLists' => true),
@@ -117,5 +119,20 @@ class Placard extends DataObject
 			}
 		}
 		return $this->triggers;
+	}
+
+	public function isDismissed(){
+		require_once ROOT_DIR . '/sys/LocalEnrichment/PlacardDismissal.php';
+		//Make sure the user has not dismissed the placard
+		if (UserAccount::isLoggedIn()){
+			$placardDismissal = new PlacardDismissal();
+			$placardDismissal->placardId = $this->id;
+			$placardDismissal->userId = UserAccount::getActiveUserId();
+			if ($placardDismissal->find(true)){
+				//The placard has been dismissed
+				return true;
+			}
+		}
+		return false;
 	}
 }
