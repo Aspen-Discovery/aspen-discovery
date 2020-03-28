@@ -250,6 +250,14 @@ function getLibraryLocationUpdates(){
 			),
 		),
 
+		'library_system_message' => [
+			'title' => 'Library System Message Length',
+			'description' => 'Increase library system message length',
+			'sql' => [
+				"ALTER TABLE library change column systemMessage systemMessage TEXT",
+			]
+		],
+
 		'library_30' => array(
 			'title' => 'Library 30',
 			'description' => 'Add bettter controls for restricting what is searched',
