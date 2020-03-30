@@ -1047,6 +1047,8 @@ class BookCoverProcessor{
 
 	private function getGroupedWorkCover() {
 		if ($this->loadGroupedWork()){
+			$oldType = $this->type;
+			$this->type = 'grouped_work';
 			if ($this->getUploadedGroupedWorkCover($this->groupedWork->getPermanentId())){
 				return true;
 			}
@@ -1178,6 +1180,7 @@ class BookCoverProcessor{
 					}
 				}
 			}
+			$this->type = $oldType;
 		}
 		return false;
 	}
