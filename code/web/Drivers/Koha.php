@@ -1441,6 +1441,8 @@ class Koha extends AbstractIlsDriver
 
 	function getSelfRegistrationFields($type = 'selfReg')
 	{
+		global $library;
+
 		$this->initDatabaseConnection();
 
 		/** @noinspection SqlResolve */
@@ -1465,9 +1467,19 @@ class Koha extends AbstractIlsDriver
 
 		$fields = array();
 		$location = new Location();
-		$location->validHoldPickupBranch = 1;
 
 		$pickupLocations = array();
+		if ($library->selfRegistrationLocationRestrictions == 1){
+			//Library Locations
+			$location->libraryId = $library->libraryId;
+		}elseif ($library->selfRegistrationLocationRestrictions == 2){
+			//Valid pickup locations
+			$location->validHoldPickupBranch = 1;
+		}elseif ($library->selfRegistrationLocationRestrictions == 3){
+			//Valid pickup locations
+			$location->libraryId = $library->libraryId;
+			$location->validHoldPickupBranch = 1;
+		}
 		if ($location->find()) {
 			while ($location->fetch()) {
 				if (count($validLibraries) == 0 || array_key_exists($location->code, $validLibraries)) {
