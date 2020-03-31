@@ -309,7 +309,15 @@ function getOverDriveUpdates()
 				'ALTER TABLE location DROP COLUMN enableOverdriveCollection',
 				'ALTER TABLE location DROP COLUMN repeatInOverdrive',
 			]
-		]
+		],
+
+		'overdrive_module_add_log' =>[
+			'title' => 'OverDrive add log info to module',
+			'description' => 'Add logging information to OverDrive module',
+			'sql' => [
+				"UPDATE modules set logClassPath='/sys/OverDrive/OverDriveExtractLogEntry.php', logClassName='OverDriveExtractLogEntry' WHERE name='OverDrive'",
+			]
+		],
 	);
 }
 

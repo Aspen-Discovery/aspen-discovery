@@ -5,7 +5,7 @@ require_once ROOT_DIR . '/sys/OpenArchives/OpenArchivesExportLogEntry.php';
 
 class OpenArchives_IndexingLog extends Admin_IndexingLog
 {
-	function getIndexLogEntryObject(): DataObject
+	function getIndexLogEntryObject(): BaseLogEntry
 	{
 		return new OpenArchivesExportLogEntry();
 	}

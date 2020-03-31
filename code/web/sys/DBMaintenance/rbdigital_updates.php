@@ -271,6 +271,14 @@ function getRBdigitalUpdates() {
 				"ALTER TABLE rbdigital_magazine_usage ADD INDEX (magazineId, issueId, year, month)",
 			]
 		],
+
+		'rbdigital_module_add_log' =>[
+			'title' => 'RBdigital add log info to module',
+			'description' => 'Add logging information to RBdigital module',
+			'sql' => [
+				"UPDATE modules set logClassPath='/sys/RBdigital/RBdigitalExportLogEntry.php', logClassName='RBdigitalExportLogEntry' WHERE name='RBdigital'",
+			]
+		],
 	);
 }
 

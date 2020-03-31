@@ -1,7 +1,7 @@
 <?php
 
-require_once ROOT_DIR . '/sys/DB/DataObject.php';
-class OpenArchivesExportLogEntry extends DataObject
+require_once ROOT_DIR . '/sys/BaseLogEntry.php';
+class OpenArchivesExportLogEntry extends BaseLogEntry
 {
 	public $__table = 'open_archives_export_log';   // table name
 	public $id;
