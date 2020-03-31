@@ -52,7 +52,7 @@ class WebsiteIndexer {
 		this.fullReload = fullReload;
 		this.solrUpdateServer = solrUpdateServer;
 
-		if (pathsToExclude.length() > 0){
+		if (pathsToExclude != null && pathsToExclude.length() > 0){
 			String[] paths = pathsToExclude.split("\r\n|\r|\n");
 			for (String path : paths){
 				if (path.contains(siteUrl)){
@@ -160,15 +160,12 @@ class WebsiteIndexer {
 			try (CloseableHttpResponse response1 = httpclient.execute(httpGet)) {
 				StatusLine status = response1.getStatusLine();
 				if (status.getStatusCode() == 200) {
-					Header lastModifiedHeader = response1.getFirstHeader("Last-Modified");
-					String lastModified = lastModifiedHeader.getValue();
 					WebPage page;
 					if (existingPages.containsKey(pageToProcess)) {
 						page = existingPages.get(pageToProcess);
 					} else {
 						page = new WebPage(pageToProcess);
 					}
-					//TODO: check last modified date?  If we do this, need to figure out how to keep track of deleted pages
 
 					HttpEntity entity1 = response1.getEntity();
 					ContentType contentType = ContentType.getOrDefault(entity1);

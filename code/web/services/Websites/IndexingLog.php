@@ -1,41 +1,34 @@
 <?php
 
 require_once ROOT_DIR . '/Action.php';
-require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
-require_once ROOT_DIR . '/sys/Pager.php';
+require_once ROOT_DIR . '/services/Admin/IndexingLog.php';
 require_once ROOT_DIR . '/sys/WebsiteIndexing/WebsiteIndexLogEntry.php';
 
-class Websites_IndexingLog extends Admin_Admin
+class Websites_IndexingLog extends Admin_IndexingLog
 {
-	function launch()
+	function getIndexLogEntryObject(): BaseLogEntry
 	{
-		global $interface;
-		global $configArray;
+		return new WebsiteIndexLogEntry();
+	}
 
-		$logEntries = array();
-		$logEntry = new WebsiteIndexLogEntry();
-		$total = $logEntry->count();
-		$logEntry = new WebsiteIndexLogEntry();
-		$logEntry->orderBy('startTime DESC');
-		$page = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
-		$pageSize = isset($_REQUEST['pageSize']) ? $_REQUEST['pageSize'] : 30; // to adjust number of items listed on a page
-		$interface->assign('recordsPerPage', $pageSize);
-		$interface->assign('page', $page);
-		$logEntry->limit(($page - 1) * $pageSize, $pageSize);
-		$logEntry->find();
-		while ($logEntry->fetch()){
-			$logEntries[] = clone($logEntry);
+	function getTemplateName() : string
+	{
+		return 'websiteIndexLog.tpl';
+	}
+
+	function getTitle() : string
+	{
+		return 'Website Indexing Log';
+	}
+
+	function getModule() : string{
+		return 'Websites';
+	}
+
+	function applyMinProcessedFilter(DataObject $indexingObject, $minProcessed){
+		if ($indexingObject instanceof WebsiteIndexLogEntry){
+			$indexingObject->whereAdd('(numAdded + numDeleted + numUpdated) >= ' . $minProcessed);
 		}
-		$interface->assign('logEntries', $logEntries);
-
-		$options = array('totalItems' => $total,
-			'fileName'   => '/Websites/IndexingLog?page=%d'. (empty($_REQUEST['pageSize']) ? '' : '&pageSize=' . $_REQUEST['pageSize']),
-			'perPage'    => $pageSize,
-		);
-		$pager = new Pager($options);
-		$interface->assign('pageLinks', $pager->getLinks());
-
-		$this->display('websiteIndexLog.tpl', 'Website Index Log');
 	}
 
 	function getAllowableRoles(){

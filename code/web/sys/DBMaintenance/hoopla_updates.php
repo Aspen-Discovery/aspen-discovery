@@ -178,6 +178,14 @@ function getHooplaUpdates()
 			'sql' => [
 				"UPDATE modules SET backgroundProcess = '' WHERE name = 'Hoopla'",
 			]
-		]
+		],
+
+		'hoopla_module_add_log' =>[
+			'title' => 'Hoopla add log info to module',
+			'description' => 'Add logging information to Hoopla module',
+			'sql' => [
+				"UPDATE modules set logClassPath='/sys/Hoopla/HooplaExportLogEntry.php', logClassName='HooplaExportLogEntry' WHERE name='Hoopla'",
+			]
+		],
 	);
 }

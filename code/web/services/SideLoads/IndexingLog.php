@@ -5,7 +5,7 @@ require_once ROOT_DIR . '/sys/Indexing/SideLoadLogEntry.php';
 
 class SideLoads_IndexingLog extends Admin_IndexingLog
 {
-	function getIndexLogEntryObject(): DataObject
+	function getIndexLogEntryObject(): BaseLogEntry
 	{
 		return new SideLoadLogEntry();
 	}

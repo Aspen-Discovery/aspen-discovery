@@ -756,6 +756,15 @@ function getIndexingUpdates()
 				'ALTER TABLE indexing_profiles ADD COLUMN checkRecordForLargePrint TINYINT(1) DEFAULT 0'
 			]
 		],
+
+		'indexing_module_add_log' =>[
+			'title' => 'Indexing add log info to module',
+			'description' => 'Add logging information to Indexing modules',
+			'sql' => [
+				"UPDATE modules set logClassPath='/sys/ILS/IlsExtractLogEntry.php', logClassName='IlsExtractLogEntry' WHERE name in ('Koha', 'CARL.X', 'Sierra', 'Horizon', 'Symphony')",
+				"UPDATE modules set logClassPath='/sys/Indexing/SideLoadLogEntry.php', logClassName='SideLoadLogEntry' WHERE name = 'Side Loads'",
+			]
+		],
 	);
 }
 

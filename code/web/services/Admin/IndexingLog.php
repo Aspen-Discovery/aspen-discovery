@@ -3,6 +3,7 @@
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/sys/Pager.php';
+require_once ROOT_DIR . '/sys/BaseLogEntry.php';
 
 abstract class Admin_IndexingLog extends Admin_Admin
 {
@@ -51,7 +52,7 @@ abstract class Admin_IndexingLog extends Admin_Admin
 		return array('opacAdmin', 'libraryAdmin', 'cataloging');
 	}
 
-	abstract function getIndexLogEntryObject() : DataObject;
+	abstract function getIndexLogEntryObject() : BaseLogEntry;
 
 	abstract function getTemplateName() : string;
 

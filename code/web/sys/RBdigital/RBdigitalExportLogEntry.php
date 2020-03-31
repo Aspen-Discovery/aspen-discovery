@@ -1,7 +1,7 @@
 <?php
 
-require_once ROOT_DIR . '/sys/DB/DataObject.php';
-class RBdigitalExportLogEntry extends DataObject
+require_once ROOT_DIR . '/sys/BaseLogEntry.php';
+class RBdigitalExportLogEntry extends BaseLogEntry
 {
 	public $__table = 'rbdigital_export_log';   // table name
 	public $id;
