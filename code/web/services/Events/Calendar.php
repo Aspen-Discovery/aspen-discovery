@@ -54,7 +54,7 @@ class Events_Calendar extends Action
 		$searchObject->init();
 		$searchObject->setPrimarySearch(false);
 		$searchObject->setLimit(1000);
-		$searchObject->addFilter(["event_month", $monthFilter]);
+		$searchObject->addHiddenFilter("event_month", $monthFilter);
 
 		$timer->logTime('Setup Search');
 
