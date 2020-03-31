@@ -88,8 +88,18 @@ class Events_Calendar extends Action
 			$week = [
 				'days' => []
 			];
-			//TODO: Offset if start of week is not a Sunday
-			for ($j = 0; $j < 7; $j++){
+
+			$startDayIndex = 0;
+			if ($i == 0){
+				$startDayIndex = $calendarStartDay->format('N');
+				for ($j = 0; $j < $startDayIndex; $j++){
+					$week['days'][] = [
+						'day' => '',
+						'events' => []
+					];
+				}
+			}
+			for ($j = $startDayIndex; $j < 7; $j++){
 				$eventDayObj = [
 					'day' => $dayNum,
 					'events' => []
