@@ -135,6 +135,7 @@
       <w>oclc</w>
       <w>oclcs</w>
       <w>ocode</w>
+      <w>offsite</w>
       <w>oneclick</w>
       <w>oneclickdigital</w>
       <w>onloan</w>
@@ -153,6 +154,7 @@
       <w>puliter</w>
       <w>rbdigital</w>
       <w>recordtype</w>
+      <w>reindexer</w>
       <w>replacementprice</w>
       <w>replacementpricedate</w>
       <w>reshelve</w>

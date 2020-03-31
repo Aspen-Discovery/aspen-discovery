@@ -9,7 +9,7 @@ echo "Starting carlx export"
 cd /usr/local/aspen-discovery/code/carlx_export; java -jar carlx_export.jar nashville.production &
 sleep 5
 echo "Starting Overdrive export"
-cd /usr/local/aspen-discovery/code/overdrive_api_extract; java -jar overdrive_extract.jar nashville.production &
+cd /usr/local/aspen-discovery/code/overdrive_extract; java -jar overdrive_extract.jar nashville.production &
 sleep 5
 echo "Starting rbdigital export"
 cd /usr/local/aspen-discovery/code/rbdigital_export; java -jar rbdigital_export.jar nashville.production &

@@ -27,6 +27,10 @@ abstract class Admin_IndexingLog extends Admin_Admin
 			$interface->assign('processedLimit', $_REQUEST['processedLimit']);
 			$this->applyMinProcessedFilter($logEntry, $_REQUEST['processedLimit']);
 		}
+		if (isset($_REQUEST['showErrorsOnly'])){
+			$interface->assign('showErrorsOnly', true);
+			$this->applyShowErrorsOnlyFilter($logEntry);
+		}
 		$logEntry->find();
 		while ($logEntry->fetch()){
 			$logEntries[] = clone($logEntry);
@@ -56,4 +60,9 @@ abstract class Admin_IndexingLog extends Admin_Admin
 	abstract function getModule() : string;
 
 	abstract function applyMinProcessedFilter(DataObject $indexingObject, $minProcessed);
+
+	function applyShowErrorsOnlyFilter(DataObject $logEntry)
+	{
+		$logEntry->whereAdd('numErrors > 0');
+	}
 }

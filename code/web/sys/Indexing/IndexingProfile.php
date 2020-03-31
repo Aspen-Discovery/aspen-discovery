@@ -30,6 +30,7 @@ class IndexingProfile extends DataObject
 	public $specifiedFormat;
 	public $specifiedFormatCategory;
 	public $specifiedFormatBoost;
+	public $checkRecordForLargePrint;
 	public $recordNumberTag;
 	public $recordNumberSubfield;
 	public $recordNumberPrefix;
@@ -168,6 +169,7 @@ class IndexingProfile extends DataObject
 				'specifiedFormat' => array('property' => 'specifiedFormat', 'type' => 'text', 'label' => 'Specified Format', 'maxLength' => 50, 'description' => 'The format to set when using a defined format', 'required' => false, 'default' => ''),
 				'specifiedFormatCategory' => array('property' => 'specifiedFormatCategory', 'type' => 'enum', 'values' => array('', 'Books' => 'Books', 'eBook' => 'eBook', 'Audio Books' => 'Audio Books', 'Movies' => 'Movies', 'Music' => 'Music', 'Other' => 'Other'), 'label' => 'Specified Format Category', 'maxLength' => 50, 'description' => 'The format category to set when using a defined format', 'required' => false, 'default' => ''),
 				'specifiedFormatBoost' => array('property' => 'specifiedFormatBoost', 'type' => 'integer', 'label' => 'Specified Format Boost', 'maxLength' => 50, 'description' => 'The format boost to set when using a defined format', 'required' => false, 'default' => '8'),
+				'checkRecordForLargePrint' => array('property' => 'checkRecordForLargePrint', 'type' => 'checkbox', 'label' => 'Check Record for Large Print', 'default' => false, 'description' => 'Check metadata within the record to see if a book is large print'),
 				'formatMap' => array(
 					'property' => 'formatMap',
 					'type' => 'oneToMany',

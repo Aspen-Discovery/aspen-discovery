@@ -316,7 +316,8 @@ class RBdigital_AJAX extends Action
 			if ($patron) {
 				require_once ROOT_DIR . '/Drivers/RBdigitalDriver.php';
 				$driver = new RBdigitalDriver();
-				$result = $driver->returnMagazine($patron, $id);
+				list($magzineId, $issueId) = explode('_', $id);
+				$result = $driver->returnMagazine($patron, $magzineId, $issueId);
 				return json_encode($result);
 			} else {
 				return json_encode(array('result' => false, 'message' => 'Sorry, it looks like you don\'t have permissions to modify checkouts for that user.'));
@@ -346,41 +347,4 @@ class RBdigital_AJAX extends Action
 		return $usersWithRBdigitalAccess;
 	}
 
-	/** @noinspection PhpUnused */
-	function reloadCover()
-	{
-		require_once ROOT_DIR . '/RecordDrivers/RBdigitalRecordDriver.php';
-		$id = $_REQUEST['id'];
-		$recordDriver = new RBdigitalRecordDriver($id);
-
-		//Reload small cover
-		$smallCoverUrl = str_replace('&amp;', '&', $recordDriver->getBookcoverUrl('small', true)) . '&reload';
-		file_get_contents($smallCoverUrl);
-
-		//Reload medium cover
-		$mediumCoverUrl = str_replace('&amp;', '&', $recordDriver->getBookcoverUrl('medium', true)) . '&reload';
-		file_get_contents($mediumCoverUrl);
-
-		//Reload large cover
-		$largeCoverUrl = str_replace('&amp;', '&', $recordDriver->getBookcoverUrl('large', true)) . '&reload';
-		file_get_contents($largeCoverUrl);
-
-		//Also reload covers for the grouped work
-		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-		$groupedWorkDriver = new GroupedWorkDriver($recordDriver->getGroupedWorkId());
-
-		//Reload small cover
-		$smallCoverUrl = str_replace('&amp;', '&', $groupedWorkDriver->getBookcoverUrl('small', true)) . '&reload';
-		file_get_contents($smallCoverUrl);
-
-		//Reload medium cover
-		$mediumCoverUrl = str_replace('&amp;', '&', $groupedWorkDriver->getBookcoverUrl('medium', true)) . '&reload';
-		file_get_contents($mediumCoverUrl);
-
-		//Reload large cover
-		$largeCoverUrl = str_replace('&amp;', '&', $groupedWorkDriver->getBookcoverUrl('large', true)) . '&reload';
-		file_get_contents($largeCoverUrl);
-
-		return json_encode(array('success' => true, 'message' => 'Covers have been reloaded.  You may need to refresh the page to clear your local cache.'));
-	}
 }

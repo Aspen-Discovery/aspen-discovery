@@ -66,6 +66,7 @@ class Admin_UsageDashboard extends Admin_Admin
 		$usage->selectAdd('SUM(openArchivesSearches) as totalOpenArchivesSearches');
 		$usage->selectAdd('SUM(userListSearches) as totalUserListSearches');
 		$usage->selectAdd('SUM(websiteSearches) as totalWebsiteSearches');
+		$usage->selectAdd('SUM(eventsSearches) as totalEventsSearches');
 
 		$usage->find(true);
 
@@ -81,6 +82,7 @@ class Admin_UsageDashboard extends Admin_Admin
 			'totalOpenArchivesSearches' => $usage->totalOpenArchivesSearches,
 			'totalUserListSearches' => $usage->totalUserListSearches,
 			'totalWebsiteSearches' => $usage->totalWebsiteSearches,
+			'totalEventsSearches' => $usage->totalEventsSearches,
 		];
 
 		return $stats;

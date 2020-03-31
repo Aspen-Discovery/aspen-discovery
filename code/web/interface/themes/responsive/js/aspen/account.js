@@ -1034,6 +1034,22 @@ AspenDiscovery.Account = (function(){
 			);
 			$('#formattedTotal' + userId).text("$" + totalFineAmt.toFixed(2));
 			$('#formattedOutstandingTotal' + userId).text("$" + totalOutstandingAmt.toFixed(2));
+		},
+		dismissPlacard:function(patronId, placardId) {
+			let url = Globals.path + "/MyAccount/AJAX";
+			let params = {
+				method: "dismissPlacard",
+				placardId: placardId,
+				patronId: patronId,
+			};
+			$.getJSON(url, params, function(data){
+				if (data.success) {
+					$("#placard" + placardId).hide();
+				} else {
+					AspenDiscovery.showMessage('Error', data.message, false);
+				}
+			}).fail(AspenDiscovery.ajaxFail);
+			return false;
 		}
 	};
 }(AspenDiscovery.Account || {}));

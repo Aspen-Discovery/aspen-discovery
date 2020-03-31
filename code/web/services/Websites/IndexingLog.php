@@ -10,7 +10,6 @@ class Websites_IndexingLog extends Admin_Admin
 	function launch()
 	{
 		global $interface;
-		global $configArray;
 
 		$logEntries = array();
 		$logEntry = new WebsiteIndexLogEntry();

@@ -1555,6 +1555,8 @@ class User extends DataObject
 			if ($pType->getNumResults() > 0) {
 				$this->masqueradeLevel = $pType->masquerade;
 			}
+		}else if ($this->hasRole('userAdmin')){
+			$this->masqueradeLevel = 'any';
 		}
 	}
 

@@ -362,7 +362,7 @@ AspenDiscovery.RBdigital = (function(){
                 success: function(data){
                     if (data.success) {
                         AspenDiscovery.showMessage("Magazine Returned", data.message, true);
-                        $("#rbdigitalMagazineCheckout_" + recordId).hide();
+                        $(".rbdigitalMagazineCheckout_" + recordId).hide();
                         AspenDiscovery.Account.loadMenuData();
                     }else{
                         AspenDiscovery.showMessage("Error Returning Magazine", data.message, true);

@@ -1,6 +1,7 @@
 package com.turning_leaf_technologies.reindexer;
 
 import com.turning_leaf_technologies.config.ConfigUtil;
+import com.turning_leaf_technologies.file.JarUtil;
 import com.turning_leaf_technologies.logging.LoggingUtil;
 import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -20,8 +21,6 @@ public class UserListIndexerMain {
 
 	private static UserListIndexer listProcessor;
 
-	//General configuration
-	private static String serverName;
 	private static Connection dbConn;
 
 	/**
@@ -32,6 +31,8 @@ public class UserListIndexerMain {
 	public static void main(String[] args) {
 		startTime = new Date().getTime();
 		boolean runContinuously = true;
+		//General configuration
+		String serverName;
 		if (args.length == 0) {
 			serverName = StringUtils.getInputFromCommandLine("Please enter the server name");
 			if (serverName.length() == 0) {
@@ -53,10 +54,16 @@ public class UserListIndexerMain {
 		}
 		System.setProperty("reindex.process.serverName", serverName);
 
+		String processName = "user_list_indexer";
+		logger = LoggingUtil.setupLogging(serverName, processName);
+
+		//Get the checksum of the JAR when it was started so we can stop if it has changed.
+		long myChecksumAtStart = JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar");
+
 		while (runContinuously) {
 			runContinuously = !fullReindex;
 
-			initializeIndexer();
+			initializeIndexer(serverName);
 
 			//Process lists
 			long numListsProcessed = 0;
@@ -84,6 +91,10 @@ public class UserListIndexerMain {
 			listProcessor.close();
 			listProcessor = null;
 
+			//Check to see if the jar has changes, and if so quit
+			if (myChecksumAtStart != JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar")){
+				break;
+			}
 			//Pause before running the next export (longer if we didn't get any actual changes)
 			if (runContinuously) {
 				System.gc();
@@ -125,10 +136,7 @@ public class UserListIndexerMain {
 		}
 	}
 
-	private static void initializeIndexer() {
-		String processName = "user_list_reindex";
-		logger = LoggingUtil.setupLogging(serverName, processName);
-
+	private static void initializeIndexer(String serverName) {
 		logger.info("Starting Reindex for " + serverName);
 
 		// Parse the configuration file
@@ -137,7 +145,7 @@ public class UserListIndexerMain {
 		logger.info("Setting up database connections");
 		String databaseConnectionInfo = ConfigUtil.cleanIniValue(configIni.get("Database", "database_aspen_jdbc"));
 		if (databaseConnectionInfo == null || databaseConnectionInfo.length() == 0) {
-			logger.error("Database connection information not found in Database Section.  Please specify connection information in database_vufind_jdbc.");
+			logger.error("Database connection information not found in Database Section.  Please specify connection information in database_aspen_jdbc.");
 			System.exit(1);
 		}
 		try {

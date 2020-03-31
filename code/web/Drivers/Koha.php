@@ -455,7 +455,12 @@ class Koha extends AbstractIlsDriver
 				$user->displayName = '';
 			}
 			$user->_fullname = $userFromDb['firstname'] . ' ' . $userFromDb['surname'];
-			$user->cat_username = $userFromDb['cardnumber'];
+			if ($userFromDb['cardnumber'] != null) {
+				$user->cat_username = $userFromDb['cardnumber'];
+			}else{
+				$user->cat_username = $userFromDb['userid'];
+			}
+
 			if ($userExistsInDB) {
 				$passwordChanged = ($user->cat_password != $password);
 				if ($passwordChanged) {
@@ -975,6 +980,7 @@ class Koha extends AbstractIlsDriver
 					$curHold['status'] .= ' until ' . date("m/d/Y", strtotime($curRow['suspend_until']));
 				}
 			} elseif ($curRow['found'] == 'W') {
+				$curHold['cancelable'] = false;
 				$curHold['status'] = "Ready to Pickup";
 			} elseif ($curRow['found'] == 'T') {
 				$curHold['status'] = "In Transit";
@@ -1435,6 +1441,8 @@ class Koha extends AbstractIlsDriver
 
 	function getSelfRegistrationFields($type = 'selfReg')
 	{
+		global $library;
+
 		$this->initDatabaseConnection();
 
 		/** @noinspection SqlResolve */
@@ -1459,9 +1467,19 @@ class Koha extends AbstractIlsDriver
 
 		$fields = array();
 		$location = new Location();
-		$location->validHoldPickupBranch = 1;
 
 		$pickupLocations = array();
+		if ($library->selfRegistrationLocationRestrictions == 1){
+			//Library Locations
+			$location->libraryId = $library->libraryId;
+		}elseif ($library->selfRegistrationLocationRestrictions == 2){
+			//Valid pickup locations
+			$location->validHoldPickupBranch = 1;
+		}elseif ($library->selfRegistrationLocationRestrictions == 3){
+			//Valid pickup locations
+			$location->libraryId = $library->libraryId;
+			$location->validHoldPickupBranch = 1;
+		}
 		if ($location->find()) {
 			while ($location->fetch()) {
 				if (count($validLibraries) == 0 || array_key_exists($location->code, $validLibraries)) {

@@ -209,7 +209,7 @@ class OverDrive_AJAX extends JSON_Action
 		if (count($overDriveUsers) == 0) {
 			return [
 				'success' => false,
-				'message' => 'Could not find a valid user to place a hold for, please check with your library to validate your account'
+				'message' => 'Your account is not valid for OverDrive, please contact your local library.'
 			];
 		} else if ($promptForEmail || count($overDriveUsers) > 1) {
 			$promptTitle = 'OverDrive Hold Options';
@@ -261,7 +261,7 @@ class OverDrive_AJAX extends JSON_Action
 			return [
 				'promptNeeded' => true,
 				'promptTitle' => 'Error',
-				'prompts' => 'No valid Overdrive account was found to check this title out with.',
+				'prompts' => 'Your account is not valid for OverDrive, please contact your local library.',
 				'buttons' => ''
 			];
 		}

@@ -321,7 +321,7 @@
 				{/if}
 
 				{* Admin Functionality if Available *}
-				{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('contentEditor', $userRoles) || array_key_exists('libraryManager', $userRoles) || array_key_exists('locationManager', $userRoles) || array_key_exists('translator', $userRoles))}
+				{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('libraryManager', $userRoles) || array_key_exists('locationManager', $userRoles) || array_key_exists('translator', $userRoles))}
 					{if in_array($action, array('Libraries', 'Locations', 'IPAddresses', 'PTypes', 'AccountProfiles', 'BlockPatronAccountLinks', 'Languages'))}
 						{assign var="curSection" value=true}
 					{else}
@@ -394,7 +394,7 @@
 				{/if}
 
 				{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('contentEditor', $userRoles) || array_key_exists('libraryManager', $userRoles) || array_key_exists('locationManager', $userRoles))}
-					{if in_array($action, array('Placards', 'NYTLists', 'CollectionSpotlights', 'BrowseCategories', 'NovelistSettings', 'AuthorEnrichment', 'ARSettings', 'ContentCafeSettings', 'GoogleApiSettings', 'SyndeticsSettings', 'DPLASettings', 'NewYorkTimesSettings'))}
+					{if in_array($action, array('Placards', 'NYTLists', 'CollectionSpotlights', 'BrowseCategories', 'NovelistSettings', 'AuthorEnrichment', 'ARSettings', 'ContentCafeSettings', 'GoogleApiSettings', 'SyndeticsSettings', 'DPLASettings', 'OMDBSettings', 'NewYorkTimesSettings'))}
 						{assign var="curSection" value=true}
 					{else}
 						{assign var="curSection" value=false}
@@ -437,10 +437,13 @@
 									<div class="adminMenuLink"><a href="/Enrichment/NewYorkTimesSettings">{translate text="NY Times Settings"}</a></div>
 								{/if}
 								{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles) || array_key_exists('libraryManager', $userRoles) || array_key_exists('contentEditor', $userRoles))}
-									<div class="adminMenuLink">&nbsp;&raquo;&nbsp;<a href="/Admin/NYTLists">{translate text="NY Times Lists"}</a></div>
+									<div class="adminMenuLink">{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles))}&nbsp;&raquo;&nbsp;{/if}<a href="/Admin/NYTLists">{translate text="NY Times Lists"}</a></div>
 								{/if}
 								{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles))}
 									<div class="adminMenuLink"><a href="/Enrichment/NovelistSettings">{translate text="Novelist Settings"}</a></div>
+								{/if}
+								{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles))}
+									<div class="adminMenuLink"><a href="/Enrichment/OMDBSettings">{translate text="OMDB Settings"}</a></div>
 								{/if}
 								{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles))}
 									<div class="adminMenuLink"><a href="/Enrichment/SyndeticsSettings">{translate text="Syndetics Settings"}</a></div>
@@ -732,6 +735,30 @@
 					</div>
 				{/if}
 
+				{if array_key_exists('Events', $enabledModules) && (array_key_exists('archives', $userRoles) || array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles))}
+					{if $module == 'Events' && in_array($action, array('LMLibraryCalendarSettings', 'Dashboard', 'IndexingLog'))}
+						{assign var="curSection" value=true}
+					{else}
+						{assign var="curSection" value=false}
+					{/if}
+					<div class="panel{if $curSection} active{/if}">
+						<a href="#eventsMenu" data-toggle="collapse" data-parent="#adminMenuAccordion">
+							<div class="panel-heading">
+								<div class="panel-title">
+									{translate text="Events"}
+								</div>
+							</div>
+						</a>
+						<div id="eventsMenu" class="panel-collapse collapse {if $curSection}in{/if}">
+							<div class="panel-body">
+								<div class="adminMenuLink"><a href="/Events/LMLibraryCalendarSettings">{translate text="Library Market - Calendar Settings"}</a></div>
+								<div class="adminMenuLink"><a href="/Events/IndexingLog">{translate text="Indexing Log"}</a></div>
+								<div class="adminMenuLink"><a href="/Events/Dashboard">{translate text="Dashboard"}</a></div>
+							</div>
+						</div>
+					</div>
+				{/if}
+
 				{if array_key_exists('Web Indexer', $enabledModules) && (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles))}
 					{if $module == 'Websites' && in_array($action, array('Settings', 'Dashboard', 'IndexingLog'))}
 						{assign var="curSection" value=true}
@@ -778,6 +805,28 @@
 					</div>
 				{/if}
 
+				{if (array_key_exists('opacAdmin', $userRoles) || array_key_exists('libraryAdmin', $userRoles))}
+					{if $module == 'Admin' && in_array($action, array('ReleaseNotes', 'SubmitTicket'))}
+						{assign var="curSection" value=true}
+					{else}
+						{assign var="curSection" value=false}
+					{/if}
+					<div class="panel{if $curSection} active{/if}">
+						<a href="#websitesMenu" data-toggle="collapse" data-parent="#adminMenuAccordion">
+							<div class="panel-heading">
+								<div class="panel-title">
+									{translate text="Aspen Discovery Help"}
+								</div>
+							</div>
+						</a>
+						<div id="websitesMenu" class="panel-collapse collapse {if $curSection}in{/if}">
+							<div class="panel-body">
+								<div class="adminMenuLink"><a href="/Admin/ReleaseNotes">{translate text="Release Notes"}</a></div>
+								{*<div class="adminMenuLink"><a href="/Admin/SubmitTicket">{translate text="Submit Ticket"}</a></div>*}
+							</div>
+						</div>
+					</div>
+				{/if}
 			</div>
 
 			{include file="library-links.tpl" libraryLinks=$libraryAccountLinks linksId='home-library-account-links' section='Account'}

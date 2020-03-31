@@ -1,5 +1,5 @@
 {strip}
-	<div id="rbdigitalMagazineCheckout_{$record.recordId|escape}" class="result row">
+	<div class="result row rbdigitalMagazineCheckout_{$record.recordId|escape}">
 
 		{* Cover Column *}
 		{if $showCovers}
@@ -49,6 +49,13 @@
 			</div>
 			<div class="row">
 				<div class="resultDetails col-xs-12 col-md-9">
+                    {if !empty($record.volume)}
+						<div class="row">
+							<div class="result-label col-tn-4 col-lg-3">{translate text='Volume'}</div>
+							<div class="result-value col-tn-8 col-lg-9">{$record.volume|escape}</div>
+						</div>
+                    {/if}
+
 					{if strlen($record.publisher) > 0}
 						<div class="row">
 							<div class="result-label col-tn-4 col-lg-3">{translate text='Publisher'}</div>

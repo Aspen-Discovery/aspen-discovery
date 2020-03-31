@@ -94,6 +94,8 @@ class Admin_DBMaintenance extends Admin_Admin
 		$websiteIndexingUpdates = getWebsiteIndexingUpdates();
 		require_once ROOT_DIR . '/sys/DBMaintenance/web_builder_updates.php';
 		$webBuilderUpdates = getWebBuilderUpdates();
+		require_once ROOT_DIR . '/sys/DBMaintenance/events_integration_updates.php';
+		$eventsIntegrationUpdates = getEventsIntegrationUpdates();
 
 		/** @noinspection SqlResolve */
 		/** @noinspection SqlWithoutWhere */
@@ -131,6 +133,7 @@ class Admin_DBMaintenance extends Admin_Admin
 			$cloudLibraryUpdates,
 			$websiteIndexingUpdates,
 			$webBuilderUpdates,
+			$eventsIntegrationUpdates,
 			array(
 				'index_search_stats' => array(
 					'title' => 'Index search stats table',
@@ -2007,6 +2010,43 @@ class Admin_DBMaintenance extends Admin_Admin
 					],
 				],
 
+				'placard_updates_1' => [
+					'title' => 'Placard update 1',
+					'description' => 'Add a link to placards, make them (optionally) dismissable, and allow placards to be shown or hidden by library.',
+					'continueOnError' => true,
+					'sql' => [
+						'ALTER TABLE placards ADD COLUMN link VARCHAR(255)',
+						'ALTER TABLE placards ADD COLUMN dismissable TINYINT(1)',
+						'CREATE TABLE placard_dismissal (
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							placardId INT,
+							userId INT,
+							UNIQUE INDEX userPlacard(userId, placardId)
+						) ENGINE = INNODB;',
+						'CREATE TABLE placard_library (
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							placardId INT,
+							libraryId INT,
+							UNIQUE INDEX placardLibrary(placardId, libraryId)
+						) ENGINE = INNODB;',
+						'INSERT INTO placard_library (libraryId, placardId) SELECT libraryId, placards.id from library, placards;'
+					]
+				],
+
+				'placard_location_scope' => [
+					'title' => 'Placard location scope',
+					'description' => 'Add location scoping for placards',
+					'sql' => [
+						'CREATE TABLE placard_location (
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							placardId INT,
+							locationId INT,
+							UNIQUE INDEX placardLocation(placardId, locationId)
+						) ENGINE = INNODB;',
+						'INSERT INTO placard_location (locationId, placardId) SELECT locationId, placards.id from location, placards;'
+					]
+				],
+
 				'novelist_settings' => [
 					'title' => 'Novelist settings',
 					'description' => 'Add the ability to store Novelist settings in the DB rather than config file',
@@ -2103,6 +2143,17 @@ class Admin_DBMaintenance extends Admin_Admin
 							apiKey VARCHAR(32) NOT NULL
 						) ENGINE = INNODB;',
 					],
+				],
+
+				'omdb_settings' => [
+					'title' => 'OMDB API settings',
+					'description' => 'Add the ability to store OMDB API settings in the DB',
+					'sql' => [
+						'CREATE TABLE omdb_settings(
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							apiKey VARCHAR(10) NOT NULL
+						) ENGINE = INNODB;'
+					]
 				],
 			)
 		);

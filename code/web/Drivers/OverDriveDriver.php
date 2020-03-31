@@ -533,7 +533,7 @@ class OverDriveDriver extends AbstractEContentDriver{
 			foreach ($response->holds as $curTitle){
 				$hold = array();
 				$hold['overDriveId'] = $curTitle->reserveId;
-				if ($curTitle->emailAddress){
+				if (!empty($curTitle->emailAddress)){
 					$hold['notifyEmail'] = $curTitle->emailAddress;
 				}
 				$datePlaced                = strtotime($curTitle->holdPlacedDate);

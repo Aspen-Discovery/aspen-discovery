@@ -8,8 +8,8 @@ class ReindexLog extends Admin_Admin
 {
 	function launch()
 	{
-		global $interface,
-		       $configArray;
+		global $interface;
+		global $configArray;
 
 		$logEntries = array();
 		$logEntry = new ReindexLogEntry();

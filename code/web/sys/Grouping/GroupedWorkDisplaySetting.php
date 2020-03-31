@@ -193,7 +193,8 @@ class GroupedWorkDisplaySetting extends DataObject
 							)
 						)
 					),
-				)),
+				)
+			),
 
 			'libraries' => array(
 				'property' => 'libraries',

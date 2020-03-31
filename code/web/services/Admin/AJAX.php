@@ -11,24 +11,12 @@ class Admin_AJAX extends Action
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
 		if (method_exists($this, $method)) {
 			$timer->logTime("Starting method $method");
-			if (in_array($method, array('getReindexNotes', 'getExtractNotes', 'getReindexProcessNotes', 'getCronNotes', 'getCronProcessNotes', 'getAddToSpotlightForm', 'getRecordGroupingNotes', 'getSierraExportNotes', 'ungroupRecord'))) {
-				//JSON Responses
-				header('Content-type: application/json');
-				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
-				header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-				echo $this->$method();
-			} else {
-				//XML responses
-				header('Content-type: text/xml');
-				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
-				header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-				$xml = '<?xml version="1.0" encoding="UTF-8"?' . ">\n" .
-					"<AJAXResponse>\n";
-				$xml .= $this->$_GET['method']();
-				$xml .= '</AJAXResponse>';
 
-				echo $xml;
-			}
+			//JSON Responses
+			header('Content-type: application/json');
+			header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
+			header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
+			echo $this->$method();
 		} else {
 			echo json_encode(array('error' => 'invalid_method'));
 		}
@@ -220,6 +208,27 @@ class Admin_AJAX extends Action
 
 		}else{
 			$results['message'] = "You do not have the correct permissions for this operation";
+		}
+		return json_encode($results);
+	}
+
+	function getReleaseNotes(){
+		$release = $_REQUEST['release'];
+		$releaseNotesPath = ROOT_DIR . '/release_notes';
+		$results = [
+			'success' => false,
+			'message' => 'Unknown error loading release notes'
+		];
+		if (!file_exists($releaseNotesPath . '/'. $release . '.MD')){
+			$results['message'] = 'Could not find notes for that release';
+		}else{
+			require_once ROOT_DIR . '/sys/Parsedown/Parsedown.php';
+			$parsedown = Parsedown::instance();
+			$releaseNotesFormatted = $parsedown->parse(file_get_contents($releaseNotesPath . '/'. $release . '.MD'));
+			$results = [
+				'success' => true,
+				'releaseNotes' => $releaseNotesFormatted
+			];
 		}
 		return json_encode($results);
 	}

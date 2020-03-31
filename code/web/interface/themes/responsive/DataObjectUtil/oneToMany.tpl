@@ -7,7 +7,7 @@
 				<th>Sort</th>
 			{/if}
 			{foreach from=$property.structure item=subProperty}
-				{if in_array($subProperty.type, array('text', 'enum', 'date', 'checkbox', 'integer', 'textarea', 'html', 'multiSelect')) }
+				{if in_array($subProperty.type, array('text', 'enum', 'date', 'checkbox', 'integer', 'textarea', 'html')) || ($subProperty.type == 'multiSelect' && $subProperty.listStyle == 'checkboxList') }
 					<th{if in_array($subProperty.type, array('text', 'enum', 'html', 'multiSelect'))} style="min-width:150px"{/if}>{$subProperty.label}</th>
 				{/if}
 			{/foreach}

@@ -478,19 +478,37 @@ class Search_Results extends Action {
 			$placardToDisplay = null;
 			require_once ROOT_DIR . '/sys/LocalEnrichment/Placard.php';
 			require_once ROOT_DIR . '/sys/LocalEnrichment/PlacardTrigger.php';
+
 			$trigger = new PlacardTrigger();
 			$trigger->triggerWord = $_REQUEST['lookfor'];
-			if ($trigger->find(true)) {
+			$trigger->find();
+			while ($trigger->fetch()) {
 				$placardToDisplay = new Placard();
 				$placardToDisplay->id = $trigger->placardId;
-				$placardToDisplay->find(true);
+				if ($placardToDisplay->find(true)){
+					if ($placardToDisplay->isDismissed() || !$placardToDisplay->isValidForScope()){
+						$placardToDisplay = null;
+					}
+				}else{
+					$placardToDisplay = null;
+				}
+				if ($placardToDisplay != null) {
+					break;
+				}
 			}
 			if ($placardToDisplay == null && !empty($_REQUEST['replacementTerm'])) {
 				$trigger->triggerWord = $_REQUEST['replacementTerm'];
-				if ($trigger->find(true)) {
+				$trigger->find();
+				while ($trigger->fetch()) {
 					$placardToDisplay = new Placard();
 					$placardToDisplay->id = $trigger->placardId;
 					$placardToDisplay->find(true);
+					if ($placardToDisplay->isDismissed() || !$placardToDisplay->isValidForScope()){
+						$placardToDisplay = null;
+					}
+					if ($placardToDisplay != null) {
+						break;
+					}
 				}
 			}
 			//TODO: Additional fuzzy matches of the search terms

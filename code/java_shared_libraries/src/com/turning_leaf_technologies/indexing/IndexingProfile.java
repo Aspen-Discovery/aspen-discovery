@@ -39,6 +39,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 	private char format;
 	private boolean groupUnchangedFiles;
 	private long lastUpdateFromMarcExport;
+	private boolean checkRecordForLargePrint;
 
 	private void setFilenamesToInclude(String filenamesToInclude) {
 		this.filenamesToInclude = filenamesToInclude;
@@ -122,6 +123,8 @@ public class IndexingProfile extends BaseIndexingSettings {
 				indexingProfile.setFormatSource(indexingProfileRS.getString("formatSource"));
 				indexingProfile.setSpecifiedFormatCategory(indexingProfileRS.getString("specifiedFormatCategory"));
 				indexingProfile.setFormat(getCharFromRecordSet(indexingProfileRS, "format"));
+				indexingProfile.setCheckRecordForLargePrint(indexingProfileRS.getBoolean("checkRecordForLargePrint"));
+
 				indexingProfile.setGroupUnchangedFiles(indexingProfileRS.getBoolean("groupUnchangedFiles"));
 
 				indexingProfile.setDoAutomaticEcontentSuppression(indexingProfileRS.getBoolean("doAutomaticEcontentSuppression"));
@@ -431,4 +434,11 @@ public class IndexingProfile extends BaseIndexingSettings {
 		return lastUpdateFromMarcExport;
 	}
 
+	private void setCheckRecordForLargePrint(boolean checkRecordForLargePrint) {
+		this.checkRecordForLargePrint = checkRecordForLargePrint;
+	}
+
+	public boolean getCheckRecordForLargePrint() {
+		return checkRecordForLargePrint;
+	}
 }

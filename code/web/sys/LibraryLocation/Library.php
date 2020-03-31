@@ -110,8 +110,9 @@ class Library extends DataObject
 	public /** @noinspection PhpUnused */ $enableGenealogy;
 	public $showHoldCancelDate;
 	public /** @noinspection PhpUnused */ $enableCourseReserves;
-	public /** @noinspection PhpUnused */ $enableSelfRegistration;
-	public/** @noinspection PhpUnused */  $promptForBirthDateInSelfReg;
+	public $enableSelfRegistration;
+	public $selfRegistrationLocationRestrictions;
+	public $promptForBirthDateInSelfReg;
 	public $showItsHere;
 	public $holdDisclaimer;
 	public $enableMaterialsRequest;
@@ -380,13 +381,17 @@ class Library extends DataObject
 		}
 
 		require_once ROOT_DIR . '/sys/RBdigital/RBdigitalScope.php';
+		require_once ROOT_DIR . '/sys/RBdigital/RBdigitalSetting.php';
 		$rbdigitalScope = new RBdigitalScope();
 		$rbdigitalScope->orderBy('name');
 		$rbdigitalScopes = [];
 		$rbdigitalScope->find();
 		$rbdigitalScopes[-1] = 'none';
 		while ($rbdigitalScope->fetch()){
-			$rbdigitalScopes[$rbdigitalScope->id] = $rbdigitalScope->name;
+			$rbdigitalSetting = new RBdigitalSetting();
+			$rbdigitalSetting->id = $rbdigitalScope->settingId;
+			$rbdigitalSetting->find(true);
+			$rbdigitalScopes[$rbdigitalScope->id] = $rbdigitalScope->name . ' ' . $rbdigitalSetting->userInterfaceUrl;
 		}
 
 		require_once ROOT_DIR . '/sys/CloudLibrary/CloudLibraryScope.php';
@@ -496,6 +501,7 @@ class Library extends DataObject
 				'selfRegistrationSection' => array('property' => 'selfRegistrationSection', 'type' => 'section', 'label' => 'Self Registration', 'hideInLists' => true,
 						'helpLink' => '', 'properties' => array(
 					'enableSelfRegistration'         => array('property'=>'enableSelfRegistration', 'type'=>'checkbox', 'label'=>'Enable Self Registration', 'description'=>'Whether or not patrons can self register on the site', 'hideInLists' => true),
+					'selfRegistrationLocationRestrictions' => ['property' => 'selfRegistrationLocationRestrictions', 'type' => 'enum', 'values' => [0 => 'No Restrictions', 1 => 'All Library Locations', 2 => 'All Hold Pickup Locations', 3 => 'Pickup Locations for the library'], 'label' => 'Valid Registration Locations', 'description' => 'Indicates which locations are valid pickup locations', 'hideInLists' => true],
 					'promptForBirthDateInSelfReg'    => array('property' => 'promptForBirthDateInSelfReg', 'type' => 'checkbox', 'label' => 'Prompt For Birth Date', 'description'=>'Whether or not to prompt for birth date when self registering'),
 					'selfRegistrationFormMessage'    => array('property'=>'selfRegistrationFormMessage', 'type'=>'html', 'label'=>'Self Registration Form Message', 'description'=>'Message shown to users with the form to submit the self registration.  Leave blank to give users the default message.', 'hideInLists' => true),
 					'selfRegistrationSuccessMessage' => array('property'=>'selfRegistrationSuccessMessage', 'type'=>'html', 'label'=>'Self Registration Success Message', 'description'=>'Message shown to users when the self registration has been completed successfully.  Leave blank to give users the default message.', 'hideInLists' => true),

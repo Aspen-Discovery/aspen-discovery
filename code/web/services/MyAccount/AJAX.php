@@ -195,36 +195,7 @@ class MyAccount_AJAX extends JSON_Action
 		return $result;
 	}
 
-	function deleteSavedSearch()
-	{
-		$searchId = $_REQUEST['searchId'];
-		$search = new SearchEntry();
-		$search->id = $searchId;
-		$saveOk = false;
-		if ($search->find(true)) {
-			// Found, make sure this is a search from this user
-			if ($search->session_id == session_id() || $search->user_id == UserAccount::getActiveUserId()) {
-				if ($search->saved != 0) {
-					$search->saved = 0;
-					$saveOk = ($search->update() !== FALSE);
-					$message = $saveOk ? "Your saved search was deleted successfully." : "Sorry, we could not delete that search for you.  It may have already been deleted.";
-				} else {
-					$saveOk = true;
-					$message = "That search is not saved.";
-				}
-			} else {
-				$message = "Sorry, it looks like that search does not belong to you.";
-			}
-		} else {
-			$message = "Sorry, it looks like that search has expired.";
-		}
-		$result = array(
-			'result' => $saveOk,
-			'message' => $message,
-		);
-		return $result;
-	}
-
+	/** @noinspection PhpUnused */
 	function confirmCancelHold()
 	{
 		$patronId = $_REQUEST['patronId'];
@@ -284,6 +255,7 @@ class MyAccount_AJAX extends JSON_Action
 		return $cancelResult;
 	}
 
+	/** @noinspection PhpUnused */
 	function cancelBooking()
 	{
 		$totalCancelled = null;
@@ -433,6 +405,7 @@ class MyAccount_AJAX extends JSON_Action
 		return $result;
 	}
 
+	/** @noinspection PhpUnused */
 	function addList()
 	{
 		$return = array();
@@ -550,6 +523,7 @@ class MyAccount_AJAX extends JSON_Action
 		return $results;
 	}
 
+	/** @noinspection PhpUnused */
 	function getLoginForm()
 	{
 		global $interface;
@@ -571,6 +545,7 @@ class MyAccount_AJAX extends JSON_Action
 		return $interface->fetch('MyAccount/ajax-login.tpl');
 	}
 
+	/** @noinspection PhpUnused */
 	function getMasqueradeAsForm()
 	{
 		global $interface;
@@ -581,18 +556,21 @@ class MyAccount_AJAX extends JSON_Action
 		);
 	}
 
+	/** @noinspection PhpUnused */
 	function initiateMasquerade()
 	{
 		require_once ROOT_DIR . '/services/MyAccount/Masquerade.php';
 		return MyAccount_Masquerade::initiateMasquerade();
 	}
 
+	/** @noinspection PhpUnused */
 	function endMasquerade()
 	{
 		require_once ROOT_DIR . '/services/MyAccount/Masquerade.php';
 		return MyAccount_Masquerade::endMasquerade();
 	}
 
+	/** @noinspection PhpUnused */
 	function getPinUpdateForm()
 	{
 		global $interface;
@@ -623,7 +601,7 @@ class MyAccount_AJAX extends JSON_Action
 				$location = new Location();
 				$location->code = $currentLocation;
 				if ($location->find(true)){
-					$currentLocation = $location->id;
+					$currentLocation = $location->locationId;
 				}else{
 					$currentLocation = null;
 				}
@@ -650,7 +628,7 @@ class MyAccount_AJAX extends JSON_Action
 		return $results;
 	}
 
-	// called by js function Account.freezeHold
+	/** @noinspection PhpUnused */
 	function getReactivationDateForm()
 	{
 		global $interface;
@@ -674,6 +652,7 @@ class MyAccount_AJAX extends JSON_Action
 		return $results;
 	}
 
+	/** @noinspection PhpUnused */
 	function changeHoldLocation()
 	{
 		global $configArray;
@@ -711,6 +690,7 @@ class MyAccount_AJAX extends JSON_Action
 		);
 	}
 
+	/** @noinspection PhpUnused */
 	function requestPinReset()
 	{
 		/** @var CatalogConnection $catalog */
@@ -723,6 +703,7 @@ class MyAccount_AJAX extends JSON_Action
 		return $result;
 	}
 
+	/** @noinspection PhpUnused */
 	function getCitationFormatsForm()
 	{
 		global $interface;
@@ -738,7 +719,7 @@ class MyAccount_AJAX extends JSON_Action
 		);
 	}
 
-
+	/** @noinspection PhpUnused */
 	function sendMyListEmail()
 	{
 		global $interface;
@@ -826,6 +807,7 @@ class MyAccount_AJAX extends JSON_Action
 		return $result;
 	}
 
+	/** @noinspection PhpUnused */
 	function getEmailMyListForm()
 	{
 		global $interface;
@@ -893,6 +875,7 @@ class MyAccount_AJAX extends JSON_Action
 		return $result;
 	}
 
+	/** @noinspection PhpUnused */
 	function renewSelectedItems()
 	{
 		if (!UserAccount::isLoggedIn()) {
@@ -990,6 +973,7 @@ class MyAccount_AJAX extends JSON_Action
 		return $result;
 	}
 
+	/** @noinspection PhpUnused */
 	function setListEntryPositions()
 	{
 		$success = false; // assume failure
@@ -1027,6 +1011,7 @@ class MyAccount_AJAX extends JSON_Action
 		return array('success' => $success);
 	}
 
+	/** @noinspection PhpUnused */
 	function getMenuDataIls()
 	{
 		global $timer;
@@ -1089,6 +1074,7 @@ class MyAccount_AJAX extends JSON_Action
 		return $result;
 	}
 
+	/** @noinspection PhpUnused */
 	function getMenuDataRBdigital()
 	{
 		global $timer;
@@ -1124,6 +1110,7 @@ class MyAccount_AJAX extends JSON_Action
 		return $result;
 	}
 
+	/** @noinspection PhpUnused */
 	function getMenuDataCloudLibrary()
 	{
 		global $timer;
@@ -1161,6 +1148,7 @@ class MyAccount_AJAX extends JSON_Action
 		return $result;
 	}
 
+	/** @noinspection PhpUnused */
 	function getMenuDataHoopla()
 	{
 		global $timer;
@@ -1210,6 +1198,7 @@ class MyAccount_AJAX extends JSON_Action
 		return $result;
 	}
 
+	/** @noinspection PhpUnused */
 	function getMenuDataOverdrive()
 	{
 		global $timer;
@@ -1247,6 +1236,7 @@ class MyAccount_AJAX extends JSON_Action
 		return $result;
 	}
 
+	/** @noinspection PhpUnused */
 	function getRatingsData()
 	{
 		global $interface;
@@ -1262,6 +1252,7 @@ class MyAccount_AJAX extends JSON_Action
 		return $result;
 	}
 
+	/** @noinspection PhpUnused */
 	function getListData()
 	{
 		global $timer;
@@ -1309,6 +1300,7 @@ class MyAccount_AJAX extends JSON_Action
 		return $result;
 	}
 
+	/** @noinspection PhpUnused */
 	public function exportCheckouts()
 	{
 		global $configArray;
@@ -1435,6 +1427,7 @@ class MyAccount_AJAX extends JSON_Action
 		exit;
 	}
 
+	/** @noinspection PhpUnused */
 	public function exportHolds()
 	{
 		global $configArray;
@@ -1663,6 +1656,7 @@ class MyAccount_AJAX extends JSON_Action
 		exit;
 	}
 
+	/** @noinspection PhpUnused */
 	public function exportReadingHistory()
 	{
 		$user = UserAccount::getActiveUserObj();
@@ -1940,6 +1934,7 @@ class MyAccount_AJAX extends JSON_Action
 		return $result;
 	}
 
+	/** @noinspection PhpUnused */
 	public function getReadingHistory()
 	{
 		global $interface;
@@ -2025,6 +2020,7 @@ class MyAccount_AJAX extends JSON_Action
 		return $result;
 	}
 
+	/** @noinspection PhpUnused */
 	function renderReadingHistoryPaginationLink($page, $options)
 	{
 		return "<a class='page-link' onclick='AspenDiscovery.Account.loadReadingHistory(\"{$options['patronId']}\", \"{$options['sort']}\", \"{$page}\", undefined, \"{$options['filter']}\");AspenDiscovery.goToAnchor(\"topOfList\")'>";
@@ -2153,6 +2149,7 @@ class MyAccount_AJAX extends JSON_Action
 		return $result;
 	}
 
+	/** @noinspection PhpUnused */
 	function dismissMessage()
 	{
 		require_once ROOT_DIR . '/sys/Account/UserMessage.php';
@@ -2177,6 +2174,7 @@ class MyAccount_AJAX extends JSON_Action
 		}
 	}
 
+	/** @noinspection PhpUnused */
 	function enableAccountLinking()
 	{
 		require_once ROOT_DIR . '/sys/Account/UserMessage.php';
@@ -2214,6 +2212,7 @@ class MyAccount_AJAX extends JSON_Action
 		return ['success' => true, 'message' => 'Account Linking Resumed'];
 	}
 
+	/** @noinspection PhpUnused */
 	function stopAccountLinking()
 	{
 		require_once ROOT_DIR . '/sys/Account/UserMessage.php';
@@ -2250,6 +2249,7 @@ class MyAccount_AJAX extends JSON_Action
 		return ['success' => true, 'message' => 'Account Linking Stopped'];
 	}
 
+	/** @noinspection PhpUnused */
 	function createPayPalOrder()
 	{
 		global $configArray;
@@ -2489,6 +2489,7 @@ class MyAccount_AJAX extends JSON_Action
 		}
 	}
 
+	/** @noinspection PhpUnused */
 	function completePayPalOrder()
 	{
 		$orderId = $_REQUEST['orderId'];
@@ -2510,5 +2511,38 @@ class MyAccount_AJAX extends JSON_Action
 		} else {
 			return ['success' => false, 'message' => 'Unable to find the order you processed, please visit the library with your receipt'];
 		}
+	}
+
+	/** @noinspection PhpUnused */
+	function dismissPlacard(){
+		$patronId = $_REQUEST['patronId'];
+		$placardId = $_REQUEST['placardId'];
+
+		$result = [
+			'success' => false,
+			'message' => 'Unknown Error',
+		];
+
+		if ($patronId != UserAccount::getActiveUserId()){
+			$result['message'] = 'Incorrect user information, please login again.';
+		}else{
+			require_once ROOT_DIR . '/sys/LocalEnrichment/Placard.php';
+			$placard = new Placard();
+			$placard->id = $placardId;
+			if (!$placard->find(true)){
+				$result['message'] = 'Incorrect placard provided, please try again.';
+			}else{
+				require_once ROOT_DIR . '/sys/LocalEnrichment/PlacardDismissal.php';
+				$placardDismissal = new PlacardDismissal();
+				$placardDismissal->placardId = $placardId;
+				$placardDismissal->userId = $patronId;
+				$placardDismissal->insert();
+				$result = [
+					'success' => true
+				];
+			}
+		}
+
+		return $result;
 	}
 }

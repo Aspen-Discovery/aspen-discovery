@@ -9,6 +9,7 @@ class CloudLibraryDriver extends AbstractEContentDriver
 	public function initCurlWrapper()
 	{
 		$this->curlWrapper = new CurlWrapper();
+		$this->curlWrapper->timeout = 20;
 	}
 
 	public function hasNativeReadingHistory()
