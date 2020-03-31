@@ -75,7 +75,33 @@ class SearchAPI extends Action
 			}
 		}
 
-		//Check background processes running (Overdrive, rbdigital, open archives, list indexing, ils extract)
+		//Check free disk space
+		$freeSpace = disk_free_space('/');
+		if ($freeSpace < 5000000000){
+			$status[] = self::STATUS_CRITICAL;
+			$notes[] = "The disk currently has less than 5GB of space available";
+		}
+
+		//Check for errors within the logs
+		require_once ROOT_DIR . '/sys/Module.php';
+		$module = new Module();
+		$module->enabled = true;
+		$module->find();
+		while ($module->fetch()){
+			if (!empty($module->logClassPath) && !empty($module->logClassName)){
+				require_once ROOT_DIR . $module->logClassPath;
+				/** @var BaseLogEntry $logEntry */
+				$logEntry = new $module->logClassName();
+				$logEntry->orderBy("id DESC");
+				$logEntry->limit(0, 1);
+				if ($logEntry->find(true)){
+					if ($logEntry->numErrors > 0){
+						$status[] = self::STATUS_CRITICAL;
+						$notes[] = "The last log entry for {$module->name} had errors";
+					}
+				}
+			}
+		}
 
 		// Unprocessed Offline Holds //
 		$offlineHoldEntry = new OfflineHold();

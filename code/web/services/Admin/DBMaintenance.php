@@ -115,6 +115,14 @@ class Admin_DBMaintenance extends Admin_Admin
 						'ALTER TABLE modules add INDEX (enabled)',
 					]
 				],
+				'module_log_information' => [
+					'title' => 'Module log information',
+					'description' => 'Add log information to modules table',
+					'sql' => [
+						'ALTER TABLE modules ADD COLUMN logClassPath VARCHAR(100)',
+						'ALTER TABLE modules ADD COLUMN logClassName VARCHAR(35)',
+					]
+				]
 			],
 			$library_location_updates,
 			$user_updates,

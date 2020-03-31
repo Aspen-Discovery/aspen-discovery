@@ -5,7 +5,7 @@ require_once ROOT_DIR . '/sys/ILS/IlsExtractLogEntry.php';
 
 class ILS_IndexingLog extends Admin_IndexingLog
 {
-	function getIndexLogEntryObject(): DataObject
+	function getIndexLogEntryObject(): BaseLogEntry
 	{
 		return new IlsExtractLogEntry();
 	}

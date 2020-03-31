@@ -2,14 +2,11 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="55ca2c23-0e7e-4349-ac3a-9f29a6a68364" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/Events/results-displayMode-toggle.tpl" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../web/services/Events/Calendar.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/LibraryCalendarIndexer.java" beforeDir="false" afterPath="$PROJECT_DIR$/../events_indexer/src/com/turning_leaf_technologies/events/LibraryCalendarIndexer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../events_indexer/META-INF/MANIFEST.MF" beforeDir="false" afterPath="$PROJECT_DIR$/../events_indexer/META-INF/MANIFEST.MF" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../web/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../web/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/Events/list.tpl" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/Events/list.tpl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../web/services/Events/Results.php" beforeDir="false" afterPath="$PROJECT_DIR$/../web/services/Events/Results.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/schema.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/schema.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/interface/themes/nashville_resp/css/main.css" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/nashville_resp/css/main.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../web/interface/themes/responsive/css/main.css" beforeDir="false" afterPath="$PROJECT_DIR$/../web/interface/themes/responsive/css/main.css" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -181,15 +178,19 @@
     <navigator proportions="" version="1">
       <foldersAlwaysOnTop value="true" />
     </navigator>
-    <panes />
+    <panes>
+      <pane id="PackagesPane" />
+      <pane id="ProjectPane" />
+      <pane id="Scope" />
+    </panes>
   </component>
   <component name="PropertiesComponent">
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1557953281623" />
     <property name="extract.method.default.visibility" value="private" />
     <property name="last_directory_selection" value="$PROJECT_DIR$/../java_shared_libraries/src/com/turning_leaf_technologies" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../../sites/default/solr-7.6.0/dist/solr-core-7.6.0.jar!/" />
-    <property name="project.structure.last.edited" value="Modules" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../events_indexer" />
+    <property name="project.structure.last.edited" value="Artifacts" />
     <property name="project.structure.proportion" value="0.15" />
     <property name="project.structure.side.proportion" value="0.2" />
     <property name="settings.editor.selected.configurable" value="project.propVCSSupport.Confirmation" />
@@ -458,7 +459,7 @@
   <component name="ToolWindowManager">
     <frame x="-7" y="-7" width="1550" height="838" extended-state="6" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.4969325" weight="0.19127516" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.4969325" visible="true" weight="0.19127516" />
       <window_info id="Image Layers" order="1" />
       <window_info id="Designer" order="2" />
       <window_info id="UI Designer" order="3" />
@@ -1876,24 +1877,19 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/schema.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="195">
-          <caret line="94" column="55" selection-start-line="94" selection-start-column="55" selection-end-line="94" selection-end-column="55" />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$PROJECT_DIR$/../../data_dir_setup/solr7/events/conf/schema.xml" />
   </component>
   <component name="masterDetails">
     <states>
       <state key="ArtifactsStructureConfigurable.UI">
         <settings>
           <artifact-editor />
-          <last-edited>cloud_library_export</last-edited>
+          <last-edited>events_indexer</last-edited>
           <splitter-proportions>
             <option name="proportions">
               <list>
                 <option value="0.2" />
+                <option value="0.5" />
               </list>
             </option>
           </splitter-proportions>
@@ -1936,7 +1932,7 @@
       </state>
       <state key="ModuleStructureConfigurable.UI">
         <settings>
-          <last-edited>cloud_library_export</last-edited>
+          <last-edited>events_indexer</last-edited>
           <splitter-proportions>
             <option name="proportions">
               <list>

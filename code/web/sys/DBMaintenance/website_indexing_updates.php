@@ -94,5 +94,13 @@ function getWebsiteIndexingUpdates()
 				"ALTER TABLE website_indexing_settings ADD COLUMN pathsToExclude MEDIUMTEXT",
 			]
 		],
+
+		'web_indexer_module_add_log' =>[
+			'title' => 'Web Indexer add log info to module',
+			'description' => 'Add logging information to web indexer module',
+			'sql' => [
+				"UPDATE modules set logClassPath='/sys/WebsiteIndexing/WebsiteIndexLogEntry.php', logClassName='WebsiteIndexLogEntry' WHERE name='Web Indexer'",
+			]
+		],
 	);
 }
