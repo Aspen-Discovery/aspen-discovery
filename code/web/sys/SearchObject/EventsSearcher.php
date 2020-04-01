@@ -256,6 +256,28 @@ class SearchObject_EventsSearcher extends SearchObject_SolrSearcher
 			$eventState->useMoreFacetPopup = true;
 			$facetConfig["event_state"] = $eventState;
 
+			$reservationState = new LibraryFacetSetting();
+			$reservationState->id = count($facetConfig) +1;
+			$reservationState->multiSelect = true;
+			$reservationState->facetName = "reservation_state";
+			$reservationState->displayName = "Reservation State";
+			$reservationState->numEntriesToShowByDefault = 5;
+			$reservationState->translate = false;
+			$reservationState->collapseByDefault = true;
+			$reservationState->useMoreFacetPopup = true;
+			$facetConfig["reservation_state"] = $reservationState;
+
+			$eventType = new LibraryFacetSetting();
+			$eventType->id = count($facetConfig) +1;
+			$eventType->multiSelect = true;
+			$eventType->facetName = "event_type";
+			$eventType->displayName = "Event Type";
+			$eventType->numEntriesToShowByDefault = 5;
+			$eventType->translate = false;
+			$eventType->collapseByDefault = true;
+			$eventType->useMoreFacetPopup = true;
+			$facetConfig["event_type"] = $eventType;
+
 			$this->facetConfig = $facetConfig;
 		}
 		return $this->facetConfig;

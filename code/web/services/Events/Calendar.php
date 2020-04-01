@@ -108,10 +108,18 @@ class Events_Calendar extends Action
 				//Loop through search results to find events for this day
 				foreach ($searchResults as $result) {
 					if (in_array($eventDay, $result['event_day'])){
+						$startDate = new DateTime($result['start_date']);
+						$formattedTime = date_format($startDate, "h:iA");
+						$endDate = new DateTime($result['end_date']);
+						$formattedTime .= ' - ' . date_format($endDate, "h:iA");
+						if (($endDate->getTimestamp() - $startDate-> getTimestamp()) > 24 * 60 * 60){
+							$formattedTime = 'All day';
+						}
 						$eventDayObj['events'][] = [
 							'id' => $result['id'],
 							'title' => $result['title'],
-							'link' => $result['url']
+							'link' => $result['url'],
+							'formattedTime' => $formattedTime,
 						];
 					}
 				}

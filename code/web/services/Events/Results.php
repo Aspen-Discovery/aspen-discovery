@@ -24,6 +24,9 @@ class Events_Results extends Action
 		$searchObject->init();
 		$searchObject->setPrimarySearch(true);
 
+		//When searching for events, we hide closures and just show them on the calendar.
+		$searchObject->addHiddenFilter("event_type", "lc_event");
+
 		// Build RSS Feed for Results (if requested)
 		if ($searchObject->getView() == 'rss') {
 			// Throw the XML to screen

@@ -104,11 +104,13 @@
 
 		<field name="age_group_facet" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
 		<field name="age_group" type="searchable_text" indexed="true" stored="true" multiValued="true"/>
+		<field name="event_type" type="unchanged_string" indexed="true" stored="true" multiValued="false"/>
 		<field name="program_type_facet" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
 		<field name="program_type" type="searchable_text" indexed="true" stored="true" multiValued="true"/>
 		<field name="internal_category" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
 
 		<field name="event_state" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
+		<field name="reservation_state" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
 
 		<field name="registration_required" type="unchanged_string" indexed="true" stored="true" multiValued="false"/>
 		<field name="registration_start_date" type="date" indexed="false" stored="true"/>
