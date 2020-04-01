@@ -1,11 +1,16 @@
 package com.turning_leaf_technologies.events;
 
 import org.apache.http.HttpEntity;
+import org.apache.http.NameValuePair;
 import org.apache.http.StatusLine;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -15,21 +20,24 @@ import org.apache.solr.common.SolrInputDocument;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.json.JSONString;
-
 import java.io.IOException;
 import java.sql.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.zip.CRC32;
+import java.util.*;
 import java.util.Date;
+import java.util.zip.CRC32;
+
+import static java.util.Calendar.YEAR;
 
 class LibraryCalendarIndexer {
 	private long settingsId;
 	private String name;
 	private String baseUrl;
+	private String clientId;
+	private String clientSecret;
+	private String username;
+	private String password;
 	private Connection aspenConn;
 	private EventsIndexerLogEntry logEntry;
 	private HashMap<String, LibraryCalendarEvent> existingEvents = new HashMap<>();
@@ -43,10 +51,14 @@ class LibraryCalendarIndexer {
 	//TODO: Update full reload based on settings
 	private boolean doFullReload = true;
 
-	LibraryCalendarIndexer(long settingsId, String name, String baseUrl, ConcurrentUpdateSolrClient solrUpdateServer, Connection aspenConn, Logger logger) {
+	LibraryCalendarIndexer(long settingsId, String name, String baseUrl, String clientId, String clientSecret, String username, String password, ConcurrentUpdateSolrClient solrUpdateServer, Connection aspenConn, Logger logger) {
 		this.settingsId = settingsId;
 		this.name = name;
 		this.baseUrl = baseUrl;
+		this.clientId = clientId;
+		this.clientSecret = clientSecret;
+		this.username = username;
+		this.password = password;
 		this.aspenConn = aspenConn;
 		this.solrUpdateServer = solrUpdateServer;
 
@@ -92,6 +104,9 @@ class LibraryCalendarIndexer {
 	private SimpleDateFormat eventYearFormatter = new SimpleDateFormat("yyyy");
 	void indexEvents() {
 		//Load the RSS feed
+		GregorianCalendar nextYear = new GregorianCalendar();
+		nextYear.setTime(new Date());
+		nextYear.add(YEAR, 1);
 		JSONArray rssFeed = getRSSFeed();
 		if (rssFeed != null){
 			if (doFullReload) {
@@ -141,16 +156,27 @@ class LibraryCalendarIndexer {
 							solrDocument.addField("start_date_sort", startDate.getTime() / 1000);
 							Date endDate = getDateForKey(curEvent,"end_date");
 							solrDocument.addField("end_date", endDate);
+
+							//Only add events for the next year
+							if (startDate.after(nextYear.getTime())){
+								continue;
+							}
 							HashSet<String> eventDays = new HashSet<>();
 							HashSet<String> eventMonths = new HashSet<>();
 							HashSet<String> eventYears = new HashSet<>();
 							Date tmpDate = (Date)startDate.clone();
 
-							while (tmpDate.before(endDate)){
+							if (tmpDate.equals(endDate) || tmpDate.after(endDate)){
 								eventDays.add(eventDayFormatter.format(tmpDate));
 								eventMonths.add(eventMonthFormatter.format(tmpDate));
 								eventYears.add(eventYearFormatter.format(tmpDate));
-								tmpDate.setTime(tmpDate.getTime() + 24 * 60 * 60 * 1000);
+							}else {
+								while (tmpDate.before(endDate)) {
+									eventDays.add(eventDayFormatter.format(tmpDate));
+									eventMonths.add(eventMonthFormatter.format(tmpDate));
+									eventYears.add(eventYearFormatter.format(tmpDate));
+									tmpDate.setTime(tmpDate.getTime() + 24 * 60 * 60 * 1000);
+								}
 							}
 							solrDocument.addField("event_day", eventDays);
 							solrDocument.addField("event_month", eventMonths);
@@ -204,6 +230,9 @@ class LibraryCalendarIndexer {
 
 						if (eventExists){
 							existingEvents.remove(eventId);
+							logEntry.incUpdated();
+						}else{
+							logEntry.incAdded();
 						}
 					}
 
@@ -220,12 +249,15 @@ class LibraryCalendarIndexer {
 					logEntry.addNote("Error deleting event " + e.toString());
 					logEntry.incErrors();
 				}
-				try {
-					solrUpdateServer.deleteById("lc_" + settingsId + "_" + eventInfo.getExternalId());
-				} catch (Exception e) {
-					logEntry.addNote("Error deleting event by id " + e.toString());
-					logEntry.incErrors();
+				if (!doFullReload) {
+					try {
+						solrUpdateServer.deleteById("lc_" + settingsId + "_" + eventInfo.getExternalId());
+					} catch (Exception e) {
+						logEntry.addNote("Error deleting event by id " + e.toString());
+						logEntry.incErrors();
+					}
 				}
+				logEntry.incDeleted();
 			}
 
 			try {
@@ -298,11 +330,47 @@ class LibraryCalendarIndexer {
 	}
 
 	private JSONArray getRSSFeed() {
+		//Check to see if we are getting the private feed or not
+		boolean getPrivateFeed = false;
+		if (clientId != null && clientId.length() > 0 &&
+			clientSecret != null && clientSecret.length() > 0 &&
+			username != null && username.length() > 0 &&
+			password != null && password.length() > 0){
+			getPrivateFeed = true;
+		}
 		String rssURL = baseUrl + "/events/feed/json";
 		try {
 			CloseableHttpClient httpclient = HttpClients.createDefault();
-			HttpGet httpGet = new HttpGet(rssURL);
-			try (CloseableHttpResponse response1 = httpclient.execute(httpGet)) {
+			HttpRequestBase rssRequest;
+			if (getPrivateFeed) {
+				String authTokenUrl = baseUrl + "/oauth/token";
+				ArrayList<NameValuePair> params = new ArrayList<>();
+				params.add(new BasicNameValuePair("grant_type", "client_credentials"));
+				params.add(new BasicNameValuePair("client_id", clientId));
+				params.add(new BasicNameValuePair("client_secret", clientSecret));
+				params.add(new BasicNameValuePair("username", username));
+				params.add(new BasicNameValuePair("password", password));
+				HttpPost authTokenRequest  = new HttpPost(authTokenUrl);
+				authTokenRequest.setEntity(new UrlEncodedFormEntity(params, "UTF-8"));
+				String accessToken = "";
+				String tokenType = "";
+				try (CloseableHttpResponse response1 = httpclient.execute(authTokenRequest)) {
+					StatusLine status = response1.getStatusLine();
+					HttpEntity entity1 = response1.getEntity();
+					if (status.getStatusCode() == 200) {
+						String response = EntityUtils.toString(entity1);
+						JSONObject authData = new JSONObject(response);
+						tokenType = authData.getString("token_type");
+						accessToken = authData.getString("access_token");
+					}
+				}
+
+				rssRequest = new HttpPost(rssURL);
+				rssRequest.addHeader("Authorization", tokenType + " " + accessToken);
+			}else{
+				rssRequest = new HttpGet(rssURL);
+			}
+			try (CloseableHttpResponse response1 = httpclient.execute(rssRequest)) {
 				StatusLine status = response1.getStatusLine();
 				HttpEntity entity1 = response1.getEntity();
 				if (status.getStatusCode() == 200) {
