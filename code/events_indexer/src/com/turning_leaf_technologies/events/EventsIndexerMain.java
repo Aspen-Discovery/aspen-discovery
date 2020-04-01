@@ -1,6 +1,7 @@
 package com.turning_leaf_technologies.events;
 
 import com.turning_leaf_technologies.config.ConfigUtil;
+import com.turning_leaf_technologies.file.JarUtil;
 import com.turning_leaf_technologies.logging.LoggingUtil;
 import com.turning_leaf_technologies.strings.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -28,6 +29,9 @@ public class EventsIndexerMain {
 		String processName = "events_indexer";
 		logger = LoggingUtil.setupLogging(serverName, processName);
 
+		//Get the checksum of the JAR when it was started so we can stop if it has changed.
+		long myChecksumAtStart = JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar");
+
 		//noinspection InfiniteLoopStatement
 		while (true) {
 			Date startTime = new Date();
@@ -47,13 +51,26 @@ public class EventsIndexerMain {
 				PreparedStatement getLibraryCalendarSitesToIndexStmt = aspenConn.prepareStatement("SELECT * from lm_library_calendar_settings");
 				ResultSet libraryCalendarSitesRS = getLibraryCalendarSitesToIndexStmt.executeQuery();
 				while (libraryCalendarSitesRS.next()) {
-					LibraryCalendarIndexer indexer = new LibraryCalendarIndexer(libraryCalendarSitesRS.getLong("id"), libraryCalendarSitesRS.getString("name"), libraryCalendarSitesRS.getString("baseUrl"), solrUpdateServer, aspenConn, logger);
+					LibraryCalendarIndexer indexer = new LibraryCalendarIndexer(
+							libraryCalendarSitesRS.getLong("id"),
+							libraryCalendarSitesRS.getString("name"),
+							libraryCalendarSitesRS.getString("baseUrl"),
+							libraryCalendarSitesRS.getString("clientId"),
+							libraryCalendarSitesRS.getString("clientSecret"),
+							libraryCalendarSitesRS.getString("username"),
+							libraryCalendarSitesRS.getString("password"),
+							solrUpdateServer, aspenConn, logger);
 					indexer.indexEvents();
 				}
 
 				//Index events from other source here
 			} catch (SQLException e) {
 				logger.error("Error indexing events", e);
+			}
+
+			//Check to see if the jar has changes, and if so quit
+			if (myChecksumAtStart != JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar")){
+				break;
 			}
 
 			//Pause 15 minutes before running the next export

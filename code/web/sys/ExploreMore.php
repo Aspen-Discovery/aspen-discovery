@@ -389,7 +389,7 @@ class ExploreMore {
 
 		$interface->assign('exploreMoreOptions', $exploreMoreDisplayOptions);
 
-		return $exploreMoreOptions;
+		return $exploreMoreDisplayOptions;
 	}
 
 	/**

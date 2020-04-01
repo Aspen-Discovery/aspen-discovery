@@ -8725,9 +8725,13 @@ ul.account-submenu {
   white-space: normal !important;
 }
 .placard {
-  border: 1px solid black;
-  background-color: lightyellow;
+  border: 1px solid #bbb;
+  background-color: #f0f5f5;
   padding: 10px;
+  margin: 5px;
+}
+a.placard-link {
+  text-decoration: none;
 }
 .placard-image {
   float: left;
@@ -10277,6 +10281,68 @@ a.browse-thumbnail-sorted.active {
 #moreResultsFromProspector {
   margin: 5px;
   text-align: right;
+}
+.calendar {
+  margin: 10px;
+}
+.calendar-nav {
+  height: 50px;
+}
+.calendar-nav .calendar-nav-cell {
+  height: 60px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.calendar-current-month {
+  font-size: 36px;
+}
+.calendar-day-cell {
+  display: flex;
+  width: 14.28571429%;
+  border: 1px solid lightgray;
+  min-height: 150px;
+  flex-direction: column;
+}
+.calendar-header-cell {
+  display: flex;
+  width: 14.28571429%;
+  font-weight: bold;
+  background-color: #F7F7F7;
+  border: 1px solid lightgray;
+  border-left-width: 0;
+  border-right-width: 0;
+  font-size: 14px;
+  justify-content: center;
+}
+.calendar-header :first-child {
+  border-left-width: 1px;
+}
+.calendar-header :last-child {
+  border-right-width: 1px;
+}
+.calendar-row {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+}
+.calendar-day-date {
+  display: flex;
+  text-align: right;
+  font-size: 16px;
+  font-weight: bold;
+  width: 100%;
+  padding-top: 7px;
+}
+.calendar-events {
+  display: flex;
+  flex-direction: column;
+}
+.calendar-event {
+  border-radius: 4px;
+  margin-bottom: 5px;
+  padding: 3px;
+  background-color: #EFEFEF;
 }
 .blockhead {
   border-bottom: 1px solid #c0c0c0;

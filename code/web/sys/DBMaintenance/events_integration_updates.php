@@ -21,6 +21,17 @@ function getEventsIntegrationUpdates(){
 			]
 		],
 
+		'lm_library_calendar_private_feed_settings' => [
+			'title' => 'Library Market Library Calendar - Private Feed Settings',
+			'description' => 'Add properties to retrieve the private feed',
+			'sql' => [
+				'ALTER TABLE lm_library_calendar_settings ADD COLUMN clientId VARCHAR(36)',
+				'ALTER TABLE lm_library_calendar_settings ADD COLUMN clientSecret VARCHAR(36)',
+				"ALTER TABLE lm_library_calendar_settings ADD COLUMN username VARCHAR(36) default 'lc_feeds_staffadmin'",
+				"ALTER TABLE lm_library_calendar_settings ADD COLUMN password VARCHAR(36)",
+			]
+		],
+
 		'library_events_setting' => [
 			'title' => 'Library Events Settings',
 			'description' => 'Initial setup link between library events settings and libraries',
