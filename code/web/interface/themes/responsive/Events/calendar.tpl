@@ -41,7 +41,12 @@
 						<div class="calendar-events">
 							{foreach from=$day.events item=event}
 								<div class="calendar-event" data-event_id="{$event.id}">
-									<a href="{$event.link}">{$event.title}</a>
+									<div class="calendar-event-title">
+										<a href="{$event.link}">{$event.title}</a>
+									</div>
+									<div class="calendar-event-time">
+										{$event.formattedTime}
+									</div>
 								</div>
 							{/foreach}
 						</div>

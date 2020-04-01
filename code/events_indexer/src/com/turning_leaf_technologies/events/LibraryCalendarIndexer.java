@@ -149,6 +149,12 @@ class LibraryCalendarIndexer {
 							solrDocument.addField("type", "library_calendar");
 							solrDocument.addField("source", settingsId);
 							solrDocument.addField("url", getStringForKey(curEvent, "url"));
+							String eventType = getStringForKey(curEvent, "type");
+							solrDocument.addField("event_type", eventType);
+							//Don't index reservations since they are restricted to staff and
+							if (eventType != null && eventType.equals("lc_reservation")) {
+								continue;
+							}
 							solrDocument.addField("last_indexed", new Date());
 							solrDocument.addField("last_change", getDateForKey(curEvent,"changed"));
 							Date startDate = getDateForKey(curEvent,"start_date");
@@ -190,6 +196,7 @@ class LibraryCalendarIndexer {
 							solrDocument.addField("program_type", getStringsForKey(curEvent, "program_type"));
 							solrDocument.addField("internal_category", getStringsForKey(curEvent, "internal_categories"));
 							solrDocument.addField("event_state", getStringsForKey(curEvent, "event_state"));
+							solrDocument.addField("reservation_state", getStringsForKey(curEvent, "reservation_state"));
 							solrDocument.addField("registration_required", curEvent.getBoolean("registration_enabled"));
 							solrDocument.addField("registration_start_date", getDateForKey(curEvent, "registration_start"));
 							solrDocument.addField("registration_end_date",getDateForKey(curEvent,"registration_end"));
@@ -249,13 +256,11 @@ class LibraryCalendarIndexer {
 					logEntry.addNote("Error deleting event " + e.toString());
 					logEntry.incErrors();
 				}
-				if (!doFullReload) {
-					try {
-						solrUpdateServer.deleteById("lc_" + settingsId + "_" + eventInfo.getExternalId());
-					} catch (Exception e) {
-						logEntry.addNote("Error deleting event by id " + e.toString());
-						logEntry.incErrors();
-					}
+				try {
+					solrUpdateServer.deleteById("lc_" + settingsId + "_" + eventInfo.getExternalId());
+				} catch (Exception e) {
+					logEntry.addNote("Error deleting event by id " + e.toString());
+					logEntry.incErrors();
 				}
 				logEntry.incDeleted();
 			}
