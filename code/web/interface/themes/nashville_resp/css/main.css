@@ -10404,9 +10404,21 @@ a.browse-thumbnail-sorted.active {
 }
 .calendar-event {
   border-radius: 4px;
-  margin-bottom: 5px;
-  padding: 3px;
+  padding: 3px 5px 3px 10px;
   background-color: #EFEFEF;
+}
+@media (max-width: 767px) {
+  .calendar-event {
+    margin: 3px 5px 3px 10px;
+  }
+}
+@media (min-width: 768px) {
+  .calendar-event {
+    margin: 3px 5px;
+  }
+}
+.calendar-event-time {
+  font-size: 12px;
 }
 .blockhead {
   border-bottom: 1px solid #c0c0c0;
