@@ -95,16 +95,21 @@ class Events_Calendar extends Action
 				for ($j = 0; $j < $startDayIndex; $j++){
 					$week['days'][] = [
 						'day' => '',
+						'fullDate' => '',
 						'events' => []
 					];
 				}
 			}
 			for ($j = $startDayIndex; $j < 7; $j++){
+				$eventDay = $year . '-' . $paddedMonth . '-' . str_pad($dayNum, 2, '0', STR_PAD_LEFT);
+				$eventDate = new DateTime($eventDay);
+
 				$eventDayObj = [
 					'day' => $dayNum,
+					'fullDate' => $eventDate->format('l, F jS'),
 					'events' => []
 				];
-				$eventDay = $year . '-' . $paddedMonth . '-' . str_pad($dayNum, 2, '0', STR_PAD_LEFT);
+
 				//Loop through search results to find events for this day
 				foreach ($searchResults as $result) {
 					if (in_array($eventDay, $result['event_day'])){

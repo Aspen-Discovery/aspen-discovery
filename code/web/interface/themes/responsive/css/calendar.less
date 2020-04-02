@@ -2,6 +2,8 @@
 	margin: 10px;
 }
 .calendar-nav{
+	display: flex;
+	flex-direction: row;
 	height: 50px;
 	.calendar-nav-cell{
 		height: 60px;
@@ -14,11 +16,17 @@
 	font-size: 36px;
 }
 .calendar-day-cell{
-	display: flex;
-	width: 14.28571428571429%;
+	@media (max-width: @screen-xs-max) {
+		width: 100%;
+		display: inline-block;
+	}
+	@media (min-width: @screen-sm-min) {
+		width: 14.28571428571429%;
+		display: flex;
+		flex-direction: column;
+		min-height: 150px;
+	}
 	border: 1px solid lightgray;
-	min-height: 150px;
-	flex-direction: column;
 }
 .calendar-header-cell {
 	display: flex;
@@ -33,23 +41,43 @@
 }
 
 .calendar-header{
-	:first-child{
-		border-left-width: 1px;
+	@media (max-width: @screen-xs-max) {
+		display: none;
 	}
-	:last-child{
-		border-right-width: 1px;
+	@media (min-width: @screen-sm-min) {
+		display: flex;
+		flex-direction: row;
+		align-items: stretch;
+		:first-child {
+			border-left-width: 1px;
+		}
+
+		:last-child {
+			border-right-width: 1px;
+		}
 	}
 }
 
 .calendar-row{
 	display: flex;
-	flex-direction: row;
+	@media (max-width: @screen-xs-max) {
+		flex-direction: column;
+	}
+	@media (min-width: @screen-sm-min) {
+		flex-direction: row;
+	}
 	align-items: stretch;
 }
 
 .calendar-day-date{
 	display: flex;
-	text-align: right;
+	@media (max-width: @screen-xs-max) {
+		justify-content: center;
+	}
+	@media (min-width: @screen-sm-min) {
+		justify-content: right;
+	}
+
 	font-size: 16px;
 	font-weight: bold;
 	width: 100%;
