@@ -3,40 +3,40 @@
 
 	<div class="calendar">
 		<div class="row calendar-nav">
-			<div class="calendar-nav-cell col-tn-1"><a class="btn btn-default" href="{$prevLink}">&laquo; Prev</a></div>
-			<div class="calendar-nav-cell col-tn-10 text-center calendar-current-month">{$calendarMonth}</div>
-			<div class="calendar-nav-cell col-tn-1"><a class="btn btn-default" href="{$nextLink}">Next &raquo;</a></div>
+			<div class="calendar-nav-cell col-tn-2 col-sm-1"><a class="btn btn-default" href="{$prevLink}">&laquo; Prev</a></div>
+			<div class="calendar-nav-cell col-tn-8 col-sm-10 text-center calendar-current-month">{$calendarMonth}</div>
+			<div class="calendar-nav-cell col-tn-2 col-sm-1"><a class="btn btn-default" href="{$nextLink}">Next &raquo;</a></div>
 		</div>
 
-		<div class="row calendar-header">
-			<div class="col-sm-2 calendar-header-cell">
+		<div class="calendar-header">
+			<div class="calendar-header-cell">
 				{translate text=Sunday}
 			</div>
-			<div class="col-sm-2 calendar-header-cell">
+			<div class="calendar-header-cell">
 	            {translate text=Monday}
 			</div>
-			<div class="col-sm-2 calendar-header-cell">
+			<div class="calendar-header-cell">
 	            {translate text=Tuesday}
 			</div>
-			<div class="col-sm-2 calendar-header-cell">
+			<div class="calendar-header-cell">
 	            {translate text=Wednesday}
 			</div>
-			<div class="col-sm-2 calendar-header-cell">
+			<div class="calendar-header-cell">
 	            {translate text=Thursday}
 			</div>
-			<div class="col-sm-2 calendar-header-cell">
+			<div class="calendar-header-cell">
 	            {translate text=Friday}
 			</div>
-			<div class="col-sm-2 calendar-header-cell">
+			<div class="calendar-header-cell">
 	            {translate text=Saturday}
 			</div>
 		</div>
 		{foreach from=$weeks item=week}
-			<div class="row calendar-row">
+			<div class="calendar-row">
 				{foreach from=$week.days item=day}
-					<div class="col-sm-2 calendar-day-cell">
+					<div class="calendar-day-cell {if empty($day.day)}hidden-xs{/if}">
 						<div class="calendar-day-date">
-							{$day.day}
+							<span class="visible-xs">{$day.fullDate}</span><span class="hidden-xs">{$day.day}</span>
 						</div>
 						<div class="calendar-events">
 							{foreach from=$day.events item=event}
