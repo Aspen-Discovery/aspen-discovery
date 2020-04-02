@@ -252,6 +252,7 @@ class LibraryCalendarIndexer {
 			for(LibraryCalendarEvent eventInfo : existingEvents.values()){
 				try {
 					deleteEventStmt.setLong(1, eventInfo.getId());
+					deleteEventStmt.executeUpdate();
 				} catch (SQLException e) {
 					logEntry.addNote("Error deleting event " + e.toString());
 					logEntry.incErrors();
