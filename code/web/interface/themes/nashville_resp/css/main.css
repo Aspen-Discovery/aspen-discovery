@@ -8530,6 +8530,11 @@ hr.menu {
   right: 0;
   z-index: 101;
 }
+@media print {
+  #horizontal-search-wrapper {
+    display: none;
+  }
+}
 .sticky-sidebar {
   position: fixed;
   top: 0;
