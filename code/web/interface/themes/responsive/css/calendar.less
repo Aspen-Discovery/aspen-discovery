@@ -91,7 +91,16 @@
 
 .calendar-event{
 	border-radius: 4px;
-	margin-bottom: 5px;
-	padding: 3px;
+	@media (max-width: @screen-xs-max) {
+		margin: 3px 5px 3px 10px;
+	}
+	@media (min-width: @screen-sm-min) {
+		margin: 3px 5px;
+	}
+	padding: 3px 5px 3px 10px;
 	background-color: #EFEFEF;
+}
+
+.calendar-event-time{
+	font-size: 12px;
 }
