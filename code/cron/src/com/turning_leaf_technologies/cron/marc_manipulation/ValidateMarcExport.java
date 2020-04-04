@@ -25,8 +25,8 @@ public class ValidateMarcExport implements IProcessHandler {
 	private Logger logger;
 	public void doCronProcess(String servername, Ini configIni, Profile.Section processSettings, Connection dbConn, CronLogEntry cronEntry, Logger logger) {
 		this.logger = logger;
-		CronProcessLogEntry processLog = new CronProcessLogEntry(cronEntry.getLogEntryId(), "Validate Marc Records");
-		processLog.saveToDatabase(dbConn, logger);
+		CronProcessLogEntry processLog = new CronProcessLogEntry(cronEntry, "Validate Marc Records", dbConn, logger);
+		processLog.saveResults();
 
 		boolean allExportsValid = true;
 		ArrayList<IndexingProfile> indexingProfiles = loadIndexingProfiles(dbConn);
@@ -69,10 +69,7 @@ public class ValidateMarcExport implements IProcessHandler {
 										}
 									}catch (MarcException me){
 										if (!lastProcessedRecordLogged.equals(lastRecordProcessed)) {
-											logger.warn("Error processing individual record  on record " + numRecordsRead + " of " + curBibFile.getAbsolutePath() + " the last record processed was " + lastRecordProcessed + " trying to continue", me);
-											processLog.addNote("Error processing individual record  on record " + numRecordsRead + " of " + curBibFile.getAbsolutePath() + " the last record processed was " + lastRecordProcessed + " trying to continue.  " + me.toString());
-											processLog.incErrors();
-											processLog.saveToDatabase(dbConn, logger);
+											processLog.incErrors("Error processing individual record  on record " + numRecordsRead + " of " + curBibFile.getAbsolutePath() + " the last record processed was " + lastRecordProcessed + " trying to continue", me);
 											lastProcessedRecordLogged = lastRecordProcessed;
 										}
 									}
@@ -80,15 +77,12 @@ public class ValidateMarcExport implements IProcessHandler {
 								marcFileStream.close();
 								processLog.addNote("&nbsp;&nbsp;&nbsp;&nbsp;File is valid.  Found " + numRecordsToIndex + " records that will be indexed and " + numSuppressedRecords + " records that will be suppressed.");
 							} catch (Exception e) {
-								logger.error("&nbsp;&nbsp;&nbsp;&nbsp;Error loading catalog bibs on record " + numRecordsRead + " of " + curBibFile.getAbsolutePath() + " the last record processed was " + lastRecordProcessed, e);
-								processLog.addNote("Error loading catalog bibs on record " + numRecordsRead + " of " + curBibFile.getAbsolutePath() + " the last record processed was " + lastRecordProcessed + ". " + e.toString());
+								processLog.incErrors("Error loading catalog bibs on record " + numRecordsRead + " of " + curBibFile.getAbsolutePath() + " the last record processed was " + lastRecordProcessed, e);
 								allExportsValid = false;
-								processLog.saveToDatabase(dbConn, logger);
 							}
 						}
 					} catch (Exception e) {
-						logger.error("Error validating marc records in file " + curBibFile.getAbsolutePath(), e);
-						processLog.addNote("Error validating marc records " + curBibFile.getAbsolutePath() + "  " + e.toString());
+						processLog.incErrors("Error validating marc records in file " + curBibFile.getAbsolutePath(), e);
 						allExportsValid = false;
 					}
 				}
@@ -101,11 +95,10 @@ public class ValidateMarcExport implements IProcessHandler {
 			updateExportValidSetting.setBoolean(1, allExportsValid);
 			updateExportValidSetting.executeUpdate();
 		} catch (Exception e) {
-			logger.error("Error updating variable ", e);
-			processLog.addNote("Error updating variable  " + e.toString());
+			processLog.incErrors("Error updating variable ", e);
 		}finally{
 			processLog.setFinished();
-			processLog.saveToDatabase(dbConn, logger);
+			processLog.saveResults();
 		}
 	}
 

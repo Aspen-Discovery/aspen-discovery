@@ -73,8 +73,7 @@ class WebsiteIndexer {
 			addPageToStmt = aspenConn.prepareStatement("INSERT INTO website_pages SET websiteId = ?, url = ?, checksum = ?, deleted = 0, firstDetected = ? ON DUPLICATE KEY UPDATE checksum = VALUES(checksum)", Statement.RETURN_GENERATED_KEYS);
 			deletePageStmt = aspenConn.prepareStatement("UPDATE website_pages SET deleted = 1 where id = ?");
 		} catch (Exception e) {
-			logEntry.incErrors();
-			logEntry.addNote("Error setting up statements " + e.toString());
+			logEntry.incErrors("Error setting up statements ", e);
 		}
 
 		loadExistingPages();
@@ -90,8 +89,7 @@ class WebsiteIndexer {
 				existingPages.put(page.getUrl(), page);
 			}
 		} catch (SQLException e) {
-			logEntry.addNote("Error loading existing pages for website " + websiteName + " " + e.toString());
-			logEntry.incErrors();
+			logEntry.incErrors("Error loading existing pages for website " + websiteName + " ", e);
 		}
 	}
 
@@ -104,8 +102,7 @@ class WebsiteIndexer {
 				logEntry.addNote("Solr is not running properly, try restarting " + rse.toString());
 				System.exit(-1);
 			} catch (Exception e) {
-				logEntry.addNote("Error deleting from index " + e.toString());
-				logEntry.incErrors();
+				logEntry.incErrors("Error deleting from index ", e);
 			}
 		}
 		if (siteUrl.endsWith("/")) {
@@ -139,16 +136,14 @@ class WebsiteIndexer {
 					solrUpdateServer.deleteById(Long.toString(curPage.getId()));
 				}
 			} catch (Exception e) {
-				logEntry.incErrors();
-				logEntry.addNote("Error deleting page");
+				logEntry.incErrors("Error deleting page");
 			}
 		}
 
 		try {
 			solrUpdateServer.commit(false, false, true);
 		} catch (Exception e) {
-			logEntry.addNote("Error in final commit " + e.toString());
-			logEntry.incErrors();
+			logEntry.incErrors("Error in final commit ", e);
 		}
 	}
 
@@ -190,8 +185,7 @@ class WebsiteIndexer {
 								page.setTitle("Title not provided");
 							}
 						} catch (PatternSyntaxException ex) {
-							logEntry.addNote("Error in pattern " + ex.toString());
-							logEntry.incErrors();
+							logEntry.incErrors("Error in pattern ", ex);
 						}
 
 						//Extract the related links
@@ -246,8 +240,7 @@ class WebsiteIndexer {
 								}
 							}
 						} catch (PatternSyntaxException ex) {
-							logEntry.addNote("Error in pattern " + ex.toString());
-							logEntry.incErrors();
+							logEntry.incErrors("Error in pattern ", ex);
 						}
 
 						checksumCalculator.reset();
@@ -292,8 +285,7 @@ class WebsiteIndexer {
 				}
 			}
 		} catch (Exception e) {
-			logEntry.addNote("Error parsing page " + pageToProcess + e.toString());
-			logEntry.incErrors();
+			logEntry.incErrors("Error parsing page " + pageToProcess, e);
 		}
 	}
 }

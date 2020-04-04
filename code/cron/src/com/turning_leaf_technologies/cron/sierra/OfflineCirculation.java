@@ -32,8 +32,8 @@ public class OfflineCirculation implements IProcessHandler {
 	@Override
 	public void doCronProcess(String servername, Ini configIni, Profile.Section processSettings, Connection dbConn, CronLogEntry cronEntry, Logger logger) {
 		this.logger = logger;
-		processLog = new CronProcessLogEntry(cronEntry.getLogEntryId(), "Offline Circulation");
-		processLog.saveToDatabase(dbConn, logger);
+		processLog = new CronProcessLogEntry(cronEntry, "Offline Circulation", dbConn, logger);
+		processLog.saveResults();
 
 		ils = configIni.get("Catalog", "ils");
 
@@ -47,7 +47,7 @@ public class OfflineCirculation implements IProcessHandler {
 		processOfflineHolds(configIni, dbConn);
 
 		processLog.setFinished();
-		processLog.saveToDatabase(dbConn, logger);
+		processLog.saveResults();
 	}
 
 	/**
@@ -67,8 +67,7 @@ public class OfflineCirculation implements IProcessHandler {
 				processOfflineHold(updateHold, baseUrl, holdsToProcessRS);
 			}
 		} catch (SQLException e) {
-			processLog.incErrors();
-			processLog.addNote("Error processing offline holds " + e.toString());
+			processLog.incErrors("Error processing offline holds ", e);
 		}
 
 	}
@@ -113,22 +112,19 @@ public class OfflineCirculation implements IProcessHandler {
 			}
 			processLog.incUpdated();
 		} catch (JSONException e) {
-			processLog.incErrors();
-			processLog.addNote("Error Loading JSON response for placing hold " + holdId + " - '" + e.toString());
+			processLog.incErrors("Error Loading JSON response for placing hold " + holdId, e);
 			updateHold.setString(2, "Hold Failed");
 			updateHold.setString(3, "Error Loading JSON response for placing hold " + holdId + " - " + e.toString());
 
 		} catch (IOException e) {
-			processLog.incErrors();
-			processLog.addNote("Error processing offline hold " + holdId + " - " + e.toString());
+			processLog.incErrors("Error processing offline hold " + holdId, e);
 			updateHold.setString(2, "Hold Failed");
 			updateHold.setString(3, "Error processing offline hold " + holdId + " - " + e.toString());
 		}
 		try {
 			updateHold.executeUpdate();
 		} catch (SQLException e) {
-			processLog.incErrors();
-			processLog.addNote("Error updating hold status for hold " + holdId + " - " + e.toString());
+			processLog.incErrors("Error updating hold status for hold " + holdId, e);
 		}
 	}
 
@@ -155,8 +151,7 @@ public class OfflineCirculation implements IProcessHandler {
 				NetworkUtils.getURL(baseUrl + "/airwkstcore?action=AirWkstReturnToWelcomeAction", logger);
 			}
 		} catch (SQLException e) {
-			processLog.incErrors();
-			processLog.addNote("Error processing offline holds " + e.toString());
+			processLog.incErrors("Error processing offline holds ", e);
 		}
 	}
 
@@ -182,7 +177,7 @@ public class OfflineCirculation implements IProcessHandler {
 			processLog.incUpdated();
 			updateCirculationEntry.setString(2, "Processing Succeeded");
 		}else{
-			processLog.incErrors();
+			processLog.incErrors("Processing failed");
 			updateCirculationEntry.setString(2, "Processing Failed");
 		}
 		updateCirculationEntry.setString(3, result.getNote());
@@ -288,7 +283,7 @@ public class OfflineCirculation implements IProcessHandler {
 						} else {
 							logger.debug("Item Barcode response\r\n" + itemBarcodeResponse.getMessage());
 							result.setSuccess(false);
-							result.setNote("Could not process check out because the item response was not successfull");
+							result.setNote("Could not process check out because the item response was not successful");
 						}
 					} else if (patronBarcodeResponse.isSuccess() && patronBarcodeResponse.getMessage().contains("<h[123] class=\"error\">")){
 						lastPatronHadError = true;

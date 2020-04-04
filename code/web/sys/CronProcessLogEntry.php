@@ -12,6 +12,7 @@ class CronProcessLogEntry extends DataObject
 	public $endTime;
 	public $numErrors;
 	public $numUpdated;
+	public $numSkipped;
 	public $notes;
 
 	function keys() {

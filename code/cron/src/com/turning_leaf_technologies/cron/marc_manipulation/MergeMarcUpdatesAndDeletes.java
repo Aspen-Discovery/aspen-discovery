@@ -25,8 +25,8 @@ public class MergeMarcUpdatesAndDeletes implements IProcessHandler {
 
 	@Override
 	public void doCronProcess(String servername, Ini configIni, Profile.Section processSettings, Connection dbConn, CronLogEntry cronEntry, Logger logger) {
-		CronProcessLogEntry processLog = new CronProcessLogEntry(cronEntry.getLogEntryId(), "Merge Marc Updates and Deletes");
-		processLog.saveToDatabase(dbConn, logger);
+		CronProcessLogEntry processLog = new CronProcessLogEntry(cronEntry, "Merge Marc Updates and Deletes", dbConn, logger);
+		processLog.saveResults();
 
 		//TODO: Load a list of indexing profiles that require merging
 		//TODO: SQL to load the indexing profiles
@@ -54,7 +54,7 @@ public class MergeMarcUpdatesAndDeletes implements IProcessHandler {
 			File[] filesInExport = new File(exportPath).listFiles();
 			if (filesInExport != null) {
 				for (File exportFile : filesInExport) {
-					//TODO: Read the pattern for updates and deletes from the indexing profil
+					//TODO: Read the pattern for updates and deletes from the indexing profile
 					if (exportFile.getName().matches(".*updated.*")) {
 						updatesFile = exportFile;
 					}else if (exportFile.getName().matches(".*deleted.*")) {
@@ -65,9 +65,7 @@ public class MergeMarcUpdatesAndDeletes implements IProcessHandler {
 				}
 
 				if (mainFile == null){
-					logger.error("Did not find file to merge into");
-					processLog.addNote("Did not find file to merge into");
-					processLog.saveToDatabase(dbConn, logger);
+					processLog.incErrors("Did not find file to merge into");
 				}else {
 					boolean errorOccurred = false;
 					HashMap<String, Record> recordsToUpdate = new HashMap<>();
@@ -85,9 +83,7 @@ public class MergeMarcUpdatesAndDeletes implements IProcessHandler {
 							}
 							marcFileStream.close();
 						} catch (Exception e) {
-							processLog.addNote("Error processing updates file. " + e.toString());
-							logger.error("Error loading records from updates fail", e);
-							processLog.saveToDatabase(dbConn, logger);
+							processLog.incErrors("Error processing updates file. ", e);
 							errorOccurred = true;
 						}
 					}
@@ -107,11 +103,8 @@ public class MergeMarcUpdatesAndDeletes implements IProcessHandler {
 
 							marcFileStream.close();
 						} catch (Exception e) {
-							processLog.incErrors();
-							processLog.addNote("Error processing deletes file. " + e.toString());
-							logger.error("Error processing deletes file", e);
+							processLog.incErrors("Error processing deletes file. ", e);
 							errorOccurred = true;
-							processLog.saveToDatabase(dbConn, logger);
 						}
 					}
 
@@ -153,30 +146,21 @@ public class MergeMarcUpdatesAndDeletes implements IProcessHandler {
 						mainWriter.close();
 						marcFileStream.close();
 					} catch (Exception e) {
-						processLog.incErrors();
-						processLog.addNote("Error processing main file. " + e.toString());
-						processLog.addNote("Read " + numRecordsRead + " last record read was " + lastRecordId + e.toString());
-						logger.error("Error processing main file", e);
+						processLog.incErrors("Error processing main file. ", e);
+						processLog.addNote("Read " + numRecordsRead + " last record read was " + lastRecordId);
 						errorOccurred = true;
-						processLog.saveToDatabase(dbConn, logger);
 					}
 
 					if (!new File(backupPath).exists()){
 						if (!new File(backupPath).mkdirs()){
-							processLog.incErrors();
-							processLog.addNote("Could not create backup path");
-							logger.error("Could not create backup path");
+							processLog.incErrors("Could not create backup path");
 							errorOccurred = true;
-							processLog.saveToDatabase(dbConn, logger);
 						}
 					}
 					if (updatesFile != null && !errorOccurred) {
 						//Move to the backup directory
 						if (!updatesFile.renameTo(new File(backupPath + "/" + updatesFile.getName()))) {
-							processLog.incErrors();
-							processLog.addNote("Unable to move updates file to backup directory.");
-							logger.error("Unable to move updates file " + updatesFile.getAbsolutePath() + " to backup directory " + backupPath + "/" + updatesFile.getName());
-							processLog.saveToDatabase(dbConn, logger);
+							processLog.incErrors("Unable to move updates file " + updatesFile.getAbsolutePath() + " to backup directory " + backupPath + "/" + updatesFile.getName());
 							errorOccurred = true;
 						}
 					}
@@ -184,10 +168,7 @@ public class MergeMarcUpdatesAndDeletes implements IProcessHandler {
 					if (deletesFile != null && !errorOccurred) {
 						//Move to the backup directory
 						if (!deletesFile.renameTo(new File(backupPath + "/" + deletesFile.getName()))) {
-							processLog.incErrors();
-							processLog.addNote("Unable to move deletion file to backup directory.");
-							logger.error("Unable to move deletion file to backup directory");
-							processLog.saveToDatabase(dbConn, logger);
+							processLog.incErrors("Unable to move deletion file to backup directory.");
 							errorOccurred = true;
 						}
 					}
@@ -195,18 +176,12 @@ public class MergeMarcUpdatesAndDeletes implements IProcessHandler {
 					if (!errorOccurred) {
 						String mainFilePath = mainFile.getPath();
 						if (!mainFile.renameTo(new File(backupPath + "/" + mainFile.getName()))) {
-							processLog.incErrors();
 							String note = "Unable to move main file " + mainFile.getAbsolutePath() + " to backup directory " + backupPath + "/" + mainFile.getName();
-							processLog.addNote(note);
-							logger.error(note);
-							processLog.saveToDatabase(dbConn, logger);
+							processLog.incErrors(note);
 						} else {
 							//Move the merged file to the main file
 							if (!mergedFile.renameTo(new File(mainFilePath))){
-								processLog.incErrors();
-								processLog.addNote("Unable to move merged file to main file.");
-								logger.error("Unable to move merged file to main file");
-								processLog.saveToDatabase(dbConn, logger);
+								processLog.incErrors("Unable to move merged file to main file.");
 							}else {
 								logger.debug("Added " + numAdditions);
 								logger.debug("Updated " + numUpdates);
@@ -215,7 +190,7 @@ public class MergeMarcUpdatesAndDeletes implements IProcessHandler {
 								processLog.addNote("Added " + numAdditions);
 								processLog.addNote("Updated " + numUpdates);
 								processLog.addNote("Deleted " + numDeletions);
-								processLog.saveToDatabase(dbConn, logger);
+								processLog.saveResults();
 							}
 						}
 					}
@@ -224,13 +199,10 @@ public class MergeMarcUpdatesAndDeletes implements IProcessHandler {
 				logger.error("No files were found in " + exportPath);
 			}
 		} catch (Exception e) {
-			processLog.incErrors();
-			processLog.addNote("Unknown error merging records. " + e.toString());
-			logger.error("Unknown error merging records", e);
-			processLog.saveToDatabase(dbConn, logger);
+			processLog.incErrors("Unknown error merging records", e);
 		}
 		processLog.setFinished();
-		processLog.saveToDatabase(dbConn, logger);
+		processLog.saveResults();
 	}
 
 	private String getRecordIdFromMarcRecord(Record marcRecord) {

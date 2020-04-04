@@ -101,8 +101,18 @@ class OverDriveExtractLogEntry implements BaseLogEntry {
 		this.addNote("Finished OverDrive extraction");
 		this.saveResults();
 	}
-	void incErrors(){
+	public void incErrors(String note) {
+		this.addNote(note);
 		numErrors++;
+		this.saveResults();
+		logger.error(note);
+	}
+
+	public void incErrors(String note, Exception e){
+		this.addNote(note + " " + e.toString());
+		numErrors++;
+		this.saveResults();
+		logger.error(note, e);
 	}
 	void incAdded(){
 		numAdded++;

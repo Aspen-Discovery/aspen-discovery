@@ -6,7 +6,7 @@ class CurlWrapper
 	private $cookieJar;
 	private $headers = [];
 	public $curl_connection; // need access in order to check for curl errors.
-	public $timeout = 5;
+	public $timeout = 10;
 
 	public function __construct()
 	{
