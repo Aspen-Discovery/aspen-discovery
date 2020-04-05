@@ -234,7 +234,7 @@ public class RbdigitalExportMain {
 
 			//Now process magazines
 		}catch (SQLException e){
-			logEntry.incErrors("Error processing records to reload, e");
+			logEntry.incErrors("Error processing records to reload", e);
 		}
 	}
 
@@ -320,7 +320,7 @@ public class RbdigitalExportMain {
 				existingRecords.put(rbdigitalId, newTitle);
 			}
 		} catch (SQLException e) {
-			logEntry.incErrors("Error loading existing titles" + e.toString());
+			logEntry.incErrors("Error loading existing titles", e);
 			logEntry.saveResults();
 			System.exit(-1);
 		}
@@ -342,7 +342,7 @@ public class RbdigitalExportMain {
 				existingMagazines.put(magazineId, newTitle);
 			}
 		} catch (SQLException e) {
-			logEntry.incErrors("Error loading existing magazines " + e.toString());
+			logEntry.incErrors("Error loading existing magazines ", e);
 			logEntry.saveResults();
 			System.exit(-1);
 		}
@@ -399,7 +399,7 @@ public class RbdigitalExportMain {
 			}
 			logger.info("Updated or added " + numChanges + " records");
 		} catch (SQLException e) {
-			logEntry.incErrors("Error extracting RBdigital information " + e.toString());
+			logEntry.incErrors("Error extracting RBdigital information ", e);
 		}
 
 		return numChanges;

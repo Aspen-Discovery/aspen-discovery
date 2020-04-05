@@ -16,8 +16,8 @@ public class DatabaseCleanup implements IProcessHandler {
 
 	@Override
 	public void doCronProcess(String servername, Ini configIni, Section processSettings, Connection dbConn, CronLogEntry cronEntry, Logger logger) {
-		CronProcessLogEntry processLog = new CronProcessLogEntry(cronEntry.getLogEntryId(), "Database Cleanup");
-		processLog.saveToDatabase(dbConn, logger);
+		CronProcessLogEntry processLog = new CronProcessLogEntry(cronEntry, "Database Cleanup", dbConn, logger);
+		processLog.saveResults();
 
 		removeExpiredSessions(configIni, dbConn, logger, processLog);
 		removeOldSearches(dbConn, logger, processLog);
@@ -31,7 +31,7 @@ public class DatabaseCleanup implements IProcessHandler {
 		cleanupReadingHistory(dbConn, logger, processLog);
 
 		processLog.setFinished();
-		processLog.saveToDatabase(dbConn, logger);
+		processLog.saveResults();
 	}
 
 	private void cleanupReadingHistory(Connection dbConn, Logger logger, CronProcessLogEntry processLog) {
@@ -68,12 +68,9 @@ public class DatabaseCleanup implements IProcessHandler {
 			processLog.addNote("Finished cleaning up reading history");
 			processLog.incUpdated();
 
-			processLog.saveToDatabase(dbConn, logger);
+			processLog.saveResults();
 		} catch (SQLException e) {
-			processLog.incErrors();
-			processLog.addNote("Unable to cleanup reading history. " + e.toString());
-			logger.error("Error cleaning up reading history", e);
-			processLog.saveToDatabase(dbConn, logger);
+			processLog.incErrors("Unable to cleanup reading history. ", e);
 		}
 	}
 
@@ -94,12 +91,9 @@ public class DatabaseCleanup implements IProcessHandler {
 			processLog.addNote("Removed " + rowsRemoved + " works that were scheduled for reindexing that have already been processed");
 			processLog.incUpdated();
 
-			processLog.saveToDatabase(dbConn, logger);
+			processLog.saveResults();
 		} catch (SQLException e) {
-			processLog.incErrors();
-			processLog.addNote("Unable to delete old cached objects. " + e.toString());
-			logger.error("Error deleting old cached objects", e);
-			processLog.saveToDatabase(dbConn, logger);
+			processLog.incErrors("Unable to delete old cached objects. ", e);
 		}
 	}
 
@@ -115,12 +109,9 @@ public class DatabaseCleanup implements IProcessHandler {
 			processLog.addNote("Removed " + rowsRemoved + " long searches");
 			processLog.incUpdated();
 
-			processLog.saveToDatabase(dbConn, logger);
+			processLog.saveResults();
 		} catch (SQLException e) {
-			processLog.incErrors();
-			processLog.addNote("Unable to delete old cached objects. " + e.toString());
-			logger.error("Error deleting old cached objects", e);
-			processLog.saveToDatabase(dbConn, logger);
+			processLog.incErrors("Unable to delete old cached objects. ", e);
 		}
 	}
 
@@ -197,11 +188,9 @@ public class DatabaseCleanup implements IProcessHandler {
 				processLog.incUpdated();
 				processLog.addNote("Deleted " + numUpdates + " user_work_review where the user does not exist");
 			}
+			processLog.saveResults();
 		}catch (Exception e){
-			processLog.incErrors();
-			processLog.addNote("Unable to cleanup user data for deleted users. " + e.toString());
-			logger.error("Error cleaning up user data for deleted users", e);
-			processLog.saveToDatabase(dbConn, logger);
+			processLog.incErrors("Unable to cleanup user data for deleted users. ", e);
 		}
 	}
 
@@ -259,10 +248,7 @@ public class DatabaseCleanup implements IProcessHandler {
 			librariesListStmt.close();
 			processLog.addNote("Removed " + numDeletions + " old materials requests.");
 		}catch (SQLException e) {
-			processLog.incErrors();
-			processLog.addNote("Unable to remove old materials requests. " + e.toString());
-			logger.error("Error deleting long searches", e);
-			processLog.saveToDatabase(dbConn, logger);
+			processLog.incErrors("Unable to remove old materials requests. ", e);
 		}
 	}
 
@@ -276,12 +262,9 @@ public class DatabaseCleanup implements IProcessHandler {
 			processLog.addNote("Removed " + rowsRemoved + " long searches");
 			processLog.incUpdated();
 
-			processLog.saveToDatabase(dbConn, logger);
+			processLog.saveResults();
 		} catch (SQLException e) {
-			processLog.incErrors();
-			processLog.addNote("Unable to delete long searches. " + e.toString());
-			logger.error("Error deleting long searches", e);
-			processLog.saveToDatabase(dbConn, logger);
+			processLog.incErrors("Unable to delete long searches. ", e);
 		}
 	}
 
@@ -295,12 +278,9 @@ public class DatabaseCleanup implements IProcessHandler {
 			processLog.addNote("Removed " + rowsRemoved + " spammy searches");
 			processLog.incUpdated();
 
-			processLog.saveToDatabase(dbConn, logger);
+			processLog.saveResults();
 		} catch (SQLException e) {
-			processLog.incErrors();
-			processLog.addNote("Unable to delete spammy searches. " + e.toString());
-			logger.error("Error deleting spammy searches", e);
-			processLog.saveToDatabase(dbConn, logger);
+			processLog.incErrors("Unable to delete spammy searches. ", e);
 		}
 	}
 
@@ -314,7 +294,7 @@ public class DatabaseCleanup implements IProcessHandler {
 			long batchSize = 100000;
 			long numBatches = (numSearches / batchSize) + 1;
 			processLog.addNote("Found " + numSearches + " expired searches that need to be removed.  Will process in " + numBatches + " batches");
-			processLog.saveToDatabase(dbConn, logger);
+			processLog.saveResults();
 			for (int i = 0; i < numBatches; i++){
 				PreparedStatement searchesToRemove = dbConn.prepareStatement("SELECT id from search where created < (CURDATE() - INTERVAL 2 DAY) and saved = 0 LIMIT 0, " + batchSize, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 				PreparedStatement removeSearchStmt = dbConn.prepareStatement("DELETE from search where id = ?");
@@ -326,15 +306,12 @@ public class DatabaseCleanup implements IProcessHandler {
 					rowsRemoved += removeSearchStmt.executeUpdate();
 				}
 				processLog.incUpdated();
-				processLog.saveToDatabase(dbConn, logger);
+				processLog.saveResults();
 			}
 			processLog.addNote("Removed " + rowsRemoved + " expired searches");
-			processLog.saveToDatabase(dbConn, logger);
+			processLog.saveResults();
 		} catch (SQLException e) {
-			processLog.incErrors();
-			processLog.addNote("Unable to delete expired searches. " + e.toString());
-			logger.error("Error deleting expired searches", e);
-			processLog.saveToDatabase(dbConn, logger);
+			processLog.incErrors("Unable to delete expired searches. ", e);
 		}
 	}
 
@@ -347,17 +324,14 @@ public class DatabaseCleanup implements IProcessHandler {
 			long earliestDefaultSessionToKeep = now - defaultTimeout;
 			long numStandardSessionsDeleted = dbConn.prepareStatement("DELETE FROM session where last_used < " + earliestDefaultSessionToKeep + " and remember_me = 0").executeUpdate();
 			processLog.addNote("Deleted " + numStandardSessionsDeleted + " expired Standard Sessions");
-			processLog.saveToDatabase(dbConn, logger);
+			processLog.saveResults();
 			long rememberMeTimeout = Long.parseLong(ConfigUtil.cleanIniValue(configIni.get("Session", "rememberMeLifetime")));
 			long earliestRememberMeSessionToKeep = now - rememberMeTimeout;
 			long numRememberMeSessionsDeleted = dbConn.prepareStatement("DELETE FROM session where last_used < " + earliestRememberMeSessionToKeep + " and remember_me = 1").executeUpdate();
 			processLog.addNote("Deleted " + numRememberMeSessionsDeleted + " expired Remember Me Sessions");
-			processLog.saveToDatabase(dbConn, logger);
+			processLog.saveResults();
 		}catch (SQLException e) {
-			processLog.incErrors();
-			processLog.addNote("Unable to delete expired sessions. " + e.toString());
-			logger.error("Error deleting expired sessions", e);
-			processLog.saveToDatabase(dbConn, logger);
+			processLog.incErrors("Unable to delete expired sessions. ", e);
 		}
 	}
 

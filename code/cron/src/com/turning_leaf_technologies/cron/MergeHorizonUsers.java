@@ -27,8 +27,8 @@ public class MergeHorizonUsers implements IProcessHandler {
 
 	@Override
 	public void doCronProcess(String servername, Ini configIni, Profile.Section processSettings, Connection dbConn, CronLogEntry cronEntry, Logger logger) {
-		CronProcessLogEntry processLog = new CronProcessLogEntry(cronEntry.getLogEntryId(), "Merge Horizon Users");
-		processLog.saveToDatabase(dbConn, logger);
+		CronProcessLogEntry processLog = new CronProcessLogEntry(cronEntry, "Merge Horizon Users", dbConn, logger);
+		processLog.saveResults();
 
 		//Get a list of users that are in the database twice
 		try {
@@ -97,23 +97,17 @@ public class MergeHorizonUsers implements IProcessHandler {
 						}
 					}
 				}catch (SQLException e) {
-					processLog.incErrors();
-					processLog.addNote("Error processing barcode " + barcode + ". " + e.toString());
-					logger.error("Error processing barcode " + barcode , e);
-					processLog.saveToDatabase(dbConn, logger);
+					processLog.incErrors("Error processing barcode " + barcode + ". ", e);
 				}
 			}
 			logger.debug("Processed " + numDuplicateUsers + " users with more than one instance in the system.");
 		}catch (SQLException e) {
-			processLog.incErrors();
-			processLog.addNote("Error loading duplicate users. " + e.toString());
-			logger.error("Error loading duplicate users", e);
-			processLog.saveToDatabase(dbConn, logger);
+			processLog.incErrors("Error loading duplicate users. ", e);
 		}
 
 
 		processLog.setFinished();
-		processLog.saveToDatabase(dbConn, logger);
+		processLog.saveResults();
 	}
 
 	private int mergeUserReviews(Long preferredUserId, Long duplicateUserId) throws SQLException{

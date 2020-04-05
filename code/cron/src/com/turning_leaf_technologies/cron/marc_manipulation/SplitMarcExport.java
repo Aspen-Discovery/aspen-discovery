@@ -21,15 +21,14 @@ public class SplitMarcExport implements IProcessHandler {
 
 	@Override
 	public void doCronProcess(String servername, Ini configIni, Profile.Section processSettings, Connection dbConn, CronLogEntry cronEntry, Logger logger) {
-		CronProcessLogEntry processLog = new CronProcessLogEntry(cronEntry.getLogEntryId(), "Split Marc Records");
-		processLog.saveToDatabase(dbConn, logger);
+		CronProcessLogEntry processLog = new CronProcessLogEntry(cronEntry, "Split Marc Records", dbConn, logger);
 		try{
 			String marcPath = ConfigUtil.cleanIniValue(configIni.get("Reindex", "marcPath"));
 			String splitMarcPath = ConfigUtil.cleanIniValue(processSettings.get("splitMarcPath"));
 			String itemTag = ConfigUtil.cleanIniValue(configIni.get("Reindex", "itemTag"));
 			char locationSubfield = ConfigUtil.cleanIniValue(configIni.get("Reindex", "locationSubfield")).charAt(0);
 			if (splitMarcPath == null){
-				logger.error("Did not find path to store the split marc files, please add splitMarcPath to the configuration file.");
+				processLog.incErrors("Did not find path to store the split marc files, please add splitMarcPath to the configuration file.");
 			}
 
 			String marcEncoding = configIni.get("Reindex", "marcEncoding");
@@ -73,17 +72,16 @@ public class SplitMarcExport implements IProcessHandler {
 								splitter.close();
 							}
 						} catch (Exception e) {
-							logger.error("Error loading catalog bibs on record " + numRecordsRead + " the last record processed was " + lastRecordProcessed, e);
+							processLog.incErrors("Error loading catalog bibs on record " + numRecordsRead + " the last record processed was " + lastRecordProcessed, e);
 						}
 					}
 				}
 			}
 		} catch (Exception e) {
-			logger.error("Error splitting marc records", e);
-			processLog.addNote("Error splitting marc records " + e.toString());
+			processLog.incErrors("Error splitting marc records ", e);
 		}finally{
 			processLog.setFinished();
-			processLog.saveToDatabase(dbConn, logger);
+			processLog.saveResults();
 		}
 	}
 }

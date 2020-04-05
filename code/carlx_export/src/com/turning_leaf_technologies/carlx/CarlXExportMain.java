@@ -114,8 +114,7 @@ public class CarlXExportMain {
 				// Connect to the CARL.X database and get information about API
 				CarlXInstanceInformation carlXInstanceInformation = initializeCarlXConnection();
 				if (carlXInstanceInformation == null){
-					logEntry.incErrors();
-					logEntry.addNote("Could not connect to the CARL.X database");
+					logEntry.incErrors("Could not connect to the CARL.X database");
 					logEntry.setFinished();
 					continue;
 				}else{
@@ -144,9 +143,7 @@ public class CarlXExportMain {
 						e.printStackTrace();
 					}
 				}else{
-					logger.warn("Did not export holds because connection to the CARL.X database was not established");
-					logEntry.addNote("Did not export holds because connection to the CARL.X database was not established");
-					logEntry.incErrors();
+					logEntry.incErrors("Did not export holds because connection to the CARL.X database was not established");
 				}
 
 				processRecordsToReload(indexingProfile, logEntry);
@@ -209,8 +206,7 @@ public class CarlXExportMain {
 				String recordIdentifier = getRecordsToReloadRS.getString("identifier");
 				File marcFile = indexingProfile.getFileForIlsRecord(recordIdentifier);
 				if (!marcFile.exists()) {
-					logEntry.incErrors();
-					logEntry.addNote("Could not find marc for record to reload " + recordIdentifier);
+					logEntry.incErrors("Could not find marc for record to reload " + recordIdentifier);
 				} else {
 					FileInputStream marcFileStream = new FileInputStream(marcFile);
 					MarcPermissiveStreamReader streamReader = new MarcPermissiveStreamReader(marcFileStream, true, true);
@@ -221,8 +217,7 @@ public class CarlXExportMain {
 						//Reindex the record
 						getGroupedWorkIndexer(dbConn).processGroupedWork(groupedWorkId);
 					} else {
-						logEntry.incErrors();
-						logEntry.addNote("Could not read file " + marcFile);
+						logEntry.incErrors("Could not read file " + marcFile);
 					}
 				}
 
@@ -235,8 +230,7 @@ public class CarlXExportMain {
 			}
 			getRecordsToReloadRS.close();
 		}catch (Exception e){
-			logEntry.incErrors();
-			logEntry.addNote("Error processing records to reload " + e.toString());
+			logEntry.incErrors("Error processing records to reload ", e);
 		}
 	}
 
@@ -282,8 +276,7 @@ public class CarlXExportMain {
 		int totalChanges = 0;
 		MarcRecordGrouper recordGroupingProcessor = getRecordGroupingProcessor(dbConn);
 		if (!recordGroupingProcessor.isValid()){
-			logEntry.addNote("Record Grouping Processor was not valid");
-			logEntry.incErrors();
+			logEntry.incErrors("Record Grouping Processor was not valid");
 			return totalChanges;
 		}else if (!recordGroupingProcessor.loadExistingTitles(logEntry)){
 			return totalChanges;
@@ -347,9 +340,7 @@ public class CarlXExportMain {
 							totalChanges++;
 						}
 					}catch (MarcException me){
-						logger.error("Error processing individual record  on record " + numRecordsRead + " of " + curBibFile.getAbsolutePath() + " the last record processed was " + lastRecordProcessed + " trying to continue", me);
-						logEntry.addNote("Error processing individual record  on record " + numRecordsRead + " of " + curBibFile.getAbsolutePath() + " the last record processed was " + lastRecordProcessed + " trying to continue");
-						logEntry.incErrors();
+						logEntry.incErrors("Error processing individual record  on record " + numRecordsRead + " of " + curBibFile.getAbsolutePath() + " the last record processed was " + lastRecordProcessed + " trying to continue", me);
 					}
 					numRecordsRead++;
 					if (numRecordsRead % 250 == 0) {
@@ -358,9 +349,7 @@ public class CarlXExportMain {
 				}
 				marcFileStream.close();
 			} catch (Exception e) {
-				logger.error("Error loading CARL.X bibs on record " + numRecordsRead + " in profile " + indexingProfile.getName() + " the last record processed was " + lastRecordProcessed + " file " + curBibFile.getAbsolutePath(), e);
-				logEntry.addNote("Error loading CARL.X bibs on record " + numRecordsRead + " in profile " + indexingProfile.getName() + " the last record processed was " + lastRecordProcessed + " file " + curBibFile.getAbsolutePath());
-				logEntry.incErrors();
+				logEntry.incErrors("Error loading CARL.X bibs on record " + numRecordsRead + " in profile " + indexingProfile.getName() + " the last record processed was " + lastRecordProcessed + " file " + curBibFile.getAbsolutePath(), e);
 			}
 		}
 
@@ -373,8 +362,7 @@ public class CarlXExportMain {
 			updateMarcExportStmt.setLong(2, indexingProfile.getId());
 			updateMarcExportStmt.executeUpdate();
 		}catch (Exception e){
-			logger.error("Error updating lastUpdateFromMarcExport", e);
-			logEntry.addNote("Error updating lastUpdateFromMarcExport");
+			logEntry.incErrors("Error updating lastUpdateFromMarcExport", e);
 		}
 
 		return totalChanges;
@@ -420,9 +408,7 @@ public class CarlXExportMain {
 
 			if (!getChangedBibsFromCarlXApi(beginTimeString, updatedBibs, createdBibs, deletedBibs)) {
 				//Halt execution
-				logger.error("Failed to getChangedBibsFromCarlXApi, exiting");
-				logEntry.incErrors();
-				logEntry.addNote("Failed to getChangedBibsFromCarlXApi, exiting");
+				logEntry.incErrors("Failed to getChangedBibsFromCarlXApi, exiting");
 				return totalChanges;
 			}
 			logger.info("Loaded updated bibs");
@@ -431,9 +417,7 @@ public class CarlXExportMain {
 			logger.debug("Calling GetChangedItemsRequest with BeginTime of " + beginTimeString);
 			if (!getChangedItemsFromCarlXApi(beginTimeString, updatedItemIDs, createdItemIDs, deletedItemIDs)) {
 				//Halt execution
-				logger.error("Failed to getChangedItemsFromCarlXApi, exiting");
-				logEntry.incErrors();
-				logEntry.addNote("Failed to getChangedItemsFromCarlXApi, exiting");
+				logEntry.incErrors("Failed to getChangedItemsFromCarlXApi, exiting");
 				return totalChanges;
 			} else {
 				logger.info("Loaded updated items");
@@ -443,9 +427,7 @@ public class CarlXExportMain {
 			// so we can fetch MARC records for them.
 			itemUpdates = fetchItemInformation(updatedItemIDs);
 			if (hadErrors) {
-				logger.error("Failed to Fetch Item Information for updated items");
-				logEntry.incErrors();
-				logEntry.addNote("Failed to Fetch Item Information for updated items");
+				logEntry.incErrors("Failed to Fetch Item Information for updated items");
 				return totalChanges;
 			} else {
 				logger.info("Fetched Item information for updated items");
@@ -459,9 +441,7 @@ public class CarlXExportMain {
 			if (createdItemIDs.size() > 0) {
 				createdItems = fetchItemInformation(createdItemIDs);
 				if (hadErrors) {
-					logger.error("Failed to Fetch Item Information for created items");
-					logEntry.incErrors();
-					logEntry.addNote("Failed to Fetch Item Information for created items");
+					logEntry.incErrors("Failed to Fetch Item Information for created items");
 					return totalChanges;
 				} else {
 					logger.info("Fetched Item information for created items");
@@ -476,8 +456,6 @@ public class CarlXExportMain {
 			if (deletedItemIDs.size() > 0) {
 				deletedItems = fetchItemInformation(deletedItemIDs);
 				if (hadErrors) {
-					logger.error("Failed to Fetch Item Information for deleted items");
-					//logEntry.incErrors();
 					logEntry.addNote("Failed to Fetch Item Information for deleted items");
 					//return totalChanges;
 				} else {
@@ -497,9 +475,6 @@ public class CarlXExportMain {
 			totalChanges = updateBibRecords(updatedBibs, updatedItemIDs, createdItemIDs, deletedItemIDs, itemUpdates, createdItems, false);
 			logger.debug("Done updating Bib Records");
 			logEntry.saveResults();
-			//This should not be needed since we add anything where just the item was added above
-//			totalChanges += updateChangedItems(createdItemIDs, deletedItemIDs, itemUpdates, createdItems);
-//			logger.debug("Done updating Item Records");
 
 			// Now remove Any left-over deleted items.  The APIs give us the item id, but not the bib id.  We may need to
 			// look them up within Solr as long as the item id is exported as part of the MARC record
@@ -550,9 +525,7 @@ public class CarlXExportMain {
 				}
 			}
 		} catch (Exception e){
-			logger.error("Error loading changed records from CARL.X", e);
-			logEntry.incErrors();
-			//Don't quit since that keeps the exporter from running continuously
+			logEntry.incErrors("Error loading changed records from CARL.X", e);
 		}
 
 		return totalChanges;
@@ -743,23 +716,21 @@ public class CarlXExportMain {
 									logEntry.saveResults();
 								}
 							}catch (Exception e){
-								logEntry.incErrors();
-								logEntry.addNote("Error processing bib " + e.toString());
-								logger.error("Error processing bib", e);
+								logEntry.incErrors("Error processing bib", e);
 							}
 						}
 					} else {
 						String shortErrorMessage = marcRecordsResponseStatus.getChildNodes().item(2).getTextContent();
-						logger.error("Error Response for API call for getting Marc Records : " + shortErrorMessage);
+						logEntry.incErrors("Error Response for API call for getting Marc Records : " + shortErrorMessage);
 					}
 				}else{
 					if (marcRecordSOAPResponse.getResponseCode() != 500){
-						logger.error("API call for getting Marc Records Failed: " + marcRecordSOAPResponse.getResponseCode() + marcRecordSOAPResponse.getMessage());
+						logEntry.incErrors("API call for getting Marc Records Failed: " + marcRecordSOAPResponse.getResponseCode() + marcRecordSOAPResponse.getMessage());
 						hadErrors = true;
 					}
 				}
 			} catch (Exception e) {
-				logger.error("Error Creating SOAP Request for Marc Records", e);
+				logEntry.incErrors("Error Creating SOAP Request for Marc Records", e);
 			}
 		}
 		return numUpdates;
