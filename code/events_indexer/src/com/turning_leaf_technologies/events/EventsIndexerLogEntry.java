@@ -105,8 +105,18 @@ public class EventsIndexerLogEntry implements BaseLogEntry {
 		this.saveResults();
 	}
 
-	void incErrors() {
+	public void incErrors(String note) {
+		this.addNote(note);
 		numErrors++;
+		this.saveResults();
+		logger.error(note);
+	}
+
+	public void incErrors(String note, Exception e){
+		this.addNote(note + " " + e.toString());
+		numErrors++;
+		this.saveResults();
+		logger.error(note, e);
 	}
 
 	void incAdded() {
