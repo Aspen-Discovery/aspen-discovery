@@ -128,8 +128,7 @@ public class SideLoadingMain {
 	private static void processSideLoad(SideLoadSettings settings) {
 		File marcDirectory = new File(settings.getMarcPath());
 		if (!marcDirectory.exists()) {
-			logEntry.addNote("Marc Directory " + settings.getMarcPath() + " did not exist");
-			logEntry.incErrors();
+			logEntry.incErrors("Marc Directory " + settings.getMarcPath() + " did not exist");
 		} else {
 			HashSet<String> existingRecords = new HashSet<>();
 			if (settings.isRunFullUpdate()){
@@ -143,8 +142,7 @@ public class SideLoadingMain {
 					}
 					existingRecordsStmt.close();
 				}catch (Exception e){
-					logEntry.incErrors();
-					logEntry.addNote("Error loading existing records for " + settings.getName());
+					logEntry.incErrors("Error loading existing records for " + settings.getName(), e);
 				}
 			}
 
@@ -187,8 +185,7 @@ public class SideLoadingMain {
 					}
 					deleteFromIlsMarcChecksums.close();
 				} catch (Exception e) {
-					logEntry.incErrors();
-					logEntry.addNote("Error deleting records from " + settings.getName());
+					logEntry.incErrors("Error deleting records from " + settings.getName(), e);
 				}
 			}
 
@@ -206,8 +203,7 @@ public class SideLoadingMain {
 				updateSideloadStmt.setLong(2, settings.getId());
 				updateSideloadStmt.executeUpdate();
 			} catch (Exception e) {
-				logger.error("Error updating lastUpdateFromMarcExport", e);
-				logEntry.addNote("Error updating lastUpdateFromMarcExport");
+				logEntry.incErrors("Error updating lastUpdateFromMarcExport", e);
 			}
 		}
 	}
@@ -224,8 +220,7 @@ public class SideLoadingMain {
 				String recordIdentifier = getRecordsToReloadRS.getString("identifier");
 				File marcFile = settings.getFileForIlsRecord(recordIdentifier);
 				if (!marcFile.exists()) {
-					logEntry.incErrors();
-					logEntry.addNote("Could not find marc for record to reload " + recordIdentifier);
+					logEntry.incErrors("Could not find marc for record to reload " + recordIdentifier);
 				} else {
 					FileInputStream marcFileStream = new FileInputStream(marcFile);
 					MarcPermissiveStreamReader streamReader = new MarcPermissiveStreamReader(marcFileStream, true, true);
@@ -236,8 +231,7 @@ public class SideLoadingMain {
 						//Reindex the record
 						getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
 					} else {
-						logEntry.incErrors();
-						logEntry.addNote("Could not read file " + marcFile);
+						logEntry.incErrors("Could not read file " + marcFile);
 					}
 				}
 
@@ -250,8 +244,7 @@ public class SideLoadingMain {
 			}
 			getRecordsToReloadRS.close();
 		}catch (Exception e){
-			logEntry.incErrors();
-			logEntry.addNote("Error processing records to reload " + e.toString());
+			logEntry.incErrors("Error processing records to reload ", e);
 		}
 	}
 
@@ -300,19 +293,14 @@ public class SideLoadingMain {
 						}
 					}
 				}catch (MarcException e){
-					logger.error("Error reading MARC file " + fileToProcess, e);
-					logEntry.incErrors();
-					logEntry.addNote("Error reading MARC file " + fileToProcess + " " + e.toString());
+					logEntry.incErrors("Error reading MARC file " + fileToProcess, e);
 				}
 			}
 			logEntry.saveResults();
 		} catch (FileNotFoundException e) {
-			logEntry.incErrors();
-			logEntry.addNote("Could not find file " + fileToProcess.getAbsolutePath());
+			logEntry.incErrors("Could not find file " + fileToProcess.getAbsolutePath());
 		} catch (Exception e){
-			logger.error("Error reading MARC file " + fileToProcess, e);
-			logEntry.incErrors();
-			logEntry.addNote("Error reading MARC file " + fileToProcess + " " + e.toString());
+			logEntry.incErrors("Error reading MARC file " + fileToProcess, e);
 		}
 	}
 

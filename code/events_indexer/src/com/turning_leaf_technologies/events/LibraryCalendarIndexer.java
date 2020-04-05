@@ -76,8 +76,7 @@ class LibraryCalendarIndexer {
 			}
 
 		} catch (Exception e) {
-			logEntry.incErrors();
-			logEntry.addNote("Error setting up statements " + e.toString());
+			logEntry.incErrors("Error setting up statements ", e);
 		}
 
 		loadExistingEvents();
@@ -93,8 +92,7 @@ class LibraryCalendarIndexer {
 				existingEvents.put(event.getExternalId(), event);
 			}
 		} catch (SQLException e) {
-			logEntry.addNote("Error loading existing events for Library Calendar " + name + " " + e.toString());
-			logEntry.incErrors();
+			logEntry.incErrors("Error loading existing events for Library Calendar " + name, e);
 		}
 	}
 
@@ -114,11 +112,10 @@ class LibraryCalendarIndexer {
 					solrUpdateServer.deleteByQuery("type:library_calendar AND source:" + this.settingsId);
 					//3-19-2019 Don't commit so the index does not get cleared during run (but will clear at the end).
 				} catch (HttpSolrClient.RemoteSolrException rse) {
-					logEntry.addNote("Solr is not running properly, try restarting " + rse.toString());
+					logEntry.incErrors("Solr is not running properly, try restarting " + rse.toString());
 					System.exit(-1);
 				} catch (Exception e) {
-					logEntry.addNote("Error deleting from index " + e.toString());
-					logEntry.incErrors();
+					logEntry.incErrors("Error deleting from index ", e);
 				}
 			}
 
@@ -218,8 +215,7 @@ class LibraryCalendarIndexer {
 
 							solrUpdateServer.add(solrDocument);
 						} catch (SolrServerException | IOException e) {
-							logEntry.addNote("Error adding event to solr " + e.toString());
-							logEntry.incErrors();
+							logEntry.incErrors("Error adding event to solr ", e);
 						}
 
 						//Add the event to the database
@@ -231,8 +227,7 @@ class LibraryCalendarIndexer {
 							addEventStmt.setString(5, rawResponse);
 							addEventStmt.executeUpdate();
 						} catch (SQLException e) {
-							logEntry.addNote("Error adding event to database " + e.toString());
-							logEntry.incErrors();
+							logEntry.incErrors("Error adding event to database " , e);
 						}
 
 						if (eventExists){
@@ -244,8 +239,7 @@ class LibraryCalendarIndexer {
 					}
 
 				} catch (JSONException e) {
-					logEntry.addNote("Error getting JSON information from the RSS Feed " + e.toString());
-					logEntry.incErrors();
+					logEntry.incErrors("Error getting JSON information from the RSS Feed ", e);
 				}
 			}
 
@@ -254,14 +248,12 @@ class LibraryCalendarIndexer {
 					deleteEventStmt.setLong(1, eventInfo.getId());
 					deleteEventStmt.executeUpdate();
 				} catch (SQLException e) {
-					logEntry.addNote("Error deleting event " + e.toString());
-					logEntry.incErrors();
+					logEntry.incErrors("Error deleting event ", e);
 				}
 				try {
 					solrUpdateServer.deleteById("lc_" + settingsId + "_" + eventInfo.getExternalId());
 				} catch (Exception e) {
-					logEntry.addNote("Error deleting event by id " + e.toString());
-					logEntry.incErrors();
+					logEntry.incErrors("Error deleting event by id ", e);
 				}
 				logEntry.incDeleted();
 			}
@@ -269,8 +261,7 @@ class LibraryCalendarIndexer {
 			try {
 				solrUpdateServer.commit(false, false, true);
 			} catch (Exception e) {
-				logEntry.addNote("Error in final commit " + e.toString());
-				logEntry.incErrors();
+				logEntry.incErrors("Error in final commit ", e);
 			}
 		}
 
@@ -285,8 +276,7 @@ class LibraryCalendarIndexer {
 			try {
 				return dateParser.parse(date);
 			} catch (ParseException e) {
-				logEntry.addNote("Error parsing date " + date);
-				logEntry.incErrors();
+				logEntry.incErrors("Error parsing date " + date, e);
 				return null;
 			}
 		}
@@ -381,13 +371,11 @@ class LibraryCalendarIndexer {
 				HttpEntity entity1 = response1.getEntity();
 				if (status.getStatusCode() == 200) {
 					String response = EntityUtils.toString(entity1);
-					JSONArray rssData = new JSONArray(response);
-					return rssData;
+					return new JSONArray(response);
 				}
 			}
 		} catch (Exception e) {
-			logEntry.addNote("Error getting RSS feed from " + rssURL + " " + e.toString());
-			logEntry.incErrors();
+			logEntry.incErrors("Error getting RSS feed from " + rssURL, e);
 		}
 		return null;
 	}

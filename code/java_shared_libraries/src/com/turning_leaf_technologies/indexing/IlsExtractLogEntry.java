@@ -103,8 +103,18 @@ public class IlsExtractLogEntry implements BaseLogEntry {
 		this.saveResults();
 	}
 
-	public void incErrors(){
+	public void incErrors(String note) {
+		this.addNote(note);
 		numErrors++;
+		this.saveResults();
+		logger.error(note);
+	}
+
+	public void incErrors(String note, Exception e){
+		this.addNote(note + " " + e.toString());
+		numErrors++;
+		this.saveResults();
+		logger.error(note, e);
 	}
 	public void incAdded(){
 		numAdded++;

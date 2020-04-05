@@ -8,6 +8,7 @@ class CronLogEntry extends DataObject
 	public $startTime;
 	public $lastUpdate;
 	public $endTime;
+	public $numErrors;
 	public $notes;
 	private $_processes = null;
 

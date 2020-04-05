@@ -29,36 +29,33 @@ import com.opencsv.CSVReader;
 @SuppressWarnings("unused")
 public class GenealogyCleanup implements IProcessHandler {
 	private Connection dbConn;
-	private Logger logger;
 	private CronProcessLogEntry processLog;
 
 	@Override
 	public void doCronProcess(String servername, Ini configIni, Section processSettings, Connection dbConn, CronLogEntry cronEntry, Logger logger) {
 		this.dbConn = dbConn;
-		this.logger = logger;
-		processLog = new CronProcessLogEntry(cronEntry.getLogEntryId(), "Genealogy Cleanup");
-		processLog.saveToDatabase(dbConn, logger);
+		processLog = new CronProcessLogEntry(cronEntry, "Genealogy Cleanup", dbConn, logger);
+		processLog.saveResults();
 		
 		deleteDuplicates(configIni, processSettings);
-		processLog.saveToDatabase(dbConn, logger);
+		processLog.saveResults();
 		
 		importFiles(configIni, processSettings);
-		processLog.saveToDatabase(dbConn, logger);
+		processLog.saveResults();
 		
 		reindexPeople(configIni, processSettings);
-		processLog.saveToDatabase(dbConn, logger);
+		processLog.saveResults();
 		
 		optimizeIndex(configIni, processSettings);
 		processLog.setFinished();
-		processLog.saveToDatabase(dbConn, logger);
+		processLog.saveResults();
 	}
 
 	private void optimizeIndex(Ini configIni, Section processSettings) {
 		processLog.addNote("Optimizing genealogy index");
 		String body = "<optimize/>";
 		if (!doSolrUpdate(processSettings, body)) {
-			processLog.addNote("Genealogy Optimization Failed.");
-			processLog.incErrors();
+			processLog.incErrors("Genealogy Optimization Failed.");
 		}else{
 			processLog.incUpdated();
 		}
@@ -82,7 +79,7 @@ public class GenealogyCleanup implements IProcessHandler {
 
 			// Get the response
 			InputStream _is;
-			boolean doOuptut = false;
+			boolean doOutput = false;
 			if (conn.getResponseCode() == 200) {
 				_is = conn.getInputStream();
 			} else {
@@ -90,12 +87,12 @@ public class GenealogyCleanup implements IProcessHandler {
 				System.out.println("  " + body);
 				/* error from server */
 				_is = conn.getErrorStream();
-				doOuptut = true;
+				doOutput = true;
 			}
 			BufferedReader rd = new BufferedReader(new InputStreamReader(_is));
 			String line;
 			while ((line = rd.readLine()) != null) {
-				if (doOuptut)
+				if (doOutput)
 					System.out.println(line);
 			}
 			wr.close();
@@ -116,7 +113,7 @@ public class GenealogyCleanup implements IProcessHandler {
 	private void reindexPeople(Ini configIni, Section processSettings) {
 		String reindexSetting = processSettings.get("reindex");
 		if (reindexSetting == null || !reindexSetting.equals("true")) {
-			processLog.addNote("Skipping reindexing people becuase reindex was not true.");
+			processLog.addNote("Skipping reindexing people because reindex was not true.");
 			return;
 		}
 		String genealogyUrl = processSettings.get("genealogyIndex");
@@ -142,7 +139,7 @@ public class GenealogyCleanup implements IProcessHandler {
 				numPeople++;
 				processLog.incUpdated();
 				if (numPeople % 100 == 0){
-					processLog.saveToDatabase(dbConn, logger);
+					processLog.saveResults();
 				}
 			}
 			personRs.close();
@@ -155,8 +152,7 @@ public class GenealogyCleanup implements IProcessHandler {
 	private void importFiles(Ini configIni, Section processSettings) {
 		String importFile = processSettings.get("importFile");
 		if (importFile == null || importFile.length() == 0) {
-			processLog.addNote("Skipping importing people becuase no importFile was specified.");
-			processLog.incErrors();
+			processLog.incErrors("Skipping importing people because no importFile was specified.");
 			return;
 		}
 		String genealogyUrl = configIni.get("Genealogy", "url");
@@ -205,8 +201,7 @@ public class GenealogyCleanup implements IProcessHandler {
 				+ " VALUES (?, ?, ?, ?, ?, ?, ?);";
 			insertObitStmt = dbConn.prepareStatement(insertObitQuery);
 		} catch (SQLException e1) {
-			processLog.addNote("Could not prepare statements for importing people ");
-			processLog.incErrors();
+			processLog.incErrors("Could not prepare statements for importing people ");
 			return;
 		}	
 
@@ -261,7 +256,7 @@ public class GenealogyCleanup implements IProcessHandler {
 							boolean foundMatch = false;
 							Integer personId = null;
 							if (personExistsRs.next()) {
-								// Check to see if we have a match of the birthdate and/or death
+								// Check to see if we have a match of the birth date and/or death
 								// date
 								foundMatch = true;
 								personId = personExistsRs.getInt("personId");
@@ -302,8 +297,7 @@ public class GenealogyCleanup implements IProcessHandler {
 									// System.out.println("Inserted person " + personId);
 									processLog.incUpdated();
 								} else {
-									processLog.incErrors();
-									processLog.addNote("Could not retrieve key for inseerted person");
+									processLog.incErrors("Could not retrieve key for inserted person");
 								}
 								generatedKeys.close();
 							}
@@ -382,24 +376,20 @@ public class GenealogyCleanup implements IProcessHandler {
 							reindexPerson(processSettings, dbConn, personId);
 							processLog.incUpdated();
 						} catch (Exception e) {
-							processLog.addNote("Error checking if person exists " + e.toString());
+							processLog.incErrors("Error checking if person exists ", e);
 							processLog.addNote(st1.toString());
-							processLog.incErrors();
 						}
 						st1.close();
 					}
 				}
 			} catch (FileNotFoundException e) {
-				processLog.addNote("Could not find the file to import" + e.toString());
-				processLog.incErrors();
+				processLog.incErrors("Could not find the file to import", e);
 			} catch (IOException e) {
-				processLog.addNote("Error reading import file " + e.toString());
-				processLog.incErrors();
+				processLog.incErrors("Error reading import file ", e);
 			}
 		} catch (SQLException ex) {
 			// handle any errors
-			processLog.addNote("Error importing genealogy data from file" + ex.toString());
-			processLog.incErrors();
+			processLog.incErrors("Error importing genealogy data from file", ex);
 		}
 	}
 
@@ -567,14 +557,12 @@ public class GenealogyCleanup implements IProcessHandler {
 		String deleteDuplicates = processSettings.get("deleteDuplicates");
 		if (deleteDuplicates == null || !deleteDuplicates.equalsIgnoreCase("true")) {
 			processLog.addNote("Skipping deleting duplicates, to activate set deleteDuplicates key to true.");
-			processLog.incErrors();
 			return;
 		}
 
 		String genealogyUrl = configIni.get("Genealogy", "url");
 		if (genealogyUrl == null || genealogyUrl.length() == 0) {
-			processLog.addNote("Unable to get url for genealogy in GenealogyCleanup section.  Please specify genealogyIndex key.");
-			processLog.incErrors();
+			processLog.incErrors("Unable to get url for genealogy in GenealogyCleanup section.  Please specify genealogyIndex key.");
 			return;
 		}
 
@@ -625,8 +613,7 @@ public class GenealogyCleanup implements IProcessHandler {
 
 		} catch (SQLException ex) {
 			// handle any errors
-			processLog.addNote("Error establishing connection to database " + ex.toString());
-			processLog.incErrors();
+			processLog.incErrors("Error establishing connection to database ", ex);
 			ex.printStackTrace();
 		}
 	}

@@ -947,6 +947,22 @@ class Admin_DBMaintenance extends Admin_Admin
 					),
 				),
 
+				'cron_log_errors' => [
+					'title' => 'Cron Log errors',
+					'description' => 'Add error counts and notes to the main cron log for consistency',
+					'sql' => [
+						'ALTER TABLE cron_log ADD COLUMN numErrors INT(11) NOT NULL DEFAULT 0'
+					]
+				],
+
+				'cron_process_skips' => [
+					'title' => 'Cron Process Log skips',
+					'description' => 'Add error counts and notes to the main cron log for consistency',
+					'sql' => [
+						'ALTER TABLE cron_process_log ADD COLUMN numSkipped INT(11) NOT NULL DEFAULT 0'
+					]
+				],
+
 				'marcImport' => array(
 					'title' => 'Marc Import table',
 					'description' => 'Create a table to store information about marc records that are being imported.',

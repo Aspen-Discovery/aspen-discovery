@@ -104,13 +104,17 @@ class RbdigitalExtractLogEntry implements BaseLogEntry {
 		this.addNote("Finished Rbdigital extraction");
 		this.saveResults();
 	}
-	void incErrors(){
-		numErrors++;
-	}
-	void incErrors(String note){
+	public void incErrors(String note){
 		numErrors++;
 		this.addNote(note);
+		this.saveResults();
 		logger.error(note);
+	}
+	public void incErrors(String note, Exception e){
+		this.addNote(note + " " + e.toString());
+		numErrors++;
+		this.saveResults();
+		logger.error(note, e);
 	}
 	void incAdded(){
 		numAdded++;

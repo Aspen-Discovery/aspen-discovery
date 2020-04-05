@@ -179,9 +179,13 @@ class RBdigitalDriver extends AbstractEContentDriver
 							$checkout['linkUrl'] = $recordDriver->getLinkUrl();
 							$checkout['accessOnlineUrl'] = $recordDriver->getAccessOnlineLinkUrl($patron);
 						} else {
-							$checkout['coverUrl'] = "";
+							if (!empty($patronMagazineDetails->images[0])) {
+								$checkout['coverUrl'] = $patronMagazineDetails->images[0]->url;
+							}else{
+								$checkout['coverUrl'] = null;
+							}
 							$checkout['groupedWorkId'] = "";
-							$checkout['format'] = $patronCheckout->mediaType;
+							$checkout['format'] = 'eMagazine';
 						}
 					}
 

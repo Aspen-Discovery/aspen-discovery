@@ -103,6 +103,18 @@ class SearchAPI extends Action
 			}
 		}
 
+		//Check cron to be sure it doesn't have errors either
+		require_once ROOT_DIR . '/sys/CronLogEntry.php';
+		$cronLogEntry = new CronLogEntry();
+		$cronLogEntry->orderBy("id DESC");
+		$cronLogEntry->limit(0, 1);
+		if ($cronLogEntry->find(true)){
+			if ($cronLogEntry->numErrors > 0){
+				$status[] = self::STATUS_CRITICAL;
+				$notes[] = "The last cron log entry had errors";
+			}
+		}
+
 		// Unprocessed Offline Holds //
 		$offlineHoldEntry = new OfflineHold();
 		$offlineHoldEntry->status = 'Not Processed';
@@ -115,7 +127,7 @@ class SearchAPI extends Action
 		if (count($notes) > 0) {
 			$result = array(
 				'status' => in_array(self::STATUS_CRITICAL, $status) ? self::STATUS_CRITICAL : self::STATUS_WARN, // Critical warnings trump Warnings;
-				'message' => implode('; ', $notes)
+				'message' => implode(";\r\n", $notes)
 			);
 		} else {
 			$result = array(

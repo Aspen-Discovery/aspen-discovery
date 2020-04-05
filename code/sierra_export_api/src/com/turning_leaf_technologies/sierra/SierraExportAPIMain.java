@@ -139,8 +139,7 @@ public class SierraExportAPIMain {
 				indexingProfile = IndexingProfile.loadIndexingProfile(dbConn, sierraInstanceInformation.indexingProfileName, logger);
 
 				if (sierraInstanceInformation.sierraConnection == null) {
-					logEntry.incErrors();
-					logEntry.addNote("Could not connect to the Sierra database");
+					logEntry.incErrors("Could not connect to the Sierra database");
 				}else{
 					//Open the connection to the database
 					sierraConn = DriverManager.getConnection(url);
@@ -285,8 +284,7 @@ public class SierraExportAPIMain {
 				String recordIdentifier = getRecordsToReloadRS.getString("identifier");
 				File marcFile = indexingProfile.getFileForIlsRecord(recordIdentifier);
 				if (!marcFile.exists()) {
-					logEntry.incErrors();
-					logEntry.addNote("Could not find marc for record to reload " + recordIdentifier);
+					logEntry.incErrors("Could not find marc for record to reload " + recordIdentifier);
 				} else {
 					FileInputStream marcFileStream = new FileInputStream(marcFile);
 					MarcPermissiveStreamReader streamReader = new MarcPermissiveStreamReader(marcFileStream, true, true);
@@ -297,8 +295,7 @@ public class SierraExportAPIMain {
 						//Reindex the record
 						getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
 					} else {
-						logEntry.incErrors();
-						logEntry.addNote("Could not read file " + marcFile);
+						logEntry.incErrors("Could not read file " + marcFile);
 					}
 				}
 
@@ -311,8 +308,7 @@ public class SierraExportAPIMain {
 			}
 			getRecordsToReloadRS.close();
 		}catch (Exception e){
-			logEntry.incErrors();
-			logEntry.addNote("Error processing records to reload " + e.toString());
+			logEntry.incErrors("Error processing records to reload ", e);
 		}
 	}
 
@@ -350,8 +346,7 @@ public class SierraExportAPIMain {
 				getAllBibsRS.close();
 				getAllBibsStmt.close();
 			}catch (SQLException e){
-				logEntry.addNote("Error loading all records: " + e.toString());
-				logEntry.incErrors();
+				logEntry.incErrors("Error loading all records: " , e);
 			}
 		}else{
 			//Add a 5 second buffer to the extract
@@ -867,7 +862,7 @@ public class SierraExportAPIMain {
 						logger.debug("id " + id + " was deleted");
 						return true;
 					}else{
-						logger.error("Unknown error " + marcResults);
+						logEntry.incErrors("Unknown error " + marcResults);
 						return false;
 					}
 				}
@@ -942,7 +937,7 @@ public class SierraExportAPIMain {
 				File marcFile = indexingProfile.getFileForIlsRecord(identifier.getIdentifier());
 				if (!marcFile.getParentFile().exists()) {
 					if (!marcFile.getParentFile().mkdirs()) {
-						logger.error("Could not create directories for " + marcFile.getAbsolutePath());
+						logEntry.incErrors("Could not create directories for " + marcFile.getAbsolutePath());
 					}
 				}
 				MarcWriter marcWriter = new MarcStreamWriter(new FileOutputStream(marcFile, false), "UTF-8", true);
@@ -959,11 +954,11 @@ public class SierraExportAPIMain {
 					getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
 				}
 			}else{
-				logger.error("Error exporting marc record for " + id + " call returned null");
+				//This is already logged as an error, don't need to again
 				return false;
 			}
 		}catch (Exception e){
-			logger.error("Error in updateMarcAndRegroupRecordId processing bib from Sierra API", e);
+			logEntry.incErrors("Error in updateMarcAndRegroupRecordId processing bib from Sierra API", e);
 			return false;
 		}
 		return true;
@@ -1171,8 +1166,7 @@ public class SierraExportAPIMain {
 								logEntry.incUpdated();
 							}else{
 								//Don't fail the entire process.  We will just reprocess next time the export runs
-								logEntry.addNote("Processing " + id + " failed");
-								logEntry.incErrors();
+								logEntry.incErrors("Processing " + id + " failed");
 								//allPass = false;
 							}
 						}
@@ -1189,8 +1183,7 @@ public class SierraExportAPIMain {
 					logger.debug("starting to process " + id);
 					if (!updateMarcAndRegroupRecordId(ini, id)){
 						//Don't fail the entire process.  We will just reprocess next time the export runs
-						logEntry.addNote("Processing " + id + " failed");
-						logEntry.incErrors();
+						logEntry.incErrors("Processing " + id + " failed");
 						//allPass = false;
 					}else{
 						logEntry.incUpdated();
@@ -1385,7 +1378,7 @@ public class SierraExportAPIMain {
 				conn.setRequestMethod("GET");
 				conn.setRequestProperty("Accept-Charset", "UTF-8");
 				conn.setRequestProperty("Authorization", sierraAPITokenType + " " + sierraAPIToken);
-				conn.setReadTimeout(20000);
+				conn.setReadTimeout(30000);
 				conn.setConnectTimeout(5000);
 
 				StringBuilder response = new StringBuilder();
@@ -1422,11 +1415,11 @@ public class SierraExportAPIMain {
 				}
 
 			} catch (java.net.SocketTimeoutException e) {
-				logger.error("Socket timeout talking to to sierra API (callSierraApiURL) " + sierraUrl + " - " + e.toString() );
+				logEntry.incErrors("Socket timeout talking to to sierra API (callSierraApiURL) " + sierraUrl, e);
 			} catch (java.net.ConnectException e) {
-				logger.error("Timeout connecting to sierra API (callSierraApiURL) " + sierraUrl + " - "  + e.toString() );
+				logEntry.incErrors("Timeout connecting to sierra API (callSierraApiURL) " + sierraUrl, e );
 			} catch (Exception e) {
-				logger.error("Error loading data from sierra API (callSierraApiURL) " + sierraUrl + " - " , e );
+				logEntry.incErrors("Error loading data from sierra API (callSierraApiURL) " + sierraUrl , e );
 			}
 		}
 		return null;
@@ -1644,8 +1637,7 @@ public class SierraExportAPIMain {
 							numVolumesUpdated++;
 						}
 					}catch (SQLException sqlException){
-						logger.error("Error adding volume", sqlException);
-						logEntry.incErrors();
+						logEntry.incErrors("Error adding volume", sqlException);
 					}
 				}
 				volumeInfoRS.close();
@@ -1663,10 +1655,7 @@ public class SierraExportAPIMain {
 
 			logEntry.addNote("Finished export of volume information " + dateTimeFormatter.format(new Date()));
 		}catch (Exception e){
-			logger.error("Error exporting volume information", e);
-			logEntry.incErrors();
-			logEntry.addNote("Error exporting volume information " + e.toString());
-
+			logEntry.incErrors("Error exporting volume information", e);
 		}
 		logEntry.saveResults();
 	}

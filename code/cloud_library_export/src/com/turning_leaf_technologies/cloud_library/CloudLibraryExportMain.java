@@ -75,7 +75,6 @@ public class CloudLibraryExportMain {
 		long reindexerChecksumAtStart = JarUtil.getChecksumForJar(logger, "reindexer", "../reindexer/reindexer.jar");
 		long recordGroupingChecksumAtStart = JarUtil.getChecksumForJar(logger, "record_grouping", "../record_grouping/record_grouping.jar");
 
-		//noinspection InfiniteLoopStatement
 		while (true) {
 
 			Date startTime = new Date();
@@ -174,8 +173,7 @@ public class CloudLibraryExportMain {
 					markRecordToReloadAsProcessedStmt.executeUpdate();
 					numRecordsToReloadProcessed++;
 				}else{
-					logEntry.incErrors();
-					logEntry.addNote("Could not get details for record to reload " + cloudLibraryId);
+					logEntry.incErrors("Could not get details for record to reload " + cloudLibraryId);
 				}
 				getItemDetailsForRecordRS.close();
 			}
@@ -184,8 +182,7 @@ public class CloudLibraryExportMain {
 			}
 			getRecordsToReloadRS.close();
 		}catch (Exception e){
-			logEntry.incErrors();
-			logEntry.addNote("Error processing records to reload " + e.toString());
+			logEntry.incErrors("Error processing records to reload " + e.toString());
 		}
 	}
 
@@ -283,12 +280,11 @@ public class CloudLibraryExportMain {
 							return numChanges;
 						} else if (!response.isSuccess()) {
 							if (response.getResponseCode() != 502) {
-								logEntry.incErrors();
-								logEntry.addNote(response.getMessage());
+								logEntry.incErrors("Error " + response.getResponseCode() + " calling " + apiPath + ": " + response.getMessage());
 								break;
 							} else {
 								if (curTry == 4) {
-									logEntry.incErrors();
+									logEntry.incErrors("Error " + response.getResponseCode() + " calling " + apiPath + ": " + response.getMessage());
 									logEntry.addNote(response.getMessage());
 									break;
 								} else {
@@ -332,13 +328,11 @@ public class CloudLibraryExportMain {
 							return numChanges;
 						} else if (!response.isSuccess()) {
 							if (response.getResponseCode() != 502) {
-								logEntry.incErrors();
-								logEntry.addNote(response.getMessage());
+								logEntry.incErrors("Error " + response.getResponseCode() + " calling " + eventsApiPath + ": " + response.getMessage());
 								break;
 							} else {
 								if (curTry == 4) {
-									logEntry.incErrors();
-									logEntry.addNote(response.getMessage());
+									logEntry.incErrors("Error " + response.getResponseCode() + " calling " + eventsApiPath + ": " + response.getMessage());
 									break;
 								} else {
 									try {
@@ -466,7 +460,7 @@ public class CloudLibraryExportMain {
 			return null;
 		} else if (!response.isSuccess()) {
 			if (response.getResponseCode() != 500) {
-				logEntry.incErrors();
+				logEntry.incErrors("Error " + response.getResponseCode() + " calling " + apiPath + ": " + response.getMessage());
 			}
 			logEntry.addNote("Error getting availability from " + apiPath + ": " + response.getResponseCode() + " " + response.getMessage());
 			return null;
