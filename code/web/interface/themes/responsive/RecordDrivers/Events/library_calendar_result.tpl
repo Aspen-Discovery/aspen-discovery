@@ -3,7 +3,7 @@
 	{if $showCovers}
 		<div class="coversColumn col-xs-3 col-sm-3 col-md-3 col-lg-2 text-center">
 			{if $disableCoverArt != 1}
-				<a href="{$pageUrl}" class="alignleft listResultImage" onclick="AspenDiscovery.Websites.trackUsage('{$id}')">
+				<a href="{$eventUrl}" class="alignleft listResultImage" onclick="AspenDiscovery.Websites.trackUsage('{$id}')">
 					<img src="{$bookCoverUrl}" class="listResultImage img-thumbnail" alt="{translate text='Cover Image' inAttribute=true}">
 				</a>
 			{/if}
@@ -17,7 +17,7 @@
 		<div class="row">
 			<div class="col-xs-12">
 				<span class="result-index">{$resultIndex})</span>&nbsp;
-				<a href="{$pageUrl}" class="result-title notranslate" onclick="AspenDiscovery.Websites.trackUsage('{$id}')">
+				<a href="{$eventUrl}" class="result-title notranslate" onclick="AspenDiscovery.Websites.trackUsage('{$id}')">
 					{if !$title|removeTrailingPunctuation}{translate text='Title not available'}{else}{$title|removeTrailingPunctuation|highlight|truncate:180:"..."}{/if}
 				</a>
 				{if isset($summScore)}
