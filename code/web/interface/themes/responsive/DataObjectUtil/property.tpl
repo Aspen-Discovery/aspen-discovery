@@ -160,7 +160,7 @@
 		{elseif $property.type == 'partialDate'}
 			{include file="DataObjectUtil/partialDate.tpl"}
 
-		{elseif $property.type == 'textarea' || $property.type == 'html' || $property.type == 'crSeparated'}
+		{elseif $property.type == 'textarea' || $property.type == 'html' || $property.type == 'markdown' || $property.type == 'crSeparated'}
 			{include file="DataObjectUtil/textarea.tpl"}
 
 		{elseif $property.type == 'password' || $property.type == 'storedPassword'}
@@ -175,9 +175,6 @@
 
 		{elseif $property.type == 'label'}
 			<div id='{$propName}'>{$propValue}</div>
-
-		{*{elseif $property.type == 'html'}*}
-			{*{include file="DataObjectUtil/htmlField.tpl"}*}
 
 		{elseif $property.type == 'enum'}
 			{include file="DataObjectUtil/enum.tpl"}

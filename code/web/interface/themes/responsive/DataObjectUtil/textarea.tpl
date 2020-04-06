@@ -20,4 +20,10 @@
 	});
 	{/literal}
 	</script>
+{elseif $property.type == 'markdown'}
+	<script type="text/javascript">
+		$(document).ready(function(){ldelim}
+			let simplemde{$propName} = new SimpleMDE({ldelim} element: $("#{$propName}")[0] {rdelim});
+		{rdelim});
+	</script>
 {/if}

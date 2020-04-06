@@ -141,7 +141,7 @@ class DataObjectUtil
 				$object->$propertyName = "";
 			}
 
-		}else if (in_array( $property['type'], array('textarea', 'html', 'folder', 'crSeparated'))){
+		}else if (in_array( $property['type'], array('textarea', 'html', 'markdown', 'folder', 'crSeparated'))){
 			if (strlen(trim($_REQUEST[$propertyName])) == 0){
 				$object->$propertyName = null;
 			}else{
@@ -150,7 +150,7 @@ class DataObjectUtil
 			//Strip tags from the input to avoid problems
 			if ($property['type'] == 'textarea' || $property['type'] == 'crSeparated'){
 				$object->$propertyName = strip_tags($object->$propertyName);
-			}else{
+			}elseif ($property['type'] == 'html'){
 				$allowableTags = isset($property['allowableTags']) ? $property['allowableTags'] : '<p><a><b><em><ul><ol><em><li><strong><i><br>';
 				$object->$propertyName = strip_tags($object->$propertyName, $allowableTags);
 			}
@@ -436,7 +436,7 @@ class DataObjectUtil
 						foreach ($subStructure as $subProperty){
 							$requestKey = $propertyName . '_' . $subProperty['property'];
 							$subPropertyName = $subProperty['property'];
-							if (in_array($subProperty['type'], array('text', 'enum', 'integer', 'numeric', 'textarea', 'html', 'multiSelect') )){
+							if (in_array($subProperty['type'], array('text', 'enum', 'integer', 'numeric', 'textarea', 'html', 'markdown', 'multiSelect') )){
 								$subObject->$subPropertyName = $_REQUEST[$requestKey][$id];
 							}elseif (in_array($subProperty['type'], array('checkbox') )){
 								$subObject->$subPropertyName = isset($_REQUEST[$requestKey][$id]) ? 1 : 0;
