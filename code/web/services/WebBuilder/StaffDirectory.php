@@ -17,7 +17,6 @@ class StaffDirectory extends Action
 
 		$interface->assign('staffMembers', $staffMembers);
 
-		$sidebar = null;
-		$this->display('staffDirectory.tpl', 'Staff Directory', $sidebar, false);
+		$this->display('staffDirectory.tpl', 'Staff Directory');
 	}
 }

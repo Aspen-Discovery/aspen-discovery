@@ -165,6 +165,11 @@ hr.menu {
   right: 0;
   z-index: 101;
 }
+@media print {
+  #horizontal-search-wrapper {
+    display: none;
+  }
+}
 .sticky-sidebar {
   position: fixed;
   top: 0;
@@ -362,9 +367,13 @@ ul.account-submenu {
   white-space: normal !important;
 }
 .placard {
-  border: 1px solid black;
-  background-color: lightyellow;
+  border: 1px solid #bbb;
+  background-color: #f0f5f5;
   padding: 10px;
+  margin: 5px;
+}
+a.placard-link {
+  text-decoration: none;
 }
 .placard-image {
   float: left;
@@ -381,11 +390,10 @@ ul.account-submenu {
   border-radius: 0;
   min-height: auto;
 }
-#webMenuNavBar .navbar-nav > li > a,
-#webMenuNavBar .navbar-nav > li > a:visited {
+#webMenuNavBar .nav > li > a,
+#webMenuNavBar .nav > li > a:visited {
   color: #FFF;
-  padding-top: 7px;
-  padding-bottom: 7px;
+  padding: 7px 10px;
 }
 #webMenuNavBar .navbar-nav > li.open > a,
 #webMenuNavBar .navbar-nav > li.open > a:visited {
