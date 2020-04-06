@@ -69,6 +69,14 @@
 				</div>
 			</div>
 		{/if}
+
+		<div class="row">
+			<div class="col-xs-12">
+                {include file='Websites/result-tools-horizontal.tpl' ratingData=$summRating recordUrl=$summUrl showMoreInfo=true}
+                {* TODO: id & shortId shouldn't be needed to be specified here, otherwise need to note when used.
+					summTitle only used by cart div, which is disabled as of now. 12-28-2015 plb *}
+			</div>
+		</div>
 	</div>
 </div>
 {/strip}
