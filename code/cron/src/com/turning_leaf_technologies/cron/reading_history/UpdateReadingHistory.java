@@ -46,41 +46,47 @@ public class UpdateReadingHistory implements IProcessHandler {
 			// Get a list of all patrons that have reading history turned on.
 			PreparedStatement getUsersStmt = dbConn.prepareStatement("SELECT id, cat_username, cat_password FROM user where trackReadingHistory=1", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 
-			BlockingQueue<Runnable> blockingQueue = new ArrayBlockingQueue<>(numUsersToUpdate);
+			if (numUsersToUpdate > 0) {
+				BlockingQueue<Runnable> blockingQueue = new ArrayBlockingQueue<>(numUsersToUpdate);
 
-			//Process all the threads, we will allow up to 20 concurrent threads to start
-			ThreadPoolExecutor executor = new ThreadPoolExecutor(15,30, 5000, TimeUnit.MILLISECONDS, blockingQueue);
+				//Process all the threads, we will allow up to 20 concurrent threads to start
+				ThreadPoolExecutor executor = new ThreadPoolExecutor(15, 30, 5000, TimeUnit.MILLISECONDS, blockingQueue);
 
-			//Setup the ThreadGroup
-			ResultSet userResults = getUsersStmt.executeQuery();
-			while (userResults.next()) {
+				//Setup the ThreadGroup
+				ResultSet userResults = getUsersStmt.executeQuery();
+				while (userResults.next()) {
 
-				// For each patron
-				String cat_username = userResults.getString("cat_username");
-				String cat_password = userResults.getString("cat_password");
+					// For each patron
+					String cat_username = userResults.getString("cat_username");
+					String cat_password = userResults.getString("cat_password");
 
-				if (cat_password == null || cat_password.length() == 0){
-					numSkipped++;
-					processLog.incSkipped();
-					continue;
+					if (cat_password == null || cat_password.length() == 0) {
+						numSkipped++;
+						processLog.incSkipped();
+						continue;
+					}
+
+					UpdateReadingHistoryTask newTask = new UpdateReadingHistoryTask(aspenUrl, cat_username, cat_password, processLog, logger);
+					executor.execute(newTask);
+
+					processLog.saveResults();
 				}
+				userResults.close();
 
-				UpdateReadingHistoryTask newTask = new UpdateReadingHistoryTask(aspenUrl, cat_username, cat_password, processLog, logger);
-				executor.execute(newTask);
-
-				processLog.saveResults();
-			}
-			userResults.close();
-
-			while (executor.getCompletedTaskCount() < numUsersToUpdate){
-				try {
-					Thread.sleep(1000);
-				} catch (InterruptedException e) {
-					logger.error("Sleep was interrupted", e);
+				while (executor.getCompletedTaskCount() < numUsersToUpdate) {
+					logger.error("Num Users To Update = " + numUsersToUpdate + " Completed Task Count = " + executor.getCompletedTaskCount() + " Num Skipped = " + numSkipped);
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						logger.error("Sleep was interrupted", e);
+					}
 				}
-			}
+				logger.error("Finished processing all threads");
 
-			processLog.addNote("Skipped " + numSkipped + " records because the password was null");
+				executor.shutdownNow();
+
+				processLog.addNote("Skipped " + numSkipped + " records because the password was null");
+			}
 		} catch (SQLException e) {
 			processLog.incErrors("Unable get a list of users that need to have their reading list updated ", e);
 		}
