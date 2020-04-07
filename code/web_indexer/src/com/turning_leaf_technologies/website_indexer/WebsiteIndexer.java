@@ -151,6 +151,7 @@ class WebsiteIndexer {
 		try {
 			//TODO: Add appropriate headers
 			CloseableHttpClient httpclient = HttpClients.createDefault();
+			pageToProcess = pageToProcess.replaceAll("\\s", "%20");
 			HttpGet httpGet = new HttpGet(pageToProcess);
 			try (CloseableHttpResponse response1 = httpclient.execute(httpGet)) {
 				StatusLine status = response1.getStatusLine();
