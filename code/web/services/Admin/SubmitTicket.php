@@ -15,13 +15,20 @@ class SubmitTicket extends Admin_Admin
 			$description = $_REQUEST['description'];
 			$email = $_REQUEST['email'];
 			$name = $_REQUEST['name'];
+			$criticality = $_REQUEST['criticality'];
+			$component = $_REQUEST['component'];
+			if (is_array($component)){
+				$component = implode(', ', $component);
+			}
 
 			global $serverName;
 			require_once ROOT_DIR . '/sys/Email/Mailer.php';
 			$mailer = new Mailer();
-			$description = 'Server: ' . $serverName . "\n" .
-				'From: ' . $name . "\n" .
-				$description;
+			$description .= "\n";
+			$description .= 'Server: ' . $serverName . "\n";
+			$description .= 'From: ' . $name . "\n";
+			$description .= 'Criticality: ' . $criticality . "\n";
+			$description .= 'Component: ' . $component . "\n";
 
 			$result = $mailer->send("aspensupport@bywatersolutions.com", "Aspen Discovery: $subject", $description, $email);
 			if ($result == true){
