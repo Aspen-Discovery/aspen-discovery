@@ -786,17 +786,17 @@
 						{assign var="curSection" value=false}
 					{/if}
 					<div class="panel{if $curSection} active{/if}">
-						<a href="#websitesMenu" data-toggle="collapse" data-parent="#adminMenuAccordion">
+						<a href="#aspenHelpMenu" data-toggle="collapse" data-parent="#adminMenuAccordion">
 							<div class="panel-heading">
 								<div class="panel-title">
 									{translate text="Aspen Discovery Help"}
 								</div>
 							</div>
 						</a>
-						<div id="websitesMenu" class="panel-collapse collapse {if $curSection}in{/if}">
+						<div id="aspenHelpMenu" class="panel-collapse collapse {if $curSection}in{/if}">
 							<div class="panel-body">
 								<div class="adminMenuLink"><a href="/Admin/ReleaseNotes">{translate text="Release Notes"}</a></div>
-								{*<div class="adminMenuLink"><a href="/Admin/SubmitTicket">{translate text="Submit Ticket"}</a></div>*}
+								<div class="adminMenuLink"><a href="/Admin/SubmitTicket">{translate text="Submit Ticket"}</a></div>
 							</div>
 						</div>
 					</div>
