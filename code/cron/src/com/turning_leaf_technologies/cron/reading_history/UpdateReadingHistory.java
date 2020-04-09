@@ -73,7 +73,7 @@ public class UpdateReadingHistory implements IProcessHandler {
 				}
 				userResults.close();
 
-				while (executor.getCompletedTaskCount() < numUsersToUpdate) {
+				while ((executor.getCompletedTaskCount() + numSkipped) < numUsersToUpdate) {
 					logger.error("Num Users To Update = " + numUsersToUpdate + " Completed Task Count = " + executor.getCompletedTaskCount() + " Num Skipped = " + numSkipped);
 					try {
 						Thread.sleep(1000);
