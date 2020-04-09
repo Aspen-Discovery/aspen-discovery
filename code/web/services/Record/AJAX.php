@@ -160,7 +160,7 @@ class Record_AJAX extends Action
 			$indexingProfile = $indexingProfiles[$marcRecord->getRecordType()];
 			$formatMap = $indexingProfile->formatMap;
 			/** @var FormatMapValue $formatMapValue */
-			$holdType = 'none';
+			$holdType = 'bib';
 			foreach ($formatMap as $formatMapValue){
 				if ($formatMapValue->format == $format){
 					$holdType = $formatMapValue->holdType;

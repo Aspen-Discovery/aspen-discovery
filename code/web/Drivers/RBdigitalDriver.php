@@ -719,15 +719,23 @@ class RBdigitalDriver extends AbstractEContentDriver
 
 	public function redirectToRBdigitalMagazine(/** @noinspection PhpUnusedParameterInspection */ User $patron, RBdigitalMagazineDriver $recordDriver)
 	{
-		$this->addBearerTokenHeader($patron);
-		header('Location:' . $recordDriver->getRBdigitalLinkUrl());
+		$token = $this->addBearerTokenHeader($patron);
+		$redirectUrl = $recordDriver->getRBdigitalLinkUrl();
+		if (!empty($token)) {
+			$redirectUrl .= '?bearer=' . $token;
+		}
+		header('Location:' . $redirectUrl);
 		die();
 	}
 
 	public function redirectToRBdigital(User $patron, RBdigitalRecordDriver $recordDriver)
 	{
-		$this->addBearerTokenHeader($patron);
-		header('Location:' . $this->userInterfaceURL . '/book/' . $recordDriver->getUniqueID());
+		$token = $this->addBearerTokenHeader($patron);
+		$redirectUrl = $this->userInterfaceURL . '/book/' . $recordDriver->getUniqueID();
+		if (!empty($token)) {
+			$redirectUrl .= '?bearer=' . $token;
+		}
+		header('Location:' . $redirectUrl);
 		die();
 //        $result = ['success' => false, 'message' => 'Unknown error'];
 //        $rbdigitalId = $this->getRBdigitalId($patron);
@@ -850,7 +858,7 @@ class RBdigitalDriver extends AbstractEContentDriver
 
 	/**
 	 * @param User $patron
-	 * @return void
+	 * @return string|null
 	 */
 	private function addBearerTokenHeader(User $patron)
 	{
@@ -876,8 +884,39 @@ class RBdigitalDriver extends AbstractEContentDriver
 				if ($response->result == true) {
 					$bearerToken = $response->bearer;
 					header('Authorization: bearer ' . $bearerToken);
+					return $bearerToken;
+				}
+			}
+		}elseif (!empty($patron->email)){
+			$this->curlWrapper->timeout = 10;
+			$patronUrl = $this->webServiceURL . '/v1/rpc/libraries/' . $this->libraryId . '/patrons/' . urlencode($patron->email);
+			$rawResponse = $this->curlWrapper->curlGetPage($patronUrl);
+			$response = json_decode($rawResponse);
+			if ($response != false) {
+				$tokenUrl = $this->webServiceURL . '/v1/libraries/' . $this->libraryId . '/tokens';
+				$userData = [
+					'userId' => $response->userId,
+				];
+				$rawTokenResponse = $this->curlWrapper->curlPostBodyData($tokenUrl, $userData);
+				$tokenResponse = json_decode($rawTokenResponse);
+				if ($tokenResponse != false) {
+					if (!empty($tokenResponse->message)){
+						return false;
+					}
+					return $tokenResponse->bearer;
 				}
 			}
 		}
+		return null;
+
+//...with that userId GUID value, you can generate a bearer token via...
+//POST https://api.rbdigital.com/v1/libraries/[libraryId]/tokens
+//{
+//	"userId":"[GUID]"
+//}
+//
+//...which will return a bearer token.
+//	Assuming you know the ISBN for the title of interest, you can use the bearer token as per...
+//https://[subdomain].rbdigital.com/book/[ISBN]?bearer=[bearer token]
 	}
 }

@@ -250,6 +250,14 @@ function getLibraryLocationUpdates(){
 			),
 		),
 
+		'library_system_message' => [
+			'title' => 'Library System Message Length',
+			'description' => 'Increase library system message length',
+			'sql' => [
+				"ALTER TABLE library change column systemMessage systemMessage TEXT",
+			]
+		],
+
 		'library_30' => array(
 			'title' => 'Library 30',
 			'description' => 'Add bettter controls for restricting what is searched',
@@ -2058,7 +2066,15 @@ function getLibraryLocationUpdates(){
 				"UPDATE grouped_work_display_settings set defaultAvailabilityToggle = 'available' where name = 'school_elem'",
 				"UPDATE grouped_work_display_settings set defaultAvailabilityToggle = 'local' where name = 'academic' OR name = 'school_upper'",
 			],
-		]
+		],
+
+		'selfRegistrationLocationRestrictions' => [
+			'title' => 'Self Registration Location Restrictions',
+			'description' => 'Setup restrictions for valid locations for self registration',
+			'sql' => [
+				'ALTER TABLE library add column selfRegistrationLocationRestrictions INT DEFAULT 2',
+			],
+		],
 	);
 }
 

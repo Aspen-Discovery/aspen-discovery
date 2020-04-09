@@ -11,7 +11,7 @@ var AspenDiscovery = (function(){
 		AspenDiscovery.initCarousels();
 
 		$("#modalDialog").modal({show:false});
-		$('[data-toggle="tooltip"]').tooltip()
+		$('[data-toggle="tooltip"]').tooltip();
 
 		$('.panel')
 				.on('show.bs.collapse', function () {
@@ -482,9 +482,9 @@ var AspenDiscovery = (function(){
 					}
 				}
 			).fail(AspenDiscovery.ajaxFail);
-            return false;
-        }
-    }
+			return false;
+		}
+	}
 
 }(AspenDiscovery || {}));
 

@@ -1,9 +1,5 @@
 AspenDiscovery.Admin = (function(){
 	return {
-		showSierraExportNotes: function (id){
-			AspenDiscovery.Account.ajaxLightbox("/Admin/AJAX?method=getSierraExportNotes&id=" + id, true);
-			return false;
-		},
 		showRecordGroupingNotes: function (id){
 			AspenDiscovery.Account.ajaxLightbox("/Admin/AJAX?method=getRecordGroupingNotes&id=" + id, true);
 			return false;
@@ -73,6 +69,24 @@ AspenDiscovery.Admin = (function(){
 				AspenDiscovery.showMessage("Error", "Please select only two objects to compare");
 				return false;
 			}
+		},
+		displayReleaseNotes: function() {
+			let url = Globals.path + "/Admin/AJAX";
+			let selectedNotes = $('#releaseSelector').val();
+			let params =  {
+				method : 'getReleaseNotes',
+				release : selectedNotes
+			};
+			$.getJSON(url, params,
+				function(data) {
+					if (data.success) {
+						$("#releaseNotes").html(data.releaseNotes);
+					} else {
+						$("#releaseNotes").html("Error + " + data.message);
+					}
+				}
+			).fail(AspenDiscovery.ajaxFail);
+			return false;
 		},
 	};
 }(AspenDiscovery.Admin || {}));
