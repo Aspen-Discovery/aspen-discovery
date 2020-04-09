@@ -1454,9 +1454,9 @@ class Koha extends AbstractIlsDriver
 		}
 
 		if ($type == 'selfReg') {
-			$unwantedFields = explode('|', $kohaPreferences['PatronSelfModificationBorrowerUnwantedField']);
-		} else {
 			$unwantedFields = explode('|', $kohaPreferences['PatronSelfRegistrationBorrowerUnwantedField']);
+		} else {
+			$unwantedFields = explode('|', $kohaPreferences['PatronSelfModificationBorrowerUnwantedField']);
 		}
 		$requiredFields = explode('|', $kohaPreferences['PatronSelfRegistrationBorrowerMandatoryField']);
 		if (strlen($kohaPreferences['PatronSelfRegistrationLibraryList']) == 0) {
