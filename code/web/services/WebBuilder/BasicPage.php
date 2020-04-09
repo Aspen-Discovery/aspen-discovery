@@ -16,12 +16,7 @@ class WebBuilder_BasicPage extends Action{
 			die();
 		}
 
-		//Add in widgets and links to titles
-		require_once ROOT_DIR . '/sys/Parsedown/Parsedown.php';
-		$parsedown = Parsedown::instance();
-		$contentsFormatted = $parsedown->parse($basicPage->contents);
-
-		$interface->assign('contents', $contentsFormatted);
+		$interface->assign('contents', $basicPage->getFormattedContents());
 		$interface->assign('title', $basicPage->title);
 
 		$sidebar = null;
