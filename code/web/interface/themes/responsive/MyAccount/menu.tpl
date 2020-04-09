@@ -220,7 +220,7 @@
 				</div>
 
 				{if (array_key_exists('userAdmin', $userRoles) || array_key_exists('opacAdmin', $userRoles))}
-					{if in_array($action, array('Modules', 'Administrators', 'DBMaintenance', 'PHPInfo', 'Variables'))
+					{if in_array($action, array('Modules', 'Administrators', 'DBMaintenance', 'PHPInfo', 'Variables', 'SystemVariables'))
 					|| ($module == 'Admin' && $action == 'Home')}
 						{assign var="curSection" value=true}
 					{else}
@@ -247,7 +247,8 @@
 									<div class="adminMenuLink"><a href="/Admin/SendGridSettings">{translate text="SendGrid Settings"}</a></div>
 									<div class="adminMenuLink"><a href="/Admin/Home">{translate text="Solr Information"}</a></div>
 									<div class="adminMenuLink"><a href="/Admin/PHPInfo">{translate text="PHP Information"}</a></div>
-									<div class="adminMenuLink"><a href="/Admin/Variables">{translate text="System Variables"}</a></div>
+									<div class="adminMenuLink"><a href="/Admin/Variables">{translate text="Variables"}</a></div>
+									<div class="adminMenuLink"><a href="/Admin/SystemVariables">{translate text="System Variables"}</a></div>
 								{/if}
 							</div>
 						</div>
@@ -772,7 +773,9 @@
 						<div id="aspenHelpMenu" class="panel-collapse collapse {if $curSection}in{/if}">
 							<div class="panel-body">
 								<div class="adminMenuLink"><a href="/Admin/ReleaseNotes">{translate text="Release Notes"}</a></div>
+								{if $showSubmitTicket}
 								<div class="adminMenuLink"><a href="/Admin/SubmitTicket">{translate text="Submit Ticket"}</a></div>
+								{/if}
 							</div>
 						</div>
 					</div>

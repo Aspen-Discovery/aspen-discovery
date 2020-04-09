@@ -819,6 +819,19 @@ class Admin_DBMaintenance extends Admin_Admin
 					),
 				),
 
+				'create_system_variables_table' => [
+					'title' => 'Create System Variables Table',
+					'description' => 'Create a table to store system variables to avoid hard coding',
+					'sql' => [
+						'CREATE TABLE system_variables (
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							errorEmail VARCHAR( 128 ),
+							ticketEmail VARCHAR( 128 ),
+							searchErrorEmail VARCHAR( 128 )
+						)'
+					]
+				],
+
 				'utf8_update' => array(
 					'title' => 'Update to UTF-8',
 					'description' => 'Update database to use UTF-8 encoding',
