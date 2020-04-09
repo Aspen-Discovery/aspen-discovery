@@ -47,6 +47,11 @@
 									<div class="calendar-event-time">
 										{$event.formattedTime}
 									</div>
+									{if $event.isCancelled}
+										<div class="label label-danger calendar-event-state">
+											{translate text="Cancelled"}
+										</div>
+									{/if}
 								</div>
 							{/foreach}
 						</div>

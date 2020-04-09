@@ -147,11 +147,24 @@ class LibraryCalendarIndexer {
 							solrDocument.addField("source", settingsId);
 							solrDocument.addField("url", getStringForKey(curEvent, "url"));
 							String eventType = getStringForKey(curEvent, "type");
+							//Translate the Event Type
+							int boost = 1;
+							if (eventType == null ){
+								eventType = "Unknown";
+							}else if (eventType.equals("lc_closing")) {
+								eventType = "Library Closure";
+							}else if (eventType.equals("lc_event")) {
+								eventType = "Event";
+								boost = 5;
+							}else if (eventType.equals("lc_reservation")) {
+								eventType = "Reservation";
+								boost = 2;
+							}
 							solrDocument.addField("event_type", eventType);
 							//Don't index reservations since they are restricted to staff and
-							if (eventType != null && eventType.equals("lc_reservation")) {
+							/*if (eventType != null && eventType.equals("lc_reservation")) {
 								continue;
-							}
+							}*/
 							solrDocument.addField("last_indexed", new Date());
 							solrDocument.addField("last_change", getDateForKey(curEvent,"changed"));
 							Date startDate = getDateForKey(curEvent,"start_date");
@@ -181,6 +194,17 @@ class LibraryCalendarIndexer {
 									tmpDate.setTime(tmpDate.getTime() + 24 * 60 * 60 * 1000);
 								}
 							}
+							//Boost based on start date, we will give preference to anything in the next 30 days
+							Date today = new Date();
+							if (startDate.before(today) || startDate.equals(today)){
+								boost += 30;
+							}else{
+								long daysInFuture = (startDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24);
+								if (daysInFuture > 30){
+									daysInFuture = 30;
+								}
+								boost += (30 - daysInFuture);
+							}
 							solrDocument.addField("event_day", eventDays);
 							solrDocument.addField("event_month", eventMonths);
 							solrDocument.addField("event_year", eventYears);
@@ -191,10 +215,18 @@ class LibraryCalendarIndexer {
 							solrDocument.addField("online_address", getStringForKey(curEvent, "online_address"));
 							solrDocument.addField("age_group", getStringsForKey(curEvent, "age_group"));
 							solrDocument.addField("program_type", getStringsForKey(curEvent, "program_type"));
-							solrDocument.addField("internal_category", getStringsForKey(curEvent, "internal_categories"));
+							HashSet<String> internalCategories =  getStringsForKey(curEvent, "internal_categories");
+							if (internalCategories.contains("Featured")){
+								boost += 10;
+							}
+							solrDocument.addField("internal_category", internalCategories);
 							solrDocument.addField("event_state", getStringsForKey(curEvent, "event_state"));
+							HashSet<String> reservationStates = getStringsForKey(curEvent, "reservation_state");
+							if (reservationStates.contains("Cancelled")){
+								boost -= 10;
+							}
 							solrDocument.addField("reservation_state", getStringsForKey(curEvent, "reservation_state"));
-							solrDocument.addField("registration_required", curEvent.getBoolean("registration_enabled"));
+							solrDocument.addField("registration_required", curEvent.getBoolean("registration_enabled") ? "Yes" : "No");
 							solrDocument.addField("registration_start_date", getDateForKey(curEvent, "registration_start"));
 							solrDocument.addField("registration_end_date",getDateForKey(curEvent,"registration_end"));
 
@@ -212,6 +244,11 @@ class LibraryCalendarIndexer {
 							solrDocument.addField("image_url", getStringForKey(curEvent, "image"));
 
 							solrDocument.addField("library_scopes", librariesToShowFor);
+
+							if (boost < 1){
+								boost = 1;
+							}
+							solrDocument.addField("boost", boost);
 
 							solrUpdateServer.add(solrDocument);
 						} catch (SolrServerException | IOException e) {
@@ -259,7 +296,7 @@ class LibraryCalendarIndexer {
 			}
 
 			try {
-				solrUpdateServer.commit(false, false, true);
+				solrUpdateServer.commit(true, true, false);
 			} catch (Exception e) {
 				logEntry.incErrors("Error in final commit ", e);
 			}

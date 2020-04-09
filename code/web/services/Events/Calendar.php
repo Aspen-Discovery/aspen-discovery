@@ -120,11 +120,16 @@ class Events_Calendar extends Action
 						if (($endDate->getTimestamp() - $startDate-> getTimestamp()) > 24 * 60 * 60){
 							$formattedTime = 'All day';
 						}
+						$isCancelled = false;
+						if (array_key_exists('reservation_state', $result) && in_array('Cancelled', $result['reservation_state'] )) {
+							$isCancelled = true;
+						}
 						$eventDayObj['events'][] = [
 							'id' => $result['id'],
 							'title' => $result['title'],
 							'link' => $result['url'],
 							'formattedTime' => $formattedTime,
+							'isCancelled' => $isCancelled
 						];
 					}
 				}

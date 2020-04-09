@@ -43,4 +43,13 @@ class EventsSolrConnector extends Solr
 		}
 		return $filter;
 	}
+
+	public function getBoostFactors($searchLibrary)
+	{
+		$boostFactors = array();
+
+		$boostFactors[] = "boost";
+
+		return $boostFactors;
+	}
 }

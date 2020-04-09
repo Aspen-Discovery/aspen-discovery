@@ -1152,15 +1152,11 @@ abstract class Solr
 		//Boost items owned at our location
 		$searchLocation = Location::getSearchLocation($this->searchSource);
 
-		//Apply automatic boosting for grouped work queries
-		if (preg_match('/.*(grouped_works).*/i', $this->host)) {
-			$boostFactors = $this->getBoostFactors($searchLibrary);
-
+		//Apply automatic boosting for queries
+		$boostFactors = $this->getBoostFactors($searchLibrary);
+		if (!empty($boostFactors)) {
 			if (isset($options['qt']) && $options['qt'] == 'dismax') {
-				//Boost by number of holdings
-				if (count($boostFactors) > 0 && $configArray['Index']['enableBoosting']) {
-					$options['bf'] = "sum(" . implode(',', $boostFactors) . ")";
-				}
+				$options['bf'] = "sum(" . implode(',', $boostFactors) . ")";
 			} else {
 				$baseQuery = $options['q'];
 				//Boost items in our system
@@ -1169,7 +1165,7 @@ abstract class Solr
 				} else {
 					$boost = '';
 				}
-				if (empty($boost) || !$configArray['Index']['enableBoosting']) {
+				if (empty($boost)) {
 					$options['q'] = $baseQuery;
 				} else {
 					$options['q'] = "{!boost b=$boost} $baseQuery";
