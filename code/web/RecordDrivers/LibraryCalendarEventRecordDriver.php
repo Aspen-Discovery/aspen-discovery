@@ -46,6 +46,11 @@ class LibraryCalendarEventRecordDriver extends IndexRecordDriver
 		} else {
 			$interface->assign('description', '');
 		}
+		if (array_key_exists('reservation_state', $this->fields) && in_array('Cancelled', $this->fields['reservation_state'] )) {
+			$interface->assign('isCancelled', true);
+		}else{
+			$interface->assign('isCancelled', false);
+		}
 		$interface->assign('start_date', $this->fields['start_date']);
 		$interface->assign('end_date', $this->fields['end_date']);
 		$interface->assign('source', isset($this->fields['source']) ? $this->fields['source'] : '');

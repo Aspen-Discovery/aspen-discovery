@@ -10426,6 +10426,9 @@ a.browse-thumbnail-sorted.active {
 .calendar-event-time {
   font-size: 12px;
 }
+.calendar-event-state {
+  display: inherit;
+}
 .blockhead {
   border-bottom: 1px solid #c0c0c0;
   color: #3e63a6;

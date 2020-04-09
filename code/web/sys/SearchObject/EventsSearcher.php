@@ -238,7 +238,7 @@ class SearchObject_EventsSearcher extends SearchObject_SolrSearcher
 			$internalCategory->id = count($facetConfig) +1;
 			$internalCategory->multiSelect = true;
 			$internalCategory->facetName = "internal_category";
-			$internalCategory->displayName = "Internal Category";
+			$internalCategory->displayName = "Category";
 			$internalCategory->numEntriesToShowByDefault = 5;
 			$internalCategory->translate = false;
 			$internalCategory->collapseByDefault = true;
@@ -266,6 +266,17 @@ class SearchObject_EventsSearcher extends SearchObject_SolrSearcher
 			$reservationState->collapseByDefault = true;
 			$reservationState->useMoreFacetPopup = true;
 			$facetConfig["reservation_state"] = $reservationState;
+
+			$registrationRequired = new LibraryFacetSetting();
+			$registrationRequired->id = count($facetConfig) +1;
+			$registrationRequired->multiSelect = true;
+			$registrationRequired->facetName = "registration_required";
+			$registrationRequired->displayName = "Registration Required?";
+			$registrationRequired->numEntriesToShowByDefault = 5;
+			$registrationRequired->translate = false;
+			$registrationRequired->collapseByDefault = true;
+			$registrationRequired->useMoreFacetPopup = true;
+			$facetConfig["registration_required"] = $registrationRequired;
 
 			$eventType = new LibraryFacetSetting();
 			$eventType->id = count($facetConfig) +1;

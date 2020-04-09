@@ -509,7 +509,6 @@ class ExploreMore {
 					'lookfor' => $searchTerm,
 					'index' => 'EventsKeyword'
 				));
-				$searchObjectSolr->addHiddenFilter("event_type", "lc_event");
 				$searchObjectSolr->setPage(1);
 				$searchObjectSolr->setLimit($this->numEntriesToAdd + 1);
 				$results = $searchObjectSolr->processSearch(true, false);
