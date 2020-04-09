@@ -15,6 +15,8 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 	// Display Modes //
 	public $viewOptions = array('list', 'covers');
 
+	private $fieldsToReturn = null;
+
 	/**
 	 * Constructor. Initialise some details about the server
 	 *
@@ -1545,10 +1547,18 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_SolrSearcher
 		return $this->indexEngine->getRecordByIsbn($isbn, $this->getFieldsToReturn());
 	}
 
+	/**
+	 * @param String $fields - a list of comma separated fields to return
+	 */
+	function setFieldsToReturn($fields){
+		$this->fieldsToReturn = $fields;
+	}
 	protected function getFieldsToReturn()
 	{
 		if (isset($_REQUEST['allFields'])) {
 			$fieldsToReturn = '*,score';
+		}elseif ($this->fieldsToReturn != null) {
+			$fieldsToReturn = $this->fieldsToReturn;
 		} else {
 			$fieldsToReturn = SearchObject_GroupedWorkSearcher::$fields_to_return;
 			global $solrScope;
