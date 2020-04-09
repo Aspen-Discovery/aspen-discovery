@@ -6,15 +6,8 @@ global $library;
 global $serverName;
 global $interface;
 header('Content-Type:text/plain');
-if (true || $configArray['Site']['isProduction']){
+if ($configArray['Site']['isProduction']){
 	echo(@file_get_contents('robots.txt'));
-
-	$subdomain = $library->subdomain;
-
-	$file = 'robots.txt';
-	// Open the file to get existing content
-	$current = file_get_contents($file);
-
 	$fileName = 'sitemapindex.xml';
 	$siteMap_Url = 'Sitemap: ' . $configArray['Site']['url'] . '/' .$fileName;
 	// Append a new line char
