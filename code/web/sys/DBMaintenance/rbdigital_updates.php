@@ -5,14 +5,6 @@
 
 function getRBdigitalUpdates() {
 	return array(
-		'variables_lastRBdigitalExport' => array(
-			'title' => 'Variables Last RBdigital Export Time',
-			'description' => 'Add a variable for when RBdigital data was extracted from the API last.',
-			'sql' => array(
-				"INSERT INTO variables (name, value) VALUES ('lastRBdigitalExport', 'false')",
-			),
-		),
-
 		'rbdigital_exportTables' => array(
 			'title' => 'RBdigital title tables',
 			'description' => 'Create tables to store data exported from RBdigital.',

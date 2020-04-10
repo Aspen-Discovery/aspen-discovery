@@ -3,14 +3,6 @@
 function getHooplaUpdates()
 {
 	return array(
-		'variables_lastHooplaExport' => array(
-			'title' => 'Variables Last Hoopla Export Time',
-			'description' => 'Add a variable for when hoopla data was extracted from the API last.',
-			'sql' => array(
-				"INSERT INTO variables (name, value) VALUES ('lastHooplaExport', 'false')",
-			),
-		),
-
 		'hoopla_exportTables' => array(
 			'title' => 'Hoopla export tables',
 			'description' => 'Create tables to store data exported from hoopla.',
