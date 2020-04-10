@@ -31,15 +31,8 @@ class Archive_RequestCopy extends Action{
 		$archiveRequestFields['pid']['default'] = $pid; // add pid to the form
 
 		if (isset($_REQUEST['submit'])) {
-			if (isset($configArray['ReCaptcha']['privateKey'])){
-				$privatekey = $configArray['ReCaptcha']['privateKey'];
-				$resp = recaptcha_check_answer ($privatekey,
-					$_SERVER["REMOTE_ADDR"],
-					$_POST["g-recaptcha-response"]);
-				$recaptchaValid = $resp->is_valid;
-			}else{
-				$recaptchaValid = true;
-			}
+			require_once ROOT_DIR . '/sys/Enrichment/RecaptchaSetting.php';
+			$recaptchaValid = RecaptchaSetting::validateRecaptcha();
 
 			if (!$recaptchaValid) {
 				$interface->assign('captchaMessage', 'The CAPTCHA response was incorrect, please try again.');
@@ -111,9 +104,10 @@ class Archive_RequestCopy extends Action{
 		$interface->assign('archiveRequestMaterialsHeader', $owningLibrary->archiveRequestMaterialsHeader);
 
 		// Set up captcha to limit spam self registrations
-		if (isset($configArray['ReCaptcha']['publicKey'])) {
-			$recaptchaPublicKey = $configArray['ReCaptcha']['publicKey'];
-			$captchaCode        = recaptcha_get_html($recaptchaPublicKey);
+		require_once ROOT_DIR . '/sys/Enrichment/RecaptchaSetting.php';
+		$recaptcha = new RecaptchaSetting();
+		if ($recaptcha->find(true) && !empty($recaptcha->publicKey)){
+			$captchaCode        = recaptcha_get_html($recaptcha->publicKey);
 			$interface->assign('captcha', $captchaCode);
 		}
 

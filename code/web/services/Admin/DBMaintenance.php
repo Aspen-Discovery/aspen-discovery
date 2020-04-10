@@ -2186,6 +2186,20 @@ class Admin_DBMaintenance extends Admin_Admin
 						) ENGINE = INNODB;'
 					]
 				],
+
+				'recaptcha_settings' => [
+					'title' => 'Recaptcha settings',
+					'description' => 'Add the ability to store Recaptcha settings in the DB rather than config file',
+					'continueOnError' => 'true',
+					'sql' => [
+						'CREATE TABLE IF NOT EXISTS recaptcha_settings(
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							publicKey VARCHAR(50) NOT NULL,
+							privateKey VARCHAR(50) NOT NULL
+						) ENGINE = INNODB;',
+						'populateRecaptchaSettings'
+					],
+				],
 			)
 		);
 	}
@@ -2390,6 +2404,17 @@ class Admin_DBMaintenance extends Admin_Admin
 			$setting->hasAuthorNotes = ($configArray['Syndetics']['showAuthorNotes'] == true);
 			$setting->hasVideoClip = ($configArray['Syndetics']['showVideoClip'] == true);
 			$setting->insert();
+		}
+	}
+
+	function populateRecaptchaSettings(){
+		global $configArray;
+		if (!empty($configArray['ReCaptcha']['publicKey'])){
+			require_once ROOT_DIR . '/sys/Enrichment/RecaptchaSetting.php';
+			$recaptchaSetting = new RecaptchaSetting();
+			$recaptchaSetting->publicKey = $configArray['ReCaptcha']['publicKey'];
+			$recaptchaSetting->privateKey = $configArray['ReCaptcha']['privateKey'];
+			$recaptchaSetting->insert();
 		}
 	}
 
