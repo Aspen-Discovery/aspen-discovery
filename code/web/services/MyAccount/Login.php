@@ -77,6 +77,7 @@ class MyAccount_Login extends Action
 			$interface->assign('username', $_REQUEST['username']);
 		}
 		$interface->assign('enableSelfRegistration', $library->enableSelfRegistration);
+		$interface->assign('selfRegistrationUrl', $library->selfRegistrationUrl);
 		$interface->assign('usernameLabel', $library->loginFormUsernameLabel ? $library->loginFormUsernameLabel : 'Your Name');
 		$interface->assign('passwordLabel', $library->loginFormPasswordLabel ? $library->loginFormPasswordLabel : 'Library Card Number');
 

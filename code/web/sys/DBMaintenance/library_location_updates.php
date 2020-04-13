@@ -2092,6 +2092,14 @@ function getLibraryLocationUpdates(){
 				'ALTER TABLE library ADD COLUMN generateSitemap TINYINT(1) DEFAULT 1',
 			]
 		],
+
+		'selfRegistrationUrl' => [
+			'title' => 'Self Registration with external url',
+			'description' => 'Update libraries to allow self registration by redirecting to another URL',
+			'sql' => [
+				'ALTER TABLE library add COLUMN selfRegistrationUrl VARCHAR(255)',
+			]
+		]
 	);
 }
 
