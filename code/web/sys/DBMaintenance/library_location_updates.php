@@ -429,6 +429,14 @@ function getLibraryLocationUpdates(){
 			),
 		],
 
+		'library_links_showToLoggedInUsersOnly' => [
+			'title' => 'Library Links - Show to logged in users only',
+			'description' => 'Allow library links to only be shown to users that are logged in',
+			'sql' => [
+				'ALTER TABLE library_links ADD COLUMN showToLoggedInUsersOnly TINYINT DEFAULT 0'
+			]
+		],
+
 		'library_top_links' => array(
 			'title' => 'Library Top Links',
 			'description' => 'Add configurable links to display within the header. ',
