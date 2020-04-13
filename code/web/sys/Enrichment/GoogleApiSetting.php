@@ -16,7 +16,7 @@ class GoogleApiSetting extends DataObject
 
 	public static function getObjectStructure()
 	{
-		$structure = array(
+		return array(
 			'id' => array('property' => 'id', 'type' => 'label', 'label' => 'Id', 'description' => 'The unique id'),
 			'googleAnalyticsTrackingId' => array('property' => 'googleAnalyticsTrackingId', 'type' => 'text', 'label' => 'Google Analytics Tracking ID', 'description' => 'The Google analytics Tracking ID to use'),
 			'googleAnalyticsLinkingId' => array('property' => 'googleAnalyticsLinkingId', 'type' => 'text', 'label' => 'Google Analytics Linking ID', 'description' => 'The Google analytics Linking ID to use'),
@@ -27,6 +27,5 @@ class GoogleApiSetting extends DataObject
 			'googleTranslateKey' => array('property' => 'googleTranslateKey', 'type' => 'text', 'label' => 'Google Translate Key', 'description' => 'The Google translate API key to use'),
 			'googleTranslateLanguages' => array('property' => 'googleTranslateLanguages', 'type' => 'text', 'label' => 'Google Translate Languages', 'description' => 'The Google translate lanaguages to show', 'default'=>'ar,da,en,es,fr,de,it,ja,pl,pt,ru,sv,th,vi,zh-CN,zh-TW'),
 		);
-		return $structure;
 	}
 }

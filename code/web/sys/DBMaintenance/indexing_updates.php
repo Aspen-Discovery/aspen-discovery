@@ -405,6 +405,14 @@ function getIndexingUpdates()
 			),
 		),
 
+		'track_ils_self_registrations' => [
+			'title' => 'Track Self Registrations',
+			'description' => 'Track self registrations done by indexing profile',
+			'sql' => [
+				'ALTER TABLE user_ils_usage ADD COLUMN selfRegistrationCount INT(11) DEFAULT 0'
+			]
+		],
+
 		'indexing_profile_add_continuous_update_fields' => [
 			'title' => 'Indexing Profile Add Continuous Update Fields',
 			'description' => 'Add fields to track when last updates were done and to trigger full updates',

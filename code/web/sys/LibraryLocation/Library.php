@@ -41,12 +41,15 @@ class Library extends DataObject
 	public $isDefault;
 	public $libraryId; 				//int(11)
 	public $subdomain; 				//varchar(15)
+	public $baseUrl;
 
 	//Display information specific to the library
 	public $displayName; 			//varchar(50)
 	public $showDisplayNameInHeader;
 	public $headerText;
 	public $systemMessage;
+
+	public $generateSitemap;
 
 	//More general display configurations
 	public $themeName; 				//varchar(15)
@@ -111,6 +114,7 @@ class Library extends DataObject
 	public $showHoldCancelDate;
 	public /** @noinspection PhpUnused */ $enableCourseReserves;
 	public $enableSelfRegistration;
+	public $selfRegistrationUrl;
 	public $selfRegistrationLocationRestrictions;
 	public $promptForBirthDateInSelfReg;
 	public $showItsHere;
@@ -412,9 +416,11 @@ class Library extends DataObject
 			'isDefault' => array('property' => 'isDefault', 'type'=>'checkbox', 'label' => 'Default Library (one per install!)', 'description' => 'The default library instance for loading scoping information etc', 'hideInLists' => true),
 			'libraryId' => array('property'=>'libraryId', 'type'=>'label', 'label'=>'Library Id', 'description'=>'The unique id of the library within the database', 'uniqueProperty' => true),
 			'subdomain' => array('property'=>'subdomain', 'type'=>'text', 'label'=>'Subdomain', 'description'=>'A unique id to identify the library within the system', 'uniqueProperty' => true),
+			'baseUrl' => array('property'=>'baseUrl', 'type'=>'text', 'label'=>'Base URL', 'description'=>'The Base URL for the library instance including the protocol (http or https).'),
 			'displayName' => array('property'=>'displayName', 'type'=>'text', 'label'=>'Display Name', 'description'=>'A name to identify the library within the system', 'size'=>'40', 'uniqueProperty' => true),
 			'showDisplayNameInHeader' => array('property'=>'showDisplayNameInHeader', 'type'=>'checkbox', 'label'=>'Show Display Name in Header', 'description'=>'Whether or not the display name should be shown in the header next to the logo', 'hideInLists' => true, 'default'=>false),
 			'systemMessage' => array('property'=>'systemMessage', 'type'=>'html', 'label'=>'System Message', 'description'=>'A message to be displayed at the top of the screen', 'size'=>'80', 'maxLength' =>'512', 'allowableTags' => '<a><b><em><div><script><span><p><strong><sub><sup>', 'hideInLists' => true),
+			'generateSitemap' => array('property'=>'generateSitemap', 'type'=>'checkbox', 'label'=>'Generate Sitemap', 'description'=>'Whether or not a sitemap should be generated for the library.', 'hideInLists' => true,),
 
 			// Basic Display //
 			'displaySection' =>array('property'=>'displaySection', 'type' => 'section', 'label' =>'Basic Display', 'hideInLists' => true,
@@ -500,9 +506,10 @@ class Library extends DataObject
 				)),
 				'selfRegistrationSection' => array('property' => 'selfRegistrationSection', 'type' => 'section', 'label' => 'Self Registration', 'hideInLists' => true,
 						'helpLink' => '', 'properties' => array(
-					'enableSelfRegistration'         => array('property'=>'enableSelfRegistration', 'type'=>'checkbox', 'label'=>'Enable Self Registration', 'description'=>'Whether or not patrons can self register on the site', 'hideInLists' => true),
+					'enableSelfRegistration'         => array('property'=>'enableSelfRegistration', 'type'=>'enum', 'values' => [0 => 'No Self Registration', 1 => 'ILS Based Self Registration', 2 => 'Redirect to Self Registration URL'], 'label'=>'Enable Self Registration', 'description'=>'Whether or not patrons can self register on the site', 'hideInLists' => true),
 					'selfRegistrationLocationRestrictions' => ['property' => 'selfRegistrationLocationRestrictions', 'type' => 'enum', 'values' => [0 => 'No Restrictions', 1 => 'All Library Locations', 2 => 'All Hold Pickup Locations', 3 => 'Pickup Locations for the library'], 'label' => 'Valid Registration Locations', 'description' => 'Indicates which locations are valid pickup locations', 'hideInLists' => true],
 					'promptForBirthDateInSelfReg'    => array('property' => 'promptForBirthDateInSelfReg', 'type' => 'checkbox', 'label' => 'Prompt For Birth Date', 'description'=>'Whether or not to prompt for birth date when self registering'),
+					'selfRegistrationUrl'            => array('property'=>'selfRegistrationUrl', 'type'=>'url', 'label'=>'Self Registration URL', 'description'=>'An external URL where users can self register', 'hideInLists' => true),
 					'selfRegistrationFormMessage'    => array('property'=>'selfRegistrationFormMessage', 'type'=>'html', 'label'=>'Self Registration Form Message', 'description'=>'Message shown to users with the form to submit the self registration.  Leave blank to give users the default message.', 'hideInLists' => true),
 					'selfRegistrationSuccessMessage' => array('property'=>'selfRegistrationSuccessMessage', 'type'=>'html', 'label'=>'Self Registration Success Message', 'description'=>'Message shown to users when the self registration has been completed successfully.  Leave blank to give users the default message.', 'hideInLists' => true),
 					'selfRegistrationTemplate'       => array('property'=>'selfRegistrationTemplate', 'type'=>'text', 'label'=>'Self Registration Template', 'description'=>'The ILS template to use during self registration (Sierra and Millennium).', 'hideInLists' => true, 'default' => 'default'),

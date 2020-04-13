@@ -603,7 +603,25 @@ class CatalogConnection
 
 	function selfRegister()
 	{
-		return $this->driver->selfRegister();
+		$result = $this->driver->selfRegister();
+		if ($result['success'] == true){
+			//Track usage by the user
+			require_once ROOT_DIR . '/sys/ILS/UserILSUsage.php';
+			$userUsage = new UserILSUsage();
+			$userUsage->userId = -1;
+			$userUsage->indexingProfileId = $this->driver->getIndexingProfile()->id;
+			$userUsage->year = date('Y');
+			$userUsage->month = date('n');
+
+			if ($userUsage->find(true)) {
+				$userUsage->selfRegistrationCount++;
+				$userUsage->update();
+			} else {
+				$userUsage->selfRegistrationCount = 1;
+				$userUsage->insert();
+			}
+		}
+		return $result;
 	}
 
 	/**

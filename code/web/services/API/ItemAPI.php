@@ -361,6 +361,7 @@ class ItemAPI extends Action {
 
 	function getItemAvailability(){
 		$itemData = array();
+		global $library;
 
 		//Load basic information
 		$this->id = $_GET['id'];
@@ -389,7 +390,7 @@ class ItemAPI extends Action {
 						'number' =>  $i++,
 						'type' => 'holding',
 						'availability' => $copy['available'],
-						'holdable' => $copy['holdable'] ? 1 : 0,
+						'holdable' => ($copy['holdable'] && $library->showHoldButton) ? 1 : 0,
 						'bookable' => $copy['bookable'] ? 1 : 0,
 						'libraryDisplayName' => $copy['shelfLocation'],
 						'section' => $copy['section'],

@@ -94,6 +94,8 @@ class Admin_DBMaintenance extends Admin_Admin
 		$websiteIndexingUpdates = getWebsiteIndexingUpdates();
 		require_once ROOT_DIR . '/sys/DBMaintenance/events_integration_updates.php';
 		$eventsIntegrationUpdates = getEventsIntegrationUpdates();
+		require_once ROOT_DIR . '/sys/DBMaintenance/file_upload_updates.php';
+		$fileUploadUpdates = getFileUploadUpdates();
 
 		/** @noinspection SqlResolve */
 		/** @noinspection SqlWithoutWhere */
@@ -139,6 +141,7 @@ class Admin_DBMaintenance extends Admin_Admin
 			$cloudLibraryUpdates,
 			$websiteIndexingUpdates,
 			$eventsIntegrationUpdates,
+			$fileUploadUpdates,
 			array(
 				'index_search_stats' => array(
 					'title' => 'Index search stats table',
@@ -821,6 +824,19 @@ class Admin_DBMaintenance extends Admin_Admin
 						"INSERT INTO variables (name, value) VALUES ('fullReindexIntervalCritical', '129600')",
 					),
 				),
+
+				'create_system_variables_table' => [
+					'title' => 'Create System Variables Table',
+					'description' => 'Create a table to store system variables to avoid hard coding',
+					'sql' => [
+						'CREATE TABLE system_variables (
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							errorEmail VARCHAR( 128 ),
+							ticketEmail VARCHAR( 128 ),
+							searchErrorEmail VARCHAR( 128 )
+						)'
+					]
+				],
 
 				'utf8_update' => array(
 					'title' => 'Update to UTF-8',
@@ -2176,6 +2192,20 @@ class Admin_DBMaintenance extends Admin_Admin
 						) ENGINE = INNODB;'
 					]
 				],
+
+				'recaptcha_settings' => [
+					'title' => 'Recaptcha settings',
+					'description' => 'Add the ability to store Recaptcha settings in the DB rather than config file',
+					'continueOnError' => 'true',
+					'sql' => [
+						'CREATE TABLE IF NOT EXISTS recaptcha_settings(
+							id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+							publicKey VARCHAR(50) NOT NULL,
+							privateKey VARCHAR(50) NOT NULL
+						) ENGINE = INNODB;',
+						'populateRecaptchaSettings'
+					],
+				],
 			)
 		);
 	}
@@ -2183,7 +2213,6 @@ class Admin_DBMaintenance extends Admin_Admin
 	public function convertTablesToInnoDB(/** @noinspection PhpUnusedParameterInspection */ &$update)
 	{
 		global $configArray;
-		/** @noinspection SqlResolve */
 		$sql = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = '{$configArray['Database']['database_aspen_dbname']}' AND ENGINE = 'MyISAM'";
 
 		/** @var PDO $aspen_db */
@@ -2380,6 +2409,17 @@ class Admin_DBMaintenance extends Admin_Admin
 			$setting->hasAuthorNotes = ($configArray['Syndetics']['showAuthorNotes'] == true);
 			$setting->hasVideoClip = ($configArray['Syndetics']['showVideoClip'] == true);
 			$setting->insert();
+		}
+	}
+
+	function populateRecaptchaSettings(){
+		global $configArray;
+		if (!empty($configArray['ReCaptcha']['publicKey'])){
+			require_once ROOT_DIR . '/sys/Enrichment/RecaptchaSetting.php';
+			$recaptchaSetting = new RecaptchaSetting();
+			$recaptchaSetting->publicKey = $configArray['ReCaptcha']['publicKey'];
+			$recaptchaSetting->privateKey = $configArray['ReCaptcha']['privateKey'];
+			$recaptchaSetting->insert();
 		}
 	}
 

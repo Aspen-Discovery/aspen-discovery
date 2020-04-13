@@ -21,6 +21,9 @@
 			{if !empty($selfRegResult.password)}
 				<p>Your initial password is <strong>{$selfRegResult.password}</strong></p>
 			{/if}
+			{if !empty($selfRegResult.message)}
+				<p class="alert alert-warning">{$selfRegResult.message}</p>
+			{/if}
 		</div>
 	{else}
 		{img_assign filename='self_reg_banner.png' var=selfRegBanner}
@@ -37,8 +40,12 @@
 		</div>
 		{if (isset($selfRegResult))}
 			<div id="selfRegFail" class="alert alert-warning">
-				Sorry, we were unable to create a library card for you.  You may already have an account or there may be an error with the information you entered.
-				Please try again or visit the library in person (with a valid ID) so we can create a card for you.
+				{if !empty($selfRegResult.message)}
+					{$selfRegResult.message}
+				{else}
+					Sorry, we were unable to create a library card for you.  You may already have an account or there may be an error with the information you entered.
+					Please try again or visit the library in person (with a valid ID) so we can create a card for you.
+				{/if}
 			</div>
 		{/if}
 		{if $captchaMessage}

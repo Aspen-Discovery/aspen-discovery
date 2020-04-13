@@ -31,6 +31,7 @@
 #############
 @reboot       root    sleep 5 cd /usr/local/aspen-discovery/sites/{sitename}/; ./start_background_processes.sh
 5 2 * * *     root    php /usr/local/aspen-discovery/code/web/cron/updateSuggesters.php {sitename}
+7 3 * * *     root    php /usr/local/aspen-discovery/code/web/cron/createSitemaps.php {sitename}
 */5 * * * *   root    php /usr/local/aspen-discovery/code/web/cron/checkBackgroundProcesses.php {sitename}
 
 ########################################################
