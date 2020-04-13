@@ -14,7 +14,7 @@ class Record_AJAX extends Action
 		$timer->logTime("Starting method $method");
 		if (method_exists($this, $method)) {
 			// Methods intend to return JSON data
-			if (in_array($method, array('getPlaceHoldForm', 'getPlaceHoldEditionsForm', 'getBookMaterialForm', 'placeHold', 'bookMaterial'))) {
+			if (in_array($method, array('getPlaceHoldForm', 'getPlaceHoldEditionsForm', 'getBookMaterialForm', 'placeHold', 'bookMaterial', 'getUploadPDFForm', 'uploadPDF', 'showSelectDownloadForm'))) {
 				header('Content-type: application/json');
 				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 				header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
@@ -516,4 +516,133 @@ class Record_AJAX extends Action
 		return $results;
 	}
 
+	/** @noinspection PhpUnused */
+	function getUploadPDFForm(){
+		global $interface;
+
+		$id = $_REQUEST['id'];
+		if (strpos($id, ':')){
+			list(,$id) = explode(':', $id);
+		}
+		$interface->assign('id', $id);
+
+		return [
+			'title' => 'Upload a PDF',
+			'modalBody' => $interface->fetch("Record/upload-pdf-form.tpl"),
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#uploadPDFForm\").submit()'>Upload PDF</button>"
+		];
+	}
+
+	/** @noinspection PhpUnused */
+	function uploadPDF(){
+		$result = [
+			'success' => false,
+			'title' => 'Uploading PDF',
+			'message' => 'Sorry your pdf could not be uploaded'
+		];
+		if (UserAccount::isLoggedIn() && (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('cataloging'))){
+			if (isset($_FILES['pdfFile'])) {
+				$uploadedFile = $_FILES['pdfFile'];
+				if (isset($uploadedFile["error"]) && $uploadedFile["error"] == 4) {
+					$result['message'] = "No PDF was uploaded";
+				} else if (isset($uploadedFile["error"]) && $uploadedFile["error"] > 0) {
+					$result['message'] =  "Error in file upload " . $uploadedFile["error"];
+				} else {
+					$id = $_REQUEST['id'];
+					$recordDriver = RecordDriverFactory::initRecordDriverById($id);
+					if (!$recordDriver->isValid()){
+						$result['message'] =  "Could not find the record to attach this file to";
+					}else{
+						//Upload data files
+						global $serverName;
+						$dataPath = '/data/aspen-discovery/' . $serverName . '/uploads/record_pdfs/';
+						if (!file_exists($dataPath)){
+							global $configArray;
+							if ($configArray['System']['operatingSystem'] == 'windows') {
+								if (!mkdir($dataPath, 0777, true)) {
+									$result['message'] = 'Could not create the directory on the server';
+								}
+							}else{
+								if (!mkdir($dataPath, 0755, true)) {
+									$result['message'] = 'Could not create the directory on the server';
+								}
+							}
+						}
+						$destFullPath = $dataPath . $recordDriver->getId() . '_' . $uploadedFile["name"];
+						if (!file_exists($destFullPath)) {
+							$fileType = $uploadedFile["type"];
+							if ($fileType == 'application/pdf') {
+								if (copy($uploadedFile["tmp_name"], $destFullPath)) {
+									require_once ROOT_DIR . '/sys/File/FileUpload.php';
+									$fileUpload = new FileUpload();
+									$fileUpload->title = $_REQUEST['title'];
+									$fileUpload->fullPath = $destFullPath;
+									$fileUpload->type = 'RecordPDF';
+									$fileUpload->insert();
+
+									require_once ROOT_DIR . '/sys/ILS/RecordFile.php';
+									$recordFile = new RecordFile();
+									$recordFile->type = $recordDriver->getRecordType();
+									$recordFile->identifier = $recordDriver->getUniqueID();
+									$recordFile->fileId = $fileUpload->id;
+									$recordFile->insert();
+
+									$result['success'] = true;
+
+								}else{
+									$result['message'] = 'Could not save the file on the server';
+								}
+							} else {
+								$result['message'] = 'Incorrect file type.  Please upload a PDF';
+							}
+						}else{
+							$result['message'] = 'A file with this name already exists. Please rename your file.';
+						}
+					}
+				}
+			} else {
+				$result['message'] = 'No file was uploaded, please try again.';
+			}
+		}
+		if ($result['success']){
+			//TODO: Marc the record as needing indexing
+			//$this->reloadCover();
+			$result['message'] = 'Your file has been uploaded successfully';
+		}
+		return $result;
+	}
+
+	function showSelectDownloadForm(){
+		global $interface;
+
+		$id = $_REQUEST['id'];
+		$recordDriver = RecordDriverFactory::initRecordDriverById($id);
+		if (strpos($id, ':')){
+			list(,$id) = explode(':', $id);
+		}
+		$interface->assign('id', $id);
+
+		require_once ROOT_DIR . '/sys/ILS/RecordFile.php';
+		require_once ROOT_DIR . '/sys/File/FileUpload.php';
+		$recordFile = new RecordFile();
+		$recordFile->type = $recordDriver->getRecordType();
+		$recordFile->identifier = $recordDriver->getUniqueID();
+		$recordFile->find();
+		$validFiles = [];
+		while ($recordFile->fetch()){
+			$fileUpload = new FileUpload();
+			$fileUpload->id = $recordFile->fileId;
+			if ($fileUpload->find(true)){
+				$validFiles[$recordFile->fileId] = $fileUpload->title;
+			}
+		}
+		asort($validFiles);
+		$interface->assign('validFiles', $validFiles);
+
+		return [
+			'title' => 'Select PDF to download',
+			'modalBody' => $interface->fetch("Record/select-download-pdf-form.tpl"),
+			'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#downloadPDF\").submit()'>Download PDF</button>"
+		];
+	}
 }

@@ -140,7 +140,49 @@ AspenDiscovery.Record = (function(){
 		lessContributors: function(){
 			document.getElementById('showAdditionalContributorsLink').style.display="block";
 			document.getElementById('additionalContributors').style.display="none";
-		}
+		},
 
+		uploadPDF: function (id){
+			let url = Globals.path + '/Record/' + id + '/AJAX?method=uploadPDF';
+			let uploadPDFData = new FormData($("#uploadPDFForm")[0]);
+			$.ajax({
+				url: url,
+				type: 'POST',
+				data: uploadPDFData,
+				dataType: 'json',
+				success: function(data) {
+					AspenDiscovery.showMessage(data.title, data.message, true, data.success);
+				},
+				async: false,
+				contentType: false,
+				processData: false
+			});
+			return false;
+		},
+
+		getUploadPDFForm: function (id){
+			let url = Globals.path + '/Record/' + id + '/AJAX?method=getUploadPDFForm';
+			$.getJSON(url, function (data){
+					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+				}
+			);
+			return false;
+		},
+
+		selectFileDownload: function( recordId) {
+			let url = Globals.path + '/Record/' + recordId + '/AJAX?method=showSelectDownloadForm';
+			$.getJSON(url, function (data){
+					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+				}
+			);
+			return false;
+		},
+
+		downloadSelectedFile: function () {
+			let id = $('#id').val();
+			let selectedFile = $('#selectedFile').val();
+			window.location = Globals.path + '/Record/' + id + '/DownloadPDF?fileId=' + selectedFile;
+			return false;
+		}
 	};
 }(AspenDiscovery.Record || {}));
