@@ -38,12 +38,14 @@ while ($library->fetch()){
 		$searchObject->setFieldsToReturn('id');
 		$searchObject->setLimit(1);
 		$result = $searchObject->processSearch();
+		//Technically google will take 50k, but they don't like it if you have that many.
+		$recordsPerSitemap = 40000;
 		if (!$result instanceof AspenError && empty($result['error'])) {
 			$numResults = $searchObject->getResultTotal();
 			$lastPage = (int)ceil($numResults / 100);
 			$searchObject->setLimit(100);
 
-			$numSitemaps = (int)ceil($numResults / 50000);
+			$numSitemaps = (int)ceil($numResults / $recordsPerSitemap);
 
 			//Now do searches in batch and create the sitemap files
 			for ($curSitemap = 1; $curSitemap <= $numSitemaps; $curSitemap++) {
@@ -52,9 +54,9 @@ while ($library->fetch()){
 				//Store sitemaps in the sitemaps directory
 				$sitemapFhnd = fopen(ROOT_DIR . '/sitemaps/' . $curSitemapName, 'w');
 
-				$sitemapStartIndex = ($curSitemap - 1) * 50000;
+				$sitemapStartIndex = ($curSitemap - 1) * $recordsPerSitemap;
 				$sitemapStartPage = $sitemapStartIndex / 100;
-				$sitemapEndIndex = $curSitemap * 50000;
+				$sitemapEndIndex = $curSitemap * $recordsPerSitemap;
 				$sitemapEndPage = $sitemapEndIndex / 100;
 
 				for ($curPage = $sitemapStartPage; $curPage < $sitemapEndPage; $curPage++) {
