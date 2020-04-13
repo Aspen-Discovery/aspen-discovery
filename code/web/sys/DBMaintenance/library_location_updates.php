@@ -2075,6 +2075,15 @@ function getLibraryLocationUpdates(){
 				'ALTER TABLE library add column selfRegistrationLocationRestrictions INT DEFAULT 2',
 			],
 		],
+
+		'library_sitemap_changes' => [
+			'title' => 'Updates to handle sitemaps for libraries',
+			'description' => 'Update libraries to include base url and a flag for whether or not a sitemap should be generated',
+			'sql' => [
+				'ALTER TABLE library ADD COLUMN baseUrl VARCHAR(75)',
+				'ALTER TABLE library ADD COLUMN generateSitemap TINYINT(1) DEFAULT 1',
+			]
+		],
 	);
 }
 

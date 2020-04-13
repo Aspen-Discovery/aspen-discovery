@@ -5,8 +5,6 @@ global $configArray;
 global $serverName;
 global $interface;
 
-$baseUrl = $configArray['Site']['url'];
-
 require_once ROOT_DIR . '/sys/Module.php';
 $module = new Module();
 $module->enabled = true;
@@ -22,10 +20,16 @@ while ($module->fetch()) {
 $library = new Library();
 $library->find();
 while ($library->fetch()){
-	if ($addGroupedWorks) {
+	if ($addGroupedWorks && $library->generateSitemap) {
 		$subdomain = $library->subdomain;
 		global $solrScope;
 		$solrScope = $subdomain;
+
+		if (empty($library->baseUrl)){
+			$baseUrl = $configArray['Site']['url'];
+		}else{
+			$baseUrl = $library->baseUrl;
+		}
 
 		//Do a quick search to see how many results we have
 		/** @var SearchObject_GroupedWorkSearcher $searchObject */
