@@ -23,6 +23,6 @@ if (true || $configArray['Site']['isProduction']) {
 echo('<?xml version="1.0" encoding="UTF-8"?>');
 echo('<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">');
 foreach ($sitemaps as $sitemap){
-	echo("<sitemap>$sitemap</sitemap>");
+	echo("<sitemap><loc>$sitemap</loc></sitemap>");
 }
 echo('</sitemapindex>');
