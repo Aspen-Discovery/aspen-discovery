@@ -731,7 +731,7 @@
 							<div class="panel-body">
 								<div class="adminMenuLink"><a href="/Events/LMLibraryCalendarSettings">{translate text="Library Market - Calendar Settings"}</a></div>
 								<div class="adminMenuLink"><a href="/Events/IndexingLog">{translate text="Indexing Log"}</a></div>
-								<div class="adminMenuLink"><a href="/Events/Dashboard">{translate text="Dashboard"}</a></div>
+								{*<div class="adminMenuLink"><a href="/Events/Dashboard">{translate text="Dashboard"}</a></div>*}
 							</div>
 						</div>
 					</div>
