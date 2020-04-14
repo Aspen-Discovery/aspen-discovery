@@ -70,7 +70,10 @@ while ($library->fetch()){
 					}
 				}
 				fclose($sitemapFhnd);
+				gc_collect_cycles();
 			}
 		}
+		gc_collect_cycles();
+		$searchObject = null;
 	}
 }
