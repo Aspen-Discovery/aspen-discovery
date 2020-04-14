@@ -88,10 +88,17 @@ foreach ($runningProcesses as $process){
 
 if (strlen($results) > 0){
 	//For debugging
-	//	echo $results;
-	require_once ROOT_DIR . '/sys/Email/Mailer.php';
-	$mailer = new Mailer();
-	$mailer->send("issues@turningleaftechnologies.com", "$serverName Error with Background processes", $results);
+	try {
+		require_once ROOT_DIR . '/sys/SystemVariables.php';
+		$systemVariables = new SystemVariables();
+		if ($systemVariables->find(true) && !empty($systemVariables->errorEmail)) {
+			require_once ROOT_DIR . '/sys/Email/Mailer.php';
+			$mailer = new Mailer();
+			$mailer->send($systemVariables->errorEmail, "$serverName Error with Background processes", $results);
+		}
+	}catch (Exception $e) {
+		//This happens if the table has not been created
+	}
 }
 
 function execInBackground($cmd) {

@@ -115,6 +115,20 @@ class SearchAPI extends Action
 			}
 		}
 
+		//Check to see if sitemaps have been created
+		$sitemapFiles = scandir(ROOT_DIR . '/sitemaps');
+		$groupedWorkSitemapFound = false;
+		foreach ($sitemapFiles as $sitemapFile) {
+			if (strpos($sitemapFile, 'grouped_work_site_map_') === 0){
+				$groupedWorkSitemapFound = true;
+				break;
+			}
+		}
+		if (!$groupedWorkSitemapFound){
+			$status[] = self::STATUS_CRITICAL;
+			$notes[] = "No sitemap found for grouped works";
+		}
+
 		// Unprocessed Offline Holds //
 		$offlineHoldEntry = new OfflineHold();
 		$offlineHoldEntry->status = 'Not Processed';

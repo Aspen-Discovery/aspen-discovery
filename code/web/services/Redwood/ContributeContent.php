@@ -11,15 +11,8 @@ class Redwood_ContributeContent extends Action{
 
 
 		if (isset($_REQUEST['submit'])) {
-			if (isset($configArray['ReCaptcha']['privateKey'])){
-				$privateKey = $configArray['ReCaptcha']['privateKey'];
-				$resp = recaptcha_check_answer ($privateKey,
-					$_SERVER["REMOTE_ADDR"],
-					$_POST["g-recaptcha-response"]);
-				$recaptchaValid = $resp->is_valid;
-			}else{
-				$recaptchaValid = true;
-			}
+			require_once ROOT_DIR . '/sys/Enrichment/RecaptchaSetting.php';
+			$recaptchaValid = RecaptchaSetting::validateRecaptcha();
 
 			if (!$recaptchaValid) {
 				$interface->assign('captchaMessage', 'The CAPTCHA response was incorrect, please try again.');
@@ -52,9 +45,10 @@ class Redwood_ContributeContent extends Action{
 		$interface->assign('saveButtonText', 'Submit Content');
 
 		// Set up captcha to limit spam self registrations
-		if (isset($configArray['ReCaptcha']['publicKey'])) {
-			$recaptchaPublicKey = $configArray['ReCaptcha']['publicKey'];
-			$captchaCode        = recaptcha_get_html($recaptchaPublicKey);
+		require_once ROOT_DIR . '/sys/Enrichment/RecaptchaSetting.php';
+		$recaptcha = new RecaptchaSetting();
+		if ($recaptcha->find(true) && !empty($recaptcha->publicKey)){
+			$captchaCode        = recaptcha_get_html($recaptcha->publicKey);
 			$interface->assign('captcha', $captchaCode);
 		}
 

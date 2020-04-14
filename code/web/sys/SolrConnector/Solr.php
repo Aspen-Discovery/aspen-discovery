@@ -2060,7 +2060,7 @@ abstract class Solr
 			foreach ($schema->fields->dynamicField as $field) {
 				$fields[] = substr((string)$field['name'], 0, -1);
 			}
-			$memCache->set("schema_dynamic_fields_$solrScope", $fields, 24 * 60 * 60);
+			$memCache->set("schema_dynamic_fields_{$solrScope}_{$this->index}", $fields, 24 * 60 * 60);
 		}
 		return $fields;
 	}
@@ -2096,7 +2096,7 @@ abstract class Solr
 					$fields[] = substr((string)$field['name'], 0, -1) . $solrScope;
 				}
 			}
-			$memCache->set("schema_fields_$solrScope", $fields, 24 * 60 * 60);
+			$memCache->set("schema_fields_{$solrScope}_{$this->index}", $fields, 24 * 60 * 60);
 		}
 		return $fields;
 	}

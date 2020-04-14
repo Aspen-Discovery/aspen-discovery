@@ -7,6 +7,7 @@ import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.json.JSONString;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -104,7 +105,7 @@ class HooplaProcessor {
 					groupedWork.addSeries(series);
 					String volume = "";
 					if (rawResponse.has("episode")){
-						volume = rawResponse.getString("episode");
+						volume = rawResponse.get("episode").toString();
 					}
 					groupedWork.addSeriesWithVolume(series, volume);
 				}
@@ -188,7 +189,9 @@ class HooplaProcessor {
 				String publisher = rawResponse.getString("publisher");
 				groupedWork.addPublisher(publisher);
 				//publication date
-				String releaseYear = rawResponse.getString("year");
+				Object yearObj = rawResponse.get("year");
+				String releaseYear = yearObj.toString();
+
 				groupedWork.addPublicationDate(releaseYear);
 				//physical description
 				if (rawResponse.has("duration")){

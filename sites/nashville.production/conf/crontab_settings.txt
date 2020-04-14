@@ -32,6 +32,7 @@
 #############
 @reboot sleep 5 cd /usr/local/aspen-discovery/sites/nashville.production/; ./start_background_processes.sh
 5 2 * * * php /usr/local/aspen-discovery/code/web/cron/updateSuggesters.php nashville.production
+7 3 * * * php /usr/local/aspen-discovery/code/web/cron/createSitemaps.php nashville.production
 */5 * * * * php /usr/local/aspen-discovery/code/web/cron/checkBackgroundProcesses.php nashville.production
 
 ########################################################

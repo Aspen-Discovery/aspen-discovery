@@ -9,6 +9,7 @@ class LibraryLink extends DataObject{
 	public $url;
 	public $weight;
 	public $htmlContents;
+	public $showToLoggedInUsersOnly;
 	public $showInAccount;
 	public $showInHelp;
 	public $showExpanded;
@@ -34,6 +35,7 @@ class LibraryLink extends DataObject{
 			'linkText' => array('property'=>'linkText', 'type'=>'text', 'label'=>'Link Text', 'description'=>'The text to display for the link ', 'size'=>'80', 'maxLength'=>100),
 			'url' => array('property'=>'url', 'type'=>'text', 'label'=>'URL', 'description'=>'The url to link to', 'size'=>'80', 'maxLength'=>255),
 			'htmlContents' => array('property'=>'htmlContents', 'type'=>'html', 'label'=>'HTML Contents', 'description'=>'Optional full HTML contents to show rather than showing a basic link within the sidebar.',),
+			'showToLoggedInUsersOnly' => array('property'=>'showToLoggedInUsersOnly', 'type'=>'checkbox', 'label'=>'Show to logged in users only', 'description'=>'Show the link only to users that have logged in.',),
 			'showInAccount' => array('property'=>'showInAccount', 'type'=>'checkbox', 'label'=>'Show in Account', 'description'=>'Show the link within the Account Menu.',),
 			'showInHelp' => array('property'=>'showInHelp', 'type'=>'checkbox', 'label'=>'Show In Help', 'description'=>'Show the link within the Help Menu','default'=>'1'),
 			'showExpanded' => array('property'=>'showExpanded', 'type'=>'checkbox', 'label'=>'Show Expanded', 'description'=>'Expand the category by default',),

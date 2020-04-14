@@ -10,4 +10,5 @@ class UserILSUsage extends DataObject
     public $year;
     public $month;
     public $usageCount; //Number of holds/clicks to online for sideloads
+	public $selfRegistrationCount;
 }

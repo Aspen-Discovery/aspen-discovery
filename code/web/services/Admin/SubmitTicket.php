@@ -16,10 +16,15 @@ class SubmitTicket extends Admin_Admin
 			$email = $_REQUEST['email'];
 			$name = $_REQUEST['name'];
 			$criticality = $_REQUEST['criticality'];
-			$component = $_REQUEST['component'];
-			if (is_array($component)){
-				$component = implode(', ', $component);
+			if (isset($_REQUEST['component'])){
+				$component = $_REQUEST['component'];
+				if (is_array($component)){
+					$component = implode(', ', $component);
+				}
+			}else{
+				$component = '';
 			}
+
 
 			global $serverName;
 			require_once ROOT_DIR . '/sys/Email/Mailer.php';
@@ -30,7 +35,18 @@ class SubmitTicket extends Admin_Admin
 			$description .= 'Criticality: ' . $criticality . "\n";
 			$description .= 'Component: ' . $component . "\n";
 
-			$result = $mailer->send("aspensupport@bywatersolutions.com", "Aspen Discovery: $subject", $description, $email);
+			try {
+				require_once ROOT_DIR . '/sys/SystemVariables.php';
+				$systemVariables = new SystemVariables();
+				if ($systemVariables->find(true) && !empty($systemVariables->ticketEmail)) {
+					$result = $mailer->send($systemVariables->ticketEmail, "Aspen Discovery: $subject", $description, $email);
+				} else {
+					$result = false;
+				}
+			}catch (Exception $e) {
+				//This happens when the table has not been created
+				$result = false;
+			}
 			if ($result == true){
 				$this->display('submitTicketSuccess.tpl', 'Submit Ticket');
 				die();

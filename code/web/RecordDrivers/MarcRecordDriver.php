@@ -915,6 +915,29 @@ class MarcRecordDriver extends GroupedWorkSubDriver
 			);
 		}
 
+		//Check to see if a file has been uploaded for the record
+		require_once ROOT_DIR . '/sys/ILS/RecordFile.php';
+		$recordFile = new RecordFile();
+		$recordFile->type = $this->getRecordType();
+		$recordFile->identifier = $this->getUniqueID();
+		if ($recordFile->find()){
+			if ($recordFile->getNumResults() == 1){
+				$recordFile->fetch();
+				$actions[] = array(
+					'title' => 'Download PDF',
+					'url' => "/Record/{$this->getId()}/DownloadPDF?fileId={$recordFile->fileId}",
+					'requireLogin' => false,
+				);
+			}else{
+				$actions[] = array(
+					'title' => 'Download PDF',
+					'url' => '',
+					'onclick' => "return AspenDiscovery.Record.selectFileDownload('{$this->getId()}');",
+					'requireLogin' => false,
+				);
+			}
+		}
+
 		$archiveLink = GroupedWorkDriver::getArchiveLinkForWork($this->getGroupedWorkId());
 		if ($archiveLink != null){
 			$actions[] = array(

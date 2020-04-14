@@ -267,7 +267,7 @@ public class HooplaExportMain {
 
 						String startToken = null;
 						if (responseJSON.has("nextStartToken")) {
-							startToken = responseJSON.getString("nextStartToken");
+							startToken = responseJSON.get("nextStartToken").toString();
 						}
 
 						int numTries = 0;
@@ -283,7 +283,7 @@ public class HooplaExportMain {
 									}
 								}
 								if (responseJSON.has("nextStartToken")) {
-									startToken = responseJSON.getString("nextStartToken");
+									startToken = responseJSON.get("nextStartToken").toString();
 								} else {
 									startToken = null;
 								}

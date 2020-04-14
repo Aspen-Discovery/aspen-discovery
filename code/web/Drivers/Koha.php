@@ -1454,9 +1454,9 @@ class Koha extends AbstractIlsDriver
 		}
 
 		if ($type == 'selfReg') {
-			$unwantedFields = explode('|', $kohaPreferences['PatronSelfModificationBorrowerUnwantedField']);
-		} else {
 			$unwantedFields = explode('|', $kohaPreferences['PatronSelfRegistrationBorrowerUnwantedField']);
+		} else {
+			$unwantedFields = explode('|', $kohaPreferences['PatronSelfModificationBorrowerUnwantedField']);
 		}
 		$requiredFields = explode('|', $kohaPreferences['PatronSelfRegistrationBorrowerMandatoryField']);
 		if (strlen($kohaPreferences['PatronSelfRegistrationLibraryList']) == 0) {
@@ -1474,11 +1474,11 @@ class Koha extends AbstractIlsDriver
 			$location->libraryId = $library->libraryId;
 		}elseif ($library->selfRegistrationLocationRestrictions == 2){
 			//Valid pickup locations
-			$location->validHoldPickupBranch = 1;
+			$location->whereAdd('validHoldPickupBranch <> 2');
 		}elseif ($library->selfRegistrationLocationRestrictions == 3){
 			//Valid pickup locations
 			$location->libraryId = $library->libraryId;
-			$location->validHoldPickupBranch = 1;
+			$location->whereAdd('validHoldPickupBranch <> 2');
 		}
 		if ($location->find()) {
 			while ($location->fetch()) {
@@ -1660,6 +1660,11 @@ class Koha extends AbstractIlsDriver
 			$result['success'] = true;
 			$result['username'] = $username;
 			$result['password'] = $password;
+		}elseif (preg_match('%<h1>Registration Complete!</h1>%s', $selfRegPageResponse, $matches)) {
+			$result['success'] = true;
+			$result['message'] = "Your account was registered, but a barcode was not provided, please contact your library for barcode and password to use when logging in.";
+		}elseif (preg_match('%This email address already exists in our database.%', $selfRegPageResponse)){
+			$result['message'] = 'This email address already exists in our database. Please contact your library for account information or use a different email.';
 		}
 		return $result;
 	}

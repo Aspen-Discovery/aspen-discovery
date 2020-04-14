@@ -222,6 +222,20 @@ $timer->logTime('Translator setup');
 
 $interface->setLanguage($activeLanguage);
 
+//Check to see if we should show the submit ticket option
+$interface->assign('showSubmitTicket', false);
+if (UserAccount::isLoggedIn() && (UserAccount::userHasRole('opacAdmin') || UserAccount::userHasRole('libraryAdmin'))) {
+	try {
+		require_once ROOT_DIR . '/sys/SystemVariables.php';
+		$systemVariables = new SystemVariables();
+		if ($systemVariables->find(true) && !empty($systemVariables->ticketEmail)) {
+			$interface->assign('showSubmitTicket', true);
+		}
+	}catch (Exception $e) {
+		//This happens before the table is setup
+	}
+}
+
 //Set System Message after translator has been setup
 if ($configArray['System']['systemMessage']){
 	$interface->assign('systemMessage', translate($configArray['System']['systemMessage']));

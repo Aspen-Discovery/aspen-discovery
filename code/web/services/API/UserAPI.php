@@ -14,7 +14,6 @@ class UserAPI extends Action
 	 *
 	 * @see Action::launch()
 	 * @access private
-	 * @author Mark Noble <mnoble@turningleaftech.com>
 	 */
 	function launch()
 	{
@@ -66,7 +65,6 @@ class UserAPI extends Action
 	 * </code>
 	 *
 	 * @access private
-	 * @author Mark Noble <mnoble@turningleaftech.com>
 	 */
 	function isLoggedIn()
 	{
@@ -96,7 +94,6 @@ class UserAPI extends Action
 	 * </code>
 	 *
 	 * @access private
-	 * @author Mark Noble <mnoble@turningleaftech.com>
 	 */
 	function login()
 	{
@@ -144,7 +141,6 @@ class UserAPI extends Action
 	 * </code>
 	 *
 	 * @access private
-	 * @author Mark Noble <mnoble@turningleaftech.com>
 	 */
 	function logout()
 	{
@@ -206,7 +202,6 @@ class UserAPI extends Action
 	 * {"result":{"success":false}}
 	 * </code>
 	 *
-	 * @author Mark Noble <mnoble@turningleaftech.com>
 	 */
 	function validateAccount()
 	{
@@ -326,7 +321,6 @@ class UserAPI extends Action
 	 * } }
 	 * </code>
 	 *
-	 * @author Mark Noble <mnoble@turningleaftech.com>
 	 */
 	function getPatronProfile()
 	{
@@ -465,7 +459,6 @@ class UserAPI extends Action
 	 * }
 	 * </code>
 	 *
-	 * @author Mark Noble <mnoble@turningleaftech.com>
 	 */
 	function getPatronHolds()
 	{
@@ -541,7 +534,6 @@ class UserAPI extends Action
 	 * }}
 	 * </code>
 	 *
-	 * @author Mark Noble <mnoble@turningleaftech.com>
 	 */
 	function getPatronHoldsOverDrive()
 	{
@@ -593,7 +585,6 @@ class UserAPI extends Action
 	 * }}
 	 * </code>
 	 *
-	 * @author Mark Noble <mnoble@turningleaftech.com>
 	 */
 	function getPatronCheckedOutItemsOverDrive()
 	{
@@ -641,7 +632,6 @@ class UserAPI extends Action
 	 * }}
 	 * </code>
 	 *
-	 * @author Mark Noble <mnoble@turningleaftech.com>
 	 */
 	function getPatronOverDriveSummary()
 	{
@@ -691,7 +681,6 @@ class UserAPI extends Action
 	 * }}
 	 * </code>
 	 *
-	 * @author Mark Noble <mnoble@turningleaftech.com>
 	 */
 	function getPatronFines()
 	{
@@ -767,7 +756,6 @@ class UserAPI extends Action
 	 * }}
 	 * </code>
 	 *
-	 * @author Mark Noble <mnoble@turningleaftech.com>
 	 */
 	function getPatronCheckedOutItems()
 	{
@@ -838,7 +826,6 @@ class UserAPI extends Action
 	 * }}
 	 * </code>
 	 *
-	 * @author Mark Noble <mnoble@turningleaftech.com>
 	 */
 	function renewCheckout()
 	{
@@ -891,7 +878,6 @@ class UserAPI extends Action
 	 * }}
 	 * </code>
 	 *
-	 * @author Mark Noble <mnoble@turningleaftech.com>
 	 */
 	function renewAll()
 	{
@@ -944,7 +930,6 @@ class UserAPI extends Action
 	 * }}
 	 * </code>
 	 *
-	 * @author Mark Noble <mnoble@turningleaftech.com>
 	 */
 	function placeHold()
 	{
@@ -1045,7 +1030,6 @@ class UserAPI extends Action
 	 * }}
 	 * </code>
 	 *
-	 * @author Mark Noble <mnoble@turningleaftech.com>
 	 */
 	function placeOverDriveHold()
 	{
@@ -1097,7 +1081,6 @@ class UserAPI extends Action
 	 * }}
 	 * </code>
 	 *
-	 * @author Mark Noble <mnoble@turningleaftech.com>
 	 */
 	function cancelOverDriveHold()
 	{
@@ -1144,7 +1127,6 @@ class UserAPI extends Action
 	 * }}
 	 * </code>
 	 *
-	 * @author Mark Noble <mnoble@turningleaftech.com>
 	 */
 	function checkoutOverDriveItem()
 	{
@@ -1203,7 +1185,6 @@ class UserAPI extends Action
 	 * }}
 	 * </code>
 	 *
-	 * @author Mark Noble <mnoble@turningleaftech.com>
 	 */
 	function cancelHold()
 	{
@@ -1260,7 +1241,6 @@ class UserAPI extends Action
 	 * }}
 	 * </code>
 	 *
-	 * @author Mark Noble <mnoble@turningleaftech.com>
 	 */
 	function freezeHold()
 	{
@@ -1313,7 +1293,6 @@ class UserAPI extends Action
 	 * }}
 	 * </code>
 	 *
-	 * @author Mark Noble <mnoble@turningleaftech.com>
 	 */
 	function activateHold()
 	{
@@ -1389,7 +1368,6 @@ class UserAPI extends Action
 	 * }}
 	 * </code>
 	 *
-	 * @author Mark Noble <mnoble@turningleaftech.com>
 	 */
 	function getPatronReadingHistory()
 	{
@@ -1452,7 +1430,6 @@ class UserAPI extends Action
 	 * {"result":{"success":true}}
 	 * </code>
 	 *
-	 * @author Mark Noble <mnoble@turningleaftech.com>
 	 */
 	function optIntoReadingHistory()
 	{
@@ -1490,7 +1467,6 @@ class UserAPI extends Action
 	 * {"result":{"success":true}}
 	 * </code>
 	 *
-	 * @author Mark Noble <mnoble@turningleaftech.com>
 	 */
 	function optOutOfReadingHistory()
 	{
@@ -1528,7 +1504,6 @@ class UserAPI extends Action
 	 * <code>
 	 * </code>
 	 *
-	 * @author Mark Noble <mnoble@turningleaftech.com>
 	 */
 	function deleteAllFromReadingHistory()
 	{
@@ -1567,7 +1542,6 @@ class UserAPI extends Action
 	 * {"result":{"success":true}}
 	 * </code>
 	 *
-	 * @author Mark Noble <mnoble@turningleaftech.com>
 	 */
 	function deleteSelectedFromReadingHistory()
 	{

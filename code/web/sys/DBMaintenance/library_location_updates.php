@@ -429,6 +429,14 @@ function getLibraryLocationUpdates(){
 			),
 		],
 
+		'library_links_showToLoggedInUsersOnly' => [
+			'title' => 'Library Links - Show to logged in users only',
+			'description' => 'Allow library links to only be shown to users that are logged in',
+			'sql' => [
+				'ALTER TABLE library_links ADD COLUMN showToLoggedInUsersOnly TINYINT DEFAULT 0'
+			]
+		],
+
 		'library_top_links' => array(
 			'title' => 'Library Top Links',
 			'description' => 'Add configurable links to display within the header. ',
@@ -2075,6 +2083,23 @@ function getLibraryLocationUpdates(){
 				'ALTER TABLE library add column selfRegistrationLocationRestrictions INT DEFAULT 2',
 			],
 		],
+
+		'library_sitemap_changes' => [
+			'title' => 'Updates to handle sitemaps for libraries',
+			'description' => 'Update libraries to include base url and a flag for whether or not a sitemap should be generated',
+			'sql' => [
+				'ALTER TABLE library ADD COLUMN baseUrl VARCHAR(75)',
+				'ALTER TABLE library ADD COLUMN generateSitemap TINYINT(1) DEFAULT 1',
+			]
+		],
+
+		'selfRegistrationUrl' => [
+			'title' => 'Self Registration with external url',
+			'description' => 'Update libraries to allow self registration by redirecting to another URL',
+			'sql' => [
+				'ALTER TABLE library add COLUMN selfRegistrationUrl VARCHAR(255)',
+			]
+		]
 	);
 }
 

@@ -7,22 +7,22 @@
 				{$error}
 			</div>
 		{/if}
-		<form class="form-horizontal">
+		<form class="form-horizontal" id="submitTicketForm">
 			<div class="form-group">
-				<label class="control-label" for="name">{translate text="Your Name"}</label>
-				<input type="text" class="form-control" name="name" id="name" value="{$name}">
+				<label class="control-label" for="name">{translate text="Your Name"} <span class="required-input">*</span></label>
+				<input type="text" class="form-control required" name="name" id="name" value="{$name}">
 			</div>
 			<div class="form-group">
-				<label class="control-label" for="email">{translate text="Email"}</label>
-				<input type="email" class="form-control" name="email" id="email" value="{$email}">
+				<label class="control-label" for="email">{translate text="Email"} <span class="required-input">*</span></label>
+				<input type="email" class="form-control required" name="email" id="email" value="{$email}">
 			</div>
 			<div class="form-group">
-				<label class="control-label" for="subject">{translate text="Subject"}</label>
-				<input type="text" class="form-control" name="subject" id="subject">
+				<label class="control-label" for="subject">{translate text="Subject"} <span class="required-input">*</span></label>
+				<input type="text" class="form-control required" name="subject" id="subject">
 			</div>
 			<div class="form-group">
-				<label class="control-label" for="description">{translate text="Description"}</label>
-				<textarea class="form-control" name="description" id="description"></textarea>
+				<label class="control-label" for="description">{translate text="Description"} <span class="required-input">*</span></label>
+				<textarea class="form-control required" name="description" id="description"></textarea>
 			</div>
 			<div class="form-group">
 				<label class="control-label" for="criticality">{translate text="Criticality"}</label>
@@ -137,5 +137,10 @@
 				</div>
 			</div>
 		</form>
+		<script type="application/javascript">
+            {literal}
+			$("#submitTicketForm").validate();
+            {/literal}
+		</script>
 	</div>
 {/strip}

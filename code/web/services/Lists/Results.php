@@ -60,12 +60,20 @@ class Lists_Results extends Action
 			$this->getKeywordSearchResults($searchObject, $interface);
 
 			//Don't record an error, but send it to issues just to be sure everything looks good
-			global $serverName;
-			if ($configArray['Site']['isProduction']) {
-				require_once ROOT_DIR . '/sys/Email/Mailer.php';
-				$mailer = new Mailer();
-				$emailErrorDetails = $_SERVER['REQUEST_URI'] . "\n" . $result['error']['msg'];
-				$mailer->send("issues@turningleaftechnologies.com", "$serverName Error processing lists search", $emailErrorDetails);
+			try {
+				require_once ROOT_DIR . '/sys/SystemVariables.php';
+				$systemVariables = new SystemVariables();
+				if ($systemVariables->find(true) && !empty($systemVariables->searchErrorEmail)) {
+					global $serverName;
+
+					require_once ROOT_DIR . '/sys/Email/Mailer.php';
+					$mailer = new Mailer();
+					$emailErrorDetails = $_SERVER['REQUEST_URI'] . "\n" . $result['error']['msg'];
+
+					$mailer->send($systemVariables->searchErrorEmail, "$serverName Error processing lists search", $emailErrorDetails);
+				}
+			}catch (Exception $e){
+				//This happens when the table has not been created
 			}
 
 			$interface->assign('searchError', $result);
