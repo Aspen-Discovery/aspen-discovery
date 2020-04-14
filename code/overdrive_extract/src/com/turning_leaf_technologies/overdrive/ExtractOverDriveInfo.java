@@ -15,6 +15,7 @@ import java.util.zip.CRC32;
 
 import javax.net.ssl.HttpsURLConnection;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import com.turning_leaf_technologies.grouping.OverDriveRecordGrouper;
 import com.turning_leaf_technologies.grouping.RemoveRecordFromWorkResult;
 import com.turning_leaf_technologies.net.NetworkUtils;
@@ -1046,7 +1047,15 @@ class ExtractOverDriveInfo {
 		}else {
 			try {
 				JSONObject availability = availabilityResponse.getJSONResponse();
-				boolean available = availability.has("available") && availability.getString("available").equals("true");
+				boolean available = false;
+				if (availability.has("available")){
+					Object availableObj = availability.get("available");
+					if (availableObj instanceof Boolean){
+						available = (Boolean)availableObj;
+					}else if (availableObj instanceof String){
+						available = availability.getString("available").equals("true");
+					}
+				}
 
 				//Get existing availability
 				HashMap<Long, OverDriveAvailabilityInfo> existingAvailabilities = new HashMap<>();
