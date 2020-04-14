@@ -1474,11 +1474,11 @@ class Koha extends AbstractIlsDriver
 			$location->libraryId = $library->libraryId;
 		}elseif ($library->selfRegistrationLocationRestrictions == 2){
 			//Valid pickup locations
-			$location->validHoldPickupBranch = 1;
+			$location->whereAdd('validHoldPickupBranch <> 2');
 		}elseif ($library->selfRegistrationLocationRestrictions == 3){
 			//Valid pickup locations
 			$location->libraryId = $library->libraryId;
-			$location->validHoldPickupBranch = 1;
+			$location->whereAdd('validHoldPickupBranch <> 2');
 		}
 		if ($location->find()) {
 			while ($location->fetch()) {
