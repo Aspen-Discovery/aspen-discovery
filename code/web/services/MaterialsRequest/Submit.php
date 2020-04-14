@@ -105,7 +105,7 @@ class MaterialsRequest_Submit extends Action
 							$materialsRequest->author              = empty($_REQUEST['author']) ? '' : strip_tags($_REQUEST['author']);
 							$materialsRequest->ageLevel            = isset($_REQUEST['ageLevel']) ? strip_tags($_REQUEST['ageLevel']) : '';
 							$materialsRequest->bookType            = isset($_REQUEST['bookType']) ? strip_tags($_REQUEST['bookType']) : '';
-							$materialsRequest->isbn                = isset($_REQUEST['isbn']) ? strip_tags($_REQUEST['isbn']) : '';
+							$materialsRequest->isbn                = isset($_REQUEST['isbn']) ? substr(strip_tags($_REQUEST['isbn']), 0, 15) : '';
 							$materialsRequest->upc                 = isset($_REQUEST['upc']) ? strip_tags($_REQUEST['upc']) : '';
 							$materialsRequest->issn                = isset($_REQUEST['issn']) ? strip_tags($_REQUEST['issn']) : '';
 							$materialsRequest->oclcNumber          = isset($_REQUEST['oclcNumber']) ? strip_tags($_REQUEST['oclcNumber']) : '';
