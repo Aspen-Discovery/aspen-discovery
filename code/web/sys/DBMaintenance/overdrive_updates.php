@@ -318,6 +318,14 @@ function getOverDriveUpdates()
 				"UPDATE modules set logClassPath='/sys/OverDrive/OverDriveExtractLogEntry.php', logClassName='OverDriveExtractLogEntry' WHERE name='OverDrive'",
 			]
 		],
+
+		'overdrive_part_count' => [
+			'title' => 'OverDrive part count',
+			'description' => 'Increase the size of the partCount field',
+			'sql' => [
+				'ALTER TABLE overdrive_api_product_formats CHANGE partCount partCount SMALLINT',
+			]
+		],
 	);
 }
 
