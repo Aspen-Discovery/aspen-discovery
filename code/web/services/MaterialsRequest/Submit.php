@@ -93,7 +93,7 @@ class MaterialsRequest_Submit extends Action
 							$interface->assign('success', false);
 							$interface->assign('error', 'No format was specified.');
 						} else {
-							$materialsRequest->phone                = isset($_REQUEST['phone']) ? strip_tags($_REQUEST['phone']) : '';
+							$materialsRequest->phone                = isset($_REQUEST['phone']) ? substr(strip_tags($_REQUEST['phone']),0,15) : '';
 							$materialsRequest->email               = isset($_REQUEST['email']) ? strip_tags($_REQUEST['email']) : '';
 							$materialsRequest->title               = isset($_REQUEST['title']) ? strip_tags($_REQUEST['title']) : '';
 							$materialsRequest->season              = isset($_REQUEST['season']) ? strip_tags($_REQUEST['season']) : '';
@@ -110,7 +110,7 @@ class MaterialsRequest_Submit extends Action
 							$materialsRequest->issn                = isset($_REQUEST['issn']) ? strip_tags($_REQUEST['issn']) : '';
 							$materialsRequest->oclcNumber          = isset($_REQUEST['oclcNumber']) ? strip_tags($_REQUEST['oclcNumber']) : '';
 							$materialsRequest->publisher           = empty($_REQUEST['publisher']) ? '' : strip_tags($_REQUEST['publisher']);
-							$materialsRequest->publicationYear     = empty($_REQUEST['publicationYear']) ? '' : strip_tags($_REQUEST['publicationYear']);
+							$materialsRequest->publicationYear     = empty($_REQUEST['publicationYear']) ? '' : substr(strip_tags($_REQUEST['publicationYear']), 0, 4);
 							$materialsRequest->about               = empty($_REQUEST['about']) ? '' : strip_tags($_REQUEST['about']);
 							$materialsRequest->comments            = empty($_REQUEST['comments']) ? '' : strip_tags($_REQUEST['comments']);
 							$materialsRequest->placeHoldWhenAvailable = empty($_REQUEST['placeHoldWhenAvailable']) ? 0: $_REQUEST['placeHoldWhenAvailable'];

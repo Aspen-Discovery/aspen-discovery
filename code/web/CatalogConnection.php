@@ -309,8 +309,8 @@ class CatalogConnection
 							$userReadingHistoryEntry->groupedWorkPermanentId = $title['permanentId'];
 							$userReadingHistoryEntry->source = $this->accountProfile->recordSource;
 							$userReadingHistoryEntry->sourceId = $title['recordId'];
-							$userReadingHistoryEntry->title = $title['title'];
-							$userReadingHistoryEntry->author = $title['author'];
+							$userReadingHistoryEntry->title = substr($title['title'], 0, 150);
+							$userReadingHistoryEntry->author = substr($title['author'], 0, 75);
 							$userReadingHistoryEntry->format = $title['format'];
 							$userReadingHistoryEntry->checkOutDate = $title['checkout'];
 							$userReadingHistoryEntry->checkInDate = null;
